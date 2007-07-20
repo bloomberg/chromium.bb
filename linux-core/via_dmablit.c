@@ -805,7 +805,7 @@ via_dma_blit_sync( DRM_IOCTL_ARGS )
 
 	err = via_dmablit_sync(dev, sync.sync_handle, sync.engine);
 
-	if (-EINTR) == err
+	if (-EINTR == err)
 		err = -EAGAIN;
 
 	return err;

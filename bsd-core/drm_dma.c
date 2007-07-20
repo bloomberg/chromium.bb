@@ -89,18 +89,18 @@ void drm_free_buffer(drm_device_t *dev, drm_buf_t *buf)
 	if (!buf) return;
 
 	buf->pending  = 0;
-	buf->filp     = NULL;
+	buf->file_priv= NULL;
 	buf->used     = 0;
 }
 
-void drm_reclaim_buffers(drm_device_t *dev, DRMFILE filp)
+void drm_reclaim_buffers(drm_device_t *dev, struct drm_file *file_priv)
 {
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
 	if (!dma) return;
 	for (i = 0; i < dma->buf_count; i++) {
-		if (dma->buflist[i]->filp == filp) {
+		if (dma->buflist[i]->file_priv == file_priv) {
 			switch (dma->buflist[i]->list) {
 			case DRM_LIST_NONE:
 				drm_free_buffer(dev, dma->buflist[i]);
@@ -122,7 +122,8 @@ int drm_dma(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 
 	if (dev->driver.dma_ioctl) {
-		return -dev->driver.dma_ioctl(kdev, cmd, data, flags, p, filp);
+		return -dev->driver.dma_ioctl(kdev, cmd, data, flags, p,
+					      file_priv);
 	} else {
 		DRM_DEBUG("DMA ioctl on driver with no dma handler\n");
 		return EINVAL;

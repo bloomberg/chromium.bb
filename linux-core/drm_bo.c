@@ -505,7 +505,8 @@ void drm_bo_usage_deref_locked(struct drm_buffer_object ** bo)
 	}
 }
 
-static void drm_bo_base_deref_locked(struct drm_file * priv, struct drm_user_object * uo)
+static void drm_bo_base_deref_locked(struct drm_file * file_priv,
+				     struct drm_user_object * uo)
 {
 	struct drm_buffer_object *bo =
 	    drm_user_object_entry(uo, struct drm_buffer_object, base);
@@ -535,13 +536,13 @@ static void drm_bo_usage_deref_unlocked(struct drm_buffer_object ** bo)
  * and deregister fence object usage.
  */
 
-int drm_fence_buffer_objects(struct drm_file * priv,
+int drm_fence_buffer_objects(struct drm_file * file_priv,
 			     struct list_head *list,
 			     uint32_t fence_flags,
 			     struct drm_fence_object * fence,
 			     struct drm_fence_object ** used_fence)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_buffer_manager *bm = &dev->bm;
 
 	struct drm_buffer_object *entry;
@@ -921,21 +922,21 @@ static int drm_bo_new_mask(struct drm_buffer_object * bo,
  * Call dev->struct_mutex locked.
  */
 
-struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file * priv,
+struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file *file_priv,
 					      uint32_t handle, int check_owner)
 {
 	struct drm_user_object *uo;
 	struct drm_buffer_object *bo;
 
-	uo = drm_lookup_user_object(priv, handle);
+	uo = drm_lookup_user_object(file_priv, handle);
 
 	if (!uo || (uo->type != drm_buffer_type)) {
 		DRM_ERROR("Could not find buffer object 0x%08x\n", handle);
 		return NULL;
 	}
 
-	if (check_owner && priv != uo->owner) {
-		if (!drm_lookup_ref_object(priv, uo, _DRM_REF_USE))
+	if (check_owner && file_priv != uo->owner) {
+		if (!drm_lookup_ref_object(file_priv, uo, _DRM_REF_USE))
 			return NULL;
 	}
 
@@ -1102,17 +1103,17 @@ static void drm_bo_fill_rep_arg(struct drm_buffer_object * bo,
  * unregistered.
  */
 
-static int drm_buffer_object_map(struct drm_file * priv, uint32_t handle,
+static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 				 uint32_t map_flags, unsigned hint,
 				 struct drm_bo_info_rep *rep)
 {
 	struct drm_buffer_object *bo;
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	int ret = 0;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 
 	mutex_lock(&dev->struct_mutex);
-	bo = drm_lookup_buffer_object(priv, handle, 1);
+	bo = drm_lookup_buffer_object(file_priv, handle, 1);
 	mutex_unlock(&dev->struct_mutex);
 
 	if (!bo)
@@ -1169,7 +1170,7 @@ static int drm_buffer_object_map(struct drm_file * priv, uint32_t handle,
 	}
 
 	mutex_lock(&dev->struct_mutex);
-	ret = drm_add_ref_object(priv, &bo->base, _DRM_REF_TYPE1);
+	ret = drm_add_ref_object(file_priv, &bo->base, _DRM_REF_TYPE1);
 	mutex_unlock(&dev->struct_mutex);
 	if (ret) {
 		if (atomic_add_negative(-1, &bo->mapped))
@@ -1183,28 +1184,28 @@ static int drm_buffer_object_map(struct drm_file * priv, uint32_t handle,
 	return ret;
 }
 
-static int drm_buffer_object_unmap(struct drm_file * priv, uint32_t handle)
+static int drm_buffer_object_unmap(struct drm_file *file_priv, uint32_t handle)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_buffer_object *bo;
 	struct drm_ref_object *ro;
 	int ret = 0;
 
 	mutex_lock(&dev->struct_mutex);
 
-	bo = drm_lookup_buffer_object(priv, handle, 1);
+	bo = drm_lookup_buffer_object(file_priv, handle, 1);
 	if (!bo) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	ro = drm_lookup_ref_object(priv, &bo->base, _DRM_REF_TYPE1);
+	ro = drm_lookup_ref_object(file_priv, &bo->base, _DRM_REF_TYPE1);
 	if (!ro) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	drm_remove_ref_object(priv, ro);
+	drm_remove_ref_object(file_priv, ro);
 	drm_bo_usage_deref_locked(&bo);
       out:
 	mutex_unlock(&dev->struct_mutex);
@@ -1215,7 +1216,7 @@ static int drm_buffer_object_unmap(struct drm_file * priv, uint32_t handle)
  * Call struct-sem locked.
  */
 
-static void drm_buffer_user_object_unmap(struct drm_file * priv,
+static void drm_buffer_user_object_unmap(struct drm_file *file_priv,
 					 struct drm_user_object * uo,
 					 enum drm_ref_type action)
 {
@@ -1489,19 +1490,19 @@ static int drm_buffer_object_validate(struct drm_buffer_object * bo,
 	return 0;
 }
 
-static int drm_bo_handle_validate(struct drm_file * priv,
+static int drm_bo_handle_validate(struct drm_file *file_priv,
 				  uint32_t handle,
 				  uint32_t fence_class,
 				  uint64_t flags, uint64_t mask, uint32_t hint,
 				  struct drm_bo_info_rep *rep)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_buffer_object *bo;
 	int ret;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 
 	mutex_lock(&dev->struct_mutex);
-	bo = drm_lookup_buffer_object(priv, handle, 1);
+	bo = drm_lookup_buffer_object(file_priv, handle, 1);
 	mutex_unlock(&dev->struct_mutex);
 	if (!bo) {
 		return -EINVAL;
@@ -1532,14 +1533,14 @@ static int drm_bo_handle_validate(struct drm_file * priv,
 	return ret;
 }
 
-static int drm_bo_handle_info(struct drm_file *priv, uint32_t handle,
+static int drm_bo_handle_info(struct drm_file *file_priv, uint32_t handle,
 			      struct drm_bo_info_rep *rep)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_buffer_object *bo;
 
 	mutex_lock(&dev->struct_mutex);
-	bo = drm_lookup_buffer_object(priv, handle, 1);
+	bo = drm_lookup_buffer_object(file_priv, handle, 1);
 	mutex_unlock(&dev->struct_mutex);
 
 	if (!bo) {
@@ -1554,17 +1555,17 @@ static int drm_bo_handle_info(struct drm_file *priv, uint32_t handle,
 	return 0;
 }
 
-static int drm_bo_handle_wait(struct drm_file *priv, uint32_t handle,
+static int drm_bo_handle_wait(struct drm_file *file_priv, uint32_t handle,
 			      uint32_t hint,
 			      struct drm_bo_info_rep *rep)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_buffer_object *bo;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
-	bo = drm_lookup_buffer_object(priv, handle, 1);
+	bo = drm_lookup_buffer_object(file_priv, handle, 1);
 	mutex_unlock(&dev->struct_mutex);
 
 	if (!bo) {
@@ -1672,14 +1673,15 @@ int drm_buffer_object_create(struct drm_device *dev,
 	return ret;
 }
 
-static int drm_bo_add_user_object(struct drm_file * priv, struct drm_buffer_object * bo,
+static int drm_bo_add_user_object(struct drm_file *file_priv,
+				  struct drm_buffer_object *bo,
 				  int shareable)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
-	ret = drm_add_user_object(priv, &bo->base, shareable);
+	ret = drm_add_user_object(file_priv, &bo->base, shareable);
 	if (ret)
 		goto out;
 
@@ -1693,9 +1695,9 @@ static int drm_bo_add_user_object(struct drm_file * priv, struct drm_buffer_obje
 	return ret;
 }
 
-static int drm_bo_lock_test(struct drm_device * dev, struct file *filp)
+static int drm_bo_lock_test(struct drm_device * dev, struct drm_file *file_priv)
 {
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 	return 0;
 }
 
@@ -1724,10 +1726,10 @@ int drm_bo_op_ioctl(DRM_IOCTL_ARGS)
 		ret = 0;
 		switch (req->op) {
 		case drm_bo_validate:
-			ret = drm_bo_lock_test(dev, filp);
+			ret = drm_bo_lock_test(dev, file_priv);
 			if (ret)
 				break;
-			ret = drm_bo_handle_validate(priv, req->bo_req.handle,
+			ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
 						     req->bo_req.fence_class,
 						     req->bo_req.flags,
 						     req->bo_req.mask,
@@ -1779,18 +1781,18 @@ int drm_bo_create_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 	
-	ret = drm_bo_lock_test(dev, filp);
+	ret = drm_bo_lock_test(dev, file_priv);
 	if (ret)
 		goto out;
 
-	ret = drm_buffer_object_create(priv->head->dev,
+	ret = drm_buffer_object_create(file_priv->head->dev,
 				       req->size, req->type, req->mask,
 				       req->hint, req->page_alignment,
 				       req->buffer_start, &entry);
 	if (ret)
 		goto out;
 	
-	ret = drm_bo_add_user_object(priv, entry,
+	ret = drm_bo_add_user_object(file_priv, entry,
 				     req->mask & DRM_BO_FLAG_SHAREABLE);
 	if (ret) {
 		drm_bo_usage_deref_unlocked(&entry);
@@ -1822,12 +1824,12 @@ int drm_bo_destroy_ioctl(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
 	mutex_lock(&dev->struct_mutex);
-	uo = drm_lookup_user_object(priv, arg.handle);
-	if (!uo || (uo->type != drm_buffer_type) || uo->owner != priv) {
+	uo = drm_lookup_user_object(file_priv, arg.handle);
+	if (!uo || (uo->type != drm_buffer_type) || uo->owner != file_priv) {
 		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
-	ret = drm_remove_user_object(priv, uo);
+	ret = drm_remove_user_object(file_priv, uo);
 	mutex_unlock(&dev->struct_mutex);
 	
 	return ret;
@@ -1847,7 +1849,7 @@ int drm_bo_map_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	ret = drm_buffer_object_map(priv, req->handle, req->mask,
+	ret = drm_buffer_object_map(file_priv, req->handle, req->mask,
 				    req->hint, rep);
 	if (ret)
 		return ret;
@@ -1868,7 +1870,7 @@ int drm_bo_unmap_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	ret = drm_buffer_object_unmap(priv, arg.handle);
+	ret = drm_buffer_object_unmap(file_priv, arg.handle);
 	return ret;
 }
 
@@ -1889,12 +1891,12 @@ int drm_bo_reference_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	ret = drm_user_object_ref(priv, req->handle,
+	ret = drm_user_object_ref(file_priv, req->handle,
 				  drm_buffer_type, &uo);
 	if (ret)
 		return ret;
 	
-	ret = drm_bo_handle_info(priv, req->handle, rep);
+	ret = drm_bo_handle_info(file_priv, req->handle, rep);
 	if (ret)
 		return ret;
 
@@ -1915,7 +1917,7 @@ int drm_bo_unreference_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	ret = drm_user_object_unref(priv, arg.handle, drm_buffer_type);
+	ret = drm_user_object_unref(file_priv, arg.handle, drm_buffer_type);
 	return ret;
 }
 
@@ -1934,7 +1936,7 @@ int drm_bo_info_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	ret = drm_bo_handle_info(priv, req->handle, rep);
+	ret = drm_bo_handle_info(file_priv, req->handle, rep);
 	if (ret)
 		return ret;
 	DRM_COPY_TO_USER_IOCTL((void __user *)data, arg, sizeof(arg));
@@ -1955,7 +1957,7 @@ int drm_bo_wait_idle_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	ret = drm_bo_handle_wait(priv, req->handle,
+	ret = drm_bo_handle_wait(file_priv, req->handle,
 				 req->hint, rep);
 	if (ret)
 		return ret;
@@ -2407,7 +2409,7 @@ int drm_mm_takedown_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 	ret = -EINVAL;
@@ -2448,7 +2450,7 @@ int drm_mm_lock_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bo_lock_mm(dev, arg.mem_type);
@@ -2474,7 +2476,7 @@ int drm_mm_unlock_ioctl(DRM_IOCTL_ARGS)
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 	ret = 0;

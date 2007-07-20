@@ -306,7 +306,7 @@ static void drm_locked_task(void *context, int pending __unused)
 		if (drm_lock_take(&dev->lock.hw_lock->lock,
 		    DRM_KERNEL_CONTEXT))
 		{
-			dev->lock.filp = (void *)(uintptr_t)DRM_CURRENTPID;
+			dev->lock.file_priv = NULL; /* kernel owned */
 			dev->lock.lock_time = jiffies;
 			atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
 			break;  /* Got lock */

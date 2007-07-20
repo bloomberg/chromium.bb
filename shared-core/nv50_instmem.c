@@ -179,7 +179,7 @@ nv50_instmem_populate(struct drm_device *dev, struct nouveau_gpuobj *gpuobj, uin
 
 	gpuobj->im_backing = nouveau_mem_alloc(dev, NV50_INSTMEM_PAGE_SIZE,
 					       *sz, NOUVEAU_MEM_FB,
-					       (DRMFILE)-2);
+					       (struct drm_file *)-2);
 	if (!gpuobj->im_backing) {
 		DRM_ERROR("Couldn't allocate vram to back PRAMIN pages\n");
 		return -ENOMEM;

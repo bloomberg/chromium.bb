@@ -47,7 +47,7 @@ struct mem_block {
 	struct mem_block *prev;
 	uint64_t start;
 	uint64_t size;
-	DRMFILE filp;           /* 0: free, -1: heap, other: real files */
+	struct drm_file *file_priv; /* NULL: free, -1: heap, other: real files */
 	int flags;
 	drm_local_map_t *map;
 	drm_handle_t map_handle;
@@ -95,7 +95,7 @@ struct nouveau_gpuobj_ref {
 struct nouveau_fifo
 {
 	/* owner of this fifo */
-	DRMFILE filp;
+	struct drm_file *file_priv;
 	/* mapping of the fifo itself */
 	drm_local_map_t *map;
 	/* mapping of the regs controling the fifo */
@@ -263,7 +263,8 @@ struct drm_nouveau_private {
 };
 
 /* nouveau_state.c */
-extern void nouveau_preclose(struct drm_device * dev, DRMFILE filp);
+extern void nouveau_preclose(struct drm_device * dev,
+			     struct drm_file *file_priv);
 extern int nouveau_load(struct drm_device *dev, unsigned long flags);
 extern int nouveau_firstopen(struct drm_device *dev);
 extern void nouveau_lastclose(struct drm_device *dev);
@@ -278,20 +279,25 @@ extern int               nouveau_mem_init_heap(struct mem_block **,
 					       uint64_t start, uint64_t size);
 extern struct mem_block *nouveau_mem_alloc_block(struct mem_block *,
 						 uint64_t size, int align2,
-						 DRMFILE);
+						 struct drm_file *file_priv);
 extern void              nouveau_mem_takedown(struct mem_block **heap);
 extern void              nouveau_mem_free_block(struct mem_block *);
 extern uint64_t          nouveau_mem_fb_amount(struct drm_device *dev);
-extern void              nouveau_mem_release(DRMFILE filp, struct mem_block *heap);
+extern void              nouveau_mem_release(struct drm_file *file_priv,
+					     struct mem_block *heap);
 extern int               nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS);
 extern int               nouveau_ioctl_mem_free(DRM_IOCTL_ARGS);
-extern struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint64_t size, int flags, DRMFILE filp);
+extern struct mem_block* nouveau_mem_alloc(struct drm_device *dev,
+					   int alignment, uint64_t size,
+					   int flags,
+					   struct drm_file *file_priv);
 extern void              nouveau_mem_free(struct drm_device* dev, struct mem_block*);
 extern int               nouveau_mem_init(struct drm_device *dev);
 extern void              nouveau_mem_close(struct drm_device *dev);
 
 /* nouveau_notifier.c */
-extern int  nouveau_notifier_init_channel(struct drm_device *, int channel, DRMFILE);
+extern int  nouveau_notifier_init_channel(struct drm_device *, int channel,
+					  struct drm_file *file_priv);
 extern void nouveau_notifier_takedown_channel(struct drm_device *, int channel);
 extern int  nouveau_notifier_alloc(struct drm_device *, int channel,
 				   uint32_t handle, int cout, uint32_t *offset);
@@ -301,8 +307,10 @@ extern int  nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS);
 extern int  nouveau_fifo_init(struct drm_device *dev);
 extern int  nouveau_fifo_number(struct drm_device *dev);
 extern int  nouveau_fifo_ctx_size(struct drm_device *dev);
-extern void nouveau_fifo_cleanup(struct drm_device *dev, DRMFILE filp);
-extern int  nouveau_fifo_owner(struct drm_device *dev, DRMFILE filp, int channel);
+extern void nouveau_fifo_cleanup(struct drm_device *dev,
+				 struct drm_file *file_priv);
+extern int  nouveau_fifo_owner(struct drm_device *dev,
+			       struct drm_file *file_priv, int channel);
 extern void nouveau_fifo_free(struct drm_device *dev, int channel);
 
 /* nouveau_object.c */
@@ -473,7 +481,7 @@ extern int  nv04_timer_init(struct drm_device *dev);
 extern uint64_t nv04_timer_read(struct drm_device *dev);
 extern void nv04_timer_takedown(struct drm_device *dev);
 
-extern long nouveau_compat_ioctl(struct file *filp, unsigned int cmd,
+extern long nouveau_compat_ioctl(struct file *file, unsigned int cmd,
 				unsigned long arg);
 
 #if defined(__powerpc__)

@@ -36,7 +36,7 @@
 #include "nouveau_drv.h"
 
 static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64_t size,
-		DRMFILE filp)
+		struct drm_file *file_priv)
 {
 	/* Maybe cut off the start of an existing block */
 	if (start > p->start) {
@@ -46,7 +46,7 @@ static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64
 			goto out;
 		newblock->start = start;
 		newblock->size = p->size - (start - p->start);
-		newblock->filp = NULL;
+		newblock->file_priv = NULL;
 		newblock->next = p->next;
 		newblock->prev = p;
 		p->next->prev = newblock;
@@ -63,7 +63,7 @@ static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64
 			goto out;
 		newblock->start = start + size;
 		newblock->size = p->size - size;
-		newblock->filp = NULL;
+		newblock->file_priv = NULL;
 		newblock->next = p->next;
 		newblock->prev = p;
 		p->next->prev = newblock;
@@ -73,12 +73,14 @@ static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64
 
 out:
 	/* Our block is in the middle */
-	p->filp = filp;
+	p->file_priv = file_priv;
 	return p;
 }
 
-struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
-					  int align2, DRMFILE filp)
+struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap,
+					  uint64_t size,
+					  int align2,
+					  struct drm_file *file_priv)
 {
 	struct mem_block *p;
 	uint64_t mask = (1 << align2) - 1;
@@ -88,8 +90,8 @@ struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
 
 	list_for_each(p, heap) {
 		uint64_t start = (p->start + mask) & ~mask;
-		if (p->filp == 0 && start + size <= p->start + p->size)
-			return split_block(p, start, size, filp);
+		if (p->file_priv == 0 && start + size <= p->start + p->size)
+			return split_block(p, start, size, file_priv);
 	}
 
 	return NULL;
@@ -108,12 +110,12 @@ static struct mem_block *find_block(struct mem_block *heap, uint64_t start)
 
 void nouveau_mem_free_block(struct mem_block *p)
 {
-	p->filp = NULL;
+	p->file_priv = NULL;
 
-	/* Assumes a single contiguous range.  Needs a special filp in
+	/* Assumes a single contiguous range.  Needs a special file_priv in
 	 * 'heap' to stop it being subsumed.
 	 */
-	if (p->next->filp == 0) {
+	if (p->next->file_priv == 0) {
 		struct mem_block *q = p->next;
 		p->size += q->size;
 		p->next = q->next;
@@ -121,7 +123,7 @@ void nouveau_mem_free_block(struct mem_block *p)
 		drm_free(q, sizeof(*q), DRM_MEM_BUFS);
 	}
 
-	if (p->prev->filp == 0) {
+	if (p->prev->file_priv == 0) {
 		struct mem_block *q = p->prev;
 		q->size += p->size;
 		q->next = p->next;
@@ -148,19 +150,19 @@ int nouveau_mem_init_heap(struct mem_block **heap, uint64_t start,
 
 	blocks->start = start;
 	blocks->size = size;
-	blocks->filp = NULL;
+	blocks->file_priv = NULL;
 	blocks->next = blocks->prev = *heap;
 
 	memset(*heap, 0, sizeof(**heap));
-	(*heap)->filp = (DRMFILE) - 1;
+	(*heap)->file_priv = (struct drm_file *) - 1;
 	(*heap)->next = (*heap)->prev = blocks;
 	return 0;
 }
 
 /* 
- * Free all blocks associated with the releasing filp
+ * Free all blocks associated with the releasing file_priv
  */
-void nouveau_mem_release(DRMFILE filp, struct mem_block *heap)
+void nouveau_mem_release(struct drm_file *file_priv, struct mem_block *heap)
 {
 	struct mem_block *p;
 
@@ -168,15 +170,16 @@ void nouveau_mem_release(DRMFILE filp, struct mem_block *heap)
 		return;
 
 	list_for_each(p, heap) {
-		if (p->filp == filp)
-			p->filp = NULL;
+		if (p->file_priv == file_priv)
+			p->file_priv = NULL;
 	}
 
-	/* Assumes a single contiguous range.  Needs a special filp in
+	/* Assumes a single contiguous range.  Needs a special file_priv in
 	 * 'heap' to stop it being subsumed.
 	 */
 	list_for_each(p, heap) {
-		while ((p->filp == 0) && (p->next->filp == 0) && (p->next!=heap)) {
+		while ((p->file_priv == 0) && (p->next->file_priv == 0) &&
+		       (p->next!=heap)) {
 			struct mem_block *q = p->next;
 			p->size += q->size;
 			p->next = q->next;
@@ -424,7 +427,9 @@ int nouveau_mem_init(struct drm_device *dev)
 	return 0;
 }
 
-struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint64_t size, int flags, DRMFILE filp)
+struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
+				    uint64_t size, int flags,
+				    struct drm_file *file_priv)
 {
 	struct mem_block *block;
 	int type;
@@ -453,13 +458,14 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 #define NOUVEAU_MEM_ALLOC_AGP {\
 		type=NOUVEAU_MEM_AGP;\
                 block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,\
-                                                alignment, filp);\
+                                                alignment, file_priv); \
                 if (block) goto alloc_ok;\
 	        }
 
 #define NOUVEAU_MEM_ALLOC_PCI {\
                 type = NOUVEAU_MEM_PCI;\
-                block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, alignment, filp);\
+                block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, \
+						alignment, file_priv); \
                 if ( block ) goto alloc_ok;\
 	        }
 
@@ -467,11 +473,12 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
                 type=NOUVEAU_MEM_FB;\
                 if (!(flags&NOUVEAU_MEM_MAPPED)) {\
                         block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,\
-                                                        size, alignment, filp); \
+                                                        size, alignment, \
+							file_priv); \
                         if (block) goto alloc_ok;\
                 }\
                 block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,\
-                                                alignment, filp);\
+                                                alignment, file_priv);\
                 if (block) goto alloc_ok;\
 	        }
 
@@ -556,7 +563,8 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 				 (struct drm_nouveau_mem_alloc_t __user *) data,
 				 sizeof(alloc));
 
-	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags, filp);
+	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags,
+				file_priv);
 	if (!block)
 		return -ENOMEM;
 	alloc.map_handle=block->map_handle;
@@ -589,7 +597,7 @@ int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
 		block = find_block(dev_priv->pci_heap, memfree.offset);
 	if (!block)
 		return -EFAULT;
-	if (block->filp != filp)
+	if (block->file_priv != file_priv)
 		return -EPERM;
 
 	nouveau_mem_free(dev, block);

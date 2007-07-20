@@ -204,7 +204,7 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 
 	cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
 			config->cmdbuf.location | NOUVEAU_MEM_MAPPED,
-			(DRMFILE)-2);
+			(struct drm_file *)-2);
 	if (!cb) {
 		DRM_ERROR("Couldn't allocate DMA command buffer.\n");
 		return -ENOMEM;
@@ -264,7 +264,8 @@ nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
 }
 
 /* allocates and initializes a fifo for user space consumption */
-int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret, DRMFILE filp,
+int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret,
+		       struct drm_file *file_priv,
 		       uint32_t vram_handle, uint32_t tt_handle)
 {
 	int ret;
@@ -298,7 +299,7 @@ int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret, DRMFILE filp,
 		return -ENOMEM;
 	dev_priv->fifo_alloc_count++;
 	chan = dev_priv->fifos[channel];
-	chan->filp = filp;
+	chan->file_priv = file_priv;
 
 	DRM_INFO("Allocating FIFO number %d\n", channel);
 
@@ -317,7 +318,7 @@ int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret, DRMFILE filp,
 	}
 
 	/* Allocate space for per-channel fixed notifier memory */
-	ret = nouveau_notifier_init_channel(dev, channel, filp);
+	ret = nouveau_notifier_init_channel(dev, channel, file_priv);
 	if (ret) {
 		nouveau_fifo_free(dev, channel);
 		return ret;
@@ -441,20 +442,22 @@ void nouveau_fifo_free(struct drm_device *dev, int channel)
 	drm_free(chan, sizeof(*chan), DRM_MEM_DRIVER);
 }
 
-/* cleanups all the fifos from filp */
-void nouveau_fifo_cleanup(struct drm_device *dev, DRMFILE filp)
+/* cleanups all the fifos from file_priv */
+void nouveau_fifo_cleanup(struct drm_device *dev, struct drm_file *file_priv)
 {
 	int i;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	DRM_DEBUG("clearing FIFO enables from filp\n");
+	DRM_DEBUG("clearing FIFO enables from file_priv\n");
 	for(i=0;i<nouveau_fifo_number(dev);i++)
-		if (dev_priv->fifos[i] && dev_priv->fifos[i]->filp==filp)
+		if (dev_priv->fifos[i] &&
+		    dev_priv->fifos[i]->file_priv==file_priv)
 			nouveau_fifo_free(dev,i);
 }
 
 int
-nouveau_fifo_owner(struct drm_device *dev, DRMFILE filp, int channel)
+nouveau_fifo_owner(struct drm_device *dev, struct drm_file *file_priv,
+		   int channel)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
@@ -462,7 +465,7 @@ nouveau_fifo_owner(struct drm_device *dev, DRMFILE filp, int channel)
 		return 0;
 	if (dev_priv->fifos[channel] == NULL)
 		return 0;
-	return (dev_priv->fifos[channel]->filp == filp);
+	return (dev_priv->fifos[channel]->file_priv == file_priv);
 }
 
 /***********************************
@@ -485,7 +488,7 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	if (init.fb_ctxdma_handle == ~0 || init.tt_ctxdma_handle == ~0)
 		return -EINVAL;
 
-	res = nouveau_fifo_alloc(dev, &init.channel, filp,
+	res = nouveau_fifo_alloc(dev, &init.channel, file_priv,
 				 init.fb_ctxdma_handle,
 				 init.tt_ctxdma_handle);
 	if (res)

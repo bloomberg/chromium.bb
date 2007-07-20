@@ -1165,7 +1165,7 @@ int mach64_dma_init(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	DRM_COPY_FROM_USER_IOCTL(init, (drm_mach64_init_t *) data,
 				 sizeof(init));
@@ -1187,7 +1187,7 @@ int mach64_dma_idle(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	return mach64_do_dma_idle(dev_priv);
 }
@@ -1199,7 +1199,7 @@ int mach64_dma_flush(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	return mach64_do_dma_flush(dev_priv);
 }
@@ -1211,7 +1211,7 @@ int mach64_engine_reset(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	return mach64_do_engine_reset(dev_priv);
 }
@@ -1461,7 +1461,8 @@ int mach64_freelist_put(drm_mach64_private_t * dev_priv, struct drm_buf * copy_b
 /** \name DMA buffer request and submission IOCTL handler */
 /*@{*/
 
-static int mach64_dma_get_buffers(DRMFILE filp, struct drm_device * dev,
+static int mach64_dma_get_buffers(struct drm_device * dev,
+				  struct drm_file *file_priv,
 				  struct drm_dma * d)
 {
 	int i;
@@ -1478,7 +1479,7 @@ static int mach64_dma_get_buffers(DRMFILE filp, struct drm_device * dev,
 			return -EAGAIN;
 #endif
 
-		buf->filp = filp;
+		buf->file_priv = file_priv;
 
 		if (DRM_COPY_TO_USER(&d->request_indices[i], &buf->idx,
 				     sizeof(buf->idx)))
@@ -1499,7 +1500,7 @@ int mach64_dma_buffers(DRM_IOCTL_ARGS)
 	struct drm_dma d;
 	int ret = 0;
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	DRM_COPY_FROM_USER_IOCTL(d, (struct drm_dma *) data, sizeof(d));
 
@@ -1522,7 +1523,7 @@ int mach64_dma_buffers(DRM_IOCTL_ARGS)
 	d.granted_count = 0;
 
 	if (d.request_count) {
-		ret = mach64_dma_get_buffers(filp, dev, &d);
+		ret = mach64_dma_get_buffers(dev, file_priv, &d);
 	}
 
 	DRM_COPY_TO_USER_IOCTL((struct drm_dma *) data, d, sizeof(d));

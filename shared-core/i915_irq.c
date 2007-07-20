@@ -456,7 +456,7 @@ int i915_irq_emit(DRM_IOCTL_ARGS)
 	drm_i915_irq_emit_t emit;
 	int result;
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
@@ -623,7 +623,7 @@ int i915_vblank_swap(DRM_IOCTL_ARGS)
 		if ((curseq - swap.sequence) <= (1<<23)) {
 			struct drm_drawable_info *drw;
 
-			LOCK_TEST_WITH_RETURN(dev, filp);
+			LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 			DRM_SPINLOCK_IRQSAVE(&dev->drw_lock, irqflags);
 

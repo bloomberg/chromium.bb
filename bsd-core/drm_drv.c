@@ -499,7 +499,7 @@ static int drm_lastclose(drm_device_t *dev)
 	drm_dma_takedown(dev);
 	if ( dev->lock.hw_lock ) {
 		dev->lock.hw_lock = NULL; /* SHM removed */
-		dev->lock.filp = NULL;
+		dev->lock.file_priv = NULL;
 		DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);
 	}
 
@@ -704,24 +704,23 @@ int drm_open(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 
 int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 {
-	drm_file_t *priv;
+	drm_file_t *file_priv;
 	DRM_DEVICE;
 	int retcode = 0;
-	DRMFILE filp = (void *)(uintptr_t)(DRM_CURRENTPID);
-	
+
 	DRM_DEBUG( "open_count = %d\n", dev->open_count );
 
 	DRM_LOCK();
 
-	priv = drm_find_file_by_proc(dev, p);
-	if (!priv) {
+	file_priv = drm_find_file_by_proc(dev, p);
+	if (!file_priv) {
 		DRM_UNLOCK();
 		DRM_ERROR("can't find authenticator\n");
 		return EINVAL;
 	}
 
 	if (dev->driver.preclose != NULL)
-		dev->driver.preclose(dev, filp);
+		dev->driver.preclose(dev, file_priv);
 
 	/* ========================================================
 	 * Begin inline drm_release
@@ -736,12 +735,12 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 #endif
 
 	if (dev->lock.hw_lock && _DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)
-	    && dev->lock.filp == filp) {
+	    && dev->lock.file_priv == file_priv) {
 		DRM_DEBUG("Process %d dead, freeing lock for context %d\n",
 			  DRM_CURRENTPID,
 			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 		if (dev->driver.reclaim_buffers_locked != NULL)
-			dev->driver.reclaim_buffers_locked(dev, filp);
+			dev->driver.reclaim_buffers_locked(dev, file_priv);
 
 		drm_lock_free(dev, &dev->lock.hw_lock->lock,
 		    _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
@@ -761,7 +760,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 			}
 			if (drm_lock_take(&dev->lock.hw_lock->lock,
 			    DRM_KERNEL_CONTEXT)) {
-				dev->lock.filp = filp;
+				dev->lock.file_priv = file_priv;
 				dev->lock.lock_time = jiffies;
                                 atomic_inc( &dev->counts[_DRM_STAT_LOCKS] );
 				break;	/* Got lock */
@@ -778,14 +777,14 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 				break;
 		}
 		if (retcode == 0) {
-			dev->driver.reclaim_buffers_locked(dev, filp);
+			dev->driver.reclaim_buffers_locked(dev, file_priv);
 			drm_lock_free(dev, &dev->lock.hw_lock->lock,
 			    DRM_KERNEL_CONTEXT);
 		}
 	}
 
 	if (dev->driver.use_dma && !dev->driver.reclaim_buffers_locked)
-		drm_reclaim_buffers(dev, filp);
+		drm_reclaim_buffers(dev, file_priv);
 
 #if defined (__FreeBSD__) && (__FreeBSD_version >= 500000)
 	funsetown(&dev->buf_sigio);
@@ -795,11 +794,11 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	dev->buf_pgid = 0;
 #endif /* __NetBSD__  || __OpenBSD__ */
 
-	if (--priv->refs == 0) {
+	if (--file_priv->refs == 0) {
 		if (dev->driver.postclose != NULL)
-			dev->driver.postclose(dev, priv);
-		TAILQ_REMOVE(&dev->files, priv, link);
-		free(priv, M_DRM);
+			dev->driver.postclose(dev, file_priv);
+		TAILQ_REMOVE(&dev->files, file_priv, link);
+		free(file_priv, M_DRM);
 	}
 
 	/* ========================================================
@@ -830,26 +829,27 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	int (*func)(DRM_IOCTL_ARGS);
 	int nr = DRM_IOCTL_NR(cmd);
 	int is_driver_ioctl = 0;
-	drm_file_t *priv;
-	DRMFILE filp = (DRMFILE)(uintptr_t)DRM_CURRENTPID;
+	drm_file_t *file_priv;
 
 	DRM_LOCK();
-	priv = drm_find_file_by_proc(dev, p);
+	file_priv = drm_find_file_by_proc(dev, p);
 	DRM_UNLOCK();
-	if (priv == NULL) {
+	if (file_priv == NULL) {
 		DRM_ERROR("can't find authenticator\n");
 		return EINVAL;
 	}
 
 	atomic_inc( &dev->counts[_DRM_STAT_IOCTLS] );
-	++priv->ioctl_count;
+	++file_priv->ioctl_count;
 
 #ifdef __FreeBSD__
 	DRM_DEBUG( "pid=%d, cmd=0x%02lx, nr=0x%02x, dev 0x%lx, auth=%d\n",
-		 DRM_CURRENTPID, cmd, nr, (long)dev->device, priv->authenticated );
+	    DRM_CURRENTPID, cmd, nr, (long)dev->device,
+	    file_priv->authenticated );
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	DRM_DEBUG( "pid=%d, cmd=0x%02lx, nr=0x%02x, dev 0x%lx, auth=%d\n",
-		 DRM_CURRENTPID, cmd, nr, (long)&dev->device, priv->authenticated );
+	    DRM_CURRENTPID, cmd, nr, (long)&dev->device,
+	    file_priv->authenticated );
 #endif
 
 	switch (cmd) {
@@ -904,17 +904,15 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 		DRM_DEBUG( "no function\n" );
 		return EINVAL;
 	}
-	/* ioctl->master check should be against something in the filp set up
-	 * for the first opener, but it doesn't matter yet.
-	 */
+
 	if (((ioctl->flags & DRM_ROOT_ONLY) && !DRM_SUSER(p)) ||
-	    ((ioctl->flags & DRM_AUTH) && !priv->authenticated) ||
-	    ((ioctl->flags & DRM_MASTER) && !priv->master))
+	    ((ioctl->flags & DRM_AUTH) && !file_priv->authenticated) ||
+	    ((ioctl->flags & DRM_MASTER) && !file_priv->master))
 		return EACCES;
 
 	if (is_driver_ioctl)
 		DRM_LOCK();
-	retcode = func(kdev, cmd, data, flags, p, filp);
+	retcode = func(kdev, cmd, data, flags, p, file_priv);
 	if (is_driver_ioctl) {
 		DRM_UNLOCK();
 		/* Driver ioctls in shared code follow the linux convention of

@@ -85,7 +85,8 @@ static void mach64_print_dirty(const char *msg, unsigned int flags)
 /* This function returns 0 on success, 1 for no intersection, and
  * negative for an error
  */
-static int mach64_emit_cliprect(DRMFILE filp, drm_mach64_private_t * dev_priv,
+static int mach64_emit_cliprect(struct drm_file *file_priv,
+				drm_mach64_private_t * dev_priv,
 				struct drm_clip_rect * box)
 {
 	u32 sc_left_right, sc_top_bottom;
@@ -120,7 +121,7 @@ static int mach64_emit_cliprect(DRMFILE filp, drm_mach64_private_t * dev_priv,
 	if (scissor.y1 >= scissor.y2)
 		return 1;
 
-	DMAGETPTR(filp, dev_priv, 2);	/* returns on failure to get buffer */
+	DMAGETPTR(file_priv, dev_priv, 2);	/* returns on failure to get buffer */
 
 	sc_left_right = ((scissor.x1 << 0) | (scissor.x2 << 16));
 	sc_top_bottom = ((scissor.y1 << 0) | (scissor.y2 << 16));
@@ -133,7 +134,7 @@ static int mach64_emit_cliprect(DRMFILE filp, drm_mach64_private_t * dev_priv,
 	return 0;
 }
 
-static __inline__ int mach64_emit_state(DRMFILE filp,
+static __inline__ int mach64_emit_state(struct drm_file *file_priv,
 					drm_mach64_private_t * dev_priv)
 {
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
@@ -148,7 +149,7 @@ static __inline__ int mach64_emit_state(DRMFILE filp,
 		DRM_DEBUG("%s: dirty=0x%08x\n", __FUNCTION__, dirty);
 	}
 
-	DMAGETPTR(filp, dev_priv, 17);	/* returns on failure to get buffer */
+	DMAGETPTR(file_priv, dev_priv, 17);	/* returns on failure to get buffer */
 
 	if (dirty & MACH64_UPLOAD_MISC) {
 		DMAOUTREG(MACH64_DP_MIX, regs->dp_mix);
@@ -212,7 +213,8 @@ static __inline__ int mach64_emit_state(DRMFILE filp,
  * DMA command dispatch functions
  */
 
-static int mach64_dma_dispatch_clear(DRMFILE filp, struct drm_device * dev,
+static int mach64_dma_dispatch_clear(struct drm_device * dev,
+				     struct drm_file *file_priv,
 				     unsigned int flags,
 				     int cx, int cy, int cw, int ch,
 				     unsigned int clear_color,
@@ -254,7 +256,7 @@ static int mach64_dma_dispatch_clear(DRMFILE filp, struct drm_device * dev,
 	if (!nbox)
 		return 0;
 
-	DMAGETPTR(filp, dev_priv, nbox * 31);	/* returns on failure to get buffer */
+	DMAGETPTR(file_priv, dev_priv, nbox * 31);	/* returns on failure to get buffer */
 
 	for (i = 0; i < nbox; i++) {
 		int x = pbox[i].x1;
@@ -355,7 +357,8 @@ static int mach64_dma_dispatch_clear(DRMFILE filp, struct drm_device * dev,
 	return 0;
 }
 
-static int mach64_dma_dispatch_swap(DRMFILE filp, struct drm_device * dev)
+static int mach64_dma_dispatch_swap(struct drm_device * dev,
+				    struct drm_file *file_priv)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
@@ -380,7 +383,7 @@ static int mach64_dma_dispatch_swap(DRMFILE filp, struct drm_device * dev)
 	if (!nbox)
 		return 0;
 
-	DMAGETPTR(filp, dev_priv, 13 + nbox * 4);	/* returns on failure to get buffer */
+	DMAGETPTR(file_priv, dev_priv, 13 + nbox * 4);	/* returns on failure to get buffer */
 
 	DMAOUTREG(MACH64_Z_CNTL, 0);
 	DMAOUTREG(MACH64_SCALE_3D_CNTL, 0);
@@ -545,7 +548,8 @@ static __inline__ int copy_from_user_vertex(u32 *to,
 	}
 }
 
-static int mach64_dma_dispatch_vertex(DRMFILE filp, struct drm_device * dev,
+static int mach64_dma_dispatch_vertex(struct drm_device * dev,
+				      struct drm_file *file_priv,
 				      drm_mach64_vertex_t * vertex)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
@@ -583,7 +587,7 @@ static int mach64_dma_dispatch_vertex(DRMFILE filp, struct drm_device * dev,
 	DMASETPTR(copy_buf);
 
 	if (sarea_priv->dirty & ~MACH64_UPLOAD_CLIPRECTS) {
-		ret = mach64_emit_state(filp, dev_priv);
+		ret = mach64_emit_state(file_priv, dev_priv);
 		if (ret < 0)
 			return ret;
 	}
@@ -591,7 +595,7 @@ static int mach64_dma_dispatch_vertex(DRMFILE filp, struct drm_device * dev,
 	do {
 		/* Emit the next cliprect */
 		if (i < sarea_priv->nbox) {
-			ret = mach64_emit_cliprect(filp, dev_priv,
+			ret = mach64_emit_cliprect(file_priv, dev_priv,
 						   &sarea_priv->boxes[i]);
 			if (ret < 0) {
 				/* failed to get buffer */
@@ -640,7 +644,8 @@ static __inline__ int copy_from_user_blit(u32 *to,
 	return 0;
 }
 
-static int mach64_dma_dispatch_blit(DRMFILE filp, struct drm_device * dev,
+static int mach64_dma_dispatch_blit(struct drm_device * dev,
+				    struct drm_file *file_priv,
 				    drm_mach64_blit_t * blit)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
@@ -763,7 +768,7 @@ int mach64_dma_clear(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG("%s: pid=%d\n", __FUNCTION__, DRM_CURRENTPID);
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	DRM_COPY_FROM_USER_IOCTL(clear, (drm_mach64_clear_t *) data,
 				 sizeof(clear));
@@ -771,7 +776,7 @@ int mach64_dma_clear(DRM_IOCTL_ARGS)
 	if (sarea_priv->nbox > MACH64_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = MACH64_NR_SAREA_CLIPRECTS;
 
-	ret = mach64_dma_dispatch_clear(filp, dev, clear.flags,
+	ret = mach64_dma_dispatch_clear(dev, file_priv, clear.flags,
 					clear.x, clear.y, clear.w, clear.h,
 					clear.clear_color, clear.clear_depth);
 
@@ -790,12 +795,12 @@ int mach64_dma_swap(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG("%s: pid=%d\n", __FUNCTION__, DRM_CURRENTPID);
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (sarea_priv->nbox > MACH64_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = MACH64_NR_SAREA_CLIPRECTS;
 
-	ret = mach64_dma_dispatch_swap(filp, dev);
+	ret = mach64_dma_dispatch_swap(dev, file_priv);
 
 	/* Make sure we restore the 3D state next time.
 	 */
@@ -810,7 +815,7 @@ int mach64_dma_vertex(DRM_IOCTL_ARGS)
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	drm_mach64_vertex_t vertex;
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
@@ -838,7 +843,7 @@ int mach64_dma_vertex(DRM_IOCTL_ARGS)
 	if (sarea_priv->nbox > MACH64_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = MACH64_NR_SAREA_CLIPRECTS;
 
-	return mach64_dma_dispatch_vertex(filp, dev, &vertex);
+	return mach64_dma_dispatch_vertex(dev, file_priv, &vertex);
 }
 
 int mach64_dma_blit(DRM_IOCTL_ARGS)
@@ -849,12 +854,12 @@ int mach64_dma_blit(DRM_IOCTL_ARGS)
 	drm_mach64_blit_t blit;
 	int ret;
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	DRM_COPY_FROM_USER_IOCTL(blit, (drm_mach64_blit_t *) data,
 				 sizeof(blit));
 
-	ret = mach64_dma_dispatch_blit(filp, dev, &blit);
+	ret = mach64_dma_dispatch_blit(dev, file_priv, &blit);
 
 	/* Make sure we restore the 3D state next time.
 	 */
@@ -884,7 +889,7 @@ int mach64_get_param(DRM_IOCTL_ARGS)
 	switch (param.param) {
 	case MACH64_PARAM_FRAMES_QUEUED:
 		/* Needs lock since it calls mach64_ring_tick() */
-		LOCK_TEST_WITH_RETURN(dev, filp);
+		LOCK_TEST_WITH_RETURN(dev, file_priv);
 		value = mach64_do_get_frames_queued(dev_priv);
 		break;
 	case MACH64_PARAM_IRQ_NR:

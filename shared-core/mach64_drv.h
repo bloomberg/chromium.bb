@@ -842,7 +842,7 @@ do {						\
 } while(0)
 
 /* FIXME: use a private set of smaller buffers for state emits, clears, and swaps? */
-#define DMAGETPTR( filp, dev_priv, n )					\
+#define DMAGETPTR( file_priv, dev_priv, n )				\
 do {									\
 	if ( MACH64_VERBOSE ) {						\
 		DRM_INFO( "DMAGETPTR( %d ) in %s\n",			\
@@ -859,7 +859,7 @@ do {									\
 			   __FUNCTION__ );				\
 		return -EFAULT;					\
 	}								\
-	_buf->filp = filp;						\
+	_buf->file_priv = file_priv;					\
 	_outcount = 0;							\
 									\
         _buf_wptr = GETBUFPTR( _buf );					\

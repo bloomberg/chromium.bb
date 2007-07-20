@@ -241,7 +241,7 @@ nouveau_gpuobj_new(struct drm_device *dev, int channel, int size, int align,
 	/* Allocate a chunk of the PRAMIN aperture */
 	gpuobj->im_pramin = nouveau_mem_alloc_block(pramin, size,
 						    drm_order(align),
-						    (DRMFILE)-2);
+						    (struct drm_file *)-2);
 	if (!gpuobj->im_pramin) {
 		nouveau_gpuobj_del(dev, &gpuobj);
 		return -ENOMEM;
@@ -1035,7 +1035,7 @@ int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS)
 				 (struct drm_nouveau_grobj_alloc_t __user*)data,
 				 sizeof(init));
 
-	if (!nouveau_fifo_owner(dev, filp, init.channel)) {
+	if (!nouveau_fifo_owner(dev, file_priv, init.channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
 				DRM_CURRENTPID, init.channel);
 		return -EINVAL;

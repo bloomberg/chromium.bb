@@ -469,7 +469,7 @@ static int drm_do_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->address = (void *)(agp_offset + offset);
 		buf->next    = NULL;
 		buf->pending = 0;
-		buf->filp    = NULL;
+		buf->file_priv = NULL;
 
 		buf->dev_priv_size = dev->driver.buf_priv_size;
 		buf->dev_private = malloc(buf->dev_priv_size, M_DRM,
@@ -610,7 +610,7 @@ static int drm_do_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 			buf->bus_address = dmah->busaddr + offset;
 			buf->next    = NULL;
 			buf->pending = 0;
-			buf->filp    = NULL;
+			buf->file_priv = NULL;
 
 			buf->dev_priv_size = dev->driver.buf_priv_size;
 			buf->dev_private = malloc(buf->dev_priv_size, M_DRM,
@@ -724,7 +724,7 @@ static int drm_do_addbufs_sg(drm_device_t *dev, drm_buf_desc_t *request)
 		buf->address = (void *)(agp_offset + offset + dev->sg->handle);
 		buf->next    = NULL;
 		buf->pending = 0;
-		buf->filp    = NULL;
+		buf->file_priv = NULL;
 
 		buf->dev_priv_size = dev->driver.buf_priv_size;
 		buf->dev_private = malloc(buf->dev_priv_size, M_DRM,
@@ -1008,7 +1008,7 @@ int drm_freebufs(DRM_IOCTL_ARGS)
 			break;
 		}
 		buf = dma->buflist[idx];
-		if ( buf->filp != filp ) {
+		if ( buf->file_priv != file_priv ) {
 			DRM_ERROR("Process %d freeing buffer not owned\n",
 				   DRM_CURRENTPID);
 			retcode = EINVAL;

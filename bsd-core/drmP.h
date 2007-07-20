@@ -217,10 +217,6 @@ MALLOC_DECLARE(M_DRM);
 #define spldrm()		spltty()
 #endif /* __NetBSD__ || __OpenBSD__ */
 
-/* Currently our DRMFILE (filp) is a void * which is actually the pid
- * of the current process.  It should be a per-open unique pointer, but
- * code for that is not yet written */
-#define DRMFILE			void *
 #define DRM_IRQ_ARGS		void *arg
 typedef void			irqreturn_t;
 #define IRQ_HANDLED		/* nothing */
@@ -237,7 +233,8 @@ enum {
 #define DRM_DEVICE							\
 	drm_device_t *dev = kdev->si_drv1
 #define DRM_IOCTL_ARGS		struct cdev *kdev, u_long cmd, caddr_t data, \
-				int flags, DRM_STRUCTPROC *p, DRMFILE filp
+				int flags, DRM_STRUCTPROC *p,		\
+				struct drm_file *file_priv
 
 #define PAGE_ALIGN(addr) round_page(addr)
 /* DRM_SUSER returns true if the user is superuser */
@@ -260,8 +257,9 @@ enum {
 	drm_device_t *dev = (device_lookup(&drm_cd,			\
 	    minor(kdev)))->dv_cfdata->cf_driver->cd_devs[minor(kdev)]
 #endif /* __OpenBSD__ */
-#define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data, \
-				int flags, DRM_STRUCTPROC *p, DRMFILE filp
+#define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data,	\
+				int flags, DRM_STRUCTPROC *p,		\
+				struct drm_file *file_priv
 
 #define CDEV_MAJOR		34
 #define PAGE_ALIGN(addr)	(((addr) + PAGE_SIZE - 1) & PAGE_MASK)
@@ -385,23 +383,10 @@ typedef vaddr_t vm_offset_t;
 	(_map) = (_dev)->context_sareas[_ctx];		\
 } while(0)
 
-#define DRM_GET_PRIV_WITH_RETURN(_priv, _filp)			\
-do {								\
-	if (_filp != (DRMFILE)(intptr_t)DRM_CURRENTPID) {	\
-		DRM_ERROR("filp doesn't match curproc\n");	\
-		return EINVAL;					\
-	}							\
-	_priv = drm_find_file_by_proc(dev, DRM_CURPROC);	\
-	if (_priv == NULL) {					\
-		DRM_ERROR("can't find authenticator\n");	\
-		return EINVAL;					\
-	}							\
-} while (0)
-
-#define LOCK_TEST_WITH_RETURN(dev, filp)				\
+#define LOCK_TEST_WITH_RETURN(dev, file_priv)				\
 do {									\
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ||		\
-	     dev->lock.filp != filp) {					\
+	     dev->lock.file_priv != file_priv) {			\
 		DRM_ERROR("%s called without lock held\n",		\
 			   __FUNCTION__);				\
 		return EINVAL;						\
@@ -479,7 +464,7 @@ typedef struct drm_buf {
 	unsigned long	  bus_address; /* Bus address of buffer		     */
 	struct drm_buf	  *next;       /* Kernel-only: used for free list    */
 	__volatile__ int  pending;     /* On hardware DMA queue		     */
-	DRMFILE		  filp;	       /* Unique identifier of holding process */
+	struct drm_file   *file_priv;  /* Unique identifier of holding process */
 	int		  context;     /* Kernel queue for this buffer	     */
 	enum {
 		DRM_LIST_NONE	 = 0,
@@ -541,7 +526,7 @@ struct drm_file {
 
 typedef struct drm_lock_data {
 	drm_hw_lock_t	  *hw_lock;	/* Hardware lock		   */
-	DRMFILE		  filp;	        /* Unique identifier of holding process (NULL is kernel)*/
+	struct drm_file   *file_priv;   /* Unique identifier of holding process (NULL is kernel)*/
 	int		  lock_queue;	/* Queue of blocked processes	   */
 	unsigned long	  lock_time;	/* Time of last lock in jiffies	   */
 } drm_lock_data_t;
@@ -645,11 +630,12 @@ struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
 	int	(*firstopen)(struct drm_device *);
 	int	(*open)(struct drm_device *, drm_file_t *);
-	void	(*preclose)(struct drm_device *, void *filp);
+	void	(*preclose)(struct drm_device *, struct drm_file *file_priv);
 	void	(*postclose)(struct drm_device *, drm_file_t *);
 	void	(*lastclose)(struct drm_device *);
 	int	(*unload)(struct drm_device *);
-	void	(*reclaim_buffers_locked)(struct drm_device *, void *filp);
+	void	(*reclaim_buffers_locked)(struct drm_device *,
+					  struct drm_file *file_priv);
 	int	(*dma_ioctl)(DRM_IOCTL_ARGS);
 	void	(*dma_ready)(struct drm_device *);
 	int	(*dma_quiescent)(struct drm_device *);
@@ -900,7 +886,7 @@ int	drm_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request);
 int	drm_dma_setup(drm_device_t *dev);
 void	drm_dma_takedown(drm_device_t *dev);
 void	drm_free_buffer(drm_device_t *dev, drm_buf_t *buf);
-void	drm_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
+void	drm_reclaim_buffers(drm_device_t *dev, struct drm_file *file_priv);
 #define drm_core_reclaim_buffers drm_reclaim_buffers
 
 /* IRQ support (drm_irq.c) */

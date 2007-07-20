@@ -353,15 +353,16 @@ static void nouveau_card_takedown(struct drm_device *dev)
 	}
 }
 
-/* here a client dies, release the stuff that was allocated for its filp */
-void nouveau_preclose(struct drm_device *dev, DRMFILE filp)
+/* here a client dies, release the stuff that was allocated for its
+ * file_priv */
+void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	nouveau_fifo_cleanup(dev, filp);
-	nouveau_mem_release(filp,dev_priv->fb_heap);
-	nouveau_mem_release(filp,dev_priv->agp_heap);
-	nouveau_mem_release(filp,dev_priv->pci_heap);
+	nouveau_fifo_cleanup(dev, file_priv);
+	nouveau_mem_release(file_priv,dev_priv->fb_heap);
+	nouveau_mem_release(file_priv,dev_priv->agp_heap);
+	nouveau_mem_release(file_priv,dev_priv->pci_heap);
 }
 
 /* first module load, setup the mmio/fb mapping */

@@ -30,7 +30,8 @@
 #include "nouveau_drv.h"
 
 int
-nouveau_notifier_init_channel(struct drm_device *dev, int channel, DRMFILE filp)
+nouveau_notifier_init_channel(struct drm_device *dev, int channel,
+			      struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
@@ -44,7 +45,8 @@ nouveau_notifier_init_channel(struct drm_device *dev, int channel, DRMFILE filp)
 		flags = NOUVEAU_MEM_FB;
 	flags |= NOUVEAU_MEM_MAPPED;
 
-	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,filp);
+	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,
+						 file_priv);
 	if (!chan->notifier_block)
 		return -ENOMEM;
 
@@ -87,7 +89,8 @@ nouveau_notifier_alloc(struct drm_device *dev, int channel, uint32_t handle,
 		return -EINVAL;
 	}
 
-	mem = nouveau_mem_alloc_block(chan->notifier_heap, 32, 0, chan->filp);
+	mem = nouveau_mem_alloc_block(chan->notifier_heap, 32, 0,
+				      chan->file_priv);
 	if (!mem) {
 		DRM_ERROR("Channel %d notifier block full\n", channel);
 		return -ENOMEM;
@@ -135,7 +138,7 @@ nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS)
 			(struct drm_nouveau_notifier_alloc __user*)data,
 			sizeof(na));
 
-	if (!nouveau_fifo_owner(dev, filp, na.channel)) {
+	if (!nouveau_fifo_owner(dev, file_priv, na.channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
 			  DRM_CURRENTPID, na.channel);
 		return -EPERM;

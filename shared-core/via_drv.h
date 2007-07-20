@@ -181,7 +181,8 @@ extern void via_cleanup_futex(drm_via_private_t *dev_priv);
 extern void via_release_futex(drm_via_private_t *dev_priv, int context);
 
 #ifdef VIA_HAVE_CORE_MM
-extern void via_reclaim_buffers_locked(struct drm_device *dev, struct file *filp);
+extern void via_reclaim_buffers_locked(struct drm_device *dev,
+				       struct drm_file *file_priv);
 extern void via_lastclose(struct drm_device *dev);
 #else
 extern int via_init_context(struct drm_device * dev, int context);

@@ -582,12 +582,12 @@ int drm_fence_create_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 	if (arg.flags & DRM_FENCE_FLAG_EMIT)
-		LOCK_TEST_WITH_RETURN(dev, filp);
+		LOCK_TEST_WITH_RETURN(dev, file_priv);
 	ret = drm_fence_object_create(dev, arg.class,
 				      arg.type, arg.flags, &fence);
 	if (ret)
 		return ret;
-	ret = drm_fence_add_user_object(priv, fence,
+	ret = drm_fence_add_user_object(file_priv, fence,
 					arg.flags &
 					DRM_FENCE_FLAG_SHAREABLE);
 	if (ret) {
@@ -630,12 +630,12 @@ int drm_fence_destroy_ioctl(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
 	mutex_lock(&dev->struct_mutex);
-	uo = drm_lookup_user_object(priv, arg.handle);
-	if (!uo || (uo->type != drm_fence_type) || uo->owner != priv) {
+	uo = drm_lookup_user_object(file_priv, arg.handle);
+	if (!uo || (uo->type != drm_fence_type) || uo->owner != file_priv) {
 		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
-	ret = drm_remove_user_object(priv, uo);
+	ret = drm_remove_user_object(file_priv, uo);
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
@@ -658,10 +658,10 @@ int drm_fence_reference_ioctl(DRM_IOCTL_ARGS)
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	ret = drm_user_object_ref(priv, arg.handle, drm_fence_type, &uo);
+	ret = drm_user_object_ref(file_priv, arg.handle, drm_fence_type, &uo);
 	if (ret)
 		return ret;
-	fence = drm_lookup_fence_object(priv, arg.handle);
+	fence = drm_lookup_fence_object(file_priv, arg.handle);
 
 	read_lock_irqsave(&fm->lock, flags);
 	arg.class = fence->class;
@@ -689,7 +689,7 @@ int drm_fence_unreference_ioctl(DRM_IOCTL_ARGS)
 	}
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
-	return drm_user_object_unref(priv, arg.handle, drm_fence_type);
+	return drm_user_object_unref(file_priv, arg.handle, drm_fence_type);
 }
 
 int drm_fence_signaled_ioctl(DRM_IOCTL_ARGS)
@@ -709,7 +709,7 @@ int drm_fence_signaled_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	fence = drm_lookup_fence_object(priv, arg.handle);
+	fence = drm_lookup_fence_object(file_priv, arg.handle);
 	if (!fence)
 		return -EINVAL;
 
@@ -741,7 +741,7 @@ int drm_fence_flush_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	fence = drm_lookup_fence_object(priv, arg.handle);
+	fence = drm_lookup_fence_object(file_priv, arg.handle);
 	if (!fence)
 		return -EINVAL;
 	ret = drm_fence_object_flush(fence, arg.type);
@@ -775,7 +775,7 @@ int drm_fence_wait_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	fence = drm_lookup_fence_object(priv, arg.handle);
+	fence = drm_lookup_fence_object(file_priv, arg.handle);
 	if (!fence)
 		return -EINVAL;
 	ret = drm_fence_object_wait(fence,
@@ -811,8 +811,8 @@ int drm_fence_emit_ioctl(DRM_IOCTL_ARGS)
 
 	DRM_COPY_FROM_USER_IOCTL(arg, (void __user *)data, sizeof(arg));
 
-	LOCK_TEST_WITH_RETURN(dev, filp);
-	fence = drm_lookup_fence_object(priv, arg.handle);
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
+	fence = drm_lookup_fence_object(file_priv, arg.handle);
 	if (!fence)
 		return -EINVAL;
 	ret = drm_fence_object_emit(fence, arg.flags, arg.class,
@@ -850,12 +850,12 @@ int drm_fence_buffers_ioctl(DRM_IOCTL_ARGS)
 		DRM_ERROR("Buffer object manager is not initialized\n");
 		return -EINVAL;
 	}
-	LOCK_TEST_WITH_RETURN(dev, filp);
-	ret = drm_fence_buffer_objects(priv, NULL, arg.flags,
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
+	ret = drm_fence_buffer_objects(file_priv, NULL, arg.flags,
 				       NULL, &fence);
 	if (ret)
 		return ret;
-	ret = drm_fence_add_user_object(priv, fence,
+	ret = drm_fence_add_user_object(file_priv, fence,
 					arg.flags &
 					DRM_FENCE_FLAG_SHAREABLE);
 	if (ret)

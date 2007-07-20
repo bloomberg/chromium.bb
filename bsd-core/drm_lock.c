@@ -66,7 +66,7 @@ int drm_lock_transfer(drm_device_t *dev,
 {
 	unsigned int old, new;
 
-	dev->lock.filp = NULL;
+	dev->lock.file_priv = NULL;
 	do {
 		old  = *lock;
 		new  = context | _DRM_LOCK_HELD;
@@ -80,7 +80,7 @@ int drm_lock_free(drm_device_t *dev,
 {
 	unsigned int old, new;
 
-	dev->lock.filp = NULL;
+	dev->lock.file_priv = NULL;
 	do {
 		old  = *lock;
 		new  = 0;
@@ -118,7 +118,7 @@ int drm_lock(DRM_IOCTL_ARGS)
 	DRM_LOCK();
 	for (;;) {
 		if (drm_lock_take(&dev->lock.hw_lock->lock, lock.context)) {
-			dev->lock.filp = (void *)(uintptr_t)DRM_CURRENTPID;
+			dev->lock.file_priv = file_priv;
 			dev->lock.lock_time = jiffies;
 			atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
 			break;  /* Got lock */

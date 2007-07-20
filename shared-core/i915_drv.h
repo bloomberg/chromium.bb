@@ -81,7 +81,7 @@ struct mem_block {
 	struct mem_block *prev;
 	int start;
 	int size;
-	DRMFILE filp;		/* 0: free, -1: heap, other: real files */
+	struct drm_file *file_priv; /* NULL: free, -1: heap, other: real files */
 };
 
 typedef struct _drm_i915_vbl_swap {
@@ -152,7 +152,8 @@ extern int i915_max_ioctl;
 extern void i915_kernel_lost_context(struct drm_device * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);
 extern void i915_driver_lastclose(struct drm_device * dev);
-extern void i915_driver_preclose(struct drm_device * dev, DRMFILE filp);
+extern void i915_driver_preclose(struct drm_device *dev,
+				 struct drm_file *file_priv);
 extern int i915_driver_device_is_agp(struct drm_device * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
@@ -185,7 +186,8 @@ extern int i915_mem_init_heap(DRM_IOCTL_ARGS);
 extern int i915_mem_destroy_heap(DRM_IOCTL_ARGS);
 extern void i915_mem_takedown(struct mem_block **heap);
 extern void i915_mem_release(struct drm_device * dev,
-			     DRMFILE filp, struct mem_block *heap);
+			     struct drm_file *file_priv,
+			     struct mem_block *heap);
 #ifdef I915_HAVE_FENCE
 /* i915_fence.c */
 

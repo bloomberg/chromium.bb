@@ -187,10 +187,10 @@ int drm_sg_alloc(struct drm_device *dev, struct drm_scatter_gather * request)
 }
 EXPORT_SYMBOL(drm_sg_alloc);
 
-int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
+int drm_sg_alloc_ioctl(struct inode *inode, struct drm_file *file_priv,
 		 unsigned int cmd, unsigned long arg)
 {
-	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_scatter_gather __user *argp = (void __user *)arg;
 	struct drm_scatter_gather request;
 	int ret;
@@ -198,11 +198,11 @@ int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 	if (copy_from_user(&request, argp, sizeof(request)))
 		return -EFAULT;
 
-	ret = drm_sg_alloc(priv->head->dev, &request);
+	ret = drm_sg_alloc(dev, &request);
 	if ( ret ) return ret;
 
 	if (copy_to_user(argp, &request, sizeof(request))) {
-		drm_sg_cleanup(priv->head->dev->sg);
+		drm_sg_cleanup(dev->sg);
 		return -EFAULT;
 	}
 
@@ -211,11 +211,10 @@ int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
 
 }
 
-int drm_sg_free(struct inode *inode, struct file *filp,
+int drm_sg_free(struct inode *inode, struct drm_file *file_priv,
 		unsigned int cmd, unsigned long arg)
 {
-	struct drm_file *priv = filp->private_data;
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_scatter_gather request;
 	struct drm_sg_mem *entry;
 

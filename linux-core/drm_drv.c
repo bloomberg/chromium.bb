@@ -51,7 +51,7 @@
 static void drm_cleanup(struct drm_device * dev);
 int drm_fb_loaded = 0;
 
-static int drm_version(struct inode *inode, struct file *filp,
+static int drm_version(struct inode *inode, struct drm_file *file_priv,
 		unsigned int cmd, unsigned long arg);
 
 /** Ioctl table */
@@ -276,7 +276,7 @@ int drm_lastclose(struct drm_device * dev)
 
 	if (dev->lock.hw_lock) {
 		dev->sigdata.lock = dev->lock.hw_lock = NULL;	/* SHM removed */
-		dev->lock.filp = NULL;
+		dev->lock.file_priv = NULL;
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
 	dev->dev_mapping = NULL;
@@ -538,18 +538,17 @@ module_exit(drm_core_exit);
  * Get version information
  *
  * \param inode device inode.
- * \param filp file pointer.
+ * \param file_priv DRM file private.
  * \param cmd command.
  * \param arg user argument, pointing to a drm_version structure.
  * \return zero on success or negative number on failure.
  *
  * Fills in the version information in \p arg.
  */
-static int drm_version(struct inode *inode, struct file *filp,
+static int drm_version(struct inode *inode, struct drm_file *file_priv,
 		unsigned int cmd, unsigned long arg)
 {
-	struct drm_file *priv = filp->private_data;
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_version __user *argp = (void __user *)arg;
 	struct drm_version version;
 	int len;
@@ -573,7 +572,7 @@ static int drm_version(struct inode *inode, struct file *filp,
  * Called whenever a process performs an ioctl on /dev/drm.
  *
  * \param inode device inode.
- * \param filp file pointer.
+ * \param file_priv DRM file private.
  * \param cmd command.
  * \param arg user argument.
  * \return zero on success or negative number on failure.
@@ -584,8 +583,8 @@ static int drm_version(struct inode *inode, struct file *filp,
 int drm_ioctl(struct inode *inode, struct file *filp,
 	      unsigned int cmd, unsigned long arg)
 {
-	struct drm_file *priv = filp->private_data;
-	struct drm_device *dev = priv->head->dev;
+	struct drm_file *file_priv = filp->private_data;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_ioctl_desc *ioctl;
 	drm_ioctl_t *func;
 	unsigned int nr = DRM_IOCTL_NR(cmd);
@@ -593,11 +592,11 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 
 	atomic_inc(&dev->ioctl_count);
 	atomic_inc(&dev->counts[_DRM_STAT_IOCTLS]);
-	++priv->ioctl_count;
+	++file_priv->ioctl_count;
 
 	DRM_DEBUG("pid=%d, cmd=0x%02x, nr=0x%02x, dev 0x%lx, auth=%d\n",
-		  current->pid, cmd, nr, (long)old_encode_dev(priv->head->device),
-		  priv->authenticated);
+		  current->pid, cmd, nr, (long)old_encode_dev(file_priv->head->device),
+		  file_priv->authenticated);
 
 	if ((nr >= DRM_CORE_IOCTL_COUNT) &&
 	    ((nr < DRM_COMMAND_BASE) || (nr >= DRM_COMMAND_END)))
@@ -619,11 +618,11 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 		DRM_DEBUG("no function\n");
 		retcode = -EINVAL;
 	} else if (((ioctl->flags & DRM_ROOT_ONLY) && !capable(CAP_SYS_ADMIN)) ||
-		   ((ioctl->flags & DRM_AUTH) && !priv->authenticated) ||
-		   ((ioctl->flags & DRM_MASTER) && !priv->master)) {
+		   ((ioctl->flags & DRM_AUTH) && !file_priv->authenticated) ||
+		   ((ioctl->flags & DRM_MASTER) && !file_priv->master)) {
 		retcode = -EACCES;
 	} else {
-		retcode = func(inode, filp, cmd, arg);
+		retcode = func(inode, file_priv, cmd, arg);
 	}
 err_i1:
 	atomic_dec(&dev->ioctl_count);
