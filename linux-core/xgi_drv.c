@@ -286,11 +286,8 @@ void xgi_kern_isr_bh(struct drm_device *dev)
 
 int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 {
-	struct xgi_info *info;
-	int err;
+	struct xgi_info *info = drm_alloc(sizeof(*info), DRM_MEM_DRIVER);
 
-
-	info = drm_alloc(sizeof(*info), DRM_MEM_DRIVER);
 	if (!info)
 		return DRM_ERR(ENOMEM);
 
