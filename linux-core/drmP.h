@@ -1266,12 +1266,12 @@ static inline void drm_ctl_free(void *pt, size_t size, int area)
  * Initialize the lock for use.  name is an optional string describing the
  * lock
  */
-#define DRM_SPININIT(l,name)	spin_lock_init(l);
+#define DRM_SPININIT(l,name)	spin_lock_init(l)
 #define DRM_SPINUNINIT(l)
-#define DRM_SPINLOCK(l)		spin_lock(l);
-#define DRM_SPINUNLOCK(u)	spin_unlock(l);
-#define DRM_SPINLOCK_IRQSAVE(l, flags)	spin_lock_irqflags(l, _flags);
-#define DRM_SPINUNLOCK_IRQRESTORE(u, flags) spin_unlock_irqrestore(l, _flags);
+#define DRM_SPINLOCK(l)		spin_lock(l)
+#define DRM_SPINUNLOCK(l)	spin_unlock(l)
+#define DRM_SPINLOCK_IRQSAVE(l, _flags)	spin_lock_irqsave(l, _flags);
+#define DRM_SPINUNLOCK_IRQRESTORE(l, _flags) spin_unlock_irqrestore(l, _flags);
 #define DRM_SPINLOCK_ASSERT(l)		do {} while (0) 
 
 #endif				/* __KERNEL__ */
