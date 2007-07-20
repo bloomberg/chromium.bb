@@ -45,11 +45,11 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 		.size = size,
 		.owner = PCIE_2D,
 	};
+	int err;
 
-	xgi_pcie_alloc(info, &mem_alloc, 0);
-
-	if ((mem_alloc.size == 0) && (mem_alloc.hw_addr == 0)) {
-		return -1;
+	err = xgi_pcie_alloc(info, &mem_alloc, 0);
+	if (err) {
+		return err;
 	}
 
 	s_cmdring._cmdRingSize = mem_alloc.size;
@@ -58,7 +58,7 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 	s_cmdring._lastBatchStartAddr = 0;
 	s_cmdring._cmdRingOffset = 0;
 
-	return 1;
+	return 0;
 }
 
 static void xgi_submit_cmdlist(struct xgi_info * info,

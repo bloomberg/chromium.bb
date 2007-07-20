@@ -231,7 +231,11 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 	}
 
 	/* Alloc 1M bytes for cmdbuffer which is flush2D batch array */
-	xgi_cmdlist_initialize(info, 0x100000);
+	err = xgi_cmdlist_initialize(info, 0x100000);
+	if (err) {
+		DRM_ERROR("xgi_cmdlist_initialize() failed\n");
+		return err;
+	}
 
 	info->bootstrap_done = 1;
 	return 0;
