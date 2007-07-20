@@ -34,7 +34,7 @@
 struct xgi_cmdring_info s_cmdring;
 
 static void addFlush2D(struct xgi_info * info);
-static unsigned int getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo);
+static unsigned int get_batch_command(enum xgi_batch_type type);
 static void triggerHWCommandList(struct xgi_info * info,
 				 unsigned int triggerCounter);
 static void xgi_cmdlist_reset(void);
@@ -61,14 +61,33 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 	return 0;
 }
 
-static void xgi_submit_cmdlist(struct xgi_info * info,
-			       struct xgi_cmd_info * pCmdInfo)
+
+/**
+ * get_batch_command - Get the command ID for the current begin type.
+ * @type: Type of the current batch
+ *
+ * See section 3.2.2 "Begin" (page 15) of the 3D SPG.
+ * 
+ * This function assumes that @type is on the range [0,3].
+ */
+unsigned int get_batch_command(enum xgi_batch_type type)
 {
-	const unsigned int beginPort = getCurBatchBeginPort(pCmdInfo);
+	static const unsigned int ports[4] = {
+		0x30 >> 2, 0x40 >> 2, 0x50 >> 2, 0x20 >> 2
+	};
+	
+	return ports[type];
+}
+
+
+static void xgi_submit_cmdlist(struct xgi_info * info,
+			       const struct xgi_cmd_info * pCmdInfo)
+{
+	const unsigned int cmd = get_batch_command(pCmdInfo->_firstBeginType);
 
 
 	if (s_cmdring._lastBatchStartAddr == 0) {
-		const unsigned int portOffset = BASE_3D_ENG + beginPort;
+		const unsigned int portOffset = BASE_3D_ENG + (cmd << 2);
 
 
 		/* Enable PCI Trigger Mode
@@ -90,10 +109,10 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 		/* Send PCI begin command
 		 */
 		DRM_INFO("portOffset=%d, beginPort=%d\n",
-			 portOffset, beginPort);
+			 portOffset, cmd << 2);
 
 		dwWriteReg(info->mmio_map, portOffset,
-			   (beginPort << 22) + (BEGIN_VALID_MASK) +
+			   (cmd << 24) + (BEGIN_VALID_MASK) +
 			   pCmdInfo->_curDebugID);
 
 		dwWriteReg(info->mmio_map, portOffset + 4,
@@ -128,7 +147,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 			lastBatchVirtAddr[3] = 0;
 			//barrier();
 			lastBatchVirtAddr[0] =
-				(beginPort << 22) + (BEGIN_VALID_MASK) +
+				(cmd << 24) + (BEGIN_VALID_MASK) +
 				(0xffff & pCmdInfo->_curDebugID);
 
 			/* Jong 06/12/2006; system hang; marked for test */
@@ -152,6 +171,10 @@ int xgi_submit_cmdlist_ioctl(DRM_IOCTL_ARGS)
 	DRM_COPY_FROM_USER_IOCTL(cmd_list, 
 				 (struct xgi_cmd_info __user *) data,
 				 sizeof(cmd_list));
+
+	if (cmd_list._firstBeginType > BTYPE_CTRL) {
+		return DRM_ERR(EINVAL);
+	}
 
 	xgi_submit_cmdlist(info, &cmd_list);
 	return 0;
@@ -238,23 +261,6 @@ static void triggerHWCommandList(struct xgi_info * info,
 	}
 }
 
-static unsigned int getCurBatchBeginPort(struct xgi_cmd_info * pCmdInfo)
-{
-	// Convert the batch type to begin port ID
-	switch (pCmdInfo->_firstBeginType) {
-	case BTYPE_2D:
-		return 0x30;
-	case BTYPE_3D:
-		return 0x40;
-	case BTYPE_FLIP:
-		return 0x50;
-	case BTYPE_CTRL:
-		return 0x20;
-	default:
-		//ASSERT(0);
-		return 0xff;
-	}
-}
 
 static void addFlush2D(struct xgi_info * info)
 {
