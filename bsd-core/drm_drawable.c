@@ -64,10 +64,9 @@ drm_get_drawable_info(drm_device_t *dev, int handle)
 	return &result->info;
 }
 
-int drm_adddraw(DRM_IOCTL_ARGS)
+int drm_adddraw(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_draw_t draw;
+	drm_draw_t *draw = data;
 	struct bsd_drm_drawable_info *info;
 
 	info = drm_calloc(1, sizeof(struct bsd_drm_drawable_info),
@@ -78,19 +77,16 @@ int drm_adddraw(DRM_IOCTL_ARGS)
 	info->handle = alloc_unr(dev->drw_unrhdr);
 	DRM_SPINLOCK(&dev->drw_lock);
 	RB_INSERT(drawable_tree, &dev->drw_head, info);
-	draw.handle = info->handle;
+	draw->handle = info->handle;
 	DRM_SPINUNLOCK(&dev->drw_lock);
 
-	DRM_DEBUG("%d\n", draw.handle);
-
-	DRM_COPY_TO_USER_IOCTL((drm_draw_t *)data, draw, sizeof(draw));
+	DRM_DEBUG("%d\n", draw->handle);
 
 	return 0;
 }
 
-int drm_rmdraw(DRM_IOCTL_ARGS)
+int drm_rmdraw(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_draw_t *draw = (drm_draw_t *)data;
 	struct drm_drawable_info *info;
 
@@ -110,9 +106,8 @@ int drm_rmdraw(DRM_IOCTL_ARGS)
 	}
 }
 
-int drm_update_draw(DRM_IOCTL_ARGS)
+int drm_update_draw(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	struct drm_drawable_info *info;
 	struct drm_update_draw *update = (struct drm_update_draw *)data;
 	int ret;

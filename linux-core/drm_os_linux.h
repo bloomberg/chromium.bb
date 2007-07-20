@@ -6,8 +6,6 @@
 #include <linux/interrupt.h>	/* For task queue support */
 #include <linux/delay.h>
 
-/** Ioctl arguments */
-#define DRM_IOCTL_ARGS			struct inode *inode, struct drm_file *file_priv, unsigned int cmd, unsigned long data
 /** Current process ID */
 #define DRM_CURRENTPID			current->pid
 #define DRM_SUSER(p)			capable(CAP_SYS_ADMIN)
@@ -48,8 +46,6 @@
 #define DRM_WRITEMEMORYBARRIER()	wmb()
 /** Read/write memory barrier */
 #define DRM_MEMORYBARRIER()		mb()
-/** DRM device local declaration */
-#define DRM_DEVICE	struct drm_device *dev	= file_priv->head->dev
 
 /** IRQ handler arguments and return type and values */
 #define DRM_IRQ_ARGS		int irq, void *arg
@@ -89,14 +85,6 @@ static __inline__ int mtrr_del(int reg, unsigned long base, unsigned long size)
 #define MTRR_TYPE_WRCOMB     1
 #endif
 
-/** For data going into the kernel through the ioctl argument */
-#define DRM_COPY_FROM_USER_IOCTL(arg1, arg2, arg3)	\
-	if ( copy_from_user(&arg1, arg2, arg3) )	\
-		return -EFAULT
-/** For data going from the kernel through the ioctl argument */
-#define DRM_COPY_TO_USER_IOCTL(arg1, arg2, arg3)	\
-	if ( copy_to_user(arg1, &arg2, arg3) )		\
-		return -EFAULT
 /** Other copying of data to kernel space */
 #define DRM_COPY_FROM_USER(arg1, arg2, arg3)		\
 	copy_from_user(arg1, arg2, arg3)

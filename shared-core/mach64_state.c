@@ -41,15 +41,15 @@
  *
  */
 struct drm_ioctl_desc mach64_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_MACH64_INIT)] = {mach64_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
-	[DRM_IOCTL_NR(DRM_MACH64_CLEAR)] = {mach64_dma_clear, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_MACH64_SWAP)] = {mach64_dma_swap, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_MACH64_IDLE)] = {mach64_dma_idle, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_MACH64_RESET)] = {mach64_engine_reset, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_MACH64_VERTEX)] = {mach64_dma_vertex, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_MACH64_BLIT)] = {mach64_dma_blit, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_MACH64_FLUSH)] = {mach64_dma_flush, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_MACH64_GETPARAM)] = {mach64_get_param, DRM_AUTH},
+	DRM_IOCTL_DEF(DRM_MACH64_INIT, mach64_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_MACH64_CLEAR, mach64_dma_clear, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_MACH64_SWAP, mach64_dma_swap, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_MACH64_IDLE, mach64_dma_idle, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_MACH64_RESET, mach64_engine_reset, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_MACH64_VERTEX, mach64_dma_vertex, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_MACH64_BLIT, mach64_dma_blit, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_MACH64_FLUSH, mach64_dma_flush, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_MACH64_GETPARAM, mach64_get_param, DRM_AUTH),
 };
 
 int mach64_max_ioctl = DRM_ARRAY_SIZE(mach64_ioctls);
@@ -758,27 +758,25 @@ _blit_done:
  * IOCTL functions
  */
 
-int mach64_dma_clear(DRM_IOCTL_ARGS)
+int mach64_dma_clear(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	drm_mach64_clear_t clear;
+	drm_mach64_clear_t *clear = data;
 	int ret;
 
 	DRM_DEBUG("%s: pid=%d\n", __FUNCTION__, DRM_CURRENTPID);
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-	DRM_COPY_FROM_USER_IOCTL(clear, (drm_mach64_clear_t *) data,
-				 sizeof(clear));
-
 	if (sarea_priv->nbox > MACH64_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = MACH64_NR_SAREA_CLIPRECTS;
 
-	ret = mach64_dma_dispatch_clear(dev, file_priv, clear.flags,
-					clear.x, clear.y, clear.w, clear.h,
-					clear.clear_color, clear.clear_depth);
+	ret = mach64_dma_dispatch_clear(dev, file_priv, clear->flags,
+					clear->x, clear->y, clear->w, clear->h,
+					clear->clear_color,
+					clear->clear_depth);
 
 	/* Make sure we restore the 3D state next time.
 	 */
@@ -786,9 +784,9 @@ int mach64_dma_clear(DRM_IOCTL_ARGS)
 	return ret;
 }
 
-int mach64_dma_swap(DRM_IOCTL_ARGS)
+int mach64_dma_swap(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	int ret;
@@ -808,12 +806,12 @@ int mach64_dma_swap(DRM_IOCTL_ARGS)
 	return ret;
 }
 
-int mach64_dma_vertex(DRM_IOCTL_ARGS)
+int mach64_dma_vertex(struct drm_device *dev, void *data,
+		      struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	drm_mach64_vertex_t vertex;
+	drm_mach64_vertex_t *vertex = data;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -822,44 +820,38 @@ int mach64_dma_vertex(DRM_IOCTL_ARGS)
 		return -EINVAL;
 	}
 
-	DRM_COPY_FROM_USER_IOCTL(vertex, (drm_mach64_vertex_t *) data,
-				 sizeof(vertex));
-
 	DRM_DEBUG("%s: pid=%d buf=%p used=%lu discard=%d\n",
 		  __FUNCTION__, DRM_CURRENTPID,
-		  vertex.buf, vertex.used, vertex.discard);
+		  vertex->buf, vertex->used, vertex->discard);
 
-	if (vertex.prim < 0 || vertex.prim > MACH64_PRIM_POLYGON) {
-		DRM_ERROR("buffer prim %d\n", vertex.prim);
+	if (vertex->prim < 0 || vertex->prim > MACH64_PRIM_POLYGON) {
+		DRM_ERROR("buffer prim %d\n", vertex->prim);
 		return -EINVAL;
 	}
 
-	if (vertex.used > MACH64_BUFFER_SIZE || (vertex.used & 3) != 0) {
+	if (vertex->used > MACH64_BUFFER_SIZE || (vertex->used & 3) != 0) {
 		DRM_ERROR("Invalid vertex buffer size: %lu bytes\n",
-			  vertex.used);
+			  vertex->used);
 		return -EINVAL;
 	}
 
 	if (sarea_priv->nbox > MACH64_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = MACH64_NR_SAREA_CLIPRECTS;
 
-	return mach64_dma_dispatch_vertex(dev, file_priv, &vertex);
+	return mach64_dma_dispatch_vertex(dev, file_priv, vertex);
 }
 
-int mach64_dma_blit(DRM_IOCTL_ARGS)
+int mach64_dma_blit(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	drm_mach64_sarea_t *sarea_priv = dev_priv->sarea_priv;
-	drm_mach64_blit_t blit;
+	drm_mach64_blit_t *blit = data;
 	int ret;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-	DRM_COPY_FROM_USER_IOCTL(blit, (drm_mach64_blit_t *) data,
-				 sizeof(blit));
-
-	ret = mach64_dma_dispatch_blit(dev, file_priv, &blit);
+	ret = mach64_dma_dispatch_blit(dev, file_priv, blit);
 
 	/* Make sure we restore the 3D state next time.
 	 */
@@ -869,11 +861,11 @@ int mach64_dma_blit(DRM_IOCTL_ARGS)
 	return ret;
 }
 
-int mach64_get_param(DRM_IOCTL_ARGS)
+int mach64_get_param(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
-	drm_mach64_getparam_t param;
+	drm_mach64_getparam_t *param = data;
 	int value;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -883,10 +875,7 @@ int mach64_get_param(DRM_IOCTL_ARGS)
 		return -EINVAL;
 	}
 
-	DRM_COPY_FROM_USER_IOCTL(param, (drm_mach64_getparam_t *) data,
-				 sizeof(param));
-
-	switch (param.param) {
+	switch (param->param) {
 	case MACH64_PARAM_FRAMES_QUEUED:
 		/* Needs lock since it calls mach64_ring_tick() */
 		LOCK_TEST_WITH_RETURN(dev, file_priv);
@@ -899,7 +888,7 @@ int mach64_get_param(DRM_IOCTL_ARGS)
 		return -EINVAL;
 	}
 
-	if (DRM_COPY_TO_USER(param.value, &value, sizeof(int))) {
+	if (DRM_COPY_TO_USER(param->value, &value, sizeof(int))) {
 		DRM_ERROR("copy_to_user\n");
 		return -EFAULT;
 	}

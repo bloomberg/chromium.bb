@@ -427,40 +427,35 @@ int nouveau_unload(struct drm_device *dev)
 	return 0;
 }
 
-int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
+int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct drm_nouveau_getparam getparam;
+	struct drm_nouveau_getparam *getparam = data;
 
-	DRM_COPY_FROM_USER_IOCTL(getparam, 
-				 (struct drm_nouveau_getparam __user *)data,
-				 sizeof(getparam));
-
-	switch (getparam.param) {
+	switch (getparam->param) {
 	case NOUVEAU_GETPARAM_PCI_VENDOR:
-		getparam.value=dev->pci_vendor;
+		getparam->value=dev->pci_vendor;
 		break;
 	case NOUVEAU_GETPARAM_PCI_DEVICE:
-		getparam.value=dev->pci_device;
+		getparam->value=dev->pci_device;
 		break;
 	case NOUVEAU_GETPARAM_BUS_TYPE:
 		if (drm_device_is_agp(dev))
-			getparam.value=NV_AGP;
+			getparam->value=NV_AGP;
 		else if (drm_device_is_pcie(dev))
-			getparam.value=NV_PCIE;
+			getparam->value=NV_PCIE;
 		else
-			getparam.value=NV_PCI;
+			getparam->value=NV_PCI;
 		break;
 	case NOUVEAU_GETPARAM_FB_PHYSICAL:
-		getparam.value=dev_priv->fb_phys;
+		getparam->value=dev_priv->fb_phys;
 		break;
 	case NOUVEAU_GETPARAM_AGP_PHYSICAL:
-		getparam.value=dev_priv->gart_info.aper_base;
+		getparam->value=dev_priv->gart_info.aper_base;
 		break;
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
-			getparam.value=(uint64_t) dev->sg->virtual;
+			getparam->value=(uint64_t) dev->sg->virtual;
 		else 
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");
@@ -468,34 +463,27 @@ int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
 		     }
 		break;
 	case NOUVEAU_GETPARAM_FB_SIZE:
-		getparam.value=dev_priv->fb_available_size;
+		getparam->value=dev_priv->fb_available_size;
 		break;
 	case NOUVEAU_GETPARAM_AGP_SIZE:
-		getparam.value=dev_priv->gart_info.aper_size;
+		getparam->value=dev_priv->gart_info.aper_size;
 		break;
 	default:
-		DRM_ERROR("unknown parameter %lld\n", getparam.param);
+		DRM_ERROR("unknown parameter %lld\n", getparam->param);
 		return -EINVAL;
 	}
 
-	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_getparam __user *)data,
-			       getparam, sizeof(getparam));
 	return 0;
 }
 
-int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
+int nouveau_ioctl_setparam(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct drm_nouveau_setparam setparam;
+	struct drm_nouveau_setparam *setparam = data;
 
-	DRM_COPY_FROM_USER_IOCTL(setparam,
-				 (struct drm_nouveau_setparam __user *)data,
-				 sizeof(setparam));
-
-	switch (setparam.param) {
+	switch (setparam->param) {
 	case NOUVEAU_SETPARAM_CMDBUF_LOCATION:
-		switch (setparam.value) {
+		switch (setparam->value) {
 		case NOUVEAU_MEM_AGP:
 		case NOUVEAU_MEM_FB:
 		case NOUVEAU_MEM_PCI:
@@ -503,16 +491,16 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 			break;
 		default:
 			DRM_ERROR("invalid CMDBUF_LOCATION value=%lld\n",
-					setparam.value);
+					setparam->value);
 			return -EINVAL;
 		}
-		dev_priv->config.cmdbuf.location = setparam.value;
+		dev_priv->config.cmdbuf.location = setparam->value;
 		break;
 	case NOUVEAU_SETPARAM_CMDBUF_SIZE:
-		dev_priv->config.cmdbuf.size = setparam.value;
+		dev_priv->config.cmdbuf.size = setparam->value;
 		break;
 	default:
-		DRM_ERROR("unknown parameter %lld\n", setparam.param);
+		DRM_ERROR("unknown parameter %lld\n", setparam->param);
 		return -EINVAL;
 	}
 

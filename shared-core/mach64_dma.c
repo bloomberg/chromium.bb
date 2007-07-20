@@ -1158,21 +1158,18 @@ int mach64_do_cleanup_dma(struct drm_device * dev)
 /** \name IOCTL handlers */
 /*@{*/
 
-int mach64_dma_init(DRM_IOCTL_ARGS)
+int mach64_dma_init(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_mach64_init_t init;
+	drm_mach64_init_t *init = data;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-	DRM_COPY_FROM_USER_IOCTL(init, (drm_mach64_init_t *) data,
-				 sizeof(init));
-
-	switch (init.func) {
+	switch (init->func) {
 	case DRM_MACH64_INIT_DMA:
-		return mach64_do_dma_init(dev, &init);
+		return mach64_do_dma_init(dev, init);
 	case DRM_MACH64_CLEANUP_DMA:
 		return mach64_do_cleanup_dma(dev);
 	}
@@ -1180,9 +1177,9 @@ int mach64_dma_init(DRM_IOCTL_ARGS)
 	return -EINVAL;
 }
 
-int mach64_dma_idle(DRM_IOCTL_ARGS)
+int mach64_dma_idle(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -1192,9 +1189,9 @@ int mach64_dma_idle(DRM_IOCTL_ARGS)
 	return mach64_do_dma_idle(dev_priv);
 }
 
-int mach64_dma_flush(DRM_IOCTL_ARGS)
+int mach64_dma_flush(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -1204,9 +1201,9 @@ int mach64_dma_flush(DRM_IOCTL_ARGS)
 	return mach64_do_dma_flush(dev_priv);
 }
 
-int mach64_engine_reset(DRM_IOCTL_ARGS)
+int mach64_engine_reset(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -1461,7 +1458,7 @@ int mach64_freelist_put(drm_mach64_private_t * dev_priv, struct drm_buf * copy_b
 /** \name DMA buffer request and submission IOCTL handler */
 /*@{*/
 
-static int mach64_dma_get_buffers(struct drm_device * dev,
+static int mach64_dma_get_buffers(struct drm_device *dev,
 				  struct drm_file *file_priv,
 				  struct drm_dma * d)
 {
@@ -1493,40 +1490,36 @@ static int mach64_dma_get_buffers(struct drm_device * dev,
 	return 0;
 }
 
-int mach64_dma_buffers(DRM_IOCTL_ARGS)
+int mach64_dma_buffers(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	struct drm_device_dma *dma = dev->dma;
-	struct drm_dma d;
+	struct drm_dma *d = data;
 	int ret = 0;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-	DRM_COPY_FROM_USER_IOCTL(d, (struct drm_dma *) data, sizeof(d));
-
 	/* Please don't send us buffers.
 	 */
-	if (d.send_count != 0) {
+	if (d->send_count != 0) {
 		DRM_ERROR("Process %d trying to send %d buffers via drmDMA\n",
-			  DRM_CURRENTPID, d.send_count);
+			  DRM_CURRENTPID, d->send_count);
 		return -EINVAL;
 	}
 
 	/* We'll send you buffers.
 	 */
-	if (d.request_count < 0 || d.request_count > dma->buf_count) {
+	if (d->request_count < 0 || d->request_count > dma->buf_count) {
 		DRM_ERROR("Process %d trying to get %d buffers (of %d max)\n",
-			  DRM_CURRENTPID, d.request_count, dma->buf_count);
+			  DRM_CURRENTPID, d->request_count, dma->buf_count);
 		ret = -EINVAL;
 	}
 
-	d.granted_count = 0;
+	d->granted_count = 0;
 
-	if (d.request_count) {
-		ret = mach64_dma_get_buffers(dev, file_priv, &d);
+	if (d->request_count) {
+		ret = mach64_dma_get_buffers(dev, file_priv, d);
 	}
-
-	DRM_COPY_TO_USER_IOCTL((struct drm_dma *) data, d, sizeof(d));
 
 	return ret;
 }

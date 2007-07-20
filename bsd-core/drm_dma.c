@@ -117,13 +117,11 @@ void drm_reclaim_buffers(drm_device_t *dev, struct drm_file *file_priv)
 }
 
 /* Call into the driver-specific DMA handler */
-int drm_dma(DRM_IOCTL_ARGS)
+int drm_dma(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 
 	if (dev->driver.dma_ioctl) {
-		return -dev->driver.dma_ioctl(kdev, cmd, data, flags, p,
-					      file_priv);
+		return -dev->driver.dma_ioctl(dev, data, file_priv);
 	} else {
 		DRM_DEBUG("DMA ioctl on driver with no dma handler\n");
 		return EINVAL;

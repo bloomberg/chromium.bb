@@ -151,15 +151,15 @@ enum via_family {
 extern struct drm_ioctl_desc via_ioctls[];
 extern int via_max_ioctl;
 
-extern int via_fb_init(DRM_IOCTL_ARGS);
-extern int via_mem_alloc(DRM_IOCTL_ARGS);
-extern int via_mem_free(DRM_IOCTL_ARGS);
-extern int via_agp_init(DRM_IOCTL_ARGS);
-extern int via_map_init(DRM_IOCTL_ARGS);
-extern int via_decoder_futex(DRM_IOCTL_ARGS);
-extern int via_wait_irq(DRM_IOCTL_ARGS);
-extern int via_dma_blit_sync( DRM_IOCTL_ARGS );
-extern int via_dma_blit( DRM_IOCTL_ARGS );
+extern int via_fb_init(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int via_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int via_mem_free(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int via_agp_init(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int via_map_init(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int via_decoder_futex(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int via_wait_irq(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int via_dma_blit_sync( struct drm_device *dev, void *data, struct drm_file *file_priv );
+extern int via_dma_blit( struct drm_device *dev, void *data, struct drm_file *file_priv );
 
 extern int via_driver_load(struct drm_device *dev, unsigned long chipset);
 extern int via_driver_unload(struct drm_device *dev);

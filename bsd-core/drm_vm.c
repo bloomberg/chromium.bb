@@ -33,7 +33,7 @@ int drm_mmap(dev_t kdev, vm_offset_t offset, int prot)
 paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 #endif
 {
-	DRM_DEVICE;
+	drm_device_t *dev = drm_get_device_from_kdev(kdev);
 	drm_local_map_t *map;
 	drm_file_t *priv;
 	drm_map_type_t type;

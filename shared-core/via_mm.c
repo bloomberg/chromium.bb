@@ -72,17 +72,14 @@ static int del_alloc_set(int context, int type, unsigned long val)
 /* agp memory management */
 static memHeap_t *AgpHeap = NULL;
 
-int via_agp_init(DRM_IOCTL_ARGS)
+int via_agp_init(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_via_agp_t agp;
+	drm_via_agp_t *agp = data;
 
-	DRM_COPY_FROM_USER_IOCTL(agp, (drm_via_agp_t __user *) data,
-				 sizeof(agp));
+	AgpHeap = via_mmInit(agp->offset, agp->size);
 
-	AgpHeap = via_mmInit(agp.offset, agp.size);
-
-	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)agp.offset,
-		  (unsigned long)agp.size);
+	DRM_DEBUG("offset = %lu, size = %lu", (unsigned long)agp->offset,
+		  (unsigned long)agp->size);
 
 	return 0;
 }
@@ -90,11 +87,9 @@ int via_agp_init(DRM_IOCTL_ARGS)
 /* fb memory management */
 static memHeap_t *FBHeap = NULL;
 
-int via_fb_init(DRM_IOCTL_ARGS)
+int via_fb_init(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_via_fb_t fb;
-
-	DRM_COPY_FROM_USER_IOCTL(fb, (drm_via_fb_t __user *) data, sizeof(fb));
+	drm_via_fb_t *fb = data;
 
 	FBHeap = via_mmInit(fb.offset, fb.size);
 
@@ -191,25 +186,18 @@ int via_final_context(struct drm_device *dev, int context)
 	return 1;
 }
 
-int via_mem_alloc(DRM_IOCTL_ARGS)
+int via_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_via_mem_t mem;
-
-	DRM_COPY_FROM_USER_IOCTL(mem, (drm_via_mem_t __user *) data,
-				 sizeof(mem));
+	drm_via_mem_t *mem = data;
 
 	switch (mem.type) {
 	case VIA_MEM_VIDEO:
-		if (via_fb_alloc(&mem) < 0)
+		if (via_fb_alloc(mem) < 0)
 			return -EFAULT;
-		DRM_COPY_TO_USER_IOCTL((drm_via_mem_t __user *) data, mem,
-				       sizeof(mem));
 		return 0;
 	case VIA_MEM_AGP:
-		if (via_agp_alloc(&mem) < 0)
+		if (via_agp_alloc(mem) < 0)
 			return -EFAULT;
-		DRM_COPY_TO_USER_IOCTL((drm_via_mem_t __user *) data, mem,
-				       sizeof(mem));
 		return 0;
 	}
 
@@ -288,21 +276,18 @@ static int via_agp_alloc(drm_via_mem_t * mem)
 	return retval;
 }
 
-int via_mem_free(DRM_IOCTL_ARGS)
+int via_mem_free(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_via_mem_t mem;
+	drm_via_mem_t *mem = data;
 
-	DRM_COPY_FROM_USER_IOCTL(mem, (drm_via_mem_t __user *) data,
-				 sizeof(mem));
-
-	switch (mem.type) {
+	switch (mem->type) {
 
 	case VIA_MEM_VIDEO:
-		if (via_fb_free(&mem) == 0)
+		if (via_fb_free(mem) == 0)
 			return 0;
 		break;
 	case VIA_MEM_AGP:
-		if (via_agp_free(&mem) == 0)
+		if (via_agp_free(mem) == 0)
 			return 0;
 		break;
 	}
@@ -356,7 +341,7 @@ static int via_agp_free(drm_via_mem_t * mem)
 		retval = -1;
 	}
 
-	DRM_DEBUG("free agp, free = %ld\n", agp.free);
+	DRM_DEBUG("free agp, free = %ld\n", agp.nfree);
 
 	return retval;
 }

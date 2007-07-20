@@ -472,42 +472,37 @@ nouveau_fifo_owner(struct drm_device *dev, struct drm_file *file_priv,
  * ioctls wrapping the functions
  ***********************************/
 
-static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
+static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct drm_nouveau_fifo_alloc init;
+	struct drm_nouveau_fifo_alloc *init = data;
 	struct drm_map_list *entry;
 	struct nouveau_fifo *chan;
 	int res;
 
-	DRM_COPY_FROM_USER_IOCTL(init,
-				 (struct drm_nouveau_fifo_alloc __user *) data,
-				 sizeof(init));
-
-	if (init.fb_ctxdma_handle == ~0 || init.tt_ctxdma_handle == ~0)
+	if (init->fb_ctxdma_handle == ~0 || init->tt_ctxdma_handle == ~0)
 		return -EINVAL;
 
-	res = nouveau_fifo_alloc(dev, &init.channel, file_priv,
-				 init.fb_ctxdma_handle,
-				 init.tt_ctxdma_handle);
+	res = nouveau_fifo_alloc(dev, &init->channel, file_priv,
+				 init->fb_ctxdma_handle,
+				 init->tt_ctxdma_handle);
 	if (res)
 		return res;
-	chan = dev_priv->fifos[init.channel];
+	chan = dev_priv->fifos[init->channel];
 
-	init.put_base = chan->pushbuf_base;
+	init->put_base = chan->pushbuf_base;
 
 	/* make the fifo available to user space */
 	/* first, the fifo control regs */
-	init.ctrl = dev_priv->mmio->offset;
+	init->ctrl = dev_priv->mmio->offset;
 	if (dev_priv->card_type < NV_50) {
-		init.ctrl      += NV03_FIFO_REGS(init.channel);
-		init.ctrl_size  = NV03_FIFO_REGS_SIZE;
+		init->ctrl      += NV03_FIFO_REGS(init->channel);
+		init->ctrl_size  = NV03_FIFO_REGS_SIZE;
 	} else {
-		init.ctrl      += NV50_FIFO_REGS(init.channel);
-		init.ctrl_size  = NV50_FIFO_REGS_SIZE;
+		init->ctrl      += NV50_FIFO_REGS(init->channel);
+		init->ctrl_size  = NV50_FIFO_REGS_SIZE;
 	}
-	res = drm_addmap(dev, init.ctrl, init.ctrl_size, _DRM_REGISTERS,
+	res = drm_addmap(dev, init->ctrl, init->ctrl_size, _DRM_REGISTERS,
 			 0, &chan->regs);
 	if (res != 0)
 		return res;
@@ -515,18 +510,16 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
 	entry = drm_find_matching_map(dev, chan->regs);
 	if (!entry)
 		return -EINVAL;
-	init.ctrl = entry->user_token;
+	init->ctrl = entry->user_token;
 
 	/* pass back FIFO map info to the caller */
-	init.cmdbuf      = chan->pushbuf_mem->map_handle;
-	init.cmdbuf_size = chan->pushbuf_mem->size;
+	init->cmdbuf      = chan->pushbuf_mem->map_handle;
+	init->cmdbuf_size = chan->pushbuf_mem->size;
 
 	/* and the notifier block */
-	init.notifier      = chan->notifier_block->map_handle;
-	init.notifier_size = chan->notifier_block->size;
+	init->notifier      = chan->notifier_block->map_handle;
+	init->notifier_size = chan->notifier_block->size;
 
-	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_fifo_alloc __user *)data,
-			       init, sizeof(init));
 	return 0;
 }
 
@@ -535,13 +528,13 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
  ***********************************/
 
 struct drm_ioctl_desc nouveau_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_NOUVEAU_FIFO_ALLOC)] = {nouveau_ioctl_fifo_alloc, DRM_AUTH},	
-	[DRM_IOCTL_NR(DRM_NOUVEAU_GROBJ_ALLOC)] = {nouveau_ioctl_grobj_alloc, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_NOTIFIER_ALLOC)] = {nouveau_ioctl_notifier_alloc, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_MEM_ALLOC)] = {nouveau_ioctl_mem_alloc, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_MEM_FREE)] = {nouveau_ioctl_mem_free, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_GETPARAM)] = {nouveau_ioctl_getparam, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_SETPARAM)] = {nouveau_ioctl_setparam, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},	
+	DRM_IOCTL_DEF(DRM_NOUVEAU_FIFO_ALLOC, nouveau_ioctl_fifo_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_GROBJ_ALLOC, nouveau_ioctl_grobj_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_NOTIFIER_ALLOC, nouveau_ioctl_notifier_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_ALLOC, nouveau_ioctl_mem_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_FREE, nouveau_ioctl_mem_free, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_GETPARAM, nouveau_ioctl_getparam, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_SETPARAM, nouveau_ioctl_setparam, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 };
 
 int nouveau_max_ioctl = DRM_ARRAY_SIZE(nouveau_ioctls);

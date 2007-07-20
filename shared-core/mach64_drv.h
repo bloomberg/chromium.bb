@@ -112,11 +112,16 @@ extern struct drm_ioctl_desc mach64_ioctls[];
 extern int mach64_max_ioctl;
 
 				/* mach64_dma.c */
-extern int mach64_dma_init(DRM_IOCTL_ARGS);
-extern int mach64_dma_idle(DRM_IOCTL_ARGS);
-extern int mach64_dma_flush(DRM_IOCTL_ARGS);
-extern int mach64_engine_reset(DRM_IOCTL_ARGS);
-extern int mach64_dma_buffers(DRM_IOCTL_ARGS);
+extern int mach64_dma_init(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv);
+extern int mach64_dma_idle(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv);
+extern int mach64_dma_flush(struct drm_device *dev, void *data,
+			    struct drm_file *file_priv);
+extern int mach64_engine_reset(struct drm_device *dev, void *data,
+			       struct drm_file *file_priv);
+extern int mach64_dma_buffers(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
 extern void mach64_driver_lastclose(struct drm_device * dev);
 
 extern int mach64_init_freelist(struct drm_device * dev);
@@ -140,11 +145,16 @@ extern int mach64_do_dma_flush(drm_mach64_private_t * dev_priv);
 extern int mach64_do_cleanup_dma(struct drm_device * dev);
 
 				/* mach64_state.c */
-extern int mach64_dma_clear(DRM_IOCTL_ARGS);
-extern int mach64_dma_swap(DRM_IOCTL_ARGS);
-extern int mach64_dma_vertex(DRM_IOCTL_ARGS);
-extern int mach64_dma_blit(DRM_IOCTL_ARGS);
-extern int mach64_get_param(DRM_IOCTL_ARGS);
+extern int mach64_dma_clear(struct drm_device *dev, void *data,
+			    struct drm_file *file_priv);
+extern int mach64_dma_swap(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv);
+extern int mach64_dma_vertex(struct drm_device *dev, void *data,
+			     struct drm_file *file_priv);
+extern int mach64_dma_blit(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv);
+extern int mach64_get_param(struct drm_device *dev, void *data,
+			    struct drm_file *file_priv);
 extern int mach64_driver_vblank_wait(struct drm_device * dev,
 				     unsigned int *sequence);
 

@@ -250,39 +250,35 @@ done:
 	return 0;
 }
 
-int drm_addmap_ioctl(DRM_IOCTL_ARGS)
+int drm_addmap_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	drm_map_t request;
+	drm_map_t *request = data;
 	drm_local_map_t *map;
 	int err;
-	DRM_DEVICE;
 
 	if (!(dev->flags & (FREAD|FWRITE)))
 		return EACCES; /* Require read/write */
 
-	DRM_COPY_FROM_USER_IOCTL(request, (drm_map_t *)data, sizeof(drm_map_t));
-
-	if (!DRM_SUSER(p) && request.type != _DRM_AGP)
+	if (!DRM_SUSER(DRM_CURPROC) && request->type != _DRM_AGP)
 		return EACCES;
 
 	DRM_LOCK();
-	err = drm_addmap(dev, request.offset, request.size, request.type,
-	    request.flags, &map);
+	err = drm_addmap(dev, request->offset, request->size, request->type,
+	    request->flags, &map);
 	DRM_UNLOCK();
 	if (err != 0)
 		return err;
 
-	request.offset = map->offset;
-	request.size = map->size;
-	request.type = map->type;
-	request.flags = map->flags;
-	request.mtrr   = map->mtrr;
-	request.handle = map->handle;
+	request->offset = map->offset;
+	request->size = map->size;
+	request->type = map->type;
+	request->flags = map->flags;
+	request->mtrr   = map->mtrr;
+	request->handle = map->handle;
 
-	if (request.type != _DRM_SHM) {
-		request.handle = (void *)request.offset;
+	if (request->type != _DRM_SHM) {
+		request->handle = (void *)request->offset;
 	}
-	DRM_COPY_TO_USER_IOCTL((drm_map_t *)data, request, sizeof(drm_map_t));
 
 	return 0;
 }
@@ -333,17 +329,14 @@ void drm_rmmap(drm_device_t *dev, drm_local_map_t *map)
  * isn't in use.
  */
 
-int drm_rmmap_ioctl(DRM_IOCTL_ARGS)
+int drm_rmmap_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_local_map_t *map;
-	drm_map_t request;
-
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_map_t *)data, sizeof(request) );
+	drm_map_t *request = data;
 
 	DRM_LOCK();
 	TAILQ_FOREACH(map, &dev->maplist, link) {
-		if (map->handle == request.handle &&
+		if (map->handle == request->handle &&
 		    map->flags & _DRM_REMOVABLE)
 			break;
 	}
@@ -873,38 +866,28 @@ int drm_addbufs_pci(drm_device_t *dev, drm_buf_desc_t *request)
 	return ret;
 }
 
-int drm_addbufs_ioctl(DRM_IOCTL_ARGS)
+int drm_addbufs_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_buf_desc_t request;
+	drm_buf_desc_t *request = data;
 	int err;
 
-	DRM_COPY_FROM_USER_IOCTL(request, (drm_buf_desc_t *)data,
-	    sizeof(request));
-
-	if (request.flags & _DRM_AGP_BUFFER)
-		err = drm_addbufs_agp(dev, &request);
-	else if (request.flags & _DRM_SG_BUFFER)
-		err = drm_addbufs_sg(dev, &request);
+	if (request->flags & _DRM_AGP_BUFFER)
+		err = drm_addbufs_agp(dev, request);
+	else if (request->flags & _DRM_SG_BUFFER)
+		err = drm_addbufs_sg(dev, request);
 	else
-		err = drm_addbufs_pci(dev, &request);
-
-	DRM_COPY_TO_USER_IOCTL((drm_buf_desc_t *)data, request,
-	    sizeof(request));
+		err = drm_addbufs_pci(dev, request);
 
 	return err;
 }
 
-int drm_infobufs(DRM_IOCTL_ARGS)
+int drm_infobufs(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_info_t request;
+	drm_buf_info_t *request = data;
 	int i;
 	int count;
 	int retcode = 0;
-
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_info_t *)data, sizeof(request) );
 
 	DRM_SPINLOCK(&dev->dma_lock);
 	++dev->buf_use;		/* Can't allocate more after this call */
@@ -916,7 +899,7 @@ int drm_infobufs(DRM_IOCTL_ARGS)
 
 	DRM_DEBUG( "count = %d\n", count );
 
-	if ( request.count >= count ) {
+	if ( request->count >= count ) {
 		for ( i = 0, count = 0 ; i < DRM_MAX_ORDER + 1 ; i++ ) {
 			if ( dma->bufs[i].buf_count ) {
 				drm_buf_desc_t from;
@@ -926,7 +909,7 @@ int drm_infobufs(DRM_IOCTL_ARGS)
 				from.low_mark = dma->bufs[i].freelist.low_mark;
 				from.high_mark = dma->bufs[i].freelist.high_mark;
 
-				if (DRM_COPY_TO_USER(&request.list[count], &from,
+				if (DRM_COPY_TO_USER(&request->list[count], &from,
 				    sizeof(drm_buf_desc_t)) != 0) {
 					retcode = EFAULT;
 					break;
@@ -942,62 +925,54 @@ int drm_infobufs(DRM_IOCTL_ARGS)
 			}
 		}
 	}
-	request.count = count;
-
-	DRM_COPY_TO_USER_IOCTL( (drm_buf_info_t *)data, request, sizeof(request) );
+	request->count = count;
 
 	return retcode;
 }
 
-int drm_markbufs(DRM_IOCTL_ARGS)
+int drm_markbufs(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_desc_t request;
+	drm_buf_desc_t *request = data;
 	int order;
 
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_desc_t *)data, sizeof(request) );
-
 	DRM_DEBUG( "%d, %d, %d\n",
-		   request.size, request.low_mark, request.high_mark );
+		   request->size, request->low_mark, request->high_mark );
 	
 
-	order = drm_order(request.size);	
+	order = drm_order(request->size);	
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER ||
-	    request.low_mark < 0 || request.high_mark < 0) {
+	    request->low_mark < 0 || request->high_mark < 0) {
 		return EINVAL;
 	}
 
 	DRM_SPINLOCK(&dev->dma_lock);
-	if (request.low_mark > dma->bufs[order].buf_count ||
-	    request.high_mark > dma->bufs[order].buf_count) {
+	if (request->low_mark > dma->bufs[order].buf_count ||
+	    request->high_mark > dma->bufs[order].buf_count) {
 		return EINVAL;
 	}
 
-	dma->bufs[order].freelist.low_mark  = request.low_mark;
-	dma->bufs[order].freelist.high_mark = request.high_mark;
+	dma->bufs[order].freelist.low_mark  = request->low_mark;
+	dma->bufs[order].freelist.high_mark = request->high_mark;
 	DRM_SPINUNLOCK(&dev->dma_lock);
 
 	return 0;
 }
 
-int drm_freebufs(DRM_IOCTL_ARGS)
+int drm_freebufs(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
-	drm_buf_free_t request;
+	drm_buf_free_t *request = data;
 	int i;
 	int idx;
 	drm_buf_t *buf;
 	int retcode = 0;
 
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_free_t *)data, sizeof(request) );
-
-	DRM_DEBUG( "%d\n", request.count );
+	DRM_DEBUG( "%d\n", request->count );
 	
 	DRM_SPINLOCK(&dev->dma_lock);
-	for ( i = 0 ; i < request.count ; i++ ) {
-		if (DRM_COPY_FROM_USER(&idx, &request.list[i], sizeof(idx))) {
+	for ( i = 0 ; i < request->count ; i++ ) {
+		if (DRM_COPY_FROM_USER(&idx, &request->list[i], sizeof(idx))) {
 			retcode = EFAULT;
 			break;
 		}
@@ -1021,9 +996,8 @@ int drm_freebufs(DRM_IOCTL_ARGS)
 	return retcode;
 }
 
-int drm_mapbufs(DRM_IOCTL_ARGS)
+int drm_mapbufs(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	drm_device_dma_t *dma = dev->dma;
 	int retcode = 0;
 	const int zero = 0;
@@ -1040,10 +1014,8 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	vaddr_t vaddr;
 #endif /* __NetBSD__ || __OpenBSD__ */
 
-	drm_buf_map_t request;
+	drm_buf_map_t *request = data;
 	int i;
-
-	DRM_COPY_FROM_USER_IOCTL( request, (drm_buf_map_t *)data, sizeof(request) );
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 	if (!vfinddev(kdev, VCHR, &vn))
@@ -1051,16 +1023,16 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 #endif /* __NetBSD__ || __OpenBSD */
 
 #if defined(__FreeBSD__) && __FreeBSD_version >= 500000
-	vms = p->td_proc->p_vmspace;
+	vms = DRM_CURPROC->td_proc->p_vmspace;
 #else
-	vms = p->p_vmspace;
+	vms = DRM_CURPROC->p_vmspace;
 #endif
 
 	DRM_SPINLOCK(&dev->dma_lock);
 	dev->buf_use++;		/* Can't allocate more after this call */
 	DRM_SPINUNLOCK(&dev->dma_lock);
 
-	if (request.count < dma->buf_count)
+	if (request->count < dma->buf_count)
 		goto done;
 
 	if ((dev->driver.use_agp && (dma->flags & _DRM_DMA_USE_AGP)) ||
@@ -1082,10 +1054,11 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	vaddr = round_page((vm_offset_t)vms->vm_daddr + MAXDSIZ);
 #if __FreeBSD_version >= 600023
 	retcode = vm_mmap(&vms->vm_map, &vaddr, size, PROT_READ | PROT_WRITE,
-	    VM_PROT_ALL, MAP_SHARED, OBJT_DEVICE, kdev, foff );
+	    VM_PROT_ALL, MAP_SHARED, OBJT_DEVICE, dev->devnode, foff);
 #else
 	retcode = vm_mmap(&vms->vm_map, &vaddr, size, PROT_READ | PROT_WRITE,
-	    VM_PROT_ALL, MAP_SHARED, SLIST_FIRST(&kdev->si_hlist), foff );
+	    VM_PROT_ALL, MAP_SHARED, SLIST_FIRST(&dev->devnode->si_hlist),
+	    foff);
 #endif
 #elif defined(__NetBSD__) || defined(__OpenBSD__)
 	vaddr = round_page((vaddr_t)vms->vm_daddr + MAXDSIZ);
@@ -1096,26 +1069,26 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	if (retcode)
 		goto done;
 
-	request.virtual = (void *)vaddr;
+	request->virtual = (void *)vaddr;
 
 	for ( i = 0 ; i < dma->buf_count ; i++ ) {
-		if (DRM_COPY_TO_USER(&request.list[i].idx,
-		    &dma->buflist[i]->idx, sizeof(request.list[0].idx))) {
+		if (DRM_COPY_TO_USER(&request->list[i].idx,
+		    &dma->buflist[i]->idx, sizeof(request->list[0].idx))) {
 			retcode = EFAULT;
 			goto done;
 		}
-		if (DRM_COPY_TO_USER(&request.list[i].total,
-		    &dma->buflist[i]->total, sizeof(request.list[0].total))) {
+		if (DRM_COPY_TO_USER(&request->list[i].total,
+		    &dma->buflist[i]->total, sizeof(request->list[0].total))) {
 			retcode = EFAULT;
 			goto done;
 		}
-		if (DRM_COPY_TO_USER(&request.list[i].used, &zero,
+		if (DRM_COPY_TO_USER(&request->list[i].used, &zero,
 		    sizeof(zero))) {
 			retcode = EFAULT;
 			goto done;
 		}
 		address = vaddr + dma->buflist[i]->offset; /* *** */
-		if (DRM_COPY_TO_USER(&request.list[i].address, &address,
+		if (DRM_COPY_TO_USER(&request->list[i].address, &address,
 		    sizeof(address))) {
 			retcode = EFAULT;
 			goto done;
@@ -1123,11 +1096,9 @@ int drm_mapbufs(DRM_IOCTL_ARGS)
 	}
 
  done:
-	request.count = dma->buf_count;
+	request->count = dma->buf_count;
 
-	DRM_DEBUG( "%d buffers, retcode = %d\n", request.count, retcode );
-
-	DRM_COPY_TO_USER_IOCTL((drm_buf_map_t *)data, request, sizeof(request));
+	DRM_DEBUG( "%d buffers, retcode = %d\n", request->count, retcode );
 
 	return retcode;
 }

@@ -128,29 +128,22 @@ nouveau_notifier_alloc(struct drm_device *dev, int channel, uint32_t handle,
 }
 
 int
-nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS)
+nouveau_ioctl_notifier_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	struct drm_nouveau_notifier_alloc na;
+	struct drm_nouveau_notifier_alloc *na = data;
 	int ret;
 
-	DRM_COPY_FROM_USER_IOCTL(na,
-			(struct drm_nouveau_notifier_alloc __user*)data,
-			sizeof(na));
-
-	if (!nouveau_fifo_owner(dev, file_priv, na.channel)) {
+	if (!nouveau_fifo_owner(dev, file_priv, na->channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
-			  DRM_CURRENTPID, na.channel);
+			  DRM_CURRENTPID, na->channel);
 		return -EPERM;
 	}
 
-	ret = nouveau_notifier_alloc(dev, na.channel, na.handle,
-				     na.count, &na.offset);
+	ret = nouveau_notifier_alloc(dev, na->channel, na->handle,
+				     na->count, &na->offset);
 	if (ret)
 		return ret;
 
-	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_notifier_alloc __user*)data,
-			       na, sizeof(na));
 	return 0;
 }
 

@@ -335,15 +335,15 @@ static __inline__ int radeon_check_offset(drm_radeon_private_t *dev_priv,
 }
 
 				/* radeon_cp.c */
-extern int radeon_cp_init(DRM_IOCTL_ARGS);
-extern int radeon_cp_start(DRM_IOCTL_ARGS);
-extern int radeon_cp_stop(DRM_IOCTL_ARGS);
-extern int radeon_cp_reset(DRM_IOCTL_ARGS);
-extern int radeon_cp_idle(DRM_IOCTL_ARGS);
-extern int radeon_cp_resume(DRM_IOCTL_ARGS);
-extern int radeon_engine_reset(DRM_IOCTL_ARGS);
-extern int radeon_fullscreen(DRM_IOCTL_ARGS);
-extern int radeon_cp_buffers(DRM_IOCTL_ARGS);
+extern int radeon_cp_init(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_cp_start(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_cp_stop(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_cp_reset(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_cp_idle(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_cp_resume(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_engine_reset(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_fullscreen(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_cp_buffers(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
 extern void radeon_freelist_reset(struct drm_device * dev);
 extern struct drm_buf *radeon_freelist_get(struct drm_device * dev);
@@ -352,16 +352,16 @@ extern int radeon_wait_ring(drm_radeon_private_t * dev_priv, int n);
 
 extern int radeon_do_cp_idle(drm_radeon_private_t * dev_priv);
 
-extern int radeon_mem_alloc(DRM_IOCTL_ARGS);
-extern int radeon_mem_free(DRM_IOCTL_ARGS);
-extern int radeon_mem_init_heap(DRM_IOCTL_ARGS);
+extern int radeon_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_mem_free(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_mem_init_heap(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern void radeon_mem_takedown(struct mem_block **heap);
 extern void radeon_mem_release(struct drm_file *file_priv,
 			       struct mem_block *heap);
 
 				/* radeon_irq.c */
-extern int radeon_irq_emit(DRM_IOCTL_ARGS);
-extern int radeon_irq_wait(DRM_IOCTL_ARGS);
+extern int radeon_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int radeon_irq_wait(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
 extern void radeon_do_release(struct drm_device * dev);
 extern int radeon_driver_vblank_wait(struct drm_device * dev,

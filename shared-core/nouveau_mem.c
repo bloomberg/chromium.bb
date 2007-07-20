@@ -547,11 +547,10 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
  * Ioctls
  */
 
-int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
+int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct drm_nouveau_mem_alloc alloc;
+	struct drm_nouveau_mem_alloc *alloc = data;
 	struct mem_block *block;
 
 	if (!dev_priv) {
@@ -559,42 +558,30 @@ int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
 		return -EINVAL;
 	}
 
-	DRM_COPY_FROM_USER_IOCTL(alloc,
-				 (struct drm_nouveau_mem_alloc_t __user *) data,
-				 sizeof(alloc));
-
-	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags,
-				file_priv);
+	block=nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
+				alloc->flags, file_priv);
 	if (!block)
 		return -ENOMEM;
-	alloc.map_handle=block->map_handle;
-	alloc.offset=block->start;
-	alloc.flags=block->flags;
-
-	DRM_COPY_TO_USER_IOCTL((struct drm_nouveau_mem_alloc __user *)data,
-			       alloc, sizeof(alloc));
+	alloc->map_handle=block->map_handle;
+	alloc->offset=block->start;
+	alloc->flags=block->flags;
 
 	return 0;
 }
 
-int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
+int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct drm_nouveau_mem_free memfree;
+	struct drm_nouveau_mem_free *memfree = data;
 	struct mem_block *block;
 
-	DRM_COPY_FROM_USER_IOCTL(memfree,
-				 (struct drm_nouveau_mem_free_t __user *)data,
-				 sizeof(memfree));
-
 	block=NULL;
-	if (memfree.flags&NOUVEAU_MEM_FB)
-		block = find_block(dev_priv->fb_heap, memfree.offset);
-	else if (memfree.flags&NOUVEAU_MEM_AGP)
-		block = find_block(dev_priv->agp_heap, memfree.offset);
-	else if (memfree.flags&NOUVEAU_MEM_PCI)
-		block = find_block(dev_priv->pci_heap, memfree.offset);
+	if (memfree->flags & NOUVEAU_MEM_FB)
+		block = find_block(dev_priv->fb_heap, memfree->offset);
+	else if (memfree->flags & NOUVEAU_MEM_AGP)
+		block = find_block(dev_priv->agp_heap, memfree->offset);
+	else if (memfree->flags & NOUVEAU_MEM_PCI)
+		block = find_block(dev_priv->pci_heap, memfree->offset);
 	if (!block)
 		return -EFAULT;
 	if (block->file_priv != file_priv)

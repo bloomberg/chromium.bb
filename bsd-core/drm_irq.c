@@ -33,25 +33,20 @@
 
 static void drm_locked_task(void *context, int pending __unused);
 
-int drm_irq_by_busid(DRM_IOCTL_ARGS)
+int drm_irq_by_busid(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_irq_busid_t irq;
+	drm_irq_busid_t *irq = data;
 
-	DRM_COPY_FROM_USER_IOCTL(irq, (drm_irq_busid_t *)data, sizeof(irq));
-
-	if ((irq.busnum >> 8) != dev->pci_domain ||
-	    (irq.busnum & 0xff) != dev->pci_bus ||
-	    irq.devnum != dev->pci_slot ||
-	    irq.funcnum != dev->pci_func)
+	if ((irq->busnum >> 8) != dev->pci_domain ||
+	    (irq->busnum & 0xff) != dev->pci_bus ||
+	    irq->devnum != dev->pci_slot ||
+	    irq->funcnum != dev->pci_func)
 		return EINVAL;
 
-	irq.irq = dev->irq;
+	irq->irq = dev->irq;
 
 	DRM_DEBUG("%d:%d:%d => IRQ %d\n",
-		  irq.busnum, irq.devnum, irq.funcnum, irq.irq);
-
-	DRM_COPY_TO_USER_IOCTL( (drm_irq_busid_t *)data, irq, sizeof(irq) );
+		  irq->busnum, irq->devnum, irq->funcnum, irq->irq);
 
 	return 0;
 }
@@ -182,15 +177,12 @@ int drm_irq_uninstall(drm_device_t *dev)
 	return 0;
 }
 
-int drm_control(DRM_IOCTL_ARGS)
+int drm_control(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_control_t ctl;
+	drm_control_t *ctl = data;
 	int err;
 
-	DRM_COPY_FROM_USER_IOCTL( ctl, (drm_control_t *) data, sizeof(ctl) );
-
-	switch ( ctl.func ) {
+	switch ( ctl->func ) {
 	case DRM_INST_HANDLER:
 		/* Handle drivers whose DRM used to require IRQ setup but the
 		 * no longer does.
@@ -198,7 +190,7 @@ int drm_control(DRM_IOCTL_ARGS)
 		if (!dev->driver.use_irq)
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
-		    ctl.irq != dev->irq)
+		    ctl->irq != dev->irq)
 			return EINVAL;
 		return drm_irq_install(dev);
 	case DRM_UNINST_HANDLER:
@@ -213,25 +205,21 @@ int drm_control(DRM_IOCTL_ARGS)
 	}
 }
 
-int drm_wait_vblank(DRM_IOCTL_ARGS)
+int drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_wait_vblank_t vblwait;
+	drm_wait_vblank_t *vblwait = data;
 	struct timeval now;
-	int ret;
+	int ret, flags;
 
 	if (!dev->irq_enabled)
 		return EINVAL;
 
-	DRM_COPY_FROM_USER_IOCTL( vblwait, (drm_wait_vblank_t *)data,
-				  sizeof(vblwait) );
-
-	if (vblwait.request.type & _DRM_VBLANK_RELATIVE) {
-		vblwait.request.sequence += atomic_read(&dev->vbl_received);
-		vblwait.request.type &= ~_DRM_VBLANK_RELATIVE;
+	if (vblwait->request.type & _DRM_VBLANK_RELATIVE) {
+		vblwait->request.sequence += atomic_read(&dev->vbl_received);
+		vblwait->request.type &= ~_DRM_VBLANK_RELATIVE;
 	}
 
-	flags = vblwait.request.type & _DRM_VBLANK_FLAGS_MASK;
+	flags = vblwait->request.type & _DRM_VBLANK_FLAGS_MASK;
 	if (flags & _DRM_VBLANK_SIGNAL) {
 #if 0 /* disabled */
 		drm_vbl_sig_t *vbl_sig = malloc(sizeof(drm_vbl_sig_t), M_DRM,
@@ -239,11 +227,11 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 		if (vbl_sig == NULL)
 			return ENOMEM;
 
-		vbl_sig->sequence = vblwait.request.sequence;
-		vbl_sig->signo = vblwait.request.signal;
+		vbl_sig->sequence = vblwait->request.sequence;
+		vbl_sig->signo = vblwait->request.signal;
 		vbl_sig->pid = DRM_CURRENTPID;
 
-		vblwait.reply.sequence = atomic_read(&dev->vbl_received);
+		vblwait->reply.sequence = atomic_read(&dev->vbl_received);
 		
 		DRM_SPINLOCK(&dev->irq_lock);
 		TAILQ_INSERT_HEAD(&dev->vbl_sig_list, vbl_sig, link);
@@ -253,16 +241,14 @@ int drm_wait_vblank(DRM_IOCTL_ARGS)
 		ret = EINVAL;
 	} else {
 		DRM_LOCK();
-		ret = -dev->driver.vblank_wait(dev, &vblwait.request.sequence);
+		ret = -dev->driver.vblank_wait(dev,
+		    &vblwait->request.sequence);
 		DRM_UNLOCK();
 
 		microtime(&now);
-		vblwait.reply.tval_sec = now.tv_sec;
-		vblwait.reply.tval_usec = now.tv_usec;
+		vblwait->reply.tval_sec = now.tv_sec;
+		vblwait->reply.tval_usec = now.tv_usec;
 	}
-
-	DRM_COPY_TO_USER_IOCTL( (drm_wait_vblank_t *)data, vblwait,
-				sizeof(vblwait) );
 
 	return ret;
 }

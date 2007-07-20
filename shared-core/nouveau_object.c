@@ -1024,40 +1024,37 @@ nouveau_gpuobj_channel_takedown(struct drm_device *dev, int channel)
 
 }
 
-int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS)
+int nouveau_ioctl_grobj_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	struct drm_nouveau_grobj_alloc init;
+	struct drm_nouveau_grobj_alloc *init = data;
 	struct nouveau_gpuobj *gr = NULL;
 	int ret;
 
-	DRM_COPY_FROM_USER_IOCTL(init,
-				 (struct drm_nouveau_grobj_alloc_t __user*)data,
-				 sizeof(init));
-
-	if (!nouveau_fifo_owner(dev, file_priv, init.channel)) {
+	if (!nouveau_fifo_owner(dev, file_priv, init->channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
-				DRM_CURRENTPID, init.channel);
+				DRM_CURRENTPID, init->channel);
 		return -EINVAL;
 	}
 
 	//FIXME: check args, only allow trusted objects to be created
 	
-	if (init.handle == ~0)
+	if (init->handle == ~0)
 		return -EINVAL;
-	if (nouveau_gpuobj_ref_find(dev, init.channel, init.handle, NULL) == 0)
+	if (nouveau_gpuobj_ref_find(dev, init->channel, init->handle, NULL) ==
+	    0)
 		return -EEXIST;
 
-	if ((ret = nouveau_gpuobj_gr_new(dev, init.channel, init.class, &gr))) {
+	ret = nouveau_gpuobj_gr_new(dev, init->channel, init->class, &gr);
+	if (ret) {
 		DRM_ERROR("Error creating gr object: %d (%d/0x%08x)\n",
-			  ret, init.channel, init.handle);
+			  ret, init->channel, init->handle);
 		return ret;
 	}
 
-	if ((ret = nouveau_gpuobj_ref_add(dev, init.channel, init.handle,
+	if ((ret = nouveau_gpuobj_ref_add(dev, init->channel, init->handle,
 					  gr, NULL))) {
 		DRM_ERROR("Error referencing gr object: %d (%d/0x%08x\n)",
-			  ret, init.channel, init.handle);
+			  ret, init->channel, init->handle);
 		nouveau_gpuobj_del(dev, &gr);
 		return ret;
 	}
