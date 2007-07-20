@@ -459,7 +459,7 @@ struct drm_mode_config_funcs {
  *
  */
 struct drm_mode_config {
-	spinlock_t config_lock; /* protects configuration and IDR */
+	struct mutex mutex; /* protects configuration and IDR */
 	struct idr crtc_idr; /* use this idr for all IDs, fb, crtc, output, modes - just makes life easier */
 	/* this is limited to one for now */
 	int num_fb;
