@@ -66,58 +66,43 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 {
 	const unsigned int beginPort = getCurBatchBeginPort(pCmdInfo);
 
-	DRM_INFO("After getCurBatchBeginPort()\n");
 
 	if (s_cmdring._lastBatchStartAddr == 0) {
 		const unsigned int portOffset = BASE_3D_ENG + beginPort;
 
-		/* Jong 06/13/2006; remove marked for system hang test */
-		/* xgi_waitfor_pci_idle(info); */
 
-		// Enable PCI Trigger Mode
+		/* Enable PCI Trigger Mode
+		 */
 		DRM_INFO("Enable PCI Trigger Mode \n");
 
-
-		/* Jong 06/14/2006; 0x400001a */
 		dwWriteReg(info->mmio_map,
 			   BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			   (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) |
 			   M2REG_CLEAR_COUNTERS_MASK | 0x08 |
 			   M2REG_PCI_TRIGGER_MODE_MASK);
 
-		/* Jong 06/14/2006; 0x400000a */
 		dwWriteReg(info->mmio_map,
 			   BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			   (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) | 0x08 |
 			   M2REG_PCI_TRIGGER_MODE_MASK);
 
-		// Send PCI begin command
-		DRM_INFO("Send PCI begin command \n");
 
+		/* Send PCI begin command
+		 */
 		DRM_INFO("portOffset=%d, beginPort=%d\n",
 			 portOffset, beginPort);
 
-		/* beginPort = 48; */
-		/* 0xc100000 */
 		dwWriteReg(info->mmio_map, portOffset,
 			   (beginPort << 22) + (BEGIN_VALID_MASK) +
 			   pCmdInfo->_curDebugID);
 
-		DRM_INFO("Send PCI begin command- After\n");
-
-		/* 0x80000024 */
 		dwWriteReg(info->mmio_map, portOffset + 4,
 			   BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize);
 
-		/* 0x1010000 */
 		dwWriteReg(info->mmio_map, portOffset + 8, 
 			   (pCmdInfo->_firstBeginAddr >> 4));
 
-		/* Jong 06/12/2006; system hang; marked for test */
 		dwWriteReg(info->mmio_map, portOffset + 12, 0);
-
-		/* Jong 06/13/2006; remove marked for system hang test */
-		/* xgi_waitfor_pci_idle(info); */
 	} else {
 		u32 *lastBatchVirtAddr;
 
@@ -154,7 +139,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 	}
 
 	s_cmdring._lastBatchStartAddr = pCmdInfo->_lastBeginAddr;
-	DRM_INFO("End\n");
+	DRM_INFO("%s: exit\n", __func__);
 }
 
 
