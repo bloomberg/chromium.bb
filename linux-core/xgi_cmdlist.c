@@ -84,7 +84,14 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 			       const struct xgi_cmd_info * pCmdInfo)
 {
 	const unsigned int cmd = get_batch_command(pCmdInfo->_firstBeginType);
+	u32 begin[4];
 
+
+	begin[0] = (cmd << 24) | (BEGIN_VALID_MASK) |
+		(BEGIN_BEGIN_IDENTIFICATION_MASK & pCmdInfo->_curDebugID);
+	begin[1] = BEGIN_LINK_ENABLE_MASK | pCmdInfo->_firstSize;
+	begin[2] = pCmdInfo->_firstBeginAddr >> 4;
+	begin[3] = 0;
 
 	if (s_cmdring._lastBatchStartAddr == 0) {
 		const unsigned int portOffset = BASE_3D_ENG + (cmd << 2);
@@ -111,17 +118,10 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 		DRM_INFO("portOffset=%d, beginPort=%d\n",
 			 portOffset, cmd << 2);
 
-		dwWriteReg(info->mmio_map, portOffset,
-			   (cmd << 24) + (BEGIN_VALID_MASK) +
-			   pCmdInfo->_curDebugID);
-
-		dwWriteReg(info->mmio_map, portOffset + 4,
-			   BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize);
-
-		dwWriteReg(info->mmio_map, portOffset + 8, 
-			   (pCmdInfo->_firstBeginAddr >> 4));
-
-		dwWriteReg(info->mmio_map, portOffset + 12, 0);
+		dwWriteReg(info->mmio_map, portOffset,      begin[0]);
+		dwWriteReg(info->mmio_map, portOffset +  4, begin[1]);
+		dwWriteReg(info->mmio_map, portOffset +  8, begin[2]);
+		dwWriteReg(info->mmio_map, portOffset + 12, begin[3]);
 	} else {
 		u32 *lastBatchVirtAddr;
 
@@ -135,26 +135,13 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 			xgi_find_pcie_virt(info,
 					   s_cmdring._lastBatchStartAddr);
 
-		/* lastBatchVirtAddr should *never* be NULL.  However, there
-		 * are currently some bugs that cause this to happen.  The
-		 * if-statement here prevents some fatal (i.e., hard lock
-		 * requiring the reset button) oopses.
-		 */
-		if (lastBatchVirtAddr) {
-			lastBatchVirtAddr[1] =
-				BEGIN_LINK_ENABLE_MASK + pCmdInfo->_firstSize;
-			lastBatchVirtAddr[2] = pCmdInfo->_firstBeginAddr >> 4;
-			lastBatchVirtAddr[3] = 0;
-			//barrier();
-			lastBatchVirtAddr[0] =
-				(cmd << 24) + (BEGIN_VALID_MASK) +
-				(0xffff & pCmdInfo->_curDebugID);
+		lastBatchVirtAddr[1] = begin[1];
+		lastBatchVirtAddr[2] = begin[2];
+		lastBatchVirtAddr[3] = begin[3];
+		wmb();
+		lastBatchVirtAddr[0] = begin[0];
 
-			/* Jong 06/12/2006; system hang; marked for test */
-			triggerHWCommandList(info, pCmdInfo->_beginCount);
-		} else {
-			DRM_ERROR("lastBatchVirtAddr is NULL\n");
-		}
+		triggerHWCommandList(info, pCmdInfo->_beginCount);
 	}
 
 	s_cmdring._lastBatchStartAddr = pCmdInfo->_lastBeginAddr;

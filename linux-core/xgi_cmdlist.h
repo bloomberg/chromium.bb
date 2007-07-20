@@ -40,6 +40,7 @@
 #define 	M2REG_PCI_TRIGGER_MODE_MASK				(ONE_BIT_MASK<<1)
 #define 	BEGIN_VALID_MASK                        (ONE_BIT_MASK<<20)
 #define 	BEGIN_LINK_ENABLE_MASK                  (ONE_BIT_MASK<<31)
+#define 	BEGIN_BEGIN_IDENTIFICATION_MASK         (TWENTY_BIT_MASK<<0)
 #define     M2REG_PCI_TRIGGER_REGISTER_ADDRESS      0x14
 
 typedef enum {
