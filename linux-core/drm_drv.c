@@ -602,12 +602,18 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 		retcode = -EINVAL;
 		goto err_i1;
 	}
-
+#if 0
+	/*
+	 * This check is disabled, because driver private ioctl->cmd
+	 * are not the ioctl commands with size and direction bits but
+	 * just the indices. The DRM core ioctl->cmd are the proper ioctl
+	 * commands. The drivers' ioctl tables need to be fixed.
+	 */
 	if (ioctl->cmd != cmd) {
 		retcode = -EINVAL;
 		goto err_i1;
 	}
-
+#endif
 	func = ioctl->func;
 	/* is there a local override? */
 	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->driver->dma_ioctl)

@@ -343,8 +343,7 @@ int drm_addmap_ioctl(struct drm_device *dev, void *data,
 		return err;
 
 	/* avoid a warning on 64-bit, this casting isn't very nice, but the API is set so too late */
-	if (put_user((void *)(unsigned long)maplist->user_token, &map->handle))
-		return -EFAULT;
+	map->handle = (void *)(unsigned long)maplist->user_token;
 	return 0;
 }
 

@@ -301,7 +301,7 @@ int drm_getstats(struct drm_device *dev, void *data,
 int drm_setversion(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	struct drm_set_version *sv = data;
-	int if_version, retcode;
+	int if_version, retcode = 0;
 
 	if (sv->drm_di_major != -1) {
 		if (sv->drm_di_major != DRM_IF_MAJOR ||
