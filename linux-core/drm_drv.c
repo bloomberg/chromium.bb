@@ -615,9 +615,10 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 
 	if (cmd & IOC_IN) {
 		if (copy_from_user(kdata, (void __user *)arg,
-				   _IOC_SIZE(cmd)) != 0)
+				   _IOC_SIZE(cmd)) != 0) {
 			retcode = -EACCES;
-		goto err_i1;
+			goto err_i1;
+		}
 	}
 
 	if (!func) {
