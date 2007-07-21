@@ -599,7 +599,7 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 	else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE))
 		ioctl = &drm_ioctls[nr];
 	else {
-		errno = -EINVAL;
+		retcode = -EINVAL;
 		goto err_i1;
 	}
 
