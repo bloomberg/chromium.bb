@@ -73,7 +73,7 @@ struct xgi_mem_alloc {
 	/**
 	 * Offset of the allocation in the mapping.
 	 */
-	unsigned long offset;
+	__u32 offset;
 };
 
 enum xgi_batch_type {
