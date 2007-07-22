@@ -66,6 +66,7 @@ struct xgi_cmdring_info {
 	u32 _cmdRingOffset;
 };
 
+struct xgi_info;
 extern int xgi_cmdlist_initialize(struct xgi_info * info, size_t size);
 
 extern int xgi_state_change(struct xgi_info * info, unsigned int to,

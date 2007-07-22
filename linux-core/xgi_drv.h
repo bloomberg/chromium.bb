@@ -42,6 +42,7 @@
 #define DRIVER_MINOR		8
 #define DRIVER_PATCHLEVEL	0
 
+#include "xgi_cmdlist.h"
 #include "xgi_drm.h"
 
 struct xgi_aperture {
@@ -90,6 +91,8 @@ struct xgi_info {
 
 	struct semaphore fb_sem;
 	struct semaphore pcie_sem;
+
+	struct xgi_cmdring_info cmdring;
 };
 
 enum PcieOwner {

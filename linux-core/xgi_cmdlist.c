@@ -31,12 +31,10 @@
 #include "xgi_misc.h"
 #include "xgi_cmdlist.h"
 
-struct xgi_cmdring_info s_cmdring;
-
 static void addFlush2D(struct xgi_info * info);
 static unsigned int get_batch_command(enum xgi_batch_type type);
 static void triggerHWCommandList(struct xgi_info * info);
-static void xgi_cmdlist_reset(void);
+static void xgi_cmdlist_reset(struct xgi_info * info);
 
 int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 {
@@ -51,11 +49,11 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 		return err;
 	}
 
-	s_cmdring._cmdRingSize = mem_alloc.size;
-	s_cmdring._cmdRingBuffer = mem_alloc.hw_addr;
-	s_cmdring._cmdRingAllocOffset = mem_alloc.offset;
-	s_cmdring._lastBatchStartAddr = 0;
-	s_cmdring._cmdRingOffset = 0;
+	info->cmdring._cmdRingSize = mem_alloc.size;
+	info->cmdring._cmdRingBuffer = mem_alloc.hw_addr;
+	info->cmdring._cmdRingAllocOffset = mem_alloc.offset;
+	info->cmdring._lastBatchStartAddr = 0;
+	info->cmdring._cmdRingOffset = 0;
 
 	return 0;
 }
@@ -92,7 +90,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 	begin[2] = pCmdInfo->hw_addr >> 4;
 	begin[3] = 0;
 
-	if (s_cmdring._lastBatchStartAddr == 0) {
+	if (info->cmdring._lastBatchStartAddr == 0) {
 		const unsigned int portOffset = BASE_3D_ENG + (cmd << 2);
 
 
@@ -124,7 +122,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 	} else {
 		u32 *lastBatchVirtAddr;
 
-		DRM_INFO("s_cmdring._lastBatchStartAddr != 0\n");
+		DRM_INFO("info->cmdring._lastBatchStartAddr != 0\n");
 
 		if (pCmdInfo->type == BTYPE_3D) {
 			addFlush2D(info);
@@ -132,7 +130,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 
 		lastBatchVirtAddr = 
 			xgi_find_pcie_virt(info,
-					   s_cmdring._lastBatchStartAddr);
+					   info->cmdring._lastBatchStartAddr);
 
 		lastBatchVirtAddr[1] = begin[1];
 		lastBatchVirtAddr[2] = begin[2];
@@ -143,7 +141,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 		triggerHWCommandList(info);
 	}
 
-	s_cmdring._lastBatchStartAddr = pCmdInfo->hw_addr;
+	info->cmdring._lastBatchStartAddr = pCmdInfo->hw_addr;
 	DRM_INFO("%s: exit\n", __func__);
 }
 
@@ -188,7 +186,7 @@ int xgi_state_change(struct xgi_info * info, unsigned int to,
 		// stop to received batch
 	} else if ((from == STATE_CONSOLE) && (to == STATE_GRAPHIC)) {
 		DRM_INFO("[kd] I see, now is to enterVT\n");
-		xgi_cmdlist_reset();
+		xgi_cmdlist_reset(info);
 	} else if ((from == STATE_GRAPHIC)
 		   && ((to == STATE_LOGOUT)
 		       || (to == STATE_REBOOT)
@@ -217,19 +215,19 @@ int xgi_state_change_ioctl(DRM_IOCTL_ARGS)
 }
 
 
-void xgi_cmdlist_reset(void)
+void xgi_cmdlist_reset(struct xgi_info * info)
 {
-	s_cmdring._lastBatchStartAddr = 0;
-	s_cmdring._cmdRingOffset = 0;
+	info->cmdring._lastBatchStartAddr = 0;
+	info->cmdring._cmdRingOffset = 0;
 }
 
 void xgi_cmdlist_cleanup(struct xgi_info * info)
 {
-	if (s_cmdring._cmdRingBuffer != 0) {
-		xgi_pcie_free(info, s_cmdring._cmdRingAllocOffset, NULL);
-		s_cmdring._cmdRingBuffer = 0;
-		s_cmdring._cmdRingOffset = 0;
-		s_cmdring._cmdRingSize = 0;
+	if (info->cmdring._cmdRingBuffer != 0) {
+		xgi_pcie_free(info, info->cmdring._cmdRingAllocOffset, NULL);
+		info->cmdring._cmdRingBuffer = 0;
+		info->cmdring._cmdRingOffset = 0;
+		info->cmdring._cmdRingSize = 0;
 	}
 }
 
@@ -250,11 +248,11 @@ static void addFlush2D(struct xgi_info * info)
 	u32 *lastBatchVirtAddr;
 
 	/* check buf is large enough to contain a new flush batch */
-	if ((s_cmdring._cmdRingOffset + 0x20) >= s_cmdring._cmdRingSize) {
-		s_cmdring._cmdRingOffset = 0;
+	if ((info->cmdring._cmdRingOffset + 0x20) >= info->cmdring._cmdRingSize) {
+		info->cmdring._cmdRingOffset = 0;
 	}
 
-	flushBatchHWAddr = s_cmdring._cmdRingBuffer + s_cmdring._cmdRingOffset;
+	flushBatchHWAddr = info->cmdring._cmdRingBuffer + info->cmdring._cmdRingOffset;
 	flushBatchVirtAddr = xgi_find_pcie_virt(info, flushBatchHWAddr);
 
 	/* not using memcpy for I assume the address is discrete */
@@ -267,9 +265,9 @@ static void addFlush2D(struct xgi_info * info)
 	*(flushBatchVirtAddr + 6) = FLUSH_2D;
 	*(flushBatchVirtAddr + 7) = FLUSH_2D;
 
-	// ASSERT(s_cmdring._lastBatchStartAddr != NULL);
+	// ASSERT(info->cmdring._lastBatchStartAddr != NULL);
 	lastBatchVirtAddr =
-		xgi_find_pcie_virt(info, s_cmdring._lastBatchStartAddr);
+		xgi_find_pcie_virt(info, info->cmdring._lastBatchStartAddr);
 
 	lastBatchVirtAddr[1] = BEGIN_LINK_ENABLE_MASK + 0x08;
 	lastBatchVirtAddr[2] = flushBatchHWAddr >> 4;
@@ -280,6 +278,6 @@ static void addFlush2D(struct xgi_info * info)
 
 	triggerHWCommandList(info);
 
-	s_cmdring._cmdRingOffset += 0x20;
-	s_cmdring._lastBatchStartAddr = flushBatchHWAddr;
+	info->cmdring._cmdRingOffset += 0x20;
+	info->cmdring._lastBatchStartAddr = flushBatchHWAddr;
 }
