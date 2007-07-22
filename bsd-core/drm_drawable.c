@@ -45,7 +45,7 @@ drm_drawable_compare(struct bsd_drm_drawable_info *a,
 {
 	if (a->handle > b->handle)
 		return 1;
-	if (a->handle > b->handle)
+	if (a->handle < b->handle)
 		return -1;
 	return 0;
 }
