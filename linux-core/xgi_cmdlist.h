@@ -59,11 +59,34 @@ typedef enum {
 } CMD_SIZE;
 
 struct xgi_cmdring_info {
-	unsigned int _cmdRingSize;
-	u32 _cmdRingBuffer;
-	unsigned long _cmdRingAllocOffset;
-	u32 _lastBatchStartAddr;
-	u32 _cmdRingOffset;
+	/**
+	 * Kernel space pointer to the base of the command ring.
+	 */
+	u32 * ptr;
+
+	/**
+	 * Size, in bytes, of the command ring.
+	 */
+	unsigned int size;
+
+	/**
+	 * Base address of the command ring from the hardware's PoV.
+	 */
+	unsigned int ring_hw_base;
+
+	/**
+	 * Offset, in bytes, from the base of PCI-e GART space to the start
+	 * of the ring.
+	 */
+	unsigned long ring_gart_base;
+
+	u32 * last_ptr;
+
+	/**
+	 * Offset, in bytes, from the start of the ring to the next available
+	 * location to store a command.
+	 */
+	unsigned int ring_offset;
 };
 
 struct xgi_info;
