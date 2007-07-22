@@ -97,8 +97,6 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 
 		/* Enable PCI Trigger Mode
 		 */
-		DRM_INFO("Enable PCI Trigger Mode \n");
-
 		dwWriteReg(info->mmio_map,
 			   BASE_3D_ENG + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			   (M2REG_AUTO_LINK_SETTING_ADDRESS << 22) |
@@ -113,9 +111,6 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 
 		/* Send PCI begin command
 		 */
-		DRM_INFO("portOffset=%d, beginPort=%d\n",
-			 portOffset, cmd << 2);
-
 		dwWriteReg(info->mmio_map, portOffset,      begin[0]);
 		dwWriteReg(info->mmio_map, portOffset +  4, begin[1]);
 		dwWriteReg(info->mmio_map, portOffset +  8, begin[2]);
