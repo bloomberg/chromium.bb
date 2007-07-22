@@ -35,8 +35,7 @@ struct xgi_cmdring_info s_cmdring;
 
 static void addFlush2D(struct xgi_info * info);
 static unsigned int get_batch_command(enum xgi_batch_type type);
-static void triggerHWCommandList(struct xgi_info * info,
-				 unsigned int triggerCounter);
+static void triggerHWCommandList(struct xgi_info * info);
 static void xgi_cmdlist_reset(void);
 
 int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
@@ -83,14 +82,14 @@ unsigned int get_batch_command(enum xgi_batch_type type)
 static void xgi_submit_cmdlist(struct xgi_info * info,
 			       const struct xgi_cmd_info * pCmdInfo)
 {
-	const unsigned int cmd = get_batch_command(pCmdInfo->_firstBeginType);
+	const unsigned int cmd = get_batch_command(pCmdInfo->type);
 	u32 begin[4];
 
 
-	begin[0] = (cmd << 24) | (BEGIN_VALID_MASK) |
-		(BEGIN_BEGIN_IDENTIFICATION_MASK & pCmdInfo->_curDebugID);
-	begin[1] = BEGIN_LINK_ENABLE_MASK | pCmdInfo->_firstSize;
-	begin[2] = pCmdInfo->_firstBeginAddr >> 4;
+	begin[0] = (cmd << 24) | BEGIN_VALID_MASK
+		| (BEGIN_BEGIN_IDENTIFICATION_MASK & pCmdInfo->id);
+	begin[1] = BEGIN_LINK_ENABLE_MASK | pCmdInfo->size;
+	begin[2] = pCmdInfo->hw_addr >> 4;
 	begin[3] = 0;
 
 	if (s_cmdring._lastBatchStartAddr == 0) {
@@ -127,7 +126,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 
 		DRM_INFO("s_cmdring._lastBatchStartAddr != 0\n");
 
-		if (pCmdInfo->_firstBeginType == BTYPE_3D) {
+		if (pCmdInfo->type == BTYPE_3D) {
 			addFlush2D(info);
 		}
 
@@ -141,10 +140,10 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 		wmb();
 		lastBatchVirtAddr[0] = begin[0];
 
-		triggerHWCommandList(info, pCmdInfo->_beginCount);
+		triggerHWCommandList(info);
 	}
 
-	s_cmdring._lastBatchStartAddr = pCmdInfo->_lastBeginAddr;
+	s_cmdring._lastBatchStartAddr = pCmdInfo->hw_addr;
 	DRM_INFO("%s: exit\n", __func__);
 }
 
@@ -159,7 +158,7 @@ int xgi_submit_cmdlist_ioctl(DRM_IOCTL_ARGS)
 				 (struct xgi_cmd_info __user *) data,
 				 sizeof(cmd_list));
 
-	if (cmd_list._firstBeginType > BTYPE_CTRL) {
+	if (cmd_list.type > BTYPE_CTRL) {
 		return DRM_ERR(EINVAL);
 	}
 
@@ -234,18 +233,13 @@ void xgi_cmdlist_cleanup(struct xgi_info * info)
 	}
 }
 
-static void triggerHWCommandList(struct xgi_info * info,
-				 unsigned int triggerCounter)
+static void triggerHWCommandList(struct xgi_info * info)
 {
 	static unsigned int s_triggerID = 1;
 
-	//Fix me, currently we just trigger one time
-	while (triggerCounter--) {
-		dwWriteReg(info->mmio_map,
-			   BASE_3D_ENG + M2REG_PCI_TRIGGER_REGISTER_ADDRESS,
-			   0x05000000 + (0x0ffff & s_triggerID++));
-		// xgi_waitfor_pci_idle(info);
-	}
+	dwWriteReg(info->mmio_map,
+		   BASE_3D_ENG + M2REG_PCI_TRIGGER_REGISTER_ADDRESS,
+		   0x05000000 + (0x0ffff & s_triggerID++));
 }
 
 
@@ -284,7 +278,7 @@ static void addFlush2D(struct xgi_info * info)
 	lastBatchVirtAddr[0] = (get_batch_command(BTYPE_CTRL) << 24) 
 		| (BEGIN_VALID_MASK);
 
-	triggerHWCommandList(info, 1);
+	triggerHWCommandList(info);
 
 	s_cmdring._cmdRingOffset += 0x20;
 	s_cmdring._lastBatchStartAddr = flushBatchHWAddr;

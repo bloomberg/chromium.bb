@@ -85,13 +85,10 @@ enum xgi_batch_type {
 };
 
 struct xgi_cmd_info {
-	unsigned int  _firstBeginType;
-	__u32 _firstBeginAddr;
-	__u32 _firstSize;
-	__u32 _curDebugID;
-	__u32 _lastBeginAddr;
-	unsigned int _beginCount;
-
+	__u32 type;
+	__u32 hw_addr;
+	__u32 size;
+	__u32 id;
 };
 
 struct xgi_state_info {
