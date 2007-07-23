@@ -139,40 +139,6 @@ MODULE_LICENSE("GPL and additional rights");
 
 void xgi_kern_isr_bh(struct drm_device *dev);
 
-/*
- * verify access to pci config space wasn't disabled behind our back
- * unfortunately, XFree86 enables/disables memory access in pci config space at
- * various times (such as restoring initial pci config space settings during vt
- * switches or when doing mulicard). As a result, all of our register accesses
- * are garbage at this point. add a check to see if access was disabled and
- * reenable any such access.
- */
-#define XGI_CHECK_PCI_CONFIG(xgi) \
-    xgi_check_pci_config(xgi, __LINE__)
-
-static inline void xgi_check_pci_config(struct xgi_info * info, int line)
-{
-	u16 cmd;
-	bool flag = 0;
-
-	pci_read_config_word(info->dev->pdev, PCI_COMMAND, &cmd);
-	if (!(cmd & PCI_COMMAND_MASTER)) {
-		DRM_INFO("restoring bus mastering! (%d)\n", line);
-		cmd |= PCI_COMMAND_MASTER;
-		flag = 1;
-	}
-
-	if (!(cmd & PCI_COMMAND_MEMORY)) {
-		DRM_INFO("restoring MEM access! (%d)\n", line);
-		cmd |= PCI_COMMAND_MEMORY;
-		flag = 1;
-	}
-
-	if (flag)
-		pci_write_config_word(info->dev->pdev, PCI_COMMAND, cmd);
-}
-
-
 int xgi_bootstrap(DRM_IOCTL_ARGS)
 {
 	DRM_DEVICE;
@@ -262,8 +228,6 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 
 	//DRM_INFO("xgi_kern_isr \n");
 
-	//XGI_CHECK_PCI_CONFIG(info);
-
 	//xgi_dvi_irq_handler(info);
 
 	if (need_to_run_bottom_half) {
@@ -280,8 +244,6 @@ void xgi_kern_isr_bh(struct drm_device *dev)
 	DRM_INFO("xgi_kern_isr_bh \n");
 
 	//xgi_dvi_irq_handler(info);
-
-	XGI_CHECK_PCI_CONFIG(info);
 }
 
 int xgi_driver_load(struct drm_device *dev, unsigned long flags)
