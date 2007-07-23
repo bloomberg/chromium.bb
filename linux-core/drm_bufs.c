@@ -467,11 +467,6 @@ int drm_rmmap_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	if (!map) {
-		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
-	}
-
 	/* Register and framebuffer maps are permanent */
 	if ((map->type == _DRM_REGISTERS) || (map->type == _DRM_FRAME_BUFFER)) {
 		mutex_unlock(&dev->struct_mutex);
