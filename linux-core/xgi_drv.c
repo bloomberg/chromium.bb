@@ -64,6 +64,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static int xgi_driver_load(struct drm_device *dev, unsigned long flags);
 static int xgi_driver_unload(struct drm_device *dev);
 static void xgi_driver_preclose(struct drm_device * dev, DRMFILE filp);
+static void xgi_driver_lastclose(drm_device_t * dev);
 static irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS);
 
 
@@ -75,6 +76,7 @@ static struct drm_driver driver = {
 	.load = xgi_driver_load,
 	.unload = xgi_driver_unload,
 	.preclose = xgi_driver_preclose,
+	.lastclose = xgi_driver_lastclose,
 	.dma_quiescent = NULL,
 	.irq_preinstall = NULL,
 	.irq_postinstall = NULL,
@@ -144,26 +146,25 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
 	struct xgi_bootstrap bs;
+	struct drm_map_list *maplist;
 	int err;
 
 
 	DRM_COPY_FROM_USER_IOCTL(bs, (struct xgi_bootstrap __user *) data,
 				 sizeof(bs));
 
-	if (info->bootstrap_done) {
-		return 0;
+	if (info->mmio_map == NULL) {
+		err = drm_addmap(dev, info->mmio.base, info->mmio.size,
+				 _DRM_REGISTERS, _DRM_KERNEL,
+				 &info->mmio_map);
+		if (err) {
+			DRM_ERROR("Unable to map MMIO region: %d\n", err);
+			return err;
+		}
+
+		xgi_enable_mmio(info);
 	}
 
-	err = drm_addmap(dev, info->mmio.base, info->mmio.size,
-			 _DRM_REGISTERS, _DRM_KERNEL,
-			 &info->mmio_map);
-	if (err) {
-		DRM_ERROR("Unable to map MMIO region: %d\n", err);
-		return err;
-	}
-
-	xgi_enable_mmio(info);
-	//xgi_enable_ge(info);
 
 	info->fb.size = IN3CFB(info->mmio_map, 0x54) * 8 * 1024 * 1024;
 
@@ -172,38 +173,64 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 
 
 	if ((info->fb.base == 0) || (info->fb.size == 0)) {
-		DRM_ERROR("frame buffer appears to be wrong: 0x%lx 0x%x\n",
+		DRM_ERROR("framebuffer appears to be wrong: 0x%lx 0x%x\n",
 			  (unsigned long) info->fb.base, info->fb.size);
 		return DRM_ERR(EINVAL);
 	}
 
 
 	/* Init the resource manager */
-	err = xgi_fb_heap_init(info);
-	if (err) {
-		DRM_ERROR("xgi_fb_heap_init() failed\n");
-		return err;
+	if (!info->fb_heap.initialized) {
+		err = xgi_fb_heap_init(info);
+		if (err) {
+			DRM_ERROR("Unable to initialize FB heap.\n");
+			return err;
+		}
 	}
 
 
-
-	info->pcie.size = bs.gart_size * (1024 * 1024);
+	info->pcie.size = bs.gart.size;
 
 	/* Init the resource manager */
-	err = xgi_pcie_heap_init(info);
-	if (err) {
-		DRM_ERROR("xgi_pcie_heap_init() failed\n");
-		return err;
+	if (!info->pcie_heap.initialized) {
+		err = xgi_pcie_heap_init(info);
+		if (err) {
+			DRM_ERROR("Unable to initialize GART heap.\n");
+			return err;
+		}
+
+		/* Alloc 1M bytes for cmdbuffer which is flush2D batch array */
+		err = xgi_cmdlist_initialize(info, 0x100000);
+		if (err) {
+			DRM_ERROR("xgi_cmdlist_initialize() failed\n");
+			return err;
+		}
 	}
 
-	/* Alloc 1M bytes for cmdbuffer which is flush2D batch array */
-	err = xgi_cmdlist_initialize(info, 0x100000);
-	if (err) {
-		DRM_ERROR("xgi_cmdlist_initialize() failed\n");
-		return err;
+
+	if (info->pcie_map == NULL) {
+		err = drm_addmap(info->dev, 0, info->pcie.size,
+				 _DRM_SCATTER_GATHER, _DRM_LOCKED,
+				 & info->pcie_map);
+		if (err) {
+			DRM_ERROR("Could not add map for GART backing "
+				  "store.\n");
+			return err;
+		}
 	}
 
-	info->bootstrap_done = 1;
+
+	maplist = drm_find_matching_map(dev, info->pcie_map);
+	if (maplist == NULL) {
+		DRM_ERROR("Could not find GART backing store map.\n");
+		return DRM_ERR(EINVAL);
+	}
+
+	bs.gart = *info->pcie_map;
+	bs.gart.handle = (void *)(unsigned long) maplist->user_token;
+	DRM_COPY_TO_USER_IOCTL((struct xgi_bootstrap __user *) data,
+			       bs, sizeof(bs));
+
 	return 0;
 }
 
@@ -214,6 +241,33 @@ void xgi_driver_preclose(struct drm_device * dev, DRMFILE filp)
 
 	xgi_pcie_free_all(info, filp);
 	xgi_fb_free_all(info, filp);
+}
+
+
+void xgi_driver_lastclose(drm_device_t * dev)
+{
+	struct xgi_info * info = dev->dev_private;
+
+	if (info != NULL) {
+		/* The core DRM lastclose routine will destroy all of our
+		 * mappings for us.  NULL out the pointers here so that
+		 * xgi_bootstrap can do the right thing.
+		 */
+		info->pcie_map = NULL;
+		info->mmio_map = NULL;
+		info->fb_map = NULL;
+
+		xgi_cmdlist_cleanup(info);
+
+		if (info->fb_heap.initialized) {
+			xgi_mem_heap_cleanup(&info->fb_heap);
+		}
+
+		if (info->pcie_heap.initialized) {
+			xgi_mem_heap_cleanup(&info->pcie_heap);
+			xgi_pcie_lut_cleanup(info);
+		}
+	}
 }
 
 
@@ -298,23 +352,13 @@ int xgi_driver_unload(struct drm_device *dev)
 {
 	struct xgi_info * info = dev->dev_private;
 
-	xgi_cmdlist_cleanup(info);
-	if (info->fb_map != NULL) {
-		drm_rmmap(info->dev, info->fb_map);
-	}
-
-	if (info->mmio_map != NULL) {
-		drm_rmmap(info->dev, info->mmio_map);
-	}
-
-	xgi_mem_heap_cleanup(&info->fb_heap);
-	xgi_mem_heap_cleanup(&info->pcie_heap);
-	xgi_pcie_lut_cleanup(info);
-
 	if (xgi_mem_block_cache) {
 		kmem_cache_destroy(xgi_mem_block_cache);
 		xgi_mem_block_cache = NULL;
 	}
+
+	drm_free(info, sizeof(*info), DRM_MEM_DRIVER);
+	dev->dev_private = NULL;
 
 	return 0;
 }

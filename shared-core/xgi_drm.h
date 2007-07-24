@@ -49,7 +49,7 @@ struct xgi_bootstrap {
 	/**
 	 * Size of PCI-e GART range in megabytes.
 	 */
-	unsigned int gart_size;
+	struct drm_map gart;
 };
 
 
@@ -113,7 +113,7 @@ struct xgi_state_info {
 #define DRM_XGI_TEST_RWINKERNEL     9
 #define DRM_XGI_STATE_CHANGE        10
 
-#define XGI_IOCTL_BOOTSTRAP         DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_BOOTSTRAP, struct xgi_bootstrap)
+#define XGI_IOCTL_BOOTSTRAP         DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_BOOTSTRAP, struct xgi_bootstrap)
 
 #define XGI_IOCTL_FB_ALLOC          DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_FB_ALLOC, struct xgi_mem_alloc)
 #define XGI_IOCTL_FB_FREE           DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_FB_FREE, __u32)
