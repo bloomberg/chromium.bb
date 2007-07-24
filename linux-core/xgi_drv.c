@@ -42,7 +42,7 @@ static struct pci_device_id pciidlist[] = {
 static int xgi_bootstrap(DRM_IOCTL_ARGS);
 
 static drm_ioctl_desc_t xgi_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_XGI_BOOTSTRAP)] = {xgi_bootstrap, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_BOOTSTRAP)] = {xgi_bootstrap, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
 
 	[DRM_IOCTL_NR(DRM_XGI_FB_ALLOC)] = {xgi_fb_alloc_ioctl, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_XGI_FB_FREE)] = {xgi_fb_free_ioctl, DRM_AUTH},
@@ -55,7 +55,7 @@ static drm_ioctl_desc_t xgi_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_XGI_DEBUG_INFO)] = {xgi_restore_registers_ioctl, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_XGI_SUBMIT_CMDLIST)] = {xgi_submit_cmdlist_ioctl, DRM_AUTH},
 	[DRM_IOCTL_NR(DRM_XGI_TEST_RWINKERNEL)] = {xgi_test_rwinkernel_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_STATE_CHANGE)] = {xgi_state_change_ioctl, DRM_AUTH},
+	[DRM_IOCTL_NR(DRM_XGI_STATE_CHANGE)] = {xgi_state_change_ioctl, DRM_AUTH|DRM_MASTER},
 };
 
 static const int xgi_max_ioctl = DRM_ARRAY_SIZE(xgi_ioctls);
