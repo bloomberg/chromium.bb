@@ -47,7 +47,7 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 		return err;
 	}
 
-	info->cmdring.ptr = xgi_find_pcie_virt(info, mem_alloc.hw_offset);
+	info->cmdring.ptr = xgi_find_pcie_virt(info, mem_alloc.hw_addr);
 	info->cmdring.size = mem_alloc.size;
 	info->cmdring.ring_hw_base = mem_alloc.hw_addr;
 	info->cmdring.ring_gart_base = mem_alloc.offset;
