@@ -76,9 +76,10 @@ static inline u8 IN3CFB(struct drm_map * map, u8 index)
  */
 static inline void dwWriteReg(struct drm_map * map, u32 addr, u32 data)
 {
+#ifdef XGI_MMIO_DEBUG
 	DRM_INFO("mmio_map->handle = 0x%p, addr = 0x%x, data = 0x%x\n",
 		 map->handle, addr, data);
-
+#endif
 	DRM_WRITE32(map, addr, data);
 }
 
