@@ -116,7 +116,7 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 		dwWriteReg(info->mmio_map, portOffset +  8, begin[2]);
 		dwWriteReg(info->mmio_map, portOffset + 12, begin[3]);
 	} else {
-		DRM_INFO("info->cmdring.last_ptr != NULL\n");
+		DRM_DEBUG("info->cmdring.last_ptr != NULL\n");
 
 		if (pCmdInfo->type == BTYPE_3D) {
 			addFlush2D(info);
@@ -132,7 +132,6 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 	}
 
 	info->cmdring.last_ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
-	DRM_INFO("%s: exit\n", __func__);
 }
 
 
@@ -172,19 +171,17 @@ int xgi_state_change(struct xgi_info * info, unsigned int to,
 #define STATE_SHUTDOWN  5
 
 	if ((from == STATE_GRAPHIC) && (to == STATE_CONSOLE)) {
-		DRM_INFO("[kd] I see, now is to leaveVT\n");
-		// stop to received batch
+		DRM_INFO("Leaving graphical mode (probably VT switch)\n");
 	} else if ((from == STATE_CONSOLE) && (to == STATE_GRAPHIC)) {
-		DRM_INFO("[kd] I see, now is to enterVT\n");
+		DRM_INFO("Entering graphical mode (probably VT switch)\n");
 		xgi_cmdlist_reset(info);
 	} else if ((from == STATE_GRAPHIC)
 		   && ((to == STATE_LOGOUT)
 		       || (to == STATE_REBOOT)
 		       || (to == STATE_SHUTDOWN))) {
-		DRM_INFO("[kd] I see, not is to exit from X\n");
-		// stop to received batch
+		DRM_INFO("Leaving graphical mode (probably X shutting down)\n");
 	} else {
-		DRM_ERROR("[kd] Should not happen\n");
+		DRM_ERROR("Invalid state change.\n");
 		return DRM_ERR(EINVAL);
 	}
 
