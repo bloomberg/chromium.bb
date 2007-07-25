@@ -520,9 +520,10 @@ void drm_fence_manager_init(struct drm_device * dev)
 	struct drm_fence_class_manager *class;
 	struct drm_fence_driver *fed = dev->driver->fence_driver;
 	int i;
+	unsigned long flags;
 
 	rwlock_init(&fm->lock);
-	write_lock(&fm->lock);
+	write_lock_irqsave(&fm->lock, flags);
 	fm->initialized = 0;
 	if (!fed)
 	    goto out_unlock;
@@ -541,7 +542,7 @@ void drm_fence_manager_init(struct drm_device * dev)
 
 	atomic_set(&fm->count, 0);
  out_unlock:
-	write_unlock(&fm->lock);
+	write_unlock_irqrestore(&fm->lock, flags);
 }
 
 void drm_fence_manager_takedown(struct drm_device * dev)
