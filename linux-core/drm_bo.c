@@ -1729,7 +1729,7 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 			next = arg->next;
 			continue;
 		}
-
+		req = &arg->d.req;
 		ret = 0;
 		switch (req->op) {
 		case drm_bo_validate:
