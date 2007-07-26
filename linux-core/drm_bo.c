@@ -1720,7 +1720,7 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 		if (next != 0) {
 			curuserarg = (void __user *)next;
 			if (copy_from_user(&curarg, curuserarg,
-					   sizeof(arg)) != 0)
+					   sizeof(curarg)) != 0)
 				return -EFAULT;
 			arg = &curarg;
 		}
@@ -1768,7 +1768,7 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 		arg->d.rep.bo_info = rep;
 		if (arg != data) {
 			if (copy_to_user(curuserarg, &curarg,
-					 sizeof(arg)) != 0)
+					 sizeof(curarg)) != 0)
 				return -EFAULT;
 		}
 	} while (next != 0);
