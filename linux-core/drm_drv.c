@@ -648,7 +648,7 @@ int drm_ioctl(struct inode *inode, struct file *filp,
 err_i1:
 	atomic_dec(&dev->ioctl_count);
 	if (retcode)
-		DRM_DEBUG("ret = %x\n", retcode);
+		DRM_DEBUG("ret = %d\n", retcode);
 	return retcode;
 }
 EXPORT_SYMBOL(drm_ioctl);
