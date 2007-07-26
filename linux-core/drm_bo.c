@@ -1565,6 +1565,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 {
 	struct drm_buffer_manager *bm = &dev->bm;
 	struct drm_buffer_object *bo;
+	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret = 0;
 	unsigned long num_pages;
 
@@ -1624,9 +1625,27 @@ int drm_buffer_object_create(struct drm_device *dev,
 		if (ret)
 			goto out_err;
 	}
-	ret = drm_buffer_object_validate(bo, 0, 0, hint & DRM_BO_HINT_DONT_BLOCK);
+
+	bo->fence_class = 0;
+	ret = driver->fence_type(bo, &bo->fence_type);
+	if (ret) {
+		DRM_ERROR("Driver did not support given buffer permissions\n");
+		goto out_err;
+	}
+
+	if (bo->type == drm_bo_type_fake) {
+		ret = drm_bo_check_fake(dev, &bo->mem);
+		if (ret)
+			goto out_err;
+	}
+
+	ret = drm_bo_add_ttm(bo);
 	if (ret)
 		goto out_err;
+
+	mutex_lock(&dev->struct_mutex);
+	drm_bo_add_to_lru(bo);
+	mutex_unlock(&dev->struct_mutex);
 
 	mutex_unlock(&bo->mutex);
 	*buf_obj = bo;
@@ -1676,6 +1695,8 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 	unsigned long next = 0;
 	void __user *curuserarg = NULL;
 	int ret;
+
+	DRM_DEBUG("drm_bo_op_ioctl\n");
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -1749,14 +1770,15 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 	struct drm_buffer_object *entry;
 	int ret = 0;
 
+	DRM_DEBUG("drm_bo_create_ioctl: %dkb, %dkb align, %d type\n",
+	    (int)(req->size / 1024), req->page_alignment * 4, req->type);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
 	}
-
-	ret = drm_bo_lock_test(dev, file_priv);
-	if (ret)
-		goto out;
+	if (req->type == drm_bo_type_fake)
+		LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	ret = drm_buffer_object_create(file_priv->head->dev,
 				       req->size, req->type, req->mask,
@@ -1787,6 +1809,8 @@ int drm_bo_destroy_ioctl(struct drm_device *dev, void *data, struct drm_file *fi
 	struct drm_user_object *uo;
 	int ret = 0;
 
+	DRM_DEBUG("drm_bo_destroy_ioctl: buffer %d\n", arg->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1810,6 +1834,9 @@ int drm_bo_map_ioctl(struct drm_device *dev, void *data, struct drm_file *file_p
 	struct drm_bo_info_req *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	int ret;
+
+	DRM_DEBUG("drm_bo_map_ioctl: buffer %d\n", req->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1827,6 +1854,9 @@ int drm_bo_unmap_ioctl(struct drm_device *dev, void *data, struct drm_file *file
 {
 	struct drm_bo_handle_arg *arg = data;
 	int ret;
+
+	DRM_DEBUG("drm_bo_unmap_ioctl: buffer %d\n", arg->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1844,6 +1874,8 @@ int drm_bo_reference_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	struct drm_user_object *uo;
 	int ret;
+
+	DRM_DEBUG("drm_bo_reference_ioctl: buffer %d\n", req->handle);
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -1867,6 +1899,8 @@ int drm_bo_unreference_ioctl(struct drm_device *dev, void *data, struct drm_file
 	struct drm_bo_handle_arg *arg = data;
 	int ret = 0;
 
+	DRM_DEBUG("drm_bo_unreference_ioctl: buffer %d\n", arg->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1882,6 +1916,8 @@ int drm_bo_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	struct drm_bo_handle_arg *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	int ret;
+
+	DRM_DEBUG("drm_bo_info_ioctl: buffer %d\n", req->handle);
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -1901,6 +1937,9 @@ int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	struct drm_bo_info_req *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	int ret;
+
+	DRM_DEBUG("drm_bo_wait_idle_ioctl: buffer %d\n", req->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1986,6 +2025,9 @@ int drm_bo_set_pin_ioctl(struct drm_device *dev, void *data,
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	struct drm_buffer_object *bo;
 	int ret;
+
+	DRM_DEBUG("drm_bo_set_pin_ioctl: buffer %d, pin %d\n",
+	    req->handle, req->pin);
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -2395,6 +2437,9 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
 
+	DRM_DEBUG("drm_mm_init_ioctl: type %d, 0x%08llx offset, %dkb\n",
+	    arg->mem_type, arg->p_offset * PAGE_SIZE, (int)(arg->p_size * 4));
+
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
 		return -EINVAL;
@@ -2449,6 +2494,8 @@ int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
 
+	DRM_DEBUG("drm_mm_takedown_ioctl: %d type\n", arg->mem_type);
+
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
 		return -EINVAL;
@@ -2486,6 +2533,8 @@ int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
 
+	DRM_DEBUG("drm_mm_lock_ioctl: %d type\n", arg->mem_type);
+
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
 		return -EINVAL;
@@ -2507,6 +2556,8 @@ int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 {
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
+
+	DRM_DEBUG("drm_mm_unlock_ioctl\n");
 
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
