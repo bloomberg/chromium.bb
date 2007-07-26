@@ -121,10 +121,6 @@ static int xgi_pcie_lut_init(struct xgi_info * info)
 
 void xgi_pcie_lut_cleanup(struct xgi_info * info)
 {
-	if (info->dev->sg) {
-		drm_sg_free(info->dev, info->dev->sg->handle);
-	}
-
 	if (info->lut_handle) {
 		drm_pci_free(info->dev, info->lut_handle);
 		info->lut_handle = NULL;
