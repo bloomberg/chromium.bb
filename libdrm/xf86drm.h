@@ -36,6 +36,7 @@
 
 #include <stdarg.h>
 #include <sys/types.h>
+#include <stdint.h>
 #include <drm.h>
 
 				/* Defaults, if nothing set in xf86config */

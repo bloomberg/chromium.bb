@@ -36,7 +36,7 @@
 
 #define DEBUG_SCATTER 0
 
-void drm_sg_cleanup(drm_sg_mem_t * entry)
+void drm_sg_cleanup(struct drm_sg_mem *entry)
 {
 	struct page *page;
 	int i;
@@ -63,9 +63,9 @@ EXPORT_SYMBOL(drm_sg_cleanup);
 # define ScatterHandle(x) (unsigned int)(x)
 #endif
 
-int drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request)
+int drm_sg_alloc(struct drm_device *dev, struct drm_scatter_gather * request)
 {
-	drm_sg_mem_t *entry;
+	struct drm_sg_mem *entry;
 	unsigned long pages, i, j;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -187,43 +187,28 @@ int drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request)
 }
 EXPORT_SYMBOL(drm_sg_alloc);
 
-int drm_sg_alloc_ioctl(struct inode *inode, struct file *filp,
-		 unsigned int cmd, unsigned long arg)
+int drm_sg_alloc_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_scatter_gather_t __user *argp = (void __user *)arg;
-	drm_scatter_gather_t request;
-	int ret;
+	struct drm_scatter_gather *request = data;
 
-	if (copy_from_user(&request, argp, sizeof(request)))
-		return -EFAULT;
-
-	ret = drm_sg_alloc(priv->head->dev, &request);
-	if ( ret ) return ret;
-
-	if (copy_to_user(argp, &request, sizeof(request))) {
-		drm_sg_cleanup(priv->head->dev->sg);
-		priv->head->dev->sg = NULL;
-		return -EFAULT;
-	}
-
-
-	return 0;
+	return drm_sg_alloc(dev, request);
 
 }
 
-int drm_sg_free(struct drm_device *dev, unsigned long handle)
+int drm_sg_free(struct drm_device *dev, void *data,
+		struct drm_file *file_priv)
 {
-	drm_sg_mem_t *entry;
+	struct drm_scatter_gather *request = data;
+	struct drm_sg_mem *entry;
 
 	if (!drm_core_check_feature(dev, DRIVER_SG))
 		return -EINVAL;
 
-
 	entry = dev->sg;
 	dev->sg = NULL;
 
-	if (!entry || entry->handle != handle)
+	if (!entry || entry->handle != request->handle)
 		return -EINVAL;
 
 	DRM_DEBUG("sg free virtual  = %p\n", entry->virtual);
@@ -231,20 +216,4 @@ int drm_sg_free(struct drm_device *dev, unsigned long handle)
 	drm_sg_cleanup(entry);
 
 	return 0;
-}
-
-EXPORT_SYMBOL(drm_sg_free);
-
-int drm_sg_free_ioctl(struct inode *inode, struct file *filp,
-		      unsigned int cmd, unsigned long arg)
-{
-	struct drm_file *priv = filp->private_data;
-	struct drm_device *dev = priv->head->dev;
-	struct drm_scatter_gather __user *argp = (void __user *)arg;
-	struct drm_scatter_gather request;
-
-	if (copy_from_user(&request, argp, sizeof(request)))
-		return -EFAULT;
-
-	return drm_sg_free(dev, request.handle);
 }

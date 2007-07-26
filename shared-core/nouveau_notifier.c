@@ -30,22 +30,25 @@
 #include "nouveau_drv.h"
 
 int
-nouveau_notifier_init_channel(drm_device_t *dev, int channel, DRMFILE filp)
+nouveau_notifier_init_channel(struct drm_device *dev, int channel,
+			      struct drm_file *file_priv)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	int flags, ret;
 
 	/*TODO: PCI notifier blocks */
-	if (dev_priv->agp_heap)
+	if (dev_priv->agp_heap &&
+	    dev_priv->gart_info.type != NOUVEAU_GART_SGDMA)
 		flags = NOUVEAU_MEM_AGP | NOUVEAU_MEM_FB_ACCEPTABLE;
 	else
 		flags = NOUVEAU_MEM_FB;
 	flags |= NOUVEAU_MEM_MAPPED;
 
-	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,filp);
+	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,
+						 file_priv);
 	if (!chan->notifier_block)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	ret = nouveau_mem_init_heap(&chan->notifier_heap,
 				    0, chan->notifier_block->size);
@@ -56,9 +59,9 @@ nouveau_notifier_init_channel(drm_device_t *dev, int channel, DRMFILE filp)
 }
 
 void
-nouveau_notifier_takedown_channel(drm_device_t *dev, int channel)
+nouveau_notifier_takedown_channel(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 
 	if (chan->notifier_block) {
@@ -70,12 +73,12 @@ nouveau_notifier_takedown_channel(drm_device_t *dev, int channel)
 }
 
 int
-nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
+nouveau_notifier_alloc(struct drm_device *dev, int channel, uint32_t handle,
 		       int count, uint32_t *b_offset)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-	nouveau_gpuobj_t *nobj = NULL;
+	struct nouveau_gpuobj *nobj = NULL;
 	struct mem_block *mem;
 	uint32_t offset;
 	int target, ret;
@@ -83,13 +86,14 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 	if (!chan->notifier_heap) {
 		DRM_ERROR("Channel %d doesn't have a notifier heap!\n",
 			  channel);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
-	mem = nouveau_mem_alloc_block(chan->notifier_heap, 32, 0, chan->filp);
+	mem = nouveau_mem_alloc_block(chan->notifier_heap, 32, 0,
+				      chan->file_priv);
 	if (!mem) {
 		DRM_ERROR("Channel %d notifier block full\n", channel);
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 	mem->flags = NOUVEAU_MEM_NOTIFIER;
 
@@ -101,7 +105,7 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 	} else {
 		DRM_ERROR("Bad DMA target, flags 0x%08x!\n",
 			  chan->notifier_block->flags);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if ((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
@@ -124,28 +128,22 @@ nouveau_notifier_alloc(drm_device_t *dev, int channel, uint32_t handle,
 }
 
 int
-nouveau_ioctl_notifier_alloc(DRM_IOCTL_ARGS)
+nouveau_ioctl_notifier_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_nouveau_notifier_alloc_t na;
+	struct drm_nouveau_notifier_alloc *na = data;
 	int ret;
 
-	DRM_COPY_FROM_USER_IOCTL(na, (drm_nouveau_notifier_alloc_t __user*)data,
-				 sizeof(na));
-
-	if (!nouveau_fifo_owner(dev, filp, na.channel)) {
+	if (!nouveau_fifo_owner(dev, file_priv, na->channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
-			  DRM_CURRENTPID, na.channel);
-		return DRM_ERR(EPERM);
+			  DRM_CURRENTPID, na->channel);
+		return -EPERM;
 	}
 
-	ret = nouveau_notifier_alloc(dev, na.channel, na.handle,
-				     na.count, &na.offset);
+	ret = nouveau_notifier_alloc(dev, na->channel, na->handle,
+				     na->count, &na->offset);
 	if (ret)
 		return ret;
 
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_notifier_alloc_t __user*)data,
-			       na, sizeof(na));
 	return 0;
 }
 

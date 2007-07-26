@@ -66,9 +66,9 @@
    is given as:
 */
 static uint32_t
-nouveau_ramht_hash_handle(drm_device_t *dev, int channel, uint32_t handle)
+nouveau_ramht_hash_handle(struct drm_device *dev, int channel, uint32_t handle)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	uint32_t hash = 0;
 	int i;
 
@@ -85,10 +85,10 @@ nouveau_ramht_hash_handle(drm_device_t *dev, int channel, uint32_t handle)
 }
 
 static int
-nouveau_ramht_entry_valid(drm_device_t *dev, nouveau_gpuobj_t *ramht,
+nouveau_ramht_entry_valid(struct drm_device *dev, struct nouveau_gpuobj *ramht,
 			  uint32_t offset)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	uint32_t ctx = INSTANCE_RD(ramht, (offset + 4)/4);
 
 	if (dev_priv->card_type < NV_40)
@@ -97,17 +97,17 @@ nouveau_ramht_entry_valid(drm_device_t *dev, nouveau_gpuobj_t *ramht,
 }
 
 static int
-nouveau_ramht_insert(drm_device_t* dev, nouveau_gpuobj_ref_t *ref)
+nouveau_ramht_insert(struct drm_device *dev, struct nouveau_gpuobj_ref *ref)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[ref->channel];
-	nouveau_gpuobj_t *ramht = chan->ramht ? chan->ramht->gpuobj : NULL;
-	nouveau_gpuobj_t *gpuobj = ref->gpuobj;
+	struct nouveau_gpuobj *ramht = chan->ramht ? chan->ramht->gpuobj : NULL;
+	struct nouveau_gpuobj *gpuobj = ref->gpuobj;
 	uint32_t ctx, co, ho;
 
 	if (!ramht) {
 		DRM_ERROR("No hash table!\n");
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (dev_priv->card_type < NV_40) {
@@ -142,15 +142,15 @@ nouveau_ramht_insert(drm_device_t* dev, nouveau_gpuobj_ref_t *ref)
 	} while (co != ho);
 
 	DRM_ERROR("RAMHT space exhausted. ch=%d\n", ref->channel);
-	return DRM_ERR(ENOMEM);
+	return -ENOMEM;
 }
 
 static void
-nouveau_ramht_remove(drm_device_t* dev, nouveau_gpuobj_ref_t *ref)
+nouveau_ramht_remove(struct drm_device *dev, struct nouveau_gpuobj_ref *ref)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[ref->channel];
-	nouveau_gpuobj_t *ramht = chan->ramht ? chan->ramht->gpuobj : NULL;
+	struct nouveau_gpuobj *ramht = chan->ramht ? chan->ramht->gpuobj : NULL;
 	uint32_t co, ho;
 
 	if (!ramht) {
@@ -180,13 +180,13 @@ nouveau_ramht_remove(drm_device_t* dev, nouveau_gpuobj_ref_t *ref)
 }
 
 int
-nouveau_gpuobj_new(drm_device_t *dev, int channel, int size, int align,
-		   uint32_t flags, nouveau_gpuobj_t **gpuobj_ret)
+nouveau_gpuobj_new(struct drm_device *dev, int channel, int size, int align,
+		   uint32_t flags, struct nouveau_gpuobj **gpuobj_ret)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine = &dev_priv->Engine;
 	struct nouveau_fifo *chan = NULL;
-	nouveau_gpuobj_t *gpuobj;
+	struct nouveau_gpuobj *gpuobj;
 	struct mem_block *pramin = NULL;
 	int ret;
 
@@ -194,17 +194,17 @@ nouveau_gpuobj_new(drm_device_t *dev, int channel, int size, int align,
 		  channel, size, align, flags);
 
 	if (!dev_priv || !gpuobj_ret || *gpuobj_ret != NULL)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	if (channel >= 0) {
 		if (channel > nouveau_fifo_number(dev))
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		chan = dev_priv->fifos[channel];
 	}
 
 	gpuobj = drm_calloc(1, sizeof(*gpuobj), DRM_MEM_DRIVER);
 	if (!gpuobj)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	DRM_DEBUG("gpuobj %p\n", gpuobj);
 	gpuobj->flags = flags;
 	gpuobj->im_channel = channel;
@@ -230,7 +230,7 @@ nouveau_gpuobj_new(drm_device_t *dev, int channel, int size, int align,
 
 	if (!pramin) {
 		DRM_ERROR("No PRAMIN heap!\n");
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (!chan && (ret = engine->instmem.populate(dev, gpuobj, &size))) {
@@ -241,10 +241,10 @@ nouveau_gpuobj_new(drm_device_t *dev, int channel, int size, int align,
 	/* Allocate a chunk of the PRAMIN aperture */
 	gpuobj->im_pramin = nouveau_mem_alloc_block(pramin, size,
 						    drm_order(align),
-						    (DRMFILE)-2);
+						    (struct drm_file *)-2);
 	if (!gpuobj->im_pramin) {
 		nouveau_gpuobj_del(dev, &gpuobj);
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 	gpuobj->im_pramin->flags = NOUVEAU_MEM_INSTANCE;
 
@@ -270,10 +270,10 @@ nouveau_gpuobj_new(drm_device_t *dev, int channel, int size, int align,
 	return 0;
 }
 
-void nouveau_gpuobj_takedown(drm_device_t *dev)
+void nouveau_gpuobj_takedown(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_gpuobj_t *gpuobj = NULL;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_gpuobj *gpuobj = NULL;
 
 	DRM_DEBUG("\n");
 
@@ -285,21 +285,21 @@ void nouveau_gpuobj_takedown(drm_device_t *dev)
 	}
 }
 
-int nouveau_gpuobj_del(drm_device_t *dev, nouveau_gpuobj_t **pgpuobj)
+int nouveau_gpuobj_del(struct drm_device *dev, struct nouveau_gpuobj **pgpuobj)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
-	nouveau_gpuobj_t *gpuobj;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine = &dev_priv->Engine;
+	struct nouveau_gpuobj *gpuobj;
 
 	DRM_DEBUG("gpuobj %p\n", pgpuobj ? *pgpuobj : NULL);
 
 	if (!dev_priv || !pgpuobj || !(*pgpuobj))
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	gpuobj = *pgpuobj;
 
 	if (gpuobj->refcount != 0) {
 		DRM_ERROR("gpuobj refcount is %d\n", gpuobj->refcount);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	engine->instmem.clear(dev, gpuobj);
@@ -325,11 +325,11 @@ int nouveau_gpuobj_del(drm_device_t *dev, nouveau_gpuobj_t **pgpuobj)
 }
 
 static int
-nouveau_gpuobj_instance_get(drm_device_t *dev, int channel,
-			    nouveau_gpuobj_t *gpuobj, uint32_t *inst)
+nouveau_gpuobj_instance_get(struct drm_device *dev, int channel,
+			    struct nouveau_gpuobj *gpuobj, uint32_t *inst)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_gpuobj_t *cpramin;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_gpuobj *cpramin;
 
 	/* <NV50 use PRAMIN address everywhere */
 	if (dev_priv->card_type < NV_50) {
@@ -340,7 +340,7 @@ nouveau_gpuobj_instance_get(drm_device_t *dev, int channel,
 	if ((channel > 0) && gpuobj->im_channel != channel) {
 		DRM_ERROR("Channel mismatch: obj %d, ref %d\n",
 			  gpuobj->im_channel, channel);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	/* NV50 channel-local instance */
@@ -355,7 +355,7 @@ nouveau_gpuobj_instance_get(drm_device_t *dev, int channel,
 		/* ...from global heap */
 		if (!gpuobj->im_backing) {
 			DRM_ERROR("AII, no VRAM backing gpuobj\n");
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 		*inst = gpuobj->im_backing->start;
 		return 0;
@@ -367,31 +367,31 @@ nouveau_gpuobj_instance_get(drm_device_t *dev, int channel,
 		return 0;
 	}
 
-	return DRM_ERR(EINVAL);
+	return -EINVAL;
 }
 
 int
-nouveau_gpuobj_ref_add(drm_device_t *dev, int channel, uint32_t handle,
-		       nouveau_gpuobj_t *gpuobj, nouveau_gpuobj_ref_t **ref_ret)
+nouveau_gpuobj_ref_add(struct drm_device *dev, int channel, uint32_t handle,
+		       struct nouveau_gpuobj *gpuobj, struct nouveau_gpuobj_ref **ref_ret)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = NULL;
-	nouveau_gpuobj_ref_t *ref;
+	struct nouveau_gpuobj_ref *ref;
 	uint32_t instance;
 	int ret;
 
 	DRM_DEBUG("ch%d h=0x%08x gpuobj=%p\n", channel, handle, gpuobj);
 
 	if (!dev_priv || !gpuobj || (ref_ret && *ref_ret != NULL))
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	if (channel >= 0) {
 		if (channel > nouveau_fifo_number(dev))
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		chan = dev_priv->fifos[channel];
 	} else
 	if (!ref_ret)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	ret = nouveau_gpuobj_instance_get(dev, channel, gpuobj, &instance);
 	if (ret)
@@ -399,7 +399,7 @@ nouveau_gpuobj_ref_add(drm_device_t *dev, int channel, uint32_t handle,
 
 	ref = drm_calloc(1, sizeof(*ref), DRM_MEM_DRIVER);
 	if (!ref)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	ref->gpuobj   = gpuobj;
 	ref->channel  = channel;
 	ref->instance = instance;
@@ -424,14 +424,14 @@ nouveau_gpuobj_ref_add(drm_device_t *dev, int channel, uint32_t handle,
 	return 0;
 }
 
-int nouveau_gpuobj_ref_del(drm_device_t *dev, nouveau_gpuobj_ref_t **pref)
+int nouveau_gpuobj_ref_del(struct drm_device *dev, struct nouveau_gpuobj_ref **pref)
 {
-	nouveau_gpuobj_ref_t *ref;
+	struct nouveau_gpuobj_ref *ref;
 
 	DRM_DEBUG("ref %p\n", pref ? *pref : NULL);
 
 	if (!dev || !pref || *pref == NULL)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	ref = *pref;
 
 	if (ref->handle != ~0)
@@ -452,11 +452,11 @@ int nouveau_gpuobj_ref_del(drm_device_t *dev, nouveau_gpuobj_ref_t **pref)
 }
 
 int
-nouveau_gpuobj_new_ref(drm_device_t *dev, int oc, int rc, uint32_t handle,
+nouveau_gpuobj_new_ref(struct drm_device *dev, int oc, int rc, uint32_t handle,
 		       int size, int align, uint32_t flags,
-		       nouveau_gpuobj_ref_t **ref)
+		       struct nouveau_gpuobj_ref **ref)
 {
-	nouveau_gpuobj_t *gpuobj = NULL;
+	struct nouveau_gpuobj *gpuobj = NULL;
 	int ret;
 
 	if ((ret = nouveau_gpuobj_new(dev, oc, size, align, flags, &gpuobj)))
@@ -471,12 +471,12 @@ nouveau_gpuobj_new_ref(drm_device_t *dev, int oc, int rc, uint32_t handle,
 }
 
 static int
-nouveau_gpuobj_ref_find(drm_device_t *dev, int channel, uint32_t handle,
-			nouveau_gpuobj_ref_t **ref_ret)
+nouveau_gpuobj_ref_find(struct drm_device *dev, int channel, uint32_t handle,
+			struct nouveau_gpuobj_ref **ref_ret)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-	nouveau_gpuobj_ref_t *ref = chan->ramht_refs;
+	struct nouveau_gpuobj_ref *ref = chan->ramht_refs;
 
 	while (ref) {
 		if (ref->handle == handle) {
@@ -487,16 +487,16 @@ nouveau_gpuobj_ref_find(drm_device_t *dev, int channel, uint32_t handle,
 		ref = ref->next;
 	}
 
-	return DRM_ERR(EINVAL);
+	return -EINVAL;
 }
 
 int
-nouveau_gpuobj_new_fake(drm_device_t *dev, uint32_t offset, uint32_t size,
-			uint32_t flags, nouveau_gpuobj_t **pgpuobj,
-			nouveau_gpuobj_ref_t **pref)
+nouveau_gpuobj_new_fake(struct drm_device *dev, uint32_t offset, uint32_t size,
+			uint32_t flags, struct nouveau_gpuobj **pgpuobj,
+			struct nouveau_gpuobj_ref **pref)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_gpuobj_t *gpuobj = NULL;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_gpuobj *gpuobj = NULL;
 	int i;
 
 	DRM_DEBUG("offset=0x%08x size=0x%08x flags=0x%08x\n",
@@ -504,7 +504,7 @@ nouveau_gpuobj_new_fake(drm_device_t *dev, uint32_t offset, uint32_t size,
 
 	gpuobj = drm_calloc(1, sizeof(*gpuobj), DRM_MEM_DRIVER);
 	if (!gpuobj)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	DRM_DEBUG("gpuobj %p\n", gpuobj);
 	gpuobj->im_channel = -1;
 	gpuobj->flags      = flags | NVOBJ_FLAG_FAKE;
@@ -513,7 +513,7 @@ nouveau_gpuobj_new_fake(drm_device_t *dev, uint32_t offset, uint32_t size,
 				       DRM_MEM_DRIVER);
 	if (!gpuobj->im_pramin) {
 		nouveau_gpuobj_del(dev, &gpuobj);
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 	gpuobj->im_pramin->start = offset;
 	gpuobj->im_pramin->size  = size;
@@ -537,9 +537,9 @@ nouveau_gpuobj_new_fake(drm_device_t *dev, uint32_t offset, uint32_t size,
 
 
 static int
-nouveau_gpuobj_class_instmem_size(drm_device_t *dev, int class)
+nouveau_gpuobj_class_instmem_size(struct drm_device *dev, int class)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	/*XXX: dodgy hack for now */
 	if (dev_priv->card_type >= NV_50)
@@ -577,21 +577,26 @@ nouveau_gpuobj_class_instmem_size(drm_device_t *dev, int class)
    to it that can be used to set up context objects.
 */
 int
-nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
+nouveau_gpuobj_dma_new(struct drm_device *dev, int channel, int class,
 		       uint64_t offset, uint64_t size, int access, int target,
-		       nouveau_gpuobj_t **gpuobj)
+		       struct nouveau_gpuobj **gpuobj)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 	uint32_t is_scatter_gather = 0;
 	
+	/* Total number of pages covered by the request.
+	 */
+	const unsigned int page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+
+
 	DRM_DEBUG("ch%d class=0x%04x offset=0x%llx size=0x%llx\n",
 		  channel, class, offset, size);
 	DRM_DEBUG("access=%d target=%d\n", access, target);
 
 	switch (target) {
         case NV_DMA_TARGET_AGP:
-                 offset += dev_priv->agp_phys;
+                 offset += dev_priv->gart_info.aper_base;
                  break;
         case NV_DMA_TARGET_PCI_NONLINEAR:
                 /*assume the "offset" is a virtual memory address*/
@@ -604,7 +609,7 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
         }
 	
 	ret = nouveau_gpuobj_new(dev, channel,
-				 is_scatter_gather ? ((((size + PAGE_SIZE - 1) / PAGE_SIZE) << 2) + 12) : nouveau_gpuobj_class_instmem_size(dev, class),
+				 is_scatter_gather ? ((page_count << 2) + 12) : nouveau_gpuobj_class_instmem_size(dev, class),
 				 16,
 				 NVOBJ_FLAG_ZERO_ALLOC | NVOBJ_FLAG_ZERO_FREE,
 				 gpuobj);
@@ -634,9 +639,19 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
 			}
 		else 
 			{
+			/* Intial page entry in the scatter-gather area that
+			 * corresponds to the base offset
+			 */
+			unsigned int idx = offset / PAGE_SIZE;
+
 			uint32_t instance_offset;
-			uint64_t bus_addr;
-			size = (uint32_t) size;
+			unsigned int i;
+
+			if ((idx + page_count) > dev->sg->pages) {
+				DRM_ERROR("Requested page range exceedes "
+					  "allocated scatter-gather range!");
+				return -E2BIG;
+			}
 
 			DRM_DEBUG("Creating PCI DMA object using virtual zone starting at %#llx, size %d\n", offset, (uint32_t)size);
 	                INSTANCE_WR(*gpuobj, 0, ((1<<12) | (0<<13) |
@@ -644,63 +659,91 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
                                 (access << 14) |
                                 (target << 16) |
                                 class));
-			INSTANCE_WR(*gpuobj, 1, size-1);
+			INSTANCE_WR(*gpuobj, 1, (uint32_t) size-1);
 
-			offset += dev->sg->virtual;
 
 			/*write starting at the third dword*/
 			instance_offset = 2;
  
 			/*for each PAGE, get its bus address, fill in the page table entry, and advance*/
-			while ( size > 0 ) {
-				bus_addr = vmalloc_to_page(offset);
- 				if ( ! bus_addr ) 
-					{
-					DRM_ERROR("Couldn't map virtual address %#llx to a page number\n", offset);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(ENOMEM);
-					}
-				bus_addr = (uint64_t) page_address(bus_addr);
- 				if ( ! bus_addr ) 
-					{
-					DRM_ERROR("Couldn't find page address for address %#llx\n", offset);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(ENOMEM);
-					}
-				bus_addr |= (offset & ~PAGE_MASK);
-				bus_addr = virt_to_bus((void *)bus_addr);
- 				if ( ! bus_addr ) 
-					{
-					DRM_ERROR("Couldn't get bus address for %#llx\n", offset);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(ENOMEM);
-					}
+			for (i = 0; i < page_count; i++) {
+				if (dev->sg->busaddr[idx] == 0) {
+					dev->sg->busaddr[idx] =
+						pci_map_page(dev->pdev,
+							     dev->sg->pagelist[idx],
+							     0,
+							     PAGE_SIZE,
+							     DMA_BIDIRECTIONAL);
 
-				/*if ( bus_addr >= 1 << 32 )
-					{
-					DRM_ERROR("Bus address %#llx is over 32 bits, Nvidia cards cannot address it !\n", bus_addr);
-					nouveau_gpuobj_del(dev, gpuobj);
-					return DRM_ERR(EINVAL);
-					}*/
-				
-				frame = (uint32_t) bus_addr & ~0x00000FFF;
-				INSTANCE_WR(*gpuobj, instance_offset, frame | pte_flags);
-				offset += PAGE_SIZE;
-				instance_offset ++;
-				size -= PAGE_SIZE;
+					if (dma_mapping_error(dev->sg->busaddr[idx])) {
+						return -ENOMEM;
+					}
 				}
 
+				frame = (uint32_t) dev->sg->busaddr[idx];
+				INSTANCE_WR(*gpuobj, instance_offset, 
+					    frame | pte_flags);
+ 
+				idx++;
+				instance_offset ++;
+ 			}
 			}
 	} else {
-		INSTANCE_WR(*gpuobj, 0, 0x00190000 | class);
+		uint32_t flags0, flags5;
+
+		if (target == NV_DMA_TARGET_VIDMEM) {
+			flags0 = 0x00190000;
+			flags5 = 0x00010000;
+		} else {
+			flags0 = 0x7fc00000;
+			flags5 = 0x00080000;
+		}
+
+		INSTANCE_WR(*gpuobj, 0, flags0 | class);
 		INSTANCE_WR(*gpuobj, 1, offset + size - 1);
 		INSTANCE_WR(*gpuobj, 2, offset);
-		INSTANCE_WR(*gpuobj, 5, 0x00010000);
+		INSTANCE_WR(*gpuobj, 5, flags5);
 	}
 
 	(*gpuobj)->engine = NVOBJ_ENGINE_SW;
 	(*gpuobj)->class  = class;
 	return 0;
+}
+
+int
+nouveau_gpuobj_gart_dma_new(struct drm_device *dev, int channel,
+			    uint64_t offset, uint64_t size, int access,
+			    struct nouveau_gpuobj **gpuobj,
+			    uint32_t *o_ret)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int ret;
+
+	if (dev_priv->gart_info.type == NOUVEAU_GART_AGP ||
+	    (dev_priv->card_type >= NV_50 &&
+	     dev_priv->gart_info.type == NOUVEAU_GART_SGDMA)) {
+		ret = nouveau_gpuobj_dma_new(dev, channel,
+					     NV_CLASS_DMA_IN_MEMORY,
+					     offset, size, access,
+					     NV_DMA_TARGET_AGP, gpuobj);
+		if (o_ret)
+			*o_ret = 0;
+	} else
+	if (dev_priv->gart_info.type == NOUVEAU_GART_SGDMA) {
+		*gpuobj = dev_priv->gart_info.sg_ctxdma;
+		if (offset & ~0xffffffffULL) {
+			DRM_ERROR("obj offset exceeds 32-bits\n");
+			return -EINVAL;
+		}
+		if (o_ret)
+			*o_ret = (uint32_t)offset;
+		ret = (*gpuobj != NULL) ? 0 : -EINVAL;
+	} else {
+		DRM_ERROR("Invalid GART type %d\n", dev_priv->gart_info.type);
+		return -EINVAL;
+	}
+
+	return ret;
 }
 
 /* Context objects in the instance RAM have the following structure.
@@ -755,10 +798,10 @@ nouveau_gpuobj_dma_new(drm_device_t *dev, int channel, int class,
    set to 0?
 */
 int
-nouveau_gpuobj_gr_new(drm_device_t *dev, int channel, int class,
-		      nouveau_gpuobj_t **gpuobj)
+nouveau_gpuobj_gr_new(struct drm_device *dev, int channel, int class,
+		      struct nouveau_gpuobj **gpuobj)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 
 	DRM_DEBUG("ch%d class=0x%04x\n", channel, class);
@@ -804,11 +847,11 @@ nouveau_gpuobj_gr_new(drm_device_t *dev, int channel, int class,
 }
 
 static int
-nouveau_gpuobj_channel_init_pramin(drm_device_t *dev, int channel)
+nouveau_gpuobj_channel_init_pramin(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-	nouveau_gpuobj_t *pramin = NULL;
+	struct nouveau_gpuobj *pramin = NULL;
 	int size, base, ret;
 
 	DRM_DEBUG("ch%d\n", channel);
@@ -854,13 +897,13 @@ nouveau_gpuobj_channel_init_pramin(drm_device_t *dev, int channel)
 }
 
 int
-nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
+nouveau_gpuobj_channel_init(struct drm_device *dev, int channel,
 			    uint32_t vram_h, uint32_t tt_h)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-	nouveau_gpuobj_t *vram = NULL, *tt = NULL;
-	int ret;
+	struct nouveau_gpuobj *vram = NULL, *tt = NULL;
+	int ret, i;
 
 	DRM_DEBUG("ch%d vram=0x%08x tt=0x%08x\n", channel, vram_h, tt_h);
 
@@ -871,6 +914,29 @@ nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
 		ret = nouveau_gpuobj_channel_init_pramin(dev, channel);
 		if (ret)
 			return ret;
+	}
+
+	/* NV50 VM, point offset 0-512MiB at shared PCIEGART table  */
+	if (dev_priv->card_type >= NV_50) {
+		uint32_t vm_offset;
+		
+		vm_offset = (dev_priv->chipset & 0xf0) == 0x50 ? 0x1400 : 0x200;
+		vm_offset += chan->ramin->gpuobj->im_pramin->start;
+		if ((ret = nouveau_gpuobj_new_fake(dev, vm_offset, 0x4000,
+						   0, &chan->vm_pd, NULL)))
+			return ret;
+		for (i=0; i<0x4000; i+=8) {
+			INSTANCE_WR(chan->vm_pd, (i+0)/4, 0x00000000);
+			INSTANCE_WR(chan->vm_pd, (i+4)/4, 0xdeadcafe);
+		}
+
+		if ((ret = nouveau_gpuobj_ref_add(dev, -1, 0,
+						  dev_priv->gart_info.sg_ctxdma,
+						  &chan->vm_gart_pt)))
+			return ret;
+		INSTANCE_WR(chan->vm_pd, (0+0)/4,
+			    chan->vm_gart_pt->instance | 0x03);
+		INSTANCE_WR(chan->vm_pd, (0+4)/4, 0x00000000);
 	}
 
 	/* RAMHT */
@@ -902,49 +968,43 @@ nouveau_gpuobj_channel_init(drm_device_t *dev, int channel,
 		return ret;
 	}
 
-	if (dev_priv->agp_heap) {
-		/* AGPGART ctxdma */
-		if ((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-						   0, dev_priv->agp_available_size,
-						   NV_DMA_ACCESS_RW,
-						   NV_DMA_TARGET_AGP, &tt))) {
-			DRM_ERROR("Error creating AGP TT ctxdma: %d\n", DRM_ERR(ENOMEM));
-			return DRM_ERR(ENOMEM);
-		}
-	
-		ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
-		if (ret) {
-			DRM_ERROR("Error referencing AGP TT ctxdma: %d\n", ret);
-			return ret;
-		}
+	/* TT memory ctxdma */
+	if (dev_priv->gart_info.type != NOUVEAU_GART_NONE) {
+		ret = nouveau_gpuobj_gart_dma_new(dev, channel, 0,
+						  dev_priv->gart_info.aper_size,
+						  NV_DMA_ACCESS_RW, &tt, NULL);
+	} else
+	if (dev_priv->pci_heap) {
+		ret = nouveau_gpuobj_dma_new(dev, channel,
+					     NV_CLASS_DMA_IN_MEMORY,
+					     0, dev->sg->pages * PAGE_SIZE,
+					     NV_DMA_ACCESS_RW,
+					     NV_DMA_TARGET_PCI_NONLINEAR, &tt);
+	} else {
+		DRM_ERROR("Invalid GART type %d\n", dev_priv->gart_info.type);
+		ret = -EINVAL;
 	}
-	else {
-		if (dev_priv -> card_type >= NV_50 ) return 0; /*no PCIGART for NV50*/
 
-		/*PCI*/
-		if((ret = nouveau_gpuobj_dma_new(dev, channel, NV_CLASS_DMA_IN_MEMORY,
-						   0, dev->sg->pages * PAGE_SIZE,
-						   NV_DMA_ACCESS_RW,
-						   NV_DMA_TARGET_PCI_NONLINEAR, &tt))) {
-			DRM_ERROR("Error creating PCI TT ctxdma: %d\n", DRM_ERR(ENOMEM));
-			return 0; //this is noncritical
-		}
-	
-		ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
-		if (ret) {
-			DRM_ERROR("Error referencing PCI TT ctxdma: %d\n", ret);
-			return ret;
-		}
+	if (ret) {
+		DRM_ERROR("Error creating TT ctxdma: %d\n", ret);
+		return ret;
 	}
+
+	ret = nouveau_gpuobj_ref_add(dev, channel, tt_h, tt, NULL);
+	if (ret) {
+		DRM_ERROR("Error referencing TT ctxdma: %d\n", ret);
+		return ret;
+	}
+
 	return 0;
 }
 
 void
-nouveau_gpuobj_channel_takedown(drm_device_t *dev, int channel)
+nouveau_gpuobj_channel_takedown(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-	nouveau_gpuobj_ref_t *ref;
+	struct nouveau_gpuobj_ref *ref;
 
 	DRM_DEBUG("ch%d\n", channel);
 
@@ -954,6 +1014,9 @@ nouveau_gpuobj_channel_takedown(drm_device_t *dev, int channel)
 	}
 	nouveau_gpuobj_ref_del(dev, &chan->ramht);
 
+	nouveau_gpuobj_del(dev, &chan->vm_pd);
+	nouveau_gpuobj_ref_del(dev, &chan->vm_gart_pt);
+
 	if (chan->ramin_heap)
 		nouveau_mem_takedown(&chan->ramin_heap);
 	if (chan->ramin)
@@ -961,39 +1024,37 @@ nouveau_gpuobj_channel_takedown(drm_device_t *dev, int channel)
 
 }
 
-int nouveau_ioctl_grobj_alloc(DRM_IOCTL_ARGS)
+int nouveau_ioctl_grobj_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_nouveau_grobj_alloc_t init;
-	nouveau_gpuobj_t *gr = NULL;
+	struct drm_nouveau_grobj_alloc *init = data;
+	struct nouveau_gpuobj *gr = NULL;
 	int ret;
 
-	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_grobj_alloc_t __user *)
-		data, sizeof(init));
-
-	if (!nouveau_fifo_owner(dev, filp, init.channel)) {
+	if (!nouveau_fifo_owner(dev, file_priv, init->channel)) {
 		DRM_ERROR("pid %d doesn't own channel %d\n",
-				DRM_CURRENTPID, init.channel);
-		return DRM_ERR(EINVAL);
+				DRM_CURRENTPID, init->channel);
+		return -EINVAL;
 	}
 
 	//FIXME: check args, only allow trusted objects to be created
 	
-	if (init.handle == ~0)
-		return DRM_ERR(EINVAL);
-	if (nouveau_gpuobj_ref_find(dev, init.channel, init.handle, NULL) == 0)
-		return DRM_ERR(EEXIST);
+	if (init->handle == ~0)
+		return -EINVAL;
+	if (nouveau_gpuobj_ref_find(dev, init->channel, init->handle, NULL) ==
+	    0)
+		return -EEXIST;
 
-	if ((ret = nouveau_gpuobj_gr_new(dev, init.channel, init.class, &gr))) {
+	ret = nouveau_gpuobj_gr_new(dev, init->channel, init->class, &gr);
+	if (ret) {
 		DRM_ERROR("Error creating gr object: %d (%d/0x%08x)\n",
-			  ret, init.channel, init.handle);
+			  ret, init->channel, init->handle);
 		return ret;
 	}
 
-	if ((ret = nouveau_gpuobj_ref_add(dev, init.channel, init.handle,
+	if ((ret = nouveau_gpuobj_ref_add(dev, init->channel, init->handle,
 					  gr, NULL))) {
 		DRM_ERROR("Error referencing gr object: %d (%d/0x%08x\n)",
-			  ret, init.channel, init.handle);
+			  ret, init->channel, init->handle);
 		nouveau_gpuobj_del(dev, &gr);
 		return ret;
 	}

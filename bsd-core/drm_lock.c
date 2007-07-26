@@ -66,7 +66,7 @@ int drm_lock_transfer(drm_device_t *dev,
 {
 	unsigned int old, new;
 
-	dev->lock.filp = NULL;
+	dev->lock.file_priv = NULL;
 	do {
 		old  = *lock;
 		new  = context | _DRM_LOCK_HELD;
@@ -80,7 +80,7 @@ int drm_lock_free(drm_device_t *dev,
 {
 	unsigned int old, new;
 
-	dev->lock.filp = NULL;
+	dev->lock.file_priv = NULL;
 	do {
 		old  = *lock;
 		new  = 0;
@@ -95,30 +95,28 @@ int drm_lock_free(drm_device_t *dev,
 	return 0;
 }
 
-int drm_lock(DRM_IOCTL_ARGS)
+int drm_lock(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-        drm_lock_t lock;
+        drm_lock_t *lock = data;
         int ret = 0;
 
-	DRM_COPY_FROM_USER_IOCTL(lock, (drm_lock_t *)data, sizeof(lock));
-
-        if (lock.context == DRM_KERNEL_CONTEXT) {
+        if (lock->context == DRM_KERNEL_CONTEXT) {
                 DRM_ERROR("Process %d using kernel context %d\n",
-		    DRM_CURRENTPID, lock.context);
+		    DRM_CURRENTPID, lock->context);
                 return EINVAL;
         }
 
         DRM_DEBUG("%d (pid %d) requests lock (0x%08x), flags = 0x%08x\n",
-	    lock.context, DRM_CURRENTPID, dev->lock.hw_lock->lock, lock.flags);
+	    lock->context, DRM_CURRENTPID, dev->lock.hw_lock->lock,
+	    lock->flags);
 
-        if (dev->driver.use_dma_queue && lock.context < 0)
+        if (dev->driver.use_dma_queue && lock->context < 0)
                 return EINVAL;
 
 	DRM_LOCK();
 	for (;;) {
-		if (drm_lock_take(&dev->lock.hw_lock->lock, lock.context)) {
-			dev->lock.filp = (void *)(uintptr_t)DRM_CURRENTPID;
+		if (drm_lock_take(&dev->lock.hw_lock->lock, lock->context)) {
+			dev->lock.file_priv = file_priv;
 			dev->lock.lock_time = jiffies;
 			atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
 			break;  /* Got lock */
@@ -136,7 +134,7 @@ int drm_lock(DRM_IOCTL_ARGS)
 			break;
 	}
 	DRM_UNLOCK();
-	DRM_DEBUG("%d %s\n", lock.context, ret ? "interrupted" : "has lock");
+	DRM_DEBUG("%d %s\n", lock->context, ret ? "interrupted" : "has lock");
 
 	if (ret != 0)
 		return ret;
@@ -144,22 +142,19 @@ int drm_lock(DRM_IOCTL_ARGS)
 	/* XXX: Add signal blocking here */
 
 	if (dev->driver.dma_quiescent != NULL &&
-	    (lock.flags & _DRM_LOCK_QUIESCENT))
+	    (lock->flags & _DRM_LOCK_QUIESCENT))
 		dev->driver.dma_quiescent(dev);
 
 	return 0;
 }
 
-int drm_unlock(DRM_IOCTL_ARGS)
+int drm_unlock(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_lock_t lock;
+	drm_lock_t *lock = data;
 
-	DRM_COPY_FROM_USER_IOCTL(lock, (drm_lock_t *)data, sizeof(lock));
-
-	if (lock.context == DRM_KERNEL_CONTEXT) {
+	if (lock->context == DRM_KERNEL_CONTEXT) {
 		DRM_ERROR("Process %d using kernel context %d\n",
-		    DRM_CURRENTPID, lock.context);
+		    DRM_CURRENTPID, lock->context);
 		return EINVAL;
 	}
 

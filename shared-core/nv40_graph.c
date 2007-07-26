@@ -47,9 +47,9 @@
  *      created.
  */
 static void
-nv40_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv40_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	/* Always has the "instance address" of itself at offset 0 */
@@ -188,9 +188,9 @@ nv40_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 }
 
 static void
-nv43_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv43_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 	
 	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
@@ -304,9 +304,9 @@ nv43_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 };
 
 static void
-nv46_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv46_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
@@ -455,9 +455,9 @@ nv46_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 }
 
 static void
-nv49_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv49_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
@@ -678,9 +678,9 @@ nv49_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 }
 
 static void
-nv4a_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv4a_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
@@ -795,9 +795,9 @@ nv4a_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 }
 
 static void
-nv4b_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv4b_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
@@ -1010,9 +1010,9 @@ nv4b_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 }
 
 static void
-nv4c_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv4c_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
@@ -1117,9 +1117,9 @@ nv4c_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 }
 
 static void
-nv4e_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
+nv4e_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
 
 	INSTANCE_WR(ctx, 0x00000/4, ctx->im_pramin->start);
@@ -1224,12 +1224,12 @@ nv4e_graph_context_init(drm_device_t *dev, nouveau_gpuobj_t *ctx)
 }
 
 int
-nv40_graph_create_context(drm_device_t *dev, int channel)
+nv40_graph_create_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv =
-		(drm_nouveau_private_t *)dev->dev_private;
+	struct drm_nouveau_private *dev_priv =
+		(struct drm_nouveau_private *)dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-	void (*ctx_init)(drm_device_t *, nouveau_gpuobj_t *);
+	void (*ctx_init)(struct drm_device *, struct nouveau_gpuobj *);
 	unsigned int ctx_size;
 	int ret;
 
@@ -1284,9 +1284,9 @@ nv40_graph_create_context(drm_device_t *dev, int channel)
 }
 
 void
-nv40_graph_destroy_context(drm_device_t *dev, int channel)
+nv40_graph_destroy_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 
 	if (chan->ramin_grctx)
@@ -1294,9 +1294,9 @@ nv40_graph_destroy_context(drm_device_t *dev, int channel)
 }
 
 static int
-nv40_graph_transfer_context(drm_device_t *dev, uint32_t inst, int save)
+nv40_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t old_cp, tv = 1000;
 	int i;
 
@@ -1317,7 +1317,7 @@ nv40_graph_transfer_context(drm_device_t *dev, uint32_t inst, int save)
 		DRM_ERROR("failed: inst=0x%08x save=%d\n", inst, save);
 		DRM_ERROR("0x40030C = 0x%08x\n",
 			  NV_READ(NV40_PGRAPH_CTXCTL_030C));
-		return DRM_ERR(EBUSY);
+		return -EBUSY;
 	}
 
 	return 0;
@@ -1327,14 +1327,14 @@ nv40_graph_transfer_context(drm_device_t *dev, uint32_t inst, int save)
  *XXX: fails sometimes, not sure why..
  */
 int
-nv40_graph_save_context(drm_device_t *dev, int channel)
+nv40_graph_save_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t inst;
 
 	if (!chan->ramin_grctx)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	inst = chan->ramin_grctx->instance >> 4;
 
 	return nv40_graph_transfer_context(dev, inst, 1);
@@ -1344,15 +1344,15 @@ nv40_graph_save_context(drm_device_t *dev, int channel)
  * XXX: fails sometimes.. not sure why
  */
 int
-nv40_graph_load_context(drm_device_t *dev, int channel)
+nv40_graph_load_context(struct drm_device *dev, int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t inst;
 	int ret;
 
 	if (!chan->ramin_grctx)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	inst = chan->ramin_grctx->instance >> 4;
 
 	ret = nv40_graph_transfer_context(dev, inst, 0);
@@ -1599,10 +1599,10 @@ static uint32_t nv4e_ctx_voodoo[] = {
  * C51		0x4e
  */
 int
-nv40_graph_init(drm_device_t *dev)
+nv40_graph_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv =
-		(drm_nouveau_private_t *)dev->dev_private;
+	struct drm_nouveau_private *dev_priv =
+		(struct drm_nouveau_private *)dev->dev_private;
 	uint32_t *ctx_voodoo;
 	uint32_t vramsz, tmp;
 	int i, j;
@@ -1829,7 +1829,7 @@ nv40_graph_init(drm_device_t *dev)
 	return 0;
 }
 
-void nv40_graph_takedown(drm_device_t *dev)
+void nv40_graph_takedown(struct drm_device *dev)
 {
 }
 

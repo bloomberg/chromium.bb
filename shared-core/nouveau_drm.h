@@ -27,7 +27,7 @@
 
 #define NOUVEAU_DRM_HEADER_PATCHLEVEL 9
 
-typedef struct drm_nouveau_fifo_alloc {
+struct drm_nouveau_fifo_alloc {
 	uint32_t     fb_ctxdma_handle;
 	uint32_t     tt_ctxdma_handle;
 
@@ -42,27 +42,24 @@ typedef struct drm_nouveau_fifo_alloc {
 	/* Notifier memory */
 	drm_handle_t notifier;
 	int          notifier_size;
-}
-drm_nouveau_fifo_alloc_t;
+};
 
-typedef struct drm_nouveau_grobj_alloc {
+struct drm_nouveau_grobj_alloc {
 	int      channel;
 	uint32_t handle;
 	int      class;
-}
-drm_nouveau_grobj_alloc_t;
+};
 
 #define NOUVEAU_MEM_ACCESS_RO	1
 #define NOUVEAU_MEM_ACCESS_WO	2
 #define NOUVEAU_MEM_ACCESS_RW	3
-typedef struct drm_nouveau_notifier_alloc {
+struct drm_nouveau_notifier_alloc {
 	int      channel;
 	uint32_t handle;
 	int      count;
 
 	uint32_t offset;
-}
-drm_nouveau_notifier_alloc_t;
+};
 
 #define NOUVEAU_MEM_FB			0x00000001
 #define NOUVEAU_MEM_AGP			0x00000002
@@ -76,20 +73,18 @@ drm_nouveau_notifier_alloc_t;
 #define NOUVEAU_MEM_INSTANCE		0x00000200 /* internal */
 #define NOUVEAU_MEM_NOTIFIER            0x00000400 /* internal */
 
-typedef struct drm_nouveau_mem_alloc {
+struct drm_nouveau_mem_alloc {
 	int flags;
 	int alignment;
 	uint64_t size;	// in bytes
 	uint64_t offset;
 	drm_handle_t map_handle;
-}
-drm_nouveau_mem_alloc_t;
+};
 
-typedef struct drm_nouveau_mem_free {
+struct drm_nouveau_mem_free {
 	uint64_t offset;
 	int flags;
-}
-drm_nouveau_mem_free_t;
+};
 
 /* FIXME : maybe unify {GET,SET}PARAMs */
 #define NOUVEAU_GETPARAM_PCI_VENDOR      3
@@ -100,19 +95,17 @@ drm_nouveau_mem_free_t;
 #define NOUVEAU_GETPARAM_FB_SIZE         8
 #define NOUVEAU_GETPARAM_AGP_SIZE        9
 #define NOUVEAU_GETPARAM_PCI_PHYSICAL    10
-typedef struct drm_nouveau_getparam {
+struct drm_nouveau_getparam {
 	uint64_t param;
 	uint64_t value;
-}
-drm_nouveau_getparam_t;
+};
 
 #define NOUVEAU_SETPARAM_CMDBUF_LOCATION 1
 #define NOUVEAU_SETPARAM_CMDBUF_SIZE     2
-typedef struct drm_nouveau_setparam {
+struct drm_nouveau_setparam {
 	uint64_t param;
 	uint64_t value;
-}
-drm_nouveau_setparam_t;
+};
 
 enum nouveau_card_type {
 	NV_UNKNOWN =0,
@@ -121,8 +114,8 @@ enum nouveau_card_type {
 	NV_04      =4,
 	NV_05      =5,
 	NV_10      =10,
-	NV_11      =10,
-	NV_15      =10,
+	NV_11      =11,
+	NV_15      =11,
 	NV_17      =17,
 	NV_20      =20,
 	NV_25      =20,
@@ -142,12 +135,11 @@ enum nouveau_bus_type {
 
 #define NOUVEAU_MAX_SAREA_CLIPRECTS 16
 
-typedef struct drm_nouveau_sarea {
+struct drm_nouveau_sarea {
 	/* the cliprects */
-	drm_clip_rect_t boxes[NOUVEAU_MAX_SAREA_CLIPRECTS];
+	struct drm_clip_rect boxes[NOUVEAU_MAX_SAREA_CLIPRECTS];
 	unsigned int nbox;
-}
-drm_nouveau_sarea_t;
+};
 
 #define DRM_NOUVEAU_FIFO_ALLOC      0x00
 #define DRM_NOUVEAU_GROBJ_ALLOC     0x01

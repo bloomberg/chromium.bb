@@ -28,9 +28,9 @@
 #include "nouveau_drv.h"
 #include "nouveau_drm.h"
 
-static int nouveau_init_card_mappings(drm_device_t *dev)
+static int nouveau_init_card_mappings(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 
 	/* resource 0 is mmio regs */
@@ -86,11 +86,13 @@ static int nouveau_init_card_mappings(drm_device_t *dev)
 	return 0;
 }
 
-static int nouveau_stub_init(drm_device_t *dev) { return 0; }
-static void nouveau_stub_takedown(drm_device_t *dev) {}
-static int nouveau_init_engine_ptrs(drm_device_t *dev)
+static int nouveau_stub_init(struct drm_device *dev) { return 0; }
+static void nouveau_stub_takedown(struct drm_device *dev) {}
+static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
+
+static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine_func *engine = &dev_priv->Engine;
 
 	switch (dev_priv->chipset & 0xf0) {
@@ -104,6 +106,7 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv04_fb_init;
 		engine->fb.takedown	= nv04_fb_takedown;
@@ -130,6 +133,7 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -156,6 +160,7 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -182,6 +187,7 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->mc.init		= nv04_mc_init;
 		engine->mc.takedown	= nv04_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
@@ -208,6 +214,7 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->mc.init		= nv40_mc_init;
 		engine->mc.takedown	= nv40_mc_takedown;
 		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
 		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nv40_fb_init;
 		engine->fb.takedown	= nv40_fb_takedown;
@@ -235,6 +242,7 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 		engine->mc.init		= nv50_mc_init;
 		engine->mc.takedown	= nv50_mc_takedown;
 		engine->timer.init	= nouveau_stub_init;
+		engine->timer.read	= nouveau_stub_timer_read;
 		engine->timer.takedown	= nouveau_stub_takedown;
 		engine->fb.init		= nouveau_stub_init;
 		engine->fb.takedown	= nouveau_stub_takedown;
@@ -259,9 +267,9 @@ static int nouveau_init_engine_ptrs(drm_device_t *dev)
 	return 0;
 }
 
-static int nouveau_card_init(drm_device_t *dev)
+static int nouveau_card_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine_func *engine;
 	int ret;
 
@@ -321,10 +329,10 @@ static int nouveau_card_init(drm_device_t *dev)
 	return 0;
 }
 
-static void nouveau_card_takedown(drm_device_t *dev)
+static void nouveau_card_takedown(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine_func *engine = &dev_priv->Engine;
 
 	if (dev_priv->init_state != NOUVEAU_CARD_INIT_DOWN) {
 		engine->fifo.takedown(dev);
@@ -332,7 +340,12 @@ static void nouveau_card_takedown(drm_device_t *dev)
 		engine->fb.takedown(dev);
 		engine->timer.takedown(dev);
 		engine->mc.takedown(dev);
+
+		nouveau_sgdma_nottm_hack_takedown(dev);
+		nouveau_sgdma_takedown(dev);
+
 		nouveau_gpuobj_takedown(dev);
+
 		nouveau_mem_close(dev);
 		engine->instmem.takedown(dev);
 
@@ -340,15 +353,16 @@ static void nouveau_card_takedown(drm_device_t *dev)
 	}
 }
 
-/* here a client dies, release the stuff that was allocated for its filp */
-void nouveau_preclose(drm_device_t * dev, DRMFILE filp)
+/* here a client dies, release the stuff that was allocated for its
+ * file_priv */
+void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	nouveau_fifo_cleanup(dev, filp);
-	nouveau_mem_release(filp,dev_priv->fb_heap);
-	nouveau_mem_release(filp,dev_priv->agp_heap);
-	nouveau_mem_release(filp,dev_priv->pci_heap);
+	nouveau_fifo_cleanup(dev, file_priv);
+	nouveau_mem_release(file_priv,dev_priv->fb_heap);
+	nouveau_mem_release(file_priv,dev_priv->agp_heap);
+	nouveau_mem_release(file_priv,dev_priv->pci_heap);
 }
 
 /* first module load, setup the mmio/fb mapping */
@@ -367,14 +381,14 @@ int nouveau_firstopen(struct drm_device *dev)
 
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
-	drm_nouveau_private_t *dev_priv;
+	struct drm_nouveau_private *dev_priv;
 
 	if (flags==NV_UNKNOWN)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
 	if (!dev_priv)                   
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	dev_priv->card_type=flags&NOUVEAU_FAMILY;
 	dev_priv->flags=flags&NOUVEAU_FLAGS;
@@ -395,7 +409,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 void nouveau_lastclose(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	nouveau_card_takedown(dev);
 
@@ -413,73 +427,63 @@ int nouveau_unload(struct drm_device *dev)
 	return 0;
 }
 
-int nouveau_ioctl_getparam(DRM_IOCTL_ARGS)
+int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_getparam_t getparam;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_getparam *getparam = data;
 
-	DRM_COPY_FROM_USER_IOCTL(getparam, (drm_nouveau_getparam_t __user *)data,
-			sizeof(getparam));
-
-	switch (getparam.param) {
+	switch (getparam->param) {
 	case NOUVEAU_GETPARAM_PCI_VENDOR:
-		getparam.value=dev->pci_vendor;
+		getparam->value=dev->pci_vendor;
 		break;
 	case NOUVEAU_GETPARAM_PCI_DEVICE:
-		getparam.value=dev->pci_device;
+		getparam->value=dev->pci_device;
 		break;
 	case NOUVEAU_GETPARAM_BUS_TYPE:
 		if (drm_device_is_agp(dev))
-			getparam.value=NV_AGP;
+			getparam->value=NV_AGP;
 		else if (drm_device_is_pcie(dev))
-			getparam.value=NV_PCIE;
+			getparam->value=NV_PCIE;
 		else
-			getparam.value=NV_PCI;
+			getparam->value=NV_PCI;
 		break;
 	case NOUVEAU_GETPARAM_FB_PHYSICAL:
-		getparam.value=dev_priv->fb_phys;
+		getparam->value=dev_priv->fb_phys;
 		break;
 	case NOUVEAU_GETPARAM_AGP_PHYSICAL:
-		getparam.value=dev_priv->agp_phys;
+		getparam->value=dev_priv->gart_info.aper_base;
 		break;
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
-			getparam.value=(uint64_t) dev->sg->virtual;
+			getparam->value=(uint64_t) dev->sg->virtual;
 		else 
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");
-		     return DRM_ERR(EINVAL);
+		     return -EINVAL;
 		     }
 		break;
 	case NOUVEAU_GETPARAM_FB_SIZE:
-		getparam.value=dev_priv->fb_available_size;
+		getparam->value=dev_priv->fb_available_size;
 		break;
 	case NOUVEAU_GETPARAM_AGP_SIZE:
-		getparam.value=dev_priv->agp_available_size;
+		getparam->value=dev_priv->gart_info.aper_size;
 		break;
 	default:
-		DRM_ERROR("unknown parameter %lld\n", getparam.param);
-		return DRM_ERR(EINVAL);
+		DRM_ERROR("unknown parameter %lld\n", getparam->param);
+		return -EINVAL;
 	}
 
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_getparam_t __user *)data, getparam,
-			sizeof(getparam));
 	return 0;
 }
 
-int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
+int nouveau_ioctl_setparam(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_setparam_t setparam;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_setparam *setparam = data;
 
-	DRM_COPY_FROM_USER_IOCTL(setparam, (drm_nouveau_setparam_t __user *)data,
-			sizeof(setparam));
-
-	switch (setparam.param) {
+	switch (setparam->param) {
 	case NOUVEAU_SETPARAM_CMDBUF_LOCATION:
-		switch (setparam.value) {
+		switch (setparam->value) {
 		case NOUVEAU_MEM_AGP:
 		case NOUVEAU_MEM_FB:
 		case NOUVEAU_MEM_PCI:
@@ -487,17 +491,17 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 			break;
 		default:
 			DRM_ERROR("invalid CMDBUF_LOCATION value=%lld\n",
-					setparam.value);
-			return DRM_ERR(EINVAL);
+					setparam->value);
+			return -EINVAL;
 		}
-		dev_priv->config.cmdbuf.location = setparam.value;
+		dev_priv->config.cmdbuf.location = setparam->value;
 		break;
 	case NOUVEAU_SETPARAM_CMDBUF_SIZE:
-		dev_priv->config.cmdbuf.size = setparam.value;
+		dev_priv->config.cmdbuf.size = setparam->value;
 		break;
 	default:
-		DRM_ERROR("unknown parameter %lld\n", setparam.param);
-		return DRM_ERR(EINVAL);
+		DRM_ERROR("unknown parameter %lld\n", setparam->param);
+		return -EINVAL;
 	}
 
 	return 0;
@@ -506,17 +510,32 @@ int nouveau_ioctl_setparam(DRM_IOCTL_ARGS)
 /* waits for idle */
 void nouveau_wait_for_idle(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
-	switch(dev_priv->card_type)
-	{
-		case NV_03:
-			while(NV_READ(NV03_PGRAPH_STATUS));
-			break;
-		case NV_50:
-			break;
-		default:
-			while(NV_READ(NV04_PGRAPH_STATUS));
-			break;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
+	switch(dev_priv->card_type) {
+	case NV_03:
+		while (NV_READ(NV03_PGRAPH_STATUS));
+		break;
+	case NV_50:
+		break;
+	default: {
+		/* This stuff is more or less a copy of what is seen
+		 * in nv28 kmmio dump.
+		 */
+		uint64_t started = dev_priv->Engine.timer.read(dev);
+		uint64_t stopped = started;
+		uint32_t status;
+		do {
+			uint32_t pmc_e = NV_READ(NV03_PMC_ENABLE);
+			status = NV_READ(NV04_PGRAPH_STATUS);
+			if (!status)
+				break;
+			stopped = dev_priv->Engine.timer.read(dev);
+		/* It'll never wrap anyway... */
+		} while (stopped - started < 1000000000ULL);
+		if (status)
+			DRM_ERROR("timed out with status 0x%08x\n",
+			          status);
+	}
 	}
 }
 

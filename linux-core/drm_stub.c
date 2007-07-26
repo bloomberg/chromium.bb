@@ -50,11 +50,11 @@ MODULE_PARM_DESC(debug, "Enable debug output");
 module_param_named(cards_limit, drm_cards_limit, int, 0444);
 module_param_named(debug, drm_debug, int, 0600);
 
-drm_head_t **drm_heads;
+struct drm_head **drm_heads;
 struct drm_sysfs_class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
-static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
+static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 		       const struct pci_device_id *ent,
 		       struct drm_driver *driver)
 {
@@ -160,9 +160,9 @@ error_out_unreg:
  * create the proc init entry via proc_init(). This routines assigns
  * minor numbers to secondary heads of multi-headed cards
  */
-static int drm_get_head(drm_device_t * dev, drm_head_t * head)
+static int drm_get_head(struct drm_device * dev, struct drm_head * head)
 {
-	drm_head_t **heads = drm_heads;
+	struct drm_head **heads = drm_heads;
 	int ret;
 	int minor;
 
@@ -171,7 +171,7 @@ static int drm_get_head(drm_device_t * dev, drm_head_t * head)
 	for (minor = 0; minor < drm_cards_limit; minor++, heads++) {
 		if (!*heads) {
 
-			*head = (drm_head_t) {
+			*head = (struct drm_head) {
 				.dev = dev,
 				.device = MKDEV(DRM_MAJOR, minor),
 				.minor = minor,
@@ -202,7 +202,7 @@ static int drm_get_head(drm_device_t * dev, drm_head_t * head)
 err_g2:
 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
 err_g1:
-	*head = (drm_head_t) {
+	*head = (struct drm_head) {
 		.dev = NULL};
 	return ret;
 }
@@ -221,7 +221,7 @@ err_g1:
 int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	      struct drm_driver *driver)
 {
-	drm_device_t *dev;
+	struct drm_device *dev;
 	int ret;
 
 	DRM_DEBUG("\n");
@@ -282,7 +282,7 @@ EXPORT_SYMBOL(drm_get_dev);
  * "drm" data, otherwise unregisters the "drm" data, frees the dev list and
  * unregisters the character device.
  */
-int drm_put_dev(drm_device_t * dev)
+int drm_put_dev(struct drm_device * dev)
 {
 	DRM_DEBUG("release primary %s\n", dev->driver->pci_driver.name);
 
@@ -310,7 +310,7 @@ int drm_put_dev(drm_device_t * dev)
  * last minor released.
  *
  */
-int drm_put_head(drm_head_t * head)
+int drm_put_head(struct drm_head * head)
 {
 	int minor = head->minor;
 
@@ -319,7 +319,7 @@ int drm_put_head(drm_head_t * head)
 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
 	drm_sysfs_device_remove(head->dev_class);
 
-	*head = (drm_head_t){.dev = NULL};
+	*head = (struct drm_head){.dev = NULL};
 
 	drm_heads[minor] = NULL;
 	return 0;

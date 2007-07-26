@@ -36,7 +36,7 @@
 #include "nouveau_drv.h"
 
 static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64_t size,
-		DRMFILE filp)
+		struct drm_file *file_priv)
 {
 	/* Maybe cut off the start of an existing block */
 	if (start > p->start) {
@@ -46,7 +46,7 @@ static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64
 			goto out;
 		newblock->start = start;
 		newblock->size = p->size - (start - p->start);
-		newblock->filp = NULL;
+		newblock->file_priv = NULL;
 		newblock->next = p->next;
 		newblock->prev = p;
 		p->next->prev = newblock;
@@ -63,7 +63,7 @@ static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64
 			goto out;
 		newblock->start = start + size;
 		newblock->size = p->size - size;
-		newblock->filp = NULL;
+		newblock->file_priv = NULL;
 		newblock->next = p->next;
 		newblock->prev = p;
 		p->next->prev = newblock;
@@ -73,12 +73,14 @@ static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64
 
 out:
 	/* Our block is in the middle */
-	p->filp = filp;
+	p->file_priv = file_priv;
 	return p;
 }
 
-struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
-					  int align2, DRMFILE filp)
+struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap,
+					  uint64_t size,
+					  int align2,
+					  struct drm_file *file_priv)
 {
 	struct mem_block *p;
 	uint64_t mask = (1 << align2) - 1;
@@ -88,8 +90,8 @@ struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
 
 	list_for_each(p, heap) {
 		uint64_t start = (p->start + mask) & ~mask;
-		if (p->filp == 0 && start + size <= p->start + p->size)
-			return split_block(p, start, size, filp);
+		if (p->file_priv == 0 && start + size <= p->start + p->size)
+			return split_block(p, start, size, file_priv);
 	}
 
 	return NULL;
@@ -108,12 +110,12 @@ static struct mem_block *find_block(struct mem_block *heap, uint64_t start)
 
 void nouveau_mem_free_block(struct mem_block *p)
 {
-	p->filp = NULL;
+	p->file_priv = NULL;
 
-	/* Assumes a single contiguous range.  Needs a special filp in
+	/* Assumes a single contiguous range.  Needs a special file_priv in
 	 * 'heap' to stop it being subsumed.
 	 */
-	if (p->next->filp == 0) {
+	if (p->next->file_priv == 0) {
 		struct mem_block *q = p->next;
 		p->size += q->size;
 		p->next = q->next;
@@ -121,7 +123,7 @@ void nouveau_mem_free_block(struct mem_block *p)
 		drm_free(q, sizeof(*q), DRM_MEM_BUFS);
 	}
 
-	if (p->prev->filp == 0) {
+	if (p->prev->file_priv == 0) {
 		struct mem_block *q = p->prev;
 		q->size += p->size;
 		q->next = p->next;
@@ -138,29 +140,29 @@ int nouveau_mem_init_heap(struct mem_block **heap, uint64_t start,
 	struct mem_block *blocks = drm_alloc(sizeof(*blocks), DRM_MEM_BUFS);
 
 	if (!blocks)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	*heap = drm_alloc(sizeof(**heap), DRM_MEM_BUFS);
 	if (!*heap) {
 		drm_free(blocks, sizeof(*blocks), DRM_MEM_BUFS);
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 
 	blocks->start = start;
 	blocks->size = size;
-	blocks->filp = NULL;
+	blocks->file_priv = NULL;
 	blocks->next = blocks->prev = *heap;
 
 	memset(*heap, 0, sizeof(**heap));
-	(*heap)->filp = (DRMFILE) - 1;
+	(*heap)->file_priv = (struct drm_file *) - 1;
 	(*heap)->next = (*heap)->prev = blocks;
 	return 0;
 }
 
 /* 
- * Free all blocks associated with the releasing filp
+ * Free all blocks associated with the releasing file_priv
  */
-void nouveau_mem_release(DRMFILE filp, struct mem_block *heap)
+void nouveau_mem_release(struct drm_file *file_priv, struct mem_block *heap)
 {
 	struct mem_block *p;
 
@@ -168,15 +170,16 @@ void nouveau_mem_release(DRMFILE filp, struct mem_block *heap)
 		return;
 
 	list_for_each(p, heap) {
-		if (p->filp == filp)
-			p->filp = NULL;
+		if (p->file_priv == file_priv)
+			p->file_priv = NULL;
 	}
 
-	/* Assumes a single contiguous range.  Needs a special filp in
+	/* Assumes a single contiguous range.  Needs a special file_priv in
 	 * 'heap' to stop it being subsumed.
 	 */
 	list_for_each(p, heap) {
-		while ((p->filp == 0) && (p->next->filp == 0) && (p->next!=heap)) {
+		while ((p->file_priv == 0) && (p->next->file_priv == 0) &&
+		       (p->next!=heap)) {
 			struct mem_block *q = p->next;
 			p->size += q->size;
 			p->next = q->next;
@@ -208,19 +211,18 @@ void nouveau_mem_takedown(struct mem_block **heap)
 
 void nouveau_mem_close(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
 	nouveau_mem_takedown(&dev_priv->agp_heap);
 	nouveau_mem_takedown(&dev_priv->fb_heap);
-	if ( dev_priv->pci_heap ) 
-		{
+	if (dev_priv->pci_heap)
 		nouveau_mem_takedown(&dev_priv->pci_heap);
-		}
 }
 
 /* returns the amount of FB ram in bytes */
 uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
 		case NV_03:
@@ -253,6 +255,7 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 			}
 			break;
 		case NV_10:
+		case NV_11:
 		case NV_17:
 		case NV_20:
 		case NV_30:
@@ -281,93 +284,68 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 	return 0;
 }
 
+static int
+nouveau_mem_init_agp(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_agp_info info;
+	struct drm_agp_mode mode;
+	struct drm_agp_buffer agp_req;
+	struct drm_agp_binding bind_req;
+	int ret;
 
+	ret = drm_agp_acquire(dev);
+	if (ret) {
+		DRM_ERROR("Unable to acquire AGP: %d\n", ret);
+		return ret;
+	}
+
+	ret = drm_agp_info(dev, &info);
+	if (ret) {
+		DRM_ERROR("Unable to get AGP info: %d\n", ret);
+		return ret;
+	}
+
+	/* see agp.h for the AGPSTAT_* modes available */
+	mode.mode = info.mode;
+	ret = drm_agp_enable(dev, mode);
+	if (ret) {
+		DRM_ERROR("Unable to enable AGP: %d\n", ret);
+		return ret;
+	}
+
+	agp_req.size = info.aperture_size;
+	agp_req.type = 0;
+	ret = drm_agp_alloc(dev, &agp_req);
+	if (ret) {
+		DRM_ERROR("Unable to alloc AGP: %d\n", ret);
+		return ret;
+	}
+
+	bind_req.handle = agp_req.handle;
+	bind_req.offset = 0;
+	ret = drm_agp_bind(dev, &bind_req);
+	if (ret) {
+		DRM_ERROR("Unable to bind AGP: %d\n", ret);
+		return ret;
+	}
+
+	dev_priv->gart_info.type	= NOUVEAU_GART_AGP;
+	dev_priv->gart_info.aper_base	= info.aperture_base;
+	dev_priv->gart_info.aper_size	= info.aperture_size;
+	return 0;
+}
 
 int nouveau_mem_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t fb_size;
-	drm_scatter_gather_t sgreq;
-	dev_priv->agp_phys=0;
-	dev_priv->fb_phys=0;
-	sgreq . size = 4 << 20; //4MB of PCI scatter-gather zone
+	int ret = 0;
 
-	/* init AGP */
-	dev_priv->agp_heap=NULL;
-	if (drm_device_is_agp(dev))
-	{
-		int err;
-		drm_agp_info_t info;
-		drm_agp_mode_t mode;
-		drm_agp_buffer_t agp_req;
-		drm_agp_binding_t bind_req;
+	dev_priv->agp_heap = dev_priv->pci_heap = dev_priv->fb_heap = NULL;
+	dev_priv->fb_phys = 0;
+	dev_priv->gart_info.type = NOUVEAU_GART_NONE;
 
-		err = drm_agp_acquire(dev);
-		if (err) {
-			DRM_ERROR("Unable to acquire AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		err = drm_agp_info(dev, &info);
-		if (err) {
-			DRM_ERROR("Unable to get AGP info: %d\n", err);
-			goto no_agp;
-		}
-
-		/* see agp.h for the AGPSTAT_* modes available */
-		mode.mode = info.mode;
-		err = drm_agp_enable(dev, mode);
-		if (err) {
-			DRM_ERROR("Unable to enable AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		agp_req.size = info.aperture_size;
-		agp_req.type = 0;
-		err = drm_agp_alloc(dev, &agp_req);
-		if (err) {
-			DRM_ERROR("Unable to alloc AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		bind_req.handle = agp_req.handle;
-		bind_req.offset = 0;
-		err = drm_agp_bind(dev, &bind_req);
-		if (err) {
-			DRM_ERROR("Unable to bind AGP: %d\n", err);
-			goto no_agp;
-		}
-
-		if (nouveau_mem_init_heap(&dev_priv->agp_heap,
-					  0, info.aperture_size))
-			goto no_agp;
-
-		dev_priv->agp_phys		= info.aperture_base;
-		dev_priv->agp_available_size	= info.aperture_size;
-		goto have_agp;
-	}
-
-no_agp:
-
-	if ( dev_priv->card_type >= NV_50 ) goto no_pci;
-
-	dev_priv->pci_heap = NULL;
-	DRM_DEBUG("Allocating sg memory for PCI DMA\n");
-	if ( drm_sg_alloc(dev, &sgreq) )
-		{
-		DRM_ERROR("Unable to allocate 4MB of scatter-gather pages for PCI DMA!");
-		goto no_pci;
-		}
-
-	if ( nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
-				   dev->sg->pages * PAGE_SIZE))
-		{
-		DRM_ERROR("Unable to initialize pci_heap!");	
-		goto no_pci;
-		}
-
-no_pci:
-have_agp:
 	/* setup a mtrr over the FB */
 	dev_priv->fb_mtrr = drm_mtrr_add(drm_get_resource_start(dev, 1),
 					 nouveau_mem_fb_amount(dev),
@@ -388,24 +366,74 @@ have_agp:
 		 * So we create a second FB heap for that type of memory */
 		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
 					  0, 256*1024*1024))
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		if (nouveau_mem_init_heap(&dev_priv->fb_nomap_heap,
 					  256*1024*1024, fb_size-256*1024*1024))
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 	} else {
 		if (nouveau_mem_init_heap(&dev_priv->fb_heap, 0, fb_size))
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		dev_priv->fb_nomap_heap=NULL;
+	}
+
+	/* Init AGP / NV50 PCIEGART */
+	if (drm_device_is_agp(dev) && dev->agp) {
+		if ((ret = nouveau_mem_init_agp(dev)))
+			DRM_ERROR("Error initialising AGP: %d\n", ret);
+	}
+
+	/*Note: this is *not* just NV50 code, but only used on NV50 for now */
+	if (dev_priv->gart_info.type == NOUVEAU_GART_NONE &&
+	    dev_priv->card_type >= NV_50) {
+		ret = nouveau_sgdma_init(dev);
+		if (!ret) {
+			ret = nouveau_sgdma_nottm_hack_init(dev);
+			if (ret)
+				nouveau_sgdma_takedown(dev); 
+		}
+
+		if (ret)
+			DRM_ERROR("Error initialising SG DMA: %d\n", ret);
+	}
+
+	if (dev_priv->gart_info.type != NOUVEAU_GART_NONE) {
+		if (nouveau_mem_init_heap(&dev_priv->agp_heap,
+					  0, dev_priv->gart_info.aper_size)) {
+			if (dev_priv->gart_info.type == NOUVEAU_GART_SGDMA) {
+				nouveau_sgdma_nottm_hack_takedown(dev);
+				nouveau_sgdma_takedown(dev); 
+			}
+		}
+	}
+
+	/* NV04-NV40 PCIEGART */
+	if (!dev_priv->agp_heap && dev_priv->card_type < NV_50) {
+		struct drm_scatter_gather sgreq;
+
+		DRM_DEBUG("Allocating sg memory for PCI DMA\n");
+		sgreq.size = 4 << 20; //4MB of PCI scatter-gather zone
+
+		if (drm_sg_alloc(dev, &sgreq)) {
+			DRM_ERROR("Unable to allocate 4MB of scatter-gather"
+				  " pages for PCI DMA!");
+		} else {
+			if (nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
+						  dev->sg->pages * PAGE_SIZE)) {
+				DRM_ERROR("Unable to initialize pci_heap!");	
+			}
+		}
 	}
 
 	return 0;
 }
 
-struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint64_t size, int flags, DRMFILE filp)
+struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
+				    uint64_t size, int flags,
+				    struct drm_file *file_priv)
 {
 	struct mem_block *block;
 	int type;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	/* 
 	 * Make things easier on ourselves: all allocations are page-aligned. 
@@ -430,13 +458,14 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
 #define NOUVEAU_MEM_ALLOC_AGP {\
 		type=NOUVEAU_MEM_AGP;\
                 block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,\
-                                                alignment, filp);\
+                                                alignment, file_priv); \
                 if (block) goto alloc_ok;\
 	        }
 
 #define NOUVEAU_MEM_ALLOC_PCI {\
                 type = NOUVEAU_MEM_PCI;\
-                block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, alignment, filp);\
+                block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, \
+						alignment, file_priv); \
                 if ( block ) goto alloc_ok;\
 	        }
 
@@ -444,11 +473,12 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment, uint6
                 type=NOUVEAU_MEM_FB;\
                 if (!(flags&NOUVEAU_MEM_MAPPED)) {\
                         block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,\
-                                                        size, alignment, filp); \
+                                                        size, alignment, \
+							file_priv); \
                         if (block) goto alloc_ok;\
                 }\
                 block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,\
-                                                alignment, filp);\
+                                                alignment, file_priv);\
                 if (block) goto alloc_ok;\
 	        }
 
@@ -468,13 +498,18 @@ alloc_ok:
 
 	if (flags&NOUVEAU_MEM_MAPPED)
 	{
-		drm_map_list_t *entry;
+		struct drm_map_list *entry;
 		int ret = 0;
 		block->flags|=NOUVEAU_MEM_MAPPED;
 
-		if (type == NOUVEAU_MEM_AGP)
+		if (type == NOUVEAU_MEM_AGP) {
+			if (dev_priv->gart_info.type != NOUVEAU_GART_SGDMA)
 			ret = drm_addmap(dev, block->start, block->size,
 					 _DRM_AGP, 0, &block->map);
+			else
+			ret = drm_addmap(dev, block->start, block->size,
+					 _DRM_SCATTER_GATHER, 0, &block->map);
+		}
 		else if (type == NOUVEAU_MEM_FB)
 			ret = drm_addmap(dev, block->start + dev_priv->fb_phys,
 					 block->size, _DRM_FRAME_BUFFER,
@@ -512,54 +547,45 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
  * Ioctls
  */
 
-int nouveau_ioctl_mem_alloc(DRM_IOCTL_ARGS)
+int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_mem_alloc_t alloc;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_mem_alloc *alloc = data;
 	struct mem_block *block;
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
-	DRM_COPY_FROM_USER_IOCTL(alloc, (drm_nouveau_mem_alloc_t __user *) data,
-				 sizeof(alloc));
-
-	block=nouveau_mem_alloc(dev, alloc.alignment, alloc.size, alloc.flags, filp);
+	block=nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
+				alloc->flags, file_priv);
 	if (!block)
-		return DRM_ERR(ENOMEM);
-	alloc.map_handle=block->map_handle;
-	alloc.offset=block->start;
-	alloc.flags=block->flags;
-
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_mem_alloc_t __user *) data, alloc, sizeof(alloc));
+		return -ENOMEM;
+	alloc->map_handle=block->map_handle;
+	alloc->offset=block->start;
+	alloc->flags=block->flags;
 
 	return 0;
 }
 
-int nouveau_ioctl_mem_free(DRM_IOCTL_ARGS)
+int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	drm_nouveau_mem_free_t memfree;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_mem_free *memfree = data;
 	struct mem_block *block;
 
-	DRM_COPY_FROM_USER_IOCTL(memfree, (drm_nouveau_mem_free_t __user *) data,
-				 sizeof(memfree));
-
 	block=NULL;
-	if (memfree.flags&NOUVEAU_MEM_FB)
-		block = find_block(dev_priv->fb_heap, memfree.offset);
-	else if (memfree.flags&NOUVEAU_MEM_AGP)
-		block = find_block(dev_priv->agp_heap, memfree.offset);
-	else if (memfree.flags&NOUVEAU_MEM_PCI)
-		block = find_block(dev_priv->pci_heap, memfree.offset);
+	if (memfree->flags & NOUVEAU_MEM_FB)
+		block = find_block(dev_priv->fb_heap, memfree->offset);
+	else if (memfree->flags & NOUVEAU_MEM_AGP)
+		block = find_block(dev_priv->agp_heap, memfree->offset);
+	else if (memfree->flags & NOUVEAU_MEM_PCI)
+		block = find_block(dev_priv->pci_heap, memfree->offset);
 	if (!block)
-		return DRM_ERR(EFAULT);
-	if (block->filp != filp)
-		return DRM_ERR(EPERM);
+		return -EFAULT;
+	if (block->file_priv != file_priv)
+		return -EPERM;
 
 	nouveau_mem_free(dev, block);
 	return 0;

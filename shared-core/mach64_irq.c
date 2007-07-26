@@ -42,7 +42,7 @@
 
 irqreturn_t mach64_driver_irq_handler(DRM_IRQ_ARGS)
 {
-	drm_device_t *dev = (drm_device_t *) arg;
+	struct drm_device *dev = (struct drm_device *) arg;
 	drm_mach64_private_t *dev_priv =
 	    (drm_mach64_private_t *) dev->dev_private;
 	int status;
@@ -70,7 +70,7 @@ irqreturn_t mach64_driver_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_NONE;
 }
 
-int mach64_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence)
+int mach64_driver_vblank_wait(struct drm_device * dev, unsigned int *sequence)
 {
 	unsigned int cur_vblank;
 	int ret = 0;
@@ -90,7 +90,7 @@ int mach64_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence)
 
 /* drm_dma.h hooks
 */
-void mach64_driver_irq_preinstall(drm_device_t * dev)
+void mach64_driver_irq_preinstall(struct drm_device * dev)
 {
 	drm_mach64_private_t *dev_priv =
 	    (drm_mach64_private_t *) dev->dev_private;
@@ -104,7 +104,7 @@ void mach64_driver_irq_preinstall(drm_device_t * dev)
 		     | MACH64_CRTC_VBLANK_INT);
 }
 
-void mach64_driver_irq_postinstall(drm_device_t * dev)
+void mach64_driver_irq_postinstall(struct drm_device * dev)
 {
 	drm_mach64_private_t *dev_priv =
 	    (drm_mach64_private_t *) dev->dev_private;
@@ -118,7 +118,7 @@ void mach64_driver_irq_postinstall(drm_device_t * dev)
 
 }
 
-void mach64_driver_irq_uninstall(drm_device_t * dev)
+void mach64_driver_irq_uninstall(struct drm_device * dev)
 {
 	drm_mach64_private_t *dev_priv =
 	    (drm_mach64_private_t *) dev->dev_private;

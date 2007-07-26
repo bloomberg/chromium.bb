@@ -36,9 +36,9 @@
 #include "nouveau_drv.h"
 #include "nouveau_reg.h"
 
-void nouveau_irq_preinstall(drm_device_t *dev)
+void nouveau_irq_preinstall(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("IRQ: preinst\n");
 
@@ -71,9 +71,9 @@ void nouveau_irq_preinstall(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
 
-void nouveau_irq_postinstall(drm_device_t *dev)
+void nouveau_irq_postinstall(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (!dev_priv) {
 		DRM_ERROR("AIII, no dev_priv\n");
@@ -107,9 +107,9 @@ void nouveau_irq_postinstall(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_EN_0, NV_PMC_INTR_EN_0_MASTER_ENABLE);
 }
 
-void nouveau_irq_uninstall(drm_device_t *dev)
+void nouveau_irq_uninstall(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (!dev_priv) {
 		DRM_ERROR("AIII, no dev_priv\n");
@@ -138,10 +138,10 @@ void nouveau_irq_uninstall(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
 
-static void nouveau_fifo_irq_handler(drm_device_t *dev)
+static void nouveau_fifo_irq_handler(struct drm_device *dev)
 {
 	uint32_t status, chmode, chstat, channel;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	status = NV_READ(NV03_PFIFO_INTR_0);
 	if (!status)
@@ -200,9 +200,9 @@ static void nouveau_fifo_irq_handler(drm_device_t *dev)
 }
 
 #if 0
-static void nouveau_nv04_context_switch(drm_device_t *dev)
+static void nouveau_nv04_context_switch(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t channel,i;
 	uint32_t max=0;
 	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
@@ -246,37 +246,101 @@ static void nouveau_nv04_context_switch(drm_device_t *dev)
 }
 #endif
 
-static void
-nouveau_graph_dump_trap_info(drm_device_t *dev)
+
+struct nouveau_bitfield_names
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	uint32_t mask;
+	const char * name;
+};
+
+static struct nouveau_bitfield_names nouveau_nstatus_names[] =
+{
+	{ NV03_PGRAPH_NSTATUS_STATE_IN_USE,       "STATE_IN_USE" },
+	{ NV03_PGRAPH_NSTATUS_INVALID_STATE,      "INVALID_STATE" },
+	{ NV03_PGRAPH_NSTATUS_BAD_ARGUMENT,       "BAD_ARGUMENT" },
+	{ NV03_PGRAPH_NSTATUS_PROTECTION_FAULT,   "PROTECTION_FAULT" }
+};
+
+static struct nouveau_bitfield_names nouveau_nsource_names[] =
+{
+	{ NV03_PGRAPH_NSOURCE_NOTIFICATION,       "NOTIFICATION" },
+	{ NV03_PGRAPH_NSOURCE_DATA_ERROR,         "DATA_ERROR" },
+	{ NV03_PGRAPH_NSOURCE_PROTECTION_ERROR,   "PROTECTION_ERROR" },
+	{ NV03_PGRAPH_NSOURCE_RANGE_EXCEPTION,    "RANGE_EXCEPTION" },
+	{ NV03_PGRAPH_NSOURCE_LIMIT_COLOR,        "LIMIT_COLOR" },
+	{ NV03_PGRAPH_NSOURCE_LIMIT_ZETA,         "LIMIT_ZETA" },
+	{ NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD,       "ILLEGAL_MTHD" },
+	{ NV03_PGRAPH_NSOURCE_DMA_R_PROTECTION,   "DMA_R_PROTECTION" },
+	{ NV03_PGRAPH_NSOURCE_DMA_W_PROTECTION,   "DMA_W_PROTECTION" },
+	{ NV03_PGRAPH_NSOURCE_FORMAT_EXCEPTION,   "FORMAT_EXCEPTION" },
+	{ NV03_PGRAPH_NSOURCE_PATCH_EXCEPTION,    "PATCH_EXCEPTION" },
+	{ NV03_PGRAPH_NSOURCE_STATE_INVALID,      "STATE_INVALID" },
+	{ NV03_PGRAPH_NSOURCE_DOUBLE_NOTIFY,      "DOUBLE_NOTIFY" },
+	{ NV03_PGRAPH_NSOURCE_NOTIFY_IN_USE,      "NOTIFY_IN_USE" },
+	{ NV03_PGRAPH_NSOURCE_METHOD_CNT,         "METHOD_CNT" },
+	{ NV03_PGRAPH_NSOURCE_BFR_NOTIFICATION,   "BFR_NOTIFICATION" },
+	{ NV03_PGRAPH_NSOURCE_DMA_VTX_PROTECTION, "DMA_VTX_PROTECTION" },
+	{ NV03_PGRAPH_NSOURCE_DMA_WIDTH_A,        "DMA_WIDTH_A" },
+	{ NV03_PGRAPH_NSOURCE_DMA_WIDTH_B,        "DMA_WIDTH_B" },
+};
+
+static void
+nouveau_print_bitfield_names(uint32_t value,
+                             const struct nouveau_bitfield_names *namelist,
+                             const int namelist_len)
+{
+	int i;
+	for(i=0; i<namelist_len; ++i) {
+		uint32_t mask = namelist[i].mask;
+		if(value & mask) {
+			printk(" %s", namelist[i].name);
+			value &= ~mask;
+		}
+	}
+	if(value)
+		printk(" (unknown bits 0x%08x)", value);
+}
+
+static void
+nouveau_graph_dump_trap_info(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t address;
 	uint32_t channel, class;
 	uint32_t method, subc, data;
+	uint32_t nsource, nstatus;
 
 	address = NV_READ(0x400704);
 	channel = (address >> 20) & 0x1F;
 	subc    = (address >> 16) & 0x7;
 	method  = address & 0x1FFC;
 	data    = NV_READ(0x400708);
+	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
+	nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
 	if (dev_priv->card_type < NV_50) {
 		class = NV_READ(0x400160 + subc*4) & 0xFFFF;
 	} else {
 		class = NV_READ(0x400814);
 	}
 
-	DRM_ERROR("NV: nSource: 0x%08x, nStatus: 0x%08x\n",
-			NV_READ(0x400108), NV_READ(0x400104));
-	DRM_ERROR("NV: Channel %d/%d (class 0x%04x) -"
+	DRM_ERROR("nSource:");
+	nouveau_print_bitfield_names(nsource, nouveau_nsource_names,
+	                             ARRAY_SIZE(nouveau_nsource_names));
+	printk(", nStatus:");
+	nouveau_print_bitfield_names(nstatus, nouveau_nstatus_names,
+	                             ARRAY_SIZE(nouveau_nstatus_names));
+	printk("\n");
+
+	DRM_ERROR("NV: Channel %d/%d (class 0x%04x) - "
 			"Method 0x%04x, Data 0x%08x\n",
 			channel, subc, class, method, data
 		 );
 }
 
-static void nouveau_pgraph_irq_handler(drm_device_t *dev)
+static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 {
 	uint32_t status;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	status = NV_READ(NV03_PGRAPH_INTR);
 	if (!status)
@@ -286,8 +350,8 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 		uint32_t nsource, nstatus, instance, notify;
 		DRM_DEBUG("NV: PGRAPH notify interrupt\n");
 
-		nstatus = NV_READ(0x00400104);
-		nsource = NV_READ(0x00400108);
+		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
 
 		/* if this wasn't NOTIFICATION_PENDING, dump extra trap info */
@@ -308,8 +372,8 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 		uint32_t nsource, nstatus, instance, notify;
 		DRM_DEBUG("NV: PGRAPH buffer notify interrupt\n");
 
-		nstatus = NV_READ(0x00400104);
-		nsource = NV_READ(0x00400108);
+		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
 
 		instance = NV_READ(0x00400158);
@@ -332,8 +396,8 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 
 		DRM_ERROR("NV: PGRAPH error interrupt\n");
 
-		nstatus = NV_READ(0x00400104);
-		nsource = NV_READ(0x00400108);
+		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 		DRM_ERROR("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
 
 		instance = NV_READ(0x00400158);
@@ -355,6 +419,7 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 				nouveau_nv04_context_switch(dev);
 				break;
 			case NV_10:
+			case NV_11:
 			case NV_17:
 				nouveau_nv10_context_switch(dev);
 				break;
@@ -379,9 +444,9 @@ static void nouveau_pgraph_irq_handler(drm_device_t *dev)
 	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PGRAPH_PENDING);
 }
 
-static void nouveau_crtc_irq_handler(drm_device_t *dev, int crtc)
+static void nouveau_crtc_irq_handler(struct drm_device *dev, int crtc)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	if (crtc&1) {
 		NV_WRITE(NV_CRTC0_INTSTAT, NV_CRTC_INTR_VBLANK);
 	}
@@ -393,8 +458,8 @@ static void nouveau_crtc_irq_handler(drm_device_t *dev, int crtc)
 
 irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS)
 {
-	drm_device_t          *dev = (drm_device_t*)arg;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = (struct drm_device*)arg;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t status;
 
 	status = NV_READ(NV03_PMC_INTR_0);
