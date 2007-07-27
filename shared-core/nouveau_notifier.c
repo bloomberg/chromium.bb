@@ -41,10 +41,13 @@ nouveau_notifier_init_channel(struct drm_device *dev, int channel,
 	if (dev_priv->agp_heap &&
 	    dev_priv->gart_info.type != NOUVEAU_GART_SGDMA)
 		flags = NOUVEAU_MEM_AGP | NOUVEAU_MEM_FB_ACCEPTABLE;
+	else if ( dev_priv->pci_heap )
+		flags = NOUVEAU_MEM_PCI;
 	else
 		flags = NOUVEAU_MEM_FB;
 	flags |= NOUVEAU_MEM_MAPPED;
 
+DRM_DEBUG("Allocating notifier block in %d\n", flags);
 	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,
 						 file_priv);
 	if (!chan->notifier_block)
@@ -102,6 +105,8 @@ nouveau_notifier_alloc(struct drm_device *dev, int channel, uint32_t handle,
 		target = NV_DMA_TARGET_VIDMEM;
 	} else if (chan->notifier_block->flags & NOUVEAU_MEM_AGP) {
 		target = NV_DMA_TARGET_AGP;
+	} else if (chan->notifier_block->flags & NOUVEAU_MEM_PCI) {
+		target = NV_DMA_TARGET_PCI_NONLINEAR;
 	} else {
 		DRM_ERROR("Bad DMA target, flags 0x%08x!\n",
 			  chan->notifier_block->flags);
