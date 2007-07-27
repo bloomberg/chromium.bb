@@ -37,23 +37,23 @@ static struct pci_device_id pciidlist[] = {
 	xgi_PCI_IDS
 };
 
-static int xgi_bootstrap(DRM_IOCTL_ARGS);
+static int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
 
-static drm_ioctl_desc_t xgi_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_XGI_BOOTSTRAP)] = {xgi_bootstrap, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},
+static struct drm_ioctl_desc xgi_ioctls[] = {
+	DRM_IOCTL_DEF(DRM_XGI_BOOTSTRAP, xgi_bootstrap, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
-	[DRM_IOCTL_NR(DRM_XGI_FB_ALLOC)] = {xgi_fb_alloc_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_FB_FREE)] = {xgi_fb_free_ioctl, DRM_AUTH},
+	DRM_IOCTL_DEF(DRM_XGI_FB_ALLOC, xgi_fb_alloc_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_FB_FREE, xgi_fb_free_ioctl, DRM_AUTH),
 
-	[DRM_IOCTL_NR(DRM_XGI_PCIE_ALLOC)] = {xgi_pcie_alloc_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_PCIE_FREE)] = {xgi_pcie_free_ioctl, DRM_AUTH},
+	DRM_IOCTL_DEF(DRM_XGI_PCIE_ALLOC, xgi_pcie_alloc_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_PCIE_FREE, xgi_pcie_free_ioctl, DRM_AUTH),
 
-	[DRM_IOCTL_NR(DRM_XGI_GE_RESET)] = {xgi_ge_reset_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_DUMP_REGISTER)] = {xgi_dump_register_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_DEBUG_INFO)] = {xgi_restore_registers_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_SUBMIT_CMDLIST)] = {xgi_submit_cmdlist_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_TEST_RWINKERNEL)] = {xgi_test_rwinkernel_ioctl, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_XGI_STATE_CHANGE)] = {xgi_state_change_ioctl, DRM_AUTH|DRM_MASTER},
+	DRM_IOCTL_DEF(DRM_XGI_GE_RESET, xgi_ge_reset_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_DUMP_REGISTER, xgi_dump_register_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_DEBUG_INFO, xgi_restore_registers_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_SUBMIT_CMDLIST, xgi_submit_cmdlist, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_TEST_RWINKERNEL, xgi_test_rwinkernel_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_STATE_CHANGE, xgi_state_change_ioctl, DRM_AUTH|DRM_MASTER),
 };
 
 static const int xgi_max_ioctl = DRM_ARRAY_SIZE(xgi_ioctls);
@@ -61,8 +61,9 @@ static const int xgi_max_ioctl = DRM_ARRAY_SIZE(xgi_ioctls);
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static int xgi_driver_load(struct drm_device *dev, unsigned long flags);
 static int xgi_driver_unload(struct drm_device *dev);
-static void xgi_driver_preclose(struct drm_device * dev, DRMFILE filp);
-static void xgi_driver_lastclose(drm_device_t * dev);
+static void xgi_driver_preclose(struct drm_device * dev, 
+	struct drm_file * filp);
+static void xgi_driver_lastclose(struct drm_device * dev);
 static irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS);
 
 
@@ -139,17 +140,14 @@ MODULE_LICENSE("GPL and additional rights");
 
 void xgi_kern_isr_bh(struct drm_device *dev);
 
-int xgi_bootstrap(DRM_IOCTL_ARGS)
+int xgi_bootstrap(struct drm_device * dev, void * data,
+		  struct drm_file * filp)
 {
-	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
-	struct xgi_bootstrap bs;
+	struct xgi_bootstrap * bs = (struct xgi_bootstrap *) data;
 	struct drm_map_list *maplist;
 	int err;
 
-
-	DRM_COPY_FROM_USER_IOCTL(bs, (struct xgi_bootstrap __user *) data,
-				 sizeof(bs));
 
 	if (info->mmio_map == NULL) {
 		err = drm_addmap(dev, info->mmio.base, info->mmio.size,
@@ -187,7 +185,7 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 	}
 
 
-	info->pcie.size = bs.gart.size;
+	info->pcie.size = bs->gart.size;
 
 	/* Init the resource manager */
 	if (!info->pcie_heap.initialized) {
@@ -224,16 +222,13 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 		return -EINVAL;
 	}
 
-	bs.gart = *info->pcie_map;
-	bs.gart.handle = (void *)(unsigned long) maplist->user_token;
-	DRM_COPY_TO_USER_IOCTL((struct xgi_bootstrap __user *) data,
-			       bs, sizeof(bs));
-
+	bs->gart = *info->pcie_map;
+	bs->gart.handle = (void *)(unsigned long) maplist->user_token;
 	return 0;
 }
 
 
-void xgi_driver_preclose(struct drm_device * dev, DRMFILE filp)
+void xgi_driver_preclose(struct drm_device * dev, struct drm_file * filp)
 {
 	struct xgi_info * info = dev->dev_private;
 
@@ -242,7 +237,7 @@ void xgi_driver_preclose(struct drm_device * dev, DRMFILE filp)
 }
 
 
-void xgi_driver_lastclose(drm_device_t * dev)
+void xgi_driver_lastclose(struct drm_device * dev)
 {
 	struct xgi_info * info = dev->dev_private;
 

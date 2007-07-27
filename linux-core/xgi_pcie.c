@@ -33,7 +33,7 @@ static struct xgi_mem_block *xgi_pcie_cmdlist_block = NULL;
 static struct xgi_mem_block *xgi_pcie_scratchpad_block = NULL;
 
 static int xgi_pcie_free_locked(struct xgi_info * info,
-	 unsigned long offset, DRMFILE filp);
+	 unsigned long offset, struct drm_file * filp);
 
 static int xgi_pcie_lut_init(struct xgi_info * info)
 {
@@ -148,7 +148,7 @@ int xgi_pcie_heap_init(struct xgi_info * info)
 
 
 int xgi_pcie_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
-		   DRMFILE filp)
+		   struct drm_file * filp)
 {
 	struct xgi_mem_block *block;
 
@@ -199,32 +199,21 @@ int xgi_pcie_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 }
 
 
-int xgi_pcie_alloc_ioctl(DRM_IOCTL_ARGS)
+int xgi_pcie_alloc_ioctl(struct drm_device * dev, void * data,
+			 struct drm_file * filp)
 {
-	DRM_DEVICE;
-	struct xgi_mem_alloc alloc;
+	struct xgi_mem_alloc *const alloc =
+		(struct xgi_mem_alloc *) data;
 	struct xgi_info *info = dev->dev_private;
-	int err;
 
-	DRM_COPY_FROM_USER_IOCTL(alloc, (struct xgi_mem_alloc __user *) data,
-				 sizeof(alloc));
-
-	err = xgi_pcie_alloc(info, & alloc, filp);
-	if (err) {
-		return err;
-	}
-	
-	DRM_COPY_TO_USER_IOCTL((struct xgi_mem_alloc __user *) data,
-			       alloc, sizeof(alloc));
-
-	return 0;
+	return xgi_pcie_alloc(info, alloc, filp);
 }
 
 
 /**
  * Free all blocks associated with a particular file handle.
  */
-void xgi_pcie_free_all(struct xgi_info * info, DRMFILE filp)
+void xgi_pcie_free_all(struct xgi_info * info, struct drm_file * filp)
 {
 	if (!info->pcie_heap.initialized) {
 		return;
@@ -252,8 +241,8 @@ void xgi_pcie_free_all(struct xgi_info * info, DRMFILE filp)
 }
 
 
-int xgi_pcie_free_locked(struct xgi_info * info,
-			 unsigned long offset, DRMFILE filp)
+int xgi_pcie_free_locked(struct xgi_info * info, unsigned long offset,
+			 struct drm_file * filp)
 {
 	const bool isvertex = (xgi_pcie_vertex_block
 			       && (xgi_pcie_vertex_block->offset == offset));
@@ -266,7 +255,8 @@ int xgi_pcie_free_locked(struct xgi_info * info,
 }
 
 
-int xgi_pcie_free(struct xgi_info * info, unsigned long offset, DRMFILE filp)
+int xgi_pcie_free(struct xgi_info * info, unsigned long offset, 
+		  struct drm_file * filp)
 {
 	int err;
 
@@ -282,16 +272,12 @@ int xgi_pcie_free(struct xgi_info * info, unsigned long offset, DRMFILE filp)
 }
 
 
-int xgi_pcie_free_ioctl(DRM_IOCTL_ARGS)
+int xgi_pcie_free_ioctl(struct drm_device * dev, void * data,
+			struct drm_file * filp)
 {
-	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
-	u32 offset;
 
-	DRM_COPY_FROM_USER_IOCTL(offset, (unsigned long __user *) data,
-				 sizeof(offset));
-
-	return xgi_pcie_free(info, offset, filp);
+	return xgi_pcie_free(info, *(u32 *) data, filp);
 }
 
 
@@ -312,15 +298,13 @@ void *xgi_find_pcie_virt(struct xgi_info * info, u32 address)
 /*
     address -- GE hw address
 */
-int xgi_test_rwinkernel_ioctl(DRM_IOCTL_ARGS)
+int xgi_test_rwinkernel_ioctl(struct drm_device * dev, void * data,
+			      struct drm_file * filp)
 {
-	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
-	u32 address;
+	u32 address = *(u32 *) data;
 	u32 *virtaddr = 0;
 
-	DRM_COPY_FROM_USER_IOCTL(address, (unsigned long __user *) data,
-				 sizeof(address));
 
 	DRM_INFO("input GE HW addr is 0x%x\n", address);
 

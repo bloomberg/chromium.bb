@@ -94,7 +94,7 @@ struct xgi_mem_block *xgi_mem_new_node(void)
 	block->offset = 0;
 	block->size = 0;
 	block->owner = PCIE_INVALID;
-	block->filp = (DRMFILE) -1;
+	block->filp = (struct drm_file *) -1;
 
 	return block;
 }
@@ -173,7 +173,7 @@ struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
 }
 
 int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
-		 DRMFILE filp)
+		 struct drm_file * filp)
 {
 	struct xgi_mem_block *used_block = NULL, *block;
 	struct xgi_mem_block *prev, *next;
@@ -246,7 +246,7 @@ int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
 
 
 int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
-		 DRMFILE filp)
+		 struct drm_file * filp)
 {
 	struct xgi_mem_block *block;
 
@@ -282,29 +282,19 @@ int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 }
 
 
-int xgi_fb_alloc_ioctl(DRM_IOCTL_ARGS)
+int xgi_fb_alloc_ioctl(struct drm_device * dev, void * data,
+		       struct drm_file * filp)
 {
-	DRM_DEVICE;
-	struct xgi_mem_alloc alloc;
+	struct xgi_mem_alloc *alloc = 
+		(struct xgi_mem_alloc *) data;
 	struct xgi_info *info = dev->dev_private;
-	int err;
 
-	DRM_COPY_FROM_USER_IOCTL(alloc, (struct xgi_mem_alloc __user *) data,
-				 sizeof(alloc));
-
-	err = xgi_fb_alloc(info, & alloc, filp);
-	if (err) {
-		return err;
-	}
-
-	DRM_COPY_TO_USER_IOCTL((struct xgi_mem_alloc __user *) data,
-			       alloc, sizeof(alloc));
-
-	return 0;
+	return xgi_fb_alloc(info, alloc, filp);
 }
 
 
-int xgi_fb_free(struct xgi_info * info, unsigned long offset, DRMFILE filp)
+int xgi_fb_free(struct xgi_info * info, unsigned long offset,
+		struct drm_file * filp)
 {
 	int err = 0;
 
@@ -320,16 +310,12 @@ int xgi_fb_free(struct xgi_info * info, unsigned long offset, DRMFILE filp)
 }
 
 
-int xgi_fb_free_ioctl(DRM_IOCTL_ARGS)
+int xgi_fb_free_ioctl(struct drm_device * dev, void * data,
+		      struct drm_file * filp)
 {
-	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
-	u32 offset;
 
-	DRM_COPY_FROM_USER_IOCTL(offset, (unsigned long __user *) data,
-				 sizeof(offset));
-
-	return xgi_fb_free(info, offset, filp);
+	return xgi_fb_free(info, *(u32 *) data, filp);
 }
 
 
@@ -342,7 +328,7 @@ int xgi_fb_heap_init(struct xgi_info * info)
 /**
  * Free all blocks associated with a particular file handle.
  */
-void xgi_fb_free_all(struct xgi_info * info, DRMFILE filp)
+void xgi_fb_free_all(struct xgi_info * info, struct drm_file * filp)
 {
 	if (!info->fb_heap.initialized) {
 		return;

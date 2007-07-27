@@ -52,7 +52,7 @@ struct xgi_mem_block {
 	struct list_head list;
 	unsigned long offset;
 	unsigned long size;
-	DRMFILE filp;
+	struct drm_file * filp;
 
 	unsigned int owner;
 };
@@ -111,7 +111,7 @@ extern struct kmem_cache *xgi_mem_block_cache;
 extern struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
 	unsigned long size, enum PcieOwner owner);
 extern int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
-	DRMFILE filp);
+	struct drm_file * filp);
 extern int xgi_mem_heap_init(struct xgi_mem_heap * heap, unsigned int start,
 	unsigned int end);
 extern void xgi_mem_heap_cleanup(struct xgi_mem_heap * heap);
@@ -119,34 +119,44 @@ extern void xgi_mem_heap_cleanup(struct xgi_mem_heap * heap);
 extern int xgi_fb_heap_init(struct xgi_info * info);
 
 extern int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
-	DRMFILE filp);
+	struct drm_file * filp);
 
 extern int xgi_fb_free(struct xgi_info * info, unsigned long offset,
-	DRMFILE filp);
+	struct drm_file * filp);
 
 extern int xgi_pcie_heap_init(struct xgi_info * info);
 extern void xgi_pcie_lut_cleanup(struct xgi_info * info);
 
 extern int xgi_pcie_alloc(struct xgi_info * info,
-			  struct xgi_mem_alloc * alloc, DRMFILE filp);
+	struct xgi_mem_alloc * alloc, struct drm_file * filp);
 
 extern int xgi_pcie_free(struct xgi_info * info, unsigned long offset,
-	DRMFILE filp);
+	struct drm_file * filp);
 
 extern void *xgi_find_pcie_virt(struct xgi_info * info, u32 address);
 
-extern void xgi_pcie_free_all(struct xgi_info *, DRMFILE);
-extern void xgi_fb_free_all(struct xgi_info *, DRMFILE);
+extern void xgi_pcie_free_all(struct xgi_info *, struct drm_file *);
+extern void xgi_fb_free_all(struct xgi_info *, struct drm_file *);
 
-extern int xgi_fb_alloc_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_fb_free_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_pcie_alloc_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_pcie_free_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_ge_reset_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_dump_register_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_restore_registers_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_submit_cmdlist_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_test_rwinkernel_ioctl(DRM_IOCTL_ARGS);
-extern int xgi_state_change_ioctl(DRM_IOCTL_ARGS);
+extern int xgi_fb_alloc_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_fb_free_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_pcie_alloc_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_pcie_free_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_ge_reset_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_dump_register_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_restore_registers_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_submit_cmdlist(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_test_rwinkernel_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_state_change_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
 
 #endif

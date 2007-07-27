@@ -27,9 +27,9 @@
 #include "xgi_drv.h"
 #include "xgi_regs.h"
 
-int xgi_ge_reset_ioctl(DRM_IOCTL_ARGS)
+int xgi_ge_reset_ioctl(struct drm_device * dev, void * data,
+		       struct drm_file * filp)
 {
-	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
 
 	xgi_disable_ge(info);
@@ -436,25 +436,23 @@ void xgi_dump_register(struct xgi_info * info)
 }
 
 
-int xgi_dump_register_ioctl(DRM_IOCTL_ARGS)
+int xgi_dump_register_ioctl(struct drm_device * dev, void * data,
+			    struct drm_file * filp)
 {
-	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
 
 	xgi_dump_register(info);
-
 	return 0;
 }
 
 
-int xgi_restore_registers_ioctl(DRM_IOCTL_ARGS)
+int xgi_restore_registers_ioctl(struct drm_device * dev, void * data,
+				struct drm_file * filp)
 {
-	DRM_DEVICE;
 	struct xgi_info *info = dev->dev_private;
 
 	OUT3X5B(info->mmio_map, 0x13, 0);
 	OUT3X5B(info->mmio_map, 0x8b, 2);
-
 	return 0;
 }
 

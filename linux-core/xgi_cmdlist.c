@@ -76,9 +76,12 @@ unsigned int get_batch_command(enum xgi_batch_type type)
 }
 
 
-static void xgi_submit_cmdlist(struct xgi_info * info,
-			       const struct xgi_cmd_info * pCmdInfo)
+int xgi_submit_cmdlist(struct drm_device * dev, void * data,
+		       struct drm_file * filp)
 {
+	struct xgi_info *const info = dev->dev_private;
+	const struct xgi_cmd_info *const pCmdInfo =
+		(struct xgi_cmd_info *) data;
 	const unsigned int cmd = get_batch_command(pCmdInfo->type);
 	u32 begin[4];
 
@@ -130,24 +133,6 @@ static void xgi_submit_cmdlist(struct xgi_info * info,
 	}
 
 	info->cmdring.last_ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
-}
-
-
-int xgi_submit_cmdlist_ioctl(DRM_IOCTL_ARGS)
-{
-	DRM_DEVICE;
-	struct xgi_cmd_info  cmd_list;
-	struct xgi_info *info = dev->dev_private;
-
-	DRM_COPY_FROM_USER_IOCTL(cmd_list, 
-				 (struct xgi_cmd_info __user *) data,
-				 sizeof(cmd_list));
-
-	if (cmd_list.type > BTYPE_CTRL) {
-		return -EINVAL;
-	}
-
-	xgi_submit_cmdlist(info, &cmd_list);
 	return 0;
 }
 
@@ -187,16 +172,15 @@ int xgi_state_change(struct xgi_info * info, unsigned int to,
 }
 
 
-int xgi_state_change_ioctl(DRM_IOCTL_ARGS)
+int xgi_state_change_ioctl(struct drm_device * dev, void * data,
+			   struct drm_file * filp)
 {
-	DRM_DEVICE;
-	struct xgi_state_info  state;
+	struct xgi_state_info *const state =
+		(struct xgi_state_info *) data;
 	struct xgi_info *info = dev->dev_private;
 
-	DRM_COPY_FROM_USER_IOCTL(state, (struct xgi_state_info __user *) data,
-				 sizeof(state));
 
-	return xgi_state_change(info, state._toState, state._fromState);
+	return xgi_state_change(info, state->_toState, state->_fromState);
 }
 
 
