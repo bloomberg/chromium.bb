@@ -173,7 +173,7 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 	if ((info->fb.base == 0) || (info->fb.size == 0)) {
 		DRM_ERROR("framebuffer appears to be wrong: 0x%lx 0x%x\n",
 			  (unsigned long) info->fb.base, info->fb.size);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 
@@ -221,7 +221,7 @@ int xgi_bootstrap(DRM_IOCTL_ARGS)
 	maplist = drm_find_matching_map(dev, info->pcie_map);
 	if (maplist == NULL) {
 		DRM_ERROR("Could not find GART backing store map.\n");
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	bs.gart = *info->pcie_map;
@@ -303,7 +303,7 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 	struct xgi_info *info = drm_alloc(sizeof(*info), DRM_MEM_DRIVER);
 
 	if (!info)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	(void) memset(info, 0, sizeof(*info));
 	dev->dev_private = info;
@@ -322,7 +322,7 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 	if ((info->mmio.base == 0) || (info->mmio.size == 0)) {
 		DRM_ERROR("mmio appears to be wrong: 0x%lx 0x%x\n",
 			  (unsigned long) info->mmio.base, info->mmio.size);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 
@@ -339,7 +339,7 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 						SLAB_HWCACHE_ALIGN,
 						NULL, NULL);
 	if (xgi_mem_block_cache == NULL) {
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 
 

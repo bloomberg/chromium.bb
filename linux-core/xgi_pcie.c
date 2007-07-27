@@ -85,7 +85,7 @@ static int xgi_pcie_lut_init(struct xgi_info * info)
 					 DMA_31BIT_MASK);
 	if (info->lut_handle == NULL) {
 		DRM_ERROR("cannot allocate PCIE lut page!\n");
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 
 	lut = info->lut_handle->vaddr;
@@ -97,7 +97,7 @@ static int xgi_pcie_lut_init(struct xgi_info * info)
 							 DMA_BIDIRECTIONAL);
 		if (dma_mapping_error(info->dev->sg->busaddr[i])) {
 			DRM_ERROR("cannot map GART backing store for DMA!\n");
-			return DRM_ERR(-(info->dev->sg->busaddr[i]));
+			return info->dev->sg->busaddr[i];
 		}
 
 		lut[i] = info->dev->sg->busaddr[i];
@@ -184,7 +184,7 @@ int xgi_pcie_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 		alloc->location = XGI_MEMLOC_INVALID;
 		alloc->size = 0;
 		DRM_ERROR("PCIE RAM allocation failed\n");
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	} else {
 		DRM_INFO("PCIE RAM allocation succeeded: offset = 0x%lx\n",
 			 block->offset);
@@ -325,7 +325,7 @@ int xgi_test_rwinkernel_ioctl(DRM_IOCTL_ARGS)
 	DRM_INFO("input GE HW addr is 0x%x\n", address);
 
 	if (address == 0) {
-		return DRM_ERR(EFAULT);
+		return -EFAULT;
 	}
 
 	virtaddr = (u32 *)xgi_find_pcie_virt(info, address);
@@ -337,7 +337,7 @@ int xgi_test_rwinkernel_ioctl(DRM_IOCTL_ARGS)
 		*virtaddr = 0x00f00fff;
 		DRM_INFO("modified [virtaddr] = 0x%x\n", *virtaddr);
 	} else {
-		return DRM_ERR(EFAULT);
+		return -EFAULT;
 	}
 
 	return 0;

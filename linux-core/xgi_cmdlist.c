@@ -144,7 +144,7 @@ int xgi_submit_cmdlist_ioctl(DRM_IOCTL_ARGS)
 				 sizeof(cmd_list));
 
 	if (cmd_list.type > BTYPE_CTRL) {
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	xgi_submit_cmdlist(info, &cmd_list);
@@ -180,7 +180,7 @@ int xgi_state_change(struct xgi_info * info, unsigned int to,
 		DRM_INFO("Leaving graphical mode (probably X shutting down)\n");
 	} else {
 		DRM_ERROR("Invalid state change.\n");
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	return 0;

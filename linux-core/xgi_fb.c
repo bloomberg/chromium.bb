@@ -45,7 +45,7 @@ int xgi_mem_heap_init(struct xgi_mem_heap *heap, unsigned int start,
 
 	block = kmem_cache_alloc(xgi_mem_block_cache, GFP_KERNEL);
 	if (!block) {
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 	}
 
 	block->offset = start;
@@ -189,11 +189,11 @@ int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
 
 	if (&block->list == &heap->used_list) {
 		DRM_ERROR("can't find block: 0x%lx to free!\n", offset);
-		return DRM_ERR(ENOENT);
+		return -ENOENT;
 	}
 
 	if (block->filp != filp) {
-		return DRM_ERR(EPERM);
+		return -EPERM;
 	}
 
 	used_block = block;
@@ -265,7 +265,7 @@ int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 			alloc->location = XGI_MEMLOC_LOCAL;
 			alloc->size = 0;
 			DRM_ERROR("Video RAM allocation failed\n");
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		} else {
 			DRM_INFO("Video RAM allocation succeeded: 0x%p\n",
 				 (char *)block->offset);
