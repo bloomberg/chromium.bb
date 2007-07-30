@@ -597,7 +597,6 @@ int drm_fence_create_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	 * usage > 0. No need to lock dev->struct_mutex;
 	 */
 	
-	atomic_inc(&fence->usage);
 	arg->handle = fence->base.hash.key;
 
 	read_lock_irqsave(&fm->lock, flags);
@@ -830,7 +829,7 @@ int drm_fence_buffers_ioctl(struct drm_device *dev, void *data, struct drm_file 
 					DRM_FENCE_FLAG_SHAREABLE);
 	if (ret)
 		return ret;
-	atomic_inc(&fence->usage);
+
 	arg->handle = fence->base.hash.key;
 
 	read_lock_irqsave(&fm->lock, flags);
