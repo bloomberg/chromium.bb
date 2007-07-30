@@ -27,6 +27,8 @@
 #include "xgi_drv.h"
 #include "xgi_regs.h"
 
+#include <linux/delay.h>
+
 int xgi_ge_reset_ioctl(struct drm_device * dev, void * data,
 		       struct drm_file * filp)
 {
@@ -46,47 +48,43 @@ int xgi_ge_reset_ioctl(struct drm_device * dev, void * data,
 
 static unsigned int s_invalid_begin = 0;
 
-static bool xgi_validate_signal(volatile u8 *mmio_vbase)
+static bool xgi_validate_signal(struct drm_map * map)
 {
-	volatile u32 *const ge_3d_status = 
-		(volatile u32 *)(mmio_vbase + 0x2800);
-	const u32 old_ge_status = ge_3d_status[0x00];
-
-	if (old_ge_status & 0x001c0000) {
+	if (DRM_READ32(map, 0x2800) & 0x001c0000) {
 		u16 check;
 
 		/* Check Read back status */
-		*(mmio_vbase + 0x235c) = 0x80;
-		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		DRM_WRITE8(map, 0x235c, 0x80);
+		check = DRM_READ16(map, 0x2360);
 
 		if ((check & 0x3f) != ((check & 0x3f00) >> 8)) {
 			return FALSE;
 		}
 
 		/* Check RO channel */
-		*(mmio_vbase + 0x235c) = 0x83;
-		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		DRM_WRITE8(map, 0x235c, 0x83);
+		check = DRM_READ16(map, 0x2360);
 		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
 			return FALSE;
 		}
 
 		/* Check RW channel */
-		*(mmio_vbase + 0x235c) = 0x88;
-		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		DRM_WRITE8(map, 0x235c, 0x88);
+		check = DRM_READ16(map, 0x2360);
 		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
 			return FALSE;
 		}
 
 		/* Check RO channel outstanding */
-		*(mmio_vbase + 0x235c) = 0x8f;
-		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		DRM_WRITE8(map, 0x235c, 0x8f);
+		check = DRM_READ16(map, 0x2360);
 		if (0 != (check & 0x3ff)) {
 			return FALSE;
 		}
 
 		/* Check RW channel outstanding */
-		*(mmio_vbase + 0x235c) = 0x90;
-		check = *((volatile u16 *)(mmio_vbase + 0x2360));
+		DRM_WRITE8(map, 0x235c, 0x90);
+		check = DRM_READ16(map, 0x2360);
 		if (0 != (check & 0x3ff)) {
 			return FALSE;
 		}
@@ -98,14 +96,12 @@ static bool xgi_validate_signal(volatile u8 *mmio_vbase)
 }
 
 
-static void xgi_ge_hang_reset(volatile u8 *mmio_vbase)
+static void xgi_ge_hang_reset(struct drm_map * map)
 {
-	volatile u32 *const ge_3d_status =
-		(volatile u32 *)(mmio_vbase + 0x2800);
 	int time_out = 0xffff;
 
-	*(mmio_vbase + 0xb057) = 8;
-	while (0 != (ge_3d_status[0x00] & 0xf0000000)) {
+	DRM_WRITE8(map, 0xb057, 8);
+	while (0 != (DRM_READ32(map, 0x2800) & 0xf0000000)) {
 		while (0 != ((--time_out) & 0xfff)) 
 			/* empty */ ;
 
@@ -116,57 +112,53 @@ static void xgi_ge_hang_reset(volatile u8 *mmio_vbase)
 			u8 old_36;
 
 			DRM_INFO("Can not reset back 0x%x!\n",
-				 ge_3d_status[0x00]);
+				 DRM_READ32(map, 0x2800));
 
-			*(mmio_vbase + 0xb057) = 0;
+			DRM_WRITE8(map, 0xb057, 0);
 
 			/* Have to use 3x5.36 to reset. */
 			/* Save and close dynamic gating */
 
-			old_3ce = *(mmio_vbase + 0x3ce);
-			*(mmio_vbase + 0x3ce) = 0x2a;
-			old_3cf = *(mmio_vbase + 0x3cf);
-			*(mmio_vbase + 0x3cf) = old_3cf & 0xfe;
+			old_3ce = DRM_READ8(map, 0x3ce);
+			DRM_WRITE8(map, 0x3ce, 0x2a);
+			old_3cf = DRM_READ8(map, 0x3cf);
+			DRM_WRITE8(map, 0x3cf, old_3cf & 0xfe);
 
 			/* Reset GE */
-			old_index = *(mmio_vbase + 0x3d4);
-			*(mmio_vbase + 0x3d4) = 0x36;
-			old_36 = *(mmio_vbase + 0x3d5);
-			*(mmio_vbase + 0x3d5) = old_36 | 0x10;
-
+			old_index = DRM_READ8(map, 0x3d4);
+			DRM_WRITE8(map, 0x3d4, 0x36);
+			old_36 = DRM_READ8(map, 0x3d5);
+			DRM_WRITE8(map, 0x3d5, old_36 | 0x10);
+			
 			while (0 != ((--time_out) & 0xfff)) 
 				/* empty */ ;
 
-			*(mmio_vbase + 0x3d5) = old_36;
-			*(mmio_vbase + 0x3d4) = old_index;
+			DRM_WRITE8(map, 0x3d5, old_36);
+			DRM_WRITE8(map, 0x3d4, old_index);
 
 			/* Restore dynamic gating */
-			*(mmio_vbase + 0x3cf) = old_3cf; 
-			*(mmio_vbase + 0x3ce) = old_3ce;
+			DRM_WRITE8(map, 0x3cf, old_3cf);
+			DRM_WRITE8(map, 0x3ce, old_3ce);
 			break;
 		}
 	}
 
-	*(mmio_vbase + 0xb057) = 0;
+	DRM_WRITE8(map, 0xb057, 0);
 }
 
 	
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
-	volatile u8 *const mmio_vbase = info->mmio_map->handle;
-	volatile u32 *const ge_3d_status =
-		(volatile u32 *)(mmio_vbase + 0x2800);
-	const u32 int_status = ge_3d_status[4];
+	const u32 int_status = DRM_READ32(info->mmio_map, 0x2810);
 	bool is_support_auto_reset = FALSE;
 
 	/* Check GE on/off */
 	if (0 == (0xffffc0f0 & int_status)) {
-		u32 old_pcie_cmd_fetch_Addr = ge_3d_status[0x0a];
-
 		if (0 != (0x1000 & int_status)) {
 			/* We got GE stall interrupt. 
 			 */
-			ge_3d_status[0x04] = int_status | 0x04000000;
+			DRM_WRITE32(info->mmio_map, 0x2810,
+				    int_status | 0x04000000);
 
 			if (is_support_auto_reset) {
 				static cycles_t last_tick;
@@ -174,7 +166,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 
 				/* OE II is busy. */
 
-				if (!xgi_validate_signal(mmio_vbase)) {
+				if (!xgi_validate_signal(info->mmio_map)) {
 					/* Nothing but skip. */
 				} else if (0 == continue_int_count++) {
 					last_tick = get_cycles();
@@ -189,13 +181,14 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 						/* GE Hung up, need reset. */
 						DRM_INFO("Reset GE!\n");
 
-						xgi_ge_hang_reset(mmio_vbase);
+						xgi_ge_hang_reset(info->mmio_map);
 					}
 				}
 			}
 		} else if (0 != (0x1 & int_status)) {
 			s_invalid_begin++;
-			ge_3d_status[0x04] = (int_status & ~0x01) | 0x04000000;
+			DRM_WRITE32(info->mmio_map, 0x2810,
+				    (int_status & ~0x01) | 0x04000000);
 		}
 
 		return TRUE;
@@ -456,14 +449,38 @@ int xgi_restore_registers_ioctl(struct drm_device * dev, void * data,
 	return 0;
 }
 
+
+#define WHOLD_GE_STATUS             0x2800
+
+/* Test everything except the "whole GE busy" bit, the "master engine busy"
+ * bit, and the reserved bits [26:21].
+ */
+#define IDLE_MASK                   ~((1U<<31) | (1U<<28) | (0x3f<<21))
+
 void xgi_waitfor_pci_idle(struct xgi_info * info)
 {
-#define WHOLD_GE_STATUS             0x2800
-#define IDLE_MASK                   ~0x90200000
+	unsigned int idleCount = 0;
+	u32 old_status = 0;
+	unsigned int same_count = 0;
 
-	int idleCount = 0;
 	while (idleCount < 5) {
-		if (DRM_READ32(info->mmio_map, WHOLD_GE_STATUS) & IDLE_MASK) {
+		const u32 status = DRM_READ32(info->mmio_map, WHOLD_GE_STATUS) 
+			& IDLE_MASK;
+
+		if (status == old_status) {
+			same_count++;
+
+			if ((same_count % 100) == 0) {
+				DRM_ERROR("GE status stuck at 0x%08x for %u iterations!\n",
+					  old_status, same_count);
+			}
+		} else {
+			old_status = status;
+			same_count = 0;
+		}
+
+		if (status != 0) {
+			msleep(1);
 			idleCount = 0;
 		} else {
 			idleCount++;
