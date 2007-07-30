@@ -130,7 +130,7 @@ static inline void xgi_enable_ge(struct xgi_info * info)
 	int wait = 0;
 
 	// Enable GE
-	DRM_WRITE16(info->mmio_map, 0x3C4, 0x9211);
+	OUT3C5B(info->mmio_map, 0x11, 0x92);
 
 	// Save and close dynamic gating
 	bOld3cf2a = IN3CFB(info->mmio_map, 0x2a);
