@@ -242,6 +242,12 @@ void xgi_driver_lastclose(struct drm_device * dev)
 	struct xgi_info * info = dev->dev_private;
 
 	if (info != NULL) {
+		if (info->mmio_map != NULL) {
+			xgi_cmdlist_cleanup(info);
+			xgi_disable_ge(info);
+			xgi_disable_mmio(info);
+		}
+
 		/* The core DRM lastclose routine will destroy all of our
 		 * mappings for us.  NULL out the pointers here so that
 		 * xgi_bootstrap can do the right thing.
@@ -249,8 +255,6 @@ void xgi_driver_lastclose(struct drm_device * dev)
 		info->pcie_map = NULL;
 		info->mmio_map = NULL;
 		info->fb_map = NULL;
-
-		xgi_cmdlist_cleanup(info);
 
 		if (info->fb_heap.initialized) {
 			xgi_mem_heap_cleanup(&info->fb_heap);

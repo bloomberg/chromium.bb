@@ -29,7 +29,7 @@
 #include "xgi_misc.h"
 #include "xgi_cmdlist.h"
 
-static void addFlush2D(struct xgi_info * info);
+static void xgi_emit_flush(struct xgi_info * info, bool link);
 static unsigned int get_batch_command(enum xgi_batch_type type);
 static void triggerHWCommandList(struct xgi_info * info);
 static void xgi_cmdlist_reset(struct xgi_info * info);
@@ -120,7 +120,7 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 		DRM_DEBUG("info->cmdring.last_ptr != NULL\n");
 
 		if (pCmdInfo->type == BTYPE_3D) {
-			addFlush2D(info);
+			xgi_emit_flush(info, TRUE);
 		}
 
 		info->cmdring.last_ptr[1] = begin[1];
@@ -190,9 +190,18 @@ void xgi_cmdlist_reset(struct xgi_info * info)
 	info->cmdring.ring_offset = 0;
 }
 
+
 void xgi_cmdlist_cleanup(struct xgi_info * info)
 {
 	if (info->cmdring.ring_hw_base != 0) {
+		/* If command lists have been issued, terminate the command
+		 * list chain with a flush command.
+		 */
+		if (info->cmdring.last_ptr != NULL) {
+			xgi_emit_flush(info, FALSE);
+			xgi_waitfor_pci_idle(info);
+		}
+
 		xgi_pcie_free(info, info->cmdring.ring_gart_base, NULL);
 		info->cmdring.ring_hw_base = 0;
 		info->cmdring.ring_offset = 0;
@@ -210,32 +219,43 @@ static void triggerHWCommandList(struct xgi_info * info)
 }
 
 
-static void addFlush2D(struct xgi_info * info)
+/**
+ * Emit a flush to the CRTL command stream.
+ * @info XGI info structure
+ * @link Emit (or don't emit) link information at start of flush command.
+ *
+ * This function assumes info->cmdring.ptr is non-NULL.
+ */
+static void xgi_emit_flush(struct xgi_info * info, bool link)
 {
-	u32 *flushBatchVirtAddr;
-	u32 flushBatchHWAddr;
+	static const u32 flush_command[8] = {
+		(0x10 << 24),
+		BEGIN_LINK_ENABLE_MASK | (0x00004),
+		0x00000000, 0x00000000,
+
+		/* Flush everything with the default 32 clock delay.
+		 */
+		0x003fffff, 0x003fffff, 0x003fffff, 0x003fffff
+	};
+	const unsigned int base = (link) ? 0 : 4;
+	const unsigned int flush_size = (8 - base) * sizeof(u32);
+	u32 *batch_addr;
+	u32 hw_addr;
 
 	/* check buf is large enough to contain a new flush batch */
-	if ((info->cmdring.ring_offset + 0x20) >= info->cmdring.size) {
+	if ((info->cmdring.ring_offset + flush_size) >= info->cmdring.size) {
 		info->cmdring.ring_offset = 0;
 	}
 
-	flushBatchHWAddr = info->cmdring.ring_hw_base + info->cmdring.ring_offset;
-	flushBatchVirtAddr = info->cmdring.ptr 
+	hw_addr = info->cmdring.ring_hw_base 
+		+ info->cmdring.ring_offset;
+	batch_addr = info->cmdring.ptr 
 		+ (info->cmdring.ring_offset / 4);
 
-	/* not using memcpy for I assume the address is discrete */
-	*(flushBatchVirtAddr + 0) = 0x10000000;
-	*(flushBatchVirtAddr + 1) = 0x80000004;	/* size = 0x04 dwords */
-	*(flushBatchVirtAddr + 2) = 0x00000000;
-	*(flushBatchVirtAddr + 3) = 0x00000000;
-	*(flushBatchVirtAddr + 4) = FLUSH_2D;
-	*(flushBatchVirtAddr + 5) = FLUSH_2D;
-	*(flushBatchVirtAddr + 6) = FLUSH_2D;
-	*(flushBatchVirtAddr + 7) = FLUSH_2D;
+	(void) memcpy(batch_addr, & flush_command[base], flush_size);
 
-	info->cmdring.last_ptr[1] = BEGIN_LINK_ENABLE_MASK + 0x08;
-	info->cmdring.last_ptr[2] = flushBatchHWAddr >> 4;
+	info->cmdring.last_ptr[1] = BEGIN_LINK_ENABLE_MASK | (flush_size / 4);
+	info->cmdring.last_ptr[2] = hw_addr >> 4;
 	info->cmdring.last_ptr[3] = 0;
 	wmb();
 	info->cmdring.last_ptr[0] = (get_batch_command(BTYPE_CTRL) << 24) 
@@ -243,6 +263,6 @@ static void addFlush2D(struct xgi_info * info)
 
 	triggerHWCommandList(info);
 
-	info->cmdring.ring_offset += 0x20;
-	info->cmdring.last_ptr = flushBatchVirtAddr;
+	info->cmdring.ring_offset += flush_size;
+	info->cmdring.last_ptr = (link) ? batch_addr : NULL;
 }
