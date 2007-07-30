@@ -138,6 +138,57 @@ MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL and additional rights");
 
 
+void xgi_engine_init(struct xgi_info * info)
+{
+	u8 temp;
+
+
+	OUT3C5B(info->mmio_map, 0x11, 0x92);
+
+	/* -------> copy from OT2D
+	 * PCI Retry Control Register.
+	 * disable PCI read retry & enable write retry in mem. (10xx xxxx)b
+	 */
+	temp = IN3X5B(info->mmio_map, 0x55);
+	OUT3X5B(info->mmio_map, 0x55, (temp & 0xbf) | 0x80);
+
+	xgi_enable_ge(info);
+
+	/* Enable linear addressing of the card. */
+	temp = IN3X5B(info->mmio_map, 0x21);
+	OUT3X5B(info->mmio_map, 0x21, temp | 0x20);
+
+	/* Enable 32-bit internal data path */
+	temp = IN3X5B(info->mmio_map, 0x2A);
+	OUT3X5B(info->mmio_map, 0x2A, temp | 0x40);
+
+	/* Enable PCI burst write ,disable burst read and enable MMIO. */
+	/*
+	 * 0x3D4.39 Enable PCI burst write, disable burst read and enable MMIO.
+	 * 7 ---- Pixel Data Format 1:  big endian 0:  little endian
+	 * 6 5 4 3---- Memory Data with Big Endian Format, BE[3:0]#  with Big Endian Format
+	 * 2 ---- PCI Burst Write Enable
+	 * 1 ---- PCI Burst Read Enable
+	 * 0 ---- MMIO Control
+	 */
+	temp = IN3X5B(info->mmio_map, 0x39);
+	OUT3X5B(info->mmio_map, 0x39, (temp | 0x05) & 0xfd);
+
+	/* enable GEIO decode */
+	/* temp = IN3X5B(info->mmio_map, 0x29);
+	 * OUT3X5B(info->mmio_map, 0x29, temp | 0x08);
+	 */
+
+	/* Enable graphic engine I/O PCI retry function*/
+	/* temp = IN3X5B(info->mmio_map, 0x62);
+	 * OUT3X5B(info->mmio_map, 0x62, temp | 0x50);
+	 */
+
+	/* protect all register except which protected by 3c5.0e.7 */
+        /* OUT3C5B(info->mmio_map, 0x11, 0x87); */
+}
+
+
 void xgi_kern_isr_bh(struct drm_device *dev);
 
 int xgi_bootstrap(struct drm_device * dev, void * data,
@@ -159,6 +210,7 @@ int xgi_bootstrap(struct drm_device * dev, void * data,
 		}
 
 		xgi_enable_mmio(info);
+		xgi_engine_init(info);
 	}
 
 
