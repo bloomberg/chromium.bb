@@ -254,178 +254,65 @@ bool xgi_dvi_irq_handler(struct xgi_info * info)
 }
 
 
+static void dump_reg_header(unsigned regbase)
+{
+	printk("\n=====xgi_dump_register========0x%x===============\n",
+	       regbase);
+	printk("    0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
+}
+
+
+static void dump_indexed_reg(struct xgi_info * info, unsigned regbase)
+{
+	unsigned i, j;
+	u8 temp;
+
+
+	dump_reg_header(regbase);
+	for (i = 0; i < 0x10; i++) {
+		printk("%1x ", i);
+
+		for (j = 0; j < 0x10; j++) {
+			DRM_WRITE8(info->mmio_map, regbase - 1,
+				   (i * 0x10) + j);
+			temp = DRM_READ8(info->mmio_map, regbase);
+			printk("%3x", temp);
+		}
+		printk("\n");
+	}
+}
+
+
+static void dump_reg(struct xgi_info * info, unsigned regbase, unsigned range)
+{
+	unsigned i, j;
+
+
+	dump_reg_header(regbase);
+	for (i = 0; i < range; i++) {
+		printk("%1x ", i);
+
+		for (j = 0; j < 0x10; j++) {
+			u8 temp = DRM_READ8(info->mmio_map, 
+					    regbase + (i * 0x10) + j);
+			printk("%3x", temp);
+		}
+		printk("\n");
+	}
+}
+
+
 void xgi_dump_register(struct xgi_info * info)
 {
-	int i, j;
-	unsigned char temp;
+	dump_indexed_reg(info, 0x3c5);
+	dump_indexed_reg(info, 0x3d5);
+	dump_indexed_reg(info, 0x3cf);
 
-	// 0x3C5
-	printk("\r\n=====xgi_dump_register========0x%x===============\r\n",
-	       0x3C5);
-
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0x10; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = IN3C5B(info->mmio_map, i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
-
-	// 0x3D5
-	printk("\r\n====xgi_dump_register=========0x%x===============\r\n",
-	       0x3D5);
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0x10; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = IN3X5B(info->mmio_map, i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
-
-	// 0x3CF
-	printk("\r\n=========xgi_dump_register====0x%x===============\r\n",
-	       0x3CF);
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0x10; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = IN3CFB(info->mmio_map, i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
-
-	printk("\r\n=====xgi_dump_register======0x%x===============\r\n",
-	       0xB000);
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0x5; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = DRM_READ8(info->mmio_map, 0xB000 + i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
-
-	printk("\r\n==================0x%x===============\r\n", 0x2200);
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0xB; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = DRM_READ8(info->mmio_map, 0x2200 + i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
-
-	printk("\r\n==================0x%x===============\r\n", 0x2300);
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0x7; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = DRM_READ8(info->mmio_map, 0x2300 + i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
-
-	printk("\r\n==================0x%x===============\r\n", 0x2400);
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0x10; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = DRM_READ8(info->mmio_map, 0x2400 + i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
-
-	printk("\r\n==================0x%x===============\r\n", 0x2800);
-	for (i = 0; i < 0x10; i++) {
-		if (i == 0) {
-			printk("%5x", i);
-		} else {
-			printk("%3x", i);
-		}
-	}
-	printk("\r\n");
-
-	for (i = 0; i < 0x10; i++) {
-		printk("%1x ", i);
-
-		for (j = 0; j < 0x10; j++) {
-			temp = DRM_READ8(info->mmio_map, 0x2800 + i * 0x10 + j);
-			printk("%3x", temp);
-		}
-		printk("\r\n");
-	}
+	dump_reg(info, 0xB000, 0x05);
+	dump_reg(info, 0x2200, 0x0B);
+	dump_reg(info, 0x2300, 0x07);
+	dump_reg(info, 0x2400, 0x10);
+	dump_reg(info, 0x2800, 0x10);
 }
 
 
