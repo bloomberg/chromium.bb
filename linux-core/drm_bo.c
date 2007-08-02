@@ -705,6 +705,10 @@ static int drm_bo_evict(struct drm_buffer_object * bo, unsigned mem_type,
 	return ret;
 }
 
+/**
+ * Repeatedly evict memory from the LRU for @mem_type until we create enough
+ * space, or we've evicted everything and there isn't enough space.
+ */
 static int drm_bo_mem_force_space(struct drm_device * dev,
 				  struct drm_bo_mem_reg * mem,
 				  uint32_t mem_type, int no_wait)
@@ -791,6 +795,14 @@ static int drm_bo_mt_compatible(struct drm_mem_type_manager * man,
 	return 1;
 }
 
+/**
+ * Creates space for memory region @mem according to its type.
+ *
+ * This function first searches for free space in compatible memory types in
+ * the priority order defined by the driver.  If free space isn't found, then
+ * drm_bo_mem_force_space is attempted in priority order to evict and find
+ * space.
+ */
 int drm_bo_mem_space(struct drm_buffer_object * bo,
 		     struct drm_bo_mem_reg * mem, int no_wait)
 {
@@ -2406,8 +2418,7 @@ int drm_bo_driver_init(struct drm_device * dev)
 	 * Initialize the system memory buffer type.
 	 * Other types need to be driver / IOCTL initialized.
 	 */
-
-	ret = drm_bo_init_mm(dev, 0, 0, 0);
+	ret = drm_bo_init_mm(dev, DRM_BO_MEM_LOCAL, 0, 0);
 	if (ret)
 		goto out_unlock;
 
