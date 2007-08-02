@@ -911,6 +911,8 @@ extern void drm_exit(struct drm_driver *driver);
 extern void drm_cleanup_pci(struct pci_dev *pdev);
 extern int drm_ioctl(struct inode *inode, struct file *filp,
 		     unsigned int cmd, unsigned long arg);
+extern long drm_unlocked_ioctl(struct file *filp,
+			       unsigned int cmd, unsigned long arg);
 extern long drm_compat_ioctl(struct file *filp,
 			     unsigned int cmd, unsigned long arg);
 
