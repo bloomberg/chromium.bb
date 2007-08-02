@@ -1,5 +1,6 @@
 AM_CFLAGS = \
-	-I $(top_srcdir)/shared-core
+	-I $(top_srcdir)/shared-core \
+	-I $(top_srcdir)/libdrm
 
 noinst_PROGRAMS = \
 	dristat \
@@ -21,3 +22,4 @@ TESTS = openclose \
 
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)
+
