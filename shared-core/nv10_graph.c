@@ -544,24 +544,42 @@ static int nv10_graph_ctx_regs_find_offset(struct drm_device *dev, int reg)
 	return -1;
 }
 
-static void restore_ctx_regs(struct drm_device *dev, int channel)
+int nv10_graph_load_context(struct drm_device *dev, int channel)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *fifo = dev_priv->fifos[channel];
 	int i, j;
+
 	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
 		NV_WRITE(nv10_graph_ctx_regs[i], fifo->pgraph_ctx[i]);
 	if (dev_priv->chipset>=0x17) {
 		for (j = 0; j < sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0]); i++,j++)
 			NV_WRITE(nv17_graph_ctx_regs[j], fifo->pgraph_ctx[i]);
 	}
-	nouveau_wait_for_idle(dev);
+
+	return 0;
+}
+
+int nv10_graph_save_context(struct drm_device *dev, int channel)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_fifo *fifo = dev_priv->fifos[channel];
+	int i, j;
+
+	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
+		fifo->pgraph_ctx[i] = NV_READ(nv10_graph_ctx_regs[i]);
+	if (dev_priv->chipset>=0x17) {
+		for (j = 0; j < sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0]); i++,j++)
+			fifo->pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
+	}
+
+	return 0;
 }
 
 void nouveau_nv10_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	int channel, channel_old, i, j;
+	int channel, channel_old;
 
 	channel=NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
 	channel_old = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
@@ -574,14 +592,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
 #endif
-
-	// save PGRAPH context
-	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
-		dev_priv->fifos[channel_old]->pgraph_ctx[i] = NV_READ(nv10_graph_ctx_regs[i]);
-	if (dev_priv->chipset>=0x17) {
-		for (j = 0; j < sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0]); i++,j++)
-			dev_priv->fifos[channel_old]->pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
-	}
+	nv10_graph_save_context(dev, channel_old);
 	
 	nouveau_wait_for_idle(dev);
 
@@ -589,15 +600,12 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	NV_WRITE(NV10_PGRAPH_CTX_USER, (NV_READ(NV10_PGRAPH_CTX_USER) & 0xffffff) | (0x1f << 24));
 
 	nouveau_wait_for_idle(dev);
-	// restore PGRAPH context
-#if 1
-	restore_ctx_regs(dev, channel);
-#endif
+
+	nv10_graph_load_context(dev, channel);
 	
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_CTX_USER, channel << 24);
 	NV_WRITE(NV10_PGRAPH_FFINTFC_ST2, NV_READ(NV10_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
-
 #if 0
 	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000001);
 	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000001);
@@ -611,6 +619,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	if (offset > 0) \
 		fifo->pgraph_ctx[offset] = val; \
 	} while (0)
+
 int nv10_graph_create_context(struct drm_device *dev, int channel) {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_fifo *fifo = dev_priv->fifos[channel];
@@ -654,7 +663,7 @@ int nv10_graph_create_context(struct drm_device *dev, int channel) {
 
 	/* for the first channel init the regs */
 	if (dev_priv->fifo_alloc_count == 0)
-		restore_ctx_regs(dev, channel);
+		nv10_graph_load_context(dev, channel);
 
 
 	//XXX should be saved/restored for each fifo
@@ -665,18 +674,6 @@ int nv10_graph_create_context(struct drm_device *dev, int channel) {
 
 void nv10_graph_destroy_context(struct drm_device *dev, int channel)
 {
-}
-
-int nv10_graph_load_context(struct drm_device *dev, int channel)
-{
-	DRM_ERROR("stub!\n");
-	return 0;
-}
-
-int nv10_graph_save_context(struct drm_device *dev, int channel)
-{
-	DRM_ERROR("stub!\n");
-	return 0;
 }
 
 int nv10_graph_init(struct drm_device *dev) {
