@@ -104,6 +104,7 @@ FcDirCacheUnlink (const FcChar8 *dir, FcConfig *config)
         if (!cache_hashed)
 	    break;
 	(void) unlink ((char *) cache_hashed);
+	FcStrFree (cache_hashed);
     }
     FcStrListDone (list);
     /* return FcFalse if something went wrong */
