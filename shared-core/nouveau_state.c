@@ -93,7 +93,7 @@ static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
 static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_engine_func *engine = &dev_priv->Engine;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 
 	switch (dev_priv->chipset & 0xf0) {
 	case 0x00:
@@ -270,7 +270,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 static int nouveau_card_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_engine_func *engine;
+	struct nouveau_engine *engine;
 	int ret;
 
 	/* Map any PCI resources we need on the card */
@@ -332,7 +332,7 @@ static int nouveau_card_init(struct drm_device *dev)
 static void nouveau_card_takedown(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_engine_func *engine = &dev_priv->Engine;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 
 	if (dev_priv->init_state != NOUVEAU_CARD_INIT_DOWN) {
 		engine->fifo.takedown(dev);
@@ -526,6 +526,7 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 		uint32_t status;
 		do {
 			uint32_t pmc_e = NV_READ(NV03_PMC_ENABLE);
+			(void)pmc_e;
 			status = NV_READ(NV04_PGRAPH_STATUS);
 			if (!status)
 				break;

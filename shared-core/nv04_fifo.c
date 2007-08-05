@@ -36,13 +36,13 @@
 #define NV04_RAMFC__SIZE 32
 
 int
-nv04_fifo_create_context(struct drm_device *dev, int channel)
+nv04_fifo_create_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	int ret;
 
-	if ((ret = nouveau_gpuobj_new_fake(dev, NV04_RAMFC(channel),
+	if ((ret = nouveau_gpuobj_new_fake(dev, NV04_RAMFC(chan->id),
 						NV04_RAMFC__SIZE,
 						NVOBJ_FLAG_ZERO_ALLOC |
 						NVOBJ_FLAG_ZERO_FREE,
@@ -62,30 +62,29 @@ nv04_fifo_create_context(struct drm_device *dev, int channel)
 			     0));
 
 	/* enable the fifo dma operation */
-	NV_WRITE(NV04_PFIFO_MODE,NV_READ(NV04_PFIFO_MODE)|(1<<channel));
+	NV_WRITE(NV04_PFIFO_MODE,NV_READ(NV04_PFIFO_MODE) | (1<<chan->id));
 	return 0;
 }
 
 void
-nv04_fifo_destroy_context(struct drm_device *dev, int channel)
+nv04_fifo_destroy_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	
+	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<chan->id));
 
-	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<channel));
-
-	if (chan->ramfc)
-		nouveau_gpuobj_ref_del(dev, &chan->ramfc);
+	nouveau_gpuobj_ref_del(dev, &chan->ramfc);
 }
 
 int
-nv04_fifo_load_context(struct drm_device *dev, int channel)
+nv04_fifo_load_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t tmp;
 
-	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, (1<<8) | channel);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, (1<<8) | chan->id);
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET, RAMFC_RD(DMA_GET));
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUT, RAMFC_RD(DMA_PUT));
@@ -107,10 +106,10 @@ nv04_fifo_load_context(struct drm_device *dev, int channel)
 }
 
 int
-nv04_fifo_save_context(struct drm_device *dev, int channel)
+nv04_fifo_save_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t tmp;
 
 	RAMFC_WR(DMA_PUT, NV04_PFIFO_CACHE1_DMA_PUT);

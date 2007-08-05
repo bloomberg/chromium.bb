@@ -100,11 +100,10 @@ static void nv30_graph_context_init(struct drm_device *dev, struct nouveau_gpuob
 }
 
 
-int nv30_graph_create_context(struct drm_device *dev, int channel)
+int nv30_graph_create_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv =
-		(struct drm_nouveau_private *)dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	void (*ctx_init)(struct drm_device *, struct nouveau_gpuobj *);
 	unsigned int ctx_size;
 	int ret;
@@ -116,7 +115,7 @@ int nv30_graph_create_context(struct drm_device *dev, int channel)
 		break;
 	}
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0, ctx_size, 16,
+	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, ctx_size, 16,
 					  NVOBJ_FLAG_ZERO_ALLOC,
 					  &chan->ramin_grctx)))
 		return ret;
@@ -124,23 +123,22 @@ int nv30_graph_create_context(struct drm_device *dev, int channel)
 	/* Initialise default context values */
 	ctx_init(dev, chan->ramin_grctx->gpuobj);
         
-        INSTANCE_WR(chan->ramin_grctx->gpuobj, 10, channel<<24); /* CTX_USER */
-        INSTANCE_WR(dev_priv->ctx_table->gpuobj, channel,
+        INSTANCE_WR(chan->ramin_grctx->gpuobj, 10, chan->id<<24); /* CTX_USER */
+        INSTANCE_WR(dev_priv->ctx_table->gpuobj, chan->id,
 		    chan->ramin_grctx->instance >> 4);
 
 	return 0;
 }
 
-void nv30_graph_destroy_context(struct drm_device *dev, int channel)
+void nv30_graph_destroy_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv =
-		(struct drm_nouveau_private *)dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (chan->ramin_grctx)
 		nouveau_gpuobj_ref_del(dev, &chan->ramin_grctx);
 
-	INSTANCE_WR(dev_priv->ctx_table->gpuobj, channel, 0);
+	INSTANCE_WR(dev_priv->ctx_table->gpuobj, chan->id, 0);
 }
 
 static int
@@ -161,10 +159,10 @@ nouveau_graph_wait_idle(struct drm_device *dev)
 	return 0;
 }
 
-int nv30_graph_load_context(struct drm_device *dev, int channel)
+int nv30_graph_load_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t inst;
 
 	if (!chan->ramin_grctx)
@@ -178,10 +176,10 @@ int nv30_graph_load_context(struct drm_device *dev, int channel)
 	return nouveau_graph_wait_idle(dev);
 }
 
-int nv30_graph_save_context(struct drm_device *dev, int channel)
+int nv30_graph_save_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t inst;
 
 	if (!chan->ramin_grctx)
@@ -197,8 +195,7 @@ int nv30_graph_save_context(struct drm_device *dev, int channel)
 
 int nv30_graph_init(struct drm_device *dev)
 {
-	struct drm_nouveau_private *dev_priv =
-		(struct drm_nouveau_private *)dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t vramsz, tmp;
 	int ret, i;
 
@@ -209,7 +206,7 @@ int nv30_graph_init(struct drm_device *dev)
 
         /* Create Context Pointer Table */
         dev_priv->ctx_table_size = 32 * 4;
-	if ((ret = nouveau_gpuobj_new_ref(dev, -1, -1, 0,
+	if ((ret = nouveau_gpuobj_new_ref(dev, NULL, NULL, 0,
 					  dev_priv->ctx_table_size, 16,
 					  NVOBJ_FLAG_ZERO_ALLOC,
 					  &dev_priv->ctx_table)))

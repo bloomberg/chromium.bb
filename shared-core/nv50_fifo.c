@@ -63,7 +63,7 @@ static int
 nv50_fifo_channel_enable(struct drm_device *dev, int channel)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct nouveau_channel *chan = dev_priv->fifos[channel];
 
 	DRM_DEBUG("ch%d\n", channel);
 
@@ -150,7 +150,7 @@ nv50_fifo_init_regs(struct drm_device *dev)
 
 	DRM_DEBUG("\n");
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, -1, -1, 0, 0x1000,
+	if ((ret = nouveau_gpuobj_new_ref(dev, NULL, NULL, 0, 0x1000,
 					  0x1000,
 					  NVOBJ_FLAG_ZERO_ALLOC |
 					  NVOBJ_FLAG_ZERO_FREE,
@@ -191,7 +191,7 @@ nv50_fifo_init(struct drm_device *dev)
 
 	nv50_fifo_init_reset(dev);
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, -1, -1, 0, (128+2)*4, 0x1000,
+	if ((ret = nouveau_gpuobj_new_ref(dev, NULL, NULL, 0, (128+2)*4, 0x1000,
 				   NVOBJ_FLAG_ZERO_ALLOC,
 				   &priv->thingo))) {
 		DRM_ERROR("error creating thingo: %d\n", ret);
@@ -225,14 +225,14 @@ nv50_fifo_takedown(struct drm_device *dev)
 }
 
 int
-nv50_fifo_create_context(struct drm_device *dev, int channel)
+nv50_fifo_create_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	struct nouveau_gpuobj *ramfc = NULL;
 	int ret;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
 	if (IS_G80) {
 		uint32_t ramfc_offset = chan->ramin->gpuobj->im_pramin->start;
@@ -242,7 +242,7 @@ nv50_fifo_create_context(struct drm_device *dev, int channel)
 						   &ramfc, &chan->ramfc)))
 				return ret;
 	} else {
-		if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0, 0x100,
+		if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, 0x100,
 						  256,
 						  NVOBJ_FLAG_ZERO_ALLOC |
 						  NVOBJ_FLAG_ZERO_FREE,
@@ -266,15 +266,15 @@ nv50_fifo_create_context(struct drm_device *dev, int channel)
 	INSTANCE_WR(ramfc, 0x4c/4, chan->pushbuf_mem->size - 1);
 
 	if (!IS_G80) {
-		INSTANCE_WR(chan->ramin->gpuobj, 0, channel);
+		INSTANCE_WR(chan->ramin->gpuobj, 0, chan->id);
 		INSTANCE_WR(chan->ramin->gpuobj, 1, chan->ramfc->instance);
 
 		INSTANCE_WR(ramfc, 0x88/4, 0x3d520); /* some vram addy >> 10 */
 		INSTANCE_WR(ramfc, 0x98/4, chan->ramin->instance >> 12);
 	}
 
-	if ((ret = nv50_fifo_channel_enable(dev, channel))) {
-		DRM_ERROR("error enabling ch%d: %d\n", channel, ret);
+	if ((ret = nv50_fifo_channel_enable(dev, chan->id))) {
+		DRM_ERROR("error enabling ch%d: %d\n", chan->id, ret);
 		nouveau_gpuobj_ref_del(dev, &chan->ramfc);
 		return ret;
 	}
@@ -283,25 +283,24 @@ nv50_fifo_create_context(struct drm_device *dev, int channel)
 }
 
 void
-nv50_fifo_destroy_context(struct drm_device *dev, int channel)
+nv50_fifo_destroy_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
-	nv50_fifo_channel_disable(dev, channel, 0);
+	nv50_fifo_channel_disable(dev, chan->id, 0);
 	nouveau_gpuobj_ref_del(dev, &chan->ramfc);
 }
 
 int
-nv50_fifo_load_context(struct drm_device *dev, int channel)
+nv50_fifo_load_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	struct nouveau_gpuobj *ramfc = chan->ramfc->gpuobj;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
 	/*XXX: incomplete, only touches the regs that NV does */
 
@@ -319,14 +318,14 @@ nv50_fifo_load_context(struct drm_device *dev, int channel)
 		NV_WRITE(0x3410, INSTANCE_RD(ramfc, 0x98/4));
 	}
 
-	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, channel | (1<<16));
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, chan->id | (1<<16));
 	return 0;
 }
 
 int
-nv50_fifo_save_context(struct drm_device *dev, int channel)
+nv50_fifo_save_context(struct nouveau_channel *chan)
 {
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 	DRM_ERROR("stub!\n");
 	return 0;
 }
