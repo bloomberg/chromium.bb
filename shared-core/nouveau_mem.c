@@ -439,11 +439,11 @@ int nouveau_mem_init(struct drm_device *dev)
 		struct drm_scatter_gather sgreq;
 
 		DRM_DEBUG("Allocating sg memory for PCI DMA\n");
-		sgreq.size = 16 << 20; //4MB of PCI scatter-gather zone
+		sgreq.size = 16 << 20; //16MB of PCI scatter-gather zone
 
 		if (drm_sg_alloc(dev, &sgreq)) {
-			DRM_ERROR("Unable to allocate 4MB of scatter-gather"
-				  " pages for PCI DMA!");
+			DRM_ERROR("Unable to allocate %dMB of scatter-gather"
+				  " pages for PCI DMA!",sgreq.size>>20);
 		} else {
 			if (nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
 						  dev->sg->pages * PAGE_SIZE)) {
