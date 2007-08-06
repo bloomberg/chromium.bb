@@ -284,8 +284,10 @@ void xgi_driver_preclose(struct drm_device * dev, struct drm_file * filp)
 {
 	struct xgi_info * info = dev->dev_private;
 
-	xgi_pcie_free_all(info, filp);
-	xgi_fb_free_all(info, filp);
+	mutex_lock(&info->dev->struct_mutex);
+	xgi_free_all(info, &info->pcie_heap, filp);
+	xgi_free_all(info, &info->fb_heap, filp);
+	mutex_unlock(&info->dev->struct_mutex);
 }
 
 

@@ -318,29 +318,27 @@ int xgi_fb_heap_init(struct xgi_info * info)
 /**
  * Free all blocks associated with a particular file handle.
  */
-void xgi_fb_free_all(struct xgi_info * info, struct drm_file * filp)
+void xgi_free_all(struct xgi_info * info, struct xgi_mem_heap * heap,
+		  struct drm_file * filp)
 {
-	if (!info->fb_heap.initialized) {
+	if (!heap->initialized) {
 		return;
 	}
 
-	mutex_lock(&info->dev->struct_mutex);
 
 	do {
 		struct xgi_mem_block *block;
 
-		list_for_each_entry(block, &info->fb_heap.used_list, list) {
+		list_for_each_entry(block, &heap->used_list, list) {
 			if (block->filp == filp) {
 				break;
 			}
 		}
 
-		if (&block->list == &info->fb_heap.used_list) {
+		if (&block->list == &heap->used_list) {
 			break;
 		}
 
-		(void) xgi_mem_free(&info->fb_heap, block->offset, filp);
+		(void) xgi_mem_free(heap, block->offset, filp);
 	} while(1);
-
-	mutex_unlock(&info->dev->struct_mutex);
 }

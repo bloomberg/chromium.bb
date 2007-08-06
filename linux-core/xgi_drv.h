@@ -38,7 +38,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		10
-#define DRIVER_PATCHLEVEL	3
+#define DRIVER_PATCHLEVEL	4
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"
@@ -111,8 +111,8 @@ extern int xgi_pcie_free(struct xgi_info * info, unsigned long offset,
 
 extern void *xgi_find_pcie_virt(struct xgi_info * info, u32 address);
 
-extern void xgi_pcie_free_all(struct xgi_info *, struct drm_file *);
-extern void xgi_fb_free_all(struct xgi_info *, struct drm_file *);
+extern void xgi_free_all(struct xgi_info *, struct xgi_mem_heap *,
+	struct drm_file *);
 
 extern int xgi_fb_alloc_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
