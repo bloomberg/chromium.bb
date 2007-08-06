@@ -140,34 +140,6 @@ int xgi_pcie_heap_init(struct xgi_info * info)
 }
 
 
-int xgi_pcie_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
-		   struct drm_file * filp)
-{
-	struct xgi_mem_block *block;
-
-	down(&info->pcie_sem);
-	block = xgi_mem_alloc(&info->pcie_heap, alloc->size);
-	up(&info->pcie_sem);
-
-	if (block == NULL) {
-		alloc->location = XGI_MEMLOC_INVALID;
-		alloc->size = 0;
-		DRM_ERROR("PCIE RAM allocation failed\n");
-		return -ENOMEM;
-	} else {
-		DRM_INFO("PCIE RAM allocation succeeded: offset = 0x%lx\n",
-			 block->offset);
-		alloc->location = XGI_MEMLOC_NON_LOCAL;
-		alloc->size = block->size;
-		alloc->hw_addr = block->offset + info->pcie.base;
-		alloc->offset = block->offset;
-
-		block->filp = filp;
-		return 0;
-	}
-}
-
-
 int xgi_pcie_alloc_ioctl(struct drm_device * dev, void * data,
 			 struct drm_file * filp)
 {
@@ -175,7 +147,8 @@ int xgi_pcie_alloc_ioctl(struct drm_device * dev, void * data,
 		(struct xgi_mem_alloc *) data;
 	struct xgi_info *info = dev->dev_private;
 
-	return xgi_pcie_alloc(info, alloc, filp);
+	alloc->location = XGI_MEMLOC_NON_LOCAL;
+	return xgi_alloc(info, alloc, filp);
 }
 
 

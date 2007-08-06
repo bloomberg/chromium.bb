@@ -37,11 +37,12 @@ static void xgi_cmdlist_reset(struct xgi_info * info);
 int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 {
 	struct xgi_mem_alloc mem_alloc = {
+		.location = XGI_MEMLOC_NON_LOCAL,
 		.size = size,
 	};
 	int err;
 
-	err = xgi_pcie_alloc(info, &mem_alloc, 0);
+	err = xgi_alloc(info, &mem_alloc, 0);
 	if (err) {
 		return err;
 	}

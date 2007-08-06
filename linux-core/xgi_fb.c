@@ -99,8 +99,8 @@ struct xgi_mem_block *xgi_mem_new_node(void)
 }
 
 
-struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
-				    unsigned long originalSize)
+static struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
+					   unsigned long originalSize)
 {
 	struct xgi_mem_block *block, *free_block, *used_block;
 	unsigned long size = (originalSize + PAGE_SIZE - 1) & PAGE_MASK;
@@ -242,13 +242,15 @@ int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
 }
 
 
-int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
+int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 		 struct drm_file * filp)
 {
 	struct xgi_mem_block *block;
 
 	down(&info->fb_sem);
-	block = xgi_mem_alloc(&info->fb_heap, alloc->size);
+	block = xgi_mem_alloc((alloc->location == XGI_MEMLOC_LOCAL)
+			      ? &info->fb_heap : &info->pcie_heap,
+			      alloc->size);
 	up(&info->fb_sem);
 
 	if (block == NULL) {
@@ -258,10 +260,13 @@ int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 	} else {
 		DRM_INFO("Video RAM allocation succeeded: 0x%p\n",
 			 (char *)block->offset);
-		alloc->location = XGI_MEMLOC_LOCAL;
 		alloc->size = block->size;
 		alloc->offset = block->offset;
 		alloc->hw_addr = block->offset;
+
+		if (alloc->location == XGI_MEMLOC_NON_LOCAL) {
+			alloc->hw_addr += info->pcie.base;
+		}
 
 		block->filp = filp;
 	}
@@ -277,7 +282,8 @@ int xgi_fb_alloc_ioctl(struct drm_device * dev, void * data,
 		(struct xgi_mem_alloc *) data;
 	struct xgi_info *info = dev->dev_private;
 
-	return xgi_fb_alloc(info, alloc, filp);
+	alloc->location = XGI_MEMLOC_LOCAL;
+	return xgi_alloc(info, alloc, filp);
 }
 
 

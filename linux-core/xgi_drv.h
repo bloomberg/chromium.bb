@@ -38,7 +38,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		10
-#define DRIVER_PATCHLEVEL	2
+#define DRIVER_PATCHLEVEL	3
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"
@@ -92,8 +92,6 @@ struct xgi_info {
 };
 
 extern struct kmem_cache *xgi_mem_block_cache;
-extern struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
-	unsigned long size);
 extern int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
 	struct drm_file * filp);
 extern int xgi_mem_heap_init(struct xgi_mem_heap * heap, unsigned int start,
@@ -102,7 +100,7 @@ extern void xgi_mem_heap_cleanup(struct xgi_mem_heap * heap);
 
 extern int xgi_fb_heap_init(struct xgi_info * info);
 
-extern int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
+extern int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 	struct drm_file * filp);
 
 extern int xgi_fb_free(struct xgi_info * info, unsigned long offset,
@@ -110,9 +108,6 @@ extern int xgi_fb_free(struct xgi_info * info, unsigned long offset,
 
 extern int xgi_pcie_heap_init(struct xgi_info * info);
 extern void xgi_pcie_lut_cleanup(struct xgi_info * info);
-
-extern int xgi_pcie_alloc(struct xgi_info * info,
-	struct xgi_mem_alloc * alloc, struct drm_file * filp);
 
 extern int xgi_pcie_free(struct xgi_info * info, unsigned long offset,
 	struct drm_file * filp);
