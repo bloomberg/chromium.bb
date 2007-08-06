@@ -153,31 +153,7 @@ int xgi_pcie_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 	struct xgi_mem_block *block;
 
 	down(&info->pcie_sem);
-	if ((alloc->owner == PCIE_3D) && (xgi_pcie_vertex_block)) {
-		DRM_INFO("PCIE Vertex has been created, return directly.\n");
-		block = xgi_pcie_vertex_block;
-	}
-	else if ((alloc->owner == PCIE_3D_CMDLIST) && (xgi_pcie_cmdlist_block)) {
-		DRM_INFO("PCIE Cmdlist has been created, return directly.\n");
-		block = xgi_pcie_cmdlist_block;
-	}
-	else if ((alloc->owner == PCIE_3D_SCRATCHPAD) && (xgi_pcie_scratchpad_block)) {
-		DRM_INFO("PCIE Scratchpad has been created, return directly.\n");
-		block = xgi_pcie_scratchpad_block;
-	}
-	else {
-		block = xgi_mem_alloc(&info->pcie_heap, alloc->size, alloc->owner);
-
-		if (alloc->owner == PCIE_3D) {
-			xgi_pcie_vertex_block = block;
-		}
-		else if (alloc->owner == PCIE_3D_CMDLIST) {
-			xgi_pcie_cmdlist_block = block;
- 		}
-		else if (alloc->owner == PCIE_3D_SCRATCHPAD) {
-			xgi_pcie_scratchpad_block = block;
-		}
-	}
+	block = xgi_mem_alloc(&info->pcie_heap, alloc->size);
 	up(&info->pcie_sem);
 
 	if (block == NULL) {

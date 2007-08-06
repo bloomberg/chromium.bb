@@ -38,7 +38,6 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 {
 	struct xgi_mem_alloc mem_alloc = {
 		.size = size,
-		.owner = PCIE_2D,
 	};
 	int err;
 

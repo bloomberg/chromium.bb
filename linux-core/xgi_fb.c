@@ -93,7 +93,6 @@ struct xgi_mem_block *xgi_mem_new_node(void)
 
 	block->offset = 0;
 	block->size = 0;
-	block->owner = PCIE_INVALID;
 	block->filp = (struct drm_file *) -1;
 
 	return block;
@@ -101,8 +100,7 @@ struct xgi_mem_block *xgi_mem_new_node(void)
 
 
 struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
-				    unsigned long originalSize,
-				    enum PcieOwner owner)
+				    unsigned long originalSize)
 {
 	struct xgi_mem_block *block, *free_block, *used_block;
 	unsigned long size = (originalSize + PAGE_SIZE - 1) & PAGE_MASK;
@@ -167,7 +165,6 @@ struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
 	heap->max_freesize -= size;
 
 	list_add(&used_block->list, &heap->used_list);
-	used_block->owner = owner;
 
 	return (used_block);
 }
@@ -258,7 +255,7 @@ int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 		    ("Video RAM allocation on front buffer successfully! \n");
 	} else {
 		down(&info->fb_sem);
-		block = xgi_mem_alloc(&info->fb_heap, alloc->size, PCIE_2D);
+		block = xgi_mem_alloc(&info->fb_heap, alloc->size);
 		up(&info->fb_sem);
 
 		if (block == NULL) {

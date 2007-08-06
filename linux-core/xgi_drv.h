@@ -34,11 +34,11 @@
 
 #define DRIVER_NAME		"xgi"
 #define DRIVER_DESC		"XGI XP5 / XP10 / XG47"
-#define DRIVER_DATE		"20070723"
+#define DRIVER_DATE		"20070806"
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		10
-#define DRIVER_PATCHLEVEL	0
+#define DRIVER_PATCHLEVEL	1
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"
@@ -53,8 +53,6 @@ struct xgi_mem_block {
 	unsigned long offset;
 	unsigned long size;
 	struct drm_file * filp;
-
-	unsigned int owner;
 };
 
 struct xgi_mem_heap {
@@ -93,23 +91,9 @@ struct xgi_info {
 	struct xgi_cmdring_info cmdring;
 };
 
-enum PcieOwner {
-	PCIE_2D = 0,
-	/*
-	   PCIE_3D should not begin with 1,
-	   2D alloc pcie memory will use owner 1.
-	 */
-	PCIE_3D = 11,		/*vetex buf */
-	PCIE_3D_CMDLIST = 12,
-	PCIE_3D_SCRATCHPAD = 13,
-	PCIE_3D_TEXTURE = 14,
-	PCIE_INVALID = 0x7fffffff
-};
-
-
 extern struct kmem_cache *xgi_mem_block_cache;
 extern struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
-	unsigned long size, enum PcieOwner owner);
+	unsigned long size);
 extern int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
 	struct drm_file * filp);
 extern int xgi_mem_heap_init(struct xgi_mem_heap * heap, unsigned int start,
