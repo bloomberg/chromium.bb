@@ -28,9 +28,6 @@
 #include "xgi_regs.h"
 #include "xgi_misc.h"
 
-static int xgi_pcie_free_locked(struct xgi_info * info,
-	 unsigned long offset, struct drm_file * filp);
-
 static int xgi_pcie_lut_init(struct xgi_info * info)
 {
 	u8 temp = 0;
@@ -206,17 +203,10 @@ void xgi_pcie_free_all(struct xgi_info * info, struct drm_file * filp)
 			break;
 		}
 
-		(void) xgi_pcie_free_locked(info, block->offset, filp);
+		(void) xgi_mem_free(&info->pcie_heap, block->offset, filp);
 	} while(1);
 
 	up(&info->pcie_sem);
-}
-
-
-int xgi_pcie_free_locked(struct xgi_info * info, unsigned long offset,
-			 struct drm_file * filp)
-{
-	return xgi_mem_free(&info->pcie_heap, offset, filp);
 }
 
 
@@ -226,7 +216,7 @@ int xgi_pcie_free(struct xgi_info * info, unsigned long offset,
 	int err;
 
 	down(&info->pcie_sem);
-	err = xgi_pcie_free_locked(info, offset, filp);
+	err = xgi_mem_free(&info->pcie_heap, offset, filp);
 	up(&info->pcie_sem);
 
 	if (err) {
