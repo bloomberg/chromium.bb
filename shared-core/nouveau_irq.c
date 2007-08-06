@@ -301,6 +301,61 @@ nouveau_print_bitfield_names(uint32_t value,
 		printk(" (unknown bits 0x%08x)", value);
 }
 
+static int
+nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int channel;
+
+	if (dev_priv->card_type < NV_40) {
+		channel = (NV_READ(0x400704) >> 20) & 0x1f;
+	} else
+	if (dev_priv->card_type < NV_50) {
+		uint32_t cur_grctx = (NV_READ(0x40032C) & 0xfffff) << 4;
+
+		/* 0x400704 *sometimes* contains a sensible channel ID, but
+		 * mostly not.. for now lookup which channel owns the active
+		 * PGRAPH context.  Probably a better way, but this'll do
+		 * for now.
+		 */
+		for (channel = 0; channel < 32; channel++) {
+			if (dev_priv->fifos[channel] == NULL)
+				continue;
+			if (cur_grctx ==
+			    dev_priv->fifos[channel]->ramin_grctx->instance)
+				break;
+		}
+		if (channel == 32) {
+			DRM_ERROR("AIII, unable to determine active channel "
+				  "from PGRAPH context 0x%08x\n", cur_grctx);
+			return -EINVAL;
+		}
+	} else {
+		uint32_t cur_grctx = (NV_READ(0x40032C) & 0xfffff) << 12;
+
+		for (channel = 0; channel < 128; channel++) {
+			if (dev_priv->fifos[channel] == NULL)
+				continue;
+			if (cur_grctx ==
+			    dev_priv->fifos[channel]->ramin_grctx->instance)
+				break;
+		}
+		if (channel == 128) {
+			DRM_ERROR("AIII, unable to determine active channel "
+				  "from PGRAPH context 0x%08x\n", cur_grctx);
+			return -EINVAL;
+		}
+	}
+
+	if (channel > nouveau_fifo_number(dev) ||
+	    dev_priv->fifos[channel] == NULL) {
+		DRM_ERROR("AIII, invalid/inactive channel id %d\n", channel);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 static void
 nouveau_graph_dump_trap_info(struct drm_device *dev)
 {
@@ -310,8 +365,10 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	uint32_t method, subc, data;
 	uint32_t nsource, nstatus;
 
+	if (nouveau_graph_trapped_channel(dev, &channel))
+		channel = -1;
+
 	address = NV_READ(0x400704);
-	channel = (address >> 20) & 0x1F;
 	subc    = (address >> 16) & 0x7;
 	method  = address & 0x1FFC;
 	data    = NV_READ(0x400708);
