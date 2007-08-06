@@ -274,6 +274,8 @@ nouveau_card_init(struct drm_device *dev)
 	struct nouveau_engine *engine;
 	int ret;
 
+	DRM_DEBUG("prev state = %d\n", dev_priv->init_state);
+
 	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
 		return 0;
 
@@ -335,6 +337,9 @@ nouveau_card_init(struct drm_device *dev)
 
 	/* what about PVIDEO/PCRTC/PRAMDAC etc? */
 
+	ret = nouveau_dma_channel_init(dev);
+	if (ret) return ret;
+
 	dev_priv->init_state = NOUVEAU_CARD_INIT_DONE;
 	return 0;
 }
@@ -344,7 +349,11 @@ static void nouveau_card_takedown(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine = &dev_priv->Engine;
 
+	DRM_DEBUG("prev state = %d\n", dev_priv->init_state);
+
 	if (dev_priv->init_state != NOUVEAU_CARD_INIT_DOWN) {
+		nouveau_dma_channel_takedown(dev);
+
 		engine->fifo.takedown(dev);
 		engine->graph.takedown(dev);
 		engine->fb.takedown(dev);

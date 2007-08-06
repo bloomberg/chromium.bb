@@ -69,7 +69,7 @@ nouveau_sgdma_clear(struct drm_ttm_backend *be)
 		if (nvbe->is_bound)
 			be->func->unbind(be);
 
-		for (d = 0; d < nvbe->pages_populated; d--) {
+		for (d = 0; d < nvbe->pages_populated; d++) {
 			pci_unmap_page(nvbe->dev->pdev, nvbe->pagelist[d],
 				       NV_CTXDMA_PAGE_SIZE,
 				       PCI_DMA_BIDIRECTIONAL);

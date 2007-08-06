@@ -261,9 +261,10 @@ nouveau_fifo_cmdbuf_alloc(struct nouveau_channel *chan)
 }
 
 /* allocates and initializes a fifo for user space consumption */
-int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret,
-		       struct drm_file *file_priv,
-		       uint32_t vram_handle, uint32_t tt_handle)
+int
+nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
+		   struct drm_file *file_priv,
+		   uint32_t vram_handle, uint32_t tt_handle)
 {
 	int ret;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -288,7 +289,6 @@ int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret,
 	/* no more fifos. you lost. */
 	if (channel==nouveau_fifo_number(dev))
 		return -EINVAL;
-	(*chan_ret) = channel;
 
 	dev_priv->fifos[channel] = drm_calloc(1, sizeof(struct nouveau_channel),
 					      DRM_MEM_DRIVER);
@@ -394,6 +394,7 @@ int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret,
 	NV_WRITE(NV03_PFIFO_CACHES, 1);
 
 	DRM_INFO("%s: initialised FIFO %d\n", __func__, channel);
+	*chan_ret = chan;
 	return 0;
 }
 
@@ -482,13 +483,12 @@ static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data,
 	if (init->fb_ctxdma_handle == ~0 || init->tt_ctxdma_handle == ~0)
 		return -EINVAL;
 
-	res = nouveau_fifo_alloc(dev, &init->channel, file_priv,
+	res = nouveau_fifo_alloc(dev, &chan, file_priv,
 				 init->fb_ctxdma_handle,
 				 init->tt_ctxdma_handle);
 	if (res)
 		return res;
-	chan = dev_priv->fifos[init->channel];
-
+	init->channel  = chan->id;
 	init->put_base = chan->pushbuf_base;
 
 	/* make the fifo available to user space */

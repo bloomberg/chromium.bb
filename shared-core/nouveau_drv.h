@@ -134,6 +134,22 @@ struct nouveau_channel
 	struct list_head           ramht_refs; /* Objects referenced by RAMHT */
 };
 
+struct nouveau_drm_channel {
+	struct nouveau_channel *chan;
+
+	/* DMA state */
+	int max, put, cur, free;
+	int push_free;
+	volatile uint32_t *pushbuf;
+
+	/* Notifiers */
+	uint32_t notify0_offset;
+
+	/* Buffer moves */
+	uint32_t m2mf_dma_source;
+	uint32_t m2mf_dma_destin;
+};
+
 struct nouveau_config {
 	struct {
 		int location;
@@ -222,6 +238,7 @@ struct drm_nouveau_private {
 	struct nouveau_channel *fifos[NV_MAX_FIFO_NUMBER];
 
 	struct nouveau_engine Engine;
+	struct nouveau_drm_channel channel;
 
 	/* RAMIN configuration, RAMFC, RAMHT and RAMRO offsets */
 	struct nouveau_gpuobj *ramht;
@@ -345,6 +362,10 @@ extern int  nouveau_fifo_ctx_size(struct drm_device *);
 extern void nouveau_fifo_cleanup(struct drm_device *, struct drm_file *);
 extern int  nouveau_fifo_owner(struct drm_device *, struct drm_file *,
 			       int channel);
+extern int  nouveau_fifo_alloc(struct drm_device *dev,
+			       struct nouveau_channel **chan,
+			       struct drm_file *file_priv,
+			       uint32_t fb_ctxdma, uint32_t tt_ctxdma);
 extern void nouveau_fifo_free(struct nouveau_channel *);
 
 /* nouveau_object.c */
@@ -399,6 +420,11 @@ extern void nouveau_sgdma_takedown(struct drm_device *);
 extern struct drm_ttm_backend *nouveau_sgdma_init_ttm(struct drm_device *);
 extern int nouveau_sgdma_nottm_hack_init(struct drm_device *);
 extern void nouveau_sgdma_nottm_hack_takedown(struct drm_device *);
+
+/* nouveau_dma.c */
+extern int  nouveau_dma_channel_init(struct drm_device *);
+extern void nouveau_dma_channel_takedown(struct drm_device *);
+extern int  nouveau_dma_wait(struct drm_device *, int size);
 
 /* nv04_fb.c */
 extern int  nv04_fb_init(struct drm_device *);
