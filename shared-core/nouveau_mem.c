@@ -549,14 +549,10 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 
 int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_alloc *alloc = data;
 	struct mem_block *block;
 
-	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return -EINVAL;
-	}
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
 
 	block=nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
 				alloc->flags, file_priv);
@@ -574,6 +570,8 @@ int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_free *memfree = data;
 	struct mem_block *block;
+
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
 
 	block=NULL;
 	if (memfree->flags & NOUVEAU_MEM_FB)

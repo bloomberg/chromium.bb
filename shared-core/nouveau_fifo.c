@@ -302,6 +302,13 @@ int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret,
 
 	DRM_INFO("Allocating FIFO number %d\n", channel);
 
+	/* Allocate space for per-channel fixed notifier memory */
+	ret = nouveau_notifier_init_channel(chan);
+	if (ret) {
+		nouveau_fifo_free(chan);
+		return ret;
+	}
+
 	/* Setup channel's default objects */
 	ret = nouveau_gpuobj_channel_init(chan, vram_handle, tt_handle);
 	if (ret) {
@@ -311,13 +318,6 @@ int nouveau_fifo_alloc(struct drm_device *dev, int *chan_ret,
 
 	/* allocate a command buffer, and create a dma object for the gpu */
 	ret = nouveau_fifo_cmdbuf_alloc(chan);
-	if (ret) {
-		nouveau_fifo_free(chan);
-		return ret;
-	}
-
-	/* Allocate space for per-channel fixed notifier memory */
-	ret = nouveau_notifier_init_channel(chan);
 	if (ret) {
 		nouveau_fifo_free(chan);
 		return ret;
@@ -426,10 +426,10 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 		chan->pushbuf_mem = NULL;
 	}
 
-	nouveau_notifier_takedown_channel(chan);
-
 	/* Destroy objects belonging to the channel */
 	nouveau_gpuobj_channel_takedown(chan);
+
+	nouveau_notifier_takedown_channel(chan);
 
 	dev_priv->fifos[chan->id] = NULL;
 	dev_priv->fifo_alloc_count--;
@@ -468,13 +468,16 @@ nouveau_fifo_owner(struct drm_device *dev, struct drm_file *file_priv,
  * ioctls wrapping the functions
  ***********************************/
 
-static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
+static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data,
+				    struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct drm_nouveau_fifo_alloc *init = data;
+	struct drm_nouveau_channel_alloc *init = data;
 	struct drm_map_list *entry;
 	struct nouveau_channel *chan;
 	int res;
+
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
 
 	if (init->fb_ctxdma_handle == ~0 || init->tt_ctxdma_handle == ~0)
 		return -EINVAL;
@@ -519,18 +522,34 @@ static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data, struct d
 	return 0;
 }
 
+static int nouveau_ioctl_fifo_free(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv)
+{
+	struct drm_nouveau_channel_free *cfree = data;
+	struct nouveau_channel *chan;
+
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+	NOUVEAU_GET_USER_CHANNEL_WITH_RETURN(cfree->channel, file_priv, chan);
+
+	nouveau_fifo_free(chan);
+	return 0;
+}
+
 /***********************************
  * finally, the ioctl table
  ***********************************/
 
 struct drm_ioctl_desc nouveau_ioctls[] = {
-	DRM_IOCTL_DEF(DRM_NOUVEAU_FIFO_ALLOC, nouveau_ioctl_fifo_alloc, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_NOUVEAU_GROBJ_ALLOC, nouveau_ioctl_grobj_alloc, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_NOUVEAU_NOTIFIER_ALLOC, nouveau_ioctl_notifier_alloc, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_ALLOC, nouveau_ioctl_mem_alloc, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_FREE, nouveau_ioctl_mem_free, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_CARD_INIT, nouveau_ioctl_card_init, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_NOUVEAU_GETPARAM, nouveau_ioctl_getparam, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_NOUVEAU_SETPARAM, nouveau_ioctl_setparam, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_CHANNEL_ALLOC, nouveau_ioctl_fifo_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_CHANNEL_FREE, nouveau_ioctl_fifo_free, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_GROBJ_ALLOC, nouveau_ioctl_grobj_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_NOTIFIEROBJ_ALLOC, nouveau_ioctl_notifier_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_GPUOBJ_FREE, nouveau_ioctl_gpuobj_free, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_ALLOC, nouveau_ioctl_mem_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_FREE, nouveau_ioctl_mem_free, DRM_AUTH),
 };
 
 int nouveau_max_ioctl = DRM_ARRAY_SIZE(nouveau_ioctls);

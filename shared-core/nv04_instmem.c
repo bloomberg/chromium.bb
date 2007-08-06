@@ -93,13 +93,6 @@ int nv04_instmem_init(struct drm_device *dev)
 	nv04_instmem_determine_amount(dev);
 	nv04_instmem_configure_fixed_tables(dev);
 
-	if ((ret = nouveau_gpuobj_new_fake(dev, dev_priv->ramht_offset,
-						dev_priv->ramht_size,
-						NVOBJ_FLAG_ZERO_ALLOC |
-						NVOBJ_FLAG_ALLOW_NO_REFS,
-						&dev_priv->ramht, NULL)))
-		return ret;
-
 	/* Create a heap to manage RAMIN allocations, we don't allocate
 	 * the space that was reserved for RAMHT/FC/RO.
 	 */
@@ -117,9 +110,6 @@ int nv04_instmem_init(struct drm_device *dev)
 void
 nv04_instmem_takedown(struct drm_device *dev)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-
-	nouveau_gpuobj_del(dev, &dev_priv->ramht);
 }
 
 int

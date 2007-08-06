@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	9
+#define DRIVER_PATCHLEVEL	10
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -67,8 +67,7 @@ enum nouveau_flags {
 #define NVOBJ_FLAG_ZERO_FREE		(1 << 2)
 #define NVOBJ_FLAG_FAKE			(1 << 3)
 struct nouveau_gpuobj {
-	struct nouveau_gpuobj *next;
-	struct nouveau_gpuobj *prev;
+	struct list_head list;
 
 	int im_channel;
 	struct mem_block *im_pramin;
@@ -80,10 +79,13 @@ struct nouveau_gpuobj {
 
 	uint32_t engine;
 	uint32_t class;
+
+	void (*dtor)(struct drm_device *, struct nouveau_gpuobj *);
+	void *priv;
 };
 
 struct nouveau_gpuobj_ref {
-	struct nouveau_gpuobj_ref *next;
+	struct list_head list;
 
 	struct nouveau_gpuobj *gpuobj;
 	uint32_t instance;
@@ -129,7 +131,7 @@ struct nouveau_channel
 	struct nouveau_gpuobj_ref *ramin; /* Private instmem */
 	struct mem_block          *ramin_heap; /* Private PRAMIN heap */
 	struct nouveau_gpuobj_ref *ramht; /* Hash table */
-	struct nouveau_gpuobj_ref *ramht_refs; /* Objects referenced by RAMHT */
+	struct list_head           ramht_refs; /* Objects referenced by RAMHT */
 };
 
 struct nouveau_config {
@@ -269,8 +271,16 @@ struct drm_nouveau_private {
 
 	struct nouveau_config config;
 
-	struct nouveau_gpuobj *gpuobj_all;
+	struct list_head gpuobj_list;
 };
+
+#define NOUVEAU_CHECK_INITIALISED_WITH_RETURN do {         \
+	struct drm_nouveau_private *nv = dev->dev_private; \
+	if (nv->init_state != NOUVEAU_CARD_INIT_DONE) {    \
+		DRM_ERROR("called without init\n");        \
+		return -EINVAL;                            \
+	}                                                  \
+} while(0)
 
 #define NOUVEAU_GET_USER_CHANNEL_WITH_RETURN(id,cl,ch) do {  \
 	struct drm_nouveau_private *nv = dev->dev_private;   \
@@ -293,6 +303,7 @@ extern int  nouveau_ioctl_getparam(struct drm_device *, void *data,
 extern int  nouveau_ioctl_setparam(struct drm_device *, void *data,
 				   struct drm_file *);
 extern void nouveau_wait_for_idle(struct drm_device *);
+extern int  nouveau_card_init(struct drm_device *);
 extern int  nouveau_ioctl_card_init(struct drm_device *, void *data,
 				    struct drm_file *);
 
@@ -324,6 +335,8 @@ extern int  nouveau_notifier_alloc(struct nouveau_channel *, uint32_t handle,
 				   int cout, uint32_t *offset);
 extern int  nouveau_ioctl_notifier_alloc(struct drm_device *, void *data,
 					 struct drm_file *);
+extern int  nouveau_ioctl_notifier_free(struct drm_device *, void *data,
+					struct drm_file *);
 
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(struct drm_device *);
@@ -335,6 +348,7 @@ extern int  nouveau_fifo_owner(struct drm_device *, struct drm_file *,
 extern void nouveau_fifo_free(struct nouveau_channel *);
 
 /* nouveau_object.c */
+extern int  nouveau_gpuobj_init(struct drm_device *);
 extern void nouveau_gpuobj_takedown(struct drm_device *);
 extern int nouveau_gpuobj_channel_init(struct nouveau_channel *,
 				       uint32_t vram_h, uint32_t tt_h);
@@ -348,6 +362,8 @@ extern int nouveau_gpuobj_ref_add(struct drm_device *, struct nouveau_channel *,
 				  struct nouveau_gpuobj_ref **);
 extern int nouveau_gpuobj_ref_del(struct drm_device *,
 				  struct nouveau_gpuobj_ref **);
+extern int nouveau_gpuobj_ref_find(struct nouveau_channel *, uint32_t handle,
+				   struct nouveau_gpuobj_ref **ref_ret);
 extern int nouveau_gpuobj_new_ref(struct drm_device *,
 				  struct nouveau_channel *alloc_chan,
 				  struct nouveau_channel *ref_chan,
@@ -367,6 +383,8 @@ extern int nouveau_gpuobj_gart_dma_new(struct nouveau_channel *,
 extern int nouveau_gpuobj_gr_new(struct nouveau_channel *, int class,
 				 struct nouveau_gpuobj **);
 extern int nouveau_ioctl_grobj_alloc(struct drm_device *, void *data,
+				     struct drm_file *);
+extern int nouveau_ioctl_gpuobj_free(struct drm_device *, void *data,
 				     struct drm_file *);
 
 /* nouveau_irq.c */
