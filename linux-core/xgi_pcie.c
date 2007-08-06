@@ -28,10 +28,6 @@
 #include "xgi_regs.h"
 #include "xgi_misc.h"
 
-static struct xgi_mem_block *xgi_pcie_vertex_block = NULL;
-static struct xgi_mem_block *xgi_pcie_cmdlist_block = NULL;
-static struct xgi_mem_block *xgi_pcie_scratchpad_block = NULL;
-
 static int xgi_pcie_free_locked(struct xgi_info * info,
 	 unsigned long offset, struct drm_file * filp);
 
@@ -220,14 +216,7 @@ void xgi_pcie_free_all(struct xgi_info * info, struct drm_file * filp)
 int xgi_pcie_free_locked(struct xgi_info * info, unsigned long offset,
 			 struct drm_file * filp)
 {
-	const bool isvertex = (xgi_pcie_vertex_block
-			       && (xgi_pcie_vertex_block->offset == offset));
-	int err = xgi_mem_free(&info->pcie_heap, offset, filp);
-
-	if (!err && isvertex)
-		xgi_pcie_vertex_block = NULL;
-
-	return err;
+	return xgi_mem_free(&info->pcie_heap, offset, filp);
 }
 
 
