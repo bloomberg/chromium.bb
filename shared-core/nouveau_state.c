@@ -299,6 +299,8 @@ nouveau_card_init(struct drm_device *dev)
 	ret = drm_irq_install(dev);
 	if (ret) return ret;
 
+	INIT_LIST_HEAD(&dev_priv->gpuobj_list);
+
 	/* Initialise instance memory, must happen before mem_init so we
 	 * know exactly how much VRAM we're able to use for "normal"
 	 * purposes.

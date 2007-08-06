@@ -270,8 +270,6 @@ nouveau_gpuobj_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 
-	INIT_LIST_HEAD(&dev_priv->gpuobj_list);
-
 	if (dev_priv->card_type < NV_50) {
 		if ((ret = nouveau_gpuobj_new_fake(dev, dev_priv->ramht_offset,
 						   dev_priv->ramht_size,
