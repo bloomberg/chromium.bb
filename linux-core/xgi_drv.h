@@ -85,9 +85,6 @@ struct xgi_info {
 	struct xgi_mem_heap fb_heap;
 	struct xgi_mem_heap pcie_heap;
 
-	struct semaphore fb_sem;
-	struct semaphore pcie_sem;
-
 	struct xgi_cmdring_info cmdring;
 };
 

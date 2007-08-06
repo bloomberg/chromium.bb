@@ -360,9 +360,6 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 	dev->dev_private = info;
 	info->dev = dev;
 
-	sema_init(&info->fb_sem, 1);
-	sema_init(&info->pcie_sem, 1);
-
 	info->mmio.base = drm_get_resource_start(dev, 1);
 	info->mmio.size = drm_get_resource_len(dev, 1);
 

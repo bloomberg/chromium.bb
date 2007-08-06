@@ -247,11 +247,11 @@ int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 {
 	struct xgi_mem_block *block;
 
-	down(&info->fb_sem);
+	mutex_lock(&info->dev->struct_mutex);
 	block = xgi_mem_alloc((alloc->location == XGI_MEMLOC_LOCAL)
 			      ? &info->fb_heap : &info->pcie_heap,
 			      alloc->size);
-	up(&info->fb_sem);
+	mutex_unlock(&info->dev->struct_mutex);
 
 	if (block == NULL) {
 		alloc->size = 0;
@@ -292,9 +292,9 @@ int xgi_fb_free(struct xgi_info * info, unsigned long offset,
 {
 	int err = 0;
 
-	down(&info->fb_sem);
+	mutex_lock(&info->dev->struct_mutex);
 	err = xgi_mem_free(&info->fb_heap, offset, filp);
-	up(&info->fb_sem);
+	mutex_unlock(&info->dev->struct_mutex);
 
 	return err;
 }
@@ -324,7 +324,7 @@ void xgi_fb_free_all(struct xgi_info * info, struct drm_file * filp)
 		return;
 	}
 
-	down(&info->fb_sem);
+	mutex_lock(&info->dev->struct_mutex);
 
 	do {
 		struct xgi_mem_block *block;
@@ -342,5 +342,5 @@ void xgi_fb_free_all(struct xgi_info * info, struct drm_file * filp)
 		(void) xgi_mem_free(&info->fb_heap, block->offset, filp);
 	} while(1);
 
-	up(&info->fb_sem);
+	mutex_unlock(&info->dev->struct_mutex);
 }

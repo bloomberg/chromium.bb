@@ -161,7 +161,7 @@ void xgi_pcie_free_all(struct xgi_info * info, struct drm_file * filp)
 		return;
 	}
 
-	down(&info->pcie_sem);
+	mutex_lock(&info->dev->struct_mutex);
 
 	do {
 		struct xgi_mem_block *block;
@@ -179,7 +179,7 @@ void xgi_pcie_free_all(struct xgi_info * info, struct drm_file * filp)
 		(void) xgi_mem_free(&info->pcie_heap, block->offset, filp);
 	} while(1);
 
-	up(&info->pcie_sem);
+	mutex_unlock(&info->dev->struct_mutex);
 }
 
 
@@ -188,9 +188,9 @@ int xgi_pcie_free(struct xgi_info * info, unsigned long offset,
 {
 	int err;
 
-	down(&info->pcie_sem);
+	mutex_lock(&info->dev->struct_mutex);
 	err = xgi_mem_free(&info->pcie_heap, offset, filp);
-	up(&info->pcie_sem);
+	mutex_unlock(&info->dev->struct_mutex);
 
 	if (err) {
 		DRM_ERROR("xgi_pcie_free() failed at base 0x%lx\n", offset);
