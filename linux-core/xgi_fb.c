@@ -247,32 +247,23 @@ int xgi_fb_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 {
 	struct xgi_mem_block *block;
 
-	if (alloc->is_front) {
-		alloc->location = XGI_MEMLOC_LOCAL;
-		alloc->offset = 0;
-		alloc->hw_addr = 0;
-		DRM_INFO
-		    ("Video RAM allocation on front buffer successfully! \n");
+	down(&info->fb_sem);
+	block = xgi_mem_alloc(&info->fb_heap, alloc->size);
+	up(&info->fb_sem);
+
+	if (block == NULL) {
+		alloc->size = 0;
+		DRM_ERROR("Video RAM allocation failed\n");
+		return -ENOMEM;
 	} else {
-		down(&info->fb_sem);
-		block = xgi_mem_alloc(&info->fb_heap, alloc->size);
-		up(&info->fb_sem);
+		DRM_INFO("Video RAM allocation succeeded: 0x%p\n",
+			 (char *)block->offset);
+		alloc->location = XGI_MEMLOC_LOCAL;
+		alloc->size = block->size;
+		alloc->offset = block->offset;
+		alloc->hw_addr = block->offset;
 
-		if (block == NULL) {
-			alloc->location = XGI_MEMLOC_LOCAL;
-			alloc->size = 0;
-			DRM_ERROR("Video RAM allocation failed\n");
-			return -ENOMEM;
-		} else {
-			DRM_INFO("Video RAM allocation succeeded: 0x%p\n",
-				 (char *)block->offset);
-			alloc->location = XGI_MEMLOC_LOCAL;
-			alloc->size = block->size;
-			alloc->offset = block->offset;
-			alloc->hw_addr = block->offset;
-
-			block->filp = filp;
-		}
+		block->filp = filp;
 	}
 
 	return 0;
@@ -295,13 +286,9 @@ int xgi_fb_free(struct xgi_info * info, unsigned long offset,
 {
 	int err = 0;
 
-	if (offset == 0) {
-		DRM_INFO("free onscreen frame buffer successfully !\n");
-	} else {
-		down(&info->fb_sem);
-		err = xgi_mem_free(&info->fb_heap, offset, filp);
-		up(&info->fb_sem);
-	}
+	down(&info->fb_sem);
+	err = xgi_mem_free(&info->fb_heap, offset, filp);
+	up(&info->fb_sem);
 
 	return err;
 }
