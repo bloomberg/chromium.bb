@@ -61,9 +61,9 @@ static const int xgi_max_ioctl = DRM_ARRAY_SIZE(xgi_ioctls);
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static int xgi_driver_load(struct drm_device *dev, unsigned long flags);
 static int xgi_driver_unload(struct drm_device *dev);
-static void xgi_driver_preclose(struct drm_device * dev, 
-	struct drm_file * filp);
 static void xgi_driver_lastclose(struct drm_device * dev);
+static void xgi_reclaim_buffers_locked(struct drm_device * dev,
+	struct drm_file * filp);
 static irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS);
 
 
@@ -74,7 +74,6 @@ static struct drm_driver driver = {
 	.dev_priv_size = sizeof(struct xgi_info),
 	.load = xgi_driver_load,
 	.unload = xgi_driver_unload,
-	.preclose = xgi_driver_preclose,
 	.lastclose = xgi_driver_lastclose,
 	.dma_quiescent = NULL,
 	.irq_preinstall = NULL,
@@ -82,6 +81,7 @@ static struct drm_driver driver = {
 	.irq_uninstall = NULL,
 	.irq_handler = xgi_kern_isr,
 	.reclaim_buffers = drm_core_reclaim_buffers,
+	.reclaim_buffers_idlelocked = xgi_reclaim_buffers_locked,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.ioctls = xgi_ioctls,
@@ -280,17 +280,6 @@ int xgi_bootstrap(struct drm_device * dev, void * data,
 }
 
 
-void xgi_driver_preclose(struct drm_device * dev, struct drm_file * filp)
-{
-	struct xgi_info * info = dev->dev_private;
-
-	mutex_lock(&info->dev->struct_mutex);
-	xgi_free_all(info, &info->pcie_heap, filp);
-	xgi_free_all(info, &info->fb_heap, filp);
-	mutex_unlock(&info->dev->struct_mutex);
-}
-
-
 void xgi_driver_lastclose(struct drm_device * dev)
 {
 	struct xgi_info * info = dev->dev_private;
@@ -319,6 +308,23 @@ void xgi_driver_lastclose(struct drm_device * dev)
 			xgi_pcie_lut_cleanup(info);
 		}
 	}
+}
+
+
+void xgi_reclaim_buffers_locked(struct drm_device * dev,
+				struct drm_file * filp)
+{
+	struct xgi_info * info = dev->dev_private;
+
+	mutex_lock(&info->dev->struct_mutex);
+	if (dev->driver->dma_quiescent) {
+		dev->driver->dma_quiescent(dev);
+	}
+
+	xgi_free_all(info, &info->pcie_heap, filp);
+	xgi_free_all(info, &info->fb_heap, filp);
+	mutex_unlock(&info->dev->struct_mutex);
+	return;
 }
 
 
