@@ -169,8 +169,8 @@ static struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
 	return (used_block);
 }
 
-int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
-		 struct drm_file * filp)
+static int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
+			struct drm_file * filp)
 {
 	struct xgi_mem_block *used_block = NULL, *block;
 	struct xgi_mem_block *prev, *next;
@@ -287,13 +287,16 @@ int xgi_fb_alloc_ioctl(struct drm_device * dev, void * data,
 }
 
 
-int xgi_fb_free(struct xgi_info * info, unsigned long offset,
-		struct drm_file * filp)
+int xgi_free(struct xgi_info * info, unsigned long index,
+	     struct drm_file * filp)
 {
 	int err = 0;
+	const unsigned heap = index & 0x03;
 
 	mutex_lock(&info->dev->struct_mutex);
-	err = xgi_mem_free(&info->fb_heap, offset, filp);
+	err = xgi_mem_free((heap == XGI_MEMLOC_NON_LOCAL)
+			   ? &info->pcie_heap : &info->fb_heap, 
+			   (index & ~0x03), filp);
 	mutex_unlock(&info->dev->struct_mutex);
 
 	return err;
@@ -305,7 +308,7 @@ int xgi_fb_free_ioctl(struct drm_device * dev, void * data,
 {
 	struct xgi_info *info = dev->dev_private;
 
-	return xgi_fb_free(info, *(u32 *) data, filp);
+	return xgi_free(info, XGI_MEMLOC_LOCAL | *(u32 *) data, filp);
 }
 
 

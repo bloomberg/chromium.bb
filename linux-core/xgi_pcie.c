@@ -152,29 +152,12 @@ int xgi_pcie_alloc_ioctl(struct drm_device * dev, void * data,
 }
 
 
-int xgi_pcie_free(struct xgi_info * info, unsigned long offset, 
-		  struct drm_file * filp)
-{
-	int err;
-
-	mutex_lock(&info->dev->struct_mutex);
-	err = xgi_mem_free(&info->pcie_heap, offset, filp);
-	mutex_unlock(&info->dev->struct_mutex);
-
-	if (err) {
-		DRM_ERROR("xgi_pcie_free() failed at base 0x%lx\n", offset);
-	}
-
-	return err;
-}
-
-
 int xgi_pcie_free_ioctl(struct drm_device * dev, void * data,
 			struct drm_file * filp)
 {
 	struct xgi_info *info = dev->dev_private;
 
-	return xgi_pcie_free(info, *(u32 *) data, filp);
+	return xgi_free(info, XGI_MEMLOC_NON_LOCAL | *(u32 *) data, filp);
 }
 
 

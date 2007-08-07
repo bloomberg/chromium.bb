@@ -202,7 +202,9 @@ void xgi_cmdlist_cleanup(struct xgi_info * info)
 			xgi_waitfor_pci_idle(info);
 		}
 
-		xgi_pcie_free(info, info->cmdring.ring_gart_base, NULL);
+		xgi_free(info, (XGI_MEMLOC_NON_LOCAL
+				| info->cmdring.ring_gart_base),
+			 NULL);
 		info->cmdring.ring_hw_base = 0;
 		info->cmdring.ring_offset = 0;
 		info->cmdring.size = 0;
