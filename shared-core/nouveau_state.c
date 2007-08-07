@@ -296,9 +296,6 @@ nouveau_card_init(struct drm_device *dev)
 	engine = &dev_priv->Engine;
 	dev_priv->init_state = NOUVEAU_CARD_INIT_FAILED;
 
-	ret = drm_irq_install(dev);
-	if (ret) return ret;
-
 	INIT_LIST_HEAD(&dev_priv->gpuobj_list);
 
 	/* Initialise instance memory, must happen before mem_init so we
@@ -335,6 +332,12 @@ nouveau_card_init(struct drm_device *dev)
 
 	/* PFIFO */
 	ret = engine->fifo.init(dev);
+	if (ret) return ret;
+
+	/* this call irq_preinstall, register irq handler and
+	 * call irq_postinstall
+	 */
+	ret = drm_irq_install(dev);
 	if (ret) return ret;
 
 	/* what about PVIDEO/PCRTC/PRAMDAC etc? */

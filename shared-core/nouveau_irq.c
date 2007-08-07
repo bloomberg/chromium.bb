@@ -39,6 +39,9 @@
 void nouveau_irq_preinstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	/* TODO this should be removed as this stuff is done in
+	 * engine.*init
+	 */
 
 	DRM_DEBUG("IRQ: preinst\n");
 
