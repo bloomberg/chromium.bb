@@ -275,6 +275,7 @@ nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 		return -EINVAL;
 	}
 
+	*channel_ret = channel;
 	return 0;
 }
 
