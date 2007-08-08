@@ -365,6 +365,7 @@ extern int  nouveau_fifo_owner(struct drm_device *, struct drm_file *,
 extern int  nouveau_fifo_alloc(struct drm_device *dev,
 			       struct nouveau_channel **chan,
 			       struct drm_file *file_priv,
+			       struct mem_block *pushbuf,
 			       uint32_t fb_ctxdma, uint32_t tt_ctxdma);
 extern void nouveau_fifo_free(struct nouveau_channel *);
 

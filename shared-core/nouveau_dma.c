@@ -37,13 +37,22 @@ nouveau_dma_channel_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_drm_channel *dchan = &dev_priv->channel;
 	struct nouveau_gpuobj *gpuobj = NULL;
+	struct mem_block *pushbuf;
 	int grclass, ret, i;
 
 	DRM_DEBUG("\n");
 
+	pushbuf = nouveau_mem_alloc(dev, 0, 0x8000,
+				    NOUVEAU_MEM_FB | NOUVEAU_MEM_MAPPED,
+				    (struct drm_file *)-2);
+	if (!pushbuf) {
+		DRM_ERROR("Failed to allocate DMA push buffer\n");
+		return -ENOMEM;
+	}
+
 	/* Allocate channel */
 	ret = nouveau_fifo_alloc(dev, &dchan->chan, (struct drm_file *)-2,
-				 NvDmaFB, NvDmaTT);
+				 pushbuf, NvDmaFB, NvDmaTT);
 	if (ret) {
 		DRM_ERROR("Error allocating GPU channel: %d\n", ret);
 		return ret;

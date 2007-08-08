@@ -190,46 +190,30 @@ int nouveau_fifo_init(struct drm_device *dev)
 }
 
 static int
-nouveau_fifo_cmdbuf_alloc(struct nouveau_channel *chan)
+nouveau_fifo_pushbuf_ctxdma_init(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_config *config = &dev_priv->config;
-	struct mem_block *cb;
-	int cb_min_size = max(NV03_FIFO_SIZE,PAGE_SIZE);
+	struct mem_block *pb = chan->pushbuf_mem;
 	struct nouveau_gpuobj *pushbuf = NULL;
 	int ret;
 
-	/* Defaults for unconfigured values */
-	if (!config->cmdbuf.location)
-		config->cmdbuf.location = NOUVEAU_MEM_FB;
-	if (!config->cmdbuf.size || config->cmdbuf.size < cb_min_size)
-		config->cmdbuf.size = cb_min_size;
-
-	cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
-			config->cmdbuf.location | NOUVEAU_MEM_MAPPED,
-			(struct drm_file *)-2);
-	if (!cb) {
-		DRM_ERROR("Couldn't allocate DMA command buffer.\n");
-		return -ENOMEM;
-	}
-
-	if (cb->flags & NOUVEAU_MEM_AGP) {
-		ret = nouveau_gpuobj_gart_dma_new(chan, cb->start, cb->size,
+	if (pb->flags & NOUVEAU_MEM_AGP) {
+		ret = nouveau_gpuobj_gart_dma_new(chan, pb->start, pb->size,
 						  NV_DMA_ACCESS_RO,
 						  &pushbuf,
 						  &chan->pushbuf_base);
 	} else
-	if (cb->flags & NOUVEAU_MEM_PCI) {
+	if (pb->flags & NOUVEAU_MEM_PCI) {
 		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
-					     cb->start, cb->size,
+					     pb->start, pb->size,
 					     NV_DMA_ACCESS_RO,
 					     NV_DMA_TARGET_PCI_NONLINEAR,
 					     &pushbuf);
 		chan->pushbuf_base = 0;
 	} else if (dev_priv->card_type != NV_04) {
 		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
-					     cb->start, cb->size,
+					     pb->start, pb->size,
 					     NV_DMA_ACCESS_RO,
 					     NV_DMA_TARGET_VIDMEM, &pushbuf);
 		chan->pushbuf_base = 0;
@@ -239,17 +223,11 @@ nouveau_fifo_cmdbuf_alloc(struct nouveau_channel *chan)
 		 * VRAM.
 		 */
 		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
-					     cb->start +
+					     pb->start +
 					       drm_get_resource_start(dev, 1),
-					     cb->size, NV_DMA_ACCESS_RO,
+					     pb->size, NV_DMA_ACCESS_RO,
 					     NV_DMA_TARGET_PCI, &pushbuf);
 		chan->pushbuf_base = 0;
-	}
-
-	if (ret) {
-		nouveau_mem_free(dev, cb);
-		DRM_ERROR("Error creating push buffer ctxdma: %d\n", ret);
-		return ret;
 	}
 
 	if ((ret = nouveau_gpuobj_ref_add(dev, chan, 0, pushbuf,
@@ -260,14 +238,36 @@ nouveau_fifo_cmdbuf_alloc(struct nouveau_channel *chan)
 		return ret;
 	}
 
-	chan->pushbuf_mem = cb;
 	return 0;
+}
+
+static struct mem_block *
+nouveau_fifo_user_pushbuf_alloc(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_config *config = &dev_priv->config;
+	struct mem_block *pb;
+	int pb_min_size = max(NV03_FIFO_SIZE,PAGE_SIZE);
+
+	/* Defaults for unconfigured values */
+	if (!config->cmdbuf.location)
+		config->cmdbuf.location = NOUVEAU_MEM_FB;
+	if (!config->cmdbuf.size || config->cmdbuf.size < pb_min_size)
+		config->cmdbuf.size = pb_min_size;
+
+	pb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
+			       config->cmdbuf.location | NOUVEAU_MEM_MAPPED,
+			       (struct drm_file *)-2);
+	if (!pb)
+		DRM_ERROR("Couldn't allocate DMA push buffer.\n");
+
+	return pb;
 }
 
 /* allocates and initializes a fifo for user space consumption */
 int
 nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
-		   struct drm_file *file_priv,
+		   struct drm_file *file_priv, struct mem_block *pushbuf,
 		   uint32_t vram_handle, uint32_t tt_handle)
 {
 	int ret;
@@ -303,6 +303,7 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 	chan->dev = dev;
 	chan->id = channel;
 	chan->file_priv = file_priv;
+	chan->pushbuf_mem = pushbuf;
 
 	DRM_INFO("Allocating FIFO number %d\n", channel);
 
@@ -320,8 +321,8 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 		return ret;
 	}
 
-	/* allocate a command buffer, and create a dma object for the gpu */
-	ret = nouveau_fifo_cmdbuf_alloc(chan);
+	/* Create a dma object for the push buffer */
+	ret = nouveau_fifo_pushbuf_ctxdma_init(chan);
 	if (ret) {
 		nouveau_fifo_free(chan);
 		return ret;
@@ -467,6 +468,7 @@ static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data,
 	struct drm_nouveau_channel_alloc *init = data;
 	struct drm_map_list *entry;
 	struct nouveau_channel *chan;
+	struct mem_block *pushbuf;
 	int res;
 
 	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
@@ -474,7 +476,11 @@ static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data,
 	if (init->fb_ctxdma_handle == ~0 || init->tt_ctxdma_handle == ~0)
 		return -EINVAL;
 
-	res = nouveau_fifo_alloc(dev, &chan, file_priv,
+	pushbuf = nouveau_fifo_user_pushbuf_alloc(dev);
+	if (!pushbuf)
+		return -ENOMEM;
+
+	res = nouveau_fifo_alloc(dev, &chan, file_priv, pushbuf,
 				 init->fb_ctxdma_handle,
 				 init->tt_ctxdma_handle);
 	if (res)
