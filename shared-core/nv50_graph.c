@@ -202,6 +202,7 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	struct nouveau_gpuobj *ramin = chan->ramin->gpuobj;
 	int grctx_size = 0x60000, hdr;
 	int ret;
@@ -223,6 +224,11 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 	INSTANCE_WR(ramin, (hdr + 0x0c)/4, 0);
 	INSTANCE_WR(ramin, (hdr + 0x10)/4, 0);
 	INSTANCE_WR(ramin, (hdr + 0x14)/4, 0x00010000);
+
+	if ((ret = engine->graph.load_context(chan))) {
+		DRM_ERROR("Error hacking up initial context: %d\n", ret);
+		return ret;
+	}
 
 	return 0;
 }
