@@ -45,6 +45,16 @@ nv50_graph_init_reset(struct drm_device *dev)
 }
 
 static void
+nv50_graph_init_intr(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	DRM_DEBUG("\n");
+	NV_WRITE(NV03_PGRAPH_INTR, 0xffffffff);
+	NV_WRITE(NV40_PGRAPH_INTR_EN, 0xffffffff);
+}
+
+static void
 nv50_graph_init_regs__nv(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -59,7 +69,6 @@ nv50_graph_init_regs__nv(struct drm_device *dev)
 	NV_WRITE(0x402000, 0xc0000000);
 
 	NV_WRITE(0x400108, 0xffffffff);
-	NV_WRITE(0x400100, 0xffffffff);
 
 	NV_WRITE(0x400824, 0x00004000);
 	NV_WRITE(0x400500, 0x00010001);
@@ -174,6 +183,7 @@ nv50_graph_init(struct drm_device *dev)
 	DRM_DEBUG("\n");
 
 	nv50_graph_init_reset(dev);
+	nv50_graph_init_intr(dev);
 	nv50_graph_init_regs__nv(dev);
 	nv50_graph_init_regs(dev);
 	nv50_graph_init_ctxctl(dev);

@@ -169,8 +169,8 @@ int nv20_graph_init(struct drm_device *dev) {
 	//XXX need to be done and save/restore for each fifo ???
 	nv20_graph_rdi(dev);
 
-	NV_WRITE(NV03_PGRAPH_INTR_EN, 0x00000000);
 	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
+	NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
 
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);

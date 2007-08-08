@@ -375,6 +375,10 @@ int nv04_graph_init(struct drm_device *dev) {
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
 			 NV_PMC_ENABLE_PGRAPH);
 
+	/* Enable PGRAPH interrupts */
+	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
+	NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
+
 	// check the context is big enough
 	for ( i = 0 ; i<sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
 		sum+=nv04_graph_ctx_regs[i].number;

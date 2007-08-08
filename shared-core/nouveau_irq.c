@@ -39,37 +39,7 @@
 void nouveau_irq_preinstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	/* TODO this should be removed as this stuff is done in
-	 * engine.*init
-	 */
 
-	DRM_DEBUG("IRQ: preinst\n");
-
-	if (!dev_priv) {
-		DRM_ERROR("AIII, no dev_priv\n");
-		return;
-	}
-	if (!dev_priv->mmio) {
-		DRM_ERROR("AIII, no dev_priv->mmio\n");
-		return;
-	}
-
-	/* Disable/Clear PFIFO interrupts */
-	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0);
-	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
-	/* Disable/Clear PGRAPH interrupts */
-	if (dev_priv->card_type<NV_40)
-		NV_WRITE(NV03_PGRAPH_INTR_EN, 0);
-	else
-		NV_WRITE(NV40_PGRAPH_INTR_EN, 0);
-	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
-#if 0
-	/* Disable/Clear CRTC0/1 interrupts */
-	NV_WRITE(NV_CRTC0_INTEN, 0);
-	NV_WRITE(NV_CRTC0_INTSTAT, NV_CRTC_INTR_VBLANK);
-	NV_WRITE(NV_CRTC1_INTEN, 0);
-	NV_WRITE(NV_CRTC1_INTSTAT, NV_CRTC_INTR_VBLANK);
-#endif
 	/* Master disable */
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
@@ -77,34 +47,6 @@ void nouveau_irq_preinstall(struct drm_device *dev)
 void nouveau_irq_postinstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-
-	if (!dev_priv) {
-		DRM_ERROR("AIII, no dev_priv\n");
-		return;
-	}
-	if (!dev_priv->mmio) {
-		DRM_ERROR("AIII, no dev_priv->mmio\n");
-		return;
-	}
-
-	DRM_DEBUG("IRQ: postinst\n");
-
-	/* Enable PFIFO error reporting */
-	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0xFFFFFFFF);
-	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
-
-	/* Enable PGRAPH interrupts */
-	if (dev_priv->card_type<NV_40)
-		NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
-	else
-		NV_WRITE(NV40_PGRAPH_INTR_EN, 0xFFFFFFFF);
-	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
-
-#if 0
-	/* Enable CRTC0/1 interrupts */
-	NV_WRITE(NV_CRTC0_INTEN, NV_CRTC_INTR_VBLANK);
-	NV_WRITE(NV_CRTC1_INTEN, NV_CRTC_INTR_VBLANK);
-#endif
 
 	/* Master enable */
 	NV_WRITE(NV03_PMC_INTR_EN_0, NV_PMC_INTR_EN_0_MASTER_ENABLE);
@@ -114,29 +56,6 @@ void nouveau_irq_uninstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	if (!dev_priv) {
-		DRM_ERROR("AIII, no dev_priv\n");
-		return;
-	}
-	if (!dev_priv->mmio) {
-		DRM_ERROR("AIII, no dev_priv->mmio\n");
-		return;
-	}
-
-	DRM_DEBUG("IRQ: uninst\n");
-
-	/* Disable PFIFO interrupts */
-	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0);
-	/* Disable PGRAPH interrupts */
-	if (dev_priv->card_type<NV_40)
-		NV_WRITE(NV03_PGRAPH_INTR_EN, 0);
-	else
-		NV_WRITE(NV40_PGRAPH_INTR_EN, 0);
-#if 0
-	/* Disable CRTC0/1 interrupts */
-	NV_WRITE(NV_CRTC0_INTEN, 0);
-	NV_WRITE(NV_CRTC1_INTEN, 0);
-#endif
 	/* Master disable */
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }

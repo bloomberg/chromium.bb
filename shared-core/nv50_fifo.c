@@ -120,6 +120,17 @@ nv50_fifo_init_reset(struct drm_device *dev)
 }
 
 static void
+nv50_fifo_init_intr(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	DRM_DEBUG("\n");
+
+	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
+	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0xFFFFFFFF);
+}
+
+static void
 nv50_fifo_init_context_table(struct drm_device *dev)
 {
 	int i;
@@ -190,6 +201,7 @@ nv50_fifo_init(struct drm_device *dev)
 	dev_priv->Engine.fifo.priv = priv;
 
 	nv50_fifo_init_reset(dev);
+	nv50_fifo_init_intr(dev);
 
 	if ((ret = nouveau_gpuobj_new_ref(dev, NULL, NULL, 0, (128+2)*4, 0x1000,
 				   NVOBJ_FLAG_ZERO_ALLOC,

@@ -120,6 +120,10 @@ int nouveau_fifo_init(struct drm_device *dev)
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
 			 NV_PMC_ENABLE_PFIFO);
 
+	/* Enable PFIFO error reporting */
+	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
+	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0xFFFFFFFF);
+
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
 
 	ret = nouveau_fifo_instmem_configure(dev);

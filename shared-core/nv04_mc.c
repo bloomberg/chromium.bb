@@ -13,8 +13,6 @@ nv04_mc_init(struct drm_device *dev)
 	 */
 	NV_WRITE(NV03_PMC_ENABLE, 0xFFFFFFFF);
 
-	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
-
 	return 0;
 }
 
