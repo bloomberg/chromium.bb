@@ -186,8 +186,6 @@ void xgi_engine_init(struct xgi_info * info)
 }
 
 
-void xgi_kern_isr_bh(struct drm_device *dev);
-
 int xgi_bootstrap(struct drm_device * dev, void * data,
 		  struct drm_file * filp)
 {
@@ -335,28 +333,19 @@ void xgi_reclaim_buffers_locked(struct drm_device * dev,
 irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
-//	struct xgi_info *info = dev->dev_private;
-	u32 need_to_run_bottom_half = 0;
-
-	//DRM_INFO("xgi_kern_isr \n");
-
-	//xgi_dvi_irq_handler(info);
-
-	if (need_to_run_bottom_half) {
-		drm_locked_tasklet(dev, xgi_kern_isr_bh);
-	}
-
-	return IRQ_HANDLED;
-}
-
-void xgi_kern_isr_bh(struct drm_device *dev)
-{
 	struct xgi_info *info = dev->dev_private;
+	const u32 irq_bits = DRM_READ32(info->mmio_map, 0x2810);
 
-	DRM_INFO("xgi_kern_isr_bh \n");
 
-	//xgi_dvi_irq_handler(info);
+	if ((irq_bits & 0x00000000) != 0) {
+		DRM_WRITE32(info->mmio_map, 0x2810,
+			    0x04000000 | irq_bits);
+		return IRQ_HANDLED;
+	} else {
+		return IRQ_NONE;
+	}
 }
+
 
 int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 {

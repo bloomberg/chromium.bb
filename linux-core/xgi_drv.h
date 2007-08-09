@@ -39,7 +39,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		11
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_PATCHLEVEL	2
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"
