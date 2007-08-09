@@ -34,11 +34,11 @@
 
 #define DRIVER_NAME		"xgi"
 #define DRIVER_DESC		"XGI XP5 / XP10 / XG47"
-#define DRIVER_DATE		"20070806"
+#define DRIVER_DATE		"20070809"
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		10
-#define DRIVER_PATCHLEVEL	5
+#define DRIVER_PATCHLEVEL	6
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"

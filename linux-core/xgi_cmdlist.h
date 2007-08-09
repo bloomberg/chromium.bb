@@ -72,12 +72,6 @@ struct xgi_cmdring_info {
 	 */
 	unsigned int ring_hw_base;
 
-	/**
-	 * Offset, in bytes, from the base of PCI-e GART space to the start
-	 * of the ring.
-	 */
-	unsigned long ring_gart_base;
-
 	u32 * last_ptr;
 
 	/**
@@ -88,7 +82,8 @@ struct xgi_cmdring_info {
 };
 
 struct xgi_info;
-extern int xgi_cmdlist_initialize(struct xgi_info * info, size_t size);
+extern int xgi_cmdlist_initialize(struct xgi_info * info, size_t size,
+	struct drm_file * filp);
 
 extern int xgi_state_change(struct xgi_info * info, unsigned int to,
 	unsigned int from);

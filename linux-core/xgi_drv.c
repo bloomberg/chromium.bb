@@ -248,7 +248,7 @@ int xgi_bootstrap(struct drm_device * dev, void * data,
 		}
 
 		/* Alloc 1M bytes for cmdbuffer which is flush2D batch array */
-		err = xgi_cmdlist_initialize(info, 0x100000);
+		err = xgi_cmdlist_initialize(info, 0x100000, filp);
 		if (err) {
 			DRM_ERROR("xgi_cmdlist_initialize() failed\n");
 			return err;

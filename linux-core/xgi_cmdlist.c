@@ -34,7 +34,8 @@ static unsigned int get_batch_command(enum xgi_batch_type type);
 static void triggerHWCommandList(struct xgi_info * info);
 static void xgi_cmdlist_reset(struct xgi_info * info);
 
-int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
+int xgi_cmdlist_initialize(struct xgi_info * info, size_t size,
+			   struct drm_file * filp)
 {
 	struct xgi_mem_alloc mem_alloc = {
 		.location = XGI_MEMLOC_NON_LOCAL,
@@ -42,7 +43,7 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 	};
 	int err;
 
-	err = xgi_alloc(info, &mem_alloc, 0);
+	err = xgi_alloc(info, &mem_alloc, filp);
 	if (err) {
 		return err;
 	}
@@ -50,7 +51,6 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size)
 	info->cmdring.ptr = xgi_find_pcie_virt(info, mem_alloc.hw_addr);
 	info->cmdring.size = mem_alloc.size;
 	info->cmdring.ring_hw_base = mem_alloc.hw_addr;
-	info->cmdring.ring_gart_base = mem_alloc.offset;
 	info->cmdring.last_ptr = NULL;
 	info->cmdring.ring_offset = 0;
 
@@ -202,12 +202,7 @@ void xgi_cmdlist_cleanup(struct xgi_info * info)
 			xgi_waitfor_pci_idle(info);
 		}
 
-		xgi_free(info, (XGI_MEMLOC_NON_LOCAL
-				| info->cmdring.ring_gart_base),
-			 NULL);
-		info->cmdring.ring_hw_base = 0;
-		info->cmdring.ring_offset = 0;
-		info->cmdring.size = 0;
+		(void) memset(&info->cmdring, 0, sizeof(info->cmdring));
 	}
 }
 
