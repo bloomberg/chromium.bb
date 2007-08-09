@@ -131,11 +131,15 @@ int xgi_pcie_heap_init(struct xgi_info * info)
 	}
 
 
-	err = xgi_mem_heap_init(&info->pcie_heap, 0, info->pcie.size);
+	mutex_lock(&info->dev->struct_mutex);
+	err = drm_sman_set_range(&info->sman, XGI_MEMLOC_NON_LOCAL,
+				 0, info->pcie.size);
+	mutex_unlock(&info->dev->struct_mutex);
 	if (err) {
 		xgi_pcie_lut_cleanup(info);
 	}
 
+	info->pcie_heap_initialized = (err == 0);
 	return err;
 }
 

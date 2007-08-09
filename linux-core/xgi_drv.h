@@ -29,6 +29,7 @@
 
 #include "drmP.h"
 #include "drm.h"
+#include "drm_sman.h"
 
 #define DRIVER_AUTHOR		"Andrea Zhang <andrea_zhang@macrosynergy.com>"
 
@@ -38,7 +39,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		11
-#define DRIVER_PATCHLEVEL	0
+#define DRIVER_PATCHLEVEL	1
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"
@@ -46,22 +47,6 @@
 struct xgi_aperture {
 	dma_addr_t base;
 	unsigned int size;
-};
-
-struct xgi_mem_block {
-	struct list_head list;
-	unsigned long offset;
-	unsigned long size;
-	struct drm_file * filp;
-};
-
-struct xgi_mem_heap {
-	struct list_head free_list;
-	struct list_head used_list;
-	struct list_head sort_list;
-	unsigned long max_freesize;
-
-	bool initialized;
 };
 
 struct xgi_info {
@@ -82,18 +67,12 @@ struct xgi_info {
 	struct drm_dma_handle *lut_handle;
 	unsigned int lutPageSize;
 
-	struct xgi_mem_heap fb_heap;
-	struct xgi_mem_heap pcie_heap;
+	struct drm_sman sman;
+	bool fb_heap_initialized;
+	bool pcie_heap_initialized;
 
 	struct xgi_cmdring_info cmdring;
 };
-
-extern struct kmem_cache *xgi_mem_block_cache;
-extern int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
-	struct drm_file * filp);
-extern int xgi_mem_heap_init(struct xgi_mem_heap * heap, unsigned int start,
-	unsigned int end);
-extern void xgi_mem_heap_cleanup(struct xgi_mem_heap * heap);
 
 extern int xgi_fb_heap_init(struct xgi_info * info);
 
@@ -107,9 +86,6 @@ extern int xgi_pcie_heap_init(struct xgi_info * info);
 extern void xgi_pcie_lut_cleanup(struct xgi_info * info);
 
 extern void *xgi_find_pcie_virt(struct xgi_info * info, u32 address);
-
-extern void xgi_free_all(struct xgi_info *, struct xgi_mem_heap *,
-	struct drm_file *);
 
 extern int xgi_alloc_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);

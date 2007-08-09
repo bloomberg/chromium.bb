@@ -225,7 +225,7 @@ int xgi_bootstrap(struct drm_device * dev, void * data,
 
 
 	/* Init the resource manager */
-	if (!info->fb_heap.initialized) {
+	if (!info->fb_heap_initialized) {
 		err = xgi_fb_heap_init(info);
 		if (err) {
 			DRM_ERROR("Unable to initialize FB heap.\n");
@@ -237,7 +237,7 @@ int xgi_bootstrap(struct drm_device * dev, void * data,
 	info->pcie.size = bs->gart.size;
 
 	/* Init the resource manager */
-	if (!info->pcie_heap.initialized) {
+	if (!info->pcie_heap_initialized) {
 		err = xgi_pcie_heap_init(info);
 		if (err) {
 			DRM_ERROR("Unable to initialize GART heap.\n");
@@ -296,13 +296,13 @@ void xgi_driver_lastclose(struct drm_device * dev)
 		info->mmio_map = NULL;
 		info->fb_map = NULL;
 
-		if (info->fb_heap.initialized) {
-			xgi_mem_heap_cleanup(&info->fb_heap);
+		if (info->pcie_heap_initialized) {
+			xgi_pcie_lut_cleanup(info);
 		}
 
-		if (info->pcie_heap.initialized) {
-			xgi_mem_heap_cleanup(&info->pcie_heap);
-			xgi_pcie_lut_cleanup(info);
+		if (info->fb_heap_initialized
+		    || info->pcie_heap_initialized) {
+			drm_sman_cleanup(&info->sman);
 		}
 	}
 }
@@ -314,12 +314,16 @@ void xgi_reclaim_buffers_locked(struct drm_device * dev,
 	struct xgi_info * info = dev->dev_private;
 
 	mutex_lock(&info->dev->struct_mutex);
+	if (drm_sman_owner_clean(&info->sman, (unsigned long) filp)) {
+		mutex_unlock(&info->dev->struct_mutex);
+		return;
+	}
+
 	if (dev->driver->dma_quiescent) {
 		dev->driver->dma_quiescent(dev);
 	}
 
-	xgi_free_all(info, &info->pcie_heap, filp);
-	xgi_free_all(info, &info->fb_heap, filp);
+	drm_sman_owner_cleanup(&info->sman, (unsigned long) filp);
 	mutex_unlock(&info->dev->struct_mutex);
 	return;
 }
@@ -357,6 +361,7 @@ void xgi_kern_isr_bh(struct drm_device *dev)
 int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 {
 	struct xgi_info *info = drm_alloc(sizeof(*info), DRM_MEM_DRIVER);
+	int err;
 
 	if (!info)
 		return -ENOMEM;
@@ -375,7 +380,8 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 	if ((info->mmio.base == 0) || (info->mmio.size == 0)) {
 		DRM_ERROR("mmio appears to be wrong: 0x%lx 0x%x\n",
 			  (unsigned long) info->mmio.base, info->mmio.size);
-		return -EINVAL;
+		err = -EINVAL;
+		goto fail;
 	}
 
 
@@ -386,28 +392,24 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 		 (unsigned long) info->fb.base, info->fb.size);
 
 
-	xgi_mem_block_cache = kmem_cache_create("xgi_mem_block",
-						sizeof(struct xgi_mem_block),
-						0,
-						SLAB_HWCACHE_ALIGN,
-						NULL, NULL);
-	if (xgi_mem_block_cache == NULL) {
-		return -ENOMEM;
+	err = drm_sman_init(&info->sman, 2, 12, 8);
+	if (err) {
+		goto fail;
 	}
 
 
 	return 0;
+	
+fail:
+	drm_free(info, sizeof(*info), DRM_MEM_DRIVER);
+	return err;
 }
 
 int xgi_driver_unload(struct drm_device *dev)
 {
 	struct xgi_info * info = dev->dev_private;
 
-	if (xgi_mem_block_cache) {
-		kmem_cache_destroy(xgi_mem_block_cache);
-		xgi_mem_block_cache = NULL;
-	}
-
+	drm_sman_takedown(&info->sman);
 	drm_free(info, sizeof(*info), DRM_MEM_DRIVER);
 	dev->dev_private = NULL;
 
