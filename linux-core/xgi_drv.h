@@ -37,8 +37,8 @@
 #define DRIVER_DATE		"20070809"
 
 #define DRIVER_MAJOR		0
-#define DRIVER_MINOR		10
-#define DRIVER_PATCHLEVEL	6
+#define DRIVER_MINOR		11
+#define DRIVER_PATCHLEVEL	0
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"
@@ -89,6 +89,8 @@ struct xgi_info {
 };
 
 extern struct kmem_cache *xgi_mem_block_cache;
+extern int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
+	struct drm_file * filp);
 extern int xgi_mem_heap_init(struct xgi_mem_heap * heap, unsigned int start,
 	unsigned int end);
 extern void xgi_mem_heap_cleanup(struct xgi_mem_heap * heap);
@@ -109,13 +111,9 @@ extern void *xgi_find_pcie_virt(struct xgi_info * info, u32 address);
 extern void xgi_free_all(struct xgi_info *, struct xgi_mem_heap *,
 	struct drm_file *);
 
-extern int xgi_fb_alloc_ioctl(struct drm_device * dev, void * data,
+extern int xgi_alloc_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
-extern int xgi_fb_free_ioctl(struct drm_device * dev, void * data,
-	struct drm_file * filp);
-extern int xgi_pcie_alloc_ioctl(struct drm_device * dev, void * data,
-	struct drm_file * filp);
-extern int xgi_pcie_free_ioctl(struct drm_device * dev, void * data,
+extern int xgi_free_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
 extern int xgi_ge_reset_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);

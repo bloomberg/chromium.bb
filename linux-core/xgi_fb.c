@@ -169,8 +169,8 @@ static struct xgi_mem_block *xgi_mem_alloc(struct xgi_mem_heap * heap,
 	return (used_block);
 }
 
-static int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
-			struct drm_file * filp)
+int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
+		 struct drm_file * filp)
 {
 	struct xgi_mem_block *used_block = NULL, *block;
 	struct xgi_mem_block *prev, *next;
@@ -243,26 +243,45 @@ static int xgi_mem_free(struct xgi_mem_heap * heap, unsigned long offset,
 
 
 int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
-		 struct drm_file * filp)
+	      struct drm_file * filp)
 {
 	struct xgi_mem_block *block;
+	struct xgi_mem_heap *heap;
+	const char *const mem_name = (alloc->location == XGI_MEMLOC_LOCAL) 
+		? "on-card" : "GART";
+
+
+	if ((alloc->location != XGI_MEMLOC_LOCAL)
+	    && (alloc->location != XGI_MEMLOC_NON_LOCAL)) {
+		DRM_ERROR("Invalid memory pool (0x%08x) specified.\n",
+			  alloc->location);
+		return -EINVAL;
+	}
+
+	heap = (alloc->location == XGI_MEMLOC_LOCAL)
+		? &info->fb_heap : &info->pcie_heap;
+	
+	if (!heap->initialized) {
+		DRM_ERROR("Attempt to allocate from uninitialized memory "
+			  "pool (0x%08x).\n", alloc->location);
+		return -EINVAL;
+	}
 
 	mutex_lock(&info->dev->struct_mutex);
-	block = xgi_mem_alloc((alloc->location == XGI_MEMLOC_LOCAL)
-			      ? &info->fb_heap : &info->pcie_heap,
-			      alloc->size);
+	block = xgi_mem_alloc(heap, alloc->size);
 	mutex_unlock(&info->dev->struct_mutex);
 
 	if (block == NULL) {
 		alloc->size = 0;
-		DRM_ERROR("Video RAM allocation failed\n");
+		DRM_ERROR("%s memory allocation failed\n", mem_name);
 		return -ENOMEM;
 	} else {
-		DRM_INFO("Video RAM allocation succeeded: 0x%p\n",
-			 (char *)block->offset);
+		DRM_DEBUG("%s memory allocation succeeded: 0x%p\n",
+			  mem_name, (char *)block->offset);
 		alloc->size = block->size;
 		alloc->offset = block->offset;
 		alloc->hw_addr = block->offset;
+		alloc->index = alloc->offset | alloc->location;
 
 		if (alloc->location == XGI_MEMLOC_NON_LOCAL) {
 			alloc->hw_addr += info->pcie.base;
@@ -275,47 +294,45 @@ int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 }
 
 
-int xgi_fb_alloc_ioctl(struct drm_device * dev, void * data,
-		       struct drm_file * filp)
+int xgi_alloc_ioctl(struct drm_device * dev, void * data,
+		    struct drm_file * filp)
 {
-	struct xgi_mem_alloc *alloc = 
-		(struct xgi_mem_alloc *) data;
 	struct xgi_info *info = dev->dev_private;
 
-	alloc->location = XGI_MEMLOC_LOCAL;
-	return xgi_alloc(info, alloc, filp);
+	return xgi_alloc(info, (struct xgi_mem_alloc *) data, filp);
 }
 
 
 int xgi_free(struct xgi_info * info, unsigned long index,
 	     struct drm_file * filp)
 {
-	int err = 0;
-	const unsigned heap = index & 0x03;
+	int err;
+	struct xgi_mem_heap *const heap = 
+		((index & 0x03) == XGI_MEMLOC_NON_LOCAL) 
+		? &info->pcie_heap : &info->fb_heap;
+	const u32 offset = (index & ~0x03);
 
 	mutex_lock(&info->dev->struct_mutex);
-	err = xgi_mem_free((heap == XGI_MEMLOC_NON_LOCAL)
-			   ? &info->pcie_heap : &info->fb_heap, 
-			   (index & ~0x03), filp);
+	err = xgi_mem_free(heap, offset, filp);
 	mutex_unlock(&info->dev->struct_mutex);
 
 	return err;
 }
 
 
-int xgi_fb_free_ioctl(struct drm_device * dev, void * data,
-		      struct drm_file * filp)
+int xgi_free_ioctl(struct drm_device * dev, void * data,
+		   struct drm_file * filp)
 {
 	struct xgi_info *info = dev->dev_private;
 
-	return xgi_free(info, XGI_MEMLOC_LOCAL | *(u32 *) data, filp);
+	return xgi_free(info, *(unsigned long *) data, filp);
 }
 
 
 int xgi_fb_heap_init(struct xgi_info * info)
 {
 	return xgi_mem_heap_init(&info->fb_heap, XGI_FB_HEAP_START,
-				 info->fb.size);
+				 info->fb.size - XGI_FB_HEAP_START);
 }
 
 /**

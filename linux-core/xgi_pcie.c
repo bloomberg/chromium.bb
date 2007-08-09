@@ -140,27 +140,6 @@ int xgi_pcie_heap_init(struct xgi_info * info)
 }
 
 
-int xgi_pcie_alloc_ioctl(struct drm_device * dev, void * data,
-			 struct drm_file * filp)
-{
-	struct xgi_mem_alloc *const alloc =
-		(struct xgi_mem_alloc *) data;
-	struct xgi_info *info = dev->dev_private;
-
-	alloc->location = XGI_MEMLOC_NON_LOCAL;
-	return xgi_alloc(info, alloc, filp);
-}
-
-
-int xgi_pcie_free_ioctl(struct drm_device * dev, void * data,
-			struct drm_file * filp)
-{
-	struct xgi_info *info = dev->dev_private;
-
-	return xgi_free(info, XGI_MEMLOC_NON_LOCAL | *(u32 *) data, filp);
-}
-
-
 /**
  * xgi_find_pcie_virt
  * @address: GE HW address

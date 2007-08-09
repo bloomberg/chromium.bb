@@ -60,10 +60,20 @@ enum xgi_mem_location {
 };
 
 struct xgi_mem_alloc {
+	/**
+	 * Memory region to be used for allocation.
+	 * 
+	 * Must be one of XGI_MEMLOC_NON_LOCAL or XGI_MEMLOC_LOCAL.
+	 */
 	unsigned int location;
+
+	/**
+	 * Number of bytes request.
+	 * 
+	 * On successful allocation, set to the actual number of bytes
+	 * allocated.
+	 */
 	unsigned int size;
-	unsigned int is_front;
-	unsigned int owner;
 
 	/**
 	 * Address of the memory from the graphics hardware's point of view.
@@ -74,6 +84,13 @@ struct xgi_mem_alloc {
 	 * Offset of the allocation in the mapping.
 	 */
 	__u32 offset;
+
+	/**
+	 * Magic handle used to release memory.
+	 * 
+	 * See also DRM_XGI_FREE ioctl.
+	 */
+	unsigned long index;
 };
 
 enum xgi_batch_type {
@@ -102,24 +119,19 @@ struct xgi_state_info {
  */
 
 #define DRM_XGI_BOOTSTRAP           0
-#define DRM_XGI_FB_ALLOC            1
-#define DRM_XGI_FB_FREE             2
-#define DRM_XGI_PCIE_ALLOC          3
-#define DRM_XGI_PCIE_FREE           4
-#define DRM_XGI_SUBMIT_CMDLIST      5
-#define DRM_XGI_GE_RESET            6
-#define DRM_XGI_DUMP_REGISTER       7
-#define DRM_XGI_DEBUG_INFO          8
-#define DRM_XGI_TEST_RWINKERNEL     9
-#define DRM_XGI_STATE_CHANGE        10
+#define DRM_XGI_ALLOC               1
+#define DRM_XGI_FREE                2
+#define DRM_XGI_SUBMIT_CMDLIST      3
+#define DRM_XGI_GE_RESET            4
+#define DRM_XGI_DUMP_REGISTER       5
+#define DRM_XGI_DEBUG_INFO          6
+#define DRM_XGI_TEST_RWINKERNEL     7
+#define DRM_XGI_STATE_CHANGE        8
 
 #define XGI_IOCTL_BOOTSTRAP         DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_BOOTSTRAP, struct xgi_bootstrap)
 
-#define XGI_IOCTL_FB_ALLOC          DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_FB_ALLOC, struct xgi_mem_alloc)
-#define XGI_IOCTL_FB_FREE           DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_FB_FREE, __u32)
-
-#define XGI_IOCTL_PCIE_ALLOC        DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_PCIE_ALLOC, struct xgi_mem_alloc)
-#define XGI_IOCTL_PCIE_FREE         DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_PCIE_FREE, __u32)
+#define XGI_IOCTL_ALLOC             DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_ALLOC, struct xgi_mem_alloc)
+#define XGI_IOCTL_FREE              DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_FREE, __u32)
 
 #define XGI_IOCTL_GE_RESET          DRM_IO(DRM_COMMAND_BASE + DRM_XGI_GE_RESET)
 #define XGI_IOCTL_DUMP_REGISTER     DRM_IO(DRM_COMMAND_BASE + DRM_XGI_DUMP_REGISTER)
