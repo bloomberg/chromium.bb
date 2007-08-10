@@ -285,8 +285,6 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 	 * When there are no more contexts, you lost
 	 */
 	for(channel=0; channel<nouveau_fifo_number(dev); channel++) {
-		if ((dev_priv->card_type == NV_50) && (channel == 0))
-			continue;
 		if (dev_priv->fifos[channel] == NULL)
 			break;
 	}

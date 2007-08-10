@@ -43,7 +43,7 @@ nv40_fifo_create_context(struct nouveau_channel *chan)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 
-	if ((ret = nouveau_gpuobj_new_fake(dev, NV40_RAMFC(chan->id),
+	if ((ret = nouveau_gpuobj_new_fake(dev, NV40_RAMFC(chan->id), ~0,
 						NV40_RAMFC__SIZE,
 						NVOBJ_FLAG_ZERO_ALLOC |
 						NVOBJ_FLAG_ZERO_FREE,

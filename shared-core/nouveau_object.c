@@ -72,6 +72,8 @@ nouveau_ramht_hash_handle(struct drm_device *dev, int channel, uint32_t handle)
 	uint32_t hash = 0;
 	int i;
 
+	DRM_DEBUG("ch%d handle=0x%08x\n", channel, handle);
+
 	for (i=32;i>0;i-=dev_priv->ramht_bits) {
 		hash ^= (handle & ((1 << dev_priv->ramht_bits) - 1));
 		handle >>= dev_priv->ramht_bits;
@@ -80,7 +82,7 @@ nouveau_ramht_hash_handle(struct drm_device *dev, int channel, uint32_t handle)
 		hash ^= channel << (dev_priv->ramht_bits - 4);
 	hash <<= 3;
 
-	DRM_DEBUG("ch%d handle=0x%08x hash=0x%08x\n", channel, handle, hash);
+	DRM_DEBUG("hash=0x%08x\n", hash);
 	return hash;
 }
 
@@ -286,7 +288,7 @@ nouveau_gpuobj_init(struct drm_device *dev)
 
 	if (dev_priv->card_type < NV_50) {
 		if ((ret = nouveau_gpuobj_new_fake(dev, dev_priv->ramht_offset,
-						   dev_priv->ramht_size,
+						   ~0, dev_priv->ramht_size,
 						   NVOBJ_FLAG_ZERO_ALLOC |
 						   NVOBJ_FLAG_ALLOW_NO_REFS,
 						   &dev_priv->ramht, NULL)))
@@ -346,7 +348,13 @@ nouveau_gpuobj_del(struct drm_device *dev, struct nouveau_gpuobj **pgpuobj)
 	if (gpuobj->dtor)
 		gpuobj->dtor(dev, gpuobj);
 
-	engine->instmem.clear(dev, gpuobj);
+	if (gpuobj->im_backing) {
+		if (gpuobj->flags & NVOBJ_FLAG_FAKE)
+			drm_free(gpuobj->im_backing,
+				 sizeof(*gpuobj->im_backing), DRM_MEM_DRIVER);
+		else
+			engine->instmem.clear(dev, gpuobj);
+	}
 
 	if (gpuobj->im_pramin) {
 		if (gpuobj->flags & NVOBJ_FLAG_FAKE)
@@ -525,7 +533,8 @@ nouveau_gpuobj_ref_find(struct nouveau_channel *chan, uint32_t handle,
 }
 
 int
-nouveau_gpuobj_new_fake(struct drm_device *dev, uint32_t offset, uint32_t size,
+nouveau_gpuobj_new_fake(struct drm_device *dev, uint32_t p_offset,
+			uint32_t b_offset, uint32_t size,
 			uint32_t flags, struct nouveau_gpuobj **pgpuobj,
 			struct nouveau_gpuobj_ref **pref)
 {
@@ -533,8 +542,8 @@ nouveau_gpuobj_new_fake(struct drm_device *dev, uint32_t offset, uint32_t size,
 	struct nouveau_gpuobj *gpuobj = NULL;
 	int i;
 
-	DRM_DEBUG("offset=0x%08x size=0x%08x flags=0x%08x\n",
-		  offset, size, flags);
+	DRM_DEBUG("p_offset=0x%08x b_offset=0x%08x size=0x%08x flags=0x%08x\n",
+		  p_offset, b_offset, size, flags);
 
 	gpuobj = drm_calloc(1, sizeof(*gpuobj), DRM_MEM_DRIVER);
 	if (!gpuobj)
@@ -545,14 +554,27 @@ nouveau_gpuobj_new_fake(struct drm_device *dev, uint32_t offset, uint32_t size,
 
 	list_add_tail(&gpuobj->list, &dev_priv->gpuobj_list);
 
-	gpuobj->im_pramin = drm_calloc(1, sizeof(struct mem_block),
-				       DRM_MEM_DRIVER);
-	if (!gpuobj->im_pramin) {
-		nouveau_gpuobj_del(dev, &gpuobj);
-		return -ENOMEM;
+	if (p_offset != ~0) {
+		gpuobj->im_pramin = drm_calloc(1, sizeof(struct mem_block),
+					       DRM_MEM_DRIVER);
+		if (!gpuobj->im_pramin) {
+			nouveau_gpuobj_del(dev, &gpuobj);
+			return -ENOMEM;
+		}
+		gpuobj->im_pramin->start = p_offset;
+		gpuobj->im_pramin->size  = size;
 	}
-	gpuobj->im_pramin->start = offset;
-	gpuobj->im_pramin->size  = size;
+
+	if (b_offset != ~0) {
+		gpuobj->im_backing = drm_calloc(1, sizeof(struct mem_block),
+					       DRM_MEM_DRIVER);
+		if (!gpuobj->im_backing) {
+			nouveau_gpuobj_del(dev, &gpuobj);
+			return -ENOMEM;
+		}
+		gpuobj->im_backing->start = b_offset;
+		gpuobj->im_backing->size  = size;
+	}
 
 	if (gpuobj->flags & NVOBJ_FLAG_ZERO_ALLOC) {
 		for (i = 0; i < gpuobj->im_pramin->size; i += 4)
@@ -962,7 +984,7 @@ nouveau_gpuobj_channel_init(struct nouveau_channel *chan,
 		
 		vm_offset = (dev_priv->chipset & 0xf0) == 0x50 ? 0x1400 : 0x200;
 		vm_offset += chan->ramin->gpuobj->im_pramin->start;
-		if ((ret = nouveau_gpuobj_new_fake(dev, vm_offset, 0x4000,
+		if ((ret = nouveau_gpuobj_new_fake(dev, vm_offset, ~0, 0x4000,
 						   0, &chan->vm_pd, NULL)))
 			return ret;
 		for (i=0; i<0x4000; i+=8) {

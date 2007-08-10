@@ -393,7 +393,8 @@ extern int nouveau_gpuobj_new_ref(struct drm_device *,
 				  struct nouveau_channel *ref_chan,
 				  uint32_t handle, int size, int align,
 				  uint32_t flags, struct nouveau_gpuobj_ref **);
-extern int nouveau_gpuobj_new_fake(struct drm_device *, uint32_t offset,
+extern int nouveau_gpuobj_new_fake(struct drm_device *,
+				   uint32_t p_offset, uint32_t b_offset,
 				   uint32_t size, uint32_t flags,
 				   struct nouveau_gpuobj **,
 				   struct nouveau_gpuobj_ref**);
