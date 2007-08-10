@@ -334,12 +334,19 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
 	struct xgi_info *info = dev->dev_private;
-	const u32 irq_bits = DRM_READ32(info->mmio_map, 0x2810);
+	const u32 irq_bits = DRM_READ32(info->mmio_map,
+					(0x2800 
+					 + M2REG_AUTO_LINK_STATUS_ADDRESS))
+		& (M2REG_ACTIVE_TIMER_INTERRUPT_MASK
+		   | M2REG_ACTIVE_INTERRUPT_0_MASK
+		   | M2REG_ACTIVE_INTERRUPT_2_MASK
+		   | M2REG_ACTIVE_INTERRUPT_3_MASK);
 
 
-	if ((irq_bits & 0x00000000) != 0) {
-		DRM_WRITE32(info->mmio_map, 0x2810,
-			    0x04000000 | irq_bits);
+	if (irq_bits != 0) {
+		DRM_WRITE32(info->mmio_map, 
+			    0x2800 + M2REG_AUTO_LINK_SETTING_ADDRESS,
+			    M2REG_AUTO_LINK_SETTING_COMMAND | irq_bits);
 		return IRQ_HANDLED;
 	} else {
 		return IRQ_NONE;

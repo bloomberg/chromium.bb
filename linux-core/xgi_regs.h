@@ -30,6 +30,57 @@
 #include "drmP.h"
 #include "drm.h"
 
+#define BASE_3D_ENG 0x2800
+
+#define MAKE_MASK(bits)  ((1U << (bits)) - 1)
+
+#define ONE_BIT_MASK        MAKE_MASK(1)
+#define TWENTY_BIT_MASK     MAKE_MASK(20)
+#define TWENTYONE_BIT_MASK  MAKE_MASK(21)
+#define TWENTYTWO_BIT_MASK  MAKE_MASK(22)
+
+#define M2REG_FLUSH_ENGINE_ADDRESS 0x000
+#define M2REG_FLUSH_ENGINE_COMMAND 0x00
+#define M2REG_FLUSH_FLIP_ENGINE_MASK              (ONE_BIT_MASK<<21)
+#define M2REG_FLUSH_2D_ENGINE_MASK                (ONE_BIT_MASK<<20)
+#define M2REG_FLUSH_3D_ENGINE_MASK                TWENTY_BIT_MASK
+
+/* Write register */
+#define M2REG_AUTO_LINK_SETTING_ADDRESS 0x010
+#define M2REG_AUTO_LINK_SETTING_COMMAND 0x04
+#define M2REG_CLEAR_TIMER_INTERRUPT_MASK          (ONE_BIT_MASK<<11)
+#define M2REG_CLEAR_INTERRUPT_3_MASK              (ONE_BIT_MASK<<10)
+#define M2REG_CLEAR_INTERRUPT_2_MASK              (ONE_BIT_MASK<<9)
+#define M2REG_CLEAR_INTERRUPT_0_MASK              (ONE_BIT_MASK<<8)
+#define M2REG_CLEAR_COUNTERS_MASK                 (ONE_BIT_MASK<<4)
+#define M2REG_PCI_TRIGGER_MODE_MASK               (ONE_BIT_MASK<<1)
+#define M2REG_INVALID_LIST_AUTO_INTERRUPT_MASK    (ONE_BIT_MASK<<0)
+
+/* Read register */
+#define M2REG_AUTO_LINK_STATUS_ADDRESS 0x010
+#define M2REG_AUTO_LINK_STATUS_COMMAND 0x04
+#define M2REG_ACTIVE_TIMER_INTERRUPT_MASK          (ONE_BIT_MASK<<11)
+#define M2REG_ACTIVE_INTERRUPT_3_MASK              (ONE_BIT_MASK<<10)
+#define M2REG_ACTIVE_INTERRUPT_2_MASK              (ONE_BIT_MASK<<9)
+#define M2REG_ACTIVE_INTERRUPT_0_MASK              (ONE_BIT_MASK<<8)
+#define M2REG_INVALID_LIST_AUTO_INTERRUPTED_MODE_MASK    (ONE_BIT_MASK<<0)
+
+#define     M2REG_PCI_TRIGGER_REGISTER_ADDRESS 0x014
+#define     M2REG_PCI_TRIGGER_REGISTER_COMMAND 0x05
+
+
+/**
+ * Begin instruction, double-word 0
+ */
+#define BEGIN_VALID_MASK                        (ONE_BIT_MASK<<20)
+#define BEGIN_BEGIN_IDENTIFICATION_MASK         TWENTY_BIT_MASK
+
+/**
+ * Begin instruction, double-word 1
+ */
+#define BEGIN_LINK_ENABLE_MASK                  (ONE_BIT_MASK<<31)
+#define BEGIN_COMMAND_LIST_LENGTH_MASK          TWENTYTWO_BIT_MASK
+
 
 /* Hardware access functions */
 static inline void OUT3C5B(struct drm_map * map, u8 index, u8 data)
