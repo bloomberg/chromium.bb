@@ -301,6 +301,9 @@ void xgi_driver_lastclose(struct drm_device * dev)
 		if (info->fb_heap_initialized
 		    || info->pcie_heap_initialized) {
 			drm_sman_cleanup(&info->sman);
+
+			info->fb_heap_initialized = FALSE;
+			info->pcie_heap_initialized = FALSE;
 		}
 	}
 }
