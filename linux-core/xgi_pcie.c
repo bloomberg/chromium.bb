@@ -96,11 +96,7 @@ static int xgi_pcie_lut_init(struct xgi_info * info)
 		lut[i] = info->dev->sg->busaddr[i];
 	}
 
-#if defined(__i386__) || defined(__x86_64__)
-	asm volatile ("wbinvd":::"memory");
-#else
-	mb();
-#endif
+	DRM_MEMORYBARRIER();
 
 	/* Set GART in SFB */
 	temp = DRM_READ8(info->mmio_map, 0xB00C);
