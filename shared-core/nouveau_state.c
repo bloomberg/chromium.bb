@@ -296,7 +296,8 @@ nouveau_card_init(struct drm_device *dev)
 	engine = &dev_priv->Engine;
 	dev_priv->init_state = NOUVEAU_CARD_INIT_FAILED;
 
-	INIT_LIST_HEAD(&dev_priv->gpuobj_list);
+	ret = nouveau_gpuobj_early_init(dev);
+	if (ret) return ret;
 
 	/* Initialise instance memory, must happen before mem_init so we
 	 * know exactly how much VRAM we're able to use for "normal"
@@ -374,6 +375,8 @@ static void nouveau_card_takedown(struct drm_device *dev)
 		engine->instmem.takedown(dev);
 
 		drm_irq_uninstall(dev);
+
+		nouveau_gpuobj_late_takedown(dev);
 
 		dev_priv->init_state = NOUVEAU_CARD_INIT_DOWN;
 	}

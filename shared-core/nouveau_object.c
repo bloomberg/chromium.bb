@@ -265,10 +265,24 @@ nouveau_gpuobj_new(struct drm_device *dev, struct nouveau_channel *chan,
 }
 
 int
+nouveau_gpuobj_early_init(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	DRM_DEBUG("\n");
+
+	INIT_LIST_HEAD(&dev_priv->gpuobj_list);
+
+	return 0;
+}
+
+int
 nouveau_gpuobj_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
+
+	DRM_DEBUG("\n");
 
 	if (dev_priv->card_type < NV_50) {
 		if ((ret = nouveau_gpuobj_new_fake(dev, dev_priv->ramht_offset,
@@ -286,12 +300,20 @@ void
 nouveau_gpuobj_takedown(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_gpuobj *gpuobj = NULL;
-	struct list_head *entry, *tmp;
 
 	DRM_DEBUG("\n");
 
 	nouveau_gpuobj_del(dev, &dev_priv->ramht);
+}
+
+void
+nouveau_gpuobj_late_takedown(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_gpuobj *gpuobj = NULL;
+	struct list_head *entry, *tmp;
+
+	DRM_DEBUG("\n");
 
 	list_for_each_safe(entry, tmp, &dev_priv->gpuobj_list) {
 		gpuobj = list_entry(entry, struct nouveau_gpuobj, list);

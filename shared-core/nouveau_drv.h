@@ -370,8 +370,10 @@ extern int  nouveau_fifo_alloc(struct drm_device *dev,
 extern void nouveau_fifo_free(struct nouveau_channel *);
 
 /* nouveau_object.c */
+extern int  nouveau_gpuobj_early_init(struct drm_device *);
 extern int  nouveau_gpuobj_init(struct drm_device *);
 extern void nouveau_gpuobj_takedown(struct drm_device *);
+extern void nouveau_gpuobj_late_takedown(struct drm_device *);
 extern int nouveau_gpuobj_channel_init(struct nouveau_channel *,
 				       uint32_t vram_h, uint32_t tt_h);
 extern void nouveau_gpuobj_channel_takedown(struct nouveau_channel *);
