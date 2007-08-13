@@ -15,7 +15,8 @@ libdrmtest_la_LIBADD = \
 
 LDADD = libdrmtest.la
 
-TESTS = openclose \
+TESTS = auth \
+	openclose \
 	getversion \
 	getclient \
 	updatedraw
