@@ -43,6 +43,8 @@ static drm_file_t *drm_find_file(drm_device_t *dev, drm_magic_t magic)
 	drm_magic_entry_t *pt;
 	int hash = drm_hash_magic(magic);
 
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+
 	for (pt = dev->magiclist[hash].head; pt; pt = pt->next) {
 		if (pt->magic == magic) {
 			return pt->priv;
@@ -58,6 +60,8 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 	drm_magic_entry_t *entry;
 
 	DRM_DEBUG("%d\n", magic);
+
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
 
 	hash = drm_hash_magic(magic);
 	entry = malloc(sizeof(*entry), M_DRM, M_ZERO | M_NOWAIT);
@@ -85,10 +89,11 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 	drm_magic_entry_t *pt;
 	int		  hash;
 
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+
 	DRM_DEBUG("%d\n", magic);
 	hash = drm_hash_magic(magic);
 
-	DRM_LOCK();
 	for (pt = dev->magiclist[hash].head; pt; prev = pt, pt = pt->next) {
 		if (pt->magic == magic) {
 			if (dev->magiclist[hash].head == pt) {
@@ -100,11 +105,9 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 			if (prev) {
 				prev->next = pt->next;
 			}
-			DRM_UNLOCK();
 			return 0;
 		}
 	}
-	DRM_UNLOCK();
 
 	free(pt, M_DRM);
 	return EINVAL;
@@ -129,8 +132,8 @@ int drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 				continue;
 		} while (drm_find_file(dev, auth->magic));
 		file_priv->magic = auth->magic;
-		DRM_UNLOCK();
 		drm_add_magic(dev, file_priv, auth->magic);
+		DRM_UNLOCK();
 	}
 
 	DRM_DEBUG("%u\n", auth->magic);
