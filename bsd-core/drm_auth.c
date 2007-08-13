@@ -1,4 +1,4 @@
-/* drm_auth.h -- IOCTLs for authentication -*- linux-c -*-
+/* drm_auth.c -- IOCTLs for authentication -*- linux-c -*-
  * Created: Tue Feb  2 08:37:54 1999 by faith@valinux.com
  */
 /*-
@@ -38,6 +38,9 @@ static int drm_hash_magic(drm_magic_t magic)
 	return magic & (DRM_HASH_SIZE-1);
 }
 
+/**
+ * Returns the file private associated with the given magic number.
+ */
 static drm_file_t *drm_find_file(drm_device_t *dev, drm_magic_t magic)
 {
 	drm_magic_entry_t *pt;
@@ -54,6 +57,10 @@ static drm_file_t *drm_find_file(drm_device_t *dev, drm_magic_t magic)
 	return NULL;
 }
 
+/**
+ * Inserts the given magic number into the hash table of used magic number
+ * lists.
+ */
 static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 {
 	int		  hash;
@@ -83,6 +90,10 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 	return 0;
 }
 
+/**
+ * Removes the given magic number from the hash table of used magic number
+ * lists.
+ */
 static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 {
 	drm_magic_entry_t *prev = NULL;
@@ -113,6 +124,14 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 	return EINVAL;
 }
 
+/**
+ * Called by the client, this returns a unique magic number to be authorized
+ * by the master.
+ *
+ * The master may use its own knowledge of the client (such as the X
+ * connection that the magic is passed over) to determine if the magic number
+ * should be authenticated.
+ */
 int drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
 	static drm_magic_t sequence = 0;
@@ -125,9 +144,9 @@ int drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 		DRM_LOCK();
 		do {
 			int old = sequence;
-			
+
 			auth->magic = old+1;
-			
+
 			if (!atomic_cmpset_int(&sequence, old, auth->magic))
 				continue;
 		} while (drm_find_file(dev, auth->magic));
@@ -141,6 +160,9 @@ int drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	return 0;
 }
 
+/**
+ * Marks the client associated with the given magic number as authenticated.
+ */
 int drm_authmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
 	drm_auth_t *auth = data;
