@@ -241,6 +241,7 @@ int drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv)
 		ret = EINVAL;
 	} else {
 		DRM_LOCK();
+		/* shared code returns -errno */
 		ret = -dev->driver.vblank_wait(dev,
 		    &vblwait->request.sequence);
 		DRM_UNLOCK();
