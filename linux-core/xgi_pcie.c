@@ -103,7 +103,11 @@ static int xgi_pcie_lut_init(struct xgi_info * info)
 	DRM_WRITE8(info->mmio_map, 0xB00C, temp & ~0x02);
 
 	/* Set GART base address to HW */
-	dwWriteReg(info->mmio_map, 0xB034, info->lut_handle->busaddr);
+	DRM_WRITE32(info->mmio_map, 0xB034, info->lut_handle->busaddr);
+
+	/* Flush GART table. */
+	DRM_WRITE8(info->mmio_map, 0xB03F, 0x40);
+	DRM_WRITE8(info->mmio_map, 0xB03F, 0x00);
 
 	return 0;
 }
