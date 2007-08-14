@@ -9,21 +9,18 @@ nv04_instmem_determine_amount(struct drm_device *dev)
 	int i;
 
 	/* Figure out how much instance memory we need */
-	switch (dev_priv->card_type) {
-	case NV_40:
+	if (dev_priv->card_type >= NV_40) {
 		/* We'll want more instance memory than this on some NV4x cards.
 		 * There's a 16MB aperture to play with that maps onto the end
 		 * of vram.  For now, only reserve a small piece until we know
 		 * more about what each chipset requires.
 		 */
 		dev_priv->ramin_rsvd_vram = (1*1024* 1024);
-		break;
-	default:
+	} else {
 		/*XXX: what *are* the limits on <NV40 cards?, and does RAMIN
 		 *     exist in vram on those cards as well?
 		 */
 		dev_priv->ramin_rsvd_vram = (512*1024);
-		break;
 	}
 	DRM_DEBUG("RAMIN size: %dKiB\n", dev_priv->ramin_rsvd_vram>>10);
 
