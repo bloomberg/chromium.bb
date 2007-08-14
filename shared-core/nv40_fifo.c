@@ -193,3 +193,16 @@ nv40_fifo_save_context(struct nouveau_channel *chan)
 	return 0;
 }
 
+int
+nv40_fifo_init(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int ret;
+
+	if ((ret = nouveau_fifo_init(dev)))
+		return ret;
+
+	NV_WRITE(NV04_PFIFO_DMA_TIMESLICE, 0x2101ffff);
+	return 0;
+}
+

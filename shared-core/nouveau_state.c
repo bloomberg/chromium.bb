@@ -224,7 +224,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv40_graph_destroy_context;
 		engine->graph.load_context	= nv40_graph_load_context;
 		engine->graph.save_context	= nv40_graph_save_context;
-		engine->fifo.init	= nouveau_fifo_init;
+		engine->fifo.init	= nv40_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
 		engine->fifo.create_context	= nv40_fifo_create_context;
 		engine->fifo.destroy_context	= nv40_fifo_destroy_context;
