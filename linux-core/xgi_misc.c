@@ -29,18 +29,6 @@
 
 #include <linux/delay.h>
 
-int xgi_ge_reset_ioctl(struct drm_device * dev, void * data,
-		       struct drm_file * filp)
-{
-	struct xgi_info *info = dev->dev_private;
-
-	xgi_disable_ge(info);
-	xgi_enable_ge(info);
-
-	return 0;
-}
-
-
 /*
  * irq functions
  */
@@ -321,27 +309,6 @@ void xgi_dump_register(struct xgi_info * info)
 	dump_reg(info, 0x2300, 0x07);
 	dump_reg(info, 0x2400, 0x10);
 	dump_reg(info, 0x2800, 0x10);
-}
-
-
-int xgi_dump_register_ioctl(struct drm_device * dev, void * data,
-			    struct drm_file * filp)
-{
-	struct xgi_info *info = dev->dev_private;
-
-	xgi_dump_register(info);
-	return 0;
-}
-
-
-int xgi_restore_registers_ioctl(struct drm_device * dev, void * data,
-				struct drm_file * filp)
-{
-	struct xgi_info *info = dev->dev_private;
-
-	OUT3X5B(info->mmio_map, 0x13, 0);
-	OUT3X5B(info->mmio_map, 0x8b, 2);
-	return 0;
 }
 
 

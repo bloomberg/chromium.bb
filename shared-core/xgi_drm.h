@@ -122,22 +122,12 @@ struct xgi_state_info {
 #define DRM_XGI_ALLOC               1
 #define DRM_XGI_FREE                2
 #define DRM_XGI_SUBMIT_CMDLIST      3
-#define DRM_XGI_GE_RESET            4
-#define DRM_XGI_DUMP_REGISTER       5
-#define DRM_XGI_DEBUG_INFO          6
-#define DRM_XGI_TEST_RWINKERNEL     7
-#define DRM_XGI_STATE_CHANGE        8
+#define DRM_XGI_STATE_CHANGE        4
 
 #define XGI_IOCTL_BOOTSTRAP         DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_BOOTSTRAP, struct xgi_bootstrap)
-
 #define XGI_IOCTL_ALLOC             DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_ALLOC, struct xgi_mem_alloc)
 #define XGI_IOCTL_FREE              DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_FREE, __u32)
-
-#define XGI_IOCTL_GE_RESET          DRM_IO(DRM_COMMAND_BASE + DRM_XGI_GE_RESET)
-#define XGI_IOCTL_DUMP_REGISTER     DRM_IO(DRM_COMMAND_BASE + DRM_XGI_DUMP_REGISTER)
-#define XGI_IOCTL_DEBUG_INFO        DRM_IO(DRM_COMMAND_BASE + DRM_XGI_DEBUG_INFO)
 #define XGI_IOCTL_SUBMIT_CMDLIST    DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_SUBMIT_CMDLIST, struct xgi_cmd_info)
-#define XGI_IOCTL_TEST_RWINKERNEL   DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_TEST_RWINKERNEL, __u32)
 #define XGI_IOCTL_STATE_CHANGE      DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_STATE_CHANGE, struct xgi_state_info)
 
 #endif /* _XGI_DRM_H_ */

@@ -41,15 +41,9 @@ static int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
 
 static struct drm_ioctl_desc xgi_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_XGI_BOOTSTRAP, xgi_bootstrap, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-
 	DRM_IOCTL_DEF(DRM_XGI_ALLOC, xgi_alloc_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_XGI_FREE, xgi_free_ioctl, DRM_AUTH),
-
-	DRM_IOCTL_DEF(DRM_XGI_GE_RESET, xgi_ge_reset_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_XGI_DUMP_REGISTER, xgi_dump_register_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_XGI_DEBUG_INFO, xgi_restore_registers_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_XGI_SUBMIT_CMDLIST, xgi_submit_cmdlist, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_XGI_TEST_RWINKERNEL, xgi_test_rwinkernel_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_XGI_STATE_CHANGE, xgi_state_change_ioctl, DRM_AUTH|DRM_MASTER),
 };
 

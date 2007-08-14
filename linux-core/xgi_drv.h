@@ -35,11 +35,11 @@
 
 #define DRIVER_NAME		"xgi"
 #define DRIVER_DESC		"XGI XP5 / XP10 / XG47"
-#define DRIVER_DATE		"20070809"
+#define DRIVER_DATE		"20070814"
 
 #define DRIVER_MAJOR		0
-#define DRIVER_MINOR		11
-#define DRIVER_PATCHLEVEL	2
+#define DRIVER_MINOR		12
+#define DRIVER_PATCHLEVEL	0
 
 #include "xgi_cmdlist.h"
 #include "xgi_drm.h"
@@ -96,15 +96,7 @@ extern int xgi_alloc_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
 extern int xgi_free_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
-extern int xgi_ge_reset_ioctl(struct drm_device * dev, void * data,
-	struct drm_file * filp);
-extern int xgi_dump_register_ioctl(struct drm_device * dev, void * data,
-	struct drm_file * filp);
-extern int xgi_restore_registers_ioctl(struct drm_device * dev, void * data,
-	struct drm_file * filp);
 extern int xgi_submit_cmdlist(struct drm_device * dev, void * data,
-	struct drm_file * filp);
-extern int xgi_test_rwinkernel_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
 extern int xgi_state_change_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);

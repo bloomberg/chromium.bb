@@ -157,35 +157,3 @@ void *xgi_find_pcie_virt(struct xgi_info * info, u32 address)
 
 	return ((u8 *) info->dev->sg->virtual) + offset;
 }
-
-/*
-    address -- GE hw address
-*/
-int xgi_test_rwinkernel_ioctl(struct drm_device * dev, void * data,
-			      struct drm_file * filp)
-{
-	struct xgi_info *info = dev->dev_private;
-	u32 address = *(u32 *) data;
-	u32 *virtaddr = 0;
-
-
-	DRM_INFO("input GE HW addr is 0x%x\n", address);
-
-	if (address == 0) {
-		return -EFAULT;
-	}
-
-	virtaddr = (u32 *)xgi_find_pcie_virt(info, address);
-
-	DRM_INFO("convert to CPU virt addr 0x%p\n", virtaddr);
-
-	if (virtaddr != NULL) {
-		DRM_INFO("original [virtaddr] = 0x%x\n", *virtaddr);
-		*virtaddr = 0x00f00fff;
-		DRM_INFO("modified [virtaddr] = 0x%x\n", *virtaddr);
-	} else {
-		return -EFAULT;
-	}
-
-	return 0;
-}
