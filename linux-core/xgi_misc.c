@@ -202,15 +202,18 @@ bool xgi_crt_irq_handler(struct xgi_info * info)
 	bool ret = FALSE;
 	u8 save_3ce = DRM_READ8(info->mmio_map, 0x3ce);
 
-	if (IN3CFB(info->mmio_map, 0x37) & 0x01)	// CRT1 interrupt just happened
-	{
+	/* CRT1 interrupt just happened
+	 */
+	if (IN3CFB(info->mmio_map, 0x37) & 0x01) {
 		u8 op3cf_3d;
 		u8 op3cf_37;
 
-		// What happened?
+		/* What happened?
+		 */
 		op3cf_37 = IN3CFB(info->mmio_map, 0x37);
 
-		// Clear CRT interrupt
+		/* Clear CRT interrupt
+		 */
 		op3cf_3d = IN3CFB(info->mmio_map, 0x3d);
 		OUT3CFB(info->mmio_map, 0x3d, (op3cf_3d | 0x04));
 		OUT3CFB(info->mmio_map, 0x3d, (op3cf_3d & ~0x04));
@@ -226,25 +229,30 @@ bool xgi_dvi_irq_handler(struct xgi_info * info)
 	bool ret = FALSE;
 	const u8 save_3ce = DRM_READ8(info->mmio_map, 0x3ce);
 
-	if (IN3CFB(info->mmio_map, 0x38) & 0x20) {	// DVI interrupt just happened
+	/* DVI interrupt just happened
+	 */
+	if (IN3CFB(info->mmio_map, 0x38) & 0x20) {
 		const u8 save_3x4 = DRM_READ8(info->mmio_map, 0x3d4);
 		u8 op3cf_39;
 		u8 op3cf_37;
 		u8 op3x5_5a;
 
-		// What happened?
+		/* What happened?
+		 */
 		op3cf_37 = IN3CFB(info->mmio_map, 0x37);
 
-		//Notify BIOS that DVI plug/unplug happened
+		/* Notify BIOS that DVI plug/unplug happened
+		 */
 		op3x5_5a = IN3X5B(info->mmio_map, 0x5a);
 		OUT3X5B(info->mmio_map, 0x5a, op3x5_5a & 0xf7);
 
 		DRM_WRITE8(info->mmio_map, 0x3d4, save_3x4);
 
-		// Clear DVI interrupt
+		/* Clear DVI interrupt
+		 */
 		op3cf_39 = IN3CFB(info->mmio_map, 0x39);
-		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 & ~0x01));	//Set 3cf.39 bit 0 to 0
-		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 | 0x01));	//Set 3cf.39 bit 0 to 1
+		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 & ~0x01));
+		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 | 0x01));
 
 		ret = TRUE;
 	}
