@@ -87,6 +87,11 @@ extern void xgi_pcie_lut_cleanup(struct xgi_info * info);
 
 extern void *xgi_find_pcie_virt(struct xgi_info * info, u32 address);
 
+extern void xgi_enable_mmio(struct xgi_info * info);
+extern void xgi_disable_mmio(struct xgi_info * info);
+extern void xgi_enable_ge(struct xgi_info * info);
+extern void xgi_disable_ge(struct xgi_info * info);
+
 extern int xgi_alloc_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
 extern int xgi_free_ioctl(struct drm_device * dev, void * data,

@@ -374,3 +374,129 @@ void xgi_waitfor_pci_idle(struct xgi_info * info)
 		}
 	}
 }
+
+
+void xgi_enable_mmio(struct xgi_info * info)
+{
+	u8 protect = 0;
+	u8 temp;
+
+	/* Unprotect registers */
+	DRM_WRITE8(info->mmio_map, 0x3C4, 0x11);
+	protect = DRM_READ8(info->mmio_map, 0x3C5);
+	DRM_WRITE8(info->mmio_map, 0x3C5, 0x92);
+
+	DRM_WRITE8(info->mmio_map, 0x3D4, 0x3A);
+	temp = DRM_READ8(info->mmio_map, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D5, temp | 0x20);
+
+	/* Enable MMIO */
+	DRM_WRITE8(info->mmio_map, 0x3D4, 0x39);
+	temp = DRM_READ8(info->mmio_map, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D5, temp | 0x01);
+
+	/* Protect registers */
+	OUT3C5B(info->mmio_map, 0x11, protect);
+}
+
+
+void xgi_disable_mmio(struct xgi_info * info)
+{
+	u8 protect = 0;
+	u8 temp;
+
+	/* Unprotect registers */
+	DRM_WRITE8(info->mmio_map, 0x3C4, 0x11);
+	protect = DRM_READ8(info->mmio_map, 0x3C5);
+	DRM_WRITE8(info->mmio_map, 0x3C5, 0x92);
+
+	/* Disable MMIO access */
+	DRM_WRITE8(info->mmio_map, 0x3D4, 0x39);
+	temp = DRM_READ8(info->mmio_map, 0x3D5);
+	DRM_WRITE8(info->mmio_map, 0x3D5, temp & 0xFE);
+
+	/* Protect registers */
+	OUT3C5B(info->mmio_map, 0x11, protect);
+}
+
+
+void xgi_enable_ge(struct xgi_info * info)
+{
+	u8 bOld3cf2a;
+	int wait = 0;
+
+	OUT3C5B(info->mmio_map, 0x11, 0x92);
+
+	/* Save and close dynamic gating
+	 */
+	bOld3cf2a = IN3CFB(info->mmio_map, XGI_MISC_CTRL);
+	OUT3CFB(info->mmio_map, XGI_MISC_CTRL, bOld3cf2a & ~EN_GEPWM);
+
+	/* Enable 2D and 3D GE
+	 */
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL, (GE_ENABLE | GE_ENABLE_3D));
+	wait = 10;
+	while (wait--) {
+		DRM_READ8(info->mmio_map, 0x36);
+	}
+
+	/* Reset both 3D and 2D engine
+	 */
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL,
+		(GE_ENABLE | GE_RESET | GE_ENABLE_3D));
+	wait = 10;
+	while (wait--) {
+		DRM_READ8(info->mmio_map, 0x36);
+	}
+
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL, (GE_ENABLE | GE_ENABLE_3D));
+	wait = 10;
+	while (wait--) {
+		DRM_READ8(info->mmio_map, 0x36);
+	}
+
+	/* Enable 2D engine only
+	 */
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL, GE_ENABLE);
+
+	/* Enable 2D+3D engine
+	 */
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL, (GE_ENABLE | GE_ENABLE_3D));
+
+	/* Restore dynamic gating
+	 */
+	OUT3CFB(info->mmio_map, XGI_MISC_CTRL, bOld3cf2a);
+}
+
+
+void xgi_disable_ge(struct xgi_info * info)
+{
+	int wait = 0;
+
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL, (GE_ENABLE | GE_ENABLE_3D));
+
+	wait = 10;
+	while (wait--) {
+		DRM_READ8(info->mmio_map, 0x36);
+	}
+
+	/* Reset both 3D and 2D engine
+	 */
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL,
+		(GE_ENABLE | GE_RESET | GE_ENABLE_3D));
+
+	wait = 10;
+	while (wait--) {
+		DRM_READ8(info->mmio_map, 0x36);
+	}
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL, (GE_ENABLE | GE_ENABLE_3D));
+
+	wait = 10;
+	while (wait--) {
+		DRM_READ8(info->mmio_map, 0x36);
+	}
+
+	/* Disable 2D engine and 3D engine.
+	 */
+	OUT3X5B(info->mmio_map, XGI_GE_CNTL, 0);
+}

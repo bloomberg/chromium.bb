@@ -30,14 +30,52 @@
 #include "drmP.h"
 #include "drm.h"
 
-#define BASE_3D_ENG 0x2800
-
 #define MAKE_MASK(bits)  ((1U << (bits)) - 1)
 
 #define ONE_BIT_MASK        MAKE_MASK(1)
 #define TWENTY_BIT_MASK     MAKE_MASK(20)
 #define TWENTYONE_BIT_MASK  MAKE_MASK(21)
 #define TWENTYTWO_BIT_MASK  MAKE_MASK(22)
+
+
+/* Port 0x3d4/0x3d5, index 0x2a */
+#define XGI_INTERFACE_SEL 0x2a
+#define DUAL_64BIT        (1U<<7)
+#define INTERNAL_32BIT    (1U<<6)
+#define EN_SEP_WR         (1U<<5)
+#define POWER_DOWN_SEL    (1U<<4)
+/*#define RESERVED_3      (1U<<3) */
+#define SUBS_MCLK_PCICLK  (1U<<2)
+#define MEM_SIZE_MASK     (3<<0)
+#define MEM_SIZE_32MB     (0<<0)
+#define MEM_SIZE_64MB     (1<<0)
+#define MEM_SIZE_128MB    (2<<0)
+#define MEM_SIZE_256MB    (3<<0)
+
+/* Port 0x3d4/0x3d5, index 0x36 */
+#define XGI_GE_CNTL 0x36
+#define GE_ENABLE        (1U<<7)
+/*#define RESERVED_6     (1U<<6) */
+/*#define RESERVED_5     (1U<<5) */
+#define GE_RESET         (1U<<4)
+/*#define RESERVED_3     (1U<<3) */
+#define GE_ENABLE_3D     (1U<<2)
+/*#define RESERVED_1     (1U<<1) */
+/*#define RESERVED_0     (1U<<0) */
+
+/* Port 0x3ce/0x3cf, index 0x2a */
+#define XGI_MISC_CTRL 0x2a
+#define MOTION_VID_SUSPEND   (1U<<7)
+#define DVI_CRTC_TIMING_SEL  (1U<<6)
+#define LCD_SEL_CTL_NEW      (1U<<5)
+#define LCD_SEL_EXT_DELYCTRL (1U<<4)
+#define REG_LCDDPARST        (1U<<3)
+#define LCD2DPAOFF           (1U<<2)
+/*#define RESERVED_1         (1U<<1) */
+#define EN_GEPWM             (1U<<0)  /* Enable GE power management */
+
+
+#define BASE_3D_ENG 0x2800
 
 #define M2REG_FLUSH_ENGINE_ADDRESS 0x000
 #define M2REG_FLUSH_ENGINE_COMMAND 0x00
@@ -132,114 +170,6 @@ static inline void dwWriteReg(struct drm_map * map, u32 addr, u32 data)
 	DRM_WRITE32(map, addr, data);
 }
 
-
-static inline void xgi_enable_mmio(struct xgi_info * info)
-{
-	u8 protect = 0;
-	u8 temp;
-
-	/* Unprotect registers */
-	DRM_WRITE8(info->mmio_map, 0x3C4, 0x11);
-	protect = DRM_READ8(info->mmio_map, 0x3C5);
-	DRM_WRITE8(info->mmio_map, 0x3C5, 0x92);
-
-	DRM_WRITE8(info->mmio_map, 0x3D4, 0x3A);
-	temp = DRM_READ8(info->mmio_map, 0x3D5);
-	DRM_WRITE8(info->mmio_map, 0x3D5, temp | 0x20);
-
-	/* Enable MMIO */
-	DRM_WRITE8(info->mmio_map, 0x3D4, 0x39);
-	temp = DRM_READ8(info->mmio_map, 0x3D5);
-	DRM_WRITE8(info->mmio_map, 0x3D5, temp | 0x01);
-
-	/* Protect registers */
-	OUT3C5B(info->mmio_map, 0x11, protect);
-}
-
-static inline void xgi_disable_mmio(struct xgi_info * info)
-{
-	u8 protect = 0;
-	u8 temp;
-
-	/* Unprotect registers */
-	DRM_WRITE8(info->mmio_map, 0x3C4, 0x11);
-	protect = DRM_READ8(info->mmio_map, 0x3C5);
-	DRM_WRITE8(info->mmio_map, 0x3C5, 0x92);
-
-	/* Disable MMIO access */
-	DRM_WRITE8(info->mmio_map, 0x3D4, 0x39);
-	temp = DRM_READ8(info->mmio_map, 0x3D5);
-	DRM_WRITE8(info->mmio_map, 0x3D5, temp & 0xFE);
-
-	/* Protect registers */
-	OUT3C5B(info->mmio_map, 0x11, protect);
-}
-
-static inline void xgi_enable_ge(struct xgi_info * info)
-{
-	unsigned char bOld3cf2a = 0;
-	int wait = 0;
-
-	// Enable GE
-	OUT3C5B(info->mmio_map, 0x11, 0x92);
-
-	// Save and close dynamic gating
-	bOld3cf2a = IN3CFB(info->mmio_map, 0x2a);
-	OUT3CFB(info->mmio_map, 0x2a, bOld3cf2a & 0xfe);
-
-	// Reset both 3D and 2D engine
-	OUT3X5B(info->mmio_map, 0x36, 0x84);
-	wait = 10;
-	while (wait--) {
-		DRM_READ8(info->mmio_map, 0x36);
-	}
-	OUT3X5B(info->mmio_map, 0x36, 0x94);
-	wait = 10;
-	while (wait--) {
-		DRM_READ8(info->mmio_map, 0x36);
-	}
-	OUT3X5B(info->mmio_map, 0x36, 0x84);
-	wait = 10;
-	while (wait--) {
-		DRM_READ8(info->mmio_map, 0x36);
-	}
-	// Enable 2D engine only
-	OUT3X5B(info->mmio_map, 0x36, 0x80);
-
-	// Enable 2D+3D engine
-	OUT3X5B(info->mmio_map, 0x36, 0x84);
-
-	// Restore dynamic gating
-	OUT3CFB(info->mmio_map, 0x2a, bOld3cf2a);
-}
-
-static inline void xgi_disable_ge(struct xgi_info * info)
-{
-	int wait = 0;
-
-	// Reset both 3D and 2D engine
-	OUT3X5B(info->mmio_map, 0x36, 0x84);
-
-	wait = 10;
-	while (wait--) {
-		DRM_READ8(info->mmio_map, 0x36);
-	}
-	OUT3X5B(info->mmio_map, 0x36, 0x94);
-
-	wait = 10;
-	while (wait--) {
-		DRM_READ8(info->mmio_map, 0x36);
-	}
-	OUT3X5B(info->mmio_map, 0x36, 0x84);
-
-	wait = 10;
-	while (wait--) {
-		DRM_READ8(info->mmio_map, 0x36);
-	}
-
-	// Disable 2D engine only
-	OUT3X5B(info->mmio_map, 0x36, 0);
-}
 
 static inline void xgi_enable_dvi_interrupt(struct xgi_info * info)
 {
