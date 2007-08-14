@@ -170,28 +170,4 @@ static inline void dwWriteReg(struct drm_map * map, u32 addr, u32 data)
 	DRM_WRITE32(map, addr, data);
 }
 
-
-static inline void xgi_enable_dvi_interrupt(struct xgi_info * info)
-{
-	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) & ~0x01);	//Set 3cf.39 bit 0 to 0
-	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) | 0x01);	//Set 3cf.39 bit 0 to 1
-	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) | 0x02);
-}
-static inline void xgi_disable_dvi_interrupt(struct xgi_info * info)
-{
-	OUT3CFB(info->mmio_map, 0x39, IN3CFB(info->mmio_map, 0x39) & ~0x02);
-}
-
-static inline void xgi_enable_crt1_interrupt(struct xgi_info * info)
-{
-	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) | 0x04);
-	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) & ~0x04);
-	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) | 0x08);
-}
-
-static inline void xgi_disable_crt1_interrupt(struct xgi_info * info)
-{
-	OUT3CFB(info->mmio_map, 0x3d, IN3CFB(info->mmio_map, 0x3d) & ~0x08);
-}
-
 #endif
