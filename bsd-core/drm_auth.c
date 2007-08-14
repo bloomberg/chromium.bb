@@ -1,6 +1,3 @@
-/* drm_auth.c -- IOCTLs for authentication -*- linux-c -*-
- * Created: Tue Feb  2 08:37:54 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,11 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_auth.c
+ * Implementation of the get/authmagic ioctls implementing the authentication
+ * scheme between the master and clients.
  */
 
 #include "drmP.h"

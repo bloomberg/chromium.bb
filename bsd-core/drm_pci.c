@@ -1,10 +1,3 @@
-/**
- * \file drm_pci.h
- * \brief PCI consistent, DMA-accessible memory functions.
- *
- * \author Eric Anholt <anholt@FreeBSD.org>
- */
-
 /*-
  * Copyright 2003 Eric Anholt.
  * All Rights Reserved.
@@ -26,6 +19,13 @@
  * AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
  * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/**
+ * \file drm_pci.h
+ * \brief PCI consistent, DMA-accessible memory allocation.
+ *
+ * \author Eric Anholt <anholt@FreeBSD.org>
  */
 
 #include "drmP.h"

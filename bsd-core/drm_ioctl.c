@@ -1,6 +1,3 @@
-/* drm_ioctl.h -- IOCTL processing for DRM -*- linux-c -*-
- * Created: Fri Jan  8 09:01:26 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,11 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_ioctl.c
+ * Varios minor DRM ioctls not applicable to other files, such as versioning
+ * information and reporting DRM information to userland.
  */
 
 #include "drmP.h"

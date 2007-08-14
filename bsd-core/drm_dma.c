@@ -1,6 +1,3 @@
-/* drm_dma.c -- DMA IOCTL and function support -*- linux-c -*-
- * Created: Fri Mar 19 14:30:16 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,14 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_dma.c
+ * Support code for DMA buffer management.
+ *
+ * The implementation used to be significantly more complicated, but the
+ * complexity has been moved into the drivers as different buffer management
+ * schemes evolved.
  */
 
 #include "drmP.h"
