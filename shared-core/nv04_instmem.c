@@ -94,6 +94,14 @@ int nv04_instmem_init(struct drm_device *dev)
 	 * the space that was reserved for RAMHT/FC/RO.
 	 */
 	offset = dev_priv->ramfc_offset + dev_priv->ramfc_size;
+
+	/* On my NV4E, there's *something* clobbering the 16KiB just after
+	 * where we setup these fixed tables.  No idea what it is just yet,
+	 * so reserve this space on all NV4X cards for now.
+	 */
+	if (dev_priv->card_type >= NV_40)
+		offset += 16*1024;
+
 	ret = nouveau_mem_init_heap(&dev_priv->ramin_heap,
 				    offset, dev_priv->ramin_rsvd_vram - offset);
 	if (ret) {
