@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 	int fd, ret;
 	drm_set_version_t sv, version;
 
-	fd = drm_open_any();
+	fd = drm_open_any_master();
 
 	/* First, check that we can get the DD/DI versions. */
 	memset(&version, 0, sizeof(version));
