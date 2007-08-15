@@ -205,7 +205,7 @@ int drm_getstats(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	drm_stats_t  *stats = data;
 	int          i;
 
-	memset(&stats, 0, sizeof(stats));
+	memset(stats, 0, sizeof(drm_stats_t));
 	
 	DRM_LOCK();
 
