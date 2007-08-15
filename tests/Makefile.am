@@ -20,6 +20,7 @@ TESTS = auth \
 	getversion \
 	getclient \
 	getstats \
+	lock \
 	setversion \
 	updatedraw
 

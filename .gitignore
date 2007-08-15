@@ -57,6 +57,7 @@ tests/drmstat
 tests/getclient
 tests/getstats
 tests/getversion
+tests/lock
 tests/openclose
 tests/setversion
 tests/updatedraw
