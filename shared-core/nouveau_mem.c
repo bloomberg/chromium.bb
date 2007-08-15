@@ -531,13 +531,13 @@ alloc_ok:
 		block->map_handle = entry->user_token;
 	}
 
-	DRM_INFO("allocated 0x%llx\n", block->start);
+	DRM_DEBUG("allocated 0x%llx type=0x%08x\n", block->start, block->flags);
 	return block;
 }
 
 void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 {
-	DRM_INFO("freeing 0x%llx\n", block->start);
+	DRM_DEBUG("freeing 0x%llx type=0x%08x\n", block->start, block->flags);
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);
 	nouveau_mem_free_block(block);
