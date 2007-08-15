@@ -184,7 +184,6 @@ int drm_agp_enable(drm_device_t *dev, drm_agp_mode_t mode)
 	
 	dev->agp->mode    = mode.mode;
 	agp_enable(dev->agp->agpdev, mode.mode);
-	dev->agp->base    = dev->agp->info.ai_aperture_base;
 	dev->agp->enabled = 1;
 	return 0;
 }
@@ -405,6 +404,7 @@ drm_agp_head_t *drm_agp_init(void)
 			return NULL;
 		head->agpdev = agpdev;
 		agp_get_info(agpdev, &head->info);
+		head->base = head->info.ai_aperture_base;
 		head->memory = NULL;
 		DRM_INFO("AGP at 0x%08lx %dMB\n",
 			 (long)head->info.ai_aperture_base,

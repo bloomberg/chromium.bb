@@ -191,7 +191,17 @@ int drm_addmap(drm_device_t * dev, unsigned long offset, unsigned long size,
 		break;
 	case _DRM_AGP:
 		/*valid = 0;*/
-		map->offset += dev->agp->base;
+		/* In some cases (i810 driver), user space may have already
+		 * added the AGP base itself, because dev->agp->base previously
+		 * only got set during AGP enable.  So, only add the base
+		 * address if the map's offset isn't already within the
+		 * aperture.
+		 */
+		if (map->offset < dev->agp->base ||
+		    map->offset > dev->agp->base +
+		    dev->agp->info.ai_aperture_size - 1) {
+			map->offset += dev->agp->base;
+		}
 		map->mtrr   = dev->agp->mtrr; /* for getmap */
 		/*for (entry = dev->agp->memory; entry; entry = entry->next) {
 			if ((map->offset >= entry->bound) &&
