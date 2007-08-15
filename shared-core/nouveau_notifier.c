@@ -45,11 +45,12 @@ nouveau_notifier_init_channel(struct nouveau_channel *chan)
 		flags = NOUVEAU_MEM_FB;
 	flags |= (NOUVEAU_MEM_MAPPED | NOUVEAU_MEM_FB_ACCEPTABLE);
 
-	DRM_DEBUG("Allocating notifier block in %d\n", flags);
 	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,
 						 (struct drm_file *)-2);
 	if (!chan->notifier_block)
 		return -ENOMEM;
+	DRM_DEBUG("Allocated notifier block in 0x%08x\n",
+		  chan->notifier_block->flags);
 
 	ret = nouveau_mem_init_heap(&chan->notifier_heap,
 				    0, chan->notifier_block->size);
@@ -99,7 +100,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 		return -EINVAL;
 	}
 
-	mem = nouveau_mem_alloc_block(chan->notifier_heap, 32, 0,
+	mem = nouveau_mem_alloc_block(chan->notifier_heap, count*32, 0,
 				      (struct drm_file *)-2);
 	if (!mem) {
 		DRM_ERROR("Channel %d notifier block full\n", chan->id);
