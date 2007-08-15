@@ -55,6 +55,7 @@ tests/auth
 tests/dristat
 tests/drmstat
 tests/getclient
+tests/getstats
 tests/getversion
 tests/openclose
 tests/updatedraw
