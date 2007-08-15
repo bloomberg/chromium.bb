@@ -20,6 +20,7 @@ TESTS = auth \
 	getversion \
 	getclient \
 	getstats \
+	setversion \
 	updatedraw
 
 EXTRA_PROGRAMS = $(TESTS)

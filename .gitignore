@@ -58,4 +58,5 @@ tests/getclient
 tests/getstats
 tests/getversion
 tests/openclose
+tests/setversion
 tests/updatedraw
