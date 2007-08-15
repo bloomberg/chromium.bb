@@ -232,23 +232,27 @@ int drm_getstats(drm_device_t *dev, void *data, struct drm_file *file_priv)
 int drm_setversion(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
 	drm_set_version_t *sv = data;
-	drm_set_version_t retv;
+	drm_set_version_t ver;
 	int if_version;
 
-	retv.drm_di_major = DRM_IF_MAJOR;
-	retv.drm_di_minor = DRM_IF_MINOR;
-	retv.drm_dd_major = dev->driver.major;
-	retv.drm_dd_minor = dev->driver.minor;
+	/* Save the incoming data, and set the response before continuing
+	 * any further.
+	 */
+	ver = *sv;
+	sv->drm_di_major = DRM_IF_MAJOR;
+	sv->drm_di_minor = DRM_IF_MINOR;
+	sv->drm_dd_major = dev->driver.major;
+	sv->drm_dd_minor = dev->driver.minor;
 
-	if (sv->drm_di_major != -1) {
-		if (sv->drm_di_major != DRM_IF_MAJOR ||
-		    sv->drm_di_minor < 0 || sv->drm_di_minor > DRM_IF_MINOR) {
+	if (ver.drm_di_major != -1) {
+		if (ver.drm_di_major != DRM_IF_MAJOR ||
+		    ver.drm_di_minor < 0 || ver.drm_di_minor > DRM_IF_MINOR) {
 			return EINVAL;
 		}
-		if_version = DRM_IF_VERSION(sv->drm_di_major,
-		    sv->drm_dd_minor);
+		if_version = DRM_IF_VERSION(ver.drm_di_major,
+		    ver.drm_dd_minor);
 		dev->if_version = DRM_MAX(if_version, dev->if_version);
-		if (sv->drm_di_minor >= 1) {
+		if (ver.drm_di_minor >= 1) {
 			/*
 			 * Version 1.1 includes tying of DRM to specific device
 			 */
@@ -256,10 +260,10 @@ int drm_setversion(drm_device_t *dev, void *data, struct drm_file *file_priv)
 		}
 	}
 
-	if (sv->drm_dd_major != -1) {
-		if (sv->drm_dd_major != dev->driver.major ||
-		    sv->drm_dd_minor < 0 ||
-		    sv->drm_dd_minor > dev->driver.minor)
+	if (ver.drm_dd_major != -1) {
+		if (ver.drm_dd_major != dev->driver.major ||
+		    ver.drm_dd_minor < 0 ||
+		    ver.drm_dd_minor > dev->driver.minor)
 		{
 			return EINVAL;
 		}
