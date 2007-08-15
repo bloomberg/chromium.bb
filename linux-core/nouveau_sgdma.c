@@ -316,3 +316,20 @@ nouveau_sgdma_nottm_hack_takedown(struct drm_device *dev)
 {
 }
 
+int
+nouveau_sgdma_get_page(struct drm_device *dev, uint32_t offset, uint32_t *page)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_gpuobj *gpuobj = dev_priv->gart_info.sg_ctxdma;
+	int pte;
+
+	pte = (offset >> NV_CTXDMA_PAGE_SHIFT);
+	if (dev_priv->card_type < NV_50) {
+		*page = INSTANCE_RD(gpuobj, (pte + 2)) & ~NV_CTXDMA_PAGE_MASK;
+		return 0;
+	}
+
+	DRM_ERROR("Unimplemented on NV50\n");
+	return -EINVAL;
+}
+
