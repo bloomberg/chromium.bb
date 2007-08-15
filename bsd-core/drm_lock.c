@@ -173,6 +173,12 @@ int drm_unlock(drm_device_t *dev, void *data, struct drm_file *file_priv)
 		    DRM_CURRENTPID, lock->context);
 		return EINVAL;
 	}
+	/* Check that the context unlock being requested actually matches
+	 * who currently holds the lock.
+	 */
+	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ||
+	    _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock) != lock->context)
+		return EINVAL;
 
 	atomic_inc(&dev->counts[_DRM_STAT_UNLOCKS]);
 
