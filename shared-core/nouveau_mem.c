@@ -219,6 +219,33 @@ void nouveau_mem_close(struct drm_device *dev)
 		nouveau_mem_takedown(&dev_priv->pci_heap);
 }
 
+/*XXX won't work on BSD because of pci_read_config_dword */
+static uint32_t
+nouveau_mem_fb_amount_igp(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct pci_dev *bridge;
+	uint32_t mem;
+
+	bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0,1));
+	if (!bridge) {
+		DRM_ERROR("no bridge device\n");
+		return 0;
+	}
+
+	if (dev_priv->flags&NV_NFORCE) {
+		pci_read_config_dword(bridge, 0x7C, &mem);
+		return (uint64_t)(((mem >> 6) & 31) + 1)*1024*1024;
+	} else
+	if(dev_priv->flags&NV_NFORCE2) {
+		pci_read_config_dword(bridge, 0x84, &mem);
+		return (uint64_t)(((mem >> 4) & 127) + 1)*1024*1024;
+	}
+
+	DRM_ERROR("impossible!\n");
+	return 0;
+}
+
 /* returns the amount of FB ram in bytes */
 uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 {
@@ -263,18 +290,14 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 		case NV_44:
 		case NV_50:
 		default:
-			// XXX won't work on BSD because of pci_read_config_dword
-			if (dev_priv->flags&NV_NFORCE) {
-				uint32_t mem;
-				pci_read_config_dword(dev->pdev, 0x7C, &mem);
-				return (uint64_t)(((mem >> 6) & 31) + 1)*1024*1024;
-			} else if(dev_priv->flags&NV_NFORCE2) {
-				uint32_t mem;
-				pci_read_config_dword(dev->pdev, 0x84, &mem);
-				return (uint64_t)(((mem >> 4) & 127) + 1)*1024*1024;
+			if (dev_priv->flags & (NV_NFORCE | NV_NFORCE2)) {
+				return nouveau_mem_fb_amount_igp(dev);
 			} else {
 				uint64_t mem;
-				mem=(NV_READ(NV04_FIFO_DATA)&NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK) >> NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT;
+
+				mem = (NV_READ(NV04_FIFO_DATA) & 
+				       NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK) >>
+				      NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT;
 				return mem*1024*1024;
 			}
 			break;
