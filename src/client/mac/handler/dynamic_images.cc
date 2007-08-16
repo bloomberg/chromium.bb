@@ -27,14 +27,69 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <mach-o/nlist.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <algorithm>
+extern "C" { // needed to compile on Leopard
+  #include <mach-o/nlist.h>
+  #include <stdlib.h>
+  #include <stdio.h>
+}
 
+#include <algorithm>
 #include "client/mac/handler/dynamic_images.h"
 
 namespace google_breakpad {
+  
+//==============================================================================
+// Returns the size of the memory region containing |address| and the
+// number of bytes from |address| to the end of the region.
+static vm_size_t GetMemoryRegionSize(task_port_t target_task,
+                                     const void* address,
+                                     vm_size_t *size_to_end) {
+  vm_address_t stack_region_base = (vm_address_t)address;
+  vm_size_t stack_region_size;
+  natural_t nesting_level = 0;
+  vm_region_submap_info submap_info;
+  mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT;
+
+  kern_return_t result = 
+    vm_region_recurse(target_task, &stack_region_base, &stack_region_size,
+                      &nesting_level, 
+                      reinterpret_cast<vm_region_recurse_info_t>(&submap_info),
+                      &info_count);
+
+  if (result == KERN_SUCCESS) {
+    *size_to_end = stack_region_base + stack_region_size - (vm_address_t)address;
+  } else {
+    stack_region_size = 0;
+    *size_to_end = 0;
+  }
+  
+  return stack_region_size;   
+}
+
+#define kMaxStringLength 8192
+//==============================================================================
+// Reads a NULL-terminated string from another task.
+//
+// Warning!  This will not read any strings longer than kMaxStringLength-1
+//
+static void* ReadTaskString(task_port_t target_task,
+                            const void* address) {
+  // The problem is we don't know how much to read until we know how long
+  // the string is. And we don't know how long the string is, until we've read
+  // the memory!  So, we'll try to read kMaxStringLength bytes
+  // (or as many bytes as we can until we reach the end of the vm region).  
+  vm_size_t size_to_end;
+  GetMemoryRegionSize(target_task, address, &size_to_end);
+
+  if (size_to_end > 0) {
+    vm_size_t size_to_read =
+      size_to_end > kMaxStringLength ? kMaxStringLength : size_to_end;
+
+    return ReadTaskMemory(target_task, address, size_to_read);
+  }
+  
+  return NULL;
+}
 
 //==============================================================================
 // Reads an address range from another task.  A block of memory is malloced
@@ -173,7 +228,7 @@ void DynamicImages::ReadImageInfoForTask() {
 
         if (!header)
           break;   // bail on this dynamic image
-        
+		
         // Now determine the total amount we really want to read based on the
         // size of the load commands.  We need the header plus all of the 
         // load commands.
@@ -186,15 +241,13 @@ void DynamicImages::ReadImageInfoForTask() {
         // Read the file name from the task's memory space.
         char *file_path = NULL;
         if (info.file_path_) {
-          // Although we're reading 0x2000 bytes, this is copied in the
+          // Although we're reading kMaxStringLength bytes, it's copied in the
           // the DynamicImage constructor below with the correct string length,
           // so it's not really wasting memory.
           file_path = reinterpret_cast<char*>
-            (ReadTaskMemory(task_,
-                            info.file_path_,
-                            0x2000));
+            (ReadTaskString(task_, info.file_path_));
         }
-        
+ 
         // Create an object representing this image and add it to our list.
         DynamicImage *new_image = new DynamicImage(header,
                                                    header_size,
