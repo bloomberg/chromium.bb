@@ -61,4 +61,6 @@ extern int xgi_state_change(struct xgi_info * info, unsigned int to,
 
 extern void xgi_cmdlist_cleanup(struct xgi_info * info);
 
+extern void xgi_emit_irq(struct xgi_info * info);
+
 #endif				/* _XGI_CMDLIST_H_ */

@@ -38,7 +38,7 @@
 #define DRIVER_DATE		"20070814"
 
 #define DRIVER_MAJOR		0
-#define DRIVER_MINOR		12
+#define DRIVER_MINOR		13
 #define DRIVER_PATCHLEVEL	0
 
 #include "xgi_cmdlist.h"
@@ -72,6 +72,10 @@ struct xgi_info {
 	bool pcie_heap_initialized;
 
 	struct xgi_cmdring_info cmdring;
+
+	spinlock_t fence_lock;
+	unsigned complete_sequence;
+	unsigned next_sequence;
 };
 
 extern int xgi_fb_heap_init(struct xgi_info * info);
@@ -91,6 +95,13 @@ extern void xgi_enable_mmio(struct xgi_info * info);
 extern void xgi_disable_mmio(struct xgi_info * info);
 extern void xgi_enable_ge(struct xgi_info * info);
 extern void xgi_disable_ge(struct xgi_info * info);
+
+extern void xgi_poke_flush(struct drm_device * dev, uint32_t class);
+extern int xgi_fence_emit_sequence(struct drm_device * dev, uint32_t class,
+	uint32_t flags, uint32_t * sequence, uint32_t * native_type);
+extern void xgi_fence_handler(struct drm_device * dev);
+extern int xgi_fence_has_irq(struct drm_device *dev, uint32_t class,
+	uint32_t flags);
 
 extern int xgi_alloc_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);

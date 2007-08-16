@@ -83,6 +83,14 @@
 #define M2REG_FLUSH_2D_ENGINE_MASK                (ONE_BIT_MASK<<20)
 #define M2REG_FLUSH_3D_ENGINE_MASK                TWENTY_BIT_MASK
 
+#define M2REG_RESET_ADDRESS 0x004
+#define M2REG_RESET_COMMAND 0x01
+#define M2REG_RESET_STATUS2_MASK                  (ONE_BIT_MASK<<10)
+#define M2REG_RESET_STATUS1_MASK                  (ONE_BIT_MASK<<9)
+#define M2REG_RESET_STATUS0_MASK                  (ONE_BIT_MASK<<8)
+#define M2REG_RESET_3DENG_MASK                    (ONE_BIT_MASK<<4)
+#define M2REG_RESET_2DENG_MASK                    (ONE_BIT_MASK<<2)
+
 /* Write register */
 #define M2REG_AUTO_LINK_SETTING_ADDRESS 0x010
 #define M2REG_AUTO_LINK_SETTING_COMMAND 0x04
@@ -110,6 +118,7 @@
 /**
  * Begin instruction, double-word 0
  */
+#define BEGIN_STOP_STORE_CURRENT_POINTER_MASK   (ONE_BIT_MASK<<22)
 #define BEGIN_VALID_MASK                        (ONE_BIT_MASK<<20)
 #define BEGIN_BEGIN_IDENTIFICATION_MASK         TWENTY_BIT_MASK
 

@@ -37,6 +37,17 @@ static struct pci_device_id pciidlist[] = {
 	xgi_PCI_IDS
 };
 
+static struct drm_fence_driver xgi_fence_driver = {
+	.num_classes = 1,
+	.wrap_diff = BEGIN_BEGIN_IDENTIFICATION_MASK,
+	.flush_diff = BEGIN_BEGIN_IDENTIFICATION_MASK - 1,
+	.sequence_mask = BEGIN_BEGIN_IDENTIFICATION_MASK,
+	.lazy_capable = 1,
+	.emit = xgi_fence_emit_sequence,
+	.poke_flush = xgi_poke_flush,
+	.has_irq = xgi_fence_has_irq
+};
+
 static int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
 
 static struct drm_ioctl_desc xgi_ioctls[] = {
@@ -94,6 +105,8 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
+
+	.fence_driver = &xgi_fence_driver,
 
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
@@ -188,6 +201,10 @@ int xgi_bootstrap(struct drm_device * dev, void * data,
 	struct drm_map_list *maplist;
 	int err;
 
+
+	spin_lock_init(&info->fence_lock);
+	info->next_sequence = 0;
+	info->complete_sequence = 0;
 
 	if (info->mmio_map == NULL) {
 		err = drm_addmap(dev, info->mmio.base, info->mmio.size,
@@ -344,6 +361,7 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 		DRM_WRITE32(info->mmio_map, 
 			    0x2800 + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			    M2REG_AUTO_LINK_SETTING_COMMAND | irq_bits);
+		xgi_fence_handler(dev);
 		return IRQ_HANDLED;
 	} else {
 		return IRQ_NONE;
