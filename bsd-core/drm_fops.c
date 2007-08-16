@@ -93,6 +93,7 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->authenticated	= DRM_SUSER(p);
 
 		if (dev->driver.open) {
+			/* shared code returns -errno */
 			retcode = -dev->driver.open(dev, priv);
 			if (retcode != 0) {
 				free(priv, M_DRM);

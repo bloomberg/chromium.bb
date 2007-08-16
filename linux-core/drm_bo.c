@@ -516,7 +516,7 @@ static void drm_bo_base_deref_locked(struct drm_file * file_priv,
 	drm_bo_usage_deref_locked(&bo);
 }
 
-static void drm_bo_usage_deref_unlocked(struct drm_buffer_object ** bo)
+void drm_bo_usage_deref_unlocked(struct drm_buffer_object ** bo)
 {
 	struct drm_buffer_object *tmp_bo = *bo;
 	struct drm_device *dev = tmp_bo->dev;
@@ -529,6 +529,7 @@ static void drm_bo_usage_deref_unlocked(struct drm_buffer_object ** bo)
 		mutex_unlock(&dev->struct_mutex);
 	}
 }
+EXPORT_SYMBOL(drm_bo_usage_deref_unlocked);
 
 /*
  * Note. The caller has to register (if applicable)
@@ -1669,10 +1670,10 @@ int drm_buffer_object_create(struct drm_device *dev,
 	drm_bo_usage_deref_unlocked(&bo);
 	return ret;
 }
+EXPORT_SYMBOL(drm_buffer_object_create);
 
-static int drm_bo_add_user_object(struct drm_file *file_priv,
-				  struct drm_buffer_object *bo,
-				  int shareable)
+int drm_bo_add_user_object(struct drm_file *file_priv,
+			   struct drm_buffer_object *bo, int shareable)
 {
 	struct drm_device *dev = file_priv->head->dev;
 	int ret;
@@ -1691,6 +1692,7 @@ static int drm_bo_add_user_object(struct drm_file *file_priv,
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_add_user_object);
 
 static int drm_bo_lock_test(struct drm_device * dev, struct drm_file *file_priv)
 {
@@ -1719,7 +1721,7 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 		if (next != 0) {
 			curuserarg = (void __user *)next;
 			if (copy_from_user(&curarg, curuserarg,
-					   sizeof(arg)) != 0)
+					   sizeof(curarg)) != 0)
 				return -EFAULT;
 			arg = &curarg;
 		}
@@ -1728,7 +1730,7 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 			next = arg->next;
 			continue;
 		}
-
+		req = &arg->d.req;
 		ret = 0;
 		switch (req->op) {
 		case drm_bo_validate:
@@ -1767,7 +1769,7 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 		arg->d.rep.bo_info = rep;
 		if (arg != data) {
 			if (copy_to_user(curuserarg, &curarg,
-					 sizeof(arg)) != 0)
+					 sizeof(curarg)) != 0)
 				return -EFAULT;
 		}
 	} while (next != 0);

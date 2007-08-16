@@ -1224,11 +1224,10 @@ nv4e_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 }
 
 int
-nv40_graph_create_context(struct drm_device *dev, int channel)
+nv40_graph_create_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv =
-		(struct drm_nouveau_private *)dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	void (*ctx_init)(struct drm_device *, struct nouveau_gpuobj *);
 	unsigned int ctx_size;
 	int ret;
@@ -1272,7 +1271,7 @@ nv40_graph_create_context(struct drm_device *dev, int channel)
 		break;
 	}
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0, ctx_size, 16,
+	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, ctx_size, 16,
 					  NVOBJ_FLAG_ZERO_ALLOC,
 					  &chan->ramin_grctx)))
 		return ret;
@@ -1284,13 +1283,9 @@ nv40_graph_create_context(struct drm_device *dev, int channel)
 }
 
 void
-nv40_graph_destroy_context(struct drm_device *dev, int channel)
+nv40_graph_destroy_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
-
-	if (chan->ramin_grctx)
-		nouveau_gpuobj_ref_del(dev, &chan->ramin_grctx);
+	nouveau_gpuobj_ref_del(chan->dev, &chan->ramin_grctx);
 }
 
 static int
@@ -1327,10 +1322,9 @@ nv40_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
  *XXX: fails sometimes, not sure why..
  */
 int
-nv40_graph_save_context(struct drm_device *dev, int channel)
+nv40_graph_save_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
 	uint32_t inst;
 
 	if (!chan->ramin_grctx)
@@ -1344,10 +1338,10 @@ nv40_graph_save_context(struct drm_device *dev, int channel)
  * XXX: fails sometimes.. not sure why
  */
 int
-nv40_graph_load_context(struct drm_device *dev, int channel)
+nv40_graph_load_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t inst;
 	int ret;
 
@@ -1642,8 +1636,8 @@ nv40_graph_init(struct drm_device *dev)
 	/* No context present currently */
 	NV_WRITE(NV40_PGRAPH_CTXCTL_CUR, 0x00000000);
 
-	NV_WRITE(NV03_PGRAPH_INTR_EN, 0x00000000);
 	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
+	NV_WRITE(NV40_PGRAPH_INTR_EN, 0xFFFFFFFF);
 
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);

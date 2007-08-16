@@ -40,33 +40,6 @@ void nouveau_irq_preinstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	DRM_DEBUG("IRQ: preinst\n");
-
-	if (!dev_priv) {
-		DRM_ERROR("AIII, no dev_priv\n");
-		return;
-	}
-	if (!dev_priv->mmio) {
-		DRM_ERROR("AIII, no dev_priv->mmio\n");
-		return;
-	}
-
-	/* Disable/Clear PFIFO interrupts */
-	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0);
-	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
-	/* Disable/Clear PGRAPH interrupts */
-	if (dev_priv->card_type<NV_40)
-		NV_WRITE(NV03_PGRAPH_INTR_EN, 0);
-	else
-		NV_WRITE(NV40_PGRAPH_INTR_EN, 0);
-	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
-#if 0
-	/* Disable/Clear CRTC0/1 interrupts */
-	NV_WRITE(NV_CRTC0_INTEN, 0);
-	NV_WRITE(NV_CRTC0_INTSTAT, NV_CRTC_INTR_VBLANK);
-	NV_WRITE(NV_CRTC1_INTEN, 0);
-	NV_WRITE(NV_CRTC1_INTSTAT, NV_CRTC_INTR_VBLANK);
-#endif
 	/* Master disable */
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
@@ -74,34 +47,6 @@ void nouveau_irq_preinstall(struct drm_device *dev)
 void nouveau_irq_postinstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-
-	if (!dev_priv) {
-		DRM_ERROR("AIII, no dev_priv\n");
-		return;
-	}
-	if (!dev_priv->mmio) {
-		DRM_ERROR("AIII, no dev_priv->mmio\n");
-		return;
-	}
-
-	DRM_DEBUG("IRQ: postinst\n");
-
-	/* Enable PFIFO error reporting */
-	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0xFFFFFFFF);
-	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
-
-	/* Enable PGRAPH interrupts */
-	if (dev_priv->card_type<NV_40)
-		NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
-	else
-		NV_WRITE(NV40_PGRAPH_INTR_EN, 0xFFFFFFFF);
-	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
-
-#if 0
-	/* Enable CRTC0/1 interrupts */
-	NV_WRITE(NV_CRTC0_INTEN, NV_CRTC_INTR_VBLANK);
-	NV_WRITE(NV_CRTC1_INTEN, NV_CRTC_INTR_VBLANK);
-#endif
 
 	/* Master enable */
 	NV_WRITE(NV03_PMC_INTR_EN_0, NV_PMC_INTR_EN_0_MASTER_ENABLE);
@@ -111,29 +56,6 @@ void nouveau_irq_uninstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	if (!dev_priv) {
-		DRM_ERROR("AIII, no dev_priv\n");
-		return;
-	}
-	if (!dev_priv->mmio) {
-		DRM_ERROR("AIII, no dev_priv->mmio\n");
-		return;
-	}
-
-	DRM_DEBUG("IRQ: uninst\n");
-
-	/* Disable PFIFO interrupts */
-	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0);
-	/* Disable PGRAPH interrupts */
-	if (dev_priv->card_type<NV_40)
-		NV_WRITE(NV03_PGRAPH_INTR_EN, 0);
-	else
-		NV_WRITE(NV40_PGRAPH_INTR_EN, 0);
-#if 0
-	/* Disable CRTC0/1 interrupts */
-	NV_WRITE(NV_CRTC0_INTEN, 0);
-	NV_WRITE(NV_CRTC1_INTEN, 0);
-#endif
 	/* Master disable */
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
@@ -150,12 +72,10 @@ static void nouveau_fifo_irq_handler(struct drm_device *dev)
 	chstat = NV_READ(NV04_PFIFO_DMA);
 	channel=NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
 
-	DRM_DEBUG("NV: PFIFO interrupt! Channel=%d, INTSTAT=0x%08x/MODE=0x%08x/PEND=0x%08x\n", channel, status, chmode, chstat);
-
 	if (status & NV_PFIFO_INTR_CACHE_ERROR) {
 		uint32_t c1get, c1method, c1data;
 
-		DRM_ERROR("NV: PFIFO error interrupt\n");
+		DRM_ERROR("PFIFO error interrupt\n");
 
 		c1get = NV_READ(NV03_PFIFO_CACHE1_GET) >> 2;
 		if (dev_priv->card_type < NV_40) {
@@ -167,17 +87,17 @@ static void nouveau_fifo_irq_handler(struct drm_device *dev)
 			c1data   = NV_READ(NV40_PFIFO_CACHE1_DATA(c1get));
 		}
 
-		DRM_ERROR("NV: Channel %d/%d - Method 0x%04x, Data 0x%08x\n",
-				channel, (c1method >> 13) & 7,
-				c1method & 0x1ffc, c1data
-			 );
+		DRM_ERROR("Channel %d/%d - Method 0x%04x, Data 0x%08x\n",
+			  channel, (c1method >> 13) & 7, c1method & 0x1ffc,
+			  c1data);
 
 		status &= ~NV_PFIFO_INTR_CACHE_ERROR;
 		NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_CACHE_ERROR);
 	}
 
 	if (status & NV_PFIFO_INTR_DMA_PUSHER) {
-		DRM_INFO("NV: PFIFO DMA pusher interrupt\n");
+		DRM_ERROR("PFIFO DMA pusher interrupt: ch%d, 0x%08x\n",
+			  channel, NV_READ(NV04_PFIFO_CACHE1_DMA_GET));
 
 		status &= ~NV_PFIFO_INTR_DMA_PUSHER;
 		NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_DMA_PUSHER);
@@ -191,7 +111,7 @@ static void nouveau_fifo_irq_handler(struct drm_device *dev)
 	}
 
 	if (status) {
-		DRM_INFO("NV: unknown PFIFO interrupt. status=0x%08x\n", status);
+		DRM_ERROR("Unhandled PFIFO interrupt: status=0x%08x\n", status);
 
 		NV_WRITE(NV03_PFIFO_INTR_0, status);
 	}
@@ -301,6 +221,62 @@ nouveau_print_bitfield_names(uint32_t value,
 		printk(" (unknown bits 0x%08x)", value);
 }
 
+static int
+nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int channel;
+
+	if (dev_priv->card_type < NV_40) {
+		channel = (NV_READ(0x400704) >> 20) & 0x1f;
+	} else
+	if (dev_priv->card_type < NV_50) {
+		uint32_t cur_grctx = (NV_READ(0x40032C) & 0xfffff) << 4;
+
+		/* 0x400704 *sometimes* contains a sensible channel ID, but
+		 * mostly not.. for now lookup which channel owns the active
+		 * PGRAPH context.  Probably a better way, but this'll do
+		 * for now.
+		 */
+		for (channel = 0; channel < 32; channel++) {
+			if (dev_priv->fifos[channel] == NULL)
+				continue;
+			if (cur_grctx ==
+			    dev_priv->fifos[channel]->ramin_grctx->instance)
+				break;
+		}
+		if (channel == 32) {
+			DRM_ERROR("AIII, unable to determine active channel "
+				  "from PGRAPH context 0x%08x\n", cur_grctx);
+			return -EINVAL;
+		}
+	} else {
+		uint32_t cur_grctx = (NV_READ(0x40032C) & 0xfffff) << 12;
+
+		for (channel = 0; channel < 128; channel++) {
+			if (dev_priv->fifos[channel] == NULL)
+				continue;
+			if (cur_grctx ==
+			    dev_priv->fifos[channel]->ramin_grctx->instance)
+				break;
+		}
+		if (channel == 128) {
+			DRM_ERROR("AIII, unable to determine active channel "
+				  "from PGRAPH context 0x%08x\n", cur_grctx);
+			return -EINVAL;
+		}
+	}
+
+	if (channel > nouveau_fifo_number(dev) ||
+	    dev_priv->fifos[channel] == NULL) {
+		DRM_ERROR("AIII, invalid/inactive channel id %d\n", channel);
+		return -EINVAL;
+	}
+
+	*channel_ret = channel;
+	return 0;
+}
+
 static void
 nouveau_graph_dump_trap_info(struct drm_device *dev)
 {
@@ -310,8 +286,10 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	uint32_t method, subc, data;
 	uint32_t nsource, nstatus;
 
+	if (nouveau_graph_trapped_channel(dev, &channel))
+		channel = -1;
+
 	address = NV_READ(0x400704);
-	channel = (address >> 20) & 0x1F;
 	subc    = (address >> 16) & 0x7;
 	method  = address & 0x1FFC;
 	data    = NV_READ(0x400708);
@@ -331,77 +309,31 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	                             ARRAY_SIZE(nouveau_nstatus_names));
 	printk("\n");
 
-	DRM_ERROR("NV: Channel %d/%d (class 0x%04x) - "
-			"Method 0x%04x, Data 0x%08x\n",
-			channel, subc, class, method, data
-		 );
+	DRM_ERROR("Channel %d/%d (class 0x%04x) - Method 0x%04x, Data 0x%08x\n",
+		  channel, subc, class, method, data);
 }
 
 static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 {
-	uint32_t status;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	uint32_t status, nsource;
 
 	status = NV_READ(NV03_PGRAPH_INTR);
 	if (!status)
 		return;
+	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 
 	if (status & NV_PGRAPH_INTR_NOTIFY) {
-		uint32_t nsource, nstatus, instance, notify;
-		DRM_DEBUG("NV: PGRAPH notify interrupt\n");
+		DRM_DEBUG("PGRAPH notify interrupt\n");
 
-		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
-		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
-		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
-
-		/* if this wasn't NOTIFICATION_PENDING, dump extra trap info */
-		if (nsource & ~(1<<0)) {
-			nouveau_graph_dump_trap_info(dev);
-		} else {
-			instance = NV_READ(0x00400158);
-			notify   = NV_READ(0x00400150) >> 16;
-			DRM_DEBUG("instance:0x%08x\tnotify:0x%08x\n",
-				  instance, notify);
-		}
+		nouveau_graph_dump_trap_info(dev);
 
 		status &= ~NV_PGRAPH_INTR_NOTIFY;
 		NV_WRITE(NV03_PGRAPH_INTR, NV_PGRAPH_INTR_NOTIFY);
 	}
 
-	if (status & NV_PGRAPH_INTR_BUFFER_NOTIFY) {
-		uint32_t nsource, nstatus, instance, notify;
-		DRM_DEBUG("NV: PGRAPH buffer notify interrupt\n");
-
-		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
-		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
-		DRM_DEBUG("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
-
-		instance = NV_READ(0x00400158);
-		notify   = NV_READ(0x00400150) >> 16;
-		DRM_DEBUG("instance:0x%08x\tnotify:0x%08x\n", instance, notify);
-
-		status &= ~NV_PGRAPH_INTR_BUFFER_NOTIFY;
-		NV_WRITE(NV03_PGRAPH_INTR, NV_PGRAPH_INTR_BUFFER_NOTIFY);
-	}
-
-	if (status & NV_PGRAPH_INTR_MISSING_HW) {
-		DRM_ERROR("NV: PGRAPH missing hw interrupt\n");
-
-		status &= ~NV_PGRAPH_INTR_MISSING_HW;
-		NV_WRITE(NV03_PGRAPH_INTR, NV_PGRAPH_INTR_MISSING_HW);
-	}
-
 	if (status & NV_PGRAPH_INTR_ERROR) {
-		uint32_t nsource, nstatus, instance;
-
-		DRM_ERROR("NV: PGRAPH error interrupt\n");
-
-		nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
-		nsource = NV_READ(NV03_PGRAPH_NSOURCE);
-		DRM_ERROR("nsource:0x%08x\tnstatus:0x%08x\n", nsource, nstatus);
-
-		instance = NV_READ(0x00400158);
-		DRM_ERROR("instance:0x%08x\n", instance);
+		DRM_ERROR("PGRAPH error interrupt\n");
 
 		nouveau_graph_dump_trap_info(dev);
 
@@ -411,7 +343,7 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 
 	if (status & NV_PGRAPH_INTR_CONTEXT_SWITCH) {
 		uint32_t channel=NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
-		DRM_INFO("NV: PGRAPH context switch interrupt channel %x\n",channel);
+		DRM_DEBUG("PGRAPH context switch interrupt channel %x\n",channel);
 		switch(dev_priv->card_type)
 		{
 			case NV_04:
@@ -428,7 +360,7 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 				nouveau_nv20_context_switch(dev);
 				break;
 			default:
-				DRM_INFO("NV: Context switch not implemented\n");
+				DRM_ERROR("Context switch not implemented\n");
 				break;
 		}
 
@@ -437,7 +369,7 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 	}
 
 	if (status) {
-		DRM_INFO("NV: Unknown PGRAPH interrupt! STAT=0x%08x\n", status);
+		DRM_ERROR("Unhandled PGRAPH interrupt: STAT=0x%08x\n", status);
 		NV_WRITE(NV03_PGRAPH_INTR, status);
 	}
 
@@ -447,6 +379,7 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 static void nouveau_crtc_irq_handler(struct drm_device *dev, int crtc)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
 	if (crtc&1) {
 		NV_WRITE(NV_CRTC0_INTSTAT, NV_CRTC_INTR_VBLANK);
 	}
@@ -466,16 +399,16 @@ irqreturn_t nouveau_irq_handler(DRM_IRQ_ARGS)
 	if (!status)
 		return IRQ_NONE;
 
-	DRM_DEBUG("PMC INTSTAT: 0x%08x\n", status);
-
 	if (status & NV_PMC_INTR_0_PFIFO_PENDING) {
 		nouveau_fifo_irq_handler(dev);
 		status &= ~NV_PMC_INTR_0_PFIFO_PENDING;
 	}
+
 	if (status & NV_PMC_INTR_0_PGRAPH_PENDING) {
 		nouveau_pgraph_irq_handler(dev);
 		status &= ~NV_PMC_INTR_0_PGRAPH_PENDING;
 	}
+
 	if (status & NV_PMC_INTR_0_CRTCn_PENDING) {
 		nouveau_crtc_irq_handler(dev, (status>>24)&3);
 		status &= ~NV_PMC_INTR_0_CRTCn_PENDING;

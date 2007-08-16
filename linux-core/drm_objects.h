@@ -484,6 +484,17 @@ extern int drm_bo_mem_space(struct drm_buffer_object * bo,
 			    struct drm_bo_mem_reg * mem, int no_wait);
 extern int drm_bo_move_buffer(struct drm_buffer_object * bo, uint32_t new_mem_flags,
 			      int no_wait, int move_unfenced);
+extern int drm_buffer_object_create(struct drm_device *dev, unsigned long size,
+				    enum drm_bo_type type, uint64_t mask,
+				    uint32_t hint, uint32_t page_alignment,
+				    unsigned long buffer_start,
+				    struct drm_buffer_object **bo);
+extern int drm_bo_init_mm(struct drm_device *dev, unsigned type,
+			  unsigned long p_offset, unsigned long p_size);
+extern int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type);
+extern int drm_bo_add_user_object(struct drm_file *file_priv,
+				  struct drm_buffer_object *bo, int sharable);
+extern void drm_bo_usage_deref_unlocked(struct drm_buffer_object **bo);
 
 /*
  * Buffer object memory move helpers.
@@ -502,6 +513,11 @@ extern int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 				     uint32_t fence_type,
 				     uint32_t fence_flags,
 				     struct drm_bo_mem_reg * new_mem);
+
+extern int drm_mem_reg_ioremap(struct drm_device *dev,
+			       struct drm_bo_mem_reg *mem, void **virtual);
+extern void drm_mem_reg_iounmap(struct drm_device *dev,
+				struct drm_bo_mem_reg *mem, void *virtual);
 
 #ifdef CONFIG_DEBUG_MUTEXES
 #define DRM_ASSERT_LOCKED(_mutex)					\

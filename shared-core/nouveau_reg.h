@@ -80,6 +80,16 @@
 #define NV40_PMC_1708                                      0x00001708
 #define NV40_PMC_170C                                      0x0000170C
 
+/* probably PMC ? */
+#define NV50_PUNK_BAR0_PRAMIN                              0x00001700
+#define NV50_PUNK_BAR_CFG_BASE                             0x00001704
+#define NV50_PUNK_BAR_CFG_BASE_VALID                          (1<<30)
+#define NV50_PUNK_BAR1_CTXDMA                              0x00001708
+#define NV50_PUNK_BAR1_CTXDMA_VALID                           (1<<31)
+#define NV50_PUNK_BAR3_CTXDMA                              0x0000170C
+#define NV50_PUNK_BAR3_CTXDMA_VALID                           (1<<31)
+#define NV50_PUNK_UNK1710                                  0x00001710
+
 #define NV04_PTIMER_INTR_0                                 0x00009100
 #define NV04_PTIMER_INTR_EN_0                              0x00009140
 #define NV04_PTIMER_NUMERATOR                              0x00009200

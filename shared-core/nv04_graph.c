@@ -336,14 +336,13 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
-int nv04_graph_create_context(struct drm_device *dev, int channel) {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	DRM_DEBUG("nv04_graph_context_create %d\n", channel);
+int nv04_graph_create_context(struct nouveau_channel *chan) {
+	DRM_DEBUG("nv04_graph_context_create %d\n", chan->id);
 
-	memset(dev_priv->fifos[channel]->pgraph_ctx, 0, sizeof(dev_priv->fifos[channel]->pgraph_ctx));
+	memset(chan->pgraph_ctx, 0, sizeof(chan->pgraph_ctx));
 
 	//dev_priv->fifos[channel].pgraph_ctx_user = channel << 24;
-	dev_priv->fifos[channel]->pgraph_ctx[0] = 0x0001ffff;
+	chan->pgraph_ctx[0] = 0x0001ffff;
 	/* is it really needed ??? */
 	//dev_priv->fifos[channel].pgraph_ctx[1] = NV_READ(NV_PGRAPH_DEBUG_4);
 	//dev_priv->fifos[channel].pgraph_ctx[2] = NV_READ(0x004006b0);
@@ -351,17 +350,17 @@ int nv04_graph_create_context(struct drm_device *dev, int channel) {
 	return 0;
 }
 
-void nv04_graph_destroy_context(struct drm_device *dev, int channel)
+void nv04_graph_destroy_context(struct nouveau_channel *chan)
 {
 }
 
-int nv04_graph_load_context(struct drm_device *dev, int channel)
+int nv04_graph_load_context(struct nouveau_channel *chan)
 {
 	DRM_ERROR("stub!\n");
 	return 0;
 }
 
-int nv04_graph_save_context(struct drm_device *dev, int channel)
+int nv04_graph_save_context(struct nouveau_channel *chan)
 {
 	DRM_ERROR("stub!\n");
 	return 0;
@@ -375,6 +374,10 @@ int nv04_graph_init(struct drm_device *dev) {
 			~NV_PMC_ENABLE_PGRAPH);
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
 			 NV_PMC_ENABLE_PGRAPH);
+
+	/* Enable PGRAPH interrupts */
+	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
+	NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
 
 	// check the context is big enough
 	for ( i = 0 ; i<sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)

@@ -34,6 +34,7 @@ nv50_mc_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	NV_WRITE(NV03_PMC_ENABLE, 0xFFFFFFFF);
+
 	return 0;
 }
 

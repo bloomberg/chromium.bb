@@ -546,9 +546,15 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 
 		if (dev_priv->use_mi_batchbuffer_start) {
 			BEGIN_LP_RING(2);
-			OUT_RING(MI_BATCH_BUFFER_START | (2 << 6));
-			OUT_RING(batch->start | MI_BATCH_NON_SECURE);
+			if (IS_I965G(dev)) {
+				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6) | MI_BATCH_NON_SECURE_I965);
+				OUT_RING(batch->start);
+			} else {
+				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6));
+				OUT_RING(batch->start | MI_BATCH_NON_SECURE);
+			}
 			ADVANCE_LP_RING();
+
 		} else {
 			BEGIN_LP_RING(4);
 			OUT_RING(MI_BATCH_BUFFER);

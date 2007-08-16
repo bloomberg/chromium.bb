@@ -83,16 +83,10 @@ set_draw_cliprects_2(int fd, int drawable)
 	assert(ret == 0);
 }
 
-/**
- * Tests drawable management: adding, removing, and updating the cliprects of
- * drawables.
- */
-int main(int argc, char **argv)
+static int add_drawable(int fd)
 {
 	drm_draw_t drawarg;
-	int fd, ret, drawable;
-
-	fd = drm_open_any_master();
+	int ret;
 
 	/* Create a drawable.
 	 * IOCTL_ADD_DRAW is RDWR, though it should really just be RD
@@ -100,27 +94,54 @@ int main(int argc, char **argv)
 	drawarg.handle = 0;
 	ret = ioctl(fd, DRM_IOCTL_ADD_DRAW, &drawarg);
 	assert(ret == 0);
-	drawable = drawarg.handle;
+	return drawarg.handle;
+}
 
-	/* Do a series of cliprect updates */
-	set_draw_cliprects_empty(fd, drawable);
-	set_draw_cliprects_2(fd, drawable);
-	set_draw_cliprects_empty(fd, drawable);
+static int rm_drawable(int fd, int drawable, int fail)
+{
+	drm_draw_t drawarg;
+	int ret;
 
-	/* Remove our drawable */
+	/* Create a drawable.
+	 * IOCTL_ADD_DRAW is RDWR, though it should really just be RD
+	 */
 	drawarg.handle = drawable;
 	ret = ioctl(fd, DRM_IOCTL_RM_DRAW, &drawarg);
-	assert(ret == 0);
-	drawable = drawarg.handle;
+	if (!fail)
+		assert(ret == 0);
+	else
+		assert(ret == -1 && errno == EINVAL);
+
+	return drawarg.handle;
+}
+
+/**
+ * Tests drawable management: adding, removing, and updating the cliprects of
+ * drawables.
+ */
+int main(int argc, char **argv)
+{
+	int fd, ret, d1, d2;
+
+	fd = drm_open_any_master();
+
+	d1 = add_drawable(fd);
+	d2 = add_drawable(fd);
+	/* Do a series of cliprect updates */
+	set_draw_cliprects_empty(fd, d1);
+	set_draw_cliprects_empty(fd, d2);
+	set_draw_cliprects_2(fd, d1);
+	set_draw_cliprects_empty(fd, d1);
+
+	/* Remove our drawables */
+	rm_drawable(fd, d1, 0);
+	rm_drawable(fd, d2, 0);
 
 	/* Check that removing an unknown drawable returns error */
-	drawarg.handle = 0x7fffffff;
-	ret = ioctl(fd, DRM_IOCTL_RM_DRAW, &drawarg);
-	assert(ret == -1 && errno == EINVAL);
-	drawable = drawarg.handle;
+	rm_drawable(fd, 0x7fffffff, 1);
 
 	/* Attempt to set cliprects on a nonexistent drawable */
-	set_draw_cliprects_empty_fail(fd, drawable);
+	set_draw_cliprects_empty_fail(fd, d1);
 
 	close(fd);
 	return 0;

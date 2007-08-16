@@ -30,7 +30,6 @@
 
 typedef struct {
 	struct nouveau_gpuobj_ref *thingo;
-	struct nouveau_gpuobj_ref *dummyctx;
 } nv50_fifo_priv;
 
 #define IS_G80 ((dev_priv->chipset & 0xf0) == 0x50)
@@ -47,7 +46,7 @@ nv50_fifo_init_thingo(struct drm_device *dev)
 
 	INSTANCE_WR(thingo->gpuobj, 0, 0x7e);
 	INSTANCE_WR(thingo->gpuobj, 1, 0x7e);
-	for (i = 0; i <NV_MAX_FIFO_NUMBER; i++, fi) {
+	for (i = 1; i < 127; i++, fi) {
 		if (dev_priv->fifos[i]) {
 			INSTANCE_WR(thingo->gpuobj, fi, i);
 			fi++;
@@ -60,10 +59,10 @@ nv50_fifo_init_thingo(struct drm_device *dev)
 }
 
 static int
-nv50_fifo_channel_enable(struct drm_device *dev, int channel)
+nv50_fifo_channel_enable(struct drm_device *dev, int channel, int nt)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct nouveau_channel *chan = dev_priv->fifos[channel];
 
 	DRM_DEBUG("ch%d\n", channel);
 
@@ -83,7 +82,7 @@ nv50_fifo_channel_enable(struct drm_device *dev, int channel)
 			 NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED);
 	}
 
-	nv50_fifo_init_thingo(dev);
+	if (!nt) nv50_fifo_init_thingo(dev);
 	return 0;
 }
 
@@ -120,6 +119,17 @@ nv50_fifo_init_reset(struct drm_device *dev)
 }
 
 static void
+nv50_fifo_init_intr(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	DRM_DEBUG("\n");
+
+	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
+	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0xFFFFFFFF);
+}
+
+static void
 nv50_fifo_init_context_table(struct drm_device *dev)
 {
 	int i;
@@ -145,17 +155,8 @@ static int
 nv50_fifo_init_regs(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	nv50_fifo_priv *priv = dev_priv->Engine.fifo.priv;
-	int ret;
 
 	DRM_DEBUG("\n");
-
-	if ((ret = nouveau_gpuobj_new_ref(dev, -1, -1, 0, 0x1000,
-					  0x1000,
-					  NVOBJ_FLAG_ZERO_ALLOC |
-					  NVOBJ_FLAG_ZERO_FREE,
-					  &priv->dummyctx)))
-		return ret;
 
 	NV_WRITE(0x2500, 0);
 	NV_WRITE(0x3250, 0);
@@ -164,13 +165,9 @@ nv50_fifo_init_regs(struct drm_device *dev)
 	NV_WRITE(0x3210, 0);
 	NV_WRITE(0x3270, 0);
 
-	if (IS_G80) {
-		NV_WRITE(0x2600, (priv->dummyctx->instance>>8) | (1<<31));
-		NV_WRITE(0x27fc, (priv->dummyctx->instance>>8) | (1<<31));
-	} else {
-		NV_WRITE(0x2600, (priv->dummyctx->instance>>12) | (1<<31));
-		NV_WRITE(0x27fc, (priv->dummyctx->instance>>12) | (1<<31));
-	}
+	/* Enable dummy channels setup by nv50_instmem.c */
+	nv50_fifo_channel_enable(dev, 0, 1);
+	nv50_fifo_channel_enable(dev, 127, 1);
 
 	return 0;
 }
@@ -190,13 +187,15 @@ nv50_fifo_init(struct drm_device *dev)
 	dev_priv->Engine.fifo.priv = priv;
 
 	nv50_fifo_init_reset(dev);
+	nv50_fifo_init_intr(dev);
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, -1, -1, 0, (128+2)*4, 0x1000,
+	if ((ret = nouveau_gpuobj_new_ref(dev, NULL, NULL, 0, (128+2)*4, 0x1000,
 				   NVOBJ_FLAG_ZERO_ALLOC,
 				   &priv->thingo))) {
 		DRM_ERROR("error creating thingo: %d\n", ret);
 		return ret;
 	}
+
 	nv50_fifo_init_context_table(dev);
 
 	nv50_fifo_init_regs__nv(dev);
@@ -218,31 +217,30 @@ nv50_fifo_takedown(struct drm_device *dev)
 		return;
 
 	nouveau_gpuobj_ref_del(dev, &priv->thingo);
-	nouveau_gpuobj_ref_del(dev, &priv->dummyctx);
 
 	dev_priv->Engine.fifo.priv = NULL;
 	drm_free(priv, sizeof(*priv), DRM_MEM_DRIVER);
 }
 
 int
-nv50_fifo_create_context(struct drm_device *dev, int channel)
+nv50_fifo_create_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	struct nouveau_gpuobj *ramfc = NULL;
 	int ret;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
 	if (IS_G80) {
 		uint32_t ramfc_offset = chan->ramin->gpuobj->im_pramin->start;
-		if ((ret = nouveau_gpuobj_new_fake(dev, ramfc_offset, 0x100,
+		if ((ret = nouveau_gpuobj_new_fake(dev, ramfc_offset, ~0, 0x100,
 						   NVOBJ_FLAG_ZERO_ALLOC |
 						   NVOBJ_FLAG_ZERO_FREE,
 						   &ramfc, &chan->ramfc)))
 				return ret;
 	} else {
-		if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0, 0x100,
+		if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, 0x100,
 						  256,
 						  NVOBJ_FLAG_ZERO_ALLOC |
 						  NVOBJ_FLAG_ZERO_FREE,
@@ -266,15 +264,15 @@ nv50_fifo_create_context(struct drm_device *dev, int channel)
 	INSTANCE_WR(ramfc, 0x4c/4, chan->pushbuf_mem->size - 1);
 
 	if (!IS_G80) {
-		INSTANCE_WR(chan->ramin->gpuobj, 0, channel);
+		INSTANCE_WR(chan->ramin->gpuobj, 0, chan->id);
 		INSTANCE_WR(chan->ramin->gpuobj, 1, chan->ramfc->instance);
 
 		INSTANCE_WR(ramfc, 0x88/4, 0x3d520); /* some vram addy >> 10 */
 		INSTANCE_WR(ramfc, 0x98/4, chan->ramin->instance >> 12);
 	}
 
-	if ((ret = nv50_fifo_channel_enable(dev, channel))) {
-		DRM_ERROR("error enabling ch%d: %d\n", channel, ret);
+	if ((ret = nv50_fifo_channel_enable(dev, chan->id, 0))) {
+		DRM_ERROR("error enabling ch%d: %d\n", chan->id, ret);
 		nouveau_gpuobj_ref_del(dev, &chan->ramfc);
 		return ret;
 	}
@@ -283,25 +281,29 @@ nv50_fifo_create_context(struct drm_device *dev, int channel)
 }
 
 void
-nv50_fifo_destroy_context(struct drm_device *dev, int channel)
+nv50_fifo_destroy_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
-	nv50_fifo_channel_disable(dev, channel, 0);
+	nv50_fifo_channel_disable(dev, chan->id, 0);
+
+	/* Dummy channel, also used on ch 127 */
+	if (chan->id == 0)
+		nv50_fifo_channel_disable(dev, 127, 0);
+
 	nouveau_gpuobj_ref_del(dev, &chan->ramfc);
 }
 
 int
-nv50_fifo_load_context(struct drm_device *dev, int channel)
+nv50_fifo_load_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	struct nouveau_gpuobj *ramfc = chan->ramfc->gpuobj;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
 	/*XXX: incomplete, only touches the regs that NV does */
 
@@ -319,14 +321,14 @@ nv50_fifo_load_context(struct drm_device *dev, int channel)
 		NV_WRITE(0x3410, INSTANCE_RD(ramfc, 0x98/4));
 	}
 
-	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, channel | (1<<16));
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, chan->id | (1<<16));
 	return 0;
 }
 
 int
-nv50_fifo_save_context(struct drm_device *dev, int channel)
+nv50_fifo_save_context(struct nouveau_channel *chan)
 {
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 	DRM_ERROR("stub!\n");
 	return 0;
 }
