@@ -28,7 +28,6 @@
 #include "xgi_regs.h"
 #include "xgi_misc.h"
 #include "xgi_cmdlist.h"
-#include <linux/delay.h>
 
 static void xgi_emit_flush(struct xgi_info * info, bool stop);
 static void xgi_emit_nop(struct xgi_info * info);
