@@ -223,6 +223,7 @@ void nouveau_mem_close(struct drm_device *dev)
 static uint32_t
 nouveau_mem_fb_amount_igp(struct drm_device *dev)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct pci_dev *bridge;
 	uint32_t mem;
@@ -243,6 +244,10 @@ nouveau_mem_fb_amount_igp(struct drm_device *dev)
 	}
 
 	DRM_ERROR("impossible!\n");
+#else
+	DRM_ERROR("Linux kernel >= 2.6.19 required to check for igp memory amount\n");
+#endif
+
 	return 0;
 }
 
