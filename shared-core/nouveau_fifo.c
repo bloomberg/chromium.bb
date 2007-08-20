@@ -84,9 +84,16 @@ static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 	{
 		case NV_50:
 		case NV_40:
+			switch (dev_priv->chipset) {
+			case 0x47:
+			case 0x49:
+			case 0x4b:
+				NV_WRITE(0x2230, 1);
+				break;
+			default:
+				break;
+			}
 			NV_WRITE(NV40_PFIFO_RAMFC, 0x30002);
-			if((dev_priv->chipset == 0x49) || (dev_priv->chipset == 0x4b))
-				NV_WRITE(0x2230,0x00000001);
 			break;
 		case NV_44:
 			NV_WRITE(NV40_PFIFO_RAMFC, ((nouveau_mem_fb_amount(dev)-512*1024+dev_priv->ramfc_offset)>>16) |
