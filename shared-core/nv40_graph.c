@@ -1310,7 +1310,11 @@ nv40_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, old_cp);
 
 	if (i == tv) {
-		DRM_ERROR("failed: inst=0x%08x save=%d\n", inst, save);
+		uint32_t ucstat = NV_READ(NV40_PGRAPH_CTXCTL_UCODE_STAT);
+		DRM_ERROR("Failed: Instance=0x%08x Save=%d\n", inst, save);
+		DRM_ERROR("IP: 0x%02x, Opcode: 0x%08x\n",
+			  ucstat >> NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_SHIFT,
+			  ucstat  & NV40_PGRAPH_CTXCTL_UCODE_STAT_OP_MASK);
 		DRM_ERROR("0x40030C = 0x%08x\n",
 			  NV_READ(NV40_PGRAPH_CTXCTL_030C));
 		return -EBUSY;

@@ -178,6 +178,10 @@
 #define NV10_PGRAPH_CTX_CACHE5                             0x004001E0
 #define NV40_PGRAPH_CTXCTL_0304                            0x00400304
 #define NV40_PGRAPH_CTXCTL_0304_XFER_CTX                   0x00000001
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT                      0x00400308
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_MASK              0xff000000
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_SHIFT                     24
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_OP_MASK              0x00ffffff
 #define NV40_PGRAPH_CTXCTL_0310                            0x00400310
 #define NV40_PGRAPH_CTXCTL_0310_XFER_SAVE                  0x00000020
 #define NV40_PGRAPH_CTXCTL_0310_XFER_LOAD                  0x00000040
