@@ -63,24 +63,17 @@ nv50_fifo_channel_enable(struct drm_device *dev, int channel, int nt)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_channel *chan = dev_priv->fifos[channel];
+	uint32_t inst;
 
 	DRM_DEBUG("ch%d\n", channel);
 
-	if (IS_G80) {
-		if (!chan->ramin)
-			return -EINVAL;
+	if (!chan->ramfc)
+		return -EINVAL;
 
-		NV_WRITE(NV50_PFIFO_CTX_TABLE(channel),
-			 (chan->ramin->instance >> 12) |
-			 NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED);
-	} else {
-		if (!chan->ramfc)
-			return -EINVAL;
-
-		NV_WRITE(NV50_PFIFO_CTX_TABLE(channel),
-			 (chan->ramfc->instance >> 8) |
-			 NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED);
-	}
+	if (IS_G80) inst = chan->ramfc->instance >> 12;
+	else        inst = chan->ramfc->instance >> 8;
+	NV_WRITE(NV50_PFIFO_CTX_TABLE(channel),
+		 inst | NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED);
 
 	if (!nt) nv50_fifo_init_thingo(dev);
 	return 0;
@@ -90,16 +83,13 @@ static void
 nv50_fifo_channel_disable(struct drm_device *dev, int channel, int nt)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	uint32_t inst;
 
 	DRM_DEBUG("ch%d, nt=%d\n", channel, nt);
 
-	if (IS_G80) {
-		NV_WRITE(NV50_PFIFO_CTX_TABLE(channel),
-			 NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G80);
-	} else {
-		NV_WRITE(NV50_PFIFO_CTX_TABLE(channel),
-			 NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G84);
-	}
+	if (IS_G80) inst = NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G80;
+	else        inst = NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G84;
+	NV_WRITE(NV50_PFIFO_CTX_TABLE(channel), inst);
 
 	if (!nt) nv50_fifo_init_thingo(dev);
 }
@@ -234,7 +224,9 @@ nv50_fifo_create_context(struct nouveau_channel *chan)
 
 	if (IS_G80) {
 		uint32_t ramfc_offset = chan->ramin->gpuobj->im_pramin->start;
-		if ((ret = nouveau_gpuobj_new_fake(dev, ramfc_offset, ~0, 0x100,
+		uint32_t vram_offset = chan->ramin->gpuobj->im_backing->start;
+		if ((ret = nouveau_gpuobj_new_fake(dev, ramfc_offset,
+						   vram_offset, 0x100,
 						   NVOBJ_FLAG_ZERO_ALLOC |
 						   NVOBJ_FLAG_ZERO_FREE,
 						   &ramfc, &chan->ramfc)))
