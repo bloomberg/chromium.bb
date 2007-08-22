@@ -1293,20 +1293,26 @@ static int
 nv40_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t old_cp, tv = 1000;
+	uint32_t old_cp, tv = 1000, tmp;
 	int i;
 
 	old_cp = NV_READ(NV20_PGRAPH_CHANNEL_CTX_POINTER);
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
-	NV_WRITE(NV40_PGRAPH_CTXCTL_0310,
-		 save ? NV40_PGRAPH_CTXCTL_0310_XFER_SAVE :
-		 	NV40_PGRAPH_CTXCTL_0310_XFER_LOAD);
-	NV_WRITE(NV40_PGRAPH_CTXCTL_0304, NV40_PGRAPH_CTXCTL_0304_XFER_CTX);
+
+	tmp  = NV_READ(NV40_PGRAPH_CTXCTL_0310);
+	tmp |= save ? NV40_PGRAPH_CTXCTL_0310_XFER_SAVE :
+		      NV40_PGRAPH_CTXCTL_0310_XFER_LOAD;
+	NV_WRITE(NV40_PGRAPH_CTXCTL_0310, tmp);
+	
+	tmp  = NV_READ(NV40_PGRAPH_CTXCTL_0304);
+	tmp |= NV40_PGRAPH_CTXCTL_0304_XFER_CTX;
+	NV_WRITE(NV40_PGRAPH_CTXCTL_0304, tmp);
 
 	for (i = 0; i < tv; i++) {
 		if (NV_READ(NV40_PGRAPH_CTXCTL_030C) == 0)
 			break;
 	}
+
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, old_cp);
 
 	if (i == tv) {
