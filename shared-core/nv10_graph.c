@@ -578,15 +578,39 @@ int nv10_graph_save_context(struct nouveau_channel *chan)
 
 void nouveau_nv10_context_switch(struct drm_device *dev)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv;
 	struct nouveau_channel *next, *last;
 	int chid;
+
+	if (!dev) {
+		DRM_DEBUG("Invalid drm_device\n");
+		return;
+	}
+	dev_priv = dev->dev_private;
+	if (!dev_priv) {
+		DRM_DEBUG("Invalid drm_nouveau_private\n");
+		return;
+	}
+	if (!dev_priv->fifos) {
+		DRM_DEBUG("Invalid drm_nouveau_private->fifos\n");
+		return;
+	}
 
 	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
 	next = dev_priv->fifos[chid];
 
+	if (!next) {
+		DRM_DEBUG("Invalid next channel\n");
+		return;
+	}
+
 	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 	last = dev_priv->fifos[chid];
+
+	if (!last) {
+		DRM_DEBUG("Invalid last channel\n");
+		return;
+	}
 
 	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",
 		 last->id, next->id);
@@ -607,7 +631,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	nouveau_wait_for_idle(dev);
 
 	nv10_graph_load_context(next);
-	
+
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_CTX_USER, next->id << 24);
 	NV_WRITE(NV10_PGRAPH_FFINTFC_ST2, NV_READ(NV10_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
