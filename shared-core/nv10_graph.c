@@ -608,12 +608,12 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	last = dev_priv->fifos[chid];
 
 	if (!last) {
-		DRM_DEBUG("Invalid last channel\n");
-		return;
+		DRM_DEBUG("WARNING: Invalid last channel, switch to %x\n",
+		          next->id);
+	} else {
+		DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",
+		         last->id, next->id);
 	}
-
-	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",
-		 last->id, next->id);
 
 	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
 #if 0
@@ -621,8 +621,10 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000000);
 	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
 #endif
-	nv10_graph_save_context(last);
-	
+	if (last) {
+		nv10_graph_save_context(last);
+	}	
+
 	nouveau_wait_for_idle(dev);
 
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000000);
