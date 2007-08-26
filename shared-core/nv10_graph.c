@@ -594,7 +594,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 		return;
 	}
 
-	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
+	chid = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 20)&(nouveau_fifo_number(dev)-1);
 	next = dev_priv->fifos[chid];
 
 	if (!next) {

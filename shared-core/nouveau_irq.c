@@ -227,8 +227,10 @@ nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int channel;
 
-	if (dev_priv->card_type < NV_40) {
-		channel = (NV_READ(0x400704) >> 20) & 0x1f;
+	if (dev_priv->card_type < NV_10) {
+		channel = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 24) & 0xf;
+	} else if (dev_priv->card_type < NV_40) {
+		channel = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 20) & 0x1f;
 	} else
 	if (dev_priv->card_type < NV_50) {
 		uint32_t cur_grctx = (NV_READ(0x40032C) & 0xfffff) << 4;
@@ -283,16 +285,22 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t address;
 	uint32_t channel, class;
-	uint32_t method, subc, data;
+	uint32_t method, subc, data, data2;
 	uint32_t nsource, nstatus;
 
 	if (nouveau_graph_trapped_channel(dev, &channel))
 		channel = -1;
 
-	address = NV_READ(0x400704);
-	subc    = (address >> 16) & 0x7;
+	data    = NV_READ(NV04_PGRAPH_TRAPPED_DATA);
+	address = NV_READ(NV04_PGRAPH_TRAPPED_ADDR);
 	method  = address & 0x1FFC;
-	data    = NV_READ(0x400708);
+	if (dev_priv->card_type < NV_10) {
+		subc = (address >> 13) & 0x7;
+		data2= 0;
+	} else {
+		subc = (address >> 16) & 0x7;
+		data2= NV_READ(NV10_PGRAPH_TRAPPED_DATA_HIGH);
+	}
 	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 	nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
 	if (dev_priv->card_type < NV_50) {
@@ -309,8 +317,8 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	                             ARRAY_SIZE(nouveau_nstatus_names));
 	printk("\n");
 
-	DRM_ERROR("Channel %d/%d (class 0x%04x) - Method 0x%04x, Data 0x%08x\n",
-		  channel, subc, class, method, data);
+	DRM_ERROR("Channel %d/%d (class 0x%04x) - Method 0x%04x, Data 0x%08x:0x%08x\n",
+		  channel, subc, class, method, data2, data);
 }
 
 static void nouveau_pgraph_irq_handler(struct drm_device *dev)

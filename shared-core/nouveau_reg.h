@@ -15,9 +15,6 @@
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK              0xfff00000
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT             20
 
-#define NV03_PGRAPH_STATUS                                 0x004006b0
-#define NV04_PGRAPH_STATUS                                 0x00400700
-
 #define NV_RAMIN                                           0x00700000
 
 #define NV_RAMHT_HANDLE_OFFSET                             0
@@ -264,7 +261,12 @@
 #define NV04_PGRAPH_BLIMIT5                                0x00400698
 #define NV04_PGRAPH_BSWIZZLE2                              0x0040069C
 #define NV04_PGRAPH_BSWIZZLE5                              0x004006A0
+#define NV03_PGRAPH_STATUS                                 0x004006B0
+#define NV04_PGRAPH_STATUS                                 0x00400700
+#define NV04_PGRAPH_TRAPPED_ADDR                           0x00400704
+#define NV04_PGRAPH_TRAPPED_DATA                           0x00400708
 #define NV04_PGRAPH_SURFACE                                0x0040070C
+#define NV10_PGRAPH_TRAPPED_DATA_HIGH                      0x0040070C
 #define NV04_PGRAPH_STATE                                  0x00400710
 #define NV10_PGRAPH_SURFACE                                0x00400710
 #define NV04_PGRAPH_NOTIFY                                 0x00400714
