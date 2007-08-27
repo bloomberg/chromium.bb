@@ -34,6 +34,20 @@
 #include "client/mac/handler/minidump_generator.h"
 #include "common/mac/macho_utilities.h"
 
+#ifndef USE_PROTECTED_ALLOCATIONS
+#define USE_PROTECTED_ALLOCATIONS 0
+#endif
+
+// If USE_PROTECTED_ALLOCATIONS is activated then the
+// gBreakpadAllocator needs to be setup in other code
+// ahead of time.  Please see ProtectedMemoryAllocator.h
+// for more details.
+#if USE_PROTECTED_ALLOCATIONS
+  #include "protected_memory_allocator.h"
+  extern ProtectedMemoryAllocator *gBreakpadAllocator;
+#endif
+
+
 namespace google_breakpad {
 
 using std::map;
@@ -360,6 +374,12 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
                                     MACH_RCV_MSG | MACH_RCV_LARGE, 0,
                                     sizeof(receive), self->handler_port_,
                                     MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
+
+#if USE_PROTECTED_ALLOCATIONS
+    if(gBreakpadAllocator)
+      gBreakpadAllocator->Unprotect();
+#endif
+    
     if (result == KERN_SUCCESS) {
       // Uninstall our handler so that we don't get in a loop if the process of
       // writing out a minidump causes an exception.  However, if the exception
@@ -426,7 +446,13 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
 bool ExceptionHandler::InstallHandler() {
   try {
+#if USE_PROTECTED_ALLOCATIONS
+    previous_ = new (gBreakpadAllocator->Allocate(sizeof(ExceptionParameters)) )
+      ExceptionParameters();    
+#else
     previous_ = new ExceptionParameters();
+#endif
+  
   }
   catch (std::bad_alloc) {
     return false;
@@ -472,7 +498,11 @@ bool ExceptionHandler::UninstallHandler(bool in_exception) {
     
     // this delete should NOT happen if an exception just occurred!
     if (!in_exception) {
+#if USE_PROTECTED_ALLOCATIONS
+      previous_->~ExceptionParameters();
+#else
       delete previous_; 
+#endif
     }
     
     previous_ = NULL;
