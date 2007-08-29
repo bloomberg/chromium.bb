@@ -73,7 +73,7 @@ struct xgi_info {
 
 	struct xgi_cmdring_info cmdring;
 
-	spinlock_t fence_lock;
+	DRM_SPINTYPE fence_lock;
 	unsigned complete_sequence;
 	unsigned next_sequence;
 };

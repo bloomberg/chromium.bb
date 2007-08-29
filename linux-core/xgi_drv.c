@@ -202,7 +202,7 @@ int xgi_bootstrap(struct drm_device * dev, void * data,
 	int err;
 
 
-	spin_lock_init(&info->fence_lock);
+	DRM_SPINLOCK_INIT(&info->fence_lock);
 	info->next_sequence = 0;
 	info->complete_sequence = 0;
 

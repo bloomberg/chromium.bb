@@ -41,7 +41,7 @@ static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 	if ((info == NULL) || (class != 0))
 		return 0;
 
-	spin_lock(&info->fence_lock);
+	DRM_SPINLOCK(&info->fence_lock);
 
 	pending_flush_types = fc->pending_flush |
 		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
@@ -64,7 +64,7 @@ static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 		}
 	}
 
-	spin_unlock(&info->fence_lock);
+	DRM_SPINUNLOCK(&info->fence_lock);
 
 	return fc->pending_flush |
 		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
@@ -81,12 +81,12 @@ int xgi_fence_emit_sequence(struct drm_device * dev, uint32_t class,
 		return -EINVAL;
 
 
-	spin_lock(&info->fence_lock);
+	DRM_SPINLOCK(&info->fence_lock);
 	info->next_sequence++;
 	if (info->next_sequence > BEGIN_BEGIN_IDENTIFICATION_MASK) {
 		info->next_sequence = 1;
 	}
-	spin_unlock(&info->fence_lock);
+	DRM_SPINUNLOCK(&info->fence_lock);
 	
 
 	*sequence = (uint32_t) info->next_sequence;
