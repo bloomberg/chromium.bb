@@ -375,10 +375,6 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
                                     sizeof(receive), self->handler_port_,
                                     MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
 
-#if USE_PROTECTED_ALLOCATIONS
-    if(gBreakpadAllocator)
-      gBreakpadAllocator->Unprotect();
-#endif
     
     if (result == KERN_SUCCESS) {
       // Uninstall our handler so that we don't get in a loop if the process of
@@ -393,23 +389,32 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
       // to avoid misleading stacks.  If appropriate they will be resumed
       // afterwards.
       if (!receive.exception) {
-        self->UninstallHandler(false);
-      
         if (self->is_in_teardown_)
           return NULL;
 
         self->SuspendThreads();
 
+#if USE_PROTECTED_ALLOCATIONS
+        if(gBreakpadAllocator)
+          gBreakpadAllocator->Unprotect();
+#endif
+
         // Write out the dump and save the result for later retrieval
         self->last_minidump_write_result_ =
           self->WriteMinidumpWithException(0, 0, 0);
+
+        self->UninstallHandler(false);
+
+#if USE_PROTECTED_ALLOCATIONS
+        if(gBreakpadAllocator)
+          gBreakpadAllocator->Protect();
+#endif
 
         self->ResumeThreads();
 
         if (self->use_minidump_write_mutex_)
           pthread_mutex_unlock(&self->minidump_write_mutex_);
       } else {
-        self->UninstallHandler(true);
 
         // When forking a child process with the exception handler installed,
         // if the child crashes, it will send the exception back to the parent
@@ -419,10 +424,22 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         if (receive.task.name == mach_task_self()) {
           self->SuspendThreads();
           
+#if USE_PROTECTED_ALLOCATIONS
+        if(gBreakpadAllocator)
+          gBreakpadAllocator->Unprotect();
+#endif
+
           // Generate the minidump with the exception data.
           self->WriteMinidumpWithException(receive.exception, receive.code[0],
                                            receive.thread.name);
         
+          self->UninstallHandler(true);
+
+#if USE_PROTECTED_ALLOCATIONS
+        if(gBreakpadAllocator)
+          gBreakpadAllocator->Protect();
+#endif
+
           // Pass along the exception to the server, which will setup the 
           // message and call catch_exception_raise() and put the KERN_SUCCESS
           // into the reply.
