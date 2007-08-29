@@ -28,15 +28,31 @@
 #include "xgi_regs.h"
 #include "xgi_misc.h"
 
-static int xgi_pcie_lut_init(struct xgi_info * info)
+void xgi_gart_flush(struct drm_device *dev)
+{
+	struct xgi_info *const info = dev->dev_private;
+	u8 temp;
+
+	DRM_MEMORYBARRIER();
+
+	/* Set GART in SFB */
+	temp = DRM_READ8(info->mmio_map, 0xB00C);
+	DRM_WRITE8(info->mmio_map, 0xB00C, temp & ~0x02);
+
+	/* Set GART base address to HW */
+	DRM_WRITE32(info->mmio_map, 0xB034, info->gart_info.bus_addr);
+
+	/* Flush GART table. */
+	DRM_WRITE8(info->mmio_map, 0xB03F, 0x40);
+	DRM_WRITE8(info->mmio_map, 0xB03F, 0x00);
+}
+
+
+int xgi_pcie_heap_init(struct xgi_info * info)
 {
 	u8 temp = 0;
 	int err;
-	unsigned i;
 	struct drm_scatter_gather request;
-	struct drm_sg_mem *sg;
-	u32 *lut;
-
 
 	/* Get current FB aperture size */
 	temp = IN3X5B(info->mmio_map, 0x27);
@@ -70,73 +86,24 @@ static int xgi_pcie_lut_init(struct xgi_info * info)
 		return err;
 	}
 
-	sg = info->dev->sg;
+	info->gart_info.gart_table_location = DRM_ATI_GART_MAIN;
+	info->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
+	info->gart_info.table_size = info->dev->sg->pages * sizeof(u32);
 
-	info->lut_handle = drm_pci_alloc(info->dev, 
-					 sizeof(u32) * sg->pages,
-					 PAGE_SIZE,
-					 DMA_31BIT_MASK);
-	if (info->lut_handle == NULL) {
-		DRM_ERROR("cannot allocate PCIE lut page!\n");
+	if (!drm_ati_pcigart_init(info->dev, &info->gart_info)) {
+		DRM_ERROR("failed to init PCI GART!\n");
 		return -ENOMEM;
 	}
 
-	lut = info->lut_handle->vaddr;
-	for (i = 0; i < sg->pages; i++) {
-		info->dev->sg->busaddr[i] = pci_map_page(info->dev->pdev,
-							 sg->pagelist[i],
-							 0,
-							 PAGE_SIZE,
-							 DMA_BIDIRECTIONAL);
-		if (dma_mapping_error(info->dev->sg->busaddr[i])) {
-			DRM_ERROR("cannot map GART backing store for DMA!\n");
-			return info->dev->sg->busaddr[i];
-		}
 
-		lut[i] = info->dev->sg->busaddr[i];
-	}
-
-	DRM_MEMORYBARRIER();
-
-	/* Set GART in SFB */
-	temp = DRM_READ8(info->mmio_map, 0xB00C);
-	DRM_WRITE8(info->mmio_map, 0xB00C, temp & ~0x02);
-
-	/* Set GART base address to HW */
-	DRM_WRITE32(info->mmio_map, 0xB034, info->lut_handle->busaddr);
-
-	/* Flush GART table. */
-	DRM_WRITE8(info->mmio_map, 0xB03F, 0x40);
-	DRM_WRITE8(info->mmio_map, 0xB03F, 0x00);
-
-	return 0;
-}
-
-void xgi_pcie_lut_cleanup(struct xgi_info * info)
-{
-	if (info->lut_handle) {
-		drm_pci_free(info->dev, info->lut_handle);
-		info->lut_handle = NULL;
-	}
-}
-
-int xgi_pcie_heap_init(struct xgi_info * info)
-{
-	int err;
-
-	err = xgi_pcie_lut_init(info);
-	if (err) {
-		DRM_ERROR("xgi_pcie_lut_init failed\n");
-		return err;
-	}
-
+	xgi_gart_flush(info->dev);
 
 	mutex_lock(&info->dev->struct_mutex);
 	err = drm_sman_set_range(&info->sman, XGI_MEMLOC_NON_LOCAL,
 				 0, info->pcie.size);
 	mutex_unlock(&info->dev->struct_mutex);
 	if (err) {
-		xgi_pcie_lut_cleanup(info);
+		drm_ati_pcigart_cleanup(info->dev, &info->gart_info);
 	}
 
 	info->pcie_heap_initialized = (err == 0);

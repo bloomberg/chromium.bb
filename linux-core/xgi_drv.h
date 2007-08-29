@@ -64,7 +64,7 @@ struct xgi_info {
 	struct drm_map *fb_map;
 
 	/* look up table parameters */
-	struct drm_dma_handle *lut_handle;
+	struct ati_pcigart_info gart_info;
 	unsigned int lutPageSize;
 
 	struct drm_sman sman;
@@ -87,7 +87,6 @@ extern int xgi_free(struct xgi_info * info, unsigned long index,
 	struct drm_file * filp);
 
 extern int xgi_pcie_heap_init(struct xgi_info * info);
-extern void xgi_pcie_lut_cleanup(struct xgi_info * info);
 
 extern void *xgi_find_pcie_virt(struct xgi_info * info, u32 address);
 

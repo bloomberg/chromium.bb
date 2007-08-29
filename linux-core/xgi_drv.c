@@ -306,7 +306,7 @@ void xgi_driver_lastclose(struct drm_device * dev)
 		info->fb_map = NULL;
 
 		if (info->pcie_heap_initialized) {
-			xgi_pcie_lut_cleanup(info);
+			drm_ati_pcigart_cleanup(dev, &info->gart_info);
 		}
 
 		if (info->fb_heap_initialized
