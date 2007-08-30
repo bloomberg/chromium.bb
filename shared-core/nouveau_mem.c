@@ -257,18 +257,6 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
-		case NV_03:
-			switch(NV_READ(NV03_BOOT_0)&NV03_BOOT_0_RAM_AMOUNT)
-			{
-				case NV03_BOOT_0_RAM_AMOUNT_8MB:
-				case NV03_BOOT_0_RAM_AMOUNT_8MB_SDRAM:
-					return 8*1024*1024;
-				case NV03_BOOT_0_RAM_AMOUNT_4MB:
-					return 4*1024*1024;
-				case NV03_BOOT_0_RAM_AMOUNT_2MB:
-					return 2*1024*1024;
-			}
-			break;
 		case NV_04:
 		case NV_05:
 			if (NV_READ(NV03_BOOT_0) & 0x00000100) {

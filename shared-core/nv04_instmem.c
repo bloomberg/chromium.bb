@@ -70,7 +70,6 @@ nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 		case NV_11:
 		case NV_10:
 		case NV_04:
-		case NV_03:
 		default:
 			dev_priv->ramfc_offset = 0x11400;
 			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *

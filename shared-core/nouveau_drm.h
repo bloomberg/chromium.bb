@@ -119,8 +119,6 @@ struct drm_nouveau_setparam {
 
 enum nouveau_card_type {
 	NV_UNKNOWN =0,
-	NV_01      =1,
-	NV_03      =3,
 	NV_04      =4,
 	NV_05      =5,
 	NV_10      =10,

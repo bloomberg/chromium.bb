@@ -34,8 +34,6 @@ int nouveau_fifo_number(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
-		case NV_03:
-			return 8;
 		case NV_04:
 		case NV_05:
 			return 16;
@@ -109,7 +107,6 @@ static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 		case NV_11:
 		case NV_10:
 		case NV_04:
-		case NV_03:
 			NV_WRITE(NV03_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
 			break;
 	}
