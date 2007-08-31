@@ -87,7 +87,9 @@ int xgi_fence_emit_sequence(struct drm_device * dev, uint32_t class,
 		info->next_sequence = 1;
 	}
 	DRM_SPINUNLOCK(&info->fence_lock);
-	
+
+
+	xgi_emit_irq(info);
 
 	*sequence = (uint32_t) info->next_sequence;
 	*native_type = DRM_FENCE_TYPE_EXE;
