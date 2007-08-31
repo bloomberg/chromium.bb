@@ -69,7 +69,7 @@ nouveau_sgdma_clear(struct drm_ttm_backend *be)
 		if (nvbe->is_bound)
 			be->func->unbind(be);
 
-		for (d = 0; d < nvbe->pages_populated; d--) {
+		for (d = 0; d < nvbe->pages_populated; d++) {
 			pci_unmap_page(nvbe->dev->pdev, nvbe->pagelist[d],
 				       NV_CTXDMA_PAGE_SIZE,
 				       PCI_DMA_BIDIRECTIONAL);
@@ -211,7 +211,7 @@ nouveau_sgdma_init(struct drm_device *dev)
 		obj_size  = (aper_size >> NV_CTXDMA_PAGE_SHIFT) * 8;
 	}
 
-	if ((ret = nouveau_gpuobj_new(dev, -1, obj_size, 16,
+	if ((ret = nouveau_gpuobj_new(dev, NULL, obj_size, 16,
 				      NVOBJ_FLAG_ALLOW_NO_REFS |
 				      NVOBJ_FLAG_ZERO_ALLOC |
 				      NVOBJ_FLAG_ZERO_FREE, &gpuobj)))  {
@@ -314,5 +314,22 @@ nouveau_sgdma_nottm_hack_init(struct drm_device *dev)
 void
 nouveau_sgdma_nottm_hack_takedown(struct drm_device *dev)
 {
+}
+
+int
+nouveau_sgdma_get_page(struct drm_device *dev, uint32_t offset, uint32_t *page)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_gpuobj *gpuobj = dev_priv->gart_info.sg_ctxdma;
+	int pte;
+
+	pte = (offset >> NV_CTXDMA_PAGE_SHIFT);
+	if (dev_priv->card_type < NV_50) {
+		*page = INSTANCE_RD(gpuobj, (pte + 2)) & ~NV_CTXDMA_PAGE_MASK;
+		return 0;
+	}
+
+	DRM_ERROR("Unimplemented on NV50\n");
+	return -EINVAL;
 }
 

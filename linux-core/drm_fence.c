@@ -520,9 +520,10 @@ void drm_fence_manager_init(struct drm_device * dev)
 	struct drm_fence_class_manager *class;
 	struct drm_fence_driver *fed = dev->driver->fence_driver;
 	int i;
+	unsigned long flags;
 
 	rwlock_init(&fm->lock);
-	write_lock(&fm->lock);
+	write_lock_irqsave(&fm->lock, flags);
 	fm->initialized = 0;
 	if (!fed)
 	    goto out_unlock;
@@ -541,7 +542,7 @@ void drm_fence_manager_init(struct drm_device * dev)
 
 	atomic_set(&fm->count, 0);
  out_unlock:
-	write_unlock(&fm->lock);
+	write_unlock_irqrestore(&fm->lock, flags);
 }
 
 void drm_fence_manager_takedown(struct drm_device * dev)
@@ -597,7 +598,6 @@ int drm_fence_create_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	 * usage > 0. No need to lock dev->struct_mutex;
 	 */
 	
-	atomic_inc(&fence->usage);
 	arg->handle = fence->base.hash.key;
 
 	read_lock_irqsave(&fm->lock, flags);
@@ -830,7 +830,7 @@ int drm_fence_buffers_ioctl(struct drm_device *dev, void *data, struct drm_file 
 					DRM_FENCE_FLAG_SHAREABLE);
 	if (ret)
 		return ret;
-	atomic_inc(&fence->usage);
+
 	arg->handle = fence->base.hash.key;
 
 	read_lock_irqsave(&fm->lock, flags);

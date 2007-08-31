@@ -1,6 +1,3 @@
-/* lock.c -- IOCTLs for locking -*- linux-c -*-
- * Created: Tue Feb  2 08:37:54 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,25 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_lock.c
+ * Implementation of the ioctls and other support code for dealing with the
+ * hardware lock.
+ *
+ * The DRM hardware lock is a shared structure between the kernel and userland.
+ *
+ * On uncontended access where the new context was the last context, the
+ * client may take the lock without dropping down into the kernel, using atomic
+ * compare-and-set.
+ *
+ * If the client finds during compare-and-set that it was not the last owner
+ * of the lock, it calls the DRM lock ioctl, which may sleep waiting for the
+ * lock, and may have side-effects of kernel-managed context switching.
+ *
+ * When the client releases the lock, if the lock is marked as being contended
+ * by another client, then the DRM unlock ioctl is called so that the
+ * contending client may be woken up.
  */
 
 #include "drmP.h"
@@ -157,6 +173,12 @@ int drm_unlock(drm_device_t *dev, void *data, struct drm_file *file_priv)
 		    DRM_CURRENTPID, lock->context);
 		return EINVAL;
 	}
+	/* Check that the context unlock being requested actually matches
+	 * who currently holds the lock.
+	 */
+	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ||
+	    _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock) != lock->context)
+		return EINVAL;
 
 	atomic_inc(&dev->counts[_DRM_STAT_UNLOCKS]);
 

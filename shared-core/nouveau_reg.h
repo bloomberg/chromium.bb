@@ -15,9 +15,6 @@
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK              0xfff00000
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT             20
 
-#define NV03_PGRAPH_STATUS                                 0x004006b0
-#define NV04_PGRAPH_STATUS                                 0x00400700
-
 #define NV_RAMIN                                           0x00700000
 
 #define NV_RAMHT_HANDLE_OFFSET                             0
@@ -79,6 +76,16 @@
 #define NV40_PMC_1704                                      0x00001704
 #define NV40_PMC_1708                                      0x00001708
 #define NV40_PMC_170C                                      0x0000170C
+
+/* probably PMC ? */
+#define NV50_PUNK_BAR0_PRAMIN                              0x00001700
+#define NV50_PUNK_BAR_CFG_BASE                             0x00001704
+#define NV50_PUNK_BAR_CFG_BASE_VALID                          (1<<30)
+#define NV50_PUNK_BAR1_CTXDMA                              0x00001708
+#define NV50_PUNK_BAR1_CTXDMA_VALID                           (1<<31)
+#define NV50_PUNK_BAR3_CTXDMA                              0x0000170C
+#define NV50_PUNK_BAR3_CTXDMA_VALID                           (1<<31)
+#define NV50_PUNK_UNK1710                                  0x00001710
 
 #define NV04_PTIMER_INTR_0                                 0x00009100
 #define NV04_PTIMER_INTR_EN_0                              0x00009140
@@ -168,6 +175,10 @@
 #define NV10_PGRAPH_CTX_CACHE5                             0x004001E0
 #define NV40_PGRAPH_CTXCTL_0304                            0x00400304
 #define NV40_PGRAPH_CTXCTL_0304_XFER_CTX                   0x00000001
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT                      0x00400308
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_MASK              0xff000000
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_SHIFT                     24
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_OP_MASK              0x00ffffff
 #define NV40_PGRAPH_CTXCTL_0310                            0x00400310
 #define NV40_PGRAPH_CTXCTL_0310_XFER_SAVE                  0x00000020
 #define NV40_PGRAPH_CTXCTL_0310_XFER_LOAD                  0x00000040
@@ -250,7 +261,12 @@
 #define NV04_PGRAPH_BLIMIT5                                0x00400698
 #define NV04_PGRAPH_BSWIZZLE2                              0x0040069C
 #define NV04_PGRAPH_BSWIZZLE5                              0x004006A0
+#define NV03_PGRAPH_STATUS                                 0x004006B0
+#define NV04_PGRAPH_STATUS                                 0x00400700
+#define NV04_PGRAPH_TRAPPED_ADDR                           0x00400704
+#define NV04_PGRAPH_TRAPPED_DATA                           0x00400708
 #define NV04_PGRAPH_SURFACE                                0x0040070C
+#define NV10_PGRAPH_TRAPPED_DATA_HIGH                      0x0040070C
 #define NV04_PGRAPH_STATE                                  0x00400710
 #define NV10_PGRAPH_SURFACE                                0x00400710
 #define NV04_PGRAPH_NOTIFY                                 0x00400714

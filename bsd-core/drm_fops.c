@@ -1,6 +1,3 @@
-/* drm_fops.h -- File operations for DRM -*- linux-c -*-
- * Created: Mon Jan  4 08:58:31 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -30,6 +27,11 @@
  *    Daryll Strauss <daryll@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_fops.c
+ * Support code for dealing with the file privates associated with each
+ * open of the DRM device.
  */
 
 #include "drmP.h"
@@ -93,6 +95,7 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		priv->authenticated	= DRM_SUSER(p);
 
 		if (dev->driver.open) {
+			/* shared code returns -errno */
 			retcode = -dev->driver.open(dev, priv);
 			if (retcode != 0) {
 				free(priv, M_DRM);

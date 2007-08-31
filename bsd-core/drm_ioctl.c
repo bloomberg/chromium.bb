@@ -1,6 +1,3 @@
-/* drm_ioctl.h -- IOCTL processing for DRM -*- linux-c -*-
- * Created: Fri Jan  8 09:01:26 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,11 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_ioctl.c
+ * Varios minor DRM ioctls not applicable to other files, such as versioning
+ * information and reporting DRM information to userland.
  */
 
 #include "drmP.h"
@@ -203,7 +205,7 @@ int drm_getstats(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	drm_stats_t  *stats = data;
 	int          i;
 
-	memset(&stats, 0, sizeof(stats));
+	memset(stats, 0, sizeof(drm_stats_t));
 	
 	DRM_LOCK();
 
@@ -230,23 +232,27 @@ int drm_getstats(drm_device_t *dev, void *data, struct drm_file *file_priv)
 int drm_setversion(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
 	drm_set_version_t *sv = data;
-	drm_set_version_t retv;
+	drm_set_version_t ver;
 	int if_version;
 
-	retv.drm_di_major = DRM_IF_MAJOR;
-	retv.drm_di_minor = DRM_IF_MINOR;
-	retv.drm_dd_major = dev->driver.major;
-	retv.drm_dd_minor = dev->driver.minor;
+	/* Save the incoming data, and set the response before continuing
+	 * any further.
+	 */
+	ver = *sv;
+	sv->drm_di_major = DRM_IF_MAJOR;
+	sv->drm_di_minor = DRM_IF_MINOR;
+	sv->drm_dd_major = dev->driver.major;
+	sv->drm_dd_minor = dev->driver.minor;
 
-	if (sv->drm_di_major != -1) {
-		if (sv->drm_di_major != DRM_IF_MAJOR ||
-		    sv->drm_di_minor < 0 || sv->drm_di_minor > DRM_IF_MINOR) {
+	if (ver.drm_di_major != -1) {
+		if (ver.drm_di_major != DRM_IF_MAJOR ||
+		    ver.drm_di_minor < 0 || ver.drm_di_minor > DRM_IF_MINOR) {
 			return EINVAL;
 		}
-		if_version = DRM_IF_VERSION(sv->drm_di_major,
-		    sv->drm_dd_minor);
+		if_version = DRM_IF_VERSION(ver.drm_di_major,
+		    ver.drm_dd_minor);
 		dev->if_version = DRM_MAX(if_version, dev->if_version);
-		if (sv->drm_di_minor >= 1) {
+		if (ver.drm_di_minor >= 1) {
 			/*
 			 * Version 1.1 includes tying of DRM to specific device
 			 */
@@ -254,10 +260,10 @@ int drm_setversion(drm_device_t *dev, void *data, struct drm_file *file_priv)
 		}
 	}
 
-	if (sv->drm_dd_major != -1) {
-		if (sv->drm_dd_major != dev->driver.major ||
-		    sv->drm_dd_minor < 0 ||
-		    sv->drm_dd_minor > dev->driver.minor)
+	if (ver.drm_dd_major != -1) {
+		if (ver.drm_dd_major != dev->driver.major ||
+		    ver.drm_dd_minor < 0 ||
+		    ver.drm_dd_minor > dev->driver.minor)
 		{
 			return EINVAL;
 		}

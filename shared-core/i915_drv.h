@@ -272,11 +272,24 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define MI_NO_WRITE_FLUSH    (1 << 2)
 #define MI_READ_FLUSH        (1 << 0)
 #define MI_EXE_FLUSH         (1 << 1)
+#define MI_END_SCENE         (1 << 4) /* flush binner and incr scene count */
+#define MI_SCENE_COUNT       (1 << 3) /* just increment scene count */
+
+/* Packet to load a register value from the ring/batch command stream:
+ */
+#define CMD_MI_LOAD_REGISTER_IMM	((0x22 << 23)|0x1)
 
 #define BB1_START_ADDR_MASK   (~0x7)
 #define BB1_PROTECTED         (1<<0)
 #define BB1_UNPROTECTED       (0<<0)
 #define BB2_END_ADDR_MASK     (~0x7)
+
+/* Interrupt bits:
+ */
+#define USER_INT_FLAG    (1<<1)
+#define VSYNC_PIPEB_FLAG (1<<5)
+#define VSYNC_PIPEA_FLAG (1<<7)
+#define HWB_OOM_FLAG     (1<<13) /* binner out of memory */
 
 #define I915REG_HWSTAM		0x02098
 #define I915REG_INT_IDENTITY_R	0x020a4
@@ -315,6 +328,10 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define NOPID                   0x2094
 #define LP_RING     		0x2030
 #define HP_RING     		0x2040
+/* The binner has its own ring buffer:
+ */
+#define HWB_RING		0x2400
+
 #define RING_TAIL      		0x00
 #define TAIL_ADDR		0x001FFFF8
 #define RING_HEAD      		0x04
@@ -333,10 +350,104 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define RING_VALID          	0x00000001
 #define RING_INVALID        	0x00000000
 
+/* Instruction parser error reg:
+ */
+#define IPEIR			0x2088
+
+/* Scratch pad debug 0 reg:
+ */
+#define SCPD0			0x209c
+
+/* Error status reg:
+ */
+#define ESR			0x20b8
+
+/* Secondary DMA fetch address debug reg:
+ */
+#define DMA_FADD_S		0x20d4
+
+/* Cache mode 0 reg.  
+ *  - Manipulating render cache behaviour is central
+ *    to the concept of zone rendering, tuning this reg can help avoid
+ *    unnecessary render cache reads and even writes (for z/stencil)
+ *    at beginning and end of scene.
+ *
+ * - To change a bit, write to this reg with a mask bit set and the
+ * bit of interest either set or cleared.  EG: (BIT<<16) | BIT to set.
+ */
+#define Cache_Mode_0		0x2120
+#define CM0_MASK_SHIFT          16
+#define CM0_IZ_OPT_DISABLE      (1<<6)
+#define CM0_ZR_OPT_DISABLE      (1<<5)
+#define CM0_DEPTH_EVICT_DISABLE (1<<4)
+#define CM0_COLOR_EVICT_DISABLE (1<<3)
+#define CM0_DEPTH_WRITE_DISABLE (1<<1)
+#define CM0_RC_OP_FLUSH_DISABLE (1<<0)
+
+
+/* Graphics flush control.  A CPU write flushes the GWB of all writes.
+ * The data is discarded.
+ */
+#define GFX_FLSH_CNTL		0x2170
+
+/* Binner control.  Defines the location of the bin pointer list:
+ */
+#define BINCTL			0x2420
+#define BC_MASK			(1 << 9)
+
+/* Binned scene info.  
+ */
+#define BINSCENE		0x2428
+#define BS_OP_LOAD		(1 << 8)
+#define BS_MASK			(1 << 22)
+
+/* Bin command parser debug reg:
+ */
+#define BCPD			0x2480
+
+/* Bin memory control debug reg:
+ */
+#define BMCD			0x2484
+
+/* Bin data cache debug reg:
+ */
+#define BDCD			0x2488
+
+/* Binner pointer cache debug reg: 
+ */
+#define BPCD			0x248c
+
+/* Binner scratch pad debug reg:
+ */
+#define BINSKPD			0x24f0
+
+/* HWB scratch pad debug reg:
+ */
+#define HWBSKPD			0x24f4
+
+/* Binner memory pool reg:
+ */
+#define BMP_BUFFER		0x2430
+#define BMP_PAGE_SIZE_4K	(0 << 10)
+#define BMP_BUFFER_SIZE_SHIFT	1
+#define BMP_ENABLE		(1 << 0)
+
+/* Get/put memory from the binner memory pool:
+ */
+#define BMP_GET			0x2438
+#define BMP_PUT			0x2440
+#define BMP_OFFSET_SHIFT	5
+
+/* 3D state packets:
+ */
+#define GFX_OP_RASTER_RULES    ((0x3<<29)|(0x7<<24))
+
 #define GFX_OP_SCISSOR         ((0x3<<29)|(0x1c<<24)|(0x10<<19))
 #define SC_UPDATE_SCISSOR       (0x1<<1)
 #define SC_ENABLE_MASK          (0x1<<0)
 #define SC_ENABLE               (0x1<<0)
+
+#define GFX_OP_LOAD_INDIRECT   ((0x3<<29)|(0x1d<<24)|(0x7<<16))
 
 #define GFX_OP_SCISSOR_INFO    ((0x3<<29)|(0x1d<<24)|(0x81<<16)|(0x1))
 #define SCI_YMIN_MASK      (0xffff<<16)
@@ -364,6 +475,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define MI_BATCH_BUFFER_END 	(0xA<<23)
 #define MI_BATCH_NON_SECURE	(1)
 
+#define MI_BATCH_NON_SECURE_I965 (1<<8)
+
 #define MI_WAIT_FOR_EVENT       ((0x3<<23))
 #define MI_WAIT_FOR_PLANE_B_FLIP      (1<<6)
 #define MI_WAIT_FOR_PLANE_A_FLIP      (1<<2)
@@ -375,6 +488,10 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define ASYNC_FLIP                (1<<22)
 #define DISPLAY_PLANE_A           (0<<20)
 #define DISPLAY_PLANE_B           (1<<20)
+
+/* Define the region of interest for the binner:
+ */
+#define CMD_OP_BIN_CONTROL	 ((0x3<<29)|(0x1d<<24)|(0x84<<16)|4)
 
 #define CMD_OP_DESTBUFFER_INFO	 ((0x3<<29)|(0x1d<<24)|(0x8e<<16)|1)
 

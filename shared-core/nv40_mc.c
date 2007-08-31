@@ -14,8 +14,6 @@ nv40_mc_init(struct drm_device *dev)
 	 */
 	NV_WRITE(NV03_PMC_ENABLE, 0xFFFFFFFF);
 
-	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
-
 	switch (dev_priv->chipset) {
 	case 0x44:
 	case 0x46: /* G72 */

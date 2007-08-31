@@ -1,6 +1,3 @@
-/* drm_context.h -- IOCTLs for generic contexts -*- linux-c -*-
- * Created: Fri Nov 24 18:31:37 2000 by gareth@valinux.com
- */
 /*-
  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,10 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_context.c
+ * Implementation of the context management ioctls.
  */
 
 #include "drmP.h"

@@ -31,118 +31,162 @@
 
 typedef struct {
 	uint32_t save1700[5]; /* 0x1700->0x1710 */
+
+	struct nouveau_gpuobj_ref *pramin_pt;
+	struct nouveau_gpuobj_ref *pramin_bar;
 } nv50_instmem_priv;
 
 #define NV50_INSTMEM_PAGE_SHIFT 12
 #define NV50_INSTMEM_PAGE_SIZE  (1 << NV50_INSTMEM_PAGE_SHIFT)
-#define NV50_INSTMEM_RSVD_SIZE	(64 * 1024)
 #define NV50_INSTMEM_PT_SIZE(a)	(((a) >> 12) << 3)
+
+/*NOTE: - Assumes 0x1700 already covers the correct MiB of PRAMIN
+ */
+#define BAR0_WI32(g,o,v) do {                                     \
+	uint32_t offset;                                          \
+	if ((g)->im_backing) {                                    \
+		offset = (g)->im_backing->start;                  \
+	} else {                                                  \
+		offset  = chan->ramin->gpuobj->im_backing->start; \
+		offset += (g)->im_pramin->start;                  \
+	}                                                         \
+	offset += (o);                                            \
+	NV_WRITE(NV_RAMIN + (offset & 0xfffff), (v));             \
+} while(0)
 
 int
 nv50_instmem_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_channel *chan;
+	uint32_t c_offset, c_size, c_ramfc, c_vmpd, c_base, pt_size;
 	nv50_instmem_priv *priv;
-	uint32_t rv, pt, pts, cb, cb0, cb1, unk, as;
-	uint32_t i, v;
-	int ret;
+	int ret, i;
+	uint32_t v;
 
 	priv = drm_calloc(1, sizeof(*priv), DRM_MEM_DRIVER);
 	if (!priv)
 		return -ENOMEM;
 	dev_priv->Engine.instmem.priv = priv;
 
-	/* Save current state */
-	for (i = 0x1700; i <= 0x1710; i+=4)
-		priv->save1700[(i-0x1700)/4] = NV_READ(i);
-
-	as  = dev_priv->ramin->size;
-	rv  = nouveau_mem_fb_amount(dev) - (1*1024*1024);
-	pt  = rv + 0xd0000;
-	pts = NV50_INSTMEM_PT_SIZE(as);
-	cb  = rv + 0xc8000;
-	if ((dev_priv->chipset & 0xf0) != 0x50) {
-		unk = cb + 0x4200;
-		cb0 = cb + 0x4240;
-		cb1 = cb + 0x278;
-	} else {
-		unk = cb + 0x5400;
-		cb0 = cb + 0x5440;
-		cb1 = cb + 0x1478;
-	}
-
-	DRM_DEBUG("PRAMIN config:\n");
-	DRM_DEBUG(" Rsvd VRAM base: 0x%08x\n", rv);
-	DRM_DEBUG("  Aperture size: %i MiB\n", as >> 20);
-	DRM_DEBUG("        PT base: 0x%08x\n", pt);
-	DRM_DEBUG("        PT size: %d KiB\n", pts >> 10);
-	DRM_DEBUG("     BIOS image: 0x%08x\n", (NV_READ(0x619f04)&~0xff)<<8);
-	DRM_DEBUG("    Config base: 0x%08x\n", cb);
-	DRM_DEBUG(" ctxdma Config0: 0x%08x\n", cb0);
-	DRM_DEBUG("        Config1: 0x%08x\n", cb1);
-
-	/* Map first MiB of reserved vram into BAR0 PRAMIN aperture */
-	NV_WRITE(0x1700, (rv>>16));
-	/* Poke some regs.. */
-	NV_WRITE(0x1704, (cb>>12));
-	NV_WRITE(0x1710, (((unk-cb)>>4))|(1<<31));
-	NV_WRITE(0x1704, (cb>>12)|(1<<30));
-
-	/* CB0, some DMA object, NFI what it points at... Needed however,
-	 * or the PRAMIN aperture doesn't operate as expected.
+	/* Reserve the last MiB of VRAM, we should probably try to avoid 
+	 * setting up the below tables over the top of the VBIOS image at
+	 * some point.
 	 */
-	NV_WRITE(NV_RAMIN + (cb0 - rv) + 0x00, 0x7fc00000);
-	NV_WRITE(NV_RAMIN + (cb0 - rv) + 0x04, 0xe1ffffff);
-	NV_WRITE(NV_RAMIN + (cb0 - rv) + 0x08, 0xe0000000);
-	NV_WRITE(NV_RAMIN + (cb0 - rv) + 0x0c, 0x01000001);
-	NV_WRITE(NV_RAMIN + (cb0 - rv) + 0x10, 0x00000000);
-	NV_WRITE(NV_RAMIN + (cb0 - rv) + 0x14, 0x00000000);
+	dev_priv->ramin_rsvd_vram = 1 << 20;
+	c_offset = nouveau_mem_fb_amount(dev) - dev_priv->ramin_rsvd_vram;
+	c_size   = 128 << 10;
+	c_vmpd   = ((dev_priv->chipset & 0xf0) == 0x50) ? 0x1400 : 0x200;
+	c_ramfc  = ((dev_priv->chipset & 0xf0) == 0x50) ? 0x0 : 0x20;
+	c_base   = c_vmpd + 0x4000;
+	pt_size  = NV50_INSTMEM_PT_SIZE(dev_priv->ramin->size);
 
-	/* CB1, points at PRAMIN PT */
-	NV_WRITE(NV_RAMIN + (cb1 - rv) + 0, pt | 0x63);
-	NV_WRITE(NV_RAMIN + (cb1 - rv) + 4, 0x00000000);
+	DRM_DEBUG(" Rsvd VRAM base: 0x%08x\n", c_offset);
+	DRM_DEBUG("    VBIOS image: 0x%08x\n", (NV_READ(0x619f04)&~0xff)<<8);
+	DRM_DEBUG("  Aperture size: %d MiB\n",
+		  (uint32_t)dev_priv->ramin->size >> 20);
+	DRM_DEBUG("        PT size: %d KiB\n", pt_size >> 10);
 
-	/* Zero PRAMIN page table */
-	v  = NV_RAMIN + (pt - rv);
-	for (i = v; i < v + pts; i += 8) {
-		NV_WRITE(i + 0x00, 0x00000009);
-		NV_WRITE(i + 0x04, 0x00000000);
-	}
+	NV_WRITE(NV50_PUNK_BAR0_PRAMIN, (c_offset >> 16));
 
-	/* Map page table into PRAMIN aperture */
-	for (i = pt; i < pt + pts; i += 0x1000) {
-		uint32_t pte = NV_RAMIN + (pt-rv) + (((i-pt) >> 12) << 3);
-		DRM_DEBUG("PRAMIN PTE = 0x%08x @ 0x%08x\n", i, pte);
-		NV_WRITE(pte + 0x00,      i | 1);
-		NV_WRITE(pte + 0x04, 0x00000000);
-	}
-
-	/* Points at CB0 */
-	NV_WRITE(0x170c, (((cb0 - cb)>>4)|(1<<31)));
-
-	/* Confirm it all worked, should be able to read back the page table's
-	 * PTEs from the PRAMIN BAR
+	/* Create a fake channel, and use it as our "dummy" channels 0/127.
+	 * The main reason for creating a channel is so we can use the gpuobj
+	 * code.  However, it's probably worth noting that NVIDIA also setup
+	 * their channels 0/127 with the same values they configure here.
+	 * So, there may be some other reason for doing this.
+	 *
+	 * Have to create the entire channel manually, as the real channel
+	 * creation code assumes we have PRAMIN access, and we don't until
+	 * we're done here.
 	 */
-	NV_WRITE(0x1700, pt >> 16);
-	if (NV_READ(0x700000) != NV_RI32(0)) {
-		DRM_ERROR("Failed to init PRAMIN page table\n");
-		return -EINVAL;
-	}
-
-	/* Create a heap to manage PRAMIN aperture allocations */
-	ret = nouveau_mem_init_heap(&dev_priv->ramin_heap, pts, as-pts);
-	if (ret) {
-		DRM_ERROR("Failed to init PRAMIN heap\n");
+	chan = drm_calloc(1, sizeof(*chan), DRM_MEM_DRIVER);
+	if (!chan)
 		return -ENOMEM;
+	chan->id = 0;
+	chan->dev = dev;
+	chan->file_priv = (struct drm_file *)-2;
+	dev_priv->fifos[0] = dev_priv->fifos[127] = chan;
+
+	/* Channel's PRAMIN object + heap */
+	if ((ret = nouveau_gpuobj_new_fake(dev, 0, c_offset, 128<<10, 0,
+					   NULL, &chan->ramin)))
+		return ret;
+
+	if (nouveau_mem_init_heap(&chan->ramin_heap, c_base, c_size - c_base))
+		return -ENOMEM;
+
+	/* RAMFC + zero channel's PRAMIN up to start of VM pagedir */
+	if ((ret = nouveau_gpuobj_new_fake(dev, c_ramfc, c_offset + c_ramfc,
+					   0x4000, 0, NULL, &chan->ramfc)))
+		return ret;
+
+	for (i = 0; i < c_vmpd; i += 4)
+		BAR0_WI32(chan->ramin->gpuobj, i, 0);
+
+	/* VM page directory */
+	if ((ret = nouveau_gpuobj_new_fake(dev, c_vmpd, c_offset + c_vmpd,
+					   0x4000, 0, &chan->vm_pd, NULL)))
+		return ret;
+	for (i = 0; i < 0x4000; i += 8) {
+		BAR0_WI32(chan->vm_pd, i + 0x00, 0x00000000);
+		BAR0_WI32(chan->vm_pd, i + 0x04, 0x00000000);
 	}
-	DRM_DEBUG("NV50: PRAMIN setup ok\n");
 
-	/* Don't alloc the last MiB of VRAM, probably too much, but be safe
-	 * at least for now.
+	/* PRAMIN page table, cheat and map into VM at 0x0000000000.
+	 * We map the entire fake channel into the start of the PRAMIN BAR
 	 */
-	dev_priv->ramin_rsvd_vram = 1*1024*1024;
+	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, pt_size, 0x1000,
+					  0, &priv->pramin_pt)))
+		return ret;
 
-	/*XXX: probably incorrect, but needed to make hash func "work" */
+	for (i = 0, v = c_offset; i < pt_size; i+=8, v+=0x1000) {
+		if (v < (c_offset + c_size))
+			BAR0_WI32(priv->pramin_pt->gpuobj, i + 0, v | 1);
+		else
+			BAR0_WI32(priv->pramin_pt->gpuobj, i + 0, 0x00000009);
+		BAR0_WI32(priv->pramin_pt->gpuobj, i + 4, 0x00000000); 
+	}
+
+	BAR0_WI32(chan->vm_pd, 0x00, priv->pramin_pt->instance | 0x63);
+	BAR0_WI32(chan->vm_pd, 0x04, 0x00000000);
+
+	/* DMA object for PRAMIN BAR */
+	if ((ret = nouveau_gpuobj_new_ref(dev, chan, chan, 0, 6*4, 16, 0,
+					  &priv->pramin_bar)))
+		return ret;
+	BAR0_WI32(priv->pramin_bar->gpuobj, 0x00, 0x7fc00000);
+	BAR0_WI32(priv->pramin_bar->gpuobj, 0x04, dev_priv->ramin->size - 1);
+	BAR0_WI32(priv->pramin_bar->gpuobj, 0x08, 0x00000000);
+	BAR0_WI32(priv->pramin_bar->gpuobj, 0x0c, 0x00000000);
+	BAR0_WI32(priv->pramin_bar->gpuobj, 0x10, 0x00000000);
+	BAR0_WI32(priv->pramin_bar->gpuobj, 0x14, 0x00000000);
+
+	/* Poke the relevant regs, and pray it works :) */
+	NV_WRITE(NV50_PUNK_BAR_CFG_BASE, (chan->ramin->instance >> 12));
+	NV_WRITE(NV50_PUNK_UNK1710, 0);
+	NV_WRITE(NV50_PUNK_BAR_CFG_BASE, (chan->ramin->instance >> 12) |
+					 NV50_PUNK_BAR_CFG_BASE_VALID);
+	NV_WRITE(NV50_PUNK_BAR1_CTXDMA, 0);
+	NV_WRITE(NV50_PUNK_BAR3_CTXDMA, (priv->pramin_bar->instance >> 4) |
+					NV50_PUNK_BAR3_CTXDMA_VALID);
+
+	/* Assume that praying isn't enough, check that we can re-read the
+	 * entire fake channel back from the PRAMIN BAR */
+	for (i = 0; i < c_size; i+=4) {
+		if (NV_READ(NV_RAMIN + i) != NV_RI32(i)) {
+			DRM_ERROR("Error reading back PRAMIN at 0x%08x\n", i);
+			return -EINVAL;
+		}
+	}
+
+	/* Global PRAMIN heap */
+	if (nouveau_mem_init_heap(&dev_priv->ramin_heap,
+				  c_size, dev_priv->ramin->size - c_size)) {
+		dev_priv->ramin_heap = NULL;
+		DRM_ERROR("Failed to init RAMIN heap\n");
+	}
+
+	/*XXX: incorrect, but needed to make hash func "work" */
 	dev_priv->ramht_offset = 0x10000;
 	dev_priv->ramht_bits   = 9;
 	dev_priv->ramht_size   = (1 << dev_priv->ramht_bits);
@@ -154,7 +198,10 @@ nv50_instmem_takedown(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	nv50_instmem_priv *priv = dev_priv->Engine.instmem.priv;
+	struct nouveau_channel *chan = dev_priv->fifos[0];
 	int i;
+
+	DRM_DEBUG("\n");
 
 	if (!priv)
 		return;
@@ -162,6 +209,20 @@ nv50_instmem_takedown(struct drm_device *dev)
 	/* Restore state from before init */
 	for (i = 0x1700; i <= 0x1710; i+=4)
 		NV_WRITE(i, priv->save1700[(i-0x1700)/4]);
+
+	nouveau_gpuobj_ref_del(dev, &priv->pramin_bar);
+	nouveau_gpuobj_ref_del(dev, &priv->pramin_pt);
+
+	/* Destroy dummy channel */
+	if (chan) {
+		nouveau_gpuobj_del(dev, &chan->vm_pd);
+		nouveau_gpuobj_ref_del(dev, &chan->ramfc);
+		nouveau_gpuobj_ref_del(dev, &chan->ramin);
+		nouveau_mem_takedown(&chan->ramin_heap);
+
+		dev_priv->fifos[0] = dev_priv->fifos[127] = NULL;
+		drm_free(chan, sizeof(*chan), DRM_MEM_DRIVER);
+	}
 
 	dev_priv->Engine.instmem.priv = NULL;
 	drm_free(priv, sizeof(*priv), DRM_MEM_DRIVER);
@@ -205,6 +266,7 @@ int
 nv50_instmem_bind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	nv50_instmem_priv *priv = dev_priv->Engine.instmem.priv;
 	uint32_t pte, pte_end, vram;
 
 	if (!gpuobj->im_backing || !gpuobj->im_pramin || gpuobj->im_bound)
@@ -217,19 +279,14 @@ nv50_instmem_bind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 	pte_end = ((gpuobj->im_pramin->size >> 12) << 3) + pte;
 	vram    = gpuobj->im_backing->start;
 
-	if (pte == pte_end) {
-		DRM_ERROR("WARNING: badness in bind() pte calc\n");
-		pte_end++;
-	}
-
 	DRM_DEBUG("pramin=0x%llx, pte=%d, pte_end=%d\n",
 		  gpuobj->im_pramin->start, pte, pte_end);
 	DRM_DEBUG("first vram page: 0x%llx\n",
 		  gpuobj->im_backing->start);
 
 	while (pte < pte_end) {
-		NV_WI32(pte + 0, vram | 1);
-		NV_WI32(pte + 4, 0x00000000);
+		INSTANCE_WR(priv->pramin_pt->gpuobj, (pte + 0)/4, vram | 1);
+		INSTANCE_WR(priv->pramin_pt->gpuobj, (pte + 4)/4, 0x00000000);
 
 		pte += 8;
 		vram += NV50_INSTMEM_PAGE_SIZE;
@@ -243,6 +300,7 @@ int
 nv50_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	nv50_instmem_priv *priv = dev_priv->Engine.instmem.priv;
 	uint32_t pte, pte_end;
 
 	if (gpuobj->im_bound == 0)
@@ -251,8 +309,8 @@ nv50_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 	pte     = (gpuobj->im_pramin->start >> 12) << 3;
 	pte_end = ((gpuobj->im_pramin->size >> 12) << 3) + pte;
 	while (pte < pte_end) {
-		NV_WI32(pte + 0, 0x00000000);
-		NV_WI32(pte + 4, 0x00000000);
+		INSTANCE_WR(priv->pramin_pt->gpuobj, (pte + 0)/4, 0x00000009);
+		INSTANCE_WR(priv->pramin_pt->gpuobj, (pte + 4)/4, 0x00000000);
 		pte += 8;
 	}
 

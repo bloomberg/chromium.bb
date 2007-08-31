@@ -25,9 +25,9 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 9
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 10
 
-struct drm_nouveau_fifo_alloc {
+struct drm_nouveau_channel_alloc {
 	uint32_t     fb_ctxdma_handle;
 	uint32_t     tt_ctxdma_handle;
 
@@ -44,6 +44,10 @@ struct drm_nouveau_fifo_alloc {
 	int          notifier_size;
 };
 
+struct drm_nouveau_channel_free {
+	int channel;
+};
+
 struct drm_nouveau_grobj_alloc {
 	int      channel;
 	uint32_t handle;
@@ -53,12 +57,17 @@ struct drm_nouveau_grobj_alloc {
 #define NOUVEAU_MEM_ACCESS_RO	1
 #define NOUVEAU_MEM_ACCESS_WO	2
 #define NOUVEAU_MEM_ACCESS_RW	3
-struct drm_nouveau_notifier_alloc {
+struct drm_nouveau_notifierobj_alloc {
 	int      channel;
 	uint32_t handle;
 	int      count;
 
 	uint32_t offset;
+};
+
+struct drm_nouveau_gpuobj_free {
+	int      channel;
+	uint32_t handle;
 };
 
 #define NOUVEAU_MEM_FB			0x00000001
@@ -95,6 +104,7 @@ struct drm_nouveau_mem_free {
 #define NOUVEAU_GETPARAM_FB_SIZE         8
 #define NOUVEAU_GETPARAM_AGP_SIZE        9
 #define NOUVEAU_GETPARAM_PCI_PHYSICAL    10
+#define NOUVEAU_GETPARAM_CHIPSET_ID      11
 struct drm_nouveau_getparam {
 	uint64_t param;
 	uint64_t value;
@@ -109,8 +119,6 @@ struct drm_nouveau_setparam {
 
 enum nouveau_card_type {
 	NV_UNKNOWN =0,
-	NV_01      =1,
-	NV_03      =3,
 	NV_04      =4,
 	NV_05      =5,
 	NV_10      =10,
@@ -141,13 +149,16 @@ struct drm_nouveau_sarea {
 	unsigned int nbox;
 };
 
-#define DRM_NOUVEAU_FIFO_ALLOC      0x00
-#define DRM_NOUVEAU_GROBJ_ALLOC     0x01
-#define DRM_NOUVEAU_NOTIFIER_ALLOC  0x02
-#define DRM_NOUVEAU_MEM_ALLOC       0x03
-#define DRM_NOUVEAU_MEM_FREE        0x04
-#define DRM_NOUVEAU_GETPARAM        0x05
-#define DRM_NOUVEAU_SETPARAM        0x06
+#define DRM_NOUVEAU_CARD_INIT          0x00
+#define DRM_NOUVEAU_GETPARAM           0x01
+#define DRM_NOUVEAU_SETPARAM           0x02
+#define DRM_NOUVEAU_CHANNEL_ALLOC      0x03
+#define DRM_NOUVEAU_CHANNEL_FREE       0x04
+#define DRM_NOUVEAU_GROBJ_ALLOC        0x05
+#define DRM_NOUVEAU_NOTIFIEROBJ_ALLOC  0x06
+#define DRM_NOUVEAU_GPUOBJ_FREE        0x07
+#define DRM_NOUVEAU_MEM_ALLOC          0x08
+#define DRM_NOUVEAU_MEM_FREE           0x09
 
 #endif /* __NOUVEAU_DRM_H__ */
 

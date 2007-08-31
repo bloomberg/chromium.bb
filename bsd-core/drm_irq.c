@@ -1,6 +1,3 @@
-/* drm_irq.c -- IRQ IOCTL and function support
- * Created: Fri Oct 18 2003 by anholt@FreeBSD.org
- */
 /*-
  * Copyright 2003 Eric Anholt
  * All Rights Reserved.
@@ -26,6 +23,11 @@
  * Authors:
  *    Eric Anholt <anholt@FreeBSD.org>
  *
+ */
+
+/** @file drm_irq.c
+ * Support code for handling setup/teardown of interrupt handlers and
+ * handing interrupt handlers off to the drivers.
  */
 
 #include "drmP.h"
@@ -241,6 +243,7 @@ int drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv)
 		ret = EINVAL;
 	} else {
 		DRM_LOCK();
+		/* shared code returns -errno */
 		ret = -dev->driver.vblank_wait(dev,
 		    &vblwait->request.sequence);
 		DRM_UNLOCK();

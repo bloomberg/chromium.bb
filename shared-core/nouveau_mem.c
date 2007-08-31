@@ -219,24 +219,44 @@ void nouveau_mem_close(struct drm_device *dev)
 		nouveau_mem_takedown(&dev_priv->pci_heap);
 }
 
+/*XXX won't work on BSD because of pci_read_config_dword */
+static uint32_t
+nouveau_mem_fb_amount_igp(struct drm_device *dev)
+{
+#if defined(LINUX) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct pci_dev *bridge;
+	uint32_t mem;
+
+	bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0,1));
+	if (!bridge) {
+		DRM_ERROR("no bridge device\n");
+		return 0;
+	}
+
+	if (dev_priv->flags&NV_NFORCE) {
+		pci_read_config_dword(bridge, 0x7C, &mem);
+		return (uint64_t)(((mem >> 6) & 31) + 1)*1024*1024;
+	} else
+	if(dev_priv->flags&NV_NFORCE2) {
+		pci_read_config_dword(bridge, 0x84, &mem);
+		return (uint64_t)(((mem >> 4) & 127) + 1)*1024*1024;
+	}
+
+	DRM_ERROR("impossible!\n");
+#else
+	DRM_ERROR("Linux kernel >= 2.6.19 required to check for igp memory amount\n");
+#endif
+
+	return 0;
+}
+
 /* returns the amount of FB ram in bytes */
 uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
-		case NV_03:
-			switch(NV_READ(NV03_BOOT_0)&NV03_BOOT_0_RAM_AMOUNT)
-			{
-				case NV03_BOOT_0_RAM_AMOUNT_8MB:
-				case NV03_BOOT_0_RAM_AMOUNT_8MB_SDRAM:
-					return 8*1024*1024;
-				case NV03_BOOT_0_RAM_AMOUNT_4MB:
-					return 4*1024*1024;
-				case NV03_BOOT_0_RAM_AMOUNT_2MB:
-					return 2*1024*1024;
-			}
-			break;
 		case NV_04:
 		case NV_05:
 			if (NV_READ(NV03_BOOT_0) & 0x00000100) {
@@ -263,18 +283,14 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 		case NV_44:
 		case NV_50:
 		default:
-			// XXX won't work on BSD because of pci_read_config_dword
-			if (dev_priv->flags&NV_NFORCE) {
-				uint32_t mem;
-				pci_read_config_dword(dev->pdev, 0x7C, &mem);
-				return (uint64_t)(((mem >> 6) & 31) + 1)*1024*1024;
-			} else if(dev_priv->flags&NV_NFORCE2) {
-				uint32_t mem;
-				pci_read_config_dword(dev->pdev, 0x84, &mem);
-				return (uint64_t)(((mem >> 4) & 127) + 1)*1024*1024;
+			if (dev_priv->flags & (NV_NFORCE | NV_NFORCE2)) {
+				return nouveau_mem_fb_amount_igp(dev);
 			} else {
 				uint64_t mem;
-				mem=(NV_READ(NV04_FIFO_DATA)&NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK) >> NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT;
+
+				mem = (NV_READ(NV04_FIFO_DATA) & 
+				       NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK) >>
+				      NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT;
 				return mem*1024*1024;
 			}
 			break;
@@ -411,11 +427,11 @@ int nouveau_mem_init(struct drm_device *dev)
 		struct drm_scatter_gather sgreq;
 
 		DRM_DEBUG("Allocating sg memory for PCI DMA\n");
-		sgreq.size = 4 << 20; //4MB of PCI scatter-gather zone
+		sgreq.size = 16 << 20; //16MB of PCI scatter-gather zone
 
 		if (drm_sg_alloc(dev, &sgreq)) {
-			DRM_ERROR("Unable to allocate 4MB of scatter-gather"
-				  " pages for PCI DMA!");
+			DRM_ERROR("Unable to allocate %dMB of scatter-gather"
+				  " pages for PCI DMA!",sgreq.size>>20);
 		} else {
 			if (nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
 						  dev->sg->pages * PAGE_SIZE)) {
@@ -531,13 +547,13 @@ alloc_ok:
 		block->map_handle = entry->user_token;
 	}
 
-	DRM_INFO("allocated 0x%llx\n", block->start);
+	DRM_DEBUG("allocated 0x%llx type=0x%08x\n", block->start, block->flags);
 	return block;
 }
 
 void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 {
-	DRM_INFO("freeing 0x%llx\n", block->start);
+	DRM_DEBUG("freeing 0x%llx type=0x%08x\n", block->start, block->flags);
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);
 	nouveau_mem_free_block(block);
@@ -549,14 +565,10 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 
 int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_alloc *alloc = data;
 	struct mem_block *block;
 
-	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
-		return -EINVAL;
-	}
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
 
 	block=nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
 				alloc->flags, file_priv);
@@ -574,6 +586,8 @@ int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_free *memfree = data;
 	struct mem_block *block;
+
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
 
 	block=NULL;
 	if (memfree->flags & NOUVEAU_MEM_FB)

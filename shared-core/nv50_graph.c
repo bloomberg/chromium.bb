@@ -45,6 +45,16 @@ nv50_graph_init_reset(struct drm_device *dev)
 }
 
 static void
+nv50_graph_init_intr(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	DRM_DEBUG("\n");
+	NV_WRITE(NV03_PGRAPH_INTR, 0xffffffff);
+	NV_WRITE(NV40_PGRAPH_INTR_EN, 0xffffffff);
+}
+
+static void
 nv50_graph_init_regs__nv(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -59,7 +69,6 @@ nv50_graph_init_regs__nv(struct drm_device *dev)
 	NV_WRITE(0x402000, 0xc0000000);
 
 	NV_WRITE(0x400108, 0xffffffff);
-	NV_WRITE(0x400100, 0xffffffff);
 
 	NV_WRITE(0x400824, 0x00004000);
 	NV_WRITE(0x400500, 0x00010001);
@@ -174,6 +183,7 @@ nv50_graph_init(struct drm_device *dev)
 	DRM_DEBUG("\n");
 
 	nv50_graph_init_reset(dev);
+	nv50_graph_init_intr(dev);
 	nv50_graph_init_regs__nv(dev);
 	nv50_graph_init_regs(dev);
 	nv50_graph_init_ctxctl(dev);
@@ -188,17 +198,18 @@ nv50_graph_takedown(struct drm_device *dev)
 }
 
 int
-nv50_graph_create_context(struct drm_device *dev, int channel)
+nv50_graph_create_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	struct nouveau_gpuobj *ramin = chan->ramin->gpuobj;
 	int grctx_size = 0x60000, hdr;
 	int ret;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, channel, -1, 0,
+	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0,
 					  grctx_size, 0x1000,
 					  NVOBJ_FLAG_ZERO_ALLOC |
 					  NVOBJ_FLAG_ZERO_FREE,
@@ -214,17 +225,22 @@ nv50_graph_create_context(struct drm_device *dev, int channel)
 	INSTANCE_WR(ramin, (hdr + 0x10)/4, 0);
 	INSTANCE_WR(ramin, (hdr + 0x14)/4, 0x00010000);
 
+	if ((ret = engine->graph.load_context(chan))) {
+		DRM_ERROR("Error hacking up initial context: %d\n", ret);
+		return ret;
+	}
+
 	return 0;
 }
 
 void
-nv50_graph_destroy_context(struct drm_device *dev, int channel)
+nv50_graph_destroy_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	int i, hdr;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
 	hdr = IS_G80 ? 0x200 : 0x20;
 	for (i=hdr; i<hdr+24; i+=4)
@@ -266,14 +282,14 @@ nv50_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 }
 
 int
-nv50_graph_load_context(struct drm_device *dev, int channel)
+nv50_graph_load_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
 	uint32_t inst = ((chan->ramin->instance >> 12) | (1<<31));
 	int ret; (void)ret;
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
 #if 0
 	if ((ret = nv50_graph_transfer_context(dev, inst, 0)))
@@ -288,13 +304,12 @@ nv50_graph_load_context(struct drm_device *dev, int channel)
 }
 
 int
-nv50_graph_save_context(struct drm_device *dev, int channel)
+nv50_graph_save_context(struct nouveau_channel *chan)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
 	uint32_t inst = ((chan->ramin->instance >> 12) | (1<<31));
 
-	DRM_DEBUG("ch%d\n", channel);
+	DRM_DEBUG("ch%d\n", chan->id);
 
 	return nv50_graph_transfer_context(dev, inst, 1);
 }

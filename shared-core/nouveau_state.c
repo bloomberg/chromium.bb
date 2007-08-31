@@ -93,7 +93,7 @@ static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
 static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_engine_func *engine = &dev_priv->Engine;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 
 	switch (dev_priv->chipset & 0xf0) {
 	case 0x00:
@@ -224,7 +224,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv40_graph_destroy_context;
 		engine->graph.load_context	= nv40_graph_load_context;
 		engine->graph.save_context	= nv40_graph_save_context;
-		engine->fifo.init	= nouveau_fifo_init;
+		engine->fifo.init	= nv40_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
 		engine->fifo.create_context	= nv40_fifo_create_context;
 		engine->fifo.destroy_context	= nv40_fifo_destroy_context;
@@ -267,11 +267,17 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 	return 0;
 }
 
-static int nouveau_card_init(struct drm_device *dev)
+int
+nouveau_card_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_engine_func *engine;
+	struct nouveau_engine *engine;
 	int ret;
+
+	DRM_DEBUG("prev state = %d\n", dev_priv->init_state);
+
+	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
+		return 0;
 
 	/* Map any PCI resources we need on the card */
 	ret = nouveau_init_card_mappings(dev);
@@ -290,6 +296,9 @@ static int nouveau_card_init(struct drm_device *dev)
 	engine = &dev_priv->Engine;
 	dev_priv->init_state = NOUVEAU_CARD_INIT_FAILED;
 
+	ret = nouveau_gpuobj_early_init(dev);
+	if (ret) return ret;
+
 	/* Initialise instance memory, must happen before mem_init so we
 	 * know exactly how much VRAM we're able to use for "normal"
 	 * purposes.
@@ -299,6 +308,9 @@ static int nouveau_card_init(struct drm_device *dev)
 
 	/* Setup the memory manager */
 	ret = nouveau_mem_init(dev);
+	if (ret) return ret;
+
+	ret = nouveau_gpuobj_init(dev);
 	if (ret) return ret;
 
 	/* Parse BIOS tables / Run init tables? */
@@ -323,7 +335,16 @@ static int nouveau_card_init(struct drm_device *dev)
 	ret = engine->fifo.init(dev);
 	if (ret) return ret;
 
+	/* this call irq_preinstall, register irq handler and
+	 * call irq_postinstall
+	 */
+	ret = drm_irq_install(dev);
+	if (ret) return ret;
+
 	/* what about PVIDEO/PCRTC/PRAMDAC etc? */
+
+	ret = nouveau_dma_channel_init(dev);
+	if (ret) return ret;
 
 	dev_priv->init_state = NOUVEAU_CARD_INIT_DONE;
 	return 0;
@@ -332,9 +353,13 @@ static int nouveau_card_init(struct drm_device *dev)
 static void nouveau_card_takedown(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct nouveau_engine_func *engine = &dev_priv->Engine;
+	struct nouveau_engine *engine = &dev_priv->Engine;
+
+	DRM_DEBUG("prev state = %d\n", dev_priv->init_state);
 
 	if (dev_priv->init_state != NOUVEAU_CARD_INIT_DOWN) {
+		nouveau_dma_channel_takedown(dev);
+
 		engine->fifo.takedown(dev);
 		engine->graph.takedown(dev);
 		engine->fb.takedown(dev);
@@ -348,6 +373,10 @@ static void nouveau_card_takedown(struct drm_device *dev)
 
 		nouveau_mem_close(dev);
 		engine->instmem.takedown(dev);
+
+		drm_irq_uninstall(dev);
+
+		nouveau_gpuobj_late_takedown(dev);
 
 		dev_priv->init_state = NOUVEAU_CARD_INIT_DOWN;
 	}
@@ -368,14 +397,6 @@ void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 /* first module load, setup the mmio/fb mapping */
 int nouveau_firstopen(struct drm_device *dev)
 {
-	int ret;
-
-	ret = nouveau_card_init(dev);
-	if (ret) {
-		DRM_ERROR("nouveau_card_init() failed! (%d)\n", ret);
-		return ret;
-	}
-
 	return 0;
 }
 
@@ -395,15 +416,6 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	dev_priv->init_state = NOUVEAU_CARD_INIT_DOWN;
 
 	dev->dev_private = (void *)dev_priv;
-
-#if 0
-	ret = nouveau_card_init(dev);
-	if (ret) {
-		DRM_ERROR("nouveau_card_init() failed! (%d)\n", ret);
-		return ret;
-	}
-#endif
-
 	return 0;
 }
 
@@ -427,12 +439,24 @@ int nouveau_unload(struct drm_device *dev)
 	return 0;
 }
 
+int
+nouveau_ioctl_card_init(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
+{
+	return nouveau_card_init(dev);
+}
+
 int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_getparam *getparam = data;
 
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
 	switch (getparam->param) {
+	case NOUVEAU_GETPARAM_CHIPSET_ID:
+		getparam->value = dev_priv->chipset;
+		break;
 	case NOUVEAU_GETPARAM_PCI_VENDOR:
 		getparam->value=dev->pci_vendor;
 		break;
@@ -481,6 +505,8 @@ int nouveau_ioctl_setparam(struct drm_device *dev, void *data, struct drm_file *
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_setparam *setparam = data;
 
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
 	switch (setparam->param) {
 	case NOUVEAU_SETPARAM_CMDBUF_LOCATION:
 		switch (setparam->value) {
@@ -512,9 +538,6 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type) {
-	case NV_03:
-		while (NV_READ(NV03_PGRAPH_STATUS));
-		break;
 	case NV_50:
 		break;
 	default: {
@@ -526,6 +549,7 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 		uint32_t status;
 		do {
 			uint32_t pmc_e = NV_READ(NV03_PMC_ENABLE);
+			(void)pmc_e;
 			status = NV_READ(NV04_PGRAPH_STATUS);
 			if (!status)
 				break;

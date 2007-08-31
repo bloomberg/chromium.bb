@@ -80,7 +80,7 @@ int drm_irq_by_busid(struct drm_device *dev, void *data,
  * \c drm_driver_irq_preinstall() and \c drm_driver_irq_postinstall() functions
  * before and after the installation.
  */
-static int drm_irq_install(struct drm_device * dev)
+int drm_irq_install(struct drm_device * dev)
 {
 	int ret;
 	unsigned long sh_flags = 0;
@@ -140,6 +140,7 @@ static int drm_irq_install(struct drm_device * dev)
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_irq_install);
 
 /**
  * Uninstall the IRQ handler.

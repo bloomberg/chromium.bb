@@ -21,6 +21,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/** @file drm_vm.c
+ * Support code for mmaping of DRM maps.
+ */
+
 #include "drmP.h"
 #include "drm.h"
 

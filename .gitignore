@@ -51,9 +51,13 @@ sis.kld
 stamp-h1
 tdfx.kld
 via.kld
+tests/auth
 tests/dristat
 tests/drmstat
 tests/getclient
+tests/getstats
 tests/getversion
+tests/lock
 tests/openclose
+tests/setversion
 tests/updatedraw

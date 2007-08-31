@@ -377,6 +377,7 @@ do {									\
 } while (0)
 
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
+/* Returns -errno to shared code */
 #define DRM_WAIT_ON( ret, queue, timeout, condition )		\
 for ( ret = 0 ; !ret && !(condition) ; ) {			\
 	DRM_UNLOCK();						\
@@ -388,11 +389,12 @@ for ( ret = 0 ; !ret && !(condition) ; ) {			\
 	DRM_LOCK();						\
 }
 #else
+/* Returns -errno to shared code */
 #define DRM_WAIT_ON( ret, queue, timeout, condition )	\
 for ( ret = 0 ; !ret && !(condition) ; ) {		\
         int s = spldrm();				\
 	if (!(condition))				\
-	   ret = tsleep( &(queue), PZERO | PCATCH, 	\
+	   ret = -tsleep( &(queue), PZERO | PCATCH, 	\
 			 "drmwtq", (timeout) );		\
 	splx(s);					\
 }
