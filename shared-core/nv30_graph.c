@@ -8,9 +8,8 @@
 #include "nouveau_drm.h"
 
 /*
- * There are 4 families :
- * NV30 is 0x10de:0x030* (not working, no dump for that one)
- *
+ * There are 3 families :
+ * NV30 is 0x10de:0x030*
  * NV31 is 0x10de:0x031*
  *
  * NV34 is 0x10de:0x032*
@@ -25,11 +24,11 @@
  */
 
 
-#define NV31_GRCTX_SIZE (22392)
-#define NV34_GRCTX_SIZE (18140)
-#define NV35_GRCTX_SIZE (22396)
+#define NV30_31_GRCTX_SIZE (22392)
+#define NV34_GRCTX_SIZE    (18140)
+#define NV35_36_GRCTX_SIZE (22396)
 
-static void nv31_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
+static void nv30_31_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
@@ -919,7 +918,8 @@ static void nv31_graph_context_init(struct drm_device *dev, struct nouveau_gpuob
 	INSTANCE_WR(ctx, 0x3858/4, 0x40000000);
 	INSTANCE_WR(ctx, 0x385c/4, 0x3f800000);
 	INSTANCE_WR(ctx, 0x3864/4, 0xbf800000);
-	INSTANCE_WR(ctx, 0x386c/4, 0xbf800000);}        
+	INSTANCE_WR(ctx, 0x386c/4, 0xbf800000);
+}
 
 static void nv34_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
@@ -1814,7 +1814,7 @@ static void nv34_graph_context_init(struct drm_device *dev, struct nouveau_gpuob
 	INSTANCE_WR(ctx, 0x2f00/4, 0xbf800000);
 }
 
-static void nv35_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
+static void nv35_36_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
@@ -2715,9 +2715,10 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 	int ret;
 
 	switch (dev_priv->chipset) {
+	case 0x30:
 	case 0x31:
-		ctx_size = NV31_GRCTX_SIZE;
-		ctx_init = nv31_graph_context_init;
+		ctx_size = NV30_31_GRCTX_SIZE;
+		ctx_init = nv30_31_graph_context_init;
 		break;
 	case 0x34:
 		ctx_size = NV34_GRCTX_SIZE;
@@ -2725,12 +2726,12 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 		break;
 	case 0x35:
 	case 0x36:
-		ctx_size = NV35_GRCTX_SIZE;
-		ctx_init = nv35_graph_context_init;
+		ctx_size = NV35_36_GRCTX_SIZE;
+		ctx_init = nv35_36_graph_context_init;
 		break;
 	default:
 		ctx_size = 0;
-		ctx_init = nv35_graph_context_init;
+		ctx_init = nv35_36_graph_context_init;
 		DRM_ERROR("Please contact the devs if you want your NV%x card to work\n",dev_priv->chipset);
 		break;
 	}
