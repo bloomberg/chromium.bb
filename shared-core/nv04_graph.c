@@ -358,14 +358,15 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 	chid = (NV_READ(NV04_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 	last = dev_priv->fifos[chid];
 
-	DRM_DEBUG("NV: PGRAPH context switch interrupt channel %x -> %x\n",last->id, next->id);
+	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",last->id, next->id);
 
-	NV_WRITE(NV03_PFIFO_CACHES, 0x0);
+/*	NV_WRITE(NV03_PFIFO_CACHES, 0x0);
 	NV_WRITE(NV04_PFIFO_CACHE0_PULL0, 0x0);
-	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x0);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x0);*/
 	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
 
-	nv04_graph_save_context(last);
+	if (last)
+		nv04_graph_save_context(last);
 
 	nouveau_wait_for_idle(dev);
 
@@ -374,16 +375,16 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 
 	nouveau_wait_for_idle(dev);
 
-	nv04_graph_load_context(last);
+	nv04_graph_load_context(next);
 
 	NV_WRITE(NV04_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV04_PGRAPH_CTX_USER, next->id << 24);
 	NV_WRITE(NV04_PGRAPH_FFINTFC_ST2, NV_READ(NV04_PGRAPH_FFINTFC_ST2)&0x000FFFFF);
 
-	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
+/*	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
 	NV_WRITE(NV04_PFIFO_CACHE0_PULL0, 0x0);
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x1);
-	NV_WRITE(NV03_PFIFO_CACHES, 0x1);
+	NV_WRITE(NV03_PFIFO_CACHES, 0x1);*/
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
