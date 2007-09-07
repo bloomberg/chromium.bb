@@ -1349,6 +1349,7 @@ nv40_graph_create_context(struct nouveau_channel *chan)
 		ctx_init = nv40_graph_context_init;
 		break;
 	case 0x41:
+	case 0x42:
 		ctx_size = NV41_GRCTX_SIZE;
 		ctx_init = nv41_graph_context_init;
 		break;
@@ -1829,7 +1830,8 @@ nv40_graph_init(struct drm_device *dev)
 
 	switch (dev_priv->chipset) {
 	case 0x40: ctx_voodoo = nv40_ctx_voodoo; break;
-	case 0x41: ctx_voodoo = nv41_ctx_voodoo; break;
+	case 0x41:
+	case 0x42: ctx_voodoo = nv41_ctx_voodoo; break;
 	case 0x43: ctx_voodoo = nv43_ctx_voodoo; break;
 	case 0x44: ctx_voodoo = nv44_ctx_voodoo; break;
 	case 0x46: ctx_voodoo = nv46_ctx_voodoo; break;
