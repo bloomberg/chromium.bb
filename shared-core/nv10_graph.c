@@ -652,7 +652,6 @@ int nv10_graph_load_context(struct nouveau_channel *chan)
 		for (j = 0; j < sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0]); i++,j++)
 			NV_WRITE(nv17_graph_ctx_regs[j], chan->pgraph_ctx[i]);
 	}
-	NV_WRITE(NV10_PGRAPH_CTX_USER, chan->id << 24);
 
 	nv10_graph_load_pipe(chan);
 
@@ -725,14 +724,12 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	nouveau_wait_for_idle(dev);
 
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000000);
-	NV_WRITE(NV10_PGRAPH_CTX_USER, (NV_READ(NV10_PGRAPH_CTX_USER) & 0xffffff) | (0x1f << 24));
 
 	nouveau_wait_for_idle(dev);
 
 	nv10_graph_load_context(next);
 
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
-	//NV_WRITE(NV10_PGRAPH_CTX_USER, next->id << 24);
 	NV_WRITE(NV10_PGRAPH_FFINTFC_ST2, NV_READ(NV10_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
@@ -796,6 +793,7 @@ int nv10_graph_create_context(struct nouveau_channel *chan) {
 		NV_WRITE_CTX(0x00400ec0, 0x00000080);
 		NV_WRITE_CTX(0x00400ed0, 0x00000080);
 	}
+	NV_WRITE_CTX(NV10_PGRAPH_CTX_USER, chan->id << 24);
 
 	nv10_graph_create_pipe(chan);
 	return 0;
