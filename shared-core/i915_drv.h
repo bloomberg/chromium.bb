@@ -55,10 +55,11 @@
  *      - Support vertical blank on secondary display pipe
  * 1.8: New ioctl for ARB_Occlusion_Query
  * 1.9: Usable page flipping and triple buffering
+ * 1.10: Plane/pipe disentangling
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		9
+#define DRIVER_MINOR		10
 #else
 #define DRIVER_MINOR		6
 #endif
@@ -87,7 +88,7 @@ struct mem_block {
 typedef struct _drm_i915_vbl_swap {
 	struct list_head head;
 	drm_drawable_t drw_id;
-	unsigned int pipe;
+	unsigned int plane;
 	unsigned int sequence;
 	int flip;
 } drm_i915_vbl_swap_t;

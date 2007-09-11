@@ -572,11 +572,11 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 	return 0;
 }
 
-static void i915_do_dispatch_flip(struct drm_device * dev, int pipe, int sync)
+static void i915_do_dispatch_flip(struct drm_device * dev, int plane, int sync)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	u32 num_pages, current_page, next_page, dspbase;
-	int shift = 2 * pipe, x, y;
+	int shift = 2 * plane, x, y;
 	RING_LOCALS;
 
 	/* Calculate display base offset */
@@ -597,25 +597,25 @@ static void i915_do_dispatch_flip(struct drm_device * dev, int pipe, int sync)
 		break;
 	}
 
-	if (pipe == 0) {
-		x = dev_priv->sarea_priv->pipeA_x;
-		y = dev_priv->sarea_priv->pipeA_y;
+	if (plane == 0) {
+		x = dev_priv->sarea_priv->planeA_x;
+		y = dev_priv->sarea_priv->planeA_y;
 	} else {
-		x = dev_priv->sarea_priv->pipeB_x;
-		y = dev_priv->sarea_priv->pipeB_y;
+		x = dev_priv->sarea_priv->planeB_x;
+		y = dev_priv->sarea_priv->planeB_y;
 	}
 
 	dspbase += (y * dev_priv->sarea_priv->pitch + x) * dev_priv->cpp;
 
-	DRM_DEBUG("pipe=%d current_page=%d dspbase=0x%x\n", pipe, current_page,
+	DRM_DEBUG("plane=%d current_page=%d dspbase=0x%x\n", plane, current_page,
 		  dspbase);
 
 	BEGIN_LP_RING(4);
 	OUT_RING(sync ? 0 :
-		 (MI_WAIT_FOR_EVENT | (pipe ? MI_WAIT_FOR_PLANE_B_FLIP :
+		 (MI_WAIT_FOR_EVENT | (plane ? MI_WAIT_FOR_PLANE_B_FLIP :
 				       MI_WAIT_FOR_PLANE_A_FLIP)));
 	OUT_RING(CMD_OP_DISPLAYBUFFER_INFO | (sync ? 0 : ASYNC_FLIP) |
-		 (pipe ? DISPLAY_PLANE_B : DISPLAY_PLANE_A));
+		 (plane ? DISPLAY_PLANE_B : DISPLAY_PLANE_A));
 	OUT_RING(dev_priv->sarea_priv->pitch * dev_priv->cpp);
 	OUT_RING(dspbase);
 	ADVANCE_LP_RING();
@@ -624,19 +624,19 @@ static void i915_do_dispatch_flip(struct drm_device * dev, int pipe, int sync)
 	dev_priv->sarea_priv->pf_current_page |= next_page << shift;
 }
 
-void i915_dispatch_flip(struct drm_device * dev, int pipes, int sync)
+void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	DRM_DEBUG("%s: pipes=0x%x pfCurrentPage=%d\n",
+	DRM_DEBUG("%s: planes=0x%x pfCurrentPage=%d\n",
 		  __FUNCTION__,
-		  pipes, dev_priv->sarea_priv->pf_current_page);
+		  planes, dev_priv->sarea_priv->pf_current_page);
 
 	i915_emit_mi_flush(dev, MI_READ_FLUSH | MI_EXE_FLUSH);
 
 	for (i = 0; i < 2; i++)
-		if (pipes & (1 << i))
+		if (planes & (1 << i))
 			i915_do_dispatch_flip(dev, i, sync);
 
 	i915_emit_breadcrumb(dev);
@@ -728,21 +728,21 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
 static int i915_do_cleanup_pageflip(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	int i, pipes, num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
+	int i, planes, num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	for (i = 0, pipes = 0; i < 2; i++)
+	for (i = 0, planes = 0; i < 2; i++)
 		if (dev_priv->sarea_priv->pf_current_page & (0x3 << (2 * i))) {
 			dev_priv->sarea_priv->pf_current_page =
 				(dev_priv->sarea_priv->pf_current_page &
 				 ~(0x3 << (2 * i))) | (num_pages - 1) << (2 * i);
 
-			pipes |= 1 << i;
+			planes |= 1 << i;
 		}
 
-	if (pipes)
-		i915_dispatch_flip(dev, pipes, 0);
+	if (planes)
+		i915_dispatch_flip(dev, planes, 0);
 
 	return 0;
 }
@@ -755,13 +755,13 @@ static int i915_flip_bufs(struct drm_device *dev, void *data, struct drm_file *f
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-	if (param->pipes & ~0x3) {
-		DRM_ERROR("Invalid pipes 0x%x, only <= 0x3 is valid\n",
-			  param->pipes);
+	if (param->planes & ~0x3) {
+		DRM_ERROR("Invalid planes 0x%x, only <= 0x3 is valid\n",
+			  param->planes);
 		return -EINVAL;
 	}
 
-	i915_dispatch_flip(dev, param->pipes, 0);
+	i915_dispatch_flip(dev, param->planes, 0);
 
 	return 0;
 }
