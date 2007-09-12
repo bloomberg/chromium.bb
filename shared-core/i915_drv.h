@@ -490,6 +490,11 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define DISPLAY_PLANE_A           (0<<20)
 #define DISPLAY_PLANE_B           (1<<20)
 
+/* Display regs */
+#define DSPACNTR                0x70180
+#define DSPBCNTR                0x71180
+#define DISPPLANE_SEL_PIPE_MASK                 (1<<24)
+
 /* Define the region of interest for the binner:
  */
 #define CMD_OP_BIN_CONTROL	 ((0x3<<29)|(0x1d<<24)|(0x84<<16)|4)

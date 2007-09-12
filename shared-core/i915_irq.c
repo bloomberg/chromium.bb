@@ -38,6 +38,26 @@
 #define MAX_NOPID ((u32)~0)
 
 /**
+ * i915_get_pipe - return the the pipe associated with a given plane
+ * @dev: DRM device
+ * @plane: plane to look for
+ *
+ * We need to get the pipe associated with a given plane to correctly perform
+ * vblank driven swapping, and they may not always be equal.  So look up the
+ * pipe associated with @plane here.
+ */
+static int
+i915_get_pipe(struct drm_device *dev, int plane)
+{
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	u32 dspcntr;
+
+	dspcntr = plane ? I915_READ(DSPBCNTR) : I915_READ(DSPACNTR);
+
+	return dspcntr & DISPPLANE_SEL_PIPE_MASK ? 1 : 0;
+}
+
+/**
  * Emit a synchronous flip.
  *
  * This function must be called with the drawable spinlock held.
@@ -124,8 +144,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 	list_for_each_safe(list, tmp, &dev_priv->vbl_swaps.head) {
 		drm_i915_vbl_swap_t *vbl_swap =
 			list_entry(list, drm_i915_vbl_swap_t, head);
-		int pipe = vbl_swap->plane ? sarea_priv->planeB_pipe :
-			sarea_priv->planeA_pipe;
+		int pipe = i915_get_pipe(dev, vbl_swap->plane);
 
 		if ((counter[pipe] - vbl_swap->sequence) > (1<<23))
 			continue;
@@ -565,7 +584,6 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 	unsigned int pipe, seqtype, curseq, plane;
 	unsigned long irqflags;
 	struct list_head *list;
-	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
 
 	if (!dev_priv) {
 		DRM_ERROR("%s called with no initialization\n", __func__);
@@ -585,7 +603,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 	}
 
 	plane = (swap->seqtype & _DRM_VBLANK_SECONDARY) ? 1 : 0;
-	pipe = plane ? sarea_priv->planeB_pipe : sarea_priv->planeA_pipe;
+	pipe = i915_get_pipe(dev, plane);
 
 	seqtype = swap->seqtype & (_DRM_VBLANK_RELATIVE | _DRM_VBLANK_ABSOLUTE);
 

@@ -114,9 +114,6 @@ typedef struct _drm_i915_sarea {
 	int planeB_w;
 	int planeB_h;
 
-	int planeA_pipe;
-	int planeB_pipe;
-
 	/* Triple buffering */
 	drm_handle_t third_handle;
 	int third_offset;
