@@ -149,7 +149,7 @@ struct drm_fence_object {
 	 */
 
 	struct list_head ring;
-	int class;
+	int fence_class;
 	uint32_t native_type;
 	uint32_t type;
 	uint32_t signaled;
@@ -173,7 +173,7 @@ struct drm_fence_class_manager {
 struct drm_fence_manager {
 	int initialized;
 	rwlock_t lock;
-	struct drm_fence_class_manager class[_DRM_FENCE_CLASSES];
+	struct drm_fence_class_manager fence_class[_DRM_FENCE_CLASSES];
 	uint32_t num_classes;
 	atomic_t count;
 };
@@ -184,18 +184,18 @@ struct drm_fence_driver {
 	uint32_t flush_diff;
 	uint32_t sequence_mask;
 	int lazy_capable;
-	int (*has_irq) (struct drm_device * dev, uint32_t class,
+	int (*has_irq) (struct drm_device * dev, uint32_t fence_class,
 			uint32_t flags);
-	int (*emit) (struct drm_device * dev, uint32_t class, uint32_t flags,
+	int (*emit) (struct drm_device * dev, uint32_t fence_class, uint32_t flags,
 		     uint32_t * breadcrumb, uint32_t * native_type);
-	void (*poke_flush) (struct drm_device * dev, uint32_t class);
+	void (*poke_flush) (struct drm_device * dev, uint32_t fence_class);
 };
 
-extern void drm_fence_handler(struct drm_device *dev, uint32_t class,
+extern void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 			      uint32_t sequence, uint32_t type);
 extern void drm_fence_manager_init(struct drm_device *dev);
 extern void drm_fence_manager_takedown(struct drm_device *dev);
-extern void drm_fence_flush_old(struct drm_device *dev, uint32_t class,
+extern void drm_fence_flush_old(struct drm_device *dev, uint32_t fence_class,
 				uint32_t sequence);
 extern int drm_fence_object_flush(struct drm_fence_object * fence, uint32_t type);
 extern int drm_fence_object_signaled(struct drm_fence_object * fence,
@@ -208,7 +208,7 @@ extern void drm_fence_reference_unlocked(struct drm_fence_object **dst,
 extern int drm_fence_object_wait(struct drm_fence_object * fence,
 				 int lazy, int ignore_signals, uint32_t mask);
 extern int drm_fence_object_create(struct drm_device *dev, uint32_t type,
-				   uint32_t fence_flags, uint32_t class,
+				   uint32_t fence_flags, uint32_t fence_class,
 				   struct drm_fence_object ** c_fence);
 extern int drm_fence_add_user_object(struct drm_file * priv,
 				     struct drm_fence_object * fence, int shareable);
@@ -474,7 +474,7 @@ extern int drm_mem_reg_is_pci(struct drm_device *dev, struct drm_bo_mem_reg * me
 extern void drm_bo_usage_deref_locked(struct drm_buffer_object ** bo);
 extern int drm_fence_buffer_objects(struct drm_file * priv,
 				    struct list_head *list,
-				    uint32_t fence_flags,
+				    uint32_t fence_class, uint32_t fence_flags,
 				    struct drm_fence_object * fence,
 				    struct drm_fence_object ** used_fence);
 extern void drm_bo_add_to_lru(struct drm_buffer_object * bo);

@@ -42,7 +42,7 @@ static void i915_perform_flush(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->class[0];
+	struct drm_fence_class_manager *fc = &fm->fence_class[0];
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	uint32_t flush_flags = 0;
 	uint32_t flush_sequence = 0;

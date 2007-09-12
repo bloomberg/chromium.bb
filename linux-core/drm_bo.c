@@ -538,7 +538,7 @@ EXPORT_SYMBOL(drm_bo_usage_deref_unlocked);
 
 int drm_fence_buffer_objects(struct drm_file * file_priv,
 			     struct list_head *list,
-			     uint32_t fence_flags,
+			     uint32_t fence_class, uint32_t fence_flags,
 			     struct drm_fence_object * fence,
 			     struct drm_fence_object ** used_fence)
 {
@@ -560,13 +560,8 @@ int drm_fence_buffer_objects(struct drm_file * file_priv,
 	list_for_each_entry(entry, list, lru) {
 		BUG_ON(!(entry->priv_flags & _DRM_BO_FLAG_UNFENCED));
 		fence_type |= entry->fence_type;
-		if (entry->fence_class != 0) {
-			DRM_ERROR("Fence class %d is not implemented yet.\n",
-				  entry->fence_class);
-			ret = -EINVAL;
-			goto out;
-		}
-		count++;
+		if (entry->fence_class == fence_class)
+			count++;
 	}
 
 	if (!count) {
@@ -583,7 +578,8 @@ int drm_fence_buffer_objects(struct drm_file * file_priv,
 	list_splice_init(list, &f_list);
 
 	if (fence) {
-		if ((fence_type & fence->type) != fence_type) {
+		if ((fence_type & fence->type) != fence_type ||
+		    (fence->fence_class != fence_class)) {
 			DRM_ERROR("Given fence doesn't match buffers "
 				  "on unfenced list.\n");
 			ret = -EINVAL;
@@ -591,7 +587,7 @@ int drm_fence_buffer_objects(struct drm_file * file_priv,
 		}
 	} else {
 		mutex_unlock(&dev->struct_mutex);
-		ret = drm_fence_object_create(dev, 0, fence_type,
+		ret = drm_fence_object_create(dev, fence_class, fence_type,
 					      fence_flags | DRM_FENCE_FLAG_EMIT,
 					      &fence);
 		mutex_lock(&dev->struct_mutex);
@@ -609,7 +605,8 @@ int drm_fence_buffer_objects(struct drm_file * file_priv,
 		mutex_lock(&entry->mutex);
 		mutex_lock(&dev->struct_mutex);
 		list_del_init(l);
-		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED) {
+		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED &&
+		    entry->fence_class == fence_class) {
 			count++;
 			if (entry->fence)
 				drm_fence_usage_deref_locked(&entry->fence);

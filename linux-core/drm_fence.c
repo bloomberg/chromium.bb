@@ -34,14 +34,14 @@
  * Typically called by the IRQ handler.
  */
 
-void drm_fence_handler(struct drm_device * dev, uint32_t class,
+void drm_fence_handler(struct drm_device * dev, uint32_t fence_class,
 		       uint32_t sequence, uint32_t type)
 {
 	int wake = 0;
 	uint32_t diff;
 	uint32_t relevant;
 	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->class[class];
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence_class];
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	struct list_head *head;
 	struct drm_fence_object *fence, *next;
@@ -198,7 +198,7 @@ int drm_fence_object_signaled(struct drm_fence_object * fence,
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 
 	if (poke_flush)
-		driver->poke_flush(dev, fence->class);
+		driver->poke_flush(dev, fence->fence_class);
 	read_lock_irqsave(&fm->lock, flags);
 	signaled =
 	    (fence->type & mask & fence->signaled) == (fence->type & mask);
@@ -229,7 +229,7 @@ int drm_fence_object_flush(struct drm_fence_object * fence,
 {
 	struct drm_device *dev = fence->dev;
 	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->class[fence->class];
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	unsigned long flags;
 
@@ -253,7 +253,7 @@ int drm_fence_object_flush(struct drm_fence_object * fence,
 		}
 	}
 	write_unlock_irqrestore(&fm->lock, flags);
-	driver->poke_flush(dev, fence->class);
+	driver->poke_flush(dev, fence->fence_class);
 	return 0;
 }
 
@@ -262,10 +262,10 @@ int drm_fence_object_flush(struct drm_fence_object * fence,
  * wrapped around and reused.
  */
 
-void drm_fence_flush_old(struct drm_device * dev, uint32_t class, uint32_t sequence)
+void drm_fence_flush_old(struct drm_device * dev, uint32_t fence_class, uint32_t sequence)
 {
 	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->class[class];
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence_class];
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	uint32_t old_sequence;
 	unsigned long flags;
@@ -308,7 +308,7 @@ static int drm_fence_lazy_wait(struct drm_fence_object *fence,
 {
 	struct drm_device *dev = fence->dev;
 	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->class[fence->class];
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
 	int signaled;
 	unsigned long _end = jiffies + 3*DRM_HZ;
 	int ret = 0;
@@ -366,7 +366,7 @@ int drm_fence_object_wait(struct drm_fence_object * fence,
 
 	} else {
 
-		if (driver->has_irq(dev, fence->class,
+		if (driver->has_irq(dev, fence->fence_class,
 				    DRM_FENCE_TYPE_EXE)) {
 			ret = drm_fence_lazy_wait(fence, ignore_signals,
 						  DRM_FENCE_TYPE_EXE);
@@ -374,7 +374,7 @@ int drm_fence_object_wait(struct drm_fence_object * fence,
 				return ret;
 		}
 
-		if (driver->has_irq(dev, fence->class,
+		if (driver->has_irq(dev, fence->fence_class,
 				    mask & ~DRM_FENCE_TYPE_EXE)) {
 			ret = drm_fence_lazy_wait(fence, ignore_signals,
 						  mask);
@@ -409,7 +409,7 @@ int drm_fence_object_emit(struct drm_fence_object * fence,
 	struct drm_device *dev = fence->dev;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
-	struct drm_fence_class_manager *fc = &fm->class[fence->class];
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
 	unsigned long flags;
 	uint32_t sequence;
 	uint32_t native_type;
@@ -421,7 +421,7 @@ int drm_fence_object_emit(struct drm_fence_object * fence,
 		return ret;
 
 	write_lock_irqsave(&fm->lock, flags);
-	fence->class = class;
+	fence->fence_class = class;
 	fence->type = type;
 	fence->flush_mask = 0x00;
 	fence->submitted_flush = 0x00;
@@ -456,7 +456,7 @@ static int drm_fence_object_init(struct drm_device * dev, uint32_t class,
 	 */
 
 	INIT_LIST_HEAD(&fence->base.list);
-	fence->class = class;
+	fence->fence_class = class;
 	fence->type = type;
 	fence->flush_mask = 0;
 	fence->submitted_flush = 0;
@@ -466,7 +466,7 @@ static int drm_fence_object_init(struct drm_device * dev, uint32_t class,
 	write_unlock_irqrestore(&fm->lock, flags);
 	if (fence_flags & DRM_FENCE_FLAG_EMIT) {
 		ret = drm_fence_object_emit(fence, fence_flags,
-					    fence->class, type);
+					    fence->fence_class, type);
 	}
 	return ret;
 }
@@ -533,7 +533,7 @@ void drm_fence_manager_init(struct drm_device * dev)
 	BUG_ON(fm->num_classes > _DRM_FENCE_CLASSES);
 
 	for (i=0; i<fm->num_classes; ++i) {
-	    class = &fm->class[i];
+	    class = &fm->fence_class[i];
 
 	    INIT_LIST_HEAD(&class->ring);
 	    class->pending_flush = 0;
@@ -582,7 +582,7 @@ int drm_fence_create_ioctl(struct drm_device *dev, void *data, struct drm_file *
 
 	if (arg->flags & DRM_FENCE_FLAG_EMIT)
 		LOCK_TEST_WITH_RETURN(dev, file_priv);
-	ret = drm_fence_object_create(dev, arg->class,
+	ret = drm_fence_object_create(dev, arg->fence_class,
 				      arg->type, arg->flags, &fence);
 	if (ret)
 		return ret;
@@ -601,7 +601,7 @@ int drm_fence_create_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	arg->handle = fence->base.hash.key;
 
 	read_lock_irqsave(&fm->lock, flags);
-	arg->class = fence->class;
+	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
 	arg->signaled = fence->signaled;
 	read_unlock_irqrestore(&fm->lock, flags);
@@ -656,7 +656,7 @@ int drm_fence_reference_ioctl(struct drm_device *dev, void *data, struct drm_fil
 	fence = drm_lookup_fence_object(file_priv, arg->handle);
 
 	read_lock_irqsave(&fm->lock, flags);
-	arg->class = fence->class;
+	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
 	arg->signaled = fence->signaled;
 	read_unlock_irqrestore(&fm->lock, flags);
@@ -700,7 +700,7 @@ int drm_fence_signaled_ioctl(struct drm_device *dev, void *data, struct drm_file
 		return -EINVAL;
 
 	read_lock_irqsave(&fm->lock, flags);
-	arg->class = fence->class;
+	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
 	arg->signaled = fence->signaled;
 	read_unlock_irqrestore(&fm->lock, flags);
@@ -729,7 +729,7 @@ int drm_fence_flush_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 	ret = drm_fence_object_flush(fence, arg->type);
 
 	read_lock_irqsave(&fm->lock, flags);
-	arg->class = fence->class;
+	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
 	arg->signaled = fence->signaled;
 	read_unlock_irqrestore(&fm->lock, flags);
@@ -761,7 +761,7 @@ int drm_fence_wait_ioctl(struct drm_device *dev, void *data, struct drm_file *fi
 				    0, arg->type);
 
 	read_lock_irqsave(&fm->lock, flags);
-	arg->class = fence->class;
+	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
 	arg->signaled = fence->signaled;
 	read_unlock_irqrestore(&fm->lock, flags);
@@ -789,11 +789,11 @@ int drm_fence_emit_ioctl(struct drm_device *dev, void *data, struct drm_file *fi
 	fence = drm_lookup_fence_object(file_priv, arg->handle);
 	if (!fence)
 		return -EINVAL;
-	ret = drm_fence_object_emit(fence, arg->flags, arg->class,
+	ret = drm_fence_object_emit(fence, arg->flags, arg->fence_class,
 				    arg->type);
 
 	read_lock_irqsave(&fm->lock, flags);
-	arg->class = fence->class;
+	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
 	arg->signaled = fence->signaled;
 	read_unlock_irqrestore(&fm->lock, flags);
@@ -821,8 +821,8 @@ int drm_fence_buffers_ioctl(struct drm_device *dev, void *data, struct drm_file 
 		return -EINVAL;
 	}
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
-	ret = drm_fence_buffer_objects(file_priv, NULL, arg->flags,
-				       NULL, &fence);
+	ret = drm_fence_buffer_objects(file_priv, NULL, arg->fence_class,
+				       arg->flags, NULL, &fence);
 	if (ret)
 		return ret;
 	ret = drm_fence_add_user_object(file_priv, fence,
@@ -834,9 +834,10 @@ int drm_fence_buffers_ioctl(struct drm_device *dev, void *data, struct drm_file 
 	arg->handle = fence->base.hash.key;
 
 	read_lock_irqsave(&fm->lock, flags);
-	arg->class = fence->class;
+	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
 	arg->signaled = fence->signaled;
+	arg->sequence = fence->sequence;
 	read_unlock_irqrestore(&fm->lock, flags);
 	drm_fence_usage_deref_unlocked(&fence);
 
