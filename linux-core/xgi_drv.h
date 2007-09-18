@@ -35,10 +35,10 @@
 
 #define DRIVER_NAME		"xgi"
 #define DRIVER_DESC		"XGI XP5 / XP10 / XG47"
-#define DRIVER_DATE		"20070906"
+#define DRIVER_DATE		"20070918"
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		0
+#define DRIVER_MINOR		1
 #define DRIVER_PATCHLEVEL	0
 
 #include "xgi_cmdlist.h"
@@ -77,6 +77,9 @@ struct xgi_info {
 	unsigned complete_sequence;
 	unsigned next_sequence;
 };
+
+extern long xgi_compat_ioctl(struct file *filp, unsigned int cmd,
+	unsigned long arg);
 
 extern int xgi_fb_heap_init(struct xgi_info * info);
 

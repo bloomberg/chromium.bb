@@ -48,6 +48,7 @@ mga-objs    += mga_ioc32.o
 r128-objs   += r128_ioc32.o
 i915-objs   += i915_ioc32.o
 nouveau-objs += nouveau_ioc32.o
+xgi-objs    += xgi_ioc32.o
 endif
 
 obj-m			+= drm.o

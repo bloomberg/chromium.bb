@@ -90,7 +90,7 @@ struct xgi_mem_alloc {
 	 * 
 	 * See also DRM_XGI_FREE ioctl.
 	 */
-	unsigned long index;
+	__u32 index;
 };
 
 enum xgi_batch_type {

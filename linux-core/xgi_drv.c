@@ -48,7 +48,7 @@ static struct drm_fence_driver xgi_fence_driver = {
 	.has_irq = xgi_fence_has_irq
 };
 
-static int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
+int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
 
 static struct drm_ioctl_desc xgi_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_XGI_BOOTSTRAP, xgi_bootstrap, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
@@ -97,6 +97,9 @@ static struct drm_driver driver = {
 		.mmap = drm_mmap,
 		.poll = drm_poll,
 		.fasync = drm_fasync,
+#if defined(CONFIG_COMPAT) && LINUX_VERSION_CODE > KERNEL_VERSION(2,6,9)
+		.compat_ioctl = xgi_compat_ioctl,
+#endif
 	},
 
 	.pci_driver = {

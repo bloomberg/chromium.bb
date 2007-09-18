@@ -65,6 +65,13 @@ int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 		alloc->hw_addr = alloc->offset;
 		alloc->index = block->user_hash.key;
 
+		if (block->user_hash.key != (unsigned long) alloc->index) {
+			DRM_ERROR("%s truncated handle %lx for pool %d "
+				  "offset %x\n",
+				  __func__, block->user_hash.key,
+				  alloc->location, alloc->offset);
+		}
+
 		if (alloc->location == XGI_MEMLOC_NON_LOCAL) {
 			alloc->hw_addr += info->pcie.base;
 		}
