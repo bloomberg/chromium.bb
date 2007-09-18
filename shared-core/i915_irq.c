@@ -188,7 +188,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 		DRM_SPINLOCK(&dev_priv->swaps_lock);
 	}
 
-	DRM_SPINUNLOCK(&dev->drw_lock);
+	DRM_SPINUNLOCK(&dev_priv->swaps_lock);
 
 	if (nhits == 0) {
 		return;
