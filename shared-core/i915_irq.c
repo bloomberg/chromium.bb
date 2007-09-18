@@ -612,6 +612,21 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
+	DRM_SPINLOCK_IRQSAVE(&dev->drw_lock, irqflags);
+
+	/* It makes no sense to schedule a swap for a drawable that doesn't have
+	 * valid information at this point. E.g. this could mean that the X
+	 * server is too old to push drawable information to the DRM, in which
+	 * case all such swaps would become ineffective.
+	 */
+	if (!drm_get_drawable_info(dev, swap->drawable)) {
+		DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
+		DRM_DEBUG("Invalid drawable ID %d\n", swap->drawable);
+		return -EINVAL;
+	}
+
+	DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
+
 	curseq = atomic_read(pipe ? &dev->vbl_received2 : &dev->vbl_received);
 
 	if (seqtype == _DRM_VBLANK_RELATIVE)
