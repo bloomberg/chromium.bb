@@ -538,9 +538,6 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type) {
-	case NV_03:
-		while (NV_READ(NV03_PGRAPH_STATUS));
-		break;
 	case NV_50:
 		break;
 	default: {

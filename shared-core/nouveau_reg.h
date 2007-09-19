@@ -15,9 +15,6 @@
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK              0xfff00000
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT             20
 
-#define NV03_PGRAPH_STATUS                                 0x004006b0
-#define NV04_PGRAPH_STATUS                                 0x00400700
-
 #define NV_RAMIN                                           0x00700000
 
 #define NV_RAMHT_HANDLE_OFFSET                             0
@@ -178,6 +175,10 @@
 #define NV10_PGRAPH_CTX_CACHE5                             0x004001E0
 #define NV40_PGRAPH_CTXCTL_0304                            0x00400304
 #define NV40_PGRAPH_CTXCTL_0304_XFER_CTX                   0x00000001
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT                      0x00400308
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_MASK              0xff000000
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_SHIFT                     24
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_OP_MASK              0x00ffffff
 #define NV40_PGRAPH_CTXCTL_0310                            0x00400310
 #define NV40_PGRAPH_CTXCTL_0310_XFER_SAVE                  0x00000020
 #define NV40_PGRAPH_CTXCTL_0310_XFER_LOAD                  0x00000040
@@ -260,7 +261,12 @@
 #define NV04_PGRAPH_BLIMIT5                                0x00400698
 #define NV04_PGRAPH_BSWIZZLE2                              0x0040069C
 #define NV04_PGRAPH_BSWIZZLE5                              0x004006A0
+#define NV03_PGRAPH_STATUS                                 0x004006B0
+#define NV04_PGRAPH_STATUS                                 0x00400700
+#define NV04_PGRAPH_TRAPPED_ADDR                           0x00400704
+#define NV04_PGRAPH_TRAPPED_DATA                           0x00400708
 #define NV04_PGRAPH_SURFACE                                0x0040070C
+#define NV10_PGRAPH_TRAPPED_DATA_HIGH                      0x0040070C
 #define NV04_PGRAPH_STATE                                  0x00400710
 #define NV10_PGRAPH_SURFACE                                0x00400710
 #define NV04_PGRAPH_NOTIFY                                 0x00400714
@@ -313,6 +319,18 @@
 #define NV47_PGRAPH_TSTATUS0(i)                            0x00400D0C
 #define NV04_PGRAPH_V_RAM                                  0x00400D40
 #define NV04_PGRAPH_W_RAM                                  0x00400D80
+#define NV10_PGRAPH_COMBINER0_IN_ALPHA                     0x00400E40
+#define NV10_PGRAPH_COMBINER1_IN_ALPHA                     0x00400E44
+#define NV10_PGRAPH_COMBINER0_IN_RGB                       0x00400E48
+#define NV10_PGRAPH_COMBINER1_IN_RGB                       0x00400E4C
+#define NV10_PGRAPH_COMBINER_COLOR0                        0x00400E50
+#define NV10_PGRAPH_COMBINER_COLOR1                        0x00400E54
+#define NV10_PGRAPH_COMBINER0_OUT_ALPHA                    0x00400E58
+#define NV10_PGRAPH_COMBINER1_OUT_ALPHA                    0x00400E5C
+#define NV10_PGRAPH_COMBINER0_OUT_RGB                      0x00400E60
+#define NV10_PGRAPH_COMBINER1_OUT_RGB                      0x00400E64
+#define NV10_PGRAPH_COMBINER_FINAL0                        0x00400E68
+#define NV10_PGRAPH_COMBINER_FINAL1                        0x00400E6C
 #define NV10_PGRAPH_WINDOWCLIP_HORIZONTAL                  0x00400F00
 #define NV10_PGRAPH_WINDOWCLIP_VERTICAL                    0x00400F20
 #define NV10_PGRAPH_XFMODE0                                0x00400F40

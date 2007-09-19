@@ -1,6 +1,3 @@
-/* drm_drawable.h -- IOCTLs for drawables -*- linux-c -*-
- * Created: Tue Feb  2 08:37:54 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,11 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_drawable.c
+ * This file implements ioctls to store information along with DRM drawables,
+ * such as the current set of cliprects for vblank-synced buffer swaps.
  */
 
 #include "drmP.h"

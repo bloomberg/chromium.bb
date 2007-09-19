@@ -421,6 +421,8 @@ extern void        nouveau_irq_uninstall(struct drm_device *);
 /* nouveau_sgdma.c */
 extern int nouveau_sgdma_init(struct drm_device *);
 extern void nouveau_sgdma_takedown(struct drm_device *);
+extern int nouveau_sgdma_get_page(struct drm_device *, uint32_t offset,
+				  uint32_t *page);
 extern struct drm_ttm_backend *nouveau_sgdma_init_ttm(struct drm_device *);
 extern int nouveau_sgdma_nottm_hack_init(struct drm_device *);
 extern void nouveau_sgdma_nottm_hack_takedown(struct drm_device *);

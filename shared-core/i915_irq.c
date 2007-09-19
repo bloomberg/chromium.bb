@@ -38,34 +38,54 @@
 #define MAX_NOPID ((u32)~0)
 
 /**
+ * i915_get_pipe - return the the pipe associated with a given plane
+ * @dev: DRM device
+ * @plane: plane to look for
+ *
+ * We need to get the pipe associated with a given plane to correctly perform
+ * vblank driven swapping, and they may not always be equal.  So look up the
+ * pipe associated with @plane here.
+ */
+static int
+i915_get_pipe(struct drm_device *dev, int plane)
+{
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	u32 dspcntr;
+
+	dspcntr = plane ? I915_READ(DSPBCNTR) : I915_READ(DSPACNTR);
+
+	return dspcntr & DISPPLANE_SEL_PIPE_MASK ? 1 : 0;
+}
+
+/**
  * Emit a synchronous flip.
  *
  * This function must be called with the drawable spinlock held.
  */
 static void
 i915_dispatch_vsync_flip(struct drm_device *dev, struct drm_drawable_info *drw,
-			 int pipe)
+			 int plane)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	u16 x1, y1, x2, y2;
-	int pf_pipes = 1 << pipe;
+	int pf_planes = 1 << plane;
 
 	DRM_SPINLOCK_ASSERT(&dev->drw_lock);
 
-	/* If the window is visible on the other pipe, we have to flip on that
-	 * pipe as well.
+	/* If the window is visible on the other plane, we have to flip on that
+	 * plane as well.
 	 */
-	if (pipe == 1) {
-		x1 = sarea_priv->pipeA_x;
-		y1 = sarea_priv->pipeA_y;
-		x2 = x1 + sarea_priv->pipeA_w;
-		y2 = y1 + sarea_priv->pipeA_h;
+	if (plane == 1) {
+		x1 = sarea_priv->planeA_x;
+		y1 = sarea_priv->planeA_y;
+		x2 = x1 + sarea_priv->planeA_w;
+		y2 = y1 + sarea_priv->planeA_h;
 	} else {
-		x1 = sarea_priv->pipeB_x;
-		y1 = sarea_priv->pipeB_y;
-		x2 = x1 + sarea_priv->pipeB_w;
-		y2 = y1 + sarea_priv->pipeB_h;
+		x1 = sarea_priv->planeB_x;
+		y1 = sarea_priv->planeB_y;
+		x2 = x1 + sarea_priv->planeB_w;
+		y2 = y1 + sarea_priv->planeB_h;
 	}
 
 	if (x2 > 0 && y2 > 0) {
@@ -75,13 +95,13 @@ i915_dispatch_vsync_flip(struct drm_device *dev, struct drm_drawable_info *drw,
 		for (i = 0; i < num_rects; i++)
 			if (!(rect[i].x1 >= x2 || rect[i].y1 >= y2 ||
 			      rect[i].x2 <= x1 || rect[i].y2 <= y1)) {
-				pf_pipes = 0x3;
+				pf_planes = 0x3;
 
 				break;
 			}
 	}
 
-	i915_dispatch_flip(dev, pf_pipes, 1);
+	i915_dispatch_flip(dev, pf_planes, 1);
 }
 
 /**
@@ -124,8 +144,9 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 	list_for_each_safe(list, tmp, &dev_priv->vbl_swaps.head) {
 		drm_i915_vbl_swap_t *vbl_swap =
 			list_entry(list, drm_i915_vbl_swap_t, head);
+		int pipe = i915_get_pipe(dev, vbl_swap->plane);
 
-		if ((counter[vbl_swap->pipe] - vbl_swap->sequence) > (1<<23))
+		if ((counter[pipe] - vbl_swap->sequence) > (1<<23))
 			continue;
 
 		list_del(list);
@@ -167,7 +188,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 		DRM_SPINLOCK(&dev_priv->swaps_lock);
 	}
 
-	DRM_SPINUNLOCK(&dev->drw_lock);
+	DRM_SPINUNLOCK(&dev_priv->swaps_lock);
 
 	if (nhits == 0) {
 		return;
@@ -176,10 +197,10 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 	i915_kernel_lost_context(dev);
 
 	upper[0] = upper[1] = 0;
-	slice[0] = max(sarea_priv->pipeA_h / nhits, 1);
-	slice[1] = max(sarea_priv->pipeB_h / nhits, 1);
-	lower[0] = sarea_priv->pipeA_y + slice[0];
-	lower[1] = sarea_priv->pipeB_y + slice[0];
+	slice[0] = max(sarea_priv->planeA_h / nhits, 1);
+	slice[1] = max(sarea_priv->planeB_h / nhits, 1);
+	lower[0] = sarea_priv->planeA_y + slice[0];
+	lower[1] = sarea_priv->planeB_y + slice[0];
 
 	offsets[0] = sarea_priv->front_offset;
 	offsets[1] = sarea_priv->back_offset;
@@ -205,7 +226,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			drm_i915_vbl_swap_t *swap_hit =
 				list_entry(hit, drm_i915_vbl_swap_t, head);
 			struct drm_clip_rect *rect;
-			int num_rects, pipe, front, back;
+			int num_rects, plane, front, back;
 			unsigned short top, bottom;
 
 			drw = drm_get_drawable_info(dev, swap_hit->drw_id);
@@ -213,10 +234,10 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			if (!drw)
 				continue;
 
-			pipe = swap_hit->pipe;
+			plane = swap_hit->plane;
 
 			if (swap_hit->flip) {
-				i915_dispatch_vsync_flip(dev, drw, pipe);
+				i915_dispatch_vsync_flip(dev, drw, plane);
 				continue;
 			}
 
@@ -238,11 +259,11 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			}
 
 			rect = drw->rects;
-			top = upper[pipe];
-			bottom = lower[pipe];
+			top = upper[plane];
+			bottom = lower[plane];
 
 			front = (dev_priv->sarea_priv->pf_current_page >>
-				 (2 * pipe)) & 0x3;
+				 (2 * plane)) & 0x3;
 			back = (front + 1) % num_pages;
 
 			for (num_rects = drw->num_rects; num_rects--; rect++) {
@@ -560,7 +581,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_vblank_swap_t *swap = data;
 	drm_i915_vbl_swap_t *vbl_swap;
-	unsigned int pipe, seqtype, curseq;
+	unsigned int pipe, seqtype, curseq, plane;
 	unsigned long irqflags;
 	struct list_head *list;
 
@@ -581,7 +602,8 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	pipe = (swap->seqtype & _DRM_VBLANK_SECONDARY) ? 1 : 0;
+	plane = (swap->seqtype & _DRM_VBLANK_SECONDARY) ? 1 : 0;
+	pipe = i915_get_pipe(dev, plane);
 
 	seqtype = swap->seqtype & (_DRM_VBLANK_RELATIVE | _DRM_VBLANK_ABSOLUTE);
 
@@ -589,6 +611,21 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		DRM_ERROR("Invalid pipe %d\n", pipe);
 		return -EINVAL;
 	}
+
+	DRM_SPINLOCK_IRQSAVE(&dev->drw_lock, irqflags);
+
+	/* It makes no sense to schedule a swap for a drawable that doesn't have
+	 * valid information at this point. E.g. this could mean that the X
+	 * server is too old to push drawable information to the DRM, in which
+	 * case all such swaps would become ineffective.
+	 */
+	if (!drm_get_drawable_info(dev, swap->drawable)) {
+		DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
+		DRM_DEBUG("Invalid drawable ID %d\n", swap->drawable);
+		return -EINVAL;
+	}
+
+	DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
 
 	curseq = atomic_read(pipe ? &dev->vbl_received2 : &dev->vbl_received);
 
@@ -624,7 +661,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 				return -EINVAL;
 			}
 
-			i915_dispatch_vsync_flip(dev, drw, pipe);
+			i915_dispatch_vsync_flip(dev, drw, plane);
 
 			DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
 
@@ -638,7 +675,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		vbl_swap = list_entry(list, drm_i915_vbl_swap_t, head);
 
 		if (vbl_swap->drw_id == swap->drawable &&
-		    vbl_swap->pipe == pipe &&
+		    vbl_swap->plane == plane &&
 		    vbl_swap->sequence == swap->sequence) {
 			vbl_swap->flip = (swap->seqtype & _DRM_VBLANK_FLIP);
 			DRM_SPINUNLOCK_IRQRESTORE(&dev_priv->swaps_lock, irqflags);
@@ -664,7 +701,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 	DRM_DEBUG("\n");
 
 	vbl_swap->drw_id = swap->drawable;
-	vbl_swap->pipe = pipe;
+	vbl_swap->plane = plane;
 	vbl_swap->sequence = swap->sequence;
 	vbl_swap->flip = (swap->seqtype & _DRM_VBLANK_FLIP);
 

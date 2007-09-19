@@ -1,6 +1,3 @@
-/* drm_drv.h -- Generic driver template -*- linux-c -*-
- * Created: Thu Nov 23 03:10:50 2000 by gareth@valinux.com
- */
 /*-
  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -30,6 +27,12 @@
  *    Gareth Hughes <gareth@valinux.com>
  *
  */
+
+/** @file drm_drv.c
+ * The catch-all file for DRM device support, including module setup/teardown,
+ * open/close, and ioctl dispatch.
+ */
+
 
 #include <sys/limits.h>
 #include "drmP.h"
@@ -818,14 +821,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags, 
     DRM_STRUCTPROC *p)
 {
-#ifdef __FreeBSD__
-	drm_device_t *dev = kdev->si_drv1;
-#elif defined(__NetBSD__)
-	drm_device_t *dev = device_lookup(&drm_cd, minor(kdev));
-#else
-	drm_device_t *dev = device_lookup(&drm_cd,
-            minor(kdev)))->dv_cfdata->cf_driver->cd_devs[minor(kdev)];
-#endif
+	drm_device_t *dev = drm_get_device_from_kdev(kdev);
 	int retcode = 0;
 	drm_ioctl_desc_t *ioctl;
 	int (*func)(drm_device_t *dev, void *data, struct drm_file *file_priv);
@@ -912,15 +908,13 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	    ((ioctl->flags & DRM_MASTER) && !file_priv->master))
 		return EACCES;
 
-	if (is_driver_ioctl)
-		DRM_LOCK();
-	retcode = func(dev, data, file_priv);
 	if (is_driver_ioctl) {
+		DRM_LOCK();
+		/* shared code returns -errno */
+		retcode = -func(dev, data, file_priv);
 		DRM_UNLOCK();
-		/* Driver ioctls in shared code follow the linux convention of
-		 * returning -errno instead of errno.
-		 */
-		retcode = -retcode;
+	} else {
+		retcode = func(dev, data, file_priv);
 	}
 
 	if (retcode != 0)

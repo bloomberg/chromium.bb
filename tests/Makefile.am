@@ -19,6 +19,9 @@ TESTS = auth \
 	openclose \
 	getversion \
 	getclient \
+	getstats \
+	lock \
+	setversion \
 	updatedraw
 
 EXTRA_PROGRAMS = $(TESTS)

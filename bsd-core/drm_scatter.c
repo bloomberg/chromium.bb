@@ -1,5 +1,3 @@
-/* drm_scatter.h -- IOCTLs to manage scatter/gather memory -*- linux-c -*-
- * Created: Mon Dec 18 23:20:54 2000 by gareth@valinux.com */
 /*-
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
@@ -27,6 +25,13 @@
  *   Gareth Hughes <gareth@valinux.com>
  *   Eric Anholt <anholt@FreeBSD.org>
  *
+ */
+
+/** @file drm_scatter.c
+ * Allocation of memory for scatter-gather mappings by the graphics chip.
+ *
+ * The memory allocated here is then made into an aperture in the card
+ * by drm_ati_pcigart_init().
  */
 
 #include "drmP.h"

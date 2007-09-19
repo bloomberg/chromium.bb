@@ -37,20 +37,20 @@ nouveau_notifier_init_channel(struct nouveau_channel *chan)
 	int flags, ret;
 
 	/*TODO: PCI notifier blocks */
-	if (dev_priv->agp_heap &&
-	    dev_priv->gart_info.type != NOUVEAU_GART_SGDMA)
-		flags = NOUVEAU_MEM_AGP | NOUVEAU_MEM_FB_ACCEPTABLE;
-	else if ( dev_priv->pci_heap )
+	if (dev_priv->agp_heap)
+		flags = NOUVEAU_MEM_AGP;
+	else if (dev_priv->pci_heap)
 		flags = NOUVEAU_MEM_PCI;
 	else
 		flags = NOUVEAU_MEM_FB;
-	flags |= NOUVEAU_MEM_MAPPED;
+	flags |= (NOUVEAU_MEM_MAPPED | NOUVEAU_MEM_FB_ACCEPTABLE);
 
-	DRM_DEBUG("Allocating notifier block in %d\n", flags);
 	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,
 						 (struct drm_file *)-2);
 	if (!chan->notifier_block)
 		return -ENOMEM;
+	DRM_DEBUG("Allocated notifier block in 0x%08x\n",
+		  chan->notifier_block->flags);
 
 	ret = nouveau_mem_init_heap(&chan->notifier_heap,
 				    0, chan->notifier_block->size);
@@ -88,6 +88,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 		       int count, uint32_t *b_offset)
 {
 	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_gpuobj *nobj = NULL;
 	struct mem_block *mem;
 	uint32_t offset;
@@ -99,7 +100,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 		return -EINVAL;
 	}
 
-	mem = nouveau_mem_alloc_block(chan->notifier_heap, 32, 0,
+	mem = nouveau_mem_alloc_block(chan->notifier_heap, count*32, 0,
 				      (struct drm_file *)-2);
 	if (!mem) {
 		DRM_ERROR("Channel %d notifier block full\n", chan->id);
@@ -107,18 +108,29 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 	}
 	mem->flags = NOUVEAU_MEM_NOTIFIER;
 
-	offset = chan->notifier_block->start + mem->start;
+	offset = chan->notifier_block->start;
 	if (chan->notifier_block->flags & NOUVEAU_MEM_FB) {
 		target = NV_DMA_TARGET_VIDMEM;
-	} else if (chan->notifier_block->flags & NOUVEAU_MEM_AGP) {
-		target = NV_DMA_TARGET_AGP;
-	} else if (chan->notifier_block->flags & NOUVEAU_MEM_PCI) {
+	} else
+	if (chan->notifier_block->flags & NOUVEAU_MEM_AGP) {
+		if (dev_priv->gart_info.type == NOUVEAU_GART_SGDMA &&
+		    dev_priv->card_type < NV_50) {
+			ret = nouveau_sgdma_get_page(dev, offset, &offset);
+			if (ret)
+				return ret;
+			target = NV_DMA_TARGET_PCI;
+		} else {
+			target = NV_DMA_TARGET_AGP;
+		}
+	} else 
+	if (chan->notifier_block->flags & NOUVEAU_MEM_PCI) {
 		target = NV_DMA_TARGET_PCI_NONLINEAR;
 	} else {
 		DRM_ERROR("Bad DMA target, flags 0x%08x!\n",
 			  chan->notifier_block->flags);
 		return -EINVAL;
 	}
+	offset += mem->start;
 
 	if ((ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
 					  offset, mem->size,

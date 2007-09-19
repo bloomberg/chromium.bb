@@ -9,21 +9,18 @@ nv04_instmem_determine_amount(struct drm_device *dev)
 	int i;
 
 	/* Figure out how much instance memory we need */
-	switch (dev_priv->card_type) {
-	case NV_40:
+	if (dev_priv->card_type >= NV_40) {
 		/* We'll want more instance memory than this on some NV4x cards.
 		 * There's a 16MB aperture to play with that maps onto the end
 		 * of vram.  For now, only reserve a small piece until we know
 		 * more about what each chipset requires.
 		 */
 		dev_priv->ramin_rsvd_vram = (1*1024* 1024);
-		break;
-	default:
+	} else {
 		/*XXX: what *are* the limits on <NV40 cards?, and does RAMIN
 		 *     exist in vram on those cards as well?
 		 */
 		dev_priv->ramin_rsvd_vram = (512*1024);
-		break;
 	}
 	DRM_DEBUG("RAMIN size: %dKiB\n", dev_priv->ramin_rsvd_vram>>10);
 
@@ -73,7 +70,6 @@ nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 		case NV_11:
 		case NV_10:
 		case NV_04:
-		case NV_03:
 		default:
 			dev_priv->ramfc_offset = 0x11400;
 			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *
@@ -97,6 +93,14 @@ int nv04_instmem_init(struct drm_device *dev)
 	 * the space that was reserved for RAMHT/FC/RO.
 	 */
 	offset = dev_priv->ramfc_offset + dev_priv->ramfc_size;
+
+	/* On my NV4E, there's *something* clobbering the 16KiB just after
+	 * where we setup these fixed tables.  No idea what it is just yet,
+	 * so reserve this space on all NV4X cards for now.
+	 */
+	if (dev_priv->card_type >= NV_40)
+		offset += 16*1024;
+
 	ret = nouveau_mem_init_heap(&dev_priv->ramin_heap,
 				    offset, dev_priv->ramin_rsvd_vram - offset);
 	if (ret) {

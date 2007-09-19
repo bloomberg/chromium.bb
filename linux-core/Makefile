@@ -58,7 +58,7 @@ endif
 
 # Modules for all architectures
 MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o \
-               mach64.o nv.o nouveau.o
+               mach64.o nv.o nouveau.o xgi.o
 
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
@@ -91,6 +91,7 @@ MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
 NVHEADERS =     nv_drv.h $(DRMHEADERS)
 FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
 NOUVEAUHEADERS = nouveau_drv.h nouveau_drm.h nouveau_reg.h $(DRMHEADERS)
+XGIHEADERS = xgi_cmdlist.h xgi_drv.h xgi_misc.h xgi_regs.h $(DRMHEADERS)
 
 PROGS = dristat drmstat
 
@@ -285,6 +286,7 @@ CONFIG_DRM_VIA := n
 CONFIG_DRM_MACH64 := n
 CONFIG_DRM_NV := n
 CONFIG_DRM_NOUVEAU := n
+CONFIG_DRM_XGI := n
 
 # Enable module builds for the modules requested/supported.
 
@@ -321,6 +323,9 @@ endif
 ifneq (,$(findstring nouveau,$(DRM_MODULES)))
 CONFIG_DRM_NOUVEAU := m
 endif
+ifneq (,$(findstring xgi,$(DRM_MODULES)))
+CONFIG_DRM_XGI := m
+endif
 
 # These require AGP support
 
@@ -348,6 +353,7 @@ $(via-objs):	$(VIAHEADERS)
 $(mach64-objs): $(MACH64HEADERS)
 $(nv-objs):     $(NVHEADERS)
 $(nouveau-objs): $(NOUVEAUHEADERS)
+$(xgi-objs):    $(XGIHEADERS)
 
 endif
 

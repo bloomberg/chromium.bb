@@ -27,13 +27,68 @@
 #include "nouveau_drm.h"
 #include "nouveau_drv.h"
 
+#define NV10_FIFO_NUMBER 32
 
-static void nv10_praph_pipe(struct drm_device *dev) {
+struct pipe_state {
+	uint32_t pipe_0x0000[0x040/4];
+	uint32_t pipe_0x0040[0x010/4];
+	uint32_t pipe_0x0200[0x0c0/4];
+	uint32_t pipe_0x4400[0x080/4];
+	uint32_t pipe_0x6400[0x3b0/4];
+	uint32_t pipe_0x6800[0x2f0/4];
+	uint32_t pipe_0x6c00[0x030/4];
+	uint32_t pipe_0x7000[0x130/4];
+	uint32_t pipe_0x7400[0x0c0/4];
+	uint32_t pipe_0x7800[0x0c0/4];
+};
+
+/* TODO dynamic allocation ??? */
+static struct pipe_state pipe_state[NV10_FIFO_NUMBER];
+
+static void nv10_graph_save_pipe(struct nouveau_channel *chan) {
+	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct pipe_state *fifo_pipe_state = pipe_state + chan->id;
 	int i;
+#define PIPE_SAVE(addr) \
+	do { \
+		NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, addr); \
+		for (i=0; i < sizeof(fifo_pipe_state->pipe_##addr)/sizeof(fifo_pipe_state->pipe_##addr[0]); i++) \
+			fifo_pipe_state->pipe_##addr[i] = NV_READ(NV10_PGRAPH_PIPE_DATA); \
+	} while (0)
+
+	PIPE_SAVE(0x4400);
+	PIPE_SAVE(0x0200);
+	PIPE_SAVE(0x6400);
+	PIPE_SAVE(0x6800);
+	PIPE_SAVE(0x6c00);
+	PIPE_SAVE(0x7000);
+	PIPE_SAVE(0x7400);
+	PIPE_SAVE(0x7800);
+	PIPE_SAVE(0x0040);
+	PIPE_SAVE(0x0000);
+
+#undef PIPE_SAVE
+}
+
+static void nv10_graph_load_pipe(struct nouveau_channel *chan) {
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct pipe_state *fifo_pipe_state = pipe_state + chan->id;
+	int i;
+	uint32_t xfmode0, xfmode1;
+#define PIPE_RESTORE(addr) \
+	do { \
+		NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, addr); \
+		for (i=0; i < sizeof(fifo_pipe_state->pipe_##addr)/sizeof(fifo_pipe_state->pipe_##addr[0]); i++) \
+			NV_WRITE(NV10_PGRAPH_PIPE_DATA, fifo_pipe_state->pipe_##addr[i]); \
+	} while (0)
+
 
 	nouveau_wait_for_idle(dev);
 	/* XXX check haiku comments */
+	xfmode0 = NV_READ(NV10_PGRAPH_XFMODE0);
+	xfmode1 = NV_READ(NV10_PGRAPH_XFMODE1);
 	NV_WRITE(NV10_PGRAPH_XFMODE0, 0x10000000);
 	NV_WRITE(NV10_PGRAPH_XFMODE1, 0x00000000);
 	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x000064c0);
@@ -43,7 +98,6 @@ static void nv10_praph_pipe(struct drm_device *dev) {
 		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
 
 	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00006ab0);
-	
 	for (i = 0; i < 3; i++)
 		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
 
@@ -54,138 +108,179 @@ static void nv10_praph_pipe(struct drm_device *dev) {
 	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00000040);
 	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000008);
 
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00000200);
-	for (i = 0; i < 48; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
 
+	PIPE_RESTORE(0x0200);
 	nouveau_wait_for_idle(dev);
 
-	NV_WRITE(NV10_PGRAPH_XFMODE0, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_XFMODE1, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00006400);
-	for (i = 0; i < 211; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x40000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x40000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x40000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x40000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00006800);
-	for (i = 0; i < 162; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x3f800000);
-	for (i = 0; i < 25; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00006c00);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0xbf800000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00007000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-	NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x7149f2ca);
-	for (i = 0; i < 35; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
-
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00007400);
-	for (i = 0; i < 48; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00007800);
-	for (i = 0; i < 48; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00004400);
-	for (i = 0; i < 32; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00000000);
-	for (i = 0; i < 16; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
-	NV_WRITE(NV10_PGRAPH_PIPE_ADDRESS, 0x00000040);
-	for (i = 0; i < 4; i++)
-		NV_WRITE(NV10_PGRAPH_PIPE_DATA, 0x00000000);
-
+	/* restore XFMODE */
+	NV_WRITE(NV10_PGRAPH_XFMODE0, xfmode0);
+	NV_WRITE(NV10_PGRAPH_XFMODE1, xfmode1);
+	PIPE_RESTORE(0x6400);
+	PIPE_RESTORE(0x6800);
+	PIPE_RESTORE(0x6c00);
+	PIPE_RESTORE(0x7000);
+	PIPE_RESTORE(0x7400);
+	PIPE_RESTORE(0x7800);
+	PIPE_RESTORE(0x4400);
+	PIPE_RESTORE(0x0000);
+	PIPE_RESTORE(0x0040);
 	nouveau_wait_for_idle(dev);
+
+#undef PIPE_RESTORE
 }
 
-/* TODO replace address with name
-   use loops */
-static int nv10_graph_ctx_regs [] = {
-NV03_PGRAPH_XY_LOGIC_MISC0,
+static void nv10_graph_create_pipe(struct nouveau_channel *chan) {
+	struct pipe_state *fifo_pipe_state = pipe_state + chan->id;
+	uint32_t *fifo_pipe_state_addr;
+	int i;
+#define PIPE_INIT(addr) \
+	do { \
+		fifo_pipe_state_addr = fifo_pipe_state->pipe_##addr; \
+	} while (0)
+#define PIPE_INIT_END(addr) \
+	do { \
+		if (fifo_pipe_state_addr != \
+				sizeof(fifo_pipe_state->pipe_##addr)/sizeof(fifo_pipe_state->pipe_##addr[0]) + fifo_pipe_state->pipe_##addr) \
+			DRM_ERROR("incomplete pipe init for 0x%x :  %p/%p\n", addr, fifo_pipe_state_addr, \
+					sizeof(fifo_pipe_state->pipe_##addr)/sizeof(fifo_pipe_state->pipe_##addr[0]) + fifo_pipe_state->pipe_##addr); \
+	} while (0)
+#define NV_WRITE_PIPE_INIT(value) *(fifo_pipe_state_addr++) = value
 
+	PIPE_INIT(0x0200);
+	for (i = 0; i < 48; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x0200);
+
+	PIPE_INIT(0x6400);
+	for (i = 0; i < 211; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	NV_WRITE_PIPE_INIT(0x40000000);
+	NV_WRITE_PIPE_INIT(0x40000000);
+	NV_WRITE_PIPE_INIT(0x40000000);
+	NV_WRITE_PIPE_INIT(0x40000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x3f000000);
+	NV_WRITE_PIPE_INIT(0x3f000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	PIPE_INIT_END(0x6400);
+
+	PIPE_INIT(0x6800);
+	for (i = 0; i < 162; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x3f800000);
+	for (i = 0; i < 25; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x6800);
+
+	PIPE_INIT(0x6c00);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0xbf800000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x6c00);
+
+	PIPE_INIT(0x7000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x00000000);
+	NV_WRITE_PIPE_INIT(0x7149f2ca);
+	for (i = 0; i < 35; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x7000);
+
+	PIPE_INIT(0x7400);
+	for (i = 0; i < 48; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x7400);
+
+	PIPE_INIT(0x7800);
+	for (i = 0; i < 48; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x7800);
+
+	PIPE_INIT(0x4400);
+	for (i = 0; i < 32; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x4400);
+
+	PIPE_INIT(0x0000);
+	for (i = 0; i < 16; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x0000);
+
+	PIPE_INIT(0x0040);
+	for (i = 0; i < 4; i++)
+		NV_WRITE_PIPE_INIT(0x00000000);
+	PIPE_INIT_END(0x0040);
+
+#undef PIPE_INIT
+#undef PIPE_INIT_END
+#undef NV_WRITE_PIPE_INIT
+}
+
+static int nv10_graph_ctx_regs [] = {
 NV10_PGRAPH_CTX_SWITCH1,
 NV10_PGRAPH_CTX_SWITCH2,
 NV10_PGRAPH_CTX_SWITCH3,
@@ -455,6 +550,7 @@ NV03_PGRAPH_ABS_UCLIPA_YMIN,
 NV03_PGRAPH_ABS_UCLIPA_YMAX,
 NV03_PGRAPH_ABS_ICLIP_XMAX,
 NV03_PGRAPH_ABS_ICLIP_YMAX,
+NV03_PGRAPH_XY_LOGIC_MISC0,
 NV03_PGRAPH_XY_LOGIC_MISC1,
 NV03_PGRAPH_XY_LOGIC_MISC2,
 NV03_PGRAPH_XY_LOGIC_MISC3,
@@ -462,18 +558,18 @@ NV03_PGRAPH_CLIPX_0,
 NV03_PGRAPH_CLIPX_1,
 NV03_PGRAPH_CLIPY_0,
 NV03_PGRAPH_CLIPY_1,
-0x00400e40,
-0x00400e44,
-0x00400e48,
-0x00400e4c,
-0x00400e50,
-0x00400e54,
-0x00400e58,
-0x00400e5c,
-0x00400e60,
-0x00400e64,
-0x00400e68,
-0x00400e6c,
+NV10_PGRAPH_COMBINER0_IN_ALPHA,
+NV10_PGRAPH_COMBINER1_IN_ALPHA,
+NV10_PGRAPH_COMBINER0_IN_RGB,
+NV10_PGRAPH_COMBINER1_IN_RGB,
+NV10_PGRAPH_COMBINER_COLOR0,
+NV10_PGRAPH_COMBINER_COLOR1,
+NV10_PGRAPH_COMBINER0_OUT_ALPHA,
+NV10_PGRAPH_COMBINER1_OUT_ALPHA,
+NV10_PGRAPH_COMBINER0_OUT_RGB,
+NV10_PGRAPH_COMBINER1_OUT_RGB,
+NV10_PGRAPH_COMBINER_FINAL0,
+NV10_PGRAPH_COMBINER_FINAL1,
 0x00400e00,
 0x00400e04,
 0x00400e08,
@@ -557,6 +653,8 @@ int nv10_graph_load_context(struct nouveau_channel *chan)
 			NV_WRITE(nv17_graph_ctx_regs[j], chan->pgraph_ctx[i]);
 	}
 
+	nv10_graph_load_pipe(chan);
+
 	return 0;
 }
 
@@ -573,49 +671,66 @@ int nv10_graph_save_context(struct nouveau_channel *chan)
 			chan->pgraph_ctx[i] = NV_READ(nv17_graph_ctx_regs[j]);
 	}
 
+	nv10_graph_save_pipe(chan);
+
 	return 0;
 }
 
 void nouveau_nv10_context_switch(struct drm_device *dev)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv;
 	struct nouveau_channel *next, *last;
 	int chid;
 
-	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
+	if (!dev) {
+		DRM_DEBUG("Invalid drm_device\n");
+		return;
+	}
+	dev_priv = dev->dev_private;
+	if (!dev_priv) {
+		DRM_DEBUG("Invalid drm_nouveau_private\n");
+		return;
+	}
+	if (!dev_priv->fifos) {
+		DRM_DEBUG("Invalid drm_nouveau_private->fifos\n");
+		return;
+	}
+
+	chid = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 20)&(nouveau_fifo_number(dev)-1);
 	next = dev_priv->fifos[chid];
+
+	if (!next) {
+		DRM_DEBUG("Invalid next channel\n");
+		return;
+	}
 
 	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 	last = dev_priv->fifos[chid];
 
-	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",
-		 last->id, next->id);
+	if (!last) {
+		DRM_DEBUG("WARNING: Invalid last channel, switch to %x\n",
+		          next->id);
+	} else {
+		DRM_DEBUG("NV: PGRAPH context switch interrupt channel %x -> %x\n",
+		         last->id, next->id);
+	}
 
 	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
-#if 0
-	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000000);
-	NV_WRITE(NV_PFIFO_CACHES, 0x00000000);
-#endif
-	nv10_graph_save_context(last);
-	
+	if (last) {
+		nouveau_wait_for_idle(dev);
+		nv10_graph_save_context(last);
+	}	
+
 	nouveau_wait_for_idle(dev);
 
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000000);
-	NV_WRITE(NV10_PGRAPH_CTX_USER, (NV_READ(NV10_PGRAPH_CTX_USER) & 0xffffff) | (0x1f << 24));
 
 	nouveau_wait_for_idle(dev);
 
 	nv10_graph_load_context(next);
-	
+
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
-	NV_WRITE(NV10_PGRAPH_CTX_USER, next->id << 24);
 	NV_WRITE(NV10_PGRAPH_FFINTFC_ST2, NV_READ(NV10_PGRAPH_FFINTFC_ST2)&0xCFFFFFFF);
-#if 0
-	NV_WRITE(NV_PFIFO_CACH1_PUL0, 0x00000001);
-	NV_WRITE(NV_PFIFO_CACH1_PUL1, 0x00000001);
-	NV_WRITE(NV_PFIFO_CACHES, 0x00000001);
-#endif
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
@@ -628,12 +743,14 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 int nv10_graph_create_context(struct nouveau_channel *chan) {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t tmp, vramsz;
 
 	DRM_DEBUG("nv10_graph_context_create %d\n", chan->id);
 
 	memset(chan->pgraph_ctx, 0, sizeof(chan->pgraph_ctx));
 
+	/* mmio trace suggest that should be done in ddx with methods/objects */
+#if 0
+	uint32_t tmp, vramsz;
 	/* per channel init from ddx */
 	tmp = NV_READ(NV10_PGRAPH_SURFACE) & 0x0007ff00;
 	/*XXX the original ddx code, does this in 2 steps :
@@ -658,27 +775,49 @@ int nv10_graph_create_context(struct nouveau_channel *chan) {
 	NV_WRITE_CTX(NV03_PGRAPH_ABS_UCLIP_YMIN, 0);
 	NV_WRITE_CTX(NV03_PGRAPH_ABS_UCLIP_XMAX, 0x7fff);
 	NV_WRITE_CTX(NV03_PGRAPH_ABS_UCLIP_YMAX, 0x7fff);
+#endif
 
+	NV_WRITE_CTX(0x00400e88, 0x08000000);
+	NV_WRITE_CTX(0x00400e9c, 0x4b7fffff);
 	NV_WRITE_CTX(NV03_PGRAPH_XY_LOGIC_MISC0, 0x0001ffff);
-	/* is it really needed ??? */
+	NV_WRITE_CTX(0x00400e10, 0x00001000);
+	NV_WRITE_CTX(0x00400e14, 0x00001000);
+	NV_WRITE_CTX(0x00400e30, 0x00080008);
+	NV_WRITE_CTX(0x00400e34, 0x00080008);
 	if (dev_priv->chipset>=0x17) {
+		/* is it really needed ??? */
 		NV_WRITE_CTX(NV10_PGRAPH_DEBUG_4, NV_READ(NV10_PGRAPH_DEBUG_4));
 		NV_WRITE_CTX(0x004006b0, NV_READ(0x004006b0));
+		NV_WRITE_CTX(0x00400eac, 0x0fff0000);
+		NV_WRITE_CTX(0x00400eb0, 0x0fff0000);
+		NV_WRITE_CTX(0x00400ec0, 0x00000080);
+		NV_WRITE_CTX(0x00400ed0, 0x00000080);
 	}
+	NV_WRITE_CTX(NV10_PGRAPH_CTX_USER, chan->id << 24);
 
-	/* for the first channel init the regs */
-	if (dev_priv->fifo_alloc_count == 0)
-		nv10_graph_load_context(chan);
-
-
-	//XXX should be saved/restored for each fifo
-	//we supposed here we have X fifo and only one 3D fifo.
-	nv10_praph_pipe(dev);
+	nv10_graph_create_pipe(chan);
 	return 0;
 }
 
 void nv10_graph_destroy_context(struct nouveau_channel *chan)
 {
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int chid;
+	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
+
+	/* does this avoid a potential context switch while we are written graph
+	 * reg, or we should mask graph interrupt ???
+	 */
+	NV_WRITE(NV04_PGRAPH_FIFO,0x0);
+	if (chid == chan->id) {
+		DRM_INFO("cleanning a channel with graph in current context\n");
+		nouveau_wait_for_idle(dev);
+		DRM_INFO("reseting current graph context\n");
+		nv10_graph_create_context(chan);
+		nv10_graph_load_context(chan);
+	}
+	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
 
 int nv10_graph_init(struct drm_device *dev) {
@@ -696,10 +835,17 @@ int nv10_graph_init(struct drm_device *dev) {
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);
 	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x00118700);
-	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x24E00810);
-	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x55DE0030 |
+	//NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x24E00810); /* 0x25f92ad9 */
+	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x25f92ad9);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x55DE0830 |
 				      (1<<29) |
 				      (1<<31));
+	if (dev_priv->chipset>=0x17) {
+		NV_WRITE(NV10_PGRAPH_DEBUG_4, 0x1f000000);
+		NV_WRITE(0x004006b0, 0x40000020);
+	}
+	else
+		NV_WRITE(NV10_PGRAPH_DEBUG_4, 0x00000000);
 
 	/* copy tile info from PFB */
 	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
@@ -709,6 +855,10 @@ int nv10_graph_init(struct drm_device *dev) {
 		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
 	}
 
+	NV_WRITE(NV10_PGRAPH_CTX_SWITCH1, 0x00000000);
+	NV_WRITE(NV10_PGRAPH_CTX_SWITCH2, 0x00000000);
+	NV_WRITE(NV10_PGRAPH_CTX_SWITCH3, 0x00000000);
+	NV_WRITE(NV10_PGRAPH_CTX_SWITCH4, 0x00000000);
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);

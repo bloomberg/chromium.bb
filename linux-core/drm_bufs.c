@@ -231,7 +231,7 @@ static int drm_addmap_core(struct drm_device *dev, unsigned int offset,
 		 */
 		if (map->offset < dev->agp->base ||
 		    map->offset > dev->agp->base +
-		    dev->agp->agp_info.aper_size * 1024 * 1024) {
+		    dev->agp->agp_info.aper_size * 1024 * 1024 - 1) {
 			map->offset += dev->agp->base;
 		}
 		map->mtrr = dev->agp->agp_mtrr;	/* for getmap */

@@ -108,7 +108,7 @@ static void server()
 
 	ret = ioctl(drmfd, DRM_IOCTL_AUTH_MAGIC, &auth);
 	if (ret == -1)
-		err(1, "Authenticating bad magic succeeded\n");
+		err(1, "Failure to authenticate client magic\n");
 
 	wait_event(1, CLIENT_DONE);
 }
