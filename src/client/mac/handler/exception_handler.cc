@@ -84,7 +84,7 @@ struct ExceptionReplyMessage {
 // Only catch these three exceptions.  The other ones are nebulously defined
 // and may result in treating a non-fatal exception as fatal.
 exception_mask_t s_exception_mask = EXC_MASK_BAD_ACCESS | 
-EXC_MASK_BAD_INSTRUCTION | EXC_MASK_ARITHMETIC;
+EXC_MASK_BAD_INSTRUCTION | EXC_MASK_ARITHMETIC | EXC_MASK_BREAKPOINT;
 
 extern "C"
 {
