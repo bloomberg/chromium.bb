@@ -41,29 +41,67 @@ namespace google_breakpad {
 //==============================================================================
 // Returns the size of the memory region containing |address| and the
 // number of bytes from |address| to the end of the region.
+// We potentially, will extend the size of the original
+// region by the size of the following region if it's contiguous with the
+// first in order to handle cases when we're reading strings and they
+// straddle two vm regions.
+//
 static vm_size_t GetMemoryRegionSize(task_port_t target_task,
                                      const void* address,
                                      vm_size_t *size_to_end) {
-  vm_address_t stack_region_base = (vm_address_t)address;
-  vm_size_t stack_region_size;
+  vm_address_t region_base = (vm_address_t)address;
+  vm_size_t region_size;
   natural_t nesting_level = 0;
   vm_region_submap_info submap_info;
   mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT;
-
+  
+  // Get information about the vm region containing |address|
   kern_return_t result = 
-    vm_region_recurse(target_task, &stack_region_base, &stack_region_size,
+    vm_region_recurse(target_task,
+                      &region_base,
+                      &region_size,
                       &nesting_level, 
                       reinterpret_cast<vm_region_recurse_info_t>(&submap_info),
                       &info_count);
-
+  
   if (result == KERN_SUCCESS) {
-    *size_to_end = stack_region_base + stack_region_size - (vm_address_t)address;
+    // Get distance from |address| to the end of this region
+    *size_to_end = region_base + region_size -(vm_address_t)address;
+
+    // If we want to handle strings as long as 4096 characters we may need
+    // to check if there's a vm region immediately following the first one.
+    // If so, we need to extend |*size_to_end| to go all the way to the end
+    // of the second region.
+    if (*size_to_end < 4096) {
+      // Second region starts where the first one ends
+      vm_address_t region_base2 =
+        (vm_address_t)(region_base + region_size);
+      vm_size_t region_size2;
+
+      // Get information about the following vm region
+      result = 
+        vm_region_recurse(
+                      target_task,
+                      &region_base2,
+                      &region_size2,
+                      &nesting_level, 
+                      reinterpret_cast<vm_region_recurse_info_t>(&submap_info),
+                      &info_count);
+      
+      // Extend region_size to go all the way to the end of the 2nd region
+      if (result == KERN_SUCCESS
+          && region_base2 == region_base + region_size) {
+        region_size += region_size2;
+      }
+    }
+
+    *size_to_end = region_base + region_size -(vm_address_t)address;
   } else {
-    stack_region_size = 0;
+    region_size = 0;
     *size_to_end = 0;
   }
   
-  return stack_region_size;   
+  return region_size;   
 }
 
 #define kMaxStringLength 8192
@@ -80,7 +118,7 @@ static void* ReadTaskString(task_port_t target_task,
   // (or as many bytes as we can until we reach the end of the vm region).  
   vm_size_t size_to_end;
   GetMemoryRegionSize(target_task, address, &size_to_end);
-
+  
   if (size_to_end > 0) {
     vm_size_t size_to_read =
       size_to_end > kMaxStringLength ? kMaxStringLength : size_to_end;
@@ -118,7 +156,7 @@ void* ReadTaskMemory(task_port_t target_task,
     }
     vm_deallocate(mach_task_self(), (uintptr_t)local_start, local_length);
   }
-
+  
   return result;
 }
 
@@ -186,7 +224,7 @@ DynamicImages::DynamicImages(mach_port_t task)
 void DynamicImages::ReadImageInfoForTask() {
   struct nlist l[8];
   memset(l, 0, sizeof(l) );
-  
+
   // First we lookup the address of the "_dyld_all_image_infos" struct
   // which lives in "dyld".  This structure contains information about all
   // of the loaded dynamic images.
@@ -218,7 +256,7 @@ void DynamicImages::ReadImageInfoForTask() {
                         count*sizeof(dyld_image_info)));
 
       image_list_.reserve(count);
-      
+
       for (int i = 0; i < count; ++i) {
         dyld_image_info &info = infoArray[i];
 
@@ -237,7 +275,7 @@ void DynamicImages::ReadImageInfoForTask() {
 
         header = reinterpret_cast<mach_header*>
           (ReadTaskMemory(task_, info.load_address_, header_size));
-        
+
         // Read the file name from the task's memory space.
         char *file_path = NULL;
         if (info.file_path_) {
@@ -273,7 +311,7 @@ void DynamicImages::ReadImageInfoForTask() {
       // sorts based on loading address
       sort(image_list_.begin(), image_list_.end() );
     }
-  }
+  }  
 }
 
 //==============================================================================
