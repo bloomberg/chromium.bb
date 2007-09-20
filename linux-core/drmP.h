@@ -1130,7 +1130,7 @@ extern int drm_put_head(struct drm_head * head);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_cards_limit;
 extern struct drm_head **drm_heads;
-extern struct drm_sysfs_class *drm_class;
+extern struct class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
 extern drm_local_map_t *drm_getsarea(struct drm_device *dev);
@@ -1163,10 +1163,9 @@ extern void drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah);
 
 			       /* sysfs support (drm_sysfs.c) */
 struct drm_sysfs_class;
-extern struct drm_sysfs_class *drm_sysfs_create(struct module *owner,
-						char *name);
-extern void drm_sysfs_destroy(struct drm_sysfs_class *cs);
-extern struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
+extern struct class *drm_sysfs_create(struct module *owner, char *name);
+extern void drm_sysfs_destroy(struct class *cs);
+extern struct class_device *drm_sysfs_device_add(struct class *cs,
 						 struct drm_head * head);
 extern void drm_sysfs_device_remove(struct class_device *class_dev);
 

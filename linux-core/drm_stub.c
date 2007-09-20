@@ -51,7 +51,7 @@ module_param_named(cards_limit, drm_cards_limit, int, 0444);
 module_param_named(debug, drm_debug, int, 0600);
 
 struct drm_head **drm_heads;
-struct drm_sysfs_class *drm_class;
+struct class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
