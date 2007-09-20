@@ -179,7 +179,7 @@ bool HTTPUpload::ReadResponse(HINTERNET request, wstring *response) {
   bool has_content_length_header = false;
   wchar_t content_length[32];
   DWORD content_length_size = sizeof(content_length);
-  DWORD claimed_size;
+  DWORD claimed_size = 0;
   string response_body;
 
   if (HttpQueryInfo(request, HTTP_QUERY_CONTENT_LENGTH,
