@@ -37,7 +37,7 @@ nouveau_notifier_init_channel(struct nouveau_channel *chan)
 	int flags, ret;
 
 	/*TODO: PCI notifier blocks */
-#if defined(__powerpc__)
+#ifndef __powerpc__
 	if (dev_priv->agp_heap)
 		flags = NOUVEAU_MEM_AGP;
 	else
