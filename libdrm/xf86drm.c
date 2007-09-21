@@ -2874,6 +2874,7 @@ int drmBOUnmap(int fd, drmBO *buf)
     if (ioctl(fd, DRM_IOCTL_BO_UNMAP, &arg)) {
 	return -errno;
     }
+    buf->mapCount--;
     return 0;
 }
 
