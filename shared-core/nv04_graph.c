@@ -352,13 +352,38 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 	struct nouveau_channel *next, *last;
 	int chid;
 
+	if (!dev) {
+		DRM_DEBUG("Invalid drm_device\n");
+		return;
+	}
+	dev_priv = dev->dev_private;
+	if (!dev_priv) {
+		DRM_DEBUG("Invalid drm_nouveau_private\n");
+		return;
+	}
+	if (!dev_priv->fifos) {
+		DRM_DEBUG("Invalid drm_nouveau_private->fifos\n");
+		return;
+	}
+
 	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
 	next = dev_priv->fifos[chid];
+
+	if (!next) {
+		DRM_DEBUG("Invalid next channel\n");
+		return;
+	}
 
 	chid = (NV_READ(NV04_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 	last = dev_priv->fifos[chid];
 
-	DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",last->id, next->id);
+	if (!last) {
+		DRM_DEBUG("WARNING: Invalid last channel, switch to %x\n",
+		          next->id);
+	} else {
+		DRM_INFO("NV: PGRAPH context switch interrupt channel %x -> %x\n",
+		         last->id, next->id);
+	}
 
 /*	NV_WRITE(NV03_PFIFO_CACHES, 0x0);
 	NV_WRITE(NV04_PFIFO_CACHE0_PULL0, 0x0);
