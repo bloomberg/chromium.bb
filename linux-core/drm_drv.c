@@ -147,6 +147,7 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_OP, drm_bo_op_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_INFO, drm_bo_info_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_WAIT_IDLE, drm_bo_wait_idle_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_IOCTL_BO_SET_PIN, drm_bo_set_pin_ioctl, DRM_AUTH | DRM_MASTER | DRM_ROOT_ONLY),
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
@@ -653,7 +654,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 err_i1:
 	atomic_dec(&dev->ioctl_count);
 	if (retcode)
-		DRM_DEBUG("ret = %x\n", retcode);
+		DRM_DEBUG("ret = %d\n", retcode);
 	return retcode;
 }
 EXPORT_SYMBOL(drm_unlocked_ioctl);

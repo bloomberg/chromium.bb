@@ -2874,6 +2874,7 @@ int drmBOUnmap(int fd, drmBO *buf)
     if (ioctl(fd, DRM_IOCTL_BO_UNMAP, &arg)) {
 	return -errno;
     }
+    buf->mapCount--;
     return 0;
 }
 
@@ -2975,7 +2976,30 @@ int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
     }
     return 0;
 }
-	
+
+int drmBOSetPin(int fd, drmBO *buf, int pin)
+{
+    struct drm_bo_set_pin_arg arg;
+    struct drm_bo_set_pin_req *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
+    int ret = 0;
+
+    memset(&arg, 0, sizeof(arg));
+    req->handle = buf->handle;
+    req->pin = pin;
+
+    do {
+	ret = ioctl(fd, DRM_IOCTL_BO_SET_PIN, &arg);
+    } while (ret && errno == EAGAIN);
+
+    if (ret)
+	return -errno;
+
+    drmBOCopyReply(rep, buf);
+
+    return 0;
+}
+
 int drmBOBusy(int fd, drmBO *buf, int *busy)
 {
     if (!(buf->flags & DRM_BO_FLAG_SHAREABLE) &&

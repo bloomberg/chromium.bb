@@ -80,8 +80,7 @@ void drm_bo_add_to_lru(struct drm_buffer_object * bo)
 
 	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
 
-	if (!(bo->mem.mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))
-	    || bo->mem.mem_type != bo->pinned_mem_type) {
+	if (!bo->pinned || bo->mem.mem_type != bo->pinned_mem_type) {
 		man = &bo->dev->bm.man[bo->mem.mem_type];
 		list_add_tail(&bo->lru, &man->lru);
 	} else {
@@ -707,6 +706,10 @@ static int drm_bo_evict(struct drm_buffer_object * bo, unsigned mem_type,
 	return ret;
 }
 
+/**
+ * Repeatedly evict memory from the LRU for @mem_type until we create enough
+ * space, or we've evicted everything and there isn't enough space.
+ */
 static int drm_bo_mem_force_space(struct drm_device * dev,
 				  struct drm_bo_mem_reg * mem,
 				  uint32_t mem_type, int no_wait)
@@ -734,7 +737,7 @@ static int drm_bo_mem_force_space(struct drm_device * dev,
 		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&entry->mutex);
-		BUG_ON(entry->mem.flags & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT));
+		BUG_ON(entry->pinned);
 
 		ret = drm_bo_evict(entry, mem_type, no_wait);
 		mutex_unlock(&entry->mutex);
@@ -793,6 +796,14 @@ static int drm_bo_mt_compatible(struct drm_mem_type_manager * man,
 	return 1;
 }
 
+/**
+ * Creates space for memory region @mem according to its type.
+ *
+ * This function first searches for free space in compatible memory types in
+ * the priority order defined by the driver.  If free space isn't found, then
+ * drm_bo_mem_force_space is attempted in priority order to evict and find
+ * space.
+ */
 int drm_bo_mem_space(struct drm_buffer_object * bo,
 		     struct drm_bo_mem_reg * mem, int no_wait)
 {
@@ -893,18 +904,6 @@ static int drm_bo_new_mask(struct drm_buffer_object * bo,
 	if (bo->type == drm_bo_type_user) {
 		DRM_ERROR("User buffers are not supported yet\n");
 		return -EINVAL;
-	}
-	if (bo->type == drm_bo_type_fake &&
-	    !(new_mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))) {
-		DRM_ERROR("Fake buffers must be pinned.\n");
-		return -EINVAL;
-	}
-
-	if ((new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
-		DRM_ERROR
-		    ("DRM_BO_FLAG_NO_EVICT is only available to priviliged "
-		     "processes\n");
-		return -EPERM;
 	}
 
 	new_props = new_mask & (DRM_BO_FLAG_EXE | DRM_BO_FLAG_WRITE |
@@ -1383,6 +1382,12 @@ static int drm_buffer_object_validate(struct drm_buffer_object * bo,
 		return ret;
 	}
 
+	if (bo->pinned && bo->pinned_mem_type != bo->mem.mem_type) {
+		DRM_ERROR("Attempt to validate pinned buffer into different memory "
+		    "type\n");
+		return -EINVAL;
+	}
+
 	/*
 	 * We're switching command submission mechanism,
 	 * or cannot simply rely on the hardware serializing for us.
@@ -1424,37 +1429,6 @@ static int drm_buffer_object_validate(struct drm_buffer_object * bo,
 				DRM_ERROR("Failed moving buffer.\n");
 			return ret;
 		}
-	}
-
-	/*
-	 * Pinned buffers.
-	 */
-
-	if (bo->mem.mask & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) {
-		bo->pinned_mem_type = bo->mem.mem_type;
-		mutex_lock(&dev->struct_mutex);
-		list_del_init(&bo->pinned_lru);
-		drm_bo_add_to_pinned_lru(bo);
-
-		if (bo->pinned_node != bo->mem.mm_node) {
-			if (bo->pinned_node != NULL)
-				drm_mm_put_block(bo->pinned_node);
-			bo->pinned_node = bo->mem.mm_node;
-		}
-
-		mutex_unlock(&dev->struct_mutex);
-
-	} else if (bo->pinned_node != NULL) {
-
-		mutex_lock(&dev->struct_mutex);
-
-		if (bo->pinned_node != bo->mem.mm_node)
-			drm_mm_put_block(bo->pinned_node);
-
-		list_del_init(&bo->pinned_lru);
-		bo->pinned_node = NULL;
-		mutex_unlock(&dev->struct_mutex);
-
 	}
 
 	/*
@@ -1534,6 +1508,10 @@ static int drm_bo_handle_validate(struct drm_file *file_priv,
 	return ret;
 }
 
+/**
+ * Fills out the generic buffer object ioctl reply with the information for
+ * the BO with id of handle.
+ */
 static int drm_bo_handle_info(struct drm_file *file_priv, uint32_t handle,
 			      struct drm_bo_info_rep *rep)
 {
@@ -1600,6 +1578,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 {
 	struct drm_buffer_manager *bm = &dev->bm;
 	struct drm_buffer_object *bo;
+	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret = 0;
 	unsigned long num_pages;
 
@@ -1659,9 +1638,27 @@ int drm_buffer_object_create(struct drm_device *dev,
 		if (ret)
 			goto out_err;
 	}
-	ret = drm_buffer_object_validate(bo, 0, 0, hint & DRM_BO_HINT_DONT_BLOCK);
+
+	bo->fence_class = 0;
+	ret = driver->fence_type(bo, &bo->fence_type);
+	if (ret) {
+		DRM_ERROR("Driver did not support given buffer permissions\n");
+		goto out_err;
+	}
+
+	if (bo->type == drm_bo_type_fake) {
+		ret = drm_bo_check_fake(dev, &bo->mem);
+		if (ret)
+			goto out_err;
+	}
+
+	ret = drm_bo_add_ttm(bo);
 	if (ret)
 		goto out_err;
+
+	mutex_lock(&dev->struct_mutex);
+	drm_bo_add_to_lru(bo);
+	mutex_unlock(&dev->struct_mutex);
 
 	mutex_unlock(&bo->mutex);
 	*buf_obj = bo;
@@ -1712,6 +1709,8 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 	unsigned long next = 0;
 	void __user *curuserarg = NULL;
 	int ret;
+
+	DRM_DEBUG("drm_bo_op_ioctl\n");
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -1785,14 +1784,15 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 	struct drm_buffer_object *entry;
 	int ret = 0;
 
+	DRM_DEBUG("drm_bo_create_ioctl: %dkb, %dkb align, %d type\n",
+	    (int)(req->size / 1024), req->page_alignment * 4, req->type);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
 	}
-
-	ret = drm_bo_lock_test(dev, file_priv);
-	if (ret)
-		goto out;
+	if (req->type == drm_bo_type_fake)
+		LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	ret = drm_buffer_object_create(file_priv->head->dev,
 				       req->size, req->type, req->mask,
@@ -1823,6 +1823,8 @@ int drm_bo_destroy_ioctl(struct drm_device *dev, void *data, struct drm_file *fi
 	struct drm_user_object *uo;
 	int ret = 0;
 
+	DRM_DEBUG("drm_bo_destroy_ioctl: buffer %d\n", arg->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1846,6 +1848,9 @@ int drm_bo_map_ioctl(struct drm_device *dev, void *data, struct drm_file *file_p
 	struct drm_bo_info_req *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	int ret;
+
+	DRM_DEBUG("drm_bo_map_ioctl: buffer %d\n", req->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1863,6 +1868,9 @@ int drm_bo_unmap_ioctl(struct drm_device *dev, void *data, struct drm_file *file
 {
 	struct drm_bo_handle_arg *arg = data;
 	int ret;
+
+	DRM_DEBUG("drm_bo_unmap_ioctl: buffer %d\n", arg->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1880,6 +1888,8 @@ int drm_bo_reference_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	struct drm_user_object *uo;
 	int ret;
+
+	DRM_DEBUG("drm_bo_reference_ioctl: buffer %d\n", req->handle);
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -1903,6 +1913,8 @@ int drm_bo_unreference_ioctl(struct drm_device *dev, void *data, struct drm_file
 	struct drm_bo_handle_arg *arg = data;
 	int ret = 0;
 
+	DRM_DEBUG("drm_bo_unreference_ioctl: buffer %d\n", arg->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1918,6 +1930,8 @@ int drm_bo_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	struct drm_bo_handle_arg *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	int ret;
+
+	DRM_DEBUG("drm_bo_info_ioctl: buffer %d\n", req->handle);
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -1937,6 +1951,9 @@ int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	struct drm_bo_info_req *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	int ret;
+
+	DRM_DEBUG("drm_bo_wait_idle_ioctl: buffer %d\n", req->handle);
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
@@ -1950,6 +1967,117 @@ int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	return 0;
 }
 
+/**
+ * Pins or unpins the given buffer object in the given memory area.
+ *
+ * Pinned buffers will not be evicted from or move within their memory area.
+ * Must be called with the hardware lock held for pinning.
+ */
+static int
+drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
+    int pin)
+{
+	int ret = 0;
+
+	mutex_lock(&bo->mutex);
+	if (bo->pinned == pin) {
+		mutex_unlock(&bo->mutex);
+		return 0;
+	}
+
+	if (pin) {
+		ret = drm_bo_wait_unfenced(bo, 0, 0);
+		if (ret) {
+			mutex_unlock(&bo->mutex);
+			return ret;
+		}
+
+		/* Validate the buffer into its pinned location, with no
+		 * pending fence.
+		 */
+		ret = drm_buffer_object_validate(bo, 0, 0, 0);
+		if (ret) {
+			mutex_unlock(&bo->mutex);
+			return ret;
+		}
+
+		/* Pull the buffer off of the LRU and add it to the pinned
+		 * list
+		 */
+		bo->pinned_mem_type = bo->mem.mem_type;
+		mutex_lock(&dev->struct_mutex);
+		list_del_init(&bo->lru);
+		list_del_init(&bo->pinned_lru);
+		drm_bo_add_to_pinned_lru(bo);
+
+		if (bo->pinned_node != bo->mem.mm_node) {
+			if (bo->pinned_node != NULL)
+				drm_mm_put_block(bo->pinned_node);
+			bo->pinned_node = bo->mem.mm_node;
+		}
+
+		bo->pinned = pin;
+		mutex_unlock(&dev->struct_mutex);
+
+	} else {
+		mutex_lock(&dev->struct_mutex);
+
+		/* Remove our buffer from the pinned list */
+		if (bo->pinned_node != bo->mem.mm_node)
+			drm_mm_put_block(bo->pinned_node);
+
+		list_del_init(&bo->pinned_lru);
+		bo->pinned_node = NULL;
+		bo->pinned = pin;
+		mutex_unlock(&dev->struct_mutex);
+	}
+	mutex_unlock(&bo->mutex);
+	return 0;
+}
+
+int drm_bo_set_pin_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv)
+{
+	struct drm_bo_set_pin_arg *arg = data;
+	struct drm_bo_set_pin_req *req = &arg->d.req;
+	struct drm_bo_info_rep *rep = &arg->d.rep;
+	struct drm_buffer_object *bo;
+	int ret;
+
+	DRM_DEBUG("drm_bo_set_pin_ioctl: buffer %d, pin %d\n",
+	    req->handle, req->pin);
+
+	if (!dev->bm.initialized) {
+		DRM_ERROR("Buffer object manager is not initialized.\n");
+		return -EINVAL;
+	}
+
+	if (req->pin < 0 || req->pin > 1) {
+		DRM_ERROR("Bad arguments to set_pin\n");
+		return -EINVAL;
+	}
+
+	if (req->pin)
+		LOCK_TEST_WITH_RETURN(dev, file_priv);
+
+	mutex_lock(&dev->struct_mutex);
+	bo = drm_lookup_buffer_object(file_priv, req->handle, 1);
+	mutex_unlock(&dev->struct_mutex);
+	if (!bo) {
+		return -EINVAL;
+	}
+
+	ret = drm_bo_set_pin(dev, bo, req->pin);
+	if (ret) {
+		drm_bo_usage_deref_unlocked(&bo);
+		return ret;
+	}
+
+	drm_bo_fill_rep_arg(bo, rep);
+	drm_bo_usage_deref_unlocked(&bo);
+
+	return 0;
+}
 
 
 /**
@@ -2011,11 +2139,10 @@ static int drm_bo_leave_list(struct drm_buffer_object * bo,
 		mutex_unlock(&dev->struct_mutex);
 	}
 
-	if (bo->mem.flags & DRM_BO_FLAG_NO_EVICT) {
-		DRM_ERROR("A DRM_BO_NO_EVICT buffer present at "
+	if (bo->pinned) {
+		DRM_ERROR("A pinned buffer was present at "
 			  "cleanup. Removing flag and evicting.\n");
-		bo->mem.flags &= ~DRM_BO_FLAG_NO_EVICT;
-		bo->mem.mask &= ~DRM_BO_FLAG_NO_EVICT;
+		bo->pinned = 0;
 	}
 
 	if (bo->mem.mem_type == mem_type)
@@ -2297,8 +2424,7 @@ int drm_bo_driver_init(struct drm_device * dev)
 	 * Initialize the system memory buffer type.
 	 * Other types need to be driver / IOCTL initialized.
 	 */
-
-	ret = drm_bo_init_mm(dev, 0, 0, 0);
+	ret = drm_bo_init_mm(dev, DRM_BO_MEM_LOCAL, 0, 0);
 	if (ret)
 		goto out_unlock;
 
@@ -2327,6 +2453,9 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	struct drm_buffer_manager *bm = &dev->bm;
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
+
+	DRM_DEBUG("drm_mm_init_ioctl: type %d, 0x%08llx offset, %dkb\n",
+	    arg->mem_type, arg->p_offset * PAGE_SIZE, (int)(arg->p_size * 4));
 
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
@@ -2382,6 +2511,8 @@ int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
 
+	DRM_DEBUG("drm_mm_takedown_ioctl: %d type\n", arg->mem_type);
+
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
 		return -EINVAL;
@@ -2419,6 +2550,8 @@ int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
 
+	DRM_DEBUG("drm_mm_lock_ioctl: %d type\n", arg->mem_type);
+
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");
 		return -EINVAL;
@@ -2440,6 +2573,8 @@ int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 {
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
+
+	DRM_DEBUG("drm_mm_unlock_ioctl\n");
 
 	if (!driver) {
 		DRM_ERROR("Buffer objects are not supported by this driver\n");

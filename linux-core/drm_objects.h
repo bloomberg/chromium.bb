@@ -362,6 +362,7 @@ struct drm_buffer_object {
 	struct mutex mutex;
 
 	/* For pinned buffers */
+	int pinned;
 	struct drm_mm_node *pinned_node;
 	uint32_t pinned_mem_type;
 	struct list_head pinned_lru;
@@ -455,7 +456,7 @@ extern int drm_bo_unreference_ioctl(struct drm_device *dev, void *data, struct d
 extern int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-
+int drm_bo_set_pin_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
 extern int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
