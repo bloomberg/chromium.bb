@@ -1515,13 +1515,6 @@ int drm_bo_do_validate(struct drm_buffer_object *bo,
 	if (ret)
 		goto out;
 
-	if ((mask & flags & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
-		DRM_ERROR
-		    ("DRM_BO_FLAG_NO_EVICT is only available to priviliged "
-		     "processes\n");
-		return -EPERM;
-	}
-
 
 	DRM_FLAG_MASKED(flags, bo->mem.mask, ~mask);
 	ret = drm_bo_new_mask(bo, flags, hint);
@@ -1706,7 +1699,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	}
 
 	bo->fence_class = 0;
-	ret = driver->fence_type(bo, &bo->fence_type);
+	ret = driver->fence_type(bo, &bo->fence_class, &bo->fence_type);
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		goto out_err;
