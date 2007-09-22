@@ -1995,7 +1995,7 @@ drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
 		/* Validate the buffer into its pinned location, with no
 		 * pending fence.
 		 */
-		ret = drm_buffer_object_validate(bo, 0, 0, 0);
+		ret = drm_buffer_object_validate(bo, bo->fence_class, 0, 0);
 		if (ret) {
 			mutex_unlock(&bo->mutex);
 			return ret;
