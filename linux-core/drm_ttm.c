@@ -35,11 +35,12 @@ static void drm_ttm_ipi_handler(void *null)
 	flush_agp_cache();
 }
 
-static void drm_ttm_cache_flush(void)
+void drm_ttm_cache_flush(void)
 {
 	if (on_each_cpu(drm_ttm_ipi_handler, NULL, 1, 1) != 0)
 		DRM_ERROR("Timed out waiting for drm cache flush.\n");
 }
+EXPORT_SYMBOL(drm_ttm_cache_flush);
 
 /*
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
@@ -207,7 +208,7 @@ struct page *drm_ttm_get_page(struct drm_ttm * ttm, int index)
 	return p;
 }
 
-static int drm_ttm_populate(struct drm_ttm * ttm)
+int drm_ttm_populate(struct drm_ttm * ttm)
 {
 	struct page *page;
 	unsigned long i;
@@ -308,7 +309,7 @@ void drm_ttm_unbind(struct drm_ttm * ttm)
 	drm_ttm_fixup_caching(ttm);
 }
 
-int drm_bind_ttm(struct drm_ttm * ttm, int cached, unsigned long aper_offset)
+int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem)
 {
 
 	int ret = 0;
@@ -325,17 +326,16 @@ int drm_bind_ttm(struct drm_ttm * ttm, int cached, unsigned long aper_offset)
 	if (ret)
 		return ret;
 
-	if (ttm->state == ttm_unbound && !cached) {
+	if (ttm->state == ttm_unbound && !(bo_mem->flags & DRM_BO_FLAG_CACHED)) {
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
 	}
 
-	if ((ret = be->func->bind(be, aper_offset, cached))) {
+	if ((ret = be->func->bind(be, bo_mem))) {
 		ttm->state = ttm_evicted;
 		DRM_ERROR("Couldn't bind backend.\n");
 		return ret;
 	}
 
-	ttm->aper_offset = aper_offset;
 	ttm->state = ttm_bound;
 
 	return 0;

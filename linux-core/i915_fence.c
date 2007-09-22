@@ -63,7 +63,8 @@ static void i915_perform_flush(struct drm_device * dev)
 
 		diff = (sequence - fc->last_exe_flush) & BREADCRUMB_MASK;
 		if (diff < driver->wrap_diff && diff != 0) {
-			drm_fence_handler(dev, 0, sequence, DRM_FENCE_TYPE_EXE);
+		        drm_fence_handler(dev, 0, sequence,
+					  DRM_FENCE_TYPE_EXE, 0);
 		}
 
 		if (dev_priv->fence_irq_on && !fc->pending_exe_flush) {
@@ -82,7 +83,7 @@ static void i915_perform_flush(struct drm_device * dev)
 			flush_flags = dev_priv->flush_flags;
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, 0, flush_sequence, flush_flags);
+			drm_fence_handler(dev, 0, flush_sequence, flush_flags, 0);
 		}
 	}
 
@@ -103,7 +104,7 @@ static void i915_perform_flush(struct drm_device * dev)
 			flush_flags = dev_priv->flush_flags;
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, 0, flush_sequence, flush_flags);
+			drm_fence_handler(dev, 0, flush_sequence, flush_flags, 0);
 		}
 	}
 

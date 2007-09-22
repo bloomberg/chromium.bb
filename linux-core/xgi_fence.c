@@ -60,7 +60,7 @@ static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 
 		if (signaled_flush_types) {
 			drm_fence_handler(dev, 0, info->complete_sequence,
-					  signaled_flush_types);
+					  signaled_flush_types, 0);
 		}
 	}
 
