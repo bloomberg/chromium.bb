@@ -215,18 +215,18 @@ static void intel_sdvo_write_cmd(struct drm_output *output, u8 cmd,
         if (1) {
                 DRM_DEBUG("%s: W: %02X ", SDVO_NAME(sdvo_priv), cmd);
                 for (i = 0; i < args_len; i++)
-                        DRM_DEBUG("%02X ", ((u8 *)args)[i]);
+                        printk("%02X ", ((u8 *)args)[i]);
                 for (; i < 8; i++)
-                        DRM_DEBUG("   ");
+                        printk("   ");
                 for (i = 0; i < sizeof(sdvo_cmd_names) / sizeof(sdvo_cmd_names[0]); i++) {
                         if (cmd == sdvo_cmd_names[i].cmd) {
-                                DRM_DEBUG("(%s)", sdvo_cmd_names[i].name);
+                                printk("(%s)", sdvo_cmd_names[i].name);
                                 break;
                         }
                 }
                 if (i == sizeof(sdvo_cmd_names)/ sizeof(sdvo_cmd_names[0]))
-                        DRM_DEBUG("(%02X)",cmd);
-                DRM_DEBUG("\n");
+                        printk("(%02X)",cmd);
+                printk("\n");
         }
                         
 	for (i = 0; i < args_len; i++) {
@@ -268,14 +268,14 @@ static u8 intel_sdvo_read_response(struct drm_output *output, void *response,
 	        if (1) {
 			DRM_DEBUG("%s: R: ", SDVO_NAME(sdvo_priv));
        			for (i = 0; i < response_len; i++)
-                        	DRM_DEBUG("%02X ", ((u8 *)response)[i]);
+                        	printk("%02X ", ((u8 *)response)[i]);
                 	for (; i < 8; i++)
-                        	DRM_DEBUG("   ");
+                        	printk("   ");
                 	if (status <= SDVO_CMD_STATUS_SCALING_NOT_SUPP)
-                        	DRM_DEBUG("(%s)", cmd_status_names[status]);
+                        	printk("(%s)", cmd_status_names[status]);
                 	else
-                        	DRM_DEBUG("(??? %d)", status);
-                	DRM_DEBUG("\n");
+                        	printk("(??? %d)", status);
+                	printk("\n");
         	}
 
 		if (status != SDVO_CMD_STATUS_PENDING)
