@@ -36,14 +36,14 @@ static struct pci_device_id pciidlist[] = {
 };
 
 
-static int sis_driver_load(drm_device_t *dev, unsigned long chipset)
+static int sis_driver_load(struct drm_device *dev, unsigned long chipset)
 {
 	drm_sis_private_t *dev_priv;
 	int ret;
 
 	dev_priv = drm_calloc(1, sizeof(drm_sis_private_t), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
 	dev->dev_private = (void *)dev_priv;
 	dev_priv->chipset = chipset;
@@ -55,7 +55,7 @@ static int sis_driver_load(drm_device_t *dev, unsigned long chipset)
 	return ret;
 }
 
-static int sis_driver_unload(drm_device_t *dev)
+static int sis_driver_unload(struct drm_device *dev)
 {
 	drm_sis_private_t *dev_priv = dev->dev_private;
 

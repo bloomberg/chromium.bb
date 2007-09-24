@@ -29,25 +29,25 @@
 
 
 /* returns the number of hw fifos */
-int nouveau_fifo_number(drm_device_t* dev)
+int nouveau_fifo_number(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 	switch(dev_priv->card_type)
 	{
-		case NV_03:
-			return 8;
 		case NV_04:
 		case NV_05:
 			return 16;
+		case NV_50:
+			return 128;
 		default:
 			return 32;
 	}
 }
 
 /* returns the size of fifo context */
-int nouveau_fifo_ctx_size(drm_device_t* dev)
+int nouveau_fifo_ctx_size(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv=dev->dev_private;
+	struct drm_nouveau_private *dev_priv=dev->dev_private;
 
 	if (dev_priv->card_type >= NV_40)
 		return 128;
@@ -66,9 +66,9 @@ int nouveau_fifo_ctx_size(drm_device_t* dev)
  * voir nv_driver.c : NVPreInit 
  */
 
-static int nouveau_fifo_instmem_configure(drm_device_t *dev)
+static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	NV_WRITE(NV03_PFIFO_RAMHT,
 			(0x03 << 24) /* search 128 */ | 
@@ -82,9 +82,16 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 	{
 		case NV_50:
 		case NV_40:
+			switch (dev_priv->chipset) {
+			case 0x47:
+			case 0x49:
+			case 0x4b:
+				NV_WRITE(0x2230, 1);
+				break;
+			default:
+				break;
+			}
 			NV_WRITE(NV40_PFIFO_RAMFC, 0x30002);
-			if((dev_priv->chipset == 0x49) || (dev_priv->chipset == 0x4b))
-				NV_WRITE(0x2230,0x00000001);
 			break;
 		case NV_44:
 			NV_WRITE(NV40_PFIFO_RAMFC, ((nouveau_mem_fb_amount(dev)-512*1024+dev_priv->ramfc_offset)>>16) |
@@ -97,9 +104,9 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 					(1 << 16) /* 64 Bytes entry*/);
 			/* XXX nvidia blob set bit 18, 21,23 for nv20 & nv30 */
 			break;
+		case NV_11:
 		case NV_10:
 		case NV_04:
-		case NV_03:
 			NV_WRITE(NV03_PFIFO_RAMFC, dev_priv->ramfc_offset>>8);
 			break;
 	}
@@ -107,15 +114,19 @@ static int nouveau_fifo_instmem_configure(drm_device_t *dev)
 	return 0;
 }
 
-int nouveau_fifo_init(drm_device_t *dev)
+int nouveau_fifo_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
 			~NV_PMC_ENABLE_PFIFO);
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
 			 NV_PMC_ENABLE_PFIFO);
+
+	/* Enable PFIFO error reporting */
+	NV_WRITE(NV03_PFIFO_INTR_0, 0xFFFFFFFF);
+	NV_WRITE(NV03_PFIFO_INTR_EN_0, 0xFFFFFFFF);
 
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
 
@@ -183,71 +194,90 @@ int nouveau_fifo_init(drm_device_t *dev)
 }
 
 static int
-nouveau_fifo_cmdbuf_alloc(struct drm_device *dev, int channel)
+nouveau_fifo_pushbuf_ctxdma_init(struct nouveau_channel *chan)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_config *config = &dev_priv->config;
-	struct mem_block *cb;
-	struct nouveau_object *cb_dma = NULL;
-	int cb_min_size = max(NV03_FIFO_SIZE,PAGE_SIZE);
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct mem_block *pb = chan->pushbuf_mem;
+	struct nouveau_gpuobj *pushbuf = NULL;
+	int ret;
 
-	/* Defaults for unconfigured values */
-	if (!config->cmdbuf.location)
-		config->cmdbuf.location = NOUVEAU_MEM_FB;
-	if (!config->cmdbuf.size || config->cmdbuf.size < cb_min_size)
-		config->cmdbuf.size = cb_min_size;
-
-	cb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
-			config->cmdbuf.location | NOUVEAU_MEM_MAPPED,
-			(DRMFILE)-2);
-	if (!cb) {
-		DRM_ERROR("Couldn't allocate DMA command buffer.\n");
-		return DRM_ERR(ENOMEM);
-	}
-
-	if (cb->flags & NOUVEAU_MEM_AGP) {
-		cb_dma = nouveau_object_dma_create(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start - dev_priv->agp_phys,
-				cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_AGP);
+	if (pb->flags & NOUVEAU_MEM_AGP) {
+		ret = nouveau_gpuobj_gart_dma_new(chan, pb->start, pb->size,
+						  NV_DMA_ACCESS_RO,
+						  &pushbuf,
+						  &chan->pushbuf_base);
+	} else
+	if (pb->flags & NOUVEAU_MEM_PCI) {
+		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
+					     pb->start, pb->size,
+					     NV_DMA_ACCESS_RO,
+					     NV_DMA_TARGET_PCI_NONLINEAR,
+					     &pushbuf);
+		chan->pushbuf_base = 0;
 	} else if (dev_priv->card_type != NV_04) {
-		cb_dma = nouveau_object_dma_create(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start - drm_get_resource_start(dev, 1),
-				cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_VIDMEM);
+		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
+					     pb->start, pb->size,
+					     NV_DMA_ACCESS_RO,
+					     NV_DMA_TARGET_VIDMEM, &pushbuf);
+		chan->pushbuf_base = 0;
 	} else {
 		/* NV04 cmdbuf hack, from original ddx.. not sure of it's
 		 * exact reason for existing :)  PCI access to cmdbuf in
 		 * VRAM.
 		 */
-		cb_dma = nouveau_object_dma_create(dev, channel,
-				NV_CLASS_DMA_IN_MEMORY,
-				cb->start, cb->size,
-				NV_DMA_ACCESS_RO, NV_DMA_TARGET_PCI);
+		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
+					     pb->start +
+					       drm_get_resource_start(dev, 1),
+					     pb->size, NV_DMA_ACCESS_RO,
+					     NV_DMA_TARGET_PCI, &pushbuf);
+		chan->pushbuf_base = 0;
 	}
 
-	if (!cb_dma) {
-		nouveau_mem_free(dev, cb);
-		DRM_ERROR("Failed to alloc DMA object for command buffer\n");
-		return DRM_ERR(ENOMEM);
+	if ((ret = nouveau_gpuobj_ref_add(dev, chan, 0, pushbuf,
+					  &chan->pushbuf))) {
+		DRM_ERROR("Error referencing push buffer ctxdma: %d\n", ret);
+		if (pushbuf != dev_priv->gart_info.sg_ctxdma)
+			nouveau_gpuobj_del(dev, &pushbuf);
+		return ret;
 	}
 
-	dev_priv->fifos[channel].pushbuf_base = 0;
-	dev_priv->fifos[channel].cmdbuf_mem = cb;
-	dev_priv->fifos[channel].cmdbuf_obj = cb_dma;
 	return 0;
 }
 
+static struct mem_block *
+nouveau_fifo_user_pushbuf_alloc(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_config *config = &dev_priv->config;
+	struct mem_block *pb;
+	int pb_min_size = max(NV03_FIFO_SIZE,PAGE_SIZE);
+
+	/* Defaults for unconfigured values */
+	if (!config->cmdbuf.location)
+		config->cmdbuf.location = NOUVEAU_MEM_FB;
+	if (!config->cmdbuf.size || config->cmdbuf.size < pb_min_size)
+		config->cmdbuf.size = pb_min_size;
+
+	pb = nouveau_mem_alloc(dev, 0, config->cmdbuf.size,
+			       config->cmdbuf.location | NOUVEAU_MEM_MAPPED,
+			       (struct drm_file *)-2);
+	if (!pb)
+		DRM_ERROR("Couldn't allocate DMA push buffer.\n");
+
+	return pb;
+}
+
 /* allocates and initializes a fifo for user space consumption */
-int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
-		       uint32_t vram_handle, uint32_t tt_handle)
+int
+nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
+		   struct drm_file *file_priv, struct mem_block *pushbuf,
+		   uint32_t vram_handle, uint32_t tt_handle)
 {
 	int ret;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
-	struct nouveau_fifo *chan;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
+	struct nouveau_channel *chan;
 	int channel;
 
 	/*
@@ -258,42 +288,45 @@ int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
 	 * (woo, full userspace command submission !)
 	 * When there are no more contexts, you lost
 	 */
-	for(channel=0; channel<nouveau_fifo_number(dev); channel++)
-		if (dev_priv->fifos[channel].used==0)
+	for(channel=0; channel<nouveau_fifo_number(dev); channel++) {
+		if (dev_priv->fifos[channel] == NULL)
 			break;
+	}
 	/* no more fifos. you lost. */
 	if (channel==nouveau_fifo_number(dev))
-		return DRM_ERR(EINVAL);
-	(*chan_ret) = channel;
-	chan = &dev_priv->fifos[channel];
+		return -EINVAL;
+
+	dev_priv->fifos[channel] = drm_calloc(1, sizeof(struct nouveau_channel),
+					      DRM_MEM_DRIVER);
+	if (!dev_priv->fifos[channel])
+		return -ENOMEM;
+	dev_priv->fifo_alloc_count++;
+	chan = dev_priv->fifos[channel];
+	chan->dev = dev;
+	chan->id = channel;
+	chan->file_priv = file_priv;
+	chan->pushbuf_mem = pushbuf;
 
 	DRM_INFO("Allocating FIFO number %d\n", channel);
 
-	/* that fifo is used */
-	chan->used = 1;
-	chan->filp = filp;
-
-	/* FIFO has no objects yet */
-	chan->objs = NULL;
-
-	/* allocate a command buffer, and create a dma object for the gpu */
-	ret = nouveau_fifo_cmdbuf_alloc(dev, channel);
+	/* Allocate space for per-channel fixed notifier memory */
+	ret = nouveau_notifier_init_channel(chan);
 	if (ret) {
-		nouveau_fifo_free(dev, channel);
+		nouveau_fifo_free(chan);
 		return ret;
 	}
 
 	/* Setup channel's default objects */
-	ret = nouveau_object_init_channel(dev, channel, vram_handle, tt_handle);
+	ret = nouveau_gpuobj_channel_init(chan, vram_handle, tt_handle);
 	if (ret) {
-		nouveau_fifo_free(dev, channel);
+		nouveau_fifo_free(chan);
 		return ret;
 	}
 
-	/* Allocate space for per-channel fixed notifier memory */
-	ret = nouveau_notifier_init_channel(dev, channel, filp);
+	/* Create a dma object for the push buffer */
+	ret = nouveau_fifo_pushbuf_ctxdma_init(chan);
 	if (ret) {
-		nouveau_fifo_free(dev, channel);
+		nouveau_fifo_free(chan);
 		return ret;
 	}
 
@@ -306,177 +339,198 @@ int nouveau_fifo_alloc(drm_device_t* dev, int *chan_ret, DRMFILE filp,
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
 
 	/* Create a graphics context for new channel */
-	ret = engine->graph.create_context(dev, channel);
+	ret = engine->graph.create_context(chan);
 	if (ret) {
-		nouveau_fifo_free(dev, channel);
+		nouveau_fifo_free(chan);
 		return ret;
 	}
 
 	/* Construct inital RAMFC for new channel */
-	ret = engine->fifo.create_context(dev, channel);
+	ret = engine->fifo.create_context(chan);
 	if (ret) {
-		nouveau_fifo_free(dev, channel);
+		nouveau_fifo_free(chan);
 		return ret;
 	}
 
-	/* enable the fifo dma operation */
-	NV_WRITE(NV04_PFIFO_MODE,NV_READ(NV04_PFIFO_MODE)|(1<<channel));
-
 	/* setup channel's default get/put values */
-	NV_WRITE(NV03_FIFO_REGS_DMAPUT(channel), chan->pushbuf_base);
-	NV_WRITE(NV03_FIFO_REGS_DMAGET(channel), chan->pushbuf_base);
+	if (dev_priv->card_type < NV_50) {
+		NV_WRITE(NV03_FIFO_REGS_DMAPUT(channel), chan->pushbuf_base);
+		NV_WRITE(NV03_FIFO_REGS_DMAGET(channel), chan->pushbuf_base);
+	} else {
+		NV_WRITE(NV50_FIFO_REGS_DMAPUT(channel), chan->pushbuf_base);
+		NV_WRITE(NV50_FIFO_REGS_DMAGET(channel), chan->pushbuf_base);
+	}
 
 	/* If this is the first channel, setup PFIFO ourselves.  For any
 	 * other case, the GPU will handle this when it switches contexts.
 	 */
-	if (dev_priv->fifo_alloc_count == 0) {
-		ret = engine->fifo.load_context(dev, channel);
+	if (dev_priv->fifo_alloc_count == 1) {
+		ret = engine->fifo.load_context(chan);
 		if (ret) {
-			nouveau_fifo_free(dev, channel);
+			nouveau_fifo_free(chan);
 			return ret;
 		}
 
-		ret = engine->graph.load_context(dev, channel);
+		ret = engine->graph.load_context(chan);
 		if (ret) {
-			nouveau_fifo_free(dev, channel);
+			nouveau_fifo_free(chan);
 			return ret;
-		}
-
-		/* Temporary hack, to avoid breaking Xv on cards where the
-		 * initial context value for 0x400710 doesn't have these bits
-		 * set.  Proper fix would be to find which object+method is
-		 * responsible for modifying this state.
-		 */
-		if (dev_priv->chipset >= 0x10) {
-			uint32_t tmp;
-			tmp = NV_READ(NV10_PGRAPH_SURFACE) & 0x0007ff00;
-			NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
-			tmp = NV_READ(NV10_PGRAPH_SURFACE) | 0x00020100;
-			NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
 		}
 	}
 
-	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH, 0x00000001);
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH,
+		 NV_READ(NV04_PFIFO_CACHE1_DMA_PUSH) | 1);
 	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000001);
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000001);
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL1, 0x00000001);
 
 	/* reenable the fifo caches */
-	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
-
-	dev_priv->fifo_alloc_count++;
+	NV_WRITE(NV03_PFIFO_CACHES, 1);
 
 	DRM_INFO("%s: initialised FIFO %d\n", __func__, channel);
+	*chan_ret = chan;
 	return 0;
 }
 
 /* stops a fifo */
-void nouveau_fifo_free(drm_device_t* dev, int channel)
+void nouveau_fifo_free(struct nouveau_channel *chan)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	nouveau_engine_func_t *engine = &dev_priv->Engine;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 
-	chan->used = 0;
-	DRM_INFO("%s: freeing fifo %d\n", __func__, channel);
+	DRM_INFO("%s: freeing fifo %d\n", __func__, chan->id);
 
 	/* disable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
 
-	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<channel));
 	// FIXME XXX needs more code
-	
-	engine->fifo.destroy_context(dev, channel);
+
+	engine->fifo.destroy_context(chan);
 
 	/* Cleanup PGRAPH state */
-	engine->graph.destroy_context(dev, channel);
+	engine->graph.destroy_context(chan);
 
 	/* reenable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
 
-	/* Deallocate command buffer */
-	if (chan->cmdbuf_mem)
-		nouveau_mem_free(dev, chan->cmdbuf_mem);
-
-	nouveau_notifier_takedown_channel(dev, channel);
+	/* Deallocate push buffer */
+	nouveau_gpuobj_ref_del(dev, &chan->pushbuf);
+	if (chan->pushbuf_mem) {
+		nouveau_mem_free(dev, chan->pushbuf_mem);
+		chan->pushbuf_mem = NULL;
+	}
 
 	/* Destroy objects belonging to the channel */
-	nouveau_object_cleanup(dev, channel);
+	nouveau_gpuobj_channel_takedown(chan);
 
+	nouveau_notifier_takedown_channel(chan);
+
+	dev_priv->fifos[chan->id] = NULL;
 	dev_priv->fifo_alloc_count--;
+	drm_free(chan, sizeof(*chan), DRM_MEM_DRIVER);
 }
 
-/* cleanups all the fifos from filp */
-void nouveau_fifo_cleanup(drm_device_t* dev, DRMFILE filp)
+/* cleanups all the fifos from file_priv */
+void nouveau_fifo_cleanup(struct drm_device *dev, struct drm_file *file_priv)
 {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
 
-	DRM_DEBUG("clearing FIFO enables from filp\n");
-	for(i=0;i<nouveau_fifo_number(dev);i++)
-		if (dev_priv->fifos[i].used && dev_priv->fifos[i].filp==filp)
-			nouveau_fifo_free(dev,i);
+	DRM_DEBUG("clearing FIFO enables from file_priv\n");
+	for(i = 0; i < nouveau_fifo_number(dev); i++) {
+		struct nouveau_channel *chan = dev_priv->fifos[i];
+
+		if (chan && chan->file_priv == file_priv)
+			nouveau_fifo_free(chan);
+	}
 }
 
 int
-nouveau_fifo_owner(drm_device_t *dev, DRMFILE filp, int channel)
+nouveau_fifo_owner(struct drm_device *dev, struct drm_file *file_priv,
+		   int channel)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	if (channel >= nouveau_fifo_number(dev))
 		return 0;
-	if (dev_priv->fifos[channel].used == 0)
+	if (dev_priv->fifos[channel] == NULL)
 		return 0;
-	return (dev_priv->fifos[channel].filp == filp);
+	return (dev_priv->fifos[channel]->file_priv == file_priv);
 }
 
 /***********************************
  * ioctls wrapping the functions
  ***********************************/
 
-static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
+static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data,
+				    struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan;
-	drm_nouveau_fifo_alloc_t init;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_channel_alloc *init = data;
+	struct drm_map_list *entry;
+	struct nouveau_channel *chan;
+	struct mem_block *pushbuf;
 	int res;
 
-	DRM_COPY_FROM_USER_IOCTL(init, (drm_nouveau_fifo_alloc_t __user *) data,
-				 sizeof(init));
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
 
-	res = nouveau_fifo_alloc(dev, &init.channel, filp,
-				 init.fb_ctxdma_handle,
-				 init.tt_ctxdma_handle);
+	if (init->fb_ctxdma_handle == ~0 || init->tt_ctxdma_handle == ~0)
+		return -EINVAL;
+
+	pushbuf = nouveau_fifo_user_pushbuf_alloc(dev);
+	if (!pushbuf)
+		return -ENOMEM;
+
+	res = nouveau_fifo_alloc(dev, &chan, file_priv, pushbuf,
+				 init->fb_ctxdma_handle,
+				 init->tt_ctxdma_handle);
 	if (res)
 		return res;
-	chan = &dev_priv->fifos[init.channel];
-
-	init.put_base = chan->pushbuf_base;
+	init->channel  = chan->id;
+	init->put_base = chan->pushbuf_base;
 
 	/* make the fifo available to user space */
 	/* first, the fifo control regs */
-	init.ctrl      = dev_priv->mmio->offset + NV03_FIFO_REGS(init.channel);
-	init.ctrl_size = NV03_FIFO_REGS_SIZE;
-	res = drm_addmap(dev, init.ctrl, init.ctrl_size, _DRM_REGISTERS,
+	init->ctrl = dev_priv->mmio->offset;
+	if (dev_priv->card_type < NV_50) {
+		init->ctrl      += NV03_FIFO_REGS(init->channel);
+		init->ctrl_size  = NV03_FIFO_REGS_SIZE;
+	} else {
+		init->ctrl      += NV50_FIFO_REGS(init->channel);
+		init->ctrl_size  = NV50_FIFO_REGS_SIZE;
+	}
+	res = drm_addmap(dev, init->ctrl, init->ctrl_size, _DRM_REGISTERS,
 			 0, &chan->regs);
 	if (res != 0)
 		return res;
 
+	entry = drm_find_matching_map(dev, chan->regs);
+	if (!entry)
+		return -EINVAL;
+	init->ctrl = entry->user_token;
+
 	/* pass back FIFO map info to the caller */
-	init.cmdbuf      = chan->cmdbuf_mem->start;
-	init.cmdbuf_size = chan->cmdbuf_mem->size;
+	init->cmdbuf      = chan->pushbuf_mem->map_handle;
+	init->cmdbuf_size = chan->pushbuf_mem->size;
 
 	/* and the notifier block */
-	init.notifier      = chan->notifier_block->start;
-	init.notifier_size = chan->notifier_block->size;
-	res = drm_addmap(dev, init.notifier, init.notifier_size, _DRM_REGISTERS,
-			 0, &chan->notifier_map);
-	if (res != 0)
-		return res;
+	init->notifier      = chan->notifier_block->map_handle;
+	init->notifier_size = chan->notifier_block->size;
 
-	DRM_COPY_TO_USER_IOCTL((drm_nouveau_fifo_alloc_t __user *)data,
-			       init, sizeof(init));
+	return 0;
+}
+
+static int nouveau_ioctl_fifo_free(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv)
+{
+	struct drm_nouveau_channel_free *cfree = data;
+	struct nouveau_channel *chan;
+
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+	NOUVEAU_GET_USER_CHANNEL_WITH_RETURN(cfree->channel, file_priv, chan);
+
+	nouveau_fifo_free(chan);
 	return 0;
 }
 
@@ -484,14 +538,17 @@ static int nouveau_ioctl_fifo_alloc(DRM_IOCTL_ARGS)
  * finally, the ioctl table
  ***********************************/
 
-drm_ioctl_desc_t nouveau_ioctls[] = {
-	[DRM_IOCTL_NR(DRM_NOUVEAU_FIFO_ALLOC)] = {nouveau_ioctl_fifo_alloc, DRM_AUTH},	
-	[DRM_IOCTL_NR(DRM_NOUVEAU_GROBJ_ALLOC)] = {nouveau_ioctl_grobj_alloc, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_NOTIFIER_ALLOC)] = {nouveau_ioctl_notifier_alloc, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_MEM_ALLOC)] = {nouveau_ioctl_mem_alloc, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_MEM_FREE)] = {nouveau_ioctl_mem_free, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_GETPARAM)] = {nouveau_ioctl_getparam, DRM_AUTH},
-	[DRM_IOCTL_NR(DRM_NOUVEAU_SETPARAM)] = {nouveau_ioctl_setparam, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY},	
+struct drm_ioctl_desc nouveau_ioctls[] = {
+	DRM_IOCTL_DEF(DRM_NOUVEAU_CARD_INIT, nouveau_ioctl_card_init, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_GETPARAM, nouveau_ioctl_getparam, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_SETPARAM, nouveau_ioctl_setparam, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_CHANNEL_ALLOC, nouveau_ioctl_fifo_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_CHANNEL_FREE, nouveau_ioctl_fifo_free, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_GROBJ_ALLOC, nouveau_ioctl_grobj_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_NOTIFIEROBJ_ALLOC, nouveau_ioctl_notifier_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_GPUOBJ_FREE, nouveau_ioctl_gpuobj_free, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_ALLOC, nouveau_ioctl_mem_alloc, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_NOUVEAU_MEM_FREE, nouveau_ioctl_mem_free, DRM_AUTH),
 };
 
 int nouveau_max_ioctl = DRM_ARRAY_SIZE(nouveau_ioctls);

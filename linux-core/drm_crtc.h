@@ -528,29 +528,29 @@ extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		       int x, int y);
 
 /* IOCTLs */
-extern int drm_mode_getresources(struct inode *inode, struct file *filp,
-				 unsigned int cmd, unsigned long arg);
+extern int drm_mode_getresources(struct drm_device *dev,
+				 void *data, struct drm_file *file_priv);
 
-extern int drm_mode_getcrtc(struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg);
-extern int drm_mode_getoutput(struct inode *inode, struct file *filp,
-			      unsigned int cmd, unsigned long arg);
-extern int drm_mode_setcrtc(struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg);
-extern int drm_mode_addfb(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int drm_mode_rmfb(struct inode *inode, struct file *filp,
-			 unsigned int cmd, unsigned long arg);
-extern int drm_mode_getfb(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg);
-extern int drm_mode_addmode(struct inode *inode, struct file *filp,
-			    unsigned int cmd, unsigned long arg);
-extern int drm_mode_rmmode(struct inode *inode, struct file *filp,
-			   unsigned int cmd, unsigned long arg);
-extern int drm_mode_attachmode(struct inode *inode, struct file *filp,
-			       unsigned int cmd, unsigned long arg);
-extern int drm_mode_detachmode(struct inode *inode, struct file *filp,
-			       unsigned int cmd, unsigned long arg);
+extern int drm_mode_getcrtc(struct drm_device *dev,
+			    void *data, struct drm_file *file_priv);
+extern int drm_mode_getoutput(struct drm_device *dev,
+			      void *data, struct drm_file *file_priv);
+extern int drm_mode_setcrtc(struct drm_device *dev,
+			    void *data, struct drm_file *file_priv);
+extern int drm_mode_addfb(struct drm_device *dev,
+			  void *data, struct drm_file *file_priv);
+extern int drm_mode_rmfb(struct drm_device *dev,
+			 void *data, struct drm_file *file_priv);
+extern int drm_mode_getfb(struct drm_device *dev,
+			  void *data, struct drm_file *file_priv);
+extern int drm_mode_addmode(struct drm_device *dev,
+			    void *data, struct drm_file *file_priv);
+extern int drm_mode_rmmode(struct drm_device *dev,
+			   void *data, struct drm_file *file_priv);
+extern int drm_mode_attachmode(struct drm_device *dev,
+			       void *data, struct drm_file *file_priv);
+extern int drm_mode_detachmode(struct drm_device *dev,
+			       void *data, struct drm_file *file_priv);
 
 #endif /* __DRM_CRTC_H__ */
 

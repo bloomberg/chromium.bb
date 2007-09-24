@@ -36,7 +36,7 @@
 
 #define DEBUG_SCATTER 0
 
-void drm_sg_cleanup(drm_sg_mem_t * entry)
+void drm_sg_cleanup(struct drm_sg_mem *entry)
 {
 	struct page *page;
 	int i;
@@ -55,6 +55,7 @@ void drm_sg_cleanup(drm_sg_mem_t * entry)
 		 entry->pages * sizeof(*entry->pagelist), DRM_MEM_PAGES);
 	drm_free(entry, sizeof(*entry), DRM_MEM_SGLISTS);
 }
+EXPORT_SYMBOL(drm_sg_cleanup);
 
 #ifdef _LP64
 # define ScatterHandle(x) (unsigned int)((x >> 32) + (x & ((1L << 32) - 1)))
@@ -62,14 +63,9 @@ void drm_sg_cleanup(drm_sg_mem_t * entry)
 # define ScatterHandle(x) (unsigned int)(x)
 #endif
 
-int drm_sg_alloc(struct inode *inode, struct file *filp,
-		 unsigned int cmd, unsigned long arg)
+int drm_sg_alloc(struct drm_device *dev, struct drm_scatter_gather * request)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_scatter_gather_t __user *argp = (void __user *)arg;
-	drm_scatter_gather_t request;
-	drm_sg_mem_t *entry;
+	struct drm_sg_mem *entry;
 	unsigned long pages, i, j;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
@@ -80,17 +76,13 @@ int drm_sg_alloc(struct inode *inode, struct file *filp,
 	if (dev->sg)
 		return -EINVAL;
 
-	if (copy_from_user(&request, argp, sizeof(request)))
-		return -EFAULT;
-
 	entry = drm_alloc(sizeof(*entry), DRM_MEM_SGLISTS);
 	if (!entry)
 		return -ENOMEM;
 
 	memset(entry, 0, sizeof(*entry));
-
-	pages = (request.size + PAGE_SIZE - 1) / PAGE_SIZE;
-	DRM_DEBUG("sg size=%ld pages=%ld\n", request.size, pages);
+	pages = (request->size + PAGE_SIZE - 1) / PAGE_SIZE;
+	DRM_DEBUG("sg size=%ld pages=%ld\n", request->size, pages);
 
 	entry->pages = pages;
 	entry->pagelist = drm_alloc(pages * sizeof(*entry->pagelist),
@@ -142,12 +134,7 @@ int drm_sg_alloc(struct inode *inode, struct file *filp,
 		SetPageReserved(entry->pagelist[j]);
 	}
 
-	request.handle = entry->handle;
-
-	if (copy_to_user(argp, &request, sizeof(request))) {
-		drm_sg_cleanup(entry);
-		return -EFAULT;
-	}
+	request->handle = entry->handle;
 
 	dev->sg = entry;
 
@@ -196,28 +183,32 @@ int drm_sg_alloc(struct inode *inode, struct file *filp,
       failed:
 	drm_sg_cleanup(entry);
 	return -ENOMEM;
+
+}
+EXPORT_SYMBOL(drm_sg_alloc);
+
+int drm_sg_alloc_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
+{
+	struct drm_scatter_gather *request = data;
+
+	return drm_sg_alloc(dev, request);
+
 }
 
-int drm_sg_free(struct inode *inode, struct file *filp,
-		unsigned int cmd, unsigned long arg)
+int drm_sg_free(struct drm_device *dev, void *data,
+		struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	drm_scatter_gather_t request;
-	drm_sg_mem_t *entry;
+	struct drm_scatter_gather *request = data;
+	struct drm_sg_mem *entry;
 
 	if (!drm_core_check_feature(dev, DRIVER_SG))
 		return -EINVAL;
 
-	if (copy_from_user(&request,
-			   (drm_scatter_gather_t __user *) arg,
-			   sizeof(request)))
-		return -EFAULT;
-
 	entry = dev->sg;
 	dev->sg = NULL;
 
-	if (!entry || entry->handle != request.handle)
+	if (!entry || entry->handle != request->handle)
 		return -EINVAL;
 
 	DRM_DEBUG("sg free virtual  = %p\n", entry->virtual);

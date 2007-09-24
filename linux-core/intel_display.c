@@ -170,7 +170,7 @@ static const intel_limit_t intel_limits[] = {
 
 static const intel_limit_t *intel_limit(struct drm_crtc *crtc)
 {
-	drm_device_t *dev = crtc->dev;
+	struct drm_device *dev = crtc->dev;
 	const intel_limit_t *limit;
 	
 	if (IS_I9XX(dev)) {
@@ -278,8 +278,8 @@ static bool intel_PLL_is_valid(struct drm_crtc *crtc, intel_clock_t *clock)
 static bool intel_find_best_PLL(struct drm_crtc *crtc, int target,
 				int refclk, intel_clock_t *best_clock)
 {
-	drm_device_t *dev = crtc->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = crtc->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	intel_clock_t clock;
 	const intel_limit_t *limit = intel_limit(crtc);
 	int err = target;
@@ -334,9 +334,9 @@ static bool intel_find_best_PLL(struct drm_crtc *crtc, int target,
 }
 
 void
-intel_set_vblank(drm_device_t *dev)
+intel_set_vblank(struct drm_device *dev)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_crtc *crtc;
 	struct intel_crtc *intel_crtc;
 	int vbl_pipe = 0;
@@ -352,7 +352,7 @@ intel_set_vblank(drm_device_t *dev)
 	i915_enable_interrupt(dev);
 }
 void
-intel_wait_for_vblank(drm_device_t *dev)
+intel_wait_for_vblank(struct drm_device *dev)
 {
 	/* Wait for 20ms, i.e. one cycle at 50hz. */
 	udelay(20000);
@@ -361,8 +361,8 @@ intel_wait_for_vblank(drm_device_t *dev)
 void
 intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 {
-	drm_device_t *dev = crtc->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = crtc->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	unsigned long Start, Offset;
@@ -389,12 +389,12 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 		
 	switch (pipe) {
 	case 0:
-		dev_priv->sarea_priv->pipeA_x = x;
-		dev_priv->sarea_priv->pipeA_y = y;
+		dev_priv->sarea_priv->planeA_x = x;
+		dev_priv->sarea_priv->planeA_y = y;
 		break;
 	case 1:
-		dev_priv->sarea_priv->pipeB_x = x;
-		dev_priv->sarea_priv->pipeB_y = y;
+		dev_priv->sarea_priv->planeB_x = x;
+		dev_priv->sarea_priv->planeB_y = y;
 		break;
 	default:
 		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
@@ -410,8 +410,8 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
  */
 static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 {
-	drm_device_t *dev = crtc->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = crtc->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	int dpll_reg = (pipe == 0) ? DPLL_A : DPLL_B;
@@ -513,12 +513,12 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	
 	switch (pipe) {
 	case 0:
-		dev_priv->sarea_priv->pipeA_w = enabled ? crtc->mode.hdisplay : 0;
-		dev_priv->sarea_priv->pipeA_h = enabled ? crtc->mode.vdisplay : 0;
+		dev_priv->sarea_priv->planeA_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->planeA_h = enabled ? crtc->mode.vdisplay : 0;
 		break;
 	case 1:
-		dev_priv->sarea_priv->pipeB_w = enabled ? crtc->mode.hdisplay : 0;
-		dev_priv->sarea_priv->pipeB_h = enabled ? crtc->mode.vdisplay : 0;
+		dev_priv->sarea_priv->planeB_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->planeB_h = enabled ? crtc->mode.vdisplay : 0;
 		break;
 	default:
 		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
@@ -576,7 +576,7 @@ static bool intel_crtc_mode_fixup(struct drm_crtc *crtc,
 
 
 /** Returns the core display clock speed for i830 - i945 */
-static int intel_get_core_clock_speed(drm_device_t *dev)
+static int intel_get_core_clock_speed(struct drm_device *dev)
 {
 
 	/* Core clock values taken from the published datasheets.
@@ -636,9 +636,9 @@ static int intel_get_core_clock_speed(drm_device_t *dev)
  * Return the pipe currently connected to the panel fitter,
  * or -1 if the panel fitter is not present or not in use
  */
-static int intel_panel_fitter_pipe (drm_device_t *dev)
+static int intel_panel_fitter_pipe (struct drm_device *dev)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32  pfit_control;
     
 	/* i830 doesn't have a panel fitter */
@@ -664,8 +664,8 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 				struct drm_display_mode *adjusted_mode,
 				int x, int y)
 {
-	drm_device_t *dev = crtc->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = crtc->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	int fp_reg = (pipe == 0) ? FPA0 : FPB0;
@@ -938,8 +938,8 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 /** Loads the palette/gamma unit for the CRTC with the prepared values */
 void intel_crtc_load_lut(struct drm_crtc *crtc)
 {
-	drm_device_t *dev = crtc->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = crtc->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int palreg = (intel_crtc->pipe == 0) ? PALETTE_A : PALETTE_B;
 	int i;
@@ -970,7 +970,7 @@ static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 /* Returns the clock of the currently programmed mode of the given pipe. */
 static int intel_crtc_clock_get(struct drm_device *dev, struct drm_crtc *crtc)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	u32 dpll = I915_READ((pipe == 0) ? DPLL_A : DPLL_B);
@@ -1045,10 +1045,10 @@ static int intel_crtc_clock_get(struct drm_device *dev, struct drm_crtc *crtc)
 }
 
 /** Returns the currently programmed mode of the given pipe. */
-struct drm_display_mode *intel_crtc_mode_get(drm_device_t *dev,
+struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
 					     struct drm_crtc *crtc)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	struct drm_display_mode *mode;
@@ -1089,7 +1089,7 @@ static const struct drm_crtc_funcs intel_crtc_funcs = {
 };
 
 
-void intel_crtc_init(drm_device_t *dev, int pipe)
+void intel_crtc_init(struct drm_device *dev, int pipe)
 {
 	struct drm_crtc *crtc;
 	struct intel_crtc *intel_crtc;
@@ -1115,7 +1115,7 @@ void intel_crtc_init(drm_device_t *dev, int pipe)
 	crtc->driver_private = intel_crtc;
 }
 
-struct drm_crtc *intel_get_crtc_from_pipe(drm_device_t *dev, int pipe)
+struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe)
 {
 	struct drm_crtc *crtc = NULL;
 
@@ -1127,7 +1127,7 @@ struct drm_crtc *intel_get_crtc_from_pipe(drm_device_t *dev, int pipe)
 	return crtc;
 }
 
-int intel_output_clones(drm_device_t *dev, int type_mask)
+int intel_output_clones(struct drm_device *dev, int type_mask)
 {
 	int index_mask = 0;
 	struct drm_output *output;
@@ -1143,7 +1143,7 @@ int intel_output_clones(drm_device_t *dev, int type_mask)
 }
 
 
-static void intel_setup_outputs(drm_device_t *dev)
+static void intel_setup_outputs(struct drm_device *dev)
 {
 	struct drm_output *output;
 
@@ -1194,7 +1194,7 @@ static void intel_setup_outputs(drm_device_t *dev)
 	}
 }
 
-void intel_modeset_init(drm_device_t *dev)
+void intel_modeset_init(struct drm_device *dev)
 {
 	int num_pipe;
 	int i;
@@ -1223,7 +1223,7 @@ void intel_modeset_init(drm_device_t *dev)
 	//drm_initial_config(dev, false);
 }
 
-void intel_modeset_cleanup(drm_device_t *dev)
+void intel_modeset_cleanup(struct drm_device *dev)
 {
 	drm_mode_config_cleanup(dev);
 }

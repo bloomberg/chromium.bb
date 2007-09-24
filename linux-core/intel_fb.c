@@ -446,7 +446,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	struct device *device = &dev->pdev->dev; 
 	struct drm_framebuffer *fb;
 	struct drm_display_mode *mode = crtc->desired_mode;
-	drm_buffer_object_t *fbo = NULL;
+	struct drm_buffer_object *fbo = NULL;
 	int ret;
 
 	info = framebuffer_alloc(sizeof(struct intelfb_par), device);
@@ -468,13 +468,11 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	fb->bits_per_pixel = 32;
 	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
 	fb->depth = 24;
-	ret = drm_buffer_object_create(dev, 
-				       fb->width * fb->height * 4, 
+	ret = drm_buffer_object_create(dev, fb->width * fb->height * 4, 
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
-				       DRM_BO_FLAG_MEM_VRAM | /* FIXME! */
-				       DRM_BO_FLAG_NO_MOVE,
+				       DRM_BO_FLAG_MEM_VRAM,
 				       0, 0, 0,
 				       &fbo);
 	if (ret || !fbo) {
@@ -483,6 +481,15 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		framebuffer_release(info);
 		return -EINVAL;
 	}
+
+	ret = drm_bo_set_pin(dev, fbo, 1);
+	if (ret) {
+		printk(KERN_ERR "failed to pin framebuffer, aborting\n");
+		drm_framebuffer_destroy(fb);
+		framebuffer_release(info);
+		return -EINVAL;
+	}
+
 	fb->offset = fbo->offset;
 	fb->bo = fbo;
 	printk("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,

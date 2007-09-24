@@ -40,7 +40,7 @@ static struct pci_device_id pciidlist[] = {
 
 
 #ifdef VIA_HAVE_FENCE
-static drm_fence_driver_t via_fence_driver = {
+static struct drm_fence_driver via_fence_driver = {
 	.num_classes = 1,
 	.wrap_diff = (1 << 30),
 	.flush_diff = (1 << 20),
@@ -65,7 +65,7 @@ static uint32_t via_mem_prios[] = {DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM
 static uint32_t via_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
 
 
-static drm_bo_driver_t via_bo_driver = {
+static struct drm_bo_driver via_bo_driver = {
 	.mem_type_prio = via_mem_prios,
 	.mem_busy_prio = via_busy_prios,
 	.num_mem_type_prio = ARRAY_SIZE(via_mem_prios),

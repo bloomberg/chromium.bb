@@ -28,30 +28,34 @@
 #include "drm.h"
 #include "nouveau_drv.h"
 
-#define RAMFC_WR(offset, val)	NV_WI32(fifoctx + NV10_RAMFC_##offset, (val))
-#define RAMFC_RD(offset)	NV_RI32(fifoctx + NV10_RAMFC_##offset)
-#define NV10_RAMFC(c) (dev_priv->ramfc_offset + NV10_RAMFC__SIZE)
+
+#define RAMFC_WR(offset,val) INSTANCE_WR(chan->ramfc->gpuobj, \
+					 NV10_RAMFC_##offset/4, (val))
+#define RAMFC_RD(offset)     INSTANCE_RD(chan->ramfc->gpuobj, \
+					 NV10_RAMFC_##offset/4)
+#define NV10_RAMFC(c) (dev_priv->ramfc_offset + ((c) * NV10_RAMFC__SIZE))
 #define NV10_RAMFC__SIZE ((dev_priv->chipset) >= 0x17 ? 64 : 32)
 
 int
-nv10_fifo_create_context(drm_device_t *dev, int channel)
+nv10_fifo_create_context(struct nouveau_channel *chan)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	struct nouveau_fifo *chan = &dev_priv->fifos[channel];
-	uint32_t fifoctx = NV10_RAMFC(channel), pushbuf;
-	int i;
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int ret;
 
-	pushbuf = nouveau_chip_instance_get(dev, chan->cmdbuf_obj->instance);
-
-	for (i=0; i<NV10_RAMFC__SIZE; i+=4)
-		NV_WI32(fifoctx + i, 0);
+	if ((ret = nouveau_gpuobj_new_fake(dev, NV10_RAMFC(chan->id), ~0,
+						NV10_RAMFC__SIZE,
+						NVOBJ_FLAG_ZERO_ALLOC |
+						NVOBJ_FLAG_ZERO_FREE,
+						NULL, &chan->ramfc)))
+		return ret;
 
 	/* Fill entries that are seen filled in dumps of nvidia driver just
 	 * after channel's is put into DMA mode
 	 */
 	RAMFC_WR(DMA_PUT       , chan->pushbuf_base);
 	RAMFC_WR(DMA_GET       , chan->pushbuf_base);
-	RAMFC_WR(DMA_INSTANCE  , pushbuf);
+	RAMFC_WR(DMA_INSTANCE  , chan->pushbuf->instance >> 4);
 	RAMFC_WR(DMA_FETCH     , NV_PFIFO_CACHE1_DMA_FETCH_TRIG_128_BYTES |
 				 NV_PFIFO_CACHE1_DMA_FETCH_SIZE_128_BYTES |
 				 NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_8 |
@@ -60,28 +64,30 @@ nv10_fifo_create_context(drm_device_t *dev, int channel)
 #endif
 				 0);
 
+	/* enable the fifo dma operation */
+	NV_WRITE(NV04_PFIFO_MODE,NV_READ(NV04_PFIFO_MODE)|(1<<chan->id));
 	return 0;
 }
 
 void
-nv10_fifo_destroy_context(drm_device_t *dev, int channel)
+nv10_fifo_destroy_context(struct nouveau_channel *chan)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx = NV10_RAMFC(channel);
-	int i;
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	for (i=0; i<NV10_RAMFC__SIZE; i+=4)
-		NV_WI32(fifoctx + i, 0);
+	NV_WRITE(NV04_PFIFO_MODE, NV_READ(NV04_PFIFO_MODE)&~(1<<chan->id));
+
+	nouveau_gpuobj_ref_del(dev, &chan->ramfc);
 }
 
 int
-nv10_fifo_load_context(drm_device_t *dev, int channel)
+nv10_fifo_load_context(struct nouveau_channel *chan)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx = NV10_RAMFC(channel);
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t tmp;
 
-	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1            , 0x00000100 | channel);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1            , 0x00000100 | chan->id);
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET          , RAMFC_RD(DMA_GET));
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUT          , RAMFC_RD(DMA_PUT));
@@ -117,10 +123,10 @@ nv10_fifo_load_context(drm_device_t *dev, int channel)
 }
 
 int
-nv10_fifo_save_context(drm_device_t *dev, int channel)
+nv10_fifo_save_context(struct nouveau_channel *chan)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
-	uint32_t fifoctx = NV10_RAMFC(channel);
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t tmp;
 
 	RAMFC_WR(DMA_PUT          , NV_READ(NV04_PFIFO_CACHE1_DMA_PUT));

@@ -30,10 +30,10 @@
 
 #include "drmP.h"
 
-int drm_add_user_object(drm_file_t * priv, drm_user_object_t * item,
+int drm_add_user_object(struct drm_file * priv, struct drm_user_object * item,
 			int shareable)
 {
-	drm_device_t *dev = priv->head->dev;
+	struct drm_device *dev = priv->head->dev;
 	int ret;
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
@@ -51,12 +51,12 @@ int drm_add_user_object(drm_file_t * priv, drm_user_object_t * item,
 	return 0;
 }
 
-drm_user_object_t *drm_lookup_user_object(drm_file_t * priv, uint32_t key)
+struct drm_user_object *drm_lookup_user_object(struct drm_file * priv, uint32_t key)
 {
-	drm_device_t *dev = priv->head->dev;
-	drm_hash_item_t *hash;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_hash_item *hash;
 	int ret;
-	drm_user_object_t *item;
+	struct drm_user_object *item;
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 
@@ -64,10 +64,10 @@ drm_user_object_t *drm_lookup_user_object(drm_file_t * priv, uint32_t key)
 	if (ret) {
 		return NULL;
 	}
-	item = drm_hash_entry(hash, drm_user_object_t, hash);
+	item = drm_hash_entry(hash, struct drm_user_object, hash);
 
 	if (priv != item->owner) {
-		drm_open_hash_t *ht = &priv->refd_object_hash[_DRM_REF_USE];
+		struct drm_open_hash *ht = &priv->refd_object_hash[_DRM_REF_USE];
 		ret = drm_ht_find_item(ht, (unsigned long)item, &hash);
 		if (ret) {
 			DRM_ERROR("Object not registered for usage\n");
@@ -77,9 +77,9 @@ drm_user_object_t *drm_lookup_user_object(drm_file_t * priv, uint32_t key)
 	return item;
 }
 
-static void drm_deref_user_object(drm_file_t * priv, drm_user_object_t * item)
+static void drm_deref_user_object(struct drm_file * priv, struct drm_user_object * item)
 {
-	drm_device_t *dev = priv->head->dev;
+	struct drm_device *dev = priv->head->dev;
 	int ret;
 
 	if (atomic_dec_and_test(&item->refcount)) {
@@ -90,7 +90,7 @@ static void drm_deref_user_object(drm_file_t * priv, drm_user_object_t * item)
 	}
 }
 
-int drm_remove_user_object(drm_file_t * priv, drm_user_object_t * item)
+int drm_remove_user_object(struct drm_file * priv, struct drm_user_object * item)
 {
 	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
 
@@ -105,8 +105,8 @@ int drm_remove_user_object(drm_file_t * priv, drm_user_object_t * item)
 	return 0;
 }
 
-static int drm_object_ref_action(drm_file_t * priv, drm_user_object_t * ro,
-				 drm_ref_t action)
+static int drm_object_ref_action(struct drm_file * priv, struct drm_user_object * ro,
+				 enum drm_ref_type action)
 {
 	int ret = 0;
 
@@ -124,12 +124,12 @@ static int drm_object_ref_action(drm_file_t * priv, drm_user_object_t * ro,
 	return ret;
 }
 
-int drm_add_ref_object(drm_file_t * priv, drm_user_object_t * referenced_object,
-		       drm_ref_t ref_action)
+int drm_add_ref_object(struct drm_file * priv, struct drm_user_object * referenced_object,
+		       enum drm_ref_type ref_action)
 {
 	int ret = 0;
-	drm_ref_object_t *item;
-	drm_open_hash_t *ht = &priv->refd_object_hash[ref_action];
+	struct drm_ref_object *item;
+	struct drm_open_hash *ht = &priv->refd_object_hash[ref_action];
 
 	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
 	if (!referenced_object->shareable && priv != referenced_object->owner) {
@@ -181,11 +181,11 @@ int drm_add_ref_object(drm_file_t * priv, drm_user_object_t * referenced_object,
 	return ret;
 }
 
-drm_ref_object_t *drm_lookup_ref_object(drm_file_t * priv,
-					drm_user_object_t * referenced_object,
-					drm_ref_t ref_action)
+struct drm_ref_object *drm_lookup_ref_object(struct drm_file * priv,
+					struct drm_user_object * referenced_object,
+					enum drm_ref_type ref_action)
 {
-	drm_hash_item_t *hash;
+	struct drm_hash_item *hash;
 	int ret;
 
 	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
@@ -194,32 +194,32 @@ drm_ref_object_t *drm_lookup_ref_object(drm_file_t * priv,
 	if (ret)
 		return NULL;
 
-	return drm_hash_entry(hash, drm_ref_object_t, hash);
+	return drm_hash_entry(hash, struct drm_ref_object, hash);
 }
 
-static void drm_remove_other_references(drm_file_t * priv,
-					drm_user_object_t * ro)
+static void drm_remove_other_references(struct drm_file * priv,
+					struct drm_user_object * ro)
 {
 	int i;
-	drm_open_hash_t *ht;
-	drm_hash_item_t *hash;
-	drm_ref_object_t *item;
+	struct drm_open_hash *ht;
+	struct drm_hash_item *hash;
+	struct drm_ref_object *item;
 
 	for (i = _DRM_REF_USE + 1; i < _DRM_NO_REF_TYPES; ++i) {
 		ht = &priv->refd_object_hash[i];
 		while (!drm_ht_find_item(ht, (unsigned long)ro, &hash)) {
-			item = drm_hash_entry(hash, drm_ref_object_t, hash);
+			item = drm_hash_entry(hash, struct drm_ref_object, hash);
 			drm_remove_ref_object(priv, item);
 		}
 	}
 }
 
-void drm_remove_ref_object(drm_file_t * priv, drm_ref_object_t * item)
+void drm_remove_ref_object(struct drm_file * priv, struct drm_ref_object * item)
 {
 	int ret;
-	drm_user_object_t *user_object = (drm_user_object_t *) item->hash.key;
-	drm_open_hash_t *ht = &priv->refd_object_hash[item->unref_action];
-	drm_ref_t unref_action;
+	struct drm_user_object *user_object = (struct drm_user_object *) item->hash.key;
+	struct drm_open_hash *ht = &priv->refd_object_hash[item->unref_action];
+	enum drm_ref_type unref_action;
 
 	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
 	unref_action = item->unref_action;
@@ -244,12 +244,12 @@ void drm_remove_ref_object(drm_file_t * priv, drm_ref_object_t * item)
 
 }
 
-int drm_user_object_ref(drm_file_t * priv, uint32_t user_token,
-			drm_object_type_t type, drm_user_object_t ** object)
+int drm_user_object_ref(struct drm_file * priv, uint32_t user_token,
+			enum drm_object_type type, struct drm_user_object ** object)
 {
-	drm_device_t *dev = priv->head->dev;
-	drm_user_object_t *uo;
-	drm_hash_item_t *hash;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_user_object *uo;
+	struct drm_hash_item *hash;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
@@ -258,7 +258,7 @@ int drm_user_object_ref(drm_file_t * priv, uint32_t user_token,
 		DRM_ERROR("Could not find user object to reference.\n");
 		goto out_err;
 	}
-	uo = drm_hash_entry(hash, drm_user_object_t, hash);
+	uo = drm_hash_entry(hash, struct drm_user_object, hash);
 	if (uo->type != type) {
 		ret = -EINVAL;
 		goto out_err;
@@ -274,12 +274,12 @@ int drm_user_object_ref(drm_file_t * priv, uint32_t user_token,
 	return ret;
 }
 
-int drm_user_object_unref(drm_file_t * priv, uint32_t user_token,
-			  drm_object_type_t type)
+int drm_user_object_unref(struct drm_file * priv, uint32_t user_token,
+			  enum drm_object_type type)
 {
-	drm_device_t *dev = priv->head->dev;
-	drm_user_object_t *uo;
-	drm_ref_object_t *ro;
+	struct drm_device *dev = priv->head->dev;
+	struct drm_user_object *uo;
+	struct drm_ref_object *ro;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);

@@ -38,7 +38,7 @@
 #define INTEL_DVO_CHIP_TVOUT 4
 
 struct intel_i2c_chan {
-	drm_device_t *drm_dev; /* for getting at dev. private (mmio etc.) */
+	struct drm_device *drm_dev; /* for getting at dev. private (mmio etc.) */
 	u32 reg; /* GPIO reg */
 	struct i2c_adapter adapter;
 	struct i2c_algo_bit_data algo;
@@ -58,23 +58,23 @@ struct intel_crtc {
 	u8 lut_r[256], lut_g[256], lut_b[256];
 };
 
-struct intel_i2c_chan *intel_i2c_create(drm_device_t *dev, const u32 reg,
+struct intel_i2c_chan *intel_i2c_create(struct drm_device *dev, const u32 reg,
 					const char *name);
 void intel_i2c_destroy(struct intel_i2c_chan *chan);
 int intel_ddc_get_modes(struct drm_output *output);
 extern bool intel_ddc_probe(struct drm_output *output);
 
-extern void intel_crt_init(drm_device_t *dev);
-extern void intel_sdvo_init(drm_device_t *dev, int output_device);
-extern void intel_lvds_init(drm_device_t *dev);
+extern void intel_crt_init(struct drm_device *dev);
+extern void intel_sdvo_init(struct drm_device *dev, int output_device);
+extern void intel_lvds_init(struct drm_device *dev);
 
 extern void intel_crtc_load_lut(struct drm_crtc *crtc);
 extern void intel_output_prepare (struct drm_output *output);
 extern void intel_output_commit (struct drm_output *output);
-extern struct drm_display_mode *intel_crtc_mode_get(drm_device_t *dev,
+extern struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
  						    struct drm_crtc *crtc);
-extern void intel_wait_for_vblank(drm_device_t *dev);
-extern struct drm_crtc *intel_get_crtc_from_pipe(drm_device_t *dev, int pipe);
+extern void intel_wait_for_vblank(struct drm_device *dev);
+extern struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe);
 
 extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc);

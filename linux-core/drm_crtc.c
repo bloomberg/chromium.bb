@@ -117,7 +117,7 @@ struct drm_crtc *drm_crtc_from_fb(struct drm_device *dev,
  * RETURNS:
  * Pointer to new framebuffer or NULL on error.
  */
-struct drm_framebuffer *drm_framebuffer_create(drm_device_t *dev)
+struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev)
 {
 	struct drm_framebuffer *fb;
 
@@ -153,7 +153,7 @@ EXPORT_SYMBOL(drm_framebuffer_create);
  */
 void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 {
-	drm_device_t *dev = fb->dev;
+	struct drm_device *dev = fb->dev;
 	struct drm_crtc *crtc;
 
 	/* remove from any CRTC */
@@ -183,7 +183,7 @@ EXPORT_SYMBOL(drm_framebuffer_destroy);
  * RETURNS:
  * Pointer to new CRTC object or NULL on error.
  */
-struct drm_crtc *drm_crtc_create(drm_device_t *dev,
+struct drm_crtc *drm_crtc_create(struct drm_device *dev,
 				 const struct drm_crtc_funcs *funcs)
 {
 	struct drm_crtc *crtc;
@@ -216,7 +216,7 @@ EXPORT_SYMBOL(drm_crtc_create);
  */
 void drm_crtc_destroy(struct drm_crtc *crtc)
 {
-	drm_device_t *dev = crtc->dev;
+	struct drm_device *dev = crtc->dev;
 
 	if (crtc->funcs->cleanup)
 		(*crtc->funcs->cleanup)(crtc);
@@ -243,7 +243,7 @@ EXPORT_SYMBOL(drm_crtc_destroy);
 bool drm_crtc_in_use(struct drm_crtc *crtc)
 {
 	struct drm_output *output;
-	drm_device_t *dev = crtc->dev;
+	struct drm_device *dev = crtc->dev;
 	/* FIXME: Locking around list access? */
 	list_for_each_entry(output, &dev->mode_config.output_list, head)
 		if (output->crtc == crtc)
@@ -369,7 +369,7 @@ void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
 bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		       int x, int y)
 {
-	drm_device_t *dev = crtc->dev;
+	struct drm_device *dev = crtc->dev;
 	struct drm_display_mode *adjusted_mode, saved_mode;
 	int saved_x, saved_y;
 	bool didLock = false;
@@ -549,7 +549,7 @@ EXPORT_SYMBOL(drm_mode_remove);
  * RETURNS:
  * Pointer to the new output or NULL on error.
  */
-struct drm_output *drm_output_create(drm_device_t *dev,
+struct drm_output *drm_output_create(struct drm_device *dev,
 				     const struct drm_output_funcs *funcs,
 				     const char *name)
 {
@@ -698,7 +698,7 @@ EXPORT_SYMBOL(drm_mode_destroy);
  * Initialize @dev's mode_config structure, used for tracking the graphics
  * configuration of @dev.
  */
-void drm_mode_config_init(drm_device_t *dev)
+void drm_mode_config_init(struct drm_device *dev)
 {
 	mutex_init(&dev->mode_config.mutex);
 	INIT_LIST_HEAD(&dev->mode_config.fb_list);
@@ -724,10 +724,10 @@ EXPORT_SYMBOL(drm_mode_config_init);
  * RETURNS:
  * Zero on success, -EINVAL if the handle couldn't be found.
  */
-static int drm_get_buffer_object(drm_device_t *dev, struct drm_buffer_object **bo, unsigned long handle)
+static int drm_get_buffer_object(struct drm_device *dev, struct drm_buffer_object **bo, unsigned long handle)
 {
-	drm_user_object_t *uo;
-	drm_hash_item_t *hash;
+	struct drm_user_object *uo;
+	struct drm_hash_item *hash;
 	int ret;
 
 	*bo = NULL;
@@ -740,13 +740,13 @@ static int drm_get_buffer_object(drm_device_t *dev, struct drm_buffer_object **b
 		goto out_err;
 	}
 
-	uo = drm_hash_entry(hash, drm_user_object_t, hash);
+	uo = drm_hash_entry(hash, struct drm_user_object, hash);
 	if (uo->type != drm_buffer_type) {
 		ret = -EINVAL;
 		goto out_err;
 	}
 	
-	*bo = drm_user_object_entry(uo, drm_buffer_object_t, base);
+	*bo = drm_user_object_entry(uo, struct drm_buffer_object, base);
 	ret = 0;
 out_err:
 	mutex_unlock(&dev->struct_mutex);
@@ -760,7 +760,7 @@ out_err:
  * LOCKING:
  * Caller must hold mode config lock.
  */
-static void drm_pick_crtcs (drm_device_t *dev)
+static void drm_pick_crtcs (struct drm_device *dev)
 {
 	int c, o;
 	struct drm_output *output, *output_equal;
@@ -853,7 +853,7 @@ clone:
  * RETURNS:
  * Zero if everything went ok, nonzero otherwise.
  */
-bool drm_initial_config(drm_device_t *dev, bool can_grow)
+bool drm_initial_config(struct drm_device *dev, bool can_grow)
 {
 	struct drm_output *output;
 	int ret = false;
@@ -891,7 +891,7 @@ EXPORT_SYMBOL(drm_initial_config);
  *
  * FIXME: cleanup any dangling user buffer objects too
  */
-void drm_mode_config_cleanup(drm_device_t *dev)
+void drm_mode_config_cleanup(struct drm_device *dev)
 {
 	struct drm_output *output, *ot;
 	struct drm_crtc *crtc, *ct;
@@ -942,7 +942,7 @@ EXPORT_SYMBOL(drm_mode_config_cleanup);
  */
 int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set, struct drm_framebuffer *fb)
 {
-	drm_device_t *dev = crtc->dev;
+	struct drm_device *dev = crtc->dev;
 	struct drm_crtc **save_crtcs, *new_crtc;
 	bool save_enabled = crtc->enabled;
 	bool changed;
@@ -1085,12 +1085,10 @@ void drm_crtc_convert_umode(struct drm_display_mode *out, struct drm_mode_modein
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_getresources(struct inode *inode, struct file *filp,
-			  unsigned int cmd, unsigned long arg)
+int drm_mode_getresources(struct drm_device *dev,
+			  void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	struct drm_mode_card_res __user *argp = (void __user *)arg;
+	struct drm_mode_card_res __user *argp = (void __user *)data;
 	struct drm_mode_card_res card_res;
 	struct list_head *lh;
 	struct drm_framebuffer *fb;
@@ -1236,12 +1234,10 @@ out_unlock:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_getcrtc(struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg)
+int drm_mode_getcrtc(struct drm_device *dev,
+		     void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	struct drm_mode_crtc __user *argp = (void __user *)arg;
+	struct drm_mode_crtc __user *argp = (void __user *)data;
 	struct drm_mode_crtc crtc_resp;
 	struct drm_crtc *crtc;
 	struct drm_output *output;
@@ -1300,12 +1296,10 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_getoutput(struct inode *inode, struct file *filp,
-		       unsigned int cmd, unsigned long arg)
+int drm_mode_getoutput(struct drm_device *dev,
+		       void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	struct drm_mode_get_output __user *argp = (void __user *)arg;
+	struct drm_mode_get_output __user *argp = (void __user *)data;
 	struct drm_mode_get_output out_resp;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
@@ -1390,12 +1384,10 @@ out_unlock:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_setcrtc(struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg)
+int drm_mode_setcrtc(struct drm_device *dev,
+		     void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	struct drm_mode_crtc __user *argp = (void __user *)arg;
+	struct drm_mode_crtc __user *argp = (void __user *)data;
 	struct drm_mode_crtc crtc_req;
 	struct drm_crtc *crtc;
 	struct drm_output **output_set = NULL, *output;
@@ -1508,12 +1500,10 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_addfb(struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg)
+int drm_mode_addfb(struct drm_device *dev,
+		   void *data, struct drm_file *file_priv)
 {
-	struct drm_file *priv = filp->private_data;
-	struct drm_device *dev = priv->head->dev;
-	struct drm_mode_fb_cmd __user *argp = (void __user *)arg;
+	struct drm_mode_fb_cmd __user *argp = (void __user *)data;
 	struct drm_mode_fb_cmd r;
 	struct drm_mode_config *config = &dev->mode_config;
 	struct drm_framebuffer *fb;
@@ -1560,7 +1550,7 @@ int drm_mode_addfb(struct inode *inode, struct file *filp,
 
 	r.buffer_id = fb->id;
 
-	list_add(&fb->filp_head, &priv->fbs);
+	list_add(&fb->filp_head, &file_priv->fbs);
 
 	if (copy_to_user(argp, &r, sizeof(r))) {
 		ret = -EFAULT;
@@ -1595,13 +1585,11 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_rmfb(struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg)
+int drm_mode_rmfb(struct drm_device *dev,
+		   void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
 	struct drm_framebuffer *fb = 0;
-	uint32_t id = arg;
+	uint32_t id = data;
 	int ret = 0;
 
 	mutex_lock(&dev->mode_config.mutex);
@@ -1644,12 +1632,10 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_getfb(struct inode *inode, struct file *filp,
-		   unsigned int cmd, unsigned long arg)
+int drm_mode_getfb(struct drm_device *dev,
+		   void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;	
-	struct drm_mode_fb_cmd __user *argp = (void __user *)arg;
+	struct drm_mode_fb_cmd __user *argp = (void __user *)data;
 	struct drm_mode_fb_cmd r;
 	struct drm_framebuffer *fb;
 	int ret = 0;
@@ -1696,8 +1682,8 @@ out:
  */
 void drm_fb_release(struct file *filp)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	struct drm_framebuffer *fb, *tfb;
 
 	mutex_lock(&dev->mode_config.mutex);
@@ -1724,12 +1710,10 @@ void drm_fb_release(struct file *filp)
  * writes new mode id into arg.
  * Zero on success, errno on failure.
  */
-int drm_mode_addmode(struct inode *inode, struct file *filp,
-		     unsigned int cmd, unsigned long arg)
+int drm_mode_addmode(struct drm_device *dev,
+		     void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	struct drm_mode_modeinfo __user *argp = (void __user *)arg;
+	struct drm_mode_modeinfo __user *argp = (void __user *)data;
 	struct drm_mode_modeinfo new_mode;
 	struct drm_display_mode *user_mode;
 	int ret = 0;
@@ -1774,12 +1758,10 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_rmmode(struct inode *inode, struct file *filp,
-		    unsigned int cmd, unsigned long arg)
+int drm_mode_rmmode(struct drm_device *dev,
+		    void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	uint32_t id = arg;
+	uint32_t id = (uint32_t)data;
 	struct drm_display_mode *mode, *t;
 	int ret = -EINVAL;
 
@@ -1827,12 +1809,10 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_attachmode(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg)
+int drm_mode_attachmode(struct drm_device *dev,
+			void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	struct drm_mode_mode_cmd __user *argp = (void __user *)arg;
+	struct drm_mode_mode_cmd __user *argp = (void __user *)data;
 	struct drm_mode_mode_cmd mode_cmd;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
@@ -1884,12 +1864,10 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_detachmode(struct inode *inode, struct file *filp,
-			unsigned int cmd, unsigned long arg)
+int drm_mode_detachmode(struct drm_device *dev,
+			void *data, struct drm_file *file_priv)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
-	struct drm_mode_mode_cmd __user *argp = (void __user *)arg;
+	struct drm_mode_mode_cmd __user *argp = (void __user *)data;
 	struct drm_mode_mode_cmd mode_cmd;
 	struct drm_output *output;
 	struct drm_display_mode *mode;

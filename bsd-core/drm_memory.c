@@ -1,6 +1,3 @@
-/* drm_memory.h -- Memory management wrappers for DRM -*- linux-c -*-
- * Created: Thu Feb  4 14:00:34 1999 by faith@valinux.com
- */
 /*-
  *Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -29,6 +26,14 @@
  *    Rickard E. (Rik) Faith <faith@valinux.com>
  *    Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file drm_memory.c
+ * Wrappers for kernel memory allocation routines, and MTRR management support.
+ *
+ * This file previously implemented a memory consumption tracking system using
+ * the "area" argument for various different types of allocations, but that
+ * has been stripped out for now.
  */
 
 #include "drmP.h"

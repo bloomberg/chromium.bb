@@ -1,6 +1,3 @@
-/* drm_auth.h -- IOCTLs for authentication -*- linux-c -*-
- * Created: Tue Feb  2 08:37:54 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -31,6 +28,11 @@
  *
  */
 
+/** @file drm_auth.c
+ * Implementation of the get/authmagic ioctls implementing the authentication
+ * scheme between the master and clients.
+ */
+
 #include "drmP.h"
 
 static int drm_hash_magic(drm_magic_t magic)
@@ -38,25 +40,29 @@ static int drm_hash_magic(drm_magic_t magic)
 	return magic & (DRM_HASH_SIZE-1);
 }
 
+/**
+ * Returns the file private associated with the given magic number.
+ */
 static drm_file_t *drm_find_file(drm_device_t *dev, drm_magic_t magic)
 {
-	drm_file_t	  *retval = NULL;
 	drm_magic_entry_t *pt;
-	int		  hash;
+	int hash = drm_hash_magic(magic);
 
-	hash = drm_hash_magic(magic);
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
 
-	DRM_LOCK();
 	for (pt = dev->magiclist[hash].head; pt; pt = pt->next) {
 		if (pt->magic == magic) {
-			retval = pt->priv;
-			break;
+			return pt->priv;
 		}
 	}
-	DRM_UNLOCK();
-	return retval;
+
+	return NULL;
 }
 
+/**
+ * Inserts the given magic number into the hash table of used magic number
+ * lists.
+ */
 static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 {
 	int		  hash;
@@ -64,9 +70,11 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 
 	DRM_DEBUG("%d\n", magic);
 
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+
 	hash = drm_hash_magic(magic);
 	entry = malloc(sizeof(*entry), M_DRM, M_ZERO | M_NOWAIT);
-	if (!entry) return DRM_ERR(ENOMEM);
+	if (!entry) return ENOMEM;
 	entry->magic = magic;
 	entry->priv  = priv;
 	entry->next  = NULL;
@@ -84,16 +92,21 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 	return 0;
 }
 
+/**
+ * Removes the given magic number from the hash table of used magic number
+ * lists.
+ */
 static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 {
 	drm_magic_entry_t *prev = NULL;
 	drm_magic_entry_t *pt;
 	int		  hash;
 
+	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
+
 	DRM_DEBUG("%d\n", magic);
 	hash = drm_hash_magic(magic);
 
-	DRM_LOCK();
 	for (pt = dev->magiclist[hash].head; pt; prev = pt, pt = pt->next) {
 		if (pt->magic == magic) {
 			if (dev->magiclist[hash].head == pt) {
@@ -105,68 +118,69 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
 			if (prev) {
 				prev->next = pt->next;
 			}
-			DRM_UNLOCK();
 			return 0;
 		}
 	}
-	DRM_UNLOCK();
 
 	free(pt, M_DRM);
-	return DRM_ERR(EINVAL);
+	return EINVAL;
 }
 
-int drm_getmagic(DRM_IOCTL_ARGS)
+/**
+ * Called by the client, this returns a unique magic number to be authorized
+ * by the master.
+ *
+ * The master may use its own knowledge of the client (such as the X
+ * connection that the magic is passed over) to determine if the magic number
+ * should be authenticated.
+ */
+int drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	static drm_magic_t sequence = 0;
-	drm_auth_t auth;
-	drm_file_t *priv;
-
-	DRM_LOCK();
-	priv = drm_find_file_by_proc(dev, p);
-	DRM_UNLOCK();
-	if (priv == NULL) {
-		DRM_ERROR("can't find authenticator\n");
-		return EINVAL;
-	}
+	drm_auth_t *auth = data;
 
 				/* Find unique magic */
-	if (priv->magic) {
-		auth.magic = priv->magic;
+	if (file_priv->magic) {
+		auth->magic = file_priv->magic;
 	} else {
+		DRM_LOCK();
 		do {
 			int old = sequence;
-			
-			auth.magic = old+1;
-			
-			if (!atomic_cmpset_int(&sequence, old, auth.magic))
+
+			auth->magic = old+1;
+
+			if (!atomic_cmpset_int(&sequence, old, auth->magic))
 				continue;
-		} while (drm_find_file(dev, auth.magic));
-		priv->magic = auth.magic;
-		drm_add_magic(dev, priv, auth.magic);
+		} while (drm_find_file(dev, auth->magic));
+		file_priv->magic = auth->magic;
+		drm_add_magic(dev, file_priv, auth->magic);
+		DRM_UNLOCK();
 	}
 
-	DRM_DEBUG("%u\n", auth.magic);
-
-	DRM_COPY_TO_USER_IOCTL((drm_auth_t *)data, auth, sizeof(auth));
+	DRM_DEBUG("%u\n", auth->magic);
 
 	return 0;
 }
 
-int drm_authmagic(DRM_IOCTL_ARGS)
+/**
+ * Marks the client associated with the given magic number as authenticated.
+ */
+int drm_authmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	drm_auth_t	   auth;
-	drm_file_t	   *file;
-	DRM_DEVICE;
+	drm_auth_t *auth = data;
+	drm_file_t *priv;
 
-	DRM_COPY_FROM_USER_IOCTL(auth, (drm_auth_t *)data, sizeof(auth));
+	DRM_DEBUG("%u\n", auth->magic);
 
-	DRM_DEBUG("%u\n", auth.magic);
-
-	if ((file = drm_find_file(dev, auth.magic))) {
-		file->authenticated = 1;
-		drm_remove_magic(dev, auth.magic);
+	DRM_LOCK();
+	priv = drm_find_file(dev, auth->magic);
+	if (priv != NULL) {
+		priv->authenticated = 1;
+		drm_remove_magic(dev, auth->magic);
+		DRM_UNLOCK();
 		return 0;
+	} else {
+		DRM_UNLOCK();
+		return EINVAL;
 	}
-	return DRM_ERR(EINVAL);
 }

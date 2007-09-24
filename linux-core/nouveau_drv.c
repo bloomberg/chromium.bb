@@ -32,7 +32,7 @@ static struct pci_device_id pciidlist[] = {
 	nouveau_PCI_IDS
 };
 
-extern drm_ioctl_desc_t nouveau_ioctls[];
+extern struct drm_ioctl_desc nouveau_ioctls[];
 extern int nouveau_max_ioctl;
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);

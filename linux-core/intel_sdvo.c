@@ -62,8 +62,8 @@ struct intel_sdvo_priv {
  */
 static void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 {
-	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = output->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv   *sdvo_priv = intel_output->dev_priv;
 	u32 bval = val, cval = val;
@@ -567,8 +567,8 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 				struct drm_display_mode *mode,
 				struct drm_display_mode *adjusted_mode)
 {
-	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = output->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_crtc *crtc = output->crtc;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	struct intel_output *intel_output = output->driver_private;
@@ -698,8 +698,8 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 
 static void intel_sdvo_dpms(struct drm_output *output, int mode)
 {
-	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = output->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u32 temp;
@@ -745,8 +745,8 @@ static void intel_sdvo_dpms(struct drm_output *output, int mode)
 
 static void intel_sdvo_save(struct drm_output *output)
 {
-	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = output->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int o;
@@ -782,8 +782,8 @@ static void intel_sdvo_save(struct drm_output *output)
 
 static void intel_sdvo_restore(struct drm_output *output)
 {
-	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = output->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int o;
@@ -941,7 +941,7 @@ static const struct drm_output_funcs intel_sdvo_output_funcs = {
 	.cleanup = intel_sdvo_destroy
 };
 
-void intel_sdvo_init(drm_device_t *dev, int output_device)
+void intel_sdvo_init(struct drm_device *dev, int output_device)
 {
 	struct drm_output *output;
 	struct intel_output *intel_output;

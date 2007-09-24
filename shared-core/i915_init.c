@@ -109,18 +109,18 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
  *   - allocate initial config memory
  *   - setup the DRM framebuffer with the allocated memory
  */
-int i915_driver_load(drm_device_t *dev, unsigned long flags)
+int i915_driver_load(struct drm_device *dev, unsigned long flags)
 {
-	drm_i915_private_t *dev_priv;
+	struct drm_i915_private *dev_priv;
 	unsigned long agp_size, prealloc_size;
 	unsigned long sareapage;
 	int size, ret;
 
-	dev_priv = drm_alloc(sizeof(drm_i915_private_t), DRM_MEM_DRIVER);
+	dev_priv = drm_alloc(sizeof(struct drm_i915_private), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
-		return DRM_ERR(ENOMEM);
+		return -ENOMEM;
 
-	memset(dev_priv, 0, sizeof(drm_i915_private_t));
+	memset(dev_priv, 0, sizeof(struct drm_i915_private));
 	dev->dev_private = (void *)dev_priv;
 //	dev_priv->flags = flags;
 
@@ -167,7 +167,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	init_waitqueue_head(&dev->lock.lock_queue);
 
 	/* FIXME: assume sarea_priv is right after SAREA */
-        dev_priv->sarea_priv = dev_priv->sarea->handle + sizeof(drm_sarea_t);
+        dev_priv->sarea_priv = dev_priv->sarea->handle + sizeof(struct drm_sarea);
 
 	/*
 	 * Initialize the memory manager for local and AGP space
@@ -186,11 +186,16 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
 				       DRM_BO_FLAG_MEM_VRAM |
-				       DRM_BO_FLAG_NO_EVICT,
-				       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
+				       DRM_BO_HINT_DONT_FENCE, 0, 0x1, 0,
 				       &dev_priv->ring_buffer);
 	if (ret < 0) {
 		DRM_ERROR("Unable to allocate ring buffer\n");
+		return -EINVAL;
+	}
+
+	ret = drm_bo_set_pin(dev, dev_priv->ring_buffer, 1);
+	if (ret < 0) {
+		DRM_ERROR("Unable to pin ring buffer\n");
 		return -EINVAL;
 	}
 
@@ -236,7 +241,7 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 			dev->dev_private = (void *)dev_priv;
 			i915_dma_cleanup(dev);
 			DRM_ERROR("Can not allocate hardware status page\n");
-			return DRM_ERR(ENOMEM);
+			return -ENOMEM;
 		}
 		dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
 		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
@@ -253,9 +258,9 @@ int i915_driver_load(drm_device_t *dev, unsigned long flags)
 	return 0;
 }
 
-int i915_driver_unload(drm_device_t *dev)
+int i915_driver_unload(struct drm_device *dev)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	if (dev_priv->ring.virtual_start) {
 		drm_core_ioremapfree(&dev_priv->ring.map, dev);
@@ -305,18 +310,20 @@ int i915_driver_unload(drm_device_t *dev)
 	return 0;
 }
 
-void i915_driver_lastclose(drm_device_t * dev)
+void i915_driver_lastclose(struct drm_device *dev)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	i915_do_cleanup_pageflip(dev);
 	
 	i915_mem_takedown(&(dev_priv->agp_heap));
 
 	i915_dma_cleanup(dev);
 }
 
-void i915_driver_preclose(drm_device_t * dev, DRMFILE filp)
+void i915_driver_preclose(struct drm_device *dev, struct drm_file *filp)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	i915_mem_release(dev, filp, dev_priv->agp_heap);
 }
 

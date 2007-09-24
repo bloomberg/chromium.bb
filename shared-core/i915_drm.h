@@ -39,7 +39,7 @@
 				 * of chars for next/prev indices */
 #define I915_LOG_MIN_TEX_REGION_SIZE 14
 
-typedef struct _drm_i915_init {
+typedef struct drm_i915_init {
 	enum {
 		I915_INIT_DMA = 0x01,
 		I915_CLEANUP_DMA = 0x02,
@@ -63,8 +63,8 @@ typedef struct _drm_i915_init {
 	unsigned int chipset;
 } drm_i915_init_t;
 
-typedef struct _drm_i915_sarea {
-	drm_tex_region_t texList[I915_NR_TEX_REGIONS + 1];
+typedef struct drm_i915_sarea {
+	struct drm_tex_region texList[I915_NR_TEX_REGIONS + 1];
 	int last_upload;	/* last time texture was uploaded */
 	int last_enqueue;	/* last time a buffer was enqueued */
 	int last_dispatch;	/* age of the most recently dispatched buffer */
@@ -105,14 +105,14 @@ typedef struct _drm_i915_sarea {
 	unsigned int rotated_tiled;
 	unsigned int rotated2_tiled;
 
-	int pipeA_x;
-	int pipeA_y;
-	int pipeA_w;
-	int pipeA_h;
-	int pipeB_x;
-	int pipeB_y;
-	int pipeB_w;
-	int pipeB_h;
+	int planeA_x;
+	int planeA_y;
+	int planeA_w;
+	int planeA_h;
+	int planeB_x;
+	int planeB_y;
+	int planeB_w;
+	int planeB_h;
 
 	/* Triple buffering */
 	drm_handle_t third_handle;
@@ -182,31 +182,31 @@ typedef struct _drm_i915_sarea {
 /* Asynchronous page flipping:
  */
 typedef struct drm_i915_flip {
-	int pipes;
+	int planes;
 } drm_i915_flip_t;
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
  */
-typedef struct _drm_i915_batchbuffer {
+typedef struct drm_i915_batchbuffer {
 	int start;		/* agp offset */
 	int used;		/* nr bytes in use */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
 	int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO */
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-	drm_clip_rect_t __user *cliprects;	/* pointer to userspace cliprects */
+	struct drm_clip_rect __user *cliprects;	/* pointer to userspace cliprects */
 } drm_i915_batchbuffer_t;
 
 /* As above, but pass a pointer to userspace buffer which can be
  * validated by the kernel prior to sending to hardware.
  */
-typedef struct _drm_i915_cmdbuffer {
+typedef struct drm_i915_cmdbuffer {
 	char __user *buf;	/* pointer to userspace command buffer */
 	int sz;			/* nr bytes in buf */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
 	int DR4;		/* window origin for GFX_OP_DRAWRECT_INFO */
 	int num_cliprects;	/* mulitpass with multiple cliprects? */
-	drm_clip_rect_t __user *cliprects;	/* pointer to userspace cliprects */
+	struct drm_clip_rect __user *cliprects;	/* pointer to userspace cliprects */
 } drm_i915_cmdbuffer_t;
 
 /* Userspace can request & wait on irq's:
@@ -283,7 +283,7 @@ typedef struct drm_i915_vblank_pipe {
  */
 typedef struct drm_i915_vblank_swap {
 	drm_drawable_t drawable;
-	drm_vblank_seq_type_t seqtype;
+	enum drm_vblank_seq_type seqtype;
 	unsigned int sequence;
 } drm_i915_vblank_swap_t;
 

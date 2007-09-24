@@ -15,9 +15,6 @@
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK              0xfff00000
 #    define NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT             20
 
-#define NV03_PGRAPH_STATUS                                 0x004006b0
-#define NV04_PGRAPH_STATUS                                 0x00400700
-
 #define NV_RAMIN                                           0x00700000
 
 #define NV_RAMHT_HANDLE_OFFSET                             0
@@ -39,6 +36,8 @@
 #define NV_DMA_TARGET_VIDMEM 0
 #define NV_DMA_TARGET_PCI    2
 #define NV_DMA_TARGET_AGP    3
+/*The following is not a real value used by nvidia cards, it's changed by nouveau_object_dma_create*/
+#define NV_DMA_TARGET_PCI_NONLINEAR   8
 
 /* Some object classes we care about in the drm */
 #define NV_CLASS_DMA_FROM_MEMORY                           0x00000002
@@ -47,11 +46,15 @@
 #define NV_CLASS_DMA_IN_MEMORY                             0x0000003D
 
 #define NV03_FIFO_SIZE                                     0x8000UL
-#define NV_MAX_FIFO_NUMBER                                 32
+#define NV_MAX_FIFO_NUMBER                                 128
 #define NV03_FIFO_REGS_SIZE                                0x10000
 #define NV03_FIFO_REGS(i)                                  (0x00800000+i*NV03_FIFO_REGS_SIZE)
 #    define NV03_FIFO_REGS_DMAPUT(i)                       (NV03_FIFO_REGS(i)+0x40)
 #    define NV03_FIFO_REGS_DMAGET(i)                       (NV03_FIFO_REGS(i)+0x44)
+#define NV50_FIFO_REGS_SIZE                                0x2000
+#define NV50_FIFO_REGS(i)                                  (0x00c00000+i*NV50_FIFO_REGS_SIZE)
+#    define NV50_FIFO_REGS_DMAPUT(i)                       (NV50_FIFO_REGS(i)+0x40)
+#    define NV50_FIFO_REGS_DMAGET(i)                       (NV50_FIFO_REGS(i)+0x44)
 
 #define NV03_PMC_BOOT_0                                    0x00000000
 #define NV03_PMC_INTR_0                                    0x00000100
@@ -73,6 +76,16 @@
 #define NV40_PMC_1704                                      0x00001704
 #define NV40_PMC_1708                                      0x00001708
 #define NV40_PMC_170C                                      0x0000170C
+
+/* probably PMC ? */
+#define NV50_PUNK_BAR0_PRAMIN                              0x00001700
+#define NV50_PUNK_BAR_CFG_BASE                             0x00001704
+#define NV50_PUNK_BAR_CFG_BASE_VALID                          (1<<30)
+#define NV50_PUNK_BAR1_CTXDMA                              0x00001708
+#define NV50_PUNK_BAR1_CTXDMA_VALID                           (1<<31)
+#define NV50_PUNK_BAR3_CTXDMA                              0x0000170C
+#define NV50_PUNK_BAR3_CTXDMA_VALID                           (1<<31)
+#define NV50_PUNK_UNK1710                                  0x00001710
 
 #define NV04_PTIMER_INTR_0                                 0x00009100
 #define NV04_PTIMER_INTR_EN_0                              0x00009140
@@ -104,6 +117,31 @@
 #define NV04_PGRAPH_DEBUG_3                                0x0040008c
 #define NV10_PGRAPH_DEBUG_4                                0x00400090
 #define NV03_PGRAPH_INTR                                   0x00400100
+#define NV03_PGRAPH_NSTATUS                                0x00400104
+#    define NV03_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<23)
+#    define NV03_PGRAPH_NSTATUS_INVALID_STATE                 (1<<24)
+#    define NV03_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<25)
+#    define NV03_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<26)
+#define NV03_PGRAPH_NSOURCE                                0x00400108
+#    define NV03_PGRAPH_NSOURCE_NOTIFICATION                  (1<< 0)
+#    define NV03_PGRAPH_NSOURCE_DATA_ERROR                    (1<< 1)
+#    define NV03_PGRAPH_NSOURCE_PROTECTION_ERROR              (1<< 2)
+#    define NV03_PGRAPH_NSOURCE_RANGE_EXCEPTION               (1<< 3)
+#    define NV03_PGRAPH_NSOURCE_LIMIT_COLOR                   (1<< 4)
+#    define NV03_PGRAPH_NSOURCE_LIMIT_ZETA                    (1<< 5)
+#    define NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD                  (1<< 6)
+#    define NV03_PGRAPH_NSOURCE_DMA_R_PROTECTION              (1<< 7)
+#    define NV03_PGRAPH_NSOURCE_DMA_W_PROTECTION              (1<< 8)
+#    define NV03_PGRAPH_NSOURCE_FORMAT_EXCEPTION              (1<< 9)
+#    define NV03_PGRAPH_NSOURCE_PATCH_EXCEPTION               (1<<10)
+#    define NV03_PGRAPH_NSOURCE_STATE_INVALID                 (1<<11)
+#    define NV03_PGRAPH_NSOURCE_DOUBLE_NOTIFY                 (1<<12)
+#    define NV03_PGRAPH_NSOURCE_NOTIFY_IN_USE                 (1<<13)
+#    define NV03_PGRAPH_NSOURCE_METHOD_CNT                    (1<<14)
+#    define NV03_PGRAPH_NSOURCE_BFR_NOTIFICATION              (1<<15)
+#    define NV03_PGRAPH_NSOURCE_DMA_VTX_PROTECTION            (1<<16)
+#    define NV03_PGRAPH_NSOURCE_DMA_WIDTH_A                   (1<<17)
+#    define NV03_PGRAPH_NSOURCE_DMA_WIDTH_B                   (1<<18)
 #define NV03_PGRAPH_INTR_EN                                0x00400140
 #define NV40_PGRAPH_INTR_EN                                0x0040013C
 #    define NV_PGRAPH_INTR_NOTIFY                             (1<< 0)
@@ -137,6 +175,10 @@
 #define NV10_PGRAPH_CTX_CACHE5                             0x004001E0
 #define NV40_PGRAPH_CTXCTL_0304                            0x00400304
 #define NV40_PGRAPH_CTXCTL_0304_XFER_CTX                   0x00000001
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT                      0x00400308
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_MASK              0xff000000
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_IP_SHIFT                     24
+#define NV40_PGRAPH_CTXCTL_UCODE_STAT_OP_MASK              0x00ffffff
 #define NV40_PGRAPH_CTXCTL_0310                            0x00400310
 #define NV40_PGRAPH_CTXCTL_0310_XFER_SAVE                  0x00000020
 #define NV40_PGRAPH_CTXCTL_0310_XFER_LOAD                  0x00000040
@@ -219,7 +261,12 @@
 #define NV04_PGRAPH_BLIMIT5                                0x00400698
 #define NV04_PGRAPH_BSWIZZLE2                              0x0040069C
 #define NV04_PGRAPH_BSWIZZLE5                              0x004006A0
+#define NV03_PGRAPH_STATUS                                 0x004006B0
+#define NV04_PGRAPH_STATUS                                 0x00400700
+#define NV04_PGRAPH_TRAPPED_ADDR                           0x00400704
+#define NV04_PGRAPH_TRAPPED_DATA                           0x00400708
 #define NV04_PGRAPH_SURFACE                                0x0040070C
+#define NV10_PGRAPH_TRAPPED_DATA_HIGH                      0x0040070C
 #define NV04_PGRAPH_STATE                                  0x00400710
 #define NV10_PGRAPH_SURFACE                                0x00400710
 #define NV04_PGRAPH_NOTIFY                                 0x00400714
@@ -272,6 +319,18 @@
 #define NV47_PGRAPH_TSTATUS0(i)                            0x00400D0C
 #define NV04_PGRAPH_V_RAM                                  0x00400D40
 #define NV04_PGRAPH_W_RAM                                  0x00400D80
+#define NV10_PGRAPH_COMBINER0_IN_ALPHA                     0x00400E40
+#define NV10_PGRAPH_COMBINER1_IN_ALPHA                     0x00400E44
+#define NV10_PGRAPH_COMBINER0_IN_RGB                       0x00400E48
+#define NV10_PGRAPH_COMBINER1_IN_RGB                       0x00400E4C
+#define NV10_PGRAPH_COMBINER_COLOR0                        0x00400E50
+#define NV10_PGRAPH_COMBINER_COLOR1                        0x00400E54
+#define NV10_PGRAPH_COMBINER0_OUT_ALPHA                    0x00400E58
+#define NV10_PGRAPH_COMBINER1_OUT_ALPHA                    0x00400E5C
+#define NV10_PGRAPH_COMBINER0_OUT_RGB                      0x00400E60
+#define NV10_PGRAPH_COMBINER1_OUT_RGB                      0x00400E64
+#define NV10_PGRAPH_COMBINER_FINAL0                        0x00400E68
+#define NV10_PGRAPH_COMBINER_FINAL1                        0x00400E6C
 #define NV10_PGRAPH_WINDOWCLIP_HORIZONTAL                  0x00400F00
 #define NV10_PGRAPH_WINDOWCLIP_VERTICAL                    0x00400F20
 #define NV10_PGRAPH_XFMODE0                                0x00400F40
@@ -332,6 +391,12 @@
 #define NV04_PFIFO_MODE                                    0x00002504
 #define NV04_PFIFO_DMA                                     0x00002508
 #define NV04_PFIFO_SIZE                                    0x0000250c
+#define NV50_PFIFO_CTX_TABLE(c)                        (0x2600+(c)*4)
+#define NV50_PFIFO_CTX_TABLE__SIZE                                128
+#define NV50_PFIFO_CTX_TABLE_CHANNEL_ENABLED                  (1<<31)
+#define NV50_PFIFO_CTX_TABLE_UNK30_BAD                        (1<<30)
+#define NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G80             0x0FFFFFFF
+#define NV50_PFIFO_CTX_TABLE_INSTANCE_MASK_G84             0x00FFFFFF
 #define NV03_PFIFO_CACHE0_PUSH0                            0x00003000
 #define NV03_PFIFO_CACHE0_PULL0                            0x00003040
 #define NV04_PFIFO_CACHE0_PULL0                            0x00003050

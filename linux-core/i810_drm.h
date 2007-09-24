@@ -102,13 +102,8 @@ typedef enum _drm_i810_init_func {
 /* This is the init structure after v1.2 */
 typedef struct _drm_i810_init {
 	drm_i810_init_func_t func;
-#if CONFIG_XFREE86_VERSION < XFREE86_VERSION(4,1,0,0)
-	int ring_map_idx;
-	int buffer_map_idx;
-#else
 	unsigned int mmio_offset;
 	unsigned int buffers_offset;
-#endif
 	int sarea_priv_offset;
 	unsigned int ring_start;
 	unsigned int ring_end;
@@ -123,29 +118,6 @@ typedef struct _drm_i810_init {
 	unsigned int pitch;
 	unsigned int pitch_bits;
 } drm_i810_init_t;
-
-/* This is the init structure prior to v1.2 */
-typedef struct _drm_i810_pre12_init {
-	drm_i810_init_func_t func;
-#if CONFIG_XFREE86_VERSION < XFREE86_VERSION(4,1,0,0)
-	int ring_map_idx;
-	int buffer_map_idx;
-#else
-	unsigned int mmio_offset;
-	unsigned int buffers_offset;
-#endif
-	int sarea_priv_offset;
-	unsigned int ring_start;
-	unsigned int ring_end;
-	unsigned int ring_size;
-	unsigned int front_offset;
-	unsigned int back_offset;
-	unsigned int depth_offset;
-	unsigned int w;
-	unsigned int h;
-	unsigned int pitch;
-	unsigned int pitch_bits;
-} drm_i810_pre12_init_t;
 
 /* Warning: If you change the SAREA structure you must change the Xserver
  * structure as well */
@@ -163,7 +135,7 @@ typedef struct _drm_i810_sarea {
 	unsigned int dirty;
 
 	unsigned int nbox;
-	drm_clip_rect_t boxes[I810_NR_SAREA_CLIPRECTS];
+	struct drm_clip_rect boxes[I810_NR_SAREA_CLIPRECTS];
 
 	/* Maintain an LRU of contiguous regions of texture space.  If
 	 * you think you own a region of texture memory, and it has an

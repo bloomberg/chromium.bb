@@ -107,9 +107,9 @@ typedef struct _drmBO
 {
     drm_bo_type_t type;
     unsigned handle;
-    drm_u64_t mapHandle;
-    unsigned flags;
-    unsigned mask;
+    uint64_t mapHandle;
+    uint64_t flags;
+    uint64_t mask;
     unsigned mapFlags;
     unsigned long size;
     unsigned long offset;
@@ -117,6 +117,9 @@ typedef struct _drmBO
     unsigned replyFlags;
     unsigned fenceFlags;
     unsigned pageAlignment;
+    unsigned tileInfo;
+    unsigned hwTileStride;
+    unsigned desiredTileStride;
     void *virtual;
     void *mapVirtual;
     int mapCount;
@@ -127,7 +130,7 @@ typedef struct _drmBONode
 {
     drmMMListHead head;
     drmBO *buf;
-    drm_bo_arg_t bo_arg;
+    struct drm_bo_op_arg bo_arg;
     unsigned long arg0;
     unsigned long arg1;
 } drmBONode;
@@ -176,8 +179,8 @@ extern int drmBOCreateList(int numTarget, drmBOList *list);
  */
 
 extern int drmBOCreate(int fd, unsigned long start, unsigned long size,
-		       unsigned pageAlignment,void *user_buffer, 
-		       drm_bo_type_t type, unsigned mask,
+		       unsigned pageAlignment,void *user_buffer,
+		       drm_bo_type_t type, uint64_t mask,
 		       unsigned hint, drmBO *buf);
 extern int drmBODestroy(int fd, drmBO *buf);
 extern int drmBOReference(int fd, unsigned handle, drmBO *buf);
@@ -185,19 +188,20 @@ extern int drmBOUnReference(int fd, drmBO *buf);
 extern int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 		    void **address);
 extern int drmBOUnmap(int fd, drmBO *buf);
-extern int drmBOValidate(int fd, drmBO *buf, unsigned flags, unsigned mask, 
-			 unsigned hint);
+extern int drmBOValidate(int fd, drmBO *buf, uint64_t flags,
+			 uint64_t mask, unsigned hint);
+
 extern int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle);
 extern int drmBOInfo(int fd, drmBO *buf);
 extern int drmBOBusy(int fd, drmBO *buf, int *busy);
 
-
-extern int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags, 
+extern int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags,
 		       unsigned mask,
 		       int *newItem);
 extern int drmBOValidateList(int fd, drmBOList *list);
 extern int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle);
 extern int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint);
+int drmBOSetPin(int fd, drmBO *buf, int pin);
 
 /*
  * Initialization functions.

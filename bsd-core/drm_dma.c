@@ -1,6 +1,3 @@
-/* drm_dma.c -- DMA IOCTL and function support -*- linux-c -*-
- * Created: Fri Mar 19 14:30:16 1999 by faith@valinux.com
- */
 /*-
  * Copyright 1999, 2000 Precision Insight, Inc., Cedar Park, Texas.
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
@@ -31,6 +28,14 @@
  *
  */
 
+/** @file drm_dma.c
+ * Support code for DMA buffer management.
+ *
+ * The implementation used to be significantly more complicated, but the
+ * complexity has been moved into the drivers as different buffer management
+ * schemes evolved.
+ */
+
 #include "drmP.h"
 
 int drm_dma_setup(drm_device_t *dev)
@@ -38,9 +43,9 @@ int drm_dma_setup(drm_device_t *dev)
 
 	dev->dma = malloc(sizeof(*dev->dma), M_DRM, M_NOWAIT | M_ZERO);
 	if (dev->dma == NULL)
-		return DRM_ERR(ENOMEM);
+		return ENOMEM;
 
-	DRM_SPININIT(dev->dma_lock, "drmdma");
+	DRM_SPININIT(&dev->dma_lock, "drmdma");
 
 	return 0;
 }
@@ -80,7 +85,7 @@ void drm_dma_takedown(drm_device_t *dev)
 	free(dma->pagelist, M_DRM);
 	free(dev->dma, M_DRM);
 	dev->dma = NULL;
-	DRM_SPINUNINIT(dev->dma_lock);
+	DRM_SPINUNINIT(&dev->dma_lock);
 }
 
 
@@ -89,18 +94,18 @@ void drm_free_buffer(drm_device_t *dev, drm_buf_t *buf)
 	if (!buf) return;
 
 	buf->pending  = 0;
-	buf->filp     = NULL;
+	buf->file_priv= NULL;
 	buf->used     = 0;
 }
 
-void drm_reclaim_buffers(drm_device_t *dev, DRMFILE filp)
+void drm_reclaim_buffers(drm_device_t *dev, struct drm_file *file_priv)
 {
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
 	if (!dma) return;
 	for (i = 0; i < dma->buf_count; i++) {
-		if (dma->buflist[i]->filp == filp) {
+		if (dma->buflist[i]->file_priv == file_priv) {
 			switch (dma->buflist[i]->list) {
 			case DRM_LIST_NONE:
 				drm_free_buffer(dev, dma->buflist[i]);
@@ -117,12 +122,12 @@ void drm_reclaim_buffers(drm_device_t *dev, DRMFILE filp)
 }
 
 /* Call into the driver-specific DMA handler */
-int drm_dma(DRM_IOCTL_ARGS)
+int drm_dma(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 
 	if (dev->driver.dma_ioctl) {
-		return dev->driver.dma_ioctl(kdev, cmd, data, flags, p, filp);
+		/* shared code returns -errno */
+		return -dev->driver.dma_ioctl(dev, data, file_priv);
 	} else {
 		DRM_DEBUG("DMA ioctl on driver with no dma handler\n");
 		return EINVAL;

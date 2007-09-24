@@ -34,8 +34,8 @@
 
 static void intel_crt_dpms(struct drm_output *output, int mode)
 {
-	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = output->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 temp;
 	
 	temp = I915_READ(ADPA);
@@ -93,10 +93,10 @@ static void intel_crt_mode_set(struct drm_output *output,
 			       struct drm_display_mode *mode,
 			       struct drm_display_mode *adjusted_mode)
 {
-	drm_device_t *dev = output->dev;
+	struct drm_device *dev = output->dev;
 	struct drm_crtc *crtc = output->crtc;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	int dpll_md_reg;
 	u32 adpa, dpll_md;
 
@@ -139,8 +139,8 @@ static void intel_crt_mode_set(struct drm_output *output,
  */
 static bool intel_crt_detect_hotplug(struct drm_output *output)
 {
-	drm_device_t *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = output->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 temp;
 	unsigned long timeout = jiffies + msecs_to_jiffies(1000);
 
@@ -175,7 +175,7 @@ static bool intel_crt_detect_ddc(struct drm_output *output)
 
 static enum drm_output_status intel_crt_detect(struct drm_output *output)
 {
-	drm_device_t *dev = output->dev;
+	struct drm_device *dev = output->dev;
 	
 	if (IS_I945G(dev)| IS_I945GM(dev) || IS_I965G(dev)) {
 		if (intel_crt_detect_hotplug(output))
@@ -221,7 +221,7 @@ static const struct drm_output_funcs intel_crt_output_funcs = {
 	.cleanup = intel_crt_destroy,
 };
 
-void intel_crt_init(drm_device_t *dev)
+void intel_crt_init(struct drm_device *dev)
 {
 	struct drm_output *output;
 	struct intel_output *intel_output;

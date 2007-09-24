@@ -43,7 +43,7 @@
  */
 static void intel_lvds_set_backlight(struct drm_device *dev, int level)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 blc_pwm_ctl;
 
 	blc_pwm_ctl = I915_READ(BLC_PWM_CTL) & ~BACKLIGHT_DUTY_CYCLE_MASK;
@@ -56,7 +56,7 @@ static void intel_lvds_set_backlight(struct drm_device *dev, int level)
  */
 static u32 intel_lvds_get_max_backlight(struct drm_device *dev)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
     
 	return ((I915_READ(BLC_PWM_CTL) & BACKLIGHT_MODULATION_FREQ_MASK) >>
 		BACKLIGHT_MODULATION_FREQ_SHIFT) * 2;
@@ -67,7 +67,7 @@ static u32 intel_lvds_get_max_backlight(struct drm_device *dev)
  */
 static void intel_lvds_set_power(struct drm_device *dev, bool on)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 pp_status;
 
 	if (on) {
@@ -104,7 +104,7 @@ static void intel_lvds_dpms(struct drm_output *output, int mode)
 static void intel_lvds_save(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	dev_priv->savePP_ON = I915_READ(LVDSPP_ON);
 	dev_priv->savePP_OFF = I915_READ(LVDSPP_OFF);
@@ -125,7 +125,7 @@ static void intel_lvds_save(struct drm_output *output)
 static void intel_lvds_restore(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	I915_WRITE(BLC_PWM_CTL, dev_priv->saveBLC_PWM_CTL);
 	I915_WRITE(LVDSPP_ON, dev_priv->savePP_ON);
@@ -142,7 +142,7 @@ static int intel_lvds_mode_valid(struct drm_output *output,
 				 struct drm_display_mode *mode)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_display_mode *fixed_mode = dev_priv->panel_fixed_mode;
 
 	if (fixed_mode)	{
@@ -160,7 +160,7 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 				  struct drm_display_mode *adjusted_mode)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = output->crtc->driver_private;
 	struct drm_output *tmp_output;
 
@@ -214,7 +214,7 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 static void intel_lvds_prepare(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
 	dev_priv->backlight_duty_cycle = (dev_priv->saveBLC_PWM_CTL &
@@ -226,7 +226,7 @@ static void intel_lvds_prepare(struct drm_output *output)
 static void intel_lvds_commit( struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	if (dev_priv->backlight_duty_cycle == 0)
 		dev_priv->backlight_duty_cycle =
@@ -240,7 +240,7 @@ static void intel_lvds_mode_set(struct drm_output *output,
 				struct drm_display_mode *adjusted_mode)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = output->crtc->driver_private;
 	u32 pfit_control;
 
@@ -285,7 +285,7 @@ static enum drm_output_status intel_lvds_detect(struct drm_output *output)
 static int intel_lvds_get_modes(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	int ret = 0;
 
 	ret = intel_ddc_get_modes(output);
@@ -359,7 +359,7 @@ static const struct drm_output_funcs intel_lvds_output_funcs = {
  */
 void intel_lvds_init(struct drm_device *dev)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_output *output;
 	struct intel_output *intel_output;
 	struct drm_display_mode *scan; /* *modes, *bios_mode; */

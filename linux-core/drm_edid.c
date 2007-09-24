@@ -94,7 +94,7 @@ struct drm_display_mode *drm_mode_std(struct drm_device *dev,
  * if this is the display's preferred timing, and we'll use it to indicate
  * to the other layers that this mode is desired.
  */
-struct drm_display_mode *drm_mode_detailed(drm_device_t *dev,
+struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 					   struct detailed_timing *timing)
 {
 	struct drm_display_mode *mode;
