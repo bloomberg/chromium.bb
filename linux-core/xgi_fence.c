@@ -33,7 +33,7 @@
 static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 {
 	struct xgi_info * info = dev->dev_private;
-	struct drm_fence_class_manager * fc = &dev->fm.class[class];
+	struct drm_fence_class_manager * fc = &dev->fm.fence_class[class];
 	uint32_t pending_flush_types = 0;
 	uint32_t signaled_flush_types = 0;
 

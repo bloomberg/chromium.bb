@@ -648,12 +648,14 @@ struct drm_set_version {
 
 struct drm_fence_arg {
 	unsigned int handle;
-	unsigned int class;
+	unsigned int fence_class;
 	unsigned int type;
 	unsigned int flags;
 	unsigned int signaled;
 	unsigned int error;
-	uint64_t expand_pad[3]; /*Future expansion */
+	unsigned int sequence;
+        unsigned int pad64;
+	uint64_t expand_pad[2]; /*Future expansion */
 };
 
 /* Buffer permissions, referring to how the GPU uses the buffers.

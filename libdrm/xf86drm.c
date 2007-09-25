@@ -2345,7 +2345,7 @@ int drmCommandWriteRead(int fd, unsigned long drmCommandIndex, void *data,
  * DRM_FENCE_MASK_DRIVER
  */
 
-int drmFenceCreate(int fd, unsigned flags, int class, unsigned type,
+int drmFenceCreate(int fd, unsigned flags, int fence_class, unsigned type,
 		   drmFence *fence)
 {
     drm_fence_arg_t arg;
@@ -2353,11 +2353,12 @@ int drmFenceCreate(int fd, unsigned flags, int class, unsigned type,
     memset(&arg, 0, sizeof(arg));
     arg.flags = flags;
     arg.type = type;
-    arg.class = class;
+    arg.fence_class = fence_class;
+
     if (ioctl(fd, DRM_IOCTL_FENCE_CREATE, &arg))
 	return -errno;
     fence->handle = arg.handle;
-    fence->class = arg.class;
+    fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->flags = arg.flags;
     fence->signaled = 0;
@@ -2370,19 +2371,21 @@ int drmFenceCreate(int fd, unsigned flags, int class, unsigned type,
  * DRM_FENCE_MASK_DRIVER
  */
 
-int drmFenceBuffers(int fd, unsigned flags, drmFence *fence)
+int drmFenceBuffers(int fd, unsigned flags, uint32_t fence_class, drmFence *fence)
 {
     drm_fence_arg_t arg;
 
     memset(&arg, 0, sizeof(arg));
     arg.flags = flags;
+    arg.fence_class = fence_class;
 
     if (ioctl(fd, DRM_IOCTL_FENCE_BUFFERS, &arg))
 	return -errno;
     fence->handle = arg.handle;
-    fence->class = arg.class;
+    fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->flags = arg.flags;
+    fence->sequence = arg.sequence;
     fence->signaled = 0;
     return 0;
 }
@@ -2409,7 +2412,7 @@ int drmFenceReference(int fd, unsigned handle, drmFence *fence)
     if (ioctl(fd, DRM_IOCTL_FENCE_REFERENCE, &arg))
 	return -errno;
     fence->handle = arg.handle;
-    fence->class = arg.class;
+    fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->flags = arg.flags;
     fence->signaled = arg.signaled;
@@ -2438,7 +2441,7 @@ int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type)
 
     if (ioctl(fd, DRM_IOCTL_FENCE_FLUSH, &arg))
 	return -errno;
-    fence->class = arg.class;
+    fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2453,7 +2456,7 @@ int drmFenceUpdate(int fd, drmFence *fence)
 
     if (ioctl(fd, DRM_IOCTL_FENCE_SIGNALED, &arg))
 	return -errno;
-    fence->class = arg.class;
+    fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2486,14 +2489,14 @@ int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
     drm_fence_arg_t arg;
 
     memset(&arg, 0, sizeof(arg));
-    arg.class = fence->class;
+    arg.fence_class = fence->fence_class;
     arg.flags = flags;
     arg.handle = fence->handle;
     arg.type = emit_type;
 
     if (ioctl(fd, DRM_IOCTL_FENCE_EMIT, &arg))
 	return -errno;
-    fence->class = arg.class;
+    fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2532,7 +2535,7 @@ int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
     if (ret)
 	return -errno;
 
-    fence->class = arg.class;
+    fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
     return 0;
@@ -2878,7 +2881,7 @@ int drmBOUnmap(int fd, drmBO *buf)
     return 0;
 }
 
-int drmBOValidate(int fd, drmBO *buf,
+int drmBOValidate(int fd, drmBO *buf, uint32_t fence_class,
 		  uint64_t flags, uint64_t mask,
 		  unsigned hint)
 {
@@ -2892,7 +2895,7 @@ int drmBOValidate(int fd, drmBO *buf,
     req->bo_req.flags = flags;
     req->bo_req.mask = mask;
     req->bo_req.hint = hint;
-    req->bo_req.fence_class = 0; /* Backwards compatibility. */
+    req->bo_req.fence_class = fence_class;
     req->op = drm_bo_validate;
 
     do{

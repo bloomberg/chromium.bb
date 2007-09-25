@@ -588,7 +588,7 @@ int drm_fence_buffer_objects(struct drm_device *dev,
 		list = &bm->unfenced;
 
 	if (fence)
-		fence_class = fence->class;
+		fence_class = fence->fence_class;
 
 	list_for_each_entry(entry, list, lru) {
 		BUG_ON(!(entry->priv_flags & _DRM_BO_FLAG_UNFENCED));
@@ -612,7 +612,8 @@ int drm_fence_buffer_objects(struct drm_device *dev,
 	}
 
 	if (fence) {
-		if ((fence_type & fence->type) != fence_type) {
+		if ((fence_type & fence->type) != fence_type ||
+		    (fence->fence_class != fence_class)) {
 			DRM_ERROR("Given fence doesn't match buffers "
 				  "on unfenced list.\n");
 			ret = -EINVAL;
@@ -638,7 +639,8 @@ int drm_fence_buffer_objects(struct drm_device *dev,
 		mutex_lock(&entry->mutex);
 		mutex_lock(&dev->struct_mutex);
 		list_del_init(l);
-		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED) {
+		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED &&
+		    entry->fence_class == fence_class) {
 			count++;
 			if (entry->fence)
 				drm_fence_usage_deref_locked(&entry->fence);
@@ -2055,7 +2057,7 @@ drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
 		/* Validate the buffer into its pinned location, with no
 		 * pending fence.
 		 */
-		ret = drm_buffer_object_validate(bo, 0, 0, 0);
+		ret = drm_buffer_object_validate(bo, bo->fence_class, 0, 0);
 		if (ret) {
 			mutex_unlock(&bo->mutex);
 			return ret;
