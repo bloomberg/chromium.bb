@@ -291,12 +291,12 @@ int i915_driver_unload(struct drm_device *dev)
 	DRM_DEBUG("usage is %d\n", atomic_read(&dev_priv->ring_buffer->usage));
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(&dev_priv->ring_buffer);
-	mutex_unlock(&dev->struct_mutex);
 
 	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM)) {
 		DRM_ERROR("Memory manager type 3 not clean. "
 			  "Delaying takedown\n");
 	}
+	mutex_unlock(&dev->struct_mutex);
 
 	drm_bo_driver_finish(dev);
 
@@ -315,15 +315,14 @@ void i915_driver_lastclose(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	i915_do_cleanup_pageflip(dev);
-	
-	i915_mem_takedown(&(dev_priv->agp_heap));
-
+	//i915_mem_takedown(&(dev_priv->agp_heap));
 	i915_dma_cleanup(dev);
 }
 
 void i915_driver_preclose(struct drm_device *dev, struct drm_file *filp)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	i915_mem_release(dev, filp, dev_priv->agp_heap);
+
+	//i915_mem_release(dev, filp, dev_priv->agp_heap);
 }
 
