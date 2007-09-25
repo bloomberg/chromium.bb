@@ -96,10 +96,11 @@ typedef struct _drmMMListHead
 typedef struct _drmFence
 {
     unsigned handle;
-    int class;
+    int fence_class;
     unsigned type; 
     unsigned flags;
     unsigned signaled;
+    uint32_t sequence;
     unsigned pad[4]; /* for future expansion */
 } drmFence;
 
@@ -148,7 +149,7 @@ typedef struct _drmBOList {
  * Fence functions.
  */
 
-extern int drmFenceCreate(int fd, unsigned flags, int class,
+extern int drmFenceCreate(int fd, unsigned flags, int fence_class,
                           unsigned type, drmFence *fence);
 extern int drmFenceDestroy(int fd, const drmFence *fence);
 extern int drmFenceReference(int fd, unsigned handle, drmFence *fence);
@@ -160,7 +161,7 @@ extern int drmFenceWait(int fd, unsigned flags, drmFence *fence,
                         unsigned flush_type);
 extern int drmFenceEmit(int fd, unsigned flags, drmFence *fence, 
                         unsigned emit_type);
-extern int drmFenceBuffers(int fd, unsigned flags, drmFence *fence);
+extern int drmFenceBuffers(int fd, unsigned flags, uint32_t fence_class, drmFence *fence);
 
 
 /*
@@ -188,7 +189,7 @@ extern int drmBOUnReference(int fd, drmBO *buf);
 extern int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 		    void **address);
 extern int drmBOUnmap(int fd, drmBO *buf);
-extern int drmBOValidate(int fd, drmBO *buf, uint64_t flags,
+extern int drmBOValidate(int fd, drmBO *buf, uint32_t fence_class, uint64_t flags,
 			 uint64_t mask, unsigned hint);
 
 extern int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle);

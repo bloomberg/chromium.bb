@@ -647,11 +647,11 @@ struct drm_set_version {
 
 struct drm_fence_arg {
 	unsigned int handle;
-	unsigned int class;
+	unsigned int fence_class;
 	unsigned int type;
 	unsigned int flags;
 	unsigned int signaled;
-	unsigned int pad64;
+	unsigned int sequence;
 	uint64_t expand_pad[3]; /*Future expansion */
 };
 
