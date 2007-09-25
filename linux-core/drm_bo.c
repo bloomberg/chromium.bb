@@ -417,7 +417,6 @@ static void drm_bo_destroy_locked(struct drm_buffer_object * bo)
 
 		atomic_dec(&bm->count);
 
-		BUG_ON(!list_empty(&bo->base.list));
 		drm_ctl_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
 
 		return;
