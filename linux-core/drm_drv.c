@@ -391,7 +391,6 @@ static void drm_cleanup(struct drm_device * dev)
 	drm_lastclose(dev);
 	drm_fence_manager_takedown(dev);
 
-	drm_ht_remove(&dev->map_hash);
 	drm_mm_takedown(&dev->offset_manager);
 	drm_ht_remove(&dev->object_hash);
 
@@ -412,6 +411,7 @@ static void drm_cleanup(struct drm_device * dev)
 	if (dev->driver->unload)
 		dev->driver->unload(dev);
         
+	drm_ht_remove(&dev->map_hash);
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
