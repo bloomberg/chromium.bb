@@ -106,7 +106,7 @@ static inline void Swap(u_int32_t* value) {
 }
 
 
-static void Swap(u_int64_t* value) {
+static inline void Swap(u_int64_t* value) {
   u_int32_t* value32 = reinterpret_cast<u_int32_t*>(value);
   Swap(&value32[0]);
   Swap(&value32[1]);
