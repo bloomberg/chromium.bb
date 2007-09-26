@@ -73,4 +73,5 @@ $(BIN_DIR)/exception_handler_test:$(EXCEPTION_TEST_OBJ)
 	$(CXX) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
 
 clean:
-	rm -f $(BIN) *.o *.out *.dmp core
+	rm -f $(BIN) *.o *.out *.dmp core ../../minidump_file_writer.o\
+		../../../common/*.o ../../../common/solaris/*.o

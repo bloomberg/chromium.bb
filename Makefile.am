@@ -94,6 +94,8 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/stackwalker.cc \
 	src/processor/stackwalker_ppc.cc \
 	src/processor/stackwalker_ppc.h \
+	src/processor/stackwalker_sparc.cc \
+	src/processor/stackwalker_sparc.h \
 	src/processor/stackwalker_x86.cc \
 	src/processor/stackwalker_x86.h
 
@@ -159,6 +161,7 @@ src_processor_minidump_processor_unittest_LDADD = \
 	src/processor/process_state.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
 
 src_processor_pathname_stripper_unittest_SOURCES = \
@@ -189,6 +192,7 @@ src_processor_stackwalker_selftest_LDADD = \
 	src/processor/pathname_stripper.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
 
 ## Non-installables
@@ -217,6 +221,7 @@ src_processor_minidump_stackwalk_LDADD = \
 	src/processor/simple_symbol_supplier.lo \
 	src/processor/stackwalker.lo \
 	src/processor/stackwalker_ppc.lo \
+	src/processor/stackwalker_sparc.lo \
 	src/processor/stackwalker_x86.lo
 
 
@@ -268,6 +273,7 @@ EXTRA_DIST = \
 	src/common/windows/pdb_source_line_writer.h \
 	src/common/windows/string_utils-inl.h \
 	src/common/windows/string_utils.cc \
+	src/processor/stackwalker_selftest_sol.s \
 	src/processor/testdata/minidump2.dmp \
 	src/processor/testdata/minidump2.dump.out \
 	src/processor/testdata/minidump2.stackwalk.machine_readable.out \
