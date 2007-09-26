@@ -228,9 +228,23 @@ src_processor_minidump_stackwalk_LDADD = \
 ## Additional files to be included in a source distribution
 ##
 ## find src/client src/common src/processor/testdata src/tools \
-##     -type f \! -path '*/.svn/*' -print | sort
+##     -type f \! -path '*/.svn/*' -print | sort | \
+##     sed -e s/'^\(.*\)$'/'\t\1 \\'/
 EXTRA_DIST = \
 	$(SCRIPTS) \
+	src/processor/stackwalk_selftest_sol.s \
+	src/client/linux/handler/Makefile \
+	src/client/linux/handler/exception_handler.cc \
+	src/client/linux/handler/exception_handler.h \
+	src/client/linux/handler/exception_handler_test.cc \
+	src/client/linux/handler/linux_thread.cc \
+	src/client/linux/handler/linux_thread.h \
+	src/client/linux/handler/linux_thread_test.cc \
+	src/client/linux/handler/minidump_generator.cc \
+	src/client/linux/handler/minidump_generator.h \
+	src/client/linux/handler/minidump_test.cc \
+	src/client/mac/handler/dynamic_images.cc \
+	src/client/mac/handler/dynamic_images.h \
 	src/client/mac/handler/exception_handler.cc \
 	src/client/mac/handler/exception_handler.h \
 	src/client/mac/handler/exception_handler_test.cc \
@@ -238,10 +252,21 @@ EXTRA_DIST = \
 	src/client/mac/handler/minidump_generator.h \
 	src/client/mac/handler/minidump_generator_test.cc \
 	src/client/mac/handler/minidump_test.xcodeproj/project.pbxproj \
+	src/client/mac/handler/protected_memory_allocator.cc \
+	src/client/mac/handler/protected_memory_allocator.h \
+	src/client/minidump_file_writer-inl.h \
 	src/client/minidump_file_writer.cc \
 	src/client/minidump_file_writer.h \
-	src/client/minidump_file_writer-inl.h \
 	src/client/minidump_file_writer_unittest.cc \
+	src/client/solaris/handler/Makefile \
+	src/client/solaris/handler/exception_handler.cc \
+	src/client/solaris/handler/exception_handler.h \
+	src/client/solaris/handler/exception_handler_test.cc \
+	src/client/solaris/handler/minidump_generator.cc \
+	src/client/solaris/handler/minidump_generator.h \
+	src/client/solaris/handler/minidump_test.cc \
+	src/client/solaris/handler/solaris_lwp.cc \
+	src/client/solaris/handler/solaris_lwp.h \
 	src/client/windows/breakpad_client.sln \
 	src/client/windows/handler/exception_handler.cc \
 	src/client/windows/handler/exception_handler.h \
@@ -251,6 +276,16 @@ EXTRA_DIST = \
 	src/client/windows/sender/crash_report_sender.vcproj \
 	src/common/convert_UTF.c \
 	src/common/convert_UTF.h \
+	src/common/linux/dump_symbols.cc \
+	src/common/linux/dump_symbols.h \
+	src/common/linux/file_id.cc \
+	src/common/linux/file_id.h \
+	src/common/linux/guid_creator.cc \
+	src/common/linux/guid_creator.h \
+	src/common/linux/http_upload.cc \
+	src/common/linux/http_upload.h \
+	src/common/linux/md5.c \
+	src/common/linux/md5.h \
 	src/common/mac/HTTPMultipartUpload.h \
 	src/common/mac/HTTPMultipartUpload.m \
 	src/common/mac/dump_syms.h \
@@ -259,10 +294,17 @@ EXTRA_DIST = \
 	src/common/mac/file_id.h \
 	src/common/mac/macho_id.cc \
 	src/common/mac/macho_id.h \
+	src/common/mac/macho_utilities.cc \
+	src/common/mac/macho_utilities.h \
 	src/common/mac/macho_walker.cc \
 	src/common/mac/macho_walker.h \
 	src/common/mac/string_utilities.cc \
 	src/common/mac/string_utilities.h \
+	src/common/solaris/file_id.cc \
+	src/common/solaris/file_id.h \
+	src/common/solaris/guid_creator.cc \
+	src/common/solaris/guid_creator.h \
+	src/common/solaris/message_output.h \
 	src/common/string_conversion.cc \
 	src/common/string_conversion.h \
 	src/common/windows/guid_string.cc \
@@ -273,7 +315,6 @@ EXTRA_DIST = \
 	src/common/windows/pdb_source_line_writer.h \
 	src/common/windows/string_utils-inl.h \
 	src/common/windows/string_utils.cc \
-	src/processor/stackwalker_selftest_sol.s \
 	src/processor/testdata/minidump2.dmp \
 	src/processor/testdata/minidump2.dump.out \
 	src/processor/testdata/minidump2.stackwalk.machine_readable.out \
@@ -281,9 +322,15 @@ EXTRA_DIST = \
 	src/processor/testdata/module1.out \
 	src/processor/testdata/module2.out \
 	src/processor/testdata/module3_bad.out \
+	src/processor/testdata/module4_bad.out \
 	src/processor/testdata/symbols/kernel32.pdb/BCE8785C57B44245A669896B6A19B9542/kernel32.sym \
 	src/processor/testdata/symbols/test_app.pdb/5A9832E5287241C1838ED98914E9B7FF1/test_app.sym \
 	src/processor/testdata/test_app.cc \
+	src/tools/linux/dump_syms/Makefile \
+	src/tools/linux/dump_syms/dump_syms.cc \
+	src/tools/linux/symupload/Makefile \
+	src/tools/linux/symupload/minidump_upload.cc \
+	src/tools/linux/symupload/sym_upload.cc \
 	src/tools/mac/crash_report/crash_report.mm \
 	src/tools/mac/crash_report/crash_report.xcodeproj/project.pbxproj \
 	src/tools/mac/crash_report/on_demand_symbol_supplier.h \
