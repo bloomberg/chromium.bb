@@ -731,8 +731,9 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, u_int64_t *address) {
           break;
       }
       break;
+    }
 
-    case MD_OS_LINUX:
+    case MD_OS_LINUX: {
       switch (exception_code) {
         case MD_EXCEPTION_CODE_LIN_SIGHUP:
           reason = "SIGHUP";
