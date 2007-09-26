@@ -163,7 +163,7 @@ endif
 all: modules
 
 modules: includes
-	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
+	+make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
 
 ifeq ($(HEADERFROMBOOT),1)
 
