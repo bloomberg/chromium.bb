@@ -433,24 +433,31 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	 * on the DPLL.
 	 */
 	crtc->funcs->mode_set(crtc, mode, adjusted_mode, x, y);
+
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == crtc) {
-			dev_warn(&output->dev->pdev->dev, "%s: set mode %s\n",
-				output->name, mode->name);
-			output->funcs->mode_set(output, mode, adjusted_mode);
-		}
+
+		if (output->crtc != crtc)
+			continue;
+		
+		DRM_INFO("%s: set mode %s\n", output->name, mode->name);
+
+		output->funcs->mode_set(output, mode, adjusted_mode);
 	}
 	
 	/* Now, enable the clocks, plane, pipe, and outputs that we set up. */
 	crtc->funcs->commit(crtc);
+
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == crtc) {
-			output->funcs->commit(output);
+
+		if (output->crtc != crtc)
+			continue;
+		
+		output->funcs->commit(output);
+
 #if 0 // TODO def RANDR_12_INTERFACE
-			if (output->randr_output)
-				RRPostPendingProperties (output->randr_output);
+		if (output->randr_output)
+			RRPostPendingProperties (output->randr_output);
 #endif
-		}
 	}
 	
 	/* XXX free adjustedmode */
@@ -762,7 +769,7 @@ out_err:
  */
 static void drm_pick_crtcs (struct drm_device *dev)
 {
-	int c, o;
+	int c, o, assigned;
 	struct drm_output *output, *output_equal;
 	struct drm_crtc   *crtc;
 	struct drm_display_mode *des_mode = NULL, *modes, *modes_equal;
@@ -802,11 +809,26 @@ static void drm_pick_crtcs (struct drm_device *dev)
 
 		c = -1;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			assigned = 0;
+
 			c++;
 			if ((output->possible_crtcs & (1 << c)) == 0)
 		    		continue;
 	
-#if 0 /* should we try and clone ?? - code not tested - FIXME */
+			list_for_each_entry(output_equal, &dev->mode_config.output_list, head) {
+				if (output->id == output_equal->id)
+					continue;
+
+				/* Find out if crtc has been assigned before */
+				if (output_equal->crtc == crtc)
+					assigned = 1;
+			}
+
+#if 1 /* continue for now */
+			if (assigned)
+				continue;
+#endif
+
 			o = -1;
 			list_for_each_entry(output_equal, &dev->mode_config.output_list, head) {
 				o++;
@@ -816,7 +838,9 @@ static void drm_pick_crtcs (struct drm_device *dev)
 				list_for_each_entry(modes, &output->modes, head) {
 					list_for_each_entry(modes_equal, &output_equal->modes, head) {
 						if (drm_mode_equal (modes, modes_equal)) {
-							if ((output->possible_clones & (1 << o))) {
+							if ((output->possible_clones & output_equal->possible_clones) && (output_equal->crtc == crtc)) {
+								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",output->name,output->possible_clones,output_equal->name,output_equal->possible_clones);
+								assigned = 0;
 								goto clone;
 							}
 						}
@@ -825,7 +849,10 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			}
 
 clone:
-#endif
+			/* crtc has been assigned skip it */
+			if (assigned)
+				continue;
+
 			/* Found a CRTC to attach to, do it ! */
 			output->crtc = crtc;
 			output->crtc->desired_mode = des_mode;
@@ -856,6 +883,7 @@ clone:
 bool drm_initial_config(struct drm_device *dev, bool can_grow)
 {
 	struct drm_output *output;
+	struct drm_crtc *crtc;
 	int ret = false;
 
 	mutex_lock(&dev->mode_config.mutex);
@@ -864,14 +892,31 @@ bool drm_initial_config(struct drm_device *dev, bool can_grow)
 
 	drm_pick_crtcs(dev);
 
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+
+		/* can't setup the crtc if there's no assigned mode */
+		if (!crtc->desired_mode)
+			continue;
+
+		/* Now setup the fbdev for attached crtcs */
+		dev->driver->fb_probe(dev, crtc);
+	}
+
+	/* This is a little screwy, as we've already walked the outputs 
+	 * above, but it's a little bit of magic too. There's the potential
+	 * for things not to get setup above if an existing device gets
+	 * re-assigned thus confusing the hardware. By walking the outputs
+	 * this fixes up their crtc's.
+	 */
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 
-		/* can't setup the output if there's no assigned crtc or mode */
+		/* can't setup the output if there's no assigned mode */
 		if (!output->crtc || !output->crtc->desired_mode)
 			continue;
 
-		dev->driver->fb_probe(dev, output->crtc);
+		drm_crtc_set_mode(output->crtc, output->crtc->desired_mode, 0, 0);
 	}
+
 	drm_disable_unused_functions(dev);
 
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1088,8 +1133,7 @@ void drm_crtc_convert_umode(struct drm_display_mode *out, struct drm_mode_modein
 int drm_mode_getresources(struct drm_device *dev,
 			  void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_card_res __user *argp = (void __user *)data;
-	struct drm_mode_card_res card_res;
+	struct drm_mode_card_res *card_res = data;
 	struct list_head *lh;
 	struct drm_framebuffer *fb;
 	struct drm_output *output;
@@ -1122,12 +1166,7 @@ int drm_mode_getresources(struct drm_device *dev,
 	list_for_each(lh, &dev->mode_config.usermode_list)
 		mode_count++;
 
-	if (copy_from_user(&card_res, argp, sizeof(card_res))) {
-		ret = -EFAULT;
-		goto out_unlock;
-	}
-
-	if (card_res.count_modes == 0) {
+	if (card_res->count_modes == 0) {
 		DRM_DEBUG("probing modes %dx%d\n", dev->mode_config.max_width, dev->mode_config.max_height);
 		drm_crtc_probe_output_modes(dev, dev->mode_config.max_width, dev->mode_config.max_height);
 		mode_count = 0;
@@ -1141,78 +1180,58 @@ int drm_mode_getresources(struct drm_device *dev,
 
 	/* handle this in 4 parts */
 	/* FBs */
-	if (card_res.count_fbs >= fb_count) {
+	if (card_res->count_fbs >= fb_count) {
 		copied = 0;
 		list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
-			if (put_user(fb->id, &card_res.fb_id[copied++])) {
-				ret = -EFAULT;
-				goto done;
-			}
+			card_res->fb_id[copied++] = fb->id;
 		}
 	}
-	card_res.count_fbs = fb_count;
+	card_res->count_fbs = fb_count;
 
 	/* CRTCs */
-	if (card_res.count_crtcs >= crtc_count) {
+	if (card_res->count_crtcs >= crtc_count) {
 		copied = 0;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head){
 			DRM_DEBUG("CRTC ID is %d\n", crtc->id);
-			if (put_user(crtc->id, &card_res.crtc_id[copied++])) {
-				ret = -EFAULT;
-				goto done;
-			}
+			card_res->crtc_id[copied++] = crtc->id;
 		}
 	}
-	card_res.count_crtcs = crtc_count;
+	card_res->count_crtcs = crtc_count;
 
 
 	/* Outputs */
-	if (card_res.count_outputs >= output_count) {
+	if (card_res->count_outputs >= output_count) {
 		copied = 0;
 		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
  			DRM_DEBUG("OUTPUT ID is %d\n", output->id);
-			if (put_user(output->id, &card_res.output_id[copied++])) {
-				ret = -EFAULT;
-				goto done;
-			}
+			card_res->output_id[copied++] = output->id;
 		}
 	}
-	card_res.count_outputs = output_count;
+	card_res->count_outputs = output_count;
 	
 	/* Modes */
-	if (card_res.count_modes >= mode_count) {
+	if (card_res->count_modes >= mode_count) {
 		copied = 0;
 		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
 			list_for_each_entry(mode, &output->modes, head) {
 				drm_crtc_convert_to_umode(&u_mode, mode);
-				if (copy_to_user(&card_res.modes[copied++], &u_mode, sizeof(struct drm_mode_modeinfo))) {
-					ret = -EFAULT;
-					goto done;
-				}
+				card_res->modes[copied++] = u_mode;
 			}
 		}
 		/* add in user modes */
 		list_for_each_entry(mode, &dev->mode_config.usermode_list, head) {
 			drm_crtc_convert_to_umode(&u_mode, mode);
-			if (copy_to_user(&card_res.modes[copied++], &u_mode, sizeof(struct drm_mode_modeinfo))) {
-				ret = -EFAULT;
-				goto done;
-			}
+			card_res->modes[copied++] = u_mode;
 		}
 	}
-	card_res.count_modes = mode_count;
+	card_res->count_modes = mode_count;
 
-done:
-	DRM_DEBUG("Counted %d %d %d\n", card_res.count_crtcs,
-		  card_res.count_outputs,
-		  card_res.count_modes);
+	DRM_DEBUG("Counted %d %d %d\n", card_res->count_crtcs,
+		  card_res->count_outputs,
+		  card_res->count_modes);
 	
-	if (copy_to_user(argp, &card_res, sizeof(card_res)))
-		ret = -EFAULT;
-
-out_unlock:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
 }
@@ -1237,42 +1256,35 @@ out_unlock:
 int drm_mode_getcrtc(struct drm_device *dev,
 		     void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_crtc __user *argp = (void __user *)data;
-	struct drm_mode_crtc crtc_resp;
+	struct drm_mode_crtc *crtc_resp = data;
 	struct drm_crtc *crtc;
 	struct drm_output *output;
 	int ocount;
 	int ret = 0;
 
-	if (copy_from_user(&crtc_resp, argp, sizeof(crtc_resp)))
-		return -EFAULT;
-
 	mutex_lock(&dev->mode_config.mutex);
-	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_resp.crtc_id);
-	if (!crtc || (crtc->id != crtc_resp.crtc_id)) {
+	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_resp->crtc_id);
+	if (!crtc || (crtc->id != crtc_resp->crtc_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	crtc_resp.x = crtc->x;
-	crtc_resp.y = crtc->y;
-	crtc_resp.fb_id = 1;
+	crtc_resp->x = crtc->x;
+	crtc_resp->y = crtc->y;
+	crtc_resp->fb_id = 1;
 
-	crtc_resp.outputs = 0;
+	crtc_resp->outputs = 0;
 	if (crtc->enabled) {
 
-		crtc_resp.mode = crtc->mode.mode_id;
+		crtc_resp->mode = crtc->mode.mode_id;
 		ocount = 0;
 		list_for_each_entry(output, &dev->mode_config.output_list, head) {
 			if (output->crtc == crtc)
-				crtc_resp.outputs |= 1 << (ocount++);
+				crtc_resp->outputs |= 1 << (ocount++);
 		}
 	} else {
-		crtc_resp.mode = 0;
+		crtc_resp->mode = 0;
 	}
-
-	if (copy_to_user(argp, &crtc_resp, sizeof(crtc_resp)))
-		ret = -EFAULT;
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1299,8 +1311,7 @@ out:
 int drm_mode_getoutput(struct drm_device *dev,
 		       void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_get_output __user *argp = (void __user *)data;
-	struct drm_mode_get_output out_resp;
+	struct drm_mode_get_output *out_resp = data;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
 	int mode_count = 0;
@@ -1308,16 +1319,13 @@ int drm_mode_getoutput(struct drm_device *dev,
 	int copied = 0;
 	int i;
 
-	if (copy_from_user(&out_resp, argp, sizeof(out_resp)))
-		return -EFAULT;	
-
-	DRM_DEBUG("output id %d:\n", out_resp.output);
+	DRM_DEBUG("output id %d:\n", out_resp->output);
 
 	mutex_lock(&dev->mode_config.mutex);
-	output= idr_find(&dev->mode_config.crtc_idr, out_resp.output);
-	if (!output || (output->id != out_resp.output)) {
+	output= idr_find(&dev->mode_config.crtc_idr, out_resp->output);
+	if (!output || (output->id != out_resp->output)) {
 		ret = -EINVAL;
-		goto out_unlock;
+		goto done;
 	}
 
 	list_for_each_entry(mode, &output->modes, head)
@@ -1327,42 +1335,32 @@ int drm_mode_getoutput(struct drm_device *dev,
 		if (output->user_mode_ids[i] != 0)
 			mode_count++;
 
-	strncpy(out_resp.name, output->name, DRM_OUTPUT_NAME_LEN);
-	out_resp.name[DRM_OUTPUT_NAME_LEN-1] = 0;
+	strncpy(out_resp->name, output->name, DRM_OUTPUT_NAME_LEN);
+	out_resp->name[DRM_OUTPUT_NAME_LEN-1] = 0;
 
-	out_resp.mm_width = output->mm_width;
-	out_resp.mm_height = output->mm_height;
-	out_resp.subpixel = output->subpixel_order;
-	out_resp.connection = output->status;
+	out_resp->mm_width = output->mm_width;
+	out_resp->mm_height = output->mm_height;
+	out_resp->subpixel = output->subpixel_order;
+	out_resp->connection = output->status;
 	if (output->crtc)
-		out_resp.crtc = output->crtc->id;
+		out_resp->crtc = output->crtc->id;
 	else
-		out_resp.crtc = 0;
+		out_resp->crtc = 0;
 
-	if ((out_resp.count_modes >= mode_count) && mode_count) {
+	if ((out_resp->count_modes >= mode_count) && mode_count) {
 		copied = 0;
 		list_for_each_entry(mode, &output->modes, head) {
-			if (put_user(mode->mode_id, &out_resp.modes[copied++])) {
-				ret = -EFAULT;
-				goto done;
-			}
+			out_resp->modes[copied++] = mode->mode_id;
 		}
 		for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
 			if (output->user_mode_ids[i] != 0)
-				if (put_user(output->user_mode_ids[i], &out_resp.modes[copied++])) {
-					ret = -EFAULT;
-					goto done;
-				}
+				out_resp->modes[copied++] = output->user_mode_ids[i];
 		}
 			
 	}
-	out_resp.count_modes = mode_count;
+	out_resp->count_modes = mode_count;
 
 done:
-	if (copy_to_user(argp, &out_resp, sizeof(out_resp)))
-		ret = -EFAULT;
-
-out_unlock:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
 }
@@ -1387,8 +1385,7 @@ out_unlock:
 int drm_mode_setcrtc(struct drm_device *dev,
 		     void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_crtc __user *argp = (void __user *)data;
-	struct drm_mode_crtc crtc_req;
+	struct drm_mode_crtc *crtc_req = data;
 	struct drm_crtc *crtc;
 	struct drm_output **output_set = NULL, *output;
 	struct drm_display_mode *mode;
@@ -1396,29 +1393,26 @@ int drm_mode_setcrtc(struct drm_device *dev,
 	int ret = 0;
 	int i;
 
-	if (copy_from_user(&crtc_req, argp, sizeof(crtc_req)))
-		return -EFAULT;
-
 	mutex_lock(&dev->mode_config.mutex);
-	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req.crtc_id);
-	if (!crtc || (crtc->id != crtc_req.crtc_id)) {
-		DRM_DEBUG("Unknown CRTC ID %d\n", crtc_req.crtc_id);
+	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req->crtc_id);
+	if (!crtc || (crtc->id != crtc_req->crtc_id)) {
+		DRM_DEBUG("Unknown CRTC ID %d\n", crtc_req->crtc_id);
 		ret = -EINVAL;
 		goto out;
 	}
 
-	if (crtc_req.mode) {
+	if (crtc_req->mode) {
 		/* if we have a mode we need a framebuffer */
-		if (crtc_req.fb_id) {
-			fb = idr_find(&dev->mode_config.crtc_idr, crtc_req.fb_id);
-			if (!fb || (fb->id != crtc_req.fb_id)) {
-				DRM_DEBUG("Unknown FB ID%d\n", crtc_req.fb_id);
+		if (crtc_req->fb_id) {
+			fb = idr_find(&dev->mode_config.crtc_idr, crtc_req->fb_id);
+			if (!fb || (fb->id != crtc_req->fb_id)) {
+				DRM_DEBUG("Unknown FB ID%d\n", crtc_req->fb_id);
 				ret = -EINVAL;
 				goto out;
 			}
 		}
-		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req.mode);
-		if (!mode || (mode->mode_id != crtc_req.mode)) {
+		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req->mode);
+		if (!mode || (mode->mode_id != crtc_req->mode)) {
 			struct drm_output *output;
 			
 			list_for_each_entry(output, 
@@ -1431,36 +1425,36 @@ int drm_mode_setcrtc(struct drm_device *dev,
 				}
 			}
 
-			DRM_DEBUG("Unknown mode id %d, %p\n", crtc_req.mode, mode);
+			DRM_DEBUG("Unknown mode id %d, %p\n", crtc_req->mode, mode);
 			ret = -EINVAL;
 			goto out;
 		}
 	} else
 		mode = NULL;
 
-	if (crtc_req.count_outputs == 0 && mode) {
+	if (crtc_req->count_outputs == 0 && mode) {
 		DRM_DEBUG("Count outputs is 0 but mode set\n");
 		ret = -EINVAL;
 		goto out;
 	}
 
-	if (crtc_req.count_outputs > 0 && !mode && !fb) {
-		DRM_DEBUG("Count outputs is %d but no mode or fb set\n", crtc_req.count_outputs);
+	if (crtc_req->count_outputs > 0 && !mode && !fb) {
+		DRM_DEBUG("Count outputs is %d but no mode or fb set\n", crtc_req->count_outputs);
 		ret = -EINVAL;
 		goto out;
 	}
 
-	if (crtc_req.count_outputs > 0) {
+	if (crtc_req->count_outputs > 0) {
 		u32 out_id;
-		output_set = kmalloc(crtc_req.count_outputs *
+		output_set = kmalloc(crtc_req->count_outputs *
 				     sizeof(struct drm_output *), GFP_KERNEL);
 		if (!output_set) {
 			ret = -ENOMEM;
 			goto out;
 		}
 
-		for (i = 0; i < crtc_req.count_outputs; i++) {
-			if (get_user(out_id, &crtc_req.set_outputs[i])) {
+		for (i = 0; i < crtc_req->count_outputs; i++) {
+			if (get_user(out_id, &crtc_req->set_outputs[i])) {
 				ret = -EFAULT;
 				goto out;
 			}
@@ -1476,7 +1470,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		}
 	}
 		
-	ret = drm_crtc_set_config(crtc, &crtc_req, mode, output_set, fb);
+	ret = drm_crtc_set_config(crtc, crtc_req, mode, output_set, fb);
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1503,29 +1497,25 @@ out:
 int drm_mode_addfb(struct drm_device *dev,
 		   void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_fb_cmd __user *argp = (void __user *)data;
-	struct drm_mode_fb_cmd r;
+	struct drm_mode_fb_cmd *r = data;
 	struct drm_mode_config *config = &dev->mode_config;
 	struct drm_framebuffer *fb;
 	struct drm_buffer_object *bo;
 	struct drm_crtc *crtc;
 	int ret = 0;
 
-	if (copy_from_user(&r, argp, sizeof(r)))
-		return -EFAULT;
-
-	if ((config->min_width > r.width) || (r.width > config->max_width)) {
+	if ((config->min_width > r->width) || (r->width > config->max_width)) {
 		DRM_ERROR("mode new framebuffer width not within limits\n");
 		return -EINVAL;
 	}
-	if ((config->min_height > r.height) || (r.height > config->max_height)) {
+	if ((config->min_height > r->height) || (r->height > config->max_height)) {
 		DRM_ERROR("mode new framebuffer height not within limits\n");
 		return -EINVAL;
 	}
 
 	mutex_lock(&dev->mode_config.mutex);
 	/* TODO check limits are okay */
-	ret = drm_get_buffer_object(dev, &bo, r.handle);
+	ret = drm_get_buffer_object(dev, &bo, r->handle);
 	if (ret || !bo) {
 		ret = -EINVAL;
 		goto out;
@@ -1540,23 +1530,18 @@ int drm_mode_addfb(struct drm_device *dev,
 		goto out;
 	}
 
-	fb->width = r.width;
-	fb->height = r.height;
-	fb->pitch = r.pitch;
-	fb->bits_per_pixel = r.bpp;
-	fb->depth = r.depth;
+	fb->width = r->width;
+	fb->height = r->height;
+	fb->pitch = r->pitch;
+	fb->bits_per_pixel = r->bpp;
+	fb->depth = r->depth;
 	fb->offset = bo->offset;
 	fb->bo = bo;
 
-	r.buffer_id = fb->id;
+	r->buffer_id = fb->id;
 
 	list_add(&fb->filp_head, &file_priv->fbs);
 
-	if (copy_to_user(argp, &r, sizeof(r))) {
-		ret = -EFAULT;
-		goto out;
-	}
-		
 	/* FIXME: bind the fb to the right crtc */
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		crtc->fb = fb;
@@ -1589,13 +1574,12 @@ int drm_mode_rmfb(struct drm_device *dev,
 		   void *data, struct drm_file *file_priv)
 {
 	struct drm_framebuffer *fb = 0;
-	uint32_t id = data;
+	uint32_t *id = data;
 	int ret = 0;
 
-	mutex_lock(&dev->mode_config.mutex);
-	fb = idr_find(&dev->mode_config.crtc_idr, id);
+	fb = idr_find(&dev->mode_config.crtc_idr, *id);
 	/* TODO check that we realy get a framebuffer back. */
-	if (!fb || (id != fb->id)) {
+	if (!fb || (*id != fb->id)) {
 		DRM_ERROR("mode invalid framebuffer id\n");
 		ret = -EINVAL;
 		goto out;
@@ -1635,31 +1619,24 @@ out:
 int drm_mode_getfb(struct drm_device *dev,
 		   void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_fb_cmd __user *argp = (void __user *)data;
-	struct drm_mode_fb_cmd r;
+	struct drm_mode_fb_cmd *r = data;
 	struct drm_framebuffer *fb;
 	int ret = 0;
 
-	if (copy_from_user(&r, argp, sizeof(r)))
-		return -EFAULT;
-
 	mutex_lock(&dev->mode_config.mutex);
-	fb = idr_find(&dev->mode_config.crtc_idr, r.buffer_id);
-	if (!fb || (r.buffer_id != fb->id)) {
+	fb = idr_find(&dev->mode_config.crtc_idr, r->buffer_id);
+	if (!fb || (r->buffer_id != fb->id)) {
 		DRM_ERROR("invalid framebuffer id\n");
 		ret = -EINVAL;
 		goto out;
 	}
 
-	r.height = fb->height;
-	r.width = fb->width;
-	r.depth = fb->depth;
-	r.bpp = fb->bits_per_pixel;
-	r.handle = fb->bo->base.hash.key;
-	r.pitch = fb->pitch;
-
-	if (copy_to_user(argp, &r, sizeof(r)))
-		ret = -EFAULT;
+	r->height = fb->height;
+	r->width = fb->width;
+	r->depth = fb->depth;
+	r->bpp = fb->bits_per_pixel;
+	r->handle = fb->bo->base.hash.key;
+	r->pitch = fb->pitch;
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1713,13 +1690,9 @@ void drm_fb_release(struct file *filp)
 int drm_mode_addmode(struct drm_device *dev,
 		     void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_modeinfo __user *argp = (void __user *)data;
-	struct drm_mode_modeinfo new_mode;
+	struct drm_mode_modeinfo *new_mode = data;
 	struct drm_display_mode *user_mode;
 	int ret = 0;
-
-	if (copy_from_user(&new_mode, argp, sizeof(new_mode)))
-		return -EFAULT;
 
 	mutex_lock(&dev->mode_config.mutex);
 	user_mode = drm_mode_create(dev);
@@ -1728,16 +1701,14 @@ int drm_mode_addmode(struct drm_device *dev,
 		goto out;
 	}
 
-	drm_crtc_convert_umode(user_mode, &new_mode);
+	drm_crtc_convert_umode(user_mode, new_mode);
 	user_mode->type |= DRM_MODE_TYPE_USERDEF;
 
 	user_mode->output_count = 0;
 
 	list_add(&user_mode->head, &dev->mode_config.usermode_list);
 
-	new_mode.id = user_mode->mode_id;
-	if (copy_to_user(argp, &new_mode, sizeof(new_mode)))
-		ret = -EFAULT;
+	new_mode->id = user_mode->mode_id;
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1761,13 +1732,13 @@ out:
 int drm_mode_rmmode(struct drm_device *dev,
 		    void *data, struct drm_file *file_priv)
 {
-	uint32_t id = (uint32_t)data;
+	uint32_t *id = data;
 	struct drm_display_mode *mode, *t;
 	int ret = -EINVAL;
 
 	mutex_lock(&dev->mode_config.mutex);	
-	mode = idr_find(&dev->mode_config.crtc_idr, id);
-	if (!mode || (id != mode->mode_id)) {
+	mode = idr_find(&dev->mode_config.crtc_idr, *id);
+	if (!mode || (*id != mode->mode_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
@@ -1812,25 +1783,21 @@ out:
 int drm_mode_attachmode(struct drm_device *dev,
 			void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_mode_cmd __user *argp = (void __user *)data;
-	struct drm_mode_mode_cmd mode_cmd;
+	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
 	int i, ret = 0;
 
-	if (copy_from_user(&mode_cmd, argp, sizeof(mode_cmd)))
-		return -EFAULT;
-
 	mutex_lock(&dev->mode_config.mutex);
 
-	mode = idr_find(&dev->mode_config.crtc_idr, mode_cmd.mode_id);
-	if (!mode || (mode->mode_id != mode_cmd.mode_id)) {
+	mode = idr_find(&dev->mode_config.crtc_idr, mode_cmd->mode_id);
+	if (!mode || (mode->mode_id != mode_cmd->mode_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	output = idr_find(&dev->mode_config.crtc_idr, mode_cmd.output_id);
-	if (!output || (output->id != mode_cmd.output_id)) {
+	output = idr_find(&dev->mode_config.crtc_idr, mode_cmd->output_id);
+	if (!output || (output->id != mode_cmd->output_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
@@ -1867,25 +1834,21 @@ out:
 int drm_mode_detachmode(struct drm_device *dev,
 			void *data, struct drm_file *file_priv)
 {
-	struct drm_mode_mode_cmd __user *argp = (void __user *)data;
-	struct drm_mode_mode_cmd mode_cmd;
+	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
 	int i, found = 0, ret = 0;
 
-	if (copy_from_user(&mode_cmd, argp, sizeof(mode_cmd)))
-		return -EFAULT;
-
 	mutex_lock(&dev->mode_config.mutex);
 
-	mode = idr_find(&dev->mode_config.crtc_idr, mode_cmd.mode_id);
-	if (!mode || (mode->mode_id != mode_cmd.mode_id)) {
+	mode = idr_find(&dev->mode_config.crtc_idr, mode_cmd->mode_id);
+	if (!mode || (mode->mode_id != mode_cmd->mode_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	output = idr_find(&dev->mode_config.crtc_idr, mode_cmd.output_id);
-	if (!output || (output->id != mode_cmd.output_id)) {
+	output = idr_find(&dev->mode_config.crtc_idr, mode_cmd->output_id);
+	if (!output || (output->id != mode_cmd->output_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
