@@ -49,6 +49,17 @@ struct intelfb_par {
 	struct drm_crtc *crtc;
 };
 
+static int
+var_to_refresh(const struct fb_var_screeninfo *var)
+{
+	int xtot = var->xres + var->left_margin + var->right_margin +
+		   var->hsync_len;
+	int ytot = var->yres + var->upper_margin + var->lower_margin +
+		   var->vsync_len;
+
+	return (1000000000 / var->pixclock * 1000 + 500) / xtot / ytot;
+}
+
 static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			   unsigned blue, unsigned transp,
 			   struct fb_info *info)
@@ -98,7 +109,7 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 	struct drm_framebuffer *fb = par->crtc->fb;
         struct drm_display_mode *drm_mode;
         struct drm_output *output;
-        int depth;
+        int depth, found = 0;
 
         if (!var->pixclock)
                 return -EINVAL;
@@ -191,11 +202,14 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
         list_for_each_entry(drm_mode, &output->modes, head) {
                 if (drm_mode->hdisplay == var->xres &&
                     drm_mode->vdisplay == var->yres &&
-                    drm_mode->clock != 0)
+                    (((PICOS2KHZ(var->pixclock))/1000) >= ((drm_mode->clock/1000)-1)) &&
+                    (((PICOS2KHZ(var->pixclock))/1000) <= ((drm_mode->clock/1000)+1))) {
+			found = 1;
 			break;
+		}
 	}
  
-        if (!drm_mode)
+        if (!found)
                 return -EINVAL;
 #endif
 
@@ -210,7 +224,9 @@ static int intelfb_set_par(struct fb_info *info)
 	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_device *dev = par->dev;
         struct drm_display_mode *drm_mode;
+        struct drm_output *output;
         struct fb_var_screeninfo *var = &info->var;
+	int found = 0;
 
         switch (var->bits_per_pixel) {
         case 16:
@@ -246,9 +262,18 @@ static int intelfb_set_par(struct fb_info *info)
         list_for_each_entry(drm_mode, &output->modes, head) {
                 if (drm_mode->hdisplay == var->xres &&
                     drm_mode->vdisplay == var->yres &&
-                    drm_mode->clock != 0)
+                    (((PICOS2KHZ(var->pixclock))/1000) >= ((drm_mode->clock/1000)-1)) &&
+                    (((PICOS2KHZ(var->pixclock))/1000) <= ((drm_mode->clock/1000)+1))) {
+			found = 1;
 			break;
+		}
         }
+
+	if (!found) {
+		DRM_ERROR("Couldn't find a mode for requested %dx%d-%d\n",
+			var->xres,var->yres,var_to_refresh(var));
+		return -EINVAL;
+	}
 #else
         drm_mode = drm_mode_create(dev);
         drm_mode->hdisplay = var->xres;
@@ -265,13 +290,15 @@ static int intelfb_set_par(struct fb_info *info)
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 #endif
 
+	drm_mode_debug_printmodeline(dev, drm_mode);
+
         if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
                 return -EINVAL;
 
         /* Have to destroy our created mode if we're not searching the mode
          * list for it.
          */
-#if 1 
+#if 1
         drm_mode_destroy(dev, drm_mode);
 #endif
 
@@ -472,6 +499,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
+				       DRM_BO_FLAG_MEM_TT |
 				       DRM_BO_FLAG_MEM_VRAM,
 				       0, 0, 0,
 				       &fbo);
@@ -629,6 +657,7 @@ int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 		unregister_framebuffer(info);
 		framebuffer_release(info);
 		drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
+		drm_framebuffer_destroy(fb);
 	}
 	return 0;
 }

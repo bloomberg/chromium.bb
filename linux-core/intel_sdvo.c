@@ -730,9 +730,12 @@ static void intel_sdvo_dpms(struct drm_output *output, int mode)
 						       &input2);
 
 		
-		/* Warn if the device reported failure to sync. */
+		/* Warn if the device reported failure to sync. 
+		 * A lot of SDVO devices fail to notify of sync, but it's
+		 * a given it the status is a success, we succeeded.
+		 */
 		if (status == SDVO_CMD_STATUS_SUCCESS && !input1) {
-			DRM_ERROR("First %s output reported failure to sync\n",
+			DRM_DEBUG("First %s output reported failure to sync\n",
 				   SDVO_NAME(sdvo_priv));
 		}
 		
@@ -839,10 +842,10 @@ static int intel_sdvo_mode_valid(struct drm_output *output,
 		return MODE_NO_DBLESCAN;
 
 	if (sdvo_priv->pixel_clock_min > mode->clock)
-		return MODE_CLOCK_HIGH;
+		return MODE_CLOCK_LOW;
 
 	if (sdvo_priv->pixel_clock_max < mode->clock)
-		return MODE_CLOCK_LOW;
+		return MODE_CLOCK_HIGH;
 
 	return MODE_OK;
 }
