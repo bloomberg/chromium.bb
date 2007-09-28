@@ -61,20 +61,21 @@ src_libbreakpad_la_SOURCES = \
 	src/google_breakpad/processor/minidump.h \
 	src/google_breakpad/processor/minidump_processor.h \
 	src/google_breakpad/processor/process_state.h \
+	src/google_breakpad/processor/source_line_resolver_interface.h \
 	src/google_breakpad/processor/stack_frame.h \
 	src/google_breakpad/processor/stack_frame_cpu.h \
 	src/google_breakpad/processor/stackwalker.h \
 	src/google_breakpad/processor/symbol_supplier.h \
 	src/google_breakpad/processor/system_info.h \
-	src/processor/address_map.h \
 	src/processor/address_map-inl.h \
+	src/processor/address_map.h \
 	src/processor/basic_code_module.h \
 	src/processor/basic_code_modules.cc \
 	src/processor/basic_code_modules.h \
 	src/processor/basic_source_line_resolver.cc \
 	src/processor/call_stack.cc \
-	src/processor/contained_range_map.h \
 	src/processor/contained_range_map-inl.h \
+	src/processor/contained_range_map.h \
 	src/processor/linked_ptr.h \
 	src/processor/logging.h \
 	src/processor/logging.cc \
@@ -82,11 +83,11 @@ src_libbreakpad_la_SOURCES = \
 	src/processor/minidump_processor.cc \
 	src/processor/pathname_stripper.cc \
 	src/processor/pathname_stripper.h \
-	src/processor/postfix_evaluator.h \
 	src/processor/postfix_evaluator-inl.h \
+	src/processor/postfix_evaluator.h \
 	src/processor/process_state.cc \
-	src/processor/range_map.h \
 	src/processor/range_map-inl.h \
+	src/processor/range_map.h \
 	src/processor/scoped_ptr.h \
 	src/processor/simple_symbol_supplier.cc \
 	src/processor/simple_symbol_supplier.h \
@@ -284,8 +285,6 @@ EXTRA_DIST = \
 	src/common/linux/guid_creator.h \
 	src/common/linux/http_upload.cc \
 	src/common/linux/http_upload.h \
-	src/common/linux/md5.c \
-	src/common/linux/md5.h \
 	src/common/mac/HTTPMultipartUpload.h \
 	src/common/mac/HTTPMultipartUpload.m \
 	src/common/mac/dump_syms.h \
@@ -300,6 +299,10 @@ EXTRA_DIST = \
 	src/common/mac/macho_walker.h \
 	src/common/mac/string_utilities.cc \
 	src/common/mac/string_utilities.h \
+	src/common/md5.c \
+	src/common/md5.h \
+	src/common/solaris/dump_symbols.cc \
+	src/common/solaris/dump_symbols.h \
 	src/common/solaris/file_id.cc \
 	src/common/solaris/file_id.h \
 	src/common/solaris/guid_creator.cc \
@@ -340,6 +343,13 @@ EXTRA_DIST = \
 	src/tools/mac/symupload/minidump_upload.m \
 	src/tools/mac/symupload/symupload.m \
 	src/tools/mac/symupload/symupload.xcodeproj/project.pbxproj \
+	src/tools/solaris/dump_syms/Makefile \
+	src/tools/solaris/dump_syms/dump_syms.cc \
+	src/tools/solaris/dump_syms/run_regtest.sh \
+	src/tools/solaris/dump_syms/testdata/dump_syms_regtest.cc \
+	src/tools/solaris/dump_syms/testdata/dump_syms_regtest.o \
+	src/tools/solaris/dump_syms/testdata/dump_syms_regtest.stabs \
+	src/tools/solaris/dump_syms/testdata/dump_syms_regtest.sym \
 	src/tools/windows/converter/ms_symbol_server_converter.cc \
 	src/tools/windows/converter/ms_symbol_server_converter.h \
 	src/tools/windows/converter/ms_symbol_server_converter.vcproj \

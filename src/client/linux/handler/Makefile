@@ -48,7 +48,7 @@ $(BIN_DIR)/minidump_test:$(MINIDUMP_TEST_OBJ)
 $(BIN_DIR)/exception_handler_test:$(EXCEPTION_TEST_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@
 
-md5.o:../../../common/linux/md5.c
+md5.o:../../../common/md5.c
 	$(CC) $(CXXFLAGS) -c $^
 
 clean:

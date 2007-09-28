@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # Copyright (c) 2007, Google Inc.
 # All rights reserved.
 #
@@ -27,52 +29,23 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Author: Alfred Peng
+./dump_syms testdata/dump_syms_regtest.o > testdata/dump_syms_regtest.new
+status=$?
 
-CC=cc
-CXX=CC
+if [ $status -ne 0 ] ; then
+  echo "FAIL, dump_syms failed"
+  exit $status
+fi
 
-CPPFLAGS=-g -I../../.. -DNDEBUG -features=extensions -D_REENTRANT
-LDFLAGS=-lpthread -lssl -lgnutls-openssl -lelf
+diff -u testdata/dump_syms_regtest.new testdata/dump_syms_regtest.sym > \
+ testdata/dump_syms_regtest.diff
+status=$?
 
-OBJ_DIR=.
-BIN_DIR=.
+if [ $status -eq 0 ] ; then
+  rm testdata/dump_syms_regtest.diff testdata/dump_syms_regtest.new
+  echo "PASS"
+else
+  echo "FAIL, see testdata/dump_syms_regtest.[new|diff]"
+fi
 
-THREAD_SRC=solaris_lwp.cc
-SHARE_SRC=../../minidump_file_writer.cc\
-	  ../../../common/md5.c\
-	  ../../../common/string_conversion.cc\
-	  ../../../common/solaris/file_id.cc\
-	  minidump_generator.cc
-HANDLER_SRC=exception_handler.cc\
-	  ../../../common/solaris/guid_creator.cc
-SHARE_C_SRC=../../../common/convert_UTF.c
-
-MINIDUMP_TEST_SRC=minidump_test.cc
-EXCEPTION_TEST_SRC=exception_handler_test.cc
-
-THREAD_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(THREAD_SRC))
-SHARE_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(SHARE_SRC))
-HANDLER_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(HANDLER_SRC))
-SHARE_C_OBJ=$(patsubst %.c,$(OBJ_DIR)/%.o,$(SHARE_C_SRC))
-MINIDUMP_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(MINIDUMP_TEST_SRC))\
-		  $(THREAD_OBJ) $(SHARE_OBJ) $(SHARE_C_OBJ) $(HANDLER_OBJ)
-EXCEPTION_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(EXCEPTION_TEST_SRC))\
-          $(THREAD_OBJ) $(SHARE_OBJ) $(SHARE_C_OBJ) $(HANDLER_OBJ)
-
-BIN=$(BIN_DIR)/minidump_test\
-    $(BIN_DIR)/exception_handler_test
-
-.PHONY:all clean
-
-all:$(BIN)
-
-$(BIN_DIR)/minidump_test:$(MINIDUMP_TEST_OBJ)
-	$(CXX) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
-
-$(BIN_DIR)/exception_handler_test:$(EXCEPTION_TEST_OBJ)
-	$(CXX) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
-
-clean:
-	rm -f $(BIN) *.o *.out *.dmp core ../../minidump_file_writer.o\
-		../../../common/*.o ../../../common/solaris/*.o
+exit $status

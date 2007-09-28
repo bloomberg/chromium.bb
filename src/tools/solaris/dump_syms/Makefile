@@ -29,50 +29,36 @@
 
 # Author: Alfred Peng
 
-CC=cc
 CXX=CC
+CC=cc
 
-CPPFLAGS=-g -I../../.. -DNDEBUG -features=extensions -D_REENTRANT
-LDFLAGS=-lpthread -lssl -lgnutls-openssl -lelf
-
-OBJ_DIR=.
-BIN_DIR=.
-
-THREAD_SRC=solaris_lwp.cc
-SHARE_SRC=../../minidump_file_writer.cc\
-	  ../../../common/md5.c\
-	  ../../../common/string_conversion.cc\
-	  ../../../common/solaris/file_id.cc\
-	  minidump_generator.cc
-HANDLER_SRC=exception_handler.cc\
-	  ../../../common/solaris/guid_creator.cc
-SHARE_C_SRC=../../../common/convert_UTF.c
-
-MINIDUMP_TEST_SRC=minidump_test.cc
-EXCEPTION_TEST_SRC=exception_handler_test.cc
-
-THREAD_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(THREAD_SRC))
-SHARE_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(SHARE_SRC))
-HANDLER_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o,$(HANDLER_SRC))
-SHARE_C_OBJ=$(patsubst %.c,$(OBJ_DIR)/%.o,$(SHARE_C_SRC))
-MINIDUMP_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(MINIDUMP_TEST_SRC))\
-		  $(THREAD_OBJ) $(SHARE_OBJ) $(SHARE_C_OBJ) $(HANDLER_OBJ)
-EXCEPTION_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(EXCEPTION_TEST_SRC))\
-          $(THREAD_OBJ) $(SHARE_OBJ) $(SHARE_C_OBJ) $(HANDLER_OBJ)
-
-BIN=$(BIN_DIR)/minidump_test\
-    $(BIN_DIR)/exception_handler_test
+CXXFLAGS=-g -xs -xdebugformat=stabs -I../../.. -I../../../common/solaris -lelf -ldemangle -D_REENTRANT
 
 .PHONY:all clean
 
+BIN=dump_syms
+
 all:$(BIN)
 
-$(BIN_DIR)/minidump_test:$(MINIDUMP_TEST_OBJ)
-	$(CXX) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
+DUMP_OBJ=dump_symbols.o guid_creator.o dump_syms.o file_id.o md5.o
 
-$(BIN_DIR)/exception_handler_test:$(EXCEPTION_TEST_OBJ)
-	$(CXX) $(CPPFLAGS) $(LDFLAGS) $^ -o $@
+dump_syms:$(DUMP_OBJ)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+dump_symbols.o:../../../common/solaris/dump_symbols.cc
+	$(CXX) $(CXXFLAGS) -c $^
+
+guid_creator.o:../../../common/solaris/guid_creator.cc
+	$(CXX) $(CXXFLAGS) -c $^
+
+file_id.o:../../../common/solaris/file_id.cc
+	$(CXX) $(CXXFLAGS) -c $^
+
+md5.o:../../../common/md5.c
+	$(CC) $(CXXFLAGS) -c $^
+
+test:all
+	./run_regtest.sh
 
 clean:
-	rm -f $(BIN) *.o *.out *.dmp core ../../minidump_file_writer.o\
-		../../../common/*.o ../../../common/solaris/*.o
+	rm -f $(BIN) $(DUMP_OBJ)

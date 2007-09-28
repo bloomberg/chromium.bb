@@ -23,7 +23,7 @@ guid_creator.o:../../../common/linux/guid_creator.cc
 file_id.o:../../../common/linux/file_id.cc
 	$(CXX) $(CXXFLAGS) -c $^
 
-md5.o:../../../common/linux/md5.c
+md5.o:../../../common/md5.c
 	$(CC) $(CXXFLAGS) -c $^
 
 clean:
