@@ -124,6 +124,9 @@ int CrashReportSender::GetCurrentDate() const {
 }
 
 int CrashReportSender::OpenCheckpointFile(const wchar_t *mode, FILE **fd) {
+  if (checkpoint_file_.empty()) {
+    return ENOENT;
+  }
 #if _MSC_VER >= 1400  // MSVC 2005/8
   return _wfopen_s(fd, checkpoint_file_.c_str(), mode);
 #else
