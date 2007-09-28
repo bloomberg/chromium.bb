@@ -755,13 +755,14 @@ static int i915_flip_bufs(struct drm_device *dev, void *data, struct drm_file *f
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-	if (param->planes & ~0x3) {
+	/* This is really planes */
+	if (param->pipes & ~0x3) {
 		DRM_ERROR("Invalid planes 0x%x, only <= 0x3 is valid\n",
-			  param->planes);
+			  param->pipes);
 		return -EINVAL;
 	}
 
-	i915_dispatch_flip(dev, param->planes, 0);
+	i915_dispatch_flip(dev, param->pipes, 0);
 
 	return 0;
 }

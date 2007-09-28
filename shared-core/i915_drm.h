@@ -182,7 +182,13 @@ typedef struct _drm_i915_sarea {
 /* Asynchronous page flipping:
  */
 typedef struct drm_i915_flip {
-	int planes;
+	/*
+	 * This is really talking about planes, and we could rename it
+	 * except for the fact that some of the duplicated i915_drm.h files
+	 * out there check for HAVE_I915_FLIP and so might pick up this
+	 * version.
+	 */
+	int pipes;
 } drm_i915_flip_t;
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
