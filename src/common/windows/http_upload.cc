@@ -137,7 +137,8 @@ bool HTTPUpload::SendRequest(const wstring &url,
   wstring content_type_header = GenerateRequestHeader(boundary);
   HttpAddRequestHeaders(request.get(),
                         content_type_header.c_str(),
-                        -1, HTTP_ADDREQ_FLAG_ADD);
+                        static_cast<DWORD>(-1),
+                        HTTP_ADDREQ_FLAG_ADD);
 
   string request_body;
   if (!GenerateRequestBody(parameters, upload_file,
