@@ -57,18 +57,6 @@ void nv20_graph_destroy_context(struct nouveau_channel *chan) {
 
 	INSTANCE_WR(dev_priv->ctx_table->gpuobj, chan->id, 0);
 }
-#endif /* 0 */
-
-static void nv20_graph_rdi(struct drm_device *dev) {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	int i;
-
-	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x2c80000);
-	for (i = 0; i < 32; i++)
-		NV_WRITE(NV10_PGRAPH_RDI_DATA, 0);
-
-	nouveau_wait_for_idle(dev);
-}
 
 /* Save current context (from PGRAPH) into the channel's context
  */
@@ -145,6 +133,18 @@ void nouveau_nv20_context_switch(struct drm_device *dev)
 
 	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
 }
+#endif /* 0 */
+
+static void nv20_graph_rdi(struct drm_device *dev) {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int i;
+
+	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x2c80000);
+	for (i = 0; i < 32; i++)
+		NV_WRITE(NV10_PGRAPH_RDI_DATA, 0);
+
+	nouveau_wait_for_idle(dev);
+}
 
 int nv20_graph_init(struct drm_device *dev) {
 	struct drm_nouveau_private *dev_priv =
@@ -177,7 +177,7 @@ int nv20_graph_init(struct drm_device *dev) {
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);
 	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x00118700);
-	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xF20E0431);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xF20E0435); /* 0x4 = auto ctx switch */
 	NV_WRITE(NV10_PGRAPH_DEBUG_4, 0x00000000);
 	NV_WRITE(0x40009C           , 0x00000040);
 
