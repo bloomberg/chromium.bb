@@ -714,7 +714,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	next = dev_priv->fifos[chid];
 
 	if (!next) {
-		DRM_DEBUG("Invalid next channel\n");
+		DRM_ERROR("Invalid next channel\n");
 		return;
 	}
 
@@ -722,7 +722,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	last = dev_priv->fifos[chid];
 
 	if (!last) {
-		DRM_DEBUG("WARNING: Invalid last channel, switch to %x\n",
+		DRM_INFO("WARNING: Invalid last channel, switch to %x\n",
 		          next->id);
 	} else {
 		DRM_DEBUG("NV: PGRAPH context switch interrupt channel %x -> %x\n",
@@ -827,6 +827,9 @@ void nv10_graph_destroy_context(struct nouveau_channel *chan)
 	int chid;
 	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 
+	/* This code seems to corrupt the 3D pipe, but blob seems to do similar things ????
+	 */
+#if 0
 	/* does this avoid a potential context switch while we are written graph
 	 * reg, or we should mask graph interrupt ???
 	 */
@@ -838,7 +841,12 @@ void nv10_graph_destroy_context(struct nouveau_channel *chan)
 		nv10_graph_create_context(chan);
 		nv10_graph_load_context(chan);
 	}
-	NV_WRITE(NV04_PGRAPH_FIFO,0x1);
+	NV_WRITE(NV04_PGRAPH_FIFO, 0x1);
+#else
+	if (chid == chan->id) {
+		DRM_INFO("cleanning a channel with graph in current context\n");
+	}
+#endif
 }
 
 int nv10_graph_init(struct drm_device *dev) {
