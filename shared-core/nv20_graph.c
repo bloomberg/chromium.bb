@@ -29,6 +29,7 @@
 
 #define NV20_GRCTX_SIZE (3529*4)
 
+#if 0
 int nv20_graph_create_context(struct nouveau_channel *chan) {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -56,6 +57,7 @@ void nv20_graph_destroy_context(struct nouveau_channel *chan) {
 
 	INSTANCE_WR(dev_priv->ctx_table->gpuobj, chan->id, 0);
 }
+#endif /* 0 */
 
 static void nv20_graph_rdi(struct drm_device *dev) {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;

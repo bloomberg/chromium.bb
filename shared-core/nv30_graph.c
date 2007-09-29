@@ -23,10 +23,22 @@
  *
  */
 
+/*#define NV20_GRCTX_SIZE (3529*4)*/
+
+#define NV28_GRCTX_SIZE (3529*4)
 
 #define NV30_31_GRCTX_SIZE (22392)
 #define NV34_GRCTX_SIZE    (18140)
 #define NV35_36_GRCTX_SIZE (22396)
+
+
+static void nv28_graph_context_init(struct drm_device *dev,
+                                    struct nouveau_gpuobj *ctx)
+{
+	int i;
+	(void)dev;
+
+}
 
 static void nv30_31_graph_context_init(struct drm_device *dev, struct nouveau_gpuobj *ctx)
 {
@@ -2715,6 +2727,10 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 	int ret;
 
 	switch (dev_priv->chipset) {
+	case 0x28:
+		ctx_size = NV28_GRCTX_SIZE;
+		ctx_init = nv28_graph_context_init;
+		break;
 	case 0x30:
 	case 0x31:
 		ctx_size = NV30_31_GRCTX_SIZE;
@@ -2732,7 +2748,9 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 	default:
 		ctx_size = 0;
 		ctx_init = nv35_36_graph_context_init;
-		DRM_ERROR("Please contact the devs if you want your NV%x card to work\n",dev_priv->chipset);
+		DRM_ERROR("Please contact the devs if you want your NV%x"
+		          " card to work\n", dev_priv->chipset);
+		return -ENOSYS;
 		break;
 	}
 
@@ -2744,7 +2762,10 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 	/* Initialise default context values */
 	ctx_init(dev, chan->ramin_grctx->gpuobj);
 
-	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x28/4, (chan->id<<24)|0x1); /* CTX_USER */
+	/* nv20: INSTANCE_WR(chan->ramin_grctx->gpuobj, 10, chan->id<<24); */
+	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x28/4, (chan->id<<24)|0x1);
+	                                                     /* CTX_USER */
+
 	INSTANCE_WR(dev_priv->ctx_table->gpuobj, chan->id,
 			chan->ramin_grctx->instance >> 4);
 
