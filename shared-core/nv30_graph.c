@@ -2769,11 +2769,11 @@ nouveau_graph_wait_idle(struct drm_device *dev)
 	int tv = 1000;
 
 	while (tv--) {
-		if (NV_READ(0x400700) == 0)
+		if (NV_READ(NV04_PGRAPH_STATUS) == 0)
 			break;
 	}
 
-	if (NV_READ(0x400700)) {
+	if (NV_READ(NV04_PGRAPH_STATUS)) {
 		DRM_ERROR("timeout!\n");
 		return -EBUSY;
 	}
@@ -2859,7 +2859,7 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(0x400B84, 0x0c000000);
 	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x62ff0f7f);
 	NV_WRITE(0x4000c0, 0x00000016);
-	NV_WRITE(0x400780, 0x000014e4);
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE, 0x000014e4);
 
 	/* copy tile info from PFB */
 	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
