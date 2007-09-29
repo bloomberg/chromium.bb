@@ -403,7 +403,19 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 
 	/* disable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH, NV_READ(NV04_PFIFO_CACHE1_DMA_PUSH)&(~0x1));
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000000);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
 
+	/* stop the fifo, otherwise it could be running and
+	 * it will crash when removing gpu objects */
+	if (dev_priv->card_type < NV_50) {
+		NV_WRITE(NV03_FIFO_REGS_DMAPUT(chan->id), chan->pushbuf_base);
+		NV_WRITE(NV03_FIFO_REGS_DMAGET(chan->id), chan->pushbuf_base);
+	} else {
+		NV_WRITE(NV50_FIFO_REGS_DMAPUT(chan->id), chan->pushbuf_base);
+		NV_WRITE(NV50_FIFO_REGS_DMAGET(chan->id), chan->pushbuf_base);
+	}
 	// FIXME XXX needs more code
 
 	engine->fifo.destroy_context(chan);
@@ -412,6 +424,10 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 	engine->graph.destroy_context(chan);
 
 	/* reenable the fifo caches */
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH,
+		 NV_READ(NV04_PFIFO_CACHE1_DMA_PUSH) | 1);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000001);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000001);
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
 
 	/* Deallocate push buffer */
