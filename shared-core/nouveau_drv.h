@@ -120,8 +120,9 @@ struct nouveau_channel
 	struct nouveau_gpuobj_ref *ramfc;
 
 	/* PGRAPH context */
+	/* XXX may be merge 2 pointers as private data ??? */
 	struct nouveau_gpuobj_ref *ramin_grctx;
-	uint32_t pgraph_ctx [340]; /* XXX dynamic alloc ? */
+	void *pgraph_ctx;
 
 	/* NV50 VM */
 	struct nouveau_gpuobj     *vm_pd;

@@ -388,17 +388,14 @@ NV10_PGRAPH_DEBUG_4,
 struct graph_state {
 	int nv10[sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0])];
 	int nv17[sizeof(nv17_graph_ctx_regs)/sizeof(nv17_graph_ctx_regs[0])];
+	struct pipe_state pipe_state;
 };
-
-/* TODO dynamic allocation ??? */
-static struct pipe_state pipe_state[NV10_FIFO_NUMBER];
-static struct graph_state graph_state[NV10_FIFO_NUMBER];
-
 
 static void nv10_graph_save_pipe(struct nouveau_channel *chan) {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct pipe_state *fifo_pipe_state = pipe_state + chan->id;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
+	struct pipe_state *fifo_pipe_state = &pgraph_ctx->pipe_state;
 	int i;
 #define PIPE_SAVE(addr) \
 	do { \
@@ -424,7 +421,8 @@ static void nv10_graph_save_pipe(struct nouveau_channel *chan) {
 static void nv10_graph_load_pipe(struct nouveau_channel *chan) {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct pipe_state *fifo_pipe_state = pipe_state + chan->id;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
+	struct pipe_state *fifo_pipe_state = &pgraph_ctx->pipe_state;
 	int i;
 	uint32_t xfmode0, xfmode1;
 #define PIPE_RESTORE(addr) \
@@ -480,7 +478,8 @@ static void nv10_graph_load_pipe(struct nouveau_channel *chan) {
 }
 
 static void nv10_graph_create_pipe(struct nouveau_channel *chan) {
-	struct pipe_state *fifo_pipe_state = pipe_state + chan->id;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
+	struct pipe_state *fifo_pipe_state = &pgraph_ctx->pipe_state;
 	uint32_t *fifo_pipe_state_addr;
 	int i;
 #define PIPE_INIT(addr) \
@@ -656,7 +655,7 @@ int nv10_graph_load_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct graph_state* pgraph_ctx = graph_state + chan->id;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int i;
 
 	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
@@ -675,7 +674,7 @@ int nv10_graph_save_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct graph_state* pgraph_ctx = graph_state + chan->id;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int i;
 
 	for (i = 0; i < sizeof(nv10_graph_ctx_regs)/sizeof(nv10_graph_ctx_regs[0]); i++)
@@ -763,11 +762,15 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 int nv10_graph_create_context(struct nouveau_channel *chan) {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct graph_state* pgraph_ctx = graph_state + chan->id;
+	struct graph_state* pgraph_ctx;
 
 	DRM_DEBUG("nv10_graph_context_create %d\n", chan->id);
 
-	memset(pgraph_ctx, 0, sizeof(*pgraph_ctx));
+	chan->pgraph_ctx = pgraph_ctx = drm_calloc(1, sizeof(*pgraph_ctx),
+					      DRM_MEM_DRIVER);
+
+	if (pgraph_ctx == NULL)
+		return -ENOMEM;
 
 	/* mmio trace suggest that should be done in ddx with methods/objects */
 #if 0
@@ -824,7 +827,12 @@ void nv10_graph_destroy_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int chid;
+
+	drm_free(pgraph_ctx, sizeof(*pgraph_ctx), DRM_MEM_DRIVER);
+	chan->pgraph_ctx = NULL;
+
 	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
 
 	/* This code seems to corrupt the 3D pipe, but blob seems to do similar things ????
@@ -838,7 +846,8 @@ void nv10_graph_destroy_context(struct nouveau_channel *chan)
 		DRM_INFO("cleanning a channel with graph in current context\n");
 		nouveau_wait_for_idle(dev);
 		DRM_INFO("reseting current graph context\n");
-		nv10_graph_create_context(chan);
+		/* can't be call here because of dynamic mem alloc */
+		//nv10_graph_create_context(chan);
 		nv10_graph_load_context(chan);
 	}
 	NV_WRITE(NV04_PGRAPH_FIFO, 0x1);

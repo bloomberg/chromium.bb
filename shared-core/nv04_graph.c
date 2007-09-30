@@ -350,9 +350,6 @@ struct graph_state {
 	int nv04[sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0])];
 };
 
-/* TODO dynamic allocation ??? */
-static struct graph_state graph_state[16];
-
 void nouveau_nv04_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -421,10 +418,14 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 }
 
 int nv04_graph_create_context(struct nouveau_channel *chan) {
-	struct graph_state* pgraph_ctx = graph_state + chan->id;
+	struct graph_state* pgraph_ctx;
 	DRM_DEBUG("nv04_graph_context_create %d\n", chan->id);
 
-	memset(pgraph_ctx, 0, sizeof(*pgraph_ctx));
+	chan->pgraph_ctx = pgraph_ctx = drm_calloc(1, sizeof(*pgraph_ctx),
+					      DRM_MEM_DRIVER);
+
+	if (pgraph_ctx == NULL)
+		return -ENOMEM;
 
 	//dev_priv->fifos[channel].pgraph_ctx_user = channel << 24;
 	pgraph_ctx->nv04[0] = 0x0001ffff;
@@ -437,13 +438,17 @@ int nv04_graph_create_context(struct nouveau_channel *chan) {
 
 void nv04_graph_destroy_context(struct nouveau_channel *chan)
 {
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
+
+	drm_free(pgraph_ctx, sizeof(*pgraph_ctx), DRM_MEM_DRIVER);
+	chan->pgraph_ctx = NULL;
 }
 
 int nv04_graph_load_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct graph_state* pgraph_ctx = graph_state + chan->id;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int i;
 
 	for (i = 0; i < sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
@@ -456,7 +461,7 @@ int nv04_graph_save_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct graph_state* pgraph_ctx = graph_state + chan->id;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int i;
 
 	for (i = 0; i < sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
