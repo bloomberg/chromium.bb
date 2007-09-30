@@ -2879,6 +2879,7 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 	int ret;
 
 	switch (dev_priv->chipset) {
+	case 0x25:
 	case 0x28:
 		ctx_size = NV28_GRCTX_SIZE;
 		ctx_init = nv28_graph_context_init;
