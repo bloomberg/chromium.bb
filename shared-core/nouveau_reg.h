@@ -286,10 +286,8 @@
 #define NV10_PGRAPH_DMA_PITCH                              0x00400770
 #define NV10_PGRAPH_DVD_COLORFMT                           0x00400774
 #define NV10_PGRAPH_SCALED_FORMAT                          0x00400778
-#define NV10_PGRAPH_CHANNEL_CTX_TABLE                      0x00400780
-#define NV10_PGRAPH_CHANNEL_CTX_SIZE                       0x00400784
+#define NV20_PGRAPH_CHANNEL_CTX_TABLE                      0x00400780
 #define NV20_PGRAPH_CHANNEL_CTX_POINTER                    0x00400784
-#define NV10_PGRAPH_CHANNEL_CTX_POINTER                    0x00400788
 #define NV20_PGRAPH_CHANNEL_CTX_XFER                       0x00400788
 #define NV20_PGRAPH_CHANNEL_CTX_XFER_LOAD                  0x00000001
 #define NV20_PGRAPH_CHANNEL_CTX_XFER_SAVE                  0x00000002

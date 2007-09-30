@@ -2933,24 +2933,6 @@ void nv20_graph_destroy_context(struct nouveau_channel *chan)
 	INSTANCE_WR(dev_priv->ctx_table->gpuobj, chan->id, 0);
 }
 
-static int
-nouveau_graph_wait_idle(struct drm_device *dev)
-{
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	int tv = 1000;
-
-	while (tv--) {
-		if (NV_READ(NV04_PGRAPH_STATUS) == 0)
-			break;
-	}
-
-	if (NV_READ(NV04_PGRAPH_STATUS)) {
-		DRM_ERROR("timeout!\n");
-		return -EBUSY;
-	}
-	return 0;
-}
-
 int nv20_graph_load_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
@@ -2965,7 +2947,8 @@ int nv20_graph_load_context(struct nouveau_channel *chan)
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_XFER,
 		 NV20_PGRAPH_CHANNEL_CTX_XFER_LOAD);
 
-	return nouveau_graph_wait_idle(dev);
+	nouveau_wait_for_idle(dev);
+	return 0;
 }
 
 int nv20_graph_save_context(struct nouveau_channel *chan)
@@ -2982,7 +2965,8 @@ int nv20_graph_save_context(struct nouveau_channel *chan)
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_XFER,
 		 NV20_PGRAPH_CHANNEL_CTX_XFER_SAVE);
 
-	return nouveau_graph_wait_idle(dev);
+	nouveau_wait_for_idle(dev);
+	return 0;
 }
 
 static void nv20_graph_rdi(struct drm_device *dev) {
@@ -3015,7 +2999,7 @@ int nv20_graph_init(struct drm_device *dev) {
 					  &dev_priv->ctx_table)))
 		return ret;
 
-	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE,
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_TABLE,
 		 dev_priv->ctx_table->instance >> 4);
 
 	//XXX need to be done and save/restore for each fifo ???
@@ -3118,7 +3102,7 @@ int nv30_graph_init(struct drm_device *dev)
 					  &dev_priv->ctx_table)))
 		return ret;
 
-        NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE,
+        NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_TABLE,
 		 dev_priv->ctx_table->instance >> 4);
 
 	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
@@ -3144,7 +3128,7 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(0x400B84, 0x0c000000);
 	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x62ff0f7f);
 	NV_WRITE(0x4000c0, 0x00000016);
-	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE, 0x000014e4);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_TABLE, 0x000014e4);
 
 	/* copy tile info from PFB */
 	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
