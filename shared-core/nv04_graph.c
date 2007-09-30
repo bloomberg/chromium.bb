@@ -346,6 +346,13 @@ static uint32_t nv04_graph_ctx_regs [] = {
 
 };
 
+struct graph_state {
+	int nv04[sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0])];
+};
+
+/* TODO dynamic allocation ??? */
+static struct graph_state graph_state[16];
+
 void nouveau_nv04_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -414,12 +421,13 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 }
 
 int nv04_graph_create_context(struct nouveau_channel *chan) {
+	struct graph_state* pgraph_ctx = graph_state + chan->id;
 	DRM_DEBUG("nv04_graph_context_create %d\n", chan->id);
 
-	memset(chan->pgraph_ctx, 0, sizeof(chan->pgraph_ctx));
+	memset(pgraph_ctx, 0, sizeof(*pgraph_ctx));
 
 	//dev_priv->fifos[channel].pgraph_ctx_user = channel << 24;
-	chan->pgraph_ctx[0] = 0x0001ffff;
+	pgraph_ctx->nv04[0] = 0x0001ffff;
 	/* is it really needed ??? */
 	//dev_priv->fifos[channel].pgraph_ctx[1] = NV_READ(NV_PGRAPH_DEBUG_4);
 	//dev_priv->fifos[channel].pgraph_ctx[2] = NV_READ(0x004006b0);
@@ -435,10 +443,11 @@ int nv04_graph_load_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct graph_state* pgraph_ctx = graph_state + chan->id;
 	int i;
 
 	for (i = 0; i < sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
-		NV_WRITE(nv04_graph_ctx_regs[i], chan->pgraph_ctx[i]);
+		NV_WRITE(nv04_graph_ctx_regs[i], pgraph_ctx->nv04[i]);
 
 	return 0;
 }
@@ -447,10 +456,11 @@ int nv04_graph_save_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct graph_state* pgraph_ctx = graph_state + chan->id;
 	int i;
 
 	for (i = 0; i < sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
-		chan->pgraph_ctx[i] = NV_READ(nv04_graph_ctx_regs[i]);
+		pgraph_ctx->nv04[i] = NV_READ(nv04_graph_ctx_regs[i]);
 
 	return 0;
 }
@@ -466,10 +476,6 @@ int nv04_graph_init(struct drm_device *dev) {
 	/* Enable PGRAPH interrupts */
 	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
 	NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
-
-	// check the context is big enough
-	if ( sizeof(nv04_graph_ctx_regs)>sizeof(dev_priv->fifos[0]->pgraph_ctx) )
-		DRM_ERROR("pgraph_ctx too small\n");
 
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x000001FF);
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x1231c000);
