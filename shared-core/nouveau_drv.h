@@ -490,7 +490,7 @@ extern void nv10_graph_destroy_context(struct nouveau_channel *);
 extern int  nv10_graph_load_context(struct nouveau_channel *);
 extern int  nv10_graph_save_context(struct nouveau_channel *);
 
-/* nv30_graph.c */
+/* nv20_graph.c */
 extern int  nv20_graph_create_context(struct nouveau_channel *);
 extern void nv20_graph_destroy_context(struct nouveau_channel *);
 extern int  nv20_graph_load_context(struct nouveau_channel *);
