@@ -3002,7 +3002,6 @@ int nv20_graph_init(struct drm_device *dev) {
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_TABLE,
 		 dev_priv->ctx_table->instance >> 4);
 
-	//XXX need to be done and save/restore for each fifo ???
 	nv20_graph_rdi(dev);
 
 	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
@@ -3094,16 +3093,16 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
 			 NV_PMC_ENABLE_PGRAPH);
 
-        /* Create Context Pointer Table */
-        dev_priv->ctx_table_size = 32 * 4;
+	/* Create Context Pointer Table */
+	dev_priv->ctx_table_size = 32 * 4;
 	if ((ret = nouveau_gpuobj_new_ref(dev, NULL, NULL, 0,
 					  dev_priv->ctx_table_size, 16,
 					  NVOBJ_FLAG_ZERO_ALLOC,
 					  &dev_priv->ctx_table)))
 		return ret;
 
-        NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_TABLE,
-		 dev_priv->ctx_table->instance >> 4);
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_TABLE,
+			dev_priv->ctx_table->instance >> 4);
 
 	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
 	NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
@@ -3128,7 +3127,6 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(0x400B84, 0x0c000000);
 	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x62ff0f7f);
 	NV_WRITE(0x4000c0, 0x00000016);
-	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_TABLE, 0x000014e4);
 
 	/* copy tile info from PFB */
 	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
