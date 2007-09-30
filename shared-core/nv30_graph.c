@@ -1,7 +1,3 @@
-/*
- * Based on nv40_graph.c
- *  Someday this will all go away...
- */
 #include "drmP.h"
 #include "drm.h"
 #include "nouveau_drv.h"
@@ -25,14 +21,14 @@
 
 /*#define NV20_GRCTX_SIZE (3529*4)*/
 
-#define NV28_GRCTX_SIZE (3529*4)
+#define NV25_GRCTX_SIZE (3529*4)
 
 #define NV30_31_GRCTX_SIZE (22392)
 #define NV34_GRCTX_SIZE    (18140)
 #define NV35_36_GRCTX_SIZE (22396)
 
 
-static void nv28_graph_context_init(struct drm_device *dev,
+static void nv25_graph_context_init(struct drm_device *dev,
                                     struct nouveau_gpuobj *ctx)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -2868,9 +2864,10 @@ static void nv35_36_graph_context_init(struct drm_device *dev,
 	INSTANCE_WR(ctx, 0x385c/4, 0x40000000);
 	INSTANCE_WR(ctx, 0x3860/4, 0x3f800000);
 	INSTANCE_WR(ctx, 0x3868/4, 0xbf800000);
-	INSTANCE_WR(ctx, 0x3870/4, 0xbf800000);}
+	INSTANCE_WR(ctx, 0x3870/4, 0xbf800000);
+}
 
-int nv30_graph_create_context(struct nouveau_channel *chan)
+int nv20_graph_create_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -2881,8 +2878,8 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 	switch (dev_priv->chipset) {
 	case 0x25:
 	case 0x28:
-		ctx_size = NV28_GRCTX_SIZE;
-		ctx_init = nv28_graph_context_init;
+		ctx_size = NV25_GRCTX_SIZE;
+		ctx_init = nv25_graph_context_init;
 		break;
 	case 0x30:
 	case 0x31:
@@ -2925,7 +2922,7 @@ int nv30_graph_create_context(struct nouveau_channel *chan)
 	return 0;
 }
 
-void nv30_graph_destroy_context(struct nouveau_channel *chan)
+void nv20_graph_destroy_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -2954,7 +2951,7 @@ nouveau_graph_wait_idle(struct drm_device *dev)
 	return 0;
 }
 
-int nv30_graph_load_context(struct nouveau_channel *chan)
+int nv20_graph_load_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -2971,7 +2968,7 @@ int nv30_graph_load_context(struct nouveau_channel *chan)
 	return nouveau_graph_wait_idle(dev);
 }
 
-int nv30_graph_save_context(struct nouveau_channel *chan)
+int nv20_graph_save_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -2986,6 +2983,120 @@ int nv30_graph_save_context(struct nouveau_channel *chan)
 		 NV20_PGRAPH_CHANNEL_CTX_XFER_SAVE);
 
 	return nouveau_graph_wait_idle(dev);
+}
+
+static void nv20_graph_rdi(struct drm_device *dev) {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int i;
+
+	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x2c80000);
+	for (i = 0; i < 32; i++)
+		NV_WRITE(NV10_PGRAPH_RDI_DATA, 0);
+
+	nouveau_wait_for_idle(dev);
+}
+
+int nv20_graph_init(struct drm_device *dev) {
+	struct drm_nouveau_private *dev_priv =
+		(struct drm_nouveau_private *)dev->dev_private;
+	uint32_t tmp, vramsz;
+	int ret, i;
+
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
+			~NV_PMC_ENABLE_PGRAPH);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
+			 NV_PMC_ENABLE_PGRAPH);
+
+	/* Create Context Pointer Table */
+	dev_priv->ctx_table_size = 32 * 4;
+	if ((ret = nouveau_gpuobj_new_ref(dev, NULL, NULL, 0,
+					  dev_priv->ctx_table_size, 16,
+					  NVOBJ_FLAG_ZERO_ALLOC,
+					  &dev_priv->ctx_table)))
+		return ret;
+
+	NV_WRITE(NV10_PGRAPH_CHANNEL_CTX_TABLE,
+		 dev_priv->ctx_table->instance >> 4);
+
+	//XXX need to be done and save/restore for each fifo ???
+	nv20_graph_rdi(dev);
+
+	NV_WRITE(NV03_PGRAPH_INTR   , 0xFFFFFFFF);
+	NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
+
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);
+	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x00118700);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xF20E0435); /* 0x4 = auto ctx switch */
+	NV_WRITE(NV10_PGRAPH_DEBUG_4, 0x00000000);
+	NV_WRITE(0x40009C           , 0x00000040);
+
+	if (dev_priv->chipset >= 0x25) {
+		NV_WRITE(0x400890, 0x00080000);
+		NV_WRITE(0x400610, 0x304B1FB6);
+		NV_WRITE(0x400B80, 0x18B82880);
+		NV_WRITE(0x400B84, 0x44000000);
+		NV_WRITE(0x400098, 0x40000080);
+		NV_WRITE(0x400B88, 0x000000ff);
+	} else {
+		NV_WRITE(0x400880, 0x00080000);
+		NV_WRITE(0x400094, 0x00000005);
+		NV_WRITE(0x400B80, 0x45CAA208);
+		NV_WRITE(0x400B84, 0x24000000);
+		NV_WRITE(0x400098, 0x00000040);
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00E00038);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA , 0x00000030);
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00E10038);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA , 0x00000030);
+	}
+
+	/* copy tile info from PFB */
+	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
+		NV_WRITE(NV10_PGRAPH_TILE(i), NV_READ(NV10_PFB_TILE(i)));
+		NV_WRITE(NV10_PGRAPH_TLIMIT(i), NV_READ(NV10_PFB_TLIMIT(i)));
+		NV_WRITE(NV10_PGRAPH_TSIZE(i), NV_READ(NV10_PFB_TSIZE(i)));
+		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
+	}
+
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
+	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
+
+	tmp = NV_READ(NV10_PGRAPH_SURFACE) & 0x0007ff00;
+	NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+	tmp = NV_READ(NV10_PGRAPH_SURFACE) | 0x00020100;
+	NV_WRITE(NV10_PGRAPH_SURFACE, tmp);
+
+	/* begin RAM config */
+	vramsz = drm_get_resource_len(dev, 0) - 1;
+	NV_WRITE(0x4009A4, NV_READ(NV04_PFB_CFG0));
+	NV_WRITE(0x4009A8, NV_READ(NV04_PFB_CFG1));
+	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0000);
+	NV_WRITE(NV10_PGRAPH_RDI_DATA , NV_READ(NV04_PFB_CFG0));
+	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0004);
+	NV_WRITE(NV10_PGRAPH_RDI_DATA , NV_READ(NV04_PFB_CFG1));
+	NV_WRITE(0x400820, 0);
+	NV_WRITE(0x400824, 0);
+	NV_WRITE(0x400864, vramsz-1);
+	NV_WRITE(0x400868, vramsz-1);
+
+	/* interesting.. the below overwrites some of the tile setup above.. */
+	NV_WRITE(0x400B20, 0x00000000);
+	NV_WRITE(0x400B04, 0xFFFFFFFF);
+
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_XMIN, 0);
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_YMIN, 0);
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_XMAX, 0x7fff);
+	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_YMAX, 0x7fff);
+
+	return 0;
+}
+
+void nv20_graph_takedown(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	nouveau_gpuobj_ref_del(dev, &dev_priv->ctx_table);
 }
 
 int nv30_graph_init(struct drm_device *dev)
@@ -3075,12 +3186,5 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_YMAX, 0x7fff);
 
 	return 0;
-}
-
-void nv30_graph_takedown(struct drm_device *dev)
-{
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-
-	nouveau_gpuobj_ref_del(dev, &dev_priv->ctx_table);
 }
 
