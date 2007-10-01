@@ -423,12 +423,15 @@ void nouveau_lastclose(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	nouveau_card_takedown(dev);
+	/* In the case of an error dev_priv may not be be allocated yet */
+	if (dev_priv && dev_priv->card_type) {
+		nouveau_card_takedown(dev);
 
-	if(dev_priv->fb_mtrr>0)
-	{
-		drm_mtrr_del(dev_priv->fb_mtrr, drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
-		dev_priv->fb_mtrr=0;
+		if(dev_priv->fb_mtrr>0)
+		{
+			drm_mtrr_del(dev_priv->fb_mtrr, drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
+			dev_priv->fb_mtrr=0;
+		}
 	}
 }
 
