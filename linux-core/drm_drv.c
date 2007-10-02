@@ -321,6 +321,11 @@ int drm_init(struct drm_driver *driver,
 		while ((pdev =
 			pci_get_subsys(pid->vendor, pid->device, pid->subvendor,
 				       pid->subdevice, pdev))) {
+			/* Are there device class requirements? */
+			if ((pid->class != 0) 
+				&& ((pdev->class & pid->class_mask) != pid->class)) {
+				continue;
+			}
 			/* is there already a driver loaded, or (short circuit saves work) */
 			/* does something like VesaFB have control of the memory region? */
 			if (pci_dev_driver(pdev)
@@ -347,6 +352,11 @@ int drm_init(struct drm_driver *driver,
 				pci_get_subsys(pid->vendor, pid->device,
 					       pid->subvendor, pid->subdevice,
 					       pdev))) {
+				/* Are there device class requirements? */
+				if ((pid->class != 0) 
+					&& ((pdev->class & pid->class_mask) != pid->class)) {
+					continue;
+				}
 				/* stealth mode requires a manual probe */
 				pci_dev_get(pdev);
 				if ((rc = drm_get_dev(pdev, &pciidlist[i], driver))) {
