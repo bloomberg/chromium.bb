@@ -1767,7 +1767,6 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 	struct drm_bo_op_arg *arg = data;
 	struct drm_bo_op_req *req = &arg->d.req;
 	struct drm_bo_info_rep rep;
-	struct drm_buffer_object *dummy;
 	unsigned long next = 0;
 	void __user *curuserarg = NULL;
 	int ret;
@@ -1804,7 +1803,7 @@ int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_pr
 						     req->bo_req.flags,
 						     req->bo_req.mask,
 						     req->bo_req.hint,
-						     &rep, &dummy);
+						     &rep, NULL);
 			break;
 		case drm_bo_fence:
 			ret = -EINVAL;
