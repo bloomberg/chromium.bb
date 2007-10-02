@@ -256,11 +256,10 @@ write32 #1 block at +0x00740d34 NV_PRAMIN.GRCTX0+0x614 of 3136 (0xc40) elements:
 	INSTANCE_WR(ctx, (0x614/4)+25, 0x00000001);
 	INSTANCE_WR(ctx, (0x614/4)+27, 0x00040000);
 	INSTANCE_WR(ctx, (0x614/4)+28, 0x00010000);
-	for (i=0; i<0x880; i+=4) {
+	for (i=0; i < 0x880/4; i+=4) {
 		INSTANCE_WR(ctx, (0x1b04/4)+i+0, 0x10700ff9);
 		INSTANCE_WR(ctx, (0x1b04/4)+i+1, 0x0436086c);
 		INSTANCE_WR(ctx, (0x1b04/4)+i+2, 0x000c001b);
-		INSTANCE_WR(ctx, (0x1b04/4)+i+3, 0x00000000);
 	}
 
 /*
