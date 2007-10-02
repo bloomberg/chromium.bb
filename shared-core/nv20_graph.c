@@ -3004,12 +3004,14 @@ int nv20_graph_create_context(struct nouveau_channel *chan)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	void (*ctx_init)(struct drm_device *, struct nouveau_gpuobj *);
 	unsigned int ctx_size;
+	unsigned int idoffs = 0x28/4;
 	int ret;
 
 	switch (dev_priv->chipset) {
 	case 0x20:
 		ctx_size = NV20_GRCTX_SIZE;
 		ctx_init = nv20_graph_context_init;
+		idoffs = 0;
 		break;
 	case 0x25:
 	case 0x28:
@@ -3048,7 +3050,7 @@ int nv20_graph_create_context(struct nouveau_channel *chan)
 	ctx_init(dev, chan->ramin_grctx->gpuobj);
 
 	/* nv20: INSTANCE_WR(chan->ramin_grctx->gpuobj, 10, chan->id<<24); */
-	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x28/4, (chan->id<<24)|0x1);
+	INSTANCE_WR(chan->ramin_grctx->gpuobj, idoffs, (chan->id<<24)|0x1);
 	                                                     /* CTX_USER */
 
 	INSTANCE_WR(dev_priv->ctx_table->gpuobj, chan->id,
