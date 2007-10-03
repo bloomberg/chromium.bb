@@ -98,7 +98,7 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 	const struct xgi_cmd_info *const pCmdInfo =
 		(struct xgi_cmd_info *) data;
 	const unsigned int cmd = get_batch_command(pCmdInfo->type);
-#if __BIG_ENDIAN
+#ifdef __BIG_ENDIAN
 	const u32 *const ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
 	unsigned i;
 	unsigned j;
