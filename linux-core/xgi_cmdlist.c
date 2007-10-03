@@ -45,7 +45,7 @@ static inline void dwWriteReg(struct drm_map * map, u32 addr, u32 data)
 	DRM_INFO("mmio_map->handle = 0x%p, addr = 0x%x, data = 0x%x\n",
 		 map->handle, addr, data);
 #endif
-	DRM_WRITE32(map, addr, data);
+	DRM_WRITE32(map, addr, cpu_to_le32(data));
 }
 
 
@@ -98,6 +98,25 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 	const struct xgi_cmd_info *const pCmdInfo =
 		(struct xgi_cmd_info *) data;
 	const unsigned int cmd = get_batch_command(pCmdInfo->type);
+#if __BIG_ENDIAN
+	const u32 *const ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
+	unsigned i;
+	unsigned j;
+
+	xgi_waitfor_pci_idle(info);
+	for (j = 4; j < pCmdInfo->size; j += 4) {
+		u32 reg = ptr[j];
+
+		for (i = 1; i < 4; i++) {
+			if ((reg & 1) != 0) {
+				const unsigned r = 0x2100 | (reg & 0x0fe);
+				DRM_WRITE32(info->mmio_map, r, ptr[j + i]);
+			}
+
+			reg >>= 8;
+		}
+	}
+#else
 	u32 begin[4];
 
 
@@ -138,16 +157,17 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 			xgi_emit_flush(info, FALSE);
 		}
 
-		info->cmdring.last_ptr[1] = begin[1];
-		info->cmdring.last_ptr[2] = begin[2];
-		info->cmdring.last_ptr[3] = begin[3];
+		info->cmdring.last_ptr[1] = cpu_to_le32(begin[1]);
+		info->cmdring.last_ptr[2] = cpu_to_le32(begin[2]);
+		info->cmdring.last_ptr[3] = cpu_to_le32(begin[3]);
 		DRM_WRITEMEMORYBARRIER();
-		info->cmdring.last_ptr[0] = begin[0];
+		info->cmdring.last_ptr[0] = cpu_to_le32(begin[0]);
 
 		triggerHWCommandList(info);
 	}
 
 	info->cmdring.last_ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
+#endif
 	drm_fence_flush_old(info->dev, 0, info->next_sequence);
 	return 0;
 }
@@ -258,6 +278,8 @@ void xgi_emit_flush(struct xgi_info * info, bool stop)
 	const unsigned int flush_size = sizeof(flush_command);
 	u32 *batch_addr;
 	u32 hw_addr;
+	unsigned int i;
+
 
 	/* check buf is large enough to contain a new flush batch */
 	if ((info->cmdring.ring_offset + flush_size) >= info->cmdring.size) {
@@ -269,18 +291,20 @@ void xgi_emit_flush(struct xgi_info * info, bool stop)
 	batch_addr = info->cmdring.ptr 
 		+ (info->cmdring.ring_offset / 4);
 
-	(void) memcpy(batch_addr, flush_command, flush_size);
-
-	if (stop) {
-		*batch_addr |= BEGIN_STOP_STORE_CURRENT_POINTER_MASK;
+	for (i = 0; i < (flush_size / 4); i++) {
+		batch_addr[i] = cpu_to_le32(flush_command[i]);
 	}
 
-	info->cmdring.last_ptr[1] = BEGIN_LINK_ENABLE_MASK | (flush_size / 4);
-	info->cmdring.last_ptr[2] = hw_addr >> 4;
+	if (stop) {
+		*batch_addr |= cpu_to_le32(BEGIN_STOP_STORE_CURRENT_POINTER_MASK);
+	}
+
+	info->cmdring.last_ptr[1] = cpu_to_le32(BEGIN_LINK_ENABLE_MASK | (flush_size / 4));
+	info->cmdring.last_ptr[2] = cpu_to_le32(hw_addr >> 4);
 	info->cmdring.last_ptr[3] = 0;
 	DRM_WRITEMEMORYBARRIER();
-	info->cmdring.last_ptr[0] = (get_batch_command(BTYPE_CTRL) << 24) 
-		| (BEGIN_VALID_MASK);
+	info->cmdring.last_ptr[0] = cpu_to_le32((get_batch_command(BTYPE_CTRL) << 24)
+		| (BEGIN_VALID_MASK));
 
 	triggerHWCommandList(info);
 

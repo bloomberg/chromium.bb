@@ -351,9 +351,9 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
 	struct xgi_info *info = dev->dev_private;
-	const u32 irq_bits = DRM_READ32(info->mmio_map,
+	const u32 irq_bits = le32_to_cpu(DRM_READ32(info->mmio_map,
 					(0x2800 
-					 + M2REG_AUTO_LINK_STATUS_ADDRESS))
+					 + M2REG_AUTO_LINK_STATUS_ADDRESS)))
 		& (M2REG_ACTIVE_TIMER_INTERRUPT_MASK
 		   | M2REG_ACTIVE_INTERRUPT_0_MASK
 		   | M2REG_ACTIVE_INTERRUPT_2_MASK
@@ -363,7 +363,7 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 	if (irq_bits != 0) {
 		DRM_WRITE32(info->mmio_map, 
 			    0x2800 + M2REG_AUTO_LINK_SETTING_ADDRESS,
-			    M2REG_AUTO_LINK_SETTING_COMMAND | irq_bits);
+			    cpu_to_le32(M2REG_AUTO_LINK_SETTING_COMMAND | irq_bits));
 		xgi_fence_handler(dev);
 		return IRQ_HANDLED;
 	} else {

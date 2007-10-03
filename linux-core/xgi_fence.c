@@ -48,8 +48,8 @@ static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 
 	if (pending_flush_types) {
 		if (pending_flush_types & DRM_FENCE_TYPE_EXE) {
-			const u32 begin_id = DRM_READ32(info->mmio_map,
-							0x2820)
+			const u32 begin_id = le32_to_cpu(DRM_READ32(info->mmio_map,
+							0x2820))
 				& BEGIN_BEGIN_IDENTIFICATION_MASK;
 
 			if (begin_id != info->complete_sequence) {

@@ -38,12 +38,12 @@ static unsigned int s_invalid_begin = 0;
 
 static bool xgi_validate_signal(struct drm_map * map)
 {
-	if (DRM_READ32(map, 0x2800) & 0x001c0000) {
+	if (le32_to_cpu(DRM_READ32(map, 0x2800) & 0x001c0000)) {
 		u16 check;
 
 		/* Check Read back status */
 		DRM_WRITE8(map, 0x235c, 0x80);
-		check = DRM_READ16(map, 0x2360);
+		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 
 		if ((check & 0x3f) != ((check & 0x3f00) >> 8)) {
 			return FALSE;
@@ -51,28 +51,28 @@ static bool xgi_validate_signal(struct drm_map * map)
 
 		/* Check RO channel */
 		DRM_WRITE8(map, 0x235c, 0x83);
-		check = DRM_READ16(map, 0x2360);
+		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
 			return FALSE;
 		}
 
 		/* Check RW channel */
 		DRM_WRITE8(map, 0x235c, 0x88);
-		check = DRM_READ16(map, 0x2360);
+		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
 			return FALSE;
 		}
 
 		/* Check RO channel outstanding */
 		DRM_WRITE8(map, 0x235c, 0x8f);
-		check = DRM_READ16(map, 0x2360);
+		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if (0 != (check & 0x3ff)) {
 			return FALSE;
 		}
 
 		/* Check RW channel outstanding */
 		DRM_WRITE8(map, 0x235c, 0x90);
-		check = DRM_READ16(map, 0x2360);
+		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if (0 != (check & 0x3ff)) {
 			return FALSE;
 		}
@@ -89,7 +89,7 @@ static void xgi_ge_hang_reset(struct drm_map * map)
 	int time_out = 0xffff;
 
 	DRM_WRITE8(map, 0xb057, 8);
-	while (0 != (DRM_READ32(map, 0x2800) & 0xf0000000)) {
+	while (0 != le32_to_cpu(DRM_READ32(map, 0x2800) & 0xf0000000)) {
 		while (0 != ((--time_out) & 0xfff)) 
 			/* empty */ ;
 
@@ -100,7 +100,7 @@ static void xgi_ge_hang_reset(struct drm_map * map)
 			u8 old_36;
 
 			DRM_INFO("Can not reset back 0x%x!\n",
-				 DRM_READ32(map, 0x2800));
+				 le32_to_cpu(DRM_READ32(map, 0x2800)));
 
 			DRM_WRITE8(map, 0xb057, 0);
 
@@ -137,7 +137,7 @@ static void xgi_ge_hang_reset(struct drm_map * map)
 	
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
-	const u32 int_status = DRM_READ32(info->mmio_map, 0x2810);
+	const u32 int_status = le32_to_cpu(DRM_READ32(info->mmio_map, 0x2810));
 	bool is_support_auto_reset = FALSE;
 
 	/* Check GE on/off */
@@ -146,7 +146,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 			/* We got GE stall interrupt. 
 			 */
 			DRM_WRITE32(info->mmio_map, 0x2810,
-				    int_status | 0x04000000);
+				    cpu_to_le32(int_status | 0x04000000));
 
 			if (is_support_auto_reset) {
 				static cycles_t last_tick;
@@ -176,7 +176,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 		} else if (0 != (0x1 & int_status)) {
 			s_invalid_begin++;
 			DRM_WRITE32(info->mmio_map, 0x2810,
-				    (int_status & ~0x01) | 0x04000000);
+				    cpu_to_le32((int_status & ~0x01) | 0x04000000));
 		}
 
 		return TRUE;
@@ -326,7 +326,7 @@ void xgi_waitfor_pci_idle(struct xgi_info * info)
 	unsigned int same_count = 0;
 
 	while (idleCount < 5) {
-		const u32 status = DRM_READ32(info->mmio_map, WHOLD_GE_STATUS) 
+		const u32 status = le32_to_cpu(DRM_READ32(info->mmio_map, WHOLD_GE_STATUS))
 			& IDLE_MASK;
 
 		if (status == old_status) {
