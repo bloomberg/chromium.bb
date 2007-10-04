@@ -4,14 +4,19 @@
 #include "nouveau_drm.h"
 
 /*
+ * NV20
+ * -----
  * There are 3 families :
- * NV30 is 0x10de:0x030*
- * NV31 is 0x10de:0x031*
+ * NV20 is 0x10de:0x020*
+ * NV25/28 is 0x10de:0x025* / 0x10de:0x028*
+ * NV2A is 0x10de:0x02A0
  *
+ * NV30
+ * -----
+ * There are 3 families :
+ * NV30/31 is 0x10de:0x030* / 0x10de:0x031*
  * NV34 is 0x10de:0x032*
- *
- * NV35 is 0x10de:0x033* (NV35 and NV36 are the same)
- * NV36 is 0x10de:0x034*
+ * NV35/36 is 0x10de:0x033* / 0x10de:0x034*
  *
  * Not seen in the wild, no dumps (probably NV35) :
  * NV37 is 0x10de:0x00fc, 0x10de:0x00fd
@@ -21,6 +26,7 @@
 
 #define NV20_GRCTX_SIZE (3580*4)
 #define NV25_GRCTX_SIZE (3529*4)
+#define NV2A_GRCTX_SIZE (3500*4)
 
 #define NV30_31_GRCTX_SIZE (22392)
 #define NV34_GRCTX_SIZE    (18140)
@@ -158,6 +164,59 @@ write32 #1 block at +0x00743cfc NV_PRAMIN+0x43cfc of 8 (0x8) elements:
 */
 	for (i = 0; i < 8; ++i)
 		INSTANCE_WR(ctx, (0x355c/4)+i, 0x001c527c);
+}
+
+static void nv2a_graph_context_init(struct drm_device *dev,
+                                    struct nouveau_gpuobj *ctx)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	int i;
+
+	INSTANCE_WR(ctx, 0x33c/4, 0xffff0000);
+	for(i = 0x3a0; i< 0x3a8; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x0fff0000);
+	INSTANCE_WR(ctx, 0x47c/4, 0x00000101);
+	INSTANCE_WR(ctx, 0x490/4, 0x00000111);
+	INSTANCE_WR(ctx, 0x4a8/4, 0x44400000);
+	for(i = 0x4d4; i< 0x4e4; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x00030303);
+	for(i = 0x4f4; i< 0x504; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x00080000);
+	for(i = 0x50c; i< 0x51c; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x01012000);
+	for(i = 0x51c; i< 0x52c; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x000105b8);
+	for(i = 0x52c; i< 0x53c; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x00080008);
+	for(i = 0x55c; i< 0x59c; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x07ff0000);
+	INSTANCE_WR(ctx, 0x5a4/4, 0x4b7fffff);
+	INSTANCE_WR(ctx, 0x5fc/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x604/4, 0x00004000);
+	INSTANCE_WR(ctx, 0x610/4, 0x00000001);
+	INSTANCE_WR(ctx, 0x618/4, 0x00040000);
+	INSTANCE_WR(ctx, 0x61c/4, 0x00010000);
+
+	for (i=0x1a9c; i <= 0x22fc/4; i += 32) {
+		INSTANCE_WR(ctx, i/4    , 0x10700ff9);
+		INSTANCE_WR(ctx, i/4 + 1, 0x0436086c);
+		INSTANCE_WR(ctx, i/4 + 2, 0x000c001b);
+	}
+
+	INSTANCE_WR(ctx, 0x269c/4, 0x3f800000);
+	INSTANCE_WR(ctx, 0x26b0/4, 0x3f800000);
+	INSTANCE_WR(ctx, 0x26dc/4, 0x40000000);
+	INSTANCE_WR(ctx, 0x26e0/4, 0x3f800000);
+	INSTANCE_WR(ctx, 0x26e4/4, 0x3f000000);
+	INSTANCE_WR(ctx, 0x26ec/4, 0x40000000);
+	INSTANCE_WR(ctx, 0x26f0/4, 0x3f800000);
+	INSTANCE_WR(ctx, 0x26f8/4, 0xbf800000);
+	INSTANCE_WR(ctx, 0x2700/4, 0xbf800000);
+	INSTANCE_WR(ctx, 0x3024/4, 0x000fe000);
+	INSTANCE_WR(ctx, 0x30a0/4, 0x000003f8);
+	INSTANCE_WR(ctx, 0x33fc/4, 0x002fe000);
+	for(i = 0x341c; i< 0x343c; i += 4)
+		INSTANCE_WR(ctx, i/4, 0x001c527c);
 }
 
 static void nv25_graph_context_init(struct drm_device *dev,
@@ -3017,6 +3076,11 @@ int nv20_graph_create_context(struct nouveau_channel *chan)
 	case 0x28:
 		ctx_size = NV25_GRCTX_SIZE;
 		ctx_init = nv25_graph_context_init;
+		break;
+	case 0x2a:
+		ctx_size = NV2A_GRCTX_SIZE;
+		ctx_init = nv2a_graph_context_init;
+		idoffs = 0;
 		break;
 	case 0x30:
 	case 0x31:
