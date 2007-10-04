@@ -403,19 +403,81 @@ int nouveau_firstopen(struct drm_device *dev)
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_nouveau_private *dev_priv;
-
-	if (flags==NV_UNKNOWN)
-		return -EINVAL;
+	void __iomem *regs;
+	uint32_t reg0;
+	char architecture = 0;
 
 	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
-	if (!dev_priv)                   
+	if (!dev_priv)
 		return -ENOMEM;
 
-	dev_priv->card_type=flags&NOUVEAU_FAMILY;
-	dev_priv->flags=flags&NOUVEAU_FLAGS;
+	dev_priv->flags = flags & NOUVEAU_FLAGS;
 	dev_priv->init_state = NOUVEAU_CARD_INIT_DOWN;
 
+	DRM_DEBUG("vendor: 0x%X device: 0x%X class: 0x%X\n", dev->pci_vendor, dev->pci_device, dev->pdev->class);
+
+	/* Time to determine the card architecture */
+	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x4); 
+	if (!regs) {
+		DRM_ERROR("Could not ioremap to determine register\n");
+		return -ENOMEM;
+	}
+	reg0 = readl(regs);
+
+	/* We're dealing with >=NV10 */
+	if ((reg0 & 0x0f000000) > 0 ) {
+		/* Bit 27-20 contain the architecture in hex */
+		architecture = (reg0 & 0xff00000) >> 20;
+	/* NV04 or NV05 */
+	} else if ((reg0 & 0xff00fff0) == 0x20004000) {
+		architecture = 0x04;
+	}
+
+	iounmap(regs);
+
+	if (architecture >= 0x50) {
+		dev_priv->card_type = NV_50;
+	} else if (architecture >= 0x44) {
+		dev_priv->card_type = NV_44;
+	} else if (architecture >= 0x40) {
+		dev_priv->card_type = NV_40;
+	} else if (architecture >= 0x34) {
+		dev_priv->card_type = NV_34;
+	} else if (architecture >= 0x30) {
+		dev_priv->card_type = NV_30;
+	} else if (architecture >= 0x25) {
+		dev_priv->card_type = NV_25;
+	} else if (architecture >= 0x20) {
+		dev_priv->card_type = NV_20;
+	} else if (architecture >= 0x17) {
+		dev_priv->card_type = NV_17;
+	} else if (architecture >= 0x15) {
+		dev_priv->card_type = NV_15;
+	} else if (architecture >= 0x11) {
+		dev_priv->card_type = NV_11;
+	} else if (architecture >= 0x10) {
+		dev_priv->card_type = NV_10;
+	} else if (architecture >= 0x04) {
+		dev_priv->card_type = NV_04;
+	} else {
+		dev_priv->card_type = NV_UNKNOWN;
+	}
+
+	DRM_INFO("Detected an NV%d generation card\n", dev_priv->card_type);
+
+	if (dev_priv->card_type == NV_UNKNOWN) {
+		return -EINVAL;
+	}
+
+	/* Special flags */
+	if (dev->pci_device == 0x01a0) {
+		dev_priv->flags |= NV_NFORCE;
+	} else if (dev->pci_device == 0x01f0) {
+		dev_priv->flags |= NV_NFORCE2;
+	}
+
 	dev->dev_private = (void *)dev_priv;
+
 	return 0;
 }
 
