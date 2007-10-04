@@ -674,6 +674,14 @@ struct drm_fence_arg {
  */
 
 /*
+ * Mask: Never evict this buffer. Not even with force. This type of buffer is only
+ * available to root and must be manually removed before buffer manager shutdown
+ * or lock.
+ * Flags: Acknowledge
+ */
+#define DRM_BO_FLAG_NO_EVICT    (1ULL << 4)
+
+/*
  * Mask: Require that the buffer is placed in mappable memory when validated.
  *       If not set the buffer may or may not be in mappable memory when validated.
  * Flags: If set, the buffer is in mappable memory.
@@ -781,16 +789,6 @@ struct drm_bo_op_req {
 	struct drm_bo_info_req bo_req;
 };
 
-struct drm_bo_set_pin_req {
-	/** Buffer object ID */
-	unsigned int handle;
-	/**
-	 * - 0: Unpin the given buffer object.
-	 * - 1: Pin the given buffer object.
-	 */
-	unsigned int pin;
-};
-
 /*
  * Reply flags
  */
@@ -854,13 +852,6 @@ struct drm_bo_op_arg {
 	} d;
 	int handled;
 	unsigned int pad64;
-};
-
-struct drm_bo_set_pin_arg {
-	union {
-		struct drm_bo_set_pin_req req;
-		struct drm_bo_info_rep rep;
-	} d;
 };
 
 #define DRM_BO_MEM_LOCAL 0
@@ -976,7 +967,7 @@ struct drm_mm_init_arg {
 #define DRM_IOCTL_BO_OP                 DRM_IOWR(0xd3, struct drm_bo_op_arg)
 #define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
-#define DRM_IOCTL_BO_SET_PIN		DRM_IOWR(0xd6, struct drm_bo_set_pin_arg)
+
 
 /*@}*/
 

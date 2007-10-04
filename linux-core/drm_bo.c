@@ -80,7 +80,8 @@ void drm_bo_add_to_lru(struct drm_buffer_object * bo)
 
 	DRM_ASSERT_LOCKED(&bo->dev->struct_mutex);
 
-	if (!bo->pinned || bo->mem.mem_type != bo->pinned_mem_type) {
+	if (!(bo->mem.mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))
+	    || bo->mem.mem_type != bo->pinned_mem_type) {
 		man = &bo->dev->bm.man[bo->mem.mem_type];
 		list_add_tail(&bo->lru, &man->lru);
 	} else {
@@ -638,8 +639,7 @@ int drm_fence_buffer_objects(struct drm_device *dev,
 		mutex_lock(&entry->mutex);
 		mutex_lock(&dev->struct_mutex);
 		list_del_init(l);
-		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED &&
-		    entry->fence_class == fence_class) {
+		if (entry->priv_flags & _DRM_BO_FLAG_UNFENCED) {
 			count++;
 			if (entry->fence)
 				drm_fence_usage_deref_locked(&entry->fence);
@@ -761,7 +761,7 @@ static int drm_bo_mem_force_space(struct drm_device * dev,
 		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&entry->mutex);
-		BUG_ON(entry->pinned);
+		BUG_ON(entry->mem.flags & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT));
 
 		ret = drm_bo_evict(entry, mem_type, no_wait);
 		mutex_unlock(&entry->mutex);
@@ -928,6 +928,18 @@ static int drm_bo_new_mask(struct drm_buffer_object * bo,
 	if (bo->type == drm_bo_type_user) {
 		DRM_ERROR("User buffers are not supported yet\n");
 		return -EINVAL;
+	}
+	if (bo->type == drm_bo_type_fake &&
+	    !(new_mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))) {
+		DRM_ERROR("Fake buffers must be pinned.\n");
+		return -EINVAL;
+	}
+
+	if ((new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
+		DRM_ERROR
+		    ("DRM_BO_FLAG_NO_EVICT is only available to priviliged "
+		     "processes\n");
+		return -EPERM;
 	}
 
 	new_props = new_mask & (DRM_BO_FLAG_EXE | DRM_BO_FLAG_WRITE |
@@ -1372,12 +1384,6 @@ static int drm_buffer_object_validate(struct drm_buffer_object * bo,
 		return ret;
 	}
 
-	if (bo->pinned && bo->pinned_mem_type != bo->mem.mem_type) {
-		DRM_ERROR("Attempt to validate pinned buffer into different memory "
-		    "type\n");
-		return -EINVAL;
-	}
-
 	/*
 	 * We're switching command submission mechanism,
 	 * or cannot simply rely on the hardware serializing for us.
@@ -1416,6 +1422,37 @@ static int drm_buffer_object_validate(struct drm_buffer_object * bo,
 				DRM_ERROR("Failed moving buffer.\n");
 			return ret;
 		}
+	}
+
+	/*
+	 * Pinned buffers.
+	 */
+
+	if (bo->mem.mask & (DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE)) {
+		bo->pinned_mem_type = bo->mem.mem_type;
+		mutex_lock(&dev->struct_mutex);
+		list_del_init(&bo->pinned_lru);
+		drm_bo_add_to_pinned_lru(bo);
+
+		if (bo->pinned_node != bo->mem.mm_node) {
+			if (bo->pinned_node != NULL)
+				drm_mm_put_block(bo->pinned_node);
+			bo->pinned_node = bo->mem.mm_node;
+		}
+
+		mutex_unlock(&dev->struct_mutex);
+
+	} else if (bo->pinned_node != NULL) {
+
+		mutex_lock(&dev->struct_mutex);
+
+		if (bo->pinned_node != bo->mem.mm_node)
+			drm_mm_put_block(bo->pinned_node);
+
+		list_del_init(&bo->pinned_lru);
+		bo->pinned_node = NULL;
+		mutex_unlock(&dev->struct_mutex);
+
 	}
 
 	/*
@@ -1517,10 +1554,6 @@ int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 }
 EXPORT_SYMBOL(drm_bo_handle_validate);
 
-/**
- * Fills out the generic buffer object ioctl reply with the information for
- * the BO with id of handle.
- */
 static int drm_bo_handle_info(struct drm_file *file_priv, uint32_t handle,
 			      struct drm_bo_info_rep *rep)
 {
@@ -1927,112 +1960,6 @@ int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *
 }
 
 /**
- * Pins or unpins the given buffer object in the given memory area.
- *
- * Pinned buffers will not be evicted from or move within their memory area.
- * Must be called with the hardware lock held for pinning.
- */
-static int
-drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
-    int pin)
-{
-	int ret = 0;
-
-	mutex_lock(&bo->mutex);
-	if (bo->pinned == pin) {
-		mutex_unlock(&bo->mutex);
-		return 0;
-	}
-
-	if (pin) {
-		ret = drm_bo_wait_unfenced(bo, 0, 0);
-		if (ret) {
-			mutex_unlock(&bo->mutex);
-			return ret;
-		}
-
-		/* Validate the buffer into its pinned location, with no pending
-		 * fence.
-		 */
-		ret = drm_buffer_object_validate(bo, bo->fence_class, 0, 0);
-		if (ret) {
-			mutex_unlock(&bo->mutex);
-			return ret;
-		}
-
-		/* Add our buffer to the pinned list */
-		bo->pinned_mem_type = bo->mem.mem_type;
-		mutex_lock(&dev->struct_mutex);
-		list_del_init(&bo->pinned_lru);
-		drm_bo_add_to_pinned_lru(bo);
-
-		if (bo->pinned_node != bo->mem.mm_node) {
-			if (bo->pinned_node != NULL)
-				drm_mm_put_block(bo->pinned_node);
-			bo->pinned_node = bo->mem.mm_node;
-		}
-
-		mutex_unlock(&dev->struct_mutex);
-
-	} else {
-		mutex_lock(&dev->struct_mutex);
-
-		/* Remove our buffer from the pinned list */
-		if (bo->pinned_node != bo->mem.mm_node)
-			drm_mm_put_block(bo->pinned_node);
-
-		list_del_init(&bo->pinned_lru);
-		bo->pinned_node = NULL;
-		mutex_unlock(&dev->struct_mutex);
-	}
-	bo->pinned = pin;
-	mutex_unlock(&bo->mutex);
-	return 0;
-}
-
-int drm_bo_set_pin_ioctl(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv)
-{
-	struct drm_bo_set_pin_arg *arg = data;
-	struct drm_bo_set_pin_req *req = &arg->d.req;
-	struct drm_bo_info_rep *rep = &arg->d.rep;
-	struct drm_buffer_object *bo;
-	int ret;
-
-	if (!dev->bm.initialized) {
-		DRM_ERROR("Buffer object manager is not initialized.\n");
-		return -EINVAL;
-	}
-
-	if (req->pin < 0 || req->pin > 1) {
-		DRM_ERROR("Bad arguments to set_pin\n");
-		return -EINVAL;
-	}
-
-	if (req->pin)
-		LOCK_TEST_WITH_RETURN(dev, file_priv);
-
-	mutex_lock(&dev->struct_mutex);
-	bo = drm_lookup_buffer_object(file_priv, req->handle, 1);
-	mutex_unlock(&dev->struct_mutex);
-	if (!bo) {
-		return -EINVAL;
-	}
-
-	ret = drm_bo_set_pin(dev, bo, req->pin);
-	if (ret) {
-		drm_bo_usage_deref_unlocked(&bo);
-		return ret;
-	}
-
-	drm_bo_fill_rep_arg(bo, rep);
-	drm_bo_usage_deref_unlocked(&bo);
-
-	return 0;
-}
-
-
-/**
  *Clean the unfenced list and put on regular LRU.
  *This is part of the memory manager cleanup and should only be
  *called with the DRI lock held.
@@ -2112,10 +2039,11 @@ static int drm_bo_leave_list(struct drm_buffer_object * bo,
 		mutex_unlock(&dev->struct_mutex);
 	}
 
-	if (bo->pinned) {
-		DRM_ERROR("A pinned buffer was present at "
+	if (bo->mem.flags & DRM_BO_FLAG_NO_EVICT) {
+		DRM_ERROR("A DRM_BO_NO_EVICT buffer present at "
 			  "cleanup. Removing flag and evicting.\n");
-		bo->pinned = 0;
+		bo->mem.flags &= ~DRM_BO_FLAG_NO_EVICT;
+		bo->mem.mask &= ~DRM_BO_FLAG_NO_EVICT;
 	}
 
 	if (bo->mem.mem_type == mem_type)

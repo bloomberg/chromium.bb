@@ -164,7 +164,6 @@ extern int drmBOInfo(int fd, drmBO *buf);
 extern int drmBOBusy(int fd, drmBO *buf, int *busy);
 
 extern int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint);
-int drmBOSetPin(int fd, drmBO *buf, int pin);
 
 /*
  * Initialization functions.
