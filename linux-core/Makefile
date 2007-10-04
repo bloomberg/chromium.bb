@@ -269,7 +269,6 @@ PAGE_AGP := $(shell cat $(LINUXDIR)/include/asm/agp.h 2>/dev/null | \
 ifneq ($(PAGE_AGP),0)
 EXTRA_CFLAGS += -DHAVE_PAGE_AGP
 endif
-EXTRA_CFLAGS += -g
 
 # Start with all modules turned off.
 CONFIG_DRM_GAMMA := n

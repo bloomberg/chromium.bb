@@ -1965,8 +1965,8 @@ drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
 			return ret;
 		}
 
-		/* Validate the buffer into its pinned location, with no
-		 * pending fence.
+		/* Validate the buffer into its pinned location, with no pending
+		 * fence.
 		 */
 		ret = drm_buffer_object_validate(bo, bo->fence_class, 0, 0);
 		if (ret) {
@@ -1974,12 +1974,9 @@ drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
 			return ret;
 		}
 
-		/* Pull the buffer off of the LRU and add it to the pinned
-		 * list
-		 */
+		/* Add our buffer to the pinned list */
 		bo->pinned_mem_type = bo->mem.mem_type;
 		mutex_lock(&dev->struct_mutex);
-		list_del_init(&bo->lru);
 		list_del_init(&bo->pinned_lru);
 		drm_bo_add_to_pinned_lru(bo);
 
@@ -1989,7 +1986,6 @@ drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
 			bo->pinned_node = bo->mem.mm_node;
 		}
 
-		bo->pinned = pin;
 		mutex_unlock(&dev->struct_mutex);
 
 	} else {
@@ -2001,9 +1997,9 @@ drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo,
 
 		list_del_init(&bo->pinned_lru);
 		bo->pinned_node = NULL;
-		bo->pinned = pin;
 		mutex_unlock(&dev->struct_mutex);
 	}
+	bo->pinned = pin;
 	mutex_unlock(&bo->mutex);
 	return 0;
 }
