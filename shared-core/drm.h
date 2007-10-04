@@ -786,9 +786,7 @@ struct drm_bo_set_pin_req {
 	unsigned int handle;
 	/**
 	 * - 0: Unpin the given buffer object.
-	 * - 1: Pin the given buffer object, requiring that its offset and
-	 * memory area stay constant until unpin.  The intended use is for
-	 * scanout buffers.
+	 * - 1: Pin the given buffer object.
 	 */
 	unsigned int pin;
 };
