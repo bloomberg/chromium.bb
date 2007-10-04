@@ -488,16 +488,6 @@ static int drm_bo_kmap_ttm(struct drm_buffer_object *bo, unsigned long start_pag
 
 	BUG_ON(!ttm);
 
-	/*
-	 * Populate the part we're mapping;
-	 */
-
-	for (i=start_page; i< num_pages; ++i) {
-		d = drm_ttm_get_page(ttm, i);
-		if (!d)
-			return -ENOMEM;
-	}
-
 	if (num_pages == 1 && (mem->flags & DRM_BO_FLAG_CACHED)) {
 
 		/*
@@ -509,6 +499,15 @@ static int drm_bo_kmap_ttm(struct drm_buffer_object *bo, unsigned long start_pag
 		map->page = drm_ttm_get_page(ttm, start_page);
 		map->virtual = kmap(map->page);
 	} else {
+		/*
+		 * Populate the part we're mapping;
+		 */
+
+		for (i = start_page; i< start_page + num_pages; ++i) {
+			d = drm_ttm_get_page(ttm, i);
+			if (!d)
+				return -ENOMEM;
+		}
 
 		/*
 		 * We need to use vmap to get the desired page protection
