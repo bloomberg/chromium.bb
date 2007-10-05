@@ -98,7 +98,8 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 				drm_idlelock_release(&dev->lock);
 				dev_priv->have_idlelock = 0;
 			}
-			drm_fence_handler(dev, 0, dev_priv->emit_0_sequence, signaled_flush_types);
+			drm_fence_handler(dev, 0, dev_priv->emit_0_sequence,
+					  signaled_flush_types, 0);
 		}
 	}
 

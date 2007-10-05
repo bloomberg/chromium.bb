@@ -71,9 +71,7 @@ int drm_bo_move_ttm(struct drm_buffer_object * bo,
 		save_flags = old_mem->flags;
 	}
 	if (new_mem->mem_type != DRM_BO_MEM_LOCAL) {
-		ret = drm_bind_ttm(ttm,
-				   new_mem->flags & DRM_BO_FLAG_CACHED,
-				   new_mem->mm_node->start);
+		ret = drm_bind_ttm(ttm, new_mem);
 		if (ret)
 			return ret;
 	}
@@ -344,6 +342,7 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 	ret = drm_fence_object_create(dev, fence_class, fence_type,
 				      fence_flags | DRM_FENCE_FLAG_EMIT,
 				      &bo->fence);
+	bo->fence_type = fence_type;
 	if (ret)
 		return ret;
 
@@ -410,3 +409,194 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 }
 
 EXPORT_SYMBOL(drm_bo_move_accel_cleanup);
+
+int drm_bo_same_page(unsigned long offset,
+		     unsigned long offset2)
+{
+	return (offset & PAGE_MASK) == (offset2 & PAGE_MASK);
+}
+EXPORT_SYMBOL(drm_bo_same_page);
+
+unsigned long drm_bo_offset_end(unsigned long offset,
+				unsigned long end)
+{
+
+	offset = (offset + PAGE_SIZE) & PAGE_MASK;
+	return (end < offset) ? end : offset;
+}
+EXPORT_SYMBOL(drm_bo_offset_end);
+
+
+static pgprot_t drm_kernel_io_prot(uint32_t map_type)
+{
+	pgprot_t tmp = PAGE_KERNEL;
+
+#if defined(__i386__) || defined(__x86_64__)
+#ifdef USE_PAT_WC
+#warning using pat
+	if (drm_use_pat() && map_type == _DRM_TTM) {
+		pgprot_val(tmp) |= _PAGE_PAT;
+		return tmp;
+	}
+#endif
+	if (boot_cpu_data.x86 > 3 && map_type != _DRM_AGP) {
+		pgprot_val(tmp) |= _PAGE_PCD;
+		pgprot_val(tmp) &= ~_PAGE_PWT;
+	}
+#elif defined(__powerpc__)
+	pgprot_val(tmp) |= _PAGE_NO_CACHE;
+	if (map_type == _DRM_REGISTERS)
+		pgprot_val(tmp) |= _PAGE_GUARDED;
+#endif
+#if defined(__ia64__)
+	if (map_type == _DRM_TTM)
+		tmp = pgprot_writecombine(tmp);
+	else
+		tmp = pgprot_noncached(tmp);
+#endif
+	return tmp;
+}
+
+static int drm_bo_ioremap(struct drm_buffer_object *bo, unsigned long bus_base,
+			  unsigned long bus_offset, unsigned long bus_size,
+			  struct drm_bo_kmap_obj *map)
+{
+	struct drm_device *dev = bo->dev;
+	struct drm_bo_mem_reg *mem = &bo->mem;
+	struct drm_mem_type_manager *man = &dev->bm.man[mem->mem_type];
+
+	if (!(man->flags & _DRM_FLAG_NEEDS_IOREMAP)) {
+		map->bo_kmap_type = bo_map_premapped;
+		map->virtual = (void *)(((u8 *) man->io_addr) + bus_offset);
+	} else {
+		map->bo_kmap_type = bo_map_iomap;
+		map->virtual = ioremap_nocache(bus_base + bus_offset, bus_size);
+	}
+	return (!map->virtual) ? -ENOMEM : 0;
+}
+
+static int drm_bo_kmap_ttm(struct drm_buffer_object *bo, unsigned long start_page,
+			   unsigned long num_pages, struct drm_bo_kmap_obj *map)
+{
+	struct drm_device *dev = bo->dev;
+	struct drm_bo_mem_reg *mem = &bo->mem;
+	struct drm_mem_type_manager *man = &dev->bm.man[mem->mem_type];
+	pgprot_t prot;
+	struct drm_ttm *ttm = bo->ttm;
+	struct page *d;
+	int i;
+
+	BUG_ON(!ttm);
+
+	if (num_pages == 1 && (mem->flags & DRM_BO_FLAG_CACHED)) {
+
+		/*
+		 * We're mapping a single page, and the desired
+		 * page protection is consistent with the bo.
+		 */
+
+		map->bo_kmap_type = bo_map_kmap;
+		map->page = drm_ttm_get_page(ttm, start_page);
+		map->virtual = kmap(map->page);
+	} else {
+		/*
+		 * Populate the part we're mapping;
+		 */
+
+		for (i = start_page; i< start_page + num_pages; ++i) {
+			d = drm_ttm_get_page(ttm, i);
+			if (!d)
+				return -ENOMEM;
+		}
+
+		/*
+		 * We need to use vmap to get the desired page protection
+		 * or to make the buffer object look contigous.
+		 */
+
+		prot = (mem->flags & DRM_BO_FLAG_CACHED) ?
+			PAGE_KERNEL :
+			drm_kernel_io_prot(man->drm_bus_maptype);
+		map->bo_kmap_type = bo_map_vmap;
+		map->virtual = vmap(ttm->pages + start_page,
+				    num_pages, 0, prot);
+	}
+	return (!map->virtual) ? -ENOMEM : 0;
+}
+
+/*
+ * This function is to be used for kernel mapping of buffer objects.
+ * It chooses the appropriate mapping method depending on the memory type
+ * and caching policy the buffer currently has.
+ * Mapping multiple pages or buffers that live in io memory is a bit slow and
+ * consumes vmalloc space. Be restrictive with such mappings.
+ * Mapping single pages usually returns the logical kernel address, (which is fast)
+ * BUG may use slower temporary mappings for high memory pages or
+ * uncached / write-combined pages.
+ *
+ * The function fills in a drm_bo_kmap_obj which can be used to return the
+ * kernel virtual address of the buffer.
+ *
+ * Code servicing a non-priviliged user request is only allowed to map one
+ * page at a time. We might need to implement a better scheme to stop such
+ * processes from consuming all vmalloc space.
+ */
+
+int drm_bo_kmap(struct drm_buffer_object *bo, unsigned long start_page,
+		unsigned long num_pages, struct drm_bo_kmap_obj *map)
+{
+	int ret;
+	unsigned long bus_base;
+	unsigned long bus_offset;
+	unsigned long bus_size;
+
+	map->virtual = NULL;
+
+	if (num_pages > bo->num_pages)
+		return -EINVAL;
+	if (start_page > bo->num_pages)
+		return -EINVAL;
+#if 0
+	if (num_pages > 1 && !DRM_SUSER(DRM_CURPROC))
+		return -EPERM;
+#endif
+	ret = drm_bo_pci_offset(bo->dev, &bo->mem, &bus_base,
+				&bus_offset, &bus_size);
+
+	if (ret)
+		return ret;
+
+	if (bus_size == 0) {
+		return drm_bo_kmap_ttm(bo, start_page, num_pages, map);
+	} else {
+		bus_offset += start_page << PAGE_SHIFT;
+		bus_size = num_pages << PAGE_SHIFT;
+		return drm_bo_ioremap(bo, bus_base, bus_offset, bus_size, map);
+	}
+}
+EXPORT_SYMBOL(drm_bo_kmap);
+
+void drm_bo_kunmap(struct drm_bo_kmap_obj *map)
+{
+	if (!map->virtual)
+		return;
+
+	switch(map->bo_kmap_type) {
+	case bo_map_iomap:
+		iounmap(map->virtual);
+		break;
+	case bo_map_vmap:
+		vunmap(map->virtual);
+		break;
+	case bo_map_kmap:
+		kunmap(map->page);
+		break;
+	case bo_map_premapped:
+		break;
+	default:
+		BUG();
+	}
+	map->virtual = NULL;
+	map->page = NULL;
+}
+EXPORT_SYMBOL(drm_bo_kunmap);

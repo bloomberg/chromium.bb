@@ -50,6 +50,7 @@ int drm_add_user_object(struct drm_file * priv, struct drm_user_object * item,
 	list_add_tail(&item->list, &priv->user_objects);
 	return 0;
 }
+EXPORT_SYMBOL(drm_add_user_object);
 
 struct drm_user_object *drm_lookup_user_object(struct drm_file * priv, uint32_t key)
 {
@@ -76,6 +77,7 @@ struct drm_user_object *drm_lookup_user_object(struct drm_file * priv, uint32_t 
 	}
 	return item;
 }
+EXPORT_SYMBOL(drm_lookup_user_object);
 
 static void drm_deref_user_object(struct drm_file * priv, struct drm_user_object * item)
 {
@@ -104,6 +106,7 @@ int drm_remove_user_object(struct drm_file * priv, struct drm_user_object * item
 	drm_deref_user_object(priv, item);
 	return 0;
 }
+EXPORT_SYMBOL(drm_remove_user_object);
 
 static int drm_object_ref_action(struct drm_file * priv, struct drm_user_object * ro,
 				 enum drm_ref_type action)
@@ -196,6 +199,7 @@ struct drm_ref_object *drm_lookup_ref_object(struct drm_file * priv,
 
 	return drm_hash_entry(hash, struct drm_ref_object, hash);
 }
+EXPORT_SYMBOL(drm_lookup_ref_object);
 
 static void drm_remove_other_references(struct drm_file * priv,
 					struct drm_user_object * ro)

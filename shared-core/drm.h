@@ -639,6 +639,7 @@ struct drm_set_version {
 #define DRM_FENCE_FLAG_SHAREABLE           0x00000002
 #define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
 #define DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS 0x00000008
+#define DRM_FENCE_FLAG_NO_USER             0x00000010
 
 /* Reserved for driver use */
 #define DRM_FENCE_MASK_DRIVER              0xFF000000
@@ -651,8 +652,10 @@ struct drm_fence_arg {
 	unsigned int type;
 	unsigned int flags;
 	unsigned int signaled;
+	unsigned int error;
 	unsigned int sequence;
-	uint64_t expand_pad[3]; /*Future expansion */
+        unsigned int pad64;
+	uint64_t expand_pad[2]; /*Future expansion */
 };
 
 /* Buffer permissions, referring to how the GPU uses the buffers.

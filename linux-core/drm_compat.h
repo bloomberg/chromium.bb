@@ -193,7 +193,10 @@ extern void drm_clear_vma(struct vm_area_struct *vma,
 extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
 
 #ifndef GFP_DMA32
-#define GFP_DMA32 0
+#define GFP_DMA32 GFP_KERNEL
+#endif
+#ifndef __GFP_DMA32
+#define __GFP_DMA32 GFP_KERNEL
 #endif
 
 #if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))

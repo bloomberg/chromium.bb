@@ -38,7 +38,9 @@ struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device * dev)
 	return drm_agp_init_ttm(dev);
 }
 
-int i915_fence_types(struct drm_buffer_object *bo, uint32_t * type)
+int i915_fence_types(struct drm_buffer_object *bo,
+		     uint32_t * fclass,
+		     uint32_t * type)
 {
 	if (bo->mem.flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
@@ -71,6 +73,7 @@ int i915_init_mem_type(struct drm_device * dev, uint32_t type,
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_CACHED;
 		man->drm_bus_maptype = 0;
+		man->gpu_offset = 0;
 		break;
 	case DRM_BO_MEM_TT:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
@@ -84,6 +87,7 @@ int i915_init_mem_type(struct drm_device * dev, uint32_t type,
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
+		man->gpu_offset = 0;
 		break;
 	case DRM_BO_MEM_PRIV0:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
@@ -97,6 +101,7 @@ int i915_init_mem_type(struct drm_device * dev, uint32_t type,
 		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
+		man->gpu_offset = 0;
 		break;
 	default:
 		DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);
@@ -196,7 +201,7 @@ static int i915_move_flip(struct drm_buffer_object * bo,
 	if (ret)
 		return ret;
 
-	ret = drm_bind_ttm(bo->ttm, 1, tmp_mem.mm_node->start);
+	ret = drm_bind_ttm(bo->ttm, &tmp_mem);
 	if (ret)
 		goto out_cleanup;
 
