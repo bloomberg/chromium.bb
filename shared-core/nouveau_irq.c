@@ -303,7 +303,11 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	}
 	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 	nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
-	if (dev_priv->card_type < NV_50) {
+	if (dev_priv->card_type < NV_10) {
+		class = NV_READ(0x400180 + subc*4) & 0xFF;
+	} else if (dev_priv->card_type < NV_40) {
+		class = NV_READ(0x400160 + subc*4) & 0xFFF;
+	} else if (dev_priv->card_type < NV_50) {
 		class = NV_READ(0x400160 + subc*4) & 0xFFFF;
 	} else {
 		class = NV_READ(0x400814);
