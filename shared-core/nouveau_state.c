@@ -405,7 +405,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	struct drm_nouveau_private *dev_priv;
 	void __iomem *regs;
 	uint32_t reg0;
-	char architecture = 0;
+	uint8_t architecture = 0;
 
 	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
 	if (!dev_priv)
