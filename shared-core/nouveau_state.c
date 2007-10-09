@@ -283,6 +283,10 @@ nouveau_card_init(struct drm_device *dev)
 	ret = nouveau_init_card_mappings(dev);
 	if (ret) return ret;
 
+	/* Put the card in BE mode if it's not */
+	if (NV_READ(NV03_PMC_BOOT_1))
+		NV_WRITE(NV03_PMC_BOOT_1,0x01000001);
+
 	/* Determine exact chipset we're running on */
 	if (dev_priv->card_type < NV_10)
 		dev_priv->chipset = dev_priv->card_type;
@@ -404,7 +408,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_nouveau_private *dev_priv;
 	void __iomem *regs;
-	uint32_t reg0;
+	uint32_t reg0,reg1;
 	uint8_t architecture = 0;
 
 	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
@@ -422,7 +426,11 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 		DRM_ERROR("Could not ioremap to determine register\n");
 		return -ENOMEM;
 	}
-	reg0 = readl(regs);
+
+	reg0 = readl(regs+NV03_PMC_BOOT_0);
+	reg1 = readl(regs+NV03_PMC_BOOT_1);
+	if (reg1)
+		reg0=___swab32(reg0);
 
 	/* We're dealing with >=NV10 */
 	if ((reg0 & 0x0f000000) > 0 ) {
@@ -457,7 +465,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 		dev_priv->card_type = NV_UNKNOWN;
 	}
 
-	DRM_INFO("Detected an NV%d generation card\n", dev_priv->card_type);
+	DRM_INFO("Detected an NV%d generation card (0x%08x)\n", dev_priv->card_type,reg0);
 
 	if (dev_priv->card_type == NV_UNKNOWN) {
 		return -EINVAL;

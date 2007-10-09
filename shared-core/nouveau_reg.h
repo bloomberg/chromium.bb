@@ -57,6 +57,7 @@
 #    define NV50_FIFO_REGS_DMAGET(i)                       (NV50_FIFO_REGS(i)+0x44)
 
 #define NV03_PMC_BOOT_0                                    0x00000000
+#define NV03_PMC_BOOT_1                                    0x00000004
 #define NV03_PMC_INTR_0                                    0x00000100
 #    define NV_PMC_INTR_0_PFIFO_PENDING                       (1<< 8)
 #    define NV_PMC_INTR_0_PGRAPH_PENDING                      (1<<12)
