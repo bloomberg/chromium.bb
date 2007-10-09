@@ -86,11 +86,11 @@ write32 #1 block at +0x00740adc NV_PRAMIN+0x40adc of 3369 (0xd29) elements:
 		INSTANCE_WR(ctx, (0x33c/4)+124+i, 0x00080008);
 	for (i = 0; i < 16; ++i)
 		INSTANCE_WR(ctx, (0x33c/4)+136+i, 0x07ff0000);
-	INSTANCE_WR(ctx, (0x33c/4)+154, 0x4b7ffff);
+	INSTANCE_WR(ctx, (0x33c/4)+154, 0x4b7fffff);
 	INSTANCE_WR(ctx, (0x33c/4)+176, 0x00000001);
 	INSTANCE_WR(ctx, (0x33c/4)+178, 0x00004000);
 	INSTANCE_WR(ctx, (0x33c/4)+181, 0x00000001);
-	INSTANCE_WR(ctx, (0x33c/4)+183, 0x00004000);
+	INSTANCE_WR(ctx, (0x33c/4)+183, 0x00040000);
 	INSTANCE_WR(ctx, (0x33c/4)+184, 0x00010000);
 
 /*
