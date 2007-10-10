@@ -516,8 +516,11 @@ static int drm_load(drm_device_t *dev)
 	DRM_DEBUG( "\n" );
 
 	dev->irq = pci_get_irq(dev->device);
-	/* XXX Fix domain number (alpha hoses) */
+#if defined(__FreeBSD__) && __FreeBSD_version >= 700053
+	dev->pci_domain = pci_get_domain(dev->device);
+#else
 	dev->pci_domain = 0;
+#endif
 	dev->pci_bus = pci_get_bus(dev->device);
 	dev->pci_slot = pci_get_slot(dev->device);
 	dev->pci_func = pci_get_function(dev->device);
