@@ -90,7 +90,9 @@ void drm_fence_handler(struct drm_device * dev, uint32_t fence_class,
 			break;
 		}
 
-		type |= fence->native_type;
+		if (is_exe)
+			type |= fence->native_type;
+
 		relevant = type & fence->type;
 
 		if ((fence->signaled | relevant) != fence->signaled) {
