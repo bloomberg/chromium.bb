@@ -421,7 +421,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	DRM_DEBUG("vendor: 0x%X device: 0x%X class: 0x%X\n", dev->pci_vendor, dev->pci_device, dev->pdev->class);
 
 	/* Time to determine the card architecture */
-	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x4); 
+	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x8); 
 	if (!regs) {
 		DRM_ERROR("Could not ioremap to determine register\n");
 		return -ENOMEM;
