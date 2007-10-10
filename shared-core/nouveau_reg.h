@@ -119,10 +119,14 @@
 #define NV10_PGRAPH_DEBUG_4                                0x00400090
 #define NV03_PGRAPH_INTR                                   0x00400100
 #define NV03_PGRAPH_NSTATUS                                0x00400104
-#    define NV03_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<23)
-#    define NV03_PGRAPH_NSTATUS_INVALID_STATE                 (1<<24)
-#    define NV03_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<25)
-#    define NV03_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<26)
+#    define NV04_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<11)
+#    define NV04_PGRAPH_NSTATUS_INVALID_STATE                 (1<<12)
+#    define NV04_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<13)
+#    define NV04_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<14)
+#    define NV10_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<23)
+#    define NV10_PGRAPH_NSTATUS_INVALID_STATE                 (1<<24)
+#    define NV10_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<25)
+#    define NV10_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<26)
 #define NV03_PGRAPH_NSOURCE                                0x00400108
 #    define NV03_PGRAPH_NSOURCE_NOTIFICATION                  (1<< 0)
 #    define NV03_PGRAPH_NSOURCE_DATA_ERROR                    (1<< 1)

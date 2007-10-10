@@ -175,10 +175,18 @@ struct nouveau_bitfield_names
 
 static struct nouveau_bitfield_names nouveau_nstatus_names[] =
 {
-	{ NV03_PGRAPH_NSTATUS_STATE_IN_USE,       "STATE_IN_USE" },
-	{ NV03_PGRAPH_NSTATUS_INVALID_STATE,      "INVALID_STATE" },
-	{ NV03_PGRAPH_NSTATUS_BAD_ARGUMENT,       "BAD_ARGUMENT" },
-	{ NV03_PGRAPH_NSTATUS_PROTECTION_FAULT,   "PROTECTION_FAULT" }
+	{ NV04_PGRAPH_NSTATUS_STATE_IN_USE,       "STATE_IN_USE" },
+	{ NV04_PGRAPH_NSTATUS_INVALID_STATE,      "INVALID_STATE" },
+	{ NV04_PGRAPH_NSTATUS_BAD_ARGUMENT,       "BAD_ARGUMENT" },
+	{ NV04_PGRAPH_NSTATUS_PROTECTION_FAULT,   "PROTECTION_FAULT" }
+};
+
+static struct nouveau_bitfield_names nouveau_nstatus_names_nv10[] =
+{
+	{ NV10_PGRAPH_NSTATUS_STATE_IN_USE,       "STATE_IN_USE" },
+	{ NV10_PGRAPH_NSTATUS_INVALID_STATE,      "INVALID_STATE" },
+	{ NV10_PGRAPH_NSTATUS_BAD_ARGUMENT,       "BAD_ARGUMENT" },
+	{ NV10_PGRAPH_NSTATUS_PROTECTION_FAULT,   "PROTECTION_FAULT" }
 };
 
 static struct nouveau_bitfield_names nouveau_nsource_names[] =
@@ -317,8 +325,12 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 	nouveau_print_bitfield_names(nsource, nouveau_nsource_names,
 	                             ARRAY_SIZE(nouveau_nsource_names));
 	printk(", nStatus:");
-	nouveau_print_bitfield_names(nstatus, nouveau_nstatus_names,
+	if (dev_priv->card_type < NV_10)
+		nouveau_print_bitfield_names(nstatus, nouveau_nstatus_names,
 	                             ARRAY_SIZE(nouveau_nstatus_names));
+	else
+		nouveau_print_bitfield_names(nstatus, nouveau_nstatus_names_nv10,
+	                             ARRAY_SIZE(nouveau_nstatus_names_nv10));
 	printk("\n");
 
 	DRM_ERROR("Channel %d/%d (class 0x%04x) - Method 0x%04x, Data 0x%08x:0x%08x\n",
