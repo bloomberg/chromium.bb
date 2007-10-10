@@ -754,12 +754,6 @@ struct drm_fence_arg {
 #define DRM_BO_INIT_MINOR 1
 
 
-enum drm_bo_type {
-	drm_bo_type_dc,
-	drm_bo_type_user,
-	drm_bo_type_kernel, /* for initial kernel allocations */
-};
-
 struct drm_bo_info_req {
 	uint64_t mask;
 	uint64_t flags;
@@ -775,8 +769,6 @@ struct drm_bo_create_req {
 	uint64_t buffer_start;
 	unsigned int hint;
 	unsigned int page_alignment;
-	enum drm_bo_type type;
-	unsigned int pad64;
 };
 
 struct drm_bo_op_req {

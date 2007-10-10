@@ -106,7 +106,6 @@ typedef struct _drmFence
 
 typedef struct _drmBO
 {
-    drm_bo_type_t type;
     unsigned handle;
     uint64_t mapHandle;
     uint64_t flags;
@@ -179,10 +178,9 @@ extern int drmBOCreateList(int numTarget, drmBOList *list);
  * Buffer object functions.
  */
 
-extern int drmBOCreate(int fd, unsigned long start, unsigned long size,
-		       unsigned pageAlignment,void *user_buffer,
-		       drm_bo_type_t type, uint64_t mask,
-		       unsigned hint, drmBO *buf);
+extern int drmBOCreate(int fd, unsigned long size,
+		       unsigned pageAlignment, void *user_buffer,
+		       uint64_t mask, unsigned hint, drmBO *buf);
 extern int drmBODestroy(int fd, drmBO *buf);
 extern int drmBOReference(int fd, unsigned handle, drmBO *buf);
 extern int drmBOUnReference(int fd, drmBO *buf);

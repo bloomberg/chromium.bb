@@ -2698,8 +2698,8 @@ static void drmBOCopyReply(const struct drm_bo_info_rep *rep, drmBO *buf)
 
 
 
-int drmBOCreate(int fd, unsigned long start, unsigned long size,
-		unsigned pageAlignment, void *user_buffer, drm_bo_type_t type,
+int drmBOCreate(int fd, unsigned long size,
+		unsigned pageAlignment, void *user_buffer,
 		uint64_t mask,
 		unsigned hint, drmBO *buf)
 {
@@ -2713,22 +2713,10 @@ int drmBOCreate(int fd, unsigned long start, unsigned long size,
     req->mask = mask;
     req->hint = hint;
     req->size = size;
-    req->type = type;
     req->page_alignment = pageAlignment;
+    req->buffer_start = (unsigned long) user_buffer;
 
     buf->virtual = NULL;
-
-    switch(type) {
-    case drm_bo_type_dc:
-        req->buffer_start = start;
-	break;
-    case drm_bo_type_user:
-	req->buffer_start = (unsigned long) user_buffer;
-	buf->virtual = user_buffer;
-	break;
-    default:
-	return -EINVAL;
-    }
 
     do {
 	ret = ioctl(fd, DRM_IOCTL_BO_CREATE, &arg);
@@ -2777,7 +2765,6 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
 	return -errno;
 
     drmBOCopyReply(rep, buf);
-    buf->type = drm_bo_type_dc;
     buf->mapVirtual = NULL;
     buf->mapCount = 0;
     buf->virtual = NULL;

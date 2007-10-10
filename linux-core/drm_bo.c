@@ -1620,7 +1620,10 @@ int drm_buffer_object_create(struct drm_device *dev,
 	INIT_LIST_HEAD(&bo->vma_list);
 #endif
 	bo->dev = dev;
-	bo->type = type;
+	if (buffer_start != 0)
+		bo->type = drm_bo_type_user;
+	else
+		bo->type = type;
 	bo->num_pages = num_pages;
 	bo->mem.mem_type = DRM_BO_MEM_LOCAL;
 	bo->mem.num_pages = bo->num_pages;
@@ -1783,8 +1786,8 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 	struct drm_buffer_object *entry;
 	int ret = 0;
 
-	DRM_DEBUG("drm_bo_create_ioctl: %dkb, %dkb align, %d type\n",
-	    (int)(req->size / 1024), req->page_alignment * 4, req->type);
+	DRM_DEBUG("drm_bo_create_ioctl: %dkb, %dkb align\n",
+	    (int)(req->size / 1024), req->page_alignment * 4);
 
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
@@ -1792,7 +1795,7 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 	}
 
 	ret = drm_buffer_object_create(file_priv->head->dev,
-				       req->size, req->type, req->mask,
+				       req->size, drm_bo_type_dc, req->mask,
 				       req->hint, req->page_alignment,
 				       req->buffer_start, &entry);
 	if (ret)

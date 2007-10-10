@@ -350,6 +350,12 @@ struct drm_bo_mem_reg {
         uint32_t hw_tile_stride;
 };
 
+enum drm_bo_type {
+	drm_bo_type_dc,
+	drm_bo_type_user,
+	drm_bo_type_kernel, /* for initial kernel allocations */
+};
+
 struct drm_buffer_object {
 	struct drm_device *dev;
 	struct drm_user_object base;
