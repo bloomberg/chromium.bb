@@ -103,15 +103,6 @@ extern struct drm_user_object *drm_lookup_user_object(struct drm_file * priv,
 						 uint32_t key);
 
 /*
- * Must be called with the struct_mutex held.
- * If "item" has been obtained by a call to drm_lookup_user_object. You may not
- * release the struct_mutex before calling drm_remove_ref_object.
- * This function may temporarily release the struct_mutex.
- */
-
-extern int drm_remove_user_object(struct drm_file * priv, struct drm_user_object * item);
-
-/*
  * Must be called with the struct_mutex held. May temporarily release it.
  */
 
@@ -221,9 +212,6 @@ extern int drm_fence_object_emit(struct drm_fence_object * fence,
 				 uint32_t type);
 extern void drm_fence_fill_arg(struct drm_fence_object *fence,
 			       struct drm_fence_arg *arg);
-
-extern int drm_fence_add_user_object(struct drm_file * priv,
-				     struct drm_fence_object * fence, int shareable);
 
 extern int drm_fence_create_ioctl(struct drm_device *dev, void *data,
 				  struct drm_file *file_priv);

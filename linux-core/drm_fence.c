@@ -517,7 +517,7 @@ static int drm_fence_object_init(struct drm_device * dev, uint32_t fence_class,
 	return ret;
 }
 
-int drm_fence_add_user_object(struct drm_file * priv, struct drm_fence_object * fence,
+static int drm_fence_add_user_object(struct drm_file * priv, struct drm_fence_object * fence,
 			      int shareable)
 {
 	struct drm_device *dev = priv->head->dev;
@@ -535,7 +535,6 @@ out:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
-EXPORT_SYMBOL(drm_fence_add_user_object);
 
 int drm_fence_object_create(struct drm_device * dev, uint32_t fence_class, uint32_t type,
 			    unsigned flags, struct drm_fence_object ** c_fence)
@@ -669,31 +668,6 @@ int drm_fence_create_ioctl(struct drm_device *dev, void *data, struct drm_file *
 
 	return ret;
 }
-
-int drm_fence_destroy_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
-{
-	int ret;
-	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_arg *arg = data;
-	struct drm_user_object *uo;
-	ret = 0;
-
-	if (!fm->initialized) {
-		DRM_ERROR("The DRM driver does not support fencing.\n");
-		return -EINVAL;
-	}
-
-	mutex_lock(&dev->struct_mutex);
-	uo = drm_lookup_user_object(file_priv, arg->handle);
-	if (!uo || (uo->type != drm_fence_type) || uo->owner != file_priv) {
-		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
-	}
-	ret = drm_remove_user_object(file_priv, uo);
-	mutex_unlock(&dev->struct_mutex);
-	return ret;
-}
-
 
 int drm_fence_reference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {

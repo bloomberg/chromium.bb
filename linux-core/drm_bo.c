@@ -1674,8 +1674,8 @@ int drm_buffer_object_create(struct drm_device *dev,
 }
 EXPORT_SYMBOL(drm_buffer_object_create);
 
-int drm_bo_add_user_object(struct drm_file *file_priv,
-			   struct drm_buffer_object *bo, int shareable)
+static int drm_bo_add_user_object(struct drm_file *file_priv,
+				  struct drm_buffer_object *bo, int shareable)
 {
 	struct drm_device *dev = file_priv->head->dev;
 	int ret;
@@ -1694,7 +1694,6 @@ int drm_bo_add_user_object(struct drm_file *file_priv,
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
-EXPORT_SYMBOL(drm_bo_add_user_object);
 
 static int drm_bo_lock_test(struct drm_device * dev, struct drm_file *file_priv)
 {
@@ -1813,32 +1812,6 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 	mutex_unlock(&entry->mutex);
 
 out:
-	return ret;
-}
-
-
-int drm_bo_destroy_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
-{
-	struct drm_bo_handle_arg *arg = data;
-	struct drm_user_object *uo;
-	int ret = 0;
-
-	DRM_DEBUG("drm_bo_destroy_ioctl: buffer %d\n", arg->handle);
-
-	if (!dev->bm.initialized) {
-		DRM_ERROR("Buffer object manager is not initialized.\n");
-		return -EINVAL;
-	}
-
-	mutex_lock(&dev->struct_mutex);
-	uo = drm_lookup_user_object(file_priv, arg->handle);
-	if (!uo || (uo->type != drm_buffer_type) || uo->owner != file_priv) {
-		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
-	}
-	ret = drm_remove_user_object(file_priv, uo);
-	mutex_unlock(&dev->struct_mutex);
-	
 	return ret;
 }
 

@@ -38,7 +38,8 @@ int drm_add_user_object(struct drm_file * priv, struct drm_user_object * item,
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 
-	atomic_set(&item->refcount, 1);
+	/* The refcount will be bumped to 1 when we add the ref object below. */
+	atomic_set(&item->refcount, 0);
 	item->shareable = shareable;
 	item->owner = priv;
 
@@ -47,8 +48,11 @@ int drm_add_user_object(struct drm_file * priv, struct drm_user_object * item,
 	if (ret)
 		return ret;
 
-	list_add_tail(&item->list, &priv->user_objects);
-	return 0;
+	ret = drm_add_ref_object(priv, item, _DRM_REF_USE);
+	if (ret)
+		ret = drm_ht_remove_item(&dev->object_hash, &item->hash);
+
+	return ret;
 }
 EXPORT_SYMBOL(drm_add_user_object);
 
@@ -87,26 +91,9 @@ static void drm_deref_user_object(struct drm_file * priv, struct drm_user_object
 	if (atomic_dec_and_test(&item->refcount)) {
 		ret = drm_ht_remove_item(&dev->object_hash, &item->hash);
 		BUG_ON(ret);
-		list_del_init(&item->list);
 		item->remove(priv, item);
 	}
 }
-
-int drm_remove_user_object(struct drm_file * priv, struct drm_user_object * item)
-{
-	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
-
-	if (item->owner != priv) {
-		DRM_ERROR("Cannot destroy object not owned by you.\n");
-		return -EINVAL;
-	}
-	item->owner = 0;
-	item->shareable = 0;
-	list_del_init(&item->list);
-	drm_deref_user_object(priv, item);
-	return 0;
-}
-EXPORT_SYMBOL(drm_remove_user_object);
 
 static int drm_object_ref_action(struct drm_file * priv, struct drm_user_object * ro,
 				 enum drm_ref_type action)

@@ -150,7 +150,6 @@ typedef struct _drmBOList {
 
 extern int drmFenceCreate(int fd, unsigned flags, int fence_class,
                           unsigned type, drmFence *fence);
-extern int drmFenceDestroy(int fd, const drmFence *fence);
 extern int drmFenceReference(int fd, unsigned handle, drmFence *fence);
 extern int drmFenceUnreference(int fd, const drmFence *fence);
 extern int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type);
@@ -181,7 +180,6 @@ extern int drmBOCreateList(int numTarget, drmBOList *list);
 extern int drmBOCreate(int fd, unsigned long size,
 		       unsigned pageAlignment, void *user_buffer,
 		       uint64_t mask, unsigned hint, drmBO *buf);
-extern int drmBODestroy(int fd, drmBO *buf);
 extern int drmBOReference(int fd, unsigned handle, drmBO *buf);
 extern int drmBOUnReference(int fd, drmBO *buf);
 extern int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,

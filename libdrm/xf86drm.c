@@ -2389,18 +2389,6 @@ int drmFenceBuffers(int fd, unsigned flags, uint32_t fence_class, drmFence *fenc
     fence->signaled = 0;
     return 0;
 }
-    
-int drmFenceDestroy(int fd, const drmFence *fence)
-{
-    drm_fence_arg_t arg;
-
-    memset(&arg, 0, sizeof(arg));
-    arg.handle = fence->handle;
-
-    if (ioctl(fd, DRM_IOCTL_FENCE_DESTROY, &arg))
-	return -errno;
-    return 0;
-}
 
 int drmFenceReference(int fd, unsigned handle, drmFence *fence)
 {
@@ -2729,26 +2717,6 @@ int drmBOCreate(int fd, unsigned long size,
     buf->mapVirtual = NULL;
     buf->mapCount = 0;
 
-    return 0;
-}
-
-int drmBODestroy(int fd, drmBO *buf)
-{
-    struct drm_bo_handle_arg arg;
-    
-    if (buf->mapVirtual) {
-	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
-	buf->mapVirtual = NULL;
-	buf->virtual = NULL;
-    }
-
-    memset(&arg, 0, sizeof(arg));
-    arg.handle = buf->handle;
-
-    if (ioctl(fd, DRM_IOCTL_BO_DESTROY, &arg))
-	return -errno;
-
-    buf->handle = 0;
     return 0;
 }
 

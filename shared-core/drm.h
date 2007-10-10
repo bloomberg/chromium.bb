@@ -962,7 +962,6 @@ struct drm_mm_init_arg {
 #define DRM_IOCTL_MM_UNLOCK             DRM_IOWR(0xc3, struct drm_mm_type_arg)
 
 #define DRM_IOCTL_FENCE_CREATE          DRM_IOWR(0xc4, struct drm_fence_arg)
-#define DRM_IOCTL_FENCE_DESTROY         DRM_IOWR(0xc5, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_REFERENCE       DRM_IOWR(0xc6, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_UNREFERENCE     DRM_IOWR(0xc7, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_SIGNALED        DRM_IOWR(0xc8, struct drm_fence_arg)
@@ -972,7 +971,6 @@ struct drm_mm_init_arg {
 #define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcc, struct drm_fence_arg)
 
 #define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcd, struct drm_bo_create_arg)
-#define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xce, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_MAP                DRM_IOWR(0xcf, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, struct drm_bo_reference_info_arg)
