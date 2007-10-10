@@ -40,8 +40,7 @@ void xgi_gart_flush(struct drm_device *dev)
 	DRM_WRITE8(info->mmio_map, 0xB00C, temp & ~0x02);
 
 	/* Set GART base address to HW */
-	DRM_WRITE32(info->mmio_map, 0xB034,
-		    cpu_to_le32(info->gart_info.bus_addr));
+	DRM_WRITE32(info->mmio_map, 0xB034, info->gart_info.bus_addr);
 
 	/* Flush GART table. */
 	DRM_WRITE8(info->mmio_map, 0xB03F, 0x40);

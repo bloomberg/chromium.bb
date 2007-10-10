@@ -45,7 +45,7 @@ static inline void dwWriteReg(struct drm_map * map, u32 addr, u32 data)
 	DRM_INFO("mmio_map->handle = 0x%p, addr = 0x%x, data = 0x%x\n",
 		 map->handle, addr, data);
 #endif
-	DRM_WRITE32(map, addr, cpu_to_le32(data));
+	DRM_WRITE32(map, addr, data);
 }
 
 
@@ -98,25 +98,6 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 	const struct xgi_cmd_info *const pCmdInfo =
 		(struct xgi_cmd_info *) data;
 	const unsigned int cmd = get_batch_command(pCmdInfo->type);
-#ifdef __BIG_ENDIAN
-	const u32 *const ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
-	unsigned i;
-	unsigned j;
-
-	xgi_waitfor_pci_idle(info);
-	for (j = 4; j < pCmdInfo->size; j += 4) {
-		u32 reg = ptr[j];
-
-		for (i = 1; i < 4; i++) {
-			if ((reg & 1) != 0) {
-				const unsigned r = 0x2100 | (reg & 0x0fe);
-				DRM_WRITE32(info->mmio_map, r, ptr[j + i]);
-			}
-
-			reg >>= 8;
-		}
-	}
-#else
 	u32 begin[4];
 
 
@@ -167,7 +148,6 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 	}
 
 	info->cmdring.last_ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
-#endif
 	drm_fence_flush_old(info->dev, 0, info->next_sequence);
 	return 0;
 }
@@ -323,13 +303,13 @@ void xgi_emit_flush(struct xgi_info * info, bool stop)
  */
 void xgi_emit_nop(struct xgi_info * info)
 {
-	info->cmdring.last_ptr[1] = BEGIN_LINK_ENABLE_MASK 
-		| (BEGIN_BEGIN_IDENTIFICATION_MASK & info->next_sequence);
+	info->cmdring.last_ptr[1] = cpu_to_le32(BEGIN_LINK_ENABLE_MASK 
+		| (BEGIN_BEGIN_IDENTIFICATION_MASK & info->next_sequence));
 	info->cmdring.last_ptr[2] = 0;
 	info->cmdring.last_ptr[3] = 0;
 	DRM_WRITEMEMORYBARRIER();
-	info->cmdring.last_ptr[0] = (get_batch_command(BTYPE_CTRL) << 24) 
-		| (BEGIN_VALID_MASK);
+	info->cmdring.last_ptr[0] = cpu_to_le32((get_batch_command(BTYPE_CTRL) << 24) 
+		| (BEGIN_VALID_MASK));
 
 	triggerHWCommandList(info);
 

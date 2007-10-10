@@ -326,7 +326,7 @@ void xgi_waitfor_pci_idle(struct xgi_info * info)
 	unsigned int same_count = 0;
 
 	while (idleCount < 5) {
-		const u32 status = le32_to_cpu(DRM_READ32(info->mmio_map, WHOLD_GE_STATUS))
+		const u32 status = DRM_READ32(info->mmio_map, WHOLD_GE_STATUS)
 			& IDLE_MASK;
 
 		if (status == old_status) {
