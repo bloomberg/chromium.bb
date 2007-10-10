@@ -2726,9 +2726,6 @@ int drmBOCreate(int fd, unsigned long start, unsigned long size,
 	req->buffer_start = (unsigned long) user_buffer;
 	buf->virtual = user_buffer;
 	break;
-    case drm_bo_type_fake:
-        req->buffer_start = start;
-	break;
     default:
 	return -EINVAL;
     }
@@ -2751,7 +2748,7 @@ int drmBODestroy(int fd, drmBO *buf)
 {
     struct drm_bo_handle_arg arg;
     
-    if (buf->mapVirtual && (buf->type != drm_bo_type_fake)) {
+    if (buf->mapVirtual) {
 	(void) drmUnmap(buf->mapVirtual, buf->start + buf->size);
 	buf->mapVirtual = NULL;
 	buf->virtual = NULL;
@@ -2792,7 +2789,7 @@ int drmBOUnReference(int fd, drmBO *buf)
 {
     struct drm_bo_handle_arg arg;
 
-    if (buf->mapVirtual && (buf->type != drm_bo_type_fake)) {
+    if (buf->mapVirtual) {
 	(void) munmap(buf->mapVirtual, buf->start + buf->size);
 	buf->mapVirtual = NULL;
 	buf->virtual = NULL;
@@ -2827,7 +2824,7 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
      * Make sure we have a virtual address of the buffer.
      */
 
-    if (!buf->virtual && buf->type != drm_bo_type_fake) {
+    if (!buf->virtual) {
 	drmAddress virtual;
 	virtual = mmap(0, buf->size + buf->start, 
 		       PROT_READ | PROT_WRITE, MAP_SHARED,

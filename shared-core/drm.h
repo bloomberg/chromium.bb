@@ -757,7 +757,6 @@ struct drm_fence_arg {
 enum drm_bo_type {
 	drm_bo_type_dc,
 	drm_bo_type_user,
-	drm_bo_type_fake,
 	drm_bo_type_kernel, /* for initial kernel allocations */
 };
 

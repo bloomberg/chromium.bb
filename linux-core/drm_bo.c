@@ -148,7 +148,6 @@ static int drm_bo_add_ttm(struct drm_buffer_object * bo)
 			ret = -ENOMEM;
 		break;
 	case drm_bo_type_user:
-	case drm_bo_type_fake:
 		break;
 	default:
 		DRM_ERROR("Illegal buffer object type\n");
@@ -695,12 +694,6 @@ static int drm_bo_evict(struct drm_buffer_object * bo, unsigned mem_type,
 	evict_mem = bo->mem;
 	evict_mem.mm_node = NULL;
 
-	if (bo->type == drm_bo_type_fake) {
-		bo->mem.mem_type = DRM_BO_MEM_LOCAL;
-		bo->mem.mm_node = NULL;
-		goto out1;
-	}
-
 	evict_mem = bo->mem;
 	evict_mem.mask = dev->driver->bo_driver->evict_mask(bo);
 	ret = drm_bo_mem_space(bo, &evict_mem, no_wait);
@@ -720,7 +713,6 @@ static int drm_bo_evict(struct drm_buffer_object * bo, unsigned mem_type,
 		goto out;
 	}
 
-      out1:
 	mutex_lock(&dev->struct_mutex);
 	if (evict_mem.mm_node) {
 		if (evict_mem.mm_node != bo->pinned_node)
@@ -1355,44 +1347,6 @@ static int drm_bo_mem_compat(struct drm_bo_mem_reg * mem)
 	return 1;
 }
 
-static int drm_bo_check_fake(struct drm_device * dev, struct drm_bo_mem_reg * mem)
-{
-	struct drm_buffer_manager *bm = &dev->bm;
-	struct drm_mem_type_manager *man;
-	uint32_t num_prios = dev->driver->bo_driver->num_mem_type_prio;
-	const uint32_t *prios = dev->driver->bo_driver->mem_type_prio;
-	uint32_t i;
-	int type_ok = 0;
-	uint32_t mem_type = 0;
-	uint32_t cur_flags;
-
-	if (drm_bo_mem_compat(mem))
-		return 0;
-
-	BUG_ON(mem->mm_node);
-
-	for (i = 0; i < num_prios; ++i) {
-		mem_type = prios[i];
-		man = &bm->man[mem_type];
-		type_ok = drm_bo_mt_compatible(man, mem_type, mem->mask,
-					       &cur_flags);
-		if (type_ok)
-			break;
-	}
-
-	if (type_ok) {
-		mem->mm_node = NULL;
-		mem->mem_type = mem_type;
-		mem->flags = cur_flags;
-		DRM_FLAG_MASKED(mem->flags, mem->mask, ~DRM_BO_MASK_MEMTYPE);
-		return 0;
-	}
-
-	DRM_ERROR("Illegal fake buffer flags 0x%016llx\n",
-		  (unsigned long long) mem->mask);
-	return -EINVAL;
-}
-
 /*
  * bo locked.
  */
@@ -1448,11 +1402,6 @@ static int drm_buffer_object_validate(struct drm_buffer_object * bo,
 	if (ret) {
 	        DRM_ERROR("Timed out waiting for buffer unmap.\n");
 		return ret;
-	}
-	if (bo->type == drm_bo_type_fake) {
-		ret = drm_bo_check_fake(dev, &bo->mem);
-		if (ret)
-			return ret;
 	}
 
 	/*
@@ -1642,7 +1591,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	int ret = 0;
 	unsigned long num_pages;
 
-	if ((buffer_start & ~PAGE_MASK) && (type != drm_bo_type_fake)) {
+	if (buffer_start & ~PAGE_MASK) {
 		DRM_ERROR("Invalid buffer object start.\n");
 		return -EINVAL;
 	}
@@ -1677,12 +1626,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	bo->mem.num_pages = bo->num_pages;
 	bo->mem.mm_node = NULL;
 	bo->mem.page_alignment = page_alignment;
-	if (bo->type == drm_bo_type_fake) {
-		bo->offset = buffer_start;
-		bo->buffer_start = 0;
-	} else {
-		bo->buffer_start = buffer_start;
-	}
+	bo->buffer_start = buffer_start;
 	bo->priv_flags = 0;
 	bo->mem.flags = 0ULL;
 	bo->mem.mask = 0ULL;
@@ -1705,12 +1649,6 @@ int drm_buffer_object_create(struct drm_device *dev,
 	if (ret) {
 		DRM_ERROR("Driver did not support given buffer permissions\n");
 		goto out_err;
-	}
-
-	if (bo->type == drm_bo_type_fake) {
-		ret = drm_bo_check_fake(dev, &bo->mem);
-		if (ret)
-			goto out_err;
 	}
 
 	ret = drm_bo_add_ttm(bo);
@@ -1852,8 +1790,6 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
 	}
-	if (req->type == drm_bo_type_fake)
-		LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	ret = drm_buffer_object_create(file_priv->head->dev,
 				       req->size, req->type, req->mask,
