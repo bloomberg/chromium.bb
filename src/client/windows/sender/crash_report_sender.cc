@@ -30,6 +30,8 @@
 // Disable exception handler warnings.
 #pragma warning( disable : 4530 )
 
+#include <errno.h>
+
 #include "client/windows/sender/crash_report_sender.h"
 #include "common/windows/http_upload.h"
 
