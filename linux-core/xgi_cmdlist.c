@@ -303,12 +303,12 @@ void xgi_emit_flush(struct xgi_info * info, bool stop)
  */
 void xgi_emit_nop(struct xgi_info * info)
 {
-	info->cmdring.last_ptr[1] = cpu_to_le32(BEGIN_LINK_ENABLE_MASK 
+	info->cmdring.last_ptr[1] = cpu_to_le32(BEGIN_LINK_ENABLE_MASK
 		| (BEGIN_BEGIN_IDENTIFICATION_MASK & info->next_sequence));
 	info->cmdring.last_ptr[2] = 0;
 	info->cmdring.last_ptr[3] = 0;
 	DRM_WRITEMEMORYBARRIER();
-	info->cmdring.last_ptr[0] = cpu_to_le32((get_batch_command(BTYPE_CTRL) << 24) 
+	info->cmdring.last_ptr[0] = cpu_to_le32((get_batch_command(BTYPE_CTRL) << 24)
 		| (BEGIN_VALID_MASK));
 
 	triggerHWCommandList(info);
