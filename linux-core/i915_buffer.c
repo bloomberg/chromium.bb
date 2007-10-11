@@ -42,7 +42,7 @@ int i915_fence_types(struct drm_buffer_object *bo,
 		     uint32_t * fclass,
 		     uint32_t * type)
 {
-	if (bo->mem.flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
+	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
 		*type = 1;
