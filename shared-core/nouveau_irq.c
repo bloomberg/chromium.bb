@@ -35,6 +35,7 @@
 #include "nouveau_drm.h"
 #include "nouveau_drv.h"
 #include "nouveau_reg.h"
+#include "nouveau_swmthd.h"
 
 void nouveau_irq_preinstall(struct drm_device *dev)
 {
@@ -340,20 +341,27 @@ nouveau_graph_dump_trap_info(struct drm_device *dev)
 static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t status, nsource;
+	uint32_t status, nsource, method;
+	uint32_t obj_class;
 
-	status = NV_READ(NV03_PGRAPH_INTR);
-	if (!status)
-		return;
+	while ( (status = NV_READ(NV03_PGRAPH_INTR)) ) {
 	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 
 	if (status & NV_PGRAPH_INTR_NOTIFY) {
 		DRM_DEBUG("PGRAPH notify interrupt\n");
 
-		nouveau_graph_dump_trap_info(dev);
+		if ( dev_priv->card_type == NV_04 && (nsource & NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD ) ) {
+		/* NV4 (nvidia TNT 1) reports software methods with PGRAPH NOTIFY ILLEGAL_MTHD*/
+			method = NV_READ(NV04_PGRAPH_TRAPPED_ADDR) & 0x1FFC;
+			obj_class = NV_READ(NV04_PGRAPH_CTX_SWITCH1) & 0xFFF;
+			DRM_DEBUG("Got NV04 software method method %x for class %#x\n", method, obj_class);
 
+			if ( nouveau_sw_method_execute(dev, obj_class, method) )
+				DRM_ERROR("Unable to execute NV04 software method %x for object class %x. Please report.\n", method, obj_class);
+			}
 		status &= ~NV_PGRAPH_INTR_NOTIFY;
 		NV_WRITE(NV03_PGRAPH_INTR, NV_PGRAPH_INTR_NOTIFY);
+		NV_WRITE(NV04_PGRAPH_FIFO, 1);
 	}
 
 	if (status & NV_PGRAPH_INTR_ERROR) {
@@ -392,8 +400,9 @@ static void nouveau_pgraph_irq_handler(struct drm_device *dev)
 		DRM_ERROR("Unhandled PGRAPH interrupt: STAT=0x%08x\n", status);
 		NV_WRITE(NV03_PGRAPH_INTR, status);
 	}
+NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PGRAPH_PENDING);
+	}
 
-	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PGRAPH_PENDING);
 }
 
 static void nouveau_crtc_irq_handler(struct drm_device *dev, int crtc)
