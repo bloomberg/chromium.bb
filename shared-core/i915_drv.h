@@ -56,14 +56,19 @@
  * 1.8: New ioctl for ARB_Occlusion_Query
  * 1.9: Usable page flipping and triple buffering
  * 1.10: Plane/pipe disentangling
+ * 1.11: TTM superioctl
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		10
+#define DRIVER_MINOR		11
 #else
 #define DRIVER_MINOR		6
 #endif
 #define DRIVER_PATCHLEVEL	0
+
+#ifdef I915_HAVE_BUFFER
+#define I915_MAX_VALIDATE_BUFFERS 4096
+#endif
 
 typedef struct _drm_i915_ring_buffer {
 	int tail_mask;
@@ -133,10 +138,13 @@ typedef struct drm_i915_private {
 #endif
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
+	unsigned int max_validate_buffers;
 #endif
+
 	DRM_SPINTYPE swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
+
 } drm_i915_private_t;
 
 enum intel_chip_family {
