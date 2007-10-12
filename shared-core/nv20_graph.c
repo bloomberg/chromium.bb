@@ -283,7 +283,7 @@ write32 #1 block at +0x00740a7c NV_PRAMIN.GRCTX0+0x35c of 173 (0xad) elements:
 	INSTANCE_WR(ctx, (0x35c/4)+134, 0x00080008);
 	for (i=0; i<16; ++i)
 		INSTANCE_WR(ctx, (0x35c/4)+143+i, 0x07ff0000);
-	INSTANCE_WR(ctx, (0x35c/4)+161, 0x4b7ffff);
+	INSTANCE_WR(ctx, (0x35c/4)+161, 0x4b7fffff);
 
 /*
 write32 #1 block at +0x00740d34 NV_PRAMIN.GRCTX0+0x614 of 3136 (0xc40) elements:
