@@ -33,7 +33,6 @@ int
 nouveau_notifier_init_channel(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int flags, ret;
 
 	flags = (NOUVEAU_MEM_PCI | NOUVEAU_MEM_MAPPED |
