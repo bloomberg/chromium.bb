@@ -285,7 +285,9 @@ nouveau_card_init(struct drm_device *dev)
 
 	/* Put the card in BE mode if it's not */
 	if (NV_READ(NV03_PMC_BOOT_1))
-		NV_WRITE(NV03_PMC_BOOT_1,0x01000001);
+		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
+
+	DRM_MEMORYBARRIER();
 
 	/* Determine exact chipset we're running on */
 	if (dev_priv->card_type < NV_10)
