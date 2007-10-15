@@ -657,6 +657,7 @@ int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 		unregister_framebuffer(info);
 		framebuffer_release(info);
 		drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
+		drm_bo_usage_deref_locked(&fb->bo);
 		drm_framebuffer_destroy(fb);
 	}
 	return 0;

@@ -951,14 +951,10 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	}
 		
 	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
-		dev->driver->fb_remove(dev, drm_crtc_from_fb(dev, fb));
-		/* If this FB was the kernel one, free it */
-		if (fb->bo->type == drm_bo_type_kernel) {
-			mutex_lock(&dev->struct_mutex);
-			drm_bo_usage_deref_locked(&fb->bo);
-			mutex_unlock(&dev->struct_mutex);
-		}
-		drm_framebuffer_destroy(fb);
+		if (fb->bo->type != drm_bo_type_kernel)
+			drm_framebuffer_destroy(fb);
+		else
+			dev->driver->fb_remove(dev, drm_crtc_from_fb(dev, fb));
 	}
 
 	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
@@ -1585,14 +1581,15 @@ int drm_mode_rmfb(struct drm_device *dev,
 		goto out;
 	}
 
-	dev->driver->fb_remove(dev, drm_crtc_from_fb(dev, fb));
-
 	/* TODO check if we own the buffer */
 	/* TODO release all crtc connected to the framebuffer */
 	/* bind the fb to the crtc for now */
 	/* TODO unhock the destructor from the buffer object */
 
-	drm_framebuffer_destroy(fb);
+	if (fb->bo->type != drm_bo_type_kernel)
+		drm_framebuffer_destroy(fb);
+	else
+		dev->driver->fb_remove(dev, drm_crtc_from_fb(dev, fb));
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1666,8 +1663,10 @@ void drm_fb_release(struct file *filp)
 	mutex_lock(&dev->mode_config.mutex);
 	list_for_each_entry_safe(fb, tfb, &priv->fbs, filp_head) {
 		list_del(&fb->filp_head);
-		dev->driver->fb_remove(dev, drm_crtc_from_fb(dev, fb));
-		drm_framebuffer_destroy(fb);
+		if (fb->bo->type != drm_bo_type_kernel)
+			drm_framebuffer_destroy(fb);
+		else
+			dev->driver->fb_remove(dev, drm_crtc_from_fb(dev, fb));
 	}
 	mutex_unlock(&dev->mode_config.mutex);
 }
