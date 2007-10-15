@@ -533,7 +533,6 @@ void* MinidumpGenerator::Write() {
 bool MinidumpGenerator::WriteMinidumpToFile(const char *file_pathname,
                                             int signo) {
   assert(file_pathname != NULL);
-  assert(stack_ != NULL);
 
   if (file_pathname == NULL)
     return false;
