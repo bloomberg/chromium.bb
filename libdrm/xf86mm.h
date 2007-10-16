@@ -181,7 +181,7 @@ extern int drmBOCreate(int fd, unsigned long size,
 		       unsigned pageAlignment, void *user_buffer,
 		       uint64_t mask, unsigned hint, drmBO *buf);
 extern int drmBOReference(int fd, unsigned handle, drmBO *buf);
-extern int drmBOUnReference(int fd, drmBO *buf);
+extern int drmBOUnreference(int fd, drmBO *buf);
 extern int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 		    void **address);
 extern int drmBOUnmap(int fd, drmBO *buf);

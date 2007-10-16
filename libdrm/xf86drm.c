@@ -2740,7 +2740,7 @@ int drmBOReference(int fd, unsigned handle, drmBO *buf)
     return 0;
 }
 
-int drmBOUnReference(int fd, drmBO *buf)
+int drmBOUnreference(int fd, drmBO *buf)
 {
     struct drm_bo_handle_arg arg;
 
