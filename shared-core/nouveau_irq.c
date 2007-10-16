@@ -63,58 +63,56 @@ void nouveau_irq_uninstall(struct drm_device *dev)
 
 static void nouveau_fifo_irq_handler(struct drm_device *dev)
 {
-	uint32_t status, chmode, chstat, channel;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	uint32_t status;
 
-	status = NV_READ(NV03_PFIFO_INTR_0);
-	if (!status)
-		return;
-	chmode = NV_READ(NV04_PFIFO_MODE);
-	chstat = NV_READ(NV04_PFIFO_DMA);
-	channel=NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
+	while ((status = NV_READ(NV03_PFIFO_INTR_0))) {
+		uint32_t chid, get;
 
-	if (status & NV_PFIFO_INTR_CACHE_ERROR) {
-		uint32_t c1get, c1method, c1data;
+		NV_WRITE(NV03_PFIFO_CACHES, 0);
 
-		DRM_ERROR("PFIFO error interrupt\n");
+		chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1) &
+				(nouveau_fifo_number(dev) - 1);
+		get  = NV_READ(NV03_PFIFO_CACHE1_GET);
 
-		c1get = NV_READ(NV03_PFIFO_CACHE1_GET) >> 2;
-		if (dev_priv->card_type < NV_40) {
-			/* Untested, so it may not work.. */
-			c1method = NV_READ(NV04_PFIFO_CACHE1_METHOD(c1get));
-			c1data   = NV_READ(NV04_PFIFO_CACHE1_DATA(c1get));
-		} else {
-			c1method = NV_READ(NV40_PFIFO_CACHE1_METHOD(c1get));
-			c1data   = NV_READ(NV40_PFIFO_CACHE1_DATA(c1get));
+		if (status & NV_PFIFO_INTR_CACHE_ERROR) {
+			uint32_t mthd, data;
+			int ptr;
+			
+			ptr = get >> 2;
+			if (dev_priv->card_type < NV_40) {
+				mthd = NV_READ(NV04_PFIFO_CACHE1_METHOD(ptr));
+				data = NV_READ(NV04_PFIFO_CACHE1_DATA(ptr));
+			} else {
+				mthd = NV_READ(NV40_PFIFO_CACHE1_METHOD(ptr));
+				data = NV_READ(NV40_PFIFO_CACHE1_DATA(ptr));
+			}
+
+			DRM_INFO("PFIFO_CACHE_ERROR - "
+				 "Ch %d/%d Mthd 0x%04x Data 0x%08x\n",
+				 chid, (mthd >> 13) & 7, mthd & 0x1ffc, data);
+
+			status &= ~NV_PFIFO_INTR_CACHE_ERROR;
+			NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_CACHE_ERROR);
 		}
 
-		DRM_ERROR("Channel %d/%d - Method 0x%04x, Data 0x%08x\n",
-			  channel, (c1method >> 13) & 7, c1method & 0x1ffc,
-			  c1data);
+		if (status & NV_PFIFO_INTR_DMA_PUSHER) {
+			DRM_INFO("PFIFO_DMA_PUSHER - Ch %d\n", chid);
 
-		status &= ~NV_PFIFO_INTR_CACHE_ERROR;
-		NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_CACHE_ERROR);
-	}
+			status &= ~NV_PFIFO_INTR_DMA_PUSHER;
+			NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_DMA_PUSHER);
 
-	if (status & NV_PFIFO_INTR_DMA_PUSHER) {
-		DRM_ERROR("PFIFO DMA pusher interrupt: ch%d, 0x%08x\n",
-			  channel, NV_READ(NV04_PFIFO_CACHE1_DMA_GET));
-
-		status &= ~NV_PFIFO_INTR_DMA_PUSHER;
-		NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_DMA_PUSHER);
-
-		NV_WRITE(NV04_PFIFO_CACHE1_DMA_STATE, 0x00000000);
-		if (NV_READ(NV04_PFIFO_CACHE1_DMA_PUT)!=NV_READ(NV04_PFIFO_CACHE1_DMA_GET))
-		{
-			uint32_t getval=NV_READ(NV04_PFIFO_CACHE1_DMA_GET)+4;
-			NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET,getval);
+			NV_WRITE(NV04_PFIFO_CACHE1_DMA_STATE, 0x00000000);
+			if (NV_READ(NV04_PFIFO_CACHE1_DMA_PUT) != get)
+				NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET, get + 4);
 		}
-	}
 
-	if (status) {
-		DRM_ERROR("Unhandled PFIFO interrupt: status=0x%08x\n", status);
+		if (status) {
+			DRM_INFO("Unhandled PFIFO_INTR - 0x%8x\n", status);
+			NV_WRITE(NV03_PFIFO_INTR_0, status);
+		}
 
-		NV_WRITE(NV03_PFIFO_INTR_0, status);
+		NV_WRITE(NV03_PFIFO_CACHES, 1);
 	}
 
 	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PFIFO_PENDING);

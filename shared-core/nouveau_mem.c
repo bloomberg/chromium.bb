@@ -399,8 +399,7 @@ int nouveau_mem_init(struct drm_device *dev)
 	}
 
 	/*Note: this is *not* just NV50 code, but only used on NV50 for now */
-	if (dev_priv->gart_info.type == NOUVEAU_GART_NONE &&
-	    dev_priv->card_type >= NV_50) {
+	if (dev_priv->gart_info.type == NOUVEAU_GART_NONE) {
 		ret = nouveau_sgdma_init(dev);
 		if (!ret) {
 			ret = nouveau_sgdma_nottm_hack_init(dev);
