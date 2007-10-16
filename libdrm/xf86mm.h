@@ -126,24 +126,6 @@ typedef struct _drmBO
     unsigned pad[8];     /* for future expansion */
 } drmBO;
 
-typedef struct _drmBONode
-{
-    drmMMListHead head;
-    drmBO *buf;
-    struct drm_bo_op_arg bo_arg;
-    unsigned long arg0;
-    unsigned long arg1;
-} drmBONode;
-
-typedef struct _drmBOList {
-    unsigned numTarget;
-    unsigned numCurrent;
-    unsigned numOnList;
-    drmMMListHead list;
-    drmMMListHead free;
-} drmBOList;
-
-
 /*
  * Fence functions.
  */
@@ -161,17 +143,6 @@ extern int drmFenceEmit(int fd, unsigned flags, drmFence *fence,
                         unsigned emit_type);
 extern int drmFenceBuffers(int fd, unsigned flags, uint32_t fence_class, drmFence *fence);
 
-
-/*
- * Buffer object list functions.
- */
-
-extern void drmBOFreeList(drmBOList *list);
-extern int drmBOResetList(drmBOList *list);
-extern void *drmBOListIterator(drmBOList *list);
-extern void *drmBOListNext(drmBOList *list, void *iterator);
-extern drmBO *drmBOListBuf(void *iterator);
-extern int drmBOCreateList(int numTarget, drmBOList *list);
 
 /*
  * Buffer object functions.
@@ -192,11 +163,6 @@ extern int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle);
 extern int drmBOInfo(int fd, drmBO *buf);
 extern int drmBOBusy(int fd, drmBO *buf, int *busy);
 
-extern int drmAddValidateItem(drmBOList *list, drmBO *buf, unsigned flags,
-		       unsigned mask,
-		       int *newItem);
-extern int drmBOValidateList(int fd, drmBOList *list);
-extern int drmBOFenceList(int fd, drmBOList *list, unsigned fenceHandle);
 extern int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint);
 int drmBOSetPin(int fd, drmBO *buf, int pin);
 
