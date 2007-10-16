@@ -92,6 +92,9 @@ static void nouveau_fifo_irq_handler(struct drm_device *dev)
 				 "Ch %d/%d Mthd 0x%04x Data 0x%08x\n",
 				 chid, (mthd >> 13) & 7, mthd & 0x1ffc, data);
 
+			NV_WRITE(NV03_PFIFO_CACHE1_GET, get + 4);
+			NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 1);
+
 			status &= ~NV_PFIFO_INTR_CACHE_ERROR;
 			NV_WRITE(NV03_PFIFO_INTR_0, NV_PFIFO_INTR_CACHE_ERROR);
 		}
