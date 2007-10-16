@@ -163,7 +163,7 @@ endif
 all: modules
 
 modules: includes
-	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
+	+make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
 
 ifeq ($(HEADERFROMBOOT),1)
 
@@ -269,7 +269,7 @@ PAGE_AGP := $(shell cat $(LINUXDIR)/include/asm/agp.h 2>/dev/null | \
 ifneq ($(PAGE_AGP),0)
 EXTRA_CFLAGS += -DHAVE_PAGE_AGP
 endif
-EXTRA_CFLAGS += -g -O0
+EXTRA_CFLAGS += -g
 
 # Start with all modules turned off.
 CONFIG_DRM_GAMMA := n

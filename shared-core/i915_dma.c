@@ -116,6 +116,10 @@ static int i915_initialize(struct drm_device * dev,
 		return -EINVAL;
 	}
 
+#ifdef I915_HAVE_BUFFER
+	dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
+#endif
+
 	dev_priv->sarea_priv = (drm_i915_sarea_t *)
 	    ((u8 *) dev_priv->sarea->handle + init->sarea_priv_offset);
 
@@ -694,6 +698,343 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
 	return 0;
 }
 
+#ifdef I915_HAVE_BUFFER
+struct i915_relocatee_info {
+	struct drm_buffer_object *buf;
+	unsigned long offset;
+	u32 *data_page;
+	unsigned page_offset;
+	struct drm_bo_kmap_obj kmap;
+	int is_iomem;
+};
+
+static void i915_dereference_buffers_locked(struct drm_buffer_object **buffers,
+					    unsigned num_buffers)
+{
+	while (num_buffers--)
+		drm_bo_usage_deref_locked(&buffers[num_buffers]);
+}
+
+int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
+		     struct drm_buffer_object **buffers,
+		     struct i915_relocatee_info *relocatee,
+		     uint32_t *reloc)
+{
+	unsigned index;
+	unsigned long new_cmd_offset;
+	u32 val;
+	int ret;
+
+	if (reloc[2] >= num_buffers) {
+		DRM_ERROR("Illegal relocation buffer %08X\n", reloc[2]);
+		return -EINVAL;
+	}
+
+	new_cmd_offset = reloc[0];
+	if (!relocatee->data_page ||
+	    !drm_bo_same_page(relocatee->offset, new_cmd_offset)) {
+		drm_bo_kunmap(&relocatee->kmap);
+		relocatee->offset = new_cmd_offset;
+		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
+				  1, &relocatee->kmap);
+		if (ret) {
+			DRM_ERROR("Could not map command buffer to apply relocs\n %08lx", new_cmd_offset);
+			return ret;
+		}
+
+		relocatee->data_page = drm_bmo_virtual(&relocatee->kmap,
+						       &relocatee->is_iomem);
+		relocatee->page_offset = (relocatee->offset & PAGE_MASK);
+	}
+
+	val = buffers[reloc[2]]->offset;
+	index = (reloc[0] - relocatee->page_offset) >> 2;
+
+	/* add in validate */
+	val = val + reloc[1];
+
+	relocatee->data_page[index] = val;
+	return 0;
+}
+
+int i915_process_relocs(struct drm_file *file_priv,
+			uint32_t buf_handle,
+			uint32_t *reloc_buf_handle,
+			struct i915_relocatee_info *relocatee,
+			struct drm_buffer_object **buffers,
+			uint32_t num_buffers)
+{
+	struct drm_device *dev = file_priv->head->dev;
+	struct drm_buffer_object *reloc_list_object;
+	uint32_t cur_handle = *reloc_buf_handle;
+	uint32_t *reloc_page;
+	int ret, reloc_is_iomem, reloc_stride;
+	uint32_t num_relocs, reloc_offset, reloc_end, reloc_page_offset, next_offset, cur_offset;
+	struct drm_bo_kmap_obj reloc_kmap;
+
+	memset(&reloc_kmap, 0, sizeof(reloc_kmap));
+
+	reloc_list_object = drm_lookup_buffer_object(file_priv, cur_handle, 1);
+	if (!reloc_list_object)
+		return -EINVAL;
+
+	ret = drm_bo_kmap(reloc_list_object, 0, 1, &reloc_kmap);
+	if (ret) {
+		DRM_ERROR("Could not map relocation buffer.\n");
+		goto out;
+	}
+
+	reloc_page = drm_bmo_virtual(&reloc_kmap, &reloc_is_iomem);
+	num_relocs = reloc_page[0] & 0xffff;
+
+	if ((reloc_page[0] >> 16) & 0xffff) {
+		DRM_ERROR("Unsupported relocation type requested\n");
+		goto out;
+	}
+
+	/* get next relocate buffer handle */
+	*reloc_buf_handle = reloc_page[1];
+	reloc_stride = I915_RELOC0_STRIDE * sizeof(uint32_t); /* may be different for other types of relocs */
+
+	DRM_DEBUG("num relocs is %d, next is %08X\n", num_relocs, reloc_page[1]);
+
+	reloc_page_offset = 0;
+	reloc_offset = I915_RELOC_HEADER * sizeof(uint32_t);
+	reloc_end = reloc_offset + (num_relocs * reloc_stride);
+
+	do {
+		next_offset = drm_bo_offset_end(reloc_offset, reloc_end);
+
+		do {
+			cur_offset = ((reloc_offset + reloc_page_offset) & ~PAGE_MASK) / sizeof(uint32_t);
+			ret = i915_apply_reloc(file_priv, num_buffers,
+					 buffers, relocatee, &reloc_page[cur_offset]);
+			if (ret)
+				goto out;
+
+			reloc_offset += reloc_stride;
+		} while (reloc_offset < next_offset);
+
+		drm_bo_kunmap(&reloc_kmap);
+
+		reloc_offset = next_offset;
+		if (reloc_offset != reloc_end) {
+			ret = drm_bo_kmap(reloc_list_object, reloc_offset >> PAGE_SHIFT, 1, &reloc_kmap);
+			if (ret) {
+				DRM_ERROR("Could not map relocation buffer.\n");
+				goto out;
+			}
+
+			reloc_page = drm_bmo_virtual(&reloc_kmap, &reloc_is_iomem);
+			reloc_page_offset = reloc_offset & ~PAGE_MASK;
+		}
+
+	} while (reloc_offset != reloc_end);
+out:
+	drm_bo_kunmap(&reloc_kmap);
+
+	mutex_lock(&dev->struct_mutex);
+	drm_bo_usage_deref_locked(&reloc_list_object);
+	mutex_unlock(&dev->struct_mutex);
+
+	return ret;
+}
+
+/*
+ * Validate, add fence and relocate a block of bos from a userspace list
+ */
+int i915_validate_buffer_list(struct drm_file *file_priv,
+			      unsigned int fence_class, uint64_t data,
+			      struct drm_buffer_object **buffers,
+			      uint32_t *num_buffers)
+{
+	struct drm_i915_op_arg arg;
+	struct drm_bo_op_req *req = &arg.d.req;
+	struct drm_bo_arg_rep rep;
+	unsigned long next = 0;
+	int ret = 0;
+	unsigned buf_count = 0;
+	struct drm_device *dev = file_priv->head->dev;
+	uint32_t buf_reloc_handle, buf_handle;
+	struct i915_relocatee_info relocatee;
+
+	do {
+		if (buf_count >= *num_buffers) {
+			DRM_ERROR("Buffer count exceeded %d\n.", *num_buffers);
+			ret = -EINVAL;
+			goto out_err;
+		}
+
+		buffers[buf_count] = NULL;
+
+		if (copy_from_user(&arg, (void __user *)(unsigned)data, sizeof(arg))) {
+			ret = -EFAULT;
+			goto out_err;
+		}
+
+		if (arg.handled) {
+			data = arg.next;
+			buffers[buf_count] = drm_lookup_buffer_object(file_priv, req->arg_handle, 1);
+			buf_count++;
+			continue;
+		}
+
+		rep.ret = 0;
+		if (req->op != drm_bo_validate) {
+			DRM_ERROR
+			    ("Buffer object operation wasn't \"validate\".\n");
+			rep.ret = -EINVAL;
+			goto out_err;
+		}
+
+		buf_handle = req->bo_req.handle;
+		buf_reloc_handle = arg.reloc_handle;
+
+		rep.ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
+						 req->bo_req.fence_class,
+						 req->bo_req.flags,
+						 req->bo_req.mask,
+						 req->bo_req.hint,
+						 &rep.bo_info,
+						 &buffers[buf_count]);
+
+		if (rep.ret) {
+			DRM_ERROR("error on handle validate %d\n", rep.ret);
+			goto out_err;
+		}
+
+
+		next = arg.next;
+		arg.handled = 1;
+		arg.d.rep = rep;
+
+		if (copy_to_user((void __user *)(unsigned)data, &arg, sizeof(arg)))
+			return -EFAULT;
+
+		data = next;
+		buf_count++;
+
+		if (buf_reloc_handle) {
+			memset(&relocatee, 0, sizeof(relocatee));
+
+			relocatee.buf = drm_lookup_buffer_object(file_priv, buf_handle, 1);
+			if (!relocatee.buf) {
+				DRM_DEBUG("relocatee buffer invalid %08x\n", buf_handle);
+				ret = -EINVAL;
+				goto out_err;
+			}
+
+			while (buf_reloc_handle) {
+				ret = i915_process_relocs(file_priv, buf_handle, &buf_reloc_handle, &relocatee, buffers, buf_count);
+				if (ret) {
+					DRM_ERROR("process relocs failed\n");
+					break;
+				}
+			}
+
+			drm_bo_kunmap(&relocatee.kmap);
+			mutex_lock(&dev->struct_mutex);
+			drm_bo_usage_deref_locked(&relocatee.buf);
+			mutex_unlock(&dev->struct_mutex);
+
+			if (ret)
+				goto out_err;
+
+		}
+	} while (next != 0);
+	*num_buffers = buf_count;
+	return 0;
+out_err:
+	mutex_lock(&dev->struct_mutex);
+	i915_dereference_buffers_locked(buffers, buf_count);
+	mutex_unlock(&dev->struct_mutex);
+	*num_buffers = 0;
+	return (ret) ? ret : rep.ret;
+}
+
+static int i915_execbuffer(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv)
+{
+	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	drm_i915_sarea_t *sarea_priv = (drm_i915_sarea_t *)
+		dev_priv->sarea_priv;
+	struct drm_i915_execbuffer *exec_buf = data;
+	struct drm_i915_batchbuffer *batch = &exec_buf->batch;
+	struct drm_fence_arg *fence_arg = &exec_buf->fence_arg;
+	int num_buffers;
+	int ret;
+	struct drm_buffer_object **buffers;
+	struct drm_fence_object *fence;
+
+	if (!dev_priv->allow_batchbuffer) {
+		DRM_ERROR("Batchbuffer ioctl disabled\n");
+		return -EINVAL;
+	}
+
+
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
+
+	if (batch->num_cliprects && DRM_VERIFYAREA_READ(batch->cliprects,
+							batch->num_cliprects *
+							sizeof(struct drm_clip_rect)))
+		return -EFAULT;
+
+	if (exec_buf->num_buffers > dev_priv->max_validate_buffers)
+		return -EINVAL;
+
+	num_buffers = exec_buf->num_buffers;
+
+	buffers = drm_calloc(num_buffers, sizeof(struct drm_buffer_object *), DRM_MEM_DRIVER);
+	if (!buffers)
+		return -ENOMEM;
+
+	/* validate buffer list + fixup relocations */
+	ret = i915_validate_buffer_list(file_priv, 0, exec_buf->ops_list,
+					buffers, &num_buffers);
+	if (ret)
+		goto out_free;
+
+	/* submit buffer */
+	batch->start = buffers[num_buffers-1]->offset;
+
+	DRM_DEBUG("i915 exec batchbuffer, start %x used %d cliprects %d\n",
+		  batch->start, batch->used, batch->num_cliprects);
+
+	ret = i915_dispatch_batchbuffer(dev, batch);
+	if (ret)
+		goto out_err0;
+
+	sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+
+	/* fence */
+	ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
+	if (ret)
+		goto out_err0;
+
+	if (!(fence_arg->flags & DRM_FENCE_FLAG_NO_USER)) {
+		ret = drm_fence_add_user_object(file_priv, fence, fence_arg->flags & DRM_FENCE_FLAG_SHAREABLE);
+		if (!ret) {
+			fence_arg->handle = fence->base.hash.key;
+			fence_arg->fence_class = fence->fence_class;
+			fence_arg->type = fence->type;
+			fence_arg->signaled = fence->signaled;
+		}
+	}
+	drm_fence_usage_deref_unlocked(&fence);
+out_err0:
+
+	/* handle errors */
+	mutex_lock(&dev->struct_mutex);
+	i915_dereference_buffers_locked(buffers, num_buffers);
+	mutex_unlock(&dev->struct_mutex);
+
+out_free:
+	drm_free(buffers, (exec_buf->num_buffers * sizeof(struct drm_buffer_object *)), DRM_MEM_DRIVER);
+
+	return ret;
+}
+#endif
+
 int i915_do_cleanup_pageflip(struct drm_device * dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -724,13 +1065,14 @@ static int i915_flip_bufs(struct drm_device *dev, void *data, struct drm_file *f
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-	if (param->planes & ~0x3) {
+	/* This is really planes */
+	if (param->pipes & ~0x3) {
 		DRM_ERROR("Invalid planes 0x%x, only <= 0x3 is valid\n",
-			  param->planes);
+			  param->pipes);
 		return -EINVAL;
 	}
 
-	i915_dispatch_flip(dev, param->planes, 0);
+	i915_dispatch_flip(dev, param->pipes, 0);
 
 	return 0;
 }
@@ -915,6 +1257,9 @@ struct drm_ioctl_desc i915_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_MMIO, i915_mmio, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
+#ifdef I915_HAVE_BUFFER
+	DRM_IOCTL_DEF(DRM_I915_EXECBUFFER, i915_execbuffer, DRM_AUTH),
+#endif
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);

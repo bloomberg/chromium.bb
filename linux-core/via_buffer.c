@@ -37,7 +37,8 @@ struct drm_ttm_backend *via_create_ttm_backend_entry(struct drm_device * dev)
 	return drm_agp_init_ttm(dev);
 }
 
-int via_fence_types(struct drm_buffer_object *bo, uint32_t * type)
+int via_fence_types(struct drm_buffer_object *bo, uint32_t * fclass,
+		    uint32_t * type)
 {
 	*type = 3;
 	return 0;

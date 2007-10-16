@@ -33,7 +33,7 @@
 static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 {
 	struct xgi_info * info = dev->dev_private;
-	struct drm_fence_class_manager * fc = &dev->fm.class[class];
+	struct drm_fence_class_manager * fc = &dev->fm.fence_class[class];
 	uint32_t pending_flush_types = 0;
 	uint32_t signaled_flush_types = 0;
 
@@ -48,8 +48,8 @@ static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 
 	if (pending_flush_types) {
 		if (pending_flush_types & DRM_FENCE_TYPE_EXE) {
-			const u32 begin_id = DRM_READ32(info->mmio_map,
-							0x2820)
+			const u32 begin_id = le32_to_cpu(DRM_READ32(info->mmio_map,
+							0x2820))
 				& BEGIN_BEGIN_IDENTIFICATION_MASK;
 
 			if (begin_id != info->complete_sequence) {
@@ -60,7 +60,7 @@ static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 
 		if (signaled_flush_types) {
 			drm_fence_handler(dev, 0, info->complete_sequence,
-					  signaled_flush_types);
+					  signaled_flush_types, 0);
 		}
 	}
 

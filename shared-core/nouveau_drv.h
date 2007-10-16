@@ -120,8 +120,9 @@ struct nouveau_channel
 	struct nouveau_gpuobj_ref *ramfc;
 
 	/* PGRAPH context */
+	/* XXX may be merge 2 pointers as private data ??? */
 	struct nouveau_gpuobj_ref *ramin_grctx;
-	uint32_t pgraph_ctx [340]; /* XXX dynamic alloc ? */
+	void *pgraph_ctx;
 
 	/* NV50 VM */
 	struct nouveau_gpuobj     *vm_pd;
@@ -490,21 +491,13 @@ extern int  nv10_graph_load_context(struct nouveau_channel *);
 extern int  nv10_graph_save_context(struct nouveau_channel *);
 
 /* nv20_graph.c */
-extern void nouveau_nv20_context_switch(struct drm_device *);
-extern int  nv20_graph_init(struct drm_device *);
-extern void nv20_graph_takedown(struct drm_device *);
 extern int  nv20_graph_create_context(struct nouveau_channel *);
 extern void nv20_graph_destroy_context(struct nouveau_channel *);
 extern int  nv20_graph_load_context(struct nouveau_channel *);
 extern int  nv20_graph_save_context(struct nouveau_channel *);
-
-/* nv30_graph.c */
+extern int  nv20_graph_init(struct drm_device *);
+extern void nv20_graph_takedown(struct drm_device *);
 extern int  nv30_graph_init(struct drm_device *);
-extern void nv30_graph_takedown(struct drm_device *);
-extern int  nv30_graph_create_context(struct nouveau_channel *);
-extern void nv30_graph_destroy_context(struct nouveau_channel *);
-extern int  nv30_graph_load_context(struct nouveau_channel *);
-extern int  nv30_graph_save_context(struct nouveau_channel *);
 
 /* nv40_graph.c */
 extern int  nv40_graph_init(struct drm_device *);

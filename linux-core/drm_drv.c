@@ -142,7 +142,6 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl, DRM_AUTH),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_CREATE, drm_fence_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_DESTROY, drm_fence_destroy_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_REFERENCE, drm_fence_reference_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_UNREFERENCE, drm_fence_unreference_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_SIGNALED, drm_fence_signaled_ioctl, DRM_AUTH),
@@ -152,7 +151,6 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_BUFFERS, drm_fence_buffers_ioctl, DRM_AUTH),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_CREATE, drm_bo_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_DESTROY, drm_bo_destroy_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_MAP, drm_bo_map_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNMAP, drm_bo_unmap_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_REFERENCE, drm_bo_reference_ioctl, DRM_AUTH),
@@ -332,6 +330,11 @@ int drm_init(struct drm_driver *driver,
 		while ((pdev =
 			pci_get_subsys(pid->vendor, pid->device, pid->subvendor,
 				       pid->subdevice, pdev))) {
+			/* Are there device class requirements? */
+			if ((pid->class != 0) 
+				&& ((pdev->class & pid->class_mask) != pid->class)) {
+				continue;
+			}
 			/* is there already a driver loaded, or (short circuit saves work) */
 			/* does something like VesaFB have control of the memory region? */
 			if (pci_dev_driver(pdev)
@@ -358,6 +361,11 @@ int drm_init(struct drm_driver *driver,
 				pci_get_subsys(pid->vendor, pid->device,
 					       pid->subvendor, pid->subdevice,
 					       pdev))) {
+				/* Are there device class requirements? */
+				if ((pid->class != 0) 
+					&& ((pdev->class & pid->class_mask) != pid->class)) {
+					continue;
+				}
 				/* stealth mode requires a manual probe */
 				pci_dev_get(pdev);
 				if ((rc = drm_get_dev(pdev, &pciidlist[i], driver))) {

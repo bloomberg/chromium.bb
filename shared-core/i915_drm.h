@@ -160,6 +160,7 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_VBLANK_SWAP	0x0f
 #define DRM_I915_MMIO		0x10
 #define DRM_I915_HWS_ADDR	0x11
+#define DRM_I915_EXECBUFFER	0x12
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -177,12 +178,18 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_SET_VBLANK_PIPE	DRM_IOW( DRM_COMMAND_BASE + DRM_I915_SET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_GET_VBLANK_PIPE	DRM_IOR( DRM_COMMAND_BASE + DRM_I915_GET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
-
+#define DRM_IOCTL_I915_EXECBUFFER	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_EXECBUFFER, struct drm_i915_execbuffer)
 
 /* Asynchronous page flipping:
  */
 typedef struct drm_i915_flip {
-	int planes;
+	/*
+	 * This is really talking about planes, and we could rename it
+	 * except for the fact that some of the duplicated i915_drm.h files
+	 * out there check for HAVE_I915_FLIP and so might pick up this
+	 * version.
+	 */
+	int pipes;
 } drm_i915_flip_t;
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
@@ -318,5 +325,41 @@ typedef struct drm_i915_mmio {
 typedef struct drm_i915_hws_addr {
 	uint64_t addr;
 } drm_i915_hws_addr_t;
+
+/*
+ * Relocation header is 4 uint32_ts
+ * 0 - (16-bit relocation type << 16)| 16 bit reloc count
+ * 1 - buffer handle for another list of relocs
+ * 2-3 - spare.
+ */
+#define I915_RELOC_HEADER 4
+
+/*
+ * type 0 relocation has 4-uint32_t stride
+ * 0 - offset into buffer
+ * 1 - delta to add in
+ * 2 - index into buffer list
+ * 3 - reserved (for optimisations later).
+ */
+#define I915_RELOC_TYPE_0 0
+#define I915_RELOC0_STRIDE 4
+
+struct drm_i915_op_arg {
+	uint64_t next;
+	uint32_t reloc_handle;
+	int handled;
+	union {
+		struct drm_bo_op_req req;
+		struct drm_bo_arg_rep rep;
+	} d;
+
+};
+
+struct drm_i915_execbuffer {
+	uint64_t ops_list;
+	uint32_t num_buffers;
+	struct drm_i915_batchbuffer batch;
+	struct drm_fence_arg fence_arg;
+};
 
 #endif				/* _I915_DRM_H_ */

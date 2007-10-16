@@ -42,7 +42,7 @@
 static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 {
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
-	struct drm_fence_class_manager *fc = &dev->fm.class[class];
+	struct drm_fence_class_manager *fc = &dev->fm.fence_class[class];
 	uint32_t pending_flush_types = 0;
 	uint32_t signaled_flush_types = 0;
 	uint32_t status;
@@ -98,7 +98,8 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 				drm_idlelock_release(&dev->lock);
 				dev_priv->have_idlelock = 0;
 			}
-			drm_fence_handler(dev, 0, dev_priv->emit_0_sequence, signaled_flush_types);
+			drm_fence_handler(dev, 0, dev_priv->emit_0_sequence,
+					  signaled_flush_types, 0);
 		}
 	}
 
@@ -204,7 +205,7 @@ void via_fence_timer(unsigned long data)
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
 	uint32_t pending_flush;
-	struct drm_fence_class_manager *fc = &dev->fm.class[0];
+	struct drm_fence_class_manager *fc = &dev->fm.fence_class[0];
 
 	if (!dev_priv)
 		return;

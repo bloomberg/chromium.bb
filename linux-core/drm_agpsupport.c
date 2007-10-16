@@ -535,23 +535,23 @@ static int drm_agp_populate(struct drm_ttm_backend *backend, unsigned long num_p
 }
 
 static int drm_agp_bind_ttm(struct drm_ttm_backend *backend,
-			    unsigned long offset,
-			    int cached)
+			    struct drm_bo_mem_reg *bo_mem)
 {
-	struct drm_agp_ttm_backend *agp_be = 
+	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	DRM_AGP_MEM *mem = agp_be->mem;
 	int ret;
 
 	DRM_DEBUG("drm_agp_bind_ttm\n");
 	mem->is_flushed = TRUE;
-	mem->type = (cached) ? AGP_USER_CACHED_MEMORY : 
+	mem->type = (bo_mem->flags & DRM_BO_FLAG_CACHED) ? AGP_USER_CACHED_MEMORY :
 		AGP_USER_MEMORY;
-	ret = drm_agp_bind_memory(mem, offset);
+	ret = drm_agp_bind_memory(mem, bo_mem->mm_node->start);
 	if (ret) {
 		DRM_ERROR("AGP Bind memory failed\n");
 	}
-	DRM_FLAG_MASKED(backend->flags, (cached) ? DRM_BE_FLAG_BOUND_CACHED : 0,
+	DRM_FLAG_MASKED(backend->flags, (bo_mem->flags & DRM_BO_FLAG_CACHED) ?
+			DRM_BE_FLAG_BOUND_CACHED : 0,
 			DRM_BE_FLAG_BOUND_CACHED);
 	return ret;
 }
@@ -643,7 +643,8 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 	agp_be->bridge = dev->agp->bridge;
 	agp_be->populated = FALSE;
 	agp_be->backend.func = &agp_ttm_backend;
-	agp_be->backend.mem_type = DRM_BO_MEM_TT;
+	//	agp_be->backend.mem_type = DRM_BO_MEM_TT;
+	agp_be->backend.dev = dev;
 
 	return &agp_be->backend;
 }

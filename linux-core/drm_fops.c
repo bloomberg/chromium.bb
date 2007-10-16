@@ -263,7 +263,6 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	priv->lock_count = 0;
 
 	INIT_LIST_HEAD(&priv->lhead);
-	INIT_LIST_HEAD(&priv->user_objects);
 	INIT_LIST_HEAD(&priv->refd_objects);
 	INIT_LIST_HEAD(&priv->fbs);
 
@@ -339,7 +338,6 @@ static void drm_object_release(struct file *filp) {
 
 	struct drm_file *priv = filp->private_data;
 	struct list_head *head;
-	struct drm_user_object *user_object;
 	struct drm_ref_object *ref_object;
 	int i;
 
@@ -356,17 +354,6 @@ static void drm_object_release(struct file *filp) {
 		ref_object = list_entry(head->next, struct drm_ref_object, list);
 		drm_remove_ref_object(priv, ref_object);
 		head = &priv->refd_objects;
-	}
-
-	/*
-	 * Free leftover user objects created by me.
-	 */
-
-	head = &priv->user_objects;
-	while (head->next != head) {
-		user_object = list_entry(head->next, struct drm_user_object, list);
-		drm_remove_user_object(priv, user_object);
-		head = &priv->user_objects;
 	}
 
 	for(i=0; i<_DRM_NO_REF_TYPES; ++i) {

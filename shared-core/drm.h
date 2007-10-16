@@ -640,6 +640,7 @@ struct drm_set_version {
 #define DRM_FENCE_FLAG_SHAREABLE           0x00000002
 #define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
 #define DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS 0x00000008
+#define DRM_FENCE_FLAG_NO_USER             0x00000010
 
 /* Reserved for driver use */
 #define DRM_FENCE_MASK_DRIVER              0xFF000000
@@ -648,12 +649,14 @@ struct drm_set_version {
 
 struct drm_fence_arg {
 	unsigned int handle;
-	unsigned int class;
+	unsigned int fence_class;
 	unsigned int type;
 	unsigned int flags;
 	unsigned int signaled;
-	unsigned int pad64;
-	uint64_t expand_pad[3]; /*Future expansion */
+	unsigned int error;
+	unsigned int sequence;
+        unsigned int pad64;
+	uint64_t expand_pad[2]; /*Future expansion */
 };
 
 /* Buffer permissions, referring to how the GPU uses the buffers.
@@ -752,13 +755,6 @@ struct drm_fence_arg {
 #define DRM_BO_INIT_MINOR 1
 
 
-enum drm_bo_type {
-	drm_bo_type_dc,
-	drm_bo_type_user,
-	drm_bo_type_fake,
-	drm_bo_type_kernel, /* for initial kernel allocations */
-};
-
 struct drm_bo_info_req {
 	uint64_t mask;
 	uint64_t flags;
@@ -774,8 +770,6 @@ struct drm_bo_create_req {
 	uint64_t buffer_start;
 	unsigned int hint;
 	unsigned int page_alignment;
-	enum drm_bo_type type;
-	unsigned int pad64;
 };
 
 struct drm_bo_op_req {
@@ -1062,7 +1056,6 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MM_UNLOCK             DRM_IOWR(0xc3, struct drm_mm_type_arg)
 
 #define DRM_IOCTL_FENCE_CREATE          DRM_IOWR(0xc4, struct drm_fence_arg)
-#define DRM_IOCTL_FENCE_DESTROY         DRM_IOWR(0xc5, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_REFERENCE       DRM_IOWR(0xc6, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_UNREFERENCE     DRM_IOWR(0xc7, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_SIGNALED        DRM_IOWR(0xc8, struct drm_fence_arg)
@@ -1072,7 +1065,6 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcc, struct drm_fence_arg)
 
 #define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcd, struct drm_bo_create_arg)
-#define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xce, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_MAP                DRM_IOWR(0xcf, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, struct drm_bo_reference_info_arg)

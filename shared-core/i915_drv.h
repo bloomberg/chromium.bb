@@ -56,14 +56,19 @@
  * 1.8: New ioctl for ARB_Occlusion_Query
  * 1.9: Usable page flipping and triple buffering
  * 1.10: Plane/pipe disentangling
+ * 1.11: TTM superioctl
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		10
+#define DRIVER_MINOR		11
 #else
 #define DRIVER_MINOR		6
 #endif
 #define DRIVER_PATCHLEVEL	0
+
+#ifdef I915_HAVE_BUFFER
+#define I915_MAX_VALIDATE_BUFFERS 4096
+#endif
 
 struct drm_i915_ring_buffer {
 	int tail_mask;
@@ -137,7 +142,9 @@ struct drm_i915_private {
 #endif
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
+	unsigned int max_validate_buffers;
 #endif
+
 	DRM_SPINTYPE swaps_lock;
 	struct drm_i915_vbl_swap vbl_swaps;
 	unsigned int swaps_pending;
@@ -284,7 +291,8 @@ extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t f
 #ifdef I915_HAVE_BUFFER
 /* i915_buffer.c */
 extern struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev);
-extern int i915_fence_types(struct drm_buffer_object *bo, uint32_t *type);
+extern int i915_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
+	                    uint32_t *type);
 extern int i915_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);

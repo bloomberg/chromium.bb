@@ -346,6 +346,10 @@ static uint32_t nv04_graph_ctx_regs [] = {
 
 };
 
+struct graph_state {
+	int nv04[sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0])];
+};
+
 void nouveau_nv04_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -414,12 +418,17 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 }
 
 int nv04_graph_create_context(struct nouveau_channel *chan) {
+	struct graph_state* pgraph_ctx;
 	DRM_DEBUG("nv04_graph_context_create %d\n", chan->id);
 
-	memset(chan->pgraph_ctx, 0, sizeof(chan->pgraph_ctx));
+	chan->pgraph_ctx = pgraph_ctx = drm_calloc(1, sizeof(*pgraph_ctx),
+					      DRM_MEM_DRIVER);
+
+	if (pgraph_ctx == NULL)
+		return -ENOMEM;
 
 	//dev_priv->fifos[channel].pgraph_ctx_user = channel << 24;
-	chan->pgraph_ctx[0] = 0x0001ffff;
+	pgraph_ctx->nv04[0] = 0x0001ffff;
 	/* is it really needed ??? */
 	//dev_priv->fifos[channel].pgraph_ctx[1] = NV_READ(NV_PGRAPH_DEBUG_4);
 	//dev_priv->fifos[channel].pgraph_ctx[2] = NV_READ(0x004006b0);
@@ -429,16 +438,21 @@ int nv04_graph_create_context(struct nouveau_channel *chan) {
 
 void nv04_graph_destroy_context(struct nouveau_channel *chan)
 {
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
+
+	drm_free(pgraph_ctx, sizeof(*pgraph_ctx), DRM_MEM_DRIVER);
+	chan->pgraph_ctx = NULL;
 }
 
 int nv04_graph_load_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int i;
 
 	for (i = 0; i < sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
-		NV_WRITE(nv04_graph_ctx_regs[i], chan->pgraph_ctx[i]);
+		NV_WRITE(nv04_graph_ctx_regs[i], pgraph_ctx->nv04[i]);
 
 	return 0;
 }
@@ -447,10 +461,11 @@ int nv04_graph_save_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int i;
 
 	for (i = 0; i < sizeof(nv04_graph_ctx_regs)/sizeof(nv04_graph_ctx_regs[0]); i++)
-		chan->pgraph_ctx[i] = NV_READ(nv04_graph_ctx_regs[i]);
+		pgraph_ctx->nv04[i] = NV_READ(nv04_graph_ctx_regs[i]);
 
 	return 0;
 }
@@ -467,20 +482,22 @@ int nv04_graph_init(struct drm_device *dev) {
 	NV_WRITE(NV03_PGRAPH_INTR, 0xFFFFFFFF);
 	NV_WRITE(NV03_PGRAPH_INTR_EN, 0xFFFFFFFF);
 
-	// check the context is big enough
-	if ( sizeof(nv04_graph_ctx_regs)>sizeof(dev_priv->fifos[0]->pgraph_ctx) )
-		DRM_ERROR("pgraph_ctx too small\n");
-
-	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x000001FF);
+	NV_WRITE(NV04_PGRAPH_VALID1, 0);
+	NV_WRITE(NV04_PGRAPH_VALID2, 0);
+	/*NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x000001FF);
+	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x001FFFFF);*/
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x1231c000);
-	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0xf2d91100);
-	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x11d5f870);
-	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x0004FF31);
-	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x4004FF31 |
-				    (0x00D00000) |
-				    (1<<29) |
-				    (1<<31));
-	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xfad4ff31);
+	/*1231C000 blob, 001 haiku*/
+	//*V_WRITE(NV04_PGRAPH_DEBUG_1, 0xf2d91100);*/
+	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x72111100);
+	/*0x72111100 blob , 01 haiku*/
+	/*NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x11d5f870);*/
+	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x11d5f071);
+	/*haiku same*/
+
+	/*NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xfad4ff31);*/
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x10d4ff31);
+	/*haiku and blob 10d4*/
 
 	NV_WRITE(NV04_PGRAPH_STATE        , 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_CTX_CONTROL  , 0x10010100);
@@ -496,4 +513,3 @@ int nv04_graph_init(struct drm_device *dev) {
 void nv04_graph_takedown(struct drm_device *dev)
 {
 }
-

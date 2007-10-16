@@ -57,6 +57,7 @@
 #    define NV50_FIFO_REGS_DMAGET(i)                       (NV50_FIFO_REGS(i)+0x44)
 
 #define NV03_PMC_BOOT_0                                    0x00000000
+#define NV03_PMC_BOOT_1                                    0x00000004
 #define NV03_PMC_INTR_0                                    0x00000100
 #    define NV_PMC_INTR_0_PFIFO_PENDING                       (1<< 8)
 #    define NV_PMC_INTR_0_PGRAPH_PENDING                      (1<<12)
@@ -118,10 +119,14 @@
 #define NV10_PGRAPH_DEBUG_4                                0x00400090
 #define NV03_PGRAPH_INTR                                   0x00400100
 #define NV03_PGRAPH_NSTATUS                                0x00400104
-#    define NV03_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<23)
-#    define NV03_PGRAPH_NSTATUS_INVALID_STATE                 (1<<24)
-#    define NV03_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<25)
-#    define NV03_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<26)
+#    define NV04_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<11)
+#    define NV04_PGRAPH_NSTATUS_INVALID_STATE                 (1<<12)
+#    define NV04_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<13)
+#    define NV04_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<14)
+#    define NV10_PGRAPH_NSTATUS_STATE_IN_USE                  (1<<23)
+#    define NV10_PGRAPH_NSTATUS_INVALID_STATE                 (1<<24)
+#    define NV10_PGRAPH_NSTATUS_BAD_ARGUMENT                  (1<<25)
+#    define NV10_PGRAPH_NSTATUS_PROTECTION_FAULT              (1<<26)
 #define NV03_PGRAPH_NSOURCE                                0x00400108
 #    define NV03_PGRAPH_NSOURCE_NOTIFICATION                  (1<< 0)
 #    define NV03_PGRAPH_NSOURCE_DATA_ERROR                    (1<< 1)
@@ -286,10 +291,8 @@
 #define NV10_PGRAPH_DMA_PITCH                              0x00400770
 #define NV10_PGRAPH_DVD_COLORFMT                           0x00400774
 #define NV10_PGRAPH_SCALED_FORMAT                          0x00400778
-#define NV10_PGRAPH_CHANNEL_CTX_TABLE                      0x00400780
-#define NV10_PGRAPH_CHANNEL_CTX_SIZE                       0x00400784
+#define NV20_PGRAPH_CHANNEL_CTX_TABLE                      0x00400780
 #define NV20_PGRAPH_CHANNEL_CTX_POINTER                    0x00400784
-#define NV10_PGRAPH_CHANNEL_CTX_POINTER                    0x00400788
 #define NV20_PGRAPH_CHANNEL_CTX_XFER                       0x00400788
 #define NV20_PGRAPH_CHANNEL_CTX_XFER_LOAD                  0x00000001
 #define NV20_PGRAPH_CHANNEL_CTX_XFER_SAVE                  0x00000002

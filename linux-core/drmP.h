@@ -430,7 +430,6 @@ struct drm_file {
 	 */
 
 	struct list_head refd_objects;
-	struct list_head user_objects;
 
 	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;

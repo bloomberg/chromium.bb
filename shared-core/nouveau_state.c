@@ -192,11 +192,11 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->fb.init		= nv10_fb_init;
 		engine->fb.takedown	= nv10_fb_takedown;
 		engine->graph.init	= nv30_graph_init;
-		engine->graph.takedown	= nv30_graph_takedown;
-		engine->graph.create_context	= nv30_graph_create_context;
-		engine->graph.destroy_context	= nv30_graph_destroy_context;
-		engine->graph.load_context	= nv30_graph_load_context;
-		engine->graph.save_context	= nv30_graph_save_context;
+		engine->graph.takedown	= nv20_graph_takedown;
+		engine->graph.create_context	= nv20_graph_create_context;
+		engine->graph.destroy_context	= nv20_graph_destroy_context;
+		engine->graph.load_context	= nv20_graph_load_context;
+		engine->graph.save_context	= nv20_graph_save_context;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
 		engine->fifo.create_context	= nv10_fifo_create_context;
@@ -282,6 +282,12 @@ nouveau_card_init(struct drm_device *dev)
 	/* Map any PCI resources we need on the card */
 	ret = nouveau_init_card_mappings(dev);
 	if (ret) return ret;
+
+	/* Put the card in BE mode if it's not */
+	if (NV_READ(NV03_PMC_BOOT_1))
+		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
+
+	DRM_MEMORYBARRIER();
 
 	/* Determine exact chipset we're running on */
 	if (dev_priv->card_type < NV_10)
@@ -403,19 +409,79 @@ int nouveau_firstopen(struct drm_device *dev)
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_nouveau_private *dev_priv;
-
-	if (flags==NV_UNKNOWN)
-		return -EINVAL;
+	void __iomem *regs;
+	uint32_t reg0,reg1;
+	uint8_t architecture = 0;
 
 	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
-	if (!dev_priv)                   
+	if (!dev_priv)
 		return -ENOMEM;
 
-	dev_priv->card_type=flags&NOUVEAU_FAMILY;
-	dev_priv->flags=flags&NOUVEAU_FLAGS;
+	dev_priv->flags = flags & NOUVEAU_FLAGS;
 	dev_priv->init_state = NOUVEAU_CARD_INIT_DOWN;
 
+	DRM_DEBUG("vendor: 0x%X device: 0x%X class: 0x%X\n", dev->pci_vendor, dev->pci_device, dev->pdev->class);
+
+	/* Time to determine the card architecture */
+	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x8); 
+	if (!regs) {
+		DRM_ERROR("Could not ioremap to determine register\n");
+		return -ENOMEM;
+	}
+
+	reg0 = readl(regs+NV03_PMC_BOOT_0);
+	reg1 = readl(regs+NV03_PMC_BOOT_1);
+	if (reg1)
+		reg0=___swab32(reg0);
+
+	/* We're dealing with >=NV10 */
+	if ((reg0 & 0x0f000000) > 0 ) {
+		/* Bit 27-20 contain the architecture in hex */
+		architecture = (reg0 & 0xff00000) >> 20;
+	/* NV04 or NV05 */
+	} else if ((reg0 & 0xff00fff0) == 0x20004000) {
+		architecture = 0x04;
+	}
+
+	iounmap(regs);
+
+	if (architecture >= 0x50) {
+		dev_priv->card_type = NV_50;
+	} else if (architecture >= 0x44) {
+		dev_priv->card_type = NV_44;
+	} else if (architecture >= 0x40) {
+		dev_priv->card_type = NV_40;
+	} else if (architecture >= 0x30) {
+		dev_priv->card_type = NV_30;
+	} else if (architecture >= 0x20) {
+		dev_priv->card_type = NV_20;
+	} else if (architecture >= 0x17) {
+		dev_priv->card_type = NV_17;
+	} else if (architecture >= 0x11) {
+		dev_priv->card_type = NV_11;
+	} else if (architecture >= 0x10) {
+		dev_priv->card_type = NV_10;
+	} else if (architecture >= 0x04) {
+		dev_priv->card_type = NV_04;
+	} else {
+		dev_priv->card_type = NV_UNKNOWN;
+	}
+
+	DRM_INFO("Detected an NV%d generation card (0x%08x)\n", dev_priv->card_type,reg0);
+
+	if (dev_priv->card_type == NV_UNKNOWN) {
+		return -EINVAL;
+	}
+
+	/* Special flags */
+	if (dev->pci_device == 0x01a0) {
+		dev_priv->flags |= NV_NFORCE;
+	} else if (dev->pci_device == 0x01f0) {
+		dev_priv->flags |= NV_NFORCE2;
+	}
+
 	dev->dev_private = (void *)dev_priv;
+
 	return 0;
 }
 
@@ -423,12 +489,15 @@ void nouveau_lastclose(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	nouveau_card_takedown(dev);
+	/* In the case of an error dev_priv may not be be allocated yet */
+	if (dev_priv && dev_priv->card_type) {
+		nouveau_card_takedown(dev);
 
-	if(dev_priv->fb_mtrr>0)
-	{
-		drm_mtrr_del(dev_priv->fb_mtrr, drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
-		dev_priv->fb_mtrr=0;
+		if(dev_priv->fb_mtrr>0)
+		{
+			drm_mtrr_del(dev_priv->fb_mtrr, drm_get_resource_start(dev, 1),nouveau_mem_fb_amount(dev), DRM_MTRR_WC);
+			dev_priv->fb_mtrr=0;
+		}
 	}
 }
 

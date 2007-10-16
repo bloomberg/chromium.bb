@@ -80,16 +80,16 @@ nouveau_sgdma_clear(struct drm_ttm_backend *be)
 }
 
 static int
-nouveau_sgdma_bind(struct drm_ttm_backend *be, unsigned long pg_start,
-		   int cached)
+nouveau_sgdma_bind(struct drm_ttm_backend *be, struct drm_bo_mem_reg *mem)
 {
 	struct nouveau_sgdma_be *nvbe = (struct nouveau_sgdma_be *)be;
 	struct drm_nouveau_private *dev_priv = nvbe->dev->dev_private;
 	struct nouveau_gpuobj *gpuobj = dev_priv->gart_info.sg_ctxdma;
-	uint64_t offset = (pg_start << PAGE_SHIFT);
+	uint64_t offset = (mem->mm_node->start << PAGE_SHIFT);
 	uint32_t i;
 
-	DRM_DEBUG("pg=0x%lx (0x%llx), cached=%d\n", pg_start, offset, cached);
+	DRM_DEBUG("pg=0x%lx (0x%llx), cached=%d\n", mem->mm_node->start,
+		  offset, (mem->flags & DRM_BO_FLAG_CACHED) == 1);
 
 	if (offset & NV_CTXDMA_PAGE_MASK)
 		return -EINVAL;
@@ -188,7 +188,6 @@ nouveau_sgdma_init_ttm(struct drm_device *dev)
 	nvbe->dev = dev;
 
 	nvbe->backend.func	= &nouveau_sgdma_backend;
-	nvbe->backend.mem_type	= DRM_BO_MEM_TT;
 
 	return &nvbe->backend;
 }
@@ -278,6 +277,8 @@ nouveau_sgdma_nottm_hack_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_ttm_backend *be;
 	struct drm_scatter_gather sgreq;
+	struct drm_mm_node mm_node;
+	struct drm_bo_mem_reg mem;
 	int ret;
 
 	dev_priv->gart_info.sg_be = nouveau_sgdma_init_ttm(dev);
@@ -303,7 +304,10 @@ nouveau_sgdma_nottm_hack_init(struct drm_device *dev)
 		return ret;
 	}
 
-	if ((ret = be->func->bind(be, 0, 0))) {
+	mm_node.start = 0;
+	mem.mm_node = &mm_node;
+
+	if ((ret = be->func->bind(be, &mem))) {
 		DRM_ERROR("failed bind: %d\n", ret);
 		return ret;
 	}

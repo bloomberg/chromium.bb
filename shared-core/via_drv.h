@@ -206,7 +206,8 @@ extern int via_fence_has_irq(struct drm_device * dev, uint32_t class,
 
 #ifdef VIA_HAVE_BUFFER
 extern struct drm_ttm_backend *via_create_ttm_backend_entry(struct drm_device *dev);
-extern int via_fence_types(struct drm_buffer_object *bo, uint32_t *type);
+extern int via_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
+			   uint32_t *type);
 extern int via_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern int via_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);

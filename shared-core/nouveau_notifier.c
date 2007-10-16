@@ -33,20 +33,10 @@ int
 nouveau_notifier_init_channel(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int flags, ret;
 
-	/*TODO: PCI notifier blocks */
-#ifndef __powerpc__
-	if (dev_priv->agp_heap)
-		flags = NOUVEAU_MEM_AGP;
-	else
-#endif
-	if (dev_priv->pci_heap)
-		flags = NOUVEAU_MEM_PCI;
-	else
-		flags = NOUVEAU_MEM_FB;
-	flags |= (NOUVEAU_MEM_MAPPED | NOUVEAU_MEM_FB_ACCEPTABLE);
+	flags = (NOUVEAU_MEM_PCI | NOUVEAU_MEM_MAPPED |
+	         NOUVEAU_MEM_FB_ACCEPTABLE);
 
 	chan->notifier_block = nouveau_mem_alloc(dev, 0, PAGE_SIZE, flags,
 						 (struct drm_file *)-2);
