@@ -517,7 +517,7 @@ static int drm_fence_object_init(struct drm_device * dev, uint32_t fence_class,
 	return ret;
 }
 
-static int drm_fence_add_user_object(struct drm_file * priv, struct drm_fence_object * fence,
+int drm_fence_add_user_object(struct drm_file * priv, struct drm_fence_object * fence,
 			      int shareable)
 {
 	struct drm_device *dev = priv->head->dev;
@@ -535,6 +535,7 @@ out:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
+EXPORT_SYMBOL(drm_fence_add_user_object);
 
 int drm_fence_object_create(struct drm_device * dev, uint32_t fence_class, uint32_t type,
 			    unsigned flags, struct drm_fence_object ** c_fence)

@@ -213,6 +213,9 @@ extern int drm_fence_object_emit(struct drm_fence_object * fence,
 extern void drm_fence_fill_arg(struct drm_fence_object *fence,
 			       struct drm_fence_arg *arg);
 
+extern int drm_fence_add_user_object(struct drm_file * priv,
+				     struct drm_fence_object * fence, int shareable);
+
 extern int drm_fence_create_ioctl(struct drm_device *dev, void *data,
 				  struct drm_file *file_priv);
 extern int drm_fence_destroy_ioctl(struct drm_device *dev, void *data,
