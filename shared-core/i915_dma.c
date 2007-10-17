@@ -805,7 +805,9 @@ int i915_process_relocs(struct drm_file *file_priv,
 
 	memset(&reloc_kmap, 0, sizeof(reloc_kmap));
 
+	mutex_lock(&dev->struct_mutex);
 	reloc_list_object = drm_lookup_buffer_object(file_priv, cur_handle, 1);
+	mutex_unlock(&dev->struct_mutex);
 	if (!reloc_list_object)
 		return -EINVAL;
 
@@ -905,7 +907,9 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 
 		if (arg.handled) {
 			data = arg.next;
+			mutex_lock(&dev->struct_mutex);
 			buffers[buf_count] = drm_lookup_buffer_object(file_priv, req->arg_handle, 1);
+			mutex_unlock(&dev->struct_mutex);
 			buf_count++;
 			continue;
 		}
@@ -948,7 +952,9 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		if (buf_reloc_handle) {
 			memset(&relocatee, 0, sizeof(relocatee));
 
+			mutex_lock(&dev->struct_mutex);
 			relocatee.buf = drm_lookup_buffer_object(file_priv, buf_handle, 1);
+			mutex_unlock(&dev->struct_mutex);
 			if (!relocatee.buf) {
 				DRM_DEBUG("relocatee buffer invalid %08x\n", buf_handle);
 				ret = -EINVAL;
