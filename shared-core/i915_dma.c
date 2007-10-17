@@ -86,8 +86,6 @@ int i915_dma_cleanup(struct drm_device * dev)
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
-	I915_WRITE(LP_RING + RING_LEN, 0);
-
 	if (dev->irq)
 		drm_irq_uninstall(dev);
 
@@ -1042,7 +1040,7 @@ int i915_do_cleanup_pageflip(struct drm_device * dev)
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
 
-	for (i = 0, planes = 0; i < 2; i++)
+	for (i = 0, planes = 0; i < 2; i++) {
 		if (dev_priv->sarea_priv->pf_current_page & (0x3 << (2 * i))) {
 			dev_priv->sarea_priv->pf_current_page =
 				(dev_priv->sarea_priv->pf_current_page &
@@ -1050,6 +1048,7 @@ int i915_do_cleanup_pageflip(struct drm_device * dev)
 
 			planes |= 1 << i;
 		}
+	}
 
 	if (planes)
 		i915_dispatch_flip(dev, planes, 0);
