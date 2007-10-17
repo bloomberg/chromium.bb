@@ -87,8 +87,6 @@ client_auth(int drmfd)
 	struct drm_auth auth;
 	int ret;
 
-	wait_event(0, SERVER_READY);
-
 	/* Get a client magic number and pass it to the master for auth. */
 	ret = ioctl(drmfd, DRM_IOCTL_GET_MAGIC, &auth);
 	if (ret == -1)
@@ -172,14 +170,14 @@ static void test_open_close_locked(drmfd)
 	ret = drmUnlock(drmfd, lock1);
 	if (ret != 0)
 		errx(1, "lock lost during open/close by same pid");
-
-	close(drmfd);
 }
 
 static void client()
 {
 	int drmfd, ret;
 	unsigned int time;
+
+	wait_event(0, SERVER_READY);
 
 	/* XXX: Should make sure we open the same DRM as the master */
 	drmfd = drm_open_any();
@@ -201,6 +199,7 @@ static void client()
 	send_event(0, CLIENT_LOCKED);
 	ret = write(commfd[0], &time, sizeof(time));
 
+	close(drmfd);
 	exit(0);
 }
 
@@ -238,6 +237,8 @@ static void server()
 
 	if (client_time < unlock_time)
 		errx(1, "Client took lock before server released it");
+
+	close(drmfd);
 }
 
 int main(int argc, char **argv)
