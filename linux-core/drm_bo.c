@@ -1540,8 +1540,16 @@ int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 	if (!bo) {
 		return -EINVAL;
 	}
-
 	
+	/*
+	 * Only allow creator to change shared buffer mask.
+	 */
+
+	if (bo->base.owner != file_priv) {
+		flags = 0x0;
+		mask = 0x0;
+	}
+		
 	ret = drm_bo_do_validate(bo, flags, mask, hint, fence_class,
 				 no_wait, rep);
 
