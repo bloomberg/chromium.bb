@@ -929,16 +929,17 @@ static int drm_bo_new_mask(struct drm_buffer_object * bo,
 		DRM_ERROR("User buffers are not supported yet\n");
 		return -EINVAL;
 	}
-	if (bo->type == drm_bo_type_fake &&
-	    !(new_mask & (DRM_BO_FLAG_NO_MOVE | DRM_BO_FLAG_NO_EVICT))) {
-		DRM_ERROR("Fake buffers must be pinned.\n");
-		return -EINVAL;
-	}
 
 	if ((new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
 		DRM_ERROR
 		    ("DRM_BO_FLAG_NO_EVICT is only available to priviliged "
 		     "processes\n");
+		return -EPERM;
+	}
+
+	if ((new_mask & DRM_BO_FLAG_NO_MOVE)) {
+		DRM_ERROR
+			("DRM_BO_FLAG_NO_MOVE is not properly implemented yet.\n");
 		return -EPERM;
 	}
 
@@ -1160,11 +1161,9 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 		return -EINVAL;
 
 	mutex_lock(&bo->mutex);
-	if (!(hint & DRM_BO_HINT_ALLOW_UNFENCED_MAP)) {
-		ret = drm_bo_wait_unfenced(bo, no_wait, 0);
-		if (ret)
-			goto out;
-	}
+	ret = drm_bo_wait_unfenced(bo, no_wait, 0);
+	if (ret)
+		goto out;
 
 	/*
 	 * If this returns true, we are currently unmapped.
@@ -1542,6 +1541,7 @@ int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 		return -EINVAL;
 	}
 
+	
 	ret = drm_bo_do_validate(bo, flags, mask, hint, fence_class,
 				 no_wait, rep);
 
@@ -1663,8 +1663,10 @@ int drm_buffer_object_create(struct drm_device *dev,
 	bo->mem.page_alignment = page_alignment;
 	bo->buffer_start = buffer_start;
 	bo->priv_flags = 0;
-	bo->mem.flags = 0ULL;
-	bo->mem.mask = 0ULL;
+	bo->mem.flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED | 
+		DRM_BO_FLAG_MAPPABLE;
+	bo->mem.mask = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED |
+		DRM_BO_FLAG_MAPPABLE;
 	atomic_inc(&bm->count);
 	ret = drm_bo_new_mask(bo, mask, hint);
 
@@ -1678,18 +1680,8 @@ int drm_buffer_object_create(struct drm_device *dev,
 		if (ret)
 			goto out_err;
 	}
-#if 0
-	bo->fence_class = 0;
-	ret = driver->fence_type(bo, &bo->fence_class, &bo->fence_type);
-	if (ret) {
-		DRM_ERROR("Driver did not support given buffer permissions\n");
-		goto out_err;
-	}
 
-	ret = drm_bo_add_ttm(bo);
-#else
 	ret = drm_buffer_object_validate(bo, 0, 0, hint & DRM_BO_HINT_DONT_BLOCK);
-#endif
 	if (ret)
 		goto out_err;
 
@@ -1704,6 +1696,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	return ret;
 }
 EXPORT_SYMBOL(drm_buffer_object_create);
+
 
 static int drm_bo_add_user_object(struct drm_file *file_priv,
 				  struct drm_buffer_object *bo, int shareable)
@@ -1726,86 +1719,6 @@ static int drm_bo_add_user_object(struct drm_file *file_priv,
 	return ret;
 }
 
-static int drm_bo_lock_test(struct drm_device * dev, struct drm_file *file_priv)
-{
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-	return 0;
-}
-
-int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
-{
-	struct drm_bo_op_arg curarg;
-	struct drm_bo_op_arg *arg = data;
-	struct drm_bo_op_req *req = &arg->d.req;
-	struct drm_bo_info_rep rep;
-	unsigned long next = 0;
-	void __user *curuserarg = NULL;
-	int ret;
-
-	if (!dev->bm.initialized) {
-		DRM_ERROR("Buffer object manager is not initialized.\n");
-		return -EINVAL;
-	}
-
-	do {
-		if (next != 0) {
-			curuserarg = (void __user *)next;
-			if (copy_from_user(&curarg, curuserarg,
-					   sizeof(curarg)) != 0)
-				return -EFAULT;
-			arg = &curarg;
-		}
-
-		if (arg->handled) {
-			next = arg->next;
-			continue;
-		}
-		req = &arg->d.req;
-		ret = 0;
-		switch (req->op) {
-		case drm_bo_validate:
-			ret = drm_bo_lock_test(dev, file_priv);
-			if (ret)
-				break;
-			ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
-						     req->bo_req.fence_class,
-						     req->bo_req.flags,
-						     req->bo_req.mask,
-						     req->bo_req.hint,
-						     &rep, NULL);
-			break;
-		case drm_bo_fence:
-			ret = -EINVAL;
-			DRM_ERROR("Function is not implemented yet.\n");
-			break;
-		case drm_bo_ref_fence:
-			ret = -EINVAL;
-			DRM_ERROR("Function is not implemented yet.\n");
-			break;
-		default:
-			ret = -EINVAL;
-		}
-		next = arg->next;
-
-		/*
-		 * A signal interrupted us. Make sure the ioctl is restartable.
-		 */
-
-		if (ret == -EAGAIN)
-			return -EAGAIN;
-
-		arg->handled = 1;
-		arg->d.rep.ret = ret;
-		arg->d.rep.bo_info = rep;
-		if (arg != data) {
-			if (copy_to_user(curuserarg, &curarg,
-					 sizeof(curarg)) != 0)
-				return -EFAULT;
-		}
-	} while (next != 0);
-	return 0;
-}
-
 int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	struct drm_bo_create_arg *arg = data;
@@ -1821,11 +1734,6 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
 	}
-#if 0
-	ret = drm_bo_lock_test(dev, file_priv);
-	if (ret)
-		goto out;
-#endif
 
 	ret = drm_buffer_object_create(file_priv->head->dev,
 				       req->size, drm_bo_type_dc, req->mask,
@@ -1847,6 +1755,30 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 
 out:
 	return ret;
+}
+
+int drm_bo_setstatus_ioctl(struct drm_device *dev, 
+			   void *data, struct drm_file *file_priv)
+{
+	struct drm_bo_map_wait_idle_arg *arg = data;
+	struct drm_bo_info_req *req = &arg->d.req;
+	struct drm_bo_info_rep *rep = &arg->d.rep;
+	int ret;
+	if (!dev->bm.initialized) {
+		DRM_ERROR("Buffer object manager is not initialized.\n");
+		return -EINVAL;
+	}
+
+	ret = drm_bo_handle_validate(file_priv, req->handle, req->fence_class,
+				     req->flags,
+				     req->mask,
+				     req->hint | DRM_BO_HINT_DONT_FENCE,
+				     rep, NULL);
+
+	if (ret)
+		return ret;
+
+	return 0;
 }
 
 int drm_bo_map_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)

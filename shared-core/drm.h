@@ -723,6 +723,7 @@ struct drm_fence_arg {
  * Flags: Acknowledge.
  */
 #define DRM_BO_FLAG_FORCE_MAPPABLE (1ULL << 14)
+#define DRM_BO_FLAG_TILE           (1ULL << 15)
 
 /*
  * Memory type flags that can be or'ed together in the mask, but only
@@ -755,7 +756,6 @@ struct drm_fence_arg {
 /* Don't place this buffer on the unfenced list.*/
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
-#define DRM_BO_HINT_ALLOW_UNFENCED_MAP 0x00000010
 
 #define DRM_BO_INIT_MAGIC 0xfe769812
 #define DRM_BO_INIT_MAJOR 0
@@ -768,6 +768,8 @@ struct drm_bo_info_req {
 	unsigned int handle;
 	unsigned int hint;
 	unsigned int fence_class;
+	unsigned int desired_tile_stride;
+	unsigned int tile_info;
 	unsigned int pad64;
 };
 
@@ -779,15 +781,6 @@ struct drm_bo_create_req {
 	unsigned int page_alignment;
 };
 
-struct drm_bo_op_req {
-	enum {
-		drm_bo_validate,
-		drm_bo_fence,
-		drm_bo_ref_fence,
-	} op;
-	unsigned int arg_handle;
-	struct drm_bo_info_req bo_req;
-};
 
 /*
  * Reply flags
@@ -844,6 +837,17 @@ struct drm_bo_map_wait_idle_arg {
 	} d;
 };
 
+struct drm_bo_op_req {
+	enum {
+		drm_bo_validate,
+		drm_bo_fence,
+		drm_bo_ref_fence,
+	} op;
+	unsigned int arg_handle;
+	struct drm_bo_info_req bo_req;
+};
+
+
 struct drm_bo_op_arg {
 	uint64_t next;
 	union {
@@ -853,6 +857,7 @@ struct drm_bo_op_arg {
 	int handled;
 	unsigned int pad64;
 };
+
 
 #define DRM_BO_MEM_LOCAL 0
 #define DRM_BO_MEM_TT 1
@@ -964,7 +969,7 @@ struct drm_mm_init_arg {
 #define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_UNREFERENCE        DRM_IOWR(0xd2, struct drm_bo_handle_arg)
-#define DRM_IOCTL_BO_OP                 DRM_IOWR(0xd3, struct drm_bo_op_arg)
+#define DRM_IOCTL_BO_SETSTATUS          DRM_IOWR(0xd3, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
 

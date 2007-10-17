@@ -470,9 +470,7 @@ extern int drm_bo_reference_ioctl(struct drm_device *dev, void *data, struct drm
 extern int drm_bo_unreference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-
-
+extern int drm_bo_setstatus_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);

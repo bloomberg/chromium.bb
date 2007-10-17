@@ -2695,61 +2695,36 @@ int drmBOUnmap(int fd, drmBO *buf)
     return 0;
 }
 
-int drmBOValidate(int fd, drmBO *buf, uint32_t fence_class,
-		  uint64_t flags, uint64_t mask,
-		  unsigned hint)
+int drmBOSetStatus(int fd, drmBO *buf, uint32_t fence_class,
+		   uint64_t flags, uint64_t mask,
+		   unsigned int hint, 
+		   unsigned int desired_tile_stride,
+		   unsigned int tile_info)
 {
-    struct drm_bo_op_arg arg;
-    struct drm_bo_op_req *req = &arg.d.req;
-    struct drm_bo_arg_rep *rep = &arg.d.rep;
+    struct drm_bo_map_wait_idle_arg arg;
+    struct drm_bo_info_req *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
     int ret = 0;
 
     memset(&arg, 0, sizeof(arg));
-    req->bo_req.handle = buf->handle;
-    req->bo_req.flags = flags;
-    req->bo_req.mask = mask;
-    req->bo_req.hint = hint;
-    req->bo_req.fence_class = fence_class;
-    req->op = drm_bo_validate;
-
-    do{
-	ret = ioctl(fd, DRM_IOCTL_BO_OP, &arg);
+    req->mask = mask;
+    req->flags = flags;
+    req->handle = buf->handle;
+    req->hint = hint;
+    req->fence_class = fence_class;
+    req->desired_tile_stride = desired_tile_stride;
+    req->tile_info = tile_info;
+    
+    do {
+	    ret = ioctl(fd, DRM_IOCTL_BO_SETSTATUS, &arg);
     } while (ret && errno == EAGAIN);
 
     if (ret) 
-	return -errno;
-    if (!arg.handled)
-	return -EFAULT;
-    if (rep->ret)
-	return rep->ret;
+	    return -errno;
 
-    drmBOCopyReply(&rep->bo_info, buf);
-    return 0;
+    drmBOCopyReply(rep, buf);
 }
 	    
-
-int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
-{
-    struct drm_bo_op_arg arg;
-    struct drm_bo_op_req *req = &arg.d.req;
-    struct drm_bo_arg_rep *rep = &arg.d.rep;
-    int ret = 0;
-
-    memset(&arg, 0, sizeof(arg));
-    req->bo_req.handle = buf->handle;
-    req->bo_req.flags = flags;
-    req->arg_handle = fenceHandle;
-    req->op = drm_bo_fence;
-
-    ret = ioctl(fd, DRM_IOCTL_BO_OP, &arg);
-    if (ret) 
-	return -errno;
-    if (!arg.handled)
-	return -EFAULT;
-    if (rep->ret)
-	return rep->ret;
-    return 0;
-}
 
 int drmBOInfo(int fd, drmBO *buf)
 {

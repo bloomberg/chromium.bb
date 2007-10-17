@@ -142,7 +142,7 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNMAP, drm_bo_unmap_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_REFERENCE, drm_bo_reference_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNREFERENCE, drm_bo_unreference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_OP, drm_bo_op_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_IOCTL_BO_SETSTATUS, drm_bo_setstatus_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_INFO, drm_bo_info_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_WAIT_IDLE, drm_bo_wait_idle_ioctl, DRM_AUTH),
 };
