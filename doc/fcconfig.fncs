@@ -282,7 +282,7 @@ FC_CONFIG_DIR environment variable.
 @FUNC@		FcConfigParseAndLoad
 @TYPE1@		FcConfig *			@ARG1@		config
 @TYPE2@		const FcChar8 *			@ARG2@		file
-@TYPE2@		FcBool%				@ARG3@		complain
+@TYPE3@		FcBool%				@ARG3@		complain
 @PURPOSE@	load a configuration file
 @DESC@
 Walks the configuration in 'file' and constructs the internal representation
