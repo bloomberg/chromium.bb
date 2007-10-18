@@ -377,7 +377,7 @@ main (int argc, char **argv)
 	if (j < 0)
 	    j = i;
 
-	printf ("    { (FcChar8 *) \"%s\", "
+	printf ("    { \"%s\", "
 		" { FC_REF_CONSTANT, %d, OFF(%d,%d), NUM(%d,%d) } }, /* %d */\n",
 		langs[i],
 		sets[j]->num, i, off[j], i, off[j], i);
