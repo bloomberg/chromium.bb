@@ -267,7 +267,8 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
     if (access ((char *) dir, W_OK|X_OK) != 0)
     {
 	if (verbose)
-	    printf ("%s: not cleaning unwritable cache directory\n", dir);
+	    printf ("%s: not cleaning %s cache directory\n", dir,
+		    access ((char *) dir, F_OK) == 0 ? "unwritable" : "non-existent");
 	FcStrFree (dir_base);
 	return FcTrue;
     }
