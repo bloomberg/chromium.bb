@@ -301,29 +301,31 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 	    ret = FcFalse;
 	    break;
 	}
+	remove = FcFalse;
 	cache = FcDirCacheLoadFile (file_name, &file_stat);
 	if (!cache)
 	{
-	    fprintf (stderr, "%s: invalid cache file: %s\n", dir, ent->d_name);
-	    FcStrFree (file_name);
-	    ret = FcFalse;
-	    continue;
-	}
-	target_dir = FcCacheDir (cache);
-	remove = FcFalse;
-	if (stat ((char *) target_dir, &target_stat) < 0)
-	{
 	    if (verbose)
-		printf ("%s: %s: missing directory: %s \n",
-			dir, ent->d_name, target_dir);
+		printf ("%s: invalid cache file: %s\n", dir, ent->d_name);
 	    remove = FcTrue;
 	}
-	else if (target_stat.st_mtime > file_stat.st_mtime)
+	else
 	{
-	    if (verbose)
-		printf ("%s: %s: cache outdated: %s\n",
-			dir, ent->d_name, target_dir);
-	    remove = FcTrue;
+	    target_dir = FcCacheDir (cache);
+	    if (stat ((char *) target_dir, &target_stat) < 0)
+	    {
+		if (verbose)
+		    printf ("%s: %s: missing directory: %s \n",
+			    dir, ent->d_name, target_dir);
+		remove = FcTrue;
+	    }
+	    else if (target_stat.st_mtime > file_stat.st_mtime)
+	    {
+		if (verbose)
+		    printf ("%s: %s: cache outdated: %s\n",
+			    dir, ent->d_name, target_dir);
+		remove = FcTrue;
+	    }
 	}
 	if (remove)
 	{
