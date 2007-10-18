@@ -558,6 +558,10 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
     const FcObjectType	*o;
     const FcConstant	*c;
     
+    /* If parsing the expression failed, some nodes may be NULL */
+    if (!expr)
+	return;
+
     switch (expr->op) {
     case FcOpInteger:
     case FcOpDouble:
