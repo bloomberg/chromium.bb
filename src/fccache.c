@@ -493,8 +493,8 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat, struct stat *dir_stat)
     if (cache->magic != FC_CACHE_MAGIC_MMAP || 
 	cache->version < FC_CACHE_CONTENT_VERSION ||
 	cache->size != fd_stat->st_size ||
-	!FcCacheInsert (cache, fd_stat) ||
-	!FcCacheTimeValid (cache, dir_stat))
+	!FcCacheTimeValid (cache, dir_stat) ||
+	!FcCacheInsert (cache, fd_stat))
     {
 	if (allocated)
 	    free (cache);
