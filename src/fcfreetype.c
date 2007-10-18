@@ -80,13 +80,13 @@
  */
 
 static const struct {
-    int		    bit;
-    const FcChar8   *lang;
+    char    	    bit;
+    const FcChar8   lang[6];
 } FcCodePageRange[] = {
-    { 17,	(const FcChar8 *) "ja" },
-    { 18,	(const FcChar8 *) "zh-cn" },
-    { 19,	(const FcChar8 *) "ko" },
-    { 20,	(const FcChar8 *) "zh-tw" },
+    { 17,	"ja" },
+    { 18,	"zh-cn" },
+    { 19,	"ko" },
+    { 20,	"zh-tw" },
 };
 
 #define NUM_CODE_PAGE_RANGE (int) (sizeof FcCodePageRange / sizeof FcCodePageRange[0])
