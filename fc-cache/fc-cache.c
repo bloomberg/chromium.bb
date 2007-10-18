@@ -201,13 +201,13 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	if (was_valid)
 	{
 	    if (verbose)
-		printf ("skipping, %d fonts, %d dirs\n",
+		printf ("skipping, existing cache is valid: %d fonts, %d dirs\n",
 			FcCacheNumFont (cache), FcCacheNumSubdir (cache));
 	}
 	else
 	{
 	    if (verbose)
-		printf ("caching, %d fonts, %d dirs\n", 
+		printf ("caching, new cache contents: %d fonts, %d dirs\n", 
 			FcCacheNumFont (cache), FcCacheNumSubdir (cache));
 
 	    if (!FcDirCacheValid (dir))
