@@ -727,7 +727,7 @@ FcMakeDirectory (const FcChar8 *dir)
     parent = FcStrDirname (dir);
     if (!parent)
 	return FcFalse;
-    if (access ((char *) parent, W_OK|X_OK) == 0)
+    if (access ((char *) parent, F_OK) == 0)
 	ret = mkdir ((char *) dir, 0777) == 0;
     else if (access ((char *) parent, F_OK) == -1)
 	ret = FcMakeDirectory (parent) && (mkdir ((char *) dir, 0777) == 0);
@@ -760,7 +760,7 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
     if (!list)
 	return FcFalse;
     while ((test_dir = FcStrListNext (list))) {
-	if (access ((char *) test_dir, W_OK|X_OK) == 0)
+	if (access ((char *) test_dir, W_OK) == 0)
 	{
 	    cache_dir = test_dir;
 	    break;

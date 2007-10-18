@@ -264,7 +264,7 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 	fprintf (stderr, "%s: out of memory\n", dir);
 	return FcFalse;
     }
-    if (access ((char *) dir, W_OK|X_OK) != 0)
+    if (access ((char *) dir, W_OK) != 0)
     {
 	if (verbose)
 	    printf ("%s: not cleaning %s cache directory\n", dir,
