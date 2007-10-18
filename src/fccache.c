@@ -47,7 +47,7 @@ struct MD5Context {
 };
 
 static void MD5Init(struct MD5Context *ctx);
-static void MD5Update(struct MD5Context *ctx, unsigned char *buf, unsigned len);
+static void MD5Update(struct MD5Context *ctx, const unsigned char *buf, unsigned len);
 static void MD5Final(unsigned char digest[16], struct MD5Context *ctx);
 static void MD5Transform(FcChar32 buf[4], FcChar32 in[16]);
 
@@ -67,7 +67,7 @@ FcDirCacheBasename (const FcChar8 * dir, FcChar8 cache_base[CACHEBASE_LEN])
     struct MD5Context 	ctx;
 
     MD5Init (&ctx);
-    MD5Update (&ctx, (unsigned char *)dir, strlen ((char *) dir));
+    MD5Update (&ctx, (const unsigned char *)dir, strlen ((const char *) dir));
 
     MD5Final (hash, &ctx);
 
@@ -136,7 +136,8 @@ FcDirCacheOpenFile (const FcChar8 *cache_file, struct stat *file_stat)
  */
 static FcBool
 FcDirCacheProcess (FcConfig *config, const FcChar8 *dir, 
-		   FcBool (*callback) (int fd, struct stat *stat, void *closure),
+		   FcBool (*callback) (int fd, struct stat *fd_stat,
+				       struct stat *dir_stat, void *closure),
 		   void *closure, FcChar8 **cache_file_ret)
 {
     int		fd = -1;
@@ -162,20 +163,16 @@ FcDirCacheProcess (FcConfig *config, const FcChar8 *dir,
 	    break;
         fd = FcDirCacheOpenFile (cache_hashed, &file_stat);
         if (fd >= 0) {
-	    if (dir_stat.st_mtime <= file_stat.st_mtime)
-	    {
-		ret = (*callback) (fd, &file_stat, closure);
-		if (ret)
-		{
-		    if (cache_file_ret)
-			*cache_file_ret = cache_hashed;
-		    else
-			FcStrFree (cache_hashed);
-		    close (fd);
-		    break;
-		}
-	    }
+	    ret = (*callback) (fd, &file_stat, &dir_stat, closure);
 	    close (fd);
+	    if (ret)
+	    {
+		if (cache_file_ret)
+		    *cache_file_ret = cache_hashed;
+		else
+		    FcStrFree (cache_hashed);
+		break;
+	    }
 	}
     	FcStrFree (cache_hashed);
     }
@@ -425,11 +422,28 @@ FcCacheFini (void)
     assert (fcCacheMaxLevel == 0);
 }
 
+static FcBool
+FcCacheTimeValid (FcCache *cache, struct stat *dir_stat)
+{
+    struct stat	dir_static;
+
+    if (!dir_stat)
+    {
+	if (stat ((const char *) FcCacheDir (cache), &dir_static) < 0)
+	    return FcFalse;
+	dir_stat = &dir_static;
+    }
+    if (FcDebug () & FC_DBG_CACHE)
+	printf ("FcCacheTimeValid dir \"%s\" cache time %d dir time %d\n",
+		FcCacheDir (cache), cache->mtime, (int) dir_stat->st_mtime);
+    return cache->mtime == (int) dir_stat->st_mtime;
+}
+
 /*
  * Map a cache file into memory
  */
 static FcCache *
-FcDirCacheMapFd (int fd, struct stat *fd_stat)
+FcDirCacheMapFd (int fd, struct stat *fd_stat, struct stat *dir_stat)
 {
     FcCache	*cache;
     FcBool	allocated = FcFalse;
@@ -478,7 +492,8 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat)
     if (cache->magic != FC_CACHE_MAGIC_MMAP || 
 	cache->version < FC_CACHE_CONTENT_VERSION ||
 	cache->size != fd_stat->st_size ||
-	!FcCacheInsert (cache, fd_stat))
+	!FcCacheInsert (cache, fd_stat) ||
+	!FcCacheTimeValid (cache, dir_stat))
     {
 	if (allocated)
 	    free (cache);
@@ -516,9 +531,9 @@ FcDirCacheUnload (FcCache *cache)
 }
 
 static FcBool
-FcDirCacheMapHelper (int fd, struct stat *fd_stat, void *closure)
+FcDirCacheMapHelper (int fd, struct stat *fd_stat, struct stat *dir_stat, void *closure)
 {
-    FcCache *cache = FcDirCacheMapFd (fd, fd_stat);
+    FcCache *cache = FcDirCacheMapFd (fd, fd_stat, dir_stat);
 
     if (!cache)
 	return FcFalse;
@@ -547,7 +562,7 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
     fd = FcDirCacheOpenFile (cache_file, file_stat);
     if (fd < 0)
 	return NULL;
-    cache = FcDirCacheMapFd (fd, file_stat);
+    cache = FcDirCacheMapFd (fd, file_stat, NULL);
     close (fd);
     return cache;
 }
@@ -557,7 +572,7 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
  * the magic number and the size field
  */
 static FcBool
-FcDirCacheValidateHelper (int fd, struct stat *fd_stat, void *closure)
+FcDirCacheValidateHelper (int fd, struct stat *fd_stat, struct stat *dir_stat, void *closure)
 {
     FcBool  ret = FcTrue;
     FcCache	c;
@@ -569,6 +584,8 @@ FcDirCacheValidateHelper (int fd, struct stat *fd_stat, void *closure)
     else if (c.version < FC_CACHE_CONTENT_VERSION)
 	ret = FcFalse;
     else if (fd_stat->st_size != c.size)
+	ret = FcFalse;
+    else if (c.mtime != (int) dir_stat->st_mtime)
 	ret = FcFalse;
     return ret;
 }
@@ -597,7 +614,7 @@ FcDirCacheValid (const FcChar8 *dir)
  * Build a cache structure from the given contents
  */
 FcCache *
-FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs)
+FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, struct stat *dir_stat, FcStrSet *dirs)
 {
     FcSerialize	*serialize = FcSerializeCreate ();
     FcCache *cache;
@@ -645,6 +662,7 @@ FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs)
     cache->magic = FC_CACHE_MAGIC_ALLOC;
     cache->version = FC_CACHE_CONTENT_VERSION;
     cache->size = serialize->size;
+    cache->mtime = (int) dir_stat->st_mtime;
 
     /*
      * Serialize directory name
@@ -931,7 +949,7 @@ static void MD5Init(struct MD5Context *ctx)
  * Update context to reflect the concatenation of another buffer full
  * of bytes.
  */
-static void MD5Update(struct MD5Context *ctx, unsigned char *buf, unsigned len)
+static void MD5Update(struct MD5Context *ctx, const unsigned char *buf, unsigned len)
 {
     FcChar32 t;
 

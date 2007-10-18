@@ -322,6 +322,7 @@ struct _FcCache {
     intptr_t	dirs;		    /* offset to subdirs */
     int		dirs_count;	    /* number of subdir strings */
     intptr_t	set;		    /* offset to font set */
+    int		mtime;		    /* low bits of directory mtime */
 };
 
 #undef FcCacheDir
@@ -408,7 +409,7 @@ typedef struct _FcCaseFold {
 
 #define FC_CACHE_MAGIC_MMAP	    0xFC02FC04
 #define FC_CACHE_MAGIC_ALLOC	    0xFC02FC05
-#define FC_CACHE_CONTENT_VERSION    1
+#define FC_CACHE_CONTENT_VERSION    2
 
 struct _FcAtomic {
     FcChar8	*file;		/* original file name */
@@ -503,7 +504,7 @@ FcPrivate FcCache *
 FcDirCacheScan (const FcChar8 *dir, FcConfig *config);
 
 FcPrivate FcCache *
-FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, FcStrSet *dirs);
+FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, struct stat *dir_stat, FcStrSet *dirs);
 
 FcPrivate FcBool
 FcDirCacheWrite (FcCache *cache, FcConfig *config);

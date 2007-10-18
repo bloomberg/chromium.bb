@@ -146,6 +146,7 @@ FcDirCacheScan (const FcChar8 *dir, FcConfig *config)
     int			i;
     FcBlanks		*blanks = FcConfigGetBlanks (config);
     FcCache		*cache = NULL;
+    struct stat		dir_stat;
 
     if (FcDebug () & FC_DBG_FONTSET)
     	printf ("cache scan dir %s\n", dir);
@@ -172,6 +173,11 @@ FcDirCacheScan (const FcChar8 *dir, FcConfig *config)
 	    ret = FcTrue;
 	else
 	    ret = FcFalse;
+	goto bail_1;
+    }
+    if (stat ((char *) dir, &dir_stat) < 0)
+    {
+	ret = FcFalse;
 	goto bail_1;
     }
 
@@ -218,7 +224,7 @@ FcDirCacheScan (const FcChar8 *dir, FcConfig *config)
     /*
      * Build the cache object
      */
-    cache = FcDirCacheBuild (set, dir, dirs);
+    cache = FcDirCacheBuild (set, dir, &dir_stat, dirs);
     if (!cache)
 	goto bail3;
     
