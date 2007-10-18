@@ -454,7 +454,8 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat, struct stat *dir_stat)
     if (cache)
 	return cache;
     /*
-     * For small cache files, just read them into memory
+     * Lage cache files are mmap'ed, smaller cache files are read. This
+     * balances the system cost of mmap against per-process memory usage.
      */
     if (fd_stat->st_size >= FC_CACHE_MIN_MMAP)
     {
