@@ -153,35 +153,23 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    continue;
 	}
 
-	if (access ((char *) dir, W_OK) < 0)
+	if (stat ((char *) dir, &statb) == -1)
 	{
 	    switch (errno) {
 	    case ENOENT:
 	    case ENOTDIR:
 		if (verbose)
 		    printf ("skipping, no such directory\n");
-		continue;
-	    case EACCES:
-	    case EROFS:
-		/* That's ok, caches go to /var anyway. */
-		/* Ideally we'd do an access on the hashed_name. */
-		/* But we hid that behind an abstraction barrier. */
 		break;
 	    default:
 		fprintf (stderr, "\"%s\": ", dir);
 		perror ("");
 		ret++;
-
-		continue;
+		break;
 	    }
-	}
-	if (stat ((char *) dir, &statb) == -1)
-	{
-	    fprintf (stderr, "\"%s\": ", dir);
-	    perror ("");
-	    ret++;
 	    continue;
 	}
+
 	if (!S_ISDIR (statb.st_mode))
 	{
 	    fprintf (stderr, "\"%s\": not a directory, skipping\n", dir);
