@@ -2304,12 +2304,12 @@ FcUcs4ToGlyphName (FcChar32 ucs4)
 {
     int		i = (int) (ucs4 % FC_GLYPHNAME_HASH);
     int		r = 0;
-    const FcGlyphName	*gn;
+    FcGlyphId	gn;
 
-    while ((gn = ucs_to_name[i]))
+    while ((gn = ucs_to_name[i]) != -1)
     {
-	if (gn->ucs == ucs4)
-	    return gn->name;
+	if (glyphs[gn].ucs == ucs4)
+	    return glyphs[gn].name;
 	if (!r) 
 	{
 	    r = (int) (ucs4 % FC_GLYPHNAME_REHASH);
@@ -2329,12 +2329,12 @@ FcGlyphNameToUcs4 (FcChar8 *name)
     FcChar32	h = FcHashGlyphName (name);
     int		i = (int) (h % FC_GLYPHNAME_HASH);
     int		r = 0;
-    const FcGlyphName	*gn;
+    FcGlyphId	gn;
 
-    while ((gn = name_to_ucs[i]))
+    while ((gn = name_to_ucs[i]) != -1)
     {
-	if (!strcmp ((char *) name, (char *) gn->name))
-	    return gn->ucs;
+	if (!strcmp ((char *) name, (char *) glyphs[gn].name))
+	    return glyphs[gn].ucs;
 	if (!r) 
 	{
 	    r = (int) (h % FC_GLYPHNAME_REHASH);
