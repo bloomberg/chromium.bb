@@ -1072,13 +1072,6 @@ static int drm_bo_check_unfenced(struct drm_buffer_object * bo)
 /*
  * Wait until a buffer, scheduled to be fenced moves off the unfenced list.
  * Until then, we cannot really do anything with it except delete it.
- * The unfenced list is a PITA, and the operations
- * 1) validating
- * 2) submitting commands
- * 3) fencing
- * Should really be an atomic operation.
- * We now "solve" this problem by keeping
- * the buffer "unfenced" after validating, but before fencing.
  */
 
 static int drm_bo_wait_unfenced(struct drm_buffer_object * bo, int no_wait,
@@ -2144,8 +2137,10 @@ int drm_bo_init_mm(struct drm_device * dev,
 EXPORT_SYMBOL(drm_bo_init_mm);
 
 /*
- * This is called from lastclose, so we don't need to bother about
- * any clients still running when we set the initialized flag to zero.
+ * This function is intended to be called on drm driver unload.
+ * If you decide to call it from lastclose, you must protect the call
+ * from a potentially racing drm_bo_driver_init in firstopen. 
+ * (This may happen on X server restart).
  */
 
 int drm_bo_driver_finish(struct drm_device * dev)
@@ -2198,6 +2193,13 @@ int drm_bo_driver_finish(struct drm_device * dev)
 	mutex_unlock(&dev->bm.init_mutex);
 	return ret;
 }
+
+/*
+ * This function is intended to be called on drm driver load.
+ * If you decide to call it from firstopen, you must protect the call
+ * from a potentially racing drm_bo_driver_finish in lastclose. 
+ * (This may happen on X server restart).
+ */
 
 int drm_bo_driver_init(struct drm_device * dev)
 {
