@@ -1296,6 +1296,7 @@ MinidumpModule::MinidumpModule(Minidump* minidump)
       module_valid_(false),
       module_(),
       name_(NULL),
+      has_debug_info_(false),
       cv_record_(NULL),
       cv_record_signature_(MD_CVINFOUNKNOWN_SIGNATURE),
       misc_record_(NULL) {
@@ -1320,6 +1321,7 @@ bool MinidumpModule::Read() {
   misc_record_ = NULL;
 
   module_valid_ = false;
+  has_debug_info_ = false;
   valid_ = false;
 
   if (!minidump_->ReadBytes(&module_, MD_MODULE_SIZE)) {
@@ -1380,6 +1382,9 @@ bool MinidumpModule::ReadAuxiliaryData() {
     return false;
   }
 
+  // At this point, we have enough info for the module to be valid.
+  valid_ = true;
+
   // CodeView and miscellaneous debug records are only required if the
   // module indicates that they exist.
   if (module_.cv_record.data_size && !GetCVRecord(NULL)) {
@@ -1394,7 +1399,7 @@ bool MinidumpModule::ReadAuxiliaryData() {
     return false;
   }
 
-  valid_ = true;
+  has_debug_info_ = true;
   return true;
 }
 
@@ -1414,6 +1419,9 @@ string MinidumpModule::code_identifier() const {
     BPLOG(ERROR) << "Invalid MinidumpModule for code_identifier";
     return "";
   }
+
+  if (!has_debug_info_)
+    return "";
 
   MinidumpSystemInfo *minidump_system_info = minidump_->GetSystemInfo();
   if (!minidump_system_info) {
@@ -1470,6 +1478,9 @@ string MinidumpModule::debug_file() const {
     BPLOG(ERROR) << "Invalid MinidumpModule for debug_file";
     return "";
   }
+
+  if (!has_debug_info_)
+    return "";
 
   string file;
   // Prefer the CodeView record if present.
@@ -1546,6 +1557,9 @@ string MinidumpModule::debug_identifier() const {
     BPLOG(ERROR) << "Invalid MinidumpModule for debug_identifier";
     return "";
   }
+
+  if (!has_debug_info_)
+    return "";
 
   string identifier;
 
@@ -2090,10 +2104,10 @@ bool MinidumpModuleList::Read(u_int32_t expected_size) {
       MinidumpModule* module = &(*modules)[module_index];
 
       if (!module->ReadAuxiliaryData()) {
-        BPLOG(ERROR) << "MinidumpModuleList could not read module auxiliary "
-                        "data for module " <<
-                        module_index << "/" << module_count;
-        return false;
+        BPLOG(INFO) << "MinidumpModuleList could not read module auxiliary "
+                       "data for module " <<
+                       module_index << "/" << module_count;
+        continue;
       }
 
       // It is safe to use module->code_file() after successfully calling

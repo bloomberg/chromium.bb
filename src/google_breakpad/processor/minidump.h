@@ -451,6 +451,11 @@ class MinidumpModule : public MinidumpObject,
   // be read.
   bool              module_valid_;
 
+  // True if debug info was read from the module.  Certain modules
+  // may contain debug records in formats we don't support,
+  // so we can just set this to false to ignore them.
+  bool              has_debug_info_;
+
   MDRawModule       module_;
 
   // Cached module name.
