@@ -1545,10 +1545,9 @@ int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 	 * Only allow creator to change shared buffer mask.
 	 */
 
-	if (bo->base.owner != file_priv) {
-		flags = 0x0;
-		mask = 0x0;
-	}
+	if (bo->base.owner != file_priv) 
+		mask &= ~(DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE);
+
 		
 	ret = drm_bo_do_validate(bo, flags, mask, hint, fence_class,
 				 no_wait, rep);
@@ -1899,60 +1898,6 @@ int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *
 	return 0;
 }
 
-/**
- *Clean the unfenced list and put on regular LRU.
- *This is part of the memory manager cleanup and should only be
- *called with the DRI lock held.
- *Call dev->struct_sem locked.
- */
-
-static void drm_bo_clean_unfenced(struct drm_device *dev)
-{
-	struct drm_buffer_manager *bm  = &dev->bm;
-	struct list_head *head, *list;
-	struct drm_buffer_object *entry;
-	struct drm_fence_object *fence;
-
-	head = &bm->unfenced;
-
-	if (list_empty(head))
-		return;
-
-	DRM_ERROR("Clean unfenced\n");
-
-	if (drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence)) {
-
-		/*
-		 * Fixme: Should really wait here.
-		 */
-	}
-
-	if (fence)
-		drm_fence_usage_deref_locked(&fence);
-
-	if (list_empty(head))
-		return;
-
-	DRM_ERROR("Really clean unfenced\n");
-
-	list = head->next;
-	while(list != head) {
-		prefetch(list->next);
-		entry = list_entry(list, struct drm_buffer_object, lru);
-
-		atomic_inc(&entry->usage);
-		mutex_unlock(&dev->struct_mutex);
-		mutex_lock(&entry->mutex);
-		mutex_lock(&dev->struct_mutex);
-
-		list_del(&entry->lru);
-		DRM_FLAG_MASKED(entry->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
-		drm_bo_add_to_lru(entry);
-		mutex_unlock(&entry->mutex);
-		list = head->next;
-	}
-}
-
 static int drm_bo_leave_list(struct drm_buffer_object * bo,
 			     uint32_t mem_type,
 			     int free_pinned, int allow_errors)
@@ -2103,8 +2048,7 @@ int drm_bo_clean_mm(struct drm_device * dev, unsigned mem_type)
 
 	ret = 0;
 	if (mem_type > 0) {
-
-		drm_bo_clean_unfenced(dev);
+		BUG_ON(!list_empty(&bm->unfenced));
 		drm_bo_force_list_clean(dev, &man->lru, mem_type, 1, 0, 0);
 		drm_bo_force_list_clean(dev, &man->pinned, mem_type, 1, 0, 1);
 
@@ -2142,7 +2086,6 @@ static int drm_bo_lock_mm(struct drm_device * dev, unsigned mem_type)
 		return 0;
 	}
 
-	drm_bo_clean_unfenced(dev);
 	ret = drm_bo_force_list_clean(dev, &man->lru, mem_type, 0, 1, 0);
 	if (ret)
 		return ret;
