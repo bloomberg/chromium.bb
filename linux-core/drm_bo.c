@@ -1524,7 +1524,9 @@ EXPORT_SYMBOL(drm_bo_do_validate);
 
 int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 			   uint32_t fence_class,
-			   uint64_t flags, uint64_t mask, uint32_t hint,
+			   uint64_t flags, uint64_t mask, 
+			   uint32_t hint,
+			   int use_old_fence_class,
 			   struct drm_bo_info_rep * rep,
 			   struct drm_buffer_object **bo_rep)
 {
@@ -1537,10 +1539,12 @@ int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 	bo = drm_lookup_buffer_object(file_priv, handle, 1);
 	mutex_unlock(&dev->struct_mutex);
 
-	if (!bo) {
+	if (!bo) 
 		return -EINVAL;
-	}
-	
+
+	if (use_old_fence_class)
+		fence_class = bo->fence_class;
+
 	/*
 	 * Only allow creator to change shared buffer mask.
 	 */
@@ -1780,6 +1784,7 @@ int drm_bo_setstatus_ioctl(struct drm_device *dev,
 				     req->flags,
 				     req->mask,
 				     req->hint | DRM_BO_HINT_DONT_FENCE,
+				     1,
 				     rep, NULL);
 
 	if (ret)

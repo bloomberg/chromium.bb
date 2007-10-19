@@ -2695,7 +2695,7 @@ int drmBOUnmap(int fd, drmBO *buf)
     return 0;
 }
 
-int drmBOSetStatus(int fd, drmBO *buf, uint32_t fence_class,
+int drmBOSetStatus(int fd, drmBO *buf, 
 		   uint64_t flags, uint64_t mask,
 		   unsigned int hint, 
 		   unsigned int desired_tile_stride,
@@ -2711,7 +2711,6 @@ int drmBOSetStatus(int fd, drmBO *buf, uint32_t fence_class,
     req->flags = flags;
     req->handle = buf->handle;
     req->hint = hint;
-    req->fence_class = fence_class;
     req->desired_tile_stride = desired_tile_stride;
     req->tile_info = tile_info;
     
