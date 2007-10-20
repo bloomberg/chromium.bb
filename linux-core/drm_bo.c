@@ -1768,10 +1768,15 @@ int drm_bo_setstatus_ioctl(struct drm_device *dev,
 	struct drm_bo_info_req *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	int ret;
+
 	if (!dev->bm.initialized) {
 		DRM_ERROR("Buffer object manager is not initialized.\n");
 		return -EINVAL;
 	}
+
+	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	if (ret)
+		return ret;
 
 	ret = drm_bo_handle_validate(file_priv, req->handle, req->fence_class,
 				     req->flags,
@@ -1780,6 +1785,7 @@ int drm_bo_setstatus_ioctl(struct drm_device *dev,
 				     1,
 				     rep, NULL);
 
+	(void) drm_bo_read_unlock(&dev->bm.bm_lock);
 	if (ret)
 		return ret;
 
@@ -1898,7 +1904,8 @@ int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *
 
 static int drm_bo_leave_list(struct drm_buffer_object * bo,
 			     uint32_t mem_type,
-			     int free_pinned, int allow_errors)
+			     int free_pinned,
+			     int allow_errors)
 {
 	struct drm_device *dev = bo->dev;
 	int ret = 0;
@@ -2150,7 +2157,6 @@ int drm_bo_driver_finish(struct drm_device * dev)
 	unsigned i = DRM_BO_MEM_TYPES;
 	struct drm_mem_type_manager *man;
 
-	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 
 	if (!bm->initialized)
@@ -2190,7 +2196,6 @@ int drm_bo_driver_finish(struct drm_device * dev)
 	}
       out:
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
 	return ret;
 }
 
@@ -2207,7 +2212,7 @@ int drm_bo_driver_init(struct drm_device * dev)
 	struct drm_buffer_manager *bm = &dev->bm;
 	int ret = -EINVAL;
 
-	mutex_lock(&dev->bm.init_mutex);
+	drm_bo_init_lock(&bm->bm_lock);
 	mutex_lock(&dev->struct_mutex);
 	if (!driver)
 		goto out_unlock;
@@ -2233,7 +2238,6 @@ int drm_bo_driver_init(struct drm_device * dev)
 	INIT_LIST_HEAD(&bm->ddestroy);
       out_unlock:
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
 	return ret;
 }
 
@@ -2252,6 +2256,10 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	}
 
 	ret = -EINVAL;
+	ret = drm_bo_write_lock(&bm->bm_lock, file_priv);
+	if (ret)
+		return ret;
+
 	if (arg->magic != DRM_BO_INIT_MAGIC) {
 		DRM_ERROR("You are using an old libdrm that is not compatible with\n"
 			  "\tthe kernel DRM module. Please upgrade your libdrm.\n");
@@ -2271,7 +2279,6 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 		return -EINVAL;
 	}
 
-	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 	if (!bm->initialized) {
 		DRM_ERROR("DRM memory manager was not initialized.\n");
@@ -2286,7 +2293,8 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 
 out:
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
+	(void) drm_bo_write_unlock(&bm->bm_lock, file_priv);
+
 	if (ret)
 		return ret;
 
@@ -2305,8 +2313,10 @@ int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 		return -EINVAL;
 	}
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-	mutex_lock(&dev->bm.init_mutex);
+	ret = drm_bo_write_lock(&bm->bm_lock, file_priv);
+	if (ret)
+		return ret;
+
 	mutex_lock(&dev->struct_mutex);
 	ret = -EINVAL;
 	if (!bm->initialized) {
@@ -2324,7 +2334,8 @@ int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 	}
 out:
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
+	(void) drm_bo_write_unlock(&bm->bm_lock, file_priv);
+
 	if (ret)
 		return ret;
 
@@ -2342,20 +2353,28 @@ int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 		return -EINVAL;
 	}
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-	mutex_lock(&dev->bm.init_mutex);
+	if (arg->lock_unlock_bm) {
+		ret = drm_bo_write_lock(&dev->bm.bm_lock, file_priv);
+		if (ret)
+			return ret;
+	}
+		
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bo_lock_mm(dev, arg->mem_type);
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
-	if (ret)
+	if (ret) {
+		(void) drm_bo_write_unlock(&dev->bm.bm_lock, file_priv);
 		return ret;
+	}
 
 	return 0;
 }
 
-int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+int drm_mm_unlock_ioctl(struct drm_device *dev, 
+			void *data, 
+			struct drm_file *file_priv)
 {
+	struct drm_mm_type_arg *arg = data;
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	int ret;
 
@@ -2364,16 +2383,12 @@ int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 		return -EINVAL;
 	}
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-	mutex_lock(&dev->bm.init_mutex);
-	mutex_lock(&dev->struct_mutex);
-	ret = 0;
-
-	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
-	if (ret)
-		return ret;
-
+	if (arg->lock_unlock_bm) {
+		ret = drm_bo_write_unlock(&dev->bm.bm_lock, file_priv);
+		if (ret)
+			return ret;
+	}
+		
 	return 0;
 }
 

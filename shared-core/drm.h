@@ -872,6 +872,7 @@ struct drm_bo_op_arg {
 
 struct drm_mm_type_arg {
 	unsigned int mem_type;
+        int lock_unlock_bm;
 };
 
 struct drm_mm_init_arg {

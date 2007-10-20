@@ -2815,13 +2815,19 @@ int drmMMTakedown(int fd, unsigned memType)
     return 0;	
 }
 
-int drmMMLock(int fd, unsigned memType)
+/*
+ * If this function returns an error, and lockBM was set to 1,
+ * the buffer manager is NOT locked.
+ */
+
+int drmMMLock(int fd, unsigned memType, int lockBM)
 {
     struct drm_mm_type_arg arg;
     int ret;
 
     memset(&arg, 0, sizeof(arg));
     arg.mem_type = memType;
+    arg.lock_unlock_bm = lock_bm;
 
     do{
         ret = ioctl(fd, DRM_IOCTL_MM_LOCK, &arg);
@@ -2830,7 +2836,7 @@ int drmMMLock(int fd, unsigned memType)
     return (ret) ? -errno : 0;
 }
 
-int drmMMUnlock(int fd, unsigned memType)
+int drmMMUnlock(int fd, unsigned memType, int unlockBM)
 {
     struct drm_mm_type_arg arg;
     int ret;
@@ -2838,6 +2844,7 @@ int drmMMUnlock(int fd, unsigned memType)
     memset(&arg, 0, sizeof(arg));
     
     arg.mem_type = memType;
+    arg.lock_unlock_bm = unlockBM;
 
     do{
 	ret = ioctl(fd, DRM_IOCTL_MM_UNLOCK, &arg);

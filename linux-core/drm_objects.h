@@ -43,6 +43,7 @@ struct drm_bo_mem_reg;
 enum drm_object_type {
 	drm_fence_type,
 	drm_buffer_type,
+	drm_lock_type,
 	    /*
 	     * Add other user space object types here.
 	     */
@@ -414,6 +415,13 @@ struct drm_mem_type_manager {
 	void *io_addr;
 };
 
+struct drm_bo_lock {
+	struct drm_user_object base;
+	wait_queue_head_t queue;
+	atomic_t write_lock_pending;
+	atomic_t readers;
+};
+
 #define _DRM_FLAG_MEMTYPE_FIXED     0x00000001	/* Fixed (on-card) PCI memory */
 #define _DRM_FLAG_MEMTYPE_MAPPABLE  0x00000002	/* Memory mappable */
 #define _DRM_FLAG_MEMTYPE_CACHED    0x00000004	/* Cached binding */
@@ -423,8 +431,8 @@ struct drm_mem_type_manager {
 #define _DRM_FLAG_MEMTYPE_CSELECT   0x00000020	/* Select caching */
 
 struct drm_buffer_manager {
-	struct mutex init_mutex;
-	struct mutex evict_mutex;
+        struct drm_bo_lock bm_lock;
+        struct mutex evict_mutex;
 	int nice_mode;
 	int initialized;
 	struct drm_file *last_to_validate;
@@ -602,6 +610,21 @@ extern void drm_regs_init(struct drm_reg_manager *manager,
 			  int (*reg_reusable)(const struct drm_reg *,
 					      const void *),
 			  void (*reg_destroy)(struct drm_reg *));
+
+/*
+ * drm_bo_lock.c 
+ * Simple replacement for the hardware lock on buffer manager init and clean.
+ */
+
+
+extern void drm_bo_init_lock(struct drm_bo_lock *lock);
+extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
+extern int drm_bo_read_lock(struct drm_bo_lock *lock);
+extern int drm_bo_write_lock(struct drm_bo_lock *lock, 
+			     struct drm_file *file_priv);
+
+extern int drm_bo_write_unlock(struct drm_bo_lock *lock, 
+			       struct drm_file *file_priv);
 
 #ifdef CONFIG_DEBUG_MUTEXES
 #define DRM_ASSERT_LOCKED(_mutex)					\

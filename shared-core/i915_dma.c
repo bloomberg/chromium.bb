@@ -930,6 +930,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 						 req->bo_req.flags,
 						 req->bo_req.mask,
 						 req->bo_req.hint,
+						 0,
 						 &rep.bo_info,
 						 &buffers[buf_count]);
 
