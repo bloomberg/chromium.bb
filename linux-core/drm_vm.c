@@ -728,9 +728,16 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	if (address > vma->vm_end)
 		return NOPFN_SIGBUS;
 
-	err = mutex_lock_interruptible(&bo->mutex);
+	dev = bo->dev;
+	err = drm_bo_read_lock(&dev->bm.bm_lock);
 	if (err)
 		return NOPFN_REFAULT;
+
+	err = mutex_lock_interruptible(&bo->mutex);
+	if (err) {
+		drm_bo_read_unlock(&dev->bm.bm_lock);
+		return NOPFN_REFAULT;
+	}
 
 	err = drm_bo_wait(bo, 0, 0, 0);
 	if (err) {
@@ -754,7 +761,6 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 		}
 	}
 
-	dev = bo->dev;
 	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset,
 				&bus_size);
 
@@ -792,6 +798,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	}
 out_unlock:
 	mutex_unlock(&bo->mutex);
+	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
 #endif

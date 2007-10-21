@@ -2255,11 +2255,11 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 		return -EINVAL;
 	}
 
-	ret = -EINVAL;
 	ret = drm_bo_write_lock(&bm->bm_lock, file_priv);
 	if (ret)
 		return ret;
 
+	ret = -EINVAL;
 	if (arg->magic != DRM_BO_INIT_MAGIC) {
 		DRM_ERROR("You are using an old libdrm that is not compatible with\n"
 			  "\tthe kernel DRM module. Please upgrade your libdrm.\n");
@@ -2353,7 +2353,12 @@ int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 		return -EINVAL;
 	}
 
-	if (arg->lock_unlock_bm) {
+	if (arg->lock_flags & DRM_BO_LOCK_IGNORE_NO_EVICT) {
+		DRM_ERROR("Lock flag DRM_BO_LOCK_IGNORE_NO_EVICT not supported yet.\n");
+		return -EINVAL;
+	}
+		
+	if (arg->lock_flags & DRM_BO_LOCK_UNLOCK_BM) {
 		ret = drm_bo_write_lock(&dev->bm.bm_lock, file_priv);
 		if (ret)
 			return ret;
@@ -2383,7 +2388,7 @@ int drm_mm_unlock_ioctl(struct drm_device *dev,
 		return -EINVAL;
 	}
 
-	if (arg->lock_unlock_bm) {
+	if (arg->lock_flags & DRM_BO_LOCK_UNLOCK_BM) {
 		ret = drm_bo_write_unlock(&dev->bm.bm_lock, file_priv);
 		if (ret)
 			return ret;

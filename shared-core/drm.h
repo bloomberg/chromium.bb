@@ -870,9 +870,12 @@ struct drm_bo_op_arg {
 
 #define DRM_BO_MEM_TYPES 8 /* For now. */
 
+#define DRM_BO_LOCK_UNLOCK_BM       (1 << 0)
+#define DRM_BO_LOCK_IGNORE_NO_EVICT (1 << 1)
+
 struct drm_mm_type_arg {
 	unsigned int mem_type;
-        int lock_unlock_bm;
+        unsigned int lock_flags;
 };
 
 struct drm_mm_init_arg {

@@ -172,8 +172,8 @@ extern int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint);
 extern int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
 		     unsigned memType);
 extern int drmMMTakedown(int fd, unsigned memType);
-extern int drmMMLock(int fd, unsigned memType);
-extern int drmMMUnlock(int fd, unsigned memType);
+extern int drmMMLock(int fd, unsigned memType, int lockBM, int ignoreNoEvict);
+extern int drmMMUnlock(int fd, unsigned memType, int unlockBM);
 
 
 #endif

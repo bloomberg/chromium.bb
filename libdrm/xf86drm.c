@@ -2820,14 +2820,15 @@ int drmMMTakedown(int fd, unsigned memType)
  * the buffer manager is NOT locked.
  */
 
-int drmMMLock(int fd, unsigned memType, int lockBM)
+int drmMMLock(int fd, unsigned memType, int lockBM, int ignoreNoEvict)
 {
     struct drm_mm_type_arg arg;
     int ret;
 
     memset(&arg, 0, sizeof(arg));
     arg.mem_type = memType;
-    arg.lock_unlock_bm = lock_bm;
+    arg.lock_flags |= (lockBM) ? DRM_BO_LOCK_UNLOCK_BM : 0;
+    arg.lock_flags |= (ignoreNoEvict) = DRM_BO_LOCK_IGNORE_NO_EVICT;
 
     do{
         ret = ioctl(fd, DRM_IOCTL_MM_LOCK, &arg);
@@ -2844,7 +2845,7 @@ int drmMMUnlock(int fd, unsigned memType, int unlockBM)
     memset(&arg, 0, sizeof(arg));
     
     arg.mem_type = memType;
-    arg.lock_unlock_bm = unlockBM;
+    arg.lock_flags |= (unlockBM) ? DRM_BO_LOCK_UNLOCK_BM : 0;
 
     do{
 	ret = ioctl(fd, DRM_IOCTL_MM_UNLOCK, &arg);
