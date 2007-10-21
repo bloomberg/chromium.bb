@@ -121,6 +121,8 @@ uint32_t i915_evict_mask(struct drm_buffer_object *bo)
 	}
 }
 
+#if 0 /* See comment below */
+
 static void i915_emit_copy_blit(struct drm_device * dev,
 				uint32_t src_offset,
 				uint32_t dst_offset,
@@ -221,6 +223,16 @@ out_cleanup:
 	return ret;
 }
 
+#endif
+
+/*
+ * Disable i915_move_flip for now, since we can't guarantee that the hardware lock
+ * is held here. To re-enable we need to make sure either
+ * a) The X server is using DRM to submit commands to the ring, or
+ * b) DRM can use the HP ring for these blits. This means i915 needs to implement
+ *    a new ring submission mechanism and fence class.
+ */
+
 int i915_move(struct drm_buffer_object * bo,
 	      int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
 {
@@ -229,10 +241,10 @@ int i915_move(struct drm_buffer_object * bo,
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		if (i915_move_flip(bo, evict, no_wait, new_mem))
+		if (0 /*i915_move_flip(bo, evict, no_wait, new_mem)*/)
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else {
-		if (i915_move_blit(bo, evict, no_wait, new_mem))
+		if (0 /*i915_move_blit(bo, evict, no_wait, new_mem)*/)
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
