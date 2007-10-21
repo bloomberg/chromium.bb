@@ -1010,8 +1010,6 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	}
 
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-
 	if (batch->num_cliprects && DRM_VERIFYAREA_READ(batch->cliprects,
 							batch->num_cliprects *
 							sizeof(struct drm_clip_rect)))
@@ -1020,11 +1018,18 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	if (exec_buf->num_buffers > dev_priv->max_validate_buffers)
 		return -EINVAL;
 
+
+	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	if (ret) 
+		return ret;
+
 	num_buffers = exec_buf->num_buffers;
 
 	buffers = drm_calloc(num_buffers, sizeof(struct drm_buffer_object *), DRM_MEM_DRIVER);
-	if (!buffers)
+	if (!buffers) {
+	        drm_bo_read_unlock(&dev->bm.bm_lock);
 		return -ENOMEM;
+        }
 
 	/* validate buffer list + fixup relocations */
 	ret = i915_validate_buffer_list(file_priv, 0, exec_buf->ops_list,
@@ -1068,7 +1073,7 @@ out_err0:
 
 out_free:
 	drm_free(buffers, (exec_buf->num_buffers * sizeof(struct drm_buffer_object *)), DRM_MEM_DRIVER);
-
+	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
 #endif
