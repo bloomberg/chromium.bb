@@ -2828,7 +2828,7 @@ int drmMMLock(int fd, unsigned memType, int lockBM, int ignoreNoEvict)
     memset(&arg, 0, sizeof(arg));
     arg.mem_type = memType;
     arg.lock_flags |= (lockBM) ? DRM_BO_LOCK_UNLOCK_BM : 0;
-    arg.lock_flags |= (ignoreNoEvict) = DRM_BO_LOCK_IGNORE_NO_EVICT;
+    arg.lock_flags |= (ignoreNoEvict) ? DRM_BO_LOCK_IGNORE_NO_EVICT : 0;
 
     do{
         ret = ioctl(fd, DRM_IOCTL_MM_LOCK, &arg);
