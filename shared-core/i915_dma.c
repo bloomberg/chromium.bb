@@ -213,6 +213,7 @@ static int i915_initialize(struct drm_device * dev,
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
 	dev->dev_private = (void *)dev_priv;
+	mutex_init(&dev_priv->cmdbuf_mutex);
 	return 0;
 }
 
@@ -1023,11 +1024,23 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	if (ret) 
 		return ret;
 
+	/*
+	 * The cmdbuf_mutex makes sure the validate-submit-fence
+	 * operation is atomic. 
+	 */
+
+	ret = mutex_lock_interruptible(&dev_priv->cmdbuf_mutex);
+	if (ret) {
+		drm_bo_read_unlock(&dev->bm.bm_lock);
+		return -EAGAIN;
+	}
+
 	num_buffers = exec_buf->num_buffers;
 
 	buffers = drm_calloc(num_buffers, sizeof(struct drm_buffer_object *), DRM_MEM_DRIVER);
 	if (!buffers) {
 	        drm_bo_read_unlock(&dev->bm.bm_lock);
+		mutex_unlock(&dev_priv->cmdbuf_mutex);
 		return -ENOMEM;
         }
 
@@ -1073,6 +1086,8 @@ out_err0:
 
 out_free:
 	drm_free(buffers, (exec_buf->num_buffers * sizeof(struct drm_buffer_object *)), DRM_MEM_DRIVER);
+
+	mutex_unlock(&dev_priv->cmdbuf_mutex);
 	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
