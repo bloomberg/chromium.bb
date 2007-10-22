@@ -1294,9 +1294,9 @@ u_int32_t MinidumpModule::max_misc_bytes_ = 1024;
 MinidumpModule::MinidumpModule(Minidump* minidump)
     : MinidumpObject(minidump),
       module_valid_(false),
+      has_debug_info_(false),
       module_(),
       name_(NULL),
-      has_debug_info_(false),
       cv_record_(NULL),
       cv_record_signature_(MD_CVINFOUNKNOWN_SIGNATURE),
       misc_record_(NULL) {
