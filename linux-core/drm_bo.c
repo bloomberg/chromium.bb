@@ -1299,10 +1299,7 @@ int drm_bo_move_buffer(struct drm_buffer_object * bo, uint32_t new_mem_flags,
 
 	mutex_lock(&bm->evict_mutex);
 	mutex_lock(&dev->struct_mutex);
-	list_del(&bo->lru);
-	list_add_tail(&bo->lru, &bm->unfenced);
-	DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED,
-			_DRM_BO_FLAG_UNFENCED);
+	list_del_init(&bo->lru);
 	mutex_unlock(&dev->struct_mutex);
 
 	/*
@@ -1322,10 +1319,6 @@ int drm_bo_move_buffer(struct drm_buffer_object * bo, uint32_t new_mem_flags,
 				drm_mm_put_block(mem.mm_node);
 			mem.mm_node = NULL;
 		}
-		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
-		DRM_WAKEUP(&bo->event_queue);
-		list_del(&bo->lru);
-		drm_bo_add_to_lru(bo);
 		mutex_unlock(&dev->struct_mutex);
 	}
 
