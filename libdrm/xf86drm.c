@@ -2701,6 +2701,7 @@ int drmBOSetStatus(int fd, drmBO *buf,
 		   unsigned int desired_tile_stride,
 		   unsigned int tile_info)
 {
+
     struct drm_bo_map_wait_idle_arg arg;
     struct drm_bo_info_req *req = &arg.d.req;
     struct drm_bo_info_rep *rep = &arg.d.rep;
