@@ -772,7 +772,9 @@ int i915_process_relocs(struct drm_file *file_priv,
 
 	memset(&reloc_kmap, 0, sizeof(reloc_kmap));
 
+	mutex_lock(&dev->struct_mutex);
 	reloc_list_object = drm_lookup_buffer_object(file_priv, cur_handle, 1);
+	mutex_unlock(&dev->struct_mutex);
 	if (!reloc_list_object)
 		return -EINVAL;
 
@@ -838,6 +840,43 @@ out:
 	return ret;
 }
 
+static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
+			   drm_handle_t buf_reloc_handle,
+			   struct drm_buffer_object **buffers,
+			   uint32_t buf_count)
+{
+	struct drm_device *dev = file_priv->head->dev;
+	struct i915_relocatee_info relocatee;
+	int ret = 0;
+
+	memset(&relocatee, 0, sizeof(relocatee));
+	
+	mutex_lock(&dev->struct_mutex);
+	relocatee.buf = drm_lookup_buffer_object(file_priv, buf_handle, 1);
+	mutex_unlock(&dev->struct_mutex);
+	if (!relocatee.buf) {
+		DRM_DEBUG("relocatee buffer invalid %08x\n", buf_handle);
+		ret = -EINVAL;
+		goto out_err;
+	}
+	
+	while (buf_reloc_handle) {
+		ret = i915_process_relocs(file_priv, buf_handle, &buf_reloc_handle, &relocatee, buffers, buf_count);
+		if (ret) {
+			DRM_ERROR("process relocs failed\n");
+			break;
+		}
+	}
+	
+	drm_bo_kunmap(&relocatee.kmap);
+	mutex_lock(&dev->struct_mutex);
+	drm_bo_usage_deref_locked(&relocatee.buf);
+	mutex_unlock(&dev->struct_mutex);
+	
+out_err:
+	return ret;
+}
+
 /*
  * Validate, add fence and relocate a block of bos from a userspace list
  */
@@ -854,7 +893,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 	unsigned buf_count = 0;
 	struct drm_device *dev = file_priv->head->dev;
 	uint32_t buf_reloc_handle, buf_handle;
-	struct i915_relocatee_info relocatee;
+
 
 	do {
 		if (buf_count >= *num_buffers) {
@@ -872,7 +911,9 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 
 		if (arg.handled) {
 			data = arg.next;
+			mutex_lock(&dev->struct_mutex);
 			buffers[buf_count] = drm_lookup_buffer_object(file_priv, req->arg_handle, 1);
+			mutex_unlock(&dev->struct_mutex);
 			buf_count++;
 			continue;
 		}
@@ -913,31 +954,9 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		buf_count++;
 
 		if (buf_reloc_handle) {
-			memset(&relocatee, 0, sizeof(relocatee));
-
-			relocatee.buf = drm_lookup_buffer_object(file_priv, buf_handle, 1);
-			if (!relocatee.buf) {
-				DRM_DEBUG("relocatee buffer invalid %08x\n", buf_handle);
-				ret = -EINVAL;
-				goto out_err;
-			}
-
-			while (buf_reloc_handle) {
-				ret = i915_process_relocs(file_priv, buf_handle, &buf_reloc_handle, &relocatee, buffers, buf_count);
-				if (ret) {
-					DRM_ERROR("process relocs failed\n");
-					break;
-				}
-			}
-
-			drm_bo_kunmap(&relocatee.kmap);
-			mutex_lock(&dev->struct_mutex);
-			drm_bo_usage_deref_locked(&relocatee.buf);
-			mutex_unlock(&dev->struct_mutex);
-
+			ret = i915_exec_reloc(file_priv, buf_handle, buf_reloc_handle, buffers, buf_count);
 			if (ret)
 				goto out_err;
-
 		}
 	} while (next != 0);
 	*num_buffers = buf_count;
@@ -991,6 +1010,9 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 					buffers, &num_buffers);
 	if (ret)
 		goto out_free;
+
+	/* make sure all previous memory operations have passed */
+	asm volatile("mfence":::"memory");
 
 	/* submit buffer */
 	batch->start = buffers[num_buffers-1]->offset;

@@ -69,9 +69,9 @@ static void client()
 	int drmfd, ret;
 
 	/* XXX: Should make sure we open the same DRM as the master */
-	drmfd = drm_open_any();
-
 	wait_event(0, SERVER_READY);
+
+	drmfd = drm_open_any();
 
 	/* Get a client magic number and pass it to the master for auth. */
 	auth.magic = 0; /* Quiet valgrind */
