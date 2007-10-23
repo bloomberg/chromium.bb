@@ -1044,6 +1044,9 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	if (ret)
 		goto out_free;
 
+	/* make sure all previous memory operations have passed */
+	asm volatile("mfence":::"memory");
+
 	/* submit buffer */
 	batch->start = buffers[num_buffers-1]->offset;
 
