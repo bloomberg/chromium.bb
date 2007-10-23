@@ -914,7 +914,9 @@ bool drm_initial_config(struct drm_device *dev, bool can_grow)
 		if (!output->crtc || !output->crtc->desired_mode)
 			continue;
 
-		drm_crtc_set_mode(output->crtc, output->crtc->desired_mode, 0, 0);
+		/* and needs an attached fb */
+		if (output->crtc->fb)
+			drm_crtc_set_mode(output->crtc, output->crtc->desired_mode, 0, 0);
 	}
 
 	drm_disable_unused_functions(dev);
