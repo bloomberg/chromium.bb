@@ -494,7 +494,7 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 	int i = 0, count, ret;
 
 	if (cmd->sz & 0x3) {
-		DRM_ERROR("alignment");
+		DRM_ERROR("alignment\n");
 		return -EINVAL;
 	}
 
@@ -532,7 +532,7 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 	RING_LOCALS;
 
 	if ((batch->start | batch->used) & 0x7) {
-		DRM_ERROR("alignment");
+		DRM_ERROR("alignment\n");
 		return -EINVAL;
 	}
 
