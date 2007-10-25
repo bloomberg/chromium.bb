@@ -495,7 +495,7 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 	int i = 0, count, ret;
 
 	if (cmd->sz & 0x3) {
-		DRM_ERROR("alignment");
+		DRM_ERROR("alignment\n");
 		return -EINVAL;
 	}
 
@@ -533,7 +533,7 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 	RING_LOCALS;
 
 	if ((batch->start | batch->used) & 0x7) {
-		DRM_ERROR("alignment");
+		DRM_ERROR("alignment\n");
 		return -EINVAL;
 	}
 
@@ -865,12 +865,51 @@ int i915_process_relocs(struct drm_file *file_priv,
 
 	} while (reloc_offset != reloc_end);
 out:
+	drm_bo_kunmap(&relocatee->kmap);
+	relocatee->data_page = NULL;
+
 	drm_bo_kunmap(&reloc_kmap);
 
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(&reloc_list_object);
 	mutex_unlock(&dev->struct_mutex);
 
+	return ret;
+}
+
+static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
+			   drm_handle_t buf_reloc_handle,
+			   struct drm_buffer_object **buffers,
+			   uint32_t buf_count)
+{
+	struct drm_device *dev = file_priv->head->dev;
+	struct i915_relocatee_info relocatee;
+	int ret = 0;
+
+	memset(&relocatee, 0, sizeof(relocatee));
+	
+	mutex_lock(&dev->struct_mutex);
+	relocatee.buf = drm_lookup_buffer_object(file_priv, buf_handle, 1);
+	mutex_unlock(&dev->struct_mutex);
+	if (!relocatee.buf) {
+		DRM_DEBUG("relocatee buffer invalid %08x\n", buf_handle);
+		ret = -EINVAL;
+		goto out_err;
+	}
+	
+	while (buf_reloc_handle) {
+		ret = i915_process_relocs(file_priv, buf_handle, &buf_reloc_handle, &relocatee, buffers, buf_count);
+		if (ret) {
+			DRM_ERROR("process relocs failed\n");
+			break;
+		}
+	}
+	
+	mutex_lock(&dev->struct_mutex);
+	drm_bo_usage_deref_locked(&relocatee.buf);
+	mutex_unlock(&dev->struct_mutex);
+	
+out_err:
 	return ret;
 }
 
@@ -890,7 +929,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 	unsigned buf_count = 0;
 	struct drm_device *dev = file_priv->head->dev;
 	uint32_t buf_reloc_handle, buf_handle;
-	struct i915_relocatee_info relocatee;
+
 
 	do {
 		if (buf_count >= *num_buffers) {
@@ -926,6 +965,13 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		buf_handle = req->bo_req.handle;
 		buf_reloc_handle = arg.reloc_handle;
 
+		if (buf_reloc_handle) {
+			ret = i915_exec_reloc(file_priv, buf_handle, buf_reloc_handle, buffers, buf_count);
+			if (ret)
+				goto out_err;
+			DRM_MEMORYBARRIER();
+		}
+
 		rep.ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
 						 req->bo_req.fence_class,
 						 req->bo_req.flags,
@@ -951,35 +997,6 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		data = next;
 		buf_count++;
 
-		if (buf_reloc_handle) {
-			memset(&relocatee, 0, sizeof(relocatee));
-
-			mutex_lock(&dev->struct_mutex);
-			relocatee.buf = drm_lookup_buffer_object(file_priv, buf_handle, 1);
-			mutex_unlock(&dev->struct_mutex);
-			if (!relocatee.buf) {
-				DRM_DEBUG("relocatee buffer invalid %08x\n", buf_handle);
-				ret = -EINVAL;
-				goto out_err;
-			}
-
-			while (buf_reloc_handle) {
-				ret = i915_process_relocs(file_priv, buf_handle, &buf_reloc_handle, &relocatee, buffers, buf_count);
-				if (ret) {
-					DRM_ERROR("process relocs failed\n");
-					break;
-				}
-			}
-
-			drm_bo_kunmap(&relocatee.kmap);
-			mutex_lock(&dev->struct_mutex);
-			drm_bo_usage_deref_locked(&relocatee.buf);
-			mutex_unlock(&dev->struct_mutex);
-
-			if (ret)
-				goto out_err;
-
-		}
 	} while (next != 0);
 	*num_buffers = buf_count;
 	return 0;
@@ -1049,6 +1066,9 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 					buffers, &num_buffers);
 	if (ret)
 		goto out_free;
+
+	/* make sure all previous memory operations have passed */
+	DRM_MEMORYBARRIER();
 
 	/* submit buffer */
 	batch->start = buffers[num_buffers-1]->offset;

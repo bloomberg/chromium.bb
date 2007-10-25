@@ -538,6 +538,7 @@ static int drm_load(drm_device_t *dev)
 
 	if (dev->driver.load != NULL) {
 		DRM_LOCK();
+		/* Shared code returns -errno. */
 		retcode = -dev->driver.load(dev,
 		    dev->id_entry->driver_private);
 		DRM_UNLOCK();
@@ -720,6 +721,9 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		return EINVAL;
 	}
 
+	if (--file_priv->refs != 0)
+		goto done;
+
 	if (dev->driver.preclose != NULL)
 		dev->driver.preclose(dev, file_priv);
 
@@ -795,17 +799,16 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	dev->buf_pgid = 0;
 #endif /* __NetBSD__  || __OpenBSD__ */
 
-	if (--file_priv->refs == 0) {
-		if (dev->driver.postclose != NULL)
-			dev->driver.postclose(dev, file_priv);
-		TAILQ_REMOVE(&dev->files, file_priv, link);
-		free(file_priv, M_DRM);
-	}
+	if (dev->driver.postclose != NULL)
+		dev->driver.postclose(dev, file_priv);
+	TAILQ_REMOVE(&dev->files, file_priv, link);
+	free(file_priv, M_DRM);
 
 	/* ========================================================
 	 * End inline drm_release
 	 */
 
+done:
 	atomic_inc( &dev->counts[_DRM_STAT_CLOSES] );
 #ifdef __FreeBSD__
 	device_unbusy(dev->device);
