@@ -982,6 +982,9 @@ static const FcStringConst  weightConsts[] = {
     { (FC8) "superbold",	FC_WEIGHT_EXTRABOLD },
     { (FC8) "ultrabold",	FC_WEIGHT_ULTRABOLD },
     { (FC8) "bold",		FC_WEIGHT_BOLD },
+    { (FC8) "ultrablack",	FC_WEIGHT_ULTRABLACK },
+    { (FC8) "superblack",	FC_WEIGHT_EXTRABLACK },
+    { (FC8) "extrablack",	FC_WEIGHT_EXTRABLACK },
     { (FC8) "black",		FC_WEIGHT_BLACK },
     { (FC8) "heavy",		FC_WEIGHT_HEAVY },
 };
@@ -1439,8 +1442,10 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    weight = FC_WEIGHT_BOLD;
 	else if (os2->usWeightClass < 850)
 	    weight = FC_WEIGHT_EXTRABOLD;
-	else if (os2->usWeightClass < 950)
+	else if (os2->usWeightClass < 925)
 	    weight = FC_WEIGHT_BLACK;
+	else if (os2->usWeightClass < 1000)
+	    weight = FC_WEIGHT_EXTRABLACK;
 	if ((FcDebug() & FC_DBG_SCANV) && weight != -1)
 	    printf ("\tos2 weight class %d maps to weight %d\n",
 		    os2->usWeightClass, weight);
