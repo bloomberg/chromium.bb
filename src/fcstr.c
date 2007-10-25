@@ -367,7 +367,7 @@ FcStrIsAtIgnoreCase (const FcChar8 *s1, const FcChar8 *s2)
 }
 
 /*
- * Does s1 contain an instance of s2 (ignoring case)?
+ * Does s1 contain an instance of s2 (ignoring blanks and case)?
  */
 
 const FcChar8 *
