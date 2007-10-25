@@ -864,6 +864,9 @@ int i915_process_relocs(struct drm_file *file_priv,
 
 	} while (reloc_offset != reloc_end);
 out:
+	drm_bo_kunmap(&relocatee->kmap);
+	relocatee->data_page = NULL;
+
 	drm_bo_kunmap(&reloc_kmap);
 
 	mutex_lock(&dev->struct_mutex);
@@ -901,7 +904,6 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 		}
 	}
 	
-	drm_bo_kunmap(&relocatee.kmap);
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(&relocatee.buf);
 	mutex_unlock(&dev->struct_mutex);
