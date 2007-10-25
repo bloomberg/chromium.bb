@@ -858,7 +858,6 @@ FcNoticeFoundry(const FT_String *notice)
             const char *n = notice_foundry_data + nf->notice_offset;
             const char *f = notice_foundry_data + nf->foundry_offset;
 
-	    printf ("foundry \"%s\" -> \"%s\"\n", n, f);
 	    if (strstr ((const char *) notice, n))
 		return (const FcChar8 *) f;
         }
