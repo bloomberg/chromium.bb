@@ -27,11 +27,6 @@
 	@FC_FONTPATH@
 	<dir>~/.fonts</dir>
 
-<!-- Font cache directory list -->
-
-	<cachedir>@FC_CACHEDIR@</cachedir>
-	<cachedir>~/.fontconfig</cachedir>
-
 <!--
   Accept deprecated 'mono' alias, replacing it with 'monospace'
 -->
@@ -72,6 +67,11 @@
   Load local system customization file
 -->
 	<include ignore_missing="yes">conf.d</include>
+
+<!-- Font cache directory list -->
+
+	<cachedir>@FC_CACHEDIR@</cachedir>
+	<cachedir>~/.fontconfig</cachedir>
 
 	<config>
 <!--
