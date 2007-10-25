@@ -186,8 +186,8 @@ else
 
 	AC_TRY_LINK([#include <iconv.h>],
 		    [iconv_open ("from", "to");],
-		    [use_iconv=true],
-		    [use_iconv=false])
+		    [use_iconv=1],
+		    [use_iconv=0])
 	
 	if test x$use_iconv = x1; then
 		ICONV_LIBS="-liconv"
