@@ -886,38 +886,38 @@ FcVendorMatch(const FT_Char vendor[4], const FT_Char *vendor_string)
    entries for padding both with spaces and NULs. */
 
 static const struct {
-    const FT_Char   *vendor;
-    const FcChar8   *foundry;
+    const FT_Char   vendor[5];
+    const FcChar8   foundry[13];
 } FcVendorFoundries[] = {
-    { (const FT_Char *) "ADBE", (const FcChar8 *) "adobe"},
-    { (const FT_Char *) "AGFA", (const FcChar8 *) "agfa"},
-    { (const FT_Char *) "ALTS", (const FcChar8 *) "altsys"},
-    { (const FT_Char *) "APPL", (const FcChar8 *) "apple"},
-    { (const FT_Char *) "ARPH", (const FcChar8 *) "arphic"},
-    { (const FT_Char *) "ATEC", (const FcChar8 *) "alltype"},
-    { (const FT_Char *) "B&H",  (const FcChar8 *) "b&h"},
-    { (const FT_Char *) "BITS", (const FcChar8 *) "bitstream"},
-    { (const FT_Char *) "CANO", (const FcChar8 *) "cannon"},
-    { (const FT_Char *) "DYNA", (const FcChar8 *) "dynalab"},
-    { (const FT_Char *) "EPSN", (const FcChar8 *) "epson"},
-    { (const FT_Char *) "FJ",   (const FcChar8 *) "fujitsu"},
-    { (const FT_Char *) "IBM",  (const FcChar8 *) "ibm"},
-    { (const FT_Char *) "ITC",  (const FcChar8 *) "itc"},
-    { (const FT_Char *) "IMPR", (const FcChar8 *) "impress"},
-    { (const FT_Char *) "LARA", (const FcChar8 *) "larabiefonts"},
-    { (const FT_Char *) "LEAF", (const FcChar8 *) "interleaf"},
-    { (const FT_Char *) "LETR", (const FcChar8 *) "letraset"},
-    { (const FT_Char *) "LINO", (const FcChar8 *) "linotype"},
-    { (const FT_Char *) "MACR", (const FcChar8 *) "macromedia"},
-    { (const FT_Char *) "MONO", (const FcChar8 *) "monotype"},
-    { (const FT_Char *) "MS",   (const FcChar8 *) "microsoft"},
-    { (const FT_Char *) "MT",   (const FcChar8 *) "monotype"},
-    { (const FT_Char *) "NEC",  (const FcChar8 *) "nec"},
-    { (const FT_Char *) "PARA", (const FcChar8 *) "paratype"},
-    { (const FT_Char *) "QMSI", (const FcChar8 *) "qms"},
-    { (const FT_Char *) "RICO", (const FcChar8 *) "ricoh"},
-    { (const FT_Char *) "URW",  (const FcChar8 *) "urw"},
-    { (const FT_Char *) "Y&Y",  (const FcChar8 *) "y&y"}
+    { "ADBE", "adobe"},
+    { "AGFA", "agfa"},
+    { "ALTS", "altsys"},
+    { "APPL", "apple"},
+    { "ARPH", "arphic"},
+    { "ATEC", "alltype"},
+    { "B&H",  "b&h"},
+    { "BITS", "bitstream"},
+    { "CANO", "cannon"},
+    { "DYNA", "dynalab"},
+    { "EPSN", "epson"},
+    { "FJ",   "fujitsu"},
+    { "IBM",  "ibm"},
+    { "ITC",  "itc"},
+    { "IMPR", "impress"},
+    { "LARA", "larabiefonts"},
+    { "LEAF", "interleaf"},
+    { "LETR", "letraset"},
+    { "LINO", "linotype"},
+    { "MACR", "macromedia"},
+    { "MONO", "monotype"},
+    { "MS",   "microsoft"},
+    { "MT",   "monotype"},
+    { "NEC",  "nec"},
+    { "PARA", "paratype"},
+    { "QMSI", "qms"},
+    { "RICO", "ricoh"},
+    { "URW",  "urw"},
+    { "Y&Y",  "y&y"}
 };
 
 #define NUM_VENDOR_FOUNDRIES	(int) (sizeof (FcVendorFoundries) / sizeof (FcVendorFoundries[0]))
