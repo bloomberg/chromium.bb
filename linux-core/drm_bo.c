@@ -921,37 +921,37 @@ int drm_bo_mem_space(struct drm_buffer_object * bo,
 EXPORT_SYMBOL(drm_bo_mem_space);
 
 static int drm_bo_new_mask(struct drm_buffer_object * bo,
-			   uint64_t new_mask, uint32_t hint)
+			   uint64_t new_flags, uint64_t used_mask)
 {
 	uint32_t new_props;
 
 	if (bo->type == drm_bo_type_user) {
-		DRM_ERROR("User buffers are not supported yet\n");
+		DRM_ERROR("User buffers are not supported yet.\n");
 		return -EINVAL;
 	}
 
-	if ((new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
+	if ((used_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
 		DRM_ERROR
 		    ("DRM_BO_FLAG_NO_EVICT is only available to priviliged "
-		     "processes\n");
+		     "processes.\n");
 		return -EPERM;
 	}
 
-	if ((new_mask & DRM_BO_FLAG_NO_MOVE)) {
+	if ((new_flags & DRM_BO_FLAG_NO_MOVE)) {
 		DRM_ERROR
 			("DRM_BO_FLAG_NO_MOVE is not properly implemented yet.\n");
 		return -EPERM;
 	}
 
-	new_props = new_mask & (DRM_BO_FLAG_EXE | DRM_BO_FLAG_WRITE |
-				DRM_BO_FLAG_READ);
+	new_props = new_flags & (DRM_BO_FLAG_EXE | DRM_BO_FLAG_WRITE |
+				 DRM_BO_FLAG_READ);
 
 	if (!new_props) {
 		DRM_ERROR("Invalid buffer object rwx properties\n");
 		return -EINVAL;
 	}
 
-	bo->mem.mask = new_mask;
+	bo->mem.mask = new_flags;
 	return 0;
 }
 
@@ -1490,7 +1490,7 @@ int drm_bo_do_validate(struct drm_buffer_object *bo,
 
 
 	DRM_FLAG_MASKED(flags, bo->mem.mask, ~mask);
-	ret = drm_bo_new_mask(bo, flags, hint);
+	ret = drm_bo_new_mask(bo, flags, mask);
 	if (ret)
 		goto out;
 
