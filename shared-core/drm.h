@@ -759,7 +759,7 @@ struct drm_fence_arg {
 
 #define DRM_BO_INIT_MAGIC 0xfe769812
 #define DRM_BO_INIT_MAJOR 1
-#define DRM_BO_INIT_MINOR 1
+#define DRM_BO_INIT_MINOR 0
 #define DRM_BO_INIT_PATCH 0
 
 

@@ -123,10 +123,14 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_UPDATE_DRAW, drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
 
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl, 
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl, 
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl, 
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl, 
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_CREATE, drm_fence_create_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_REFERENCE, drm_fence_reference_ioctl, DRM_AUTH),

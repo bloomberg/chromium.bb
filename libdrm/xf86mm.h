@@ -179,6 +179,9 @@ extern int drmBOSetStatus(int fd, drmBO *buf,
 			  unsigned int hint, 
 			  unsigned int desired_tile_stride,
 			  unsigned int tile_info);
+extern int drmBOVersion(int fd, unsigned int *major,
+			unsigned int *minor,
+			unsigned int *patchlevel);
 
 
 #endif
