@@ -964,6 +964,13 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		buf_handle = req->bo_req.handle;
 		buf_reloc_handle = arg.reloc_handle;
 
+		if (buf_reloc_handle) {
+			ret = i915_exec_reloc(file_priv, buf_handle, buf_reloc_handle, buffers, buf_count);
+			if (ret)
+				goto out_err;
+			DRM_MEMORYBARRIER();
+		}
+
 		rep.ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
 						 req->bo_req.fence_class,
 						 req->bo_req.flags,
@@ -988,11 +995,6 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		data = next;
 		buf_count++;
 
-		if (buf_reloc_handle) {
-			ret = i915_exec_reloc(file_priv, buf_handle, buf_reloc_handle, buffers, buf_count);
-			if (ret)
-				goto out_err;
-		}
 	} while (next != 0);
 	*num_buffers = buf_count;
 	return 0;
