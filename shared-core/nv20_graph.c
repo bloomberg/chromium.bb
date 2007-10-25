@@ -667,10 +667,16 @@ int nv20_graph_save_context(struct nouveau_channel *chan)
 
 static void nv20_graph_rdi(struct drm_device *dev) {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	int i;
+	int i, writecount = 32;
+	uint32_t rdi_index = 0x2c80000;
 
-	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x2c80000);
-	for (i = 0; i < 32; i++)
+	if (dev_priv->chipset == 0x20) {
+		rdi_index = 0x3d0000;
+		writecount = 15;
+	}
+
+	NV_WRITE(NV10_PGRAPH_RDI_INDEX, rdi_index);
+	for (i = 0; i < writecount; i++)
 		NV_WRITE(NV10_PGRAPH_RDI_DATA, 0);
 
 	nouveau_wait_for_idle(dev);
@@ -706,7 +712,7 @@ int nv20_graph_init(struct drm_device *dev) {
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_DEBUG_0, 0x00000000);
 	NV_WRITE(NV04_PGRAPH_DEBUG_1, 0x00118700);
-	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xF20E0435); /* 0x4 = auto ctx switch */
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xF3CE0475); /* 0x4 = auto ctx switch */
 	NV_WRITE(NV10_PGRAPH_DEBUG_4, 0x00000000);
 	NV_WRITE(0x40009C           , 0x00000040);
 
@@ -718,9 +724,9 @@ int nv20_graph_init(struct drm_device *dev) {
 		NV_WRITE(0x400098, 0x40000080);
 		NV_WRITE(0x400B88, 0x000000ff);
 	} else {
-		NV_WRITE(0x400880, 0x00080000);
+		NV_WRITE(0x400880, 0x00080000); /* 0x0008c7df */
 		NV_WRITE(0x400094, 0x00000005);
-		NV_WRITE(0x400B80, 0x45CAA208);
+		NV_WRITE(0x400B80, 0x45CAA208); /* 0x45eae20e */
 		NV_WRITE(0x400B84, 0x24000000);
 		NV_WRITE(0x400098, 0x00000040);
 		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00E00038);
@@ -730,12 +736,28 @@ int nv20_graph_init(struct drm_device *dev) {
 	}
 
 	/* copy tile info from PFB */
-	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
-		NV_WRITE(NV10_PGRAPH_TILE(i), NV_READ(NV10_PFB_TILE(i)));
-		NV_WRITE(NV10_PGRAPH_TLIMIT(i), NV_READ(NV10_PFB_TLIMIT(i)));
-		NV_WRITE(NV10_PGRAPH_TSIZE(i), NV_READ(NV10_PFB_TSIZE(i)));
-		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
+	for (i = 0; i < NV10_PFB_TILE__SIZE; i++) {
+		NV_WRITE(0x00400904 + i*0x10, NV_READ(NV10_PFB_TLIMIT(i)));
+			/* which is NV40_PGRAPH_TLIMIT0(i) ?? */
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0030+i*4);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA, NV_READ(NV10_PFB_TLIMIT(i)));
+		NV_WRITE(0x00400908 + i*0x10, NV_READ(NV10_PFB_TSIZE(i)));
+			/* which is NV40_PGRAPH_TSIZE0(i) ?? */
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0050+i*4);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA, NV_READ(NV10_PFB_TSIZE(i)));
+		NV_WRITE(0x00400900 + i*0x10, NV_READ(NV10_PFB_TILE(i)));
+			/* which is NV40_PGRAPH_TILE0(i) ?? */
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0010+i*4);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA, NV_READ(NV10_PFB_TILE(i)));
 	}
+	for (i = 0; i < 8; i++) {
+		NV_WRITE(0x400980+i*4, NV_READ(0x100300+i*4));
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0090+i*4);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA, NV_READ(0x100300+i*4));
+	}
+	NV_WRITE(0x4009a0, NV_READ(0x100324));
+	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA000C);
+	NV_WRITE(NV10_PGRAPH_RDI_DATA, NV_READ(0x100324));
 
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
