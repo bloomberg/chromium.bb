@@ -2695,61 +2695,36 @@ int drmBOUnmap(int fd, drmBO *buf)
     return 0;
 }
 
-int drmBOValidate(int fd, drmBO *buf, uint32_t fence_class,
-		  uint64_t flags, uint64_t mask,
-		  unsigned hint)
+int drmBOSetStatus(int fd, drmBO *buf, 
+		   uint64_t flags, uint64_t mask,
+		   unsigned int hint, 
+		   unsigned int desired_tile_stride,
+		   unsigned int tile_info)
 {
-    struct drm_bo_op_arg arg;
-    struct drm_bo_op_req *req = &arg.d.req;
-    struct drm_bo_arg_rep *rep = &arg.d.rep;
+
+    struct drm_bo_map_wait_idle_arg arg;
+    struct drm_bo_info_req *req = &arg.d.req;
+    struct drm_bo_info_rep *rep = &arg.d.rep;
     int ret = 0;
 
     memset(&arg, 0, sizeof(arg));
-    req->bo_req.handle = buf->handle;
-    req->bo_req.flags = flags;
-    req->bo_req.mask = mask;
-    req->bo_req.hint = hint;
-    req->bo_req.fence_class = fence_class;
-    req->op = drm_bo_validate;
-
-    do{
-	ret = ioctl(fd, DRM_IOCTL_BO_OP, &arg);
+    req->mask = mask;
+    req->flags = flags;
+    req->handle = buf->handle;
+    req->hint = hint;
+    req->desired_tile_stride = desired_tile_stride;
+    req->tile_info = tile_info;
+    
+    do {
+	    ret = ioctl(fd, DRM_IOCTL_BO_SETSTATUS, &arg);
     } while (ret && errno == EAGAIN);
 
     if (ret) 
-	return -errno;
-    if (!arg.handled)
-	return -EFAULT;
-    if (rep->ret)
-	return rep->ret;
+	    return -errno;
 
-    drmBOCopyReply(&rep->bo_info, buf);
-    return 0;
+    drmBOCopyReply(rep, buf);
 }
 	    
-
-int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle)
-{
-    struct drm_bo_op_arg arg;
-    struct drm_bo_op_req *req = &arg.d.req;
-    struct drm_bo_arg_rep *rep = &arg.d.rep;
-    int ret = 0;
-
-    memset(&arg, 0, sizeof(arg));
-    req->bo_req.handle = buf->handle;
-    req->bo_req.flags = flags;
-    req->arg_handle = fenceHandle;
-    req->op = drm_bo_fence;
-
-    ret = ioctl(fd, DRM_IOCTL_BO_OP, &arg);
-    if (ret) 
-	return -errno;
-    if (!arg.handled)
-	return -EFAULT;
-    if (rep->ret)
-	return rep->ret;
-    return 0;
-}
 
 int drmBOInfo(int fd, drmBO *buf)
 {
@@ -2793,30 +2768,7 @@ int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
     }
     return 0;
 }
-
-int drmBOSetPin(int fd, drmBO *buf, int pin)
-{
-    struct drm_bo_set_pin_arg arg;
-    struct drm_bo_set_pin_req *req = &arg.d.req;
-    struct drm_bo_info_rep *rep = &arg.d.rep;
-    int ret = 0;
-
-    memset(&arg, 0, sizeof(arg));
-    req->handle = buf->handle;
-    req->pin = pin;
-
-    do {
-	ret = ioctl(fd, DRM_IOCTL_BO_SET_PIN, &arg);
-    } while (ret && errno == EAGAIN);
-
-    if (ret)
-	return -errno;
-
-    drmBOCopyReply(rep, buf);
-
-    return 0;
-}
-
+	
 int drmBOBusy(int fd, drmBO *buf, int *busy)
 {
     if (!(buf->flags & DRM_BO_FLAG_SHAREABLE) &&
@@ -2864,13 +2816,20 @@ int drmMMTakedown(int fd, unsigned memType)
     return 0;	
 }
 
-int drmMMLock(int fd, unsigned memType)
+/*
+ * If this function returns an error, and lockBM was set to 1,
+ * the buffer manager is NOT locked.
+ */
+
+int drmMMLock(int fd, unsigned memType, int lockBM, int ignoreNoEvict)
 {
     struct drm_mm_type_arg arg;
     int ret;
 
     memset(&arg, 0, sizeof(arg));
     arg.mem_type = memType;
+    arg.lock_flags |= (lockBM) ? DRM_BO_LOCK_UNLOCK_BM : 0;
+    arg.lock_flags |= (ignoreNoEvict) ? DRM_BO_LOCK_IGNORE_NO_EVICT : 0;
 
     do{
         ret = ioctl(fd, DRM_IOCTL_MM_LOCK, &arg);
@@ -2879,7 +2838,7 @@ int drmMMLock(int fd, unsigned memType)
     return (ret) ? -errno : 0;
 }
 
-int drmMMUnlock(int fd, unsigned memType)
+int drmMMUnlock(int fd, unsigned memType, int unlockBM)
 {
     struct drm_mm_type_arg arg;
     int ret;
@@ -2887,6 +2846,7 @@ int drmMMUnlock(int fd, unsigned memType)
     memset(&arg, 0, sizeof(arg));
     
     arg.mem_type = memType;
+    arg.lock_flags |= (unlockBM) ? DRM_BO_LOCK_UNLOCK_BM : 0;
 
     do{
 	ret = ioctl(fd, DRM_IOCTL_MM_UNLOCK, &arg);
@@ -2894,6 +2854,30 @@ int drmMMUnlock(int fd, unsigned memType)
 
     return (ret) ? -errno : 0;
 }
+
+int drmBOVersion(int fd, unsigned int *major,
+		 unsigned int *minor,
+		 unsigned int *patchlevel)
+{
+    struct drm_bo_version_arg arg;
+    int ret;
+
+    memset(&arg, 0, sizeof(arg));
+    ret = ioctl(fd, DRM_IOCTL_BO_VERSION, &arg);
+    if (ret)
+	return ret;
+
+    if (major)
+	*major = arg.major;
+    if (minor)
+	*minor = arg.minor;
+    if (patchlevel)
+	*patchlevel = arg.patchlevel;
+
+    return (ret) ? -errno : 0;
+}
+
+
 
 #define DRM_MAX_FDS 16
 static struct {

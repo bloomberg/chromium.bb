@@ -675,6 +675,14 @@ struct drm_fence_arg {
  */
 
 /*
+ * Mask: Never evict this buffer. Not even with force. This type of buffer is only
+ * available to root and must be manually removed before buffer manager shutdown
+ * or lock.
+ * Flags: Acknowledge
+ */
+#define DRM_BO_FLAG_NO_EVICT    (1ULL << 4)
+
+/*
  * Mask: Require that the buffer is placed in mappable memory when validated.
  *       If not set the buffer may or may not be in mappable memory when validated.
  * Flags: If set, the buffer is in mappable memory.
@@ -716,6 +724,7 @@ struct drm_fence_arg {
  * Flags: Acknowledge.
  */
 #define DRM_BO_FLAG_FORCE_MAPPABLE (1ULL << 14)
+#define DRM_BO_FLAG_TILE           (1ULL << 15)
 
 /*
  * Memory type flags that can be or'ed together in the mask, but only
@@ -748,11 +757,11 @@ struct drm_fence_arg {
 /* Don't place this buffer on the unfenced list.*/
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
-#define DRM_BO_HINT_ALLOW_UNFENCED_MAP 0x00000010
 
 #define DRM_BO_INIT_MAGIC 0xfe769812
-#define DRM_BO_INIT_MAJOR 0
-#define DRM_BO_INIT_MINOR 1
+#define DRM_BO_INIT_MAJOR 1
+#define DRM_BO_INIT_MINOR 0
+#define DRM_BO_INIT_PATCH 0
 
 
 struct drm_bo_info_req {
@@ -761,6 +770,8 @@ struct drm_bo_info_req {
 	unsigned int handle;
 	unsigned int hint;
 	unsigned int fence_class;
+	unsigned int desired_tile_stride;
+	unsigned int tile_info;
 	unsigned int pad64;
 };
 
@@ -772,27 +783,6 @@ struct drm_bo_create_req {
 	unsigned int page_alignment;
 };
 
-struct drm_bo_op_req {
-	enum {
-		drm_bo_validate,
-		drm_bo_fence,
-		drm_bo_ref_fence,
-	} op;
-	unsigned int arg_handle;
-	struct drm_bo_info_req bo_req;
-};
-
-struct drm_bo_set_pin_req {
-	/** Buffer object ID */
-	unsigned int handle;
-	/**
-	 * - 0: Unpin the given buffer object.
-	 * - 1: Pin the given buffer object, requiring that its offset and
-	 * memory area stay constant until unpin.  The intended use is for
-	 * scanout buffers.
-	 */
-	unsigned int pin;
-};
 
 /*
  * Reply flags
@@ -849,6 +839,17 @@ struct drm_bo_map_wait_idle_arg {
 	} d;
 };
 
+struct drm_bo_op_req {
+	enum {
+		drm_bo_validate,
+		drm_bo_fence,
+		drm_bo_ref_fence,
+	} op;
+	unsigned int arg_handle;
+	struct drm_bo_info_req bo_req;
+};
+
+
 struct drm_bo_op_arg {
 	uint64_t next;
 	union {
@@ -859,12 +860,6 @@ struct drm_bo_op_arg {
 	unsigned int pad64;
 };
 
-struct drm_bo_set_pin_arg {
-	union {
-		struct drm_bo_set_pin_req req;
-		struct drm_bo_info_rep rep;
-	} d;
-};
 
 #define DRM_BO_MEM_LOCAL 0
 #define DRM_BO_MEM_TT 1
@@ -877,8 +872,18 @@ struct drm_bo_set_pin_arg {
 
 #define DRM_BO_MEM_TYPES 8 /* For now. */
 
+#define DRM_BO_LOCK_UNLOCK_BM       (1 << 0)
+#define DRM_BO_LOCK_IGNORE_NO_EVICT (1 << 1)
+
+struct drm_bo_version_arg {
+	uint32_t major;
+	uint32_t minor;
+	uint32_t patchlevel;
+};
+
 struct drm_mm_type_arg {
 	unsigned int mem_type;
+        unsigned int lock_flags;
 };
 
 struct drm_mm_init_arg {
@@ -1069,10 +1074,11 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_UNREFERENCE        DRM_IOWR(0xd2, struct drm_bo_handle_arg)
-#define DRM_IOCTL_BO_OP                 DRM_IOWR(0xd3, struct drm_bo_op_arg)
+#define DRM_IOCTL_BO_SETSTATUS          DRM_IOWR(0xd3, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
-#define DRM_IOCTL_BO_SET_PIN		DRM_IOWR(0xd6, struct drm_bo_set_pin_arg)
+#define DRM_IOCTL_BO_VERSION          DRM_IOR(0xd6, struct drm_bo_version_arg)
+
 
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)

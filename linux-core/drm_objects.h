@@ -43,6 +43,7 @@ struct drm_bo_mem_reg;
 enum drm_object_type {
 	drm_fence_type,
 	drm_buffer_type,
+	drm_lock_type,
 	    /*
 	     * Add other user space object types here.
 	     */
@@ -377,7 +378,6 @@ struct drm_buffer_object {
 	unsigned long num_pages;
 
 	/* For pinned buffers */
-	int pinned;
 	struct drm_mm_node *pinned_node;
 	uint32_t pinned_mem_type;
 	struct list_head pinned_lru;
@@ -415,6 +415,13 @@ struct drm_mem_type_manager {
 	void *io_addr;
 };
 
+struct drm_bo_lock {
+	struct drm_user_object base;
+	wait_queue_head_t queue;
+	atomic_t write_lock_pending;
+	atomic_t readers;
+};
+
 #define _DRM_FLAG_MEMTYPE_FIXED     0x00000001	/* Fixed (on-card) PCI memory */
 #define _DRM_FLAG_MEMTYPE_MAPPABLE  0x00000002	/* Memory mappable */
 #define _DRM_FLAG_MEMTYPE_CACHED    0x00000004	/* Cached binding */
@@ -424,8 +431,8 @@ struct drm_mem_type_manager {
 #define _DRM_FLAG_MEMTYPE_CSELECT   0x00000020	/* Select caching */
 
 struct drm_buffer_manager {
-	struct mutex init_mutex;
-	struct mutex evict_mutex;
+        struct drm_bo_lock bm_lock;
+        struct mutex evict_mutex;
 	int nice_mode;
 	int initialized;
 	struct drm_file *last_to_validate;
@@ -471,13 +478,12 @@ extern int drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo, 
 extern int drm_bo_unreference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_op_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-int drm_bo_set_pin_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-
+extern int drm_bo_setstatus_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_version_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_driver_finish(struct drm_device *dev);
 extern int drm_bo_driver_init(struct drm_device *dev);
 extern int drm_bo_pci_offset(struct drm_device *dev,
@@ -513,6 +519,7 @@ extern int drm_bo_init_mm(struct drm_device * dev, unsigned type,
 extern int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 				  uint32_t fence_class, uint64_t flags,
 				  uint64_t mask, uint32_t hint,
+				  int use_old_fence_class,
 				  struct drm_bo_info_rep * rep,
 				  struct drm_buffer_object **bo_rep);
 extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file * file_priv,
@@ -609,6 +616,21 @@ extern int drm_mem_reg_ioremap(struct drm_device *dev, struct drm_bo_mem_reg * m
 			       void **virtual);
 extern void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg * mem,
 				void *virtual);
+/*
+ * drm_bo_lock.c 
+ * Simple replacement for the hardware lock on buffer manager init and clean.
+ */
+
+
+extern void drm_bo_init_lock(struct drm_bo_lock *lock);
+extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
+extern int drm_bo_read_lock(struct drm_bo_lock *lock);
+extern int drm_bo_write_lock(struct drm_bo_lock *lock, 
+			     struct drm_file *file_priv);
+
+extern int drm_bo_write_unlock(struct drm_bo_lock *lock, 
+			       struct drm_file *file_priv);
+
 #ifdef CONFIG_DEBUG_MUTEXES
 #define DRM_ASSERT_LOCKED(_mutex)					\
 	BUG_ON(!mutex_is_locked(_mutex) ||				\

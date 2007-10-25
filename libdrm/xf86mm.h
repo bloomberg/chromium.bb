@@ -164,7 +164,6 @@ extern int drmBOInfo(int fd, drmBO *buf);
 extern int drmBOBusy(int fd, drmBO *buf, int *busy);
 
 extern int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint);
-int drmBOSetPin(int fd, drmBO *buf, int pin);
 
 /*
  * Initialization functions.
@@ -173,8 +172,16 @@ int drmBOSetPin(int fd, drmBO *buf, int pin);
 extern int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
 		     unsigned memType);
 extern int drmMMTakedown(int fd, unsigned memType);
-extern int drmMMLock(int fd, unsigned memType);
-extern int drmMMUnlock(int fd, unsigned memType);
+extern int drmMMLock(int fd, unsigned memType, int lockBM, int ignoreNoEvict);
+extern int drmMMUnlock(int fd, unsigned memType, int unlockBM);
+extern int drmBOSetStatus(int fd, drmBO *buf, 
+			  uint64_t flags, uint64_t mask,
+			  unsigned int hint, 
+			  unsigned int desired_tile_stride,
+			  unsigned int tile_info);
+extern int drmBOVersion(int fd, unsigned int *major,
+			unsigned int *minor,
+			unsigned int *patchlevel);
 
 
 #endif

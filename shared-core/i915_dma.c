@@ -180,6 +180,7 @@ static int i915_initialize(struct drm_device * dev,
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
 	dev->dev_private = (void *)dev_priv;
+	mutex_init(&dev_priv->cmdbuf_mutex);
 	return 0;
 }
 
@@ -461,7 +462,7 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 	int i = 0, count, ret;
 
 	if (cmd->sz & 0x3) {
-		DRM_ERROR("alignment");
+		DRM_ERROR("alignment\n");
 		return -EINVAL;
 	}
 
@@ -499,7 +500,7 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 	RING_LOCALS;
 
 	if ((batch->start | batch->used) & 0x7) {
-		DRM_ERROR("alignment");
+		DRM_ERROR("alignment\n");
 		return -EINVAL;
 	}
 
@@ -831,6 +832,9 @@ int i915_process_relocs(struct drm_file *file_priv,
 
 	} while (reloc_offset != reloc_end);
 out:
+	drm_bo_kunmap(&relocatee->kmap);
+	relocatee->data_page = NULL;
+
 	drm_bo_kunmap(&reloc_kmap);
 
 	mutex_lock(&dev->struct_mutex);
@@ -868,7 +872,6 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 		}
 	}
 	
-	drm_bo_kunmap(&relocatee.kmap);
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(&relocatee.buf);
 	mutex_unlock(&dev->struct_mutex);
@@ -929,11 +932,19 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		buf_handle = req->bo_req.handle;
 		buf_reloc_handle = arg.reloc_handle;
 
+		if (buf_reloc_handle) {
+			ret = i915_exec_reloc(file_priv, buf_handle, buf_reloc_handle, buffers, buf_count);
+			if (ret)
+				goto out_err;
+			DRM_MEMORYBARRIER();
+		}
+
 		rep.ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
 						 req->bo_req.fence_class,
 						 req->bo_req.flags,
 						 req->bo_req.mask,
 						 req->bo_req.hint,
+						 0,
 						 &rep.bo_info,
 						 &buffers[buf_count]);
 
@@ -953,11 +964,6 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		data = next;
 		buf_count++;
 
-		if (buf_reloc_handle) {
-			ret = i915_exec_reloc(file_priv, buf_handle, buf_reloc_handle, buffers, buf_count);
-			if (ret)
-				goto out_err;
-		}
 	} while (next != 0);
 	*num_buffers = buf_count;
 	return 0;
@@ -989,8 +995,6 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	}
 
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-
 	if (batch->num_cliprects && DRM_VERIFYAREA_READ(batch->cliprects,
 							batch->num_cliprects *
 							sizeof(struct drm_clip_rect)))
@@ -999,11 +1003,30 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	if (exec_buf->num_buffers > dev_priv->max_validate_buffers)
 		return -EINVAL;
 
+
+	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	if (ret) 
+		return ret;
+
+	/*
+	 * The cmdbuf_mutex makes sure the validate-submit-fence
+	 * operation is atomic. 
+	 */
+
+	ret = mutex_lock_interruptible(&dev_priv->cmdbuf_mutex);
+	if (ret) {
+		drm_bo_read_unlock(&dev->bm.bm_lock);
+		return -EAGAIN;
+	}
+
 	num_buffers = exec_buf->num_buffers;
 
 	buffers = drm_calloc(num_buffers, sizeof(struct drm_buffer_object *), DRM_MEM_DRIVER);
-	if (!buffers)
+	if (!buffers) {
+	        drm_bo_read_unlock(&dev->bm.bm_lock);
+		mutex_unlock(&dev_priv->cmdbuf_mutex);
 		return -ENOMEM;
+        }
 
 	/* validate buffer list + fixup relocations */
 	ret = i915_validate_buffer_list(file_priv, 0, exec_buf->ops_list,
@@ -1012,7 +1035,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 		goto out_free;
 
 	/* make sure all previous memory operations have passed */
-	asm volatile("mfence":::"memory");
+	DRM_MEMORYBARRIER();
 
 	/* submit buffer */
 	batch->start = buffers[num_buffers-1]->offset;
@@ -1051,6 +1074,8 @@ out_err0:
 out_free:
 	drm_free(buffers, (exec_buf->num_buffers * sizeof(struct drm_buffer_object *)), DRM_MEM_DRIVER);
 
+	mutex_unlock(&dev_priv->cmdbuf_mutex);
+	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
 #endif

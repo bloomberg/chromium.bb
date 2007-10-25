@@ -212,6 +212,8 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	unsigned long bus_offset;
 	unsigned long bus_size;
 	
+	dev = bo->dev;
+	while(drm_bo_read_lock(&dev->bm.bm_lock));
 
 	mutex_lock(&bo->mutex);
 
@@ -289,6 +291,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 		data->type = VM_FAULT_OOM;
 out_unlock:
 	mutex_unlock(&bo->mutex);
+	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return NULL;
 }
 

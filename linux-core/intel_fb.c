@@ -500,19 +500,12 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
 				       DRM_BO_FLAG_MEM_TT |
-				       DRM_BO_FLAG_MEM_VRAM,
-				       0, 0, 0,
+				       DRM_BO_FLAG_MEM_VRAM |
+				       DRM_BO_FLAG_NO_EVICT,
+				       DRM_BO_HINT_DONT_FENCE, 0, 0,
 				       &fbo);
 	if (ret || !fbo) {
 		printk(KERN_ERR "failed to allocate framebuffer\n");
-		drm_framebuffer_destroy(fb);
-		framebuffer_release(info);
-		return -EINVAL;
-	}
-
-	ret = drm_bo_set_pin(dev, fbo, 1);
-	if (ret) {
-		printk(KERN_ERR "failed to pin framebuffer, aborting\n");
 		drm_framebuffer_destroy(fb);
 		framebuffer_release(info);
 		return -EINVAL;

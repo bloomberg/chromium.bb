@@ -143,6 +143,7 @@ struct drm_i915_private {
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
 	unsigned int max_validate_buffers;
+	struct mutex cmdbuf_mutex;
 #endif
 
 	DRM_SPINTYPE swaps_lock;
