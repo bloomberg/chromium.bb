@@ -1,11 +1,66 @@
 			Fontconfig
 	Font configuration and customization library
-		      Version 2.4.2
-		        2006-12-02
+		  Version 2.4.91 (2.5 RC1)
+		        2007-10-25
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.4.91 (2.5 RC1)
+
+Behdad Esfahbod (1):
+      Update CaseFolding.txt to Unicode 5.1.0
+
+Dwayne Bailey (1):
+      Add/fix *.orth files for South African languages
+
+Hideki Yamane (1):
+      Handle Japanese fonts better. (debian bug #435971)
+
+Keith Packard (32):
+      rehash increment could be zero, causing rehash infinite loop.
+      Work around FreeType bug when glyph name buffer is too small.
+      Free temporary string in FcDirCacheUnlink (Bug #11758)
+      Fix ChangeLog generation to avoid circular make dependency
+      Store font directory mtime in cache file.
+      Comment about mmaping cache files was misleading.
+      Make FC_FULLNAME include all fullname entries, elide nothing. [bug 12827]
+      Remove unneeded call to access(2) in fc-cache.
+      Improve verbose messages from fc-cache.
+      Verbose message about cleaning directories was imprecise
+      Don't use X_OK bit when checking for writable directories (bug 12438)
+      Have fc-cache remove invalid cache files from cache directories.
+      FcConfigParseAndLoad doc was missing the last param.
+      Place language name in constant array instead of pointer.
+      Must not insert cache into hash table before completely validating.
+      Eliminate relocations for glyph name table.
+      Eliminate relocations from FcCodePageRange structure (bug 10982).
+      Leave generated headers out of distribution (bug 12734).
+      Move <cachedir> elements to the end of fonts.conf.
+      Add BRAILLE PATTERN BLANK to list of blank glyphs.
+      Replace makealias pattern with something supported by POSIX grep (bug 11083)
+      FcInit should return FcFalse when FcInitLoadConfigAndFonts fails. (bug 10976)
+      There is no U+1257 (bug 10899).
+      Spelling errors in documentation. (bug 10879).
+      Oops. Left debugging printf in previous commit.
+      Handle UltraBlack weight.
+      Fix parallel build in fontconfig/docs (bug 10481).
+      Distribute man source files for command line programs (bug 9678).
+      Ensure weight/slant values present even when style is supplied (bug 9313).
+      fontconfig needs configure option to use gnu iconv (bug 4083).
+      Match 'ultra' on word boundaries to detect ultra bold fonts. (bug 2511)
+      Build fix for Solaris 10 with GCC.
+
+Mike FABIAN (1):
+      Avoid crashes if config files contain junk.
+
+Stephan Kulow (1):
+      Make FcPatternDuplicate copy the binding instead of always using Strong.
+
+Tilman Sauerbeck (2):
+      Store FcNoticeFoundries in read-only memory.
+      Store FcVendorFoundries in read-only memory.
 
 2.4.2
 
