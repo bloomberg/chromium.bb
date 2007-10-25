@@ -31,13 +31,13 @@ SGML = ${FC_MATCH_SRC}/fc-match.sgml
 
 INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
-EXTRA_DIST=fc-match.sgml
+man_MANS=fc-match.1
+
+EXTRA_DIST=fc-match.sgml $(man_MANS)
 
 fc_match_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
-
-man_MANS=fc-match.1
 
 ${man_MANS}: ${SGML}
 	$(RM) $@

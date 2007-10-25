@@ -31,13 +31,13 @@ INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 bin_PROGRAMS=fc-cat
 
-EXTRA_DIST=fc-cat.sgml
+man_MANS=fc-cat.1
+
+EXTRA_DIST=fc-cat.sgml fc-cat.1
 
 fc_cat_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
-
-man_MANS=fc-cat.1
 
 ${man_MANS}: ${SGML}	
 	$(RM) $@

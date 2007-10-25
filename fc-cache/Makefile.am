@@ -37,13 +37,13 @@ INCLUDES=-I${top_srcdir} -I${top_srcdir}/src $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
 bin_PROGRAMS=fc-cache
 
-EXTRA_DIST=fc-cache.sgml
+man_MANS=fc-cache.1
+
+EXTRA_DIST=fc-cache.sgml $(man_MANS)
 
 fc_cache_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
-
-man_MANS=fc-cache.1
 
 ${man_MANS}: ${SGML}	
 	$(RM) $@
