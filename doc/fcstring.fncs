@@ -32,7 +32,7 @@
 @DESC@
 Converts the next Unicode char from <parameter>src</parameter> into
 <parameter>dst</parameter> and returns the number of bytes containing the
-char.  <parameter>src</parameter> nust be at least
+char.  <parameter>src</parameter> must be at least
 <parameter>len</parameter> bytes long.
 @@
 

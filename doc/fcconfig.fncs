@@ -131,7 +131,7 @@ blanks were present in the configuration, this function will return 0.
 @@
 
 @RET@           int
-@FUNC@          FcConfigGetRescanInverval
+@FUNC@          FcConfigGetRescanInterval
 @TYPE1@         FcConfig *                      @ARG1@          config
 @PURPOSE@	Get config rescan interval
 @DESC@
@@ -141,7 +141,7 @@ a call to FcFontList when this interval has passed since the last check.
 @@
 
 @RET@           FcBool
-@FUNC@          FcConfigSetRescanInverval
+@FUNC@          FcConfigSetRescanInterval
 @TYPE1@         FcConfig *			@ARG1@		config
 @TYPE2@		int%                       	@ARG2@          rescanInterval
 @PURPOSE@	Set config rescan interval
