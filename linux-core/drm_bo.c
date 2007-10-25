@@ -2260,15 +2260,8 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	}
 	if (arg->major != DRM_BO_INIT_MAJOR) {
 		DRM_ERROR("libdrm and kernel DRM buffer object interface major\n"
-			  "\tversion don't match. Got %d, expected %d,\n",
+			  "\tversion don't match. Got %d, expected %d.\n",
 			  arg->major, DRM_BO_INIT_MAJOR);
-		return -EINVAL;
-	}
-	if (arg->minor > DRM_BO_INIT_MINOR) {
-		DRM_ERROR("libdrm expects a newer DRM buffer object interface.\n"
-			  "\tlibdrm buffer object interface version is %d.%d.\n"
-			  "\tkernel DRM buffer object interface version is %d.%d\n",
-			  arg->major, arg->minor, DRM_BO_INIT_MAJOR, DRM_BO_INIT_MINOR);
 		return -EINVAL;
 	}
 
@@ -2532,6 +2525,18 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object * bo)
 	}
 
 	list->user_token = ((uint64_t) list->hash.key) << PAGE_SHIFT;
+
+	return 0;
+}
+
+int drm_bo_version_ioctl(struct drm_device *dev, void *data, 
+			 struct drm_file *file_priv)
+{
+	struct drm_bo_version_arg *arg = (struct drm_bo_version_arg *)data;
+	
+	arg->major = DRM_BO_INIT_MAJOR;
+	arg->minor = DRM_BO_INIT_MINOR;
+	arg->patchlevel = DRM_BO_INIT_PATCH;
 
 	return 0;
 }

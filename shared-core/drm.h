@@ -758,8 +758,9 @@ struct drm_fence_arg {
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
 
 #define DRM_BO_INIT_MAGIC 0xfe769812
-#define DRM_BO_INIT_MAJOR 0
+#define DRM_BO_INIT_MAJOR 1
 #define DRM_BO_INIT_MINOR 1
+#define DRM_BO_INIT_PATCH 0
 
 
 struct drm_bo_info_req {
@@ -873,6 +874,12 @@ struct drm_bo_op_arg {
 #define DRM_BO_LOCK_UNLOCK_BM       (1 << 0)
 #define DRM_BO_LOCK_IGNORE_NO_EVICT (1 << 1)
 
+struct drm_bo_version_arg {
+	uint32_t major;
+	uint32_t minor;
+	uint32_t patchlevel;
+};
+
 struct drm_mm_type_arg {
 	unsigned int mem_type;
         unsigned int lock_flags;
@@ -976,6 +983,7 @@ struct drm_mm_init_arg {
 #define DRM_IOCTL_BO_SETSTATUS          DRM_IOWR(0xd3, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
+#define DRM_IOCTL_BO_VERSION          DRM_IOR(0xd6, struct drm_bo_version_arg)
 
 
 /*@}*/

@@ -2855,6 +2855,30 @@ int drmMMUnlock(int fd, unsigned memType, int unlockBM)
     return (ret) ? -errno : 0;
 }
 
+int drmBOVersion(int fd, unsigned int *major,
+		 unsigned int *minor,
+		 unsigned int *patchlevel)
+{
+    struct drm_bo_version_arg arg;
+    int ret;
+
+    memset(&arg, 0, sizeof(arg));
+    ret = ioctl(fd, DRM_IOCTL_BO_VERSION, &arg);
+    if (ret)
+	return ret;
+
+    if (major)
+	*major = arg.major;
+    if (minor)
+	*minor = arg.minor;
+    if (patchlevel)
+	*patchlevel = arg.patchlevel;
+
+    return (ret) ? -errno : 0;
+}
+
+
+
 #define DRM_MAX_FDS 16
 static struct {
     char *BusID;
