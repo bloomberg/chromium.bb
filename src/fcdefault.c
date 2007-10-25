@@ -122,17 +122,11 @@ FcDefaultSubstitute (FcPattern *pattern)
     FcValue v;
     int	    i;
 
-    if (FcPatternObjectGet (pattern, FC_STYLE_OBJECT, 0, &v) == FcResultNoMatch)
-    {
-	if (FcPatternObjectGet (pattern, FC_WEIGHT_OBJECT, 0, &v) == FcResultNoMatch )
-	{
-	    FcPatternObjectAddInteger (pattern, FC_WEIGHT_OBJECT, FC_WEIGHT_MEDIUM);
-	}
-	if (FcPatternObjectGet (pattern, FC_SLANT_OBJECT, 0, &v) == FcResultNoMatch)
-	{
-	    FcPatternObjectAddInteger (pattern, FC_SLANT_OBJECT, FC_SLANT_ROMAN);
-	}
-    }
+    if (FcPatternObjectGet (pattern, FC_WEIGHT_OBJECT, 0, &v) == FcResultNoMatch )
+	FcPatternObjectAddInteger (pattern, FC_WEIGHT_OBJECT, FC_WEIGHT_MEDIUM);
+
+    if (FcPatternObjectGet (pattern, FC_SLANT_OBJECT, 0, &v) == FcResultNoMatch)
+	FcPatternObjectAddInteger (pattern, FC_SLANT_OBJECT, FC_SLANT_ROMAN);
 
     if (FcPatternObjectGet (pattern, FC_WIDTH_OBJECT, 0, &v) == FcResultNoMatch)
 	FcPatternObjectAddInteger (pattern, FC_WIDTH_OBJECT, FC_WIDTH_NORMAL);
