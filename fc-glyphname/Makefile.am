@@ -34,8 +34,6 @@ TARG=fcglyphname.h
 
 noinst_PROGRAMS=fc-glyphname
 
-noinst_HEADERS=$(TARG)
-
 noinst_MANS=fc-glyphname.man
 
 GLYPHNAME=zapfdingbats.txt
@@ -49,7 +47,7 @@ $(TARG): $(STMPL) fc-glyphname$(EXEEXT) $(SGLYPHNAME)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
-BUILT_SOURCES = $(ALIAS_FILES)
+BUILT_SOURCES = $(ALIAS_FILES) $(TARG)
 
 $(ALIAS_FILES): 
 	touch $(ALIAS_FILES)

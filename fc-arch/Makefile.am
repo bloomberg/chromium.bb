@@ -37,8 +37,6 @@ ARCHITECTURE=@ARCHITECTURE@
 
 noinst_PROGRAMS=fc-arch
 
-noinst_HEADERS=$(TARG)
-
 noinst_MANS=fc-arch.man
 
 EXTRA_DIST=$(TMPL)
@@ -49,7 +47,7 @@ $(TARG):fc-arch${EXEEXT} $(STMPL) ${top_srcdir}/src/fcint.h ../config.h
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
-BUILT_SOURCES = $(ALIAS_FILES)
+BUILT_SOURCES = $(ALIAS_FILES) $(TARG)
 
 $(ALIAS_FILES): 
 	touch $(ALIAS_FILES)

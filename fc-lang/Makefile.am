@@ -34,8 +34,6 @@ TARG=fclang.h
 
 noinst_PROGRAMS=fc-lang
 
-noinst_HEADERS=$(TARG)
-
 noinst_MANS=fc-lang.man
 
 ORTH=@ORTH_FILES@
@@ -48,7 +46,7 @@ $(TARG):$(ORTH) fc-lang${EXEEXT} $(STMPL)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
-BUILT_SOURCES = $(ALIAS_FILES)
+BUILT_SOURCES = $(ALIAS_FILES) $(TARG)
 
 $(ALIAS_FILES): 
 	touch $(ALIAS_FILES)
