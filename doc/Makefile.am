@@ -108,7 +108,7 @@ $(man3_MANS): func.refs
 
 func.refs: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) func.refs
-	$(DOC2MAN) local-fontconfig-devel.sgml
+	$(DOC2MAN) local-fontconfig-devel.sgml && \
 	mv manpage.refs func.refs
 	$(RM) manpage.links
 
