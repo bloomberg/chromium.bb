@@ -111,7 +111,7 @@
 #define FC_BANK_LANGS	    0xfcfcfcfc
 
 /* slim_internal.h */
-#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && defined(__ELF__)
+#if (__GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 3)) && defined(__ELF__) && !defined(__sun)
 #define FcPrivate		__attribute__((__visibility__("hidden")))
 #define HAVE_GNUC_ATTRIBUTE 1
 #include "fcalias.h"
