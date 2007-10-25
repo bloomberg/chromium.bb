@@ -801,29 +801,47 @@ FcSfntNameLanguage (FT_SfntName *sname)
 /* Order is significant.  For example, some B&H fonts are hinted by
    URW++, and both strings appear in the notice. */
 
-static const struct {
-    const FT_String *notice;
-    const FcChar8   *foundry;
-} FcNoticeFoundries[] = {
-    { (const FT_String *) "Bigelow",	(const FcChar8 *) "b&h" },
-    { (const FT_String *) "Adobe",	(const FcChar8 *) "adobe" },
-    { (const FT_String *) "Bitstream",	(const FcChar8 *) "bitstream" },
-    { (const FT_String *) "Monotype",	(const FcChar8 *) "monotype" },
-    { (const FT_String *) "Linotype",	(const FcChar8 *) "linotype" },
-    { (const FT_String *) "LINOTYPE-HELL",
-					(const FcChar8 *) "linotype" },
-    { (const FT_String *) "IBM",	(const FcChar8 *) "ibm" },
-    { (const FT_String *) "URW",	(const FcChar8 *) "urw" },
-    { (const FT_String *) "International Typeface Corporation", 
-					(const FcChar8 *) "itc" },
-    { (const FT_String *) "Tiro Typeworks",
-					(const FcChar8 *) "tiro" },
-    { (const FT_String *) "XFree86",	(const FcChar8 *) "xfree86" },
-    { (const FT_String *) "Microsoft",	(const FcChar8 *) "microsoft" },
-    { (const FT_String *) "Omega",	(const FcChar8 *) "omega" },
-    { (const FT_String *) "Font21",	(const FcChar8 *) "hwan" },
-    { (const FT_String *) "HanYang System",
-					(const FcChar8 *) "hanyang" }
+static const char notice_foundry_data[] =
+	"Bigelow\0b&h\0"
+	"Adobe\0adobe\0"
+	"Bitstream\0bitstream\0"
+	"Monotype\0monotype\0"
+	"Linotype\0linotype\0"
+	"LINOTYPE-HELL\0linotype\0"
+	"IBM\0ibm\0"
+	"URW\0urw\0"
+	"International Typeface Corporation\0itc\0"
+	"Tiro Typeworks\0tiro\0"
+	"XFree86\0xfree86\0"
+	"Microsoft\0microsoft\0"
+	"Omega\0omega\0"
+	"Font21\0hwan\0"
+	"HanYang System\0hanyang";
+
+struct _notice_foundry {
+    /* these are the offsets into the
+     * notice_foundry_data array.
+     */
+    unsigned char notice_offset;
+    unsigned char foundry_offset;
+};
+
+static const struct _notice_foundry FcNoticeFoundries[] = {
+    { 0, 8 },
+    { 12, 18 },
+    { 24, 34 },
+    { 44, 53 },
+    { 62, 71 },
+    { 80, 94 },
+    { 103, 107 },
+    { 111, 115 },
+    { 119, 154 },
+    { 158, 173 },
+    { 178, 186 },
+    { 194, 204 },
+    { 214, 220 },
+    { 226, 233 },
+    { 238, 253 }
 };
 
 #define NUM_NOTICE_FOUNDRIES	(int) (sizeof (FcNoticeFoundries) / sizeof (FcNoticeFoundries[0]))
@@ -835,8 +853,15 @@ FcNoticeFoundry(const FT_String *notice)
 
     if (notice)
 	for(i = 0; i < NUM_NOTICE_FOUNDRIES; i++)
-	    if (strstr ((const char *) notice, (const char *) FcNoticeFoundries[i].notice))
-		return FcNoticeFoundries[i].foundry;
+        {
+            const struct _notice_foundry *nf = &FcNoticeFoundries[i];
+            const char *n = notice_foundry_data + nf->notice_offset;
+            const char *f = notice_foundry_data + nf->foundry_offset;
+
+	    printf ("foundry \"%s\" -> \"%s\"\n", n, f);
+	    if (strstr ((const char *) notice, n))
+		return (const FcChar8 *) f;
+        }
     return 0;
 }
 
