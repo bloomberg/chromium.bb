@@ -294,7 +294,7 @@ built.
     nai			North American Indian				indiennes d'Amérique du Nord, autres langues
     nau		na	Nauru						nauruan
     nav		nv	Navajo; Navaho					navaho
-    nbl		nr	Ndebele, South; South Ndebele			ndébélé du Sud
+*   nbl		nr	Ndebele, South; South Ndebele			ndébélé du Sud
     nde		nd	Ndebele, North; North Ndebele			ndébélé du Nord
     ndo		ng	Ndonga						ndonga
     nds			Low German; Low Saxon; German, Low; Saxon, Low	bas allemand; bas saxon; allemand, bas; saxon, bas
@@ -308,7 +308,7 @@ built.
 *   nor		no	Norwegian					norvégien
 *   nno		nn	Norwegian Nynorsk; Nynorsk, Norwegian		norvégien nynorsk; nynorsk, norvégien
 *   nob		nb	Norwegian Bokmål; Bokmål, Norwegian		norvégien bokmål; bokmål, norvégien
-    nso			Sotho, Northern					sotho du Nord
+*   nso			Sotho, Northern					sotho du Nord
     nub			Nubian languages				nubiennes, langues
 *   nya		ny	Chichewa; Chewa; Nyanja				chichewa; chewa; nyanja
     nym			Nyamwezi					nyamwezi
@@ -389,7 +389,7 @@ built.
     sog			Sogdian						sogdien
 *   som		so	Somali						somali
     son			Songhai						songhai
-    sot		st	Sotho, Southern					sotho du Sud
+*   sot		st	Sotho, Southern					sotho du Sud
 *   spa		es	Spanish; Castilian				espagnol; castillan
 *   alb/sqi*	sq	Albanian					albanais
     srd		sc	Sardinian					sarde
@@ -397,7 +397,7 @@ built.
 *		sh	Serbo-Croatian					serbo-croate
     srr			Serer						sérère
     ssa			Nilo-Saharan (Other)				nilo-sahariennes, autres langues
-    ssw		ss	Swati						swati
+*   ssw		ss	Swati						swati
     suk			Sukuma						sukuma
     sun		su	Sundanese					soundanais
     sus			Susu						soussou
