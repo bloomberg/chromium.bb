@@ -1288,6 +1288,33 @@ FcParseBool (FcConfigParse *parse)
     FcStrFree (s);
 }
 
+static FcBool
+FcConfigLexBinding (FcConfigParse   *parse,
+		    const FcChar8   *binding_string,
+		    FcValueBinding  *binding_ret)
+{
+    FcValueBinding binding;
+    
+    if (!binding_string)
+	binding = FcValueBindingWeak;
+    else
+    {
+	if (!strcmp ((char *) binding_string, "weak"))
+	    binding = FcValueBindingWeak;
+	else if (!strcmp ((char *) binding_string, "strong"))
+	    binding = FcValueBindingStrong;
+	else if (!strcmp ((char *) binding_string, "same"))
+	    binding = FcValueBindingSame;
+	else
+	{
+	    FcConfigMessage (parse, FcSevereWarning, "invalid binding \"%s\"", binding_string);
+	    return FcFalse;
+	}
+    }
+    *binding_ret = binding;
+    return FcTrue;
+}
+
 static void
 FcParseFamilies (FcConfigParse *parse, FcVStackTag tag)
 {
@@ -1357,7 +1384,10 @@ FcParseAlias (FcConfigParse *parse)
     FcEdit	*edit = 0, *next;
     FcVStack	*vstack;
     FcTest	*test;
+    FcValueBinding  binding;
 
+    if (!FcConfigLexBinding (parse, FcConfigGetAttribute (parse, "binding"), &binding))
+	return;
     while ((vstack = FcVStackPop (parse))) 
     {
 	switch (vstack->tag) {
@@ -1419,7 +1449,7 @@ FcParseAlias (FcConfigParse *parse)
 			     FC_FAMILY_OBJECT,
 			     FcOpPrepend,
 			     prefer,
-			     FcValueBindingWeak);
+			     binding);
 	if (edit)
 	    edit->next = 0;
 	else
@@ -1432,7 +1462,7 @@ FcParseAlias (FcConfigParse *parse)
 			     FC_FAMILY_OBJECT,
 			     FcOpAppend,
 			     accept,
-			     FcValueBindingWeak);
+			     binding);
 	if (edit)
 	    edit->next = next;
 	else
@@ -1445,7 +1475,7 @@ FcParseAlias (FcConfigParse *parse)
 			     FC_FAMILY_OBJECT,
 			     FcOpAppendLast,
 			     def,
-			     FcValueBindingWeak);
+			     binding);
 	if (edit)
 	    edit->next = next;
 	else
@@ -1650,7 +1680,6 @@ FcConfigLexCompare (const FcChar8 *compare)
     return FcConfigLexOp (compare, fcCompareOps, NUM_COMPARE_OPS);
 }
 
-
 static void
 FcParseTest (FcConfigParse *parse)
 {
@@ -1757,7 +1786,6 @@ FcParseEdit (FcConfigParse *parse)
 {
     const FcChar8   *name;
     const FcChar8   *mode_string;
-    const FcChar8   *binding_string;
     FcOp	    mode;
     FcValueBinding  binding;
     FcExpr	    *expr;
@@ -1781,23 +1809,9 @@ FcParseEdit (FcConfigParse *parse)
 	    return;
 	}
     }
-    binding_string = FcConfigGetAttribute (parse, "binding");
-    if (!binding_string)
-	binding = FcValueBindingWeak;
-    else
-    {
-	if (!strcmp ((char *) binding_string, "weak"))
-	    binding = FcValueBindingWeak;
-	else if (!strcmp ((char *) binding_string, "strong"))
-	    binding = FcValueBindingStrong;
-	else if (!strcmp ((char *) binding_string, "same"))
-	    binding = FcValueBindingSame;
-	else
-	{
-	    FcConfigMessage (parse, FcSevereWarning, "invalid edit binding \"%s\"", binding_string);
-	    return;
-	}
-    }
+    if (!FcConfigLexBinding (parse, FcConfigGetAttribute (parse, "binding"), &binding))
+	return;
+
     expr = FcPopBinary (parse, FcOpComma);
     edit = FcEditCreate (parse, FcObjectFromName ((char *) name),
 			 mode, expr, binding);
