@@ -2865,7 +2865,7 @@ int drmBOVersion(int fd, unsigned int *major,
     memset(&arg, 0, sizeof(arg));
     ret = ioctl(fd, DRM_IOCTL_BO_VERSION, &arg);
     if (ret)
-	return ret;
+	return -errno;
 
     if (major)
 	*major = arg.major;
@@ -2874,7 +2874,7 @@ int drmBOVersion(int fd, unsigned int *major,
     if (patchlevel)
 	*patchlevel = arg.patchlevel;
 
-    return (ret) ? -errno : 0;
+    return 0;
 }
 
 
