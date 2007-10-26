@@ -54,9 +54,9 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object * bo);
 static void drm_bo_takedown_vm_locked(struct drm_buffer_object * bo);
 static void drm_bo_unmap_virtual(struct drm_buffer_object * bo);
 
-static inline uint32_t drm_bo_type_flags(unsigned type)
+static inline uint64_t drm_bo_type_flags(unsigned type)
 {
-	return (1 << (24 + type));
+	return (1ULL << (24 + type));
 }
 
 /*
@@ -785,10 +785,10 @@ static int drm_bo_mem_force_space(struct drm_device * dev,
 
 static int drm_bo_mt_compatible(struct drm_mem_type_manager * man,
 				uint32_t mem_type,
-				uint32_t mask, uint32_t * res_mask)
+				uint64_t mask, uint32_t * res_mask)
 {
-	uint32_t cur_flags = drm_bo_type_flags(mem_type);
-	uint32_t flag_diff;
+	uint64_t cur_flags = drm_bo_type_flags(mem_type);
+	uint64_t flag_diff;
 
 	if (man->flags & _DRM_FLAG_MEMTYPE_CACHED)
 		cur_flags |= DRM_BO_FLAG_CACHED;
@@ -1271,7 +1271,7 @@ static void drm_buffer_user_object_unmap(struct drm_file *file_priv,
  * Note that new_mem_flags are NOT transferred to the bo->mem.mask.
  */
 
-int drm_bo_move_buffer(struct drm_buffer_object * bo, uint32_t new_mem_flags,
+int drm_bo_move_buffer(struct drm_buffer_object * bo, uint64_t new_mem_flags,
 		       int no_wait, int move_unfenced)
 {
 	struct drm_device *dev = bo->dev;

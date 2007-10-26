@@ -511,7 +511,8 @@ extern int drm_bo_wait(struct drm_buffer_object * bo, int lazy, int ignore_signa
 		       int no_wait);
 extern int drm_bo_mem_space(struct drm_buffer_object * bo,
 			    struct drm_bo_mem_reg * mem, int no_wait);
-extern int drm_bo_move_buffer(struct drm_buffer_object * bo, uint32_t new_mem_flags,
+extern int drm_bo_move_buffer(struct drm_buffer_object * bo,
+			      uint64_t new_mem_flags,
 			      int no_wait, int move_unfenced);
 extern int drm_bo_clean_mm(struct drm_device * dev, unsigned mem_type);
 extern int drm_bo_init_mm(struct drm_device * dev, unsigned type,
