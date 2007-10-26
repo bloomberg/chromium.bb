@@ -113,13 +113,14 @@ typedef struct drm_mga_private {
 	 * \sa drm_mga_private_t::mmio
 	 */
 	/*@{*/
-	u32 mmio_base;             /**< Bus address of base of MMIO. */
-	u32 mmio_size;             /**< Size of the MMIO region. */
+	u32 mmio_base;			/**< Bus address of base of MMIO. */
+	u32 mmio_size;			/**< Size of the MMIO region. */
 	/*@}*/
 
 	u32 clear_cmd;
 	u32 maccess;
 
+	atomic_t vbl_received;		/**< Number of vblanks received. */
 	wait_queue_head_t fence_queue;
 	atomic_t last_fence_retired;
 	u32 next_fence_to_post;
@@ -177,10 +178,12 @@ extern int mga_warp_init(drm_mga_private_t * dev_priv);
 
 				/* mga_irq.c */
 extern int mga_driver_fence_wait(drm_device_t * dev, unsigned int *sequence);
-extern int mga_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence);
+extern int mga_enable_vblank(drm_device_t *dev, int crtc);
+extern void mga_disable_vblank(drm_device_t *dev, int crtc);
+extern u32 mga_get_vblank_counter(drm_device_t *dev, int crtc);
 extern irqreturn_t mga_driver_irq_handler(DRM_IRQ_ARGS);
 extern void mga_driver_irq_preinstall(drm_device_t * dev);
-extern void mga_driver_irq_postinstall(drm_device_t * dev);
+extern int mga_driver_irq_postinstall(drm_device_t * dev);
 extern void mga_driver_irq_uninstall(drm_device_t * dev);
 extern long mga_compat_ioctl(struct file *filp, unsigned int cmd,
 			     unsigned long arg);
