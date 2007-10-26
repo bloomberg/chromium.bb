@@ -53,8 +53,8 @@ int drm_bo_move_ttm(struct drm_buffer_object * bo,
 {
 	struct drm_ttm *ttm = bo->ttm;
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
-	uint32_t save_flags = old_mem->flags;
-	uint32_t save_mask = old_mem->mask;
+	uint64_t save_flags = old_mem->flags;
+	uint64_t save_mask = old_mem->mask;
 	int ret;
 
 	if (old_mem->mem_type == DRM_BO_MEM_TT) {
@@ -211,8 +211,8 @@ int drm_bo_move_memcpy(struct drm_buffer_object * bo,
 	void *old_iomap;
 	void *new_iomap;
 	int ret;
-	uint32_t save_flags = old_mem->flags;
-	uint32_t save_mask = old_mem->mask;
+	uint64_t save_flags = old_mem->flags;
+	uint64_t save_mask = old_mem->mask;
 	unsigned long i;
 	unsigned long page;
 	unsigned long add = 0;
@@ -334,8 +334,8 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 	struct drm_mem_type_manager *man = &dev->bm.man[new_mem->mem_type];
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int ret;
-	uint32_t save_flags = old_mem->flags;
-	uint32_t save_mask = old_mem->mask;
+	uint64_t save_flags = old_mem->flags;
+	uint64_t save_mask = old_mem->mask;
 	struct drm_buffer_object *old_obj;
 
 	if (bo->fence)
