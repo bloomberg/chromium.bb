@@ -29,6 +29,7 @@
 #ifndef _XF86MM_H_
 #define _XF86MM_H_
 #include <stddef.h>
+#include <stdint.h>
 #include "drm.h"
 
 /*
@@ -37,7 +38,7 @@
  * be protected using an external mutex.
  *
  * Note: Don't protect the following functions, as it may lead to deadlocks:
- * drmBOUnmap(), drmFenceBuffers().
+ * drmBOUnmap().
  * The kernel is synchronizing and refcounting buffer maps. 
  * User space only needs to refcount object usage within the same application.
  */
@@ -156,9 +157,6 @@ extern int drmBOUnreference(int fd, drmBO *buf);
 extern int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
 		    void **address);
 extern int drmBOUnmap(int fd, drmBO *buf);
-extern int drmBOValidate(int fd, drmBO *buf, uint32_t fence_class, uint64_t flags,
-			 uint64_t mask, unsigned hint);
-
 extern int drmBOFence(int fd, drmBO *buf, unsigned flags, unsigned fenceHandle);
 extern int drmBOInfo(int fd, drmBO *buf);
 extern int drmBOBusy(int fd, drmBO *buf, int *busy);
