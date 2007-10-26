@@ -141,12 +141,28 @@ main (int argc, char **argv)
     FcConfigSubstitute (0, pat, FcMatchPattern);
     FcDefaultSubstitute (pat);
     
+    fs = FcFontSetCreate ();
+
     if (sort)
-	fs = FcFontSort (0, pat, FcTrue, 0, &result);
+    {
+	FcFontSet	*font_patterns;
+	int	j;
+	font_patterns = FcFontSort (0, pat, FcTrue, 0, &result);
+
+	for (j = 0; j < font_patterns->nfont; j++)
+	{
+	    FcPattern  *font_pattern;
+
+	    font_pattern = FcFontRenderPrepare (NULL, pat, font_patterns->fonts[j]);
+	    if (font_pattern)
+		FcFontSetAdd (fs, font_pattern);
+	}
+
+	FcFontSetSortDestroy (font_patterns);
+    }
     else
     {
 	FcPattern   *match;
-	fs = FcFontSetCreate ();
 	match = FcFontMatch (0, pat, &result);
 	if (match)
 	    FcFontSetAdd (fs, match);
