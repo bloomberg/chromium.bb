@@ -138,23 +138,10 @@ FcConfigNewestFile (FcStrSet *files)
     return newest;
 }
 
-FcFileTime
-FcConfigModifiedTime (FcConfig *config)
-{
-    if (!config)
-    {
-	FcFileTime v = { 0, FcFalse };
-	config = FcConfigGetCurrent ();
-	if (!config)
-	    return v;
-    }
-    return FcConfigNewestFile (config->configFiles);
-}
-
 FcBool
 FcConfigUptoDate (FcConfig *config)
 {
-    FcFileTime	config_time, font_time;
+    FcFileTime	config_time, config_dir_time, font_time;
     time_t	now = time(0);
     if (!config)
     {
@@ -163,8 +150,10 @@ FcConfigUptoDate (FcConfig *config)
 	    return FcFalse;
     }
     config_time = FcConfigNewestFile (config->configFiles);
+    config_dir_time = FcConfigNewestFile (config->configDirs);
     font_time = FcConfigNewestFile (config->fontDirs);
     if ((config_time.set && config_time.time - config->rescanTime > 0) ||
+	(config_dir_time.set && (config_dir_time.time - config->rescanTime) > 0) ||
 	(font_time.set && (font_time.time - config->rescanTime) > 0))
     {
 	return FcFalse;
