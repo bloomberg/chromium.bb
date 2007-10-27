@@ -283,11 +283,13 @@ nouveau_card_init(struct drm_device *dev)
 	ret = nouveau_init_card_mappings(dev);
 	if (ret) return ret;
 
+#if defined(__powerpc__)
 	/* Put the card in BE mode if it's not */
 	if (NV_READ(NV03_PMC_BOOT_1))
 		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
 
 	DRM_MEMORYBARRIER();
+#endif
 
 	/* Determine exact chipset we're running on */
 	if (dev_priv->card_type < NV_10)
@@ -431,8 +433,10 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 	reg0 = readl(regs+NV03_PMC_BOOT_0);
 	reg1 = readl(regs+NV03_PMC_BOOT_1);
+#if defined(__powerpc__)
 	if (reg1)
 		reg0=___swab32(reg0);
+#endif
 
 	/* We're dealing with >=NV10 */
 	if ((reg0 & 0x0f000000) > 0 ) {
