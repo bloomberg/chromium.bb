@@ -434,7 +434,16 @@ typedef struct {
 	int pfCurrentPage;	/* which buffer is being displayed? */
 	int crtc2_base;		/* CRTC2 frame offset */
 	int tiling_enabled;	/* set by drm, read by 2d + 3d clients */
+
+	unsigned int last_fence;
 } drm_radeon_sarea_t;
+
+/* The only fence class we support */
+#define DRM_RADEON_FENCE_CLASS_ACCEL 0
+/* Fence type that guarantees read-write flush */
+#define DRM_RADEON_FENCE_TYPE_RW 2
+/* cache flushes programmed just before the fence */
+#define DRM_RADEON_FENCE_FLAG_FLUSHED 0x01000000
 
 /* WARNING: If you change any of these defines, make sure to change the
  * defines in the Xserver file (xf86drmRadeon.h)

@@ -176,7 +176,7 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
     /*
      * Test system memory objects.
      */
-
+    BM_CKFATAL(drmGetLock(ctx->drmFD, ctx->hwContext, 0));
     oldTime = fastrdtsc();
     BM_CKFATAL(drmBOCreate(ctx->drmFD, 0, size, 0, NULL,
 	    drm_bo_type_dc,
@@ -216,7 +216,7 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
      * Test TT bound buffer objects.
      */
 
-    BM_CKFATAL(drmGetLock(ctx->drmFD, ctx->hwContext, 0));
+    //    BM_CKFATAL(drmGetLock(ctx->drmFD, ctx->hwContext, 0));
     oldTime = fastrdtsc();
     BM_CKFATAL(drmBOValidate(ctx->drmFD, &buf,
 	    DRM_BO_FLAG_MEM_TT, DRM_BO_MASK_MEM, DRM_BO_HINT_DONT_FENCE));
