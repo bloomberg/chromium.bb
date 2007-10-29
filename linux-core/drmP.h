@@ -586,6 +586,15 @@ struct drm_vbl_sig {
 	struct task_struct *task;
 };
 
+/**
+ * Drawable information.
+ */
+struct drm_drawable_info {
+	unsigned int num_rects;
+	struct drm_clip_rect *rects;
+};
+
+
 /* location of GART table */
 #define DRM_ATI_GART_MAIN 1
 #define DRM_ATI_GART_FB   2

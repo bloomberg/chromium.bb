@@ -135,14 +135,6 @@ struct drm_clip_rect {
 };
 
 /**
- * Drawable information.
- */
-struct drm_drawable_info {
-	unsigned int num_rects;
-	struct drm_clip_rect *rects;
-};
-
-/**
  * Texture region,
  */
 struct drm_tex_region {
@@ -1002,7 +994,6 @@ struct drm_mm_init_arg {
 /* typedef area */
 #if !defined(__KERNEL__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 typedef struct drm_clip_rect drm_clip_rect_t;
-typedef struct drm_drawable_info drm_drawable_info_t;
 typedef struct drm_tex_region drm_tex_region_t;
 typedef struct drm_hw_lock drm_hw_lock_t;
 typedef struct drm_version drm_version_t;
