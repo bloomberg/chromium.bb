@@ -224,10 +224,6 @@ typedef struct drm_i915_private {
 	u8 saveDACMASK;
 	u8 saveDACDATA[256*3]; /* 256 3-byte colors */
 	u8 saveCR[36];
-	u8 savePLANE0[64*1024];
-	u8 savePLANE1[64*1024];
-	u8 savePLANE2[64*1024];
-	u8 savePLANE3[64*1024];
 } drm_i915_private_t;
 
 enum intel_chip_family {
