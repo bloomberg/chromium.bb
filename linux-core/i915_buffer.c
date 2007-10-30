@@ -249,3 +249,36 @@ int i915_move(struct drm_buffer_object * bo,
 	}
 	return 0;
 }
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+static inline void clflush(volatile void *__p)
+{
+	asm volatile("clflush %0" : "+m" (*(char __force *)__p));
+}
+#endif
+
+static inline void drm_cache_flush_addr(void *virt)
+{ 
+        int i;
+
+	for (i = 0; i < PAGE_SIZE; i += boot_cpu_data.x86_clflush_size)
+		clflush(virt+i);
+}
+
+static inline void drm_cache_flush_page(struct page *p)
+{
+	drm_cache_flush_addr(page_address(p));
+}
+
+void i915_flush_ttm(struct drm_ttm *ttm)
+{
+	int i;
+
+	if (!ttm)
+		return;
+
+	DRM_MEMORYBARRIER();
+	for (i = ttm->num_pages-1; i >= 0; i--)
+		drm_cache_flush_page(drm_ttm_get_page(ttm, i));
+	DRM_MEMORYBARRIER();
+}

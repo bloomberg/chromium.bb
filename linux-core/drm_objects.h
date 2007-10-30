@@ -464,6 +464,7 @@ struct drm_bo_driver {
 	 uint32_t(*evict_mask) (struct drm_buffer_object *bo);
 	int (*move) (struct drm_buffer_object * bo,
 		     int evict, int no_wait, struct drm_bo_mem_reg * new_mem);
+	void (*ttm_cache_flush)(struct drm_ttm *ttm);
 };
 
 /*

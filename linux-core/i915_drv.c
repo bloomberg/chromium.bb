@@ -66,6 +66,7 @@ static struct drm_bo_driver i915_bo_driver = {
 	.init_mem_type = i915_init_mem_type,
 	.evict_mask = i915_evict_mask,
 	.move = i915_move,
+	.ttm_cache_flush = i915_flush_ttm,
 };
 #endif
 

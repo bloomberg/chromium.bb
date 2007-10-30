@@ -310,7 +310,7 @@ extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 extern uint32_t i915_evict_mask(struct drm_buffer_object *bo);
 extern int i915_move(struct drm_buffer_object *bo, int evict,
 	      	int no_wait, struct drm_bo_mem_reg *new_mem);
-
+void i915_flush_ttm(struct drm_ttm *ttm);
 #endif
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
