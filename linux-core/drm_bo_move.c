@@ -35,9 +35,9 @@
  * have not been requested to free also pinned regions.
  */
 
-static void drm_bo_free_old_node(drm_buffer_object_t * bo)
+static void drm_bo_free_old_node(struct drm_buffer_object * bo)
 {
-	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
 	if (old_mem->mm_node && (old_mem->mm_node != bo->pinned_node)) {
 		mutex_lock(&bo->dev->struct_mutex);
@@ -48,13 +48,13 @@ static void drm_bo_free_old_node(drm_buffer_object_t * bo)
 	old_mem->mm_node = NULL;
 }
 
-int drm_bo_move_ttm(drm_buffer_object_t * bo,
-		    int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
+int drm_bo_move_ttm(struct drm_buffer_object * bo,
+		    int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
 {
-	drm_ttm_t *ttm = bo->ttm;
-	drm_bo_mem_reg_t *old_mem = &bo->mem;
-	uint32_t save_flags = old_mem->flags;
-	uint32_t save_mask = old_mem->mask;
+	struct drm_ttm *ttm = bo->ttm;
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
+	uint64_t save_flags = old_mem->flags;
+	uint64_t save_mask = old_mem->mask;
 	int ret;
 
 	if (old_mem->mem_type == DRM_BO_MEM_TT) {
@@ -71,9 +71,7 @@ int drm_bo_move_ttm(drm_buffer_object_t * bo,
 		save_flags = old_mem->flags;
 	}
 	if (new_mem->mem_type != DRM_BO_MEM_LOCAL) {
-		ret = drm_bind_ttm(ttm,
-				   new_mem->flags & DRM_BO_FLAG_CACHED,
-				   new_mem->mm_node->start);
+		ret = drm_bind_ttm(ttm, new_mem);
 		if (ret)
 			return ret;
 	}
@@ -102,11 +100,11 @@ EXPORT_SYMBOL(drm_bo_move_ttm);
  * Call bo->mutex locked.
  */
 
-int drm_mem_reg_ioremap(drm_device_t * dev, drm_bo_mem_reg_t * mem,
+int drm_mem_reg_ioremap(struct drm_device * dev, struct drm_bo_mem_reg * mem,
 			void **virtual)
 {
-	drm_buffer_manager_t *bm = &dev->bm;
-	drm_mem_type_manager_t *man = &bm->man[mem->mem_type];
+	struct drm_buffer_manager *bm = &dev->bm;
+	struct drm_mem_type_manager *man = &bm->man[mem->mem_type];
 	unsigned long bus_offset;
 	unsigned long bus_size;
 	unsigned long bus_base;
@@ -128,6 +126,7 @@ int drm_mem_reg_ioremap(drm_device_t * dev, drm_bo_mem_reg_t * mem,
 	*virtual = addr;
 	return 0;
 }
+EXPORT_SYMBOL(drm_mem_reg_ioremap);
 
 /**
  * \c Unmap mapping obtained using drm_bo_ioremap
@@ -137,11 +136,11 @@ int drm_mem_reg_ioremap(drm_device_t * dev, drm_bo_mem_reg_t * mem,
  * Call bo->mutex locked.
  */
 
-void drm_mem_reg_iounmap(drm_device_t * dev, drm_bo_mem_reg_t * mem,
+void drm_mem_reg_iounmap(struct drm_device * dev, struct drm_bo_mem_reg * mem,
 			 void *virtual)
 {
-	drm_buffer_manager_t *bm;
-	drm_mem_type_manager_t *man;
+	struct drm_buffer_manager *bm;
+	struct drm_mem_type_manager *man;
 
 	bm = &dev->bm;
 	man = &bm->man[mem->mem_type];
@@ -164,7 +163,7 @@ static int drm_copy_io_page(void *dst, void *src, unsigned long page)
 	return 0;
 }
 
-static int drm_copy_io_ttm_page(drm_ttm_t * ttm, void *src, unsigned long page)
+static int drm_copy_io_ttm_page(struct drm_ttm * ttm, void *src, unsigned long page)
 {
 	struct page *d = drm_ttm_get_page(ttm, page);
 	void *dst;
@@ -182,7 +181,7 @@ static int drm_copy_io_ttm_page(drm_ttm_t * ttm, void *src, unsigned long page)
 	return 0;
 }
 
-static int drm_copy_ttm_io_page(drm_ttm_t * ttm, void *dst, unsigned long page)
+static int drm_copy_ttm_io_page(struct drm_ttm * ttm, void *dst, unsigned long page)
 {
 	struct page *s = drm_ttm_get_page(ttm, page);
 	void *src;
@@ -200,19 +199,19 @@ static int drm_copy_ttm_io_page(drm_ttm_t * ttm, void *dst, unsigned long page)
 	return 0;
 }
 
-int drm_bo_move_memcpy(drm_buffer_object_t * bo,
-		       int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
+int drm_bo_move_memcpy(struct drm_buffer_object * bo,
+		       int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
 {
-	drm_device_t *dev = bo->dev;
-	drm_mem_type_manager_t *man = &dev->bm.man[new_mem->mem_type];
-	drm_ttm_t *ttm = bo->ttm;
-	drm_bo_mem_reg_t *old_mem = &bo->mem;
-	drm_bo_mem_reg_t old_copy = *old_mem;
+	struct drm_device *dev = bo->dev;
+	struct drm_mem_type_manager *man = &dev->bm.man[new_mem->mem_type];
+	struct drm_ttm *ttm = bo->ttm;
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
+	struct drm_bo_mem_reg old_copy = *old_mem;
 	void *old_iomap;
 	void *new_iomap;
 	int ret;
-	uint32_t save_flags = old_mem->flags;
-	uint32_t save_mask = old_mem->mask;
+	uint64_t save_flags = old_mem->flags;
+	uint64_t save_mask = old_mem->mask;
 	unsigned long i;
 	unsigned long page;
 	unsigned long add = 0;
@@ -281,12 +280,12 @@ EXPORT_SYMBOL(drm_bo_move_memcpy);
  * object. Call bo->mutex locked.
  */
 
-int drm_buffer_object_transfer(drm_buffer_object_t * bo,
-			       drm_buffer_object_t ** new_obj)
+int drm_buffer_object_transfer(struct drm_buffer_object * bo,
+			       struct drm_buffer_object ** new_obj)
 {
-	drm_buffer_object_t *fbo;
-	drm_device_t *dev = bo->dev;
-	drm_buffer_manager_t *bm = &dev->bm;
+	struct drm_buffer_object *fbo;
+	struct drm_device *dev = bo->dev;
+	struct drm_buffer_manager *bm = &dev->bm;
 
 	fbo = drm_ctl_calloc(1, sizeof(*fbo), DRM_MEM_BUFOBJ);
 	if (!fbo)
@@ -306,7 +305,7 @@ int drm_buffer_object_transfer(drm_buffer_object_t * bo,
 	INIT_LIST_HEAD(&fbo->p_mm_list);
 #endif
 
-	atomic_inc(&bo->fence->usage);
+	drm_fence_reference_unlocked(&fbo->fence, bo->fence);
 	fbo->pinned_node = NULL;
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
@@ -323,26 +322,27 @@ int drm_buffer_object_transfer(drm_buffer_object_t * bo,
  * We cannot restart until it has finished.
  */
 
-int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
+int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 			      int evict,
 			      int no_wait,
 			      uint32_t fence_class,
 			      uint32_t fence_type,
-			      uint32_t fence_flags, drm_bo_mem_reg_t * new_mem)
+			      uint32_t fence_flags, struct drm_bo_mem_reg * new_mem)
 {
-	drm_device_t *dev = bo->dev;
-	drm_mem_type_manager_t *man = &dev->bm.man[new_mem->mem_type];
-	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	struct drm_device *dev = bo->dev;
+	struct drm_mem_type_manager *man = &dev->bm.man[new_mem->mem_type];
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int ret;
-	uint32_t save_flags = old_mem->flags;
-	uint32_t save_mask = old_mem->mask;
-	drm_buffer_object_t *old_obj;
+	uint64_t save_flags = old_mem->flags;
+	uint64_t save_mask = old_mem->mask;
+	struct drm_buffer_object *old_obj;
 
 	if (bo->fence)
-		drm_fence_usage_deref_unlocked(dev, bo->fence);
+		drm_fence_usage_deref_unlocked(&bo->fence);
 	ret = drm_fence_object_create(dev, fence_class, fence_type,
 				      fence_flags | DRM_FENCE_FLAG_EMIT,
 				      &bo->fence);
+	bo->fence_type = fence_type;
 	if (ret)
 		return ret;
 
@@ -396,7 +396,7 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 		DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 		drm_bo_add_to_lru(old_obj);
 
-		drm_bo_usage_deref_locked(old_obj);
+		drm_bo_usage_deref_locked(&old_obj);
 		mutex_unlock(&dev->struct_mutex);
 
 	}
@@ -409,3 +409,194 @@ int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
 }
 
 EXPORT_SYMBOL(drm_bo_move_accel_cleanup);
+
+int drm_bo_same_page(unsigned long offset,
+		     unsigned long offset2)
+{
+	return (offset & PAGE_MASK) == (offset2 & PAGE_MASK);
+}
+EXPORT_SYMBOL(drm_bo_same_page);
+
+unsigned long drm_bo_offset_end(unsigned long offset,
+				unsigned long end)
+{
+
+	offset = (offset + PAGE_SIZE) & PAGE_MASK;
+	return (end < offset) ? end : offset;
+}
+EXPORT_SYMBOL(drm_bo_offset_end);
+
+
+static pgprot_t drm_kernel_io_prot(uint32_t map_type)
+{
+	pgprot_t tmp = PAGE_KERNEL;
+
+#if defined(__i386__) || defined(__x86_64__)
+#ifdef USE_PAT_WC
+#warning using pat
+	if (drm_use_pat() && map_type == _DRM_TTM) {
+		pgprot_val(tmp) |= _PAGE_PAT;
+		return tmp;
+	}
+#endif
+	if (boot_cpu_data.x86 > 3 && map_type != _DRM_AGP) {
+		pgprot_val(tmp) |= _PAGE_PCD;
+		pgprot_val(tmp) &= ~_PAGE_PWT;
+	}
+#elif defined(__powerpc__)
+	pgprot_val(tmp) |= _PAGE_NO_CACHE;
+	if (map_type == _DRM_REGISTERS)
+		pgprot_val(tmp) |= _PAGE_GUARDED;
+#endif
+#if defined(__ia64__)
+	if (map_type == _DRM_TTM)
+		tmp = pgprot_writecombine(tmp);
+	else
+		tmp = pgprot_noncached(tmp);
+#endif
+	return tmp;
+}
+
+static int drm_bo_ioremap(struct drm_buffer_object *bo, unsigned long bus_base,
+			  unsigned long bus_offset, unsigned long bus_size,
+			  struct drm_bo_kmap_obj *map)
+{
+	struct drm_device *dev = bo->dev;
+	struct drm_bo_mem_reg *mem = &bo->mem;
+	struct drm_mem_type_manager *man = &dev->bm.man[mem->mem_type];
+
+	if (!(man->flags & _DRM_FLAG_NEEDS_IOREMAP)) {
+		map->bo_kmap_type = bo_map_premapped;
+		map->virtual = (void *)(((u8 *) man->io_addr) + bus_offset);
+	} else {
+		map->bo_kmap_type = bo_map_iomap;
+		map->virtual = ioremap_nocache(bus_base + bus_offset, bus_size);
+	}
+	return (!map->virtual) ? -ENOMEM : 0;
+}
+
+static int drm_bo_kmap_ttm(struct drm_buffer_object *bo, unsigned long start_page,
+			   unsigned long num_pages, struct drm_bo_kmap_obj *map)
+{
+	struct drm_device *dev = bo->dev;
+	struct drm_bo_mem_reg *mem = &bo->mem;
+	struct drm_mem_type_manager *man = &dev->bm.man[mem->mem_type];
+	pgprot_t prot;
+	struct drm_ttm *ttm = bo->ttm;
+	struct page *d;
+	int i;
+
+	BUG_ON(!ttm);
+
+	if (num_pages == 1 && (mem->flags & DRM_BO_FLAG_CACHED)) {
+
+		/*
+		 * We're mapping a single page, and the desired
+		 * page protection is consistent with the bo.
+		 */
+
+		map->bo_kmap_type = bo_map_kmap;
+		map->page = drm_ttm_get_page(ttm, start_page);
+		map->virtual = kmap(map->page);
+	} else {
+		/*
+		 * Populate the part we're mapping;
+		 */
+
+		for (i = start_page; i< start_page + num_pages; ++i) {
+			d = drm_ttm_get_page(ttm, i);
+			if (!d)
+				return -ENOMEM;
+		}
+
+		/*
+		 * We need to use vmap to get the desired page protection
+		 * or to make the buffer object look contigous.
+		 */
+
+		prot = (mem->flags & DRM_BO_FLAG_CACHED) ?
+			PAGE_KERNEL :
+			drm_kernel_io_prot(man->drm_bus_maptype);
+		map->bo_kmap_type = bo_map_vmap;
+		map->virtual = vmap(ttm->pages + start_page,
+				    num_pages, 0, prot);
+	}
+	return (!map->virtual) ? -ENOMEM : 0;
+}
+
+/*
+ * This function is to be used for kernel mapping of buffer objects.
+ * It chooses the appropriate mapping method depending on the memory type
+ * and caching policy the buffer currently has.
+ * Mapping multiple pages or buffers that live in io memory is a bit slow and
+ * consumes vmalloc space. Be restrictive with such mappings.
+ * Mapping single pages usually returns the logical kernel address, (which is fast)
+ * BUG may use slower temporary mappings for high memory pages or
+ * uncached / write-combined pages.
+ *
+ * The function fills in a drm_bo_kmap_obj which can be used to return the
+ * kernel virtual address of the buffer.
+ *
+ * Code servicing a non-priviliged user request is only allowed to map one
+ * page at a time. We might need to implement a better scheme to stop such
+ * processes from consuming all vmalloc space.
+ */
+
+int drm_bo_kmap(struct drm_buffer_object *bo, unsigned long start_page,
+		unsigned long num_pages, struct drm_bo_kmap_obj *map)
+{
+	int ret;
+	unsigned long bus_base;
+	unsigned long bus_offset;
+	unsigned long bus_size;
+
+	map->virtual = NULL;
+
+	if (num_pages > bo->num_pages)
+		return -EINVAL;
+	if (start_page > bo->num_pages)
+		return -EINVAL;
+#if 0
+	if (num_pages > 1 && !DRM_SUSER(DRM_CURPROC))
+		return -EPERM;
+#endif
+	ret = drm_bo_pci_offset(bo->dev, &bo->mem, &bus_base,
+				&bus_offset, &bus_size);
+
+	if (ret)
+		return ret;
+
+	if (bus_size == 0) {
+		return drm_bo_kmap_ttm(bo, start_page, num_pages, map);
+	} else {
+		bus_offset += start_page << PAGE_SHIFT;
+		bus_size = num_pages << PAGE_SHIFT;
+		return drm_bo_ioremap(bo, bus_base, bus_offset, bus_size, map);
+	}
+}
+EXPORT_SYMBOL(drm_bo_kmap);
+
+void drm_bo_kunmap(struct drm_bo_kmap_obj *map)
+{
+	if (!map->virtual)
+		return;
+
+	switch(map->bo_kmap_type) {
+	case bo_map_iomap:
+		iounmap(map->virtual);
+		break;
+	case bo_map_vmap:
+		vunmap(map->virtual);
+		break;
+	case bo_map_kmap:
+		kunmap(map->page);
+		break;
+	case bo_map_premapped:
+		break;
+	default:
+		BUG();
+	}
+	map->virtual = NULL;
+	map->page = NULL;
+}
+EXPORT_SYMBOL(drm_bo_kunmap);

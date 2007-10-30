@@ -114,7 +114,7 @@ static void ffb_apply_upa_parent_ranges(int parent,
 	return;
 }
 
-static int ffb_init_one(drm_device_t *dev, int prom_node, int parent_node,
+static int ffb_init_one(struct drm_device *dev, int prom_node, int parent_node,
 			int instance)
 {
 	struct linux_prom64_registers regs[2*PROMREG_MAX];
@@ -167,7 +167,7 @@ static int __init ffb_scan_siblings(int root, int instance)
 static drm_map_t *ffb_find_map(struct file *filp, unsigned long off)
 {
 	drm_file_t	*priv	= filp->private_data;
-	drm_device_t	*dev;
+	struct drm_device	*dev;
 	drm_map_list_t  *r_list;
 	struct list_head *list;
 	drm_map_t	*map;
@@ -237,10 +237,10 @@ unsigned long ffb_get_unmapped_area(struct file *filp,
 /* This functions must be here since it references drm_numdevs)
  * which drm_drv.h declares.
  */
-static int ffb_driver_firstopen(drm_device_t *dev)
+static int ffb_driver_firstopen(struct drm_device *dev)
 {
 	ffb_dev_priv_t	*ffb_priv;
-	drm_device_t *temp_dev;
+	struct drm_device *temp_dev;
 	int ret = 0;
 	int i;
 

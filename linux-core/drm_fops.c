@@ -39,9 +39,9 @@
 #include <linux/poll.h>
 
 static int drm_open_helper(struct inode *inode, struct file *filp,
-			   drm_device_t * dev);
+			   struct drm_device * dev);
 
-static int drm_setup(drm_device_t * dev)
+static int drm_setup(struct drm_device * dev)
 {
 	drm_local_map_t *map;
 	int i;
@@ -128,7 +128,7 @@ static int drm_setup(drm_device_t * dev)
  */
 int drm_open(struct inode *inode, struct file *filp)
 {
-	drm_device_t *dev = NULL;
+	struct drm_device *dev = NULL;
 	int minor = iminor(inode);
 	int retcode = 0;
 
@@ -176,7 +176,7 @@ EXPORT_SYMBOL(drm_open);
  */
 int drm_stub_open(struct inode *inode, struct file *filp)
 {
-	drm_device_t *dev = NULL;
+	struct drm_device *dev = NULL;
 	int minor = iminor(inode);
 	int err = -ENODEV;
 	const struct file_operations *old_fops;
@@ -232,10 +232,10 @@ static int drm_cpu_valid(void)
  * filp and add it into the double linked list in \p dev.
  */
 static int drm_open_helper(struct inode *inode, struct file *filp,
-			   drm_device_t * dev)
+			   struct drm_device * dev)
 {
 	int minor = iminor(inode);
-	drm_file_t *priv;
+	struct drm_file *priv;
 	int ret;
 	int i,j;
 
@@ -252,6 +252,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 
 	memset(priv, 0, sizeof(*priv));
 	filp->private_data = priv;
+	priv->filp = filp;
 	priv->uid = current->euid;
 	priv->pid = current->pid;
 	priv->minor = minor;
@@ -262,7 +263,6 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	priv->lock_count = 0;
 
 	INIT_LIST_HEAD(&priv->lhead);
-	INIT_LIST_HEAD(&priv->user_objects);
 	INIT_LIST_HEAD(&priv->refd_objects);
 
 	for (i=0; i<_DRM_NO_REF_TYPES; ++i) {
@@ -320,8 +320,8 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 /** No-op. */
 int drm_fasync(int fd, struct file *filp, int on)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->head->dev;
+	struct drm_file *priv = filp->private_data;
+	struct drm_device *dev = priv->head->dev;
 	int retcode;
 
 	DRM_DEBUG("fd = %d, device = 0x%lx\n", fd,
@@ -335,10 +335,9 @@ EXPORT_SYMBOL(drm_fasync);
 
 static void drm_object_release(struct file *filp) {
 
-        drm_file_t *priv = filp->private_data;
+	struct drm_file *priv = filp->private_data;
 	struct list_head *head;
-	drm_user_object_t *user_object;
-	drm_ref_object_t *ref_object;
+	struct drm_ref_object *ref_object;
 	int i;
 
 	/*
@@ -351,20 +350,9 @@ static void drm_object_release(struct file *filp) {
 
 	head = &priv->refd_objects;
 	while (head->next != head) {
-		ref_object = list_entry(head->next, drm_ref_object_t, list);
+		ref_object = list_entry(head->next, struct drm_ref_object, list);
 		drm_remove_ref_object(priv, ref_object);
 		head = &priv->refd_objects;
-	}
-
-	/*
-	 * Free leftover user objects created by me.
-	 */
-
-	head = &priv->user_objects;
-	while (head->next != head) {
-		user_object = list_entry(head->next, drm_user_object_t, list);
-		drm_remove_user_object(priv, user_object);
-		head = &priv->user_objects;
 	}
 
 	for(i=0; i<_DRM_NO_REF_TYPES; ++i) {
@@ -376,7 +364,7 @@ static void drm_object_release(struct file *filp) {
  * Release file.
  *
  * \param inode device inode
- * \param filp file pointer.
+ * \param file_priv DRM file private.
  * \return zero on success or a negative number on failure.
  *
  * If the hardware lock is held then free it, and take it again for the kernel
@@ -386,29 +374,28 @@ static void drm_object_release(struct file *filp) {
  */
 int drm_release(struct inode *inode, struct file *filp)
 {
-	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev;
+	struct drm_file *file_priv = filp->private_data;
+	struct drm_device *dev = file_priv->head->dev;
 	int retcode = 0;
 
 	lock_kernel();
-	dev = priv->head->dev;
 
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 
 	if (dev->driver->preclose)
-		dev->driver->preclose(dev, filp);
+		dev->driver->preclose(dev, file_priv);
 
 	/* ========================================================
 	 * Begin inline drm_release
 	 */
 
 	DRM_DEBUG("pid = %d, device = 0x%lx, open_count = %d\n",
-		  current->pid, (long)old_encode_dev(priv->head->device),
+		  current->pid, (long)old_encode_dev(file_priv->head->device),
 		  dev->open_count);
 
 	if (dev->driver->reclaim_buffers_locked && dev->lock.hw_lock) {
-		if (drm_i_have_hw_lock(filp)) {
-			dev->driver->reclaim_buffers_locked(dev, filp);
+		if (drm_i_have_hw_lock(dev, file_priv)) {
+			dev->driver->reclaim_buffers_locked(dev, file_priv);
 		} else {
 			unsigned long _end=jiffies + 3*DRM_HZ;
 			int locked = 0;
@@ -434,7 +421,7 @@ int drm_release(struct inode *inode, struct file *filp)
 					  "\tI will go on reclaiming the buffers anyway.\n");
 			}
 
-			dev->driver->reclaim_buffers_locked(dev, filp);
+			dev->driver->reclaim_buffers_locked(dev, file_priv);
 			drm_idlelock_release(&dev->lock);
 		}
 	}
@@ -442,12 +429,12 @@ int drm_release(struct inode *inode, struct file *filp)
 	if (dev->driver->reclaim_buffers_idlelocked && dev->lock.hw_lock) {
 
 		drm_idlelock_take(&dev->lock);
-		dev->driver->reclaim_buffers_idlelocked(dev, filp);
+		dev->driver->reclaim_buffers_idlelocked(dev, file_priv);
 		drm_idlelock_release(&dev->lock);
 
 	}
 
-	if (drm_i_have_hw_lock(filp)) {
+	if (drm_i_have_hw_lock(dev, file_priv)) {
 		DRM_DEBUG("File %p released, freeing lock for context %d\n",
 			  filp, _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
 
@@ -458,7 +445,7 @@ int drm_release(struct inode *inode, struct file *filp)
 
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) &&
 	    !dev->driver->reclaim_buffers_locked) {
-		dev->driver->reclaim_buffers(dev, filp);
+		dev->driver->reclaim_buffers(dev, file_priv);
 	}
 
 	drm_fasync(-1, filp, 0);
@@ -466,10 +453,10 @@ int drm_release(struct inode *inode, struct file *filp)
 	mutex_lock(&dev->ctxlist_mutex);
 
 	if (!list_empty(&dev->ctxlist)) {
-		drm_ctx_list_t *pos, *n;
+		struct drm_ctx_list *pos, *n;
 
 		list_for_each_entry_safe(pos, n, &dev->ctxlist, head) {
-			if (pos->tag == priv &&
+			if (pos->tag == file_priv &&
 			    pos->handle != DRM_KERNEL_CONTEXT) {
 				if (dev->driver->context_dtor)
 					dev->driver->context_dtor(dev,
@@ -487,18 +474,18 @@ int drm_release(struct inode *inode, struct file *filp)
 
 	mutex_lock(&dev->struct_mutex);
 	drm_object_release(filp);
-	if (priv->remove_auth_on_close == 1) {
-		drm_file_t *temp;
+	if (file_priv->remove_auth_on_close == 1) {
+		struct drm_file *temp;
 
 		list_for_each_entry(temp, &dev->filelist, lhead)
 			temp->authenticated = 0;
 	}
-	list_del(&priv->lhead);
+	list_del(&file_priv->lhead);
 	mutex_unlock(&dev->struct_mutex);
 
 	if (dev->driver->postclose)
-		dev->driver->postclose(dev, priv);
-	drm_free(priv, sizeof(*priv), DRM_MEM_FILES);
+		dev->driver->postclose(dev, file_priv);
+	drm_free(file_priv, sizeof(*file_priv), DRM_MEM_FILES);
 
 	/* ========================================================
 	 * End inline drm_release

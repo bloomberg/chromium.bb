@@ -4,9 +4,9 @@
 #include "nouveau_drm.h"
 
 int
-nv10_fb_init(drm_device_t *dev)
+nv10_fb_init(struct drm_device *dev)
 {
-	drm_nouveau_private_t *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t fb_bar_size;
 	int i;
 
@@ -20,7 +20,7 @@ nv10_fb_init(drm_device_t *dev)
 }
 
 void
-nv10_fb_takedown(drm_device_t *dev)
+nv10_fb_takedown(struct drm_device *dev)
 {
 }
 

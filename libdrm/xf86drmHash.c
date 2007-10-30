@@ -74,7 +74,6 @@
 #define HASH_MAIN 0
 
 #if !HASH_MAIN
-# include "drm.h"
 # include "xf86drm.h"
 #endif
 

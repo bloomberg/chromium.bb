@@ -57,7 +57,7 @@
 
 typedef struct drm_r128_freelist {
 	unsigned int age;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 	struct drm_r128_freelist *next;
 	struct drm_r128_freelist *prev;
 } drm_r128_freelist_t;
@@ -97,6 +97,8 @@ typedef struct drm_r128_private {
 	u32 crtc_offset;
 	u32 crtc_offset_cntl;
 
+	atomic_t vbl_received;
+
 	u32 color_fmt;
 	unsigned int front_offset;
 	unsigned int front_pitch;
@@ -118,7 +120,7 @@ typedef struct drm_r128_private {
 	drm_local_map_t *cce_ring;
 	drm_local_map_t *ring_rptr;
 	drm_local_map_t *agp_textures;
-	drm_ati_pcigart_info gart_info;
+	struct ati_pcigart_info gart_info;
 } drm_r128_private_t;
 
 typedef struct drm_r128_buf_priv {
@@ -129,34 +131,36 @@ typedef struct drm_r128_buf_priv {
 	drm_r128_freelist_t *list_entry;
 } drm_r128_buf_priv_t;
 
-extern drm_ioctl_desc_t r128_ioctls[];
+extern struct drm_ioctl_desc r128_ioctls[];
 extern int r128_max_ioctl;
 
 				/* r128_cce.c */
-extern int r128_cce_init(DRM_IOCTL_ARGS);
-extern int r128_cce_start(DRM_IOCTL_ARGS);
-extern int r128_cce_stop(DRM_IOCTL_ARGS);
-extern int r128_cce_reset(DRM_IOCTL_ARGS);
-extern int r128_cce_idle(DRM_IOCTL_ARGS);
-extern int r128_engine_reset(DRM_IOCTL_ARGS);
-extern int r128_fullscreen(DRM_IOCTL_ARGS);
-extern int r128_cce_buffers(DRM_IOCTL_ARGS);
+extern int r128_cce_init(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int r128_cce_start(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int r128_cce_stop(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int r128_cce_reset(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int r128_cce_idle(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int r128_engine_reset(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int r128_fullscreen(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int r128_cce_buffers(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
-extern void r128_freelist_reset(drm_device_t * dev);
+extern void r128_freelist_reset(struct drm_device * dev);
 
 extern int r128_wait_ring(drm_r128_private_t * dev_priv, int n);
 
 extern int r128_do_cce_idle(drm_r128_private_t * dev_priv);
-extern int r128_do_cleanup_cce(drm_device_t * dev);
+extern int r128_do_cleanup_cce(struct drm_device * dev);
 
-extern int r128_driver_vblank_wait(drm_device_t * dev, unsigned int *sequence);
-
+extern int r128_enable_vblank(struct drm_device *dev, int crtc);
+extern void r128_disable_vblank(struct drm_device *dev, int crtc);
+extern u32 r128_get_vblank_counter(struct drm_device *dev, int crtc);
 extern irqreturn_t r128_driver_irq_handler(DRM_IRQ_ARGS);
-extern void r128_driver_irq_preinstall(drm_device_t * dev);
-extern void r128_driver_irq_postinstall(drm_device_t * dev);
-extern void r128_driver_irq_uninstall(drm_device_t * dev);
-extern void r128_driver_lastclose(drm_device_t * dev);
-extern void r128_driver_preclose(drm_device_t * dev, DRMFILE filp);
+extern void r128_driver_irq_preinstall(struct drm_device * dev);
+extern int r128_driver_irq_postinstall(struct drm_device * dev);
+extern void r128_driver_irq_uninstall(struct drm_device * dev);
+extern void r128_driver_lastclose(struct drm_device * dev);
+extern void r128_driver_preclose(struct drm_device * dev,
+				 struct drm_file *file_priv);
 
 extern long r128_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
@@ -428,7 +432,7 @@ do {									\
 			DRM_UDELAY(1);				\
 		}							\
 		DRM_ERROR( "ring space check failed!\n" );		\
-		return DRM_ERR(EBUSY);				\
+		return -EBUSY;				\
 	}								\
  __ring_space_done:							\
 	;								\

@@ -32,6 +32,7 @@
 #define _DRM_OBJECTS_H
 
 struct drm_device;
+struct drm_bo_mem_reg;
 
 /***************************************************
  * User space objects. (drm_object.c)
@@ -39,14 +40,19 @@ struct drm_device;
 
 #define drm_user_object_entry(_ptr, _type, _member) container_of(_ptr, _type, _member)
 
-typedef enum {
+enum drm_object_type {
 	drm_fence_type,
 	drm_buffer_type,
-	drm_ttm_type
+	drm_lock_type,
 	    /*
 	     * Add other user space object types here.
 	     */
-} drm_object_type_t;
+	drm_driver_type0 = 256,
+	drm_driver_type1,
+	drm_driver_type2,
+	drm_driver_type3,
+	drm_driver_type4
+};
 
 /*
  * A user object is a structure that helps the drm give out user handles
@@ -55,20 +61,20 @@ typedef enum {
  * Designed to be accessible using a user space 32-bit handle.
  */
 
-typedef struct drm_user_object {
-	drm_hash_item_t hash;
+struct drm_user_object {
+	struct drm_hash_item hash;
 	struct list_head list;
-	drm_object_type_t type;
+	enum drm_object_type type;
 	atomic_t refcount;
 	int shareable;
-	drm_file_t *owner;
-	void (*ref_struct_locked) (drm_file_t * priv,
+	struct drm_file *owner;
+	void (*ref_struct_locked) (struct drm_file * priv,
 				   struct drm_user_object * obj,
-				   drm_ref_t ref_action);
-	void (*unref) (drm_file_t * priv, struct drm_user_object * obj,
-		       drm_ref_t unref_action);
-	void (*remove) (drm_file_t * priv, struct drm_user_object * obj);
-} drm_user_object_t;
+				   enum drm_ref_type ref_action);
+	void (*unref) (struct drm_file * priv, struct drm_user_object * obj,
+		       enum drm_ref_type unref_action);
+	void (*remove) (struct drm_file * priv, struct drm_user_object * obj);
+};
 
 /*
  * A ref object is a structure which is used to
@@ -77,50 +83,41 @@ typedef struct drm_user_object {
  * process exits. Designed to be accessible using a pointer to the _user_ object.
  */
 
-typedef struct drm_ref_object {
-	drm_hash_item_t hash;
+struct drm_ref_object {
+	struct drm_hash_item hash;
 	struct list_head list;
 	atomic_t refcount;
-	drm_ref_t unref_action;
-} drm_ref_object_t;
+	enum drm_ref_type unref_action;
+};
 
 /**
  * Must be called with the struct_mutex held.
  */
 
-extern int drm_add_user_object(drm_file_t * priv, drm_user_object_t * item,
+extern int drm_add_user_object(struct drm_file * priv, struct drm_user_object * item,
 			       int shareable);
 /**
  * Must be called with the struct_mutex held.
  */
 
-extern drm_user_object_t *drm_lookup_user_object(drm_file_t * priv,
+extern struct drm_user_object *drm_lookup_user_object(struct drm_file * priv,
 						 uint32_t key);
-
-/*
- * Must be called with the struct_mutex held.
- * If "item" has been obtained by a call to drm_lookup_user_object. You may not
- * release the struct_mutex before calling drm_remove_ref_object.
- * This function may temporarily release the struct_mutex.
- */
-
-extern int drm_remove_user_object(drm_file_t * priv, drm_user_object_t * item);
 
 /*
  * Must be called with the struct_mutex held. May temporarily release it.
  */
 
-extern int drm_add_ref_object(drm_file_t * priv,
-			      drm_user_object_t * referenced_object,
-			      drm_ref_t ref_action);
+extern int drm_add_ref_object(struct drm_file * priv,
+			      struct drm_user_object * referenced_object,
+			      enum drm_ref_type ref_action);
 
 /*
  * Must be called with the struct_mutex held.
  */
 
-drm_ref_object_t *drm_lookup_ref_object(drm_file_t * priv,
-					drm_user_object_t * referenced_object,
-					drm_ref_t ref_action);
+struct drm_ref_object *drm_lookup_ref_object(struct drm_file * priv,
+					struct drm_user_object * referenced_object,
+					enum drm_ref_type ref_action);
 /*
  * Must be called with the struct_mutex held.
  * If "item" has been obtained by a call to drm_lookup_ref_object. You may not
@@ -128,19 +125,20 @@ drm_ref_object_t *drm_lookup_ref_object(drm_file_t * priv,
  * This function may temporarily release the struct_mutex.
  */
 
-extern void drm_remove_ref_object(drm_file_t * priv, drm_ref_object_t * item);
-extern int drm_user_object_ref(drm_file_t * priv, uint32_t user_token,
-			       drm_object_type_t type,
-			       drm_user_object_t ** object);
-extern int drm_user_object_unref(drm_file_t * priv, uint32_t user_token,
-				 drm_object_type_t type);
+extern void drm_remove_ref_object(struct drm_file * priv, struct drm_ref_object * item);
+extern int drm_user_object_ref(struct drm_file * priv, uint32_t user_token,
+			       enum drm_object_type type,
+			       struct drm_user_object ** object);
+extern int drm_user_object_unref(struct drm_file * priv, uint32_t user_token,
+				 enum drm_object_type type);
 
 /***************************************************
  * Fence objects. (drm_fence.c)
  */
 
-typedef struct drm_fence_object {
-	drm_user_object_t base;
+struct drm_fence_object {
+	struct drm_user_object base;
+        struct drm_device *dev;
 	atomic_t usage;
 
 	/*
@@ -148,71 +146,95 @@ typedef struct drm_fence_object {
 	 */
 
 	struct list_head ring;
-	int class;
+	int fence_class;
 	uint32_t native_type;
 	uint32_t type;
 	uint32_t signaled;
 	uint32_t sequence;
 	uint32_t flush_mask;
 	uint32_t submitted_flush;
-} drm_fence_object_t;
+        uint32_t error;
+};
 
 #define _DRM_FENCE_CLASSES 8
 #define _DRM_FENCE_TYPE_EXE 0x00
 
-typedef struct drm_fence_class_manager {
+struct drm_fence_class_manager {
 	struct list_head ring;
 	uint32_t pending_flush;
 	wait_queue_head_t fence_queue;
 	int pending_exe_flush;
 	uint32_t last_exe_flush;
 	uint32_t exe_flush_sequence;
-} drm_fence_class_manager_t;
+};
 
-typedef struct drm_fence_manager {
+struct drm_fence_manager {
 	int initialized;
 	rwlock_t lock;
-	drm_fence_class_manager_t class[_DRM_FENCE_CLASSES];
+	struct drm_fence_class_manager fence_class[_DRM_FENCE_CLASSES];
 	uint32_t num_classes;
 	atomic_t count;
-} drm_fence_manager_t;
+};
 
-typedef struct drm_fence_driver {
+struct drm_fence_driver {
 	uint32_t num_classes;
 	uint32_t wrap_diff;
 	uint32_t flush_diff;
 	uint32_t sequence_mask;
 	int lazy_capable;
-	int (*has_irq) (struct drm_device * dev, uint32_t class,
+	int (*has_irq) (struct drm_device * dev, uint32_t fence_class,
 			uint32_t flags);
-	int (*emit) (struct drm_device * dev, uint32_t class, uint32_t flags,
+	int (*emit) (struct drm_device * dev, uint32_t fence_class, uint32_t flags,
 		     uint32_t * breadcrumb, uint32_t * native_type);
-	void (*poke_flush) (struct drm_device * dev, uint32_t class);
-} drm_fence_driver_t;
+	void (*poke_flush) (struct drm_device * dev, uint32_t fence_class);
+};
 
-extern void drm_fence_handler(struct drm_device *dev, uint32_t class,
-			      uint32_t sequence, uint32_t type);
+extern void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
+			      uint32_t sequence, uint32_t type, uint32_t error);
 extern void drm_fence_manager_init(struct drm_device *dev);
 extern void drm_fence_manager_takedown(struct drm_device *dev);
-extern void drm_fence_flush_old(struct drm_device *dev, uint32_t class,
+extern void drm_fence_flush_old(struct drm_device *dev, uint32_t fence_class,
 				uint32_t sequence);
-extern int drm_fence_object_flush(struct drm_device *dev,
-				  drm_fence_object_t * fence, uint32_t type);
-extern int drm_fence_object_signaled(drm_fence_object_t * fence, uint32_t type);
-extern void drm_fence_usage_deref_locked(struct drm_device *dev,
-					 drm_fence_object_t * fence);
-extern void drm_fence_usage_deref_unlocked(struct drm_device *dev,
-					   drm_fence_object_t * fence);
-extern int drm_fence_object_wait(struct drm_device *dev,
-				 drm_fence_object_t * fence,
+extern int drm_fence_object_flush(struct drm_fence_object * fence, uint32_t type);
+extern int drm_fence_object_signaled(struct drm_fence_object * fence,
+				     uint32_t type, int flush);
+extern void drm_fence_usage_deref_locked(struct drm_fence_object ** fence);
+extern void drm_fence_usage_deref_unlocked(struct drm_fence_object ** fence);
+extern struct drm_fence_object *drm_fence_reference_locked(struct drm_fence_object *src);
+extern void drm_fence_reference_unlocked(struct drm_fence_object **dst,
+					 struct drm_fence_object *src);
+extern int drm_fence_object_wait(struct drm_fence_object * fence,
 				 int lazy, int ignore_signals, uint32_t mask);
 extern int drm_fence_object_create(struct drm_device *dev, uint32_t type,
-				   uint32_t fence_flags, uint32_t class,
-				   drm_fence_object_t ** c_fence);
-extern int drm_fence_add_user_object(drm_file_t * priv,
-				     drm_fence_object_t * fence, int shareable);
-extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
+				   uint32_t fence_flags, uint32_t fence_class,
+				   struct drm_fence_object ** c_fence);
+extern int drm_fence_object_emit(struct drm_fence_object * fence,
+				 uint32_t fence_flags, uint32_t class,
+				 uint32_t type);
+extern void drm_fence_fill_arg(struct drm_fence_object *fence,
+			       struct drm_fence_arg *arg);
 
+extern int drm_fence_add_user_object(struct drm_file * priv,
+				     struct drm_fence_object * fence, int shareable);
+
+extern int drm_fence_create_ioctl(struct drm_device *dev, void *data,
+				  struct drm_file *file_priv);
+extern int drm_fence_destroy_ioctl(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv);
+extern int drm_fence_reference_ioctl(struct drm_device *dev, void *data,
+				     struct drm_file *file_priv);
+extern int drm_fence_unreference_ioctl(struct drm_device *dev, void *data,
+				       struct drm_file *file_priv);
+extern int drm_fence_signaled_ioctl(struct drm_device *dev, void *data,
+				    struct drm_file *file_priv);
+extern int drm_fence_flush_ioctl(struct drm_device *dev, void *data,
+				 struct drm_file *file_priv);
+extern int drm_fence_wait_ioctl(struct drm_device *dev, void *data,
+				struct drm_file *file_priv);
+extern int drm_fence_emit_ioctl(struct drm_device *dev, void *data,
+				struct drm_file *file_priv);
+extern int drm_fence_buffers_ioctl(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv);
 /**************************************************
  *TTMs
  */
@@ -234,34 +256,33 @@ extern int drm_fence_ioctl(DRM_IOCTL_ARGS);
 #define DRM_BE_FLAG_BOUND_CACHED   0x00000002
 
 struct drm_ttm_backend;
-typedef struct drm_ttm_backend_func {
+struct drm_ttm_backend_func {
 	int (*needs_ub_cache_adjust) (struct drm_ttm_backend * backend);
 	int (*populate) (struct drm_ttm_backend * backend,
 			 unsigned long num_pages, struct page ** pages);
 	void (*clear) (struct drm_ttm_backend * backend);
 	int (*bind) (struct drm_ttm_backend * backend,
-		     unsigned long offset, int cached);
+		     struct drm_bo_mem_reg * bo_mem);
 	int (*unbind) (struct drm_ttm_backend * backend);
 	void (*destroy) (struct drm_ttm_backend * backend);
-} drm_ttm_backend_func_t;
+};
 
 
 typedef struct drm_ttm_backend {
-	uint32_t flags;
-	int mem_type;
-	drm_ttm_backend_func_t *func;
+        struct drm_device *dev;
+        uint32_t flags;
+        struct drm_ttm_backend_func *func;
 } drm_ttm_backend_t;
 
-typedef struct drm_ttm {
+struct drm_ttm {
 	struct page **pages;
 	uint32_t page_flags;
 	unsigned long num_pages;
-	unsigned long aper_offset;
 	atomic_t vma_count;
 	struct drm_device *dev;
 	int destroy;
 	uint32_t mapping_offset;
-	drm_ttm_backend_t *be;
+	struct drm_ttm_backend *be;
 	enum {
 		ttm_bound,
 		ttm_evicted,
@@ -269,14 +290,16 @@ typedef struct drm_ttm {
 		ttm_unpopulated,
 	} state;
 
-} drm_ttm_t;
+};
 
-extern drm_ttm_t *drm_ttm_init(struct drm_device *dev, unsigned long size);
-extern int drm_bind_ttm(drm_ttm_t * ttm, int cached, unsigned long aper_offset);
-extern void drm_ttm_unbind(drm_ttm_t * ttm);
-extern void drm_ttm_evict(drm_ttm_t * ttm);
-extern void drm_ttm_fixup_caching(drm_ttm_t * ttm);
-extern struct page *drm_ttm_get_page(drm_ttm_t * ttm, int index);
+extern struct drm_ttm *drm_ttm_init(struct drm_device *dev, unsigned long size);
+extern int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem);
+extern void drm_ttm_unbind(struct drm_ttm * ttm);
+extern void drm_ttm_evict(struct drm_ttm * ttm);
+extern void drm_ttm_fixup_caching(struct drm_ttm * ttm);
+extern struct page *drm_ttm_get_page(struct drm_ttm * ttm, int index);
+extern void drm_ttm_cache_flush(void);
+extern int drm_ttm_populate(struct drm_ttm * ttm);
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do this,
@@ -284,7 +307,7 @@ extern struct page *drm_ttm_get_page(drm_ttm_t * ttm, int index);
  * when the last vma exits.
  */
 
-extern int drm_destroy_ttm(drm_ttm_t * ttm);
+extern int drm_destroy_ttm(struct drm_ttm * ttm);
 
 #define DRM_FLAG_MASKED(_old, _new, _mask) {\
 (_old) ^= (((_old) ^ (_new)) & (_mask)); \
@@ -307,19 +330,27 @@ extern int drm_destroy_ttm(drm_ttm_t * ttm);
  * Buffer objects. (drm_bo.c, drm_bo_move.c)
  */
 
-typedef struct drm_bo_mem_reg {
-	drm_mm_node_t *mm_node;
+struct drm_bo_mem_reg {
+	struct drm_mm_node *mm_node;
 	unsigned long size;
 	unsigned long num_pages;
 	uint32_t page_alignment;
 	uint32_t mem_type;
-	uint32_t flags;
-	uint32_t mask;
-} drm_bo_mem_reg_t;
+	uint64_t flags;
+	uint64_t mask;
+        uint32_t desired_tile_stride;
+        uint32_t hw_tile_stride;
+};
 
-typedef struct drm_buffer_object {
+enum drm_bo_type {
+	drm_bo_type_dc,
+	drm_bo_type_user,
+	drm_bo_type_kernel, /* for initial kernel allocations */
+};
+
+struct drm_buffer_object {
 	struct drm_device *dev;
-	drm_user_object_t base;
+	struct drm_user_object base;
 
 	/*
 	 * If there is a possibility that the usage variable is zero,
@@ -328,30 +359,32 @@ typedef struct drm_buffer_object {
 
 	atomic_t usage;
 	unsigned long buffer_start;
-	drm_bo_type_t type;
+	enum drm_bo_type type;
 	unsigned long offset;
 	atomic_t mapped;
-	drm_bo_mem_reg_t mem;
+	struct drm_bo_mem_reg mem;
 
 	struct list_head lru;
 	struct list_head ddestroy;
 
 	uint32_t fence_type;
 	uint32_t fence_class;
-	drm_fence_object_t *fence;
+        uint32_t new_fence_type;
+        uint32_t new_fence_class;
+	struct drm_fence_object *fence;
 	uint32_t priv_flags;
 	wait_queue_head_t event_queue;
 	struct mutex mutex;
+	unsigned long num_pages;
 
 	/* For pinned buffers */
-	drm_mm_node_t *pinned_node;
+	struct drm_mm_node *pinned_node;
 	uint32_t pinned_mem_type;
 	struct list_head pinned_lru;
 
 	/* For vm */
-
-	drm_ttm_t *ttm;
-	drm_map_list_t map_list;
+	struct drm_ttm *ttm;
+	struct drm_map_list map_list;
 	uint32_t memory_type;
 	unsigned long bus_offset;
 	uint32_t vm_flags;
@@ -363,23 +396,31 @@ typedef struct drm_buffer_object {
 	struct list_head p_mm_list;
 #endif
 
-} drm_buffer_object_t;
+};
 
 #define _DRM_BO_FLAG_UNFENCED 0x00000001
 #define _DRM_BO_FLAG_EVICTED  0x00000002
 
-typedef struct drm_mem_type_manager {
+struct drm_mem_type_manager {
 	int has_type;
 	int use_type;
-	drm_mm_t manager;
+	struct drm_mm manager;
 	struct list_head lru;
 	struct list_head pinned;
 	uint32_t flags;
 	uint32_t drm_bus_maptype;
+        unsigned long gpu_offset;
 	unsigned long io_offset;
 	unsigned long io_size;
 	void *io_addr;
-} drm_mem_type_manager_t;
+};
+
+struct drm_bo_lock {
+	struct drm_user_object base;
+	wait_queue_head_t queue;
+	atomic_t write_lock_pending;
+	atomic_t readers;
+};
 
 #define _DRM_FLAG_MEMTYPE_FIXED     0x00000001	/* Fixed (on-card) PCI memory */
 #define _DRM_FLAG_MEMTYPE_MAPPABLE  0x00000002	/* Memory mappable */
@@ -389,13 +430,13 @@ typedef struct drm_mem_type_manager {
 #define _DRM_FLAG_MEMTYPE_CMA       0x00000010	/* Can't map aperture */
 #define _DRM_FLAG_MEMTYPE_CSELECT   0x00000020	/* Select caching */
 
-typedef struct drm_buffer_manager {
-	struct mutex init_mutex;
-	struct mutex evict_mutex;
+struct drm_buffer_manager {
+        struct drm_bo_lock bm_lock;
+        struct mutex evict_mutex;
 	int nice_mode;
 	int initialized;
-	drm_file_t *last_to_validate;
-	drm_mem_type_manager_t man[DRM_BO_MEM_TYPES];
+	struct drm_file *last_to_validate;
+	struct drm_mem_type_manager man[DRM_BO_MEM_TYPES];
 	struct list_head unfenced;
 	struct list_head ddestroy;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
@@ -406,69 +447,193 @@ typedef struct drm_buffer_manager {
 	uint32_t fence_type;
 	unsigned long cur_pages;
 	atomic_t count;
-} drm_buffer_manager_t;
+};
 
-typedef struct drm_bo_driver {
+struct drm_bo_driver {
 	const uint32_t *mem_type_prio;
 	const uint32_t *mem_busy_prio;
 	uint32_t num_mem_type_prio;
 	uint32_t num_mem_busy_prio;
-	drm_ttm_backend_t *(*create_ttm_backend_entry)
+	struct drm_ttm_backend *(*create_ttm_backend_entry)
 	 (struct drm_device * dev);
-	int (*fence_type) (struct drm_buffer_object *bo, uint32_t * class, uint32_t * type);
-	int (*invalidate_caches) (struct drm_device * dev, uint32_t flags);
+	int (*fence_type) (struct drm_buffer_object *bo, uint32_t *fclass,
+		     uint32_t * type);
+	int (*invalidate_caches) (struct drm_device * dev, uint64_t flags);
 	int (*init_mem_type) (struct drm_device * dev, uint32_t type,
-			      drm_mem_type_manager_t * man);
+			      struct drm_mem_type_manager * man);
 	 uint32_t(*evict_mask) (struct drm_buffer_object *bo);
 	int (*move) (struct drm_buffer_object * bo,
 		     int evict, int no_wait, struct drm_bo_mem_reg * new_mem);
-} drm_bo_driver_t;
+	void (*ttm_cache_flush)(struct drm_ttm *ttm);
+};
 
 /*
  * buffer objects (drm_bo.c)
  */
 
-extern int drm_bo_ioctl(DRM_IOCTL_ARGS);
-extern int drm_mm_init_ioctl(DRM_IOCTL_ARGS);
+extern int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_destroy_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_map_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_unmap_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_reference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_unreference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_setstatus_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_bo_version_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_driver_finish(struct drm_device *dev);
 extern int drm_bo_driver_init(struct drm_device *dev);
 extern int drm_bo_pci_offset(struct drm_device *dev,
-			     drm_bo_mem_reg_t * mem,
+			     struct drm_bo_mem_reg * mem,
 			     unsigned long *bus_base,
 			     unsigned long *bus_offset,
 			     unsigned long *bus_size);
-extern int drm_mem_reg_is_pci(struct drm_device *dev, drm_bo_mem_reg_t * mem);
+extern int drm_mem_reg_is_pci(struct drm_device *dev, struct drm_bo_mem_reg * mem);
 
-extern void drm_bo_usage_deref_locked(drm_buffer_object_t * bo);
-extern int drm_fence_buffer_objects(drm_file_t * priv,
+extern void drm_bo_usage_deref_locked(struct drm_buffer_object ** bo);
+extern void drm_bo_usage_deref_unlocked(struct drm_buffer_object ** bo);
+extern void drm_putback_buffer_objects(struct drm_device *dev);
+extern int drm_fence_buffer_objects(struct drm_device * dev,
 				    struct list_head *list,
 				    uint32_t fence_flags,
-				    drm_fence_object_t * fence,
-				    drm_fence_object_t ** used_fence);
-extern void drm_bo_add_to_lru(drm_buffer_object_t * bo);
-extern int drm_bo_wait(drm_buffer_object_t * bo, int lazy, int ignore_signals,
+				    struct drm_fence_object * fence,
+				    struct drm_fence_object ** used_fence);
+extern void drm_bo_add_to_lru(struct drm_buffer_object * bo);
+extern int drm_buffer_object_create(struct drm_device *dev, unsigned long size,
+				    enum drm_bo_type type, uint64_t mask,
+				    uint32_t hint, uint32_t page_alignment,
+				    unsigned long buffer_start,
+				    struct drm_buffer_object **bo);
+extern int drm_bo_wait(struct drm_buffer_object * bo, int lazy, int ignore_signals,
 		       int no_wait);
-extern int drm_bo_mem_space(drm_buffer_object_t * bo,
-			    drm_bo_mem_reg_t * mem, int no_wait);
-extern int drm_bo_move_buffer(drm_buffer_object_t * bo, uint32_t new_mem_flags,
+extern int drm_bo_mem_space(struct drm_buffer_object * bo,
+			    struct drm_bo_mem_reg * mem, int no_wait);
+extern int drm_bo_move_buffer(struct drm_buffer_object * bo,
+			      uint64_t new_mem_flags,
 			      int no_wait, int move_unfenced);
+extern int drm_bo_clean_mm(struct drm_device * dev, unsigned mem_type);
+extern int drm_bo_init_mm(struct drm_device * dev, unsigned type,
+			  unsigned long p_offset, unsigned long p_size);
+extern int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
+				  uint32_t fence_class, uint64_t flags,
+				  uint64_t mask, uint32_t hint,
+				  int use_old_fence_class,
+				  struct drm_bo_info_rep * rep,
+				  struct drm_buffer_object **bo_rep);
+extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file * file_priv,
+							  uint32_t handle,
+							  int check_owner);
+extern int drm_bo_do_validate(struct drm_buffer_object *bo,
+			      uint64_t flags, uint64_t mask, uint32_t hint,
+			      uint32_t fence_class,
+			      int no_wait,
+			      struct drm_bo_info_rep *rep);
 
 /*
- * Buffer object memory move helpers.
+ * Buffer object memory move- and map helpers.
  * drm_bo_move.c
  */
 
-extern int drm_bo_move_ttm(drm_buffer_object_t * bo,
-			   int evict, int no_wait, drm_bo_mem_reg_t * new_mem);
-extern int drm_bo_move_memcpy(drm_buffer_object_t * bo,
+extern int drm_bo_move_ttm(struct drm_buffer_object * bo,
+			   int evict, int no_wait, struct drm_bo_mem_reg * new_mem);
+extern int drm_bo_move_memcpy(struct drm_buffer_object * bo,
 			      int evict,
-			      int no_wait, drm_bo_mem_reg_t * new_mem);
-extern int drm_bo_move_accel_cleanup(drm_buffer_object_t * bo,
+			      int no_wait, struct drm_bo_mem_reg * new_mem);
+extern int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 				     int evict,
 				     int no_wait,
 				     uint32_t fence_class,
 				     uint32_t fence_type,
 				     uint32_t fence_flags,
-				     drm_bo_mem_reg_t * new_mem);
+				     struct drm_bo_mem_reg * new_mem);
+extern int drm_bo_same_page(unsigned long offset, unsigned long offset2);
+extern unsigned long drm_bo_offset_end(unsigned long offset,
+				       unsigned long end);
 
+struct drm_bo_kmap_obj {
+	void *virtual;
+	struct page *page;
+	enum {
+		bo_map_iomap,
+		bo_map_vmap,
+		bo_map_kmap,
+		bo_map_premapped,
+	} bo_kmap_type;
+};
+
+static inline void *drm_bmo_virtual(struct drm_bo_kmap_obj *map, int *is_iomem)
+{
+	*is_iomem = (map->bo_kmap_type == bo_map_iomap ||
+		     map->bo_kmap_type == bo_map_premapped);
+	return map->virtual;
+}
+extern void drm_bo_kunmap(struct drm_bo_kmap_obj *map);
+extern int drm_bo_kmap(struct drm_buffer_object *bo, unsigned long start_page,
+		       unsigned long num_pages, struct drm_bo_kmap_obj *map);
+
+
+/*
+ * drm_regman.c
+ */
+
+struct drm_reg {
+	struct list_head head;
+	struct drm_fence_object *fence;
+	uint32_t fence_type;
+	uint32_t new_fence_type;
+};
+
+struct drm_reg_manager {
+	struct list_head free;
+	struct list_head lru;
+	struct list_head unfenced;
+
+	int (*reg_reusable)(const struct drm_reg *reg, const void *data);
+	void (*reg_destroy)(struct drm_reg *reg);
+};
+
+extern int drm_regs_alloc(struct drm_reg_manager *manager,
+			  const void *data,
+			  uint32_t fence_class,
+			  uint32_t fence_type,
+			  int interruptible,
+			  int no_wait,
+			  struct drm_reg **reg);
+
+extern void drm_regs_fence(struct drm_reg_manager *regs,
+			   struct drm_fence_object *fence);
+
+extern void drm_regs_free(struct drm_reg_manager *manager);
+extern void drm_regs_add(struct drm_reg_manager *manager, struct drm_reg *reg);
+extern void drm_regs_init(struct drm_reg_manager *manager,
+			  int (*reg_reusable)(const struct drm_reg *,
+					      const void *),
+			  void (*reg_destroy)(struct drm_reg *));
+
+/*
+ * drm_bo_lock.c 
+ * Simple replacement for the hardware lock on buffer manager init and clean.
+ */
+
+
+extern void drm_bo_init_lock(struct drm_bo_lock *lock);
+extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
+extern int drm_bo_read_lock(struct drm_bo_lock *lock);
+extern int drm_bo_write_lock(struct drm_bo_lock *lock, 
+			     struct drm_file *file_priv);
+
+extern int drm_bo_write_unlock(struct drm_bo_lock *lock, 
+			       struct drm_file *file_priv);
+
+#ifdef CONFIG_DEBUG_MUTEXES
+#define DRM_ASSERT_LOCKED(_mutex)					\
+	BUG_ON(!mutex_is_locked(_mutex) ||				\
+	       ((_mutex)->owner != current_thread_info()))
+#else
+#define DRM_ASSERT_LOCKED(_mutex)
+#endif
 #endif

@@ -40,28 +40,21 @@
 /**
  * Allocate drawable ID and memory to store information about it.
  */
-int drm_adddraw(DRM_IOCTL_ARGS)
+int drm_adddraw(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
 	unsigned long irqflags;
-	struct drm_drawable_list *draw_info;
-	drm_draw_t draw;
+	struct drm_draw *draw = data;
 	int new_id = 0;
 	int ret;
-
-	draw_info = drm_calloc(1, sizeof(struct drm_drawable_list), DRM_MEM_BUFS);
-	if (!draw_info)
-		return -ENOMEM;
 
 again:
 	if (idr_pre_get(&dev->drw_idr, GFP_KERNEL) == 0) {
 		DRM_ERROR("Out of memory expanding drawable idr\n");
-		drm_free(draw_info, sizeof(struct drm_drawable_list), DRM_MEM_BUFS);
 		return -ENOMEM;
 	}
 
 	spin_lock_irqsave(&dev->drw_lock, irqflags);
-	ret = idr_get_new_above(&dev->drw_idr, draw_info, 1, &new_id);
+	ret = idr_get_new_above(&dev->drw_idr, NULL, 1, &new_id);
 	if (ret == -EAGAIN) {
 		spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 		goto again;
@@ -69,11 +62,9 @@ again:
 
 	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 
-	draw.handle = new_id;
+	draw->handle = new_id;
 
-	DRM_DEBUG("%d\n", draw.handle);
-
-	DRM_COPY_TO_USER_IOCTL((drm_draw_t __user *)data, draw, sizeof(draw));
+	DRM_DEBUG("%d\n", draw->handle);
 
 	return 0;
 }
@@ -81,73 +72,64 @@ again:
 /**
  * Free drawable ID and memory to store information about it.
  */
-int drm_rmdraw(DRM_IOCTL_ARGS)
+int drm_rmdraw(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	DRM_DEVICE;
-	drm_draw_t draw;
+	struct drm_draw *draw = data;
 	unsigned long irqflags;
-	struct drm_drawable_list *draw_info;
-
-	DRM_COPY_FROM_USER_IOCTL(draw, (drm_draw_t __user *) data,
-				 sizeof(draw));
-
-	draw_info = idr_find(&dev->drw_idr, draw.handle);
-	if (!draw_info) {
-		DRM_DEBUG("No such drawable %d\n", draw.handle);
-		return -EINVAL;
-	}
 
 	spin_lock_irqsave(&dev->drw_lock, irqflags);
 
-	idr_remove(&dev->drw_idr, draw.handle);
-	drm_free(draw_info, sizeof(struct drm_drawable_list), DRM_MEM_BUFS);
+	drm_free(drm_get_drawable_info(dev, draw->handle),
+		 sizeof(struct drm_drawable_info), DRM_MEM_BUFS);
+
+	idr_remove(&dev->drw_idr, draw->handle);
 
 	spin_unlock_irqrestore(&dev->drw_lock, irqflags);
-	DRM_DEBUG("%d\n", draw.handle);
+	DRM_DEBUG("%d\n", draw->handle);
 	return 0;
 }
 
-int drm_update_drawable_info(DRM_IOCTL_ARGS) {
-	DRM_DEVICE;
-	drm_update_draw_t update;
+int drm_update_drawable_info(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	struct drm_update_draw *update = data;
 	unsigned long irqflags;
-	drm_drawable_info_t *info;
-	drm_clip_rect_t *rects;
-	struct drm_drawable_list *draw_info;
+	struct drm_clip_rect *rects;
+	struct drm_drawable_info *info;
 	int err;
 
-	DRM_COPY_FROM_USER_IOCTL(update, (drm_update_draw_t __user *) data,
-				 sizeof(update));
-
-	draw_info = idr_find(&dev->drw_idr, update.handle);
-	if (!draw_info) {
-		DRM_ERROR("No such drawable %d\n", update.handle);
-		return DRM_ERR(EINVAL);
+	info = idr_find(&dev->drw_idr, update->handle);
+	if (!info) {
+		info = drm_calloc(1, sizeof(*info), DRM_MEM_BUFS);
+		if (!info)
+			return -ENOMEM;
+		if (IS_ERR(idr_replace(&dev->drw_idr, info, update->handle))) {
+			DRM_ERROR("No such drawable %d\n", update->handle);
+			drm_free(info, sizeof(*info), DRM_MEM_BUFS);
+			return -EINVAL;
+		}
 	}
 
-	info = &draw_info->info;
-
-	switch (update.type) {
+	switch (update->type) {
 	case DRM_DRAWABLE_CLIPRECTS:
-		if (update.num != info->num_rects) {
-			rects = drm_alloc(update.num * sizeof(drm_clip_rect_t),
+		if (update->num != info->num_rects) {
+			rects = drm_alloc(update->num * sizeof(struct drm_clip_rect),
 					 DRM_MEM_BUFS);
 		} else
 			rects = info->rects;
 
-		if (update.num && !rects) {
+		if (update->num && !rects) {
 			DRM_ERROR("Failed to allocate cliprect memory\n");
-			err = DRM_ERR(ENOMEM);
+			err = -ENOMEM;
 			goto error;
 		}
 
-		if (update.num && DRM_COPY_FROM_USER(rects,
-						     (drm_clip_rect_t __user *)
-						     (unsigned long)update.data,
-						     update.num *
+		if (update->num && DRM_COPY_FROM_USER(rects,
+						     (struct drm_clip_rect __user *)
+						     (unsigned long)update->data,
+						     update->num *
 						     sizeof(*rects))) {
 			DRM_ERROR("Failed to copy cliprects from userspace\n");
-			err = DRM_ERR(EFAULT);
+			err = -EFAULT;
 			goto error;
 		}
 
@@ -155,27 +137,27 @@ int drm_update_drawable_info(DRM_IOCTL_ARGS) {
 
 		if (rects != info->rects) {
 			drm_free(info->rects, info->num_rects *
-				 sizeof(drm_clip_rect_t), DRM_MEM_BUFS);
+				 sizeof(struct drm_clip_rect), DRM_MEM_BUFS);
 		}
 
 		info->rects = rects;
-		info->num_rects = update.num;
+		info->num_rects = update->num;
 
 		spin_unlock_irqrestore(&dev->drw_lock, irqflags);
 
 		DRM_DEBUG("Updated %d cliprects for drawable %d\n",
-			  info->num_rects, update.handle);
+			  info->num_rects, update->handle);
 		break;
 	default:
-		DRM_ERROR("Invalid update type %d\n", update.type);
-		return DRM_ERR(EINVAL);
+		DRM_ERROR("Invalid update type %d\n", update->type);
+		return -EINVAL;
 	}
 
 	return 0;
 
 error:
 	if (rects != info->rects)
-		drm_free(rects, update.num * sizeof(drm_clip_rect_t),
+		drm_free(rects, update->num * sizeof(struct drm_clip_rect),
 			 DRM_MEM_BUFS);
 
 	return err;
@@ -184,28 +166,26 @@ error:
 /**
  * Caller must hold the drawable spinlock!
  */
-drm_drawable_info_t *drm_get_drawable_info(drm_device_t *dev, drm_drawable_t id) {
-	struct drm_drawable_list *draw_info;
-	draw_info = idr_find(&dev->drw_idr, id);
-	if (!draw_info) {
-		DRM_DEBUG("No such drawable %d\n", id);
-		return NULL;
-	}
-
-	return &draw_info->info;
+struct drm_drawable_info *drm_get_drawable_info(struct drm_device *dev, drm_drawable_t id)
+{
+	return idr_find(&dev->drw_idr, id);
 }
 EXPORT_SYMBOL(drm_get_drawable_info);
 
 static int drm_drawable_free(int idr, void *p, void *data)
 {
-	struct drm_drawable_list *drw_entry = p;
-	drm_free(drw_entry->info.rects, drw_entry->info.num_rects *
-		 sizeof(drm_clip_rect_t), DRM_MEM_BUFS);
-	drm_free(drw_entry, sizeof(struct drm_drawable_list), DRM_MEM_BUFS);
+	struct drm_drawable_info *info = p;
+
+	if (info) {
+		drm_free(info->rects, info->num_rects *
+			 sizeof(struct drm_clip_rect), DRM_MEM_BUFS);
+		drm_free(info, sizeof(*info), DRM_MEM_BUFS);
+	}
+
 	return 0;
 }
 
-void drm_drawable_free_all(drm_device_t *dev)
+void drm_drawable_free_all(struct drm_device *dev)
 {
 	idr_for_each(&dev->drw_idr, drm_drawable_free, NULL);
 	idr_remove_all(&dev->drw_idr);

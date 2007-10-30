@@ -33,22 +33,23 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-drm_ttm_backend_t *i915_create_ttm_backend_entry(drm_device_t * dev)
+struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device * dev)
 {
 	return drm_agp_init_ttm(dev);
 }
 
-int i915_fence_types(drm_buffer_object_t *bo, uint32_t * class, uint32_t * type)
+int i915_fence_types(struct drm_buffer_object *bo,
+		     uint32_t * fclass,
+		     uint32_t * type)
 {
-	*class = 0;
-	if (bo->mem.flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
+	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
 		*type = 1;
 	return 0;
 }
 
-int i915_invalidate_caches(drm_device_t * dev, uint32_t flags)
+int i915_invalidate_caches(struct drm_device * dev, uint64_t flags)
 {
 	/*
 	 * FIXME: Only emit once per batchbuffer submission.
@@ -64,14 +65,15 @@ int i915_invalidate_caches(drm_device_t * dev, uint32_t flags)
 	return i915_emit_mi_flush(dev, flush_cmd);
 }
 
-int i915_init_mem_type(drm_device_t * dev, uint32_t type,
-		       drm_mem_type_manager_t * man)
+int i915_init_mem_type(struct drm_device * dev, uint32_t type,
+		       struct drm_mem_type_manager * man)
 {
 	switch (type) {
 	case DRM_BO_MEM_LOCAL:
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_CACHED;
 		man->drm_bus_maptype = 0;
+		man->gpu_offset = 0;
 		break;
 	case DRM_BO_MEM_TT:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
@@ -85,6 +87,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
+		man->gpu_offset = 0;
 		break;
 	case DRM_BO_MEM_PRIV0:
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
@@ -98,6 +101,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 		man->flags =  _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
+		man->gpu_offset = 0;
 		break;
 	default:
 		DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);
@@ -106,7 +110,7 @@ int i915_init_mem_type(drm_device_t * dev, uint32_t type,
 	return 0;
 }
 
-uint32_t i915_evict_mask(drm_buffer_object_t *bo)
+uint32_t i915_evict_mask(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:
@@ -117,7 +121,9 @@ uint32_t i915_evict_mask(drm_buffer_object_t *bo)
 	}
 }
 
-static void i915_emit_copy_blit(drm_device_t * dev,
+#if 0 /* See comment below */
+
+static void i915_emit_copy_blit(struct drm_device * dev,
 				uint32_t src_offset,
 				uint32_t dst_offset,
 				uint32_t pages, int direction)
@@ -151,10 +157,10 @@ static void i915_emit_copy_blit(drm_device_t * dev,
 	return;
 }
 
-static int i915_move_blit(drm_buffer_object_t * bo,
-			  int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
+static int i915_move_blit(struct drm_buffer_object * bo,
+			  int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
 {
-	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int dir = 0;
 
 	if ((old_mem->mem_type == new_mem->mem_type) &&
@@ -181,11 +187,11 @@ static int i915_move_blit(drm_buffer_object_t * bo,
  * then blit and subsequently move out again.
  */
 
-static int i915_move_flip(drm_buffer_object_t * bo,
-			  int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
+static int i915_move_flip(struct drm_buffer_object * bo,
+			  int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
 {
-	drm_device_t *dev = bo->dev;
-	drm_bo_mem_reg_t tmp_mem;
+	struct drm_device *dev = bo->dev;
+	struct drm_bo_mem_reg tmp_mem;
 	int ret;
 
 	tmp_mem = *new_mem;
@@ -197,7 +203,7 @@ static int i915_move_flip(drm_buffer_object_t * bo,
 	if (ret)
 		return ret;
 
-	ret = drm_bind_ttm(bo->ttm, 1, tmp_mem.mm_node->start);
+	ret = drm_bind_ttm(bo->ttm, &tmp_mem);
 	if (ret)
 		goto out_cleanup;
 
@@ -217,19 +223,62 @@ out_cleanup:
 	return ret;
 }
 
-int i915_move(drm_buffer_object_t * bo,
-	      int evict, int no_wait, drm_bo_mem_reg_t * new_mem)
+#endif
+
+/*
+ * Disable i915_move_flip for now, since we can't guarantee that the hardware lock
+ * is held here. To re-enable we need to make sure either
+ * a) The X server is using DRM to submit commands to the ring, or
+ * b) DRM can use the HP ring for these blits. This means i915 needs to implement
+ *    a new ring submission mechanism and fence class.
+ */
+
+int i915_move(struct drm_buffer_object * bo,
+	      int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
 {
-	drm_bo_mem_reg_t *old_mem = &bo->mem;
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		if (i915_move_flip(bo, evict, no_wait, new_mem))
+		if (0 /*i915_move_flip(bo, evict, no_wait, new_mem)*/)
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else {
-		if (i915_move_blit(bo, evict, no_wait, new_mem))
+		if (0 /*i915_move_blit(bo, evict, no_wait, new_mem)*/)
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
+}
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+static inline void clflush(volatile void *__p)
+{
+	asm volatile("clflush %0" : "+m" (*(char __force *)__p));
+}
+#endif
+
+static inline void drm_cache_flush_addr(void *virt)
+{ 
+        int i;
+
+	for (i = 0; i < PAGE_SIZE; i += boot_cpu_data.x86_clflush_size)
+		clflush(virt+i);
+}
+
+static inline void drm_cache_flush_page(struct page *p)
+{
+	drm_cache_flush_addr(page_address(p));
+}
+
+void i915_flush_ttm(struct drm_ttm *ttm)
+{
+	int i;
+
+	if (!ttm)
+		return;
+
+	DRM_MEMORYBARRIER();
+	for (i = ttm->num_pages-1; i >= 0; i--)
+		drm_cache_flush_page(drm_ttm_get_page(ttm, i));
+	DRM_MEMORYBARRIER();
 }

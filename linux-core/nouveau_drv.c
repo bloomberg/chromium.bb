@@ -29,10 +29,19 @@
 #include "drm_pciids.h"
 
 static struct pci_device_id pciidlist[] = {
-	nouveau_PCI_IDS
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID),
+		.class = PCI_BASE_CLASS_DISPLAY << 16,
+		.class_mask  = 0xff << 16,
+	},
+	{
+		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA_SGS, PCI_ANY_ID),
+		.class = PCI_BASE_CLASS_DISPLAY << 16,
+		.class_mask  = 0xff << 16,
+	}
 };
 
-extern drm_ioctl_desc_t nouveau_ioctls[];
+extern struct drm_ioctl_desc nouveau_ioctls[];
 extern int nouveau_max_ioctl;
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);

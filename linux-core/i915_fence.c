@@ -38,12 +38,12 @@
  * Implements an intel sync flush operation.
  */
 
-static void i915_perform_flush(drm_device_t * dev)
+static void i915_perform_flush(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	drm_fence_manager_t *fm = &dev->fm;
-	drm_fence_class_manager_t *fc = &fm->class[0];
-	drm_fence_driver_t *driver = dev->driver->fence_driver;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_class_manager *fc = &fm->fence_class[0];
+	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	uint32_t flush_flags = 0;
 	uint32_t flush_sequence = 0;
 	uint32_t i_status;
@@ -61,9 +61,10 @@ static void i915_perform_flush(drm_device_t * dev)
 		 * First update fences with the current breadcrumb.
 		 */
 
-		diff = sequence - fc->last_exe_flush;
+		diff = (sequence - fc->last_exe_flush) & BREADCRUMB_MASK;
 		if (diff < driver->wrap_diff && diff != 0) {
-			drm_fence_handler(dev, 0, sequence, DRM_FENCE_TYPE_EXE);
+		        drm_fence_handler(dev, 0, sequence,
+					  DRM_FENCE_TYPE_EXE, 0);
 		}
 
 		if (dev_priv->fence_irq_on && !fc->pending_exe_flush) {
@@ -82,7 +83,7 @@ static void i915_perform_flush(drm_device_t * dev)
 			flush_flags = dev_priv->flush_flags;
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, 0, flush_sequence, flush_flags);
+			drm_fence_handler(dev, 0, flush_sequence, flush_flags, 0);
 		}
 	}
 
@@ -103,15 +104,15 @@ static void i915_perform_flush(drm_device_t * dev)
 			flush_flags = dev_priv->flush_flags;
 			flush_sequence = dev_priv->flush_sequence;
 			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, 0, flush_sequence, flush_flags);
+			drm_fence_handler(dev, 0, flush_sequence, flush_flags, 0);
 		}
 	}
 
 }
 
-void i915_poke_flush(drm_device_t * dev, uint32_t class)
+void i915_poke_flush(struct drm_device * dev, uint32_t class)
 {
-	drm_fence_manager_t *fm = &dev->fm;
+	struct drm_fence_manager *fm = &dev->fm;
 	unsigned long flags;
 
 	write_lock_irqsave(&fm->lock, flags);
@@ -119,7 +120,7 @@ void i915_poke_flush(drm_device_t * dev, uint32_t class)
 	write_unlock_irqrestore(&fm->lock, flags);
 }
 
-int i915_fence_emit_sequence(drm_device_t * dev, uint32_t class, uint32_t flags,
+int i915_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t flags,
 			     uint32_t * sequence, uint32_t * native_type)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
@@ -135,16 +136,16 @@ int i915_fence_emit_sequence(drm_device_t * dev, uint32_t class, uint32_t flags,
 	return 0;
 }
 
-void i915_fence_handler(drm_device_t * dev)
+void i915_fence_handler(struct drm_device * dev)
 {
-	drm_fence_manager_t *fm = &dev->fm;
+	struct drm_fence_manager *fm = &dev->fm;
 
 	write_lock(&fm->lock);
 	i915_perform_flush(dev);
 	write_unlock(&fm->lock);
 }
 
-int i915_fence_has_irq(drm_device_t *dev, uint32_t class, uint32_t flags)
+int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags)
 {
 	/*
 	 * We have an irq that tells us when we have a new breadcrumb.

@@ -59,6 +59,8 @@ typedef struct drm_file drm_file_t;
 #include <sys/bus.h>
 #include <sys/signalvar.h>
 #include <sys/poll.h>
+#include <sys/tree.h>
+#include <sys/taskqueue.h>
 #include <vm/vm.h>
 #include <vm/pmap.h>
 #include <vm/vm_extern.h>
@@ -152,6 +154,7 @@ typedef struct drm_file drm_file_t;
 #define DRM_MEM_CTXBITMAP 17
 #define DRM_MEM_STUB	  18
 #define DRM_MEM_SGLISTS	  19
+#define DRM_MEM_DRAWABLE  20
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 
@@ -184,10 +187,15 @@ MALLOC_DECLARE(M_DRM);
 #define DRM_CURPROC		curthread
 #define DRM_STRUCTPROC		struct thread
 #define DRM_SPINTYPE		struct mtx
-#define DRM_SPININIT(l,name)	mtx_init(&l, name, NULL, MTX_DEF)
-#define DRM_SPINUNINIT(l)	mtx_destroy(&l)
+#define DRM_SPININIT(l,name)	mtx_init(l, name, NULL, MTX_DEF)
+#define DRM_SPINUNINIT(l)	mtx_destroy(l)
 #define DRM_SPINLOCK(l)		mtx_lock(l)
-#define DRM_SPINUNLOCK(u)	mtx_unlock(u);
+#define DRM_SPINUNLOCK(u)	mtx_unlock(u)
+#define DRM_SPINLOCK_IRQSAVE(l, irqflags) do {		\
+	mtx_lock(l);					\
+	(void)irqflags;					\
+} while (0)
+#define DRM_SPINUNLOCK_IRQRESTORE(u, irqflags) mtx_unlock(u)
 #define DRM_SPINLOCK_ASSERT(l)	mtx_assert(l, MA_OWNED)
 #define DRM_CURRENTPID		curthread->td_proc->p_pid
 #define DRM_LOCK()		mtx_lock(&dev->dev_lock)
@@ -209,10 +217,6 @@ MALLOC_DECLARE(M_DRM);
 #define spldrm()		spltty()
 #endif /* __NetBSD__ || __OpenBSD__ */
 
-/* Currently our DRMFILE (filp) is a void * which is actually the pid
- * of the current process.  It should be a per-open unique pointer, but
- * code for that is not yet written */
-#define DRMFILE			void *
 #define DRM_IRQ_ARGS		void *arg
 typedef void			irqreturn_t;
 #define IRQ_HANDLED		/* nothing */
@@ -226,11 +230,15 @@ enum {
 #define DRM_AGP_MEM		struct agp_memory_info
 
 #if defined(__FreeBSD__)
-#define DRM_DEVICE							\
-	drm_device_t *dev = kdev->si_drv1
-#define DRM_IOCTL_ARGS		struct cdev *kdev, u_long cmd, caddr_t data, \
-				int flags, DRM_STRUCTPROC *p, DRMFILE filp
+#define drm_get_device_from_kdev(_kdev) (_kdev->si_drv1)
+#elif defined(__NetBSD__)
+#define drm_get_device_from_kdev(_kdev) device_lookup(&drm_cd, minor(_kdev))
+#elif defined(__OpenBSD__)
+#define drm_get_device_from_kdev(_kdev) device_lookup(&drm_cd, \
+    minor(_kdev)))->dv_cfdata->cf_driver->cd_devs[minor(_kdev)]
+#endif
 
+#if defined(__FreeBSD__)
 #define PAGE_ALIGN(addr) round_page(addr)
 /* DRM_SUSER returns true if the user is superuser */
 #if __FreeBSD_version >= 700000
@@ -243,17 +251,6 @@ enum {
 #define jiffies			ticks
 
 #else /* __FreeBSD__ */
-
-#if defined(__NetBSD__)
-#define DRM_DEVICE							\
-	drm_device_t *dev = device_lookup(&drm_cd, minor(kdev))
-#elif defined(__OpenBSD__)
-#define DRM_DEVICE							\
-	drm_device_t *dev = (device_lookup(&drm_cd,			\
-	    minor(kdev)))->dv_cfdata->cf_driver->cd_devs[minor(kdev)]
-#endif /* __OpenBSD__ */
-#define DRM_IOCTL_ARGS		dev_t kdev, u_long cmd, caddr_t data, \
-				int flags, DRM_STRUCTPROC *p, DRMFILE filp
 
 #define CDEV_MAJOR		34
 #define PAGE_ALIGN(addr)	(((addr) + PAGE_SIZE - 1) & PAGE_MASK)
@@ -342,14 +339,6 @@ typedef vaddr_t vm_offset_t;
 	(!uvm_useracc((caddr_t)uaddr, size, VM_PROT_READ))
 #endif /* !__FreeBSD__ */
 
-#define DRM_COPY_TO_USER_IOCTL(user, kern, size)	\
-	if ( IOCPARM_LEN(cmd) != size)			\
-		return EINVAL;				\
-	*user = kern;
-#define DRM_COPY_FROM_USER_IOCTL(kern, user, size) \
-	if ( IOCPARM_LEN(cmd) != size)			\
-		return EINVAL;				\
-	kern = *user;
 #define DRM_COPY_TO_USER(user, kern, size) \
 	copyout(kern, user, size)
 #define DRM_COPY_FROM_USER(kern, user, size) \
@@ -369,7 +358,6 @@ typedef vaddr_t vm_offset_t;
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)
 
-#define DRM_ERR(v)		v
 #define DRM_HZ			hz
 #define DRM_UDELAY(udelay)	DELAY(udelay)
 #define DRM_TIME_SLICE		(hz/20)  /* Time slice for GLXContexts	  */
@@ -378,23 +366,10 @@ typedef vaddr_t vm_offset_t;
 	(_map) = (_dev)->context_sareas[_ctx];		\
 } while(0)
 
-#define DRM_GET_PRIV_WITH_RETURN(_priv, _filp)			\
-do {								\
-	if (_filp != (DRMFILE)(intptr_t)DRM_CURRENTPID) {	\
-		DRM_ERROR("filp doesn't match curproc\n");	\
-		return EINVAL;					\
-	}							\
-	_priv = drm_find_file_by_proc(dev, DRM_CURPROC);	\
-	if (_priv == NULL) {					\
-		DRM_ERROR("can't find authenticator\n");	\
-		return EINVAL;					\
-	}							\
-} while (0)
-
-#define LOCK_TEST_WITH_RETURN(dev, filp)				\
+#define LOCK_TEST_WITH_RETURN(dev, file_priv)				\
 do {									\
 	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ||		\
-	     dev->lock.filp != filp) {					\
+	     dev->lock.file_priv != file_priv) {			\
 		DRM_ERROR("%s called without lock held\n",		\
 			   __FUNCTION__);				\
 		return EINVAL;						\
@@ -402,22 +377,24 @@ do {									\
 } while (0)
 
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
+/* Returns -errno to shared code */
 #define DRM_WAIT_ON( ret, queue, timeout, condition )		\
 for ( ret = 0 ; !ret && !(condition) ; ) {			\
 	DRM_UNLOCK();						\
 	mtx_lock(&dev->irq_lock);				\
 	if (!(condition))					\
-	   ret = msleep(&(queue), &dev->irq_lock, 		\
+	   ret = -msleep(&(queue), &dev->irq_lock, 		\
 			 PZERO | PCATCH, "drmwtq", (timeout));	\
 	mtx_unlock(&dev->irq_lock);				\
 	DRM_LOCK();						\
 }
 #else
+/* Returns -errno to shared code */
 #define DRM_WAIT_ON( ret, queue, timeout, condition )	\
 for ( ret = 0 ; !ret && !(condition) ; ) {		\
         int s = spldrm();				\
 	if (!(condition))				\
-	   ret = tsleep( &(queue), PZERO | PCATCH, 	\
+	   ret = -tsleep( &(queue), PZERO | PCATCH, 	\
 			 "drmwtq", (timeout) );		\
 	splx(s);					\
 }
@@ -447,9 +424,16 @@ typedef struct drm_pci_id_list
 #define DRM_MASTER	0x2
 #define DRM_ROOT_ONLY	0x4
 typedef struct drm_ioctl_desc {
-	int		     (*func)(DRM_IOCTL_ARGS);
+	unsigned long cmd;
+	int (*func)(drm_device_t *dev, void *data, struct drm_file *file_priv);
 	int flags;
 } drm_ioctl_desc_t;
+/**
+ * Creates a driver or general drm_ioctl_desc array entry for the given
+ * ioctl, for use by drm_ioctl().
+ */
+#define DRM_IOCTL_DEF(ioctl, func, flags) \
+	[DRM_IOCTL_NR(ioctl)] = {ioctl, func, flags}
 
 typedef struct drm_magic_entry {
 	drm_magic_t	       magic;
@@ -472,7 +456,7 @@ typedef struct drm_buf {
 	unsigned long	  bus_address; /* Bus address of buffer		     */
 	struct drm_buf	  *next;       /* Kernel-only: used for free list    */
 	__volatile__ int  pending;     /* On hardware DMA queue		     */
-	DRMFILE		  filp;	       /* Unique identifier of holding process */
+	struct drm_file   *file_priv;  /* Unique identifier of holding process */
 	int		  context;     /* Kernel queue for this buffer	     */
 	enum {
 		DRM_LIST_NONE	 = 0,
@@ -534,7 +518,7 @@ struct drm_file {
 
 typedef struct drm_lock_data {
 	drm_hw_lock_t	  *hw_lock;	/* Hardware lock		   */
-	DRMFILE		  filp;	        /* Unique identifier of holding process (NULL is kernel)*/
+	struct drm_file   *file_priv;   /* Unique identifier of holding process (NULL is kernel)*/
 	int		  lock_queue;	/* Queue of blocked processes	   */
 	unsigned long	  lock_time;	/* Time of last lock in jiffies	   */
 } drm_lock_data_t;
@@ -638,12 +622,13 @@ struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
 	int	(*firstopen)(struct drm_device *);
 	int	(*open)(struct drm_device *, drm_file_t *);
-	void	(*preclose)(struct drm_device *, void *filp);
+	void	(*preclose)(struct drm_device *, struct drm_file *file_priv);
 	void	(*postclose)(struct drm_device *, drm_file_t *);
 	void	(*lastclose)(struct drm_device *);
 	int	(*unload)(struct drm_device *);
-	void	(*reclaim_buffers_locked)(struct drm_device *, void *filp);
-	int	(*dma_ioctl)(DRM_IOCTL_ARGS);
+	void	(*reclaim_buffers_locked)(struct drm_device *,
+					  struct drm_file *file_priv);
+	int	(*dma_ioctl)(drm_device_t *dev, void *data, struct drm_file *file_priv);
 	void	(*dma_ready)(struct drm_device *);
 	int	(*dma_quiescent)(struct drm_device *);
 	int	(*dma_flush_block_and_flush)(struct drm_device *, int context,
@@ -732,6 +717,8 @@ struct drm_device {
 	struct mtx	  irq_lock;	/* protects irq condition checks */
 	struct mtx	  dev_lock;	/* protects everything else */
 #endif
+	DRM_SPINTYPE	  drw_lock;
+
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
 	int		  buf_use;	/* Buffers in use -- cannot alloc  */
@@ -780,6 +767,7 @@ struct drm_device {
 	int		  last_context;	/* Last current context		   */
    	int		  vbl_queue;	/* vbl wait channel */
    	atomic_t          vbl_received;
+   	atomic_t          vbl_received2;
 
 #ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */
@@ -796,6 +784,13 @@ struct drm_device {
 	void		  *dev_private;
 	unsigned int	  agp_buffer_token;
 	drm_local_map_t   *agp_buffer_map;
+
+	struct unrhdr	  *drw_unrhdr;
+	/* RB tree of drawable infos */
+	RB_HEAD(drawable_tree, bsd_drm_drawable_info) drw_head;
+
+	struct task	  locked_task;
+	void		  (*locked_task_call)(drm_device_t *dev);
 };
 
 extern int	drm_debug_flag;
@@ -883,7 +878,7 @@ int	drm_addbufs_agp(drm_device_t *dev, drm_buf_desc_t *request);
 int	drm_dma_setup(drm_device_t *dev);
 void	drm_dma_takedown(drm_device_t *dev);
 void	drm_free_buffer(drm_device_t *dev, drm_buf_t *buf);
-void	drm_reclaim_buffers(drm_device_t *dev, DRMFILE filp);
+void	drm_reclaim_buffers(drm_device_t *dev, struct drm_file *file_priv);
 #define drm_core_reclaim_buffers drm_reclaim_buffers
 
 /* IRQ support (drm_irq.c) */
@@ -915,6 +910,7 @@ int	drm_agp_unbind(drm_device_t *dev, drm_agp_binding_t *request);
 
 /* Scatter Gather Support (drm_scatter.c) */
 void	drm_sg_cleanup(drm_sg_mem_t *entry);
+int	drm_sg_alloc(drm_device_t * dev, drm_scatter_gather_t * request);
 
 #ifdef __FreeBSD__
 /* sysctl support (drm_sysctl.h) */
@@ -929,68 +925,72 @@ int	drm_ati_pcigart_cleanup(drm_device_t *dev,
 				drm_ati_pcigart_info *gart_info);
 
 /* Locking IOCTL support (drm_drv.c) */
-int	drm_lock(DRM_IOCTL_ARGS);
-int	drm_unlock(DRM_IOCTL_ARGS);
-int	drm_version(DRM_IOCTL_ARGS);
-int	drm_setversion(DRM_IOCTL_ARGS);
+int	drm_lock(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_unlock(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_version(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_setversion(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* Misc. IOCTL support (drm_ioctl.c) */
-int	drm_irq_by_busid(DRM_IOCTL_ARGS);
-int	drm_getunique(DRM_IOCTL_ARGS);
-int	drm_setunique(DRM_IOCTL_ARGS);
-int	drm_getmap(DRM_IOCTL_ARGS);
-int	drm_getclient(DRM_IOCTL_ARGS);
-int	drm_getstats(DRM_IOCTL_ARGS);
-int	drm_noop(DRM_IOCTL_ARGS);
+int	drm_irq_by_busid(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_getunique(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_setunique(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_getmap(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_getclient(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_getstats(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_noop(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* Context IOCTL support (drm_context.c) */
-int	drm_resctx(DRM_IOCTL_ARGS);
-int	drm_addctx(DRM_IOCTL_ARGS);
-int	drm_modctx(DRM_IOCTL_ARGS);
-int	drm_getctx(DRM_IOCTL_ARGS);
-int	drm_switchctx(DRM_IOCTL_ARGS);
-int	drm_newctx(DRM_IOCTL_ARGS);
-int	drm_rmctx(DRM_IOCTL_ARGS);
-int	drm_setsareactx(DRM_IOCTL_ARGS);
-int	drm_getsareactx(DRM_IOCTL_ARGS);
+int	drm_resctx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_addctx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_modctx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_getctx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_switchctx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_newctx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_rmctx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_setsareactx(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_getsareactx(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* Drawable IOCTL support (drm_drawable.c) */
-int	drm_adddraw(DRM_IOCTL_ARGS);
-int	drm_rmdraw(DRM_IOCTL_ARGS);
+int	drm_adddraw(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_rmdraw(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_update_draw(drm_device_t *dev, void *data, struct drm_file *file_priv);
+struct drm_drawable_info *drm_get_drawable_info(drm_device_t *dev, int handle);
 
 /* Authentication IOCTL support (drm_auth.c) */
-int	drm_getmagic(DRM_IOCTL_ARGS);
-int	drm_authmagic(DRM_IOCTL_ARGS);
+int	drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_authmagic(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* Buffer management support (drm_bufs.c) */
-int	drm_addmap_ioctl(DRM_IOCTL_ARGS);
-int	drm_rmmap_ioctl(DRM_IOCTL_ARGS);
-int	drm_addbufs_ioctl(DRM_IOCTL_ARGS);
-int	drm_infobufs(DRM_IOCTL_ARGS);
-int	drm_markbufs(DRM_IOCTL_ARGS);
-int	drm_freebufs(DRM_IOCTL_ARGS);
-int	drm_mapbufs(DRM_IOCTL_ARGS);
+int	drm_addmap_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_rmmap_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_addbufs_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_infobufs(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_markbufs(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_freebufs(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_mapbufs(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* DMA support (drm_dma.c) */
-int	drm_dma(DRM_IOCTL_ARGS);
+int	drm_dma(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* IRQ support (drm_irq.c) */
-int	drm_control(DRM_IOCTL_ARGS);
-int	drm_wait_vblank(DRM_IOCTL_ARGS);
+int	drm_control(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv);
+void	drm_locked_tasklet(drm_device_t *dev,
+			   void (*tasklet)(drm_device_t *dev));
 
 /* AGP/GART support (drm_agpsupport.c) */
-int	drm_agp_acquire_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_release_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_enable_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_info_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_alloc_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_free_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_unbind_ioctl(DRM_IOCTL_ARGS);
-int	drm_agp_bind_ioctl(DRM_IOCTL_ARGS);
+int	drm_agp_acquire_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_agp_release_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_agp_enable_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_agp_info_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_agp_alloc_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_agp_free_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_agp_unbind_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_agp_bind_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* Scatter Gather Support (drm_scatter.c) */
-int	drm_sg_alloc(DRM_IOCTL_ARGS);
-int	drm_sg_free(DRM_IOCTL_ARGS);
+int	drm_sg_alloc_ioctl(drm_device_t *dev, void *data, struct drm_file *file_priv);
+int	drm_sg_free(drm_device_t *dev, void *data, struct drm_file *file_priv);
 
 /* consistent PCI memory functions (drm_pci.c) */
 drm_dma_handle_t *drm_pci_alloc(drm_device_t *dev, size_t size, size_t align,

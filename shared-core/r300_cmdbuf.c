@@ -55,7 +55,7 @@ static const int r300_cliprect_cntl[4] = {
 static int r300_emit_cliprects(drm_radeon_private_t *dev_priv,
 			       drm_radeon_kcmd_buffer_t *cmdbuf, int n)
 {
-	drm_clip_rect_t box;
+	struct drm_clip_rect box;
 	int nr;
 	int i;
 	RING_LOCALS;
@@ -74,7 +74,7 @@ static int r300_emit_cliprects(drm_radeon_private_t *dev_priv,
 			if (DRM_COPY_FROM_USER_UNCHECKED
 			    (&box, &cmdbuf->boxes[n + i], sizeof(box))) {
 				DRM_ERROR("copy cliprect faulted\n");
-				return DRM_ERR(EFAULT);
+				return -EFAULT;
 			}
 
 			box.x1 =
@@ -155,7 +155,8 @@ void r300_init_reg_flags(void)
 	ADD_RANGE(R300_VAP_INPUT_CNTL_0, 2);
 	ADD_RANGE(0x21DC, 1);
 	ADD_RANGE(R300_VAP_UNKNOWN_221C, 1);
-	ADD_RANGE(0x2220, 4);
+	ADD_RANGE(R300_VAP_CLIP_X_0, 4);
+	ADD_RANGE(R300_VAP_PVS_WAITIDLE, 1);
 	ADD_RANGE(R300_VAP_UNKNOWN_2288, 1);
 	ADD_RANGE(R300_VAP_OUTPUT_VTX_FMT_0, 2);
 	ADD_RANGE(R300_VAP_PVS_CNTL_1, 3);
@@ -262,7 +263,7 @@ static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t *
 		DRM_ERROR
 		    ("Cannot emit more than 64 values at a time (reg=%04x sz=%d)\n",
 		     reg, sz);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	for (i = 0; i < sz; i++) {
 		values[i] = ((int *)cmdbuf->buf)[i];
@@ -274,13 +275,13 @@ static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t *
 				DRM_ERROR
 				    ("Offset failed range check (reg=%04x sz=%d)\n",
 				     reg, sz);
-				return DRM_ERR(EINVAL);
+				return -EINVAL;
 			}
 			break;
 		default:
 			DRM_ERROR("Register %04x failed check as flag=%02x\n",
 				  reg + i * 4, r300_reg_flags[(reg >> 2) + i]);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 	}
 
@@ -316,12 +317,12 @@ static __inline__ int r300_emit_packet0(drm_radeon_private_t *dev_priv,
 		return 0;
 
 	if (sz * 4 > cmdbuf->bufsz)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	if (reg + sz * 4 >= 0x10000) {
 		DRM_ERROR("No such registers in hardware reg=%04x sz=%d\n", reg,
 			  sz);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	if (r300_check_range(reg, sz)) {
@@ -361,7 +362,7 @@ static __inline__ int r300_emit_vpu(drm_radeon_private_t *dev_priv,
 	if (!sz)
 		return 0;
 	if (sz * 16 > cmdbuf->bufsz)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	BEGIN_RING(5 + sz * 4);
 	/* Wait for VAP to come to senses.. */
@@ -390,7 +391,7 @@ static __inline__ int r300_emit_clear(drm_radeon_private_t *dev_priv,
 	RING_LOCALS;
 
 	if (8 * 4 > cmdbuf->bufsz)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	BEGIN_RING(10);
 	OUT_RING(CP_PACKET3(R200_3D_DRAW_IMMD_2, 8));
@@ -420,7 +421,7 @@ static __inline__ int r300_emit_3d_load_vbpntr(drm_radeon_private_t *dev_priv,
 	if ((count + 1) > MAX_ARRAY_PACKET) {
 		DRM_ERROR("Too large payload in 3D_LOAD_VBPNTR (count=%d)\n",
 			  count);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	memset(payload, 0, MAX_ARRAY_PACKET * 4);
 	memcpy(payload, cmdbuf->buf + 4, (count + 1) * 4);
@@ -436,7 +437,7 @@ static __inline__ int r300_emit_3d_load_vbpntr(drm_radeon_private_t *dev_priv,
 			DRM_ERROR
 			    ("Offset failed range check (k=%d i=%d) while processing 3D_LOAD_VBPNTR packet.\n",
 			     k, i);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 		k++;
 		i++;
@@ -447,7 +448,7 @@ static __inline__ int r300_emit_3d_load_vbpntr(drm_radeon_private_t *dev_priv,
 			DRM_ERROR
 			    ("Offset failed range check (k=%d i=%d) while processing 3D_LOAD_VBPNTR packet.\n",
 			     k, i);
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 		k++;
 		i++;
@@ -457,7 +458,7 @@ static __inline__ int r300_emit_3d_load_vbpntr(drm_radeon_private_t *dev_priv,
 		DRM_ERROR
 		    ("Malformed 3D_LOAD_VBPNTR packet (k=%d i=%d narrays=%d count+1=%d).\n",
 		     k, i, narrays, count + 1);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	/* all clear, output packet */
@@ -491,7 +492,7 @@ static __inline__ int r300_emit_bitblt_multi(drm_radeon_private_t *dev_priv,
 			ret = !radeon_check_offset(dev_priv, offset);
 			if (ret) {
 				DRM_ERROR("Invalid bitblt first offset is %08X\n", offset);
-				return DRM_ERR(EINVAL);
+				return -EINVAL;
 			}
 		}
 
@@ -501,7 +502,7 @@ static __inline__ int r300_emit_bitblt_multi(drm_radeon_private_t *dev_priv,
 			ret = !radeon_check_offset(dev_priv, offset);
 			if (ret) {
 				DRM_ERROR("Invalid bitblt second offset is %08X\n", offset);
-				return DRM_ERR(EINVAL);
+				return -EINVAL;
 			}
 			
 		}
@@ -529,12 +530,12 @@ static __inline__ int r300_emit_indx_buffer(drm_radeon_private_t *dev_priv,
 
 	if ((cmd[1] & 0x8000ffff) != 0x80000810) {
 		DRM_ERROR("Invalid indx_buffer reg address %08X\n", cmd[1]);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	ret = !radeon_check_offset(dev_priv, cmd[2]);
 	if (ret) {
 		DRM_ERROR("Invalid indx_buffer offset is %08X\n", cmd[2]);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	BEGIN_RING(count+2);
@@ -556,7 +557,7 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
 	RING_LOCALS;
 
 	if (4 > cmdbuf->bufsz)
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 
 	/* Fixme !! This simply emits a packet without much checking.
 	   We need to be smarter. */
@@ -567,7 +568,7 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
 	/* Is it packet 3 ? */
 	if ((header >> 30) != 0x3) {
 		DRM_ERROR("Not a packet3 header (0x%08x)\n", header);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	count = (header >> 16) & 0x3fff;
@@ -577,7 +578,7 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
 		DRM_ERROR
 		    ("Expected packet3 of length %d but have only %d bytes left\n",
 		     (count + 2) * 4, cmdbuf->bufsz);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	/* Is it a packet type we know about ? */
@@ -599,7 +600,7 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
 		break;
 	default:
 		DRM_ERROR("Unknown packet3 header (0x%08x)\n", header);
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 
 	BEGIN_RING(count + 2);
@@ -663,7 +664,7 @@ static __inline__ int r300_emit_packet3(drm_radeon_private_t *dev_priv,
 			DRM_ERROR("bad packet3 type %i at %p\n",
 				  header.packet3.packet,
 				  cmdbuf->buf - sizeof(header));
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 
 		n += R300_SIMULTANEOUS_CLIPRECTS;
@@ -705,7 +706,7 @@ static __inline__ void r300_pacify(drm_radeon_private_t *dev_priv)
  * The actual age emit is done by r300_do_cp_cmdbuf, which is why you must
  * be careful about how this function is called.
  */
-static void r300_discard_buffer(drm_device_t * dev, drm_buf_t * buf)
+static void r300_discard_buffer(struct drm_device * dev, struct drm_buf * buf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_buf_priv_t *buf_priv = buf->dev_private;
@@ -724,11 +725,11 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
 	RING_LOCALS;
 	
 	if (cmdbuf->bufsz < sizeof(uint64_t) + header.scratch.n_bufs * sizeof(buf_idx) ) {
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	
 	if (header.scratch.reg >= 5) {
-		return DRM_ERR(EINVAL);
+		return -EINVAL;
 	}
 	
 	dev_priv->scratch_ages[header.scratch.reg] ++;
@@ -743,21 +744,21 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
 		buf_idx *= 2; /* 8 bytes per buf */
 		
 		if (DRM_COPY_TO_USER(ref_age_base + buf_idx, &dev_priv->scratch_ages[header.scratch.reg], sizeof(u32))) {
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 					
 		if (DRM_COPY_FROM_USER(&h_pending, ref_age_base + buf_idx + 1, sizeof(u32))) {
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 					
 		if (h_pending == 0) {
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 					
 		h_pending--;
 						
 		if (DRM_COPY_TO_USER(ref_age_base + buf_idx + 1, &h_pending, sizeof(u32))) {
-			return DRM_ERR(EINVAL);
+			return -EINVAL;
 		}
 					
 		cmdbuf->buf += sizeof(buf_idx);
@@ -777,14 +778,13 @@ static int r300_scratch(drm_radeon_private_t *dev_priv,
  * commands on the DMA ring buffer.
  * Called by the ioctl handler function radeon_cp_cmdbuf.
  */
-int r300_do_cp_cmdbuf(drm_device_t *dev,
-		      DRMFILE filp,
-		      drm_file_t *filp_priv,
+int r300_do_cp_cmdbuf(struct drm_device *dev,
+		      struct drm_file *file_priv,
 		      drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	drm_device_dma_t *dma = dev->dma;
-	drm_buf_t *buf = NULL;
+	struct drm_device_dma *dma = dev->dma;
+	struct drm_buf *buf = NULL;
 	int emit_dispatch_age = 0;
 	int ret = 0;
 
@@ -877,15 +877,16 @@ int r300_do_cp_cmdbuf(drm_device_t *dev,
 			if (idx < 0 || idx >= dma->buf_count) {
 				DRM_ERROR("buffer index %d (of %d max)\n",
 					  idx, dma->buf_count - 1);
-				ret = DRM_ERR(EINVAL);
+				ret = -EINVAL;
 				goto cleanup;
 			}
 
 			buf = dma->buflist[idx];
-			if (buf->filp != filp || buf->pending) {
+			if (buf->file_priv != file_priv || buf->pending) {
 				DRM_ERROR("bad buffer %p %p %d\n",
-					  buf->filp, filp, buf->pending);
-				ret = DRM_ERR(EINVAL);
+					  buf->file_priv, file_priv,
+					  buf->pending);
+				ret = -EINVAL;
 				goto cleanup;
 			}
 
@@ -922,7 +923,7 @@ int r300_do_cp_cmdbuf(drm_device_t *dev,
 			DRM_ERROR("bad cmd_type %i at %p\n",
 				  header.header.cmd_type,
 				  cmdbuf->buf - sizeof(header));
-			ret = DRM_ERR(EINVAL);
+			ret = -EINVAL;
 			goto cleanup;
 		}
 	}

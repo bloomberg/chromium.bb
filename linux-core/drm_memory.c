@@ -38,9 +38,9 @@
 
 static struct {
 	spinlock_t lock;
-	drm_u64_t cur_used;
-	drm_u64_t low_threshold;
-	drm_u64_t high_threshold;
+	uint64_t cur_used;
+	uint64_t low_threshold;
+	uint64_t high_threshold;
 } drm_memctl = {
 	.lock = SPIN_LOCK_UNLOCKED
 };
@@ -82,9 +82,9 @@ void drm_free_memctl(size_t size)
 }
 EXPORT_SYMBOL(drm_free_memctl);
 
-void drm_query_memctl(drm_u64_t *cur_used,
-		      drm_u64_t *low_threshold,
-		      drm_u64_t *high_threshold)
+void drm_query_memctl(uint64_t *cur_used,
+		      uint64_t *low_threshold,
+		      uint64_t *high_threshold)
 {
 	spin_lock(&drm_memctl.lock);
 	*cur_used = drm_memctl.cur_used;
@@ -214,7 +214,7 @@ void drm_free_pages(unsigned long address, int order, int area)
 
 #if __OS_HAS_AGP
 static void *agp_remap(unsigned long offset, unsigned long size,
-			      drm_device_t * dev)
+			      struct drm_device * dev)
 {
 	unsigned long *phys_addr_map, i, num_pages =
 	    PAGE_ALIGN(size) / PAGE_SIZE;
@@ -258,12 +258,12 @@ static void *agp_remap(unsigned long offset, unsigned long size,
 
 /** Wrapper around agp_allocate_memory() */
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-DRM_AGP_MEM *drm_alloc_agp(drm_device_t *dev, int pages, u32 type)
+DRM_AGP_MEM *drm_alloc_agp(struct drm_device *dev, int pages, u32 type)
 {
 	return drm_agp_allocate_memory(pages, type);
 }
 #else
-DRM_AGP_MEM *drm_alloc_agp(drm_device_t *dev, int pages, u32 type)
+DRM_AGP_MEM *drm_alloc_agp(struct drm_device *dev, int pages, u32 type)
 {
 	return drm_agp_allocate_memory(dev->agp->bridge, pages, type);
 }
@@ -289,7 +289,7 @@ int drm_unbind_agp(DRM_AGP_MEM * handle)
 
 #else  /* __OS_HAS_AGP*/
 static void *agp_remap(unsigned long offset, unsigned long size,
-		       drm_device_t * dev)
+		       struct drm_device * dev)
 {
 	return NULL;
 }

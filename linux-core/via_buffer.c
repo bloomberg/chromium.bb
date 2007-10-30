@@ -32,19 +32,19 @@
 #include "via_drm.h"
 #include "via_drv.h"
 
-drm_ttm_backend_t *via_create_ttm_backend_entry(drm_device_t * dev)
+struct drm_ttm_backend *via_create_ttm_backend_entry(struct drm_device * dev)
 {
 	return drm_agp_init_ttm(dev);
 }
 
-int via_fence_types(drm_buffer_object_t *bo, uint32_t * class, uint32_t * type)
+int via_fence_types(struct drm_buffer_object *bo, uint32_t * fclass,
+		    uint32_t * type)
 {
-	*class = 0;
 	*type = 3;
 	return 0;
 }
 
-int via_invalidate_caches(drm_device_t * dev, uint32_t flags)
+int via_invalidate_caches(struct drm_device * dev, uint64_t flags)
 {
 	/*
 	 * FIXME: Invalidate texture caches here.
@@ -54,14 +54,14 @@ int via_invalidate_caches(drm_device_t * dev, uint32_t flags)
 }
 
 
-static int via_vram_info(drm_device_t *dev,
+static int via_vram_info(struct drm_device *dev,
 			 unsigned long *offset,
 			 unsigned long *size)
 {
 	struct pci_dev *pdev = dev->pdev;
 	unsigned long flags;
 
-	int ret = DRM_ERR(EINVAL);
+	int ret = -EINVAL;
 	int i;
 	for (i=0; i<6; ++i) {
 		flags = pci_resource_flags(pdev, i);
@@ -82,8 +82,8 @@ static int via_vram_info(drm_device_t *dev,
 	return 0;
 }
 
-int via_init_mem_type(drm_device_t * dev, uint32_t type,
-		       drm_mem_type_manager_t * man)
+int via_init_mem_type(struct drm_device * dev, uint32_t type,
+		       struct drm_mem_type_manager * man)
 {
 	switch (type) {
 	case DRM_BO_MEM_LOCAL:
@@ -144,7 +144,7 @@ int via_init_mem_type(drm_device_t * dev, uint32_t type,
 	return 0;
 }
 
-uint32_t via_evict_mask(drm_buffer_object_t *bo)
+uint32_t via_evict_mask(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:

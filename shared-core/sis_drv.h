@@ -33,11 +33,11 @@
 
 #define DRIVER_AUTHOR		"SIS, Tungsten Graphics"
 #define DRIVER_NAME		"sis"
-#define DRIVER_DESC		"SIS 300/630/540"
-#define DRIVER_DATE		"20060619"
+#define DRIVER_DESC		"SIS 300/630/540 and XGI V3XE/V5/V8"
+#define DRIVER_DATE		"20070626"
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		2
-#define DRIVER_PATCHLEVEL	1
+#define DRIVER_MINOR		3
+#define DRIVER_PATCHLEVEL	0
 
 enum sis_family {
 	SIS_OTHER = 0,
@@ -58,7 +58,7 @@ enum sis_family {
 typedef struct drm_sis_private {
 	drm_local_map_t *mmio;
 	unsigned int idle_fault;
-	drm_sman_t sman;
+	struct drm_sman sman;
 	unsigned int chipset;
 	int vram_initialized;
 	int agp_initialized;
@@ -66,9 +66,10 @@ typedef struct drm_sis_private {
 	unsigned long agp_offset;
 } drm_sis_private_t;
 
-extern int sis_idle(drm_device_t *dev);
-extern void sis_reclaim_buffers_locked(drm_device_t *dev, struct file *filp);
-extern void sis_lastclose(drm_device_t *dev);
+extern int sis_idle(struct drm_device *dev);
+extern void sis_reclaim_buffers_locked(struct drm_device *dev,
+				       struct drm_file *file_priv);
+extern void sis_lastclose(struct drm_device *dev);
 
 #else
 #include "sis_ds.h"
@@ -78,14 +79,14 @@ typedef struct drm_sis_private {
 	memHeap_t *FBHeap;
 } drm_sis_private_t;
 
-extern int sis_init_context(drm_device_t * dev, int context);
-extern int sis_final_context(drm_device_t * dev, int context);
+extern int sis_init_context(struct drm_device * dev, int context);
+extern int sis_final_context(struct drm_device * dev, int context);
 
 #endif
 
 
 
-extern drm_ioctl_desc_t sis_ioctls[];
+extern struct drm_ioctl_desc sis_ioctls[];
 extern int sis_max_ioctl;
 
 #endif

@@ -40,7 +40,7 @@ static struct pci_device_id pciidlist[] = {
 
 
 #ifdef VIA_HAVE_FENCE
-static drm_fence_driver_t via_fence_driver = {
+static struct drm_fence_driver via_fence_driver = {
 	.num_classes = 1,
 	.wrap_diff = (1 << 30),
 	.flush_diff = (1 << 20),
@@ -65,7 +65,7 @@ static uint32_t via_mem_prios[] = {DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM
 static uint32_t via_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
 
 
-static drm_bo_driver_t via_bo_driver = {
+static struct drm_bo_driver via_bo_driver = {
 	.mem_type_prio = via_mem_prios,
 	.mem_busy_prio = via_busy_prios,
 	.num_mem_type_prio = ARRAY_SIZE(via_mem_prios),
@@ -83,14 +83,16 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_HAVE_IRQ |
-	    DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL,
+	    DRIVER_IRQ_SHARED,
 	.load = via_driver_load,
 	.unload = via_driver_unload,
 #ifndef VIA_HAVE_CORE_MM
 	.context_ctor = via_init_context,
 #endif
 	.context_dtor = via_final_context,
-	.vblank_wait = via_driver_vblank_wait,
+	.get_vblank_counter = via_get_vblank_counter,
+	.enable_vblank = via_enable_vblank,
+	.disable_vblank = via_disable_vblank,
 	.irq_preinstall = via_driver_irq_preinstall,
 	.irq_postinstall = via_driver_irq_postinstall,
 	.irq_uninstall = via_driver_irq_uninstall,

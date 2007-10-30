@@ -35,4 +35,9 @@ AC_SYS_LARGEFILE
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
 
-AC_OUTPUT([Makefile libdrm/Makefile shared-core/Makefile libdrm.pc])
+AC_OUTPUT([
+	Makefile
+	libdrm/Makefile
+	shared-core/Makefile
+	tests/Makefile
+	libdrm.pc])

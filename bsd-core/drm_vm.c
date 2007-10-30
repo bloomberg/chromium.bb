@@ -21,6 +21,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/** @file drm_vm.c
+ * Support code for mmaping of DRM maps.
+ */
+
 #include "drmP.h"
 #include "drm.h"
 
@@ -33,7 +37,7 @@ int drm_mmap(dev_t kdev, vm_offset_t offset, int prot)
 paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 #endif
 {
-	DRM_DEVICE;
+	drm_device_t *dev = drm_get_device_from_kdev(kdev);
 	drm_local_map_t *map;
 	drm_file_t *priv;
 	drm_map_type_t type;
@@ -52,7 +56,7 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 	}
 
 	if (!priv->authenticated)
-		return DRM_ERR(EACCES);
+		return EACCES;
 
 	if (dev->dma && offset >= 0 && offset < ptoa(dev->dma->page_count)) {
 		drm_device_dma_t *dma = dev->dma;

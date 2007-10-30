@@ -77,7 +77,6 @@
 #define RANDOM_MAIN 0
 
 #if !RANDOM_MAIN
-# include "drm.h"
 # include "xf86drm.h"
 #endif
 

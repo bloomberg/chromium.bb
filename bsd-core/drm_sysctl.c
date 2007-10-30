@@ -21,6 +21,11 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+/** @file drm_sysctl.c
+ * Implementation of various sysctls for controlling DRM behavior and reporting
+ * debug information.
+ */
+
 #include "drmP.h"
 #include "drm.h"
 

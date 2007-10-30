@@ -277,7 +277,7 @@ void drm_free_pages (unsigned long address, int order, int area) {
 
 #if __OS_HAS_AGP
 
-DRM_AGP_MEM *drm_alloc_agp (drm_device_t *dev, int pages, u32 type) {
+DRM_AGP_MEM *drm_alloc_agp (struct drm_device *dev, int pages, u32 type) {
 	DRM_AGP_MEM *handle;
 
 	if (!pages) {

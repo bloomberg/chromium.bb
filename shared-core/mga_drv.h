@@ -65,7 +65,7 @@ typedef struct drm_mga_freelist {
 	struct drm_mga_freelist *next;
 	struct drm_mga_freelist *prev;
 	drm_mga_age_t age;
-	drm_buf_t *buf;
+	struct drm_buf *buf;
 } drm_mga_freelist_t;
 
 typedef struct {
@@ -149,19 +149,24 @@ typedef struct drm_mga_private {
 	unsigned int agp_size;
 } drm_mga_private_t;
 
-extern drm_ioctl_desc_t mga_ioctls[];
+extern struct drm_ioctl_desc mga_ioctls[];
 extern int mga_max_ioctl;
 
 				/* mga_dma.c */
-extern int mga_dma_bootstrap(DRM_IOCTL_ARGS);
-extern int mga_dma_init(DRM_IOCTL_ARGS);
-extern int mga_dma_flush(DRM_IOCTL_ARGS);
-extern int mga_dma_reset(DRM_IOCTL_ARGS);
-extern int mga_dma_buffers(DRM_IOCTL_ARGS);
-extern int mga_driver_load(drm_device_t *dev, unsigned long flags);
-extern int mga_driver_unload(drm_device_t * dev);
-extern void mga_driver_lastclose(drm_device_t * dev);
-extern int mga_driver_dma_quiescent(drm_device_t * dev);
+extern int mga_dma_bootstrap(struct drm_device *dev, void *data,
+			     struct drm_file *file_priv);
+extern int mga_dma_init(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+extern int mga_dma_flush(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+extern int mga_dma_reset(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+extern int mga_dma_buffers(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv);
+extern int mga_driver_load(struct drm_device *dev, unsigned long flags);
+extern int mga_driver_unload(struct drm_device * dev);
+extern void mga_driver_lastclose(struct drm_device * dev);
+extern int mga_driver_dma_quiescent(struct drm_device * dev);
 
 extern int mga_do_wait_for_idle(drm_mga_private_t * dev_priv);
 
@@ -169,7 +174,7 @@ extern void mga_do_dma_flush(drm_mga_private_t * dev_priv);
 extern void mga_do_dma_wrap_start(drm_mga_private_t * dev_priv);
 extern void mga_do_dma_wrap_end(drm_mga_private_t * dev_priv);
 
-extern int mga_freelist_put(drm_device_t * dev, drm_buf_t * buf);
+extern int mga_freelist_put(struct drm_device * dev, struct drm_buf * buf);
 
 				/* mga_warp.c */
 extern unsigned int mga_warp_microcode_size(const drm_mga_private_t * dev_priv);
@@ -177,14 +182,15 @@ extern int mga_warp_install_microcode(drm_mga_private_t * dev_priv);
 extern int mga_warp_init(drm_mga_private_t * dev_priv);
 
 				/* mga_irq.c */
-extern int mga_driver_fence_wait(drm_device_t * dev, unsigned int *sequence);
-extern int mga_enable_vblank(drm_device_t *dev, int crtc);
-extern void mga_disable_vblank(drm_device_t *dev, int crtc);
-extern u32 mga_get_vblank_counter(drm_device_t *dev, int crtc);
+extern int mga_enable_vblank(struct drm_device *dev, int crtc);
+extern void mga_disable_vblank(struct drm_device *dev, int crtc);
+extern u32 mga_get_vblank_counter(struct drm_device *dev, int crtc);
+extern int mga_driver_fence_wait(struct drm_device * dev, unsigned int *sequence);
+extern int mga_driver_vblank_wait(struct drm_device * dev, unsigned int *sequence);
 extern irqreturn_t mga_driver_irq_handler(DRM_IRQ_ARGS);
-extern void mga_driver_irq_preinstall(drm_device_t * dev);
-extern int mga_driver_irq_postinstall(drm_device_t * dev);
-extern void mga_driver_irq_uninstall(drm_device_t * dev);
+extern void mga_driver_irq_preinstall(struct drm_device * dev);
+extern int mga_driver_irq_postinstall(struct drm_device * dev);
+extern void mga_driver_irq_uninstall(struct drm_device * dev);
 extern long mga_compat_ioctl(struct file *filp, unsigned int cmd,
 			     unsigned long arg);
 
@@ -248,7 +254,7 @@ do {									\
 			    dev_priv->prim.high_mark ) {		\
 			if ( MGA_DMA_DEBUG )				\
 				DRM_INFO( "%s: wrap...\n", __FUNCTION__ );	\
-			return DRM_ERR(EBUSY);			\
+			return -EBUSY;			\
 		}							\
 	}								\
 } while (0)
@@ -259,7 +265,7 @@ do {									\
 		if ( mga_do_wait_for_idle( dev_priv ) < 0 ) {		\
 			if ( MGA_DMA_DEBUG )				\
 				DRM_INFO( "%s: wrap...\n", __FUNCTION__ );	\
-			return DRM_ERR(EBUSY);			\
+			return -EBUSY;			\
 		}							\
 		mga_do_dma_wrap_end( dev_priv );			\
 	}								\

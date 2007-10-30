@@ -50,11 +50,11 @@ MODULE_PARM_DESC(debug, "Enable debug output");
 module_param_named(cards_limit, drm_cards_limit, int, 0444);
 module_param_named(debug, drm_debug, int, 0600);
 
-drm_head_t **drm_heads;
-struct drm_sysfs_class *drm_class;
+struct drm_head **drm_heads;
+struct class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
-static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
+static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 		       const struct pci_device_id *ent,
 		       struct drm_driver *driver)
 {
@@ -72,7 +72,6 @@ static int drm_fill_in_dev(drm_device_t * dev, struct pci_dev *pdev,
 	init_timer(&dev->timer);
 	mutex_init(&dev->struct_mutex);
 	mutex_init(&dev->ctxlist_mutex);
-	mutex_init(&dev->bm.init_mutex);
 	mutex_init(&dev->bm.evict_mutex);
 
 	idr_init(&dev->drw_idr);
@@ -160,9 +159,9 @@ error_out_unreg:
  * create the proc init entry via proc_init(). This routines assigns
  * minor numbers to secondary heads of multi-headed cards
  */
-static int drm_get_head(drm_device_t * dev, drm_head_t * head)
+static int drm_get_head(struct drm_device * dev, struct drm_head * head)
 {
-	drm_head_t **heads = drm_heads;
+	struct drm_head **heads = drm_heads;
 	int ret;
 	int minor;
 
@@ -171,7 +170,7 @@ static int drm_get_head(drm_device_t * dev, drm_head_t * head)
 	for (minor = 0; minor < drm_cards_limit; minor++, heads++) {
 		if (!*heads) {
 
-			*head = (drm_head_t) {
+			*head = (struct drm_head) {
 				.dev = dev,
 				.device = MKDEV(DRM_MAJOR, minor),
 				.minor = minor,
@@ -184,11 +183,10 @@ static int drm_get_head(drm_device_t * dev, drm_head_t * head)
 				goto err_g1;
 			}
 
-			head->dev_class = drm_sysfs_device_add(drm_class, head);
-			if (IS_ERR(head->dev_class)) {
+			ret = drm_sysfs_device_add(dev, head);
+			if (ret) {
 				printk(KERN_ERR
 				       "DRM: Error sysfs_device_add.\n");
-				ret = PTR_ERR(head->dev_class);
 				goto err_g2;
 			}
 			*heads = head;
@@ -202,7 +200,7 @@ static int drm_get_head(drm_device_t * dev, drm_head_t * head)
 err_g2:
 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
 err_g1:
-	*head = (drm_head_t) {
+	*head = (struct drm_head) {
 		.dev = NULL};
 	return ret;
 }
@@ -221,7 +219,7 @@ err_g1:
 int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	      struct drm_driver *driver)
 {
-	drm_device_t *dev;
+	struct drm_device *dev;
 	int ret;
 
 	DRM_DEBUG("\n");
@@ -232,18 +230,22 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	if (!drm_fb_loaded) {
 		pci_set_drvdata(pdev, dev);
-		pci_request_regions(pdev, driver->pci_driver.name);
+		ret = pci_request_regions(pdev, driver->pci_driver.name);
+		if (ret)
+			goto err_g1;
 	}
 
-	pci_enable_device(pdev);
+	ret = pci_enable_device(pdev);
+	if (ret)
+		goto err_g2;
 	pci_set_master(pdev);
 
 	if ((ret = drm_fill_in_dev(dev, pdev, ent, driver))) {
 		printk(KERN_ERR "DRM: fill_in_dev failed\n");
-		goto err_g1;
+		goto err_g3;
 	}
 	if ((ret = drm_get_head(dev, &dev->primary)))
-		goto err_g1;
+		goto err_g3;
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
@@ -251,12 +253,16 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	return 0;
 
-err_g1:
-	if (!drm_fb_loaded) {
-		pci_set_drvdata(pdev, NULL);
-		pci_release_regions(pdev);
+ err_g3:
+	if (!drm_fb_loaded)
 		pci_disable_device(pdev);
-	}
+ err_g2:
+	if (!drm_fb_loaded)
+		pci_release_regions(pdev);
+ err_g1:
+	if (!drm_fb_loaded)
+		pci_set_drvdata(pdev, NULL);
+
 	drm_free(dev, sizeof(*dev), DRM_MEM_STUB);
 	printk(KERN_ERR "DRM: drm_get_dev failed.\n");
 	return ret;
@@ -274,7 +280,7 @@ EXPORT_SYMBOL(drm_get_dev);
  * "drm" data, otherwise unregisters the "drm" data, frees the dev list and
  * unregisters the character device.
  */
-int drm_put_dev(drm_device_t * dev)
+int drm_put_dev(struct drm_device * dev)
 {
 	DRM_DEBUG("release primary %s\n", dev->driver->pci_driver.name);
 
@@ -302,16 +308,16 @@ int drm_put_dev(drm_device_t * dev)
  * last minor released.
  *
  */
-int drm_put_head(drm_head_t * head)
+int drm_put_head(struct drm_head * head)
 {
 	int minor = head->minor;
 
 	DRM_DEBUG("release secondary minor %d\n", minor);
 
 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
-	drm_sysfs_device_remove(head->dev_class);
+	drm_sysfs_device_remove(head->dev);
 
-	*head = (drm_head_t){.dev = NULL};
+	*head = (struct drm_head){.dev = NULL};
 
 	drm_heads[minor] = NULL;
 	return 0;

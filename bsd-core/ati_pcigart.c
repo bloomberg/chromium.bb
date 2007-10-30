@@ -1,6 +1,3 @@
-/* ati_pcigart.h -- ATI PCI GART support -*- linux-c -*-
- * Created: Wed Dec 13 21:52:19 2000 by gareth@valinux.com
- */
 /*-
  * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
  * All Rights Reserved.
@@ -27,6 +24,11 @@
  * Authors:
  *   Gareth Hughes <gareth@valinux.com>
  *
+ */
+
+/** @file ati_pcigart.c
+ * Implementation of ATI's PCIGART, which provides an aperture in card virtual
+ * address space with addresses remapped to system memory.
  */
 
 #include "drmP.h"

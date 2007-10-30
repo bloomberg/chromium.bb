@@ -13,7 +13,7 @@
 #include "drmP.h"
 #include "ffb_drv.h"
 
-static int ffb_alloc_queue(drm_device_t * dev, int is_2d_only) {
+static int ffb_alloc_queue(struct drm_device * dev, int is_2d_only) {
 	ffb_dev_priv_t *fpriv = (ffb_dev_priv_t *) dev->dev_private;
 	int i;
 
@@ -351,7 +351,7 @@ static void FFBWait(ffb_fbcPtr ffb)
 	} while (--limit);
 }
 
-int ffb_context_switch(drm_device_t * dev, int old, int new) {
+int ffb_context_switch(struct drm_device * dev, int old, int new) {
 	ffb_dev_priv_t *fpriv = (ffb_dev_priv_t *) dev->dev_private;
 
 #if DRM_DMA_HISTOGRAM
@@ -401,7 +401,7 @@ int ffb_resctx(struct inode * inode, struct file * filp, unsigned int cmd,
 int ffb_addctx(struct inode * inode, struct file * filp, unsigned int cmd,
 		 unsigned long arg) {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	struct drm_device *dev = priv->dev;
 	drm_ctx_t ctx;
 	int idx;
 
@@ -421,7 +421,7 @@ int ffb_addctx(struct inode * inode, struct file * filp, unsigned int cmd,
 int ffb_modctx(struct inode * inode, struct file * filp, unsigned int cmd,
 		 unsigned long arg) {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	struct drm_device *dev = priv->dev;
 	ffb_dev_priv_t *fpriv = (ffb_dev_priv_t *) dev->dev_private;
 	struct ffb_hw_context *hwctx;
 	drm_ctx_t ctx;
@@ -449,7 +449,7 @@ int ffb_modctx(struct inode * inode, struct file * filp, unsigned int cmd,
 int ffb_getctx(struct inode * inode, struct file * filp, unsigned int cmd,
 		 unsigned long arg) {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	struct drm_device *dev = priv->dev;
 	ffb_dev_priv_t *fpriv = (ffb_dev_priv_t *) dev->dev_private;
 	struct ffb_hw_context *hwctx;
 	drm_ctx_t ctx;
@@ -480,7 +480,7 @@ int ffb_getctx(struct inode * inode, struct file * filp, unsigned int cmd,
 int ffb_switchctx(struct inode * inode, struct file * filp, unsigned int cmd,
 		    unsigned long arg) {
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	struct drm_device *dev = priv->dev;
 	drm_ctx_t ctx;
 
 	if (copy_from_user(&ctx, (drm_ctx_t __user *) arg, sizeof(ctx)))
@@ -504,7 +504,7 @@ int ffb_rmctx(struct inode * inode, struct file * filp, unsigned int cmd,
 		unsigned long arg) {
 	drm_ctx_t ctx;
 	drm_file_t *priv = filp->private_data;
-	drm_device_t *dev = priv->dev;
+	struct drm_device *dev = priv->dev;
 	ffb_dev_priv_t *fpriv = (ffb_dev_priv_t *) dev->dev_private;
 	int idx;
 
@@ -523,7 +523,7 @@ int ffb_rmctx(struct inode * inode, struct file * filp, unsigned int cmd,
 	return 0;
 }
 
-static void ffb_driver_reclaim_buffers_locked(drm_device_t * dev)
+static void ffb_driver_reclaim_buffers_locked(struct drm_device * dev)
 {
 	ffb_dev_priv_t *fpriv = (ffb_dev_priv_t *) dev->dev_private;
 	int context = _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock);
@@ -537,13 +537,13 @@ static void ffb_driver_reclaim_buffers_locked(drm_device_t * dev)
 	}
 }
 
-static void ffb_driver_lastclose(drm_device_t * dev)
+static void ffb_driver_lastclose(struct drm_device * dev)
 {
 	if (dev->dev_private)
 		kfree(dev->dev_private);
 }
 
-static void ffb_driver_unload(drm_device_t * dev)
+static void ffb_driver_unload(struct drm_device * dev)
 {
 	if (ffb_position != NULL)
 		kfree(ffb_position);
@@ -571,7 +571,7 @@ unsigned long ffb_driver_get_map_ofs(drm_map_t * map)
 	return (map->offset & 0xffffffff);
 }
 
-unsigned long ffb_driver_get_reg_ofs(drm_device_t * dev)
+unsigned long ffb_driver_get_reg_ofs(struct drm_device * dev)
 {
 	ffb_dev_priv_t *ffb_priv = (ffb_dev_priv_t *) dev->dev_private;
 

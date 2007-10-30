@@ -44,7 +44,6 @@
 #define SL_MAIN 0
 
 #if !SL_MAIN
-# include "drm.h"
 # include "xf86drm.h"
 #else
 # include <sys/time.h>

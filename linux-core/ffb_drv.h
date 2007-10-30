@@ -281,4 +281,4 @@ extern unsigned long ffb_get_unmapped_area(struct file *filp,
 					   unsigned long pgoff,
 					   unsigned long flags);
 extern unsigned long ffb_driver_get_map_ofs(drm_map_t *map)
-extern unsigned long ffb_driver_get_reg_ofs(drm_device_t *dev)
+extern unsigned long ffb_driver_get_reg_ofs(struct drm_device *dev)
