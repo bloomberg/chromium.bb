@@ -1043,6 +1043,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	/* make sure all previous memory operations have passed */
 	DRM_MEMORYBARRIER();
+	drm_agp_chipset_flush(dev);
 
 	/* submit buffer */
 	batch->start = buffers[num_buffers-1]->offset;

@@ -650,4 +650,12 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 }
 EXPORT_SYMBOL(drm_agp_init_ttm);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+void drm_agp_flush_chipset(struct drm_device *dev)
+{
+	agp_flush_chipset(dev->agp->bridge);
+}
+EXPORT_SYMBOL(drm_agp_flush_chipset);
+#endif
+
 #endif				/* __OS_HAS_AGP */
