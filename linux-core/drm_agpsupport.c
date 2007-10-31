@@ -541,11 +541,15 @@ static int drm_agp_bind_ttm(struct drm_ttm_backend *backend,
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	DRM_AGP_MEM *mem = agp_be->mem;
 	int ret;
+	int snooped = (bo_mem->flags & DRM_BO_FLAG_CACHED) && !(bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED);
 
 	DRM_DEBUG("drm_agp_bind_ttm\n");
 	mem->is_flushed = TRUE;
-	mem->type = (bo_mem->flags & DRM_BO_FLAG_CACHED) ? AGP_USER_CACHED_MEMORY :
-		AGP_USER_MEMORY;
+	mem->type = AGP_USER_MEMORY;
+	/* CACHED MAPPED implies not snooped memory */
+	if (snooped)
+		mem->type = AGP_USER_CACHED_MEMORY;
+
 	ret = drm_agp_bind_memory(mem, bo_mem->mm_node->start);
 	if (ret) {
 		DRM_ERROR("AGP Bind memory failed\n");

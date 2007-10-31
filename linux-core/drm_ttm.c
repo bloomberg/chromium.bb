@@ -329,7 +329,7 @@ int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem)
 
 	if (ttm->state == ttm_unbound && !(bo_mem->flags & DRM_BO_FLAG_CACHED)) {
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
-	} else if ((bo_mem->flags & DRM_BO_FLAG_CACHED) &&
+	} else if ((bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED) &&
 		   bo_driver->ttm_cache_flush)
 		bo_driver->ttm_cache_flush(ttm);
 
