@@ -89,7 +89,6 @@ static void intel_i965_g33_setup_chipset_flush(struct pci_dev *pdev)
 
 		pci_write_config_dword(pdev, I965_IFPADDR + 4, (intel_private.ifp_resource.start >> 32));
 		pci_write_config_dword(pdev, I965_IFPADDR, (intel_private.ifp_resource.start & 0xffffffff) | 0x1);
-		intel_private.flush_page = ioremap_nocache(intel_private.ifp_resource.start, PAGE_SIZE);
 	} else {
 		u64 l64;
 		
