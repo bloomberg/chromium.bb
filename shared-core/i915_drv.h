@@ -313,6 +313,11 @@ extern int i915_move(struct drm_buffer_object *bo, int evict,
 void i915_flush_ttm(struct drm_ttm *ttm);
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+extern void intel_init_chipset_flush_compat(struct drm_device *dev);
+extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
+#endif
+
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
 #define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
 #define I915_READ16(reg) 	DRM_READ16(dev_priv->mmio_map, (reg))
