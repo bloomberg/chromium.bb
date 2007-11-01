@@ -392,11 +392,13 @@ int nouveau_mem_init(struct drm_device *dev)
 		dev_priv->fb_nomap_heap=NULL;
 	}
 
+#ifndef __powerpc__
 	/* Init AGP / NV50 PCIEGART */
 	if (drm_device_is_agp(dev) && dev->agp) {
 		if ((ret = nouveau_mem_init_agp(dev)))
 			DRM_ERROR("Error initialising AGP: %d\n", ret);
 	}
+#endif
 
 	/*Note: this is *not* just NV50 code, but only used on NV50 for now */
 	if (dev_priv->gart_info.type == NOUVEAU_GART_NONE &&
