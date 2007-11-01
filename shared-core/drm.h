@@ -565,7 +565,7 @@ typedef enum {
  * \sa drmModesetCtl().
  */
 typedef struct drm_modeset_ctl {
-	u64 arg;
+	unsigned long arg;
 	drm_modeset_ctl_cmd_t cmd;
 } drm_modeset_ctl_t;
 
