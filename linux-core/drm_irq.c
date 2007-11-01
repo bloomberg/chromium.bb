@@ -85,7 +85,7 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 {
 	int i, ret = -ENOMEM;
 
-	setup_timer(&dev->vblank_disable_timer, vblank_disable_fn,\
+	setup_timer(&dev->vblank_disable_timer, vblank_disable_fn,
 		    (unsigned long)dev);
 	spin_lock_init(&dev->vbl_lock);
 	atomic_set(&dev->vbl_signal_pending, 0);
@@ -111,18 +111,16 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	if (!dev->vblank_refcount)
 		goto err;
 
-	dev->last_vblank = drm_calloc(1, sizeof(u32) * num_crtcs,
-				      DRM_MEM_DRIVER);
+	dev->last_vblank = drm_calloc(num_crtcs, sizeof(u32), DRM_MEM_DRIVER);
 	if (!dev->last_vblank)
 		goto err;
 
-	dev->vblank_premodeset = drm_calloc(1, sizeof(u32) * num_crtcs,
+	dev->vblank_premodeset = drm_calloc(num_crtcs, sizeof(u32),
 					    DRM_MEM_DRIVER);
 	if (!dev->vblank_premodeset)
 		goto err;
 
-	dev->vblank_offset = drm_calloc(1, sizeof(u32) * num_crtcs,
-					DRM_MEM_DRIVER);
+	dev->vblank_offset = drm_calloc(num_crtcs, sizeof(u32), DRM_MEM_DRIVER);
 	if (!dev->vblank_offset)
 		goto err;
 
@@ -210,6 +208,11 @@ int drm_irq_install(struct drm_device * dev)
 
 	/* After installing handler */
 	ret = dev->driver->irq_postinstall(dev);
+	if (ret < 0) {
+		mutex_lock(&dev->struct_mutex);
+		dev->irq_enabled = 0;
+		mutex_unlock(&dev->struct_mutex);
+	}
 
 	return ret;
 }
