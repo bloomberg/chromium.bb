@@ -806,6 +806,9 @@ static int drm_bo_mt_compatible(struct drm_mem_type_manager * man,
 	}
 
 	flag_diff = (mask ^ cur_flags);
+	if (flag_diff & DRM_BO_FLAG_CACHED_MAPPED)
+		cur_flags |= DRM_BO_FLAG_CACHED_MAPPED;
+
 	if ((flag_diff & DRM_BO_FLAG_CACHED) &&
 	    (!(mask & DRM_BO_FLAG_CACHED) ||
 	     (mask & DRM_BO_FLAG_FORCE_CACHING)))
@@ -1029,7 +1032,7 @@ static int drm_bo_busy(struct drm_buffer_object * bo)
 	return 0;
 }
 
-static int drm_bo_read_cached(struct drm_buffer_object * bo)
+static int drm_bo_evict_cached(struct drm_buffer_object * bo)
 {
 	int ret = 0;
 
@@ -1177,15 +1180,11 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 				goto out;
 			}
 
-			if ((map_flags & DRM_BO_FLAG_READ) &&
-			    (bo->mem.flags & DRM_BO_FLAG_READ_CACHED) &&
-			    (!(bo->mem.flags & DRM_BO_FLAG_CACHED))) {
-				drm_bo_read_cached(bo);
-			}
+			if (bo->mem.flags & DRM_BO_FLAG_CACHED_MAPPED)
+				drm_bo_evict_cached(bo);
+
 			break;
-		} else if ((map_flags & DRM_BO_FLAG_READ) &&
-			   (bo->mem.flags & DRM_BO_FLAG_READ_CACHED) &&
-			   (!(bo->mem.flags & DRM_BO_FLAG_CACHED))) {
+		} else if (bo->mem.flags & DRM_BO_FLAG_CACHED_MAPPED) {
 
 			/*
 			 * We are already mapped with different flags.
@@ -1666,7 +1665,6 @@ int drm_buffer_object_create(struct drm_device *dev,
 		DRM_BO_FLAG_MAPPABLE;
 	atomic_inc(&bm->count);
 	ret = drm_bo_new_mask(bo, mask, hint);
-
 	if (ret)
 		goto out_err;
 
