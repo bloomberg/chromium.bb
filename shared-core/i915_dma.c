@@ -80,8 +80,6 @@ void i915_kernel_lost_context(struct drm_device * dev)
 
 int i915_dma_cleanup(struct drm_device * dev)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
@@ -92,23 +90,19 @@ int i915_dma_cleanup(struct drm_device * dev)
 	return 0;
 }
 
-static int i915_initialize(struct drm_device * dev,
-			   struct drm_i915_private * dev_priv,
-			   struct drm_i915_init * init)
+static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 {
-	memset(dev_priv, 0, sizeof(struct drm_i915_private));
+	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
-		dev->dev_private = (void *)dev_priv;
 		i915_dma_cleanup(dev);
 		return -EINVAL;
 	}
 
 	dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
 	if (!dev_priv->mmio_map) {
-		dev->dev_private = (void *)dev_priv;
 		i915_dma_cleanup(dev);
 		DRM_ERROR("can not find mmio map!\n");
 		return -EINVAL;
@@ -135,7 +129,6 @@ static int i915_initialize(struct drm_device * dev,
 	drm_core_ioremap(&dev_priv->ring.map, dev);
 
 	if (dev_priv->ring.map.handle == NULL) {
-		dev->dev_private = (void *)dev_priv;
 		i915_dma_cleanup(dev);
 		DRM_ERROR("can not ioremap virtual address for"
 			  " ring buffer\n");
@@ -166,7 +159,6 @@ static int i915_initialize(struct drm_device * dev,
 			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
 
 		if (!dev_priv->status_page_dmah) {
-			dev->dev_private = (void *)dev_priv;
 			i915_dma_cleanup(dev);
 			DRM_ERROR("Can not allocate hardware status page\n");
 			return -ENOMEM;
@@ -179,7 +171,6 @@ static int i915_initialize(struct drm_device * dev,
 		I915_WRITE(0x02080, dev_priv->dma_status_page);
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
-	dev->dev_private = (void *)dev_priv;
 	mutex_init(&dev_priv->cmdbuf_mutex);
 	return 0;
 }
@@ -225,17 +216,12 @@ static int i915_dma_resume(struct drm_device * dev)
 static int i915_dma_init(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
-	struct drm_i915_private *dev_priv;
 	struct drm_i915_init *init = data;
 	int retcode = 0;
 
 	switch (init->func) {
 	case I915_INIT_DMA:
-		dev_priv = drm_alloc(sizeof(struct drm_i915_private),
-				     DRM_MEM_DRIVER);
-		if (dev_priv == NULL)
-			return -ENOMEM;
-		retcode = i915_initialize(dev, dev_priv, init);
+		retcode = i915_initialize(dev, init);
 		break;
 	case I915_CLEANUP_DMA:
 		retcode = i915_dma_cleanup(dev);
@@ -1036,6 +1022,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	/* make sure all previous memory operations have passed */
 	DRM_MEMORYBARRIER();
+	drm_agp_chipset_flush(dev);
 
 	/* submit buffer */
 	batch->start = buffers[num_buffers-1]->offset;
@@ -1267,7 +1254,6 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 
 	drm_core_ioremap(&dev_priv->hws_map, dev);
 	if (dev_priv->hws_map.handle == NULL) {
-		dev->dev_private = (void *)dev_priv;
 		i915_dma_cleanup(dev);
 		dev_priv->status_gfx_addr = 0;
 		DRM_ERROR("can not ioremap virtual address for"

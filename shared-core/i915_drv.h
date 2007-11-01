@@ -155,61 +155,84 @@ struct drm_i915_private {
 	bool panel_wants_dither;
 	struct drm_display_mode *panel_fixed_mode;
 
-	/* Register state */
-	u32 saveDSPACNTR;
-	u32 saveDSPBCNTR;
-	u32 savePIPEACONF;
-	u32 savePIPEBCONF;
-	u32 savePIPEASRC;
-	u32 savePIPEBSRC;
-	u32 saveFPA0;
-	u32 saveFPA1;
-	u32 saveDPLL_A;
-	u32 saveDPLL_A_MD;
-	u32 saveHTOTAL_A;
-	u32 saveHBLANK_A;
-	u32 saveHSYNC_A;
-	u32 saveVTOTAL_A;
-	u32 saveVBLANK_A;
-	u32 saveVSYNC_A;
-	u32 saveDSPASTRIDE;
-	u32 saveDSPASIZE;
-	u32 saveDSPAPOS;
-	u32 saveDSPABASE;
-	u32 saveDSPASURF;
-	u32 saveFPB0;
-	u32 saveFPB1;
-	u32 saveDPLL_B;
-	u32 saveDPLL_B_MD;
-	u32 saveHTOTAL_B;
-	u32 saveHBLANK_B;
-	u32 saveHSYNC_B;
-	u32 saveVTOTAL_B;
-	u32 saveVBLANK_B;
-	u32 saveVSYNC_B;
-	u32 saveDSPBSTRIDE;
-	u32 saveDSPBSIZE;
-	u32 saveDSPBPOS;
-	u32 saveDSPBBASE;
-	u32 saveDSPBSURF;
-	u32 saveVCLK_DIVISOR_VGA0;
-	u32 saveVCLK_DIVISOR_VGA1;
-	u32 saveVCLK_POST_DIV;
-	u32 saveVGACNTRL;
-	u32 saveADPA;
-	u32 saveLVDS;
-	u32 saveDVOA;
-	u32 saveDVOB;
-	u32 saveDVOC;
-	u32 savePP_ON;
-	u32 savePP_OFF;
-	u32 savePP_CONTROL;
-	u32 savePP_CYCLE;
-	u32 savePFIT_CONTROL;
-	u32 savePaletteA[256];
-	u32 savePaletteB[256];
-	u32 saveSWF[17];
+ 	/* Register state */
+	u8 saveLBB;
+ 	u32 saveDSPACNTR;
+ 	u32 saveDSPBCNTR;
+ 	u32 savePIPEACONF;
+ 	u32 savePIPEBCONF;
+ 	u32 savePIPEASRC;
+ 	u32 savePIPEBSRC;
+ 	u32 saveFPA0;
+ 	u32 saveFPA1;
+ 	u32 saveDPLL_A;
+ 	u32 saveDPLL_A_MD;
+ 	u32 saveHTOTAL_A;
+ 	u32 saveHBLANK_A;
+ 	u32 saveHSYNC_A;
+ 	u32 saveVTOTAL_A;
+ 	u32 saveVBLANK_A;
+ 	u32 saveVSYNC_A;
+	u32 saveBCLRPAT_A;
+ 	u32 saveDSPASTRIDE;
+ 	u32 saveDSPASIZE;
+ 	u32 saveDSPAPOS;
+ 	u32 saveDSPABASE;
+ 	u32 saveDSPASURF;
+	u32 saveDSPATILEOFF;
+	u32 savePFIT_PGM_RATIOS;
 	u32 saveBLC_PWM_CTL;
+	u32 saveBLC_PWM_CTL2;
+ 	u32 saveFPB0;
+ 	u32 saveFPB1;
+ 	u32 saveDPLL_B;
+ 	u32 saveDPLL_B_MD;
+ 	u32 saveHTOTAL_B;
+ 	u32 saveHBLANK_B;
+ 	u32 saveHSYNC_B;
+ 	u32 saveVTOTAL_B;
+ 	u32 saveVBLANK_B;
+ 	u32 saveVSYNC_B;
+	u32 saveBCLRPAT_B;
+ 	u32 saveDSPBSTRIDE;
+ 	u32 saveDSPBSIZE;
+ 	u32 saveDSPBPOS;
+ 	u32 saveDSPBBASE;
+ 	u32 saveDSPBSURF;
+	u32 saveDSPBTILEOFF;
+ 	u32 saveVCLK_DIVISOR_VGA0;
+ 	u32 saveVCLK_DIVISOR_VGA1;
+ 	u32 saveVCLK_POST_DIV;
+ 	u32 saveVGACNTRL;
+ 	u32 saveADPA;
+ 	u32 saveLVDS;
+	u32 saveLVDSPP_ON;
+	u32 saveLVDSPP_OFF;
+ 	u32 saveDVOA;
+ 	u32 saveDVOB;
+ 	u32 saveDVOC;
+ 	u32 savePP_ON;
+ 	u32 savePP_OFF;
+ 	u32 savePP_CONTROL;
+ 	u32 savePP_CYCLE;
+ 	u32 savePFIT_CONTROL;
+ 	u32 save_palette_a[256];
+ 	u32 save_palette_b[256];
+	u32 saveFBC_CFB_BASE;
+	u32 saveFBC_LL_BASE;
+	u32 saveFBC_CONTROL;
+	u32 saveFBC_CONTROL2;
+ 	u32 saveSWF0[16];
+ 	u32 saveSWF1[16];
+ 	u32 saveSWF2[3];
+	u8 saveMSR;
+	u8 saveSR[8];
+	u8 saveGR[24];
+	u8 saveAR_INDEX;
+	u8 saveAR[20];
+	u8 saveDACMASK;
+	u8 saveDACDATA[256*3]; /* 256 3-byte colors */
+	u8 saveCR[36];
 };
 
 enum intel_chip_family {
@@ -300,7 +323,12 @@ extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 extern uint32_t i915_evict_mask(struct drm_buffer_object *bo);
 extern int i915_move(struct drm_buffer_object *bo, int evict,
 	      	int no_wait, struct drm_bo_mem_reg *new_mem);
+void i915_flush_ttm(struct drm_ttm *ttm);
+#endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+extern void intel_init_chipset_flush_compat(struct drm_device *dev);
+extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
 #endif
 
 
@@ -371,6 +399,50 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define INTEL_915G_GMCH_GMS_STOLEN_48M	(0x6 << 4)
 #define INTEL_915G_GMCH_GMS_STOLEN_64M	(0x7 << 4)
 
+/* Extended config space */
+#define LBB 0xf4
+
+/* VGA stuff */
+
+#define VGA_ST01_MDA 0x3ba
+#define VGA_ST01_CGA 0x3da
+
+#define VGA_MSR_WRITE 0x3c2
+#define VGA_MSR_READ 0x3cc
+#define   VGA_MSR_MEM_EN (1<<1)
+#define   VGA_MSR_CGA_MODE (1<<0)
+
+#define VGA_SR_INDEX 0x3c4
+#define VGA_SR_DATA 0x3c5
+
+#define VGA_AR_INDEX 0x3c0
+#define   VGA_AR_VID_EN (1<<5)
+#define VGA_AR_DATA_WRITE 0x3c0
+#define VGA_AR_DATA_READ 0x3c1
+
+#define VGA_GR_INDEX 0x3ce
+#define VGA_GR_DATA 0x3cf
+/* GR05 */
+#define   VGA_GR_MEM_READ_MODE_SHIFT 3
+#define     VGA_GR_MEM_READ_MODE_PLANE 1
+/* GR06 */
+#define   VGA_GR_MEM_MODE_MASK 0xc
+#define   VGA_GR_MEM_MODE_SHIFT 2
+#define   VGA_GR_MEM_A0000_AFFFF 0
+#define   VGA_GR_MEM_A0000_BFFFF 1
+#define   VGA_GR_MEM_B0000_B7FFF 2
+#define   VGA_GR_MEM_B0000_BFFFF 3
+
+#define VGA_DACMASK 0x3c6
+#define VGA_DACRX 0x3c7
+#define VGA_DACWX 0x3c8
+#define VGA_DACDATA 0x3c9
+
+#define VGA_CR_INDEX_MDA 0x3b4
+#define VGA_CR_DATA_MDA 0x3b5
+#define VGA_CR_INDEX_CGA 0x3d4
+#define VGA_CR_DATA_CGA 0x3d5
+
 #define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
 #define CMD_REPORT_HEAD			(7<<23)
@@ -394,6 +466,37 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define BB2_END_ADDR_MASK     (~0x7)
 
 #define I915REG_HWS_PGA		0x02080
+
+/* Framebuffer compression */
+#define FBC_CFB_BASE		0x03200 /* 4k page aligned */
+#define FBC_LL_BASE		0x03204 /* 4k page aligned */
+#define FBC_CONTROL		0x03208
+#define   FBC_CTL_EN		(1<<31)
+#define   FBC_CTL_PERIODIC	(1<<30)
+#define   FBC_CTL_INTERVAL_SHIFT (16)
+#define   FBC_CTL_UNCOMPRESSIBLE (1<<14)
+#define   FBC_CTL_STRIDE_SHIFT	(5)
+#define   FBC_CTL_FENCENO	(1<<0)
+#define FBC_COMMAND		0x0320c
+#define   FBC_CMD_COMPRESS	(1<<0)
+#define FBC_STATUS		0x03210
+#define   FBC_STAT_COMPRESSING	(1<<31)
+#define   FBC_STAT_COMPRESSED	(1<<30)
+#define   FBC_STAT_MODIFIED	(1<<29)
+#define   FBC_STAT_CURRENT_LINE	(1<<0)
+#define FBC_CONTROL2		0x03214
+#define   FBC_CTL_FENCE_DBL	(0<<4)
+#define   FBC_CTL_IDLE_IMM	(0<<2)
+#define   FBC_CTL_IDLE_FULL	(1<<2)
+#define   FBC_CTL_IDLE_LINE	(2<<2)
+#define   FBC_CTL_IDLE_DEBUG	(3<<2)
+#define   FBC_CTL_CPU_FENCE	(1<<1)
+#define   FBC_CTL_PLANEA	(0<<0)
+#define   FBC_CTL_PLANEB	(1<<0)
+#define FBC_FENCE_OFF		0x0321b
+
+#define FBC_LL_SIZE		(1536)
+#define FBC_LL_PAD		(32)
 
 /* Interrupt bits:
  */
@@ -684,6 +787,9 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 #define BLC_PWM_CTL		0x61254
 #define BACKLIGHT_MODULATION_FREQ_SHIFT		(17)
+
+#define BLC_PWM_CTL2		0x61250
+
 /**
  * This is the most significant 15 bits of the number of backlight cycles in a
  * complete cycle of the modulated backlight control.
@@ -714,6 +820,30 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define I855_CLOCK_100_200			(1 << 0)
 #define I855_CLOCK_100_133			(2 << 0)
 #define I855_CLOCK_166_250			(3 << 0)
+
+/* p317, 319
+ */
+#define VCLK2_VCO_M        0x6008 /* treat as 16 bit? (includes msbs) */
+#define VCLK2_VCO_N        0x600a
+#define VCLK2_VCO_DIV_SEL  0x6012
+
+#define VCLK_DIVISOR_VGA0   0x6000
+#define VCLK_DIVISOR_VGA1   0x6004
+#define VCLK_POST_DIV	    0x6010
+/** Selects a post divisor of 4 instead of 2. */
+# define VGA1_PD_P2_DIV_4	(1 << 15)
+/** Overrides the p2 post divisor field */
+# define VGA1_PD_P1_DIV_2	(1 << 13)
+# define VGA1_PD_P1_SHIFT	8
+/** P1 value is 2 greater than this field */
+# define VGA1_PD_P1_MASK	(0x1f << 8)
+/** Selects a post divisor of 4 instead of 2. */
+# define VGA0_PD_P2_DIV_4	(1 << 7)
+/** Overrides the p2 post divisor field */
+# define VGA0_PD_P1_DIV_2	(1 << 5)
+# define VGA0_PD_P1_SHIFT	0
+/** P1 value is 2 greater than this field */
+# define VGA0_PD_P1_MASK	(0x1f << 0)
 
 /* I830 CRTC registers */
 #define HTOTAL_A	0x60000
@@ -1106,25 +1236,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define SWF5			0x71424
 #define SWF6			0x71428
 
-/*
- * 855 scratch registers.
- */
-#define SWF00			0x70410
-#define SWF01			0x70414
-#define SWF02			0x70418
-#define SWF03			0x7041c
-#define SWF04			0x70420
-#define SWF05			0x70424
-#define SWF06			0x70428
-
-#define SWF10			SWF0
-#define SWF11			SWF1
-#define SWF12			SWF2
-#define SWF13			SWF3
-#define SWF14			SWF4
-#define SWF15			SWF5
-#define SWF16			SWF6
-
+#define SWF10			0x70410
 #define SWF30			0x72414
 #define SWF31			0x72418
 #define SWF32			0x7241c
@@ -1169,14 +1281,14 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 		       (dev)->pci_device == 0x2A02 || \
 		       (dev)->pci_device == 0x2A12)
 
-#define IS_I965GM(dev) (((dev)->pci_device == 0x2A02))
+#define IS_I965GM(dev) ((dev)->pci_device == 0x2A02)
+
+#define IS_G33(dev)    ((dev)->pci_device == 0x29C2 ||	\
+		   	(dev)->pci_device == 0x29B2 ||	\
+			(dev)->pci_device == 0x29D2)
 
 #define IS_I9XX(dev) (IS_I915G(dev) || IS_I915GM(dev) || IS_I945G(dev) || \
 		      IS_I945GM(dev) || IS_I965G(dev))
-
-#define IS_G33(dev)    ((dev)->pci_device == 0x29C2 || \
-		   	(dev)->pci_device == 0x29B2 || \
-			(dev)->pci_device == 0x29D2) 
 
 #define IS_MOBILE(dev) (IS_I830(dev) || IS_I85X(dev) || IS_I915GM(dev) || \
 			IS_I945GM(dev) || IS_I965GM(dev))

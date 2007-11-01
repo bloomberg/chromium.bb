@@ -41,6 +41,25 @@ static struct pci_device_id pciidlist[] = {
 	}
 };
 
+#ifdef NOUVEAU_HAVE_BUFFER
+static uint32_t nouveau_mem_prios[]  = { DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL };
+static uint32_t nouveau_busy_prios[] = { DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL };
+
+static struct drm_bo_driver nouveau_bo_driver = {
+	.mem_type_prio = nouveau_mem_prios,
+	.mem_busy_prio = nouveau_busy_prios,
+	.num_mem_type_prio = sizeof(nouveau_mem_prios)/sizeof(uint32_t),
+	.num_mem_busy_prio = sizeof(nouveau_busy_prios)/sizeof(uint32_t),
+	.create_ttm_backend_entry = nouveau_create_ttm_backend_entry,
+	.fence_type = nouveau_fence_types,
+	.invalidate_caches = nouveau_invalidate_caches,
+	.init_mem_type = nouveau_init_mem_type,
+	.evict_mask = nouveau_evict_mask,
+	.move = nouveau_move,
+	.ttm_cache_flush= nouveau_flush_ttm
+};
+#endif
+
 extern struct drm_ioctl_desc nouveau_ioctls[];
 extern int nouveau_max_ioctl;
 
@@ -80,6 +99,9 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
+#ifdef NOUVEAU_HAVE_BUFFER
+	.bo_driver = &nouveau_bo_driver,
+#endif
 
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,

@@ -207,6 +207,7 @@ struct page *drm_ttm_get_page(struct drm_ttm * ttm, int index)
 	}
 	return p;
 }
+EXPORT_SYMBOL(drm_ttm_get_page);
 
 int drm_ttm_populate(struct drm_ttm * ttm)
 {
@@ -311,7 +312,7 @@ void drm_ttm_unbind(struct drm_ttm * ttm)
 
 int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem)
 {
-
+	struct drm_bo_driver *bo_driver = ttm->dev->driver->bo_driver;
 	int ret = 0;
 	struct drm_ttm_backend *be;
 
@@ -328,7 +329,9 @@ int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem)
 
 	if (ttm->state == ttm_unbound && !(bo_mem->flags & DRM_BO_FLAG_CACHED)) {
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
-	}
+	} else if ((bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED) &&
+		   bo_driver->ttm_cache_flush)
+		bo_driver->ttm_cache_flush(ttm);
 
 	if ((ret = be->func->bind(be, bo_mem))) {
 		ttm->state = ttm_evicted;

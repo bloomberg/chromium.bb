@@ -135,14 +135,6 @@ struct drm_clip_rect {
 };
 
 /**
- * Drawable information.
- */
-struct drm_drawable_info {
-	unsigned int num_rects;
-	struct drm_clip_rect *rects;
-};
-
-/**
  * Texture region,
  */
 struct drm_tex_region {
@@ -709,10 +701,14 @@ struct drm_fence_arg {
  */
 #define DRM_BO_FLAG_NO_MOVE     (1ULL << 8)
 
-/* Mask: Make sure the buffer is in cached memory when mapped for reading.
+/* Mask: Make sure the buffer is in cached memory when mapped
  * Flags: Acknowledge.
+ * Buffers allocated with this flag should not be used for suballocators
+ * This type may have issues on CPUs with over-aggressive caching 
+ * http://marc.info/?l=linux-kernel&m=102376926732464&w=2
  */
-#define DRM_BO_FLAG_READ_CACHED    (1ULL << 19)
+#define DRM_BO_FLAG_CACHED_MAPPED    (1ULL << 19)
+
 
 /* Mask: Force DRM_BO_FLAG_CACHED flag strictly also if it is set.
  * Flags: Acknowledge.
@@ -747,7 +743,7 @@ struct drm_fence_arg {
 
 /* Memory flag mask */
 #define DRM_BO_MASK_MEM         0x00000000FF000000ULL
-#define DRM_BO_MASK_MEMTYPE     0x00000000FF0000A0ULL
+#define DRM_BO_MASK_MEMTYPE     0x00000000FF0800A0ULL
 
 /* Driver-private flags */
 #define DRM_BO_MASK_DRIVER      0xFFFF000000000000ULL
@@ -1108,7 +1104,6 @@ struct drm_mode_mode_cmd {
 /* typedef area */
 #if !defined(__KERNEL__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 typedef struct drm_clip_rect drm_clip_rect_t;
-typedef struct drm_drawable_info drm_drawable_info_t;
 typedef struct drm_tex_region drm_tex_region_t;
 typedef struct drm_hw_lock drm_hw_lock_t;
 typedef struct drm_version drm_version_t;

@@ -29,6 +29,9 @@
 #include "nouveau_drv.h"
 #include "nouveau_dma.h"
 
+/* FIXME : should go into a nouveau_drm.h define ?
+ * (it's shared between DRI & DDX & DRM)
+ */
 #define SKIPS 8
 
 int
