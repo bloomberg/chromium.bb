@@ -1,5 +1,5 @@
 /*
- * Copyright 2005 Stephane Marchesin.
+ * Copyright 2007 Dave Airlied
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -22,7 +22,8 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 /*
- * Authors: Jeremy Kolb <jkolb@brandeis.edu>
+ * Authors: Dave Airlied <airlied@linux.ie>
+ *	    Jeremy Kolb <jkolb@brandeis.edu>
  */
 
 #include "drmP.h"
@@ -33,8 +34,6 @@
 
 struct drm_ttm_backend *nouveau_create_ttm_backend_entry(struct drm_device * dev)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-
 	return drm_agp_init_ttm(dev);
 }
 
@@ -61,8 +60,6 @@ int nouveau_init_mem_type(struct drm_device *dev,
 			  uint32_t type,
 			  struct drm_mem_type_manager *man)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-
 	switch (type) {
 		case DRM_BO_MEM_LOCAL:
 			man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
@@ -119,6 +116,82 @@ uint32_t nouveau_evict_mask(struct drm_buffer_object *bo)
 
 }
 
+static void nouveau_emit_copy_blit(struct drm_device * dev,
+				   uint32_t src_offset,
+				   uint32_t dst_offset,
+				   uint32_t pages, int direction)
+{
+	return;
+}
+
+static int nouveau_move_blit(struct drm_buffer_object *bo,
+			     int evict,
+			     int no_wait,
+			     struct drm_bo_mem_reg *new_mem)
+{
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
+	int dir = 0;
+
+	if ((old_mem->mem_type == new_mem->mem_type) &&
+	    (new_mem->mm_node->start < 
+	     old_mem->mm_node->start + old_mem->mm_node->size)) {
+		dir = 1;
+	}
+
+	nouveau_emit_copy_blit(bo->dev,
+			       old_mem->mm_node->start << PAGE_SHIFT,
+			       new_mem->mm_node->start << PAGE_SHIFT,
+			       new_mem->num_pages, dir);
+	
+	/* we don't need to cleanup out mess because our fences
+	 * are from userland. so this cleanup call is probably wrong.
+	 */
+	return drm_bo_move_accel_cleanup(bo, evict, no_wait, 0,
+					 DRM_FENCE_TYPE_EXE,
+					 0,
+					 new_mem);
+	
+}
+
+static int nouveau_move_flip(struct drm_buffer_object *bo,
+			     int evict,
+			     int no_wait,
+			     struct drm_bo_mem_reg *new_mem)
+{
+	struct drm_device *dev = bo->dev;
+	struct drm_bo_mem_reg tmp_mem;
+	int ret;
+
+	tmp_mem = *new_mem;
+	tmp_mem.mm_node = NULL;
+	tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
+		DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING;
+
+	ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
+	if (ret)
+		return ret;
+
+	ret = drm_bind_ttm(bo->ttm, tmp_mem.mm_node->start);
+	if (ret)
+		goto out_cleanup;
+
+	ret = nouveau_move_blit(bo, 1, no_wait, &tmp_mem);
+	if (ret)
+		goto out_cleanup;
+
+	ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
+
+out_cleanup:
+	if (tmp_mem.mm_node) {
+		mutex_lock(&dev->struct_mutex);
+		if (tmp_mem.mm_node != bo->pinned_node)
+			drm_mm_put_block(tmp_mem.mm_node);
+		tmp_mem.mm_node = NULL;
+		mutex_unlock(&dev->struct_mutex);
+	}
+	return ret;
+}
+
 int nouveau_move(struct drm_buffer_object *bo,
 		 int evict,
 		 int no_wait,
@@ -127,12 +200,17 @@ int nouveau_move(struct drm_buffer_object *bo,
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
-	else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		/* local to VRAM */
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
+	else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		/* VRAM to local */
+		/*if (nouveau_move_flip(bo, evict, no_wait, new_mem))*/
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	}
 	else {
-		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+		/*if (nouveau_move_blit(bo, evict, no_wait, new_mem))*/
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
 }
