@@ -23,8 +23,8 @@
  */
 /*
  * Authors: Dave Airlied <airlied@linux.ie>
- *	    Jeremy Kolb <jkolb@brandeis.edu>
- *	    Ben Skeggs
+ *	    Ben Skeggs   <darktama@iinet.net.au>
+ *	    Jeremy Kolb  <jkolb@brandeis.edu>
  */
 
 #include "drmP.h"
