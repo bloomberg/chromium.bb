@@ -2612,9 +2612,9 @@ int drmBOCreate(int fd, unsigned long size,
     ret = drmIoctlTimeout(fd, DRM_IOCTL_BO_CREATE, &arg);
     if (ret)
 	return ret;
-    
+
     drmBOCopyReply(rep, buf);
-    buf->mapVirtual = NULL;
+    buf->virtual = user_buffer;
     buf->mapCount = 0;
 
     return 0;
@@ -2644,7 +2644,7 @@ int drmBOUnreference(int fd, drmBO *buf)
 {
     struct drm_bo_handle_arg arg;
 
-    if (buf->mapVirtual) {
+    if (buf->mapVirtual && buf->mapHandle) {
 	(void) munmap(buf->mapVirtual, buf->start + buf->size);
 	buf->mapVirtual = NULL;
 	buf->virtual = NULL;

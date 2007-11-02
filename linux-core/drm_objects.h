@@ -275,6 +275,8 @@ typedef struct drm_ttm_backend {
 } drm_ttm_backend_t;
 
 struct drm_ttm {
+        struct mm_struct *user_mm;
+	struct page *dummy_read_page;
 	struct page **pages;
 	uint32_t page_flags;
 	unsigned long num_pages;
@@ -300,6 +302,12 @@ extern void drm_ttm_fixup_caching(struct drm_ttm * ttm);
 extern struct page *drm_ttm_get_page(struct drm_ttm * ttm, int index);
 extern void drm_ttm_cache_flush(void);
 extern int drm_ttm_populate(struct drm_ttm * ttm);
+extern int drm_ttm_set_user(struct drm_ttm *ttm,
+			    struct task_struct *tsk,
+			    int write,
+			    unsigned long start,
+			    unsigned long num_pages,
+			    struct page *dummy_read_page);
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do this,
@@ -320,11 +328,15 @@ extern int drm_destroy_ttm(struct drm_ttm * ttm);
  * Page flags.
  */
 
-#define DRM_TTM_PAGE_UNCACHED 0x01
-#define DRM_TTM_PAGE_USED     0x02
-#define DRM_TTM_PAGE_BOUND    0x04
-#define DRM_TTM_PAGE_PRESENT  0x08
-#define DRM_TTM_PAGE_VMALLOC  0x10
+#define DRM_TTM_PAGE_UNCACHED   (1 << 0)
+#define DRM_TTM_PAGE_USED       (1 << 1)
+#define DRM_TTM_PAGE_BOUND      (1 << 2)
+#define DRM_TTM_PAGE_PRESENT    (1 << 3)
+#define DRM_TTM_PAGE_VMALLOC    (1 << 4)
+#define DRM_TTM_PAGE_USER       (1 << 5)
+#define DRM_TTM_PAGE_USER_WRITE (1 << 6)
+#define DRM_TTM_PAGE_USER_DIRTY (1 << 7)
+#define DRM_TTM_PAGE_USER_DMA   (1 << 8)
 
 /***************************************************
  * Buffer objects. (drm_bo.c, drm_bo_move.c)
@@ -447,6 +459,7 @@ struct drm_buffer_manager {
 	uint32_t fence_type;
 	unsigned long cur_pages;
 	atomic_t count;
+	struct page *dummy_read_page;
 };
 
 struct drm_bo_driver {

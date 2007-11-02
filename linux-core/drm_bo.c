@@ -137,9 +137,9 @@ static int drm_bo_add_ttm(struct drm_buffer_object * bo)
 {
 	struct drm_device *dev = bo->dev;
 	int ret = 0;
-	bo->ttm = NULL;
 
 	DRM_ASSERT_LOCKED(&bo->mutex);
+	bo->ttm = NULL;
 
 	switch (bo->type) {
 	case drm_bo_type_dc:
@@ -149,6 +149,18 @@ static int drm_bo_add_ttm(struct drm_buffer_object * bo)
 			ret = -ENOMEM;
 		break;
 	case drm_bo_type_user:
+		bo->ttm = drm_ttm_init(dev, bo->num_pages << PAGE_SHIFT);
+		if (!bo->ttm)
+			ret = -ENOMEM;
+
+		ret = drm_ttm_set_user(bo->ttm, current,
+				       bo->mem.mask & DRM_BO_FLAG_WRITE,
+				       bo->buffer_start,
+				       bo->num_pages,
+				       dev->bm.dummy_read_page);
+		if (ret)
+			return ret;
+
 		break;
 	default:
 		DRM_ERROR("Illegal buffer object type\n");
@@ -784,12 +796,15 @@ static int drm_bo_mem_force_space(struct drm_device * dev,
 }
 
 static int drm_bo_mt_compatible(struct drm_mem_type_manager * man,
+				int disallow_fixed,
 				uint32_t mem_type,
 				uint64_t mask, uint32_t * res_mask)
 {
 	uint64_t cur_flags = drm_bo_type_flags(mem_type);
 	uint64_t flag_diff;
 
+	if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && disallow_fixed)
+		return 0;
 	if (man->flags & _DRM_FLAG_MEMTYPE_CACHED)
 		cur_flags |= DRM_BO_FLAG_CACHED;
 	if (man->flags & _DRM_FLAG_MEMTYPE_MAPPABLE)
@@ -854,7 +869,9 @@ int drm_bo_mem_space(struct drm_buffer_object * bo,
 		mem_type = prios[i];
 		man = &bm->man[mem_type];
 
-		type_ok = drm_bo_mt_compatible(man, mem_type, mem->mask,
+		type_ok = drm_bo_mt_compatible(man,
+					       bo->type == drm_bo_type_user,
+					       mem_type, mem->mask,
 					       &cur_flags);
 
 		if (!type_ok)
@@ -903,7 +920,11 @@ int drm_bo_mem_space(struct drm_buffer_object * bo,
 		if (!man->has_type)
 			continue;
 
-		if (!drm_bo_mt_compatible(man, mem_type, mem->mask, &cur_flags))
+		if (!drm_bo_mt_compatible(man,
+					  bo->type == drm_bo_type_user,
+					  mem_type,
+					  mem->mask,
+					  &cur_flags))
 			continue;
 
 		ret = drm_bo_mem_force_space(dev, mem, mem_type, no_wait);
@@ -928,8 +949,10 @@ static int drm_bo_new_mask(struct drm_buffer_object * bo,
 {
 	uint32_t new_props;
 
-	if (bo->type == drm_bo_type_user) {
-		DRM_ERROR("User buffers are not supported yet.\n");
+	if (bo->type == drm_bo_type_user &&
+	    ((used_mask & (DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING)) !=
+	     (DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING))) {
+		DRM_ERROR("User buffers require cache-coherent memory.\n");
 		return -EINVAL;
 	}
 
@@ -1120,7 +1143,12 @@ static void drm_bo_fill_rep_arg(struct drm_buffer_object * bo,
 	rep->flags = bo->mem.flags;
 	rep->size = bo->num_pages * PAGE_SIZE;
 	rep->offset = bo->offset;
-	rep->arg_handle = bo->map_list.user_token;
+
+	if (bo->type == drm_bo_type_dc)
+		rep->arg_handle = bo->map_list.user_token;
+	else
+		rep->arg_handle = 0;
+
 	rep->mask = bo->mem.mask;
 	rep->buffer_start = bo->buffer_start;
 	rep->fence_flags = bo->fence_type;
@@ -1619,10 +1647,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	int ret = 0;
 	unsigned long num_pages;
 
-	if (buffer_start & ~PAGE_MASK) {
-		DRM_ERROR("Invalid buffer object start.\n");
-		return -EINVAL;
-	}
+	size += buffer_start & ~PAGE_MASK;
 	num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 	if (num_pages == 0) {
 		DRM_ERROR("Illegal buffer object size.\n");
@@ -1648,23 +1673,20 @@ int drm_buffer_object_create(struct drm_device *dev,
 	INIT_LIST_HEAD(&bo->vma_list);
 #endif
 	bo->dev = dev;
-	if (buffer_start != 0)
-		bo->type = drm_bo_type_user;
-	else
-		bo->type = type;
+	bo->type = type;
 	bo->num_pages = num_pages;
 	bo->mem.mem_type = DRM_BO_MEM_LOCAL;
 	bo->mem.num_pages = bo->num_pages;
 	bo->mem.mm_node = NULL;
 	bo->mem.page_alignment = page_alignment;
-	bo->buffer_start = buffer_start;
+	bo->buffer_start = buffer_start & PAGE_MASK;
 	bo->priv_flags = 0;
-	bo->mem.flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED | 
+	bo->mem.flags = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED |
 		DRM_BO_FLAG_MAPPABLE;
 	bo->mem.mask = DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED |
 		DRM_BO_FLAG_MAPPABLE;
 	atomic_inc(&bm->count);
-	ret = drm_bo_new_mask(bo, mask, hint);
+	ret = drm_bo_new_mask(bo, mask, mask);
 	if (ret)
 		goto out_err;
 
@@ -1720,6 +1742,7 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 	struct drm_bo_create_req *req = &arg->d.req;
 	struct drm_bo_info_rep *rep = &arg->d.rep;
 	struct drm_buffer_object *entry;
+	enum drm_bo_type bo_type;
 	int ret = 0;
 
 	DRM_DEBUG("drm_bo_create_ioctl: %dkb, %dkb align\n",
@@ -1730,8 +1753,13 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 		return -EINVAL;
 	}
 
+	bo_type = (req->buffer_start) ? drm_bo_type_user : drm_bo_type_dc;
+
+	if (bo_type == drm_bo_type_user)
+		req->mask &= ~DRM_BO_FLAG_SHAREABLE;
+
 	ret = drm_buffer_object_create(file_priv->head->dev,
-				       req->size, drm_bo_type_dc, req->mask,
+				       req->size, bo_type, req->mask,
 				       req->hint, req->page_alignment,
 				       req->buffer_start, &entry);
 	if (ret)
@@ -2186,6 +2214,13 @@ int drm_bo_driver_finish(struct drm_device * dev)
 		DRM_DEBUG("Unfenced list was clean\n");
 	}
       out:
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
+	unlock_page(bm->dummy_read_page);
+#else
+	ClearPageReserved(bm->dummy_read_page);
+#endif
+	__free_page(bm->dummy_read_page);
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
@@ -2203,10 +2238,23 @@ int drm_bo_driver_init(struct drm_device * dev)
 	struct drm_buffer_manager *bm = &dev->bm;
 	int ret = -EINVAL;
 
+	bm->dummy_read_page = NULL;
 	drm_bo_init_lock(&bm->bm_lock);
 	mutex_lock(&dev->struct_mutex);
 	if (!driver)
 		goto out_unlock;
+
+	bm->dummy_read_page = alloc_page(__GFP_ZERO | GFP_DMA32);
+	if (!bm->dummy_read_page) {
+		ret = -ENOMEM;
+		goto out_unlock;
+	}
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
+	SetPageLocked(bm->dummy_read_page);
+#else
+	SetPageReserved(bm->dummy_read_page);
+#endif
 
 	/*
 	 * Initialize the system memory buffer type.
@@ -2462,11 +2510,15 @@ void drm_bo_unmap_virtual(struct drm_buffer_object * bo)
 
 static void drm_bo_takedown_vm_locked(struct drm_buffer_object * bo)
 {
-	struct drm_map_list *list = &bo->map_list;
+        struct drm_map_list *list;
 	drm_local_map_t *map;
 	struct drm_device *dev = bo->dev;
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
+	if (bo->type != drm_bo_type_dc)
+		return;
+
+	list = &bo->map_list;
 	if (list->user_token) {
 		drm_ht_remove_item(&dev->map_hash, &list->hash);
 		list->user_token = 0;
