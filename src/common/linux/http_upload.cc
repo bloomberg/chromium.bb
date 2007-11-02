@@ -61,12 +61,15 @@ bool HTTPUpload::SendRequest(const string &url,
                              const string &file_part_name,
                              const string &proxy,
                              const string &proxy_user_pwd,
-                             string *response_body) {
+                             string *response_body,
+                             string *error_description) {
   if (!CheckParameters(parameters))
     return false;
 
   CURL *curl = curl_easy_init();
   CURLcode err_code = CURLE_OK;
+  if (error_description != NULL)
+    *error_description = "No Error";
 
   if (curl) {
     curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
@@ -114,6 +117,8 @@ bool HTTPUpload::SendRequest(const string &url,
               url.c_str(),
               curl_easy_strerror(err_code));
 #endif
+    if (error_description != NULL)
+      *error_description = curl_easy_strerror(err_code);
 
     if (curl != NULL)
       curl_easy_cleanup(curl);
