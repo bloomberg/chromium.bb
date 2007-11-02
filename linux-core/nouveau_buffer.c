@@ -24,17 +24,29 @@
 /*
  * Authors: Dave Airlied <airlied@linux.ie>
  *	    Jeremy Kolb <jkolb@brandeis.edu>
+ *	    Ben Skeggs
  */
 
 #include "drmP.h"
 #include "nouveau_drm.h"
 #include "nouveau_drv.h"
-
-#ifdef NOUVEAU_HAVE_BUFFER
+#include "nouveau_dma.h"
 
 struct drm_ttm_backend *nouveau_create_ttm_backend_entry(struct drm_device * dev)
 {
-	return drm_agp_init_ttm(dev);
+        struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+        switch (dev_priv->gart_info.type) {
+                case NOUVEAU_GART_AGP:
+                        return drm_agp_init_ttm(dev);
+                case NOUVEAU_GART_SGDMA:
+                        return nouveau_sgdma_init_ttm(dev);
+                default:
+                        DRM_ERROR("Unknown GART type %d\n", dev_priv->gart_info.type);
+                        break;
+        }
+
+        return NULL;
 }
 
 int nouveau_fence_types(struct drm_buffer_object *bo,
@@ -57,46 +69,67 @@ int nouveau_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags)
 }
 
 int nouveau_init_mem_type(struct drm_device *dev,
-			  uint32_t type,
-			  struct drm_mem_type_manager *man)
+                          uint32_t type,
+                          struct drm_mem_type_manager *man)
 {
-	switch (type) {
-		case DRM_BO_MEM_LOCAL:
-			man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-				_DRM_FLAG_MEMTYPE_CACHED;
-			man->drm_bus_maptype = 0;
-			break;
+        struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-		case DRM_BO_MEM_VRAM:
-			man->flags = _DRM_FLAG_MEMTYPE_FIXED |
-				_DRM_FLAG_MEMTYPE_MAPPABLE |
-				_DRM_FLAG_NEEDS_IOREMAP;
-			man->io_addr = NULL;
-			man->drm_bus_maptype = _DRM_FRAME_BUFFER;
-			man->io_offset = drm_get_resource_start(dev, 0);
-			man->io_size = drm_get_resource_len(dev, 0);
-			break;
+        switch (type) {
+                case DRM_BO_MEM_LOCAL:
+                        man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+                                     _DRM_FLAG_MEMTYPE_CACHED;
+                        man->drm_bus_maptype = 0;
+                        break;
 
-		case DRM_BO_MEM_TT:
-			if (!(drm_core_has_AGP(dev) && dev->agp)) {
-				DRM_ERROR("AGP is not enabled for memory type %u\n",
-						(unsigned)type);
-				return -EINVAL;
-			}
+                case DRM_BO_MEM_VRAM:
+                        man->flags = _DRM_FLAG_MEMTYPE_FIXED |
+                                     _DRM_FLAG_MEMTYPE_MAPPABLE |
+                                     _DRM_FLAG_NEEDS_IOREMAP;
+                        man->io_addr = NULL;
+                        man->drm_bus_maptype = _DRM_FRAME_BUFFER;
+                        man->io_offset = drm_get_resource_start(dev, 0);
+                        man->io_size = drm_get_resource_len(dev, 0);
+                        break;
 
-			man->io_offset = dev->agp->agp_info.aper_base;
-			man->io_size = dev->agp->agp_info.aper_size * 1024 * 1024;
-			man->io_addr = NULL;
-			man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-				_DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
-			man->drm_bus_maptype = _DRM_AGP;
-			break;
+                case DRM_BO_MEM_PRIV0:
+                        /* Unmappable VRAM */                   
+                        man->flags = _DRM_FLAG_MEMTYPE_CMA;
+                        man->drm_bus_maptype = 0;
+                        break;
 
-		default:
-			DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);
-			return -EINVAL;
-	}
-	return 0;
+                case DRM_BO_MEM_TT:
+                        switch (dev_priv->gart_info.type) {
+                                case NOUVEAU_GART_AGP:
+                                        man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+                                                     _DRM_FLAG_MEMTYPE_CSELECT |
+                                                     _DRM_FLAG_NEEDS_IOREMAP;
+                                        man->drm_bus_maptype = _DRM_AGP;
+                                        break;
+
+                                case NOUVEAU_GART_SGDMA:
+                                        man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+                                                     _DRM_FLAG_MEMTYPE_CSELECT |
+                                                     _DRM_FLAG_MEMTYPE_CMA;
+                                        man->drm_bus_maptype = _DRM_SCATTER_GATHER;
+                                        break;
+
+                                default:
+                                        DRM_ERROR("Unknown GART type: %d\n",
+                                                        dev_priv->gart_info.type);
+                                        return -EINVAL;
+                        }
+
+                        man->io_offset  = dev_priv->gart_info.aper_base;
+                        man->io_size    = dev_priv->gart_info.aper_size;
+                        man->io_addr   = NULL;
+                        break;
+
+
+                default:
+                        DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);
+                        return -EINVAL;
+        }
+        return 0;
 }
 
 uint32_t nouveau_evict_mask(struct drm_buffer_object *bo)
@@ -105,91 +138,63 @@ uint32_t nouveau_evict_mask(struct drm_buffer_object *bo)
 		case DRM_BO_MEM_LOCAL:
 		case DRM_BO_MEM_TT:
 			return DRM_BO_FLAG_MEM_LOCAL;
-		case DRM_BO_MEM_VRAM:
-			if (bo->mem.num_pages > 128)
-				return DRM_BO_MEM_TT;
-			else
-				return DRM_BO_MEM_LOCAL;
 		default:
 			return DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED;
 	}
-
+	return 0;
 }
 
-static void nouveau_emit_copy_blit(struct drm_device * dev,
-				   uint32_t src_offset,
-				   uint32_t dst_offset,
-				   uint32_t pages, int direction)
-{
-	return;
-}
-
-static int nouveau_move_blit(struct drm_buffer_object *bo,
-			     int evict,
-			     int no_wait,
-			     struct drm_bo_mem_reg *new_mem)
-{
-	struct drm_bo_mem_reg *old_mem = &bo->mem;
-	int dir = 0;
-
-	if ((old_mem->mem_type == new_mem->mem_type) &&
-	    (new_mem->mm_node->start < 
-	     old_mem->mm_node->start + old_mem->mm_node->size)) {
-		dir = 1;
-	}
-
-	nouveau_emit_copy_blit(bo->dev,
-			       old_mem->mm_node->start << PAGE_SHIFT,
-			       new_mem->mm_node->start << PAGE_SHIFT,
-			       new_mem->num_pages, dir);
-	
-	/* we don't need to cleanup out mess because our fences
-	 * are from userland. so this cleanup call is probably wrong.
-	 */
-	return drm_bo_move_accel_cleanup(bo, evict, no_wait, 0,
-					 DRM_FENCE_TYPE_EXE,
-					 0,
-					 new_mem);
-	
-}
-
-static int nouveau_move_flip(struct drm_buffer_object *bo,
-			     int evict,
-			     int no_wait,
-			     struct drm_bo_mem_reg *new_mem)
+/* GPU-assisted copy using NV_MEMORY_TO_MEMORY_FORMAT, can access
+ * DRM_BO_MEM_{VRAM,PRIV0,TT} directly.
+ */
+static int
+nouveau_bo_move_m2mf(struct drm_buffer_object *bo, int evict, int no_wait,
+		struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_device *dev = bo->dev;
-	struct drm_bo_mem_reg tmp_mem;
-	int ret;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_drm_channel *dchan = &dev_priv->channel;
+	struct drm_bo_mem_reg *old_mem = &bo->mem;
+	uint32_t srch, dsth, page_count;
 
-	tmp_mem = *new_mem;
-	tmp_mem.mm_node = NULL;
-	tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
-		DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING;
+	/* Can happen during init/takedown */
+	if (!dchan->chan)
+		return -EINVAL;
 
-	ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
-	if (ret)
-		return ret;
+	srch = old_mem->mem_type == DRM_BO_MEM_TT ? NvDmaTT : NvDmaFB;
+	dsth = new_mem->mem_type == DRM_BO_MEM_TT ? NvDmaTT : NvDmaFB;
+	if (srch != dchan->m2mf_dma_source || dsth != dchan->m2mf_dma_destin) {
+		dchan->m2mf_dma_source = srch;
+		dchan->m2mf_dma_destin = dsth;
 
-	ret = drm_bind_ttm(bo->ttm, tmp_mem.mm_node->start);
-	if (ret)
-		goto out_cleanup;
-
-	ret = nouveau_move_blit(bo, 1, no_wait, &tmp_mem);
-	if (ret)
-		goto out_cleanup;
-
-	ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
-
-out_cleanup:
-	if (tmp_mem.mm_node) {
-		mutex_lock(&dev->struct_mutex);
-		if (tmp_mem.mm_node != bo->pinned_node)
-			drm_mm_put_block(tmp_mem.mm_node);
-		tmp_mem.mm_node = NULL;
-		mutex_unlock(&dev->struct_mutex);
+		BEGIN_RING(NvSubM2MF,
+				NV_MEMORY_TO_MEMORY_FORMAT_SET_DMA_SOURCE, 2);
+		OUT_RING  (dchan->m2mf_dma_source);
+		OUT_RING  (dchan->m2mf_dma_destin);
 	}
-	return ret;
+
+	page_count = new_mem->num_pages;
+	while (page_count) {
+		int line_count = (page_count > 2047) ? 2047 : page_count;
+
+		BEGIN_RING(NvSubM2MF, NV_MEMORY_TO_MEMORY_FORMAT_OFFSET_IN, 8);
+		OUT_RING  (old_mem->mm_node->start << PAGE_SHIFT);
+		OUT_RING  (new_mem->mm_node->start << PAGE_SHIFT);
+		OUT_RING  (PAGE_SIZE); /* src_pitch */
+		OUT_RING  (PAGE_SIZE); /* dst_pitch */
+		OUT_RING  (PAGE_SIZE); /* line_length */
+		OUT_RING  (line_count);
+		OUT_RING  ((1<<8)|(1<<0));
+		OUT_RING  (0);
+		BEGIN_RING(NvSubM2MF, NV_MEMORY_TO_MEMORY_FORMAT_NOP, 1);
+		OUT_RING  (0);
+
+		page_count -= line_count;
+	}
+
+	return drm_bo_move_accel_cleanup(bo, evict, no_wait, 0,
+			DRM_FENCE_TYPE_EXE,
+			0, new_mem);
 }
 
 int nouveau_move(struct drm_buffer_object *bo,
@@ -199,17 +204,22 @@ int nouveau_move(struct drm_buffer_object *bo,
 {
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
-	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		/* local to VRAM */
-		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+	if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		if (old_mem->mem_type == DRM_BO_MEM_LOCAL)
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
+#if 0
+		if (!nouveau_bo_move_flipd(bo, evict, no_wait, new_mem))
+#endif
+			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
-	else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		/* VRAM to local */
-		/*if (nouveau_move_flip(bo, evict, no_wait, new_mem))*/
+	else if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
+#if 0
+		if (nouveau_bo_move_flips(bo, evict, no_wait, new_mem))
+#endif
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	else {
-		/*if (nouveau_move_blit(bo, evict, no_wait, new_mem))*/
+		if (nouveau_bo_move_m2mf(bo, evict, no_wait, new_mem))
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
@@ -220,4 +230,3 @@ void nouveau_flush_ttm(struct drm_ttm *ttm)
 
 }
 
-#endif
