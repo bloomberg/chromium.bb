@@ -2432,7 +2432,7 @@ int drmFenceFlush(int fd, drmFence *fence, unsigned flush_type)
     fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
-    return 0;
+    return arg.error;
 }
 
 int drmFenceUpdate(int fd, drmFence *fence)
@@ -2495,7 +2495,50 @@ int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
  * DRM_FENCE_FLAG_WAIT_LAZY
  * DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS
  */
+
+#define DRM_IOCTL_TIMEOUT_USEC 3000000UL
+
+static unsigned long
+drmTimeDiff(struct timeval *now, struct timeval *then)
+{
+    uint64_t val;
+
+    val = now->tv_sec - then->tv_sec;
+    val *= 1000000LL;
+    val += now->tv_usec;
+    val -= then->tv_usec;
+
+    return (unsigned long) val;
+}
+
+static int
+drmIoctlTimeout(int fd, unsigned long request, void *argp)
+{
+    int haveThen = 0;
+    struct timeval then, now;
+    int ret;
+
+    do {
+	ret = ioctl(fd, request, argp);
+	if (ret != 0 && errno == EAGAIN) {
+	    if (!haveThen) {
+		gettimeofday(&then, NULL);
+		haveThen = 1;
+	    }
+	    gettimeofday(&now, NULL);
+	}
+    } while (ret != 0 && errno == EAGAIN && 
+	     drmTimeDiff(&now, &then) < DRM_IOCTL_TIMEOUT_USEC);
     
+    if (ret != 0)
+	return ((errno == EAGAIN) ? -EBUSY : -errno);
+
+    return 0;
+}
+    
+	
+
+
 int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
 {
     drm_fence_arg_t arg;
@@ -2516,17 +2559,15 @@ int drmFenceWait(int fd, unsigned flags, drmFence *fence, unsigned flush_type)
     arg.type = flush_type;
     arg.flags = flags;
 
-    do {
-	ret = ioctl(fd, DRM_IOCTL_FENCE_WAIT, &arg);
-    } while (ret != 0 && errno == EAGAIN);
 
+    ret = drmIoctlTimeout(fd, DRM_IOCTL_FENCE_WAIT, &arg);
     if (ret)
-	return -errno;
+	return ret;
 
     fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
-    return 0;
+    return arg.error;
 }    
 
 static void drmBOCopyReply(const struct drm_bo_info_rep *rep, drmBO *buf)
@@ -2568,12 +2609,9 @@ int drmBOCreate(int fd, unsigned long size,
 
     buf->virtual = NULL;
 
-    do {
-	ret = ioctl(fd, DRM_IOCTL_BO_CREATE, &arg);
-    } while (ret != 0 && errno == EAGAIN);
-
+    ret = drmIoctlTimeout(fd, DRM_IOCTL_BO_CREATE, &arg);
     if (ret)
-	return -errno;
+	return ret;
     
     drmBOCopyReply(rep, buf);
     buf->mapVirtual = NULL;
@@ -2665,12 +2703,9 @@ int drmBOMap(int fd, drmBO *buf, unsigned mapFlags, unsigned mapHint,
      * This IOCTL synchronizes the buffer.
      */
     
-    do {
-	ret = ioctl(fd, DRM_IOCTL_BO_MAP, &arg);
-    } while (ret != 0 && errno == EAGAIN);
-
-    if (ret) 
-	return -errno;
+    ret = drmIoctlTimeout(fd, DRM_IOCTL_BO_MAP, &arg);
+    if (ret)
+	return ret;
 
     drmBOCopyReply(rep, buf);	
     buf->mapFlags = mapFlags;
@@ -2715,14 +2750,12 @@ int drmBOSetStatus(int fd, drmBO *buf,
     req->desired_tile_stride = desired_tile_stride;
     req->tile_info = tile_info;
     
-    do {
-	    ret = ioctl(fd, DRM_IOCTL_BO_SETSTATUS, &arg);
-    } while (ret && errno == EAGAIN);
-
+    ret = drmIoctlTimeout(fd, DRM_IOCTL_BO_SETSTATUS, &arg);
     if (ret) 
-	    return -errno;
+	    return ret;
 
     drmBOCopyReply(rep, buf);
+    return 0;
 }
 	    
 
@@ -2757,12 +2790,9 @@ int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
 	req->handle = buf->handle;
 	req->hint = hint;
 
-	do {
-	    ret = ioctl(fd, DRM_IOCTL_BO_WAIT_IDLE, &arg);
-	} while (ret && errno == EAGAIN);
-
+	ret = drmIoctlTimeout(fd, DRM_IOCTL_BO_WAIT_IDLE, &arg);
 	if (ret) 
-	    return -errno;
+	    return ret;
 
 	drmBOCopyReply(rep, buf);
     }
@@ -2824,35 +2854,25 @@ int drmMMTakedown(int fd, unsigned memType)
 int drmMMLock(int fd, unsigned memType, int lockBM, int ignoreNoEvict)
 {
     struct drm_mm_type_arg arg;
-    int ret;
 
     memset(&arg, 0, sizeof(arg));
     arg.mem_type = memType;
     arg.lock_flags |= (lockBM) ? DRM_BO_LOCK_UNLOCK_BM : 0;
     arg.lock_flags |= (ignoreNoEvict) ? DRM_BO_LOCK_IGNORE_NO_EVICT : 0;
 
-    do{
-        ret = ioctl(fd, DRM_IOCTL_MM_LOCK, &arg);
-    } while (ret && errno == EAGAIN);
-
-    return (ret) ? -errno : 0;
+    return drmIoctlTimeout(fd, DRM_IOCTL_MM_LOCK, &arg);
 }
 
 int drmMMUnlock(int fd, unsigned memType, int unlockBM)
 {
     struct drm_mm_type_arg arg;
-    int ret;
 
     memset(&arg, 0, sizeof(arg));
     
     arg.mem_type = memType;
     arg.lock_flags |= (unlockBM) ? DRM_BO_LOCK_UNLOCK_BM : 0;
 
-    do{
-	ret = ioctl(fd, DRM_IOCTL_MM_UNLOCK, &arg);
-    } while (ret && errno == EAGAIN);
-
-    return (ret) ? -errno : 0;
+    return drmIoctlTimeout(fd, DRM_IOCTL_MM_UNLOCK, &arg);
 }
 
 int drmBOVersion(int fd, unsigned int *major,
