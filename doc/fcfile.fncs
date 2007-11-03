@@ -36,7 +36,8 @@ Scans a single file and adds all fonts found to <parameter>set</parameter>.
 If <parameter>force</parameter> is FcTrue, then the file is scanned even if
 associated information is found in <parameter>cache</parameter>.  If
 <parameter>file</parameter> is a directory, it is added to
-<parameter>dirs</parameter>.
+<parameter>dirs</parameter>. Whether fonts are found depends on fontconfig
+poliy as well as the current configuration.
 @@
 
 @RET@		FcBool 	
@@ -53,7 +54,9 @@ Scans an entire directory and adds all fonts found to
 <parameter>set</parameter>.  If <parameter>force</parameter> is FcTrue, then
 the directory and all files within it are scanned even if information is
 present in the per-directory cache file or <parameter>cache</parameter>.  Any
-subdirectories found are added to <parameter>dirs</parameter>.
+subdirectories found are added to <parameter>dirs</parameter>. Whether fonts
+or directories are found depends on fontconfig
+policy as well as the current configuration.
 @@
 
 @RET@		FcBool 	
