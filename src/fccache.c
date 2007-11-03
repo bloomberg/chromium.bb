@@ -559,7 +559,10 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
 {
     int	fd;
     FcCache *cache;
+    struct stat	my_file_stat;
 
+    if (!file_stat)
+	file_stat = &my_file_stat;
     fd = FcDirCacheOpenFile (cache_file, file_stat);
     if (fd < 0)
 	return NULL;
