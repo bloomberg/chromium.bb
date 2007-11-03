@@ -61,8 +61,8 @@ Returns the current default configuration.
 @TYPE1@         FcConfig *                      @ARG1@          config
 @PURPOSE@	Check timestamps on config files
 @DESC@
-Checks all of the files related to <parameter>config</parameter> and returns whether the
-in-memory version is in sync with the disk version.
+Checks all of the files related to <parameter>config</parameter> and returns
+whether any of them has been modified since the configuration was created.
 @@
 
 @RET@           FcBool
