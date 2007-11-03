@@ -38,9 +38,9 @@ a consistent and complete file without the need to lock for reading.
 @TYPE1@         FcAtomic *                      @ARG1@          atomic
 @PURPOSE@	lock a file
 @DESC@
-Attempts to lock the file referenced by <parameter>atomic</parameter>.  Returns FcFalse if the
-file is locked by another process, else returns FcTrue and leaves the file
-locked.
+Attempts to lock the file referenced by <parameter>atomic</parameter>.
+Returns FcFalse if the file is already locked, else returns FcTrue and
+leaves the file locked.
 @@
 
 @RET@           FcChar8 *
