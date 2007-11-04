@@ -63,13 +63,16 @@ DOC_FUNCS_FNCS=\
 DOC_FUNCS_SGML=\
 	fcatomic.sgml \
 	fcblanks.sgml \
+	fccache.sgml \
 	fccharset.sgml \
 	fcconfig.sgml \
 	fcconstant.sgml \
+	fcdircache.sgml \
 	fcfile.sgml \
 	fcfontset.sgml \
 	fcfreetype.sgml \
 	fcinit.sgml \
+	fclangset.sgml \
 	fcmatrix.sgml \
 	fcobjectset.sgml \
 	fcobjecttype.sgml \
