@@ -150,13 +150,13 @@ FcLangCompare (const FcChar8 *s1, const FcChar8 *s2)
 	if (c1 != c2)
 	{
 	    if (FcLangEnd (c1) && FcLangEnd (c2))
-		result = FcLangDifferentCountry;
+		result = FcLangDifferentTerritory;
 	    return result;
 	}
 	else if (!c1)
 	    return FcLangEqual;
 	else if (c1 == '-')
-	    result = FcLangDifferentCountry;
+	    result = FcLangDifferentTerritory;
     }
 }
 
@@ -206,7 +206,7 @@ FcCharSetForLang (const FcChar8 *lang)
 	switch (FcLangCompare (lang, fcLangCharSets[i].lang)) {
 	case FcLangEqual:
 	    return &fcLangCharSets[i].charset;
-	case FcLangDifferentCountry:
+	case FcLangDifferentTerritory:
 	    if (country == -1)
 		country = i;
 	default:
@@ -437,7 +437,7 @@ FcLangSetCompare (const FcLangSet *lsa, const FcLangSet *lsb)
 	    if ((lsa->map[i] & fcLangCountrySets[j][i]) &&
 		(lsb->map[i] & fcLangCountrySets[j][i]))
 	    {
-		best = FcLangDifferentCountry;
+		best = FcLangDifferentTerritory;
 		break;
 	    }
     if (lsa->extra)
