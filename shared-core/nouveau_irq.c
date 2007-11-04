@@ -298,16 +298,14 @@ static inline void
 nouveau_pgraph_intr_notify(struct drm_device *dev, uint32_t nsource)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	int handled = 0;
-
-	DRM_DEBUG("PGRAPH notify interrupt\n");
+	int unhandled = 0;
 
 	if (nsource & NV03_PGRAPH_NSOURCE_NOTIFICATION && dev_priv->ttm) {
 		int channel;
-		if (!nouveau_graph_trapped_channel(dev, &channel))
+		if (!nouveau_graph_trapped_channel(dev, &channel)) {
 			nouveau_fence_handler(dev, channel);
-	}
-
+		}
+	} else
 	if (dev_priv->card_type == NV_04 &&
 	    (nsource & NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD)) {
 		uint32_t class, mthd;
@@ -324,12 +322,13 @@ nouveau_pgraph_intr_notify(struct drm_device *dev, uint32_t nsource)
 			DRM_ERROR("Unable to execute NV04 software method %x "
 				  "for object class %x. Please report.\n",
 				  mthd, class);
-		} else {
-			handled = 1;
+			unhandled = 1;
 		}
+	} else {
+		unhandled = 1;
 	}
 
-	if (!handled)
+	if (unhandled)
 		nouveau_graph_dump_trap_info(dev, "PGRAPH_NOTIFY");
 }
 
