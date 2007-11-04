@@ -54,7 +54,8 @@ static int
 nouveau_bo_fence_type(struct drm_buffer_object *bo,
 		      uint32_t *fclass, uint32_t *type)
 {
-	*fclass = 0;
+	/* When we get called, *fclass is set to the requested fence class */
+
 	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
@@ -216,7 +217,7 @@ nouveau_bo_move(struct drm_buffer_object *bo, int evict, int no_wait,
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	else {
-		if (nouveau_bo_move_m2mf(bo, evict, no_wait, new_mem))
+//		if (nouveau_bo_move_m2mf(bo, evict, no_wait, new_mem))
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
