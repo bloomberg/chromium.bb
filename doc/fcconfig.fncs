@@ -121,7 +121,6 @@ filesystem.
 @PURPOSE@	Get config files
 @DESC@
 Returns the list of known configuration files used to generate <parameter>config</parameter>.
-Note that this will not include any configuration done with FcConfigParse.
 @@
 
 @RET@           char *
@@ -319,6 +318,6 @@ FC_CONFIG_DIR environment variable.
 @DESC@
 Walks the configuration in 'file' and constructs the internal representation
 in 'config'.  Any include files referenced from within 'file' will be loaded
-with FcConfigLoad and also parsed.  If 'complain' is FcFalse, no warning
+and parsed.  If 'complain' is FcFalse, no warning
 will be displayed if 'file' does not exist.
 @@
