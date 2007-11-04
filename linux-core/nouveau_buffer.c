@@ -35,19 +35,19 @@
 static struct drm_ttm_backend *
 nouveau_bo_create_ttm_backend_entry(struct drm_device * dev)
 {
-        struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-        switch (dev_priv->gart_info.type) {
-                case NOUVEAU_GART_AGP:
-                        return drm_agp_init_ttm(dev);
-                case NOUVEAU_GART_SGDMA:
-                        return nouveau_sgdma_init_ttm(dev);
-                default:
-                        DRM_ERROR("Unknown GART type %d\n", dev_priv->gart_info.type);
-                        break;
-        }
+	switch (dev_priv->gart_info.type) {
+	case NOUVEAU_GART_AGP:
+		return drm_agp_init_ttm(dev);
+	case NOUVEAU_GART_SGDMA:
+		return nouveau_sgdma_init_ttm(dev);
+	default:
+		DRM_ERROR("Unknown GART type %d\n", dev_priv->gart_info.type);
+		break;
+	}
 
-        return NULL;
+	return NULL;
 }
 
 static int
@@ -75,75 +75,70 @@ static int
 nouveau_bo_init_mem_type(struct drm_device *dev, uint32_t type,
 			 struct drm_mem_type_manager *man)
 {
-        struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-        switch (type) {
-                case DRM_BO_MEM_LOCAL:
-                        man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-                                     _DRM_FLAG_MEMTYPE_CACHED;
-                        man->drm_bus_maptype = 0;
-                        break;
+	switch (type) {
+	case DRM_BO_MEM_LOCAL:
+		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+			     _DRM_FLAG_MEMTYPE_CACHED;
+		man->drm_bus_maptype = 0;
+		break;
+	case DRM_BO_MEM_VRAM:
+		man->flags = _DRM_FLAG_MEMTYPE_FIXED |
+			     _DRM_FLAG_MEMTYPE_MAPPABLE |
+			     _DRM_FLAG_NEEDS_IOREMAP;
+		man->io_addr = NULL;
+		man->drm_bus_maptype = _DRM_FRAME_BUFFER;
+		man->io_offset = drm_get_resource_start(dev, 1);
+		man->io_size = drm_get_resource_len(dev, 1);
+		if (man->io_size > nouveau_mem_fb_amount(dev))
+			man->io_size = nouveau_mem_fb_amount(dev);
+		break;
+	case DRM_BO_MEM_PRIV0:
+		/* Unmappable VRAM */		   
+		man->flags = _DRM_FLAG_MEMTYPE_CMA;
+		man->drm_bus_maptype = 0;
+		break;
+	case DRM_BO_MEM_TT:
+		switch (dev_priv->gart_info.type) {
+		case NOUVEAU_GART_AGP:
+			man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+				     _DRM_FLAG_MEMTYPE_CSELECT |
+				     _DRM_FLAG_NEEDS_IOREMAP;
+			man->drm_bus_maptype = _DRM_AGP;
+			break;
+		case NOUVEAU_GART_SGDMA:
+			man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
+				     _DRM_FLAG_MEMTYPE_CSELECT |
+				     _DRM_FLAG_MEMTYPE_CMA;
+			man->drm_bus_maptype = _DRM_SCATTER_GATHER;
+			break;
+		default:
+			DRM_ERROR("Unknown GART type: %d\n",
+				  dev_priv->gart_info.type);
+			return -EINVAL;
+		}
 
-                case DRM_BO_MEM_VRAM:
-                        man->flags = _DRM_FLAG_MEMTYPE_FIXED |
-                                     _DRM_FLAG_MEMTYPE_MAPPABLE |
-                                     _DRM_FLAG_NEEDS_IOREMAP;
-                        man->io_addr = NULL;
-                        man->drm_bus_maptype = _DRM_FRAME_BUFFER;
-                        man->io_offset = drm_get_resource_start(dev, 0);
-                        man->io_size = drm_get_resource_len(dev, 0);
-                        break;
-
-                case DRM_BO_MEM_PRIV0:
-                        /* Unmappable VRAM */                   
-                        man->flags = _DRM_FLAG_MEMTYPE_CMA;
-                        man->drm_bus_maptype = 0;
-                        break;
-
-                case DRM_BO_MEM_TT:
-                        switch (dev_priv->gart_info.type) {
-                                case NOUVEAU_GART_AGP:
-                                        man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-                                                     _DRM_FLAG_MEMTYPE_CSELECT |
-                                                     _DRM_FLAG_NEEDS_IOREMAP;
-                                        man->drm_bus_maptype = _DRM_AGP;
-                                        break;
-
-                                case NOUVEAU_GART_SGDMA:
-                                        man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-                                                     _DRM_FLAG_MEMTYPE_CSELECT |
-                                                     _DRM_FLAG_MEMTYPE_CMA;
-                                        man->drm_bus_maptype = _DRM_SCATTER_GATHER;
-                                        break;
-
-                                default:
-                                        DRM_ERROR("Unknown GART type: %d\n",
-                                                        dev_priv->gart_info.type);
-                                        return -EINVAL;
-                        }
-
-                        man->io_offset  = dev_priv->gart_info.aper_base;
-                        man->io_size    = dev_priv->gart_info.aper_size;
-                        man->io_addr   = NULL;
-                        break;
-
-
-                default:
-                        DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);
-                        return -EINVAL;
-        }
-        return 0;
+		man->io_offset  = dev_priv->gart_info.aper_base;
+		man->io_size    = dev_priv->gart_info.aper_size;
+		man->io_addr   = NULL;
+		break;
+	default:
+		DRM_ERROR("Unsupported memory type %u\n", (unsigned)type);
+		return -EINVAL;
+	}
+	return 0;
 }
 
 static uint32_t
 nouveau_bo_evict_mask(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
-		case DRM_BO_MEM_LOCAL:
-		case DRM_BO_MEM_TT:
-			return DRM_BO_FLAG_MEM_LOCAL;
-		default:
-			return DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED;
+	case DRM_BO_MEM_LOCAL:
+	case DRM_BO_MEM_TT:
+		return DRM_BO_FLAG_MEM_LOCAL;
+	default:
+		return DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED;
 	}
 	return 0;
 }
@@ -215,7 +210,8 @@ nouveau_bo_move(struct drm_buffer_object *bo, int evict, int no_wait,
 #endif
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
-	else if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
+	else
+	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 #if 0
 		if (nouveau_bo_move_flips(bo, evict, no_wait, new_mem))
 #endif
@@ -234,16 +230,16 @@ nouveau_bo_flush_ttm(struct drm_ttm *ttm)
 }
 
 static uint32_t nouveau_mem_prios[]  = {
-        DRM_BO_MEM_PRIV0,
-        DRM_BO_MEM_VRAM,
-        DRM_BO_MEM_TT,
-        DRM_BO_MEM_LOCAL
+	DRM_BO_MEM_PRIV0,
+	DRM_BO_MEM_VRAM,
+	DRM_BO_MEM_TT,
+	DRM_BO_MEM_LOCAL
 };
 static uint32_t nouveau_busy_prios[] = {
-        DRM_BO_MEM_TT,
-        DRM_BO_MEM_PRIV0,
-        DRM_BO_MEM_VRAM,
-        DRM_BO_MEM_LOCAL
+	DRM_BO_MEM_TT,
+	DRM_BO_MEM_PRIV0,
+	DRM_BO_MEM_VRAM,
+	DRM_BO_MEM_LOCAL
 };
 
 struct drm_bo_driver nouveau_bo_driver = {
