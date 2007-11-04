@@ -535,6 +535,22 @@ FcConfigSetRescanInterval (FcConfig *config, int rescanInterval)
     return FcTrue;
 }
 
+/*
+ * A couple of typos escaped into the library
+ */
+int
+FcConfigGetRescanInverval (FcConfig *config)
+{
+    return FcConfigGetRescanInterval (config);
+}
+
+FcBool
+FcConfigSetRescanInverval (FcConfig *config, int rescanInterval)
+{
+    return FcConfigSetRescanInterval (config, rescanInterval);
+}
+
+    
 FcBool
 FcConfigAddEdit (FcConfig	*config,
 		 FcTest		*test,

@@ -79,7 +79,7 @@ INCLUDES = 						\
 
 EXTRA_DIST = makealias
 
-noinst_HEADERS=fcint.h
+noinst_HEADERS=fcint.h fcdeprecate.h
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
@@ -124,7 +124,8 @@ uninstall-local: uninstall-ms-import-lib uninstall-libtool-import-lib
 
 PUBLIC_FILES = \
 	$(top_srcdir)/fontconfig/fontconfig.h \
-	$(top_srcdir)/fontconfig/fcfreetype.h
+	$(top_srcdir)/fontconfig/fcfreetype.h \
+	$(top_srcdir)/src/fcdeprecate.h
 	
 fcaliastail.h: fcalias.h
 

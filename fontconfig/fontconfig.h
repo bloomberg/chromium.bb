@@ -919,4 +919,17 @@ _FCFUNCPROTOEND
 
 #undef FC_ATTRIBUTE_SENTINEL
 
+
+#ifndef _FCINT_H_
+
+/*
+ * Deprecated functions are placed here to help users fix their code without
+ * digging through documentation
+ */
+ 
+#define FcConfigGetRescanInverval   FcConfigGetRescanInverval_REPLACE_BY_FcConfigGetRescanInterval
+#define FcConfigSetRescanInverval   FcConfigSetRescanInverval_REPLACE_BY_FcConfigSetRescanInterval
+
+#endif
+
 #endif /* _FONTCONFIG_H_ */
