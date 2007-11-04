@@ -255,7 +255,6 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
     FcBool	ret = FcTrue;
     FcBool	remove;
     FcCache	*cache;
-    struct stat	file_stat;
     struct stat	target_stat;
 
     dir_base = FcStrPlus (dir, (FcChar8 *) "/");
@@ -302,7 +301,7 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 	    break;
 	}
 	remove = FcFalse;
-	cache = FcDirCacheLoadFile (file_name, &file_stat);
+	cache = FcDirCacheLoadFile (file_name, NULL);
 	if (!cache)
 	{
 	    if (verbose)
@@ -316,13 +315,6 @@ cleanCacheDirectory (FcConfig *config, FcChar8 *dir, FcBool verbose)
 	    {
 		if (verbose)
 		    printf ("%s: %s: missing directory: %s \n",
-			    dir, ent->d_name, target_dir);
-		remove = FcTrue;
-	    }
-	    else if (target_stat.st_mtime > file_stat.st_mtime)
-	    {
-		if (verbose)
-		    printf ("%s: %s: cache outdated: %s\n",
 			    dir, ent->d_name, target_dir);
 		remove = FcTrue;
 	    }
