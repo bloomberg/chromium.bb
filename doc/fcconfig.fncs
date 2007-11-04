@@ -127,9 +127,10 @@ Note that this will not include any configuration done with FcConfigParse.
 @RET@           char *
 @FUNC@          FcConfigGetCache
 @TYPE1@         FcConfig *                      @ARG1@          config
-@PURPOSE@	Get cache filename
+@PURPOSE@	DEPRECATED used to return per-user cache filename
 @DESC@
-Returns the name of the file used to store per-user font information.
+With fontconfig no longer using per-user cache files, this function now
+simply returns NULL to indicate that no per-user file exists.
 @@
 
 @RET@		FcStrList *
