@@ -228,7 +228,6 @@ typedef struct _FcValue {
 	const FcMatrix	*m;
 	const FcCharSet	*c;
 	void		*f;
-	const FcPattern	*p;
 	const FcLangSet	*l;
     } u;
 } FcValue;
@@ -250,7 +249,10 @@ typedef enum _FcMatchKind {
 } FcMatchKind;
 
 typedef enum _FcLangResult {
-    FcLangEqual, FcLangDifferentCountry, FcLangDifferentLang
+    FcLangEqual = 0,
+    FcLangDifferentCountry = 1,
+    FcLangDifferentTerritory = 1,
+    FcLangDifferentLang = 2
 } FcLangResult;
 
 typedef enum _FcSetName {
@@ -367,10 +369,10 @@ FcPublic FcStrList *
 FcConfigGetCacheDirs (FcConfig	*config);
 
 FcPublic int
-FcConfigGetRescanInverval (FcConfig *config);
+FcConfigGetRescanInterval (FcConfig *config);
 
 FcPublic FcBool
-FcConfigSetRescanInverval (FcConfig *config, int rescanInterval);
+FcConfigSetRescanInterval (FcConfig *config, int rescanInterval);
 
 FcPublic FcFontSet *
 FcConfigGetFonts (FcConfig	*config,
@@ -883,25 +885,25 @@ FcPublic FcStrSet *
 FcStrSetCreate (void);
 
 FcPublic FcBool
-FcStrSetMember (FcPublic FcStrSet *set, const FcChar8 *s);
+FcStrSetMember (FcStrSet *set, const FcChar8 *s);
 
 FcPublic FcBool
-FcStrSetEqual (FcPublic FcStrSet *sa, FcPublic FcStrSet *sb);
+FcStrSetEqual (FcStrSet *sa, FcStrSet *sb);
 
 FcPublic FcBool
-FcStrSetAdd (FcPublic FcStrSet *set, const FcChar8 *s);
+FcStrSetAdd (FcStrSet *set, const FcChar8 *s);
 
 FcPublic FcBool
-FcStrSetAddFilename (FcPublic FcStrSet *set, const FcChar8 *s);
+FcStrSetAddFilename (FcStrSet *set, const FcChar8 *s);
 
 FcPublic FcBool
-FcStrSetDel (FcPublic FcStrSet *set, const FcChar8 *s);
+FcStrSetDel (FcStrSet *set, const FcChar8 *s);
 
 FcPublic void
-FcStrSetDestroy (FcPublic FcStrSet *set);
+FcStrSetDestroy (FcStrSet *set);
 
 FcPublic FcStrList *
-FcStrListCreate (FcPublic FcStrSet *set);
+FcStrListCreate (FcStrSet *set);
 
 FcPublic FcChar8 *
 FcStrListNext (FcStrList *list);
