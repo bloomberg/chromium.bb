@@ -132,7 +132,7 @@ values added to the list have binding <parameter>weak</parameter> instead of <pa
 @FUNC++@	FcPatternAddString
 @TYPE1++@ 	FcPattern * 			@ARG1++@ 	p
 @TYPE2++@	const char *			@ARG2++@	object
-@TYPE3++@	const char *			@ARG3++@	s
+@TYPE3++@	const FcChar8 *			@ARG3++@	s
 
 @PROTOTYPE+++@
 @RET+++@	FcBool
@@ -214,7 +214,7 @@ within the pattern directly.  Applications must not free this value.
 @TYPE1++@	FcPattern *			@ARG1++@	p
 @TYPE2++@	const char *			@ARG2++@	object
 @TYPE3++@	int%				@ARG3++@	n
-@TYPE4++@	char **const			@ARG4++@	s
+@TYPE4++@	FcChar8 **			@ARG4++@	s
 
 @PROTOTYPE+++@
 @RET+++@	FcResult
@@ -356,7 +356,7 @@ specified point size (default 12), dpi (default 75) and scale (default 1).
 
 @RET@		FcPattern *
 @FUNC@		FcNameParse
-@TYPE1@		const char *			@ARG1@		name 
+@TYPE1@		const FcChar8 *			@ARG1@		name 
 @PURPOSE@	Parse a pattern string
 @DESC@
 Converts <parameter>name</parameter> from the standard text format described above into a pattern.

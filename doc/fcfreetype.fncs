@@ -80,7 +80,7 @@ widths.
 #include &lt;fcfreetype.h&gt;
 @RET@           FcPattern *      
 @FUNC@          FcFreeTypeQuery 
-@TYPE1@         const char *			@ARG1@          file      
+@TYPE1@         const FcChar8 *			@ARG1@          file      
 @TYPE2@         int%				@ARG2@          id      
 @TYPE3@         FcBlanks *			@ARG3@          blanks      
 @TYPE4@         int *				@ARG4@          count      
@@ -96,7 +96,7 @@ of fonts in 'file' is returned in 'count'.
 @RET@           FcPattern *      
 @FUNC@          FcFreeTypeQueryFace
 @TYPE1@		const FT_Face%			@ARG1@		face
-@TYPE2@         const char *			@ARG2@          file
+@TYPE2@         const FcChar8 *			@ARG2@          file
 @TYPE3@         int%				@ARG3@          id
 @TYPE4@         FcBlanks *			@ARG4@          blanks
 @PURPOSE@	compute pattern from FT_Face

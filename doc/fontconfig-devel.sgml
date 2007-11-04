@@ -269,7 +269,7 @@ types.  The 'type' tag indicates which member is valid.
         FcTypeVoid      (none)          (none)
         FcTypeInteger   i               int
         FcTypeDouble    d               double
-        FcTypeString    s               char *
+        FcTypeString    s               FcChar8 *
         FcTypeBool      b               b
         FcTypeMatrix    m               FcMatrix *
         FcTypeCharSet   c               FcCharSet *

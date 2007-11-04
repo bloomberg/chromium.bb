@@ -123,7 +123,7 @@ filesystem.
 Returns the list of known configuration files used to generate <parameter>config</parameter>.
 @@
 
-@RET@           char *
+@RET@           FcChar8 *
 @FUNC@          FcConfigGetCache
 @TYPE1@         FcConfig *                      @ARG1@          config
 @PURPOSE@	DEPRECATED used to return per-user cache filename
@@ -183,7 +183,7 @@ Sets the rescan interval; returns FcFalse if an error occurred.
 @RET@           FcBool
 @FUNC@          FcConfigAppFontAddFile
 @TYPE1@         FcConfig *			@ARG1@		config
-@TYPE2@		const char *                    @ARG2@          file
+@TYPE2@		const FcChar8 *			@ARG2@          file
 @PURPOSE@	Add font file to font database
 @DESC@
 Adds an application-specific font to the configuration.
@@ -192,7 +192,7 @@ Adds an application-specific font to the configuration.
 @RET@           FcBool
 @FUNC@          FcConfigAppFontAddDir
 @TYPE1@         FcConfig *			@ARG1@		config
-@TYPE2@		const char *                    @ARG1@          dir
+@TYPE2@		const FcChar8 *			@ARG2@          dir
 @PURPOSE@	Add fonts from directory to font database
 @DESC@
 Scans the specified directory for fonts, adding each one found to the
@@ -291,9 +291,9 @@ Selects fonts matching <parameter>p</parameter>, creates patterns from those fon
 only the objects in <parameter>os</parameter> and returns the set of unique such patterns.
 @@
 
-@RET@           char *
+@RET@           FcChar8 *
 @FUNC@          FcConfigFilename
-@TYPE1@         const char *                    @ARG1@          name
+@TYPE1@         const FcChar8 *			@ARG1@          name
 @PURPOSE@	Find a config file
 @DESC@
 Given the specified external entity name, return the associated filename.
