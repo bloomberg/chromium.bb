@@ -32,7 +32,7 @@ This function returns the directory from which the cache was constructed.
 @FUNC@		FcCacheCopySet
 @TYPE1@		const FcCache *			@ARG1@		cache
 @PURPOSE@	Returns a copy of the fontset from <parameter>cache</parameter>
-@DESC
+@DESC@
 The returned fontset contains each of the font patterns from
 <parameter>cache</parameter>. This fontset may be modified, but the patterns
 from the cache are read-only.
@@ -43,7 +43,7 @@ from the cache are read-only.
 @TYPE1@		const FcCache *			@ARG1@		cache
 @TYPE2@		int				@ARG2@		i
 @PURPOSE@	Return the <parameter>i</parameter>'th subdirectory.
-@DESC
+@DESC@
 The set of subdirectories stored in a cache file are indexed by this
 function, <parameter>i</parameter> should range from 0 to
 <parameter>n</parameter>-1, where <parameter>n</parameter> is the return
@@ -54,7 +54,7 @@ value from FcCacheNumSubdir.
 @FUNC@		FcCacheNumSubdir
 @TYPE1@		const FcCache *			@ARG1@		cache
 @PURPOSE@	Return the number of subdirectories in <parameter>cache</parameter>.
-@DESC
+@DESC@
 This returns the total number of subdirectories in the cache.
 @@
 
@@ -62,7 +62,7 @@ This returns the total number of subdirectories in the cache.
 @FUNC@		FcCacheNumFont
 @TYPE1@		const FcCache *			@ARG1@		cache
 @PURPOSE@	Returns the number of fonts in <parameter>cache</parameter>.
-@DESC
+@DESC@
 This returns the number of fonts which would be included in the return from
 FcCacheCopySet.
 @@
