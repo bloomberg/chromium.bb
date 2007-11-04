@@ -278,6 +278,7 @@ nouveau_card_init(struct drm_device *dev)
 
 	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
 		return 0;
+	dev_priv->ttm = 0;
 
 	/* Map any PCI resources we need on the card */
 	ret = nouveau_init_card_mappings(dev);
@@ -315,8 +316,13 @@ nouveau_card_init(struct drm_device *dev)
 	if (ret) return ret;
 
 	/* Setup the memory manager */
-	ret = nouveau_mem_init(dev);
-	if (ret) return ret;
+	if (dev_priv->ttm) {
+		ret = nouveau_mem_init_ttm(dev);
+		if (ret) return ret;
+	} else {
+		ret = nouveau_mem_init(dev);
+		if (ret) return ret;
+	}
 
 	ret = nouveau_gpuobj_init(dev);
 	if (ret) return ret;

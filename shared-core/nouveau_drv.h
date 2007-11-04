@@ -42,7 +42,6 @@
 #include "nouveau_drm.h"
 #include "nouveau_reg.h"
 
-
 struct mem_block {
 	struct mem_block *next;
 	struct mem_block *prev;
@@ -229,6 +228,8 @@ struct drm_nouveau_private {
 		NOUVEAU_CARD_INIT_FAILED
 	} init_state;
 
+	int ttm;
+
 	/* the card type, takes NV_* as values */
 	int card_type;
 	/* exact chipset, derived from NV_PMC_BOOT_0 */
@@ -348,6 +349,7 @@ extern struct mem_block* nouveau_mem_alloc(struct drm_device *,
 					   int flags, struct drm_file *);
 extern void nouveau_mem_free(struct drm_device *dev, struct mem_block*);
 extern int  nouveau_mem_init(struct drm_device *);
+extern int  nouveau_mem_init_ttm(struct drm_device *);
 extern void nouveau_mem_close(struct drm_device *);
 
 /* nouveau_notifier.c */
