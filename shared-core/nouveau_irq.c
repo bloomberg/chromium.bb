@@ -301,6 +301,13 @@ nouveau_pgraph_intr_notify(struct drm_device *dev, uint32_t nsource)
 	int handled = 0;
 
 	DRM_DEBUG("PGRAPH notify interrupt\n");
+
+	if (nsource & NV03_PGRAPH_NSOURCE_NOTIFICATION && dev_priv->ttm) {
+		int channel;
+		if (!nouveau_graph_trapped_channel(dev, &channel))
+			nouveau_fence_handler(dev, channel);
+	}
+
 	if (dev_priv->card_type == NV_04 &&
 	    (nsource & NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD)) {
 		uint32_t class, mthd;

@@ -32,7 +32,8 @@
 #include "nouveau_drv.h"
 #include "nouveau_dma.h"
 
-struct drm_ttm_backend *nouveau_create_ttm_backend_entry(struct drm_device * dev)
+static struct drm_ttm_backend *
+nouveau_bo_create_ttm_backend_entry(struct drm_device * dev)
 {
         struct drm_nouveau_private *dev_priv = dev->dev_private;
 
@@ -49,9 +50,9 @@ struct drm_ttm_backend *nouveau_create_ttm_backend_entry(struct drm_device * dev
         return NULL;
 }
 
-int nouveau_fence_types(struct drm_buffer_object *bo,
-			uint32_t *fclass,
-			uint32_t *type)
+static int
+nouveau_bo_fence_type(struct drm_buffer_object *bo,
+		      uint32_t *fclass, uint32_t *type)
 {
 	*fclass = 0;
 
@@ -62,15 +63,17 @@ int nouveau_fence_types(struct drm_buffer_object *bo,
 	return 0;
 
 }
-int nouveau_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags)
+
+static int
+nouveau_bo_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags)
 {
 	/* We'll do this from user space. */
 	return 0;
 }
 
-int nouveau_init_mem_type(struct drm_device *dev,
-                          uint32_t type,
-                          struct drm_mem_type_manager *man)
+static int
+nouveau_bo_init_mem_type(struct drm_device *dev, uint32_t type,
+			 struct drm_mem_type_manager *man)
 {
         struct drm_nouveau_private *dev_priv = dev->dev_private;
 
@@ -132,7 +135,8 @@ int nouveau_init_mem_type(struct drm_device *dev,
         return 0;
 }
 
-uint32_t nouveau_evict_mask(struct drm_buffer_object *bo)
+static uint32_t
+nouveau_bo_evict_mask(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 		case DRM_BO_MEM_LOCAL:
@@ -197,10 +201,9 @@ nouveau_bo_move_m2mf(struct drm_buffer_object *bo, int evict, int no_wait,
 			0, new_mem);
 }
 
-int nouveau_move(struct drm_buffer_object *bo,
-		 int evict,
-		 int no_wait,
-		 struct drm_bo_mem_reg *new_mem)
+static int
+nouveau_bo_move(struct drm_buffer_object *bo, int evict, int no_wait,
+		struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
@@ -225,9 +228,9 @@ int nouveau_move(struct drm_buffer_object *bo,
 	return 0;
 }
 
-void nouveau_flush_ttm(struct drm_ttm *ttm)
+static void
+nouveau_bo_flush_ttm(struct drm_ttm *ttm)
 {
-
 }
 
 static uint32_t nouveau_mem_prios[]  = {
@@ -248,12 +251,12 @@ struct drm_bo_driver nouveau_bo_driver = {
 	.mem_busy_prio = nouveau_busy_prios,
 	.num_mem_type_prio = sizeof(nouveau_mem_prios)/sizeof(uint32_t),
 	.num_mem_busy_prio = sizeof(nouveau_busy_prios)/sizeof(uint32_t),
-	.create_ttm_backend_entry = nouveau_create_ttm_backend_entry,
-	.fence_type = nouveau_fence_types,
-	.invalidate_caches = nouveau_invalidate_caches,
-	.init_mem_type = nouveau_init_mem_type,
-	.evict_mask = nouveau_evict_mask,
-	.move = nouveau_move,
-	.ttm_cache_flush= nouveau_flush_ttm
+	.create_ttm_backend_entry = nouveau_bo_create_ttm_backend_entry,
+	.fence_type = nouveau_bo_fence_type,
+	.invalidate_caches = nouveau_bo_invalidate_caches,
+	.init_mem_type = nouveau_bo_init_mem_type,
+	.evict_mask = nouveau_bo_evict_mask,
+	.move = nouveau_bo_move,
+	.ttm_cache_flush= nouveau_bo_flush_ttm
 };
 
