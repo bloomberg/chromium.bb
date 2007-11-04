@@ -77,10 +77,10 @@ static void
 ReplaceDispose (Replace *r);
 
 static void
-Bail (const char *format, const char *arg);
+Bail (const char *format, int line, const char *arg);
 
 static Replace *
-ReplaceRead (FILE *f);
+ReplaceRead (FILE *f, int *linep);
 
 typedef struct _replaceList {
     struct _replaceList	*next;
@@ -110,7 +110,7 @@ static Replace *
 ReplaceSetFind (ReplaceSet *s, char *tag);
 
 static ReplaceSet *
-ReplaceSetRead (FILE *f);
+ReplaceSetRead (FILE *f, int *linep);
 
 typedef struct _skipStack {
     struct _skipStack	*prev;
@@ -137,10 +137,10 @@ static LoopStack *
 LoopStackLoop (ReplaceSet *rs, LoopStack *ls, FILE *f);
 
 static void
-LineSkip (FILE *f);
+LineSkip (FILE *f, int *linep);
 
 static void
-DoReplace (FILE *f, ReplaceSet *s);
+DoReplace (FILE *f, int *linep, ReplaceSet *s);
 
 #define STRING_INIT 128
 
@@ -249,27 +249,43 @@ ReplaceDispose (Replace *r)
 }
 
 static void
-Bail (const char *format, const char *arg)
+Bail (const char *format, int line, const char *arg)
 {
     fprintf (stderr, "fatal: ");
-    fprintf (stderr, format, arg);
+    fprintf (stderr, format, line, arg);
     fprintf (stderr, "\n");
     exit (1);
 }
 
+static int
+Getc (FILE *f, int *linep)
+{
+    int	c = getc (f);
+    if (c == '\n')
+	++(*linep);
+}
+
+static void
+Ungetc (int c, FILE *f, int *linep)
+{
+    if (c == '\n')
+	--(*linep);
+    ungetc (c, f);
+}
+
 static Replace *
-ReplaceRead (FILE *f)
+ReplaceRead (FILE *f, int *linep)
 {
     int	    c;
     Replace *r;
 
-    while ((c = getc (f)) != '@')
+    while ((c = Getc (f, linep)) != '@')
     {
 	if (c == EOF)
 	    return 0;
     }
     r = ReplaceNew();
-    while ((c = getc (f)) != '@')
+    while ((c = Getc (f, linep)) != '@')
     {
 	if (c == EOF)
 	{
@@ -277,7 +293,7 @@ ReplaceRead (FILE *f)
 	    return 0;
 	}
 	if (isspace (c))
-	    Bail ("invalid character after tag %s", r->tag->buf);
+	    Bail ("%d: invalid character after tag %s", *linep, r->tag->buf);
 	StringAdd (r->tag, c);
     }
     if (r->tag->buf[0] == '\0')
@@ -285,13 +301,13 @@ ReplaceRead (FILE *f)
 	ReplaceDispose (r);
 	return 0;
     }
-    while (isspace ((c = getc (f))))
+    while (isspace ((c = Getc (f, linep))))
 	;
-    ungetc (c, f);
-    while ((c = getc (f)) != '@' && c != EOF)
+    Ungetc (c, f, linep);
+    while ((c = Getc (f, linep)) != '@' && c != EOF)
 	StringAdd (r->text, c);
     if (c == '@')
-	ungetc (c, f);
+	Ungetc (c, f, linep);
     while (isspace (StringLast (r->text)))
 	StringDel (r->text);
     if (StringLast(r->text) == '%')
@@ -355,12 +371,12 @@ ReplaceSetFind (ReplaceSet *s, char *tag)
 }
 
 static ReplaceSet *
-ReplaceSetRead (FILE *f)
+ReplaceSetRead (FILE *f, int *linep)
 {
     ReplaceSet	*s = ReplaceSetNew ();
     Replace	*r;
 
-    while ((r = ReplaceRead (f)))
+    while ((r = ReplaceRead (f, linep)))
     {
 	while (ReplaceSetFind (s, r->tag->buf))
 	    StringAdd (r->tag, '+');
@@ -426,17 +442,17 @@ LoopStackLoop (ReplaceSet *rs, LoopStack *ls, FILE *f)
 }
 
 static void
-LineSkip (FILE *f)
+LineSkip (FILE *f, int *linep)
 {
     int	c;
 
-    while ((c = getc (f)) == '\n')
+    while ((c = Getc (f, linep)) == '\n')
 	;
-    ungetc (c, f);
+    Ungetc (c, f, linep);
 }
 
 static void
-DoReplace (FILE *f, ReplaceSet *s)
+DoReplace (FILE *f, int *linep, ReplaceSet *s)
 {
     int		c;
     String	*tag;
@@ -445,12 +461,12 @@ DoReplace (FILE *f, ReplaceSet *s)
     LoopStack	*ls = 0;
     int		skipping = 0;
 
-    while ((c = getc (f)) != EOF)
+    while ((c = Getc (f, linep)) != EOF)
     {
 	if (c == '@')
 	{
 	    tag = StringNew ();
-	    while ((c = getc (f)) != '@')
+	    while ((c = Getc (f, linep)) != '@')
 	    {
 		if (c == EOF)
 		    abort ();
@@ -463,7 +479,7 @@ DoReplace (FILE *f, ReplaceSet *s)
 		ss = SkipStackPush (ss, skipping);
 		if (!ReplaceSetFind (s, tag->buf + 1))
 		    skipping++;
-		LineSkip (f);
+		LineSkip (f, linep);
 		break;
 	    case ':':
 		if (!ss)
@@ -472,20 +488,20 @@ DoReplace (FILE *f, ReplaceSet *s)
 		    ++skipping;
 		else
 		    --skipping;
-		LineSkip (f);
+		LineSkip (f, linep);
 		break;
 	    case ';':
 		skipping = ss->skipping;
 		ss = SkipStackPop (ss);
-		LineSkip (f);
+		LineSkip (f, linep);
 		break;
 	    case '{':
 		ls = LoopStackPush (ls, f, tag->buf + 1);
-		LineSkip (f);
+		LineSkip (f, linep);
 		break;
 	    case '}':
 		ls = LoopStackLoop (s, ls, f);
-		LineSkip (f);
+		LineSkip (f, linep);
 		break;
 	    default:
 		r = ReplaceSetFind (s, tag->buf);
@@ -505,22 +521,25 @@ main (int argc, char **argv)
 {
     FILE	*f;
     ReplaceSet	*s;
+    int		iline, oline;
 
     if (!argv[1])
-	Bail ("usage: %s <template.sgml>", argv[0]);
+	Bail ("usage: %s <template.sgml>", 0, argv[0]);
     f = fopen (argv[1], "r");
     if (!f)
     {
-	Bail ("can't open file %s", argv[1]);
+	Bail ("can't open file %s", 0, argv[1]);
 	exit (1);
     }
-    while ((s = ReplaceSetRead (stdin)))
+    iline = 1;
+    while ((s = ReplaceSetRead (stdin, &iline)))
     {
-	DoReplace (f, s);
+	oline = 1;
+	DoReplace (f, &oline, s);
 	ReplaceSetDispose (s);
 	rewind (f);
     }
     if (ferror (stdout))
-	Bail ("%s", "error writing output");
+	Bail ("%s", 0, "error writing output");
     exit (0);
 }
