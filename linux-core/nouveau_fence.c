@@ -54,13 +54,17 @@ nouveau_fence_emit(struct drm_device *dev, uint32_t class, uint32_t flags,
 
 	DRM_DEBUG("class=%d, flags=0x%08x\n", class, flags);
 
-	/* We can't emit fences on client channels */
-	if (chan != dchan->chan)
-		return 0;
-
-	*breadcrumb  = ++dchan->next_sequence;
+	/* We can't emit fences on client channels, update sequence number
+	 * and userspace will emit the fence
+	 */
+	*breadcrumb  = ++chan->next_sequence;
 	*native_type = DRM_FENCE_TYPE_EXE;
+	if (chan != dchan->chan) {
+		DRM_DEBUG("user fence 0x%08x\n", *breadcrumb);
+		return 0;
+	}
 
+	DRM_DEBUG("emit 0x%08x\n", *breadcrumb);
 	BEGIN_RING(NvSubM2MF, NV_MEMORY_TO_MEMORY_FORMAT_SET_REF, 1);
 	OUT_RING  (*breadcrumb);
 	BEGIN_RING(NvSubM2MF, NV_MEMORY_TO_MEMORY_FORMAT_NOTIFY, 1);
@@ -83,10 +87,13 @@ nouveau_fence_perform_flush(struct drm_device *dev, uint32_t class)
 
 	pending_types = fc->pending_flush |
 			((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
+	DRM_DEBUG("pending: 0x%08x 0x%08x\n", pending_types,
+					      fc->pending_flush);
 
 	if (pending_types) {
 		uint32_t sequence = NV_READ(NV03_FIFO_REGS(class) + 0x48);
 
+		DRM_DEBUG("got 0x%08x\n", sequence);
 		drm_fence_handler(dev, class, sequence, pending_types, 0);
 	}
 }

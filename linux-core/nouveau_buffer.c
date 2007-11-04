@@ -55,7 +55,6 @@ nouveau_bo_fence_type(struct drm_buffer_object *bo,
 		      uint32_t *fclass, uint32_t *type)
 {
 	*fclass = 0;
-
 	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
@@ -167,7 +166,7 @@ nouveau_bo_move_m2mf(struct drm_buffer_object *bo, int evict, int no_wait,
 		dchan->m2mf_dma_destin = dsth;
 
 		BEGIN_RING(NvSubM2MF,
-				NV_MEMORY_TO_MEMORY_FORMAT_SET_DMA_SOURCE, 2);
+			   NV_MEMORY_TO_MEMORY_FORMAT_SET_DMA_SOURCE, 2);
 		OUT_RING  (dchan->m2mf_dma_source);
 		OUT_RING  (dchan->m2mf_dma_destin);
 	}
@@ -191,9 +190,8 @@ nouveau_bo_move_m2mf(struct drm_buffer_object *bo, int evict, int no_wait,
 		page_count -= line_count;
 	}
 
-	return drm_bo_move_accel_cleanup(bo, evict, no_wait, 0,
-			DRM_FENCE_TYPE_EXE,
-			0, new_mem);
+	return drm_bo_move_accel_cleanup(bo, evict, no_wait, dchan->chan->id,
+					 DRM_FENCE_TYPE_EXE, 0, new_mem);
 }
 
 static int

@@ -106,6 +106,9 @@ struct nouveau_channel
 	/* mapping of the regs controling the fifo */
 	drm_local_map_t *regs;
 
+	/* Fencing */
+	uint32_t next_sequence;
+
 	/* DMA push buffer */
 	struct nouveau_gpuobj_ref *pushbuf;
 	struct mem_block          *pushbuf_mem;
@@ -145,9 +148,6 @@ struct nouveau_drm_channel {
 
 	/* Notifiers */
 	uint32_t notify0_offset;
-
-        /* Fences */
-        uint32_t next_sequence;
 
 	/* Buffer moves */
 	uint32_t m2mf_dma_source;

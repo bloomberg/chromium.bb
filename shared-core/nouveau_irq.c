@@ -115,7 +115,7 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 		}
 
 		if (status) {
-			DRM_INFO("Unhandled PFIFO_INTR - 0x%8x\n", status);
+			DRM_INFO("Unhandled PFIFO_INTR - 0x%08x\n", status);
 			NV_WRITE(NV03_PFIFO_INTR_0, status);
 		}
 
@@ -395,7 +395,7 @@ nouveau_pgraph_irq_handler(struct drm_device *dev)
 		}
 
 		if (status) {
-			DRM_INFO("Unhandled PGRAPH_INTR - 0x%8x\n", status);
+			DRM_INFO("Unhandled PGRAPH_INTR - 0x%08x\n", status);
 			NV_WRITE(NV03_PGRAPH_INTR, status);
 		}
 
