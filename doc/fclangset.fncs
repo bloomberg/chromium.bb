@@ -103,7 +103,7 @@ the same language and territory combinations as <parameter>ls_b</parameter>.
 @DESC@
 This function returns a value which depends solely on the languages
 supported by <parameter>ls</parameter>. Any language which equals
-<parameter>ls</function> will have the same result from
+<parameter>ls</parameter> will have the same result from
 <function>FcLangSetHash</function>. However, two langsets with the same hash
 value may not be equal.
 @@
