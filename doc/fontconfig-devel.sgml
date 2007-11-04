@@ -178,7 +178,7 @@ convenience for the applications rendering mechanism.
                                                 spacing
     charset        FC_CHARSET           CharSet Unicode chars encoded by
                                                 the font
-    lang           FC_LANG              String  List of RFC-3066-style
+    lang           FC_LANG              LangSet Set of RFC-3066-style
                                                 languages this font supports
     fontversion    FC_FONTVERSION       Int     Version number of the font
     capability     FC_CAPABILITY        String  List of layout capabilities in
@@ -217,6 +217,26 @@ An FcCharSet is an abstract type that holds the set of encoded unicode chars
 in a font.  Operations to build and compare these sets are provided.
     </para>
   </sect2>
+  <sect2><title>FcLangSet</title>
+    <para>
+An FcLangSet is an abstract type that holds the set of languages supported
+by a font.  Operations to build and compare these sets are provided. These
+are computed for a font based on orthographic information built into the
+fontconfig library. Fontconfig has orthographies for all of the ISO 639-1
+languages except for MS, NA, PA, PS, QU, RN, RW, SD, SG, SN, SU and ZA. If
+you have orthographic information for any of these languages, please submit
+them.
+    </para>
+  </sect2>
+  <sect2><title>FcLangResult</title>
+    <para>
+An FcLangResult is an enumeration used to return the results of comparing
+two language strings or FcLangSet objects. FcLangEqual means the
+objects match language and territory. FcLangDifferentTerritory means
+the objects match in language but differ in territory.
+FcLangDifferentLang means the objects differ in language.
+    </para>
+  </sect2>
   <sect2><title>FcType</title>
     <para>
 Tags the kind of data stored in an FcValue.
@@ -236,6 +256,8 @@ types.  The 'type' tag indicates which member is valid.
                         double d;
                         const FcMatrix *m;
                         const FcCharSet *c;
+			void *f;
+			const FcLangSet *l;
                 } u;
         } FcValue;
     </programlisting>
@@ -251,6 +273,8 @@ types.  The 'type' tag indicates which member is valid.
         FcTypeBool      b               b
         FcTypeMatrix    m               FcMatrix *
         FcTypeCharSet   c               FcCharSet *
+	FcTypeFTFace	f		void * (FT_Face)
+	FcTypeLangSet	l		FcLangSet *
     </programlisting>
     </para>
   </sect2>

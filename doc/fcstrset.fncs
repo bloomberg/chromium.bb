@@ -42,6 +42,17 @@ Returns whether <parameter>s</parameter> is a member of
 @@
 
 @RET@		FcBool
+@FUNC@		FcStrSetEqual
+@TYPE1@		FcStrSet *			@ARG1@		set_a
+@TYPE2@		FcStrSet *			@ARG2@		set_b
+@PURPOSE@	check sets for equality
+@DESC@
+Returns whether <parameter>set_a</parameter> contains precisely the same
+strings as <parameter>set_b</parameter>. Ordering of strings within the two
+sets is not considered.
+@@
+
+@RET@		FcBool
 @FUNC@		FcStrSetAdd
 @TYPE1@		FcStrSet *			@ARG1@		set
 @TYPE2@		const FcChar8 *			@ARG2@		s	

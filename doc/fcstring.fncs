@@ -97,6 +97,33 @@ indicates whether <parameter>string</parameter> is a well-formed UTF16
 string.
 @@
 
+@RET@		FcBool
+@FUNC@		FcIsLower
+@TYPE1@		FcChar8				@ARG1@		c
+@PURPOSE@	check for lower case ASCII character
+@DESC@
+This macro checks whether <parameter>c</parameter> is an lower case ASCII
+letter.
+@@
+
+@RET@		FcBool
+@FUNC@		FcIsUpper
+@TYPE1@		FcChar8				@ARG1@		c
+@PURPOSE@	check for upper case ASCII character
+@DESC@
+This macro checks whether <parameter>c</parameter> is a upper case ASCII
+letter.
+@@
+
+@RET@		FcChar8
+@FUNC@		FcToLower
+@TYPE1@		FcChar8				@ARG1@		c
+@PURPOSE@	convert upper case ASCII to lower case
+@DESC@
+This macro converts upper case ASCII <parameter>c</parameter> to the
+equivalent lower case letter.
+@@
+
 @RET@		FcChar8 *
 @FUNC@		FcStrCopy
 @TYPE1@		const FcChar8 *			@ARG1@		s
@@ -127,43 +154,68 @@ Returns NULL if '~' is present in <parameter>s</parameter> and HOME is unset.
 @@
 
 @RET@		int
+@FUNC@		FcStrCmp
+@TYPE1@		const FcChar8 *			@ARG1@		s1
+@TYPE2@		const FcChar8 *			@ARG2@		s2
+@PURPOSE@	compare UTF-8 strings
+@DESC@
+Returns the usual &lt;0, 0, &gt;0 result of comparing
+<parameter>s1</parameter> and <parameter>s2</parameter>. 
+@@
+
+@RET@		int
 @FUNC@		FcStrCmpIgnoreCase
 @TYPE1@		const FcChar8 *			@ARG1@		s1
 @TYPE2@		const FcChar8 *			@ARG2@		s2
-@PURPOSE@	compare UTF-8 strings ignoring ASCII case
+@PURPOSE@	compare UTF-8 strings ignoring case
 @DESC@
 Returns the usual &lt;0, 0, &gt;0 result of comparing
-<parameter>s1</parameter> and <parameter>s2</parameter>.  This test is
-case-insensitive in the ASCII range and will operate properly with UTF8
-encoded strings, although it does not check for well formed strings.
+<parameter>s1</parameter> and <parameter>s2</parameter>. This test is
+case-insensitive for all proper UTF-8 encoded strings.
 @@
 
 @RET@		FcChar8 *
 @FUNC@		FcStrStr
-@TYPE1@		const char *			@ARG1@		s1
-@TYPE2@		const char *			@ARG2@		s2
+@TYPE1@		const FcChar8 *			@ARG1@		s1
+@TYPE2@		const FcChar8 *			@ARG2@		s2
 @PURPOSE@	locate UTF-8 substring
 @DESC@
 Returns the location of <parameter>s2</parameter> in
 <parameter>s1</parameter>.  Returns NULL if <parameter>s2</parameter>
 is not present in <parameter>s1</parameter>. This test will operate properly
-with UTF8 encoded strings, although it does not check for well formed
-strings.
+with UTF8 encoded strings.
 @@
 
 @RET@		FcChar8 *
 @FUNC@		FcStrStrIgnoreCase
-@TYPE1@		const char *			@ARG1@		s1
-@TYPE2@		const char *			@ARG2@		s2
+@TYPE1@		const FcChar8 *			@ARG1@		s1
+@TYPE2@		const FcChar8 *			@ARG2@		s2
 @PURPOSE@	locate UTF-8 substring ignoring ASCII case
 @DESC@
 Returns the location of <parameter>s2</parameter> in 
-<parameter>s1</parameter>, ignoring ASCII case.  Returns NULL if
+<parameter>s1</parameter>, ignoring case.  Returns NULL if
 <parameter>s2</parameter> is not present in <parameter>s1</parameter>.
-This test is case-insensitive in the ASCII range and will operate properly
-with UTF8 encoded strings, although it does not check for well formed
-strings.
+This test is case-insensitive for all proper UTF-8 encoded strings.
 @@
+
+@RET@		FcChar8 *
+@FUNC@		FcStrPlus
+@TYPE1@		const FcChar8 *			@ARG1@		s1
+@TYPE2@		const FcChar8 *			@ARG2@		s2
+@PURPOSE@	concatenate two strings
+@DESC@
+This function allocates new storage and places the concatenation of
+<parameter>s1</parameter> and <parameter>s2</parameter> there, returning the
+new string.
+@@
+
+@RET@		void
+@FUNC@		FcStrFree
+@TYPE1@		FcChar8 *			@ARG1@		s
+@PURPOSE@	free a string
+@DESC@
+This is just a wrapper around free(3) which helps track memory usage of
+strings within the fontconfig library.
 
 @RET@		FcChar8 *
 @FUNC@		FcStrDirname

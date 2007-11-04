@@ -56,6 +56,28 @@ not in 'blanks' are not placed in the returned FcCharSet.
 @SYNOPSIS@
 #include &lt;fontconfig.h&gt;
 #include &lt;fcfreetype.h&gt;
+@RET@           FcCharSet *      
+@FUNC@          FcFreeTypeCharSetAndSpacing 
+@TYPE1@         FT_Face%			@ARG1@          face      
+@TYPE2@         FcBlanks *			@ARG2@          blanks
+@TYPE3@		int *				@ARG3@		spacing
+@PURPOSE@	compute unicode coverage and spacing type
+@DESC@
+Scans a FreeType face and returns the set of encoded Unicode chars.
+This scans
+several encoding tables to build as complete a list as possible.  
+If 'blanks' is not 0, the glyphs in the font are examined and any blank glyphs
+not in 'blanks' are not placed in the returned FcCharSet.
+<parameter>spacing</parameter> receives the computed spacing type of the
+font, one of FC_MONO for a font where all glyphs have the same width,
+FC_DUAL, where the font has glyphs in precisely two widths, one twice as
+wide as the other, or FC_PROPORTIONAL where the font has glyphs of many
+widths.  
+@@
+
+@SYNOPSIS@
+#include &lt;fontconfig.h&gt;
+#include &lt;fcfreetype.h&gt;
 @RET@           FcPattern *      
 @FUNC@          FcFreeTypeQuery 
 @TYPE1@         const char *			@ARG1@          file      

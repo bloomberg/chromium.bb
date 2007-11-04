@@ -37,7 +37,20 @@ If <parameter>force</parameter> is FcTrue, then the file is scanned even if
 associated information is found in <parameter>cache</parameter>.  If
 <parameter>file</parameter> is a directory, it is added to
 <parameter>dirs</parameter>. Whether fonts are found depends on fontconfig
-poliy as well as the current configuration.
+policy as well as the current configuration. Internally, fontconfig will
+ignore BDF and PCF fonts which are not in Unicode (or the effectively
+equivalent ISO Latin-1) encoding as those are not usable by Unicode-based
+applications. The configuration can ignore fonts based on filename or
+contents of the font file itself.
+@@
+
+@RET@		FcBool
+@FUNC@		FcFileIsDir
+@TYPE1@		const FcChar8 *			@ARG1@		file
+@PURPOSE@	check whether a file is a directory
+@DESC@
+Returns FcTrue if <parameter>file</parameter> is a directory, otherwise
+returns FcFalse.
 @@
 
 @RET@		FcBool 	
@@ -54,9 +67,9 @@ Scans an entire directory and adds all fonts found to
 <parameter>set</parameter>.  If <parameter>force</parameter> is FcTrue, then
 the directory and all files within it are scanned even if information is
 present in the per-directory cache file or <parameter>cache</parameter>.  Any
-subdirectories found are added to <parameter>dirs</parameter>. Whether fonts
-or directories are found depends on fontconfig
-policy as well as the current configuration.
+subdirectories found are added to <parameter>dirs</parameter>. See the
+manual for <function>FcFileScan</function> for a description of how
+fontconfig selects which fonts to include.
 @@
 
 @RET@		FcBool 	
@@ -71,11 +84,3 @@ populates it with the fonts in <parameter>set</parameter> and subdirectories
 in <parameter>dirs</parameter>.
 @@
 
-@RET@		FcBool 	
-@FUNC@		FcDirCacheValid 
-@TYPE1@		const FcChar8 *			@ARG1@		cache_file	
-@PURPOSE@	check directory cache timestamp
-@DESC@
-Returns FcTrue if <parameter>cache_file</parameter> is no older than the
-directory containing it, else FcFalse.
-@@

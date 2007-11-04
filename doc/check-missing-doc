@@ -1,7 +1,7 @@
 #!/bin/sh
 header=fontconfig-header
 doc=fontconfig-doc
-#trap "rm $header $doc"  0 1 15
+trap "rm $header $doc"  0 1 15
 top_srcdir=${top_srcdir-".."}
 (
 cat $top_srcdir/fontconfig/*.h  | grep '^Fc' | 
@@ -10,7 +10,7 @@ cat $top_srcdir/fontconfig/*.h  | grep '^Fc' |
  sed -n 's/#define \(Fc[a-zA-Z]*\)(.*$/\1/p') |
  sort -u > $header
 
-grep '@FUNC@' $top_srcdir/doc/*.fncs |
+grep '@FUNC[+]*@' $top_srcdir/doc/*.fncs |
 awk '{print $2}' |
 sort -u > $doc
 

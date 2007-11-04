@@ -65,6 +65,27 @@ Checks all of the files related to <parameter>config</parameter> and returns
 whether any of them has been modified since the configuration was created.
 @@
 
+@RET@		FcBool
+@FUNC@		FcConfigHome
+@TYPE1@		void
+@PURPOSE@	return the current home directory.
+@DESC@
+Return the current user's home directory, if it is available, and if using it
+is enabled. See also <function>FcConfigEnableHome</function>).
+@@
+
+@RET@		FcBol
+@FUNC@		FcConfigEnableHome
+@TYPE1@		FcBool%				@ARG1@		enable
+@PURPOSE@	controls use of the home directory.
+@DESC@
+If <parameter>enable</parameter> is FcTrue, then Fontconfig will use various
+files which are specified relative to the user's home directory (using the ~
+notation in the configuration). When <parameter>enable</parameter> is
+FcFalse, then all use of the home directory in these contexts will be
+disabled. The previous setting of the value is returned.
+@@
+
 @RET@           FcBool
 @FUNC@          FcConfigBuildFonts
 @TYPE1@         FcConfig *                      @ARG1@          config
@@ -109,6 +130,16 @@ Note that this will not include any configuration done with FcConfigParse.
 @PURPOSE@	Get cache filename
 @DESC@
 Returns the name of the file used to store per-user font information.
+@@
+
+@RET@		FcStrList *
+@FUNC@		FcConfigGetCacheDirs
+@TYPE1@		FcConfig *			@ARG1@		config
+@PURPOSE@	return the list of directories searched for cache files
+@DESC@
+<function>FcConfigGetCacheDirs</function> returns a string list containing
+all of the directories that fontconfig will search when attempting to load a
+cache file for a font directory.
 @@
 
 @RET@           FcFontSet *

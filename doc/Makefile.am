@@ -42,13 +42,16 @@ FNCS_TMPL = ${DOC_SRC}/func.sgml
 DOC_FUNCS_FNCS=\
 	fcatomic.fncs \
 	fcblanks.fncs \
+	fccache.fncs \
 	fccharset.fncs \
 	fcconfig.fncs \
 	fcconstant.fncs \
+	fcdircache.fncs \
 	fcfile.fncs \
 	fcfontset.fncs \
 	fcfreetype.fncs \
 	fcinit.fncs \
+	fclangset.fncs \
 	fcmatrix.fncs \
 	fcobjectset.fncs \
 	fcobjecttype.fncs \

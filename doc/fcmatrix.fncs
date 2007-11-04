@@ -21,6 +21,8 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+
+@RET@		void
 @FUNC@		FcMatrixInit
 @PURPOSE@	initialize an FcMatrix structure
 @TYPE1@		FcMatrix *

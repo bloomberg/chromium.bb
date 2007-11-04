@@ -165,3 +165,27 @@ Builds an array of bits marking the Unicode coverage of <parameter>a</parameter>
 <parameter>*next</parameter>. Returns the base of the array. <parameter>next</parameter> contains the next page in
 the font. 
 @@
+
+@RET@		FcChar32
+@FUNC@		FcCharSetCoverage
+@TYPE1@		const FcCharSet *	@ARG1@		a
+@TYPE2@		FcChar32		@ARG2@		page
+@TYPE3@		FcChar32[8] 		@ARG3@		result
+@PURPOSE@	DEPRECATED return coverage for a Unicode page
+@DESC@
+DEPRECATED
+This function returns a bitmask in <parameter>result</parameter> which
+indicates which code points in
+<parameter>page</parameter> are included in <parameter>a</parameter>.
+<function>FcCharSetCoverage</function> returns the next page in the charset which has any
+coverage.
+@@
+
+@RET@		FcCharSet *
+@FUNC@		FcCharSetNew
+@TYPE1@		void
+@PURPOSE@	DEPRECATED alias for FcCharSetCreate
+@DESC@
+<function>FcCharSetNew</function> is a DEPRECATED alias for FcCharSetCreate.
+@@
+
