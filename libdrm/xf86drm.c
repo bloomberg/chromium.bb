@@ -2487,6 +2487,7 @@ int drmFenceEmit(int fd, unsigned flags, drmFence *fence, unsigned emit_type)
     fence->fence_class = arg.fence_class;
     fence->type = arg.type;
     fence->signaled = arg.signaled;
+    fence->sequence = arg.sequence;
     return 0;
 }
 
