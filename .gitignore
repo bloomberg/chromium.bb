@@ -34,12 +34,15 @@ doc/confdir.sgml
 doc/edit-sgml
 doc/fcatomic.sgml
 doc/fcblanks.sgml
+doc/fccache.sgml
 doc/fccharset.sgml
 doc/fcconfig.sgml
 doc/fcconstant.sgml
+doc/fcdircache.sgml
 doc/fcfile.sgml
 doc/fcfontset.sgml
 doc/fcfreetype.sgml
+doc/fclangset.sgml
 doc/fcinit.sgml
 doc/fcmatrix.sgml
 doc/fcobjectset.sgml
