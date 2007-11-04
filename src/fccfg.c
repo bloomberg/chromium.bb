@@ -332,6 +332,9 @@ FcConfigBuildFonts (FcConfig *config)
 FcBool
 FcConfigSetCurrent (FcConfig *config)
 {
+    if (config == _fcConfig)
+	return FcTrue;
+
     if (!config->fonts)
 	if (!FcConfigBuildFonts (config))
 	    return FcFalse;
