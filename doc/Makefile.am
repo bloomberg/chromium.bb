@@ -86,7 +86,11 @@ docdir=@DOCDIR@
 DOC_FILES=$(TXT) $(PDF) $(HTML_FILES)
 LOCAL_DOCS=$(man3_MANS) $(man5_MANS) $(DOC_FILES) $(HTML_DIR)/*
 
-EXTRA_DIST=$(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) func.sgml confdir.sgml.in
+check_SCRIPTS=check-missing-doc
+TESTS_ENVIRONMENT=top_srcdir=${top_srcdir} sh
+TESTS=check-missing-doc
+
+EXTRA_DIST=$(LOCAL_DOCS) $(SGML) $(DOC_FUNCS_FNCS) $(check_SCRIPTS) func.sgml confdir.sgml.in
 
 SUFFIXES=.fncs .sgml .txt .html
 
