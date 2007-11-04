@@ -508,7 +508,7 @@ FcConfigAddBlank (FcConfig	*config,
 }
 
 int
-FcConfigGetRescanInverval (FcConfig *config)
+FcConfigGetRescanInterval (FcConfig *config)
 {
     if (!config)
     {
@@ -520,7 +520,7 @@ FcConfigGetRescanInverval (FcConfig *config)
 }
 
 FcBool
-FcConfigSetRescanInverval (FcConfig *config, int rescanInterval)
+FcConfigSetRescanInterval (FcConfig *config, int rescanInterval)
 {
     if (!config)
     {
