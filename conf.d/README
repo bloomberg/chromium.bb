@@ -29,12 +29,13 @@ has led to the following conventions in usage:
  	30-urw-aliases.conf
 	30-metric-aliases.conf
  40 through 49		generic identification, map family->generic
- 	40-generic-id.conf
+ 	40-nonlatin.conf
+ 	45-latin.conf
 	49-sansserif.conf
  50 through 59		alternate config file loading
  	50-user.conf	Load ~/.fonts.conf
 	51-local.conf	Load local.conf
- 60 through 69		generic aliases
+ 60 through 69		generic aliases, map generic->family
  	60-latin.conf
 	65-fonts-persian.conf
 	65-nonlatin.conf
