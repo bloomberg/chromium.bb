@@ -24,9 +24,10 @@ has led to the following conventions in usage:
  	20-fix-globaladvance.conf
 	20-lohit-gujarati.conf
 	20-unhint-small-vera.conf
+	25-unhint-nonlatin.conf
  30 through 39		family substitution
  	30-urw-aliases.conf
-	30-amt-aliases.conf
+	30-metric-aliases.conf
  40 through 49		generic identification, map family->generic
  	40-generic-id.conf
 	49-sansserif.conf
