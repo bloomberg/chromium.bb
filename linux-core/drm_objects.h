@@ -157,7 +157,6 @@ struct drm_fence_object {
 };
 
 #define _DRM_FENCE_CLASSES 8
-#define _DRM_FENCE_TYPE_EXE 0x00
 
 struct drm_fence_class_manager {
 	struct list_head ring;
