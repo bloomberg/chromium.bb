@@ -263,6 +263,7 @@ Getc (FILE *f, int *linep)
     int	c = getc (f);
     if (c == '\n')
 	++(*linep);
+    return c;
 }
 
 static void
@@ -524,7 +525,7 @@ main (int argc, char **argv)
     int		iline, oline;
 
     if (!argv[1])
-	Bail ("usage: %s <template.sgml>", 0, argv[0]);
+	Bail ("usage: %*s <template.sgml>", 0, argv[0]);
     f = fopen (argv[1], "r");
     if (!f)
     {
