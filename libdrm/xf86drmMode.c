@@ -368,7 +368,7 @@ uint32_t drmModeAddMode(int fd, struct drm_mode_modeinfo *mode_info)
 
 int drmModeRmMode(int fd, uint32_t mode_id)
 {
-  	return ioctl(fd, DRM_IOCTL_MODE_RMMODE, mode_id);
+  	return ioctl(fd, DRM_IOCTL_MODE_RMMODE, &mode_id);
 }
 
 int drmModeAttachMode(int fd, uint32_t output_id, uint32_t mode_id)
