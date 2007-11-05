@@ -945,7 +945,7 @@ static int drm_bo_new_mask(struct drm_buffer_object *bo,
 	uint32_t new_props;
 
 	if (bo->type == drm_bo_type_user &&
-	    ((used_mask & (DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING)) !=
+	    ((new_flags & (DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING)) !=
 	     (DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING))) {
 		DRM_ERROR("User buffers require cache-coherent memory.\n");
 		return -EINVAL;
