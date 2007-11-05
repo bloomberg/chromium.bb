@@ -78,7 +78,7 @@ int xgi_cmdlist_initialize(struct xgi_info * info, size_t size,
  * @type: Type of the current batch
  *
  * See section 3.2.2 "Begin" (page 15) of the 3D SPG.
- * 
+ *
  * This function assumes that @type is on the range [0,3].
  */
 unsigned int get_batch_command(enum xgi_batch_type type)
@@ -86,7 +86,7 @@ unsigned int get_batch_command(enum xgi_batch_type type)
 	static const unsigned int ports[4] = {
 		0x30 >> 2, 0x40 >> 2, 0x50 >> 2, 0x20 >> 2
 	};
-	
+
 	return ports[type];
 }
 
@@ -159,7 +159,7 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
                 2 - fb
                 3 - logout
 */
-int xgi_state_change(struct xgi_info * info, unsigned int to, 
+int xgi_state_change(struct xgi_info * info, unsigned int to,
 		     unsigned int from)
 {
 #define STATE_CONSOLE   0
@@ -219,7 +219,7 @@ void xgi_cmdlist_cleanup(struct xgi_info * info)
 		}
 
 		xgi_waitfor_pci_idle(info);
-		
+
 		(void) memset(&info->cmdring, 0, sizeof(info->cmdring));
 	}
 }
@@ -243,7 +243,7 @@ static void triggerHWCommandList(struct xgi_info * info)
 void xgi_emit_flush(struct xgi_info * info, bool stop)
 {
 	const u32 flush_command[8] = {
-		((0x10 << 24) 
+		((0x10 << 24)
 		 | (BEGIN_BEGIN_IDENTIFICATION_MASK & info->next_sequence)),
 		BEGIN_LINK_ENABLE_MASK | (0x00004),
 		0x00000000, 0x00000000,
@@ -266,9 +266,9 @@ void xgi_emit_flush(struct xgi_info * info, bool stop)
 		info->cmdring.ring_offset = 0;
 	}
 
-	hw_addr = info->cmdring.ring_hw_base 
+	hw_addr = info->cmdring.ring_hw_base
 		+ info->cmdring.ring_offset;
-	batch_addr = info->cmdring.ptr 
+	batch_addr = info->cmdring.ptr
 		+ (info->cmdring.ring_offset / 4);
 
 	for (i = 0; i < (flush_size / 4); i++) {

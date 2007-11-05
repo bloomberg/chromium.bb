@@ -695,7 +695,7 @@ static const u32 R300_cp_microcode[][2] = {
 	{ 0x0000e571, 0x00000004 },
 	{ 0x0000e572, 0x0000000c },
 	{ 0x0000a000, 0x00000004 },
-	{ 0x0140a000, 0x00000004 }, 
+	{ 0x0140a000, 0x00000004 },
 	{ 0x0000e568, 0x00000004 },
 	{ 0x000c2000, 0x00000004 },
 	{ 0x00000089, 0x00000018 },
@@ -1127,7 +1127,7 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 {
 	u32 ring_start, cur_read_ptr;
 	u32 tmp;
-	
+
 	/* Initialize the memory controller. With new memory map, the fb location
 	 * is not changed, it should have been properly initialized already. Part
 	 * of the problem is that the code below is bogus, assuming the GART is
@@ -1364,7 +1364,7 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 		return;
 	}
 
- 	tmp = RADEON_READ(RADEON_AIC_CNTL);
+	tmp = RADEON_READ(RADEON_AIC_CNTL);
 
 	if (on) {
 		RADEON_WRITE(RADEON_AIC_CNTL,
@@ -1592,7 +1592,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 
 	dev_priv->fb_location = (RADEON_READ(RADEON_MC_FB_LOCATION)
 				 & 0xffff) << 16;
-	dev_priv->fb_size = 
+	dev_priv->fb_size =
 		((RADEON_READ(RADEON_MC_FB_LOCATION) & 0xffff0000u) + 0x10000)
 		- dev_priv->fb_location;
 
@@ -1639,7 +1639,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 			    ((base + dev_priv->gart_size) & 0xfffffffful) < base)
 				base = dev_priv->fb_location
 					- dev_priv->gart_size;
-		}		
+		}
 		dev_priv->gart_vm_start = base & 0xffc00000u;
 		if (dev_priv->gart_vm_start != base)
 			DRM_INFO("GART aligned down from 0x%08x to 0x%08x\n",

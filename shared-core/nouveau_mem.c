@@ -159,7 +159,7 @@ int nouveau_mem_init_heap(struct mem_block **heap, uint64_t start,
 	return 0;
 }
 
-/* 
+/*
  * Free all blocks associated with the releasing file_priv
  */
 void nouveau_mem_release(struct drm_file *file_priv, struct mem_block *heap)
@@ -189,7 +189,7 @@ void nouveau_mem_release(struct drm_file *file_priv, struct mem_block *heap)
 	}
 }
 
-/* 
+/*
  * Cleanup everything
  */
 void nouveau_mem_takedown(struct mem_block **heap)
@@ -288,7 +288,7 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 			} else {
 				uint64_t mem;
 
-				mem = (NV_READ(NV04_FIFO_DATA) & 
+				mem = (NV_READ(NV04_FIFO_DATA) &
 				       NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK) >>
 				      NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT;
 				return mem*1024*1024;
@@ -448,7 +448,7 @@ int nouveau_mem_init(struct drm_device *dev)
 	DRM_DEBUG("Available VRAM: %dKiB\n", fb_size>>10);
 
 	if (fb_size>256*1024*1024) {
-		/* On cards with > 256Mb, you can't map everything. 
+		/* On cards with > 256Mb, you can't map everything.
 		 * So we create a second FB heap for that type of memory */
 		if (nouveau_mem_init_heap(&dev_priv->fb_heap,
 					  0, 256*1024*1024))
@@ -477,7 +477,7 @@ int nouveau_mem_init(struct drm_device *dev)
 		if (!ret) {
 			ret = nouveau_sgdma_nottm_hack_init(dev);
 			if (ret)
-				nouveau_sgdma_takedown(dev); 
+				nouveau_sgdma_takedown(dev);
 		}
 
 		if (ret)
@@ -489,7 +489,7 @@ int nouveau_mem_init(struct drm_device *dev)
 					  0, dev_priv->gart_info.aper_size)) {
 			if (dev_priv->gart_info.type == NOUVEAU_GART_SGDMA) {
 				nouveau_sgdma_nottm_hack_takedown(dev);
-				nouveau_sgdma_takedown(dev); 
+				nouveau_sgdma_takedown(dev);
 			}
 		}
 	}
@@ -507,7 +507,7 @@ int nouveau_mem_init(struct drm_device *dev)
 		} else {
 			if (nouveau_mem_init_heap(&dev_priv->pci_heap, 0,
 						  dev->sg->pages * PAGE_SIZE)) {
-				DRM_ERROR("Unable to initialize pci_heap!");	
+				DRM_ERROR("Unable to initialize pci_heap!");
 			}
 		}
 	}
@@ -523,8 +523,8 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
 	int type;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	/* 
-	 * Make things easier on ourselves: all allocations are page-aligned. 
+	/*
+	 * Make things easier on ourselves: all allocations are page-aligned.
 	 * We need that to map allocated regions into the user space
 	 */
 	if (alignment < PAGE_SHIFT)
@@ -606,7 +606,7 @@ alloc_ok:
 			ret = drm_addmap(dev, block->start, block->size,
 					 _DRM_SCATTER_GATHER, 0, &block->map);
 
-		if (ret) { 
+		if (ret) {
 			nouveau_mem_free_block(block);
 			return NULL;
 		}
@@ -676,5 +676,3 @@ int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *
 	nouveau_mem_free(dev, block);
 	return 0;
 }
-
-

@@ -1,5 +1,5 @@
 /**************************************************************************
- * 
+ *
  * This kernel module is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of the
@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- * 
+ *
  **************************************************************************/
 /*
  * This code provides access to unexported mm kernel features. It is necessary
@@ -21,7 +21,7 @@
  * directly.
  *
  * Authors: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
- *          Linux kernel mm subsystem authors. 
+ *          Linux kernel mm subsystem authors.
  *          (Most code taken from there).
  */
 
@@ -50,7 +50,7 @@ int drm_unmap_page_from_agp(struct page *page)
          * performance reasons */
         return i;
 }
-#endif 
+#endif
 
 
 #if  (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
@@ -80,22 +80,22 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 
 /*
  * vm code for kernels below 2.6.15 in which version a major vm write
- * occured. This implement a simple straightforward 
+ * occured. This implement a simple straightforward
  * version similar to what's going to be
  * in kernel 2.6.19+
  * Kernels below 2.6.15 use nopage whereas 2.6.19 and upwards use
  * nopfn.
- */ 
+ */
 
 static struct {
 	spinlock_t lock;
 	struct page *dummy_page;
 	atomic_t present;
-} drm_np_retry = 
+} drm_np_retry =
 {SPIN_LOCK_UNLOCKED, NOPAGE_OOM, ATOMIC_INIT(0)};
 
 
-static struct page *drm_bo_vm_fault(struct vm_area_struct *vma, 
+static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 				    struct fault_data *data);
 
 
@@ -126,7 +126,7 @@ void free_nopage_retry(void)
 }
 
 struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
-			       unsigned long address, 
+			       unsigned long address,
 			       int *type)
 {
 	struct fault_data data;
@@ -204,14 +204,14 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page = NULL;
-	struct drm_ttm *ttm; 
+	struct drm_ttm *ttm;
 	struct drm_device *dev;
 	unsigned long pfn;
 	int err;
 	unsigned long bus_base;
 	unsigned long bus_offset;
 	unsigned long bus_size;
-	
+
 	dev = bo->dev;
 	while(drm_bo_read_lock(&dev->bm.bm_lock));
 
@@ -219,12 +219,12 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 
 	err = drm_bo_wait(bo, 0, 1, 0);
 	if (err) {
-		data->type = (err == -EAGAIN) ? 
+		data->type = (err == -EAGAIN) ?
 			VM_FAULT_MINOR : VM_FAULT_SIGBUS;
 		goto out_unlock;
 	}
-	
-	
+
+
 	/*
 	 * If buffer happens to be in a non-mappable location,
 	 * move it to a mappable.
@@ -253,7 +253,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	}
 
 	dev = bo->dev;
-	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset, 
+	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset,
 				&bus_size);
 
 	if (err) {
@@ -286,7 +286,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	err = vm_insert_pfn(vma, address, pfn);
 
 	if (!err || err == -EBUSY)
-		data->type = VM_FAULT_MINOR; 
+		data->type = VM_FAULT_MINOR;
 	else
 		data->type = VM_FAULT_OOM;
 out_unlock:
@@ -330,7 +330,7 @@ unsigned long drm_bo_vm_nopfn(struct vm_area_struct * vma,
  * VM compatibility code for 2.6.15-2.6.18. This code implements a complicated
  * workaround for a single BUG statement in do_no_page in these versions. The
  * tricky thing is that we need to take the mmap_sem in exclusive mode for _all_
- * vmas mapping the ttm, before dev->struct_mutex is taken. The way we do this is to 
+ * vmas mapping the ttm, before dev->struct_mutex is taken. The way we do this is to
  * check first take the dev->struct_mutex, and then trylock all mmap_sems. If this
  * fails for a single mmap_sem, we have to release all sems and the dev->struct_mutex,
  * release the cpu and retry. We also need to keep track of all vmas mapping the ttm.
@@ -351,13 +351,13 @@ typedef struct vma_entry {
 
 
 struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
-			       unsigned long address, 
+			       unsigned long address,
 			       int *type)
 {
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
 	struct page *page;
-	struct drm_ttm *ttm; 
+	struct drm_ttm *ttm;
 	struct drm_device *dev;
 
 	mutex_lock(&bo->mutex);
@@ -369,7 +369,7 @@ struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
 		page = NOPAGE_SIGBUS;
 		goto out_unlock;
 	}
-	
+
 	dev = bo->dev;
 
 	if (drm_mem_reg_is_pci(dev, &bo->mem)) {
@@ -403,8 +403,8 @@ int drm_bo_map_bound(struct vm_area_struct *vma)
 	unsigned long bus_base;
 	unsigned long bus_offset;
 	unsigned long bus_size;
-	
-	ret = drm_bo_pci_offset(bo->dev, &bo->mem, &bus_base, 
+
+	ret = drm_bo_pci_offset(bo->dev, &bo->mem, &bus_base,
 				&bus_offset, &bus_size);
 	BUG_ON(ret);
 
@@ -419,7 +419,7 @@ int drm_bo_map_bound(struct vm_area_struct *vma)
 
 	return ret;
 }
-	
+
 
 int drm_bo_add_vma(struct drm_buffer_object * bo, struct vm_area_struct *vma)
 {
@@ -493,7 +493,7 @@ int drm_bo_lock_kmm(struct drm_buffer_object * bo)
 {
 	p_mm_entry_t *entry;
 	int lock_ok = 1;
-	
+
 	list_for_each_entry(entry, &bo->p_mm_list, head) {
 		BUG_ON(entry->locked);
 		if (!down_write_trylock(&entry->mm->mmap_sem)) {
@@ -507,7 +507,7 @@ int drm_bo_lock_kmm(struct drm_buffer_object * bo)
 		return 0;
 
 	list_for_each_entry(entry, &bo->p_mm_list, head) {
-		if (!entry->locked) 
+		if (!entry->locked)
 			break;
 		up_write(&entry->mm->mmap_sem);
 		entry->locked = 0;
@@ -524,7 +524,7 @@ int drm_bo_lock_kmm(struct drm_buffer_object * bo)
 void drm_bo_unlock_kmm(struct drm_buffer_object * bo)
 {
 	p_mm_entry_t *entry;
-	
+
 	list_for_each_entry(entry, &bo->p_mm_list, head) {
 		BUG_ON(!entry->locked);
 		up_write(&entry->mm->mmap_sem);
@@ -532,7 +532,7 @@ void drm_bo_unlock_kmm(struct drm_buffer_object * bo)
 	}
 }
 
-int drm_bo_remap_bound(struct drm_buffer_object *bo) 
+int drm_bo_remap_bound(struct drm_buffer_object *bo)
 {
 	vma_entry_t *v_entry;
 	int ret = 0;
@@ -553,9 +553,9 @@ void drm_bo_finish_unmap(struct drm_buffer_object *bo)
 	vma_entry_t *v_entry;
 
 	list_for_each_entry(v_entry, &bo->vma_list, head) {
-		v_entry->vma->vm_flags &= ~VM_PFNMAP; 
+		v_entry->vma->vm_flags &= ~VM_PFNMAP;
 	}
-}	
+}
 
 #endif
 

@@ -324,7 +324,7 @@ static void r128_cce_init_ring_buffer(struct drm_device * dev,
 		ring_start = dev_priv->cce_ring->offset - dev->agp->base;
 	else
 #endif
-		ring_start = dev_priv->cce_ring->offset - 
+		ring_start = dev_priv->cce_ring->offset -
 				(unsigned long)dev->sg->virtual;
 
 	R128_WRITE(R128_PM4_BUFFER_OFFSET, ring_start | R128_AGP_OFFSET);

@@ -1537,7 +1537,7 @@ EXPORT_SYMBOL(drm_bo_do_validate);
 
 int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 			   uint32_t fence_class,
-			   uint64_t flags, uint64_t mask, 
+			   uint64_t flags, uint64_t mask,
 			   uint32_t hint,
 			   int use_old_fence_class,
 			   struct drm_bo_info_rep * rep,
@@ -1552,7 +1552,7 @@ int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 	bo = drm_lookup_buffer_object(file_priv, handle, 1);
 	mutex_unlock(&dev->struct_mutex);
 
-	if (!bo) 
+	if (!bo)
 		return -EINVAL;
 
 	if (use_old_fence_class)
@@ -1562,10 +1562,10 @@ int drm_bo_handle_validate(struct drm_file * file_priv, uint32_t handle,
 	 * Only allow creator to change shared buffer mask.
 	 */
 
-	if (bo->base.owner != file_priv) 
+	if (bo->base.owner != file_priv)
 		mask &= ~(DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE);
 
-		
+
 	ret = drm_bo_do_validate(bo, flags, mask, hint, fence_class,
 				 no_wait, rep);
 
@@ -1764,14 +1764,14 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 				       req->buffer_start, &entry);
 	if (ret)
 		goto out;
-	
+
 	ret = drm_bo_add_user_object(file_priv, entry,
 				     req->mask & DRM_BO_FLAG_SHAREABLE);
 	if (ret) {
 		drm_bo_usage_deref_unlocked(&entry);
 		goto out;
 	}
-	
+
 	mutex_lock(&entry->mutex);
 	drm_bo_fill_rep_arg(entry, rep);
 	mutex_unlock(&entry->mutex);
@@ -1780,7 +1780,7 @@ out:
 	return ret;
 }
 
-int drm_bo_setstatus_ioctl(struct drm_device *dev, 
+int drm_bo_setstatus_ioctl(struct drm_device *dev,
 			   void *data, struct drm_file *file_priv)
 {
 	struct drm_bo_map_wait_idle_arg *arg = data;
@@ -1861,7 +1861,7 @@ int drm_bo_reference_ioctl(struct drm_device *dev, void *data, struct drm_file *
 				  drm_buffer_type, &uo);
 	if (ret)
 		return ret;
-	
+
 	ret = drm_bo_handle_info(file_priv, req->handle, rep);
 	if (ret)
 		return ret;
@@ -2165,7 +2165,7 @@ EXPORT_SYMBOL(drm_bo_init_mm);
 /*
  * This function is intended to be called on drm driver unload.
  * If you decide to call it from lastclose, you must protect the call
- * from a potentially racing drm_bo_driver_init in firstopen. 
+ * from a potentially racing drm_bo_driver_init in firstopen.
  * (This may happen on X server restart).
  */
 
@@ -2229,7 +2229,7 @@ out:
 /*
  * This function is intended to be called on drm driver load.
  * If you decide to call it from firstopen, you must protect the call
- * from a potentially racing drm_bo_driver_finish in lastclose. 
+ * from a potentially racing drm_bo_driver_finish in lastclose.
  * (This may happen on X server restart).
  */
 
@@ -2390,13 +2390,13 @@ int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 		DRM_ERROR("Lock flag DRM_BO_LOCK_IGNORE_NO_EVICT not supported yet.\n");
 		return -EINVAL;
 	}
-		
+
 	if (arg->lock_flags & DRM_BO_LOCK_UNLOCK_BM) {
 		ret = drm_bo_write_lock(&dev->bm.bm_lock, file_priv);
 		if (ret)
 			return ret;
 	}
-		
+
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_bo_lock_mm(dev, arg->mem_type);
 	mutex_unlock(&dev->struct_mutex);
@@ -2408,8 +2408,8 @@ int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	return 0;
 }
 
-int drm_mm_unlock_ioctl(struct drm_device *dev, 
-			void *data, 
+int drm_mm_unlock_ioctl(struct drm_device *dev,
+			void *data,
 			struct drm_file *file_priv)
 {
 	struct drm_mm_type_arg *arg = data;
@@ -2426,7 +2426,7 @@ int drm_mm_unlock_ioctl(struct drm_device *dev,
 		if (ret)
 			return ret;
 	}
-		
+
 	return 0;
 }
 
@@ -2580,11 +2580,11 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object * bo)
 	return 0;
 }
 
-int drm_bo_version_ioctl(struct drm_device *dev, void *data, 
+int drm_bo_version_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
 	struct drm_bo_version_arg *arg = (struct drm_bo_version_arg *)data;
-	
+
 	arg->major = DRM_BO_INIT_MAJOR;
 	arg->minor = DRM_BO_INIT_MINOR;
 	arg->patchlevel = DRM_BO_INIT_PATCH;

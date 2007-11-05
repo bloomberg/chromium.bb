@@ -32,7 +32,7 @@ void savage_emit_clip_rect_s3d(drm_savage_private_t *dev_priv,
 	uint32_t scstart = dev_priv->state.s3d.new_scstart;
 	uint32_t scend   = dev_priv->state.s3d.new_scend;
 	scstart = (scstart & ~SAVAGE_SCISSOR_MASK_S3D) |
-		((uint32_t)pbox->x1 & 0x000007ff) | 
+		((uint32_t)pbox->x1 & 0x000007ff) |
 		(((uint32_t)pbox->y1 << 16) & 0x07ff0000);
 	scend   = (scend   & ~SAVAGE_SCISSOR_MASK_S3D) |
 		(((uint32_t)pbox->x2-1) & 0x000007ff) |
@@ -966,7 +966,7 @@ int savage_bci_cmdbuf(struct drm_device *dev, void *data, struct drm_file *file_
 	int ret = 0;
 
 	DRM_DEBUG("\n");
-	
+
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (dma && dma->buflist) {

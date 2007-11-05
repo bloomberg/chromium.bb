@@ -628,7 +628,7 @@ extern void drm_regs_init(struct drm_reg_manager *manager,
 			  void (*reg_destroy)(struct drm_reg *));
 
 /*
- * drm_bo_lock.c 
+ * drm_bo_lock.c
  * Simple replacement for the hardware lock on buffer manager init and clean.
  */
 
@@ -636,10 +636,10 @@ extern void drm_regs_init(struct drm_reg_manager *manager,
 extern void drm_bo_init_lock(struct drm_bo_lock *lock);
 extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
 extern int drm_bo_read_lock(struct drm_bo_lock *lock);
-extern int drm_bo_write_lock(struct drm_bo_lock *lock, 
+extern int drm_bo_write_lock(struct drm_bo_lock *lock,
 			     struct drm_file *file_priv);
 
-extern int drm_bo_write_unlock(struct drm_bo_lock *lock, 
+extern int drm_bo_write_unlock(struct drm_bo_lock *lock,
 			       struct drm_file *file_priv);
 
 #ifdef CONFIG_DEBUG_MUTEXES

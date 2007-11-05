@@ -42,4 +42,3 @@ void
 nv04_timer_takedown(struct drm_device *dev)
 {
 }
-

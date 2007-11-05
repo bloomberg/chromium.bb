@@ -171,14 +171,14 @@ extern void mach64_driver_irq_uninstall(struct drm_device * dev);
 #define MACH64_AGP_CNTL				0x014c
 #define MACH64_ALPHA_TST_CNTL			0x0550
 
-#define MACH64_DSP_CONFIG 			0x0420
-#define MACH64_DSP_ON_OFF 			0x0424
-#define MACH64_EXT_MEM_CNTL 			0x04ac
-#define MACH64_GEN_TEST_CNTL 			0x04d0
-#define MACH64_HW_DEBUG 			0x047c
-#define MACH64_MEM_ADDR_CONFIG 			0x0434
-#define MACH64_MEM_BUF_CNTL 			0x042c
-#define MACH64_MEM_CNTL 			0x04b0
+#define MACH64_DSP_CONFIG			0x0420
+#define MACH64_DSP_ON_OFF			0x0424
+#define MACH64_EXT_MEM_CNTL			0x04ac
+#define MACH64_GEN_TEST_CNTL			0x04d0
+#define MACH64_HW_DEBUG				0x047c
+#define MACH64_MEM_ADDR_CONFIG			0x0434
+#define MACH64_MEM_BUF_CNTL			0x042c
+#define MACH64_MEM_CNTL				0x04b0
 
 #define MACH64_BM_ADDR				0x0648
 #define MACH64_BM_COMMAND			0x0188
@@ -205,16 +205,16 @@ extern void mach64_driver_irq_uninstall(struct drm_device * dev);
 #define MACH64_CLR_CMP_CLR			0x0700
 #define MACH64_CLR_CMP_CNTL			0x0708
 #define MACH64_CLR_CMP_MASK			0x0704
-#define MACH64_CONFIG_CHIP_ID 			0x04e0
-#define MACH64_CONFIG_CNTL 			0x04dc
-#define MACH64_CONFIG_STAT0 			0x04e4
-#define MACH64_CONFIG_STAT1 			0x0494
-#define MACH64_CONFIG_STAT2 			0x0498
+#define MACH64_CONFIG_CHIP_ID			0x04e0
+#define MACH64_CONFIG_CNTL			0x04dc
+#define MACH64_CONFIG_STAT0			0x04e4
+#define MACH64_CONFIG_STAT1			0x0494
+#define MACH64_CONFIG_STAT2			0x0498
 #define MACH64_CONTEXT_LOAD_CNTL		0x072c
 #define MACH64_CONTEXT_MASK			0x0720
 #define MACH64_COMPOSITE_SHADOW_ID		0x0798
-#define MACH64_CRC_SIG 				0x04e8
-#define MACH64_CUSTOM_MACRO_CNTL 		0x04d4
+#define MACH64_CRC_SIG				0x04e8
+#define MACH64_CUSTOM_MACRO_CNTL		0x04d4
 
 #define MACH64_DP_BKGD_CLR			0x06c0
 #define MACH64_DP_FOG_CLR			0x06c4
@@ -358,7 +358,7 @@ extern void mach64_driver_irq_uninstall(struct drm_device * dev);
 #define MACH64_TEX_0_OFF			0x05c0
 #define MACH64_TEX_CNTL				0x0774
 #define MACH64_TEX_SIZE_PITCH			0x0770
-#define MACH64_TIMER_CONFIG 			0x0428
+#define MACH64_TIMER_CONFIG			0x0428
 
 #define MACH64_VERTEX_1_ARGB			0x0254
 #define MACH64_VERTEX_1_S			0x0240
@@ -758,7 +758,7 @@ mach64_update_ring_snapshot(drm_mach64_private_t * dev_priv)
 
 #define RING_WRITE_OFS  _ring_write
 
-#define BEGIN_RING( n ) 								\
+#define BEGIN_RING( n )									\
 do {											\
 	if ( MACH64_VERBOSE ) {								\
 		DRM_INFO( "BEGIN_RING( %d ) in %s\n",					\
@@ -789,7 +789,7 @@ do {								\
 	_ring_write &= _ring_mask;				\
 } while (0)
 
-#define ADVANCE_RING() 							\
+#define ADVANCE_RING()							\
 do {									\
 	if ( MACH64_VERBOSE ) {						\
 		DRM_INFO( "ADVANCE_RING() wr=0x%06x tail=0x%06x\n",	\
@@ -808,12 +808,12 @@ do {									\
 
 #define DMALOCALS				\
 	drm_mach64_freelist_t *_entry = NULL;	\
-	struct drm_buf *_buf = NULL; 		\
+	struct drm_buf *_buf = NULL;		\
 	u32 *_buf_wptr; int _outcount
 
 #define GETBUFPTR( __buf )						\
-((dev_priv->is_pci) ? 							\
-	((u32 *)(__buf)->address) : 					\
+((dev_priv->is_pci) ?							\
+	((u32 *)(__buf)->address) :					\
 	((u32 *)((char *)dev_priv->dev_buffers->handle + (__buf)->offset)))
 
 #define GETBUFADDR( __buf ) ((u32)(__buf)->bus_address)
@@ -844,7 +844,7 @@ static __inline__ int mach64_find_pending_buf_entry(drm_mach64_private_t *
 	return 0;
 }
 
-#define DMASETPTR( _p ) 			\
+#define DMASETPTR( _p )				\
 do {						\
 	_buf = (_p);				\
 	_outcount = 0;				\
@@ -913,10 +913,10 @@ do {											     \
 				   __FUNCTION__, _buf->idx );				     \
 			return -EFAULT;						     \
 		}									     \
-     	} else {									     \
+	} else {									     \
 		if (list_empty(&dev_priv->placeholders)) {				     \
 			DRM_ERROR( "DMAADVANCE() in %s: empty placeholder list\n",	     \
-			   	__FUNCTION__ );						     \
+				__FUNCTION__ );						     \
 			return -EFAULT;						     \
 		}									     \
 		ptr = dev_priv->placeholders.next;					     \

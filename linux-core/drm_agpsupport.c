@@ -506,7 +506,7 @@ static int drm_agp_needs_unbind_cache_adjust(struct drm_ttm_backend *backend) {
 static int drm_agp_populate(struct drm_ttm_backend *backend, unsigned long num_pages,
 			    struct page **pages) {
 
-	struct drm_agp_ttm_backend *agp_be = 
+	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	struct page **cur_page, **last_page = pages + num_pages;
 	DRM_AGP_MEM *mem;
@@ -562,7 +562,7 @@ static int drm_agp_bind_ttm(struct drm_ttm_backend *backend,
 
 static int drm_agp_unbind_ttm(struct drm_ttm_backend *backend) {
 
-	struct drm_agp_ttm_backend *agp_be = 
+	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 
 	DRM_DEBUG("drm_agp_unbind_ttm\n");
@@ -574,7 +574,7 @@ static int drm_agp_unbind_ttm(struct drm_ttm_backend *backend) {
 
 static void drm_agp_clear_ttm(struct drm_ttm_backend *backend) {
 
-	struct drm_agp_ttm_backend *agp_be = 
+	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	DRM_AGP_MEM *mem = agp_be->mem;
 
@@ -604,7 +604,7 @@ static void drm_agp_destroy_ttm(struct drm_ttm_backend *backend) {
 	}
 }
 
-static struct drm_ttm_backend_func agp_ttm_backend = 
+static struct drm_ttm_backend_func agp_ttm_backend =
 {
 	.needs_ub_cache_adjust = drm_agp_needs_unbind_cache_adjust,
 	.populate = drm_agp_populate,
@@ -637,7 +637,7 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 		return NULL;
 	}
 
-	
+
 	agp_be = drm_ctl_calloc(1, sizeof(*agp_be), DRM_MEM_TTM);
 	if (!agp_be)
 		return NULL;

@@ -134,7 +134,7 @@ nv04_instmem_clear(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 		if (gpuobj->im_bound)
 			dev_priv->Engine.instmem.unbind(dev, gpuobj);
 		gpuobj->im_backing = NULL;
-	}	
+	}
 }
 
 int
@@ -156,4 +156,3 @@ nv04_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 	gpuobj->im_bound = 0;
 	return 0;
 }
-

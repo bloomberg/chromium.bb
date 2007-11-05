@@ -205,4 +205,3 @@ nv40_fifo_init(struct drm_device *dev)
 	NV_WRITE(NV04_PFIFO_DMA_TIMESLICE, 0x2101ffff);
 	return 0;
 }
-

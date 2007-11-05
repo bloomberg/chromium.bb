@@ -128,7 +128,7 @@ int drm_ht_insert_item(struct drm_open_hash * ht, struct drm_hash_item * item)
 }
 
 /*
- * Just insert an item and return any "bits" bit key that hasn't been 
+ * Just insert an item and return any "bits" bit key that hasn't been
  * used before.
  */
 int drm_ht_just_insert_please(struct drm_open_hash * ht, struct drm_hash_item * item,

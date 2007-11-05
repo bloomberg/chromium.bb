@@ -59,7 +59,7 @@ enum nouveau_flags {
 };
 
 #define NVOBJ_ENGINE_SW		0
-#define NVOBJ_ENGINE_GR  	1
+#define NVOBJ_ENGINE_GR		1
 #define NVOBJ_ENGINE_INT	0xdeadbeef
 
 #define NVOBJ_FLAG_ALLOW_NO_REFS	(1 << 0)
@@ -587,4 +587,3 @@ extern void nouveau_fence_handler(struct drm_device *dev, int channel);
 #define INSTANCE_WR(o,i,v) NV_WI32((o)->im_pramin->start + ((i)<<2), (v))
 
 #endif /* __NOUVEAU_DRV_H__ */
-

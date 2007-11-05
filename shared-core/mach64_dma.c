@@ -53,7 +53,7 @@
  *
  * \param dev_priv pointer to device private data structure.
  * \param entries number of free entries in the FIFO to wait for.
- * 
+ *
  * \returns zero on success, or -EBUSY if the timeout (specificed by
  * drm_mach64_private::usec_timeout) occurs.
  */
@@ -107,10 +107,10 @@ int mach64_do_wait_for_idle(drm_mach64_private_t * dev_priv)
  *
  * This function should be called before writing new entries to the ring
  * buffer.
- * 
+ *
  * \param dev_priv pointer to device private data structure.
  * \param n number of free entries in the ring buffer to wait for.
- * 
+ *
  * \returns zero on success, or -EBUSY if the timeout (specificed by
  * drm_mach64_private_t::usec_timeout) occurs.
  *
@@ -139,7 +139,7 @@ int mach64_wait_ring(drm_mach64_private_t * dev_priv, int n)
 }
 
 /**
- * Wait until all DMA requests have been processed... 
+ * Wait until all DMA requests have been processed...
  *
  * \sa mach64_wait_ring()
  */

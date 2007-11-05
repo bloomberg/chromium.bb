@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright (c) 2007 Tungsten Graphics, Inc., Cedar Park, TX., USA
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,7 +10,7 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
@@ -19,8 +19,8 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
  * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
@@ -90,13 +90,13 @@ EXPORT_SYMBOL(drm_bo_move_ttm);
  *
  * \param bo The buffer object.
  * \return Failure indication.
- * 
+ *
  * Returns -EINVAL if the buffer object is currently not mappable.
  * Returns -ENOMEM if the ioremap operation failed.
  * Otherwise returns zero.
- * 
+ *
  * After a successfull call, bo->iomap contains the virtual address, or NULL
- * if the buffer object content is not accessible through PCI space. 
+ * if the buffer object content is not accessible through PCI space.
  * Call bo->mutex locked.
  */
 
@@ -349,11 +349,11 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 #ifdef DRM_ODD_MM_COMPAT
 	/*
 	 * In this mode, we don't allow pipelining a copy blit,
-	 * since the buffer will be accessible from user space 
+	 * since the buffer will be accessible from user space
 	 * the moment we return and rebuild the page tables.
 	 *
 	 * With normal vm operation, page tables are rebuilt
-	 * on demand using fault(), which waits for buffer idle. 
+	 * on demand using fault(), which waits for buffer idle.
 	 */
 	if (1)
 #else

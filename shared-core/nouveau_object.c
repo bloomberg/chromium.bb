@@ -524,7 +524,7 @@ nouveau_gpuobj_ref_find(struct nouveau_channel *chan, uint32_t handle,
 	struct nouveau_gpuobj_ref *ref;
 	struct list_head *entry, *tmp;
 
-	list_for_each_safe(entry, tmp, &chan->ramht_refs) {		
+	list_for_each_safe(entry, tmp, &chan->ramht_refs) {
 		ref = list_entry(entry, struct nouveau_gpuobj_ref, list);
 
 		if (ref->handle == handle) {
@@ -616,7 +616,7 @@ nouveau_gpuobj_class_instmem_size(struct drm_device *dev, int class)
    DMA objects are used to reference a piece of memory in the
    framebuffer, PCI or AGP address space. Each object is 16 bytes big
    and looks as follows:
-   
+
    entry[0]
    11:0  class (seems like I can always use 0 here)
    12    page table present?
@@ -648,7 +648,7 @@ nouveau_gpuobj_dma_new(struct nouveau_channel *chan, int class,
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int ret;
 	uint32_t is_scatter_gather = 0;
-	
+
 	/* Total number of pages covered by the request.
 	 */
 	const unsigned int page_count = (size + PAGE_SIZE - 1) / PAGE_SIZE;
@@ -671,7 +671,7 @@ nouveau_gpuobj_dma_new(struct nouveau_channel *chan, int class,
         default:
                 break;
         }
-	
+
 	ret = nouveau_gpuobj_new(dev, chan,
 				 is_scatter_gather ? ((page_count << 2) + 12) : nouveau_gpuobj_class_instmem_size(dev, class),
 				 16,
@@ -687,11 +687,11 @@ nouveau_gpuobj_dma_new(struct nouveau_channel *chan, int class,
 		adjust = offset &  0x00000fff;
 		if (access != NV_DMA_ACCESS_RO)
 				pte_flags |= (1<<1);
-		
-		if ( ! is_scatter_gather ) 
+
+		if ( ! is_scatter_gather )
 			{
 			frame  = offset & ~0x00000fff;
-			
+
 			INSTANCE_WR(*gpuobj, 0, ((1<<12) | (1<<13) |
 					(adjust << 20) |
 					 (access << 14) |
@@ -701,7 +701,7 @@ nouveau_gpuobj_dma_new(struct nouveau_channel *chan, int class,
 			INSTANCE_WR(*gpuobj, 2, frame | pte_flags);
 			INSTANCE_WR(*gpuobj, 3, frame | pte_flags);
 			}
-		else 
+		else
 			{
 			/* Intial page entry in the scatter-gather area that
 			 * corresponds to the base offset
@@ -728,7 +728,7 @@ nouveau_gpuobj_dma_new(struct nouveau_channel *chan, int class,
 
 			/*write starting at the third dword*/
 			instance_offset = 2;
- 
+
 			/*for each PAGE, get its bus address, fill in the page table entry, and advance*/
 			for (i = 0; i < page_count; i++) {
 				if (dev->sg->busaddr[idx] == 0) {
@@ -745,12 +745,12 @@ nouveau_gpuobj_dma_new(struct nouveau_channel *chan, int class,
 				}
 
 				frame = (uint32_t) dev->sg->busaddr[idx];
-				INSTANCE_WR(*gpuobj, instance_offset, 
+				INSTANCE_WR(*gpuobj, instance_offset,
 					    frame | pte_flags);
- 
+
 				idx++;
 				instance_offset ++;
- 			}
+			}
 			}
 	} else {
 		uint32_t flags0, flags5;
@@ -848,7 +848,7 @@ nouveau_gpuobj_gart_dma_new(struct nouveau_channel *chan,
    entry[0]:
    11:0  class  (maybe uses more bits here?)
    17    user clip enable
-   21:19 patch config 
+   21:19 patch config
    25    patch status valid ?
    entry[1]:
    15:0  DMA notifier  (maybe 20:0)
@@ -986,7 +986,7 @@ nouveau_gpuobj_channel_init(struct nouveau_channel *chan,
 	/* NV50 VM, point offset 0-512MiB at shared PCIEGART table  */
 	if (dev_priv->card_type >= NV_50) {
 		uint32_t vm_offset;
-		
+
 		vm_offset = (dev_priv->chipset & 0xf0) == 0x50 ? 0x1400 : 0x200;
 		vm_offset += chan->ramin->gpuobj->im_pramin->start;
 		if ((ret = nouveau_gpuobj_new_fake(dev, vm_offset, ~0, 0x4000,
@@ -1074,7 +1074,7 @@ nouveau_gpuobj_channel_takedown(struct nouveau_channel *chan)
 
 	DRM_DEBUG("ch%d\n", chan->id);
 
-	list_for_each_safe(entry, tmp, &chan->ramht_refs) {		
+	list_for_each_safe(entry, tmp, &chan->ramht_refs) {
 		ref = list_entry(entry, struct nouveau_gpuobj_ref, list);
 
 		nouveau_gpuobj_ref_del(dev, &ref);
@@ -1104,7 +1104,7 @@ int nouveau_ioctl_grobj_alloc(struct drm_device *dev, void *data,
 	NOUVEAU_GET_USER_CHANNEL_WITH_RETURN(init->channel, file_priv, chan);
 
 	//FIXME: check args, only allow trusted objects to be created
-	
+
 	if (init->handle == ~0)
 		return -EINVAL;
 
@@ -1145,4 +1145,3 @@ int nouveau_ioctl_gpuobj_free(struct drm_device *dev, void *data,
 
 	return 0;
 }
-

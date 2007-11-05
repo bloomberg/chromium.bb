@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2007 Matthieu CASTET <castet.matthieu@free.fr>
  * All Rights Reserved.
  *
@@ -732,7 +732,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	if (last) {
 		nouveau_wait_for_idle(dev);
 		nv10_graph_save_context(last);
-	}	
+	}
 
 	nouveau_wait_for_idle(dev);
 
@@ -907,4 +907,3 @@ int nv10_graph_init(struct drm_device *dev) {
 void nv10_graph_takedown(struct drm_device *dev)
 {
 }
-

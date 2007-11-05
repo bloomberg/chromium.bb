@@ -3,7 +3,7 @@
 /*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -11,11 +11,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -23,7 +23,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #include "drmP.h"
@@ -310,7 +310,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 	pipea_stats = I915_READ(I915REG_PIPEASTAT);
 	pipeb_stats = I915_READ(I915REG_PIPEBSTAT);
-		
+
 	temp = I915_READ16(I915REG_INT_IDENTITY_R);
 	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG);
 
@@ -354,7 +354,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
-		I915_WRITE(I915REG_PIPEASTAT, 
+		I915_WRITE(I915REG_PIPEASTAT,
 			pipea_stats|I915_VBLANK_INTERRUPT_ENABLE|
 			I915_VBLANK_CLEAR);
 		I915_WRITE(I915REG_PIPEBSTAT,
@@ -367,7 +367,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 int i915_emit_irq(struct drm_device * dev)
 {
-	
+
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
@@ -397,7 +397,7 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
 }
-		
+
 void i915_user_irq_off(drm_i915_private_t *dev_priv)
 {
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
@@ -407,7 +407,7 @@ void i915_user_irq_off(drm_i915_private_t *dev_priv)
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 }
-		
+
 
 static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 {
@@ -421,7 +421,7 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 		return 0;
 
 	dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-	
+
 	i915_user_irq_on(dev_priv);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
 		    READ_BREADCRUMB(dev_priv) >= irq_nr);
@@ -453,7 +453,7 @@ static int i915_driver_vblank_do_wait(struct drm_device *dev,
 	DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
 		    (((cur_vblank = atomic_read(counter))
 			- *sequence) <= (1<<23)));
-	
+
 	*sequence = cur_vblank;
 
 	return ret;
@@ -513,8 +513,8 @@ int i915_irq_wait(struct drm_device *dev, void *data,
 static void i915_enable_interrupt (struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	
-	dev_priv->irq_enable_reg = USER_INT_FLAG; 
+
+	dev_priv->irq_enable_reg = USER_INT_FLAG;
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_A)
 		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B)
@@ -538,7 +538,7 @@ int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 	}
 
 	if (pipe->pipe & ~(DRM_I915_VBLANK_PIPE_A|DRM_I915_VBLANK_PIPE_B)) {
-		DRM_ERROR("%s called with invalid pipe 0x%x\n", 
+		DRM_ERROR("%s called with invalid pipe 0x%x\n",
 			  __FUNCTION__, pipe->pipe);
 		return -EINVAL;
 	}

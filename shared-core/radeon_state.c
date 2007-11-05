@@ -3069,7 +3069,7 @@ static int radeon_cp_getparam(struct drm_device *dev, void *data, struct drm_fil
 			return -EINVAL;
 		value = RADEON_SCRATCH_REG_OFFSET;
 		break;
-	
+
 	case RADEON_PARAM_CARD_TYPE:
 		if (dev_priv->flags & RADEON_IS_PCIE)
 			value = RADEON_CARD_PCIE;

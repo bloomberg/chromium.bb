@@ -94,9 +94,9 @@ int via_init_mem_type(struct drm_device * dev, uint32_t type,
 		man->drm_bus_maptype = 0;
 		break;
 
-	case DRM_BO_MEM_TT: 
+	case DRM_BO_MEM_TT:
 		/* Dynamic agpgart memory */
-		
+
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
 			DRM_ERROR("AGP is not enabled for memory type %u\n",
 				  (unsigned)type);
@@ -109,21 +109,21 @@ int via_init_mem_type(struct drm_device * dev, uint32_t type,
 
 		/* Only to get pte protection right. */
 
-		man->drm_bus_maptype = _DRM_AGP; 
+		man->drm_bus_maptype = _DRM_AGP;
 		break;
 
-	case DRM_BO_MEM_VRAM: 
+	case DRM_BO_MEM_VRAM:
 		/* "On-card" video ram */
-		
+
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE | _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_FRAME_BUFFER;
 		man->io_addr = NULL;
 		return via_vram_info(dev, &man->io_offset, &man->io_size);
 		break;
 
-	case DRM_BO_MEM_PRIV0: 
+	case DRM_BO_MEM_PRIV0:
 		/* Pre-bound agpgart memory */
-		
+
 		if (!(drm_core_has_AGP(dev) && dev->agp)) {
 			DRM_ERROR("AGP is not enabled for memory type %u\n",
 				  (unsigned)type);

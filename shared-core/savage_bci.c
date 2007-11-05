@@ -584,7 +584,7 @@ int savage_driver_firstopen(struct drm_device *dev)
 			 * MTRRs. */
 			dev_priv->mtrr[0].base = fb_base;
 			dev_priv->mtrr[0].size = 0x01000000;
-			dev_priv->mtrr[0].handle = 
+			dev_priv->mtrr[0].handle =
 			    drm_mtrr_add(dev_priv->mtrr[0].base,
 					 dev_priv->mtrr[0].size, DRM_MTRR_WC);
 			dev_priv->mtrr[1].base = fb_base+0x02000000;
@@ -595,7 +595,7 @@ int savage_driver_firstopen(struct drm_device *dev)
 			dev_priv->mtrr[2].base = fb_base+0x04000000;
 			dev_priv->mtrr[2].size = 0x04000000;
 			dev_priv->mtrr[2].handle =
-			    drm_mtrr_add(dev_priv->mtrr[2].base, 
+			    drm_mtrr_add(dev_priv->mtrr[2].base,
 				         dev_priv->mtrr[2].size, DRM_MTRR_WC);
 		} else {
 			DRM_ERROR("strange pci_resource_len %08lx\n",
@@ -615,7 +615,7 @@ int savage_driver_firstopen(struct drm_device *dev)
 			 * aperture. */
 			dev_priv->mtrr[0].base = fb_base;
 			dev_priv->mtrr[0].size = 0x08000000;
-			dev_priv->mtrr[0].handle = 
+			dev_priv->mtrr[0].handle =
 			    drm_mtrr_add(dev_priv->mtrr[0].base,
 					 dev_priv->mtrr[0].size, DRM_MTRR_WC);
 		} else {
@@ -834,7 +834,7 @@ static int savage_do_init_bci(struct drm_device *dev, drm_savage_init_t *init)
 		}
 		front_stride = dev_priv->front_pitch / (dev_priv->fb_bpp / 8);
 		back_stride  = dev_priv->back_pitch / (dev_priv->fb_bpp / 8);
-		depth_stride = 
+		depth_stride =
 		    dev_priv->depth_pitch / (dev_priv->depth_bpp / 8);
 
 		dev_priv->front_bd = front_stride | SAVAGE_BD_BW_DISABLE |
@@ -1092,4 +1092,3 @@ struct drm_ioctl_desc savage_ioctls[] = {
 };
 
 int savage_max_ioctl = DRM_ARRAY_SIZE(savage_ioctls);
-

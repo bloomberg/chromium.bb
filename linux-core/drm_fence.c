@@ -127,7 +127,7 @@ void drm_fence_handler(struct drm_device * dev, uint32_t fence_class,
 		list_for_each_entry(fence, head, ring) {
 			if (&fence->ring == &fc->ring)
 				break;
-	    		diff = (fc->last_exe_flush - fence->sequence) &
+			diff = (fc->last_exe_flush - fence->sequence) &
 				driver->sequence_mask;
 			if (diff > driver->wrap_diff)
 				break;
@@ -497,7 +497,7 @@ static int drm_fence_object_init(struct drm_device * dev, uint32_t fence_class,
 	write_lock_irqsave(&fm->lock, flags);
 	INIT_LIST_HEAD(&fence->ring);
 
-	/* 
+	/*
 	 *  Avoid hitting BUG() for kernel-only fence objects.
 	 */
 
@@ -656,7 +656,7 @@ int drm_fence_create_ioctl(struct drm_device *dev, void *data, struct drm_file *
 		drm_fence_usage_deref_unlocked(&fence);
 		return ret;
 	}
-	
+
 	/*
 	 * usage > 0. No need to lock dev->struct_mutex;
 	 */

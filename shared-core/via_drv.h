@@ -83,7 +83,7 @@ typedef struct drm_via_irq {
 	uint32_t enable_mask;
 	wait_queue_head_t irq_queue;
 } drm_via_irq_t;
-	
+
 typedef struct drm_via_private {
 	drm_via_sarea_t *sarea_priv;
 	drm_local_map_t *sarea;
@@ -110,8 +110,8 @@ typedef struct drm_via_private {
 	drm_via_irq_t via_irqs[VIA_NUM_IRQS];
 	unsigned num_irqs;
 	maskarray_t *irq_masks;
-	uint32_t irq_enable_mask; 
-	uint32_t irq_pending_mask;	
+	uint32_t irq_enable_mask;
+	uint32_t irq_pending_mask;
 	int *irq_map;
 	/* Memory manager stuff */
 #ifdef VIA_HAVE_CORE_MM
@@ -213,7 +213,7 @@ extern int via_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);
 extern uint32_t via_evict_mask(struct drm_buffer_object *bo);
 extern int via_move(struct drm_buffer_object *bo, int evict,
-	      	int no_wait, struct drm_bo_mem_reg *new_mem);
+		int no_wait, struct drm_bo_mem_reg *new_mem);
 #endif
 
 #endif

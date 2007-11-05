@@ -95,7 +95,7 @@ nouveau_bo_init_mem_type(struct drm_device *dev, uint32_t type,
 			man->io_size = nouveau_mem_fb_amount(dev);
 		break;
 	case DRM_BO_MEM_PRIV0:
-		/* Unmappable VRAM */		   
+		/* Unmappable VRAM */
 		man->flags = _DRM_FLAG_MEMTYPE_CMA;
 		man->drm_bus_maptype = 0;
 		break;
@@ -254,4 +254,3 @@ struct drm_bo_driver nouveau_bo_driver = {
 	.move = nouveau_bo_move,
 	.ttm_cache_flush= nouveau_bo_flush_ttm
 };
-

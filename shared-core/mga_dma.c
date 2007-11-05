@@ -28,7 +28,7 @@
 /**
  * \file mga_dma.c
  * DMA support for MGA G200 / G400.
- * 
+ *
  * \author Rickard E. (Rik) Faith <faith@valinux.com>
  * \author Jeff Hartmann <jhartmann@valinux.com>
  * \author Keith Whitwell <keith@tungstengraphics.com>
@@ -420,7 +420,7 @@ int mga_driver_load(struct drm_device *dev, unsigned long flags)
 
 /**
  * Bootstrap the driver for AGP DMA.
- * 
+ *
  * \todo
  * Investigate whether there is any benifit to storing the WARP microcode in
  * AGP memory.  If not, the microcode may as well always be put in PCI
@@ -591,7 +591,7 @@ static int mga_do_agp_dma_bootstrap(struct drm_device *dev,
 
 /**
  * Bootstrap the driver for PCI DMA.
- * 
+ *
  * \todo
  * The algorithm for decreasing the size of the primary DMA buffer could be
  * better.  The size should be rounded up to the nearest page size, then
@@ -600,7 +600,7 @@ static int mga_do_agp_dma_bootstrap(struct drm_device *dev,
  * \todo
  * Determine whether the maximum address passed to drm_pci_alloc is correct.
  * The same goes for drm_addbufs_pci.
- * 
+ *
  * \sa mga_do_dma_bootstrap, mga_do_agp_dma_bootstrap
  */
 static int mga_do_pci_dma_bootstrap(struct drm_device * dev,
@@ -613,7 +613,7 @@ static int mga_do_pci_dma_bootstrap(struct drm_device * dev,
 	int err;
 	struct drm_buf_desc req;
 
-	
+
 	if (dev->dma == NULL) {
 		DRM_ERROR("dev->dma is NULL\n");
 		return -EFAULT;
@@ -656,13 +656,13 @@ static int mga_do_pci_dma_bootstrap(struct drm_device * dev,
 
 	if (dev_priv->primary->size != dma_bs->primary_size) {
 		DRM_INFO("Primary DMA buffer size reduced from %u to %u.\n",
-			 dma_bs->primary_size, 
+			 dma_bs->primary_size,
 			 (unsigned) dev_priv->primary->size);
 		dma_bs->primary_size = dev_priv->primary->size;
 	}
 
 	for ( bin_count = dma_bs->secondary_bin_count
-	      ; bin_count > 0 
+	      ; bin_count > 0
 	      ; bin_count-- ) {
 		(void) memset( &req, 0, sizeof(req) );
 		req.count = bin_count;
@@ -673,7 +673,7 @@ static int mga_do_pci_dma_bootstrap(struct drm_device * dev,
 			break;
 		}
 	}
-	
+
 	if (bin_count == 0) {
 		DRM_ERROR("Unable to add secondary DMA buffers: %d\n", err);
 		return err;
@@ -736,7 +736,7 @@ static int mga_do_dma_bootstrap(struct drm_device * dev,
 	if (is_agp) {
 		err = mga_do_agp_dma_bootstrap(dev, dma_bs);
 	}
-	
+
 	/* If we attempted to initialize the card for AGP DMA but failed,
 	 * clean-up any mess that may have been created.
 	 */
@@ -768,7 +768,7 @@ int mga_dma_bootstrap(struct drm_device *dev, void *data,
 	drm_mga_dma_bootstrap_t *bootstrap = data;
 	int err;
 	static const int modes[] = { 0, 1, 2, 2, 4, 4, 4, 4 };
-	const drm_mga_private_t * const dev_priv = 
+	const drm_mga_private_t * const dev_priv =
 		(drm_mga_private_t *) dev->dev_private;
 
 
@@ -951,7 +951,7 @@ static int mga_do_cleanup_dma(struct drm_device * dev, int full_cleanup)
 		    && (dev_priv->warp->type != _DRM_CONSISTENT))
 			drm_core_ioremapfree(dev_priv->warp, dev);
 
-		if ((dev_priv->primary != NULL) 
+		if ((dev_priv->primary != NULL)
 		    && (dev_priv->primary->type != _DRM_CONSISTENT))
 			drm_core_ioremapfree(dev_priv->primary, dev);
 

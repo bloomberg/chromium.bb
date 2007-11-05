@@ -82,7 +82,7 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 		if (status & NV_PFIFO_INTR_CACHE_ERROR) {
 			uint32_t mthd, data;
 			int ptr;
-			
+
 			ptr = get >> 2;
 			if (dev_priv->card_type < NV_40) {
 				mthd = NV_READ(NV04_PFIFO_CACHE1_METHOD(ptr));
@@ -366,7 +366,7 @@ nouveau_pgraph_intr_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t chid;
-	
+
 	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1) & (nouveau_fifo_number(dev)-1);
 	DRM_DEBUG("PGRAPH context switch interrupt channel %x\n", chid);
 
@@ -474,4 +474,3 @@ nouveau_irq_handler(DRM_IRQ_ARGS)
 
 	return IRQ_HANDLED;
 }
-

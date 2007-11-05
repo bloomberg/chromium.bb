@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2007 Stephane Marchesin
  * All Rights Reserved.
  *

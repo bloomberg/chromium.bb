@@ -131,4 +131,3 @@ struct drm_fence_driver nouveau_fence_driver = {
 	.emit		= nouveau_fence_emit,
 	.poke_flush	= nouveau_fence_poke_flush
 };
-

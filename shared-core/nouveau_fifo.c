@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2005-2006 Stephane Marchesin
  * All Rights Reserved.
  *
@@ -63,7 +63,7 @@ int nouveau_fifo_ctx_size(struct drm_device *dev)
 
 /* voir nv_xaa.c : NVResetGraphics
  * mémoire mappée par nv_driver.c : NVMapMem
- * voir nv_driver.c : NVPreInit 
+ * voir nv_driver.c : NVPreInit
  */
 
 static int nouveau_fifo_instmem_configure(struct drm_device *dev)
@@ -71,7 +71,7 @@ static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	NV_WRITE(NV03_PFIFO_RAMHT,
-			(0x03 << 24) /* search 128 */ | 
+			(0x03 << 24) /* search 128 */ |
 			((dev_priv->ramht_bits - 9) << 16) |
 			(dev_priv->ramht_offset >> 8)
 			);
@@ -166,7 +166,7 @@ int nouveau_fifo_init(struct drm_device *dev)
 				      NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4 |
 #ifdef __BIG_ENDIAN
 				      NV_PFIFO_CACHE1_BIG_ENDIAN |
-#endif				      
+#endif
 				      0x00000000);
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH, 0x00000001);
@@ -282,9 +282,9 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 
 	/*
 	 * Alright, here is the full story
-	 * Nvidia cards have multiple hw fifo contexts (praise them for that, 
+	 * Nvidia cards have multiple hw fifo contexts (praise them for that,
 	 * no complicated crash-prone context switches)
-	 * We allocate a new context for each app and let it write to it directly 
+	 * We allocate a new context for each app and let it write to it directly
 	 * (woo, full userspace command submission !)
 	 * When there are no more contexts, you lost
 	 */
