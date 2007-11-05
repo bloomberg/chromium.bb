@@ -551,6 +551,12 @@ FcPublic FcBool
 FcInitBringUptoDate (void);
 
 /* fclang.c */
+FcStrSet *
+FcGetLangs (void);
+
+FcPublic const FcCharSet *
+FcLangGetCharSet (const FcChar8 *lang);
+
 FcPublic FcLangSet*
 FcLangSetCreate (void);
 

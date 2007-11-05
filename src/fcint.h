@@ -890,9 +890,6 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
 FcPrivate FcLangResult
 FcLangCompare (const FcChar8 *s1, const FcChar8 *s2);
     
-FcPrivate const FcCharSet *
-FcCharSetForLang (const FcChar8 *lang);
-
 FcPrivate FcLangSet *
 FcLangSetPromote (const FcChar8 *lang);
 

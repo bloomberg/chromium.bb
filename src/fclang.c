@@ -54,7 +54,7 @@ FcFreeTypeLangSet (const FcCharSet  *charset,
     FcLangSet	    *ls;
 
     if (exclusiveLang)
-	exclusiveCharset = FcCharSetForLang (exclusiveLang);
+	exclusiveCharset = FcLangGetCharSet (exclusiveLang);
     ls = FcLangSetCreate ();
     if (!ls)
 	return 0;
@@ -196,7 +196,7 @@ FcLangContains (const FcChar8 *super, const FcChar8 *sub)
 }
 
 const FcCharSet *
-FcCharSetForLang (const FcChar8 *lang)
+FcLangGetCharSet (const FcChar8 *lang)
 {
     int		i;
     int		country = -1;
@@ -216,6 +216,22 @@ FcCharSetForLang (const FcChar8 *lang)
     if (country == -1)
 	return 0;
     return &fcLangCharSets[country].charset;
+}
+
+FcStrSet *
+FcGetLangs (void)
+{
+    FcStrSet *langs;
+    int	i;
+
+    langs = FcStrSetCreate();
+    if (!langs)
+	return 0;
+
+    for (i = 0; i < NUM_LANG_CHAR_SET; i++)
+	FcStrSetAdd (langs, fcLangCharSets[i].lang);
+
+    return langs;
 }
 
 FcLangSet *

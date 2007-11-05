@@ -122,3 +122,19 @@ a matching language but differs in which territory that language is for, this
 function returns FcLangDiffentTerritory. If <parameter>ls</parameter> 
 has no matching language, this function returns FcLangDifferentLang.
 @@
+
+@RET@		FcStrSet *
+@FUNC@		FcGetLangs
+@TYPE1@		void
+@PURPOSE@	Get list of languages
+@DESC@
+Returns a string set of all known languages.
+@@
+
+@RET@		const FcCharSet *
+@FUNC@		FcLangGetCharSet
+@TYPE1@		const FcChar8 *			@ARG1@		lang
+@PURPOSE@	Get character map for a language
+@DESC@
+Returns the FcCharMap for a language.
+@@
