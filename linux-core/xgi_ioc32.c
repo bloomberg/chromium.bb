@@ -43,7 +43,7 @@ struct drm_map32 {
 	u32 handle;		/**< User-space: "Handle" to pass to mmap() */
 	int mtrr;		/**< MTRR slot used */
 };
-	
+
 struct drm32_xgi_bootstrap {
 	struct drm_map32 gart;
 };

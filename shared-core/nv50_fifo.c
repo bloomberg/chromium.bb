@@ -324,4 +324,3 @@ nv50_fifo_save_context(struct nouveau_channel *chan)
 	DRM_ERROR("stub!\n");
 	return 0;
 }
-

@@ -80,10 +80,10 @@ static int drm_map_handle(struct drm_device *dev, struct drm_hash_item *hash,
 		int ret;
 		hash->key = user_token >> PAGE_SHIFT;
 		ret = drm_ht_insert_item(&dev->map_hash, hash);
-		if (ret != -EINVAL) 
+		if (ret != -EINVAL)
 			return ret;
 	}
-	return drm_ht_just_insert_please(&dev->map_hash, hash, 
+	return drm_ht_just_insert_please(&dev->map_hash, hash,
 					 user_token, 32 - PAGE_SHIFT - 3,
 					 0, DRM_MAP_HASH_OFFSET >> PAGE_SHIFT);
 }
@@ -297,7 +297,7 @@ static int drm_addmap_core(struct drm_device *dev, unsigned int offset,
 
 	/* Assign a 32-bit handle */
 
-	user_token = (map->type == _DRM_SHM) ? (unsigned long) map->handle : 
+	user_token = (map->type == _DRM_SHM) ? (unsigned long) map->handle :
 		map->offset;
 	ret = drm_map_handle(dev, &list->hash, user_token, 0);
 
@@ -379,7 +379,7 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
 		if (r_list->map == map) {
 			list_del(&r_list->head);
-			drm_ht_remove_key(&dev->map_hash, 
+			drm_ht_remove_key(&dev->map_hash,
 					  r_list->user_token >> PAGE_SHIFT);
 			drm_free(r_list, sizeof(*r_list), DRM_MEM_MAPS);
 			found = 1;
@@ -822,9 +822,9 @@ int drm_addbufs_pci(struct drm_device *dev, struct drm_buf_desc * request)
 	page_count = 0;
 
 	while (entry->buf_count < count) {
-		
+
 		dmah = drm_pci_alloc(dev, PAGE_SIZE << page_order, 0x1000, 0xfffffffful);
-		
+
 		if (!dmah) {
 			/* Set count correctly so we free the proper amount. */
 			entry->buf_count = count;
@@ -1601,5 +1601,3 @@ int drm_order(unsigned long size)
 	return order;
 }
 EXPORT_SYMBOL(drm_order);
-
-

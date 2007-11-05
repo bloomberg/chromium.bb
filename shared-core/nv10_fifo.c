@@ -157,4 +157,3 @@ nv10_fifo_save_context(struct nouveau_channel *chan)
 
 	return 0;
 }
-

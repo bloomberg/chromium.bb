@@ -20,4 +20,3 @@ void
 nv04_mc_takedown(struct drm_device *dev)
 {
 }
-

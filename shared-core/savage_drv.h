@@ -237,7 +237,7 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
  */
 #define SAVAGE_STATUS_WORD0		0x48C00
 #define SAVAGE_STATUS_WORD1		0x48C04
-#define SAVAGE_ALT_STATUS_WORD0 	0x48C60
+#define SAVAGE_ALT_STATUS_WORD0		0x48C60
 
 #define SAVAGE_FIFO_USED_MASK_S3D	0x0001ffff
 #define SAVAGE_FIFO_USED_MASK_S4	0x001fffff
@@ -310,7 +310,7 @@ extern void savage_emit_clip_rect_s4(drm_savage_private_t *dev_priv,
 #define SAVAGE_DESTCTRL_S3D		0x34
 #define SAVAGE_SCSTART_S3D		0x35
 #define SAVAGE_SCEND_S3D		0x36
-#define SAVAGE_ZWATERMARK_S3D		0x37 
+#define SAVAGE_ZWATERMARK_S3D		0x37
 #define SAVAGE_DESTTEXRWWATERMARK_S3D	0x38
 /* common stuff */
 #define SAVAGE_VERTBUFADDR		0x3e

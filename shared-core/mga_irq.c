@@ -145,6 +145,6 @@ void mga_driver_irq_uninstall(struct drm_device * dev)
 
 	/* Disable *all* interrupts */
 	MGA_WRITE(MGA_IEN, 0);
-	
+
 	dev->irq_enabled = 0;
 }

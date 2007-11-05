@@ -189,5 +189,3 @@ static void nouveau_NV04_setcontext_sw_method(struct drm_device *dev, uint32_t o
 
 	 return 1;
  }
-
-

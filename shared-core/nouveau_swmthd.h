@@ -31,4 +31,3 @@
  */
 
 int nouveau_sw_method_execute(struct drm_device *dev, uint32_t oclass, uint32_t method); /* execute the given software method, returns 0 on success */
-

@@ -32,7 +32,7 @@ int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 	      struct drm_file * filp)
 {
 	struct drm_memblock_item *block;
-	const char *const mem_name = (alloc->location == XGI_MEMLOC_LOCAL) 
+	const char *const mem_name = (alloc->location == XGI_MEMLOC_LOCAL)
 		? "on-card" : "GART";
 
 
@@ -43,7 +43,7 @@ int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 		return -EINVAL;
 	}
 
-	if ((alloc->location == XGI_MEMLOC_LOCAL) 
+	if ((alloc->location == XGI_MEMLOC_LOCAL)
 	    ? !info->fb_heap_initialized : !info->pcie_heap_initialized) {
 		DRM_ERROR("Attempt to allocate from uninitialized memory "
 			  "pool (0x%08x).\n", alloc->location);
@@ -118,7 +118,7 @@ int xgi_free_ioctl(struct drm_device * dev, void * data,
 int xgi_fb_heap_init(struct xgi_info * info)
 {
 	int err;
-	
+
 	mutex_lock(&info->dev->struct_mutex);
 	err = drm_sman_set_range(&info->sman, XGI_MEMLOC_LOCAL,
 				 XGI_FB_HEAP_START,

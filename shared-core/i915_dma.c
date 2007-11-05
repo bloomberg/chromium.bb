@@ -3,7 +3,7 @@
 /*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -11,11 +11,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -23,7 +23,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #include "drmP.h"
@@ -151,11 +151,11 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 
 	/* Enable vblank on pipe A for older X servers
 	 */
-    	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
+	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 
 	/* Program Hardware Status Page */
 	if (!IS_G33(dev)) {
-		dev_priv->status_page_dmah = 
+		dev_priv->status_page_dmah =
 			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
 
 		if (!dev_priv->status_page_dmah) {
@@ -308,7 +308,7 @@ static int validate_cmd(int cmd)
 {
 	int ret = do_validate_cmd(cmd);
 
-/* 	printk("validate_cmd( %x ): %d\n", cmd, ret); */
+/*	printk("validate_cmd( %x ): %d\n", cmd, ret); */
 
 	return ret;
 }
@@ -344,12 +344,12 @@ static int i915_emit_cmds(struct drm_device * dev, int __user * buffer,
 			OUT_RING(cmd);
 		}
 	}
-		
+
 	if (dwords & 1)
 		OUT_RING(0);
 
 	ADVANCE_LP_RING();
-		
+
 	return 0;
 }
 
@@ -840,7 +840,7 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 	int ret = 0;
 
 	memset(&relocatee, 0, sizeof(relocatee));
-	
+
 	mutex_lock(&dev->struct_mutex);
 	relocatee.buf = drm_lookup_buffer_object(file_priv, buf_handle, 1);
 	mutex_unlock(&dev->struct_mutex);
@@ -849,7 +849,7 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 		ret = -EINVAL;
 		goto out_err;
 	}
-	
+
 	while (buf_reloc_handle) {
 		ret = i915_process_relocs(file_priv, buf_handle, &buf_reloc_handle, &relocatee, buffers, buf_count);
 		if (ret) {
@@ -857,11 +857,11 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 			break;
 		}
 	}
-	
+
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(&relocatee.buf);
 	mutex_unlock(&dev->struct_mutex);
-	
+
 out_err:
 	return ret;
 }
@@ -991,12 +991,12 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 
 	ret = drm_bo_read_lock(&dev->bm.bm_lock);
-	if (ret) 
+	if (ret)
 		return ret;
 
 	/*
 	 * The cmdbuf_mutex makes sure the validate-submit-fence
-	 * operation is atomic. 
+	 * operation is atomic.
 	 */
 
 	ret = mutex_lock_interruptible(&dev_priv->cmdbuf_mutex);
@@ -1180,7 +1180,7 @@ drm_i915_mmio_entry_t mmio_table[] = {
 		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
 		0x2350,
 		8
-	}	
+	}
 };
 
 static int mmio_table_size = sizeof(mmio_table)/sizeof(drm_i915_mmio_entry_t);

@@ -75,7 +75,7 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	mutex_init(&dev->bm.evict_mutex);
 
 	idr_init(&dev->drw_idr);
-	
+
 	dev->pdev = pdev;
 	dev->pci_device = pdev->device;
 	dev->pci_vendor = pdev->vendor;

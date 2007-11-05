@@ -3,7 +3,7 @@
  *
  * 32-bit ioctl compatibility routines for the i915 DRM.
  *
- * \author Alan Hourihane <alanh@fairlite.demon.co.uk> 
+ * \author Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  *
  * Copyright (C) Paul Mackerras 2005
@@ -49,11 +49,11 @@ static int compat_i915_batchbuffer(struct file *file, unsigned int cmd,
 {
 	drm_i915_batchbuffer32_t batchbuffer32;
 	drm_i915_batchbuffer_t __user *batchbuffer;
-	
+
 	if (copy_from_user
 	    (&batchbuffer32, (void __user *)arg, sizeof(batchbuffer32)))
 		return -EFAULT;
-	
+
 	batchbuffer = compat_alloc_user_space(sizeof(*batchbuffer));
 	if (!access_ok(VERIFY_WRITE, batchbuffer, sizeof(*batchbuffer))
 	    || __put_user(batchbuffer32.start, &batchbuffer->start)
@@ -65,7 +65,7 @@ static int compat_i915_batchbuffer(struct file *file, unsigned int cmd,
 	    || __put_user((int __user *)(unsigned long)batchbuffer32.cliprects,
 			  &batchbuffer->cliprects))
 		return -EFAULT;
-	
+
 	return drm_ioctl(file->f_dentry->d_inode, file,
 			 DRM_IOCTL_I915_BATCHBUFFER,
 			 (unsigned long) batchbuffer);
@@ -85,11 +85,11 @@ static int compat_i915_cmdbuffer(struct file *file, unsigned int cmd,
 {
 	drm_i915_cmdbuffer32_t cmdbuffer32;
 	drm_i915_cmdbuffer_t __user *cmdbuffer;
-	
+
 	if (copy_from_user
 	    (&cmdbuffer32, (void __user *)arg, sizeof(cmdbuffer32)))
 		return -EFAULT;
-	
+
 	cmdbuffer = compat_alloc_user_space(sizeof(*cmdbuffer));
 	if (!access_ok(VERIFY_WRITE, cmdbuffer, sizeof(*cmdbuffer))
 	    || __put_user((int __user *)(unsigned long)cmdbuffer32.buf,
@@ -101,7 +101,7 @@ static int compat_i915_cmdbuffer(struct file *file, unsigned int cmd,
 	    || __put_user((int __user *)(unsigned long)cmdbuffer32.cliprects,
 			  &cmdbuffer->cliprects))
 		return -EFAULT;
-	
+
 	return drm_ioctl(file->f_dentry->d_inode, file,
 			 DRM_IOCTL_I915_CMDBUFFER, (unsigned long) cmdbuffer);
 }
@@ -208,7 +208,7 @@ long i915_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 	if (nr < DRM_COMMAND_BASE)
 		return drm_compat_ioctl(filp, cmd, arg);
-	
+
 	if (nr < DRM_COMMAND_BASE + DRM_ARRAY_SIZE(i915_compat_ioctls))
 		fn = i915_compat_ioctls[nr - DRM_COMMAND_BASE];
 

@@ -126,7 +126,7 @@ int drm_sg_alloc(struct drm_device *dev, struct drm_scatter_gather * request)
 	DRM_DEBUG("sg alloc handle  = %08lx\n", entry->handle);
 	DRM_DEBUG("sg alloc virtual = %p\n", entry->virtual);
 
-	for (i = (unsigned long)entry->virtual, j = 0; j < pages; 
+	for (i = (unsigned long)entry->virtual, j = 0; j < pages;
 	     i += PAGE_SIZE, j++) {
 		entry->pagelist[j] = vmalloc_to_page((void *)i);
 		if (!entry->pagelist[j])

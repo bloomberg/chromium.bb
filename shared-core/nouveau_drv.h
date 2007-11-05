@@ -39,15 +39,8 @@
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
 
-#if 0
-#if defined(__linux__)
-#define NOUVEAU_HAVE_BUFFER
-#endif
-#endif
-
 #include "nouveau_drm.h"
 #include "nouveau_reg.h"
-
 
 struct mem_block {
 	struct mem_block *next;
@@ -66,7 +59,7 @@ enum nouveau_flags {
 };
 
 #define NVOBJ_ENGINE_SW		0
-#define NVOBJ_ENGINE_GR  	1
+#define NVOBJ_ENGINE_GR		1
 #define NVOBJ_ENGINE_INT	0xdeadbeef
 
 #define NVOBJ_FLAG_ALLOW_NO_REFS	(1 << 0)
@@ -112,6 +105,9 @@ struct nouveau_channel
 	drm_local_map_t *map;
 	/* mapping of the regs controling the fifo */
 	drm_local_map_t *regs;
+
+	/* Fencing */
+	uint32_t next_sequence;
 
 	/* DMA push buffer */
 	struct nouveau_gpuobj_ref *pushbuf;
@@ -232,6 +228,8 @@ struct drm_nouveau_private {
 		NOUVEAU_CARD_INIT_FAILED
 	} init_state;
 
+	int ttm;
+
 	/* the card type, takes NV_* as values */
 	int card_type;
 	/* exact chipset, derived from NV_PMC_BOOT_0 */
@@ -351,6 +349,7 @@ extern struct mem_block* nouveau_mem_alloc(struct drm_device *,
 					   int flags, struct drm_file *);
 extern void nouveau_mem_free(struct drm_device *dev, struct mem_block*);
 extern int  nouveau_mem_init(struct drm_device *);
+extern int  nouveau_mem_init_ttm(struct drm_device *);
 extern void nouveau_mem_close(struct drm_device *);
 
 /* nouveau_notifier.c */
@@ -560,16 +559,12 @@ extern void nv04_timer_takedown(struct drm_device *);
 extern long nouveau_compat_ioctl(struct file *file, unsigned int cmd,
 				 unsigned long arg);
 
-#ifdef NOUVEAU_HAVE_BUFFER
 /* nouveau_buffer.c */
-extern struct drm_ttm_backend *nouveau_create_ttm_backend_entry(struct drm_device *dev);
-extern int nouveau_fence_types(struct drm_buffer_object *bo, uint32_t *fclass, uint32_t *type);
-extern int nouveau_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
-extern int nouveau_init_mem_type(struct drm_device *dev, uint32_t type, struct drm_mem_type_manager *man);
-extern uint32_t nouveau_evict_mask(struct drm_buffer_object *bo);
-extern int nouveau_move(struct drm_buffer_object *bo, int evict, int no_wait, struct drm_bo_mem_reg *new_mem);
-void nouveau_flush_ttm(struct drm_ttm *ttm);
-#endif
+extern struct drm_bo_driver nouveau_bo_driver;
+
+/* nouveau_fence.c */
+extern struct drm_fence_driver nouveau_fence_driver;
+extern void nouveau_fence_handler(struct drm_device *dev, int channel);
 
 #if defined(__powerpc__)
 #define NV_READ(reg)        in_be32((void __iomem *)(dev_priv->mmio)->handle + (reg) )
@@ -592,4 +587,3 @@ void nouveau_flush_ttm(struct drm_ttm *ttm);
 #define INSTANCE_WR(o,i,v) NV_WI32((o)->im_pramin->start + ((i)<<2), (v))
 
 #endif /* __NOUVEAU_DRV_H__ */
-

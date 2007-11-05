@@ -419,7 +419,7 @@ extern int radeon_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t
 
 #ifdef RADEON_HAVE_BUFFER
 /* radeon_buffer.c */
-extern drm_ttm_backend_t *radeon_create_ttm_backend_entry(struct drm_device *dev);
+extern struct drm_ttm_backend *radeon_create_ttm_backend_entry(struct drm_device *dev);
 extern int radeon_fence_types(struct drm_buffer_object *bo, uint32_t *class, uint32_t *type);
 extern int radeon_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern uint32_t radeon_evict_mask(struct drm_buffer_object *bo);
@@ -468,7 +468,7 @@ extern int radeon_move(struct drm_buffer_object * bo,
 #define RADEON_PCIE_INDEX               0x0030
 #define RADEON_PCIE_DATA                0x0034
 #define RADEON_PCIE_TX_GART_CNTL	0x10
-#	define RADEON_PCIE_TX_GART_EN   	(1 << 0)
+#	define RADEON_PCIE_TX_GART_EN		(1 << 0)
 #	define RADEON_PCIE_TX_GART_UNMAPPED_ACCESS_PASS_THRU (0<<1)
 #	define RADEON_PCIE_TX_GART_UNMAPPED_ACCESS_CLAMP_LO  (1<<1)
 #	define RADEON_PCIE_TX_GART_UNMAPPED_ACCESS_DISCARD   (3<<1)
@@ -478,7 +478,7 @@ extern int radeon_move(struct drm_buffer_object * bo,
 #	define RADEON_PCIE_TX_GART_INVALIDATE_TLB	(1<<8)
 #define RADEON_PCIE_TX_DISCARD_RD_ADDR_LO 0x11
 #define RADEON_PCIE_TX_DISCARD_RD_ADDR_HI 0x12
-#define RADEON_PCIE_TX_GART_BASE  	0x13
+#define RADEON_PCIE_TX_GART_BASE	0x13
 #define RADEON_PCIE_TX_GART_START_LO	0x14
 #define RADEON_PCIE_TX_GART_START_HI	0x15
 #define RADEON_PCIE_TX_GART_END_LO	0x16
@@ -552,12 +552,12 @@ extern int radeon_move(struct drm_buffer_object * bo,
 
 #define RADEON_GEN_INT_STATUS		0x0044
 #	define RADEON_CRTC_VBLANK_STAT		(1 << 0)
-#	define RADEON_CRTC_VBLANK_STAT_ACK   	(1 << 0)
+#	define RADEON_CRTC_VBLANK_STAT_ACK	(1 << 0)
 #	define RADEON_CRTC2_VBLANK_STAT		(1 << 9)
-#	define RADEON_CRTC2_VBLANK_STAT_ACK   	(1 << 9)
+#	define RADEON_CRTC2_VBLANK_STAT_ACK	(1 << 9)
 #	define RADEON_GUI_IDLE_INT_TEST_ACK     (1 << 19)
 #	define RADEON_SW_INT_TEST		(1 << 25)
-#	define RADEON_SW_INT_TEST_ACK   	(1 << 25)
+#	define RADEON_SW_INT_TEST_ACK		(1 << 25)
 #	define RADEON_SW_INT_FIRE		(1 << 26)
 
 #define RADEON_HOST_PATH_CNTL		0x0130
@@ -676,30 +676,30 @@ extern int radeon_move(struct drm_buffer_object * bo,
  */
 #define RADEON_RBBM_STATUS		0x0e40
 /* Same as the previous RADEON_RBBM_STATUS; this is a mirror of that register.  */
-/* #define RADEON_RBBM_STATUS 		0x1740 */
+/* #define RADEON_RBBM_STATUS		0x1740 */
 /* bits 6:0 are dword slots available in the cmd fifo */
 #	define RADEON_RBBM_FIFOCNT_MASK		0x007f
-#	define RADEON_HIRQ_ON_RBB 	(1 <<  8)
-#	define RADEON_CPRQ_ON_RBB 	(1 <<  9)
-#	define RADEON_CFRQ_ON_RBB 	(1 << 10)
-#	define RADEON_HIRQ_IN_RTBUF 	(1 << 11)
-#	define RADEON_CPRQ_IN_RTBUF 	(1 << 12)
-#	define RADEON_CFRQ_IN_RTBUF 	(1 << 13)
-#	define RADEON_PIPE_BUSY 	(1 << 14)
-#	define RADEON_ENG_EV_BUSY 	(1 << 15)
-#	define RADEON_CP_CMDSTRM_BUSY 	(1 << 16)
-#	define RADEON_E2_BUSY 		(1 << 17)
-#	define RADEON_RB2D_BUSY 	(1 << 18)
-#	define RADEON_RB3D_BUSY 	(1 << 19) /* not used on r300 */
-#	define RADEON_VAP_BUSY 		(1 << 20)
-#	define RADEON_RE_BUSY 		(1 << 21) /* not used on r300 */
-#	define RADEON_TAM_BUSY 		(1 << 22) /* not used on r300 */
-#	define RADEON_TDM_BUSY 		(1 << 23) /* not used on r300 */
-#	define RADEON_PB_BUSY 		(1 << 24) /* not used on r300 */
-#	define RADEON_TIM_BUSY 		(1 << 25) /* not used on r300 */
-#	define RADEON_GA_BUSY 		(1 << 26)
-#	define RADEON_CBA2D_BUSY 	(1 << 27)
-#	define RADEON_RBBM_ACTIVE 	(1 << 31)
+#	define RADEON_HIRQ_ON_RBB	(1 <<  8)
+#	define RADEON_CPRQ_ON_RBB	(1 <<  9)
+#	define RADEON_CFRQ_ON_RBB	(1 << 10)
+#	define RADEON_HIRQ_IN_RTBUF	(1 << 11)
+#	define RADEON_CPRQ_IN_RTBUF	(1 << 12)
+#	define RADEON_CFRQ_IN_RTBUF	(1 << 13)
+#	define RADEON_PIPE_BUSY		(1 << 14)
+#	define RADEON_ENG_EV_BUSY	(1 << 15)
+#	define RADEON_CP_CMDSTRM_BUSY	(1 << 16)
+#	define RADEON_E2_BUSY		(1 << 17)
+#	define RADEON_RB2D_BUSY		(1 << 18)
+#	define RADEON_RB3D_BUSY		(1 << 19) /* not used on r300 */
+#	define RADEON_VAP_BUSY		(1 << 20)
+#	define RADEON_RE_BUSY		(1 << 21) /* not used on r300 */
+#	define RADEON_TAM_BUSY		(1 << 22) /* not used on r300 */
+#	define RADEON_TDM_BUSY		(1 << 23) /* not used on r300 */
+#	define RADEON_PB_BUSY		(1 << 24) /* not used on r300 */
+#	define RADEON_TIM_BUSY		(1 << 25) /* not used on r300 */
+#	define RADEON_GA_BUSY		(1 << 26)
+#	define RADEON_CBA2D_BUSY	(1 << 27)
+#	define RADEON_RBBM_ACTIVE	(1 << 31)
 #define RADEON_RE_LINE_PATTERN		0x1cd0
 #define RADEON_RE_MISC			0x26c4
 #define RADEON_RE_TOP_LEFT		0x26c0
@@ -1245,7 +1245,7 @@ do {									\
 			  write, dev_priv->ring.tail );			\
 	}								\
 	if (((dev_priv->ring.tail + _nr) & mask) != write) {		\
-		DRM_ERROR( 						\
+		DRM_ERROR(						\
 			"ADVANCE_RING(): mismatch: nr: %x write: %x line: %d\n",	\
 			((dev_priv->ring.tail + _nr) & mask),		\
 			write, __LINE__);						\

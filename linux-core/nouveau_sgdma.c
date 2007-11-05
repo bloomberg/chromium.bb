@@ -128,7 +128,7 @@ nouveau_sgdma_unbind(struct drm_ttm_backend *be)
 	if (nvbe->is_bound) {
 		struct nouveau_gpuobj *gpuobj = dev_priv->gart_info.sg_ctxdma;
 		unsigned int pte;
-		
+
 		pte = nvbe->pte_start;
 		while (pte < (nvbe->pte_start + nvbe->pages)) {
 			uint64_t pteval = dev_priv->gart_info.sg_dummy_bus;
@@ -336,4 +336,3 @@ nouveau_sgdma_get_page(struct drm_device *dev, uint32_t offset, uint32_t *page)
 	DRM_ERROR("Unimplemented on NV50\n");
 	return -EINVAL;
 }
-

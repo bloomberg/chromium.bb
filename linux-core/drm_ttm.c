@@ -46,7 +46,7 @@ EXPORT_SYMBOL(drm_ttm_cache_flush);
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
  */
 
-static void ttm_alloc_pages(struct drm_ttm * ttm)
+static void ttm_alloc_pages(struct drm_ttm *ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 	ttm->pages = NULL;
@@ -54,20 +54,19 @@ static void ttm_alloc_pages(struct drm_ttm * ttm)
 	if (drm_alloc_memctl(size))
 		return;
 
-	if (size <= PAGE_SIZE) {
+	if (size <= PAGE_SIZE)
 		ttm->pages = drm_calloc(1, size, DRM_MEM_TTM);
-	}
+
 	if (!ttm->pages) {
 		ttm->pages = vmalloc_user(size);
 		if (ttm->pages)
 			ttm->page_flags |= DRM_TTM_PAGE_VMALLOC;
 	}
-	if (!ttm->pages) {
+	if (!ttm->pages)
 		drm_free_memctl(size);
-	}
 }
 
-static void ttm_free_pages(struct drm_ttm * ttm)
+static void ttm_free_pages(struct drm_ttm *ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 
@@ -85,9 +84,9 @@ static struct page *drm_ttm_alloc_page(void)
 {
 	struct page *page;
 
-	if (drm_alloc_memctl(PAGE_SIZE)) {
+	if (drm_alloc_memctl(PAGE_SIZE))
 		return NULL;
-	}
+
 	page = alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
 	if (!page) {
 		drm_free_memctl(PAGE_SIZE);
@@ -106,7 +105,7 @@ static struct page *drm_ttm_alloc_page(void)
  * for range of pages in a ttm.
  */
 
-static int drm_set_caching(struct drm_ttm * ttm, int noncached)
+static int drm_set_caching(struct drm_ttm *ttm, int noncached)
 {
 	int i;
 	struct page **cur_page;
@@ -153,7 +152,7 @@ static void drm_ttm_free_user_pages(struct drm_ttm *ttm)
 	dirty = ((ttm->page_flags & DRM_TTM_PAGE_USER_DIRTY) != 0);
 
 	down_read(&mm->mmap_sem);
-	for (i=0; i<ttm->num_pages; ++i) {
+	for (i = 0; i < ttm->num_pages; ++i) {
 		page = ttm->pages[i];
 		if (page == NULL)
 			continue;
@@ -186,14 +185,10 @@ static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
 #else
 			ClearPageReserved(*cur_page);
 #endif
-			if (page_count(*cur_page) != 1) {
-				DRM_ERROR("Erroneous page count. "
-					  "Leaking pages.\n");
-			}
-			if (page_mapped(*cur_page)) {
-				DRM_ERROR("Erroneous map count. "
-					  "Leaking page mappings.\n");
-			}
+			if (page_count(*cur_page) != 1)
+				DRM_ERROR("Erroneous page count. Leaking pages.\n");
+			if (page_mapped(*cur_page))
+				DRM_ERROR("Erroneous map count. Leaking page mappings.\n");
 			__free_page(*cur_page);
 			drm_free_memctl(PAGE_SIZE);
 			--bm->cur_pages;
@@ -205,7 +200,7 @@ static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
  * Free all resources associated with a ttm.
  */
 
-int drm_destroy_ttm(struct drm_ttm * ttm)
+int drm_destroy_ttm(struct drm_ttm *ttm)
 {
 	struct drm_ttm_backend *be;
 
@@ -234,7 +229,7 @@ int drm_destroy_ttm(struct drm_ttm * ttm)
 	return 0;
 }
 
-struct page *drm_ttm_get_page(struct drm_ttm * ttm, int index)
+struct page *drm_ttm_get_page(struct drm_ttm *ttm, int index)
 {
 	struct page *p;
 	struct drm_buffer_manager *bm = &ttm->dev->bm;
@@ -283,10 +278,9 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 		return -ENOMEM;
 	}
 
-	for (i=0; i<num_pages; ++i) {
-		if (ttm->pages[i] == NULL) {
+	for (i = 0; i < num_pages; ++i) {
+		if (ttm->pages[i] == NULL)
 			ttm->pages[i] = ttm->dummy_read_page;
-		}
 	}
 
 	return 0;
@@ -294,7 +288,7 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 
 
 
-int drm_ttm_populate(struct drm_ttm * ttm)
+int drm_ttm_populate(struct drm_ttm *ttm)
 {
 	struct page *page;
 	unsigned long i;
@@ -318,7 +312,7 @@ int drm_ttm_populate(struct drm_ttm * ttm)
  * Initialize a ttm.
  */
 
-struct drm_ttm *drm_ttm_init(struct drm_device * dev, unsigned long size)
+struct drm_ttm *drm_ttm_init(struct drm_device *dev, unsigned long size)
 {
 	struct drm_bo_driver *bo_driver = dev->driver->bo_driver;
 	struct drm_ttm *ttm;
@@ -362,7 +356,7 @@ struct drm_ttm *drm_ttm_init(struct drm_device * dev, unsigned long size)
  * Unbind a ttm region from the aperture.
  */
 
-void drm_ttm_evict(struct drm_ttm * ttm)
+void drm_ttm_evict(struct drm_ttm *ttm)
 {
 	struct drm_ttm_backend *be = ttm->be;
 	int ret;
@@ -375,19 +369,18 @@ void drm_ttm_evict(struct drm_ttm * ttm)
 	ttm->state = ttm_evicted;
 }
 
-void drm_ttm_fixup_caching(struct drm_ttm * ttm)
+void drm_ttm_fixup_caching(struct drm_ttm *ttm)
 {
 
 	if (ttm->state == ttm_evicted) {
 		struct drm_ttm_backend *be = ttm->be;
-		if (be->func->needs_ub_cache_adjust(be)) {
+		if (be->func->needs_ub_cache_adjust(be))
 			drm_set_caching(ttm, 0);
-		}
 		ttm->state = ttm_unbound;
 	}
 }
 
-void drm_ttm_unbind(struct drm_ttm * ttm)
+void drm_ttm_unbind(struct drm_ttm *ttm)
 {
 	if (ttm->state == ttm_bound)
 		drm_ttm_evict(ttm);
@@ -395,7 +388,7 @@ void drm_ttm_unbind(struct drm_ttm * ttm)
 	drm_ttm_fixup_caching(ttm);
 }
 
-int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem)
+int drm_bind_ttm(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem)
 {
 	struct drm_bo_driver *bo_driver = ttm->dev->driver->bo_driver;
 	int ret = 0;
@@ -412,13 +405,14 @@ int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem)
 	if (ret)
 		return ret;
 
-	if (ttm->state == ttm_unbound && !(bo_mem->flags & DRM_BO_FLAG_CACHED)) {
+	if (ttm->state == ttm_unbound && !(bo_mem->flags & DRM_BO_FLAG_CACHED))
 		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
-	} else if ((bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED) &&
+	else if ((bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED) &&
 		   bo_driver->ttm_cache_flush)
 		bo_driver->ttm_cache_flush(ttm);
 
-	if ((ret = be->func->bind(be, bo_mem))) {
+	ret = be->func->bind(be, bo_mem);
+	if (ret) {
 		ttm->state = ttm_evicted;
 		DRM_ERROR("Couldn't bind backend.\n");
 		return ret;
@@ -429,5 +423,4 @@ int drm_bind_ttm(struct drm_ttm * ttm, struct drm_bo_mem_reg *bo_mem)
 		ttm->page_flags |= DRM_TTM_PAGE_USER_DIRTY;
 	return 0;
 }
-
 EXPORT_SYMBOL(drm_bind_ttm);

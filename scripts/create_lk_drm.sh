@@ -2,10 +2,10 @@
 # script to create a Linux Kernel tree from the DRM tree for diffing etc..
 #
 # Original author - Dave Airlie (C) 2004 - airlied@linux.ie
-#
+# kernel_version to remove below (e.g. 2.6.24)
 
-if [ $# -lt 1 ] ;then
-	echo usage: $0 output_dir
+if [ $# -lt 2 ] ;then
+	echo usage: $0 output_dir kernel_version
 	exit 1
 fi
 
@@ -15,43 +15,23 @@ if [ ! -d shared-core -o ! -d linux-core ]  ;then
 fi
 
 OUTDIR=$1/drivers/char/drm/
-
+KERNEL_VERS=$2
 echo "Copying kernel independent files"
-mkdir -p $OUTDIR
+mkdir -p $OUTDIR/.tmp
 
 ( cd linux-core/ ; make drm_pciids.h )
-cp shared-core/*.[ch] $OUTDIR
-cp linux-core/*.[ch] $OUTDIR
-cp linux-core/Makefile.kernel $OUTDIR/Makefile
+cp shared-core/*.[ch] $OUTDIR/.tmp
+cp linux-core/*.[ch] $OUTDIR/.tmp
+cp linux-core/Makefile.kernel $OUTDIR/.tmp/Makefile
 
 echo "Copying 2.6 Kernel files"
-cp linux-core/Kconfig $OUTDIR/
+cp linux-core/Kconfig $OUTDIR/.tmp
 
+./scripts/drm-scripts-gentree.pl $KERNEL_VERS $OUTDIR/.tmp $OUTDIR
 cd $OUTDIR
 
+rm -rf .tmp
 rm via_ds.[ch]
-for i in via*.[ch]
-do
-unifdef -D__linux__ -DVIA_HAVE_DMABLIT -DVIA_HAVE_CORE_MM $i > $i.tmp
-mv $i.tmp $i
-done
-
 rm sis_ds.[ch]
-for i in sis*.[ch]
-do
-unifdef -D__linux__ -DVIA_HAVE_DMABLIT -DSIS_HAVE_CORE_MM $i > $i.tmp
-mv $i.tmp $i
-done
 
-for i in i915*.[ch]
-do
-unifdef -D__linux__ -DI915_HAVE_FENCE -DI915_HAVE_BUFFER $i > $i.tmp
-mv $i.tmp $i
-done
-
-for i in drm*.[ch]
-do
-unifdef -UDRM_ODD_MM_COMPAT -D__linux__ $i > $i.tmp
-mv $i.tmp $i
-done
 cd -

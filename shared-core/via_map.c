@@ -140,4 +140,3 @@ int via_driver_unload(struct drm_device *dev)
 
 	return 0;
 }
-

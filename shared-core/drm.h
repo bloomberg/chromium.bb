@@ -704,7 +704,7 @@ struct drm_fence_arg {
 /* Mask: Make sure the buffer is in cached memory when mapped
  * Flags: Acknowledge.
  * Buffers allocated with this flag should not be used for suballocators
- * This type may have issues on CPUs with over-aggressive caching 
+ * This type may have issues on CPUs with over-aggressive caching
  * http://marc.info/?l=linux-kernel&m=102376926732464&w=2
  */
 #define DRM_BO_FLAG_CACHED_MAPPED    (1ULL << 19)
@@ -1019,7 +1019,7 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_RM_MAP		DRM_IOW( 0x1b, struct drm_map)
 
 #define DRM_IOCTL_SET_SAREA_CTX		DRM_IOW( 0x1c, struct drm_ctx_priv_map)
-#define DRM_IOCTL_GET_SAREA_CTX 	DRM_IOWR(0x1d, struct drm_ctx_priv_map)
+#define DRM_IOCTL_GET_SAREA_CTX		DRM_IOWR(0x1d, struct drm_ctx_priv_map)
 
 #define DRM_IOCTL_ADD_CTX		DRM_IOWR(0x20, struct drm_ctx)
 #define DRM_IOCTL_RM_CTX		DRM_IOWR(0x21, struct drm_ctx)

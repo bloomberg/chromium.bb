@@ -129,13 +129,13 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_ATTACHMODE, drm_mode_attachmode, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_DETACHMODE, drm_mode_detachmode, DRM_MASTER|DRM_ROOT_ONLY),
 
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_CREATE, drm_fence_create_ioctl, DRM_AUTH),
@@ -248,7 +248,7 @@ int drm_lastclose(struct drm_device * dev)
 		list_del(&vma->head);
 		drm_ctl_free(vma, sizeof(*vma), DRM_MEM_VMAS);
 	}
-	
+
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
 		drm_rmmap_locked(dev, r_list->map);
 		r_list = NULL;
@@ -328,7 +328,7 @@ int drm_init(struct drm_driver *driver,
 			pci_get_subsys(pid->vendor, pid->device, pid->subvendor,
 				       pid->subdevice, pdev))) {
 			/* Are there device class requirements? */
-			if ((pid->class != 0) 
+			if ((pid->class != 0)
 				&& ((pdev->class & pid->class_mask) != pid->class)) {
 				continue;
 			}
@@ -359,7 +359,7 @@ int drm_init(struct drm_driver *driver,
 					       pid->subvendor, pid->subdevice,
 					       pdev))) {
 				/* Are there device class requirements? */
-				if ((pid->class != 0) 
+				if ((pid->class != 0)
 					&& ((pdev->class & pid->class_mask) != pid->class)) {
 					continue;
 				}
@@ -477,19 +477,19 @@ static int __init drm_core_init(void)
 	unsigned long max_memctl_mem;
 
 	si_meminfo(&si);
-	
+
 	/*
 	 * AGP only allows low / DMA32 memory ATM.
 	 */
 
 	avail_memctl_mem = si.totalram - si.totalhigh;
 
-	/* 
-	 * Avoid overflows 
+	/*
+	 * Avoid overflows
 	 */
 
 	max_memctl_mem = 1UL << (32 - PAGE_SHIFT);
-	max_memctl_mem = (max_memctl_mem / si.mem_unit) * PAGE_SIZE; 
+	max_memctl_mem = (max_memctl_mem / si.mem_unit) * PAGE_SIZE;
 
 	if (avail_memctl_mem >= max_memctl_mem)
 		avail_memctl_mem = max_memctl_mem;

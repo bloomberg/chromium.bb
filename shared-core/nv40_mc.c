@@ -36,4 +36,3 @@ void
 nv40_mc_takedown(struct drm_device *dev)
 {
 }
-

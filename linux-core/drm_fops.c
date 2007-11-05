@@ -273,9 +273,8 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	}
 
 	if (ret) {
-		for(j=0; j<i; ++j) {
+		for(j = 0; j < i; ++j)
 			drm_ht_remove(&priv->refd_object_hash[j]);
-		}
 		goto out_free;
 	}
 
@@ -334,8 +333,8 @@ int drm_fasync(int fd, struct file *filp, int on)
 }
 EXPORT_SYMBOL(drm_fasync);
 
-static void drm_object_release(struct file *filp) {
-
+static void drm_object_release(struct file *filp)
+{
 	struct drm_file *priv = filp->private_data;
 	struct list_head *head;
 	struct drm_ref_object *ref_object;
@@ -356,7 +355,7 @@ static void drm_object_release(struct file *filp) {
 		head = &priv->refd_objects;
 	}
 
-	for(i=0; i<_DRM_NO_REF_TYPES; ++i) {
+	for(i = 0; i < _DRM_NO_REF_TYPES; ++i) {
 		drm_ht_remove(&priv->refd_object_hash[i]);
 	}
 }
@@ -530,4 +529,3 @@ unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
 	return 0;
 }
 EXPORT_SYMBOL(drm_poll);
-

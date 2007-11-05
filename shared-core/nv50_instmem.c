@@ -69,7 +69,7 @@ nv50_instmem_init(struct drm_device *dev)
 		return -ENOMEM;
 	dev_priv->Engine.instmem.priv = priv;
 
-	/* Reserve the last MiB of VRAM, we should probably try to avoid 
+	/* Reserve the last MiB of VRAM, we should probably try to avoid
 	 * setting up the below tables over the top of the VBIOS image at
 	 * some point.
 	 */
@@ -144,7 +144,7 @@ nv50_instmem_init(struct drm_device *dev)
 			BAR0_WI32(priv->pramin_pt->gpuobj, i + 0, v | 1);
 		else
 			BAR0_WI32(priv->pramin_pt->gpuobj, i + 0, 0x00000009);
-		BAR0_WI32(priv->pramin_pt->gpuobj, i + 4, 0x00000000); 
+		BAR0_WI32(priv->pramin_pt->gpuobj, i + 4, 0x00000000);
 	}
 
 	BAR0_WI32(chan->vm_pd, 0x00, priv->pramin_pt->instance | 0x63);
@@ -259,7 +259,7 @@ nv50_instmem_clear(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 			dev_priv->Engine.instmem.unbind(dev, gpuobj);
 		nouveau_mem_free(dev, gpuobj->im_backing);
 		gpuobj->im_backing = NULL;
-	}	
+	}
 }
 
 int
@@ -317,4 +317,3 @@ nv50_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 	gpuobj->im_bound = 0;
 	return 0;
 }
-

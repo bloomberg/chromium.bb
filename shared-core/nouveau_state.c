@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2005 Stephane Marchesin
  * All Rights Reserved.
  *
@@ -40,7 +40,7 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 
 	/* map the mmio regs */
 	ret = drm_addmap(dev, drm_get_resource_start(dev, 0),
-			      drm_get_resource_len(dev, 0), 
+			      drm_get_resource_len(dev, 0),
 			      _DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio);
 	if (ret) {
 		DRM_ERROR("Unable to initialize the mmio mapping (%d). "
@@ -278,6 +278,7 @@ nouveau_card_init(struct drm_device *dev)
 
 	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
 		return 0;
+	dev_priv->ttm = 0;
 
 	/* Map any PCI resources we need on the card */
 	ret = nouveau_init_card_mappings(dev);
@@ -315,8 +316,13 @@ nouveau_card_init(struct drm_device *dev)
 	if (ret) return ret;
 
 	/* Setup the memory manager */
-	ret = nouveau_mem_init(dev);
-	if (ret) return ret;
+	if (dev_priv->ttm) {
+		ret = nouveau_mem_init_ttm(dev);
+		if (ret) return ret;
+	} else {
+		ret = nouveau_mem_init(dev);
+		if (ret) return ret;
+	}
 
 	ret = nouveau_gpuobj_init(dev);
 	if (ret) return ret;
@@ -425,7 +431,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	DRM_DEBUG("vendor: 0x%X device: 0x%X class: 0x%X\n", dev->pci_vendor, dev->pci_device, dev->pdev->class);
 
 	/* Time to determine the card architecture */
-	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x8); 
+	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x8);
 	if (!regs) {
 		DRM_ERROR("Could not ioremap to determine register\n");
 		return -ENOMEM;
@@ -553,7 +559,7 @@ int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
 			getparam->value=(uint64_t) dev->sg->virtual;
-		else 
+		else
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");
 		     return -EINVAL;
@@ -635,5 +641,3 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 	}
 	}
 }
-
-

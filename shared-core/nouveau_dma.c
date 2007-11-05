@@ -177,4 +177,3 @@ nouveau_dma_wait(struct drm_device *dev, int size)
 
 	return 0;
 }
-

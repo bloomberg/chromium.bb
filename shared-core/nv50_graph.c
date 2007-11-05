@@ -177,7 +177,7 @@ nv50_graph_init_ctxctl(struct drm_device *dev)
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, 0);
 }
 
-int 
+int
 nv50_graph_init(struct drm_device *dev)
 {
 	DRM_DEBUG("\n");
@@ -262,7 +262,7 @@ nv50_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst | (1<<31));
 	NV_WRITE(0x400824, NV_READ(0x400824) |
 		 (save ? NV40_PGRAPH_CTXCTL_0310_XFER_SAVE :
-		  	 NV40_PGRAPH_CTXCTL_0310_XFER_LOAD));
+			 NV40_PGRAPH_CTXCTL_0310_XFER_LOAD));
 	NV_WRITE(NV40_PGRAPH_CTXCTL_0304, NV40_PGRAPH_CTXCTL_0304_XFER_CTX);
 
 	for (i = 0; i < tv; i++) {
@@ -313,4 +313,3 @@ nv50_graph_save_context(struct nouveau_channel *chan)
 
 	return nv50_graph_transfer_context(dev, inst, 1);
 }
-

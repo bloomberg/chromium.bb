@@ -249,7 +249,7 @@ sis_idle(struct drm_device *dev)
 			return 0;
 		}
 	}
-	
+
 	/*
 	 * Implement a device switch here if needed
 	 */

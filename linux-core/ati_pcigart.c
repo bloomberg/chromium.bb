@@ -267,12 +267,12 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct ati_pcigart_info *gart_i
 }
 EXPORT_SYMBOL(drm_ati_pcigart_init);
 
-static int ati_pcigart_needs_unbind_cache_adjust(drm_ttm_backend_t *backend)
+static int ati_pcigart_needs_unbind_cache_adjust(struct drm_ttm_backend *backend)
 {
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
-static int ati_pcigart_populate(drm_ttm_backend_t *backend,
+static int ati_pcigart_populate(struct drm_ttm_backend *backend,
 				unsigned long num_pages,
 				struct page **pages)
 {
@@ -329,7 +329,7 @@ static int ati_pcigart_bind_ttm(struct drm_ttm_backend *backend,
 	return 0;
 }
 
-static int ati_pcigart_unbind_ttm(drm_ttm_backend_t *backend)
+static int ati_pcigart_unbind_ttm(struct drm_ttm_backend *backend)
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
@@ -353,7 +353,7 @@ static int ati_pcigart_unbind_ttm(drm_ttm_backend_t *backend)
 	return 0;
 }
 
-static void ati_pcigart_clear_ttm(drm_ttm_backend_t *backend)
+static void ati_pcigart_clear_ttm(struct drm_ttm_backend *backend)
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
@@ -367,7 +367,7 @@ static void ati_pcigart_clear_ttm(drm_ttm_backend_t *backend)
 	atipci_be->num_pages = 0;
 }
 
-static void ati_pcigart_destroy_ttm(drm_ttm_backend_t *backend)
+static void ati_pcigart_destroy_ttm(struct drm_ttm_backend *backend)
 {
 	ati_pcigart_ttm_backend_t *atipci_be;
 	if (backend) {

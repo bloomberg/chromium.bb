@@ -1,7 +1,7 @@
 /*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -9,11 +9,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -21,7 +21,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #ifndef _I915_DRM_H_
@@ -294,11 +294,11 @@ typedef struct drm_i915_vblank_swap {
 	unsigned int sequence;
 } drm_i915_vblank_swap_t;
 
-#define I915_MMIO_READ 	0
+#define I915_MMIO_READ	0
 #define I915_MMIO_WRITE 1
 
-#define I915_MMIO_MAY_READ  	0x1
-#define I915_MMIO_MAY_WRITE  	0x2
+#define I915_MMIO_MAY_READ	0x1
+#define I915_MMIO_MAY_WRITE	0x2
 
 #define MMIO_REGS_IA_PRIMATIVES_COUNT		0
 #define MMIO_REGS_IA_VERTICES_COUNT		1
@@ -319,7 +319,7 @@ typedef struct drm_i915_mmio_entry {
 typedef struct drm_i915_mmio {
 	unsigned int read_write:1;
 	unsigned int reg:31;
-	void __user *data;	
+	void __user *data;
 } drm_i915_mmio_t;
 
 typedef struct drm_i915_hws_addr {
