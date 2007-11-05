@@ -73,7 +73,6 @@ void drm_bo_read_unlock(struct drm_bo_lock *lock)
 	if (atomic_read(&lock->readers) == 0)
 		wake_up_interruptible(&lock->queue);
 }
-
 EXPORT_SYMBOL(drm_bo_read_unlock);
 
 int drm_bo_read_lock(struct drm_bo_lock *lock)
@@ -95,7 +94,6 @@ int drm_bo_read_lock(struct drm_bo_lock *lock)
 	}
 	return 0;
 }
-
 EXPORT_SYMBOL(drm_bo_read_lock);
 
 static int __drm_bo_write_unlock(struct drm_bo_lock *lock)
@@ -123,9 +121,8 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 	int ret = 0;
 	struct drm_device *dev;
 
-	if (unlikely(atomic_cmpxchg(&lock->write_lock_pending, 0, 1) != 0)) {
+	if (unlikely(atomic_cmpxchg(&lock->write_lock_pending, 0, 1) != 0))
 		return -EINVAL;
-	}
 
 	while (unlikely(atomic_cmpxchg(&lock->readers, 0, -1) != 0)) {
 		ret = wait_event_interruptible
@@ -149,9 +146,9 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 	ret = drm_add_user_object(file_priv, &lock->base, 0);
 	lock->base.remove = &drm_bo_write_lock_remove;
 	lock->base.type = drm_lock_type;
-	if (ret) {
+	if (ret)
 		(void)__drm_bo_write_unlock(lock);
-	}
+
 	mutex_unlock(&dev->struct_mutex);
 
 	return ret;
