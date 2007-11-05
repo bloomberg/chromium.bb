@@ -1575,6 +1575,7 @@ int drm_mode_rmfb(struct drm_device *dev,
 	uint32_t *id = data;
 	int ret = 0;
 
+	mutex_lock(&dev->mode_config.mutex);
 	fb = idr_find(&dev->mode_config.crtc_idr, *id);
 	/* TODO check that we realy get a framebuffer back. */
 	if (!fb || (*id != fb->id)) {
