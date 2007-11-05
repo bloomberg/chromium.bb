@@ -13,38 +13,11 @@ has led to the following conventions in usage:
  
  00 through 09		Font directories
  10 through 19		system rendering defaults (AA, etc)
-	10-autohint.conf
-	10-no-sub-pixel.conf
- 	10-sub-pixel-bgr.conf
- 	10-sub-pixel-rgb.conf
- 	10-sub-pixel-vbgr.conf
- 	10-sub-pixel-vrgb.conf
-	10-unhinted.conf
  20 through 29		font rendering options
- 	20-fix-globaladvance.conf
-	20-lohit-gujarati.conf
-	20-unhint-small-vera.conf
-	25-unhint-nonlatin.conf
  30 through 39		family substitution
- 	30-urw-aliases.conf
-	30-metric-aliases.conf
  40 through 49		generic identification, map family->generic
- 	40-nonlatin.conf
- 	45-latin.conf
-	49-sansserif.conf
  50 through 59		alternate config file loading
- 	50-user.conf	Load ~/.fonts.conf
-	51-local.conf	Load local.conf
  60 through 69		generic aliases, map generic->family
- 	60-latin.conf
-	65-fonts-persian.conf
-	65-nonlatin.conf
-	69-unifont.conf
  70 through 79		select font (adjust which fonts are available)
- 	70-no-bitmaps.conf
-	70-yes-bitmaps.conf
  80 through 89		match target="scan" (modify scanned patterns)
- 	80-delicious.conf
- 90 through 98		font synthesis
- 	90-synthetic.conf
- 
+ 90 through 99		font synthesis
