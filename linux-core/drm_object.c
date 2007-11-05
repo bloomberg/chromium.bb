@@ -234,6 +234,7 @@ void drm_remove_ref_object(struct drm_file *priv, struct drm_ref_object *item)
 	}
 
 }
+EXPORT_SYMBOL(drm_remove_ref_object);
 
 int drm_user_object_ref(struct drm_file *priv, uint32_t user_token,
 			enum drm_object_type type, struct drm_user_object **object)
