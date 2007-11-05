@@ -31,7 +31,6 @@ CONF_FILES = \
 	10-sub-pixel-vrgb.conf \
 	10-unhinted.conf \
 	20-fix-globaladvance.conf \
-	20-lohit-gujarati.conf \
 	20-unhint-small-vera.conf \
 	25-unhint-nonlatin.conf \
 	30-urw-aliases.conf \
@@ -52,7 +51,6 @@ CONF_FILES = \
 
 CONF_LINKS = \
 	20-fix-globaladvance.conf \
-	20-lohit-gujarati.conf \
 	20-unhint-small-vera.conf \
 	25-unhint-nonlatin.conf \
 	30-urw-aliases.conf \
