@@ -1,11 +1,56 @@
 			Fontconfig
 	Font configuration and customization library
-		  Version 2.4.91 (2.5 RC1)
-		        2007-10-25
+		  Version 2.4.92 (2.5 RC2)
+		        2007-11-5
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.4.92 (2.5 RC2)
+
+Behdad Esfahbod (14):
+      Make fc-match --sort call FcFontRenderPrepare.
+      Port fonts-persian.conf to new alias syntax with binding="same"
+      Fix trivial bugs in edit-sgml.c
+      Add FcGetLangs() and FcLangGetCharSet().
+      Add/update config files from Fedora.
+      Split 40-generic.conf into 40-nonlatin.conf and 45-latin.conf
+      Use binding="same" in 30-urw-aliases.conf and remove duplicate entries.
+      Remove redundant/obsolete comments from conf files.
+      Remove 20-lohit-gujarati.conf.  It's covered by 25-unhint-nonlatin.conf now.
+      Oops, fix Makefile.am.
+      Remove 25-unhint-nonlatin.conf from default configuration by not linking it.
+      Fix documented conf-file naming format in README
+      Remove list of available conf files from README.
+      Simplify/improve 30-metric-aliases.conf
+
+Keith Packard (25):
+      Also check configDirs mtimes in FcConfigUptoDate
+      Respect "binding" attribute in <alias> entries.
+      Correct documentation for FcAtomicLock (Bug 12947).
+      Remove fcprivate.h, move the remaining macros to fcint.h.
+      Correct documentation for FcConfigUptoDate (bug 12948).
+      Document skipping of fonts from FcFileScan/FcDirScan.
+      Make file_stat argument to FcDirCacheLoadFile optional.
+      Clean up exported names in fontconfig.h.
+      Track line numbers in sgml edit tool input.
+      Typo error in function name: Inverval -> interval
+      Don't check cache file time stamps when cleaning cache dir.
+      Use FcLangDifferentTerritory instead of FcLangDifferentCountry.
+      Verify documentation covers exposed symbols.
+      Document previously undocumented functions. (bug 12963)
+      Update documentation for FcStrCopyFilename (bug 12964).
+      Update documentation for stale FcConfigGetConfig function.
+      Have FcConfigSetCurrent accept the current configuration and simply return
+      Remove references to FcConfigParse and FcConfigLoad.
+      Replace incorrect documentation uses of 'char' with 'FcChar8' (bug 13002).
+      Fix formatting syntax in doc/fccache.fncs
+      Generate fccache.sgml, fcdircache.sgml and fclangset.sgml.
+      Formatting syntax mistake in doc/fclangset.fncs.
+      Link new function documentation into the fontconfig-devel.sgml
+      Ignore new generated documentation
+      Export FcConfig{G,S}etRescanInverval from .so, mark as deprecated.
 
 2.4.91 (2.5 RC1)
 
