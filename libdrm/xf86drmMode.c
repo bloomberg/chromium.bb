@@ -212,7 +212,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 
 int drmModeRmFB(int fd, uint32_t bufferId)
 {
-	return ioctl(fd, DRM_IOCTL_MODE_RMFB, bufferId);
+	return ioctl(fd, DRM_IOCTL_MODE_RMFB, &bufferId);
 }
 
 drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
