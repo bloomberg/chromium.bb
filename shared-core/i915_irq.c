@@ -365,9 +365,8 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_HANDLED;
 }
 
-int i915_emit_irq(struct drm_device * dev)
+int i915_emit_irq(struct drm_device *dev)
 {
-
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
@@ -383,8 +382,6 @@ int i915_emit_irq(struct drm_device * dev)
 	ADVANCE_LP_RING();
 
 	return dev_priv->counter;
-
-
 }
 
 void i915_user_irq_on(drm_i915_private_t *dev_priv)
@@ -471,7 +468,8 @@ int i915_driver_vblank_wait2(struct drm_device *dev, unsigned int *sequence)
 
 /* Needs the lock as it touches the ring.
  */
-int i915_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_priv)
+int i915_irq_emit(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_irq_emit_t *emit = data;
@@ -747,13 +745,14 @@ void i915_driver_irq_postinstall(struct drm_device * dev)
 	 * Initialize the hardware status page IRQ location.
 	 */
 
-	I915_WRITE(I915REG_INSTPM, ( 1 << 5) | ( 1 << 21));
+	I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
 }
 
 void i915_driver_irq_uninstall(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u16 temp;
+
 	if (!dev_priv)
 		return;
 

@@ -38,7 +38,7 @@
  * Implements an intel sync flush operation.
  */
 
-static void i915_perform_flush(struct drm_device * dev)
+static void i915_perform_flush(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
@@ -63,7 +63,7 @@ static void i915_perform_flush(struct drm_device * dev)
 
 		diff = (sequence - fc->last_exe_flush) & BREADCRUMB_MASK;
 		if (diff < driver->wrap_diff && diff != 0) {
-		        drm_fence_handler(dev, 0, sequence,
+			drm_fence_handler(dev, 0, sequence,
 					  DRM_FENCE_TYPE_EXE, 0);
 		}
 
@@ -110,7 +110,7 @@ static void i915_perform_flush(struct drm_device * dev)
 
 }
 
-void i915_poke_flush(struct drm_device * dev, uint32_t class)
+void i915_poke_flush(struct drm_device *dev, uint32_t class)
 {
 	struct drm_fence_manager *fm = &dev->fm;
 	unsigned long flags;
@@ -120,8 +120,9 @@ void i915_poke_flush(struct drm_device * dev, uint32_t class)
 	write_unlock_irqrestore(&fm->lock, flags);
 }
 
-int i915_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t flags,
-			     uint32_t * sequence, uint32_t * native_type)
+int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
+			     uint32_t flags, uint32_t *sequence,
+			     uint32_t *native_type)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	if (!dev_priv)
@@ -136,7 +137,7 @@ int i915_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t f
 	return 0;
 }
 
-void i915_fence_handler(struct drm_device * dev)
+void i915_fence_handler(struct drm_device *dev)
 {
 	struct drm_fence_manager *fm = &dev->fm;
 

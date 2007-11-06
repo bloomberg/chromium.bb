@@ -267,7 +267,7 @@ extern int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
 extern int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
-extern int i915_emit_irq(struct drm_device * dev);
+extern int i915_emit_irq(struct drm_device *dev);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
 extern int i915_vblank_swap(struct drm_device *dev, void *data,
@@ -303,7 +303,7 @@ extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t f
 /* i915_buffer.c */
 extern struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev);
 extern int i915_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
-	                    uint32_t *type);
+			    uint32_t *type);
 extern int i915_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);
