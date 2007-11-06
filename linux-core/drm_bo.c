@@ -1331,16 +1331,25 @@ int drm_bo_move_buffer(struct drm_buffer_object *bo, uint64_t new_mem_flags,
 	ret = drm_bo_handle_move_mem(bo, &mem, 0, no_wait);
 
 out_unlock:
+	mutex_lock(&dev->struct_mutex);
 	if (ret || !move_unfenced) {
-		mutex_lock(&dev->struct_mutex);
 		if (mem.mm_node) {
 			if (mem.mm_node != bo->pinned_node)
 				drm_mm_put_block(mem.mm_node);
 			mem.mm_node = NULL;
 		}
-		mutex_unlock(&dev->struct_mutex);
+		drm_bo_add_to_lru(bo);
+		if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED) {
+			DRM_WAKEUP(&bo->event_queue);
+			DRM_FLAG_MASKED(bo->priv_flags, 0,
+					_DRM_BO_FLAG_UNFENCED);
+		}
+	} else {
+		list_add_tail(&bo->lru, &bm->unfenced);
+		DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED,
+				_DRM_BO_FLAG_UNFENCED);
 	}
-
+	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&bm->evict_mutex);
 	return ret;
 }
