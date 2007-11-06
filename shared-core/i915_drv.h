@@ -316,7 +316,7 @@ extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t f
 /* i915_buffer.c */
 extern struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev);
 extern int i915_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
-	                    uint32_t *type);
+			    uint32_t *type);
 extern int i915_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);
@@ -1288,7 +1288,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 			(dev)->pci_device == 0x29D2)
 
 #define IS_I9XX(dev) (IS_I915G(dev) || IS_I915GM(dev) || IS_I945G(dev) || \
-		      IS_I945GM(dev) || IS_I965G(dev))
+		      IS_I945GM(dev) || IS_I965G(dev) || IS_G33(dev))
 
 #define IS_MOBILE(dev) (IS_I830(dev) || IS_I85X(dev) || IS_I915GM(dev) || \
 			IS_I945GM(dev) || IS_I965GM(dev))

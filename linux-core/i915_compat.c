@@ -2,6 +2,9 @@
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 
+#include "i915_drm.h"
+#include "i915_drv.h"
+
 #define PCI_DEVICE_ID_INTEL_82946GZ_HB      0x2970
 #define PCI_DEVICE_ID_INTEL_82965G_1_HB     0x2980
 #define PCI_DEVICE_ID_INTEL_82965Q_HB       0x2990
@@ -12,17 +15,6 @@
 #define PCI_DEVICE_ID_INTEL_G33_HB          0x29C0
 #define PCI_DEVICE_ID_INTEL_Q35_HB          0x29B0
 #define PCI_DEVICE_ID_INTEL_Q33_HB          0x29D0
-
-#define IS_I965 (agp_dev->device == PCI_DEVICE_ID_INTEL_82946GZ_HB || \
-                 agp_dev->device == PCI_DEVICE_ID_INTEL_82965G_1_HB || \
-                 agp_dev->device == PCI_DEVICE_ID_INTEL_82965Q_HB || \
-                 agp_dev->device == PCI_DEVICE_ID_INTEL_82965G_HB || \
-                 agp_dev->device == PCI_DEVICE_ID_INTEL_82965GM_HB || \
-                 agp_dev->device == PCI_DEVICE_ID_INTEL_82965GME_HB)
-
-#define IS_G33 (agp_dev->device == PCI_DEVICE_ID_INTEL_G33_HB || \
-		agp_dev->device == PCI_DEVICE_ID_INTEL_Q35_HB || \
-		agp_dev->device == PCI_DEVICE_ID_INTEL_Q33_HB)
 
 #define I915_IFPADDR    0x60
 #define I965_IFPADDR    0x70
@@ -109,11 +101,15 @@ void intel_init_chipset_flush_compat(struct drm_device *dev)
 {
 	struct pci_dev *agp_dev = dev->agp->agp_info.device;
 
+	/* not flush on i8xx */
+	if (!IS_I9XX(dev))
+		return;
+
 	intel_private.ifp_resource.name = "GMCH IFPBAR";
 	intel_private.ifp_resource.flags = IORESOURCE_MEM;
 
 	/* Setup chipset flush for 915 */
-	if (IS_I965 || IS_G33) {
+	if (IS_I965G(dev) || IS_G33(dev)) {
 		intel_i965_g33_setup_chipset_flush(agp_dev);
 	} else {
 		intel_i915_setup_chipset_flush(agp_dev);
@@ -128,6 +124,10 @@ void intel_init_chipset_flush_compat(struct drm_device *dev)
 
 void intel_fini_chipset_flush_compat(struct drm_device *dev)
 {
+	/* not flush on i8xx */
+	if (!IS_I9XX(dev))
+		return;
+
 	iounmap(intel_private.flush_page);
 	release_resource(&intel_private.ifp_resource);
 }

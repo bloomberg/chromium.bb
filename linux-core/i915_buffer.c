@@ -33,14 +33,14 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device * dev)
+struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev)
 {
 	return drm_agp_init_ttm(dev);
 }
 
 int i915_fence_types(struct drm_buffer_object *bo,
-		     uint32_t * fclass,
-		     uint32_t * type)
+		     uint32_t *fclass,
+		     uint32_t *type)
 {
 	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
@@ -49,7 +49,7 @@ int i915_fence_types(struct drm_buffer_object *bo,
 	return 0;
 }
 
-int i915_invalidate_caches(struct drm_device * dev, uint64_t flags)
+int i915_invalidate_caches(struct drm_device *dev, uint64_t flags)
 {
 	/*
 	 * FIXME: Only emit once per batchbuffer submission.
@@ -65,8 +65,8 @@ int i915_invalidate_caches(struct drm_device * dev, uint64_t flags)
 	return i915_emit_mi_flush(dev, flush_cmd);
 }
 
-int i915_init_mem_type(struct drm_device * dev, uint32_t type,
-		       struct drm_mem_type_manager * man)
+int i915_init_mem_type(struct drm_device *dev, uint32_t type,
+		       struct drm_mem_type_manager *man)
 {
 	switch (type) {
 	case DRM_BO_MEM_LOCAL:
@@ -229,25 +229,24 @@ out_cleanup:
 #endif
 
 /*
- * Disable i915_move_flip for now, since we can't guarantee that the hardware lock
- * is held here. To re-enable we need to make sure either
+ * Disable i915_move_flip for now, since we can't guarantee that the hardware
+ * lock is held here. To re-enable we need to make sure either
  * a) The X server is using DRM to submit commands to the ring, or
- * b) DRM can use the HP ring for these blits. This means i915 needs to implement
- *    a new ring submission mechanism and fence class.
+ * b) DRM can use the HP ring for these blits. This means i915 needs to
+ *    implement a new ring submission mechanism and fence class.
  */
-
-int i915_move(struct drm_buffer_object * bo,
-	      int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
+int i915_move(struct drm_buffer_object *bo,
+	      int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		if (0 /*i915_move_flip(bo, evict, no_wait, new_mem)*/)
+		if (0) /*i915_move_flip(bo, evict, no_wait, new_mem)*/
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else {
-		if (0 /*i915_move_blit(bo, evict, no_wait, new_mem)*/)
+		if (0) /*i915_move_blit(bo, evict, no_wait, new_mem)*/
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
@@ -262,7 +261,7 @@ static inline void clflush(volatile void *__p)
 
 static inline void drm_cache_flush_addr(void *virt)
 {
-        int i;
+	int i;
 
 	for (i = 0; i < PAGE_SIZE; i += boot_cpu_data.x86_clflush_size)
 		clflush(virt+i);

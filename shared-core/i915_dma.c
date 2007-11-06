@@ -1312,4 +1312,3 @@ int i915_driver_device_is_agp(struct drm_device * dev)
 	return 1;
 }
 
-
