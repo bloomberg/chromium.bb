@@ -264,7 +264,7 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 
 	ttm->user_mm = mm;
 	ttm->dummy_read_page = dummy_read_page;
-	ttm->page_flags = DRM_TTM_PAGE_USER |
+	ttm->page_flags |= DRM_TTM_PAGE_USER |
 		((write) ? DRM_TTM_PAGE_USER_WRITE : 0);
 
 
