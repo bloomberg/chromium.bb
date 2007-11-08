@@ -25,7 +25,7 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 10
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 11
 
 struct drm_nouveau_channel_alloc {
 	uint32_t     fb_ctxdma_handle;
@@ -117,6 +117,9 @@ struct drm_nouveau_setparam {
 	uint64_t value;
 };
 
+struct drm_nouveau_bo_validate {
+};
+
 enum nouveau_card_type {
 	NV_UNKNOWN =0,
 	NV_04      =4,
@@ -156,5 +159,6 @@ struct drm_nouveau_sarea {
 #define DRM_NOUVEAU_GPUOBJ_FREE        0x07
 #define DRM_NOUVEAU_MEM_ALLOC          0x08
 #define DRM_NOUVEAU_MEM_FREE           0x09
+#define DRM_NOUVEAU_BO_VALIDATE        0x0a
 
 #endif /* __NOUVEAU_DRM_H__ */

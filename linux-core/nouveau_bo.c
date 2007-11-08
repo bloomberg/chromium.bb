@@ -254,3 +254,12 @@ struct drm_bo_driver nouveau_bo_driver = {
 	.move = nouveau_bo_move,
 	.ttm_cache_flush= nouveau_bo_flush_ttm
 };
+
+int
+nouveau_bo_validate(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	DRM_ERROR("unimplemented\n");
+	return -EINVAL;
+}
+
