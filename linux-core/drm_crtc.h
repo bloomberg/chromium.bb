@@ -487,8 +487,9 @@ extern void drm_output_destroy(struct drm_output *output);
 extern bool drm_output_rename(struct drm_output *output, const char *name);
 extern void drm_fb_release(struct file *filp);
 
-extern int drm_add_edid_modes(struct drm_output *output,
-			struct i2c_adapter *adapter);
+extern struct edid *drm_get_edid(struct drm_output *output,
+				 struct i2c_adapter *adapter);
+extern int drm_add_edid_modes(struct drm_output *output, struct edid *edid);
 extern void drm_mode_probed_add(struct drm_output *output, struct drm_display_mode *mode);
 extern void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode);
 extern struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,

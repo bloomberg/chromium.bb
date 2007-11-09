@@ -50,6 +50,13 @@ bool intel_ddc_probe(struct drm_output *output)
 int intel_ddc_get_modes(struct drm_output *output)
 {
 	struct intel_output *intel_output = output->driver_private;
+	struct edid *edid;
+	int ret = 0;
 
-	return drm_add_edid_modes(output, &intel_output->ddc_bus->adapter);
+	edid = drm_get_edid(output, &intel_output->ddc_bus->adapter);
+	if (edid) {
+		ret = drm_add_edid_modes(output, edid);
+		kfree(edid);
+	}
+	return ret;
 }
