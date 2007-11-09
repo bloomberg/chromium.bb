@@ -1070,10 +1070,12 @@ out_free:
 int i915_do_cleanup_pageflip(struct drm_device * dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	int i, planes, num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
+	int i, planes, num_pages;
 
 	DRM_DEBUG("%s\n", __FUNCTION__);
-
+	if (!dev_priv->sarea_priv)
+		return 0;
+	num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
 	for (i = 0, planes = 0; i < 2; i++) {
 		if (dev_priv->sarea_priv->pf_current_page & (0x3 << (2 * i))) {
 			dev_priv->sarea_priv->pf_current_page =
