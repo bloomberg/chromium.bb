@@ -469,6 +469,14 @@ int drm_add_edid_modes(struct drm_output *output, struct edid *edid)
 {
 	int num_modes = 0;
 
+	if (edid == NULL) {
+		return 0;
+	}
+	if (!edid_valid(edid)) {
+		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
+			 output->name);
+		return 0;
+	}
 	num_modes += add_established_modes(output, edid);
 	num_modes += add_standard_modes(output, edid);
 	num_modes += add_detailed_info(output, edid);
