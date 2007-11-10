@@ -431,7 +431,11 @@ static int i915_resume(struct drm_device *dev)
 		I915_WRITE(DSPASURF, dev_priv->saveDSPASURF);
 		I915_WRITE(DSPATILEOFF, dev_priv->saveDSPATILEOFF);
 	}
-	I915_WRITE(PIPEACONF, dev_priv->savePIPEACONF);
+
+	if ((dev_priv->saveDPLL_A & DPLL_VCO_ENABLE) &&
+	    (dev_priv->saveDPLL_A & DPLL_VGA_MODE_DIS))
+		I915_WRITE(PIPEACONF, dev_priv->savePIPEACONF);
+
 	i915_restore_palette(dev, PIPE_A);
 	/* Enable the plane */
 	I915_WRITE(DSPACNTR, dev_priv->saveDSPACNTR);
@@ -471,7 +475,10 @@ static int i915_resume(struct drm_device *dev)
 		I915_WRITE(DSPBSURF, dev_priv->saveDSPBSURF);
 		I915_WRITE(DSPBTILEOFF, dev_priv->saveDSPBTILEOFF);
 	}
-	I915_WRITE(PIPEBCONF, dev_priv->savePIPEBCONF);
+
+	if ((dev_priv->saveDPLL_B & DPLL_VCO_ENABLE) &&
+	    (dev_priv->saveDPLL_B & DPLL_VGA_MODE_DIS))
+		I915_WRITE(PIPEBCONF, dev_priv->savePIPEBCONF);
 	i915_restore_palette(dev, PIPE_A);
 	/* Enable the plane */
 	I915_WRITE(DSPBCNTR, dev_priv->saveDSPBCNTR);
