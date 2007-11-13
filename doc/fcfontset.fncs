@@ -73,10 +73,14 @@ the set of unique such patterns.
 @TYPE5@		FcResult *			@ARG5@		result
 @PURPOSE@	Return the best font from a set of font sets
 @DESC@
-Returns the font in <parameter>sets</parameter> most close matching
-<parameter>pattern</parameter>.  This function should be called only after
-FcConfigSubstitute and FcDefaultSubstitute have been called for
+Finds the font in <parameter>sets</parameter> most closely matching
+<parameter>pattern</parameter> and returns the result of
+<function>FcFontRenderPrepare</function> for that font and the provided
+pattern. This function should be called only after
+<function>FcConfigSubstitute</function> and
+<function>FcDefaultSubstitute</function> have been called for
 <parameter>pattern</parameter>; otherwise the results will not be correct.
+Returns NULL if an error occurs during this process.
 @@
 
 @RET@		void
@@ -116,7 +120,7 @@ The returned FcFontSet references FcPattern structures which may be shared
 by the return value from multiple FcFontSort calls, applications cannot
 modify these patterns.  Instead, they should be passed, along with
 <parameter>pattern</parameter> to
-FcFontRenderPrepare which combines them into a complete pattern.
+<function>FcFontRenderPrepare</function> which combines them into a complete pattern.
     </para><para>
 The FcFontSet returned by FcFontSetSort is destroyed by caling FcFontSetDestroy.
 @@
