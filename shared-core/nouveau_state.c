@@ -290,7 +290,7 @@ nouveau_card_init(struct drm_device *dev)
 
 	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
 		return 0;
-	dev_priv->ttm = 1;
+	dev_priv->ttm = 0;
 
 	/* Map any PCI resources we need on the card */
 	ret = nouveau_init_card_mappings(dev);

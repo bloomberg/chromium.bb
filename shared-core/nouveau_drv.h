@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	11
+#define DRIVER_PATCHLEVEL	10
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -572,10 +572,8 @@ extern void nv04_timer_takedown(struct drm_device *);
 extern long nouveau_compat_ioctl(struct file *file, unsigned int cmd,
 				 unsigned long arg);
 
-/* nouveau_bo.c */
+/* nouveau_buffer.c */
 extern struct drm_bo_driver nouveau_bo_driver;
-extern int nouveau_bo_validate(struct drm_device *, void *data,
-			       struct drm_file *);
 
 /* nouveau_fence.c */
 extern struct drm_fence_driver nouveau_fence_driver;
