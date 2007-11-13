@@ -213,6 +213,15 @@ nv50_fifo_takedown(struct drm_device *dev)
 }
 
 int
+nv50_fifo_channel_id(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	return (NV_READ(NV03_PFIFO_CACHE1_PUSH1) &
+			NV50_PFIFO_CACHE1_PUSH1_CHID_MASK);
+}
+
+int
 nv50_fifo_create_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;

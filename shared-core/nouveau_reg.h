@@ -406,6 +406,11 @@
 #define NV04_PFIFO_CACHE0_PULL1                            0x00003054
 #define NV03_PFIFO_CACHE1_PUSH0                            0x00003200
 #define NV03_PFIFO_CACHE1_PUSH1                            0x00003204
+#define NV03_PFIFO_CACHE1_PUSH1_DMA                            (1<<8)
+#define NV40_PFIFO_CACHE1_PUSH1_DMA                           (1<<16)
+#define NV03_PFIFO_CACHE1_PUSH1_CHID_MASK                  0x0000000f
+#define NV10_PFIFO_CACHE1_PUSH1_CHID_MASK                  0x0000001f
+#define NV50_PFIFO_CACHE1_PUSH1_CHID_MASK                  0x0000007f
 #define NV04_PFIFO_CACHE1_DMA_PUSH                         0x00003220
 #define NV04_PFIFO_CACHE1_DMA_FETCH                        0x00003224
 #    define NV_PFIFO_CACHE1_DMA_FETCH_TRIG_8_BYTES         0x00000000

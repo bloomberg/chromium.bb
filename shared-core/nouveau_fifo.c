@@ -28,22 +28,6 @@
 #include "nouveau_drm.h"
 
 
-/* returns the number of hw fifos */
-int nouveau_fifo_number(struct drm_device *dev)
-{
-	struct drm_nouveau_private *dev_priv=dev->dev_private;
-	switch(dev_priv->card_type)
-	{
-		case NV_04:
-		case NV_05:
-			return 16;
-		case NV_50:
-			return 128;
-		default:
-			return 32;
-	}
-}
-
 /* returns the size of fifo context */
 int nouveau_fifo_ctx_size(struct drm_device *dev)
 {
@@ -288,12 +272,13 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 	 * (woo, full userspace command submission !)
 	 * When there are no more contexts, you lost
 	 */
-	for(channel=0; channel<nouveau_fifo_number(dev); channel++) {
+	for (channel = 0; channel < engine->fifo.channels; channel++) {
 		if (dev_priv->fifos[channel] == NULL)
 			break;
 	}
+
 	/* no more fifos. you lost. */
-	if (channel==nouveau_fifo_number(dev))
+	if (channel == engine->fifo.channels)
 		return -EINVAL;
 
 	dev_priv->fifos[channel] = drm_calloc(1, sizeof(struct nouveau_channel),
@@ -451,10 +436,11 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 void nouveau_fifo_cleanup(struct drm_device *dev, struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	int i;
 
 	DRM_DEBUG("clearing FIFO enables from file_priv\n");
-	for(i = 0; i < nouveau_fifo_number(dev); i++) {
+	for(i = 0; i < engine->fifo.channels; i++) {
 		struct nouveau_channel *chan = dev_priv->fifos[i];
 
 		if (chan && chan->file_priv == file_priv)
@@ -467,8 +453,9 @@ nouveau_fifo_owner(struct drm_device *dev, struct drm_file *file_priv,
 		   int channel)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 
-	if (channel >= nouveau_fifo_number(dev))
+	if (channel >= engine->fifo.channels)
 		return 0;
 	if (dev_priv->fifos[channel] == NULL)
 		return 0;

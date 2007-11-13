@@ -135,7 +135,9 @@ nv40_fifo_load_context(struct nouveau_channel *chan)
 	NV_WRITE(NV04_PFIFO_DMA_TIMESLICE, tmp);
 
 	/* Set channel active, and in DMA mode */
-	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1  , 0x00010000 | chan->id);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1,
+		 NV03_PFIFO_CACHE1_PUSH1_DMA | chan->id);
+
 	/* Reset DMA_CTL_AT_INFO to INVALID */
 	tmp = NV_READ(NV04_PFIFO_CACHE1_DMA_CTL) & ~(1<<31);
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_CTL, tmp);

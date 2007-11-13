@@ -193,8 +193,12 @@ struct nouveau_fb_engine {
 struct nouveau_fifo_engine {
 	void *priv;
 
+	int  channels;
+
 	int  (*init)(struct drm_device *);
 	void (*takedown)(struct drm_device *);
+
+	int  (*channel_id)(struct drm_device *);
 
 	int  (*create_context)(struct nouveau_channel *);
 	void (*destroy_context)(struct nouveau_channel *);
@@ -364,7 +368,6 @@ extern int  nouveau_ioctl_notifier_free(struct drm_device *, void *data,
 
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(struct drm_device *);
-extern int  nouveau_fifo_number(struct drm_device *);
 extern int  nouveau_fifo_ctx_size(struct drm_device *);
 extern void nouveau_fifo_cleanup(struct drm_device *, struct drm_file *);
 extern int  nouveau_fifo_owner(struct drm_device *, struct drm_file *,
@@ -452,12 +455,14 @@ extern int  nv40_fb_init(struct drm_device *);
 extern void nv40_fb_takedown(struct drm_device *);
 
 /* nv04_fifo.c */
+extern int  nv04_fifo_channel_id(struct drm_device *);
 extern int  nv04_fifo_create_context(struct nouveau_channel *);
 extern void nv04_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv04_fifo_load_context(struct nouveau_channel *);
 extern int  nv04_fifo_save_context(struct nouveau_channel *);
 
 /* nv10_fifo.c */
+extern int  nv10_fifo_channel_id(struct drm_device *);
 extern int  nv10_fifo_create_context(struct nouveau_channel *);
 extern void nv10_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv10_fifo_load_context(struct nouveau_channel *);
@@ -473,6 +478,7 @@ extern int  nv40_fifo_save_context(struct nouveau_channel *);
 /* nv50_fifo.c */
 extern int  nv50_fifo_init(struct drm_device *);
 extern void nv50_fifo_takedown(struct drm_device *);
+extern int  nv50_fifo_channel_id(struct drm_device *);
 extern int  nv50_fifo_create_context(struct nouveau_channel *);
 extern void nv50_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv50_fifo_load_context(struct nouveau_channel *);
