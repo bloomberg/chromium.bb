@@ -295,12 +295,19 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 	DRM_INFO("Allocating FIFO number %d\n", channel);
 
 	/* Locate channel's user control regs */
-	if (dev_priv->card_type < NV_50) {
+	if (dev_priv->card_type < NV_40) {
 		chan->user = NV03_USER(channel);
 		chan->user_size = NV03_USER_SIZE;
 		chan->put = NV03_USER_DMA_PUT(channel);
 		chan->get = NV03_USER_DMA_GET(channel);
 		chan->ref_cnt = NV03_USER_REF_CNT(channel);
+	} else
+	if (dev_priv->card_type < NV_50) {
+		chan->user = NV40_USER(channel);
+		chan->user_size = NV40_USER_SIZE;
+		chan->put = NV40_USER_DMA_PUT(channel);
+		chan->get = NV40_USER_DMA_GET(channel);
+		chan->ref_cnt = NV40_USER_REF_CNT(channel);
 	} else {
 		chan->user = NV50_USER(channel);
 		chan->user_size = NV50_USER_SIZE;
