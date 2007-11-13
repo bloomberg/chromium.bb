@@ -435,6 +435,7 @@
 #define NV03_PFIFO_CACHE1_PUSH1_CHID_MASK                  0x0000000f
 #define NV10_PFIFO_CACHE1_PUSH1_CHID_MASK                  0x0000001f
 #define NV50_PFIFO_CACHE1_PUSH1_CHID_MASK                  0x0000007f
+#define NV03_PFIFO_CACHE1_PUT                              0x00003210
 #define NV04_PFIFO_CACHE1_DMA_PUSH                         0x00003220
 #define NV04_PFIFO_CACHE1_DMA_FETCH                        0x00003224
 #    define NV_PFIFO_CACHE1_DMA_FETCH_TRIG_8_BYTES         0x00000000

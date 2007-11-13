@@ -419,13 +419,19 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 
 	/* Give the channel a chance to idle, wait 2s (hopefully) */
 	t_start = engine->timer.read(dev);
-	while (NV_READ(chan->get) != NV_READ(chan->put)) {
+	while (NV_READ(chan->get) != NV_READ(chan->put) ||
+	       NV_READ(NV03_PFIFO_CACHE1_GET) !=
+	       NV_READ(NV03_PFIFO_CACHE1_PUT)) {
 		if (engine->timer.read(dev) - t_start > 2000000000ULL) {
 			DRM_ERROR("Failed to idle channel %d before destroy."
 				  "Prepare for strangeness..\n", chan->id);
 			break;
 		}
 	}
+
+	/*XXX: Maybe should wait for PGRAPH to finish with the stuff it fetched
+	 *     from CACHE1 too?
+	 */
 
 	/* disable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
