@@ -192,7 +192,9 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 		I915_WRITE(0x02080, dev_priv->dma_status_page);
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
+#ifdef I915_HAVE_BUFFER
 	mutex_init(&dev_priv->cmdbuf_mutex);
+#endif
 	return 0;
 }
 
@@ -1318,8 +1320,10 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	ret = drm_addmap(dev, base, size, _DRM_REGISTERS, _DRM_KERNEL,
 			 &dev_priv->mmio_map);
 
+#ifdef __LINUX__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_init_chipset_flush_compat(dev);
+#endif
 #endif
 	return ret;
 }
@@ -1333,8 +1337,10 @@ int i915_driver_unload(struct drm_device *dev)
 
 	drm_free(dev->dev_private, sizeof(drm_i915_private_t),
 		 DRM_MEM_DRIVER);
+#ifdef __LINUX__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_fini_chipset_flush_compat(dev);
+#endif
 #endif
 	return 0;
 }
