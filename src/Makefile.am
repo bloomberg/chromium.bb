@@ -125,7 +125,8 @@ uninstall-local: uninstall-ms-import-lib uninstall-libtool-import-lib
 PUBLIC_FILES = \
 	$(top_srcdir)/fontconfig/fontconfig.h \
 	$(top_srcdir)/fontconfig/fcfreetype.h \
-	$(top_srcdir)/src/fcdeprecate.h
+	$(top_srcdir)/src/fcdeprecate.h \
+	$(top_srcdir)/fontconfig/fcprivate.h
 	
 fcaliastail.h: fcalias.h
 

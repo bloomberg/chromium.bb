@@ -51,12 +51,23 @@ Destroys an object set.
 @FUNC@		FcObjectSetBuild
 @TYPE1@		const char *			@ARG1@		first
 @TYPE2@		...
+
 @PROTOTYPE+@
 @RET+@		FcObjectSet *
 @FUNC+@		FcObjectSetVaBuild
 @TYPE1+@	const char *			@ARG1+@		first
 @TYPE2+@	va_list%			@ARG2+@		va
+
+@PROTOTYPE++@
+@RET++@		void
+@FUNC++@	FcObjectSetVapBuild
+@TYPE1++@	FcObjectSet *			@ARG1++@	result
+@TYPE2++@	const char *			@ARG2++@	first
+@TYPE3++@	va_list%			@ARG3++@	va
+
 @PURPOSE@	Build object set from args
 @DESC@
 These build an object set from a null-terminated list of property names.
+FcObjectSetVapBuild is a macro version of FcObjectSetVaBuild which returns
+the result in the <parameter>result</parameter> variable directly.
 @@

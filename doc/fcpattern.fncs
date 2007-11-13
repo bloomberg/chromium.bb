@@ -273,6 +273,14 @@ in preference to FcPatternGet to provide compile-time typechecking.
 @FUNC+@		FcPatternVaBuild
 @TYPE1+@	FcPattern *			@ARG1+@		orig
 @TYPE2+@	va_list% 			@ARG2+@		va
+
+@PROTOTYPE++@
+@RET++@		void
+@FUNC++@	FcPatternVapBuild
+@TYPE1++@	FcPattern *			@ARG1++@	result
+@TYPE2++@	FcPattern *			@ARG2++@	orig
+@TYPE3++@	va_list%			@ARG3++@	va
+
 @PURPOSE@	Create patterns from arguments
 @DESC@
 Builds a pattern using a list of objects, types and values.  Each
@@ -300,7 +308,9 @@ pattern = FcPatternBuild (0, FC_FAMILY, FcTypeString, "Times", (char *) 0);
 </programlisting>
 <para>
 FcPatternVaBuild is used when the arguments are already in the form of a
-varargs value.
+varargs value. FcPatternVapBuild is a macro version of FcPatternVaBuild
+which returns its result directly in the <parameter>result</parameter>
+variable.
 @@
 
 @RET@		FcBool

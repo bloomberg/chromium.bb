@@ -21,3 +21,4 @@ fi
 echo \
 'Library Export							Documentation'
 diff -y $header $doc | grep '[<>]'
+exit 1
