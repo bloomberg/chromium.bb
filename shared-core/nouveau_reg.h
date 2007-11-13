@@ -45,16 +45,40 @@
 #define NV_CLASS_NULL                                      0x00000030
 #define NV_CLASS_DMA_IN_MEMORY                             0x0000003D
 
+#define NV03_USER(i)                             (0x00800000+(i*NV03_USER_SIZE))
+#define NV03_USER__SIZE                                                       16
+#define NV10_USER__SIZE                                                       32
+#define NV03_USER_SIZE                                                0x00010000
+#define NV03_USER_DMA_PUT(i)                     (0x00800040+(i*NV03_USER_SIZE))
+#define NV03_USER_DMA_PUT__SIZE                                               16
+#define NV10_USER_DMA_PUT__SIZE                                               32
+#define NV03_USER_DMA_GET(i)                     (0x00800044+(i*NV03_USER_SIZE))
+#define NV03_USER_DMA_GET__SIZE                                               16
+#define NV10_USER_DMA_GET__SIZE                                               32
+#define NV03_USER_REF_CNT(i)                     (0x00800048+(i*NV03_USER_SIZE))
+#define NV03_USER_REF_CNT__SIZE                                               16
+#define NV10_USER_REF_CNT__SIZE                                               32
+
+#define NV40_USER(i)                             (0x00c00000+(i*NV40_USER_SIZE))
+#define NV40_USER_SIZE                                                0x00001000
+#define NV40_USER_DMA_PUT(i)                     (0x00c00040+(i*NV40_USER_SIZE))
+#define NV40_USER_DMA_PUT__SIZE                                               32
+#define NV40_USER_DMA_GET(i)                     (0x00c00044+(i*NV40_USER_SIZE))
+#define NV40_USER_DMA_GET__SIZE                                               32
+#define NV40_USER_REF_CNT(i)                     (0x00c00048+(i*NV40_USER_SIZE))
+#define NV40_USER_REF_CNT__SIZE                                               32
+
+#define NV50_USER(i)                             (0x00c00000+(i*NV50_USER_SIZE))
+#define NV50_USER_SIZE                                                0x00002000
+#define NV50_USER_DMA_PUT(i)                     (0x00c00040+(i*NV50_USER_SIZE))
+#define NV50_USER_DMA_PUT__SIZE                                              128
+#define NV50_USER_DMA_GET(i)                     (0x00c00044+(i*NV50_USER_SIZE))
+#define NV50_USER_DMA_GET__SIZE                                              128
+/*XXX: I don't think this actually exists.. */
+#define NV50_USER_REF_CNT(i)                     (0x00c00048+(i*NV50_USER_SIZE))
+#define NV50_USER_REF_CNT__SIZE                                              128
+
 #define NV03_FIFO_SIZE                                     0x8000UL
-#define NV_MAX_FIFO_NUMBER                                 128
-#define NV03_FIFO_REGS_SIZE                                0x10000
-#define NV03_FIFO_REGS(i)                                  (0x00800000+i*NV03_FIFO_REGS_SIZE)
-#    define NV03_FIFO_REGS_DMAPUT(i)                       (NV03_FIFO_REGS(i)+0x40)
-#    define NV03_FIFO_REGS_DMAGET(i)                       (NV03_FIFO_REGS(i)+0x44)
-#define NV50_FIFO_REGS_SIZE                                0x2000
-#define NV50_FIFO_REGS(i)                                  (0x00c00000+i*NV50_FIFO_REGS_SIZE)
-#    define NV50_FIFO_REGS_DMAPUT(i)                       (NV50_FIFO_REGS(i)+0x40)
-#    define NV50_FIFO_REGS_DMAGET(i)                       (NV50_FIFO_REGS(i)+0x44)
 
 #define NV03_PMC_BOOT_0                                    0x00000000
 #define NV03_PMC_BOOT_1                                    0x00000004

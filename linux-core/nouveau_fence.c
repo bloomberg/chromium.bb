@@ -79,6 +79,7 @@ nouveau_fence_perform_flush(struct drm_device *dev, uint32_t class)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_fence_class_manager *fc = &dev->fm.fence_class[class];
+	struct nouveau_channel *chan = dev_priv->fifos[class];
 	uint32_t pending_types = 0;
 
 	DRM_DEBUG("class=%d\n", class);
@@ -89,7 +90,7 @@ nouveau_fence_perform_flush(struct drm_device *dev, uint32_t class)
 					      fc->pending_flush);
 
 	if (pending_types) {
-		uint32_t sequence = NV_READ(NV03_FIFO_REGS(class) + 0x48);
+		uint32_t sequence = NV_READ(chan->ref_cnt);
 
 		DRM_DEBUG("got 0x%08x\n", sequence);
 		drm_fence_handler(dev, class, sequence, pending_types, 0);

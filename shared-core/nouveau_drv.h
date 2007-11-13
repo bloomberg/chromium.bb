@@ -114,6 +114,12 @@ struct nouveau_channel
 	struct mem_block          *pushbuf_mem;
 	uint32_t                   pushbuf_base;
 
+	/* FIFO user control regs */
+	uint32_t user, user_size;
+	uint32_t put;
+	uint32_t get;
+	uint32_t ref_cnt;
+
 	/* Notifier memory */
 	struct mem_block *notifier_block;
 	struct mem_block *notifier_heap;
@@ -225,6 +231,7 @@ struct nouveau_engine {
 	struct nouveau_fifo_engine    fifo;
 };
 
+#define NOUVEAU_MAX_CHANNEL_NR 128
 struct drm_nouveau_private {
 	enum {
 		NOUVEAU_CARD_INIT_DOWN,
@@ -245,7 +252,7 @@ struct drm_nouveau_private {
 	drm_local_map_t *ramin; /* NV40 onwards */
 
 	int fifo_alloc_count;
-	struct nouveau_channel *fifos[NV_MAX_FIFO_NUMBER];
+	struct nouveau_channel *fifos[NOUVEAU_MAX_CHANNEL_NR];
 
 	struct nouveau_engine Engine;
 	struct nouveau_drm_channel channel;
