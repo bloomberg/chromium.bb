@@ -114,6 +114,12 @@ struct nouveau_channel
 	struct mem_block          *pushbuf_mem;
 	uint32_t                   pushbuf_base;
 
+	/* FIFO user control regs */
+	uint32_t user, user_size;
+	uint32_t put;
+	uint32_t get;
+	uint32_t ref_cnt;
+
 	/* Notifier memory */
 	struct mem_block *notifier_block;
 	struct mem_block *notifier_heap;
@@ -193,8 +199,12 @@ struct nouveau_fb_engine {
 struct nouveau_fifo_engine {
 	void *priv;
 
+	int  channels;
+
 	int  (*init)(struct drm_device *);
 	void (*takedown)(struct drm_device *);
+
+	int  (*channel_id)(struct drm_device *);
 
 	int  (*create_context)(struct nouveau_channel *);
 	void (*destroy_context)(struct nouveau_channel *);
@@ -221,6 +231,7 @@ struct nouveau_engine {
 	struct nouveau_fifo_engine    fifo;
 };
 
+#define NOUVEAU_MAX_CHANNEL_NR 128
 struct drm_nouveau_private {
 	enum {
 		NOUVEAU_CARD_INIT_DOWN,
@@ -241,7 +252,7 @@ struct drm_nouveau_private {
 	drm_local_map_t *ramin; /* NV40 onwards */
 
 	int fifo_alloc_count;
-	struct nouveau_channel *fifos[NV_MAX_FIFO_NUMBER];
+	struct nouveau_channel *fifos[NOUVEAU_MAX_CHANNEL_NR];
 
 	struct nouveau_engine Engine;
 	struct nouveau_drm_channel channel;
@@ -364,7 +375,6 @@ extern int  nouveau_ioctl_notifier_free(struct drm_device *, void *data,
 
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(struct drm_device *);
-extern int  nouveau_fifo_number(struct drm_device *);
 extern int  nouveau_fifo_ctx_size(struct drm_device *);
 extern void nouveau_fifo_cleanup(struct drm_device *, struct drm_file *);
 extern int  nouveau_fifo_owner(struct drm_device *, struct drm_file *,
@@ -452,12 +462,14 @@ extern int  nv40_fb_init(struct drm_device *);
 extern void nv40_fb_takedown(struct drm_device *);
 
 /* nv04_fifo.c */
+extern int  nv04_fifo_channel_id(struct drm_device *);
 extern int  nv04_fifo_create_context(struct nouveau_channel *);
 extern void nv04_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv04_fifo_load_context(struct nouveau_channel *);
 extern int  nv04_fifo_save_context(struct nouveau_channel *);
 
 /* nv10_fifo.c */
+extern int  nv10_fifo_channel_id(struct drm_device *);
 extern int  nv10_fifo_create_context(struct nouveau_channel *);
 extern void nv10_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv10_fifo_load_context(struct nouveau_channel *);
@@ -473,6 +485,7 @@ extern int  nv40_fifo_save_context(struct nouveau_channel *);
 /* nv50_fifo.c */
 extern int  nv50_fifo_init(struct drm_device *);
 extern void nv50_fifo_takedown(struct drm_device *);
+extern int  nv50_fifo_channel_id(struct drm_device *);
 extern int  nv50_fifo_create_context(struct nouveau_channel *);
 extern void nv50_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv50_fifo_load_context(struct nouveau_channel *);
