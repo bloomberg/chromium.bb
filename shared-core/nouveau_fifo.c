@@ -402,8 +402,30 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine = &dev_priv->Engine;
+	uint64_t t_start;
 
 	DRM_INFO("%s: freeing fifo %d\n", __func__, chan->id);
+
+	/* Disable channel switching, if this channel isn't currenly
+	 * active re-enable it if there's still pending commands.
+	 * We really should do a manual context switch here, but I'm
+	 * not sure I trust our ability to do this reliably yet..
+	 */
+	NV_WRITE(NV03_PFIFO_CACHES, 0);
+	if (engine->fifo.channel_id(dev) != chan->id &&
+	    NV_READ(chan->get) != NV_READ(chan->put)) {
+		NV_WRITE(NV03_PFIFO_CACHES, 1);
+	}
+
+	/* Give the channel a chance to idle, wait 2s (hopefully) */
+	t_start = engine->timer.read(dev);
+	while (NV_READ(chan->get) != NV_READ(chan->put)) {
+		if (engine->timer.read(dev) - t_start > 2000000000ULL) {
+			DRM_ERROR("Failed to idle channel %d before destroy."
+				  "Prepare for strangeness..\n", chan->id);
+			break;
+		}
+	}
 
 	/* disable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
