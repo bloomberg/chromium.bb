@@ -149,7 +149,8 @@ cache file for a font directory.
 @PURPOSE@	Get config font set
 @DESC@
 Returns one of the two sets of fonts from the configuration as specified
-by <parameter>set</parameter>.
+by <parameter>set</parameter>. This font set is owned by the library and must
+not be freed.
 @@
 
 @RET@           FcBlanks *
