@@ -45,7 +45,8 @@ well.
 @PURPOSE@	Add to a font set
 @DESC@
 Adds a pattern to a font set.  Note that the pattern is not copied before
-being inserted into the set.
+being inserted into the set. Returns FcFalse if the pattern cannot be
+inserted into the set (due to allocation failure). Otherwise returns FcTrue.
 @@
 
 @RET@		FcFontSet *

@@ -177,7 +177,8 @@ a call to FcFontList when this interval has passed since the last check.
 @TYPE2@		int%                       	@ARG2@          rescanInterval
 @PURPOSE@	Set config rescan interval
 @DESC@
-Sets the rescan interval; returns FcFalse if an error occurred.
+Sets the rescan interval. Returns FcFalse if the interval cannot be set (due
+to allocation failure). Otherwise returns FcTrue.
 @@
 
 @RET@           FcBool
@@ -186,7 +187,8 @@ Sets the rescan interval; returns FcFalse if an error occurred.
 @TYPE2@		const FcChar8 *			@ARG2@          file
 @PURPOSE@	Add font file to font database
 @DESC@
-Adds an application-specific font to the configuration.
+Adds an application-specific font to the configuration. Returns FcFalse
+if the fonts cannot be added (due to allocation failure). Otherwise returns FcTrue.
 @@
 
 @RET@           FcBool
@@ -196,7 +198,8 @@ Adds an application-specific font to the configuration.
 @PURPOSE@	Add fonts from directory to font database
 @DESC@
 Scans the specified directory for fonts, adding each one found to the
-application-specific set of fonts.
+application-specific set of fonts. Returns FcFalse
+if the fonts cannot be added (due to allocation failure). Otherwise returns FcTrue.
 @@
 
 @RET@           void
@@ -218,7 +221,8 @@ Clears the set of application-specific fonts.
 Performs the sequence of pattern modification operations, if <parameter>kind</parameter> is
 FcMatchPattern, then those tagged as pattern operations are applied, else
 if <parameter>kind</parameter> is FcMatchFont, those tagged as font operations are applied and
-p_pat is used for &lt;test&gt; elements with target=pattern.
+p_pat is used for &lt;test&gt; elements with target=pattern. Returns FcFalse
+if the substitution cannot be performed (due to allocation failure). Otherwise returns FcTrue.
 @@
 
 @RET@           FcBool
@@ -228,7 +232,8 @@ p_pat is used for &lt;test&gt; elements with target=pattern.
 @TYPE3@		FcMatchKind%                    @ARG3@          kind
 @PURPOSE@	Execute substitutions
 @DESC@
-Calls FcConfigSubstituteWithPat setting p_pat to NULL.
+Calls FcConfigSubstituteWithPat setting p_pat to NULL. Returns FcFalse
+if the substitution cannot be performed (due to allocation failure). Otherwise returns FcTrue.
 @@
 
 @RET@           FcPattern *
@@ -318,6 +323,8 @@ FC_CONFIG_DIR environment variable.
 @DESC@
 Walks the configuration in 'file' and constructs the internal representation
 in 'config'.  Any include files referenced from within 'file' will be loaded
-and parsed.  If 'complain' is FcFalse, no warning
-will be displayed if 'file' does not exist.
+and parsed.  If 'complain' is FcFalse, no warning will be displayed if
+'file' does not exist. Error and warning messages will be output to stderr.
+Returns FcFalse if some error occurred while loading the file, either a
+parse error, semantic error or allocation failure. Otherwise returns FcTrue.
 @@

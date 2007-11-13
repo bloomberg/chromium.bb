@@ -65,7 +65,9 @@ Returns the file refernced by <parameter>atomic</parameter>.
 @TYPE1@         FcAtomic *                      @ARG1@          atomic
 @PURPOSE@	replace original with new
 @DESC@
-Replaces the original file referenced by <parameter>atomic</parameter> with the new file.
+Replaces the original file referenced by <parameter>atomic</parameter> with
+the new file. Returns FcFalse if the file cannot be replaced due to
+permission issues in the filesystem. Otherwise returns FcTrue.
 @@
 
 @RET@           void

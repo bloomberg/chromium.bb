@@ -27,7 +27,9 @@
 @TYPE2@		int%				@ARG2@		nconsts
 @PURPOSE@	Register symbolic constants
 @DESC@
-Register <parameter>nconsts</parameter> new symbolic constants.
+Register <parameter>nconsts</parameter> new symbolic constants. Returns
+FcFalse if the constants cannot be registered (due to allocation failure).
+Otherwise returns FcTrue.
 @@
 
 @RET@		FcBool
@@ -36,7 +38,9 @@ Register <parameter>nconsts</parameter> new symbolic constants.
 @TYPE2@		int%				@ARG2@		nconsts
 @PURPOSE@	Unregister symbolic constants
 @DESC@
-Unregister <parameter>nconsts</parameter> symbolic constants.
+Unregister <parameter>nconsts</parameter> symbolic constants. Returns
+FcFalse if the specified constants were not registered. Otherwise returns
+FcTrue.
 @@
 
 @RET@		const FcConstant *
