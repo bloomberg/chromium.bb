@@ -1,11 +1,22 @@
 			Fontconfig
 	Font configuration and customization library
-		  Version 2.4.92 (2.5 RC2)
-		        2007-11-5
+		        Version 2.5
+		        2007-11-13
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.5
+
+Keith Packard (4):
+      Document several function return values (Bug 13145).
+      Document that Match calls FcFontRenderPrepare (bug 13162).
+      Document that FcConfigGetFonts returns the internal fontset (bug 13197)
+      Revert "Remove fcprivate.h, move the remaining macros to fcint.h."
+
+Tor Lillqvist (1):
+      Workaround for stat() brokenness in Microsoft's C library (bug 8526)
 
 2.4.92 (2.5 RC2)
 
