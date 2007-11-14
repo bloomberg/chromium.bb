@@ -459,7 +459,11 @@ AC_ARG_WITH(cache-dir,         [ --with-cache-dir=DIR           Use DIR to store
 
 case $fc_cachedir in
 no|yes)
-	fc_cachedir=`eval echo "${localstatedir}/cache/"${PACKAGE}`
+	if test "$os_win32" = "yes"; then
+		fc_cachedir="WINDOWSTEMPDIR_FONTCONFIG_CACHE"
+	else
+		fc_cachedir=`eval echo "${localstatedir}/cache/"${PACKAGE}`
+	fi
 	;;
 *)
 	;;

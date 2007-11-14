@@ -27,11 +27,14 @@ FC_CACHE_SRC=${top_srcdir}/fc-cache
 
 SGML = ${FC_CACHE_SRC}/fc-cache.sgml
 
+if OS_WIN32
+else
 install-data-local:
 	-$(mkinstalldirs) "$(DESTDIR)$(fc_cachedir)"
 
 uninstall-local:
 	-$(RM) -rf "$(DESTDIR)$(fc_cachedir)"
+endif
 
 INCLUDES=-I${top_srcdir} -I${top_srcdir}/src $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
 
