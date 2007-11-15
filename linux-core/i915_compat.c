@@ -127,8 +127,6 @@ static void intel_i8xx_setup_flush(struct drm_device *dev)
 	i8xx_private.flush_page = kmap(i8xx_private.page);
 	if (!i8xx_private.flush_page)
 		intel_i8xx_fini_flush(dev);
-
-	DRM_ERROR("i8xx got flush page %p %p\n", i8xx_private.page, i8xx_private.flush_page);
 }
 
 
