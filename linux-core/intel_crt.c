@@ -177,7 +177,7 @@ static enum drm_output_status intel_crt_detect(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	
-	if (IS_I945G(dev)| IS_I945GM(dev) || IS_I965G(dev)) {
+	if (IS_I945G(dev) || IS_I945GM(dev) || IS_I965G(dev)) {
 		if (intel_crt_detect_hotplug(output))
 			return output_status_connected;
 		else
