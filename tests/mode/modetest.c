@@ -288,12 +288,12 @@ int testFrameBufferAdd(int fd, drmModeResPtr res)
 
 	printf("\tRemoveing BO\n");
 
-	ret = drmBODestroy(fb, &bo);
+	ret = drmBOUnreference(fb, &bo);
 
 	return 0;
 	
 err_bo:
-	drmBODestroy(fd, &bo);
+	drmBOUnreference(fd, &bo);
 
 err:
 	printf("\tFailed\n");
