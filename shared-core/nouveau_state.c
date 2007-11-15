@@ -323,8 +323,13 @@ nouveau_card_init(struct drm_device *dev)
 			int i;
 			for(i=0;i<size;i+=4)
 				NV_WI32(i, bios[i/4]);
+			DRM_INFO("OF bios successfully copied\n");
 		}
+		else
+			DRM_INFO("Unable to get the OF bios\n");
 	}
+	else
+		DRM_INFO("Unable to get the OF node\n");
 #endif
 
 	/* Determine exact chipset we're running on */
