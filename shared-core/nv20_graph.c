@@ -29,7 +29,7 @@
 #define NV2A_GRCTX_SIZE (3500*4)
 
 #define NV30_31_GRCTX_SIZE (24392)
-#define NV34_GRCTX_SIZE    (18140)
+#define NV34_GRCTX_SIZE    (22000)
 #define NV35_36_GRCTX_SIZE (22396)
 
 static void nv20_graph_context_init(struct drm_device *dev,
@@ -432,6 +432,19 @@ static void nv30_31_graph_context_init(struct drm_device *dev,
 	INSTANCE_WR(ctx, 0x385c/4, 0x3f800000);
 	INSTANCE_WR(ctx, 0x3864/4, 0xbf800000);
 	INSTANCE_WR(ctx, 0x386c/4, 0xbf800000);
+
+	/* nv30gl stuff */
+	for (i=0; i<8; i++) {
+		INSTANCE_WR(ctx, (0x4dfc/4)+i, 0x001c527d);
+	}
+	INSTANCE_WR(ctx, 0x4e3c/4, 0x001c527c);
+/* these ones make dma fifo hang
+	INSTANCE_WR(ctx, 0x567c/4, 0x000a0000);
+	INSTANCE_WR(ctx, 0x0878/4, 0x01000000);
+	INSTANCE_WR(ctx, 0x02f4/4, 0x0001ffff);
+
+	INSTANCE_WR(ctx, 0x0028/4, INSTANCE_RD(ctx, 0x0028/4) | 1);
+*/
 }
 
 static void nv34_graph_context_init(struct drm_device *dev,

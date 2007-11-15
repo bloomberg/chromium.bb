@@ -108,6 +108,7 @@ typedef struct drm_file drm_file_t;
 #include "drm.h"
 #include "drm_linux_list.h"
 #include "drm_atomic.h"
+#include "drm_internal.h"
 
 #ifdef __FreeBSD__
 #include <opt_drm.h>

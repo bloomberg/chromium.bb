@@ -133,10 +133,10 @@ nouveau_dma_channel_takedown(struct drm_device *dev)
 
 #define RING_SKIPS 8
 
-#define READ_GET() ((NV_READ(NV03_FIFO_REGS_DMAGET(dchan->chan->id)) -         \
-		     dchan->chan->pushbuf_base) >> 2)
+#define READ_GET() ((NV_READ(dchan->chan->get) -                               \
+		    dchan->chan->pushbuf_base) >> 2)
 #define WRITE_PUT(val) do {                                                    \
-	NV_WRITE(NV03_FIFO_REGS_DMAPUT(dchan->chan->id),                       \
+	NV_WRITE(dchan->chan->put,                                             \
 		 ((val) << 2) + dchan->chan->pushbuf_base);                    \
 } while(0)
 

@@ -353,6 +353,7 @@ struct graph_state {
 void nouveau_nv04_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	struct nouveau_channel *next, *last;
 	int chid;
 
@@ -370,7 +371,7 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 		return;
 	}
 
-	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1)&(nouveau_fifo_number(dev)-1);
+	chid = engine->fifo.channel_id(dev);
 	next = dev_priv->fifos[chid];
 
 	if (!next) {
@@ -378,7 +379,7 @@ void nouveau_nv04_context_switch(struct drm_device *dev)
 		return;
 	}
 
-	chid = (NV_READ(NV04_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
+	chid = (NV_READ(NV04_PGRAPH_CTX_USER) >> 24) & (engine->fifo.channels - 1);
 	last = dev_priv->fifos[chid];
 
 	if (!last) {

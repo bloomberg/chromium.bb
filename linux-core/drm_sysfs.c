@@ -89,8 +89,10 @@ struct class *drm_sysfs_create(struct module *owner, char *name)
 		goto err_out;
 	}
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
 	class->suspend = drm_sysfs_suspend;
 	class->resume = drm_sysfs_resume;
+#endif
 
 	err = class_create_file(class, &class_attr_version);
 	if (err)

@@ -83,6 +83,7 @@
 
 #include "drm_os_linux.h"
 #include "drm_hashtab.h"
+#include "drm_internal.h"
 
 struct drm_file;
 
@@ -589,15 +590,6 @@ struct drm_vbl_sig {
 	struct siginfo info;
 	struct task_struct *task;
 };
-
-/**
- * Drawable information.
- */
-struct drm_drawable_info {
-	unsigned int num_rects;
-	struct drm_clip_rect *rects;
-};
-
 
 /* location of GART table */
 #define DRM_ATI_GART_MAIN 1

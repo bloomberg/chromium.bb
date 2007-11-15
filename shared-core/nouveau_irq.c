@@ -68,6 +68,7 @@ static void
 nouveau_fifo_irq_handler(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	uint32_t status;
 
 	while ((status = NV_READ(NV03_PFIFO_INTR_0))) {
@@ -75,8 +76,7 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 
 		NV_WRITE(NV03_PFIFO_CACHES, 0);
 
-		chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1) &
-				(nouveau_fifo_number(dev) - 1);
+		chid = engine->fifo.channel_id(dev);
 		get  = NV_READ(NV03_PFIFO_CACHE1_GET);
 
 		if (status & NV_PFIFO_INTR_CACHE_ERROR) {
@@ -190,6 +190,7 @@ static int
 nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	int channel;
 
 	if (dev_priv->card_type < NV_10) {
@@ -234,8 +235,7 @@ nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 		}
 	}
 
-	if (channel > nouveau_fifo_number(dev) ||
-	    dev_priv->fifos[channel] == NULL) {
+	if (channel > engine->fifo.channels || !dev_priv->fifos[channel]) {
 		DRM_ERROR("AIII, invalid/inactive channel id %d\n", channel);
 		return -EINVAL;
 	}
@@ -365,9 +365,10 @@ static inline void
 nouveau_pgraph_intr_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	uint32_t chid;
 
-	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1) & (nouveau_fifo_number(dev)-1);
+	chid = engine->fifo.channel_id(dev);
 	DRM_DEBUG("PGRAPH context switch interrupt channel %x\n", chid);
 
 	switch(dev_priv->card_type) {
