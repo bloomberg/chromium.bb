@@ -92,9 +92,7 @@ static struct page *drm_ttm_alloc_page(void)
 		drm_free_memctl(PAGE_SIZE);
 		return NULL;
 	}
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
-	SetPageLocked(page);
-#else
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	SetPageReserved(page);
 #endif
 	return page;
@@ -141,7 +139,6 @@ static int drm_set_caching(struct drm_ttm *ttm, int noncached)
 
 static void drm_ttm_free_user_pages(struct drm_ttm *ttm)
 {
-	struct mm_struct *mm = ttm->user_mm;
 	int write;
 	int dirty;
 	struct page *page;
@@ -151,7 +148,6 @@ static void drm_ttm_free_user_pages(struct drm_ttm *ttm)
 	write = ((ttm->page_flags & DRM_TTM_PAGE_USER_WRITE) != 0);
 	dirty = ((ttm->page_flags & DRM_TTM_PAGE_USER_DIRTY) != 0);
 
-	down_read(&mm->mmap_sem);
 	for (i = 0; i < ttm->num_pages; ++i) {
 		page = ttm->pages[i];
 		if (page == NULL)
@@ -163,12 +159,11 @@ static void drm_ttm_free_user_pages(struct drm_ttm *ttm)
 		}
 
 		if (write && dirty && !PageReserved(page))
-			SetPageDirty(page);
+			set_page_dirty_lock(page);
 
 		ttm->pages[i] = NULL;
-		page_cache_release(page);
+		put_page(page);
 	}
-	up_read(&mm->mmap_sem);
 }
 
 static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
@@ -180,9 +175,7 @@ static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
 	for (i = 0; i < ttm->num_pages; ++i) {
 		cur_page = ttm->pages + i;
 		if (*cur_page) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
-			unlock_page(*cur_page);
-#else
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 			ClearPageReserved(*cur_page);
 #endif
 			if (page_count(*cur_page) != 1)
@@ -262,7 +255,6 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 
 	BUG_ON(num_pages != ttm->num_pages);
 
-	ttm->user_mm = mm;
 	ttm->dummy_read_page = dummy_read_page;
 	ttm->page_flags |= DRM_TTM_PAGE_USER |
 		((write) ? DRM_TTM_PAGE_USER_WRITE : 0);
