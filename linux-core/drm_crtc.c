@@ -1271,7 +1271,11 @@ int drm_mode_getcrtc(struct drm_device *dev,
 
 	crtc_resp->x = crtc->x;
 	crtc_resp->y = crtc->y;
-	crtc_resp->fb_id = 1;
+
+	if (crtc->fb)
+		crtc_resp->fb_id = crtc->fb->id;
+	else
+		crtc_resp->fb_id = 0;
 
 	crtc_resp->outputs = 0;
 	if (crtc->enabled) {
