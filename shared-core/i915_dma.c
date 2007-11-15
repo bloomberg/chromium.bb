@@ -1402,8 +1402,7 @@ int i915_driver_device_is_agp(struct drm_device * dev)
 int i915_driver_firstopen(struct drm_device *dev)
 {
 #ifdef I915_HAVE_BUFFER
-	if (IS_I9XX(dev))
-		drm_bo_driver_init(dev);
+	drm_bo_driver_init(dev);
 #endif
 	return 0;
 }
