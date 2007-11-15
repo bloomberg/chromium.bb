@@ -339,6 +339,7 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 		return 0;
 
 	r->output_id = out.output;
+	r->crtc = out.crtc;
 	r->connection   = out.connection;
 	r->mmWidth      = out.mm_width;
 	r->mmHeight     = out.mm_height;
