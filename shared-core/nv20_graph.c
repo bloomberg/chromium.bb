@@ -29,7 +29,7 @@
 #define NV2A_GRCTX_SIZE (3500*4)
 
 #define NV30_31_GRCTX_SIZE (24392)
-#define NV34_GRCTX_SIZE    (22000)
+#define NV34_GRCTX_SIZE    (18140)
 #define NV35_36_GRCTX_SIZE (22396)
 
 static void nv20_graph_context_init(struct drm_device *dev,
