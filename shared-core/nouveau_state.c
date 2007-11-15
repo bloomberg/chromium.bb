@@ -307,13 +307,17 @@ nouveau_card_init(struct drm_device *dev)
 	DRM_MEMORYBARRIER();
 #endif
 
-#if defined(__powerpc__)
+#if defined(__linux__) && defined(__powerpc__)
 	/* if we have an OF card, copy vbios to RAMIN */
 	dn = pci_device_to_OF_node(dev->pdev);
 	if (dn)
 	{
-		int size; 
+		int size;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
 		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
+#else
+		const uint32_t *bios = get_property(dn, "NVDA,BMP", &size);
+#endif
 		if (bios)
 		{
 			int i;
