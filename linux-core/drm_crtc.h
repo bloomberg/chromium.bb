@@ -64,14 +64,6 @@ enum drm_mode_status {
     MODE_ERROR	= -1	/* error condition */
 };
 
-#define DRM_MODE_TYPE_BUILTIN	(1<<0)
-#define DRM_MODE_TYPE_CLOCK_C	((1<<1) | DRM_MODE_TYPE_BUILTIN)
-#define DRM_MODE_TYPE_CRTC_C	((1<<2) | DRM_MODE_TYPE_BUILTIN)
-#define DRM_MODE_TYPE_PREFERRED	(1<<3)
-#define DRM_MODE_TYPE_DEFAULT	(1<<4)
-#define DRM_MODE_TYPE_USERDEF	(1<<5)
-#define DRM_MODE_TYPE_DRIVER	(1<<6)
-
 #define DRM_MODE_TYPE_CLOCK_CRTC_C (DRM_MODE_TYPE_CLOCK_C | \
 				    DRM_MODE_TYPE_CRTC_C)
 

@@ -898,6 +898,14 @@ struct drm_mm_init_arg {
 #define DRM_OUTPUT_NAME_LEN 32
 #define DRM_DISPLAY_MODE_LEN 32
 
+#define DRM_MODE_TYPE_BUILTIN	(1<<0)
+#define DRM_MODE_TYPE_CLOCK_C	((1<<1) | DRM_MODE_TYPE_BUILTIN)
+#define DRM_MODE_TYPE_CRTC_C	((1<<2) | DRM_MODE_TYPE_BUILTIN)
+#define DRM_MODE_TYPE_PREFERRED	(1<<3)
+#define DRM_MODE_TYPE_DEFAULT	(1<<4)
+#define DRM_MODE_TYPE_USERDEF	(1<<5)
+#define DRM_MODE_TYPE_DRIVER	(1<<6)
+
 struct drm_mode_modeinfo {
 
 	unsigned int id;
@@ -909,7 +917,7 @@ struct drm_mode_modeinfo {
 	unsigned int vrefresh; /* vertical refresh * 1000 */
 
 	unsigned int flags;
-
+	unsigned int type;
 	char name[DRM_DISPLAY_MODE_LEN];
 };
 

@@ -1076,6 +1076,7 @@ void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display
 	out->vscan = in->vscan;
 	out->vrefresh = in->vrefresh;
 	out->flags = in->flags;
+	out->type = in->type;
 	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
 	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
 }
@@ -1106,6 +1107,7 @@ void drm_crtc_convert_umode(struct drm_display_mode *out, struct drm_mode_modein
 	out->vscan = in->vscan;
 	out->vrefresh = in->vrefresh;
 	out->flags = in->flags;
+	out->type = in->type;
 	strncpy(out->name, in->name, DRM_DISPLAY_MODE_LEN);
 	out->name[DRM_DISPLAY_MODE_LEN-1] = 0;
 }
@@ -1345,6 +1347,8 @@ int drm_mode_getoutput(struct drm_device *dev,
 	else
 		out_resp->crtc = 0;
 
+	out_resp->crtcs = output->possible_crtcs;
+	out_resp->clones = output->possible_clones;
 	if ((out_resp->count_modes >= mode_count) && mode_count) {
 		copied = 0;
 		list_for_each_entry(mode, &output->modes, head) {
