@@ -250,8 +250,10 @@ int drm_lastclose(struct drm_device * dev)
 	}
 
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
-		drm_rmmap_locked(dev, r_list->map);
-		r_list = NULL;
+		if (!(r_list->map->flags & _DRM_DRIVER)) {
+			drm_rmmap_locked(dev, r_list->map);
+			r_list = NULL;
+		}
 	}
 
 	if (drm_core_check_feature(dev, DRIVER_DMA_QUEUE) && dev->queuelist) {
