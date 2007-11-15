@@ -265,7 +265,8 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 
 	if (!(r = drmMalloc(sizeof(*r))))
 		return 0;
-
+	
+	r->crtc_id         = crtc.crtc_id;
 	r->x               = crtc.x;
 	r->y               = crtc.y;
 	r->mode            = crtc.mode;
@@ -337,6 +338,7 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	if(!(r = drmMalloc(sizeof(*r))))
 		return 0;
 
+	r->output_id = out.output;
 	r->connection   = out.connection;
 	r->mmWidth      = out.mm_width;
 	r->mmHeight     = out.mm_height;

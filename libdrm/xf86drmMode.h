@@ -71,7 +71,7 @@ typedef struct _drmModeRes {
 typedef struct drm_mode_fb_cmd drmModeFB, *drmModeFBPtr;
 
 typedef struct _drmModeCrtc {
-
+	unsigned int crtc_id;
 	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect*/
 
 	uint32_t x, y; /**< Position on the frameuffer */
@@ -104,6 +104,7 @@ typedef enum {
 } drmModeSubPixel;
 
 typedef struct _drmModeOutput {
+	unsigned int output_id;
 
 	unsigned int crtc; /**< Crtc currently connected to */
 	unsigned char name[DRM_OUTPUT_NAME_LEN];
