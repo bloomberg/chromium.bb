@@ -278,7 +278,6 @@ struct drm_ttm_backend {
 };
 
 struct drm_ttm {
-	struct mm_struct *user_mm;
 	struct page *dummy_read_page;
 	struct page **pages;
 	uint32_t page_flags;
