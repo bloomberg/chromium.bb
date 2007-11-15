@@ -285,6 +285,9 @@ nouveau_card_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine;
 	int ret;
+#if defined(__powerpc__)
+	struct device_node *dn;
+#endif
 
 	DRM_DEBUG("prev state = %d\n", dev_priv->init_state);
 
@@ -302,6 +305,22 @@ nouveau_card_init(struct drm_device *dev)
 		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
 
 	DRM_MEMORYBARRIER();
+#endif
+
+#if defined(__powerpc__)
+	/* if we have an OF card, copy vbios to RAMIN */
+	dn = pci_device_to_OF_node(dev->pdev);
+	if (dn)
+	{
+		int size; 
+		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
+		if (bios)
+		{
+			int i;
+			for(i=0;i<size;i+=4)
+				NV_WI32(i, bios[i/4]);
+		}
+	}
 #endif
 
 	/* Determine exact chipset we're running on */
