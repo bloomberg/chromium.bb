@@ -148,9 +148,9 @@ struct drm_display_mode {
 #define DPMSModeOff 3
 
 enum drm_output_status {
-	output_status_connected,
-	output_status_disconnected,
-	output_status_unknown,
+	output_status_connected = 1,
+	output_status_disconnected = 2,
+	output_status_unknown = 3,
 };
 
 enum subpixel_order {
