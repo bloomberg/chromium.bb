@@ -1209,8 +1209,7 @@ int drm_mode_getresources(struct drm_device *dev,
 		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
  			DRM_DEBUG("OUTPUT ID is %d\n", output->id);
-			if (put_user(output->id,
-				     card_res->output_id + copied))
+			if (put_user(output->id, card_res->output_id + copied))
 				return -EFAULT;
 			copied++;
 		}
@@ -1224,7 +1223,7 @@ int drm_mode_getresources(struct drm_device *dev,
 				    head) {
 			list_for_each_entry(mode, &output->modes, head) {
 				drm_crtc_convert_to_umode(&u_mode, mode);
-				if (copy_to_user(&card_res->modes + copied,
+				if (copy_to_user(card_res->modes + copied,
 						 &u_mode, sizeof(u_mode)))
 					return -EFAULT;
 				copied++;
@@ -1233,9 +1232,9 @@ int drm_mode_getresources(struct drm_device *dev,
 		/* add in user modes */
 		list_for_each_entry(mode, &dev->mode_config.usermode_list, head) {
 			drm_crtc_convert_to_umode(&u_mode, mode);
-			if (copy_to_user(&card_res->modes + copied, &u_mode,
+			if (copy_to_user(card_res->modes + copied, &u_mode,
 					 sizeof(u_mode)))
-			    return -EFAULT;
+				return -EFAULT;
 			copied++;
 		}
 	}
