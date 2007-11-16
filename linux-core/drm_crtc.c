@@ -1146,7 +1146,7 @@ int drm_mode_getresources(struct drm_device *dev,
 	int crtc_count = 0;
 	int fb_count = 0;
 	int copied = 0;
-	
+
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
 	mutex_lock(&dev->mode_config.mutex);
@@ -1183,7 +1183,9 @@ int drm_mode_getresources(struct drm_device *dev,
 	if (card_res->count_fbs >= fb_count) {
 		copied = 0;
 		list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
-			card_res->fb_id[copied++] = fb->id;
+			if (put_user(fb->id, card_res->fb_id + copied))
+				return -EFAULT;
+			copied++;
 		}
 	}
 	card_res->count_fbs = fb_count;
@@ -1193,7 +1195,9 @@ int drm_mode_getresources(struct drm_device *dev,
 		copied = 0;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head){
 			DRM_DEBUG("CRTC ID is %d\n", crtc->id);
-			card_res->crtc_id[copied++] = crtc->id;
+			if (put_user(crtc->id, card_res->crtc_id + copied))
+				return -EFAULT;
+			copied++;
 		}
 	}
 	card_res->count_crtcs = crtc_count;
@@ -1205,7 +1209,10 @@ int drm_mode_getresources(struct drm_device *dev,
 		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
  			DRM_DEBUG("OUTPUT ID is %d\n", output->id);
-			card_res->output_id[copied++] = output->id;
+			if (put_user(output->id,
+				     card_res->output_id + copied))
+				return -EFAULT;
+			copied++;
 		}
 	}
 	card_res->count_outputs = output_count;
@@ -1217,13 +1224,19 @@ int drm_mode_getresources(struct drm_device *dev,
 				    head) {
 			list_for_each_entry(mode, &output->modes, head) {
 				drm_crtc_convert_to_umode(&u_mode, mode);
-				card_res->modes[copied++] = u_mode;
+				if (copy_to_user(&card_res->modes + copied,
+						 &u_mode, sizeof(u_mode)))
+					return -EFAULT;
+				copied++;
 			}
 		}
 		/* add in user modes */
 		list_for_each_entry(mode, &dev->mode_config.usermode_list, head) {
 			drm_crtc_convert_to_umode(&u_mode, mode);
-			card_res->modes[copied++] = u_mode;
+			if (copy_to_user(&card_res->modes + copied, &u_mode,
+					 sizeof(u_mode)))
+			    return -EFAULT;
+			copied++;
 		}
 	}
 	card_res->count_modes = mode_count;
