@@ -323,7 +323,7 @@ nouveau_card_init(struct drm_device *dev)
 			int i;
 			for(i=0;i<size;i+=4)
 				NV_WI32(i, bios[i/4]);
-			DRM_INFO("OF bios successfully copied\n");
+			DRM_INFO("OF bios successfully copied (%d bytes)\n",size);
 		}
 		else
 			DRM_INFO("Unable to get the OF bios\n");
