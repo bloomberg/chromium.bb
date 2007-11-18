@@ -84,6 +84,7 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	dev->hose = pdev->sysdata;
 #endif
 	dev->irq = pdev->irq;
+	dev->irq_enabled = 0;
 
 	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER)) {
 		return -ENOMEM;
