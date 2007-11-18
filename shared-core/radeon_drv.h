@@ -345,6 +345,7 @@ extern int radeon_cp_resume(struct drm_device *dev, void *data, struct drm_file 
 extern int radeon_engine_reset(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_fullscreen(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_cp_buffers(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv);
 
 extern void radeon_freelist_reset(struct drm_device * dev);
 extern struct drm_buf *radeon_freelist_get(struct drm_device * dev);
