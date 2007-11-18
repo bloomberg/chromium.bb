@@ -85,7 +85,6 @@ static int drm_setup(struct drm_device * dev)
 	dev->queue_reserved = 0;
 	dev->queue_slots = 0;
 	dev->queuelist = NULL;
-	dev->irq_enabled = 0;
 	dev->context_flag = 0;
 	dev->interrupt_flag = 0;
 	dev->dma_flag = 0;
