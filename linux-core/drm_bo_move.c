@@ -303,7 +303,7 @@ int drm_buffer_object_transfer(struct drm_buffer_object *bo,
 	INIT_LIST_HEAD(&fbo->p_mm_list);
 #endif
 
-	drm_fence_reference_unlocked(&fbo->fence, bo->fence);
+	fbo->fence = drm_fence_reference_locked(bo->fence);
 	fbo->pinned_node = NULL;
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
