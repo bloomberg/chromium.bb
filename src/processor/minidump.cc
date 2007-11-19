@@ -727,7 +727,8 @@ bool MinidumpContext::CheckAgainstSystemInfo(u_int32_t context_cpu_type) {
   switch (context_cpu_type) {
     case MD_CONTEXT_X86:
       if (system_info_cpu_type == MD_CPU_ARCHITECTURE_X86 ||
-          system_info_cpu_type == MD_CPU_ARCHITECTURE_X86_WIN64) {
+          system_info_cpu_type == MD_CPU_ARCHITECTURE_X86_WIN64 ||
+          system_info_cpu_type == MD_CPU_ARCHITECTURE_AMD64) {
         return_value = true;
       }
       break;
