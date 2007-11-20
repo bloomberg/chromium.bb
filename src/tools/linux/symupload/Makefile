@@ -12,10 +12,10 @@ DUMP_UPLOAD_OBJ=minidump_upload.o http_upload.o
 SYM_UPLOAD_OBJ=sym_upload.o http_upload.o
 
 minidump_upload:$(DUMP_UPLOAD_OBJ)
-	$(CXX) $(CXXFLAGS) `curl-config --libs` -o $@ $^
+	$(CXX) $(CXXFLAGS) -ldl -o $@ $^
 
 sym_upload:$(SYM_UPLOAD_OBJ)
-	$(CXX) $(CXXFLAGS) `curl-config --libs` -o $@ $^
+	$(CXX) $(CXXFLAGS) -ldl -o $@ $^
 
 http_upload.o:../../../common/linux/http_upload.cc
 	$(CXX) $(CXXFLAGS) `curl-config --cflags` -c $^
