@@ -359,6 +359,7 @@ struct drm_i915_execbuffer {
 	uint64_t ops_list;
 	uint32_t num_buffers;
 	struct _drm_i915_batchbuffer batch;
+	drm_context_t context; /* for lockless use in the future */
 	struct drm_fence_arg fence_arg;
 };
 
