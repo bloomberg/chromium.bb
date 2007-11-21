@@ -77,23 +77,31 @@ static int r300_emit_cliprects(drm_radeon_private_t *dev_priv,
 				return -EFAULT;
 			}
 
-			box.x1 =
-			    (box.x1 +
-			     R300_CLIPRECT_OFFSET) & R300_CLIPRECT_MASK;
-			box.y1 =
-			    (box.y1 +
-			     R300_CLIPRECT_OFFSET) & R300_CLIPRECT_MASK;
-			box.x2 =
-			    (box.x2 +
-			     R300_CLIPRECT_OFFSET) & R300_CLIPRECT_MASK;
-			box.y2 =
-			    (box.y2 +
-			     R300_CLIPRECT_OFFSET) & R300_CLIPRECT_MASK;
+			if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515) {
+				box.x1 = (box.x1) &
+					R300_CLIPRECT_MASK;
+				box.y1 = (box.y1) &
+					R300_CLIPRECT_MASK;
+				box.x2 = (box.x2) &
+					R300_CLIPRECT_MASK;
+				box.y2 = (box.y2) &
+					R300_CLIPRECT_MASK;
+			} else {
+				box.x1 = (box.x1 + R300_CLIPRECT_OFFSET) &
+					R300_CLIPRECT_MASK;
+				box.y1 = (box.y1 + R300_CLIPRECT_OFFSET) &
+					R300_CLIPRECT_MASK;
+				box.x2 = (box.x2 + R300_CLIPRECT_OFFSET) &
+					R300_CLIPRECT_MASK;
+				box.y2 = (box.y2 + R300_CLIPRECT_OFFSET) &
+					R300_CLIPRECT_MASK;
 
+			}
 			OUT_RING((box.x1 << R300_CLIPRECT_X_SHIFT) |
 				 (box.y1 << R300_CLIPRECT_Y_SHIFT));
 			OUT_RING((box.x2 << R300_CLIPRECT_X_SHIFT) |
 				 (box.y2 << R300_CLIPRECT_Y_SHIFT));
+
 		}
 
 		OUT_RING_REG(R300_RE_CLIPRECT_CNTL, r300_cliprect_cntl[nr - 1]);
