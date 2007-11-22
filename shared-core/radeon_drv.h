@@ -297,11 +297,11 @@ typedef struct drm_radeon_private {
 	int irq_enabled;
 
 	struct radeon_surface surfaces[RADEON_MAX_SURFACES];
-	struct radeon_virt_surface virt_surfaces[2*RADEON_MAX_SURFACES];
+	struct radeon_virt_surface virt_surfaces[2 * RADEON_MAX_SURFACES];
 
 	unsigned long pcigart_offset;
 	unsigned int pcigart_offset_set;
-	struct ati_pcigart_info gart_info;
+	struct drm_ati_pcigart_info gart_info;
 
 	u32 scratch_ages[5];
 
@@ -352,6 +352,7 @@ extern int radeon_engine_reset(struct drm_device *dev, void *data, struct drm_fi
 extern int radeon_fullscreen(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_cp_buffers(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern void radeon_gart_flush(struct drm_device *dev);
+extern u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv);
 
 extern void radeon_freelist_reset(struct drm_device * dev);
 extern struct drm_buf *radeon_freelist_get(struct drm_device * dev);
@@ -402,7 +403,7 @@ extern void r300_init_reg_flags(void);
 
 extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 			     struct drm_file *file_priv,
-			     drm_radeon_kcmd_buffer_t* cmdbuf);
+			     drm_radeon_kcmd_buffer_t *cmdbuf);
 
 
 #ifdef RADEON_HAVE_FENCE

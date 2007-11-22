@@ -171,7 +171,9 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 		I915_WRITE(0x02080, dev_priv->dma_status_page);
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
+#ifdef I915_HAVE_BUFFER
 	mutex_init(&dev_priv->cmdbuf_mutex);
+#endif
 	return 0;
 }
 
@@ -393,7 +395,7 @@ static int i915_emit_box(struct drm_device * dev,
 }
 
 /* XXX: Emitting the counter should really be moved to part of the IRQ
- * emit.  For now, do it in both places:
+ * emit. For now, do it in both places:
  */
 
 void i915_emit_breadcrumb(struct drm_device *dev)
@@ -1161,7 +1163,8 @@ static int i915_setparam(struct drm_device *dev, void *data,
 
 	switch (param->param) {
 	case I915_SETPARAM_USE_MI_BATCHBUFFER_START:
-		dev_priv->use_mi_batchbuffer_start = param->value;
+		if (!IS_I965G(dev))
+			dev_priv->use_mi_batchbuffer_start = param->value;
 		break;
 	case I915_SETPARAM_TEX_LRU_LOG_GRANULARITY:
 		dev_priv->tex_lru_log_granularity = param->value;
@@ -1209,27 +1212,27 @@ static int i915_mmio(struct drm_device *dev, void *data,
 	base = (u8 *) dev_priv->mmio_map->handle + e->offset;
 
 	switch (mmio->read_write) {
-		case I915_MMIO_READ:
-			if (!(e->flag & I915_MMIO_MAY_READ))
-				return -EINVAL;
-			for (i = 0; i < e->size / 4; i++)
-				buf[i] = I915_READ(e->offset + i * 4);
-			if (DRM_COPY_TO_USER(mmio->data, buf, e->size)) {
-				DRM_ERROR("DRM_COPY_TO_USER failed\n");
+	case I915_MMIO_READ:
+		if (!(e->flag & I915_MMIO_MAY_READ))
+			return -EINVAL;
+		for (i = 0; i < e->size / 4; i++)
+			buf[i] = I915_READ(e->offset + i * 4);
+		if (DRM_COPY_TO_USER(mmio->data, buf, e->size)) {
+			DRM_ERROR("DRM_COPY_TO_USER failed\n");
+			return -EFAULT;
+		}
+		break;
+		
+	case I915_MMIO_WRITE:
+		if (!(e->flag & I915_MMIO_MAY_WRITE))
+			return -EINVAL;
+		if(DRM_COPY_FROM_USER(buf, mmio->data, e->size)) {
+			DRM_ERROR("DRM_COPY_TO_USER failed\n");
 				return -EFAULT;
-			}
-			break;
-
-		case I915_MMIO_WRITE:
-			if (!(e->flag & I915_MMIO_MAY_WRITE))
-				return -EINVAL;
-			if(DRM_COPY_FROM_USER(buf, mmio->data, e->size)) {
-				DRM_ERROR("DRM_COPY_TO_USER failed\n");
-				return -EFAULT;
-			}
-			for (i = 0; i < e->size / 4; i++)
-				I915_WRITE(e->offset + i * 4, buf[i]);
-			break;
+		}
+		for (i = 0; i < e->size / 4; i++)
+			I915_WRITE(e->offset + i * 4, buf[i]);
+		break;
 	}
 	return 0;
 }

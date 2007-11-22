@@ -307,20 +307,29 @@ nouveau_card_init(struct drm_device *dev)
 	DRM_MEMORYBARRIER();
 #endif
 
-#if defined(__powerpc__)
+#if defined(__linux__) && defined(__powerpc__)
 	/* if we have an OF card, copy vbios to RAMIN */
 	dn = pci_device_to_OF_node(dev->pdev);
 	if (dn)
 	{
-		int size; 
+		int size;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
 		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
+#else
+		const uint32_t *bios = get_property(dn, "NVDA,BMP", &size);
+#endif
 		if (bios)
 		{
 			int i;
 			for(i=0;i<size;i+=4)
 				NV_WI32(i, bios[i/4]);
+			DRM_INFO("OF bios successfully copied (%d bytes)\n",size);
 		}
+		else
+			DRM_INFO("Unable to get the OF bios\n");
 	}
+	else
+		DRM_INFO("Unable to get the OF node\n");
 #endif
 
 	/* Determine exact chipset we're running on */

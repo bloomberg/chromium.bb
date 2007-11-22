@@ -264,7 +264,8 @@ int drm_sman_free_key(struct drm_sman *sman, unsigned int key)
 	if (drm_ht_find_item(&sman->user_hash_tab, key, &hash_item))
 		return -EINVAL;
 
-	memblock_item = drm_hash_entry(hash_item, struct drm_memblock_item, user_hash);
+	memblock_item = drm_hash_entry(hash_item, struct drm_memblock_item,
+				       user_hash);
 	drm_sman_free(memblock_item);
 	return 0;
 }

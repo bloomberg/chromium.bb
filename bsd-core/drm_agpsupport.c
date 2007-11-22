@@ -36,7 +36,11 @@
 #include "drmP.h"
 
 #ifdef __FreeBSD__
+#if __FreeBSD_version >= 800004
+#include <dev/agp/agpreg.h>
+#else /* __FreeBSD_version >= 800004 */
 #include <pci/agpreg.h>
+#endif /* __FreeBSD_version >= 800004 */
 #include <dev/pci/pcireg.h>
 #endif
 

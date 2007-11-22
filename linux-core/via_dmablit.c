@@ -239,8 +239,10 @@ via_lock_all_dma_pages(drm_via_sg_info_t *vsg,  drm_via_dmablit_t *xfer)
 		return -ENOMEM;
 	memset(vsg->pages, 0, sizeof(struct page *) * vsg->num_pages);
 	down_read(&current->mm->mmap_sem);
-	ret = get_user_pages(current, current->mm, (unsigned long) xfer->mem_addr,
-			     vsg->num_pages, (vsg->direction == DMA_FROM_DEVICE),
+	ret = get_user_pages(current, current->mm,
+			     (unsigned long)xfer->mem_addr,
+			     vsg->num_pages,
+			     (vsg->direction == DMA_FROM_DEVICE),
 			     0, vsg->pages, NULL);
 
 	up_read(&current->mm->mmap_sem);
@@ -509,7 +511,7 @@ via_dmablit_workqueue(struct work_struct *work)
 #else
 	drm_via_blitq_t *blitq = container_of(work, drm_via_blitq_t, wq);
 #endif
-        struct drm_device *dev = blitq->dev;
+	struct drm_device *dev = blitq->dev;
 	unsigned long irqsave;
 	drm_via_sg_info_t *cur_sg;
 	int cur_released;

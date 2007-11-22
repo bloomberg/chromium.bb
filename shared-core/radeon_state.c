@@ -3081,6 +3081,9 @@ static int radeon_cp_getparam(struct drm_device *dev, void *data, struct drm_fil
 	case RADEON_PARAM_VBLANK_CRTC:
 		value = radeon_vblank_crtc_get(dev);
 		break;
+	case RADEON_PARAM_FB_LOCATION:
+		value = radeon_read_fb_location(dev_priv);
+		break;
 	default:
 		DRM_DEBUG( "Invalid parameter %d\n", param->param );
 		return -EINVAL;
@@ -3154,7 +3157,7 @@ static int radeon_cp_setparam(struct drm_device *dev, void *data, struct drm_fil
  *
  * DRM infrastructure takes care of reclaiming dma buffers.
  */
-void radeon_driver_preclose(struct drm_device * dev,
+void radeon_driver_preclose(struct drm_device *dev,
 			    struct drm_file *file_priv)
 {
 	if (dev->dev_private) {
@@ -3166,7 +3169,7 @@ void radeon_driver_preclose(struct drm_device * dev,
 	}
 }
 
-void radeon_driver_lastclose(struct drm_device * dev)
+void radeon_driver_lastclose(struct drm_device *dev)
 {
 	if (dev->dev_private) {
 		drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -3179,7 +3182,7 @@ void radeon_driver_lastclose(struct drm_device * dev)
 	radeon_do_release(dev);
 }
 
-int radeon_driver_open(struct drm_device * dev, struct drm_file *file_priv)
+int radeon_driver_open(struct drm_device *dev, struct drm_file *file_priv)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	struct drm_radeon_driver_file_fields *radeon_priv;
@@ -3201,7 +3204,7 @@ int radeon_driver_open(struct drm_device * dev, struct drm_file *file_priv)
 	return 0;
 }
 
-void radeon_driver_postclose(struct drm_device * dev, struct drm_file *file_priv)
+void radeon_driver_postclose(struct drm_device *dev, struct drm_file *file_priv)
 {
 	struct drm_radeon_driver_file_fields *radeon_priv =
 	    file_priv->driver_priv;

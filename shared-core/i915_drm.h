@@ -314,7 +314,7 @@ typedef struct drm_i915_mmio_entry {
 	unsigned int flag;
 	unsigned int offset;
 	unsigned int size;
-}drm_i915_mmio_entry_t;
+} drm_i915_mmio_entry_t;
 
 typedef struct drm_i915_mmio {
 	unsigned int read_write:1;
@@ -359,6 +359,7 @@ struct drm_i915_execbuffer {
 	uint64_t ops_list;
 	uint32_t num_buffers;
 	struct drm_i915_batchbuffer batch;
+	drm_context_t context; /* for lockless use in the future */
 	struct drm_fence_arg fence_arg;
 };
 

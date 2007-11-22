@@ -55,8 +55,8 @@ struct class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
-		       const struct pci_device_id *ent,
-		       struct drm_driver *driver)
+			   const struct pci_device_id *ent,
+			   struct drm_driver *driver)
 {
 	int retcode;
 
@@ -218,7 +218,7 @@ err_g1:
  * Try and register, if we fail to register, backout previous work.
  */
 int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
-	      struct drm_driver *driver)
+		struct drm_driver *driver)
 {
 	struct drm_device *dev;
 	int ret;
@@ -318,7 +318,7 @@ int drm_put_head(struct drm_head * head)
 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
 	drm_sysfs_device_remove(head->dev);
 
-	*head = (struct drm_head){.dev = NULL};
+	*head = (struct drm_head) {.dev = NULL};
 
 	drm_heads[minor] = NULL;
 	return 0;

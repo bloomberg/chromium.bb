@@ -35,7 +35,7 @@
 
 # define ATI_PCIGART_PAGE_SIZE		4096	/**< PCI GART page size */
 
-static __inline__ void insert_page_into_table(struct ati_pcigart_info *info, u32 page_base, u32 *pci_gart)
+static __inline__ void insert_page_into_table(struct drm_ati_pcigart_info *info, u32 page_base, u32 *pci_gart)
 {
 	switch(info->gart_reg_if) {
 	case DRM_ATI_GART_IGP:
@@ -51,7 +51,7 @@ static __inline__ void insert_page_into_table(struct ati_pcigart_info *info, u32
 	}
 }
 
-static __inline__ u32 get_page_base_from_table(struct ati_pcigart_info *info, u32 *pci_gart)
+static __inline__ u32 get_page_base_from_table(struct drm_ati_pcigart_info *info, u32 *pci_gart)
 {
 	u32 retval;
 	switch(info->gart_reg_if) {
@@ -120,7 +120,7 @@ static void drm_ati_free_pcigart_table(void *address, int order)
 	free_pages((unsigned long)address, order);
 }
 
-int drm_ati_pcigart_cleanup(struct drm_device *dev, struct ati_pcigart_info *gart_info)
+int drm_ati_pcigart_cleanup(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info)
 {
 	struct drm_sg_mem *entry = dev->sg;
 	unsigned long pages;
@@ -171,7 +171,7 @@ int drm_ati_pcigart_cleanup(struct drm_device *dev, struct ati_pcigart_info *gar
 }
 EXPORT_SYMBOL(drm_ati_pcigart_cleanup);
 
-int drm_ati_pcigart_init(struct drm_device *dev, struct ati_pcigart_info *gart_info)
+int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info)
 {
 	struct drm_sg_mem *entry = dev->sg;
 	void *address = NULL;
@@ -293,7 +293,7 @@ static int ati_pcigart_bind_ttm(struct drm_ttm_backend *backend,
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
         off_t j;
 	int i;
-	struct ati_pcigart_info *info = atipci_be->gart_info;
+	struct drm_ati_pcigart_info *info = atipci_be->gart_info;
 	u32 *pci_gart;
 	u32 page_base;
 	unsigned long offset = bo_mem->mm_node->start;
@@ -333,7 +333,7 @@ static int ati_pcigart_unbind_ttm(struct drm_ttm_backend *backend)
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);
-	struct ati_pcigart_info *info = atipci_be->gart_info;	
+	struct drm_ati_pcigart_info *info = atipci_be->gart_info;	
 	unsigned long offset = atipci_be->offset;
 	int i;
 	off_t j;
@@ -392,7 +392,7 @@ static struct drm_ttm_backend_func ati_pcigart_ttm_backend =
 	.destroy =  ati_pcigart_destroy_ttm,
 };
 
-struct drm_ttm_backend *ati_pcigart_init_ttm(struct drm_device *dev, struct ati_pcigart_info *info, void (*gart_flush_fn)(struct drm_device *dev))
+struct drm_ttm_backend *ati_pcigart_init_ttm(struct drm_device *dev, struct drm_ati_pcigart_info *info, void (*gart_flush_fn)(struct drm_device *dev))
 {
 	ati_pcigart_ttm_backend_t *atipci_be;
 

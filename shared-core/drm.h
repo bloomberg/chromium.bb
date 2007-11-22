@@ -647,7 +647,7 @@ struct drm_fence_arg {
 	unsigned int signaled;
 	unsigned int error;
 	unsigned int sequence;
-        unsigned int pad64;
+	unsigned int pad64;
 	uint64_t expand_pad[2]; /*Future expansion */
 };
 
@@ -879,7 +879,7 @@ struct drm_bo_version_arg {
 
 struct drm_mm_type_arg {
 	unsigned int mem_type;
-        unsigned int lock_flags;
+	unsigned int lock_flags;
 };
 
 struct drm_mm_init_arg {

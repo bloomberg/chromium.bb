@@ -45,13 +45,13 @@ static struct {
 	.lock = SPIN_LOCK_UNLOCKED
 };
 
-static inline size_t drm_size_align(size_t size) {
-
+static inline size_t drm_size_align(size_t size)
+{
 	size_t tmpSize = 4;
 	if (size > PAGE_SIZE)
 		return PAGE_ALIGN(size);
 
-	while(tmpSize < size)
+	while (tmpSize < size)
 		tmpSize <<= 1;
 
 	return (size_t) tmpSize;

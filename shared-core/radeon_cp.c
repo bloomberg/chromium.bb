@@ -816,6 +816,21 @@ static const u32 R300_cp_microcode[][2] = {
 	{ 0000000000, 0000000000 },
 };
 
+u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
+{
+	return RADEON_READ(RADEON_MC_FB_LOCATION);
+}
+
+static void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
+{
+	RADEON_WRITE(RADEON_MC_FB_LOCATION, fb_loc);
+}
+
+static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_loc)
+{
+	RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_loc);
+}
+
 static int RADEON_READ_PLL(struct drm_device * dev, int addr)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -1134,14 +1149,14 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	 * always appended to the fb which is not necessarily the case
 	 */
 	if (!dev_priv->new_memmap)
-		RADEON_WRITE(RADEON_MC_FB_LOCATION,
+		radeon_write_fb_location(dev_priv,
 			     ((dev_priv->gart_vm_start - 1) & 0xffff0000)
 			     | (dev_priv->fb_location >> 16));
 
 #if __OS_HAS_AGP
 	if (dev_priv->flags & RADEON_IS_AGP) {
 		RADEON_WRITE(RADEON_AGP_BASE, (unsigned int)dev->agp->base);
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION,
+		radeon_write_agp_location(dev_priv,
 			     (((dev_priv->gart_vm_start - 1 +
 				dev_priv->gart_size) & 0xffff0000) |
 			      (dev_priv->gart_vm_start >> 16)));
@@ -1305,7 +1320,7 @@ static void radeon_set_igpgart(drm_radeon_private_t * dev_priv, int on)
 
 		RADEON_WRITE(RADEON_AGP_BASE, (unsigned int)dev_priv->gart_vm_start);
 		dev_priv->gart_size = 32*1024*1024;
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION,
+		radeon_write_agp_location(dev_priv,
 			     (((dev_priv->gart_vm_start - 1 +
 			       dev_priv->gart_size) & 0xffff0000) |
 			     (dev_priv->gart_vm_start >> 16)));
@@ -1339,7 +1354,7 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 				  dev_priv->gart_vm_start +
 				  dev_priv->gart_size - 1);
 
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION, 0xffffffc0);	/* ?? */
+		radeon_write_agp_location(dev_priv, 0xffffffc0); /* ?? */
 
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL,
 				  RADEON_PCIE_TX_GART_EN);
@@ -1382,7 +1397,7 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 
 		/* Turn off AGP aperture -- is this required for PCI GART?
 		 */
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION, 0xffffffc0);	/* ?? */
+		radeon_write_agp_location(dev_priv, 0xffffffc0);
 		RADEON_WRITE(RADEON_AGP_COMMAND, 0);	/* clear AGP_COMMAND */
 	} else {
 		RADEON_WRITE(RADEON_AIC_CNTL,
@@ -1612,10 +1627,9 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 			  dev->agp_buffer_map->handle);
 	}
 
-	dev_priv->fb_location = (RADEON_READ(RADEON_MC_FB_LOCATION)
-				 & 0xffff) << 16;
+	dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffff) << 16;
 	dev_priv->fb_size =
-		((RADEON_READ(RADEON_MC_FB_LOCATION) & 0xffff0000u) + 0x10000)
+		((radeon_read_fb_location(dev_priv) & 0xffff0000u) + 0x10000)
 		- dev_priv->fb_location;
 
 	dev_priv->front_pitch_offset = (((dev_priv->front_pitch / 64) << 22) |

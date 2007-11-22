@@ -62,8 +62,7 @@ static void mga_emit_clip_rect(drm_mga_private_t * dev_priv,
 	}
 	DMA_BLOCK(MGA_DMAPAD, 0x00000000,
 		  MGA_CXBNDRY, ((box->x2 - 1) << 16) | box->x1,
-		  MGA_YTOP, box->y1 * pitch,
-		  MGA_YBOT, (box->y2 - 1) * pitch);
+		  MGA_YTOP, box->y1 * pitch, MGA_YBOT, (box->y2 - 1) * pitch);
 
 	ADVANCE_DMA();
 }
@@ -78,18 +77,15 @@ static __inline__ void mga_g200_emit_context(drm_mga_private_t * dev_priv)
 
 	DMA_BLOCK(MGA_DSTORG, ctx->dstorg,
 		  MGA_MACCESS, ctx->maccess,
-		  MGA_PLNWT, ctx->plnwt,
-		  MGA_DWGCTL, ctx->dwgctl);
+		  MGA_PLNWT, ctx->plnwt, MGA_DWGCTL, ctx->dwgctl);
 
 	DMA_BLOCK(MGA_ALPHACTRL, ctx->alphactrl,
 		  MGA_FOGCOL, ctx->fogcolor,
-		  MGA_WFLAG, ctx->wflag,
-		  MGA_ZORG, dev_priv->depth_offset);
+		  MGA_WFLAG, ctx->wflag, MGA_ZORG, dev_priv->depth_offset);
 
 	DMA_BLOCK(MGA_FCOL, ctx->fcol,
 		  MGA_DMAPAD, 0x00000000,
-		  MGA_DMAPAD, 0x00000000,
-		  MGA_DMAPAD, 0x00000000);
+		  MGA_DMAPAD, 0x00000000, MGA_DMAPAD, 0x00000000);
 
 	ADVANCE_DMA();
 }

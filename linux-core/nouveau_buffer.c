@@ -143,12 +143,13 @@ nouveau_bo_evict_mask(struct drm_buffer_object *bo)
 	return 0;
 }
 
+
 /* GPU-assisted copy using NV_MEMORY_TO_MEMORY_FORMAT, can access
  * DRM_BO_MEM_{VRAM,PRIV0,TT} directly.
  */
 static int
 nouveau_bo_move_m2mf(struct drm_buffer_object *bo, int evict, int no_wait,
-		struct drm_bo_mem_reg *new_mem)
+		     struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_device *dev = bo->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -195,6 +196,46 @@ nouveau_bo_move_m2mf(struct drm_buffer_object *bo, int evict, int no_wait,
 					 DRM_FENCE_TYPE_EXE, 0, new_mem);
 }
 
+/* Flip pages into the GART and move if we can. */
+static int
+nouveau_bo_move_gart(struct drm_buffer_object *bo, int evict, int no_wait,
+                     struct drm_bo_mem_reg *new_mem)
+{
+        struct drm_device *dev = bo->dev;
+        struct drm_bo_mem_reg tmp_mem;
+        int ret;
+
+        tmp_mem = *new_mem;
+        tmp_mem.mm_node = NULL;
+        tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
+                DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING;
+
+        ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
+
+        if (ret)
+                return ret;
+
+        ret = drm_bind_ttm(bo->ttm, &tmp_mem);
+        if (ret)
+                goto out_cleanup;
+
+        ret = nouveau_bo_move_m2mf(bo, 1, no_wait, &tmp_mem);
+        if (ret)
+                goto out_cleanup;
+
+        ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
+
+out_cleanup:
+        if (tmp_mem.mm_node) {
+                mutex_lock(&dev->struct_mutex);
+                if (tmp_mem.mm_node != bo->pinned_node)
+                        drm_mm_put_block(tmp_mem.mm_node);
+                tmp_mem.mm_node = NULL;
+                mutex_unlock(&dev->struct_mutex);
+        }
+        return ret;
+}
+
 static int
 nouveau_bo_move(struct drm_buffer_object *bo, int evict, int no_wait,
 		struct drm_bo_mem_reg *new_mem)
@@ -205,14 +246,14 @@ nouveau_bo_move(struct drm_buffer_object *bo, int evict, int no_wait,
 		if (old_mem->mem_type == DRM_BO_MEM_LOCAL)
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 #if 0
-		if (!nouveau_bo_move_flipd(bo, evict, no_wait, new_mem))
+		if (!nouveau_bo_move_to_gart(bo, evict, no_wait, new_mem))
 #endif
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	else
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 #if 0
-		if (nouveau_bo_move_flips(bo, evict, no_wait, new_mem))
+		if (nouveau_bo_move_to_gart(bo, evict, no_wait, new_mem))
 #endif
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
