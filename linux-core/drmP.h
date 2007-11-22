@@ -85,6 +85,7 @@
 #include "drm_hashtab.h"
 #include "drm_internal.h"
 
+struct drm_device;
 struct drm_file;
 
 /* If you want the memory alloc debug functionality, change define below */
@@ -162,6 +163,12 @@ struct drm_file;
 #define DRM_OBJECT_HASH_ORDER 12
 #define DRM_FILE_PAGE_OFFSET_START ((0xFFFFFFFFUL >> PAGE_SHIFT) + 1)
 #define DRM_FILE_PAGE_OFFSET_SIZE ((0xFFFFFFFFUL >> PAGE_SHIFT) * 16)
+/*
+ * This should be small enough to allow the use of kmalloc for hash tables
+ * instead of vmalloc.
+ */
+
+#define DRM_FILE_HASH_ORDER 8
 #define DRM_MM_INIT_MAX_PAGES 256
 
 /*@}*/
@@ -202,7 +209,7 @@ struct drm_file;
 #if DRM_DEBUG_CODE
 #define DRM_DEBUG(fmt, arg...)						\
 	do {								\
-		if ( drm_debug )						\
+		if ( drm_debug )					\
 			printk(KERN_DEBUG				\
 			       "[" DRM_NAME ":%s] " fmt ,		\
 			       __FUNCTION__ , ##arg);			\
@@ -275,9 +282,6 @@ do {									\
 		if ( copy_to_user( name, value, len ) )			\
 			return -EFAULT;					\
 	}
-
-struct drm_device;
-struct drm_file;
 
 /**
  * Ioctl function type.
@@ -394,14 +398,9 @@ struct drm_buf_entry {
 	struct drm_freelist freelist;
 };
 
-/*
- * This should be small enough to allow the use of kmalloc for hash tables
- * instead of vmalloc.
- */
 
-#define DRM_FILE_HASH_ORDER 8
 enum drm_ref_type {
-	_DRM_REF_USE=0,
+	_DRM_REF_USE = 0,
 	_DRM_REF_TYPE1,
 	_DRM_NO_REF_TYPES
 };
@@ -504,14 +503,14 @@ struct drm_agp_mem {
 /**
  * AGP data.
  *
- * \sa drm_agp_init)() and drm_device::agp.
+ * \sa drm_agp_init() and drm_device::agp.
  */
 struct drm_agp_head {
 	DRM_AGP_KERN agp_info;		/**< AGP device information */
 	struct list_head memory;
 	unsigned long mode;		/**< AGP mode */
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,11)
-	struct agp_bridge_data  *bridge;
+	struct agp_bridge_data *bridge;
 #endif
 	int enabled;			/**< whether the AGP bus as been enabled */
 	int acquired;			/**< whether the AGP device has been acquired */
@@ -595,7 +594,7 @@ struct drm_vbl_sig {
 #define DRM_ATI_GART_PCIE 2
 #define DRM_ATI_GART_IGP 3
 
-struct ati_pcigart_info {
+struct drm_ati_pcigart_info {
 	int gart_table_location;
 	int gart_reg_if;
 	void *addr;
@@ -625,14 +624,14 @@ struct drm_driver {
 	int (*dma_ioctl) (struct drm_device *dev, void *data, struct drm_file *file_priv);
 	void (*dma_ready) (struct drm_device *);
 	int (*dma_quiescent) (struct drm_device *);
-	int (*context_ctor) (struct drm_device * dev, int context);
-	int (*context_dtor) (struct drm_device * dev, int context);
-	int (*kernel_context_switch) (struct drm_device * dev, int old,
+	int (*context_ctor) (struct drm_device *dev, int context);
+	int (*context_dtor) (struct drm_device *dev, int context);
+	int (*kernel_context_switch) (struct drm_device *dev, int old,
 				      int new);
-	void (*kernel_context_switch_unlock) (struct drm_device * dev);
-	int (*vblank_wait) (struct drm_device * dev, unsigned int *sequence);
-	int (*vblank_wait2) (struct drm_device * dev, unsigned int *sequence);
-	int (*dri_library_name) (struct drm_device * dev, char * buf);
+	void (*kernel_context_switch_unlock) (struct drm_device *dev);
+	int (*vblank_wait) (struct drm_device *dev, unsigned int *sequence);
+	int (*vblank_wait2) (struct drm_device *dev, unsigned int *sequence);
+	int (*dri_library_name) (struct drm_device *dev, char * buf);
 
 	/**
 	 * Called by \c drm_device_is_agp.  Typically used to determine if a
@@ -645,22 +644,23 @@ struct drm_driver {
 	 * card is absolutely \b not AGP (return of 0), absolutely \b is AGP
 	 * (return of 1), or may or may not be AGP (return of 2).
 	 */
-	int (*device_is_agp) (struct drm_device * dev);
+	int (*device_is_agp) (struct drm_device *dev);
 
 /* these have to be filled in */
 	 irqreturn_t(*irq_handler) (DRM_IRQ_ARGS);
-	void (*irq_preinstall) (struct drm_device * dev);
-	void (*irq_postinstall) (struct drm_device * dev);
-	void (*irq_uninstall) (struct drm_device * dev);
+	void (*irq_preinstall) (struct drm_device *dev);
+	void (*irq_postinstall) (struct drm_device *dev);
+	void (*irq_uninstall) (struct drm_device *dev);
 	void (*reclaim_buffers) (struct drm_device *dev,
 				 struct drm_file *file_priv);
 	void (*reclaim_buffers_locked) (struct drm_device *dev,
 					struct drm_file *file_priv);
 	void (*reclaim_buffers_idlelocked) (struct drm_device *dev,
 					    struct drm_file *file_priv);
-	unsigned long (*get_map_ofs) (struct drm_map * map);
-	unsigned long (*get_reg_ofs) (struct drm_device * dev);
-	void (*set_version) (struct drm_device * dev, struct drm_set_version * sv);
+	unsigned long (*get_map_ofs) (struct drm_map *map);
+	unsigned long (*get_reg_ofs) (struct drm_device *dev);
+	void (*set_version) (struct drm_device *dev,
+			     struct drm_set_version *sv);
 
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
@@ -1157,8 +1157,8 @@ extern int drm_sg_free(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv);
 
 			       /* ATI PCIGART support (ati_pcigart.h) */
-extern int drm_ati_pcigart_init(struct drm_device *dev, struct ati_pcigart_info *gart_info);
-extern int drm_ati_pcigart_cleanup(struct drm_device *dev, struct ati_pcigart_info *gart_info);
+extern int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info);
+extern int drm_ati_pcigart_cleanup(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info);
 
 extern drm_dma_handle_t *drm_pci_alloc(struct drm_device *dev, size_t size,
 			   size_t align, dma_addr_t maxaddr);
@@ -1169,7 +1169,7 @@ extern void drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah);
 struct drm_sysfs_class;
 extern struct class *drm_sysfs_create(struct module *owner, char *name);
 extern void drm_sysfs_destroy(void);
-extern int drm_sysfs_device_add(struct drm_device *dev, struct drm_head * head);
+extern int drm_sysfs_device_add(struct drm_device *dev, struct drm_head *head);
 extern void drm_sysfs_device_remove(struct drm_device *dev);
 
 /*
@@ -1209,7 +1209,7 @@ static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
 static __inline__ int drm_device_is_agp(struct drm_device *dev)
 {
 	if ( dev->driver->device_is_agp != NULL ) {
-		int err = (*dev->driver->device_is_agp)( dev );
+		int err = (*dev->driver->device_is_agp)(dev);
 
 		if (err != 2) {
 			return err;

@@ -239,9 +239,6 @@ struct page *drm_ttm_get_page(struct drm_ttm *ttm, int index)
 }
 EXPORT_SYMBOL(drm_ttm_get_page);
 
-
-
-
 int drm_ttm_set_user(struct drm_ttm *ttm,
 		     struct task_struct *tsk,
 		     int write,
@@ -277,8 +274,6 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 
 	return 0;
 }
-
-
 
 int drm_ttm_populate(struct drm_ttm *ttm)
 {

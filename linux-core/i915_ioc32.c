@@ -45,7 +45,7 @@ typedef struct _drm_i915_batchbuffer32 {
 } drm_i915_batchbuffer32_t;
 
 static int compat_i915_batchbuffer(struct file *file, unsigned int cmd,
-			   unsigned long arg)
+				   unsigned long arg)
 {
 	drm_i915_batchbuffer32_t batchbuffer32;
 	drm_i915_batchbuffer_t __user *batchbuffer;
@@ -81,7 +81,7 @@ typedef struct _drm_i915_cmdbuffer32 {
 } drm_i915_cmdbuffer32_t;
 
 static int compat_i915_cmdbuffer(struct file *file, unsigned int cmd,
-			   unsigned long arg)
+				 unsigned long arg)
 {
 	drm_i915_cmdbuffer32_t cmdbuffer32;
 	drm_i915_cmdbuffer_t __user *cmdbuffer;
@@ -111,7 +111,7 @@ typedef struct drm_i915_irq_emit32 {
 } drm_i915_irq_emit32_t;
 
 static int compat_i915_irq_emit(struct file *file, unsigned int cmd,
-				  unsigned long arg)
+				unsigned long arg)
 {
 	drm_i915_irq_emit32_t req32;
 	drm_i915_irq_emit_t __user *request;
@@ -134,7 +134,7 @@ typedef struct drm_i915_getparam32 {
 } drm_i915_getparam32_t;
 
 static int compat_i915_getparam(struct file *file, unsigned int cmd,
-				     unsigned long arg)
+				unsigned long arg)
 {
 	drm_i915_getparam32_t req32;
 	drm_i915_getparam_t __user *request;
@@ -161,7 +161,7 @@ typedef struct drm_i915_mem_alloc32 {
 } drm_i915_mem_alloc32_t;
 
 static int compat_i915_alloc(struct file *file, unsigned int cmd,
-				     unsigned long arg)
+			     unsigned long arg)
 {
 	drm_i915_mem_alloc32_t req32;
 	drm_i915_mem_alloc_t __user *request;

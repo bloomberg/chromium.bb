@@ -57,7 +57,7 @@ irqreturn_t mga_driver_irq_handler(DRM_IRQ_ARGS)
 	/* SOFTRAP interrupt */
 	if (status & MGA_SOFTRAPEN) {
 		const u32 prim_start = MGA_READ(MGA_PRIMADDRESS);
-		const u32 prim_end   = MGA_READ(MGA_PRIMEND);
+		const u32 prim_end = MGA_READ(MGA_PRIMEND);
 
 
 		MGA_WRITE(MGA_ICLEAR, MGA_SOFTRAPICLR);
@@ -65,7 +65,7 @@ irqreturn_t mga_driver_irq_handler(DRM_IRQ_ARGS)
 		/* In addition to clearing the interrupt-pending bit, we
 		 * have to write to MGA_PRIMEND to re-start the DMA operation.
 		 */
-		if ( (prim_start & ~0x03) != (prim_end & ~0x03) ) {
+		if ((prim_start & ~0x03) != (prim_end & ~0x03)) {
 			MGA_WRITE(MGA_PRIMEND, prim_end);
 		}
 
@@ -74,9 +74,8 @@ irqreturn_t mga_driver_irq_handler(DRM_IRQ_ARGS)
 		handled = 1;
 	}
 
-	if ( handled ) {
+	if (handled)
 		return IRQ_HANDLED;
-	}
 	return IRQ_NONE;
 }
 
@@ -131,7 +130,7 @@ void mga_driver_irq_postinstall(struct drm_device * dev)
 {
 	drm_mga_private_t *dev_priv = (drm_mga_private_t *) dev->dev_private;
 
-	DRM_INIT_WAITQUEUE( &dev_priv->fence_queue );
+	DRM_INIT_WAITQUEUE(&dev_priv->fence_queue);
 
 	/* Turn on vertical blank interrupt and soft trap interrupt. */
 	MGA_WRITE(MGA_IEN, MGA_VLINEIEN | MGA_SOFTRAPEN);

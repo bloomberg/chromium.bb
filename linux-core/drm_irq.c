@@ -396,7 +396,7 @@ EXPORT_SYMBOL(drm_vbl_send_signals);
  */
 static void drm_locked_tasklet_func(unsigned long data)
 {
-	struct drm_device *dev = (struct drm_device*)data;
+	struct drm_device *dev = (struct drm_device *)data;
 	unsigned long irqflags;
 
 	spin_lock_irqsave(&dev->tasklet_lock, irqflags);
@@ -433,7 +433,7 @@ static void drm_locked_tasklet_func(unsigned long data)
  * context, it must not make any assumptions about this. Also, the HW lock will
  * be held with the kernel context or any client context.
  */
-void drm_locked_tasklet(struct drm_device *dev, void (*func)(struct drm_device*))
+void drm_locked_tasklet(struct drm_device *dev, void (*func)(struct drm_device *))
 {
 	unsigned long irqflags;
 	static DECLARE_TASKLET(drm_tasklet, drm_locked_tasklet_func, 0);

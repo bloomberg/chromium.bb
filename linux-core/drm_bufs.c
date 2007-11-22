@@ -173,12 +173,17 @@ static int drm_addmap_core(struct drm_device *dev, unsigned int offset,
 		if (drm_core_has_MTRR(dev)) {
 			if (map->type == _DRM_FRAME_BUFFER ||
 			    (map->flags & _DRM_WRITE_COMBINING)) {
-				map->mtrr =  mtrr_add(map->offset, map->size,
-						      MTRR_TYPE_WRCOMB, 1);
+				map->mtrr = mtrr_add(map->offset, map->size,
+						     MTRR_TYPE_WRCOMB, 1);
 			}
 		}
-		if (map->type == _DRM_REGISTERS)
+		if (map->type == _DRM_REGISTERS) {
 			map->handle = ioremap(map->offset, map->size);
+			if (!map->handle) {
+				drm_free(map, sizeof(*map), DRM_MEM_MAPS);
+				return -ENOMEM;
+			}
+		}
 		break;
 	case _DRM_SHM:
 		list = drm_find_matching_map(dev, map);
@@ -387,9 +392,9 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 		}
 	}
 
-	if (!found) {
+	if (!found)
 		return -EINVAL;
-	}
+
 	/* List has wrapped around to the head pointer, or it's empty and we
 	 * didn't find anything.
 	 */
@@ -494,7 +499,8 @@ int drm_rmmap_ioctl(struct drm_device *dev, void *data,
  *
  * Frees any pages and buffers associated with the given entry.
  */
-static void drm_cleanup_buf_error(struct drm_device *dev, struct drm_buf_entry * entry)
+static void drm_cleanup_buf_error(struct drm_device *dev,
+				  struct drm_buf_entry *entry)
 {
 	int i;
 
@@ -529,7 +535,7 @@ static void drm_cleanup_buf_error(struct drm_device *dev, struct drm_buf_entry *
 
 #if __OS_HAS_AGP
 /**
- * Add AGP buffers for DMA transfers
+ * Add AGP buffers for DMA transfers.
  *
  * \param dev struct drm_device to which the buffers are to be added.
  * \param request pointer to a struct drm_buf_desc describing the request.
@@ -539,7 +545,7 @@ static void drm_cleanup_buf_error(struct drm_device *dev, struct drm_buf_entry *
  * reallocates the buffer list of the same size order to accommodate the new
  * buffers.
  */
-int drm_addbufs_agp(struct drm_device *dev, struct drm_buf_desc * request)
+int drm_addbufs_agp(struct drm_device *dev, struct drm_buf_desc *request)
 {
 	struct drm_device_dma *dma = dev->dma;
 	struct drm_buf_entry *entry;
@@ -709,7 +715,7 @@ int drm_addbufs_agp(struct drm_device *dev, struct drm_buf_desc * request)
 EXPORT_SYMBOL(drm_addbufs_agp);
 #endif				/* __OS_HAS_AGP */
 
-int drm_addbufs_pci(struct drm_device *dev, struct drm_buf_desc * request)
+int drm_addbufs_pci(struct drm_device *dev, struct drm_buf_desc *request)
 {
 	struct drm_device_dma *dma = dev->dma;
 	int count;
@@ -935,7 +941,7 @@ int drm_addbufs_pci(struct drm_device *dev, struct drm_buf_desc * request)
 }
 EXPORT_SYMBOL(drm_addbufs_pci);
 
-static int drm_addbufs_sg(struct drm_device *dev, struct drm_buf_desc * request)
+static int drm_addbufs_sg(struct drm_device *dev, struct drm_buf_desc *request)
 {
 	struct drm_device_dma *dma = dev->dma;
 	struct drm_buf_entry *entry;

@@ -76,8 +76,7 @@ static maskarray_t via_pro_group_a_irqs[] = {
 	{VIA_IRQ_DMA1_TD_ENABLE, VIA_IRQ_DMA1_TD_PENDING, VIA_PCI_DMA_CSR1,
 	 VIA_DMA_CSR_TA | VIA_DMA_CSR_TD, 0x00000008},
 };
-static int via_num_pro_group_a =
-    sizeof(via_pro_group_a_irqs)/sizeof(maskarray_t);
+static int via_num_pro_group_a = ARRAY_SIZE(via_pro_group_a_irqs);
 static int via_irqmap_pro_group_a[] = {0, 1, -1, 2, -1, 3};
 
 static maskarray_t via_unichrome_irqs[] = {
@@ -86,15 +85,15 @@ static maskarray_t via_unichrome_irqs[] = {
 	{VIA_IRQ_DMA1_TD_ENABLE, VIA_IRQ_DMA1_TD_PENDING, VIA_PCI_DMA_CSR1,
 	 VIA_DMA_CSR_TA | VIA_DMA_CSR_TD, 0x00000008}
 };
-static int via_num_unichrome = sizeof(via_unichrome_irqs)/sizeof(maskarray_t);
+static int via_num_unichrome = ARRAY_SIZE(via_unichrome_irqs);
 static int via_irqmap_unichrome[] = {-1, -1, -1, 0, -1, 1};
 
 
 static unsigned time_diff(struct timeval *now,struct timeval *then)
 {
-    return (now->tv_usec >= then->tv_usec) ?
-	now->tv_usec - then->tv_usec :
-	1000000 - (then->tv_usec - now->tv_usec);
+	return (now->tv_usec >= then->tv_usec) ?
+		now->tv_usec - then->tv_usec :
+		1000000 - (then->tv_usec - now->tv_usec);
 }
 
 irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
@@ -126,17 +125,17 @@ irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS)
 		}
 		if (!(atomic_read(&dev->vbl_received) & 0xFF)) {
 			DRM_DEBUG("US per vblank is: %u\n",
-				dev_priv->usec_per_vblank);
+				  dev_priv->usec_per_vblank);
 		}
 		DRM_WAKEUP(&dev->vbl_queue);
 		drm_vbl_send_signals(dev);
 		handled = 1;
 	}
 
-	for (i=0; i<dev_priv->num_irqs; ++i) {
+	for (i = 0; i < dev_priv->num_irqs; ++i) {
 		if (status & cur_irq->pending_mask) {
-			atomic_inc( &cur_irq->irq_received );
-			DRM_WAKEUP( &cur_irq->irq_queue );
+			atomic_inc(&cur_irq->irq_received);
+			DRM_WAKEUP(&cur_irq->irq_queue);
 			handled = 1;
 #ifdef VIA_HAVE_DMABLIT
 			if (dev_priv->irq_map[drm_via_irq_dma0_td] == i) {
@@ -216,7 +215,7 @@ via_driver_irq_wait(struct drm_device * dev, unsigned int irq, int force_sequenc
 		return -EINVAL;
 	}
 
-	if (irq >= drm_via_irq_num ) {
+	if (irq >= drm_via_irq_num) {
 		DRM_ERROR("%s Trying to wait on unknown irq %d\n", __FUNCTION__,
 			  irq);
 		return -EINVAL;
@@ -278,11 +277,11 @@ void via_driver_irq_preinstall(struct drm_device * dev)
 			dev_priv->irq_map = via_irqmap_unichrome;
 		}
 
-		for(i=0; i < dev_priv->num_irqs; ++i) {
+		for (i = 0; i < dev_priv->num_irqs; ++i) {
 			atomic_set(&cur_irq->irq_received, 0);
 			cur_irq->enable_mask = dev_priv->irq_masks[i][0];
 			cur_irq->pending_mask = dev_priv->irq_masks[i][1];
-			DRM_INIT_WAITQUEUE( &cur_irq->irq_queue );
+			DRM_INIT_WAITQUEUE(&cur_irq->irq_queue);
 			dev_priv->irq_enable_mask |= cur_irq->enable_mask;
 			dev_priv->irq_pending_mask |= cur_irq->pending_mask;
 			cur_irq++;

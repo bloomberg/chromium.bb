@@ -1271,7 +1271,7 @@ int i810_driver_dma_quiescent(struct drm_device * dev)
 }
 
 struct drm_ioctl_desc i810_ioctls[] = {
-  DRM_IOCTL_DEF(DRM_I810_INIT, i810_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_I810_INIT, i810_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_I810_VERTEX, i810_dma_vertex, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I810_CLEAR, i810_clear_bufs, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I810_FLUSH, i810_flush_ioctl, DRM_AUTH),

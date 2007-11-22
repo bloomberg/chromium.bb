@@ -185,8 +185,8 @@ int drm_lastclose(struct drm_device * dev)
 
 	if (dev->unique) {
 		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
-		dev->unique=NULL;
-		dev->unique_len=0;
+		dev->unique = NULL;
+		dev->unique_len = 0;
 	}
 
 	if (dev->irq_enabled)
