@@ -204,7 +204,7 @@ static int i915_dma_resume(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
@@ -612,8 +612,7 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	DRM_DEBUG("%s: planes=0x%x pfCurrentPage=%d\n",
-		  __FUNCTION__,
+	DRM_DEBUG("planes=0x%x pfCurrentPage=%d\n",
 		  planes, dev_priv->sarea_priv->pf_current_page);
 
 	i915_emit_mi_flush(dev, MI_READ_FLUSH | MI_EXE_FLUSH);
@@ -1097,7 +1096,7 @@ static int i915_do_cleanup_pageflip(struct drm_device * dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int i, planes, num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	for (i = 0, planes = 0; i < 2; i++)
 		if (dev_priv->sarea_priv->pf_current_page & (0x3 << (2 * i))) {
@@ -1118,7 +1117,7 @@ static int i915_flip_bufs(struct drm_device *dev, void *data, struct drm_file *f
 {
 	drm_i915_flip_t *param = data;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
