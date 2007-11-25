@@ -772,7 +772,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 			}
 				/* Contention */
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
-			retcode = msleep((void *)&dev->lock.lock_queue,
+			retcode = mtx_sleep((void *)&dev->lock.lock_queue,
 			    &dev->dev_lock, PZERO | PCATCH, "drmlk2", 0);
 #else
 			retcode = tsleep((void *)&dev->lock.lock_queue,
