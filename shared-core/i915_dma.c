@@ -1102,7 +1102,7 @@ static int i915_do_cleanup_pageflip(struct drm_device * dev)
 		if (dev_priv->sarea_priv->pf_current_page & (0x3 << (2 * i))) {
 			dev_priv->sarea_priv->pf_current_page =
 				(dev_priv->sarea_priv->pf_current_page &
-				 ~(0x3 << (2 * i))) | (num_pages - 1) << (2 * i);
+				 ~(0x3 << (2 * i))) | ((num_pages - 1) << (2 * i));
 
 			planes |= 1 << i;
 		}
