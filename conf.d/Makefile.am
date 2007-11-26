@@ -21,8 +21,10 @@
 #  TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 #  PERFORMANCE OF THIS SOFTWARE.
 
+DOC_FILES= \
+	README
+
 CONF_FILES = \
-	README \
 	10-autohint.conf \
 	10-no-sub-pixel.conf \
 	10-sub-pixel-bgr.conf \
@@ -66,13 +68,14 @@ CONF_LINKS = \
 	80-delicious.conf \
 	90-synthetic.conf
 
-EXTRA_DIST = $(CONF_FILES)
+EXTRA_DIST = $(CONF_FILES) $(DOC_FILES)
 
 configdir=$(CONFDIR)
 confavaildir=$(configdir)/conf.avail
 confddir=$(configdir)/conf.d
 
 confavail_DATA=$(CONF_FILES)
+confd_DATA=$(DOC_FILES)
 
 install-data-local:
 	mkdir -p ${DESTDIR}${confddir}
