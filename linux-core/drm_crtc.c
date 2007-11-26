@@ -1722,6 +1722,70 @@ int drm_mode_rmmode(struct drm_device *dev, struct drm_display_mode *mode)
 }
 EXPORT_SYMBOL(drm_mode_rmmode);
 
+static int drm_mode_attachmode(struct drm_device *dev,
+			       struct drm_output *output,
+			       struct drm_display_mode *mode)
+{
+	int ret = 0;
+	int i;
+
+	for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
+		if (output->user_mode_ids[i] == 0) {
+			output->user_mode_ids[i] = mode->mode_id;
+			mode->output_count++;
+			break;
+		}
+	}
+
+	if (i == DRM_OUTPUT_MAX_UMODES)
+		ret = -ENOSPC;
+
+	return ret;
+}
+
+int drm_mode_attachmode_crtc(struct drm_device *dev, struct drm_crtc *crtc,
+			     struct drm_display_mode *mode)
+{
+	struct drm_output *output;
+
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+		if (output->crtc == crtc)
+			drm_mode_attachmode(dev, output, mode);
+	}
+}
+EXPORT_SYMBOL(drm_mode_attachmode_crtc);
+
+static int drm_mode_detachmode(struct drm_device *dev,
+			       struct drm_output *output,
+			       struct drm_display_mode *mode)
+{
+	int found = 0;
+	int ret = 0, i;
+
+	for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
+		if (output->user_mode_ids[i] == mode->mode_id) {
+			output->user_mode_ids[i] = 0;
+			mode->output_count--;
+			found = 1;
+		}
+	}
+
+	if (!found)
+		ret = -EINVAL;
+
+	return ret;
+}
+
+int drm_mode_detachmode_crtc(struct drm_device *dev, struct drm_display_mode *mode)
+{
+	struct drm_output *output;
+
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+		drm_mode_detachmode(dev, output, mode);
+	}
+}
+EXPORT_SYMBOL(drm_mode_detachmode_crtc);
+
 /**
  * drm_fb_addmode - adds a user defined mode
  * @inode: inode from the ioctl
@@ -1822,7 +1886,7 @@ int drm_mode_attachmode_ioctl(struct drm_device *dev,
 	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
-	int i, ret = 0;
+	int ret = 0;
 
 	mutex_lock(&dev->mode_config.mutex);
 
@@ -1838,17 +1902,7 @@ int drm_mode_attachmode_ioctl(struct drm_device *dev,
 		goto out;
 	}
 
-	for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
-		if (output->user_mode_ids[i] == 0) {
-			output->user_mode_ids[i] = mode->mode_id;
-			mode->output_count++;
-			break;
-		}
-	}
-
-	if (i == DRM_OUTPUT_MAX_UMODES)
-		ret = -ENOSPC;
-
+	ret = drm_mode_attachmode(dev, output, mode);
 out:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
@@ -1873,7 +1927,7 @@ int drm_mode_detachmode_ioctl(struct drm_device *dev,
 	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
-	int i, found = 0, ret = 0;
+	int ret = 0;
 
 	mutex_lock(&dev->mode_config.mutex);
 
@@ -1890,17 +1944,7 @@ int drm_mode_detachmode_ioctl(struct drm_device *dev,
 	}
 
 
-	for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
-		if (output->user_mode_ids[i] == mode->mode_id) {
-			output->user_mode_ids[i] = 0;
-			mode->output_count--;
-			found = 1;
-		}
-	}
-
-	if (!found)
-		ret = -EINVAL;
-
+	ret = drm_mode_detachmode(dev, output, mode);
 out:	       
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;

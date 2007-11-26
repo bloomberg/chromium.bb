@@ -223,7 +223,7 @@ static int intelfb_set_par(struct fb_info *info)
 	struct intelfb_par *par = info->par;
 	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_device *dev = par->dev;
-        struct drm_display_mode *drm_mode;
+        struct drm_display_mode *drm_mode, *search_mode;
         struct drm_output *output;
         struct fb_var_screeninfo *var = &info->var;
 	int found = 0;
@@ -248,34 +248,7 @@ static int intelfb_set_par(struct fb_info *info)
 
         info->screen_size = info->fix.smem_len; /* ??? */
 
-        /* Should we walk the output's modelist or just create our own ???
-         * For now, we create and destroy a mode based on the incoming 
-         * parameters. But there's commented out code below which scans 
-         * the output list too.
-         */
-#if 0
-        list_for_each_entry(output, &dev->mode_config.output_list, head) {
-                if (output->crtc == par->crtc)
-                        break;
-        }
-    
-        list_for_each_entry(drm_mode, &output->modes, head) {
-                if (drm_mode->hdisplay == var->xres &&
-                    drm_mode->vdisplay == var->yres &&
-                    (((PICOS2KHZ(var->pixclock))/1000) >= ((drm_mode->clock/1000)-1)) &&
-                    (((PICOS2KHZ(var->pixclock))/1000) <= ((drm_mode->clock/1000)+1))) {
-			found = 1;
-			break;
-		}
-        }
-
-	if (!found) {
-		DRM_ERROR("Couldn't find a mode for requested %dx%d-%d\n",
-			var->xres,var->yres,var_to_refresh(var));
-		return -EINVAL;
-	}
-#else
-	
+	/* create a drm mode */
         drm_mode = drm_mode_create(dev);
         drm_mode->hdisplay = var->xres;
         drm_mode->hsync_start = drm_mode->hdisplay + var->right_margin;
@@ -289,14 +262,36 @@ static int intelfb_set_par(struct fb_info *info)
         drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
         drm_mode_set_name(drm_mode);
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
-#endif
 
-	drm_mode_addmode(dev, drm_mode);
-	if (par->fb_mode)
-		drm_mode_rmmode(dev, par->fb_mode);
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
+                if (output->crtc == par->crtc)
+                        break;
+        }
+
+	drm_mode_debug_printmodeline(dev, drm_mode);    
+        list_for_each_entry(search_mode, &output->modes, head) {
+		DRM_ERROR("mode %s : %s\n", drm_mode->name, search_mode->name);
+		drm_mode_debug_printmodeline(dev, search_mode);
+		if (drm_mode_equal(drm_mode, search_mode)) {
+			drm_mode_destroy(dev, drm_mode);
+			drm_mode = search_mode;
+			found = 1;
+			break;
+		}
+	}
 	
-	par->fb_mode = drm_mode;
-	drm_mode_debug_printmodeline(dev, drm_mode);
+	if (!found) {
+		drm_mode_addmode(dev, drm_mode);
+		if (par->fb_mode) {
+			drm_mode_detachmode_crtc(dev, par->fb_mode);
+			drm_mode_rmmode(dev, par->fb_mode);
+		}
+	
+		par->fb_mode = drm_mode;
+		drm_mode_debug_printmodeline(dev, drm_mode);
+		/* attach mode */
+		drm_mode_attachmode_crtc(dev, par->crtc, par->fb_mode);
+	}
 
         if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
                 return -EINVAL;

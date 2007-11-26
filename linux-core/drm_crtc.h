@@ -497,6 +497,12 @@ extern void drm_disable_unused_functions(struct drm_device *dev);
 extern void drm_mode_addmode(struct drm_device *dev, struct drm_display_mode *user_mode);
 extern int drm_mode_rmmode(struct drm_device *dev, struct drm_display_mode *mode);
 
+/* for us by fb module */
+extern int drm_mode_attachmode_crtc(struct drm_device *dev,
+				    struct drm_crtc *crtc,
+				    struct drm_display_mode *mode);
+extern int drm_mode_detachmode_crtc(struct drm_device *dev, struct drm_display_mode *mode);
+
 extern struct drm_display_mode *drm_mode_create(struct drm_device *dev);
 extern void drm_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode);
 extern void drm_mode_list_concat(struct list_head *head,
