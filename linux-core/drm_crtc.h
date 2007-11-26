@@ -543,10 +543,10 @@ extern int drm_mode_addmode_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
 extern int drm_mode_rmmode_ioctl(struct drm_device *dev,
 				 void *data, struct drm_file *file_priv);
-extern int drm_mode_attachmode(struct drm_device *dev,
-			       void *data, struct drm_file *file_priv);
-extern int drm_mode_detachmode(struct drm_device *dev,
-			       void *data, struct drm_file *file_priv);
+extern int drm_mode_attachmode_ioctl(struct drm_device *dev,
+				     void *data, struct drm_file *file_priv);
+extern int drm_mode_detachmode_ioctl(struct drm_device *dev,
+				     void *data, struct drm_file *file_priv);
 
 #endif /* __DRM_CRTC_H__ */
 

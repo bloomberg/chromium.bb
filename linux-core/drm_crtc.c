@@ -1816,8 +1816,8 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_attachmode(struct drm_device *dev,
-			void *data, struct drm_file *file_priv)
+int drm_mode_attachmode_ioctl(struct drm_device *dev,
+			      void *data, struct drm_file *file_priv)
 {
 	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
@@ -1867,8 +1867,8 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_detachmode(struct drm_device *dev,
-			void *data, struct drm_file *file_priv)
+int drm_mode_detachmode_ioctl(struct drm_device *dev,
+			      void *data, struct drm_file *file_priv)
 {
 	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
