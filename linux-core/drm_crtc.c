@@ -439,7 +439,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		if (output->crtc != crtc)
 			continue;
 		
-		DRM_INFO("%s: set mode %s\n", output->name, mode->name);
+		DRM_INFO("%s: set mode %s %x\n", output->name, mode->name, mode->mode_id);
 
 		output->funcs->mode_set(output, mode, adjusted_mode);
 	}
@@ -858,7 +858,7 @@ clone:
 			output->crtc->desired_mode = des_mode;
 			output->initial_x = 0;
 			output->initial_y = 0;
-			DRM_DEBUG("Desired mode for CRTC %d is %s\n",c,des_mode->name);
+			DRM_DEBUG("Desired mode for CRTC %d is 0x%x:%s\n",c,des_mode->mode_id, des_mode->name);
 			break;
     		}
 	}
@@ -1694,8 +1694,36 @@ void drm_fb_release(struct file *filp)
 	mutex_unlock(&dev->mode_config.mutex);
 }
 
+/*
+ *
+ */
+void drm_mode_addmode(struct drm_device *dev, struct drm_display_mode *user_mode)
+{
+	user_mode->type |= DRM_MODE_TYPE_USERDEF;
+
+	user_mode->output_count = 0;
+	list_add(&user_mode->head, &dev->mode_config.usermode_list);
+}
+EXPORT_SYMBOL(drm_mode_addmode);
+
+int drm_mode_rmmode(struct drm_device *dev, struct drm_display_mode *mode)
+{
+	struct drm_display_mode *t;
+	int ret = -EINVAL;
+	list_for_each_entry(t, &dev->mode_config.usermode_list, head) {
+		if (t == mode) {
+			list_del(&mode->head);
+			drm_mode_destroy(dev, mode);
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
+}
+EXPORT_SYMBOL(drm_mode_rmmode);
+
 /**
- * drm_fb_newmode - adds a user defined mode
+ * drm_fb_addmode - adds a user defined mode
  * @inode: inode from the ioctl
  * @filp: file * from the ioctl
  * @cmd: cmd from ioctl
@@ -1709,8 +1737,8 @@ void drm_fb_release(struct file *filp)
  * writes new mode id into arg.
  * Zero on success, errno on failure.
  */
-int drm_mode_addmode(struct drm_device *dev,
-		     void *data, struct drm_file *file_priv)
+int drm_mode_addmode_ioctl(struct drm_device *dev,
+			   void *data, struct drm_file *file_priv)
 {
 	struct drm_mode_modeinfo *new_mode = data;
 	struct drm_display_mode *user_mode;
@@ -1724,12 +1752,8 @@ int drm_mode_addmode(struct drm_device *dev,
 	}
 
 	drm_crtc_convert_umode(user_mode, new_mode);
-	user_mode->type |= DRM_MODE_TYPE_USERDEF;
 
-	user_mode->output_count = 0;
-
-	list_add(&user_mode->head, &dev->mode_config.usermode_list);
-
+	drm_mode_addmode(dev, user_mode);
 	new_mode->id = user_mode->mode_id;
 
 out:
@@ -1751,38 +1775,28 @@ out:
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_mode_rmmode(struct drm_device *dev,
-		    void *data, struct drm_file *file_priv)
+int drm_mode_rmmode_ioctl(struct drm_device *dev,
+			  void *data, struct drm_file *file_priv)
 {
 	uint32_t *id = data;
-	struct drm_display_mode *mode, *t;
+	struct drm_display_mode *mode;
 	int ret = -EINVAL;
 
 	mutex_lock(&dev->mode_config.mutex);	
 	mode = idr_find(&dev->mode_config.crtc_idr, *id);
 	if (!mode || (*id != mode->mode_id)) {
-		ret = -EINVAL;
 		goto out;
 	}
 
 	if (!(mode->type & DRM_MODE_TYPE_USERDEF)) {
-		ret = -EINVAL;
 		goto out;
 	}
 
 	if (mode->output_count) {
-		ret = -EINVAL;
 		goto out;
 	}
 
-	list_for_each_entry(t, &dev->mode_config.usermode_list, head) {
-		if (t == mode) {
-			list_del(&mode->head);
-			drm_mode_destroy(dev, mode);
-			ret = 0;
-			break;
-		}
-	}
+	ret = drm_mode_rmmode(dev, mode);
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);

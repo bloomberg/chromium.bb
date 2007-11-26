@@ -494,6 +494,9 @@ extern void drm_mode_set_name(struct drm_display_mode *mode);
 extern bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2);
 extern void drm_disable_unused_functions(struct drm_device *dev);
 
+extern void drm_mode_addmode(struct drm_device *dev, struct drm_display_mode *user_mode);
+extern int drm_mode_rmmode(struct drm_device *dev, struct drm_display_mode *mode);
+
 extern struct drm_display_mode *drm_mode_create(struct drm_device *dev);
 extern void drm_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode);
 extern void drm_mode_list_concat(struct list_head *head,
@@ -536,10 +539,10 @@ extern int drm_mode_rmfb(struct drm_device *dev,
 			 void *data, struct drm_file *file_priv);
 extern int drm_mode_getfb(struct drm_device *dev,
 			  void *data, struct drm_file *file_priv);
-extern int drm_mode_addmode(struct drm_device *dev,
-			    void *data, struct drm_file *file_priv);
-extern int drm_mode_rmmode(struct drm_device *dev,
-			   void *data, struct drm_file *file_priv);
+extern int drm_mode_addmode_ioctl(struct drm_device *dev,
+				  void *data, struct drm_file *file_priv);
+extern int drm_mode_rmmode_ioctl(struct drm_device *dev,
+				 void *data, struct drm_file *file_priv);
 extern int drm_mode_attachmode(struct drm_device *dev,
 			       void *data, struct drm_file *file_priv);
 extern int drm_mode_detachmode(struct drm_device *dev,

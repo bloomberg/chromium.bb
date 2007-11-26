@@ -47,6 +47,7 @@
 struct intelfb_par {
 	struct drm_device *dev;
 	struct drm_crtc *crtc;
+        struct drm_display_mode *fb_mode;
 };
 
 static int
@@ -107,7 +108,6 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
         struct intelfb_par *par = info->par;
         struct drm_device *dev = par->dev;
 	struct drm_framebuffer *fb = par->crtc->fb;
-        struct drm_display_mode *drm_mode;
         struct drm_output *output;
         int depth, found = 0;
 
@@ -275,6 +275,7 @@ static int intelfb_set_par(struct fb_info *info)
 		return -EINVAL;
 	}
 #else
+	
         drm_mode = drm_mode_create(dev);
         drm_mode->hdisplay = var->xres;
         drm_mode->hsync_start = drm_mode->hdisplay + var->right_margin;
@@ -290,17 +291,15 @@ static int intelfb_set_par(struct fb_info *info)
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 #endif
 
+	drm_mode_addmode(dev, drm_mode);
+	if (par->fb_mode)
+		drm_mode_rmmode(dev, par->fb_mode);
+	
+	par->fb_mode = drm_mode;
 	drm_mode_debug_printmodeline(dev, drm_mode);
 
         if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
                 return -EINVAL;
-
-        /* Have to destroy our created mode if we're not searching the mode
-         * list for it.
-         */
-#if 1
-        drm_mode_destroy(dev, drm_mode);
-#endif
 
 	return 0;
 }
