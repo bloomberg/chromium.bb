@@ -141,9 +141,11 @@ static int r300_emit_cliprects(drm_radeon_private_t *dev_priv,
 
 static u8 r300_reg_flags[0x10000 >> 2];
 
-void r300_init_reg_flags(void)
+void r300_init_reg_flags(struct drm_device *dev)
 {
 	int i;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
 	memset(r300_reg_flags, 0, 0x10000 >> 2);
 #define ADD_RANGE_MARK(reg, count,mark) \
 		for(i=((reg)>>2);i<((reg)>>2)+(count);i++)\
@@ -238,6 +240,9 @@ void r300_init_reg_flags(void)
 	ADD_RANGE(R300_VAP_INPUT_ROUTE_0_0, 8);
 	ADD_RANGE(R300_VAP_INPUT_ROUTE_1_0, 8);
 
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515) {
+		ADD_RANGE(0x4074, 16);
+	}
 }
 
 static __inline__ int r300_check_range(unsigned reg, int count)

@@ -126,6 +126,8 @@ enum radeon_family {
 	CHIP_RS400,
 	CHIP_RV515,
 	CHIP_R520,
+	CHIP_RV530,
+	CHIP_RV560,
 	CHIP_RV570,
 	CHIP_R580,
 	CHIP_LAST,
@@ -395,7 +397,7 @@ extern long radeon_compat_ioctl(struct file *filp, unsigned int cmd,
 					 unsigned long arg);
 
 /* r300_cmdbuf.c */
-extern void r300_init_reg_flags(void);
+extern void r300_init_reg_flags(struct drm_device *dev);
 
 extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 			     struct drm_file *file_priv,

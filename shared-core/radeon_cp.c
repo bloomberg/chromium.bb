@@ -1114,7 +1114,7 @@ static int radeon_do_engine_reset(struct drm_device * dev)
 
 	radeon_do_pixcache_flush(dev_priv);
 
-	if (dev_priv->flags & RADEON_FAMILY_MASK < CHIP_RV515) {
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) < CHIP_RV515) {
 		clock_cntl_index = RADEON_READ(RADEON_CLOCK_CNTL_INDEX);
 		mclk_cntl = RADEON_READ_PLL(dev, RADEON_MCLK_CNTL);
 		
@@ -1152,7 +1152,6 @@ static int radeon_do_engine_reset(struct drm_device * dev)
 		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
 	}
 
-reset_cp:
 	/* Reset the CP ring */
 	radeon_do_cp_reset(dev_priv);
 
@@ -1887,7 +1886,7 @@ int radeon_cp_init(struct drm_device *dev, void *data, struct drm_file *file_pri
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (init->func == RADEON_INIT_R300_CP)
-		r300_init_reg_flags();
+		r300_init_reg_flags(dev);
 
 	switch (init->func) {
 	case RADEON_INIT_CP:
