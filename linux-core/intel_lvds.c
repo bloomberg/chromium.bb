@@ -255,8 +255,13 @@ static void intel_lvds_mode_set(struct drm_output *output,
 	 * screen.  Should be enabled before the pipe is enabled, according to
 	 * register description and PRM.
 	 */
-	pfit_control = (PFIT_ENABLE | VERT_AUTO_SCALE | HORIZ_AUTO_SCALE |
-			VERT_INTERP_BILINEAR | HORIZ_INTERP_BILINEAR);
+	if (mode->hdisplay != adjusted_mode->hdisplay ||
+	    mode->vdisplay != adjusted_mode->vdisplay)
+		pfit_control = (PFIT_ENABLE | VERT_AUTO_SCALE |
+				HORIZ_AUTO_SCALE | VERT_INTERP_BILINEAR |
+				HORIZ_INTERP_BILINEAR);
+	else
+		pfit_control = 0;
 
 	if (!IS_I965G(dev)) {
 		if (dev_priv->panel_wants_dither)
