@@ -316,7 +316,7 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 {
 	struct drm_mode_get_output out;
-	drmModeOutputPtr r = 0;
+	drmModeOutputPtr r = NULL;
 
 	out.output = output_id;
 	out.count_crtcs  = 0;
@@ -325,9 +325,17 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	out.clones       = 0;
 	out.count_modes  = 0;
 	out.modes        = 0;
+	out.count_props  = 0;
+	out.props = NULL;
+	out.prop_values = NULL;
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETOUTPUT, &out))
 		return 0;
+
+	if (out.count_props) {
+		out.props = drmMalloc(out.count_props*sizeof(uint32_t));
+		out.prop_values = drmMalloc(out.count_props*sizeof(uint32_t));
+	}
 
 	if (out.count_modes)
 		out.modes = drmMalloc(out.count_modes*sizeof(uint32_t));
@@ -335,8 +343,9 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	if (ioctl(fd, DRM_IOCTL_MODE_GETOUTPUT, &out))
 		goto err_allocs;
 
-	if(!(r = drmMalloc(sizeof(*r))))
-		return 0;
+	if(!(r = drmMalloc(sizeof(*r)))) {
+		goto err_allocs;
+	}
 
 	r->output_id = out.output;
 	r->crtc = out.crtc;
@@ -350,15 +359,19 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	/* TODO we should test if these alloc & cpy fails. */
 	r->crtcs        = out.crtcs;
 	r->clones       = out.clones;
+	r->count_props  = out.count_props;
+	r->props        = drmAllocCpy(out.props, out.count_props, sizeof(uint32_t));
+	r->prop_values  = drmAllocCpy(out.prop_values, out.count_props, sizeof(uint32_t));
 	r->modes        = drmAllocCpy(out.modes, out.count_modes, sizeof(uint32_t));
 	strncpy(r->name, out.name, DRM_OUTPUT_NAME_LEN);
 	r->name[DRM_OUTPUT_NAME_LEN-1] = 0;
-	return r;
 
 err_allocs:
+	drmFree(out.prop_values);
+	drmFree(out.props);
 	drmFree(out.modes);
 
-	return 0;
+	return r;
 }
 
 uint32_t drmModeAddMode(int fd, struct drm_mode_modeinfo *mode_info)
@@ -396,3 +409,57 @@ int drmModeDetachMode(int fd, uint32_t output_id, uint32_t mode_id)
 }
 
 
+drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
+{
+	struct drm_mode_get_property prop;
+	drmModePropertyPtr r;
+
+	prop.prop_id = property_id;
+	prop.count_enums = 0;
+	prop.count_values = 0;
+	prop.flags = 0;
+	prop.enums = NULL;
+	prop.values = NULL;
+
+	if (ioctl(fd, DRM_IOCTL_MODE_GETPROPERTY, &prop))
+		return 0;
+
+	if (prop.count_values)
+		prop.values = drmMalloc(prop.count_values * sizeof(uint32_t));
+
+	if (prop.count_enums)
+		prop.enums = drmMalloc(prop.count_enums * sizeof(struct drm_mode_property_enum));
+
+	if (ioctl(fd, DRM_IOCTL_MODE_GETPROPERTY, &prop)) {
+		r = NULL;
+		goto err_allocs;
+	}
+
+	if (!(r = drmMalloc(sizeof(*r))))
+		return NULL;
+	
+	r->prop_id = prop.prop_id;
+	r->count_values = prop.count_values;
+	r->count_enums = prop.count_enums;
+
+	r->values = drmAllocCpy(prop.values, prop.count_values, sizeof(uint32_t));
+	r->enums = drmAllocCpy(prop.enums, prop.count_enums, sizeof(struct drm_mode_property_enum));
+	strncpy(r->name, prop.name, DRM_PROP_NAME_LEN);
+	r->name[DRM_PROP_NAME_LEN-1] = 0;
+
+err_allocs:
+	drmFree(prop.values);
+	drmFree(prop.enums);
+
+	return r;
+}
+
+void drmModeFreeProperty(drmModePropertyPtr ptr)
+{
+	if (!ptr)
+		return;
+
+	drmFree(ptr->values);
+	drmFree(ptr->enums);
+	drmFree(ptr);
+}

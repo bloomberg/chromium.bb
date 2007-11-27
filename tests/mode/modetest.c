@@ -57,8 +57,10 @@ int printMode(struct drm_mode_modeinfo *mode)
 
 int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 {
-	int i = 0;
+	int i = 0, j;
 	struct drm_mode_modeinfo *mode = NULL;
+	drmModePropertyPtr props;
+	unsigned char *name = NULL;
 
 	printf("Output: %s\n", output->name);
 	printf("\tid           : %i\n", id);
@@ -70,6 +72,36 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 	printf("\tcount_clones : %i\n", output->count_clones);
 	printf("\tclones       : %i\n", output->clones);
 	printf("\tcount_modes  : %i\n", output->count_modes);
+	printf("\tcount_props  : %i\n", output->count_props);
+
+	for (i = 0; i < output->count_props; i++) {
+		props = drmModeGetProperty(fd, output->props[i]);
+		name = NULL;
+		if (props) {
+			printf("Property: %s\n", props->name);
+			printf("\tid:        %i\n", props->prop_id);
+			printf("\tflags:     %i\n", props->flags);
+			printf("\tvalues %d: ", props->count_values);
+			for (j = 0; j < props->count_values; j++)
+				printf("%d ", props->values[j]);
+
+			printf("\n\tenums %d: \n", props->count_enums);
+
+			for (j = 0; j < props->count_enums; j++) {
+				if (output->prop_values[i] == props->enums[j].value)
+					name = props->enums[j].name;
+				printf("\t\t%d = %s\n", props->enums[j].value, props->enums[j].name);
+			}
+
+			if (props->count_enums && name) {
+				printf("\toutput property name %s %s\n", props->name, name);
+			} else {
+				printf("\toutput property id %s %i\n", props->name, output->prop_values[i]);
+			}
+
+			drmModeFreeProperty(props);
+		}
+	}
 
 	for (i = 0; i < output->count_modes; i++) {
 		mode = findMode(res, output->modes[i]);

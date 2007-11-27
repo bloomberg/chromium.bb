@@ -70,6 +70,17 @@ typedef struct _drmModeRes {
 
 typedef struct drm_mode_fb_cmd drmModeFB, *drmModeFBPtr;
 
+typedef struct _drmModeProperty {
+	unsigned int prop_id;
+	unsigned int flags;
+	unsigned char name[DRM_PROP_NAME_LEN];
+	int count_values;
+	uint32_t *values;
+	int count_enums;
+	struct drm_mode_property_enum *enums;
+
+} drmModePropertyRes, *drmModePropertyPtr;
+
 typedef struct _drmModeCrtc {
 	unsigned int crtc_id;
 	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect*/
@@ -120,6 +131,10 @@ typedef struct _drmModeOutput {
 
 	int count_modes;
 	uint32_t *modes; /**< List of modes ids */
+
+	int count_props;
+	uint32_t *props; /**< List of property ids */
+	uint32_t *prop_values; /**< List of property values */
 
 } drmModeOutput, *drmModeOutputPtr;
 
@@ -207,3 +222,5 @@ extern int drmModeAttachMode(int fd, uint32_t outputId, uint32_t modeId);
  */
 extern int drmModeDetachMode(int fd, uint32_t outputId, uint32_t modeId);
 
+extern drmModePropertyPtr drmModeGetProperty(int fd, uint32_t propertyId);
+extern void drmModeFreeProperty(drmModePropertyPtr ptr);
