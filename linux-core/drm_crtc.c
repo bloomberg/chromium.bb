@@ -280,73 +280,79 @@ static struct drm_display_mode std_mode[] = {
  *
  * FIXME: take into account monitor limits
  */
-void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
+void drm_crtc_probe_single_output_modes(struct drm_output *output, int maxX, int maxY)
 {
-	struct drm_output *output;
+	struct drm_device *dev = output->dev;
 	struct drm_display_mode *mode, *t;
 	int ret;
 	//if (maxX == 0 || maxY == 0) 
 	// TODO
 
+	/* set all modes to the unverified state */
+	list_for_each_entry_safe(mode, t, &output->modes, head)
+		mode->status = MODE_UNVERIFIED;
+		
+	output->status = (*output->funcs->detect)(output);
+	
+	if (output->status == output_status_disconnected) {
+		DRM_DEBUG("%s is disconnected\n", output->name);
+		/* TODO set EDID to NULL */
+		return;
+	}
+	
+	ret = (*output->funcs->get_modes)(output);
+	
+	if (ret) {
+		drm_mode_output_list_update(output);
+	}
+	
+	if (maxX && maxY)
+		drm_mode_validate_size(dev, &output->modes, maxX,
+				       maxY, 0);
+	list_for_each_entry_safe(mode, t, &output->modes, head) {
+		if (mode->status == MODE_OK)
+			mode->status = (*output->funcs->mode_valid)(output,mode);
+	}
+	
+	
+	drm_mode_prune_invalid(dev, &output->modes, TRUE);
+	
+	if (list_empty(&output->modes)) {
+		struct drm_display_mode *stdmode;
+		
+		DRM_DEBUG("No valid modes on %s\n", output->name);
+		
+		/* Should we do this here ???
+		 * When no valid EDID modes are available we end up
+		 * here and bailed in the past, now we add a standard
+		 * 640x480@60Hz mode and carry on.
+		 */
+		stdmode = drm_mode_duplicate(dev, &std_mode[0]);
+		drm_mode_probed_add(output, stdmode);
+		drm_mode_list_concat(&output->probed_modes,
+				     &output->modes);
+		
+		DRM_DEBUG("Adding standard 640x480 @ 60Hz to %s\n",
+			  output->name);
+	}
+	
+	drm_mode_sort(&output->modes);
+	
+	DRM_DEBUG("Probed modes for %s\n", output->name);
+	list_for_each_entry_safe(mode, t, &output->modes, head) {
+		mode->vrefresh = drm_mode_vrefresh(mode);
+		
+		drm_mode_set_crtcinfo(mode, CRTC_INTERLACE_HALVE_V);
+		drm_mode_debug_printmodeline(dev, mode);
+	}
+}
+
+void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY)
+{
+	struct drm_output *output;
+
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-
-		/* set all modes to the unverified state */
-		list_for_each_entry_safe(mode, t, &output->modes, head)
-			mode->status = MODE_UNVERIFIED;
-		
-		output->status = (*output->funcs->detect)(output);
-
-		if (output->status == output_status_disconnected) {
-			DRM_DEBUG("%s is disconnected\n", output->name);
-			/* TODO set EDID to NULL */
-			continue;
-		}
-
-		ret = (*output->funcs->get_modes)(output);
-
-		if (ret) {
-			drm_mode_output_list_update(output);
-		}
-
-		if (maxX && maxY)
-			drm_mode_validate_size(dev, &output->modes, maxX,
-					       maxY, 0);
-		list_for_each_entry_safe(mode, t, &output->modes, head) {
-			if (mode->status == MODE_OK)
-				mode->status = (*output->funcs->mode_valid)(output,mode);
-		}
-		
-
-		drm_mode_prune_invalid(dev, &output->modes, TRUE);
-
-		if (list_empty(&output->modes)) {
-			struct drm_display_mode *stdmode;
-
-			DRM_DEBUG("No valid modes on %s\n", output->name);
-
-			/* Should we do this here ???
-			 * When no valid EDID modes are available we end up
-			 * here and bailed in the past, now we add a standard
-			 * 640x480@60Hz mode and carry on.
-			 */
-			stdmode = drm_mode_duplicate(dev, &std_mode[0]);
-			drm_mode_probed_add(output, stdmode);
-			drm_mode_list_concat(&output->probed_modes,
-					     &output->modes);
-
-			DRM_DEBUG("Adding standard 640x480 @ 60Hz to %s\n",
-								output->name);
-		}
-
-		drm_mode_sort(&output->modes);
-
-		DRM_DEBUG("Probed modes for %s\n", output->name);
-		list_for_each_entry_safe(mode, t, &output->modes, head) {
-			mode->vrefresh = drm_mode_vrefresh(mode);
-
-			drm_mode_set_crtcinfo(mode, CRTC_INTERLACE_HALVE_V);
-			drm_mode_debug_printmodeline(dev, mode);
-		}
+		drm_crtc_probe_single_output_modes(output, maxX, maxY);
 	}
 }
 
@@ -1068,8 +1074,6 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
  */
 void drm_crtc_convert_to_umode(struct drm_mode_modeinfo *out, struct drm_display_mode *in)
 {
-
-	out->id = in->mode_id;
 	out->clock = in->clock;
 	out->hdisplay = in->hdisplay;
 	out->hsync_start = in->hsync_start;
@@ -1145,16 +1149,11 @@ int drm_mode_getresources(struct drm_device *dev,
 	struct drm_framebuffer *fb;
 	struct drm_output *output;
 	struct drm_crtc *crtc;
-	struct drm_mode_modeinfo u_mode;
-	struct drm_display_mode *mode;
 	int ret = 0;
-	int mode_count= 0;
 	int output_count = 0;
 	int crtc_count = 0;
 	int fb_count = 0;
 	int copied = 0;
-
-	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
 	mutex_lock(&dev->mode_config.mutex);
 
@@ -1164,34 +1163,18 @@ int drm_mode_getresources(struct drm_device *dev,
 	list_for_each(lh, &dev->mode_config.crtc_list)
 		crtc_count++;
 
-	list_for_each_entry(output, &dev->mode_config.output_list,
-			    head) {
+	list_for_each(lh, &dev->mode_config.output_list)
 		output_count++;
-		list_for_each(lh, &output->modes)
-			mode_count++;
-	}
-	list_for_each(lh, &dev->mode_config.usermode_list)
-		mode_count++;
-
-	if (card_res->count_modes == 0) {
-		DRM_DEBUG("probing modes %dx%d\n", dev->mode_config.max_width, dev->mode_config.max_height);
-		drm_crtc_probe_output_modes(dev, dev->mode_config.max_width, dev->mode_config.max_height);
-		mode_count = 0;
-		list_for_each_entry(output, &dev->mode_config.output_list, head) {
-			list_for_each(lh, &output->modes)
-				mode_count++;
-		}
-		list_for_each(lh, &dev->mode_config.usermode_list)
-			mode_count++;
-	}
 
 	/* handle this in 4 parts */
 	/* FBs */
 	if (card_res->count_fbs >= fb_count) {
 		copied = 0;
 		list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
-			if (put_user(fb->id, card_res->fb_id + copied))
-				return -EFAULT;
+			if (put_user(fb->id, card_res->fb_id + copied)) {
+				ret = -EFAULT;
+				goto out;
+			}
 			copied++;
 		}
 	}
@@ -1202,8 +1185,10 @@ int drm_mode_getresources(struct drm_device *dev,
 		copied = 0;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head){
 			DRM_DEBUG("CRTC ID is %d\n", crtc->id);
-			if (put_user(crtc->id, card_res->crtc_id + copied))
-				return -EFAULT;
+			if (put_user(crtc->id, card_res->crtc_id + copied)) {
+				ret = -EFAULT;
+				goto out;
+			}
 			copied++;
 		}
 	}
@@ -1216,41 +1201,20 @@ int drm_mode_getresources(struct drm_device *dev,
 		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
  			DRM_DEBUG("OUTPUT ID is %d\n", output->id);
-			if (put_user(output->id, card_res->output_id + copied))
-				return -EFAULT;
+			if (put_user(output->id, card_res->output_id + copied)) {
+				ret = -EFAULT;
+				goto out;
+			}
 			copied++;
 		}
 	}
 	card_res->count_outputs = output_count;
 	
-	/* Modes */
-	if (card_res->count_modes >= mode_count) {
-		copied = 0;
-		list_for_each_entry(output, &dev->mode_config.output_list,
-				    head) {
-			list_for_each_entry(mode, &output->modes, head) {
-				drm_crtc_convert_to_umode(&u_mode, mode);
-				if (copy_to_user(card_res->modes + copied,
-						 &u_mode, sizeof(u_mode)))
-					return -EFAULT;
-				copied++;
-			}
-		}
-		/* add in user modes */
-		list_for_each_entry(mode, &dev->mode_config.usermode_list, head) {
-			drm_crtc_convert_to_umode(&u_mode, mode);
-			if (copy_to_user(card_res->modes + copied, &u_mode,
-					 sizeof(u_mode)))
-				return -EFAULT;
-			copied++;
-		}
-	}
-	card_res->count_modes = mode_count;
+	DRM_DEBUG("Counted %d %d\n", card_res->count_crtcs,
+		  card_res->count_outputs);
 
-	DRM_DEBUG("Counted %d %d %d\n", card_res->count_crtcs,
-		  card_res->count_outputs,
-		  card_res->count_modes);
-	
+
+out:	
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
 }
@@ -1299,14 +1263,16 @@ int drm_mode_getcrtc(struct drm_device *dev,
 	crtc_resp->outputs = 0;
 	if (crtc->enabled) {
 
-		crtc_resp->mode = crtc->mode.mode_id;
+		drm_crtc_convert_to_umode(&crtc_resp->mode, &crtc->mode);
+		crtc_resp->mode_valid = 1;
 		ocount = 0;
 		list_for_each_entry(output, &dev->mode_config.output_list, head) {
 			if (output->crtc == crtc)
 				crtc_resp->outputs |= 1 << (ocount++);
 		}
+		
 	} else {
-		crtc_resp->mode = 0;
+		crtc_resp->mode_valid = 0;
 	}
 
 out:
@@ -1342,6 +1308,9 @@ int drm_mode_getoutput(struct drm_device *dev,
 	int ret = 0;
 	int copied = 0;
 	int i;
+	struct drm_mode_modeinfo u_mode;
+
+	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
 	DRM_DEBUG("output id %d:\n", out_resp->output);
 
@@ -1365,6 +1334,10 @@ int drm_mode_getoutput(struct drm_device *dev,
 		}
 	}
 
+	if (out_resp->count_modes == 0) {
+		drm_crtc_probe_single_output_modes(output, dev->mode_config.max_width, dev->mode_config.max_height);
+	}
+
 	strncpy(out_resp->name, output->name, DRM_OUTPUT_NAME_LEN);
 	out_resp->name[DRM_OUTPUT_NAME_LEN-1] = 0;
 
@@ -1383,12 +1356,26 @@ int drm_mode_getoutput(struct drm_device *dev,
 	if ((out_resp->count_modes >= mode_count) && mode_count) {
 		copied = 0;
 		list_for_each_entry(mode, &output->modes, head) {
-			out_resp->modes[copied++] = mode->mode_id;
+			drm_crtc_convert_to_umode(&u_mode, mode);
+			if (copy_to_user(out_resp->modes + copied,
+					 &u_mode, sizeof(u_mode))) {
+				ret = -EFAULT;
+				goto out;
+			}
+			copied++;
+			
 		}
 		for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
-			if (output->user_mode_ids[i] != 0) {
-				if (put_user(output->user_mode_ids[i], out_resp->modes + copied))
-					return -EFAULT;
+			if (!output->user_mode_ids[i])
+				continue;
+			mode = idr_find(&dev->mode_config.crtc_idr, output->user_mode_ids[i]);
+			if (mode && (mode->mode_id == output->user_mode_ids[i])) {
+				drm_crtc_convert_to_umode(&u_mode, mode);
+				if (copy_to_user(out_resp->modes + copied,
+						 &u_mode, sizeof(u_mode))) {
+					ret = -EFAULT;
+					goto out;
+				}
 				copied++;
 			}
 		}
@@ -1442,8 +1429,9 @@ int drm_mode_setcrtc(struct drm_device *dev,
 	struct drm_mode_crtc *crtc_req = data;
 	struct drm_crtc *crtc;
 	struct drm_output **output_set = NULL, *output;
-	struct drm_display_mode *mode;
 	struct drm_framebuffer *fb = NULL;
+	struct drm_display_mode mode;
+	int mode_valid = 0;
 	int ret = 0;
 	int i;
 
@@ -1455,7 +1443,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		goto out;
 	}
 
-	if (crtc_req->mode) {
+	if (crtc_req->mode_valid) {
 		/* if we have a mode we need a framebuffer */
 		if (crtc_req->fb_id) {
 			fb = idr_find(&dev->mode_config.crtc_idr, crtc_req->fb_id);
@@ -1465,34 +1453,19 @@ int drm_mode_setcrtc(struct drm_device *dev,
 				goto out;
 			}
 		}
-		mode = idr_find(&dev->mode_config.crtc_idr, crtc_req->mode);
-		if (!mode || (mode->mode_id != crtc_req->mode)) {
-			struct drm_output *output;
-			
-			list_for_each_entry(output, 
-					    &dev->mode_config.output_list,
-					    head) {
-				list_for_each_entry(mode, &output->modes,
-						    head) {
-					drm_mode_debug_printmodeline(dev, 
-								     mode);
-				}
-			}
 
-			DRM_DEBUG("Unknown mode id %d, %p\n", crtc_req->mode, mode);
-			ret = -EINVAL;
-			goto out;
-		}
+		mode_valid = 1;
+		drm_crtc_convert_umode(&mode, &crtc_req->mode);
 	} else
-		mode = NULL;
+		mode_valid = 0;
 
-	if (crtc_req->count_outputs == 0 && mode) {
+	if (crtc_req->count_outputs == 0 && mode_valid) {
 		DRM_DEBUG("Count outputs is 0 but mode set\n");
 		ret = -EINVAL;
 		goto out;
 	}
 
-	if (crtc_req->count_outputs > 0 && !mode && !fb) {
+	if (crtc_req->count_outputs > 0 && !mode_valid && !fb) {
 		DRM_DEBUG("Count outputs is %d but no mode or fb set\n", crtc_req->count_outputs);
 		ret = -EINVAL;
 		goto out;
@@ -1523,8 +1496,12 @@ int drm_mode_setcrtc(struct drm_device *dev,
 			output_set[i] = output;
 		}
 	}
-		
-	ret = drm_crtc_set_config(crtc, crtc_req, mode, output_set, fb);
+
+	if (mode_valid) {
+		ret = drm_crtc_set_config(crtc, crtc_req, &mode, output_set, fb);
+	} else {
+		ret = drm_crtc_set_config(crtc, crtc_req, NULL, output_set, fb);
+	}
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1855,7 +1832,6 @@ int drm_mode_addmode_ioctl(struct drm_device *dev,
 	drm_crtc_convert_umode(user_mode, new_mode);
 
 	drm_mode_addmode(dev, user_mode);
-	new_mode->id = user_mode->mode_id;
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);

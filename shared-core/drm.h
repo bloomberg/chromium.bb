@@ -908,9 +908,6 @@ struct drm_mm_init_arg {
 #define DRM_MODE_TYPE_DRIVER	(1<<6)
 
 struct drm_mode_modeinfo {
-
-	unsigned int id;
-
 	unsigned int clock;
 	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;
 	unsigned short vdisplay, vsync_start, vsync_end, vtotal, vscan;
@@ -932,10 +929,6 @@ struct drm_mode_card_res {
 
 	int count_outputs;
 	unsigned int __user *output_id;
-
-	int count_modes;
-        struct drm_mode_modeinfo __user *modes;
-
 };
 
 struct drm_mode_crtc {
@@ -943,8 +936,6 @@ struct drm_mode_crtc {
 	unsigned int fb_id; /**< Id of framebuffer */
 
 	int x, y; /**< Position on the frameuffer */
-
-	unsigned int mode; /**< Current mode used */
 
 	int count_outputs;
 	unsigned int outputs; /**< Outputs that are connected */
@@ -955,7 +946,8 @@ struct drm_mode_crtc {
 	unsigned int __user *set_outputs; /**< Outputs to be connected */
 
 	int gamma_size;
-
+	int mode_valid;
+	struct drm_mode_modeinfo mode;
 };
 
 struct drm_mode_get_output {
@@ -975,7 +967,7 @@ struct drm_mode_get_output {
 	unsigned int clones; /**< list of clones */
 
 	int count_modes;
-	unsigned int __user *modes; /**< list of modes it supports */
+	struct drm_mode_modeinfo *modes;
 
 	int count_props;
 	unsigned int __user *props;

@@ -20,20 +20,9 @@ const char* getConnectionText(drmModeConnection conn)
 
 }
 
-struct drm_mode_modeinfo* findMode(drmModeResPtr res, uint32_t id)
-{
-	int i;
-	for (i = 0; i < res->count_modes; i++) {
-		if (res->modes[i].id == id)
-			return &res->modes[i];
-	}
-
-	return 0;
-}
-
 int printMode(struct drm_mode_modeinfo *mode)
 {
-#if 0
+#if 1
 	printf("Mode: %s\n", mode->name);
 	printf("\tclock       : %i\n", mode->clock);
 	printf("\thdisplay    : %i\n", mode->hdisplay);
@@ -49,7 +38,7 @@ int printMode(struct drm_mode_modeinfo *mode)
 	printf("\tvrefresh    : %i\n", mode->vrefresh);
 	printf("\tflags       : %i\n", mode->flags);
 #else
-	printf("Mode: %i \"%s\" %ix%i %.0f\n", mode->id, mode->name,
+	printf("Mode: \"%s\" %ix%i %.0f\n", mode->name,
 		mode->hdisplay, mode->vdisplay, mode->vrefresh / 1000.0);
 #endif
 	return 0;
@@ -104,11 +93,9 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 	}
 
 	for (i = 0; i < output->count_modes; i++) {
-		mode = findMode(res, output->modes[i]);
-
+		mode = &output->modes[i];
 		if (mode)
-			printf("\t\tmode: %i \"%s\" %ix%i %.0f\n", mode->id, mode->name,
-				mode->hdisplay, mode->vdisplay, mode->vrefresh / 1000.0);
+			printMode(mode);
 		else
 			printf("\t\tmode: Invalid mode %i\n", output->modes[i]);
 	}
@@ -153,10 +140,6 @@ int printRes(int fd, drmModeResPtr res)
 	drmModeOutputPtr output;
 	drmModeCrtcPtr crtc;
 	drmModeFBPtr fb;
-
-	for (i = 0; i < res->count_modes; i++) {
-		printMode(&res->modes[i]);
-	}
 
 	for (i = 0; i < res->count_outputs; i++) {
 		output = drmModeGetOutput(fd, res->outputs[i]);
@@ -218,6 +201,7 @@ int testMode(int fd, drmModeResPtr res)
 	int ret = 0;
 	int error = 0;
 
+#if 0
 	printf("Test: adding mode to output %i\n", output);
 
 	/* printMode(&mode); */
@@ -255,7 +239,7 @@ err:
 
 	if (error)
 		printf("\tFailed to delete mode %i\n", newMode);
-
+#endif
 	return 1;
 }
 
