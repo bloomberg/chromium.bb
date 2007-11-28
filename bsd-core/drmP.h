@@ -614,14 +614,14 @@ typedef struct drm_vbl_sig {
 #define DRM_ATI_GART_PCIE 2
 #define DRM_ATI_GART_IGP  3
 
-typedef struct ati_pcigart_info {
+struct drm_ati_pcigart_info {
 	int gart_table_location;
 	int gart_reg_if;
 	void *addr;
 	dma_addr_t bus_addr;
 	drm_local_map_t mapping;
 	int table_size;
-} drm_ati_pcigart_info;
+};
 
 struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
@@ -925,9 +925,9 @@ extern int		drm_sysctl_cleanup(drm_device_t *dev);
 
 /* ATI PCIGART support (ati_pcigart.c) */
 int	drm_ati_pcigart_init(drm_device_t *dev,
-			     drm_ati_pcigart_info *gart_info);
+				struct drm_ati_pcigart_info *gart_info);
 int	drm_ati_pcigart_cleanup(drm_device_t *dev,
-				drm_ati_pcigart_info *gart_info);
+				struct drm_ati_pcigart_info *gart_info);
 
 /* Locking IOCTL support (drm_drv.c) */
 int	drm_lock(drm_device_t *dev, void *data, struct drm_file *file_priv);
