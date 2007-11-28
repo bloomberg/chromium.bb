@@ -522,7 +522,7 @@ static int drm_agp_populate(struct drm_ttm_backend *backend,
 	mem = drm_agp_allocate_memory(agp_be->bridge, num_pages, AGP_USER_MEMORY);
 #endif
 	if (!mem) {
-		drm_free_memctl(num_pages * sizeof(void *));
+		drm_free_memctl(num_pages *sizeof(void *));
 		return -1;
 	}
 
@@ -652,7 +652,7 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 EXPORT_SYMBOL(drm_agp_init_ttm);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
-void drm_agp_flush_chipset(struct drm_device *dev)
+void drm_agp_chipset_flush(struct drm_device *dev)
 {
 	agp_flush_chipset(dev->agp->bridge);
 }

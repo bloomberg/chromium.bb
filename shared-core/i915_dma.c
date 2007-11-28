@@ -165,9 +165,8 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 	 * private backbuffer/depthbuffer usage.
 	 */
 	dev_priv->use_mi_batchbuffer_start = 0;
-	if (IS_I965G(dev))
+	if (IS_I965G(dev)) /* 965 doesn't support older method */
 		dev_priv->use_mi_batchbuffer_start = 1;
-		
 
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
@@ -339,7 +338,7 @@ static int validate_cmd(int cmd)
 	return ret;
 }
 
-static int i915_emit_cmds(struct drm_device * dev, int __user * buffer,
+static int i915_emit_cmds(struct drm_device *dev, int __user *buffer,
 			  int dwords)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -495,7 +494,7 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 			return ret;
 	}
 
-	i915_emit_breadcrumb( dev );
+	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
 	drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
@@ -549,7 +548,7 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 		}
 	}
 
-	i915_emit_breadcrumb( dev );
+	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
 	drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
@@ -630,7 +629,7 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 #endif
 }
 
-static int i915_quiescent(struct drm_device * dev)
+static int i915_quiescent(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 
@@ -1035,10 +1034,10 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	buffers = drm_calloc(num_buffers, sizeof(struct drm_buffer_object *), DRM_MEM_DRIVER);
 	if (!buffers) {
-	        drm_bo_read_unlock(&dev->bm.bm_lock);
+		drm_bo_read_unlock(&dev->bm.bm_lock);
 		mutex_unlock(&dev_priv->cmdbuf_mutex);
 		return -ENOMEM;
-        }
+	}
 
 	/* validate buffer list + fixup relocations */
 	ret = i915_validate_buffer_list(file_priv, 0, exec_buf->ops_list,
@@ -1247,9 +1246,9 @@ static int i915_mmio(struct drm_device *dev, void *data,
 	case I915_MMIO_WRITE:
 		if (!(e->flag & I915_MMIO_MAY_WRITE))
 			return -EINVAL;
-		if(DRM_COPY_FROM_USER(buf, mmio->data, e->size)) {
+		if (DRM_COPY_FROM_USER(buf, mmio->data, e->size)) {
 			DRM_ERROR("DRM_COPY_TO_USER failed\n");
-				return -EFAULT;
+			return -EFAULT;
 		}
 		for (i = 0; i < e->size / 4; i++)
 			I915_WRITE(e->offset + i * 4, buf[i]);

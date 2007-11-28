@@ -277,7 +277,7 @@ void i915_flush_ttm(struct drm_ttm *ttm)
 		return;
 
 	DRM_MEMORYBARRIER();
-	for (i = ttm->num_pages-1; i >= 0; i--)
+	for (i = ttm->num_pages - 1; i >= 0; i--)
 		drm_cache_flush_page(drm_ttm_get_page(ttm, i));
 	DRM_MEMORYBARRIER();
 }

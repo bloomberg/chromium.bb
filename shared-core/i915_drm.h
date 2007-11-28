@@ -178,6 +178,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_SET_VBLANK_PIPE	DRM_IOW( DRM_COMMAND_BASE + DRM_I915_SET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_GET_VBLANK_PIPE	DRM_IOR( DRM_COMMAND_BASE + DRM_I915_GET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
+#define DRM_IOCTL_I915_MMIO             DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_MMIO, drm_i915_mmio)
 #define DRM_IOCTL_I915_EXECBUFFER	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_EXECBUFFER, struct drm_i915_execbuffer)
 
 /* Asynchronous page flipping:
@@ -274,7 +275,7 @@ typedef struct drm_i915_mem_init_heap {
  * rotate):
  */
 typedef struct drm_i915_mem_destroy_heap {
-	        int region;
+	int region;
 } drm_i915_mem_destroy_heap_t;
 
 /* Allow X server to configure which pipes to monitor for vblank signals
