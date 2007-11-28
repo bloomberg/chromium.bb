@@ -165,6 +165,9 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 	 * private backbuffer/depthbuffer usage.
 	 */
 	dev_priv->use_mi_batchbuffer_start = 0;
+	if (IS_I965G(dev))
+		dev_priv->use_mi_batchbuffer_start = 1;
+		
 
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
