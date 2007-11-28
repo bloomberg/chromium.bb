@@ -522,7 +522,7 @@ static int drm_agp_populate(struct drm_ttm_backend *backend,
 	mem = drm_agp_allocate_memory(agp_be->bridge, num_pages, AGP_USER_MEMORY);
 #endif
 	if (!mem) {
-		drm_free_memctl(num_pages *sizeof(void *));
+		drm_free_memctl(num_pages * sizeof(void *));
 		return -1;
 	}
 
