@@ -918,7 +918,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 
 		buffers[buf_count] = NULL;
 
-		if (copy_from_user(&arg, (void __user *)(unsigned)data, sizeof(arg))) {
+		if (copy_from_user(&arg, (void __user *)(unsigned long)data, sizeof(arg))) {
 			ret = -EFAULT;
 			goto out_err;
 		}
@@ -969,7 +969,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		arg.handled = 1;
 		arg.d.rep = rep;
 
-		if (copy_to_user((void __user *)(unsigned)data, &arg, sizeof(arg)))
+		if (copy_to_user((void __user *)(unsigned long)data, &arg, sizeof(arg)))
 			return -EFAULT;
 
 		data = next;
