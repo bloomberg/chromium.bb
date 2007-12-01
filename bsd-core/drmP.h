@@ -650,6 +650,7 @@ struct drm_driver_info {
 	void	(*irq_uninstall)(drm_device_t *dev);
 	void	(*irq_handler)(DRM_IRQ_ARGS);
 	int	(*vblank_wait)(drm_device_t *dev, unsigned int *sequence);
+	int	(*vblank_wait2)(drm_device_t *dev, unsigned int *sequence);
 
 	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
 

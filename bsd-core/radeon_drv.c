@@ -53,6 +53,7 @@ static void radeon_configure(drm_device_t *dev)
 	dev->driver.postclose		= radeon_driver_postclose;
 	dev->driver.lastclose		= radeon_driver_lastclose;
 	dev->driver.vblank_wait		= radeon_driver_vblank_wait;
+	dev->driver.vblank_wait2	= radeon_driver_vblank_wait2;
 	dev->driver.irq_preinstall	= radeon_driver_irq_preinstall;
 	dev->driver.irq_postinstall	= radeon_driver_irq_postinstall;
 	dev->driver.irq_uninstall	= radeon_driver_irq_uninstall;
