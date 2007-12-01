@@ -403,17 +403,6 @@ static int drm_firstopen(drm_device_t *dev)
 			return i;
 	}
 
-	dev->counters  = 6;
-	dev->types[0]  = _DRM_STAT_LOCK;
-	dev->types[1]  = _DRM_STAT_OPENS;
-	dev->types[2]  = _DRM_STAT_CLOSES;
-	dev->types[3]  = _DRM_STAT_IOCTLS;
-	dev->types[4]  = _DRM_STAT_LOCKS;
-	dev->types[5]  = _DRM_STAT_UNLOCKS;
-
-	for ( i = 0 ; i < DRM_ARRAY_SIZE(dev->counts) ; i++ )
-		atomic_set( &dev->counts[i], 0 );
-
 	for ( i = 0 ; i < DRM_HASH_SIZE ; i++ ) {
 		dev->magiclist[i].head = NULL;
 		dev->magiclist[i].tail = NULL;
@@ -511,7 +500,7 @@ static int drm_lastclose(drm_device_t *dev)
 
 static int drm_load(drm_device_t *dev)
 {
-	int retcode;
+	int i, retcode;
 
 	DRM_DEBUG( "\n" );
 
@@ -535,6 +524,17 @@ static int drm_load(drm_device_t *dev)
 	drm_sysctl_init(dev);
 #endif
 	TAILQ_INIT(&dev->files);
+
+	dev->counters  = 6;
+	dev->types[0]  = _DRM_STAT_LOCK;
+	dev->types[1]  = _DRM_STAT_OPENS;
+	dev->types[2]  = _DRM_STAT_CLOSES;
+	dev->types[3]  = _DRM_STAT_IOCTLS;
+	dev->types[4]  = _DRM_STAT_LOCKS;
+	dev->types[5]  = _DRM_STAT_UNLOCKS;
+
+	for ( i = 0 ; i < DRM_ARRAY_SIZE(dev->counts) ; i++ )
+		atomic_set( &dev->counts[i], 0 );
 
 	if (dev->driver.load != NULL) {
 		DRM_LOCK();
