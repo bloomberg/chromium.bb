@@ -1320,14 +1320,15 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	base = drm_get_resource_start(dev, mmio_bar);
 	size = drm_get_resource_len(dev, mmio_bar);
 
-	ret = drm_addmap(dev, base, size, _DRM_REGISTERS, _DRM_KERNEL,
-			 &dev_priv->mmio_map);
+	ret = drm_addmap(dev, base, size, _DRM_REGISTERS,
+		_DRM_KERNEL | _DRM_DRIVER, &dev_priv->mmio_map);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_init_chipset_flush_compat(dev);
 #endif
 #endif
+
 	return ret;
 }
 

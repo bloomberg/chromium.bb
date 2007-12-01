@@ -484,9 +484,9 @@ static int drm_lastclose(drm_device_t *dev)
 	}
 
 	TAILQ_FOREACH_SAFE(map, &dev->maplist, link, mapsave) {
-		drm_rmmap(dev, map);
+		if (!(map->flags & _DRM_DRIVER))
+			drm_rmmap(dev, map);
 	}
-
 
 	drm_dma_takedown(dev);
 	if ( dev->lock.hw_lock ) {
