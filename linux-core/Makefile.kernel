@@ -34,6 +34,12 @@ nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
 		nv40_graph.o nv50_graph.o \
 		nv04_instmem.o nv50_instmem.o
 radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o radeon_fence.o radeon_buffer.o
+radeon_ms-objs := radeon_ms_drv.o radeon_ms_drm.o radeon_ms_family.o \
+		radeon_ms_state.o radeon_ms_bo.o radeon_ms_irq.o \
+		radeon_ms_bus.o radeon_ms_fence.o \
+		radeon_ms_cp.o radeon_ms_cp_mc.o radeon_ms_i2c.o \
+		radeon_ms_output.o radeon_ms_crtc.o radeon_ms_fb.o \
+		radeon_ms_exec.o radeon_ms_gpu.o radeon_ms_dac.o
 sis-objs    := sis_drv.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o
 savage-objs := savage_drv.o savage_bci.o savage_state.o
@@ -47,6 +53,7 @@ xgi-objs    := xgi_cmdlist.o xgi_drv.o xgi_fb.o xgi_misc.o xgi_pcie.o \
 ifeq ($(CONFIG_COMPAT),y)
 drm-objs    += drm_ioc32.o
 radeon-objs += radeon_ioc32.o
+radeon_ms-objs += radeon_ms_compat.o
 mga-objs    += mga_ioc32.o
 r128-objs   += r128_ioc32.o
 i915-objs   += i915_ioc32.o
@@ -69,3 +76,4 @@ obj-$(CONFIG_DRM_MACH64)+= mach64.o
 obj-$(CONFIG_DRM_NV)    += nv.o
 obj-$(CONFIG_DRM_NOUVEAU) += nouveau.o
 obj-$(CONFIG_DRM_XGI)   += xgi.o
+obj-$(CONFIG_DRM_RADEON_MS) += radeon_ms.o

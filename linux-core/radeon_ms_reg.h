@@ -1,0 +1,1 @@
+../shared-core/radeon_ms_reg.h
