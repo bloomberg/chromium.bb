@@ -335,7 +335,7 @@ static void drm_locked_task(void *context, int pending __unused)
 
 		/* Contention */
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
-		ret = msleep((void *)&dev->lock.lock_queue, &dev->dev_lock,
+		ret = mtx_sleep((void *)&dev->lock.lock_queue, &dev->dev_lock,
 		    PZERO | PCATCH, "drmlk2", 0);
 #else
 		ret = tsleep((void *)&dev->lock.lock_queue, PZERO | PCATCH,
