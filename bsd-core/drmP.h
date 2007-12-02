@@ -687,6 +687,7 @@ struct drm_driver_info {
 	unsigned use_dma_queue :1;
 	unsigned use_irq :1;
 	unsigned use_vbl_irq :1;
+	unsigned use_vbl_irq2 :1;
 	unsigned use_mtrr :1;
 };
 

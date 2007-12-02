@@ -69,6 +69,7 @@ static void i915_configure(drm_device_t *dev)
 	dev->driver.use_mtrr		= 1;
 	dev->driver.use_irq		= 1;
 	dev->driver.use_vbl_irq		= 1;
+	dev->driver.use_vbl_irq2	= 1;
 }
 
 #ifdef __FreeBSD__

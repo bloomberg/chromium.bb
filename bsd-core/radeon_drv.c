@@ -77,6 +77,7 @@ static void radeon_configure(drm_device_t *dev)
 	dev->driver.use_dma		= 1;
 	dev->driver.use_irq		= 1;
 	dev->driver.use_vbl_irq		= 1;
+	dev->driver.use_vbl_irq2	= 1;
 }
 
 #ifdef __FreeBSD__
