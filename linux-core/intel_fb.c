@@ -281,10 +281,8 @@ static int intelfb_set_par(struct fb_info *info)
 	}
 	
 	if (!found) {
-		drm_mode_addmode(dev, drm_mode);
 		if (par->fb_mode) {
 			drm_mode_detachmode_crtc(dev, par->fb_mode);
-			drm_mode_rmmode(dev, par->fb_mode);
 		}
 	
 		par->fb_mode = drm_mode;

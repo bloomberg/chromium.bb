@@ -372,38 +372,22 @@ err_allocs:
 	return r;
 }
 
-#if 0
-uint32_t drmModeAddMode(int fd, struct drm_mode_modeinfo *mode_info)
+int drmModeAttachMode(int fd, uint32_t output_id, struct drm_mode_modeinfo *mode_info)
 {
-	if (ioctl(fd, DRM_IOCTL_MODE_ADDMODE, mode_info))
-		return 0;
-	
-	return mode_info->id;
-}
-
-int drmModeRmMode(int fd, uint32_t mode_id)
-{
-  	return ioctl(fd, DRM_IOCTL_MODE_RMMODE, &mode_id);
-}
-#endif
-
-int drmModeAttachMode(int fd, uint32_t output_id, uint32_t mode_id)
-{
-
 	struct drm_mode_mode_cmd res;
 
+	memcpy(&res.mode, mode_info, sizeof(struct drm_mode_modeinfo));
 	res.output_id = output_id;
-	res.mode_id = mode_id;
 
 	return ioctl(fd, DRM_IOCTL_MODE_ATTACHMODE, &res);
 }
 
-int drmModeDetachMode(int fd, uint32_t output_id, uint32_t mode_id)
+int drmModeDetachMode(int fd, uint32_t output_id, struct drm_mode_modeinfo *mode_info)
 {
 	struct drm_mode_mode_cmd res;
 
+	memcpy(&res.mode, mode_info, sizeof(struct drm_mode_modeinfo));
 	res.output_id = output_id;
-	res.mode_id = mode_id;
 
 	return ioctl(fd, DRM_IOCTL_MODE_DETACHMODE, &res);
 }

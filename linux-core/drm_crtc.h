@@ -448,7 +448,7 @@ struct drm_output {
 	const struct drm_output_funcs *funcs;
 	void *driver_private;
 
-	u32 user_mode_ids[DRM_OUTPUT_MAX_UMODES];
+	struct list_head user_modes;
 
 	u32 property_ids[DRM_OUTPUT_MAX_PROPERTY];
 	u32 property_values[DRM_OUTPUT_MAX_PROPERTY];
@@ -484,8 +484,6 @@ struct drm_mode_config {
 	int num_crtc;
 	struct list_head crtc_list;
 
-	struct list_head usermode_list;
-
 	struct list_head property_list;
 
 	int min_width, min_height;
@@ -517,9 +515,6 @@ extern void drm_mode_config_cleanup(struct drm_device *dev);
 extern void drm_mode_set_name(struct drm_display_mode *mode);
 extern bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2);
 extern void drm_disable_unused_functions(struct drm_device *dev);
-
-extern void drm_mode_addmode(struct drm_device *dev, struct drm_display_mode *user_mode);
-extern int drm_mode_rmmode(struct drm_device *dev, struct drm_display_mode *mode);
 
 /* for us by fb module */
 extern int drm_mode_attachmode_crtc(struct drm_device *dev,

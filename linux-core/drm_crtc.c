@@ -579,6 +579,7 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 		strncpy(output->name, name, DRM_OUTPUT_LEN);
 	output->name[DRM_OUTPUT_LEN - 1] = 0;
 	output->subpixel_order = SubPixelUnknown;
+	INIT_LIST_HEAD(&output->user_modes);
 	INIT_LIST_HEAD(&output->probed_modes);
 	INIT_LIST_HEAD(&output->modes);
 	/* randr_output? */
@@ -618,6 +619,9 @@ void drm_output_destroy(struct drm_output *output)
 		drm_mode_remove(output, mode);
 
 	list_for_each_entry_safe(mode, t, &output->modes, head)
+		drm_mode_remove(output, mode);
+
+	list_for_each_entry_safe(mode, t, &output->user_modes, head)
 		drm_mode_remove(output, mode);
 
 	mutex_lock(&dev->mode_config.mutex);
@@ -718,7 +722,6 @@ void drm_mode_config_init(struct drm_device *dev)
 	INIT_LIST_HEAD(&dev->mode_config.crtc_list);
 	INIT_LIST_HEAD(&dev->mode_config.output_list);
 	INIT_LIST_HEAD(&dev->mode_config.property_list);
-	INIT_LIST_HEAD(&dev->mode_config.usermode_list);
 	idr_init(&dev->mode_config.crtc_idr);
 }
 EXPORT_SYMBOL(drm_mode_config_init);
@@ -950,7 +953,6 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	struct drm_output *output, *ot;
 	struct drm_crtc *crtc, *ct;
 	struct drm_framebuffer *fb, *fbt;
-	struct drm_display_mode *mode, *mt;
 	struct drm_property *property, *pt;
 
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
@@ -959,10 +961,6 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 
 	list_for_each_entry_safe(property, pt, &dev->mode_config.property_list, head) {
 		drm_property_destroy(dev, property);
-	}
-
-	list_for_each_entry_safe(mode, mt, &dev->mode_config.usermode_list, head) {
-		drm_mode_destroy(dev, mode);
 	}
 
 	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
@@ -1324,10 +1322,6 @@ int drm_mode_getoutput(struct drm_device *dev,
 	list_for_each_entry(mode, &output->modes, head)
 		mode_count++;
 	
-	for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++)
-		if (output->user_mode_ids[i] != 0)
-			mode_count++;
-
 	for (i = 0; i < DRM_OUTPUT_MAX_PROPERTY; i++) {
 		if (output->property_ids[i] != 0) {
 			props_count++;
@@ -1364,20 +1358,6 @@ int drm_mode_getoutput(struct drm_device *dev,
 			}
 			copied++;
 			
-		}
-		for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
-			if (!output->user_mode_ids[i])
-				continue;
-			mode = idr_find(&dev->mode_config.crtc_idr, output->user_mode_ids[i]);
-			if (mode && (mode->mode_id == output->user_mode_ids[i])) {
-				drm_crtc_convert_to_umode(&u_mode, mode);
-				if (copy_to_user(out_resp->modes + copied,
-						 &u_mode, sizeof(u_mode))) {
-					ret = -EFAULT;
-					goto out;
-				}
-				copied++;
-			}
 		}
 	}
 	out_resp->count_modes = mode_count;
@@ -1710,49 +1690,14 @@ void drm_fb_release(struct file *filp)
 /*
  *
  */
-void drm_mode_addmode(struct drm_device *dev, struct drm_display_mode *user_mode)
-{
-	user_mode->type |= DRM_MODE_TYPE_USERDEF;
-
-	user_mode->output_count = 0;
-	list_add(&user_mode->head, &dev->mode_config.usermode_list);
-}
-EXPORT_SYMBOL(drm_mode_addmode);
-
-int drm_mode_rmmode(struct drm_device *dev, struct drm_display_mode *mode)
-{
-	struct drm_display_mode *t;
-	int ret = -EINVAL;
-	list_for_each_entry(t, &dev->mode_config.usermode_list, head) {
-		if (t == mode) {
-			list_del(&mode->head);
-			drm_mode_destroy(dev, mode);
-			ret = 0;
-			break;
-		}
-	}
-	return ret;
-}
-EXPORT_SYMBOL(drm_mode_rmmode);
 
 static int drm_mode_attachmode(struct drm_device *dev,
 			       struct drm_output *output,
 			       struct drm_display_mode *mode)
 {
 	int ret = 0;
-	int i;
 
-	for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
-		if (output->user_mode_ids[i] == 0) {
-			output->user_mode_ids[i] = mode->mode_id;
-			mode->output_count++;
-			break;
-		}
-	}
-
-	if (i == DRM_OUTPUT_MAX_UMODES)
-		ret = -ENOSPC;
-
+	list_add_tail(&mode->head, &output->user_modes);
 	return ret;
 }
 
@@ -1760,11 +1705,22 @@ int drm_mode_attachmode_crtc(struct drm_device *dev, struct drm_crtc *crtc,
 			     struct drm_display_mode *mode)
 {
 	struct drm_output *output;
-
+	int ret = 0;
+	struct drm_display_mode *dup_mode;
+	int need_dup = 0;
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == crtc)
-			drm_mode_attachmode(dev, output, mode);
+		if (output->crtc == crtc) {
+			if (need_dup)
+				dup_mode = drm_mode_duplicate(dev, mode);
+			else
+				dup_mode = mode;
+			ret = drm_mode_attachmode(dev, output, dup_mode); 
+			if (ret)
+				return ret;
+			need_dup = 1;
+		}
 	}
+	return 0;
 }
 EXPORT_SYMBOL(drm_mode_attachmode_crtc);
 
@@ -1773,13 +1729,15 @@ static int drm_mode_detachmode(struct drm_device *dev,
 			       struct drm_display_mode *mode)
 {
 	int found = 0;
-	int ret = 0, i;
+	int ret = 0;
+	struct drm_display_mode *match_mode, *t;
 
-	for (i = 0; i < DRM_OUTPUT_MAX_UMODES; i++) {
-		if (output->user_mode_ids[i] == mode->mode_id) {
-			output->user_mode_ids[i] = 0;
-			mode->output_count--;
+	list_for_each_entry_safe(match_mode, t, &output->user_modes, head) {
+		if (drm_mode_equal(match_mode, mode)) {
+			list_del(&match_mode->head);
+			drm_mode_destroy(dev, match_mode);
 			found = 1;
+			break;
 		}
 	}
 
@@ -1801,86 +1759,6 @@ int drm_mode_detachmode_crtc(struct drm_device *dev, struct drm_display_mode *mo
 EXPORT_SYMBOL(drm_mode_detachmode_crtc);
 
 /**
- * drm_fb_addmode - adds a user defined mode
- * @inode: inode from the ioctl
- * @filp: file * from the ioctl
- * @cmd: cmd from ioctl
- * @arg: arg from ioctl
- *
- * Adds a user specified mode to the kernel.
- *
- * Called by the user via ioctl.
- *
- * RETURNS:
- * writes new mode id into arg.
- * Zero on success, errno on failure.
- */
-int drm_mode_addmode_ioctl(struct drm_device *dev,
-			   void *data, struct drm_file *file_priv)
-{
-	struct drm_mode_modeinfo *new_mode = data;
-	struct drm_display_mode *user_mode;
-	int ret = 0;
-
-	mutex_lock(&dev->mode_config.mutex);
-	user_mode = drm_mode_create(dev);
-	if (!user_mode) {
-		ret = -ENOMEM;
-		goto out;
-	}
-
-	drm_crtc_convert_umode(user_mode, new_mode);
-
-	drm_mode_addmode(dev, user_mode);
-
-out:
-	mutex_unlock(&dev->mode_config.mutex);
-	return ret;
-}
-
-/**
- * drm_fb_rmmode - removes a user defined mode
- * @inode: inode from the ioctl
- * @filp: file * from the ioctl
- * @cmd: cmd from ioctl
- * @arg: arg from ioctl
- *
- * Remove the user defined mode specified by the user.
- *
- * Called by the user via ioctl
- *
- * RETURNS:
- * Zero on success, errno on failure.
- */
-int drm_mode_rmmode_ioctl(struct drm_device *dev,
-			  void *data, struct drm_file *file_priv)
-{
-	uint32_t *id = data;
-	struct drm_display_mode *mode;
-	int ret = -EINVAL;
-
-	mutex_lock(&dev->mode_config.mutex);	
-	mode = idr_find(&dev->mode_config.crtc_idr, *id);
-	if (!mode || (*id != mode->mode_id)) {
-		goto out;
-	}
-
-	if (!(mode->type & DRM_MODE_TYPE_USERDEF)) {
-		goto out;
-	}
-
-	if (mode->output_count) {
-		goto out;
-	}
-
-	ret = drm_mode_rmmode(dev, mode);
-
-out:
-	mutex_unlock(&dev->mode_config.mutex);
-	return ret;
-}
-
-/**
  * drm_fb_attachmode - Attach a user mode to an output
  * @inode: inode from the ioctl
  * @filp: file * from the ioctl
@@ -1899,21 +1777,24 @@ int drm_mode_attachmode_ioctl(struct drm_device *dev,
 	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
 	struct drm_display_mode *mode;
+	struct drm_mode_modeinfo *umode = &mode_cmd->mode;
 	int ret = 0;
 
 	mutex_lock(&dev->mode_config.mutex);
-
-	mode = idr_find(&dev->mode_config.crtc_idr, mode_cmd->mode_id);
-	if (!mode || (mode->mode_id != mode_cmd->mode_id)) {
-		ret = -EINVAL;
-		goto out;
-	}
 
 	output = idr_find(&dev->mode_config.crtc_idr, mode_cmd->output_id);
 	if (!output || (output->id != mode_cmd->output_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
+
+	mode = drm_mode_create(dev);
+	if (!mode) {
+		ret = -ENOMEM;
+		goto out;
+	}
+	
+	drm_crtc_convert_umode(mode, umode);
 
 	ret = drm_mode_attachmode(dev, output, mode);
 out:
@@ -1939,25 +1820,20 @@ int drm_mode_detachmode_ioctl(struct drm_device *dev,
 {
 	struct drm_mode_mode_cmd *mode_cmd = data;
 	struct drm_output *output;
-	struct drm_display_mode *mode;
+	struct drm_display_mode mode;
+	struct drm_mode_modeinfo *umode = &mode_cmd->mode;
 	int ret = 0;
 
 	mutex_lock(&dev->mode_config.mutex);
-
-	mode = idr_find(&dev->mode_config.crtc_idr, mode_cmd->mode_id);
-	if (!mode || (mode->mode_id != mode_cmd->mode_id)) {
-		ret = -EINVAL;
-		goto out;
-	}
 
 	output = idr_find(&dev->mode_config.crtc_idr, mode_cmd->output_id);
 	if (!output || (output->id != mode_cmd->output_id)) {
 		ret = -EINVAL;
 		goto out;
 	}
-
-
-	ret = drm_mode_detachmode(dev, output, mode);
+	
+	drm_crtc_convert_umode(&mode, umode);
+	ret = drm_mode_detachmode(dev, output, &mode);
 out:	       
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;

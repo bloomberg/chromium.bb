@@ -201,45 +201,30 @@ int testMode(int fd, drmModeResPtr res)
 	int ret = 0;
 	int error = 0;
 
-#if 0
 	printf("Test: adding mode to output %i\n", output);
 
 	/* printMode(&mode); */
 
-	printf("\tAdding mode\n");
-	newMode = drmModeAddMode(fd, &mode);
-	if (!newMode)
-		goto err;
-
 	printf("\tAttaching mode %i to output %i\n", newMode, output);
 
-	ret = drmModeAttachMode(fd, output, newMode);
+	ret = drmModeAttachMode(fd, output, &mode);
 
 	if (ret)
 		goto err_mode;
 
 	printf("\tDetaching mode %i from output %i\n", newMode, output);
-	ret = drmModeDetachMode(fd, output, newMode);
+	ret = drmModeDetachMode(fd, output, &mode);
 
 	if (ret)
 		goto err_mode;
-
-	printf("\tRemoveing new mode %i\n", newMode);
-	ret = drmModeRmMode(fd, newMode);
-	if (ret)
-		goto err;
-
 	return 0;
 
 err_mode:
-	error = drmModeRmMode(fd, newMode);
 
-err:
 	printf("\tFailed\n");
 
 	if (error)
 		printf("\tFailed to delete mode %i\n", newMode);
-#endif
 	return 1;
 }
 

@@ -1008,7 +1008,7 @@ struct drm_mode_fb_cmd {
 
 struct drm_mode_mode_cmd {
 	unsigned int output_id;
-	unsigned int mode_id;
+	struct drm_mode_modeinfo mode;
 };
 
 /**
@@ -1111,8 +1111,6 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
 #define DRM_IOCTL_MODE_GETFB            DRM_IOWR(0xA6, struct drm_mode_fb_cmd)
 
-#define DRM_IOCTL_MODE_ADDMODE         DRM_IOWR(0xA7, struct drm_mode_modeinfo)
-#define DRM_IOCTL_MODE_RMMODE          DRM_IOWR(0xA8, unsigned int)
 #define DRM_IOCTL_MODE_ATTACHMODE      DRM_IOWR(0xA9, struct drm_mode_mode_cmd)
 #define DRM_IOCTL_MODE_DETACHMODE      DRM_IOWR(0xAA, struct drm_mode_mode_cmd)
 

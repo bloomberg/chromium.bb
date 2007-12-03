@@ -199,26 +199,15 @@ extern drmModeOutputPtr drmModeGetOutput(int fd,
 		uint32_t outputId);
 
 /**
- * Adds a new mode from the given mode info.
- * Name must be unique.
- */
-extern uint32_t drmModeAddMode(int fd, struct drm_mode_modeinfo *modeInfo);
-
-/**
- * Removes a mode created with AddMode, must be unused.
- */
-extern int drmModeRmMode(int fd, uint32_t modeId);
-
-/**
  * Attaches the given mode to an output.
  */
-extern int drmModeAttachMode(int fd, uint32_t outputId, uint32_t modeId);
+extern int drmModeAttachMode(int fd, uint32_t outputId, struct drm_mode_modeinfo *mode_info);
 
 /**
  * Detaches a mode from the output
  * must be unused, by the given mode.
  */
-extern int drmModeDetachMode(int fd, uint32_t outputId, uint32_t modeId);
+extern int drmModeDetachMode(int fd, uint32_t outputId, struct drm_mode_modeinfo *mode_info);
 
 extern drmModePropertyPtr drmModeGetProperty(int fd, uint32_t propertyId);
 extern void drmModeFreeProperty(drmModePropertyPtr ptr);
