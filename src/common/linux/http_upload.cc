@@ -137,9 +137,9 @@ bool HTTPUpload::SendRequest(const string &url,
   CURLcode (*curl_easy_perform)(CURL *);
   *(void**) (&curl_easy_perform) = dlsym(curl_lib, "curl_easy_perform");
   err_code = (*curl_easy_perform)(curl);
-#ifndef NDEBUG
   const char* (*curl_easy_strerror)(CURLcode);
   *(void**) (&curl_easy_strerror) = dlsym(curl_lib, "curl_easy_strerror");
+#ifndef NDEBUG
   if (err_code != CURLE_OK)
     fprintf(stderr, "Failed to send http request to %s, error: %s\n",
             url.c_str(),
