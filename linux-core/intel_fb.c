@@ -216,6 +216,32 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 	return 0;
 }
 
+bool i915_drmfb_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2, unsigned int pixclock)
+{
+
+	if (mode1->hdisplay == mode2->hdisplay &&
+	    mode1->hsync_start == mode2->hsync_start &&
+	    mode1->hsync_end == mode2->hsync_end &&
+	    mode1->htotal == mode2->htotal &&
+	    mode1->hskew == mode2->hskew &&
+	    mode1->vdisplay == mode2->vdisplay &&
+	    mode1->vsync_start == mode2->vsync_start &&
+	    mode1->vsync_end == mode2->vsync_end &&
+	    mode1->vtotal == mode2->vtotal &&
+	    mode1->vscan == mode2->vscan &&
+	    mode1->flags == mode2->flags) 
+	{
+		if (mode1->clock == mode2->clock)
+			return true;
+
+		if (KHZ2PICOS(mode2->clock) == pixclock)
+			return true;
+		return false;
+	}
+	
+	return false;
+}
+
 /* this will let fbcon do the mode init */
 /* FIXME: take mode config lock? */
 static int intelfb_set_par(struct fb_info *info)
@@ -260,6 +286,10 @@ static int intelfb_set_par(struct fb_info *info)
         drm_mode->vtotal = drm_mode->vsync_end + var->upper_margin;
         drm_mode->clock = PICOS2KHZ(var->pixclock);
         drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
+	drm_mode->flags = 0;
+	drm_mode->flags |= var->sync & FB_SYNC_HOR_HIGH_ACT ? V_PHSYNC : V_NHSYNC;
+	drm_mode->flags |= var->sync & FB_SYNC_VERT_HIGH_ACT ? V_PVSYNC : V_NVSYNC;
+
         drm_mode_set_name(drm_mode);
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 
@@ -270,9 +300,8 @@ static int intelfb_set_par(struct fb_info *info)
 
 	drm_mode_debug_printmodeline(dev, drm_mode);    
         list_for_each_entry(search_mode, &output->modes, head) {
-		DRM_ERROR("mode %s : %s\n", drm_mode->name, search_mode->name);
 		drm_mode_debug_printmodeline(dev, search_mode);
-		if (drm_mode_equal(drm_mode, search_mode)) {
+		if (i915_drmfb_mode_equal(drm_mode, search_mode, var->pixclock)) {
 			drm_mode_destroy(dev, drm_mode);
 			drm_mode = search_mode;
 			found = 1;
@@ -550,7 +579,6 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->var.activate = FB_ACTIVATE_NOW;
 	info->var.height = -1;
 	info->var.width = -1;
-	info->var.vmode = FB_VMODE_NONINTERLACED;
 
         info->var.xres = mode->hdisplay;
         info->var.right_margin = mode->hsync_start - mode->hdisplay;
@@ -560,10 +588,20 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
         info->var.lower_margin = mode->vsync_start - mode->vdisplay;
         info->var.vsync_len = mode->vsync_end - mode->vsync_start;
 	info->var.upper_margin = mode->vtotal - mode->vsync_end;
-        info->var.pixclock = 10000000 / mode->htotal * 1000 /
-		mode->vtotal * 100;
-	/* avoid overflow */
-	info->var.pixclock = info->var.pixclock * 1000 / mode->vrefresh;
+	info->var.pixclock = KHZ2PICOS(mode->clock);
+
+	if (mode->flags & V_PHSYNC)
+		info->var.sync |= FB_SYNC_HOR_HIGH_ACT;
+
+	if (mode->flags & V_PVSYNC)
+		info->var.sync |= FB_SYNC_VERT_HIGH_ACT;
+
+	if (mode->flags & V_INTERLACE)
+		info->var.vmode = FB_VMODE_INTERLACED;
+	else if (mode->flags & V_DBLSCAN)
+		info->var.vmode = FB_VMODE_DOUBLE;
+	else
+		info->var.vmode = FB_VMODE_NONINTERLACED;
 
 	info->pixmap.size = 64*1024;
 	info->pixmap.buf_align = 8;
