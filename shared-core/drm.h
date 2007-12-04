@@ -753,6 +753,7 @@ struct drm_fence_arg {
 /* Don't place this buffer on the unfenced list.*/
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
+#define DRM_BO_HINT_PRESUMED_OFFSET 0x00000010
 
 #define DRM_BO_INIT_MAGIC 0xfe769812
 #define DRM_BO_INIT_MAJOR 1
@@ -769,6 +770,7 @@ struct drm_bo_info_req {
 	unsigned int desired_tile_stride;
 	unsigned int tile_info;
 	unsigned int pad64;
+	uint64_t presumed_offset;
 };
 
 struct drm_bo_create_req {
