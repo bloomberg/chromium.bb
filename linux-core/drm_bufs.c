@@ -413,6 +413,8 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 	case _DRM_SHM:
 		vfree(map->handle);
 		dev->sigdata.lock = dev->lock.hw_lock = NULL;   /* SHM removed */
+		dev->lock.file_priv = NULL;
+		wake_up_interruptible(&dev->lock.lock_queue);
 		break;
 	case _DRM_AGP:
 	case _DRM_SCATTER_GATHER:

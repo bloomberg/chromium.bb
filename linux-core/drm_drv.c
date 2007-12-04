@@ -276,11 +276,6 @@ int drm_lastclose(struct drm_device * dev)
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		drm_dma_takedown(dev);
 
-	if (dev->lock.hw_lock) {
-		dev->sigdata.lock = dev->lock.hw_lock = NULL;	/* SHM removed */
-		dev->lock.file_priv = NULL;
-		wake_up_interruptible(&dev->lock.lock_queue);
-	}
 	dev->dev_mapping = NULL;
 	mutex_unlock(&dev->struct_mutex);
 
