@@ -489,6 +489,46 @@ static struct fb_ops intelfb_ops = {
 	.fb_imageblit = cfb_imageblit, //intelfb_imageblit,
 };
 
+/**
+ * Curretly it is assumed that the old framebuffer is reused.
+ *
+ * LOCKING
+ * caller should hold the mode config lock.
+ *
+ */
+int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
+{
+    struct fb_info *info;
+	struct drm_framebuffer *fb;
+	struct drm_display_mode *mode = crtc->desired_mode;
+
+	fb = crtc->fb;
+	if (!fb)
+		return 1;
+
+	info = fb->fbdev;
+	if (!info)
+		return 1;
+
+	if (!mode)
+		return 1;
+
+	info->var.xres = mode->hdisplay;
+	info->var.right_margin = mode->hsync_start - mode->hdisplay;
+	info->var.hsync_len = mode->hsync_end - mode->hsync_start;
+	info->var.left_margin = mode->htotal - mode->hsync_end;
+	info->var.yres = mode->vdisplay;
+	info->var.lower_margin = mode->vsync_start - mode->vdisplay;
+	info->var.vsync_len = mode->vsync_end - mode->vsync_start;
+	info->var.upper_margin = mode->vtotal - mode->vsync_end;
+	info->var.pixclock = 10000000 / mode->htotal * 1000 / mode->vtotal * 100;
+    /* avoid overflow */
+	info->var.pixclock = info->var.pixclock * 1000 / mode->vrefresh;
+
+	return 0;
+}
+EXPORT_SYMBOL(intelfb_resize);
+
 int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct fb_info *info;
@@ -512,8 +552,9 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	}
 	crtc->fb = fb;
 
-	fb->width = crtc->desired_mode->hdisplay;
-	fb->height = crtc->desired_mode->vdisplay;
+	/* To allow resizeing without swapping buffers */
+	fb->width = 2048;/* crtc->desired_mode->hdisplay; */
+	fb->height = 2048;/* crtc->desired_mode->vdisplay; */
 
 	fb->bits_per_pixel = 32;
 	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);

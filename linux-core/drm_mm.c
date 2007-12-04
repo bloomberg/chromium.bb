@@ -294,3 +294,18 @@ void drm_mm_takedown(struct drm_mm * mm)
 }
 
 EXPORT_SYMBOL(drm_mm_takedown);
+
+void drm_mm_print(struct drm_mm *mm, const char *name)
+{
+	struct list_head *list;
+	const struct list_head *mm_stack = &mm->ml_entry;
+	struct drm_mm_node *entry;
+
+	DRM_DEBUG("Memory usage for '%s'\n", name ? name : "unknown");
+	list_for_each(list, mm_stack) {
+		entry = list_entry(list, struct drm_mm_node, ml_entry);
+		DRM_DEBUG("\t0x%08lx %li %s pages\n", entry->start, entry->size,
+			entry->free ? "free" : "used");
+	}
+}
+EXPORT_SYMBOL(drm_mm_print);

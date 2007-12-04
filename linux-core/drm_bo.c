@@ -569,7 +569,6 @@ void drm_putback_buffer_objects(struct drm_device *dev)
 }
 EXPORT_SYMBOL(drm_putback_buffer_objects);
 
-
 /*
  * Note. The caller has to register (if applicable)
  * and deregister fence object usage.

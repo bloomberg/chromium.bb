@@ -76,7 +76,12 @@ extern struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
 extern void intel_wait_for_vblank(struct drm_device *dev);
 extern struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe);
 
+extern struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB);
+extern int intel_sdvo_supports_hotplug(struct drm_output *output);
+extern void intel_sdvo_set_hotplug(struct drm_output *output, int enable);
+
 extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
+extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
 
 #endif /* __INTEL_DRV_H__ */

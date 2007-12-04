@@ -60,7 +60,7 @@ struct intel_sdvo_priv {
  * SDVOB and SDVOC to work around apparent hardware issues (according to
  * comments in the BIOS).
  */
-static void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
+void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -69,10 +69,12 @@ static void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 	u32 bval = val, cval = val;
 	int i;
 
-	if (sdvo_priv->output_device == SDVOB)
+	if (sdvo_priv->output_device == SDVOB) {
 		cval = I915_READ(SDVOC);
-	else
-		bval = I915_READ(SDVOB);
+		bval = bval | (1 << 26);
+	} else {
+		bval = I915_READ(SDVOB) | (1 << 26);
+	}
 	/*
 	 * Write the registers twice for luck. Sometimes,
 	 * writing them only once doesn't appear to 'stick'.
@@ -879,6 +881,72 @@ void intel_sdvo_dump(void)
 
 }
 
+struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB)
+{
+	struct drm_output *output = 0;
+	struct intel_output *iout = 0;
+	struct intel_sdvo_priv *sdvo;
+
+	/* find the sdvo output */
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+		iout = output->driver_private;
+
+		if (iout->type != INTEL_OUTPUT_SDVO)
+			continue;
+
+		sdvo = iout->dev_priv;
+
+		if (sdvo->output_device == SDVOB && sdvoB)
+			return output;
+
+		if (sdvo->output_device == SDVOC && !sdvoB)
+			return output;
+
+    }
+
+	return 0;
+}
+
+int intel_sdvo_supports_hotplug(struct drm_output *output)
+{
+	u8 response[2];
+	u8 status;
+	DRM_DEBUG("\n");
+
+	if (!output)
+		return 0;
+
+	intel_sdvo_write_cmd(output, SDVO_CMD_GET_HOT_PLUG_SUPPORT, NULL, 0);
+	status = intel_sdvo_read_response(output, &response, 2);
+
+	if (response[0] !=0)
+		return 1;
+
+	return 0;
+}
+
+void intel_sdvo_set_hotplug(struct drm_output *output, int on)
+{
+	u8 response[2];
+	u8 status;
+
+	intel_sdvo_write_cmd(output, SDVO_CMD_GET_ACTIVE_HOT_PLUG, NULL, 0);
+	intel_sdvo_read_response(output, &response, 2);
+
+	if (on) {
+		intel_sdvo_write_cmd(output, SDVO_CMD_GET_HOT_PLUG_SUPPORT, NULL, 0);
+		status = intel_sdvo_read_response(output, &response, 2);
+
+		intel_sdvo_write_cmd(output, SDVO_CMD_SET_ACTIVE_HOT_PLUG, &response, 2);
+	} else {
+		response[0] = 0;
+		response[1] = 0;
+		intel_sdvo_write_cmd(output, SDVO_CMD_SET_ACTIVE_HOT_PLUG, &response, 2);
+	}
+
+	intel_sdvo_write_cmd(output, SDVO_CMD_GET_ACTIVE_HOT_PLUG, NULL, 0);
+	intel_sdvo_read_response(output, &response, 2);
+}
 
 static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
 {

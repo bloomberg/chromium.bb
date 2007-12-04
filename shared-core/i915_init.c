@@ -30,7 +30,7 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 	u16 tmp = 0;
 	unsigned long overhead;
 
-	bridge_dev = pci_get_bus_and_slot(0, PCI_DEVFN(0,0));
+	bridge_dev = pci_find_slot(0, PCI_DEVFN(0,0));
 	if (!bridge_dev) {
 		DRM_ERROR("bridge device not found\n");
 		return -1;
@@ -249,8 +249,19 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
 
+	dev_priv->wq = create_singlethread_workqueue("i915");
+	if (dev_priv == 0) {
+		DRM_DEBUG("Error\n");
+	}
+
+
 	intel_modeset_init(dev);
 	drm_initial_config(dev, false);
+
+	drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
+	drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");
+
+	drm_irq_install(dev);
 
 	return 0;
 }
@@ -259,9 +270,15 @@ int i915_driver_unload(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
+	I915_WRITE(LP_RING + RING_LEN, 0);
+
+	intel_modeset_cleanup(dev);
+
+#if 0
 	if (dev_priv->ring.virtual_start) {
 		drm_core_ioremapfree(&dev_priv->ring.map, dev);
 	}
+#endif
 
 	if (dev_priv->status_page_dmah) {
 		drm_pci_free(dev, dev_priv->status_page_dmah);
@@ -277,10 +294,6 @@ int i915_driver_unload(struct drm_device *dev)
 		drm_core_ioremapfree(&dev_priv->hws_map, dev);
 		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
 	}
-
-	I915_WRITE(LP_RING + RING_LEN, 0);
-
-	intel_modeset_cleanup(dev);
 
 	drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
 			    dev_priv->ring.virtual_start);
@@ -310,20 +323,3 @@ int i915_driver_unload(struct drm_device *dev)
 	dev->dev_private = NULL;
 	return 0;
 }
-
-void i915_driver_lastclose(struct drm_device *dev)
-{
-	struct drm_i915_private *dev_priv = dev->dev_private;
-
-	i915_do_cleanup_pageflip(dev);
-	//i915_mem_takedown(&(dev_priv->agp_heap));
-	i915_dma_cleanup(dev);
-}
-
-void i915_driver_preclose(struct drm_device *dev, struct drm_file *filp)
-{
-	struct drm_i915_private *dev_priv = dev->dev_private;
-
-	//i915_mem_release(dev, filp, dev_priv->agp_heap);
-}
-

@@ -135,6 +135,8 @@ struct drm_i915_private {
 	uint32_t irq_enable_reg;
 	int irq_enabled;
 
+	struct workqueue_struct *wq;
+
 #ifdef I915_HAVE_FENCE
 	uint32_t flush_sequence;
 	uint32_t flush_flags;

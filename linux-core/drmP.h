@@ -669,6 +669,7 @@ struct drm_driver {
 	/* FB routines, if present */
 	int (*fb_probe)(struct drm_device *dev, struct drm_crtc *crtc);
 	int (*fb_remove)(struct drm_device *dev, struct drm_crtc *crtc);
+	int (*fb_resize)(struct drm_device *dev, struct drm_crtc *crtc);
 
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
@@ -1210,6 +1211,7 @@ extern int drm_mm_clean(struct drm_mm *mm);
 extern unsigned long drm_mm_tail_space(struct drm_mm *mm);
 extern int drm_mm_remove_space_from_tail(struct drm_mm *mm, unsigned long size);
 extern int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size);
+extern void drm_mm_print(struct drm_mm *mm, const char *name);
 
 static inline struct drm_mm *drm_get_mm(struct drm_mm_node *block)
 {
