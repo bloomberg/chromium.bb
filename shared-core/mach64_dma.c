@@ -6,7 +6,7 @@
  * \author Gareth Hughes <gareth@valinux.com>
  * \author Frank C. Earl <fearl@airmail.net>
  * \author Leif Delgass <ldelgass@retinalburn.net>
- * \author Jose Fonseca <j_r_fonseca@yahoo.co.uk>
+ * \author José Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 /*

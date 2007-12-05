@@ -29,7 +29,7 @@
  *    Gareth Hughes <gareth@valinux.com>
  *    Frank C. Earl <fearl@airmail.net>
  *    Leif Delgass <ldelgass@retinalburn.net>
- *    Jos�Fonseca <j_r_fonseca@yahoo.co.uk>
+ *    José Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #ifndef __MACH64_DRV_H__

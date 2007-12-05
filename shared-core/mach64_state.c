@@ -27,7 +27,7 @@
  * Authors:
  *    Gareth Hughes <gareth@valinux.com>
  *    Leif Delgass <ldelgass@retinalburn.net>
- *    Jos�Fonseca <j_r_fonseca@yahoo.co.uk>
+ *    José Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #include "drmP.h"
