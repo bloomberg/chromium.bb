@@ -1968,7 +1968,9 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	struct drm_property_enum *prop_enum;
 	struct drm_property_enum __user *enum_ptr;
 	struct drm_property_blob *prop_blob;
+	uint32_t *blob_id_ptr;
 	uint64_t __user *values_ptr;
+	uint32_t __user *blob_length_ptr;
 
 	mutex_lock(&dev->mode_config.mutex);
 	property = idr_find(&dev->mode_config.crtc_idr, out_resp->prop_id);
@@ -1980,7 +1982,7 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	if (property->flags & DRM_MODE_PROP_ENUM) {
 		list_for_each_entry(prop_enum, &property->enum_blob_list, head)
 			enum_count++;
-	} else 	if (property->flags & DRM_MODE_PROP_BLOB) {
+	} else if (property->flags & DRM_MODE_PROP_BLOB) {
 		list_for_each_entry(prop_blob, &property->enum_blob_list, head)
 			blob_count++;
 	}
@@ -2002,44 +2004,49 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	}
 	out_resp->count_values = value_count;
 
-	if ((out_resp->count_enum_blobs >= enum_count) && enum_count && (property->flags & DRM_MODE_PROP_ENUM)) {
-		copied = 0;
-		enum_ptr = (struct drm_property_enum *)(unsigned long)out_resp->enum_blob_ptr;
-		list_for_each_entry(prop_enum, &property->enum_blob_list, head) {
-			if (put_user(prop_enum->value, &enum_ptr[copied].value)) {
+	if (property->flags & DRM_MODE_PROP_ENUM) {
+		if ((out_resp->count_enum_blobs >= enum_count) && enum_count) {
+			copied = 0;
+			enum_ptr = (struct drm_property_enum *)(unsigned long)out_resp->enum_blob_ptr;
+			list_for_each_entry(prop_enum, &property->enum_blob_list, head) {
+				if (put_user(prop_enum->value, &enum_ptr[copied].value)) {
+					ret = -EFAULT;
+					goto done;
+				}
+				
+				if (copy_to_user(&enum_ptr[copied].name,
+						 prop_enum->name, DRM_PROP_NAME_LEN)) {
 				ret = -EFAULT;
 				goto done;
+				}
+				copied++;
 			}
-
-			if (copy_to_user(&enum_ptr[copied].name,
-					 prop_enum->name, DRM_PROP_NAME_LEN)) {
-				ret = -EFAULT;
-				goto done;
-			}
-			copied++;
 		}
+		out_resp->count_enum_blobs = enum_count;
 	}
-	out_resp->count_enum_blobs = enum_count;
 
-#if 0
-	if ((out_resp->count_blobs >= enum_count) && blob_count && (property->flags & DRM_MODE_PROP_BLOB)) {
-		copied = 0;
-		list_for_each_entry(prop_blob, &property->enum_list, head) {
-			if (put_user(prop_enum->value, &out_resp->blobs[copied].value)) {
-				ret = -EFAULT;
-				goto done;
+	if (property->flags & DRM_MODE_PROP_BLOB) {
+		if ((out_resp->count_enum_blobs >= blob_count) && blob_count) {
+			copied = 0;
+			blob_id_ptr = (uint32_t *)(unsigned long)out_resp->enum_blob_ptr;
+			blob_length_ptr = (uint32_t *)(unsigned long)out_resp->values_ptr;
+			
+			list_for_each_entry(prop_blob, &property->enum_blob_list, head) {
+				if (put_user(prop_blob->id, blob_id_ptr + copied)) {
+					ret = -EFAULT;
+					goto done;
+				}
+				
+				if (put_user(prop_blob->length, blob_length_ptr + copied)) {
+					ret = -EFAULT;
+					goto done;
+				}
+				
+				copied++;
 			}
-
-			if (copy_to_user(&out_resp->enums[copied].name,
-					 prop_enum->name, DRM_PROP_NAME_LEN)) {
-				ret = -EFAULT;
-				goto done;
-			}
-			copied++;
 		}
+		out_resp->count_enum_blobs = enum_count;
 	}
-	out_resp->count_enums = enum_count;
-#endif
 done:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;

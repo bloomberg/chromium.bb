@@ -69,15 +69,22 @@ typedef struct _drmModeRes {
 
 typedef struct drm_mode_fb_cmd drmModeFB, *drmModeFBPtr;
 
+typedef struct _drmModePropertyBlob {
+	uint32_t id;
+	uint32_t length;
+	void *data;
+} drmModePropertyBlobRes, *drmModePropertyBlobPtr;
+
 typedef struct _drmModeProperty {
 	unsigned int prop_id;
 	unsigned int flags;
 	unsigned char name[DRM_PROP_NAME_LEN];
 	int count_values;
-	uint64_t *values;
+	uint64_t *values; // store the blob lengths
 	int count_enums;
 	struct drm_mode_property_enum *enums;
-
+	int count_blobs;
+	uint32_t *blob_ids; // store the blob IDs
 } drmModePropertyRes, *drmModePropertyPtr;
 
 typedef struct _drmModeCrtc {

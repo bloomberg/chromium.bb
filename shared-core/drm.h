@@ -981,12 +981,13 @@ struct drm_mode_property_enum {
 };
 
 struct drm_mode_property_blob {
+	uint64_t data_ptr;
 	uint32_t length;
 };
 		
 struct drm_mode_get_property {
-	uint64_t values_ptr;
-	uint64_t enum_blob_ptr;
+	uint64_t values_ptr; /* values and blob lengths */
+	uint64_t enum_blob_ptr; /* enum and blob id ptrs */
 
 	unsigned int prop_id;
 	unsigned int flags;
