@@ -417,8 +417,6 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
 		return 0;
 
-	dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-
 	i915_user_irq_on(dev_priv);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
 		    READ_BREADCRUMB(dev_priv) >= irq_nr);

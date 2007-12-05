@@ -51,8 +51,6 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 		if (ring->space >= n)
 			return 0;
 
-		dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-
 		if (ring->head != last_head)
 			i = 0;
 
@@ -73,9 +71,6 @@ void i915_kernel_lost_context(struct drm_device * dev)
 	ring->space = ring->head - (ring->tail + 8);
 	if (ring->space < 0)
 		ring->space += ring->Size;
-
-	if (ring->head == ring->tail)
-		dev_priv->sarea_priv->perf_boxes |= I915_BOX_RING_EMPTY;
 }
 
 static int i915_dma_cleanup(struct drm_device * dev)
