@@ -63,6 +63,8 @@ typedef struct _drmModeRes {
 	int count_outputs;
 	uint32_t *outputs;
 
+	uint32_t min_width, max_width;
+	uint32_t min_height, max_height;
 } drmModeRes, *drmModeResPtr;
 
 typedef struct drm_mode_fb_cmd drmModeFB, *drmModeFBPtr;
@@ -72,7 +74,7 @@ typedef struct _drmModeProperty {
 	unsigned int flags;
 	unsigned char name[DRM_PROP_NAME_LEN];
 	int count_values;
-	uint32_t *values;
+	uint64_t *values;
 	int count_enums;
 	struct drm_mode_property_enum *enums;
 
@@ -132,7 +134,7 @@ typedef struct _drmModeOutput {
 
 	int count_props;
 	uint32_t *props; /**< List of property ids */
-	uint32_t *prop_values; /**< List of property values */
+	uint64_t *prop_values; /**< List of property values */
 
 } drmModeOutput, *drmModeOutputPtr;
 

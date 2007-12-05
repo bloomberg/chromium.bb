@@ -722,7 +722,11 @@ void drm_mode_config_init(struct drm_device *dev)
 	INIT_LIST_HEAD(&dev->mode_config.crtc_list);
 	INIT_LIST_HEAD(&dev->mode_config.output_list);
 	INIT_LIST_HEAD(&dev->mode_config.property_list);
+	INIT_LIST_HEAD(&dev->mode_config.property_blob_list);
 	idr_init(&dev->mode_config.crtc_idr);
+	dev->mode_config.edid_property = drm_property_create(dev,
+							     DRM_MODE_PROP_BLOB | DRM_MODE_PROP_IMMUTABLE,
+							     "EDID", 0);
 }
 EXPORT_SYMBOL(drm_mode_config_init);
 
@@ -1013,7 +1017,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
 		changed = true;
 
-	if (new_mode && (crtc->mode.mode_id != new_mode->mode_id))
+	if (new_mode && !drm_mode_equal(new_mode, &crtc->mode))
 		changed = true;
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
@@ -1152,6 +1156,9 @@ int drm_mode_getresources(struct drm_device *dev,
 	int crtc_count = 0;
 	int fb_count = 0;
 	int copied = 0;
+	uint32_t __user *fb_id;
+	uint32_t __user *crtc_id;
+	uint32_t __user *output_id;
 
 	mutex_lock(&dev->mode_config.mutex);
 
@@ -1164,12 +1171,18 @@ int drm_mode_getresources(struct drm_device *dev,
 	list_for_each(lh, &dev->mode_config.output_list)
 		output_count++;
 
+	card_res->max_height = dev->mode_config.max_height;
+	card_res->min_height = dev->mode_config.min_height;
+	card_res->max_width = dev->mode_config.max_width;
+	card_res->min_width = dev->mode_config.min_width;
+
 	/* handle this in 4 parts */
 	/* FBs */
 	if (card_res->count_fbs >= fb_count) {
 		copied = 0;
+		fb_id = (uint32_t *)(unsigned long)card_res->fb_id_ptr;
 		list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
-			if (put_user(fb->id, card_res->fb_id + copied)) {
+			if (put_user(fb->id, fb_id + copied)) {
 				ret = -EFAULT;
 				goto out;
 			}
@@ -1181,9 +1194,10 @@ int drm_mode_getresources(struct drm_device *dev,
 	/* CRTCs */
 	if (card_res->count_crtcs >= crtc_count) {
 		copied = 0;
+		crtc_id = (uint32_t *)(unsigned long)card_res->crtc_id_ptr;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head){
 			DRM_DEBUG("CRTC ID is %d\n", crtc->id);
-			if (put_user(crtc->id, card_res->crtc_id + copied)) {
+			if (put_user(crtc->id, crtc_id + copied)) {
 				ret = -EFAULT;
 				goto out;
 			}
@@ -1196,10 +1210,11 @@ int drm_mode_getresources(struct drm_device *dev,
 	/* Outputs */
 	if (card_res->count_outputs >= output_count) {
 		copied = 0;
+		output_id = (uint32_t *)(unsigned long)card_res->output_id_ptr;
 		list_for_each_entry(output, &dev->mode_config.output_list,
 				    head) {
  			DRM_DEBUG("OUTPUT ID is %d\n", output->id);
-			if (put_user(output->id, card_res->output_id + copied)) {
+			if (put_user(output->id, output_id + copied)) {
 				ret = -EFAULT;
 				goto out;
 			}
@@ -1210,7 +1225,6 @@ int drm_mode_getresources(struct drm_device *dev,
 	
 	DRM_DEBUG("Counted %d %d\n", card_res->count_crtcs,
 		  card_res->count_outputs);
-
 
 out:	
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1307,6 +1321,9 @@ int drm_mode_getoutput(struct drm_device *dev,
 	int copied = 0;
 	int i;
 	struct drm_mode_modeinfo u_mode;
+	struct drm_mode_modeinfo __user *mode_ptr;
+	uint32_t __user *prop_ptr;
+	uint64_t __user *prop_values;
 
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
@@ -1349,9 +1366,10 @@ int drm_mode_getoutput(struct drm_device *dev,
 
 	if ((out_resp->count_modes >= mode_count) && mode_count) {
 		copied = 0;
+		mode_ptr = (struct drm_mode_modeinfo *)(unsigned long)out_resp->modes_ptr;
 		list_for_each_entry(mode, &output->modes, head) {
 			drm_crtc_convert_to_umode(&u_mode, mode);
-			if (copy_to_user(out_resp->modes + copied,
+			if (copy_to_user(mode_ptr + copied,
 					 &u_mode, sizeof(u_mode))) {
 				ret = -EFAULT;
 				goto out;
@@ -1364,14 +1382,16 @@ int drm_mode_getoutput(struct drm_device *dev,
 
 	if ((out_resp->count_props >= props_count) && props_count) {
 		copied = 0;
+		prop_ptr = (uint32_t *)(unsigned long)(out_resp->props_ptr);
+		prop_values = (uint64_t *)(unsigned long)(out_resp->prop_values_ptr);
 		for (i = 0; i < DRM_OUTPUT_MAX_PROPERTY; i++) {
 			if (output->property_ids[i] != 0) {
-				if (put_user(output->property_ids[i], out_resp->props + copied)) {
+				if (put_user(output->property_ids[i], prop_ptr + copied)) {
 					ret = -EFAULT;
 					goto out;
 				}
 
-				if (put_user(output->property_values[i], out_resp->prop_values + copied)) {
+				if (put_user(output->property_values[i], prop_values + copied)) {
 					ret = -EFAULT;
 					goto out;
 				}
@@ -1410,10 +1430,10 @@ int drm_mode_setcrtc(struct drm_device *dev,
 	struct drm_crtc *crtc;
 	struct drm_output **output_set = NULL, *output;
 	struct drm_framebuffer *fb = NULL;
-	struct drm_display_mode mode;
-	int mode_valid = 0;
+	struct drm_display_mode *mode = NULL;
 	int ret = 0;
 	int i;
+	uint32_t __user *set_outputs_ptr;
 
 	mutex_lock(&dev->mode_config.mutex);
 	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req->crtc_id);
@@ -1434,18 +1454,17 @@ int drm_mode_setcrtc(struct drm_device *dev,
 			}
 		}
 
-		mode_valid = 1;
-		drm_crtc_convert_umode(&mode, &crtc_req->mode);
-	} else
-		mode_valid = 0;
+		mode = drm_mode_create(dev);
+		drm_crtc_convert_umode(mode, &crtc_req->mode);
+	}
 
-	if (crtc_req->count_outputs == 0 && mode_valid) {
+	if (crtc_req->count_outputs == 0 && mode) {
 		DRM_DEBUG("Count outputs is 0 but mode set\n");
 		ret = -EINVAL;
 		goto out;
 	}
 
-	if (crtc_req->count_outputs > 0 && !mode_valid && !fb) {
+	if (crtc_req->count_outputs > 0 && !mode && !fb) {
 		DRM_DEBUG("Count outputs is %d but no mode or fb set\n", crtc_req->count_outputs);
 		ret = -EINVAL;
 		goto out;
@@ -1461,7 +1480,8 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		}
 
 		for (i = 0; i < crtc_req->count_outputs; i++) {
-			if (get_user(out_id, &crtc_req->set_outputs[i])) {
+			set_outputs_ptr = (uint32_t *)(unsigned long)crtc_req->set_outputs_ptr;
+			if (get_user(out_id, &set_outputs_ptr[i])) {
 				ret = -EFAULT;
 				goto out;
 			}
@@ -1477,11 +1497,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		}
 	}
 
-	if (mode_valid) {
-		ret = drm_crtc_set_config(crtc, crtc_req, &mode, output_set, fb);
-	} else {
-		ret = drm_crtc_set_config(crtc, crtc_req, NULL, output_set, fb);
-	}
+	ret = drm_crtc_set_config(crtc, crtc_req, mode, output_set, fb);
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1847,15 +1863,17 @@ struct drm_property *drm_property_create(struct drm_device *dev, int flags,
 	property = kzalloc(sizeof(struct drm_output), GFP_KERNEL);
 	if (!property)
 		return NULL;
-	
-	property->values = kzalloc(sizeof(uint32_t)*num_values, GFP_KERNEL);
-	if (!property->values)
-		goto fail;
+
+	if (num_values) {
+		property->values = kzalloc(sizeof(uint64_t)*num_values, GFP_KERNEL);
+		if (!property->values)
+			goto fail;
+	}
 
 	property->id = drm_idr_get(dev, property);
 	property->flags = flags;
 	property->num_values = num_values;
-	INIT_LIST_HEAD(&property->enum_list);
+	INIT_LIST_HEAD(&property->enum_blob_list);
 
 	if (name)
 		strncpy(property->name, name, DRM_PROP_NAME_LEN);
@@ -1869,15 +1887,15 @@ fail:
 EXPORT_SYMBOL(drm_property_create);
 
 int drm_property_add_enum(struct drm_property *property, int index,
-			  uint32_t value, const char *name)
+			  uint64_t value, const char *name)
 {
 	struct drm_property_enum *prop_enum;
 
 	if (!(property->flags & DRM_MODE_PROP_ENUM))
 		return -EINVAL;
 
-	if (!list_empty(&property->enum_list)) {
-		list_for_each_entry(prop_enum, &property->enum_list, head) {
+	if (!list_empty(&property->enum_blob_list)) {
+		list_for_each_entry(prop_enum, &property->enum_blob_list, head) {
 			if (prop_enum->value == value) {
 				strncpy(prop_enum->name, name, DRM_PROP_NAME_LEN); 
 				prop_enum->name[DRM_PROP_NAME_LEN-1] = '\0';
@@ -1895,7 +1913,7 @@ int drm_property_add_enum(struct drm_property *property, int index,
 	prop_enum->value = value;
 
 	property->values[index] = value;
-	list_add_tail(&prop_enum->head, &property->enum_list);
+	list_add_tail(&prop_enum->head, &property->enum_blob_list);
 	return 0;
 }
 EXPORT_SYMBOL(drm_property_add_enum);
@@ -1904,12 +1922,13 @@ void drm_property_destroy(struct drm_device *dev, struct drm_property *property)
 {
 	struct drm_property_enum *prop_enum, *pt;
 
-	list_for_each_entry_safe(prop_enum, pt, &property->enum_list, head) {
+	list_for_each_entry_safe(prop_enum, pt, &property->enum_blob_list, head) {
 		list_del(&prop_enum->head);
 		kfree(prop_enum);
 	}
 
-	kfree(property->values);
+	if (property->num_values)
+		kfree(property->values);
 	drm_idr_put(dev, property->id);
 	list_del(&property->head);
 	kfree(property);	
@@ -1918,7 +1937,7 @@ EXPORT_SYMBOL(drm_property_destroy);
 
 
 int drm_output_attach_property(struct drm_output *output,
-			       struct drm_property *property, int init_val)
+			       struct drm_property *property, uint64_t init_val)
 {
 	int i;
 
@@ -1942,10 +1961,14 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	struct drm_mode_get_property *out_resp = data;
 	struct drm_property *property;
 	int enum_count = 0;
+	int blob_count = 0;
 	int value_count = 0;
 	int ret = 0, i;
 	int copied;
 	struct drm_property_enum *prop_enum;
+	struct drm_property_enum __user *enum_ptr;
+	struct drm_property_blob *prop_blob;
+	uint64_t __user *values_ptr;
 
 	mutex_lock(&dev->mode_config.mutex);
 	property = idr_find(&dev->mode_config.crtc_idr, out_resp->prop_id);
@@ -1954,9 +1977,13 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 		goto done;
 	}
 
-
-	list_for_each_entry(prop_enum, &property->enum_list, head)
-		enum_count++;
+	if (property->flags & DRM_MODE_PROP_ENUM) {
+		list_for_each_entry(prop_enum, &property->enum_blob_list, head)
+			enum_count++;
+	} else 	if (property->flags & DRM_MODE_PROP_BLOB) {
+		list_for_each_entry(prop_blob, &property->enum_blob_list, head)
+			blob_count++;
+	}
 
 	value_count = property->num_values;
 
@@ -1965,8 +1992,9 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	out_resp->flags = property->flags;
 
 	if ((out_resp->count_values >= value_count) && value_count) {
+		values_ptr = (uint64_t *)(unsigned long)out_resp->values_ptr;
 		for (i = 0; i < value_count; i++) {
-			if (put_user(property->values[i], out_resp->values + i)) {
+			if (put_user(property->values[i], values_ptr + i)) {
 				ret = -EFAULT;
 				goto done;
 			}
@@ -1974,10 +2002,30 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	}
 	out_resp->count_values = value_count;
 
-	if ((out_resp->count_enums >= enum_count) && enum_count) {
+	if ((out_resp->count_enum_blobs >= enum_count) && enum_count && (property->flags & DRM_MODE_PROP_ENUM)) {
 		copied = 0;
-		list_for_each_entry(prop_enum, &property->enum_list, head) {
-			if (put_user(prop_enum->value, &out_resp->enums[copied].value)) {
+		enum_ptr = (struct drm_property_enum *)(unsigned long)out_resp->enum_blob_ptr;
+		list_for_each_entry(prop_enum, &property->enum_blob_list, head) {
+			if (put_user(prop_enum->value, &enum_ptr[copied].value)) {
+				ret = -EFAULT;
+				goto done;
+			}
+
+			if (copy_to_user(&enum_ptr[copied].name,
+					 prop_enum->name, DRM_PROP_NAME_LEN)) {
+				ret = -EFAULT;
+				goto done;
+			}
+			copied++;
+		}
+	}
+	out_resp->count_enum_blobs = enum_count;
+
+#if 0
+	if ((out_resp->count_blobs >= enum_count) && blob_count && (property->flags & DRM_MODE_PROP_BLOB)) {
+		copied = 0;
+		list_for_each_entry(prop_blob, &property->enum_list, head) {
+			if (put_user(prop_enum->value, &out_resp->blobs[copied].value)) {
 				ret = -EFAULT;
 				goto done;
 			}
@@ -1991,8 +2039,39 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 		}
 	}
 	out_resp->count_enums = enum_count;
-
+#endif
 done:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
+}
+
+static int drm_property_create_blob(struct drm_device *dev, int length,
+				    void *data)
+{
+	struct drm_property_blob *blob;
+
+	if (!length || !data)
+		return -EINVAL;
+
+	blob = kzalloc(sizeof(struct drm_property_blob)+length, GFP_KERNEL);
+	if (!blob)
+		return -EINVAL;
+
+	blob->data = (void *)((char *)blob + sizeof(struct drm_property_blob));
+	blob->length = length;
+
+	memcpy(blob->data, data, length);
+
+	blob->id = drm_idr_get(dev, blob);
+	
+	list_add_tail(&blob->head, &dev->mode_config.property_blob_list);
+	return blob->id;
+}
+
+static void drm_property_destroy_blob(struct drm_device *dev,
+			       struct drm_property_blob *blob)
+{
+	drm_idr_put(dev, blob->id);
+	list_del(&blob->head);
+	kfree(blob);
 }

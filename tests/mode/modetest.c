@@ -76,16 +76,21 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 
 			printf("\n\tenums %d: \n", props->count_enums);
 
-			for (j = 0; j < props->count_enums; j++) {
-				if (output->prop_values[i] == props->enums[j].value)
-					name = props->enums[j].name;
-				printf("\t\t%d = %s\n", props->enums[j].value, props->enums[j].name);
-			}
+			if (prop->flags & DRM_MODE_PROP_BLOB) {
+				
 
-			if (props->count_enums && name) {
-				printf("\toutput property name %s %s\n", props->name, name);
 			} else {
-				printf("\toutput property id %s %i\n", props->name, output->prop_values[i]);
+				for (j = 0; j < props->count_enums; j++) {
+					if (output->prop_values[i] == props->enums[j].value)
+						name = props->enums[j].name;
+					printf("\t\t%d = %s\n", props->enums[j].value, props->enums[j].name);
+				}
+
+				if (props->count_enums && name) {
+					printf("\toutput property name %s %s\n", props->name, name);
+				} else {
+					printf("\toutput property id %s %i\n", props->name, output->prop_values[i]);
+				}
 			}
 
 			drmModeFreeProperty(props);

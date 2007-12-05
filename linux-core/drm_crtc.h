@@ -234,9 +234,16 @@ struct drm_framebuffer {
 	struct list_head filp_head;
 };
 
+struct drm_property_blob {
+	struct list_head head;
+	unsigned int id;
+	unsigned int length;
+	void *data;
+};
+
 struct drm_property_enum {
 	struct list_head head;
-	uint32_t value;
+	uint64_t value;
 	unsigned char name[DRM_PROP_NAME_LEN];
 };
 
@@ -246,9 +253,9 @@ struct drm_property {
 	uint32_t flags;
 	char name[DRM_PROP_NAME_LEN];
 	uint32_t num_values;
-	uint32_t *values;
+	uint64_t *values;
 
-	struct list_head enum_list;
+	struct list_head enum_blob_list;
 };
 
 struct drm_crtc;
@@ -451,7 +458,7 @@ struct drm_output {
 	struct list_head user_modes;
 
 	u32 property_ids[DRM_OUTPUT_MAX_PROPERTY];
-	u32 property_values[DRM_OUTPUT_MAX_PROPERTY];
+	uint64_t property_values[DRM_OUTPUT_MAX_PROPERTY];
 };
 
 /**
@@ -492,6 +499,10 @@ struct drm_mode_config {
 	/* DGA stuff? */
 	struct drm_mode_config_funcs *funcs;
 	unsigned long fb_base;
+
+	/* pointers to standard properties */
+	struct list_head property_blob_list;
+	struct drm_property *edid_property;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,
@@ -549,12 +560,12 @@ extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		       int x, int y);
 
 extern int drm_output_attach_property(struct drm_output *output,
-				      struct drm_property *property, int init_val);
+				      struct drm_property *property, uint64_t init_val);
 extern struct drm_property *drm_property_create(struct drm_device *dev, int flags,
 						const char *name, int num_values);
 extern void drm_property_destroy(struct drm_device *dev, struct drm_property *property);
 extern int drm_property_add_enum(struct drm_property *property, int index, 
-				 uint32_t value, const char *name);
+				 uint64_t value, const char *name);
 
 /* IOCTLs */
 extern int drm_mode_getresources(struct drm_device *dev,
