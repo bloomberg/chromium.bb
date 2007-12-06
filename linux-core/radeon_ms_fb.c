@@ -42,8 +42,9 @@
 #include "radeon_ms.h"
 
 struct radeonfb_par {
-	struct drm_device	*dev;
-	struct drm_crtc		*crtc;
+	struct drm_device       *dev;
+	struct drm_crtc         *crtc;
+	struct drm_display_mode *fb_mode;
 };
 
 static int radeonfb_setcolreg(unsigned regno, unsigned red,
@@ -127,13 +128,38 @@ static int radeonfb_check_var(struct fb_var_screeninfo *var,
 	return 0;
 }
 
+static bool radeonfb_mode_equal(struct drm_display_mode *mode1,
+			        struct drm_display_mode *mode2)
+{
+	if (mode1->hdisplay == mode2->hdisplay &&
+	    mode1->hsync_start == mode2->hsync_start &&
+	    mode1->hsync_end == mode2->hsync_end &&
+	    mode1->htotal == mode2->htotal &&
+	    mode1->hskew == mode2->hskew &&
+	    mode1->vdisplay == mode2->vdisplay &&
+	    mode1->vsync_start == mode2->vsync_start &&
+	    mode1->vsync_end == mode2->vsync_end &&
+	    mode1->vtotal == mode2->vtotal &&
+	    mode1->vscan == mode2->vscan &&
+	    mode1->flags == mode2->flags) {
+	    	/* FIXME: what about adding a margin for clock ? */
+		if (mode1->clock == mode2->clock)
+			return true;
+		return false;
+	}
+	
+	return false;
+}
+
 static int radeonfb_set_par(struct fb_info *info)
 {
 	struct radeonfb_par *par = info->par;
 	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_device *dev = par->dev;
-        struct drm_display_mode *drm_mode;
+        struct drm_display_mode *drm_mode, *search_mode;
+        struct drm_output *output;
         struct fb_var_screeninfo *var = &info->var;
+	int found = 0;
 
         switch (var->bits_per_pixel) {
         case 16:
@@ -171,15 +197,39 @@ static int radeonfb_set_par(struct fb_info *info)
 	drm_mode_set_name(drm_mode);
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 
-	drm_mode_debug_printmodeline(dev, drm_mode);
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
+                if (output->crtc == par->crtc)
+                        break;
+        }
 
-	if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
-		return -EINVAL;
+	drm_mode_debug_printmodeline(dev, drm_mode);    
+        list_for_each_entry(search_mode, &output->modes, head) {
+		drm_mode_debug_printmodeline(dev, search_mode);
+		if (radeonfb_mode_equal(drm_mode, search_mode)) {
+			drm_mode_destroy(dev, drm_mode);
+			drm_mode = search_mode;
+			found = 1;
+			break;
+		}
+	}
 
-        /* Have to destroy our created mode if we're not searching the mode
-         * list for it.
-         */
-	drm_mode_destroy(dev, drm_mode);
+	if (!found) {
+		if (par->fb_mode) {
+			drm_mode_detachmode_crtc(dev, par->fb_mode);
+		}
+		par->fb_mode = drm_mode;
+		drm_mode_debug_printmodeline(dev, drm_mode);
+		/* attach mode */
+		drm_mode_attachmode_crtc(dev, par->crtc, par->fb_mode);
+	}
+
+	if (par->crtc->enabled) {
+		if (!drm_mode_equal(&par->crtc->mode, drm_mode)) {
+			if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0)) {
+				return -EINVAL;
+			}
+		}
+	}
 
 	return 0;
 }

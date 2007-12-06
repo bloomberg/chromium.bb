@@ -164,6 +164,10 @@ static int radeon_ms_output_get_modes(struct drm_output *output)
 	if (connector == NULL || connector->i2c == NULL) {
 		return 0;
 	}
+	if (connector->edid == NULL) {
+		return 0;
+	}
+	drm_mode_output_update_edid_property(output, connector->edid);
 	ret = drm_add_edid_modes(output, connector->edid);
 	kfree(connector->edid);
 	connector->edid = NULL;
