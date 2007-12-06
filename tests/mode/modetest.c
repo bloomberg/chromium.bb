@@ -20,20 +20,9 @@ const char* getConnectionText(drmModeConnection conn)
 
 }
 
-struct drm_mode_modeinfo* findMode(drmModeResPtr res, uint32_t id)
-{
-	int i;
-	for (i = 0; i < res->count_modes; i++) {
-		if (res->modes[i].id == id)
-			return &res->modes[i];
-	}
-
-	return 0;
-}
-
 int printMode(struct drm_mode_modeinfo *mode)
 {
-#if 0
+#if 1
 	printf("Mode: %s\n", mode->name);
 	printf("\tclock       : %i\n", mode->clock);
 	printf("\thdisplay    : %i\n", mode->hdisplay);
@@ -49,7 +38,7 @@ int printMode(struct drm_mode_modeinfo *mode)
 	printf("\tvrefresh    : %i\n", mode->vrefresh);
 	printf("\tflags       : %i\n", mode->flags);
 #else
-	printf("Mode: %i \"%s\" %ix%i %.0f\n", mode->id, mode->name,
+	printf("Mode: \"%s\" %ix%i %.0f\n", mode->name,
 		mode->hdisplay, mode->vdisplay, mode->vrefresh / 1000.0);
 #endif
 	return 0;
@@ -86,17 +75,27 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 				printf("%d ", props->values[j]);
 
 			printf("\n\tenums %d: \n", props->count_enums);
+			
+			if (props->flags & DRM_MODE_PROP_BLOB) {
+				drmModePropertyBlobPtr blob;
 
-			for (j = 0; j < props->count_enums; j++) {
-				if (output->prop_values[i] == props->enums[j].value)
-					name = props->enums[j].name;
-				printf("\t\t%d = %s\n", props->enums[j].value, props->enums[j].name);
-			}
+				blob = drmModeGetPropertyBlob(fd, output->prop_values[i]);
 
-			if (props->count_enums && name) {
-				printf("\toutput property name %s %s\n", props->name, name);
+				printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
+				drmModeFreePropertyBlob(blob);
+
 			} else {
-				printf("\toutput property id %s %i\n", props->name, output->prop_values[i]);
+				for (j = 0; j < props->count_enums; j++) {
+					if (output->prop_values[i] == props->enums[j].value)
+						name = props->enums[j].name;
+					printf("\t\t%d = %s\n", props->enums[j].value, props->enums[j].name);
+				}
+
+				if (props->count_enums && name) {
+					printf("\toutput property name %s %s\n", props->name, name);
+				} else {
+					printf("\toutput property id %s %i\n", props->name, output->prop_values[i]);
+				}
 			}
 
 			drmModeFreeProperty(props);
@@ -104,11 +103,9 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 	}
 
 	for (i = 0; i < output->count_modes; i++) {
-		mode = findMode(res, output->modes[i]);
-
+		mode = &output->modes[i];
 		if (mode)
-			printf("\t\tmode: %i \"%s\" %ix%i %.0f\n", mode->id, mode->name,
-				mode->hdisplay, mode->vdisplay, mode->vrefresh / 1000.0);
+			printMode(mode);
 		else
 			printf("\t\tmode: Invalid mode %i\n", output->modes[i]);
 	}
@@ -153,10 +150,6 @@ int printRes(int fd, drmModeResPtr res)
 	drmModeOutputPtr output;
 	drmModeCrtcPtr crtc;
 	drmModeFBPtr fb;
-
-	for (i = 0; i < res->count_modes; i++) {
-		printMode(&res->modes[i]);
-	}
 
 	for (i = 0; i < res->count_outputs; i++) {
 		output = drmModeGetOutput(fd, res->outputs[i]);
@@ -222,40 +215,26 @@ int testMode(int fd, drmModeResPtr res)
 
 	/* printMode(&mode); */
 
-	printf("\tAdding mode\n");
-	newMode = drmModeAddMode(fd, &mode);
-	if (!newMode)
-		goto err;
-
 	printf("\tAttaching mode %i to output %i\n", newMode, output);
 
-	ret = drmModeAttachMode(fd, output, newMode);
+	ret = drmModeAttachMode(fd, output, &mode);
 
 	if (ret)
 		goto err_mode;
 
 	printf("\tDetaching mode %i from output %i\n", newMode, output);
-	ret = drmModeDetachMode(fd, output, newMode);
+	ret = drmModeDetachMode(fd, output, &mode);
 
 	if (ret)
 		goto err_mode;
-
-	printf("\tRemoveing new mode %i\n", newMode);
-	ret = drmModeRmMode(fd, newMode);
-	if (ret)
-		goto err;
-
 	return 0;
 
 err_mode:
-	error = drmModeRmMode(fd, newMode);
 
-err:
 	printf("\tFailed\n");
 
 	if (error)
 		printf("\tFailed to delete mode %i\n", newMode);
-
 	return 1;
 }
 

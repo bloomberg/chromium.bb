@@ -124,8 +124,8 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_ADDFB, drm_mode_addfb, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_RMFB, drm_mode_rmfb, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETFB, drm_mode_getfb, DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MODE_ADDMODE, drm_mode_addmode_ioctl, DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MODE_RMMODE, drm_mode_rmmode_ioctl, DRM_MASTER|DRM_ROOT_ONLY),
+
+	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETPROPBLOB, drm_mode_getblob_ioctl, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_ATTACHMODE, drm_mode_attachmode_ioctl, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_DETACHMODE, drm_mode_detachmode_ioctl, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETPROPERTY, drm_mode_getproperty_ioctl, DRM_MASTER | DRM_ROOT_ONLY),
@@ -277,11 +277,6 @@ int drm_lastclose(struct drm_device * dev)
 	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
 		drm_dma_takedown(dev);
 
-	if (dev->lock.hw_lock) {
-		dev->sigdata.lock = dev->lock.hw_lock = NULL;	/* SHM removed */
-		dev->lock.file_priv = NULL;
-		wake_up_interruptible(&dev->lock.lock_queue);
-	}
 	dev->dev_mapping = NULL;
 	mutex_unlock(&dev->struct_mutex);
 

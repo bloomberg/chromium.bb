@@ -234,9 +234,16 @@ struct drm_framebuffer {
 	struct list_head filp_head;
 };
 
+struct drm_property_blob {
+	struct list_head head;
+	unsigned int length;
+	unsigned int id;
+	void *data;
+};
+
 struct drm_property_enum {
 	struct list_head head;
-	uint32_t value;
+	uint64_t value;
 	unsigned char name[DRM_PROP_NAME_LEN];
 };
 
@@ -246,9 +253,9 @@ struct drm_property {
 	uint32_t flags;
 	char name[DRM_PROP_NAME_LEN];
 	uint32_t num_values;
-	uint32_t *values;
+	uint64_t *values;
 
-	struct list_head enum_list;
+	struct list_head enum_blob_list;
 };
 
 struct drm_crtc;
@@ -448,10 +455,10 @@ struct drm_output {
 	const struct drm_output_funcs *funcs;
 	void *driver_private;
 
-	u32 user_mode_ids[DRM_OUTPUT_MAX_UMODES];
-
+	struct list_head user_modes;
+	struct drm_property_blob *edid_blob_ptr;
 	u32 property_ids[DRM_OUTPUT_MAX_PROPERTY];
-	u32 property_values[DRM_OUTPUT_MAX_PROPERTY];
+	uint64_t property_values[DRM_OUTPUT_MAX_PROPERTY];
 };
 
 /**
@@ -484,8 +491,6 @@ struct drm_mode_config {
 	int num_crtc;
 	struct list_head crtc_list;
 
-	struct list_head usermode_list;
-
 	struct list_head property_list;
 
 	int min_width, min_height;
@@ -494,6 +499,10 @@ struct drm_mode_config {
 	/* DGA stuff? */
 	struct drm_mode_config_funcs *funcs;
 	unsigned long fb_base;
+
+	/* pointers to standard properties */
+	struct list_head property_blob_list;
+	struct drm_property *edid_property;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,
@@ -518,9 +527,6 @@ extern void drm_mode_set_name(struct drm_display_mode *mode);
 extern bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2);
 extern void drm_disable_unused_functions(struct drm_device *dev);
 
-extern void drm_mode_addmode(struct drm_device *dev, struct drm_display_mode *user_mode);
-extern int drm_mode_rmmode(struct drm_device *dev, struct drm_display_mode *mode);
-
 /* for us by fb module */
 extern int drm_mode_attachmode_crtc(struct drm_device *dev,
 				    struct drm_crtc *crtc,
@@ -541,7 +547,7 @@ extern int drm_mode_vrefresh(struct drm_display_mode *mode);
 extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
 				  int adjust_flags);
 extern void drm_mode_output_list_update(struct drm_output *output);
-
+extern int drm_mode_output_update_edid_property(struct drm_output *output, unsigned char *edid);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
@@ -554,12 +560,12 @@ extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		       int x, int y);
 
 extern int drm_output_attach_property(struct drm_output *output,
-				      struct drm_property *property, int init_val);
+				      struct drm_property *property, uint64_t init_val);
 extern struct drm_property *drm_property_create(struct drm_device *dev, int flags,
 						const char *name, int num_values);
 extern void drm_property_destroy(struct drm_device *dev, struct drm_property *property);
 extern int drm_property_add_enum(struct drm_property *property, int index, 
-				 uint32_t value, const char *name);
+				 uint64_t value, const char *name);
 
 /* IOCTLs */
 extern int drm_mode_getresources(struct drm_device *dev,
@@ -588,5 +594,7 @@ extern int drm_mode_detachmode_ioctl(struct drm_device *dev,
 
 extern int drm_mode_getproperty_ioctl(struct drm_device *dev,
 				      void *data, struct drm_file *file_priv);
+extern int drm_mode_getblob_ioctl(struct drm_device *dev,
+				  void *data, struct drm_file *file_priv);
 #endif /* __DRM_CRTC_H__ */
 

@@ -63,22 +63,28 @@ typedef struct _drmModeRes {
 	int count_outputs;
 	uint32_t *outputs;
 
-	int count_modes;
-	struct drm_mode_modeinfo *modes;
-
+	uint32_t min_width, max_width;
+	uint32_t min_height, max_height;
 } drmModeRes, *drmModeResPtr;
 
 typedef struct drm_mode_fb_cmd drmModeFB, *drmModeFBPtr;
+
+typedef struct _drmModePropertyBlob {
+	uint32_t id;
+	uint32_t length;
+	void *data;
+} drmModePropertyBlobRes, *drmModePropertyBlobPtr;
 
 typedef struct _drmModeProperty {
 	unsigned int prop_id;
 	unsigned int flags;
 	unsigned char name[DRM_PROP_NAME_LEN];
 	int count_values;
-	uint32_t *values;
+	uint64_t *values; // store the blob lengths
 	int count_enums;
 	struct drm_mode_property_enum *enums;
-
+	int count_blobs;
+	uint32_t *blob_ids; // store the blob IDs
 } drmModePropertyRes, *drmModePropertyPtr;
 
 typedef struct _drmModeCrtc {
@@ -87,7 +93,8 @@ typedef struct _drmModeCrtc {
 
 	uint32_t x, y; /**< Position on the frameuffer */
 	uint32_t width, height;
-	uint32_t mode; /**< Current mode used */
+	int mode_valid;
+	struct drm_mode_modeinfo mode;
 
 	int count_outputs;
 	uint32_t outputs; /**< Outputs that are connected */
@@ -130,11 +137,11 @@ typedef struct _drmModeOutput {
 	uint32_t clones; /**< Mask of clones */
 
 	int count_modes;
-	uint32_t *modes; /**< List of modes ids */
+	struct drm_mode_modeinfo *modes;
 
 	int count_props;
 	uint32_t *props; /**< List of property ids */
-	uint32_t *prop_values; /**< List of property values */
+	uint64_t *prop_values; /**< List of property values */
 
 } drmModeOutput, *drmModeOutputPtr;
 
@@ -185,9 +192,9 @@ extern drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId);
 /**
  * Set the mode on a crtc crtcId with the given mode modeId.
  */
-extern int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
-		uint32_t x, uint32_t y, uint32_t modeId,
-		uint32_t *outputs, int count);
+int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
+                   uint32_t x, uint32_t y, uint32_t *outputs, int count,
+		   struct drm_mode_modeinfo *mode);
 
 
 /*
@@ -201,26 +208,18 @@ extern drmModeOutputPtr drmModeGetOutput(int fd,
 		uint32_t outputId);
 
 /**
- * Adds a new mode from the given mode info.
- * Name must be unique.
- */
-extern uint32_t drmModeAddMode(int fd, struct drm_mode_modeinfo *modeInfo);
-
-/**
- * Removes a mode created with AddMode, must be unused.
- */
-extern int drmModeRmMode(int fd, uint32_t modeId);
-
-/**
  * Attaches the given mode to an output.
  */
-extern int drmModeAttachMode(int fd, uint32_t outputId, uint32_t modeId);
+extern int drmModeAttachMode(int fd, uint32_t outputId, struct drm_mode_modeinfo *mode_info);
 
 /**
  * Detaches a mode from the output
  * must be unused, by the given mode.
  */
-extern int drmModeDetachMode(int fd, uint32_t outputId, uint32_t modeId);
+extern int drmModeDetachMode(int fd, uint32_t outputId, struct drm_mode_modeinfo *mode_info);
 
 extern drmModePropertyPtr drmModeGetProperty(int fd, uint32_t propertyId);
 extern void drmModeFreeProperty(drmModePropertyPtr ptr);
+
+extern drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id);
+extern void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr);

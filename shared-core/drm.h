@@ -908,9 +908,6 @@ struct drm_mm_init_arg {
 #define DRM_MODE_TYPE_DRIVER	(1<<6)
 
 struct drm_mode_modeinfo {
-
-	unsigned int id;
-
 	unsigned int clock;
 	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;
 	unsigned short vdisplay, vsync_start, vsync_end, vtotal, vscan;
@@ -923,43 +920,42 @@ struct drm_mode_modeinfo {
 };
 
 struct drm_mode_card_res {
-
+	uint64_t fb_id_ptr;
+	uint64_t crtc_id_ptr;
+	uint64_t output_id_ptr;
 	int count_fbs;
-	unsigned int __user *fb_id;
-
 	int count_crtcs;
-	unsigned int __user *crtc_id;
-
 	int count_outputs;
-	unsigned int __user *output_id;
-
-	int count_modes;
-        struct drm_mode_modeinfo __user *modes;
-
+	int min_width, max_width;
+	int min_height, max_height;
 };
 
 struct drm_mode_crtc {
+	uint64_t set_outputs_ptr;
+
 	unsigned int crtc_id; /**< Id */
 	unsigned int fb_id; /**< Id of framebuffer */
 
 	int x, y; /**< Position on the frameuffer */
-
-	unsigned int mode; /**< Current mode used */
 
 	int count_outputs;
 	unsigned int outputs; /**< Outputs that are connected */
 
 	int count_possibles;
 	unsigned int possibles; /**< Outputs that can be connected */
-
-	unsigned int __user *set_outputs; /**< Outputs to be connected */
-
 	int gamma_size;
-
+	int mode_valid;
+	struct drm_mode_modeinfo mode;
 };
 
 struct drm_mode_get_output {
 
+	uint64_t modes_ptr;
+	uint64_t props_ptr;
+	uint64_t prop_values_ptr;
+
+	int count_modes;
+	int count_props;
 	unsigned int output; /**< Id */
 	unsigned int crtc; /**< Id of crtc */
 	unsigned char name[DRM_OUTPUT_NAME_LEN];
@@ -967,42 +963,39 @@ struct drm_mode_get_output {
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */
 	unsigned int subpixel;
-
 	int count_crtcs;
-	unsigned int crtcs; /**< possible crtc to connect to */
-
 	int count_clones;
+	unsigned int crtcs; /**< possible crtc to connect to */
 	unsigned int clones; /**< list of clones */
-
-	int count_modes;
-	unsigned int __user *modes; /**< list of modes it supports */
-
-	int count_props;
-	unsigned int __user *props;
-	unsigned int __user *prop_values;
 };
 
 #define DRM_MODE_PROP_PENDING (1<<0)
 #define DRM_MODE_PROP_RANGE (1<<1)
 #define DRM_MODE_PROP_IMMUTABLE (1<<2)
 #define DRM_MODE_PROP_ENUM (1<<3) // enumerated type with text strings
+#define DRM_MODE_PROP_BLOB (1<<4)
 
 struct drm_mode_property_enum {
-	uint32_t value;
+	uint64_t value;
 	unsigned char name[DRM_PROP_NAME_LEN];
 };
-		
+
 struct drm_mode_get_property {
+	uint64_t values_ptr; /* values and blob lengths */
+	uint64_t enum_blob_ptr; /* enum and blob id ptrs */
 
 	unsigned int prop_id;
 	unsigned int flags;
 	unsigned char name[DRM_PROP_NAME_LEN];
 
 	int count_values;
-	uint32_t __user *values;
+	int count_enum_blobs;
+};
 
-	int count_enums;
-	struct drm_mode_property_enum *enums;
+struct drm_mode_get_blob {
+	uint32_t blob_id;
+	uint32_t length;
+	uint64_t data;
 };
 
 struct drm_mode_fb_cmd {
@@ -1016,7 +1009,7 @@ struct drm_mode_fb_cmd {
 
 struct drm_mode_mode_cmd {
 	unsigned int output_id;
-	unsigned int mode_id;
+	struct drm_mode_modeinfo mode;
 };
 
 /**
@@ -1119,8 +1112,7 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
 #define DRM_IOCTL_MODE_GETFB            DRM_IOWR(0xA6, struct drm_mode_fb_cmd)
 
-#define DRM_IOCTL_MODE_ADDMODE         DRM_IOWR(0xA7, struct drm_mode_modeinfo)
-#define DRM_IOCTL_MODE_RMMODE          DRM_IOWR(0xA8, unsigned int)
+#define DRM_IOCTL_MODE_GETPROPBLOB     DRM_IOWR(0xA8, struct drm_mode_get_blob)
 #define DRM_IOCTL_MODE_ATTACHMODE      DRM_IOWR(0xA9, struct drm_mode_mode_cmd)
 #define DRM_IOCTL_MODE_DETACHMODE      DRM_IOWR(0xAA, struct drm_mode_mode_cmd)
 

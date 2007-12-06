@@ -245,4 +245,5 @@ void intel_crt_init(struct drm_device *dev)
 	output->driver_private = intel_output;
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;
+
 }
