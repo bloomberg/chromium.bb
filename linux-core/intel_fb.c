@@ -320,9 +320,11 @@ static int intelfb_set_par(struct fb_info *info)
 		drm_mode_attachmode_crtc(dev, par->crtc, par->fb_mode);
 	}
 
-        if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
+	if (par->crtc->enabled) {
+	  if (!drm_mode_equal(&par->crtc->mode, drm_mode))
+	      if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
                 return -EINVAL;
-
+	}
 	return 0;
 }
 
