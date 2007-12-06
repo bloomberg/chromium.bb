@@ -1005,7 +1005,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	struct drm_device *dev = crtc->dev;
 	struct drm_crtc **save_crtcs, *new_crtc;
 	bool save_enabled = crtc->enabled;
-	bool changed;
+	bool changed = false;
 	struct drm_output *output;
 	int count = 0, ro;
 
