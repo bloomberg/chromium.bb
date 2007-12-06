@@ -220,3 +220,6 @@ extern int drmModeDetachMode(int fd, uint32_t outputId, struct drm_mode_modeinfo
 
 extern drmModePropertyPtr drmModeGetProperty(int fd, uint32_t propertyId);
 extern void drmModeFreeProperty(drmModePropertyPtr ptr);
+
+extern drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id);
+extern void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr);

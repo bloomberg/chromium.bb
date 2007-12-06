@@ -470,3 +470,44 @@ void drmModeFreeProperty(drmModePropertyPtr ptr)
 	drmFree(ptr->enums);
 	drmFree(ptr);
 }
+
+drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id)
+{
+	struct drm_mode_get_blob blob;
+	drmModePropertyBlobPtr r;
+
+	blob.length = 0;
+	blob.data = 0;
+	blob.blob_id = blob_id;
+
+	if (ioctl(fd, DRM_IOCTL_MODE_GETPROPBLOB, &blob))
+		return NULL;
+
+	if (blob.length)
+		blob.data = VOID2U64(drmMalloc(blob.length));
+
+	if (ioctl(fd, DRM_IOCTL_MODE_GETPROPBLOB, &blob)) {
+		r = NULL;
+		goto err_allocs;
+	}
+
+	if (!(r = drmMalloc(sizeof(*r))))
+		return NULL;
+
+	r->id = blob.blob_id;
+	r->length = blob.length;
+	r->data = drmAllocCpy(U642VOID(blob.data), 1, blob.length);
+
+err_allocs:
+	drmFree(U642VOID(blob.data));
+	return r;
+}
+
+void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr)
+{
+	if (!ptr)
+		return;
+
+	drmFree(ptr->data);
+	drmFree(ptr);
+}

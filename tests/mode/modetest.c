@@ -75,9 +75,14 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 				printf("%d ", props->values[j]);
 
 			printf("\n\tenums %d: \n", props->count_enums);
+			
+			if (props->flags & DRM_MODE_PROP_BLOB) {
+				drmModePropertyBlobPtr blob;
 
-			if (prop->flags & DRM_MODE_PROP_BLOB) {
-				
+				blob = drmModeGetPropertyBlob(fd, output->prop_values[i]);
+
+				printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
+				drmModeFreePropertyBlob(blob);
 
 			} else {
 				for (j = 0; j < props->count_enums; j++) {

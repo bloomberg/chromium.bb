@@ -236,8 +236,8 @@ struct drm_framebuffer {
 
 struct drm_property_blob {
 	struct list_head head;
-	unsigned int id;
 	unsigned int length;
+	unsigned int id;
 	void *data;
 };
 
@@ -456,7 +456,7 @@ struct drm_output {
 	void *driver_private;
 
 	struct list_head user_modes;
-
+	struct drm_property_blob *edid_blob_ptr;
 	u32 property_ids[DRM_OUTPUT_MAX_PROPERTY];
 	uint64_t property_values[DRM_OUTPUT_MAX_PROPERTY];
 };
@@ -547,7 +547,7 @@ extern int drm_mode_vrefresh(struct drm_display_mode *mode);
 extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
 				  int adjust_flags);
 extern void drm_mode_output_list_update(struct drm_output *output);
-
+extern int drm_mode_output_update_edid_property(struct drm_output *output, unsigned char *edid);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
@@ -594,5 +594,7 @@ extern int drm_mode_detachmode_ioctl(struct drm_device *dev,
 
 extern int drm_mode_getproperty_ioctl(struct drm_device *dev,
 				      void *data, struct drm_file *file_priv);
+extern int drm_mode_getblob_ioctl(struct drm_device *dev,
+				  void *data, struct drm_file *file_priv);
 #endif /* __DRM_CRTC_H__ */
 

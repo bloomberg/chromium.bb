@@ -590,6 +590,8 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 	list_add_tail(&output->head, &dev->mode_config.output_list);
 	dev->mode_config.num_output++;
 
+	drm_output_attach_property(output, dev->mode_config.edid_property, 0);
+
 	mutex_unlock(&dev->mode_config.mutex);
 
 	return output;
@@ -1935,7 +1937,6 @@ void drm_property_destroy(struct drm_device *dev, struct drm_property *property)
 }
 EXPORT_SYMBOL(drm_property_destroy);
 
-
 int drm_output_attach_property(struct drm_output *output,
 			       struct drm_property *property, uint64_t init_val)
 {
@@ -1954,6 +1955,24 @@ int drm_output_attach_property(struct drm_output *output,
 	return 0;
 }
 EXPORT_SYMBOL(drm_output_attach_property);
+
+int drm_output_property_set_value(struct drm_output *output,
+				  struct drm_property *property, uint64_t value)
+{
+	int i;
+
+	for (i = 0; i < DRM_OUTPUT_MAX_PROPERTY; i++) {
+		if (output->property_ids[i] == property->id) {
+			output->property_values[i] = value;
+			break;
+		}
+	}
+
+	if (i == DRM_OUTPUT_MAX_PROPERTY)
+		return -EINVAL;
+	return 0;
+}
+EXPORT_SYMBOL(drm_output_property_set_value);
 
 int drm_mode_getproperty_ioctl(struct drm_device *dev,
 			       void *data, struct drm_file *file_priv)
@@ -2052,17 +2071,17 @@ done:
 	return ret;
 }
 
-static int drm_property_create_blob(struct drm_device *dev, int length,
-				    void *data)
+static struct drm_property_blob *drm_property_create_blob(struct drm_device *dev, int length,
+							  void *data)
 {
 	struct drm_property_blob *blob;
 
 	if (!length || !data)
-		return -EINVAL;
+		return NULL;
 
 	blob = kzalloc(sizeof(struct drm_property_blob)+length, GFP_KERNEL);
 	if (!blob)
-		return -EINVAL;
+		return NULL;
 
 	blob->data = (void *)((char *)blob + sizeof(struct drm_property_blob));
 	blob->length = length;
@@ -2072,7 +2091,7 @@ static int drm_property_create_blob(struct drm_device *dev, int length,
 	blob->id = drm_idr_get(dev, blob);
 	
 	list_add_tail(&blob->head, &dev->mode_config.property_blob_list);
-	return blob->id;
+	return blob;
 }
 
 static void drm_property_destroy_blob(struct drm_device *dev,
@@ -2082,3 +2101,47 @@ static void drm_property_destroy_blob(struct drm_device *dev,
 	list_del(&blob->head);
 	kfree(blob);
 }
+
+int drm_mode_getblob_ioctl(struct drm_device *dev,
+			   void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_get_blob *out_resp = data;
+	struct drm_property_blob *blob;
+	int ret = 0;
+	void *blob_ptr;
+
+	mutex_lock(&dev->mode_config.mutex);
+	
+	blob = idr_find(&dev->mode_config.crtc_idr, out_resp->blob_id);
+	if (!blob || (blob->id != out_resp->blob_id)) {
+		ret = -EINVAL;
+		goto done;
+	}
+
+	if (out_resp->length == blob->length) {
+		blob_ptr = (void *)(unsigned long)out_resp->data;
+		if (copy_to_user(blob_ptr, blob->data, blob->length)){
+			ret = -EFAULT;
+			goto done;
+		}
+	}
+	out_resp->length = blob->length;
+
+done:
+	mutex_unlock(&dev->mode_config.mutex);
+	return ret;
+}
+
+int drm_mode_output_update_edid_property(struct drm_output *output, unsigned char *edid)
+{
+	struct drm_device *dev = output->dev;
+	int ret = 0;
+	if (output->edid_blob_ptr)
+		drm_property_destroy_blob(dev, output->edid_blob_ptr);
+
+	output->edid_blob_ptr = drm_property_create_blob(output->dev, 128, edid);
+	
+	ret = drm_output_property_set_value(output, dev->mode_config.edid_property, output->edid_blob_ptr->id);
+	return ret;
+}
+EXPORT_SYMBOL(drm_mode_output_update_edid_property);

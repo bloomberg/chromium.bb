@@ -980,11 +980,6 @@ struct drm_mode_property_enum {
 	unsigned char name[DRM_PROP_NAME_LEN];
 };
 
-struct drm_mode_property_blob {
-	uint64_t data_ptr;
-	uint32_t length;
-};
-		
 struct drm_mode_get_property {
 	uint64_t values_ptr; /* values and blob lengths */
 	uint64_t enum_blob_ptr; /* enum and blob id ptrs */
@@ -995,6 +990,12 @@ struct drm_mode_get_property {
 
 	int count_values;
 	int count_enum_blobs;
+};
+
+struct drm_mode_get_blob {
+	uint32_t blob_id;
+	uint32_t length;
+	uint64_t data;
 };
 
 struct drm_mode_fb_cmd {
@@ -1111,7 +1112,7 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
 #define DRM_IOCTL_MODE_GETFB            DRM_IOWR(0xA6, struct drm_mode_fb_cmd)
 
-#define DRM_IOCTL_MODE_GETPROPBLOB     DRM_IOWR(0xA8, struct drm_mode_get_propblob)
+#define DRM_IOCTL_MODE_GETPROPBLOB     DRM_IOWR(0xA8, struct drm_mode_get_blob)
 #define DRM_IOCTL_MODE_ATTACHMODE      DRM_IOWR(0xA9, struct drm_mode_mode_cmd)
 #define DRM_IOCTL_MODE_DETACHMODE      DRM_IOWR(0xAA, struct drm_mode_mode_cmd)
 

@@ -55,6 +55,7 @@ int intel_ddc_get_modes(struct drm_output *output)
 
 	edid = drm_get_edid(output, &intel_output->ddc_bus->adapter);
 	if (edid) {
+		drm_mode_output_update_edid_property(output, edid);
 		ret = drm_add_edid_modes(output, edid);
 		kfree(edid);
 	}
