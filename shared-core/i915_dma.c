@@ -751,6 +751,13 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	    !drm_bo_same_page(relocatee->offset, new_cmd_offset)) {
 		drm_bo_kunmap(&relocatee->kmap);
 		relocatee->offset = new_cmd_offset;
+		mutex_lock (&relocatee->buf->mutex);
+		ret = drm_bo_wait (relocatee->buf, 0, 0, FALSE);
+		mutex_unlock (&relocatee->buf->mutex);
+		if (ret) {
+			DRM_ERROR("Could not wait for buffer to apply relocs\n %08lx", new_cmd_offset);
+			return ret;
+		}
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
 		if (ret) {
