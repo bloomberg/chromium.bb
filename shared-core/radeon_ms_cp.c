@@ -101,6 +101,9 @@ int radeon_ms_cp_finish(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 
+	if (!dev_priv->cp_ready) {
+		return 0;
+	}
 	dev_priv->cp_ready = 0;
 	radeon_ms_wait_for_idle(dev);
 	DRM_INFO("[radeon_ms] cp idle\n");
@@ -126,6 +129,7 @@ int radeon_ms_cp_init(struct drm_device *dev)
 	struct radeon_state *state = &dev_priv->driver_state;
 	int ret = 0;
 
+	dev_priv->cp_ready = -1;
 	if (dev_priv->microcode == NULL) {
 		DRM_INFO("[radeon_ms] no microcode not starting cp");
 		return 0;

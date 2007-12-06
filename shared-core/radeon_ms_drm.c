@@ -173,7 +173,6 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 		return ret;
 	}
 	radeon_ms_gpu_restore(dev, &dev_priv->driver_state);
-	dev_priv->bus_ready = 1;
 
 	/* initialize ttm */
 	ret = drm_bo_init_mm(dev, DRM_BO_MEM_TT, 0,

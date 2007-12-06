@@ -54,7 +54,7 @@ int radeon_ms_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t fence_id, cmd[2], i, ret;
 
-	if (!dev_priv || !dev_priv->cp_ready) {
+	if (!dev_priv || dev_priv->cp_ready != 1) {
 		return -EINVAL;
 	}
 	fence_id = (++dev_priv->fence_id_last);

@@ -205,6 +205,12 @@ static int pcie_ttm_unbind(struct drm_ttm_backend *backend)
 
 int radeon_ms_agp_finish(struct drm_device *dev)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+
+	if (!dev_priv->bus_ready) {
+		return 0;
+	}
+	dev_priv->bus_ready = 0;
 	drm_agp_release(dev);
 	return 0;
 }
@@ -217,6 +223,7 @@ int radeon_ms_agp_init(struct drm_device *dev)
 	uint32_t agp_status;
 	int ret;
 
+	dev_priv->bus_ready = -1;
 	if (dev->agp == NULL) {
 		DRM_ERROR("[radeon_ms] can't initialize AGP\n");
 		return -EINVAL;
@@ -256,6 +263,7 @@ int radeon_ms_agp_init(struct drm_device *dev)
 	DRM_INFO("[radeon_ms] gpu agp location 0x%08X\n",
 		 state->mc_agp_location);
 	DRM_INFO("[radeon_ms] bus ready\n");
+	dev_priv->bus_ready = 1;
 	return 0;
 }
 
@@ -328,6 +336,7 @@ int radeon_ms_pcie_init(struct drm_device *dev)
 	struct radeon_pcie *pcie;
 	int ret = 0;
 
+	dev_priv->bus_ready = -1;
 	/* allocate and clear device private structure */
 	pcie = drm_alloc(sizeof(struct radeon_pcie), DRM_MEM_DRIVER);
 	if (pcie == NULL) {
@@ -401,6 +410,7 @@ int radeon_ms_pcie_init(struct drm_device *dev)
 	DRM_INFO("[radeon_ms] gpu gart end   0x%08X\n",
 		 PCIE_R(PCIE_TX_GART_END_LO));
 	DRM_INFO("[radeon_ms] bus ready\n");
+	dev_priv->bus_ready = 1;
 	return 0;
 }
 
