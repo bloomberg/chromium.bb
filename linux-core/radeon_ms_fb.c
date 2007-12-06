@@ -52,12 +52,35 @@ static int radeonfb_setcolreg(unsigned regno, unsigned red,
 			       unsigned transp, struct fb_info *info)
 {
 	struct radeonfb_par *par = info->par;
+	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_crtc *crtc = par->crtc;
 
-	if (regno > 255)
+	if (regno > 255) {
 		return 1;
-	if (crtc->funcs->gamma_set)
+	}
+	if (crtc->funcs->gamma_set) {
 		crtc->funcs->gamma_set(crtc, red, green, blue, regno);
+	}
+	if (regno < 16) {
+		switch (fb->depth) {
+		case 15:
+			fb->pseudo_palette[regno] = ((red & 0xf800) >>  1) |
+				((green & 0xf800) >>  6) |
+				((blue & 0xf800) >> 11);
+			break;
+		case 16:
+			fb->pseudo_palette[regno] = (red & 0xf800) |
+				((green & 0xfc00) >>  5) |
+				((blue  & 0xf800) >> 11);
+			break;
+		case 24:
+		case 32:
+			fb->pseudo_palette[regno] = ((red & 0xff00) << 8) |
+				(green & 0xff00) |
+				((blue  & 0xff00) >> 8);
+			break;
+		}
+	}
 	return 0;
 }
 
