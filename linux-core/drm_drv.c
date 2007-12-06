@@ -394,15 +394,6 @@ static void drm_cleanup(struct drm_device * dev)
 	drm_lastclose(dev);
 	drm_fence_manager_takedown(dev);
 
-	drm_ht_remove(&dev->map_hash);
-	drm_mm_takedown(&dev->offset_manager);
-	drm_ht_remove(&dev->object_hash);
-
-	if (!drm_fb_loaded)
-		pci_disable_device(dev->pdev);
-
-	drm_ctxbitmap_cleanup(dev);
-
 	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp
 	    && dev->agp->agp_mtrr >= 0) {
 		int retval;
@@ -418,6 +409,14 @@ static void drm_cleanup(struct drm_device * dev)
 	}
 	if (dev->driver->unload)
 		dev->driver->unload(dev);
+
+	if (!drm_fb_loaded)
+		pci_disable_device(dev->pdev);
+
+	drm_ctxbitmap_cleanup(dev);
+	drm_ht_remove(&dev->map_hash);
+	drm_mm_takedown(&dev->offset_manager);
+	drm_ht_remove(&dev->object_hash);
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))
