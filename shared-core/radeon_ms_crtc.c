@@ -379,13 +379,26 @@ static void radeon_ms_crtc_mode_prepare(struct drm_crtc *crtc)
 	crtc->funcs->dpms(crtc, DPMSModeOff);
 }
 
-/* Compute n/d with rounding */
-static int radeon_div(int n, int d)
+/* compute PLL registers values for requested video mode */
+static int radeon_pll1_constraint(int clock, int rdiv,
+                                  int fdiv, int pdiv,
+                                  int rfrq, int pfrq)
 {
-	return (n + (d / 2)) / d;
+    int dfrq;
+
+    if (rdiv < 2 || fdiv < 4) {
+        return 0;
+    }
+    dfrq = rfrq / rdiv;
+    if (dfrq < 2000 || dfrq > 3300) {
+        return 0;
+    }
+    if (pfrq < 125000 || pfrq > 250000) {
+        return 0;
+    }
+    return 1;
 }
 
-/* compute PLL registers values for requested video mode */
 static void radeon_pll1_compute(struct drm_crtc *crtc,
 				struct drm_display_mode *mode)
 {
@@ -410,65 +423,73 @@ static void radeon_pll1_compute(struct drm_crtc *crtc,
 	};
 	struct drm_radeon_private *dev_priv = crtc->dev->dev_private;
 	struct radeon_state *state = &dev_priv->driver_state;
-	unsigned long freq = mode->clock / 10;
-	int pll_output_freq;
-	int min_rcenter_dist;
-	int rcenter_dist;
-	int post_divider;
-	int post_divider_id;
-	int ref_div;
-	int fb_div;
+	int clock = mode->clock;
+	int rfrq = dev_priv->properties->pll_reference_freq;
+	int pdiv = 1;
+	int pdiv_id = 0;
+	int rdiv_best = 2;
+	int fdiv_best = 4;
+	int tfrq_best = 0;
+	int pfrq_best = 0;
+	int diff_cpfrq_best = 350000;
 	int vco_freq;
 	int vco_gain;
+	int rdiv = 0;
+	int fdiv = 0;
+	int tfrq = 35000;
+	int pfrq = 35000;
+	int diff_cpfrq = 350000;
 
 	/* clamp frequency into pll [min; max] frequency range */
-	if (freq > dev_priv->properties->pll_max_pll_freq) {
-		freq = dev_priv->properties->pll_max_pll_freq;
+	if (clock > dev_priv->properties->pll_max_pll_freq) {
+		clock = dev_priv->properties->pll_max_pll_freq;
 	}
-	if (freq < dev_priv->properties->pll_min_pll_freq) {
-		freq = dev_priv->properties->pll_min_pll_freq;
+	if ((clock * 12) < dev_priv->properties->pll_min_pll_freq) {
+		clock = dev_priv->properties->pll_min_pll_freq / 12;
 	}
-	/* select divider so that pll output frequency is the nearest to
-	 * the center of [350; 125]Mhz range */
-	min_rcenter_dist = 350 * 100;
-	post_divider = post_divs[0].divider;
-	post_divider_id = post_divs[0].divider_id;
+
+	/* maximize pll_ref_div while staying in boundary and minimizing
+	 * the difference btw target frequency and programmed frequency */
 	for (post_div = &post_divs[0]; post_div->divider; ++post_div) {
-		if (post_div->divider == 0)
+		if (post_div->divider == 0) {
 			break;
-		/* pll output frequency (before post divider) */
-		pll_output_freq = post_div->divider * freq;
-		/* compute distance to [350; 125] range center*/
-		rcenter_dist = abs(pll_output_freq - 11250);
-		if (rcenter_dist < min_rcenter_dist) {
-			min_rcenter_dist = rcenter_dist;
-			post_divider = post_div->divider;
-			post_divider_id = post_div->divider_id;
+		}
+		tfrq = clock * post_div->divider;
+		for (fdiv = 1023; fdiv >= 4; fdiv--) {
+			rdiv = (fdiv * rfrq) / tfrq;
+			if (radeon_pll1_constraint(clock, rdiv, fdiv,
+						pdiv, rfrq, tfrq)) {
+				pfrq = (fdiv * rfrq) / rdiv;
+				diff_cpfrq = pfrq - tfrq;
+				if ((diff_cpfrq >= 0 &&
+				     diff_cpfrq < diff_cpfrq_best) ||
+				    (diff_cpfrq == diff_cpfrq_best &&
+				     rdiv > rdiv_best)) {
+					rdiv_best = rdiv;
+					fdiv_best = fdiv;
+					tfrq_best = tfrq;
+					pfrq_best = pfrq;
+					pdiv = post_div->divider;
+					pdiv_id = post_div->divider_id;
+					diff_cpfrq_best = diff_cpfrq;
+				}
+			}
 		}
 	}
-	pll_output_freq = post_divider * freq;
-	/* select first feedback */
-	state->clock_cntl_index = REG_S(CLOCK_CNTL_INDEX, PPLL_DIV_SEL, 0);
-	/* set ref div so that ref_freq/ref_div is in middle of [2; 3.3]Mhz */
-	ref_div = dev_priv->properties->pll_reference_freq / 265;
-	state->ppll_ref_div = REG_S(PPLL_REF_DIV, PPLL_REF_DIV, ref_div) |
-		REG_S(PPLL_REF_DIV, PPLL_REF_DIV_ACC, ref_div);
-	fb_div = radeon_div(pll_output_freq * ref_div,
-			dev_priv->properties->pll_reference_freq);
-	state->ppll_div_0 = REG_S(PPLL_DIV_0, PPLL_FB0_DIV, fb_div) |
-		REG_S(PPLL_DIV_0, PPLL_POST0_DIV, post_divider_id);
-	/* configure vco gain */
-	state->ppll_cntl = PPLL_R(PPLL_CNTL);
-	vco_gain = REG_G(PPLL_CNTL, PPLL_PVG, state->ppll_cntl); 
-	vco_freq = (fb_div * dev_priv->properties->pll_reference_freq) /
-		ref_div;
+	state->ppll_ref_div =
+		REG_S(PPLL_REF_DIV, PPLL_REF_DIV, rdiv_best) |
+		REG_S(PPLL_REF_DIV, PPLL_REF_DIV_ACC, rdiv_best);
+	state->ppll_div_0 = REG_S(PPLL_DIV_0, PPLL_FB0_DIV, fdiv_best) |
+		REG_S(PPLL_DIV_0, PPLL_POST0_DIV, pdiv_id);
+
+	vco_freq = (fdiv_best * rfrq) / rdiv_best;
 	/* This is horribly crude: the VCO frequency range is divided into
 	 * 3 parts, each part having a fixed PLL gain value.
 	 */
-        if (vco_freq >= 30000) {
+        if (vco_freq >= 300000) {
 		/* [300..max] MHz : 7 */
 		vco_gain = 7;
-	} else if (vco_freq >= 18000) {
+	} else if (vco_freq >= 180000) {
 		/* [180..300) MHz : 4 */
 		vco_gain = 4;
 	} else {
@@ -479,6 +500,16 @@ static void radeon_pll1_compute(struct drm_crtc *crtc,
 	state->vclk_ecp_cntl |= REG_S(VCLK_ECP_CNTL, VCLK_SRC_SEL,
 			VCLK_SRC_SEL__PPLLCLK);
 	state->htotal_cntl = 0;
+	DRM_INFO("rdiv: %d\n", rdiv_best);
+	DRM_INFO("fdiv: %d\n", fdiv_best);
+	DRM_INFO("pdiv: %d\n", pdiv);
+	DRM_INFO("pdiv: %d\n", pdiv_id);
+	DRM_INFO("tfrq: %d\n", tfrq_best);
+	DRM_INFO("pfrq: %d\n", pfrq_best);
+	DRM_INFO("PPLL_REF_DIV:  0x%08X\n", state->ppll_ref_div);
+	DRM_INFO("PPLL_DIV_0:    0x%08X\n", state->ppll_div_0);
+	DRM_INFO("PPLL_CNTL:     0x%08X\n", state->ppll_cntl);
+	DRM_INFO("VCLK_ECP_CNTL: 0x%08X\n", state->vclk_ecp_cntl);
 }
 
 static void radeon_ms_crtc1_mode_set(struct drm_crtc *crtc,

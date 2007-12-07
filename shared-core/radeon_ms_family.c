@@ -76,7 +76,7 @@ static struct radeon_ms_connector radeon_ms_dvi_i_2 = {
 static struct radeon_ms_properties properties[] = {
 	/* default only one VGA connector */
 	{
-		0, 0, 2700, 2500, 20000, 1, 1, 1, 1,
+		0, 0, 27000, 25000, 200000, 1, 1, 1, 1,
 		{
 			&radeon_ms_dac1, NULL, NULL, NULL, NULL, NULL, NULL,
 			NULL
@@ -87,7 +87,7 @@ static struct radeon_ms_properties properties[] = {
 		}
 	},
 	{
-		0x1043, 0x176, 2700, 2500, 20000, 1, 1, 1, 1,
+		0x1043, 0x176, 27000, 25000, 200000, 1, 1, 1, 1,
 		{
 			&radeon_ms_dac1, &radeon_ms_dac2, NULL, NULL, NULL,
 			NULL, NULL, NULL
@@ -98,7 +98,7 @@ static struct radeon_ms_properties properties[] = {
 		}
 	},
 	{
-		0x1002, 0x4150, 2700, 2500, 20000, 1, 1, 1, 1,
+		0x1002, 0x4150, 27000, 25000, 200000, 1, 1, 1, 1,
 		{
 			&radeon_ms_dac1, &radeon_ms_dac2, NULL, NULL, NULL,
 			NULL, NULL, NULL
