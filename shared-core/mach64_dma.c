@@ -562,6 +562,14 @@ void mach64_dump_ring_info(drm_mach64_private_t * dev_priv)
 /** \name DMA descriptor ring macros */
 /*@{*/
 
+/**
+ * Add the end mark to the ring's new tail position.
+ * 
+ * The bus master engine will keep processing the DMA buffers listed in the ring
+ * until it finds this mark, making it stop.
+ * 
+ * \sa mach64_clear_dma_eol
+ */ 
 static __inline__ void mach64_set_dma_eol(volatile u32 * addr)
 {
 #if defined(__i386__)
@@ -602,6 +610,17 @@ static __inline__ void mach64_set_dma_eol(volatile u32 * addr)
 #endif
 }
 
+/**
+ * Remove the end mark from the ring's old tail position.  
+ * 
+ * It should be called after calling mach64_set_dma_eol to mark the ring's new
+ * tail position.
+ * 
+ * We update the end marks while the bus master engine is in operation. Since  
+ * the bus master engine may potentially be reading from the same position
+ * that we write, we must change atomically to avoid having intermediary bad 
+ * data.
+ */
 static __inline__ void mach64_clear_dma_eol(volatile u32 * addr)
 {
 #if defined(__i386__)
@@ -691,7 +710,9 @@ do {									\
 	mach64_ring_tick( dev_priv, &(dev_priv)->ring );		\
 } while (0)
 
-
+/**
+ * Queue a DMA buffer of registers writes into the ring buffer.
+ */ 
 int mach64_add_buf_to_ring(drm_mach64_private_t *dev_priv,
                            drm_mach64_freelist_t *entry)
 {
@@ -734,6 +755,11 @@ int mach64_add_buf_to_ring(drm_mach64_private_t *dev_priv,
 	return 0;
 }
 
+/**
+ * Queue DMA buffer controlling host data tranfers (e.g., blit).
+ * 
+ * Almost identical to mach64_add_buf_to_ring.
+ */
 int mach64_add_hostdata_buf_to_ring(drm_mach64_private_t *dev_priv,
                                     drm_mach64_freelist_t *entry)
 {

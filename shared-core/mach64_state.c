@@ -575,6 +575,10 @@ static int mach64_dma_dispatch_vertex(struct drm_device * dev,
 		return -EAGAIN;
 	}
 
+	/* Mach64's vertex data is actually register writes. To avoid security
+	 * compromises these register writes have to be verified and copied from
+	 * user space into a private DMA buffer.
+	 */
 	verify_ret = copy_from_user_vertex(GETBUFPTR(copy_buf), buf, used);
 
 	if (verify_ret != 0) {
@@ -698,6 +702,16 @@ static int mach64_dma_dispatch_blit(struct drm_device * dev,
 		return -EAGAIN;
 	}
 
+	/* Copy the blit data from userspace.
+	 * 
+	 * XXX: This is overkill. The most efficient solution would be having 
+	 * two sets of buffers (one set private for vertex data, the other set 
+	 * client-writable for blits). However that would bring more complexity 
+	 * and would break backward compatability. The solution currently 
+	 * implemented is keeping all buffers private, allowing to secure the
+	 * driver, without increasing complexity at the expense of some speed 
+	 * transfering data.
+	 */
 	verify_ret = copy_from_user_blit(GETBUFPTR(copy_buf), blit->buf, used);
 
 	if (verify_ret != 0) {

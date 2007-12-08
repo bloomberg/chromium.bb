@@ -527,6 +527,9 @@ extern void mach64_driver_irq_uninstall(struct drm_device * dev);
 
 /* ================================================================
  * Ring operations
+ *
+ * Since the Mach64 bus master engine requires polling, these functions end
+ * up being called frequently, hence being inline.
  */
 
 static __inline__ void mach64_ring_start(drm_mach64_private_t * dev_priv)
@@ -591,6 +594,18 @@ static __inline__ void mach64_ring_resume(drm_mach64_private_t * dev_priv,
 	}
 }
 
+/**
+ * Poll the ring head and make sure the bus master is alive.
+ * 
+ * Mach64's bus master engine will stop if there are no more entries to process.
+ * This function polls the engine for the last processed entry and calls 
+ * mach64_ring_resume if there is an unprocessed entry.
+ * 
+ * Note also that, since we update the ring tail while the bus master engine is 
+ * in operation, it is possible that the last tail update was too late to be 
+ * processed, and the bus master engine stops at the previous tail position. 
+ * Therefore it is important to call this function frequently. 
+ */
 static __inline__ void mach64_ring_tick(drm_mach64_private_t * dev_priv,
 					drm_mach64_descriptor_ring_t * ring)
 {
@@ -676,6 +691,11 @@ mach64_update_ring_snapshot(drm_mach64_private_t * dev_priv)
 
 /* ================================================================
  * DMA macros
+ * 
+ * Mach64's ring buffer doesn't take register writes directly. These 
+ * have to be written indirectly in DMA buffers. These macros simplify 
+ * the task of setting up a buffer, writing commands to it, and 
+ * queuing the buffer in the ring. 
  */
 
 #define DMALOCALS				\
