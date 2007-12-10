@@ -454,6 +454,9 @@ int nouveau_firstopen(struct drm_device *dev)
 	return 0;
 }
 
+#define NV40_CHIPSET_MASK 0x00000baf
+#define NV44_CHIPSET_MASK 0x00005450
+
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_nouveau_private *dev_priv;
@@ -497,10 +500,16 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 	if (architecture >= 0x50) {
 		dev_priv->card_type = NV_50;
-	} else if (architecture >= 0x44) {
-		dev_priv->card_type = NV_44;
 	} else if (architecture >= 0x40) {
-		dev_priv->card_type = NV_40;
+		uint8_t subarch = architecture & 0xf;
+		/* Selection criteria borrowed from NV40EXA */
+		if (NV40_CHIPSET_MASK & (1 << subarch)) {
+			dev_priv->card_type = NV_40;
+		} else if (NV44_CHIPSET_MASK & (1 << subarch)) {
+			dev_priv->card_type = NV_44;
+		} else {
+			dev_priv->card_type = NV_UNKNOWN;
+		}
 	} else if (architecture >= 0x30) {
 		dev_priv->card_type = NV_30;
 	} else if (architecture >= 0x20) {

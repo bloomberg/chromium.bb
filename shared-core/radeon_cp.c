@@ -1979,7 +1979,7 @@ void radeon_do_release(struct drm_device * dev)
 				schedule();
 #else
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
-				msleep(&ret, &dev->dev_lock, PZERO, "rdnrel",
+				mtx_sleep(&ret, &dev->dev_lock, PZERO, "rdnrel",
 				       1);
 #else
 				tsleep(&ret, PZERO, "rdnrel", 1);

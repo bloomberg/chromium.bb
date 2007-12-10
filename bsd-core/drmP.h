@@ -388,7 +388,7 @@ for ( ret = 0 ; !ret && !(condition) ; ) {			\
 	DRM_UNLOCK();						\
 	mtx_lock(&dev->irq_lock);				\
 	if (!(condition))					\
-	   ret = -msleep(&(queue), &dev->irq_lock, 		\
+	   ret = -mtx_sleep(&(queue), &dev->irq_lock, 		\
 			 PZERO | PCATCH, "drmwtq", (timeout));	\
 	mtx_unlock(&dev->irq_lock);				\
 	DRM_LOCK();						\
@@ -614,14 +614,14 @@ typedef struct drm_vbl_sig {
 #define DRM_ATI_GART_PCIE 2
 #define DRM_ATI_GART_IGP  3
 
-typedef struct ati_pcigart_info {
+struct drm_ati_pcigart_info {
 	int gart_table_location;
 	int gart_reg_if;
 	void *addr;
 	dma_addr_t bus_addr;
 	drm_local_map_t mapping;
 	int table_size;
-} drm_ati_pcigart_info;
+};
 
 struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
@@ -650,6 +650,7 @@ struct drm_driver_info {
 	void	(*irq_uninstall)(drm_device_t *dev);
 	void	(*irq_handler)(DRM_IRQ_ARGS);
 	int	(*vblank_wait)(drm_device_t *dev, unsigned int *sequence);
+	int	(*vblank_wait2)(drm_device_t *dev, unsigned int *sequence);
 
 	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
 
@@ -686,6 +687,7 @@ struct drm_driver_info {
 	unsigned use_dma_queue :1;
 	unsigned use_irq :1;
 	unsigned use_vbl_irq :1;
+	unsigned use_vbl_irq2 :1;
 	unsigned use_mtrr :1;
 };
 
@@ -925,9 +927,9 @@ extern int		drm_sysctl_cleanup(drm_device_t *dev);
 
 /* ATI PCIGART support (ati_pcigart.c) */
 int	drm_ati_pcigart_init(drm_device_t *dev,
-			     drm_ati_pcigart_info *gart_info);
+				struct drm_ati_pcigart_info *gart_info);
 int	drm_ati_pcigart_cleanup(drm_device_t *dev,
-				drm_ati_pcigart_info *gart_info);
+				struct drm_ati_pcigart_info *gart_info);
 
 /* Locking IOCTL support (drm_drv.c) */
 int	drm_lock(drm_device_t *dev, void *data, struct drm_file *file_priv);

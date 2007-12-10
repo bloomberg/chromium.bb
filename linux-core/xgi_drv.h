@@ -64,7 +64,7 @@ struct xgi_info {
 	struct drm_map *fb_map;
 
 	/* look up table parameters */
-	struct ati_pcigart_info gart_info;
+	struct drm_ati_pcigart_info gart_info;
 	unsigned int lutPageSize;
 
 	struct drm_sman sman;

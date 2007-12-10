@@ -48,7 +48,7 @@
  * Verifies the AGP device has been initialized and acquired and fills in the
  * drm_agp_info structure with the information in drm_agp_head::agp_info.
  */
-int drm_agp_info(struct drm_device * dev, struct drm_agp_info *info)
+int drm_agp_info(struct drm_device *dev, struct drm_agp_info *info)
 {
 	DRM_AGP_KERN *kern;
 
@@ -130,7 +130,7 @@ EXPORT_SYMBOL(drm_agp_acquire);
 int drm_agp_acquire_ioctl(struct drm_device *dev, void *data,
 			  struct drm_file *file_priv)
 {
-	return drm_agp_acquire( (struct drm_device *) file_priv->head->dev );
+	return drm_agp_acquire((struct drm_device *) file_priv->head->dev);
 }
 
 /**
@@ -426,7 +426,7 @@ struct drm_agp_head *drm_agp_init(struct drm_device *dev)
 		if (!(head->bridge = agp_backend_acquire(dev->pdev))) {
 			drm_free(head, sizeof(*head), DRM_MEM_AGPLISTS);
 			return NULL;
-	}
+		}
 		agp_copy_info(head->bridge, &head->agp_info);
 		agp_backend_release(head->bridge);
 	} else {
@@ -652,7 +652,7 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 EXPORT_SYMBOL(drm_agp_init_ttm);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
-void drm_agp_flush_chipset(struct drm_device *dev)
+void drm_agp_chipset_flush(struct drm_device *dev)
 {
 	agp_flush_chipset(dev->agp->bridge);
 }

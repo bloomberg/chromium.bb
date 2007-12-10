@@ -54,11 +54,11 @@
 	*vb++ = (w2);				\
 	dev_priv->dma_low += 8;
 
-static void via_cmdbuf_start(drm_via_private_t * dev_priv);
-static void via_cmdbuf_pause(drm_via_private_t * dev_priv);
-static void via_cmdbuf_reset(drm_via_private_t * dev_priv);
-static void via_cmdbuf_rewind(drm_via_private_t * dev_priv);
-static int via_wait_idle(drm_via_private_t * dev_priv);
+static void via_cmdbuf_start(drm_via_private_t *dev_priv);
+static void via_cmdbuf_pause(drm_via_private_t *dev_priv);
+static void via_cmdbuf_reset(drm_via_private_t *dev_priv);
+static void via_cmdbuf_rewind(drm_via_private_t *dev_priv);
+static int via_wait_idle(drm_via_private_t *dev_priv);
 static void via_pad_cache(drm_via_private_t *dev_priv, int qwords);
 
 
@@ -110,7 +110,7 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 		if (count-- == 0) {
 			DRM_ERROR
 			    ("via_cmdbuf_wait timed out hw %x cur_addr %x next_addr %x\n",
-			    hw_addr, cur_addr, next_addr);
+			     hw_addr, cur_addr, next_addr);
 			return -1;
 		}
 	} while ((cur_addr < hw_addr) && (next_addr >= hw_addr));
@@ -450,7 +450,7 @@ static int via_hook_segment(drm_via_private_t * dev_priv,
 
 
 
-static int via_wait_idle(drm_via_private_t * dev_priv)
+static int via_wait_idle(drm_via_private_t *dev_priv)
 {
 	int count = 10000000;
 
@@ -462,7 +462,7 @@ static int via_wait_idle(drm_via_private_t * dev_priv)
 	return count;
 }
 
-static uint32_t *via_align_cmd(drm_via_private_t * dev_priv, uint32_t cmd_type,
+static uint32_t *via_align_cmd(drm_via_private_t *dev_priv, uint32_t cmd_type,
 			       uint32_t addr, uint32_t *cmd_addr_hi,
 			       uint32_t *cmd_addr_lo, int skip_wait)
 {
@@ -472,11 +472,12 @@ static uint32_t *via_align_cmd(drm_via_private_t * dev_priv, uint32_t cmd_type,
 	uint32_t qw_pad_count;
 
 	if (!skip_wait)
-		via_cmdbuf_wait(dev_priv, 2*CMDBUF_ALIGNMENT_SIZE);
+		via_cmdbuf_wait(dev_priv, 2 * CMDBUF_ALIGNMENT_SIZE);
 
 	vb = via_get_dma(dev_priv);
-	VIA_OUT_RING_QW( HC_HEADER2 | ((VIA_REG_TRANSET >> 2) << 12) |
-			 (VIA_REG_TRANSPACE >> 2), HC_ParaType_PreCR << 16);
+	VIA_OUT_RING_QW(HC_HEADER2 | ((VIA_REG_TRANSET >> 2) << 12) |
+			(VIA_REG_TRANSPACE >> 2), HC_ParaType_PreCR << 16);
+
 	agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
 	qw_pad_count = (CMDBUF_ALIGNMENT_SIZE >> 3) -
 		((dev_priv->dma_low & CMDBUF_ALIGNMENT_MASK) >> 3);
@@ -557,8 +558,8 @@ static void via_pad_cache(drm_via_private_t *dev_priv, int qwords)
 
 	via_cmdbuf_wait(dev_priv, qwords + 2);
 	vb = via_get_dma(dev_priv);
-	VIA_OUT_RING_QW( HC_HEADER2, HC_ParaType_NotTex << 16);
-	via_align_buffer(dev_priv,vb,qwords);
+	VIA_OUT_RING_QW(HC_HEADER2, HC_ParaType_NotTex << 16);
+	via_align_buffer(dev_priv, vb, qwords);
 }
 
 static inline void via_dummy_bitblt(drm_via_private_t * dev_priv)
@@ -577,7 +578,7 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 	volatile uint32_t *last_pause_ptr;
 
 	agp_base = dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr;
-	via_align_cmd(dev_priv,  HC_HAGPBpID_JUMP, 0, &jump_addr_hi,
+	via_align_cmd(dev_priv, HC_HAGPBpID_JUMP, 0, &jump_addr_hi,
 		      &jump_addr_lo, 0);
 
 	dev_priv->dma_wrap = dev_priv->dma_low;
@@ -594,15 +595,14 @@ static void via_cmdbuf_jump(drm_via_private_t * dev_priv)
 
 	via_dummy_bitblt(dev_priv);
 	via_dummy_bitblt(dev_priv);
-	last_pause_ptr = via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi,
+	last_pause_ptr = via_align_cmd(dev_priv, HC_HAGPBpID_PAUSE, 0, &pause_addr_hi,
 				       &pause_addr_lo, 0) -1;
-	via_align_cmd(dev_priv,  HC_HAGPBpID_PAUSE, 0, &pause_addr_hi,
+	via_align_cmd(dev_priv, HC_HAGPBpID_PAUSE, 0, &pause_addr_hi,
 		      &pause_addr_lo, 0);
 	*last_pause_ptr = pause_addr_lo;
 
-	via_hook_segment( dev_priv, jump_addr_hi, jump_addr_lo, 0);
+	via_hook_segment(dev_priv, jump_addr_hi, jump_addr_lo, 0);
 }
-
 
 static void via_cmdbuf_rewind(drm_via_private_t * dev_priv)
 {
@@ -614,7 +614,7 @@ static void via_cmdbuf_flush(drm_via_private_t * dev_priv, uint32_t cmd_type)
 	uint32_t pause_addr_lo, pause_addr_hi;
 
 	via_align_cmd(dev_priv, cmd_type, 0, &pause_addr_hi, &pause_addr_lo, 0);
-	via_hook_segment( dev_priv, pause_addr_hi, pause_addr_lo, 0);
+	via_hook_segment(dev_priv, pause_addr_hi, pause_addr_lo, 0);
 }
 
 
@@ -653,7 +653,7 @@ static int via_cmdbuf_size(struct drm_device *dev, void *data, struct drm_file *
 
 	count = 1000000;
 	tmp_size = d_siz->size;
-	switch(d_siz->func) {
+	switch (d_siz->func) {
 	case VIA_CMDBUF_SPACE:
 		while (((tmp_size = via_cmdbuf_space(dev_priv)) < d_siz->size)
 		       && count--) {

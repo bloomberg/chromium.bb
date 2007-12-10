@@ -211,17 +211,43 @@ int drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv)
 {
 	drm_wait_vblank_t *vblwait = data;
 	struct timeval now;
-	int ret, flags;
+	int ret = 0;
+	int flags, seq;
 
 	if (!dev->irq_enabled)
 		return EINVAL;
 
-	if (vblwait->request.type & _DRM_VBLANK_RELATIVE) {
-		vblwait->request.sequence += atomic_read(&dev->vbl_received);
-		vblwait->request.type &= ~_DRM_VBLANK_RELATIVE;
+	if (vblwait->request.type &
+	    ~(_DRM_VBLANK_TYPES_MASK | _DRM_VBLANK_FLAGS_MASK)) {
+		DRM_ERROR("Unsupported type value 0x%x, supported mask 0x%x\n",
+		    vblwait->request.type,
+		    (_DRM_VBLANK_TYPES_MASK | _DRM_VBLANK_FLAGS_MASK));
+		return EINVAL;
 	}
 
 	flags = vblwait->request.type & _DRM_VBLANK_FLAGS_MASK;
+
+	if ((flags & _DRM_VBLANK_SECONDARY) && !dev->driver.use_vbl_irq2)
+		return EINVAL;
+	
+	seq = atomic_read((flags & _DRM_VBLANK_SECONDARY) ?
+	    &dev->vbl_received2 : &dev->vbl_received);
+
+	switch (vblwait->request.type & _DRM_VBLANK_TYPES_MASK) {
+	case _DRM_VBLANK_RELATIVE:
+		vblwait->request.sequence += seq;
+		vblwait->request.type &= ~_DRM_VBLANK_RELATIVE;
+	case _DRM_VBLANK_ABSOLUTE:
+		break;
+	default:
+		return EINVAL;
+	}
+
+	if ((flags & _DRM_VBLANK_NEXTONMISS) &&
+	    (seq - vblwait->request.sequence) <= (1<<23)) {
+		vblwait->request.sequence = seq + 1;
+	}
+
 	if (flags & _DRM_VBLANK_SIGNAL) {
 #if 0 /* disabled */
 		drm_vbl_sig_t *vbl_sig = malloc(sizeof(drm_vbl_sig_t), M_DRM,
@@ -244,8 +270,14 @@ int drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	} else {
 		DRM_LOCK();
 		/* shared code returns -errno */
-		ret = -dev->driver.vblank_wait(dev,
-		    &vblwait->request.sequence);
+		if (flags & _DRM_VBLANK_SECONDARY) {
+			if (dev->driver.vblank_wait2)
+				ret = -dev->driver.vblank_wait2(dev,
+				    &vblwait->request.sequence);
+		} else if (dev->driver.vblank_wait)
+			ret = -dev->driver.vblank_wait(dev,
+			    &vblwait->request.sequence);
+
 		DRM_UNLOCK();
 
 		microtime(&now);
@@ -303,7 +335,7 @@ static void drm_locked_task(void *context, int pending __unused)
 
 		/* Contention */
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
-		ret = msleep((void *)&dev->lock.lock_queue, &dev->dev_lock,
+		ret = mtx_sleep((void *)&dev->lock.lock_queue, &dev->dev_lock,
 		    PZERO | PCATCH, "drmlk2", 0);
 #else
 		ret = tsleep((void *)&dev->lock.lock_queue, PZERO | PCATCH,

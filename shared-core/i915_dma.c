@@ -51,8 +51,6 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 		if (ring->space >= n)
 			return 0;
 
-		dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-
 		if (ring->head != last_head)
 			i = 0;
 
@@ -73,9 +71,6 @@ void i915_kernel_lost_context(struct drm_device * dev)
 	ring->space = ring->head - (ring->tail + 8);
 	if (ring->space < 0)
 		ring->space += ring->Size;
-
-	if (ring->head == ring->tail)
-		dev_priv->sarea_priv->perf_boxes |= I915_BOX_RING_EMPTY;
 }
 
 static int i915_dma_cleanup(struct drm_device * dev)
@@ -165,6 +160,8 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 	 * private backbuffer/depthbuffer usage.
 	 */
 	dev_priv->use_mi_batchbuffer_start = 0;
+	if (IS_I965G(dev)) /* 965 doesn't support older method */
+		dev_priv->use_mi_batchbuffer_start = 1;
 
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
@@ -202,7 +199,7 @@ static int i915_dma_resume(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
@@ -336,7 +333,7 @@ static int validate_cmd(int cmd)
 	return ret;
 }
 
-static int i915_emit_cmds(struct drm_device * dev, int __user * buffer,
+static int i915_emit_cmds(struct drm_device *dev, int __user *buffer,
 			  int dwords)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -416,7 +413,7 @@ static int i915_emit_box(struct drm_device * dev,
 }
 
 /* XXX: Emitting the counter should really be moved to part of the IRQ
- * emit.  For now, do it in both places:
+ * emit. For now, do it in both places:
  */
 
 void i915_emit_breadcrumb(struct drm_device *dev)
@@ -492,7 +489,7 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 			return ret;
 	}
 
-	i915_emit_breadcrumb( dev );
+	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
 	drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
@@ -546,7 +543,7 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 		}
 	}
 
-	i915_emit_breadcrumb( dev );
+	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
 	drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
@@ -610,8 +607,7 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int i;
 
-	DRM_DEBUG("%s: planes=0x%x pfCurrentPage=%d\n",
-		  __FUNCTION__,
+	DRM_DEBUG("planes=0x%x pfCurrentPage=%d\n",
 		  planes, dev_priv->sarea_priv->pf_current_page);
 
 	i915_emit_mi_flush(dev, MI_READ_FLUSH | MI_EXE_FLUSH);
@@ -627,7 +623,7 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 #endif
 }
 
-static int i915_quiescent(struct drm_device * dev)
+static int i915_quiescent(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 
@@ -916,7 +912,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 
 		buffers[buf_count] = NULL;
 
-		if (copy_from_user(&arg, (void __user *)(unsigned)data, sizeof(arg))) {
+		if (copy_from_user(&arg, (void __user *)(unsigned long)data, sizeof(arg))) {
 			ret = -EFAULT;
 			goto out_err;
 		}
@@ -967,7 +963,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		arg.handled = 1;
 		arg.d.rep = rep;
 
-		if (copy_to_user((void __user *)(unsigned)data, &arg, sizeof(arg)))
+		if (copy_to_user((void __user *)(unsigned long)data, &arg, sizeof(arg)))
 			return -EFAULT;
 
 		data = next;
@@ -1032,10 +1028,10 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	buffers = drm_calloc(num_buffers, sizeof(struct drm_buffer_object *), DRM_MEM_DRIVER);
 	if (!buffers) {
-	        drm_bo_read_unlock(&dev->bm.bm_lock);
+		drm_bo_read_unlock(&dev->bm.bm_lock);
 		mutex_unlock(&dev_priv->cmdbuf_mutex);
 		return -ENOMEM;
-        }
+	}
 
 	/* validate buffer list + fixup relocations */
 	ret = i915_validate_buffer_list(file_priv, 0, exec_buf->ops_list,
@@ -1095,13 +1091,13 @@ static int i915_do_cleanup_pageflip(struct drm_device * dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int i, planes, num_pages = dev_priv->sarea_priv->third_handle ? 3 : 2;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	for (i = 0, planes = 0; i < 2; i++)
 		if (dev_priv->sarea_priv->pf_current_page & (0x3 << (2 * i))) {
 			dev_priv->sarea_priv->pf_current_page =
 				(dev_priv->sarea_priv->pf_current_page &
-				 ~(0x3 << (2 * i))) | (num_pages - 1) << (2 * i);
+				 ~(0x3 << (2 * i))) | ((num_pages - 1) << (2 * i));
 
 			planes |= 1 << i;
 		}
@@ -1116,7 +1112,7 @@ static int i915_flip_bufs(struct drm_device *dev, void *data, struct drm_file *f
 {
 	drm_i915_flip_t *param = data;
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -1181,7 +1177,8 @@ static int i915_setparam(struct drm_device *dev, void *data,
 
 	switch (param->param) {
 	case I915_SETPARAM_USE_MI_BATCHBUFFER_START:
-		dev_priv->use_mi_batchbuffer_start = param->value;
+		if (!IS_I965G(dev))
+			dev_priv->use_mi_batchbuffer_start = param->value;
 		break;
 	case I915_SETPARAM_TEX_LRU_LOG_GRANULARITY:
 		dev_priv->tex_lru_log_granularity = param->value;
@@ -1229,27 +1226,27 @@ static int i915_mmio(struct drm_device *dev, void *data,
 	base = (u8 *) dev_priv->mmio_map->handle + e->offset;
 
 	switch (mmio->read_write) {
-		case I915_MMIO_READ:
-			if (!(e->flag & I915_MMIO_MAY_READ))
-				return -EINVAL;
-			for (i = 0; i < e->size / 4; i++)
-				buf[i] = I915_READ(e->offset + i * 4);
-			if (DRM_COPY_TO_USER(mmio->data, buf, e->size)) {
-				DRM_ERROR("DRM_COPY_TO_USER failed\n");
-				return -EFAULT;
-			}
-			break;
-
-		case I915_MMIO_WRITE:
-			if (!(e->flag & I915_MMIO_MAY_WRITE))
-				return -EINVAL;
-			if(DRM_COPY_FROM_USER(buf, mmio->data, e->size)) {
-				DRM_ERROR("DRM_COPY_TO_USER failed\n");
-				return -EFAULT;
-			}
-			for (i = 0; i < e->size / 4; i++)
-				I915_WRITE(e->offset + i * 4, buf[i]);
-			break;
+	case I915_MMIO_READ:
+		if (!(e->flag & I915_MMIO_MAY_READ))
+			return -EINVAL;
+		for (i = 0; i < e->size / 4; i++)
+			buf[i] = I915_READ(e->offset + i * 4);
+		if (DRM_COPY_TO_USER(mmio->data, buf, e->size)) {
+			DRM_ERROR("DRM_COPY_TO_USER failed\n");
+			return -EFAULT;
+		}
+		break;
+		
+	case I915_MMIO_WRITE:
+		if (!(e->flag & I915_MMIO_MAY_WRITE))
+			return -EINVAL;
+		if (DRM_COPY_FROM_USER(buf, mmio->data, e->size)) {
+			DRM_ERROR("DRM_COPY_TO_USER failed\n");
+			return -EFAULT;
+		}
+		for (i = 0; i < e->size / 4; i++)
+			I915_WRITE(e->offset + i * 4, buf[i]);
+		break;
 	}
 	return 0;
 }
@@ -1317,14 +1314,15 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	base = drm_get_resource_start(dev, mmio_bar);
 	size = drm_get_resource_len(dev, mmio_bar);
 
-	ret = drm_addmap(dev, base, size, _DRM_REGISTERS, _DRM_KERNEL,
-			 &dev_priv->mmio_map);
+	ret = drm_addmap(dev, base, size, _DRM_REGISTERS,
+		_DRM_KERNEL | _DRM_DRIVER, &dev_priv->mmio_map);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_init_chipset_flush_compat(dev);
 #endif
 #endif
+
 	return ret;
 }
 

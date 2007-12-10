@@ -109,11 +109,10 @@ int drm_regs_alloc(struct drm_reg_manager *manager,
 	 */
 
 	return -EBUSY;
-      out:
+out:
 	*reg = entry;
 	return 0;
 }
-
 EXPORT_SYMBOL(drm_regs_alloc);
 
 void drm_regs_fence(struct drm_reg_manager *manager,
@@ -156,7 +155,6 @@ void drm_regs_fence(struct drm_reg_manager *manager,
 		}
 	}
 }
-
 EXPORT_SYMBOL(drm_regs_fence);
 
 void drm_regs_free(struct drm_reg_manager *manager)
@@ -180,7 +178,6 @@ void drm_regs_free(struct drm_reg_manager *manager)
 		manager->reg_destroy(entry);
 	}
 }
-
 EXPORT_SYMBOL(drm_regs_free);
 
 void drm_regs_add(struct drm_reg_manager *manager, struct drm_reg *reg)
@@ -188,7 +185,6 @@ void drm_regs_add(struct drm_reg_manager *manager, struct drm_reg *reg)
 	reg->fence = NULL;
 	list_add_tail(&reg->head, &manager->free);
 }
-
 EXPORT_SYMBOL(drm_regs_add);
 
 void drm_regs_init(struct drm_reg_manager *manager,
@@ -201,5 +197,4 @@ void drm_regs_init(struct drm_reg_manager *manager,
 	manager->reg_reusable = reg_reusable;
 	manager->reg_destroy = reg_destroy;
 }
-
 EXPORT_SYMBOL(drm_regs_init);

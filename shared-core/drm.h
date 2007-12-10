@@ -249,7 +249,8 @@ enum drm_map_flags {
 	_DRM_KERNEL = 0x08,	     /**< kernel requires access */
 	_DRM_WRITE_COMBINING = 0x10, /**< use write-combining if available */
 	_DRM_CONTAINS_LOCK = 0x20,   /**< SHM page that contains lock */
-	_DRM_REMOVABLE = 0x40	     /**< Removable mapping */
+	_DRM_REMOVABLE = 0x40,	     /**< Removable mapping */
+	_DRM_DRIVER = 0x80	     /**< Managed by driver */
 };
 
 struct drm_ctx_priv_map {
@@ -646,7 +647,7 @@ struct drm_fence_arg {
 	unsigned int signaled;
 	unsigned int error;
 	unsigned int sequence;
-        unsigned int pad64;
+	unsigned int pad64;
 	uint64_t expand_pad[2]; /*Future expansion */
 };
 
@@ -878,7 +879,7 @@ struct drm_bo_version_arg {
 
 struct drm_mm_type_arg {
 	unsigned int mem_type;
-        unsigned int lock_flags;
+	unsigned int lock_flags;
 };
 
 struct drm_mm_init_arg {

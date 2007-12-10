@@ -297,11 +297,11 @@ typedef struct drm_radeon_private {
 	int irq_enabled;
 
 	struct radeon_surface surfaces[RADEON_MAX_SURFACES];
-	struct radeon_virt_surface virt_surfaces[2*RADEON_MAX_SURFACES];
+	struct radeon_virt_surface virt_surfaces[2 * RADEON_MAX_SURFACES];
 
 	unsigned long pcigart_offset;
 	unsigned int pcigart_offset_set;
-	struct ati_pcigart_info gart_info;
+	struct drm_ati_pcigart_info gart_info;
 
 	u32 scratch_ages[5];
 
@@ -401,7 +401,7 @@ extern void r300_init_reg_flags(struct drm_device *dev);
 
 extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 			     struct drm_file *file_priv,
-			     drm_radeon_kcmd_buffer_t* cmdbuf);
+			     drm_radeon_kcmd_buffer_t *cmdbuf);
 
 /* Flags for stats.boxes
  */
