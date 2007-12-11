@@ -33,6 +33,33 @@
 #include "drmP.h"
 #include "drm_crtc.h"
 
+struct drm_prop_enum_list {
+	int type;
+	char *name;
+};
+
+static struct drm_prop_enum_list drm_dpms_enum_list[] =
+{ { DPMSModeOn, "On" },
+  { DPMSModeStandby, "Standby" },
+  { DPMSModeSuspend, "Suspend" },
+  { DPMSModeOff, "Off" }
+};
+static struct drm_prop_enum_list drm_conn_enum_list[] = 
+{ { ConnectorVGA, "VGA" },
+  { ConnectorDVII, "DVI-I" },
+  { ConnectorDVID, "DVI-D" },
+  { ConnectorDVIA, "DVI-A" },
+  { ConnectorComposite, "Composite" },
+  { ConnectorSVIDEO, "SVIDEO" },
+  { ConnectorLVDS, "LVDS" },
+  { ConnectorComponent, "Component" },
+  { Connector9PinDIN, "9-pin DIN" },
+  { ConnectorDisplayPort, "DisplayPort" },
+  { ConnectorHDMIA, "HDMI Type A" },
+  { ConnectorHDMIB, "HDMI Type B" },
+};
+
+
 /**
  * drm_idr_get - allocate a new identifier
  * @dev: DRM device
@@ -709,6 +736,34 @@ void drm_mode_destroy(struct drm_device *dev, struct drm_display_mode *mode)
 }
 EXPORT_SYMBOL(drm_mode_destroy);
 
+static int drm_mode_create_standard_output_properties(struct drm_device *dev)
+{
+	int i;
+
+	dev->mode_config.edid_property =
+		drm_property_create(dev, DRM_MODE_PROP_BLOB | DRM_MODE_PROP_IMMUTABLE,
+				    "EDID", 0);
+
+	dev->mode_config.dpms_property =
+		drm_property_create(dev, DRM_MODE_PROP_ENUM, "DPMS", 4);
+
+	for (i = 0; i < ARRAY_SIZE(drm_dpms_enum_list); i++)
+		drm_property_add_enum(dev->mode_config.dpms_property, i, drm_dpms_enum_list[i].type, drm_dpms_enum_list[i].name);
+
+	dev->mode_config.connector_type_property =
+		drm_property_create(dev, DRM_MODE_PROP_ENUM | DRM_MODE_PROP_IMMUTABLE,
+				    "Connector Type", 10);
+	for (i = 0; i < ARRAY_SIZE(drm_conn_enum_list); i++)
+		drm_property_add_enum(dev->mode_config.connector_type_property, i, drm_conn_enum_list[i].type, drm_conn_enum_list[i].name);
+
+	dev->mode_config.connector_num_property =
+		drm_property_create(dev, DRM_MODE_PROP_RANGE | DRM_MODE_PROP_IMMUTABLE,
+				    "Connector ID", 2);
+	dev->mode_config.connector_num_property->values[0] = 0;
+	dev->mode_config.connector_num_property->values[1] = 20;
+	return 0;
+}
+
 /**
  * drm_mode_config_init - initialize DRM mode_configuration structure
  * @dev: DRM device
@@ -728,17 +783,8 @@ void drm_mode_config_init(struct drm_device *dev)
 	INIT_LIST_HEAD(&dev->mode_config.property_list);
 	INIT_LIST_HEAD(&dev->mode_config.property_blob_list);
 	idr_init(&dev->mode_config.crtc_idr);
-	dev->mode_config.edid_property = drm_property_create(dev,
-							     DRM_MODE_PROP_BLOB | DRM_MODE_PROP_IMMUTABLE,
-							     "EDID", 0);
 
-	dev->mode_config.dpms_property = drm_property_create(dev,
-							     DRM_MODE_PROP_ENUM,
-							     "DPMS", 4);
-	drm_property_add_enum(dev->mode_config.dpms_property, 0, DPMSModeOn, "On");
-	drm_property_add_enum(dev->mode_config.dpms_property, 1, DPMSModeStandby, "Standby");
-	drm_property_add_enum(dev->mode_config.dpms_property, 2, DPMSModeSuspend, "Suspend");
-	drm_property_add_enum(dev->mode_config.dpms_property, 3, DPMSModeOff, "Off");
+	drm_mode_create_standard_output_properties(dev);
 	
 }
 EXPORT_SYMBOL(drm_mode_config_init);
@@ -2160,15 +2206,16 @@ int drm_mode_output_update_edid_property(struct drm_output *output, unsigned cha
 EXPORT_SYMBOL(drm_mode_output_update_edid_property);
 
 int drm_mode_output_property_set_ioctl(struct drm_device *dev,
-			   void *data, struct drm_file *file_priv)
+				       void *data, struct drm_file *file_priv)
 {
 	struct drm_mode_output_set_property *out_resp = data;
+	struct drm_property *property;
 	struct drm_output *output;
 	int ret = -EINVAL;
 	int i;
 
 	mutex_lock(&dev->mode_config.mutex);
-	output= idr_find(&dev->mode_config.crtc_idr, out_resp->output_id);
+	output = idr_find(&dev->mode_config.crtc_idr, out_resp->output_id);
 	if (!output || (output->id != out_resp->output_id)) {
 		goto out;
 	}
@@ -2182,8 +2229,35 @@ int drm_mode_output_property_set_ioctl(struct drm_device *dev,
 		goto out;
 	}
 	
+	property = idr_find(&dev->mode_config.crtc_idr, out_resp->prop_id);
+	if (!property || (property->id != out_resp->prop_id)) {
+		goto out;
+	}
+
+	if (property->flags & DRM_MODE_PROP_IMMUTABLE)
+		goto out;
+
+	if (property->flags & DRM_MODE_PROP_RANGE) {
+		if (out_resp->value < property->values[0])
+			goto out;
+
+		if (out_resp->value > property->values[1])
+			goto out;
+	} else {
+		int found = 0;
+		for (i = 0; i < property->num_values; i++) {
+			if (property->values[i] == out_resp->value) {
+				found = 1;
+				break;
+			}
+		}
+		if (!found) {
+			goto out;
+		}
+	}
+
 	if (output->funcs->set_property)
-		ret = output->funcs->set_property(output, out_resp->prop_id, out_resp->value);
+		ret = output->funcs->set_property(output, property, out_resp->value);
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);

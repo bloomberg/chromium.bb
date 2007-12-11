@@ -214,6 +214,8 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 int drmModeRmFB(int fd, uint32_t bufferId)
 {
 	return ioctl(fd, DRM_IOCTL_MODE_RMFB, &bufferId);
+
+
 }
 
 drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
@@ -510,4 +512,20 @@ void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr)
 
 	drmFree(ptr->data);
 	drmFree(ptr);
+}
+
+int drmModeOutputSetProperty(int fd, uint32_t output_id, uint32_t property_id,
+			     uint64_t value)
+{
+	struct drm_mode_output_set_property osp;
+	int ret;
+
+	osp.output_id = output_id;
+	osp.prop_id = property_id;
+	osp.value = value;
+
+	if (ret = ioctl(fd, DRM_IOCTL_MODE_SETPROPERTY, &osp))
+		return ret;
+
+	return 0;
 }

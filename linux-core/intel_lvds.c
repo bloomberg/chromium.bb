@@ -499,6 +499,7 @@ void intel_lvds_init(struct drm_device *dev)
 #endif
 
 out:
+	drm_output_attach_property(output, dev->mode_config.connector_type_property, ConnectorLVDS);
 	return;
 
 failed:

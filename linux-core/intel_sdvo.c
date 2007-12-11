@@ -950,6 +950,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	struct intel_output *intel_output;
 	struct intel_sdvo_priv *sdvo_priv;
 	struct intel_i2c_chan *i2cbus = NULL;
+	int connector_type;
 	u8 ch[0x40];
 	int i;
 	char name[DRM_OUTPUT_LEN];
@@ -1019,24 +1020,28 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
 		output->subpixel_order = SubPixelHorizontalRGB;
 		name_prefix="RGB";
+		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
 		output->subpixel_order = SubPixelHorizontalRGB;
 		name_prefix="RGB";
+		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS0;
 		output->subpixel_order = SubPixelHorizontalRGB;
 		name_prefix="TMDS";
+		connector_type = ConnectorDVID;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS1;
 		output->subpixel_order = SubPixelHorizontalRGB;
 		name_prefix="TMDS";
+		connector_type = ConnectorDVID;
 	}
 	else
 	{
@@ -1084,4 +1089,6 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		  	(SDVO_OUTPUT_TMDS1 | SDVO_OUTPUT_RGB1) ? 'Y' : 'N');
 
 	intel_output->ddc_bus = i2cbus;	
+
+	drm_output_attach_property(output, dev->mode_config.connector_type_property, connector_type);
 }

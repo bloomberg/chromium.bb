@@ -204,6 +204,19 @@ static int intel_crt_get_modes(struct drm_output *output)
 	return intel_ddc_get_modes(output);
 }
 
+static bool intel_crt_set_property(struct drm_output *output,
+				  struct drm_property *property,
+				  uint64_t value)
+{
+	struct drm_device *dev = output->dev;
+	int i;
+
+	if (property == dev->mode_config.dpms_property) {
+		intel_crt_dpms(output, (uint32_t)(value & 0xf));
+	}
+	return true;
+}
+
 /*
  * Routines for controlling stuff on the analog port
  */
@@ -219,6 +232,7 @@ static const struct drm_output_funcs intel_crt_output_funcs = {
 	.detect = intel_crt_detect,
 	.get_modes = intel_crt_get_modes,
 	.cleanup = intel_crt_destroy,
+	.set_property = intel_crt_set_property,
 };
 
 void intel_crt_init(struct drm_device *dev)
@@ -246,4 +260,5 @@ void intel_crt_init(struct drm_device *dev)
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;
 
+	drm_output_attach_property(output, dev->mode_config.connector_type_property, ConnectorVGA);
 }

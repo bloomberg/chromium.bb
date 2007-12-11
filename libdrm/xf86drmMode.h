@@ -223,3 +223,5 @@ extern void drmModeFreeProperty(drmModePropertyPtr ptr);
 
 extern drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id);
 extern void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr);
+extern int drmModeOutputSetProperty(int fd, uint32_t output_id, uint32_t property_id,
+				    uint64_t value);

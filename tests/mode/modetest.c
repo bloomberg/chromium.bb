@@ -3,10 +3,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <string.h>
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
+int dpms_prop_id = 0;
 const char* getConnectionText(drmModeConnection conn)
 {
 	switch (conn) {
@@ -72,7 +75,7 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 			printf("\tflags:     %i\n", props->flags);
 			printf("\tvalues %d: ", props->count_values);
 			for (j = 0; j < props->count_values; j++)
-				printf("%d ", props->values[j]);
+				printf("%lld ", props->values[j]);
 
 			printf("\n\tenums %d: \n", props->count_enums);
 			
@@ -86,6 +89,9 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 				}
 
 			} else {
+				if (!strncmp(props->name, "DPMS", 4))
+					dpms_prop_id = props->prop_id;
+
 				for (j = 0; j < props->count_enums; j++) {
 				  printf("\t\t%lld = %s\n", props->enums[j].value, props->enums[j].name);
 					if (output->prop_values[i] == props->enums[j].value)
@@ -96,7 +102,7 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 				if (props->count_enums && name) {
 					printf("\toutput property name %s %s\n", props->name, name);
 				} else {
-					printf("\toutput property id %s %i\n", props->name, output->prop_values[i]);
+					printf("\toutput property id %s %lli\n", props->name, output->prop_values[i]);
 				}
 			}
 
@@ -109,7 +115,7 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 		if (mode)
 			printMode(mode);
 		else
-			printf("\t\tmode: Invalid mode %i\n", output->modes[i]);
+			printf("\t\tmode: Invalid mode %p\n", &output->modes[i]);
 	}
 
 	return 0;
@@ -123,7 +129,7 @@ int printCrtc(int fd, drmModeResPtr res, drmModeCrtcPtr crtc, uint32_t id)
 	printf("\ty            : %i\n", crtc->y);
 	printf("\twidth        : %i\n", crtc->width);
 	printf("\theight       : %i\n", crtc->height);
-	printf("\tmode         : %i\n", crtc->mode);
+	printf("\tmode         : %p\n", &crtc->mode);
 	printf("\tnum outputs  : %i\n", crtc->count_outputs);
 	printf("\toutputs      : %i\n", crtc->outputs);
 	printf("\tnum possible : %i\n", crtc->count_possibles);
@@ -314,6 +320,21 @@ err:
 	return 1;
 }
 
+int testDPMS(int fd, drmModeResPtr res)
+{
+	int output_id;
+	int i;
+
+	for (i = 0; i < res->count_outputs; i++) {
+		output_id = res->outputs[i];
+		/* turn output off */
+		drmModeOutputSetProperty(fd, output_id, dpms_prop_id, 3);
+		sleep(2);
+		drmModeOutputSetProperty(fd, output_id, dpms_prop_id, 0);
+	}
+	return 1;
+
+}
 
 int main(int argc, char **argv)
 {
@@ -343,6 +364,8 @@ int main(int argc, char **argv)
 
 	testFrameBufferAdd(fd, res);
 
+	/* try dpms test */
+	testDPMS(fd, res);
 	drmModeFreeResources(res);
 	printf("Ok\n");
 

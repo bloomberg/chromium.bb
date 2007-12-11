@@ -142,10 +142,25 @@ struct drm_display_mode {
 #define V_CLKDIV2	(1<<13)
 
 #define CRTC_INTERLACE_HALVE_V 0x1 /* halve V values for interlacing */
+
 #define DPMSModeOn 0
 #define DPMSModeStandby 1
 #define DPMSModeSuspend 2
 #define DPMSModeOff 3
+
+#define ConnectorUnknown 0
+#define ConnectorVGA 1
+#define ConnectorDVII 2
+#define ConnectorDVID 3
+#define ConnectorDVIA 4
+#define ConnectorComposite 5
+#define ConnectorSVIDEO 6
+#define ConnectorLVDS 7
+#define ConnectorComponent 8
+#define Connector9PinDIN 9
+#define ConnectorDisplayPort 10
+#define ConnectorHDMIA 11
+#define ConnectorHDMIB 12
 
 enum drm_output_status {
 	output_status_connected = 1,
@@ -396,7 +411,8 @@ struct drm_output_funcs {
 	enum drm_output_status (*detect)(struct drm_output *output);
 	int (*get_modes)(struct drm_output *output);
 	/* JJJ: type checking for properties via property value type */
-	bool (*set_property)(struct drm_output *output, int prop, uint64_t val);
+	bool (*set_property)(struct drm_output *output, struct drm_property *property,
+			     uint64_t val);
 	void (*cleanup)(struct drm_output *output);
 };
 
@@ -504,6 +520,8 @@ struct drm_mode_config {
 	struct list_head property_blob_list;
 	struct drm_property *edid_property;
 	struct drm_property *dpms_property;
+	struct drm_property *connector_type_property;
+	struct drm_property *connector_num_property;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,
@@ -597,5 +615,7 @@ extern int drm_mode_getproperty_ioctl(struct drm_device *dev,
 				      void *data, struct drm_file *file_priv);
 extern int drm_mode_getblob_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
+extern int drm_mode_output_property_set_ioctl(struct drm_device *dev,
+					      void *data, struct drm_file *file_priv);
 #endif /* __DRM_CRTC_H__ */
 
