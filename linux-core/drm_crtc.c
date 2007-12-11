@@ -592,6 +592,8 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 
 	drm_output_attach_property(output, dev->mode_config.edid_property, 0);
 
+	drm_output_attach_property(output, dev->mode_config.dpms_property, 0);
+
 	mutex_unlock(&dev->mode_config.mutex);
 
 	return output;
@@ -729,6 +731,15 @@ void drm_mode_config_init(struct drm_device *dev)
 	dev->mode_config.edid_property = drm_property_create(dev,
 							     DRM_MODE_PROP_BLOB | DRM_MODE_PROP_IMMUTABLE,
 							     "EDID", 0);
+
+	dev->mode_config.dpms_property = drm_property_create(dev,
+							     DRM_MODE_PROP_ENUM,
+							     "DPMS", 4);
+	drm_property_add_enum(dev->mode_config.dpms_property, 0, DPMSModeOn, "On");
+	drm_property_add_enum(dev->mode_config.dpms_property, 1, DPMSModeStandby, "Standby");
+	drm_property_add_enum(dev->mode_config.dpms_property, 2, DPMSModeSuspend, "Suspend");
+	drm_property_add_enum(dev->mode_config.dpms_property, 3, DPMSModeOff, "Off");
+	
 }
 EXPORT_SYMBOL(drm_mode_config_init);
 
@@ -1985,7 +1996,7 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	int ret = 0, i;
 	int copied;
 	struct drm_property_enum *prop_enum;
-	struct drm_property_enum __user *enum_ptr;
+	struct drm_mode_property_enum __user *enum_ptr;
 	struct drm_property_blob *prop_blob;
 	uint32_t *blob_id_ptr;
 	uint64_t __user *values_ptr;
@@ -2015,7 +2026,7 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	if ((out_resp->count_values >= value_count) && value_count) {
 		values_ptr = (uint64_t *)(unsigned long)out_resp->values_ptr;
 		for (i = 0; i < value_count; i++) {
-			if (put_user(property->values[i], values_ptr + i)) {
+			if (copy_to_user(values_ptr + i, &property->values[i], sizeof(uint64_t))) {
 				ret = -EFAULT;
 				goto done;
 			}
@@ -2024,19 +2035,21 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	out_resp->count_values = value_count;
 
 	if (property->flags & DRM_MODE_PROP_ENUM) {
+
 		if ((out_resp->count_enum_blobs >= enum_count) && enum_count) {
 			copied = 0;
-			enum_ptr = (struct drm_property_enum *)(unsigned long)out_resp->enum_blob_ptr;
+			enum_ptr = (struct drm_mode_property_enum *)(unsigned long)out_resp->enum_blob_ptr;
 			list_for_each_entry(prop_enum, &property->enum_blob_list, head) {
-				if (put_user(prop_enum->value, &enum_ptr[copied].value)) {
+				
+				if (copy_to_user(&enum_ptr[copied].value, &prop_enum->value, sizeof(uint64_t))) {
 					ret = -EFAULT;
 					goto done;
 				}
 				
 				if (copy_to_user(&enum_ptr[copied].name,
-						 prop_enum->name, DRM_PROP_NAME_LEN)) {
-				ret = -EFAULT;
-				goto done;
+						 &prop_enum->name, DRM_PROP_NAME_LEN)) {
+					ret = -EFAULT;
+					goto done;
 				}
 				copied++;
 			}
@@ -2145,3 +2158,35 @@ int drm_mode_output_update_edid_property(struct drm_output *output, unsigned cha
 	return ret;
 }
 EXPORT_SYMBOL(drm_mode_output_update_edid_property);
+
+int drm_mode_output_property_set_ioctl(struct drm_device *dev,
+			   void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_output_set_property *out_resp = data;
+	struct drm_output *output;
+	int ret = -EINVAL;
+	int i;
+
+	mutex_lock(&dev->mode_config.mutex);
+	output= idr_find(&dev->mode_config.crtc_idr, out_resp->output_id);
+	if (!output || (output->id != out_resp->output_id)) {
+		goto out;
+	}
+
+	for (i = 0; i < DRM_OUTPUT_MAX_PROPERTY; i++) {
+		if (output->property_ids[i] == out_resp->prop_id)
+			break;
+	}
+
+	if (i == DRM_OUTPUT_MAX_PROPERTY) {
+		goto out;
+	}
+	
+	if (output->funcs->set_property)
+		ret = output->funcs->set_property(output, out_resp->prop_id, out_resp->value);
+
+out:
+	mutex_unlock(&dev->mode_config.mutex);
+	return ret;
+}
+

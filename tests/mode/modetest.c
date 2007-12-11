@@ -80,15 +80,17 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 				drmModePropertyBlobPtr blob;
 
 				blob = drmModeGetPropertyBlob(fd, output->prop_values[i]);
-
-				printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
-				drmModeFreePropertyBlob(blob);
+				if (blob) {
+					printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
+					drmModeFreePropertyBlob(blob);
+				}
 
 			} else {
 				for (j = 0; j < props->count_enums; j++) {
+				  printf("\t\t%lld = %s\n", props->enums[j].value, props->enums[j].name);
 					if (output->prop_values[i] == props->enums[j].value)
 						name = props->enums[j].name;
-					printf("\t\t%d = %s\n", props->enums[j].value, props->enums[j].name);
+
 				}
 
 				if (props->count_enums && name) {

@@ -242,8 +242,8 @@ struct drm_property_blob {
 };
 
 struct drm_property_enum {
-	struct list_head head;
 	uint64_t value;
+	struct list_head head;
 	unsigned char name[DRM_PROP_NAME_LEN];
 };
 
@@ -396,7 +396,7 @@ struct drm_output_funcs {
 	enum drm_output_status (*detect)(struct drm_output *output);
 	int (*get_modes)(struct drm_output *output);
 	/* JJJ: type checking for properties via property value type */
-	bool (*set_property)(struct drm_output *output, int prop, void *val);
+	bool (*set_property)(struct drm_output *output, int prop, uint64_t val);
 	void (*cleanup)(struct drm_output *output);
 };
 
@@ -503,6 +503,7 @@ struct drm_mode_config {
 	/* pointers to standard properties */
 	struct list_head property_blob_list;
 	struct drm_property *edid_property;
+	struct drm_property *dpms_property;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,
