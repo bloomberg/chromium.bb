@@ -418,8 +418,6 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
 		return 0;
 
-	dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-
 	i915_user_irq_on(dev_priv);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
 		    READ_BREADCRUMB(dev_priv) >= irq_nr);
@@ -472,12 +470,25 @@ void i915_driver_wait_next_vblank(struct drm_device *dev, int pipe)
 
 int i915_driver_vblank_wait(struct drm_device *dev, unsigned int *sequence)
 {
-	return i915_driver_vblank_do_wait(dev, sequence, &dev->vbl_received);
+	atomic_t *counter;
+
+	if (i915_get_pipe(dev, 0) == 0)
+		counter = &dev->vbl_received;
+	else
+		counter = &dev->vbl_received2;
+	return i915_driver_vblank_do_wait(dev, sequence, counter);
 }
 
 int i915_driver_vblank_wait2(struct drm_device *dev, unsigned int *sequence)
 {
-	return i915_driver_vblank_do_wait(dev, sequence, &dev->vbl_received2);
+	atomic_t *counter;
+
+	if (i915_get_pipe(dev, 1) == 0)
+		counter = &dev->vbl_received;
+	else
+		counter = &dev->vbl_received2;
+
+	return i915_driver_vblank_do_wait(dev, sequence, counter);
 }
 
 /* Needs the lock as it touches the ring.

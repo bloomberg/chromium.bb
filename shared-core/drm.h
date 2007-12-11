@@ -250,7 +250,7 @@ enum drm_map_flags {
 	_DRM_WRITE_COMBINING = 0x10, /**< use write-combining if available */
 	_DRM_CONTAINS_LOCK = 0x20,   /**< SHM page that contains lock */
 	_DRM_REMOVABLE = 0x40,	     /**< Removable mapping */
-        _DRM_DRIVER = 0x80           /**< Driver will take care of it */
+	_DRM_DRIVER = 0x80	     /**< Managed by driver */
 };
 
 struct drm_ctx_priv_map {

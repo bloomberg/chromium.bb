@@ -29,7 +29,7 @@
  *    Gareth Hughes <gareth@valinux.com>
  *    Frank C. Earl <fearl@airmail.net>
  *    Leif Delgass <ldelgass@retinalburn.net>
- *    Jos�Fonseca <j_r_fonseca@yahoo.co.uk>
+ *    José Fonseca <j_r_fonseca@yahoo.co.uk>
  */
 
 #ifndef __MACH64_DRV_H__
@@ -139,6 +139,11 @@ extern int mach64_do_release_used_buffers(drm_mach64_private_t * dev_priv);
 extern void mach64_dump_engine_info(drm_mach64_private_t * dev_priv);
 extern void mach64_dump_ring_info(drm_mach64_private_t * dev_priv);
 extern int mach64_do_engine_reset(drm_mach64_private_t * dev_priv);
+
+extern int mach64_add_buf_to_ring(drm_mach64_private_t *dev_priv,
+                                  drm_mach64_freelist_t *_entry);
+extern int mach64_add_hostdata_buf_to_ring(drm_mach64_private_t *dev_priv,
+                                           drm_mach64_freelist_t *_entry);
 
 extern int mach64_do_dma_idle(drm_mach64_private_t * dev_priv);
 extern int mach64_do_dma_flush(drm_mach64_private_t * dev_priv);
@@ -521,88 +526,11 @@ extern void mach64_driver_irq_uninstall(struct drm_device * dev);
 #define MACH64_APERTURE_OFFSET	        0x7ff800	/* frame-buffer offset for gui-masters */
 
 /* ================================================================
- * Misc helper macros
+ * Ring operations
+ *
+ * Since the Mach64 bus master engine requires polling, these functions end
+ * up being called frequently, hence being inline.
  */
-
-static __inline__ void mach64_set_dma_eol(volatile u32 * addr)
-{
-#if defined(__i386__)
-	int nr = 31;
-
-	/* Taken from include/asm-i386/bitops.h linux header */
-	__asm__ __volatile__("lock;" "btsl %1,%0":"=m"(*addr)
-			     :"Ir"(nr));
-#elif defined(__powerpc__)
-	u32 old;
-	u32 mask = cpu_to_le32(MACH64_DMA_EOL);
-
-	/* Taken from the include/asm-ppc/bitops.h linux header */
-	__asm__ __volatile__("\n\
-1:	lwarx	%0,0,%3 \n\
-	or	%0,%0,%2 \n\
-	stwcx.	%0,0,%3 \n\
-	bne-	1b":"=&r"(old), "=m"(*addr)
-			     :"r"(mask), "r"(addr), "m"(*addr)
-			     :"cc");
-#elif defined(__alpha__)
-	u32 temp;
-	u32 mask = MACH64_DMA_EOL;
-
-	/* Taken from the include/asm-alpha/bitops.h linux header */
-	__asm__ __volatile__("1:	ldl_l %0,%3\n"
-			     "	bis %0,%2,%0\n"
-			     "	stl_c %0,%1\n"
-			     "	beq %0,2f\n"
-			     ".subsection 2\n"
-			     "2:	br 1b\n"
-			     ".previous":"=&r"(temp), "=m"(*addr)
-			     :"Ir"(mask), "m"(*addr));
-#else
-	u32 mask = cpu_to_le32(MACH64_DMA_EOL);
-
-	*addr |= mask;
-#endif
-}
-
-static __inline__ void mach64_clear_dma_eol(volatile u32 * addr)
-{
-#if defined(__i386__)
-	int nr = 31;
-
-	/* Taken from include/asm-i386/bitops.h linux header */
-	__asm__ __volatile__("lock;" "btrl %1,%0":"=m"(*addr)
-			     :"Ir"(nr));
-#elif defined(__powerpc__)
-	u32 old;
-	u32 mask = cpu_to_le32(MACH64_DMA_EOL);
-
-	/* Taken from the include/asm-ppc/bitops.h linux header */
-	__asm__ __volatile__("\n\
-1:	lwarx	%0,0,%3 \n\
-	andc	%0,%0,%2 \n\
-	stwcx.	%0,0,%3 \n\
-	bne-	1b":"=&r"(old), "=m"(*addr)
-			     :"r"(mask), "r"(addr), "m"(*addr)
-			     :"cc");
-#elif defined(__alpha__)
-	u32 temp;
-	u32 mask = ~MACH64_DMA_EOL;
-
-	/* Taken from the include/asm-alpha/bitops.h linux header */
-	__asm__ __volatile__("1:	ldl_l %0,%3\n"
-			     "	and %0,%2,%0\n"
-			     "	stl_c %0,%1\n"
-			     "	beq %0,2f\n"
-			     ".subsection 2\n"
-			     "2:	br 1b\n"
-			     ".previous":"=&r"(temp), "=m"(*addr)
-			     :"Ir"(mask), "m"(*addr));
-#else
-	u32 mask = cpu_to_le32(~MACH64_DMA_EOL);
-
-	*addr &= mask;
-#endif
-}
 
 static __inline__ void mach64_ring_start(drm_mach64_private_t * dev_priv)
 {
@@ -666,6 +594,18 @@ static __inline__ void mach64_ring_resume(drm_mach64_private_t * dev_priv,
 	}
 }
 
+/**
+ * Poll the ring head and make sure the bus master is alive.
+ * 
+ * Mach64's bus master engine will stop if there are no more entries to process.
+ * This function polls the engine for the last processed entry and calls 
+ * mach64_ring_resume if there is an unprocessed entry.
+ * 
+ * Note also that, since we update the ring tail while the bus master engine is 
+ * in operation, it is possible that the last tail update was too late to be 
+ * processed, and the bus master engine stops at the previous tail position. 
+ * Therefore it is important to call this function frequently. 
+ */
 static __inline__ void mach64_ring_tick(drm_mach64_private_t * dev_priv,
 					drm_mach64_descriptor_ring_t * ring)
 {
@@ -750,60 +690,12 @@ mach64_update_ring_snapshot(drm_mach64_private_t * dev_priv)
 }
 
 /* ================================================================
- * DMA descriptor ring macros
- */
-
-#define RING_LOCALS									\
-	int _ring_tail, _ring_write; unsigned int _ring_mask; volatile u32 *_ring
-
-#define RING_WRITE_OFS  _ring_write
-
-#define BEGIN_RING( n )									\
-do {											\
-	if ( MACH64_VERBOSE ) {								\
-		DRM_INFO( "BEGIN_RING( %d ) in %s\n",					\
-			   (n), __FUNCTION__ );						\
-	}										\
-	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {				\
-		int ret;								\
-		if ((ret=mach64_wait_ring( dev_priv, (n) * sizeof(u32))) < 0 ) {	\
-			DRM_ERROR( "wait_ring failed, resetting engine\n");		\
-			mach64_dump_engine_info( dev_priv );				\
-			mach64_do_engine_reset( dev_priv );				\
-			return ret;							\
-		}									\
-	}										\
-	dev_priv->ring.space -= (n) * sizeof(u32);					\
-	_ring = (u32 *) dev_priv->ring.start;						\
-	_ring_tail = _ring_write = dev_priv->ring.tail;					\
-	_ring_mask = dev_priv->ring.tail_mask;						\
-} while (0)
-
-#define OUT_RING( x )						\
-do {								\
-	if ( MACH64_VERBOSE ) {					\
-		DRM_INFO( "   OUT_RING( 0x%08x ) at 0x%x\n",	\
-			   (unsigned int)(x), _ring_write );	\
-	}							\
-	_ring[_ring_write++] = cpu_to_le32( x );		\
-	_ring_write &= _ring_mask;				\
-} while (0)
-
-#define ADVANCE_RING()							\
-do {									\
-	if ( MACH64_VERBOSE ) {						\
-		DRM_INFO( "ADVANCE_RING() wr=0x%06x tail=0x%06x\n",	\
-			  _ring_write, _ring_tail );			\
-	}								\
-	DRM_MEMORYBARRIER();						\
-	mach64_clear_dma_eol( &_ring[(_ring_tail - 2) & _ring_mask] );	\
-	DRM_MEMORYBARRIER();						\
-	dev_priv->ring.tail = _ring_write;				\
-	mach64_ring_tick( dev_priv, &(dev_priv)->ring );		\
-} while (0)
-
-/* ================================================================
  * DMA macros
+ * 
+ * Mach64's ring buffer doesn't take register writes directly. These 
+ * have to be written indirectly in DMA buffers. These macros simplify 
+ * the task of setting up a buffer, writing commands to it, and 
+ * queuing the buffer in the ring. 
  */
 
 #define DMALOCALS				\
@@ -889,7 +781,7 @@ do {								\
 #define DMAADVANCE( dev_priv, _discard )						     \
 do {											     \
 	struct list_head *ptr;								     \
-	RING_LOCALS;									     \
+	int ret;									     \
 											     \
 	if ( MACH64_VERBOSE ) {								     \
 		DRM_INFO( "DMAADVANCE() in %s\n", __FUNCTION__ );			     \
@@ -902,7 +794,6 @@ do {											     \
 	}										     \
 	if (_buf->pending) {								     \
                 /* This is a resued buffer, so we need to find it in the pending list */     \
-		int ret;								     \
 		if ( (ret=mach64_find_pending_buf_entry(dev_priv, &_entry, _buf)) ) {	     \
 			DRM_ERROR( "DMAADVANCE() in %s: couldn't find pending buf %d\n",     \
 				   __FUNCTION__, _buf->idx );				     \
@@ -927,7 +818,8 @@ do {											     \
 		list_add_tail(ptr, &dev_priv->pending);					     \
 	}										     \
 	_entry->discard = (_discard);							     \
-	ADD_BUF_TO_RING( dev_priv );							     \
+	if ( (ret = mach64_add_buf_to_ring( dev_priv, _entry )) )			     \
+		return ret;								     \
 } while (0)
 
 #define DMADISCARDBUF()									\
@@ -943,48 +835,10 @@ do {											\
 	_entry->discard = 1;								\
 } while(0)
 
-#define ADD_BUF_TO_RING( dev_priv )							\
-do {											\
-	int bytes, pages, remainder;							\
-	u32 address, page;								\
-	int i;										\
-											\
-	bytes = _buf->used;								\
-	address = GETBUFADDR( _buf );							\
-											\
-	pages = (bytes + MACH64_DMA_CHUNKSIZE - 1) / MACH64_DMA_CHUNKSIZE;		\
-											\
-	BEGIN_RING( pages * 4 );							\
-											\
-	for ( i = 0 ; i < pages-1 ; i++ ) {						\
-		page = address + i * MACH64_DMA_CHUNKSIZE;				\
-		OUT_RING( MACH64_APERTURE_OFFSET + MACH64_BM_ADDR );			\
-		OUT_RING( page );							\
-		OUT_RING( MACH64_DMA_CHUNKSIZE | MACH64_DMA_HOLD_OFFSET );		\
-		OUT_RING( 0 );								\
-	}										\
-											\
-	/* generate the final descriptor for any remaining commands in this buffer */	\
-	page = address + i * MACH64_DMA_CHUNKSIZE;					\
-	remainder = bytes - i * MACH64_DMA_CHUNKSIZE;					\
-											\
-	/* Save dword offset of last descriptor for this buffer.			\
-	 * This is needed to check for completion of the buffer in freelist_get		\
-	 */										\
-	_entry->ring_ofs = RING_WRITE_OFS;						\
-											\
-	OUT_RING( MACH64_APERTURE_OFFSET + MACH64_BM_ADDR );				\
-	OUT_RING( page );								\
-	OUT_RING( remainder | MACH64_DMA_HOLD_OFFSET | MACH64_DMA_EOL );		\
-	OUT_RING( 0 );									\
-											\
-	ADVANCE_RING();									\
-} while(0)
-
 #define DMAADVANCEHOSTDATA( dev_priv )							\
 do {											\
 	struct list_head *ptr;								\
-	RING_LOCALS;									\
+	int ret;									\
 											\
 	if ( MACH64_VERBOSE ) {								\
 		DRM_INFO( "DMAADVANCEHOSTDATA() in %s\n", __FUNCTION__ );		\
@@ -1008,51 +862,8 @@ do {											\
 	_entry->buf->pending = 1;							\
 	list_add_tail(ptr, &dev_priv->pending);						\
 	_entry->discard = 1;								\
-	ADD_HOSTDATA_BUF_TO_RING( dev_priv );						\
+	if ( (ret = mach64_add_hostdata_buf_to_ring( dev_priv, _entry )) )		\
+		return ret;								\
 } while (0)
-
-#define ADD_HOSTDATA_BUF_TO_RING( dev_priv )						 \
-do {											 \
-	int bytes, pages, remainder;							 \
-	u32 address, page;								 \
-	int i;										 \
-											 \
-	bytes = _buf->used - MACH64_HOSTDATA_BLIT_OFFSET;				 \
-	pages = (bytes + MACH64_DMA_CHUNKSIZE - 1) / MACH64_DMA_CHUNKSIZE;		 \
-	address = GETBUFADDR( _buf );							 \
-											 \
-	BEGIN_RING( 4 + pages * 4 );							 \
-											 \
-	OUT_RING( MACH64_APERTURE_OFFSET + MACH64_BM_ADDR );				 \
-	OUT_RING( address );								 \
-	OUT_RING( MACH64_HOSTDATA_BLIT_OFFSET | MACH64_DMA_HOLD_OFFSET );		 \
-	OUT_RING( 0 );									 \
-											 \
-	address += MACH64_HOSTDATA_BLIT_OFFSET;						 \
-											 \
-	for ( i = 0 ; i < pages-1 ; i++ ) {						 \
-		page = address + i * MACH64_DMA_CHUNKSIZE;				 \
-		OUT_RING( MACH64_APERTURE_OFFSET + MACH64_BM_HOSTDATA );		 \
-		OUT_RING( page );							 \
-		OUT_RING( MACH64_DMA_CHUNKSIZE | MACH64_DMA_HOLD_OFFSET );		 \
-		OUT_RING( 0 );								 \
-	}										 \
-											 \
-	/* generate the final descriptor for any remaining commands in this buffer */	 \
-	page = address + i * MACH64_DMA_CHUNKSIZE;					 \
-	remainder = bytes - i * MACH64_DMA_CHUNKSIZE;					 \
-											 \
-	/* Save dword offset of last descriptor for this buffer.			 \
-	 * This is needed to check for completion of the buffer in freelist_get		 \
-	 */										 \
-	_entry->ring_ofs = RING_WRITE_OFS;						 \
-											 \
-	OUT_RING( MACH64_APERTURE_OFFSET + MACH64_BM_HOSTDATA );			 \
-	OUT_RING( page );								 \
-	OUT_RING( remainder | MACH64_DMA_HOLD_OFFSET | MACH64_DMA_EOL );		 \
-	OUT_RING( 0 );									 \
-											 \
-	ADVANCE_RING();									 \
-} while(0)
 
 #endif				/* __MACH64_DRV_H__ */
