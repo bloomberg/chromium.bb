@@ -702,7 +702,14 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
 	return 0;
 }
 
+#if DRM_DEBUG_CODE
+#define DRM_DEBUG_RELOCATION	(drm_debug != 0)
+#else
+#define DRM_DEBUG_RELOCATION	0
+#endif
+
 #ifdef I915_HAVE_BUFFER
+
 struct i915_relocatee_info {
 	struct drm_buffer_object *buf;
 	unsigned long offset;
@@ -743,7 +750,7 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	 * Short-circuit relocations that were correctly
 	 * guessed by the client
 	 */
-	if (buffers[reloc[2]].presumed_offset_correct)
+	if (buffers[reloc[2]].presumed_offset_correct && !DRM_DEBUG_RELOCATION)
 		return 0;
 
 	new_cmd_offset = reloc[0];
@@ -776,6 +783,13 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	/* add in validate */
 	val = val + reloc[1];
 
+	if (DRM_DEBUG_RELOCATION) {
+		if (buffers[reloc[2]].presumed_offset_correct &&
+		    relocatee->data_page[index] != val) {
+			DRM_DEBUG ("Relocation mismatch source %d target %d buffer %d user %08x kernel %08x\n",
+				   reloc[0], reloc[1], reloc[2], relocatee->data_page[index], val);
+		}
+	}
 	relocatee->data_page[index] = val;
 	return 0;
 }
@@ -883,12 +897,14 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 	 * buffers offsets were correctly guessed by
 	 * the client
 	 */
-	for (b = 0; b < buf_count; b++)
-		if (!buffers[b].presumed_offset_correct)
-			break;
-
-	if (b == buf_count)
-		return 0;
+	if (!DRM_DEBUG_RELOCATION) {
+		for (b = 0; b < buf_count; b++)
+			if (!buffers[b].presumed_offset_correct)
+				break;
+	
+		if (b == buf_count)
+			return 0;
+	}
 
 	memset(&relocatee, 0, sizeof(relocatee));
 
