@@ -681,7 +681,14 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
 	return 0;
 }
 
+#if DRM_DEBUG_CODE
+#define DRM_DEBUG_RELOCATION	(drm_debug != 0)
+#else
+#define DRM_DEBUG_RELOCATION	0
+#endif
+
 #ifdef I915_HAVE_BUFFER
+
 struct i915_relocatee_info {
 	struct drm_buffer_object *buf;
 	unsigned long offset;
@@ -691,15 +698,20 @@ struct i915_relocatee_info {
 	int is_iomem;
 };
 
-static void i915_dereference_buffers_locked(struct drm_buffer_object **buffers,
+struct drm_i915_validate_buffer {
+	struct drm_buffer_object *buffer;
+	int presumed_offset_correct;
+};
+
+static void i915_dereference_buffers_locked(struct drm_i915_validate_buffer *buffers,
 					    unsigned num_buffers)
 {
 	while (num_buffers--)
-		drm_bo_usage_deref_locked(&buffers[num_buffers]);
+		drm_bo_usage_deref_locked(&buffers[num_buffers].buffer);
 }
 
 int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
-		     struct drm_buffer_object **buffers,
+		     struct drm_i915_validate_buffer *buffers,
 		     struct i915_relocatee_info *relocatee,
 		     uint32_t *reloc)
 {
@@ -713,11 +725,25 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		return -EINVAL;
 	}
 
+	/*
+	 * Short-circuit relocations that were correctly
+	 * guessed by the client
+	 */
+	if (buffers[reloc[2]].presumed_offset_correct && !DRM_DEBUG_RELOCATION)
+		return 0;
+
 	new_cmd_offset = reloc[0];
 	if (!relocatee->data_page ||
 	    !drm_bo_same_page(relocatee->offset, new_cmd_offset)) {
 		drm_bo_kunmap(&relocatee->kmap);
 		relocatee->offset = new_cmd_offset;
+		mutex_lock (&relocatee->buf->mutex);
+		ret = drm_bo_wait (relocatee->buf, 0, 0, FALSE);
+		mutex_unlock (&relocatee->buf->mutex);
+		if (ret) {
+			DRM_ERROR("Could not wait for buffer to apply relocs\n %08lx", new_cmd_offset);
+			return ret;
+		}
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
 		if (ret) {
@@ -730,12 +756,19 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		relocatee->page_offset = (relocatee->offset & PAGE_MASK);
 	}
 
-	val = buffers[reloc[2]]->offset;
+	val = buffers[reloc[2]].buffer->offset;
 	index = (reloc[0] - relocatee->page_offset) >> 2;
 
 	/* add in validate */
 	val = val + reloc[1];
 
+	if (DRM_DEBUG_RELOCATION) {
+		if (buffers[reloc[2]].presumed_offset_correct &&
+		    relocatee->data_page[index] != val) {
+			DRM_DEBUG ("Relocation mismatch source %d target %d buffer %d user %08x kernel %08x\n",
+				   reloc[0], reloc[1], reloc[2], relocatee->data_page[index], val);
+		}
+	}
 	relocatee->data_page[index] = val;
 	return 0;
 }
@@ -744,7 +777,7 @@ int i915_process_relocs(struct drm_file *file_priv,
 			uint32_t buf_handle,
 			uint32_t *reloc_buf_handle,
 			struct i915_relocatee_info *relocatee,
-			struct drm_buffer_object **buffers,
+			struct drm_i915_validate_buffer *buffers,
 			uint32_t num_buffers)
 {
 	struct drm_device *dev = file_priv->head->dev;
@@ -830,12 +863,27 @@ out:
 
 static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 			   drm_handle_t buf_reloc_handle,
-			   struct drm_buffer_object **buffers,
+			   struct drm_i915_validate_buffer *buffers,
 			   uint32_t buf_count)
 {
 	struct drm_device *dev = file_priv->head->dev;
 	struct i915_relocatee_info relocatee;
 	int ret = 0;
+	int b;
+
+	/*
+	 * Short circuit relocations when all previous
+	 * buffers offsets were correctly guessed by
+	 * the client
+	 */
+	if (!DRM_DEBUG_RELOCATION) {
+		for (b = 0; b < buf_count; b++)
+			if (!buffers[b].presumed_offset_correct)
+				break;
+	
+		if (b == buf_count)
+			return 0;
+	}
 
 	memset(&relocatee, 0, sizeof(relocatee));
 
@@ -869,7 +917,7 @@ out_err:
  */
 int i915_validate_buffer_list(struct drm_file *file_priv,
 			      unsigned int fence_class, uint64_t data,
-			      struct drm_buffer_object **buffers,
+			      struct drm_i915_validate_buffer *buffers,
 			      uint32_t *num_buffers)
 {
 	struct drm_i915_op_arg arg;
@@ -889,7 +937,8 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 			goto out_err;
 		}
 
-		buffers[buf_count] = NULL;
+		buffers[buf_count].buffer = NULL;
+		buffers[buf_count].presumed_offset_correct = 0;
 
 		if (copy_from_user(&arg, (void __user *)(unsigned long)data, sizeof(arg))) {
 			ret = -EFAULT;
@@ -899,7 +948,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		if (arg.handled) {
 			data = arg.next;
 			mutex_lock(&dev->struct_mutex);
-			buffers[buf_count] = drm_lookup_buffer_object(file_priv, req->arg_handle, 1);
+			buffers[buf_count].buffer = drm_lookup_buffer_object(file_priv, req->arg_handle, 1);
 			mutex_unlock(&dev->struct_mutex);
 			buf_count++;
 			continue;
@@ -930,13 +979,21 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 						 req->bo_req.hint,
 						 0,
 						 &rep.bo_info,
-						 &buffers[buf_count]);
+						 &buffers[buf_count].buffer);
 
 		if (rep.ret) {
 			DRM_ERROR("error on handle validate %d\n", rep.ret);
 			goto out_err;
 		}
-
+		/*
+		 * If the user provided a presumed offset hint, check whether
+		 * the buffer is in the same place, if so, relocations relative to
+		 * this buffer need not be performed
+		 */
+		if ((req->bo_req.hint & DRM_BO_HINT_PRESUMED_OFFSET) &&
+		    buffers[buf_count].buffer->offset == req->bo_req.presumed_offset) {
+			buffers[buf_count].presumed_offset_correct = 1;
+		}
 
 		next = arg.next;
 		arg.handled = 1;
@@ -970,7 +1027,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	struct drm_fence_arg *fence_arg = &exec_buf->fence_arg;
 	int num_buffers;
 	int ret;
-	struct drm_buffer_object **buffers;
+	struct drm_i915_validate_buffer *buffers;
 	struct drm_fence_object *fence;
 
 	if (!dev_priv->allow_batchbuffer) {
@@ -1005,7 +1062,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	num_buffers = exec_buf->num_buffers;
 
-	buffers = drm_calloc(num_buffers, sizeof(struct drm_buffer_object *), DRM_MEM_DRIVER);
+	buffers = drm_calloc(num_buffers, sizeof(struct drm_i915_validate_buffer), DRM_MEM_DRIVER);
 	if (!buffers) {
 		drm_bo_read_unlock(&dev->bm.bm_lock);
 		mutex_unlock(&dev_priv->cmdbuf_mutex);
@@ -1023,7 +1080,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	drm_agp_chipset_flush(dev);
 
 	/* submit buffer */
-	batch->start = buffers[num_buffers-1]->offset;
+	batch->start = buffers[num_buffers-1].buffer->offset;
 
 	DRM_DEBUG("i915 exec batchbuffer, start %x used %d cliprects %d\n",
 		  batch->start, batch->used, batch->num_cliprects);

@@ -57,10 +57,11 @@
  * 1.9: Usable page flipping and triple buffering
  * 1.10: Plane/pipe disentangling
  * 1.11: TTM superioctl
+ * 1.12: TTM relocation optimization
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		11
+#define DRIVER_MINOR		12
 #else
 #define DRIVER_MINOR		6
 #endif

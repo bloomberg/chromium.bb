@@ -925,7 +925,7 @@ int drm_bo_mem_space(struct drm_buffer_object *bo,
 
 		ret = drm_bo_mem_force_space(dev, mem, mem_type, no_wait);
 
-		if (ret == 0) {
+		if (ret == 0 && mem->mm_node) {
 			mem->flags = cur_flags;
 			return 0;
 		}
