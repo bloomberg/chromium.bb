@@ -1851,6 +1851,12 @@ int drm_bo_setstatus_ioctl(struct drm_device *dev,
 	if (ret)
 		return ret;
 
+	/*
+	 * validate the buffer. note that 'fence_class' will be unused
+	 * as we pass use_old_fence_class=1 here. Note also that
+	 * the libdrm API doesn't pass fence_class to the kernel,
+	 * so it's a good thing it isn't used here.
+	 */
 	ret = drm_bo_handle_validate(file_priv, req->handle,
 				     req->flags,
 				     req->mask,
