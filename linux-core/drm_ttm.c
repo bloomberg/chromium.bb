@@ -193,7 +193,7 @@ static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
  * Free all resources associated with a ttm.
  */
 
-int drm_destroy_ttm(struct drm_ttm *ttm)
+int drm_ttm_destroy(struct drm_ttm *ttm)
 {
 	struct drm_ttm_backend *be;
 
@@ -251,11 +251,11 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 	int i;
 
 	BUG_ON(num_pages != ttm->num_pages);
+	BUG_ON((ttm->page_flags & DRM_TTM_PAGE_USER) == 0);
 
 	ttm->dummy_read_page = dummy_read_page;
-	ttm->page_flags |= DRM_TTM_PAGE_USER |
-		((write) ? DRM_TTM_PAGE_USER_WRITE : 0);
-
+	if (write)
+		ttm->page_flags |= DRM_TTM_PAGE_USER_WRITE;
 
 	down_read(&mm->mmap_sem);
 	ret = get_user_pages(tsk, mm, start, num_pages,
@@ -299,7 +299,7 @@ int drm_ttm_populate(struct drm_ttm *ttm)
  * Initialize a ttm.
  */
 
-struct drm_ttm *drm_ttm_init(struct drm_device *dev, unsigned long size)
+struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint32_t page_flags)
 {
 	struct drm_bo_driver *bo_driver = dev->driver->bo_driver;
 	struct drm_ttm *ttm;
@@ -317,7 +317,7 @@ struct drm_ttm *drm_ttm_init(struct drm_device *dev, unsigned long size)
 	ttm->destroy = 0;
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
-	ttm->page_flags = 0;
+	ttm->page_flags = page_flags;
 
 	/*
 	 * Account also for AGP module memory usage.
@@ -325,13 +325,13 @@ struct drm_ttm *drm_ttm_init(struct drm_device *dev, unsigned long size)
 
 	ttm_alloc_pages(ttm);
 	if (!ttm->pages) {
-		drm_destroy_ttm(ttm);
+		drm_ttm_destroy(ttm);
 		DRM_ERROR("Failed allocating page table\n");
 		return NULL;
 	}
 	ttm->be = bo_driver->create_ttm_backend_entry(dev);
 	if (!ttm->be) {
-		drm_destroy_ttm(ttm);
+		drm_ttm_destroy(ttm);
 		DRM_ERROR("Failed creating ttm backend entry\n");
 		return NULL;
 	}

@@ -144,12 +144,12 @@ static int drm_bo_add_ttm(struct drm_buffer_object *bo)
 	switch (bo->type) {
 	case drm_bo_type_dc:
 	case drm_bo_type_kernel:
-		bo->ttm = drm_ttm_init(dev, bo->num_pages << PAGE_SHIFT);
+		bo->ttm = drm_ttm_create(dev, bo->num_pages << PAGE_SHIFT, 0);
 		if (!bo->ttm)
 			ret = -ENOMEM;
 		break;
 	case drm_bo_type_user:
-		bo->ttm = drm_ttm_init(dev, bo->num_pages << PAGE_SHIFT);
+		bo->ttm = drm_ttm_create(dev, bo->num_pages << PAGE_SHIFT, DRM_TTM_PAGE_USER);
 		if (!bo->ttm)
 			ret = -ENOMEM;
 
@@ -262,7 +262,7 @@ out_err:
 	new_man = &bm->man[bo->mem.mem_type];
 	if ((new_man->flags & _DRM_FLAG_MEMTYPE_FIXED) && bo->ttm) {
 		drm_ttm_unbind(bo->ttm);
-		drm_destroy_ttm(bo->ttm);
+		drm_ttm_destroy(bo->ttm);
 		bo->ttm = NULL;
 	}
 
@@ -419,7 +419,7 @@ static void drm_bo_destroy_locked(struct drm_buffer_object *bo)
 
 		if (bo->ttm) {
 			drm_ttm_unbind(bo->ttm);
-			drm_destroy_ttm(bo->ttm);
+			drm_ttm_destroy(bo->ttm);
 			bo->ttm = NULL;
 		}
 

@@ -260,7 +260,7 @@ out2:
 
 	if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (ttm != NULL)) {
 		drm_ttm_unbind(ttm);
-		drm_destroy_ttm(ttm);
+		drm_ttm_destroy(ttm);
 		bo->ttm = NULL;
 	}
 
@@ -365,7 +365,7 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
 
 		if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (bo->ttm != NULL)) {
 			drm_ttm_unbind(bo->ttm);
-			drm_destroy_ttm(bo->ttm);
+			drm_ttm_destroy(bo->ttm);
 			bo->ttm = NULL;
 		}
 	} else {

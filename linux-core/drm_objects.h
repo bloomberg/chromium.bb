@@ -297,7 +297,7 @@ struct drm_ttm {
 
 };
 
-extern struct drm_ttm *drm_ttm_init(struct drm_device *dev, unsigned long size);
+extern struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint32_t page_flags);
 extern int drm_bind_ttm(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem);
 extern void drm_ttm_unbind(struct drm_ttm *ttm);
 extern void drm_ttm_evict(struct drm_ttm *ttm);
@@ -318,7 +318,7 @@ extern int drm_ttm_set_user(struct drm_ttm *ttm,
  * Otherwise it is called when the last vma exits.
  */
 
-extern int drm_destroy_ttm(struct drm_ttm *ttm);
+extern int drm_ttm_destroy(struct drm_ttm *ttm);
 
 #define DRM_FLAG_MASKED(_old, _new, _mask) {\
 (_old) ^= (((_old) ^ (_new)) & (_mask)); \
