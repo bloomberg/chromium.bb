@@ -994,11 +994,9 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		}
 
 		rep.ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
-						 req->bo_req.fence_class,
-						 req->bo_req.flags,
-						 req->bo_req.mask,
+						 req->bo_req.flags, req->bo_req.mask,
 						 req->bo_req.hint,
-						 0,
+						 req->bo_req.fence_class, 0,
 						 &rep.bo_info,
 						 &buffers[buf_count].buffer);
 

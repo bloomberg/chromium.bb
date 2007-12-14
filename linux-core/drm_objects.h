@@ -535,9 +535,8 @@ extern int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type);
 extern int drm_bo_init_mm(struct drm_device *dev, unsigned type,
 			  unsigned long p_offset, unsigned long p_size);
 extern int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
-				  uint32_t fence_class, uint64_t flags,
-				  uint64_t mask, uint32_t hint,
-				  int use_old_fence_class,
+				  uint64_t flags, uint64_t mask, uint32_t hint,
+				  uint32_t fence_class, int use_old_fence_class,
 				  struct drm_bo_info_rep *rep,
 				  struct drm_buffer_object **bo_rep);
 extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file *file_priv,

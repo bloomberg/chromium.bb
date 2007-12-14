@@ -1502,27 +1502,29 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 	return 0;
 }
 
-/*
+/**
  * drm_bo_do_validate
  *
+ * @bo:	the buffer object
+ *
+ * @flags: access rights, mapping parameters and cacheability. See
+ * the DRM_BO_FLAG_* values in drm.h
+ *
+ * @mask: Which flag values to change; this allows callers to modify
+ * things without knowing the current state of other flags.
+ *
+ * @hint: changes the proceedure for this operation, see the DRM_BO_HINT_*
+ * values in drm.h.
+ *
+ * @fence_class: a driver-specific way of doing fences. Presumably,
+ * this would be used if the driver had more than one submission and
+ * fencing mechanism. At this point, there isn't any use of this
+ * from the user mode code.
+ *
+ * @rep: To be stuffed with the reply from validation
+ * 
  * 'validate' a buffer object. This changes where the buffer is
  * located, along with changing access modes.
- *
- * flags	access rights, mapping parameters and cacheability. See
- *		the DRM_BO_FLAG_* values in drm.h
- *
- * mask		which flag values to change; this allows callers to modify
- *		things without knowing the current state of other flags.
- *
- * hint		changes the proceedure for this operation, see the DRM_BO_HINT_*
- *		values in drm.h.
- *
- * fence_class	a driver-specific way of doing fences. Presumably, this
- *		would be used if the driver had more than one submission and
- *		fencing mechanism. At this point, there isn't any use of this
- *		from the user mode code.
- *
- * rep		will be stuffed with the reply from validation
  */
 
 int drm_bo_do_validate(struct drm_buffer_object *bo,
@@ -1558,11 +1560,42 @@ out:
 }
 EXPORT_SYMBOL(drm_bo_do_validate);
 
+/**
+ * drm_bo_handle_validate
+ *
+ * @file_priv: the drm file private, used to get a handle to the user context
+ *
+ * @handle: the buffer object handle
+ *
+ * @flags: access rights, mapping parameters and cacheability. See
+ * the DRM_BO_FLAG_* values in drm.h
+ *
+ * @mask: Which flag values to change; this allows callers to modify
+ * things without knowing the current state of other flags.
+ *
+ * @hint: changes the proceedure for this operation, see the DRM_BO_HINT_*
+ * values in drm.h.
+ *
+ * @fence_class: a driver-specific way of doing fences. Presumably,
+ * this would be used if the driver had more than one submission and
+ * fencing mechanism. At this point, there isn't any use of this
+ * from the user mode code.
+ *
+ * @use_old_fence_class: don't change fence class, pull it from the buffer object
+ *
+ * @rep: To be stuffed with the reply from validation
+ * 
+ * @bp_rep: To be stuffed with the buffer object pointer
+ *
+ * Perform drm_bo_do_validate on a buffer referenced by a user-space handle.
+ * Some permissions checking is done on the parameters, otherwise this
+ * is a thin wrapper.
+ */
 
 int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
-			   uint32_t fence_class,
 			   uint64_t flags, uint64_t mask,
 			   uint32_t hint,
+			   uint32_t fence_class,
 			   int use_old_fence_class,
 			   struct drm_bo_info_rep *rep,
 			   struct drm_buffer_object **bo_rep)
@@ -1818,11 +1851,11 @@ int drm_bo_setstatus_ioctl(struct drm_device *dev,
 	if (ret)
 		return ret;
 
-	ret = drm_bo_handle_validate(file_priv, req->handle, req->fence_class,
+	ret = drm_bo_handle_validate(file_priv, req->handle,
 				     req->flags,
 				     req->mask,
 				     req->hint | DRM_BO_HINT_DONT_FENCE,
-				     1,
+				     req->fence_class, 1,
 				     rep, NULL);
 
 	(void) drm_bo_read_unlock(&dev->bm.bm_lock);
