@@ -239,6 +239,22 @@ struct page *drm_ttm_get_page(struct drm_ttm *ttm, int index)
 }
 EXPORT_SYMBOL(drm_ttm_get_page);
 
+/**
+ * drm_ttm_set_user:
+ *
+ * @ttm: the ttm to map pages to. This must always be
+ * a freshly created ttm.
+ *
+ * @tsk: a pointer to the address space from which to map
+ * pages.
+ * 
+ * @write: a boolean indicating that write access is desired
+ *
+ * start: the starting address
+ *
+ * Map a range of user addresses to a new ttm object. This
+ * provides access to user memory from the graphics device.
+ */
 int drm_ttm_set_user(struct drm_ttm *ttm,
 		     struct task_struct *tsk,
 		     int write,
