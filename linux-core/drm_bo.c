@@ -1372,8 +1372,25 @@ static int drm_bo_mem_compat(struct drm_bo_mem_reg *mem)
 	return 1;
 }
 
-/*
- * bo locked.
+/**
+ * drm_buffer_object_validate:
+ *
+ * @bo: the buffer object to modify
+ *
+ * @fence_class: the new fence class covering this buffer
+ *
+ * @move_unfenced: a boolean indicating whether switching the
+ * memory space of this buffer should cause the buffer to
+ * be placed on the unfenced list.
+ *
+ * @no_wait: whether this function should return -EBUSY instead
+ * of waiting.
+ *
+ * Change buffer access parameters. This can involve moving
+ * the buffer to the correct memory type, pinning the buffer
+ * or changing the class/type of fence covering this buffer
+ *
+ * Must be called with bo locked.
  */
 
 static int drm_buffer_object_validate(struct drm_buffer_object *bo,
@@ -1503,7 +1520,7 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 }
 
 /**
- * drm_bo_do_validate
+ * drm_bo_do_validate:
  *
  * @bo:	the buffer object
  *
