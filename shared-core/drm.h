@@ -748,11 +748,31 @@ struct drm_fence_arg {
 /* Driver-private flags */
 #define DRM_BO_MASK_DRIVER      0xFFFF000000000000ULL
 
-/* Don't block on validate and map */
+/*
+ * Don't block on validate and map. Instead, return EBUSY.
+ */
 #define DRM_BO_HINT_DONT_BLOCK  0x00000002
-/* Don't place this buffer on the unfenced list.*/
+/*
+ * Don't place this buffer on the unfenced list. This means
+ * that the buffer will not end up having a fence associated
+ * with it as a result of this operation
+ */
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
+/*
+ * Sleep while waiting for the operation to complete.
+ * Without this flag, the kernel will, instead, spin
+ * until this operation has completed. I'm not sure
+ * why you would ever want this, so please always
+ * provide DRM_BO_HINT_WAIT_LAZY to any operation
+ * which may block
+ */
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
+/*
+ * The client has compute relocations refering to this buffer using the
+ * offset in the presumed_offset field. If that offset ends up matching
+ * where this buffer lands, the kernel is free to skip executing those
+ * relocations
+ */
 #define DRM_BO_HINT_PRESUMED_OFFSET 0x00000010
 
 #define DRM_BO_INIT_MAGIC 0xfe769812

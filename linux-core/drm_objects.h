@@ -546,7 +546,6 @@ extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file *file_
 extern int drm_bo_do_validate(struct drm_buffer_object *bo,
 			      uint64_t flags, uint64_t mask, uint32_t hint,
 			      uint32_t fence_class,
-			      int no_wait,
 			      struct drm_bo_info_rep *rep);
 
 /*

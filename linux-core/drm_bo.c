@@ -1502,13 +1502,36 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 	return 0;
 }
 
+/*
+ * drm_bo_do_validate
+ *
+ * 'validate' a buffer object. This changes where the buffer is
+ * located, along with changing access modes.
+ *
+ * flags	access rights, mapping parameters and cacheability. See
+ *		the DRM_BO_FLAG_* values in drm.h
+ *
+ * mask		which flag values to change; this allows callers to modify
+ *		things without knowing the current state of other flags.
+ *
+ * hint		changes the proceedure for this operation, see the DRM_BO_HINT_*
+ *		values in drm.h.
+ *
+ * fence_class	a driver-specific way of doing fences. Presumably, this
+ *		would be used if the driver had more than one submission and
+ *		fencing mechanism. At this point, there isn't any use of this
+ *		from the user mode code.
+ *
+ * rep		will be stuffed with the reply from validation
+ */
+
 int drm_bo_do_validate(struct drm_buffer_object *bo,
 		       uint64_t flags, uint64_t mask, uint32_t hint,
 		       uint32_t fence_class,
-		       int no_wait,
 		       struct drm_bo_info_rep *rep)
 {
 	int ret;
+	int no_wait = (hint & DRM_BO_HINT_DONT_BLOCK) != 0;
 
 	mutex_lock(&bo->mutex);
 	ret = drm_bo_wait_unfenced(bo, no_wait, 0);
@@ -1547,7 +1570,6 @@ int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
 	struct drm_device *dev = file_priv->head->dev;
 	struct drm_buffer_object *bo;
 	int ret;
-	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 
 	mutex_lock(&dev->struct_mutex);
 	bo = drm_lookup_buffer_object(file_priv, handle, 1);
@@ -1567,8 +1589,7 @@ int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
 		mask &= ~(DRM_BO_FLAG_NO_EVICT | DRM_BO_FLAG_NO_MOVE);
 
 
-	ret = drm_bo_do_validate(bo, flags, mask, hint, fence_class,
-				 no_wait, rep);
+	ret = drm_bo_do_validate(bo, flags, mask, hint, fence_class, rep);
 
 	if (!ret && bo_rep)
 		*bo_rep = bo;
