@@ -297,7 +297,9 @@ struct drm_ttm {
 
 };
 
-extern struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint32_t page_flags);
+extern struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size,
+				      uint32_t page_flags,
+				      struct page *dummy_read_page);
 extern int drm_ttm_bind(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem);
 extern void drm_ttm_unbind(struct drm_ttm *ttm);
 extern void drm_ttm_evict(struct drm_ttm *ttm);
@@ -307,10 +309,8 @@ extern void drm_ttm_cache_flush(void);
 extern int drm_ttm_populate(struct drm_ttm *ttm);
 extern int drm_ttm_set_user(struct drm_ttm *ttm,
 			    struct task_struct *tsk,
-			    int write,
 			    unsigned long start,
-			    unsigned long num_pages,
-			    struct page *dummy_read_page);
+			    unsigned long num_pages);
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do
@@ -362,7 +362,7 @@ extern int drm_ttm_destroy(struct drm_ttm *ttm);
 /*
  * This ttm will be written to by the GPU
  */
-#define DRM_TTM_PAGE_USER_WRITE	(1 << 6)
+#define DRM_TTM_PAGE_WRITE	(1 << 6)
 /*
  * This ttm was mapped to the GPU, and so the contents may have
  * been modified

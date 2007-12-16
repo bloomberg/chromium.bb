@@ -145,7 +145,7 @@ static void drm_ttm_free_user_pages(struct drm_ttm *ttm)
 	int i;
 
 	BUG_ON(!(ttm->page_flags & DRM_TTM_PAGE_USER));
-	write = ((ttm->page_flags & DRM_TTM_PAGE_USER_WRITE) != 0);
+	write = ((ttm->page_flags & DRM_TTM_PAGE_WRITE) != 0);
 	dirty = ((ttm->page_flags & DRM_TTM_PAGE_USER_DIRTY) != 0);
 
 	for (i = 0; i < ttm->num_pages; ++i) {
@@ -257,21 +257,16 @@ EXPORT_SYMBOL(drm_ttm_get_page);
  */
 int drm_ttm_set_user(struct drm_ttm *ttm,
 		     struct task_struct *tsk,
-		     int write,
 		     unsigned long start,
-		     unsigned long num_pages,
-		     struct page *dummy_read_page)
+		     unsigned long num_pages)
 {
 	struct mm_struct *mm = tsk->mm;
 	int ret;
 	int i;
+	int write = (ttm->page_flags & DRM_TTM_PAGE_WRITE) != 0;
 
 	BUG_ON(num_pages != ttm->num_pages);
 	BUG_ON((ttm->page_flags & DRM_TTM_PAGE_USER) == 0);
-
-	ttm->dummy_read_page = dummy_read_page;
-	if (write)
-		ttm->page_flags |= DRM_TTM_PAGE_USER_WRITE;
 
 	down_read(&mm->mmap_sem);
 	ret = get_user_pages(tsk, mm, start, num_pages,
@@ -331,7 +326,8 @@ int drm_ttm_populate(struct drm_ttm *ttm)
  * Allocate and initialize a ttm, leaving it unpopulated at this time
  */
 
-struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint32_t page_flags)
+struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size,
+			       uint32_t page_flags, struct page *dummy_read_page)
 {
 	struct drm_bo_driver *bo_driver = dev->driver->bo_driver;
 	struct drm_ttm *ttm;
@@ -350,6 +346,8 @@ struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint3
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 
 	ttm->page_flags = page_flags;
+
+	ttm->dummy_read_page = dummy_read_page;
 
 	/*
 	 * Account also for AGP module memory usage.

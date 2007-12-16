@@ -137,27 +137,32 @@ static int drm_bo_add_ttm(struct drm_buffer_object *bo)
 {
 	struct drm_device *dev = bo->dev;
 	int ret = 0;
+	uint32_t page_flags = 0;
 
 	DRM_ASSERT_LOCKED(&bo->mutex);
 	bo->ttm = NULL;
 
+	if (bo->mem.mask & DRM_BO_FLAG_WRITE)
+		page_flags |= DRM_TTM_PAGE_WRITE;
+
 	switch (bo->type) {
 	case drm_bo_type_dc:
 	case drm_bo_type_kernel:
-		bo->ttm = drm_ttm_create(dev, bo->num_pages << PAGE_SHIFT, 0);
+		bo->ttm = drm_ttm_create(dev, bo->num_pages << PAGE_SHIFT, 
+					 page_flags, dev->bm.dummy_read_page);
 		if (!bo->ttm)
 			ret = -ENOMEM;
 		break;
 	case drm_bo_type_user:
-		bo->ttm = drm_ttm_create(dev, bo->num_pages << PAGE_SHIFT, DRM_TTM_PAGE_USER);
+		bo->ttm = drm_ttm_create(dev, bo->num_pages << PAGE_SHIFT,
+					 page_flags | DRM_TTM_PAGE_USER,
+					 dev->bm.dummy_read_page);
 		if (!bo->ttm)
 			ret = -ENOMEM;
 
 		ret = drm_ttm_set_user(bo->ttm, current,
-				       bo->mem.mask & DRM_BO_FLAG_WRITE,
 				       bo->buffer_start,
-				       bo->num_pages,
-				       dev->bm.dummy_read_page);
+				       bo->num_pages);
 		if (ret)
 			return ret;
 
