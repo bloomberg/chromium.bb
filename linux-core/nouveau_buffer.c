@@ -215,7 +215,7 @@ nouveau_bo_move_gart(struct drm_buffer_object *bo, int evict, int no_wait,
         if (ret)
                 return ret;
 
-        ret = drm_bind_ttm(bo->ttm, &tmp_mem);
+        ret = drm_ttm_bind (bo->ttm, &tmp_mem);
         if (ret)
                 goto out_cleanup;
 

@@ -71,7 +71,7 @@ int drm_bo_move_ttm(struct drm_buffer_object *bo,
 		save_flags = old_mem->flags;
 	}
 	if (new_mem->mem_type != DRM_BO_MEM_LOCAL) {
-		ret = drm_bind_ttm(ttm, new_mem);
+		ret = drm_ttm_bind(ttm, new_mem);
 		if (ret)
 			return ret;
 	}

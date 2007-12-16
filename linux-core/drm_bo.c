@@ -199,7 +199,7 @@ static int drm_bo_handle_move_mem(struct drm_buffer_object *bo,
 			goto out_err;
 
 		if (mem->mem_type != DRM_BO_MEM_LOCAL) {
-			ret = drm_bind_ttm(bo->ttm, mem);
+			ret = drm_ttm_bind(bo->ttm, mem);
 			if (ret)
 				goto out_err;
 		}

@@ -46,7 +46,7 @@ EXPORT_SYMBOL(drm_ttm_cache_flush);
  * Use kmalloc if possible. Otherwise fall back to vmalloc.
  */
 
-static void ttm_alloc_pages(struct drm_ttm *ttm)
+static void drm_ttm_alloc_pages(struct drm_ttm *ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 	ttm->pages = NULL;
@@ -66,7 +66,7 @@ static void ttm_alloc_pages(struct drm_ttm *ttm)
 		drm_free_memctl(size);
 }
 
-static void ttm_free_pages(struct drm_ttm *ttm)
+static void drm_ttm_free_pages(struct drm_ttm *ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 
@@ -103,7 +103,7 @@ static struct page *drm_ttm_alloc_page(void)
  * for range of pages in a ttm.
  */
 
-static int drm_set_caching(struct drm_ttm *ttm, int noncached)
+static int drm_ttm_set_caching(struct drm_ttm *ttm, int noncached)
 {
 	int i;
 	struct page **cur_page;
@@ -208,14 +208,14 @@ int drm_ttm_destroy(struct drm_ttm *ttm)
 
 	if (ttm->pages) {
 		if (ttm->page_flags & DRM_TTM_PAGE_UNCACHED)
-			drm_set_caching(ttm, 0);
+			drm_ttm_set_caching(ttm, 0);
 
 		if (ttm->page_flags & DRM_TTM_PAGE_USER)
 			drm_ttm_free_user_pages(ttm);
 		else
 			drm_ttm_free_alloced_pages(ttm);
 
-		ttm_free_pages(ttm);
+		drm_ttm_free_pages(ttm);
 	}
 
 	drm_ctl_free(ttm, sizeof(*ttm), DRM_MEM_TTM);
@@ -291,6 +291,14 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 	return 0;
 }
 
+/**
+ * drm_ttm_populate:
+ *
+ * @ttm: the object to allocate pages for
+ *
+ * Allocate pages for all unset page entries, then
+ * call the backend to create the hardware mappings
+ */
 int drm_ttm_populate(struct drm_ttm *ttm)
 {
 	struct page *page;
@@ -311,8 +319,16 @@ int drm_ttm_populate(struct drm_ttm *ttm)
 	return 0;
 }
 
-/*
- * Initialize a ttm.
+/**
+ * drm_ttm_create:
+ *
+ * @dev: the drm_device
+ *
+ * @size: The size (in bytes) of the desired object
+ *
+ * @page_flags: various DRM_TTM_PAGE_* flags. See drm_object.h.
+ *
+ * Allocate and initialize a ttm, leaving it unpopulated at this time
  */
 
 struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint32_t page_flags)
@@ -339,7 +355,7 @@ struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint3
 	 * Account also for AGP module memory usage.
 	 */
 
-	ttm_alloc_pages(ttm);
+	drm_ttm_alloc_pages(ttm);
 	if (!ttm->pages) {
 		drm_ttm_destroy(ttm);
 		DRM_ERROR("Failed allocating page table\n");
@@ -355,10 +371,15 @@ struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint3
 	return ttm;
 }
 
-/*
- * Unbind a ttm region from the aperture.
+/**
+ * drm_ttm_evict:
+ *
+ * @ttm: the object to be unbound from the aperture.
+ *
+ * Transition a ttm from bound to evicted, where it
+ * isn't present in the aperture, but various caches may
+ * not be consistent.
  */
-
 void drm_ttm_evict(struct drm_ttm *ttm)
 {
 	struct drm_ttm_backend *be = ttm->be;
@@ -372,17 +393,33 @@ void drm_ttm_evict(struct drm_ttm *ttm)
 	ttm->state = ttm_evicted;
 }
 
+/**
+ * drm_ttm_fixup_caching:
+ *
+ * @ttm: the object to set unbound
+ *
+ * XXX this function is misnamed. Transition a ttm from evicted to
+ * unbound, flushing caches as appropriate.
+ */
 void drm_ttm_fixup_caching(struct drm_ttm *ttm)
 {
 
 	if (ttm->state == ttm_evicted) {
 		struct drm_ttm_backend *be = ttm->be;
 		if (be->func->needs_ub_cache_adjust(be))
-			drm_set_caching(ttm, 0);
+			drm_ttm_set_caching(ttm, 0);
 		ttm->state = ttm_unbound;
 	}
 }
 
+/**
+ * drm_ttm_unbind:
+ *
+ * @ttm: the object to unbind from the graphics device
+ *
+ * Unbind an object from the aperture. This removes the mappings
+ * from the graphics device and flushes caches if necessary.
+ */
 void drm_ttm_unbind(struct drm_ttm *ttm)
 {
 	if (ttm->state == ttm_bound)
@@ -391,7 +428,19 @@ void drm_ttm_unbind(struct drm_ttm *ttm)
 	drm_ttm_fixup_caching(ttm);
 }
 
-int drm_bind_ttm(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem)
+/**
+ * drm_ttm_bind:
+ *
+ * @ttm: the ttm object to bind to the graphics device
+ *
+ * @bo_mem: the aperture memory region which will hold the object
+ *
+ * Bind a ttm object to the aperture. This ensures that the necessary
+ * pages are allocated, flushes CPU caches as needed and marks the
+ * ttm as DRM_TTM_PAGE_USER_DIRTY to indicate that it may have been
+ * modified by the GPU
+ */
+int drm_ttm_bind(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem)
 {
 	struct drm_bo_driver *bo_driver = ttm->dev->driver->bo_driver;
 	int ret = 0;
@@ -409,7 +458,7 @@ int drm_bind_ttm(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem)
 		return ret;
 
 	if (ttm->state == ttm_unbound && !(bo_mem->flags & DRM_BO_FLAG_CACHED))
-		drm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
+		drm_ttm_set_caching(ttm, DRM_TTM_PAGE_UNCACHED);
 	else if ((bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED) &&
 		   bo_driver->ttm_cache_flush)
 		bo_driver->ttm_cache_flush(ttm);
@@ -426,4 +475,4 @@ int drm_bind_ttm(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem)
 		ttm->page_flags |= DRM_TTM_PAGE_USER_DIRTY;
 	return 0;
 }
-EXPORT_SYMBOL(drm_bind_ttm);
+EXPORT_SYMBOL(drm_ttm_bind);

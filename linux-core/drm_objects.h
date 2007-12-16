@@ -298,7 +298,7 @@ struct drm_ttm {
 };
 
 extern struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size, uint32_t page_flags);
-extern int drm_bind_ttm(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem);
+extern int drm_ttm_bind(struct drm_ttm *ttm, struct drm_bo_mem_reg *bo_mem);
 extern void drm_ttm_unbind(struct drm_ttm *ttm);
 extern void drm_ttm_evict(struct drm_ttm *ttm);
 extern void drm_ttm_fixup_caching(struct drm_ttm *ttm);
@@ -331,14 +331,47 @@ extern int drm_ttm_destroy(struct drm_ttm *ttm);
  * Page flags.
  */
 
+/*
+ * This ttm should not be cached by the CPU
+ */
 #define DRM_TTM_PAGE_UNCACHED   (1 << 0)
+/*
+ * This flat is not used at this time; I don't know what the
+ * intent was
+ */
 #define DRM_TTM_PAGE_USED       (1 << 1)
+/*
+ * This flat is not used at this time; I don't know what the
+ * intent was
+ */
 #define DRM_TTM_PAGE_BOUND      (1 << 2)
+/*
+ * This flat is not used at this time; I don't know what the
+ * intent was
+ */
 #define DRM_TTM_PAGE_PRESENT    (1 << 3)
+/*
+ * The array of page pointers was allocated with vmalloc
+ * instead of drm_calloc.
+ */
 #define DRM_TTM_PAGE_VMALLOC    (1 << 4)
+/*
+ * This ttm is mapped from user space
+ */
 #define DRM_TTM_PAGE_USER       (1 << 5)
-#define DRM_TTM_PAGE_USER_WRITE (1 << 6)
+/*
+ * This ttm will be written to by the GPU
+ */
+#define DRM_TTM_PAGE_USER_WRITE	(1 << 6)
+/*
+ * This ttm was mapped to the GPU, and so the contents may have
+ * been modified
+ */
 #define DRM_TTM_PAGE_USER_DIRTY (1 << 7)
+/*
+ * This flag is not used at this time; I don't know what the
+ * intent was.
+ */
 #define DRM_TTM_PAGE_USER_DMA   (1 << 8)
 
 /***************************************************
