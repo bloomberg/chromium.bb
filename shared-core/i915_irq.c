@@ -719,7 +719,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	DRM_SPINLOCK_IRQSAVE(&dev_priv->swaps_lock, irqflags);
 
-	list_add_tail((struct list_head *)vbl_swap, &dev_priv->vbl_swaps.head);
+	list_add_tail(&vbl_swap->head, &dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending++;
 
 	DRM_SPINUNLOCK_IRQRESTORE(&dev_priv->swaps_lock, irqflags);
