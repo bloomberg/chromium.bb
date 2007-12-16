@@ -263,7 +263,8 @@ struct drm_ttm_backend;
 struct drm_ttm_backend_func {
 	int (*needs_ub_cache_adjust) (struct drm_ttm_backend *backend);
 	int (*populate) (struct drm_ttm_backend *backend,
-			 unsigned long num_pages, struct page **pages);
+			 unsigned long num_pages, struct page **pages,
+			 struct page *dummy_read_page);
 	void (*clear) (struct drm_ttm_backend *backend);
 	int (*bind) (struct drm_ttm_backend *backend,
 		     struct drm_bo_mem_reg *bo_mem);

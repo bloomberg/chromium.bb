@@ -25,7 +25,7 @@ nouveau_sgdma_needs_ub_cache_adjust(struct drm_ttm_backend *be)
 
 static int
 nouveau_sgdma_populate(struct drm_ttm_backend *be, unsigned long num_pages,
-		       struct page **pages)
+		       struct page **pages, struct page *dummy_read_page)
 {
 	struct nouveau_sgdma_be *nvbe = (struct nouveau_sgdma_be *)be;
 	int p, d, o;
@@ -41,8 +41,11 @@ nouveau_sgdma_populate(struct drm_ttm_backend *be, unsigned long num_pages,
 	nvbe->pages_populated = d = 0;
 	for (p = 0; p < num_pages; p++) {
 		for (o = 0; o < PAGE_SIZE; o += NV_CTXDMA_PAGE_SIZE) {
+			struct page *page = pages[p];
+			if (!page)
+				page = dummy_read_page;
 			nvbe->pagelist[d] = pci_map_page(nvbe->dev->pdev,
-							 pages[p], o,
+							 page, o,
 							 NV_CTXDMA_PAGE_SIZE,
 							 PCI_DMA_BIDIRECTIONAL);
 			if (pci_dma_mapping_error(nvbe->pagelist[d])) {
@@ -299,7 +302,7 @@ nouveau_sgdma_nottm_hack_init(struct drm_device *dev)
 	}
 	dev_priv->gart_info.sg_handle = sgreq.handle;
 
-	if ((ret = be->func->populate(be, dev->sg->pages, dev->sg->pagelist))) {
+	if ((ret = be->func->populate(be, dev->sg->pages, dev->sg->pagelist, dev->bm.dummy_read_page))) {
 		DRM_ERROR("failed populate: %d\n", ret);
 		return ret;
 	}

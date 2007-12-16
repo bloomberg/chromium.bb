@@ -505,12 +505,14 @@ static int drm_agp_needs_unbind_cache_adjust(struct drm_ttm_backend *backend)
 
 
 static int drm_agp_populate(struct drm_ttm_backend *backend,
-			    unsigned long num_pages, struct page **pages)
+			    unsigned long num_pages, struct page **pages,
+			    struct page *dummy_read_page)
 {
 	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	struct page **cur_page, **last_page = pages + num_pages;
 	DRM_AGP_MEM *mem;
+	int dummy_page_count = 0;
 
 	if (drm_alloc_memctl(num_pages * sizeof(void *)))
 		return -1;
@@ -528,8 +530,16 @@ static int drm_agp_populate(struct drm_ttm_backend *backend,
 
 	DRM_DEBUG("Current page count is %ld\n", (long) mem->page_count);
 	mem->page_count = 0;
-	for (cur_page = pages; cur_page < last_page; ++cur_page)
-		mem->memory[mem->page_count++] = phys_to_gart(page_to_phys(*cur_page));
+	for (cur_page = pages; cur_page < last_page; ++cur_page) {
+		struct page *page = *cur_page;
+		if (!page) {
+			page = dummy_read_page;
+			++dummy_page_count;
+		}
+		mem->memory[mem->page_count++] = phys_to_gart(page_to_phys(page));
+	}
+	if (dummy_page_count)
+		DRM_DEBUG("Mapped %d dummy pages\n", dummy_page_count);
 	agp_be->mem = mem;
 	return 0;
 }

@@ -262,7 +262,6 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 {
 	struct mm_struct *mm = tsk->mm;
 	int ret;
-	int i;
 	int write = (ttm->page_flags & DRM_TTM_PAGE_WRITE) != 0;
 
 	BUG_ON(num_pages != ttm->num_pages);
@@ -276,11 +275,6 @@ int drm_ttm_set_user(struct drm_ttm *ttm,
 	if (ret != num_pages && write) {
 		drm_ttm_free_user_pages(ttm);
 		return -ENOMEM;
-	}
-
-	for (i = 0; i < num_pages; ++i) {
-		if (ttm->pages[i] == NULL)
-			ttm->pages[i] = ttm->dummy_read_page;
 	}
 
 	return 0;
@@ -304,12 +298,14 @@ int drm_ttm_populate(struct drm_ttm *ttm)
 		return 0;
 
 	be = ttm->be;
-	for (i = 0; i < ttm->num_pages; ++i) {
-		page = drm_ttm_get_page(ttm, i);
-		if (!page)
-			return -ENOMEM;
+	if (ttm->page_flags & DRM_TTM_PAGE_WRITE) {
+		for (i = 0; i < ttm->num_pages; ++i) {
+			page = drm_ttm_get_page(ttm, i);
+			if (!page)
+				return -ENOMEM;
+		}
 	}
-	be->func->populate(be, ttm->num_pages, ttm->pages);
+	be->func->populate(be, ttm->num_pages, ttm->pages, ttm->dummy_read_page);
 	ttm->state = ttm_unbound;
 	return 0;
 }
