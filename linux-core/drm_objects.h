@@ -404,9 +404,31 @@ struct drm_bo_mem_reg {
 };
 
 enum drm_bo_type {
-	drm_bo_type_dc,
+	/*
+	 * drm_bo_type_device are 'normal' drm allocations,
+	 * pages are allocated from within the kernel automatically
+	 * and the objects can be mmap'd from the drm device. Each
+	 * drm_bo_type_device object has a unique name which can be
+	 * used by other processes to share access to the underlying
+	 * buffer.
+	 */
+	drm_bo_type_device,
+	/*
+	 * drm_bo_type_user are buffers of pages that already exist
+	 * in the process address space. They are more limited than
+	 * drm_bo_type_device buffers in that they must always
+	 * remain cached (as we assume the user pages are mapped cached),
+	 * and they are not sharable to other processes through DRM
+	 * (although, regular shared memory should still work fine).
+	 */
 	drm_bo_type_user,
-	drm_bo_type_kernel, /* for initial kernel allocations */
+	/*
+	 * drm_bo_type_kernel are buffers that exist solely for use
+	 * within the kernel. The pages cannot be mapped into the
+	 * process. One obvious use would be for the ring
+	 * buffer where user access would not (ideally) be required.
+	 */
+	drm_bo_type_kernel,
 };
 
 struct drm_buffer_object {

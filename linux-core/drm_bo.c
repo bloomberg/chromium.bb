@@ -146,7 +146,7 @@ static int drm_bo_add_ttm(struct drm_buffer_object *bo)
 		page_flags |= DRM_TTM_PAGE_WRITE;
 
 	switch (bo->type) {
-	case drm_bo_type_dc:
+	case drm_bo_type_device:
 	case drm_bo_type_kernel:
 		bo->ttm = drm_ttm_create(dev, bo->num_pages << PAGE_SHIFT, 
 					 page_flags, dev->bm.dummy_read_page);
@@ -1155,7 +1155,12 @@ static void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
 	rep->size = bo->num_pages * PAGE_SIZE;
 	rep->offset = bo->offset;
 
-	if (bo->type == drm_bo_type_dc)
+	/*
+	 * drm_bo_type_device buffers have user-visible
+	 * handles which can be used to share across
+	 * processes. Hand that back to the application
+	 */
+	if (bo->type == drm_bo_type_device)
 		rep->arg_handle = bo->map_list.user_token;
 	else
 		rep->arg_handle = 0;
@@ -1786,7 +1791,12 @@ int drm_buffer_object_create(struct drm_device *dev,
 	if (ret)
 		goto out_err;
 
-	if (bo->type == drm_bo_type_dc) {
+	/*
+	 * For drm_bo_type_device buffers, allocate
+	 * address space from the device so that applications
+	 * can mmap the buffer from there
+	 */
+	if (bo->type == drm_bo_type_device) {
 		mutex_lock(&dev->struct_mutex);
 		ret = drm_bo_setup_vm_locked(bo);
 		mutex_unlock(&dev->struct_mutex);
@@ -1849,7 +1859,12 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 		return -EINVAL;
 	}
 
-	bo_type = (req->buffer_start) ? drm_bo_type_user : drm_bo_type_dc;
+	/*
+	 * If the buffer creation request comes in with a starting address,
+	 * that points at the desired user pages to map. Otherwise, create
+	 * a drm_bo_type_device buffer, which uses pages allocated from the kernel
+	 */
+	bo_type = (req->buffer_start) ? drm_bo_type_user : drm_bo_type_device;
 
 	/*
 	 * User buffers cannot be shared
@@ -2607,6 +2622,14 @@ void drm_bo_unmap_virtual(struct drm_buffer_object *bo)
 	unmap_mapping_range(dev->dev_mapping, offset, holelen, 1);
 }
 
+/**
+ * drm_bo_takedown_vm_locked:
+ *
+ * @bo: the buffer object to remove any drm device mapping
+ *
+ * Remove any associated vm mapping on the drm device node that
+ * would have been created for a drm_bo_type_device buffer
+ */
 static void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
 {
 	struct drm_map_list *list;
@@ -2614,7 +2637,7 @@ static void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
 	struct drm_device *dev = bo->dev;
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
-	if (bo->type != drm_bo_type_dc)
+	if (bo->type != drm_bo_type_device)
 		return;
 
 	list = &bo->map_list;
@@ -2637,6 +2660,16 @@ static void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
 	drm_bo_usage_deref_locked(&bo);
 }
 
+/**
+ * drm_bo_setup_vm_locked:
+ *
+ * @bo: the buffer to allocate address space for
+ *
+ * Allocate address space in the drm device so that applications
+ * can mmap the buffer and access the contents. This only
+ * applies to drm_bo_type_device objects as others are not
+ * placed in the drm device address space.
+ */
 static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 {
 	struct drm_map_list *list = &bo->map_list;
