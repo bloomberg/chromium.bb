@@ -38,11 +38,11 @@ struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev)
 	return drm_agp_init_ttm(dev);
 }
 
-int i915_fence_types(struct drm_buffer_object *bo,
+int i915_fence_type(struct drm_buffer_object *bo,
 		     uint32_t *fclass,
 		     uint32_t *type)
 {
-	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
+	if (bo->mem.proposed_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
 		*type = 1;
@@ -110,7 +110,16 @@ int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 	return 0;
 }
 
-uint32_t i915_evict_mask(struct drm_buffer_object *bo)
+/*
+ * i915_evict_flags:
+ *
+ * @bo: the buffer object to be evicted
+ *
+ * Return the bo flags for a buffer which is not mapped to the hardware.
+ * These will be placed in proposed_flags so that when the move is
+ * finished, they'll end up in bo->mem.flags
+ */
+uint64_t i915_evict_flags(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:

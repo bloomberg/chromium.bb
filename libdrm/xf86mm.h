@@ -110,7 +110,7 @@ typedef struct _drmBO
     unsigned handle;
     uint64_t mapHandle;
     uint64_t flags;
-    uint64_t mask;
+    uint64_t proposedFlags;
     unsigned mapFlags;
     unsigned long size;
     unsigned long offset;

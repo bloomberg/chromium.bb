@@ -61,10 +61,10 @@ static struct drm_bo_driver i915_bo_driver = {
 	.num_mem_type_prio = sizeof(i915_mem_prios)/sizeof(uint32_t),
 	.num_mem_busy_prio = sizeof(i915_busy_prios)/sizeof(uint32_t),
 	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
-	.fence_type = i915_fence_types,
+	.fence_type = i915_fence_type,
 	.invalidate_caches = i915_invalidate_caches,
 	.init_mem_type = i915_init_mem_type,
-	.evict_mask = i915_evict_mask,
+	.evict_flags = i915_evict_flags,
 	.move = i915_move,
 	.ttm_cache_flush = i915_flush_ttm,
 };

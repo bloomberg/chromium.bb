@@ -385,8 +385,20 @@ struct drm_bo_mem_reg {
 	unsigned long num_pages;
 	uint32_t page_alignment;
 	uint32_t mem_type;
+	/*
+	 * Current buffer status flags, indicating
+	 * where the buffer is located and which
+	 * access modes are in effect
+	 */
 	uint64_t flags;
-	uint64_t mask;
+	/**
+	 * These are the flags proposed for
+	 * a validate operation. If the
+	 * validate succeeds, they'll get moved
+	 * into the flags field
+	 */
+	uint64_t proposed_flags;
+	
 	uint32_t desired_tile_stride;
 	uint32_t hw_tile_stride;
 };
@@ -511,9 +523,36 @@ struct drm_bo_driver {
 	int (*invalidate_caches) (struct drm_device *dev, uint64_t flags);
 	int (*init_mem_type) (struct drm_device *dev, uint32_t type,
 			      struct drm_mem_type_manager *man);
-	 uint32_t(*evict_mask) (struct drm_buffer_object *bo);
+	/*
+	 * evict_flags:
+	 *
+	 * @bo: the buffer object to be evicted
+	 *
+	 * Return the bo flags for a buffer which is not mapped to the hardware.
+	 * These will be placed in proposed_flags so that when the move is
+	 * finished, they'll end up in bo->mem.flags
+	 */
+	uint64_t(*evict_flags) (struct drm_buffer_object *bo);
+	/*
+	 * move:
+	 *
+	 * @bo: the buffer to move
+	 *
+	 * @evict: whether this motion is evicting the buffer from
+	 * the graphics address space
+	 *
+	 * @no_wait: whether this should give up and return -EBUSY
+	 * if this move would require sleeping
+	 *
+	 * @new_mem: the new memory region receiving the buffer
+	 *
+	 * Move a buffer between two memory regions.
+	 */
 	int (*move) (struct drm_buffer_object *bo,
 		     int evict, int no_wait, struct drm_bo_mem_reg *new_mem);
+	/*
+	 * ttm_cache_flush
+	 */
 	void (*ttm_cache_flush)(struct drm_ttm *ttm);
 };
 
@@ -554,7 +593,7 @@ extern int drm_fence_buffer_objects(struct drm_device *dev,
 				    struct drm_fence_object **used_fence);
 extern void drm_bo_add_to_lru(struct drm_buffer_object *bo);
 extern int drm_buffer_object_create(struct drm_device *dev, unsigned long size,
-				    enum drm_bo_type type, uint64_t mask,
+				    enum drm_bo_type type, uint64_t flags,
 				    uint32_t hint, uint32_t page_alignment,
 				    unsigned long buffer_start,
 				    struct drm_buffer_object **bo);

@@ -2578,7 +2578,7 @@ static void drmBOCopyReply(const struct drm_bo_info_rep *rep, drmBO *buf)
     buf->size = rep->size;
     buf->offset = rep->offset;
     buf->mapHandle = rep->arg_handle;
-    buf->mask = rep->mask;
+    buf->proposedFlags = rep->proposed_flags;
     buf->start = rep->buffer_start;
     buf->fenceFlags = rep->fence_flags;
     buf->replyFlags = rep->rep_flags;
@@ -2592,7 +2592,7 @@ static void drmBOCopyReply(const struct drm_bo_info_rep *rep, drmBO *buf)
 
 int drmBOCreate(int fd, unsigned long size,
 		unsigned pageAlignment, void *user_buffer,
-		uint64_t mask,
+		uint64_t flags,
 		unsigned hint, drmBO *buf)
 {
     struct drm_bo_create_arg arg;
@@ -2602,7 +2602,7 @@ int drmBOCreate(int fd, unsigned long size,
 
     memset(buf, 0, sizeof(*buf));
     memset(&arg, 0, sizeof(arg));
-    req->mask = mask;
+    req->flags = flags;
     req->hint = hint;
     req->size = size;
     req->page_alignment = pageAlignment;

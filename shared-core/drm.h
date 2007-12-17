@@ -662,6 +662,10 @@ struct drm_fence_arg {
 #define DRM_BO_FLAG_EXE         (1ULL << 2)
 
 /*
+ * All of the bits related to access mode
+ */
+#define DRM_BO_MASK_ACCESS	(DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_EXE)
+/*
  * Status flags. Can be read to determine the actual state of a buffer.
  * Can also be set in the buffer mask before validation.
  */
@@ -741,10 +745,21 @@ struct drm_fence_arg {
 #define DRM_BO_FLAG_MEM_PRIV4  (1ULL << 31)
 /* We can add more of these now with a 64-bit flag type */
 
-/* Memory flag mask */
+/*
+ * This is a mask covering all of the memory type flags; easier to just
+ * use a single constant than a bunch of | values. It covers
+ * DRM_BO_FLAG_MEM_LOCAL through DRM_BO_FLAG_MEM_PRIV4
+ */
 #define DRM_BO_MASK_MEM         0x00000000FF000000ULL
-#define DRM_BO_MASK_MEMTYPE     0x00000000FF0800A0ULL
-
+/*
+ * This adds all of the CPU-mapping options in with the memory
+ * type to label all bits which change how the page gets mapped
+ */
+#define DRM_BO_MASK_MEMTYPE     (DRM_BO_MASK_MEM | \
+				 DRM_BO_FLAG_CACHED_MAPPED | \
+				 DRM_BO_FLAG_CACHED | \
+				 DRM_BO_FLAG_MAPPABLE)
+				 
 /* Driver-private flags */
 #define DRM_BO_MASK_DRIVER      0xFFFF000000000000ULL
 
@@ -794,7 +809,7 @@ struct drm_bo_info_req {
 };
 
 struct drm_bo_create_req {
-	uint64_t mask;
+	uint64_t flags;
 	uint64_t size;
 	uint64_t buffer_start;
 	unsigned int hint;
@@ -810,7 +825,7 @@ struct drm_bo_create_req {
 
 struct drm_bo_info_rep {
 	uint64_t flags;
-	uint64_t mask;
+	uint64_t proposed_flags;
 	uint64_t size;
 	uint64_t offset;
 	uint64_t arg_handle;

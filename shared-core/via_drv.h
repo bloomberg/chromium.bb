@@ -211,7 +211,7 @@ extern int via_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
 extern int via_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern int via_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);
-extern uint32_t via_evict_mask(struct drm_buffer_object *bo);
+extern uint64_t via_evict_flags(struct drm_buffer_object *bo);
 extern int via_move(struct drm_buffer_object *bo, int evict,
 		int no_wait, struct drm_bo_mem_reg *new_mem);
 #endif
