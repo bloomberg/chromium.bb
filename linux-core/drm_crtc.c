@@ -1142,7 +1142,7 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output)
 	int has_config = 0;
 
 	if (output->crtc && output->crtc->desired_mode) {
-		DRM_DEBUG("drm thinks that output already has a config\n");
+		DRM_DEBUG("drm thinks that the output already has a config\n");
 		has_config = 1;
 	}
 

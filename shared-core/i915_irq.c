@@ -36,6 +36,7 @@
 #define USER_INT_FLAG (1<<1)
 #define VSYNC_PIPEB_FLAG (1<<5)
 #define VSYNC_PIPEA_FLAG (1<<7)
+#define HOTPLUG_FLAG (1 << 17)
 
 #define MAX_NOPID ((u32)~0)
 
@@ -303,6 +304,10 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 	}
 }
 
+#define HOTPLUG_CMD_CRT 1
+#define HOTPLUG_CMD_SDVOB 4
+#define HOTPLUG_CMD_SDVOC 8
+
 static struct drm_device *hotplug_dev;
 static int hotplug_cmd = 0;
 static spinlock_t hotplug_lock = SPIN_LOCK_UNLOCKED;
@@ -359,7 +364,10 @@ static void i915_hotplug_sdvo(struct drm_device *dev, int sdvoB)
 unlock:
 	mutex_unlock(&dev->mode_config.mutex);
 }
-
+/*
+ * This code is called in a more safe envirmoent to handle the hotplugs.
+ * Add code here for hotplug love to userspace.
+ */
 static void i915_hotplug_work_func(struct work_struct *work)
 {
 	struct drm_device *dev = hotplug_dev;
@@ -368,9 +376,9 @@ static void i915_hotplug_work_func(struct work_struct *work)
 	int sdvoC;
 
 	spin_lock(&hotplug_lock);
-	crt = hotplug_cmd & 1;
-	sdvoB = hotplug_cmd & 4;
-	sdvoC = hotplug_cmd & 8;
+	crt = hotplug_cmd & HOTPLUG_CMD_CRT;
+	sdvoB = hotplug_cmd & HOTPLUG_CMD_SDVOB;
+	sdvoC = hotplug_cmd & HOTPLUG_CMD_SDVOC;
 	hotplug_cmd = 0;
 	spin_unlock(&hotplug_lock);
 
@@ -392,31 +400,31 @@ static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 
 	hotplug_dev = dev;
 
-	if (stat & (1 << 11)) {
+	if (stat & CRT_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("CRT event\n");
 
-		if (stat & (1 << 9) && stat & (1 << 8)) {
+		if (stat & CRT_HOTPLUG_MONITOR_MASK) {
 			spin_lock(&hotplug_lock);
-			hotplug_cmd |= 1;
+			hotplug_cmd |= HOTPLUG_CMD_CRT;
 			spin_unlock(&hotplug_lock);
 		} else {
 			/* handle crt disconnects */
 		}
 	}
 
-	if (stat & (1 << 6)) {
+	if (stat & SDVOB_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("sDVOB event\n");
 
 		spin_lock(&hotplug_lock);
-		hotplug_cmd |= 4;
+		hotplug_cmd |= HOTPLUG_CMD_SDVOB;
 		spin_unlock(&hotplug_lock);
 	}
 
-	if (stat & (1 << 7)) {
+	if (stat & SDVOC_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("sDVOC event\n");
 
 		spin_lock(&hotplug_lock);
-		hotplug_cmd |= 8;
+		hotplug_cmd |= HOTPLUG_CMD_SDVOC;
 		spin_unlock(&hotplug_lock);
 	}
 
@@ -513,7 +521,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 	/* for now lest just ack it */
 	if (temp & (1 << 17)) {
-		DRM_DEBUG("Hotplug event recived\n");
+		DRM_DEBUG("Hotplug event received\n");
 
 		temp2 = I915_READ(PORT_HOTPLUG_STAT);
 
@@ -705,24 +713,24 @@ void i915_enable_interrupt (struct drm_device *dev)
 	if (dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B)
 		dev_priv->irq_enable_reg |= VSYNC_PIPEB_FLAG;
 
-	if (IS_I9XX(dev) && dev->mode_config.funcs) {
-		dev_priv->irq_enable_reg |= (1 << 17);
+	if (IS_I9XX(dev) && dev->mode_config.num_output) {
+		dev_priv->irq_enable_reg |= HOTPLUG_FLAG;
 
 		/* Activate the CRT */
-		I915_WRITE(PORT_HOTPLUG_EN, (1 << 9));
+		I915_WRITE(PORT_HOTPLUG_EN, CRT_HOTPLUG_INT_EN);
 
 		/* SDVOB */
 		o = intel_sdvo_find(dev, 1);
 		if (o && intel_sdvo_supports_hotplug(o)) {
 			intel_sdvo_set_hotplug(o, 1);
-			I915_WRITE(PORT_HOTPLUG_EN, (1 << 26));
+			I915_WRITE(PORT_HOTPLUG_EN, SDVOB_HOTPLUG_INT_EN);
 		}
 
 		/* SDVOC */
 		o = intel_sdvo_find(dev, 0);
 		if (o && intel_sdvo_supports_hotplug(o)) {
 			intel_sdvo_set_hotplug(o, 1);
-			I915_WRITE(PORT_HOTPLUG_EN, (1 << 25));
+			I915_WRITE(PORT_HOTPLUG_EN, SDVOC_HOTPLUG_INT_EN);
 		}
 
 	}

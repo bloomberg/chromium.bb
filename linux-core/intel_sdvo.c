@@ -53,6 +53,7 @@ struct intel_sdvo_priv {
 	struct intel_sdvo_dtd save_input_dtd_1, save_input_dtd_2;
 	struct intel_sdvo_dtd save_output_dtd[16];
 	u32 save_SDVOX;
+	int hotplug_enabled;
 };
 
 /**
@@ -71,9 +72,14 @@ void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 
 	if (sdvo_priv->output_device == SDVOB) {
 		cval = I915_READ(SDVOC);
-		bval = bval | (1 << 26);
+
+		if (sdvo_priv->hotplug_enabled)
+			bval = bval | (1 << 26);
 	} else {
-		bval = I915_READ(SDVOB) | (1 << 26);
+		bval = I915_READ(SDVOB);
+
+		if (sdvo_priv->hotplug_enabled)
+			cval = cval | (1 << 26);
 	}
 	/*
 	 * Write the registers twice for luck. Sometimes,
@@ -927,6 +933,8 @@ int intel_sdvo_supports_hotplug(struct drm_output *output)
 
 void intel_sdvo_set_hotplug(struct drm_output *output, int on)
 {
+	struct intel_output *intel_output = output->driver_private;
+	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u8 response[2];
 	u8 status;
 
@@ -934,11 +942,15 @@ void intel_sdvo_set_hotplug(struct drm_output *output, int on)
 	intel_sdvo_read_response(output, &response, 2);
 
 	if (on) {
+		sdvo_priv->hotplug_enabled = 1;
+
 		intel_sdvo_write_cmd(output, SDVO_CMD_GET_HOT_PLUG_SUPPORT, NULL, 0);
 		status = intel_sdvo_read_response(output, &response, 2);
 
 		intel_sdvo_write_cmd(output, SDVO_CMD_SET_ACTIVE_HOT_PLUG, &response, 2);
 	} else {
+		sdvo_priv->hotplug_enabled = 0;
+
 		response[0] = 0;
 		response[1] = 0;
 		intel_sdvo_write_cmd(output, SDVO_CMD_SET_ACTIVE_HOT_PLUG, &response, 2);
@@ -1064,6 +1076,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	}
 
 	sdvo_priv->output_device = output_device;
+	sdvo_priv->hotplug_enabled = 0;
 	intel_output->i2c_bus = i2cbus;
 	intel_output->dev_priv = sdvo_priv;
 
