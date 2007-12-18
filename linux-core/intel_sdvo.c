@@ -1033,12 +1033,10 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	int connector_type;
 	u8 ch[0x40];
 	int i;
-	char name[DRM_OUTPUT_LEN];
-	char *name_prefix;
-	char *name_suffix;
-	
+	int output_type, output_id;
 
-	output = drm_output_create(dev, &intel_sdvo_output_funcs, NULL);
+	output = drm_output_create(dev, &intel_sdvo_output_funcs,
+				   DRM_MODE_OUTPUT_NONE);
 	if (!output)
 		return;
 
@@ -1068,10 +1066,10 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	sdvo_priv->i2c_bus = i2cbus;
 
 	if (output_device == SDVOB) {
-		name_suffix = "-1";
+		output_id = 1;
 		sdvo_priv->i2c_bus->slave_addr = 0x38;
 	} else {
-		name_suffix = "-2";
+		output_id = 2;
 		sdvo_priv->i2c_bus->slave_addr = 0x39;
 	}
 
@@ -1100,28 +1098,28 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		name_prefix="RGB";
+		output_type = DRM_MODE_OUTPUT_DAC;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		name_prefix="RGB";
+		output_type = DRM_MODE_OUTPUT_DAC;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS0;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		name_prefix="TMDS";
+		output_type = DRM_MODE_OUTPUT_TMDS;
 		connector_type = ConnectorDVID;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS1;
 		output->subpixel_order = SubPixelHorizontalRGB;
-		name_prefix="TMDS";
+		output_type = DRM_MODE_OUTPUT_TMDS;
 		connector_type = ConnectorDVID;
 	}
 	else
@@ -1135,14 +1133,9 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		drm_output_destroy(output);
 		return;
 	}
-	strcpy (name, name_prefix);
-	strcat (name, name_suffix);
-	if (!drm_output_rename(output, name))
-	{
-		drm_output_destroy(output);
-		return;
-	}
-		
+	
+	output->output_type = output_type;
+	output->output_type_id = output_id;
 
 	/* Set the input timing to the screen. Assume always input 0. */
 	intel_sdvo_set_target_input(output, true, false);

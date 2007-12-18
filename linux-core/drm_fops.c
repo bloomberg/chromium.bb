@@ -472,8 +472,8 @@ int drm_release(struct inode *inode, struct file *filp)
 	}
 	mutex_unlock(&dev->ctxlist_mutex);
 
-	mutex_lock(&dev->struct_mutex);
 	drm_fb_release(filp);
+	mutex_lock(&dev->struct_mutex);
 	drm_object_release(filp);
 	if (file_priv->remove_auth_on_close == 1) {
 		struct drm_file *temp;

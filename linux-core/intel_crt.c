@@ -250,7 +250,8 @@ void intel_crt_init(struct drm_device *dev)
 	struct drm_output *output;
 	struct intel_output *intel_output;
 
-	output = drm_output_create(dev, &intel_crt_output_funcs, "VGA");
+	output = drm_output_create(dev, &intel_crt_output_funcs,
+				   DRM_MODE_OUTPUT_DAC);
 
 	intel_output = kmalloc(sizeof(struct intel_output), GFP_KERNEL);
 	if (!intel_output) {
