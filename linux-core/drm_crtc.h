@@ -433,7 +433,6 @@ struct drm_output_funcs {
  * @subpixel_order: for this output
  * @mm_width: displayable width of output in mm
  * @mm_height: displayable height of output in mm
- * @name: name of output (should be one of a few standard names)
  * @funcs: output control functions
  * @driver_private: private driver data
  *
@@ -447,6 +446,9 @@ struct drm_output {
 	struct list_head head;
 	struct drm_crtc *crtc;
 	int id; /* idr assigned */
+
+	int output_type;
+	int output_type_id;
 	unsigned long possible_crtcs;
 	unsigned long possible_clones;
 	bool interlace_allowed;
@@ -467,8 +469,7 @@ struct drm_output {
 	enum subpixel_order subpixel_order;
 	int mm_width, mm_height;
 	struct drm_display_info *monitor_info; /* if any */
-	char name[DRM_OUTPUT_LEN];
-	const struct drm_output_funcs *funcs;
+  	const struct drm_output_funcs *funcs;
 	void *driver_private;
 
 	struct list_head user_modes;
@@ -526,9 +527,10 @@ struct drm_mode_config {
 
 struct drm_output *drm_output_create(struct drm_device *dev,
 				     const struct drm_output_funcs *funcs,
-				     const char *name);
+				     int type);
+
+extern char *drm_get_output_name(struct drm_output *output);
 extern void drm_output_destroy(struct drm_output *output);
-extern bool drm_output_rename(struct drm_output *output, const char *name);
 extern void drm_fb_release(struct file *filp);
 
 extern struct edid *drm_get_edid(struct drm_output *output,

@@ -443,12 +443,12 @@ struct edid *drm_get_edid(struct drm_output *output,
 	edid = (struct edid *)drm_ddc_read(adapter);
 	if (!edid) {
 		dev_warn(&output->dev->pdev->dev, "%s: no EDID data\n",
-			 output->name);
+			 drm_get_output_name(output));
 		return NULL;
 	}
 	if (!edid_valid(edid)) {
 		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
-			 output->name);
+			 drm_get_output_name(output));
 		kfree(edid);
 		return NULL;
 	}
@@ -474,7 +474,7 @@ int drm_add_edid_modes(struct drm_output *output, struct edid *edid)
 	}
 	if (!edid_valid(edid)) {
 		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
-			 output->name);
+			 drm_get_output_name(output));
 		return 0;
 	}
 	num_modes += add_established_modes(output, edid);

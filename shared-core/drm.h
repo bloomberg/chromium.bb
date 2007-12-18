@@ -950,6 +950,12 @@ struct drm_mode_crtc {
 	struct drm_mode_modeinfo mode;
 };
 
+#define DRM_MODE_OUTPUT_NONE 0
+#define DRM_MODE_OUTPUT_DAC  1
+#define DRM_MODE_OUTPUT_TMDS 2
+#define DRM_MODE_OUTPUT_LVDS 3
+#define DRM_MODE_OUTPUT_TVDAC 4
+
 struct drm_mode_get_output {
 
 	uint64_t modes_ptr;
@@ -960,7 +966,8 @@ struct drm_mode_get_output {
 	int count_props;
 	unsigned int output; /**< Id */
 	unsigned int crtc; /**< Id of crtc */
-	unsigned char name[DRM_OUTPUT_NAME_LEN];
+	unsigned int output_type;
+	unsigned int output_type_id;
 
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */

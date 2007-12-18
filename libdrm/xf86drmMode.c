@@ -328,6 +328,8 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	drmModeOutputPtr r = NULL;
 
 	out.output = output_id;
+	out.output_type_id = 0;
+	out.output_type  = 0;
 	out.count_crtcs  = 0;
 	out.crtcs        = 0;
 	out.count_clones = 0;
@@ -372,8 +374,8 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	r->props        = drmAllocCpy(U642VOID(out.props_ptr), out.count_props, sizeof(uint32_t));
 	r->prop_values  = drmAllocCpy(U642VOID(out.prop_values_ptr), out.count_props, sizeof(uint64_t));
 	r->modes        = drmAllocCpy(U642VOID(out.modes_ptr), out.count_modes, sizeof(struct drm_mode_modeinfo));
-	strncpy(r->name, out.name, DRM_OUTPUT_NAME_LEN);
-	r->name[DRM_OUTPUT_NAME_LEN-1] = 0;
+	r->output_type  = out.output_type;
+	r->output_type_id = out.output_type_id;
 
 err_allocs:
 	drmFree(U642VOID(out.prop_values_ptr));

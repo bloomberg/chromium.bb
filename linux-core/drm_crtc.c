@@ -58,7 +58,22 @@ static struct drm_prop_enum_list drm_conn_enum_list[] =
   { ConnectorHDMIA, "HDMI Type A" },
   { ConnectorHDMIB, "HDMI Type B" },
 };
+static struct drm_prop_enum_list drm_output_enum_list[] =
+{ { DRM_MODE_OUTPUT_NONE, "None" },
+  { DRM_MODE_OUTPUT_DAC, "DAC" },
+  { DRM_MODE_OUTPUT_TMDS, "TMDS" },
+  { DRM_MODE_OUTPUT_LVDS, "LVDS" },
+  { DRM_MODE_OUTPUT_TVDAC, "TV" },
+};
 
+char *drm_get_output_name(struct drm_output *output)
+{
+	static char buf[32];
+
+	snprintf(buf, 32, "%s-%d", drm_output_enum_list[output->output_type].name,
+		 output->output_type_id);
+	return buf;
+}
 
 /**
  * drm_idr_get - allocate a new identifier
@@ -322,7 +337,7 @@ void drm_crtc_probe_single_output_modes(struct drm_output *output, int maxX, int
 	output->status = (*output->funcs->detect)(output);
 	
 	if (output->status == output_status_disconnected) {
-		DRM_DEBUG("%s is disconnected\n", output->name);
+		DRM_DEBUG("%s is disconnected\n", drm_get_output_name(output));
 		/* TODO set EDID to NULL */
 		return;
 	}
@@ -347,7 +362,7 @@ void drm_crtc_probe_single_output_modes(struct drm_output *output, int maxX, int
 	if (list_empty(&output->modes)) {
 		struct drm_display_mode *stdmode;
 		
-		DRM_DEBUG("No valid modes on %s\n", output->name);
+		DRM_DEBUG("No valid modes on %s\n", drm_get_output_name(output));
 		
 		/* Should we do this here ???
 		 * When no valid EDID modes are available we end up
@@ -360,12 +375,12 @@ void drm_crtc_probe_single_output_modes(struct drm_output *output, int maxX, int
 				     &output->modes);
 		
 		DRM_DEBUG("Adding standard 640x480 @ 60Hz to %s\n",
-			  output->name);
+			  drm_get_output_name(output));
 	}
 	
 	drm_mode_sort(&output->modes);
 	
-	DRM_DEBUG("Probed modes for %s\n", output->name);
+	DRM_DEBUG("Probed modes for %s\n", drm_get_output_name(output));
 	list_for_each_entry_safe(mode, t, &output->modes, head) {
 		mode->vrefresh = drm_mode_vrefresh(mode);
 		
@@ -472,7 +487,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		if (output->crtc != crtc)
 			continue;
 		
-		DRM_INFO("%s: set mode %s %x\n", output->name, mode->name, mode->mode_id);
+		DRM_INFO("%s: set mode %s %x\n", drm_get_output_name(output), mode->name, mode->mode_id);
 
 		output->funcs->mode_set(output, mode, adjusted_mode);
 	}
@@ -591,7 +606,7 @@ EXPORT_SYMBOL(drm_mode_remove);
  */
 struct drm_output *drm_output_create(struct drm_device *dev,
 				     const struct drm_output_funcs *funcs,
-				     const char *name)
+				     int output_type)
 {
 	struct drm_output *output = NULL;
 
@@ -602,9 +617,8 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 	output->dev = dev;
 	output->funcs = funcs;
 	output->id = drm_idr_get(dev, output);
-	if (name)
-		strncpy(output->name, name, DRM_OUTPUT_LEN);
-	output->name[DRM_OUTPUT_LEN - 1] = 0;
+	output->output_type = output_type;
+	output->output_type_id = 1; /* TODO */
 	output->subpixel_order = SubPixelUnknown;
 	INIT_LIST_HEAD(&output->user_modes);
 	INIT_LIST_HEAD(&output->probed_modes);
@@ -663,35 +677,6 @@ void drm_output_destroy(struct drm_output *output)
 }
 EXPORT_SYMBOL(drm_output_destroy);
 
-/**
- * drm_output_rename - rename an output
- * @output: output to rename
- * @name: new user visible name
- *
- * LOCKING:
- * None.
- *
- * Simply stuff a new name into @output's name field, based on @name.
- *
- * RETURNS:
- * True if the name was changed, false otherwise.
- */
-bool drm_output_rename(struct drm_output *output, const char *name)
-{
-	if (!name)
-		return false;
-
-	strncpy(output->name, name, DRM_OUTPUT_LEN);
-	output->name[DRM_OUTPUT_LEN - 1] = 0;
-
-	DRM_DEBUG("Changed name to %s\n", output->name);
-//	drm_output_set_monitor(output);
-//	if (drm_output_ignored(output))
-//		return FALSE;
-
-	return TRUE;
-}
-EXPORT_SYMBOL(drm_output_rename);
 
 /**
  * drm_mode_create - create a new display mode
@@ -912,7 +897,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 					list_for_each_entry(modes_equal, &output_equal->modes, head) {
 						if (drm_mode_equal (modes, modes_equal)) {
 							if ((output->possible_clones & output_equal->possible_clones) && (output_equal->crtc == crtc)) {
-								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",output->name,output->possible_clones,output_equal->name,output_equal->possible_clones);
+								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_output_name(output),output->possible_clones,drm_get_output_name(output_equal),output_equal->possible_clones);
 								assigned = 0;
 								goto clone;
 							}
@@ -1408,9 +1393,8 @@ int drm_mode_getoutput(struct drm_device *dev,
 		drm_crtc_probe_single_output_modes(output, dev->mode_config.max_width, dev->mode_config.max_height);
 	}
 
-	strncpy(out_resp->name, output->name, DRM_OUTPUT_NAME_LEN);
-	out_resp->name[DRM_OUTPUT_NAME_LEN-1] = 0;
-
+	out_resp->output_type = output->output_type;
+	out_resp->output_type_id = output->output_type_id;
 	out_resp->mm_width = output->mm_width;
 	out_resp->mm_height = output->mm_height;
 	out_resp->subpixel = output->subpixel_order;

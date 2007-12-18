@@ -54,7 +54,7 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 	drmModePropertyPtr props;
 	unsigned char *name = NULL;
 
-	printf("Output: %s\n", output->name);
+	printf("Output: %d-%d\n", output->output_type, output->output_type_id);
 	printf("\tid           : %i\n", id);
 	printf("\tcrtc id      : %i\n", output->crtc);
 	printf("\tconn         : %s\n", getConnectionText(output->connection));

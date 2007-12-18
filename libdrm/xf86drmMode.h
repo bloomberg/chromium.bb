@@ -125,7 +125,8 @@ typedef struct _drmModeOutput {
 	unsigned int output_id;
 
 	unsigned int crtc; /**< Crtc currently connected to */
-	unsigned char name[DRM_OUTPUT_NAME_LEN];
+	unsigned int output_type;
+	unsigned int output_type_id;
 	drmModeConnection connection;
 	uint32_t mmWidth, mmHeight; /**< HxW in millimeters */
 	drmModeSubPixel subpixel;

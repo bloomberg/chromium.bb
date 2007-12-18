@@ -372,7 +372,8 @@ void intel_lvds_init(struct drm_device *dev)
 	u32 lvds;
 	int pipe;
 
-	output = drm_output_create(dev, &intel_lvds_output_funcs, "LVDS");
+	output = drm_output_create(dev, &intel_lvds_output_funcs,
+				   DRM_MODE_OUTPUT_LVDS);
 	if (!output)
 		return;
 

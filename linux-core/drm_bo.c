@@ -1650,7 +1650,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	size += buffer_start & ~PAGE_MASK;
 	num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
 	if (num_pages == 0) {
-		DRM_ERROR("Illegal buffer object size.\n");
+		DRM_ERROR("Illegal buffer object size %d.\n", size);
 		return -EINVAL;
 	}
 

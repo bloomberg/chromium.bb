@@ -188,8 +188,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
 				       DRM_BO_FLAG_MEM_VRAM |
-				       DRM_BO_FLAG_NO_EVICT |
-				       DRM_BO_HINT_DONT_FENCE, 0, 0x1, 0,
+				       DRM_BO_FLAG_NO_EVICT,
+				       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
 				       &dev_priv->ring_buffer);
 	if (ret < 0) {
 		DRM_ERROR("Unable to allocate or pin ring buffer\n");
