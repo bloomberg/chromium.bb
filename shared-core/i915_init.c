@@ -30,7 +30,7 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 	u16 tmp = 0;
 	unsigned long overhead;
 
-	bridge_dev = pci_find_slot(0, PCI_DEVFN(0,0));
+	bridge_dev = pci_get_bus_and_slot(0, PCI_DEVFN(0,0));
 	if (!bridge_dev) {
 		DRM_ERROR("bridge device not found\n");
 		return -1;
