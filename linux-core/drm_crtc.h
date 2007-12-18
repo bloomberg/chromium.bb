@@ -471,7 +471,7 @@ struct drm_output {
 	struct drm_display_info *monitor_info; /* if any */
   	const struct drm_output_funcs *funcs;
 	void *driver_private;
-
+  uint32_t make_shit_work;
 	struct list_head user_modes;
 	struct drm_property_blob *edid_blob_ptr;
 	u32 property_ids[DRM_OUTPUT_MAX_PROPERTY];
