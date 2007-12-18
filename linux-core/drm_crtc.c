@@ -165,7 +165,6 @@ struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev)
 
 	/* Limit to single framebuffer for now */
 	if (dev->mode_config.num_fb > 1) {
-		mutex_unlock(&dev->mode_config.mutex);
 		DRM_ERROR("Attempt to add multiple framebuffers failed\n");
 		return NULL;
 	}
