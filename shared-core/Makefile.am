@@ -32,6 +32,7 @@ klibdrminclude_HEADERS = \
                          nouveau_drm.h \
                          r128_drm.h \
                          radeon_drm.h \
+                         radeon_ms_drm.h \
                          savage_drm.h \
                          sis_drm.h \
                          via_drm.h \
