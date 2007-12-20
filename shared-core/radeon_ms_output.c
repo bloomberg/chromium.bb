@@ -249,14 +249,14 @@ int radeon_ms_connectors_from_properties(struct drm_device *dev)
 					dev_priv->properties->connectors[i],
 					sizeof(struct radeon_ms_connector));
 			connector->i2c = radeon_ms_i2c_create(dev,
-					connector->i2c_reg, connector->name);
+					connector->i2c_reg, connector->type);
 			if (connector->i2c == NULL) {
 				radeon_ms_connectors_destroy(dev);
 				return -ENOMEM;
 			}
 			output = drm_output_create(dev,
 					&radeon_ms_output_funcs,
-					connector->name);
+					connector->type);
 			if (output == NULL) {
 				radeon_ms_connectors_destroy(dev);
 				return -EINVAL;
