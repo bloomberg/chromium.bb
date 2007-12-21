@@ -356,7 +356,7 @@ void drm_crtc_probe_single_output_modes(struct drm_output *output, int maxX, int
 	}
 	
 	
-	drm_mode_prune_invalid(dev, &output->modes, TRUE);
+	drm_mode_prune_invalid(dev, &output->modes, true);
 	
 	if (list_empty(&output->modes)) {
 		struct drm_display_mode *stdmode;
@@ -510,7 +510,7 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	
 	/* XXX free adjustedmode */
 	drm_mode_destroy(dev, adjusted_mode);
-	ret = TRUE;
+	ret = true;
 	/* TODO */
 //	if (scrn->pScreen)
 //		drm_crtc_set_screen_sub_pixel_order(dev);
