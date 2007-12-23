@@ -968,7 +968,12 @@ FcPStackPush (FcConfigParse *parse, FcElement element, const XML_Char **attr)
     {
 	new->attr = FcConfigSaveAttr (attr);
 	if (!new->attr)
+	{
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
+	    FcMemFree (FC_MEM_PSTACK, sizeof (FcPStack));
+	    free (new);
+	    return FcFalse;
+	}
     }
     else
 	new->attr = 0;
