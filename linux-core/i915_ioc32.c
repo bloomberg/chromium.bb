@@ -34,6 +34,7 @@
 #include "drmP.h"
 #include "drm.h"
 #include "i915_drm.h"
+#include "i915_drv.h"
 
 typedef struct _drm_i915_batchbuffer32 {
 	int start;		/* agp offset */
@@ -182,13 +183,55 @@ static int compat_i915_alloc(struct file *file, unsigned int cmd,
 			 DRM_IOCTL_I915_ALLOC, (unsigned long) request);
 }
 
+typedef struct drm_i915_execbuffer32 {
+	uint64_t ops_list;
+	uint32_t num_buffers;
+	struct _drm_i915_batchbuffer32 batch;
+	drm_context_t context; 
+	struct drm_fence_arg fence_arg;
+} drm_i915_execbuffer32_t;
+
+static int compat_i915_execbuffer(struct file *file, unsigned int cmd,
+			     unsigned long arg)
+{
+	drm_i915_execbuffer32_t req32;
+	struct drm_i915_execbuffer __user *request;
+
+	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+		return -EFAULT;
+
+	request = compat_alloc_user_space(sizeof(*request));
+
+	if (!access_ok(VERIFY_WRITE, request, sizeof(*request))
+       || __put_user(req32.ops_list, &request->ops_list)
+       || __put_user(req32.num_buffers, &request->num_buffers)
+       || __put_user(req32.context, &request->context)
+       || __copy_to_user(&request->fence_arg, &req32.fence_arg, 
+                         sizeof(req32.fence_arg))
+       || __put_user(req32.batch.start, &request->batch.start)
+       || __put_user(req32.batch.used, &request->batch.used)
+       || __put_user(req32.batch.DR1, &request->batch.DR1)
+       || __put_user(req32.batch.DR4, &request->batch.DR4)
+       || __put_user(req32.batch.num_cliprects,
+                     &request->batch.num_cliprects)
+       || __put_user((int __user *)(unsigned long)req32.batch.cliprects,
+                     &request->batch.cliprects))
+		return -EFAULT;
+
+	return drm_ioctl(file->f_dentry->d_inode, file,
+			 DRM_IOCTL_I915_EXECBUFFER, (unsigned long)request);
+}
+
 
 drm_ioctl_compat_t *i915_compat_ioctls[] = {
 	[DRM_I915_BATCHBUFFER] = compat_i915_batchbuffer,
 	[DRM_I915_CMDBUFFER] = compat_i915_cmdbuffer,
 	[DRM_I915_GETPARAM] = compat_i915_getparam,
 	[DRM_I915_IRQ_EMIT] = compat_i915_irq_emit,
-	[DRM_I915_ALLOC] = compat_i915_alloc
+	[DRM_I915_ALLOC] = compat_i915_alloc,
+#ifdef I915_HAVE_BUFFER
+	[DRM_I915_EXECBUFFER] = compat_i915_execbuffer,
+#endif
 };
 
 /**
