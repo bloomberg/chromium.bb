@@ -196,6 +196,7 @@ static int compat_i915_execbuffer(struct file *file, unsigned int cmd,
 {
 	drm_i915_execbuffer32_t req32;
 	struct drm_i915_execbuffer __user *request;
+	int err;
 
 	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
 		return -EFAULT;
@@ -218,8 +219,25 @@ static int compat_i915_execbuffer(struct file *file, unsigned int cmd,
                      &request->batch.cliprects))
 		return -EFAULT;
 
-	return drm_ioctl(file->f_dentry->d_inode, file,
+	err = drm_ioctl(file->f_dentry->d_inode, file,
 			 DRM_IOCTL_I915_EXECBUFFER, (unsigned long)request);
+
+	if (err)
+		return err;
+
+	if (__get_user(req32.fence_arg.handle, &request->fence_arg.handle)
+	    || __get_user(req32.fence_arg.fence_class, &request->fence_arg.fence_class)
+	    || __get_user(req32.fence_arg.type, &request->fence_arg.type)
+	    || __get_user(req32.fence_arg.flags, &request->fence_arg.flags)
+	    || __get_user(req32.fence_arg.signaled, &request->fence_arg.signaled)
+	    || __get_user(req32.fence_arg.error, &request->fence_arg.error)
+	    || __get_user(req32.fence_arg.sequence, &request->fence_arg.sequence))
+		return -EFAULT;
+
+	if (copy_to_user((void __user *)arg, &req32, sizeof(req32)))
+		return -EFAULT;
+
+	return 0;
 }
 
 
