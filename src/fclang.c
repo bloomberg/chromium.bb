@@ -23,6 +23,7 @@
  */
 
 #include "fcint.h"
+#include "fcftint.h"
 
 typedef struct {
     const FcChar8    	lang[8];

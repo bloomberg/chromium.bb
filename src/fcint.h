@@ -42,12 +42,12 @@
 #include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stddef.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
 #include <fontconfig/fontconfig.h>
 #include <fontconfig/fcprivate.h>
-#include <fontconfig/fcfreetype.h>
 #include "fcdeprecate.h"
 
 #ifndef FC_CONFIG_PATH
@@ -704,22 +704,6 @@ FcDirScanConfig (FcFontSet	*set,
 /* fcfont.c */
 FcPrivate int
 FcFontDebug (void);
-    
-/* fcfreetype.c */
-FcPrivate FcBool
-FcFreeTypeIsExclusiveLang (const FcChar8  *lang);
-
-FcPrivate FcBool
-FcFreeTypeHasLang (FcPattern *pattern, const FcChar8 *lang);
-
-FcPrivate FcChar32
-FcFreeTypeUcs4ToPrivate (FcChar32 ucs4, const FcCharMap *map);
-
-FcPrivate FcChar32
-FcFreeTypePrivateToUcs4 (FcChar32 private, const FcCharMap *map);
-
-FcPrivate const FcCharMap *
-FcFreeTypeGetPrivateMap (FT_Encoding encoding);
     
 /* fcfs.c */
 

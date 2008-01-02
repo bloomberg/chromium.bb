@@ -45,6 +45,7 @@
 */
 
 #include "fcint.h"
+#include "fcftint.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>

@@ -81,7 +81,7 @@ EXTRA_DIST = makealias
 
 noinst_HEADERS=fcint.h fcdeprecate.h
 
-ALIAS_FILES = fcalias.h fcaliastail.h
+ALIAS_FILES = fcalias.h fcaliastail.h fcftalias.h fcftaliastail.h
 
 BUILT_SOURCES = $(ALIAS_FILES)
 
@@ -124,14 +124,21 @@ uninstall-local: uninstall-ms-import-lib uninstall-libtool-import-lib
 
 PUBLIC_FILES = \
 	$(top_srcdir)/fontconfig/fontconfig.h \
-	$(top_srcdir)/fontconfig/fcfreetype.h \
 	$(top_srcdir)/src/fcdeprecate.h \
 	$(top_srcdir)/fontconfig/fcprivate.h
 	
+PUBLIC_FT_FILES = \
+	$(top_srcdir)/fontconfig/fcfreetype.h
+
 fcaliastail.h: fcalias.h
 
 fcalias.h: $(top_srcdir)/src/makealias $(PUBLIC_FILES)
-	sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" $(PUBLIC_FILES)
+	sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" fcalias.h fcaliastail.h $(PUBLIC_FILES)
+
+fcftaliastail.h: fcftalias.h
+
+fcftalias.h: $(top_srcdir)/src/makealias $(PUBLIC_FT_FILES)
+	sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" fcftalias.h fcftaliastail.h $(PUBLIC_FT_FILES)
 
 CLEANFILES := $(ALIAS_FILES)
 

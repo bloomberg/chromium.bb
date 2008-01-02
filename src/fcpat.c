@@ -21,6 +21,7 @@
  */
 
 #include "fcint.h"
+#include "fcftint.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>

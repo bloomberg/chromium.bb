@@ -26,7 +26,7 @@ CC = @CC_FOR_BUILD@
 EXEEXT = @EXEEXT_FOR_BUILD@
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 
-INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
+INCLUDES=-I${top_srcdir}/src -I${top_srcdir} $(WARN_CFLAGS)
 
 TMPL=fccase.tmpl.h
 STMPL=${top_srcdir}/fc-case/${TMPL}

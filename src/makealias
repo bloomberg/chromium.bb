@@ -1,8 +1,10 @@
 #!/bin/sh
 SRCDIR=$1
 shift
-HEAD=fcalias.h
-TAIL=fcaliastail.h
+HEAD=$1
+shift
+TAIL=$1
+shift
 rm -f $HEAD $TAIL
 echo "#if HAVE_GNUC_ATTRIBUTE" >> $TAIL
 cat "$@" | grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$//' |
