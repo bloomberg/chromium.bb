@@ -112,6 +112,9 @@
 #define NV50_PUNK_BAR3_CTXDMA_VALID                           (1<<31)
 #define NV50_PUNK_UNK1710                                  0x00001710
 
+#define NV04_PBUS_PCI_NV_1                                 0x00001804
+#define NV04_PBUS_PCI_NV_19                                0x0000184C
+
 #define NV04_PTIMER_INTR_0                                 0x00009100
 #define NV04_PTIMER_INTR_EN_0                              0x00009140
 #define NV04_PTIMER_NUMERATOR                              0x00009200
