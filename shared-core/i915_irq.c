@@ -315,7 +315,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG);
 
 #if 0
-	DRM_DEBUG("%s flag=%08x\n", __FUNCTION__, temp);
+	DRM_DEBUG("flag=%08x\n", temp);
 #endif
 	if (temp == 0)
 		return IRQ_NONE;
@@ -372,7 +372,7 @@ int i915_emit_irq(struct drm_device *dev)
 
 	i915_kernel_lost_context(dev);
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	i915_emit_breadcrumb(dev);
 
@@ -411,7 +411,7 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int ret = 0;
 
-	DRM_DEBUG("%s irq_nr=%d breadcrumb=%d\n", __FUNCTION__, irq_nr,
+	DRM_DEBUG("irq_nr=%d breadcrumb=%d\n", irq_nr,
 		  READ_BREADCRUMB(dev_priv));
 
 	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
@@ -423,8 +423,7 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	i915_user_irq_off(dev_priv);
 
 	if (ret == -EBUSY) {
-		DRM_ERROR("%s: EBUSY -- rec: %d emitted: %d\n",
-			  __FUNCTION__,
+		DRM_ERROR("EBUSY -- rec: %d emitted: %d\n",
 			  READ_BREADCRUMB(dev_priv), (int)dev_priv->counter);
 	}
 
@@ -441,7 +440,7 @@ static int i915_driver_vblank_do_wait(struct drm_device *dev,
 	int ret = 0;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -489,7 +488,7 @@ int i915_irq_emit(struct drm_device *dev, void *data,
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -512,7 +511,7 @@ int i915_irq_wait(struct drm_device *dev, void *data,
 	drm_i915_irq_wait_t *irqwait = data;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -542,13 +541,12 @@ int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 	drm_i915_vblank_pipe_t *pipe = data;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
 	if (pipe->pipe & ~(DRM_I915_VBLANK_PIPE_A|DRM_I915_VBLANK_PIPE_B)) {
-		DRM_ERROR("%s called with invalid pipe 0x%x\n",
-			  __FUNCTION__, pipe->pipe);
+		DRM_ERROR("called with invalid pipe 0x%x\n", pipe->pipe);
 		return -EINVAL;
 	}
 
@@ -567,7 +565,7 @@ int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 	u16 flag;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
