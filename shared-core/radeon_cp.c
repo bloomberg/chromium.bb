@@ -816,19 +816,44 @@ static const u32 R300_cp_microcode[][2] = {
 	{ 0000000000, 0000000000 },
 };
 
+static u32 RADEON_READ_MCIND(drm_radeon_private_t *dev_priv, int addr)
+{
+	u32 ret;
+	RADEON_WRITE(R520_MC_IND_INDEX, 0x7f0000 | (addr & 0xff));
+	ret = RADEON_READ(R520_MC_IND_DATA);
+	RADEON_WRITE(R520_MC_IND_INDEX, 0);
+	return ret;
+}
+
 u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
 {
-	return RADEON_READ(RADEON_MC_FB_LOCATION);
+	
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
+		return RADEON_READ_MCIND(dev_priv, RV515_MC_FB_LOCATION);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+		return RADEON_READ_MCIND(dev_priv, R520_MC_FB_LOCATION);
+	else
+		return RADEON_READ(RADEON_MC_FB_LOCATION);
 }
 
 static void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
 {
-	RADEON_WRITE(RADEON_MC_FB_LOCATION, fb_loc);
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
+		RADEON_WRITE_MCIND(RV515_MC_FB_LOCATION, fb_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+		RADEON_WRITE_MCIND(R520_MC_FB_LOCATION, fb_loc);
+	else
+		RADEON_WRITE(RADEON_MC_FB_LOCATION, fb_loc);
 }
 
 static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_loc)
 {
-	RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_loc);
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
+		RADEON_WRITE_MCIND(RV515_MC_AGP_LOCATION, agp_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+		RADEON_WRITE_MCIND(R520_MC_AGP_LOCATION, agp_loc);
+	else
+		RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_loc);
 }
 
 static int RADEON_READ_PLL(struct drm_device * dev, int addr)
@@ -1089,41 +1114,43 @@ static int radeon_do_engine_reset(struct drm_device * dev)
 
 	radeon_do_pixcache_flush(dev_priv);
 
-	clock_cntl_index = RADEON_READ(RADEON_CLOCK_CNTL_INDEX);
-	mclk_cntl = RADEON_READ_PLL(dev, RADEON_MCLK_CNTL);
-
-	RADEON_WRITE_PLL(RADEON_MCLK_CNTL, (mclk_cntl |
-					    RADEON_FORCEON_MCLKA |
-					    RADEON_FORCEON_MCLKB |
-					    RADEON_FORCEON_YCLKA |
-					    RADEON_FORCEON_YCLKB |
-					    RADEON_FORCEON_MC |
-					    RADEON_FORCEON_AIC));
-
-	rbbm_soft_reset = RADEON_READ(RADEON_RBBM_SOFT_RESET);
-
-	RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
-					      RADEON_SOFT_RESET_CP |
-					      RADEON_SOFT_RESET_HI |
-					      RADEON_SOFT_RESET_SE |
-					      RADEON_SOFT_RESET_RE |
-					      RADEON_SOFT_RESET_PP |
-					      RADEON_SOFT_RESET_E2 |
-					      RADEON_SOFT_RESET_RB));
-	RADEON_READ(RADEON_RBBM_SOFT_RESET);
-	RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset &
-					      ~(RADEON_SOFT_RESET_CP |
-						RADEON_SOFT_RESET_HI |
-						RADEON_SOFT_RESET_SE |
-						RADEON_SOFT_RESET_RE |
-						RADEON_SOFT_RESET_PP |
-						RADEON_SOFT_RESET_E2 |
-						RADEON_SOFT_RESET_RB)));
-	RADEON_READ(RADEON_RBBM_SOFT_RESET);
-
-	RADEON_WRITE_PLL(RADEON_MCLK_CNTL, mclk_cntl);
-	RADEON_WRITE(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
-	RADEON_WRITE(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) < CHIP_RV515) {
+		clock_cntl_index = RADEON_READ(RADEON_CLOCK_CNTL_INDEX);
+		mclk_cntl = RADEON_READ_PLL(dev, RADEON_MCLK_CNTL);
+		
+		RADEON_WRITE_PLL(RADEON_MCLK_CNTL, (mclk_cntl |
+						    RADEON_FORCEON_MCLKA |
+						    RADEON_FORCEON_MCLKB |
+						    RADEON_FORCEON_YCLKA |
+						    RADEON_FORCEON_YCLKB |
+						    RADEON_FORCEON_MC |
+						    RADEON_FORCEON_AIC));
+		
+		rbbm_soft_reset = RADEON_READ(RADEON_RBBM_SOFT_RESET);
+		
+		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
+						      RADEON_SOFT_RESET_CP |
+						      RADEON_SOFT_RESET_HI |
+						      RADEON_SOFT_RESET_SE |
+						      RADEON_SOFT_RESET_RE |
+						      RADEON_SOFT_RESET_PP |
+						      RADEON_SOFT_RESET_E2 |
+						      RADEON_SOFT_RESET_RB));
+		RADEON_READ(RADEON_RBBM_SOFT_RESET);
+		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset &
+						      ~(RADEON_SOFT_RESET_CP |
+							RADEON_SOFT_RESET_HI |
+							RADEON_SOFT_RESET_SE |
+							RADEON_SOFT_RESET_RE |
+							RADEON_SOFT_RESET_PP |
+							RADEON_SOFT_RESET_E2 |
+							RADEON_SOFT_RESET_RB)));
+		RADEON_READ(RADEON_RBBM_SOFT_RESET);
+		
+		RADEON_WRITE_PLL(RADEON_MCLK_CNTL, mclk_cntl);
+		RADEON_WRITE(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
+		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
+	}
 
 	/* Reset the CP ring */
 	radeon_do_cp_reset(dev_priv);
@@ -1859,7 +1886,7 @@ int radeon_cp_init(struct drm_device *dev, void *data, struct drm_file *file_pri
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (init->func == RADEON_INIT_R300_CP)
-		r300_init_reg_flags();
+		r300_init_reg_flags(dev);
 
 	switch (init->func) {
 	case RADEON_INIT_CP:
@@ -2273,6 +2300,10 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	case CHIP_R350:
 	case CHIP_R420:
 	case CHIP_RV410:
+	case CHIP_RV515:
+	case CHIP_R520:
+	case CHIP_RV570:
+	case CHIP_R580:
 		dev_priv->flags |= RADEON_HAS_HIERZ;
 		break;
 	default:
