@@ -1952,7 +1952,7 @@ struct drm_property *drm_property_create(struct drm_device *dev, int flags,
 {
 	struct drm_property *property = NULL;
 
-	property = kzalloc(sizeof(struct drm_output), GFP_KERNEL);
+	property = kzalloc(sizeof(struct drm_property), GFP_KERNEL);
 	if (!property)
 		return NULL;
 
