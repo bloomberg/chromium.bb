@@ -423,7 +423,8 @@ static void drm_cleanup(struct drm_device * dev)
 	drm_mm_takedown(&dev->offset_manager);
 	drm_ht_remove(&dev->object_hash);
 
-	drm_put_head(&dev->primary);
+	drm_put_minor(&dev->primary);
+	drm_put_minor(&dev->control);
 	if (drm_put_dev(dev))
 		DRM_ERROR("Cannot unload module\n");
 }

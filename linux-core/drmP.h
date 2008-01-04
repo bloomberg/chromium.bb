@@ -699,6 +699,7 @@ struct drm_minor {
 	int minor;			/**< Minor device number */
 	int type;                       /**< Control or render */
 	dev_t device;			/**< Device number for mknod */
+	struct device kdev;		/**< Linux device */
 	struct drm_device *dev;
 	/* for render nodes */
 	struct proc_dir_entry *dev_root;  /**< proc directory entry */
@@ -711,7 +712,6 @@ struct drm_minor {
  * may contain multiple heads.
  */
 struct drm_device {
-	struct device dev;		/**< Linux device */
 	char *unique;			/**< Unique identifier: e.g., busid */
 	int unique_len;			/**< Length of unique field */
 	char *devname;			/**< For /proc/interrupts */
@@ -1158,7 +1158,7 @@ extern void drm_agp_chipset_flush(struct drm_device *dev);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
 extern int drm_put_dev(struct drm_device *dev);
-extern int drm_put_head(struct drm_minor *minor);
+extern int drm_put_minor(struct drm_minor *minor);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_minors_limit;
 extern struct drm_minor **drm_minors;
@@ -1198,8 +1198,8 @@ extern void drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah);
 struct drm_sysfs_class;
 extern struct class *drm_sysfs_create(struct module *owner, char *name);
 extern void drm_sysfs_destroy(void);
-extern int drm_sysfs_device_add(struct drm_device *dev, struct drm_minor *minor);
-extern void drm_sysfs_device_remove(struct drm_device *dev);
+extern int drm_sysfs_device_add(struct drm_minor *minor);
+extern void drm_sysfs_device_remove(struct drm_minor *minor);
 
 /*
  * Basic memory manager support (drm_mm.c)
