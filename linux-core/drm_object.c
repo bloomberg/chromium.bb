@@ -33,7 +33,7 @@
 int drm_add_user_object(struct drm_file *priv, struct drm_user_object *item,
 			int shareable)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	int ret;
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
@@ -58,7 +58,7 @@ EXPORT_SYMBOL(drm_add_user_object);
 
 struct drm_user_object *drm_lookup_user_object(struct drm_file *priv, uint32_t key)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	struct drm_hash_item *hash;
 	int ret;
 	struct drm_user_object *item;
@@ -85,7 +85,7 @@ EXPORT_SYMBOL(drm_lookup_user_object);
 
 static void drm_deref_user_object(struct drm_file *priv, struct drm_user_object *item)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	int ret;
 
 	if (atomic_dec_and_test(&item->refcount)) {
@@ -121,7 +121,7 @@ int drm_add_ref_object(struct drm_file *priv, struct drm_user_object *referenced
 	struct drm_ref_object *item;
 	struct drm_open_hash *ht = &priv->refd_object_hash[ref_action];
 
-	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
+	DRM_ASSERT_LOCKED(&priv->minor->dev->struct_mutex);
 	if (!referenced_object->shareable && priv != referenced_object->owner) {
 		DRM_ERROR("Not allowed to reference this object\n");
 		return -EINVAL;
@@ -178,7 +178,7 @@ struct drm_ref_object *drm_lookup_ref_object(struct drm_file *priv,
 	struct drm_hash_item *hash;
 	int ret;
 
-	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
+	DRM_ASSERT_LOCKED(&priv->minor->dev->struct_mutex);
 	ret = drm_ht_find_item(&priv->refd_object_hash[ref_action],
 			       (unsigned long)referenced_object, &hash);
 	if (ret)
@@ -212,7 +212,7 @@ void drm_remove_ref_object(struct drm_file *priv, struct drm_ref_object *item)
 	struct drm_open_hash *ht = &priv->refd_object_hash[item->unref_action];
 	enum drm_ref_type unref_action;
 
-	DRM_ASSERT_LOCKED(&priv->head->dev->struct_mutex);
+	DRM_ASSERT_LOCKED(&priv->minor->dev->struct_mutex);
 	unref_action = item->unref_action;
 	if (atomic_dec_and_test(&item->refcount)) {
 		ret = drm_ht_remove_item(ht, &item->hash);
@@ -239,7 +239,7 @@ EXPORT_SYMBOL(drm_remove_ref_object);
 int drm_user_object_ref(struct drm_file *priv, uint32_t user_token,
 			enum drm_object_type type, struct drm_user_object **object)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	struct drm_user_object *uo;
 	struct drm_hash_item *hash;
 	int ret;
@@ -269,7 +269,7 @@ out_err:
 int drm_user_object_unref(struct drm_file *priv, uint32_t user_token,
 			  enum drm_object_type type)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	struct drm_user_object *uo;
 	struct drm_ref_object *ro;
 	int ret;

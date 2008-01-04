@@ -461,7 +461,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		intel_crtc_load_lut(crtc);
 		
 		/* Give the overlay scaler a chance to enable if it's on this pipe */
-		//intel_crtc_dpms_video(crtc, true); TODO
+		//intel_crtc_dpms_video(crtc, TRUE); TODO
 	break;
 	case DPMSModeOff:
 		/* Give the overlay scaler a chance to disable if it's on this pipe */
@@ -699,19 +699,19 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 
 		switch (intel_output->type) {
 		case INTEL_OUTPUT_LVDS:
-			is_lvds = true;
+			is_lvds = TRUE;
 			break;
 		case INTEL_OUTPUT_SDVO:
-			is_sdvo = true;
+			is_sdvo = TRUE;
 			break;
 		case INTEL_OUTPUT_DVO:
-			is_dvo = true;
+			is_dvo = TRUE;
 			break;
 		case INTEL_OUTPUT_TVOUT:
-			is_tv = true;
+			is_tv = TRUE;
 			break;
 		case INTEL_OUTPUT_ANALOG:
-			is_crt = true;
+			is_crt = TRUE;
 			break;
 		}
 	}

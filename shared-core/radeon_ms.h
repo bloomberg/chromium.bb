@@ -87,6 +87,17 @@ enum radeon_monitor_type {
 	MT_STV     = 5
 };
 
+enum radeon_connector_type {
+	CONNECTOR_NONE,
+	CONNECTOR_PROPRIETARY,
+	CONNECTOR_VGA,
+	CONNECTOR_DVI_I,
+	CONNECTOR_DVI_D,
+	CONNECTOR_CTV,
+	CONNECTOR_STV,
+	CONNECTOR_UNSUPPORTED
+};
+
 enum radeon_output_type {
 	OUTPUT_NONE,
 	OUTPUT_DAC1,
@@ -120,6 +131,7 @@ struct radeon_ms_connector {
 	int                     crtc;
 	uint32_t    	        i2c_reg;
 	char                    outputs[RADEON_MAX_OUTPUTS];
+	char                    name[32];
 };
 
 struct radeon_ms_output {
@@ -447,7 +459,8 @@ int radeon_ms_wait_for_idle(struct drm_device *dev);
 /* radeon_ms_i2c.c */
 void radeon_ms_i2c_destroy(struct radeon_ms_i2c *i2c);
 struct radeon_ms_i2c *radeon_ms_i2c_create(struct drm_device *dev,
-					   const uint32_t reg, int type);
+					   const uint32_t reg,
+					   const char *name);
 
 /* radeon_ms_irq.c */
 void radeon_ms_irq_emit(struct drm_device *dev);

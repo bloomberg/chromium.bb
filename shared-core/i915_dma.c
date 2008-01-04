@@ -780,7 +780,7 @@ int i915_process_relocs(struct drm_file *file_priv,
 			struct drm_i915_validate_buffer *buffers,
 			uint32_t num_buffers)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct drm_buffer_object *reloc_list_object;
 	uint32_t cur_handle = *reloc_buf_handle;
 	uint32_t *reloc_page;
@@ -866,7 +866,7 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 			   struct drm_i915_validate_buffer *buffers,
 			   uint32_t buf_count)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct i915_relocatee_info relocatee;
 	int ret = 0;
 	int b;
@@ -926,7 +926,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 	unsigned long next = 0;
 	int ret = 0;
 	unsigned buf_count = 0;
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	uint32_t buf_reloc_handle, buf_handle;
 
 

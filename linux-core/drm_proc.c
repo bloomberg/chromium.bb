@@ -90,7 +90,7 @@ static struct drm_proc_list {
  * "/proc/dri/%minor%/", and each entry in proc_list as
  * "/proc/dri/%minor%/%name%".
  */
-int drm_proc_init(struct drm_device * dev, int minor,
+int drm_proc_init(struct drm_device *dev, int minor,
 		  struct proc_dir_entry *root, struct proc_dir_entry **dev_root)
 {
 	struct proc_dir_entry *ent;
@@ -535,7 +535,7 @@ static int drm__clients_info(char *buf, char **start, off_t offset,
 	list_for_each_entry(priv, &dev->filelist, lhead) {
 		DRM_PROC_PRINT("%c %3d %5d %5d %10u %10lu\n",
 			       priv->authenticated ? 'y' : 'n',
-			       priv->minor,
+			       priv->minor->minor,
 			       priv->pid,
 			       priv->uid, priv->magic, priv->ioctl_count);
 	}

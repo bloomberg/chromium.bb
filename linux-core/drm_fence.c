@@ -516,7 +516,7 @@ static int drm_fence_object_init(struct drm_device *dev, uint32_t fence_class,
 int drm_fence_add_user_object(struct drm_file *priv,
 			      struct drm_fence_object *fence, int shareable)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
@@ -612,7 +612,7 @@ void drm_fence_manager_takedown(struct drm_device *dev)
 struct drm_fence_object *drm_lookup_fence_object(struct drm_file *priv,
 						 uint32_t handle)
 {
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	struct drm_user_object *uo;
 	struct drm_fence_object *fence;
 

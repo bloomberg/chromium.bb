@@ -57,12 +57,4 @@ struct drm_radeon_execbuffer {
 	struct drm_fence_arg fence_arg;
 };
 
-#define RADEON_MS_MAX_SAREA_CLIPRECTS 16
-
-struct drm_radeon_ms_sarea {
-	/* the cliprects */
-	struct drm_clip_rect boxes[RADEON_MS_MAX_SAREA_CLIPRECTS];
-	unsigned int nbox;
-};
-
 #endif

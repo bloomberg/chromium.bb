@@ -131,13 +131,13 @@ int drm_open(struct inode *inode, struct file *filp)
 	int minor = iminor(inode);
 	int retcode = 0;
 
-	if (!((minor >= 0) && (minor < drm_cards_limit)))
+	if (!((minor >= 0) && (minor < drm_minors_limit)))
 		return -ENODEV;
 
-	if (!drm_heads[minor])
+	if (!drm_minors[minor])
 		return -ENODEV;
 
-	if (!(dev = drm_heads[minor]->dev))
+	if (!(dev = drm_minors[minor]->dev))
 		return -ENODEV;
 
 	retcode = drm_open_helper(inode, filp, dev);
@@ -182,13 +182,13 @@ int drm_stub_open(struct inode *inode, struct file *filp)
 
 	DRM_DEBUG("\n");
 
-	if (!((minor >= 0) && (minor < drm_cards_limit)))
+	if (!((minor >= 0) && (minor < drm_minors_limit)))
 		return -ENODEV;
 
-	if (!drm_heads[minor])
+	if (!drm_minors[minor])
 		return -ENODEV;
 
-	if (!(dev = drm_heads[minor]->dev))
+	if (!(dev = drm_minors[minor]->dev))
 		return -ENODEV;
 
 	old_fops = filp->f_op;
@@ -254,8 +254,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	priv->filp = filp;
 	priv->uid = current->euid;
 	priv->pid = current->pid;
-	priv->minor = minor;
-	priv->head = drm_heads[minor];
+	priv->minor = drm_minors[minor];
 	priv->ioctl_count = 0;
 	/* for compatibility root is always authenticated */
 	priv->authenticated = capable(CAP_SYS_ADMIN);
@@ -321,11 +320,11 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 int drm_fasync(int fd, struct file *filp, int on)
 {
 	struct drm_file *priv = filp->private_data;
-	struct drm_device *dev = priv->head->dev;
+	struct drm_device *dev = priv->minor->dev;
 	int retcode;
 
 	DRM_DEBUG("fd = %d, device = 0x%lx\n", fd,
-		  (long)old_encode_dev(priv->head->device));
+		  (long)old_encode_dev(priv->minor->device));
 	retcode = fasync_helper(fd, filp, on, &dev->buf_async);
 	if (retcode < 0)
 		return retcode;
@@ -375,7 +374,7 @@ static void drm_object_release(struct file *filp)
 int drm_release(struct inode *inode, struct file *filp)
 {
 	struct drm_file *file_priv = filp->private_data;
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	int retcode = 0;
 
 	lock_kernel();
@@ -390,7 +389,7 @@ int drm_release(struct inode *inode, struct file *filp)
 	 */
 
 	DRM_DEBUG("pid = %d, device = 0x%lx, open_count = %d\n",
-		  current->pid, (long)old_encode_dev(file_priv->head->device),
+		  current->pid, (long)old_encode_dev(file_priv->minor->device),
 		  dev->open_count);
 
 	if (dev->driver->reclaim_buffers_locked && dev->lock.hw_lock) {

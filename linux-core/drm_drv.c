@@ -432,19 +432,19 @@ void drm_exit(struct drm_driver *driver)
 {
 	int i;
 	struct drm_device *dev = NULL;
-	struct drm_head *head;
+	struct drm_minor *minor;
 
 	DRM_DEBUG("\n");
 	if (drm_fb_loaded) {
-		for (i = 0; i < drm_cards_limit; i++) {
-			head = drm_heads[i];
-			if (!head)
+		for (i = 0; i < drm_minors_limit; i++) {
+			minor = drm_minors[i];
+			if (!minor)
 				continue;
-			if (!head->dev)
+			if (!minor->dev)
 				continue;
-			if (head->dev->driver != driver)
+			if (minor->dev->driver != driver)
 				continue;
-			dev = head->dev;
+			dev = minor->dev;
 			if (dev) {
 				/* release the pci driver */
 				if (dev->pdev)
@@ -495,10 +495,10 @@ static int __init drm_core_init(void)
 	drm_init_memctl(avail_memctl_mem/2, avail_memctl_mem*3/4, si.mem_unit);
 
 	ret = -ENOMEM;
-	drm_cards_limit =
-	    (drm_cards_limit < DRM_MAX_MINOR + 1 ? drm_cards_limit : DRM_MAX_MINOR + 1);
-	drm_heads = drm_calloc(drm_cards_limit, sizeof(*drm_heads), DRM_MEM_STUB);
-	if (!drm_heads)
+	drm_minors_limit =
+	    (drm_minors_limit < DRM_MAX_MINOR + 1 ? drm_minors_limit : DRM_MAX_MINOR + 1);
+	drm_minors = drm_calloc(drm_minors_limit, sizeof(*drm_minors), DRM_MEM_STUB);
+	if (!drm_minors)
 		goto err_p1;
 
 	if (register_chrdev(DRM_MAJOR, "drm", &drm_stub_fops))
@@ -528,7 +528,7 @@ err_p3:
 	drm_sysfs_destroy();
 err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
-	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
+	drm_free(drm_minors, sizeof(*drm_minors) * drm_minors_limit, DRM_MEM_STUB);
 err_p1:
 	return ret;
 }
@@ -540,7 +540,7 @@ static void __exit drm_core_exit(void)
 
 	unregister_chrdev(DRM_MAJOR, "drm");
 
-	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
+	drm_free(drm_minors, sizeof(*drm_minors) * drm_minors_limit, DRM_MEM_STUB);
 }
 
 module_init(drm_core_init);
@@ -600,7 +600,7 @@ EXPORT_SYMBOL(drm_ioctl);
 long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
 	struct drm_file *file_priv = filp->private_data;
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct drm_ioctl_desc *ioctl;
 	drm_ioctl_t *func;
 	unsigned int nr = DRM_IOCTL_NR(cmd);
@@ -612,7 +612,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	++file_priv->ioctl_count;
 
 	DRM_DEBUG("pid=%d, cmd=0x%02x, nr=0x%02x, dev 0x%lx, auth=%d\n",
-		  current->pid, cmd, nr, (long)old_encode_dev(file_priv->head->device),
+		  current->pid, cmd, nr, (long)old_encode_dev(file_priv->minor->device),
 		  file_priv->authenticated);
 
 	if ((nr >= DRM_CORE_IOCTL_COUNT) &&

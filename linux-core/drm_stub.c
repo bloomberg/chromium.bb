@@ -37,20 +37,20 @@
 #include "drmP.h"
 #include "drm_core.h"
 
-unsigned int drm_cards_limit = 16;	/* Enough for one machine */
+unsigned int drm_minors_limit = 16;	/* Enough for one machine */
 unsigned int drm_debug = 0;		/* 1 to enable debug output */
 EXPORT_SYMBOL(drm_debug);
 
 MODULE_AUTHOR(CORE_AUTHOR);
 MODULE_DESCRIPTION(CORE_DESC);
 MODULE_LICENSE("GPL and additional rights");
-MODULE_PARM_DESC(cards_limit, "Maximum number of graphics cards");
+MODULE_PARM_DESC(minors_limit, "Maximum number of graphics cards");
 MODULE_PARM_DESC(debug, "Enable debug output");
 
-module_param_named(cards_limit, drm_cards_limit, int, 0444);
+module_param_named(minors_limit, drm_minors_limit, int, 0444);
 module_param_named(debug, drm_debug, int, 0600);
 
-struct drm_head **drm_heads;
+struct drm_minor **drm_minors;
 struct class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
@@ -160,48 +160,48 @@ error_out_unreg:
  * create the proc init entry via proc_init(). This routines assigns
  * minor numbers to secondary heads of multi-headed cards
  */
-static int drm_get_head(struct drm_device * dev, struct drm_head * head)
+static int drm_get_head(struct drm_device * dev, struct drm_minor *minor)
 {
-	struct drm_head **heads = drm_heads;
+	struct drm_minor **minors = drm_minors;
 	int ret;
-	int minor;
+	int index;
 
 	DRM_DEBUG("\n");
 
-	for (minor = 0; minor < drm_cards_limit; minor++, heads++) {
-		if (!*heads) {
+	for (index = 0; index < drm_minors_limit; index++, minors++) {
+		if (!*minors) {
 
-			*head = (struct drm_head) {
+			*minor = (struct drm_minor) {
 				.dev = dev,
-				.device = MKDEV(DRM_MAJOR, minor),
-				.minor = minor,
+				.device = MKDEV(DRM_MAJOR, index),
+				.minor = index,
 			};
 			if ((ret =
-			     drm_proc_init(dev, minor, drm_proc_root,
-					   &head->dev_root))) {
+			     drm_proc_init(dev, index, drm_proc_root,
+					   &minor->dev_root))) {
 				printk(KERN_ERR
 				       "DRM: Failed to initialize /proc/dri.\n");
 				goto err_g1;
 			}
 
-			ret = drm_sysfs_device_add(dev, head);
+			ret = drm_sysfs_device_add(dev, minor);
 			if (ret) {
 				printk(KERN_ERR
 				       "DRM: Error sysfs_device_add.\n");
 				goto err_g2;
 			}
-			*heads = head;
+			*minors = minor;
 
-			DRM_DEBUG("new minor assigned %d\n", minor);
+			DRM_DEBUG("new minor assigned %d\n", index);
 			return 0;
 		}
 	}
 	DRM_ERROR("out of minors\n");
 	return -ENOMEM;
 err_g2:
-	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
+	drm_proc_cleanup(index, drm_proc_root, minor->dev_root);
 err_g1:
-	*head = (struct drm_head) {
+	*minor = (struct drm_minor) {
 		.dev = NULL};
 	return ret;
 }
@@ -309,17 +309,18 @@ int drm_put_dev(struct drm_device * dev)
  * last minor released.
  *
  */
-int drm_put_head(struct drm_head * head)
+int drm_put_minor(struct drm_minor *minor)
 {
-	int minor = head->minor;
+	int index = minor->minor;
 
-	DRM_DEBUG("release secondary minor %d\n", minor);
+	DRM_DEBUG("release secondary minor %d\n", index);
 
-	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
-	drm_sysfs_device_remove(head->dev);
+	drm_proc_cleanup(index, drm_proc_root, minor->dev_root);
+	drm_sysfs_device_remove(minor->dev);
 
-	*head = (struct drm_head) {.dev = NULL};
+	*minor = (struct drm_minor) {.type = DRM_MINOR_UNASSIGNED,
+				     .dev = NULL};
 
-	drm_heads[minor] = NULL;
+	drm_minors[index] = NULL;
 	return 0;
 }

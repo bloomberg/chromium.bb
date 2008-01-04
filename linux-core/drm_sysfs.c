@@ -154,7 +154,7 @@ static void drm_sysfs_device_release(struct device *dev)
  * as the parent for the Linux device, and make sure it has a file containing
  * the driver we're using (for userspace compatibility).
  */
-int drm_sysfs_device_add(struct drm_device *dev, struct drm_head *head)
+int drm_sysfs_device_add(struct drm_device *dev, struct drm_minor *minor)
 {
 	int err;
 	int i, j;
@@ -162,8 +162,8 @@ int drm_sysfs_device_add(struct drm_device *dev, struct drm_head *head)
 	dev->dev.parent = &dev->pdev->dev;
 	dev->dev.class = drm_class;
 	dev->dev.release = drm_sysfs_device_release;
-	dev->dev.devt = head->device;
-	snprintf(dev->dev.bus_id, BUS_ID_SIZE, "card%d", head->minor);
+	dev->dev.devt = minor->device;
+	snprintf(dev->dev.bus_id, BUS_ID_SIZE, "card%d", minor->minor);
 
 	err = device_register(&dev->dev);
 	if (err) {

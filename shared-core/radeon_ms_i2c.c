@@ -219,7 +219,8 @@ static void set_data(void *i2c_priv, int data)
  *
  */
 struct radeon_ms_i2c *radeon_ms_i2c_create(struct drm_device *dev,
-					   const uint32_t reg, int type)
+					   const uint32_t reg,
+					   const char *name)
 {
 	struct radeon_ms_i2c *i2c;
 	int ret;
@@ -232,17 +233,7 @@ struct radeon_ms_i2c *radeon_ms_i2c_create(struct drm_device *dev,
 
 	i2c->drm_dev = dev;
 	i2c->reg = reg;
-	switch (type) {
-	case ConnectorVGA:
-		snprintf(i2c->adapter.name, I2C_NAME_SIZE, "radeon-VGA");
-		break;
-	case ConnectorDVII:
-		snprintf(i2c->adapter.name, I2C_NAME_SIZE, "radeon-DVII");
-		break;
-	default:
-		snprintf(i2c->adapter.name, I2C_NAME_SIZE, "radeon-UNKNOWN");
-		break;
-	}
+	snprintf(i2c->adapter.name, I2C_NAME_SIZE, "radeon-%s", name);
 	i2c->adapter.owner = THIS_MODULE;
 	/* fixme need to take a look at what its needed for */
 	i2c->adapter.id = I2C_HW_B_RADEON;
