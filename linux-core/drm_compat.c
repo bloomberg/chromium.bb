@@ -232,7 +232,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 
 	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
 		unsigned long _end = jiffies + 3*DRM_HZ;
-		uint32_t new_mask = bo->mem.mask |
+		uint32_t new_mask = bo->mem.proposed_flags |
 			DRM_BO_FLAG_MAPPABLE |
 			DRM_BO_FLAG_FORCE_MAPPABLE;
 
