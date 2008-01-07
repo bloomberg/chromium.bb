@@ -186,7 +186,7 @@ static uint32_t nv86_ctx_voodoo[] = {
 	0x0070001c, 0x0060000c, ~0
 };
 
-static void
+static int
 nv50_graph_init_ctxctl(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -203,32 +203,37 @@ nv50_graph_init_ctxctl(struct drm_device *dev)
 		break;
 	default:
 		DRM_ERROR("no voodoo for chipset NV%02x\n", dev_priv->chipset);
-		break;
+		return -EINVAL;
 	}
 
-	if (voodoo) {
-		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
-		while (*voodoo != ~0) {
-			NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, *voodoo);
-			voodoo++;
-		}
+	NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
+	while (*voodoo != ~0) {
+		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, *voodoo);
+		voodoo++;
 	}
 
 	NV_WRITE(0x400320, 4);
 	NV_WRITE(NV40_PGRAPH_CTXCTL_CUR, 0);
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, 0);
+
+	return 0;
 }
 
 int
 nv50_graph_init(struct drm_device *dev)
 {
+	int ret;
+
 	DRM_DEBUG("\n");
 
 	nv50_graph_init_reset(dev);
 	nv50_graph_init_intr(dev);
 	nv50_graph_init_regs__nv(dev);
 	nv50_graph_init_regs(dev);
-	nv50_graph_init_ctxctl(dev);
+
+	ret = nv50_graph_init_ctxctl(dev);
+	if (ret)
+		return ret;
 
 	return 0;
 }
