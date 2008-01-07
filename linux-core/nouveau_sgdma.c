@@ -139,8 +139,8 @@ nouveau_sgdma_unbind(struct drm_ttm_backend *be)
 			if (dev_priv->card_type < NV_50) {
 				INSTANCE_WR(gpuobj, pte, pteval | 3);
 			} else {
-				INSTANCE_WR(gpuobj, (pte<<1)+0, 0x00000010);
-				INSTANCE_WR(gpuobj, (pte<<1)+1, 0x00000004);
+				INSTANCE_WR(gpuobj, (pte<<1)+0, pteval | 0x21);
+				INSTANCE_WR(gpuobj, (pte<<1)+1, 0x00000000);
 			}
 
 			pte++;
@@ -221,15 +221,14 @@ nouveau_sgdma_init(struct drm_device *dev)
 		return ret;
 	}
 
-	if (dev_priv->card_type < NV_50) {
-		dev_priv->gart_info.sg_dummy_page =
-			alloc_page(GFP_KERNEL|__GFP_DMA32);
-		SetPageLocked(dev_priv->gart_info.sg_dummy_page);
-		dev_priv->gart_info.sg_dummy_bus =
-			pci_map_page(dev->pdev,
-				     dev_priv->gart_info.sg_dummy_page, 0,
-				     PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
+	dev_priv->gart_info.sg_dummy_page =
+		alloc_page(GFP_KERNEL|__GFP_DMA32);
+	SetPageLocked(dev_priv->gart_info.sg_dummy_page);
+	dev_priv->gart_info.sg_dummy_bus =
+		pci_map_page(dev->pdev, dev_priv->gart_info.sg_dummy_page, 0,
+			     PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
 
+	if (dev_priv->card_type < NV_50) {
 		/* Maybe use NV_DMA_TARGET_AGP for PCIE? NVIDIA do this, and
 		 * confirmed to work on c51.  Perhaps means NV_DMA_TARGET_PCIE
 		 * on those cards? */
@@ -245,8 +244,9 @@ nouveau_sgdma_init(struct drm_device *dev)
 		}
 	} else {
 		for (i=0; i<obj_size; i+=8) {
-			INSTANCE_WR(gpuobj, (i+0)/4, 0); //x00000010);
-			INSTANCE_WR(gpuobj, (i+4)/4, 0); //0x00000004);
+			INSTANCE_WR(gpuobj, (i+0)/4,
+				    dev_priv->gart_info.sg_dummy_bus | 0x21);
+			INSTANCE_WR(gpuobj, (i+4)/4, 0);
 		}
 	}
 
