@@ -285,52 +285,12 @@ nouveau_card_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine;
 	int ret;
-#if defined(__powerpc__)
-	struct device_node *dn;
-#endif
 
 	DRM_DEBUG("prev state = %d\n", dev_priv->init_state);
 
 	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
 		return 0;
 	dev_priv->ttm = 0;
-
-	/* Map any PCI resources we need on the card */
-	ret = nouveau_init_card_mappings(dev);
-	if (ret) return ret;
-
-#if defined(__powerpc__)
-	/* Put the card in BE mode if it's not */
-	if (NV_READ(NV03_PMC_BOOT_1))
-		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
-
-	DRM_MEMORYBARRIER();
-#endif
-
-#if defined(__linux__) && defined(__powerpc__)
-	/* if we have an OF card, copy vbios to RAMIN */
-	dn = pci_device_to_OF_node(dev->pdev);
-	if (dn)
-	{
-		int size;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
-		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
-#else
-		const uint32_t *bios = get_property(dn, "NVDA,BMP", &size);
-#endif
-		if (bios)
-		{
-			int i;
-			for(i=0;i<size;i+=4)
-				NV_WI32(i, bios[i/4]);
-			DRM_INFO("OF bios successfully copied (%d bytes)\n",size);
-		}
-		else
-			DRM_INFO("Unable to get the OF bios\n");
-	}
-	else
-		DRM_INFO("Unable to get the OF node\n");
-#endif
 
 	/* Determine exact chipset we're running on */
 	if (dev_priv->card_type < NV_10)
@@ -451,6 +411,46 @@ void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 /* first module load, setup the mmio/fb mapping */
 int nouveau_firstopen(struct drm_device *dev)
 {
+#if defined(__powerpc__)
+	struct device_node *dn;
+#endif
+	int ret;
+	/* Map any PCI resources we need on the card */
+	ret = nouveau_init_card_mappings(dev);
+	if (ret) return ret;
+
+#if defined(__powerpc__)
+	/* Put the card in BE mode if it's not */
+	if (NV_READ(NV03_PMC_BOOT_1))
+		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
+
+	DRM_MEMORYBARRIER();
+#endif
+
+#if defined(__linux__) && defined(__powerpc__)
+	/* if we have an OF card, copy vbios to RAMIN */
+	dn = pci_device_to_OF_node(dev->pdev);
+	if (dn)
+	{
+		int size;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
+		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
+#else
+		const uint32_t *bios = get_property(dn, "NVDA,BMP", &size);
+#endif
+		if (bios)
+		{
+			int i;
+			for(i=0;i<size;i+=4)
+				NV_WI32(i, bios[i/4]);
+			DRM_INFO("OF bios successfully copied (%d bytes)\n",size);
+		}
+		else
+			DRM_INFO("Unable to get the OF bios\n");
+	}
+	else
+		DRM_INFO("Unable to get the OF node\n");
+#endif
 	return 0;
 }
 
