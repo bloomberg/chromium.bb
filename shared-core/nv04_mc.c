@@ -14,8 +14,8 @@ nv04_mc_init(struct drm_device *dev)
 
 	/* clear busmaster bit */
 	NV_WRITE(NV04_PBUS_PCI_NV_1, saved_pci_nv_1 & ~(0x00000001 << 2));
-	/* clear SBA, AGP and FW bits */
-	NV_WRITE(NV04_PBUS_PCI_NV_19, saved_pci_nv_19 & 0xfffff00f);
+	/* clear SBA and AGP bits */
+	NV_WRITE(NV04_PBUS_PCI_NV_19, saved_pci_nv_19 & 0xfffff0ff);
 
 	/* Power up everything, resetting each individual unit will
 	 * be done later if needed.
