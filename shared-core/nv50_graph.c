@@ -272,6 +272,10 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 		return ret;
 	}
 
+	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x00000/4,
+		    chan->ramin->instance >> 12);
+	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x0011c/4, 0x00000002);
+
 	return 0;
 }
 
