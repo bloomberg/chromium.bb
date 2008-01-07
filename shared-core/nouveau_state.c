@@ -412,6 +412,7 @@ void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 int nouveau_firstopen(struct drm_device *dev)
 {
 #if defined(__powerpc__)
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct device_node *dn;
 #endif
 	int ret;
