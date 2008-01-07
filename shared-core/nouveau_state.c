@@ -88,7 +88,6 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 
 static int nouveau_stub_init(struct drm_device *dev) { return 0; }
 static void nouveau_stub_takedown(struct drm_device *dev) {}
-static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
 
 static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
@@ -251,9 +250,9 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->instmem.unbind		= nv50_instmem_unbind;
 		engine->mc.init		= nv50_mc_init;
 		engine->mc.takedown	= nv50_mc_takedown;
-		engine->timer.init	= nouveau_stub_init;
-		engine->timer.read	= nouveau_stub_timer_read;
-		engine->timer.takedown	= nouveau_stub_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
+		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nouveau_stub_init;
 		engine->fb.takedown	= nouveau_stub_takedown;
 		engine->graph.init	= nv50_graph_init;
