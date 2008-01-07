@@ -705,7 +705,14 @@ struct drm_fence_arg {
  */
 #define DRM_BO_FLAG_NO_MOVE     (1ULL << 8)
 
-/* Mask: Make sure the buffer is in cached memory when mapped
+/* Mask: Make sure the buffer is in cached memory when mapped.  In conjunction
+ * with DRM_BO_FLAG_CACHED it also allows the buffer to be bound into the GART
+ * with unsnooped PTEs instead of snooped, by using chipset-specific cache
+ * flushing at bind time.  A better name might be DRM_BO_FLAG_TT_UNSNOOPED,
+ * as the eviction to local memory (TTM unbind) on map is just a side effect
+ * to prevent aggressive cache prefetch from the GPU disturbing the cache
+ * management that the DRM is doing.
+ *
  * Flags: Acknowledge.
  * Buffers allocated with this flag should not be used for suballocators
  * This type may have issues on CPUs with over-aggressive caching
