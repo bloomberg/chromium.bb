@@ -34,14 +34,12 @@ static void
 nv50_graph_init_reset(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t pmc_e;
+	uint32_t pmc_e = NV_PMC_ENABLE_PGRAPH | (1 << 21);
 
 	DRM_DEBUG("\n");
 
-	pmc_e = NV_READ(NV03_PMC_ENABLE);
-	NV_WRITE(NV03_PMC_ENABLE, pmc_e & ~NV_PMC_ENABLE_PGRAPH);
-	pmc_e = NV_READ(NV03_PMC_ENABLE);
-	NV_WRITE(NV03_PMC_ENABLE, pmc_e |  NV_PMC_ENABLE_PGRAPH);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) & ~pmc_e);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |  pmc_e);
 }
 
 static void
@@ -253,11 +251,10 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 
 	DRM_DEBUG("ch%d\n", chan->id);
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0,
-					  grctx_size, 0x1000,
-					  NVOBJ_FLAG_ZERO_ALLOC |
-					  NVOBJ_FLAG_ZERO_FREE,
-					  &chan->ramin_grctx)))
+	ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, grctx_size, 0x1000,
+				     NVOBJ_FLAG_ZERO_ALLOC |
+				     NVOBJ_FLAG_ZERO_FREE, &chan->ramin_grctx);
+	if (ret)
 		return ret;
 
 	hdr = IS_G80 ? 0x200 : 0x20;
@@ -269,7 +266,8 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 	INSTANCE_WR(ramin, (hdr + 0x10)/4, 0);
 	INSTANCE_WR(ramin, (hdr + 0x14)/4, 0x00010000);
 
-	if ((ret = engine->graph.load_context(chan))) {
+	ret = engine->graph.load_context(chan);
+	if (ret) {
 		DRM_ERROR("Error hacking up initial context: %d\n", ret);
 		return ret;
 	}
