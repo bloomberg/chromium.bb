@@ -2989,4 +2989,5 @@ bail:
 
 #define __fcfreetype__
 #include "fcaliastail.h"
+#include "fcftaliastail.h"
 #undef __fcfreetype__

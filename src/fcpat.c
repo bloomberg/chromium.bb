@@ -1230,4 +1230,5 @@ FcValueListSerialize (FcSerialize *serialize, const FcValueList *vl)
 }
 #define __fcpat__
 #include "fcaliastail.h"
+#include "fcftaliastail.h"
 #undef __fcpat__

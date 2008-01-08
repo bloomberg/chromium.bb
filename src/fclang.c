@@ -746,4 +746,5 @@ FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l)
 }
 #define __fclang__
 #include "fcaliastail.h"
+#include "fcftaliastail.h"
 #undef __fclang__
