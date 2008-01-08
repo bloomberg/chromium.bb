@@ -29,13 +29,13 @@ SGML = ${FC_LIST_SRC}/fc-list.sgml
 
 bin_PROGRAMS=fc-list
 
-INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
+INCLUDES=-I${top_srcdir} $(WARN_CFLAGS)
 
 man_MANS=fc-list.1
 
 EXTRA_DIST=fc-list.sgml $(man_MANS)
 
-fc_list_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
+fc_list_LDADD = ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
 

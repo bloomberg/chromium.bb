@@ -29,13 +29,13 @@ FC_MATCH_SRC=${top_srcdir}/fc-match
 
 SGML = ${FC_MATCH_SRC}/fc-match.sgml
 
-INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
+INCLUDES=-I${top_srcdir} $(WARN_CFLAGS)
 
 man_MANS=fc-match.1
 
 EXTRA_DIST=fc-match.sgml $(man_MANS)
 
-fc_match_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
+fc_match_LDADD = ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
 

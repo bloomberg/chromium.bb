@@ -27,7 +27,7 @@ FC_CAT_SRC=${top_srcdir}/fc-cat
 
 SGML = ${FC_CAT_SRC}/fc-cat.sgml
 
-INCLUDES=-I${top_srcdir} $(FREETYPE_CFLAGS) $(WARN_CFLAGS)
+INCLUDES=-I${top_srcdir} $(WARN_CFLAGS)
 
 bin_PROGRAMS=fc-cat
 
@@ -35,7 +35,7 @@ man_MANS=fc-cat.1
 
 EXTRA_DIST=fc-cat.sgml fc-cat.1
 
-fc_cat_LDADD = $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS) ${top_builddir}/src/libfontconfig.la
+fc_cat_LDADD = ${top_builddir}/src/libfontconfig.la
 
 if USEDOCBOOK
 
