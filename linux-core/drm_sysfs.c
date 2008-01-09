@@ -36,8 +36,9 @@ static int drm_sysfs_suspend(struct device *dev, pm_message_t state)
 
 	printk(KERN_ERR "%s\n", __FUNCTION__);
 
-	if (drm_dev->driver->suspend)
-		return drm_dev->driver->suspend(drm_dev);
+	if (drm_minor->type == DRM_MINOR_CONTROL)
+		if (drm_dev->driver->suspend)
+			return drm_dev->driver->suspend(drm_dev);
 
 	return 0;
 }
@@ -54,8 +55,9 @@ static int drm_sysfs_resume(struct device *dev)
 	struct drm_minor *drm_minor = to_drm_minor(dev);
 	struct drm_device *drm_dev = drm_minor->dev;
 
-	if (drm_dev->driver->resume)
-		return drm_dev->driver->resume(drm_dev);
+	if (drm_minor->type == DRM_MINOR_CONTROL)
+		if (drm_dev->driver->resume)
+			return drm_dev->driver->resume(drm_dev);
 
 	return 0;
 }
@@ -168,7 +170,7 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 	minor->kdev.release = drm_sysfs_device_release;
 	minor->kdev.devt = minor->device;
 	if (minor->type == DRM_MINOR_CONTROL)
-		minor_str = "controlD%d";
+	  minor_str = "controlD%d";
 	else
 		minor_str = "card%d";
 	
