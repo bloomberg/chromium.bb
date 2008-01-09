@@ -1548,6 +1548,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 
 		mode = drm_mode_create(dev);
 		drm_crtc_convert_umode(mode, &crtc_req->mode);
+		drm_mode_set_crtcinfo(mode, CRTC_INTERLACE_HALVE_V);
 	}
 
 	if (crtc_req->count_outputs == 0 && mode) {
