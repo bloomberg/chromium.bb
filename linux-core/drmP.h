@@ -302,6 +302,7 @@ typedef int drm_ioctl_compat_t(struct file *filp, unsigned int cmd,
 #define DRM_AUTH        0x1
 #define DRM_MASTER      0x2
 #define DRM_ROOT_ONLY   0x4
+#define DRM_CONTROL_ALLOW 0x8 // allow ioctl to operate on control node 
 
 struct drm_ioctl_desc {
 	unsigned int cmd;
