@@ -579,6 +579,10 @@ int drmOpen(const char *name, const char *busid)
     return -1;
 }
 
+int drmOpenControl(int minor)
+{
+    return drmOpenMinor(minor, 0, DRM_NODE_CONTROL);
+}
 
 /**
  * Free the version information returned by drmGetVersion().
