@@ -87,6 +87,9 @@
 
 #define DRM_MSG_VERBOSITY 3
 
+#define DRM_NODE_CONTROL 0
+#define DRM_NODE_RENDER 1
+
 static drmServerInfoPtr drm_server_info;
 
 void drmSetServerInfo(drmServerInfoPtr info)
@@ -264,7 +267,7 @@ static int drmMatchBusID(const char *id1, const char *id2)
  * special file node with the major and minor numbers specified by \p dev and
  * parent directory if necessary and was called by root.
  */
-static int drmOpenDevice(long dev, int minor)
+static int drmOpenDevice(long dev, int minor, int type)
 {
     stat_t          st;
     char            buf[64];
@@ -274,7 +277,7 @@ static int drmOpenDevice(long dev, int minor)
     uid_t           user    = DRM_DEV_UID;
     gid_t           group   = DRM_DEV_GID, serv_group;
     
-    sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
+    sprintf(buf, type ? DRM_DEV_NAME : DRM_CONTROL_DEV_NAME, DRM_DIR_NAME, minor);
     drmMsg("drmOpenDevice: node name is %s\n", buf);
 
     if (drm_server_info) {
@@ -348,15 +351,15 @@ static int drmOpenDevice(long dev, int minor)
  * Calls drmOpenDevice() if \p create is set, otherwise assembles the device
  * name from \p minor and opens it.
  */
-static int drmOpenMinor(int minor, int create)
+static int drmOpenMinor(int minor, int create, int type)
 {
     int  fd;
     char buf[64];
     
     if (create)
-	return drmOpenDevice(makedev(DRM_MAJOR, minor), minor);
+      return drmOpenDevice(makedev(DRM_MAJOR, minor), minor, type);
     
-    sprintf(buf, DRM_DEV_NAME, DRM_DIR_NAME, minor);
+    sprintf(buf, type ? DRM_DEV_NAME : DRM_CONTROL_DEV_NAME, DRM_DIR_NAME, minor);
     if ((fd = open(buf, O_RDWR, 0)) >= 0)
 	return fd;
     return -errno;
@@ -379,7 +382,7 @@ int drmAvailable(void)
     int           retval = 0;
     int           fd;
 
-    if ((fd = drmOpenMinor(0, 1)) < 0) {
+    if ((fd = drmOpenMinor(0, 1, DRM_NODE_RENDER)) < 0) {
 #ifdef __linux__
 	/* Try proc for backward Linux compatibility */
 	if (!access("/proc/dri/0", R_OK))
@@ -420,7 +423,7 @@ static int drmOpenByBusid(const char *busid)
 
     drmMsg("drmOpenByBusid: Searching for BusID %s\n", busid);
     for (i = 0; i < DRM_MAX_MINOR; i++) {
-	fd = drmOpenMinor(i, 1);
+	fd = drmOpenMinor(i, 1, DRM_NODE_RENDER);
 	drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
 	if (fd >= 0) {
 	    sv.drm_di_major = 1;
@@ -482,7 +485,7 @@ static int drmOpenByName(const char *name)
      * already in use.  If it's in use it will have a busid assigned already.
      */
     for (i = 0; i < DRM_MAX_MINOR; i++) {
-	if ((fd = drmOpenMinor(i, 1)) >= 0) {
+	if ((fd = drmOpenMinor(i, 1, DRM_NODE_RENDER)) >= 0) {
 	    if ((version = drmGetVersion(fd))) {
 		if (!strcmp(version->name, name)) {
 		    drmFreeVersion(version);
@@ -526,7 +529,7 @@ static int drmOpenByName(const char *name)
 			if (*pt) { /* Found busid */
 			    return drmOpenByBusid(++pt);
 			} else { /* No busid */
-			    return drmOpenDevice(strtol(devstring, NULL, 0),i);
+			    return drmOpenDevice(strtol(devstring, NULL, 0),i, DRM_NODE_RENDER);
 			}
 		    }
 		}
