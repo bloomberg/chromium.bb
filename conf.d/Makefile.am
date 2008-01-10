@@ -44,6 +44,7 @@ CONF_FILES = \
 	51-local.conf \
 	60-latin.conf \
 	65-fonts-persian.conf \
+	65-khmer.conf \
 	65-nonlatin.conf \
 	69-unifont.conf \
 	70-no-bitmaps.conf \
