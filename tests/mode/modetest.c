@@ -278,7 +278,15 @@ int testFrameBufferAdd(int fd, drmModeResPtr res)
 	printf("\tCreating BO\n");
 
 	/* TODO */
-	ret = 1;
+	ret = drmBOCreate(fd, 800 * 600 * 4, 0, 0,
+		DRM_BO_FLAG_READ |
+		DRM_BO_FLAG_WRITE |
+		DRM_BO_FLAG_MEM_TT |
+		DRM_BO_FLAG_MEM_VRAM |
+		DRM_BO_FLAG_NO_EVICT,
+		DRM_BO_HINT_DONT_FENCE, &bo);
+
+	printf("\tgot %i\n", ret);
 	if (ret)
 		goto err;
 
