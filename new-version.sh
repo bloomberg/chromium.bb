@@ -1,9 +1,6 @@
 #!/bin/sh
 
-test=echo
-if git-status > /dev/null; then
-	:
-else
+if git-status -a > /dev/null; then
 	echo 'Uncommited changes in repository' 1>&2
 	exit 1
 fi
@@ -24,12 +21,12 @@ eval `echo $version |
 			   
 # Update the version numbers
 
-$test sed -i configure.in "/^AM_INIT_AUTOMAKE/s/2\.[0-9.]*/$version/"
+sed -i configure.in -e "/^AM_INIT_AUTOMAKE/s/2\.[0-9.]*/$version/"
 
-$test sed -i fontconfig/fontconfig.h \
-	-e "/^#define FC_MAJOR/s/[0-9]*/$major/" \
-	-e "/^#define FC_MINOR/s/[0-9]*/$minor/" \
-	-e "/^#define FC_REVISION/s/[0-9]*/$revision/"
+sed -i fontconfig/fontconfig.h \
+	-e "/^#define FC_MAJOR/s/[0-9][0-9]*/$major/" \
+	-e "/^#define FC_MINOR/s/[0-9][0-9]*/$minor/" \
+	-e "/^#define FC_REVISION/s/[0-9][0-9]*/$revision/"
 
 #
 # Compute pretty form of new version number
@@ -104,7 +101,7 @@ if [ $version != $last ]; then
 	sed -n '/^2\.[0-9.]*$/,$p' README) > README.tmp ||
 		(echo "README update failed"; exit 1)
 	
-	$test mv README.tmp README
+	mv README.tmp README
 fi
 
 $test git-commit -m"Bump version to $version" \
@@ -117,5 +114,5 @@ $test git-tag -u 096c4dd3 -m"Version $version" $version
 
 # Make distributed change log
 
-$test "git-log --stat $last.. > ChangeLog-$version"
+git-log --stat $last.. > ChangeLog-$version
 
