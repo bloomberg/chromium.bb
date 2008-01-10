@@ -79,7 +79,7 @@ INCLUDES = 						\
 
 EXTRA_DIST = makealias
 
-noinst_HEADERS=fcint.h fcdeprecate.h
+noinst_HEADERS=fcint.h fcftint.h fcdeprecate.h
 
 ALIAS_FILES = fcalias.h fcaliastail.h fcftalias.h fcftaliastail.h
 
