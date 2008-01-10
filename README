@@ -1,11 +1,29 @@
-			Fontconfig
-	Font configuration and customization library
-		        Version 2.5
-		        2007-11-13
+                              Fontconfig
+             Font configuration and customization library
+                       Version 2.5.91 (2.6 RC1)
+                              2008-01-10
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.5.91 (2.6 RC1)
+
+Hongbo Zhao (1):
+      Not_contain should use strstr, not strcmp on strings. (bug 13632)
+
+Keith Packard (11):
+      Move conf.avail/README to conf.d/README (bug 13392)
+      Fix OOM failure case in FcPStackPush.
+      Remove freetype requirement for build-time applications.
+      Include fcftaliastail.h so that the freetype funcs are exported.
+      Eliminate references to freetype from utility Makefile.am's
+      Distribute new fcftint.h file
+      Create new-version.sh to help with releases, update INSTALL instructions
+      Distribute khmer font aliases
+      Add more files to .gitignore
+      new-version.sh was mis-editing files
+      git-tag requires space after -m flag
 
 2.5
 
