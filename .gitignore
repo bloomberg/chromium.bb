@@ -1,5 +1,3 @@
-fcalias.h
-fcaliastail.h
 tags
 *.tar.gz
 .libs
@@ -8,6 +6,7 @@ tags
 *.lo
 *.la
 ChangeLog
+ChangeLog-*
 Makefile
 Makefile.in
 aclocal.m4
@@ -79,3 +78,7 @@ fc-list/fc-list.1
 fc-match/fc-match
 fc-match/fc-match.1
 src/fontconfig.def
+fcalias.h
+fcaliastail.h
+src/fcftalias.h
+src/fcftaliastail.h
