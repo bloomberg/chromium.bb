@@ -8,6 +8,11 @@
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
+
+/* setting this to 2024 gets the pitch wrong check it */
+#define SIZE_X 2048
+#define SIZE_Y 2048
+
 static struct drm_mode_modeinfo mode = {
 	.name = "Test mode",
 	.clock = 25200,
@@ -28,6 +33,7 @@ static struct drm_mode_modeinfo mode = {
 drmModeFBPtr createFB(int fd, drmModeResPtr res);
 int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out);
 drmModeCrtcPtr findFreeCrtc(int fd, drmModeResPtr res);
+void prettyColors(int fd, unsigned int handle);
 
 int main(int argc, char **argv)
 {
@@ -73,14 +79,26 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+	prettyColors(fd, framebuffer->handle);
 
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 0, &out[0]->output_id, 1, &mode);
+	printf("0 0\n");
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 0, &out[1]->output_id, 1, &mode);
 	sleep(2);
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 500, &out[0]->output_id, 1, &mode);
+
+	printf("0 100\n");
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 100, &out[1]->output_id, 1, &mode);
 	sleep(2);
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 500, 0, &out[0]->output_id, 1, &mode);
+
+	printf("100 0\n");
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 0, &out[1]->output_id, 1, &mode);
 	sleep(2);
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 500, 500, &out[0]->output_id, 1, &mode);
+
+	printf("100 100\n");
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 100, &out[1]->output_id, 1, &mode);
+	sleep(2);
+
+	/* turn the crtc off just in case */
+	drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, 0, 0, 0);
 
     drmModeFreeResources(res);
     printf("Ok\n");
@@ -90,8 +108,40 @@ int main(int argc, char **argv)
 
 drmModeFBPtr createFB(int fd, drmModeResPtr res)
 {
-	/* Haveing problems getting drmBOCreate to work with me. */
-	return drmModeGetFB(fd, res->fbs[1]);
+	drmModeFBPtr frame;
+	unsigned int fb = 0;
+	int ret = 0;
+	drmBO bo;
+
+	ret = drmBOCreate(fd, SIZE_X * SIZE_Y * 4, 0, 0,
+		DRM_BO_FLAG_READ |
+		DRM_BO_FLAG_WRITE |
+		DRM_BO_FLAG_MEM_TT |
+		DRM_BO_FLAG_MEM_VRAM |
+		DRM_BO_FLAG_NO_EVICT,
+		DRM_BO_HINT_DONT_FENCE, &bo);
+
+	if (ret)
+		goto err;
+
+	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, SIZE_X*4, &bo, &fb);
+
+	if (ret)
+		goto err_bo;
+
+	frame = drmModeGetFB(fd, fb);
+
+	if (!frame)
+		goto err_bo;
+
+	return frame;
+
+err_bo:
+	drmBOUnreference(fd, &bo);
+err:
+	printf("Something went wrong when creating a fb, using one of the predefined ones\n");
+
+	return drmModeGetFB(fd, res->fbs[0]);
 }
 
 int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out)
@@ -115,5 +165,37 @@ int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out)
 
 drmModeCrtcPtr findFreeCrtc(int fd, drmModeResPtr res)
 {
-	return drmModeGetCrtc(fd, res->crtcs[0]);
+	return drmModeGetCrtc(fd, res->crtcs[1]);
+}
+
+void draw(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int v, unsigned int *ptr)
+{
+	int i, j;
+
+	for (i = x; i < x + w; i++)
+		for(j = y; j < y + h; j++)
+			ptr[(i * SIZE_X) + j] = v;
+
+}
+
+void prettyColors(int fd, unsigned int handle)
+{
+	drmBO bo;
+	unsigned int *ptr;
+	int i, j;
+
+	drmBOReference(fd, handle, &bo);
+	drmBOMap(fd, &bo, DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0, (void**)&ptr);
+
+	for (i = 0; i < (SIZE_X*SIZE_Y); i++)
+		ptr[i] = 0xFFFFFFFF;
+
+	for (i = 0; i < 8; i++)
+		draw(i*40, i*40, 40, 40, 0, ptr);
+
+
+	draw(200, 100, 40, 40, 0xff00ff, ptr);
+	draw(100, 200, 40, 40, 0xff00ff, ptr);
+
+	drmBOUnmap(fd, &bo);
 }
