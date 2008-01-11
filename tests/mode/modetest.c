@@ -291,7 +291,7 @@ int testFrameBufferAdd(int fd, drmModeResPtr res)
 		goto err;
 
 	printf("\tAdding FB\n");
-	ret = drmModeAddFB(fd, 640, 480, 32, 8, 0, &bo, &fb);
+	ret = drmModeAddFB(fd, 800, 600, 32, 8, 0, &bo, &fb);
 	if (ret)
 		goto err_bo;
 
