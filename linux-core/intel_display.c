@@ -1083,6 +1083,7 @@ static const struct drm_crtc_funcs intel_crtc_funcs = {
 	.unlock = intel_crtc_unlock,
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
+	.mode_set_base = intel_pipe_set_base,
 	.gamma_set = intel_crtc_gamma_set,
 	.prepare = intel_crtc_prepare,
 	.commit = intel_crtc_commit,

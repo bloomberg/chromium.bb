@@ -325,6 +325,10 @@ struct drm_crtc_funcs {
 	/* Actually set the mode */
 	void (*mode_set)(struct drm_crtc *crtc, struct drm_display_mode *mode,
 			 struct drm_display_mode *adjusted_mode, int x, int y);
+
+	/* Move the crtc on the current fb to the given position *optional* */
+	void (*mode_set_base)(struct drm_crtc *crtc, int x, int y);
+
 	/* Set gamma on the CRTC */
 	void (*gamma_set)(struct drm_crtc *crtc, u16 r, u16 g, u16 b,
 			  int regno);

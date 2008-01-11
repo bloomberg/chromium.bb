@@ -9,9 +9,10 @@
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
-/* setting this to 2024 gets the pitch wrong check it */
 #define SIZE_X 2048
 #define SIZE_Y 2048
+/* Pitch needs to be power of two */
+#define PITCH 2048
 
 static struct drm_mode_modeinfo mode = {
 	.name = "Test mode",
@@ -82,19 +83,19 @@ int main(int argc, char **argv)
 	prettyColors(fd, framebuffer->handle);
 
 	printf("0 0\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 0, &out[1]->output_id, 1, &mode);
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 0, &out[0]->output_id, 1, &mode);
 	sleep(2);
 
 	printf("0 100\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 100, &out[1]->output_id, 1, &mode);
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 100, &out[0]->output_id, 1, &mode);
 	sleep(2);
 
 	printf("100 0\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 0, &out[1]->output_id, 1, &mode);
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 0, &out[0]->output_id, 1, &mode);
 	sleep(2);
 
 	printf("100 100\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 100, &out[1]->output_id, 1, &mode);
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 100, &out[0]->output_id, 1, &mode);
 	sleep(2);
 
 	/* turn the crtc off just in case */
@@ -124,7 +125,7 @@ drmModeFBPtr createFB(int fd, drmModeResPtr res)
 	if (ret)
 		goto err;
 
-	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, SIZE_X*4, &bo, &fb);
+	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, PITCH * 4, &bo, &fb);
 
 	if (ret)
 		goto err_bo;
@@ -165,7 +166,7 @@ int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out)
 
 drmModeCrtcPtr findFreeCrtc(int fd, drmModeResPtr res)
 {
-	return drmModeGetCrtc(fd, res->crtcs[1]);
+	return drmModeGetCrtc(fd, res->crtcs[0]);
 }
 
 void draw(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int v, unsigned int *ptr)
@@ -174,7 +175,7 @@ void draw(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsign
 
 	for (i = x; i < x + w; i++)
 		for(j = y; j < y + h; j++)
-			ptr[(i * SIZE_X) + j] = v;
+			ptr[(i * PITCH) + j] = v;
 
 }
 
@@ -182,7 +183,7 @@ void prettyColors(int fd, unsigned int handle)
 {
 	drmBO bo;
 	unsigned int *ptr;
-	int i, j;
+	int i;
 
 	drmBOReference(fd, handle, &bo);
 	drmBOMap(fd, &bo, DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0, (void**)&ptr);
@@ -191,7 +192,7 @@ void prettyColors(int fd, unsigned int handle)
 		ptr[i] = 0xFFFFFFFF;
 
 	for (i = 0; i < 8; i++)
-		draw(i*40, i*40, 40, 40, 0, ptr);
+		draw(i * 40, i * 40, 40, 40, 0, ptr);
 
 
 	draw(200, 100, 40, 40, 0xff00ff, ptr);

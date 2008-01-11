@@ -1048,6 +1048,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	struct drm_crtc **save_crtcs, *new_crtc;
 	bool save_enabled = crtc->enabled;
 	bool changed = false;
+	bool flip_or_move = false;
 	struct drm_output *output;
 	int count = 0, ro;
 
@@ -1055,11 +1056,13 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	if (!save_crtcs)
 		return -ENOMEM;
 
+	/* We should be able to check here if the fb has the same properties
+	 * and then just flip_or_move it */
 	if (crtc->fb != fb)
 		changed = true;
 
 	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
-		changed = true;
+		flip_or_move = true;
 
 	if (new_mode && !drm_mode_equal(new_mode, &crtc->mode))
 		changed = true;
@@ -1082,6 +1085,10 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 		}
 	}
 
+	/* mode_set_base is not a required function */
+	if (flip_or_move && !crtc->funcs->mode_set_base)
+		changed = true;
+
 	if (changed) {
 		crtc->fb = fb;
 		crtc->enabled = (new_mode != NULL);
@@ -1102,7 +1109,10 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 			crtc->desired_mode = new_mode;
 		}
 		drm_disable_unused_functions(dev);
+	} else if (flip_or_move) {
+		crtc->funcs->mode_set_base(crtc, crtc_info->x, crtc_info->y);
 	}
+
 	kfree(save_crtcs);
 	return 0;
 }
@@ -1564,6 +1574,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 
 	if (crtc_req->count_outputs > 0) {
 		u32 out_id;
+		/* Maybe we should check that count_outputs is a sensible value. */
 		output_set = kmalloc(crtc_req->count_outputs *
 				     sizeof(struct drm_output *), GFP_KERNEL);
 		if (!output_set) {
@@ -1589,6 +1600,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		}
 	}
 
+	/* What happens to output_set, leak? */
 	ret = drm_crtc_set_config(crtc, crtc_req, mode, output_set, fb);
 
 out:
