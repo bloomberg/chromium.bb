@@ -255,8 +255,8 @@ int radeon_ms_connectors_from_properties(struct drm_device *dev)
 				return -ENOMEM;
 			}
 			output = drm_output_create(dev,
-					&radeon_ms_output_funcs,
-					connector->name);
+						   &radeon_ms_output_funcs,
+						   connector->type);
 			if (output == NULL) {
 				radeon_ms_connectors_destroy(dev);
 				return -EINVAL;

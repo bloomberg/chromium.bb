@@ -143,10 +143,25 @@ static int radeon_ms_combios_connector_add(struct drm_device *dev,
 	connector->type = connector_type;
 	connector->i2c_reg = i2c_reg;
 
+	switch (connector->type) {
+	case ConnectorVGA:
+		sprintf(connector->name, "VGA");
+		break;
+	case ConnectorDVII:
+		sprintf(connector->name, "DVI-I");
+		break;
+	case ConnectorDVID:
+		sprintf(connector->name, "DVI-D");
+		break;
+	default:
+		sprintf(connector->name, "UNKNOWN-CONNECTOR");
+		break;
+	}
+
 	if (i2c_reg) {
 		connector->i2c = radeon_ms_i2c_create(dev,
 						      connector->i2c_reg,
-						      connector->type);
+						      connector->name);
 		if (connector->i2c == NULL) {
 			radeon_ms_connectors_destroy(dev);
 			return -ENOMEM;

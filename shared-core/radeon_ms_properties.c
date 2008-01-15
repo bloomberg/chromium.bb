@@ -61,14 +61,16 @@ struct radeon_ms_connector radeon_ms_vga = {
 	NULL, NULL, NULL, ConnectorVGA, MT_NONE, 0, GPIO_DDC1,
 	{
 		0, -1, -1, -1, -1, -1, -1, -1
-	}
+	},
+	"VGA"
 };
 
 struct radeon_ms_connector radeon_ms_dvi_i_2 = {
 	NULL, NULL, NULL, ConnectorDVII, MT_NONE, 0, GPIO_DDC2,
 	{
 		1, -1, -1, -1, -1, -1, -1, -1
-	}
+	},
+	"DVI-I"
 };
 
 struct radeon_ms_properties properties[] = {
