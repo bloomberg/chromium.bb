@@ -19,6 +19,10 @@
 #define I915_IFPADDR    0x60
 #define I965_IFPADDR    0x70
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)
+#define upper_32_bits(_val) (((u64)(_val)) >> 32)
+#endif
+
 static struct _i9xx_private_compat {
 	void __iomem *flush_page;
 	int resource_valid;
