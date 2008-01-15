@@ -144,13 +144,13 @@ static int radeon_ms_combios_connector_add(struct drm_device *dev,
 	connector->i2c_reg = i2c_reg;
 
 	switch (connector->type) {
-	case ConnectorVGA:
+	case CONNECTOR_VGA:
 		sprintf(connector->name, "VGA");
 		break;
-	case ConnectorDVII:
+	case CONNECTOR_DVI_I:
 		sprintf(connector->name, "DVI-I");
 		break;
-	case ConnectorDVID:
+	case CONNECTOR_DVI_D:
 		sprintf(connector->name, "DVI-D");
 		break;
 	default:
@@ -279,7 +279,7 @@ int radeon_ms_connectors_from_combios(struct drm_device *dev)
 		switch (connector_type) {
 		case BIOS_CONNECTOR_TYPE__CRT:
 			ret = radeon_ms_combios_connector_add(dev, c,
-							      ConnectorVGA,
+							      CONNECTOR_VGA,
 							      i2c_reg);
 			if (ret) {
 				return ret;
@@ -288,7 +288,7 @@ int radeon_ms_connectors_from_combios(struct drm_device *dev)
 			break;
 		case BIOS_CONNECTOR_TYPE__DVI_I:
 			ret = radeon_ms_combios_connector_add(dev, c,
-							      ConnectorDVII,
+							      CONNECTOR_DVI_I,
 							      i2c_reg);
 			if (ret) {
 				return ret;
@@ -297,7 +297,7 @@ int radeon_ms_connectors_from_combios(struct drm_device *dev)
 			break;
 		case BIOS_CONNECTOR_TYPE__DVI_D:
 			ret = radeon_ms_combios_connector_add(dev, c,
-							      ConnectorDVID,
+							      CONNECTOR_DVI_D,
 							      i2c_reg);
 			if (ret) {
 				return ret;

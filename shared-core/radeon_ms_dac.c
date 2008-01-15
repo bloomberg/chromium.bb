@@ -370,7 +370,7 @@ int radeon_ms_dac2_mode_set(struct radeon_ms_output *output,
 	case CHIP_R430:
 	case CHIP_R480:
 		if (connector->type != CONNECTOR_CTV &&
-				connector->type != CONNECTOR_STV) {
+		    connector->type != CONNECTOR_STV) {
 			state->dac_cntl2 |= DAC_CNTL2__DAC2_CLK_SEL;
 		}
 	}
