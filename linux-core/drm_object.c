@@ -44,7 +44,7 @@ int drm_add_user_object(struct drm_file *priv, struct drm_user_object *item,
 	item->owner = priv;
 
 	ret = drm_ht_just_insert_please(&dev->object_hash, &item->hash,
-					(unsigned long)item, 32, 0, 0);
+					(unsigned long)item, 31, 0, 0);
 	if (ret)
 		return ret;
 
