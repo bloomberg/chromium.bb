@@ -1111,7 +1111,8 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
 	/* fence */
-	ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
+	ret = drm_fence_buffer_objects(dev, NULL, fence_arg->flags, 
+				       NULL, &fence);
 	if (ret)
 		goto out_err0;
 
