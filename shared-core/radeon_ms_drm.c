@@ -203,15 +203,35 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 		radeon_ms_driver_unload(dev);
 		return ret;
 	}
-	ret = radeon_ms_outputs_from_properties(dev);
-	if (ret != 0) {
+	ret = radeon_ms_outputs_from_rom(dev);
+	if (ret < 0) {
 		radeon_ms_driver_unload(dev);
 		return ret;
+	} else if (!ret) {
+		ret = radeon_ms_outputs_from_properties(dev);
+		if (ret < 0) {
+			radeon_ms_driver_unload(dev);
+			return ret;
+		} else if (ret == 0) {
+			DRM_INFO("[radeon_ms] no outputs !\n");
+		}
+	} else {
+		DRM_INFO("[radeon_ms] added %d outputs from rom.\n", ret);
 	}
-	ret = radeon_ms_connectors_from_properties(dev);
-	if (ret != 0) {
+	ret = radeon_ms_connectors_from_rom(dev);
+	if (ret < 0) {
 		radeon_ms_driver_unload(dev);
 		return ret;
+	} else if (!ret) {
+		ret = radeon_ms_connectors_from_properties(dev);
+		if (ret < 0) {
+			radeon_ms_driver_unload(dev);
+			return ret;
+		} else if (!ret) {
+			DRM_INFO("[radeon_ms] no connectors !\n");
+		}
+	} else {
+		DRM_INFO("[radeon_ms] added %d connectors from rom.\n", ret);
 	}
 	radeon_ms_outputs_save(dev, &dev_priv->load_state);
 	drm_initial_config(dev, false);

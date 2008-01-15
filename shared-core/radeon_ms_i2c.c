@@ -66,6 +66,22 @@ static int get_clock(void *data)
 			v = 0;
 		}
 		break;
+	case GPIO_MONID:
+		v = MMIO_R(GPIO_MONID);
+		if ((GPIO_MONID__GPIO_MONID_1_INPUT & v)) {
+			v = 1;
+		} else {
+			v = 0;
+		}
+		break;
+	case GPIO_CRT2_DDC:
+		v = MMIO_R(GPIO_CRT2_DDC);
+		if ((GPIO_CRT2_DDC__CRT2_DDC_CLK_INPUT & v)) {
+			v = 1;
+		} else {
+			v = 0;
+		}
+		break;
 	default:
 		v = 0;
 		break;
@@ -107,6 +123,22 @@ static int get_data(void *data)
 	case GPIO_DDC2:
 		v = MMIO_R(GPIO_DDC2);
 		if ((GPIO_DDC2__DDC2_DATA_INPUT & v)) {
+			v = 1;
+		} else {
+			v = 0;
+		}
+		break;
+	case GPIO_MONID:
+		v = MMIO_R(GPIO_MONID);
+		if ((GPIO_MONID__GPIO_MONID_0_INPUT & v)) {
+			v = 1;
+		} else {
+			v = 0;
+		}
+		break;
+	case GPIO_CRT2_DDC:
+		v = MMIO_R(GPIO_CRT2_DDC);
+		if ((GPIO_CRT2_DDC__CRT2_DDC_DATA_INPUT & v)) {
 			v = 1;
 		} else {
 			v = 0;
@@ -157,6 +189,18 @@ static void set_clock(void *i2c_priv, int clock)
 			v |= GPIO_DDC2__DDC2_CLK_OUT_EN;
 		}
 		break;
+	case GPIO_MONID:
+		v &= ~GPIO_MONID__GPIO_MONID_1_OUT_EN;
+		if (!clock) {
+			v |= GPIO_MONID__GPIO_MONID_1_OUT_EN;
+		}
+		break;
+	case GPIO_CRT2_DDC:
+		v &= ~GPIO_CRT2_DDC__CRT2_DDC_CLK_OUT_EN;
+		if (!clock) {
+			v |= GPIO_CRT2_DDC__CRT2_DDC_CLK_OUT_EN;
+		}
+		break;
 	default:
 		return;
 	}
@@ -199,6 +243,18 @@ static void set_data(void *i2c_priv, int data)
 		v &= ~GPIO_DDC2__DDC2_DATA_OUT_EN;
 		if (!data) {
 			v |= GPIO_DDC2__DDC2_DATA_OUT_EN;
+		}
+		break;
+	case GPIO_MONID:
+		v &= ~GPIO_MONID__GPIO_MONID_0_OUT_EN;
+		if (!data) {
+			v |= GPIO_MONID__GPIO_MONID_0_OUT_EN;
+		}
+		break;
+	case GPIO_CRT2_DDC:
+		v &= ~GPIO_CRT2_DDC__CRT2_DDC_DATA_OUT_EN;
+		if (!data) {
+			v |= GPIO_CRT2_DDC__CRT2_DDC_DATA_OUT_EN;
 		}
 		break;
 	default:
@@ -251,11 +307,12 @@ struct radeon_ms_i2c *radeon_ms_i2c_create(struct drm_device *dev,
 
 	ret = i2c_bit_add_bus(&i2c->adapter);
 	if(ret) {
-		DRM_INFO("[radeon_ms] failed to register I2C '%s' bus\n",
-			 i2c->adapter.name);
+		DRM_INFO("[radeon_ms] failed to register I2C '%s' bus (0x%X)\n",
+			 i2c->adapter.name, reg);
 		goto out_free;
 	}
-	DRM_INFO("[radeon_ms] registered I2C '%s' bus\n", i2c->adapter.name);
+	DRM_INFO("[radeon_ms] registered I2C '%s' bus (0x%X)\n",
+		 i2c->adapter.name, reg);
 	return i2c;
 
 out_free:

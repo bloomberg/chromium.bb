@@ -29,87 +29,6 @@
 #include "drm.h"
 #include "radeon_ms.h"
 
-static struct radeon_ms_output radeon_ms_dac1 = {
-	OUTPUT_DAC1,
-	NULL,
-	NULL,
-	radeon_ms_dac1_initialize,
-	radeon_ms_dac1_detect,
-	radeon_ms_dac1_dpms,
-	radeon_ms_dac1_get_modes,
-	radeon_ms_dac1_mode_fixup,
-	radeon_ms_dac1_mode_set,
-	radeon_ms_dac1_restore,
-	radeon_ms_dac1_save
-};
-
-static struct radeon_ms_output radeon_ms_dac2 = {
-	OUTPUT_DAC2,
-	NULL,
-	NULL,
-	radeon_ms_dac2_initialize,
-	radeon_ms_dac2_detect,
-	radeon_ms_dac2_dpms,
-	radeon_ms_dac2_get_modes,
-	radeon_ms_dac2_mode_fixup,
-	radeon_ms_dac2_mode_set,
-	radeon_ms_dac2_restore,
-	radeon_ms_dac2_save
-};
-
-static struct radeon_ms_connector radeon_ms_vga = {
-	NULL, NULL, NULL, CONNECTOR_VGA, MT_NONE, 0, GPIO_DDC1,
-	{
-		0, -1, -1, -1, -1, -1, -1, -1
-	},
-	"VGA"
-};
-
-static struct radeon_ms_connector radeon_ms_dvi_i_2 = {
-	NULL, NULL, NULL, CONNECTOR_DVI_I, MT_NONE, 0, GPIO_DDC2,
-	{
-		1, -1, -1, -1, -1, -1, -1, -1
-	},
-	"DVI-I"
-};
-
-static struct radeon_ms_properties properties[] = {
-	/* default only one VGA connector */
-	{
-		0, 0, 27000, 25000, 200000, 1, 1, 1, 1,
-		{
-			&radeon_ms_dac1, NULL, NULL, NULL, NULL, NULL, NULL,
-			NULL
-		},
-		{
-			&radeon_ms_vga, NULL, NULL, NULL, NULL, NULL, NULL,
-			NULL
-		}
-	},
-	{
-		0x1043, 0x176, 27000, 25000, 200000, 1, 1, 1, 1,
-		{
-			&radeon_ms_dac1, &radeon_ms_dac2, NULL, NULL, NULL,
-			NULL, NULL, NULL
-		},
-		{
-			&radeon_ms_vga, &radeon_ms_dvi_i_2, NULL, NULL, NULL,
-			NULL, NULL, NULL
-		}
-	},
-	{
-		0x1002, 0x4150, 27000, 25000, 200000, 1, 1, 1, 1,
-		{
-			&radeon_ms_dac1, &radeon_ms_dac2, NULL, NULL, NULL,
-			NULL, NULL, NULL
-		},
-		{
-			&radeon_ms_vga, &radeon_ms_dvi_i_2, NULL, NULL, NULL,
-			NULL, NULL, NULL
-		}
-	},
-};
-
 extern const uint32_t radeon_cp_microcode[];
 extern const uint32_t r200_cp_microcode[];
 extern const uint32_t r300_cp_microcode[];
@@ -159,7 +78,7 @@ static void r300_flush_cache(struct drm_device *dev)
 int radeon_ms_family_init(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	int i;
+	int ret;
 
 	dev_priv->microcode = radeon_cp_microcode;
 	dev_priv->irq_emit = radeon_ms_irq_emit;
@@ -213,17 +132,10 @@ int radeon_ms_family_init(struct drm_device *dev)
 		DRM_ERROR("Unknown radeon bus type, aborting\n");
 		return -EINVAL;
 	}
-	dev_priv->properties = NULL;
-	for (i = 1; i < sizeof(properties)/sizeof(properties[0]); i++) {
-		if (dev->pdev->subsystem_vendor == properties[i].subvendor &&
-		    dev->pdev->subsystem_device == properties[i].subdevice) {
-		    DRM_INFO("[radeon_ms] found properties for 0x%04X:0x%04X\n",
-		    	     properties[i].subvendor, properties[i].subdevice);
-		    dev_priv->properties = &properties[i];
-		}
+	ret = radeon_ms_rom_init(dev);
+	if (ret) {
+		return ret;
 	}
-	if (dev_priv->properties == NULL) {
-		dev_priv->properties = &properties[0];
-	}
-	return 0;
+	ret = radeon_ms_properties_init(dev);
+	return ret;
 }

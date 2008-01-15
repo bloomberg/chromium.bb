@@ -33,6 +33,8 @@
 #include "radeon_ms_drv.h"
 #include "radeon_ms_reg.h"
 #include "radeon_ms_drm.h"
+#include "radeon_ms_rom.h"
+#include "radeon_ms_properties.h"
 
 #define DRIVER_AUTHOR      "Jerome Glisse, Dave Airlie,  Gareth Hughes, "\
 			   "Keith Whitwell, others."
@@ -42,10 +44,6 @@
 #define DRIVER_MAJOR        1
 #define DRIVER_MINOR        0
 #define DRIVER_PATCHLEVEL   0
-
-#define RADEON_PAGE_SIZE        4096
-#define RADEON_MAX_CONNECTORS   8
-#define RADEON_MAX_OUTPUTS      8
 
 enum radeon_bus_type {
 	RADEON_PCI = 0x10000,
@@ -152,20 +150,6 @@ struct radeon_ms_output {
 			struct radeon_state *state);
 	void (*save)(struct radeon_ms_output *output,
 			struct radeon_state *state);
-};
-
-struct radeon_ms_properties {
-	uint16_t                    subvendor;
-	uint16_t                    subdevice;
-	int16_t                     pll_reference_freq;
-	int32_t                     pll_min_pll_freq;
-	int32_t                     pll_max_pll_freq;
-	char                        pll_use_bios;
-	char                        pll_dummy_reads;
-	char                        pll_delay;
-	char                        pll_r300_errata;
-	struct radeon_ms_output     *outputs[RADEON_MAX_OUTPUTS];
-	struct radeon_ms_connector  *connectors[RADEON_MAX_CONNECTORS];
 };
 
 struct radeon_state {
@@ -310,7 +294,6 @@ struct drm_radeon_private {
 	/* card family */
 	uint32_t                    usec_timeout;
 	uint32_t                    family;
-	struct radeon_ms_properties *properties;
 	struct radeon_ms_output     *outputs[RADEON_MAX_OUTPUTS];
 	struct radeon_ms_connector  *connectors[RADEON_MAX_CONNECTORS];
 	/* drm map (MMIO, FB) */
@@ -342,6 +325,9 @@ struct drm_radeon_private {
 	uint8_t                     cp_ready;
 	uint8_t                     bus_ready;
 	uint8_t                     write_back;
+	/* abstract asic specific structures */
+	struct radeon_ms_rom        rom;
+	struct radeon_ms_properties properties;
 };
 
 
@@ -368,6 +354,11 @@ int radeon_ms_pcie_finish(struct drm_device *dev);
 int radeon_ms_pcie_init(struct drm_device *dev);
 void radeon_ms_pcie_restore(struct drm_device *dev, struct radeon_state *state);
 void radeon_ms_pcie_save(struct drm_device *dev, struct radeon_state *state);
+
+/* radeon_ms_combios.c */
+int radeon_ms_combios_get_properties(struct drm_device *dev);
+int radeon_ms_connectors_from_combios(struct drm_device *dev);
+int radeon_ms_outputs_from_combios(struct drm_device *dev);
 
 /* radeon_ms_compat.c */
 long radeon_ms_compat_ioctl(struct file *filp, unsigned int cmd,
@@ -475,11 +466,20 @@ void radeon_ms_irq_uninstall(struct drm_device * dev);
 /* radeon_ms_output.c */
 void radeon_ms_connectors_destroy(struct drm_device *dev);
 int radeon_ms_connectors_from_properties(struct drm_device *dev);
+int radeon_ms_connectors_from_rom(struct drm_device *dev);
 void radeon_ms_outputs_destroy(struct drm_device *dev);
 int radeon_ms_outputs_from_properties(struct drm_device *dev);
+int radeon_ms_outputs_from_rom(struct drm_device *dev);
 void radeon_ms_outputs_restore(struct drm_device *dev,
 		struct radeon_state *state);
 void radeon_ms_outputs_save(struct drm_device *dev, struct radeon_state *state);
+
+/* radeon_ms_properties.c */
+int radeon_ms_properties_init(struct drm_device *dev);
+
+/* radeon_ms_rom.c */
+int radeon_ms_rom_get_properties(struct drm_device *dev);
+int radeon_ms_rom_init(struct drm_device *dev);
 
 /* radeon_ms_state.c */
 void radeon_ms_state_save(struct drm_device *dev, struct radeon_state *state);
@@ -545,7 +545,7 @@ static __inline__ void pll_index_errata(struct drm_radeon_private *dev_priv)
 	/* This workaround is necessary on rv200 and RS200 or PLL
 	 * reads may return garbage (among others...)
 	 */
-	if (dev_priv->properties->pll_dummy_reads) {
+	if (dev_priv->properties.pll_dummy_reads) {
 		tmp = MMIO_R(CLOCK_CNTL_DATA);
 		tmp = MMIO_R(CRTC_GEN_CNTL);
 	}
@@ -554,7 +554,7 @@ static __inline__ void pll_index_errata(struct drm_radeon_private *dev_priv)
 	 * CLOCK_CNTL_INDEX register access.  If not, register reads afterward
 	 * may not be correct.
 	 */
-	if (dev_priv->properties->pll_r300_errata) {
+	if (dev_priv->properties.pll_r300_errata) {
 		tmp = save = MMIO_R(CLOCK_CNTL_INDEX);
 		tmp = tmp & ~CLOCK_CNTL_INDEX__PLL_ADDR__MASK;
 		tmp = tmp & ~CLOCK_CNTL_INDEX__PLL_WR_EN;
@@ -569,7 +569,7 @@ static __inline__ void pll_data_errata(struct drm_radeon_private *dev_priv)
 	/* This workarounds is necessary on RV100, RS100 and RS200 chips
 	 * or the chip could hang on a subsequent access
 	 */
-	if (dev_priv->properties->pll_delay) {
+	if (dev_priv->properties.pll_delay) {
 		/* we can't deal with posted writes here ... */
 		udelay(5000);
 	}

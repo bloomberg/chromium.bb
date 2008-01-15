@@ -189,7 +189,7 @@ static void radeon_ms_output_cleanup(struct drm_output *output)
 	output->driver_private = NULL;
 }
 
-static const struct drm_output_funcs radeon_ms_output_funcs = {
+const struct drm_output_funcs radeon_ms_output_funcs = {
 	.dpms = radeon_ms_output_dpms,
 	.save = NULL,
 	.restore = NULL,
@@ -233,11 +233,11 @@ int radeon_ms_connectors_from_properties(struct drm_device *dev)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_ms_connector *connector = NULL;
 	struct drm_output *output = NULL;
-	int i = 0;
+	int i = 0, c = 0;
 
 	radeon_ms_connectors_destroy(dev);
 	for (i = 0; i < RADEON_MAX_CONNECTORS; i++) {
-		if (dev_priv->properties->connectors[i]) {
+		if (dev_priv->properties.connectors[i]) {
 			connector =
 				drm_alloc(sizeof(struct radeon_ms_connector),
 						DRM_MEM_DRIVER);
@@ -245,11 +245,11 @@ int radeon_ms_connectors_from_properties(struct drm_device *dev)
 				radeon_ms_connectors_destroy(dev);
 				return -ENOMEM;
 			}
-			memcpy(connector,
-					dev_priv->properties->connectors[i],
-					sizeof(struct radeon_ms_connector));
-			connector->i2c = radeon_ms_i2c_create(dev,
-					connector->i2c_reg, connector->name);
+			memcpy(connector, dev_priv->properties.connectors[i],
+			       sizeof(struct radeon_ms_connector));
+			connector->i2c =
+				radeon_ms_i2c_create(dev, connector->i2c_reg,
+						     connector->name);
 			if (connector->i2c == NULL) {
 				radeon_ms_connectors_destroy(dev);
 				return -ENOMEM;
@@ -264,8 +264,19 @@ int radeon_ms_connectors_from_properties(struct drm_device *dev)
 			connector->output = output;
 			output->driver_private = connector;
 			output->possible_crtcs = 0x3;
-			dev_priv->connectors[i] = connector;
+			dev_priv->connectors[c++] = connector;
 		}
+	}
+	return c;
+}
+
+int radeon_ms_connectors_from_rom(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+
+	switch (dev_priv->rom.type) {
+	case ROM_COMBIOS:
+		return radeon_ms_connectors_from_combios(dev);
 	}
 	return 0;
 }
@@ -289,23 +300,36 @@ int radeon_ms_outputs_from_properties(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	int i = 0;
+	int c = 0;
 
 	radeon_ms_outputs_destroy(dev);
 	for (i = 0; i < RADEON_MAX_OUTPUTS; i++) {
-		if (dev_priv->properties->outputs[i]) {
+		if (dev_priv->properties.outputs[i]) {
 			dev_priv->outputs[i] =
 				drm_alloc(sizeof(struct radeon_ms_output),
-						DRM_MEM_DRIVER);
+					  DRM_MEM_DRIVER);
 			if (dev_priv->outputs[i] == NULL) {
 				radeon_ms_outputs_destroy(dev);
 				return -ENOMEM;
 			}
 			memcpy(dev_priv->outputs[i],
-					dev_priv->properties->outputs[i],
-					sizeof(struct radeon_ms_output));
+			       dev_priv->properties.outputs[i],
+			       sizeof(struct radeon_ms_output));
 			dev_priv->outputs[i]->dev = dev;
 			dev_priv->outputs[i]->initialize(dev_priv->outputs[i]);
+			c++;
 		}
+	}
+	return c;
+}
+
+int radeon_ms_outputs_from_rom(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+
+	switch (dev_priv->rom.type) {
+	case ROM_COMBIOS:
+		return radeon_ms_outputs_from_combios(dev);
 	}
 	return 0;
 }

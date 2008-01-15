@@ -380,23 +380,26 @@ static void radeon_ms_crtc_mode_prepare(struct drm_crtc *crtc)
 }
 
 /* compute PLL registers values for requested video mode */
-static int radeon_pll1_constraint(int clock, int rdiv,
+static int radeon_pll1_constraint(struct drm_device *dev,
+				  int clock, int rdiv,
                                   int fdiv, int pdiv,
                                   int rfrq, int pfrq)
 {
-    int dfrq;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	int dfrq;
 
-    if (rdiv < 2 || fdiv < 4) {
-        return 0;
-    }
-    dfrq = rfrq / rdiv;
-    if (dfrq < 2000 || dfrq > 3300) {
-        return 0;
-    }
-    if (pfrq < 125000 || pfrq > 250000) {
-        return 0;
-    }
-    return 1;
+	if (rdiv < 2 || fdiv < 4) {
+		return 0;
+	}
+	dfrq = rfrq / rdiv;
+	if (dfrq < 2000 || dfrq > 3300) {
+		return 0;
+	}
+	if (pfrq < dev_priv->properties.pll_min_pll_freq ||
+	    pfrq > dev_priv->properties.pll_max_pll_freq) {
+		return 0;
+	}
+	return 1;
 }
 
 static void radeon_pll1_compute(struct drm_crtc *crtc,
@@ -424,7 +427,7 @@ static void radeon_pll1_compute(struct drm_crtc *crtc,
 	struct drm_radeon_private *dev_priv = crtc->dev->dev_private;
 	struct radeon_state *state = &dev_priv->driver_state;
 	int clock = mode->clock;
-	int rfrq = dev_priv->properties->pll_reference_freq;
+	int rfrq = dev_priv->properties.pll_reference_freq;
 	int pdiv = 1;
 	int pdiv_id = 0;
 	int rdiv_best = 2;
@@ -441,11 +444,11 @@ static void radeon_pll1_compute(struct drm_crtc *crtc,
 	int diff_cpfrq = 350000;
 
 	/* clamp frequency into pll [min; max] frequency range */
-	if (clock > dev_priv->properties->pll_max_pll_freq) {
-		clock = dev_priv->properties->pll_max_pll_freq;
+	if (clock > dev_priv->properties.pll_max_pll_freq) {
+		clock = dev_priv->properties.pll_max_pll_freq;
 	}
-	if ((clock * 12) < dev_priv->properties->pll_min_pll_freq) {
-		clock = dev_priv->properties->pll_min_pll_freq / 12;
+	if ((clock * 12) < dev_priv->properties.pll_min_pll_freq) {
+		clock = dev_priv->properties.pll_min_pll_freq / 12;
 	}
 
 	/* maximize pll_ref_div while staying in boundary and minimizing
@@ -457,8 +460,8 @@ static void radeon_pll1_compute(struct drm_crtc *crtc,
 		tfrq = clock * post_div->divider;
 		for (fdiv = 1023; fdiv >= 4; fdiv--) {
 			rdiv = (fdiv * rfrq) / tfrq;
-			if (radeon_pll1_constraint(clock, rdiv, fdiv,
-						pdiv, rfrq, tfrq)) {
+			if (radeon_pll1_constraint(crtc->dev, clock, rdiv,
+						   fdiv, pdiv, rfrq, tfrq)) {
 				pfrq = (fdiv * rfrq) / rdiv;
 				diff_cpfrq = pfrq - tfrq;
 				if ((diff_cpfrq >= 0 &&
