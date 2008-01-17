@@ -326,7 +326,12 @@ static void *agp_remap(unsigned long offset, unsigned long size,
 	return NULL;
 }
 #endif				/* agp */
-
+#else
+static void *agp_remap(unsigned long offset, unsigned long size,
+		       struct drm_device * dev)
+{
+	return NULL;
+}
 #endif				/* debug_memory */
 
 void drm_core_ioremap(struct drm_map *map, struct drm_device *dev)
