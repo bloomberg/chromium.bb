@@ -1001,8 +1001,10 @@ extern int drm_unbind_agp(DRM_AGP_MEM * handle);
 extern void drm_free_memctl(size_t size);
 extern int drm_alloc_memctl(size_t size);
 extern void drm_query_memctl(uint64_t *cur_used,
+			     uint64_t *emer_used,
 			     uint64_t *low_threshold,
-			     uint64_t *high_threshold);
+			     uint64_t *high_threshold,
+			     uint64_t *emer_threshold);
 extern void drm_init_memctl(size_t low_threshold,
 			    size_t high_threshold,
 			    size_t unit_size);

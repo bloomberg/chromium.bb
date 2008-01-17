@@ -445,9 +445,10 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 	struct drm_buffer_manager *bm = &dev->bm;
 	struct drm_fence_manager *fm = &dev->fm;
 	uint64_t used_mem;
+	uint64_t used_emer;
 	uint64_t low_mem;
 	uint64_t high_mem;
-
+	uint64_t emer_mem;
 
 	if (offset > DRM_PROC_LIMIT) {
 		*eof = 1;
@@ -476,7 +477,7 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 		DRM_PROC_PRINT("Buffer objects are not supported by this driver.\n");
 	}
 
-	drm_query_memctl(&used_mem, &low_mem, &high_mem);
+	drm_query_memctl(&used_mem, &used_emer, &low_mem, &high_mem, &emer_mem);
 
 	if (used_mem > 16*PAGE_SIZE) {
 		DRM_PROC_PRINT("Used object memory is %lu pages.\n",
@@ -485,10 +486,19 @@ static int drm__objects_info(char *buf, char **start, off_t offset, int request,
 		DRM_PROC_PRINT("Used object memory is %lu bytes.\n",
 			       (unsigned long) used_mem);
 	}
+	if (used_emer > 16*PAGE_SIZE) {
+		DRM_PROC_PRINT("Used emergency memory is %lu pages.\n",
+			       (unsigned long) (used_emer >> PAGE_SHIFT));
+	} else {
+		DRM_PROC_PRINT("Used emergency memory is %lu bytes.\n\n",
+			       (unsigned long) used_emer);
+	}
 	DRM_PROC_PRINT("Soft object memory usage threshold is %lu pages.\n",
 		       (unsigned long) (low_mem >> PAGE_SHIFT));
 	DRM_PROC_PRINT("Hard object memory usage threshold is %lu pages.\n",
 		       (unsigned long) (high_mem >> PAGE_SHIFT));
+	DRM_PROC_PRINT("Emergency root only memory usage threshold is %lu pages.\n",
+		       (unsigned long) (emer_mem >> PAGE_SHIFT));
 
 	DRM_PROC_PRINT("\n");
 
