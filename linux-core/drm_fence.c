@@ -520,8 +520,10 @@ int drm_fence_object_create(struct drm_device *dev, uint32_t fence_class,
 	struct drm_fence_manager *fm = &dev->fm;
 
 	fence = drm_ctl_calloc(1, sizeof(*fence), DRM_MEM_FENCE);
-	if (!fence)
+	if (!fence) {
+		DRM_ERROR("Out of memory creating fence object\n");
 		return -ENOMEM;
+	}
 	ret = drm_fence_object_init(dev, fence_class, type, flags, fence);
 	if (ret) {
 		drm_fence_usage_deref_unlocked(&fence);
