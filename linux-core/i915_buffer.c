@@ -286,7 +286,18 @@ void i915_flush_ttm(struct drm_ttm *ttm)
 		return;
 
 	DRM_MEMORYBARRIER();
+
+#ifdef CONFIG_X86_32
+	/* Hopefully nobody has built an x86-64 processor without clflush */
+	if (!cpu_has_clflush) {
+		wbinvd();
+		DRM_MEMORYBARRIER();
+		return;
+	}
+#endif
+
 	for (i = ttm->num_pages - 1; i >= 0; i--)
 		drm_cache_flush_page(drm_ttm_get_page(ttm, i));
+
 	DRM_MEMORYBARRIER();
 }
