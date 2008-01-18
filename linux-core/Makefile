@@ -287,7 +287,7 @@ CONFIG_DRM_MACH64 := n
 CONFIG_DRM_NV := n
 CONFIG_DRM_NOUVEAU := n
 CONFIG_DRM_XGI := n
-CONFIG_DRM_RADEON_MS := m
+CONFIG_DRM_RADEON_MS := n
 
 # Enable module builds for the modules requested/supported.
 
@@ -326,6 +326,9 @@ CONFIG_DRM_NOUVEAU := m
 endif
 ifneq (,$(findstring xgi,$(DRM_MODULES)))
 CONFIG_DRM_XGI := m
+endif
+ifneq (,$(findstring radeon_ms,$(DRM_MODULES)))
+CONFIG_DRM_RADEON_MS := m
 endif
 
 # These require AGP support
