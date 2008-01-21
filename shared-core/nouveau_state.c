@@ -498,7 +498,10 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 	iounmap(regs);
 
-	if (architecture >= 0x50) {
+	if (architecture >= 0x60) {
+		/* FIXME we need to figure out who's who for NV6x */
+		dev_priv->card_type = NV_44;
+	} else if (architecture >= 0x50) {
 		dev_priv->card_type = NV_50;
 	} else if (architecture >= 0x40) {
 		uint8_t subarch = architecture & 0xf;
