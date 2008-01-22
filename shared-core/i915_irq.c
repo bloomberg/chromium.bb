@@ -455,25 +455,12 @@ static int i915_driver_vblank_do_wait(struct drm_device *dev,
 
 int i915_driver_vblank_wait(struct drm_device *dev, unsigned int *sequence)
 {
-	atomic_t *counter;
-
-	if (i915_get_pipe(dev, 0) == 0)
-		counter = &dev->vbl_received;
-	else
-		counter = &dev->vbl_received2;
-	return i915_driver_vblank_do_wait(dev, sequence, counter);
+	return i915_driver_vblank_do_wait(dev, sequence, &dev->vbl_received);
 }
 
 int i915_driver_vblank_wait2(struct drm_device *dev, unsigned int *sequence)
 {
-	atomic_t *counter;
-
-	if (i915_get_pipe(dev, 1) == 0)
-		counter = &dev->vbl_received;
-	else
-		counter = &dev->vbl_received2;
-
-	return i915_driver_vblank_do_wait(dev, sequence, counter);
+	return i915_driver_vblank_do_wait(dev, sequence, &dev->vbl_received2);
 }
 
 /* Needs the lock as it touches the ring.
