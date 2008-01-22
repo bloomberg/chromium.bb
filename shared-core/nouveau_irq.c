@@ -70,6 +70,7 @@ static void
 nouveau_fifo_irq_handler(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	uint32_t status;
 
 	while ((status = NV_READ(NV03_PFIFO_INTR_0))) {
@@ -77,14 +78,13 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 
 		NV_WRITE(NV03_PFIFO_CACHES, 0);
 
-		chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1) &
-				(nouveau_fifo_number(dev) - 1);
+		chid = engine->fifo.channel_id(dev);
 		get  = NV_READ(NV03_PFIFO_CACHE1_GET);
 
 		if (status & NV_PFIFO_INTR_CACHE_ERROR) {
 			uint32_t mthd, data;
 			int ptr;
-			
+
 			ptr = get >> 2;
 			if (dev_priv->card_type < NV_40) {
 				mthd = NV_READ(NV04_PFIFO_CACHE1_METHOD(ptr));
@@ -117,7 +117,7 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 		}
 
 		if (status) {
-			DRM_INFO("Unhandled PFIFO_INTR - 0x%8x\n", status);
+			DRM_INFO("Unhandled PFIFO_INTR - 0x%08x\n", status);
 			NV_WRITE(NV03_PFIFO_INTR_0, status);
 		}
 
@@ -192,6 +192,7 @@ static int
 nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	int channel;
 
 	if (dev_priv->card_type < NV_10) {
@@ -236,8 +237,7 @@ nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 		}
 	}
 
-	if (channel > nouveau_fifo_number(dev) ||
-	    dev_priv->fifos[channel] == NULL) {
+	if (channel > engine->fifo.channels || !dev_priv->fifos[channel]) {
 		DRM_ERROR("AIII, invalid/inactive channel id %d\n", channel);
 		return -EINVAL;
 	}
@@ -246,39 +246,53 @@ nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 	return 0;
 }
 
+struct nouveau_pgraph_trap {
+	int channel;
+	int class;
+	int subc, mthd, size;
+	uint32_t data, data2;
+};
+
 static void
-nouveau_graph_dump_trap_info(struct drm_device *dev, const char *id)
+nouveau_graph_trap_info(struct drm_device *dev,
+			struct nouveau_pgraph_trap *trap)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t address;
-	uint32_t channel, class;
-	uint32_t method, subc, data, data2;
+
+	if (nouveau_graph_trapped_channel(dev, &trap->channel))
+		trap->channel = -1;
+	address = NV_READ(NV04_PGRAPH_TRAPPED_ADDR);
+
+	trap->mthd = address & 0x1FFC;
+	trap->data = NV_READ(NV04_PGRAPH_TRAPPED_DATA);
+	if (dev_priv->card_type < NV_10) {
+		trap->subc  = (address >> 13) & 0x7;
+	} else {
+		trap->subc  = (address >> 16) & 0x7;
+		trap->data2 = NV_READ(NV10_PGRAPH_TRAPPED_DATA_HIGH);
+	}
+
+	if (dev_priv->card_type < NV_10) {
+		trap->class = NV_READ(0x400180 + trap->subc*4) & 0xFF;
+	} else if (dev_priv->card_type < NV_40) {
+		trap->class = NV_READ(0x400160 + trap->subc*4) & 0xFFF;
+	} else if (dev_priv->card_type < NV_50) {
+		trap->class = NV_READ(0x400160 + trap->subc*4) & 0xFFFF;
+	} else {
+		trap->class = NV_READ(0x400814);
+	}
+}
+
+static void
+nouveau_graph_dump_trap_info(struct drm_device *dev, const char *id,
+			     struct nouveau_pgraph_trap *trap)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t nsource, nstatus;
 
-	if (nouveau_graph_trapped_channel(dev, &channel))
-		channel = -1;
-
-	data    = NV_READ(NV04_PGRAPH_TRAPPED_DATA);
-	address = NV_READ(NV04_PGRAPH_TRAPPED_ADDR);
-	method  = address & 0x1FFC;
-	if (dev_priv->card_type < NV_10) {
-		subc = (address >> 13) & 0x7;
-		data2= 0;
-	} else {
-		subc = (address >> 16) & 0x7;
-		data2= NV_READ(NV10_PGRAPH_TRAPPED_DATA_HIGH);
-	}
 	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
 	nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
-	if (dev_priv->card_type < NV_10) {
-		class = NV_READ(0x400180 + subc*4) & 0xFF;
-	} else if (dev_priv->card_type < NV_40) {
-		class = NV_READ(0x400160 + subc*4) & 0xFFF;
-	} else if (dev_priv->card_type < NV_50) {
-		class = NV_READ(0x400160 + subc*4) & 0xFFFF;
-	} else {
-		class = NV_READ(0x400814);
-	}
 
 	DRM_INFO("%s - nSource:", id);
 	nouveau_print_bitfield_names(nsource, nouveau_nsource_names,
@@ -293,54 +307,70 @@ nouveau_graph_dump_trap_info(struct drm_device *dev, const char *id)
 	printk("\n");
 
 	DRM_INFO("%s - Ch %d/%d Class 0x%04x Mthd 0x%04x Data 0x%08x:0x%08x\n",
-		 id, channel, subc, class, method, data2, data);
+		 id, trap->channel, trap->subc, trap->class, trap->mthd,
+		 trap->data2, trap->data);
 }
 
 static inline void
 nouveau_pgraph_intr_notify(struct drm_device *dev, uint32_t nsource)
 {
-	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	int handled = 0;
+	struct nouveau_pgraph_trap trap;
+	int unhandled = 0;
 
-	DRM_DEBUG("PGRAPH notify interrupt\n");
-	if (dev_priv->card_type == NV_04 &&
-	    (nsource & NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD)) {
-		uint32_t class, mthd;
+	nouveau_graph_trap_info(dev, &trap);
 
+	if (nsource & NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD) {
 		/* NV4 (nvidia TNT 1) reports software methods with
 		 * PGRAPH NOTIFY ILLEGAL_MTHD
 		 */
-		mthd = NV_READ(NV04_PGRAPH_TRAPPED_ADDR) & 0x1FFC;
-		class = NV_READ(NV04_PGRAPH_CTX_SWITCH1) & 0xFFF;
 		DRM_DEBUG("Got NV04 software method method %x for class %#x\n",
-			  mthd, class);
+			  trap.mthd, trap.class);
 
-		if (nouveau_sw_method_execute(dev, class, mthd)) {
+		if (nouveau_sw_method_execute(dev, trap.class, trap.mthd)) {
 			DRM_ERROR("Unable to execute NV04 software method %x "
 				  "for object class %x. Please report.\n",
-				  mthd, class);
-		} else {
-			handled = 1;
+				  trap.mthd, trap.class);
+			unhandled = 1;
 		}
+	} else {
+		unhandled = 1;
 	}
 
-	if (!handled)
-		nouveau_graph_dump_trap_info(dev, "PGRAPH_NOTIFY");
+	if (unhandled)
+		nouveau_graph_dump_trap_info(dev, "PGRAPH_NOTIFY", &trap);
 }
 
 static inline void
 nouveau_pgraph_intr_error(struct drm_device *dev, uint32_t nsource)
 {
-	nouveau_graph_dump_trap_info(dev, "PGRAPH_ERROR");
+	struct nouveau_pgraph_trap trap;
+	int unhandled = 0;
+
+	nouveau_graph_trap_info(dev, &trap);
+
+	if (nsource & NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD) {
+		if (trap.channel >= 0 && trap.mthd == 0x0150) {
+			nouveau_fence_handler(dev, trap.channel);
+		} else
+		if (nouveau_sw_method_execute(dev, trap.class, trap.mthd)) {
+			unhandled = 1;
+		}
+	} else {
+		unhandled = 1;
+	}
+
+	if (unhandled)
+		nouveau_graph_dump_trap_info(dev, "PGRAPH_ERROR", &trap);
 }
 
 static inline void
 nouveau_pgraph_intr_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	uint32_t chid;
-	
-	chid = NV_READ(NV03_PFIFO_CACHE1_PUSH1) & (nouveau_fifo_number(dev)-1);
+
+	chid = engine->fifo.channel_id(dev);
 	DRM_DEBUG("PGRAPH context switch interrupt channel %x\n", chid);
 
 	switch(dev_priv->card_type) {
@@ -391,7 +421,7 @@ nouveau_pgraph_irq_handler(struct drm_device *dev)
 		}
 
 		if (status) {
-			DRM_INFO("Unhandled PGRAPH_INTR - 0x%8x\n", status);
+			DRM_INFO("Unhandled PGRAPH_INTR - 0x%08x\n", status);
 			NV_WRITE(NV03_PGRAPH_INTR, status);
 		}
 
@@ -447,4 +477,3 @@ nouveau_irq_handler(DRM_IRQ_ARGS)
 
 	return IRQ_HANDLED;
 }
-

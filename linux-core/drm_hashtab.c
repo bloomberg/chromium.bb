@@ -36,7 +36,7 @@
 #include "drm_hashtab.h"
 #include <linux/hash.h>
 
-int drm_ht_create(struct drm_open_hash * ht, unsigned int order)
+int drm_ht_create(struct drm_open_hash *ht, unsigned int order)
 {
 	unsigned int i;
 
@@ -63,7 +63,7 @@ int drm_ht_create(struct drm_open_hash * ht, unsigned int order)
 	return 0;
 }
 
-void drm_ht_verbose_list(struct drm_open_hash * ht, unsigned long key)
+void drm_ht_verbose_list(struct drm_open_hash *ht, unsigned long key)
 {
 	struct drm_hash_item *entry;
 	struct hlist_head *h_list;
@@ -80,7 +80,7 @@ void drm_ht_verbose_list(struct drm_open_hash * ht, unsigned long key)
 	}
 }
 
-static struct hlist_node *drm_ht_find_key(struct drm_open_hash * ht,
+static struct hlist_node *drm_ht_find_key(struct drm_open_hash *ht,
 					  unsigned long key)
 {
 	struct drm_hash_item *entry;
@@ -100,7 +100,7 @@ static struct hlist_node *drm_ht_find_key(struct drm_open_hash * ht,
 	return NULL;
 }
 
-int drm_ht_insert_item(struct drm_open_hash * ht, struct drm_hash_item * item)
+int drm_ht_insert_item(struct drm_open_hash *ht, struct drm_hash_item *item)
 {
 	struct drm_hash_item *entry;
 	struct hlist_head *h_list;
@@ -128,10 +128,11 @@ int drm_ht_insert_item(struct drm_open_hash * ht, struct drm_hash_item * item)
 }
 
 /*
- * Just insert an item and return any "bits" bit key that hasn't been 
+ * Just insert an item and return any "bits" bit key that hasn't been
  * used before.
  */
-int drm_ht_just_insert_please(struct drm_open_hash * ht, struct drm_hash_item * item,
+int drm_ht_just_insert_please(struct drm_open_hash *ht,
+			      struct drm_hash_item *item,
 			      unsigned long seed, int bits, int shift,
 			      unsigned long add)
 {
@@ -155,8 +156,8 @@ int drm_ht_just_insert_please(struct drm_open_hash * ht, struct drm_hash_item * 
 	return 0;
 }
 
-int drm_ht_find_item(struct drm_open_hash * ht, unsigned long key,
-		     struct drm_hash_item ** item)
+int drm_ht_find_item(struct drm_open_hash *ht, unsigned long key,
+		     struct drm_hash_item **item)
 {
 	struct hlist_node *list;
 
@@ -168,7 +169,7 @@ int drm_ht_find_item(struct drm_open_hash * ht, unsigned long key,
 	return 0;
 }
 
-int drm_ht_remove_key(struct drm_open_hash * ht, unsigned long key)
+int drm_ht_remove_key(struct drm_open_hash *ht, unsigned long key)
 {
 	struct hlist_node *list;
 
@@ -181,14 +182,14 @@ int drm_ht_remove_key(struct drm_open_hash * ht, unsigned long key)
 	return -EINVAL;
 }
 
-int drm_ht_remove_item(struct drm_open_hash * ht, struct drm_hash_item * item)
+int drm_ht_remove_item(struct drm_open_hash *ht, struct drm_hash_item *item)
 {
 	hlist_del_init(&item->head);
 	ht->fill--;
 	return 0;
 }
 
-void drm_ht_remove(struct drm_open_hash * ht)
+void drm_ht_remove(struct drm_open_hash *ht)
 {
 	if (ht->table) {
 		if (ht->use_vmalloc)

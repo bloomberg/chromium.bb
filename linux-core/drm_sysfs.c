@@ -89,8 +89,10 @@ struct class *drm_sysfs_create(struct module *owner, char *name)
 		goto err_out;
 	}
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
 	class->suspend = drm_sysfs_suspend;
 	class->resume = drm_sysfs_resume;
+#endif
 
 	err = class_create_file(class, &class_attr_version);
 	if (err)
@@ -160,12 +162,7 @@ int drm_sysfs_device_add(struct drm_device *dev, struct drm_head *head)
 	dev->dev.parent = &dev->pdev->dev;
 	dev->dev.class = drm_class;
 	dev->dev.release = drm_sysfs_device_release;
-	/*
-	 * This will actually add the major:minor file so that udev
-	 * will create the device node.  We don't want to do that just
-	 * yet...
-	 */
-	/* dev->dev.devt = head->device; */
+	dev->dev.devt = head->device;
 	snprintf(dev->dev.bus_id, BUS_ID_SIZE, "card%d", head->minor);
 
 	err = device_register(&dev->dev);

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2007 Matthieu CASTET <castet.matthieu@free.fr>
  * All Rights Reserved.
  *
@@ -692,6 +692,7 @@ int nv10_graph_save_context(struct nouveau_channel *chan)
 void nouveau_nv10_context_switch(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv;
+	struct nouveau_engine *engine;
 	struct nouveau_channel *next, *last;
 	int chid;
 
@@ -708,8 +709,10 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 		DRM_DEBUG("Invalid drm_nouveau_private->fifos\n");
 		return;
 	}
+	engine = &dev_priv->Engine;
 
-	chid = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 20)&(nouveau_fifo_number(dev)-1);
+	chid = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 20) &
+		(engine->fifo.channels - 1);
 	next = dev_priv->fifos[chid];
 
 	if (!next) {
@@ -717,7 +720,8 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 		return;
 	}
 
-	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
+	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & 
+		(engine->fifo.channels - 1);
 	last = dev_priv->fifos[chid];
 
 	if (!last) {
@@ -732,7 +736,7 @@ void nouveau_nv10_context_switch(struct drm_device *dev)
 	if (last) {
 		nouveau_wait_for_idle(dev);
 		nv10_graph_save_context(last);
-	}	
+	}
 
 	nouveau_wait_for_idle(dev);
 
@@ -827,13 +831,14 @@ void nv10_graph_destroy_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	struct graph_state* pgraph_ctx = chan->pgraph_ctx;
 	int chid;
 
 	drm_free(pgraph_ctx, sizeof(*pgraph_ctx), DRM_MEM_DRIVER);
 	chan->pgraph_ctx = NULL;
 
-	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (nouveau_fifo_number(dev)-1);
+	chid = (NV_READ(NV10_PGRAPH_CTX_USER) >> 24) & (engine->fifo.channels - 1);
 
 	/* This code seems to corrupt the 3D pipe, but blob seems to do similar things ????
 	 */
@@ -907,4 +912,3 @@ int nv10_graph_init(struct drm_device *dev) {
 void nv10_graph_takedown(struct drm_device *dev)
 {
 }
-

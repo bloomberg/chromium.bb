@@ -55,8 +55,8 @@ struct class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
-		       const struct pci_device_id *ent,
-		       struct drm_driver *driver)
+			   const struct pci_device_id *ent,
+			   struct drm_driver *driver)
 {
 	int retcode;
 
@@ -75,7 +75,7 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	mutex_init(&dev->bm.evict_mutex);
 
 	idr_init(&dev->drw_idr);
-	
+
 	dev->pdev = pdev;
 	dev->pci_device = pdev->device;
 	dev->pci_vendor = pdev->vendor;
@@ -84,6 +84,7 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	dev->hose = pdev->sysdata;
 #endif
 	dev->irq = pdev->irq;
+	dev->irq_enabled = 0;
 
 	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER)) {
 		return -ENOMEM;
@@ -111,10 +112,6 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 
 	dev->driver = driver;
 
-	if (dev->driver->load)
-		if ((retcode = dev->driver->load(dev, ent->driver_data)))
-			goto error_out_unreg;
-
 	if (drm_core_has_AGP(dev)) {
 		if (drm_device_is_agp(dev))
 			dev->agp = drm_agp_init(dev);
@@ -133,6 +130,11 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 					     1024 * 1024, MTRR_TYPE_WRCOMB, 1);
 		}
 	}
+
+	if (dev->driver->load)
+		if ((retcode = dev->driver->load(dev, ent->driver_data)))
+			goto error_out_unreg;
+
 
 	retcode = drm_ctxbitmap_init(dev);
 	if (retcode) {
@@ -217,7 +219,7 @@ err_g1:
  * Try and register, if we fail to register, backout previous work.
  */
 int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
-	      struct drm_driver *driver)
+		struct drm_driver *driver)
 {
 	struct drm_device *dev;
 	int ret;
@@ -317,7 +319,7 @@ int drm_put_head(struct drm_head * head)
 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
 	drm_sysfs_device_remove(head->dev);
 
-	*head = (struct drm_head){.dev = NULL};
+	*head = (struct drm_head) {.dev = NULL};
 
 	drm_heads[minor] = NULL;
 	return 0;

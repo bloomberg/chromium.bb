@@ -158,4 +158,3 @@ struct drm_nouveau_sarea {
 #define DRM_NOUVEAU_MEM_FREE           0x09
 
 #endif /* __NOUVEAU_DRM_H__ */
-

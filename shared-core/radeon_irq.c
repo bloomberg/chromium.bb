@@ -181,7 +181,7 @@ u32 radeon_get_vblank_counter(struct drm_device *dev, int crtc)
 	u32 crtc_cnt_reg, crtc_status_reg;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -209,7 +209,7 @@ int radeon_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_pr
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -231,7 +231,7 @@ int radeon_irq_wait(struct drm_device *dev, void *data, struct drm_file *file_pr
 	drm_radeon_irq_wait_t *irqwait = data;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 

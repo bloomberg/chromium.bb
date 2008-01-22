@@ -98,12 +98,14 @@ int drm_setunique(struct drm_device *dev, void *data,
 
 	dev->unique[dev->unique_len] = '\0';
 
-	dev->devname = drm_alloc(strlen(dev->driver->pci_driver.name) + strlen(dev->unique) + 2,
-				 DRM_MEM_DRIVER);
+	dev->devname =
+	    drm_alloc(strlen(dev->driver->pci_driver.name) +
+		      strlen(dev->unique) + 2, DRM_MEM_DRIVER);
 	if (!dev->devname)
 		return -ENOMEM;
 
-	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name, dev->unique);
+	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name,
+		dev->unique);
 
 	/* Return error if the busid submitted doesn't match the device's actual
 	 * busid.
@@ -142,12 +144,14 @@ static int drm_set_busid(struct drm_device * dev)
 	if (len > dev->unique_len)
 		DRM_ERROR("buffer overflow");
 
-	dev->devname = drm_alloc(strlen(dev->driver->pci_driver.name) + dev->unique_len + 2,
-				 DRM_MEM_DRIVER);
+	dev->devname =
+	    drm_alloc(strlen(dev->driver->pci_driver.name) + dev->unique_len +
+		      2, DRM_MEM_DRIVER);
 	if (dev->devname == NULL)
 		return -ENOMEM;
 
-	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name, dev->unique);
+	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name,
+		dev->unique);
 
 	return 0;
 }
@@ -264,7 +268,7 @@ int drm_getstats(struct drm_device *dev, void *data,
 	struct drm_stats *stats = data;
 	int i;
 
-	memset(stats, 0, sizeof(stats));
+	memset(stats, 0, sizeof(*stats));
 
 	mutex_lock(&dev->struct_mutex);
 

@@ -37,6 +37,15 @@
 #define NV10_RAMFC__SIZE ((dev_priv->chipset) >= 0x17 ? 64 : 32)
 
 int
+nv10_fifo_channel_id(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	return (NV_READ(NV03_PFIFO_CACHE1_PUSH1) &
+			NV10_PFIFO_CACHE1_PUSH1_CHID_MASK);
+}
+
+int
 nv10_fifo_create_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
@@ -87,7 +96,8 @@ nv10_fifo_load_context(struct nouveau_channel *chan)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t tmp;
 
-	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1            , 0x00000100 | chan->id);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH1,
+		 NV03_PFIFO_CACHE1_PUSH1_DMA | chan->id);
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_GET          , RAMFC_RD(DMA_GET));
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUT          , RAMFC_RD(DMA_PUT));
@@ -157,4 +167,3 @@ nv10_fifo_save_context(struct nouveau_channel *chan)
 
 	return 0;
 }
-

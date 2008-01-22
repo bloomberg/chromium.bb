@@ -25,7 +25,7 @@ nouveau_sgdma_needs_ub_cache_adjust(struct drm_ttm_backend *be)
 
 static int
 nouveau_sgdma_populate(struct drm_ttm_backend *be, unsigned long num_pages,
-		       struct page **pages)
+		       struct page **pages, struct page *dummy_read_page)
 {
 	struct nouveau_sgdma_be *nvbe = (struct nouveau_sgdma_be *)be;
 	int p, d, o;
@@ -41,8 +41,11 @@ nouveau_sgdma_populate(struct drm_ttm_backend *be, unsigned long num_pages,
 	nvbe->pages_populated = d = 0;
 	for (p = 0; p < num_pages; p++) {
 		for (o = 0; o < PAGE_SIZE; o += NV_CTXDMA_PAGE_SIZE) {
+			struct page *page = pages[p];
+			if (!page)
+				page = dummy_read_page;
 			nvbe->pagelist[d] = pci_map_page(nvbe->dev->pdev,
-							 pages[p], o,
+							 page, o,
 							 NV_CTXDMA_PAGE_SIZE,
 							 PCI_DMA_BIDIRECTIONAL);
 			if (pci_dma_mapping_error(nvbe->pagelist[d])) {
@@ -128,7 +131,7 @@ nouveau_sgdma_unbind(struct drm_ttm_backend *be)
 	if (nvbe->is_bound) {
 		struct nouveau_gpuobj *gpuobj = dev_priv->gart_info.sg_ctxdma;
 		unsigned int pte;
-		
+
 		pte = nvbe->pte_start;
 		while (pte < (nvbe->pte_start + nvbe->pages)) {
 			uint64_t pteval = dev_priv->gart_info.sg_dummy_bus;
@@ -136,8 +139,8 @@ nouveau_sgdma_unbind(struct drm_ttm_backend *be)
 			if (dev_priv->card_type < NV_50) {
 				INSTANCE_WR(gpuobj, pte, pteval | 3);
 			} else {
-				INSTANCE_WR(gpuobj, (pte<<1)+0, 0x00000010);
-				INSTANCE_WR(gpuobj, (pte<<1)+1, 0x00000004);
+				INSTANCE_WR(gpuobj, (pte<<1)+0, pteval | 0x21);
+				INSTANCE_WR(gpuobj, (pte<<1)+1, 0x00000000);
 			}
 
 			pte++;
@@ -218,15 +221,14 @@ nouveau_sgdma_init(struct drm_device *dev)
 		return ret;
 	}
 
-	if (dev_priv->card_type < NV_50) {
-		dev_priv->gart_info.sg_dummy_page =
-			alloc_page(GFP_KERNEL|__GFP_DMA32);
-		SetPageLocked(dev_priv->gart_info.sg_dummy_page);
-		dev_priv->gart_info.sg_dummy_bus =
-			pci_map_page(dev->pdev,
-				     dev_priv->gart_info.sg_dummy_page, 0,
-				     PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
+	dev_priv->gart_info.sg_dummy_page =
+		alloc_page(GFP_KERNEL|__GFP_DMA32);
+	SetPageLocked(dev_priv->gart_info.sg_dummy_page);
+	dev_priv->gart_info.sg_dummy_bus =
+		pci_map_page(dev->pdev, dev_priv->gart_info.sg_dummy_page, 0,
+			     PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);
 
+	if (dev_priv->card_type < NV_50) {
 		/* Maybe use NV_DMA_TARGET_AGP for PCIE? NVIDIA do this, and
 		 * confirmed to work on c51.  Perhaps means NV_DMA_TARGET_PCIE
 		 * on those cards? */
@@ -242,8 +244,9 @@ nouveau_sgdma_init(struct drm_device *dev)
 		}
 	} else {
 		for (i=0; i<obj_size; i+=8) {
-			INSTANCE_WR(gpuobj, (i+0)/4, 0); //x00000010);
-			INSTANCE_WR(gpuobj, (i+4)/4, 0); //0x00000004);
+			INSTANCE_WR(gpuobj, (i+0)/4,
+				    dev_priv->gart_info.sg_dummy_bus | 0x21);
+			INSTANCE_WR(gpuobj, (i+4)/4, 0);
 		}
 	}
 
@@ -299,7 +302,7 @@ nouveau_sgdma_nottm_hack_init(struct drm_device *dev)
 	}
 	dev_priv->gart_info.sg_handle = sgreq.handle;
 
-	if ((ret = be->func->populate(be, dev->sg->pages, dev->sg->pagelist))) {
+	if ((ret = be->func->populate(be, dev->sg->pages, dev->sg->pagelist, dev->bm.dummy_read_page))) {
 		DRM_ERROR("failed populate: %d\n", ret);
 		return ret;
 	}
@@ -336,4 +339,3 @@ nouveau_sgdma_get_page(struct drm_device *dev, uint32_t offset, uint32_t *page)
 	DRM_ERROR("Unimplemented on NV50\n");
 	return -EINVAL;
 }
-

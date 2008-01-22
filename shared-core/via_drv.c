@@ -74,7 +74,7 @@ static struct drm_bo_driver via_bo_driver = {
 	.fence_type = via_fence_types,
 	.invalidate_caches = via_invalidate_caches,
 	.init_mem_type = via_init_mem_type,
-	.evict_mask = via_evict_mask,
+	.evict_flags = via_evict_flags,
 	.move = NULL,
 };
 #endif

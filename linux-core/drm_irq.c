@@ -188,7 +188,7 @@ int drm_irq_install(struct drm_device * dev)
 	dev->irq_enabled = 1;
 	mutex_unlock(&dev->struct_mutex);
 
-	DRM_DEBUG("%s: irq=%d\n", __FUNCTION__, dev->irq);
+	DRM_DEBUG("irq=%d\n", dev->irq);
 
 	/* Before installing handler */
 	dev->driver->irq_preinstall(dev);
@@ -240,7 +240,7 @@ int drm_irq_uninstall(struct drm_device * dev)
 	if (!irq_enabled)
 		return -EINVAL;
 
-	DRM_DEBUG("%s: irq=%d\n", __FUNCTION__, dev->irq);
+	DRM_DEBUG("irq=%d\n", dev->irq);
 
 	dev->driver->irq_uninstall(dev);
 
@@ -636,7 +636,7 @@ EXPORT_SYMBOL(drm_handle_vblank);
  */
 static void drm_locked_tasklet_func(unsigned long data)
 {
-	struct drm_device *dev = (struct drm_device*)data;
+	struct drm_device *dev = (struct drm_device *)data;
 	unsigned long irqflags;
 
 	spin_lock_irqsave(&dev->tasklet_lock, irqflags);
@@ -673,7 +673,7 @@ static void drm_locked_tasklet_func(unsigned long data)
  * context, it must not make any assumptions about this. Also, the HW lock will
  * be held with the kernel context or any client context.
  */
-void drm_locked_tasklet(struct drm_device *dev, void (*func)(struct drm_device*))
+void drm_locked_tasklet(struct drm_device *dev, void (*func)(struct drm_device *))
 {
 	unsigned long irqflags;
 	static DECLARE_TASKLET(drm_tasklet, drm_locked_tasklet_func, 0);

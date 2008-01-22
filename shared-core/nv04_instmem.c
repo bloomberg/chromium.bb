@@ -33,6 +33,7 @@ static void
 nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 
 	/* FIFO hash table (RAMHT)
 	 *   use 4k hash table at RAMIN+0x10000
@@ -61,8 +62,8 @@ nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 		case NV_40:
 		case NV_44:
 			dev_priv->ramfc_offset = 0x20000;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *
-				nouveau_fifo_ctx_size(dev);
+			dev_priv->ramfc_size   = engine->fifo.channels *
+						 nouveau_fifo_ctx_size(dev);
 			break;
 		case NV_30:
 		case NV_20:
@@ -72,8 +73,8 @@ nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 		case NV_04:
 		default:
 			dev_priv->ramfc_offset = 0x11400;
-			dev_priv->ramfc_size   = nouveau_fifo_number(dev) *
-				nouveau_fifo_ctx_size(dev);
+			dev_priv->ramfc_size   = engine->fifo.channels *
+						 nouveau_fifo_ctx_size(dev);
 			break;
 	}
 	DRM_DEBUG("RAMFC offset=0x%x, size=%d\n", dev_priv->ramfc_offset,
@@ -134,7 +135,7 @@ nv04_instmem_clear(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 		if (gpuobj->im_bound)
 			dev_priv->Engine.instmem.unbind(dev, gpuobj);
 		gpuobj->im_backing = NULL;
-	}	
+	}
 }
 
 int
@@ -156,4 +157,3 @@ nv04_instmem_unbind(struct drm_device *dev, struct nouveau_gpuobj *gpuobj)
 	gpuobj->im_bound = 0;
 	return 0;
 }
-

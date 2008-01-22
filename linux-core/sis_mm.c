@@ -74,7 +74,7 @@ static void sis_sman_mm_destroy(void *private)
 	;
 }
 
-unsigned long sis_sman_mm_offset(void *private, void *ref)
+static unsigned long sis_sman_mm_offset(void *private, void *ref)
 {
 	return ~((unsigned long)ref);
 }
@@ -114,12 +114,12 @@ static int sis_fb_init(struct drm_device *dev, void *data, struct drm_file *file
 	dev_priv->vram_offset = fb->offset;
 
 	mutex_unlock(&dev->struct_mutex);
-	DRM_DEBUG("offset = %u, size = %u", fb->offset, fb->size);
+	DRM_DEBUG("offset = %u, size = %u\n", fb->offset, fb->size);
 
 	return 0;
 }
 
-static int sis_drm_alloc(struct drm_device * dev, struct drm_file *file_priv,
+static int sis_drm_alloc(struct drm_device *dev, struct drm_file *file_priv,
 			 void *data, int pool)
 {
 	drm_sis_private_t *dev_priv = dev->dev_private;
@@ -204,7 +204,7 @@ static int sis_ioctl_agp_init(struct drm_device *dev, void *data,
 	dev_priv->agp_offset = agp->offset;
 	mutex_unlock(&dev->struct_mutex);
 
-	DRM_DEBUG("offset = %u, size = %u", agp->offset, agp->size);
+	DRM_DEBUG("offset = %u, size = %u\n", agp->offset, agp->size);
 	return 0;
 }
 
@@ -231,8 +231,7 @@ static drm_local_map_t *sis_reg_init(struct drm_device *dev)
 	return NULL;
 }
 
-int
-sis_idle(struct drm_device *dev)
+int sis_idle(struct drm_device *dev)
 {
 	drm_sis_private_t *dev_priv = dev->dev_private;
 	uint32_t idle_reg;
@@ -249,7 +248,7 @@ sis_idle(struct drm_device *dev)
 			return 0;
 		}
 	}
-	
+
 	/*
 	 * Implement a device switch here if needed
 	 */

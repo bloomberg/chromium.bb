@@ -64,10 +64,10 @@ static int compat_r128_init(struct file *file, unsigned int cmd,
 {
 	drm_r128_init32_t init32;
 	drm_r128_init_t __user *init;
-	
+
 	if (copy_from_user(&init32, (void __user *)arg, sizeof(init32)))
 		return -EFAULT;
-	
+
 	init = compat_alloc_user_space(sizeof(*init));
 	if (!access_ok(VERIFY_WRITE, init, sizeof(*init))
 	    || __put_user(init32.func, &init->func)
@@ -94,7 +94,7 @@ static int compat_r128_init(struct file *file, unsigned int cmd,
 	    || __put_user(init32.agp_textures_offset,
 			  &init->agp_textures_offset))
 		return -EFAULT;
-	
+
 	return drm_ioctl(file->f_dentry->d_inode, file,
 			 DRM_IOCTL_R128_INIT, (unsigned long)init);
 }

@@ -72,7 +72,7 @@ static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
 
 
 int xgi_fence_emit_sequence(struct drm_device * dev, uint32_t class,
-			    uint32_t flags, uint32_t * sequence, 
+			    uint32_t flags, uint32_t * sequence,
 			    uint32_t * native_type)
 {
 	struct xgi_info * info = dev->dev_private;

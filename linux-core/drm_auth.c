@@ -83,7 +83,7 @@ static int drm_add_magic(struct drm_device * dev, struct drm_file * priv,
 		return -ENOMEM;
 	memset(entry, 0, sizeof(*entry));
 	entry->priv = priv;
-	entry->hash_item.key = (unsigned long) magic;
+	entry->hash_item.key = (unsigned long)magic;
 	mutex_lock(&dev->struct_mutex);
 	drm_ht_insert_item(&dev->magiclist, &entry->hash_item);
 	list_add_tail(&entry->head, &dev->magicfree);
@@ -109,7 +109,7 @@ static int drm_remove_magic(struct drm_device * dev, drm_magic_t magic)
 	DRM_DEBUG("%d\n", magic);
 
 	mutex_lock(&dev->struct_mutex);
-	if (drm_ht_find_item(&dev->magiclist, (unsigned long) magic, &hash)) {
+	if (drm_ht_find_item(&dev->magiclist, (unsigned long)magic, &hash)) {
 		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}

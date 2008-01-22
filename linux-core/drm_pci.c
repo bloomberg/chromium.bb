@@ -123,7 +123,7 @@ EXPORT_SYMBOL(drm_pci_alloc);
  *
  * This function is for internal use in the Linux-specific DRM core code.
  */
-void __drm_pci_free(struct drm_device * dev, drm_dma_handle_t *dmah)
+void __drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah)
 {
 	unsigned long addr;
 	size_t sz;
@@ -167,7 +167,7 @@ void __drm_pci_free(struct drm_device * dev, drm_dma_handle_t *dmah)
 /**
  * \brief Free a PCI consistent memory block
  */
-void drm_pci_free(struct drm_device * dev, drm_dma_handle_t *dmah)
+void drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah)
 {
 	__drm_pci_free(dev, dmah);
 	kfree(dmah);

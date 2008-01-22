@@ -53,4 +53,3 @@ void
 nv40_fb_takedown(struct drm_device *dev)
 {
 }
-

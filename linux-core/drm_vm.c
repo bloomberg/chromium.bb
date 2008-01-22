@@ -166,7 +166,7 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
  * \param address access address.
  * \return pointer to the page structure.
  *
- * Get the the mapping, find the real physical page to map, get the page, and
+ * Get the mapping, find the real physical page to map, get the page, and
  * return it.
  */
 static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
@@ -189,7 +189,7 @@ static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
 		return NOPAGE_SIGBUS;
 	get_page(page);
 
-	DRM_DEBUG("shm_nopage 0x%lx\n", address);
+	DRM_DEBUG("0x%lx\n", address);
 	return page;
 }
 
@@ -263,7 +263,7 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
 				dmah.size = map->size;
 				__drm_pci_free(dev, &dmah);
 				break;
-		        case _DRM_TTM:
+			case _DRM_TTM:
 				BUG_ON(1);
 				break;
 			}
@@ -305,7 +305,7 @@ static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
 
 	get_page(page);
 
-	DRM_DEBUG("dma_nopage 0x%lx (page %lu)\n", address, page_nr);
+	DRM_DEBUG("0x%lx (page %lu)\n", address, page_nr);
 	return page;
 }
 
@@ -632,9 +632,9 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
 #endif
 		if (io_remap_pfn_range(vma, vma->vm_start,
-					(map->offset + offset) >> PAGE_SHIFT,
-					vma->vm_end - vma->vm_start,
-					vma->vm_page_prot))
+				       (map->offset + offset) >> PAGE_SHIFT,
+				       vma->vm_end - vma->vm_start,
+				       vma->vm_page_prot))
 			return -EAGAIN;
 		DRM_DEBUG("   Type = %d; start = 0x%lx, end = 0x%lx,"
 			  " offset = 0x%lx\n",
@@ -751,10 +751,10 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	 */
 
 	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
-		uint32_t new_mask = bo->mem.mask |
+		uint32_t new_flags = bo->mem.proposed_flags |
 			DRM_BO_FLAG_MAPPABLE |
 			DRM_BO_FLAG_FORCE_MAPPABLE;
-		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
+		err = drm_bo_move_buffer(bo, new_flags, 0, 0);
 		if (err) {
 			ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
 			goto out_unlock;

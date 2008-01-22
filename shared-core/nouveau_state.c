@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2005 Stephane Marchesin
  * All Rights Reserved.
  *
@@ -40,7 +40,7 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 
 	/* map the mmio regs */
 	ret = drm_addmap(dev, drm_get_resource_start(dev, 0),
-			      drm_get_resource_len(dev, 0), 
+			      drm_get_resource_len(dev, 0),
 			      _DRM_REGISTERS, _DRM_READ_ONLY, &dev_priv->mmio);
 	if (ret) {
 		DRM_ERROR("Unable to initialize the mmio mapping (%d). "
@@ -88,7 +88,6 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 
 static int nouveau_stub_init(struct drm_device *dev) { return 0; }
 static void nouveau_stub_takedown(struct drm_device *dev) {}
-static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
 
 static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
@@ -116,8 +115,10 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv04_graph_destroy_context;
 		engine->graph.load_context	= nv04_graph_load_context;
 		engine->graph.save_context	= nv04_graph_save_context;
+		engine->fifo.channels	= 16;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.channel_id		= nv04_fifo_channel_id;
 		engine->fifo.create_context	= nv04_fifo_create_context;
 		engine->fifo.destroy_context	= nv04_fifo_destroy_context;
 		engine->fifo.load_context	= nv04_fifo_load_context;
@@ -143,8 +144,10 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv10_graph_destroy_context;
 		engine->graph.load_context	= nv10_graph_load_context;
 		engine->graph.save_context	= nv10_graph_save_context;
+		engine->fifo.channels	= 32;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.channel_id		= nv10_fifo_channel_id;
 		engine->fifo.create_context	= nv10_fifo_create_context;
 		engine->fifo.destroy_context	= nv10_fifo_destroy_context;
 		engine->fifo.load_context	= nv10_fifo_load_context;
@@ -170,8 +173,10 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv20_graph_destroy_context;
 		engine->graph.load_context	= nv20_graph_load_context;
 		engine->graph.save_context	= nv20_graph_save_context;
+		engine->fifo.channels	= 32;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.channel_id		= nv10_fifo_channel_id;
 		engine->fifo.create_context	= nv10_fifo_create_context;
 		engine->fifo.destroy_context	= nv10_fifo_destroy_context;
 		engine->fifo.load_context	= nv10_fifo_load_context;
@@ -197,8 +202,10 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv20_graph_destroy_context;
 		engine->graph.load_context	= nv20_graph_load_context;
 		engine->graph.save_context	= nv20_graph_save_context;
+		engine->fifo.channels	= 32;
 		engine->fifo.init	= nouveau_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.channel_id		= nv10_fifo_channel_id;
 		engine->fifo.create_context	= nv10_fifo_create_context;
 		engine->fifo.destroy_context	= nv10_fifo_destroy_context;
 		engine->fifo.load_context	= nv10_fifo_load_context;
@@ -224,8 +231,10 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv40_graph_destroy_context;
 		engine->graph.load_context	= nv40_graph_load_context;
 		engine->graph.save_context	= nv40_graph_save_context;
+		engine->fifo.channels	= 32;
 		engine->fifo.init	= nv40_fifo_init;
 		engine->fifo.takedown	= nouveau_stub_takedown;
+		engine->fifo.channel_id		= nv10_fifo_channel_id;
 		engine->fifo.create_context	= nv40_fifo_create_context;
 		engine->fifo.destroy_context	= nv40_fifo_destroy_context;
 		engine->fifo.load_context	= nv40_fifo_load_context;
@@ -241,9 +250,9 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->instmem.unbind		= nv50_instmem_unbind;
 		engine->mc.init		= nv50_mc_init;
 		engine->mc.takedown	= nv50_mc_takedown;
-		engine->timer.init	= nouveau_stub_init;
-		engine->timer.read	= nouveau_stub_timer_read;
-		engine->timer.takedown	= nouveau_stub_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
+		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nouveau_stub_init;
 		engine->fb.takedown	= nouveau_stub_takedown;
 		engine->graph.init	= nv50_graph_init;
@@ -252,8 +261,10 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->graph.destroy_context	= nv50_graph_destroy_context;
 		engine->graph.load_context	= nv50_graph_load_context;
 		engine->graph.save_context	= nv50_graph_save_context;
+		engine->fifo.channels	= 128;
 		engine->fifo.init	= nv50_fifo_init;
 		engine->fifo.takedown	= nv50_fifo_takedown;
+		engine->fifo.channel_id		= nv50_fifo_channel_id;
 		engine->fifo.create_context	= nv50_fifo_create_context;
 		engine->fifo.destroy_context	= nv50_fifo_destroy_context;
 		engine->fifo.load_context	= nv50_fifo_load_context;
@@ -278,18 +289,7 @@ nouveau_card_init(struct drm_device *dev)
 
 	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
 		return 0;
-
-	/* Map any PCI resources we need on the card */
-	ret = nouveau_init_card_mappings(dev);
-	if (ret) return ret;
-
-#if defined(__powerpc__)
-	/* Put the card in BE mode if it's not */
-	if (NV_READ(NV03_PMC_BOOT_1))
-		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
-
-	DRM_MEMORYBARRIER();
-#endif
+	dev_priv->ttm = 0;
 
 	/* Determine exact chipset we're running on */
 	if (dev_priv->card_type < NV_10)
@@ -315,8 +315,13 @@ nouveau_card_init(struct drm_device *dev)
 	if (ret) return ret;
 
 	/* Setup the memory manager */
-	ret = nouveau_mem_init(dev);
-	if (ret) return ret;
+	if (dev_priv->ttm) {
+		ret = nouveau_mem_init_ttm(dev);
+		if (ret) return ret;
+	} else {
+		ret = nouveau_mem_init(dev);
+		if (ret) return ret;
+	}
 
 	ret = nouveau_gpuobj_init(dev);
 	if (ret) return ret;
@@ -405,8 +410,52 @@ void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 /* first module load, setup the mmio/fb mapping */
 int nouveau_firstopen(struct drm_device *dev)
 {
+#if defined(__powerpc__)
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct device_node *dn;
+#endif
+	int ret;
+	/* Map any PCI resources we need on the card */
+	ret = nouveau_init_card_mappings(dev);
+	if (ret) return ret;
+
+#if defined(__powerpc__)
+	/* Put the card in BE mode if it's not */
+	if (NV_READ(NV03_PMC_BOOT_1))
+		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
+
+	DRM_MEMORYBARRIER();
+#endif
+
+#if defined(__linux__) && defined(__powerpc__)
+	/* if we have an OF card, copy vbios to RAMIN */
+	dn = pci_device_to_OF_node(dev->pdev);
+	if (dn)
+	{
+		int size;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
+		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
+#else
+		const uint32_t *bios = get_property(dn, "NVDA,BMP", &size);
+#endif
+		if (bios)
+		{
+			int i;
+			for(i=0;i<size;i+=4)
+				NV_WI32(i, bios[i/4]);
+			DRM_INFO("OF bios successfully copied (%d bytes)\n",size);
+		}
+		else
+			DRM_INFO("Unable to get the OF bios\n");
+	}
+	else
+		DRM_INFO("Unable to get the OF node\n");
+#endif
 	return 0;
 }
+
+#define NV40_CHIPSET_MASK 0x00000baf
+#define NV44_CHIPSET_MASK 0x00005450
 
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
@@ -425,7 +474,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	DRM_DEBUG("vendor: 0x%X device: 0x%X class: 0x%X\n", dev->pci_vendor, dev->pci_device, dev->pdev->class);
 
 	/* Time to determine the card architecture */
-	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x8); 
+	regs = ioremap_nocache(pci_resource_start(dev->pdev, 0), 0x8);
 	if (!regs) {
 		DRM_ERROR("Could not ioremap to determine register\n");
 		return -ENOMEM;
@@ -449,12 +498,23 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 	iounmap(regs);
 
-	if (architecture >= 0x50) {
+	if (architecture >= 0x80) {
 		dev_priv->card_type = NV_50;
-	} else if (architecture >= 0x44) {
+	} else if (architecture >= 0x60) {
+		/* FIXME we need to figure out who's who for NV6x */
 		dev_priv->card_type = NV_44;
+	} else if (architecture >= 0x50) {
+		dev_priv->card_type = NV_50;
 	} else if (architecture >= 0x40) {
-		dev_priv->card_type = NV_40;
+		uint8_t subarch = architecture & 0xf;
+		/* Selection criteria borrowed from NV40EXA */
+		if (NV40_CHIPSET_MASK & (1 << subarch)) {
+			dev_priv->card_type = NV_40;
+		} else if (NV44_CHIPSET_MASK & (1 << subarch)) {
+			dev_priv->card_type = NV_44;
+		} else {
+			dev_priv->card_type = NV_UNKNOWN;
+		}
 	} else if (architecture >= 0x30) {
 		dev_priv->card_type = NV_30;
 	} else if (architecture >= 0x20) {
@@ -553,7 +613,7 @@ int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
 			getparam->value=(uint64_t) dev->sg->virtual;
-		else 
+		else
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");
 		     return -EINVAL;
@@ -635,5 +695,3 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 	}
 	}
 }
-
-

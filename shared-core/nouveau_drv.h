@@ -59,7 +59,7 @@ enum nouveau_flags {
 };
 
 #define NVOBJ_ENGINE_SW		0
-#define NVOBJ_ENGINE_GR  	1
+#define NVOBJ_ENGINE_GR		1
 #define NVOBJ_ENGINE_INT	0xdeadbeef
 
 #define NVOBJ_FLAG_ALLOW_NO_REFS	(1 << 0)
@@ -106,10 +106,19 @@ struct nouveau_channel
 	/* mapping of the regs controling the fifo */
 	drm_local_map_t *regs;
 
+	/* Fencing */
+	uint32_t next_sequence;
+
 	/* DMA push buffer */
 	struct nouveau_gpuobj_ref *pushbuf;
 	struct mem_block          *pushbuf_mem;
 	uint32_t                   pushbuf_base;
+
+	/* FIFO user control regs */
+	uint32_t user, user_size;
+	uint32_t put;
+	uint32_t get;
+	uint32_t ref_cnt;
 
 	/* Notifier memory */
 	struct mem_block *notifier_block;
@@ -190,8 +199,12 @@ struct nouveau_fb_engine {
 struct nouveau_fifo_engine {
 	void *priv;
 
+	int  channels;
+
 	int  (*init)(struct drm_device *);
 	void (*takedown)(struct drm_device *);
+
+	int  (*channel_id)(struct drm_device *);
 
 	int  (*create_context)(struct nouveau_channel *);
 	void (*destroy_context)(struct nouveau_channel *);
@@ -218,12 +231,15 @@ struct nouveau_engine {
 	struct nouveau_fifo_engine    fifo;
 };
 
+#define NOUVEAU_MAX_CHANNEL_NR 128
 struct drm_nouveau_private {
 	enum {
 		NOUVEAU_CARD_INIT_DOWN,
 		NOUVEAU_CARD_INIT_DONE,
 		NOUVEAU_CARD_INIT_FAILED
 	} init_state;
+
+	int ttm;
 
 	/* the card type, takes NV_* as values */
 	int card_type;
@@ -236,7 +252,7 @@ struct drm_nouveau_private {
 	drm_local_map_t *ramin; /* NV40 onwards */
 
 	int fifo_alloc_count;
-	struct nouveau_channel *fifos[NV_MAX_FIFO_NUMBER];
+	struct nouveau_channel *fifos[NOUVEAU_MAX_CHANNEL_NR];
 
 	struct nouveau_engine Engine;
 	struct nouveau_drm_channel channel;
@@ -344,6 +360,7 @@ extern struct mem_block* nouveau_mem_alloc(struct drm_device *,
 					   int flags, struct drm_file *);
 extern void nouveau_mem_free(struct drm_device *dev, struct mem_block*);
 extern int  nouveau_mem_init(struct drm_device *);
+extern int  nouveau_mem_init_ttm(struct drm_device *);
 extern void nouveau_mem_close(struct drm_device *);
 
 /* nouveau_notifier.c */
@@ -358,7 +375,6 @@ extern int  nouveau_ioctl_notifier_free(struct drm_device *, void *data,
 
 /* nouveau_fifo.c */
 extern int  nouveau_fifo_init(struct drm_device *);
-extern int  nouveau_fifo_number(struct drm_device *);
 extern int  nouveau_fifo_ctx_size(struct drm_device *);
 extern void nouveau_fifo_cleanup(struct drm_device *, struct drm_file *);
 extern int  nouveau_fifo_owner(struct drm_device *, struct drm_file *,
@@ -446,12 +462,14 @@ extern int  nv40_fb_init(struct drm_device *);
 extern void nv40_fb_takedown(struct drm_device *);
 
 /* nv04_fifo.c */
+extern int  nv04_fifo_channel_id(struct drm_device *);
 extern int  nv04_fifo_create_context(struct nouveau_channel *);
 extern void nv04_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv04_fifo_load_context(struct nouveau_channel *);
 extern int  nv04_fifo_save_context(struct nouveau_channel *);
 
 /* nv10_fifo.c */
+extern int  nv10_fifo_channel_id(struct drm_device *);
 extern int  nv10_fifo_create_context(struct nouveau_channel *);
 extern void nv10_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv10_fifo_load_context(struct nouveau_channel *);
@@ -467,6 +485,7 @@ extern int  nv40_fifo_save_context(struct nouveau_channel *);
 /* nv50_fifo.c */
 extern int  nv50_fifo_init(struct drm_device *);
 extern void nv50_fifo_takedown(struct drm_device *);
+extern int  nv50_fifo_channel_id(struct drm_device *);
 extern int  nv50_fifo_create_context(struct nouveau_channel *);
 extern void nv50_fifo_destroy_context(struct nouveau_channel *);
 extern int  nv50_fifo_load_context(struct nouveau_channel *);
@@ -553,6 +572,13 @@ extern void nv04_timer_takedown(struct drm_device *);
 extern long nouveau_compat_ioctl(struct file *file, unsigned int cmd,
 				 unsigned long arg);
 
+/* nouveau_buffer.c */
+extern struct drm_bo_driver nouveau_bo_driver;
+
+/* nouveau_fence.c */
+extern struct drm_fence_driver nouveau_fence_driver;
+extern void nouveau_fence_handler(struct drm_device *dev, int channel);
+
 #if defined(__powerpc__)
 #define NV_READ(reg)        in_be32((void __iomem *)(dev_priv->mmio)->handle + (reg) )
 #define NV_WRITE(reg,val)   out_be32((void __iomem *)(dev_priv->mmio)->handle + (reg) , (val) )
@@ -574,4 +600,3 @@ extern long nouveau_compat_ioctl(struct file *file, unsigned int cmd,
 #define INSTANCE_WR(o,i,v) NV_WI32((o)->im_pramin->start + ((i)<<2), (v))
 
 #endif /* __NOUVEAU_DRV_H__ */
-

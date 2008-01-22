@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,20 +10,20 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
  * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
- * 
+ *
+ *
  **************************************************************************/
 /*
  * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
@@ -33,23 +33,23 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device * dev)
+struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev)
 {
 	return drm_agp_init_ttm(dev);
 }
 
-int i915_fence_types(struct drm_buffer_object *bo,
-		     uint32_t * fclass,
-		     uint32_t * type)
+int i915_fence_type(struct drm_buffer_object *bo,
+		     uint32_t *fclass,
+		     uint32_t *type)
 {
-	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
+	if (bo->mem.proposed_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
 		*type = 1;
 	return 0;
 }
 
-int i915_invalidate_caches(struct drm_device * dev, uint64_t flags)
+int i915_invalidate_caches(struct drm_device *dev, uint64_t flags)
 {
 	/*
 	 * FIXME: Only emit once per batchbuffer submission.
@@ -65,8 +65,8 @@ int i915_invalidate_caches(struct drm_device * dev, uint64_t flags)
 	return i915_emit_mi_flush(dev, flush_cmd);
 }
 
-int i915_init_mem_type(struct drm_device * dev, uint32_t type,
-		       struct drm_mem_type_manager * man)
+int i915_init_mem_type(struct drm_device *dev, uint32_t type,
+		       struct drm_mem_type_manager *man)
 {
 	switch (type) {
 	case DRM_BO_MEM_LOCAL:
@@ -110,7 +110,16 @@ int i915_init_mem_type(struct drm_device * dev, uint32_t type,
 	return 0;
 }
 
-uint32_t i915_evict_mask(struct drm_buffer_object *bo)
+/*
+ * i915_evict_flags:
+ *
+ * @bo: the buffer object to be evicted
+ *
+ * Return the bo flags for a buffer which is not mapped to the hardware.
+ * These will be placed in proposed_flags so that when the move is
+ * finished, they'll end up in bo->mem.flags
+ */
+uint64_t i915_evict_flags(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:
@@ -183,7 +192,7 @@ static int i915_move_blit(struct drm_buffer_object * bo,
 }
 
 /*
- * Flip destination ttm into cached-coherent AGP, 
+ * Flip destination ttm into cached-coherent AGP,
  * then blit and subsequently move out again.
  */
 
@@ -226,25 +235,24 @@ out_cleanup:
 #endif
 
 /*
- * Disable i915_move_flip for now, since we can't guarantee that the hardware lock
- * is held here. To re-enable we need to make sure either
+ * Disable i915_move_flip for now, since we can't guarantee that the hardware
+ * lock is held here. To re-enable we need to make sure either
  * a) The X server is using DRM to submit commands to the ring, or
- * b) DRM can use the HP ring for these blits. This means i915 needs to implement
- *    a new ring submission mechanism and fence class.
+ * b) DRM can use the HP ring for these blits. This means i915 needs to
+ *    implement a new ring submission mechanism and fence class.
  */
-
-int i915_move(struct drm_buffer_object * bo,
-	      int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
+int i915_move(struct drm_buffer_object *bo,
+	      int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		if (0 /*i915_move_flip(bo, evict, no_wait, new_mem)*/)
+		if (0) /*i915_move_flip(bo, evict, no_wait, new_mem)*/
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else {
-		if (0 /*i915_move_blit(bo, evict, no_wait, new_mem)*/)
+		if (0) /*i915_move_blit(bo, evict, no_wait, new_mem)*/
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
@@ -258,8 +266,8 @@ static inline void clflush(volatile void *__p)
 #endif
 
 static inline void drm_cache_flush_addr(void *virt)
-{ 
-        int i;
+{
+	int i;
 
 	for (i = 0; i < PAGE_SIZE; i += boot_cpu_data.x86_clflush_size)
 		clflush(virt+i);
@@ -278,7 +286,18 @@ void i915_flush_ttm(struct drm_ttm *ttm)
 		return;
 
 	DRM_MEMORYBARRIER();
-	for (i = ttm->num_pages-1; i >= 0; i--)
+
+#ifdef CONFIG_X86_32
+	/* Hopefully nobody has built an x86-64 processor without clflush */
+	if (!cpu_has_clflush) {
+		wbinvd();
+		DRM_MEMORYBARRIER();
+		return;
+	}
+#endif
+
+	for (i = ttm->num_pages - 1; i >= 0; i--)
 		drm_cache_flush_page(drm_ttm_get_page(ttm, i));
+
 	DRM_MEMORYBARRIER();
 }

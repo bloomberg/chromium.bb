@@ -3,7 +3,7 @@
  *
  * 32-bit ioctl compatibility routines for the i915 DRM.
  *
- * \author Alan Hourihane <alanh@fairlite.demon.co.uk> 
+ * \author Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
  *
  * Copyright (C) Paul Mackerras 2005
@@ -34,6 +34,7 @@
 #include "drmP.h"
 #include "drm.h"
 #include "i915_drm.h"
+#include "i915_drv.h"
 
 typedef struct _drm_i915_batchbuffer32 {
 	int start;		/* agp offset */
@@ -45,15 +46,15 @@ typedef struct _drm_i915_batchbuffer32 {
 } drm_i915_batchbuffer32_t;
 
 static int compat_i915_batchbuffer(struct file *file, unsigned int cmd,
-			   unsigned long arg)
+				   unsigned long arg)
 {
 	drm_i915_batchbuffer32_t batchbuffer32;
 	drm_i915_batchbuffer_t __user *batchbuffer;
-	
+
 	if (copy_from_user
 	    (&batchbuffer32, (void __user *)arg, sizeof(batchbuffer32)))
 		return -EFAULT;
-	
+
 	batchbuffer = compat_alloc_user_space(sizeof(*batchbuffer));
 	if (!access_ok(VERIFY_WRITE, batchbuffer, sizeof(*batchbuffer))
 	    || __put_user(batchbuffer32.start, &batchbuffer->start)
@@ -65,7 +66,7 @@ static int compat_i915_batchbuffer(struct file *file, unsigned int cmd,
 	    || __put_user((int __user *)(unsigned long)batchbuffer32.cliprects,
 			  &batchbuffer->cliprects))
 		return -EFAULT;
-	
+
 	return drm_ioctl(file->f_dentry->d_inode, file,
 			 DRM_IOCTL_I915_BATCHBUFFER,
 			 (unsigned long) batchbuffer);
@@ -81,15 +82,15 @@ typedef struct _drm_i915_cmdbuffer32 {
 } drm_i915_cmdbuffer32_t;
 
 static int compat_i915_cmdbuffer(struct file *file, unsigned int cmd,
-			   unsigned long arg)
+				 unsigned long arg)
 {
 	drm_i915_cmdbuffer32_t cmdbuffer32;
 	drm_i915_cmdbuffer_t __user *cmdbuffer;
-	
+
 	if (copy_from_user
 	    (&cmdbuffer32, (void __user *)arg, sizeof(cmdbuffer32)))
 		return -EFAULT;
-	
+
 	cmdbuffer = compat_alloc_user_space(sizeof(*cmdbuffer));
 	if (!access_ok(VERIFY_WRITE, cmdbuffer, sizeof(*cmdbuffer))
 	    || __put_user((int __user *)(unsigned long)cmdbuffer32.buf,
@@ -101,7 +102,7 @@ static int compat_i915_cmdbuffer(struct file *file, unsigned int cmd,
 	    || __put_user((int __user *)(unsigned long)cmdbuffer32.cliprects,
 			  &cmdbuffer->cliprects))
 		return -EFAULT;
-	
+
 	return drm_ioctl(file->f_dentry->d_inode, file,
 			 DRM_IOCTL_I915_CMDBUFFER, (unsigned long) cmdbuffer);
 }
@@ -111,7 +112,7 @@ typedef struct drm_i915_irq_emit32 {
 } drm_i915_irq_emit32_t;
 
 static int compat_i915_irq_emit(struct file *file, unsigned int cmd,
-				  unsigned long arg)
+				unsigned long arg)
 {
 	drm_i915_irq_emit32_t req32;
 	drm_i915_irq_emit_t __user *request;
@@ -134,7 +135,7 @@ typedef struct drm_i915_getparam32 {
 } drm_i915_getparam32_t;
 
 static int compat_i915_getparam(struct file *file, unsigned int cmd,
-				     unsigned long arg)
+				unsigned long arg)
 {
 	drm_i915_getparam32_t req32;
 	drm_i915_getparam_t __user *request;
@@ -161,7 +162,7 @@ typedef struct drm_i915_mem_alloc32 {
 } drm_i915_mem_alloc32_t;
 
 static int compat_i915_alloc(struct file *file, unsigned int cmd,
-				     unsigned long arg)
+			     unsigned long arg)
 {
 	drm_i915_mem_alloc32_t req32;
 	drm_i915_mem_alloc_t __user *request;
@@ -182,13 +183,73 @@ static int compat_i915_alloc(struct file *file, unsigned int cmd,
 			 DRM_IOCTL_I915_ALLOC, (unsigned long) request);
 }
 
+typedef struct drm_i915_execbuffer32 {
+	uint64_t ops_list;
+	uint32_t num_buffers;
+	struct _drm_i915_batchbuffer32 batch;
+	drm_context_t context; 
+	struct drm_fence_arg fence_arg;
+} drm_i915_execbuffer32_t;
+
+static int compat_i915_execbuffer(struct file *file, unsigned int cmd,
+			     unsigned long arg)
+{
+	drm_i915_execbuffer32_t req32;
+	struct drm_i915_execbuffer __user *request;
+	int err;
+
+	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+		return -EFAULT;
+
+	request = compat_alloc_user_space(sizeof(*request));
+
+	if (!access_ok(VERIFY_WRITE, request, sizeof(*request))
+       || __put_user(req32.ops_list, &request->ops_list)
+       || __put_user(req32.num_buffers, &request->num_buffers)
+       || __put_user(req32.context, &request->context)
+       || __copy_to_user(&request->fence_arg, &req32.fence_arg, 
+                         sizeof(req32.fence_arg))
+       || __put_user(req32.batch.start, &request->batch.start)
+       || __put_user(req32.batch.used, &request->batch.used)
+       || __put_user(req32.batch.DR1, &request->batch.DR1)
+       || __put_user(req32.batch.DR4, &request->batch.DR4)
+       || __put_user(req32.batch.num_cliprects,
+                     &request->batch.num_cliprects)
+       || __put_user((int __user *)(unsigned long)req32.batch.cliprects,
+                     &request->batch.cliprects))
+		return -EFAULT;
+
+	err = drm_ioctl(file->f_dentry->d_inode, file,
+			 DRM_IOCTL_I915_EXECBUFFER, (unsigned long)request);
+
+	if (err)
+		return err;
+
+	if (__get_user(req32.fence_arg.handle, &request->fence_arg.handle)
+	    || __get_user(req32.fence_arg.fence_class, &request->fence_arg.fence_class)
+	    || __get_user(req32.fence_arg.type, &request->fence_arg.type)
+	    || __get_user(req32.fence_arg.flags, &request->fence_arg.flags)
+	    || __get_user(req32.fence_arg.signaled, &request->fence_arg.signaled)
+	    || __get_user(req32.fence_arg.error, &request->fence_arg.error)
+	    || __get_user(req32.fence_arg.sequence, &request->fence_arg.sequence))
+		return -EFAULT;
+
+	if (copy_to_user((void __user *)arg, &req32, sizeof(req32)))
+		return -EFAULT;
+
+	return 0;
+}
+
 
 drm_ioctl_compat_t *i915_compat_ioctls[] = {
 	[DRM_I915_BATCHBUFFER] = compat_i915_batchbuffer,
 	[DRM_I915_CMDBUFFER] = compat_i915_cmdbuffer,
 	[DRM_I915_GETPARAM] = compat_i915_getparam,
 	[DRM_I915_IRQ_EMIT] = compat_i915_irq_emit,
-	[DRM_I915_ALLOC] = compat_i915_alloc
+	[DRM_I915_ALLOC] = compat_i915_alloc,
+#ifdef I915_HAVE_BUFFER
+	[DRM_I915_EXECBUFFER] = compat_i915_execbuffer,
+#endif
 };
 
 /**
@@ -208,7 +269,7 @@ long i915_compat_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 
 	if (nr < DRM_COMMAND_BASE)
 		return drm_compat_ioctl(filp, cmd, arg);
-	
+
 	if (nr < DRM_COMMAND_BASE + DRM_ARRAY_SIZE(i915_compat_ioctls))
 		fn = i915_compat_ioctls[nr - DRM_COMMAND_BASE];
 

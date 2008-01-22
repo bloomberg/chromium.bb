@@ -1,5 +1,5 @@
 /****************************************************************************
- * Copyright (C) 2003-2006 by XGI Technology, Taiwan.			
+ * Copyright (C) 2003-2006 by XGI Technology, Taiwan.
  *
  * All Rights Reserved.
  *

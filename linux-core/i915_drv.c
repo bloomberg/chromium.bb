@@ -1,10 +1,10 @@
 /* i915_drv.c -- i830,i845,i855,i865,i915 driver -*- linux-c -*-
  */
 /*
- * 
+ *
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -12,11 +12,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -24,7 +24,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #include "drmP.h"
@@ -61,10 +61,10 @@ static struct drm_bo_driver i915_bo_driver = {
 	.num_mem_type_prio = sizeof(i915_mem_prios)/sizeof(uint32_t),
 	.num_mem_busy_prio = sizeof(i915_busy_prios)/sizeof(uint32_t),
 	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
-	.fence_type = i915_fence_types,
+	.fence_type = i915_fence_type,
 	.invalidate_caches = i915_invalidate_caches,
 	.init_mem_type = i915_init_mem_type,
-	.evict_mask = i915_evict_mask,
+	.evict_flags = i915_evict_flags,
 	.move = i915_move,
 	.ttm_cache_flush = i915_flush_ttm,
 };
@@ -330,7 +330,7 @@ static int i915_suspend(struct drm_device *dev)
 	dev_priv->saveDSPBSIZE = I915_READ(DSPBSIZE);
 	dev_priv->saveDSPBPOS = I915_READ(DSPBPOS);
 	dev_priv->saveDSPBBASE = I915_READ(DSPBBASE);
-	if (IS_I965GM(dev)) {
+	if (IS_I965GM(dev) || IS_IGD_GM(dev)) {
 		dev_priv->saveDSPBSURF = I915_READ(DSPBSURF);
 		dev_priv->saveDSPBTILEOFF = I915_READ(DSPBTILEOFF);
 	}
@@ -420,7 +420,7 @@ static int i915_resume(struct drm_device *dev)
 	I915_WRITE(VBLANK_A, dev_priv->saveVBLANK_A);
 	I915_WRITE(VSYNC_A, dev_priv->saveVSYNC_A);
 	I915_WRITE(BCLRPAT_A, dev_priv->saveBCLRPAT_A);
-   
+
 	/* Restore plane info */
 	I915_WRITE(DSPASIZE, dev_priv->saveDSPASIZE);
 	I915_WRITE(DSPAPOS, dev_priv->saveDSPAPOS);
@@ -431,7 +431,11 @@ static int i915_resume(struct drm_device *dev)
 		I915_WRITE(DSPASURF, dev_priv->saveDSPASURF);
 		I915_WRITE(DSPATILEOFF, dev_priv->saveDSPATILEOFF);
 	}
-	I915_WRITE(PIPEACONF, dev_priv->savePIPEACONF);
+
+	if ((dev_priv->saveDPLL_A & DPLL_VCO_ENABLE) &&
+	    (dev_priv->saveDPLL_A & DPLL_VGA_MODE_DIS))
+		I915_WRITE(PIPEACONF, dev_priv->savePIPEACONF);
+
 	i915_restore_palette(dev, PIPE_A);
 	/* Enable the plane */
 	I915_WRITE(DSPACNTR, dev_priv->saveDSPACNTR);
@@ -451,7 +455,7 @@ static int i915_resume(struct drm_device *dev)
 	if (IS_I965G(dev))
 		I915_WRITE(DPLL_B_MD, dev_priv->saveDPLL_B_MD);
 	udelay(150);
-   
+
 	/* Restore mode */
 	I915_WRITE(HTOTAL_B, dev_priv->saveHTOTAL_B);
 	I915_WRITE(HBLANK_B, dev_priv->saveHBLANK_B);
@@ -471,7 +475,10 @@ static int i915_resume(struct drm_device *dev)
 		I915_WRITE(DSPBSURF, dev_priv->saveDSPBSURF);
 		I915_WRITE(DSPBTILEOFF, dev_priv->saveDSPBTILEOFF);
 	}
-	I915_WRITE(PIPEBCONF, dev_priv->savePIPEBCONF);
+
+	if ((dev_priv->saveDPLL_B & DPLL_VCO_ENABLE) &&
+	    (dev_priv->saveDPLL_B & DPLL_VGA_MODE_DIS))
+		I915_WRITE(PIPEBCONF, dev_priv->savePIPEBCONF);
 	i915_restore_palette(dev, PIPE_A);
 	/* Enable the plane */
 	I915_WRITE(DSPBCNTR, dev_priv->saveDSPBCNTR);

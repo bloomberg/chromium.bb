@@ -403,17 +403,6 @@ static int drm_firstopen(drm_device_t *dev)
 			return i;
 	}
 
-	dev->counters  = 6;
-	dev->types[0]  = _DRM_STAT_LOCK;
-	dev->types[1]  = _DRM_STAT_OPENS;
-	dev->types[2]  = _DRM_STAT_CLOSES;
-	dev->types[3]  = _DRM_STAT_IOCTLS;
-	dev->types[4]  = _DRM_STAT_LOCKS;
-	dev->types[5]  = _DRM_STAT_UNLOCKS;
-
-	for ( i = 0 ; i < DRM_ARRAY_SIZE(dev->counts) ; i++ )
-		atomic_set( &dev->counts[i], 0 );
-
 	for ( i = 0 ; i < DRM_HASH_SIZE ; i++ ) {
 		dev->magiclist[i].head = NULL;
 		dev->magiclist[i].tail = NULL;
@@ -495,9 +484,9 @@ static int drm_lastclose(drm_device_t *dev)
 	}
 
 	TAILQ_FOREACH_SAFE(map, &dev->maplist, link, mapsave) {
-		drm_rmmap(dev, map);
+		if (!(map->flags & _DRM_DRIVER))
+			drm_rmmap(dev, map);
 	}
-
 
 	drm_dma_takedown(dev);
 	if ( dev->lock.hw_lock ) {
@@ -511,7 +500,7 @@ static int drm_lastclose(drm_device_t *dev)
 
 static int drm_load(drm_device_t *dev)
 {
-	int retcode;
+	int i, retcode;
 
 	DRM_DEBUG( "\n" );
 
@@ -535,6 +524,17 @@ static int drm_load(drm_device_t *dev)
 	drm_sysctl_init(dev);
 #endif
 	TAILQ_INIT(&dev->files);
+
+	dev->counters  = 6;
+	dev->types[0]  = _DRM_STAT_LOCK;
+	dev->types[1]  = _DRM_STAT_OPENS;
+	dev->types[2]  = _DRM_STAT_CLOSES;
+	dev->types[3]  = _DRM_STAT_IOCTLS;
+	dev->types[4]  = _DRM_STAT_LOCKS;
+	dev->types[5]  = _DRM_STAT_UNLOCKS;
+
+	for ( i = 0 ; i < DRM_ARRAY_SIZE(dev->counts) ; i++ )
+		atomic_set( &dev->counts[i], 0 );
 
 	if (dev->driver.load != NULL) {
 		DRM_LOCK();
@@ -772,7 +772,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 			}
 				/* Contention */
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
-			retcode = msleep((void *)&dev->lock.lock_queue,
+			retcode = mtx_sleep((void *)&dev->lock.lock_queue,
 			    &dev->dev_lock, PZERO | PCATCH, "drmlk2", 0);
 #else
 			retcode = tsleep((void *)&dev->lock.lock_queue,

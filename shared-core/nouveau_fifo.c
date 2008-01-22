@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2005-2006 Stephane Marchesin
  * All Rights Reserved.
  *
@@ -28,22 +28,6 @@
 #include "nouveau_drm.h"
 
 
-/* returns the number of hw fifos */
-int nouveau_fifo_number(struct drm_device *dev)
-{
-	struct drm_nouveau_private *dev_priv=dev->dev_private;
-	switch(dev_priv->card_type)
-	{
-		case NV_04:
-		case NV_05:
-			return 16;
-		case NV_50:
-			return 128;
-		default:
-			return 32;
-	}
-}
-
 /* returns the size of fifo context */
 int nouveau_fifo_ctx_size(struct drm_device *dev)
 {
@@ -63,7 +47,7 @@ int nouveau_fifo_ctx_size(struct drm_device *dev)
 
 /* voir nv_xaa.c : NVResetGraphics
  * mémoire mappée par nv_driver.c : NVMapMem
- * voir nv_driver.c : NVPreInit 
+ * voir nv_driver.c : NVPreInit
  */
 
 static int nouveau_fifo_instmem_configure(struct drm_device *dev)
@@ -71,7 +55,7 @@ static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	NV_WRITE(NV03_PFIFO_RAMHT,
-			(0x03 << 24) /* search 128 */ | 
+			(0x03 << 24) /* search 128 */ |
 			((dev_priv->ramht_bits - 9) << 16) |
 			(dev_priv->ramht_offset >> 8)
 			);
@@ -166,7 +150,7 @@ int nouveau_fifo_init(struct drm_device *dev)
 				      NV_PFIFO_CACHE1_DMA_FETCH_MAX_REQS_4 |
 #ifdef __BIG_ENDIAN
 				      NV_PFIFO_CACHE1_BIG_ENDIAN |
-#endif				      
+#endif
 				      0x00000000);
 
 	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH, 0x00000001);
@@ -282,18 +266,19 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 
 	/*
 	 * Alright, here is the full story
-	 * Nvidia cards have multiple hw fifo contexts (praise them for that, 
+	 * Nvidia cards have multiple hw fifo contexts (praise them for that,
 	 * no complicated crash-prone context switches)
-	 * We allocate a new context for each app and let it write to it directly 
+	 * We allocate a new context for each app and let it write to it directly
 	 * (woo, full userspace command submission !)
 	 * When there are no more contexts, you lost
 	 */
-	for(channel=0; channel<nouveau_fifo_number(dev); channel++) {
+	for (channel = 0; channel < engine->fifo.channels; channel++) {
 		if (dev_priv->fifos[channel] == NULL)
 			break;
 	}
+
 	/* no more fifos. you lost. */
-	if (channel==nouveau_fifo_number(dev))
+	if (channel == engine->fifo.channels)
 		return -EINVAL;
 
 	dev_priv->fifos[channel] = drm_calloc(1, sizeof(struct nouveau_channel),
@@ -308,6 +293,28 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 	chan->pushbuf_mem = pushbuf;
 
 	DRM_INFO("Allocating FIFO number %d\n", channel);
+
+	/* Locate channel's user control regs */
+	if (dev_priv->card_type < NV_40) {
+		chan->user = NV03_USER(channel);
+		chan->user_size = NV03_USER_SIZE;
+		chan->put = NV03_USER_DMA_PUT(channel);
+		chan->get = NV03_USER_DMA_GET(channel);
+		chan->ref_cnt = NV03_USER_REF_CNT(channel);
+	} else
+	if (dev_priv->card_type < NV_50) {
+		chan->user = NV40_USER(channel);
+		chan->user_size = NV40_USER_SIZE;
+		chan->put = NV40_USER_DMA_PUT(channel);
+		chan->get = NV40_USER_DMA_GET(channel);
+		chan->ref_cnt = NV40_USER_REF_CNT(channel);
+	} else {
+		chan->user = NV50_USER(channel);
+		chan->user_size = NV50_USER_SIZE;
+		chan->put = NV50_USER_DMA_PUT(channel);
+		chan->get = NV50_USER_DMA_GET(channel);
+		chan->ref_cnt = NV50_USER_REF_CNT(channel);
+	}
 
 	/* Allocate space for per-channel fixed notifier memory */
 	ret = nouveau_notifier_init_channel(chan);
@@ -352,14 +359,11 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 		return ret;
 	}
 
-	/* setup channel's default get/put values */
-	if (dev_priv->card_type < NV_50) {
-		NV_WRITE(NV03_FIFO_REGS_DMAPUT(channel), chan->pushbuf_base);
-		NV_WRITE(NV03_FIFO_REGS_DMAGET(channel), chan->pushbuf_base);
-	} else {
-		NV_WRITE(NV50_FIFO_REGS_DMAPUT(channel), chan->pushbuf_base);
-		NV_WRITE(NV50_FIFO_REGS_DMAGET(channel), chan->pushbuf_base);
-	}
+	/* setup channel's default get/put values
+	 * XXX: quite possibly extremely pointless..
+	 */
+	NV_WRITE(chan->get, chan->pushbuf_base);
+	NV_WRITE(chan->put, chan->pushbuf_base);
 
 	/* If this is the first channel, setup PFIFO ourselves.  For any
 	 * other case, the GPU will handle this when it switches contexts.
@@ -398,8 +402,36 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine = &dev_priv->Engine;
+	uint64_t t_start;
 
 	DRM_INFO("%s: freeing fifo %d\n", __func__, chan->id);
+
+	/* Disable channel switching, if this channel isn't currenly
+	 * active re-enable it if there's still pending commands.
+	 * We really should do a manual context switch here, but I'm
+	 * not sure I trust our ability to do this reliably yet..
+	 */
+	NV_WRITE(NV03_PFIFO_CACHES, 0);
+	if (engine->fifo.channel_id(dev) != chan->id &&
+	    NV_READ(chan->get) != NV_READ(chan->put)) {
+		NV_WRITE(NV03_PFIFO_CACHES, 1);
+	}
+
+	/* Give the channel a chance to idle, wait 2s (hopefully) */
+	t_start = engine->timer.read(dev);
+	while (NV_READ(chan->get) != NV_READ(chan->put) ||
+	       NV_READ(NV03_PFIFO_CACHE1_GET) !=
+	       NV_READ(NV03_PFIFO_CACHE1_PUT)) {
+		if (engine->timer.read(dev) - t_start > 2000000000ULL) {
+			DRM_ERROR("Failed to idle channel %d before destroy."
+				  "Prepare for strangeness..\n", chan->id);
+			break;
+		}
+	}
+
+	/*XXX: Maybe should wait for PGRAPH to finish with the stuff it fetched
+	 *     from CACHE1 too?
+	 */
 
 	/* disable the fifo caches */
 	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
@@ -408,14 +440,12 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
 
 	/* stop the fifo, otherwise it could be running and
-	 * it will crash when removing gpu objects */
-	if (dev_priv->card_type < NV_50) {
-		NV_WRITE(NV03_FIFO_REGS_DMAPUT(chan->id), chan->pushbuf_base);
-		NV_WRITE(NV03_FIFO_REGS_DMAGET(chan->id), chan->pushbuf_base);
-	} else {
-		NV_WRITE(NV50_FIFO_REGS_DMAPUT(chan->id), chan->pushbuf_base);
-		NV_WRITE(NV50_FIFO_REGS_DMAGET(chan->id), chan->pushbuf_base);
-	}
+	 * it will crash when removing gpu objects
+	 *XXX: from real-world evidence, absolutely useless..
+	 */
+	NV_WRITE(chan->get, chan->pushbuf_base);
+	NV_WRITE(chan->put, chan->pushbuf_base);
+
 	// FIXME XXX needs more code
 
 	engine->fifo.destroy_context(chan);
@@ -451,10 +481,11 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 void nouveau_fifo_cleanup(struct drm_device *dev, struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 	int i;
 
 	DRM_DEBUG("clearing FIFO enables from file_priv\n");
-	for(i = 0; i < nouveau_fifo_number(dev); i++) {
+	for(i = 0; i < engine->fifo.channels; i++) {
 		struct nouveau_channel *chan = dev_priv->fifos[i];
 
 		if (chan && chan->file_priv == file_priv)
@@ -467,8 +498,9 @@ nouveau_fifo_owner(struct drm_device *dev, struct drm_file *file_priv,
 		   int channel)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
 
-	if (channel >= nouveau_fifo_number(dev))
+	if (channel >= engine->fifo.channels)
 		return 0;
 	if (dev_priv->fifos[channel] == NULL)
 		return 0;
@@ -508,14 +540,8 @@ static int nouveau_ioctl_fifo_alloc(struct drm_device *dev, void *data,
 
 	/* make the fifo available to user space */
 	/* first, the fifo control regs */
-	init->ctrl = dev_priv->mmio->offset;
-	if (dev_priv->card_type < NV_50) {
-		init->ctrl      += NV03_FIFO_REGS(init->channel);
-		init->ctrl_size  = NV03_FIFO_REGS_SIZE;
-	} else {
-		init->ctrl      += NV50_FIFO_REGS(init->channel);
-		init->ctrl_size  = NV50_FIFO_REGS_SIZE;
-	}
+	init->ctrl = dev_priv->mmio->offset + chan->user;
+	init->ctrl_size = chan->user_size;
 	res = drm_addmap(dev, init->ctrl, init->ctrl_size, _DRM_REGISTERS,
 			 0, &chan->regs);
 	if (res != 0)

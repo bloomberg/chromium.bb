@@ -235,12 +235,12 @@ struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
 		entry = list_entry(list, struct drm_mm_node, fl_entry);
 		wasted = 0;
 
-		if (entry->size < size) 
+		if (entry->size < size)
 			continue;
 
 		if (alignment) {
 			register unsigned tmp = entry->start % alignment;
-			if (tmp) 
+			if (tmp)
 				wasted += alignment - tmp;
 		}
 

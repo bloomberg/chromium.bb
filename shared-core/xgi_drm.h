@@ -62,14 +62,14 @@ enum xgi_mem_location {
 struct xgi_mem_alloc {
 	/**
 	 * Memory region to be used for allocation.
-	 * 
+	 *
 	 * Must be one of XGI_MEMLOC_NON_LOCAL or XGI_MEMLOC_LOCAL.
 	 */
 	unsigned int location;
 
 	/**
 	 * Number of bytes request.
-	 * 
+	 *
 	 * On successful allocation, set to the actual number of bytes
 	 * allocated.
 	 */
@@ -87,7 +87,7 @@ struct xgi_mem_alloc {
 
 	/**
 	 * Magic handle used to release memory.
-	 * 
+	 *
 	 * See also DRM_XGI_FREE ioctl.
 	 */
 	__u32 index;

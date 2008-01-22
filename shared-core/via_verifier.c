@@ -77,7 +77,7 @@ typedef enum {
 /*
  * Associates each hazard above with a possible multi-command
  * sequence. For example an address that is split over multiple
- * commands and that needs to be checked at the first command 
+ * commands and that needs to be checked at the first command
  * that does not include any part of the address.
  */
 
@@ -249,10 +249,10 @@ eat_words(const uint32_t ** buf, const uint32_t * buf_end, unsigned num_words)
  * Partially stolen from drm_memory.h
  */
 
-static __inline__ drm_local_map_t *via_drm_lookup_agp_map(drm_via_state_t * seq,
+static __inline__ drm_local_map_t *via_drm_lookup_agp_map(drm_via_state_t *seq,
 							  unsigned long offset,
 							  unsigned long size,
-							  struct drm_device * dev)
+							  struct drm_device *dev)
 {
 #ifdef __linux__
 	struct drm_map_list *r_list;
@@ -283,10 +283,10 @@ static __inline__ drm_local_map_t *via_drm_lookup_agp_map(drm_via_state_t * seq,
 }
 
 /*
- * Require that all AGP texture levels reside in the same AGP map which should 
+ * Require that all AGP texture levels reside in the same AGP map which should
  * be mappable by the client. This is not a big restriction.
- * FIXME: To actually enforce this security policy strictly, drm_rmmap 
- * would have to wait for dma quiescent before removing an AGP map. 
+ * FIXME: To actually enforce this security policy strictly, drm_rmmap
+ * would have to wait for dma quiescent before removing an AGP map.
  * The via_drm_lookup_agp_map call in reality seems to take
  * very little CPU time.
  */
@@ -451,15 +451,15 @@ investigate_hazard(uint32_t cmd, hazard_t hz, drm_via_state_t * cur_seq)
 	case check_texture_addr3:
 		cur_seq->unfinished = tex_address;
 		tmp = ((cmd >> 24) - HC_SubA_HTXnL0Pit);
-		if (tmp == 0 && 
+		if (tmp == 0 &&
 		    (cmd & HC_HTXnEnPit_MASK)) {
-			cur_seq->pitch[cur_seq->texture][tmp] = 
+			cur_seq->pitch[cur_seq->texture][tmp] =
 				(cmd & HC_HTXnLnPit_MASK);
 			cur_seq->tex_npot[cur_seq->texture] = 1;
 		} else {
 			cur_seq->pitch[cur_seq->texture][tmp] =
 				(cmd & HC_HTXnLnPitE_MASK) >> HC_HTXnLnPitE_SHIFT;
-			cur_seq->tex_npot[cur_seq->texture] = 0;			
+			cur_seq->tex_npot[cur_seq->texture] = 0;
 			if (cmd & 0x000FFFFF) {
 				DRM_ERROR
 					("Unimplemented texture level 0 pitch mode.\n");
@@ -1007,7 +1007,7 @@ via_verify_command_stream(const uint32_t * buf, unsigned int size,
 			state = via_check_vheader6(&buf, buf_end);
 			break;
 		case state_command:
-			if ((HALCYON_HEADER2 == (cmd = *buf)) && 
+			if ((HALCYON_HEADER2 == (cmd = *buf)) &&
 			    supported_3d)
 				state = state_header2;
 			else if ((cmd & HALCYON_HEADER1MASK) == HALCYON_HEADER1)

@@ -41,7 +41,7 @@ static void *drm_ati_alloc_pcigart_table(int order)
 	struct page *page;
 	int i;
 
-	DRM_DEBUG("%s: alloc %d order\n", __FUNCTION__, order);
+	DRM_DEBUG("%d order\n", order);
 
 	address = __get_free_pages(GFP_KERNEL | __GFP_COMP,
 				   order);
@@ -58,7 +58,7 @@ static void *drm_ati_alloc_pcigart_table(int order)
 		SetPageReserved(page);
 	}
 
-	DRM_DEBUG("%s: returning 0x%08lx\n", __FUNCTION__, address);
+	DRM_DEBUG("returning 0x%08lx\n", address);
 	return (void *)address;
 }
 
@@ -67,7 +67,7 @@ static void drm_ati_free_pcigart_table(void *address, int order)
 	struct page *page;
 	int i;
 	int num_pages = 1 << order;
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	page = virt_to_page((unsigned long)address);
 
@@ -81,7 +81,7 @@ static void drm_ati_free_pcigart_table(void *address, int order)
 	free_pages((unsigned long)address, order);
 }
 
-int drm_ati_pcigart_cleanup(struct drm_device *dev, struct ati_pcigart_info *gart_info)
+int drm_ati_pcigart_cleanup(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info)
 {
 	struct drm_sg_mem *entry = dev->sg;
 	unsigned long pages;
@@ -132,7 +132,7 @@ int drm_ati_pcigart_cleanup(struct drm_device *dev, struct ati_pcigart_info *gar
 }
 EXPORT_SYMBOL(drm_ati_pcigart_cleanup);
 
-int drm_ati_pcigart_init(struct drm_device *dev, struct ati_pcigart_info *gart_info)
+int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info)
 {
 	struct drm_sg_mem *entry = dev->sg;
 	void *address = NULL;

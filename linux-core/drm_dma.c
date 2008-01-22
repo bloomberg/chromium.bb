@@ -43,7 +43,7 @@
  *
  * Allocate and initialize a drm_device_dma structure.
  */
-int drm_dma_setup(struct drm_device * dev)
+int drm_dma_setup(struct drm_device *dev)
 {
 	int i;
 
@@ -65,9 +65,9 @@ int drm_dma_setup(struct drm_device * dev)
  * \param dev DRM device.
  *
  * Free all pages associated with DMA buffers, the buffers and pages lists, and
- * finally the the drm_device::dma structure itself.
+ * finally the drm_device::dma structure itself.
  */
-void drm_dma_takedown(struct drm_device * dev)
+void drm_dma_takedown(struct drm_device *dev)
 {
 	struct drm_device_dma *dma = dev->dma;
 	int i, j;
@@ -129,7 +129,7 @@ void drm_dma_takedown(struct drm_device * dev)
  *
  * Resets the fields of \p buf.
  */
-void drm_free_buffer(struct drm_device * dev, struct drm_buf * buf)
+void drm_free_buffer(struct drm_device *dev, struct drm_buf *buf)
 {
 	if (!buf)
 		return;

@@ -90,7 +90,7 @@ static void xgi_ge_hang_reset(struct drm_map * map)
 
 	DRM_WRITE8(map, 0xb057, 8);
 	while (0 != le32_to_cpu(DRM_READ32(map, 0x2800) & 0xf0000000)) {
-		while (0 != ((--time_out) & 0xfff)) 
+		while (0 != ((--time_out) & 0xfff))
 			/* empty */ ;
 
 		if (0 == time_out) {
@@ -117,8 +117,8 @@ static void xgi_ge_hang_reset(struct drm_map * map)
 			DRM_WRITE8(map, 0x3d4, 0x36);
 			old_36 = DRM_READ8(map, 0x3d5);
 			DRM_WRITE8(map, 0x3d5, old_36 | 0x10);
-			
-			while (0 != ((--time_out) & 0xfff)) 
+
+			while (0 != ((--time_out) & 0xfff))
 				/* empty */ ;
 
 			DRM_WRITE8(map, 0x3d5, old_36);
@@ -134,7 +134,7 @@ static void xgi_ge_hang_reset(struct drm_map * map)
 	DRM_WRITE8(map, 0xb057, 0);
 }
 
-	
+
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
 	const u32 int_status = le32_to_cpu(DRM_READ32(info->mmio_map, 0x2810));
@@ -143,7 +143,7 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 	/* Check GE on/off */
 	if (0 == (0xffffc0f0 & int_status)) {
 		if (0 != (0x1000 & int_status)) {
-			/* We got GE stall interrupt. 
+			/* We got GE stall interrupt.
 			 */
 			DRM_WRITE32(info->mmio_map, 0x2810,
 				    cpu_to_le32(int_status | 0x04000000));
@@ -289,7 +289,7 @@ static void dump_reg(struct xgi_info * info, unsigned regbase, unsigned range)
 		printk("%1x ", i);
 
 		for (j = 0; j < 0x10; j++) {
-			u8 temp = DRM_READ8(info->mmio_map, 
+			u8 temp = DRM_READ8(info->mmio_map,
 					    regbase + (i * 0x10) + j);
 			printk("%3x", temp);
 		}

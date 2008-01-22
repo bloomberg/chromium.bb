@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright (c) 2007 Tungsten Graphics, Inc., Cedar Park, TX., USA
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,7 +10,7 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
@@ -19,8 +19,8 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
  * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
@@ -35,7 +35,7 @@
  * have not been requested to free also pinned regions.
  */
 
-static void drm_bo_free_old_node(struct drm_buffer_object * bo)
+static void drm_bo_free_old_node(struct drm_buffer_object *bo)
 {
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
@@ -48,13 +48,13 @@ static void drm_bo_free_old_node(struct drm_buffer_object * bo)
 	old_mem->mm_node = NULL;
 }
 
-int drm_bo_move_ttm(struct drm_buffer_object * bo,
-		    int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
+int drm_bo_move_ttm(struct drm_buffer_object *bo,
+		    int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_ttm *ttm = bo->ttm;
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	uint64_t save_flags = old_mem->flags;
-	uint64_t save_mask = old_mem->mask;
+	uint64_t save_proposed_flags = old_mem->proposed_flags;
 	int ret;
 
 	if (old_mem->mem_type == DRM_BO_MEM_TT) {
@@ -71,18 +71,17 @@ int drm_bo_move_ttm(struct drm_buffer_object * bo,
 		save_flags = old_mem->flags;
 	}
 	if (new_mem->mem_type != DRM_BO_MEM_LOCAL) {
-		ret = drm_bind_ttm(ttm, new_mem);
+		ret = drm_ttm_bind(ttm, new_mem);
 		if (ret)
 			return ret;
 	}
 
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
-	old_mem->mask = save_mask;
+	old_mem->proposed_flags = save_proposed_flags;
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 	return 0;
 }
-
 EXPORT_SYMBOL(drm_bo_move_ttm);
 
 /**
@@ -90,17 +89,17 @@ EXPORT_SYMBOL(drm_bo_move_ttm);
  *
  * \param bo The buffer object.
  * \return Failure indication.
- * 
+ *
  * Returns -EINVAL if the buffer object is currently not mappable.
  * Returns -ENOMEM if the ioremap operation failed.
  * Otherwise returns zero.
- * 
+ *
  * After a successfull call, bo->iomap contains the virtual address, or NULL
- * if the buffer object content is not accessible through PCI space. 
+ * if the buffer object content is not accessible through PCI space.
  * Call bo->mutex locked.
  */
 
-int drm_mem_reg_ioremap(struct drm_device * dev, struct drm_bo_mem_reg * mem,
+int drm_mem_reg_ioremap(struct drm_device *dev, struct drm_bo_mem_reg *mem,
 			void **virtual)
 {
 	struct drm_buffer_manager *bm = &dev->bm;
@@ -136,7 +135,7 @@ EXPORT_SYMBOL(drm_mem_reg_ioremap);
  * Call bo->mutex locked.
  */
 
-void drm_mem_reg_iounmap(struct drm_device * dev, struct drm_bo_mem_reg * mem,
+void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg *mem,
 			 void *virtual)
 {
 	struct drm_buffer_manager *bm;
@@ -145,9 +144,8 @@ void drm_mem_reg_iounmap(struct drm_device * dev, struct drm_bo_mem_reg * mem,
 	bm = &dev->bm;
 	man = &bm->man[mem->mem_type];
 
-	if (virtual && (man->flags & _DRM_FLAG_NEEDS_IOREMAP)) {
+	if (virtual && (man->flags & _DRM_FLAG_NEEDS_IOREMAP))
 		iounmap(virtual);
-	}
 }
 
 static int drm_copy_io_page(void *dst, void *src, unsigned long page)
@@ -163,7 +161,8 @@ static int drm_copy_io_page(void *dst, void *src, unsigned long page)
 	return 0;
 }
 
-static int drm_copy_io_ttm_page(struct drm_ttm * ttm, void *src, unsigned long page)
+static int drm_copy_io_ttm_page(struct drm_ttm *ttm, void *src,
+				unsigned long page)
 {
 	struct page *d = drm_ttm_get_page(ttm, page);
 	void *dst;
@@ -181,7 +180,7 @@ static int drm_copy_io_ttm_page(struct drm_ttm * ttm, void *src, unsigned long p
 	return 0;
 }
 
-static int drm_copy_ttm_io_page(struct drm_ttm * ttm, void *dst, unsigned long page)
+static int drm_copy_ttm_io_page(struct drm_ttm *ttm, void *dst, unsigned long page)
 {
 	struct page *s = drm_ttm_get_page(ttm, page);
 	void *src;
@@ -199,8 +198,8 @@ static int drm_copy_ttm_io_page(struct drm_ttm * ttm, void *dst, unsigned long p
 	return 0;
 }
 
-int drm_bo_move_memcpy(struct drm_buffer_object * bo,
-		       int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
+int drm_bo_move_memcpy(struct drm_buffer_object *bo,
+		       int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_device *dev = bo->dev;
 	struct drm_mem_type_manager *man = &dev->bm.man[new_mem->mem_type];
@@ -211,7 +210,7 @@ int drm_bo_move_memcpy(struct drm_buffer_object * bo,
 	void *new_iomap;
 	int ret;
 	uint64_t save_flags = old_mem->flags;
-	uint64_t save_mask = old_mem->mask;
+	uint64_t save_proposed_flags = old_mem->proposed_flags;
 	unsigned long i;
 	unsigned long page;
 	unsigned long add = 0;
@@ -251,27 +250,26 @@ int drm_bo_move_memcpy(struct drm_buffer_object * bo,
 			goto out1;
 	}
 	mb();
-      out2:
+out2:
 	drm_bo_free_old_node(bo);
 
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
-	old_mem->mask = save_mask;
+	old_mem->proposed_flags = save_proposed_flags;
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 
 	if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (ttm != NULL)) {
 		drm_ttm_unbind(ttm);
-		drm_destroy_ttm(ttm);
+		drm_ttm_destroy(ttm);
 		bo->ttm = NULL;
 	}
 
-      out1:
+out1:
 	drm_mem_reg_iounmap(dev, new_mem, new_iomap);
-      out:
+out:
 	drm_mem_reg_iounmap(dev, &old_copy, old_iomap);
 	return ret;
 }
-
 EXPORT_SYMBOL(drm_bo_move_memcpy);
 
 /*
@@ -280,8 +278,8 @@ EXPORT_SYMBOL(drm_bo_move_memcpy);
  * object. Call bo->mutex locked.
  */
 
-int drm_buffer_object_transfer(struct drm_buffer_object * bo,
-			       struct drm_buffer_object ** new_obj)
+int drm_buffer_object_transfer(struct drm_buffer_object *bo,
+			       struct drm_buffer_object **new_obj)
 {
 	struct drm_buffer_object *fbo;
 	struct drm_device *dev = bo->dev;
@@ -305,7 +303,7 @@ int drm_buffer_object_transfer(struct drm_buffer_object * bo,
 	INIT_LIST_HEAD(&fbo->p_mm_list);
 #endif
 
-	drm_fence_reference_unlocked(&fbo->fence, bo->fence);
+	fbo->fence = drm_fence_reference_locked(bo->fence);
 	fbo->pinned_node = NULL;
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);
@@ -322,19 +320,17 @@ int drm_buffer_object_transfer(struct drm_buffer_object * bo,
  * We cannot restart until it has finished.
  */
 
-int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
-			      int evict,
-			      int no_wait,
-			      uint32_t fence_class,
-			      uint32_t fence_type,
-			      uint32_t fence_flags, struct drm_bo_mem_reg * new_mem)
+int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
+			      int evict, int no_wait, uint32_t fence_class,
+			      uint32_t fence_type, uint32_t fence_flags,
+			      struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_device *dev = bo->dev;
 	struct drm_mem_type_manager *man = &dev->bm.man[new_mem->mem_type];
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int ret;
 	uint64_t save_flags = old_mem->flags;
-	uint64_t save_mask = old_mem->mask;
+	uint64_t save_proposed_flags = old_mem->proposed_flags;
 	struct drm_buffer_object *old_obj;
 
 	if (bo->fence)
@@ -349,11 +345,11 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 #ifdef DRM_ODD_MM_COMPAT
 	/*
 	 * In this mode, we don't allow pipelining a copy blit,
-	 * since the buffer will be accessible from user space 
+	 * since the buffer will be accessible from user space
 	 * the moment we return and rebuild the page tables.
 	 *
 	 * With normal vm operation, page tables are rebuilt
-	 * on demand using fault(), which waits for buffer idle. 
+	 * on demand using fault(), which waits for buffer idle.
 	 */
 	if (1)
 #else
@@ -369,7 +365,7 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 
 		if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (bo->ttm != NULL)) {
 			drm_ttm_unbind(bo->ttm);
-			drm_destroy_ttm(bo->ttm);
+			drm_ttm_destroy(bo->ttm);
 			bo->ttm = NULL;
 		}
 	} else {
@@ -403,11 +399,10 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object * bo,
 
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
-	old_mem->mask = save_mask;
+	old_mem->proposed_flags = save_proposed_flags;
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 	return 0;
 }
-
 EXPORT_SYMBOL(drm_bo_move_accel_cleanup);
 
 int drm_bo_same_page(unsigned long offset,
@@ -420,12 +415,10 @@ EXPORT_SYMBOL(drm_bo_same_page);
 unsigned long drm_bo_offset_end(unsigned long offset,
 				unsigned long end)
 {
-
 	offset = (offset + PAGE_SIZE) & PAGE_MASK;
 	return (end < offset) ? end : offset;
 }
 EXPORT_SYMBOL(drm_bo_offset_end);
-
 
 static pgprot_t drm_kernel_io_prot(uint32_t map_type)
 {
@@ -475,8 +468,9 @@ static int drm_bo_ioremap(struct drm_buffer_object *bo, unsigned long bus_base,
 	return (!map->virtual) ? -ENOMEM : 0;
 }
 
-static int drm_bo_kmap_ttm(struct drm_buffer_object *bo, unsigned long start_page,
-			   unsigned long num_pages, struct drm_bo_kmap_obj *map)
+static int drm_bo_kmap_ttm(struct drm_buffer_object *bo,
+			   unsigned long start_page, unsigned long num_pages,
+			   struct drm_bo_kmap_obj *map)
 {
 	struct drm_device *dev = bo->dev;
 	struct drm_bo_mem_reg *mem = &bo->mem;
@@ -503,7 +497,7 @@ static int drm_bo_kmap_ttm(struct drm_buffer_object *bo, unsigned long start_pag
 		 * Populate the part we're mapping;
 		 */
 
-		for (i = start_page; i< start_page + num_pages; ++i) {
+		for (i = start_page; i < start_page + num_pages; ++i) {
 			d = drm_ttm_get_page(ttm, i);
 			if (!d)
 				return -ENOMEM;
@@ -530,7 +524,8 @@ static int drm_bo_kmap_ttm(struct drm_buffer_object *bo, unsigned long start_pag
  * and caching policy the buffer currently has.
  * Mapping multiple pages or buffers that live in io memory is a bit slow and
  * consumes vmalloc space. Be restrictive with such mappings.
- * Mapping single pages usually returns the logical kernel address, (which is fast)
+ * Mapping single pages usually returns the logical kernel address,
+ * (which is fast)
  * BUG may use slower temporary mappings for high memory pages or
  * uncached / write-combined pages.
  *
@@ -581,7 +576,7 @@ void drm_bo_kunmap(struct drm_bo_kmap_obj *map)
 	if (!map->virtual)
 		return;
 
-	switch(map->bo_kmap_type) {
+	switch (map->bo_kmap_type) {
 	case bo_map_iomap:
 		iounmap(map->virtual);
 		break;

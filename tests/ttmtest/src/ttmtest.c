@@ -35,6 +35,7 @@
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <stdint.h>
 #include <drm/drm.h>
 #include "xf86dri.h"
 #include "xf86drm.h"
@@ -176,13 +177,11 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
     /*
      * Test system memory objects.
      */
-
     oldTime = fastrdtsc();
-    BM_CKFATAL(drmBOCreate(ctx->drmFD, 0, size, 0, NULL,
-	    drm_bo_type_dc,
-	    DRM_BO_FLAG_READ |
-	    DRM_BO_FLAG_WRITE |
-			   DRM_BO_FLAG_MEM_LOCAL /*| DRM_BO_FLAG_NO_MOVE*/, 0, &buf));
+    BM_CKFATAL(drmBOCreate(ctx->drmFD, size, 0, NULL,
+			   DRM_BO_FLAG_READ |
+			   DRM_BO_FLAG_WRITE |
+			   DRM_BO_FLAG_MEM_LOCAL, 0, &buf));
     curTime = fastrdtsc();
     *ticks++ = time_diff(oldTime, curTime);
 
@@ -216,12 +215,12 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
      * Test TT bound buffer objects.
      */
 
-    BM_CKFATAL(drmGetLock(ctx->drmFD, ctx->hwContext, 0));
     oldTime = fastrdtsc();
-    BM_CKFATAL(drmBOValidate(ctx->drmFD, &buf,
-	    DRM_BO_FLAG_MEM_TT, DRM_BO_MASK_MEM, DRM_BO_HINT_DONT_FENCE));
+    BM_CKFATAL(drmBOSetStatus(ctx->drmFD, &buf,
+			     DRM_BO_FLAG_MEM_TT, 
+			     DRM_BO_MASK_MEM, 
+			      0,0,0));
     curTime = fastrdtsc();
-    BM_CKFATAL(drmUnlock(ctx->drmFD, ctx->hwContext));
     *ticks++ = time_diff(oldTime, curTime);
 
     oldTime = fastrdtsc();
@@ -247,10 +246,9 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
 
     BM_CKFATAL(drmBOUnmap(ctx->drmFD, &buf));
 
-    BM_CKFATAL(drmGetLock(ctx->drmFD, ctx->hwContext, 0));
     oldTime = fastrdtsc();
-    BM_CKFATAL(drmBOValidate(ctx->drmFD, &buf,
-	    DRM_BO_FLAG_MEM_LOCAL, DRM_BO_MASK_MEM, DRM_BO_HINT_DONT_FENCE));
+    BM_CKFATAL(drmBOSetStatus(ctx->drmFD, &buf,
+			     DRM_BO_FLAG_MEM_LOCAL, DRM_BO_MASK_MEM, 0, 0,0));
     curTime = fastrdtsc();
     *ticks++ = time_diff(oldTime, curTime);
 
@@ -259,15 +257,18 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
      */
 
     oldTime = fastrdtsc();
-    ret = drmBOValidate(ctx->drmFD, &buf,
-	DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING,
-	DRM_BO_MASK_MEMTYPE | DRM_BO_FLAG_FORCE_CACHING, DRM_BO_HINT_DONT_FENCE);
+    ret = drmBOSetStatus(ctx->drmFD, &buf,
+			 DRM_BO_FLAG_MEM_TT | 
+			 DRM_BO_FLAG_CACHED | 
+			 DRM_BO_FLAG_FORCE_CACHING,
+			 DRM_BO_MASK_MEMTYPE | 
+			 DRM_BO_FLAG_FORCE_CACHING,
+			 0, 0, 0);
     curTime = fastrdtsc();
-    drmUnlock(ctx->drmFD, ctx->hwContext);
 
     if (ret) {
 	printf("Couldn't bind cached. Probably no support\n");
-	BM_CKFATAL(drmBODestroy(ctx->drmFD, &buf));
+	BM_CKFATAL(drmBOUnreference(ctx->drmFD, &buf));
 	return 1;
     }
     *ticks++ = time_diff(oldTime, curTime);
@@ -295,7 +296,7 @@ benchmarkBuffer(TinyDRIContext * ctx, unsigned long size,
     *ticks++ = time_diff(oldTime, curTime);
 
     BM_CKFATAL(drmBOUnmap(ctx->drmFD, &buf));
-    BM_CKFATAL(drmBODestroy(ctx->drmFD, &buf));
+    BM_CKFATAL(drmBOUnreference(ctx->drmFD, &buf));
 
     return 0;
 }

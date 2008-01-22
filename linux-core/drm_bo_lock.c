@@ -31,19 +31,19 @@
 /*
  * This file implements a simple replacement for the buffer manager use
  * of the heavyweight hardware lock.
- * The lock is a read-write lock. Taking it in read mode is fast, and 
+ * The lock is a read-write lock. Taking it in read mode is fast, and
  * intended for in-kernel use only.
  * Taking it in write mode is slow.
  *
- * The write mode is used only when there is a need to block all 
- * user-space processes from allocating a 
+ * The write mode is used only when there is a need to block all
+ * user-space processes from allocating a
  * new memory area.
  * Typical use in write mode is X server VT switching, and it's allowed
  * to leave kernel space with the write lock held. If a user-space process
  * dies while having the write-lock, it will be released during the file
  * descriptor release.
  *
- * The read lock is typically placed at the start of an IOCTL- or 
+ * The read lock is typically placed at the start of an IOCTL- or
  * user-space callable function that may end up allocating a memory area.
  * This includes setstatus, super-ioctls and no_pfn; the latter may move
  * unmappable regions to mappable. It's a bug to leave kernel space with the
@@ -53,7 +53,7 @@
  * latency. The locking functions will return -EAGAIN if interrupted by a
  * signal.
  *
- * Locking order: The lock should be taken BEFORE any kernel mutexes 
+ * Locking order: The lock should be taken BEFORE any kernel mutexes
  * or spinlocks.
  */
 
@@ -73,7 +73,6 @@ void drm_bo_read_unlock(struct drm_bo_lock *lock)
 	if (atomic_read(&lock->readers) == 0)
 		wake_up_interruptible(&lock->queue);
 }
-
 EXPORT_SYMBOL(drm_bo_read_unlock);
 
 int drm_bo_read_lock(struct drm_bo_lock *lock)
@@ -95,7 +94,6 @@ int drm_bo_read_lock(struct drm_bo_lock *lock)
 	}
 	return 0;
 }
-
 EXPORT_SYMBOL(drm_bo_read_lock);
 
 static int __drm_bo_write_unlock(struct drm_bo_lock *lock)
@@ -123,9 +121,8 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 	int ret = 0;
 	struct drm_device *dev;
 
-	if (unlikely(atomic_cmpxchg(&lock->write_lock_pending, 0, 1) != 0)) {
+	if (unlikely(atomic_cmpxchg(&lock->write_lock_pending, 0, 1) != 0))
 		return -EINVAL;
-	}
 
 	while (unlikely(atomic_cmpxchg(&lock->readers, 0, -1) != 0)) {
 		ret = wait_event_interruptible
@@ -140,7 +137,7 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 
 	/*
 	 * Add a dummy user-object, the destructor of which will
-	 * make sure the lock is released if the client dies 
+	 * make sure the lock is released if the client dies
 	 * while holding it.
 	 */
 
@@ -149,9 +146,9 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 	ret = drm_add_user_object(file_priv, &lock->base, 0);
 	lock->base.remove = &drm_bo_write_lock_remove;
 	lock->base.type = drm_lock_type;
-	if (ret) {
+	if (ret)
 		(void)__drm_bo_write_unlock(lock);
-	}
+
 	mutex_unlock(&dev->struct_mutex);
 
 	return ret;

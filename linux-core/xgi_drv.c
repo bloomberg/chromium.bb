@@ -352,7 +352,7 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 	struct drm_device *dev = (struct drm_device *) arg;
 	struct xgi_info *info = dev->dev_private;
 	const u32 irq_bits = le32_to_cpu(DRM_READ32(info->mmio_map,
-					(0x2800 
+					(0x2800
 					 + M2REG_AUTO_LINK_STATUS_ADDRESS)))
 		& (M2REG_ACTIVE_TIMER_INTERRUPT_MASK
 		   | M2REG_ACTIVE_INTERRUPT_0_MASK
@@ -361,7 +361,7 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 
 
 	if (irq_bits != 0) {
-		DRM_WRITE32(info->mmio_map, 
+		DRM_WRITE32(info->mmio_map,
 			    0x2800 + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			    cpu_to_le32(M2REG_AUTO_LINK_SETTING_COMMAND | irq_bits));
 		xgi_fence_handler(dev);
@@ -413,7 +413,7 @@ int xgi_driver_load(struct drm_device *dev, unsigned long flags)
 
 
 	return 0;
-	
+
 fail:
 	drm_free(info, sizeof(*info), DRM_MEM_DRIVER);
 	return err;

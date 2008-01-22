@@ -89,10 +89,8 @@ typedef enum {
 	if (dchan->cur != dchan->put) {                                        \
 		DRM_MEMORYBARRIER();                                           \
 		dchan->put = dchan->cur;                                       \
-		NV_WRITE(NV03_FIFO_REGS_DMAPUT(dchan->chan->id),               \
-			 (dchan->put<<2));                                     \
+		NV_WRITE(dchan->chan->put, dchan->put << 2);                   \
 	}                                                                      \
 } while(0)
 
 #endif
-

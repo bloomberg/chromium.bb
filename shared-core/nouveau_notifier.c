@@ -115,7 +115,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 		} else {
 			target = NV_DMA_TARGET_AGP;
 		}
-	} else 
+	} else
 	if (chan->notifier_block->flags & NOUVEAU_MEM_PCI) {
 		target = NV_DMA_TARGET_PCI_NONLINEAR;
 	} else {
@@ -163,4 +163,3 @@ nouveau_ioctl_notifier_alloc(struct drm_device *dev, void *data,
 
 	return 0;
 }
-

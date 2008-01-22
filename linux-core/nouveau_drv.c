@@ -81,6 +81,9 @@ static struct drm_driver driver = {
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
 
+        .bo_driver = &nouveau_bo_driver,
+        .fence_driver = &nouveau_fence_driver,
+
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = DRIVER_DATE,

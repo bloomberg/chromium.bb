@@ -302,10 +302,10 @@ typedef struct drm_mga_init {
 typedef struct drm_mga_dma_bootstrap {
 	/**
 	 * \name AGP texture region
-	 * 
+	 *
 	 * On return from the DRM_MGA_DMA_BOOTSTRAP ioctl, these fields will
 	 * be filled in with the actual AGP texture settings.
-	 * 
+	 *
 	 * \warning
 	 * If these fields are non-zero, but dma_mga_dma_bootstrap::agp_mode
 	 * is zero, it means that PCI memory (most likely through the use of
@@ -319,7 +319,7 @@ typedef struct drm_mga_dma_bootstrap {
 
 	/**
 	 * Requested size of the primary DMA region.
-	 * 
+	 *
 	 * On return from the DRM_MGA_DMA_BOOTSTRAP ioctl, this field will be
 	 * filled in with the actual AGP mode.  If AGP was not available
 	 */
@@ -328,18 +328,18 @@ typedef struct drm_mga_dma_bootstrap {
 
 	/**
 	 * Requested number of secondary DMA buffers.
-	 * 
+	 *
 	 * On return from the DRM_MGA_DMA_BOOTSTRAP ioctl, this field will be
 	 * filled in with the actual number of secondary DMA buffers
 	 * allocated.  Particularly when PCI DMA is used, this may be
 	 * (subtantially) less than the number requested.
 	 */
 	uint32_t secondary_bin_count;
-	
-	
+
+
 	/**
 	 * Requested size of each secondary DMA buffer.
-	 * 
+	 *
 	 * While the kernel \b is free to reduce
 	 * dma_mga_dma_bootstrap::secondary_bin_count, it is \b not allowed
 	 * to reduce dma_mga_dma_bootstrap::secondary_bin_size.
@@ -352,7 +352,7 @@ typedef struct drm_mga_dma_bootstrap {
 	 * \c AGPSTAT2_2X, and \c AGPSTAT2_4X are supported.  If this value is
 	 * zero, it means that PCI DMA should be used, even if AGP is
 	 * possible.
-	 * 
+	 *
 	 * On return from the DRM_MGA_DMA_BOOTSTRAP ioctl, this field will be
 	 * filled in with the actual AGP mode.  If AGP was not available
 	 * (i.e., PCI DMA was used), this value will be zero.

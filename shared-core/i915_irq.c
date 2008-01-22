@@ -3,7 +3,7 @@
 /*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -11,11 +11,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -23,7 +23,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #include "drmP.h"
@@ -339,11 +339,11 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 	pipea_stats = I915_READ(I915REG_PIPEASTAT);
 	pipeb_stats = I915_READ(I915REG_PIPEBSTAT);
-		
+
 	temp = I915_READ16(I915REG_INT_IDENTITY_R);
 
 #if 0
-	DRM_DEBUG("%s flag=%08x\n", __FUNCTION__, temp);
+	DRM_DEBUG("flag=%08x\n", temp);
 #endif
 	if (temp == 0)
 		return IRQ_NONE;
@@ -375,7 +375,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	if (temp & (VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG)) {
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
-		I915_WRITE(I915REG_PIPEASTAT, 
+		I915_WRITE(I915REG_PIPEASTAT,
 			pipea_stats|I915_VBLANK_INTERRUPT_ENABLE|
 			I915_VBLANK_CLEAR);
 		I915_WRITE(I915REG_PIPEBSTAT,
@@ -386,15 +386,14 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_HANDLED;
 }
 
-int i915_emit_irq(struct drm_device * dev)
+int i915_emit_irq(struct drm_device *dev)
 {
-	
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
 	i915_kernel_lost_context(dev);
 
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	i915_emit_breadcrumb(dev);
 
@@ -404,8 +403,6 @@ int i915_emit_irq(struct drm_device * dev)
 	ADVANCE_LP_RING();
 
 	return dev_priv->counter;
-
-
 }
 
 void i915_user_irq_on(drm_i915_private_t *dev_priv)
@@ -418,7 +415,7 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
 }
-		
+
 void i915_user_irq_off(drm_i915_private_t *dev_priv)
 {
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
@@ -428,29 +425,26 @@ void i915_user_irq_off(drm_i915_private_t *dev_priv)
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 }
-		
+
 
 static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int ret = 0;
 
-	DRM_DEBUG("%s irq_nr=%d breadcrumb=%d\n", __FUNCTION__, irq_nr,
+	DRM_DEBUG("irq_nr=%d breadcrumb=%d\n", irq_nr,
 		  READ_BREADCRUMB(dev_priv));
 
 	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
 		return 0;
 
-	dev_priv->sarea_priv->perf_boxes |= I915_BOX_WAIT;
-	
 	i915_user_irq_on(dev_priv);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
 		    READ_BREADCRUMB(dev_priv) >= irq_nr);
 	i915_user_irq_off(dev_priv);
 
 	if (ret == -EBUSY) {
-		DRM_ERROR("%s: EBUSY -- rec: %d emitted: %d\n",
-			  __FUNCTION__,
+		DRM_ERROR("EBUSY -- rec: %d emitted: %d\n",
 			  READ_BREADCRUMB(dev_priv), (int)dev_priv->counter);
 	}
 
@@ -460,7 +454,8 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 
 /* Needs the lock as it touches the ring.
  */
-int i915_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_priv)
+int i915_irq_emit(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_irq_emit_t *emit = data;
@@ -469,7 +464,7 @@ int i915_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_priv
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -492,7 +487,7 @@ int i915_irq_wait(struct drm_device *dev, void *data,
 	drm_i915_irq_wait_t *irqwait = data;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -560,13 +555,12 @@ int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 	drm_i915_vblank_pipe_t *pipe = data;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
 	if (pipe->pipe & ~(DRM_I915_VBLANK_PIPE_A|DRM_I915_VBLANK_PIPE_B)) {
-		DRM_ERROR("%s called with invalid pipe 0x%x\n", 
-			  __FUNCTION__, pipe->pipe);
+		DRM_ERROR("called with invalid pipe 0x%x\n", pipe->pipe);
 		return -EINVAL;
 	}
 
@@ -583,7 +577,7 @@ int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 	u16 flag;
 
 	if (!dev_priv) {
-		DRM_ERROR("%s called with no initialization\n", __FUNCTION__);
+		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
@@ -743,7 +737,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	DRM_SPINLOCK_IRQSAVE(&dev_priv->swaps_lock, irqflags);
 
-	list_add_tail((struct list_head *)vbl_swap, &dev_priv->vbl_swaps.head);
+	list_add_tail(&vbl_swap->head, &dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending++;
 
 	DRM_SPINUNLOCK_IRQRESTORE(&dev_priv->swaps_lock, irqflags);
@@ -788,7 +782,7 @@ int i915_driver_irq_postinstall(struct drm_device * dev)
 	 * Initialize the hardware status page IRQ location.
 	 */
 
-	I915_WRITE(I915REG_INSTPM, ( 1 << 5) | ( 1 << 21));
+	I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
 	return 0;
 }
 
@@ -796,6 +790,7 @@ void i915_driver_irq_uninstall(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u16 temp;
+
 	if (!dev_priv)
 		return;
 

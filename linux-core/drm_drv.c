@@ -121,13 +121,13 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 
 	DRM_IOCTL_DEF(DRM_IOCTL_UPDATE_DRAW, drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl, 
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl,
 		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_CREATE, drm_fence_create_ioctl, DRM_AUTH),
@@ -183,8 +183,8 @@ int drm_lastclose(struct drm_device * dev)
 
 	if (dev->unique) {
 		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
-		dev->unique=NULL;
-		dev->unique_len=0;
+		dev->unique = NULL;
+		dev->unique_len = 0;
 	}
 
 	if (dev->irq_enabled)
@@ -242,10 +242,12 @@ int drm_lastclose(struct drm_device * dev)
 		list_del(&vma->head);
 		drm_ctl_free(vma, sizeof(*vma), DRM_MEM_VMAS);
 	}
-	
+
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
-		drm_rmmap_locked(dev, r_list->map);
-		r_list = NULL;
+		if (!(r_list->map->flags & _DRM_DRIVER)) {
+			drm_rmmap_locked(dev, r_list->map);
+			r_list = NULL;
+		}
 	}
 
 	if (drm_core_check_feature(dev, DRIVER_DMA_QUEUE) && dev->queuelist) {
@@ -322,7 +324,7 @@ int drm_init(struct drm_driver *driver,
 			pci_get_subsys(pid->vendor, pid->device, pid->subvendor,
 				       pid->subdevice, pdev))) {
 			/* Are there device class requirements? */
-			if ((pid->class != 0) 
+			if ((pid->class != 0)
 				&& ((pdev->class & pid->class_mask) != pid->class)) {
 				continue;
 			}
@@ -353,7 +355,7 @@ int drm_init(struct drm_driver *driver,
 					       pid->subvendor, pid->subdevice,
 					       pdev))) {
 				/* Are there device class requirements? */
-				if ((pid->class != 0) 
+				if ((pid->class != 0)
 					&& ((pdev->class & pid->class_mask) != pid->class)) {
 					continue;
 				}
@@ -390,15 +392,6 @@ static void drm_cleanup(struct drm_device * dev)
 	drm_lastclose(dev);
 	drm_fence_manager_takedown(dev);
 
-	drm_ht_remove(&dev->map_hash);
-	drm_mm_takedown(&dev->offset_manager);
-	drm_ht_remove(&dev->object_hash);
-
-	if (!drm_fb_loaded)
-		pci_disable_device(dev->pdev);
-
-	drm_ctxbitmap_cleanup(dev);
-
 	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp
 	    && dev->agp->agp_mtrr >= 0) {
 		int retval;
@@ -414,6 +407,14 @@ static void drm_cleanup(struct drm_device * dev)
 	}
 	if (dev->driver->unload)
 		dev->driver->unload(dev);
+
+	if (!drm_fb_loaded)
+		pci_disable_device(dev->pdev);
+
+	drm_ctxbitmap_cleanup(dev);
+	drm_ht_remove(&dev->map_hash);
+	drm_mm_takedown(&dev->offset_manager);
+	drm_ht_remove(&dev->object_hash);
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))
@@ -467,19 +468,19 @@ static int __init drm_core_init(void)
 	unsigned long max_memctl_mem;
 
 	si_meminfo(&si);
-	
+
 	/*
 	 * AGP only allows low / DMA32 memory ATM.
 	 */
 
 	avail_memctl_mem = si.totalram - si.totalhigh;
 
-	/* 
-	 * Avoid overflows 
+	/*
+	 * Avoid overflows
 	 */
 
 	max_memctl_mem = 1UL << (32 - PAGE_SHIFT);
-	max_memctl_mem = (max_memctl_mem / si.mem_unit) * PAGE_SIZE; 
+	max_memctl_mem = (max_memctl_mem / si.mem_unit) * PAGE_SIZE;
 
 	if (avail_memctl_mem >= max_memctl_mem)
 		avail_memctl_mem = max_memctl_mem;

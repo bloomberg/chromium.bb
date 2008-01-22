@@ -120,7 +120,7 @@ typedef struct drm_r128_private {
 	drm_local_map_t *cce_ring;
 	drm_local_map_t *ring_rptr;
 	drm_local_map_t *agp_textures;
-	struct ati_pcigart_info gart_info;
+	struct drm_ati_pcigart_info gart_info;
 } drm_r128_private_t;
 
 typedef struct drm_r128_buf_priv {
@@ -465,8 +465,7 @@ do {									\
 
 #define BEGIN_RING( n ) do {						\
 	if ( R128_VERBOSE ) {						\
-		DRM_INFO( "BEGIN_RING( %d ) in %s\n",			\
-			   (n), __FUNCTION__ );				\
+		DRM_INFO( "BEGIN_RING( %d )\n", (n));			\
 	}								\
 	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {		\
 		COMMIT_RING();						\
@@ -496,7 +495,7 @@ do {									\
 			write * sizeof(u32) );				\
 	}								\
 	if (((dev_priv->ring.tail + _nr) & tail_mask) != write) {	\
-		DRM_ERROR( 						\
+		DRM_ERROR(						\
 			"ADVANCE_RING(): mismatch: nr: %x write: %x line: %d\n",	\
 			((dev_priv->ring.tail + _nr) & tail_mask),	\
 			write, __LINE__);				\

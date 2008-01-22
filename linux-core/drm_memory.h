@@ -42,7 +42,6 @@
  * drm_memory.h.
  */
 
-/* Need the 4-argument version of vmap().  */
 #if __OS_HAS_AGP
 
 #include <linux/vmalloc.h>

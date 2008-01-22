@@ -1,8 +1,8 @@
 /**************************************************************************
- * 
+ *
  * Copyright 2006 Tungsten Graphics, Inc., Bismarck, ND., USA
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -10,20 +10,20 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
  * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
- * 
+ *
+ *
  **************************************************************************/
 /*
  * Authors: Thomas Hellström <thomas-at-tungstengraphics-dot-com>
@@ -38,7 +38,7 @@
  * Implements an intel sync flush operation.
  */
 
-static void i915_perform_flush(struct drm_device * dev)
+static void i915_perform_flush(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
@@ -63,14 +63,14 @@ static void i915_perform_flush(struct drm_device * dev)
 
 		diff = (sequence - fc->last_exe_flush) & BREADCRUMB_MASK;
 		if (diff < driver->wrap_diff && diff != 0) {
-		        drm_fence_handler(dev, 0, sequence,
+			drm_fence_handler(dev, 0, sequence,
 					  DRM_FENCE_TYPE_EXE, 0);
 		}
 
 		if (dev_priv->fence_irq_on && !fc->pending_exe_flush) {
 			i915_user_irq_off(dev_priv);
 			dev_priv->fence_irq_on = 0;
-		} else if (!dev_priv->fence_irq_on && fc->pending_exe_flush) { 
+		} else if (!dev_priv->fence_irq_on && fc->pending_exe_flush) {
 			i915_user_irq_on(dev_priv);
 			dev_priv->fence_irq_on = 1;
 		}
@@ -110,7 +110,7 @@ static void i915_perform_flush(struct drm_device * dev)
 
 }
 
-void i915_poke_flush(struct drm_device * dev, uint32_t class)
+void i915_poke_flush(struct drm_device *dev, uint32_t class)
 {
 	struct drm_fence_manager *fm = &dev->fm;
 	unsigned long flags;
@@ -120,8 +120,9 @@ void i915_poke_flush(struct drm_device * dev, uint32_t class)
 	write_unlock_irqrestore(&fm->lock, flags);
 }
 
-int i915_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t flags,
-			     uint32_t * sequence, uint32_t * native_type)
+int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
+			     uint32_t flags, uint32_t *sequence,
+			     uint32_t *native_type)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	if (!dev_priv)
@@ -136,7 +137,7 @@ int i915_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t f
 	return 0;
 }
 
-void i915_fence_handler(struct drm_device * dev)
+void i915_fence_handler(struct drm_device *dev)
 {
 	struct drm_fence_manager *fm = &dev->fm;
 

@@ -136,7 +136,7 @@ typedef struct drm_radeon_stipple32 {
 static int compat_radeon_cp_stipple(struct file *file, unsigned int cmd,
 				    unsigned long arg)
 {
-	drm_radeon_stipple32_t __user *argp = (void __user *) arg;
+	drm_radeon_stipple32_t __user *argp = (void __user *)arg;
 	drm_radeon_stipple_t __user *request;
 	u32 mask;
 
@@ -176,7 +176,7 @@ static int compat_radeon_cp_texture(struct file *file, unsigned int cmd,
 	drm_radeon_tex_image32_t img32;
 	drm_radeon_tex_image_t __user *image;
 
-	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+	if (copy_from_user(&req32, (void __user *)arg, sizeof(req32)))
 		return -EFAULT;
 	if (req32.image == 0)
 		return -EINVAL;
@@ -223,7 +223,7 @@ static int compat_radeon_cp_vertex2(struct file *file, unsigned int cmd,
 	drm_radeon_vertex2_32_t req32;
 	drm_radeon_vertex2_t __user *request;
 
-	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+	if (copy_from_user(&req32, (void __user *)arg, sizeof(req32)))
 		return -EFAULT;
 
 	request = compat_alloc_user_space(sizeof(*request));
@@ -255,7 +255,7 @@ static int compat_radeon_cp_cmdbuf(struct file *file, unsigned int cmd,
 	drm_radeon_cmd_buffer32_t req32;
 	drm_radeon_cmd_buffer_t __user *request;
 
-	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+	if (copy_from_user(&req32, (void __user *)arg, sizeof(req32)))
 		return -EFAULT;
 
 	request = compat_alloc_user_space(sizeof(*request));
@@ -283,7 +283,7 @@ static int compat_radeon_cp_getparam(struct file *file, unsigned int cmd,
 	drm_radeon_getparam32_t req32;
 	drm_radeon_getparam_t __user *request;
 
-	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+	if (copy_from_user(&req32, (void __user *)arg, sizeof(req32)))
 		return -EFAULT;
 
 	request = compat_alloc_user_space(sizeof(*request));
@@ -310,7 +310,7 @@ static int compat_radeon_mem_alloc(struct file *file, unsigned int cmd,
 	drm_radeon_mem_alloc32_t req32;
 	drm_radeon_mem_alloc_t __user *request;
 
-	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+	if (copy_from_user(&req32, (void __user *)arg, sizeof(req32)))
 		return -EFAULT;
 
 	request = compat_alloc_user_space(sizeof(*request));
@@ -336,7 +336,7 @@ static int compat_radeon_irq_emit(struct file *file, unsigned int cmd,
 	drm_radeon_irq_emit32_t req32;
 	drm_radeon_irq_emit_t __user *request;
 
-	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+	if (copy_from_user(&req32, (void __user *)arg, sizeof(req32)))
 		return -EFAULT;
 
 	request = compat_alloc_user_space(sizeof(*request));
@@ -362,7 +362,7 @@ static int compat_radeon_cp_setparam(struct file *file, unsigned int cmd,
 	drm_radeon_setparam32_t req32;
 	drm_radeon_setparam_t __user *request;
 
-	if (copy_from_user(&req32, (void __user *) arg, sizeof(req32)))
+	if (copy_from_user(&req32, (void __user *)arg, sizeof(req32)))
 		return -EFAULT;
 
 	request = compat_alloc_user_space(sizeof(*request));

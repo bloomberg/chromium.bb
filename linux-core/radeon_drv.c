@@ -49,7 +49,7 @@ static int dri_library_name(struct drm_device * dev, char * buf)
 	return snprintf(buf, PAGE_SIZE, "%s\n",
 		(family < CHIP_R200) ? "radeon" :
 		((family < CHIP_R300) ? "r200" :
- 		"r300"));
+		"r300"));
 }
 
 static struct pci_device_id pciidlist[] = {

@@ -89,7 +89,7 @@
 #define __user
 #endif
 
-#if !defined(__put_page) 
+#if !defined(__put_page)
 #define __put_page(p)           atomic_dec(&(p)->count)
 #endif
 
@@ -104,7 +104,7 @@
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,10)
 static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from, unsigned long pfn, unsigned long size, pgprot_t pgprot)
 {
-  return remap_page_range(vma, from, 
+  return remap_page_range(vma, from,
 			  pfn << PAGE_SHIFT,
 			  size,
 			  pgprot);
@@ -178,7 +178,7 @@ static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
 
 
 /*
- * Flush relevant caches and clear a VMA structure so that page references 
+ * Flush relevant caches and clear a VMA structure so that page references
  * will cause a page fault. Don't flush tlbs.
  */
 
@@ -186,7 +186,7 @@ extern void drm_clear_vma(struct vm_area_struct *vma,
 			  unsigned long addr, unsigned long end);
 
 /*
- * Return the PTE protection map entries for the VMA flags given by 
+ * Return the PTE protection map entries for the VMA flags given by
  * flags. This is a functional interface to the kernel's protection map.
  */
 
@@ -223,7 +223,7 @@ extern void free_nopage_retry(void);
 #ifndef DRM_FULL_MM_COMPAT
 
 /*
- * For now, just return a dummy page that we've allocated out of 
+ * For now, just return a dummy page that we've allocated out of
  * static space. The page will be put by do_nopage() since we've already
  * filled out the pte.
  */
@@ -233,13 +233,13 @@ struct fault_data {
 	unsigned long address;
 	pgoff_t pgoff;
 	unsigned int flags;
-	
+
 	int type;
 };
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
 extern struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
-				     unsigned long address, 
+				     unsigned long address,
 				     int *type);
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)) && \
   !defined(DRM_FULL_MM_COMPAT)
@@ -254,22 +254,22 @@ struct drm_buffer_object;
 
 
 /*
- * Add a vma to the ttm vma list, and the 
+ * Add a vma to the ttm vma list, and the
  * process mm pointer to the ttm mm list. Needs the ttm mutex.
  */
 
-extern int drm_bo_add_vma(struct drm_buffer_object * bo, 
+extern int drm_bo_add_vma(struct drm_buffer_object * bo,
 			   struct vm_area_struct *vma);
 /*
  * Delete a vma and the corresponding mm pointer from the
  * ttm lists. Needs the ttm mutex.
  */
-extern void drm_bo_delete_vma(struct drm_buffer_object * bo, 
+extern void drm_bo_delete_vma(struct drm_buffer_object * bo,
 			      struct vm_area_struct *vma);
 
 /*
  * Attempts to lock all relevant mmap_sems for a ttm, while
- * not releasing the ttm mutex. May return -EAGAIN to avoid 
+ * not releasing the ttm mutex. May return -EAGAIN to avoid
  * deadlocks. In that case the caller shall release the ttm mutex,
  * schedule() and try again.
  */
@@ -292,7 +292,7 @@ extern void drm_bo_unlock_kmm(struct drm_buffer_object * bo);
 extern void drm_bo_finish_unmap(struct drm_buffer_object *bo);
 
 /*
- * Remap all vmas of this ttm using io_remap_pfn_range. We cannot 
+ * Remap all vmas of this ttm using io_remap_pfn_range. We cannot
  * fault these pfns in, because the first one will set the vma VM_PFNMAP
  * flag, which will make the next fault bug in do_nopage(). The function
  * releases the mmap_sems for this ttm.

@@ -695,7 +695,7 @@ static const u32 R300_cp_microcode[][2] = {
 	{ 0x0000e571, 0x00000004 },
 	{ 0x0000e572, 0x0000000c },
 	{ 0x0000a000, 0x00000004 },
-	{ 0x0140a000, 0x00000004 }, 
+	{ 0x0140a000, 0x00000004 },
 	{ 0x0000e568, 0x00000004 },
 	{ 0x000c2000, 0x00000004 },
 	{ 0x00000089, 0x00000018 },
@@ -815,6 +815,46 @@ static const u32 R300_cp_microcode[][2] = {
 	{ 0000000000, 0000000000 },
 	{ 0000000000, 0000000000 },
 };
+
+static u32 RADEON_READ_MCIND(drm_radeon_private_t *dev_priv, int addr)
+{
+	u32 ret;
+	RADEON_WRITE(R520_MC_IND_INDEX, 0x7f0000 | (addr & 0xff));
+	ret = RADEON_READ(R520_MC_IND_DATA);
+	RADEON_WRITE(R520_MC_IND_INDEX, 0);
+	return ret;
+}
+
+u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
+{
+	
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
+		return RADEON_READ_MCIND(dev_priv, RV515_MC_FB_LOCATION);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+		return RADEON_READ_MCIND(dev_priv, R520_MC_FB_LOCATION);
+	else
+		return RADEON_READ(RADEON_MC_FB_LOCATION);
+}
+
+static void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
+{
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
+		RADEON_WRITE_MCIND(RV515_MC_FB_LOCATION, fb_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+		RADEON_WRITE_MCIND(R520_MC_FB_LOCATION, fb_loc);
+	else
+		RADEON_WRITE(RADEON_MC_FB_LOCATION, fb_loc);
+}
+
+static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_loc)
+{
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
+		RADEON_WRITE_MCIND(RV515_MC_AGP_LOCATION, agp_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+		RADEON_WRITE_MCIND(R520_MC_AGP_LOCATION, agp_loc);
+	else
+		RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_loc);
+}
 
 static int RADEON_READ_PLL(struct drm_device * dev, int addr)
 {
@@ -1074,41 +1114,43 @@ static int radeon_do_engine_reset(struct drm_device * dev)
 
 	radeon_do_pixcache_flush(dev_priv);
 
-	clock_cntl_index = RADEON_READ(RADEON_CLOCK_CNTL_INDEX);
-	mclk_cntl = RADEON_READ_PLL(dev, RADEON_MCLK_CNTL);
-
-	RADEON_WRITE_PLL(RADEON_MCLK_CNTL, (mclk_cntl |
-					    RADEON_FORCEON_MCLKA |
-					    RADEON_FORCEON_MCLKB |
-					    RADEON_FORCEON_YCLKA |
-					    RADEON_FORCEON_YCLKB |
-					    RADEON_FORCEON_MC |
-					    RADEON_FORCEON_AIC));
-
-	rbbm_soft_reset = RADEON_READ(RADEON_RBBM_SOFT_RESET);
-
-	RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
-					      RADEON_SOFT_RESET_CP |
-					      RADEON_SOFT_RESET_HI |
-					      RADEON_SOFT_RESET_SE |
-					      RADEON_SOFT_RESET_RE |
-					      RADEON_SOFT_RESET_PP |
-					      RADEON_SOFT_RESET_E2 |
-					      RADEON_SOFT_RESET_RB));
-	RADEON_READ(RADEON_RBBM_SOFT_RESET);
-	RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset &
-					      ~(RADEON_SOFT_RESET_CP |
-						RADEON_SOFT_RESET_HI |
-						RADEON_SOFT_RESET_SE |
-						RADEON_SOFT_RESET_RE |
-						RADEON_SOFT_RESET_PP |
-						RADEON_SOFT_RESET_E2 |
-						RADEON_SOFT_RESET_RB)));
-	RADEON_READ(RADEON_RBBM_SOFT_RESET);
-
-	RADEON_WRITE_PLL(RADEON_MCLK_CNTL, mclk_cntl);
-	RADEON_WRITE(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
-	RADEON_WRITE(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) < CHIP_RV515) {
+		clock_cntl_index = RADEON_READ(RADEON_CLOCK_CNTL_INDEX);
+		mclk_cntl = RADEON_READ_PLL(dev, RADEON_MCLK_CNTL);
+		
+		RADEON_WRITE_PLL(RADEON_MCLK_CNTL, (mclk_cntl |
+						    RADEON_FORCEON_MCLKA |
+						    RADEON_FORCEON_MCLKB |
+						    RADEON_FORCEON_YCLKA |
+						    RADEON_FORCEON_YCLKB |
+						    RADEON_FORCEON_MC |
+						    RADEON_FORCEON_AIC));
+		
+		rbbm_soft_reset = RADEON_READ(RADEON_RBBM_SOFT_RESET);
+		
+		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
+						      RADEON_SOFT_RESET_CP |
+						      RADEON_SOFT_RESET_HI |
+						      RADEON_SOFT_RESET_SE |
+						      RADEON_SOFT_RESET_RE |
+						      RADEON_SOFT_RESET_PP |
+						      RADEON_SOFT_RESET_E2 |
+						      RADEON_SOFT_RESET_RB));
+		RADEON_READ(RADEON_RBBM_SOFT_RESET);
+		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset &
+						      ~(RADEON_SOFT_RESET_CP |
+							RADEON_SOFT_RESET_HI |
+							RADEON_SOFT_RESET_SE |
+							RADEON_SOFT_RESET_RE |
+							RADEON_SOFT_RESET_PP |
+							RADEON_SOFT_RESET_E2 |
+							RADEON_SOFT_RESET_RB)));
+		RADEON_READ(RADEON_RBBM_SOFT_RESET);
+		
+		RADEON_WRITE_PLL(RADEON_MCLK_CNTL, mclk_cntl);
+		RADEON_WRITE(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
+		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
+	}
 
 	/* Reset the CP ring */
 	radeon_do_cp_reset(dev_priv);
@@ -1127,21 +1169,21 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 {
 	u32 ring_start, cur_read_ptr;
 	u32 tmp;
-	
+
 	/* Initialize the memory controller. With new memory map, the fb location
 	 * is not changed, it should have been properly initialized already. Part
 	 * of the problem is that the code below is bogus, assuming the GART is
 	 * always appended to the fb which is not necessarily the case
 	 */
 	if (!dev_priv->new_memmap)
-		RADEON_WRITE(RADEON_MC_FB_LOCATION,
+		radeon_write_fb_location(dev_priv,
 			     ((dev_priv->gart_vm_start - 1) & 0xffff0000)
 			     | (dev_priv->fb_location >> 16));
 
 #if __OS_HAS_AGP
 	if (dev_priv->flags & RADEON_IS_AGP) {
 		RADEON_WRITE(RADEON_AGP_BASE, (unsigned int)dev->agp->base);
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION,
+		radeon_write_agp_location(dev_priv,
 			     (((dev_priv->gart_vm_start - 1 +
 				dev_priv->gart_size) & 0xffff0000) |
 			      (dev_priv->gart_vm_start >> 16)));
@@ -1305,7 +1347,7 @@ static void radeon_set_igpgart(drm_radeon_private_t * dev_priv, int on)
 
 		RADEON_WRITE(RADEON_AGP_BASE, (unsigned int)dev_priv->gart_vm_start);
 		dev_priv->gart_size = 32*1024*1024;
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION,
+		radeon_write_agp_location(dev_priv,
 			     (((dev_priv->gart_vm_start - 1 +
 			       dev_priv->gart_size) & 0xffff0000) |
 			     (dev_priv->gart_vm_start >> 16)));
@@ -1339,7 +1381,7 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 				  dev_priv->gart_vm_start +
 				  dev_priv->gart_size - 1);
 
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION, 0xffffffc0);	/* ?? */
+		radeon_write_agp_location(dev_priv, 0xffffffc0); /* ?? */
 
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL,
 				  RADEON_PCIE_TX_GART_EN);
@@ -1364,7 +1406,7 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 		return;
 	}
 
- 	tmp = RADEON_READ(RADEON_AIC_CNTL);
+	tmp = RADEON_READ(RADEON_AIC_CNTL);
 
 	if (on) {
 		RADEON_WRITE(RADEON_AIC_CNTL,
@@ -1382,7 +1424,7 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 
 		/* Turn off AGP aperture -- is this required for PCI GART?
 		 */
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION, 0xffffffc0);	/* ?? */
+		radeon_write_agp_location(dev_priv, 0xffffffc0);
 		RADEON_WRITE(RADEON_AGP_COMMAND, 0);	/* clear AGP_COMMAND */
 	} else {
 		RADEON_WRITE(RADEON_AIC_CNTL,
@@ -1590,10 +1632,9 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 			  dev->agp_buffer_map->handle);
 	}
 
-	dev_priv->fb_location = (RADEON_READ(RADEON_MC_FB_LOCATION)
-				 & 0xffff) << 16;
-	dev_priv->fb_size = 
-		((RADEON_READ(RADEON_MC_FB_LOCATION) & 0xffff0000u) + 0x10000)
+	dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffff) << 16;
+	dev_priv->fb_size =
+		((radeon_read_fb_location(dev_priv) & 0xffff0000u) + 0x10000)
 		- dev_priv->fb_location;
 
 	dev_priv->front_pitch_offset = (((dev_priv->front_pitch / 64) << 22) |
@@ -1639,7 +1680,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 			    ((base + dev_priv->gart_size) & 0xfffffffful) < base)
 				base = dev_priv->fb_location
 					- dev_priv->gart_size;
-		}		
+		}
 		dev_priv->gart_vm_start = base & 0xffc00000u;
 		if (dev_priv->gart_vm_start != base)
 			DRM_INFO("GART aligned down from 0x%08x to 0x%08x\n",
@@ -1694,7 +1735,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 			dev_priv->gart_info.bus_addr =
 			    dev_priv->pcigart_offset + dev_priv->fb_location;
 			dev_priv->gart_info.mapping.offset =
-			    dev_priv->gart_info.bus_addr;
+			    dev_priv->pcigart_offset + dev_priv->fb_aper_offset;
 			dev_priv->gart_info.mapping.size =
 			    dev_priv->gart_info.table_size;
 
@@ -1845,7 +1886,7 @@ int radeon_cp_init(struct drm_device *dev, void *data, struct drm_file *file_pri
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (init->func == RADEON_INIT_R300_CP)
-		r300_init_reg_flags();
+		r300_init_reg_flags(dev);
 
 	switch (init->func) {
 	case RADEON_INIT_CP:
@@ -1867,12 +1908,12 @@ int radeon_cp_start(struct drm_device *dev, void *data, struct drm_file *file_pr
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (dev_priv->cp_running) {
-		DRM_DEBUG("%s while CP running\n", __FUNCTION__);
+		DRM_DEBUG("while CP running\n");
 		return 0;
 	}
 	if (dev_priv->cp_mode == RADEON_CSQ_PRIDIS_INDDIS) {
-		DRM_DEBUG("%s called with bogus CP mode (%d)\n",
-			  __FUNCTION__, dev_priv->cp_mode);
+		DRM_DEBUG("called with bogus CP mode (%d)\n",
+			  dev_priv->cp_mode);
 		return 0;
 	}
 
@@ -1938,7 +1979,7 @@ void radeon_do_release(struct drm_device * dev)
 				schedule();
 #else
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
-				msleep(&ret, &dev->dev_lock, PZERO, "rdnrel",
+				mtx_sleep(&ret, &dev->dev_lock, PZERO, "rdnrel",
 				       1);
 #else
 				tsleep(&ret, PZERO, "rdnrel", 1);
@@ -1982,7 +2023,7 @@ int radeon_cp_reset(struct drm_device *dev, void *data, struct drm_file *file_pr
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	if (!dev_priv) {
-		DRM_DEBUG("%s called before init done\n", __FUNCTION__);
+		DRM_DEBUG("called before init done\n");
 		return -EINVAL;
 	}
 
@@ -2259,6 +2300,10 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	case CHIP_R350:
 	case CHIP_R420:
 	case CHIP_RV410:
+	case CHIP_RV515:
+	case CHIP_R520:
+	case CHIP_RV570:
+	case CHIP_R580:
 		dev_priv->flags |= RADEON_HAS_HIERZ;
 		break;
 	default:
@@ -2295,7 +2340,8 @@ int radeon_driver_firstopen(struct drm_device *dev)
 	if (ret != 0)
 		return ret;
 
-	ret = drm_addmap(dev, drm_get_resource_start(dev, 0),
+	dev_priv->fb_aper_offset = drm_get_resource_start(dev, 0);
+	ret = drm_addmap(dev, dev_priv->fb_aper_offset,
 			 drm_get_resource_len(dev, 0), _DRM_FRAME_BUFFER,
 			 _DRM_WRITE_COMBINING, &map);
 	if (ret != 0)

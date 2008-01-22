@@ -48,7 +48,7 @@
  * Verifies the AGP device has been initialized and acquired and fills in the
  * drm_agp_info structure with the information in drm_agp_head::agp_info.
  */
-int drm_agp_info(struct drm_device * dev, struct drm_agp_info *info)
+int drm_agp_info(struct drm_device *dev, struct drm_agp_info *info)
 {
 	DRM_AGP_KERN *kern;
 
@@ -130,7 +130,7 @@ EXPORT_SYMBOL(drm_agp_acquire);
 int drm_agp_acquire_ioctl(struct drm_device *dev, void *data,
 			  struct drm_file *file_priv)
 {
-	return drm_agp_acquire( (struct drm_device *) file_priv->head->dev );
+	return drm_agp_acquire((struct drm_device *) file_priv->head->dev);
 }
 
 /**
@@ -426,7 +426,7 @@ struct drm_agp_head *drm_agp_init(struct drm_device *dev)
 		if (!(head->bridge = agp_backend_acquire(dev->pdev))) {
 			drm_free(head, sizeof(*head), DRM_MEM_AGPLISTS);
 			return NULL;
-	}
+		}
 		agp_copy_info(head->bridge, &head->agp_info);
 		agp_backend_release(head->bridge);
 	} else {
@@ -498,18 +498,21 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
 #define AGP_REQUIRED_MAJOR 0
 #define AGP_REQUIRED_MINOR 102
 
-static int drm_agp_needs_unbind_cache_adjust(struct drm_ttm_backend *backend) {
+static int drm_agp_needs_unbind_cache_adjust(struct drm_ttm_backend *backend)
+{
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
 
-static int drm_agp_populate(struct drm_ttm_backend *backend, unsigned long num_pages,
-			    struct page **pages) {
-
-	struct drm_agp_ttm_backend *agp_be = 
+static int drm_agp_populate(struct drm_ttm_backend *backend,
+			    unsigned long num_pages, struct page **pages,
+			    struct page *dummy_read_page)
+{
+	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	struct page **cur_page, **last_page = pages + num_pages;
 	DRM_AGP_MEM *mem;
+	int dummy_page_count = 0;
 
 	if (drm_alloc_memctl(num_pages * sizeof(void *)))
 		return -1;
@@ -521,15 +524,22 @@ static int drm_agp_populate(struct drm_ttm_backend *backend, unsigned long num_p
 	mem = drm_agp_allocate_memory(agp_be->bridge, num_pages, AGP_USER_MEMORY);
 #endif
 	if (!mem) {
-		drm_free_memctl(num_pages *sizeof(void *));
+		drm_free_memctl(num_pages * sizeof(void *));
 		return -1;
 	}
 
 	DRM_DEBUG("Current page count is %ld\n", (long) mem->page_count);
 	mem->page_count = 0;
 	for (cur_page = pages; cur_page < last_page; ++cur_page) {
-		mem->memory[mem->page_count++] = phys_to_gart(page_to_phys(*cur_page));
+		struct page *page = *cur_page;
+		if (!page) {
+			page = dummy_read_page;
+			++dummy_page_count;
+		}
+		mem->memory[mem->page_count++] = phys_to_gart(page_to_phys(page));
 	}
+	if (dummy_page_count)
+		DRM_DEBUG("Mapped %d dummy pages\n", dummy_page_count);
 	agp_be->mem = mem;
 	return 0;
 }
@@ -541,24 +551,28 @@ static int drm_agp_bind_ttm(struct drm_ttm_backend *backend,
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	DRM_AGP_MEM *mem = agp_be->mem;
 	int ret;
+	int snooped = (bo_mem->flags & DRM_BO_FLAG_CACHED) && !(bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED);
 
 	DRM_DEBUG("drm_agp_bind_ttm\n");
 	mem->is_flushed = TRUE;
-	mem->type = (bo_mem->flags & DRM_BO_FLAG_CACHED) ? AGP_USER_CACHED_MEMORY :
-		AGP_USER_MEMORY;
+	mem->type = AGP_USER_MEMORY;
+	/* CACHED MAPPED implies not snooped memory */
+	if (snooped)
+		mem->type = AGP_USER_CACHED_MEMORY;
+
 	ret = drm_agp_bind_memory(mem, bo_mem->mm_node->start);
-	if (ret) {
+	if (ret)
 		DRM_ERROR("AGP Bind memory failed\n");
-	}
+
 	DRM_FLAG_MASKED(backend->flags, (bo_mem->flags & DRM_BO_FLAG_CACHED) ?
 			DRM_BE_FLAG_BOUND_CACHED : 0,
 			DRM_BE_FLAG_BOUND_CACHED);
 	return ret;
 }
 
-static int drm_agp_unbind_ttm(struct drm_ttm_backend *backend) {
-
-	struct drm_agp_ttm_backend *agp_be = 
+static int drm_agp_unbind_ttm(struct drm_ttm_backend *backend)
+{
+	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 
 	DRM_DEBUG("drm_agp_unbind_ttm\n");
@@ -568,9 +582,9 @@ static int drm_agp_unbind_ttm(struct drm_ttm_backend *backend) {
 		return 0;
 }
 
-static void drm_agp_clear_ttm(struct drm_ttm_backend *backend) {
-
-	struct drm_agp_ttm_backend *agp_be = 
+static void drm_agp_clear_ttm(struct drm_ttm_backend *backend)
+{
+	struct drm_agp_ttm_backend *agp_be =
 		container_of(backend, struct drm_agp_ttm_backend, backend);
 	DRM_AGP_MEM *mem = agp_be->mem;
 
@@ -579,29 +593,27 @@ static void drm_agp_clear_ttm(struct drm_ttm_backend *backend) {
 		unsigned long num_pages = mem->page_count;
 		backend->func->unbind(backend);
 		agp_free_memory(mem);
-		drm_free_memctl(num_pages *sizeof(void *));
+		drm_free_memctl(num_pages * sizeof(void *));
 	}
 	agp_be->mem = NULL;
 }
 
-static void drm_agp_destroy_ttm(struct drm_ttm_backend *backend) {
-
+static void drm_agp_destroy_ttm(struct drm_ttm_backend *backend)
+{
 	struct drm_agp_ttm_backend *agp_be;
 
 	if (backend) {
 		DRM_DEBUG("drm_agp_destroy_ttm\n");
 		agp_be = container_of(backend, struct drm_agp_ttm_backend, backend);
 		if (agp_be) {
-			if (agp_be->mem) {
+			if (agp_be->mem)
 				backend->func->clear(backend);
-			}
 			drm_ctl_free(agp_be, sizeof(*agp_be), DRM_MEM_TTM);
 		}
 	}
 }
 
-static struct drm_ttm_backend_func agp_ttm_backend = 
-{
+static struct drm_ttm_backend_func agp_ttm_backend = {
 	.needs_ub_cache_adjust = drm_agp_needs_unbind_cache_adjust,
 	.populate = drm_agp_populate,
 	.clear = drm_agp_clear_ttm,
@@ -633,7 +645,7 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 		return NULL;
 	}
 
-	
+
 	agp_be = drm_ctl_calloc(1, sizeof(*agp_be), DRM_MEM_TTM);
 	if (!agp_be)
 		return NULL;
@@ -643,11 +655,18 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 	agp_be->bridge = dev->agp->bridge;
 	agp_be->populated = FALSE;
 	agp_be->backend.func = &agp_ttm_backend;
-	//	agp_be->backend.mem_type = DRM_BO_MEM_TT;
 	agp_be->backend.dev = dev;
 
 	return &agp_be->backend;
 }
 EXPORT_SYMBOL(drm_agp_init_ttm);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,25)
+void drm_agp_chipset_flush(struct drm_device *dev)
+{
+	agp_flush_chipset(dev->agp->bridge);
+}
+EXPORT_SYMBOL(drm_agp_flush_chipset);
+#endif
 
 #endif				/* __OS_HAS_AGP */
