@@ -471,6 +471,9 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define I915REG_INT_ENABLE_R	0x020a0
 #define I915REG_INSTPM	        0x020c0
 
+#define PIPEADSL		0x70000
+#define PIPEBDSL		0x71000
+
 #define I915REG_PIPEASTAT	0x70024
 #define I915REG_PIPEBSTAT	0x71024
 /*
@@ -789,6 +792,9 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define PIPEBSRC	0x6101c
 #define BCLRPAT_B	0x61020
 #define VSYNCSHIFT_B	0x61028
+
+#define HACTIVE_MASK	0x00000fff
+#define VBLANK_START_MASK 0x00001fff
 
 #define PP_STATUS	0x61200
 # define PP_ON					(1 << 31)
