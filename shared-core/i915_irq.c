@@ -347,7 +347,7 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	unsigned long high_frame;
 	unsigned long low_frame;
-	unsigned long pipedsl, vblank, htotal;
+	unsigned long pipedsl, vblank, vtotal;
 	u32 high1, high2, low, count;
 	int pipe;
 
@@ -356,7 +356,7 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	low_frame = pipe ? PIPEBFRAMEPIXEL : PIPEAFRAMEPIXEL;
 	pipedsl = pipe ? PIPEBDSL : PIPEADSL;
 	vblank = pipe ? VBLANK_B : VBLANK_A;
-	htotal = pipe ? HTOTAL_B : HTOTAL_A;
+	vtotal = pipe ? VTOTAL_B : VTOTAL_A;
 
 	if (!i915_pipe_enabled(dev, pipe)) {
 	    printk(KERN_ERR "trying to get vblank count for disabled "
@@ -386,7 +386,7 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	 * an incremented count to stay accurate
 	 */
 	if ((I915_READ(pipedsl) >= (I915_READ(vblank) & VBLANK_START_MASK)) ||
-	    (I915_READ(pipedsl) < (I915_READ(htotal) & HACTIVE_MASK)))
+	    (I915_READ(pipedsl) < (I915_READ(vtotal) & VACTIVE_MASK)))
 		count++;
 
 	return count;
