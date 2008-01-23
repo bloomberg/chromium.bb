@@ -104,7 +104,7 @@ static void intel_i965_g33_setup_chipset_flush(struct pci_dev *pdev)
 		i9xx_private.ifp_resource.start = l64;
 		i9xx_private.ifp_resource.end = l64 + PAGE_SIZE;
 		ret = request_resource(&iomem_resource, &i9xx_private.ifp_resource);
-		if (!ret) {
+		if (ret) {
 			i9xx_private.resource_valid = 0;
 			printk("Failed inserting resource into tree\n");
 		}
