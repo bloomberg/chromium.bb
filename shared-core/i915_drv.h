@@ -794,6 +794,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define VSYNCSHIFT_B	0x61028
 
 #define HACTIVE_MASK	0x00000fff
+#define VACTIVE_MASK	0x00000fff
 #define VBLANK_START_MASK 0x00001fff
 
 #define PP_STATUS	0x61200
@@ -1194,7 +1195,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define IS_I855(dev) ((dev)->pci_device == 0x3582)
 #define IS_I865G(dev) ((dev)->pci_device == 0x2572)
 
-#define IS_I915G(dev) ((dev)->pci_device == 0x2582) || (dev)->pci_device == 0x258a)
+#define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 0x258a)
 #define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
 #define IS_I945G(dev) ((dev)->pci_device == 0x2772)
 #define IS_I945GM(dev) ((dev)->pci_device == 0x27A2)
