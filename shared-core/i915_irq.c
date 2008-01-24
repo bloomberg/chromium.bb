@@ -341,22 +341,39 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 		drm_free(swap_hit, sizeof(*swap_hit), DRM_MEM_DRIVER);
 	}
 }
+#if 0
+static int i915_in_vblank(struct drm_device *dev, int pipe)
+{
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	unsigned long pipedsl, vblank, vtotal;
+	unsigned long vbl_start, vbl_end, cur_line;
 
+	pipedsl = pipe ? PIPEBDSL : PIPEADSL;
+	vblank = pipe ? VBLANK_B : VBLANK_A;
+	vtotal = pipe ? VTOTAL_B : VTOTAL_A;
+
+	vbl_start = I915_READ(vblank) & VBLANK_START_MASK;
+	vbl_end = (I915_READ(vblank) >> VBLANK_END_SHIFT) & VBLANK_END_MASK;
+
+	cur_line = I915_READ(pipedsl);
+
+	if (cur_line >= vbl_start)
+		return 1;
+
+	return 0;
+}
+#endif
 u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	unsigned long high_frame;
 	unsigned long low_frame;
-	unsigned long pipedsl, vblank, vtotal;
 	u32 high1, high2, low, count;
 	int pipe;
 
 	pipe = i915_get_pipe(dev, plane);
 	high_frame = pipe ? PIPEBFRAMEHIGH : PIPEAFRAMEHIGH;
 	low_frame = pipe ? PIPEBFRAMEPIXEL : PIPEAFRAMEPIXEL;
-	pipedsl = pipe ? PIPEBDSL : PIPEADSL;
-	vblank = pipe ? VBLANK_B : VBLANK_A;
-	vtotal = pipe ? VTOTAL_B : VTOTAL_A;
 
 	if (!i915_pipe_enabled(dev, pipe)) {
 	    printk(KERN_ERR "trying to get vblank count for disabled "
@@ -385,10 +402,10 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	 * above regs won't have been updated yet, so return
 	 * an incremented count to stay accurate
 	 */
-	if ((I915_READ(pipedsl) >= (I915_READ(vblank) & VBLANK_START_MASK)) ||
-	    (I915_READ(pipedsl) < (I915_READ(vtotal) & VACTIVE_MASK)))
+#if 0
+	if (i915_in_vblank(dev, pipe))
 		count++;
-
+#endif
 	return count;
 }
 

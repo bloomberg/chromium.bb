@@ -794,7 +794,11 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define VSYNCSHIFT_B	0x61028
 
 #define HACTIVE_MASK	0x00000fff
+#define VTOTAL_MASK	0x00001fff
+#define VTOTAL_SHIFT	16
 #define VACTIVE_MASK	0x00000fff
+#define VBLANK_END_MASK	0x00001fff
+#define VBLANK_END_SHIFT 16
 #define VBLANK_START_MASK 0x00001fff
 
 #define PP_STATUS	0x61200
