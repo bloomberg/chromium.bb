@@ -31,10 +31,6 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-#define USER_INT_FLAG (1<<1)
-#define VSYNC_PIPEB_FLAG (1<<5)
-#define VSYNC_PIPEA_FLAG (1<<7)
-
 #define MAX_NOPID ((u32)~0)
 
 /**
@@ -420,55 +416,63 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u16 temp;
+	u32 iir;
 	u32 pipea_stats, pipeb_stats;
+	int vblank = 0;
 
-	pipea_stats = I915_READ(I915REG_PIPEASTAT);
-	pipeb_stats = I915_READ(I915REG_PIPEBSTAT);
-
-	temp = I915_READ16(I915REG_INT_IDENTITY_R);
-
+	iir = I915_READ(I915REG_INT_IDENTITY_R);
 #if 0
-	DRM_DEBUG("flag=%08x\n", temp);
+	DRM_DEBUG("flag=%08x\n", iir);
 #endif
-	if (temp == 0)
+	if (iir == 0) {
+		DRM_DEBUG ("iir 0x%08x im 0x%08x ie 0x%08x pipea 0x%08x pipeb 0x%08x\n",
+			   iir,
+			   I915_READ(I915REG_INT_MASK_R),
+			   I915_READ(I915REG_INT_ENABLE_R),
+			   I915_READ(I915REG_PIPEASTAT),
+			   I915_READ(I915REG_PIPEBSTAT));
 		return IRQ_NONE;
+	}
 
 	/*
 	 * Clear the PIPE(A|B)STAT regs before the IIR otherwise
 	 * we may get extra interrupts.
 	 */
-	if (temp & VSYNC_PIPEA_FLAG) {
-		drm_handle_vblank(dev, i915_get_plane(dev, 0));
-		I915_WRITE(I915REG_PIPEASTAT,
-			   pipea_stats | I915_VBLANK_INTERRUPT_ENABLE |
-			   I915_VBLANK_CLEAR);
+	if (iir & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT) {
+		pipea_stats = I915_READ(I915REG_PIPEASTAT);
+		if (pipea_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
+				   I915_VBLANK_INTERRUPT_STATUS))
+		{
+			vblank++;
+			drm_handle_vblank(dev, i915_get_plane(dev, 0));
+		}
+		I915_WRITE(I915REG_PIPEASTAT, pipea_stats);
 	}
-	if (temp & VSYNC_PIPEB_FLAG) {
-		drm_handle_vblank(dev, i915_get_plane(dev, 1));
-		I915_WRITE(I915REG_PIPEBSTAT,
-			   pipeb_stats | I915_VBLANK_INTERRUPT_ENABLE |
-			   I915_VBLANK_CLEAR);
+	if (iir & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT) {
+		pipeb_stats = I915_READ(I915REG_PIPEBSTAT);
+		if (pipeb_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
+				   I915_VBLANK_INTERRUPT_STATUS))
+		{
+			vblank++;
+			drm_handle_vblank(dev, i915_get_plane(dev, 1));
+		}
+		I915_WRITE(I915REG_PIPEBSTAT, pipeb_stats);
 	}
-
-	I915_WRITE16(I915REG_INT_IDENTITY_R, temp);
-	(void) I915_READ16(I915REG_INT_IDENTITY_R); /* Flush posted write */
-
-	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG | VSYNC_PIPEA_FLAG |
-		 VSYNC_PIPEB_FLAG);
 
 	if (dev_priv->sarea_priv)
-		dev_priv->sarea_priv->last_dispatch =
-			READ_BREADCRUMB(dev_priv);
+	    dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
-	if (temp & USER_INT_FLAG) {
+	I915_WRITE(I915REG_INT_IDENTITY_R, iir);
+	(void) I915_READ(I915REG_INT_IDENTITY_R); /* Flush posted write */
+
+	if (iir & I915_USER_INTERRUPT) {
 		DRM_WAKEUP(&dev_priv->irq_queue);
 #ifdef I915_HAVE_FENCE
 		i915_fence_handler(dev);
 #endif
 	}
 
-	if (temp & (VSYNC_PIPEA_FLAG | VSYNC_PIPEB_FLAG)) {
+	if (vblank) {
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
 	}
@@ -499,8 +503,8 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 {
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount == 1)){
-		dev_priv->irq_enable_reg |= USER_INT_FLAG;
-		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+		dev_priv->irq_enable_reg |= I915_USER_INTERRUPT;
+		I915_WRITE(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
@@ -511,7 +515,7 @@ void i915_user_irq_off(drm_i915_private_t *dev_priv)
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
 		//		dev_priv->irq_enable_reg &= ~USER_INT_FLAG;
-		//		I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+		//		I915_WRITE(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 }
@@ -590,13 +594,17 @@ int i915_enable_vblank(struct drm_device *dev, int plane)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int pipe = i915_get_pipe(dev, plane);
+	u32	pipestat_reg = 0;
+	u32	pipestat;
 
 	switch (pipe) {
 	case 0:
-		dev_priv->irq_enable_reg |= VSYNC_PIPEA_FLAG;
+		pipestat_reg = I915REG_PIPEASTAT;
+		dev_priv->irq_enable_reg |= I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
 		break;
 	case 1:
-		dev_priv->irq_enable_reg |= VSYNC_PIPEB_FLAG;
+		pipestat_reg = I915REG_PIPEBSTAT;
+		dev_priv->irq_enable_reg |= I915_DISPLAY_PIPE_B_EVENT_INTERRUPT;
 		break;
 	default:
 		DRM_ERROR("tried to enable vblank on non-existent pipe %d\n",
@@ -604,7 +612,25 @@ int i915_enable_vblank(struct drm_device *dev, int plane)
 		break;
 	}
 
-	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	if (pipestat_reg)
+	{
+		pipestat = I915_READ (pipestat_reg);
+		/*
+		 * Older chips didn't have the start vblank interrupt,
+		 * but 
+		 */
+		if (IS_I965G (dev))
+			pipestat |= I915_START_VBLANK_INTERRUPT_ENABLE;
+		else
+			pipestat |= I915_VBLANK_INTERRUPT_ENABLE;
+		/*
+		 * Clear any pending status
+		 */
+		pipestat |= (I915_START_VBLANK_INTERRUPT_STATUS |
+			     I915_VBLANK_INTERRUPT_STATUS);
+		I915_WRITE(pipestat_reg, pipestat);
+	}
+	I915_WRITE(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 
 	return 0;
 }
@@ -613,13 +639,17 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int pipe = i915_get_pipe(dev, plane);
+	u32	pipestat_reg = 0;
+	u32	pipestat;
 
 	switch (pipe) {
 	case 0:
-		dev_priv->irq_enable_reg &= ~VSYNC_PIPEA_FLAG;
+		pipestat_reg = I915REG_PIPEASTAT;
+		dev_priv->irq_enable_reg &= ~I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
 		break;
 	case 1:
-		dev_priv->irq_enable_reg &= ~VSYNC_PIPEB_FLAG;
+		pipestat_reg = I915REG_PIPEBSTAT;
+		dev_priv->irq_enable_reg &= ~I915_DISPLAY_PIPE_B_EVENT_INTERRUPT;
 		break;
 	default:
 		DRM_ERROR("tried to disable vblank on non-existent pipe %d\n",
@@ -627,16 +657,28 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 		break;
 	}
 
-	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	I915_WRITE(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	if (pipestat_reg)
+	{
+		pipestat = I915_READ (pipestat_reg);
+		pipestat &= ~(I915_START_VBLANK_INTERRUPT_ENABLE |
+			      I915_VBLANK_INTERRUPT_ENABLE);
+		/*
+		 * Clear any pending status
+		 */
+		pipestat |= (I915_START_VBLANK_INTERRUPT_STATUS |
+			     I915_VBLANK_INTERRUPT_STATUS);
+		I915_WRITE(pipestat_reg, pipestat);
+	}
 }
 
 static void i915_enable_interrupt (struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	
-	dev_priv->irq_enable_reg |= USER_INT_FLAG;
+	dev_priv->irq_enable_reg |= I915_USER_INTERRUPT;
 
-	I915_WRITE16(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
+	I915_WRITE(I915REG_INT_ENABLE_R, dev_priv->irq_enable_reg);
 	dev_priv->irq_enabled = 1;
 }
 
@@ -677,9 +719,9 @@ int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 
 	flag = I915_READ(I915REG_INT_ENABLE_R);
 	pipe->pipe = 0;
-	if (flag & VSYNC_PIPEA_FLAG)
+	if (flag & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT)
 		pipe->pipe |= DRM_I915_VBLANK_PIPE_A;
-	if (flag & VSYNC_PIPEB_FLAG)
+	if (flag & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT)
 		pipe->pipe |= DRM_I915_VBLANK_PIPE_B;
 
 	return 0;
@@ -883,16 +925,20 @@ int i915_driver_irq_postinstall(struct drm_device * dev)
 void i915_driver_irq_uninstall(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
-	u16 temp;
+	u32 temp;
 
 	if (!dev_priv)
 		return;
 
 	dev_priv->irq_enabled = 0;
-	I915_WRITE16(I915REG_HWSTAM, 0xffff);
-	I915_WRITE16(I915REG_INT_MASK_R, 0xffff);
-	I915_WRITE16(I915REG_INT_ENABLE_R, 0x0);
+	I915_WRITE(I915REG_HWSTAM, 0xffffffff);
+	I915_WRITE(I915REG_INT_MASK_R, 0xffffffff);
+	I915_WRITE(I915REG_INT_ENABLE_R, 0x0);
 
-	temp = I915_READ16(I915REG_INT_IDENTITY_R);
-	I915_WRITE16(I915REG_INT_IDENTITY_R, temp);
+	temp = I915_READ(I915REG_PIPEASTAT);
+	I915_WRITE(I915REG_PIPEASTAT, temp);
+	temp = I915_READ(I915REG_PIPEBSTAT);
+	I915_WRITE(I915REG_PIPEBSTAT, temp);
+	temp = I915_READ(I915REG_INT_IDENTITY_R);
+	I915_WRITE(I915REG_INT_IDENTITY_R, temp);
 }
