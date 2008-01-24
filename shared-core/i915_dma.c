@@ -834,7 +834,7 @@ int i915_process_relocs(struct drm_file *file_priv,
 		goto out;
 	}
 
-	reloc_buf_size = reloc_count * I915_RELOC0_STRIDE * sizeof(uint32_t);
+	reloc_buf_size = (I915_RELOC_HEADER + (reloc_count * I915_RELOC0_STRIDE)) * sizeof(uint32_t);
 	reloc_buf = kmalloc(reloc_buf_size, GFP_KERNEL);
 	if (!reloc_buf) {
 		DRM_ERROR("Out of memory for reloc buffer\n");
