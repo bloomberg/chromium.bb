@@ -329,9 +329,9 @@ typedef struct drm_i915_hws_addr {
 
 /*
  * Relocation header is 4 uint32_ts
- * 0 - (16-bit relocation type << 16)| 16 bit reloc count
- * 1 - buffer handle for another list of relocs
- * 2-3 - spare.
+ * 0 - 32 bit reloc count
+ * 1 - 32-bit relocation type
+ * 2-3 - 64-bit user buffer handle ptr for another list of relocs.
  */
 #define I915_RELOC_HEADER 4
 
@@ -339,7 +339,7 @@ typedef struct drm_i915_hws_addr {
  * type 0 relocation has 4-uint32_t stride
  * 0 - offset into buffer
  * 1 - delta to add in
- * 2 - index into buffer list
+ * 2 - buffer handle
  * 3 - reserved (for optimisations later).
  */
 #define I915_RELOC_TYPE_0 0
@@ -347,7 +347,7 @@ typedef struct drm_i915_hws_addr {
 
 struct drm_i915_op_arg {
 	uint64_t next;
-	uint32_t reloc_handle;
+	uint64_t reloc_ptr;
 	int handled;
 	union {
 		struct drm_bo_op_req req;

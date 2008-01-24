@@ -739,9 +739,15 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	unsigned index;
 	unsigned long new_cmd_offset;
 	u32 val;
-	int ret;
+	int ret, i;
+	int buf_index = -1;
 
-	if (reloc[2] >= num_buffers) {
+	for (i = 0; i <= num_buffers; i++)
+		if (buffers[i].buffer)
+			if (reloc[2] == buffers[i].buffer->base.hash.key)
+				buf_index = i;
+
+	if (buf_index == -1) {
 		DRM_ERROR("Illegal relocation buffer %08X\n", reloc[2]);
 		return -EINVAL;
 	}
@@ -750,7 +756,7 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	 * Short-circuit relocations that were correctly
 	 * guessed by the client
 	 */
-	if (buffers[reloc[2]].presumed_offset_correct && !DRM_DEBUG_RELOCATION)
+	if (buffers[buf_index].presumed_offset_correct && !DRM_DEBUG_RELOCATION)
 		return 0;
 
 	new_cmd_offset = reloc[0];
@@ -777,17 +783,17 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		relocatee->page_offset = (relocatee->offset & PAGE_MASK);
 	}
 
-	val = buffers[reloc[2]].buffer->offset;
+	val = buffers[buf_index].buffer->offset;
 	index = (reloc[0] - relocatee->page_offset) >> 2;
 
 	/* add in validate */
 	val = val + reloc[1];
 
 	if (DRM_DEBUG_RELOCATION) {
-		if (buffers[reloc[2]].presumed_offset_correct &&
+		if (buffers[buf_index].presumed_offset_correct &&
 		    relocatee->data_page[index] != val) {
 			DRM_DEBUG ("Relocation mismatch source %d target %d buffer %d user %08x kernel %08x\n",
-				   reloc[0], reloc[1], reloc[2], relocatee->data_page[index], val);
+				   reloc[0], reloc[1], buf_index, relocatee->data_page[index], val);
 		}
 	}
 	relocatee->data_page[index] = val;
@@ -796,94 +802,79 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 
 int i915_process_relocs(struct drm_file *file_priv,
 			uint32_t buf_handle,
-			uint32_t *reloc_buf_handle,
+			uint32_t __user **reloc_user_ptr,
 			struct i915_relocatee_info *relocatee,
 			struct drm_i915_validate_buffer *buffers,
 			uint32_t num_buffers)
 {
-	struct drm_device *dev = file_priv->head->dev;
-	struct drm_buffer_object *reloc_list_object;
-	uint32_t cur_handle = *reloc_buf_handle;
-	uint32_t *reloc_page;
-	int ret, reloc_is_iomem, reloc_stride;
-	uint32_t num_relocs, reloc_offset, reloc_end, reloc_page_offset, next_offset, cur_offset;
-	struct drm_bo_kmap_obj reloc_kmap;
+	int ret, reloc_stride;
+	uint32_t cur_offset;
+	uint32_t reloc_count;
+	uint32_t reloc_type;
+	uint32_t reloc_buf_size;
+	uint32_t *reloc_buf = NULL;
+	int i;
 
-	memset(&reloc_kmap, 0, sizeof(reloc_kmap));
-
-	mutex_lock(&dev->struct_mutex);
-	reloc_list_object = drm_lookup_buffer_object(file_priv, cur_handle, 1);
-	mutex_unlock(&dev->struct_mutex);
-	if (!reloc_list_object)
-		return -EINVAL;
-
-	ret = drm_bo_kmap(reloc_list_object, 0, 1, &reloc_kmap);
+	/* do a copy from user from the user ptr */
+	ret = get_user(reloc_count, *reloc_user_ptr);
 	if (ret) {
 		DRM_ERROR("Could not map relocation buffer.\n");
 		goto out;
 	}
 
-	reloc_page = drm_bmo_virtual(&reloc_kmap, &reloc_is_iomem);
-	num_relocs = reloc_page[0] & 0xffff;
+	ret = get_user(reloc_type, (*reloc_user_ptr)+1);
+	if (ret) {
+		DRM_ERROR("Could not map relocation buffer.\n");
+		goto out;
+	}
 
-	if ((reloc_page[0] >> 16) & 0xffff) {
+	if (reloc_type != 0) {
 		DRM_ERROR("Unsupported relocation type requested\n");
+		ret = -EINVAL;
+		goto out;
+	}
+
+	reloc_buf_size = reloc_count * I915_RELOC0_STRIDE * sizeof(uint32_t);
+	reloc_buf = kmalloc(reloc_buf_size, GFP_KERNEL);
+	if (!reloc_buf) {
+		DRM_ERROR("Out of memory for reloc buffer\n");
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	if (copy_from_user(reloc_buf, *reloc_user_ptr, reloc_buf_size)) {
+		ret = -EFAULT;
 		goto out;
 	}
 
 	/* get next relocate buffer handle */
-	*reloc_buf_handle = reloc_page[1];
+	*reloc_user_ptr = (uint32_t *)*(unsigned long *)&reloc_buf[2];
+
 	reloc_stride = I915_RELOC0_STRIDE * sizeof(uint32_t); /* may be different for other types of relocs */
 
-	DRM_DEBUG("num relocs is %d, next is %08X\n", num_relocs, reloc_page[1]);
+	DRM_DEBUG("num relocs is %d, next is %p\n", reloc_count, *reloc_user_ptr);
 
-	reloc_page_offset = 0;
-	reloc_offset = I915_RELOC_HEADER * sizeof(uint32_t);
-	reloc_end = reloc_offset + (num_relocs * reloc_stride);
+	for (i = 0; i < reloc_count; i++) {
+		cur_offset = I915_RELOC_HEADER + (i * I915_RELOC0_STRIDE);
+		  
+		ret = i915_apply_reloc(file_priv, num_buffers, buffers,
+				       relocatee, reloc_buf + cur_offset);
+		if (ret)
+			goto out;
+	}
 
-	do {
-		next_offset = drm_bo_offset_end(reloc_offset, reloc_end);
-
-		do {
-			cur_offset = ((reloc_offset + reloc_page_offset) & ~PAGE_MASK) / sizeof(uint32_t);
-			ret = i915_apply_reloc(file_priv, num_buffers,
-					 buffers, relocatee, &reloc_page[cur_offset]);
-			if (ret)
-				goto out;
-
-			reloc_offset += reloc_stride;
-		} while (reloc_offset < next_offset);
-
-		drm_bo_kunmap(&reloc_kmap);
-
-		reloc_offset = next_offset;
-		if (reloc_offset != reloc_end) {
-			ret = drm_bo_kmap(reloc_list_object, reloc_offset >> PAGE_SHIFT, 1, &reloc_kmap);
-			if (ret) {
-				DRM_ERROR("Could not map relocation buffer.\n");
-				goto out;
-			}
-
-			reloc_page = drm_bmo_virtual(&reloc_kmap, &reloc_is_iomem);
-			reloc_page_offset = reloc_offset & ~PAGE_MASK;
-		}
-
-	} while (reloc_offset != reloc_end);
 out:
+
+	if (reloc_buf)
+		kfree(reloc_buf);
 	drm_bo_kunmap(&relocatee->kmap);
 	relocatee->data_page = NULL;
-
-	drm_bo_kunmap(&reloc_kmap);
-
-	mutex_lock(&dev->struct_mutex);
-	drm_bo_usage_deref_locked(&reloc_list_object);
-	mutex_unlock(&dev->struct_mutex);
 
 	return ret;
 }
 
 static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
-			   drm_handle_t buf_reloc_handle,
+			   uint32_t __user *reloc_user_ptr,
 			   struct drm_i915_validate_buffer *buffers,
 			   uint32_t buf_count)
 {
@@ -917,8 +908,8 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 		goto out_err;
 	}
 
-	while (buf_reloc_handle) {
-		ret = i915_process_relocs(file_priv, buf_handle, &buf_reloc_handle, &relocatee, buffers, buf_count);
+	while (reloc_user_ptr) {
+		ret = i915_process_relocs(file_priv, buf_handle, &reloc_user_ptr, &relocatee, buffers, buf_count);
 		if (ret) {
 			DRM_ERROR("process relocs failed\n");
 			break;
@@ -948,8 +939,8 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 	int ret = 0;
 	unsigned buf_count = 0;
 	struct drm_device *dev = file_priv->head->dev;
-	uint32_t buf_reloc_handle, buf_handle;
-
+	uint32_t buf_handle;
+	uint32_t __user *reloc_user_ptr;
 
 	do {
 		if (buf_count >= *num_buffers) {
@@ -984,10 +975,10 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		}
 
 		buf_handle = req->bo_req.handle;
-		buf_reloc_handle = arg.reloc_handle;
+		reloc_user_ptr = (uint32_t *)(unsigned long)arg.reloc_ptr;
 
-		if (buf_reloc_handle) {
-			ret = i915_exec_reloc(file_priv, buf_handle, buf_reloc_handle, buffers, buf_count);
+		if (reloc_user_ptr) {
+			ret = i915_exec_reloc(file_priv, buf_handle, reloc_user_ptr, buffers, buf_count);
 			if (ret)
 				goto out_err;
 			DRM_MEMORYBARRIER();
