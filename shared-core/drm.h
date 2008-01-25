@@ -555,20 +555,20 @@ union drm_wait_vblank {
 	struct drm_wait_vblank_reply reply;
 };
 
-typedef enum {
+enum drm_modeset_ctl_cmd {
 	_DRM_PRE_MODESET = 1,
 	_DRM_POST_MODESET = 2,
-} drm_modeset_ctl_cmd_t;
+};
 
 /**
  * DRM_IOCTL_MODESET_CTL ioctl argument type
  *
  * \sa drmModesetCtl().
  */
-typedef struct drm_modeset_ctl {
+struct drm_modeset_ctl {
 	unsigned long arg;
-	drm_modeset_ctl_cmd_t cmd;
-} drm_modeset_ctl_t;
+	enum drm_modeset_ctl_cmd cmd;
+};
 
 /**
  * DRM_IOCTL_AGP_ENABLE ioctl argument type.
@@ -969,6 +969,7 @@ struct drm_mm_init_arg {
 #define DRM_IOCTL_GET_CLIENT            DRM_IOWR(0x05, struct drm_client)
 #define DRM_IOCTL_GET_STATS             DRM_IOR( 0x06, struct drm_stats)
 #define DRM_IOCTL_SET_VERSION		DRM_IOWR(0x07, struct drm_set_version)
+#define DRM_IOCTL_MODESET_CTL           DRM_IOW(0x08, struct drm_modeset_ctl)
 
 #define DRM_IOCTL_SET_UNIQUE		DRM_IOW( 0x10, struct drm_unique)
 #define DRM_IOCTL_AUTH_MAGIC		DRM_IOW( 0x11, struct drm_auth)
@@ -1040,9 +1041,6 @@ struct drm_mm_init_arg {
 #define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_VERSION          DRM_IOR(0xd6, struct drm_bo_version_arg)
-
-
-#define DRM_IOCTL_MODESET_CTL           DRM_IOW(0xa0, drm_modeset_ctl_t)
 
 /*@}*/
 

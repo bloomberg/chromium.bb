@@ -397,23 +397,17 @@ EXPORT_SYMBOL(drm_vblank_put);
 int drm_modeset_ctl(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
-	drm_modeset_ctl_t __user *argp = (void __user *)data;
-	drm_modeset_ctl_t modeset;
+	struct drm_modeset_ctl *modeset = data;
 	int crtc, ret = 0;
 	u32 new;
 
-	if (copy_from_user(&modeset, argp, sizeof(modeset))) {
-		ret = -EFAULT;
-		goto out;
-	}
-
-	crtc = modeset.arg;
+	crtc = modeset->arg;
 	if (crtc >= dev->num_crtcs) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	switch (modeset.cmd) {
+	switch (modeset->cmd) {
 	case _DRM_PRE_MODESET:
 		dev->vblank_premodeset[crtc] =
 			dev->driver->get_vblank_counter(dev, crtc);
