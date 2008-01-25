@@ -110,27 +110,29 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 	dev_priv->sarea_priv = (drm_i915_sarea_t *)
 	    ((u8 *) dev_priv->sarea->handle + init->sarea_priv_offset);
 
-	dev_priv->ring.Start = init->ring_start;
-	dev_priv->ring.End = init->ring_end;
-	dev_priv->ring.Size = init->ring_size;
-	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
-
-	dev_priv->ring.map.offset = init->ring_start;
-	dev_priv->ring.map.size = init->ring_size;
-	dev_priv->ring.map.type = 0;
-	dev_priv->ring.map.flags = 0;
-	dev_priv->ring.map.mtrr = 0;
-
-	drm_core_ioremap(&dev_priv->ring.map, dev);
-
-	if (dev_priv->ring.map.handle == NULL) {
-		i915_dma_cleanup(dev);
-		DRM_ERROR("can not ioremap virtual address for"
-			  " ring buffer\n");
-		return -ENOMEM;
+	if (!dev_priv->ring.Size) {
+		dev_priv->ring.Start = init->ring_start;
+		dev_priv->ring.End = init->ring_end;
+		dev_priv->ring.Size = init->ring_size;
+		dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
+		
+		dev_priv->ring.map.offset = init->ring_start;
+		dev_priv->ring.map.size = init->ring_size;
+		dev_priv->ring.map.type = 0;
+		dev_priv->ring.map.flags = 0;
+		dev_priv->ring.map.mtrr = 0;
+		
+		drm_core_ioremap(&dev_priv->ring.map, dev);
+		
+		if (dev_priv->ring.map.handle == NULL) {
+			i915_dma_cleanup(dev);
+			DRM_ERROR("can not ioremap virtual address for"
+				  " ring buffer\n");
+			return -ENOMEM;
+		}
+		dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 	}
 
-	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	dev_priv->cpp = init->cpp;
 	dev_priv->sarea_priv->pf_current_page = 0;
