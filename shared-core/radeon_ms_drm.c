@@ -63,7 +63,7 @@ struct drm_bo_driver radeon_ms_bo_driver = {
 	.fence_type = radeon_ms_fence_types,
 	.invalidate_caches = radeon_ms_invalidate_caches,
 	.init_mem_type = radeon_ms_init_mem_type,
-	.evict_mask = radeon_ms_evict_mask,
+	.evict_flags = radeon_ms_evict_flags,
 	.move = radeon_ms_bo_move,
 	.ttm_cache_flush = radeon_ms_ttm_flush,
 };

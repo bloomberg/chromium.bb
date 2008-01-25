@@ -144,7 +144,7 @@ int via_init_mem_type(struct drm_device * dev, uint32_t type,
 	return 0;
 }
 
-uint32_t via_evict_mask(struct drm_buffer_object *bo)
+uint64_t via_evict_flags(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:

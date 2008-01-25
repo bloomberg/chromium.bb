@@ -56,7 +56,7 @@ nouveau_bo_fence_type(struct drm_buffer_object *bo,
 {
 	/* When we get called, *fclass is set to the requested fence class */
 
-	if (bo->mem.mask & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
+	if (bo->mem.proposed_flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE))
 		*type = 3;
 	else
 		*type = 1;
@@ -130,8 +130,8 @@ nouveau_bo_init_mem_type(struct drm_device *dev, uint32_t type,
 	return 0;
 }
 
-static uint32_t
-nouveau_bo_evict_mask(struct drm_buffer_object *bo)
+static uint64_t
+nouveau_bo_evict_flags(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:
@@ -207,15 +207,16 @@ nouveau_bo_move_gart(struct drm_buffer_object *bo, int evict, int no_wait,
 
         tmp_mem = *new_mem;
         tmp_mem.mm_node = NULL;
-        tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
-                DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING;
+        tmp_mem.proposed_flags = (DRM_BO_FLAG_MEM_TT |
+				  DRM_BO_FLAG_CACHED |
+				  DRM_BO_FLAG_FORCE_CACHING);
 
         ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
 
         if (ret)
                 return ret;
 
-        ret = drm_bind_ttm(bo->ttm, &tmp_mem);
+        ret = drm_ttm_bind (bo->ttm, &tmp_mem);
         if (ret)
                 goto out_cleanup;
 
@@ -291,7 +292,7 @@ struct drm_bo_driver nouveau_bo_driver = {
 	.fence_type = nouveau_bo_fence_type,
 	.invalidate_caches = nouveau_bo_invalidate_caches,
 	.init_mem_type = nouveau_bo_init_mem_type,
-	.evict_mask = nouveau_bo_evict_mask,
+	.evict_flags = nouveau_bo_evict_flags,
 	.move = nouveau_bo_move,
 	.ttm_cache_flush= nouveau_bo_flush_ttm
 };

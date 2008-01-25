@@ -19,8 +19,13 @@
 #define I915_IFPADDR    0x60
 #define I965_IFPADDR    0x70
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,21)
+#define upper_32_bits(_val) (((u64)(_val)) >> 32)
+#endif
+
 static struct _i9xx_private_compat {
 	void __iomem *flush_page;
+	int resource_valid;
 	struct resource ifp_resource;
 } i9xx_private;
 
@@ -57,16 +62,17 @@ static void intel_i915_setup_chipset_flush(struct pci_dev *pdev)
 	pci_read_config_dword(pdev, I915_IFPADDR, &temp);
 	if (!(temp & 0x1)) {
 		intel_alloc_chipset_flush_resource(pdev);
-
+		i9xx_private.resource_valid = 1;
 		pci_write_config_dword(pdev, I915_IFPADDR, (i9xx_private.ifp_resource.start & 0xffffffff) | 0x1);
 	} else {
 		temp &= ~1;
 
+		i9xx_private.resource_valid = 1;
 		i9xx_private.ifp_resource.start = temp;
 		i9xx_private.ifp_resource.end = temp + PAGE_SIZE;
 		ret = request_resource(&iomem_resource, &i9xx_private.ifp_resource);
 		if (ret) {
-			i9xx_private.ifp_resource.start = 0;
+			i9xx_private.resource_valid = 0;
 			printk("Failed inserting resource into tree\n");
 		}
 	}
@@ -84,6 +90,7 @@ static void intel_i965_g33_setup_chipset_flush(struct pci_dev *pdev)
 
 		intel_alloc_chipset_flush_resource(pdev);
 
+		i9xx_private.resource_valid = 1;
 		pci_write_config_dword(pdev, I965_IFPADDR + 4,
 			upper_32_bits(i9xx_private.ifp_resource.start));
 		pci_write_config_dword(pdev, I965_IFPADDR, (i9xx_private.ifp_resource.start & 0xffffffff) | 0x1);
@@ -93,11 +100,12 @@ static void intel_i965_g33_setup_chipset_flush(struct pci_dev *pdev)
 		temp_lo &= ~0x1;
 		l64 = ((u64)temp_hi << 32) | temp_lo;
 
+		i9xx_private.resource_valid = 1;
 		i9xx_private.ifp_resource.start = l64;
 		i9xx_private.ifp_resource.end = l64 + PAGE_SIZE;
 		ret = request_resource(&iomem_resource, &i9xx_private.ifp_resource);
-		if (!ret) {
-			i9xx_private.ifp_resource.start = 0;
+		if (ret) {
+			i9xx_private.resource_valid = 0;
 			printk("Failed inserting resource into tree\n");
 		}
 	}
@@ -167,7 +175,9 @@ static void intel_i9xx_setup_flush(struct drm_device *dev)
 static void intel_i9xx_fini_flush(struct drm_device *dev)
 {
 	iounmap(i9xx_private.flush_page);
-	release_resource(&i9xx_private.ifp_resource);
+	if (i9xx_private.resource_valid)
+		release_resource(&i9xx_private.ifp_resource);
+	i9xx_private.resource_valid = 0;
 }
 
 static void intel_i9xx_flush_page(struct drm_device *dev)

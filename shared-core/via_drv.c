@@ -74,7 +74,7 @@ static struct drm_bo_driver via_bo_driver = {
 	.fence_type = via_fence_types,
 	.invalidate_caches = via_invalidate_caches,
 	.init_mem_type = via_init_mem_type,
-	.evict_mask = via_evict_mask,
+	.evict_flags = via_evict_flags,
 	.move = NULL,
 };
 #endif
@@ -83,14 +83,16 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_HAVE_IRQ |
-	    DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL,
+	    DRIVER_IRQ_SHARED,
 	.load = via_driver_load,
 	.unload = via_driver_unload,
 #ifndef VIA_HAVE_CORE_MM
 	.context_ctor = via_init_context,
 #endif
 	.context_dtor = via_final_context,
-	.vblank_wait = via_driver_vblank_wait,
+	.get_vblank_counter = via_get_vblank_counter,
+	.enable_vblank = via_enable_vblank,
+	.disable_vblank = via_disable_vblank,
 	.irq_preinstall = via_driver_irq_preinstall,
 	.irq_postinstall = via_driver_irq_postinstall,
 	.irq_uninstall = via_driver_irq_uninstall,

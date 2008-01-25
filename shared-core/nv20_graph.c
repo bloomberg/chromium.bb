@@ -432,19 +432,6 @@ static void nv30_31_graph_context_init(struct drm_device *dev,
 	INSTANCE_WR(ctx, 0x385c/4, 0x3f800000);
 	INSTANCE_WR(ctx, 0x3864/4, 0xbf800000);
 	INSTANCE_WR(ctx, 0x386c/4, 0xbf800000);
-
-	/* nv30gl stuff */
-	for (i=0; i<8; i++) {
-		INSTANCE_WR(ctx, (0x4dfc/4)+i, 0x001c527d);
-	}
-	INSTANCE_WR(ctx, 0x4e3c/4, 0x001c527c);
-/* these ones make dma fifo hang
-	INSTANCE_WR(ctx, 0x567c/4, 0x000a0000);
-	INSTANCE_WR(ctx, 0x0878/4, 0x01000000);
-	INSTANCE_WR(ctx, 0x02f4/4, 0x0001ffff);
-
-	INSTANCE_WR(ctx, 0x0028/4, INSTANCE_RD(ctx, 0x0028/4) | 1);
-*/
 }
 
 static void nv34_graph_context_init(struct drm_device *dev,
@@ -655,6 +642,7 @@ int nv20_graph_load_context(struct nouveau_channel *chan)
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_XFER,
 		 NV20_PGRAPH_CHANNEL_CTX_XFER_LOAD);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
 
 	nouveau_wait_for_idle(dev);
 	return 0;
@@ -772,7 +760,7 @@ int nv20_graph_init(struct drm_device *dev) {
 	NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA000C);
 	NV_WRITE(NV10_PGRAPH_RDI_DATA, NV_READ(0x100324));
 
-	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000100);
 	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
 
@@ -867,7 +855,7 @@ int nv30_graph_init(struct drm_device *dev)
 		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
 	}
 
-	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10010100);
+	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000100);
 	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
 	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
 

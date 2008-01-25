@@ -102,6 +102,7 @@ typedef struct drm_via_private {
 	struct timeval last_vblank;
 	int last_vblank_valid;
 	unsigned usec_per_vblank;
+	atomic_t vbl_received;
 	drm_via_state_t hc_state;
 	char pci_buf[VIA_PCI_BUF_SIZE];
 	const uint32_t *fire_offsets[VIA_FIRE_BUF_SIZE];
@@ -166,11 +167,13 @@ extern int via_driver_unload(struct drm_device *dev);
 extern int via_final_context(struct drm_device * dev, int context);
 
 extern int via_do_cleanup_map(struct drm_device * dev);
-extern int via_driver_vblank_wait(struct drm_device * dev, unsigned int *sequence);
+extern u32 via_get_vblank_counter(struct drm_device *dev, int crtc);
+extern int via_enable_vblank(struct drm_device *dev, int crtc);
+extern void via_disable_vblank(struct drm_device *dev, int crtc);
 
 extern irqreturn_t via_driver_irq_handler(DRM_IRQ_ARGS);
 extern void via_driver_irq_preinstall(struct drm_device * dev);
-extern void via_driver_irq_postinstall(struct drm_device * dev);
+extern int via_driver_irq_postinstall(struct drm_device * dev);
 extern void via_driver_irq_uninstall(struct drm_device * dev);
 
 extern int via_dma_cleanup(struct drm_device * dev);
@@ -211,7 +214,7 @@ extern int via_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
 extern int via_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern int via_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);
-extern uint32_t via_evict_mask(struct drm_buffer_object *bo);
+extern uint64_t via_evict_flags(struct drm_buffer_object *bo);
 extern int via_move(struct drm_buffer_object *bo, int evict,
 		int no_wait, struct drm_bo_mem_reg *new_mem);
 #endif

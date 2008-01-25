@@ -46,13 +46,15 @@ nouveau_irq_preinstall(struct drm_device *dev)
 	NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 }
 
-void
+int
 nouveau_irq_postinstall(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	/* Master enable */
 	NV_WRITE(NV03_PMC_INTR_EN_0, NV_PMC_INTR_EN_0_MASTER_ENABLE);
+
+	return 0;
 }
 
 void

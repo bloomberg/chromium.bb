@@ -338,7 +338,7 @@ int radeon_ms_bo_get_gpu_addr(struct drm_device *dev,
 int radeon_ms_bo_move(struct drm_buffer_object * bo, int evict,
 		      int no_wait, struct drm_bo_mem_reg * new_mem);
 struct drm_ttm_backend *radeon_ms_create_ttm_backend(struct drm_device * dev);
-uint32_t radeon_ms_evict_mask(struct drm_buffer_object *bo);
+uint64_t radeon_ms_evict_flags(struct drm_buffer_object *bo);
 int radeon_ms_init_mem_type(struct drm_device * dev, uint32_t type,
 			    struct drm_mem_type_manager * man);
 int radeon_ms_invalidate_caches(struct drm_device * dev, uint64_t flags);

@@ -65,7 +65,7 @@ int radeon_invalidate_caches(struct drm_device * dev, uint64_t flags)
 	return 0;
 }
 
-uint32_t radeon_evict_mask(struct drm_buffer_object *bo)
+uint64_t radeon_evict_flags(struct drm_buffer_object *bo)
 {
 	switch (bo->mem.mem_type) {
 	case DRM_BO_MEM_LOCAL:
@@ -216,14 +216,14 @@ static int radeon_move_flip(struct drm_buffer_object * bo,
 
 	tmp_mem = *new_mem;
 	tmp_mem.mm_node = NULL;
-	tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
+	tmp_mem.flags = DRM_BO_FLAG_MEM_TT |
 	    DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING;
 
 	ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
 	if (ret)
 		return ret;
 
-	ret = drm_bind_ttm(bo->ttm, &tmp_mem);
+	ret = drm_ttm_bind(bo->ttm, &tmp_mem);
 	if (ret)
 		goto out_cleanup;
 

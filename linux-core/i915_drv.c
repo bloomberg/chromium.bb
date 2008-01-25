@@ -62,10 +62,10 @@ static struct drm_bo_driver i915_bo_driver = {
 	.num_mem_type_prio = sizeof(i915_mem_prios)/sizeof(uint32_t),
 	.num_mem_busy_prio = sizeof(i915_busy_prios)/sizeof(uint32_t),
 	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
-	.fence_type = i915_fence_types,
+	.fence_type = i915_fence_type,
 	.invalidate_caches = i915_invalidate_caches,
 	.init_mem_type = i915_init_mem_type,
-	.evict_mask = i915_evict_mask,
+	.evict_flags = i915_evict_flags,
 	.move = i915_move,
 	.ttm_cache_flush = i915_flush_ttm,
 };
@@ -331,7 +331,7 @@ static int i915_suspend(struct drm_device *dev)
 	dev_priv->saveDSPBSIZE = I915_READ(DSPBSIZE);
 	dev_priv->saveDSPBPOS = I915_READ(DSPBPOS);
 	dev_priv->saveDSPBBASE = I915_READ(DSPBBASE);
-	if (IS_I965GM(dev)) {
+	if (IS_I965GM(dev) || IS_IGD_GM(dev)) {
 		dev_priv->saveDSPBSURF = I915_READ(DSPBSURF);
 		dev_priv->saveDSPBTILEOFF = I915_READ(DSPBTILEOFF);
 	}
@@ -537,8 +537,7 @@ static struct drm_driver driver = {
 	 */
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | /* DRIVER_USE_MTRR | */
-	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL |
-	    DRIVER_IRQ_VBL2,
+	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.load = i915_driver_load,
 	.unload = i915_driver_unload,
 /*	.lastclose = i915_driver_lastclose,
@@ -546,8 +545,9 @@ static struct drm_driver driver = {
 	.suspend = i915_suspend,
 	.resume = i915_resume,
 	.device_is_agp = i915_driver_device_is_agp,
-	.vblank_wait = i915_driver_vblank_wait,
-	.vblank_wait2 = i915_driver_vblank_wait2,
+	.get_vblank_counter = i915_get_vblank_counter,
+	.enable_vblank = i915_enable_vblank,
+	.disable_vblank = i915_disable_vblank,
 	.irq_preinstall = i915_driver_irq_preinstall,
 	.irq_postinstall = i915_driver_irq_postinstall,
 	.irq_uninstall = i915_driver_irq_uninstall,

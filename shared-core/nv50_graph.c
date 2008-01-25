@@ -34,14 +34,12 @@ static void
 nv50_graph_init_reset(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t pmc_e;
+	uint32_t pmc_e = NV_PMC_ENABLE_PGRAPH | (1 << 21);
 
 	DRM_DEBUG("\n");
 
-	pmc_e = NV_READ(NV03_PMC_ENABLE);
-	NV_WRITE(NV03_PMC_ENABLE, pmc_e & ~NV_PMC_ENABLE_PGRAPH);
-	pmc_e = NV_READ(NV03_PMC_ENABLE);
-	NV_WRITE(NV03_PMC_ENABLE, pmc_e |  NV_PMC_ENABLE_PGRAPH);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) & ~pmc_e);
+	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |  pmc_e);
 }
 
 static void
@@ -51,6 +49,7 @@ nv50_graph_init_intr(struct drm_device *dev)
 
 	DRM_DEBUG("\n");
 	NV_WRITE(NV03_PGRAPH_INTR, 0xffffffff);
+	NV_WRITE(0x400138, 0xffffffff);
 	NV_WRITE(NV40_PGRAPH_INTR_EN, 0xffffffff);
 }
 
@@ -146,12 +145,53 @@ static uint32_t nv84_ctx_voodoo[] = {
 	0x00415e06, 0x00415f05, 0x0060000d, 0x00700005, 0x0070000d, 0x00700006,
 	0x0070000b, 0x0070000e, 0x0070001c, 0x0060000c, ~0
 };
+ 
+static uint32_t nv86_ctx_voodoo[] = {
+	0x0070008e, 0x0070009c, 0x00200020, 0x00600008, 0x0050004c, 0x00400e89, 
+	0x00200000, 0x00600007, 0x00300000, 0x00c000ff, 0x00200000, 0x008000ff, 
+	0x00700009, 0x0040dd4d, 0x00402944, 0x00402905, 0x0040290d, 0x0040b906, 
+	0x00600005, 0x004015c5, 0x00600011, 0x0040270b, 0x004021c5, 0x00700000, 
+	0x00700081, 0x00600004, 0x0050004a, 0x00216d80, 0x00600007, 0x00c02801, 
+	0x0020002e, 0x00800001, 0x005000cb, 0x0090ffff, 0x0091ffff, 0x00200020, 
+	0x00600008, 0x0050004c, 0x00600009, 0x0040b945, 0x0040d44d, 0x0070009d, 
+	0x00402dcf, 0x0070009f, 0x0050009f, 0x00402ac0, 0x00200200, 0x00600008, 
+	0x00402a4f, 0x00402ac0, 0x004030cc, 0x00700081, 0x00200000, 0x00600006, 
+	0x00700000, 0x00111bfc, 0x00700083, 0x00300000, 0x00216d80, 0x00600007, 
+	0x00c00b01, 0x0020001e, 0x00800001, 0x005000cb, 0x00c000ff, 0x00700080, 
+	0x00700083, 0x00200047, 0x00600006, 0x0011020a, 0x00200280, 0x00600007, 
+	0x00300000, 0x00c000ff, 0x00c800ff, 0x0040c407, 0x00202916, 0x008000ff, 
+	0x0040508c, 0x005000cb, 0x00a0023f, 0x00200040, 0x00600006, 0x0070000f, 
+	0x00170202, 0x0011020a, 0x00200032, 0x0010020d, 0x001c0242, 0x00120302, 
+	0x00140402, 0x00180500, 0x00130509, 0x00150550, 0x00110605, 0x0020000f, 
+	0x00100607, 0x00110700, 0x00110900, 0x00120902, 0x00110a00, 0x00160b02, 
+	0x00120b28, 0x00140b2b, 0x00110c01, 0x00111400, 0x00111405, 0x00111407, 
+	0x00111409, 0x0011140b, 0x002000cb, 0x00101500, 0x0040790f, 0x0040794b, 
+	0x00214b40, 0x00600007, 0x00200442, 0x008800ff, 0x0070008f, 0x0040798c, 
+	0x005000cb, 0x00000000, 0x0020002b, 0x00101a05, 0x00131c00, 0x00121c04, 
+	0x00141c20, 0x00111c25, 0x00131c40, 0x00121c44, 0x00141c60, 0x00111c65, 
+	0x00131f00, 0x00191f40, 0x004099e0, 0x002001d9, 0x00600006, 0x00200044, 
+	0x00102080, 0x001120c6, 0x001520c9, 0x001920d0, 0x00122100, 0x00122103, 
+	0x00162200, 0x00122207, 0x00112280, 0x00112300, 0x00112302, 0x00122380, 
+	0x0011238b, 0x00112394, 0x0011239c, 0x00000000, 0x0040a00f, 0x005000cb, 
+	0x00214b40, 0x00600007, 0x00200442, 0x008800ff, 0x005000cb, 0x0040a387, 
+	0x0060000a, 0x00000000, 0x0040b200, 0x007000a0, 0x00700080, 0x00200280, 
+	0x00600007, 0x00200004, 0x00c000ff, 0x008000ff, 0x005000cb, 0x00700000, 
+	0x00200000, 0x00600006, 0x00111bfe, 0x0040d44d, 0x00700000, 0x00200000, 
+	0x00600006, 0x00111bfe, 0x00700080, 0x0070001d, 0x0040114d, 0x00700081, 
+	0x00600004, 0x0050004a, 0x0040be88, 0x0060000b, 0x00200000, 0x00600006, 
+	0x00700000, 0x0040d40b, 0x00111bfd, 0x0040424d, 0x00202916, 0x008000fd, 
+	0x005000cb, 0x00c00002, 0x00200280, 0x00600007, 0x00200160, 0x00800002, 
+	0x005000cb, 0x00c01802, 0x002027b6, 0x00800002, 0x005000cb, 0x00404e4d, 
+	0x0060000b, 0x0040d24d, 0x00700001, 0x00700003, 0x0040d806, 0x0040d905, 
+	0x0060000d, 0x00700005, 0x0070000d, 0x00700006, 0x0070000b, 0x0070000e, 
+	0x0070001c, 0x0060000c, ~0
+};
 
-static void
+static int
 nv50_graph_init_ctxctl(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t *voodoo;
+	uint32_t *voodoo = NULL;
 
 	DRM_DEBUG("\n");
 
@@ -159,34 +199,42 @@ nv50_graph_init_ctxctl(struct drm_device *dev)
 	case 0x84:
 		voodoo = nv84_ctx_voodoo;
 		break;
+	case 0x86:
+		voodoo = nv86_ctx_voodoo;
+		break;
 	default:
 		DRM_ERROR("no voodoo for chipset NV%02x\n", dev_priv->chipset);
-		break;
+		return -EINVAL;
 	}
 
-	if (voodoo) {
-		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
-		while (*voodoo != ~0) {
-			NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, *voodoo);
-			voodoo++;
-		}
+	NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
+	while (*voodoo != ~0) {
+		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, *voodoo);
+		voodoo++;
 	}
 
 	NV_WRITE(0x400320, 4);
 	NV_WRITE(NV40_PGRAPH_CTXCTL_CUR, 0);
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, 0);
+
+	return 0;
 }
 
 int
 nv50_graph_init(struct drm_device *dev)
 {
+	int ret;
+
 	DRM_DEBUG("\n");
 
 	nv50_graph_init_reset(dev);
 	nv50_graph_init_intr(dev);
 	nv50_graph_init_regs__nv(dev);
 	nv50_graph_init_regs(dev);
-	nv50_graph_init_ctxctl(dev);
+
+	ret = nv50_graph_init_ctxctl(dev);
+	if (ret)
+		return ret;
 
 	return 0;
 }
@@ -209,11 +257,10 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 
 	DRM_DEBUG("ch%d\n", chan->id);
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0,
-					  grctx_size, 0x1000,
-					  NVOBJ_FLAG_ZERO_ALLOC |
-					  NVOBJ_FLAG_ZERO_FREE,
-					  &chan->ramin_grctx)))
+	ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, grctx_size, 0x1000,
+				     NVOBJ_FLAG_ZERO_ALLOC |
+				     NVOBJ_FLAG_ZERO_FREE, &chan->ramin_grctx);
+	if (ret)
 		return ret;
 
 	hdr = IS_G80 ? 0x200 : 0x20;
@@ -225,10 +272,15 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 	INSTANCE_WR(ramin, (hdr + 0x10)/4, 0);
 	INSTANCE_WR(ramin, (hdr + 0x14)/4, 0x00010000);
 
-	if ((ret = engine->graph.load_context(chan))) {
+	ret = engine->graph.load_context(chan);
+	if (ret) {
 		DRM_ERROR("Error hacking up initial context: %d\n", ret);
 		return ret;
 	}
+
+	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x00000/4,
+		    chan->ramin->instance >> 12);
+	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x0011c/4, 0x00000002);
 
 	return 0;
 }
@@ -259,7 +311,7 @@ nv50_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 	DRM_DEBUG("inst=0x%08x, save=%d\n", inst, save);
 
 	old_cp = NV_READ(NV20_PGRAPH_CHANNEL_CTX_POINTER);
-	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst | (1<<31));
+	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
 	NV_WRITE(0x400824, NV_READ(0x400824) |
 		 (save ? NV40_PGRAPH_CTXCTL_0310_XFER_SAVE :
 			 NV40_PGRAPH_CTXCTL_0310_XFER_LOAD));
@@ -286,7 +338,7 @@ nv50_graph_load_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t inst = ((chan->ramin->instance >> 12) | (1<<31));
+	uint32_t inst = chan->ramin->instance >> 12;
 	int ret; (void)ret;
 
 	DRM_DEBUG("ch%d\n", chan->id);
@@ -298,7 +350,7 @@ nv50_graph_load_context(struct nouveau_channel *chan)
 
 	NV_WRITE(NV20_PGRAPH_CHANNEL_CTX_POINTER, inst);
 	NV_WRITE(0x400320, 4);
-	NV_WRITE(NV40_PGRAPH_CTXCTL_CUR, inst);
+	NV_WRITE(NV40_PGRAPH_CTXCTL_CUR, inst | (1<<31));
 
 	return 0;
 }
@@ -307,7 +359,7 @@ int
 nv50_graph_save_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
-	uint32_t inst = ((chan->ramin->instance >> 12) | (1<<31));
+	uint32_t inst = chan->ramin->instance >> 12;
 
 	DRM_DEBUG("ch%d\n", chan->id);
 

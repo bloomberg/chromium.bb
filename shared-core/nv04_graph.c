@@ -497,7 +497,7 @@ int nv04_graph_init(struct drm_device *dev) {
 	/*haiku same*/
 
 	/*NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xfad4ff31);*/
-	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0x10d4ff31);
+	NV_WRITE(NV04_PGRAPH_DEBUG_3, 0xf0d4ff31);
 	/*haiku and blob 10d4*/
 
 	NV_WRITE(NV04_PGRAPH_STATE        , 0xFFFFFFFF);

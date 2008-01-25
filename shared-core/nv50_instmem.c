@@ -69,6 +69,10 @@ nv50_instmem_init(struct drm_device *dev)
 		return -ENOMEM;
 	dev_priv->Engine.instmem.priv = priv;
 
+	/* Save state, will restore at takedown. */
+	for (i = 0x1700; i <= 0x1710; i+=4)
+		priv->save1700[(i-0x1700)/4] = NV_READ(i);
+
 	/* Reserve the last MiB of VRAM, we should probably try to avoid
 	 * setting up the below tables over the top of the VBIOS image at
 	 * some point.

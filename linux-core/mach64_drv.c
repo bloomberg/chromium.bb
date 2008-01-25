@@ -42,9 +42,11 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_HAVE_DMA
-	    | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_IRQ_VBL,
+	    | DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.lastclose = mach64_driver_lastclose,
-	.vblank_wait = mach64_driver_vblank_wait,
+	.get_vblank_counter = mach64_get_vblank_counter,
+	.enable_vblank = mach64_enable_vblank,
+	.disable_vblank = mach64_disable_vblank,
 	.irq_preinstall = mach64_driver_irq_preinstall,
 	.irq_postinstall = mach64_driver_irq_postinstall,
 	.irq_uninstall = mach64_driver_irq_uninstall,

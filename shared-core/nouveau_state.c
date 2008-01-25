@@ -88,7 +88,6 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 
 static int nouveau_stub_init(struct drm_device *dev) { return 0; }
 static void nouveau_stub_takedown(struct drm_device *dev) {}
-static uint64_t nouveau_stub_timer_read(struct drm_device *dev) { return 0; }
 
 static int nouveau_init_engine_ptrs(struct drm_device *dev)
 {
@@ -251,9 +250,9 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->instmem.unbind		= nv50_instmem_unbind;
 		engine->mc.init		= nv50_mc_init;
 		engine->mc.takedown	= nv50_mc_takedown;
-		engine->timer.init	= nouveau_stub_init;
-		engine->timer.read	= nouveau_stub_timer_read;
-		engine->timer.takedown	= nouveau_stub_takedown;
+		engine->timer.init	= nv04_timer_init;
+		engine->timer.read	= nv04_timer_read;
+		engine->timer.takedown	= nv04_timer_takedown;
 		engine->fb.init		= nouveau_stub_init;
 		engine->fb.takedown	= nouveau_stub_takedown;
 		engine->graph.init	= nv50_graph_init;
@@ -285,52 +284,12 @@ nouveau_card_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine;
 	int ret;
-#if defined(__powerpc__)
-	struct device_node *dn;
-#endif
 
 	DRM_DEBUG("prev state = %d\n", dev_priv->init_state);
 
 	if (dev_priv->init_state == NOUVEAU_CARD_INIT_DONE)
 		return 0;
 	dev_priv->ttm = 0;
-
-	/* Map any PCI resources we need on the card */
-	ret = nouveau_init_card_mappings(dev);
-	if (ret) return ret;
-
-#if defined(__powerpc__)
-	/* Put the card in BE mode if it's not */
-	if (NV_READ(NV03_PMC_BOOT_1))
-		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
-
-	DRM_MEMORYBARRIER();
-#endif
-
-#if defined(__linux__) && defined(__powerpc__)
-	/* if we have an OF card, copy vbios to RAMIN */
-	dn = pci_device_to_OF_node(dev->pdev);
-	if (dn)
-	{
-		int size;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
-		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
-#else
-		const uint32_t *bios = get_property(dn, "NVDA,BMP", &size);
-#endif
-		if (bios)
-		{
-			int i;
-			for(i=0;i<size;i+=4)
-				NV_WI32(i, bios[i/4]);
-			DRM_INFO("OF bios successfully copied (%d bytes)\n",size);
-		}
-		else
-			DRM_INFO("Unable to get the OF bios\n");
-	}
-	else
-		DRM_INFO("Unable to get the OF node\n");
-#endif
 
 	/* Determine exact chipset we're running on */
 	if (dev_priv->card_type < NV_10)
@@ -451,6 +410,47 @@ void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 /* first module load, setup the mmio/fb mapping */
 int nouveau_firstopen(struct drm_device *dev)
 {
+#if defined(__powerpc__)
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct device_node *dn;
+#endif
+	int ret;
+	/* Map any PCI resources we need on the card */
+	ret = nouveau_init_card_mappings(dev);
+	if (ret) return ret;
+
+#if defined(__powerpc__)
+	/* Put the card in BE mode if it's not */
+	if (NV_READ(NV03_PMC_BOOT_1))
+		NV_WRITE(NV03_PMC_BOOT_1,0x00000001);
+
+	DRM_MEMORYBARRIER();
+#endif
+
+#if defined(__linux__) && defined(__powerpc__)
+	/* if we have an OF card, copy vbios to RAMIN */
+	dn = pci_device_to_OF_node(dev->pdev);
+	if (dn)
+	{
+		int size;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
+		const uint32_t *bios = of_get_property(dn, "NVDA,BMP", &size);
+#else
+		const uint32_t *bios = get_property(dn, "NVDA,BMP", &size);
+#endif
+		if (bios)
+		{
+			int i;
+			for(i=0;i<size;i+=4)
+				NV_WI32(i, bios[i/4]);
+			DRM_INFO("OF bios successfully copied (%d bytes)\n",size);
+		}
+		else
+			DRM_INFO("Unable to get the OF bios\n");
+	}
+	else
+		DRM_INFO("Unable to get the OF node\n");
+#endif
 	return 0;
 }
 
@@ -498,7 +498,12 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 	iounmap(regs);
 
-	if (architecture >= 0x50) {
+	if (architecture >= 0x80) {
+		dev_priv->card_type = NV_50;
+	} else if (architecture >= 0x60) {
+		/* FIXME we need to figure out who's who for NV6x */
+		dev_priv->card_type = NV_44;
+	} else if (architecture >= 0x50) {
 		dev_priv->card_type = NV_50;
 	} else if (architecture >= 0x40) {
 		uint8_t subarch = architecture & 0xf;

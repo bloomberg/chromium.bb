@@ -80,7 +80,7 @@ static void *drm_ati_alloc_pcigart_table(int order)
 	struct page *page;
 	int i;
 
-	DRM_DEBUG("%s: alloc %d order\n", __FUNCTION__, order);
+	DRM_DEBUG("%d order\n", order);
 
 	address = __get_free_pages(GFP_KERNEL | __GFP_COMP,
 				   order);
@@ -97,7 +97,7 @@ static void *drm_ati_alloc_pcigart_table(int order)
 		SetPageReserved(page);
 	}
 
-	DRM_DEBUG("%s: returning 0x%08lx\n", __FUNCTION__, address);
+	DRM_DEBUG("returning 0x%08lx\n", address);
 	return (void *)address;
 }
 
@@ -106,7 +106,7 @@ static void drm_ati_free_pcigart_table(void *address, int order)
 	struct page *page;
 	int i;
 	int num_pages = 1 << order;
-	DRM_DEBUG("%s\n", __FUNCTION__);
+	DRM_DEBUG("\n");
 
 	page = virt_to_page((unsigned long)address);
 

@@ -129,6 +129,12 @@ enum radeon_family {
 	CHIP_R420,
 	CHIP_RV410,
 	CHIP_RS400,
+	CHIP_RV515,
+	CHIP_R520,
+	CHIP_RV530,
+	CHIP_RV560,
+	CHIP_RV570,
+	CHIP_R580,
 	CHIP_LAST,
 };
 
@@ -305,6 +311,9 @@ typedef struct drm_radeon_private {
 
 	u32 scratch_ages[5];
 
+	unsigned int crtc_last_cnt;
+	unsigned int crtc2_last_cnt;
+
 	/* starting from here on, data is preserved accross an open */
 	uint32_t flags;		/* see radeon_chip_flags */
 	unsigned long fb_aper_offset;
@@ -374,13 +383,13 @@ extern int radeon_irq_wait(struct drm_device *dev, void *data, struct drm_file *
 extern int radeon_emit_irq(struct drm_device * dev);
 
 extern void radeon_do_release(struct drm_device * dev);
-extern int radeon_driver_vblank_wait(struct drm_device * dev,
-				     unsigned int *sequence);
-extern int radeon_driver_vblank_wait2(struct drm_device * dev,
-				      unsigned int *sequence);
+extern u32 radeon_get_vblank_counter(struct drm_device *dev, int crtc);
+extern int radeon_enable_vblank(struct drm_device *dev, int crtc);
+extern void radeon_disable_vblank(struct drm_device *dev, int crtc);
+extern void radeon_do_release(struct drm_device * dev);
 extern irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS);
 extern void radeon_driver_irq_preinstall(struct drm_device * dev);
-extern void radeon_driver_irq_postinstall(struct drm_device * dev);
+extern int radeon_driver_irq_postinstall(struct drm_device * dev);
 extern void radeon_driver_irq_uninstall(struct drm_device * dev);
 extern int radeon_vblank_crtc_get(struct drm_device *dev);
 extern int radeon_vblank_crtc_set(struct drm_device *dev, int64_t value);
@@ -399,7 +408,7 @@ extern long radeon_compat_ioctl(struct file *filp, unsigned int cmd,
 					 unsigned long arg);
 
 /* r300_cmdbuf.c */
-extern void r300_init_reg_flags(void);
+extern void r300_init_reg_flags(struct drm_device *dev);
 
 extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 			     struct drm_file *file_priv,
@@ -423,7 +432,7 @@ extern int radeon_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t
 extern struct drm_ttm_backend *radeon_create_ttm_backend_entry(struct drm_device *dev);
 extern int radeon_fence_types(struct drm_buffer_object *bo, uint32_t *class, uint32_t *type);
 extern int radeon_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
-extern uint32_t radeon_evict_mask(struct drm_buffer_object *bo);
+extern uint64_t radeon_evict_flags(struct drm_buffer_object *bo);
 extern int radeon_init_mem_type(struct drm_device * dev, uint32_t type,
 				struct drm_mem_type_manager * man);
 extern int radeon_move(struct drm_buffer_object * bo,
@@ -494,6 +503,15 @@ extern int radeon_move(struct drm_buffer_object * bo,
 #define RADEON_IGPGART_ENABLE           0x38
 #define RADEON_IGPGART_UNK_39           0x39
 
+#define R520_MC_IND_INDEX 0x70
+#define R520_MC_IND_WR_EN (1<<24)
+#define R520_MC_IND_DATA  0x74
+
+#define RV515_MC_FB_LOCATION 0x01
+#define RV515_MC_AGP_LOCATION 0x02
+
+#define R520_MC_FB_LOCATION 0x04
+#define R520_MC_AGP_LOCATION 0x05
 
 #define RADEON_MPP_TB_CONFIG		0x01c0
 #define RADEON_MEM_CNTL			0x0140
@@ -544,6 +562,12 @@ extern int radeon_move(struct drm_buffer_object * bo,
 #define GET_SCRATCH( x )	(dev_priv->writeback_works			\
 				? DRM_READ32( dev_priv->ring_rptr, RADEON_SCRATCHOFF(x) ) \
 				: RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x) ) )
+
+#define RADEON_CRTC_CRNT_FRAME 0x0214
+#define RADEON_CRTC2_CRNT_FRAME 0x0314
+
+#define RADEON_CRTC_STATUS		0x005c
+#define RADEON_CRTC2_STATUS		0x03fc
 
 #define RADEON_GEN_INT_CNTL		0x0040
 #	define RADEON_CRTC_VBLANK_MASK		(1 << 0)
@@ -1117,6 +1141,13 @@ do {									\
 	RADEON_WRITE( RADEON_PCIE_DATA, (val) );			\
 } while (0)
 
+#define RADEON_WRITE_MCIND( addr, val )					\
+	do {								\
+		RADEON_WRITE(R520_MC_IND_INDEX, 0xff0000 | ((addr) & 0xff));	\
+		RADEON_WRITE(R520_MC_IND_DATA, (val));			\
+		RADEON_WRITE(R520_MC_IND_INDEX, 0);	\
+	} while (0)
+
 #define CP_PACKET0( reg, n )						\
 	(RADEON_CP_PACKET0 | ((n) << 16) | ((reg) >> 2))
 #define CP_PACKET0_TABLE( reg, n )					\
@@ -1227,8 +1258,7 @@ do {									\
 
 #define BEGIN_RING( n ) do {						\
 	if ( RADEON_VERBOSE ) {						\
-		DRM_INFO( "BEGIN_RING( %d ) in %s\n",			\
-			   n, __FUNCTION__ );				\
+		DRM_INFO( "BEGIN_RING( %d )\n", (n));			\
 	}								\
 	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {		\
 		COMMIT_RING();						\

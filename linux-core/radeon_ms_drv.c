@@ -57,8 +57,6 @@ static struct drm_driver driver = {
 	.context_dtor = NULL,
 	.kernel_context_switch = NULL,
 	.kernel_context_switch_unlock = NULL,
-	.vblank_wait = NULL,
-	.vblank_wait2 = NULL,
 	.dri_library_name = radeon_ms_driver_dri_library_name,
 	.device_is_agp = NULL,
 	.irq_handler = radeon_ms_irq_handler,
@@ -83,8 +81,7 @@ static struct drm_driver driver = {
 	.date = DRIVER_DATE,
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG |
-	    DRIVER_HAVE_IRQ | DRIVER_HAVE_DMA | DRIVER_IRQ_SHARED |
-	    DRIVER_IRQ_VBL | DRIVER_IRQ_VBL2,
+  	    DRIVER_HAVE_IRQ | DRIVER_HAVE_DMA | DRIVER_IRQ_SHARED,
 	.dev_priv_size = 0, 
 	.ioctls = radeon_ms_ioctls,
 	.num_ioctls = 0,

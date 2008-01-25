@@ -189,7 +189,7 @@ static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
 		return NOPAGE_SIGBUS;
 	get_page(page);
 
-	DRM_DEBUG("shm_nopage 0x%lx\n", address);
+	DRM_DEBUG("0x%lx\n", address);
 	return page;
 }
 
@@ -305,7 +305,7 @@ static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
 
 	get_page(page);
 
-	DRM_DEBUG("dma_nopage 0x%lx (page %lu)\n", address, page_nr);
+	DRM_DEBUG("0x%lx (page %lu)\n", address, page_nr);
 	return page;
 }
 
@@ -751,10 +751,10 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	 */
 
 	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
-		uint32_t new_mask = bo->mem.mask |
+		uint32_t new_flags = bo->mem.proposed_flags |
 			DRM_BO_FLAG_MAPPABLE |
 			DRM_BO_FLAG_FORCE_MAPPABLE;
-		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
+		err = drm_bo_move_buffer(bo, new_flags, 0, 0);
 		if (err) {
 			ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
 			goto out_unlock;

@@ -619,7 +619,7 @@ alloc_ok:
 		block->map_handle = entry->user_token;
 	}
 
-	DRM_DEBUG("allocated 0x%llx type=0x%08x\n", block->start, block->flags);
+	DRM_DEBUG("allocated %lld bytes at 0x%llx type=0x%08x\n", block->size, block->start, block->flags);
 	return block;
 }
 

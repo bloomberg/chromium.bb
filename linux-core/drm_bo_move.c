@@ -54,7 +54,7 @@ int drm_bo_move_ttm(struct drm_buffer_object *bo,
 	struct drm_ttm *ttm = bo->ttm;
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	uint64_t save_flags = old_mem->flags;
-	uint64_t save_mask = old_mem->mask;
+	uint64_t save_proposed_flags = old_mem->proposed_flags;
 	int ret;
 
 	if (old_mem->mem_type == DRM_BO_MEM_TT) {
@@ -71,14 +71,14 @@ int drm_bo_move_ttm(struct drm_buffer_object *bo,
 		save_flags = old_mem->flags;
 	}
 	if (new_mem->mem_type != DRM_BO_MEM_LOCAL) {
-		ret = drm_bind_ttm(ttm, new_mem);
+		ret = drm_ttm_bind(ttm, new_mem);
 		if (ret)
 			return ret;
 	}
 
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
-	old_mem->mask = save_mask;
+	old_mem->proposed_flags = save_proposed_flags;
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 	return 0;
 }
@@ -211,7 +211,7 @@ int drm_bo_move_memcpy(struct drm_buffer_object *bo,
 	void *new_iomap;
 	int ret;
 	uint64_t save_flags = old_mem->flags;
-	uint64_t save_mask = old_mem->mask;
+	uint64_t save_proposed_flags = old_mem->proposed_flags;
 	unsigned long i;
 	unsigned long page;
 	unsigned long add = 0;
@@ -256,12 +256,12 @@ out2:
 
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
-	old_mem->mask = save_mask;
+	old_mem->proposed_flags = save_proposed_flags;
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 
 	if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (ttm != NULL)) {
 		drm_ttm_unbind(ttm);
-		drm_destroy_ttm(ttm);
+		drm_ttm_destroy(ttm);
 		bo->ttm = NULL;
 	}
 
@@ -331,7 +331,7 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int ret;
 	uint64_t save_flags = old_mem->flags;
-	uint64_t save_mask = old_mem->mask;
+	uint64_t save_proposed_flags = old_mem->proposed_flags;
 	struct drm_buffer_object *old_obj;
 
 	if (bo->fence)
@@ -366,7 +366,7 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
 
 		if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (bo->ttm != NULL)) {
 			drm_ttm_unbind(bo->ttm);
-			drm_destroy_ttm(bo->ttm);
+			drm_ttm_destroy(bo->ttm);
 			bo->ttm = NULL;
 		}
 	} else {
@@ -400,7 +400,7 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
 
 	*old_mem = *new_mem;
 	new_mem->mm_node = NULL;
-	old_mem->mask = save_mask;
+	old_mem->proposed_flags = save_proposed_flags;
 	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
 	return 0;
 }
