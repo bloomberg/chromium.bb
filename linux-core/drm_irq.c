@@ -183,7 +183,7 @@ int drm_irq_install(struct drm_device * dev)
 
 	if (dev->irq_enabled) {
 		mutex_unlock(&dev->struct_mutex);
-		return -EBUSY;
+		return 0;
 	}
 	dev->irq_enabled = 1;
 	mutex_unlock(&dev->struct_mutex);
