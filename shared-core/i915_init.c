@@ -132,6 +132,11 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	dev->types[9] = _DRM_STAT_DMA;
 
 	if (IS_I9XX(dev)) {
+		pci_read_config_dword(dev->pdev, 0x5C, &dev_priv->stolen_base);
+		DRM_DEBUG("stolen base %p\n", (void*)dev_priv->stolen_base);
+	}
+
+	if (IS_I9XX(dev)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 0);
 		dev_priv->mmiolen = drm_get_resource_len(dev, 0);
 		dev->mode_config.fb_base =

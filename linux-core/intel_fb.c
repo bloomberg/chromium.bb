@@ -49,7 +49,7 @@ struct intelfb_par {
 	struct drm_crtc *crtc;
         struct drm_display_mode *fb_mode;
 };
-
+/*
 static int
 var_to_refresh(const struct fb_var_screeninfo *var)
 {
@@ -59,7 +59,7 @@ var_to_refresh(const struct fb_var_screeninfo *var)
 		   var->vsync_len;
 
 	return (1000000000 / var->pixclock * 1000 + 500) / xtot / ytot;
-}
+}*/
 
 static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			   unsigned blue, unsigned transp,
@@ -106,10 +106,10 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 			     struct fb_info *info)
 {
         struct intelfb_par *par = info->par;
-        struct drm_device *dev = par->dev;
+        /*struct drm_device *dev = par->dev;*/
 	struct drm_framebuffer *fb = par->crtc->fb;
-        struct drm_output *output;
-        int depth, found = 0;
+        /*struct drm_output *output;*/
+        int depth/*, found = 0*/;
 
         if (!var->pixclock)
                 return -EINVAL;
@@ -254,6 +254,8 @@ static int intelfb_set_par(struct fb_info *info)
         struct fb_var_screeninfo *var = &info->var;
 	int found = 0;
 
+	DRM_DEBUG("\n");
+
         switch (var->bits_per_pixel) {
         case 16:
                 fb->depth = (var->green.length == 6) ? 16 : 15;
@@ -321,9 +323,19 @@ static int intelfb_set_par(struct fb_info *info)
 	}
 
 	if (par->crtc->enabled) {
-		if (!drm_mode_equal(&par->crtc->mode, drm_mode))
-			if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
+		if (!drm_mode_equal(&par->crtc->mode, drm_mode)) {
+			if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
 				return -EINVAL;
+		} else if (par->crtc->x != var->xoffset || par->crtc->x != var->xoffset) {
+			if (!par->crtc->funcs->mode_set_base) {
+				if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
+					return -EINVAL;
+			} else {
+				par->crtc->funcs->mode_set_base(par->crtc, var->xoffset, var->yoffset);
+				par->crtc->x = var->xoffset;
+				par->crtc->y = var->yoffset;
+			}
+		}
 	}
 	return 0;
 }

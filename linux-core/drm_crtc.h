@@ -329,6 +329,11 @@ struct drm_crtc_funcs {
 	/* Move the crtc on the current fb to the given position *optional* */
 	void (*mode_set_base)(struct drm_crtc *crtc, int x, int y);
 
+	/* cursor controls */
+	int (*cursor_set)(struct drm_crtc *crtc, struct drm_buffer_object *bo,
+			  uint32_t width, uint32_t height);
+	int (*cursor_move)(struct drm_crtc *crtc, int x, int y);
+
 	/* Set gamma on the CRTC */
 	void (*gamma_set)(struct drm_crtc *crtc, u16 r, u16 g, u16 b,
 			  int regno);
@@ -483,6 +488,21 @@ struct drm_output {
 };
 
 /**
+ * struct drm_mode_set
+ *
+ * Represents a single crtc the outputs that it drives with what mode
+ * and from which framebuffer it scans out from.
+ */
+struct drm_mode_set
+{
+	struct drm_framebuffer *fb;
+	struct drm_crtc *crtc;
+
+	struct drm_output **outputs;
+	size_t num_outputs;
+};
+
+/**
  * struct drm_mode_config_funcs - configure CRTCs for a given screen layout
  * @resize: adjust CRTCs as necessary for the proposed layout
  *
@@ -603,6 +623,8 @@ extern int drm_mode_getoutput(struct drm_device *dev,
 			      void *data, struct drm_file *file_priv);
 extern int drm_mode_setcrtc(struct drm_device *dev,
 			    void *data, struct drm_file *file_priv);
+extern int drm_mode_cursor_ioctl(struct drm_device *dev,
+				void *data, struct drm_file *file_priv);
 extern int drm_mode_addfb(struct drm_device *dev,
 			  void *data, struct drm_file *file_priv);
 extern int drm_mode_rmfb(struct drm_device *dev,

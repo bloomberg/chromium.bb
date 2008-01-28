@@ -402,6 +402,8 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	}
 }
 
+
+
 /**
  * Sets the power management mode of the pipe and plane.
  *
@@ -956,6 +958,108 @@ void intel_crtc_load_lut(struct drm_crtc *crtc)
 	}
 }
 
+#define CURSOR_A_CONTROL        0x70080
+#define CURSOR_A_BASE           0x70084
+#define CURSOR_A_POSITION       0x70088
+
+#define CURSOR_B_CONTROL        0x700C0
+#define CURSOR_B_BASE           0x700C4
+#define CURSOR_B_POSITION       0x700C8
+
+#define CURSOR_MODE_DISABLE     0x00
+#define CURSOR_MODE_64_32B_AX   0x07
+#define CURSOR_MODE_64_ARGB_AX  ((1 << 5) | CURSOR_MODE_64_32B_AX)
+#define MCURSOR_GAMMA_ENABLE    (1 << 26)
+
+#define CURSOR_POS_MASK         0x007FF
+#define CURSOR_POS_SIGN         0x8000
+#define CURSOR_X_SHIFT          0
+#define CURSOR_Y_SHIFT          16
+
+static int intel_crtc_cursor_set(struct drm_crtc *crtc,
+				 struct drm_buffer_object *bo,
+				 uint32_t width, uint32_t height)
+{
+	struct drm_device *dev = crtc->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct intel_crtc *intel_crtc = crtc->driver_private;
+	int pipe = intel_crtc->pipe;
+	uint32_t control = (pipe == 0) ? CURSOR_A_CONTROL : CURSOR_B_CONTROL;
+	uint32_t temp;
+	size_t adder;
+
+	DRM_DEBUG("\n");
+
+	/* if we want to turn of the cursor ignore width and height */
+	if (!bo) {
+		DRM_DEBUG("cursor off\n");
+		/* turn of the cursor */
+		temp = 0;
+		temp |= CURSOR_MODE_DISABLE;
+
+		I915_WRITE(control, temp);
+		return 0;
+	}
+
+	/* Currently we only support 64x64 cursors */
+	if (width != 64 || height != 64) {
+		DRM_ERROR("we currently only support 64x64 cursors\n");
+		return -EINVAL;
+	}
+
+	if ((bo->mem.flags & DRM_BO_MASK_MEM) != DRM_BO_FLAG_MEM_VRAM) {
+		DRM_ERROR("buffer needs to be in VRAM\n");
+		return -ENOMEM;
+	}
+
+	if (bo->mem.size < width * height * 4) {
+		DRM_ERROR("buffer is to small\n");
+		return -ENOMEM;
+	}
+
+	adder = dev_priv->stolen_base + bo->offset;
+	intel_crtc->cursor_adder = adder;
+	temp = 0;
+	/* set the pipe for the cursor */
+	temp |= (pipe << 28);
+	temp |= CURSOR_MODE_64_ARGB_AX | MCURSOR_GAMMA_ENABLE;
+
+	DRM_DEBUG("cusror base %x\n", adder);
+
+	I915_WRITE((pipe == 0) ? CURSOR_A_CONTROL : CURSOR_B_CONTROL, temp);
+	I915_WRITE((pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE, adder);
+
+	return 0;
+}
+
+static int intel_crtc_cursor_move(struct drm_crtc *crtc, int x, int y)
+{
+	struct drm_device *dev = crtc->dev;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct intel_crtc *intel_crtc = crtc->driver_private;
+	int pipe = intel_crtc->pipe;
+	uint32_t temp = 0;
+	uint32_t adder;
+
+	if (x < 0) {
+		temp |= (CURSOR_POS_SIGN << CURSOR_X_SHIFT);
+		x = -x;
+	}
+	if (y < 0) {
+		temp |= (CURSOR_POS_SIGN << CURSOR_Y_SHIFT);
+		y = -y;
+	}
+
+	temp |= ((x & CURSOR_POS_MASK) << CURSOR_X_SHIFT);
+	temp |= ((y & CURSOR_POS_MASK) << CURSOR_Y_SHIFT);
+
+	adder = intel_crtc->cursor_adder;
+	I915_WRITE((pipe == 0) ? CURSOR_A_POSITION : CURSOR_B_POSITION, temp);
+	I915_WRITE((pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE, adder);
+
+	return 0;
+}
+
 /** Sets the color ramps on behalf of RandR */
 static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				 u16 blue, int regno)
@@ -1084,6 +1188,8 @@ static const struct drm_crtc_funcs intel_crtc_funcs = {
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
 	.mode_set_base = intel_pipe_set_base,
+	.cursor_set = intel_crtc_cursor_set,
+	.cursor_move = intel_crtc_cursor_move,
 	.gamma_set = intel_crtc_gamma_set,
 	.prepare = intel_crtc_prepare,
 	.commit = intel_crtc_commit,
@@ -1112,6 +1218,8 @@ void intel_crtc_init(struct drm_device *dev, int pipe)
 		intel_crtc->lut_g[i] = i;
 		intel_crtc->lut_b[i] = i;
 	}
+
+	intel_crtc->cursor_adder = 0;
 
 	crtc->driver_private = intel_crtc;
 }

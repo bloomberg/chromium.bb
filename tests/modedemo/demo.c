@@ -34,7 +34,9 @@ static struct drm_mode_modeinfo mode = {
 drmModeFBPtr createFB(int fd, drmModeResPtr res);
 int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out);
 drmModeCrtcPtr findFreeCrtc(int fd, drmModeResPtr res);
+void testCursor(int fd, uint32_t crtc);
 void prettyColors(int fd, unsigned int handle);
+void prettyCursor(int fd, unsigned int handle);
 
 int main(int argc, char **argv)
 {
@@ -97,6 +99,11 @@ int main(int argc, char **argv)
 	printf("100 100\n");
 	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 100, &out[0]->output_id, 1, &mode);
 	sleep(2);
+
+	printf("0 0\n");
+	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 1, 1, &out[0]->output_id, 1, &mode);
+
+	testCursor(fd, crtc->crtc_id);
 
 	/* turn the crtc off just in case */
 	drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, 0, 0, 0);
@@ -166,7 +173,7 @@ int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out)
 
 drmModeCrtcPtr findFreeCrtc(int fd, drmModeResPtr res)
 {
-	return drmModeGetCrtc(fd, res->crtcs[0]);
+	return drmModeGetCrtc(fd, res->crtcs[1]);
 }
 
 void draw(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int v, unsigned int *ptr)
@@ -197,6 +204,44 @@ void prettyColors(int fd, unsigned int handle)
 
 	draw(200, 100, 40, 40, 0xff00ff, ptr);
 	draw(100, 200, 40, 40, 0xff00ff, ptr);
+
+	drmBOUnmap(fd, &bo);
+}
+
+void testCursor(int fd, uint32_t crtc)
+{
+	drmBO bo;
+	int ret;
+	ret = drmBOCreate(fd, 64 * 64 * 4, 0, 0,
+		DRM_BO_FLAG_READ |
+		DRM_BO_FLAG_WRITE |
+		DRM_BO_FLAG_MEM_VRAM |
+		DRM_BO_FLAG_NO_EVICT,
+		DRM_BO_HINT_DONT_FENCE, &bo);
+
+	prettyCursor(fd, bo.handle);
+
+	printf("set cursor\n");
+	drmModeSetCursor(fd, crtc, &bo, 64, 64);
+	printf("move cursor 0, 0\n");
+	drmModeMoveCursor(fd, crtc, 0, 0);
+	sleep(2);
+	printf("move cursor 40, 40\n");
+	drmModeMoveCursor(fd, crtc, 40, 40);
+	sleep(2);
+}
+
+void prettyCursor(int fd, unsigned int handle)
+{
+	drmBO bo;
+	unsigned int *ptr;
+	int i;
+
+	drmBOReference(fd, handle, &bo);
+	drmBOMap(fd, &bo, DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0, (void**)&ptr);
+
+	for (i = 0; i < (64 * 64); i++)
+		ptr[i] = 0xFFFF00FF;
 
 	drmBOUnmap(fd, &bo);
 }

@@ -317,6 +317,34 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 	return ioctl(fd, DRM_IOCTL_MODE_SETCRTC, &crtc);
 }
 
+/*
+ * Cursor manipulation
+ */
+
+int drmModeSetCursor(int fd, uint32_t crtcId, drmBO *bo, uint32_t width, uint32_t height)
+{
+	struct drm_mode_cursor arg;
+
+	arg.flags = DRM_MODE_CURSOR_BO;
+	arg.crtc = crtcId;
+	arg.width = width;
+	arg.height = height;
+	arg.handle = bo->handle;
+
+	return ioctl(fd, DRM_IOCTL_MODE_CURSOR, &arg);
+}
+
+int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
+{
+	struct drm_mode_cursor arg;
+
+	arg.flags = DRM_MODE_CURSOR_MOVE;
+	arg.crtc = crtcId;
+	arg.x = x;
+	arg.y = y;
+
+	return ioctl(fd, DRM_IOCTL_MODE_CURSOR, &arg);
+}
 
 /*
  * Output manipulation

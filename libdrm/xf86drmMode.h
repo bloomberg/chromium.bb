@@ -197,6 +197,19 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
                    uint32_t x, uint32_t y, uint32_t *outputs, int count,
 		   struct drm_mode_modeinfo *mode);
 
+/*
+ * Cursor functions
+ */
+
+/**
+ * Set the cursor on crtc
+ */
+int drmModeSetCursor(int fd, uint32_t crtcId, drmBO *bo, uint32_t width, uint32_t height);
+
+/**
+ * Move the cursor on crtc
+ */
+int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y);
 
 /*
  * Output manipulation

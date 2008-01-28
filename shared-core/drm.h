@@ -1084,6 +1084,33 @@ struct drm_mode_mode_cmd {
 	struct drm_mode_modeinfo mode;
 };
 
+#define DRM_MODE_CURSOR_BO   0x01
+#define DRM_MODE_CURSOR_MOVE 0x02
+
+/*
+ * depending on the value in flags diffrent members are used.
+ *
+ * CURSOR_BO uses
+ *    crtc
+ *    width
+ *    height
+ *    handle - if 0 turns the cursor of
+ *
+ * CURSOR_MOVE uses
+ *    crtc
+ *    x
+ *    y
+ */
+struct drm_mode_cursor {
+	unsigned int flags;
+	unsigned int crtc;
+	int x;
+	int y;
+	uint32_t width;
+	uint32_t height;
+	unsigned int handle;
+};
+
 /**
  * \name Ioctls Definitions
  */
@@ -1190,6 +1217,7 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MODE_DETACHMODE      DRM_IOWR(0xAA, struct drm_mode_mode_cmd)
 
 #define DRM_IOCTL_MODE_GETPROPERTY     DRM_IOWR(0xAB, struct drm_mode_get_property)
+#define DRM_IOCTL_MODE_CURSOR          DRM_IOWR(0xAC, struct drm_mode_cursor)
 
 /*@}*/
 

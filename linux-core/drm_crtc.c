@@ -1608,6 +1608,63 @@ out:
 	return ret;
 }
 
+int drm_mode_cursor_ioctl(struct drm_device *dev,
+			void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_cursor *req = data;
+	struct drm_crtc *crtc;
+	struct drm_buffer_object *bo = NULL; /* must be set */
+	int ret = 0;
+
+	DRM_DEBUG("\n");
+
+	if (!req->flags) {
+		DRM_ERROR("no operation set\n");
+		return -EINVAL;
+	}
+
+	mutex_lock(&dev->mode_config.mutex);
+	crtc = idr_find(&dev->mode_config.crtc_idr, req->crtc);
+	if (!crtc || (crtc->id != req->crtc)) {
+		DRM_DEBUG("Unknown CRTC ID %d\n", req->crtc);
+		ret = -EINVAL;
+		goto out;
+	}
+
+	if (req->flags & DRM_MODE_CURSOR_BO) {
+		/* Turn of the cursor if handle is 0 */
+		if (req->handle)
+			ret = drm_get_buffer_object(dev, &bo, req->handle);
+
+		if (ret) {
+			DRM_ERROR("invalid buffer id\n");
+			ret = -EINVAL;
+			goto out;
+		}
+
+		if (crtc->funcs->cursor_set) {
+			ret = crtc->funcs->cursor_set(crtc, bo, req->width, req->height);
+		} else {
+			DRM_ERROR("crtc does not support cursor\n");
+			ret = -EFAULT;
+			goto out;
+		}
+	}
+
+	if (req->flags & DRM_MODE_CURSOR_MOVE) {
+		if (crtc->funcs->cursor_move) {
+			ret = crtc->funcs->cursor_move(crtc, req->x, req->y);
+		} else {
+			DRM_ERROR("crtc does not support cursor\n");
+			ret = -EFAULT;
+			goto out;
+		}
+	}
+out:
+	mutex_unlock(&dev->mode_config.mutex);
+	return ret;
+}
+
 /**
  * drm_mode_addfb - add an FB to the graphics configuration
  * @inode: inode from the ioctl

@@ -147,6 +147,7 @@ struct drm_i915_private {
 	void *agp_iomap;
 	unsigned int max_validate_buffers;
 	struct mutex cmdbuf_mutex;
+	size_t stolen_base;
 #endif
 
 	DRM_SPINTYPE swaps_lock;
