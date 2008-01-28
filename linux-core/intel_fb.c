@@ -326,7 +326,7 @@ static int intelfb_set_par(struct fb_info *info)
 		if (!drm_mode_equal(&par->crtc->mode, drm_mode)) {
 			if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
 				return -EINVAL;
-		} else if (par->crtc->x != var->xoffset || par->crtc->x != var->xoffset) {
+		} else if (par->crtc->x != var->xoffset || par->crtc->y != var->yoffset) {
 			if (!par->crtc->funcs->mode_set_base) {
 				if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
 					return -EINVAL;
@@ -485,6 +485,31 @@ void intelfb_imageblit(struct fb_info *info, const struct fb_image *image)
 	ADVANCE_LP_RING();
 }
 #endif
+static int intelfb_pan_display(struct fb_var_screeninfo *var,
+			       struct fb_info *info)
+{
+	struct intelfb_par *par = info->par;
+	struct drm_crtc *crtc = par->crtc;
+	struct drm_framebuffer *fb = crtc->fb;
+
+	DRM_DEBUG("\n");
+
+	if (!crtc->funcs->mode_set_base) {
+		DRM_ERROR("panning not supported\n");
+		return -EFAULT;
+	}
+
+	/* TODO add check size and pos*/
+
+	crtc->funcs->mode_set_base(crtc, var->xoffset, var->yoffset);
+
+	par->crtc->x = var->xoffset;
+	par->crtc->y = var->yoffset;
+	info->var.xoffset = var->xoffset;
+	info->var.yoffset = var->yoffset;
+
+	return 0;
+}
 
 static struct fb_ops intelfb_ops = {
 	.owner = THIS_MODULE,
@@ -499,6 +524,7 @@ static struct fb_ops intelfb_ops = {
 	.fb_fillrect = cfb_fillrect,
 	.fb_copyarea = cfb_copyarea, //intelfb_copyarea,
 	.fb_imageblit = cfb_imageblit, //intelfb_imageblit,
+	.fb_pan_display = intelfb_pan_display,
 };
 
 /**
@@ -606,8 +632,8 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->fix.type = FB_TYPE_PACKED_PIXELS;
 	info->fix.visual = FB_VISUAL_TRUECOLOR;
 	info->fix.type_aux = 0;
-	info->fix.xpanstep = 8;
-	info->fix.ypanstep = 1;
+	info->fix.xpanstep = 1; /* doing it in hw */
+	info->fix.ypanstep = 1; /* doing it in hw */
 	info->fix.ywrapstep = 0;
 	info->fix.accel = FB_ACCEL_I830;
 	info->fix.type_aux = 0;
