@@ -494,7 +494,8 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 
 	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
-	drm_fence_flush_old(dev, 0, dev_priv->counter);
+	if (unlikely((dev_priv->counter & 0xFF) == 0))
+		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
 	return 0;
 }
@@ -548,7 +549,8 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 
 	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
-	drm_fence_flush_old(dev, 0, dev_priv->counter);
+	if (unlikely((dev_priv->counter & 0xFF) == 0))
+		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
 	return 0;
 }
@@ -621,7 +623,7 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 
 	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
-	if (!sync)
+	if (unlikely(!sync && ((dev_priv->counter & 0xFF) == 0)))
 		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
 }
