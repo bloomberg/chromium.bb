@@ -212,6 +212,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		engine->fifo.save_context	= nv10_fifo_save_context;
 		break;
 	case 0x40:
+	case 0x60:
 		engine->instmem.init	= nv04_instmem_init;
 		engine->instmem.takedown= nv04_instmem_takedown;
 		engine->instmem.populate	= nv04_instmem_populate;

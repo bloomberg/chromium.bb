@@ -64,7 +64,6 @@ static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 
 	switch(dev_priv->card_type)
 	{
-		case NV_50:
 		case NV_40:
 			switch (dev_priv->chipset) {
 			case 0x47:

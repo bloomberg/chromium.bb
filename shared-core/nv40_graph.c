@@ -1511,6 +1511,7 @@ nv40_graph_create_context(struct nouveau_channel *chan)
 		ctx_init = nv4b_graph_context_init;
 		break;
 	case 0x4c:
+	case 0x67:
 		ctx_size = NV4C_GRCTX_SIZE;
 		ctx_init = nv4c_graph_context_init;
 		break;
@@ -2007,7 +2008,8 @@ nv40_graph_init(struct drm_device *dev)
 	case 0x49: ctx_voodoo = nv49_4b_ctx_voodoo; break;
 	case 0x4a: ctx_voodoo = nv4a_ctx_voodoo; break;
 	case 0x4b: ctx_voodoo = nv49_4b_ctx_voodoo; break;
-	case 0x4c: ctx_voodoo = nv4c_ctx_voodoo; break;
+	case 0x4c:
+	case 0x67: ctx_voodoo = nv4c_ctx_voodoo; break;
 	case 0x4e: ctx_voodoo = nv4e_ctx_voodoo; break;
 	default:
 		DRM_ERROR("Unknown ctx_voodoo for chipset 0x%02x\n",
