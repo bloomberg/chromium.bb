@@ -985,6 +985,7 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	uint32_t control = (pipe == 0) ? CURSOR_A_CONTROL : CURSOR_B_CONTROL;
+	uint32_t base = (pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE;
 	uint32_t temp;
 	size_t adder;
 
@@ -998,6 +999,7 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 		temp |= CURSOR_MODE_DISABLE;
 
 		I915_WRITE(control, temp);
+		I915_WRITE(base, 0);
 		return 0;
 	}
 
@@ -1026,8 +1028,8 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 
 	DRM_DEBUG("cusror base %x\n", adder);
 
-	I915_WRITE((pipe == 0) ? CURSOR_A_CONTROL : CURSOR_B_CONTROL, temp);
-	I915_WRITE((pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE, adder);
+	I915_WRITE(control, temp);
+	I915_WRITE(base, adder);
 
 	return 0;
 }
