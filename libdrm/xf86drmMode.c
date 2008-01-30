@@ -329,7 +329,10 @@ int drmModeSetCursor(int fd, uint32_t crtcId, drmBO *bo, uint32_t width, uint32_
 	arg.crtc = crtcId;
 	arg.width = width;
 	arg.height = height;
-	arg.handle = bo->handle;
+	if (bo)
+		arg.handle = bo->handle;
+	else
+		arg.handle = 0;
 
 	return ioctl(fd, DRM_IOCTL_MODE_CURSOR, &arg);
 }

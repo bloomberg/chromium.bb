@@ -244,4 +244,5 @@ void prettyCursor(int fd, unsigned int handle)
 		ptr[i] = 0xFFFF00FF;
 
 	drmBOUnmap(fd, &bo);
+	drmBOUnreference(fd, &bo);
 }

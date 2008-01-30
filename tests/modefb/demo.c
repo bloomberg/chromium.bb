@@ -5,22 +5,34 @@
 #include <string.h>
 #include "linux/fb.h"
 #include "sys/ioctl.h"
+#include "xf86drm.h"
+#include "xf86drmMode.h"
 
-
+void pretty(int fd);
 void setMode(struct fb_var_screeninfo *var);
 void pan(int fd, struct fb_var_screeninfo *var, int x, int y);
-void cursor(int fd);
+void cursor(int fd, int drmfd);
+void prettyCursor(int fd, unsigned int handle, unsigned int color);
+
+extern void sleep(int);
 
 int main(int argc, char **argv)
 {
 	struct fb_var_screeninfo var;
 	struct fb_fix_screeninfo fix;
+	const char* driver = "i915";
 	const char* name = "/dev/fb0";
 
 	int fd = open(name, O_RDONLY);
+	int drmfd = drmOpen(driver, NULL);
 
 	if (fd == -1) {
 		printf("open %s : %s\n", name, strerror(errno));
+		return 1;
+	}
+
+	if (drmfd < 0) {
+		printf("drmOpen failed\n");
 		return 1;
 	}
 
@@ -50,7 +62,7 @@ int main(int argc, char **argv)
 	sleep(2);
 
 	printf("cursor\n");
-	cursor(fd);
+	cursor(fd, drmfd);
 	return 0;
 }
 
@@ -66,38 +78,52 @@ void pan(int fd, struct fb_var_screeninfo *var, int x, int y)
 }
 
 /*
- * Currently isn't supported in the driver
+ * Cursor support removed from the fb kernel interface
+ * using drm instead.
  */
-void cursor(int fd)
+void cursor(int fd, int drmfd)
 {
-	struct fb_cursor cur;
-	void *data = malloc(64 * 64 * 4);
-	memset(&cur, 0, sizeof(cur));
+	drmModeResPtr res = drmModeGetResources(drmfd);
+	uint32_t crtc = res->crtcs[1]; /* select crtc here */
+	drmBO bo;
+	int ret;
+	ret = drmBOCreate(drmfd, 64 * 64 * 4, 0, 0,
+		DRM_BO_FLAG_READ |
+		DRM_BO_FLAG_WRITE |
+		DRM_BO_FLAG_MEM_VRAM |
+		DRM_BO_FLAG_NO_EVICT,
+		DRM_BO_HINT_DONT_FENCE, &bo);
 
-	cur.set = FB_CUR_SETIMAGE | FB_CUR_SETPOS | FB_CUR_SETSIZE;
-	cur.enable = 1;
-	cur.image.dx = 1;
-	cur.image.dy = 1;
-	cur.image.width = 2;
-	cur.image.height = 2;
-	cur.image.depth = 32;
-	cur.image.data = data;
+	if (ret) {
+		printf("failed to create buffer: %s\n", strerror(ret));
+		return;
+	}
 
-	if (ioctl(fd, FBIO_CURSOR, &cur))
-		printf("cursor error: %s\n", strerror(errno));
-
+	prettyCursor(drmfd, bo.handle, 0xFFFF00FF);
+	drmModeSetCursor(drmfd, crtc, &bo, 64, 64);
+	drmModeMoveCursor(drmfd, crtc, 0, 0);
 	sleep(2);
+	drmModeMoveCursor(drmfd, crtc, 40, 40);
+	prettyCursor(drmfd, bo.handle, 0xFFFF0000);
+	sleep(2);
+	drmModeSetCursor(drmfd, crtc, 0, 0, 0);
+	drmBOUnreference(drmfd, &bo);
+}
 
-	memset(&cur, 0, sizeof(cur));
-	cur.set = FB_CUR_SETPOS;
-	cur.enable = 0;
-	cur.image.dx = 100;
-	cur.image.dy = 100;
+void prettyCursor(int drmfd, unsigned int handle, unsigned int color)
+{
+	drmBO bo;
+	unsigned int *ptr;
+	int i;
 
-	if (ioctl(fd, FBIO_CURSOR, &cur))
-		printf("cursor error: %s\n", strerror(errno));
+	drmBOReference(drmfd, handle, &bo);
+	drmBOMap(drmfd, &bo, DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0, (void**)&ptr);
 
-	free(data);
+	for (i = 0; i < (64 * 64); i++)
+		ptr[i] = color;
+
+	drmBOUnmap(drmfd, &bo);
+	drmBOUnreference(drmfd, &bo);
 }
 
 struct drm_mode

@@ -5,7 +5,7 @@ all: app
 #        -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
 
 app: demo.c
-	@gcc $(CFLAGS) -o app -Wall demo.c
+	@gcc $(CFLAGS) -o app -Wall -I../../libdrm -I../../shared-core -L../../libdrm/.libs -ldrm demo.c
 
 clean:
 	@rm -f app
