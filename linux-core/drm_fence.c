@@ -30,6 +30,57 @@
 
 #include "drmP.h"
 
+
+/*
+ * Convenience function to be called by fence::wait methods that
+ * need polling.
+ */
+
+int drm_fence_wait_polling(struct drm_fence_object *fence, int lazy,
+			   int interruptible, uint32_t mask, 
+			   unsigned long end_jiffies)
+{
+	struct drm_device *dev = fence->dev;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
+	uint32_t count = 0;
+	int ret;
+
+	DECLARE_WAITQUEUE(entry, current);
+	add_wait_queue(&fc->fence_queue, &entry);
+
+	ret = 0;
+	
+	for (;;) {
+		__set_current_state((interruptible) ? 
+				    TASK_INTERRUPTIBLE :
+				    TASK_UNINTERRUPTIBLE);
+		if (drm_fence_object_signaled(fence, mask))
+			break;
+		if (time_after_eq(jiffies, end_jiffies)) {
+			ret = -EBUSY;
+			break;
+		}
+		if (lazy)
+			schedule_timeout(1);
+		else if ((++count & 0x0F) == 0){
+			__set_current_state(TASK_RUNNING);
+			schedule();
+			__set_current_state((interruptible) ? 
+					    TASK_INTERRUPTIBLE :
+					    TASK_UNINTERRUPTIBLE);
+		}			
+		if (interruptible && signal_pending(current)) {
+			ret = -EAGAIN;
+			break;
+		}
+	}
+	__set_current_state(TASK_RUNNING);
+	remove_wait_queue(&fc->fence_queue, &entry);
+	return ret;
+}
+EXPORT_SYMBOL(drm_fence_wait_polling);
+
 /*
  * Typically called by the IRQ handler.
  */
@@ -39,27 +90,14 @@ void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 {
 	int wake = 0;
 	uint32_t diff;
-	uint32_t relevant;
+	uint32_t relevant_type;
+	uint32_t new_type;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[fence_class];
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	struct list_head *head;
 	struct drm_fence_object *fence, *next;
 	int found = 0;
-	int is_exe = (type & DRM_FENCE_TYPE_EXE);
-	int ge_last_exe;
-
-
-	diff = (sequence - fc->exe_flush_sequence) & driver->sequence_mask;
-
-	if (fc->pending_exe_flush && is_exe && diff < driver->wrap_diff)
-		fc->pending_exe_flush = 0;
-
-	diff = (sequence - fc->last_exe_flush) & driver->sequence_mask;
-	ge_last_exe = diff < driver->wrap_diff;
-
-	if (is_exe && ge_last_exe)
-		fc->last_exe_flush = sequence;
 
 	if (list_empty(&fc->ring))
 		return;
@@ -72,7 +110,7 @@ void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 		}
 	}
 
-	fc->pending_flush &= ~type;
+	fc->waiting_types &= ~type;
 	head = (found) ? &fence->ring : &fc->ring;
 
 	list_for_each_entry_safe_reverse(fence, next, head, ring) {
@@ -81,64 +119,60 @@ void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 
 		if (error) {
 			fence->error = error;
-			fence->signaled = fence->type;
-			fence->submitted_flush = fence->type;
-			fence->flush_mask = fence->type;
+			fence->signaled_types = fence->type;
 			list_del_init(&fence->ring);
 			wake = 1;
 			break;
 		}
 
-		if (is_exe)
-			type |= fence->native_type;
+		if (type & DRM_FENCE_TYPE_EXE)
+			type |= fence->native_types;
 
-		relevant = type & fence->type;
+		relevant_type = type & fence->type;
+		new_type = (fence->signaled_types | relevant_type) & 
+			~fence->signaled_types;
 
-		if ((fence->signaled | relevant) != fence->signaled) {
-			fence->signaled |= relevant;
-			fence->flush_mask |= relevant;
-			fence->submitted_flush |= relevant;
+		if (new_type) {
+			fence->signaled_types |= new_type;
 			DRM_DEBUG("Fence 0x%08lx signaled 0x%08x\n",
-				  fence->base.hash.key, fence->signaled);
-			wake = 1;
+				  fence->base.hash.key, fence->signaled_types);
+
+			if (driver->needed_flush)
+				fc->pending_flush |= driver->needed_flush(fence);
+
+			if (new_type & fence->waiting_types)
+				wake = 1;
 		}
 
-		relevant = fence->flush_mask &
-			~(fence->submitted_flush | fence->signaled);
+		fc->waiting_types |= fence->waiting_types & ~fence->signaled_types;
 
-		fc->pending_flush |= relevant;
-		fence->submitted_flush |= relevant;
-
-		if (!(fence->type & ~fence->signaled)) {
+		if (!(fence->type & ~fence->signaled_types)) {
 			DRM_DEBUG("Fence completely signaled 0x%08lx\n",
 				  fence->base.hash.key);
 			list_del_init(&fence->ring);
 		}
-
 	}
 
 	/*
-	 * Reinstate lost flush flags.
+	 * Reinstate lost waiting types.
 	 */
 
-	if ((fc->pending_flush & type) != type) {
+	if ((fc->waiting_types & type) != type) {
 		head = head->prev;
 		list_for_each_entry(fence, head, ring) {
 			if (&fence->ring == &fc->ring)
 				break;
-			diff = (fc->last_exe_flush - fence->sequence) &
+			diff = (fc->highest_waiting_sequence - fence->sequence) &
 				driver->sequence_mask;
 			if (diff > driver->wrap_diff)
 				break;
-
-			relevant = fence->submitted_flush & ~fence->signaled;
-			fc->pending_flush |= relevant;
+			
+			fc->waiting_types |= fence->waiting_types & ~fence->signaled_types;
 		}
 	}
 
-	if (wake) {
-		DRM_WAKEUP(&fc->fence_queue);
-	}
+	if (wake) 
+		wake_up_all(&fc->fence_queue);
 }
 EXPORT_SYMBOL(drm_fence_handler);
 
@@ -219,41 +253,28 @@ static void drm_fence_object_destroy(struct drm_file *priv,
 	drm_fence_usage_deref_locked(&fence);
 }
 
-int drm_fence_object_signaled(struct drm_fence_object *fence,
-			      uint32_t mask, int poke_flush)
+int drm_fence_object_signaled(struct drm_fence_object *fence, uint32_t mask)
 {
 	unsigned long flags;
 	int signaled;
 	struct drm_device *dev = fence->dev;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
-
-	if (poke_flush)
-		driver->poke_flush(dev, fence->fence_class);
+	
+	mask &= fence->type;
 	read_lock_irqsave(&fm->lock, flags);
-	signaled =
-	    (fence->type & mask & fence->signaled) == (fence->type & mask);
+	signaled = (mask & fence->signaled_types) == mask;
 	read_unlock_irqrestore(&fm->lock, flags);
-
+	if (!signaled && driver->poll) {
+		write_lock_irqsave(&fm->lock, flags);
+		driver->poll(dev, fence->fence_class, mask);
+		signaled = (mask & fence->signaled_types) == mask;
+		write_unlock_irqrestore(&fm->lock, flags);
+	}
 	return signaled;
 }
 EXPORT_SYMBOL(drm_fence_object_signaled);
 
-static void drm_fence_flush_exe(struct drm_fence_class_manager *fc,
-				struct drm_fence_driver *driver,
-				uint32_t sequence)
-{
-	uint32_t diff;
-
-	if (!fc->pending_exe_flush) {
-		fc->exe_flush_sequence = sequence;
-		fc->pending_exe_flush = 1;
-	} else {
-		diff = (sequence - fc->exe_flush_sequence) & driver->sequence_mask;
-		if (diff < driver->wrap_diff)
-			fc->exe_flush_sequence = sequence;
-	}
-}
 
 int drm_fence_object_flush(struct drm_fence_object *fence,
 			   uint32_t type)
@@ -262,7 +283,10 @@ int drm_fence_object_flush(struct drm_fence_object *fence,
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
-	unsigned long flags;
+	unsigned long irq_flags;
+	uint32_t saved_pending_flush;
+	uint32_t diff;
+	int call_flush;
 
 	if (type & ~fence->type) {
 		DRM_ERROR("Flush trying to extend fence type, "
@@ -270,24 +294,36 @@ int drm_fence_object_flush(struct drm_fence_object *fence,
 		return -EINVAL;
 	}
 
-	write_lock_irqsave(&fm->lock, flags);
-	fence->flush_mask |= type;
-	if ((fence->submitted_flush & fence->signaled)
-	    == fence->submitted_flush) {
-		if ((fence->type & DRM_FENCE_TYPE_EXE) &&
-		    !(fence->submitted_flush & DRM_FENCE_TYPE_EXE)) {
-			drm_fence_flush_exe(fc, driver, fence->sequence);
-			fence->submitted_flush |= DRM_FENCE_TYPE_EXE;
-		} else {
-			fc->pending_flush |= (fence->flush_mask &
-					      ~fence->submitted_flush);
-			fence->submitted_flush = fence->flush_mask;
-		}
-	}
-	write_unlock_irqrestore(&fm->lock, flags);
-	driver->poke_flush(dev, fence->fence_class);
+	write_lock_irqsave(&fm->lock, irq_flags);
+	fence->waiting_types |= type;
+	fc->waiting_types |= fence->waiting_types;
+	diff = (fence->sequence - fc->highest_waiting_sequence) & 
+		driver->sequence_mask;
+
+	if (diff < driver->wrap_diff)
+		fc->highest_waiting_sequence = fence->sequence;
+
+	/*
+	 * fence->waiting_types has changed. Determine whether
+	 * we need to initiate some kind of flush as a result of this.
+	 */
+
+	saved_pending_flush = fc->pending_flush;
+	if (driver->needed_flush) 
+		fc->pending_flush |= driver->needed_flush(fence);
+
+	if (driver->poll)
+		driver->poll(dev, fence->fence_class, fence->waiting_types);
+
+	call_flush = fc->pending_flush;
+	write_unlock_irqrestore(&fm->lock, irq_flags);
+
+	if (call_flush && driver->flush)
+		driver->flush(dev, fence->fence_class);
+
 	return 0;
 }
+EXPORT_SYMBOL(drm_fence_object_flush);
 
 /*
  * Make sure old fence objects are signaled before their fence sequences are
@@ -299,90 +335,52 @@ void drm_fence_flush_old(struct drm_device *dev, uint32_t fence_class,
 {
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[fence_class];
-	struct drm_fence_driver *driver = dev->driver->fence_driver;
-	uint32_t old_sequence;
-	unsigned long flags;
 	struct drm_fence_object *fence;
+	unsigned long irq_flags;
+	struct drm_fence_driver *driver = dev->driver->fence_driver;
+	int call_flush;
+
 	uint32_t diff;
 
-	write_lock_irqsave(&fm->lock, flags);
-	old_sequence = (sequence - driver->flush_diff) & driver->sequence_mask;
-	diff = (old_sequence - fc->last_exe_flush) & driver->sequence_mask;
+	write_lock_irqsave(&fm->lock, irq_flags);
 
-	if ((diff < driver->wrap_diff) && !fc->pending_exe_flush) {
-		fc->pending_exe_flush = 1;
-		fc->exe_flush_sequence = sequence - (driver->flush_diff / 2);
-	}
-	write_unlock_irqrestore(&fm->lock, flags);
+	list_for_each_entry_reverse(fence, &fc->ring, ring) {
+		diff = (sequence - fence->sequence) & driver->sequence_mask;
+		if (diff <= driver->flush_diff)
+			break;
+	
+		fence->waiting_types = fence->type;
+		fc->waiting_types |= fence->type;
 
-	mutex_lock(&dev->struct_mutex);
-	read_lock_irqsave(&fm->lock, flags);
+		if (driver->needed_flush)
+			fc->pending_flush |= driver->needed_flush(fence);
+	}	
+	
+	if (driver->poll)
+		driver->poll(dev, fence_class, fc->waiting_types);
 
-	if (list_empty(&fc->ring)) {
-		read_unlock_irqrestore(&fm->lock, flags);
-		mutex_unlock(&dev->struct_mutex);
-		return;
-	}
-	fence = drm_fence_reference_locked(list_entry(fc->ring.next, struct drm_fence_object, ring));
-	mutex_unlock(&dev->struct_mutex);
-	diff = (old_sequence - fence->sequence) & driver->sequence_mask;
-	read_unlock_irqrestore(&fm->lock, flags);
-	if (diff < driver->wrap_diff)
-		drm_fence_object_flush(fence, fence->type);
-	drm_fence_usage_deref_unlocked(&fence);
+	call_flush = fc->pending_flush;
+	write_unlock_irqrestore(&fm->lock, irq_flags);
+
+	if (call_flush && driver->flush)
+		driver->flush(dev, fence->fence_class);
+
+	/*
+	 * FIXME: Shold we implement a wait here for really old fences?
+	 */
+
 }
 EXPORT_SYMBOL(drm_fence_flush_old);
-
-static int drm_fence_lazy_wait(struct drm_fence_object *fence,
-			       int ignore_signals,
-			       uint32_t mask)
-{
-	struct drm_device *dev = fence->dev;
-	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
-	int signaled;
-	unsigned long _end = jiffies + 3*DRM_HZ;
-	int ret = 0;
-
-	do {
-		DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
-			    (signaled = drm_fence_object_signaled(fence, mask, 1)));
-		if (signaled)
-			return 0;
-		if (time_after_eq(jiffies, _end))
-			break;
-	} while (ret == -EINTR && ignore_signals);
-	if (drm_fence_object_signaled(fence, mask, 0))
-		return 0;
-	if (time_after_eq(jiffies, _end))
-		ret = -EBUSY;
-	if (ret) {
-		if (ret == -EBUSY) {
-			DRM_ERROR("Fence timeout. "
-				  "GPU lockup or fence driver was "
-				  "taken down. %d 0x%08x 0x%02x 0x%02x 0x%02x\n",
-				  fence->fence_class,
-				  fence->sequence,
-				  fence->type,
-				  mask,
-				  fence->signaled);
-			DRM_ERROR("Pending exe flush %d 0x%08x\n",
-				  fc->pending_exe_flush,
-				  fc->exe_flush_sequence);
-		}
-		return ((ret == -EINTR) ? -EAGAIN : ret);
-	}
-	return 0;
-}
 
 int drm_fence_object_wait(struct drm_fence_object *fence,
 			  int lazy, int ignore_signals, uint32_t mask)
 {
 	struct drm_device *dev = fence->dev;
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
 	int ret = 0;
-	unsigned long _end;
-	int signaled;
+	unsigned long _end = 3 * DRM_HZ;
 
 	if (mask & ~fence->type) {
 		DRM_ERROR("Wait trying to extend fence type"
@@ -391,57 +389,38 @@ int drm_fence_object_wait(struct drm_fence_object *fence,
 		return -EINVAL;
 	}
 
-	if (drm_fence_object_signaled(fence, mask, 0))
-		return 0;
+	if (driver->wait)
+		return driver->wait(fence, lazy, !ignore_signals, mask);
 
-	_end = jiffies + 3 * DRM_HZ;
 
 	drm_fence_object_flush(fence, mask);
+	if (driver->has_irq(dev, fence->fence_class, mask)) {
+		if (!ignore_signals)
+			ret = wait_event_interruptible_timeout
+				(fc->fence_queue, 
+				 drm_fence_object_signaled(fence, mask), 
+				 3 * DRM_HZ);
+		else 
+			ret = wait_event_timeout
+				(fc->fence_queue, 
+				 drm_fence_object_signaled(fence, mask), 
+				 3 * DRM_HZ);
 
-	if (lazy && driver->lazy_capable) {
+		if (unlikely(ret == -ERESTARTSYS))
+			return -EAGAIN;
 
-		ret = drm_fence_lazy_wait(fence, ignore_signals, mask);
-		if (ret)
-			return ret;
+		if (unlikely(ret == 0))
+			return -EBUSY;
 
-	} else {
-
-		if (driver->has_irq(dev, fence->fence_class,
-				    DRM_FENCE_TYPE_EXE)) {
-			ret = drm_fence_lazy_wait(fence, ignore_signals,
-						  DRM_FENCE_TYPE_EXE);
-			if (ret)
-				return ret;
-		}
-
-		if (driver->has_irq(dev, fence->fence_class,
-				    mask & ~DRM_FENCE_TYPE_EXE)) {
-			ret = drm_fence_lazy_wait(fence, ignore_signals,
-						  mask);
-			if (ret)
-				return ret;
-		}
-	}
-	if (drm_fence_object_signaled(fence, mask, 0))
 		return 0;
+	}
 
-	/*
-	 * Avoid kernel-space busy-waits.
-	 */
-	if (!ignore_signals)
-		return -EAGAIN;
-
-	do {
-		schedule();
-		signaled = drm_fence_object_signaled(fence, mask, 1);
-	} while (!signaled && !time_after_eq(jiffies, _end));
-
-	if (!signaled)
-		return -EBUSY;
-
-	return 0;
+	return drm_fence_wait_polling(fence, lazy, !ignore_signals, mask,
+				      _end);
 }
 EXPORT_SYMBOL(drm_fence_object_wait);
+
+
 
 int drm_fence_object_emit(struct drm_fence_object *fence, uint32_t fence_flags,
 			  uint32_t fence_class, uint32_t type)
@@ -452,25 +431,24 @@ int drm_fence_object_emit(struct drm_fence_object *fence, uint32_t fence_flags,
 	struct drm_fence_class_manager *fc = &fm->fence_class[fence->fence_class];
 	unsigned long flags;
 	uint32_t sequence;
-	uint32_t native_type;
+	uint32_t native_types;
 	int ret;
 
 	drm_fence_unring(dev, &fence->ring);
 	ret = driver->emit(dev, fence_class, fence_flags, &sequence,
-			   &native_type);
+			   &native_types);
 	if (ret)
 		return ret;
 
 	write_lock_irqsave(&fm->lock, flags);
 	fence->fence_class = fence_class;
 	fence->type = type;
-	fence->flush_mask = 0x00;
-	fence->submitted_flush = 0x00;
-	fence->signaled = 0x00;
+	fence->waiting_types = 0;
+	fence->signaled_types = 0;
 	fence->sequence = sequence;
-	fence->native_type = native_type;
+	fence->native_types = native_types;
 	if (list_empty(&fc->ring))
-		fc->last_exe_flush = sequence - 1;
+		fc->highest_waiting_sequence = sequence - 1;
 	list_add_tail(&fence->ring, &fc->ring);
 	write_unlock_irqrestore(&fm->lock, flags);
 	return 0;
@@ -500,9 +478,8 @@ static int drm_fence_object_init(struct drm_device *dev, uint32_t fence_class,
 	INIT_LIST_HEAD(&fence->base.list);
 	fence->fence_class = fence_class;
 	fence->type = type;
-	fence->flush_mask = 0;
-	fence->submitted_flush = 0;
-	fence->signaled = 0;
+	fence->signaled_types = 0;
+	fence->waiting_types = 0;
 	fence->sequence = 0;
 	fence->dev = dev;
 	write_unlock_irqrestore(&fm->lock, flags);
@@ -598,7 +575,7 @@ void drm_fence_fill_arg(struct drm_fence_object *fence,
 	arg->handle = fence->base.hash.key;
 	arg->fence_class = fence->fence_class;
 	arg->type = fence->type;
-	arg->signaled = fence->signaled;
+	arg->signaled = fence->signaled_types;
 	arg->error = fence->error;
 	arg->sequence = fence->sequence;
 	read_unlock_irqrestore(&fm->lock, irq_flags);

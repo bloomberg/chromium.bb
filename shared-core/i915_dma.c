@@ -422,6 +422,9 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 	RING_LOCALS;
 
 	if (++dev_priv->counter > BREADCRUMB_MASK) {
+#ifdef I915_HAVE_FENCE
+		i915_invalidate_reported_sequence(dev);
+#endif
 		 dev_priv->counter = 1;
 		 DRM_DEBUG("Breadcrumb counter wrapped around\n");
 	}
@@ -1113,7 +1116,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 			fence_arg->handle = fence->base.hash.key;
 			fence_arg->fence_class = fence->fence_class;
 			fence_arg->type = fence->type;
-			fence_arg->signaled = fence->signaled;
+			fence_arg->signaled = fence->signaled_types;
 		}
 	}
 	drm_fence_usage_deref_unlocked(&fence);

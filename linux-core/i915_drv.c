@@ -39,17 +39,9 @@ static struct pci_device_id pciidlist[] = {
 };
 
 #ifdef I915_HAVE_FENCE
-static struct drm_fence_driver i915_fence_driver = {
-	.num_classes = 1,
-	.wrap_diff = (1U << (BREADCRUMB_BITS - 1)),
-	.flush_diff = (1U << (BREADCRUMB_BITS - 2)),
-	.sequence_mask = BREADCRUMB_MASK,
-	.lazy_capable = 1,
-	.emit = i915_fence_emit_sequence,
-	.poke_flush = i915_poke_flush,
-	.has_irq = i915_fence_has_irq,
-};
+extern struct drm_fence_driver i915_fence_driver;
 #endif
+
 #ifdef I915_HAVE_BUFFER
 
 static uint32_t i915_mem_prios[] = {DRM_BO_MEM_PRIV0, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
@@ -67,6 +59,7 @@ static struct drm_bo_driver i915_bo_driver = {
 	.evict_flags = i915_evict_flags,
 	.move = i915_move,
 	.ttm_cache_flush = i915_flush_ttm,
+	.command_stream_barrier = NULL,
 };
 #endif
 

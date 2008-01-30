@@ -294,5 +294,6 @@ struct drm_bo_driver nouveau_bo_driver = {
 	.init_mem_type = nouveau_bo_init_mem_type,
 	.evict_flags = nouveau_bo_evict_flags,
 	.move = nouveau_bo_move,
-	.ttm_cache_flush= nouveau_bo_flush_ttm
+	.ttm_cache_flush= nouveau_bo_flush_ttm,
+	.command_stream_barrier = NULL
 };

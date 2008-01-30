@@ -196,17 +196,6 @@ extern void via_dmablit_handler(struct drm_device *dev, int engine, int from_irq
 extern void via_init_dmablit(struct drm_device *dev);
 #endif
 
-#ifdef VIA_HAVE_FENCE
-extern void via_fence_timer(unsigned long data);
-extern void via_poke_flush(struct drm_device * dev, uint32_t class);
-extern int via_fence_emit_sequence(struct drm_device * dev, uint32_t class,
-				   uint32_t flags,
-				   uint32_t * sequence,
-				   uint32_t * native_type);
-extern int via_fence_has_irq(struct drm_device * dev, uint32_t class,
-			     uint32_t flags);
-#endif
-
 #ifdef VIA_HAVE_BUFFER
 extern struct drm_ttm_backend *via_create_ttm_backend_entry(struct drm_device *dev);
 extern int via_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,

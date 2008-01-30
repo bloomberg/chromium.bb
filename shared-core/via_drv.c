@@ -40,17 +40,9 @@ static struct pci_device_id pciidlist[] = {
 
 
 #ifdef VIA_HAVE_FENCE
-static struct drm_fence_driver via_fence_driver = {
-	.num_classes = 1,
-	.wrap_diff = (1 << 30),
-	.flush_diff = (1 << 20),
-	.sequence_mask = 0xffffffffU,
-	.lazy_capable = 1,
-	.emit = via_fence_emit_sequence,
-	.poke_flush = via_poke_flush,
-	.has_irq = via_fence_has_irq,
-};
+extern struct drm_fence_driver via_fence_driver;
 #endif
+
 #ifdef VIA_HAVE_BUFFER
 
 /**
@@ -76,6 +68,8 @@ static struct drm_bo_driver via_bo_driver = {
 	.init_mem_type = via_init_mem_type,
 	.evict_flags = via_evict_flags,
 	.move = NULL,
+	.ttm_cache_flush = NULL,
+	.command_stream_barrier = NULL
 };
 #endif
 

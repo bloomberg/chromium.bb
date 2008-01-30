@@ -69,9 +69,6 @@ static int via_do_init_map(struct drm_device * dev, drm_via_init_t * init)
 	dev_priv->emit_0_sequence = 0;
 	dev_priv->have_idlelock = 0;
 	spin_lock_init(&dev_priv->fence_lock);
-	init_timer(&dev_priv->fence_timer);
-	dev_priv->fence_timer.function = &via_fence_timer;
-	dev_priv->fence_timer.data = (unsigned long) dev;
 #endif /* VIA_HAVE_FENCE */
 	dev->dev_private = (void *)dev_priv;
 #ifdef VIA_HAVE_BUFFER

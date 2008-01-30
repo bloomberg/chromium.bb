@@ -136,6 +136,8 @@ typedef struct drm_i915_private {
 	uint32_t flush_flags;
 	uint32_t flush_pending;
 	uint32_t saved_flush_status;
+	uint32_t reported_sequence;
+	int reported_sequence_valid;
 #endif
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
@@ -290,15 +292,9 @@ extern void i915_mem_release(struct drm_device * dev,
 			     struct mem_block *heap);
 #ifdef I915_HAVE_FENCE
 /* i915_fence.c */
-
-
 extern void i915_fence_handler(struct drm_device *dev);
-extern int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
-				    uint32_t flags,
-				    uint32_t *sequence,
-				    uint32_t *native_type);
-extern void i915_poke_flush(struct drm_device *dev, uint32_t class);
-extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags);
+extern void i915_invalidate_reported_sequence(struct drm_device *dev);
+
 #endif
 
 #ifdef I915_HAVE_BUFFER

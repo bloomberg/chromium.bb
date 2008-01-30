@@ -37,16 +37,7 @@ static struct pci_device_id pciidlist[] = {
 	xgi_PCI_IDS
 };
 
-static struct drm_fence_driver xgi_fence_driver = {
-	.num_classes = 1,
-	.wrap_diff = BEGIN_BEGIN_IDENTIFICATION_MASK,
-	.flush_diff = BEGIN_BEGIN_IDENTIFICATION_MASK - 1,
-	.sequence_mask = BEGIN_BEGIN_IDENTIFICATION_MASK,
-	.lazy_capable = 1,
-	.emit = xgi_fence_emit_sequence,
-	.poke_flush = xgi_poke_flush,
-	.has_irq = xgi_fence_has_irq
-};
+extern struct drm_fence_driver xgi_fence_driver;
 
 int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
 

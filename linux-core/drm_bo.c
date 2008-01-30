@@ -287,7 +287,7 @@ int drm_bo_wait(struct drm_buffer_object *bo, int lazy, int ignore_signals,
 	DRM_ASSERT_LOCKED(&bo->mutex);
 
 	if (bo->fence) {
-		if (drm_fence_object_signaled(bo->fence, bo->fence_type, 0)) {
+		if (drm_fence_object_signaled(bo->fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
@@ -354,7 +354,7 @@ static void drm_bo_cleanup_refs(struct drm_buffer_object *bo, int remove_all)
 	DRM_FLAG_MASKED(bo->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
 
 	if (bo->fence && drm_fence_object_signaled(bo->fence,
-						   bo->fence_type, 0))
+						   bo->fence_type))
 		drm_fence_usage_deref_unlocked(&bo->fence);
 
 	if (bo->fence && remove_all)
@@ -559,7 +559,7 @@ void drm_putback_buffer_objects(struct drm_device *dev)
 
 		list_del_init(&entry->lru);
 		DRM_FLAG_MASKED(entry->priv_flags, 0, _DRM_BO_FLAG_UNFENCED);
-		DRM_WAKEUP(&entry->event_queue);
+		wake_up_all(&entry->event_queue);
 
 		/*
 		 * FIXME: Might want to put back on head of list
@@ -660,7 +660,7 @@ int drm_fence_buffer_objects(struct drm_device *dev,
 			entry->fence_type = entry->new_fence_type;
 			DRM_FLAG_MASKED(entry->priv_flags, 0,
 					_DRM_BO_FLAG_UNFENCED);
-			DRM_WAKEUP(&entry->event_queue);
+			wake_up_all(&entry->event_queue);
 			drm_bo_add_to_lru(entry);
 		}
 		mutex_unlock(&entry->mutex);
@@ -1032,7 +1032,7 @@ static int drm_bo_quick_busy(struct drm_buffer_object *bo)
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
-		if (drm_fence_object_signaled(fence, bo->fence_type, 0)) {
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
@@ -1052,12 +1052,12 @@ static int drm_bo_busy(struct drm_buffer_object *bo)
 
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNFENCED);
 	if (fence) {
-		if (drm_fence_object_signaled(fence, bo->fence_type, 0)) {
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
 		drm_fence_object_flush(fence, DRM_FENCE_TYPE_EXE);
-		if (drm_fence_object_signaled(fence, bo->fence_type, 0)) {
+		if (drm_fence_object_signaled(fence, bo->fence_type)) {
 			drm_fence_usage_deref_unlocked(&bo->fence);
 			return 0;
 		}
@@ -1249,7 +1249,7 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 	mutex_unlock(&dev->struct_mutex);
 	if (ret) {
 		if (atomic_add_negative(-1, &bo->mapped))
-			DRM_WAKEUP(&bo->event_queue);
+			wake_up_all(&bo->event_queue);
 
 	} else
 		drm_bo_fill_rep_arg(bo, rep);
@@ -1306,7 +1306,7 @@ static void drm_buffer_user_object_unmap(struct drm_file *file_priv,
 	BUG_ON(action != _DRM_REF_TYPE1);
 
 	if (atomic_add_negative(-1, &bo->mapped))
-		DRM_WAKEUP(&bo->event_queue);
+		wake_up_all(&bo->event_queue);
 }
 
 /*
@@ -1364,7 +1364,7 @@ out_unlock:
 		}
 		drm_bo_add_to_lru(bo);
 		if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED) {
-			DRM_WAKEUP(&bo->event_queue);
+			wake_up_all(&bo->event_queue);
 			DRM_FLAG_MASKED(bo->priv_flags, 0,
 					_DRM_BO_FLAG_UNFENCED);
 		}
@@ -1442,13 +1442,21 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 	 * We're switching command submission mechanism,
 	 * or cannot simply rely on the hardware serializing for us.
 	 *
-	 * Wait for buffer idle.
+	 * Insert a driver-dependant barrier or wait for buffer idle.
 	 */
 
 	if ((fence_class != bo->fence_class) ||
 	    ((ftype ^ bo->fence_type) & bo->fence_type)) {
 
-		ret = drm_bo_wait(bo, 0, 0, no_wait);
+		ret = -EINVAL;
+		if (driver->command_stream_barrier) {
+			ret = driver->command_stream_barrier(bo,
+							     fence_class,
+							     ftype,
+							     no_wait);
+		}
+		if (ret)
+			ret = drm_bo_wait(bo, 0, 0, no_wait);
 
 		if (ret)
 			return ret;
@@ -1539,7 +1547,7 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 	} else {
 		drm_bo_add_to_lru(bo);
 		if (bo->priv_flags & _DRM_BO_FLAG_UNFENCED) {
-			DRM_WAKEUP(&bo->event_queue);
+			wake_up_all(&bo->event_queue);
 			DRM_FLAG_MASKED(bo->priv_flags, 0,
 					_DRM_BO_FLAG_UNFENCED);
 		}

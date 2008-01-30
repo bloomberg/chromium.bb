@@ -38,27 +38,21 @@
  * DRM_VIA_FENCE_TYPE_ACCEL guarantees that all 2D & 3D rendering is complete.
  */
 
-
-static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
+static void via_fence_poll(struct drm_device *dev, uint32_t class,
+			   uint32_t waiting_types)
 {
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
-	struct drm_fence_class_manager *fc = &dev->fm.fence_class[class];
-	uint32_t pending_flush_types = 0;
 	uint32_t signaled_flush_types = 0;
 	uint32_t status;
 
 	if (class != 0)
-		return 0;
+		return;
 
-	if (!dev_priv)
-		return 0;
+	if (unlikely(!dev_priv))
+		return;
 
 	spin_lock(&dev_priv->fence_lock);
-
-	pending_flush_types = fc->pending_flush |
-		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
-
-	if (pending_flush_types) {
+	if (waiting_types) {
 
 		/*
 		 * Take the idlelock. This guarantees that the next time a client tries
@@ -77,7 +71,7 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 		 * Check if AGP command reader is idle.
 		 */
 
-		if (pending_flush_types & DRM_FENCE_TYPE_EXE)
+		if (waiting_types & DRM_FENCE_TYPE_EXE)
 			if (VIA_READ(0x41C) & 0x80000000)
 				signaled_flush_types |= DRM_FENCE_TYPE_EXE;
 
@@ -85,7 +79,7 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 		 * Check VRAM command queue empty and 2D + 3D engines idle.
 		 */
 
-		if (pending_flush_types & DRM_VIA_FENCE_TYPE_ACCEL) {
+		if (waiting_types & DRM_VIA_FENCE_TYPE_ACCEL) {
 			status = VIA_READ(VIA_REG_STATUS);
 			if ((status & VIA_VR_QUEUE_BUSY) &&
 			    !(status & (VIA_CMD_RGTR_BUSY | VIA_2D_ENG_BUSY | VIA_3D_ENG_BUSY)))
@@ -93,8 +87,8 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 		}
 
 		if (signaled_flush_types) {
-			pending_flush_types &= ~signaled_flush_types;
-			if (!pending_flush_types && dev_priv->have_idlelock) {
+			waiting_types &= ~signaled_flush_types;
+			if (!waiting_types && dev_priv->have_idlelock) {
 				drm_idlelock_release(&dev->lock);
 				dev_priv->have_idlelock = 0;
 			}
@@ -105,8 +99,7 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 
 	spin_unlock(&dev_priv->fence_lock);
 
-	return fc->pending_flush |
-		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
+	return;
 }
 
 
@@ -114,8 +107,8 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
  * Emit a fence sequence.
  */
 
-int via_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t flags,
-			     uint32_t * sequence, uint32_t * native_type)
+static int via_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t flags,
+				   uint32_t * sequence, uint32_t * native_type)
 {
 	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
 	int ret = 0;
@@ -150,36 +143,6 @@ int via_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t fl
 }
 
 /**
- * Manual poll (from the fence manager).
- */
-
-void via_poke_flush(struct drm_device * dev, uint32_t class)
-{
-	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
-	struct drm_fence_manager *fm = &dev->fm;
-	unsigned long flags;
-	uint32_t pending_flush;
-
-	if (!dev_priv)
-		return ;
-
-	write_lock_irqsave(&fm->lock, flags);
-	pending_flush = via_perform_flush(dev, class);
-	if (pending_flush)
-		pending_flush = via_perform_flush(dev, class);
-	write_unlock_irqrestore(&fm->lock, flags);
-
-	/*
-	 * Kick the timer if there are more flushes pending.
-	 */
-
-	if (pending_flush && !timer_pending(&dev_priv->fence_timer)) {
-		dev_priv->fence_timer.expires = jiffies + 1;
-		add_timer(&dev_priv->fence_timer);
-	}
-}
-
-/**
  * No irq fence expirations implemented yet.
  * Although both the HQV engines and PCI dmablit engines signal
  * idle with an IRQ, we haven't implemented this yet.
@@ -187,45 +150,20 @@ void via_poke_flush(struct drm_device * dev, uint32_t class)
  * unless the caller wanting to wait for a fence object has indicated a lazy wait.
  */
 
-int via_fence_has_irq(struct drm_device * dev, uint32_t class,
-		      uint32_t flags)
+static int via_fence_has_irq(struct drm_device * dev, uint32_t class,
+			     uint32_t flags)
 {
 	return 0;
 }
 
-/**
- * Regularly call the flush function. This enables lazy waits, so we can
- * set lazy_capable. Lazy waits don't really care when the fence expires,
- * so a timer tick delay should be fine.
- */
-
-void via_fence_timer(unsigned long data)
-{
-	struct drm_device *dev = (struct drm_device *) data;
-	drm_via_private_t *dev_priv = (drm_via_private_t *) dev->dev_private;
-	struct drm_fence_manager *fm = &dev->fm;
-	uint32_t pending_flush;
-	struct drm_fence_class_manager *fc = &dev->fm.fence_class[0];
-
-	if (!dev_priv)
-		return;
-	if (!fm->initialized)
-		goto out_unlock;
-
-	via_poke_flush(dev, 0);
-	pending_flush = fc->pending_flush |
-		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
-
-	/*
-	 * disable timer if there are no more flushes pending.
-	 */
-
-	if (!pending_flush && timer_pending(&dev_priv->fence_timer)) {
-		BUG_ON(dev_priv->have_idlelock);
-		del_timer(&dev_priv->fence_timer);
-	}
-	return;
-out_unlock:
-	return;
-
-}
+struct drm_fence_driver via_fence_driver = {
+	.num_classes = 1,
+	.wrap_diff = (1 << 30),
+	.flush_diff = (1 << 20),
+	.sequence_mask = 0xffffffffU,
+	.has_irq = via_fence_has_irq,
+	.emit = via_fence_emit_sequence,
+	.poll = via_fence_poll,
+	.needed_flush = NULL,
+	.wait = NULL
+};

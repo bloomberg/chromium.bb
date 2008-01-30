@@ -147,12 +147,11 @@ struct drm_fence_object {
 
 	struct list_head ring;
 	int fence_class;
-	uint32_t native_type;
+	uint32_t native_types;
 	uint32_t type;
-	uint32_t signaled;
+	uint32_t signaled_types;
 	uint32_t sequence;
-	uint32_t flush_mask;
-	uint32_t submitted_flush;
+	uint32_t waiting_types;
 	uint32_t error;
 };
 
@@ -162,10 +161,9 @@ struct drm_fence_object {
 struct drm_fence_class_manager {
 	struct list_head ring;
 	uint32_t pending_flush;
+	uint32_t waiting_types;
 	wait_queue_head_t fence_queue;
-	int pending_exe_flush;
-	uint32_t last_exe_flush;
-	uint32_t exe_flush_sequence;
+	uint32_t highest_waiting_sequence;
 };
 
 struct drm_fence_manager {
@@ -177,19 +175,49 @@ struct drm_fence_manager {
 };
 
 struct drm_fence_driver {
+	unsigned long *waiting_jiffies;
 	uint32_t num_classes;
 	uint32_t wrap_diff;
 	uint32_t flush_diff;
 	uint32_t sequence_mask;
-	int lazy_capable;
+
+	/*
+	 * Driver implemented functions:
+	 * has_irq() : 1 if the hardware can update the indicated type_flags using an
+	 * irq handler. 0 if polling is required.
+	 *
+	 * emit() : Emit a sequence number to the command stream.
+	 * Return the sequence number.
+	 *
+	 * flush() : Make sure the flags indicated in fc->pending_flush will eventually
+	 * signal for fc->highest_received_sequence and all preceding sequences.
+	 * Acknowledge by clearing the flags fc->pending_flush.
+	 *
+	 * poll() : Call drm_fence_handler with any new information.
+	 *
+	 * needed_flush() : Given the current state of the fence->type flags and previusly 
+	 * executed or queued flushes, return the type_flags that need flushing.
+	 *
+	 * wait(): Wait for the "mask" flags to signal on a given fence, performing
+	 * whatever's necessary to make this happen.
+	 */
+
 	int (*has_irq) (struct drm_device *dev, uint32_t fence_class,
 			uint32_t flags);
 	int (*emit) (struct drm_device *dev, uint32_t fence_class,
 		     uint32_t flags, uint32_t *breadcrumb,
 		     uint32_t *native_type);
-	void (*poke_flush) (struct drm_device *dev, uint32_t fence_class);
+	void (*flush) (struct drm_device *dev, uint32_t fence_class);
+	void (*poll) (struct drm_device *dev, uint32_t fence_class,
+		uint32_t types);
+	uint32_t (*needed_flush) (struct drm_fence_object *fence);
+	int (*wait) (struct drm_fence_object *fence, int lazy,
+		     int interruptible, uint32_t mask);
 };
 
+extern int drm_fence_wait_polling(struct drm_fence_object *fence, int lazy,
+				  int interruptible, uint32_t mask,
+				  unsigned long end_jiffies);
 extern void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 			      uint32_t sequence, uint32_t type,
 			      uint32_t error);
@@ -200,7 +228,7 @@ extern void drm_fence_flush_old(struct drm_device *dev, uint32_t fence_class,
 extern int drm_fence_object_flush(struct drm_fence_object *fence,
 				  uint32_t type);
 extern int drm_fence_object_signaled(struct drm_fence_object *fence,
-				     uint32_t type, int flush);
+				     uint32_t type);
 extern void drm_fence_usage_deref_locked(struct drm_fence_object **fence);
 extern void drm_fence_usage_deref_unlocked(struct drm_fence_object **fence);
 extern struct drm_fence_object *drm_fence_reference_locked(struct drm_fence_object *src);
@@ -576,6 +604,33 @@ struct drm_bo_driver {
 	 * ttm_cache_flush
 	 */
 	void (*ttm_cache_flush)(struct drm_ttm *ttm);
+
+	/*
+	 * command_stream_barrier
+	 *
+	 * @dev: The drm device.
+	 *
+	 * @bo: The buffer object to validate.
+	 *
+	 * @new_fence_class: The new fence class for the buffer object.
+	 *
+	 * @new_fence_type: The new fence type for the buffer object.
+	 *
+	 * @no_wait: whether this should give up and return -EBUSY
+	 * if this operation would require sleeping
+	 *
+	 * Insert a command stream barrier that makes sure that the
+	 * buffer is idle once the commands associated with the
+	 * current validation are starting to execute. If an error
+	 * condition is returned, or the function pointer is NULL,
+	 * the drm core will force buffer idle
+	 * during validation.
+	 */
+
+	int (*command_stream_barrier) (struct drm_buffer_object *bo,
+				       uint32_t new_fence_class,
+				       uint32_t new_fence_type,
+				       int no_wait);				       
 };
 
 /*
