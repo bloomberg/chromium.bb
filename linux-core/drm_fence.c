@@ -129,8 +129,8 @@ void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 			type |= fence->native_types;
 
 		relevant_type = type & fence->type;
-		new_type = (fence->signaled_types | relevant_type) & 
-			~fence->signaled_types;
+		new_type = (fence->signaled_types | relevant_type) ^
+			fence->signaled_types;
 
 		if (new_type) {
 			fence->signaled_types |= new_type;
@@ -450,6 +450,7 @@ int drm_fence_object_emit(struct drm_fence_object *fence, uint32_t fence_flags,
 	if (list_empty(&fc->ring))
 		fc->highest_waiting_sequence = sequence - 1;
 	list_add_tail(&fence->ring, &fc->ring);
+	fc->latest_queued_sequence = sequence;
 	write_unlock_irqrestore(&fm->lock, flags);
 	return 0;
 }
@@ -554,8 +555,8 @@ void drm_fence_manager_init(struct drm_device *dev)
 	for (i = 0; i < fm->num_classes; ++i) {
 	    fence_class = &fm->fence_class[i];
 
+	    memset(fence_class, 0, sizeof(*fence_class));
 	    INIT_LIST_HEAD(&fence_class->ring);
-	    fence_class->pending_flush = 0;
 	    DRM_INIT_WAITQUEUE(&fence_class->fence_queue);
 	}
 

@@ -164,6 +164,7 @@ struct drm_fence_class_manager {
 	uint32_t waiting_types;
 	wait_queue_head_t fence_queue;
 	uint32_t highest_waiting_sequence;
+        uint32_t latest_queued_sequence;
 };
 
 struct drm_fence_manager {
