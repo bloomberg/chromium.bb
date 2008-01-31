@@ -646,7 +646,6 @@ struct drm_set_version {
 #define DRM_FENCE_FLAG_EMIT                0x00000001
 #define DRM_FENCE_FLAG_SHAREABLE           0x00000002
 #define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
-#define DRM_FENCE_FLAG_WAIT_IGNORE_SIGNALS 0x00000008
 #define DRM_FENCE_FLAG_NO_USER             0x00000010
 
 /* Reserved for driver use */
