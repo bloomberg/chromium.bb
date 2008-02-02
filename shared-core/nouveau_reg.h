@@ -138,6 +138,7 @@
 #define NV40_PFB_TLIMIT(i)                                 (0x00100604 + (i*16))
 #define NV40_PFB_TSIZE(i)                                  (0x00100608 + (i*16))
 #define NV40_PFB_TSTATUS(i)                                (0x0010060C + (i*16))
+#define NV40_PFB_UNK_800					0x00100800
 
 #define NV04_PGRAPH_DEBUG_0                                0x00400080
 #define NV04_PGRAPH_DEBUG_1                                0x00400084
