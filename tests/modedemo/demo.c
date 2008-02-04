@@ -14,6 +14,60 @@
 /* Pitch needs to be power of two */
 #define PITCH 2048
 
+/* old functions to be replaced */
+drmModeFBPtr createFB(int fd, drmModeResPtr res);
+void testCursor(int fd, uint32_t crtc);
+void prettyColors(int fd, unsigned int handle);
+void prettyCursor(int fd, unsigned int handle);
+
+/* structs for the demo_driver */
+
+struct demo_driver;
+
+struct demo_screen
+{
+	/* drm stuff */
+	drmBO buffer;
+	drmModeFBPtr fb;
+	drmModeCrtcPtr crtc;
+	drmModeOutputPtr output;
+
+	struct drm_mode_modeinfo *mode;
+
+	/* virtual buffer */
+	uint32_t virt_x;
+	uint32_t virt_y;
+	uint32_t pitch;
+
+	/* parent */
+	struct demo_driver *driver;
+};
+
+#define DEMO_MAX_SCREENS 4
+#define MAX_FIND_OUTPUTS 8
+
+struct demo_driver
+{
+	/* drm stuff */
+	int fd;
+	drmModeResPtr res;
+
+	/* screens */
+	size_t numScreens;
+	struct demo_screen screens[DEMO_MAX_SCREENS];
+};
+
+struct demo_driver* demoCreateDriver(const char *name);
+void demoUpdateRes(struct demo_driver *driver);
+int demoCreateScreens(struct demo_driver *driver);
+void demoTakeDownScreen(struct demo_screen *screen);
+int demoFindConnectedOutputs(struct demo_driver *driver, drmModeOutputPtr *out, size_t max_out);
+drmModeCrtcPtr demoFindFreeCrtc(struct demo_driver *driver, drmModeOutputPtr output);
+void demoPanScreen(struct demo_screen *screen, uint16_t x, uint16_t y);
+/* yet to be implemented */
+void demoMouseActivate(struct demo_screen *screen);
+void demoMouseMove(struct demo_screen *screen, uint16_t x, uint16_t y);
+
 static struct drm_mode_modeinfo mode = {
 	.name = "Test mode",
 	.clock = 25200,
@@ -31,87 +85,232 @@ static struct drm_mode_modeinfo mode = {
 	.flags = 10,
 };
 
-drmModeFBPtr createFB(int fd, drmModeResPtr res);
-int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out);
-drmModeCrtcPtr findFreeCrtc(int fd, drmModeResPtr res);
-void testCursor(int fd, uint32_t crtc);
-void prettyColors(int fd, unsigned int handle);
-void prettyCursor(int fd, unsigned int handle);
-
 int main(int argc, char **argv)
 {
-	int fd;
-	const char *driver = "i915"; /* hardcoded for now */
-	drmModeResPtr res;
-	drmModeFBPtr framebuffer;
-	int numOutputs;
-	drmModeOutputPtr out[8];
-	drmModeCrtcPtr crtc;
+	const char *driver_name = "i915"; /* hardcoded for now */
+	struct demo_driver *driver;
+	int num;
+	int i;
 
-	printf("Starting test\n");
+	printf("starting demo\n");
 
-	fd = drmOpen(driver, NULL);
+	driver = demoCreateDriver(driver_name);
 
-	if (fd < 0) {
-		printf("Failed to open the card fb\n");
+	if (!driver) {
+		printf("failed to create driver\n");
 		return 1;
 	}
 
-	res = drmModeGetResources(fd);
-	if (res == 0) {
-		printf("Failed to get resources from card\n");
-		drmClose(fd);
+	num = demoCreateScreens(driver);
+	if (num < 1) {
+		printf("no screens attached or an error occured\n");
 		return 1;
 	}
+	printf("created %i screens\n", num);
 
-	framebuffer = createFB(fd, res);
-	if (framebuffer == NULL) {
-		printf("Failed to create framebuffer\n");
-		return 1;
+	for (i = 0; i < num; i++) {
+		prettyColors(driver->fd, driver->screens[i].fb->handle);
+	}
+	sleep(1);
+
+	for (i = 0; i < num; i++) {
+		printf("%i: 100 0\n", i);
+		demoPanScreen(&driver->screens[i], 100, 0);
+		sleep(1);
+
+		printf("%i: 0 100\n", i);
+		demoPanScreen(&driver->screens[i], 0, 100);
+		sleep(1);
+
+		printf("%i: 100 100\n", i);
+		demoPanScreen(&driver->screens[i], 100, 100);
+		sleep(1);
+
+		printf("%i: 0 0\n", i);
+		demoPanScreen(&driver->screens[i], 0, 1);
+		sleep(1);
+		testCursor(driver->fd, driver->screens[i].crtc->crtc_id);
 	}
 
-	numOutputs = findConnectedOutputs(fd, res, out);
-	if (numOutputs < 1) {
-		printf("Failed to find connected outputs\n");
-		return 1;
-	}
-
-	crtc = findFreeCrtc(fd, res);
-	if (numOutputs < 1) {
-		printf("Couldn't find a free crtc\n");
-		return 1;
-	}
-
-	prettyColors(fd, framebuffer->handle);
-
-	printf("0 0\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 0, &out[0]->output_id, 1, &mode);
 	sleep(2);
-
-	printf("0 100\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 0, 100, &out[0]->output_id, 1, &mode);
-	sleep(2);
-
-	printf("100 0\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 0, &out[0]->output_id, 1, &mode);
-	sleep(2);
-
-	printf("100 100\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 100, 100, &out[0]->output_id, 1, &mode);
-	sleep(2);
-
-	printf("0 0\n");
-	drmModeSetCrtc(fd, crtc->crtc_id, framebuffer->buffer_id, 1, 1, &out[0]->output_id, 1, &mode);
-
-	testCursor(fd, crtc->crtc_id);
-
-	/* turn the crtc off just in case */
-	drmModeSetCrtc(fd, crtc->crtc_id, 0, 0, 0, 0, 0, 0);
-
-    drmModeFreeResources(res);
-    printf("Ok\n");
-
+    printf("ok\n");
     return 0;
+}
+
+int demoCreateScreens(struct demo_driver *driver)
+{
+	drmModeOutputPtr out[MAX_FIND_OUTPUTS];
+	int num;
+	int num_screens = 0;
+	struct demo_screen *screen;
+	int ret = 0;
+	int i;
+
+	num = demoFindConnectedOutputs(driver, out, MAX_FIND_OUTPUTS);
+	if (num < 0)
+		return 0;
+
+	printf("found %i connected outputs\n", num);
+
+	for (i = 0; i < num; i++) {
+		screen = &driver->screens[i];
+
+		screen->crtc = demoFindFreeCrtc(driver, out[i]);
+		if (!screen->crtc) {
+			printf("found no free crtc for output\n");
+			drmModeFreeOutput(out[i]);
+			continue;
+		}
+
+		screen->fb = createFB(driver->fd, driver->res);
+		if (!screen->fb) {
+			drmModeFreeOutput(out[i]);
+			drmModeFreeCrtc(screen->crtc);
+			screen->crtc = 0;
+			printf("could not create framebuffer\n");
+			continue;
+		}
+
+		screen->virt_x = SIZE_X;
+		screen->virt_y = SIZE_Y;
+		screen->pitch = PITCH;
+
+		screen->output = out[i];
+		screen->mode = &mode;
+		screen->driver = driver;
+
+		ret = drmModeSetCrtc(
+			driver->fd,
+			screen->crtc->crtc_id,
+			screen->fb->buffer_id,
+			0, 0,
+			&screen->output->output_id, 1,
+			screen->mode);
+
+		if (ret) {
+			printf("failed to set mode\n");
+			demoTakeDownScreen(screen);
+		} else {
+			num_screens++;
+		}
+
+		demoUpdateRes(driver);
+	}
+
+	return num_screens;
+}
+
+void demoTakeDownScreen(struct demo_screen *screen)
+{
+	/* TODO Unrefence the BO */
+	/* TODO Destroy FB */
+	/* TODO take down the mode */
+
+	drmModeFreeOutput(screen->output);
+	drmModeFreeCrtc(screen->crtc);
+}
+
+drmModeCrtcPtr demoFindFreeCrtc(struct demo_driver *driver, drmModeOutputPtr output)
+{
+	drmModeCrtcPtr crtc;
+	int i, j, used = 0;
+	drmModeResPtr res = driver->res;
+
+
+	for (i = 0; i < res->count_crtcs; i++) {
+		used = 0;
+		for (j = 0; j < DEMO_MAX_SCREENS; j++) {
+			crtc = driver->screens[j].crtc;
+
+			if (crtc && crtc->crtc_id == res->crtcs[i])
+				used = 1;
+		}
+
+		if (!used) {
+			crtc = drmModeGetCrtc(driver->fd, res->crtcs[i]);
+			break;
+		} else {
+			crtc = 0;
+		}
+	}
+
+	return crtc;
+}
+
+struct demo_driver* demoCreateDriver(const char *name)
+{
+	struct demo_driver* driver = malloc(sizeof(struct demo_driver));
+
+	memset(driver, 0, sizeof(struct demo_driver));
+
+	driver->fd = drmOpen(name, NULL);
+
+	if (driver->fd < 0) {
+		printf("Failed to open the card fb\n");
+		goto err_driver;
+	}
+
+	demoUpdateRes(driver);
+	if (!driver->res) {
+		printf("could not retrive resources\n");
+		goto err_res;
+	}
+
+	return driver;
+
+err_res:
+	drmClose(driver->fd);
+err_driver:
+	free(driver);
+	return NULL;
+}
+
+void demoUpdateRes(struct demo_driver *driver)
+{
+	if (driver->res)
+		drmModeFreeResources(driver->res);
+
+	driver->res = drmModeGetResources(driver->fd);
+
+	if (!driver->res)
+		printf("failed to get resources from kernel\n");
+}
+
+int demoFindConnectedOutputs(struct demo_driver *driver, drmModeOutputPtr *out, size_t max_out)
+{
+	int count = 0;
+	int i;
+	int fd = driver->fd;
+	drmModeResPtr res = driver->res;
+
+	drmModeOutputPtr output;
+
+	for (i = 0; i < res->count_outputs && count < max_out; i++) {
+		output = drmModeGetOutput(fd, res->outputs[i]);
+
+		if (!output)
+			continue;
+
+		if (output->connection != DRM_MODE_CONNECTED) {
+			drmModeFreeOutput(output);
+			continue;
+		}
+
+		out[count++] = output;
+	}
+
+	return count;
+}
+
+void demoPanScreen(struct demo_screen *screen, uint16_t x, uint16_t y)
+{
+	drmModeSetCrtc(
+		screen->driver->fd,
+		screen->crtc->crtc_id,
+		screen->fb->buffer_id,
+		x, y,
+		&screen->output->output_id, 1,
+		screen->mode);
 }
 
 drmModeFBPtr createFB(int fd, drmModeResPtr res)
@@ -147,33 +346,7 @@ drmModeFBPtr createFB(int fd, drmModeResPtr res)
 err_bo:
 	drmBOUnreference(fd, &bo);
 err:
-	printf("Something went wrong when creating a fb, using one of the predefined ones\n");
-
-	return drmModeGetFB(fd, res->fbs[0]);
-}
-
-int findConnectedOutputs(int fd, drmModeResPtr res, drmModeOutputPtr *out)
-{
-	int count = 0;
-	int i;
-
-	drmModeOutputPtr output;
-
-	for (i = 0; i < res->count_outputs; i++) {
-		output = drmModeGetOutput(fd, res->outputs[i]);
-
-		if (!output || output->connection != DRM_MODE_CONNECTED)
-			continue;
-
-		out[count++] = output;
-	}
-
-	return count;
-}
-
-drmModeCrtcPtr findFreeCrtc(int fd, drmModeResPtr res)
-{
-	return drmModeGetCrtc(fd, res->crtcs[1]);
+	return 0;
 }
 
 void draw(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int v, unsigned int *ptr)
@@ -225,10 +398,14 @@ void testCursor(int fd, uint32_t crtc)
 	drmModeSetCursor(fd, crtc, &bo, 64, 64);
 	printf("move cursor 0, 0\n");
 	drmModeMoveCursor(fd, crtc, 0, 0);
-	sleep(2);
+	sleep(1);
 	printf("move cursor 40, 40\n");
 	drmModeMoveCursor(fd, crtc, 40, 40);
-	sleep(2);
+	sleep(1);
+	printf("move cursor 100, 100\n");
+	drmModeMoveCursor(fd, crtc, 100, 100);
+	sleep(1);
+	drmModeSetCursor(fd, crtc, NULL, 0, 0);
 }
 
 void prettyCursor(int fd, unsigned int handle)
