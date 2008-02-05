@@ -97,8 +97,8 @@ void draw(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsign
 
 void prettyColors(int fd)
 {
-	unsigned int *ptr, *newptr;
-	int i,w,h;
+	unsigned int *ptr;
+	int i;
 	int size = var.xres * var.yres * var.bits_per_pixel;
 
 	ptr = (unsigned int *)mmap(NULL, size,
@@ -109,13 +109,7 @@ void prettyColors(int fd)
 		exit(1);
 	}
 
-	newptr = ptr;
-	for (h = 0; h < var.yres; h++) {
-		for (w = 0; w < var.xres; w++) {
-			newptr[w] = 0xFFFFFFFF;
-		}
-		newptr += var.xres_virtual;
-	}
+	memset(ptr, 0xFF, size);
 		
 	for (i = 0; i < 8; i++)
 		draw(i * 40, i * 40, 40, 40, 0, ptr);
