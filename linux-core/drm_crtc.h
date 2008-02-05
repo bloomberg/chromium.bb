@@ -259,7 +259,7 @@ struct drm_property_blob {
 struct drm_property_enum {
 	uint64_t value;
 	struct list_head head;
-	unsigned char name[DRM_PROP_NAME_LEN];
+	char name[DRM_PROP_NAME_LEN];
 };
 
 struct drm_property {
