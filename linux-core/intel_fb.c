@@ -490,7 +490,6 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 {
 	struct intelfb_par *par = info->par;
 	struct drm_crtc *crtc = par->crtc;
-	struct drm_framebuffer *fb = crtc->fb;
 
 	DRM_DEBUG("\n");
 

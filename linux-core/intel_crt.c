@@ -219,11 +219,10 @@ static bool intel_crt_set_property(struct drm_output *output,
 				  uint64_t value)
 {
 	struct drm_device *dev = output->dev;
-	int i;
 
-	if (property == dev->mode_config.dpms_property) {
+	if (property == dev->mode_config.dpms_property)
 		intel_crt_dpms(output, (uint32_t)(value & 0xf));
-	}
+
 	return true;
 }
 
