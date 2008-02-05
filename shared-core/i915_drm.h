@@ -43,7 +43,12 @@ typedef struct _drm_i915_init {
 	enum {
 		I915_INIT_DMA = 0x01,
 		I915_CLEANUP_DMA = 0x02,
-		I915_RESUME_DMA = 0x03
+		I915_RESUME_DMA = 0x03,
+
+		/* Since this struct isn't versioned, just used a new
+		 * 'func' code to indicate the presence of dri2 sarea
+		 * info. */
+		I915_INIT_DMA2 = 0x04
 	} func;
 	unsigned int mmio_offset;
 	int sarea_priv_offset;
@@ -61,6 +66,7 @@ typedef struct _drm_i915_init {
 	unsigned int depth_pitch;
 	unsigned int cpp;
 	unsigned int chipset;
+	unsigned int sarea_handle;
 } drm_i915_init_t;
 
 typedef struct _drm_i915_sarea {

@@ -147,6 +147,10 @@ typedef struct drm_i915_private {
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
 
+	/* DRI2 sarea */
+	struct drm_buffer_object *sarea_bo;
+	struct drm_bo_kmap_obj sarea_kmap;
+
 	/* Register state */
 	u8 saveLBB;
 	u32 saveDSPACNTR;

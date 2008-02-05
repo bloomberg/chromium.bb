@@ -106,9 +106,73 @@ static int i915_dma_cleanup(struct drm_device * dev)
 	return 0;
 }
 
-static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
+
+#define DRI2_SAREA_BLOCK_TYPE(b) ((b) >> 16)
+#define DRI2_SAREA_BLOCK_SIZE(b) ((b) & 0xffff)
+#define DRI2_SAREA_BLOCK_NEXT(p)				\
+	((void *) ((unsigned char *) (p) +			\
+		   DRI2_SAREA_BLOCK_SIZE(*(unsigned int *) p)))
+
+#define DRI2_SAREA_BLOCK_END		0x0000
+#define DRI2_SAREA_BLOCK_LOCK		0x0001
+#define DRI2_SAREA_BLOCK_EVENT_BUFFER	0x0002
+
+static int
+setup_dri2_sarea(struct drm_device * dev,
+		 struct drm_file *file_priv,
+		 drm_i915_init_t * init)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+	int ret;
+	unsigned int *p, *end, *next;
+
+	mutex_lock(&dev->struct_mutex);
+	dev_priv->sarea_bo =
+		drm_lookup_buffer_object(file_priv,
+					 init->sarea_handle, 1);
+	mutex_unlock(&dev->struct_mutex);
+
+	if (!dev_priv->sarea_bo) {
+		DRM_ERROR("did not find sarea bo\n");
+		return -EINVAL;
+	}
+
+	ret = drm_bo_kmap(dev_priv->sarea_bo, 0,
+			  dev_priv->sarea_bo->num_pages,
+			  &dev_priv->sarea_kmap);
+	if (ret) {
+		DRM_ERROR("could not map sarea bo\n");
+		return ret;
+	}
+
+	p = dev_priv->sarea_kmap.virtual;
+	end = (void *) p + (dev_priv->sarea_bo->num_pages << PAGE_SHIFT);
+	while (p < end && DRI2_SAREA_BLOCK_TYPE(*p) != DRI2_SAREA_BLOCK_END) {
+		switch (DRI2_SAREA_BLOCK_TYPE(*p)) {
+		case DRI2_SAREA_BLOCK_LOCK:
+			dev->lock.hw_lock = (void *) (p + 1);
+			dev->sigdata.lock = dev->lock.hw_lock;
+			break;
+		}
+		next = DRI2_SAREA_BLOCK_NEXT(p);
+		if (next <= p || end < next) {
+			DRM_ERROR("malformed dri2 sarea: next is %p should be within %p-%p\n",
+				  next, p, end);
+			return -EINVAL;
+		}
+		p = next;
+	}
+
+	return 0;
+}
+
+
+static int i915_initialize(struct drm_device * dev,
+			   struct drm_file *file_priv,
+			   drm_i915_init_t * init)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	int ret;
 
 	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
@@ -201,6 +265,17 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 #ifdef I915_HAVE_BUFFER
 	mutex_init(&dev_priv->cmdbuf_mutex);
 #endif
+
+	if (init->func == I915_INIT_DMA2) {
+		ret = setup_dri2_sarea(dev, file_priv, init);
+		if (ret) {
+			i915_dma_cleanup(dev);
+			DRM_ERROR("could not set up dri2 sarea\n");
+			return ret;
+		}
+	}
+		
+
 	return 0;
 }
 
@@ -250,7 +325,8 @@ static int i915_dma_init(struct drm_device *dev, void *data,
 
 	switch (init->func) {
 	case I915_INIT_DMA:
-		retcode = i915_initialize(dev, init);
+	case I915_INIT_DMA2:
+		retcode = i915_initialize(dev, file_priv, init);
 		break;
 	case I915_CLEANUP_DMA:
 		retcode = i915_dma_cleanup(dev);
@@ -1414,6 +1490,20 @@ void i915_driver_lastclose(struct drm_device * dev)
 		i915_do_cleanup_pageflip(dev);
 	if (dev_priv->agp_heap)
 		i915_mem_takedown(&(dev_priv->agp_heap));
+
+	if (dev_priv->sarea_kmap.virtual) {
+		drm_bo_kunmap(&dev_priv->sarea_kmap);
+		dev_priv->sarea_kmap.virtual = NULL;
+		dev->lock.hw_lock = NULL;
+		dev->sigdata.lock = NULL;
+	}
+
+	if (dev_priv->sarea_bo) {
+		mutex_lock(&dev->struct_mutex);
+		drm_bo_usage_deref_locked(&dev_priv->sarea_bo);
+		mutex_unlock(&dev->struct_mutex);
+		dev_priv->sarea_bo = NULL;
+	}
 
 	i915_dma_cleanup(dev);
 }
