@@ -23,57 +23,63 @@ struct fb_fix_screeninfo fix;
 
 int main(int argc, char **argv)
 {
-	const char* name = "/dev/fb1";
-	int i;
-	int fd = open(name, O_RDWR);
+	char name[100];
+	int i,d;
+	int fd;
 	int drmfd = drmOpenControl(0);
 
-	if (fd == -1) {
-		printf("open %s : %s\n", name, strerror(errno));
-		return 1;
+	/* try four devices */
+	for (d = 0; d < 4; d++) {
+		snprintf(name, 100, "/dev/fb%d", d);
+		fd = open(name, O_RDWR);
+
+		if (fd == -1) {
+			printf("open %s : %s\n", name, strerror(errno));
+			return 1;
+		}
+
+		if (drmfd < 0) {
+			printf("drmOpenControl failed\n");
+			return 1;
+		}
+
+		memset(&var, 0, sizeof(struct fb_var_screeninfo));
+		memset(&fix, 0, sizeof(struct fb_fix_screeninfo));
+
+		if (ioctl(fd, FBIOGET_VSCREENINFO, &var))
+			printf("var  %s\n", strerror(errno));
+		if	(ioctl(fd, FBIOGET_FSCREENINFO, &fix))
+			printf("fix %s\n", strerror(errno));
+
+		setMode(&var);
+
+		if (ioctl(fd, FBIOPUT_VSCREENINFO, &var))
+			printf("var  %s\n", strerror(errno));
+
+		for (i = 0; i < 1; i++) {
+			prettyColors(fd);
+		}
+		sleep(1);
+
+		printf("pan: 0, 0\n");
+		pan(fd, &var, 0, 0);
+		sleep(2);
+		printf("pan: 100, 0\n");
+		pan(fd, &var, 100, 0);
+		sleep(2);
+		printf("pan: 0, 100\n");
+		pan(fd, &var, 0, 100);
+		sleep(2);
+		printf("pan: 100, 100\n");
+		pan(fd, &var, 100, 100);
+		sleep(2);
+		printf("pan: 0, 0\n");
+		pan(fd, &var, 0, 0);
+		sleep(2);
+
+		printf("cursor (may show up on wrong CRTC - fixme)\n");
+		cursor(fd, drmfd);
 	}
-
-	if (drmfd < 0) {
-		printf("drmOpenControl failed\n");
-		return 1;
-	}
-
-	memset(&var, 0, sizeof(struct fb_var_screeninfo));
-	memset(&fix, 0, sizeof(struct fb_fix_screeninfo));
-
-	if (ioctl(fd, FBIOGET_VSCREENINFO, &var))
-		printf("var  %s\n", strerror(errno));
-	if	(ioctl(fd, FBIOGET_FSCREENINFO, &fix))
-		printf("fix %s\n", strerror(errno));
-
-	setMode(&var);
-
-	if (ioctl(fd, FBIOPUT_VSCREENINFO, &var))
-		printf("var  %s\n", strerror(errno));
-
-	for (i = 0; i < 1; i++) {
-		prettyColors(fd);
-	}
-	sleep(1);
-
-	printf("pan: 0, 0\n");
-	pan(fd, &var, 0, 0);
-	sleep(2);
-	printf("pan: 100, 0\n");
-	pan(fd, &var, 100, 0);
-	sleep(2);
-	printf("pan: 0, 100\n");
-	pan(fd, &var, 0, 100);
-	sleep(2);
-	printf("pan: 100, 100\n");
-	pan(fd, &var, 100, 100);
-	sleep(2);
-	printf("pan: 0, 0\n");
-	pan(fd, &var, 0, 0);
-	sleep(2);
-
-	printf("cursor\n");
-	cursor(fd, drmfd);
 	return 0;
 }
 
