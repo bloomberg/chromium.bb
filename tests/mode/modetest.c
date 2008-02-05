@@ -347,15 +347,14 @@ int testDPMS(int fd, drmModeResPtr res)
 int main(int argc, char **argv)
 {
 	int fd;
-	const char *driver = "i915"; /* hardcoded for now */
 	drmModeResPtr res;
 
 	printf("Starting test\n");
 
-	fd = drmOpen(driver, NULL);
+	fd = drmOpenControl(0);
 
 	if (fd < 0) {
-		printf("Failed to open the card fb\n");
+		printf("Failed to open the card fb (%d)\n",fd);
 		return 1;
 	}
 

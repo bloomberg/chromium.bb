@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include "linux/fb.h"
+#include <sys/mman.h>
 #include "sys/ioctl.h"
 #include "xf86drm.h"
 #include "xf86drmMode.h"
@@ -12,19 +13,20 @@ void pretty(int fd);
 void setMode(struct fb_var_screeninfo *var);
 void pan(int fd, struct fb_var_screeninfo *var, int x, int y);
 void cursor(int fd, int drmfd);
+void prettyColors(int fd);
 void prettyCursor(int fd, unsigned int handle, unsigned int color);
 
 extern void sleep(int);
 
+struct fb_var_screeninfo var;
+struct fb_fix_screeninfo fix;
+
 int main(int argc, char **argv)
 {
-	struct fb_var_screeninfo var;
-	struct fb_fix_screeninfo fix;
-	const char* driver = "i915";
-	const char* name = "/dev/fb0";
-
-	int fd = open(name, O_RDONLY);
-	int drmfd = drmOpen(driver, NULL);
+	const char* name = "/dev/fb1";
+	int i;
+	int fd = open(name, O_RDWR);
+	int drmfd = drmOpenControl(0);
 
 	if (fd == -1) {
 		printf("open %s : %s\n", name, strerror(errno));
@@ -32,7 +34,7 @@ int main(int argc, char **argv)
 	}
 
 	if (drmfd < 0) {
-		printf("drmOpen failed\n");
+		printf("drmOpenControl failed\n");
 		return 1;
 	}
 
@@ -45,6 +47,15 @@ int main(int argc, char **argv)
 		printf("fix %s\n", strerror(errno));
 
 	setMode(&var);
+
+	if (ioctl(fd, FBIOPUT_VSCREENINFO, &var))
+		printf("var  %s\n", strerror(errno));
+
+	for (i = 0; i < 1; i++) {
+		prettyColors(fd);
+	}
+	sleep(1);
+
 	printf("pan: 0, 0\n");
 	pan(fd, &var, 0, 0);
 	sleep(2);
@@ -71,10 +82,49 @@ void pan(int fd, struct fb_var_screeninfo *var, int x, int y)
 	var->xoffset = x;
 	var->yoffset = y;
 
-	var->activate = FB_ACTIVATE_NOW;
-
-	if (ioctl(fd, FBIOPUT_VSCREENINFO, var))
+	if (ioctl(fd, FBIOPAN_DISPLAY, var))
 		printf("pan error: %s\n", strerror(errno));
+}
+
+void draw(unsigned int x, unsigned int y, unsigned int w, unsigned int h, unsigned int v, unsigned int *ptr)
+{
+	int i, j;
+
+	for (i = x; i < x + w; i++)
+		for(j = y; j < y + h; j++)
+			ptr[(i * var.xres_virtual) + j] = v;
+}
+
+void prettyColors(int fd)
+{
+	unsigned int *ptr, *newptr;
+	int i,w,h;
+	int size = var.xres * var.yres * var.bits_per_pixel;
+
+	ptr = (unsigned int *)mmap(NULL, size,
+				PROT_READ|PROT_WRITE, MAP_SHARED, fd,
+				0);
+	if (ptr < 0) {
+		printf("FAILED MMAP %d\n",errno);
+		exit(1);
+	}
+
+	newptr = ptr;
+	for (h = 0; h < var.yres; h++) {
+		for (w = 0; w < var.xres; w++) {
+			newptr[w] = 0xFFFFFFFF;
+		}
+		newptr += var.xres_virtual;
+	}
+		
+	for (i = 0; i < 8; i++)
+		draw(i * 40, i * 40, 40, 40, 0, ptr);
+
+
+	draw(200, 100, 40, 40, 0xff00ff, ptr);
+	draw(100, 200, 40, 40, 0xff00ff, ptr);
+
+	munmap(ptr, size);
 }
 
 /*
@@ -102,11 +152,13 @@ void cursor(int fd, int drmfd)
 	prettyCursor(drmfd, bo.handle, 0xFFFF00FF);
 	drmModeSetCursor(drmfd, crtc, &bo, 64, 64);
 	drmModeMoveCursor(drmfd, crtc, 0, 0);
-	sleep(2);
-	drmModeMoveCursor(drmfd, crtc, 40, 40);
+	sleep(1);
 	prettyCursor(drmfd, bo.handle, 0xFFFF0000);
-	sleep(2);
-	drmModeSetCursor(drmfd, crtc, 0, 0, 0);
+	drmModeMoveCursor(drmfd, crtc, 40, 40);
+	sleep(1);
+	drmModeMoveCursor(drmfd, crtc, 100, 100);
+	sleep(1);
+	drmModeSetCursor(drmfd, crtc, NULL, 0, 0);
 	drmBOUnreference(drmfd, &bo);
 }
 
@@ -173,4 +225,5 @@ void setMode(struct fb_var_screeninfo *var) {
 	var->pixclock = 10000000 / mode.htotal * 1000 / mode.vtotal * 100;
 	/* avoid overflow */
 	var->pixclock = var->pixclock * 1000 / mode.vrefresh;
+	var->bits_per_pixel = 32;
 }

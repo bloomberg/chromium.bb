@@ -18,7 +18,7 @@
 drmModeFBPtr createFB(int fd, drmModeResPtr res);
 void testCursor(int fd, uint32_t crtc);
 void prettyColors(int fd, unsigned int handle);
-void prettyCursor(int fd, unsigned int handle);
+void prettyCursor(int fd, unsigned int handle, unsigned int color);
 
 /* structs for the demo_driver */
 
@@ -57,7 +57,7 @@ struct demo_driver
 	struct demo_screen screens[DEMO_MAX_SCREENS];
 };
 
-struct demo_driver* demoCreateDriver(const char *name);
+struct demo_driver* demoCreateDriver(void);
 void demoUpdateRes(struct demo_driver *driver);
 int demoCreateScreens(struct demo_driver *driver);
 void demoTakeDownScreen(struct demo_screen *screen);
@@ -87,14 +87,13 @@ static struct drm_mode_modeinfo mode = {
 
 int main(int argc, char **argv)
 {
-	const char *driver_name = "i915"; /* hardcoded for now */
 	struct demo_driver *driver;
 	int num;
 	int i;
 
 	printf("starting demo\n");
 
-	driver = demoCreateDriver(driver_name);
+	driver = demoCreateDriver();
 
 	if (!driver) {
 		printf("failed to create driver\n");
@@ -237,13 +236,13 @@ drmModeCrtcPtr demoFindFreeCrtc(struct demo_driver *driver, drmModeOutputPtr out
 	return crtc;
 }
 
-struct demo_driver* demoCreateDriver(const char *name)
+struct demo_driver* demoCreateDriver(void)
 {
 	struct demo_driver* driver = malloc(sizeof(struct demo_driver));
 
 	memset(driver, 0, sizeof(struct demo_driver));
 
-	driver->fd = drmOpen(name, NULL);
+	driver->fd = drmOpenControl(0);
 
 	if (driver->fd < 0) {
 		printf("Failed to open the card fb\n");
@@ -328,8 +327,10 @@ drmModeFBPtr createFB(int fd, drmModeResPtr res)
 		DRM_BO_FLAG_NO_EVICT,
 		DRM_BO_HINT_DONT_FENCE, &bo);
 
-	if (ret)
+	if (ret) {
+		printf("failed to create framebuffer (ret %d)\n",ret);
 		goto err;
+	}
 
 	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, PITCH * 4, &bo, &fb);
 
@@ -392,13 +393,13 @@ void testCursor(int fd, uint32_t crtc)
 		DRM_BO_FLAG_NO_EVICT,
 		DRM_BO_HINT_DONT_FENCE, &bo);
 
-	prettyCursor(fd, bo.handle);
-
+	prettyCursor(fd, bo.handle, 0xFFFF00FF);
 	printf("set cursor\n");
 	drmModeSetCursor(fd, crtc, &bo, 64, 64);
 	printf("move cursor 0, 0\n");
 	drmModeMoveCursor(fd, crtc, 0, 0);
 	sleep(1);
+	prettyCursor(fd, bo.handle, 0xFFFF0000);
 	printf("move cursor 40, 40\n");
 	drmModeMoveCursor(fd, crtc, 40, 40);
 	sleep(1);
@@ -408,7 +409,7 @@ void testCursor(int fd, uint32_t crtc)
 	drmModeSetCursor(fd, crtc, NULL, 0, 0);
 }
 
-void prettyCursor(int fd, unsigned int handle)
+void prettyCursor(int fd, unsigned int handle, unsigned int color)
 {
 	drmBO bo;
 	unsigned int *ptr;
@@ -418,7 +419,7 @@ void prettyCursor(int fd, unsigned int handle)
 	drmBOMap(fd, &bo, DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE, 0, (void**)&ptr);
 
 	for (i = 0; i < (64 * 64); i++)
-		ptr[i] = 0xFFFF00FF;
+		ptr[i] = color;
 
 	drmBOUnmap(fd, &bo);
 	drmBOUnreference(fd, &bo);
