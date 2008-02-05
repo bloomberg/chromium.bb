@@ -476,7 +476,11 @@ unlock:
  * This code is called in a more safe envirmoent to handle the hotplugs.
  * Add code here for hotplug love to userspace.
  */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
+static void i915_hotplug_work_func(void *work)
+#else
 static void i915_hotplug_work_func(struct work_struct *work)
+#endif
 {
 	struct drm_device *dev = hotplug_dev;
 	int crt;
@@ -503,7 +507,11 @@ static void i915_hotplug_work_func(struct work_struct *work)
 
 static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
+	static DECLARE_WORK(hotplug, i915_hotplug_work_func, NULL);
+#else
 	static DECLARE_WORK(hotplug, i915_hotplug_work_func);
+#endif
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	hotplug_dev = dev;
