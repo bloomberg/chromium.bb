@@ -136,8 +136,6 @@ typedef struct drm_i915_private {
 	uint32_t flush_flags;
 	uint32_t flush_pending;
 	uint32_t saved_flush_status;
-	uint32_t reported_sequence;
-	int reported_sequence_valid;
 #endif
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;

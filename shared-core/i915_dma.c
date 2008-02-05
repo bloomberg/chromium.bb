@@ -422,9 +422,6 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 	RING_LOCALS;
 
 	if (++dev_priv->counter > BREADCRUMB_MASK) {
-#ifdef I915_HAVE_FENCE
-		i915_invalidate_reported_sequence(dev);
-#endif
 		 dev_priv->counter = 1;
 		 DRM_DEBUG("Breadcrumb counter wrapped around\n");
 	}

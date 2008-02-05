@@ -38,10 +38,10 @@
  * Initiate a sync flush if it's not already pending.
  */
 
-static void i915_initiate_rwflush(struct drm_i915_private *dev_priv, 
-				  struct drm_fence_class_manager *fc)
+static inline void i915_initiate_rwflush(struct drm_i915_private *dev_priv,
+					 struct drm_fence_class_manager *fc)
 {
-	if ((fc->pending_flush & DRM_I915_FENCE_TYPE_RW) && 
+	if ((fc->pending_flush & DRM_I915_FENCE_TYPE_RW) &&
 	    !dev_priv->flush_pending) {
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fc->pending_flush;
@@ -49,6 +49,27 @@ static void i915_initiate_rwflush(struct drm_i915_private *dev_priv,
 		I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
 		dev_priv->flush_pending = 1;
 		fc->pending_flush &= ~DRM_I915_FENCE_TYPE_RW;
+	}
+}
+
+static inline void i915_report_rwflush(struct drm_device *dev,
+				       struct drm_i915_private *dev_priv)
+{
+	if (unlikely(dev_priv->flush_pending)) {
+
+		uint32_t flush_flags;
+		uint32_t i_status;
+		uint32_t flush_sequence;
+
+		i_status = READ_HWSP(dev_priv, 0);
+		if ((i_status & (1 << 12)) !=
+		    (dev_priv->saved_flush_status & (1 << 12))) {
+			flush_flags = dev_priv->flush_flags;
+			flush_sequence = dev_priv->flush_sequence;
+			dev_priv->flush_pending = 0;
+			drm_fence_handler(dev, 0, flush_sequence,
+					  flush_flags, 0);
+		}
 	}
 }
 
@@ -69,15 +90,13 @@ static void i915_fence_flush(struct drm_device *dev,
 	write_unlock_irqrestore(&fm->lock, irq_flags);
 }
 
+
 static void i915_fence_poll(struct drm_device *dev, uint32_t fence_class,
 			    uint32_t waiting_types)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[0];
-	uint32_t flush_flags = 0;
-	uint32_t flush_sequence = 0;
-	uint32_t i_status;
 	uint32_t sequence;
 
 	if (unlikely(!dev_priv))
@@ -87,36 +106,24 @@ static void i915_fence_poll(struct drm_device *dev, uint32_t fence_class,
 	 * First, report any executed sync flush:
 	 */
 
-	if (dev_priv->flush_pending) {
-		i_status = READ_HWSP(dev_priv, 0);
-		if ((i_status & (1 << 12)) !=
-		    (dev_priv->saved_flush_status & (1 << 12))) {
-			flush_flags = dev_priv->flush_flags;
-			flush_sequence = dev_priv->flush_sequence;
-			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, 0, flush_sequence, flush_flags, 0);
-		}
-	}		
+	i915_report_rwflush(dev, dev_priv);
 
 	/*
 	 * Report A new breadcrumb, and adjust IRQs.
 	 */
 
 	if (waiting_types & DRM_FENCE_TYPE_EXE) {
+
 		sequence = READ_BREADCRUMB(dev_priv);
+		drm_fence_handler(dev, 0, sequence,
+				  DRM_FENCE_TYPE_EXE, 0);
 
-		if (sequence != dev_priv->reported_sequence ||
-		    !dev_priv->reported_sequence_valid) {
-			drm_fence_handler(dev, 0, sequence, 
-					  DRM_FENCE_TYPE_EXE, 0);
-			dev_priv->reported_sequence = sequence;
-			dev_priv->reported_sequence_valid = 1;
-		}
-
-		if (dev_priv->fence_irq_on && !(waiting_types & DRM_FENCE_TYPE_EXE)) {
+		if (dev_priv->fence_irq_on &&
+		    !(fc->waiting_types & DRM_FENCE_TYPE_EXE)) {
 			i915_user_irq_off(dev_priv);
 			dev_priv->fence_irq_on = 0;
-		} else if (!dev_priv->fence_irq_on && (waiting_types & DRM_FENCE_TYPE_EXE)) {
+		} else if (!dev_priv->fence_irq_on &&
+			   (fc->waiting_types & DRM_FENCE_TYPE_EXE)) {
 			i915_user_irq_on(dev_priv);
 			dev_priv->fence_irq_on = 1;
 		}
@@ -129,19 +136,11 @@ static void i915_fence_poll(struct drm_device *dev, uint32_t fence_class,
 	i915_initiate_rwflush(dev_priv, fc); 
 
 	/*
-	 * And possibly, but unlikely, they finish immediately. 
+	 * And possibly, but unlikely, they finish immediately.
 	 */
 
-	if (dev_priv->flush_pending) {
-		i_status = READ_HWSP(dev_priv, 0);
-		if (unlikely((i_status & (1 << 12)) !=
-		    (dev_priv->saved_flush_status & (1 << 12)))) {
-			flush_flags = dev_priv->flush_flags;
-			flush_sequence = dev_priv->flush_sequence;
-			dev_priv->flush_pending = 0;
-			drm_fence_handler(dev, 0, flush_sequence, flush_flags, 0);
-		}
-	}
+	i915_report_rwflush(dev, dev_priv);
+
 }
 
 static int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
@@ -257,27 +256,6 @@ static uint32_t i915_fence_needed_flush(struct drm_fence_object *fence)
 	}
 	return flush_flags;
 }
-
-/*
- * In the very unlikely event that "poll" is not really called very often
- * we need the following function to handle sequence wraparounds.
- */
-
-void i915_invalidate_reported_sequence(struct drm_device *dev)
-{
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) 
-		dev->dev_private;
-	struct drm_fence_manager *fm = &dev->fm;
-	unsigned long irq_flags;
-
-	if (unlikely(!dev_priv))
-		return;
-	
-	write_lock_irqsave(&fm->lock, irq_flags);
-	dev_priv->reported_sequence_valid = 0;
-	write_unlock_irqrestore(&fm->lock, irq_flags);
-}
-	
 
 struct drm_fence_driver i915_fence_driver = {
 	.num_classes = 1,
