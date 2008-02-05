@@ -270,10 +270,12 @@ static inline void clflush(volatile void *__p)
 
 static inline void drm_cache_flush_addr(void *virt)
 {
+#ifdef cpu_has_clflush
 	int i;
 
 	for (i = 0; i < PAGE_SIZE; i += boot_cpu_data.x86_clflush_size)
 		clflush(virt+i);
+#endif
 }
 
 static inline void drm_cache_flush_page(struct page *p)
@@ -291,6 +293,9 @@ void i915_flush_ttm(struct drm_ttm *ttm)
 	DRM_MEMORYBARRIER();
 
 #ifdef CONFIG_X86_32
+#ifndef cpu_has_clflush
+#define cpu_has_clflush 0
+#endif
 	/* Hopefully nobody has built an x86-64 processor without clflush */
 	if (!cpu_has_clflush) {
 		wbinvd();
