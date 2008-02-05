@@ -592,7 +592,7 @@ extern int drm_mode_vrefresh(struct drm_display_mode *mode);
 extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
 				  int adjust_flags);
 extern void drm_mode_output_list_update(struct drm_output *output);
-extern int drm_mode_output_update_edid_property(struct drm_output *output, unsigned char *edid);
+extern int drm_mode_output_update_edid_property(struct drm_output *output, struct edid *edid);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,

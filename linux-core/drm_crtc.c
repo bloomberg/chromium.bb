@@ -2299,7 +2299,7 @@ done:
 	return ret;
 }
 
-int drm_mode_output_update_edid_property(struct drm_output *output, unsigned char *edid)
+int drm_mode_output_update_edid_property(struct drm_output *output, struct edid *edid)
 {
 	struct drm_device *dev = output->dev;
 	int ret = 0;
