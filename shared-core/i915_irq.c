@@ -450,7 +450,9 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG | VSYNC_PIPEA_FLAG |
 		 VSYNC_PIPEB_FLAG);
 
-	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+	if (dev_priv->sarea_priv)
+		dev_priv->sarea_priv->last_dispatch =
+			READ_BREADCRUMB(dev_priv);
 
 	if (temp & USER_INT_FLAG) {
 		DRM_WAKEUP(&dev_priv->irq_queue);
@@ -529,7 +531,9 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 			  READ_BREADCRUMB(dev_priv), (int)dev_priv->counter);
 	}
 
-	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+	if (dev_priv->sarea_priv)
+		dev_priv->sarea_priv->last_dispatch =
+			READ_BREADCRUMB(dev_priv);
 	return ret;
 }
 
@@ -693,7 +697,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	if (dev_priv->sarea_priv->rotation) {
+	if (!dev_priv->sarea_priv || dev_priv->sarea_priv->rotation) {
 		DRM_DEBUG("Rotation not supported\n");
 		return -EINVAL;
 	}

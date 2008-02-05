@@ -128,8 +128,14 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 	dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
 #endif
 
-	dev_priv->sarea_priv = (drm_i915_sarea_t *)
-	    ((u8 *) dev_priv->sarea->handle + init->sarea_priv_offset);
+	if (init->sarea_priv_offset)
+		dev_priv->sarea_priv = (drm_i915_sarea_t *)
+			((u8 *) dev_priv->sarea->handle +
+			 init->sarea_priv_offset);
+	else {
+		/* No sarea_priv for you! */
+		dev_priv->sarea_priv = NULL;
+	}
 
 	dev_priv->ring.Start = init->ring_start;
 	dev_priv->ring.End = init->ring_end;
@@ -154,7 +160,9 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	dev_priv->cpp = init->cpp;
-	dev_priv->sarea_priv->pf_current_page = 0;
+
+	if (dev_priv->sarea_priv)
+		dev_priv->sarea_priv->pf_current_page = 0;
 
 	/* We are using separate values as placeholders for mechanisms for
 	 * private backbuffer/depthbuffer usage.
@@ -426,7 +434,8 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 		 DRM_DEBUG("Breadcrumb counter wrapped around\n");
 	}
 
-	dev_priv->sarea_priv->last_enqueue = dev_priv->counter;
+	if (dev_priv->sarea_priv)
+		dev_priv->sarea_priv->last_enqueue = dev_priv->counter;
 
 	BEGIN_LP_RING(4);
 	OUT_RING(CMD_STORE_DWORD_IDX);
@@ -1101,7 +1110,8 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	if (ret)
 		goto out_err0;
 
-	sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+	if (sarea_priv)
+		sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
 	/* fence */
 	ret = drm_fence_buffer_objects(dev, NULL, fence_arg->flags, 
