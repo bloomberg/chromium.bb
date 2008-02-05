@@ -729,3 +729,38 @@ void *idr_replace(struct idr *idp, void *ptr, int id)
 }
 EXPORT_SYMBOL(idr_replace);
 #endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+static __inline__ unsigned long __round_jiffies(unsigned long j, int cpu)
+{
+	int rem;
+	unsigned long original = j;
+
+	j += cpu * 3;
+
+	rem = j % HZ;
+
+	if (rem < HZ/4) /* round down */
+		j = j - rem;
+	else /* round up */
+		j = j - rem + HZ;
+
+	/* now that we have rounded, subtract the extra skew again */
+	j -= cpu * 3;
+
+	if (j <= jiffies) /* rounding ate our timeout entirely; */
+		return original;
+	return j;
+}
+
+static __inline__ unsigned long __round_jiffies_relative(unsigned long j, int cpu)
+{
+	return  __round_jiffies(j + jiffies, cpu) - jiffies;
+}
+
+unsigned long round_jiffies_relative(unsigned long j)
+{
+	return __round_jiffies_relative(j, raw_smp_processor_id());
+}
+EXPORT_SYMBOL(round_jiffies_relative);
+#endif

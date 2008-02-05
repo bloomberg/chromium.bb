@@ -274,7 +274,8 @@ static int ati_pcigart_needs_unbind_cache_adjust(struct drm_ttm_backend *backend
 
 static int ati_pcigart_populate(struct drm_ttm_backend *backend,
 				unsigned long num_pages,
-				struct page **pages)
+				struct page **pages,
+				struct page *dummy_page)
 {
 	ati_pcigart_ttm_backend_t *atipci_be =
 		container_of(backend, ati_pcigart_ttm_backend_t, backend);

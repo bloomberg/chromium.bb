@@ -331,4 +331,8 @@ void idr_remove_all(struct idr *idp);
 void *idr_replace(struct idr *idp, void *ptr, int id);
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+extern unsigned long round_jiffies_relative(unsigned long j);
+#endif
+
 #endif
