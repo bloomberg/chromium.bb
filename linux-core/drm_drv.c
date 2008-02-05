@@ -666,7 +666,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	} else if (((ioctl->flags & DRM_ROOT_ONLY) && !capable(CAP_SYS_ADMIN)) ||
 		   ((ioctl->flags & DRM_AUTH) && !file_priv->authenticated) ||
 		   ((ioctl->flags & DRM_MASTER) && !file_priv->master) ||
-		   ((!(ioctl->flags & DRM_CONTROL_ALLOW)) && (file_priv->minor->type == DRM_MINOR_CONTROL)) ) {
+		   ((ioctl->flags & DRM_CONTROL_ALLOW) && !(file_priv->minor->type == DRM_MINOR_CONTROL)) ) {
 		retcode = -EACCES;
 	} else {
 		retcode = func(dev, kdata, file_priv);
