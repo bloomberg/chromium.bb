@@ -78,7 +78,7 @@ typedef struct _drmModePropertyBlob {
 typedef struct _drmModeProperty {
 	unsigned int prop_id;
 	unsigned int flags;
-	unsigned char name[DRM_PROP_NAME_LEN];
+	char name[DRM_PROP_NAME_LEN];
 	int count_values;
 	uint64_t *values; // store the blob lengths
 	int count_enums;
