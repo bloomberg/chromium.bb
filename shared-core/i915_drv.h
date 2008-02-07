@@ -166,6 +166,7 @@ typedef struct drm_i915_private {
 	u32 saveVBLANK_A;
 	u32 saveVSYNC_A;
 	u32 saveBCLRPAT_A;
+	u32 savePIPEASTAT;
 	u32 saveDSPASTRIDE;
 	u32 saveDSPASIZE;
 	u32 saveDSPAPOS;
@@ -186,6 +187,7 @@ typedef struct drm_i915_private {
 	u32 saveVBLANK_B;
 	u32 saveVSYNC_B;
 	u32 saveBCLRPAT_B;
+	u32 savePIPEBSTAT;
 	u32 saveDSPBSTRIDE;
 	u32 saveDSPBSIZE;
 	u32 saveDSPBPOS;
@@ -214,6 +216,9 @@ typedef struct drm_i915_private {
 	u32 saveFBC_LL_BASE;
 	u32 saveFBC_CONTROL;
 	u32 saveFBC_CONTROL2;
+	u32 saveIER;
+	u32 saveIIR;
+	u32 saveIMR;
 	u32 saveSWF0[16];
 	u32 saveSWF1[16];
 	u32 saveSWF2[3];
