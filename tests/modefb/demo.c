@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 	char name[100];
 	int i,d;
 	int fd;
-	int drmfd = drmOpenControl(0);
+	int drmfd = drmOpen("i915", NULL);
 
 	/* try four devices */
 	for (d = 0; d < 4; d++) {
