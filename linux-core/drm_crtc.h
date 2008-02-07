@@ -547,6 +547,9 @@ struct drm_mode_config {
 	struct drm_property *dpms_property;
 	struct drm_property *connector_type_property;
 	struct drm_property *connector_num_property;
+
+	/* hotplug */
+	uint32_t hotplug_counter;
 };
 
 struct drm_output *drm_output_create(struct drm_device *dev,
@@ -603,7 +606,7 @@ extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		       int x, int y);
-extern int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output);
+extern int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output, bool connected);
 
 extern int drm_output_attach_property(struct drm_output *output,
 				      struct drm_property *property, uint64_t init_val);
@@ -646,5 +649,8 @@ extern int drm_mode_getblob_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
 extern int drm_mode_output_property_set_ioctl(struct drm_device *dev,
 					      void *data, struct drm_file *file_priv);
+extern int drm_mode_hotplug_ioctl(struct drm_device *dev,
+				  void *data, struct drm_file *file_priv);
+
 #endif /* __DRM_CRTC_H__ */
 

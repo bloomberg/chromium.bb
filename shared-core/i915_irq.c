@@ -413,6 +413,7 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 }
 
 #define HOTPLUG_CMD_CRT 1
+#define HOTPLUG_CMD_CRT_DIS 2
 #define HOTPLUG_CMD_SDVOB 4
 #define HOTPLUG_CMD_SDVOC 8
 
@@ -420,7 +421,7 @@ static struct drm_device *hotplug_dev;
 static int hotplug_cmd = 0;
 static spinlock_t hotplug_lock = SPIN_LOCK_UNLOCKED;
 
-static void i915_hotplug_crt(struct drm_device *dev)
+static void i915_hotplug_crt(struct drm_device *dev, bool connected)
 {
 	struct drm_output *output;
 	struct intel_output *iout;
@@ -439,7 +440,7 @@ static void i915_hotplug_crt(struct drm_device *dev)
 	if (iout == 0)
 		goto unlock;
 
-	drm_hotplug_stage_two(dev, output);
+	drm_hotplug_stage_two(dev, output, connected);
 
 unlock:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -462,9 +463,9 @@ static void i915_hotplug_sdvo(struct drm_device *dev, int sdvoB)
 	status = output->funcs->detect(output);
 
 	if (status != output_status_connected)
-		DRM_DEBUG("disconnect or unkown we don't do anything then\n");
+		drm_hotplug_stage_two(dev, output, false);
 	else
-		drm_hotplug_stage_two(dev, output);
+		drm_hotplug_stage_two(dev, output, true);
 
 	/* wierd hw bug, sdvo stop sending interupts */
 	intel_sdvo_set_hotplug(output, 1);
@@ -484,18 +485,22 @@ static void i915_hotplug_work_func(struct work_struct *work)
 {
 	struct drm_device *dev = hotplug_dev;
 	int crt;
+	int crtDis;
 	int sdvoB;
 	int sdvoC;
 
 	spin_lock(&hotplug_lock);
 	crt = hotplug_cmd & HOTPLUG_CMD_CRT;
+	crtDis = hotplug_cmd & HOTPLUG_CMD_CRT_DIS;
 	sdvoB = hotplug_cmd & HOTPLUG_CMD_SDVOB;
 	sdvoC = hotplug_cmd & HOTPLUG_CMD_SDVOC;
 	hotplug_cmd = 0;
 	spin_unlock(&hotplug_lock);
 
 	if (crt)
-		i915_hotplug_crt(dev);
+		i915_hotplug_crt(dev, true);
+	if (crtDis)
+		i915_hotplug_crt(dev, false);
 
 	if (sdvoB)
 		i915_hotplug_sdvo(dev, 1);
@@ -524,7 +529,9 @@ static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 			hotplug_cmd |= HOTPLUG_CMD_CRT;
 			spin_unlock(&hotplug_lock);
 		} else {
-			/* handle crt disconnects */
+			spin_lock(&hotplug_lock);
+			hotplug_cmd |= HOTPLUG_CMD_CRT_DIS;
+			spin_unlock(&hotplug_lock);
 		}
 	}
 

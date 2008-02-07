@@ -770,6 +770,7 @@ void drm_mode_config_init(struct drm_device *dev)
 	dev->mode_config.num_fb = 0;
 	dev->mode_config.num_output = 0;
 	dev->mode_config.num_crtc = 0;
+	dev->mode_config.hotplug_counter = 0;
 }
 EXPORT_SYMBOL(drm_mode_config_init);
 
@@ -1130,9 +1131,17 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output)
+int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
+			  bool connected)
 {
 	int has_config = 0;
+
+	/* We might want to do something more here */
+	if (!connected) {
+		DRM_DEBUG("not connected\n");
+		dev->mode_config.hotplug_counter++;
+		return 0;
+	}
 
 	if (output->crtc && output->crtc->desired_mode) {
 		DRM_DEBUG("drm thinks that the output already has a config\n");
@@ -1146,7 +1155,7 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output)
 
 	if (!output->crtc || !output->crtc->desired_mode) {
 		DRM_DEBUG("could not find a desired mode or crtc for output\n");
-		return 1;
+		goto out_err;
 	}
 
 	/* We should realy check if there is a fb using this crtc */
@@ -1161,9 +1170,24 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output)
 
 	drm_disable_unused_functions(dev);
 
+	dev->mode_config.hotplug_counter++;
 	return 0;
+
+out_err:
+	dev->mode_config.hotplug_counter++;
+	return 1;
 }
 EXPORT_SYMBOL(drm_hotplug_stage_two);
+
+int drm_mode_hotplug_ioctl(struct drm_device *dev,
+			   void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_hotplug *arg = data;
+
+	arg->counter = dev->mode_config.hotplug_counter;
+
+	return 0;
+}
 
 /**
  * drm_crtc_convert_to_umode - convert a drm_display_mode into a modeinfo
