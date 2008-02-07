@@ -1,4 +1,16 @@
+/*
+ * Some defines to define the behavior of the program
+ */
+
 #define CLEAN_FBDEV
+#undef DEMO_CLONE
+
+#define SIZE_X 2048
+#define SIZE_Y 2048
+/* Pitch needs to be power of two */
+#define PITCH 2048
+
+
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,11 +25,6 @@
 #endif
 #include "xf86drm.h"
 #include "xf86drmMode.h"
-
-#define SIZE_X 2048
-#define SIZE_Y 2048
-/* Pitch needs to be power of two */
-#define PITCH 2048
 
 /* old functions to be replaced */
 drmModeFBPtr createFB(int fd, drmModeResPtr res);
@@ -40,7 +47,10 @@ struct demo_screen
 	drmBO buffer;
 	drmModeFBPtr fb;
 	drmModeCrtcPtr crtc;
-	drmModeOutputPtr output;
+
+	size_t num_outputs;
+	uint32_t outputs_id[8];
+	drmModeOutputPtr outputs[8];
 
 	struct drm_mode_modeinfo *mode;
 
@@ -70,6 +80,7 @@ struct demo_driver
 struct demo_driver* demoCreateDriver(void);
 void demoUpdateRes(struct demo_driver *driver);
 int demoCreateScreens(struct demo_driver *driver);
+int demoCreateScreenCloned(struct demo_driver *driver);
 void demoTakeDownScreen(struct demo_screen *screen);
 int demoFindConnectedOutputs(struct demo_driver *driver, drmModeOutputPtr *out, size_t max_out);
 drmModeCrtcPtr demoFindFreeCrtc(struct demo_driver *driver, drmModeOutputPtr output);
@@ -123,7 +134,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
+#ifndef DEMO_CLONE
 	num = demoCreateScreens(driver);
+#else
+	num = demoCreateScreenCloned(driver);
+#endif
+
 	if (num < 1) {
 		printf("no screens attached or an error occured\n");
 		return 1;
@@ -154,13 +170,19 @@ int main(int argc, char **argv)
 		testCursor(driver->fd, driver->screens[i].crtc->crtc_id);
 	}
 
+	sleep(2);
+	printf("taking down screens\n");
+	for (i = 0; i < num; i++) {
+		demoTakeDownScreen(&driver->screens[i]);
+	}
+
 #ifdef CLEAN_FBDEV
 	if (ioctl(fbdev_fd, FBIOPUT_VSCREENINFO, &var))
 		printf("var  %s\n", strerror(errno));
 #endif
 
-	printf("ok\n");
-	return 0;
+    printf("ok\n");
+    return 0;
 }
 
 int demoCreateScreens(struct demo_driver *driver)
@@ -201,7 +223,10 @@ int demoCreateScreens(struct demo_driver *driver)
 		screen->virt_y = SIZE_Y;
 		screen->pitch = PITCH;
 
-		screen->output = out[i];
+		screen->outputs[0] = out[i];
+		screen->outputs_id[0] = out[i]->output_id;
+		screen->num_outputs = 1;
+
 		screen->mode = &mode;
 		screen->driver = driver;
 
@@ -210,7 +235,7 @@ int demoCreateScreens(struct demo_driver *driver)
 			screen->crtc->crtc_id,
 			screen->fb->buffer_id,
 			0, 0,
-			&screen->output->output_id, 1,
+			screen->outputs_id, screen->num_outputs,
 			screen->mode);
 
 		if (ret) {
@@ -226,9 +251,73 @@ int demoCreateScreens(struct demo_driver *driver)
 	return num_screens;
 }
 
+int demoCreateScreenCloned(struct demo_driver *driver)
+{
+	drmModeOutputPtr out[MAX_FIND_OUTPUTS];
+	int num;
+	struct demo_screen *screen;
+	int ret = 0;
+	int i;
+
+	num = demoFindConnectedOutputs(driver, out, MAX_FIND_OUTPUTS);
+	if (num < 0)
+		return 0;
+
+	printf("found %i connected outputs\n", num);
+
+	screen = &driver->screens[0];
+
+	screen->fb = createFB(driver->fd, driver->res);
+	if (!screen->fb) {
+		printf("could not create framebuffer\n");
+		return 0;
+	}
+
+	screen->mode = &mode;
+	screen->driver = driver;
+
+	screen->virt_x = SIZE_X;
+	screen->virt_y = SIZE_Y;
+	screen->pitch = PITCH;
+
+	screen->num_outputs = 0;
+	for (i = 0; i < num; i++) {
+		screen->crtc = demoFindFreeCrtc(driver, out[i]);
+		if (!screen->crtc) {
+			printf("found no free crtc for output\n");
+			drmModeFreeOutput(out[i]);
+			continue;
+		}
+
+		screen->outputs[screen->num_outputs] = out[i];
+		screen->outputs_id[screen->num_outputs] = out[i]->output_id;
+		screen->num_outputs++;
+		printf("%u, %u\n", out[i]->output_id, screen->num_outputs);
+	}
+
+	ret = drmModeSetCrtc(
+			driver->fd,
+			screen->crtc->crtc_id,
+			screen->fb->buffer_id,
+			0, 0,
+			screen->outputs_id, screen->num_outputs,
+			screen->mode);
+
+	if (ret) {
+		printf("failed to set mode\n");
+		demoTakeDownScreen(screen);
+		return 0;
+	}
+
+	demoUpdateRes(driver);
+
+	return 1;
+}
+
 void demoTakeDownScreen(struct demo_screen *screen)
 {
 	int fd = screen->driver->fd;
+	int i;
 	drmBO bo;
 
 	if (screen->crtc)
@@ -245,11 +334,14 @@ void demoTakeDownScreen(struct demo_screen *screen)
 		printf("bo error\n");
 	}
 
-	drmModeFreeOutput(screen->output);
+	for (i = 0; i < screen->num_outputs; i++) {
+		drmModeFreeOutput(screen->outputs[i]);
+		screen->outputs[i] = NULL;
+	}
+
 	drmModeFreeCrtc(screen->crtc);
 	drmModeFreeFB(screen->fb);
 
-	screen->output = NULL;
 	screen->crtc = NULL;
 	screen->fb = NULL;
 }
@@ -259,7 +351,6 @@ drmModeCrtcPtr demoFindFreeCrtc(struct demo_driver *driver, drmModeOutputPtr out
 	drmModeCrtcPtr crtc;
 	int i, j, used = 0;
 	drmModeResPtr res = driver->res;
-
 
 	for (i = 0; i < res->count_crtcs; i++) {
 		used = 0;
@@ -353,7 +444,7 @@ void demoPanScreen(struct demo_screen *screen, uint16_t x, uint16_t y)
 		screen->crtc->crtc_id,
 		screen->fb->buffer_id,
 		x, y,
-		&screen->output->output_id, 1,
+		screen->outputs_id, screen->num_outputs,
 		screen->mode);
 }
 
