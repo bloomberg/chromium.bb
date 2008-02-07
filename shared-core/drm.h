@@ -1111,6 +1111,13 @@ struct drm_mode_cursor {
 	unsigned int handle;
 };
 
+/*
+ * oh so ugly hotplug
+ */
+struct drm_mode_hotplug {
+	uint32_t counter;
+};
+
 /**
  * \name Ioctls Definitions
  */
@@ -1218,6 +1225,7 @@ struct drm_mode_cursor {
 
 #define DRM_IOCTL_MODE_GETPROPERTY     DRM_IOWR(0xAB, struct drm_mode_get_property)
 #define DRM_IOCTL_MODE_CURSOR          DRM_IOWR(0xAC, struct drm_mode_cursor)
+#define DRM_IOCTL_MODE_HOTPLUG         DRM_IOWR(0xAD, struct drm_mode_hotplug)
 
 /*@}*/
 
