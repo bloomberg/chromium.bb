@@ -201,12 +201,30 @@ int demoCreateScreens(struct demo_driver *driver)
 
 void demoTakeDownScreen(struct demo_screen *screen)
 {
-	/* TODO Unrefence the BO */
-	/* TODO Destroy FB */
-	/* TODO take down the mode */
+	int fd = screen->driver->fd;
+	drmBO bo;
+
+	if (screen->crtc)
+		drmModeSetCrtc(fd, screen->crtc->crtc_id, 0, 0, 0, 0, 0, 0);
+
+	if (screen->fb)
+		drmModeRmFB(fd, screen->fb->buffer_id);
+
+	/* maybe we should keep a pointer to the bo on the screen */
+	if (screen->fb && !drmBOReference(fd, screen->fb->handle, &bo)) {
+		drmBOUnreference(fd, &bo);
+		drmBOUnreference(fd, &bo);
+	} else {
+		printf("bo error\n");
+	}
 
 	drmModeFreeOutput(screen->output);
 	drmModeFreeCrtc(screen->crtc);
+	drmModeFreeFB(screen->fb);
+
+	screen->output = NULL;
+	screen->crtc = NULL;
+	screen->fb = NULL;
 }
 
 drmModeCrtcPtr demoFindFreeCrtc(struct demo_driver *driver, drmModeOutputPtr output)
