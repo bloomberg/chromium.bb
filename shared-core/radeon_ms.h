@@ -457,7 +457,7 @@ struct radeon_ms_i2c *radeon_ms_i2c_create(struct drm_device *dev,
 void radeon_ms_irq_emit(struct drm_device *dev);
 irqreturn_t radeon_ms_irq_handler(DRM_IRQ_ARGS);
 void radeon_ms_irq_preinstall(struct drm_device * dev);
-void radeon_ms_irq_postinstall(struct drm_device * dev);
+int radeon_ms_irq_postinstall(struct drm_device * dev);
 int radeon_ms_irq_init(struct drm_device *dev);
 void radeon_ms_irq_restore(struct drm_device *dev, struct radeon_state *state);
 void radeon_ms_irq_save(struct drm_device *dev, struct radeon_state *state);

@@ -115,9 +115,10 @@ void radeon_ms_irq_preinstall(struct drm_device * dev)
 	radeon_ack_irqs(dev_priv, mask);
 }
 
-void radeon_ms_irq_postinstall(struct drm_device * dev)
+int radeon_ms_irq_postinstall(struct drm_device * dev)
 {
 	radeon_ms_irq_enable(dev);
+	return 0;
 }
 
 int radeon_ms_irq_init(struct drm_device *dev)

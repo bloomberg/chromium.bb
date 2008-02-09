@@ -46,6 +46,7 @@ struct radeon_pcie_gart {
 	struct radeon_pcie      *pcie;
 	unsigned long           page_first;
 	struct page             **pages;
+	struct page             *dummy_read_page;
 	unsigned long           num_pages;
 	int                     populated;
 	int                     bound;
@@ -57,7 +58,8 @@ static void pcie_ttm_clear(struct drm_ttm_backend *backend);
 static void pcie_ttm_destroy(struct drm_ttm_backend *backend);
 static int pcie_ttm_needs_ub_cache_adjust(struct drm_ttm_backend *backend);
 static int pcie_ttm_populate(struct drm_ttm_backend *backend,
-			     unsigned long num_pages, struct page **pages);
+			     unsigned long num_pages, struct page **pages,
+			     struct page *dummy_read_page);
 static int pcie_ttm_unbind(struct drm_ttm_backend *backend);
 
 static struct drm_ttm_backend_func radeon_pcie_gart_ttm_backend = 
@@ -130,6 +132,10 @@ static int pcie_ttm_bind(struct drm_ttm_backend *backend,
 
         for (i = 0, page = page_first; i < pcie_gart->num_pages; i++, page++) {
 		struct page *cur_page = pcie_gart->pages[i];
+
+		if (!page) {
+			cur_page = pcie_gart->dummy_read_page;
+		}
                 /* write value */
 		page_base = page_to_phys(cur_page);
 		pcie_gart_set_page_base(pcie_gart->pcie, page, page_base);
@@ -173,7 +179,8 @@ static int pcie_ttm_needs_ub_cache_adjust(struct drm_ttm_backend *backend)
 }
 
 static int pcie_ttm_populate(struct drm_ttm_backend *backend,
-			     unsigned long num_pages, struct page **pages)
+			     unsigned long num_pages, struct page **pages,
+			     struct page *dummy_read_page)
 {
 	struct radeon_pcie_gart *pcie_gart;
 
