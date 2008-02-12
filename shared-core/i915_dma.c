@@ -117,7 +117,8 @@ static int i915_initialize(struct drm_device * dev, drm_i915_init_t * init)
 		return -EINVAL;
 	}
 
-	dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
+	if (init->mmio_offset != 0)
+		dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
 	if (!dev_priv->mmio_map) {
 		i915_dma_cleanup(dev);
 		DRM_ERROR("can not find mmio map!\n");
