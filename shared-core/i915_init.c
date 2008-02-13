@@ -113,7 +113,6 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_i915_private *dev_priv;
 	unsigned long agp_size, prealloc_size;
-	unsigned long sareapage;
 	int size, ret;
 
 	dev_priv = drm_alloc(sizeof(struct drm_i915_private), DRM_MEM_DRIVER);
@@ -160,20 +159,6 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		return ret;
 	}
 
-	/* prebuild the SAREA */
-	sareapage = max(SAREA_MAX, PAGE_SIZE);
-	ret = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK|_DRM_DRIVER,
-			 &dev_priv->sarea);
-	if (ret) {
-		DRM_ERROR("SAREA setup failed\n");
-		return ret;
-	}
-
-	init_waitqueue_head(&dev->lock.lock_queue);
-
-	/* FIXME: assume sarea_priv is right after SAREA */
-        dev_priv->sarea_priv = dev_priv->sarea->handle + sizeof(struct drm_sarea);
-
 	/*
 	 * Initialize the memory manager for local and AGP space
 	 */
@@ -216,7 +201,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
 		  dev_priv->ring.virtual_start, dev_priv->ring.Size);
 
-	dev_priv->sarea_priv->pf_current_page = 0;
+	//
 
 	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
 
@@ -319,12 +304,49 @@ int i915_driver_unload(struct drm_device *dev)
 
 	drm_bo_driver_finish(dev);
 
-        DRM_DEBUG("%p, %p\n", dev_priv->mmio_map, dev_priv->sarea);
+        DRM_DEBUG("%p\n", dev_priv->mmio_map);
         drm_rmmap(dev, dev_priv->mmio_map);
-        drm_rmmap(dev, dev_priv->sarea);
 
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 
 	dev->dev_private = NULL;
 	return 0;
+}
+
+int i915_master_create(struct drm_device *dev, struct drm_master *master)
+{
+	struct drm_i915_master_private *master_priv;
+	unsigned long sareapage;
+	int ret;
+
+	master_priv = drm_calloc(1, sizeof(*master_priv), DRM_MEM_DRIVER);
+	if (!master_priv)
+		return -ENOMEM;
+
+	/* prebuild the SAREA */
+	sareapage = max(SAREA_MAX, PAGE_SIZE);
+	ret = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK|_DRM_DRIVER,
+			 &master_priv->sarea);
+	if (ret) {
+		DRM_ERROR("SAREA setup failed\n");
+		return ret;
+	}
+	master_priv->sarea_priv = master_priv->sarea->handle + sizeof(struct drm_sarea);
+	master_priv->sarea_priv->pf_current_page = 0;
+
+	master->driver_priv = master_priv;
+	return 0;
+}
+
+void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
+{
+	struct drm_i915_master_private *master_priv = master->driver_priv;
+
+	if (!master_priv)
+		return;
+
+        drm_rmmap(dev, master_priv->sarea);
+	drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
+
+	master->driver_priv = NULL;
 }

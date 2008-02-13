@@ -97,17 +97,22 @@ struct drm_i915_vbl_swap {
 	unsigned int plane;
 	unsigned int sequence;
 	int flip;
+	struct drm_minor *minor;
 };
 
+struct drm_i915_master_private {
+	drm_local_map_t *sarea;
+	struct drm_i915_sarea *sarea_priv;
+};
+	
 struct drm_i915_private {
 	struct drm_buffer_object *ring_buffer;
-	drm_local_map_t *sarea;
+
 	drm_local_map_t *mmio_map;
 
 	unsigned long mmiobase;
 	unsigned long mmiolen;
 
-	struct drm_i915_sarea *sarea_priv;
 	struct drm_i915_ring_buffer ring;
 
 	struct drm_dma_handle *status_page_dmah;
@@ -249,6 +254,8 @@ enum intel_chip_family {
 extern struct drm_ioctl_desc i915_ioctls[];
 extern int i915_max_ioctl;
 
+extern int i915_master_create(struct drm_device *dev, struct drm_master *master);
+extern void i915_master_destroy(struct drm_device *dev, struct drm_master *master);
 				/* i915_dma.c */
 extern void i915_kernel_lost_context(struct drm_device * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);

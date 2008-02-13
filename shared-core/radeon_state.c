@@ -3057,7 +3057,7 @@ static int radeon_cp_getparam(struct drm_device *dev, void *data, struct drm_fil
 		 */
 	case RADEON_PARAM_SAREA_HANDLE:
 		/* The lock is the first dword in the sarea. */
-		value = (long)dev->lock.hw_lock;
+		value = (long)dev->primary->master->lock.hw_lock;
 		break;
 #endif
 	case RADEON_PARAM_GART_TEX_HANDLE:

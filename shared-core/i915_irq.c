@@ -107,8 +107,8 @@ static void
 i915_dispatch_vsync_flip(struct drm_device *dev, struct drm_drawable_info *drw,
 			 int plane)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	struct drm_i915_sarea *sarea_priv = dev_priv->sarea_priv;
+	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
+	struct drm_i915_sarea *sarea_priv = master_priv->sarea_priv;
 	u16 x1, y1, x2, y2;
 	int pf_planes = 1 << plane;
 
@@ -153,18 +153,18 @@ i915_dispatch_vsync_flip(struct drm_device *dev, struct drm_drawable_info *drw,
 static void i915_vblank_tasklet(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
 	struct list_head *list, *tmp, hits, *hit;
 	int nhits, nrects, slice[2], upper[2], lower[2], i, num_pages;
 	unsigned counter[2];
 	struct drm_drawable_info *drw;
-	struct drm_i915_sarea *sarea_priv = dev_priv->sarea_priv;
+	struct drm_i915_sarea *sarea_priv;
 	u32 cpp = dev_priv->cpp,  offsets[3];
 	u32 cmd = (cpp == 4) ? (XY_SRC_COPY_BLT_CMD |
 				XY_SRC_COPY_BLT_WRITE_ALPHA |
 				XY_SRC_COPY_BLT_WRITE_RGB)
 			     : XY_SRC_COPY_BLT_CMD;
-	u32 pitchropcpp = (sarea_priv->pitch * cpp) | (0xcc << 16) |
-			  (cpp << 23) | (1 << 24);
+	u32 pitchropcpp;
 	RING_LOCALS;
 
 	counter[0] = drm_vblank_count(dev, 0);
@@ -191,6 +191,12 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 
 		if ((counter[pipe] - vbl_swap->sequence) > (1<<23))
 			continue;
+
+		master_priv = vbl_swap->minor->master->driver_priv;
+		sarea_priv = master_priv->sarea_priv;
+		
+		pitchropcpp = (sarea_priv->pitch * cpp) | (0xcc << 16) |
+			(cpp << 23) | (1 << 24);
 
 		list_del(list);
 		dev_priv->swaps_pending--;
@@ -306,7 +312,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			top = upper[plane];
 			bottom = lower[plane];
 
-			front = (dev_priv->sarea_priv->pf_current_page >>
+			front = (master_priv->sarea_priv->pf_current_page >>
 				 (2 * plane)) & 0x3;
 			back = (front + 1) % num_pages;
 
@@ -559,6 +565,7 @@ static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
+	struct drm_i915_master_private *master_priv;
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	u32 temp = 0;
 	u32 temp2;
@@ -627,7 +634,10 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	temp &= (dev_priv->irq_enable_reg | USER_INT_FLAG | VSYNC_PIPEA_FLAG |
 		 VSYNC_PIPEB_FLAG);
 
-	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+	if (dev->primary->master) {
+		master_priv = dev->primary->master->driver_priv;
+		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+	}
 
 	if (temp & USER_INT_FLAG) {
 		DRM_WAKEUP(&dev_priv->irq_queue);
@@ -699,6 +709,7 @@ void i915_user_irq_off(struct drm_i915_private *dev_priv)
 static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 {
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	struct drm_i915_master_private *master_priv;
 	int ret = 0;
 
 	DRM_DEBUG("irq_nr=%d breadcrumb=%d\n", irq_nr,
@@ -716,8 +727,12 @@ static int i915_wait_irq(struct drm_device * dev, int irq_nr)
 		DRM_ERROR("EBUSY -- rec: %d emitted: %d\n",
 			  READ_BREADCRUMB(dev_priv), (int)dev_priv->counter);
 	}
+	
+	if (dev->primary->master) {
+		master_priv = dev->primary->master->driver_priv;
+		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+	}
 
-	dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 	return ret;
 }
 
@@ -904,6 +919,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_master_private *master_priv;
 	struct drm_i915_vblank_swap *swap = data;
 	struct drm_i915_vbl_swap *vbl_swap;
 	unsigned int pipe, seqtype, curseq, plane;
@@ -916,7 +932,12 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	if (dev_priv->sarea_priv->rotation) {
+	if (!dev->primary->master)
+		return -EINVAL;
+
+	master_priv = dev->primary->master->driver_priv;
+
+	if (master_priv->sarea_priv->rotation) {
 		DRM_DEBUG("Rotation not supported\n");
 		return -EINVAL;
 	}
@@ -1037,6 +1058,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 	vbl_swap->plane = plane;
 	vbl_swap->sequence = swap->sequence;
 	vbl_swap->flip = (swap->seqtype & _DRM_VBLANK_FLIP);
+	vbl_swap->minor = file_priv->minor;
 
 	if (vbl_swap->flip)
 		swap->sequence++;
