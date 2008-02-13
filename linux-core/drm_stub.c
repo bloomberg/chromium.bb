@@ -50,9 +50,46 @@ MODULE_PARM_DESC(debug, "Enable debug output");
 module_param_named(minors_limit, drm_minors_limit, int, 0444);
 module_param_named(debug, drm_debug, int, 0600);
 
-struct drm_minor **drm_minors;
+struct idr drm_minors_idr;
+
 struct class *drm_class;
 struct proc_dir_entry *drm_proc_root;
+
+static int drm_minor_get_id(struct drm_device *dev, int type)
+{
+	int new_id;
+	int ret;
+	int base = 0, limit = 127;
+
+	if (type == DRM_MINOR_CONTROL) {
+		base += 128;
+		limit = base + 64;
+	} else if (type == DRM_MINOR_GPGPU) {
+		base += 192;
+		limit = base + 64;
+	}	
+
+again:
+	if (idr_pre_get(&drm_minors_idr, GFP_KERNEL) == 0) {
+		DRM_ERROR("Out of memory expanding drawable idr\n");
+		return -ENOMEM;
+	}
+	mutex_lock(&dev->struct_mutex);
+	ret = idr_get_new_above(&drm_minors_idr, NULL,
+				base, &new_id);
+	mutex_unlock(&dev->struct_mutex);
+	if (ret == -EAGAIN) {
+		goto again;
+	} else if (ret) {
+		return ret;
+	}
+
+	if (new_id >= limit) {
+		idr_remove(&drm_minors_idr, new_id);
+		return -EINVAL;
+	}
+	return new_id;
+}
 
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 			   const struct pci_device_id *ent,
@@ -160,54 +197,61 @@ error_out_unreg:
  * create the proc init entry via proc_init(). This routines assigns
  * minor numbers to secondary heads of multi-headed cards
  */
-static int drm_get_minor(struct drm_device *dev, struct drm_minor *minor, int type)
+static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int type)
 {
-	struct drm_minor **minors = drm_minors;
+	struct drm_minor *new_minor;
 	int ret;
-	int index;
+	int minor_id;
 
 	DRM_DEBUG("\n");
 
-	for (index = 0; index < drm_minors_limit; index++, minors++) {
-		if (!*minors) {
+	minor_id = drm_minor_get_id(dev, type);
+	if (minor_id < 0)
+		return minor_id;
 
-			*minor = (struct drm_minor) {
-				.type = type,
-				.dev = dev,
-				.device = MKDEV(DRM_MAJOR, index),
-				.minor = index,
-			};
-
-			if (type == DRM_MINOR_RENDER) {
-				ret = drm_proc_init(dev, index, drm_proc_root,
-						    &minor->dev_root);
-				if (ret) {
-					DRM_ERROR("DRM: Failed to initialize /proc/dri.\n");
-					goto err_g1;
-				}
-			} else
-				minor->dev_root = NULL;
-
-			ret = drm_sysfs_device_add(minor);
-			if (ret) {
-				printk(KERN_ERR
-				       "DRM: Error sysfs_device_add.\n");
-				goto err_g2;
-			}
-			*minors = minor;
-
-			DRM_DEBUG("new minor assigned %d\n", index);
-			return 0;
-		}
+	new_minor = kzalloc(sizeof(struct drm_minor), GFP_KERNEL);
+	if (!new_minor) {
+		ret = -ENOMEM;
+		goto err_idr;
 	}
-	DRM_ERROR("out of minors\n");
-	return -ENOMEM;
+
+	new_minor->type = type;
+	new_minor->device = MKDEV(DRM_MAJOR, minor_id);
+	new_minor->dev = dev;
+	new_minor->index = minor_id;
+
+	idr_replace(&drm_minors_idr, new_minor, minor_id);
+	
+	if (type == DRM_MINOR_RENDER) {
+		ret = drm_proc_init(dev, minor_id, drm_proc_root,
+				    &new_minor->dev_root);
+		if (ret) {
+			DRM_ERROR("DRM: Failed to initialize /proc/dri.\n");
+			goto err_mem;
+		}
+	} else
+		new_minor->dev_root = NULL;
+
+	ret = drm_sysfs_device_add(new_minor);
+	if (ret) {
+		printk(KERN_ERR
+		       "DRM: Error sysfs_device_add.\n");
+		goto err_g2;
+	}
+	*minor = new_minor;
+	
+	DRM_DEBUG("new minor assigned %d\n", minor_id);
+	return 0;
+
+
 err_g2:
-	if (minor->type == DRM_MINOR_RENDER)
-		drm_proc_cleanup(index, drm_proc_root, minor->dev_root);
-err_g1:
-	*minor = (struct drm_minor) {
-		.dev = NULL};
+	if (new_minor->type == DRM_MINOR_RENDER)
+		drm_proc_cleanup(minor_id, drm_proc_root, new_minor->dev_root);
+err_mem:
+	kfree(new_minor);
+err_idr:
+	idr_remove(&drm_minors_idr, minor_id);
+	*minor = NULL;
 	return ret;
 }
 
@@ -259,7 +303,7 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
-		 driver->date, dev->primary.minor);
+		 driver->date, dev->primary->index);
 
 	return 0;
 
@@ -320,19 +364,18 @@ int drm_put_dev(struct drm_device * dev)
  * last minor released.
  *
  */
-int drm_put_minor(struct drm_minor *minor)
+int drm_put_minor(struct drm_minor **minor_p)
 {
-	int index = minor->minor;
-
-	DRM_DEBUG("release secondary minor %d\n", index);
+	struct drm_minor *minor = *minor_p;
+	DRM_DEBUG("release secondary minor %d\n", minor->index);
 
 	if (minor->type == DRM_MINOR_RENDER)
-		drm_proc_cleanup(index, drm_proc_root, minor->dev_root);
+		drm_proc_cleanup(minor->index, drm_proc_root, minor->dev_root);
 	drm_sysfs_device_remove(minor);
 
-	*minor = (struct drm_minor) {.type = DRM_MINOR_UNASSIGNED,
-				     .dev = NULL};
+	idr_remove(&drm_minors_idr, minor->index);
 
-	drm_minors[index] = NULL;
+	kfree(minor);
+	*minor_p = NULL;
 	return 0;
 }

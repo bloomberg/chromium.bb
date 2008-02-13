@@ -435,30 +435,29 @@ static void drm_cleanup(struct drm_device * dev)
 		DRM_ERROR("Cannot unload module\n");
 }
 
+int drm_minors_cleanup(int id, void *ptr, void *data)
+{
+	struct drm_minor *minor = ptr;
+	struct drm_device *dev;
+	struct drm_driver *driver = data;
+	if (id < 127 || id > 192)
+		return 0;
+
+	dev = minor->dev;
+	if (minor->dev->driver != driver)
+		return 0;
+
+	if (dev)
+		pci_dev_put(dev->pdev);
+	drm_cleanup(dev);
+	return 1;
+}
+
 void drm_exit(struct drm_driver *driver)
 {
-	int i;
-	struct drm_device *dev = NULL;
-	struct drm_minor *minor;
-
 	DRM_DEBUG("\n");
 	if (drm_fb_loaded) {
-		for (i = 0; i < drm_minors_limit; i++) {
-			minor = drm_minors[i];
-			if (!minor)
-				continue;
-			if (!minor->dev)
-				continue;
-			if (minor->dev->driver != driver)
-				continue;
-			dev = minor->dev;
-			if (dev) {
-				/* release the pci driver */
-				if (dev->pdev)
-					pci_dev_put(dev->pdev);
-				drm_cleanup(dev);
-			}
-		}
+		idr_for_each(&drm_minors_idr, &drm_minors_cleanup, driver);
 	} else
 		pci_unregister_driver(&driver->pci_driver);
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
@@ -481,6 +480,7 @@ static int __init drm_core_init(void)
 	unsigned long avail_memctl_mem;
 	unsigned long max_memctl_mem;
 
+	idr_init(&drm_minors_idr);
 	si_meminfo(&si);
 
 	/*
@@ -502,11 +502,6 @@ static int __init drm_core_init(void)
 	drm_init_memctl(avail_memctl_mem/2, avail_memctl_mem*3/4, si.mem_unit);
 
 	ret = -ENOMEM;
-	drm_minors_limit =
-	    (drm_minors_limit < DRM_MAX_MINOR + 1 ? drm_minors_limit : DRM_MAX_MINOR + 1);
-	drm_minors = drm_calloc(drm_minors_limit, sizeof(*drm_minors), DRM_MEM_STUB);
-	if (!drm_minors)
-		goto err_p1;
 
 	if (register_chrdev(DRM_MAJOR, "drm", &drm_stub_fops))
 		goto err_p1;
@@ -535,7 +530,8 @@ err_p3:
 	drm_sysfs_destroy();
 err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
-	drm_free(drm_minors, sizeof(*drm_minors) * drm_minors_limit, DRM_MEM_STUB);
+
+	idr_destroy(&drm_minors_idr);
 err_p1:
 	return ret;
 }
@@ -547,7 +543,7 @@ static void __exit drm_core_exit(void)
 
 	unregister_chrdev(DRM_MAJOR, "drm");
 
-	drm_free(drm_minors, sizeof(*drm_minors) * drm_minors_limit, DRM_MEM_STUB);
+	idr_destroy(&drm_minors_idr);
 }
 
 module_init(drm_core_init);

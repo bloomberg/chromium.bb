@@ -535,7 +535,7 @@ static int drm__clients_info(char *buf, char **start, off_t offset,
 	list_for_each_entry(priv, &dev->filelist, lhead) {
 		DRM_PROC_PRINT("%c %3d %5d %5d %10u %10lu\n",
 			       priv->authenticated ? 'y' : 'n',
-			       priv->minor->minor,
+			       priv->minor->index,
 			       priv->pid,
 			       priv->uid, priv->magic, priv->ioctl_count);
 	}

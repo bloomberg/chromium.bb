@@ -128,16 +128,15 @@ static int drm_setup(struct drm_device * dev)
 int drm_open(struct inode *inode, struct file *filp)
 {
 	struct drm_device *dev = NULL;
-	int minor = iminor(inode);
+	int minor_id = iminor(inode);
+	struct drm_minor *minor;
 	int retcode = 0;
 
-	if (!((minor >= 0) && (minor < drm_minors_limit)))
+	minor = idr_find(&drm_minors_idr, minor_id);
+	if (!minor)
 		return -ENODEV;
 
-	if (!drm_minors[minor])
-		return -ENODEV;
-
-	if (!(dev = drm_minors[minor]->dev))
+	if (!(dev = minor->dev))
 		return -ENODEV;
 
 	retcode = drm_open_helper(inode, filp, dev);
@@ -176,19 +175,18 @@ EXPORT_SYMBOL(drm_open);
 int drm_stub_open(struct inode *inode, struct file *filp)
 {
 	struct drm_device *dev = NULL;
-	int minor = iminor(inode);
+	struct drm_minor *minor;
+	int minor_id = iminor(inode);
 	int err = -ENODEV;
 	const struct file_operations *old_fops;
 
 	DRM_DEBUG("\n");
 
-	if (!((minor >= 0) && (minor < drm_minors_limit)))
+	minor = idr_find(&drm_minors_idr, minor_id);
+	if (!minor)
 		return -ENODEV;
-
-	if (!drm_minors[minor])
-		return -ENODEV;
-
-	if (!(dev = drm_minors[minor]->dev))
+	
+	if (!(dev = minor->dev))
 		return -ENODEV;
 
 	old_fops = filp->f_op;
@@ -233,7 +231,7 @@ static int drm_cpu_valid(void)
 static int drm_open_helper(struct inode *inode, struct file *filp,
 			   struct drm_device * dev)
 {
-	int minor = iminor(inode);
+	int minor_id = iminor(inode);
 	struct drm_file *priv;
 	int ret;
 	int i, j;
@@ -243,7 +241,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	if (!drm_cpu_valid())
 		return -EINVAL;
 
-	DRM_DEBUG("pid = %d, minor = %d\n", current->pid, minor);
+	DRM_DEBUG("pid = %d, minor = %d\n", current->pid, minor_id);
 
 	priv = drm_alloc(sizeof(*priv), DRM_MEM_FILES);
 	if (!priv)
@@ -254,7 +252,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	priv->filp = filp;
 	priv->uid = current->euid;
 	priv->pid = current->pid;
-	priv->minor = drm_minors[minor];
+	priv->minor = idr_find(&drm_minors_idr, minor_id);
 	priv->ioctl_count = 0;
 	/* for compatibility root is always authenticated */
 	priv->authenticated = capable(CAP_SYS_ADMIN);

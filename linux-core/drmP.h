@@ -733,11 +733,12 @@ struct drm_driver {
 #define DRM_MINOR_UNASSIGNED 0
 #define DRM_MINOR_CONTROL 1
 #define DRM_MINOR_RENDER 2
+#define DRM_MINOR_GPGPU 3 /* this node is restricted to operations that don't require a master */
 /**
  * DRM minor structure. This structure represents a drm minor number.
  */
 struct drm_minor {
-	int minor;			/**< Minor device number */
+	int index;			/**< Minor device number */
 	int type;                       /**< Control or render */
 	dev_t device;			/**< Device number for mknod */
 	struct device kdev;		/**< Linux device */
@@ -882,8 +883,8 @@ struct drm_device {
 	unsigned int agp_buffer_token;
 
 	/* minor number for control node */
-	struct drm_minor control;
-	struct drm_minor primary;		/**< primary screen head */
+	struct drm_minor *control;
+	struct drm_minor *primary;		/**< primary screen head */
 
 	struct drm_fence_manager fm;
 	struct drm_buffer_manager bm;
@@ -1214,12 +1215,14 @@ extern void drm_agp_chipset_flush(struct drm_device *dev);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
 extern int drm_put_dev(struct drm_device *dev);
-extern int drm_put_minor(struct drm_minor *minor);
+extern int drm_put_minor(struct drm_minor **minor);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_minors_limit;
-extern struct drm_minor **drm_minors;
+
 extern struct class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
+
+extern struct idr drm_minors_idr;
 
 extern drm_local_map_t *drm_getsarea(struct drm_device *dev);
 

@@ -170,11 +170,11 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 	minor->kdev.release = drm_sysfs_device_release;
 	minor->kdev.devt = minor->device;
 	if (minor->type == DRM_MINOR_CONTROL)
-	  minor_str = "controlD%d";
+		minor_str = "controlD%d";
 	else
 		minor_str = "card%d";
 	
-	snprintf(minor->kdev.bus_id, BUS_ID_SIZE, minor_str, minor->minor);
+	snprintf(minor->kdev.bus_id, BUS_ID_SIZE, minor_str, minor->index);
 
 	err = device_register(&minor->kdev);
 	if (err) {
