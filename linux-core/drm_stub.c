@@ -91,7 +91,7 @@ again:
 	return new_id;
 }
 
-struct drm_master *drm_get_master(struct drm_device *dev)
+struct drm_master *drm_get_master(struct drm_minor *minor)
 {
 	struct drm_master *master;
 
@@ -104,7 +104,9 @@ struct drm_master *drm_get_master(struct drm_device *dev)
 	init_waitqueue_head(&master->lock.lock_queue);
 	drm_ht_create(&master->magiclist, DRM_MAGIC_HASH_ORDER);
 	INIT_LIST_HEAD(&master->magicfree);
-	master->dev = dev;
+	master->minor = minor;
+
+	list_add_tail(&master->head, &minor->master_list);
 
 	return master;
 }
@@ -112,7 +114,9 @@ struct drm_master *drm_get_master(struct drm_device *dev)
 void drm_put_master(struct drm_master *master)
 {
 	struct drm_magic_entry *pt, *next;
-	struct drm_device *dev = master->dev;
+	struct drm_device *dev = master->minor->dev;
+
+	list_del(&master->head);
 
 	if (dev->driver->master_destroy)
 		dev->driver->master_destroy(dev, master);
@@ -265,12 +269,12 @@ static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int t
 	new_minor->device = MKDEV(DRM_MAJOR, minor_id);
 	new_minor->dev = dev;
 	new_minor->index = minor_id;
+	INIT_LIST_HEAD(&new_minor->master_list);
 
 	idr_replace(&drm_minors_idr, new_minor, minor_id);
 	
 	if (type == DRM_MINOR_RENDER) {
-		ret = drm_proc_init(dev, minor_id, drm_proc_root,
-				    &new_minor->dev_root);
+		ret = drm_proc_init(new_minor, minor_id, drm_proc_root);
 		if (ret) {
 			DRM_ERROR("DRM: Failed to initialize /proc/dri.\n");
 			goto err_mem;
@@ -292,7 +296,7 @@ static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int t
 
 err_g2:
 	if (new_minor->type == DRM_MINOR_RENDER)
-		drm_proc_cleanup(minor_id, drm_proc_root, new_minor->dev_root);
+		drm_proc_cleanup(new_minor, drm_proc_root);
 err_mem:
 	kfree(new_minor);
 err_idr:
@@ -416,7 +420,7 @@ int drm_put_minor(struct drm_minor **minor_p)
 	DRM_DEBUG("release secondary minor %d\n", minor->index);
 
 	if (minor->type == DRM_MINOR_RENDER)
-		drm_proc_cleanup(minor->index, drm_proc_root, minor->dev_root);
+		drm_proc_cleanup(minor, drm_proc_root);
 	drm_sysfs_device_remove(minor);
 
 	idr_remove(&drm_minors_idr, minor->index);

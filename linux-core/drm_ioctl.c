@@ -53,7 +53,7 @@ int drm_getunique(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
 	struct drm_unique *u = data;
-	struct drm_master *master = dev->primary->master;
+	struct drm_master *master = file_priv->master;
 
 	if (u->unique_len >= master->unique_len) {
 		if (copy_to_user(u->unique, master->unique, master->unique_len))
@@ -82,7 +82,7 @@ int drm_setunique(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
 	struct drm_unique *u = data;
-	struct drm_master *master = dev->primary->master;
+	struct drm_master *master = file_priv->master;
 	int domain, bus, slot, func, ret;
 
 	if (master->unique_len || master->unique)
@@ -127,9 +127,9 @@ int drm_setunique(struct drm_device *dev, void *data,
 	return 0;
 }
 
-static int drm_set_busid(struct drm_device * dev)
+static int drm_set_busid(struct drm_device *dev, struct drm_file *file_priv)
 {
-	struct drm_master *master = dev->primary->master;
+	struct drm_master *master = file_priv->master;
 	int len;
 
 	if (master->unique != NULL)
@@ -279,7 +279,7 @@ int drm_getstats(struct drm_device *dev, void *data,
 	for (i = 0; i < dev->counters; i++) {
 		if (dev->types[i] == _DRM_STAT_LOCK)
 			stats->data[i].value =
-			    (dev->primary->master->lock.hw_lock ? dev->primary->master->lock.hw_lock->lock : 0);
+			    (file_priv->master->lock.hw_lock ? file_priv->master->lock.hw_lock->lock : 0);
 		else
 			stats->data[i].value = atomic_read(&dev->counts[i]);
 		stats->data[i].type = dev->types[i];
@@ -321,7 +321,7 @@ int drm_setversion(struct drm_device *dev, void *data, struct drm_file *file_pri
 			/*
 			 * Version 1.1 includes tying of DRM to specific device
 			 */
-			drm_set_busid(dev);
+			drm_set_busid(dev, file_priv);
 		}
 	}
 

@@ -43,22 +43,14 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 
 static int drm_setup(struct drm_device * dev)
 {
-	drm_local_map_t *map;
 	int i;
 	int ret;
-	int sareapage;
 
 	if (dev->driver->firstopen) {
 		ret = dev->driver->firstopen(dev);
 		if (ret != 0)
 			return ret;
 	}
-
-	/* prebuild the SAREA */
-	sareapage = max(SAREA_MAX, PAGE_SIZE);
-	i = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK, &map);
-	if (i != 0)
-		return i;
 
 	atomic_set(&dev->ioctl_count, 0);
 	atomic_set(&dev->vma_count, 0);
@@ -279,25 +271,27 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	mutex_lock(&dev->struct_mutex);
 
 	/* if there is no current master make this fd it */
-	if (!dev->primary->master) {
-		priv->master = drm_get_master(dev);
-		if (!priv->master) {
+	if (!priv->minor->master) {
+		priv->minor->master = drm_get_master(priv->minor);
+		if (!priv->minor->master) {
 			ret = -ENOMEM;
 			goto out_free;
 		}
-		dev->primary->master = priv->master;
+
+		priv->is_master = 1;
+		priv->master = priv->minor->master;
 
 		if (dev->driver->master_create) {
-			ret = dev->driver->master_create(dev, dev->primary->master);
+			ret = dev->driver->master_create(dev, priv->master);
 			if (ret) {
-				drm_put_master(dev->primary->master);
-				dev->primary->master = priv->master = NULL;
+				drm_put_master(priv->minor->master);
+				priv->minor->master = priv->master = NULL;
 				goto out_free;
 			}
 		}
-	} else
-		priv->master = NULL;
-
+	}
+	else
+		priv->master = priv->minor->master;
 	list_add(&priv->lhead, &dev->filelist);
 	mutex_unlock(&dev->struct_mutex);
 
@@ -403,23 +397,23 @@ int drm_release(struct inode *inode, struct file *filp)
 		  current->pid, (long)old_encode_dev(file_priv->minor->device),
 		  dev->open_count);
 
-	if (dev->driver->reclaim_buffers_locked && dev->primary->master->lock.hw_lock) {
+	if (dev->driver->reclaim_buffers_locked && file_priv->master->lock.hw_lock) {
 		if (drm_i_have_hw_lock(dev, file_priv)) {
 			dev->driver->reclaim_buffers_locked(dev, file_priv);
 		} else {
 			unsigned long _end=jiffies + 3*DRM_HZ;
 			int locked = 0;
 
-			drm_idlelock_take(&dev->primary->master->lock);
+			drm_idlelock_take(&file_priv->master->lock);
 
 			/*
 			 * Wait for a while.
 			 */
 
 			do{
-				spin_lock(&dev->primary->master->lock.spinlock);
-				locked = dev->primary->master->lock.idle_has_lock;
-				spin_unlock(&dev->primary->master->lock.spinlock);
+				spin_lock(&file_priv->master->lock.spinlock);
+				locked = file_priv->master->lock.idle_has_lock;
+				spin_unlock(&file_priv->master->lock.spinlock);
 				if (locked)
 					break;
 				schedule();
@@ -432,24 +426,24 @@ int drm_release(struct inode *inode, struct file *filp)
 			}
 
 			dev->driver->reclaim_buffers_locked(dev, file_priv);
-			drm_idlelock_release(&dev->primary->master->lock);
+			drm_idlelock_release(&file_priv->master->lock);
 		}
 	}
 
-	if (dev->driver->reclaim_buffers_idlelocked && dev->primary->master->lock.hw_lock) {
+	if (dev->driver->reclaim_buffers_idlelocked && file_priv->master->lock.hw_lock) {
 
-		drm_idlelock_take(&dev->primary->master->lock);
+		drm_idlelock_take(&file_priv->master->lock);
 		dev->driver->reclaim_buffers_idlelocked(dev, file_priv);
-		drm_idlelock_release(&dev->primary->master->lock);
+		drm_idlelock_release(&file_priv->master->lock);
 
 	}
 
 	if (drm_i_have_hw_lock(dev, file_priv)) {
 		DRM_DEBUG("File %p released, freeing lock for context %d\n",
-			  filp, _DRM_LOCKING_CONTEXT(dev->primary->master->lock.hw_lock->lock));
+			  filp, _DRM_LOCKING_CONTEXT(file_priv->master->lock.hw_lock->lock));
 
-		drm_lock_free(&dev->primary->master->lock,
-			      _DRM_LOCKING_CONTEXT(dev->primary->master->lock.hw_lock->lock));
+		drm_lock_free(&file_priv->master->lock,
+			      _DRM_LOCKING_CONTEXT(file_priv->master->lock.hw_lock->lock));
 	}
 
 
@@ -493,12 +487,12 @@ int drm_release(struct inode *inode, struct file *filp)
 	}
 	list_del(&file_priv->lhead);
 
-	if (file_priv->master) {
-		if (file_priv->master == dev->primary->master)
-		       dev->primary->master = NULL;
-	       drm_put_master(file_priv->master);
-	       file_priv->master = NULL;
+	if (file_priv->is_master) {
+	       drm_put_master(file_priv->minor->master);
+	       file_priv->minor->master = NULL;
 	}
+
+	file_priv->master = NULL;
 
 	mutex_unlock(&dev->struct_mutex);
 

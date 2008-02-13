@@ -52,7 +52,7 @@ int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	DECLARE_WAITQUEUE(entry, current);
 	struct drm_lock *lock = data;
-	struct drm_master *master = dev->primary->master;
+	struct drm_master *master = file_priv->master;
 	int ret = 0;
 
 	++file_priv->lock_count;
@@ -150,7 +150,7 @@ int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 int drm_unlock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	struct drm_lock *lock = data;
-	struct drm_master *master = dev->primary->master;
+	struct drm_master *master = file_priv->master;
 	unsigned long irqflags;
 
 	if (lock->context == DRM_KERNEL_CONTEXT) {
@@ -386,7 +386,7 @@ EXPORT_SYMBOL(drm_idlelock_release);
 
 int drm_i_have_hw_lock(struct drm_device *dev, struct drm_file *file_priv)
 {
-	struct drm_master *master = dev->primary->master;
+	struct drm_master *master = file_priv->master;
 	return (file_priv->lock_count && master->lock.hw_lock &&
 		_DRM_LOCK_IS_HELD(master->lock.hw_lock->lock) &&
 		master->lock.file_priv == file_priv);

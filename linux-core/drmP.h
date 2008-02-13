@@ -262,11 +262,11 @@ struct drm_file;
  */
 #define LOCK_TEST_WITH_RETURN( dev, file_priv )				\
 do {									\
-	if ( !_DRM_LOCK_IS_HELD( dev->primary->master->lock.hw_lock->lock ) ||		\
-	     dev->primary->master->lock.file_priv != file_priv )	{			\
+	if ( !_DRM_LOCK_IS_HELD( file_priv->master->lock.hw_lock->lock ) ||		\
+	     file_priv->master->lock.file_priv != file_priv )	{			\
 		DRM_ERROR( "%s called without lock held, held  %d owner %p %p\n",\
-			   __FUNCTION__, _DRM_LOCK_IS_HELD( dev->primary->master->lock.hw_lock->lock ),\
-			   dev->primary->master->lock.file_priv, file_priv );		\
+			   __FUNCTION__, _DRM_LOCK_IS_HELD( file_priv->master->lock.hw_lock->lock ),\
+			   file_priv->master->lock.file_priv, file_priv );		\
 		return -EINVAL;						\
 	}								\
 } while (0)
@@ -430,9 +430,11 @@ struct drm_file {
 
 	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;
-	struct drm_master *master; /* this private has a master associated with it */
 	void *driver_priv;
 
+	int is_master; /* this file private is a master for a minor */
+	struct drm_master *master; /* master this node is currently associated with
+				      N.B. not always minor->master */
 	struct list_head fbs;
 };
 
@@ -612,7 +614,8 @@ struct drm_ati_pcigart_info {
 /* per-master structure */
 struct drm_master {
 	
-	struct drm_device *dev;
+	struct list_head head; /**< each minor contains a list of masters */
+	struct drm_minor *minor; /**< link back to minor we are a master for */
 
 	char *unique;			/**< Unique identifier: e.g., busid */
 	int unique_len;			/**< Length of unique field */
@@ -775,7 +778,10 @@ struct drm_minor {
 	struct class_device *dev_class;
 
 	/* for control nodes - a pointer to the current master for this control node */
-	struct drm_master *master;
+	struct drm_master *master; /* currently active master for this node */
+	struct list_head master_list;
+
+	/* possibly needs a list of configured modesetting pieces */
 };
 
 
@@ -831,7 +837,7 @@ struct drm_device {
 	struct list_head vmalist;	/**< List of vmas (for debugging) */
 
 	struct list_head filelist;
-//	struct drm_master *master;
+
 	/*@} */
 
 	/** \name DMA queues (contexts) */
@@ -1235,7 +1241,7 @@ extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
 extern struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev);
 extern void drm_agp_chipset_flush(struct drm_device *dev);
 				/* Stub support (drm_stub.h) */
-extern struct drm_master *drm_get_master(struct drm_device *dev);
+extern struct drm_master *drm_get_master(struct drm_minor *minor);
 extern void drm_put_master(struct drm_master *master);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
@@ -1252,13 +1258,9 @@ extern struct idr drm_minors_idr;
 extern drm_local_map_t *drm_getsarea(struct drm_device *dev);
 
 				/* Proc support (drm_proc.h) */
-extern int drm_proc_init(struct drm_device *dev,
-			 int minor,
-			 struct proc_dir_entry *root,
-			 struct proc_dir_entry **dev_root);
-extern int drm_proc_cleanup(int minor,
-			    struct proc_dir_entry *root,
-			    struct proc_dir_entry *dev_root);
+int drm_proc_init(struct drm_minor *minor, int minor_id,
+		  struct proc_dir_entry *root);
+int drm_proc_cleanup(struct drm_minor *minor, struct proc_dir_entry *root);
 
 				/* Scatter Gather Support (drm_scatter.h) */
 extern void drm_sg_cleanup(struct drm_sg_mem * entry);
