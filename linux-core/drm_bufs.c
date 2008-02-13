@@ -52,7 +52,7 @@ struct drm_map_list *drm_find_matching_map(struct drm_device *dev, drm_local_map
 {
 	struct drm_map_list *entry;
 	list_for_each_entry(entry, &dev->maplist, head) {
-		if (entry->map && map->type == entry->map->type &&
+		if (entry->map && (entry->master == dev->primary->master) && (map->type == entry->map->type) &&
 		    ((entry->map->offset == map->offset) || 
 		     ((map->type == _DRM_SHM) && (map->flags&_DRM_CONTAINS_LOCK)))) {
 			return entry;
@@ -209,12 +209,12 @@ static int drm_addmap_core(struct drm_device *dev, unsigned int offset,
 		map->offset = (unsigned long)map->handle;
 		if (map->flags & _DRM_CONTAINS_LOCK) {
 			/* Prevent a 2nd X Server from creating a 2nd lock */
-			if (dev->lock.hw_lock != NULL) {
+			if (dev->primary->master->lock.hw_lock != NULL) {
 				vfree(map->handle);
 				drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 				return -EBUSY;
 			}
-			dev->sigdata.lock = dev->lock.hw_lock = map->handle;	/* Pointer to lock */
+			dev->sigdata.lock = dev->primary->master->lock.hw_lock = map->handle;	/* Pointer to lock */
 		}
 		break;
 	case _DRM_AGP: {
@@ -412,9 +412,9 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 		break;
 	case _DRM_SHM:
 		vfree(map->handle);
-		dev->sigdata.lock = dev->lock.hw_lock = NULL;   /* SHM removed */
-		dev->lock.file_priv = NULL;
-		wake_up_interruptible(&dev->lock.lock_queue);
+		dev->sigdata.lock = dev->primary->master->lock.hw_lock = NULL;   /* SHM removed */
+		dev->primary->master->lock.file_priv = NULL;
+		wake_up_interruptible(&dev->primary->master->lock.lock_queue);
 		break;
 	case _DRM_AGP:
 	case _DRM_SCATTER_GATHER:

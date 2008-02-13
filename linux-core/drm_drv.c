@@ -180,8 +180,6 @@ static struct drm_ioctl_desc drm_ioctls[] = {
  */
 int drm_lastclose(struct drm_device * dev)
 {
-	struct drm_magic_entry *pt, *next;
-	struct drm_map_list *r_list, *list_t;
 	struct drm_vma_entry *vma, *vma_temp;
 	int i;
 
@@ -196,11 +194,6 @@ int drm_lastclose(struct drm_device * dev)
 		dev->driver->lastclose(dev);
 	DRM_DEBUG("driver lastclose completed\n");
 
-	if (dev->unique) {
-		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
-		dev->unique = NULL;
-		dev->unique_len = 0;
-	}
 
 /*	if (dev->irq_enabled)
 		drm_irq_uninstall(dev); */
@@ -211,22 +204,11 @@ int drm_lastclose(struct drm_device * dev)
 	drm_drawable_free_all(dev);
 	del_timer(&dev->timer);
 
-	if (dev->unique) {
-		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
-		dev->unique = NULL;
-		dev->unique_len = 0;
+	if (dev->primary->master) {
+		drm_put_master(dev->primary->master);
+		dev->primary->master = NULL;
 	}
-
-	if (dev->magicfree.next) {
-		list_for_each_entry_safe(pt, next, &dev->magicfree, head) {
-			list_del(&pt->head);
-			drm_ht_remove_item(&dev->magiclist, &pt->hash_item);
-			drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
-		}
-		drm_ht_remove(&dev->magiclist);
-	}
-
-
+	
 	/* Clear AGP information */
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		struct drm_agp_mem *entry, *tempe;

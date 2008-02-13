@@ -363,6 +363,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_master_private *master_priv;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	unsigned long Start, Offset;
@@ -384,17 +385,21 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	}
 	
 
-	if (!dev_priv->sarea_priv) 
+	if (!dev->primary->master)
+		return;
+
+	master_priv = dev->primary->master->driver_priv;
+	if (!master_priv->sarea_priv) 
 		return;
 		
 	switch (pipe) {
 	case 0:
-		dev_priv->sarea_priv->planeA_x = x;
-		dev_priv->sarea_priv->planeA_y = y;
+		master_priv->sarea_priv->planeA_x = x;
+		master_priv->sarea_priv->planeA_y = y;
 		break;
 	case 1:
-		dev_priv->sarea_priv->planeB_x = x;
-		dev_priv->sarea_priv->planeB_y = y;
+		master_priv->sarea_priv->planeB_x = x;
+		master_priv->sarea_priv->planeB_y = y;
 		break;
 	default:
 		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
@@ -413,6 +418,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 {
 	struct drm_device *dev = crtc->dev;
+	struct drm_i915_master_private *master_priv;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
@@ -506,21 +512,24 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		udelay(150);
 		break;
 	}
-	
 
-	if (!dev_priv->sarea_priv)
+	if (!dev->primary->master)
+		return;	
+
+	master_priv = dev->primary->master->driver_priv;
+	if (!master_priv->sarea_priv)
 		return;
 
 	enabled = crtc->enabled && mode != DPMSModeOff;
 	
 	switch (pipe) {
 	case 0:
-		dev_priv->sarea_priv->planeA_w = enabled ? crtc->mode.hdisplay : 0;
-		dev_priv->sarea_priv->planeA_h = enabled ? crtc->mode.vdisplay : 0;
+		master_priv->sarea_priv->planeA_w = enabled ? crtc->mode.hdisplay : 0;
+		master_priv->sarea_priv->planeA_h = enabled ? crtc->mode.vdisplay : 0;
 		break;
 	case 1:
-		dev_priv->sarea_priv->planeB_w = enabled ? crtc->mode.hdisplay : 0;
-		dev_priv->sarea_priv->planeB_h = enabled ? crtc->mode.vdisplay : 0;
+		master_priv->sarea_priv->planeB_w = enabled ? crtc->mode.hdisplay : 0;
+		master_priv->sarea_priv->planeB_h = enabled ? crtc->mode.vdisplay : 0;
 		break;
 	default:
 		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);

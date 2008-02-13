@@ -636,18 +636,18 @@ static void drm_locked_tasklet_func(unsigned long data)
 	spin_lock_irqsave(&dev->tasklet_lock, irqflags);
 
 	if (!dev->locked_tasklet_func ||
-	    !drm_lock_take(&dev->lock,
+	    !drm_lock_take(&dev->primary->master->lock,
 			   DRM_KERNEL_CONTEXT)) {
 		spin_unlock_irqrestore(&dev->tasklet_lock, irqflags);
 		return;
 	}
 
-	dev->lock.lock_time = jiffies;
+	dev->primary->master->lock.lock_time = jiffies;
 	atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
 
 	dev->locked_tasklet_func(dev);
 
-	drm_lock_free(&dev->lock,
+	drm_lock_free(&dev->primary->master->lock,
 		      DRM_KERNEL_CONTEXT);
 
 	dev->locked_tasklet_func = NULL;

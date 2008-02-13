@@ -166,6 +166,7 @@ static int drm_name_info(char *buf, char **start, off_t offset, int request,
 			 int *eof, void *data)
 {
 	struct drm_device *dev = (struct drm_device *) data;
+	struct drm_master *master = dev->primary->master;
 	int len = 0;
 
 	if (offset > DRM_PROC_LIMIT) {
@@ -176,10 +177,10 @@ static int drm_name_info(char *buf, char **start, off_t offset, int request,
 	*start = &buf[offset];
 	*eof = 0;
 
-	if (dev->unique) {
+	if (master->unique) {
 		DRM_PROC_PRINT("%s %s %s\n",
 			       dev->driver->pci_driver.name,
-			       pci_name(dev->pdev), dev->unique);
+			       pci_name(dev->pdev), master->unique);
 	} else {
 		DRM_PROC_PRINT("%s %s\n", dev->driver->pci_driver.name,
 			       pci_name(dev->pdev));

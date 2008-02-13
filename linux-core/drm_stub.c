@@ -91,13 +91,63 @@ again:
 	return new_id;
 }
 
+struct drm_master *drm_get_master(struct drm_device *dev)
+{
+	struct drm_master *master;
+
+	master = drm_calloc(1, sizeof(*master), DRM_MEM_DRIVER);
+	if (!master)
+		return NULL;
+
+//	INIT_LIST_HEAD(&master->filelist);
+	spin_lock_init(&master->lock.spinlock);
+	init_waitqueue_head(&master->lock.lock_queue);
+	drm_ht_create(&master->magiclist, DRM_MAGIC_HASH_ORDER);
+	INIT_LIST_HEAD(&master->magicfree);
+	master->dev = dev;
+
+	return master;
+}
+
+void drm_put_master(struct drm_master *master)
+{
+	struct drm_magic_entry *pt, *next;
+	struct drm_device *dev = master->dev;
+
+	if (dev->driver->master_destroy)
+		dev->driver->master_destroy(dev, master);
+
+	if (master->unique) {
+		drm_free(master->unique, strlen(master->unique) + 1, DRM_MEM_DRIVER);
+		master->unique = NULL;
+		master->unique_len = 0;
+	}
+
+	list_for_each_entry_safe(pt, next, &master->magicfree, head) {
+		list_del(&pt->head);
+		drm_ht_remove_item(&master->magiclist, &pt->hash_item);
+		drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
+	}
+
+	drm_ht_remove(&master->magiclist);
+
+	if (master->lock.hw_lock) {
+		if (dev->sigdata.lock == master->lock.hw_lock)
+			dev->sigdata.lock = NULL;
+		master->lock.hw_lock = NULL;	/* SHM removed */
+		master->lock.file_priv = NULL;
+		wake_up_interruptible(&master->lock.lock_queue);
+	}
+
+	drm_free(master, sizeof(*master), DRM_MEM_DRIVER);
+}
+
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 			   const struct pci_device_id *ent,
 			   struct drm_driver *driver)
 {
 	int retcode;
 
-	INIT_LIST_HEAD(&dev->filelist);
 	INIT_LIST_HEAD(&dev->ctxlist);
 	INIT_LIST_HEAD(&dev->vmalist);
 	INIT_LIST_HEAD(&dev->maplist);
@@ -105,7 +155,7 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	spin_lock_init(&dev->count_lock);
 	spin_lock_init(&dev->drw_lock);
 	spin_lock_init(&dev->tasklet_lock);
-	spin_lock_init(&dev->lock.spinlock);
+//	spin_lock_init(&dev->lock.spinlock);
 	init_timer(&dev->timer);
 	mutex_init(&dev->struct_mutex);
 	mutex_init(&dev->ctxlist_mutex);
@@ -167,10 +217,6 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 					     1024 * 1024, MTRR_TYPE_WRCOMB, 1);
 		}
 	}
-
-	if (dev->driver->load)
-		if ((retcode = dev->driver->load(dev, ent->driver_data)))
-			goto error_out_unreg;
 
 	retcode = drm_ctxbitmap_init(dev);
 	if (retcode) {
@@ -301,12 +347,17 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	if ((ret = drm_get_minor(dev, &dev->primary, DRM_MINOR_RENDER)))
 		goto err_g4;
 
+	if (dev->driver->load)
+		if ((ret = dev->driver->load(dev, ent->driver_data)))
+			goto err_g5;
+
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
 		 driver->date, dev->primary->index);
 
 	return 0;
-
+err_g5:
+	drm_put_minor(&dev->primary);
 err_g4:
 	drm_put_minor(&dev->control);
 err_g3:
@@ -340,11 +391,6 @@ int drm_put_dev(struct drm_device * dev)
 {
 	DRM_DEBUG("release primary %s\n", dev->driver->pci_driver.name);
 
-	if (dev->unique) {
-		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
-		dev->unique = NULL;
-		dev->unique_len = 0;
-	}
 	if (dev->devname) {
 		drm_free(dev->devname, strlen(dev->devname) + 1,
 			 DRM_MEM_DRIVER);

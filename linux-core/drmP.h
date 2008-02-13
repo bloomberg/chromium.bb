@@ -262,11 +262,11 @@ struct drm_file;
  */
 #define LOCK_TEST_WITH_RETURN( dev, file_priv )				\
 do {									\
-	if ( !_DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ) ||		\
-	     dev->lock.file_priv != file_priv )	{			\
+	if ( !_DRM_LOCK_IS_HELD( dev->primary->master->lock.hw_lock->lock ) ||		\
+	     dev->primary->master->lock.file_priv != file_priv )	{			\
 		DRM_ERROR( "%s called without lock held, held  %d owner %p %p\n",\
-			   __FUNCTION__, _DRM_LOCK_IS_HELD( dev->lock.hw_lock->lock ),\
-			   dev->lock.file_priv, file_priv );		\
+			   __FUNCTION__, _DRM_LOCK_IS_HELD( dev->primary->master->lock.hw_lock->lock ),\
+			   dev->primary->master->lock.file_priv, file_priv );		\
 		return -EINVAL;						\
 	}								\
 } while (0)
@@ -410,7 +410,6 @@ enum drm_ref_type {
 /** File private data */
 struct drm_file {
 	int authenticated;
-	int master;
 	pid_t pid;
 	uid_t uid;
 	drm_magic_t magic;
@@ -431,6 +430,7 @@ struct drm_file {
 
 	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;
+	struct drm_master *master; /* this private has a master associated with it */
 	void *driver_priv;
 
 	struct list_head fbs;
@@ -568,6 +568,8 @@ struct drm_map_list {
 	struct drm_map *map;			/**< mapping */
 	uint64_t user_token;
 	struct drm_mm_node *file_offset_node;
+	struct drm_master *master; /** if this map is associated with a specific
+				       master */
 };
 
 typedef struct drm_map drm_local_map_t;
@@ -606,6 +608,27 @@ struct drm_ati_pcigart_info {
 };
 
 #include "drm_objects.h"
+
+/* per-master structure */
+struct drm_master {
+	
+	struct drm_device *dev;
+
+	char *unique;			/**< Unique identifier: e.g., busid */
+	int unique_len;			/**< Length of unique field */
+
+	int blocked;			/**< Blocked due to VC switch? */
+
+	/** \name Authentication */
+	/*@{ */
+	struct drm_open_hash magiclist;
+	struct list_head magicfree;
+	/*@} */
+
+	struct drm_lock_data lock;		/**< Information on hardware lock */
+
+	void *driver_priv; /**< Private structure for driver to use */
+};
 
 /**
  * DRM driver structure. This structure represent the common code for
@@ -711,6 +734,10 @@ struct drm_driver {
 	int (*fb_remove)(struct drm_device *dev, struct drm_crtc *crtc);
 	int (*fb_resize)(struct drm_device *dev, struct drm_crtc *crtc);
 
+	/* Master routines */
+	int (*master_create)(struct drm_device *dev, struct drm_master *master);
+	void (*master_destroy)(struct drm_device *dev, struct drm_master *master);
+
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
 
@@ -746,6 +773,9 @@ struct drm_minor {
 	/* for render nodes */
 	struct proc_dir_entry *dev_root;  /**< proc directory entry */
 	struct class_device *dev_class;
+
+	/* for control nodes - a pointer to the current master for this control node */
+	struct drm_master *master;
 };
 
 
@@ -754,12 +784,8 @@ struct drm_minor {
  * may contain multiple heads.
  */
 struct drm_device {
-	char *unique;			/**< Unique identifier: e.g., busid */
-	int unique_len;			/**< Length of unique field */
 	char *devname;			/**< For /proc/interrupts */
 	int if_version;			/**< Highest interface version set */
-
-	int blocked;			/**< Blocked due to VC switch? */
 
 	/** \name Locks */
 	/*@{ */
@@ -783,12 +809,6 @@ struct drm_device {
 	atomic_t counts[15];
 	/*@} */
 
-	/** \name Authentication */
-	/*@{ */
-	struct list_head filelist;
-	struct drm_open_hash magiclist;
-	struct list_head magicfree;
-	/*@} */
 
 	/** \name Memory management */
 	/*@{ */
@@ -809,7 +829,9 @@ struct drm_device {
 	struct idr ctx_idr;
 
 	struct list_head vmalist;	/**< List of vmas (for debugging) */
-	struct drm_lock_data lock;		/**< Information on hardware lock */
+
+	struct list_head filelist;
+//	struct drm_master *master;
 	/*@} */
 
 	/** \name DMA queues (contexts) */
@@ -820,6 +842,7 @@ struct drm_device {
 	struct drm_queue **queuelist;	/**< Vector of pointers to DMA queues */
 	struct drm_device_dma *dma;		/**< Optional pointer for DMA support */
 	/*@} */
+
 
 	/** \name Context support */
 	/*@{ */
@@ -884,7 +907,7 @@ struct drm_device {
 
 	/* minor number for control node */
 	struct drm_minor *control;
-	struct drm_minor *primary;		/**< primary screen head */
+	struct drm_minor *primary;		/**< render type primary screen head */
 
 	struct drm_fence_manager fm;
 	struct drm_buffer_manager bm;
@@ -1212,6 +1235,8 @@ extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
 extern struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev);
 extern void drm_agp_chipset_flush(struct drm_device *dev);
 				/* Stub support (drm_stub.h) */
+extern struct drm_master *drm_get_master(struct drm_device *dev);
+extern void drm_put_master(struct drm_master *master);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
 extern int drm_put_dev(struct drm_device *dev);

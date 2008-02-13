@@ -69,7 +69,7 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 
 
 		if (!dev_priv->have_idlelock) {
-			drm_idlelock_take(&dev->lock);
+			drm_idlelock_take(&dev->primary->master->lock);
 			dev_priv->have_idlelock = 1;
 		}
 
@@ -95,7 +95,7 @@ static uint32_t via_perform_flush(struct drm_device *dev, uint32_t class)
 		if (signaled_flush_types) {
 			pending_flush_types &= ~signaled_flush_types;
 			if (!pending_flush_types && dev_priv->have_idlelock) {
-				drm_idlelock_release(&dev->lock);
+				drm_idlelock_release(&dev->primary->master->lock);
 				dev_priv->have_idlelock = 0;
 			}
 			drm_fence_handler(dev, 0, dev_priv->emit_0_sequence,
