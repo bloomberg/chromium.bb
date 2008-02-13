@@ -355,7 +355,7 @@ static int drmOpenMinor(int minor, int create, int type)
 {
     int  fd;
     char buf[64];
-
+    
     if (create)
       return drmOpenDevice(makedev(DRM_MAJOR, minor), minor, type);
     
@@ -421,15 +421,8 @@ static int drmOpenByBusid(const char *busid)
     const char *buf;
     drmSetVersion sv;
 
-    /*
-     * Open the first minor number that matches the driver name and isn't
-     * already in use.  If it's in use it will have a busid assigned already.
-     *
-     * start at 1, as 0 is the control node, and we should use drmOpenControl
-     * for that.
-     */
     drmMsg("drmOpenByBusid: Searching for BusID %s\n", busid);
-    for (i = 1; i < DRM_MAX_MINOR; i++) {
+    for (i = 0; i < DRM_MAX_MINOR; i++) {
 	fd = drmOpenMinor(i, 1, DRM_NODE_RENDER);
 	drmMsg("drmOpenByBusid: drmOpenMinor returns %d\n", fd);
 	if (fd >= 0) {
@@ -474,14 +467,24 @@ static int drmOpenByName(const char *name)
     drmVersionPtr version;
     char *        id;
     
+    if (!drmAvailable()) {
+	if (!drm_server_info) {
+	    return -1;
+	}
+	else {
+	    /* try to load the kernel module now */
+	    if (!drm_server_info->load_module(name)) {
+		drmMsg("[drm] failed to load kernel module \"%s\"\n", name);
+		return -1;
+	    }
+	}
+    }
+
     /*
      * Open the first minor number that matches the driver name and isn't
      * already in use.  If it's in use it will have a busid assigned already.
-     *
-     * start at 1, as 0 is the control node, and we should use drmOpenControl
-     * for that.
      */
-    for (i = 1; i < DRM_MAX_MINOR; i++) {
+    for (i = 0; i < DRM_MAX_MINOR; i++) {
 	if ((fd = drmOpenMinor(i, 1, DRM_NODE_RENDER)) >= 0) {
 	    if ((version = drmGetVersion(fd))) {
 		if (!strcmp(version->name, name)) {

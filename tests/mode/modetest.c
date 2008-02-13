@@ -351,7 +351,7 @@ int main(int argc, char **argv)
 
 	printf("Starting test\n");
 
-	fd = drmOpen("i915", NULL);
+	fd = drmOpenControl(0);
 
 	if (fd < 0) {
 		printf("Failed to open the card fb (%d)\n",fd);
