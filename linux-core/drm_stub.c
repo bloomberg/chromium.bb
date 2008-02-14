@@ -37,17 +37,14 @@
 #include "drmP.h"
 #include "drm_core.h"
 
-unsigned int drm_minors_limit = 16;	/* Enough for one machine */
 unsigned int drm_debug = 0;		/* 1 to enable debug output */
 EXPORT_SYMBOL(drm_debug);
 
 MODULE_AUTHOR(CORE_AUTHOR);
 MODULE_DESCRIPTION(CORE_DESC);
 MODULE_LICENSE("GPL and additional rights");
-MODULE_PARM_DESC(minors_limit, "Maximum number of graphics cards");
 MODULE_PARM_DESC(debug, "Enable debug output");
 
-module_param_named(minors_limit, drm_minors_limit, int, 0444);
 module_param_named(debug, drm_debug, int, 0600);
 
 struct idr drm_minors_idr;
