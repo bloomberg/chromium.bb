@@ -268,9 +268,9 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 			goto out_free;
 	}
 
-	mutex_lock(&dev->struct_mutex);
 
 	/* if there is no current master make this fd it */
+	mutex_lock(&dev->struct_mutex);
 	if (!priv->minor->master) {
 		priv->minor->master = drm_get_master(priv->minor);
 		if (!priv->minor->master) {
@@ -281,17 +281,22 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 		priv->is_master = 1;
 		priv->master = priv->minor->master;
 
+		mutex_unlock(&dev->struct_mutex);
 		if (dev->driver->master_create) {
 			ret = dev->driver->master_create(dev, priv->master);
 			if (ret) {
 				drm_put_master(priv->minor->master);
 				priv->minor->master = priv->master = NULL;
+				mutex_unlock(&dev->struct_mutex);
 				goto out_free;
 			}
 		}
-	}
-	else
+	} else {
 		priv->master = priv->minor->master;
+		mutex_unlock(&dev->struct_mutex);
+	}
+
+	mutex_lock(&dev->struct_mutex);
 	list_add(&priv->lhead, &dev->filelist);
 	mutex_unlock(&dev->struct_mutex);
 
@@ -477,6 +482,14 @@ int drm_release(struct inode *inode, struct file *filp)
 	mutex_unlock(&dev->ctxlist_mutex);
 
 	drm_fb_release(filp);
+
+	file_priv->master = NULL;
+
+	if (file_priv->is_master) {
+	       drm_put_master(file_priv->minor->master);
+	       file_priv->minor->master = NULL;
+	}
+
 	mutex_lock(&dev->struct_mutex);
 	drm_object_release(filp);
 	if (file_priv->remove_auth_on_close == 1) {
@@ -487,12 +500,6 @@ int drm_release(struct inode *inode, struct file *filp)
 	}
 	list_del(&file_priv->lhead);
 
-	if (file_priv->is_master) {
-	       drm_put_master(file_priv->minor->master);
-	       file_priv->minor->master = NULL;
-	}
-
-	file_priv->master = NULL;
 
 	mutex_unlock(&dev->struct_mutex);
 

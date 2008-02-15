@@ -152,6 +152,7 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	INIT_LIST_HEAD(&dev->ctxlist);
 	INIT_LIST_HEAD(&dev->vmalist);
 	INIT_LIST_HEAD(&dev->maplist);
+	INIT_LIST_HEAD(&dev->filelist);
 
 	spin_lock_init(&dev->count_lock);
 	spin_lock_init(&dev->drw_lock);

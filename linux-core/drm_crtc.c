@@ -1094,7 +1094,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 		crtc->fb = fb;
 		crtc->enabled = (new_mode != NULL);
 		if (new_mode != NULL) {
-			DRM_DEBUG("attempting to set mode from userspace\n");
+			DRM_DEBUG("attempting to set mode from userspace %p\n", crtc->fb);
 			drm_mode_debug_printmodeline(dev, new_mode);
 			if (!drm_crtc_set_mode(crtc, new_mode, crtc_info->x,
 					       crtc_info->y)) {
@@ -1577,7 +1577,13 @@ int drm_mode_setcrtc(struct drm_device *dev,
 				ret = -EINVAL;
 				goto out;
 			}
+			DRM_DEBUG("found fb %p for id %d\n", fb, crtc_req->fb_id);
+		} else {
+			DRM_DEBUG("Unknown FB ID %d\n", crtc_req->fb_id);
+			ret = -EINVAL;
+			goto out;
 		}
+			
 
 		mode = drm_mode_create(dev);
 		drm_crtc_convert_umode(mode, &crtc_req->mode);
