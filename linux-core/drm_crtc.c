@@ -1754,7 +1754,6 @@ int drm_mode_addfb(struct drm_device *dev,
 	fb->pitch = r->pitch;
 	fb->bits_per_pixel = r->bpp;
 	fb->depth = r->depth;
-	fb->offset = bo->offset;
 	fb->bo = bo;
 
 	r->buffer_id = fb->id;

@@ -370,7 +370,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
 
-	Start = crtc->fb->offset;
+	Start = crtc->fb->bo->offset;
 	Offset = y * crtc->fb->pitch + x * (crtc->fb->bits_per_pixel / 8);
 
 	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset, x, y);
@@ -814,6 +814,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 		else
 			dspcntr |= DISPPLANE_16BPP;
 		break;
+	case 24:
 	case 32:
 		dspcntr |= DISPPLANE_32BPP_NO_ALPHA;
 		break;
