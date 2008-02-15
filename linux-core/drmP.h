@@ -762,8 +762,8 @@ struct drm_driver {
 
 #define DRM_MINOR_UNASSIGNED 0
 #define DRM_MINOR_CONTROL 1
-#define DRM_MINOR_RENDER 2
-#define DRM_MINOR_GPGPU 3 /* this node is restricted to operations that don't require a master */
+#define DRM_MINOR_LEGACY 2
+#define DRM_MINOR_RENDER 3
 /**
  * DRM minor structure. This structure represents a drm minor number.
  */

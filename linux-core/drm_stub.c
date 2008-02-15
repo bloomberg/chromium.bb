@@ -56,14 +56,14 @@ static int drm_minor_get_id(struct drm_device *dev, int type)
 {
 	int new_id;
 	int ret;
-	int base = 0, limit = 127;
+	int base = 0, limit = 63;
 
 	if (type == DRM_MINOR_CONTROL) {
+		base += 64;
+		limit = base + 127;
+	} else if (type == DRM_MINOR_RENDER) {
 		base += 128;
-		limit = base + 64;
-	} else if (type == DRM_MINOR_GPGPU) {
-		base += 192;
-		limit = base + 64;
+		limit = base + 255;
 	}	
 
 again:
@@ -270,7 +270,7 @@ static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int t
 
 	idr_replace(&drm_minors_idr, new_minor, minor_id);
 	
-	if (type == DRM_MINOR_RENDER) {
+	if (type == DRM_MINOR_LEGACY) {
 		ret = drm_proc_init(new_minor, minor_id, drm_proc_root);
 		if (ret) {
 			DRM_ERROR("DRM: Failed to initialize /proc/dri.\n");
@@ -292,7 +292,7 @@ static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int t
 
 
 err_g2:
-	if (new_minor->type == DRM_MINOR_RENDER)
+	if (new_minor->type == DRM_MINOR_LEGACY)
 		drm_proc_cleanup(new_minor, drm_proc_root);
 err_mem:
 	kfree(new_minor);
@@ -345,7 +345,7 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	if ((ret = drm_get_minor(dev, &dev->control, DRM_MINOR_CONTROL)))
 		goto err_g3;
 
-	if ((ret = drm_get_minor(dev, &dev->primary, DRM_MINOR_RENDER)))
+	if ((ret = drm_get_minor(dev, &dev->primary, DRM_MINOR_LEGACY)))
 		goto err_g4;
 
 	if (dev->driver->load)
@@ -416,7 +416,7 @@ int drm_put_minor(struct drm_minor **minor_p)
 	struct drm_minor *minor = *minor_p;
 	DRM_DEBUG("release secondary minor %d\n", minor->index);
 
-	if (minor->type == DRM_MINOR_RENDER)
+	if (minor->type == DRM_MINOR_LEGACY)
 		drm_proc_cleanup(minor, drm_proc_root);
 	drm_sysfs_device_remove(minor);
 

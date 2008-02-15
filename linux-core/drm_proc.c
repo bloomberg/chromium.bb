@@ -210,7 +210,6 @@ static int drm__vm_info(char *buf, char **start, off_t offset, int request,
 			int *eof, void *data)
 {
 	struct drm_minor *minor = (struct drm_minor *) data; 
-	struct drm_master *master = minor->master;
 	struct drm_device *dev = minor->dev;
 	int len = 0;
 	struct drm_map *map;
@@ -269,7 +268,6 @@ static int drm_vm_info(char *buf, char **start, off_t offset, int request,
 		       int *eof, void *data)
 {
 	struct drm_minor *minor = (struct drm_minor *) data; 
-	struct drm_master *master = minor->master;
 	struct drm_device *dev = minor->dev;
 	int ret;
 
