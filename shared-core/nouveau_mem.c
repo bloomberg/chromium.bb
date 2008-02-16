@@ -393,7 +393,7 @@ nouveau_mem_init_ttm(struct drm_device *dev)
 	}
 
 	/* GART */
-#ifndef __powerpc__
+#if !defined(__powerpc__) && !defined(__ia64__)
 	if (drm_device_is_agp(dev) && dev->agp) {
 		if ((ret = nouveau_mem_init_agp(dev, 1)))
 			DRM_ERROR("Error initialising AGP: %d\n", ret);
@@ -462,7 +462,7 @@ int nouveau_mem_init(struct drm_device *dev)
 		dev_priv->fb_nomap_heap=NULL;
 	}
 
-#ifndef __powerpc__
+#if !defined(__powerpc__) && !defined(__ia64__)
 	/* Init AGP / NV50 PCIEGART */
 	if (drm_device_is_agp(dev) && dev->agp) {
 		if ((ret = nouveau_mem_init_agp(dev, 0)))
