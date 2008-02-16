@@ -38,6 +38,9 @@ struct drm_prop_enum_list {
 	char *name;
 };
 
+/*
+ * Global properties
+ */
 static struct drm_prop_enum_list drm_dpms_enum_list[] =
 { { DPMSModeOn, "On" },
   { DPMSModeStandby, "Standby" },
@@ -720,6 +723,9 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 {
 	int i;
 
+	/*
+	 * Standard properties (apply to all outputs)
+	 */
 	dev->mode_config.edid_property =
 		drm_property_create(dev, DRM_MODE_PROP_BLOB | DRM_MODE_PROP_IMMUTABLE,
 				    "EDID", 0);
@@ -741,6 +747,39 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 				    "Connector ID", 2);
 	dev->mode_config.connector_num_property->values[0] = 0;
 	dev->mode_config.connector_num_property->values[1] = 20;
+
+	/*
+	 * TV specific properties
+	 */
+	dev->mode_config.tv_left_margin_property =
+		drm_property_create(dev, DRM_MODE_PROP_RANGE |
+				    DRM_MODE_PROP_IMMUTABLE,
+				    "left margin", 2);
+	dev->mode_config.tv_left_margin_property->values[0] = 0;
+	dev->mode_config.tv_left_margin_property->values[1] = 100;
+
+	dev->mode_config.tv_right_margin_property =
+		drm_property_create(dev, DRM_MODE_PROP_RANGE |
+				    DRM_MODE_PROP_IMMUTABLE,
+				    "right margin", 2);
+	dev->mode_config.tv_right_margin_property->values[0] = 0;
+	dev->mode_config.tv_right_margin_property->values[1] = 100;
+
+	dev->mode_config.tv_top_margin_property =
+		drm_property_create(dev, DRM_MODE_PROP_RANGE |
+				    DRM_MODE_PROP_IMMUTABLE,
+				    "top margin", 2);
+	dev->mode_config.tv_top_margin_property->values[0] = 0;
+	dev->mode_config.tv_top_margin_property->values[1] = 100;
+
+	dev->mode_config.tv_bottom_margin_property =
+		drm_property_create(dev, DRM_MODE_PROP_RANGE |
+				    DRM_MODE_PROP_IMMUTABLE,
+				    "bottom margin", 2);
+	dev->mode_config.tv_bottom_margin_property->values[0] = 0;
+	dev->mode_config.tv_bottom_margin_property->values[1] = 100;
+
+
 	return 0;
 }
 
@@ -1094,7 +1133,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 		crtc->fb = fb;
 		crtc->enabled = (new_mode != NULL);
 		if (new_mode != NULL) {
-			DRM_DEBUG("attempting to set mode from userspace %p\n", crtc->fb);
+			DRM_DEBUG("attempting to set mode from userspace\n");
 			drm_mode_debug_printmodeline(dev, new_mode);
 			if (!drm_crtc_set_mode(crtc, new_mode, crtc_info->x,
 					       crtc_info->y)) {
@@ -1577,13 +1616,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 				ret = -EINVAL;
 				goto out;
 			}
-			DRM_DEBUG("found fb %p for id %d\n", fb, crtc_req->fb_id);
-		} else {
-			DRM_DEBUG("Unknown FB ID %d\n", crtc_req->fb_id);
-			ret = -EINVAL;
-			goto out;
 		}
-			
 
 		mode = drm_mode_create(dev);
 		drm_crtc_convert_umode(mode, &crtc_req->mode);
@@ -1754,6 +1787,7 @@ int drm_mode_addfb(struct drm_device *dev,
 	fb->pitch = r->pitch;
 	fb->bits_per_pixel = r->bpp;
 	fb->depth = r->depth;
+	fb->offset = bo->offset;
 	fb->bo = bo;
 
 	r->buffer_id = fb->id;

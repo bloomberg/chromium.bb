@@ -548,6 +548,13 @@ struct drm_mode_config {
 	struct drm_property *connector_type_property;
 	struct drm_property *connector_num_property;
 
+	/* TV properties */
+	struct drm_property *tv_mode_property;
+	struct drm_property *tv_left_margin_property;
+	struct drm_property *tv_right_margin_property;
+	struct drm_property *tv_top_margin_property;
+	struct drm_property *tv_bottom_margin_property;
+
 	/* hotplug */
 	uint32_t hotplug_counter;
 };
@@ -595,7 +602,11 @@ extern int drm_mode_vrefresh(struct drm_display_mode *mode);
 extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
 				  int adjust_flags);
 extern void drm_mode_output_list_update(struct drm_output *output);
-extern int drm_mode_output_update_edid_property(struct drm_output *output, struct edid *edid);
+extern int drm_mode_output_update_edid_property(struct drm_output *output,
+						struct edid *edid);
+extern int drm_output_property_set_value(struct drm_output *output,
+					 struct drm_property *property,
+					 uint64_t value);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,

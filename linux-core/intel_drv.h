@@ -49,12 +49,13 @@ struct intel_output {
 	int type;
 	struct intel_i2c_chan *i2c_bus; /* for control functions */
 	struct intel_i2c_chan *ddc_bus; /* for DDC only stuff */
-	bool load_detect_tmp;
+	bool load_detect_temp;
 	void *dev_priv;
 };
 
 struct intel_crtc {
 	int pipe;
+	int plane;
 	uint32_t cursor_adder;
 	u8 lut_r[256], lut_g[256], lut_b[256];
 };
