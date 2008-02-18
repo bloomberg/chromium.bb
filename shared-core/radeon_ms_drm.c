@@ -160,7 +160,7 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 	dev_priv->fence_reg = SCRATCH_REG2;
 	drm_bo_driver_init(dev);
 	/* initialize vram */
-	ret = drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, dev_priv->vram.size);
+	ret = drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, dev_priv->vram.size, 1);
 	if (ret != 0) {
 		radeon_ms_driver_unload(dev);
 		return ret;
@@ -176,7 +176,7 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 
 	/* initialize ttm */
 	ret = drm_bo_init_mm(dev, DRM_BO_MEM_TT, 0,
-			     dev_priv->gpu_gart_size / RADEON_PAGE_SIZE);
+			     dev_priv->gpu_gart_size / RADEON_PAGE_SIZE, 1);
 	if (ret != 0) {
 		radeon_ms_driver_unload(dev);
 		return ret;
@@ -277,7 +277,7 @@ int radeon_ms_driver_unload(struct drm_device *dev)
 	DRM_INFO("[radeon_ms] unloading\n");
 	/* clean ttm memory manager */
 	mutex_lock(&dev->struct_mutex);
-	if (drm_bo_clean_mm(dev, DRM_BO_MEM_TT)) {
+	if (drm_bo_clean_mm(dev, DRM_BO_MEM_TT, 1)) {
 		DRM_ERROR("TT memory manager not clean. Delaying takedown\n");
 	}
 	mutex_unlock(&dev->struct_mutex);
@@ -289,7 +289,7 @@ int radeon_ms_driver_unload(struct drm_device *dev)
 	DRM_INFO("[radeon_ms] bus down\n");
 	/* clean vram memory manager */
 	mutex_lock(&dev->struct_mutex);
-	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM)) {
+	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM, 1)) {
 		DRM_ERROR("VRAM memory manager not clean. Delaying takedown\n");
 	}
 	mutex_unlock(&dev->struct_mutex);

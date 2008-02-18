@@ -167,8 +167,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
 	printk("setting up %ld bytes of VRAM space\n", prealloc_size);
 	printk("setting up %ld bytes of TT space\n", (agp_size - prealloc_size));
-	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT);
-	drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT, (agp_size - prealloc_size) >> PAGE_SHIFT);
+	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT, 1);
+	drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT, (agp_size - prealloc_size) >> PAGE_SHIFT, 1);
 
 	I915_WRITE(LP_RING + RING_LEN, 0);
 	I915_WRITE(LP_RING + RING_HEAD, 0);
@@ -305,11 +305,11 @@ int i915_driver_unload(struct drm_device *dev)
 	mutex_lock(&dev->struct_mutex);
 	drm_bo_usage_deref_locked(&dev_priv->ring_buffer);
 
-	if (drm_bo_clean_mm(dev, DRM_BO_MEM_TT)) {
+	if (drm_bo_clean_mm(dev, DRM_BO_MEM_TT, 1)) {
 		DRM_ERROR("Memory manager type 3 not clean. "
 			  "Delaying takedown\n");
 	}
-	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM)) {
+	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM, 1)) {
 		DRM_ERROR("Memory manager type 3 not clean. "
 			  "Delaying takedown\n");
 	}

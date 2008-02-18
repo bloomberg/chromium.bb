@@ -2178,7 +2178,7 @@ restart:
 	return 0;
 }
 
-int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type)
+int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type, int kern_clean)
 {
 	struct drm_buffer_manager *bm = &dev->bm;
 	struct drm_mem_type_manager *man = &bm->man[mem_type];
@@ -2194,6 +2194,13 @@ int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type)
 			  "memory manager type %u\n", mem_type);
 		return ret;
 	}
+
+	if ((man->kern_init_type) && (kern_clean == 0)) {
+		DRM_ERROR("Trying to take down kernel initialized "
+			  "memory manager type %u\n", mem_type);
+		return -EPERM;
+	}
+
 	man->use_type = 0;
 	man->has_type = 0;
 
@@ -2245,9 +2252,9 @@ static int drm_bo_lock_mm(struct drm_device *dev, unsigned mem_type)
 	return ret;
 }
 
-int drm_bo_init_mm(struct drm_device *dev,
-		   unsigned type,
-		   unsigned long p_offset, unsigned long p_size)
+int drm_bo_init_mm(struct drm_device *dev, unsigned type,
+		   unsigned long p_offset, unsigned long p_size,
+		   int kern_init)
 {
 	struct drm_buffer_manager *bm = &dev->bm;
 	int ret = -EINVAL;
@@ -2281,6 +2288,7 @@ int drm_bo_init_mm(struct drm_device *dev,
 	}
 	man->has_type = 1;
 	man->use_type = 1;
+	man->kern_init_type = kern_init;
 
 	INIT_LIST_HEAD(&man->lru);
 	INIT_LIST_HEAD(&man->pinned);
@@ -2313,7 +2321,7 @@ int drm_bo_driver_finish(struct drm_device *dev)
 		man = &bm->man[i];
 		if (man->has_type) {
 			man->use_type = 0;
-			if ((i != DRM_BO_MEM_LOCAL) && drm_bo_clean_mm(dev, i)) {
+			if ((i != DRM_BO_MEM_LOCAL) && drm_bo_clean_mm(dev, i, 1)) {
 				ret = -EBUSY;
 				DRM_ERROR("DRM memory manager type %d "
 					  "is not clean.\n", i);
@@ -2384,7 +2392,7 @@ int drm_bo_driver_init(struct drm_device *dev)
 	 * Initialize the system memory buffer type.
 	 * Other types need to be driver / IOCTL initialized.
 	 */
-	ret = drm_bo_init_mm(dev, DRM_BO_MEM_LOCAL, 0, 0);
+	ret = drm_bo_init_mm(dev, DRM_BO_MEM_LOCAL, 0, 0, 1);
 	if (ret)
 		goto out_unlock;
 
@@ -2444,7 +2452,7 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 		goto out;
 	}
 	ret = drm_bo_init_mm(dev, arg->mem_type,
-			     arg->p_offset, arg->p_size);
+			     arg->p_offset, arg->p_size, 0);
 
 out:
 	mutex_unlock(&dev->struct_mutex);
@@ -2483,9 +2491,11 @@ int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 		goto out;
 	}
 	ret = 0;
-	if (drm_bo_clean_mm(dev, arg->mem_type)) {
-		DRM_ERROR("Memory manager type %d not clean. "
-			  "Delaying takedown\n", arg->mem_type);
+	if (ret = drm_bo_clean_mm(dev, arg->mem_type, 0)) {
+		if (ret == -EINVAL)
+			DRM_ERROR("Memory manager type %d not clean. "
+				  "Delaying takedown\n", arg->mem_type);
+		ret = 0;
 	}
 out:
 	mutex_unlock(&dev->struct_mutex);
