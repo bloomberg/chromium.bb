@@ -516,6 +516,7 @@ struct drm_buffer_object {
 struct drm_mem_type_manager {
 	int has_type;
 	int use_type;
+	int kern_init_type;
 	struct drm_mm manager;
 	struct list_head lru;
 	struct list_head pinned;
@@ -684,9 +685,10 @@ extern int drm_bo_mem_space(struct drm_buffer_object *bo,
 extern int drm_bo_move_buffer(struct drm_buffer_object *bo,
 			      uint64_t new_mem_flags,
 			      int no_wait, int move_unfenced);
-extern int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type);
+extern int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type, int kern_clean);
 extern int drm_bo_init_mm(struct drm_device *dev, unsigned type,
-			  unsigned long p_offset, unsigned long p_size);
+			  unsigned long p_offset, unsigned long p_size,
+			  int kern_init);
 extern int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
 				  uint64_t flags, uint64_t mask, uint32_t hint,
 				  uint32_t fence_class, int use_old_fence_class,

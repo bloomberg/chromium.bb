@@ -376,7 +376,7 @@ nouveau_mem_init_ttm(struct drm_device *dev)
 	bar1_size = drm_get_resource_len(dev, 1) >> PAGE_SHIFT;
 	if (bar1_size < vram_size) {
 		if ((ret = drm_bo_init_mm(dev, DRM_BO_MEM_PRIV0,
-					  bar1_size, vram_size - bar1_size))) {
+					  bar1_size, vram_size - bar1_size, 1))) {
 			DRM_ERROR("Failed PRIV0 mm init: %d\n", ret);
 			return ret;
 		}
@@ -387,7 +387,7 @@ nouveau_mem_init_ttm(struct drm_device *dev)
 #ifdef HACK_OLD_MM
 	vram_size /= 4;
 #endif
-	if ((ret = drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, vram_size))) {
+	if ((ret = drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, vram_size, 1))) {
 		DRM_ERROR("Failed VRAM mm init: %d\n", ret);
 		return ret;
 	}
@@ -407,7 +407,7 @@ nouveau_mem_init_ttm(struct drm_device *dev)
 
 	if ((ret = drm_bo_init_mm(dev, DRM_BO_MEM_TT, 0,
 				  dev_priv->gart_info.aper_size >>
-				  PAGE_SHIFT))) {
+				  PAGE_SHIFT, 1))) {
 		DRM_ERROR("Failed TT mm init: %d\n", ret);
 		return ret;
 	}
