@@ -878,6 +878,8 @@ struct drm_device {
 	u32 *last_vblank;		/* protected by dev->vbl_lock, used */
 					/* for wraparound handling */
 	u32 *vblank_offset;		/* used to track how many vblanks */
+	int *vblank_enabled;		/* so we don't call enable more than
+					   once per disable */
 	u32 *vblank_premodeset;		/*  were lost during modeset */
 	struct timer_list vblank_disable_timer;
 

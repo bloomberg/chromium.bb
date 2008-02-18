@@ -804,7 +804,7 @@ void nv20_graph_takedown(struct drm_device *dev)
 int nv30_graph_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t vramsz, tmp;
+//	uint32_t vramsz, tmp;
 	int ret, i;
 
 	NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) &
@@ -834,6 +834,7 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(NV10_PGRAPH_DEBUG_4, 0x00008000);
 	NV_WRITE(NV04_PGRAPH_LIMIT_VIOL_PIX, 0xf04bdff6);
 	NV_WRITE(0x400B80, 0x1003d888);
+	NV_WRITE(0x400B84, 0x0c000000);
 	NV_WRITE(0x400098, 0x00000000);
 	NV_WRITE(0x40009C, 0x0005ad00);
 	NV_WRITE(0x400B88, 0x62ff00ff); // suspiciously like PGRAPH_DEBUG_2
@@ -843,30 +844,47 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(0x400ba0, 0x002f8685);
 	NV_WRITE(0x400ba4, 0x00231f3f);
 	NV_WRITE(0x4008a4, 0x40000020);
-	NV_WRITE(0x400B84, 0x0c000000);
-	NV_WRITE(NV04_PGRAPH_DEBUG_2, 0x62ff0f7f);
+
+	if (dev_priv->chipset == 0x34) {
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0004);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA , 0x00200201);
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0008);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA , 0x00000008);
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00EA0000);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA , 0x00000032);
+		NV_WRITE(NV10_PGRAPH_RDI_INDEX, 0x00E00004);
+		NV_WRITE(NV10_PGRAPH_RDI_DATA , 0x00000002);
+	}
+
 	NV_WRITE(0x4000c0, 0x00000016);
 
 	/* copy tile info from PFB */
-	for (i=0; i<NV10_PFB_TILE__SIZE; i++) {
-		NV_WRITE(NV10_PGRAPH_TILE(i), NV_READ(NV10_PFB_TILE(i)));
-		NV_WRITE(NV10_PGRAPH_TLIMIT(i), NV_READ(NV10_PFB_TLIMIT(i)));
-		NV_WRITE(NV10_PGRAPH_TSIZE(i), NV_READ(NV10_PFB_TSIZE(i)));
-		NV_WRITE(NV10_PGRAPH_TSTATUS(i), NV_READ(NV10_PFB_TSTATUS(i)));
+	for (i = 0; i < NV10_PFB_TILE__SIZE; i++) {
+		NV_WRITE(0x00400904 + i*0x10, NV_READ(NV10_PFB_TLIMIT(i)));
+			/* which is NV40_PGRAPH_TLIMIT0(i) ?? */
+		NV_WRITE(0x00400908 + i*0x10, NV_READ(NV10_PFB_TSIZE(i)));
+			/* which is NV40_PGRAPH_TSIZE0(i) ?? */
+		NV_WRITE(0x00400900 + i*0x10, NV_READ(NV10_PFB_TILE(i)));
+			/* which is NV40_PGRAPH_TILE0(i) ?? */
 	}
 
 	NV_WRITE(NV10_PGRAPH_CTX_CONTROL, 0x10000100);
 	NV_WRITE(NV10_PGRAPH_STATE      , 0xFFFFFFFF);
+	NV_WRITE(0x0040075c             , 0x00000001);
 	NV_WRITE(NV04_PGRAPH_FIFO       , 0x00000001);
 
 	/* begin RAM config */
-	vramsz = drm_get_resource_len(dev, 0) - 1;
+//	vramsz = drm_get_resource_len(dev, 0) - 1;
 	NV_WRITE(0x4009A4, NV_READ(NV04_PFB_CFG0));
 	NV_WRITE(0x4009A8, NV_READ(NV04_PFB_CFG1));
-	NV_WRITE(0x400750, 0x00EA0000);
-	NV_WRITE(0x400754, NV_READ(NV04_PFB_CFG0));
-	NV_WRITE(0x400750, 0x00EA0004);
-	NV_WRITE(0x400754, NV_READ(NV04_PFB_CFG1));
+	if (dev_priv->chipset != 0x34) {
+		NV_WRITE(0x400750, 0x00EA0000);
+		NV_WRITE(0x400754, NV_READ(NV04_PFB_CFG0));
+		NV_WRITE(0x400750, 0x00EA0004);
+		NV_WRITE(0x400754, NV_READ(NV04_PFB_CFG1));
+	}
+
+#if 0
 	NV_WRITE(0x400820, 0);
 	NV_WRITE(0x400824, 0);
 	NV_WRITE(0x400864, vramsz-1);
@@ -885,6 +903,7 @@ int nv30_graph_init(struct drm_device *dev)
 	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_YMIN, 0);
 	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_XMAX, 0x7fff);
 	NV_WRITE(NV03_PGRAPH_ABS_UCLIP_YMAX, 0x7fff);
+#endif
 
 	return 0;
 }

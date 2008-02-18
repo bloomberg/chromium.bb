@@ -40,17 +40,9 @@ static struct pci_device_id pciidlist[] = {
 };
 
 #ifdef I915_HAVE_FENCE
-static struct drm_fence_driver i915_fence_driver = {
-	.num_classes = 1,
-	.wrap_diff = (1U << (BREADCRUMB_BITS - 1)),
-	.flush_diff = (1U << (BREADCRUMB_BITS - 2)),
-	.sequence_mask = BREADCRUMB_MASK,
-	.lazy_capable = 1,
-	.emit = i915_fence_emit_sequence,
-	.poke_flush = i915_poke_flush,
-	.has_irq = i915_fence_has_irq,
-};
+extern struct drm_fence_driver i915_fence_driver;
 #endif
+
 #ifdef I915_HAVE_BUFFER
 
 static uint32_t i915_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_PRIV0, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
@@ -68,6 +60,7 @@ static struct drm_bo_driver i915_bo_driver = {
 	.evict_flags = i915_evict_flags,
 	.move = i915_move,
 	.ttm_cache_flush = i915_flush_ttm,
+	.command_stream_barrier = NULL,
 };
 #endif
 
@@ -193,6 +186,7 @@ static void i915_save_vga(struct drm_device *dev)
 		dev_priv->saveAR[i] = i915_read_ar(st01, i, 0);
 	inb(st01);
 	outb(dev_priv->saveAR_INDEX, VGA_AR_INDEX);
+	inb(st01);
 
 	/* Graphics controller registers */
 	for (i = 0; i < 9; i++)
@@ -258,6 +252,7 @@ static void i915_restore_vga(struct drm_device *dev)
 		i915_write_ar(st01, i, dev_priv->saveAR[i], 0);
 	inb(st01); /* switch back to index mode */
 	outb(dev_priv->saveAR_INDEX | 0x20, VGA_AR_INDEX);
+	inb(st01);
 
 	/* VGA color palette registers */
 	outb(dev_priv->saveDACMASK, VGA_DACMASK);
@@ -309,6 +304,7 @@ static int i915_suspend(struct drm_device *dev)
 		dev_priv->saveDSPATILEOFF = I915_READ(DSPATILEOFF);
 	}
 	i915_save_palette(dev, PIPE_A);
+	dev_priv->savePIPEASTAT = I915_READ(I915REG_PIPEASTAT);
 
 	/* Pipe & plane B info */
 	dev_priv->savePIPEBCONF = I915_READ(PIPEBCONF);
@@ -336,6 +332,7 @@ static int i915_suspend(struct drm_device *dev)
 		dev_priv->saveDSPBTILEOFF = I915_READ(DSPBTILEOFF);
 	}
 	i915_save_palette(dev, PIPE_B);
+	dev_priv->savePIPEBSTAT = I915_READ(I915REG_PIPEBSTAT);
 
 	/* CRT state */
 	dev_priv->saveADPA = I915_READ(ADPA);
@@ -362,11 +359,25 @@ static int i915_suspend(struct drm_device *dev)
 	dev_priv->saveFBC_CONTROL2 = I915_READ(FBC_CONTROL2);
 	dev_priv->saveFBC_CONTROL = I915_READ(FBC_CONTROL);
 
+	/* Interrupt state */
+	dev_priv->saveIIR = I915_READ(I915REG_INT_IDENTITY_R);
+	dev_priv->saveIER = I915_READ(I915REG_INT_ENABLE_R);
+	dev_priv->saveIMR = I915_READ(I915REG_INT_MASK_R);
+
 	/* VGA state */
 	dev_priv->saveVCLK_DIVISOR_VGA0 = I915_READ(VCLK_DIVISOR_VGA0);
 	dev_priv->saveVCLK_DIVISOR_VGA1 = I915_READ(VCLK_DIVISOR_VGA1);
 	dev_priv->saveVCLK_POST_DIV = I915_READ(VCLK_POST_DIV);
 	dev_priv->saveVGACNTRL = I915_READ(VGACNTRL);
+
+	/* Clock gating state */
+	dev_priv->saveDSPCLK_GATE_D = I915_READ(DSPCLK_GATE_D);
+
+	/* Cache mode state */
+	dev_priv->saveCACHE_MODE_0 = I915_READ(CACHE_MODE_0);
+
+	/* Memory Arbitration state */
+	dev_priv->saveMI_ARB_STATE = I915_READ(MI_ARB_STATE);
 
 	/* Scratch space */
 	for (i = 0; i < 16; i++) {
@@ -433,9 +444,7 @@ static int i915_resume(struct drm_device *dev)
 		I915_WRITE(DSPATILEOFF, dev_priv->saveDSPATILEOFF);
 	}
 
-	if ((dev_priv->saveDPLL_A & DPLL_VCO_ENABLE) &&
-	    (dev_priv->saveDPLL_A & DPLL_VGA_MODE_DIS))
-		I915_WRITE(PIPEACONF, dev_priv->savePIPEACONF);
+	I915_WRITE(PIPEACONF, dev_priv->savePIPEACONF);
 
 	i915_restore_palette(dev, PIPE_A);
 	/* Enable the plane */
@@ -477,10 +486,9 @@ static int i915_resume(struct drm_device *dev)
 		I915_WRITE(DSPBTILEOFF, dev_priv->saveDSPBTILEOFF);
 	}
 
-	if ((dev_priv->saveDPLL_B & DPLL_VCO_ENABLE) &&
-	    (dev_priv->saveDPLL_B & DPLL_VGA_MODE_DIS))
-		I915_WRITE(PIPEBCONF, dev_priv->savePIPEBCONF);
-	i915_restore_palette(dev, PIPE_A);
+	I915_WRITE(PIPEBCONF, dev_priv->savePIPEBCONF);
+
+	i915_restore_palette(dev, PIPE_B);
 	/* Enable the plane */
 	I915_WRITE(DSPBCNTR, dev_priv->saveDSPBCNTR);
 	I915_WRITE(DSPBBASE, I915_READ(DSPBBASE));
@@ -517,6 +525,15 @@ static int i915_resume(struct drm_device *dev)
 	I915_WRITE(VCLK_DIVISOR_VGA1, dev_priv->saveVCLK_DIVISOR_VGA1);
 	I915_WRITE(VCLK_POST_DIV, dev_priv->saveVCLK_POST_DIV);
 	udelay(150);
+
+	/* Clock gating state */
+	I915_WRITE (DSPCLK_GATE_D, dev_priv->saveDSPCLK_GATE_D);
+
+	/* Cache mode state */
+	I915_WRITE (CACHE_MODE_0, dev_priv->saveCACHE_MODE_0 | 0xffff0000);
+
+	/* Memory arbitration state */
+	I915_WRITE (MI_ARB_STATE, dev_priv->saveMI_ARB_STATE | 0xffff0000);
 
 	for (i = 0; i < 16; i++) {
 		I915_WRITE(SWF0 + (i << 2), dev_priv->saveSWF0[i]);

@@ -75,7 +75,7 @@ nouveau_fence_emit(struct drm_device *dev, uint32_t class, uint32_t flags,
 }
 
 static void
-nouveau_fence_perform_flush(struct drm_device *dev, uint32_t class)
+nouveau_fence_poll(struct drm_device *dev, uint32_t class, uint32_t waiting_types)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_fence_class_manager *fc = &dev->fm.fence_class[class];
@@ -83,42 +83,26 @@ nouveau_fence_perform_flush(struct drm_device *dev, uint32_t class)
 	uint32_t pending_types = 0;
 
 	DRM_DEBUG("class=%d\n", class);
-
-	pending_types = fc->pending_flush |
-			((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
-	DRM_DEBUG("pending: 0x%08x 0x%08x\n", pending_types,
-					      fc->pending_flush);
+	DRM_DEBUG("pending: 0x%08x 0x%08x\n", waiting_types, fc->waiting_types);
 
 	if (pending_types) {
 		uint32_t sequence = NV_READ(chan->ref_cnt);
 
 		DRM_DEBUG("got 0x%08x\n", sequence);
-		drm_fence_handler(dev, class, sequence, pending_types, 0);
+		drm_fence_handler(dev, class, sequence, waiting_types, 0);
 	}
-}
-
-static void
-nouveau_fence_poke_flush(struct drm_device *dev, uint32_t class)
-{
-	struct drm_fence_manager *fm = &dev->fm;
-	unsigned long flags;
-
-	DRM_DEBUG("class=%d\n", class);
-
-	write_lock_irqsave(&fm->lock, flags);
-	nouveau_fence_perform_flush(dev, class);
-	write_unlock_irqrestore(&fm->lock, flags);
 }
 
 void
 nouveau_fence_handler(struct drm_device *dev, int channel)
 {
 	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_class_manager *fc = &fm->fence_class[channel];
 
 	DRM_DEBUG("class=%d\n", channel);
 
 	write_lock(&fm->lock);
-	nouveau_fence_perform_flush(dev, channel);
+	nouveau_fence_poll(dev, channel, fc->waiting_types);
 	write_unlock(&fm->lock);
 }
 
@@ -127,8 +111,10 @@ struct drm_fence_driver nouveau_fence_driver = {
 	.wrap_diff	= (1 << 30),
 	.flush_diff	= (1 << 29),
 	.sequence_mask	= 0xffffffffU,
-	.lazy_capable	= 1,
 	.has_irq	= nouveau_fence_has_irq,
 	.emit		= nouveau_fence_emit,
-	.poke_flush	= nouveau_fence_poke_flush
+	.flush          = NULL,
+	.poll           = nouveau_fence_poll,
+	.needed_flush   = NULL,
+	.wait           = NULL
 };

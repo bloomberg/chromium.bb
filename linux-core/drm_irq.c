@@ -74,11 +74,18 @@ int drm_irq_by_busid(struct drm_device *dev, void *data,
 static void vblank_disable_fn(unsigned long arg)
 {
 	struct drm_device *dev = (struct drm_device *)arg;
+	unsigned long irqflags;
 	int i;
 
-	for (i = 0; i < dev->num_crtcs; i++)
-		if (atomic_read(&dev->vblank_refcount[i]) == 0)
+	for (i = 0; i < dev->num_crtcs; i++) {
+		spin_lock_irqsave(&dev->vbl_lock, irqflags);
+		if (atomic_read(&dev->vblank_refcount[i]) == 0 &&
+		    dev->vblank_enabled[i]) {
 			dev->driver->disable_vblank(dev, i);
+			dev->vblank_enabled[i] = 0;
+		}
+		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
+	}
 }
 
 int drm_vblank_init(struct drm_device *dev, int num_crtcs)
@@ -109,6 +116,11 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	dev->vblank_refcount = drm_alloc(sizeof(atomic_t) * num_crtcs,
 					 DRM_MEM_DRIVER);
 	if (!dev->vblank_refcount)
+		goto err;
+
+	dev->vblank_enabled = drm_calloc(num_crtcs, sizeof(int),
+					 DRM_MEM_DRIVER);
+	if (!dev->vblank_enabled)
 		goto err;
 
 	dev->last_vblank = drm_calloc(num_crtcs, sizeof(u32), DRM_MEM_DRIVER);
@@ -143,6 +155,8 @@ err:
 		 DRM_MEM_DRIVER);
 	drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
 		 num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->vblank_enabled, sizeof(*dev->vblank_enabled) * num_crtcs,
+		 DRM_MEM_DRIVER);
 	drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * num_crtcs,
 		 DRM_MEM_DRIVER);
 	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
@@ -357,14 +371,20 @@ EXPORT_SYMBOL(drm_update_vblank_count);
  */
 int drm_vblank_get(struct drm_device *dev, int crtc)
 {
+	unsigned long irqflags;
 	int ret = 0;
 
+	spin_lock_irqsave(&dev->vbl_lock, irqflags);	
 	/* Going from 0->1 means we have to enable interrupts again */
-	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1) {
+	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1 &&
+	    !dev->vblank_enabled[crtc]) {
 		ret = dev->driver->enable_vblank(dev, crtc);
 		if (ret)
 			atomic_dec(&dev->vblank_refcount[crtc]);
+		else
+			dev->vblank_enabled[crtc] = 1;
 	}
+	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
 	return ret;
 }
@@ -382,8 +402,7 @@ void drm_vblank_put(struct drm_device *dev, int crtc)
 {
 	/* Last user schedules interrupt disable */
 	if (atomic_dec_and_test(&dev->vblank_refcount[crtc]))
-		mod_timer(&dev->vblank_disable_timer,
-			  round_jiffies_relative(DRM_HZ));
+	    mod_timer(&dev->vblank_disable_timer, jiffies + 5*DRM_HZ);
 }
 EXPORT_SYMBOL(drm_vblank_put);
 

@@ -164,7 +164,11 @@ struct drm_i915_private {
 	bool panel_wants_dither;
 	struct drm_display_mode *panel_fixed_mode;
 
- 	/* Register state */
+	/* DRI2 sarea */
+	struct drm_buffer_object *sarea_bo;
+	struct drm_bo_kmap_obj sarea_kmap;
+
+	/* Register state */
 	u8 saveLBB;
 	u32 saveDSPACNTR;
 	u32 saveDSPBCNTR;
@@ -183,6 +187,7 @@ struct drm_i915_private {
 	u32 saveVBLANK_A;
 	u32 saveVSYNC_A;
 	u32 saveBCLRPAT_A;
+	u32 savePIPEASTAT;
 	u32 saveDSPASTRIDE;
 	u32 saveDSPASIZE;
 	u32 saveDSPAPOS;
@@ -203,6 +208,7 @@ struct drm_i915_private {
 	u32 saveVBLANK_B;
 	u32 saveVSYNC_B;
 	u32 saveBCLRPAT_B;
+	u32 savePIPEBSTAT;
 	u32 saveDSPBSTRIDE;
 	u32 saveDSPBSIZE;
 	u32 saveDSPBPOS;
@@ -231,12 +237,18 @@ struct drm_i915_private {
 	u32 saveFBC_LL_BASE;
 	u32 saveFBC_CONTROL;
 	u32 saveFBC_CONTROL2;
+	u32 saveIER;
+	u32 saveIIR;
+	u32 saveIMR;
+	u32 saveCACHE_MODE_0;
+	u32 saveDSPCLK_GATE_D;
+	u32 saveMI_ARB_STATE;
 	u32 saveSWF0[16];
 	u32 saveSWF1[16];
 	u32 saveSWF2[3];
 	u8 saveMSR;
 	u8 saveSR[8];
-	u8 saveGR[24];
+	u8 saveGR[25];
 	u8 saveAR_INDEX;
 	u8 saveAR[20];
 	u8 saveDACMASK;
@@ -312,15 +324,9 @@ extern void i915_mem_release(struct drm_device * dev,
 			     struct mem_block *heap);
 #ifdef I915_HAVE_FENCE
 /* i915_fence.c */
-
-
 extern void i915_fence_handler(struct drm_device *dev);
-extern int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
-				    uint32_t flags,
-				    uint32_t *sequence,
-				    uint32_t *native_type);
-extern void i915_poke_flush(struct drm_device *dev, uint32_t class);
-extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags);
+extern void i915_invalidate_reported_sequence(struct drm_device *dev);
+
 #endif
 
 #ifdef I915_HAVE_BUFFER
@@ -685,6 +691,10 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  */
 #define DMA_FADD_S		0x20d4
 
+/* Memory Interface Arbitration State
+ */
+#define MI_ARB_STATE		0x20e4
+
 /* Cache mode 0 reg.
  *  - Manipulating render cache behaviour is central
  *    to the concept of zone rendering, tuning this reg can help avoid
@@ -695,6 +705,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  * bit of interest either set or cleared.  EG: (BIT<<16) | BIT to set.
  */
 #define Cache_Mode_0		0x2120
+#define CACHE_MODE_0		0x2120
 #define CM0_MASK_SHIFT          16
 #define CM0_IZ_OPT_DISABLE      (1<<6)
 #define CM0_ZR_OPT_DISABLE      (1<<5)
@@ -890,6 +901,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 # define VGA0_PD_P1_SHIFT	0
 /** P1 value is 2 greater than this field */
 # define VGA0_PD_P1_MASK	(0x1f << 0)
+
+#define DSPCLK_GATE_D	0x6200
 
 /* I830 CRTC registers */
 #define HTOTAL_A	0x60000

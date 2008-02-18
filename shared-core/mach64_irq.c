@@ -71,11 +71,10 @@ irqreturn_t mach64_driver_irq_handler(DRM_IRQ_ARGS)
 u32 mach64_get_vblank_counter(struct drm_device * dev, int crtc)
 {
 	const drm_mach64_private_t *const dev_priv = dev->dev_private;
-		
-	if (crtc != 0) {
+
+	if (crtc != 0)
 		return 0;
-	}
-	
+
 	return atomic_read(&dev_priv->vbl_received);
 }
 
@@ -83,14 +82,15 @@ int mach64_enable_vblank(struct drm_device * dev, int crtc)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	u32 status = MACH64_READ(MACH64_CRTC_INT_CNTL);
-	
+
 	if (crtc != 0) {
-		DRM_ERROR("tried to enable vblank on non-existent crtc %d\n", crtc);
-		return 0;
+		DRM_ERROR("tried to enable vblank on non-existent crtc %d\n",
+			  crtc);
+		return -EINVAL;
 	}
-	
+
 	DRM_DEBUG("before enable vblank CRTC_INT_CTNL: 0x%08x\n", status);
-	
+
 	/* Turn on VBLANK interrupt */
 	MACH64_WRITE(MACH64_CRTC_INT_CNTL, MACH64_READ(MACH64_CRTC_INT_CNTL)
 		     | MACH64_CRTC_VBLANK_INT_EN);
@@ -98,11 +98,30 @@ int mach64_enable_vblank(struct drm_device * dev, int crtc)
 	return 0;
 }
 
-
 void mach64_disable_vblank(struct drm_device * dev, int crtc)
+{
+	if (crtc != 0) {
+		DRM_ERROR("tried to disable vblank on non-existent crtc %d\n",
+			  crtc);
+		return;
+	}
+
+	/*
+	 * FIXME: implement proper interrupt disable by using the vblank
+	 * counter register (if available).
+	 */
+}
+
+static void mach64_disable_vblank_local(struct drm_device * dev, int crtc)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
 	u32 status = MACH64_READ(MACH64_CRTC_INT_CNTL);
+
+	if (crtc != 0) {
+		DRM_ERROR("tried to disable vblank on non-existent crtc %d\n",
+			  crtc);
+		return;
+	}
 
 	DRM_DEBUG("before disable vblank CRTC_INT_CTNL: 0x%08x\n", status);
 
@@ -111,8 +130,6 @@ void mach64_disable_vblank(struct drm_device * dev, int crtc)
 		     | MACH64_CRTC_VBLANK_INT);
 }
 
-/* drm_dma.h hooks
-*/
 void mach64_driver_irq_preinstall(struct drm_device * dev)
 {
 	drm_mach64_private_t *dev_priv = dev->dev_private;
@@ -121,7 +138,7 @@ void mach64_driver_irq_preinstall(struct drm_device * dev)
 
 	DRM_DEBUG("before install CRTC_INT_CTNL: 0x%08x\n", status);
 
-	mach64_disable_vblank(dev,0);
+	mach64_disable_vblank_local(dev, 0);
 }
 
 int mach64_driver_irq_postinstall(struct drm_device * dev)
@@ -135,7 +152,7 @@ void mach64_driver_irq_uninstall(struct drm_device * dev)
 	if (!dev_priv)
 		return;
 
-	mach64_disable_vblank(dev, 0);
+	mach64_disable_vblank_local(dev, 0);
 
 	DRM_DEBUG("after uninstall CRTC_INT_CTNL: 0x%08x\n",
 		  MACH64_READ(MACH64_CRTC_INT_CNTL));

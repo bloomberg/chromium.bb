@@ -30,44 +30,37 @@
 #include "xgi_misc.h"
 #include "xgi_cmdlist.h"
 
-static uint32_t xgi_do_flush(struct drm_device * dev, uint32_t class)
+static void xgi_fence_poll(struct drm_device * dev, uint32_t class, 
+			   uint32_t waiting_types)
 {
 	struct xgi_info * info = dev->dev_private;
-	struct drm_fence_class_manager * fc = &dev->fm.fence_class[class];
-	uint32_t pending_flush_types = 0;
-	uint32_t signaled_flush_types = 0;
+	uint32_t signaled_types = 0;
 
 
 	if ((info == NULL) || (class != 0))
-		return 0;
+		return;
 
 	DRM_SPINLOCK(&info->fence_lock);
 
-	pending_flush_types = fc->pending_flush |
-		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
-
-	if (pending_flush_types) {
-		if (pending_flush_types & DRM_FENCE_TYPE_EXE) {
+	if (waiting_types) {
+		if (waiting_types & DRM_FENCE_TYPE_EXE) {
 			const u32 begin_id = le32_to_cpu(DRM_READ32(info->mmio_map,
 							0x2820))
 				& BEGIN_BEGIN_IDENTIFICATION_MASK;
 
 			if (begin_id != info->complete_sequence) {
 				info->complete_sequence = begin_id;
-				signaled_flush_types |= DRM_FENCE_TYPE_EXE;
+				signaled_types |= DRM_FENCE_TYPE_EXE;
 			}
 		}
 
-		if (signaled_flush_types) {
+		if (signaled_types) {
 			drm_fence_handler(dev, 0, info->complete_sequence,
-					  signaled_flush_types, 0);
+					  signaled_types, 0);
 		}
 	}
 
 	DRM_SPINUNLOCK(&info->fence_lock);
-
-	return fc->pending_flush |
-		((fc->pending_exe_flush) ? DRM_FENCE_TYPE_EXE : 0);
 }
 
 
@@ -98,25 +91,13 @@ int xgi_fence_emit_sequence(struct drm_device * dev, uint32_t class,
 }
 
 
-void xgi_poke_flush(struct drm_device * dev, uint32_t class)
-{
-	struct drm_fence_manager * fm = &dev->fm;
-	unsigned long flags;
-
-
-	write_lock_irqsave(&fm->lock, flags);
-	xgi_do_flush(dev, class);
-	write_unlock_irqrestore(&fm->lock, flags);
-}
-
-
 void xgi_fence_handler(struct drm_device * dev)
 {
 	struct drm_fence_manager * fm = &dev->fm;
-
+	struct drm_fence_class_manager *fc = &fm->fence_class[0];
 
 	write_lock(&fm->lock);
-	xgi_do_flush(dev, 0);
+	xgi_fence_poll(dev, 0, fc->waiting_types);
 	write_unlock(&fm->lock);
 }
 
@@ -125,3 +106,17 @@ int xgi_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags)
 {
 	return ((class == 0) && (flags == DRM_FENCE_TYPE_EXE)) ? 1 : 0;
 }
+
+struct drm_fence_driver xgi_fence_driver = {
+	.num_classes = 1,
+	.wrap_diff = BEGIN_BEGIN_IDENTIFICATION_MASK,
+	.flush_diff = BEGIN_BEGIN_IDENTIFICATION_MASK - 1,
+	.sequence_mask = BEGIN_BEGIN_IDENTIFICATION_MASK,
+	.has_irq = xgi_fence_has_irq,
+	.emit = xgi_fence_emit_sequence,
+	.flush = NULL,
+	.poll = xgi_fence_poll,
+	.needed_flush = NULL,
+	.wait = NULL
+};
+
