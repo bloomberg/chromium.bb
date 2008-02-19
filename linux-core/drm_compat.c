@@ -764,3 +764,18 @@ unsigned long round_jiffies_relative(unsigned long j)
 }
 EXPORT_SYMBOL(round_jiffies_relative);
 #endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn)
+{
+    struct pci_dev *dev = NULL;
+
+    while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+        if (pci_domain_nr(dev->bus) == 0 &&
+           (dev->bus->number == bus && dev->devfn == devfn))
+            return dev;
+   }
+   return NULL;
+}
+EXPORT_SYMBOL(pci_get_bus_and_slot);
+#endif

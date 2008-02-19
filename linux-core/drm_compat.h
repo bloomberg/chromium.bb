@@ -335,4 +335,8 @@ void *idr_replace(struct idr *idp, void *ptr, int id);
 extern unsigned long round_jiffies_relative(unsigned long j);
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+extern struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn);
+#endif
+
 #endif
