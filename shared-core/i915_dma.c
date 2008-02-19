@@ -101,7 +101,7 @@ setup_dri2_sarea(struct drm_device * dev,
 		 struct drm_file *file_priv,
 		 drm_i915_init_t * init)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	int ret;
 	unsigned int *p, *end, *next;
 
@@ -129,8 +129,8 @@ setup_dri2_sarea(struct drm_device * dev,
 	while (p < end && DRI2_SAREA_BLOCK_TYPE(*p) != DRI2_SAREA_BLOCK_END) {
 		switch (DRI2_SAREA_BLOCK_TYPE(*p)) {
 		case DRI2_SAREA_BLOCK_LOCK:
-			dev->lock.hw_lock = (void *) (p + 1);
-			dev->sigdata.lock = dev->lock.hw_lock;
+			dev->primary->master->lock.hw_lock = (void *) (p + 1);
+			dev->sigdata.lock = dev->primary->master->lock.hw_lock;
 			break;
 		}
 		next = DRI2_SAREA_BLOCK_NEXT(p);
@@ -152,6 +152,7 @@ static int i915_initialize(struct drm_device * dev,
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
+
 	dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
 	if (!dev_priv->mmio_map) {
 		i915_dma_cleanup(dev);
@@ -228,14 +229,13 @@ static int i915_initialize(struct drm_device * dev,
 #endif
 
 	if (init->func == I915_INIT_DMA2) {
-		ret = setup_dri2_sarea(dev, file_priv, init);
+		int ret = setup_dri2_sarea(dev, file_priv, init);
 		if (ret) {
 			i915_dma_cleanup(dev);
 			DRM_ERROR("could not set up dri2 sarea\n");
 			return ret;
 		}
 	}
-		
 
 	return 0;
 }
@@ -1389,34 +1389,6 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 	DRM_DEBUG("load hws at %p\n", dev_priv->hw_status_page);
 	return 0;
 }
-
-#if 0 /* FIXME DRI2 */
-void i915_driver_lastclose(struct drm_device * dev)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-
-	if (drm_getsarea(dev) && dev_priv->sarea_priv)
-		i915_do_cleanup_pageflip(dev);
-	if (dev_priv->agp_heap)
-		i915_mem_takedown(&(dev_priv->agp_heap));
-
-	if (dev_priv->sarea_kmap.virtual) {
-		drm_bo_kunmap(&dev_priv->sarea_kmap);
-		dev_priv->sarea_kmap.virtual = NULL;
-		dev->lock.hw_lock = NULL;
-		dev->sigdata.lock = NULL;
-	}
-
-	if (dev_priv->sarea_bo) {
-		mutex_lock(&dev->struct_mutex);
-		drm_bo_usage_deref_locked(&dev_priv->sarea_bo);
-		mutex_unlock(&dev->struct_mutex);
-		dev_priv->sarea_bo = NULL;
-	}
-
-	i915_dma_cleanup(dev);
-}
-#endif
 
 struct drm_ioctl_desc i915_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_I915_INIT, i915_dma_init, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),

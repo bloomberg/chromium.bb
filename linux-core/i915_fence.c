@@ -94,7 +94,7 @@ static void i915_fence_flush(struct drm_device *dev,
 static void i915_fence_poll(struct drm_device *dev, uint32_t fence_class,
 			    uint32_t waiting_types)
 {
-	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[0];
 	uint32_t sequence;
@@ -147,7 +147,7 @@ static int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 			     uint32_t flags, uint32_t *sequence,
 			     uint32_t *native_type)
 {
-	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	if (unlikely(!dev_priv))
 		return -EINVAL;
 
@@ -179,7 +179,7 @@ static int i915_fence_wait(struct drm_fence_object *fence,
 			   int lazy, int interruptible, uint32_t mask)
 {
 	struct drm_device *dev = fence->dev;
-	drm_i915_private_t *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[0];
 	int ret;

@@ -269,6 +269,19 @@ int i915_driver_unload(struct drm_device *dev)
 		drm_core_ioremapfree(&dev_priv->ring.map, dev);
 	}
 #endif
+	if (dev_priv->sarea_kmap.virtual) {
+		drm_bo_kunmap(&dev_priv->sarea_kmap);
+		dev_priv->sarea_kmap.virtual = NULL;
+		dev->primary->master->lock.hw_lock = NULL;
+		dev->sigdata.lock = NULL;
+	}
+
+	if (dev_priv->sarea_bo) {
+		mutex_lock(&dev->struct_mutex);
+		drm_bo_usage_deref_locked(&dev_priv->sarea_bo);
+		mutex_unlock(&dev->struct_mutex);
+		dev_priv->sarea_bo = NULL;
+	}
 
 	if (dev_priv->status_page_dmah) {
 		drm_pci_free(dev, dev_priv->status_page_dmah);
