@@ -2871,6 +2871,21 @@ int drmMMUnlock(int fd, unsigned memType, int unlockBM)
     return drmIoctlTimeout(fd, DRM_IOCTL_MM_UNLOCK, &arg);
 }
 
+int drmMMInfo(int fd, unsigned memType, uint64_t *size)
+{
+    struct drm_mm_info_arg arg;
+
+    memset(&arg, 0, sizeof(arg));
+    
+    arg.mem_type = memType;
+
+    if (ioctl(fd, DRM_IOCTL_MM_INFO, &arg))
+	return -errno;
+
+    *size = arg.p_size;
+    return 0;
+}
+
 int drmBOVersion(int fd, unsigned int *major,
 		 unsigned int *minor,
 		 unsigned int *patchlevel)

@@ -2283,6 +2283,7 @@ int drm_bo_init_mm(struct drm_device *dev,
 	}
 	man->has_type = 1;
 	man->use_type = 1;
+	man->size = p_size;
 
 	INIT_LIST_HEAD(&man->lru);
 	INIT_LIST_HEAD(&man->pinned);
@@ -2553,6 +2554,42 @@ int drm_mm_unlock_ioctl(struct drm_device *dev,
 	return 0;
 }
 
+int drm_mm_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	struct drm_mm_info_arg *arg = data;
+	struct drm_buffer_manager *bm = &dev->bm;
+	struct drm_bo_driver *driver = dev->driver->bo_driver;
+	struct drm_mem_type_manager *man;
+	int ret = 0;
+	int mem_type = arg->mem_type;
+
+	if (!driver) {
+		DRM_ERROR("Buffer objects are not supported by this driver\n");
+		return -EINVAL;
+	}
+
+	if (mem_type >= DRM_BO_MEM_TYPES) {
+		DRM_ERROR("Illegal memory type %d\n", arg->mem_type);
+		return -EINVAL;
+	}
+
+	mutex_lock(&dev->struct_mutex);
+	if (!bm->initialized) {
+		DRM_ERROR("DRM memory manager was not initialized\n");
+		ret = -EINVAL;
+		goto out;
+	}
+
+
+	man = &bm->man[arg->mem_type];
+
+	arg->p_size = man->size;
+
+out:
+	mutex_unlock(&dev->struct_mutex);
+     
+	return ret;
+}
 /*
  * buffer object vm functions.
  */
