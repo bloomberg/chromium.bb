@@ -16,6 +16,12 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <string.h>
+#ifdef CLEAN_FBDEV
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <linux/fb.h>
+#endif
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
@@ -25,6 +31,11 @@ drmModeFBPtr createFB(int fd, drmModeResPtr res);
 void testCursor(int fd, uint32_t crtc);
 void prettyColors(int fd, unsigned int handle);
 void prettyCursor(int fd, unsigned int handle, unsigned int color);
+
+#ifdef CLEAN_FBDEV
+struct fb_var_screeninfo var;
+struct fb_fix_screeninfo fix;
+#endif
 
 /* structs for the demo_driver */
 
@@ -101,6 +112,20 @@ int main(int argc, char **argv)
 	int num;
 	int i;
 
+#ifdef CLEAN_FBDEV
+       int fbdev_fd;
+
+       fbdev_fd = open("/dev/fb0", O_RDWR);
+
+       memset(&var, 0, sizeof(struct fb_var_screeninfo));
+       memset(&fix, 0, sizeof(struct fb_fix_screeninfo));
+
+       if (ioctl(fbdev_fd, FBIOGET_VSCREENINFO, &var))
+               printf("var  %s\n", strerror(errno));
+       if      (ioctl(fbdev_fd, FBIOGET_FSCREENINFO, &fix))
+               printf("fix %s\n", strerror(errno));
+#endif
+
 	printf("starting demo\n");
 
 	driver = demoCreateDriver();
@@ -155,10 +180,12 @@ int main(int argc, char **argv)
 #ifdef CLEAN_FBDEV
 	if (ioctl(fbdev_fd, FBIOPUT_VSCREENINFO, &var))
 		printf("var  %s\n", strerror(errno));
+
+	close(fbdev_fd);
 #endif
 
-    printf("ok\n");
-    return 0;
+	printf("ok\n");
+	return 0;
 }
 
 int demoCreateScreens(struct demo_driver *driver)
@@ -296,8 +323,20 @@ void demoTakeDownScreen(struct demo_screen *screen)
 	int i;
 	drmBO bo;
 
+#if 0
+	/* This can bust the fbdev arrangement as it basically unhooks
+	 * the outputs and the fbdev backend doesn't know how to put things
+	 * back on track. Realistically, it's up to the crtc owner to restore
+	 * things.....
+	 *
+	 * So if you are mixing API's make sure the modesetting owner puts
+	 * back the original CRTC arrangement so fbdev can continue...
+	 *
+  	 * Ho-hum..
+	 */
 	if (screen->crtc)
 		drmModeSetCrtc(fd, screen->crtc->crtc_id, 0, 0, 0, 0, 0, 0);
+#endif
 
 	if (screen->fb)
 		drmModeRmFB(fd, screen->fb->buffer_id);
@@ -354,7 +393,7 @@ struct demo_driver* demoCreateDriver(void)
 
 	memset(driver, 0, sizeof(struct demo_driver));
 
-	driver->fd = drmOpenControl(0);
+	driver->fd = drmOpen("i915",NULL);
 
 	if (driver->fd < 0) {
 		printf("Failed to open the card fb\n");

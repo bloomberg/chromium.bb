@@ -26,7 +26,12 @@ int main(int argc, char **argv)
 	char name[100];
 	int i,d;
 	int fd;
-	int drmfd = drmOpenControl(0);
+	int drmfd = drmOpen("i915", NULL);
+
+	if (drmfd < 0) {
+		printf("drmOpenControl failed\n");
+		return 1;
+	}
 
 	/* try four devices */
 	for (d = 0; d < 4; d++) {
@@ -35,11 +40,6 @@ int main(int argc, char **argv)
 
 		if (fd == -1) {
 			printf("open %s : %s\n", name, strerror(errno));
-			return 1;
-		}
-
-		if (drmfd < 0) {
-			printf("drmOpenControl failed\n");
 			return 1;
 		}
 
@@ -79,6 +79,8 @@ int main(int argc, char **argv)
 
 		printf("cursor (may show up on wrong CRTC - fixme)\n");
 		cursor(fd, drmfd);
+
+		close(fd);
 	}
 	return 0;
 }

@@ -123,7 +123,7 @@ struct demo_driver* demoCreateDriver(void)
 
 	memset(driver, 0, sizeof(struct demo_driver));
 
-	driver->fd = drmOpenControl(0);
+	driver->fd = drmOpen("i915", NULL);
 
 	if (driver->fd < 0) {
 		printf("Failed to open the card fb\n");
