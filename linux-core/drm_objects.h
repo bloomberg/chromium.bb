@@ -525,6 +525,7 @@ struct drm_mem_type_manager {
 	unsigned long io_offset;
 	unsigned long io_size;
 	void *io_addr;
+	uint64_t size; /* size of managed area for reporting to userspace */
 };
 
 struct drm_bo_lock {
@@ -651,6 +652,7 @@ extern int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file
 extern int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+extern int drm_mm_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_version_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_driver_finish(struct drm_device *dev);
 extern int drm_bo_driver_init(struct drm_device *dev);

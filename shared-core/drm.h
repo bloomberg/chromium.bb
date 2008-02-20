@@ -950,6 +950,12 @@ struct drm_mm_init_arg {
 	uint64_t p_size;
 };
 
+struct drm_mm_info_arg {
+	unsigned int mem_type;
+	uint64_t p_size;
+};
+
+
 /*
  * Drm mode setting
  */
@@ -1209,6 +1215,7 @@ struct drm_mode_hotplug {
 #define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_VERSION          DRM_IOR(0xd6, struct drm_bo_version_arg)
+#define DRM_IOCTL_MM_INFO               DRM_IOWR(0xd7, struct drm_mm_info_arg)
 
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)

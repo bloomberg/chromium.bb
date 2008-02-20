@@ -172,6 +172,7 @@ extern int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
 extern int drmMMTakedown(int fd, unsigned memType);
 extern int drmMMLock(int fd, unsigned memType, int lockBM, int ignoreNoEvict);
 extern int drmMMUnlock(int fd, unsigned memType, int unlockBM);
+extern int drmMMInfo(int fd, unsigned memType, uint64_t *size);
 extern int drmBOSetStatus(int fd, drmBO *buf, 
 			  uint64_t flags, uint64_t mask,
 			  unsigned int hint, 
