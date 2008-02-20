@@ -235,7 +235,6 @@ struct drm_framebuffer {
 	struct list_head head;
 	int id; /* idr assigned */
 	unsigned int pitch;
-	unsigned long offset;
 	unsigned int width;
 	unsigned int height;
 	/* depth can be 15 or 16 */

@@ -556,7 +556,7 @@ static void radeon_ms_crtc1_mode_set(struct drm_crtc *crtc,
 	}
 	radeon_pll1_compute(crtc, adjusted_mode);
 
-	state->crtc_offset = REG_S(CRTC_OFFSET, CRTC_OFFSET, crtc->fb->offset);
+	state->crtc_offset = REG_S(CRTC_OFFSET, CRTC_OFFSET, crtc->fb->bo->offset);
 	state->crtc_gen_cntl = CRTC_GEN_CNTL__CRTC_EXT_DISP_EN |
 		CRTC_GEN_CNTL__CRTC_EN |
 		REG_S(CRTC_GEN_CNTL, CRTC_PIX_WIDTH, format);

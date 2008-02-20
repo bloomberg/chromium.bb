@@ -612,7 +612,6 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		return -EINVAL;
 	}
 
-	fb->offset = fbo->offset;
 	fb->bo = fbo;
 	printk("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
 		       fb->height, fbo->offset, fbo);
@@ -639,7 +638,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->fix.mmio_start = 0;
 	info->fix.mmio_len = 0;
 	info->fix.line_length = fb->pitch;
-	info->fix.smem_start = fb->offset + dev->mode_config.fb_base;
+	info->fix.smem_start = fb->bo->offset + dev->mode_config.fb_base;
 	info->fix.smem_len = info->fix.line_length * fb->height;
 
 	info->flags = FBINFO_DEFAULT;

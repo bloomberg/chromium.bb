@@ -319,7 +319,6 @@ int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		return -EINVAL;
 	}
 
-	fb->offset = fb->bo->offset;
 	DRM_INFO("[radeon_ms] framebuffer %dx%d at 0x%08lX\n",
 		 fb->width, fb->height, fb->bo->offset);
 
@@ -340,7 +339,7 @@ int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->fix.mmio_start = 0;
 	info->fix.mmio_len = 0;
 	info->fix.line_length = fb->pitch;
-	info->fix.smem_start = fb->offset + dev->mode_config.fb_base;
+	info->fix.smem_start = fb->bo->offset + dev->mode_config.fb_base;
 	info->fix.smem_len = info->fix.line_length * fb->height;
 	info->flags = FBINFO_DEFAULT;
 	DRM_INFO("[radeon_ms] fb physical start : 0x%lX\n", info->fix.smem_start);
