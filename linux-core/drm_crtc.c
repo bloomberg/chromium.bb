@@ -1092,7 +1092,8 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	struct drm_output *output;
 	int count = 0, ro;
 
-	save_crtcs = kzalloc(dev->mode_config.num_crtc * sizeof(struct drm_crtc *), GFP_KERNEL);
+	/* this is meant to be num_output not num_crtc */
+	save_crtcs = kzalloc(dev->mode_config.num_output * sizeof(struct drm_crtc *), GFP_KERNEL);
 	if (!save_crtcs)
 		return -ENOMEM;
 
@@ -1663,10 +1664,10 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		}
 	}
 
-	/* What happens to output_set, leak? */
 	ret = drm_crtc_set_config(crtc, crtc_req, mode, output_set, fb);
 
 out:
+	kfree(output_set);
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
 }
