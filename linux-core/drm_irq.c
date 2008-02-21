@@ -88,6 +88,36 @@ static void vblank_disable_fn(unsigned long arg)
 	}
 }
 
+static void drm_vblank_cleanup(struct drm_device *dev)
+{
+	/* Bail if the driver didn't call drm_vblank_init() */
+	if (dev->num_crtcs == 0)
+		return;
+
+	del_timer(&dev->vblank_disable_timer);
+
+	vblank_disable_fn((unsigned long)dev);
+
+	drm_free(dev->vbl_queue, sizeof(*dev->vbl_queue) * dev->num_crtcs,
+		 DRM_MEM_DRIVER);
+	drm_free(dev->vbl_sigs, sizeof(*dev->vbl_sigs) * dev->num_crtcs,
+		 DRM_MEM_DRIVER);
+	drm_free(dev->_vblank_count, sizeof(*dev->_vblank_count) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->vblank_enabled, sizeof(*dev->vblank_enabled) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * dev->num_crtcs,
+		 DRM_MEM_DRIVER);
+	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->vblank_offset, sizeof(*dev->vblank_offset) * dev->num_crtcs,
+		 DRM_MEM_DRIVER);
+
+	dev->num_crtcs = 0;
+}
+
 int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 {
 	int i, ret = -ENOMEM;
@@ -147,22 +177,7 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	return 0;
 
 err:
-	drm_free(dev->vbl_queue, sizeof(*dev->vbl_queue) * num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->vbl_sigs, sizeof(*dev->vbl_sigs) * num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->_vblank_count, sizeof(*dev->_vblank_count) * num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
-		 num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_enabled, sizeof(*dev->vblank_enabled) * num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
-		 num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_offset, sizeof(*dev->vblank_offset) * num_crtcs,
-		 DRM_MEM_DRIVER);
+	drm_vblank_cleanup(dev);
 	return ret;
 }
 EXPORT_SYMBOL(drm_vblank_init);
@@ -257,6 +272,8 @@ int drm_irq_uninstall(struct drm_device * dev)
 	DRM_DEBUG("irq=%d\n", dev->irq);
 
 	dev->driver->irq_uninstall(dev);
+
+	drm_vblank_cleanup(dev);
 
 	free_irq(dev->irq, dev);
 

@@ -38,7 +38,7 @@ static int drm_sysfs_suspend(struct device *dev, pm_message_t state)
 
 	if (drm_minor->type == DRM_MINOR_CONTROL)
 		if (drm_dev->driver->suspend)
-			return drm_dev->driver->suspend(drm_dev);
+			return drm_dev->driver->suspend(drm_dev, state);
 
 	return 0;
 }
