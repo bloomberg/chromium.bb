@@ -273,9 +273,9 @@ int drm_irq_uninstall(struct drm_device * dev)
 
 	dev->driver->irq_uninstall(dev);
 
-	drm_vblank_cleanup(dev);
-
 	free_irq(dev->irq, dev);
+
+	drm_vblank_cleanup(dev);
 
 	dev->locked_tasklet_func = NULL;
 
