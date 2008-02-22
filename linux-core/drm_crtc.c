@@ -418,7 +418,6 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	struct drm_display_mode *adjusted_mode, saved_mode;
 	int saved_x, saved_y;
 	bool didLock = false;
-	bool ret = false;
 	struct drm_output *output;
 
 	adjusted_mode = drm_mode_duplicate(dev, mode);
@@ -442,8 +441,13 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	crtc->x = x;
 	crtc->y = y;
 
-	/* XXX short-circuit changes to base location only */
-	
+	if (drm_mode_equal(&saved_mode, &crtc->mode)) {
+		if (saved_x != crtc->x || saved_y != crtc->y) {
+			crtc->funcs->mode_set_base(crtc, crtc->x, crtc->y);
+			goto done;
+		}
+	}
+
 	/* Pass our mode to the outputs and the CRTC to give them a chance to
 	 * adjust it according to limitations or output properties, and also
 	 * a chance to reject the mode entirely.
@@ -507,22 +511,15 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	
 	/* XXX free adjustedmode */
 	drm_mode_destroy(dev, adjusted_mode);
-	ret = TRUE;
 	/* TODO */
 //	if (scrn->pScreen)
 //		drm_crtc_set_screen_sub_pixel_order(dev);
 
 done:
-	if (!ret) {
-		crtc->x = saved_x;
-		crtc->y = saved_y;
-		crtc->mode = saved_mode;
-	}
-	
 	if (didLock)
 		crtc->funcs->unlock (crtc);
 	
-	return ret;
+	return true;
 }
 EXPORT_SYMBOL(drm_crtc_set_mode);
 
@@ -1599,13 +1596,13 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		     void *data, struct drm_file *file_priv)
 {
 	struct drm_mode_crtc *crtc_req = data;
-	struct drm_crtc *crtc;
+	struct drm_crtc *crtc, *crtcfb;
 	struct drm_output **output_set = NULL, *output;
 	struct drm_framebuffer *fb = NULL;
 	struct drm_display_mode *mode = NULL;
+	uint32_t __user *set_outputs_ptr;
 	int ret = 0;
 	int i;
-	uint32_t __user *set_outputs_ptr;
 
 	mutex_lock(&dev->mode_config.mutex);
 	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_req->crtc_id);
@@ -1616,8 +1613,16 @@ int drm_mode_setcrtc(struct drm_device *dev,
 	}
 
 	if (crtc_req->mode_valid) {
-		/* if we have a mode we need a framebuffer */
-		if (crtc_req->fb_id) {
+		/* If we have a mode we need a framebuffer. */
+		/* If we pass -1, set the mode with the currently bound fb */
+		if (crtc_req->fb_id == -1) {
+			list_for_each_entry(crtcfb, &dev->mode_config.crtc_list, head) {
+				if (crtcfb == crtc) {
+					DRM_INFO("Using current fb for setmode\n");
+					fb = crtc->fb;		
+				}
+			}
+		} else {
 			fb = idr_find(&dev->mode_config.crtc_idr, crtc_req->fb_id);
 			if (!fb || (fb->id != crtc_req->fb_id)) {
 				DRM_DEBUG("Unknown FB ID%d\n", crtc_req->fb_id);

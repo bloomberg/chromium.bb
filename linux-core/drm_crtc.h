@@ -244,7 +244,7 @@ struct drm_framebuffer {
 	struct drm_buffer_object *bo;
 	void *fbdev;
 	u32 pseudo_palette[17];
-	void *virtual_base;
+	struct drm_bo_kmap_obj kmap;
 	struct list_head filp_head;
 };
 

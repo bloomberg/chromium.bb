@@ -369,9 +369,41 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	unsigned long Start, Offset;
 	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
+	int dspstride = (pipe == 0) ? DSPASTRIDE : DSPBSTRIDE;
+	int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
+	u32 dspcntr;
+
+	/* no fb bound */
+	if (!crtc->fb) {
+		DRM_INFO("No FB bound\n");
+		return;
+	}
 
 	Start = crtc->fb->bo->offset;
 	Offset = y * crtc->fb->pitch + x * (crtc->fb->bits_per_pixel / 8);
+
+	I915_WRITE(dspstride, crtc->fb->pitch);
+
+	dspcntr = I915_READ(dspcntr_reg);
+	switch (crtc->fb->bits_per_pixel) {
+	case 8:
+		dspcntr |= DISPPLANE_8BPP;
+		break;
+	case 16:
+		if (crtc->fb->depth == 15)
+			dspcntr |= DISPPLANE_15_16BPP;
+		else
+			dspcntr |= DISPPLANE_16BPP;
+		break;
+	case 24:
+	case 32:
+		dspcntr |= DISPPLANE_32BPP_NO_ALPHA;
+		break;
+	default:
+		DRM_ERROR("Unknown color depth\n");
+		return;
+	}
+	I915_WRITE(dspcntr_reg, dspcntr);
 
 	DRM_DEBUG("Writing base %08lX %08lX %d %d\n", Start, Offset, x, y);
 	if (IS_I965G(dev)) {
@@ -691,7 +723,6 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	int vblank_reg = (pipe == 0) ? VBLANK_A : VBLANK_B;
 	int vsync_reg = (pipe == 0) ? VSYNC_A : VSYNC_B;
 	int dspsize_reg = (pipe == 0) ? DSPASIZE : DSPBSIZE;
-	int dspstride_reg = (pipe == 0) ? DSPASTRIDE : DSPBSTRIDE;
 	int dsppos_reg = (pipe == 0) ? DSPAPOS : DSPBPOS;
 	int pipesrc_reg = (pipe == 0) ? PIPEASRC : PIPEBSRC;
 	int refclk;
@@ -804,26 +835,6 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	/* Set up the display plane register */
 	dspcntr = DISPPLANE_GAMMA_ENABLE;
 
-	switch (crtc->fb->bits_per_pixel) {
-	case 8:
-		dspcntr |= DISPPLANE_8BPP;
-		break;
-	case 16:
-		if (crtc->fb->depth == 15)
-			dspcntr |= DISPPLANE_15_16BPP;
-		else
-			dspcntr |= DISPPLANE_16BPP;
-		break;
-	case 24:
-	case 32:
-		dspcntr |= DISPPLANE_32BPP_NO_ALPHA;
-		break;
-	default:
-		DRM_ERROR("Unknown color depth\n");
-		return;
-	}
-	
-
 	if (pipe == 0)
 		dspcntr |= DISPPLANE_SEL_PIPE_A;
 	else
@@ -925,7 +936,6 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 		   ((adjusted_mode->crtc_vblank_end - 1) << 16));
 	I915_WRITE(vsync_reg, (adjusted_mode->crtc_vsync_start - 1) |
 		   ((adjusted_mode->crtc_vsync_end - 1) << 16));
-	I915_WRITE(dspstride_reg, crtc->fb->pitch);
 	/* pipesrc and dspsize control the size that is scaled from, which should
 	 * always be the user's requested size.
 	 */

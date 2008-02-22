@@ -173,8 +173,6 @@ struct drm_file;
 
 #include "drm_compat.h"
 
-#include "drm_crtc.h"
-
 /***********************************************************************/
 /** \name Macros to make printk easier */
 /*@{*/
@@ -610,6 +608,7 @@ struct drm_ati_pcigart_info {
 };
 
 #include "drm_objects.h"
+#include "drm_crtc.h"
 
 /* per-master structure */
 struct drm_master {

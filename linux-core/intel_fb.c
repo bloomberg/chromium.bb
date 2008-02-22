@@ -48,6 +48,7 @@ struct intelfb_par {
 	struct drm_device *dev;
 	struct drm_crtc *crtc;
         struct drm_display_mode *fb_mode;
+	struct drm_framebuffer *fb;
 };
 /*
 static int
@@ -66,7 +67,7 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			   struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_framebuffer *fb = par->fb;
 	struct drm_crtc *crtc = par->crtc;
 
 	if (regno > 255)
@@ -107,7 +108,7 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 {
         struct intelfb_par *par = info->par;
         /*struct drm_device *dev = par->dev;*/
-	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_framebuffer *fb = par->fb;
         /*struct drm_output *output;*/
         int depth/*, found = 0*/;
 
@@ -216,41 +217,15 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 	return 0;
 }
 
-bool i915_drmfb_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2, unsigned int pixclock)
-{
-
-	if (mode1->hdisplay == mode2->hdisplay &&
-	    mode1->hsync_start == mode2->hsync_start &&
-	    mode1->hsync_end == mode2->hsync_end &&
-	    mode1->htotal == mode2->htotal &&
-	    mode1->hskew == mode2->hskew &&
-	    mode1->vdisplay == mode2->vdisplay &&
-	    mode1->vsync_start == mode2->vsync_start &&
-	    mode1->vsync_end == mode2->vsync_end &&
-	    mode1->vtotal == mode2->vtotal &&
-	    mode1->vscan == mode2->vscan &&
-	    mode1->flags == mode2->flags) 
-	{
-		if (mode1->clock == mode2->clock)
-			return true;
-
-		if (KHZ2PICOS(mode2->clock) == pixclock)
-			return true;
-		return false;
-	}
-	
-	return false;
-}
-
 /* this will let fbcon do the mode init */
 /* FIXME: take mode config lock? */
 static int intelfb_set_par(struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_framebuffer *fb = par->fb;
 	struct drm_device *dev = par->dev;
         struct drm_display_mode *drm_mode, *search_mode;
-        struct drm_output *output;
+        struct drm_output *output = NULL;
         struct fb_var_screeninfo *var = &info->var;
 	int found = 0;
 
@@ -295,15 +270,23 @@ static int intelfb_set_par(struct fb_info *info)
         drm_mode_set_name(drm_mode);
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 
+	found = 0;
         list_for_each_entry(output, &dev->mode_config.output_list, head) {
-                if (output->crtc == par->crtc)
+                if (output->crtc == par->crtc){
+			found = 1;
                         break;
+		}
         }
 
+	/* no output bound, bail */
+	if (!found)
+		return -EINVAL;
+
+	found = 0;
 	drm_mode_debug_printmodeline(dev, drm_mode);    
         list_for_each_entry(search_mode, &output->modes, head) {
 		drm_mode_debug_printmodeline(dev, search_mode);
-		if (i915_drmfb_mode_equal(drm_mode, search_mode, var->pixclock)) {
+		if (drm_mode_equal(drm_mode, search_mode)) {
 			drm_mode_destroy(dev, drm_mode);
 			drm_mode = search_mode;
 			found = 1;
@@ -311,8 +294,12 @@ static int intelfb_set_par(struct fb_info *info)
 		}
 	}
 	
+	/* If we didn't find a matching mode that exists on our output,
+	 * create a new attachment for the incoming user specified mode
+	 */
 	if (!found) {
 		if (par->fb_mode) {
+			/* this also destroys the mode */
 			drm_mode_detachmode_crtc(dev, par->fb_mode);
 		}
 	
@@ -322,21 +309,13 @@ static int intelfb_set_par(struct fb_info *info)
 		drm_mode_attachmode_crtc(dev, par->crtc, par->fb_mode);
 	}
 
-	if (par->crtc->enabled) {
-		if (!drm_mode_equal(&par->crtc->mode, drm_mode)) {
-			if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
-				return -EINVAL;
-		} else if (par->crtc->x != var->xoffset || par->crtc->y != var->yoffset) {
-			if (!par->crtc->funcs->mode_set_base) {
-				if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
-					return -EINVAL;
-			} else {
-				par->crtc->funcs->mode_set_base(par->crtc, var->xoffset, var->yoffset);
-				par->crtc->x = var->xoffset;
-				par->crtc->y = var->yoffset;
-			}
-		}
-	}
+	/* re-attach fb */
+	if (!par->crtc->fb)
+		par->crtc->fb = par->fb;
+
+	if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
+		return -EINVAL;
+
 	return 0;
 }
 
@@ -493,17 +472,14 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 
 	DRM_DEBUG("\n");
 
-	if (!crtc->funcs->mode_set_base) {
-		DRM_ERROR("panning not supported\n");
-		return -EFAULT;
-	}
-
 	/* TODO add check size and pos*/
 
-	crtc->funcs->mode_set_base(crtc, var->xoffset, var->yoffset);
+	/* re-attach fb */
+	if (!crtc->fb)
+		crtc->fb = par->fb;
 
-	par->crtc->x = var->xoffset;
-	par->crtc->y = var->yoffset;
+	drm_crtc_set_mode(crtc, &crtc->mode, var->xoffset, var->yoffset);
+
 	info->var.xoffset = var->xoffset;
 	info->var.yoffset = var->yoffset;
 
@@ -535,7 +511,7 @@ static struct fb_ops intelfb_ops = {
  */
 int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 {
-    struct fb_info *info;
+	struct fb_info *info;
 	struct drm_framebuffer *fb;
 	struct drm_display_mode *mode = crtc->desired_mode;
 
@@ -559,7 +535,7 @@ int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 	info->var.vsync_len = mode->vsync_end - mode->vsync_start;
 	info->var.upper_margin = mode->vtotal - mode->vsync_end;
 	info->var.pixclock = 10000000 / mode->htotal * 1000 / mode->vtotal * 100;
-    /* avoid overflow */
+	/* avoid overflow */
 	info->var.pixclock = info->var.pixclock * 1000 / mode->vrefresh;
 
 	return 0;
@@ -596,7 +572,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	fb->bits_per_pixel = 32;
 	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
 	fb->depth = 24;
-	ret = drm_buffer_object_create(dev, fb->width * fb->height * 4, 
+	ret = drm_buffer_object_create(dev, fb->pitch * fb->height * 4, 
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
@@ -623,6 +599,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 
 	par->dev = dev;
 	par->crtc = crtc;
+	par->fb = fb;
 
 	info->fbops = &intelfb_ops;
 
@@ -635,19 +612,26 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->fix.ywrapstep = 0;
 	info->fix.accel = FB_ACCEL_I830;
 	info->fix.type_aux = 0;
-	info->fix.mmio_start = 0;
-	info->fix.mmio_len = 0;
+ 
+ 	if (IS_I9XX(dev)) {
+ 		info->fix.mmio_start = pci_resource_start(dev->pdev, 0);
+ 		info->fix.mmio_len = pci_resource_len(dev->pdev, 0);
+ 	} else {
+ 		info->fix.mmio_start = pci_resource_start(dev->pdev, 1);
+ 		info->fix.mmio_len = pci_resource_len(dev->pdev, 1);
+ 	}
+
 	info->fix.line_length = fb->pitch;
 	info->fix.smem_start = fb->bo->offset + dev->mode_config.fb_base;
 	info->fix.smem_len = info->fix.line_length * fb->height;
 
 	info->flags = FBINFO_DEFAULT;
 
-	ret = drm_mem_reg_ioremap(dev, &fb->bo->mem, &fb->virtual_base);
-	if (ret)
-		DRM_ERROR("error mapping fb: %d\n", ret);
-
-	info->screen_base = fb->virtual_base;
+ 	ret = drm_bo_kmap(fb->bo, 0, fb->bo->num_pages, &fb->kmap);
+  	if (ret)
+  		DRM_ERROR("error mapping fb: %d\n", ret);
+  
+ 	info->screen_base = fb->kmap.virtual;
 	info->screen_size = info->fix.smem_len; /* FIXME */
 	info->pseudo_palette = fb->pseudo_palette;
 	info->var.xres_virtual = fb->width;
@@ -757,10 +741,10 @@ int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 	
 	if (info) {
 		unregister_framebuffer(info);
-		framebuffer_release(info);
-		drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
+		drm_bo_kunmap(&fb->kmap);
 		drm_bo_usage_deref_unlocked(&fb->bo);
 		drm_framebuffer_destroy(fb);
+		framebuffer_release(info);
 	}
 	return 0;
 }
