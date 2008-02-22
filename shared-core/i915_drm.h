@@ -69,7 +69,7 @@ typedef struct _drm_i915_init {
 	unsigned int sarea_handle;
 } drm_i915_init_t;
 
-typedef struct _drm_i915_sarea {
+typedef struct drm_i915_sarea {
 	struct drm_tex_region texList[I915_NR_TEX_REGIONS + 1];
 	int last_upload;	/* last time texture was uploaded */
 	int last_enqueue;	/* last time a buffer was enqueued */
@@ -211,7 +211,7 @@ typedef struct drm_i915_flip {
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
  */
-typedef struct _drm_i915_batchbuffer {
+typedef struct drm_i915_batchbuffer {
 	int start;		/* agp offset */
 	int used;		/* nr bytes in use */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
@@ -375,7 +375,7 @@ struct drm_i915_op_arg {
 struct drm_i915_execbuffer {
 	uint64_t ops_list;
 	uint32_t num_buffers;
-	struct _drm_i915_batchbuffer batch;
+	struct drm_i915_batchbuffer batch;
 	drm_context_t context; /* for lockless use in the future */
 	struct drm_fence_arg fence_arg;
 };
