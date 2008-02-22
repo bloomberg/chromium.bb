@@ -1121,7 +1121,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	drm_i915_sarea_t *sarea_priv = (drm_i915_sarea_t *)
 		dev_priv->sarea_priv;
 	struct drm_i915_execbuffer *exec_buf = data;
-	struct _drm_i915_batchbuffer *batch = &exec_buf->batch;
+	struct drm_i915_batchbuffer *batch = &exec_buf->batch;
 	struct drm_fence_arg *fence_arg = &exec_buf->fence_arg;
 	int num_buffers;
 	int ret;
