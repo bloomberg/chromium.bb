@@ -2492,7 +2492,7 @@ int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 		goto out;
 	}
 	ret = 0;
-	if (ret = drm_bo_clean_mm(dev, arg->mem_type, 0)) {
+	if ((ret = drm_bo_clean_mm(dev, arg->mem_type, 0))) {
 		if (ret == -EINVAL)
 			DRM_ERROR("Memory manager type %d not clean. "
 				  "Delaying takedown\n", arg->mem_type);
