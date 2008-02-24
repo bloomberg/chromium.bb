@@ -40,9 +40,11 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <algorithm>
 
 #include <functional>
 #include <vector>
+#include <string.h>
 
 #include "common/linux/dump_symbols.h"
 #include "common/linux/file_id.h"
