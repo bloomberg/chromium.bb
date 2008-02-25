@@ -121,18 +121,19 @@ static void PrintStack(const CallStack *stack, const string &cpu) {
         printf("!%s", frame->function_name.c_str());
         if (!frame->source_file_name.empty()) {
           string source_file = PathnameStripper::File(frame->source_file_name);
-          printf(" [%s : %d + 0x%llx]", source_file.c_str(),
-                                        frame->source_line,
-                                        frame->instruction -
-                                          frame->source_line_base);
+          printf(" [%s : %d + 0x%" PRIx64 "]",
+                 source_file.c_str(),
+                 frame->source_line,
+                 frame->instruction - frame->source_line_base);
         } else {
-          printf(" + 0x%llx", frame->instruction - frame->function_base);
+          printf(" + 0x%" PRIx64, frame->instruction - frame->function_base);
         }
       } else {
-        printf(" + 0x%llx", frame->instruction - frame->module->base_address());
+        printf(" + 0x%" PRIx64,
+               frame->instruction - frame->module->base_address());
       }
     } else {
-      printf("0x%llx", frame->instruction);
+      printf("0x%" PRIx64, frame->instruction);
     }
 
     int sequence = 0;
@@ -213,35 +214,36 @@ static void PrintStackMachineReadable(int thread_num, const CallStack *stack) {
         printf("%c%s", kOutputSeparator,
                StripSeparator(frame->function_name).c_str());
         if (!frame->source_file_name.empty()) {
-          printf("%c%s%c%d%c0x%llx", kOutputSeparator,
-                                     StripSeparator(frame->source_file_name)
-                                       .c_str(),
-                                     kOutputSeparator,
-                                     frame->source_line,
-                                     kOutputSeparator,
-                                     frame->instruction -
-                                       frame->source_line_base);
+          printf("%c%s%c%d%c0x%" PRIx64,
+                 kOutputSeparator,
+                 StripSeparator(frame->source_file_name).c_str(),
+                 kOutputSeparator,
+                 frame->source_line,
+                 kOutputSeparator,
+                 frame->instruction - frame->source_line_base);
         } else {
-          printf("%c%c%c0x%llx", kOutputSeparator,  // empty source file
-                                 kOutputSeparator,  // empty source line
-                                 kOutputSeparator,
-                                 frame->instruction - frame->function_base);
+          printf("%c%c%c0x%" PRIx64,
+                 kOutputSeparator,  // empty source file
+                 kOutputSeparator,  // empty source line
+                 kOutputSeparator,
+                 frame->instruction - frame->function_base);
         }
       } else {
-        printf("%c%c%c%c0x%llx", kOutputSeparator,  // empty function name
-                                 kOutputSeparator,  // empty source file
-                                 kOutputSeparator,  // empty source line
-                                 kOutputSeparator,
-                                 frame->instruction -
-                                   frame->module->base_address());
+        printf("%c%c%c%c0x%" PRIx64,
+               kOutputSeparator,  // empty function name
+               kOutputSeparator,  // empty source file
+               kOutputSeparator,  // empty source line
+               kOutputSeparator,
+               frame->instruction - frame->module->base_address());
       }
     } else {
       // the printf before this prints a trailing separator for module name
-      printf("%c%c%c%c0x%llx", kOutputSeparator,  // empty function name
-                               kOutputSeparator,  // empty source file
-                               kOutputSeparator,  // empty source line
-                               kOutputSeparator,
-                               frame->instruction);
+      printf("%c%c%c%c0x%" PRIx64,
+             kOutputSeparator,  // empty function name
+             kOutputSeparator,  // empty source file
+             kOutputSeparator,  // empty source line
+             kOutputSeparator,
+             frame->instruction);
     }
     printf("\n");
   }
@@ -331,7 +333,7 @@ static void PrintProcessState(const ProcessState& process_state) {
   // Print crash information.
   if (process_state.crashed()) {
     printf("Crash reason:  %s\n", process_state.crash_reason().c_str());
-    printf("Crash address: 0x%llx\n", process_state.crash_address());
+    printf("Crash address: 0x%" PRIx64 "\n", process_state.crash_address());
   } else {
     printf("No crash\n");
   }
@@ -384,7 +386,7 @@ static void PrintProcessStateMachineReadable(const ProcessState& process_state)
   // Crash|{Crash Reason}|{Crash Address}|{Crashed Thread}
   printf("Crash%c", kOutputSeparator);
   if (process_state.crashed()) {
-    printf("%s%c0x%llx%c",
+    printf("%s%c0x%" PRIx64 "%c",
            StripSeparator(process_state.crash_reason()).c_str(),
            kOutputSeparator, process_state.crash_address(), kOutputSeparator);
   } else {
