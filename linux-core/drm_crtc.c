@@ -1618,7 +1618,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		if (crtc_req->fb_id == -1) {
 			list_for_each_entry(crtcfb, &dev->mode_config.crtc_list, head) {
 				if (crtcfb == crtc) {
-					DRM_INFO("Using current fb for setmode\n");
+					DRM_DEBUG("Using current fb for setmode\n");
 					fb = crtc->fb;		
 				}
 			}
