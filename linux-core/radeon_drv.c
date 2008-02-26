@@ -56,38 +56,6 @@ static struct pci_device_id pciidlist[] = {
 	radeon_PCI_IDS
 };
 
-
-#ifdef RADEON_HAVE_FENCE
-static struct drm_fence_driver radeon_fence_driver = {
-	.num_classes = 1,
-	.wrap_diff = (1 << 30),
-	.flush_diff = (1 << 29),
-	.sequence_mask = 0xffffffffU,
-	.lazy_capable = 1,
-	.emit = radeon_fence_emit_sequence,
-	.poke_flush = radeon_poke_flush,
-	.has_irq = radeon_fence_has_irq,
-};
-#endif
-#ifdef RADEON_HAVE_BUFFER
-
-static uint32_t radeon_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
-static uint32_t radeon_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
-
-static struct drm_bo_driver radeon_bo_driver = {
-	.mem_type_prio = radeon_mem_prios,
-	.mem_busy_prio = radeon_busy_prios,
-	.num_mem_type_prio = sizeof(radeon_mem_prios)/sizeof(uint32_t),
-	.num_mem_busy_prio = sizeof(radeon_busy_prios)/sizeof(uint32_t),
-	.create_ttm_backend_entry = radeon_create_ttm_backend_entry,
-	.fence_type = radeon_fence_types,
-	.invalidate_caches = radeon_invalidate_caches,
-	.init_mem_type = radeon_init_mem_type,
-	.evict_flags = radeon_evict_flags,
-	.move = radeon_move,
-};
-#endif
-
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
@@ -132,13 +100,6 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
-
-#ifdef RADEON_HAVE_FENCE
-	.fence_driver = &radeon_fence_driver,
-#endif
-#ifdef RADEON_HAVE_BUFFER
-	.bo_driver = &radeon_bo_driver,
-#endif
 
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,

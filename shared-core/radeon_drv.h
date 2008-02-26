@@ -104,11 +104,6 @@
 #define DRIVER_MINOR		28
 #define DRIVER_PATCHLEVEL	0
 
-#if defined(__linux__)
-#define RADEON_HAVE_FENCE
-#define RADEON_HAVE_BUFFER
-#endif
-
 /*
  * Radeon chip families
  */
@@ -296,9 +291,8 @@ typedef struct drm_radeon_private {
 	struct mem_block *fb_heap;
 
 	/* SW interrupt */
-	wait_queue_head_t irq_queue;
-	int counter;
-
+	wait_queue_head_t swi_queue;
+	atomic_t swi_emitted;
 	int vblank_crtc;
 	uint32_t irq_enable_reg;
 	int irq_enabled;
@@ -361,7 +355,6 @@ extern int radeon_cp_resume(struct drm_device *dev, void *data, struct drm_file 
 extern int radeon_engine_reset(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_fullscreen(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_cp_buffers(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern void radeon_gart_flush(struct drm_device *dev);
 extern u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv);
 
 extern void radeon_freelist_reset(struct drm_device * dev);
@@ -381,7 +374,6 @@ extern void radeon_mem_release(struct drm_file *file_priv,
 				/* radeon_irq.c */
 extern int radeon_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_irq_wait(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int radeon_emit_irq(struct drm_device * dev);
 
 extern void radeon_do_release(struct drm_device * dev);
 extern u32 radeon_get_vblank_counter(struct drm_device *dev, int crtc);
@@ -415,30 +407,6 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 			     struct drm_file *file_priv,
 			     drm_radeon_kcmd_buffer_t *cmdbuf);
 
-
-#ifdef RADEON_HAVE_FENCE
-/* i915_fence.c */
-
-
-extern void radeon_fence_handler(struct drm_device *dev);
-extern int radeon_fence_emit_sequence(struct drm_device *dev, uint32_t class,
-				      uint32_t flags, uint32_t *sequence, 
-				    uint32_t *native_type);
-extern void radeon_poke_flush(struct drm_device *dev, uint32_t class);
-extern int radeon_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags);
-#endif
-
-#ifdef RADEON_HAVE_BUFFER
-/* radeon_buffer.c */
-extern struct drm_ttm_backend *radeon_create_ttm_backend_entry(struct drm_device *dev);
-extern int radeon_fence_types(struct drm_buffer_object *bo, uint32_t *class, uint32_t *type);
-extern int radeon_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
-extern uint64_t radeon_evict_flags(struct drm_buffer_object *bo);
-extern int radeon_init_mem_type(struct drm_device * dev, uint32_t type,
-				struct drm_mem_type_manager * man);
-extern int radeon_move(struct drm_buffer_object * bo,
-		       int evict, int no_wait, struct drm_bo_mem_reg * new_mem);
-#endif
 /* Flags for stats.boxes
  */
 #define RADEON_BOX_DMA_IDLE      0x1
@@ -1367,20 +1335,5 @@ do {									\
 	}							\
 	write &= mask;						\
 } while (0)
-
-/* Breadcrumb - swi irq */
-#define READ_BREADCRUMB(dev_priv) RADEON_READ(RADEON_LAST_SWI_REG)
-
-static inline int radeon_update_breadcrumb(struct drm_device *dev)
-{
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-
-	dev_priv->sarea_priv->last_fence = ++dev_priv->counter;
-
-	if (dev_priv->counter > 0x7FFFFFFFUL)
-		dev_priv->sarea_priv->last_fence = dev_priv->counter = 1;
-
-	return dev_priv->counter;
-}
 
 #endif				/* __RADEON_DRV_H__ */

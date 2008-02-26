@@ -33,7 +33,7 @@ nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
 		nv04_graph.o nv10_graph.o nv20_graph.o \
 		nv40_graph.o nv50_graph.o \
 		nv04_instmem.o nv50_instmem.o
-radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o radeon_fence.o radeon_buffer.o
+radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o
 radeon_ms-objs := radeon_ms_drv.o radeon_ms_drm.o radeon_ms_family.o \
 		radeon_ms_state.o radeon_ms_bo.o radeon_ms_irq.o \
 		radeon_ms_bus.o radeon_ms_fence.o \

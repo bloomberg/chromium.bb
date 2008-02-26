@@ -1518,28 +1518,6 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 	}
 }
 
-void radeon_gart_flush(struct drm_device *dev)
-{
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-	
-	if (dev_priv->flags & RADEON_IS_IGPGART) {
-		RADEON_READ_IGPGART(dev_priv, RADEON_IGPGART_FLUSH);
-		RADEON_WRITE_IGPGART(RADEON_IGPGART_FLUSH, 0x1);
-		RADEON_READ_IGPGART(dev_priv, RADEON_IGPGART_FLUSH);
-		RADEON_WRITE_IGPGART(RADEON_IGPGART_FLUSH, 0x0);
-	} else if (dev_priv->flags & RADEON_IS_PCIE) {
-		u32 tmp = RADEON_READ_PCIE(dev_priv, RADEON_PCIE_TX_GART_CNTL);
-		tmp |= RADEON_PCIE_TX_GART_INVALIDATE_TLB;
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, tmp);
-		tmp &= ~RADEON_PCIE_TX_GART_INVALIDATE_TLB;
-		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, tmp);
-	} else {
-
-
-	}
-
-}
-
 static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -2455,9 +2433,6 @@ int radeon_driver_firstopen(struct drm_device *dev)
 	if (ret != 0)
 		return ret;
 
-#ifdef RADEON_HAVE_BUFFER
-	drm_bo_driver_init(dev);
-#endif
 	return 0;
 }
 
