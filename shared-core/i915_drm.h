@@ -326,6 +326,8 @@ typedef struct drm_i915_vblank_swap {
 #define MMIO_REGS_CL_INVOCATION_COUNT		6
 #define MMIO_REGS_PS_INVOCATION_COUNT		7
 #define MMIO_REGS_PS_DEPTH_COUNT		8
+#define MMIO_REGS_DOVSTA			9
+#define MMIO_REGS_GAMMA				10
 
 typedef struct drm_i915_mmio_entry {
 	unsigned int flag;
