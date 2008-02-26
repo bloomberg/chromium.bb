@@ -833,6 +833,10 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	int ret, i;
 	int buf_index = -1;
 
+	/*
+	 * FIXME: O(relocs * buffers) complexity.
+	 */
+
 	for (i = 0; i <= num_buffers; i++)
 		if (buffers[i].buffer)
 			if (reloc[2] == buffers[i].buffer->base.hash.key)
@@ -854,21 +858,14 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	if (!relocatee->data_page ||
 	    !drm_bo_same_page(relocatee->offset, new_cmd_offset)) {
 		drm_bo_kunmap(&relocatee->kmap);
+		relocatee->data_page = NULL;
 		relocatee->offset = new_cmd_offset;
-		mutex_lock (&relocatee->buf->mutex);
-		ret = drm_bo_wait (relocatee->buf, 0, 0, FALSE);
-		mutex_unlock (&relocatee->buf->mutex);
-		if (ret) {
-			DRM_ERROR("Could not wait for buffer to apply relocs\n %08lx", new_cmd_offset);
-			return ret;
-		}
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
 		if (ret) {
 			DRM_ERROR("Could not map command buffer to apply relocs\n %08lx", new_cmd_offset);
 			return ret;
 		}
-
 		relocatee->data_page = drm_bmo_virtual(&relocatee->kmap,
 						       &relocatee->is_iomem);
 		relocatee->page_offset = (relocatee->offset & PAGE_MASK);
@@ -887,7 +884,11 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 				   reloc[0], reloc[1], buf_index, relocatee->data_page[index], val);
 		}
 	}
-	relocatee->data_page[index] = val;
+
+	if (relocatee->is_iomem)
+		iowrite32(val, relocatee->data_page + index);
+	else
+		relocatee->data_page[index] = val;
 	return 0;
 }
 
@@ -955,11 +956,13 @@ int i915_process_relocs(struct drm_file *file_priv,
 	}
 
 out:
-
 	if (reloc_buf)
 		kfree(reloc_buf);
-	drm_bo_kunmap(&relocatee->kmap);
-	relocatee->data_page = NULL;
+
+	if (relocatee->data_page) {		
+		drm_bo_kunmap(&relocatee->kmap);
+		relocatee->data_page = NULL;
+	}
 
 	return ret;
 }
@@ -999,18 +1002,22 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 		goto out_err;
 	}
 
+	mutex_lock (&relocatee.buf->mutex);
+	ret = drm_bo_wait (relocatee.buf, 0, 0, FALSE);
+	if (ret)
+		goto out_err1;
+
 	while (reloc_user_ptr) {
 		ret = i915_process_relocs(file_priv, buf_handle, &reloc_user_ptr, &relocatee, buffers, buf_count);
 		if (ret) {
 			DRM_ERROR("process relocs failed\n");
-			break;
+			goto out_err1;
 		}
 	}
 
-	mutex_lock(&dev->struct_mutex);
-	drm_bo_usage_deref_locked(&relocatee.buf);
-	mutex_unlock(&dev->struct_mutex);
-
+out_err1:
+	mutex_unlock (&relocatee.buf->mutex);
+	drm_bo_usage_deref_unlocked(&relocatee.buf);
 out_err:
 	return ret;
 }
@@ -1190,11 +1197,8 @@ void i915_fence_or_sync(struct drm_file *file_priv,
 		 * Fall back to synchronous operation and idle the engine.
 		 */
 
+		(void) i915_emit_mi_flush(dev, MI_READ_FLUSH);
 		(void) i915_quiescent(dev);
-
-		/*
-		 * FIXME: Might need a sync flush here.
-		 */
 
 		if (!(fence_flags & DRM_FENCE_FLAG_NO_USER)) {
 
