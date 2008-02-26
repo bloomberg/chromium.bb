@@ -870,6 +870,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 	struct drm_output *output, *output_equal;
 	struct drm_crtc   *crtc;
 	struct drm_display_mode *des_mode = NULL, *modes, *modes_equal;
+	int found;
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
        		output->crtc = NULL;
@@ -890,17 +891,23 @@ static void drm_pick_crtcs (struct drm_device *dev)
     		if (output->status != output_status_connected)
 			continue;
 
+		if (list_empty(&output->modes))
+			continue;
+
 		des_mode = NULL;
+		found = 0;
 		list_for_each_entry(des_mode, &output->modes, head) {
-			if (des_mode->type & DRM_MODE_TYPE_PREFERRED)
+			if (des_mode->type & DRM_MODE_TYPE_PREFERRED) {
+				found = 1;
 				break;
+			}
 		}
 
 		/* No preferred mode, let's just select the first available */
-		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_PREFERRED)) {
+		if (!found) {
+			des_mode = NULL;
 			list_for_each_entry(des_mode, &output->modes, head) {
-				if (des_mode)
-					break;
+				break;
 			}
 		}
 
