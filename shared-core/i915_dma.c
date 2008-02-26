@@ -1306,10 +1306,11 @@ drm_i915_mmio_entry_t mmio_table[] = {
 		0x30008,
 		1
 	},
-	[MMIO_REGS_GAMMAA] = {
+	[MMIO_REGS_GAMMA] = {
 		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
 		0x30010,
 		6
+	}
 };
 
 static int mmio_table_size = sizeof(mmio_table)/sizeof(drm_i915_mmio_entry_t);
