@@ -375,7 +375,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 
 	/* no fb bound */
 	if (!crtc->fb) {
-		DRM_INFO("No FB bound\n");
+		DRM_DEBUG("No FB bound\n");
 		return;
 	}
 
