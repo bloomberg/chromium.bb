@@ -45,11 +45,6 @@ int nouveau_fifo_ctx_size(struct drm_device *dev)
  * functions doing the actual work
  ***********************************/
 
-/* voir nv_xaa.c : NVResetGraphics
- * mémoire mappée par nv_driver.c : NVMapMem
- * voir nv_driver.c : NVPreInit
- */
-
 static int nouveau_fifo_instmem_configure(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;

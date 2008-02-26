@@ -29,11 +29,6 @@
 #include "nouveau_drv.h"
 #include "nouveau_dma.h"
 
-/* FIXME : should go into a nouveau_drm.h define ?
- * (it's shared between DRI & DDX & DRM)
- */
-#define SKIPS 8
-
 int
 nouveau_dma_channel_init(struct drm_device *dev)
 {
@@ -76,10 +71,10 @@ nouveau_dma_channel_init(struct drm_device *dev)
 	dchan->cur  = dchan->put;
 	dchan->free = dchan->max - dchan->cur;
 
-	/* Insert NOPS for SKIPS */
-	dchan->free -= SKIPS;
-	dchan->push_free = SKIPS;
-	for (i=0; i<SKIPS; i++)
+	/* Insert NOPS for NOUVEAU_DMA_SKIPS */
+	dchan->free -= NOUVEAU_DMA_SKIPS;
+	dchan->push_free = NOUVEAU_DMA_SKIPS;
+	for (i=0; i < NOUVEAU_DMA_SKIPS; i++)
 		OUT_RING(0);
 
 	/* NV_MEMORY_TO_MEMORY_FORMAT requires a notifier */
@@ -131,8 +126,6 @@ nouveau_dma_channel_takedown(struct drm_device *dev)
 	}
 }
 
-#define RING_SKIPS 8
-
 #define READ_GET() ((NV_READ(dchan->chan->get) -                               \
 		    dchan->chan->pushbuf_base) >> 2)
 #define WRITE_PUT(val) do {                                                    \
@@ -156,19 +149,19 @@ nouveau_dma_wait(struct drm_device *dev, int size)
 			if (dchan->free < size) {
 				dchan->push_free = 1;
 				OUT_RING(0x20000000|dchan->chan->pushbuf_base);
-				if (get <= RING_SKIPS) {
+				if (get <= NOUVEAU_DMA_SKIPS) {
 					/*corner case - will be idle*/
-					if (dchan->put <= RING_SKIPS)
-						WRITE_PUT(RING_SKIPS + 1);
+					if (dchan->put <= NOUVEAU_DMA_SKIPS)
+						WRITE_PUT(NOUVEAU_DMA_SKIPS + 1);
 
 					do {
 						get = READ_GET();
-					} while (get <= RING_SKIPS);
+					} while (get <= NOUVEAU_DMA_SKIPS);
 				}
 
-				WRITE_PUT(RING_SKIPS);
-				dchan->cur  = dchan->put = RING_SKIPS;
-				dchan->free = get - (RING_SKIPS + 1);
+				WRITE_PUT(NOUVEAU_DMA_SKIPS);
+				dchan->cur  = dchan->put = NOUVEAU_DMA_SKIPS;
+				dchan->free = get - (NOUVEAU_DMA_SKIPS + 1);
 			}
 		} else {
 			dchan->free = get - dchan->cur - 1;

@@ -769,7 +769,10 @@ struct i915_relocatee_info {
 
 struct drm_i915_validate_buffer {
 	struct drm_buffer_object *buffer;
+	struct drm_bo_info_rep rep;
 	int presumed_offset_correct;
+	void __user *data;
+	int ret;
 };
 
 static void i915_dereference_buffers_locked(struct drm_i915_validate_buffer *buffers,
@@ -789,6 +792,10 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	u32 val;
 	int ret, i;
 	int buf_index = -1;
+
+	/*
+	 * FIXME: O(relocs * buffers) complexity.
+	 */
 
 	for (i = 0; i <= num_buffers; i++)
 		if (buffers[i].buffer)
@@ -811,21 +818,14 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	if (!relocatee->data_page ||
 	    !drm_bo_same_page(relocatee->offset, new_cmd_offset)) {
 		drm_bo_kunmap(&relocatee->kmap);
+		relocatee->data_page = NULL;
 		relocatee->offset = new_cmd_offset;
-		mutex_lock (&relocatee->buf->mutex);
-		ret = drm_bo_wait (relocatee->buf, 0, 0, FALSE);
-		mutex_unlock (&relocatee->buf->mutex);
-		if (ret) {
-			DRM_ERROR("Could not wait for buffer to apply relocs\n %08lx", new_cmd_offset);
-			return ret;
-		}
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
 		if (ret) {
 			DRM_ERROR("Could not map command buffer to apply relocs\n %08lx", new_cmd_offset);
 			return ret;
 		}
-
 		relocatee->data_page = drm_bmo_virtual(&relocatee->kmap,
 						       &relocatee->is_iomem);
 		relocatee->page_offset = (relocatee->offset & PAGE_MASK);
@@ -844,7 +844,11 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 				   reloc[0], reloc[1], buf_index, relocatee->data_page[index], val);
 		}
 	}
-	relocatee->data_page[index] = val;
+
+	if (relocatee->is_iomem)
+		iowrite32(val, relocatee->data_page + index);
+	else
+		relocatee->data_page[index] = val;
 	return 0;
 }
 
@@ -912,11 +916,13 @@ int i915_process_relocs(struct drm_file *file_priv,
 	}
 
 out:
-
 	if (reloc_buf)
 		kfree(reloc_buf);
-	drm_bo_kunmap(&relocatee->kmap);
-	relocatee->data_page = NULL;
+
+	if (relocatee->data_page) {		
+		drm_bo_kunmap(&relocatee->kmap);
+		relocatee->data_page = NULL;
+	}
 
 	return ret;
 }
@@ -956,21 +962,59 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 		goto out_err;
 	}
 
+	mutex_lock (&relocatee.buf->mutex);
+	ret = drm_bo_wait (relocatee.buf, 0, 0, FALSE);
+	if (ret)
+		goto out_err1;
+
 	while (reloc_user_ptr) {
 		ret = i915_process_relocs(file_priv, buf_handle, &reloc_user_ptr, &relocatee, buffers, buf_count);
 		if (ret) {
 			DRM_ERROR("process relocs failed\n");
-			break;
+			goto out_err1;
 		}
 	}
 
-	mutex_lock(&dev->struct_mutex);
-	drm_bo_usage_deref_locked(&relocatee.buf);
-	mutex_unlock(&dev->struct_mutex);
-
+out_err1:
+	mutex_unlock (&relocatee.buf->mutex);
+	drm_bo_usage_deref_unlocked(&relocatee.buf);
 out_err:
 	return ret;
 }
+
+static int i915_check_presumed(struct drm_i915_op_arg *arg,
+			       struct drm_buffer_object *bo,
+			       uint32_t __user *data,
+			       int *presumed_ok)
+{
+	struct drm_bo_op_req *req = &arg->d.req;
+	uint32_t hint_offset;
+	uint32_t hint = req->bo_req.hint;
+
+	*presumed_ok = 0;
+
+	if (!(hint & DRM_BO_HINT_PRESUMED_OFFSET))
+		return 0;
+	if (bo->offset == req->bo_req.presumed_offset) {
+		*presumed_ok = 1;
+		return 0;
+	}
+
+	/*
+	 * We need to turn off the HINT_PRESUMED_OFFSET for this buffer in
+	 * the user-space IOCTL argument list, since the buffer has moved,
+	 * we're about to apply relocations and we might subsequently
+	 * hit an -EAGAIN. In that case the argument list will be reused by
+	 * user-space, but the presumed offset is no longer valid.
+	 *
+	 * Needless to say, this is a bit ugly.
+	 */
+
+       	hint_offset = (uint32_t *)&req->bo_req.hint - (uint32_t *)arg;
+	hint &= ~DRM_BO_HINT_PRESUMED_OFFSET;
+	return __put_user(hint, data + hint_offset);
+}
+
 
 /*
  * Validate, add fence and relocate a block of bos from a userspace list
@@ -982,13 +1026,11 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 {
 	struct drm_i915_op_arg arg;
 	struct drm_bo_op_req *req = &arg.d.req;
-	struct drm_bo_arg_rep rep;
-	unsigned long next = 0;
 	int ret = 0;
 	unsigned buf_count = 0;
-	struct drm_device *dev = file_priv->minor->dev;
 	uint32_t buf_handle;
 	uint32_t __user *reloc_user_ptr;
+	struct drm_i915_validate_buffer *item = buffers;
 
 	do {
 		if (buf_count >= *num_buffers) {
@@ -996,31 +1038,26 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 			ret = -EINVAL;
 			goto out_err;
 		}
+		item = buffers + buf_count;
+		item->buffer = NULL;
+		item->presumed_offset_correct = 0;
 
 		buffers[buf_count].buffer = NULL;
-		buffers[buf_count].presumed_offset_correct = 0;
 
 		if (copy_from_user(&arg, (void __user *)(unsigned long)data, sizeof(arg))) {
 			ret = -EFAULT;
 			goto out_err;
 		}
 
-		if (arg.handled) {
-			data = arg.next;
-			mutex_lock(&dev->struct_mutex);
-			buffers[buf_count].buffer = drm_lookup_buffer_object(file_priv, req->arg_handle, 1);
-			mutex_unlock(&dev->struct_mutex);
-			buf_count++;
-			continue;
-		}
-
-		rep.ret = 0;
+		ret = 0;
 		if (req->op != drm_bo_validate) {
 			DRM_ERROR
 			    ("Buffer object operation wasn't \"validate\".\n");
-			rep.ret = -EINVAL;
+			ret = -EINVAL;
 			goto out_err;
 		}
+		item->ret = 0;
+		item->data = (void __user *) (unsigned long) data;
 
 		buf_handle = req->bo_req.handle;
 		reloc_user_ptr = (uint32_t *)(unsigned long)arg.reloc_ptr;
@@ -1032,47 +1069,145 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 			DRM_MEMORYBARRIER();
 		}
 
-		rep.ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
-						 req->bo_req.flags, req->bo_req.mask,
-						 req->bo_req.hint,
-						 req->bo_req.fence_class, 0,
-						 &rep.bo_info,
-						 &buffers[buf_count].buffer);
+		ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
+					     req->bo_req.flags, req->bo_req.mask,
+					     req->bo_req.hint,
+					     req->bo_req.fence_class, 0,
+					     &item->rep,
+					     &item->buffer);
 
-		if (rep.ret) {
-			DRM_ERROR("error on handle validate %d\n", rep.ret);
+		if (ret) {
+			DRM_ERROR("error on handle validate %d\n", ret);
 			goto out_err;
 		}
-		/*
-		 * If the user provided a presumed offset hint, check whether
-		 * the buffer is in the same place, if so, relocations relative to
-		 * this buffer need not be performed
-		 */
-		if ((req->bo_req.hint & DRM_BO_HINT_PRESUMED_OFFSET) &&
-		    buffers[buf_count].buffer->offset == req->bo_req.presumed_offset) {
-			buffers[buf_count].presumed_offset_correct = 1;
-		}
 
-		next = arg.next;
-		arg.handled = 1;
-		arg.d.rep = rep;
-
-		if (copy_to_user((void __user *)(unsigned long)data, &arg, sizeof(arg)))
-			return -EFAULT;
-
-		data = next;
 		buf_count++;
 
-	} while (next != 0);
-	*num_buffers = buf_count;
-	return 0;
+		ret = i915_check_presumed(&arg, item->buffer,
+					  (uint32_t __user *)
+					  (unsigned long) data,
+					  &item->presumed_offset_correct);
+		if (ret)
+			goto out_err;
+
+		data = arg.next;
+	} while (data != 0);
 out_err:
-	mutex_lock(&dev->struct_mutex);
-	i915_dereference_buffers_locked(buffers, buf_count);
-	mutex_unlock(&dev->struct_mutex);
-	*num_buffers = 0;
-	return (ret) ? ret : rep.ret;
+	*num_buffers = buf_count;
+	item->ret = (ret != -EAGAIN) ? ret : 0;
+	return ret;
 }
+
+
+/*
+ * Remove all buffers from the unfenced list.
+ * If the execbuffer operation was aborted, for example due to a signal,
+ * this also make sure that buffers retain their original state and
+ * fence pointers.
+ * Copy back buffer information to user-space unless we were interrupted
+ * by a signal. In which case the IOCTL must be rerun.
+ */
+
+static int i915_handle_copyback(struct drm_device *dev,
+				struct drm_i915_validate_buffer *buffers,
+				unsigned int num_buffers, int ret)
+{
+	int err = ret;
+	int i;
+	struct drm_i915_op_arg arg;
+
+	if (ret)
+		drm_putback_buffer_objects(dev);
+
+	if (ret != -EAGAIN) {
+		for (i = 0; i < num_buffers; ++i) {
+			arg.handled = 1;
+			arg.d.rep.ret = buffers->ret;
+			arg.d.rep.bo_info = buffers->rep;
+			if (__copy_to_user(buffers->data, &arg, sizeof(arg)))
+				err = -EFAULT;
+			buffers++;
+		}
+	}
+
+	return err;
+}
+
+/*
+ * Create a fence object, and if that fails, pretend that everything is
+ * OK and just idle the GPU.
+ */
+
+void i915_fence_or_sync(struct drm_file *file_priv,
+			uint32_t fence_flags,
+			struct drm_fence_arg *fence_arg,
+			struct drm_fence_object **fence_p)
+{
+	struct drm_device *dev = file_priv->minor->dev;
+	int ret;
+	struct drm_fence_object *fence;
+
+	ret = drm_fence_buffer_objects(dev, NULL, fence_flags,
+			 NULL, &fence);
+
+	if (ret) {
+
+		/*
+		 * Fence creation failed.
+		 * Fall back to synchronous operation and idle the engine.
+		 */
+
+		(void) i915_emit_mi_flush(dev, MI_READ_FLUSH);
+		(void) i915_quiescent(dev);
+
+		if (!(fence_flags & DRM_FENCE_FLAG_NO_USER)) {
+
+			/*
+			 * Communicate to user-space that
+			 * fence creation has failed and that
+			 * the engine is idle.
+			 */
+
+			fence_arg->handle = ~0;
+			fence_arg->error = ret;
+		}
+
+		drm_putback_buffer_objects(dev);
+		if (fence_p)
+		    *fence_p = NULL;
+		return;
+	}
+
+	if (!(fence_flags & DRM_FENCE_FLAG_NO_USER)) {
+
+		ret = drm_fence_add_user_object(file_priv, fence,
+						fence_flags &
+						DRM_FENCE_FLAG_SHAREABLE);
+		if (!ret)
+			drm_fence_fill_arg(fence, fence_arg);
+		else {
+			/*
+			 * Fence user object creation failed.
+			 * We must idle the engine here as well, as user-
+			 * space expects a fence object to wait on. Since we
+			 * have a fence object we wait for it to signal
+			 * to indicate engine "sufficiently" idle.
+			 */
+
+			(void) drm_fence_object_wait(fence, 0, 1,
+						     fence->type);
+			drm_fence_usage_deref_unlocked(&fence);
+			fence_arg->handle = ~0;
+			fence_arg->error = ret;
+		}
+	}
+
+	if (fence_p)
+		*fence_p = fence;
+	else if (fence)
+		drm_fence_usage_deref_unlocked(&fence);
+}
+
 
 static int i915_execbuffer(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv)
@@ -1087,7 +1222,6 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	int num_buffers;
 	int ret;
 	struct drm_i915_validate_buffer *buffers;
-	struct drm_fence_object *fence;
 
 	if (!dev_priv->allow_batchbuffer) {
 		DRM_ERROR("Batchbuffer ioctl disabled\n");
@@ -1132,7 +1266,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	ret = i915_validate_buffer_list(file_priv, 0, exec_buf->ops_list,
 					buffers, &num_buffers);
 	if (ret)
-		goto out_free;
+		goto out_err0;
 
 	/* make sure all previous memory operations have passed */
 	DRM_MEMORYBARRIER();
@@ -1151,30 +1285,16 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	if (sarea_priv)
 		sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
-	/* fence */
-	ret = drm_fence_buffer_objects(dev, NULL, fence_arg->flags, 
-				       NULL, &fence);
-	if (ret)
-		goto out_err0;
+	i915_fence_or_sync(file_priv, fence_arg->flags, fence_arg, NULL);
 
-	if (!(fence_arg->flags & DRM_FENCE_FLAG_NO_USER)) {
-		ret = drm_fence_add_user_object(file_priv, fence, fence_arg->flags & DRM_FENCE_FLAG_SHAREABLE);
-		if (!ret) {
-			fence_arg->handle = fence->base.hash.key;
-			fence_arg->fence_class = fence->fence_class;
-			fence_arg->type = fence->type;
-			fence_arg->signaled = fence->signaled_types;
-		}
-	}
-	drm_fence_usage_deref_unlocked(&fence);
 out_err0:
 
 	/* handle errors */
+	ret = i915_handle_copyback(dev, buffers, num_buffers, ret);
 	mutex_lock(&dev->struct_mutex);
 	i915_dereference_buffers_locked(buffers, num_buffers);
 	mutex_unlock(&dev->struct_mutex);
 
-out_free:
 	drm_free(buffers, (exec_buf->num_buffers * sizeof(struct drm_buffer_object *)), DRM_MEM_DRIVER);
 
 	mutex_unlock(&dev_priv->cmdbuf_mutex);

@@ -70,6 +70,12 @@ struct drm_nouveau_gpuobj_free {
 	uint32_t handle;
 };
 
+/* This is needed to avoid a race condition.
+ * Otherwise you may be writing in the fetch area.
+ * Is this large enough, as it's only 32 bytes, and the maximum fetch size is 256 bytes?
+ */
+#define NOUVEAU_DMA_SKIPS 8
+
 #define NOUVEAU_MEM_FB			0x00000001
 #define NOUVEAU_MEM_AGP			0x00000002
 #define NOUVEAU_MEM_FB_ACCEPTABLE	0x00000004
