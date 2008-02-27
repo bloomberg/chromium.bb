@@ -805,6 +805,7 @@ struct i915_relocatee_info {
 	unsigned page_offset;
 	struct drm_bo_kmap_obj kmap;
 	int is_iomem;
+	int idle;
 };
 
 struct drm_i915_validate_buffer {
@@ -860,14 +861,13 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		drm_bo_kunmap(&relocatee->kmap);
 		relocatee->data_page = NULL;
 		relocatee->offset = new_cmd_offset;
-
-		/*
-		 * Note on buffer idle:
-		 * Since we're applying relocations, this part of the
-		 * buffer is obviously not used by the GPU and we don't
-		 * need to wait for buffer idle. This is an important
-		 * consideration for user-space buffer pools.
-		 */
+		
+		if (unlikely(!relocatee->idle)) {
+			ret = drm_bo_wait(relocatee->buf, 0, 0, 0);
+			if (ret)
+				return ret;
+			relocatee->idle = 1;
+		}
 
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
