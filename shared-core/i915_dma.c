@@ -860,6 +860,15 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		drm_bo_kunmap(&relocatee->kmap);
 		relocatee->data_page = NULL;
 		relocatee->offset = new_cmd_offset;
+
+		/*
+		 * Note on buffer idle:
+		 * Since we're applying relocations, this part of the
+		 * buffer is obviously not used by the GPU and we don't
+		 * need to wait for buffer idle. This is an important
+		 * consideration for user-space buffer pools.
+		 */
+
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
 		if (ret) {
@@ -1003,10 +1012,6 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 	}
 
 	mutex_lock (&relocatee.buf->mutex);
-	ret = drm_bo_wait (relocatee.buf, 0, 0, FALSE);
-	if (ret)
-		goto out_err1;
-
 	while (reloc_user_ptr) {
 		ret = i915_process_relocs(file_priv, buf_handle, &reloc_user_ptr, &relocatee, buffers, buf_count);
 		if (ret) {
