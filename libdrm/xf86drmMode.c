@@ -41,6 +41,8 @@
 #include "xf86drm.h"
 #include <drm.h>
 #include <string.h>
+#include <dirent.h>
+#include <errno.h>
 
 #define U642VOID(x) ((void *)(unsigned long)(x))
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
@@ -570,4 +572,50 @@ int drmModeOutputSetProperty(int fd, uint32_t output_id, uint32_t property_id,
 		return ret;
 
 	return 0;
+}
+
+/*
+ * checks if a modesetting capable driver has attached to the pci id
+ * returns 0 if modesetting supported.
+ *  -EINVAL or invalid bus id
+ *  -ENOSYS if no modesetting support
+*/
+int drmCheckModesettingSupported(const char *busid)
+{
+#ifdef __linux__
+	char pci_dev_dir[1024];
+	char *bus_id_path;
+	char *bus_type;
+	int domain, bus, dev, func;
+	DIR *sysdir;
+	struct dirent *dent;
+	int found = 0, ret;
+
+	ret = sscanf(busid, "pci:%04x:%02x:%02x.%d", &domain, &bus, &dev, &func);
+	if (ret != 4)
+		return -EINVAL;
+
+	sprintf(pci_dev_dir, "/sys/bus/pci/devices/%04x:%02x:%02x.%d/",
+		domain, bus, dev, func);
+
+	sysdir = opendir(pci_dev_dir);
+	if (!sysdir)
+		return -EINVAL;
+
+	dent = readdir(sysdir);
+	while (dent) {
+		if (!strncmp(dent->d_name, "drm:controlD", 12)) {
+			found = 1;
+			break;
+		}
+		
+		dent = readdir(sysdir);
+	}
+			
+	closedir(sysdir);
+	if (found)
+		return 0;
+#endif
+	return -ENOSYS;
+
 }
