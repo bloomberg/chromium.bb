@@ -153,105 +153,112 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	DRM_DEBUG("fb_base: 0x%08lx\n", dev->mode_config.fb_base);
 
 	ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
-			 _DRM_REGISTERS, _DRM_READ_ONLY|_DRM_DRIVER, &dev_priv->mmio_map);
+			 _DRM_REGISTERS, _DRM_KERNEL|_DRM_READ_ONLY|_DRM_DRIVER, &dev_priv->mmio_map);
 	if (ret != 0) {
 		DRM_ERROR("Cannot add mapping for MMIO registers\n");
 		return ret;
 	}
+
+#ifdef __linux__
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+        intel_init_chipset_flush_compat(dev);
+#endif
+#endif
 
 	/*
 	 * Initialize the memory manager for local and AGP space
 	 */
 	drm_bo_driver_init(dev);
 
-	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
-	printk("setting up %ld bytes of VRAM space\n", prealloc_size);
-	printk("setting up %ld bytes of TT space\n", (agp_size - prealloc_size));
-	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT, 1);
-	drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT, (agp_size - prealloc_size) >> PAGE_SHIFT, 1);
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
+		printk("setting up %ld bytes of VRAM space\n", prealloc_size);
+		printk("setting up %ld bytes of TT space\n", (agp_size - prealloc_size));
+		drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT, 1);
+		drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT, (agp_size - prealloc_size) >> PAGE_SHIFT, 1);
+		
+		I915_WRITE(LP_RING + RING_LEN, 0);
+		I915_WRITE(LP_RING + RING_HEAD, 0);
+		I915_WRITE(LP_RING + RING_TAIL, 0);
 
-	I915_WRITE(LP_RING + RING_LEN, 0);
-	I915_WRITE(LP_RING + RING_HEAD, 0);
-	I915_WRITE(LP_RING + RING_TAIL, 0);
+		size = PRIMARY_RINGBUFFER_SIZE;
+		ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
+					       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+					       DRM_BO_FLAG_MEM_VRAM |
+					       DRM_BO_FLAG_NO_EVICT,
+					       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
+					       &dev_priv->ring_buffer);
+		if (ret < 0) {
+			DRM_ERROR("Unable to allocate or pin ring buffer\n");
+			return -EINVAL;
+		}
+		
+		/* remap the buffer object properly */
+		dev_priv->ring.Start = dev_priv->ring_buffer->offset;
+		dev_priv->ring.End = dev_priv->ring.Start + size;
+		dev_priv->ring.Size = size;
+		dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
 
-	size = PRIMARY_RINGBUFFER_SIZE;
-	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
-				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
-				       DRM_BO_FLAG_MEM_VRAM |
-				       DRM_BO_FLAG_NO_EVICT,
-				       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
-				       &dev_priv->ring_buffer);
-	if (ret < 0) {
-		DRM_ERROR("Unable to allocate or pin ring buffer\n");
-		return -EINVAL;
-	}
-
-	/* remap the buffer object properly */
-	dev_priv->ring.Start = dev_priv->ring_buffer->offset;
-	dev_priv->ring.End = dev_priv->ring.Start + size;
-	dev_priv->ring.Size = size;
-	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
-
-	/* FIXME: need wrapper with PCI mem checks */
-	ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
-				  (void **) &dev_priv->ring.virtual_start);
-	if (ret)
-		DRM_ERROR("error mapping ring buffer: %d\n", ret);
-
-	DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
-		  dev_priv->ring.virtual_start, dev_priv->ring.Size);
+		/* FIXME: need wrapper with PCI mem checks */
+		ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
+					  (void **) &dev_priv->ring.virtual_start);
+		if (ret)
+			DRM_ERROR("error mapping ring buffer: %d\n", ret);
+		
+		DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
+			  dev_priv->ring.virtual_start, dev_priv->ring.Size);
 
 	//
 
-	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
+		memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
+		
+		I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
+		I915_WRITE(LP_RING + RING_LEN,
+			   ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
+			   (RING_NO_REPORT | RING_VALID));
 
-	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
-	I915_WRITE(LP_RING + RING_LEN,
-		   ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
-		   (RING_NO_REPORT | RING_VALID));
+		/* We are using separate values as placeholders for mechanisms for
+		 * private backbuffer/depthbuffer usage.
+		 */
+		dev_priv->use_mi_batchbuffer_start = 0;
+		
+		/* Allow hardware batchbuffers unless told otherwise.
+		 */
+		dev_priv->allow_batchbuffer = 1;
 
-	/* We are using separate values as placeholders for mechanisms for
-	 * private backbuffer/depthbuffer usage.
-	 */
-	dev_priv->use_mi_batchbuffer_start = 0;
-
-	/* Allow hardware batchbuffers unless told otherwise.
-	 */
-	dev_priv->allow_batchbuffer = 1;
-
-	/* Program Hardware Status Page */
-	if (!IS_G33(dev)) {
-		dev_priv->status_page_dmah = 
-			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
-
-		if (!dev_priv->status_page_dmah) {
-			dev->dev_private = (void *)dev_priv;
-			i915_dma_cleanup(dev);
-			DRM_ERROR("Can not allocate hardware status page\n");
-			return -ENOMEM;
+		/* Program Hardware Status Page */
+		if (!IS_G33(dev)) {
+			dev_priv->status_page_dmah = 
+				drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
+			
+			if (!dev_priv->status_page_dmah) {
+				dev->dev_private = (void *)dev_priv;
+				i915_dma_cleanup(dev);
+				DRM_ERROR("Can not allocate hardware status page\n");
+				return -ENOMEM;
+			}
+			dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
+			dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+			
+			memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+			
+			I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
 		}
-		dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+		DRM_DEBUG("Enabled hardware status page\n");
 
-		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+		dev_priv->wq = create_singlethread_workqueue("i915");
+		if (dev_priv == 0) {
+		  DRM_DEBUG("Error\n");
+		}
 
-		I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
+		intel_modeset_init(dev);
+		drm_initial_config(dev, false);
+
+		drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
+		drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");
+
+		drm_irq_install(dev);
 	}
-	DRM_DEBUG("Enabled hardware status page\n");
-
-	dev_priv->wq = create_singlethread_workqueue("i915");
-	if (dev_priv == 0) {
-		DRM_DEBUG("Error\n");
-	}
-
-
-	intel_modeset_init(dev);
-	drm_initial_config(dev, false);
-
-	drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
-	drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");
-
-	drm_irq_install(dev);
 
 	return 0;
 }
@@ -262,7 +269,10 @@ int i915_driver_unload(struct drm_device *dev)
 
 	I915_WRITE(LP_RING + RING_LEN, 0);
 
-	intel_modeset_cleanup(dev);
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		intel_modeset_cleanup(dev);
+	}
 
 #if 0
 	if (dev_priv->ring.virtual_start) {
@@ -298,24 +308,32 @@ int i915_driver_unload(struct drm_device *dev)
 		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
 	}
 
-	drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
-			    dev_priv->ring.virtual_start);
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
+				    dev_priv->ring.virtual_start);
 
-	DRM_DEBUG("usage is %d\n", atomic_read(&dev_priv->ring_buffer->usage));
-	mutex_lock(&dev->struct_mutex);
-	drm_bo_usage_deref_locked(&dev_priv->ring_buffer);
+		DRM_DEBUG("usage is %d\n", atomic_read(&dev_priv->ring_buffer->usage));
+		mutex_lock(&dev->struct_mutex);
+		drm_bo_usage_deref_locked(&dev_priv->ring_buffer);
 
-	if (drm_bo_clean_mm(dev, DRM_BO_MEM_TT, 1)) {
-		DRM_ERROR("Memory manager type 3 not clean. "
-			  "Delaying takedown\n");
+		if (drm_bo_clean_mm(dev, DRM_BO_MEM_TT, 1)) {
+			DRM_ERROR("Memory manager type 3 not clean. "
+				  "Delaying takedown\n");
+		}
+		if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM, 1)) {
+			DRM_ERROR("Memory manager type 3 not clean. "
+				  "Delaying takedown\n");
+		}
+		mutex_unlock(&dev->struct_mutex);
 	}
-	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM, 1)) {
-		DRM_ERROR("Memory manager type 3 not clean. "
-			  "Delaying takedown\n");
-	}
-	mutex_unlock(&dev->struct_mutex);
 
 	drm_bo_driver_finish(dev);
+
+#ifdef __linux__
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+        intel_init_chipset_flush_compat(dev);
+#endif
+#endif
 
         DRM_DEBUG("%p\n", dev_priv->mmio_map);
         drm_rmmap(dev, dev_priv->mmio_map);
@@ -362,4 +380,24 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
 	drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
 
 	master->driver_priv = NULL;
+}
+
+void i915_driver_preclose(struct drm_device * dev, struct drm_file *file_priv)
+{
+        struct drm_i915_private *dev_priv = dev->dev_private;
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		i915_mem_release(dev, file_priv, dev_priv->agp_heap);
+}
+
+void i915_driver_lastclose(struct drm_device * dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return;
+
+	if (dev_priv->agp_heap)
+		i915_mem_takedown(&(dev_priv->agp_heap));
+	
+	i915_dma_cleanup(dev);
 }

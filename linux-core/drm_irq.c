@@ -261,6 +261,9 @@ int drm_irq_uninstall(struct drm_device * dev)
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 		return -EINVAL;
 
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
+
 	mutex_lock(&dev->struct_mutex);
 	irq_enabled = dev->irq_enabled;
 	dev->irq_enabled = 0;
@@ -305,6 +308,8 @@ int drm_control(struct drm_device *dev, void *data,
 	switch (ctl->func) {
 	case DRM_INST_HANDLER:
 		if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
+			return 0;
+		if (drm_core_check_feature(dev, DRIVER_MODESET))
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl->irq != dev->irq)

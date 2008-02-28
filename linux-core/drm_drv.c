@@ -414,7 +414,8 @@ static void drm_cleanup(struct drm_device * dev)
 	drm_ht_remove(&dev->object_hash);
 
 	drm_put_minor(&dev->primary);
-	drm_put_minor(&dev->control);
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_put_minor(&dev->control);
 	if (drm_put_dev(dev))
 		DRM_ERROR("Cannot unload module\n");
 }
