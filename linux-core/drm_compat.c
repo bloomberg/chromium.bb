@@ -729,3 +729,35 @@ void *idr_replace(struct idr *idp, void *ptr, int id)
 }
 EXPORT_SYMBOL(idr_replace);
 #endif
+
+#if defined(CONFIG_X86)
+
+#define drm_kmap_get_fixmap_pte(vaddr)					\
+	pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr), vaddr), (vaddr)), (vaddr))
+
+void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
+			   pgprot_t protection)
+{
+	enum fixed_addresses idx;
+	unsigned long vaddr;
+	static pte_t *km_pte;
+	static int initialized = 0;
+
+	if (unlikely(!initialized)) {
+		km_pte = drm_kmap_get_fixmap_pte(__fix_to_virt(FIX_KMAP_BEGIN));
+		initialized = 1;
+	}
+
+	pagefault_disable();
+	idx = type + KM_TYPE_NR*smp_processor_id();
+	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+	set_pte(km_pte-idx, pfn_pte(pfn, protection));
+
+	return (void*) vaddr;
+}
+
+EXPORT_SYMBOL(kmap_atomic_prot_pfn);
+
+#endif
+
+
