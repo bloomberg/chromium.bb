@@ -69,6 +69,7 @@
 
 #ifdef I915_HAVE_BUFFER
 #define I915_MAX_VALIDATE_BUFFERS 4096
+struct drm_i915_validate_buffer;
 #endif
 
 typedef struct _drm_i915_ring_buffer {
@@ -141,6 +142,7 @@ typedef struct drm_i915_private {
 	void *agp_iomap;
 	unsigned int max_validate_buffers;
 	struct mutex cmdbuf_mutex;
+	struct drm_i915_validate_buffer *val_bufs;
 #endif
 
 	DRM_SPINTYPE swaps_lock;
