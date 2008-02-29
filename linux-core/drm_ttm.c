@@ -298,7 +298,7 @@ int drm_ttm_populate(struct drm_ttm *ttm)
 		return 0;
 
 	be = ttm->be;
-	if (ttm->page_flags & DRM_TTM_PAGE_WRITE) {
+	if (1 || (ttm->page_flags & DRM_TTM_PAGE_WRITE)) {
 		for (i = 0; i < ttm->num_pages; ++i) {
 			page = drm_ttm_get_page(ttm, i);
 			if (!page)
