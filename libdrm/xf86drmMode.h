@@ -177,7 +177,7 @@ extern drmModeFBPtr drmModeGetFB(int fd, uint32_t bufferId);
  * Creates a new framebuffer with an buffer object as its scanout buffer.
  */
 extern int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
-			uint8_t bpp, uint32_t pitch, drmBO *bo,
+			uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
 			uint32_t *buf_id);
 /**
  * Destroies the given framebuffer.

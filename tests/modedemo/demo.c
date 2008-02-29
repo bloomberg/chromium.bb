@@ -483,7 +483,7 @@ drmModeFBPtr createFB(int fd, drmModeResPtr res)
 		goto err;
 	}
 
-	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, PITCH * 4, &bo, &fb);
+	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, PITCH * 4, bo->handle, &fb);
 
 	if (ret)
 		goto err_bo;
