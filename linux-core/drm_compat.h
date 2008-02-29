@@ -328,7 +328,7 @@ void *idr_replace(struct idr *idp, void *ptr, int id);
 typedef _Bool                   bool;
 #endif
 
-#if defined(CONFIG_X86)
+#if (defined(CONFIG_X86) && defined(CONFIG_X86_32))
 #define DRM_KMAP_ATOMIC_PROT_PFN
 extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 				  pgprot_t protection);

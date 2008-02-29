@@ -730,8 +730,7 @@ void *idr_replace(struct idr *idp, void *ptr, int id)
 EXPORT_SYMBOL(idr_replace);
 #endif
 
-#if defined(CONFIG_X86)
-
+#if defined(DRM_KMAP_ATOMIC_PROT_PFN)
 #define drm_kmap_get_fixmap_pte(vaddr)					\
 	pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr), vaddr), (vaddr)), (vaddr))
 
