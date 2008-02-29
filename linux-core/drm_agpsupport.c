@@ -666,7 +666,7 @@ void drm_agp_chipset_flush(struct drm_device *dev)
 {
 	agp_flush_chipset(dev->agp->bridge);
 }
-EXPORT_SYMBOL(drm_agp_flush_chipset);
+EXPORT_SYMBOL(drm_agp_chipset_flush);
 #endif
 
 #endif				/* __OS_HAS_AGP */
