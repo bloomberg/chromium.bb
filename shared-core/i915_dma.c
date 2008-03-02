@@ -1469,6 +1469,16 @@ drm_i915_mmio_entry_t mmio_table[] = {
 		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
 		0x30010,
 		6
+	},
+	[MMIO_REGS_FENCE] = {
+		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
+		0x2000,
+		8
+	},
+	[MMIO_REGS_FENCE_NEW] = {
+		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
+		0x3000,
+		16
 	}
 };
 
