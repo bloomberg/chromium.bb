@@ -43,7 +43,9 @@
 #ifndef _WIN32
 
 #include <sys/types.h>
+#ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
+#endif  /* __STDC_FORMAT_MACROS */
 #include <inttypes.h>
 
 #if defined(__SUNPRO_CC) || (defined(__GNUC__) && defined(__sun__))
