@@ -301,7 +301,12 @@ struct drm_ttm_backend_func {
 	void (*destroy) (struct drm_ttm_backend *backend);
 };
 
-
+/**
+ * This structure associates a set of flags and methods with a drm_ttm
+ * object, and will also be subclassed by the particular backend.
+ *
+ * \sa #drm_agp_ttm_backend
+ */
 struct drm_ttm_backend {
 	struct drm_device *dev;
 	uint32_t flags;
