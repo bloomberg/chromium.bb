@@ -645,6 +645,13 @@ struct drm_set_version {
 
 #define DRM_FENCE_FLAG_EMIT                0x00000001
 #define DRM_FENCE_FLAG_SHAREABLE           0x00000002
+/**
+ * On hardware with no interrupt events for operation completion,
+ * indicates that the kernel should sleep while waiting for any blocking
+ * operation to complete rather than spinning.
+ *
+ * Has no effect otherwise.
+ */
 #define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
 #define DRM_FENCE_FLAG_NO_USER             0x00000010
 
@@ -794,13 +801,12 @@ struct drm_fence_arg {
  * with it as a result of this operation
  */
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
-/*
- * Sleep while waiting for the operation to complete.
- * Without this flag, the kernel will, instead, spin
- * until this operation has completed. I'm not sure
- * why you would ever want this, so please always
- * provide DRM_BO_HINT_WAIT_LAZY to any operation
- * which may block
+/**
+ * On hardware with no interrupt events for operation completion,
+ * indicates that the kernel should sleep while waiting for any blocking
+ * operation to complete rather than spinning.
+ *
+ * Has no effect otherwise.
  */
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
 /*
