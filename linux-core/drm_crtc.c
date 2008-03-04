@@ -735,20 +735,20 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 				    "EDID", 0);
 
 	dev->mode_config.dpms_property =
-		drm_property_create(dev, DRM_MODE_PROP_ENUM, "DPMS", 4);
-
+		drm_property_create(dev, DRM_MODE_PROP_ENUM, 
+			"DPMS", ARRAY_SIZE(drm_dpms_enum_list));
 	for (i = 0; i < ARRAY_SIZE(drm_dpms_enum_list); i++)
 		drm_property_add_enum(dev->mode_config.dpms_property, i, drm_dpms_enum_list[i].type, drm_dpms_enum_list[i].name);
 
 	dev->mode_config.connector_type_property =
 		drm_property_create(dev, DRM_MODE_PROP_ENUM | DRM_MODE_PROP_IMMUTABLE,
-				    "Connector Type", 10);
+			"Connector Type", ARRAY_SIZE(drm_conn_enum_list));
 	for (i = 0; i < ARRAY_SIZE(drm_conn_enum_list); i++)
 		drm_property_add_enum(dev->mode_config.connector_type_property, i, drm_conn_enum_list[i].type, drm_conn_enum_list[i].name);
 
 	dev->mode_config.connector_num_property =
 		drm_property_create(dev, DRM_MODE_PROP_RANGE | DRM_MODE_PROP_IMMUTABLE,
-				    "Connector ID", 2);
+			"Connector ID", 2);
 	dev->mode_config.connector_num_property->values[0] = 0;
 	dev->mode_config.connector_num_property->values[1] = 20;
 
@@ -782,7 +782,6 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 				    "bottom margin", 2);
 	dev->mode_config.tv_bottom_margin_property->values[0] = 0;
 	dev->mode_config.tv_bottom_margin_property->values[1] = 100;
-
 
 	return 0;
 }
