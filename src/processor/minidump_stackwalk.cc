@@ -268,7 +268,7 @@ static void PrintModules(const CodeModules *modules) {
        ++module_sequence) {
     const CodeModule *module = modules->GetModuleAtSequence(module_sequence);
     u_int64_t base_address = module->base_address();
-    printf("0x%08llx - 0x%08llx  %s  %s%s\n",
+    printf("0x%08" PRIx64 " - 0x%08" PRIx64 "  %s  %s%s\n",
            base_address, base_address + module->size() - 1,
            PathnameStripper::File(module->code_file()).c_str(),
            module->version().empty() ? "???" : module->version().c_str(),
@@ -298,7 +298,7 @@ static void PrintModulesMachineReadable(const CodeModules *modules) {
        ++module_sequence) {
     const CodeModule *module = modules->GetModuleAtSequence(module_sequence);
     u_int64_t base_address = module->base_address();
-    printf("Module%c%s%c%s%c%s%c%s%c0x%08llx%c0x%08llx%c%d\n",
+    printf("Module%c%s%c%s%c%s%c%s%c0x%08" PRIx64 "%c0x%08" PRIx64 "%c%d\n",
            kOutputSeparator,
            StripSeparator(PathnameStripper::File(module->code_file())).c_str(),
            kOutputSeparator, StripSeparator(module->version()).c_str(),
