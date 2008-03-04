@@ -2799,23 +2799,18 @@ int drmBOWaitIdle(int fd, drmBO *buf, unsigned hint)
     }
     return 0;
 }
-	
+
 int drmBOBusy(int fd, drmBO *buf, int *busy)
 {
-    if (!(buf->flags & DRM_BO_FLAG_SHAREABLE) &&
-	!(buf->replyFlags & DRM_BO_REP_BUSY)) {
-	*busy = 0;
-	return 0;
-    }
-    else {
-	int ret = drmBOInfo(fd, buf);
-	if (ret)
-	    return ret;
-	*busy = (buf->replyFlags & DRM_BO_REP_BUSY);
-	return 0;
-    }
+    int ret = drmBOInfo(fd, buf);
+
+    if (ret)
+	return ret;
+
+    *busy = (buf->replyFlags & DRM_BO_REP_BUSY);
+    return 0;
 }
-    
+
 int drmMMInit(int fd, unsigned long pOffset, unsigned long pSize,
 	      unsigned memType)
 {
