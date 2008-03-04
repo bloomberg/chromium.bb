@@ -48,7 +48,8 @@ static struct drm_prop_enum_list drm_dpms_enum_list[] =
   { DPMSModeOff, "Off" }
 };
 static struct drm_prop_enum_list drm_conn_enum_list[] = 
-{ { ConnectorVGA, "VGA" },
+{ { ConnectorUnknown, "Unknown" },
+  { ConnectorVGA, "VGA" },
   { ConnectorDVII, "DVI-I" },
   { ConnectorDVID, "DVI-D" },
   { ConnectorDVIA, "DVI-A" },
