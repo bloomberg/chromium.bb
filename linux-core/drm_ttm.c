@@ -42,11 +42,12 @@ void drm_ttm_cache_flush(void)
 }
 EXPORT_SYMBOL(drm_ttm_cache_flush);
 
-/*
- * Use kmalloc if possible. Otherwise fall back to vmalloc.
+/**
+ * Allocates storage for pointers to the pages that back the ttm.
+ *
+ * Uses kmalloc if possible. Otherwise falls back to vmalloc.
  */
-
-static void drm_ttm_alloc_pages(struct drm_ttm *ttm)
+static void drm_ttm_alloc_page_directory(struct drm_ttm *ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 	ttm->pages = NULL;
@@ -60,19 +61,19 @@ static void drm_ttm_alloc_pages(struct drm_ttm *ttm)
 	if (!ttm->pages) {
 		ttm->pages = vmalloc_user(size);
 		if (ttm->pages)
-			ttm->page_flags |= DRM_TTM_PAGE_VMALLOC;
+			ttm->page_flags |= DRM_TTM_PAGEDIR_VMALLOC;
 	}
 	if (!ttm->pages)
 		drm_free_memctl(size);
 }
 
-static void drm_ttm_free_pages(struct drm_ttm *ttm)
+static void drm_ttm_free_page_directory(struct drm_ttm *ttm)
 {
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 
-	if (ttm->page_flags & DRM_TTM_PAGE_VMALLOC) {
+	if (ttm->page_flags & DRM_TTM_PAGEDIR_VMALLOC) {
 		vfree(ttm->pages);
-		ttm->page_flags &= ~DRM_TTM_PAGE_VMALLOC;
+		ttm->page_flags &= ~DRM_TTM_PAGEDIR_VMALLOC;
 	} else {
 		drm_free(ttm->pages, size, DRM_MEM_TTM);
 	}
@@ -215,7 +216,7 @@ int drm_ttm_destroy(struct drm_ttm *ttm)
 		else
 			drm_ttm_free_alloced_pages(ttm);
 
-		drm_ttm_free_pages(ttm);
+		drm_ttm_free_page_directory(ttm);
 	}
 
 	drm_ctl_free(ttm, sizeof(*ttm), DRM_MEM_TTM);
@@ -349,7 +350,7 @@ struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size,
 	 * Account also for AGP module memory usage.
 	 */
 
-	drm_ttm_alloc_pages(ttm);
+	drm_ttm_alloc_page_directory(ttm);
 	if (!ttm->pages) {
 		drm_ttm_destroy(ttm);
 		DRM_ERROR("Failed allocating page table\n");

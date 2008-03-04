@@ -384,7 +384,7 @@ extern int drm_ttm_destroy(struct drm_ttm *ttm);
  * The array of page pointers was allocated with vmalloc
  * instead of drm_calloc.
  */
-#define DRM_TTM_PAGE_VMALLOC    (1 << 4)
+#define DRM_TTM_PAGEDIR_VMALLOC (1 << 4)
 /*
  * This ttm is mapped from user space
  */
