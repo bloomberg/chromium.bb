@@ -458,12 +458,12 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		if (output->crtc != crtc)
 			continue;
 		
-		if (!output->funcs->mode_fixup(output, mode, adjusted_mode)) {
+		if (!(ret = output->funcs->mode_fixup(output, mode, adjusted_mode))) {
 			goto done;
 		}
 	}
 	
-	if (!crtc->funcs->mode_fixup(crtc, mode, adjusted_mode)) {
+	if (!(ret = crtc->funcs->mode_fixup(crtc, mode, adjusted_mode))) {
 		goto done;
 	}
 
@@ -517,10 +517,16 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 //		drm_crtc_set_screen_sub_pixel_order(dev);
 
 done:
+	if (!ret) { 
+		crtc->mode = saved_mode;
+		crtc->x = saved_x;
+		crtc->y = saved_y;
+	} 
+
 	if (didLock)
 		crtc->funcs->unlock (crtc);
 	
-	return true;
+	return ret;
 }
 EXPORT_SYMBOL(drm_crtc_set_mode);
 
