@@ -401,3 +401,12 @@ void i915_driver_lastclose(struct drm_device * dev)
 	
 	i915_dma_cleanup(dev);
 }
+
+int i915_driver_firstopen(struct drm_device *dev)
+{
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
+
+	drm_bo_driver_init(dev);
+	return 0;
+}

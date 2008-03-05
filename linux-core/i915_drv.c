@@ -48,8 +48,8 @@ extern struct drm_fence_driver i915_fence_driver;
 
 #ifdef I915_HAVE_BUFFER
 
-static uint32_t i915_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_PRIV0, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
-static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
+static uint32_t i915_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
+static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
 
 static struct drm_bo_driver i915_bo_driver = {
 	.mem_type_prio = i915_mem_prios,
@@ -566,6 +566,7 @@ static struct drm_driver driver = {
 	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.load = i915_driver_load,
 	.unload = i915_driver_unload,
+	.firstopen = i915_driver_firstopen,
 	.lastclose = i915_driver_lastclose,
 	.preclose = i915_driver_preclose,
 	.suspend = i915_suspend,

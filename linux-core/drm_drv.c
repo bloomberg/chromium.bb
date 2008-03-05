@@ -187,7 +187,9 @@ int drm_lastclose(struct drm_device * dev)
 
 	DRM_DEBUG("\n");
 
-/*	return 0; */
+	if (!drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_bo_driver_finish(dev);
+
 	/*
 	 * We can't do much about this function failing.
 	 */
@@ -425,12 +427,19 @@ int drm_minors_cleanup(int id, void *ptr, void *data)
 	struct drm_minor *minor = ptr;
 	struct drm_device *dev;
 	struct drm_driver *driver = data;
-	if (id < 127 || id > 192)
-		return 0;
 
 	dev = minor->dev;
 	if (minor->dev->driver != driver)
 		return 0;
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		if (minor->type != DRM_MINOR_CONTROL)
+			return 0;
+	} else {
+		if (minor->type != DRM_MINOR_LEGACY)
+			return 0;
+	}
+
 
 	if (dev)
 		pci_dev_put(dev->pdev);
