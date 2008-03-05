@@ -141,7 +141,7 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 	 * while holding it.
 	 */
 
-	dev = file_priv->head->dev;
+	dev = file_priv->minor->dev;
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_add_user_object(file_priv, &lock->base, 0);
 	lock->base.remove = &drm_bo_write_lock_remove;
@@ -156,7 +156,7 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 
 int drm_bo_write_unlock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct drm_ref_object *ro;
 
 	mutex_lock(&dev->struct_mutex);

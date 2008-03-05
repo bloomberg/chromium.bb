@@ -1190,7 +1190,7 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 				 struct drm_bo_info_rep *rep)
 {
 	struct drm_buffer_object *bo;
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	int ret = 0;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 
@@ -1262,7 +1262,7 @@ out:
 
 static int drm_buffer_object_unmap(struct drm_file *file_priv, uint32_t handle)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct drm_buffer_object *bo;
 	struct drm_ref_object *ro;
 	int ret = 0;
@@ -1654,7 +1654,7 @@ int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
 			   struct drm_bo_info_rep *rep,
 			   struct drm_buffer_object **bo_rep)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct drm_buffer_object *bo;
 	int ret;
 
@@ -1690,7 +1690,7 @@ EXPORT_SYMBOL(drm_bo_handle_validate);
 static int drm_bo_handle_info(struct drm_file *file_priv, uint32_t handle,
 			      struct drm_bo_info_rep *rep)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct drm_buffer_object *bo;
 
 	mutex_lock(&dev->struct_mutex);
@@ -1713,7 +1713,7 @@ static int drm_bo_handle_wait(struct drm_file *file_priv, uint32_t handle,
 			      uint32_t hint,
 			      struct drm_bo_info_rep *rep)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct drm_buffer_object *bo;
 	int no_wait = hint & DRM_BO_HINT_DONT_BLOCK;
 	int ret;
@@ -1833,7 +1833,7 @@ EXPORT_SYMBOL(drm_buffer_object_create);
 static int drm_bo_add_user_object(struct drm_file *file_priv,
 				  struct drm_buffer_object *bo, int shareable)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	int ret;
 
 	mutex_lock(&dev->struct_mutex);
@@ -1881,7 +1881,7 @@ int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *fil
 	if (bo_type == drm_bo_type_user)
 		req->flags &= ~DRM_BO_FLAG_SHAREABLE;
 
-	ret = drm_buffer_object_create(file_priv->head->dev,
+	ret = drm_buffer_object_create(file_priv->minor->dev,
 				       req->size, bo_type, req->flags,
 				       req->hint, req->page_alignment,
 				       req->buffer_start, &entry);

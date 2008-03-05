@@ -988,7 +988,7 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 			   struct drm_i915_validate_buffer *buffers,
 			   uint32_t buf_count)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	struct i915_relocatee_info relocatee;
 	int ret = 0;
 	int b;
@@ -1195,7 +1195,7 @@ void i915_fence_or_sync(struct drm_file *file_priv,
 			struct drm_fence_arg *fence_arg,
 			struct drm_fence_object **fence_p)
 {
-	struct drm_device *dev = file_priv->head->dev;
+	struct drm_device *dev = file_priv->minor->dev;
 	int ret;
 	struct drm_fence_object *fence;
 
