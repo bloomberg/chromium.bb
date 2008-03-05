@@ -355,6 +355,10 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		if ((ret = dev->driver->load(dev, ent->driver_data)))
 			goto err_g5;
 
+	if (dev->driver->load)
+		if ((ret = dev->driver->load(dev, ent->driver_data)))
+			goto err_g4;
+
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
 		 driver->date, dev->primary->index);

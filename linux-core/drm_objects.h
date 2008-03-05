@@ -700,7 +700,7 @@ extern int drm_bo_do_validate(struct drm_buffer_object *bo,
 			      uint64_t flags, uint64_t mask, uint32_t hint,
 			      uint32_t fence_class,
 			      struct drm_bo_info_rep *rep);
-
+extern int drm_bo_evict_cached(struct drm_buffer_object *bo);
 /*
  * Buffer object memory move- and map helpers.
  * drm_bo_move.c

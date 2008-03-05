@@ -761,9 +761,10 @@ struct drm_driver {
 };
 
 #define DRM_MINOR_UNASSIGNED 0
-#define DRM_MINOR_CONTROL 1
-#define DRM_MINOR_LEGACY 2
+#define DRM_MINOR_LEGACY 1
+#define DRM_MINOR_CONTROL 2
 #define DRM_MINOR_RENDER 3
+
 /**
  * DRM minor structure. This structure represents a drm minor number.
  */

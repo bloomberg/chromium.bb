@@ -805,6 +805,7 @@ struct i915_relocatee_info {
 	struct drm_bo_kmap_obj kmap;
 	int is_iomem;
 	int idle;
+	int evicted;
 };
 
 struct drm_i915_validate_buffer {
@@ -877,6 +878,12 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		relocatee->data_page = drm_bmo_virtual(&relocatee->kmap,
 						       &relocatee->is_iomem);
 		relocatee->page_offset = (relocatee->offset & PAGE_MASK);
+		
+		if (!relocatee->evicted && 
+		    relocatee->buf->mem.flags & DRM_BO_FLAG_CACHED_MAPPED) {
+		    drm_bo_evict_cached(relocatee->buf);
+		    relocatee->evicted = 1;
+		}
 	}
 
 	val = buffers[buf_index].buffer->offset;
