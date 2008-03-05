@@ -37,6 +37,7 @@
  */
 #include <stdint.h>
 #include <sys/ioctl.h>
+#include <stdio.h>
 
 #include "xf86drmMode.h"
 #include "xf86drm.h"
@@ -125,7 +126,6 @@ void drmModeFreeOutput(drmModeOutputPtr ptr)
 drmModeResPtr drmModeGetResources(int fd)
 {
 	struct drm_mode_card_res res;
-	int i;
 	drmModeResPtr r = 0;
 
 	memset(&res, 0, sizeof(struct drm_mode_card_res));
@@ -196,7 +196,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 	f.depth  = depth;
 	f.handle = bo_handle;
 
-	if (ret = ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f))
+	if ((ret = ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f)))
 		return ret;
 
 	*buf_id = f.buffer_id;
@@ -243,7 +243,6 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 {
 	struct drm_mode_crtc crtc;
 	drmModeCrtcPtr r;
-	int i = 0;
 
 	crtc.count_outputs   = 0;
 	crtc.outputs         = 0;
@@ -276,10 +275,6 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	r->possibles       = crtc.possibles;
 
 	return r;
-
-err_allocs:
-
-	return 0;
 }
 
 
@@ -433,8 +428,7 @@ drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 {
 	struct drm_mode_get_property prop;
 	drmModePropertyPtr r;
-	struct drm_mode_property_blob *blob_tmp;
-	int i;
+
 	prop.prop_id = property_id;
 	prop.count_enum_blobs = 0;
 	prop.count_values = 0;
@@ -549,7 +543,7 @@ int drmModeOutputSetProperty(int fd, uint32_t output_id, uint32_t property_id,
 	osp.prop_id = property_id;
 	osp.value = value;
 
-	if (ret = ioctl(fd, DRM_IOCTL_MODE_SETPROPERTY, &osp))
+	if ((ret = ioctl(fd, DRM_IOCTL_MODE_SETPROPERTY, &osp)))
 		return ret;
 
 	return 0;
@@ -565,8 +559,6 @@ int drmCheckModesettingSupported(const char *busid)
 {
 #ifdef __linux__
 	char pci_dev_dir[1024];
-	char *bus_id_path;
-	char *bus_type;
 	int domain, bus, dev, func;
 	DIR *sysdir;
 	struct dirent *dent;
