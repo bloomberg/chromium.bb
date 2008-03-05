@@ -1066,7 +1066,7 @@ static int drm_bo_busy(struct drm_buffer_object *bo)
 	return 0;
 }
 
-static int drm_bo_evict_cached(struct drm_buffer_object *bo)
+int drm_bo_evict_cached(struct drm_buffer_object *bo)
 {
 	int ret = 0;
 
@@ -1076,6 +1076,7 @@ static int drm_bo_evict_cached(struct drm_buffer_object *bo)
 	return ret;
 }
 
+EXPORT_SYMBOL(drm_bo_evict_cached);
 /*
  * Wait until a buffer is unmapped.
  */
