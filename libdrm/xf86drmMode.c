@@ -36,6 +36,7 @@
  * platforms find which headers to include to get uint32_t
  */
 #include <stdint.h>
+#include <sys/ioctl.h>
 
 #include "xf86drmMode.h"
 #include "xf86drm.h"
@@ -66,27 +67,6 @@ void* drmAllocCpy(void *array, int count, int entry_size)
 		memcpy(r+(entry_size*i), array+(entry_size*i), entry_size);
 
 	return r;
-}
-
-/**
- * Generate crtc and output ids.
- *
- * Will generate ids starting from 1 up to count if count is greater then 0.
- */
-static uint32_t* drmAllocGenerate(int count)
-{
-	uint32_t *r;
-	int i;
-
-	if(0 <= count)
-		return 0;
-
-	if (!(r = drmMalloc(count*sizeof(*r))))
-		return 0;
-
-	for (i = 0; i < count; r[i] = ++i);
-
-	return 0;
 }
 
 /*
