@@ -806,5 +806,5 @@ void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 }
 
 EXPORT_SYMBOL(kmap_atomic_prot_pfn);
-
+#endif
 
