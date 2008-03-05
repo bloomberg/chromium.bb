@@ -960,175 +960,6 @@ struct drm_mm_info_arg {
 	uint64_t p_size;
 };
 
-
-/*
- * Drm mode setting
- */
-#define DRM_DISPLAY_INFO_LEN 32
-#define DRM_OUTPUT_NAME_LEN 32
-#define DRM_DISPLAY_MODE_LEN 32
-#define DRM_PROP_NAME_LEN 32
-
-#define DRM_MODE_TYPE_BUILTIN	(1<<0)
-#define DRM_MODE_TYPE_CLOCK_C	((1<<1) | DRM_MODE_TYPE_BUILTIN)
-#define DRM_MODE_TYPE_CRTC_C	((1<<2) | DRM_MODE_TYPE_BUILTIN)
-#define DRM_MODE_TYPE_PREFERRED	(1<<3)
-#define DRM_MODE_TYPE_DEFAULT	(1<<4)
-#define DRM_MODE_TYPE_USERDEF	(1<<5)
-#define DRM_MODE_TYPE_DRIVER	(1<<6)
-
-struct drm_mode_modeinfo {
-	unsigned int clock;
-	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;
-	unsigned short vdisplay, vsync_start, vsync_end, vtotal, vscan;
-
-	unsigned int vrefresh; /* vertical refresh * 1000 */
-
-	unsigned int flags;
-	unsigned int type;
-	char name[DRM_DISPLAY_MODE_LEN];
-};
-
-struct drm_mode_card_res {
-	uint64_t fb_id_ptr;
-	uint64_t crtc_id_ptr;
-	uint64_t output_id_ptr;
-	int count_fbs;
-	int count_crtcs;
-	int count_outputs;
-	int min_width, max_width;
-	int min_height, max_height;
-};
-
-struct drm_mode_crtc {
-	uint64_t set_outputs_ptr;
-
-	unsigned int crtc_id; /**< Id */
-	unsigned int fb_id; /**< Id of framebuffer */
-
-	int x, y; /**< Position on the frameuffer */
-
-	int count_outputs;
-	unsigned int outputs; /**< Outputs that are connected */
-
-	int count_possibles;
-	unsigned int possibles; /**< Outputs that can be connected */
-	int gamma_size;
-	int mode_valid;
-	struct drm_mode_modeinfo mode;
-};
-
-#define DRM_MODE_OUTPUT_NONE 0
-#define DRM_MODE_OUTPUT_DAC  1
-#define DRM_MODE_OUTPUT_TMDS 2
-#define DRM_MODE_OUTPUT_LVDS 3
-#define DRM_MODE_OUTPUT_TVDAC 4
-
-struct drm_mode_get_output {
-
-	uint64_t modes_ptr;
-	uint64_t props_ptr;
-	uint64_t prop_values_ptr;
-
-	int count_modes;
-	int count_props;
-	unsigned int output; /**< Id */
-	unsigned int crtc; /**< Id of crtc */
-	unsigned int output_type;
-	unsigned int output_type_id;
-
-	unsigned int connection;
-	unsigned int mm_width, mm_height; /**< HxW in millimeters */
-	unsigned int subpixel;
-	int count_crtcs;
-	int count_clones;
-	unsigned int crtcs; /**< possible crtc to connect to */
-	unsigned int clones; /**< list of clones */
-};
-
-#define DRM_MODE_PROP_PENDING (1<<0)
-#define DRM_MODE_PROP_RANGE (1<<1)
-#define DRM_MODE_PROP_IMMUTABLE (1<<2)
-#define DRM_MODE_PROP_ENUM (1<<3) // enumerated type with text strings
-#define DRM_MODE_PROP_BLOB (1<<4)
-
-struct drm_mode_property_enum {
-	uint64_t value;
-	unsigned char name[DRM_PROP_NAME_LEN];
-};
-
-struct drm_mode_get_property {
-	uint64_t values_ptr; /* values and blob lengths */
-	uint64_t enum_blob_ptr; /* enum and blob id ptrs */
-
-	unsigned int prop_id;
-	unsigned int flags;
-	unsigned char name[DRM_PROP_NAME_LEN];
-
-	int count_values;
-	int count_enum_blobs;
-};
-
-struct drm_mode_output_set_property {
-	uint64_t value;
-	unsigned int prop_id;
-	unsigned int output_id;
-};
-
-struct drm_mode_get_blob {
-	uint32_t blob_id;
-	uint32_t length;
-	uint64_t data;
-};
-
-struct drm_mode_fb_cmd {
-        unsigned int buffer_id;
-        unsigned int width, height;
-        unsigned int pitch;
-        unsigned int bpp;
-        unsigned int handle;
-	unsigned int depth;
-};
-
-struct drm_mode_mode_cmd {
-	unsigned int output_id;
-	struct drm_mode_modeinfo mode;
-};
-
-#define DRM_MODE_CURSOR_BO   0x01
-#define DRM_MODE_CURSOR_MOVE 0x02
-
-/*
- * depending on the value in flags diffrent members are used.
- *
- * CURSOR_BO uses
- *    crtc
- *    width
- *    height
- *    handle - if 0 turns the cursor of
- *
- * CURSOR_MOVE uses
- *    crtc
- *    x
- *    y
- */
-struct drm_mode_cursor {
-	unsigned int flags;
-	unsigned int crtc;
-	int x;
-	int y;
-	uint32_t width;
-	uint32_t height;
-	unsigned int handle;
-};
-
-/*
- * oh so ugly hotplug
- */
-struct drm_mode_hotplug {
-	uint32_t counter;
-};
-
 /**
  * \name Ioctls Definitions
  */
@@ -1221,6 +1052,7 @@ struct drm_mode_hotplug {
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_VERSION          DRM_IOR(0xd6, struct drm_bo_version_arg)
 #define DRM_IOCTL_MM_INFO               DRM_IOWR(0xd7, struct drm_mm_info_arg)
+<<<<<<< HEAD:shared-core/drm.h
 
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)
@@ -1238,6 +1070,8 @@ struct drm_mode_hotplug {
 #define DRM_IOCTL_MODE_GETPROPERTY     DRM_IOWR(0xAB, struct drm_mode_get_property)
 #define DRM_IOCTL_MODE_CURSOR          DRM_IOWR(0xAC, struct drm_mode_cursor)
 #define DRM_IOCTL_MODE_HOTPLUG         DRM_IOWR(0xAD, struct drm_mode_hotplug)
+=======
+>>>>>>> d5c0101252e9f48ef1b59f48c05fea7007df97f0:shared-core/drm.h
 
 /*@}*/
 
