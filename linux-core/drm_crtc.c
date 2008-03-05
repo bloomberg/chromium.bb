@@ -420,14 +420,14 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	int saved_x, saved_y;
 	bool didLock = false;
 	struct drm_output *output;
+	bool ret = true;
 
 	adjusted_mode = drm_mode_duplicate(dev, mode);
 
 	crtc->enabled = drm_crtc_in_use(crtc);
 
-	if (!crtc->enabled) {
+	if (!crtc->enabled)
 		return true;
-	}
 
 	didLock = crtc->funcs->lock(crtc);
 
