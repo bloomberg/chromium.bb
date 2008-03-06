@@ -1052,7 +1052,6 @@ struct drm_mm_info_arg {
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_VERSION          DRM_IOR(0xd6, struct drm_bo_version_arg)
 #define DRM_IOCTL_MM_INFO               DRM_IOWR(0xd7, struct drm_mm_info_arg)
-<<<<<<< HEAD:shared-core/drm.h
 
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)
@@ -1070,8 +1069,6 @@ struct drm_mm_info_arg {
 #define DRM_IOCTL_MODE_GETPROPERTY     DRM_IOWR(0xAB, struct drm_mode_get_property)
 #define DRM_IOCTL_MODE_CURSOR          DRM_IOWR(0xAC, struct drm_mode_cursor)
 #define DRM_IOCTL_MODE_HOTPLUG         DRM_IOWR(0xAD, struct drm_mode_hotplug)
-=======
->>>>>>> d5c0101252e9f48ef1b59f48c05fea7007df97f0:shared-core/drm.h
 
 /*@}*/
 
