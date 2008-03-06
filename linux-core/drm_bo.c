@@ -970,7 +970,7 @@ static int drm_bo_modify_proposed_flags (struct drm_buffer_object *bo,
 		return -EINVAL;
 	}
 
-	if ((new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
+	if (bo->type != drm_bo_type_kernel && (new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
 		DRM_ERROR("DRM_BO_FLAG_NO_EVICT is only available to priviliged processes.\n");
 		return -EPERM;
 	}
