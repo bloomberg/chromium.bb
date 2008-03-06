@@ -162,11 +162,13 @@ static int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 
 void i915_fence_handler(struct drm_device *dev)
 {
+	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[0];
 
 	write_lock(&fm->lock);
-	i915_fence_poll(dev, 0, fc->waiting_types);
+	if (likely(dev_priv->fence_irq_on))
+		i915_fence_poll(dev, 0, fc->waiting_types);
 	write_unlock(&fm->lock);
 }
 
