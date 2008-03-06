@@ -568,6 +568,25 @@ int drmCheckModesettingSupported(const char *busid)
 	if (ret != 4)
 		return -EINVAL;
 
+	sprintf(pci_dev_dir, "/sys/bus/pci/devices/%04x:%02x:%02x.%d/drm",
+		domain, bus, dev, func);
+
+	sysdir = opendir(pci_dev_dir);
+	if (sysdir) {
+		dent = readdir(sysdir);
+		while (dent) {
+			if (!strncmp(dent->d_name, "controlD", 8)) {
+				found = 1;
+				break;
+			}
+		
+			dent = readdir(sysdir);
+		}
+		closedir(sysdir);
+		if (found)
+			return 0;
+	}
+
 	sprintf(pci_dev_dir, "/sys/bus/pci/devices/%04x:%02x:%02x.%d/",
 		domain, bus, dev, func);
 
