@@ -333,4 +333,9 @@ typedef _Bool                   bool;
 extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 				  pgprot_t protection);
 #endif
+
+#if !defined(flush_agp_mappings)
+#define flush_agp_mappings() do {} while(0)
+#endif
+
 #endif
