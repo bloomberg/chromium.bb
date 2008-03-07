@@ -433,13 +433,6 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000000);
 	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
 
-	/* stop the fifo, otherwise it could be running and
-	 * it will crash when removing gpu objects
-	 *XXX: from real-world evidence, absolutely useless..
-	 */
-	NV_WRITE(chan->get, chan->pushbuf_base);
-	NV_WRITE(chan->put, chan->pushbuf_base);
-
 	// FIXME XXX needs more code
 
 	engine->fifo.destroy_context(chan);
