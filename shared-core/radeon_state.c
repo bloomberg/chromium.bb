@@ -3126,12 +3126,14 @@ static int radeon_cp_setparam(struct drm_device *dev, void *data, struct drm_fil
 			DRM_DEBUG("color tiling disabled\n");
 			dev_priv->front_pitch_offset &= ~RADEON_DST_TILE_MACRO;
 			dev_priv->back_pitch_offset &= ~RADEON_DST_TILE_MACRO;
-			dev_priv->sarea_priv->tiling_enabled = 0;
+			if (dev_priv->sarea_priv)
+				dev_priv->sarea_priv->tiling_enabled = 0;
 		} else if (sp->value == 1) {
 			DRM_DEBUG("color tiling enabled\n");
 			dev_priv->front_pitch_offset |= RADEON_DST_TILE_MACRO;
 			dev_priv->back_pitch_offset |= RADEON_DST_TILE_MACRO;
-			dev_priv->sarea_priv->tiling_enabled = 1;
+			if (dev_priv->sarea_priv)
+				dev_priv->sarea_priv->tiling_enabled = 1;
 		}
 		break;
 	case RADEON_SETPARAM_PCIGART_LOCATION:
