@@ -390,6 +390,34 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 	return 0;
 }
 
+static int
+nouveau_channel_idle(struct nouveau_channel *chan)
+{
+	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_engine *engine = &dev_priv->Engine;
+	uint32_t caches;
+	int idle;
+
+	caches = NV_READ(NV03_PFIFO_CACHES);
+	NV_WRITE(NV03_PFIFO_CACHES, caches & ~1);
+
+	if (engine->fifo.channel_id(dev) != chan->id) {
+		struct nouveau_gpuobj *ramfc = chan->ramfc->gpuobj;
+
+		if (INSTANCE_RD(ramfc, 0) != INSTANCE_RD(ramfc, 1))
+			idle = 0;
+		else
+			idle = 1;
+	} else {
+		idle = (NV_READ(NV04_PFIFO_CACHE1_DMA_GET) ==
+			NV_READ(NV04_PFIFO_CACHE1_DMA_PUT));
+	}
+
+	NV_WRITE(NV03_PFIFO_CACHES, caches);
+	return idle;
+}
+
 /* stops a fifo */
 void nouveau_fifo_free(struct nouveau_channel *chan)
 {
@@ -400,22 +428,9 @@ void nouveau_fifo_free(struct nouveau_channel *chan)
 
 	DRM_INFO("%s: freeing fifo %d\n", __func__, chan->id);
 
-	/* Disable channel switching, if this channel isn't currenly
-	 * active re-enable it if there's still pending commands.
-	 * We really should do a manual context switch here, but I'm
-	 * not sure I trust our ability to do this reliably yet..
-	 */
-	NV_WRITE(NV03_PFIFO_CACHES, 0);
-	if (engine->fifo.channel_id(dev) != chan->id &&
-	    NV_READ(chan->get) != NV_READ(chan->put)) {
-		NV_WRITE(NV03_PFIFO_CACHES, 1);
-	}
-
 	/* Give the channel a chance to idle, wait 2s (hopefully) */
 	t_start = engine->timer.read(dev);
-	while (NV_READ(chan->get) != NV_READ(chan->put) ||
-	       NV_READ(NV03_PFIFO_CACHE1_GET) !=
-	       NV_READ(NV03_PFIFO_CACHE1_PUT)) {
+	while (!nouveau_channel_idle(chan)) {
 		if (engine->timer.read(dev) - t_start > 2000000000ULL) {
 			DRM_ERROR("Failed to idle channel %d before destroy."
 				  "Prepare for strangeness..\n", chan->id);
