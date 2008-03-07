@@ -589,7 +589,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	fb->bits_per_pixel = 32;
 	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
 	fb->depth = 24;
-	ret = drm_buffer_object_create(dev, fb->pitch * fb->height * 4, 
+	ret = drm_buffer_object_create(dev, fb->pitch * fb->height, 
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
