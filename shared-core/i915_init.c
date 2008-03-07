@@ -271,6 +271,7 @@ int i915_driver_unload(struct drm_device *dev)
 
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		drm_irq_uninstall(dev);
 		intel_modeset_cleanup(dev);
 	}
 
