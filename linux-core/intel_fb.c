@@ -228,6 +228,7 @@ static int intelfb_set_par(struct fb_info *info)
         struct drm_output *output = NULL;
         struct fb_var_screeninfo *var = &info->var;
 	int found = 0;
+	int changed = 0;
 
 	DRM_DEBUG("\n");
 
@@ -310,11 +311,22 @@ static int intelfb_set_par(struct fb_info *info)
 	}
 
 	/* re-attach fb */
-	if (!par->crtc->fb)
+	if (!par->crtc->fb) {
 		par->crtc->fb = par->fb;
+		changed = 1;
+	}
 
-	if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
-		return -EINVAL;
+	if (par->crtc->x != var->xoffset || par->crtc->y != var->yoffset)
+		changed = 1;
+	  
+	drm_mode_debug_printmodeline(dev, drm_mode);
+	drm_mode_debug_printmodeline(dev, &par->crtc->mode);
+	if (!drm_mode_equal(drm_mode, &par->crtc->mode))
+		changed = 1;
+	
+	if (changed)
+		if (!drm_crtc_set_mode(par->crtc, drm_mode, var->xoffset, var->yoffset))
+			return -EINVAL;
 
 	return 0;
 }
@@ -469,16 +481,21 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 {
 	struct intelfb_par *par = info->par;
 	struct drm_crtc *crtc = par->crtc;
-
+	int changed = 0;
 	DRM_DEBUG("\n");
 
 	/* TODO add check size and pos*/
+	if (par->crtc->x != var->xoffset || par->crtc->y != var->yoffset)
+		changed = 1;
 
 	/* re-attach fb */
-	if (!crtc->fb)
+	if (!crtc->fb) {
 		crtc->fb = par->fb;
+		changed = 1;
+	}
 
-	drm_crtc_set_mode(crtc, &crtc->mode, var->xoffset, var->yoffset);
+	if (changed) 
+		drm_crtc_set_mode(crtc, &crtc->mode, var->xoffset, var->yoffset);
 
 	info->var.xoffset = var->xoffset;
 	info->var.yoffset = var->yoffset;

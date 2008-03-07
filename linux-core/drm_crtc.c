@@ -1110,13 +1110,17 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	/* We should be able to check here if the fb has the same properties
 	 * and then just flip_or_move it */
 	if (crtc->fb != fb)
-		changed = true;
+		flip_or_move = true;
 
 	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
 		flip_or_move = true;
 
-	if (new_mode && !drm_mode_equal(new_mode, &crtc->mode))
+	if (new_mode && !drm_mode_equal(new_mode, &crtc->mode)) {
+		DRM_DEBUG("modes are different\n");
+		drm_mode_debug_printmodeline(dev, &crtc->mode);
+		drm_mode_debug_printmodeline(dev, new_mode);
 		changed = true;
+	}
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		save_crtcs[count++] = output->crtc;
@@ -1161,6 +1165,8 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 		}
 		drm_disable_unused_functions(dev);
 	} else if (flip_or_move) {
+		if (crtc->fb != fb)
+			crtc->fb = fb;
 		crtc->funcs->mode_set_base(crtc, crtc_info->x, crtc_info->y);
 	}
 
