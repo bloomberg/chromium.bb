@@ -68,7 +68,7 @@
  * comments.
  *
  * Author: Mark Mentovai */
- 
+
 
 #ifndef GOOGLE_BREAKPAD_COMMON_MINIDUMP_FORMAT_H__
 #define GOOGLE_BREAKPAD_COMMON_MINIDUMP_FORMAT_H__

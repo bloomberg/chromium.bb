@@ -269,7 +269,8 @@ void CrashGenerationServer::HandleInitialState() {
     return;
   }
 
-  bool success = ConnectNamedPipe(pipe_, &overlapped_) != FALSE;
+  bool success;
+  success = ConnectNamedPipe(pipe_, &overlapped_) != FALSE;
 
   // From MSDN, it is not clear that when ConnectNamedPipe is used
   // in an overlapped mode, will it ever return non-zero value, and
@@ -366,7 +367,8 @@ void CrashGenerationServer::HandleReadingState() {
     return;
   }
 
-  DWORD error_code = GetLastError();
+  DWORD error_code;
+  error_code = GetLastError();
 
   // We should never get an I/O incomplete since we should not execute this
   // unless the Read has finished and the overlapped event is signaled. If
@@ -435,7 +437,8 @@ void CrashGenerationServer::HandleWritingState() {
     return;
   }
 
-  DWORD error_code = GetLastError();
+  DWORD error_code;
+  error_code = GetLastError();
 
   // We should never get an I/O incomplete since we should not execute this
   // unless the Write has finished and the overlapped event is signaled. If
@@ -490,7 +493,8 @@ void CrashGenerationServer::HandleReadingAckState() {
       connect_callback_(connect_context_, client_info_);
     }
   } else {
-    DWORD error_code = GetLastError();
+    DWORD error_code;
+    error_code = GetLastError();
 
     // We should never get an I/O incomplete since we should not execute this
     // unless the Read has finished and the overlapped event is signaled. If
