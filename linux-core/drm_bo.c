@@ -969,7 +969,7 @@ static int drm_bo_modify_proposed_flags (struct drm_buffer_object *bo,
 		return -EINVAL;
 	}
 
-	if ((new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
+	if (bo->type != drm_bo_type_kernel && (new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
 		DRM_ERROR("DRM_BO_FLAG_NO_EVICT is only available to priviliged processes.\n");
 		return -EPERM;
 	}
@@ -1065,7 +1065,7 @@ static int drm_bo_busy(struct drm_buffer_object *bo)
 	return 0;
 }
 
-static int drm_bo_evict_cached(struct drm_buffer_object *bo)
+int drm_bo_evict_cached(struct drm_buffer_object *bo)
 {
 	int ret = 0;
 
@@ -1075,6 +1075,7 @@ static int drm_bo_evict_cached(struct drm_buffer_object *bo)
 	return ret;
 }
 
+EXPORT_SYMBOL(drm_bo_evict_cached);
 /*
  * Wait until a buffer is unmapped.
  */

@@ -106,6 +106,7 @@ struct drm_file;
 #define DRIVER_IRQ_SHARED  0x80
 #define DRIVER_DMA_QUEUE   0x100
 #define DRIVER_FB_DMA      0x200
+#define DRIVER_MODESET     0x400
 
 
 /*@}*/
@@ -760,9 +761,10 @@ struct drm_driver {
 };
 
 #define DRM_MINOR_UNASSIGNED 0
-#define DRM_MINOR_CONTROL 1
-#define DRM_MINOR_LEGACY 2
+#define DRM_MINOR_LEGACY 1
+#define DRM_MINOR_CONTROL 2
 #define DRM_MINOR_RENDER 3
+
 /**
  * DRM minor structure. This structure represents a drm minor number.
  */

@@ -415,6 +415,13 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	if (i915_in_vblank(dev, pipe))
 		count++;
 #endif
+	/* count may be reset by other driver(e.g. 2D driver), 
+	   we have no way to know if it is wrapped or resetted 
+	   when count is zero. do a rough guess.
+	*/
+	if (count == 0 && dev->last_vblank[pipe] < dev->max_vblank_count/2)
+		dev->last_vblank[pipe] = 0; 
+	
 	return count;
 }
 

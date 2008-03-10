@@ -48,7 +48,8 @@ static struct drm_prop_enum_list drm_dpms_enum_list[] =
   { DPMSModeOff, "Off" }
 };
 static struct drm_prop_enum_list drm_conn_enum_list[] = 
-{ { ConnectorVGA, "VGA" },
+{ { ConnectorUnknown, "Unknown" },
+  { ConnectorVGA, "VGA" },
   { ConnectorDVII, "DVI-I" },
   { ConnectorDVID, "DVI-D" },
   { ConnectorDVIA, "DVI-A" },
@@ -419,14 +420,14 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	int saved_x, saved_y;
 	bool didLock = false;
 	struct drm_output *output;
+	bool ret = true;
 
 	adjusted_mode = drm_mode_duplicate(dev, mode);
 
 	crtc->enabled = drm_crtc_in_use(crtc);
 
-	if (!crtc->enabled) {
+	if (!crtc->enabled)
 		return true;
-	}
 
 	didLock = crtc->funcs->lock(crtc);
 
@@ -457,12 +458,12 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		if (output->crtc != crtc)
 			continue;
 		
-		if (!output->funcs->mode_fixup(output, mode, adjusted_mode)) {
+		if (!(ret = output->funcs->mode_fixup(output, mode, adjusted_mode))) {
 			goto done;
 		}
 	}
 	
-	if (!crtc->funcs->mode_fixup(crtc, mode, adjusted_mode)) {
+	if (!(ret = crtc->funcs->mode_fixup(crtc, mode, adjusted_mode))) {
 		goto done;
 	}
 
@@ -516,10 +517,16 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 //		drm_crtc_set_screen_sub_pixel_order(dev);
 
 done:
+	if (!ret) { 
+		crtc->mode = saved_mode;
+		crtc->x = saved_x;
+		crtc->y = saved_y;
+	} 
+
 	if (didLock)
 		crtc->funcs->unlock (crtc);
 	
-	return true;
+	return ret;
 }
 EXPORT_SYMBOL(drm_crtc_set_mode);
 
@@ -728,20 +735,20 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 				    "EDID", 0);
 
 	dev->mode_config.dpms_property =
-		drm_property_create(dev, DRM_MODE_PROP_ENUM, "DPMS", 4);
-
+		drm_property_create(dev, DRM_MODE_PROP_ENUM, 
+			"DPMS", ARRAY_SIZE(drm_dpms_enum_list));
 	for (i = 0; i < ARRAY_SIZE(drm_dpms_enum_list); i++)
 		drm_property_add_enum(dev->mode_config.dpms_property, i, drm_dpms_enum_list[i].type, drm_dpms_enum_list[i].name);
 
 	dev->mode_config.connector_type_property =
 		drm_property_create(dev, DRM_MODE_PROP_ENUM | DRM_MODE_PROP_IMMUTABLE,
-				    "Connector Type", 10);
+			"Connector Type", ARRAY_SIZE(drm_conn_enum_list));
 	for (i = 0; i < ARRAY_SIZE(drm_conn_enum_list); i++)
 		drm_property_add_enum(dev->mode_config.connector_type_property, i, drm_conn_enum_list[i].type, drm_conn_enum_list[i].name);
 
 	dev->mode_config.connector_num_property =
 		drm_property_create(dev, DRM_MODE_PROP_RANGE | DRM_MODE_PROP_IMMUTABLE,
-				    "Connector ID", 2);
+			"Connector ID", 2);
 	dev->mode_config.connector_num_property->values[0] = 0;
 	dev->mode_config.connector_num_property->values[1] = 20;
 
@@ -775,7 +782,6 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 				    "bottom margin", 2);
 	dev->mode_config.tv_bottom_margin_property->values[0] = 0;
 	dev->mode_config.tv_bottom_margin_property->values[1] = 100;
-
 
 	return 0;
 }
@@ -1104,13 +1110,17 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	/* We should be able to check here if the fb has the same properties
 	 * and then just flip_or_move it */
 	if (crtc->fb != fb)
-		changed = true;
+		flip_or_move = true;
 
 	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
 		flip_or_move = true;
 
-	if (new_mode && !drm_mode_equal(new_mode, &crtc->mode))
+	if (new_mode && !drm_mode_equal(new_mode, &crtc->mode)) {
+		DRM_DEBUG("modes are different\n");
+		drm_mode_debug_printmodeline(dev, &crtc->mode);
+		drm_mode_debug_printmodeline(dev, new_mode);
 		changed = true;
+	}
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		save_crtcs[count++] = output->crtc;
@@ -1155,6 +1165,8 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 		}
 		drm_disable_unused_functions(dev);
 	} else if (flip_or_move) {
+		if (crtc->fb != fb)
+			crtc->fb = fb;
 		crtc->funcs->mode_set_base(crtc, crtc_info->x, crtc_info->y);
 	}
 

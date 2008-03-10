@@ -481,7 +481,8 @@ int drm_release(struct inode *inode, struct file *filp)
 	}
 	mutex_unlock(&dev->ctxlist_mutex);
 
-	drm_fb_release(filp);
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_fb_release(filp);
 
 	file_priv->master = NULL;
 

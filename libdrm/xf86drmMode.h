@@ -177,7 +177,7 @@ extern drmModeFBPtr drmModeGetFB(int fd, uint32_t bufferId);
  * Creates a new framebuffer with an buffer object as its scanout buffer.
  */
 extern int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
-			uint8_t bpp, uint32_t pitch, drmBO *bo,
+			uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
 			uint32_t *buf_id);
 /**
  * Destroies the given framebuffer.
@@ -243,3 +243,4 @@ extern drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id);
 extern void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr);
 extern int drmModeOutputSetProperty(int fd, uint32_t output_id, uint32_t property_id,
 				    uint64_t value);
+extern int drmCheckModesettingSupported(const char *busid);

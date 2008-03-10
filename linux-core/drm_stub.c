@@ -343,8 +343,10 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		goto err_g3;
 	}
 
-	if ((ret = drm_get_minor(dev, &dev->control, DRM_MINOR_CONTROL)))
-		goto err_g3;
+	/* only add the control node on a modesetting platform */
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		if ((ret = drm_get_minor(dev, &dev->control, DRM_MINOR_CONTROL)))
+			goto err_g3;
 
 	if ((ret = drm_get_minor(dev, &dev->primary, DRM_MINOR_LEGACY)))
 		goto err_g4;
@@ -361,7 +363,8 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 err_g5:
 	drm_put_minor(&dev->primary);
 err_g4:
-	drm_put_minor(&dev->control);
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_put_minor(&dev->control);
 err_g3:
 	if (!drm_fb_loaded)
 		pci_disable_device(pdev);

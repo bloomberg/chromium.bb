@@ -59,17 +59,27 @@ pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
 	pgprot_val(tmp) |= _PAGE_NO_CACHE;
 	if (map_type == _DRM_REGISTERS)
 		pgprot_val(tmp) |= _PAGE_GUARDED;
-#endif
-#if defined(__ia64__)
+#elif defined(__ia64__)
 	if (efi_range_is_wc(vma->vm_start, vma->vm_end -
 				    vma->vm_start))
 		tmp = pgprot_writecombine(tmp);
 	else
 		tmp = pgprot_noncached(tmp);
+#elif defined(__sparc__)
+	tmp = pgprot_noncached(tmp);
 #endif
 	return tmp;
 }
 
+static pgprot_t drm_dma_prot(uint32_t map_type, struct vm_area_struct *vma)
+{
+	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
+
+#if defined(__powerpc__) && defined(CONFIG_NOT_COHERENT_CACHE)
+	tmp |= _PAGE_NO_CACHE;
+#endif
+	return tmp;
+}
 
 /**
  * \c nopage method for AGP virtual memory.
@@ -628,9 +638,6 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 		offset = dev->driver->get_reg_ofs(dev);
 		vma->vm_flags |= VM_IO;	/* not in core dump */
 		vma->vm_page_prot = drm_io_prot(map->type, vma);
-#ifdef __sparc__
-		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-#endif
 		if (io_remap_pfn_range(vma, vma->vm_start,
 				       (map->offset + offset) >> PAGE_SHIFT,
 				       vma->vm_end - vma->vm_start,
@@ -649,6 +656,7 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 		    page_to_pfn(virt_to_page(map->handle)),
 		    vma->vm_end - vma->vm_start, vma->vm_page_prot))
 			return -EAGAIN;
+		vma->vm_page_prot = drm_dma_prot(map->type, vma);
 	/* fall through to _DRM_SHM */
 	case _DRM_SHM:
 		vma->vm_ops = &drm_vm_shm_ops;
@@ -661,6 +669,7 @@ static int drm_mmap_locked(struct file *filp, struct vm_area_struct *vma)
 		vma->vm_ops = &drm_vm_sg_ops;
 		vma->vm_private_data = (void *)map;
 		vma->vm_flags |= VM_RESERVED;
+		vma->vm_page_prot = drm_dma_prot(map->type, vma);
 		break;
 	case _DRM_TTM:
 		return drm_bo_mmap_locked(vma, filp, map);

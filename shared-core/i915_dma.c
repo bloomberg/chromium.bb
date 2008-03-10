@@ -66,6 +66,11 @@ void i915_kernel_lost_context(struct drm_device * dev)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_ring_buffer *ring = &(dev_priv->ring);
 
+	/* we should never lose context on the ring with modesetting 
+	 * as we don't expose it to userspace */
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return;
+
 	ring->head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
 	ring->tail = I915_READ(LP_RING + RING_TAIL) & TAIL_ADDR;
 	ring->space = ring->head - (ring->tail + 8);
@@ -75,12 +80,39 @@ void i915_kernel_lost_context(struct drm_device * dev)
 
 int i915_dma_cleanup(struct drm_device * dev)
 {
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
+
 	/* Make sure interrupts are disabled here because the uninstall ioctl
 	 * may not have been called from userspace and after dev_private
 	 * is freed, it's too late.
 	 */
 	if (dev->irq)
 		drm_irq_uninstall(dev);
+
+        if (dev_priv->ring.virtual_start) {
+                drm_core_ioremapfree(&dev_priv->ring.map, dev);
+                dev_priv->ring.virtual_start = 0;
+                dev_priv->ring.map.handle = 0;
+                dev_priv->ring.map.size = 0;
+		dev_priv->ring.Size = 0;
+        }
+
+        if (dev_priv->status_page_dmah) {
+                drm_pci_free(dev, dev_priv->status_page_dmah);
+                dev_priv->status_page_dmah = NULL;
+                /* Need to rewrite hardware status page */
+                I915_WRITE(0x02080, 0x1ffff000);
+        }
+
+        if (dev_priv->status_gfx_addr) {
+                dev_priv->status_gfx_addr = 0;
+                drm_core_ioremapfree(&dev_priv->hws_map, dev);
+                I915_WRITE(0x02080, 0x1ffff000);
+        }
+
 
 	return 0;
 }
@@ -153,12 +185,16 @@ static int i915_initialize(struct drm_device * dev,
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
 
-	dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
-	if (!dev_priv->mmio_map) {
-		i915_dma_cleanup(dev);
-		DRM_ERROR("can not find mmio map!\n");
-		return -EINVAL;
+	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
+		if (init->mmio_offset != 0)
+			dev_priv->mmio_map = drm_core_findmap(dev, init->mmio_offset);
+		if (!dev_priv->mmio_map) {
+			i915_dma_cleanup(dev);
+			DRM_ERROR("can not find mmio map!\n");
+			return -EINVAL;
+		}
 	}
+
 
 #ifdef I915_HAVE_BUFFER
 	dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
@@ -245,6 +281,9 @@ static int i915_dma_resume(struct drm_device * dev)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 
 	DRM_DEBUG("\n");
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
 
 	if (!dev_priv->mmio_map) {
 		DRM_ERROR("can not find mmio map!\n");
@@ -765,6 +804,8 @@ struct i915_relocatee_info {
 	unsigned page_offset;
 	struct drm_bo_kmap_obj kmap;
 	int is_iomem;
+	int idle;
+	int evicted;
 };
 
 struct drm_i915_validate_buffer {
@@ -820,6 +861,14 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		drm_bo_kunmap(&relocatee->kmap);
 		relocatee->data_page = NULL;
 		relocatee->offset = new_cmd_offset;
+		
+		if (unlikely(!relocatee->idle)) {
+			ret = drm_bo_wait(relocatee->buf, 0, 0, 0);
+			if (ret)
+				return ret;
+			relocatee->idle = 1;
+		}
+
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
 		if (ret) {
@@ -829,6 +878,12 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		relocatee->data_page = drm_bmo_virtual(&relocatee->kmap,
 						       &relocatee->is_iomem);
 		relocatee->page_offset = (relocatee->offset & PAGE_MASK);
+		
+		if (!relocatee->evicted && 
+		    relocatee->buf->mem.flags & DRM_BO_FLAG_CACHED_MAPPED) {
+		    drm_bo_evict_cached(relocatee->buf);
+		    relocatee->evicted = 1;
+		}
 	}
 
 	val = buffers[buf_index].buffer->offset;
@@ -963,10 +1018,6 @@ static int i915_exec_reloc(struct drm_file *file_priv, drm_handle_t buf_handle,
 	}
 
 	mutex_lock (&relocatee.buf->mutex);
-	ret = drm_bo_wait (relocatee.buf, 0, 0, FALSE);
-	if (ret)
-		goto out_err1;
-
 	while (reloc_user_ptr) {
 		ret = i915_process_relocs(file_priv, buf_handle, &reloc_user_ptr, &relocatee, buffers, buf_count);
 		if (ret) {
@@ -1430,6 +1481,16 @@ drm_i915_mmio_entry_t mmio_table[] = {
 		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
 		0x30010,
 		6
+	},
+	[MMIO_REGS_FENCE] = {
+		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
+		0x2000,
+		8
+	},
+	[MMIO_REGS_FENCE_NEW] = {
+		I915_MMIO_MAY_READ|I915_MMIO_MAY_WRITE,
+		0x3000,
+		16
 	}
 };
 

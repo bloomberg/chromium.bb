@@ -39,14 +39,17 @@ static struct pci_device_id pciidlist[] = {
 	i915_PCI_IDS
 };
 
+unsigned int i915_modeset = 0;
+module_param_named(modeset, i915_modeset, int, 0400);
+
 #ifdef I915_HAVE_FENCE
 extern struct drm_fence_driver i915_fence_driver;
 #endif
 
 #ifdef I915_HAVE_BUFFER
 
-static uint32_t i915_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_PRIV0, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
-static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_PRIV0, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
+static uint32_t i915_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
+static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
 
 static struct drm_bo_driver i915_bo_driver = {
 	.mem_type_prio = i915_mem_prios,
@@ -563,8 +566,9 @@ static struct drm_driver driver = {
 	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
 	.load = i915_driver_load,
 	.unload = i915_driver_unload,
-/*	.lastclose = i915_driver_lastclose,
-	.preclose = i915_driver_preclose, */
+	.firstopen = i915_driver_firstopen,
+	.lastclose = i915_driver_lastclose,
+	.preclose = i915_driver_preclose,
 	.suspend = i915_suspend,
 	.resume = i915_resume,
 	.device_is_agp = i915_driver_device_is_agp,
@@ -624,6 +628,9 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 static int __init i915_init(void)
 {
 	driver.num_ioctls = i915_max_ioctl;
+	if (i915_modeset == 1)
+		driver.driver_features |= DRIVER_MODESET;
+
 	return drm_init(&driver, pciidlist);
 }
 

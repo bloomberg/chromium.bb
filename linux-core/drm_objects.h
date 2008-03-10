@@ -383,7 +383,7 @@ extern int drm_ttm_destroy(struct drm_ttm *ttm);
  * The array of page pointers was allocated with vmalloc
  * instead of drm_calloc.
  */
-#define DRM_TTM_PAGE_VMALLOC    (1 << 4)
+#define DRM_TTM_PAGEDIR_VMALLOC (1 << 4)
 /*
  * This ttm is mapped from user space
  */
@@ -700,7 +700,7 @@ extern int drm_bo_do_validate(struct drm_buffer_object *bo,
 			      uint64_t flags, uint64_t mask, uint32_t hint,
 			      uint32_t fence_class,
 			      struct drm_bo_info_rep *rep);
-
+extern int drm_bo_evict_cached(struct drm_buffer_object *bo);
 /*
  * Buffer object memory move- and map helpers.
  * drm_bo_move.c
@@ -741,6 +741,10 @@ static inline void *drm_bmo_virtual(struct drm_bo_kmap_obj *map, int *is_iomem)
 extern void drm_bo_kunmap(struct drm_bo_kmap_obj *map);
 extern int drm_bo_kmap(struct drm_buffer_object *bo, unsigned long start_page,
 		       unsigned long num_pages, struct drm_bo_kmap_obj *map);
+extern int drm_bo_pfn_prot(struct drm_buffer_object *bo,
+			   unsigned long dst_offset,
+			   unsigned long *pfn,
+			   pgprot_t *prot);
 
 
 /*

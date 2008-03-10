@@ -596,3 +596,36 @@ void drm_bo_kunmap(struct drm_bo_kmap_obj *map)
 	map->page = NULL;
 }
 EXPORT_SYMBOL(drm_bo_kunmap);
+
+int drm_bo_pfn_prot(struct drm_buffer_object *bo,
+		    unsigned long dst_offset,
+		    unsigned long *pfn,
+		    pgprot_t *prot)
+{
+	struct drm_bo_mem_reg *mem = &bo->mem;
+	struct drm_device *dev = bo->dev;
+	unsigned long bus_offset;
+	unsigned long bus_size;
+	unsigned long bus_base;
+	struct drm_mem_type_manager *man = &dev->bm.man[mem->mem_type];
+	int ret;
+
+	ret = drm_bo_pci_offset(dev, mem, &bus_base, &bus_offset,
+				&bus_size);
+	if (ret)
+		return -EINVAL;
+
+	if (bus_size != 0)
+		*pfn = (bus_base + bus_offset + dst_offset) >> PAGE_SHIFT;
+	else if (!bo->ttm)
+		return -EINVAL;
+	else
+		*pfn = page_to_pfn(drm_ttm_get_page(bo->ttm, dst_offset >> PAGE_SHIFT));
+
+	*prot = (mem->flags & DRM_BO_FLAG_CACHED) ?
+		PAGE_KERNEL : drm_kernel_io_prot(man->drm_bus_maptype);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_bo_pfn_prot);
+

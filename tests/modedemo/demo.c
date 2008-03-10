@@ -429,7 +429,7 @@ void demoUpdateRes(struct demo_driver *driver)
 int demoFindConnectedOutputs(struct demo_driver *driver, drmModeOutputPtr *out, size_t max_out)
 {
 	int count = 0;
-	int i;
+	int i,j;
 	int fd = driver->fd;
 	drmModeResPtr res = driver->res;
 
@@ -441,9 +441,19 @@ int demoFindConnectedOutputs(struct demo_driver *driver, drmModeOutputPtr *out, 
 		if (!output)
 			continue;
 
-		if (output->connection != DRM_MODE_CONNECTED) {
+		if (output->connection == DRM_MODE_DISCONNECTED) {
 			drmModeFreeOutput(output);
 			continue;
+		}
+		
+		for (j = 0; j < output->count_props; j++) {
+			drmModePropertyPtr prop;
+
+			prop = drmModeGetProperty(fd, output->props[j]);
+
+			printf("Property: %s\n",prop->name);
+			if (prop->count_enums)
+				printf("%s\n",prop->enums[output->prop_values[j]].name);
 		}
 
 		out[count++] = output;
@@ -483,7 +493,7 @@ drmModeFBPtr createFB(int fd, drmModeResPtr res)
 		goto err;
 	}
 
-	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, PITCH * 4, &bo, &fb);
+	ret = drmModeAddFB(fd, SIZE_X, SIZE_Y, 32, 32, PITCH * 4, bo.handle, &fb);
 
 	if (ret)
 		goto err_bo;

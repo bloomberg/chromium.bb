@@ -36,11 +36,15 @@
  * platforms find which headers to include to get uint32_t
  */
 #include <stdint.h>
+#include <sys/ioctl.h>
+#include <stdio.h>
 
 #include "xf86drmMode.h"
 #include "xf86drm.h"
 #include <drm.h>
 #include <string.h>
+#include <dirent.h>
+#include <errno.h>
 
 #define U642VOID(x) ((void *)(unsigned long)(x))
 #define VOID2U64(x) ((uint64_t)(unsigned long)(x))
@@ -64,27 +68,6 @@ void* drmAllocCpy(void *array, int count, int entry_size)
 		memcpy(r+(entry_size*i), array+(entry_size*i), entry_size);
 
 	return r;
-}
-
-/**
- * Generate crtc and output ids.
- *
- * Will generate ids starting from 1 up to count if count is greater then 0.
- */
-static uint32_t* drmAllocGenerate(int count)
-{
-	uint32_t *r;
-	int i;
-
-	if(0 <= count)
-		return 0;
-
-	if (!(r = drmMalloc(count*sizeof(*r))))
-		return 0;
-
-	for (i = 0; i < count; r[i] = ++i);
-
-	return 0;
 }
 
 /*
@@ -143,7 +126,6 @@ void drmModeFreeOutput(drmModeOutputPtr ptr)
 drmModeResPtr drmModeGetResources(int fd)
 {
 	struct drm_mode_card_res res;
-	int i;
 	drmModeResPtr r = 0;
 
 	memset(&res, 0, sizeof(struct drm_mode_card_res));
@@ -201,7 +183,8 @@ uint32_t drmModeGetHotplug(int fd)
 }
 
 int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
-                 uint8_t bpp, uint32_t pitch, drmBO *bo, uint32_t *buf_id)
+                 uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
+		 uint32_t *buf_id)
 {
 	struct drm_mode_fb_cmd f;
 	int ret;
@@ -211,9 +194,9 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 	f.pitch  = pitch;
 	f.bpp    = bpp;
 	f.depth  = depth;
-	f.handle = bo->handle;
+	f.handle = bo_handle;
 
-	if (ret = ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f))
+	if ((ret = ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f)))
 		return ret;
 
 	*buf_id = f.buffer_id;
@@ -260,7 +243,6 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 {
 	struct drm_mode_crtc crtc;
 	drmModeCrtcPtr r;
-	int i = 0;
 
 	crtc.count_outputs   = 0;
 	crtc.outputs         = 0;
@@ -293,10 +275,6 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	r->possibles       = crtc.possibles;
 
 	return r;
-
-err_allocs:
-
-	return 0;
 }
 
 
@@ -450,8 +428,7 @@ drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 {
 	struct drm_mode_get_property prop;
 	drmModePropertyPtr r;
-	struct drm_mode_property_blob *blob_tmp;
-	int i;
+
 	prop.prop_id = property_id;
 	prop.count_enum_blobs = 0;
 	prop.count_values = 0;
@@ -566,8 +543,71 @@ int drmModeOutputSetProperty(int fd, uint32_t output_id, uint32_t property_id,
 	osp.prop_id = property_id;
 	osp.value = value;
 
-	if (ret = ioctl(fd, DRM_IOCTL_MODE_SETPROPERTY, &osp))
+	if ((ret = ioctl(fd, DRM_IOCTL_MODE_SETPROPERTY, &osp)))
 		return ret;
 
 	return 0;
+}
+
+/*
+ * checks if a modesetting capable driver has attached to the pci id
+ * returns 0 if modesetting supported.
+ *  -EINVAL or invalid bus id
+ *  -ENOSYS if no modesetting support
+*/
+int drmCheckModesettingSupported(const char *busid)
+{
+#ifdef __linux__
+	char pci_dev_dir[1024];
+	int domain, bus, dev, func;
+	DIR *sysdir;
+	struct dirent *dent;
+	int found = 0, ret;
+
+	ret = sscanf(busid, "pci:%04x:%02x:%02x.%d", &domain, &bus, &dev, &func);
+	if (ret != 4)
+		return -EINVAL;
+
+	sprintf(pci_dev_dir, "/sys/bus/pci/devices/%04x:%02x:%02x.%d/drm",
+		domain, bus, dev, func);
+
+	sysdir = opendir(pci_dev_dir);
+	if (sysdir) {
+		dent = readdir(sysdir);
+		while (dent) {
+			if (!strncmp(dent->d_name, "controlD", 8)) {
+				found = 1;
+				break;
+			}
+		
+			dent = readdir(sysdir);
+		}
+		closedir(sysdir);
+		if (found)
+			return 0;
+	}
+
+	sprintf(pci_dev_dir, "/sys/bus/pci/devices/%04x:%02x:%02x.%d/",
+		domain, bus, dev, func);
+
+	sysdir = opendir(pci_dev_dir);
+	if (!sysdir)
+		return -EINVAL;
+
+	dent = readdir(sysdir);
+	while (dent) {
+		if (!strncmp(dent->d_name, "drm:controlD", 12)) {
+			found = 1;
+			break;
+		}
+		
+		dent = readdir(sysdir);
+	}
+			
+	closedir(sysdir);
+	if (found)
+		return 0;
+#endif
+	return -ENOSYS;
+
 }

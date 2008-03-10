@@ -223,8 +223,10 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
 		if (est_bits & (1<<i)) {
 			struct drm_display_mode *newmode;
 			newmode = drm_mode_duplicate(dev, &edid_est_modes[i]);
-			drm_mode_probed_add(output, newmode);
-			modes++;
+			if (newmode) {
+				drm_mode_probed_add(output, newmode);
+				modes++;
+			}
 		}
 
 	return modes;
@@ -251,8 +253,10 @@ static int add_standard_modes(struct drm_output *output, struct edid *edid)
 			continue;
 
 		newmode = drm_mode_std(dev, &edid->standard_timings[i]);
-		drm_mode_probed_add(output, newmode);
-		modes++;
+		if (newmode) {
+			drm_mode_probed_add(output, newmode);
+			modes++;
+		}
 	}
 
 	return modes;
@@ -283,11 +287,13 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 		if (timing->pixel_clock) {
 			newmode = drm_mode_detailed(dev, timing);
 			/* First detailed mode is preferred */
-			if (i == 0 && edid->preferred_timing)
-				newmode->type |= DRM_MODE_TYPE_PREFERRED;
-			drm_mode_probed_add(output, newmode);
+			if (newmode) {
+				if (i == 0 && edid->preferred_timing)
+					newmode->type |= DRM_MODE_TYPE_PREFERRED;
+				drm_mode_probed_add(output, newmode);
 				     
-			modes++;
+				modes++;
+			}
 			continue;
 		}
 
@@ -312,8 +318,10 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 
 				std = &data->data.timings[j];
 				newmode = drm_mode_std(dev, std);
-				drm_mode_probed_add(output, newmode);
-				modes++;
+				if (newmode) {
+					drm_mode_probed_add(output, newmode);
+					modes++;
+				}
 			}
 			break;
 		default:

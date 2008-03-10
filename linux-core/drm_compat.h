@@ -343,4 +343,14 @@ extern struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devf
 #define PM_EVENT_PRETHAW 3
 #endif
 
+#if (defined(CONFIG_X86) && defined(CONFIG_X86_32) && defined(CONFIG_HIMEM))
+#define DRM_KMAP_ATOMIC_PROT_PFN
+extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
+				  pgprot_t protection);
+#endif
+
+#if !defined(flush_agp_mappings)
+#define flush_agp_mappings() do {} while(0)
+#endif
+
 #endif
