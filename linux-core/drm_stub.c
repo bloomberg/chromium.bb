@@ -157,11 +157,6 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 		}
 	}
 
-	if (dev->driver->load)
-		if ((retcode = dev->driver->load(dev, ent->driver_data)))
-			goto error_out_unreg;
-
-
 	retcode = drm_ctxbitmap_init(dev);
 	if (retcode) {
 		DRM_ERROR("Cannot allocate memory for context bitmap.\n");
