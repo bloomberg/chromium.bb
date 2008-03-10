@@ -28,7 +28,7 @@
 #include "drm_pciids.h"
 #include "radeon_ms.h"
 
-extern struct drm_fence_driver radeon_ms_fence_driver;
+extern struct drm_fence_driver r3xx_fence_driver;
 extern struct drm_bo_driver radeon_ms_bo_driver;
 extern struct drm_ioctl_desc radeon_ms_ioctls[];
 extern int radeon_ms_num_ioctls;
@@ -71,7 +71,7 @@ static struct drm_driver driver = {
 	.set_version = NULL,
 	.fb_probe = radeonfb_probe,
 	.fb_remove = radeonfb_remove,
-	.fence_driver = &radeon_ms_fence_driver,
+	.fence_driver = &r3xx_fence_driver,
 	.bo_driver = &radeon_ms_bo_driver,
 	.major = DRIVER_MAJOR,
 	.minor = DRIVER_MINOR,

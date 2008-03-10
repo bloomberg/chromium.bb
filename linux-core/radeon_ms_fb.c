@@ -345,12 +345,11 @@ int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	DRM_INFO("[radeon_ms] fb physical start : 0x%lX\n", info->fix.smem_start);
 	DRM_INFO("[radeon_ms] fb physical size  : %d\n", info->fix.smem_len);
 
-	ret = drm_mem_reg_ioremap(dev, &fb->bo->mem, &fb->virtual_base);
-	if (ret) {
-		DRM_ERROR("error mapping fb: %d\n", ret);
+ 	ret = drm_bo_kmap(fb->bo, 0, fb->bo->num_pages, &fb->kmap);
+  	if (ret) {
+  		DRM_ERROR("error mapping fb: %d\n", ret);
 	}
-
-	info->screen_base = fb->virtual_base;
+	info->screen_base = fb->kmap.virtual;
 	info->screen_size = info->fix.smem_len; /* FIXME */
 	info->pseudo_palette = fb->pseudo_palette;
 	info->var.xres_virtual = fb->width;
@@ -445,10 +444,10 @@ int radeonfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 	
 	if (info) {
 		unregister_framebuffer(info);
-		framebuffer_release(info);
-		drm_mem_reg_iounmap(dev, &fb->bo->mem, fb->virtual_base);
+		drm_bo_kunmap(&fb->kmap);
 		drm_bo_usage_deref_unlocked(&fb->bo);
 		drm_framebuffer_destroy(fb);
+		framebuffer_release(info);
 	}
 	return 0;
 }

@@ -223,7 +223,7 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 			fence_arg->handle = fence->base.hash.key;
 			fence_arg->fence_class = fence->fence_class;
 			fence_arg->type = fence->type;
-			fence_arg->signaled = fence->signaled;
+			fence_arg->signaled = fence->signaled_types;
 			fence_arg->sequence = fence->sequence;
 		}
 	}

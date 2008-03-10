@@ -92,9 +92,9 @@ irqreturn_t radeon_ms_irq_handler(DRM_IRQ_ARGS)
 
 	/* SW interrupt */
 	if (GEN_INT_STATUS__SW_INT & status) {
-		radeon_ms_fence_handler(dev);
+		r3xx_fence_handler(dev);
 	}
-	radeon_ms_fence_handler(dev);
+	r3xx_fence_handler(dev);
 	return IRQ_HANDLED;
 }
 

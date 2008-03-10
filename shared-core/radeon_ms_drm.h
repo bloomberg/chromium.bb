@@ -30,16 +30,23 @@
 #ifndef __RADEON_MS_DRM_H__
 #define __RADEON_MS_DRM_H__
 
-/* fence definitions */
-/* The only fence class we support */
-#define DRM_RADEON_FENCE_CLASS_ACCEL 0
-/* Fence type that guarantees read-write flush */
-#define DRM_RADEON_FENCE_TYPE_RW 2
-/* cache flushes programmed just before the fence */
-#define DRM_RADEON_FENCE_FLAG_FLUSHED 0x01000000
+/* Fence
+ * We have only one fence class as we submit command through th
+ * same fifo so there is no need to synchronize buffer btw different
+ * cmd stream.
+ *
+ * Set DRM_RADEON_FENCE_FLAG_FLUSHED if you want a flush with
+ * emission of the fence
+ *
+ * For fence type we have the native DRM EXE type and the radeon RW
+ * type.
+ */
+#define DRM_RADEON_FENCE_CLASS_ACCEL		0
+#define DRM_RADEON_FENCE_TYPE_RW		2
+#define DRM_RADEON_FENCE_FLAG_FLUSHED		0x01000000
 
 /* radeon ms ioctl */
-#define DRM_RADEON_EXECBUFFER	0x00
+#define DRM_RADEON_EXECBUFFER			0x00
 
 struct drm_radeon_execbuffer_arg {
 	uint64_t    next;

@@ -43,24 +43,13 @@ static uint32_t radeon_ms_busy_prios[] = {
 	DRM_BO_MEM_LOCAL,
 };
 
-struct drm_fence_driver radeon_ms_fence_driver = {
-	.num_classes = 1,
-	.wrap_diff = (1 << 30),
-	.flush_diff = (1 << 29),
-	.sequence_mask = 0xffffffffU,
-	.lazy_capable = 1,
-	.emit = radeon_ms_fence_emit_sequence,
-	.poke_flush = radeon_ms_poke_flush,
-	.has_irq = radeon_ms_fence_has_irq,
-};
-
 struct drm_bo_driver radeon_ms_bo_driver = {
 	.mem_type_prio = radeon_ms_mem_prios,
 	.mem_busy_prio = radeon_ms_busy_prios,
 	.num_mem_type_prio = sizeof(radeon_ms_mem_prios)/sizeof(uint32_t),
 	.num_mem_busy_prio = sizeof(radeon_ms_busy_prios)/sizeof(uint32_t),
 	.create_ttm_backend_entry = radeon_ms_create_ttm_backend,
-	.fence_type = radeon_ms_fence_types,
+	.fence_type = r3xx_fence_types,
 	.invalidate_caches = radeon_ms_invalidate_caches,
 	.init_mem_type = radeon_ms_init_mem_type,
 	.evict_flags = radeon_ms_evict_flags,
@@ -126,6 +115,13 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 		radeon_ms_driver_unload(dev);
 		return ret;
 	}
+
+	dev_priv->fence = drm_alloc(sizeof(struct r3xx_fence), DRM_MEM_DRIVER);
+	if (dev_priv->fence == NULL) {
+		radeon_ms_driver_unload(dev);
+		return -ENOMEM;
+	}
+	memset(dev_priv->fence, 0, sizeof(struct r3xx_fence));
 
 	/* we don't want userspace to be able to map this so don't use
 	 * drm_addmap */
@@ -309,8 +305,10 @@ int radeon_ms_driver_unload(struct drm_device *dev)
 		drm_core_ioremapfree(&dev_priv->vram, dev);
 	}
 	DRM_INFO("[radeon_ms] map released\n");
+	drm_free(dev_priv->fence, sizeof(struct r3xx_fence), DRM_MEM_DRIVER);
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 	dev->dev_private = NULL;
+
 
 	DRM_INFO("[radeon_ms] that's all the folks\n");
 	return 0;

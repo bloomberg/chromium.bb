@@ -31,6 +31,7 @@
 #define __RADEON_MS_H__
 
 #include "radeon_ms_drv.h"
+#include "amd_r3xx_fence.h"
 #include "radeon_ms_reg.h"
 #include "radeon_ms_drm.h"
 #include "radeon_ms_rom.h"
@@ -328,6 +329,7 @@ struct drm_radeon_private {
 	/* abstract asic specific structures */
 	struct radeon_ms_rom        rom;
 	struct radeon_ms_properties properties;
+	void                        *fence;
 };
 
 
@@ -425,15 +427,9 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 int radeon_ms_family_init(struct drm_device *dev);
 
 /* radeon_ms_fence.c */
-int radeon_ms_fence_emit_sequence(struct drm_device *dev, uint32_t class,
-			 	  uint32_t flags, uint32_t *sequence,
-				  uint32_t *native_type);
-void radeon_ms_fence_handler(struct drm_device * dev);
-int radeon_ms_fence_has_irq(struct drm_device *dev, uint32_t class,
-			    uint32_t flags);
-int radeon_ms_fence_types(struct drm_buffer_object *bo,
-			  uint32_t * class, uint32_t * type);
-void radeon_ms_poke_flush(struct drm_device * dev, uint32_t class);
+void r3xx_fence_handler(struct drm_device * dev);
+int r3xx_fence_types(struct drm_buffer_object *bo,
+		     uint32_t * class, uint32_t * type);
 
 /* radeon_ms_fb.c */
 int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
