@@ -56,7 +56,7 @@ struct intel_output {
 struct intel_crtc {
 	int pipe;
 	int plane;
-	uint32_t cursor_adder;
+	uint32_t cursor_addr;
 	u8 lut_r[256], lut_g[256], lut_b[256];
 };
 

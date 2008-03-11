@@ -130,6 +130,14 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	dev->types[8] = _DRM_STAT_SECONDARY;
 	dev->types[9] = _DRM_STAT_DMA;
 
+	if (IS_MOBILE(dev) || IS_I9XX(dev))
+		dev_priv->cursor_needs_physical = true;
+	else
+		dev_priv->cursor_needs_physical = false;
+
+	if (IS_I965G(dev) || IS_G33(dev))
+		dev_priv->cursor_needs_physical = false;
+
 	if (IS_I9XX(dev)) {
 		pci_read_config_dword(dev->pdev, 0x5C, &dev_priv->stolen_base);
 		DRM_DEBUG("stolen base %p\n", (void*)dev_priv->stolen_base);

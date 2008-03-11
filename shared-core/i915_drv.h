@@ -139,8 +139,9 @@ struct drm_i915_private {
 	int fence_irq_on;
 	uint32_t irq_enable_reg;
 	int irq_enabled;
-
 	struct workqueue_struct *wq;
+
+	bool cursor_needs_physical;
 
 #ifdef I915_HAVE_FENCE
 	uint32_t flush_sequence;

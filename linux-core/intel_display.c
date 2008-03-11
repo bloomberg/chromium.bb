@@ -1007,7 +1007,7 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 	uint32_t control = (pipe == 0) ? CURSOR_A_CONTROL : CURSOR_B_CONTROL;
 	uint32_t base = (pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE;
 	uint32_t temp;
-	size_t adder;
+	size_t addr;
 
 	DRM_DEBUG("\n");
 
@@ -1039,17 +1039,21 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 		return -ENOMEM;
 	}
 
-	adder = dev_priv->stolen_base + bo->offset;
-	intel_crtc->cursor_adder = adder;
+	if (dev_priv->cursor_needs_physical)
+		addr = dev_priv->stolen_base + bo->offset;
+	else
+		addr = bo->offset;
+
+	intel_crtc->cursor_addr = addr;
 	temp = 0;
 	/* set the pipe for the cursor */
 	temp |= (pipe << 28);
 	temp |= CURSOR_MODE_64_ARGB_AX | MCURSOR_GAMMA_ENABLE;
 
-	DRM_DEBUG("cusror base %x\n", adder);
+	DRM_DEBUG("cusror base %x\n", addr);
 
 	I915_WRITE(control, temp);
-	I915_WRITE(base, adder);
+	I915_WRITE(base, addr);
 
 	return 0;
 }
@@ -1075,7 +1079,7 @@ static int intel_crtc_cursor_move(struct drm_crtc *crtc, int x, int y)
 	temp |= ((x & CURSOR_POS_MASK) << CURSOR_X_SHIFT);
 	temp |= ((y & CURSOR_POS_MASK) << CURSOR_Y_SHIFT);
 
-	adder = intel_crtc->cursor_adder;
+	adder = intel_crtc->cursor_addr;
 	I915_WRITE((pipe == 0) ? CURSOR_A_POSITION : CURSOR_B_POSITION, temp);
 	I915_WRITE((pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE, adder);
 
@@ -1241,7 +1245,7 @@ void intel_crtc_init(struct drm_device *dev, int pipe)
 		intel_crtc->lut_b[i] = i;
 	}
 
-	intel_crtc->cursor_adder = 0;
+	intel_crtc->cursor_addr = 0;
 
 	crtc->driver_private = intel_crtc;
 }
