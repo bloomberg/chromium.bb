@@ -591,6 +591,13 @@ struct drm_vbl_sig {
 	struct task_struct *task;
 };
 
+struct drm_hotplug_sig {
+	struct list_head head;
+	unsigned int counter;
+	struct siginfo info;
+	struct task_struct *task;
+};
+
 /* location of GART table */
 #define DRM_ATI_GART_MAIN 1
 #define DRM_ATI_GART_FB   2
@@ -866,6 +873,15 @@ struct drm_device {
 	/*@} */
 
 	struct work_struct work;
+
+	/** \name HOTPLUG IRQ support */
+	/*@{ */
+	wait_queue_head_t hotplug_queue;	/**< HOTPLUG wait queue */
+	spinlock_t hotplug_lock;
+	struct list_head *hotplug_sigs;		/**< signal list to send on HOTPLUG */
+	atomic_t hotplug_signal_pending;	/* number of signals pending on all crtcs*/
+
+	/*@} */
 
 	/** \name VBLANK IRQ support */
 	/*@{ */
@@ -1193,13 +1209,17 @@ extern void drm_driver_irq_preinstall(struct drm_device *dev);
 extern void drm_driver_irq_postinstall(struct drm_device *dev);
 extern void drm_driver_irq_uninstall(struct drm_device *dev);
 
+extern int drm_hotplug_init(struct drm_device *dev);
+extern int drm_wait_hotplug(struct drm_device *dev, void *data, struct drm_file *filp);
 extern int drm_vblank_init(struct drm_device *dev, int num_crtcs);
 extern int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *filp);
+extern int drm_wait_hotplug(struct drm_device *dev, void *data, struct drm_file *filp);
 extern int drm_vblank_wait(struct drm_device * dev, unsigned int *vbl_seq);
 extern void drm_locked_tasklet(struct drm_device *dev, void(*func)(struct drm_device*));
 extern u32 drm_vblank_count(struct drm_device *dev, int crtc);
 extern void drm_update_vblank_count(struct drm_device *dev, int crtc);
 extern void drm_handle_vblank(struct drm_device *dev, int crtc);
+extern void drm_handle_hotplug(struct drm_device *dev);
 extern int drm_vblank_get(struct drm_device *dev, int crtc);
 extern void drm_vblank_put(struct drm_device *dev, int crtc);
 

@@ -120,11 +120,11 @@ static void i915_fence_poll(struct drm_device *dev, uint32_t fence_class,
 
 		if (dev_priv->fence_irq_on &&
 		    !(fc->waiting_types & DRM_FENCE_TYPE_EXE)) {
-			i915_user_irq_off(dev_priv);
+			i915_user_irq_off(dev);
 			dev_priv->fence_irq_on = 0;
 		} else if (!dev_priv->fence_irq_on &&
 			   (fc->waiting_types & DRM_FENCE_TYPE_EXE)) {
-			i915_user_irq_on(dev_priv);
+			i915_user_irq_on(dev);
 			dev_priv->fence_irq_on = 1;
 		}
 	}

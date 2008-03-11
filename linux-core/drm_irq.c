@@ -90,32 +90,41 @@ static void vblank_disable_fn(unsigned long arg)
 
 static void drm_vblank_cleanup(struct drm_device *dev)
 {
-	/* Bail if the driver didn't call drm_vblank_init() */
-	if (dev->num_crtcs == 0)
-		return;
-
 	del_timer(&dev->vblank_disable_timer);
 
 	vblank_disable_fn((unsigned long)dev);
 
-	drm_free(dev->vbl_queue, sizeof(*dev->vbl_queue) * dev->num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->vbl_sigs, sizeof(*dev->vbl_sigs) * dev->num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->_vblank_count, sizeof(*dev->_vblank_count) *
-		 dev->num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
-		 dev->num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_enabled, sizeof(*dev->vblank_enabled) *
-		 dev->num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * dev->num_crtcs,
-		 DRM_MEM_DRIVER);
-	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
-		 dev->num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_offset, sizeof(*dev->vblank_offset) * dev->num_crtcs,
+	if (dev->vbl_queue)
+	    drm_free(dev->vbl_queue, sizeof(*dev->vbl_queue) * dev->num_crtcs,
 		 DRM_MEM_DRIVER);
 
-	dev->num_crtcs = 0;
+	if (dev->vbl_sigs)
+	    drm_free(dev->vbl_sigs, sizeof(*dev->vbl_sigs) * dev->num_crtcs,
+		 DRM_MEM_DRIVER);
+
+	if (dev->_vblank_count)
+	    drm_free(dev->_vblank_count, sizeof(*dev->_vblank_count) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+
+	if (dev->vblank_refcount)
+	    drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+
+	if (dev->vblank_enabled)
+	    drm_free(dev->vblank_enabled, sizeof(*dev->vblank_enabled) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+
+	if (dev->last_vblank)
+	    drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * dev->num_crtcs,
+		 DRM_MEM_DRIVER);
+
+	if (dev->vblank_premodeset)
+	    drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+
+	if (dev->vblank_offset)
+	    drm_free(dev->vblank_offset, sizeof(*dev->vblank_offset) * dev->num_crtcs,
+		 DRM_MEM_DRIVER);
 }
 
 int drm_vblank_init(struct drm_device *dev, int num_crtcs)
@@ -181,6 +190,82 @@ err:
 	return ret;
 }
 EXPORT_SYMBOL(drm_vblank_init);
+
+int drm_wait_hotplug(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	union drm_wait_hotplug *hotplugwait = data;
+	struct timeval now;
+	int ret = 0;
+	unsigned int flags;
+
+	if ((!dev->irq) || (!dev->irq_enabled))
+		return -EINVAL;
+
+	flags = hotplugwait->request.type;
+
+	if (flags & _DRM_HOTPLUG_SIGNAL) {
+		unsigned long irqflags;
+		struct list_head *hotplug_sigs = dev->hotplug_sigs;
+		struct drm_hotplug_sig *hotplug_sig;
+
+		hotplug_sig = drm_calloc(1, sizeof(struct drm_hotplug_sig),
+				     DRM_MEM_DRIVER);
+		if (!hotplug_sig)
+			return -ENOMEM;
+
+		atomic_inc(&dev->hotplug_signal_pending);
+
+		hotplug_sig->info.si_signo = hotplugwait->request.signal;
+		hotplug_sig->task = current;
+		hotplug_sig->counter = 
+			hotplugwait->reply.counter = 
+					dev->mode_config.hotplug_counter;
+
+		spin_lock_irqsave(&dev->hotplug_lock, irqflags);
+
+		list_add_tail(&hotplug_sig->head, hotplug_sigs);
+
+		spin_unlock_irqrestore(&dev->hotplug_lock, irqflags);
+	} else {
+		int cur_hotplug = dev->mode_config.hotplug_counter;
+
+		DRM_WAIT_ON(ret, dev->hotplug_queue, 3 * DRM_HZ,
+				dev->mode_config.hotplug_counter > cur_hotplug);
+
+		do_gettimeofday(&now);
+
+		hotplugwait->reply.tval_sec = now.tv_sec;
+		hotplugwait->reply.tval_usec = now.tv_usec;
+		hotplugwait->reply.counter = dev->mode_config.hotplug_counter;
+	}
+
+	return ret;
+}
+
+static void drm_hotplug_cleanup(struct drm_device *dev)
+{
+	if (dev->hotplug_sigs)
+	    drm_free(dev->hotplug_sigs, sizeof(*dev->hotplug_sigs),
+		 DRM_MEM_DRIVER);
+}
+EXPORT_SYMBOL(drm_hotplug_cleanup);
+
+int drm_hotplug_init(struct drm_device *dev)
+{
+	spin_lock_init(&dev->hotplug_lock);
+	atomic_set(&dev->hotplug_signal_pending, 0);
+
+	dev->hotplug_sigs = drm_alloc(sizeof(struct list_head), DRM_MEM_DRIVER);
+	if (!dev->hotplug_sigs)
+		return -ENOMEM;
+
+	INIT_LIST_HEAD(dev->hotplug_sigs);
+	init_waitqueue_head(&dev->hotplug_queue);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_hotplug_init);
 
 /**
  * Install IRQ handler.
@@ -276,6 +361,8 @@ int drm_irq_uninstall(struct drm_device * dev)
 	free_irq(dev->irq, dev);
 
 	drm_vblank_cleanup(dev);
+
+	drm_hotplug_cleanup(dev);
 
 	dev->locked_tasklet_func = NULL;
 
@@ -530,7 +617,7 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 	if (flags & _DRM_VBLANK_SIGNAL) {
 		unsigned long irqflags;
 		struct list_head *vbl_sigs = &dev->vbl_sigs[crtc];
-		struct drm_vbl_sig *vbl_sig;
+		struct drm_vbl_sig *vbl_sig, *tmp;
 
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
 
@@ -538,7 +625,7 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 		 * for the same vblank sequence number; nothing to be done in
 		 * that case
 		 */
-		list_for_each_entry(vbl_sig, vbl_sigs, head) {
+		list_for_each_entry_safe(vbl_sig, tmp, vbl_sigs, head) {
 			if (vbl_sig->sequence == vblwait->request.sequence
 			    && vbl_sig->info.si_signo ==
 			    vblwait->request.signal
@@ -658,6 +745,53 @@ void drm_handle_vblank(struct drm_device *dev, int crtc)
 	drm_vbl_send_signals(dev, crtc);
 }
 EXPORT_SYMBOL(drm_handle_vblank);
+
+/**
+ * Send the HOTPLUG signals.
+ *
+ * \param dev DRM device.
+ *
+ * Sends a signal for each task in drm_device::hotplug_sigs and empties the list.
+ */
+static void drm_hotplug_send_signals(struct drm_device * dev)
+{
+	struct drm_hotplug_sig *hotplug_sig, *tmp;
+	struct list_head *hotplug_sigs;
+	unsigned long flags;
+
+	spin_lock_irqsave(&dev->hotplug_lock, flags);
+
+	hotplug_sigs = dev->hotplug_sigs;
+
+	list_for_each_entry_safe(hotplug_sig, tmp, hotplug_sigs, head) {
+	    hotplug_sig->info.si_code = hotplug_sig->counter;
+
+	    send_sig_info(hotplug_sig->info.si_signo,
+			      &hotplug_sig->info, hotplug_sig->task);
+
+	    list_del(&hotplug_sig->head);
+
+	    drm_free(hotplug_sig, sizeof(*hotplug_sig),
+			 DRM_MEM_DRIVER);
+	    atomic_dec(&dev->hotplug_signal_pending);
+	}
+
+	spin_unlock_irqrestore(&dev->hotplug_lock, flags);
+}
+
+/**
+ * drm_handle_hotplug - handle a hotplug event
+ * @dev: DRM device
+ * @crtc: where this event occurred
+ *
+ * Drivers should call this routine in their hotplug interrupt handlers.
+ */
+void drm_handle_hotplug(struct drm_device *dev)
+{
+	DRM_WAKEUP(&dev->hotplug_queue);
+	drm_hotplug_send_signals(dev);
+}
+EXPORT_SYMBOL(drm_handle_hotplug);
 
 /**
  * Tasklet wrapper function.

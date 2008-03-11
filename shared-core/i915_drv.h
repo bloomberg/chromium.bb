@@ -307,8 +307,8 @@ extern void i915_disable_vblank(struct drm_device *dev, int crtc);
 extern u32 i915_get_vblank_counter(struct drm_device *dev, int crtc);
 extern int i915_vblank_swap(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
-extern void i915_user_irq_on(struct drm_i915_private *dev_priv);
-extern void i915_user_irq_off(struct drm_i915_private *dev_priv);
+extern void i915_user_irq_on(struct drm_device *dev);
+extern void i915_user_irq_off(struct drm_device *dev);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(struct drm_device *dev, void *data,
@@ -536,6 +536,12 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 #define I915REG_PIPEASTAT	0x70024
 #define I915REG_PIPEBSTAT	0x71024
+
+#define I915_VBLANK_INTERRUPT_ENABLE	(1UL<<17)
+#define I915_HOTPLUG_INTERRUPT_ENABLE	(1UL<<26)
+#define I915_HOTPLUG_CLEAR		(1UL<<10)
+#define I915_VBLANK_CLEAR		(1UL<<1)
+
 /*
  * The two pipe frame counter registers are not synchronized, so
  * reading a stable value is somewhat tricky. The following code 
@@ -566,9 +572,6 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  */
 #define PIPE_PIXEL_MASK         0x00ffffff
 #define PIPE_PIXEL_SHIFT        0
-
-#define I915_VBLANK_INTERRUPT_ENABLE	(1UL<<17)
-#define I915_VBLANK_CLEAR		(1UL<<1)
 
 #define GPIOA			0x5010
 #define GPIOB			0x5014
@@ -1153,8 +1156,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define SDVOB_PCIE_CONCURRENCY			(1 << 3)
 #define SDVO_DETECTED				(1 << 2)
 /* Bits to be preserved when writing */
-#define SDVOB_PRESERVE_MASK			((1 << 17) | (1 << 16) | (1 << 14))
-#define SDVOC_PRESERVE_MASK			(1 << 17)
+#define SDVOB_PRESERVE_MASK			((1 << 17) | (1 << 16) | (1 << 14) | (1 << 26))
+#define SDVOC_PRESERVE_MASK			((1 << 17) | (1 << 26))
 
 /** @defgroup LVDS
  * @{

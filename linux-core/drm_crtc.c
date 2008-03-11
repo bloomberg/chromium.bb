@@ -947,6 +947,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 						if (drm_mode_equal (modes, modes_equal)) {
 							if ((output->possible_clones & output_equal->possible_clones) && (output_equal->crtc == crtc)) {
 								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_output_name(output),output->possible_clones,drm_get_output_name(output_equal),output_equal->possible_clones);
+								des_mode = modes;
 								assigned = 0;
 								goto clone;
 							}
@@ -1180,7 +1181,7 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
  * @output hotpluged output
  *
  * LOCKING.
- * Caller must hold mode config lock, function might grap struct lock.
+ * Caller must hold mode config lock, function might grab struct lock.
  *
  * Stage two of a hotplug.
  *
@@ -1192,10 +1193,11 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
 {
 	int has_config = 0;
 
+	dev->mode_config.hotplug_counter++;
+
 	/* We might want to do something more here */
 	if (!connected) {
 		DRM_DEBUG("not connected\n");
-		dev->mode_config.hotplug_counter++;
 		return 0;
 	}
 
@@ -1211,10 +1213,10 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
 
 	if (!output->crtc || !output->crtc->desired_mode) {
 		DRM_DEBUG("could not find a desired mode or crtc for output\n");
-		goto out_err;
+		return 1;
 	}
 
-	/* We should realy check if there is a fb using this crtc */
+	/* We should really check if there is a fb using this crtc */
 	if (!has_config)
 		dev->driver->fb_probe(dev, output->crtc);
 	else {
@@ -1226,12 +1228,7 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
 
 	drm_disable_unused_functions(dev);
 
-	dev->mode_config.hotplug_counter++;
 	return 0;
-
-out_err:
-	dev->mode_config.hotplug_counter++;
-	return 1;
 }
 EXPORT_SYMBOL(drm_hotplug_stage_two);
 
