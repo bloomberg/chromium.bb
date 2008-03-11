@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="crash_generation.lib exception_handler.lib"
+				AdditionalDependencies="exception_handler.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\$(ConfigurationName)"
 				GenerateDebugInformation="true"
@@ -139,7 +139,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="crash_generation.lib exception_handler.lib"
+				AdditionalDependencies="exception_handler.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\$(ConfigurationName)"
 				GenerateDebugInformation="true"
@@ -220,7 +220,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="crash_generation.lib exception_handler.lib"
+				AdditionalDependencies="exception_handler.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\$(ConfigurationName)"
 				GenerateDebugInformation="true"
@@ -297,7 +297,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="crash_generation.lib exception_handler.lib"
+				AdditionalDependencies="exception_handler.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\$(ConfigurationName)"
 				GenerateDebugInformation="true"
