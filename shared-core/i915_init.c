@@ -277,7 +277,6 @@ int i915_driver_unload(struct drm_device *dev)
 
 	I915_WRITE(LP_RING + RING_LEN, 0);
 
-
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 		drm_irq_uninstall(dev);
 		intel_modeset_cleanup(dev);
@@ -291,7 +290,6 @@ int i915_driver_unload(struct drm_device *dev)
 	if (dev_priv->sarea_kmap.virtual) {
 		drm_bo_kunmap(&dev_priv->sarea_kmap);
 		dev_priv->sarea_kmap.virtual = NULL;
-		dev->primary->master->lock.hw_lock = NULL;
 		dev->sigdata.lock = NULL;
 	}
 
