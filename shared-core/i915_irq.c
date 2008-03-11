@@ -577,6 +577,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	u32 temp = 0;
 	u32 pipea_stats, pipeb_stats;
+	int hotplug = 0;
 
 	/* On i8xx/i915 hw the IIR and IER are 16bit on i9xx its 32bit */
 	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
@@ -610,13 +611,15 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			       I915_VBLANK_CLEAR;
 	}
 
-	if (temp & EVENT_PIPEA_FLAG)
+	/* This is a global event, and not a pipe A event */
+	if (temp & EVENT_PIPEA_FLAG) {
+		if (pipea_stats & I915_HOTPLUG_CLEAR)
+			hotplug = 1;
+
 		pipea_stats |= I915_HOTPLUG_INTERRUPT_ENABLE |
 			       I915_HOTPLUG_CLEAR;
 
-	if (temp & EVENT_PIPEB_FLAG)
-		pipeb_stats |= I915_HOTPLUG_INTERRUPT_ENABLE |
-			       I915_HOTPLUG_CLEAR;
+	}
 
 	I915_WRITE(I915REG_PIPEASTAT, pipea_stats);
 	(void) I915_READ(I915REG_PIPEASTAT);
@@ -650,37 +653,14 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
 	}
 
-	if (temp & (HOTPLUG_FLAG | EVENT_PIPEA_FLAG | EVENT_PIPEB_FLAG)) {
+	if ((temp & HOTPLUG_FLAG) || hotplug) {
 		u32 temp2 = 0;
 
 		DRM_INFO("Hotplug event received\n");
 
 		if (!IS_I9XX(dev) || IS_I915G(dev) || IS_I915GM(dev)) {
-#if 0
-			u32 b,c;
-
-			b = I915_READ(SDVOB) & SDVO_PIPE_B_SELECT;
-			c = I915_READ(SDVOC) & SDVO_PIPE_B_SELECT;
-
-			if (temp & EVENT_PIPEA_FLAG) {
-				if (!b)
-					temp2 |= SDVOB_HOTPLUG_INT_STATUS;
-				if (!c)
-					temp2 |= SDVOC_HOTPLUG_INT_STATUS;
-					
-			}
-
-			if (temp & EVENT_PIPEB_FLAG) {
-				if (b)
-					temp2 |= SDVOB_HOTPLUG_INT_STATUS;
-				if (c)
-					temp2 |= SDVOC_HOTPLUG_INT_STATUS;
-					
-			}
-#else
 			temp2 |= SDVOB_HOTPLUG_INT_STATUS |
 				 SDVOC_HOTPLUG_INT_STATUS;
-#endif
 		} else {
 			temp2 = I915_READ(PORT_HOTPLUG_STAT);
 
@@ -879,8 +859,8 @@ void i915_enable_interrupt (struct drm_device *dev)
 		if (dev->mode_config.num_output)
 			dev_priv->irq_enable_reg |= EVENT_PIPEA_FLAG | EVENT_PIPEB_FLAG;
 
+		/* Enable global interrupts for hotplug - not a pipeA event */
 		I915_WRITE(I915REG_PIPEASTAT, I915_READ(I915REG_PIPEASTAT) | I915_HOTPLUG_INTERRUPT_ENABLE | I915_HOTPLUG_CLEAR);
-		I915_WRITE(I915REG_PIPEBSTAT, I915_READ(I915REG_PIPEBSTAT) | I915_HOTPLUG_INTERRUPT_ENABLE | I915_HOTPLUG_CLEAR);
 	}
 
 	if (dev_priv->irq_enable_reg & (HOTPLUG_FLAG | EVENT_PIPEA_FLAG | EVENT_PIPEB_FLAG)) {
