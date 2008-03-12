@@ -299,13 +299,13 @@ int drm_ttm_populate(struct drm_ttm *ttm)
 		return 0;
 
 	be = ttm->be;
-	if (ttm->page_flags & DRM_TTM_PAGE_WRITE) {
-		for (i = 0; i < ttm->num_pages; ++i) {
-			page = drm_ttm_get_page(ttm, i);
-			if (!page)
-				return -ENOMEM;
-		}
+
+	for (i = 0; i < ttm->num_pages; ++i) {
+		page = drm_ttm_get_page(ttm, i);
+		if (!page)
+			return -ENOMEM;
 	}
+
 	be->func->populate(be, ttm->num_pages, ttm->pages, ttm->dummy_read_page);
 	ttm->state = ttm_unbound;
 	return 0;
