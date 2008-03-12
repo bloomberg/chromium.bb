@@ -37,7 +37,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20070209"
+#define DRIVER_DATE		"20080312"
 
 #if defined(__linux__)
 #define I915_HAVE_FENCE
@@ -61,7 +61,7 @@
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		12
+#define DRIVER_MINOR		13
 #else
 #define DRIVER_MINOR		6
 #endif
@@ -265,6 +265,9 @@ extern void i915_emit_breadcrumb(struct drm_device *dev);
 extern void i915_dispatch_flip(struct drm_device * dev, int pipes, int sync);
 extern int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush);
 extern int i915_driver_firstopen(struct drm_device *dev);
+extern int i915_dispatch_batchbuffer(struct drm_device * dev,
+				     drm_i915_batchbuffer_t * batch);
+extern int i915_quiescent(struct drm_device *dev);
 
 /* i915_irq.c */
 extern int i915_irq_emit(struct drm_device *dev, void *data,
@@ -321,6 +324,10 @@ extern uint64_t i915_evict_flags(struct drm_buffer_object *bo);
 extern int i915_move(struct drm_buffer_object *bo, int evict,
 		int no_wait, struct drm_bo_mem_reg *new_mem);
 void i915_flush_ttm(struct drm_ttm *ttm);
+/* i915_execbuf.c */
+int i915_execbuffer(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv);
+
 #endif
 
 #ifdef __linux__
@@ -416,6 +423,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define GFX_OP_USER_INTERRUPT		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
 #define CMD_REPORT_HEAD			(7<<23)
+#define CMD_STORE_DWORD_IMM             ((0x20<<23) | (0x1 << 22) | 0x1)
 #define CMD_STORE_DWORD_IDX		((0x21<<23) | 0x1)
 #define CMD_OP_BATCH_BUFFER  ((0x0<<29)|(0x30<<23)|0x1)
 
