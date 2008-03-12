@@ -979,6 +979,20 @@ static int drm_bo_modify_proposed_flags (struct drm_buffer_object *bo,
 		return -EPERM;
 	}
 
+	if (likely(new_mask & DRM_BO_MASK_MEM) &&
+	    (bo->mem.flags & DRM_BO_FLAG_NO_EVICT) &&
+	    !DRM_SUSER(DRM_CURPROC)) {
+		if (likely(bo->mem.flags & new_flags & new_mask &
+			   DRM_BO_MASK_MEM))
+			new_flags = (new_flags & ~DRM_BO_MASK_MEM) |
+				(bo->mem.flags & DRM_BO_MASK_MEM);
+		else {
+			DRM_ERROR("Incompatible memory type specification "
+				  "for NO_EVICT buffer.\n");
+			return -EPERM;
+		}
+	}
+
 	if ((new_flags & DRM_BO_FLAG_NO_MOVE)) {
 		DRM_ERROR("DRM_BO_FLAG_NO_MOVE is not properly implemented yet.\n");
 		return -EPERM;
