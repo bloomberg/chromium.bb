@@ -208,36 +208,35 @@ static int drm_bo_handle_move_mem(struct drm_buffer_object *bo,
 			if (ret)
 				goto out_err;
 		}
+
+		if (bo->mem.mem_type == DRM_BO_MEM_LOCAL) {
+			
+			struct drm_bo_mem_reg *old_mem = &bo->mem;
+			uint64_t save_flags = old_mem->flags;
+			uint64_t save_proposed_flags = old_mem->proposed_flags;
+			
+			*old_mem = *mem;
+			mem->mm_node = NULL;
+			old_mem->proposed_flags = save_proposed_flags;
+			DRM_FLAG_MASKED(save_flags, mem->flags,
+					DRM_BO_MASK_MEMTYPE);
+			goto moved;
+		}
+		
 	}
 
-	if ((bo->mem.mem_type == DRM_BO_MEM_LOCAL) && bo->ttm == NULL) {
-
-		struct drm_bo_mem_reg *old_mem = &bo->mem;
-		uint64_t save_flags = old_mem->flags;
-		uint64_t save_proposed_flags = old_mem->proposed_flags;
-
-		*old_mem = *mem;
-		mem->mm_node = NULL;
-		old_mem->proposed_flags = save_proposed_flags;
-		DRM_FLAG_MASKED(save_flags, mem->flags, DRM_BO_MASK_MEMTYPE);
-
-	} else if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
-		   !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
-
+	if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
+	    !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED))		
 		ret = drm_bo_move_ttm(bo, evict, no_wait, mem);
-
-	} else if (dev->driver->bo_driver->move) {
+	else if (dev->driver->bo_driver->move) 
 		ret = dev->driver->bo_driver->move(bo, evict, no_wait, mem);
-
-	} else {
-
+	else
 		ret = drm_bo_move_memcpy(bo, evict, no_wait, mem);
-
-	}
 
 	if (ret)
 		goto out_err;
 
+moved:
 	if (old_is_pci || new_is_pci)
 		drm_bo_vm_post_move(bo);
 
