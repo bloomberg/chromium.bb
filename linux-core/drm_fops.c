@@ -402,59 +402,63 @@ int drm_release(struct inode *inode, struct file *filp)
 		  current->pid, (long)old_encode_dev(file_priv->minor->device),
 		  dev->open_count);
 
-	if (dev->driver->reclaim_buffers_locked && file_priv->master->lock.hw_lock) {
-		if (drm_i_have_hw_lock(dev, file_priv)) {
-			dev->driver->reclaim_buffers_locked(dev, file_priv);
-		} else {
-			unsigned long _end=jiffies + 3*DRM_HZ;
-			int locked = 0;
-
-			drm_idlelock_take(&file_priv->master->lock);
-
-			/*
-			 * Wait for a while.
-			 */
-
-			do{
-				spin_lock(&file_priv->master->lock.spinlock);
-				locked = file_priv->master->lock.idle_has_lock;
-				spin_unlock(&file_priv->master->lock.spinlock);
-				if (locked)
-					break;
-				schedule();
-			} while (!time_after_eq(jiffies, _end));
-
-			if (!locked) {
-				DRM_ERROR("reclaim_buffers_locked() deadlock. Please rework this\n"
-					  "\tdriver to use reclaim_buffers_idlelocked() instead.\n"
-					  "\tI will go on reclaiming the buffers anyway.\n");
+	/* if the master has gone away we can't do anything with the lock */
+	if (file_priv->minor->master) {
+		if (dev->driver->reclaim_buffers_locked && file_priv->master->lock.hw_lock) {
+			if (drm_i_have_hw_lock(dev, file_priv)) {
+				dev->driver->reclaim_buffers_locked(dev, file_priv);
+			} else {
+				unsigned long _end=jiffies + 3*DRM_HZ;
+				int locked = 0;
+				
+				drm_idlelock_take(&file_priv->master->lock);
+				
+				/*
+				 * Wait for a while.
+				 */
+				
+				do{
+					spin_lock(&file_priv->master->lock.spinlock);
+					locked = file_priv->master->lock.idle_has_lock;
+					spin_unlock(&file_priv->master->lock.spinlock);
+					if (locked)
+						break;
+					schedule();
+				} while (!time_after_eq(jiffies, _end));
+				
+				if (!locked) {
+					DRM_ERROR("reclaim_buffers_locked() deadlock. Please rework this\n"
+						  "\tdriver to use reclaim_buffers_idlelocked() instead.\n"
+						  "\tI will go on reclaiming the buffers anyway.\n");
+				}
+				
+				dev->driver->reclaim_buffers_locked(dev, file_priv);
+				drm_idlelock_release(&file_priv->master->lock);
 			}
-
-			dev->driver->reclaim_buffers_locked(dev, file_priv);
-			drm_idlelock_release(&file_priv->master->lock);
 		}
-	}
 
-	if (dev->driver->reclaim_buffers_idlelocked && file_priv->master->lock.hw_lock) {
-
-		drm_idlelock_take(&file_priv->master->lock);
-		dev->driver->reclaim_buffers_idlelocked(dev, file_priv);
-		drm_idlelock_release(&file_priv->master->lock);
-
-	}
-
-	if (drm_i_have_hw_lock(dev, file_priv)) {
-		DRM_DEBUG("File %p released, freeing lock for context %d\n",
-			  filp, _DRM_LOCKING_CONTEXT(file_priv->master->lock.hw_lock->lock));
-
-		drm_lock_free(&file_priv->master->lock,
-			      _DRM_LOCKING_CONTEXT(file_priv->master->lock.hw_lock->lock));
-	}
+		if (dev->driver->reclaim_buffers_idlelocked && file_priv->master->lock.hw_lock) {
+			
+			drm_idlelock_take(&file_priv->master->lock);
+			dev->driver->reclaim_buffers_idlelocked(dev, file_priv);
+			drm_idlelock_release(&file_priv->master->lock);
+			
+		}
 
 
-	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) &&
-	    !dev->driver->reclaim_buffers_locked) {
-		dev->driver->reclaim_buffers(dev, file_priv);
+		if (drm_i_have_hw_lock(dev, file_priv)) {
+			DRM_DEBUG("File %p released, freeing lock for context %d\n",
+				  filp, _DRM_LOCKING_CONTEXT(file_priv->master->lock.hw_lock->lock));
+			
+			drm_lock_free(&file_priv->master->lock,
+				      _DRM_LOCKING_CONTEXT(file_priv->master->lock.hw_lock->lock));
+		}
+		
+
+		if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) &&
+		    !dev->driver->reclaim_buffers_locked) {
+			dev->driver->reclaim_buffers(dev, file_priv);
+		}
 	}
 
 	drm_fasync(-1, filp, 0);
