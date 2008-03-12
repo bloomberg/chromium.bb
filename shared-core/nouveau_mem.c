@@ -468,6 +468,11 @@ int nouveau_mem_init(struct drm_device *dev)
 	/* Init FB */
 	dev_priv->fb_phys=drm_get_resource_start(dev,1);
 	fb_size = nouveau_mem_fb_amount(dev);
+	/* On G80, limit VRAM to 512MiB temporarily due to limits in how
+	 * we handle VRAM page tables.
+	 */
+	if (dev_priv->card_type >= NV_50 && fb_size > (512 * 1024 * 1024))
+		fb_size = (512 * 1024 * 1024);
 	/* On at least NV40, RAMIN is actually at the end of vram.
 	 * We don't want to allocate this... */
 	if (dev_priv->card_type >= NV_40)
@@ -540,6 +545,21 @@ int nouveau_mem_init(struct drm_device *dev)
 		}
 	}
 
+	/* G8x: Allocate shared page table to map real VRAM pages into */
+	if (dev_priv->card_type >= NV_50) {
+		unsigned size = ((512 * 1024 * 1024) / 65536) * 8;
+
+		ret = nouveau_gpuobj_new(dev, NULL, size, 0,
+					 NVOBJ_FLAG_ZERO_ALLOC |
+					 NVOBJ_FLAG_ALLOW_NO_REFS,
+					 &dev_priv->vm_vram_pt);
+		if (ret) {
+			DRM_ERROR("Error creating VRAM page table: %d\n", ret);
+			return ret;
+		}
+	}
+
+
 	return 0;
 }
 
@@ -557,6 +577,12 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
 	 */
 	if (alignment < PAGE_SHIFT)
 		alignment = PAGE_SHIFT;
+
+	/* Align allocation sizes to 64KiB blocks on G8x.  We use a 64KiB
+	 * page size in the GPU VM.
+	 */
+	if (flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50)
+		size = (size + (64 * 1024)) & ~((64 * 1024) - 1);
 
 	/*
 	 * Warn about 0 sized allocations, but let it go through. It'll return 1 page
@@ -612,6 +638,30 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
 alloc_ok:
 	block->flags=type;
 
+	/* On G8x, map memory into VM */
+	if (block->flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50 &&
+	    !(flags & NOUVEAU_MEM_NOVM)) {
+		struct nouveau_gpuobj *pt = dev_priv->vm_vram_pt;
+		unsigned offset = block->start;
+		unsigned count = block->size / 65536;
+
+		if (!pt) {
+			DRM_ERROR("vm alloc without vm pt\n");
+			nouveau_mem_free_block(block);
+			return NULL;
+		}
+
+		while (count--) {
+			unsigned pte = offset / 65536;
+
+			INSTANCE_WR(pt, (pte * 2) + 0, offset | 1);
+			INSTANCE_WR(pt, (pte * 2) + 1, 0x00000000);
+			offset += 65536;
+		}
+	} else {
+		block->flags |= NOUVEAU_MEM_NOVM;
+	}	
+
 	if (flags&NOUVEAU_MEM_MAPPED)
 	{
 		struct drm_map_list *entry;
@@ -653,9 +703,34 @@ alloc_ok:
 
 void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
 	DRM_DEBUG("freeing 0x%llx type=0x%08x\n", block->start, block->flags);
+
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);
+
+	/* G8x: Remove pages from vm */
+	if (block->flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50 &&
+	    !(block->flags & NOUVEAU_MEM_NOVM)) {
+		struct nouveau_gpuobj *pt = dev_priv->vm_vram_pt;
+		unsigned offset = block->start;
+		unsigned count = block->size / 65536;
+
+		if (!pt) {
+			DRM_ERROR("vm free without vm pt\n");
+			goto out_free;
+		}
+
+		while (count--) {
+			unsigned pte = offset / 65536;
+			INSTANCE_WR(pt, (pte * 2) + 0, 0);
+			INSTANCE_WR(pt, (pte * 2) + 1, 0);
+			offset += 65536;
+		}
+	}
+
+out_free:
 	nouveau_mem_free_block(block);
 }
 
@@ -669,6 +744,9 @@ int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file 
 	struct mem_block *block;
 
 	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
+	if (alloc->flags & NOUVEAU_MEM_INTERNAL)
+		return -EINVAL;
 
 	block=nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
 				alloc->flags, file_priv);

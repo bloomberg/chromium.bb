@@ -384,6 +384,7 @@ static void nouveau_card_takedown(struct drm_device *dev)
 		nouveau_sgdma_takedown(dev);
 
 		nouveau_gpuobj_takedown(dev);
+		nouveau_gpuobj_del(dev, &dev_priv->vm_vram_pt);
 
 		nouveau_mem_close(dev);
 		engine->instmem.takedown(dev);

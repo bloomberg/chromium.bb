@@ -983,7 +983,11 @@ nouveau_gpuobj_channel_init(struct nouveau_channel *chan,
 			return ret;
 	}
 
-	/* NV50 VM, point offset 0-512MiB at shared PCIEGART table  */
+	/* NV50 VM
+	 *  - Allocate per-channel page-directory
+	 *  - Point offset 0-512MiB at shared PCIEGART table
+	 *  - Point offset 512-1024MiB at shared VRAM table
+	 */
 	if (dev_priv->card_type >= NV_50) {
 		uint32_t vm_offset;
 
@@ -1004,6 +1008,14 @@ nouveau_gpuobj_channel_init(struct nouveau_channel *chan,
 		INSTANCE_WR(chan->vm_pd, (0+0)/4,
 			    chan->vm_gart_pt->instance | 0x03);
 		INSTANCE_WR(chan->vm_pd, (0+4)/4, 0x00000000);
+
+		if ((ret = nouveau_gpuobj_ref_add(dev, NULL, 0,
+						  dev_priv->vm_vram_pt,
+						  &chan->vm_vram_pt)))
+			return ret;
+		INSTANCE_WR(chan->vm_pd, (8+0)/4,
+			    chan->vm_vram_pt->instance | 0x61);
+		INSTANCE_WR(chan->vm_pd, (8+4)/4, 0x00000000);
 	}
 
 	/* RAMHT */
@@ -1022,6 +1034,17 @@ nouveau_gpuobj_channel_init(struct nouveau_channel *chan,
 	}
 
 	/* VRAM ctxdma */
+	if (dev_priv->card_type >= NV_50) {
+		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
+					     512*1024*1024,
+					     dev_priv->fb_available_size,
+					     NV_DMA_ACCESS_RW,
+					     NV_DMA_TARGET_AGP, &vram);
+		if (ret) {
+			DRM_ERROR("Error creating VRAM ctxdma: %d\n", ret);
+			return ret;
+		}
+	} else
 	if ((ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
 					  0, dev_priv->fb_available_size,
 					  NV_DMA_ACCESS_RW,
@@ -1084,6 +1107,7 @@ nouveau_gpuobj_channel_takedown(struct nouveau_channel *chan)
 
 	nouveau_gpuobj_del(dev, &chan->vm_pd);
 	nouveau_gpuobj_ref_del(dev, &chan->vm_gart_pt);
+	nouveau_gpuobj_ref_del(dev, &chan->vm_vram_pt);
 
 	if (chan->ramin_heap)
 		nouveau_mem_takedown(&chan->ramin_heap);
