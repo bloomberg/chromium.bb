@@ -74,7 +74,7 @@ int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	add_wait_queue(&dev->lock.lock_queue, &entry);
 	spin_lock_irqsave(&dev->lock.spinlock, irqflags);
 	dev->lock.user_waiters++;
-	spin_unlock_irqsave(&dev->lock.spinlock, irqflags);
+	spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
 	for (;;) {
 		__set_current_state(TASK_INTERRUPTIBLE);
 		if (!dev->lock.hw_lock) {
@@ -361,7 +361,7 @@ void drm_idlelock_take(struct drm_lock_data *lock_data)
 		if (ret == 1)
 			lock_data->idle_has_lock = 1;
 	}
-	spin_unlock_irqrestore(&lock_data->spinlock, irq_flags);
+	spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
 }
 EXPORT_SYMBOL(drm_idlelock_take);
 
