@@ -52,6 +52,7 @@
 #include <linux/version.h>
 #include <linux/sched.h>
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
+#include <linux/dma-mapping.h>
 #include <linux/mm.h>
 #include <linux/pagemap.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
@@ -596,6 +597,9 @@ struct drm_ati_pcigart_info {
 	int gart_reg_if;
 	void *addr;
 	dma_addr_t bus_addr;
+	dma_addr_t table_mask;
+	dma_addr_t member_mask;
+	struct drm_dma_handle *table_handle;
 	drm_local_map_t mapping;
 	int table_size;
 };

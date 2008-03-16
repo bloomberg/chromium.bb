@@ -86,6 +86,7 @@ int xgi_pcie_heap_init(struct xgi_info * info)
 		return err;
 	}
 
+	info->gart_info.table_mask = DMA_BIT_MASK(32);
 	info->gart_info.gart_table_location = DRM_ATI_GART_MAIN;
 	info->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
 	info->gart_info.table_size = info->dev->sg->pages * sizeof(u32);

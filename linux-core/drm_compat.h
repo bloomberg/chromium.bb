@@ -339,4 +339,8 @@ extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 #define flush_agp_mappings() do {} while(0)
 #endif
 
+#ifndef DMA_BIT_MASK
+#define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) - 1)
+#endif
+
 #endif
