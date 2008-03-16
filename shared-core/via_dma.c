@@ -406,18 +406,19 @@ static int via_hook_segment(drm_via_private_t * dev_priv,
 	int paused, count;
 	volatile uint32_t *paused_at = dev_priv->last_pause_ptr;
 	uint32_t reader,ptr;
-	uint32_t data;
-	cycles_t time;
 
 	paused = 0;
 	via_flush_write_combine();
 	(void) *(volatile uint32_t *)(via_get_dma(dev_priv) -1);
+
 	*paused_at = pause_addr_lo;
 	via_flush_write_combine();
 	(void) *paused_at;
+
 	reader = *(dev_priv->hw_addr_ptr);
 	ptr = ((volatile char *)paused_at - dev_priv->dma_ptr) +
 		dev_priv->dma_offset + (uint32_t) dev_priv->agpAddr + 4;
+
 	dev_priv->last_pause_ptr = via_get_dma(dev_priv) - 1;
 
 	if ((ptr - reader) <= dev_priv->dma_diff ) {
