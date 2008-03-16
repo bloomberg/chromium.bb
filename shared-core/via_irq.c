@@ -190,11 +190,20 @@ int via_enable_vblank(struct drm_device *dev, int crtc)
 
 	status = VIA_READ(VIA_REG_INTERRUPT);
 	VIA_WRITE(VIA_REG_INTERRUPT, status & VIA_IRQ_VBLANK_ENABLE);
+
+	VIA_WRITE8(0x83d4, 0x11);
+	VIA_WRITE8(0x83d5, VIA_READ8(0x83d5) | 0x30);
+
 	return 0;
 }
 
 void via_disable_vblank(struct drm_device *dev, int crtc)
 {
+	drm_via_private_t *dev_priv = dev->dev_private;
+
+	VIA_WRITE8(0x83d4, 0x11);
+	VIA_WRITE8(0x83d5, VIA_READ8(0x83d5) & ~0x30);
+
 	if (crtc != 0)
 		DRM_ERROR("%s:  bad crtc %d\n", __FUNCTION__, crtc);
 }
@@ -311,6 +320,7 @@ int via_driver_irq_postinstall(struct drm_device * dev)
 	if (!dev_priv)
 		return -EINVAL;
 
+	drm_vblank_init(dev, 1);
 	status = VIA_READ(VIA_REG_INTERRUPT);
 	VIA_WRITE(VIA_REG_INTERRUPT, status | VIA_IRQ_GLOBAL
 		  | dev_priv->irq_enable_mask);
