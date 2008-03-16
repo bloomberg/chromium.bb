@@ -43,7 +43,7 @@ static void *drm_ati_alloc_pcigart_table(int order)
 
 	DRM_DEBUG("%d order\n", order);
 
-	address = __get_free_pages(GFP_KERNEL | __GFP_COMP,
+	address = __get_free_pages(GFP_KERNEL | __GFP_COMP | __GFP_DMA32,
 				   order);
 	if (address == 0UL) {
 		return NULL;
