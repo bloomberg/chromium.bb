@@ -113,6 +113,8 @@ via_cmdbuf_wait(drm_via_private_t * dev_priv, unsigned int size)
 			     hw_addr, cur_addr, next_addr);
 			return -1;
 		}
+		if  ((cur_addr < hw_addr) && (next_addr >= hw_addr))
+			msleep(1);
 	} while ((cur_addr < hw_addr) && (next_addr >= hw_addr));
 	return 0;
 }
@@ -406,6 +408,7 @@ static int via_hook_segment(drm_via_private_t * dev_priv,
 	int paused, count;
 	volatile uint32_t *paused_at = dev_priv->last_pause_ptr;
 	uint32_t reader,ptr;
+	uint32_t diff;
 
 	paused = 0;
 	via_flush_write_combine();
@@ -421,14 +424,26 @@ static int via_hook_segment(drm_via_private_t * dev_priv,
 
 	dev_priv->last_pause_ptr = via_get_dma(dev_priv) - 1;
 
-	if ((ptr - reader) <= dev_priv->dma_diff ) {
-		count = 10000000;
-		while (!(paused = (VIA_READ(0x41c) & 0x80000000)) && count--);
+	/*
+	 * If there is a possibility that the command reader will 
+	 * miss the new pause address and pause on the old one,
+	 * In that case we need to program the new start address
+	 * using PCI.
+	 */
+
+	diff = (uint32_t) (ptr - reader) - dev_priv->dma_diff;
+	count = 10000000;
+	while(diff == 0 && count--) {
+		paused = (VIA_READ(0x41c) & 0x80000000);
+		if (paused) 
+			break;
+		reader = *(dev_priv->hw_addr_ptr);
+		diff = (uint32_t) (ptr - reader) - dev_priv->dma_diff;
 	}
 
 	paused = VIA_READ(0x41c) & 0x80000000;
+
 	if (paused && !no_pci_fire) {
-		uint32_t diff;
 		reader = *(dev_priv->hw_addr_ptr);
 		diff = (uint32_t) (ptr - reader) - dev_priv->dma_diff;
 		diff &= (dev_priv->dma_high - 1);
