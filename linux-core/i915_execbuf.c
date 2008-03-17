@@ -138,6 +138,8 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 	new_cmd_offset = reloc[0];
 	if (!relocatee->data_page ||
 	    !drm_bo_same_page(relocatee->offset, new_cmd_offset)) {
+		struct drm_bo_mem_reg *mem = &relocatee->buf->mem;
+
 		drm_bo_kunmap(&relocatee->kmap);
 		relocatee->data_page = NULL;
 		relocatee->offset = new_cmd_offset;
@@ -148,6 +150,10 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 				return ret;
 			relocatee->idle = I915_RELOC_IDLE;
 		}
+
+		if (unlikely((mem->mem_type != DRM_BO_MEM_LOCAL) &&
+			     (mem->flags & DRM_BO_FLAG_CACHED_MAPPED)))
+			drm_bo_evict_cached(relocatee->buf);
 
 		ret = drm_bo_kmap(relocatee->buf, new_cmd_offset >> PAGE_SHIFT,
 				  1, &relocatee->kmap);
