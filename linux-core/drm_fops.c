@@ -488,12 +488,14 @@ int drm_release(struct inode *inode, struct file *filp)
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		drm_fb_release(filp);
 
-	file_priv->master = NULL;
-
 	if (file_priv->is_master) {
-	       drm_put_master(file_priv->minor->master);
-	       file_priv->minor->master = NULL;
+		if (file_priv->minor->master == file_priv->master)
+			file_priv->minor->master = NULL;
+		drm_put_master(file_priv->master);
 	}
+
+	file_priv->master = NULL;
+	file_priv->is_master = 0;
 
 	mutex_lock(&dev->struct_mutex);
 	drm_object_release(filp);
