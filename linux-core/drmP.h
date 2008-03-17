@@ -1266,6 +1266,10 @@ extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
 extern struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev);
 extern void drm_agp_chipset_flush(struct drm_device *dev);
 				/* Stub support (drm_stub.h) */
+extern int drm_setmaster_ioctl(struct drm_device *dev, void *data,
+			       struct drm_file *file_priv);
+extern int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
+				struct drm_file *file_priv);
 extern struct drm_master *drm_get_master(struct drm_minor *minor);
 extern void drm_put_master(struct drm_master *master);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,

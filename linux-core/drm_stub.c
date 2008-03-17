@@ -88,6 +88,29 @@ again:
 	return new_id;
 }
 
+int drm_setmaster_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
+{
+	if (file_priv->minor->master && file_priv->minor->master != file_priv->master)
+		return -EINVAL;
+
+	if (!file_priv->master)
+		return -EINVAL;
+
+	if (!file_priv->minor->master && file_priv->minor->master != file_priv->master)
+		file_priv->minor->master = file_priv->master;
+	return 0;
+}
+
+int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv)
+{
+	if (!file_priv->master)
+		return -EINVAL;
+	file_priv->minor->master = NULL;
+	return 0;
+}
+
 struct drm_master *drm_get_master(struct drm_minor *minor)
 {
 	struct drm_master *master;
