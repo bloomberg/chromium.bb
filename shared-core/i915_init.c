@@ -383,7 +383,9 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
 	if (!master_priv)
 		return;
 
-        drm_rmmap(dev, master_priv->sarea);
+	if (master_priv->sarea)
+		drm_rmmap(dev, master_priv->sarea);
+		
 	drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
 
 	master->driver_priv = NULL;
