@@ -2885,6 +2885,10 @@ string MinidumpSystemInfo::GetCPU() {
       cpu = "ppc";
       break;
 
+    case MD_CPU_ARCHITECTURE_SPARC:
+      cpu = "sparc";
+      break;
+
     default:
       BPLOG(ERROR) << "MinidumpSystemInfo unknown CPU for architecture " <<
                       HexString(system_info_.processor_architecture);
