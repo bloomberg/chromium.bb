@@ -1180,7 +1180,6 @@ static int i915_handle_copyback(struct drm_device *dev,
 			buffers++;
 		}
 	}
-
 	return err;
 }
 
@@ -1272,7 +1271,6 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	struct drm_fence_arg *fence_arg = &exec_buf->fence_arg;
 	int num_buffers;
 	int ret;
-	struct drm_i915_validate_buffer *buffers;
 
 	if (!dev_priv->allow_batchbuffer) {
 		DRM_ERROR("Batchbuffer ioctl disabled\n");
@@ -1287,7 +1285,6 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	if (exec_buf->num_buffers > dev_priv->max_validate_buffers)
 		return -EINVAL;
-
 
 	ret = drm_bo_read_lock(&dev->bm.bm_lock);
 	if (ret)
@@ -1306,8 +1303,12 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	num_buffers = exec_buf->num_buffers;
 
-	buffers = drm_calloc(num_buffers, sizeof(struct drm_i915_validate_buffer), DRM_MEM_DRIVER);
-	if (!buffers) {
+	if (!dev_priv->val_bufs) {
+		dev_priv->val_bufs =
+			vmalloc(sizeof(struct drm_i915_validate_buffer)*
+				dev_priv->max_validate_buffers);
+	}
+	if (!dev_priv->val_bufs) {
 		drm_bo_read_unlock(&dev->bm.bm_lock);
 		mutex_unlock(&dev_priv->cmdbuf_mutex);
 		return -ENOMEM;
@@ -1315,7 +1316,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 
 	/* validate buffer list + fixup relocations */
 	ret = i915_validate_buffer_list(file_priv, 0, exec_buf->ops_list,
-					buffers, &num_buffers);
+					dev_priv->val_bufs, &num_buffers);
 	if (ret)
 		goto out_err0;
 
@@ -1324,7 +1325,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 	drm_agp_chipset_flush(dev);
 
 	/* submit buffer */
-	batch->start = buffers[num_buffers-1].buffer->offset;
+	batch->start = dev_priv->val_bufs[num_buffers-1].buffer->offset;
 
 	DRM_DEBUG("i915 exec batchbuffer, start %x used %d cliprects %d\n",
 		  batch->start, batch->used, batch->num_cliprects);
@@ -1341,12 +1342,10 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 out_err0:
 
 	/* handle errors */
-	ret = i915_handle_copyback(dev, buffers, num_buffers, ret);
+	ret = i915_handle_copyback(dev, dev_priv->val_bufs, num_buffers, ret);
 	mutex_lock(&dev->struct_mutex);
-	i915_dereference_buffers_locked(buffers, num_buffers);
+	i915_dereference_buffers_locked(dev_priv->val_bufs, num_buffers);
 	mutex_unlock(&dev->struct_mutex);
-
-	drm_free(buffers, (exec_buf->num_buffers * sizeof(struct drm_buffer_object *)), DRM_MEM_DRIVER);
 
 	mutex_unlock(&dev_priv->cmdbuf_mutex);
 	drm_bo_read_unlock(&dev->bm.bm_lock);

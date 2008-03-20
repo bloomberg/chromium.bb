@@ -208,36 +208,35 @@ static int drm_bo_handle_move_mem(struct drm_buffer_object *bo,
 			if (ret)
 				goto out_err;
 		}
+
+		if (bo->mem.mem_type == DRM_BO_MEM_LOCAL) {
+			
+			struct drm_bo_mem_reg *old_mem = &bo->mem;
+			uint64_t save_flags = old_mem->flags;
+			uint64_t save_proposed_flags = old_mem->proposed_flags;
+			
+			*old_mem = *mem;
+			mem->mm_node = NULL;
+			old_mem->proposed_flags = save_proposed_flags;
+			DRM_FLAG_MASKED(save_flags, mem->flags,
+					DRM_BO_MASK_MEMTYPE);
+			goto moved;
+		}
+		
 	}
 
-	if ((bo->mem.mem_type == DRM_BO_MEM_LOCAL) && bo->ttm == NULL) {
-
-		struct drm_bo_mem_reg *old_mem = &bo->mem;
-		uint64_t save_flags = old_mem->flags;
-		uint64_t save_proposed_flags = old_mem->proposed_flags;
-
-		*old_mem = *mem;
-		mem->mm_node = NULL;
-		old_mem->proposed_flags = save_proposed_flags;
-		DRM_FLAG_MASKED(save_flags, mem->flags, DRM_BO_MASK_MEMTYPE);
-
-	} else if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
-		   !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
-
+	if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
+	    !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED))		
 		ret = drm_bo_move_ttm(bo, evict, no_wait, mem);
-
-	} else if (dev->driver->bo_driver->move) {
+	else if (dev->driver->bo_driver->move) 
 		ret = dev->driver->bo_driver->move(bo, evict, no_wait, mem);
-
-	} else {
-
+	else
 		ret = drm_bo_move_memcpy(bo, evict, no_wait, mem);
-
-	}
 
 	if (ret)
 		goto out_err;
 
+moved:
 	if (old_is_pci || new_is_pci)
 		drm_bo_vm_post_move(bo);
 
@@ -789,6 +788,11 @@ static int drm_bo_mem_force_space(struct drm_device *dev,
 	}
 
 	node = drm_mm_get_block(node, num_pages, mem->page_alignment);
+	if (unlikely(!node)) {
+		mutex_unlock(&dev->struct_mutex);
+		return -ENOMEM;
+	}
+
 	mutex_unlock(&dev->struct_mutex);
 	mem->mm_node = node;
 	mem->mem_type = mem_type;
@@ -972,6 +976,20 @@ static int drm_bo_modify_proposed_flags (struct drm_buffer_object *bo,
 	if (bo->type != drm_bo_type_kernel && (new_mask & DRM_BO_FLAG_NO_EVICT) && !DRM_SUSER(DRM_CURPROC)) {
 		DRM_ERROR("DRM_BO_FLAG_NO_EVICT is only available to priviliged processes.\n");
 		return -EPERM;
+	}
+
+	if (likely(new_mask & DRM_BO_MASK_MEM) &&
+	    (bo->mem.flags & DRM_BO_FLAG_NO_EVICT) &&
+	    !DRM_SUSER(DRM_CURPROC)) {
+		if (likely(bo->mem.flags & new_flags & new_mask &
+			   DRM_BO_MASK_MEM))
+			new_flags = (new_flags & ~DRM_BO_MASK_MEM) |
+				(bo->mem.flags & DRM_BO_MASK_MEM);
+		else {
+			DRM_ERROR("Incompatible memory type specification "
+				  "for NO_EVICT buffer.\n");
+			return -EPERM;
+		}
 	}
 
 	if ((new_flags & DRM_BO_FLAG_NO_MOVE)) {
@@ -1482,6 +1500,9 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 		if (ret) {
 			if (ret != -EAGAIN)
 				DRM_ERROR("Failed moving buffer.\n");
+			if (ret == -ENOMEM)
+				DRM_ERROR("Out of aperture space or "
+					  "DRM memory quota.\n");
 			return ret;
 		}
 	}
@@ -2748,7 +2769,7 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
 						    bo->mem.num_pages, 0, 0);
 
-	if (!list->file_offset_node) {
+	if (unlikely(!list->file_offset_node)) {
 		drm_bo_takedown_vm_locked(bo);
 		return -ENOMEM;
 	}
@@ -2756,6 +2777,11 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
 						  bo->mem.num_pages, 0);
 
+	if (unlikely(!list->file_offset_node)) {
+		drm_bo_takedown_vm_locked(bo);
+		return -ENOMEM;
+	}
+		
 	list->hash.key = list->file_offset_node->start;
 	if (drm_ht_insert_item(&dev->map_hash, &list->hash)) {
 		drm_bo_takedown_vm_locked(bo);

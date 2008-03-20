@@ -555,6 +555,39 @@ union drm_wait_vblank {
 	struct drm_wait_vblank_reply reply;
 };
 
+/* Handle monitor hotplug.
+ *
+ * May want to extend this later to pass reply information which
+ * details the outputs which generated the hotplug event.
+ * Some chipsets can't determine that though, and we'd need to leave
+ * it to the higher levels to determine exactly what changed.
+ */
+enum drm_hotplug_seq_type {
+	_DRM_HOTPLUG_SIGNAL = 0x00000001, /**< Send signal instead of blocking */
+};
+
+struct drm_wait_hotplug_request {
+	enum drm_hotplug_seq_type type;
+	unsigned long signal;
+};
+
+struct drm_wait_hotplug_reply {
+	enum drm_hotplug_seq_type type;
+	unsigned int counter;
+	long tval_sec;
+	long tval_usec;
+};
+
+/**
+ * DRM_IOCTL_WAIT_HOTPLUG ioctl argument type.
+ *
+ * \sa drmWaitHotplug().
+ */
+union drm_wait_hotplug {
+	struct drm_wait_hotplug_request request;
+	struct drm_wait_hotplug_reply reply;
+};
+
 enum drm_modeset_ctl_cmd {
 	_DRM_PRE_MODESET = 1,
 	_DRM_POST_MODESET = 2,
@@ -1167,6 +1200,9 @@ struct drm_mode_hotplug {
 #define DRM_IOCTL_SET_SAREA_CTX		DRM_IOW( 0x1c, struct drm_ctx_priv_map)
 #define DRM_IOCTL_GET_SAREA_CTX		DRM_IOWR(0x1d, struct drm_ctx_priv_map)
 
+#define DRM_IOCTL_SET_MASTER            DRM_IO(0x1e)
+#define DRM_IOCTL_DROP_MASTER           DRM_IO(0x1f)
+
 #define DRM_IOCTL_ADD_CTX		DRM_IOWR(0x20, struct drm_ctx)
 #define DRM_IOCTL_RM_CTX		DRM_IOWR(0x21, struct drm_ctx)
 #define DRM_IOCTL_MOD_CTX		DRM_IOW( 0x22, struct drm_ctx)
@@ -1238,6 +1274,7 @@ struct drm_mode_hotplug {
 #define DRM_IOCTL_MODE_GETPROPERTY     DRM_IOWR(0xAB, struct drm_mode_get_property)
 #define DRM_IOCTL_MODE_CURSOR          DRM_IOWR(0xAC, struct drm_mode_cursor)
 #define DRM_IOCTL_MODE_HOTPLUG         DRM_IOWR(0xAD, struct drm_mode_hotplug)
+#define DRM_IOCTL_WAIT_HOTPLUG		DRM_IOWR(0xAE, union drm_wait_hotplug)
 
 /*@}*/
 

@@ -157,7 +157,7 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
                 break;
         case 16:
                 var->red.offset = 11;
-                var->green.offset = 6;
+                var->green.offset = 5;
                 var->blue.offset = 0;
                 var->red.length = 5;
                 var->green.length = 6;

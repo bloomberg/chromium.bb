@@ -22,6 +22,7 @@
 #include <sys/ioctl.h>
 #include <linux/fb.h>
 #endif
+#include <signal.h>
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
@@ -387,9 +388,28 @@ drmModeCrtcPtr demoFindFreeCrtc(struct demo_driver *driver, drmModeOutputPtr out
 	return crtc;
 }
 
+static int driverfd;
+
+static void
+hotplugSIGNAL(int sig, siginfo_t *si, void *d)
+{
+	union drm_wait_hotplug hw;
+	int ret;
+
+	printf("GOT HOTPLUG EVENT!\n");
+
+	/* ask for another hotplug event ! */
+	memset(&hw, 0, sizeof(hw));
+	hw.request.type = _DRM_HOTPLUG_SIGNAL;
+	hw.request.signal = SIGUSR1;
+       	ret = ioctl(driverfd, DRM_IOCTL_WAIT_HOTPLUG, &hw);
+}
+
 struct demo_driver* demoCreateDriver(void)
 {
 	struct demo_driver* driver = malloc(sizeof(struct demo_driver));
+	union drm_wait_hotplug hw;
+	int ret = 0;
 
 	memset(driver, 0, sizeof(struct demo_driver));
 
@@ -399,6 +419,33 @@ struct demo_driver* demoCreateDriver(void)
 		printf("Failed to open the card fb\n");
 		goto err_driver;
 	}
+
+#if 0
+	/* ioctl wait for hotplug */
+	do {
+		memset(&hw, 0, sizeof(hw));
+       		ret = ioctl(driver->fd, DRM_IOCTL_WAIT_HOTPLUG, &hw);
+		printf("HOTPLUG %d %d %d\n",ret,errno,hw.reply.counter);
+	} while (ret && errno == EBUSY);
+#else 
+	/* signal for hotplug */
+	{
+		struct sigaction sa;
+		struct sigaction osa;
+
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = SA_SIGINFO;
+		sa.sa_sigaction = hotplugSIGNAL;
+		sigaction(SIGUSR1, &sa, &osa);
+
+		driverfd = driver->fd;
+
+		memset(&hw, 0, sizeof(hw));
+		hw.request.type = _DRM_HOTPLUG_SIGNAL;
+		hw.request.signal = SIGUSR1;
+       		ret = ioctl(driver->fd, DRM_IOCTL_WAIT_HOTPLUG, &hw);
+	}
+#endif
 
 	demoUpdateRes(driver);
 	if (!driver->res) {

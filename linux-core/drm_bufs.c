@@ -380,10 +380,12 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 	struct drm_map_list *r_list = NULL, *list_t;
 	drm_dma_handle_t dmah;
 	int found = 0;
+	struct drm_master *master;
 
 	/* Find the list entry for the map and remove it */
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
 		if (r_list->map == map) {
+			master = r_list->master;
 			list_del(&r_list->head);
 			drm_ht_remove_key(&dev->map_hash,
 					  r_list->user_token >> PAGE_SHIFT);
@@ -413,9 +415,13 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 		break;
 	case _DRM_SHM:
 		vfree(map->handle);
-		dev->sigdata.lock = dev->primary->master->lock.hw_lock = NULL;   /* SHM removed */
-		dev->primary->master->lock.file_priv = NULL;
-		wake_up_interruptible(&dev->primary->master->lock.lock_queue);
+		if (master) {
+			if (dev->sigdata.lock == master->lock.hw_lock)
+				dev->sigdata.lock = NULL;
+			master->lock.hw_lock = NULL;   /* SHM removed */
+			master->lock.file_priv = NULL;
+			wake_up_interruptible(&master->lock.lock_queue);
+		}
 		break;
 	case _DRM_AGP:
 	case _DRM_SCATTER_GATHER:

@@ -300,6 +300,32 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 	return 0;
 }
 
+static void nouveau_mem_reset_agp(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	uint32_t saved_pci_nv_1, saved_pci_nv_19, pmc_enable;
+
+	saved_pci_nv_1 = NV_READ(NV04_PBUS_PCI_NV_1);
+	saved_pci_nv_19 = NV_READ(NV04_PBUS_PCI_NV_19);
+
+	/* clear busmaster bit */
+	NV_WRITE(NV04_PBUS_PCI_NV_1, saved_pci_nv_1 & ~0x4);
+	/* clear SBA and AGP bits */
+	NV_WRITE(NV04_PBUS_PCI_NV_19, saved_pci_nv_19 & 0xfffff0ff);
+
+	/* power cycle pgraph, if enabled */
+	pmc_enable = NV_READ(NV03_PMC_ENABLE);
+	if (pmc_enable & NV_PMC_ENABLE_PGRAPH) {
+		NV_WRITE(NV03_PMC_ENABLE, pmc_enable & ~NV_PMC_ENABLE_PGRAPH);
+		NV_WRITE(NV03_PMC_ENABLE, NV_READ(NV03_PMC_ENABLE) |
+				NV_PMC_ENABLE_PGRAPH);
+	}
+
+	/* and restore (gives effect of resetting AGP) */
+	NV_WRITE(NV04_PBUS_PCI_NV_19, saved_pci_nv_19);
+	NV_WRITE(NV04_PBUS_PCI_NV_1, saved_pci_nv_1);
+}
+
 static int
 nouveau_mem_init_agp(struct drm_device *dev, int ttm)
 {
@@ -307,6 +333,8 @@ nouveau_mem_init_agp(struct drm_device *dev, int ttm)
 	struct drm_agp_info info;
 	struct drm_agp_mode mode;
 	int ret;
+
+	nouveau_mem_reset_agp(dev);
 
 	ret = drm_agp_acquire(dev);
 	if (ret) {

@@ -39,8 +39,10 @@
 static struct {
 	spinlock_t lock;
 	uint64_t cur_used;
+	uint64_t emer_used;
 	uint64_t low_threshold;
 	uint64_t high_threshold;
+	uint64_t emer_threshold;
 } drm_memctl = {
 	.lock = SPIN_LOCK_UNLOCKED
 };
@@ -59,14 +61,30 @@ static inline size_t drm_size_align(size_t size)
 
 int drm_alloc_memctl(size_t size)
 {
-	int ret;
+	int ret = 0;
 	unsigned long a_size = drm_size_align(size);
+	unsigned long new_used = drm_memctl.cur_used + a_size;
 
 	spin_lock(&drm_memctl.lock);
-	ret = ((drm_memctl.cur_used + a_size) > drm_memctl.high_threshold) ?
-		-ENOMEM : 0;
-	if (!ret)
-		drm_memctl.cur_used += a_size;
+	if (unlikely(new_used > drm_memctl.high_threshold)) {
+		if (!DRM_SUSER(DRM_CURPROC) ||
+		    (new_used + drm_memctl.emer_used > drm_memctl.emer_threshold) ||
+		    (a_size > 2*PAGE_SIZE)) {
+			ret = -ENOMEM;
+			goto out;
+		}
+
+		/*
+		 * Allow small root-only allocations, even if the
+		 * high threshold is exceeded.
+		 */
+
+		new_used -= drm_memctl.high_threshold;
+		drm_memctl.emer_used += new_used;
+		a_size -= new_used;
+	}
+	drm_memctl.cur_used += a_size;
+out:
 	spin_unlock(&drm_memctl.lock);
 	return ret;
 }
@@ -77,19 +95,30 @@ void drm_free_memctl(size_t size)
 	unsigned long a_size = drm_size_align(size);
 
 	spin_lock(&drm_memctl.lock);
+	if (likely(a_size >= drm_memctl.emer_used)) {
+		a_size -= drm_memctl.emer_used;
+		drm_memctl.emer_used = 0;
+	} else {
+		drm_memctl.emer_used -= a_size;
+		a_size = 0;
+	}
 	drm_memctl.cur_used -= a_size;
 	spin_unlock(&drm_memctl.lock);
 }
 EXPORT_SYMBOL(drm_free_memctl);
 
 void drm_query_memctl(uint64_t *cur_used,
+		      uint64_t *emer_used,
 		      uint64_t *low_threshold,
-		      uint64_t *high_threshold)
+		      uint64_t *high_threshold,
+		      uint64_t *emer_threshold)
 {
 	spin_lock(&drm_memctl.lock);
 	*cur_used = drm_memctl.cur_used;
+	*emer_used = drm_memctl.emer_used;
 	*low_threshold = drm_memctl.low_threshold;
 	*high_threshold = drm_memctl.high_threshold;
+	*emer_threshold = drm_memctl.emer_threshold;
 	spin_unlock(&drm_memctl.lock);
 }
 EXPORT_SYMBOL(drm_query_memctl);
@@ -99,9 +128,12 @@ void drm_init_memctl(size_t p_low_threshold,
 		     size_t unit_size)
 {
 	spin_lock(&drm_memctl.lock);
+	drm_memctl.emer_used = 0;
 	drm_memctl.cur_used = 0;
 	drm_memctl.low_threshold = p_low_threshold * unit_size;
 	drm_memctl.high_threshold = p_high_threshold * unit_size;
+	drm_memctl.emer_threshold = (drm_memctl.high_threshold >> 4) +
+		drm_memctl.high_threshold;
 	spin_unlock(&drm_memctl.lock);
 }
 
@@ -294,7 +326,12 @@ static void *agp_remap(unsigned long offset, unsigned long size,
 	return NULL;
 }
 #endif				/* agp */
-
+#else
+static void *agp_remap(unsigned long offset, unsigned long size,
+		       struct drm_device * dev)
+{
+	return NULL;
+}
 #endif				/* debug_memory */
 
 void drm_core_ioremap(struct drm_map *map, struct drm_device *dev)

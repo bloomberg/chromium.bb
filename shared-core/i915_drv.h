@@ -69,6 +69,7 @@
 
 #ifdef I915_HAVE_BUFFER
 #define I915_MAX_VALIDATE_BUFFERS 4096
+struct drm_i915_validate_buffer;
 #endif
 
 struct drm_i915_ring_buffer {
@@ -139,8 +140,9 @@ struct drm_i915_private {
 	int fence_irq_on;
 	uint32_t irq_enable_reg;
 	int irq_enabled;
-
 	struct workqueue_struct *wq;
+
+	bool cursor_needs_physical;
 
 #ifdef I915_HAVE_FENCE
 	uint32_t flush_sequence;
@@ -153,6 +155,7 @@ struct drm_i915_private {
 	unsigned int max_validate_buffers;
 	struct mutex cmdbuf_mutex;
 	size_t stolen_base;
+	struct drm_i915_validate_buffer *val_bufs;
 #endif
 
 	DRM_SPINTYPE swaps_lock;
@@ -306,8 +309,8 @@ extern void i915_disable_vblank(struct drm_device *dev, int crtc);
 extern u32 i915_get_vblank_counter(struct drm_device *dev, int crtc);
 extern int i915_vblank_swap(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
-extern void i915_user_irq_on(struct drm_i915_private *dev_priv);
-extern void i915_user_irq_off(struct drm_i915_private *dev_priv);
+extern void i915_user_irq_on(struct drm_device *dev);
+extern void i915_user_irq_off(struct drm_device *dev);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(struct drm_device *dev, void *data,
@@ -519,10 +522,23 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 /* Interrupt bits:
  */
-#define USER_INT_FLAG    (1<<1)
-#define VSYNC_PIPEB_FLAG (1<<5)
-#define VSYNC_PIPEA_FLAG (1<<7)
-#define HWB_OOM_FLAG     (1<<13) /* binner out of memory */
+#define I915_PIPE_CONTROL_NOTIFY_INTERRUPT		(1<<18)
+#define I915_DISPLAY_PORT_INTERRUPT			(1<<17)
+#define I915_RENDER_COMMAND_PARSER_ERROR_INTERRUPT	(1<<15)
+#define I915_GMCH_THERMAL_SENSOR_EVENT_INTERRUPT	(1<<14)
+#define I915_HWB_OOM_INTERRUPT				(1<<13) /* binner out of memory */
+#define I915_SYNC_STATUS_INTERRUPT			(1<<12)
+#define I915_DISPLAY_PLANE_A_FLIP_PENDING_INTERRUPT	(1<<11)
+#define I915_DISPLAY_PLANE_B_FLIP_PENDING_INTERRUPT	(1<<10)
+#define I915_OVERLAY_PLANE_FLIP_PENDING_INTERRUPT	(1<<9)
+#define I915_DISPLAY_PLANE_C_FLIP_PENDING_INTERRUPT	(1<<8)
+#define I915_DISPLAY_PIPE_A_VBLANK_INTERRUPT		(1<<7)
+#define I915_DISPLAY_PIPE_A_EVENT_INTERRUPT		(1<<6)
+#define I915_DISPLAY_PIPE_B_VBLANK_INTERRUPT		(1<<5)
+#define I915_DISPLAY_PIPE_B_EVENT_INTERRUPT		(1<<4)
+#define I915_DEBUG_INTERRUPT				(1<<2)
+#define I915_USER_INTERRUPT				(1<<1)
+
 
 #define I915REG_HWSTAM		0x02098
 #define I915REG_INT_IDENTITY_R	0x020a4
@@ -535,6 +551,12 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 #define I915REG_PIPEASTAT	0x70024
 #define I915REG_PIPEBSTAT	0x71024
+
+#define I915_VBLANK_INTERRUPT_ENABLE	(1UL<<17)
+#define I915_HOTPLUG_INTERRUPT_ENABLE	(1UL<<26)
+#define I915_HOTPLUG_CLEAR		(1UL<<10)
+#define I915_VBLANK_CLEAR		(1UL<<1)
+
 /*
  * The two pipe frame counter registers are not synchronized, so
  * reading a stable value is somewhat tricky. The following code 
@@ -565,9 +587,6 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  */
 #define PIPE_PIXEL_MASK         0x00ffffff
 #define PIPE_PIXEL_SHIFT        0
-
-#define I915_VBLANK_INTERRUPT_ENABLE	(1UL<<17)
-#define I915_VBLANK_CLEAR		(1UL<<1)
 
 #define GPIOA			0x5010
 #define GPIOB			0x5014
@@ -625,6 +644,34 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define POST_DIV_32            0x50
 #define VCO_LOOP_DIV_BY_4M     0x00
 #define VCO_LOOP_DIV_BY_16M    0x04
+
+#define I915_FIFO_UNDERRUN_STATUS		(1UL<<31)
+#define I915_CRC_ERROR_ENABLE			(1UL<<29)
+#define I915_CRC_DONE_ENABLE			(1UL<<28)
+#define I915_GMBUS_EVENT_ENABLE			(1UL<<27)
+#define I915_HOTPLUG_INTERRUPT_ENABLE		(1UL<<26)
+#define I915_VSYNC_INTERRUPT_ENABLE		(1UL<<25)
+#define I915_DISPLAY_LINE_COMPARE_ENABLE	(1UL<<24)
+#define I915_DPST_EVENT_ENABLE			(1UL<<23)
+#define I915_LEGACY_BLC_EVENT_ENABLE		(1UL<<22)
+#define I915_ODD_FIELD_INTERRUPT_ENABLE		(1UL<<21)
+#define I915_EVEN_FIELD_INTERRUPT_ENABLE	(1UL<<20)
+#define I915_START_VBLANK_INTERRUPT_ENABLE	(1UL<<18)	/* 965 or later */
+#define I915_VBLANK_INTERRUPT_ENABLE		(1UL<<17)
+#define I915_OVERLAY_UPDATED_ENABLE		(1UL<<16)
+#define I915_CRC_ERROR_INTERRUPT_STATUS		(1UL<<13)
+#define I915_CRC_DONE_INTERRUPT_STATUS		(1UL<<12)
+#define I915_GMBUS_INTERRUPT_STATUS		(1UL<<11)
+#define I915_HOTPLUG_INTERRUPT_STATUS		(1UL<<10)
+#define I915_VSYNC_INTERRUPT_STATUS		(1UL<<9)
+#define I915_DISPLAY_LINE_COMPARE_STATUS	(1UL<<8)
+#define I915_DPST_EVENT_STATUS			(1UL<<7)
+#define I915_LEGACY_BLC_EVENT_STATUS		(1UL<<6)
+#define I915_ODD_FIELD_INTERRUPT_STATUS		(1UL<<5)
+#define I915_EVEN_FIELD_INTERRUPT_STATUS	(1UL<<4)
+#define I915_START_VBLANK_INTERRUPT_STATUS	(1UL<<2)	/* 965 or later */
+#define I915_VBLANK_INTERRUPT_STATUS		(1UL<<1)
+#define I915_OVERLAY_UPDATED_STATUS		(1UL<<0)
 
 #define SRX_INDEX		0x3c4
 #define SRX_DATA		0x3c5
@@ -1152,8 +1199,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define SDVOB_PCIE_CONCURRENCY			(1 << 3)
 #define SDVO_DETECTED				(1 << 2)
 /* Bits to be preserved when writing */
-#define SDVOB_PRESERVE_MASK			((1 << 17) | (1 << 16) | (1 << 14))
-#define SDVOC_PRESERVE_MASK			(1 << 17)
+#define SDVOB_PRESERVE_MASK			((1 << 17) | (1 << 16) | (1 << 14) | (1 << 26))
+#define SDVOC_PRESERVE_MASK			((1 << 17) | (1 << 26))
 
 /** @defgroup LVDS
  * @{

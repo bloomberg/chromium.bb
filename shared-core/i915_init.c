@@ -130,6 +130,14 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	dev->types[8] = _DRM_STAT_SECONDARY;
 	dev->types[9] = _DRM_STAT_DMA;
 
+	if (IS_MOBILE(dev) || IS_I9XX(dev))
+		dev_priv->cursor_needs_physical = true;
+	else
+		dev_priv->cursor_needs_physical = false;
+
+	if (IS_I965G(dev) || IS_G33(dev))
+		dev_priv->cursor_needs_physical = false;
+
 	if (IS_I9XX(dev)) {
 		pci_read_config_dword(dev->pdev, 0x5C, &dev_priv->stolen_base);
 		DRM_DEBUG("stolen base %p\n", (void*)dev_priv->stolen_base);
@@ -269,7 +277,6 @@ int i915_driver_unload(struct drm_device *dev)
 
 	I915_WRITE(LP_RING + RING_LEN, 0);
 
-
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 		drm_irq_uninstall(dev);
 		intel_modeset_cleanup(dev);
@@ -283,7 +290,6 @@ int i915_driver_unload(struct drm_device *dev)
 	if (dev_priv->sarea_kmap.virtual) {
 		drm_bo_kunmap(&dev_priv->sarea_kmap);
 		dev_priv->sarea_kmap.virtual = NULL;
-		dev->primary->master->lock.hw_lock = NULL;
 		dev->sigdata.lock = NULL;
 	}
 
@@ -377,7 +383,9 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
 	if (!master_priv)
 		return;
 
-        drm_rmmap(dev, master_priv->sarea);
+	if (master_priv->sarea)
+		drm_rmmap(dev, master_priv->sarea);
+		
 	drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
 
 	master->driver_priv = NULL;

@@ -2977,3 +2977,20 @@ void drmCloseOnce(int fd)
 	}
     }
 }
+
+int drmSetMaster(int fd)
+{
+	int ret;
+
+	fprintf(stderr,"Setting master \n");
+	ret = ioctl(fd, DRM_IOCTL_SET_MASTER, 0);
+	return ret;
+}
+
+int drmDropMaster(int fd)
+{
+	int ret;
+	fprintf(stderr,"Dropping master \n");
+	ret = ioctl(fd, DRM_IOCTL_DROP_MASTER, 0);
+	return ret;
+}

@@ -132,7 +132,7 @@ static void intel_crt_mode_set(struct drm_output *output,
 /**
  * Uses CRT_HOTPLUG_EN and CRT_HOTPLUG_STAT to detect CRT presence.
  *
- * Only for I945G/GM.
+ * Not for i915G/i915GM
  *
  * \return TRUE if CRT is connected.
  * \return FALSE if CRT is disconnected.
@@ -142,7 +142,7 @@ static bool intel_crt_detect_hotplug(struct drm_output *output)
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 temp;
-#if 1
+
 	unsigned long timeout = jiffies + msecs_to_jiffies(1000);
 
 	temp = I915_READ(PORT_HOTPLUG_EN);
@@ -161,15 +161,6 @@ static bool intel_crt_detect_hotplug(struct drm_output *output)
 		return true;
 
 	return false;
-#else
-	temp = I915_READ(PORT_HOTPLUG_STAT);
-	DRM_DEBUG("HST 0x%08x\n", temp);
-
-	if (temp & (1 << 8) && temp & (1 << 9))
-		return true;
-
-	return false;
-#endif
 }
 
 static bool intel_crt_detect_ddc(struct drm_output *output)
@@ -187,7 +178,7 @@ static enum drm_output_status intel_crt_detect(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	
-	if (IS_I945G(dev) || IS_I945GM(dev) || IS_I965G(dev)) {
+	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
 		if (intel_crt_detect_hotplug(output))
 			return output_status_connected;
 		else
