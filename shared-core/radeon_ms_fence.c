@@ -27,7 +27,7 @@
  *    Jerome Glisse <glisse@freedesktop.org>
  */
 #include "radeon_ms.h"
-#include "amd_r3xx_fence.h"
+#include "amd_legacy_fence.h"
 
 #define R3XX_FENCE_SEQUENCE_RW_FLUSH	0x80000000u
 
@@ -35,7 +35,7 @@ static inline int r3xx_fence_emit_sequence(struct drm_device *dev,
 					   struct drm_radeon_private *dev_priv,
 					   uint32_t sequence)
 {
-	struct r3xx_fence *r3xx_fence = dev_priv->fence;
+	struct legacy_fence *r3xx_fence = dev_priv->fence;
 	uint32_t cmd[2];
 	int i, r;
 
@@ -58,7 +58,7 @@ static inline int r3xx_fence_emit_sequence(struct drm_device *dev,
 	return -EBUSY;
 }
 
-static inline uint32_t r3xx_fence_sequence(struct r3xx_fence *r3xx_fence)
+static inline uint32_t r3xx_fence_sequence(struct legacy_fence *r3xx_fence)
 {
 	r3xx_fence->sequence += 1;
 	if (unlikely(r3xx_fence->sequence > 0x7fffffffu)) {
@@ -69,7 +69,7 @@ static inline uint32_t r3xx_fence_sequence(struct r3xx_fence *r3xx_fence)
 
 static inline void r3xx_fence_report(struct drm_device *dev,
 				     struct drm_radeon_private *dev_priv,
-				     struct r3xx_fence *r3xx_fence)
+				     struct legacy_fence *r3xx_fence)
 {
 	uint32_t fence_types = DRM_FENCE_TYPE_EXE;
 	uint32_t sequence;
@@ -95,7 +95,7 @@ static inline void r3xx_fence_report(struct drm_device *dev,
 static void r3xx_fence_flush(struct drm_device *dev, uint32_t class)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct r3xx_fence *r3xx_fence = dev_priv->fence;
+	struct legacy_fence *r3xx_fence = dev_priv->fence;
 	uint32_t sequence;
 
 	sequence = r3xx_fence_sequence(r3xx_fence);
@@ -109,7 +109,7 @@ static void r3xx_fence_poll(struct drm_device *dev, uint32_t fence_class,
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
 	struct drm_fence_class_manager *fc = &fm->fence_class[fence_class];
-	struct r3xx_fence *r3xx_fence = dev_priv->fence;
+	struct legacy_fence *r3xx_fence = dev_priv->fence;
 
 	if (unlikely(!dev_priv)) {
 		return;
@@ -129,7 +129,7 @@ static int r3xx_fence_emit(struct drm_device *dev, uint32_t class,
 			   uint32_t *native_type)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct r3xx_fence *r3xx_fence = dev_priv->fence;
+	struct legacy_fence *r3xx_fence = dev_priv->fence;
 	uint32_t tmp;
 
 	if (!dev_priv || dev_priv->cp_ready != 1) {
@@ -162,7 +162,7 @@ static uint32_t r3xx_fence_needed_flush(struct drm_fence_object *fence)
 {
 	struct drm_device *dev = fence->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct r3xx_fence *r3xx_fence = dev_priv->fence;
+	struct legacy_fence *r3xx_fence = dev_priv->fence;
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	uint32_t flush_types, diff;
 	

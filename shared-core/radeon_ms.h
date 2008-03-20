@@ -31,7 +31,6 @@
 #define __RADEON_MS_H__
 
 #include "radeon_ms_drv.h"
-#include "amd_r3xx_fence.h"
 #include "radeon_ms_reg.h"
 #include "radeon_ms_drm.h"
 #include "radeon_ms_rom.h"

@@ -29,6 +29,7 @@
  */
 #include "drm_pciids.h"
 #include "radeon_ms.h"
+#include "amd_legacy_fence.h"
 
 
 static uint32_t radeon_ms_mem_prios[] = {
@@ -116,12 +117,12 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 		return ret;
 	}
 
-	dev_priv->fence = drm_alloc(sizeof(struct r3xx_fence), DRM_MEM_DRIVER);
+	dev_priv->fence = drm_alloc(sizeof(struct legacy_fence), DRM_MEM_DRIVER);
 	if (dev_priv->fence == NULL) {
 		radeon_ms_driver_unload(dev);
 		return -ENOMEM;
 	}
-	memset(dev_priv->fence, 0, sizeof(struct r3xx_fence));
+	memset(dev_priv->fence, 0, sizeof(struct legacy_fence));
 
 	/* we don't want userspace to be able to map this so don't use
 	 * drm_addmap */
@@ -305,7 +306,7 @@ int radeon_ms_driver_unload(struct drm_device *dev)
 		drm_core_ioremapfree(&dev_priv->vram, dev);
 	}
 	DRM_INFO("[radeon_ms] map released\n");
-	drm_free(dev_priv->fence, sizeof(struct r3xx_fence), DRM_MEM_DRIVER);
+	drm_free(dev_priv->fence, sizeof(struct legacy_fence), DRM_MEM_DRIVER);
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 	dev->dev_private = NULL;
 
