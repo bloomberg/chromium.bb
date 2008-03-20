@@ -332,6 +332,7 @@ static __inline__ int r300_emit_packet0(drm_radeon_private_t *dev_priv,
 	sz = header.packet0.count;
 	reg = (header.packet0.reghi << 8) | header.packet0.reglo;
 
+	DRM_DEBUG("R300_CMD_PACKET0: reg %04x, sz %d\n", reg, sz);
 	if (!sz)
 		return 0;
 
@@ -808,23 +809,21 @@ static __inline__ int r300_emit_r500fp(drm_radeon_private_t *dev_priv,
 	sz = header.r500fp.count;
 	addr = (header.r500fp.adrhi << 8) | header.r500fp.adrlo;
 
+	DRM_DEBUG("r500fp %d %d\n", sz, addr);
 	if (!sz)
 		return 0;
-	if (sz * 16 > cmdbuf->bufsz)
+	if (sz * 6 * 4 > cmdbuf->bufsz)
 		return -EINVAL;
 
-	BEGIN_RING(4 + sz * 4);
-	/* Wait for VAP to come to senses.. */
-	/* there is no need to emit it multiple times, (only once before VAP is programmed,
-	   but this optimization is for later */
+	BEGIN_RING(3 + sz * 6);
 	OUT_RING_REG(R500_GA_US_VECTOR_INDEX, addr);
-	OUT_RING(CP_PACKET0_TABLE(R500_GA_US_VECTOR_DATA, sz * 4 - 1));
-	OUT_RING_TABLE((int *)cmdbuf->buf, sz * 4);
+	OUT_RING(CP_PACKET0_TABLE(R500_GA_US_VECTOR_DATA, sz * 6 - 1));
+	OUT_RING_TABLE((int *)cmdbuf->buf, sz * 6);
 
 	ADVANCE_RING();
 
-	cmdbuf->buf += sz * 16;
-	cmdbuf->bufsz -= sz * 16;
+	cmdbuf->buf += sz * 6 * 4;
+	cmdbuf->bufsz -= sz * 6 * 4;
 
 	return 0;
 }
@@ -868,7 +867,6 @@ int r300_do_cp_cmdbuf(struct drm_device *dev,
 
 		switch (header.header.cmd_type) {
 		case R300_CMD_PACKET0:
-			DRM_DEBUG("R300_CMD_PACKET0\n");
 			ret = r300_emit_packet0(dev_priv, cmdbuf, header);
 			if (ret) {
 				DRM_ERROR("r300_emit_packet0 failed\n");
