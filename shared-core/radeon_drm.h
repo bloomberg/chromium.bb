@@ -258,7 +258,7 @@ typedef union {
 		unsigned char cmd_type, reg, n_bufs, flags;
 	} scratch;
 	struct {
-		unsigned char cmd_type, count, adrlo, adrhi;
+		unsigned char cmd_type, count, adrlo, adrhi_flags;
 	} r500fp;
 } drm_r300_cmd_header_t;
 
@@ -269,6 +269,9 @@ typedef union {
 #define RADEON_CLEAR_FASTZ		0x80000000
 #define RADEON_USE_HIERZ		0x40000000
 #define RADEON_USE_COMP_ZBUF		0x20000000
+
+#define R500FP_CONSTANT_TYPE  (1 << 1)
+#define R500FP_CONSTANT_CLAMP (1 << 2)
 
 /* Primitive types
  */

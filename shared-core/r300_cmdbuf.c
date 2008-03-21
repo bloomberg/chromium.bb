@@ -804,26 +804,38 @@ static __inline__ int r300_emit_r500fp(drm_radeon_private_t *dev_priv,
 {
 	int sz;
 	int addr;
+	int type;
+	int clamp;
+	int stride;
 	RING_LOCALS;
 
 	sz = header.r500fp.count;
-	addr = (header.r500fp.adrhi << 8) | header.r500fp.adrlo;
+	/* address is 9 bits 0 - 8, bit 1 of flags is part of address */
+	addr = ((header.r500fp.adrhi_flags & 1) << 8) | header.r500fp.adrlo;
 
-	DRM_DEBUG("r500fp %d %d\n", sz, addr);
+	type = !!(header.r500fp.adrhi_flags & R500FP_CONSTANT_TYPE);
+	clamp = !!(header.r500fp.adrhi_flags & R500FP_CONSTANT_CLAMP);
+
+	addr |= (type << 16);
+	addr |= (clamp << 17);
+
+	stride = type ? 4 : 6;
+
+	DRM_DEBUG("r500fp %d %d type: %d\n", sz, addr, type);
 	if (!sz)
 		return 0;
-	if (sz * 6 * 4 > cmdbuf->bufsz)
+	if (sz * stride * 4 > cmdbuf->bufsz)
 		return -EINVAL;
 
-	BEGIN_RING(3 + sz * 6);
+	BEGIN_RING(3 + sz * stride);
 	OUT_RING_REG(R500_GA_US_VECTOR_INDEX, addr);
-	OUT_RING(CP_PACKET0_TABLE(R500_GA_US_VECTOR_DATA, sz * 6 - 1));
-	OUT_RING_TABLE((int *)cmdbuf->buf, sz * 6);
+	OUT_RING(CP_PACKET0_TABLE(R500_GA_US_VECTOR_DATA, sz * stride - 1));
+	OUT_RING_TABLE((int *)cmdbuf->buf, sz * stride);
 
 	ADVANCE_RING();
 
-	cmdbuf->buf += sz * 6 * 4;
-	cmdbuf->bufsz -= sz * 6 * 4;
+	cmdbuf->buf += sz * stride * 4;
+	cmdbuf->bufsz -= sz * stride * 4;
 
 	return 0;
 }
