@@ -1617,25 +1617,12 @@ nv40_graph_load_context(struct nouveau_channel *chan)
 	return 0;
 }
 
-/* Some voodoo that makes context switching work without the binary driver
- * initialising the card first.
- *
- * It is possible to effect how the context is saved from PGRAPH into a block
- * of instance memory by altering the values in these tables.  This may mean
- * that the context layout of each chipset is slightly different (at least
- * NV40 and C51 are different).  It would also be possible for chipsets to
- * have an identical context layout, but pull the data from different PGRAPH
- * registers.
- *
- * TODO: decode the meaning of the magic values, may provide clues about the
- *       differences between the various NV40 chipsets.
- * TODO: one we have a better idea of how each chipset differs, perhaps think
- *       about unifying these instead of providing a separate table for each
- *       chip.
- *
- * mmio-trace dumps from other nv4x/g7x/c5x cards very welcome :)
+/* These blocks of "magic numbers" are actually a microcode that the GPU uses
+ * to control how graphics contexts get saved and restored between PRAMIN
+ * and PGRAPH during a context switch.  We're currently using values seen
+ * in mmio-traces of the binary driver.
  */
-static uint32_t nv40_ctx_voodoo[] = {
+static uint32_t nv40_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00408f65, 0x00409406,
 	0x0040a268, 0x00200000, 0x0060000a, 0x00700000, 0x00106000, 0x00700080,
@@ -1667,7 +1654,7 @@ static uint32_t nv40_ctx_voodoo[] = {
 	~0
 };
 
-static uint32_t nv41_ctx_voodoo[] = {
+static uint32_t nv41_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00408f65, 0x00409306,
 	0x0040a068, 0x0040198f, 0x00200001, 0x0060000a, 0x00700080, 0x00104042,
@@ -1698,7 +1685,7 @@ static uint32_t nv41_ctx_voodoo[] = {
 	0x00600009, 0x00700005, 0x00700006, 0x0060000e, ~0
 };
 
-static uint32_t nv43_ctx_voodoo[] = {
+static uint32_t nv43_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409565, 0x00409a06,
 	0x0040a868, 0x00200000, 0x0060000a, 0x00700000, 0x00106000, 0x00700080,
@@ -1731,7 +1718,7 @@ static uint32_t nv43_ctx_voodoo[] = {
 	~0
 };
 
-static uint32_t nv44_ctx_voodoo[] = {
+static uint32_t nv44_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409a65, 0x00409f06,
 	0x0040ac68, 0x0040248f, 0x00200001, 0x0060000a, 0x00700080, 0x00104042,
@@ -1764,7 +1751,7 @@ static uint32_t nv44_ctx_voodoo[] = {
 	0x00600009, 0x00700005, 0x00700006, 0x0060000e, ~0
 };
 
-static uint32_t nv46_ctx_voodoo[] = {
+static uint32_t nv46_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00408f65, 0x00409306,
 	0x0040a068, 0x0040198f, 0x00200001, 0x0060000a, 0x00700080, 0x00104042,
@@ -1795,7 +1782,7 @@ static uint32_t nv46_ctx_voodoo[] = {
 	0x00600009, 0x00700005, 0x00700006, 0x0060000e, ~0
 };
 
-static uint32_t nv47_ctx_voodoo[] = {
+static uint32_t nv47_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409265, 0x00409606,
 	0x0040a368, 0x0040198f, 0x00200001, 0x0060000a, 0x00700080, 0x00104042,
@@ -1828,7 +1815,7 @@ static uint32_t nv47_ctx_voodoo[] = {
 };
 
 //this is used for nv49 and nv4b
-static uint32_t nv49_4b_ctx_voodoo[] ={
+static uint32_t nv49_4b_ctx_prog[] ={
 	0x00400564, 0x00400505, 0x00408165, 0x00408206, 0x00409e68, 0x00200020,
 	0x0060000a, 0x00700080, 0x00104042, 0x00200020, 0x0060000a, 0x00700000,
 	0x001040c5, 0x00400f26, 0x00401068, 0x0060000d, 0x0070008f, 0x0070000e,
@@ -1860,7 +1847,7 @@ static uint32_t nv49_4b_ctx_voodoo[] ={
 };
 
 
-static uint32_t nv4a_ctx_voodoo[] = {
+static uint32_t nv4a_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409965, 0x00409e06,
 	0x0040ac68, 0x00200000, 0x0060000a, 0x00700000, 0x00106000, 0x00700080,
@@ -1893,7 +1880,7 @@ static uint32_t nv4a_ctx_voodoo[] = {
 	0x00600009, 0x00700005, 0x00700006, 0x0060000e, ~0
 };
 
-static uint32_t nv4c_ctx_voodoo[] = {
+static uint32_t nv4c_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409065, 0x00409406,
 	0x0040a168, 0x0040198f, 0x00200001, 0x0060000a, 0x00700080, 0x00104042,
@@ -1924,7 +1911,7 @@ static uint32_t nv4c_ctx_voodoo[] = {
 	0x0040a405, 0x00600009, 0x00700005, 0x00700006, 0x0060000e, ~0
 };
 
-static uint32_t nv4e_ctx_voodoo[] = {
+static uint32_t nv4e_ctx_prog[] = {
 	0x00400889, 0x00200000, 0x0060000a, 0x00200000, 0x00300000, 0x00800001,
 	0x00700009, 0x0060000e, 0x00400d64, 0x00400d05, 0x00409565, 0x00409a06,
 	0x0040a868, 0x00200000, 0x0060000a, 0x00700000, 0x00106000, 0x00700080,
@@ -1971,7 +1958,7 @@ nv40_graph_init(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv =
 		(struct drm_nouveau_private *)dev->dev_private;
-	uint32_t *ctx_voodoo;
+	uint32_t *ctx_prog;
 	uint32_t vramsz, tmp;
 	int i, j;
 
@@ -1981,34 +1968,34 @@ nv40_graph_init(struct drm_device *dev)
 			 NV_PMC_ENABLE_PGRAPH);
 
 	switch (dev_priv->chipset) {
-	case 0x40: ctx_voodoo = nv40_ctx_voodoo; break;
+	case 0x40: ctx_prog = nv40_ctx_prog; break;
 	case 0x41:
-	case 0x42: ctx_voodoo = nv41_ctx_voodoo; break;
-	case 0x43: ctx_voodoo = nv43_ctx_voodoo; break;
-	case 0x44: ctx_voodoo = nv44_ctx_voodoo; break;
-	case 0x46: ctx_voodoo = nv46_ctx_voodoo; break;
-	case 0x47: ctx_voodoo = nv47_ctx_voodoo; break;
-	case 0x49: ctx_voodoo = nv49_4b_ctx_voodoo; break;
-	case 0x4a: ctx_voodoo = nv4a_ctx_voodoo; break;
-	case 0x4b: ctx_voodoo = nv49_4b_ctx_voodoo; break;
+	case 0x42: ctx_prog = nv41_ctx_prog; break;
+	case 0x43: ctx_prog = nv43_ctx_prog; break;
+	case 0x44: ctx_prog = nv44_ctx_prog; break;
+	case 0x46: ctx_prog = nv46_ctx_prog; break;
+	case 0x47: ctx_prog = nv47_ctx_prog; break;
+	case 0x49: ctx_prog = nv49_4b_ctx_prog; break;
+	case 0x4a: ctx_prog = nv4a_ctx_prog; break;
+	case 0x4b: ctx_prog = nv49_4b_ctx_prog; break;
 	case 0x4c:
-	case 0x67: ctx_voodoo = nv4c_ctx_voodoo; break;
-	case 0x4e: ctx_voodoo = nv4e_ctx_voodoo; break;
+	case 0x67: ctx_prog = nv4c_ctx_prog; break;
+	case 0x4e: ctx_prog = nv4e_ctx_prog; break;
 	default:
-		DRM_ERROR("Unknown ctx_voodoo for chipset 0x%02x\n",
-				dev_priv->chipset);
-		ctx_voodoo = NULL;
+		DRM_ERROR("Context program for 0x%02x unavailable\n",
+			  dev_priv->chipset);
+		ctx_prog = NULL;
 		break;
 	}
 
-	/* Load the context voodoo onto the card */
-	if (ctx_voodoo) {
-		DRM_DEBUG("Loading context-switch voodoo\n");
+	/* Load the context program onto the card */
+	if (ctx_prog) {
+		DRM_DEBUG("Loading context program\n");
 		i = 0;
 
 		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
-		while (ctx_voodoo[i] != ~0) {
-			NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, ctx_voodoo[i]);
+		while (ctx_prog[i] != ~0) {
+			NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, ctx_prog[i]);
 			i++;
 		}
 	}
