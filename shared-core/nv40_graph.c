@@ -28,22 +28,6 @@
 #include "drm.h"
 #include "nouveau_drv.h"
 
-/* The sizes are taken from the difference between the start of two
- * grctx addresses while running the nvidia driver.  Probably slightly
- * larger than they actually are, because of other objects being created
- * between the contexts
- */
-#define NV40_GRCTX_SIZE (175*1024)
-#define NV41_GRCTX_SIZE (92*1024)
-#define NV43_GRCTX_SIZE (70*1024)
-#define NV46_GRCTX_SIZE (70*1024) /* probably ~64KiB */
-#define NV47_GRCTX_SIZE (125*1024)
-#define NV49_GRCTX_SIZE (164640)
-#define NV4A_GRCTX_SIZE (64*1024)
-#define NV4B_GRCTX_SIZE (164640)
-#define NV4C_GRCTX_SIZE (25*1024)
-#define NV4E_GRCTX_SIZE (25*1024)
-
 /*TODO: deciper what each offset in the context represents. The below
  *      contexts are taken from dumps just after the 3D object is
  *      created.
@@ -1471,61 +1455,60 @@ nv40_graph_create_context(struct nouveau_channel *chan)
 	struct drm_device *dev = chan->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	void (*ctx_init)(struct drm_device *, struct nouveau_gpuobj *);
-	unsigned int ctx_size;
 	int ret;
 
+	/* These functions populate the graphics context with a whole heap
+	 * of default state.  All these functions are very similar, with
+	 * a minimal amount of chipset-specific changes.  However, as we're
+	 * currently dependant on the context programs used by the NVIDIA
+	 * binary driver these functions must match the layout expected by
+	 * them.  Hopefully at some point this will all change.
+	 */
 	switch (dev_priv->chipset) {
 	case 0x40:
-		ctx_size = NV40_GRCTX_SIZE;
 		ctx_init = nv40_graph_context_init;
 		break;
 	case 0x41:
 	case 0x42:
-		ctx_size = NV41_GRCTX_SIZE;
 		ctx_init = nv41_graph_context_init;
 		break;
 	case 0x43:
-		ctx_size = NV43_GRCTX_SIZE;
 		ctx_init = nv43_graph_context_init;
 		break;
 	case 0x46:
-		ctx_size = NV46_GRCTX_SIZE;
 		ctx_init = nv46_graph_context_init;
 		break;
 	case 0x47:
-		DRM_INFO("NV47 warning: If your card behaves strangely, please come to the irc channel\n");
-		ctx_size = NV47_GRCTX_SIZE;
 		ctx_init = nv47_graph_context_init;
 		break;
 	case 0x49:
-		ctx_size = NV49_GRCTX_SIZE;
 		ctx_init = nv49_graph_context_init;
 		break;
 	case 0x44:
 	case 0x4a:
-		ctx_size = NV4A_GRCTX_SIZE;
 		ctx_init = nv4a_graph_context_init;
 		break;
 	case 0x4b:
-		ctx_size = NV4B_GRCTX_SIZE;
 		ctx_init = nv4b_graph_context_init;
 		break;
 	case 0x4c:
 	case 0x67:
-		ctx_size = NV4C_GRCTX_SIZE;
 		ctx_init = nv4c_graph_context_init;
 		break;
 	case 0x4e:
-		ctx_size = NV4E_GRCTX_SIZE;
 		ctx_init = nv4e_graph_context_init;
 		break;
 	default:
-		ctx_size = NV40_GRCTX_SIZE;
 		ctx_init = nv40_graph_context_init;
 		break;
 	}
 
-	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, ctx_size, 16,
+	/* Allocate a 175KiB block of PRAMIN to store the context.  This
+	 * is massive overkill for a lot of chipsets, but it should be safe
+	 * until we're able to implement this properly (will happen at more
+	 * or less the same time we're able to write our own context programs.
+	 */
+	if ((ret = nouveau_gpuobj_new_ref(dev, chan, NULL, 0, 175*1024, 16,
 					  NVOBJ_FLAG_ZERO_ALLOC,
 					  &chan->ramin_grctx)))
 		return ret;
