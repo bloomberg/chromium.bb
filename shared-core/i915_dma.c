@@ -1060,6 +1060,10 @@ void i915_driver_lastclose(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 
+	/* agp off can use this to get called before dev_priv */
+	if (!dev_priv)
+		return;
+
 #ifdef I915_HAVE_BUFFER
 	if (dev_priv->val_bufs) {
 		vfree(dev_priv->val_bufs);
