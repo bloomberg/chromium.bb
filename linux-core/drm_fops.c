@@ -489,6 +489,13 @@ int drm_release(struct inode *inode, struct file *filp)
 		drm_fb_release(filp);
 
 	if (file_priv->is_master) {
+		struct drm_file *temp;
+		list_for_each_entry(temp, &dev->filelist, lhead) {
+			if ((temp->master == file_priv->master) &&
+			    (temp != file_priv))
+				temp->authenticated = 0;
+		}
+
 		if (file_priv->minor->master == file_priv->master)
 			file_priv->minor->master = NULL;
 		drm_put_master(file_priv->master);
@@ -499,14 +506,8 @@ int drm_release(struct inode *inode, struct file *filp)
 
 	mutex_lock(&dev->struct_mutex);
 	drm_object_release(filp);
-	if (file_priv->remove_auth_on_close == 1) {
-		struct drm_file *temp;
 
-		list_for_each_entry(temp, &dev->filelist, lhead)
-			temp->authenticated = 0;
-	}
 	list_del(&file_priv->lhead);
-
 
 	mutex_unlock(&dev->struct_mutex);
 

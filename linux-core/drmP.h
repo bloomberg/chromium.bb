@@ -415,7 +415,6 @@ struct drm_file {
 	unsigned long ioctl_count;
 	struct list_head lhead;
 	struct drm_minor *minor;
-	int remove_auth_on_close;
 	unsigned long lock_count;
 
 	/*

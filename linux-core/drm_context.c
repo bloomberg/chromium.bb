@@ -444,9 +444,6 @@ int drm_rmctx(struct drm_device *dev, void *data,
 	struct drm_ctx *ctx = data;
 
 	DRM_DEBUG("%d\n", ctx->handle);
-	if (ctx->handle == DRM_KERNEL_CONTEXT + 1) {
-		file_priv->remove_auth_on_close = 1;
-	}
 	if (ctx->handle != DRM_KERNEL_CONTEXT) {
 		if (dev->driver->context_dtor)
 			dev->driver->context_dtor(dev, ctx->handle);
