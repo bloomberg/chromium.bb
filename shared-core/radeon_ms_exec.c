@@ -79,10 +79,10 @@ static int radeon_ms_execbuffer_args(struct drm_device *dev,
 		if (args_count >= 1) {
 			ret = drm_bo_handle_validate(file_priv,
 						     arg.d.req.bo_req.handle,
-						     arg.d.req.bo_req.fence_class,
 						     arg.d.req.bo_req.flags,
 						     arg.d.req.bo_req.mask,
 						     arg.d.req.bo_req.hint,
+						     arg.d.req.bo_req.fence_class,
 						     0,
 						     &rep.bo_info,
 						     &buffers[args_count]);

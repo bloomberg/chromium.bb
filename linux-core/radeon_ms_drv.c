@@ -132,6 +132,7 @@ static void __exit radeon_ms_driver_exit(void)
 static int __init radeon_ms_driver_init(void)
 {
 	driver.num_ioctls = radeon_ms_num_ioctls;
+	driver.driver_features |= DRIVER_MODESET;
 	return drm_init(&driver, pciidlist);
 }
 

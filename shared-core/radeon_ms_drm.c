@@ -155,7 +155,13 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 	/* init bo driver */
 	dev_priv->fence_id_last = 1;
 	dev_priv->fence_reg = SCRATCH_REG2;
-	drm_bo_driver_init(dev);
+	ret = drm_bo_driver_init(dev);
+	if (ret != 0) {
+		DRM_INFO("[radeon_ms] failed to init bo driver %d.\n", ret);
+		radeon_ms_driver_unload(dev);
+		return ret;
+	}
+	DRM_INFO("[radeon_ms] bo driver succesfull %d.\n", dev->bm.initialized);
 	/* initialize vram */
 	ret = drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, dev_priv->vram.size, 1);
 	if (ret != 0) {
@@ -239,6 +245,13 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 		return ret;
 	}
 
+	if (dev->primary && dev->control) {
+		DRM_INFO("[radeon_ms] control 0x%lx, render 0x%lx\n",
+		          (long)dev->primary->device, (long)dev->control->device);
+	} else {
+		DRM_INFO("[radeon_ms] error control 0x%lx, render 0x%lx\n",
+		          (long)dev->primary, (long)dev->control);
+	}
 	DRM_INFO("[radeon_ms] successfull initialization\n");
 	return 0;
 }
