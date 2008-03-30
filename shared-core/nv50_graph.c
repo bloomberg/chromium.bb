@@ -968,6 +968,7 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 				DRM_ERROR("Error hacking up initial context: %d\n", ret);
 				return ret;
 			}
+			break;
 	}
 
 	INSTANCE_WR(chan->ramin_grctx->gpuobj, 0x00000/4,
