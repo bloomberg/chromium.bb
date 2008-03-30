@@ -47,6 +47,7 @@
 
 /* radeon ms ioctl */
 #define DRM_RADEON_EXECBUFFER			0x00
+#define DRM_RADEON_RESETCP			0x01
 
 struct drm_radeon_execbuffer_arg {
 	uint64_t    next;

@@ -128,9 +128,20 @@ static void radeon_ms_gpu_reset(struct drm_device *dev)
 	MMIO_W(RBBM_SOFT_RESET, 0);
 	MMIO_R(RBBM_SOFT_RESET);
 
+#if 0
 	cache_mode = MMIO_R(RB2D_DSTCACHE_MODE);
 	MMIO_W(RB2D_DSTCACHE_MODE,
 			cache_mode | RB2D_DSTCACHE_MODE__DC_DISABLE_IGNORE_PE);
+#else
+	reset_mask = RBBM_SOFT_RESET__SOFT_RESET_CP |
+		RBBM_SOFT_RESET__SOFT_RESET_HI |
+		RBBM_SOFT_RESET__SOFT_RESET_E2;
+	MMIO_W(RBBM_SOFT_RESET, rbbm_soft_reset | reset_mask);
+	MMIO_R(RBBM_SOFT_RESET);
+	MMIO_W(RBBM_SOFT_RESET, 0);
+	cache_mode = MMIO_R(RB3D_DSTCACHE_CTLSTAT);
+	MMIO_W(RB3D_DSTCACHE_CTLSTAT, cache_mode | (0xf));
+#endif
 
 	MMIO_W(HOST_PATH_CNTL, host_path_cntl | HOST_PATH_CNTL__HDP_SOFT_RESET);
 	MMIO_R(HOST_PATH_CNTL);
@@ -166,7 +177,7 @@ static void radeon_ms_gpu_resume(struct drm_device *dev)
 		DRM_UDELAY(1);
 	}
 	if (i >= dev_priv->usec_timeout) {
-		DRM_ERROR("[radeon_ms] timeout waiting for crtc...\n");
+		DRM_INFO("[radeon_ms] timeout waiting for crtc...\n");
 	}
 	for (i = 0; i < dev_priv->usec_timeout; i++) {
 		if (!(CRTC2_OFFSET__CRTC2_GUI_TRIG_OFFSET &
@@ -176,7 +187,7 @@ static void radeon_ms_gpu_resume(struct drm_device *dev)
 		DRM_UDELAY(1);
 	}
 	if (i >= dev_priv->usec_timeout) {
-		DRM_ERROR("[radeon_ms] timeout waiting for crtc...\n");
+		DRM_INFO("[radeon_ms] timeout waiting for crtc...\n");
 	}
 	DRM_UDELAY(10000);
 }
@@ -187,7 +198,6 @@ static void radeon_ms_gpu_stop(struct drm_device *dev)
 	uint32_t ov0_scale_cntl, crtc_ext_cntl, crtc_gen_cntl;
 	uint32_t crtc2_gen_cntl, i;
 
-	radeon_ms_wait_for_idle(dev);
 	/* Capture MC_STATUS in case things go wrong ... */
 	ov0_scale_cntl = dev_priv->ov0_scale_cntl = MMIO_R(OV0_SCALE_CNTL);
 	crtc_ext_cntl = dev_priv->crtc_ext_cntl = MMIO_R(CRTC_EXT_CNTL);
@@ -244,10 +254,10 @@ static void radeon_ms_gpu_stop(struct drm_device *dev)
 		}
 		break;
 	default:
-		DRM_ERROR("Unknown radeon family, aborting\n");
+		DRM_INFO("Unknown radeon family, aborting\n");
 		return;
 	}
-	DRM_ERROR("[radeon_ms] failed to stop gpu...will proceed anyway\n");
+	DRM_INFO("[radeon_ms] failed to stop gpu...will proceed anyway\n");
 	DRM_UDELAY(20000);
 }
 
@@ -264,7 +274,7 @@ static int radeon_ms_wait_for_fifo(struct drm_device *dev, int num_fifo)
 			return 0;
 		DRM_UDELAY(1);
 	}
-	DRM_ERROR("[radeon_ms] failed to wait for fifo\n");
+	DRM_INFO("[radeon_ms] failed to wait for fifo\n");
 	return -EBUSY;
 }
 
@@ -391,7 +401,7 @@ void radeon_ms_gpu_flush(struct drm_device *dev)
 		MMIO_W(RB3D_DSTCACHE_CTLSTAT_R3, purge3d);
 		break;
 	default:
-		DRM_ERROR("Unknown radeon family, aborting\n");
+		DRM_INFO("Unknown radeon family, aborting\n");
 		return;
 	}
 	for (i = 0; i < dev_priv->usec_timeout; i++) {
@@ -401,7 +411,7 @@ void radeon_ms_gpu_flush(struct drm_device *dev)
 		}
 		DRM_UDELAY(1);
 	}
-	DRM_ERROR("[radeon_ms] gpu flush timeout\n");
+	DRM_INFO("[radeon_ms] gpu flush timeout\n");
 }
 
 void radeon_ms_gpu_restore(struct drm_device *dev, struct radeon_state *state)
@@ -478,8 +488,8 @@ void radeon_ms_gpu_restore(struct drm_device *dev, struct radeon_state *state)
 	ret = radeon_ms_wait_for_fifo(dev, 2);
 	if (ret) {
 		ok = 0;
-		DRM_ERROR("[radeon_ms] no fifo for setting up dst & src gui\n");
-		DRM_ERROR("[radeon_ms] proceed anyway\n");
+		DRM_INFO("[radeon_ms] no fifo for setting up dst & src gui\n");
+		DRM_INFO("[radeon_ms] proceed anyway\n");
 	}
 	fbstart = (MC_FB_LOCATION__MC_FB_START__MASK &
 			MMIO_R(MC_FB_LOCATION)) << 16;
@@ -491,8 +501,8 @@ void radeon_ms_gpu_restore(struct drm_device *dev, struct radeon_state *state)
 	ret = radeon_ms_wait_for_fifo(dev, 1);
 	if (ret) {
 		ok = 0;
-		DRM_ERROR("[radeon_ms] no fifo for setting up dp data type\n");
-		DRM_ERROR("[radeon_ms] proceed anyway\n");
+		DRM_INFO("[radeon_ms] no fifo for setting up dp data type\n");
+		DRM_INFO("[radeon_ms] proceed anyway\n");
 	}
 #ifdef __BIG_ENDIAN
 	MMIO_W(DP_DATATYPE, DP_DATATYPE__DP_BYTE_PIX_ORDER);
@@ -503,16 +513,16 @@ void radeon_ms_gpu_restore(struct drm_device *dev, struct radeon_state *state)
 	ret = radeon_ms_wait_for_fifo(dev, 1);
 	if (ret) {
 		ok = 0;
-		DRM_ERROR("[radeon_ms] no fifo for setting up surface cntl\n");
-		DRM_ERROR("[radeon_ms] proceed anyway\n");
+		DRM_INFO("[radeon_ms] no fifo for setting up surface cntl\n");
+		DRM_INFO("[radeon_ms] proceed anyway\n");
 	}
 	MMIO_W(SURFACE_CNTL, SURFACE_CNTL__SURF_TRANSLATION_DIS);
 
 	ret = radeon_ms_wait_for_fifo(dev, 2);
 	if (ret) {
 		ok = 0;
-		DRM_ERROR("[radeon_ms] no fifo for setting scissor\n");
-		DRM_ERROR("[radeon_ms] proceed anyway\n");
+		DRM_INFO("[radeon_ms] no fifo for setting scissor\n");
+		DRM_INFO("[radeon_ms] proceed anyway\n");
 	}
 	MMIO_W(DEFAULT_SC_BOTTOM_RIGHT, 0x1fff1fff);
 	MMIO_W(DEFAULT2_SC_BOTTOM_RIGHT, 0x1fff1fff);
@@ -520,16 +530,16 @@ void radeon_ms_gpu_restore(struct drm_device *dev, struct radeon_state *state)
 	ret = radeon_ms_wait_for_fifo(dev, 1);
 	if (ret) {
 		ok = 0;
-		DRM_ERROR("[radeon_ms] no fifo for setting up gui cntl\n");
-		DRM_ERROR("[radeon_ms] proceed anyway\n");
+		DRM_INFO("[radeon_ms] no fifo for setting up gui cntl\n");
+		DRM_INFO("[radeon_ms] proceed anyway\n");
 	}
 	MMIO_W(DP_GUI_MASTER_CNTL, 0);
 
 	ret = radeon_ms_wait_for_fifo(dev, 5);
 	if (ret) {
 		ok = 0;
-		DRM_ERROR("[radeon_ms] no fifo for setting up clear color\n");
-		DRM_ERROR("[radeon_ms] proceed anyway\n");
+		DRM_INFO("[radeon_ms] no fifo for setting up clear color\n");
+		DRM_INFO("[radeon_ms] proceed anyway\n");
 	}
 	MMIO_W(DP_BRUSH_BKGD_CLR, 0x00000000);
 	MMIO_W(DP_BRUSH_FRGD_CLR, 0xffffffff);
@@ -538,7 +548,7 @@ void radeon_ms_gpu_restore(struct drm_device *dev, struct radeon_state *state)
 	MMIO_W(DP_WRITE_MSK, 0xffffffff);
 
 	if (!ok) {
-		DRM_ERROR("[radeon_ms] engine restore not enough fifo\n");
+		DRM_INFO("[radeon_ms] engine restore not enough fifo\n");
 	}
 }
 
@@ -566,12 +576,13 @@ void radeon_ms_gpu_save(struct drm_device *dev, struct radeon_state *state)
 int radeon_ms_wait_for_idle(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_state *state = &dev_priv->driver_state;
 	int i, j, ret;
 
 	for (i = 0; i < 2; i++) {
 		ret = radeon_ms_wait_for_fifo(dev, 64);
 		if (ret) {
-			DRM_ERROR("[radeon_ms] fifo not empty\n");
+			DRM_INFO("[radeon_ms] fifo not empty\n");
 		}
 		for (j = 0; j < dev_priv->usec_timeout; j++) {
 			if (!(RBBM_STATUS__GUI_ACTIVE & MMIO_R(RBBM_STATUS))) {
@@ -580,10 +591,10 @@ int radeon_ms_wait_for_idle(struct drm_device *dev)
 			}
 			DRM_UDELAY(1);
 		}
-		DRM_ERROR("[radeon_ms] idle timed out:  status=0x%08x\n",
+		DRM_INFO("[radeon_ms] idle timed out:  status=0x%08x\n",
 				MMIO_R(RBBM_STATUS));
-		radeon_ms_gpu_stop(dev);
 		radeon_ms_gpu_reset(dev);
+		radeon_ms_gpu_resume(dev);
 	}
 	return -EBUSY;
 }

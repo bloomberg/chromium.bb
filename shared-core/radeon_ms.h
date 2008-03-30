@@ -373,6 +373,8 @@ void radeon_ms_cp_save(struct drm_device *dev, struct radeon_state *state);
 void radeon_ms_cp_stop(struct drm_device *dev);
 int radeon_ms_cp_wait(struct drm_device *dev, int n);
 int radeon_ms_ring_emit(struct drm_device *dev, uint32_t *cmd, uint32_t count);
+int radeon_ms_resetcp(struct drm_device *dev, void *data,
+		      struct drm_file *file_priv);
 
 /* radeon_ms_crtc.c */
 int radeon_ms_crtc_create(struct drm_device *dev, int crtc);

@@ -60,6 +60,7 @@ struct drm_bo_driver radeon_ms_bo_driver = {
 
 struct drm_ioctl_desc radeon_ms_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_RADEON_EXECBUFFER, radeon_ms_execbuffer, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_RADEON_RESETCP, radeon_ms_resetcp, DRM_AUTH),
 };
 int radeon_ms_num_ioctls = DRM_ARRAY_SIZE(radeon_ms_ioctls);
 

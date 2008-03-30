@@ -210,24 +210,26 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	/* fence */
-	ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
-	if (ret) {
-		drm_putback_buffer_objects(dev);
-		DRM_ERROR("[radeon_ms] fence buffer objects failed\n");
-		goto out_free_release;
-	}
-	if (!(fence_arg->flags & DRM_FENCE_FLAG_NO_USER)) {
-		ret = drm_fence_add_user_object(file_priv, fence,
-						fence_arg->flags & DRM_FENCE_FLAG_SHAREABLE);
-		if (!ret) {
-			fence_arg->handle = fence->base.hash.key;
-			fence_arg->fence_class = fence->fence_class;
-			fence_arg->type = fence->type;
-			fence_arg->signaled = fence->signaled_types;
-			fence_arg->sequence = fence->sequence;
+	if (execbuffer->args_count > 1) {
+		ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
+		if (ret) {
+			drm_putback_buffer_objects(dev);
+			DRM_ERROR("[radeon_ms] fence buffer objects failed\n");
+			goto out_free_release;
 		}
+		if (!(fence_arg->flags & DRM_FENCE_FLAG_NO_USER)) {
+			ret = drm_fence_add_user_object(file_priv, fence,
+							fence_arg->flags & DRM_FENCE_FLAG_SHAREABLE);
+			if (!ret) {
+				fence_arg->handle = fence->base.hash.key;
+				fence_arg->fence_class = fence->fence_class;
+				fence_arg->type = fence->type;
+				fence_arg->signaled = fence->signaled_types;
+				fence_arg->sequence = fence->sequence;
+			}
+		}
+		drm_fence_usage_deref_unlocked(&fence);
 	}
-	drm_fence_usage_deref_unlocked(&fence);
 out_free_release:
 	drm_bo_kunmap(&cmd_kmap);
 	radeon_ms_execbuffer_args_clean(dev, buffers, execbuffer->args_count);
