@@ -33,6 +33,15 @@
 
 #include "radeon_ms.h"
 
+#define GMC_SRC_PITCH_OFFSET_CNTL   (1    <<  0)
+#define GMC_DST_PITCH_OFFSET_CNTL   (1    <<  1)
+#define GMC_BRUSH_NONE              (15   <<  4)
+#define GMC_SRC_DATATYPE_COLOR      (3    << 12)
+#define ROP3_S                      0x00cc0000
+#define DP_SRC_SOURCE_MEMORY        (2    << 24)
+#define GMC_CLR_CMP_CNTL_DIS        (1    << 28)
+#define GMC_WR_MSK_DIS              (1    << 30)
+
 void radeon_ms_bo_copy_blit(struct drm_device *dev,
 			    uint32_t src_offset,
 			    uint32_t dst_offset,
@@ -60,7 +69,7 @@ void radeon_ms_bo_copy_blit(struct drm_device *dev,
 		if (c >= 8192) {
 			c = 8191;
 		}
-		cmd[0] = CP_PACKET3_CNTL_BITBLT_MULTI | (5 << 16);
+		cmd[0] = CP_PACKET3(PACKET3_OPCODE_BITBLT, 5);
 		cmd[1] = GMC_SRC_PITCH_OFFSET_CNTL |
 			 GMC_DST_PITCH_OFFSET_CNTL |
 			 GMC_BRUSH_NONE |

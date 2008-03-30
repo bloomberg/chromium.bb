@@ -25,14 +25,15 @@
  *    Jerome Glisse <glisse@freedesktop.org>
  */
 #include "radeon_ms.h"
+#include "amd_cbuffer.h"
 
 static void radeon_ms_execbuffer_args_clean(struct drm_device *dev,
-					    struct drm_buffer_object **buffers,
+					    struct amd_cbuffer *cbuffer,
 					    uint32_t args_count)
 {
 	mutex_lock(&dev->struct_mutex);
 	while (args_count--) {
-		drm_bo_usage_deref_locked(&buffers[args_count]);
+		drm_bo_usage_deref_locked(&cbuffer->args[args_count].buffer);
 	}
 	mutex_unlock(&dev->struct_mutex);
 }
@@ -40,8 +41,7 @@ static void radeon_ms_execbuffer_args_clean(struct drm_device *dev,
 static int radeon_ms_execbuffer_args(struct drm_device *dev,
 				     struct drm_file *file_priv,
 				     struct drm_radeon_execbuffer *execbuffer,
-				     struct drm_buffer_object **buffers,
-				     uint32_t *relocs)
+				     struct amd_cbuffer *cbuffer)
 {
 	struct drm_radeon_execbuffer_arg arg;
 	struct drm_bo_arg_rep rep;
@@ -57,17 +57,18 @@ static int radeon_ms_execbuffer_args(struct drm_device *dev,
 			ret = -EINVAL;
 			goto out_err;
 		}
-		buffers[args_count] = NULL;
+		INIT_LIST_HEAD(&cbuffer->args[args_count].list);
+		cbuffer->args[args_count].buffer = NULL;
 		if (copy_from_user(&arg, (void __user *)((unsigned)data),
 		    sizeof(struct drm_radeon_execbuffer_arg))) {
 			ret = -EFAULT;
 			goto out_err;
 		}
 		mutex_lock(&dev->struct_mutex);
-		buffers[args_count] =
+		cbuffer->args[args_count].buffer = 
 			drm_lookup_buffer_object(file_priv,
 						 arg.d.req.arg_handle, 1);
-		relocs[args_count] = arg.reloc_offset;
+		cbuffer->args[args_count].dw_id = arg.reloc_offset;
 		mutex_unlock(&dev->struct_mutex);
 		if (arg.d.req.op != drm_bo_validate) {
 			DRM_ERROR("[radeon_ms] buffer object operation wasn't "
@@ -76,17 +77,15 @@ static int radeon_ms_execbuffer_args(struct drm_device *dev,
 			goto out_err;
 		}
 		memset(&rep, 0, sizeof(struct drm_bo_arg_rep));
-		if (args_count >= 1) {
-			ret = drm_bo_handle_validate(file_priv,
-						     arg.d.req.bo_req.handle,
-						     arg.d.req.bo_req.flags,
-						     arg.d.req.bo_req.mask,
-						     arg.d.req.bo_req.hint,
-						     arg.d.req.bo_req.fence_class,
-						     0,
-						     &rep.bo_info,
-						     &buffers[args_count]);
-		}
+		ret = drm_bo_handle_validate(file_priv,
+					     arg.d.req.bo_req.handle,
+					     arg.d.req.bo_req.flags,
+					     arg.d.req.bo_req.mask,
+					     arg.d.req.bo_req.hint,
+					     arg.d.req.bo_req.fence_class,
+					     0,
+					     &rep.bo_info,
+					     &cbuffer->args[args_count].buffer);
 		if (ret) {
 			DRM_ERROR("[radeon_ms] error on handle validate %d\n",
 				  ret);
@@ -101,6 +100,10 @@ static int radeon_ms_execbuffer_args(struct drm_device *dev,
 			goto out_err;
 		}
 		data = next;
+
+		list_add_tail(&cbuffer->args[args_count].list,
+			      &cbuffer->arg_unused.list);
+
 		args_count++;
 	} while (next != 0);
 	if (args_count != execbuffer->args_count) {
@@ -111,34 +114,201 @@ static int radeon_ms_execbuffer_args(struct drm_device *dev,
 	}
 	return 0;
 out_err:
-	radeon_ms_execbuffer_args_clean(dev, buffers, args_count);
+	radeon_ms_execbuffer_args_clean(dev, cbuffer, args_count);
 	return ret;
 }
 
-static int radeon_ms_execbuffer_check(struct drm_device *dev,
-				      struct drm_file *file_priv,
-				      struct drm_radeon_execbuffer *execbuffer,
-				      struct drm_buffer_object **buffers,
-				      uint32_t *relocs,
-				      uint32_t *cmd)
+enum {
+	REGISTER_FORBIDDEN = 0,
+	REGISTER_SAFE,
+	REGISTER_SET_OFFSET,
+};
+static uint8_t _r3xx_register_right[0x5000 >> 2];
+
+static int amd_cbuffer_packet0_set_offset(struct drm_device *dev,
+					  struct amd_cbuffer *cbuffer,
+					  uint32_t reg, int dw_id,
+					  struct amd_cbuffer_arg *arg)
 {
-	uint32_t i, gpu_addr;
+	uint32_t gpu_addr;
 	int ret;
 
-	for (i = 0; i < execbuffer->args_count; i++) {
-		if (relocs[i]) {
-			ret = radeon_ms_bo_get_gpu_addr(dev, &buffers[i]->mem,
-							&gpu_addr);
+	ret = radeon_ms_bo_get_gpu_addr(dev, &arg->buffer->mem, &gpu_addr);
+	if (ret) {
+		return ret;
+	}
+	switch (reg) {
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
+static struct amd_cbuffer_arg *
+amd_cbuffer_arg_from_dw_id(struct amd_cbuffer_arg *head, uint32_t dw_id)
+{
+	struct amd_cbuffer_arg *arg;
+
+	list_for_each_entry(arg, &head->list, list) {
+		if (arg->dw_id == dw_id) {
+			return arg;
+		}
+	}
+	/* no buffer at this dw index */
+	return NULL;
+}
+
+static int amd_cbuffer_packet0_check(struct drm_device *dev,
+				     struct drm_file *file_priv,
+				     struct amd_cbuffer *cbuffer,
+				     int dw_id,
+				     uint8_t *register_right)
+{
+	struct amd_cbuffer_arg *arg;
+	uint32_t reg, count, r, i;
+	int ret;
+
+	reg = cbuffer->cbuffer[dw_id] & PACKET0_REG_MASK;
+	count = (cbuffer->cbuffer[dw_id] & PACKET0_COUNT_MASK) >>
+		PACKET0_COUNT_SHIFT;
+	for (r = reg, i = 0; i <= count; i++, r++) {
+		switch (register_right[i]) {
+		case REGISTER_FORBIDDEN:
+			return -EINVAL;
+		case REGISTER_SAFE:
+			break;
+		case REGISTER_SET_OFFSET:
+			arg = amd_cbuffer_arg_from_dw_id(&cbuffer->arg_unused,
+							 dw_id + i +1);
+			if (arg == NULL) {
+				return -EINVAL;
+			}
+			/* remove from unparsed list */
+			list_del(&arg->list);
+			list_add_tail(&arg->list, &cbuffer->arg_used.list);
+			/* set the offset */
+			ret =  amd_cbuffer_packet0_set_offset(dev, cbuffer,
+					  		      r, dw_id + i + 1,
+							      arg);
 			if (ret) {
 				return ret;
 			}
-			cmd[relocs[i]] |= (gpu_addr) >> 10;
+			break;
 		}
 	}
-	for (i = 0; i < execbuffer->cmd_size; i++) {
-#if 0
-		DRM_INFO("cmd[%d]=0x%08X\n", i, cmd[i]);
-#endif
+	/* header + N + 1 dword passed test */
+	return count + 2;
+}
+
+static int amd_cbuffer_packet3_check(struct drm_device *dev,
+				     struct drm_file *file_priv,
+				     struct amd_cbuffer *cbuffer,
+				     int dw_id)
+{
+	struct amd_cbuffer_arg *arg;
+	uint32_t opcode, count;
+	uint32_t s_auth, s_mask;
+	uint32_t gpu_addr;
+	int ret;
+
+	opcode = (cbuffer->cbuffer[dw_id] & PACKET3_OPCODE_MASK) >>
+		 PACKET3_OPCODE_SHIFT;
+	count = (cbuffer->cbuffer[dw_id] & PACKET3_COUNT_MASK) >>
+		PACKET3_COUNT_SHIFT;
+	switch (opcode) {
+	case PACKET3_OPCODE_NOP:
+		break;
+	case PACKET3_OPCODE_BITBLT:
+	case PACKET3_OPCODE_BITBLT_MULTI:
+	DRM_INFO("[radeon_ms] exec step - [05][P3]00.00\n");
+		/* we only alow simple blit */
+		if (count != 5) {
+			return -EINVAL;
+		}
+	DRM_INFO("[radeon_ms] exec step - [05][P3]01.00\n");
+		s_mask = 0xf;
+		s_auth = 0x3;
+		if ((cbuffer->cbuffer[dw_id + 1] & s_mask) != s_auth) {
+			return -EINVAL;
+		}
+	DRM_INFO("[radeon_ms] exec step - [05][P3]02.00\n");
+		arg = amd_cbuffer_arg_from_dw_id(&cbuffer->arg_unused, dw_id+2);
+		if (arg == NULL) {
+			return -EINVAL;
+		}
+	DRM_INFO("[radeon_ms] exec step - [05][P3]03.00\n");
+		ret = radeon_ms_bo_get_gpu_addr(dev, &arg->buffer->mem,
+						&gpu_addr);
+		if (ret) {
+			return ret;
+		}
+	DRM_INFO("[radeon_ms] exec step - [05][P3]04.00\n");
+		gpu_addr = (gpu_addr >> 10) & 0x003FFFFF;
+		cbuffer->cbuffer[dw_id + 2] &= 0xFFC00000;
+		cbuffer->cbuffer[dw_id + 2] |= gpu_addr;
+		arg = amd_cbuffer_arg_from_dw_id(&cbuffer->arg_unused, dw_id+3);
+		if (arg == NULL) {
+			return -EINVAL;
+		}
+	DRM_INFO("[radeon_ms] exec step - [05][P3]05.00\n");
+		ret = radeon_ms_bo_get_gpu_addr(dev, &arg->buffer->mem,
+						&gpu_addr);
+		if (ret) {
+			return ret;
+		}
+	DRM_INFO("[radeon_ms] exec step - [05][P3]06.00\n");
+		gpu_addr = (gpu_addr >> 10) & 0x003FFFFF;
+		cbuffer->cbuffer[dw_id + 3] &= 0xFFC00000;
+		cbuffer->cbuffer[dw_id + 3] |= gpu_addr;
+	DRM_INFO("[radeon_ms] exec step - [05][P3]07.00\n");
+		/* FIXME: check that source & destination are big enough
+		 * for requested blit */
+		break;
+	default:
+		return -EINVAL;
+	}
+	/* header + N + 1 dword passed test */
+	return count + 2;
+}
+
+static int amd_cbuffer_check(struct drm_device *dev,
+			     struct drm_file *file_priv,
+			     struct amd_cbuffer *cbuffer)
+{
+	uint32_t i;
+	int ret;
+
+	for (i = 0; i < cbuffer->cbuffer_dw_count;) {
+	DRM_INFO("[radeon_ms] exec step - [05]00.00 %d 0x%08X\n",
+		 i, cbuffer->cbuffer[i]);
+		switch (PACKET_HEADER_GET(cbuffer->cbuffer[i])) {
+		case 0:
+			ret = amd_cbuffer_packet0_check(dev, file_priv,
+							cbuffer, i,
+							_r3xx_register_right);
+			if (ret) {
+				return ret;
+			}
+			/* advance to next packet */
+			i += ret;
+			break;
+		case 1:
+			/* we don't accept packet 1 */
+			return -EINVAL;
+		case 2:
+			/* packet 2 */
+			i += 1;
+			break;
+		case 3:
+			ret = amd_cbuffer_packet3_check(dev, file_priv,
+							cbuffer, i);
+			if (ret) {
+				return ret;
+			}
+			/* advance to next packet */
+			i += ret;
+			break;
+		}
 	}
 	return 0;
 }
@@ -148,97 +318,116 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 {
 	struct drm_radeon_execbuffer *execbuffer = data;
 	struct drm_fence_arg *fence_arg = &execbuffer->fence_arg;
-	struct drm_buffer_object **buffers;
 	struct drm_bo_kmap_obj cmd_kmap;
 	struct drm_fence_object *fence;
-	uint32_t *relocs;
-	uint32_t *cmd;
 	int cmd_is_iomem;
 	int ret = 0;
+	struct amd_cbuffer cbuffer;
 
+	/* command buffer dword count must be >= 0 */
+	if (execbuffer->cmd_size < 0) {
+		return -EINVAL;
+	}
 
+	/* FIXME: Lock buffer manager, is this really needed ?
+	 */
+	DRM_INFO("[radeon_ms] exec step - 00.00\n");
 	ret = drm_bo_read_lock(&dev->bm.bm_lock);
 	if (ret) {
 		return ret;
 	}
 
-	relocs = drm_calloc(execbuffer->args_count, sizeof(uint32_t),
-			    DRM_MEM_DRIVER);
-	if (relocs == NULL) {
-	        drm_bo_read_unlock(&dev->bm.bm_lock);
-		return -ENOMEM;
+	DRM_INFO("[radeon_ms] exec step - 01.00\n");
+	cbuffer.args = drm_calloc(execbuffer->args_count,
+				  sizeof(struct amd_cbuffer_arg),
+				  DRM_MEM_DRIVER);
+	if (cbuffer.args == NULL) {
+		ret = -ENOMEM;
+		goto out_free;
         }
-	buffers = drm_calloc(execbuffer->args_count,
-			     sizeof(struct drm_buffer_object *),
-			     DRM_MEM_DRIVER);
-	if (buffers == NULL) {
-		drm_free(relocs, (execbuffer->args_count * sizeof(uint32_t)),
-			 DRM_MEM_DRIVER);
-	        drm_bo_read_unlock(&dev->bm.bm_lock);
-		return -ENOMEM;
-        }
+
+	INIT_LIST_HEAD(&cbuffer.arg_unused.list);
+	INIT_LIST_HEAD(&cbuffer.arg_used.list);
+
 	/* process arguments */
-	ret = radeon_ms_execbuffer_args(dev, file_priv, execbuffer,
-					buffers, relocs);
+	DRM_INFO("[radeon_ms] exec step - 02.00\n");
+	ret = radeon_ms_execbuffer_args(dev, file_priv, execbuffer, &cbuffer);
 	if (ret) {
 		DRM_ERROR("[radeon_ms] execbuffer wrong arguments\n");
 		goto out_free;
 	}
+
 	/* map command buffer */
+	DRM_INFO("[radeon_ms] exec step - 03.00\n");
+	cbuffer.cbuffer_dw_count = (cbuffer.args[0].buffer->mem.num_pages *
+				    PAGE_SIZE) >> 2;
+	if (execbuffer->cmd_size > cbuffer.cbuffer_dw_count) {
+		ret = -EINVAL;
+		goto out_free_release;
+	}
+	DRM_INFO("[radeon_ms] exec step - 04.00\n");
+	cbuffer.cbuffer_dw_count = execbuffer->cmd_size;
 	memset(&cmd_kmap, 0, sizeof(struct drm_bo_kmap_obj));
-	ret = drm_bo_kmap(buffers[0],
-			  0,
-		          buffers[0]->mem.num_pages,
-			  &cmd_kmap);
+	ret = drm_bo_kmap(cbuffer.args[0].buffer, 0,
+		          cbuffer.args[0].buffer->mem.num_pages, &cmd_kmap);
 	if (ret) {
 		DRM_ERROR("[radeon_ms] error mapping ring buffer: %d\n", ret);
 		goto out_free_release;
 	}
-	cmd = drm_bmo_virtual(&cmd_kmap, &cmd_is_iomem);
-	/* do cmd checking & relocations */
-	ret = radeon_ms_execbuffer_check(dev, file_priv, execbuffer,
-					 buffers, relocs, cmd);
-	if (ret) {
-		drm_putback_buffer_objects(dev);
-		goto out_free_release;
-	}
+	DRM_INFO("[radeon_ms] exec step - 05.00\n");
+	cbuffer.cbuffer = drm_bmo_virtual(&cmd_kmap, &cmd_is_iomem);
+	DRM_INFO("[radeon_ms] exec step - 05.01\n");
+	list_del(&cbuffer.args[0].list);
+	DRM_INFO("[radeon_ms] exec step - 05.02\n");
+	list_add_tail(&cbuffer.args[0].list , &cbuffer.arg_used.list);
+	DRM_INFO("[radeon_ms] exec step - 05.03\n");
 
-	ret = radeon_ms_ring_emit(dev, cmd, execbuffer->cmd_size);
+	/* do cmd checking & relocations */
+	ret = amd_cbuffer_check(dev, file_priv, &cbuffer);
 	if (ret) {
 		drm_putback_buffer_objects(dev);
 		goto out_free_release;
 	}
+	DRM_INFO("[radeon_ms] exec step - 06.00\n");
+
+	ret = radeon_ms_ring_emit(dev, cbuffer.cbuffer,
+				  cbuffer.cbuffer_dw_count);
+	if (ret) {
+		drm_putback_buffer_objects(dev);
+		goto out_free_release;
+	}
+	DRM_INFO("[radeon_ms] exec step - 07.00\n");
 
 	/* fence */
-	if (execbuffer->args_count > 1) {
-		ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
-		if (ret) {
-			drm_putback_buffer_objects(dev);
-			DRM_ERROR("[radeon_ms] fence buffer objects failed\n");
-			goto out_free_release;
-		}
-		if (!(fence_arg->flags & DRM_FENCE_FLAG_NO_USER)) {
-			ret = drm_fence_add_user_object(file_priv, fence,
-							fence_arg->flags & DRM_FENCE_FLAG_SHAREABLE);
-			if (!ret) {
-				fence_arg->handle = fence->base.hash.key;
-				fence_arg->fence_class = fence->fence_class;
-				fence_arg->type = fence->type;
-				fence_arg->signaled = fence->signaled_types;
-				fence_arg->sequence = fence->sequence;
-			}
-		}
-		drm_fence_usage_deref_unlocked(&fence);
+	ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
+	if (ret) {
+		drm_putback_buffer_objects(dev);
+		DRM_ERROR("[radeon_ms] fence buffer objects failed\n");
+		goto out_free_release;
 	}
+	if (!(fence_arg->flags & DRM_FENCE_FLAG_NO_USER)) {
+		ret = drm_fence_add_user_object(file_priv, fence,
+						fence_arg->flags &
+						DRM_FENCE_FLAG_SHAREABLE);
+		if (!ret) {
+			fence_arg->handle = fence->base.hash.key;
+			fence_arg->fence_class = fence->fence_class;
+			fence_arg->type = fence->type;
+			fence_arg->signaled = fence->signaled_types;
+			fence_arg->sequence = fence->sequence;
+		}
+	}
+	drm_fence_usage_deref_unlocked(&fence);
+	DRM_INFO("[radeon_ms] exec step - 08.00\n");
 out_free_release:
 	drm_bo_kunmap(&cmd_kmap);
-	radeon_ms_execbuffer_args_clean(dev, buffers, execbuffer->args_count);
+	radeon_ms_execbuffer_args_clean(dev, &cbuffer, execbuffer->args_count);
+	DRM_INFO("[radeon_ms] exec step - 09.00\n");
 out_free:
-	drm_free(relocs, (execbuffer->args_count * sizeof(uint32_t)),
-		 DRM_MEM_DRIVER);
-	drm_free(buffers,
-		 (execbuffer->args_count * sizeof(struct drm_buffer_object *)),
+	drm_free(cbuffer.args,
+		 (execbuffer->args_count * sizeof(struct amd_cbuffer_arg)),
 		 DRM_MEM_DRIVER);
 	drm_bo_read_unlock(&dev->bm.bm_lock);
+	DRM_INFO("[radeon_ms] exec step - 10.00\n");
 	return ret;
 }

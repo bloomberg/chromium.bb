@@ -1755,4 +1755,33 @@
 #define    VAP_PVS_STATE_FLUSH_REG__DATA_REGISTER__MASK         0xFFFFFFFF
 #define    VAP_PVS_STATE_FLUSH_REG__DATA_REGISTER__SHIFT        0
 
+/* packet stuff **************************************************************/
+#define PACKET_HEADER_MASK                              0xC0000000
+#define PACKET_HEADER_SHIFT                             30
+#define PACKET_HEADER_GET(p) (((p) & PACKET_HEADER_MASK) >> PACKET_HEADER_SHIFT)
+#define PACKET_HEADER_SET(p) (((p) << PACKET_HEADER_SHIFT) & PACKET_HEADER_MASK)
+
+#define PACKET0_HEADER                                  0x0
+#    define PACKET0_REG_MASK                                    0x00001FFF
+#    define PACKET0_REG_SHIFT                                   0
+#    define PACKET0_COUNT_MASK                                  0x3FFF0000
+#    define PACKET0_COUNT_SHIFT                                 16
+#define PACKET1_HEADER                                  0x1
+#define PACKET2_HEADER                                  0x2
+#define PACKET3_HEADER                                  0x3
+#    define PACKET3_OPCODE_MASK                                 0x0000FF00
+#    define PACKET3_OPCODE_SHIFT                                8
+#        define PACKET3_OPCODE_NOP                                  0x10
+#        define PACKET3_OPCODE_BITBLT                               0x92
+#        define PACKET3_OPCODE_BITBLT_MULTI                         0x9B
+#    define PACKET3_COUNT_MASK                                  0x3FFF0000
+#    define PACKET3_COUNT_SHIFT                                 16
+
+#define CP_PACKET0(r, n) (PACKET_HEADER_SET(PACKET0_HEADER) |\
+			  ((((r)>>2)<<PACKET0_REG_SHIFT) & PACKET0_REG_MASK) |\
+			  (((n) << PACKET0_COUNT_SHIFT) & PACKET0_COUNT_MASK))
+#define CP_PACKET3(o, n) (PACKET_HEADER_SET(PACKET3_HEADER) |\
+			  (((o)<<PACKET3_OPCODE_SHIFT) & PACKET3_OPCODE_MASK) |\
+			  (((n)<<PACKET3_COUNT_SHIFT) & PACKET3_COUNT_MASK))
+
 #endif

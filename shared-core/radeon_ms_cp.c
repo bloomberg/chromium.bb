@@ -156,7 +156,7 @@ int radeon_ms_cp_init(struct drm_device *dev)
 			dev_priv->ring_buffer_object->mem.num_pages,
 			&dev_priv->ring_buffer_map);
 	if (ret) {
-		DRM_INFO("[radeon_ms] error mapping ring buffer: %d\n", ret);
+		DRM_ERROR("[radeon_ms] error mapping ring buffer: %d\n", ret);
 		return ret;
 	}
 	dev_priv->ring_buffer = dev_priv->ring_buffer_map.virtual; 
@@ -275,32 +275,15 @@ void radeon_ms_cp_save(struct drm_device *dev, struct radeon_state *state)
 void radeon_ms_cp_stop(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	uint32_t rbbm_status, rbbm_status_cp_mask;
 
-	dev_priv->cp_ready = 0;
-	MMIO_W(CP_CSQ_CNTL, 0);
-	MMIO_R(CP_CSQ_CNTL);
-	MMIO_W(CP_CSQ_MODE, 0);
-	MMIO_R(CP_CSQ_MODE);
-	MMIO_W(RBBM_SOFT_RESET, RBBM_SOFT_RESET__SOFT_RESET_CP);
-	MMIO_R(RBBM_SOFT_RESET);
-	MMIO_W(RBBM_SOFT_RESET, 0);
-	MMIO_R(RBBM_SOFT_RESET);
-	rbbm_status = MMIO_R(RBBM_STATUS);
-	rbbm_status_cp_mask = (RBBM_STATUS__CPRQ_ON_RBB |
-			       RBBM_STATUS__CPRQ_IN_RTBUF |
-			       RBBM_STATUS__CP_CMDSTRM_BUSY);
-	if (rbbm_status & rbbm_status_cp_mask) {
-		DRM_INFO("[radeon_ms] cp busy (RBBM_STATUS: 0x%08X "
-			 "RBBM_STATUS(cp_mask): 0x%08X)\n", rbbm_status,
-			 rbbm_status_cp_mask);
-	}
+	MMIO_W(CP_CSQ_CNTL, REG_S(CP_CSQ_CNTL, CSQ_MODE,
+				CSQ_MODE__CSQ_PRIDIS_INDDIS));
 	MMIO_W(CP_RB_CNTL, CP_RB_CNTL__RB_RPTR_WR_ENA);
 	MMIO_W(CP_RB_RPTR_WR, 0);
 	MMIO_W(CP_RB_WPTR, 0);
 	DRM_UDELAY(5);
 	dev_priv->ring_wptr = dev_priv->ring_rptr = MMIO_R(CP_RB_RPTR);
-	MMIO_W(CP_RB_CNTL, 0);
+	MMIO_W(CP_RB_WPTR, dev_priv->ring_wptr);
 }
 
 int radeon_ms_cp_wait(struct drm_device *dev, int n)
@@ -349,7 +332,7 @@ int radeon_ms_ring_emit(struct drm_device *dev, uint32_t *cmd, uint32_t count)
 	dev_priv->ring_free -= count;
 	for (i = 0; i < count; i++) {
 		dev_priv->ring_buffer[dev_priv->ring_wptr] = cmd[i];
-		DRM_INFO("ring[%d] = 0x%08X\n", dev_priv->ring_wptr, cmd[i]);
+		DRM_INFO("ring[%d]=0x%08X\n", dev_priv->ring_wptr, cmd[i]);
 		dev_priv->ring_wptr++;
 		dev_priv->ring_wptr &= dev_priv->ring_mask;
 	}
@@ -363,7 +346,7 @@ int radeon_ms_ring_emit(struct drm_device *dev, uint32_t *cmd, uint32_t count)
 }
 
 int radeon_ms_resetcp(struct drm_device *dev, void *data,
-		      struct drm_file *file_priv)
+                     struct drm_file *file_priv)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	int i;
@@ -381,7 +364,7 @@ int radeon_ms_resetcp(struct drm_device *dev, void *data,
 		DRM_UDELAY(100);
 	}
 	DRM_INFO("[radeon_ms] status after VAP  : RBBM_STATUS: 0x%08X\n",
-		 MMIO_R(RBBM_STATUS));
+			MMIO_R(RBBM_STATUS));
 
 	DRM_INFO("[radeon_ms]--------------------------------------------\n");
 	return 0;

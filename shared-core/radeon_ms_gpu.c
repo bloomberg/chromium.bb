@@ -128,7 +128,7 @@ static void radeon_ms_gpu_reset(struct drm_device *dev)
 	MMIO_W(RBBM_SOFT_RESET, 0);
 	MMIO_R(RBBM_SOFT_RESET);
 
-#if 0
+#if 1
 	cache_mode = MMIO_R(RB2D_DSTCACHE_MODE);
 	MMIO_W(RB2D_DSTCACHE_MODE,
 			cache_mode | RB2D_DSTCACHE_MODE__DC_DISABLE_IGNORE_PE);
@@ -576,7 +576,6 @@ void radeon_ms_gpu_save(struct drm_device *dev, struct radeon_state *state)
 int radeon_ms_wait_for_idle(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_state *state = &dev_priv->driver_state;
 	int i, j, ret;
 
 	for (i = 0; i < 2; i++) {

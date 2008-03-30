@@ -117,6 +117,7 @@ int radeon_ms_family_init(struct drm_device *dev)
 	switch (dev_priv->bus_type) {
 	case RADEON_AGP:
 		dev_priv->create_ttm = drm_agp_init_ttm;
+		dev_priv->bus_finish = radeon_ms_agp_finish;
 		dev_priv->bus_init = radeon_ms_agp_init;
 		dev_priv->bus_restore = radeon_ms_agp_restore;
 		dev_priv->bus_save = radeon_ms_agp_save;

@@ -218,6 +218,7 @@ int radeon_ms_agp_finish(struct drm_device *dev)
 		return 0;
 	}
 	dev_priv->bus_ready = 0;
+	DRM_INFO("[radeon_ms] release agp\n");
 	drm_agp_release(dev);
 	return 0;
 }
@@ -237,7 +238,7 @@ int radeon_ms_agp_init(struct drm_device *dev)
 	}
 	ret = drm_agp_acquire(dev);
 	if (ret) {
-		DRM_ERROR("[radeon_ms] error failed to acquire agp\n");
+		DRM_ERROR("[radeon_ms] error failed to acquire agp %d\n", ret);
 		return ret;
 	}
 	agp_status = MMIO_R(AGP_STATUS);

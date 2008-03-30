@@ -35,6 +35,7 @@
 #include "radeon_ms_drm.h"
 #include "radeon_ms_rom.h"
 #include "radeon_ms_properties.h"
+#include "amd_cbuffer.h"
 
 #define DRIVER_AUTHOR      "Jerome Glisse, Dave Airlie,  Gareth Hughes, "\
 			   "Keith Whitwell, others."
@@ -482,21 +483,6 @@ int radeon_ms_rom_init(struct drm_device *dev);
 void radeon_ms_state_save(struct drm_device *dev, struct radeon_state *state);
 void radeon_ms_state_restore(struct drm_device *dev,
 			     struct radeon_state *state);
-
-
-/* packect stuff **************************************************************/
-#define RADEON_CP_PACKET0                               0x00000000
-#define CP_PACKET0(reg, n)						\
-	(RADEON_CP_PACKET0 | ((n) << 16) | ((reg) >> 2))
-#define CP_PACKET3_CNTL_BITBLT_MULTI                    0xC0009B00
-#    define GMC_SRC_PITCH_OFFSET_CNTL                       (1    <<  0)
-#    define GMC_DST_PITCH_OFFSET_CNTL                       (1    <<  1)
-#    define GMC_BRUSH_NONE                                  (15   <<  4)
-#    define GMC_SRC_DATATYPE_COLOR                          (3    << 12)
-#    define ROP3_S                                          0x00cc0000
-#    define DP_SRC_SOURCE_MEMORY                            (2    << 24)
-#    define GMC_CLR_CMP_CNTL_DIS                            (1    << 28)
-#    define GMC_WR_MSK_DIS                                  (1    << 30)
 
 /* helper macro & functions ***************************************************/
 #define REG_S(rn, bn, v)    (((v) << rn##__##bn##__SHIFT) & rn##__##bn##__MASK)
