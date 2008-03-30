@@ -746,6 +746,8 @@ extern int drm_bo_pfn_prot(struct drm_buffer_object *bo,
 			   unsigned long dst_offset,
 			   unsigned long *pfn,
 			   pgprot_t *prot);
+extern void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
+				struct drm_bo_info_rep *rep);
 
 
 /*

@@ -64,7 +64,6 @@ struct i915_relocatee_info {
 
 struct drm_i915_validate_buffer {
 	struct drm_buffer_object *buffer;
-	struct drm_bo_info_rep rep;
 	int presumed_offset_correct;
 	void __user *data;
 	int ret;
@@ -686,7 +685,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 					     req->bo_req.flags,
 					     req->bo_req.mask, req->bo_req.hint,
 					     req->bo_req.fence_class, 0,
-					     &item->rep, &item->buffer);
+					     NULL, &item->buffer);
 		if (ret) {
 			DRM_ERROR("error on handle validate %d\n", ret);
 			goto out_err;
@@ -725,6 +724,7 @@ static int i915_handle_copyback(struct drm_device *dev,
 	int err = ret;
 	int i;
 	struct drm_i915_op_arg arg;
+	struct drm_buffer_object *bo;
 
 	if (ret)
 		drm_putback_buffer_objects(dev);
@@ -733,7 +733,10 @@ static int i915_handle_copyback(struct drm_device *dev,
 		for (i = 0; i < num_buffers; ++i) {
 			arg.handled = 1;
 			arg.d.rep.ret = buffers->ret;
-			arg.d.rep.bo_info = buffers->rep;
+			bo = buffers->buffer;
+			mutex_lock(&bo->mutex);
+			drm_bo_fill_rep_arg(bo, &arg.d.rep.bo_info);
+			mutex_unlock(&bo->mutex);
 			if (__copy_to_user(buffers->data, &arg, sizeof(arg)))
 				err = -EFAULT;
 			buffers++;
@@ -780,7 +783,6 @@ void i915_fence_or_sync(struct drm_file *file_priv,
 			fence_arg->handle = ~0;
 			fence_arg->error = ret;
 		}
-
 		drm_putback_buffer_objects(dev);
 		if (fence_p)
 			*fence_p = NULL;

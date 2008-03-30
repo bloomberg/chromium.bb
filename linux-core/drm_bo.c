@@ -1163,8 +1163,8 @@ static int drm_bo_wait_unfenced(struct drm_buffer_object *bo, int no_wait,
  * Bo locked.
  */
 
-static void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
-				struct drm_bo_info_rep *rep)
+void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
+			 struct drm_bo_info_rep *rep)
 {
 	if (!rep)
 		return;
@@ -1195,6 +1195,7 @@ static void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
 				DRM_BO_REP_BUSY);
 	}
 }
+EXPORT_SYMBOL(drm_bo_fill_rep_arg);
 
 /*
  * Wait for buffer idle and register that we've mapped the buffer.
