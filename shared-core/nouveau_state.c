@@ -46,7 +46,7 @@ static int nouveau_init_card_mappings(struct drm_device *dev)
 		DRM_ERROR("Unable to initialize the mmio mapping (%d). "
 			  "Please report your setup to " DRIVER_EMAIL "\n",
 			  ret);
-		return 1;
+		return -EINVAL;
 	}
 	DRM_DEBUG("regs mapped ok at 0x%lx\n", dev_priv->mmio->offset);
 
