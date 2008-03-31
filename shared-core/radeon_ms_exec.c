@@ -220,47 +220,40 @@ static int amd_cbuffer_packet3_check(struct drm_device *dev,
 		break;
 	case PACKET3_OPCODE_BITBLT:
 	case PACKET3_OPCODE_BITBLT_MULTI:
-	DRM_INFO("[radeon_ms] exec step - [05][P3]00.00\n");
 		/* we only alow simple blit */
 		if (count != 5) {
 			return -EINVAL;
 		}
-	DRM_INFO("[radeon_ms] exec step - [05][P3]01.00\n");
 		s_mask = 0xf;
 		s_auth = 0x3;
 		if ((cbuffer->cbuffer[dw_id + 1] & s_mask) != s_auth) {
 			return -EINVAL;
 		}
-	DRM_INFO("[radeon_ms] exec step - [05][P3]02.00\n");
 		arg = amd_cbuffer_arg_from_dw_id(&cbuffer->arg_unused, dw_id+2);
 		if (arg == NULL) {
 			return -EINVAL;
 		}
-	DRM_INFO("[radeon_ms] exec step - [05][P3]03.00\n");
 		ret = radeon_ms_bo_get_gpu_addr(dev, &arg->buffer->mem,
 						&gpu_addr);
 		if (ret) {
 			return ret;
 		}
-	DRM_INFO("[radeon_ms] exec step - [05][P3]04.00\n");
 		gpu_addr = (gpu_addr >> 10) & 0x003FFFFF;
 		cbuffer->cbuffer[dw_id + 2] &= 0xFFC00000;
 		cbuffer->cbuffer[dw_id + 2] |= gpu_addr;
+
 		arg = amd_cbuffer_arg_from_dw_id(&cbuffer->arg_unused, dw_id+3);
 		if (arg == NULL) {
 			return -EINVAL;
 		}
-	DRM_INFO("[radeon_ms] exec step - [05][P3]05.00\n");
 		ret = radeon_ms_bo_get_gpu_addr(dev, &arg->buffer->mem,
 						&gpu_addr);
 		if (ret) {
 			return ret;
 		}
-	DRM_INFO("[radeon_ms] exec step - [05][P3]06.00\n");
 		gpu_addr = (gpu_addr >> 10) & 0x003FFFFF;
 		cbuffer->cbuffer[dw_id + 3] &= 0xFFC00000;
 		cbuffer->cbuffer[dw_id + 3] |= gpu_addr;
-	DRM_INFO("[radeon_ms] exec step - [05][P3]07.00\n");
 		/* FIXME: check that source & destination are big enough
 		 * for requested blit */
 		break;
@@ -279,14 +272,12 @@ static int amd_cbuffer_check(struct drm_device *dev,
 	int ret;
 
 	for (i = 0; i < cbuffer->cbuffer_dw_count;) {
-	DRM_INFO("[radeon_ms] exec step - [05]00.00 %d 0x%08X\n",
-		 i, cbuffer->cbuffer[i]);
 		switch (PACKET_HEADER_GET(cbuffer->cbuffer[i])) {
 		case 0:
 			ret = amd_cbuffer_packet0_check(dev, file_priv,
 							cbuffer, i,
 							_r3xx_register_right);
-			if (ret) {
+			if (ret <= 0) {
 				return ret;
 			}
 			/* advance to next packet */
@@ -302,7 +293,7 @@ static int amd_cbuffer_check(struct drm_device *dev,
 		case 3:
 			ret = amd_cbuffer_packet3_check(dev, file_priv,
 							cbuffer, i);
-			if (ret) {
+			if (ret <= 0) {
 				return ret;
 			}
 			/* advance to next packet */
@@ -331,13 +322,11 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 
 	/* FIXME: Lock buffer manager, is this really needed ?
 	 */
-	DRM_INFO("[radeon_ms] exec step - 00.00\n");
 	ret = drm_bo_read_lock(&dev->bm.bm_lock);
 	if (ret) {
 		return ret;
 	}
 
-	DRM_INFO("[radeon_ms] exec step - 01.00\n");
 	cbuffer.args = drm_calloc(execbuffer->args_count,
 				  sizeof(struct amd_cbuffer_arg),
 				  DRM_MEM_DRIVER);
@@ -350,7 +339,6 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 	INIT_LIST_HEAD(&cbuffer.arg_used.list);
 
 	/* process arguments */
-	DRM_INFO("[radeon_ms] exec step - 02.00\n");
 	ret = radeon_ms_execbuffer_args(dev, file_priv, execbuffer, &cbuffer);
 	if (ret) {
 		DRM_ERROR("[radeon_ms] execbuffer wrong arguments\n");
@@ -358,14 +346,12 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	/* map command buffer */
-	DRM_INFO("[radeon_ms] exec step - 03.00\n");
 	cbuffer.cbuffer_dw_count = (cbuffer.args[0].buffer->mem.num_pages *
 				    PAGE_SIZE) >> 2;
 	if (execbuffer->cmd_size > cbuffer.cbuffer_dw_count) {
 		ret = -EINVAL;
 		goto out_free_release;
 	}
-	DRM_INFO("[radeon_ms] exec step - 04.00\n");
 	cbuffer.cbuffer_dw_count = execbuffer->cmd_size;
 	memset(&cmd_kmap, 0, sizeof(struct drm_bo_kmap_obj));
 	ret = drm_bo_kmap(cbuffer.args[0].buffer, 0,
@@ -374,13 +360,9 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 		DRM_ERROR("[radeon_ms] error mapping ring buffer: %d\n", ret);
 		goto out_free_release;
 	}
-	DRM_INFO("[radeon_ms] exec step - 05.00\n");
 	cbuffer.cbuffer = drm_bmo_virtual(&cmd_kmap, &cmd_is_iomem);
-	DRM_INFO("[radeon_ms] exec step - 05.01\n");
 	list_del(&cbuffer.args[0].list);
-	DRM_INFO("[radeon_ms] exec step - 05.02\n");
 	list_add_tail(&cbuffer.args[0].list , &cbuffer.arg_used.list);
-	DRM_INFO("[radeon_ms] exec step - 05.03\n");
 
 	/* do cmd checking & relocations */
 	ret = amd_cbuffer_check(dev, file_priv, &cbuffer);
@@ -388,7 +370,6 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 		drm_putback_buffer_objects(dev);
 		goto out_free_release;
 	}
-	DRM_INFO("[radeon_ms] exec step - 06.00\n");
 
 	ret = radeon_ms_ring_emit(dev, cbuffer.cbuffer,
 				  cbuffer.cbuffer_dw_count);
@@ -396,7 +377,6 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 		drm_putback_buffer_objects(dev);
 		goto out_free_release;
 	}
-	DRM_INFO("[radeon_ms] exec step - 07.00\n");
 
 	/* fence */
 	ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
@@ -418,16 +398,13 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 		}
 	}
 	drm_fence_usage_deref_unlocked(&fence);
-	DRM_INFO("[radeon_ms] exec step - 08.00\n");
 out_free_release:
 	drm_bo_kunmap(&cmd_kmap);
 	radeon_ms_execbuffer_args_clean(dev, &cbuffer, execbuffer->args_count);
-	DRM_INFO("[radeon_ms] exec step - 09.00\n");
 out_free:
 	drm_free(cbuffer.args,
 		 (execbuffer->args_count * sizeof(struct amd_cbuffer_arg)),
 		 DRM_MEM_DRIVER);
 	drm_bo_read_unlock(&dev->bm.bm_lock);
-	DRM_INFO("[radeon_ms] exec step - 10.00\n");
 	return ret;
 }
