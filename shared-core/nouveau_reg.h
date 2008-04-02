@@ -87,6 +87,7 @@
 #    define NV_PMC_INTR_0_PGRAPH_PENDING                      (1<<12)
 #    define NV_PMC_INTR_0_CRTC0_PENDING                       (1<<24)
 #    define NV_PMC_INTR_0_CRTC1_PENDING                       (1<<25)
+#    define NV_PMC_INTR_0_NV50_DISPLAY_PENDING           (1<<26)
 #    define NV_PMC_INTR_0_CRTCn_PENDING                       (3<<24)
 #define NV03_PMC_INTR_EN_0                                 0x00000140
 #    define NV_PMC_INTR_EN_0_MASTER_ENABLE                    (1<< 0)
@@ -534,6 +535,9 @@
 #define NV_CRTC1_INTSTAT                                   0x00602100
 #define NV_CRTC1_INTEN                                     0x00602140
 #    define NV_CRTC_INTR_VBLANK                                (1<<0)
+
+/* This name is a partial guess. */
+#define NV50_DISPLAY_SUPERVISOR                     0x00610024
 
 /* Fifo commands. These are not regs, neither masks */
 #define NV03_FIFO_CMD_JUMP                                 0x20000000
