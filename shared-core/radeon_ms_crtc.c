@@ -638,6 +638,17 @@ static void radeon_ms_crtc1_mode_set(struct drm_crtc *crtc,
 	radeon_ms_crtc1_restore(dev, state);
 }
 
+static void radeon_ms_crtc1_mode_set_base(struct drm_crtc *crtc, int x, int y)
+{
+	struct drm_device *dev = crtc->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_state *state = &dev_priv->driver_state;
+
+	DRM_INFO("[radeon_ms] mode_set_base\n");
+	state->crtc_offset = REG_S(CRTC_OFFSET, CRTC_OFFSET, crtc->fb->bo->offset);
+	radeon_ms_crtc1_restore(dev, state);
+}
+
 static void radeon_ms_crtc_mode_commit(struct drm_crtc *crtc)
 {
 	crtc->funcs->dpms(crtc, DPMSModeOn);
@@ -651,6 +662,9 @@ static void radeon_ms_crtc_gamma_set(struct drm_crtc *crtc, u16 r,
 	struct radeon_state *state = &dev_priv->driver_state;
 	uint32_t color;
 
+	if (regno >= 256) {
+		return;
+	}
 	switch(radeon_ms_crtc->crtc) {
 	case 1:
 		state->dac_cntl2 &= ~DAC_CNTL2__PALETTE_ACCESS_CNTL;
@@ -660,70 +674,22 @@ static void radeon_ms_crtc_gamma_set(struct drm_crtc *crtc, u16 r,
 		break;
 	}
 	MMIO_W(DAC_CNTL2, state->dac_cntl2);
-	if (crtc->fb->bits_per_pixel == 16 && crtc->fb->depth == 16) {
-		if (regno >= 64) {
-			return;
-		}
-		MMIO_W(PALETTE_INDEX,
-				REG_S(PALETTE_INDEX, PALETTE_W_INDEX,
-					regno * 4));
-		color = 0;
-		color = REG_S(PALETTE_DATA, PALETTE_DATA_R, r >> 8) |
-			REG_S(PALETTE_DATA, PALETTE_DATA_G, g >> 8) |
-			REG_S(PALETTE_DATA, PALETTE_DATA_B, b >> 8);
-		MMIO_W(PALETTE_DATA, color);
-		MMIO_W(PALETTE_INDEX,
-		       REG_S(PALETTE_INDEX, PALETTE_W_INDEX, regno * 4));
-		color = 0;
-		color = REG_S(PALETTE_30_DATA, PALETTE_DATA_R, r >> 6) |
-			REG_S(PALETTE_30_DATA, PALETTE_DATA_G, g >> 6) |
-			REG_S(PALETTE_30_DATA, PALETTE_DATA_B, b >> 6);
-		MMIO_W(PALETTE_30_DATA, color);
-		radeon_ms_crtc->lut_r[regno * 4] = r;
-		radeon_ms_crtc->lut_g[regno * 4] = g;
-		radeon_ms_crtc->lut_b[regno * 4] = b;
-		if (regno < 32) {
-			MMIO_W(PALETTE_INDEX,
-			       REG_S(PALETTE_INDEX, PALETTE_W_INDEX,
-				       regno * 8));
-			color = 0;
-			color = REG_S(PALETTE_DATA, PALETTE_DATA_R, r >> 8) |
-				REG_S(PALETTE_DATA, PALETTE_DATA_G, g >> 8) |
-				REG_S(PALETTE_DATA, PALETTE_DATA_B, b >> 8);
-			MMIO_W(PALETTE_DATA, color);
-			MMIO_W(PALETTE_INDEX,
-			       REG_S(PALETTE_INDEX, PALETTE_W_INDEX,
-				      regno * 8));
-			color = 0;
-			color = REG_S(PALETTE_30_DATA, PALETTE_DATA_R,r >> 6) |
-				REG_S(PALETTE_30_DATA, PALETTE_DATA_G,g >> 6) |
-				REG_S(PALETTE_30_DATA, PALETTE_DATA_B,b >> 6);
-			MMIO_W(PALETTE_30_DATA, color);
-			radeon_ms_crtc->lut_r[regno * 8] = r;
-			radeon_ms_crtc->lut_g[regno * 8] = g;
-			radeon_ms_crtc->lut_b[regno * 8] = b;
-		}
-	} else {
-		if (regno >= 256) {
-			return;
-		}
-		radeon_ms_crtc->lut_r[regno] = r;
-		radeon_ms_crtc->lut_g[regno] = g;
-		radeon_ms_crtc->lut_b[regno] = b;
-		MMIO_W(PALETTE_INDEX,
-		       REG_S(PALETTE_INDEX, PALETTE_W_INDEX, regno));
-		color = 0;
-		color = REG_S(PALETTE_DATA, PALETTE_DATA_R, r >> 8) |
-			REG_S(PALETTE_DATA, PALETTE_DATA_G, g >> 8) |
-			REG_S(PALETTE_DATA, PALETTE_DATA_B, b >> 8);
-		MMIO_W(PALETTE_DATA, color);
-		MMIO_W(PALETTE_INDEX,
-				REG_S(PALETTE_INDEX, PALETTE_W_INDEX, regno));
-		color = 0;
-		color = REG_S(PALETTE_30_DATA, PALETTE_DATA_R, r >> 6) |
-			REG_S(PALETTE_30_DATA, PALETTE_DATA_G, g >> 6) |
-			REG_S(PALETTE_30_DATA, PALETTE_DATA_B, b >> 6);
-	}
+	radeon_ms_crtc->lut_r[regno] = r;
+	radeon_ms_crtc->lut_g[regno] = g;
+	radeon_ms_crtc->lut_b[regno] = b;
+	MMIO_W(PALETTE_INDEX, REG_S(PALETTE_INDEX, PALETTE_W_INDEX, regno));
+	color = 0;
+	color = REG_S(PALETTE_DATA, PALETTE_DATA_R, r >> 8) |
+		REG_S(PALETTE_DATA, PALETTE_DATA_G, g >> 8) |
+		REG_S(PALETTE_DATA, PALETTE_DATA_B, b >> 8);
+	MMIO_W(PALETTE_DATA, color);
+	MMIO_W(PALETTE_INDEX,
+			REG_S(PALETTE_INDEX, PALETTE_W_INDEX, regno));
+	color = 0;
+	color = REG_S(PALETTE_30_DATA, PALETTE_DATA_R, r >> 6) |
+		REG_S(PALETTE_30_DATA, PALETTE_DATA_G, g >> 6) |
+		REG_S(PALETTE_30_DATA, PALETTE_DATA_B, b >> 6);
+	MMIO_W(PALETTE_30_DATA, color);
 }
 
 static void radeon_ms_crtc_load_lut(struct drm_crtc *crtc)
@@ -762,6 +728,7 @@ static const struct drm_crtc_funcs radeon_ms_crtc1_funcs= {
 	.commit = radeon_ms_crtc_mode_commit,
 	.mode_fixup = radeon_ms_crtc_mode_fixup,
 	.mode_set = radeon_ms_crtc1_mode_set,
+	.mode_set_base = radeon_ms_crtc1_mode_set_base,
 	.gamma_set = radeon_ms_crtc_gamma_set,
 	.cleanup = NULL, /* XXX */
 };
