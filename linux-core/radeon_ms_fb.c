@@ -45,6 +45,7 @@ struct radeonfb_par {
 	struct drm_device       *dev;
 	struct drm_crtc         *crtc;
 	struct drm_display_mode *fb_mode;
+	struct drm_framebuffer  *fb;
 };
 
 static int radeonfb_setcolreg(unsigned regno, unsigned red,
@@ -52,7 +53,7 @@ static int radeonfb_setcolreg(unsigned regno, unsigned red,
 			       unsigned transp, struct fb_info *info)
 {
 	struct radeonfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_framebuffer *fb = par->fb;
 	struct drm_crtc *crtc = par->crtc;
 
 	if (regno > 255) {
@@ -88,7 +89,7 @@ static int radeonfb_check_var(struct fb_var_screeninfo *var,
 			       struct fb_info *info)
 {
         struct radeonfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_framebuffer *fb = par->fb;
 
         if (!var->pixclock)
                 return -EINVAL;
@@ -177,7 +178,7 @@ static bool radeonfb_mode_equal(struct drm_display_mode *mode1,
 static int radeonfb_set_par(struct fb_info *info)
 {
 	struct radeonfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_framebuffer *fb = par->fb;
 	struct drm_device *dev = par->dev;
         struct drm_display_mode *drm_mode, *search_mode;
         struct drm_output *output;
@@ -326,6 +327,7 @@ int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	par = info->par;
 	par->dev = dev;
 	par->crtc = crtc;
+	par->fb = fb;
 	info->fbops = &radeonfb_ops;
 	strcpy(info->fix.id, "radeonfb");
 	info->fix.type = FB_TYPE_PACKED_PIXELS;
