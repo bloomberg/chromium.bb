@@ -28,7 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "client/windows/crash_generation/crash_generation_server.h"
-#include <Windows.h>
+#include <windows.h>
 #include <cassert>
 #include "client/windows/common/auto_critical_section.h"
 #include "processor/scoped_ptr.h"
@@ -80,7 +80,7 @@ const int kShutdownDelayMs = 10000;
 // Interval for each sleep during server shutdown.
 const int kShutdownSleepIntervalMs = 5;
 
-static bool ValidateClientRequest(const ProtocolMessage& msg) {
+static bool IsClientRequestValid(const ProtocolMessage& msg) {
   return msg.tag == MESSAGE_TAG_REGISTRATION_REQUEST &&
          msg.pid != 0 &&
          msg.thread_id != NULL &&
@@ -89,7 +89,7 @@ static bool ValidateClientRequest(const ProtocolMessage& msg) {
 }
 
 CrashGenerationServer::CrashGenerationServer(
-    const wchar_t* pipe_name,
+    const std::wstring& pipe_name,
     OnClientConnectedCallback connect_callback,
     void* connect_context,
     OnClientDumpRequestCallback dump_callback,
@@ -98,23 +98,23 @@ CrashGenerationServer::CrashGenerationServer(
     void* exit_context,
     bool generate_dumps,
     const std::wstring* dump_path)
-        : pipe_name_(pipe_name),
-          pipe_(NULL),
-          pipe_wait_handle_(NULL),
-          server_alive_handle_(NULL),
-          connect_callback_(connect_callback),
-          connect_context_(connect_context),
-          dump_callback_(dump_callback),
-          dump_context_(dump_context),
-          exit_callback_(exit_callback),
-          exit_context_(exit_context),
-          generate_dumps_(generate_dumps),
-          dump_generator_(NULL),
-          server_state_(IPC_SERVER_STATE_INITIAL),
-          shutting_down_(false),
-          overlapped_(),
-          client_info_(NULL),
-          cleanup_item_count_(0) {
+    : pipe_name_(pipe_name),
+      pipe_(NULL),
+      pipe_wait_handle_(NULL),
+      server_alive_handle_(NULL),
+      connect_callback_(connect_callback),
+      connect_context_(connect_context),
+      dump_callback_(dump_callback),
+      dump_context_(dump_context),
+      exit_callback_(exit_callback),
+      exit_context_(exit_context),
+      generate_dumps_(generate_dumps),
+      dump_generator_(NULL),
+      server_state_(IPC_SERVER_STATE_INITIAL),
+      shutting_down_(false),
+      overlapped_(),
+      client_info_(NULL),
+      cleanup_item_count_(0) {
   InitializeCriticalSection(&clients_sync_);
 
   if (dump_path) {
@@ -269,8 +269,7 @@ void CrashGenerationServer::HandleInitialState() {
     return;
   }
 
-  bool success;
-  success = ConnectNamedPipe(pipe_, &overlapped_) != FALSE;
+  bool success = ConnectNamedPipe(pipe_, &overlapped_) != FALSE;
 
   // From MSDN, it is not clear that when ConnectNamedPipe is used
   // in an overlapped mode, will it ever return non-zero value, and
@@ -362,7 +361,7 @@ void CrashGenerationServer::HandleReadingState() {
                                      &bytes_count,
                                      FALSE) != FALSE;
 
-  if (success && bytes_count == sizeof(ProtocolMessage)){
+  if (success && bytes_count == sizeof(ProtocolMessage)) {
     server_state_ = IPC_SERVER_STATE_READ_DONE;
     return;
   }
@@ -387,7 +386,7 @@ void CrashGenerationServer::HandleReadingState() {
 void CrashGenerationServer::HandleReadDoneState() {
   assert(server_state_ == IPC_SERVER_STATE_READ_DONE);
 
-  if (!ValidateClientRequest(msg_)) {
+  if (!IsClientRequestValid(msg_)) {
     server_state_ = IPC_SERVER_STATE_DISCONNECTING;
     return;
   }
@@ -743,8 +742,7 @@ void CALLBACK CrashGenerationServer::OnClientEnd(void* context, BOOLEAN) {
 
   InterlockedIncrement(&crash_server->cleanup_item_count_);
 
-  if (!QueueUserWorkItem(CleanupClient, context, WT_EXECUTEDEFAULT))
-  {
+  if (!QueueUserWorkItem(CleanupClient, context, WT_EXECUTEDEFAULT)) {
     InterlockedDecrement(&crash_server->cleanup_item_count_);
   }
 }

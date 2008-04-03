@@ -30,6 +30,8 @@
 #ifndef CLIENT_WINDOWS_CRASH_GENERATION_CRASH_GENERATION_CLIENT_H__
 #define CLIENT_WINDOWS_CRASH_GENERATION_CRASH_GENERATION_CLIENT_H__
 
+#include <windows.h>
+#include <dbghelp.h>
 #include <string>
 #include "client/windows/common/ipc_protocol.h"
 
