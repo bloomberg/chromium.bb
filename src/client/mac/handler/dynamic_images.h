@@ -68,13 +68,23 @@ typedef struct dyld_all_image_infos {
   bool                          processDetachedFromSharedRegion;
 } dyld_all_image_infos;
 
+// some typedefs to isolate 64/32 bit differences
+#ifdef __LP64__
+typedef mach_header_64 breakpad_mach_header;
+typedef segment_command_64 breakpad_mach_segment_command;
+#else
+typedef mach_header breakpad_mach_header;
+typedef segment_command breakpad_mach_segment_command;
+#endif
+
+
 //==============================================================================
 // A simple wrapper for a mach_header
 //
 // This could be fleshed out with some more interesting methods.
 class MachHeader {
  public:
-  explicit MachHeader(const mach_header &header) : header_(header) {}
+  explicit MachHeader(const breakpad_mach_header &header) : header_(header) {}
 
   void Print() {
     printf("magic\t\t: %4x\n", header_.magic);
@@ -86,16 +96,16 @@ class MachHeader {
     printf("flags\t\t: %d\n", header_.flags);
   }
 
-  mach_header   header_;
+  breakpad_mach_header   header_;
 };
 
 //==============================================================================
 // Represents a single dynamically loaded mach-o image
 class DynamicImage {
  public:
-  DynamicImage(mach_header *header,       // we take ownership
-               int header_size,           // includes load commands
-               mach_header *load_address,
+  DynamicImage(breakpad_mach_header *header, // we take ownership
+               int header_size,              // includes load commands
+               breakpad_mach_header *load_address,
                char *inFilePath,
                uintptr_t image_mod_date,
                mach_port_t task)
@@ -116,7 +126,7 @@ class DynamicImage {
   }
 
   // Returns pointer to a local copy of the mach_header plus load commands
-  mach_header *GetMachHeader() {return header_;}
+  breakpad_mach_header *GetMachHeader() {return header_;}
 
   // Size of mach_header plus load commands
   int GetHeaderSize() const {return header_size_;}
@@ -127,16 +137,16 @@ class DynamicImage {
   uintptr_t GetModDate() const {return file_mod_date_;}
 
   // Actual address where the image was loaded
-  mach_header *GetLoadAddress() const {return load_address_;}
+  breakpad_mach_header *GetLoadAddress() const {return load_address_;}
 
   // Address where the image should be loaded
-  uint32_t GetVMAddr() const {return vmaddr_;}
+  mach_vm_address_t GetVMAddr() const {return vmaddr_;}
 
   // Difference between GetLoadAddress() and GetVMAddr()
   ptrdiff_t GetVMAddrSlide() const {return slide_;}
 
   // Size of the image
-  uint32_t GetVMSize() const {return vmsize_;}
+  mach_vm_size_t GetVMSize() const {return vmsize_;}
 
   // Task owning this loaded image
   mach_port_t GetTask() {return task_;}
@@ -183,23 +193,25 @@ class DynamicImage {
     InitializeFilePath(inInfo.GetFilePath());
 
     // copy mach_header and load commands
-    header_ = reinterpret_cast<mach_header*>(malloc(inInfo.header_size_));
+    void *headerBuffer = malloc(inInfo.header_size_);
+    header_ = reinterpret_cast<breakpad_mach_header*>(headerBuffer);
+
     memcpy(header_, inInfo.header_, inInfo.header_size_);
     header_size_ = inInfo.header_size_;
   }
 #endif
 
-  mach_header          *header_;        // our local copy of the header
-  int                   header_size_;    // mach_header plus load commands
-  mach_header          *load_address_;  // base address image is mapped into
-  uint32_t             vmaddr_;
-  uint32_t             vmsize_;
-  ptrdiff_t            slide_;
+  breakpad_mach_header    *header_;        // our local copy of the header
+  int                     header_size_;    // mach_header plus load commands
+  breakpad_mach_header    *load_address_;  // base address image is mapped into
+  mach_vm_address_t       vmaddr_;
+  mach_vm_size_t          vmsize_;
+  ptrdiff_t               slide_;
 
-  char                 *file_path_;     // path dyld used to load the image
-  uintptr_t            file_mod_date_;  // time_t of image file
+  char                    *file_path_;     // path dyld used to load the image
+  uintptr_t               file_mod_date_;  // time_t of image file
 
-  mach_port_t          task_;
+  mach_port_t             task_;
 };
 
 //==============================================================================
@@ -211,7 +223,8 @@ class DynamicImage {
 class DynamicImageRef {
  public:
   explicit DynamicImageRef(DynamicImage *inP) : p(inP) {}
-  DynamicImageRef(const DynamicImageRef &inRef) : p(inRef.p) {}  // STL required
+  // The copy constructor is required by STL
+  DynamicImageRef(const DynamicImageRef &inRef) : p(inRef.p) {}
 
   bool operator<(const DynamicImageRef &inRef) const {
     return (*const_cast<DynamicImageRef*>(this)->p)
@@ -266,10 +279,14 @@ class DynamicImages {
   }
 
   void TestPrint() {
+    const breakpad_mach_header *header;
     for (int i = 0; i < (int)image_list_.size(); ++i) {
       printf("dyld: %p: name = %s\n", _dyld_get_image_header(i),
-        _dyld_get_image_name(i) );
-      const mach_header *header = _dyld_get_image_header(i);
+             _dyld_get_image_name(i) );
+
+      const void *imageHeader = _dyld_get_image_header(i);
+      header = reinterpret_cast<const breakpad_mach_header*>(imageHeader);
+
       MachHeader(*header).Print();
     }
   }
