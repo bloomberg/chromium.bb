@@ -85,6 +85,7 @@
 #define NV03_PMC_INTR_0                                    0x00000100
 #    define NV_PMC_INTR_0_PFIFO_PENDING                       (1<< 8)
 #    define NV_PMC_INTR_0_PGRAPH_PENDING                      (1<<12)
+#    define NV_PMC_INTR_0_NV50_I2C_PENDING                  (1<<21)
 #    define NV_PMC_INTR_0_CRTC0_PENDING                       (1<<24)
 #    define NV_PMC_INTR_0_CRTC1_PENDING                       (1<<25)
 #    define NV_PMC_INTR_0_NV50_DISPLAY_PENDING           (1<<26)
@@ -123,6 +124,8 @@
 #define NV04_PTIMER_TIME_0                                 0x00009400
 #define NV04_PTIMER_TIME_1                                 0x00009410
 #define NV04_PTIMER_ALARM_0                                0x00009420
+
+#define NV50_I2C_CONTROLLER                           0x0000E054
 
 #define NV04_PFB_CFG0                                      0x00100200
 #define NV04_PFB_CFG1                                      0x00100204
