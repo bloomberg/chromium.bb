@@ -249,10 +249,10 @@ int i915_move(struct drm_buffer_object *bo,
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
-		if (0) /*i915_move_flip(bo, evict, no_wait, new_mem)*/
+		if (1) /*i915_move_flip(bo, evict, no_wait, new_mem)*/
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	} else {
-		if (0) /*i915_move_blit(bo, evict, no_wait, new_mem)*/
+		if (1) /*i915_move_blit(bo, evict, no_wait, new_mem)*/
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	return 0;
