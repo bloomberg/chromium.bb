@@ -537,6 +537,10 @@ static void radeon_ms_crtc1_mode_set(struct drm_crtc *crtc,
 		  adjusted_mode->hsync_end, adjusted_mode->htotal,
 		  adjusted_mode->vdisplay, adjusted_mode->vsync_start,
 		  adjusted_mode->vsync_end, adjusted_mode->vtotal, adjusted_mode->type);
+	if (crtc->fb == NULL) {
+		DRM_INFO("[radeon_ms] no FB bound\n");
+		return;
+	}
 
 	/* only support RGB555,RGB565,ARGB8888 should satisfy all users */
 	switch (crtc->fb->bits_per_pixel) {
@@ -551,7 +555,7 @@ static void radeon_ms_crtc1_mode_set(struct drm_crtc *crtc,
 		format = 6;
 		break;
 	default:
-		DRM_ERROR("Unknown color depth\n");
+		DRM_ERROR("Unknown color depth %d\n", crtc->fb->bits_per_pixel);
 		return;
 	}
 	radeon_pll1_compute(crtc, adjusted_mode);
@@ -665,6 +669,7 @@ static void radeon_ms_crtc_gamma_set(struct drm_crtc *crtc, u16 r,
 	if (regno >= 256) {
 		return;
 	}
+	DRM_INFO("[radeon_ms] gamma[%d]=(%d, %d, %d)\n", regno, r, g, b);
 	switch(radeon_ms_crtc->crtc) {
 	case 1:
 		state->dac_cntl2 &= ~DAC_CNTL2__PALETTE_ACCESS_CNTL;
