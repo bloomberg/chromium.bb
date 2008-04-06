@@ -30,13 +30,48 @@
 
 #include "drmP.h"
 
+#if defined( CONFIG_X86 ) && (LINUX_VERSION_CODE >= (2,6,24))
+static void drm_clflush_page(struct page *page)
+{
+	uint8_t *page_virtual;
+	unsigned int i;
+
+	if (unlikely(page == NULL))
+		return;
+
+	page_virtual = kmap_atomic(page, KM_USER0);
+
+	for (i=0; i < PAGE_SIZE; i += boot_cpu_data.x86_clflush_size)
+		clflush(page_virtual + i);
+
+	kunmap_atomic(page_virtual, KM_USER0);
+}
+
+static void drm_ttm_cache_flush_clflush(struct page *pages[], unsigned long num_pages)
+{
+	unsigned long i;
+
+	mb();
+	for (i=0; i < num_pages; ++i)
+		drm_clflush_page(*pages++);
+	mb();
+}
+#endif
+
 static void drm_ttm_ipi_handler(void *null)
 {
 	flush_agp_cache();
 }
 
-void drm_ttm_cache_flush(void)
+void drm_ttm_cache_flush(struct page *pages[], unsigned long num_pages)
 {
+
+#if defined( CONFIG_X86 ) && (LINUX_VERSION_CODE >= (2,6,24))
+	if (cpu_has_clflush) {
+		drm_ttm_cache_flush_clflush(pages, num_pages);
+		return;
+	}
+#endif
 	if (on_each_cpu(drm_ttm_ipi_handler, NULL, 1, 1) != 0)
 		DRM_ERROR("Timed out waiting for drm cache flush.\n");
 }
@@ -114,7 +149,7 @@ static int drm_ttm_set_caching(struct drm_ttm *ttm, int noncached)
 		return 0;
 
 	if (noncached)
-		drm_ttm_cache_flush();
+		drm_ttm_cache_flush(ttm->pages, ttm->num_pages);
 
 	for (i = 0; i < ttm->num_pages; ++i) {
 		cur_page = ttm->pages + i;

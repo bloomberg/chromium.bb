@@ -335,7 +335,7 @@ extern void drm_ttm_unbind(struct drm_ttm *ttm);
 extern void drm_ttm_evict(struct drm_ttm *ttm);
 extern void drm_ttm_fixup_caching(struct drm_ttm *ttm);
 extern struct page *drm_ttm_get_page(struct drm_ttm *ttm, int index);
-extern void drm_ttm_cache_flush(void);
+extern void drm_ttm_cache_flush(struct page *pages[], unsigned long num_pages);
 extern int drm_ttm_populate(struct drm_ttm *ttm);
 extern int drm_ttm_set_user(struct drm_ttm *ttm,
 			    struct task_struct *tsk,
