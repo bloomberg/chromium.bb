@@ -263,12 +263,16 @@ struct page *drm_ttm_get_page(struct drm_ttm *ttm, int index)
 	struct page *p;
 	struct drm_buffer_manager *bm = &ttm->dev->bm;
 
-	p = ttm->pages[index];
-	if (!p) {
+	while(NULL == (p = ttm->pages[index])) {
 		p = drm_ttm_alloc_page();
 		if (!p)
 			return NULL;
-		ttm->pages[index] = p;
+
+		if (PageHighMem(p))
+			ttm->pages[--ttm->first_himem_page] = p;
+		else
+			ttm->pages[++ttm->last_lomem_page] = p;
+
 		++bm->cur_pages;
 	}
 	return p;
@@ -376,6 +380,8 @@ struct drm_ttm *drm_ttm_create(struct drm_device *dev, unsigned long size,
 
 	ttm->destroy = 0;
 	ttm->num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+	ttm->first_himem_page = ttm->num_pages;
+	ttm->last_lomem_page = -1;
 
 	ttm->page_flags = page_flags;
 

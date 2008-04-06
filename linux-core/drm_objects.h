@@ -311,6 +311,8 @@ struct drm_ttm_backend {
 struct drm_ttm {
 	struct page *dummy_read_page;
 	struct page **pages;
+	long first_himem_page;
+	long last_lomem_page;
 	uint32_t page_flags;
 	unsigned long num_pages;
 	atomic_t vma_count;
