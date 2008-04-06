@@ -40,19 +40,14 @@
 #include "drm.h"
 #include "drm_crtc.h"
 #include "radeon_ms.h"
+#include "amd.h"
 
-struct radeonfb_par {
-	struct drm_device       *dev;
-	struct drm_crtc         *crtc;
-	struct drm_display_mode *fb_mode;
-	struct drm_framebuffer  *fb;
-};
 
 static int radeonfb_setcolreg(unsigned regno, unsigned red,
 			       unsigned green, unsigned blue,
 			       unsigned transp, struct fb_info *info)
 {
-	struct radeonfb_par *par = info->par;
+	struct amd_fb *par = info->par;
 	struct drm_framebuffer *fb = par->fb;
 	struct drm_crtc *crtc = par->crtc;
 
@@ -88,7 +83,7 @@ static int radeonfb_setcolreg(unsigned regno, unsigned red,
 static int radeonfb_check_var(struct fb_var_screeninfo *var,
 			       struct fb_info *info)
 {
-        struct radeonfb_par *par = info->par;
+        struct amd_fb *par = info->par;
 	struct drm_framebuffer *fb = par->fb;
 
         if (!var->pixclock)
@@ -177,7 +172,7 @@ static bool radeonfb_mode_equal(struct drm_display_mode *mode1,
 
 static int radeonfb_set_par(struct fb_info *info)
 {
-	struct radeonfb_par *par = info->par;
+	struct amd_fb *par = info->par;
 	struct drm_framebuffer *fb = par->fb;
 	struct drm_device *dev = par->dev;
         struct drm_display_mode *drm_mode, *search_mode;
@@ -249,6 +244,7 @@ static int radeonfb_set_par(struct fb_info *info)
 
 	if (par->crtc->enabled) {
 		if (!drm_mode_equal(&par->crtc->mode, drm_mode)) {
+			par->crtc->fb = par->fb;
 			if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0)) {
 				return -EINVAL;
 			}
@@ -275,14 +271,15 @@ static struct fb_ops radeonfb_ops = {
 
 int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct fb_info *info;
-	struct radeonfb_par *par;
+	struct amd_fb *par;
 	struct device *device = &dev->pdev->dev; 
 	struct drm_framebuffer *fb;
 	struct drm_display_mode *mode = crtc->desired_mode;
 	int ret;
 
-	info = framebuffer_alloc(sizeof(struct radeonfb_par), device);
+	info = framebuffer_alloc(sizeof(struct amd_fb), device);
 	if (!info){
 		DRM_INFO("[radeon_ms] framebuffer_alloc failed\n");
 		return -EINVAL;
@@ -325,6 +322,7 @@ int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 
 	fb->fbdev = info;
 	par = info->par;
+	dev_priv->fb = par;
 	par->dev = dev;
 	par->crtc = crtc;
 	par->fb = fb;
@@ -441,16 +439,22 @@ EXPORT_SYMBOL(radeonfb_probe);
 
 int radeonfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 {
-	struct drm_framebuffer *fb = crtc->fb;
-	struct fb_info *info = fb->fbdev;
-	
-	if (info) {
-		unregister_framebuffer(info);
-		drm_bo_kunmap(&fb->kmap);
-		drm_bo_usage_deref_unlocked(&fb->bo);
-		drm_framebuffer_destroy(fb);
-		framebuffer_release(info);
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct amd_fb *fb = dev_priv->fb;
+	struct fb_info *info;
+
+	if (fb == NULL || fb->fb == NULL || fb->fb->fbdev == NULL) {
+		DRM_INFO("[radeon_ms] %s: no crtc, or fb or fbdev\n",
+			 __func__);
+		return 0;
 	}
+	info = fb->fb->fbdev;
+	unregister_framebuffer(info);
+	drm_bo_kunmap(&fb->fb->kmap);
+	drm_bo_usage_deref_unlocked(&fb->fb->bo);
+	drm_framebuffer_destroy(fb->fb);
+	framebuffer_release(info);
+	dev_priv->fb = NULL;
 	return 0;
 }
 EXPORT_SYMBOL(radeonfb_remove);

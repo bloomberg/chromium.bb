@@ -35,6 +35,7 @@
 #include "radeon_ms_drm.h"
 #include "radeon_ms_rom.h"
 #include "radeon_ms_properties.h"
+#include "amd.h"
 #include "amd_cbuffer.h"
 
 #define DRIVER_AUTHOR      "Jerome Glisse, Dave Airlie,  Gareth Hughes, "\
@@ -292,6 +293,8 @@ struct drm_radeon_private {
 	uint32_t                    *ring_buffer;
 	uint32_t                    *write_back_area;
 	const uint32_t              *microcode;
+	/* framebuffer */
+	struct amd_fb               *fb;
 	/* card family */
 	uint32_t                    usec_timeout;
 	uint32_t                    family;
