@@ -30,7 +30,7 @@
 
 #include "drmP.h"
 
-#if defined( CONFIG_X86 ) && (LINUX_VERSION_CODE >= (2,6,24))
+#if defined( CONFIG_X86 ) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
 static void drm_clflush_page(struct page *page)
 {
 	uint8_t *page_virtual;
@@ -66,7 +66,7 @@ static void drm_ttm_ipi_handler(void *null)
 void drm_ttm_cache_flush(struct page *pages[], unsigned long num_pages)
 {
 
-#if defined( CONFIG_X86 ) && (LINUX_VERSION_CODE >= (2,6,24))
+#if defined( CONFIG_X86 ) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
 	if (cpu_has_clflush) {
 		drm_ttm_cache_flush_clflush(pages, num_pages);
 		return;
