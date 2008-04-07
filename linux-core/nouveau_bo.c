@@ -198,8 +198,8 @@ nouveau_bo_move_m2mf(struct drm_buffer_object *bo, int evict, int no_wait,
 
 /* Flip pages into the GART and move if we can. */
 static int
-nouveau_bo_move_gart(struct drm_buffer_object *bo, int evict, int no_wait,
-                     struct drm_bo_mem_reg *new_mem)
+nouveau_bo_move_flipd(struct drm_buffer_object *bo, int evict, int no_wait,
+		      struct drm_bo_mem_reg *new_mem)
 {
         struct drm_device *dev = bo->dev;
         struct drm_bo_mem_reg tmp_mem;
@@ -212,11 +212,10 @@ nouveau_bo_move_gart(struct drm_buffer_object *bo, int evict, int no_wait,
 				  DRM_BO_FLAG_FORCE_CACHING);
 
         ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
-
         if (ret)
                 return ret;
 
-        ret = drm_ttm_bind (bo->ttm, &tmp_mem);
+        ret = drm_ttm_bind(bo->ttm, &tmp_mem);
         if (ret)
                 goto out_cleanup;
 
@@ -234,6 +233,7 @@ out_cleanup:
                 tmp_mem.mm_node = NULL;
                 mutex_unlock(&dev->struct_mutex);
         }
+
         return ret;
 }
 
@@ -246,25 +246,17 @@ nouveau_bo_move(struct drm_buffer_object *bo, int evict, int no_wait,
 	if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
 		if (old_mem->mem_type == DRM_BO_MEM_LOCAL)
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
-#if 0
-		if (!nouveau_bo_move_to_gart(bo, evict, no_wait, new_mem))
-#endif
+		if (nouveau_bo_move_flipd(bo, evict, no_wait, new_mem))
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	else
 	if (old_mem->mem_type == DRM_BO_MEM_LOCAL) {
-#if 0
-		if (nouveau_bo_move_to_gart(bo, evict, no_wait, new_mem))
-#endif
+		if (1 /*nouveau_bo_move_flips(bo, evict, no_wait, new_mem)*/)
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	else {
 		if (nouveau_bo_move_m2mf(bo, evict, no_wait, new_mem))
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
-	}
-
-	if (0) {
-		nouveau_bo_move_gart(bo, 0, 0, NULL);
 	}
 
 	return 0;
