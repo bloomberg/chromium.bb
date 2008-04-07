@@ -259,12 +259,11 @@ nouveau_bo_move(struct drm_buffer_object *bo, int evict, int no_wait,
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 	else {
-//		if (nouveau_bo_move_m2mf(bo, evict, no_wait, new_mem))
+		if (nouveau_bo_move_m2mf(bo, evict, no_wait, new_mem))
 			return drm_bo_move_memcpy(bo, evict, no_wait, new_mem);
 	}
 
 	if (0) {
-		nouveau_bo_move_m2mf(bo, 0, 0, NULL);
 		nouveau_bo_move_gart(bo, 0, 0, NULL);
 	}
 
