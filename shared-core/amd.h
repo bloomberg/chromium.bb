@@ -24,14 +24,13 @@
  * Authors:
  *    Jerome Glisse <glisse@freedesktop.org>
  */
-#ifndef __AMD_CBUFFER_H__
-#define __AMD_CBUFFER_H__
+#ifndef __AMD_H__
+#define __AMD_H__
 
 /* struct amd_cbuffer are for command buffer, this is the structure passed
  * around during command validation (ie check that user have the right to
  * execute the given command).
  */
-
 struct amd_cbuffer_arg
 {
 	struct list_head         list;
@@ -46,6 +45,33 @@ struct amd_cbuffer
 	struct amd_cbuffer_arg   arg_unused;
 	struct amd_cbuffer_arg   arg_used;
 	struct amd_cbuffer_arg   *args;
+	void			 *driver;
+};
+
+struct amd_cbuffer_checker
+{
+	uint32_t numof_p0_checkers;
+	uint32_t numof_p3_checkers;
+	int (*check)(struct drm_device *dev, struct amd_cbuffer *cbuffer);
+	int (**check_p0)(struct drm_device *dev, struct amd_cbuffer *cbuffer,
+			 int dw_id, int reg);
+	int (**check_p3)(struct drm_device *dev, struct amd_cbuffer *cbuffer,
+			 int dw_id, int op, int count);
+};
+
+struct amd_cbuffer_arg *
+amd_cbuffer_arg_from_dw_id(struct amd_cbuffer_arg *head, uint32_t dw_id);
+int amd_cbuffer_check(struct drm_device *dev, struct amd_cbuffer *cbuffer);
+
+
+/* struct amd_fb amd is for storing amd framebuffer informations
+ */
+struct amd_fb
+{
+	struct drm_device       *dev;
+	struct drm_crtc         *crtc;
+	struct drm_display_mode *fb_mode;
+	struct drm_framebuffer  *fb;
 };
 
 #endif

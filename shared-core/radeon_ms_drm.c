@@ -246,6 +246,13 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 		return ret;
 	}
 
+	/* initialze driver specific */
+	ret = amd_legacy_cbuffer_initialize(dev);
+	if (ret != 0) {
+		radeon_ms_driver_unload(dev);
+		return ret;
+	}
+
 	if (dev->primary && dev->control) {
 		DRM_INFO("[radeon_ms] control 0x%lx, render 0x%lx\n",
 		          (long)dev->primary->device, (long)dev->control->device);
@@ -277,6 +284,9 @@ int radeon_ms_driver_unload(struct drm_device *dev)
 	radeon_ms_outputs_restore(dev, &dev_priv->load_state);
 	radeon_ms_connectors_destroy(dev);
 	radeon_ms_outputs_destroy(dev);
+
+	/* shutdown specific driver */
+	amd_legacy_cbuffer_destroy(dev);
 	
 	/* shutdown cp engine */
 	radeon_ms_cp_finish(dev);

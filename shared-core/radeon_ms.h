@@ -35,7 +35,8 @@
 #include "radeon_ms_drm.h"
 #include "radeon_ms_rom.h"
 #include "radeon_ms_properties.h"
-#include "amd_cbuffer.h"
+#include "amd.h"
+#include "amd_legacy.h"
 
 #define DRIVER_AUTHOR      "Jerome Glisse, Dave Airlie,  Gareth Hughes, "\
 			   "Keith Whitwell, others."
@@ -292,6 +293,8 @@ struct drm_radeon_private {
 	uint32_t                    *ring_buffer;
 	uint32_t                    *write_back_area;
 	const uint32_t              *microcode;
+	/* framebuffer */
+	struct amd_fb               *fb;
 	/* card family */
 	uint32_t                    usec_timeout;
 	uint32_t                    family;
@@ -326,6 +329,8 @@ struct drm_radeon_private {
 	uint8_t                     cp_ready;
 	uint8_t                     bus_ready;
 	uint8_t                     write_back;
+	/* command buffer informations */
+	struct amd_cbuffer_checker  cbuffer_checker;
 	/* abstract asic specific structures */
 	struct radeon_ms_rom        rom;
 	struct radeon_ms_properties properties;

@@ -40,7 +40,8 @@ radeon_ms-objs := radeon_ms_drv.o radeon_ms_drm.o radeon_ms_family.o \
 		radeon_ms_cp.o radeon_ms_cp_mc.o radeon_ms_i2c.o \
 		radeon_ms_output.o radeon_ms_crtc.o radeon_ms_fb.o \
 		radeon_ms_exec.o radeon_ms_gpu.o radeon_ms_dac.o \
-		radeon_ms_properties.o radeon_ms_rom.o radeon_ms_combios.o
+		radeon_ms_properties.o radeon_ms_rom.o radeon_ms_combios.o \
+		amd_legacy_cbuffer.o
 sis-objs    := sis_drv.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o
 savage-objs := savage_drv.o savage_bci.o savage_state.o
