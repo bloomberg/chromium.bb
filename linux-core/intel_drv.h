@@ -68,6 +68,7 @@ extern bool intel_ddc_probe(struct drm_output *output);
 
 extern void intel_crt_init(struct drm_device *dev);
 extern void intel_sdvo_init(struct drm_device *dev, int output_device);
+extern void intel_tv_init(struct drm_device *dev);
 extern void intel_lvds_init(struct drm_device *dev);
 
 extern void intel_crtc_load_lut(struct drm_crtc *crtc);

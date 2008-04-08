@@ -47,6 +47,18 @@ static struct drm_prop_enum_list drm_dpms_enum_list[] =
   { DPMSModeSuspend, "Suspend" },
   { DPMSModeOff, "Off" }
 };
+
+char *drm_get_dpms_name(int val)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(drm_dpms_enum_list); i++)
+		if (drm_dpms_enum_list[i].type == val)
+			return drm_dpms_enum_list[i].name;
+
+	return "unknown";
+}
+
 static struct drm_prop_enum_list drm_conn_enum_list[] = 
 { { ConnectorUnknown, "Unknown" },
   { ConnectorVGA, "VGA" },
@@ -77,6 +89,16 @@ char *drm_get_output_name(struct drm_output *output)
 	snprintf(buf, 32, "%s-%d", drm_output_enum_list[output->output_type].name,
 		 output->output_type_id);
 	return buf;
+}
+
+char *drm_get_output_status_name(enum drm_output_status status)
+{
+	if (status == output_status_connected)
+		return "connected";
+	else if (status == output_status_disconnected)
+		return "disconnected";
+	else
+		return "unknown";
 }
 
 /**
@@ -629,6 +651,8 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 	/* output_set_monitor(output)? */
 	/* check for output_ignored(output)? */
 
+	drm_sysfs_output_add(output);
+
 	mutex_lock(&dev->mode_config.mutex);
 	list_add_tail(&output->head, &dev->mode_config.output_list);
 	dev->mode_config.num_output++;
@@ -658,6 +682,8 @@ void drm_output_destroy(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_display_mode *mode, *t;
+
+	drm_sysfs_output_remove(output);
 
 	if (*output->funcs->cleanup)
 		(*output->funcs->cleanup)(output);
@@ -1225,6 +1251,8 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
 		if (!drm_crtc_set_mode(output->crtc, output->crtc->desired_mode, 0, 0))
 			DRM_ERROR("failed to set mode after hotplug\n");
 	}
+
+	drm_sysfs_hotplug_event(dev);
 
 	drm_disable_unused_functions(dev);
 
@@ -2222,6 +2250,24 @@ int drm_output_property_set_value(struct drm_output *output,
 	return 0;
 }
 EXPORT_SYMBOL(drm_output_property_set_value);
+
+int drm_output_property_get_value(struct drm_output *output,
+				  struct drm_property *property, uint64_t *val)
+{
+	int i;
+
+	for (i = 0; i < DRM_OUTPUT_MAX_PROPERTY; i++) {
+		if (output->property_ids[i] == property->id) {
+			*val = output->property_values[i];
+			break;
+		}
+	}
+
+	if (i == DRM_OUTPUT_MAX_PROPERTY)
+		return -EINVAL;
+	return 0;
+}
+EXPORT_SYMBOL(drm_output_property_get_value);
 
 int drm_mode_getproperty_ioctl(struct drm_device *dev,
 			       void *data, struct drm_file *file_priv)

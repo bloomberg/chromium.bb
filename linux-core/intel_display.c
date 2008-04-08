@@ -1292,7 +1292,10 @@ static void intel_setup_outputs(struct drm_device *dev)
 		intel_sdvo_init(dev, SDVOB);
 		intel_sdvo_init(dev, SDVOC);
 	}
-
+#if 0
+	if (IS_I9XX(dev) && !IS_I915G(dev))
+		intel_tv_init(dev);
+#endif
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct intel_output *intel_output = output->driver_private;
 		int crtc_mask = 0, clone_mask = 0;

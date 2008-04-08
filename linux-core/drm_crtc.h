@@ -451,6 +451,8 @@ struct drm_output_funcs {
  */
 struct drm_output {
 	struct drm_device *dev;
+	struct device kdev;
+	struct device_attribute *attr;
 	struct list_head head;
 	struct drm_crtc *crtc;
 	int id; /* idr assigned */
@@ -563,6 +565,7 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 				     int type);
 
 extern char *drm_get_output_name(struct drm_output *output);
+extern char *drm_get_dpms_name(int val);
 extern void drm_output_destroy(struct drm_output *output);
 extern void drm_fb_release(struct file *filp);
 
@@ -606,6 +609,9 @@ extern int drm_mode_output_update_edid_property(struct drm_output *output,
 extern int drm_output_property_set_value(struct drm_output *output,
 					 struct drm_property *property,
 					 uint64_t value);
+extern int drm_output_property_get_value(struct drm_output *output,
+					 struct drm_property *property,
+					 uint64_t *value);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,

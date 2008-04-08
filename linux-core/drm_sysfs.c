@@ -133,10 +133,6 @@ static ssize_t show_dri(struct device *device, struct device_attribute *attr,
 	return snprintf(buf, PAGE_SIZE, "%s\n", drm_dev->driver->pci_driver.name);
 }
 
-static struct device_attribute device_attrs[] = {
-	__ATTR(dri_library_name, S_IRUGO, show_dri, NULL),
-};
-
 /**
  * drm_sysfs_device_release - do nothing
  * @dev: Linux device
@@ -149,6 +145,189 @@ static void drm_sysfs_device_release(struct device *dev)
 {
 	return;
 }
+
+/*
+ * Output properties
+ */
+static ssize_t status_show(struct device *device,
+			   struct device_attribute *attr,
+			   char *buf)
+{
+	struct drm_output *output = container_of(device, struct drm_output, kdev);
+	return snprintf(buf, PAGE_SIZE, "%s",
+			drm_get_output_status_name(output->funcs->detect(output)));
+}
+
+static ssize_t dpms_show(struct device *device,
+			   struct device_attribute *attr,
+			   char *buf)
+{
+	struct drm_output *output = container_of(device, struct drm_output, kdev);
+	struct drm_device *dev = output->dev;
+	uint64_t dpms_status;
+	int ret;
+
+	ret = drm_output_property_get_value(output,
+					    dev->mode_config.dpms_property,
+					    &dpms_status);
+	if (ret)
+		return 0;
+	
+	return snprintf(buf, PAGE_SIZE, "%s", drm_get_dpms_name((int)dpms_status));
+}
+
+static ssize_t edid_show(struct kobject *kobj, struct bin_attribute *attr,
+			 char *buf, loff_t off, size_t count)
+{
+	struct device *output_dev = container_of(kobj, struct device, kobj);
+	struct drm_output *output = container_of(output_dev, struct drm_output,
+						 kdev);
+	unsigned char *edid;
+	size_t size;
+
+	if (!output->edid_blob_ptr)
+		return 0;
+
+	edid = output->edid_blob_ptr->data;
+	size = output->edid_blob_ptr->length;
+	if (!edid)
+		return 0;
+		
+	if (off >= size)
+		return 0;
+
+	if (off + count > size)
+		count = size - off;
+	memcpy(buf, edid + off, count);
+
+	return count;
+}
+
+static ssize_t modes_show(struct device *device,
+			   struct device_attribute *attr,
+			   char *buf)
+{
+	struct drm_output *output = container_of(device, struct drm_output, kdev);
+	struct drm_display_mode *mode;
+	int written = 0;
+
+	list_for_each_entry(mode, &output->modes, head) {
+		written += snprintf(buf + written, PAGE_SIZE - written, "%s\n",
+				    mode->name);
+	}
+
+	return written;
+}
+
+static struct device_attribute output_attrs[] = {
+	__ATTR_RO(status),
+	__ATTR_RO(dpms),
+	__ATTR_RO(modes),
+};
+
+static struct bin_attribute edid_attr = {
+	.attr.name = "edid",
+	.size = 128,
+	.read = edid_show,
+};
+
+/**
+ * drm_sysfs_output_add - add an output to sysfs
+ * @output: output to add
+ *
+ * Create an output device in sysfs, along with its associated output
+ * properties (so far, connection status, dpms, mode list & edid) and
+ * generate a hotplug event so userspace knows there's a new output
+ * available.
+ */
+int drm_sysfs_output_add(struct drm_output *output)
+{
+	struct drm_device *dev = output->dev;
+	int ret = 0, i, j;
+
+	if (device_is_registered(&output->kdev))
+	    return 0;
+
+	output->kdev.parent = &dev->primary->kdev;
+	output->kdev.class = drm_class;
+	output->kdev.release = drm_sysfs_device_release;
+
+	DRM_DEBUG("adding \"%s\" to sysfs", drm_get_output_name(output));
+
+	snprintf(output->kdev.bus_id, BUS_ID_SIZE, "card%d-%s",
+		 dev->primary->index, drm_get_output_name(output));
+	ret = device_register(&output->kdev);
+
+	if (ret) {
+		DRM_ERROR("failed to register output device: %d\n", ret);
+		goto out;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(output_attrs); i++) {
+		ret = device_create_file(&output->kdev, &output_attrs[i]);
+		if (ret)
+			goto err_out_files;
+	}
+
+	ret = sysfs_create_bin_file(&output->kdev.kobj, &edid_attr);
+	if (ret)
+		goto err_out_files;
+
+	/* Let userspace know we have a new output */
+	drm_sysfs_hotplug_event(dev);
+
+	return 0;
+
+err_out_files:
+	if (i > 0)
+		for (j = 0; j < i; j++)
+			device_remove_file(&output->kdev, &output_attrs[i]);
+	device_unregister(&output->kdev);
+
+out:
+	return ret;
+}
+
+/**
+ * drm_sysfs_output_remove - remove an output device from sysfs
+ * @output: output to remove
+ *
+ * Remove @output and its associated attributes from sysfs.  Note that
+ * the device model core will take care of sending the "remove" uevent
+ * at this time, so we don't need to do it.
+ */
+void drm_sysfs_output_remove(struct drm_output *output)
+{
+	int i;
+
+	DRM_DEBUG("removing \"%s\" from sysfs\n", drm_get_output_name(output));
+	for (i = 0; i < i; i++)
+		device_remove_file(&output->kdev, &output_attrs[i]);
+	sysfs_remove_bin_file(&output->kdev.kobj, &edid_attr);
+	device_unregister(&output->kdev);
+}
+
+/**
+ * drm_sysfs_hotplug_event - generate a DRM uevent
+ * @dev: DRM device
+ *
+ * Send a uevent for the DRM device specified by @dev.  Currently we only
+ * set HOTPLUG=1 in the uevent environment, but this could be expanded to
+ * deal with other types of events.
+ */
+void drm_sysfs_hotplug_event(struct drm_device *dev)
+{
+	char *event_string = "HOTPLUG=1";
+	char *envp[] = { event_string, NULL };
+
+	DRM_DEBUG("generating hotplug event\n");
+
+	kobject_uevent_env(&dev->primary->kdev.kobj, KOBJ_CHANGE, envp);
+}
+
+static struct device_attribute dri_attrs[] = {
+	__ATTR(dri_library_name, S_IRUGO, show_dri, NULL),
+};
 
 /**
  * drm_sysfs_device_add - adds a class device to sysfs for a character driver
@@ -184,8 +363,8 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 		goto err_out;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
-		err = device_create_file(&minor->kdev, &device_attrs[i]);
+	for (i = 0; i < ARRAY_SIZE(dri_attrs); i++) {
+		err = device_create_file(&minor->kdev, &dri_attrs[i]);
 		if (err)
 			goto err_out_files;
 	}
@@ -195,7 +374,7 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 err_out_files:
 	if (i > 0)
 		for (j = 0; j < i; j++)
-			device_remove_file(&minor->kdev, &device_attrs[i]);
+			device_remove_file(&minor->kdev, &dri_attrs[i]);
 	device_unregister(&minor->kdev);
 err_out:
 
@@ -213,7 +392,7 @@ void drm_sysfs_device_remove(struct drm_minor *minor)
 {
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
-		device_remove_file(&minor->kdev, &device_attrs[i]);
+	for (i = 0; i < ARRAY_SIZE(dri_attrs); i++)
+		device_remove_file(&minor->kdev, &dri_attrs[i]);
 	device_unregister(&minor->kdev);
 }
