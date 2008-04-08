@@ -30,55 +30,56 @@
 #include "client/windows/crash_generation/crash_generation_server.h"
 #include <windows.h>
 #include <cassert>
+#include <list>
 #include "client/windows/common/auto_critical_section.h"
 #include "processor/scoped_ptr.h"
 
 namespace google_breakpad {
 
 // Output buffer size.
-const size_t kOutBufferSize = 64;
+static const size_t kOutBufferSize = 64;
 
 // Input buffer size.
-const size_t kInBufferSize = 64;
+static const size_t kInBufferSize = 64;
 
 // Access flags for the client on the dump request event.
-const DWORD kDumpRequestEventAccess = EVENT_MODIFY_STATE;
+static const DWORD kDumpRequestEventAccess = EVENT_MODIFY_STATE;
 
 // Access flags for the client on the dump generated event.
-const DWORD kDumpGeneratedEventAccess = EVENT_MODIFY_STATE |
-                                        SYNCHRONIZE;
+static const DWORD kDumpGeneratedEventAccess = EVENT_MODIFY_STATE |
+                                               SYNCHRONIZE;
 
 // Access flags for the client on the mutex.
-const DWORD kMutexAccess = SYNCHRONIZE;
+static const DWORD kMutexAccess = SYNCHRONIZE;
 
 // Attribute flags for the pipe.
-const DWORD kPipeAttr = FILE_FLAG_FIRST_PIPE_INSTANCE |
-                        PIPE_ACCESS_DUPLEX |
-                        FILE_FLAG_OVERLAPPED;
+static const DWORD kPipeAttr = FILE_FLAG_FIRST_PIPE_INSTANCE |
+                               PIPE_ACCESS_DUPLEX |
+                               FILE_FLAG_OVERLAPPED;
 
 // Mode for the pipe.
-const DWORD kPipeMode = PIPE_TYPE_MESSAGE |
-                        PIPE_READMODE_MESSAGE |
-                        PIPE_WAIT;
+static const DWORD kPipeMode = PIPE_TYPE_MESSAGE |
+                               PIPE_READMODE_MESSAGE |
+                               PIPE_WAIT;
 
 // For pipe I/O, execute the callback in the wait thread itself,
 // since the callback does very little work. The callback executes
 // the code for one of the states of the server state machine and
 // the code for all of the states perform async I/O and hence
 // finish very quickly.
-const ULONG kPipeIOThreadFlags = WT_EXECUTEINWAITTHREAD;
+static const ULONG kPipeIOThreadFlags = WT_EXECUTEINWAITTHREAD;
 
 // Dump request threads will, most likely, generate dumps. That may
 // take some time to finish, so specify WT_EXECUTELONGFUNCTION flag.
-const ULONG kDumpRequestThreadFlags = WT_EXECUTEINWAITTHREAD |
-                                      WT_EXECUTELONGFUNCTION;
+static const ULONG kDumpRequestThreadFlags = WT_EXECUTEINWAITTHREAD |
+                                             WT_EXECUTELONGFUNCTION;
 
 // Maximum delay during server shutdown if some work items
 // are still executing.
-const int kShutdownDelayMs = 10000;
+static const int kShutdownDelayMs = 10000;
 
 // Interval for each sleep during server shutdown.
-const int kShutdownSleepIntervalMs = 5;
+static const int kShutdownSleepIntervalMs = 5;
 
 static bool IsClientRequestValid(const ProtocolMessage& msg) {
   return msg.tag == MESSAGE_TAG_REGISTRATION_REQUEST &&
@@ -336,7 +337,7 @@ void CrashGenerationServer::HandleConnectedState() {
                           &bytes_count,
                           &overlapped_) != FALSE;
 
-  // Note that the asynchronous read issued above can finish before  the
+  // Note that the asynchronous read issued above can finish before the
   // code below executes. But, it is okay to change state after issuing
   // the asynchronous read. This is because even if the asynchronous read
   // is done, the callback for it would not be executed until the current
@@ -492,8 +493,7 @@ void CrashGenerationServer::HandleReadingAckState() {
       connect_callback_(connect_context_, client_info_);
     }
   } else {
-    DWORD error_code;
-    error_code = GetLastError();
+    DWORD error_code = GetLastError();
 
     // We should never get an I/O incomplete since we should not execute this
     // unless the Read has finished and the overlapped event is signaled. If
@@ -591,7 +591,7 @@ bool CrashGenerationServer::CreateClientHandles(const ClientInfo& client_info,
 
   if (!DuplicateHandle(current_process,
                        server_alive_handle_,
-                       client_info.process_handle(), 
+                       client_info.process_handle(),
                        &reply->server_alive_handle,
                        kMutexAccess,
                        FALSE,
@@ -679,7 +679,7 @@ void CrashGenerationServer::HandleConnectionRequest() {
 bool CrashGenerationServer::AddClient(ClientInfo* client_info) {
   HANDLE request_wait_handle = NULL;
   if (!RegisterWaitForSingleObject(&request_wait_handle,
-                                   client_info->dump_requested_handle(), 
+                                   client_info->dump_requested_handle(),
                                    OnDumpRequest,
                                    client_info,
                                    INFINITE,

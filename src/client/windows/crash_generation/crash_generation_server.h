@@ -60,7 +60,7 @@ class CrashGenerationServer {
 
   // Creates an instance with the given parameters.
   //
-  // Parameter pipe_name: Name of the Windows Named pipe
+  // Parameter pipe_name: Name of the Windows named pipe
   // Parameter connect_callback: Callback for a new client connection.
   // Parameter connect_context: Context for client connection callback.
   // Parameter crash_callback: Callback for a client crash dump request.
