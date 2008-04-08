@@ -24,28 +24,10 @@
  * Authors:
  *    Jerome Glisse <glisse@freedesktop.org>
  */
-#ifndef __AMD_CBUFFER_H__
-#define __AMD_CBUFFER_H__
+#ifndef __AMD_LEGACY_H__
+#define __AMD_LEGACY_H__
 
-/* struct amd_cbuffer are for command buffer, this is the structure passed
- * around during command validation (ie check that user have the right to
- * execute the given command).
- */
-
-struct amd_cbuffer_arg
-{
-	struct list_head         list;
-	struct drm_buffer_object *buffer;
-	int32_t                  dw_id;
-};
-
-struct amd_cbuffer
-{
-	uint32_t                 *cbuffer;
-	uint32_t                 cbuffer_dw_count;
-	struct amd_cbuffer_arg   arg_unused;
-	struct amd_cbuffer_arg   arg_used;
-	struct amd_cbuffer_arg   *args;
-};
+int amd_legacy_cbuffer_destroy(struct drm_device *dev);
+int amd_legacy_cbuffer_initialize(struct drm_device *dev);
 
 #endif
