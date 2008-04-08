@@ -265,6 +265,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
 		drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");
 
+		dev->devname = DRIVER_NAME;
 		drm_irq_install(dev);
 	}
 
