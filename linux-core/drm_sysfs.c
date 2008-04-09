@@ -287,6 +287,7 @@ err_out_files:
 out:
 	return ret;
 }
+EXPORT_SYMBOL(drm_sysfs_output_add);
 
 /**
  * drm_sysfs_output_remove - remove an output device from sysfs
@@ -306,6 +307,7 @@ void drm_sysfs_output_remove(struct drm_output *output)
 	sysfs_remove_bin_file(&output->kdev.kobj, &edid_attr);
 	device_unregister(&output->kdev);
 }
+EXPORT_SYMBOL(drm_sysfs_output_remove);
 
 /**
  * drm_sysfs_hotplug_event - generate a DRM uevent

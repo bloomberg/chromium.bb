@@ -651,8 +651,6 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 	/* output_set_monitor(output)? */
 	/* check for output_ignored(output)? */
 
-	drm_sysfs_output_add(output);
-
 	mutex_lock(&dev->mode_config.mutex);
 	list_add_tail(&output->head, &dev->mode_config.output_list);
 	dev->mode_config.num_output++;
@@ -682,8 +680,6 @@ void drm_output_destroy(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_display_mode *mode, *t;
-
-	drm_sysfs_output_remove(output);
 
 	if (*output->funcs->cleanup)
 		(*output->funcs->cleanup)(output);
@@ -1080,6 +1076,7 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	struct drm_property *property, *pt;
 
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
+		drm_sysfs_output_remove(output);
 		drm_output_destroy(output);
 	}
 

@@ -1123,6 +1123,8 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	output->output_type = output_type;
 	output->output_type_id = output_id;
 
+	drm_sysfs_output_add(output);
+
 	/* Set the input timing to the screen. Assume always input 0. */
 	intel_sdvo_set_target_input(output, true, false);
 	

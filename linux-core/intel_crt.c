@@ -261,5 +261,7 @@ void intel_crt_init(struct drm_device *dev)
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;
 
+	drm_sysfs_output_add(output);
+
 	drm_output_attach_property(output, dev->mode_config.connector_type_property, ConnectorVGA);
 }

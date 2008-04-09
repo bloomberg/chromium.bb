@@ -1760,4 +1760,6 @@ intel_tv_init(struct drm_device *dev)
 	output->driver_private = intel_output;
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
+
+	drm_sysfs_output_add(output);
 }
