@@ -554,7 +554,9 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 #define I915_VBLANK_INTERRUPT_ENABLE	(1UL<<17)
 #define I915_HOTPLUG_INTERRUPT_ENABLE	(1UL<<26)
+#define I915_HOTPLUG_TV_INTERRUPT_ENABLE (1UL<<18)
 #define I915_HOTPLUG_CLEAR		(1UL<<10)
+#define I915_HOTPLUG_TV_CLEAR		(1UL<<2)
 #define I915_VBLANK_CLEAR		(1UL<<1)
 
 /*
@@ -669,6 +671,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define I915_LEGACY_BLC_EVENT_STATUS		(1UL<<6)
 #define I915_ODD_FIELD_INTERRUPT_STATUS		(1UL<<5)
 #define I915_EVEN_FIELD_INTERRUPT_STATUS	(1UL<<4)
+#define I915_HOTPLUG_TV_INTERRUPT_STATUS	(1UL<<2)
 #define I915_START_VBLANK_INTERRUPT_STATUS	(1UL<<2)	/* 965 or later */
 #define I915_VBLANK_INTERRUPT_STATUS		(1UL<<1)
 #define I915_OVERLAY_UPDATED_STATUS		(1UL<<0)

@@ -424,10 +424,40 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 #define HOTPLUG_CMD_CRT_DIS 2
 #define HOTPLUG_CMD_SDVOB 4
 #define HOTPLUG_CMD_SDVOC 8
+#define HOTPLUG_CMD_TV 16
 
 static struct drm_device *hotplug_dev;
 static int hotplug_cmd = 0;
 static spinlock_t hotplug_lock = SPIN_LOCK_UNLOCKED;
+
+static void i915_hotplug_tv(struct drm_device *dev)
+{
+	struct drm_output *output;
+	struct intel_output *iout;
+	enum drm_output_status status;
+
+	mutex_lock(&dev->mode_config.mutex);
+
+	/* find the crt output */
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+		iout = output->driver_private;
+		if (iout->type == INTEL_OUTPUT_TVOUT)
+			break;
+		else
+			iout = 0;
+	}
+
+	if (iout == 0)
+		goto unlock;
+
+	/* may need to I915_WRITE(TVDAC, 1<<31) to ack the interrupt */
+	status = output->funcs->detect(output);
+	drm_hotplug_stage_two(dev, output,
+			      status == output_status_connected ? 1 : 0);
+
+unlock:
+	mutex_unlock(&dev->mode_config.mutex);
+}
 
 static void i915_hotplug_crt(struct drm_device *dev, bool isconnected)
 {
@@ -493,8 +523,10 @@ static void i915_hotplug_work_func(struct work_struct *work)
 	int crtDis;
 	int sdvoB;
 	int sdvoC;
+	int tv;
 
 	spin_lock(&hotplug_lock);
+	tv = hotplug_cmd & HOTPLUG_CMD_TV;
 	crt = hotplug_cmd & HOTPLUG_CMD_CRT;
 	crtDis = hotplug_cmd & HOTPLUG_CMD_CRT_DIS;
 	sdvoB = hotplug_cmd & HOTPLUG_CMD_SDVOB;
@@ -502,6 +534,8 @@ static void i915_hotplug_work_func(struct work_struct *work)
 	hotplug_cmd = 0;
 	spin_unlock(&hotplug_lock);
 
+	if (tv)
+		i915_hotplug_tv(dev);
 	if (crt)
 		i915_hotplug_crt(dev, true);
 	if (crtDis)
@@ -526,6 +560,14 @@ static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	hotplug_dev = dev;
+
+	if (stat & TV_HOTPLUG_INT_STATUS) {
+		DRM_DEBUG("TV event\n");
+
+		spin_lock(&hotplug_lock);
+		hotplug_cmd |= HOTPLUG_CMD_TV;
+		spin_unlock(&hotplug_lock);
+	}
 
 	if (stat & CRT_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("CRT event\n");
@@ -584,12 +626,14 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	DRM_DEBUG("flag=%08x\n", iir);
 #endif
 	if (iir == 0) {
+#if 0
 		DRM_DEBUG ("iir 0x%08x im 0x%08x ie 0x%08x pipea 0x%08x pipeb 0x%08x\n",
 			   iir,
 			   I915_READ(I915REG_INT_MASK_R),
 			   I915_READ(I915REG_INT_ENABLE_R),
 			   I915_READ(I915REG_PIPEASTAT),
 			   I915_READ(I915REG_PIPEBSTAT));
+#endif
 		return IRQ_NONE;
 	}
 
@@ -607,7 +651,8 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		}
 
 		/* This is a global event, and not a pipe A event */
-		if (pipea_stats & I915_HOTPLUG_INTERRUPT_STATUS)
+		if ((pipea_stats & I915_HOTPLUG_INTERRUPT_STATUS) ||
+		    (pipea_stats & I915_HOTPLUG_TV_INTERRUPT_STATUS))
 			hotplug = 1;
 
 		I915_WRITE(I915REG_PIPEASTAT, pipea_stats);
@@ -656,8 +701,11 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		DRM_INFO("Hotplug event received\n");
 
 		if (!IS_I9XX(dev) || IS_I915G(dev) || IS_I915GM(dev)) {
-			temp2 |= SDVOB_HOTPLUG_INT_STATUS |
-				 SDVOC_HOTPLUG_INT_STATUS;
+			if (pipea_stats & I915_HOTPLUG_INTERRUPT_STATUS)
+				temp2 |= SDVOB_HOTPLUG_INT_STATUS |
+					SDVOC_HOTPLUG_INT_STATUS;
+			if (pipea_stats & I915_HOTPLUG_TV_INTERRUPT_STATUS)
+				temp2 |= TV_HOTPLUG_INT_STATUS;
 		} else {
 			temp2 = I915_READ(PORT_HOTPLUG_STAT);
 
@@ -898,7 +946,11 @@ void i915_enable_interrupt (struct drm_device *dev)
 			dev_priv->irq_enable_reg |= I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
 
 		/* Enable global interrupts for hotplug - not a pipeA event */
-		I915_WRITE(I915REG_PIPEASTAT, I915_READ(I915REG_PIPEASTAT) | I915_HOTPLUG_INTERRUPT_ENABLE | I915_HOTPLUG_CLEAR);
+		I915_WRITE(I915REG_PIPEASTAT, I915_READ(I915REG_PIPEASTAT) |
+			   I915_HOTPLUG_INTERRUPT_ENABLE |
+			   I915_HOTPLUG_TV_INTERRUPT_ENABLE |
+			   I915_HOTPLUG_TV_CLEAR |
+			   I915_HOTPLUG_CLEAR);
 	}
 
 	if (dev_priv->irq_enable_reg & (I915_DISPLAY_PORT_INTERRUPT | I915_DISPLAY_PIPE_A_EVENT_INTERRUPT)) {
