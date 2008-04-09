@@ -622,6 +622,7 @@ extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		       int x, int y);
+extern bool drm_crtc_in_use(struct drm_crtc *crtc);
 extern int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output, bool connected);
 
 extern int drm_output_attach_property(struct drm_output *output,
