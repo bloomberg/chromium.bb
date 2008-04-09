@@ -252,7 +252,7 @@ int drm_sysfs_output_add(struct drm_output *output)
 	output->kdev.class = drm_class;
 	output->kdev.release = drm_sysfs_device_release;
 
-	DRM_DEBUG("adding \"%s\" to sysfs", drm_get_output_name(output));
+	DRM_DEBUG("adding \"%s\" to sysfs\n", drm_get_output_name(output));
 
 	snprintf(output->kdev.bus_id, BUS_ID_SIZE, "card%d-%s",
 		 dev->primary->index, drm_get_output_name(output));
