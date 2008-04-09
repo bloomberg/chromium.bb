@@ -1438,17 +1438,16 @@ intel_tv_detect(struct drm_output *output)
 
 	mode = reported_modes[0];
 	drm_mode_set_crtcinfo(&mode, CRTC_INTERLACE_HALVE_V);
-#if 0
-	/* FIXME: pipe allocation for load detection */
-	crtc = i830GetLoadDetectPipe (output, &mode, &dpms_mode);
+
+	crtc = intel_get_load_detect_pipe(output, &mode, &dpms_mode);
 	if (crtc) {
 		type = intel_tv_detect_type(crtc, output);
-		i830ReleaseLoadDetectPipe (output, dpms_mode);
+		intel_release_load_detect_pipe(output, dpms_mode);
 	}
-#endif
+
 	if (type != tv_priv->type) {
 		tv_priv->type = type;
-		intel_tv_format_configure_property (output);
+		intel_tv_format_configure_property(output);
 	}
 	
 	switch (type) {
