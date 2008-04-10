@@ -1129,7 +1129,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 	struct drm_crtc *possible_crtc;
 	struct drm_crtc *supported_crtc =NULL;
 	struct drm_crtc *crtc = NULL;
-	int i = 0;
+	int i = -1;
 
 	/*
 	 * Algorithm gets a little messy:
