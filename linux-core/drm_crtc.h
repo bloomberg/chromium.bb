@@ -199,7 +199,7 @@ struct drm_display_info {
 	bool gtf_supported;
 	bool standard_color;
 	enum {
-		monochrome,
+		monochrome = 0,
 		rgb,
 		other,
 		unknown,
@@ -224,6 +224,8 @@ struct drm_display_info {
 	unsigned int wpgamma1;
 	unsigned int wpx2, wpy2;
 	unsigned int wpgamma2;
+
+	enum subpixel_order subpixel_order;
 
 	/* Preferred mode (if any) */
 	struct drm_display_mode *preferred_mode;
@@ -376,8 +378,6 @@ struct drm_crtc {
 	int desired_x, desired_y;
 	const struct drm_crtc_funcs *funcs;
 	void *driver_private;
-
-	/* RRCrtcPtr randr_crtc? */
 };
 
 extern struct drm_crtc *drm_crtc_create(struct drm_device *dev,
@@ -438,9 +438,6 @@ struct drm_output_funcs {
  * @initial_x: initial x position for this output
  * @initial_y: initial y position for this output
  * @status: output connected?
- * @subpixel_order: for this output
- * @mm_width: displayable width of output in mm
- * @mm_height: displayable height of output in mm
  * @funcs: output control functions
  * @driver_private: private driver data
  *
@@ -465,20 +462,13 @@ struct drm_output {
 	bool doublescan_allowed;
 	struct list_head modes; /* list of modes on this output */
 
-	/*
-	  OptionInfoPtr options;
-	  XF86ConfMonitorPtr conf_monitor;
-	 */
 	int initial_x, initial_y;
 	enum drm_output_status status;
 
 	/* these are modes added by probing with DDC or the BIOS */
 	struct list_head probed_modes;
 	
-	/* xf86MonPtr MonInfo; */
-	enum subpixel_order subpixel_order;
-	int mm_width, mm_height;
-	struct drm_display_info *monitor_info; /* if any */
+	struct drm_display_info display_info;
   	const struct drm_output_funcs *funcs;
 	void *driver_private;
 

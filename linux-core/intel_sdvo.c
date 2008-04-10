@@ -1083,28 +1083,28 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_DAC;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_DAC;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS0;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_TMDS;
 		connector_type = ConnectorDVID;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS1;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_TMDS;
 		connector_type = ConnectorDVID;
 	}

@@ -298,24 +298,15 @@ static int intel_lvds_get_modes(struct drm_output *output)
 	if (ret)
 		return ret;
 
-	/* Didn't get an EDID */
-	if (!output->monitor_info) {
-		struct drm_display_info *dspinfo;
-		dspinfo = kzalloc(sizeof(*output->monitor_info), GFP_KERNEL);
-		if (!dspinfo)
-			goto out;
+	/* Didn't get an EDID, so
+	 * Set wide sync ranges so we get all modes
+	 * handed to valid_mode for checking
+	 */
+	output->display_info.min_vfreq = 0;
+	output->display_info.max_vfreq = 200;
+	output->display_info.min_hfreq = 0;
+	output->display_info.max_hfreq = 200;
 
-		/* Set wide sync ranges so we get all modes
-		 * handed to valid_mode for checking
-		 */
-		dspinfo->min_vfreq = 0;
-		dspinfo->max_vfreq = 200;
-		dspinfo->min_hfreq = 0;
-		dspinfo->max_hfreq = 200;
-		output->monitor_info = dspinfo;
-	}
-
-out:
 	if (dev_priv->panel_fixed_mode != NULL) {
 		struct drm_display_mode *mode =
 			drm_mode_duplicate(dev, dev_priv->panel_fixed_mode);
@@ -385,7 +376,7 @@ void intel_lvds_init(struct drm_device *dev)
 
 	intel_output->type = INTEL_OUTPUT_LVDS;
 	output->driver_private = intel_output;
-	output->subpixel_order = SubPixelHorizontalRGB;
+	output->display_info.subpixel_order = SubPixelHorizontalRGB;
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
 

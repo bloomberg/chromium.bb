@@ -643,7 +643,6 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 	output->id = drm_idr_get(dev, output);
 	output->output_type = output_type;
 	output->output_type_id = 1; /* TODO */
-	output->subpixel_order = SubPixelUnknown;
 	INIT_LIST_HEAD(&output->user_modes);
 	INIT_LIST_HEAD(&output->probed_modes);
 	INIT_LIST_HEAD(&output->modes);
@@ -1555,9 +1554,9 @@ int drm_mode_getoutput(struct drm_device *dev,
 
 	out_resp->output_type = output->output_type;
 	out_resp->output_type_id = output->output_type_id;
-	out_resp->mm_width = output->mm_width;
-	out_resp->mm_height = output->mm_height;
-	out_resp->subpixel = output->subpixel_order;
+	out_resp->mm_width = output->display_info.width_mm;
+	out_resp->mm_height = output->display_info.height_mm;
+	out_resp->subpixel = output->display_info.subpixel_order;
 	out_resp->connection = output->status;
 	if (output->crtc)
 		out_resp->crtc = output->crtc->id;
