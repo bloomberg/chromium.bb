@@ -567,25 +567,8 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
 		break;
 	}
-}
 
-static bool intel_crtc_lock(struct drm_crtc *crtc)
-{
-   /* Sync the engine before mode switch */
-//   i830WaitSync(crtc->scrn);
-
-#if 0 // TODO def XF86DRI
-    return I830DRILock(crtc->scrn);
-#else
-    return FALSE;
-#endif
-}
-
-static void intel_crtc_unlock (struct drm_crtc *crtc)
-{
-#if 0 // TODO def XF86DRI
-    I830DRIUnlock (crtc->scrn);
-#endif
+	intel_crtc->dpms_mode = mode;
 }
 
 static void intel_crtc_prepare (struct drm_crtc *crtc)
@@ -1097,6 +1080,129 @@ static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 	intel_crtc->lut_b[regno] = blue >> 8;
 }
 
+/**
+ * Get a pipe with a simple mode set on it for doing load-based monitor
+ * detection.
+ *
+ * It will be up to the load-detect code to adjust the pipe as appropriate for
+ * its requirements.  The pipe will be connected to no other outputs.
+ *
+ * Currently this code will only succeed if there is a pipe with no outputs
+ * configured for it.  In the future, it could choose to temporarily disable
+ * some outputs to free up a pipe for its use.
+ *
+ * \return crtc, or NULL if no pipes are available.
+ */
+    
+/* VESA 640x480x72Hz mode to set on the pipe */
+static struct drm_display_mode load_detect_mode = {
+	DRM_MODE("640x480", DRM_MODE_TYPE_DEFAULT, 31500, 640, 664,
+		 704, 832, 0, 480, 489, 491, 520, 0, V_NHSYNC | V_NVSYNC),
+};
+
+struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
+					    struct drm_display_mode *mode,
+					    int *dpms_mode)
+{
+	struct drm_device *dev = output->dev;
+	struct intel_output *intel_output = output->driver_private;
+	struct intel_crtc *intel_crtc;
+	struct drm_crtc *possible_crtc;
+	struct drm_crtc *supported_crtc =NULL;
+	struct drm_crtc *crtc = NULL;
+	int i = -1;
+
+	/*
+	 * Algorithm gets a little messy:
+	 *   - if the output already has an assigned crtc, use it (but make
+	 *     sure it's on first)
+	 *   - try to find the first unused crtc that can drive this output,
+	 *     and use that if we find one
+	 *   - if there are no unused crtcs available, try to use the first
+	 *     one we found that supports the output
+	 */
+
+	/* See if we already have a CRTC for this output */
+	if (output->crtc) {
+		crtc = output->crtc;
+		/* Make sure the crtc and output are running */
+		intel_crtc = crtc->driver_private;
+		*dpms_mode = intel_crtc->dpms_mode;
+		if (intel_crtc->dpms_mode != DPMSModeOn) {
+			crtc->funcs->dpms(crtc, DPMSModeOn);
+			output->funcs->dpms(output, DPMSModeOn);
+		}
+		return crtc;
+	}
+
+	/* Find an unused one (if possible) */
+	list_for_each_entry(possible_crtc, &dev->mode_config.crtc_list, head) {
+		i++;
+		if (!(output->possible_crtcs & (1 << i)))
+			continue;
+		if (!possible_crtc->enabled) {
+			crtc = possible_crtc;
+			break;
+		}
+		if (!supported_crtc)
+			supported_crtc = possible_crtc;
+	}
+
+	/*
+	 * If we didn't find an unused CRTC, use the first available one
+	 * that can drive this output.
+	 */
+	if (!crtc) {
+		crtc = supported_crtc;
+		if (!crtc)
+			return NULL;
+	}
+
+	output->crtc = crtc;
+	intel_output->load_detect_temp = TRUE;
+    
+	intel_crtc = crtc->driver_private;
+	*dpms_mode = intel_crtc->dpms_mode;
+
+	if (!crtc->enabled) {
+		if (!mode)
+			mode = &load_detect_mode;
+		drm_crtc_set_mode(crtc, mode, 0, 0);
+	} else {
+		if (intel_crtc->dpms_mode != DPMSModeOn)
+			crtc->funcs->dpms(crtc, DPMSModeOn);
+
+		/* Add this output to the crtc */
+		output->funcs->mode_set(output, &crtc->mode, &crtc->mode);
+		output->funcs->commit(output);
+	}
+	/* let the output get through one full cycle before testing */
+	intel_wait_for_vblank(dev);
+
+	return crtc;
+}
+
+void intel_release_load_detect_pipe(struct drm_output *output, int dpms_mode)
+{
+	struct drm_device *dev = output->dev;
+	struct intel_output *intel_output = output->driver_private;
+	struct drm_crtc *crtc = output->crtc;
+    
+	if (intel_output->load_detect_temp) {
+		output->crtc = NULL;
+		intel_output->load_detect_temp = FALSE;
+		crtc->enabled = drm_crtc_in_use(crtc);
+		drm_disable_unused_functions(dev);
+	}
+
+	/* Switch crtc and output back off if necessary */
+	if (crtc->enabled && dpms_mode != DPMSModeOn) {
+		if (output->crtc == crtc)
+			output->funcs->dpms(output, dpms_mode);
+		crtc->funcs->dpms(crtc, dpms_mode);
+	}
+}
+
 /* Returns the clock of the currently programmed mode of the given pipe. */
 static int intel_crtc_clock_get(struct drm_device *dev, struct drm_crtc *crtc)
 {
@@ -1209,8 +1315,6 @@ struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
 
 static const struct drm_crtc_funcs intel_crtc_funcs = {
 	.dpms = intel_crtc_dpms,
-	.lock = intel_crtc_lock,
-	.unlock = intel_crtc_unlock,
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
 	.mode_set_base = intel_pipe_set_base,
@@ -1246,6 +1350,7 @@ void intel_crtc_init(struct drm_device *dev, int pipe)
 	}
 
 	intel_crtc->cursor_addr = 0;
+	intel_crtc->dpms_mode = DPMSModeOff;
 
 	crtc->driver_private = intel_crtc;
 }
@@ -1292,6 +1397,9 @@ static void intel_setup_outputs(struct drm_device *dev)
 		intel_sdvo_init(dev, SDVOB);
 		intel_sdvo_init(dev, SDVOC);
 	}
+
+	if (IS_I9XX(dev) && !IS_I915G(dev))
+		intel_tv_init(dev);
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		struct intel_output *intel_output = output->driver_private;

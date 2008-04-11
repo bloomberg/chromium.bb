@@ -199,7 +199,7 @@ struct drm_display_info {
 	bool gtf_supported;
 	bool standard_color;
 	enum {
-		monochrome,
+		monochrome = 0,
 		rgb,
 		other,
 		unknown,
@@ -224,6 +224,8 @@ struct drm_display_info {
 	unsigned int wpgamma1;
 	unsigned int wpx2, wpy2;
 	unsigned int wpgamma2;
+
+	enum subpixel_order subpixel_order;
 
 	/* Preferred mode (if any) */
 	struct drm_display_mode *preferred_mode;
@@ -306,13 +308,10 @@ struct drm_crtc_funcs {
 	 */
 	void (*dpms)(struct drm_crtc *crtc, int mode);
 
-	/* JJJ:  Are these needed? */
 	/* Save CRTC state */
 	void (*save)(struct drm_crtc *crtc); /* suspend? */
 	/* Restore CRTC state */
 	void (*restore)(struct drm_crtc *crtc); /* resume? */
-	bool (*lock)(struct drm_crtc *crtc);
-	void (*unlock)(struct drm_crtc *crtc);
 
 	void (*prepare)(struct drm_crtc *crtc);
 	void (*commit)(struct drm_crtc *crtc);
@@ -365,10 +364,6 @@ struct drm_crtc {
 
 	bool enabled;
 
-	/* JJJ: are these needed? */
-	bool cursor_in_range;
-	bool cursor_shown;
-
 	struct drm_display_mode mode;
 
 	int x, y;
@@ -376,8 +371,6 @@ struct drm_crtc {
 	int desired_x, desired_y;
 	const struct drm_crtc_funcs *funcs;
 	void *driver_private;
-
-	/* RRCrtcPtr randr_crtc? */
 };
 
 extern struct drm_crtc *drm_crtc_create(struct drm_device *dev,
@@ -418,7 +411,6 @@ struct drm_output_funcs {
 			 struct drm_display_mode *adjusted_mode);
 	enum drm_output_status (*detect)(struct drm_output *output);
 	int (*get_modes)(struct drm_output *output);
-	/* JJJ: type checking for properties via property value type */
 	bool (*set_property)(struct drm_output *output, struct drm_property *property,
 			     uint64_t val);
 	void (*cleanup)(struct drm_output *output);
@@ -438,9 +430,6 @@ struct drm_output_funcs {
  * @initial_x: initial x position for this output
  * @initial_y: initial y position for this output
  * @status: output connected?
- * @subpixel_order: for this output
- * @mm_width: displayable width of output in mm
- * @mm_height: displayable height of output in mm
  * @funcs: output control functions
  * @driver_private: private driver data
  *
@@ -451,6 +440,8 @@ struct drm_output_funcs {
  */
 struct drm_output {
 	struct drm_device *dev;
+	struct device kdev;
+	struct device_attribute *attr;
 	struct list_head head;
 	struct drm_crtc *crtc;
 	int id; /* idr assigned */
@@ -463,20 +454,13 @@ struct drm_output {
 	bool doublescan_allowed;
 	struct list_head modes; /* list of modes on this output */
 
-	/*
-	  OptionInfoPtr options;
-	  XF86ConfMonitorPtr conf_monitor;
-	 */
 	int initial_x, initial_y;
 	enum drm_output_status status;
 
 	/* these are modes added by probing with DDC or the BIOS */
 	struct list_head probed_modes;
 	
-	/* xf86MonPtr MonInfo; */
-	enum subpixel_order subpixel_order;
-	int mm_width, mm_height;
-	struct drm_display_info *monitor_info; /* if any */
+	struct drm_display_info display_info;
   	const struct drm_output_funcs *funcs;
 	void *driver_private;
 
@@ -527,7 +511,6 @@ struct drm_mode_config {
 	int num_output;
 	struct list_head output_list;
 
-	/* int compat_output? */
 	int num_crtc;
 	struct list_head crtc_list;
 
@@ -535,8 +518,6 @@ struct drm_mode_config {
 
 	int min_width, min_height;
 	int max_width, max_height;
-	/* DamagePtr rotationDamage? */
-	/* DGA stuff? */
 	struct drm_mode_config_funcs *funcs;
 	unsigned long fb_base;
 
@@ -563,6 +544,7 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 				     int type);
 
 extern char *drm_get_output_name(struct drm_output *output);
+extern char *drm_get_dpms_name(int val);
 extern void drm_output_destroy(struct drm_output *output);
 extern void drm_fb_release(struct file *filp);
 
@@ -606,6 +588,9 @@ extern int drm_mode_output_update_edid_property(struct drm_output *output,
 extern int drm_output_property_set_value(struct drm_output *output,
 					 struct drm_property *property,
 					 uint64_t value);
+extern int drm_output_property_get_value(struct drm_output *output,
+					 struct drm_property *property,
+					 uint64_t *value);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
@@ -616,6 +601,7 @@ extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		       int x, int y);
+extern bool drm_crtc_in_use(struct drm_crtc *crtc);
 extern int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output, bool connected);
 
 extern int drm_output_attach_property(struct drm_output *output,
@@ -625,6 +611,8 @@ extern struct drm_property *drm_property_create(struct drm_device *dev, int flag
 extern void drm_property_destroy(struct drm_device *dev, struct drm_property *property);
 extern int drm_property_add_enum(struct drm_property *property, int index, 
 				 uint64_t value, const char *name);
+extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
+				     char *formats[]);
 
 /* IOCTLs */
 extern int drm_mode_getresources(struct drm_device *dev,

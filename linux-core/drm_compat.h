@@ -339,6 +339,15 @@ extern unsigned long round_jiffies_relative(unsigned long j);
 extern struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn);
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+static inline int kobject_uevent_env(struct kobject *kobj,
+                                     enum kobject_action action,
+                                     char *envp[])
+{
+    return 0;
+}
+#endif
+
 #ifndef PM_EVENT_PRETHAW 
 #define PM_EVENT_PRETHAW 3
 #endif

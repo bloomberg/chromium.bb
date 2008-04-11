@@ -37,14 +37,6 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-enum tv_type {
-	TV_TYPE_NONE,
-	TV_TYPE_UNKNOWN,
-	TV_TYPE_COMPOSITE,
-	TV_TYPE_SVIDEO,
-	TV_TYPE_COMPONENT
-};
-
 enum tv_margin {
 	TV_MARGIN_LEFT, TV_MARGIN_TOP,
 	TV_MARGIN_RIGHT, TV_MARGIN_BOTTOM
@@ -1145,14 +1137,14 @@ intel_tv_mode_set(struct drm_output *output, struct drm_display_mode *mode,
 
 	switch (tv_priv->type) {
 	default:
-	case TV_TYPE_UNKNOWN:
-	case TV_TYPE_COMPOSITE:
+	case ConnectorUnknown:
+	case ConnectorComposite:
 		tv_ctl |= TV_ENC_OUTPUT_COMPOSITE;
 		video_levels = tv_mode->composite_levels;
 		color_conversion = tv_mode->composite_color;
 		burst_ena = tv_mode->burst_ena;
 		break;
-	case TV_TYPE_COMPONENT:
+	case ConnectorComponent:
 		tv_ctl |= TV_ENC_OUTPUT_COMPONENT;
 		video_levels = &component_levels;
 		if (tv_mode->burst_ena)
@@ -1161,7 +1153,7 @@ intel_tv_mode_set(struct drm_output *output, struct drm_display_mode *mode,
 			color_conversion = &hdtv_csc_yprpb;
 		burst_ena = FALSE;
 		break;
-	case TV_TYPE_SVIDEO:
+	case ConnectorSVIDEO:
 		tv_ctl |= TV_ENC_OUTPUT_SVIDEO;
 		video_levels = tv_mode->svideo_levels;
 		color_conversion = tv_mode->svideo_color;
@@ -1218,8 +1210,11 @@ intel_tv_mode_set(struct drm_output *output, struct drm_display_mode *mode,
 	if (tv_mode->pal_burst)
 		tv_ctl |= TV_PAL_BURST;
 	scctl1 = 0;
-	if (tv_mode->dda1_inc)
+	/* dda1 implies valid video levels */
+	if (tv_mode->dda1_inc) {
 		scctl1 |= TV_SC_DDA1_EN;
+		scctl1 |= video_levels->burst << TV_BURST_LEVEL_SHIFT;
+	}
 
 	if (tv_mode->dda2_inc)
 		scctl1 |= TV_SC_DDA2_EN;
@@ -1228,7 +1223,6 @@ intel_tv_mode_set(struct drm_output *output, struct drm_display_mode *mode,
 		scctl1 |= TV_SC_DDA3_EN;
 
 	scctl1 |= tv_mode->sc_reset;
-	scctl1 |= video_levels->burst << TV_BURST_LEVEL_SHIFT;
 	scctl1 |= tv_mode->dda1_inc << TV_SCDDA1_INC_SHIFT;
 
 	scctl2 = tv_mode->dda2_size << TV_SCDDA2_SIZE_SHIFT |
@@ -1255,22 +1249,26 @@ intel_tv_mode_set(struct drm_output *output, struct drm_display_mode *mode,
 	I915_WRITE(TV_SC_CTL_2, scctl2);
 	I915_WRITE(TV_SC_CTL_3, scctl3);
 
-	I915_WRITE(TV_CSC_Y, (color_conversion->ry << 16) |
-		   color_conversion->gy);
-	I915_WRITE(TV_CSC_Y2,(color_conversion->by << 16) |
-		   color_conversion->ay);
-	I915_WRITE(TV_CSC_U, (color_conversion->ru << 16) |
-		   color_conversion->gu);
-	I915_WRITE(TV_CSC_U2, (color_conversion->bu << 16) |
-		   color_conversion->au);
-	I915_WRITE(TV_CSC_V, (color_conversion->rv << 16) |
-		   color_conversion->gv);
-	I915_WRITE(TV_CSC_V2, (color_conversion->bv << 16) |
-		   color_conversion->av);
+	if (color_conversion) {
+		I915_WRITE(TV_CSC_Y, (color_conversion->ry << 16) |
+			   color_conversion->gy);
+		I915_WRITE(TV_CSC_Y2,(color_conversion->by << 16) |
+			   color_conversion->ay);
+		I915_WRITE(TV_CSC_U, (color_conversion->ru << 16) |
+			   color_conversion->gu);
+		I915_WRITE(TV_CSC_U2, (color_conversion->bu << 16) |
+			   color_conversion->au);
+		I915_WRITE(TV_CSC_V, (color_conversion->rv << 16) |
+			   color_conversion->gv);
+		I915_WRITE(TV_CSC_V2, (color_conversion->bv << 16) |
+			   color_conversion->av);
+	}
 
 	I915_WRITE(TV_CLR_KNOBS, 0x00606000);
-	I915_WRITE(TV_CLR_LEVEL, ((video_levels->black << TV_BLACK_LEVEL_SHIFT) |
-			      (video_levels->blank << TV_BLANK_LEVEL_SHIFT)));
+	if (video_levels)
+		I915_WRITE(TV_CLR_LEVEL,
+			   ((video_levels->black << TV_BLACK_LEVEL_SHIFT) |
+			    (video_levels->blank << TV_BLANK_LEVEL_SHIFT)));
 	{
 		int pipeconf_reg = (intel_crtc->pipe == 0) ?
 			PIPEACONF : PIPEBCONF;
@@ -1364,7 +1362,7 @@ intel_tv_detect_type (struct drm_crtc *crtc, struct drm_output *output)
 	struct intel_output *intel_output = output->driver_private;
 	u32 tv_ctl, save_tv_ctl;
 	u32 tv_dac, save_tv_dac;
-	int type = TV_TYPE_UNKNOWN;
+	int type = ConnectorUnknown;
 
 	tv_dac = I915_READ(TV_DAC);
 	/*
@@ -1402,23 +1400,20 @@ intel_tv_detect_type (struct drm_crtc *crtc, struct drm_output *output)
 	 */
 	if ((tv_dac & TVDAC_SENSE_MASK) == (TVDAC_B_SENSE | TVDAC_C_SENSE)) {
 		DRM_DEBUG("Detected Composite TV connection\n");
-		type = TV_TYPE_COMPOSITE;
+		type = ConnectorComposite;
 	} else if ((tv_dac & (TVDAC_A_SENSE|TVDAC_B_SENSE)) == TVDAC_A_SENSE) {
 		DRM_DEBUG("Detected S-Video TV connection\n");
-		type = TV_TYPE_SVIDEO;
+		type = ConnectorSVIDEO;
 	} else if ((tv_dac & TVDAC_SENSE_MASK) == 0) {
 		DRM_DEBUG("Detected Component TV connection\n");
-		type = TV_TYPE_COMPONENT;
+		type = ConnectorComponent;
 	} else {
 		DRM_DEBUG("No TV connection detected\n");
-		type = TV_TYPE_NONE;
+		type = -1;
 	}
 
 	return type;
 }
-
-static int
-intel_tv_format_configure_property (struct drm_output *output);
 
 /**
  * Detect the TV connection.
@@ -1438,27 +1433,26 @@ intel_tv_detect(struct drm_output *output)
 
 	mode = reported_modes[0];
 	drm_mode_set_crtcinfo(&mode, CRTC_INTERLACE_HALVE_V);
-#if 0
-	/* FIXME: pipe allocation for load detection */
-	crtc = i830GetLoadDetectPipe (output, &mode, &dpms_mode);
+
+	crtc = intel_get_load_detect_pipe(output, &mode, &dpms_mode);
 	if (crtc) {
 		type = intel_tv_detect_type(crtc, output);
-		i830ReleaseLoadDetectPipe (output, dpms_mode);
+		intel_release_load_detect_pipe(output, dpms_mode);
 	}
-#endif
+
 	if (type != tv_priv->type) {
+		struct drm_property *connector_property =
+			output->dev->mode_config.connector_type_property;
+
 		tv_priv->type = type;
-		intel_tv_format_configure_property (output);
+		drm_output_property_set_value(output, connector_property,
+					      type);
 	}
 	
-	switch (type) {
-	case TV_TYPE_NONE:
+	if (type < 0)
 		return output_status_disconnected;
-	case TV_TYPE_UNKNOWN:
-		return output_status_unknown;
-	default:
-		return output_status_connected;
-	}
+
+	return output_status_connected;
 }
 
 static struct input_res {
@@ -1540,134 +1534,40 @@ intel_tv_destroy (struct drm_output *output)
 }
 
 static bool
-intel_tv_format_set_property(struct drm_output *output,
-			     struct drm_property *prop, uint64_t val)
-{
-#if 0
-	struct intel_output *intel_output = output->driver_private;
-	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
-	const struct tv_mode *tv_mode =
-		intel_tv_mode_lookup(tv_priv->tv_format);
-	int			    err;
-
-	if (!tv_mode)
-		tv_mode = &tv_modes[0];
-	err = RRChangeOutputProperty (output->randr_output, tv_format_atom,
-				      XA_ATOM, 32, PropModeReplace, 1,
-				      &tv_format_name_atoms[tv_mode - tv_modes],
-				      FALSE, TRUE);
-	return err == Success;
-#endif
-	return 0;
-}
-
-    
-/**
- * Configure the TV_FORMAT property to list only supported formats
- *
- * Unless the connector is component, list only the formats supported by
- * svideo and composite
- */
-
-static int
-intel_tv_format_configure_property(struct drm_output *output)
-{
-#if 0
-	struct intel_output *intel_output = output->driver_private;
-	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
-	Atom		    current_atoms[NUM_TV_MODES];
-	int			    num_atoms = 0;
-	int			    i;
-    
-	if (!output->randr_output)
-		return Success;
-
-	for (i = 0; i < NUM_TV_MODES; i++)
-		if (!tv_modes[i].component_only ||
-		    tv_priv->type == TV_TYPE_COMPONENT)
-			current_atoms[num_atoms++] = tv_format_name_atoms[i];
-    
-	return RRConfigureOutputProperty(output->randr_output, tv_format_atom,
-					 TRUE, FALSE, FALSE, 
-					 num_atoms, (INT32 *) current_atoms);
-#endif
-	return 0;
-}
-
-static void
-intel_tv_create_resources(struct drm_output *output)
-{
-	struct drm_device *dev = output->dev;
-	struct intel_output *intel_output = output->driver_private;
-	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
-	int i, err;
-
-#if 0
-	/* Set up the tv_format property, which takes effect on mode set
-	 * and accepts strings that match exactly
-	 */
-	tv_format_atom = MakeAtom(TV_FORMAT_NAME, sizeof(TV_FORMAT_NAME) - 1,
-				  TRUE);
-
-	for (i = 0; i < NUM_TV_MODES; i++)
-		tv_format_name_atoms[i] = MakeAtom (tv_modes[i].name,
-						    strlen (tv_modes[i].name),
-						    TRUE);
-
-	err = intel_tv_format_configure_property (output);
-
-	if (err != 0) {
-		xf86DrvMsg(dev->scrnIndex, X_ERROR,
-			   "RRConfigureOutputProperty error, %d\n", err);
-	}
-
-	/* Set the current value of the tv_format property */
-	if (!intel_tv_format_set_property (output))
-		xf86DrvMsg(dev->scrnIndex, X_ERROR,
-			   "RRChangeOutputProperty error, %d\n", err);
-
-	for (i = 0; i < 4; i++)
-	{
-		INT32	range[2];
-		margin_atoms[i] = MakeAtom(margin_names[i], strlen (margin_names[i]),
-					   TRUE);
-
-		range[0] = 0;
-		range[1] = 100;
-		err = RRConfigureOutputProperty(output->randr_output, margin_atoms[i],
-						TRUE, TRUE, FALSE, 2, range);
-    
-		if (err != 0)
-			xf86DrvMsg(dev->scrnIndex, X_ERROR,
-				   "RRConfigureOutputProperty error, %d\n", err);
-
-		err = RRChangeOutputProperty(output->randr_output, margin_atoms[i],
-					     XA_INTEGER, 32, PropModeReplace,
-					     1, &tv_priv->margin[i],
-					     FALSE, TRUE);
-		if (err != 0)
-			xf86DrvMsg(dev->scrnIndex, X_ERROR,
-				   "RRChangeOutputProperty error, %d\n", err);
-	}
-#endif
-}
-
-static bool
 intel_tv_set_property(struct drm_output *output, struct drm_property *property,
 		      uint64_t val)
 {
 	struct drm_device *dev = output->dev;
+	struct intel_output *intel_output = output->driver_private;
+	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
 	int ret = 0;
-    
-	if (property == dev->mode_config.tv_left_margin_property ||
-	    property == dev->mode_config.tv_right_margin_property ||
-	    property == dev->mode_config.tv_top_margin_property ||
-	    property == dev->mode_config.tv_bottom_margin_property) {
-		ret = drm_output_property_set_value(output, property, val);
+
+	ret = drm_output_property_set_value(output, property, val);
+	if (ret < 0)
+		goto out;
+
+	if (property == dev->mode_config.tv_left_margin_property)
+		tv_priv->margin[TV_MARGIN_LEFT] = val;
+	else if (property == dev->mode_config.tv_right_margin_property)
+		tv_priv->margin[TV_MARGIN_RIGHT] = val;
+	else if (property == dev->mode_config.tv_top_margin_property)
+		tv_priv->margin[TV_MARGIN_TOP] = val;
+	else if (property == dev->mode_config.tv_bottom_margin_property)
+		tv_priv->margin[TV_MARGIN_BOTTOM] = val;
+	else if (property == dev->mode_config.tv_mode_property) {
+		if (val >= NUM_TV_MODES) {
+			ret = -EINVAL;
+			goto out;
+		}
+		tv_priv->tv_format = tv_modes[val].name;
+		intel_tv_mode_set(output, NULL, NULL);
 	} else {
-		/* TV mode handling here */
+		ret = -EINVAL;
+		goto out;
 	}
 
+	intel_tv_mode_set(output, NULL, NULL);
+out:
 	return ret;
 }
 
@@ -1694,6 +1594,8 @@ intel_tv_init(struct drm_device *dev)
 	struct intel_output *intel_output;
 	struct intel_tv_priv *tv_priv;
 	u32 tv_dac_on, tv_dac_off, save_tv_dac;
+	char **tv_format_names;
+	int i, initial_mode = 0;
 
 	/* FIXME: better TV detection and/or quirks */
 #if 0
@@ -1744,20 +1646,47 @@ intel_tv_init(struct drm_device *dev)
 	output->possible_crtcs = ((1 << 0) | (1 << 1));
 	output->possible_clones = (1 << INTEL_OUTPUT_TVOUT);
 	intel_output->dev_priv = tv_priv;
-	tv_priv->type = TV_TYPE_UNKNOWN;
+	tv_priv->type = ConnectorUnknown;
 
-	tv_priv->tv_format = NULL;
-    
 	/* BIOS margin values */
 	tv_priv->margin[TV_MARGIN_LEFT] = 54;
 	tv_priv->margin[TV_MARGIN_TOP] = 36;
 	tv_priv->margin[TV_MARGIN_RIGHT] = 46;
 	tv_priv->margin[TV_MARGIN_BOTTOM] = 37;
     
-	if (!tv_priv->tv_format)
-		tv_priv->tv_format = kstrdup(tv_modes[0].name, GFP_KERNEL);
+	tv_priv->tv_format = kstrdup(tv_modes[initial_mode].name, GFP_KERNEL);
     
 	output->driver_private = intel_output;
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
+
+	drm_output_attach_property(output,
+				   dev->mode_config.connector_type_property,
+				   ConnectorUnknown);
+
+	/* Create TV properties then attach current values */
+	tv_format_names = drm_alloc(sizeof(char *) * NUM_TV_MODES,
+				    DRM_MEM_DRIVER);
+	if (!tv_format_names)
+		goto out;
+	for (i = 0; i < NUM_TV_MODES; i++)
+		tv_format_names[i] = tv_modes[i].name;
+	drm_create_tv_properties(dev, NUM_TV_MODES, tv_format_names);
+
+	drm_output_attach_property(output, dev->mode_config.tv_mode_property,
+				   initial_mode);
+	drm_output_attach_property(output,
+				   dev->mode_config.tv_left_margin_property,
+				   tv_priv->margin[TV_MARGIN_LEFT]);
+	drm_output_attach_property(output,
+				   dev->mode_config.tv_top_margin_property,
+				   tv_priv->margin[TV_MARGIN_TOP]);
+	drm_output_attach_property(output,
+				   dev->mode_config.tv_right_margin_property,
+				   tv_priv->margin[TV_MARGIN_RIGHT]);
+	drm_output_attach_property(output,
+				   dev->mode_config.tv_bottom_margin_property,
+				   tv_priv->margin[TV_MARGIN_BOTTOM]);
+out:
+	drm_sysfs_output_add(output);
 }

@@ -291,7 +291,11 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 				if (i == 0 && edid->preferred_timing)
 					newmode->type |= DRM_MODE_TYPE_PREFERRED;
 				drm_mode_probed_add(output, newmode);
-				     
+
+				/* Use first one for output's preferred mode */
+				if (!output->display_info.preferred_mode)
+					output->display_info.preferred_mode =
+						newmode;
 				modes++;
 			}
 			continue;
@@ -460,6 +464,9 @@ struct edid *drm_get_edid(struct drm_output *output,
 		kfree(edid);
 		return NULL;
 	}
+
+	output->display_info.raw_edid = (char *)edid;
+
 	return edid;
 }
 EXPORT_SYMBOL(drm_get_edid);
@@ -488,6 +495,25 @@ int drm_add_edid_modes(struct drm_output *output, struct edid *edid)
 	num_modes += add_established_modes(output, edid);
 	num_modes += add_standard_modes(output, edid);
 	num_modes += add_detailed_info(output, edid);
+
+	output->display_info.serration_vsync = edid->serration_vsync;
+	output->display_info.sync_on_green = edid->sync_on_green;
+	output->display_info.composite_sync = edid->composite_sync;
+	output->display_info.separate_syncs = edid->separate_syncs;
+	output->display_info.blank_to_black = edid->blank_to_black;
+	output->display_info.video_level = edid->video_level;
+	output->display_info.digital = edid->digital;
+	output->display_info.width_mm = edid->width_cm * 10;
+	output->display_info.height_mm = edid->height_cm * 10;
+	output->display_info.gamma = edid->gamma;
+	output->display_info.gtf_supported = edid->default_gtf;
+	output->display_info.standard_color = edid->standard_color;
+	output->display_info.display_type = edid->display_type;
+	output->display_info.active_off_supported = edid->pm_active_off;
+	output->display_info.suspend_supported = edid->pm_suspend;
+	output->display_info.standby_supported = edid->pm_standby;
+	output->display_info.gamma = edid->gamma;
+
 	return num_modes;
 }
 EXPORT_SYMBOL(drm_add_edid_modes);

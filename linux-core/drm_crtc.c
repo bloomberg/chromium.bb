@@ -47,6 +47,18 @@ static struct drm_prop_enum_list drm_dpms_enum_list[] =
   { DPMSModeSuspend, "Suspend" },
   { DPMSModeOff, "Off" }
 };
+
+char *drm_get_dpms_name(int val)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(drm_dpms_enum_list); i++)
+		if (drm_dpms_enum_list[i].type == val)
+			return drm_dpms_enum_list[i].name;
+
+	return "unknown";
+}
+
 static struct drm_prop_enum_list drm_conn_enum_list[] = 
 { { ConnectorUnknown, "Unknown" },
   { ConnectorVGA, "VGA" },
@@ -77,6 +89,16 @@ char *drm_get_output_name(struct drm_output *output)
 	snprintf(buf, 32, "%s-%d", drm_output_enum_list[output->output_type].name,
 		 output->output_type_id);
 	return buf;
+}
+
+char *drm_get_output_status_name(enum drm_output_status status)
+{
+	if (status == output_status_connected)
+		return "connected";
+	else if (status == output_status_disconnected)
+		return "disconnected";
+	else
+		return "unknown";
 }
 
 /**
@@ -418,7 +440,6 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	struct drm_device *dev = crtc->dev;
 	struct drm_display_mode *adjusted_mode, saved_mode;
 	int saved_x, saved_y;
-	bool didLock = false;
 	struct drm_output *output;
 	bool ret = true;
 
@@ -428,8 +449,6 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 
 	if (!crtc->enabled)
 		return true;
-
-	didLock = crtc->funcs->lock(crtc);
 
 	saved_mode = crtc->mode;
 	saved_x = crtc->x;
@@ -522,9 +541,6 @@ done:
 		crtc->x = saved_x;
 		crtc->y = saved_y;
 	} 
-
-	if (didLock)
-		crtc->funcs->unlock (crtc);
 	
 	return ret;
 }
@@ -621,7 +637,6 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 	output->id = drm_idr_get(dev, output);
 	output->output_type = output_type;
 	output->output_type_id = 1; /* TODO */
-	output->subpixel_order = SubPixelUnknown;
 	INIT_LIST_HEAD(&output->user_modes);
 	INIT_LIST_HEAD(&output->probed_modes);
 	INIT_LIST_HEAD(&output->modes);
@@ -752,9 +767,25 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 	dev->mode_config.connector_num_property->values[0] = 0;
 	dev->mode_config.connector_num_property->values[1] = 20;
 
-	/*
-	 * TV specific properties
-	 */
+	return 0;
+}
+
+/**
+ * drm_create_tv_properties - create TV specific output properties
+ * @dev: DRM device
+ * @num_modes: number of different TV formats (modes) supported
+ * @modes: array of pointers to strings containing name of each format
+ *
+ * Called by a driver's TV initialization routine, this function creates
+ * the TV specific output properties for a given device.  Caller is
+ * responsible for allocating a list of format names and passing them to
+ * this routine.
+ */
+bool drm_create_tv_properties(struct drm_device *dev, int num_modes,
+			      char *modes[])
+{
+	int i;
+
 	dev->mode_config.tv_left_margin_property =
 		drm_property_create(dev, DRM_MODE_PROP_RANGE |
 				    DRM_MODE_PROP_IMMUTABLE,
@@ -763,28 +794,33 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 	dev->mode_config.tv_left_margin_property->values[1] = 100;
 
 	dev->mode_config.tv_right_margin_property =
-		drm_property_create(dev, DRM_MODE_PROP_RANGE |
-				    DRM_MODE_PROP_IMMUTABLE,
+		drm_property_create(dev, DRM_MODE_PROP_RANGE,
 				    "right margin", 2);
 	dev->mode_config.tv_right_margin_property->values[0] = 0;
 	dev->mode_config.tv_right_margin_property->values[1] = 100;
 
 	dev->mode_config.tv_top_margin_property =
-		drm_property_create(dev, DRM_MODE_PROP_RANGE |
-				    DRM_MODE_PROP_IMMUTABLE,
+		drm_property_create(dev, DRM_MODE_PROP_RANGE,
 				    "top margin", 2);
 	dev->mode_config.tv_top_margin_property->values[0] = 0;
 	dev->mode_config.tv_top_margin_property->values[1] = 100;
 
 	dev->mode_config.tv_bottom_margin_property =
-		drm_property_create(dev, DRM_MODE_PROP_RANGE |
-				    DRM_MODE_PROP_IMMUTABLE,
+		drm_property_create(dev, DRM_MODE_PROP_RANGE,
 				    "bottom margin", 2);
 	dev->mode_config.tv_bottom_margin_property->values[0] = 0;
 	dev->mode_config.tv_bottom_margin_property->values[1] = 100;
 
+	dev->mode_config.tv_mode_property =
+		drm_property_create(dev, DRM_MODE_PROP_ENUM,
+				    "mode", num_modes);
+	for (i = 0; i < num_modes; i++)
+		drm_property_add_enum(dev->mode_config.tv_mode_property, i,
+				      i, modes[i]);
+
 	return 0;
 }
+EXPORT_SYMBOL(drm_create_tv_properties);
 
 /**
  * drm_mode_config_init - initialize DRM mode_configuration structure
@@ -1054,6 +1090,7 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	struct drm_property *property, *pt;
 
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
+		drm_sysfs_output_remove(output);
 		drm_output_destroy(output);
 	}
 
@@ -1225,6 +1262,8 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
 		if (!drm_crtc_set_mode(output->crtc, output->crtc->desired_mode, 0, 0))
 			DRM_ERROR("failed to set mode after hotplug\n");
 	}
+
+	drm_sysfs_hotplug_event(dev);
 
 	drm_disable_unused_functions(dev);
 
@@ -1530,9 +1569,9 @@ int drm_mode_getoutput(struct drm_device *dev,
 
 	out_resp->output_type = output->output_type;
 	out_resp->output_type_id = output->output_type_id;
-	out_resp->mm_width = output->mm_width;
-	out_resp->mm_height = output->mm_height;
-	out_resp->subpixel = output->subpixel_order;
+	out_resp->mm_width = output->display_info.width_mm;
+	out_resp->mm_height = output->display_info.height_mm;
+	out_resp->subpixel = output->display_info.subpixel_order;
 	out_resp->connection = output->status;
 	if (output->crtc)
 		out_resp->crtc = output->crtc->id;
@@ -2222,6 +2261,24 @@ int drm_output_property_set_value(struct drm_output *output,
 	return 0;
 }
 EXPORT_SYMBOL(drm_output_property_set_value);
+
+int drm_output_property_get_value(struct drm_output *output,
+				  struct drm_property *property, uint64_t *val)
+{
+	int i;
+
+	for (i = 0; i < DRM_OUTPUT_MAX_PROPERTY; i++) {
+		if (output->property_ids[i] == property->id) {
+			*val = output->property_values[i];
+			break;
+		}
+	}
+
+	if (i == DRM_OUTPUT_MAX_PROPERTY)
+		return -EINVAL;
+	return 0;
+}
+EXPORT_SYMBOL(drm_output_property_get_value);
 
 int drm_mode_getproperty_ioctl(struct drm_device *dev,
 			       void *data, struct drm_file *file_priv)

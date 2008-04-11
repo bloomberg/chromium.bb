@@ -58,6 +58,7 @@ struct intel_crtc {
 	int plane;
 	uint32_t cursor_addr;
 	u8 lut_r[256], lut_g[256], lut_b[256];
+	int dpms_mode;
 };
 
 struct intel_i2c_chan *intel_i2c_create(struct drm_device *dev, const u32 reg,
@@ -68,6 +69,7 @@ extern bool intel_ddc_probe(struct drm_output *output);
 
 extern void intel_crt_init(struct drm_device *dev);
 extern void intel_sdvo_init(struct drm_device *dev, int output_device);
+extern void intel_tv_init(struct drm_device *dev);
 extern void intel_lvds_init(struct drm_device *dev);
 
 extern void intel_crtc_load_lut(struct drm_crtc *crtc);
@@ -77,6 +79,11 @@ extern struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
  						    struct drm_crtc *crtc);
 extern void intel_wait_for_vblank(struct drm_device *dev);
 extern struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe);
+extern struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
+						   struct drm_display_mode *mode,
+						   int *dpms_mode);
+extern void intel_release_load_detect_pipe(struct drm_output *output,
+					   int dpms_mode);
 
 extern struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB);
 extern int intel_sdvo_supports_hotplug(struct drm_output *output);

@@ -126,14 +126,6 @@ static bool intel_sdvo_read_byte(struct drm_output *output, u8 addr,
 	return false;
 }
 
-
-static bool intel_sdvo_read_byte_quiet(struct drm_output *output, int addr,
-				       u8 *ch)
-{
-	return true;
-
-}
-
 static bool intel_sdvo_write_byte(struct drm_output *output, int addr,
 				  u8 ch)
 {
@@ -863,23 +855,6 @@ static bool intel_sdvo_get_capabilities(struct drm_output *output, struct intel_
 	return true;
 }
 
-
-static void intel_sdvo_dump_cmd(struct drm_output *output, int opcode)
-{
-
-
-}
-
-static void intel_sdvo_dump_device(struct drm_output *output)
-{
-
-}
-
-void intel_sdvo_dump(void)
-{
-
-}
-
 struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB)
 {
 	struct drm_output *output = 0;
@@ -1083,28 +1058,28 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_DAC;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_DAC;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS0;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_TMDS;
 		connector_type = ConnectorDVID;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_TMDS1;
-		output->subpixel_order = SubPixelHorizontalRGB;
+		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output_type = DRM_MODE_OUTPUT_TMDS;
 		connector_type = ConnectorDVID;
 	}
@@ -1122,6 +1097,8 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	
 	output->output_type = output_type;
 	output->output_type_id = output_id;
+
+	drm_sysfs_output_add(output);
 
 	/* Set the input timing to the screen. Assume always input 0. */
 	intel_sdvo_set_target_input(output, true, false);
