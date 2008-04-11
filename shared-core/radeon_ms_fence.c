@@ -44,7 +44,10 @@ static inline int r3xx_fence_emit_sequence(struct drm_device *dev,
 			sequence & ~R3XX_FENCE_SEQUENCE_RW_FLUSH;
 		/* Ask flush for VERTEX & FRAGPROG pipeline
 		 * have 3D idle  */
+		/* FIXME: proper flush */
+#if 0
 		dev_priv->flush_cache(dev);
+#endif
 	}
 	cmd[0] = CP_PACKET0(dev_priv->fence_reg, 0);
 	cmd[1] = sequence;
@@ -78,18 +81,17 @@ static inline void r3xx_fence_report(struct drm_device *dev,
 		return;
 	}
 	sequence = mmio_read(dev_priv, dev_priv->fence_reg);
+DRM_INFO("%s pass fence 0x%08x\n", __func__, sequence);
 	if (sequence & R3XX_FENCE_SEQUENCE_RW_FLUSH) {
 		sequence &= ~R3XX_FENCE_SEQUENCE_RW_FLUSH;
-		fence_types |= DRM_RADEON_FENCE_TYPE_RW;
+		fence_types |= DRM_AMD_FENCE_TYPE_R;
+		fence_types |= DRM_AMD_FENCE_TYPE_W;
 		if (sequence == r3xx_fence->sequence_last_flush) {
 			r3xx_fence->sequence_last_flush = 0;
 		}
 	}
-	/* avoid to report already reported sequence */
-	if (sequence != r3xx_fence->sequence_last_reported) {
-		drm_fence_handler(dev, 0, sequence, fence_types, 0);
-		r3xx_fence->sequence_last_reported = sequence;
-	}
+	drm_fence_handler(dev, 0, sequence, fence_types, 0);
+	r3xx_fence->sequence_last_reported = sequence;
 }
 
 static void r3xx_fence_flush(struct drm_device *dev, uint32_t class)
@@ -116,9 +118,10 @@ static void r3xx_fence_poll(struct drm_device *dev, uint32_t fence_class,
 	}
 	/* if there is a RW flush pending then submit new sequence
 	 * preceded by flush cmds */
-	if (fc->pending_flush & DRM_RADEON_FENCE_TYPE_RW) {
+	if (fc->pending_flush & (DRM_AMD_FENCE_TYPE_R | DRM_AMD_FENCE_TYPE_W)) {
 		r3xx_fence_flush(dev, 0);
-		fc->pending_flush &= ~DRM_RADEON_FENCE_TYPE_RW;
+		fc->pending_flush &= ~DRM_AMD_FENCE_TYPE_R;
+		fc->pending_flush &= ~DRM_AMD_FENCE_TYPE_W;
 	}
 	r3xx_fence_report(dev, dev_priv, r3xx_fence);
 	return;
@@ -137,10 +140,12 @@ static int r3xx_fence_emit(struct drm_device *dev, uint32_t class,
 	}
 	*sequence = tmp = r3xx_fence_sequence(r3xx_fence);
 	*native_type = DRM_FENCE_TYPE_EXE;
-	if (flags & DRM_RADEON_FENCE_FLAG_FLUSHED) {
-		*native_type |= DRM_RADEON_FENCE_TYPE_RW;
+	if (flags & DRM_AMD_FENCE_FLAG_FLUSH) {
+		*native_type |= DRM_AMD_FENCE_TYPE_R;
+		*native_type |= DRM_AMD_FENCE_TYPE_W;
 		tmp |= R3XX_FENCE_SEQUENCE_RW_FLUSH;
 	}
+DRM_INFO("%s emit fence 0x%08x\n", __func__, tmp);
 	return r3xx_fence_emit_sequence(dev, dev_priv, tmp);
 }
 
@@ -148,7 +153,8 @@ static int r3xx_fence_has_irq(struct drm_device *dev,
 			      uint32_t class, uint32_t type)
 {
 	const uint32_t type_irq_mask = DRM_FENCE_TYPE_EXE |
-				       DRM_RADEON_FENCE_TYPE_RW;
+				       DRM_AMD_FENCE_TYPE_R |
+				       DRM_AMD_FENCE_TYPE_W;
 	/*
 	 * We have an irq for EXE & RW fence.
 	 */
@@ -243,7 +249,9 @@ int r3xx_fence_types(struct drm_buffer_object *bo,
 {
 	*class = 0;
 	if (bo->mem.flags & (DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE)) {
-		*type = DRM_FENCE_TYPE_EXE | DRM_RADEON_FENCE_TYPE_RW;
+		*type = DRM_FENCE_TYPE_EXE |
+			DRM_AMD_FENCE_TYPE_R |
+			DRM_AMD_FENCE_TYPE_W;
 	} else {
 		*type = DRM_FENCE_TYPE_EXE;
 	}

@@ -332,7 +332,7 @@ int radeon_ms_ring_emit(struct drm_device *dev, uint32_t *cmd, uint32_t count)
 	dev_priv->ring_free -= count;
 	for (i = 0; i < count; i++) {
 		dev_priv->ring_buffer[dev_priv->ring_wptr] = cmd[i];
-		DRM_INFO("ring[%d]=0x%08X\n", dev_priv->ring_wptr, cmd[i]);
+		DRM_DEBUG("ring[%d]=0x%08X\n", dev_priv->ring_wptr, cmd[i]);
 		dev_priv->ring_wptr++;
 		dev_priv->ring_wptr &= dev_priv->ring_mask;
 	}

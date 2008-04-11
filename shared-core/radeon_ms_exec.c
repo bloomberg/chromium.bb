@@ -27,173 +27,233 @@
 #include "radeon_ms.h"
 #include "amd.h"
 
-static void radeon_ms_execbuffer_args_clean(struct drm_device *dev,
-					    struct amd_cbuffer *cbuffer,
-					    uint32_t args_count)
+static inline void amd_cmd_bo_cleanup(struct drm_device *dev,
+				      struct amd_cmd *cmd)
 {
+	struct amd_cmd_bo *bo;
+
 	mutex_lock(&dev->struct_mutex);
-	while (args_count--) {
-		drm_bo_usage_deref_locked(&cbuffer->args[args_count].buffer);
+	list_for_each_entry(bo, &cmd->bo_unused.list, list) {
+		drm_bo_usage_deref_locked(&bo->bo);
+	}
+	list_for_each_entry(bo, &cmd->bo_used.list, list) {
+		drm_bo_usage_deref_locked(&bo->bo);
 	}
 	mutex_unlock(&dev->struct_mutex);
 }
 
-static int radeon_ms_execbuffer_args(struct drm_device *dev,
-				     struct drm_file *file_priv,
-				     struct drm_radeon_execbuffer *execbuffer,
-				     struct amd_cbuffer *cbuffer)
+static inline int amd_cmd_bo_validate(struct drm_device *dev,
+				      struct drm_file *file,
+				      struct amd_cmd_bo *cmd_bo,
+				      struct drm_amd_cmd_bo *bo,
+				      uint64_t data)
 {
-	struct drm_radeon_execbuffer_arg arg;
-	struct drm_bo_arg_rep rep;
-	uint32_t args_count = 0;
-	uint64_t next = 0;
-	uint64_t data = execbuffer->args;
+	int ret;
+
+	/* validate only cmd indirect or data bo */
+	switch (bo->type) {
+	case DRM_AMD_CMD_BO_TYPE_CMD_INDIRECT:
+	case DRM_AMD_CMD_BO_TYPE_DATA:
+	case DRM_AMD_CMD_BO_TYPE_CMD_RING:
+		/* FIXME: make sure userspace can no longer map the bo */
+		break;
+	default:
+		return 0;
+	}
+	/* check that buffer operation is validate */
+	if (bo->op_req.op != drm_bo_validate) {
+		DRM_ERROR("buffer 0x%x object operation is not validate.\n",
+			  cmd_bo->handle);
+		return -EINVAL;
+	}
+	/* validate buffer */
+	memset(&bo->op_rep, 0, sizeof(struct drm_bo_arg_rep));
+	ret = drm_bo_handle_validate(file,
+				     bo->op_req.bo_req.handle,
+				     bo->op_req.bo_req.flags,
+				     bo->op_req.bo_req.mask,
+				     bo->op_req.bo_req.hint,
+				     bo->op_req.bo_req.fence_class,
+				     0,
+				     &bo->op_rep.bo_info,
+				     &cmd_bo->bo);
+	if (ret) {
+		DRM_ERROR("validate error %d for 0x%08x\n",
+			  ret, cmd_bo->handle);
+		return ret;
+	}
+	if (copy_to_user((void __user *)((unsigned)data), bo,
+			 sizeof(struct drm_amd_cmd_bo))) {
+		DRM_ERROR("failed to copy to user validate result of 0x%08x\n",
+			  cmd_bo->handle);
+		return -EFAULT;
+	}
+	return 0;
+}
+
+static int amd_cmd_parse_cmd_bo(struct drm_device *dev,
+				struct drm_file *file,
+				struct drm_amd_cmd *drm_amd_cmd,
+				struct amd_cmd *cmd)
+{
+	struct drm_amd_cmd_bo drm_amd_cmd_bo;
+	struct amd_cmd_bo *cmd_bo;
+	uint32_t bo_count = 0;
+	uint64_t data = drm_amd_cmd->bo;
 	int ret = 0;
 
 	do {
-		if (args_count >= execbuffer->args_count) {
-			DRM_ERROR("[radeon_ms] buffer count exceeded %d\n.",
-				  execbuffer->args_count);
-			ret = -EINVAL;
-			goto out_err;
+		/* check we don't have more buffer than announced */
+		if (bo_count >= drm_amd_cmd->bo_count) {
+			DRM_ERROR("cmd bo count exceeded got %d waited %d\n.",
+				  bo_count, drm_amd_cmd->bo_count);
+			return -EINVAL;
 		}
-		INIT_LIST_HEAD(&cbuffer->args[args_count].list);
-		cbuffer->args[args_count].buffer = NULL;
-		if (copy_from_user(&arg, (void __user *)((unsigned)data),
-		    sizeof(struct drm_radeon_execbuffer_arg))) {
-			ret = -EFAULT;
-			goto out_err;
+		/* initialize amd_cmd_bo */
+		cmd_bo = &cmd->bo[bo_count];
+		INIT_LIST_HEAD(&cmd_bo->list);
+		cmd_bo->bo = NULL;
+		/* copy from userspace */
+		if (copy_from_user(&drm_amd_cmd_bo,
+				   (void __user *)((unsigned)data),
+				   sizeof(struct drm_amd_cmd_bo))) {
+			return -EFAULT;
 		}
+		/* collect informations */
+		cmd_bo->type = drm_amd_cmd_bo.type;
+		cmd_bo->mask = drm_amd_cmd_bo.op_req.bo_req.mask;
+		cmd_bo->flags = drm_amd_cmd_bo.op_req.bo_req.flags;
+		cmd_bo->handle = drm_amd_cmd_bo.op_req.arg_handle;
+		/* get bo objects */
 		mutex_lock(&dev->struct_mutex);
-		cbuffer->args[args_count].buffer = 
-			drm_lookup_buffer_object(file_priv,
-						 arg.d.req.arg_handle, 1);
-		cbuffer->args[args_count].dw_id = arg.reloc_offset;
+		cmd_bo->bo = drm_lookup_buffer_object(file, cmd_bo->handle, 1);
 		mutex_unlock(&dev->struct_mutex);
-		if (arg.d.req.op != drm_bo_validate) {
-			DRM_ERROR("[radeon_ms] buffer object operation wasn't "
-				  "validate.\n");
-			ret = -EINVAL;
-			goto out_err;
+		if (cmd_bo->bo == NULL) {
+			DRM_ERROR("unknown bo handle 0x%x\n", cmd_bo->handle);
+			return -EINVAL;
 		}
-		memset(&rep, 0, sizeof(struct drm_bo_arg_rep));
-		ret = drm_bo_handle_validate(file_priv,
-					     arg.d.req.bo_req.handle,
-					     arg.d.req.bo_req.flags,
-					     arg.d.req.bo_req.mask,
-					     arg.d.req.bo_req.hint,
-					     arg.d.req.bo_req.fence_class,
-					     0,
-					     &rep.bo_info,
-					     &cbuffer->args[args_count].buffer);
+		/* validate buffer if necessary */
+		ret = amd_cmd_bo_validate(dev, file, cmd_bo,
+					  &drm_amd_cmd_bo, data);
 		if (ret) {
-			DRM_ERROR("[radeon_ms] error on handle validate %d\n",
-				  ret);
-			rep.ret = ret;
-			goto out_err;
+			mutex_lock(&dev->struct_mutex);
+			drm_bo_usage_deref_locked(&cmd_bo->bo);
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
 		}
-		next = arg.next;
-		arg.d.rep = rep;
-		if (copy_to_user((void __user *)((unsigned)data), &arg,
-		    sizeof(struct drm_radeon_execbuffer_arg))) {
-			ret = -EFAULT;
-			goto out_err;
+		/* inspect bo type */
+		switch (cmd_bo->type) {
+		case DRM_AMD_CMD_BO_TYPE_CMD_INDIRECT:
+			/* add it so we properly unreference in case of error */
+			list_add_tail(&cmd_bo->list, &cmd->bo_used.list);
+			return -EINVAL;
+		case DRM_AMD_CMD_BO_TYPE_DATA:
+			/* add to unused list */
+			list_add_tail(&cmd_bo->list, &cmd->bo_unused.list);
+			break;
+		case DRM_AMD_CMD_BO_TYPE_CMD_RING:
+			/* set cdw_bo */
+			list_add_tail(&cmd_bo->list, &cmd->bo_used.list);
+			cmd->cdw_bo = cmd_bo;
+			break;
+		default:
+			mutex_lock(&dev->struct_mutex);
+			drm_bo_usage_deref_locked(&cmd_bo->bo);
+			mutex_unlock(&dev->struct_mutex);
+			DRM_ERROR("unknow bo 0x%x unknown type 0x%x in cmd\n",
+				  cmd_bo->handle, cmd_bo->type);
+			return -EINVAL;
 		}
-		data = next;
-
-		list_add_tail(&cbuffer->args[args_count].list,
-			      &cbuffer->arg_unused.list);
-
-		args_count++;
-	} while (next != 0);
-	if (args_count != execbuffer->args_count) {
-		DRM_ERROR("[radeon_ms] not enought buffer got %d waited %d\n.",
-			  args_count, execbuffer->args_count);
-		ret = -EINVAL;
-		goto out_err;
+		/* ok next bo */
+		data = drm_amd_cmd_bo.next;
+		bo_count++;
+	} while (data != 0);
+	if (bo_count != drm_amd_cmd->bo_count) {
+		DRM_ERROR("not enought buffer got %d expected %d\n.",
+			  bo_count, drm_amd_cmd->bo_count);
+		return -EINVAL;
 	}
 	return 0;
-out_err:
-	radeon_ms_execbuffer_args_clean(dev, cbuffer, args_count);
-	return ret;
 }
 
-static int cbuffer_packet0_check(struct drm_device *dev,
-				 struct amd_cbuffer *cbuffer,
-				 int dw_id)
+static int amd_cmd_packet0_check(struct drm_device *dev,
+				 struct amd_cmd *cmd,
+				 int *cdw_id)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t reg, count, r, i;
 	int ret;
 
-	reg = cbuffer->cbuffer[dw_id] & PACKET0_REG_MASK;
-	count = (cbuffer->cbuffer[dw_id] & PACKET0_COUNT_MASK) >>
-		PACKET0_COUNT_SHIFT;
-	if (reg + count > dev_priv->cbuffer_checker.numof_p0_checkers) {
+	reg = cmd->cdw[*cdw_id] & PACKET0_REG_MASK;
+	count = (cmd->cdw[*cdw_id] & PACKET0_COUNT_MASK) >> PACKET0_COUNT_SHIFT;
+	if (reg + count > dev_priv->cmd_module.numof_p0_checkers) {
+		DRM_ERROR("0x%08X registers is above last accepted registers\n",
+			  reg << 2);
 		return -EINVAL;
 	}
 	for (r = reg, i = 0; i <= count; i++, r++) {
-		if (dev_priv->cbuffer_checker.check_p0[r] == NULL) {
+		if (dev_priv->cmd_module.check_p0[r] == NULL) {
 			continue;
 		}
-		if (dev_priv->cbuffer_checker.check_p0[r] == (void *)-1) {
-			DRM_INFO("[radeon_ms] check_f: %d %d -1 checker\n",
-			         r, r << 2);
+		if (dev_priv->cmd_module.check_p0[r] == (void *)-1) {
+			DRM_ERROR("register 0x%08X (at %d) is forbidden\n",
+			         r << 2, (*cdw_id) + i + 1);
 			return -EINVAL;
 		}
-		ret = dev_priv->cbuffer_checker.check_p0[r](dev, cbuffer,
-							    dw_id + i + 1, reg);
+		ret = dev_priv->cmd_module.check_p0[r](dev, cmd,
+						       (*cdw_id) + i + 1, r);
 		if (ret) {
-			DRM_INFO("[radeon_ms] check_f: %d %d checker ret=%d\n",
-			         r, r << 2, ret);
-			return -EINVAL;
+			return ret;
 		}
 	}
 	/* header + N + 1 dword passed test */
-	return count + 2;
+	(*cdw_id) += count + 2;
+	return 0;
 }
 
-static int cbuffer_packet3_check(struct drm_device *dev,
-				 struct amd_cbuffer *cbuffer,
-				 int dw_id)
+static int amd_cmd_packet3_check(struct drm_device *dev,
+				 struct amd_cmd *cmd,
+				 int *cdw_id)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t opcode, count;
 	int ret;
 
-	opcode = (cbuffer->cbuffer[dw_id] & PACKET3_OPCODE_MASK) >>
+	opcode = (cmd->cdw[*cdw_id] & PACKET3_OPCODE_MASK) >>
 		 PACKET3_OPCODE_SHIFT;
-	if (opcode > dev_priv->cbuffer_checker.numof_p3_checkers) {
+	if (opcode > dev_priv->cmd_module.numof_p3_checkers) {
+		DRM_ERROR("0x%08X opcode is above last accepted opcodes\n",
+			  opcode);
 		return -EINVAL;
 	}
-	count = (cbuffer->cbuffer[dw_id] & PACKET3_COUNT_MASK) >>
-		PACKET3_COUNT_SHIFT;
-	if (dev_priv->cbuffer_checker.check_p3[opcode] == NULL) {
+	count = (cmd->cdw[*cdw_id] & PACKET3_COUNT_MASK) >> PACKET3_COUNT_SHIFT;
+	if (dev_priv->cmd_module.check_p3[opcode] == NULL) {
+		DRM_ERROR("0x%08X opcode is forbidden\n", opcode);
 		return -EINVAL;
 	}
-	ret = dev_priv->cbuffer_checker.check_p3[opcode](dev, cbuffer,
-							 dw_id + 1, opcode,
-							 count);
+	ret = dev_priv->cmd_module.check_p3[opcode](dev, cmd,
+						    (*cdw_id) + 1, opcode,
+						    count);
 	if (ret) {
-		return -EINVAL;
+		return ret;
 	}
-	return count + 2;
+	/* header + N + 1 dword passed test */
+	(*cdw_id) += count + 2;
+	return 0;
 }
 
-int amd_cbuffer_check(struct drm_device *dev, struct amd_cbuffer *cbuffer)
+int amd_cmd_check(struct drm_device *dev, struct amd_cmd *cmd)
 {
 	uint32_t i;
 	int ret;
 
-	for (i = 0; i < cbuffer->cbuffer_dw_count;) {
-		switch (PACKET_HEADER_GET(cbuffer->cbuffer[i])) {
+	for (i = 0; i < cmd->cdw_count;) {
+		switch (PACKET_HEADER_GET(cmd->cdw[i])) {
 		case 0:
-			ret = cbuffer_packet0_check(dev, cbuffer, i);
-			if (ret <= 0) {
+			ret = amd_cmd_packet0_check(dev, cmd, &i);
+			if (ret) {
 				return ret;
 			}
-			/* advance to next packet */
-			i += ret;
 			break;
 		case 1:
 			/* we don't accept packet 1 */
@@ -202,122 +262,122 @@ int amd_cbuffer_check(struct drm_device *dev, struct amd_cbuffer *cbuffer)
 			/* FIXME: accept packet 2 */
 			return -EINVAL;
 		case 3:
-			ret = cbuffer_packet3_check(dev, cbuffer, i);
-			if (ret <= 0) {
+			ret = amd_cmd_packet3_check(dev, cmd, &i);
+			if (ret) {
 				return ret;
 			}
-			/* advance to next packet */
-			i += ret;
 			break;
 		}
 	}
 	return 0;
 }
 
-struct amd_cbuffer_arg *
-amd_cbuffer_arg_from_dw_id(struct amd_cbuffer_arg *head, uint32_t dw_id)
+static int amd_ioctl_cmd_cleanup(struct drm_device *dev,
+				 struct drm_file *file,
+				 struct amd_cmd *cmd,
+				 int r)
 {
-	struct amd_cbuffer_arg *arg;
-
-	list_for_each_entry(arg, &head->list, list) {
-		if (arg->dw_id == dw_id) {
-			return arg;
-		}
+	/* check if we need to unfence object */
+	if (r && (!list_empty(&cmd->bo_unused.list) ||
+		  !list_empty(&cmd->bo_unused.list))) {
+		drm_putback_buffer_objects(dev);		
 	}
-	/* no buffer at this dw index */
-	return NULL;
+	if (cmd->cdw) {
+		drm_bo_kunmap(&cmd->cdw_kmap);
+		cmd->cdw = NULL;
+	}
+	/* derefence buffer as lookup reference them */
+	amd_cmd_bo_cleanup(dev, cmd);
+	if (cmd->bo) {
+		drm_free(cmd->bo,
+			 cmd->bo_count * sizeof(struct amd_cmd_bo),
+		 	 DRM_MEM_DRIVER);
+		cmd->bo = NULL;
+	}
+	drm_bo_read_unlock(&dev->bm.bm_lock);
+	return r;
 }
 
-
-int radeon_ms_execbuffer(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv)
+int amd_ioctl_cmd(struct drm_device *dev, void *data, struct drm_file *file)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct drm_radeon_execbuffer *execbuffer = data;
-	struct drm_fence_arg *fence_arg = &execbuffer->fence_arg;
-	struct drm_bo_kmap_obj cmd_kmap;
+	struct drm_amd_cmd *drm_amd_cmd = data;
+	struct drm_fence_arg *fence_arg = &drm_amd_cmd->fence_arg;
 	struct drm_fence_object *fence;
-	int cmd_is_iomem;
-	int ret = 0;
-	struct amd_cbuffer cbuffer;
+	struct amd_cmd cmd;
+	int tmp;
+	int ret;
 
-	/* command buffer dword count must be >= 0 */
-	if (execbuffer->cmd_size < 0) {
+	/* check that we have a command checker */
+	if (dev_priv->cmd_module.check == NULL) {
+		DRM_ERROR("invalid command checker module.\n");
+		return -EFAULT;
+	}
+	/* command dword count must be >= 0 */
+	if (drm_amd_cmd->cdw_count == 0) {
+		DRM_ERROR("command dword count is 0.\n");
 		return -EINVAL;
 	}
-
-	/* FIXME: Lock buffer manager, is this really needed ?
-	 */
+	/* FIXME: Lock buffer manager, is this really needed ? */
 	ret = drm_bo_read_lock(&dev->bm.bm_lock);
 	if (ret) {
+		DRM_ERROR("bo read locking failed.\n");
 		return ret;
 	}
-
-	cbuffer.args = drm_calloc(execbuffer->args_count,
-				  sizeof(struct amd_cbuffer_arg),
-				  DRM_MEM_DRIVER);
-	if (cbuffer.args == NULL) {
-		ret = -ENOMEM;
-		goto out_free;
+	/* cleanup & initialize amd cmd structure */
+	memset(&cmd, 0, sizeof(struct amd_cmd));
+	cmd.bo_count = drm_amd_cmd->bo_count;
+	INIT_LIST_HEAD(&cmd.bo_unused.list);
+	INIT_LIST_HEAD(&cmd.bo_used.list);
+	/* allocate structure for bo parsing */
+	cmd.bo = drm_calloc(cmd.bo_count, sizeof(struct amd_cmd_bo),
+			    DRM_MEM_DRIVER);
+	if (cmd.bo == NULL) {
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, -ENOMEM);
         }
-
-	INIT_LIST_HEAD(&cbuffer.arg_unused.list);
-	INIT_LIST_HEAD(&cbuffer.arg_used.list);
-
-	/* process arguments */
-	ret = radeon_ms_execbuffer_args(dev, file_priv, execbuffer, &cbuffer);
+	/* parse cmd bo */
+	ret = amd_cmd_parse_cmd_bo(dev, file, drm_amd_cmd, &cmd);
 	if (ret) {
-		DRM_ERROR("[radeon_ms] execbuffer wrong arguments\n");
-		goto out_free;
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, ret);
 	}
-
+	/* check that a command buffer have been found */
+	if (cmd.cdw_bo == NULL) {
+		DRM_ERROR("no command buffer submited in cmd ioctl\n");
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, -EINVAL);
+	}
 	/* map command buffer */
-	cbuffer.cbuffer_dw_count = (cbuffer.args[0].buffer->mem.num_pages *
-				    PAGE_SIZE) >> 2;
-	if (execbuffer->cmd_size > cbuffer.cbuffer_dw_count) {
-		ret = -EINVAL;
-		goto out_free_release;
+	cmd.cdw_count = drm_amd_cmd->cdw_count;
+	cmd.cdw_size = (cmd.cdw_bo->bo->mem.num_pages * PAGE_SIZE) >> 2;
+	if (cmd.cdw_size < cmd.cdw_count) {
+		DRM_ERROR("command buffer (%d) is smaller than expected (%d)\n",
+			  cmd.cdw_size, cmd.cdw_count);
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, -EINVAL);
 	}
-	cbuffer.cbuffer_dw_count = execbuffer->cmd_size;
-	memset(&cmd_kmap, 0, sizeof(struct drm_bo_kmap_obj));
-	ret = drm_bo_kmap(cbuffer.args[0].buffer, 0,
-		          cbuffer.args[0].buffer->mem.num_pages, &cmd_kmap);
+	memset(&cmd.cdw_kmap, 0, sizeof(struct drm_bo_kmap_obj));
+	ret = drm_bo_kmap(cmd.cdw_bo->bo, 0,
+			  cmd.cdw_bo->bo->mem.num_pages, &cmd.cdw_kmap);
 	if (ret) {
-		DRM_ERROR("[radeon_ms] error mapping ring buffer: %d\n", ret);
-		goto out_free_release;
+		DRM_ERROR("error mapping command buffer\n");
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, ret);
 	}
-	cbuffer.cbuffer = drm_bmo_virtual(&cmd_kmap, &cmd_is_iomem);
-	list_del(&cbuffer.args[0].list);
-	list_add_tail(&cbuffer.args[0].list , &cbuffer.arg_used.list);
-
-	/* do cmd checking & relocations */
-	if (dev_priv->cbuffer_checker.check) {
-		ret = dev_priv->cbuffer_checker.check(dev, &cbuffer);
-		if (ret) {
-			drm_putback_buffer_objects(dev);
-			goto out_free_release;
-		}
-	} else {
-		drm_putback_buffer_objects(dev);
-		goto out_free_release;
-	}
-
-	ret = radeon_ms_ring_emit(dev, cbuffer.cbuffer,
-				  cbuffer.cbuffer_dw_count);
+	cmd.cdw = drm_bmo_virtual(&cmd.cdw_kmap, &tmp);
+	/* do command checking */
+	ret = dev_priv->cmd_module.check(dev, &cmd);
 	if (ret) {
-		drm_putback_buffer_objects(dev);
-		goto out_free_release;
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, ret);
 	}
-
+	/* copy command to ring */
+	ret = radeon_ms_ring_emit(dev, cmd.cdw, cmd.cdw_count);
+	if (ret) {
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, ret);
+	}
 	/* fence */
 	ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
 	if (ret) {
-		drm_putback_buffer_objects(dev);
-		DRM_ERROR("[radeon_ms] fence buffer objects failed\n");
-		goto out_free_release;
+		return amd_ioctl_cmd_cleanup(dev, file, &cmd, ret);
 	}
 	if (!(fence_arg->flags & DRM_FENCE_FLAG_NO_USER)) {
-		ret = drm_fence_add_user_object(file_priv, fence,
+		ret = drm_fence_add_user_object(file, fence,
 						fence_arg->flags &
 						DRM_FENCE_FLAG_SHAREABLE);
 		if (!ret) {
@@ -326,16 +386,10 @@ int radeon_ms_execbuffer(struct drm_device *dev, void *data,
 			fence_arg->type = fence->type;
 			fence_arg->signaled = fence->signaled_types;
 			fence_arg->sequence = fence->sequence;
+		} else {
+			DRM_ERROR("error add object fence, expect oddity !\n");
 		}
 	}
 	drm_fence_usage_deref_unlocked(&fence);
-out_free_release:
-	drm_bo_kunmap(&cmd_kmap);
-	radeon_ms_execbuffer_args_clean(dev, &cbuffer, execbuffer->args_count);
-out_free:
-	drm_free(cbuffer.args,
-		 (execbuffer->args_count * sizeof(struct amd_cbuffer_arg)),
-		 DRM_MEM_DRIVER);
-	drm_bo_read_unlock(&dev->bm.bm_lock);
-	return ret;
+	return amd_ioctl_cmd_cleanup(dev, file, &cmd, 0);
 }

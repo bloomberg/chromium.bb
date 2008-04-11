@@ -59,8 +59,8 @@ struct drm_bo_driver radeon_ms_bo_driver = {
 };
 
 struct drm_ioctl_desc radeon_ms_ioctls[] = {
-	DRM_IOCTL_DEF(DRM_RADEON_EXECBUFFER, radeon_ms_execbuffer, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_RADEON_RESETCP, radeon_ms_resetcp, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_AMD_CMD, amd_ioctl_cmd, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_AMD_RESETCP, radeon_ms_resetcp, DRM_AUTH),
 };
 int radeon_ms_num_ioctls = DRM_ARRAY_SIZE(radeon_ms_ioctls);
 
@@ -247,7 +247,7 @@ int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags)
 	}
 
 	/* initialze driver specific */
-	ret = amd_legacy_cbuffer_initialize(dev);
+	ret = amd_legacy_cmd_module_initialize(dev);
 	if (ret != 0) {
 		radeon_ms_driver_unload(dev);
 		return ret;
@@ -286,7 +286,7 @@ int radeon_ms_driver_unload(struct drm_device *dev)
 	radeon_ms_outputs_destroy(dev);
 
 	/* shutdown specific driver */
-	amd_legacy_cbuffer_destroy(dev);
+	amd_legacy_cmd_module_destroy(dev);
 	
 	/* shutdown cp engine */
 	radeon_ms_cp_finish(dev);

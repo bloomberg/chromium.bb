@@ -551,6 +551,7 @@ static void radeon_ms_crtc1_mode_set(struct drm_crtc *crtc,
 			format = 4;
 		}
 		break;
+	case 24:
 	case 32:
 		format = 6;
 		break;
@@ -648,7 +649,7 @@ static void radeon_ms_crtc1_mode_set_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_state *state = &dev_priv->driver_state;
 
-	DRM_INFO("[radeon_ms] mode_set_base\n");
+	DRM_INFO("mode_set_base 0x%lX\n", crtc->fb->bo->offset);
 	state->crtc_offset = REG_S(CRTC_OFFSET, CRTC_OFFSET, crtc->fb->bo->offset);
 	radeon_ms_crtc1_restore(dev, state);
 }

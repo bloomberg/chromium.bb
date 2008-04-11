@@ -27,7 +27,7 @@
 #ifndef __AMD_LEGACY_H__
 #define __AMD_LEGACY_H__
 
-int amd_legacy_cbuffer_destroy(struct drm_device *dev);
-int amd_legacy_cbuffer_initialize(struct drm_device *dev);
+int amd_legacy_cmd_module_destroy(struct drm_device *dev);
+int amd_legacy_cmd_module_initialize(struct drm_device *dev);
 
 #endif

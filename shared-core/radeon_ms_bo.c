@@ -134,8 +134,9 @@ static int radeon_ms_bo_move_blit(struct drm_buffer_object *bo,
 	
 	ret = drm_bo_move_accel_cleanup(bo, evict, no_wait, 0,
 					 DRM_FENCE_TYPE_EXE |
-					 DRM_RADEON_FENCE_TYPE_RW,
-					 DRM_RADEON_FENCE_FLAG_FLUSHED,
+					 DRM_AMD_FENCE_TYPE_R |
+					 DRM_AMD_FENCE_TYPE_W,
+					 DRM_AMD_FENCE_FLAG_FLUSH,
 					 new_mem);
 	return ret;
 }

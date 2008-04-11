@@ -330,7 +330,7 @@ struct drm_radeon_private {
 	uint8_t                     bus_ready;
 	uint8_t                     write_back;
 	/* command buffer informations */
-	struct amd_cbuffer_checker  cbuffer_checker;
+	struct amd_cmd_module       cmd_module;
 	/* abstract asic specific structures */
 	struct radeon_ms_rom        rom;
 	struct radeon_ms_properties properties;
@@ -425,10 +425,6 @@ void radeon_ms_driver_lastclose(struct drm_device * dev);
 int radeon_ms_driver_load(struct drm_device *dev, unsigned long flags);
 int radeon_ms_driver_open(struct drm_device * dev, struct drm_file *file_priv);
 int radeon_ms_driver_unload(struct drm_device *dev);
-
-/* radeon_ms_exec.c */
-int radeon_ms_execbuffer(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv);
 
 /* radeon_ms_family.c */
 int radeon_ms_family_init(struct drm_device *dev);

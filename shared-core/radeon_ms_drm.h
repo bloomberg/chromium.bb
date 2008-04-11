@@ -27,42 +27,54 @@
  * Authors:
  *    Jérôme Glisse <glisse@freedesktop.org>
  */
-#ifndef __RADEON_MS_DRM_H__
-#define __RADEON_MS_DRM_H__
+#ifndef __AMD_DRM_H__
+#define __AMD_DRM_H__
 
 /* Fence
- * We have only one fence class as we submit command through th
- * same fifo so there is no need to synchronize buffer btw different
- * cmd stream.
  *
- * Set DRM_RADEON_FENCE_FLAG_FLUSHED if you want a flush with
+ * Set DRM_AND_FENCE_FLAG_FLUSH if you want a flush with
  * emission of the fence
  *
- * For fence type we have the native DRM EXE type and the radeon RW
- * type.
+ * For fence type we have the native DRM EXE type and the amd R & W type.
  */
-#define DRM_RADEON_FENCE_CLASS_ACCEL		0
-#define DRM_RADEON_FENCE_TYPE_RW		2
-#define DRM_RADEON_FENCE_FLAG_FLUSHED		0x01000000
+#define DRM_AMD_FENCE_CLASS_2D                  0
+#define DRM_AMD_FENCE_TYPE_R                    (1 << 1)
+#define DRM_AMD_FENCE_TYPE_W                    (1 << 2)
+#define DRM_AMD_FENCE_FLAG_FLUSH                0x01000000
 
-/* radeon ms ioctl */
-#define DRM_RADEON_EXECBUFFER			0x00
-#define DRM_RADEON_RESETCP			0x01
+/* ioctl */
+#define DRM_AMD_CMD                             0x00
+#define DRM_AMD_RESETCP                         0x01
 
-struct drm_radeon_execbuffer_arg {
-	uint64_t    next;
-	uint32_t    reloc_offset;
-	union {
-		struct drm_bo_op_req    req;
-		struct drm_bo_arg_rep   rep;
-	} d;
+/* cmd ioctl */
+
+#define DRM_AMD_CMD_BO_TYPE_INVALID             0
+#define DRM_AMD_CMD_BO_TYPE_CMD_RING            (1 << 0)
+#define DRM_AMD_CMD_BO_TYPE_CMD_INDIRECT        (1 << 1)
+#define DRM_AMD_CMD_BO_TYPE_DATA                (1 << 2)
+
+struct drm_amd_cmd_bo_offset
+{
+	uint64_t                next;
+	uint64_t                offset;
+	uint32_t		cs_id;
 };
 
-struct drm_radeon_execbuffer {
-	uint32_t args_count;
-	uint64_t args;
-	uint32_t cmd_size;
-	struct drm_fence_arg fence_arg;
+struct drm_amd_cmd_bo
+{
+	uint32_t                type;
+	uint64_t                next;
+	uint64_t                offset;
+	struct drm_bo_op_req    op_req;
+	struct drm_bo_arg_rep   op_rep;
+};
+
+struct drm_amd_cmd
+{
+	uint32_t                cdw_count;
+	uint32_t                bo_count;
+	uint64_t                bo;
+	struct drm_fence_arg    fence_arg;
 };
 
 #endif

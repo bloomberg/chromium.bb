@@ -44,23 +44,23 @@ struct legacy_check
 	uint32_t                dp_gui_master_cntl;
 	uint32_t                dst_offset;
 	uint32_t                dst_pitch;
-	struct amd_cbuffer_arg  *dst;
+	struct amd_cmd_bo       *dst;
 	uint32_t                dst_x;
 	uint32_t                dst_y;
 	uint32_t                dst_h;
 	uint32_t                dst_w;
-	struct amd_cbuffer_arg  *src;
+	struct amd_cmd_bo       *src;
 	uint32_t                src_pitch;
 	uint32_t                src_x;
 	uint32_t                src_y;
 };
 
-static int check_blit(struct drm_device *dev, struct amd_cbuffer *cbuffer)
+static int check_blit(struct drm_device *dev, struct amd_cmd *cmd)
 {
 	struct legacy_check *legacy_check;
 	long bpp, start, end;
 	
-	legacy_check = (struct legacy_check *)cbuffer->driver;
+	legacy_check = (struct legacy_check *)cmd->driver;
 	/* check that gui master cntl have been set */
 	if (legacy_check->dp_gui_master_cntl == 0xffffffff) {
 		return -EINVAL;
@@ -132,13 +132,13 @@ static int check_blit(struct drm_device *dev, struct amd_cbuffer *cbuffer)
 }
 
 static int p0_dp_gui_master_cntl(struct drm_device *dev,
-				 struct amd_cbuffer *cbuffer,
-				 int dw_id, int reg)
+				 struct amd_cmd *cmd,
+				 int cdw_id, int reg)
 {
 	struct legacy_check *legacy_check;
 	
-	legacy_check = (struct legacy_check *)cbuffer->driver;
-	legacy_check->dp_gui_master_cntl = cbuffer->cbuffer[dw_id];
+	legacy_check = (struct legacy_check *)cmd->driver;
+	legacy_check->dp_gui_master_cntl = cmd->cdw[cdw_id];
 	/* we only accept src data type to be same as dst */
 	if (((legacy_check->dp_gui_master_cntl >> 12) & 0x3) != 3) {
 		return -EINVAL;
@@ -147,125 +147,139 @@ static int p0_dp_gui_master_cntl(struct drm_device *dev,
 }
 
 static int p0_dst_pitch_offset(struct drm_device *dev,
-			       struct amd_cbuffer *cbuffer,
-			       int dw_id, int reg)
+			       struct amd_cmd *cmd,
+			       int cdw_id, int reg)
 {
 	struct legacy_check *legacy_check;
-	uint32_t gpu_addr;
+	uint32_t tmp;
 	int ret;
 	
-	legacy_check = (struct legacy_check *)cbuffer->driver;
-	legacy_check->dst_pitch = ((cbuffer->cbuffer[dw_id] >> 22) & 0xff) << 6;
-	legacy_check->dst = amd_cbuffer_arg_from_dw_id(&cbuffer->arg_unused,
-						       dw_id);
+	legacy_check = (struct legacy_check *)cmd->driver;
+	legacy_check->dst_pitch = ((cmd->cdw[cdw_id] >> 22) & 0xff) << 6;
+	tmp = cmd->cdw[cdw_id] & 0x003fffff;
+	legacy_check->dst = amd_cmd_get_bo(cmd, tmp);
 	if (legacy_check->dst == NULL) {
+		DRM_ERROR("invalid bo (%d) for DST_PITCH_OFFSET register.\n",
+			  tmp);
 		return -EINVAL;
 	}
-	ret = radeon_ms_bo_get_gpu_addr(dev, &legacy_check->dst->buffer->mem,
-					&gpu_addr);
+	ret = radeon_ms_bo_get_gpu_addr(dev, &legacy_check->dst->bo->mem, &tmp);
 	if (ret) {
+		DRM_ERROR("failed to get GPU offset for bo 0x%x.\n",
+			  legacy_check->dst->handle);
 		return -EINVAL;
 	}
-	cbuffer->cbuffer[dw_id] &= 0xffc00000;
-	cbuffer->cbuffer[dw_id] |= (gpu_addr >> 10);
+	if (tmp & 0x3fff) {
+		DRM_ERROR("bo 0x%x offset doesn't meet alignement 0x%x.\n",
+			  legacy_check->dst->handle, tmp);
+	}
+	cmd->cdw[cdw_id] &= 0xffc00000;
+	cmd->cdw[cdw_id] |= (tmp >> 10);
 	return 0;
 }
 
 static int p0_src_pitch_offset(struct drm_device *dev,
-			       struct amd_cbuffer *cbuffer,
-			       int dw_id, int reg)
+			       struct amd_cmd *cmd,
+			       int cdw_id, int reg)
 {
 	struct legacy_check *legacy_check;
-	uint32_t gpu_addr;
+	uint32_t tmp;
 	int ret;
 	
-	legacy_check = (struct legacy_check *)cbuffer->driver;
-	legacy_check->src_pitch = ((cbuffer->cbuffer[dw_id] >> 22) & 0xff) << 6;
-	legacy_check->src = amd_cbuffer_arg_from_dw_id(&cbuffer->arg_unused,
-						       dw_id);
-	if (legacy_check->dst == NULL) {
+	legacy_check = (struct legacy_check *)cmd->driver;
+	legacy_check->src_pitch = ((cmd->cdw[cdw_id] >> 22) & 0xff) << 6;
+	tmp = cmd->cdw[cdw_id] & 0x003fffff;
+	legacy_check->src = amd_cmd_get_bo(cmd, tmp);
+	if (legacy_check->src == NULL) {
+		DRM_ERROR("invalid bo (%d) for SRC_PITCH_OFFSET register.\n",
+			  tmp);
 		return -EINVAL;
 	}
-	ret = radeon_ms_bo_get_gpu_addr(dev, &legacy_check->src->buffer->mem,
-					&gpu_addr);
+	ret = radeon_ms_bo_get_gpu_addr(dev, &legacy_check->src->bo->mem, &tmp);
 	if (ret) {
+		DRM_ERROR("failed to get GPU offset for bo 0x%x.\n",
+			  legacy_check->src->handle);
 		return -EINVAL;
 	}
-	cbuffer->cbuffer[dw_id] &= 0xffc00000;
-	cbuffer->cbuffer[dw_id] |= (gpu_addr >> 10);
+	if (tmp & 0x3fff) {
+		DRM_ERROR("bo 0x%x offset doesn't meet alignement 0x%x.\n",
+			  legacy_check->src->handle, tmp);
+	}
+	cmd->cdw[cdw_id] &= 0xffc00000;
+	cmd->cdw[cdw_id] |= (tmp >> 10);
 	return 0;
 }
 
 static int p0_dst_y_x(struct drm_device *dev,
-		      struct amd_cbuffer *cbuffer,
-		      int dw_id, int reg)
+		      struct amd_cmd *cmd,
+		      int cdw_id, int reg)
 {
 	struct legacy_check *legacy_check;
 	
-	legacy_check = (struct legacy_check *)cbuffer->driver;
-	legacy_check->dst_x = cbuffer->cbuffer[dw_id] & 0xffff;
-	legacy_check->dst_y = (cbuffer->cbuffer[dw_id] >> 16) & 0xffff;
+	legacy_check = (struct legacy_check *)cmd->driver;
+	legacy_check->dst_x = cmd->cdw[cdw_id] & 0xffff;
+	legacy_check->dst_y = (cmd->cdw[cdw_id] >> 16) & 0xffff;
 	return 0;
 }
 
 static int p0_src_y_x(struct drm_device *dev,
-		      struct amd_cbuffer *cbuffer,
-		      int dw_id, int reg)
+		      struct amd_cmd *cmd,
+		      int cdw_id, int reg)
 {
 	struct legacy_check *legacy_check;
 	
-	legacy_check = (struct legacy_check *)cbuffer->driver;
-	legacy_check->src_x = cbuffer->cbuffer[dw_id] & 0xffff;
-	legacy_check->src_y = (cbuffer->cbuffer[dw_id] >> 16) & 0xffff;
+	legacy_check = (struct legacy_check *)cmd->driver;
+	legacy_check->src_x = cmd->cdw[cdw_id] & 0xffff;
+	legacy_check->src_y = (cmd->cdw[cdw_id] >> 16) & 0xffff;
 	return 0;
 }
 
 static int p0_dst_h_w(struct drm_device *dev,
-		      struct amd_cbuffer *cbuffer,
-		      int dw_id, int reg)
+		      struct amd_cmd *cmd,
+		      int cdw_id, int reg)
 {
 	struct legacy_check *legacy_check;
 	
-	legacy_check = (struct legacy_check *)cbuffer->driver;
-	legacy_check->dst_w = cbuffer->cbuffer[dw_id] & 0xffff;
-	legacy_check->dst_h = (cbuffer->cbuffer[dw_id] >> 16) & 0xffff;
-	return check_blit(dev, cbuffer);
+	legacy_check = (struct legacy_check *)cmd->driver;
+	legacy_check->dst_w = cmd->cdw[cdw_id] & 0xffff;
+	legacy_check->dst_h = (cmd->cdw[cdw_id] >> 16) & 0xffff;
+	return check_blit(dev, cmd);
 }
 
-static int legacy_cbuffer_check(struct drm_device *dev,
-				struct amd_cbuffer *cbuffer)
+static int legacy_cmd_check(struct drm_device *dev,
+				struct amd_cmd *cmd)
 {
 	struct legacy_check legacy_check;
 
 	memset(&legacy_check, 0xff, sizeof(struct legacy_check));
-	cbuffer->driver = &legacy_check;
-	return amd_cbuffer_check(dev, cbuffer);
+	cmd->driver = &legacy_check;
+	return amd_cmd_check(dev, cmd);
 }
 
-int amd_legacy_cbuffer_destroy(struct drm_device *dev)
+int amd_legacy_cmd_module_destroy(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 
-	dev_priv->cbuffer_checker.check = NULL;
-	if (dev_priv->cbuffer_checker.numof_p0_checkers) {
-		drm_free(dev_priv->cbuffer_checker.check_p0,
-			 dev_priv->cbuffer_checker.numof_p0_checkers *
+	dev_priv->cmd_module.check = NULL;
+	if (dev_priv->cmd_module.numof_p0_checkers) {
+		drm_free(dev_priv->cmd_module.check_p0,
+			 dev_priv->cmd_module.numof_p0_checkers *
 			 sizeof(void*), DRM_MEM_DRIVER);
-		dev_priv->cbuffer_checker.numof_p0_checkers = 0;
+		dev_priv->cmd_module.numof_p0_checkers = 0;
 	}
-	if (dev_priv->cbuffer_checker.numof_p3_checkers) {
-		drm_free(dev_priv->cbuffer_checker.check_p3,
-			 dev_priv->cbuffer_checker.numof_p3_checkers *
+	if (dev_priv->cmd_module.numof_p3_checkers) {
+		drm_free(dev_priv->cmd_module.check_p3,
+			 dev_priv->cmd_module.numof_p3_checkers *
 			 sizeof(void*), DRM_MEM_DRIVER);
-		dev_priv->cbuffer_checker.numof_p3_checkers = 0;
+		dev_priv->cmd_module.numof_p3_checkers = 0;
 	}
 	return 0;
 }
 
-int amd_legacy_cbuffer_initialize(struct drm_device *dev)
+int amd_legacy_cmd_module_initialize(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct amd_cbuffer_checker *checker = &dev_priv->cbuffer_checker;
+	struct amd_cmd_module *checker = &dev_priv->cmd_module;
 	long size;
 
 	/* packet 0 */
@@ -273,7 +287,7 @@ int amd_legacy_cbuffer_initialize(struct drm_device *dev)
 	size = checker->numof_p0_checkers * sizeof(void*);
 	checker->check_p0 = drm_alloc(size, DRM_MEM_DRIVER);
 	if (checker->check_p0 == NULL) {
-		amd_legacy_cbuffer_destroy(dev);
+		amd_legacy_cmd_module_destroy(dev);
 		return -ENOMEM;
 	}
 	/* initialize to -1 */
@@ -284,7 +298,7 @@ int amd_legacy_cbuffer_initialize(struct drm_device *dev)
 	size = checker->numof_p3_checkers * sizeof(void*);
 	checker->check_p3 = drm_alloc(size, DRM_MEM_DRIVER);
 	if (checker->check_p3 == NULL) {
-		amd_legacy_cbuffer_destroy(dev);
+		amd_legacy_cmd_module_destroy(dev);
 		return -ENOMEM;
 	}
 	/* initialize to -1 */
@@ -301,6 +315,6 @@ int amd_legacy_cbuffer_initialize(struct drm_device *dev)
 	checker->check_p0[RADEON_DP_WRITE_MASK >> 2] = NULL;
 	checker->check_p0[RADEON_DP_CNTL >> 2] = NULL;
 
-	checker->check = legacy_cbuffer_check;
+	checker->check = legacy_cmd_check;
 	return 0;
 }
