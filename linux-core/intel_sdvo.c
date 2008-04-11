@@ -126,14 +126,6 @@ static bool intel_sdvo_read_byte(struct drm_output *output, u8 addr,
 	return false;
 }
 
-
-static bool intel_sdvo_read_byte_quiet(struct drm_output *output, int addr,
-				       u8 *ch)
-{
-	return true;
-
-}
-
 static bool intel_sdvo_write_byte(struct drm_output *output, int addr,
 				  u8 ch)
 {
@@ -861,23 +853,6 @@ static bool intel_sdvo_get_capabilities(struct drm_output *output, struct intel_
 		return false;
 
 	return true;
-}
-
-
-static void intel_sdvo_dump_cmd(struct drm_output *output, int opcode)
-{
-
-
-}
-
-static void intel_sdvo_dump_device(struct drm_output *output)
-{
-
-}
-
-void intel_sdvo_dump(void)
-{
-
 }
 
 struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB)

@@ -308,13 +308,10 @@ struct drm_crtc_funcs {
 	 */
 	void (*dpms)(struct drm_crtc *crtc, int mode);
 
-	/* JJJ:  Are these needed? */
 	/* Save CRTC state */
 	void (*save)(struct drm_crtc *crtc); /* suspend? */
 	/* Restore CRTC state */
 	void (*restore)(struct drm_crtc *crtc); /* resume? */
-	bool (*lock)(struct drm_crtc *crtc);
-	void (*unlock)(struct drm_crtc *crtc);
 
 	void (*prepare)(struct drm_crtc *crtc);
 	void (*commit)(struct drm_crtc *crtc);
@@ -367,10 +364,6 @@ struct drm_crtc {
 
 	bool enabled;
 
-	/* JJJ: are these needed? */
-	bool cursor_in_range;
-	bool cursor_shown;
-
 	struct drm_display_mode mode;
 
 	int x, y;
@@ -418,7 +411,6 @@ struct drm_output_funcs {
 			 struct drm_display_mode *adjusted_mode);
 	enum drm_output_status (*detect)(struct drm_output *output);
 	int (*get_modes)(struct drm_output *output);
-	/* JJJ: type checking for properties via property value type */
 	bool (*set_property)(struct drm_output *output, struct drm_property *property,
 			     uint64_t val);
 	void (*cleanup)(struct drm_output *output);
@@ -519,7 +511,6 @@ struct drm_mode_config {
 	int num_output;
 	struct list_head output_list;
 
-	/* int compat_output? */
 	int num_crtc;
 	struct list_head crtc_list;
 
@@ -527,8 +518,6 @@ struct drm_mode_config {
 
 	int min_width, min_height;
 	int max_width, max_height;
-	/* DamagePtr rotationDamage? */
-	/* DGA stuff? */
 	struct drm_mode_config_funcs *funcs;
 	unsigned long fb_base;
 

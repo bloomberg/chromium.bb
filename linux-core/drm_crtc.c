@@ -440,7 +440,6 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	struct drm_device *dev = crtc->dev;
 	struct drm_display_mode *adjusted_mode, saved_mode;
 	int saved_x, saved_y;
-	bool didLock = false;
 	struct drm_output *output;
 	bool ret = true;
 
@@ -450,8 +449,6 @@ bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 
 	if (!crtc->enabled)
 		return true;
-
-	didLock = crtc->funcs->lock(crtc);
 
 	saved_mode = crtc->mode;
 	saved_x = crtc->x;
@@ -544,9 +541,6 @@ done:
 		crtc->x = saved_x;
 		crtc->y = saved_y;
 	} 
-
-	if (didLock)
-		crtc->funcs->unlock (crtc);
 	
 	return ret;
 }

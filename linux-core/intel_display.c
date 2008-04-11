@@ -571,25 +571,6 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	intel_crtc->dpms_mode = mode;
 }
 
-static bool intel_crtc_lock(struct drm_crtc *crtc)
-{
-   /* Sync the engine before mode switch */
-//   i830WaitSync(crtc->scrn);
-
-#if 0 // TODO def XF86DRI
-    return I830DRILock(crtc->scrn);
-#else
-    return FALSE;
-#endif
-}
-
-static void intel_crtc_unlock (struct drm_crtc *crtc)
-{
-#if 0 // TODO def XF86DRI
-    I830DRIUnlock (crtc->scrn);
-#endif
-}
-
 static void intel_crtc_prepare (struct drm_crtc *crtc)
 {
 	crtc->funcs->dpms(crtc, DPMSModeOff);
@@ -1334,8 +1315,6 @@ struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
 
 static const struct drm_crtc_funcs intel_crtc_funcs = {
 	.dpms = intel_crtc_dpms,
-	.lock = intel_crtc_lock,
-	.unlock = intel_crtc_unlock,
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
 	.mode_set_base = intel_pipe_set_base,
