@@ -1938,7 +1938,7 @@ int drm_bo_setstatus_ioctl(struct drm_device *dev,
 		return -EINVAL;
 	}
 
-	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	ret = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (ret)
 		return ret;
 
@@ -2449,7 +2449,7 @@ int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 		return -EINVAL;
 	}
 
-	ret = drm_bo_write_lock(&bm->bm_lock, file_priv);
+	ret = drm_bo_write_lock(&bm->bm_lock, 1, file_priv);
 	if (ret)
 		return ret;
 
@@ -2500,7 +2500,7 @@ int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *f
 		return -EINVAL;
 	}
 
-	ret = drm_bo_write_lock(&bm->bm_lock, file_priv);
+	ret = drm_bo_write_lock(&bm->bm_lock, 0, file_priv);
 	if (ret)
 		return ret;
 
@@ -2548,7 +2548,7 @@ int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_
 	}
 
 	if (arg->lock_flags & DRM_BO_LOCK_UNLOCK_BM) {
-		ret = drm_bo_write_lock(&dev->bm.bm_lock, file_priv);
+		ret = drm_bo_write_lock(&dev->bm.bm_lock, 1, file_priv);
 		if (ret)
 			return ret;
 	}

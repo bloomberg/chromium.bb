@@ -738,7 +738,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 		return NOPFN_SIGBUS;
 
 	dev = bo->dev;
-	err = drm_bo_read_lock(&dev->bm.bm_lock);
+	err = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (err)
 		return NOPFN_REFAULT;
 

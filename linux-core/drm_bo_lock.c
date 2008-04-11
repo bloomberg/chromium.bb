@@ -49,7 +49,7 @@
  * unmappable regions to mappable. It's a bug to leave kernel space with the
  * read lock held.
  *
- * Both read- and write lock taking is interruptible for low signal-delivery
+ * Both read- and write lock taking may be interruptible for low signal-delivery
  * latency. The locking functions will return -EAGAIN if interrupted by a
  * signal.
  *
@@ -71,14 +71,20 @@ void drm_bo_read_unlock(struct drm_bo_lock *lock)
 	if (unlikely(atomic_add_negative(-1, &lock->readers)))
 		BUG();
 	if (atomic_read(&lock->readers) == 0)
-		wake_up_interruptible(&lock->queue);
+		wake_up_all(&lock->queue);
 }
 EXPORT_SYMBOL(drm_bo_read_unlock);
 
-int drm_bo_read_lock(struct drm_bo_lock *lock)
+int drm_bo_read_lock(struct drm_bo_lock *lock, int interruptible)
 {
 	while (unlikely(atomic_read(&lock->write_lock_pending) != 0)) {
 		int ret;
+
+		if (!interruptible) {
+			wait_event(lock->queue,
+				   atomic_read(&lock->write_lock_pending) == 0);
+			continue;
+		}
 		ret = wait_event_interruptible
 		    (lock->queue, atomic_read(&lock->write_lock_pending) == 0);
 		if (ret)
@@ -87,8 +93,14 @@ int drm_bo_read_lock(struct drm_bo_lock *lock)
 
 	while (unlikely(!atomic_add_unless(&lock->readers, 1, -1))) {
 		int ret;
+
+		if (!interruptible) {
+			wait_event(lock->queue,
+				   atomic_read(&lock->readers) != -1);
+			continue;
+		}
 		ret = wait_event_interruptible
-		    (lock->queue, atomic_add_unless(&lock->readers, 1, -1));
+			(lock->queue, atomic_read(&lock->readers) != -1);
 		if (ret)
 			return -EAGAIN;
 	}
@@ -100,9 +112,7 @@ static int __drm_bo_write_unlock(struct drm_bo_lock *lock)
 {
 	if (unlikely(atomic_cmpxchg(&lock->readers, -1, 0) != -1))
 		return -EINVAL;
-	if (unlikely(atomic_cmpxchg(&lock->write_lock_pending, 1, 0) != 1))
-		return -EINVAL;
-	wake_up_interruptible(&lock->queue);
+	wake_up_all(&lock->queue);
 	return 0;
 }
 
@@ -116,21 +126,26 @@ static void drm_bo_write_lock_remove(struct drm_file *file_priv,
 	BUG_ON(ret);
 }
 
-int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
+int drm_bo_write_lock(struct drm_bo_lock *lock, int interruptible,
+		      struct drm_file *file_priv)
 {
 	int ret = 0;
 	struct drm_device *dev;
 
-	if (unlikely(atomic_cmpxchg(&lock->write_lock_pending, 0, 1) != 0))
-		return -EINVAL;
+	atomic_inc(&lock->write_lock_pending);
 
 	while (unlikely(atomic_cmpxchg(&lock->readers, 0, -1) != 0)) {
+		if (!interruptible) {
+			wait_event(lock->queue,
+				   atomic_read(&lock->readers) == 0);
+			continue;
+		}
 		ret = wait_event_interruptible
-		    (lock->queue, atomic_cmpxchg(&lock->readers, 0, -1) == 0);
+		    (lock->queue, atomic_read(&lock->readers) == 0);
 
 		if (ret) {
-			atomic_set(&lock->write_lock_pending, 0);
-			wake_up_interruptible(&lock->queue);
+			atomic_dec(&lock->write_lock_pending);
+			wake_up_all(&lock->queue);
 			return -EAGAIN;
 		}
 	}
@@ -141,6 +156,7 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, struct drm_file *file_priv)
 	 * while holding it.
 	 */
 
+	atomic_dec(&lock->write_lock_pending);
 	dev = file_priv->minor->dev;
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_add_user_object(file_priv, &lock->base, 0);

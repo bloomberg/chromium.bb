@@ -213,7 +213,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	unsigned long bus_size;
 
 	dev = bo->dev;
-	while(drm_bo_read_lock(&dev->bm.bm_lock));
+	drm_bo_read_lock(&dev->bm.bm_lock, 0);
 
 	mutex_lock(&bo->mutex);
 

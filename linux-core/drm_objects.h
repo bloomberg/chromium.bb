@@ -320,6 +320,8 @@ struct drm_ttm {
 	int destroy;
 	uint32_t mapping_offset;
 	struct drm_ttm_backend *be;
+	unsigned long highest_lomem_entry;
+	unsigned long lowest_himem_entry;
 	enum {
 		ttm_bound,
 		ttm_evicted,
@@ -798,8 +800,10 @@ extern void drm_regs_init(struct drm_reg_manager *manager,
 
 extern void drm_bo_init_lock(struct drm_bo_lock *lock);
 extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
-extern int drm_bo_read_lock(struct drm_bo_lock *lock);
+extern int drm_bo_read_lock(struct drm_bo_lock *lock,
+			    int interruptible);
 extern int drm_bo_write_lock(struct drm_bo_lock *lock,
+			     int interruptible,
 			     struct drm_file *file_priv);
 
 extern int drm_bo_write_unlock(struct drm_bo_lock *lock,

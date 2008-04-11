@@ -845,7 +845,7 @@ int i915_execbuffer(struct drm_device *dev, void *data,
 	if (exec_buf->num_buffers > dev_priv->max_validate_buffers)
 		return -EINVAL;
 
-	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	ret = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (ret)
 		return ret;
 
