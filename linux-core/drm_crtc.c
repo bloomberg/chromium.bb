@@ -767,9 +767,25 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 	dev->mode_config.connector_num_property->values[0] = 0;
 	dev->mode_config.connector_num_property->values[1] = 20;
 
-	/*
-	 * TV specific properties
-	 */
+	return 0;
+}
+
+/**
+ * drm_create_tv_properties - create TV specific output properties
+ * @dev: DRM device
+ * @num_modes: number of different TV formats (modes) supported
+ * @modes: array of pointers to strings containing name of each format
+ *
+ * Called by a driver's TV initialization routine, this function creates
+ * the TV specific output properties for a given device.  Caller is
+ * responsible for allocating a list of format names and passing them to
+ * this routine.
+ */
+bool drm_create_tv_properties(struct drm_device *dev, int num_modes,
+			      char *modes[])
+{
+	int i;
+
 	dev->mode_config.tv_left_margin_property =
 		drm_property_create(dev, DRM_MODE_PROP_RANGE |
 				    DRM_MODE_PROP_IMMUTABLE,
@@ -778,28 +794,33 @@ static int drm_mode_create_standard_output_properties(struct drm_device *dev)
 	dev->mode_config.tv_left_margin_property->values[1] = 100;
 
 	dev->mode_config.tv_right_margin_property =
-		drm_property_create(dev, DRM_MODE_PROP_RANGE |
-				    DRM_MODE_PROP_IMMUTABLE,
+		drm_property_create(dev, DRM_MODE_PROP_RANGE,
 				    "right margin", 2);
 	dev->mode_config.tv_right_margin_property->values[0] = 0;
 	dev->mode_config.tv_right_margin_property->values[1] = 100;
 
 	dev->mode_config.tv_top_margin_property =
-		drm_property_create(dev, DRM_MODE_PROP_RANGE |
-				    DRM_MODE_PROP_IMMUTABLE,
+		drm_property_create(dev, DRM_MODE_PROP_RANGE,
 				    "top margin", 2);
 	dev->mode_config.tv_top_margin_property->values[0] = 0;
 	dev->mode_config.tv_top_margin_property->values[1] = 100;
 
 	dev->mode_config.tv_bottom_margin_property =
-		drm_property_create(dev, DRM_MODE_PROP_RANGE |
-				    DRM_MODE_PROP_IMMUTABLE,
+		drm_property_create(dev, DRM_MODE_PROP_RANGE,
 				    "bottom margin", 2);
 	dev->mode_config.tv_bottom_margin_property->values[0] = 0;
 	dev->mode_config.tv_bottom_margin_property->values[1] = 100;
 
+	dev->mode_config.tv_mode_property =
+		drm_property_create(dev, DRM_MODE_PROP_ENUM,
+				    "mode", num_modes);
+	for (i = 0; i < num_modes; i++)
+		drm_property_add_enum(dev->mode_config.tv_mode_property, i,
+				      i, modes[i]);
+
 	return 0;
 }
+EXPORT_SYMBOL(drm_create_tv_properties);
 
 /**
  * drm_mode_config_init - initialize DRM mode_configuration structure

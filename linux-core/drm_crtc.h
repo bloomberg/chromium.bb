@@ -611,6 +611,8 @@ extern struct drm_property *drm_property_create(struct drm_device *dev, int flag
 extern void drm_property_destroy(struct drm_device *dev, struct drm_property *property);
 extern int drm_property_add_enum(struct drm_property *property, int index, 
 				 uint64_t value, const char *name);
+extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
+				     char *formats[]);
 
 /* IOCTLs */
 extern int drm_mode_getresources(struct drm_device *dev,
