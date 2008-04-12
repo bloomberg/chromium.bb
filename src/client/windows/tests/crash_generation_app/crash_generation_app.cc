@@ -35,7 +35,7 @@
 namespace google_breakpad {
 
 const int kMaxLoadString = 100;
-const wchar_t kPipeName[] = L"\\\\.\\pipe\\GoogleCrashServices";
+const wchar_t kPipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\S-1-5-21-39260824-743453154-142223018-195347";
 
 const DWORD kEditBoxStyles = WS_CHILD |
                              WS_VISIBLE |
@@ -236,6 +236,7 @@ void CrashServerStart() {
 
   std::wstring dump_path = L"C:\\Dumps\\";
   crash_server = new CrashGenerationServer(kPipeName,
+                                           NULL,
                                            ShowClientConnected,
                                            NULL,
                                            ShowClientCrashed,

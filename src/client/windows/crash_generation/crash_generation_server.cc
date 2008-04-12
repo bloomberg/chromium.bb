@@ -91,6 +91,7 @@ static bool IsClientRequestValid(const ProtocolMessage& msg) {
 
 CrashGenerationServer::CrashGenerationServer(
     const std::wstring& pipe_name,
+    SECURITY_ATTRIBUTES* pipe_sec_attrs,
     OnClientConnectedCallback connect_callback,
     void* connect_context,
     OnClientDumpRequestCallback dump_callback,
@@ -100,6 +101,7 @@ CrashGenerationServer::CrashGenerationServer(
     bool generate_dumps,
     const std::wstring* dump_path)
     : pipe_name_(pipe_name),
+      pipe_sec_attrs_(pipe_sec_attrs),
       pipe_(NULL),
       pipe_wait_handle_(NULL),
       server_alive_handle_(NULL),
@@ -217,7 +219,7 @@ bool CrashGenerationServer::Start() {
                           kOutBufferSize,
                           kInBufferSize,
                           0,
-                          NULL);
+                          pipe_sec_attrs_);
   if (!pipe_) {
     return false;
   }

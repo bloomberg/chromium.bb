@@ -61,6 +61,10 @@ class CrashGenerationServer {
   // Creates an instance with the given parameters.
   //
   // Parameter pipe_name: Name of the Windows named pipe
+  // Parameter pipe_sec_attrs Security attributes to set on the pipe. Pass
+  //     NULL to use default security on the pipe. By default, the pipe created
+  //     allows Local System, Administrators and the Creator full control and
+  //     the Everyone group read access on the pipe.
   // Parameter connect_callback: Callback for a new client connection.
   // Parameter connect_context: Context for client connection callback.
   // Parameter crash_callback: Callback for a client crash dump request.
@@ -74,6 +78,7 @@ class CrashGenerationServer {
   // Parameter dump_path: Path for generating dumps; required only if true is
   // passed for generateDumps parameter; NULL can be passed otherwise.
   CrashGenerationServer(const std::wstring& pipe_name,
+                        SECURITY_ATTRIBUTES* pipe_sec_attrs,
                         OnClientConnectedCallback connect_callback,
                         void* connect_context,
                         OnClientDumpRequestCallback dump_callback,
@@ -194,6 +199,9 @@ class CrashGenerationServer {
 
   // Pipe name.
   std::wstring pipe_name_;
+
+  // Pipe security attributes
+  SECURITY_ATTRIBUTES* pipe_sec_attrs_;
 
   // Handle to the pipe used for handshake with clients.
   HANDLE pipe_;
