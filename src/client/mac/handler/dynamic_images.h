@@ -77,7 +77,6 @@ typedef mach_header breakpad_mach_header;
 typedef segment_command breakpad_mach_segment_command;
 #endif
 
-
 //==============================================================================
 // A simple wrapper for a mach_header
 //
@@ -296,6 +295,7 @@ class DynamicImages {
 
   // Initialization
   void ReadImageInfoForTask();
+  void* GetDyldAllImageInfosPointer();
 
   mach_port_t              task_;
   vector<DynamicImageRef>  image_list_;

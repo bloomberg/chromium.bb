@@ -31,6 +31,7 @@ extern "C" { // needed to compile on Leopard
   #include <mach-o/nlist.h>
   #include <stdlib.h>
   #include <stdio.h>
+  #include "breakpad_nlist_64.h"
 }
 
 #include <dlfcn.h>
@@ -244,9 +245,12 @@ DynamicImages::DynamicImages(mach_port_t task)
   ReadImageInfoForTask();
 }
 
-//==============================================================================
-// This code was written using dyld_debug.c (from Darwin) as a guide.
-void DynamicImages::ReadImageInfoForTask() {
+void* DynamicImages::GetDyldAllImageInfosPointer()
+{
+
+  const char *imageSymbolName = "_dyld_all_image_infos";
+  const char *dyldPath = "/usr/lib/dyld";
+#ifndef __LP64__
   struct nlist l[8];
   memset(l, 0, sizeof(l) );
 
@@ -254,10 +258,37 @@ void DynamicImages::ReadImageInfoForTask() {
   // which lives in "dyld".  This structure contains information about all
   // of the loaded dynamic images.
   struct nlist &list = l[0];
-  list.n_un.n_name = const_cast<char *>("_dyld_all_image_infos");
-  nlist("/usr/lib/dyld", &list);
+  list.n_un.n_name = const_cast<char *>(imageSymbolName);
+  nlist(dyldPath,&list);
+  if(list.n_value) {
+    return reinterpret_cast<void*>(list.n_value);
+  }
 
-  if (list.n_value) {
+  return NULL;
+#else
+  struct nlist_64 l[8];
+  struct nlist_64 &list = l[0];
+
+  memset(l, 0, sizeof(l) );
+
+  const char *symbolNames[2] = { imageSymbolName, "\0" };
+
+  int invalidEntriesCount = breakpad_nlist_64(dyldPath,&list,symbolNames);
+
+  if(invalidEntriesCount != 0) {
+    return NULL;
+  }
+  assert(list.n_value);
+  return reinterpret_cast<void*>(list.n_value);
+#endif
+
+}
+//==============================================================================
+// This code was written using dyld_debug.c (from Darwin) as a guide.
+void DynamicImages::ReadImageInfoForTask() {
+  void *imageList = GetDyldAllImageInfosPointer();
+
+  if (imageList) {
     // Read the structure inside of dyld that contains information about
     // loaded images.  We're reading from the desired task's address space.
 
@@ -266,7 +297,7 @@ void DynamicImages::ReadImageInfoForTask() {
     // "dyld_debug.c" and is said to be nearly always valid.
     dyld_all_image_infos *dyldInfo = reinterpret_cast<dyld_all_image_infos*>
       (ReadTaskMemory(task_,
-                      reinterpret_cast<void*>(list.n_value),
+                      reinterpret_cast<void*>(imageList),
                       sizeof(dyld_all_image_infos)));
 
     if (dyldInfo) {

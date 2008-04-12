@@ -36,6 +36,7 @@
 #include <mach-o/loader.h>
 #include <sys/sysctl.h>
 #include <sys/resource.h>
+#include <mach/mach_vm.h>
 
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -472,7 +473,6 @@ bool MinidumpGenerator::WriteContext(breakpad_thread_state_data_t state,
 
   return true;
 }
-
 #endif
 
 bool MinidumpGenerator::WriteThreadStream(mach_port_t thread_id,
