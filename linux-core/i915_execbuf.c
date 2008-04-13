@@ -144,7 +144,7 @@ int i915_apply_reloc(struct drm_file *file_priv, int num_buffers,
 		relocatee->offset = new_cmd_offset;
 
 		if (unlikely(relocatee->idle == I915_RELOC_UNCHECKED)) {
-			ret = drm_bo_wait(relocatee->buf, 0, 0, 0);
+		  ret = drm_bo_wait(relocatee->buf, 0, 1, 0, 0);
 			if (ret)
 				return ret;
 			relocatee->idle = I915_RELOC_IDLE;
@@ -355,11 +355,9 @@ static int i915_update_relocatee(struct i915_relocatee_info *relocatee,
 
 		if (relocatee->idle == I915_RELOC_UNCHECKED) {
 			preempt_enable();
-			ret = mutex_lock_interruptible(&relocatee->buf->mutex);
-			if (unlikely(ret))
-				return -EAGAIN;
+			mutex_lock(&relocatee->buf->mutex);
 
-			ret = drm_bo_wait(relocatee->buf, 0, 0, 1);
+			ret = drm_bo_wait(relocatee->buf, 0, 1, 1, 0);
 			if (ret == 0)
 				relocatee->idle = I915_RELOC_IDLE;
 			else {
@@ -684,7 +682,7 @@ int i915_validate_buffer_list(struct drm_file *file_priv,
 		ret = drm_bo_handle_validate(file_priv, req->bo_req.handle,
 					     req->bo_req.flags,
 					     req->bo_req.mask, req->bo_req.hint,
-					     req->bo_req.fence_class, 0,
+					     req->bo_req.fence_class,
 					     NULL, &item->buffer);
 		if (ret) {
 			DRM_ERROR("error on handle validate %d\n", ret);

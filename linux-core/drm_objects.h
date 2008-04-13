@@ -517,6 +517,14 @@ struct drm_buffer_object {
 #define _DRM_BO_FLAG_UNFENCED 0x00000001
 #define _DRM_BO_FLAG_EVICTED  0x00000002
 
+/*
+ * This flag indicates that a flag called with bo->mutex held has
+ * temporarily released the buffer object mutex, (usually to wait for something).
+ * and thus any post-lock validation needs to be rerun.
+ */
+
+#define _DRM_BO_FLAG_UNLOCKED 0x00000004
+
 struct drm_mem_type_manager {
 	int has_type;
 	int use_type;
@@ -682,8 +690,8 @@ extern int drm_buffer_object_create(struct drm_device *dev, unsigned long size,
 				    uint32_t hint, uint32_t page_alignment,
 				    unsigned long buffer_start,
 				    struct drm_buffer_object **bo);
-extern int drm_bo_wait(struct drm_buffer_object *bo, int lazy, int ignore_signals,
-		       int no_wait);
+extern int drm_bo_wait(struct drm_buffer_object *bo, int lazy, int interruptible,
+		       int no_wait, int check_unfenced);
 extern int drm_bo_mem_space(struct drm_buffer_object *bo,
 			    struct drm_bo_mem_reg *mem, int no_wait);
 extern int drm_bo_move_buffer(struct drm_buffer_object *bo,
@@ -695,7 +703,7 @@ extern int drm_bo_init_mm(struct drm_device *dev, unsigned type,
 			  int kern_init);
 extern int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
 				  uint64_t flags, uint64_t mask, uint32_t hint,
-				  uint32_t fence_class, int use_old_fence_class,
+				  uint32_t fence_class,
 				  struct drm_bo_info_rep *rep,
 				  struct drm_buffer_object **bo_rep);
 extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file *file_priv,
