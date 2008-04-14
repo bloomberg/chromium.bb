@@ -1225,11 +1225,13 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 		bo->priv_flags &= ~_DRM_BO_FLAG_UNLOCKED;
 
 		ret = drm_bo_wait(bo, 0, 1, no_wait, 1);
+		if (unlikely(ret))
+			goto out;
 
 		if (bo->mem.flags & DRM_BO_FLAG_CACHED_MAPPED)
 			drm_bo_evict_cached(bo);
 
-	} while (bo->priv_flags & _DRM_BO_FLAG_UNLOCKED);
+	} while (unlikely(bo->priv_flags & _DRM_BO_FLAG_UNLOCKED));
 
 	atomic_inc(&bo->mapped);
 	mutex_lock(&dev->struct_mutex);
@@ -1242,6 +1244,7 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 	} else
 		drm_bo_fill_rep_arg(bo, rep);
 
+ out:
 	mutex_unlock(&bo->mutex);
 	drm_bo_usage_deref_unlocked(&bo);
 
@@ -1610,7 +1613,7 @@ int drm_bo_do_validate(struct drm_buffer_object *bo,
 		if (ret)
 			goto out;
 
-	}  while(bo->priv_flags & _DRM_BO_FLAG_UNLOCKED);
+	} while(unlikely(bo->priv_flags & _DRM_BO_FLAG_UNLOCKED));
 
 	ret = drm_buffer_object_validate(bo,
 					 fence_class,
