@@ -68,9 +68,7 @@ void drm_bo_init_lock(struct drm_bo_lock *lock)
 
 void drm_bo_read_unlock(struct drm_bo_lock *lock)
 {
-	if (unlikely(atomic_add_negative(-1, &lock->readers)))
-		BUG();
-	if (atomic_read(&lock->readers) == 0)
+	if (atomic_dec_and_test(&lock->readers))
 		wake_up_all(&lock->queue);
 }
 EXPORT_SYMBOL(drm_bo_read_unlock);
@@ -79,7 +77,7 @@ int drm_bo_read_lock(struct drm_bo_lock *lock, int interruptible)
 {
 	while (unlikely(atomic_read(&lock->write_lock_pending) != 0)) {
 		int ret;
-
+		
 		if (!interruptible) {
 			wait_event(lock->queue,
 				   atomic_read(&lock->write_lock_pending) == 0);
@@ -93,7 +91,6 @@ int drm_bo_read_lock(struct drm_bo_lock *lock, int interruptible)
 
 	while (unlikely(!atomic_add_unless(&lock->readers, 1, -1))) {
 		int ret;
-
 		if (!interruptible) {
 			wait_event(lock->queue,
 				   atomic_read(&lock->readers) != -1);
@@ -156,7 +153,8 @@ int drm_bo_write_lock(struct drm_bo_lock *lock, int interruptible,
 	 * while holding it.
 	 */
 
-	atomic_dec(&lock->write_lock_pending);
+	if (atomic_dec_and_test(&lock->write_lock_pending))
+		wake_up_all(&lock->queue);
 	dev = file_priv->minor->dev;
 	mutex_lock(&dev->struct_mutex);
 	ret = drm_add_user_object(file_priv, &lock->base, 0);

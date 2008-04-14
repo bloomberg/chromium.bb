@@ -1244,6 +1244,7 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 
 	mutex_unlock(&bo->mutex);
 	drm_bo_usage_deref_unlocked(&bo);
+
 	return ret;
 }
 
@@ -1541,8 +1542,9 @@ static int drm_bo_prepare_for_validate(struct drm_buffer_object *bo,
 							     ftype,
 							     no_wait);
 		}
-		if (ret && ret != -EAGAIN)
+		if (ret && ret != -EAGAIN) 
 			ret = drm_bo_wait(bo, 0, 1, no_wait, 1);
+		
 		if (ret)
 			return ret;
 	}
@@ -1622,6 +1624,7 @@ out:
 		drm_bo_fill_rep_arg(bo, rep);
 
 	mutex_unlock(&bo->mutex);
+
 	return ret;
 }
 EXPORT_SYMBOL(drm_bo_do_validate);
@@ -1816,7 +1819,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	}
 
 	mutex_unlock(&bo->mutex);
-	ret = drm_bo_do_validate(bo, 0, 0, hint & DRM_BO_HINT_DONT_BLOCK,
+	ret = drm_bo_do_validate(bo, 0, 0, hint | DRM_BO_HINT_DONT_FENCE,
 				 0, NULL);
 	if (ret)
 		goto out_err_unlocked;
