@@ -68,7 +68,18 @@
 
 #ifdef __LP64__
 
+#include <mach-o/nlist.h>
+#include <mach-o/loader.h>
+#include <mach-o/fat.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
 #include "breakpad_nlist_64.h"
+#include <TargetConditionals.h>
+#include <stdio.h>
+#include <mach/mach.h>
 
 /* Stuff lifted from <a.out.h> and <sys/exec.h> since they are gone */
 /*
@@ -97,6 +108,9 @@ struct exec {
 #define N_SYMOFF(x)                                                     \
   (N_TXTOFF(x) + (x).a_text+(x).a_data + (x).a_trsize+(x).a_drsize)
 
+int
+__breakpad_fdnlist_64(int fd, breakpad_nlist *list, const char **symbolNames);
+
 /*
  * nlist - retreive attributes from name list (string table version)
  */
@@ -104,8 +118,7 @@ struct exec {
 int
 breakpad_nlist_64(const char *name,
                   breakpad_nlist *list,
-                  const char **symbolNames)
-{
+                  const char **symbolNames) {
   int fd, n;
 
   fd = open(name, O_RDONLY, 0);
@@ -119,8 +132,7 @@ breakpad_nlist_64(const char *name,
 /* Note: __fdnlist() is called from kvm_nlist in libkvm's kvm.c */
 
 int
-__breakpad_fdnlist_64(int fd, breakpad_nlist *list, const char **symbolNames)
-{
+__breakpad_fdnlist_64(int fd, breakpad_nlist *list, const char **symbolNames) {
   register breakpad_nlist *p, *q;
   breakpad_nlist space[BUFSIZ/sizeof (breakpad_nlist)];
 
@@ -223,7 +235,7 @@ __breakpad_fdnlist_64(int fd, breakpad_nlist *list, const char **symbolNames)
 #elif TARGET_CPU_PPC64
       if (fat_archs[i].cputype == CPU_TYPE_POWERPC64) {
 #else
-#error undefined cpu! 
+#error undefined cpu!
         {
 #endif
           fap = &fat_archs[i];
