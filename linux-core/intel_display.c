@@ -1396,7 +1396,8 @@ static void intel_setup_outputs(struct drm_device *dev)
 	if (IS_I9XX(dev)) {
 		intel_sdvo_init(dev, SDVOB);
 		intel_sdvo_init(dev, SDVOC);
-	}
+	} else
+		intel_dvo_init(dev);
 
 	if (IS_I9XX(dev) && !IS_I915G(dev))
 		intel_tv_init(dev);
