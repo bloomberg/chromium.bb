@@ -145,7 +145,7 @@ void* ReadTaskMemory(task_port_t target_task,
 
   // use the negative of the page size for the mask to find the page address
   mach_vm_address_t page_address =
-      reinterpret_cast<mach_vm_address_t>(address) && (-systemPageSize);
+      reinterpret_cast<mach_vm_address_t>(address) & (-systemPageSize);
 
   mach_vm_address_t last_page_address =
       (reinterpret_cast<mach_vm_address_t>(address) + length +
