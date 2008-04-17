@@ -48,7 +48,9 @@ class MinidumpGenerator {
 
   ~MinidumpGenerator();
 
-  // Writes the minidump with the given parameters.
+  // Writes the minidump with the given parameters. Stores the
+  // dump file path in the dump_path parameter if dump generation
+  // succeeds.
   bool WriteMinidump(HANDLE process_handle,
                      DWORD process_id,
                      DWORD thread_id,
@@ -56,7 +58,8 @@ class MinidumpGenerator {
                      EXCEPTION_POINTERS* exception_pointers,
                      MDRawAssertionInfo* assert_info,
                      MINIDUMP_TYPE dump_type,
-                     bool is_client_pointers);
+                     bool is_client_pointers,
+                     std::wstring* dump_path);
 
  private:
   // Function pointer type for MiniDumpWriteDump, which is looked up

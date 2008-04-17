@@ -783,20 +783,23 @@ void CrashGenerationServer::HandleDumpRequest(const ClientInfo& client_info) {
   // Generate the dump only if it's explicitly requested by the
   // server application; otherwise the server might want to generate
   // dump in the callback.
+  std::wstring dump_path;
   if (generate_dumps_) {
-    if (!GenerateDump(client_info)) {
+    if (!GenerateDump(client_info, &dump_path)) {
       return;
     }
   }
 
   if (dump_callback_) {
-    dump_callback_(dump_context_, &client_info);
+    std::wstring* ptr_dump_path = (dump_path == L"") ? NULL : &dump_path;
+    dump_callback_(dump_context_, &client_info, ptr_dump_path);
   }
 
   SetEvent(client_info.dump_generated_handle());
 }
 
-bool CrashGenerationServer::GenerateDump(const ClientInfo& client) {
+bool CrashGenerationServer::GenerateDump(const ClientInfo& client,
+                                         std::wstring* dump_path) {
   assert(client.pid() != 0);
   assert(client.process_handle());
 
@@ -819,7 +822,8 @@ bool CrashGenerationServer::GenerateDump(const ClientInfo& client) {
                                         client_ex_info,
                                         client.assert_info(),
                                         client.dump_type(),
-                                        true);
+                                        true,
+                                        dump_path);
 }
 
 }  // namespace google_breakpad

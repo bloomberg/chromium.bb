@@ -53,7 +53,8 @@ class CrashGenerationServer {
                                             const ClientInfo* client_info);
 
   typedef void (*OnClientDumpRequestCallback)(void* context,
-                                              const ClientInfo* client_info);
+                                              const ClientInfo* client_info,
+                                              const std::wstring* file_path);
 
   typedef void (*OnClientExitedCallback)(void* context,
                                          const ClientInfo* client_info);
@@ -189,7 +190,7 @@ class CrashGenerationServer {
   bool AddClient(ClientInfo* client_info);
 
   // Generates dump for the given client.
-  bool GenerateDump(const ClientInfo& client);
+  bool GenerateDump(const ClientInfo& client, std::wstring* dump_path);
 
   // Sync object for thread-safe access to the shared list of clients.
   CRITICAL_SECTION clients_sync_;

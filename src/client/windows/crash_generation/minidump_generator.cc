@@ -66,7 +66,8 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
                                       EXCEPTION_POINTERS* exception_pointers,
                                       MDRawAssertionInfo* assert_info,
                                       MINIDUMP_TYPE dump_type,
-                                      bool is_client_pointers) {
+                                      bool is_client_pointers,
+                                      wstring* dump_path) {
   MiniDumpWriteDumpType write_dump = GetWriteDump();
   if (!write_dump) {
     return false;
@@ -163,6 +164,13 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
                            NULL) != FALSE;
 
   CloseHandle(dump_file);
+
+  // Store the path of the dump file in the out parameter if dump generation
+  // succeeded.
+  if (result && dump_path) {
+    *dump_path = dump_file_path;
+  }
+
   return result;
 }
 

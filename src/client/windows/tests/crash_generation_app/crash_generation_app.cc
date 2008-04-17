@@ -197,7 +197,8 @@ static void _cdecl ShowClientConnected(void* context,
 }
 
 static void _cdecl ShowClientCrashed(void* context,
-                                     const ClientInfo* client_info) {
+                                     const ClientInfo* client_info,
+                                     const wstring* dump_path) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
   int result = swprintf_s(line,
                           kMaximumLineLength,
