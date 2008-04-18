@@ -1217,14 +1217,25 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 void i915_driver_irq_preinstall(struct drm_device * dev)
 {
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	u32 tmp;
+
+	tmp = I915_READ(I915REG_PIPEASTAT);
+	I915_WRITE(I915REG_PIPEASTAT, tmp);
+	tmp = I915_READ(I915REG_PIPEBSTAT);
+	I915_WRITE(I915REG_PIPEBSTAT, tmp);
+
 
 	I915_WRITE16(I915REG_HWSTAM, 0xeffe);
 	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
 		I915_WRITE(I915REG_INT_MASK_R, 0x0);
 		I915_WRITE(I915REG_INT_ENABLE_R, 0x0);
+		tmp = I915_READ(I915REG_INT_IDENTITY_R);
+		I915_WRITE(I915REG_INT_IDENTITY_R, tmp);
 	} else {
 		I915_WRITE16(I915REG_INT_MASK_R, 0x0);
 		I915_WRITE16(I915REG_INT_ENABLE_R, 0x0);
+		tmp = I915_READ16(I915REG_INT_IDENTITY_R);
+		I915_WRITE16(I915REG_INT_IDENTITY_R, tmp);
 	}
 
 }
