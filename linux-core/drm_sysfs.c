@@ -302,7 +302,7 @@ void drm_sysfs_output_remove(struct drm_output *output)
 	int i;
 
 	DRM_DEBUG("removing \"%s\" from sysfs\n", drm_get_output_name(output));
-	for (i = 0; i < i; i++)
+	for (i = 0; i < ARRAY_SIZE(output_attrs); i++)
 		device_remove_file(&output->kdev, &output_attrs[i]);
 	sysfs_remove_bin_file(&output->kdev.kobj, &edid_attr);
 	device_unregister(&output->kdev);
