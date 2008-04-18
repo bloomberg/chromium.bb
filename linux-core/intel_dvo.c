@@ -477,6 +477,7 @@ void intel_dvo_init(struct drm_device *dev)
 			dvo->panel_wants_dither = true;
 		}
 
+		drm_sysfs_output_add(output);
 		drm_output_attach_property(output,
 				dev->mode_config.connector_type_property,
 				connector);
