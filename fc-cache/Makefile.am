@@ -40,9 +40,13 @@ INCLUDES=-I${top_srcdir} -I${top_srcdir}/src $(WARN_CFLAGS)
 
 bin_PROGRAMS=fc-cache
 
-man_MANS=fc-cache.1
+BUILT_MANS=fc-cache.1
 
-EXTRA_DIST=fc-cache.sgml $(man_MANS)
+if ENABLE_DOCS
+man_MANS=${BUILT_MANS}
+endif
+
+EXTRA_DIST=fc-cache.sgml $(BUILT_MANS)
 
 fc_cache_LDADD = ${top_builddir}/src/libfontconfig.la
 

@@ -31,9 +31,13 @@ bin_PROGRAMS=fc-list
 
 INCLUDES=-I${top_srcdir} $(WARN_CFLAGS)
 
-man_MANS=fc-list.1
+BUILT_MANS=fc-list.1
 
-EXTRA_DIST=fc-list.sgml $(man_MANS)
+if ENABLE_DOCS
+man_MANS=${BUILT_MANS}
+endif
+
+EXTRA_DIST=fc-list.sgml $(BUILT_MANS)
 
 fc_list_LDADD = ${top_builddir}/src/libfontconfig.la
 

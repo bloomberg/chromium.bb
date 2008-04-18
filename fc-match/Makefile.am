@@ -31,9 +31,13 @@ SGML = ${FC_MATCH_SRC}/fc-match.sgml
 
 INCLUDES=-I${top_srcdir} $(WARN_CFLAGS)
 
-man_MANS=fc-match.1
+BUILT_MANS=fc-match.1
 
-EXTRA_DIST=fc-match.sgml $(man_MANS)
+if ENABLE_DOCS
+man_MANS=${BUILT_MANS}
+endif
+
+EXTRA_DIST=fc-match.sgml $(BUILT_MANS)
 
 fc_match_LDADD = ${top_builddir}/src/libfontconfig.la
 
