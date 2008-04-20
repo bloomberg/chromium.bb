@@ -279,16 +279,29 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			}
 
 			if (init_drawrect) {
-				BEGIN_LP_RING(6);
+				int width  = sarea_priv->width;
+				int height = sarea_priv->height;
+				if (IS_I965G(dev)) {
+					BEGIN_LP_RING(4);
 
-				OUT_RING(GFX_OP_DRAWRECT_INFO);
-				OUT_RING(0);
-				OUT_RING(0);
-				OUT_RING(sarea_priv->width | sarea_priv->height << 16);
-				OUT_RING(sarea_priv->width | sarea_priv->height << 16);
-				OUT_RING(0);
-
-				ADVANCE_LP_RING();
+					OUT_RING(GFX_OP_DRAWRECT_INFO_I965);
+					OUT_RING(0);
+					OUT_RING(((width - 1) & 0xffff) | ((height - 1) << 16));
+					OUT_RING(0);
+					
+					ADVANCE_LP_RING();
+				} else {
+					BEGIN_LP_RING(6);
+	
+					OUT_RING(GFX_OP_DRAWRECT_INFO);
+					OUT_RING(0);
+					OUT_RING(0);
+					OUT_RING(((width - 1) & 0xffff) | ((height - 1) << 16));
+					OUT_RING(0);
+					OUT_RING(0);
+					
+					ADVANCE_LP_RING();
+				}
 
 				sarea_priv->ctxOwner = DRM_KERNEL_CONTEXT;
 
