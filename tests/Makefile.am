@@ -1,4 +1,5 @@
 AM_CFLAGS = \
+	-I $(top_srcdir)/linux-core \
 	-I $(top_srcdir)/shared-core \
 	-I $(top_srcdir)/libdrm
 
@@ -22,7 +23,8 @@ TESTS = auth \
 	getstats \
 	lock \
 	setversion \
-	updatedraw
+	updatedraw \
+	mmfs_basic
 
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)
