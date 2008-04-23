@@ -27,9 +27,11 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <errno.h>
 #include <sys/stat.h>
 #include "mmfs.h"
 
@@ -51,6 +53,65 @@ create_mmfs_device()
 		errx(1, "mknod()");
 }
 
+static void
+test_bad_unref(int fd)
+{
+	struct mmfs_unreference_args unref;
+	int ret;
+
+	printf("Testing error return on bad unreference ioctl.\n");
+
+	unref.handle = 0x10101010;
+	ret = ioctl(fd, MMFS_IOCTL_UNREFERENCE, &unref);
+
+	assert(ret == -1 && errno == EINVAL);
+}
+
+static void
+test_bad_ioctl(int fd)
+{
+	int ret;
+
+	printf("Testing error return on bad ioctl.\n");
+
+	ret = ioctl(fd, _IO(MMFS_IOCTL_BASE, 0xf0), 0);
+
+	assert(ret == -1 && errno == EINVAL);
+}
+
+static void
+test_alloc_unref(int fd)
+{
+	struct mmfs_alloc_args alloc;
+	struct mmfs_unreference_args unref;
+	int ret;
+
+	printf("Testing allocating and unreferencing an object.\n");
+
+	memset(&alloc, 0, sizeof(alloc));
+	alloc.size = 16 * 1024;
+	ret = ioctl(fd, MMFS_IOCTL_ALLOC, &alloc);
+	assert(ret == 0);
+
+	unref.handle = alloc.handle;
+	ret = ioctl(fd, MMFS_IOCTL_UNREFERENCE, &unref);
+}
+
+static void
+test_alloc_close(int fd)
+{
+	struct mmfs_alloc_args alloc;
+	int ret;
+
+	printf("Testing closing with an object allocated.\n");
+
+	memset(&alloc, 0, sizeof(alloc));
+	alloc.size = 16 * 1024;
+	ret = ioctl(fd, MMFS_IOCTL_ALLOC, &alloc);
+	assert(ret == 0);
+
+	close(fd);
+}
 
 int main(int argc, char **argv)
 {
@@ -61,6 +122,11 @@ int main(int argc, char **argv)
 	fd = open(MMFS_DEVICE_PATH, O_RDWR);
 	if (fd == -1)
 		errx(1, "open()");
+
+	test_bad_ioctl(fd);
+	test_bad_unref(fd);
+	test_alloc_unref(fd);
+	test_alloc_close(fd);
 
 	close(fd);
 

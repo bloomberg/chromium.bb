@@ -25,6 +25,8 @@
  *
  */
 
+#include <sys/ioctl.h>
+
 /** @file mmfs.h
  * This file provides ioctl and ioctl argument definitions for using the
  * mmfs device.
