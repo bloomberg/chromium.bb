@@ -1,5 +1,4 @@
 AM_CFLAGS = \
-	-I $(top_srcdir)/linux-core \
 	-I $(top_srcdir)/shared-core \
 	-I $(top_srcdir)/libdrm
 
