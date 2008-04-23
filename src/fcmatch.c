@@ -601,16 +601,9 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 	    {
                 if (trim || build_cs)
                 {
-                    if (*cs)
-                    {
-                        ncs = FcCharSetUnion (ncs, *cs);
-                        if (!ncs)
-                            return FcFalse;
-                        FcCharSetDestroy (*cs);
-                    }
-                    else
-                        ncs = FcCharSetCopy (ncs);
-                    *cs = ncs;
+		    *cs = FcCharSetMerge (*cs, ncs);
+		    if (*cs == NULL)
+			return FcFalse;
                 }
 
 		FcPatternReference (node->pattern);

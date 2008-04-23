@@ -641,6 +641,9 @@ FcNameParseCharSet (FcChar8 *string);
 FcPrivate FcCharLeaf *
 FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4);
 
+FcPrivate FcCharSet *
+FcCharSetMerge (FcCharSet *a, const FcCharSet *b);
+
 FcPrivate FcBool
 FcCharSetSerializeAlloc(FcSerialize *serialize, const FcCharSet *cs);
 

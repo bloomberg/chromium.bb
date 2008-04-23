@@ -452,6 +452,68 @@ FcCharSetUnion (const FcCharSet *a, const FcCharSet *b)
     return FcCharSetOperate (a, b, FcCharSetUnionLeaf, FcTrue, FcTrue);
 }
 
+FcCharSet *
+FcCharSetMerge (FcCharSet *a, const FcCharSet *b)
+{
+    FcCharSet	    *fcs;
+    FcCharSetIter    ai, bi;
+
+    if (a == NULL) {
+	return FcCharSetCopy ((FcCharSet *) b);
+    } else if (a->ref == FC_REF_CONSTANT) {
+	fcs = FcCharSetCreate ();
+	if (fcs == NULL)
+	    return NULL;
+    } else
+	fcs = a;
+
+    FcCharSetIterStart (a, &ai);
+    FcCharSetIterStart (b, &bi);
+    while (ai.leaf || bi.leaf)
+    {
+	if (ai.ucs4 < bi.ucs4)
+	{
+	    if (!FcCharSetAddLeaf (fcs, ai.ucs4, ai.leaf))
+		goto bail;
+
+	    FcCharSetIterNext (a, &ai);
+	}
+	else if (bi.ucs4 < ai.ucs4)
+	{
+	    if (!FcCharSetAddLeaf (fcs, bi.ucs4, bi.leaf))
+		goto bail;
+
+	    FcCharSetIterNext (b, &bi);
+	}
+	else
+	{
+	    FcCharLeaf  leaf;
+
+	    if (FcCharSetUnionLeaf (&leaf, ai.leaf, bi.leaf))
+	    {
+		if (!FcCharSetAddLeaf (fcs, ai.ucs4, &leaf))
+		    goto bail;
+	    }
+
+	    FcCharSetIterNext (a, &ai);
+	    FcCharSetIterNext (b, &bi);
+	}
+    }
+
+    if (fcs != a)
+	FcCharSetDestroy (a);
+
+    return fcs;
+
+bail:
+    FcCharSetDestroy (fcs);
+
+    if (fcs != a)
+	FcCharSetDestroy (a);
+
+    return NULL;
+}
+
 static FcBool
 FcCharSetSubtractLeaf (FcCharLeaf *result,
 		       const FcCharLeaf *al,
