@@ -379,6 +379,7 @@ struct drm_i915_op_arg {
 	uint64_t next;
 	uint64_t reloc_ptr;
 	int handled;
+	unsigned int pad64;
 	union {
 		struct drm_bo_op_req req;
 		struct drm_bo_arg_rep rep;
