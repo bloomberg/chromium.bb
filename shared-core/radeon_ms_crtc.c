@@ -715,21 +715,10 @@ static void radeon_ms_crtc_load_lut(struct drm_crtc *crtc)
 	}
 }
 
-static bool radeon_ms_crtc_lock(struct drm_crtc *crtc)
-{
-    return true;
-}
-
-static void radeon_ms_crtc_unlock(struct drm_crtc *crtc)
-{
-}
-
 static const struct drm_crtc_funcs radeon_ms_crtc1_funcs= {
 	.dpms = radeon_ms_crtc1_dpms,
 	.save = NULL, /* XXX */
 	.restore = NULL, /* XXX */
-	.lock = radeon_ms_crtc_lock,
-	.unlock = radeon_ms_crtc_unlock,
 	.prepare = radeon_ms_crtc_mode_prepare,
 	.commit = radeon_ms_crtc_mode_commit,
 	.mode_fixup = radeon_ms_crtc_mode_fixup,

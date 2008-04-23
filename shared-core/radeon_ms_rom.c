@@ -48,8 +48,8 @@ int radeon_ms_rom_init(struct drm_device *dev)
 
 	dev_priv->rom.type = ROM_UNKNOWN;
 	/* copy rom if any */
-	rom_mapped = pci_map_rom_copy(dev->pdev, &rom->rom_size);
-	if (rom->rom_size) {
+	rom_mapped = pci_map_rom(dev->pdev, &rom->rom_size);
+	if (rom_mapped && rom->rom_size) {
 		rom->rom_image = drm_alloc(rom->rom_size, DRM_MEM_DRIVER);
 		if (rom->rom_image == NULL) {
 			return -1;
