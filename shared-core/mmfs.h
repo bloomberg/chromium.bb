@@ -25,7 +25,12 @@
  *
  */
 
-#include <sys/ioctl.h>
+#ifdef __linux__
+#include <asm/ioctl.h>
+#else
+#include <sys/types.h>
+#include <sys/ioccom.h>
+#endif
 
 /** @file mmfs.h
  * This file provides ioctl and ioctl argument definitions for using the

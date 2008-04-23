@@ -54,11 +54,8 @@ struct mmfs_object {
 struct mmfs_file {
 	/** Mapping of object handles to object pointers. */
 	struct idr object_idr;
-	/**
-	 * Lock for synchronization of access to object->refcount and
-	 * object_idr.  See note in mmfs_unreference_ioctl.
-	 */
-	spinlock_t delete_lock;
+	/** Lock for synchronization of access to object_idr. */
+	spinlock_t table_lock;
 };
 
 void mmfs_object_reference(struct mmfs_object *obj);

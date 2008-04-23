@@ -91,12 +91,12 @@ mmfs_handle_delete(struct mmfs_file *mmfs_filp, int handle)
 	 * we may want to use ida for number allocation and a hash table
 	 * for the pointers, anyway.
 	 */
-	spin_lock(&mmfs_filp->delete_lock);
+	spin_lock(&mmfs_filp->table_lock);
 
 	/* Check if we currently have a reference on the object */
 	obj = idr_find(&mmfs_filp->object_idr, handle);
 	if (obj == NULL) {
-		spin_unlock(&mmfs_filp->delete_lock);
+		spin_unlock(&mmfs_filp->table_lock);
 		return -EINVAL;
 	}
 
@@ -104,10 +104,33 @@ mmfs_handle_delete(struct mmfs_file *mmfs_filp, int handle)
 	idr_remove(&mmfs_filp->object_idr, handle);
 	mmfs_object_unreference(obj);
 
-	spin_unlock(&mmfs_filp->delete_lock);
+	spin_unlock(&mmfs_filp->table_lock);
 
 	return 0;
 }
+
+/** Returns a reference to the object named by the handle. */
+static struct mmfs_object *
+mmfs_object_lookup(struct mmfs_file *mmfs_filp, int handle)
+{
+	struct mmfs_object *obj;
+
+	spin_lock(&mmfs_filp->table_lock);
+
+	/* Check if we currently have a reference on the object */
+	obj = idr_find(&mmfs_filp->object_idr, handle);
+	if (obj == NULL) {
+		spin_unlock(&mmfs_filp->table_lock);
+		return NULL;
+	}
+
+	mmfs_object_reference(obj);
+
+	spin_unlock(&mmfs_filp->table_lock);
+
+	return obj;
+}
+
 
 /**
  * Allocates a new mmfs object and returns a handle to it.
@@ -164,7 +187,7 @@ mmfs_alloc_ioctl(struct inode *inode, struct file *filp,
 }
 
 /**
- * Allocates a new mmfs object and returns a handle to it.
+ * Releases the handle to an mmfs object.
  */
 static int
 mmfs_unreference_ioctl(struct inode *inode, struct file *filp,
@@ -182,6 +205,84 @@ mmfs_unreference_ioctl(struct inode *inode, struct file *filp,
 	return ret;
 }
 
+/**
+ * Reads data from the object referenced by handle.
+ *
+ * On error, the contents of *data are undefined.
+ */
+static int
+mmfs_pread_ioctl(struct inode *inode, struct file *filp,
+		 unsigned int cmd, unsigned long arg)
+{
+	struct mmfs_file *mmfs_filp = filp->private_data;
+	struct mmfs_pread_args args;
+	struct mmfs_object *obj;
+	ssize_t read;
+	loff_t offset;
+
+	if (copy_from_user(&args, (void __user *)arg, sizeof(args)))
+		return -EFAULT;
+
+	obj = mmfs_object_lookup(mmfs_filp, args.handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	offset = args.offset;
+
+	read = obj->filp->f_op->read(obj->filp, (char __user *)args.data,
+				     args.size, &offset);
+	if (read != args.size) {
+		mmfs_object_unreference(obj);
+		if (read < 0)
+			return read;
+		else
+			return -EINVAL;
+	}
+
+	mmfs_object_unreference(obj);
+
+	return 0;
+}
+
+/**
+ * Writes data to the object referenced by handle.
+ *
+ * On error, the contents of the buffer that were to be modified are undefined.
+ */
+static int
+mmfs_pwrite_ioctl(struct inode *inode, struct file *filp,
+		 unsigned int cmd, unsigned long arg)
+{
+	struct mmfs_file *mmfs_filp = filp->private_data;
+	struct mmfs_pwrite_args args;
+	struct mmfs_object *obj;
+	ssize_t written;
+	loff_t offset;
+
+	if (copy_from_user(&args, (void __user *)arg, sizeof(args)))
+		return -EFAULT;
+
+	obj = mmfs_object_lookup(mmfs_filp, args.handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	offset = args.offset;
+
+	written = obj->filp->f_op->write(obj->filp, (char __user *)args.data,
+					 args.size, &offset);
+	if (written != args.size) {
+		mmfs_object_unreference(obj);
+		if (written < 0)
+			return written;
+		else
+			return -EINVAL;
+	}
+
+	mmfs_object_unreference(obj);
+
+	return 0;
+}
+
 static int
 mmfs_ioctl(struct inode *inode, struct file *filp,
 	   unsigned int cmd, unsigned long arg)
@@ -192,6 +293,10 @@ mmfs_ioctl(struct inode *inode, struct file *filp,
 		return mmfs_alloc_ioctl(inode, filp, cmd, arg);
 	case MMFS_IOCTL_UNREFERENCE:
 		return mmfs_unreference_ioctl(inode, filp, cmd, arg);
+	case MMFS_IOCTL_PREAD:
+		return mmfs_pread_ioctl(inode, filp, cmd, arg);
+	case MMFS_IOCTL_PWRITE:
+		return mmfs_pwrite_ioctl(inode, filp, cmd, arg);
 	default:
 		return -EINVAL;
 	}

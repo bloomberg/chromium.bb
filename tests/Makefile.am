@@ -23,7 +23,8 @@ TESTS = auth \
 	lock \
 	setversion \
 	updatedraw \
-	mmfs_basic
+	mmfs_basic \
+	mmfs_readwrite
 
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)

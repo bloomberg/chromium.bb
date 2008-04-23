@@ -36,24 +36,6 @@
 #include "mmfs.h"
 
 static void
-create_mmfs_device()
-{
-	struct stat sb;
-	int ret;
-
-	ret = stat(MMFS_DEVICE_PATH, &sb);
-
-	if (ret == 0)
-		return;
-
-	ret = mknod(MMFS_DEVICE_PATH, S_IFCHR | S_IRUSR | S_IWUSR,
-		    makedev(MMFS_DEVICE_MAJOR, 0));
-
-	if (ret != 0)
-		errx(1, "mknod()");
-}
-
-static void
 test_bad_unref(int fd)
 {
 	struct mmfs_unreference_args unref;
@@ -117,11 +99,7 @@ int main(int argc, char **argv)
 {
 	int fd;
 
-	create_mmfs_device();
-
-	fd = open(MMFS_DEVICE_PATH, O_RDWR);
-	if (fd == -1)
-		errx(1, "open()");
+	fd = open_mmfs_device();
 
 	test_bad_ioctl(fd);
 	test_bad_unref(fd);
