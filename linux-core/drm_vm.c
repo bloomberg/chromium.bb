@@ -751,6 +751,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	err = drm_bo_wait(bo, 0, 1, 0, 1);
 	if (err) {
 		ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
+		bo->priv_flags &= ~_DRM_BO_FLAG_UNLOCKED;
 		goto out_unlock;
 	}
 
