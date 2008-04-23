@@ -32,6 +32,8 @@
 #include <linux/fs.h>
 #include <linux/file.h>
 #include <linux/module.h>
+#include <linux/mman.h>
+#include <linux/pagemap.h>
 #include "mmfs.h"
 
 /** @file mmfs.c
@@ -245,6 +247,45 @@ mmfs_pread_ioctl(struct inode *inode, struct file *filp,
 }
 
 /**
+ * Maps the contents of an object, returning the address it is mapped
+ * into.
+ *
+ * While the mapping holds a reference on the contents of the object, it doesn't
+ * imply a ref on the object itself.
+ */
+static int
+mmfs_mmap_ioctl(struct inode *inode, struct file *filp,
+		 unsigned int cmd, unsigned long arg)
+{
+	struct mmfs_file *mmfs_filp = filp->private_data;
+	struct mmfs_mmap_args args;
+	struct mmfs_object *obj;
+	loff_t offset;
+
+	if (copy_from_user(&args, (void __user *)arg, sizeof(args)))
+		return -EFAULT;
+
+	obj = mmfs_object_lookup(mmfs_filp, args.handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	offset = args.offset;
+
+	down_write(&current->mm->mmap_sem);
+	args.addr = (void *)do_mmap(obj->filp, 0, args.size,
+				    PROT_READ | PROT_WRITE, MAP_SHARED,
+				    args.offset);
+	up_write(&current->mm->mmap_sem);
+
+	mmfs_object_unreference(obj);
+
+	if (copy_to_user((void __user *)arg, &args, sizeof(args)))
+		return -EFAULT;
+
+	return 0;
+}
+
+/**
  * Writes data to the object referenced by handle.
  *
  * On error, the contents of the buffer that were to be modified are undefined.
@@ -297,6 +338,8 @@ mmfs_ioctl(struct inode *inode, struct file *filp,
 		return mmfs_pread_ioctl(inode, filp, cmd, arg);
 	case MMFS_IOCTL_PWRITE:
 		return mmfs_pwrite_ioctl(inode, filp, cmd, arg);
+	case MMFS_IOCTL_MMAP:
+		return mmfs_mmap_ioctl(inode, filp, cmd, arg);
 	default:
 		return -EINVAL;
 	}
