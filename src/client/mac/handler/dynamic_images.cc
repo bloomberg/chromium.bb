@@ -31,9 +31,9 @@ extern "C" { // needed to compile on Leopard
   #include <mach-o/nlist.h>
   #include <stdlib.h>
   #include <stdio.h>
-  #include "breakpad_nlist_64.h"
 }
 
+#include "breakpad_nlist_64.h"
 #include <dlfcn.h>
 #include <mach/mach_vm.h>
 #include <algorithm>
@@ -128,7 +128,8 @@ static void* ReadTaskString(task_port_t target_task,
     mach_vm_size_t size_to_read =
       size_to_end > kMaxStringLength ? kMaxStringLength : size_to_end;
 
-    return ReadTaskMemory(target_task, address, size_to_read);
+    kern_return_t kr;
+    return ReadTaskMemory(target_task, address, size_to_read, &kr);
   }
 
   return NULL;
@@ -139,7 +140,8 @@ static void* ReadTaskString(task_port_t target_task,
 // and should be freed by the caller.
 void* ReadTaskMemory(task_port_t target_task,
                      const void* address,
-                     size_t length) {
+                     size_t length,
+                     kern_return_t *kr) {
   void* result = NULL;
   int systemPageSize = getpagesize();
 
@@ -155,12 +157,19 @@ void* ReadTaskMemory(task_port_t target_task,
   uint8_t* local_start;
   uint32_t local_length;
 
-  kern_return_t r = mach_vm_read(target_task,
-                                 page_address,
-                                 page_size,
-                                 reinterpret_cast<vm_offset_t*>(&local_start),
-                                 &local_length);
+  kern_return_t r;
 
+  r = mach_vm_read(target_task,
+                   page_address,
+                   page_size,
+                   reinterpret_cast<vm_offset_t*>(&local_start),
+                   &local_length);
+
+
+  if(kr != NULL) {
+    *kr = r;
+  }
+  
   if (r == KERN_SUCCESS) {
     result = malloc(length);
     if (result != NULL) {
@@ -289,6 +298,7 @@ void DynamicImages::ReadImageInfoForTask() {
   void *imageList = GetDyldAllImageInfosPointer();
 
   if (imageList) {
+    kern_return_t kr;
     // Read the structure inside of dyld that contains information about
     // loaded images.  We're reading from the desired task's address space.
 
@@ -298,7 +308,7 @@ void DynamicImages::ReadImageInfoForTask() {
     dyld_all_image_infos *dyldInfo = reinterpret_cast<dyld_all_image_infos*>
       (ReadTaskMemory(task_,
                       reinterpret_cast<void*>(imageList),
-                      sizeof(dyld_all_image_infos)));
+                      sizeof(dyld_all_image_infos), &kr));
 
     if (dyldInfo) {
       // number of loaded images
@@ -309,7 +319,7 @@ void DynamicImages::ReadImageInfoForTask() {
       dyld_image_info *infoArray = reinterpret_cast<dyld_image_info*>
         (ReadTaskMemory(task_,
                         dyldInfo->infoArray,
-                        count*sizeof(dyld_image_info)));
+                        count*sizeof(dyld_image_info), &kr));
 
       image_list_.reserve(count);
 
@@ -320,7 +330,7 @@ void DynamicImages::ReadImageInfoForTask() {
         breakpad_mach_header *header = reinterpret_cast<breakpad_mach_header*>
           (ReadTaskMemory(task_,
                           info.load_address_,
-                          sizeof(breakpad_mach_header)));
+                          sizeof(breakpad_mach_header), &kr));
 
         if (!header)
           break;   // bail on this dynamic image
@@ -334,7 +344,7 @@ void DynamicImages::ReadImageInfoForTask() {
         free(header);
 
         header = reinterpret_cast<breakpad_mach_header*>
-          (ReadTaskMemory(task_, info.load_address_, header_size));
+          (ReadTaskMemory(task_, info.load_address_, header_size, &kr));
 
         // Read the file name from the task's memory space.
         char *file_path = NULL;

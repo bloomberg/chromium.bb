@@ -268,9 +268,16 @@ bool MinidumpGenerator::WriteStackFromStartAddress(
   bool result;
   if (dynamic_images_) {
 
+    kern_return_t kr;
+
     void *stack_memory = ReadTaskMemory(crashing_task_,
                                         (void*)start_addr,
-                                        size);
+                                        size,
+                                        &kr);
+
+    if(stack_memory == NULL) {
+      return false;
+    }
 
     result = memory.Copy(stack_memory, size);
     free(stack_memory);

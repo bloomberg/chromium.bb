@@ -303,7 +303,10 @@ class DynamicImages {
 
 // Returns a malloced block containing the contents of memory at a particular
 // location in another task.
-void* ReadTaskMemory(task_port_t target_task, const void* address, size_t len);
+void* ReadTaskMemory(task_port_t target_task,
+                     const void* address,
+                     size_t len,
+                     kern_return_t *kr);
 
 }   // namespace google_breakpad
 
