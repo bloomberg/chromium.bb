@@ -565,8 +565,8 @@ union drm_wait_vblank {
  * \sa drmModesetCtl().
  */
 struct drm_modeset_ctl {
-	unsigned long arg;
-	int cmd;
+	uint32_t crtc;
+	uint32_t cmd;
 };
 
 /**
