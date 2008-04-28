@@ -11,8 +11,17 @@ nv04_timer_init(struct drm_device *dev)
 	NV_WRITE(NV04_PTIMER_INTR_EN_0, 0x00000000);
 	NV_WRITE(NV04_PTIMER_INTR_0, 0xFFFFFFFF);
 
-	NV_WRITE(NV04_PTIMER_NUMERATOR, 0x00000008);
-	NV_WRITE(NV04_PTIMER_DENOMINATOR, 0x00000003);
+	/* Just use the pre-existing values when possible for now; these regs
+	 * are not written in nv (driver writer missed a /4 on the address), and
+	 * writing 8 and 3 to the correct regs breaks the timings on the LVDS
+	 * hardware sequencing microcode.
+	 * A correct solution (involving calculations with the GPU PLL) can
+	 * be done when kernel modesetting lands
+	 */
+	if (!NV_READ(NV04_PTIMER_NUMERATOR) || !NV_READ(NV04_PTIMER_DENOMINATOR)) {
+		NV_WRITE(NV04_PTIMER_NUMERATOR, 0x00000008);
+		NV_WRITE(NV04_PTIMER_DENOMINATOR, 0x00000003);
+	}
 
 	return 0;
 }

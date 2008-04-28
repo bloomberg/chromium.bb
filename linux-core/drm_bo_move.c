@@ -357,10 +357,11 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
 		      bo->mem.mm_node != NULL))
 #endif
 	{
-		ret = drm_bo_wait(bo, 0, 1, 0);
-		if (ret)
-			return ret;
-
+		if (bo->fence) {
+			(void) drm_fence_object_wait(bo->fence, 0, 1,
+						    bo->fence_type);
+			drm_fence_usage_deref_unlocked(&bo->fence);
+		}
 		drm_bo_free_old_node(bo);
 
 		if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (bo->ttm != NULL)) {

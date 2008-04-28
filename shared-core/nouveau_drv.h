@@ -136,6 +136,7 @@ struct nouveau_channel
 	/* NV50 VM */
 	struct nouveau_gpuobj     *vm_pd;
 	struct nouveau_gpuobj_ref *vm_gart_pt;
+	struct nouveau_gpuobj_ref *vm_vram_pt;
 
 	/* Objects */
 	struct nouveau_gpuobj_ref *ramin; /* Private instmem */
@@ -289,6 +290,9 @@ struct drm_nouveau_private {
 		struct drm_ttm_backend *sg_be;
 		unsigned long sg_handle;
 	} gart_info;
+
+	/* G8x global VRAM page table */
+	struct nouveau_gpuobj *vm_vram_pt;
 
 	/* the mtrr covering the FB */
 	int fb_mtrr;

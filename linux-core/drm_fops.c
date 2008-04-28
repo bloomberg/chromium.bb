@@ -418,9 +418,9 @@ int drm_release(struct inode *inode, struct file *filp)
 				 */
 				
 				do{
-					spin_lock(&file_priv->master->lock.spinlock);
+					spin_lock_bh(&file_priv->master->lock.spinlock);
 					locked = file_priv->master->lock.idle_has_lock;
-					spin_unlock(&file_priv->master->lock.spinlock);
+					spin_unlock_bh(&file_priv->master->lock.spinlock);
 					if (locked)
 						break;
 					schedule();

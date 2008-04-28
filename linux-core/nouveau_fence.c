@@ -80,12 +80,11 @@ nouveau_fence_poll(struct drm_device *dev, uint32_t class, uint32_t waiting_type
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_fence_class_manager *fc = &dev->fm.fence_class[class];
 	struct nouveau_channel *chan = dev_priv->fifos[class];
-	uint32_t pending_types = 0;
 
 	DRM_DEBUG("class=%d\n", class);
 	DRM_DEBUG("pending: 0x%08x 0x%08x\n", waiting_types, fc->waiting_types);
 
-	if (pending_types) {
+	if (waiting_types & DRM_FENCE_TYPE_EXE) {
 		uint32_t sequence = NV_READ(chan->ref_cnt);
 
 		DRM_DEBUG("got 0x%08x\n", sequence);

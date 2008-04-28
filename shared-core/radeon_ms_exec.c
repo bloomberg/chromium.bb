@@ -74,7 +74,6 @@ static inline int amd_cmd_bo_validate(struct drm_device *dev,
 				     bo->op_req.bo_req.mask,
 				     bo->op_req.bo_req.hint,
 				     bo->op_req.bo_req.fence_class,
-				     0,
 				     &bo->op_rep.bo_info,
 				     &cmd_bo->bo);
 	if (ret) {
@@ -318,9 +317,19 @@ int amd_ioctl_cmd(struct drm_device *dev, void *data, struct drm_file *file)
 		DRM_ERROR("command dword count is 0.\n");
 		return -EINVAL;
 	}
-	/* FIXME: Lock buffer manager, is this really needed ? */
-	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+
+	/* FIXME: Lock buffer manager. This is needed so the X server can
+	 * block DRI clients while VT switched. The X server will then 
+	 * take the lock in write mode
+	 */
+
+	ret = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (ret) {
+
+		/* FIXME: ret can be -EAGAIN here, 
+		 * which really isn't an error. 
+		 */
+
 		DRM_ERROR("bo read locking failed.\n");
 		return ret;
 	}

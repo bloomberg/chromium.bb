@@ -565,7 +565,6 @@ union drm_wait_vblank {
 enum drm_hotplug_seq_type {
 	_DRM_HOTPLUG_SIGNAL = 0x00000001, /**< Send signal instead of blocking */
 };
-
 struct drm_wait_hotplug_request {
 	enum drm_hotplug_seq_type type;
 	unsigned long signal;
@@ -593,14 +592,15 @@ enum drm_modeset_ctl_cmd {
 	_DRM_POST_MODESET = 2,
 };
 
+
 /**
  * DRM_IOCTL_MODESET_CTL ioctl argument type
  *
  * \sa drmModesetCtl().
  */
 struct drm_modeset_ctl {
-	unsigned long arg;
-	enum drm_modeset_ctl_cmd cmd;
+	uint32_t crtc;
+	uint32_t cmd;
 };
 
 /**

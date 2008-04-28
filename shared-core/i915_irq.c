@@ -158,10 +158,21 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 				XY_SRC_COPY_BLT_WRITE_ALPHA |
 				XY_SRC_COPY_BLT_WRITE_RGB)
 			     : XY_SRC_COPY_BLT_CMD;
-	u32 pitchropcpp = (sarea_priv->pitch * cpp) | (0xcc << 16) |
-					(cpp << 23) | (1 << 24);
+	u32 src_pitch = sarea_priv->pitch * cpp;
+	u32 dst_pitch = sarea_priv->pitch * cpp;
+	/* COPY rop (0xcc), map cpp to magic color depth constants */
+	u32 ropcpp = (0xcc << 16) | ((cpp - 1) << 24);
 	RING_LOCALS;
-
+	
+	if (sarea_priv->front_tiled) {
+		cmd |= XY_SRC_COPY_BLT_DST_TILED;
+		dst_pitch >>= 2;
+	}
+	if (sarea_priv->back_tiled) {
+		cmd |= XY_SRC_COPY_BLT_SRC_TILED;
+		src_pitch >>= 2;
+	}
+	
 	counter[0] = drm_vblank_count(dev, 0);
 	counter[1] = drm_vblank_count(dev, 1);
 
@@ -190,9 +201,6 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 		master_priv = vbl_swap->minor->master->driver_priv;
 		sarea_priv = master_priv->sarea_priv;
 		
-		pitchropcpp = (sarea_priv->pitch * cpp) | (0xcc << 16) |
-			(cpp << 23) | (1 << 24);
-
 		list_del(list);
 		dev_priv->swaps_pending--;
 		drm_vblank_put(dev, pipe);
@@ -287,16 +295,29 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			}
 
 			if (init_drawrect) {
-				BEGIN_LP_RING(6);
+				int width  = sarea_priv->width;
+				int height = sarea_priv->height;
+				if (IS_I965G(dev)) {
+					BEGIN_LP_RING(4);
 
-				OUT_RING(GFX_OP_DRAWRECT_INFO);
-				OUT_RING(0);
-				OUT_RING(0);
-				OUT_RING(sarea_priv->width | sarea_priv->height << 16);
-				OUT_RING(sarea_priv->width | sarea_priv->height << 16);
-				OUT_RING(0);
-
-				ADVANCE_LP_RING();
+					OUT_RING(GFX_OP_DRAWRECT_INFO_I965);
+					OUT_RING(0);
+					OUT_RING(((width - 1) & 0xffff) | ((height - 1) << 16));
+					OUT_RING(0);
+					
+					ADVANCE_LP_RING();
+				} else {
+					BEGIN_LP_RING(6);
+	
+					OUT_RING(GFX_OP_DRAWRECT_INFO);
+					OUT_RING(0);
+					OUT_RING(0);
+					OUT_RING(((width - 1) & 0xffff) | ((height - 1) << 16));
+					OUT_RING(0);
+					OUT_RING(0);
+					
+					ADVANCE_LP_RING();
+				}
 
 				sarea_priv->ctxOwner = DRM_KERNEL_CONTEXT;
 
@@ -321,12 +342,12 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 				BEGIN_LP_RING(8);
 
 				OUT_RING(cmd);
-				OUT_RING(pitchropcpp);
+				OUT_RING(ropcpp | dst_pitch);
 				OUT_RING((y1 << 16) | rect->x1);
 				OUT_RING((y2 << 16) | rect->x2);
 				OUT_RING(offsets[front]);
 				OUT_RING((y1 << 16) | rect->x1);
-				OUT_RING(pitchropcpp & 0xffff);
+				OUT_RING(src_pitch);
 				OUT_RING(offsets[back]);
 
 				ADVANCE_LP_RING();

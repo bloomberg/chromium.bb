@@ -446,6 +446,28 @@ nouveau_crtc_irq_handler(struct drm_device *dev, int crtc)
 	}
 }
 
+static void
+nouveau_nv50_display_irq_handler(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	uint32_t val = NV_READ(NV50_DISPLAY_SUPERVISOR);
+
+	DRM_INFO("NV50_DISPLAY_INTR - 0x%08X\n", val);
+
+	NV_WRITE(NV50_DISPLAY_SUPERVISOR, val);
+}
+
+static void
+nouveau_nv50_i2c_irq_handler(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+
+	DRM_INFO("NV50_I2C_INTR - 0x%08X\n", NV_READ(NV50_I2C_CONTROLLER));
+
+	/* This seems to be the way to acknowledge an interrupt. */
+	NV_WRITE(NV50_I2C_CONTROLLER, 0x7FFF7FFF);
+}
+
 irqreturn_t
 nouveau_irq_handler(DRM_IRQ_ARGS)
 {
@@ -470,6 +492,16 @@ nouveau_irq_handler(DRM_IRQ_ARGS)
 	if (status & NV_PMC_INTR_0_CRTCn_PENDING) {
 		nouveau_crtc_irq_handler(dev, (status>>24)&3);
 		status &= ~NV_PMC_INTR_0_CRTCn_PENDING;
+	}
+
+	if (status & NV_PMC_INTR_0_NV50_DISPLAY_PENDING) {
+		nouveau_nv50_display_irq_handler(dev);
+		status &= ~NV_PMC_INTR_0_NV50_DISPLAY_PENDING;
+	}
+
+	if (status & NV_PMC_INTR_0_NV50_I2C_PENDING) {
+		nouveau_nv50_i2c_irq_handler(dev);
+		status &= ~NV_PMC_INTR_0_NV50_I2C_PENDING;
 	}
 
 	if (status)

@@ -61,34 +61,38 @@ static inline size_t drm_size_align(size_t size)
 
 int drm_alloc_memctl(size_t size)
 {
-	int ret = 0;
+        int ret = 0;
 	unsigned long a_size = drm_size_align(size);
-	unsigned long new_used = drm_memctl.cur_used + a_size;
+	unsigned long new_used;
 
 	spin_lock(&drm_memctl.lock);
-	if (unlikely(new_used > drm_memctl.high_threshold)) {
-		if (!DRM_SUSER(DRM_CURPROC) ||
-		    (new_used + drm_memctl.emer_used > drm_memctl.emer_threshold) ||
-		    (a_size > 2*PAGE_SIZE)) {
-			ret = -ENOMEM;
-			goto out;
-		}
-
-		/*
-		 * Allow small root-only allocations, even if the
-		 * high threshold is exceeded.
-		 */
-
-		new_used -= drm_memctl.high_threshold;
-		drm_memctl.emer_used += new_used;
-		a_size -= new_used;
+	new_used = drm_memctl.cur_used + a_size;
+	if (likely(new_used < drm_memctl.high_threshold)) {
+		drm_memctl.cur_used = new_used;
+		goto out;
 	}
-	drm_memctl.cur_used += a_size;
+
+	/*
+	 * Allow small allocations from root-only processes to
+	 * succeed until the emergency threshold is reached.
+	 */
+
+	new_used += drm_memctl.emer_used;
+	if (unlikely(!DRM_SUSER(DRM_CURPROC) ||
+		     (a_size > 16*PAGE_SIZE) ||
+		     (new_used > drm_memctl.emer_threshold))) {
+		ret = -ENOMEM;
+		goto out;
+	}
+
+	drm_memctl.cur_used = drm_memctl.high_threshold;
+	drm_memctl.emer_used = new_used - drm_memctl.high_threshold;
 out:
 	spin_unlock(&drm_memctl.lock);
 	return ret;
 }
 EXPORT_SYMBOL(drm_alloc_memctl);
+
 
 void drm_free_memctl(size_t size)
 {

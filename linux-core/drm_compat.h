@@ -352,6 +352,7 @@ static inline int kobject_uevent_env(struct kobject *kobj,
 #define PM_EVENT_PRETHAW 3
 #endif
 
+
 #if (defined(CONFIG_X86) && defined(CONFIG_X86_32) && defined(CONFIG_HIMEM))
 #define DRM_KMAP_ATOMIC_PROT_PFN
 extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
@@ -360,6 +361,10 @@ extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 
 #if !defined(flush_agp_mappings)
 #define flush_agp_mappings() do {} while(0)
+#endif
+
+#ifndef DMA_BIT_MASK
+#define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) - 1)
 #endif
 
 #endif

@@ -738,7 +738,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 		return NOPFN_SIGBUS;
 
 	dev = bo->dev;
-	err = drm_bo_read_lock(&dev->bm.bm_lock);
+	err = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (err)
 		return NOPFN_REFAULT;
 
@@ -748,11 +748,14 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 		return NOPFN_REFAULT;
 	}
 
-	err = drm_bo_wait(bo, 0, 0, 0);
+	err = drm_bo_wait(bo, 0, 1, 0, 1);
 	if (err) {
 		ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
+		bo->priv_flags &= ~_DRM_BO_FLAG_UNLOCKED;
 		goto out_unlock;
 	}
+
+	bo->priv_flags &= ~_DRM_BO_FLAG_UNLOCKED;
 
 	/*
 	 * If buffer happens to be in a non-mappable location,
@@ -806,6 +809,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 		goto out_unlock;
 	}
 out_unlock:
+	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNLOCKED);
 	mutex_unlock(&bo->mutex);
 	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;

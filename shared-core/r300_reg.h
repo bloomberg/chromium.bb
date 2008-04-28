@@ -1626,6 +1626,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 #define R300_CP_CMD_BITBLT_MULTI	0xC0009B00
 
+#define R500_GA_US_VECTOR_INDEX         0x4250
+#define R500_GA_US_VECTOR_DATA          0x4254
+
+#define R500_RS_IP_0                    0x4074
+#define R500_RS_INST_0                  0x4320
+
 #endif /* _R300_REG_H */
 
 /* *INDENT-ON* */

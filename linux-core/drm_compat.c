@@ -213,7 +213,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 	unsigned long bus_size;
 
 	dev = bo->dev;
-	while(drm_bo_read_lock(&dev->bm.bm_lock));
+	drm_bo_read_lock(&dev->bm.bm_lock, 0);
 
 	mutex_lock(&bo->mutex);
 
@@ -780,7 +780,7 @@ struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn)
 EXPORT_SYMBOL(pci_get_bus_and_slot);
 #endif
 
-#if defined(DRM_KMAP_ATOMIC_PROT_PFN) && defined(CONFIG_HIMEM)
+#if defined(DRM_KMAP_ATOMIC_PROT_PFN)
 #define drm_kmap_get_fixmap_pte(vaddr)					\
 	pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr), vaddr), (vaddr)), (vaddr))
 
@@ -807,4 +807,3 @@ void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 
 EXPORT_SYMBOL(kmap_atomic_prot_pfn);
 #endif
-

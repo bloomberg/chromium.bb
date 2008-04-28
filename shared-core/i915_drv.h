@@ -37,7 +37,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20070209"
+#define DRIVER_DATE		"20080312"
 
 #if defined(__linux__)
 #define I915_HAVE_FENCE
@@ -61,7 +61,7 @@
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		12
+#define DRIVER_MINOR		13
 #else
 #define DRIVER_MINOR		6
 #endif
@@ -175,6 +175,7 @@ struct drm_i915_private {
 	u8 saveLBB;
 	u32 saveDSPACNTR;
 	u32 saveDSPBCNTR;
+	u32 saveDSPARB;
 	u32 savePIPEACONF;
 	u32 savePIPEBCONF;
 	u32 savePIPEASRC;
@@ -244,6 +245,7 @@ struct drm_i915_private {
 	u32 saveIIR;
 	u32 saveIMR;
 	u32 saveCACHE_MODE_0;
+	u32 saveD_STATE;
 	u32 saveDSPCLK_GATE_D;
 	u32 saveMI_ARB_STATE;
 	u32 saveSWF0[16];
@@ -287,6 +289,9 @@ extern int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush);
 extern int i915_driver_firstopen(struct drm_device *dev);
 extern int i915_do_cleanup_pageflip(struct drm_device *dev);
 extern int i915_dma_cleanup(struct drm_device *dev);
+extern int i915_dispatch_batchbuffer(struct drm_device * dev,
+				     drm_i915_batchbuffer_t * batch);
+extern int i915_quiescent(struct drm_device *dev);
 
 /* i915_irq.c */
 extern int i915_irq_emit(struct drm_device *dev, void *data,
@@ -344,6 +349,10 @@ extern uint64_t i915_evict_flags(struct drm_buffer_object *bo);
 extern int i915_move(struct drm_buffer_object *bo, int evict,
 		int no_wait, struct drm_bo_mem_reg *new_mem);
 void i915_flush_ttm(struct drm_ttm *ttm);
+/* i915_execbuf.c */
+int i915_execbuffer(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv);
+
 #endif
 
 #ifdef __linux__
@@ -468,6 +477,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define GFX_OP_USER_INTERRUPT		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
 #define CMD_REPORT_HEAD			(7<<23)
+#define CMD_STORE_DWORD_IMM             ((0x20<<23) | (0x1 << 22) | 0x1)
 #define CMD_STORE_DWORD_IDX		((0x21<<23) | 0x1)
 #define CMD_OP_BATCH_BUFFER  ((0x0<<29)|(0x30<<23)|0x1)
 
@@ -883,6 +893,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define   BLT_DEPTH_16_1555		(2<<24)
 #define   BLT_DEPTH_32			(3<<24)
 #define   BLT_ROP_GXCOPY		(0xcc<<16)
+#define XY_SRC_COPY_BLT_SRC_TILED	(1<<15)
+#define XY_SRC_COPY_BLT_DST_TILED	(1<<11)
 
 #define MI_BATCH_BUFFER		((0x30<<23)|1)
 #define MI_BATCH_BUFFER_START	(0x31<<23)
@@ -980,6 +992,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 /** P1 value is 2 greater than this field */
 # define VGA0_PD_P1_MASK	(0x1f << 0)
 
+/* PCI D state control register */
+#define D_STATE		0x6104
 #define DSPCLK_GATE_D	0x6200
 
 /* I830 CRTC registers */
@@ -1871,6 +1885,12 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define PIPECONF_INTERLACE_W_FIELD_INDICATION	(6 << 21)
 #define PIPECONF_INTERLACE_FIELD_0_ONLY		(7 << 21)
 
+#define DSPARB	  0x70030
+#define DSPARB_CSTART_MASK	(0x7f << 7)
+#define DSPARB_CSTART_SHIFT	7
+#define DSPARB_BSTART_MASK	(0x7f)		 
+#define DSPARB_BSTART_SHIFT	0
+
 #define PIPEBCONF 0x71008
 #define PIPEBCONF_ENABLE	(1<<31)
 #define PIPEBCONF_DISABLE	0
@@ -1990,8 +2010,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define IS_I915G(dev) ((dev)->pci_device == 0x2582 || (dev)->pci_device == 0x258a)
 #define IS_I915GM(dev) ((dev)->pci_device == 0x2592)
 #define IS_I945G(dev) ((dev)->pci_device == 0x2772)
-#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2)
-
+#define IS_I945GM(dev) ((dev)->pci_device == 0x27A2 ||\
+		        (dev)->pci_device == 0x27AE)
 #define IS_I965G(dev) ((dev)->pci_device == 0x2972 || \
 		       (dev)->pci_device == 0x2982 || \
 		       (dev)->pci_device == 0x2992 || \
@@ -2013,6 +2033,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 #define IS_MOBILE(dev) (IS_I830(dev) || IS_I85X(dev) || IS_I915GM(dev) || \
 			IS_I945GM(dev) || IS_I965GM(dev) || IS_IGD_GM(dev))
+
+#define I915_NEED_GFX_HWS(dev) (IS_G33(dev) || IS_IGD_GM(dev))
 
 #define PRIMARY_RINGBUFFER_SIZE         (128*1024)
 

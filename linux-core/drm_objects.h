@@ -310,6 +310,8 @@ struct drm_ttm_backend {
 struct drm_ttm {
 	struct page *dummy_read_page;
 	struct page **pages;
+	long first_himem_page;
+	long last_lomem_page;
 	uint32_t page_flags;
 	unsigned long num_pages;
 	atomic_t vma_count;
@@ -317,6 +319,8 @@ struct drm_ttm {
 	int destroy;
 	uint32_t mapping_offset;
 	struct drm_ttm_backend *be;
+	unsigned long highest_lomem_entry;
+	unsigned long lowest_himem_entry;
 	enum {
 		ttm_bound,
 		ttm_evicted,
@@ -334,7 +338,7 @@ extern void drm_ttm_unbind(struct drm_ttm *ttm);
 extern void drm_ttm_evict(struct drm_ttm *ttm);
 extern void drm_ttm_fixup_caching(struct drm_ttm *ttm);
 extern struct page *drm_ttm_get_page(struct drm_ttm *ttm, int index);
-extern void drm_ttm_cache_flush(void);
+extern void drm_ttm_cache_flush(struct page *pages[], unsigned long num_pages);
 extern int drm_ttm_populate(struct drm_ttm *ttm);
 extern int drm_ttm_set_user(struct drm_ttm *ttm,
 			    struct task_struct *tsk,
@@ -512,6 +516,14 @@ struct drm_buffer_object {
 #define _DRM_BO_FLAG_UNFENCED 0x00000001
 #define _DRM_BO_FLAG_EVICTED  0x00000002
 
+/*
+ * This flag indicates that a flag called with bo->mutex held has
+ * temporarily released the buffer object mutex, (usually to wait for something).
+ * and thus any post-lock validation needs to be rerun.
+ */
+
+#define _DRM_BO_FLAG_UNLOCKED 0x00000004
+
 struct drm_mem_type_manager {
 	int has_type;
 	int use_type;
@@ -677,8 +689,8 @@ extern int drm_buffer_object_create(struct drm_device *dev, unsigned long size,
 				    uint32_t hint, uint32_t page_alignment,
 				    unsigned long buffer_start,
 				    struct drm_buffer_object **bo);
-extern int drm_bo_wait(struct drm_buffer_object *bo, int lazy, int ignore_signals,
-		       int no_wait);
+extern int drm_bo_wait(struct drm_buffer_object *bo, int lazy, int interruptible,
+		       int no_wait, int check_unfenced);
 extern int drm_bo_mem_space(struct drm_buffer_object *bo,
 			    struct drm_bo_mem_reg *mem, int no_wait);
 extern int drm_bo_move_buffer(struct drm_buffer_object *bo,
@@ -690,7 +702,7 @@ extern int drm_bo_init_mm(struct drm_device *dev, unsigned type,
 			  int kern_init);
 extern int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
 				  uint64_t flags, uint64_t mask, uint32_t hint,
-				  uint32_t fence_class, int use_old_fence_class,
+				  uint32_t fence_class,
 				  struct drm_bo_info_rep *rep,
 				  struct drm_buffer_object **bo_rep);
 extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file *file_priv,
@@ -745,6 +757,8 @@ extern int drm_bo_pfn_prot(struct drm_buffer_object *bo,
 			   unsigned long dst_offset,
 			   unsigned long *pfn,
 			   pgprot_t *prot);
+extern void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
+				struct drm_bo_info_rep *rep);
 
 
 /*
@@ -797,8 +811,10 @@ extern void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg * 
 
 extern void drm_bo_init_lock(struct drm_bo_lock *lock);
 extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
-extern int drm_bo_read_lock(struct drm_bo_lock *lock);
+extern int drm_bo_read_lock(struct drm_bo_lock *lock,
+			    int interruptible);
 extern int drm_bo_write_lock(struct drm_bo_lock *lock,
+			     int interruptible,
 			     struct drm_file *file_priv);
 
 extern int drm_bo_write_unlock(struct drm_bo_lock *lock,

@@ -362,13 +362,28 @@ typedef struct drm_i915_hws_addr {
  * 2 - buffer handle
  * 3 - reserved (for optimisations later).
  */
+/*
+ * type 1 relocation has 4-uint32_t stride.
+ * Hangs off the first item in the op list.
+ * Performed after all valiations are done.
+ * Try to group relocs into the same relocatee together for
+ * performance reasons.
+ * 0 - offset into buffer
+ * 1 - delta to add in
+ * 2 - buffer index in op list.
+ * 3 - relocatee index in op list.
+ */
 #define I915_RELOC_TYPE_0 0
 #define I915_RELOC0_STRIDE 4
+#define I915_RELOC_TYPE_1 1
+#define I915_RELOC1_STRIDE 4
+
 
 struct drm_i915_op_arg {
 	uint64_t next;
 	uint64_t reloc_ptr;
 	int handled;
+	unsigned int pad64;
 	union {
 		struct drm_bo_op_req req;
 		struct drm_bo_arg_rep rep;
