@@ -45,7 +45,7 @@
 /*
  * A class that is an abstration of a simple memory allocator.
  * The sman implementation provides a default such allocator
- * using the drm_mm.c implementation. But the user can replace it.
+ * using the drm_memrange.c implementation. But the user can replace it.
  * See the SiS implementation, which may use the SiS FB kernel module
  * for memory management.
  */
@@ -116,7 +116,7 @@ extern int drm_sman_init(struct drm_sman * sman, unsigned int num_managers,
 			 unsigned int user_order, unsigned int owner_order);
 
 /*
- * Initialize a drm_mm.c allocator. Should be called only once for each
+ * Initialize a drm_memrange.c allocator. Should be called only once for each
  * manager unless a customized allogator is used.
  */
 
