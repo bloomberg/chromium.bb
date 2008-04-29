@@ -35,4 +35,3 @@
 
 int drm_open_any(void);
 int drm_open_any_master(void);
-int open_mmfs_device();

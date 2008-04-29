@@ -41,7 +41,6 @@ mach64-objs := mach64_drv.o mach64_dma.o mach64_irq.o mach64_state.o
 nv-objs := nv_drv.o
 xgi-objs    := xgi_cmdlist.o xgi_drv.o xgi_fb.o xgi_misc.o xgi_pcie.o \
 		xgi_fence.o
-mmfs-objs   := mmfs_drv.o
 
 ifeq ($(CONFIG_COMPAT),y)
 drm-objs    += drm_ioc32.o
@@ -53,7 +52,7 @@ nouveau-objs += nouveau_ioc32.o
 xgi-objs    += xgi_ioc32.o
 endif
 
-obj-m			+= drm.o mmfs.o
+obj-m			+= drm.o
 obj-$(CONFIG_DRM_TDFX)	+= tdfx.o
 obj-$(CONFIG_DRM_R128)	+= r128.o
 obj-$(CONFIG_DRM_RADEON)+= radeon.o

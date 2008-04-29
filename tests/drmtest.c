@@ -28,7 +28,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include "drmtest.h"
-#include "mmfs.h"
 
 /** Open the first DRM device we can find, searching up to 16 device nodes */
 int drm_open_any(void)
@@ -81,36 +80,4 @@ int drm_open_any_master(void)
 	}
 	fprintf(stderr, "Couldn't find an un-controlled DRM device\n");
 	abort();
-}
-
-static void
-create_mmfs_device()
-{
-	struct stat sb;
-	int ret;
-
-	ret = stat(MMFS_DEVICE_PATH, &sb);
-
-	if (ret == 0)
-		return;
-
-	ret = mknod(MMFS_DEVICE_PATH, S_IFCHR | S_IRUSR | S_IWUSR,
-		    makedev(MMFS_DEVICE_MAJOR, 0));
-
-	if (ret != 0)
-		errx(1, "mknod()");
-}
-
-int
-open_mmfs_device()
-{
-	int fd;
-
-	create_mmfs_device();
-
-	fd = open(MMFS_DEVICE_PATH, O_RDWR);
-	if (fd == -1)
-		errx(1, "open()");
-
-	return fd;
 }
