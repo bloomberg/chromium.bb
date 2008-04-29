@@ -33,13 +33,13 @@
 #include <inttypes.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include "mmfs.h"
+#include "drm.h"
 
-#define MMFS_BUFFER_SIZE 16384
+#define OBJECT_SIZE 16384
 
 int do_read(int fd, int handle, void *buf, int offset, int size)
 {
-	struct mmfs_pread_args read;
+	struct drm_mm_pread_args read;
 
 	/* Ensure that we don't have any convenient data in buf in case
 	 * we fail.
@@ -52,12 +52,12 @@ int do_read(int fd, int handle, void *buf, int offset, int size)
 	read.size = size;
 	read.offset = offset;
 
-	return ioctl(fd, MMFS_IOCTL_PREAD, &read);
+	return ioctl(fd, DRM_IOCTL_MM_PREAD, &read);
 }
 
 int do_write(int fd, int handle, void *buf, int offset, int size)
 {
-	struct mmfs_pwrite_args write;
+	struct drm_mm_pwrite_args write;
 
 	memset(&write, 0, sizeof(write));
 	write.handle = handle;
@@ -65,43 +65,43 @@ int do_write(int fd, int handle, void *buf, int offset, int size)
 	write.size = size;
 	write.offset = offset;
 
-	return ioctl(fd, MMFS_IOCTL_PWRITE, &write);
+	return ioctl(fd, DRM_IOCTL_MM_PWRITE, &write);
 }
 
 int main(int argc, char **argv)
 {
 	int fd;
-	struct mmfs_alloc_args alloc;
-	uint8_t expected[MMFS_BUFFER_SIZE];
-	uint8_t buf[MMFS_BUFFER_SIZE];
+	struct drm_mm_alloc_args alloc;
+	uint8_t expected[OBJECT_SIZE];
+	uint8_t buf[OBJECT_SIZE];
 	int ret;
 	int handle;
 
-	fd = open_mmfs_device();
+	fd = drm_open_any();
 
 	memset(&alloc, 0, sizeof(alloc));
-	alloc.size = MMFS_BUFFER_SIZE;
-	ret = ioctl(fd, MMFS_IOCTL_ALLOC, &alloc);
+	alloc.size = OBJECT_SIZE;
+	ret = ioctl(fd, DRM_IOCTL_MM_ALLOC, &alloc);
 	assert(ret == 0);
 	handle = alloc.handle;
 
 	printf("Testing contents of newly allocated object.\n");
-	ret = do_read(fd, handle, buf, 0, MMFS_BUFFER_SIZE);
+	ret = do_read(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
 	memset(&expected, 0, sizeof(expected));
 	assert(memcmp(expected, buf, sizeof(expected)) == 0);
 
 	printf("Testing read beyond end of buffer.\n");
-	ret = do_read(fd, handle, buf, MMFS_BUFFER_SIZE / 2, MMFS_BUFFER_SIZE);
+	ret = do_read(fd, handle, buf, OBJECT_SIZE / 2, OBJECT_SIZE);
 	assert(ret == -1 && errno == EINVAL);
 
 	printf("Testing full write of buffer\n");
 	memset(buf, 0, sizeof(buf));
 	memset(buf + 1024, 0x01, 1024);
 	memset(expected + 1024, 0x01, 1024);
-	ret = do_write(fd, handle, buf, 0, MMFS_BUFFER_SIZE);
+	ret = do_write(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
-	ret = do_read(fd, handle, buf, 0, MMFS_BUFFER_SIZE);
+	ret = do_read(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
 	assert(memcmp(buf, expected, sizeof(buf)) == 0);
 
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
 	memset(expected + 4096, 0x02, 1024);
 	ret = do_write(fd, handle, buf + 4096, 4096, 1024);
 	assert(ret == 0);
-	ret = do_read(fd, handle, buf, 0, MMFS_BUFFER_SIZE);
+	ret = do_read(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
 	assert(memcmp(buf, expected, sizeof(buf)) == 0);
 

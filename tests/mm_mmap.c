@@ -33,13 +33,13 @@
 #include <inttypes.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include "mmfs.h"
+#include "drm.h"
 
-#define MMFS_BUFFER_SIZE 16384
+#define OBJECT_SIZE 16384
 
 int do_read(int fd, int handle, void *buf, int offset, int size)
 {
-	struct mmfs_pread_args read;
+	struct drm_mm_pread_args read;
 
 	/* Ensure that we don't have any convenient data in buf in case
 	 * we fail.
@@ -52,12 +52,12 @@ int do_read(int fd, int handle, void *buf, int offset, int size)
 	read.size = size;
 	read.offset = offset;
 
-	return ioctl(fd, MMFS_IOCTL_PREAD, &read);
+	return ioctl(fd, DRM_IOCTL_MM_PREAD, &read);
 }
 
 int do_write(int fd, int handle, void *buf, int offset, int size)
 {
-	struct mmfs_pwrite_args write;
+	struct drm_mm_pwrite_args write;
 
 	memset(&write, 0, sizeof(write));
 	write.handle = handle;
@@ -65,41 +65,41 @@ int do_write(int fd, int handle, void *buf, int offset, int size)
 	write.size = size;
 	write.offset = offset;
 
-	return ioctl(fd, MMFS_IOCTL_PWRITE, &write);
+	return ioctl(fd, DRM_IOCTL_MM_PWRITE, &write);
 }
 
 int main(int argc, char **argv)
 {
 	int fd;
-	struct mmfs_alloc_args alloc;
-	struct mmfs_mmap_args mmap;
-	struct mmfs_unreference_args unref;
-	uint8_t expected[MMFS_BUFFER_SIZE];
-	uint8_t buf[MMFS_BUFFER_SIZE];
+	struct drm_mm_alloc_args alloc;
+	struct drm_mm_mmap_args mmap;
+	struct drm_mm_unreference_args unref;
+	uint8_t expected[OBJECT_SIZE];
+	uint8_t buf[OBJECT_SIZE];
 	int ret;
 	int handle;
 
-	fd = open_mmfs_device();
+	fd = drm_open_any();
 
 	memset(&mmap, 0, sizeof(mmap));
 	mmap.handle = 0x10101010;
 	mmap.offset = 0;
 	mmap.size = 4096;
 	printf("Testing mmaping of bad object.\n");
-	ret = ioctl(fd, MMFS_IOCTL_MMAP, &mmap);
+	ret = ioctl(fd, DRM_IOCTL_MM_MMAP, &mmap);
 	assert(ret == -1 && errno == EINVAL);
 
 	memset(&alloc, 0, sizeof(alloc));
-	alloc.size = MMFS_BUFFER_SIZE;
-	ret = ioctl(fd, MMFS_IOCTL_ALLOC, &alloc);
+	alloc.size = OBJECT_SIZE;
+	ret = ioctl(fd, DRM_IOCTL_MM_ALLOC, &alloc);
 	assert(ret == 0);
 	handle = alloc.handle;
 
 	printf("Testing mmaping of newly allocated object.\n");
 	mmap.handle = handle;
 	mmap.offset = 0;
-	mmap.size = MMFS_BUFFER_SIZE;
-	ret = ioctl(fd, MMFS_IOCTL_MMAP, &mmap);
+	mmap.size = OBJECT_SIZE;
+	ret = ioctl(fd, DRM_IOCTL_MM_MMAP, &mmap);
 	assert(ret == 0);
 
 	printf("Testing contents of newly allocated object.\n");
@@ -110,18 +110,18 @@ int main(int argc, char **argv)
 	memset(buf, 0, sizeof(buf));
 	memset(buf + 1024, 0x01, 1024);
 	memset(expected + 1024, 0x01, 1024);
-	ret = do_write(fd, handle, buf, 0, MMFS_BUFFER_SIZE);
+	ret = do_write(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
 	assert(memcmp(buf, mmap.addr, sizeof(buf)) == 0);
 
 	printf("Testing that mapping stays after unreference\n");
 	unref.handle = handle;
-	ret = ioctl(fd, MMFS_IOCTL_UNREFERENCE, &unref);
+	ret = ioctl(fd, DRM_IOCTL_MM_UNREFERENCE, &unref);
 	assert(ret == 0);
 	assert(memcmp(buf, mmap.addr, sizeof(buf)) == 0);
 
 	printf("Testing unmapping\n");
-	munmap(mmap.addr, MMFS_BUFFER_SIZE);
+	munmap(mmap.addr, OBJECT_SIZE);
 
 	close(fd);
 

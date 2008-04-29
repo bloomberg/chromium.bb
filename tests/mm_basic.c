@@ -33,30 +33,18 @@
 #include <inttypes.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include "mmfs.h"
+#include "drm.h"
 
 static void
 test_bad_unref(int fd)
 {
-	struct mmfs_unreference_args unref;
+	struct drm_mm_unreference_args unref;
 	int ret;
 
 	printf("Testing error return on bad unreference ioctl.\n");
 
 	unref.handle = 0x10101010;
-	ret = ioctl(fd, MMFS_IOCTL_UNREFERENCE, &unref);
-
-	assert(ret == -1 && errno == EINVAL);
-}
-
-static void
-test_bad_ioctl(int fd)
-{
-	int ret;
-
-	printf("Testing error return on bad ioctl.\n");
-
-	ret = ioctl(fd, _IO(MMFS_IOCTL_BASE, 0xf0), 0);
+	ret = ioctl(fd, DRM_IOCTL_MM_UNREFERENCE, &unref);
 
 	assert(ret == -1 && errno == EINVAL);
 }
@@ -64,32 +52,32 @@ test_bad_ioctl(int fd)
 static void
 test_alloc_unref(int fd)
 {
-	struct mmfs_alloc_args alloc;
-	struct mmfs_unreference_args unref;
+	struct drm_mm_alloc_args alloc;
+	struct drm_mm_unreference_args unref;
 	int ret;
 
 	printf("Testing allocating and unreferencing an object.\n");
 
 	memset(&alloc, 0, sizeof(alloc));
 	alloc.size = 16 * 1024;
-	ret = ioctl(fd, MMFS_IOCTL_ALLOC, &alloc);
+	ret = ioctl(fd, DRM_IOCTL_MM_ALLOC, &alloc);
 	assert(ret == 0);
 
 	unref.handle = alloc.handle;
-	ret = ioctl(fd, MMFS_IOCTL_UNREFERENCE, &unref);
+	ret = ioctl(fd, DRM_IOCTL_MM_UNREFERENCE, &unref);
 }
 
 static void
 test_alloc_close(int fd)
 {
-	struct mmfs_alloc_args alloc;
+	struct drm_mm_alloc_args alloc;
 	int ret;
 
 	printf("Testing closing with an object allocated.\n");
 
 	memset(&alloc, 0, sizeof(alloc));
 	alloc.size = 16 * 1024;
-	ret = ioctl(fd, MMFS_IOCTL_ALLOC, &alloc);
+	ret = ioctl(fd, DRM_IOCTL_MM_ALLOC, &alloc);
 	assert(ret == 0);
 
 	close(fd);
@@ -99,9 +87,8 @@ int main(int argc, char **argv)
 {
 	int fd;
 
-	fd = open_mmfs_device();
+	fd = drm_open_any();
 
-	test_bad_ioctl(fd);
 	test_bad_unref(fd);
 	test_alloc_unref(fd);
 	test_alloc_close(fd);

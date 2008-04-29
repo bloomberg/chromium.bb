@@ -23,9 +23,9 @@ TESTS = auth \
 	lock \
 	setversion \
 	updatedraw \
-	mmfs_basic \
-	mmfs_readwrite \
-	mmfs_mmap
+	mm_basic \
+	mm_readwrite \
+	mm_mmap
 
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)

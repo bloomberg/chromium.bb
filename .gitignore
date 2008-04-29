@@ -58,9 +58,9 @@ tests/getclient
 tests/getstats
 tests/getversion
 tests/lock
-tests/mmfs_basic
-tests/mmfs_mmap
-tests/mmfs_readwrite
+tests/mm_basic
+tests/mm_mmap
+tests/mm_readwrite
 tests/openclose
 tests/setversion
 tests/updatedraw
