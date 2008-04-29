@@ -166,10 +166,10 @@ void* ReadTaskMemory(task_port_t target_task,
                    &local_length);
 
 
-  if(kr != NULL) {
+  if (kr != NULL) {
     *kr = r;
   }
-  
+
   if (r == KERN_SUCCESS) {
     result = malloc(length);
     if (result != NULL) {

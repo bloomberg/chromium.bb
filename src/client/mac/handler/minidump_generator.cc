@@ -275,7 +275,7 @@ bool MinidumpGenerator::WriteStackFromStartAddress(
                                         size,
                                         &kr);
 
-    if(stack_memory == NULL) {
+    if (stack_memory == NULL) {
       return false;
     }
 

@@ -29,7 +29,7 @@
 // breakpad_nlist.h
 //
 // This file is meant to provide a header for clients of the modified
-// nlist function implemented to work on 64-bit.  
+// nlist function implemented to work on 64-bit.
 
 #ifndef CLIENT_MAC_HANDLER_BREAKPAD_NLIST_H__
 
