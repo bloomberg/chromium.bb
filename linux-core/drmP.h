@@ -107,7 +107,7 @@ struct drm_file;
 #define DRIVER_IRQ_SHARED  0x80
 #define DRIVER_DMA_QUEUE   0x100
 #define DRIVER_FB_DMA      0x200
-
+#define DRIVER_MM	   0x400
 
 /*@}*/
 
@@ -427,6 +427,11 @@ struct drm_file {
 
 	struct list_head refd_objects;
 
+	/** Mapping of mm object handles to object pointers. */
+	struct idr object_idr;
+	/** Lock for synchronization of access to object_idr. */
+	spinlock_t table_lock;
+
 	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;
 	void *driver_priv;
@@ -602,6 +607,26 @@ struct drm_ati_pcigart_info {
 	struct drm_dma_handle *table_handle;
 	drm_local_map_t mapping;
 	int table_size;
+};
+
+/**
+ * This structure defines the drm_mm memory object, which will be used by the
+ * DRM for its buffer objects.
+ */
+struct drm_mm_object {
+	/** File representing the shmem storage */
+	struct file *filp;
+
+	spinlock_t lock;
+
+	/**
+	 * Size of the object, in bytes.  Immutable over the object's
+	 * lifetime.
+	 */
+	size_t size;
+
+	/** Reference count of this object, protected by object_lock */
+	int refcount;
 };
 
 #include "drm_objects.h"
@@ -1258,6 +1283,22 @@ static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 {
 	return block->mm;
 }
+
+/* Memory manager (drm_mm.c) */
+void drm_mm_object_reference(struct drm_mm_object *obj);
+void drm_mm_object_unreference(struct drm_mm_object *obj);
+int drm_mm_alloc_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+int drm_mm_unreference_ioctl(struct drm_device *dev, void *data,
+			     struct drm_file *file_priv);
+int drm_mm_pread_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+int drm_mm_pwrite_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int drm_mm_mmap_ioctl(struct drm_device *dev, void *data,
+		      struct drm_file *file_priv);
+void drm_mm_open(struct drm_file *file_private);
+void drm_mm_release(struct drm_file *file_private);
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
