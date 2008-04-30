@@ -41,7 +41,6 @@
 #include <CPlusTest/CPlusTest.h>
 
 class BreakpadNlistTest : public TestCase {
-
  private:
 
   // nm dumps multiple addresses for the same symbol in
