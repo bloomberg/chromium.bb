@@ -1278,6 +1278,10 @@ extern int drm_memrange_remove_space_from_tail(struct drm_memrange *mm,
 					       unsigned long size);
 extern int drm_memrange_add_space_to_tail(struct drm_memrange *mm,
 					  unsigned long size);
+extern int drm_memrange_for_each(struct drm_memrange *mm,
+				 int (*callback)(struct drm_memrange_node *node,
+						 void *data),
+				 void *data);
 
 static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 {

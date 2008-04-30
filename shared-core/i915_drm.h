@@ -176,6 +176,8 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_MMIO		0x10
 #define DRM_I915_HWS_ADDR	0x11
 #define DRM_I915_EXECBUFFER	0x12
+#define DRM_I915_MM_INIT	0x13
+#define DRM_I915_MM_EXECBUFFER	0x14
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -195,6 +197,8 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
 #define DRM_IOCTL_I915_MMIO             DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_MMIO, drm_i915_mmio)
 #define DRM_IOCTL_I915_EXECBUFFER	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_EXECBUFFER, struct drm_i915_execbuffer)
+#define DRM_IOCTL_I915_MM_INIT		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_MM_INIT, struct drm_i915_mm_init)
+#define DRM_IOCTL_I915_MM_EXECBUFFER	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_MM_INIT, struct drm_i915_mm_execbuffer)
 
 /* Asynchronous page flipping:
  */
@@ -392,6 +396,87 @@ struct drm_i915_execbuffer {
 	struct drm_i915_batchbuffer batch;
 	drm_context_t context; /* for lockless use in the future */
 	struct drm_fence_arg fence_arg;
+};
+
+struct drm_i915_mm_init {
+	/**
+	 * Beginning offset in the GTT to be managed by the DRM memory
+	 * manager.
+	 */
+	off_t gtt_start;
+	/**
+	 * Ending offset in the GTT to be managed by the DRM memory
+	 * manager.
+	 */
+	off_t gtt_end;
+};
+
+struct drm_i915_relocation_entry {
+	/**
+	 * Handle of the buffer being pointed to by this relocation entry.
+	 *
+	 * It's appealing to make this be an index into the mm_validate_entry
+	 * list to refer to the buffer, but handle lookup should be O(1) anyway,
+	 * and prevents O(n) search in userland to find what that index is.
+	 */
+	uint32_t target_buffer;
+
+	/** Offset in the buffer the relocation entry will be written into */
+	uint32_t offset;
+
+	/**
+	 * Value to be added to the offset of the target buffer to make up
+	 * the relocation entry.
+	 */
+	uint32_t delta;
+
+	/**
+	 * Offset value of the target buffer that the relocation entry was last
+	 * written as.
+	 *
+	 * If the buffer has the same offset as last time, we can skip syncing
+	 * and writing the relocation.  This value is written back out by
+	 * the execbuffer ioctl when the relocation is written.
+	 */
+	uint32_t presumed_offset;
+};
+
+struct drm_i915_mm_validate_entry {
+	/**
+	 * User's handle for a buffer to be bound into the GTT for this
+	 * operation.
+	 */
+	uint32_t buffer_handle;
+	/**
+	 * Returned value of the updated offset of the buffer, for future
+	 * presumed_offset writes.
+	 */
+	uint32_t buffer_offset;
+	/** List of relocations to be performed on this buffer */
+	struct drm_i915_relocation_entry *relocs;
+	uint32_t relocation_count;
+};
+
+struct drm_i915_mm_execbuffer {
+	/**
+	 * List of buffers to be validated wit their relocations to be
+	 * performend on them.
+	 *
+	 * These buffers must be listed in an order such that all relocations
+	 * a buffer is performing refer to buffers that have already appeared
+	 * in the validate list.
+	 */
+	struct drm_i915_mm_validate_entry *buffers;
+	uint32_t buffer_count;
+
+	/** Offset in the batchbuffer to start execution from. */
+	uint32_t batch_start_offset;
+	/** Bytes used in batchbuffer from batch_start_offset */
+	uint32_t batch_len;
+	uint32_t DR1;
+	uint32_t DR4;
+	uint32_t num_cliprects;
+	struct drm_clip_rect *cliprects;
 };
 
 #endif				/* _I915_DRM_H_ */

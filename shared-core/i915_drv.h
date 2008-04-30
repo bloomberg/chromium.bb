@@ -241,6 +241,10 @@ typedef struct drm_i915_private {
 	u8 saveDACMASK;
 	u8 saveDACDATA[256*3]; /* 256 3-byte colors */
 	u8 saveCR[36];
+
+	struct {
+		struct drm_memrange gtt_space;
+	} mm;
 } drm_i915_private_t;
 
 enum intel_chip_family {
@@ -329,6 +333,11 @@ void i915_flush_ttm(struct drm_ttm *ttm);
 /* i915_execbuf.c */
 int i915_execbuffer(struct drm_device *dev, void *data,
 				   struct drm_file *file_priv);
+/* i915_mm.c */
+int intel_mm_init_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int intel_mm_execbuffer(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
 
 #endif
 
