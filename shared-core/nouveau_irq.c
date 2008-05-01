@@ -433,6 +433,49 @@ nouveau_pgraph_irq_handler(struct drm_device *dev)
 }
 
 static void
+nv50_pgraph_irq_handler(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	uint32_t status;
+
+	status = NV_READ(NV03_PGRAPH_INTR);
+
+	if (status & 0x00000020) {
+		nouveau_pgraph_intr_error(dev,
+					  NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD);
+
+		status &= ~0x00000020;
+		NV_WRITE(NV03_PGRAPH_INTR, 0x00000020);
+	}
+
+	if (status & 0x00100000) {
+		nouveau_pgraph_intr_error(dev,
+					  NV03_PGRAPH_NSOURCE_DATA_ERROR);
+
+		status &= ~0x00100000;
+		NV_WRITE(NV03_PGRAPH_INTR, 0x00100000);
+	}
+
+	if (status & 0x00200000) {
+		nouveau_pgraph_intr_error(dev,
+					  NV03_PGRAPH_NSOURCE_PROTECTION_ERROR);
+
+		status &= ~0x00200000;
+		NV_WRITE(NV03_PGRAPH_INTR, 0x00200000);
+	}
+
+	if (status) {
+		DRM_INFO("Unhandled PGRAPH_INTR - 0x%08x\n", status);
+		NV_WRITE(NV03_PGRAPH_INTR, status);
+	}
+
+	if ((NV_READ(0x400500) & (1 << 16)) == 0)
+		NV_WRITE(0x400500, NV_READ(0x400500) | (1 << 16));
+
+	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PGRAPH_PENDING);
+}
+
+static void
 nouveau_crtc_irq_handler(struct drm_device *dev, int crtc)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -485,7 +528,11 @@ nouveau_irq_handler(DRM_IRQ_ARGS)
 	}
 
 	if (status & NV_PMC_INTR_0_PGRAPH_PENDING) {
-		nouveau_pgraph_irq_handler(dev);
+		if (dev_priv->card_type >= NV_50)
+			nv50_pgraph_irq_handler(dev);
+		else
+			nouveau_pgraph_irq_handler(dev);
+
 		status &= ~NV_PMC_INTR_0_PGRAPH_PENDING;
 	}
 
