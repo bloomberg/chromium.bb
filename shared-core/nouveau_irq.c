@@ -71,8 +71,9 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine = &dev_priv->Engine;
-	uint32_t status;
+	uint32_t status, reassign;
 
+	reassign = NV_READ(NV03_PFIFO_CACHES) & 1;
 	while ((status = NV_READ(NV03_PFIFO_INTR_0))) {
 		uint32_t chid, get;
 
@@ -121,7 +122,7 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 			NV_WRITE(NV03_PFIFO_INTR_0, status);
 		}
 
-		NV_WRITE(NV03_PFIFO_CACHES, 1);
+		NV_WRITE(NV03_PFIFO_CACHES, reassign);
 	}
 
 	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PFIFO_PENDING);
