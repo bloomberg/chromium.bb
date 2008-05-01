@@ -120,6 +120,7 @@ nouveau_fifo_irq_handler(struct drm_device *dev)
 		if (status) {
 			DRM_INFO("Unhandled PFIFO_INTR - 0x%08x\n", status);
 			NV_WRITE(NV03_PFIFO_INTR_0, status);
+			NV_WRITE(NV03_PMC_INTR_EN_0, 0);
 		}
 
 		NV_WRITE(NV03_PFIFO_CACHES, reassign);
