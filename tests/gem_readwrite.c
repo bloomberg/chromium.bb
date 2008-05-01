@@ -39,7 +39,7 @@
 
 int do_read(int fd, int handle, void *buf, int offset, int size)
 {
-	struct drm_mm_pread_args read;
+	struct drm_gem_pread read;
 
 	/* Ensure that we don't have any convenient data in buf in case
 	 * we fail.
@@ -52,12 +52,12 @@ int do_read(int fd, int handle, void *buf, int offset, int size)
 	read.size = size;
 	read.offset = offset;
 
-	return ioctl(fd, DRM_IOCTL_MM_PREAD, &read);
+	return ioctl(fd, DRM_IOCTL_GEM_PREAD, &read);
 }
 
 int do_write(int fd, int handle, void *buf, int offset, int size)
 {
-	struct drm_mm_pwrite_args write;
+	struct drm_gem_pwrite write;
 
 	memset(&write, 0, sizeof(write));
 	write.handle = handle;
@@ -65,15 +65,13 @@ int do_write(int fd, int handle, void *buf, int offset, int size)
 	write.size = size;
 	write.offset = offset;
 
-	return ioctl(fd, DRM_IOCTL_MM_PWRITE, &write);
+	return ioctl(fd, DRM_IOCTL_GEM_PWRITE, &write);
 }
 
 int main(int argc, char **argv)
 {
 	int fd;
-	struct drm_mm_alloc_args alloc;
-	struct drm_mm_mmap_args mmap;
-	struct drm_mm_unreference_args unref;
+	struct drm_gem_alloc alloc;
 	uint8_t expected[OBJECT_SIZE];
 	uint8_t buf[OBJECT_SIZE];
 	int ret;
@@ -81,47 +79,45 @@ int main(int argc, char **argv)
 
 	fd = drm_open_any();
 
-	memset(&mmap, 0, sizeof(mmap));
-	mmap.handle = 0x10101010;
-	mmap.offset = 0;
-	mmap.size = 4096;
-	printf("Testing mmaping of bad object.\n");
-	ret = ioctl(fd, DRM_IOCTL_MM_MMAP, &mmap);
-	assert(ret == -1 && errno == EINVAL);
-
 	memset(&alloc, 0, sizeof(alloc));
 	alloc.size = OBJECT_SIZE;
-	ret = ioctl(fd, DRM_IOCTL_MM_ALLOC, &alloc);
+	ret = ioctl(fd, DRM_IOCTL_GEM_ALLOC, &alloc);
 	assert(ret == 0);
 	handle = alloc.handle;
 
-	printf("Testing mmaping of newly allocated object.\n");
-	mmap.handle = handle;
-	mmap.offset = 0;
-	mmap.size = OBJECT_SIZE;
-	ret = ioctl(fd, DRM_IOCTL_MM_MMAP, &mmap);
-	assert(ret == 0);
-
 	printf("Testing contents of newly allocated object.\n");
-	memset(expected, 0, sizeof(expected));
-	assert(memcmp(mmap.addr, expected, sizeof(expected)) == 0);
+	ret = do_read(fd, handle, buf, 0, OBJECT_SIZE);
+	assert(ret == 0);
+	memset(&expected, 0, sizeof(expected));
+	assert(memcmp(expected, buf, sizeof(expected)) == 0);
 
-	printf("Testing coherency of writes and mmap reads.\n");
+	printf("Testing read beyond end of buffer.\n");
+	ret = do_read(fd, handle, buf, OBJECT_SIZE / 2, OBJECT_SIZE);
+	assert(ret == -1 && errno == EINVAL);
+
+	printf("Testing full write of buffer\n");
 	memset(buf, 0, sizeof(buf));
 	memset(buf + 1024, 0x01, 1024);
 	memset(expected + 1024, 0x01, 1024);
 	ret = do_write(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
-	assert(memcmp(buf, mmap.addr, sizeof(buf)) == 0);
-
-	printf("Testing that mapping stays after unreference\n");
-	unref.handle = handle;
-	ret = ioctl(fd, DRM_IOCTL_MM_UNREFERENCE, &unref);
+	ret = do_read(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
-	assert(memcmp(buf, mmap.addr, sizeof(buf)) == 0);
+	assert(memcmp(buf, expected, sizeof(buf)) == 0);
 
-	printf("Testing unmapping\n");
-	munmap(mmap.addr, OBJECT_SIZE);
+	printf("Testing partial write of buffer\n");
+	memset(buf + 4096, 0x02, 1024);
+	memset(expected + 4096, 0x02, 1024);
+	ret = do_write(fd, handle, buf + 4096, 4096, 1024);
+	assert(ret == 0);
+	ret = do_read(fd, handle, buf, 0, OBJECT_SIZE);
+	assert(ret == 0);
+	assert(memcmp(buf, expected, sizeof(buf)) == 0);
+
+	printf("Testing partial read of buffer\n");
+	ret = do_read(fd, handle, buf, 512, 1024);
+	assert(ret == 0);
+	assert(memcmp(buf, expected + 512, 1024) == 0);
 
 	close(fd);
 

@@ -38,13 +38,13 @@
 static void
 test_bad_unref(int fd)
 {
-	struct drm_mm_unreference_args unref;
+	struct drm_gem_unreference unref;
 	int ret;
 
 	printf("Testing error return on bad unreference ioctl.\n");
 
 	unref.handle = 0x10101010;
-	ret = ioctl(fd, DRM_IOCTL_MM_UNREFERENCE, &unref);
+	ret = ioctl(fd, DRM_IOCTL_GEM_UNREFERENCE, &unref);
 
 	assert(ret == -1 && errno == EINVAL);
 }
@@ -52,32 +52,32 @@ test_bad_unref(int fd)
 static void
 test_alloc_unref(int fd)
 {
-	struct drm_mm_alloc_args alloc;
-	struct drm_mm_unreference_args unref;
+	struct drm_gem_alloc alloc;
+	struct drm_gem_unreference unref;
 	int ret;
 
 	printf("Testing allocating and unreferencing an object.\n");
 
 	memset(&alloc, 0, sizeof(alloc));
 	alloc.size = 16 * 1024;
-	ret = ioctl(fd, DRM_IOCTL_MM_ALLOC, &alloc);
+	ret = ioctl(fd, DRM_IOCTL_GEM_ALLOC, &alloc);
 	assert(ret == 0);
 
 	unref.handle = alloc.handle;
-	ret = ioctl(fd, DRM_IOCTL_MM_UNREFERENCE, &unref);
+	ret = ioctl(fd, DRM_IOCTL_GEM_UNREFERENCE, &unref);
 }
 
 static void
 test_alloc_close(int fd)
 {
-	struct drm_mm_alloc_args alloc;
+	struct drm_gem_alloc alloc;
 	int ret;
 
 	printf("Testing closing with an object allocated.\n");
 
 	memset(&alloc, 0, sizeof(alloc));
 	alloc.size = 16 * 1024;
-	ret = ioctl(fd, DRM_IOCTL_MM_ALLOC, &alloc);
+	ret = ioctl(fd, DRM_IOCTL_GEM_ALLOC, &alloc);
 	assert(ret == 0);
 
 	close(fd);
