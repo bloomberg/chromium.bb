@@ -329,8 +329,8 @@ err:
 }
 
 int
-i915_gem_pin(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
+i915_gem_pin_ioctl(struct drm_device *dev, void *data,
+		   struct drm_file *file_priv)
 {
 	struct drm_i915_gem_pin *args = data;
 	struct drm_gem_object *obj;
@@ -353,8 +353,8 @@ i915_gem_pin(struct drm_device *dev, void *data,
 }
 
 int
-i915_gem_unpin(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
+i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
 {
 	struct drm_i915_gem_pin *args = data;
 	struct drm_gem_object *obj;

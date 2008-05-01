@@ -157,7 +157,7 @@ int
 drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
-	struct drm_gem_alloc_args *args = data;
+	struct drm_gem_alloc *args = data;
 	struct drm_gem_object *obj;
 	int handle, ret;
 
@@ -202,7 +202,7 @@ int
 drm_gem_unreference_ioctl(struct drm_device *dev, void *data,
 			  struct drm_file *file_priv)
 {
-	struct drm_gem_unreference_args *args = data;
+	struct drm_gem_unreference *args = data;
 	int ret;
 
 	ret = drm_gem_handle_delete(dev, file_priv, args->handle);
@@ -219,7 +219,7 @@ int
 drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
-	struct drm_gem_pread_args *args = data;
+	struct drm_gem_pread *args = data;
 	struct drm_gem_object *obj;
 	ssize_t read;
 	loff_t offset;
@@ -256,7 +256,7 @@ int
 drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
 {
-	struct drm_gem_mmap_args *args = data;
+	struct drm_gem_mmap *args = data;
 	struct drm_gem_object *obj;
 	loff_t offset;
 
@@ -286,7 +286,7 @@ int
 drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv)
 {
-	struct drm_gem_pwrite_args *args = data;
+	struct drm_gem_pwrite *args = data;
 	struct drm_gem_object *obj;
 	ssize_t written;
 	loff_t offset;
