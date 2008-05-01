@@ -80,6 +80,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 	}
 
 	obj->refcount = 1;
+	obj->size = size;
 
 	if (dev->driver->gem_init_object != NULL &&
 	    dev->driver->gem_init_object(dev, obj) != 0) {

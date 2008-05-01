@@ -106,6 +106,9 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj)
 	obj_priv->gtt_space = drm_memrange_get_block(free_space,
 						     obj->size,
 						     PAGE_SIZE);
+	obj_priv->gtt_offset = obj_priv->gtt_space->start;
+
+	DRM_INFO("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
 
 	/* Get the list of pages out of our struct file.  They'll be pinned
 	 * at this point until we release them.
@@ -120,6 +123,8 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj)
 
 		if (obj_priv->page_list[i] == NULL) {
 			i915_gem_object_free_page_list(dev, obj);
+			drm_memrange_put_block(obj_priv->gtt_space);
+			obj_priv->gtt_space = NULL;
 			return -ENOMEM;
 		}
 	}
@@ -133,6 +138,8 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj)
 					       obj_priv->gtt_offset);
 	if (obj_priv->agp_mem == NULL) {
 		i915_gem_object_free_page_list(dev, obj);
+		drm_memrange_put_block(obj_priv->gtt_space);
+		obj_priv->gtt_space = NULL;
 		return -ENOMEM;
 	}
 
