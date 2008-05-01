@@ -475,8 +475,12 @@ nv50_pgraph_irq_handler(struct drm_device *dev)
 		NV_WRITE(NV03_PGRAPH_INTR, status);
 	}
 
-	if ((NV_READ(0x400500) & (1 << 16)) == 0)
-		NV_WRITE(0x400500, NV_READ(0x400500) | (1 << 16));
+	{
+		const int isb = (1 << 16) | (1 << 0);
+
+		if ((NV_READ(0x400500) & isb) != isb)
+			NV_WRITE(0x400500, NV_READ(0x400500) | isb);
+	}
 
 	NV_WRITE(NV03_PMC_INTR_0, NV_PMC_INTR_0_PGRAPH_PENDING);
 }
