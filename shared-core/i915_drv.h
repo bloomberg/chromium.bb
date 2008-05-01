@@ -256,7 +256,19 @@ enum intel_chip_family {
 
 /** driver private structure attached to each drm_gem_object */
 struct drm_i915_gem_object {
-	/** Current offset of the object in GTT space, if any. */
+	/** Current space allocated to this object in the GTT, if any. */
+	struct drm_memrange_node *gtt_space;
+
+	/** AGP memory structure for our GTT binding. */
+	DRM_AGP_MEM *agp_mem;
+
+	struct page **page_list;
+
+	/**
+	 * Current offset of the object in GTT space.
+	 *
+	 * This is the same as gtt_space->start
+	 */
 	uint32_t gtt_offset;
 
 	/** Boolean whether this object has a valid gtt offset. */

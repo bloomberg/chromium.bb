@@ -1038,6 +1038,10 @@ extern void drm_free_pages(unsigned long address, int order, int area);
 extern DRM_AGP_MEM *drm_alloc_agp(struct drm_device *dev, int pages, u32 type);
 extern int drm_free_agp(DRM_AGP_MEM * handle, int pages);
 extern int drm_bind_agp(DRM_AGP_MEM * handle, unsigned int start);
+extern DRM_AGP_MEM *drm_agp_bind_pages(struct drm_device *dev,
+					      struct page **pages,
+					      unsigned long num_pages,
+					      uint32_t gtt_offset);
 extern int drm_unbind_agp(DRM_AGP_MEM * handle);
 
 extern void drm_free_memctl(size_t size);
@@ -1301,11 +1305,14 @@ static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 	return block->mm;
 }
 
-/* Memory manager (drm_mm.c) */
+/* Graphics Execution Manager library functions (drm_gem.c) */
 void drm_gem_object_reference(struct drm_device *dev,
 			      struct drm_gem_object *obj);
 void drm_gem_object_unreference(struct drm_device *dev,
 				struct drm_gem_object *obj);
+struct drm_gem_object *
+drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
+		      int handle);
 int drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int drm_gem_unreference_ioctl(struct drm_device *dev, void *data,

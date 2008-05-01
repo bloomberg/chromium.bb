@@ -484,6 +484,53 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
 	return agp_unbind_memory(handle);
 }
 
+/**
+ * Binds a collection of pages into AGP memory at the given offset, returning
+ * the AGP memory structure containing them.
+ *
+ * No reference is held on the pages during this time -- it is up to the
+ * caller to handle that.
+ */
+DRM_AGP_MEM *
+drm_agp_bind_pages(struct drm_device *dev,
+		       struct page **pages,
+		       unsigned long num_pages,
+		       uint32_t gtt_offset)
+{
+	struct page **cur_page, **last_page = pages + num_pages;
+	DRM_AGP_MEM *mem;
+	int ret;
+
+	DRM_DEBUG("drm_agp_populate_ttm\n");
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
+	mem = drm_agp_allocate_memory(num_pages, AGP_USER_MEMORY);
+#else
+	mem = drm_agp_allocate_memory(dev->agp->bridge, num_pages,
+				      AGP_USER_MEMORY);
+#endif
+	if (mem == NULL) {
+		DRM_ERROR("Failed to allocate memory for %ld pages\n",
+			  num_pages);
+		return NULL;
+	}
+
+	mem->page_count = 0;
+	for (cur_page = pages; cur_page < last_page; ++cur_page) {
+		struct page *page = *cur_page;
+
+		mem->memory[mem->page_count++] =
+		    phys_to_gart(page_to_phys(page));
+	}
+
+	mem->is_flushed = TRUE;
+	ret = drm_agp_bind_memory(mem, gtt_offset);
+	if (ret != 0) {
+		agp_free_memory(mem);
+		return NULL;
+	}
+
+	return mem;
+}
 
 
 /*

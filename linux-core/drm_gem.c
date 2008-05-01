@@ -127,7 +127,7 @@ drm_gem_handle_delete(struct drm_device *dev, struct drm_file *filp,
 }
 
 /** Returns a reference to the object named by the handle. */
-static struct drm_gem_object *
+struct drm_gem_object *
 drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 		      int handle)
 {
@@ -358,6 +358,9 @@ drm_gem_object_reference(struct drm_device *dev, struct drm_gem_object *obj)
 void
 drm_gem_object_unreference(struct drm_device *dev, struct drm_gem_object *obj)
 {
+	if (obj == NULL)
+		return;
+
 	spin_lock(&obj->lock);
 	obj->refcount--;
 	spin_unlock(&obj->lock);
