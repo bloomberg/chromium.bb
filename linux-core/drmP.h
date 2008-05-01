@@ -107,7 +107,7 @@ struct drm_file;
 #define DRIVER_IRQ_SHARED  0x80
 #define DRIVER_DMA_QUEUE   0x100
 #define DRIVER_FB_DMA      0x200
-#define DRIVER_MM	   0x400
+#define DRIVER_GEM	   0x400
 
 /*@}*/
 
@@ -613,7 +613,7 @@ struct drm_ati_pcigart_info {
  * This structure defines the drm_mm memory object, which will be used by the
  * DRM for its buffer objects.
  */
-struct drm_mm_object {
+struct drm_gem_object {
 	/** File representing the shmem storage */
 	struct file *filp;
 
@@ -627,6 +627,8 @@ struct drm_mm_object {
 
 	/** Reference count of this object, protected by object_lock */
 	int refcount;
+
+	void *driver_private;
 };
 
 #include "drm_objects.h"
@@ -729,6 +731,17 @@ struct drm_driver {
 	unsigned long (*get_reg_ofs) (struct drm_device *dev);
 	void (*set_version) (struct drm_device *dev,
 			     struct drm_set_version *sv);
+
+	/**
+	 * Driver-specific constructor for drm_gem_objects, to set up
+	 * obj->driver_private.
+	 *
+	 * Returns 0 on success.
+	 */
+	int (*gem_init_object) (struct drm_device *dev,
+				struct drm_gem_object *obj);
+	void (*gem_free_object) (struct drm_device *dev,
+				 struct drm_gem_object *obj);
 
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
@@ -1289,20 +1302,22 @@ static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 }
 
 /* Memory manager (drm_mm.c) */
-void drm_mm_object_reference(struct drm_mm_object *obj);
-void drm_mm_object_unreference(struct drm_mm_object *obj);
-int drm_mm_alloc_ioctl(struct drm_device *dev, void *data,
-		       struct drm_file *file_priv);
-int drm_mm_unreference_ioctl(struct drm_device *dev, void *data,
-			     struct drm_file *file_priv);
-int drm_mm_pread_ioctl(struct drm_device *dev, void *data,
-		       struct drm_file *file_priv);
-int drm_mm_pwrite_ioctl(struct drm_device *dev, void *data,
+void drm_gem_object_reference(struct drm_device *dev,
+			      struct drm_gem_object *obj);
+void drm_gem_object_unreference(struct drm_device *dev,
+				struct drm_gem_object *obj);
+int drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
-int drm_mm_mmap_ioctl(struct drm_device *dev, void *data,
-		      struct drm_file *file_priv);
-void drm_mm_open(struct drm_file *file_private);
-void drm_mm_release(struct drm_file *file_private);
+int drm_gem_unreference_ioctl(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
+int drm_gem_pread_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+int drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
+void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);

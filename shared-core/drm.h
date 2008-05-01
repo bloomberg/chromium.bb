@@ -961,7 +961,7 @@ struct drm_mm_info_arg {
 };
 
 
-struct drm_mm_alloc_args {
+struct drm_gem_alloc_args {
 	/**
 	 * Requested size for the object.
 	 *
@@ -972,12 +972,12 @@ struct drm_mm_alloc_args {
 	uint32_t handle;
 };
 
-struct drm_mm_unreference_args {
+struct drm_gem_unreference_args {
 	/** Handle of the object to be unreferenced. */
 	uint32_t handle;
 };
 
-struct drm_mm_link_args {
+struct drm_gem_link_args {
 	/** Handle for the object being given a name. */
 	uint32_t handle;
 	/** Requested file name to export the object under. */
@@ -986,7 +986,7 @@ struct drm_mm_link_args {
 	mode_t mode;
 };
 
-struct drm_mm_pread_args {
+struct drm_gem_pread_args {
 	/** Handle for the object being read. */
 	uint32_t handle;
 	/** Offset into the object to read from */
@@ -997,7 +997,7 @@ struct drm_mm_pread_args {
 	void *data;
 };
 
-struct drm_mm_pwrite_args {
+struct drm_gem_pwrite_args {
 	/** Handle for the object being written to. */
 	uint32_t handle;
 	/** Offset into the object to write to */
@@ -1008,7 +1008,7 @@ struct drm_mm_pwrite_args {
 	void *data;
 };
 
-struct drm_mm_mmap_args {
+struct drm_gem_mmap_args {
 	/** Handle for the object being mapped. */
 	uint32_t handle;
 	/** Offset in the object to map. */
@@ -1043,11 +1043,11 @@ struct drm_mm_mmap_args {
 #define DRM_IOCTL_GET_STATS             DRM_IOR( 0x06, struct drm_stats)
 #define DRM_IOCTL_SET_VERSION		DRM_IOWR(0x07, struct drm_set_version)
 #define DRM_IOCTL_MODESET_CTL           DRM_IOW(0x08, struct drm_modeset_ctl)
-#define DRM_IOCTL_MM_ALLOC		DRM_IOWR(0x09, struct drm_mm_alloc_args)
-#define DRM_IOCTL_MM_UNREFERENCE	DRM_IOW(0x0a, struct drm_mm_unreference_args)
-#define DRM_IOCTL_MM_PREAD		DRM_IOW(0x0b, struct drm_mm_pread_args)
-#define DRM_IOCTL_MM_PWRITE		DRM_IOW(0x0c, struct drm_mm_pwrite_args)
-#define DRM_IOCTL_MM_MMAP		DRM_IOWR(0x0d, struct drm_mm_mmap_args)
+#define DRM_IOCTL_GEM_ALLOC		DRM_IOWR(0x09, struct drm_gem_alloc_args)
+#define DRM_IOCTL_GEM_UNREFERENCE	DRM_IOW(0x0a, struct drm_gem_unreference_args)
+#define DRM_IOCTL_GEM_PREAD		DRM_IOW(0x0b, struct drm_gem_pread_args)
+#define DRM_IOCTL_GEM_PWRITE		DRM_IOW(0x0c, struct drm_gem_pwrite_args)
+#define DRM_IOCTL_GEM_MMAP		DRM_IOWR(0x0d, struct drm_gem_mmap_args)
 
 #define DRM_IOCTL_SET_UNIQUE		DRM_IOW( 0x10, struct drm_unique)
 #define DRM_IOCTL_AUTH_MAGIC		DRM_IOW( 0x11, struct drm_auth)

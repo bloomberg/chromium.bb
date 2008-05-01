@@ -176,8 +176,8 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_MMIO		0x10
 #define DRM_I915_HWS_ADDR	0x11
 #define DRM_I915_EXECBUFFER	0x12
-#define DRM_I915_MM_INIT	0x13
-#define DRM_I915_MM_EXECBUFFER	0x14
+#define DRM_I915_GEM_INIT	0x13
+#define DRM_I915_GEM_EXECBUFFER	0x14
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -197,8 +197,8 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
 #define DRM_IOCTL_I915_MMIO             DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_MMIO, drm_i915_mmio)
 #define DRM_IOCTL_I915_EXECBUFFER	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_EXECBUFFER, struct drm_i915_execbuffer)
-#define DRM_IOCTL_I915_MM_INIT		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_MM_INIT, struct drm_i915_mm_init)
-#define DRM_IOCTL_I915_MM_EXECBUFFER	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_MM_INIT, struct drm_i915_mm_execbuffer)
+#define DRM_IOCTL_I915_MM_INIT		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_INIT, struct drm_i915_gem_init)
+#define DRM_IOCTL_I915_MM_EXECBUFFER	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_INIT, struct drm_i915_gem_execbuffer)
 
 /* Asynchronous page flipping:
  */
@@ -398,7 +398,7 @@ struct drm_i915_execbuffer {
 	struct drm_fence_arg fence_arg;
 };
 
-struct drm_i915_mm_init {
+struct drm_i915_gem_init {
 	/**
 	 * Beginning offset in the GTT to be managed by the DRM memory
 	 * manager.
@@ -411,7 +411,7 @@ struct drm_i915_mm_init {
 	off_t gtt_end;
 };
 
-struct drm_i915_relocation_entry {
+struct drm_i915_gem_relocation_entry {
 	/**
 	 * Handle of the buffer being pointed to by this relocation entry.
 	 *
@@ -441,7 +441,7 @@ struct drm_i915_relocation_entry {
 	uint32_t presumed_offset;
 };
 
-struct drm_i915_mm_validate_entry {
+struct drm_i915_gem_validate_entry {
 	/**
 	 * User's handle for a buffer to be bound into the GTT for this
 	 * operation.
@@ -453,11 +453,11 @@ struct drm_i915_mm_validate_entry {
 	 */
 	uint32_t buffer_offset;
 	/** List of relocations to be performed on this buffer */
-	struct drm_i915_relocation_entry *relocs;
+	struct drm_i915_gem_relocation_entry *relocs;
 	uint32_t relocation_count;
 };
 
-struct drm_i915_mm_execbuffer {
+struct drm_i915_gem_execbuffer {
 	/**
 	 * List of buffers to be validated wit their relocations to be
 	 * performend on them.
@@ -466,7 +466,7 @@ struct drm_i915_mm_execbuffer {
 	 * a buffer is performing refer to buffers that have already appeared
 	 * in the validate list.
 	 */
-	struct drm_i915_mm_validate_entry *buffers;
+	struct drm_i915_gem_validate_entry *buffers;
 	uint32_t buffer_count;
 
 	/** Offset in the batchbuffer to start execution from. */

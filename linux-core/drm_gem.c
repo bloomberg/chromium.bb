@@ -36,7 +36,7 @@
 #include <linux/pagemap.h>
 #include "drmP.h"
 
-/** @file drm_mm.c
+/** @file drm_gem.c
  *
  * This file provides some of the base ioctls and library routines for
  * the graphics memory manager implemented by each device driver.
@@ -64,10 +64,10 @@
  * up at a later data, and as our interface with shmfs for memory allocation.
  */
 
-static struct drm_mm_object *
-drm_mm_object_alloc(size_t size)
+static struct drm_gem_object *
+drm_gem_object_alloc(struct drm_device *dev, size_t size)
 {
-	struct drm_mm_object *obj;
+	struct drm_gem_object *obj;
 
 	BUG_ON((size & (PAGE_SIZE - 1)) != 0);
 
@@ -81,6 +81,12 @@ drm_mm_object_alloc(size_t size)
 
 	obj->refcount = 1;
 
+	if (dev->driver->gem_init_object != NULL &&
+	    dev->driver->gem_init_object(dev, obj) != 0) {
+		fput(obj->filp);
+		kfree(obj);
+		return NULL;
+	}
 	return obj;
 }
 
@@ -88,9 +94,10 @@ drm_mm_object_alloc(size_t size)
  * Removes the mapping from handle to filp for this object.
  */
 static int
-drm_mm_handle_delete(struct drm_file *filp, int handle)
+drm_gem_handle_delete(struct drm_device *dev, struct drm_file *filp,
+		      int handle)
 {
-	struct drm_mm_object *obj;
+	struct drm_gem_object *obj;
 
 	/* This is gross. The idr system doesn't let us try a delete and
 	 * return an error code.  It just spews if you fail at deleting.
@@ -112,7 +119,7 @@ drm_mm_handle_delete(struct drm_file *filp, int handle)
 
 	/* Release reference and decrement refcount. */
 	idr_remove(&filp->object_idr, handle);
-	drm_mm_object_unreference(obj);
+	drm_gem_object_unreference(dev, obj);
 
 	spin_unlock(&filp->table_lock);
 
@@ -120,10 +127,11 @@ drm_mm_handle_delete(struct drm_file *filp, int handle)
 }
 
 /** Returns a reference to the object named by the handle. */
-static struct drm_mm_object *
-drm_mm_object_lookup(struct drm_file *filp, int handle)
+static struct drm_gem_object *
+drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
+		      int handle)
 {
-	struct drm_mm_object *obj;
+	struct drm_gem_object *obj;
 
 	spin_lock(&filp->table_lock);
 
@@ -134,7 +142,7 @@ drm_mm_object_lookup(struct drm_file *filp, int handle)
 		return NULL;
 	}
 
-	drm_mm_object_reference(obj);
+	drm_gem_object_reference(dev, obj);
 
 	spin_unlock(&filp->table_lock);
 
@@ -146,18 +154,18 @@ drm_mm_object_lookup(struct drm_file *filp, int handle)
  * Allocates a new mm object and returns a handle to it.
  */
 int
-drm_mm_alloc_ioctl(struct drm_device *dev, void *data,
-		   struct drm_file *file_priv)
+drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	struct drm_mm_alloc_args *args = data;
-	struct drm_mm_object *obj;
+	struct drm_gem_alloc_args *args = data;
+	struct drm_gem_object *obj;
 	int handle, ret;
 
 	/* Round requested size up to page size */
 	args->size = (args->size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
 	/* Allocate the new object */
-	obj = drm_mm_object_alloc(args->size);
+	obj = drm_gem_object_alloc(dev, args->size);
 	if (obj == NULL)
 		return -ENOMEM;
 
@@ -178,7 +186,7 @@ drm_mm_alloc_ioctl(struct drm_device *dev, void *data,
 	} while (ret == -EAGAIN);
 
 	if (ret != 0) {
-		drm_mm_object_unreference(obj);
+		drm_gem_object_unreference(dev, obj);
 		return -EFAULT;
 	}
 
@@ -191,13 +199,13 @@ drm_mm_alloc_ioctl(struct drm_device *dev, void *data,
  * Releases the handle to an mm object.
  */
 int
-drm_mm_unreference_ioctl(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv)
+drm_gem_unreference_ioctl(struct drm_device *dev, void *data,
+			  struct drm_file *file_priv)
 {
-	struct drm_mm_unreference_args *args = data;
+	struct drm_gem_unreference_args *args = data;
 	int ret;
 
-	ret = drm_mm_handle_delete(file_priv, args->handle);
+	ret = drm_gem_handle_delete(dev, file_priv, args->handle);
 
 	return ret;
 }
@@ -208,15 +216,15 @@ drm_mm_unreference_ioctl(struct drm_device *dev, void *data,
  * On error, the contents of *data are undefined.
  */
 int
-drm_mm_pread_ioctl(struct drm_device *dev, void *data,
-		   struct drm_file *file_priv)
+drm_gem_pread_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	struct drm_mm_pread_args *args = data;
-	struct drm_mm_object *obj;
+	struct drm_gem_pread_args *args = data;
+	struct drm_gem_object *obj;
 	ssize_t read;
 	loff_t offset;
 
-	obj = drm_mm_object_lookup(file_priv, args->handle);
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
 		return -EINVAL;
 
@@ -225,14 +233,14 @@ drm_mm_pread_ioctl(struct drm_device *dev, void *data,
 	read = obj->filp->f_op->read(obj->filp, (char __user *)args->data,
 				     args->size, &offset);
 	if (read != args->size) {
-		drm_mm_object_unreference(obj);
+		drm_gem_object_unreference(dev, obj);
 		if (read < 0)
 			return read;
 		else
 			return -EINVAL;
 	}
 
-	drm_mm_object_unreference(obj);
+	drm_gem_object_unreference(dev, obj);
 
 	return 0;
 }
@@ -245,14 +253,14 @@ drm_mm_pread_ioctl(struct drm_device *dev, void *data,
  * imply a ref on the object itself.
  */
 int
-drm_mm_mmap_ioctl(struct drm_device *dev, void *data,
-		  struct drm_file *file_priv)
+drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
+		   struct drm_file *file_priv)
 {
-	struct drm_mm_mmap_args *args = data;
-	struct drm_mm_object *obj;
+	struct drm_gem_mmap_args *args = data;
+	struct drm_gem_object *obj;
 	loff_t offset;
 
-	obj = drm_mm_object_lookup(file_priv, args->handle);
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
 		return -EINVAL;
 
@@ -264,7 +272,7 @@ drm_mm_mmap_ioctl(struct drm_device *dev, void *data,
 				    args->offset);
 	up_write(&current->mm->mmap_sem);
 
-	drm_mm_object_unreference(obj);
+	drm_gem_object_unreference(dev, obj);
 
 	return 0;
 }
@@ -275,15 +283,15 @@ drm_mm_mmap_ioctl(struct drm_device *dev, void *data,
  * On error, the contents of the buffer that were to be modified are undefined.
  */
 int
-drm_mm_pwrite_ioctl(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
+drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
 {
-	struct drm_mm_pwrite_args *args = data;
-	struct drm_mm_object *obj;
+	struct drm_gem_pwrite_args *args = data;
+	struct drm_gem_object *obj;
 	ssize_t written;
 	loff_t offset;
 
-	obj = drm_mm_object_lookup(file_priv, args->handle);
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
 		return -EINVAL;
 
@@ -292,14 +300,14 @@ drm_mm_pwrite_ioctl(struct drm_device *dev, void *data,
 	written = obj->filp->f_op->write(obj->filp, (char __user *)args->data,
 					 args->size, &offset);
 	if (written != args->size) {
-		drm_mm_object_unreference(obj);
+		drm_gem_object_unreference(dev, obj);
 		if (written < 0)
 			return written;
 		else
 			return -EINVAL;
 	}
 
-	drm_mm_object_unreference(obj);
+	drm_gem_object_unreference(dev, obj);
 
 	return 0;
 }
@@ -309,18 +317,19 @@ drm_mm_pwrite_ioctl(struct drm_device *dev, void *data,
  * of mm objects.
  */
 void
-drm_mm_open(struct drm_file *file_private)
+drm_gem_open(struct drm_device *dev, struct drm_file *file_private)
 {
 	idr_init(&file_private->object_idr);
 }
 
 /** Called at device close to release the file's references on objects. */
 static int
-drm_mm_object_release(int id, void *ptr, void *data)
+drm_gem_object_release(int id, void *ptr, void *data)
 {
-	struct drm_mm_object *obj = ptr;
+	struct drm_device *dev = data;
+	struct drm_gem_object *obj = ptr;
 
-	drm_mm_object_unreference(obj);
+	drm_gem_object_unreference(dev, obj);
 
 	return 0;
 }
@@ -331,15 +340,15 @@ drm_mm_object_release(int id, void *ptr, void *data)
  * Releases any remaining references on objects by this filp.
  */
 void
-drm_mm_release(struct drm_file *file_private)
+drm_gem_release(struct drm_device *dev, struct drm_file *file_private)
 {
-	idr_for_each(&file_private->object_idr, &drm_mm_object_release, NULL);
+	idr_for_each(&file_private->object_idr, &drm_gem_object_release, dev);
 
 	idr_destroy(&file_private->object_idr);
 }
 
 void
-drm_mm_object_reference(struct drm_mm_object *obj)
+drm_gem_object_reference(struct drm_device *dev, struct drm_gem_object *obj)
 {
 	spin_lock(&obj->lock);
 	obj->refcount++;
@@ -347,12 +356,15 @@ drm_mm_object_reference(struct drm_mm_object *obj)
 }
 
 void
-drm_mm_object_unreference(struct drm_mm_object *obj)
+drm_gem_object_unreference(struct drm_device *dev, struct drm_gem_object *obj)
 {
 	spin_lock(&obj->lock);
 	obj->refcount--;
 	spin_unlock(&obj->lock);
 	if (obj->refcount == 0) {
+		if (dev->driver->gem_free_object != NULL)
+			dev->driver->gem_free_object(dev, obj);
+
 		fput(obj->filp);
 		kfree(obj);
 	}

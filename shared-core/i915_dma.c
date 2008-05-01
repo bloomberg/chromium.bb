@@ -1124,8 +1124,8 @@ struct drm_ioctl_desc i915_ioctls[] = {
 #ifdef I915_HAVE_BUFFER
 	DRM_IOCTL_DEF(DRM_I915_EXECBUFFER, i915_execbuffer, DRM_AUTH),
 #endif
-	DRM_IOCTL_DEF(DRM_I915_MM_INIT, intel_mm_init_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_I915_MM_EXECBUFFER, intel_mm_execbuffer, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_I915_GEM_INIT, i915_gem_init_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_I915_GEM_EXECBUFFER, i915_gem_execbuffer, DRM_AUTH),
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);

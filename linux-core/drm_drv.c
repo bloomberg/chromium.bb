@@ -151,11 +151,11 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 
 	DRM_IOCTL_DEF(DRM_IOCTL_MM_INFO, drm_mm_info_ioctl, 0),
 
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_ALLOC, drm_mm_alloc_ioctl, 0),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNREFERENCE, drm_mm_unreference_ioctl, 0),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_PREAD, drm_mm_pread_ioctl, 0),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_PWRITE, drm_mm_pwrite_ioctl, 0),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_MMAP, drm_mm_mmap_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_GEM_ALLOC, drm_gem_alloc_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_GEM_UNREFERENCE, drm_gem_unreference_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_GEM_PREAD, drm_gem_pread_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_GEM_PWRITE, drm_gem_pwrite_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_GEM_MMAP, drm_gem_mmap_ioctl, 0),
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )

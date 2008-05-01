@@ -254,6 +254,18 @@ enum intel_chip_family {
 	CHIP_I965 = 0x08,
 };
 
+/** driver private structure attached to each drm_gem_object */
+struct drm_i915_gem_object {
+	/** Current offset of the object in GTT space, if any. */
+	uint32_t gtt_offset;
+
+	/** Boolean whether this object has a valid gtt offset. */
+	int gtt_bound;
+
+	/** How many users have pinned this object in GTT space */
+	int pin_count;
+};
+
 extern struct drm_ioctl_desc i915_ioctls[];
 extern int i915_max_ioctl;
 
@@ -333,11 +345,13 @@ void i915_flush_ttm(struct drm_ttm *ttm);
 /* i915_execbuf.c */
 int i915_execbuffer(struct drm_device *dev, void *data,
 				   struct drm_file *file_priv);
-/* i915_mm.c */
-int intel_mm_init_ioctl(struct drm_device *dev, void *data,
+/* i915_gem.c */
+int i915_gem_init_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
-int intel_mm_execbuffer(struct drm_device *dev, void *data,
+int i915_gem_execbuffer(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
+int i915_gem_init_object(struct drm_device *dev, struct drm_gem_object *obj);
+void i915_gem_free_object(struct drm_device *dev, struct drm_gem_object *obj);
 
 #endif
 
