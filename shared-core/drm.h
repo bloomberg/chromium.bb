@@ -968,7 +968,11 @@ struct drm_gem_alloc {
 	 * The (page-aligned) allocated size for the object will be returned.
 	 */
 	uint32_t size;
-	/** Returned handle for the object. */
+	/**
+	 * Returned handle for the object.
+	 *
+	 * Object handles are nonzero.
+	 */
 	uint32_t handle;
 };
 

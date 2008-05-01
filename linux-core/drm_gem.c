@@ -182,7 +182,8 @@ drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 			return -EFAULT;
 		}
 
-		ret = idr_get_new(&file_priv->object_idr, obj, &handle);
+		ret = idr_get_new_above(&file_priv->object_idr, obj, 1,
+					&handle);
 	} while (ret == -EAGAIN);
 
 	if (ret != 0) {
