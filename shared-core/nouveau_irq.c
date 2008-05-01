@@ -191,55 +191,54 @@ nouveau_print_bitfield_names(uint32_t value,
 }
 
 static int
+nouveau_graph_chid_from_grctx(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	uint32_t inst;
+	int i;
+
+	if (dev_priv->card_type < NV_40)
+		return dev_priv->Engine.fifo.channels;
+	else
+	if (dev_priv->card_type < NV_50)
+		inst = (NV_READ(0x40032c) & 0xfffff) << 4;
+	else
+		inst = NV_READ(0x40032c) & 0xfffff;
+
+	for (i = 0; i < dev_priv->Engine.fifo.channels; i++) {
+		struct nouveau_channel *chan = dev_priv->fifos[i];
+
+		if (!chan || !chan->ramin_grctx)
+			continue;
+
+		if (dev_priv->card_type < NV_50) {
+			if (inst == chan->ramin_grctx->instance)
+				break;
+		} else {
+			if (inst == INSTANCE_RD(chan->ramin_grctx->gpuobj, 0))
+				break;
+		}
+	}
+
+	return i;
+}
+
+static int
 nouveau_graph_trapped_channel(struct drm_device *dev, int *channel_ret)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_engine *engine = &dev_priv->Engine;
 	int channel;
 
-	if (dev_priv->card_type < NV_10) {
+	if (dev_priv->card_type < NV_10)
 		channel = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 24) & 0xf;
-	} else if (dev_priv->card_type < NV_40) {
+	else
+	if (dev_priv->card_type < NV_40)
 		channel = (NV_READ(NV04_PGRAPH_TRAPPED_ADDR) >> 20) & 0x1f;
-	} else
-	if (dev_priv->card_type < NV_50) {
-		uint32_t cur_grctx = (NV_READ(0x40032C) & 0xfffff) << 4;
+	else
+		channel = nouveau_graph_chid_from_grctx(dev);
 
-		/* 0x400704 *sometimes* contains a sensible channel ID, but
-		 * mostly not.. for now lookup which channel owns the active
-		 * PGRAPH context.  Probably a better way, but this'll do
-		 * for now.
-		 */
-		for (channel = 0; channel < 32; channel++) {
-			if (dev_priv->fifos[channel] == NULL)
-				continue;
-			if (cur_grctx ==
-			    dev_priv->fifos[channel]->ramin_grctx->instance)
-				break;
-		}
-		if (channel == 32) {
-			DRM_ERROR("AIII, unable to determine active channel "
-				  "from PGRAPH context 0x%08x\n", cur_grctx);
-			return -EINVAL;
-		}
-	} else {
-		uint32_t cur_grctx = (NV_READ(0x40032C) & 0xfffff) << 12;
-
-		for (channel = 0; channel < 128; channel++) {
-			if (dev_priv->fifos[channel] == NULL)
-				continue;
-			if (cur_grctx ==
-			    dev_priv->fifos[channel]->ramin_grctx->instance)
-				break;
-		}
-		if (channel == 128) {
-			DRM_ERROR("AIII, unable to determine active channel "
-				  "from PGRAPH context 0x%08x\n", cur_grctx);
-			return -EINVAL;
-		}
-	}
-
-	if (channel > engine->fifo.channels || !dev_priv->fifos[channel]) {
+	if (channel >= engine->fifo.channels || !dev_priv->fifos[channel]) {
 		DRM_ERROR("AIII, invalid/inactive channel id %d\n", channel);
 		return -EINVAL;
 	}

@@ -251,7 +251,6 @@ nv86_graph_init_ctxvals(struct drm_device *dev, struct nouveau_gpuobj_ref *ref)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_gpuobj *ctx = ref->gpuobj;
 
-	INSTANCE_WR(ctx, 0x0/4, 0x1);
 	INSTANCE_WR(ctx, 0x10C/4, 0x30);
 	INSTANCE_WR(ctx, 0x1D4/4, 0x3);
 	INSTANCE_WR(ctx, 0x1D8/4, 0x1000);
@@ -937,7 +936,6 @@ nv84_graph_init_ctxvals(struct drm_device *dev, struct nouveau_gpuobj_ref *ref)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_gpuobj *ctx = ref->gpuobj;
 
-	INSTANCE_WR(ctx, 0x00000/4, 0x00000001);
 	INSTANCE_WR(ctx, 0x0010c/4, 0x00000030);
 	INSTANCE_WR(ctx, 0x00130/4, 0x00000002);
 	INSTANCE_WR(ctx, 0x001d4/4, 0x00000003);
