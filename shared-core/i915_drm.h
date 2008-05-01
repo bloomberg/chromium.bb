@@ -178,6 +178,8 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_EXECBUFFER	0x12
 #define DRM_I915_GEM_INIT	0x13
 #define DRM_I915_GEM_EXECBUFFER	0x14
+#define DRM_I915_GEM_PIN	0x15
+#define DRM_I915_GEM_UNPIN	0x16
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -197,8 +199,10 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
 #define DRM_IOCTL_I915_MMIO             DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_MMIO, drm_i915_mmio)
 #define DRM_IOCTL_I915_EXECBUFFER	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_EXECBUFFER, struct drm_i915_execbuffer)
-#define DRM_IOCTL_I915_MM_INIT		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_INIT, struct drm_i915_gem_init)
-#define DRM_IOCTL_I915_MM_EXECBUFFER	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_INIT, struct drm_i915_gem_execbuffer)
+#define DRM_IOCTL_I915_GEM_INIT		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_INIT, struct drm_i915_gem_init)
+#define DRM_IOCTL_I915_GEM_EXECBUFFER	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_EXECBUFFER, struct drm_i915_gem_execbuffer)
+#define DRM_IOCTL_I915_GEM_PIN		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_PIN, struct drm_i915_gem_pin)
+#define DRM_IOCTL_I915_GEM_UNPIN	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_UNPIN, struct drm_i915_gem_unpin)
 
 /* Asynchronous page flipping:
  */
@@ -478,5 +482,19 @@ struct drm_i915_gem_execbuffer {
 	uint32_t num_cliprects;
 	struct drm_clip_rect *cliprects;
 };
+
+struct drm_i915_gem_pin {
+	/** Handle of the buffer to be pinned. */
+	uint32_t handle;
+
+	/** Returned GTT offset of the buffer. */
+	uint64_t offset;
+};
+
+struct drm_i915_gem_unpin {
+	/** Handle of the buffer to be unpinned. */
+	uint32_t handle;
+};
+
 
 #endif				/* _I915_DRM_H_ */

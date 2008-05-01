@@ -362,6 +362,10 @@ int i915_gem_init_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_execbuffer(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
+int i915_gem_pin_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+int i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
 int i915_gem_init_object(struct drm_device *dev, struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_device *dev, struct drm_gem_object *obj);
 

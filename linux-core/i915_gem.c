@@ -328,6 +328,48 @@ err:
 	return ret;
 }
 
+int
+i915_gem_pin(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_i915_gem_pin *args = data;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+	int ret;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	ret = i915_gem_object_bind_to_gtt(dev, obj);
+	if (ret != 0)
+		return ret;
+
+	obj_priv = obj->driver_private;
+	obj_priv->pin_count++;
+	args->offset = obj_priv->gtt_offset;
+
+	return 0;
+}
+
+int
+i915_gem_unpin(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_i915_gem_pin *args = data;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	obj_priv = obj->driver_private;
+	obj_priv->pin_count--;
+
+	return 0;
+}
+
 int i915_gem_init_object(struct drm_device *dev, struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv;
@@ -345,4 +387,3 @@ void i915_gem_free_object(struct drm_device *dev, struct drm_gem_object *obj)
 {
 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
 }
-
