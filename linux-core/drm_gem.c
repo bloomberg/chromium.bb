@@ -148,7 +148,7 @@ drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 
 	return obj;
 }
-
+EXPORT_SYMBOL(drm_gem_object_lookup);
 
 /**
  * Allocates a new mm object and returns a handle to it.
@@ -354,6 +354,7 @@ drm_gem_object_reference(struct drm_device *dev, struct drm_gem_object *obj)
 	obj->refcount++;
 	spin_unlock(&obj->lock);
 }
+EXPORT_SYMBOL(drm_gem_object_reference);
 
 void
 drm_gem_object_unreference(struct drm_device *dev, struct drm_gem_object *obj)
@@ -372,3 +373,4 @@ drm_gem_object_unreference(struct drm_device *dev, struct drm_gem_object *obj)
 		kfree(obj);
 	}
 }
+EXPORT_SYMBOL(drm_gem_object_unreference);

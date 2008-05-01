@@ -419,7 +419,7 @@ struct drm_i915_gem_relocation_entry {
 	 * list to refer to the buffer, but handle lookup should be O(1) anyway,
 	 * and prevents O(n) search in userland to find what that index is.
 	 */
-	uint32_t target_buffer;
+	uint32_t target_handle;
 
 	/** Offset in the buffer the relocation entry will be written into */
 	uint32_t offset;

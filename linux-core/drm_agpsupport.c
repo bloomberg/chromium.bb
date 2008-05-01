@@ -493,9 +493,9 @@ int drm_agp_unbind_memory(DRM_AGP_MEM * handle)
  */
 DRM_AGP_MEM *
 drm_agp_bind_pages(struct drm_device *dev,
-		       struct page **pages,
-		       unsigned long num_pages,
-		       uint32_t gtt_offset)
+		   struct page **pages,
+		   unsigned long num_pages,
+		   uint32_t gtt_offset)
 {
 	struct page **cur_page, **last_page = pages + num_pages;
 	DRM_AGP_MEM *mem;
@@ -531,7 +531,7 @@ drm_agp_bind_pages(struct drm_device *dev,
 
 	return mem;
 }
-
+EXPORT_SYMBOL(drm_agp_bind_pages);
 
 /*
  * AGP ttm backend interface.

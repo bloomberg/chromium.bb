@@ -59,14 +59,10 @@ i915_gem_object_free_page_list(struct drm_device *dev,
 	if (obj_priv->page_list == NULL)
 		return;
 
-	/* Count how many we had successfully allocated, since release_pages()
-	 * doesn't like NULLs.
-	 */
 	for (i = 0; i < obj->size / PAGE_SIZE; i++) {
 		if (obj_priv->page_list[i] == NULL)
-			break;
+			put_page(obj_priv->page_list[i]);
 	}
-	release_pages(obj_priv->page_list, i, 0);
 
 	drm_free(obj_priv->page_list,
 		 page_count * sizeof(struct page *),
@@ -149,17 +145,73 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 				   struct drm_i915_gem_validate_entry *entry,
 				   struct drm_gem_object *obj)
 {
-	struct drm_i915_gem_reloc *relocs;
+	struct drm_i915_gem_relocation_entry reloc;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-
-	/* Walk the list of relocations and perform them if necessary. */
-	/* XXX */
+	int i;
 
 	/* Choose the GTT offset for our buffer and put it there. */
 	if (obj_priv->gtt_space == NULL) {
 		i915_gem_object_bind_to_gtt(dev, obj);
 		if (obj_priv->gtt_space == NULL)
 			return -ENOMEM;
+	}
+
+	/* Apply the relocations, using the GTT aperture to avoid cache
+	 * flushing requirements.
+	 */
+	for (i = 0; i < entry->relocation_count; i++) {
+		struct drm_gem_object *target_obj;
+		struct drm_i915_gem_object *target_obj_priv;
+		void *reloc_page;
+		uint32_t reloc_val, *reloc_entry;
+		int ret;
+
+		ret = copy_from_user(&reloc, entry->relocs + i, sizeof(reloc));
+		if (ret != 0)
+			return ret;
+
+		target_obj = drm_gem_object_lookup(dev, file_priv,
+						   reloc.target_handle);
+		if (target_obj == NULL)
+			return -EINVAL;
+		target_obj_priv = target_obj->driver_private;
+
+		/* The target buffer should have appeared before us in the
+		 * validate list, so it should have a GTT space bound by now.
+		 */
+		if (target_obj_priv->gtt_space == NULL) {
+			DRM_ERROR("No GTT space found for object %d\n",
+				  reloc.target_handle);
+			return -EINVAL;
+		}
+
+		if (reloc.offset > obj->size - 4) {
+			DRM_ERROR("Relocation beyond object bounds.\n");
+			return -EINVAL;
+		}
+		if (reloc.offset & 3) {
+			DRM_ERROR("Relocation not 4-byte aligned.\n");
+			return -EINVAL;
+		}
+
+		/* Map the page containing the relocation we're going to
+		 * perform.
+		 */
+		reloc_page = ioremap(dev->agp->base +
+				     (reloc.offset & ~(PAGE_SIZE - 1)),
+				     PAGE_SIZE);
+		if (reloc_page == NULL)
+			return -ENOMEM;
+
+		reloc_entry = (uint32_t *)((char *)reloc_page +
+					   (reloc.offset & (PAGE_SIZE - 1)));
+		reloc_val = target_obj_priv->gtt_offset + reloc.delta;
+
+		DRM_DEBUG("Applied relocation: %p@0x%08x = 0x%08x\n",
+			  obj, reloc.offset, reloc_val);
+		*reloc_entry = reloc_val;
+
+		iounmap(reloc_page);
 	}
 
 	return 0;
@@ -178,21 +230,13 @@ evict_callback(struct drm_memrange_node *node, void *data)
 	return 0;
 }
 
-int
-i915_gem_execbuffer(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
+static int
+i915_gem_sync_and_evict(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	struct drm_i915_gem_execbuffer *args = data;
-	struct drm_i915_gem_validate_entry *validate_list;
-	struct drm_gem_object **object_list;
-	int ret, i;
+	int ret;
 	RING_LOCALS;
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-
-	/* Big hammer: flush and idle the hardware so we can map things in/out.
-	 */
 	BEGIN_LP_RING(2);
 	OUT_RING(CMD_MI_FLUSH | MI_READ_FLUSH | MI_EXE_FLUSH);
 	OUT_RING(0); /* noop */
@@ -203,6 +247,26 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	/* Evict everything so we have space for sure. */
 	drm_memrange_for_each(&dev_priv->mm.gtt_space, evict_callback, dev);
+
+	return 0;
+}
+
+int
+i915_gem_execbuffer(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_i915_gem_execbuffer *args = data;
+	struct drm_i915_gem_validate_entry *validate_list;
+	struct drm_gem_object **object_list;
+	int ret, i;
+
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
+
+	/* Big hammer: flush and idle the hardware so we can map things in/out.
+	 */
+	ret = i915_gem_sync_and_evict(dev);
+	if (ret != 0)
+		return ret;
 
 	/* Copy in the validate list from userland */
 	validate_list = drm_calloc(sizeof(*validate_list), args->buffer_count,
@@ -249,6 +313,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			     sizeof(*validate_list) * args->buffer_count);
 
 	/* Clean up and return */
+	ret = i915_gem_sync_and_evict(dev);
+
 err:
 	if (object_list != NULL) {
 		for (i = 0; i < args->buffer_count; i++)

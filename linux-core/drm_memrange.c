@@ -167,6 +167,7 @@ struct drm_memrange_node *drm_memrange_get_block(struct drm_memrange_node * pare
 
 	return child;
 }
+EXPORT_SYMBOL(drm_memrange_get_block);
 
 /*
  * Put a block. Merge with the previous and / or next block if they are free.
@@ -257,6 +258,7 @@ struct drm_memrange_node *drm_memrange_search_free(const struct drm_memrange * m
 
 	return best;
 }
+EXPORT_SYMBOL(drm_memrange_search_free);
 
 int drm_memrange_clean(struct drm_memrange * mm)
 {
@@ -297,6 +299,7 @@ int drm_memrange_for_each(struct drm_memrange *mm,
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_memrange_for_each);
 
 EXPORT_SYMBOL(drm_memrange_init);
 
