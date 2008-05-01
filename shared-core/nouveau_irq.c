@@ -251,6 +251,7 @@ struct nouveau_pgraph_trap {
 	int class;
 	int subc, mthd, size;
 	uint32_t data, data2;
+	uint32_t nsource, nstatus;
 };
 
 static void
@@ -259,6 +260,12 @@ nouveau_graph_trap_info(struct drm_device *dev,
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	uint32_t address;
+
+	trap->nsource = trap->nstatus = 0;
+	if (dev_priv->card_type < NV_50) {
+		trap->nsource = NV_READ(NV03_PGRAPH_NSOURCE);
+		trap->nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+	}
 
 	if (nouveau_graph_trapped_channel(dev, &trap->channel))
 		trap->channel = -1;
@@ -289,10 +296,7 @@ nouveau_graph_dump_trap_info(struct drm_device *dev, const char *id,
 			     struct nouveau_pgraph_trap *trap)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t nsource, nstatus;
-
-	nsource = NV_READ(NV03_PGRAPH_NSOURCE);
-	nstatus = NV_READ(NV03_PGRAPH_NSTATUS);
+	uint32_t nsource = trap->nsource, nstatus = trap->nstatus;
 
 	DRM_INFO("%s - nSource:", id);
 	nouveau_print_bitfield_names(nsource, nouveau_nsource_names,
@@ -347,6 +351,7 @@ nouveau_pgraph_intr_error(struct drm_device *dev, uint32_t nsource)
 	int unhandled = 0;
 
 	nouveau_graph_trap_info(dev, &trap);
+	trap.nsource = nsource;
 
 	if (nsource & NV03_PGRAPH_NSOURCE_ILLEGAL_MTHD) {
 		if (trap.channel >= 0 && trap.mthd == 0x0150) {
