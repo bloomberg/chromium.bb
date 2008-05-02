@@ -78,6 +78,9 @@ i915_gem_object_unbind(struct drm_device *dev, struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
+	if (obj_priv->gtt_space == NULL)
+		return;
+
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);
 		drm_free_agp(obj_priv->agp_mem, obj->size / PAGE_SIZE);
@@ -86,6 +89,7 @@ i915_gem_object_unbind(struct drm_device *dev, struct drm_gem_object *obj)
 	i915_gem_object_free_page_list(dev, obj);
 
 	drm_memrange_put_block(obj_priv->gtt_space);
+	obj_priv->gtt_space = NULL;
 }
 
 /**
@@ -102,13 +106,17 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj)
 	free_space = drm_memrange_search_free(&dev_priv->mm.gtt_space,
 					      obj->size,
 					      PAGE_SIZE, 0);
-
+	if (free_space == NULL)
+		return -ENOMEM;
 	obj_priv->gtt_space = drm_memrange_get_block(free_space,
 						     obj->size,
 						     PAGE_SIZE);
+	if (obj_priv->gtt_space == NULL)
+		return -ENOMEM;
+
 	obj_priv->gtt_offset = obj_priv->gtt_space->start;
 
-	DRM_INFO("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
+	DRM_DEBUG("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
 
 	/* Get the list of pages out of our struct file.  They'll be pinned
 	 * at this point until we release them.
@@ -117,6 +125,12 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj)
 	BUG_ON(obj_priv->page_list != NULL);
 	obj_priv->page_list = drm_calloc(page_count, sizeof(struct page *),
 					 DRM_MEM_DRIVER);
+	if (obj_priv->page_list == NULL) {
+		drm_memrange_put_block(obj_priv->gtt_space);
+		obj_priv->gtt_space = NULL;
+		return -ENOMEM;
+	}
+
 	for (i = 0; i < page_count; i++) {
 		obj_priv->page_list[i] =
 		    find_or_create_page(obj->filp->f_mapping, i, GFP_HIGHUSER);
@@ -345,12 +359,18 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 	int ret;
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
+	if (obj == NULL) {
+		DRM_ERROR("Bad handle in i915_gem_pin_ioctl(): %d\n",
+			  args->handle);
 		return -EINVAL;
+	}
 
 	ret = i915_gem_object_bind_to_gtt(dev, obj);
-	if (ret != 0)
+	if (ret != 0) {
+		DRM_ERROR("Failure to bind in i915_gem_pin_ioctl(): %d\n",
+			  ret);
 		return ret;
+	}
 
 	obj_priv = obj->driver_private;
 	obj_priv->pin_count++;
@@ -368,8 +388,11 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 	struct drm_i915_gem_object *obj_priv;
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
+	if (obj == NULL) {
+		DRM_ERROR("Bad handle in i915_gem_unpin_ioctl(): %d\n",
+			  args->handle);
 		return -EINVAL;
+	}
 
 	obj_priv = obj->driver_private;
 	obj_priv->pin_count--;
@@ -392,5 +415,7 @@ int i915_gem_init_object(struct drm_device *dev, struct drm_gem_object *obj)
 
 void i915_gem_free_object(struct drm_device *dev, struct drm_gem_object *obj)
 {
+	i915_gem_object_unbind(dev, obj);
+
 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
 }
