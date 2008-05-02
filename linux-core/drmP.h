@@ -937,6 +937,7 @@ struct drm_device {
 	/*@{ */
 	spinlock_t object_name_lock;
 	struct idr object_name_idr;
+	atomic_t object_count;
 	/*@} */
 };
 
@@ -1319,6 +1320,9 @@ static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 {
 	return block->mm;
 }
+
+int
+drm_gem_init (struct drm_device *dev);
 
 void
 drm_gem_object_free (struct kref *kref);

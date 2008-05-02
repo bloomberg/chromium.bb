@@ -163,7 +163,16 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 		goto error_out_unreg;
 	}
 
+	if (driver->driver_features & DRIVER_GEM) {
+		retcode = drm_gem_init (dev);
+		if (retcode) {
+			DRM_ERROR("Cannot initialize graphics execution manager (GEM)\n");
+			goto error_out_unreg;
+		}
+	}
+
 	drm_fence_manager_init(dev);
+
 	return 0;
 
 error_out_unreg:

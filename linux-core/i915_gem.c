@@ -58,11 +58,13 @@ i915_gem_object_free_page_list(struct drm_gem_object *obj)
 	if (obj_priv->page_list == NULL)
 		return;
 
-	for (i = 0; i < obj->size / PAGE_SIZE; i++) {
-		if (obj_priv->page_list[i] == NULL)
-			put_page(obj_priv->page_list[i]);
+	
+	for (i = 0; i < page_count; i++) {
+		if (obj_priv->page_list[i] != NULL) {
+			unlock_page (obj_priv->page_list[i]);
+			page_cache_release (obj_priv->page_list[i]);
+		}
 	}
-
 	drm_free(obj_priv->page_list,
 		 page_count * sizeof(struct page *),
 		 DRM_MEM_DRIVER);
@@ -212,15 +214,18 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		if (target_obj_priv->gtt_space == NULL) {
 			DRM_ERROR("No GTT space found for object %d\n",
 				  reloc.target_handle);
+			drm_gem_object_unreference (target_obj);
 			return -EINVAL;
 		}
 
 		if (reloc.offset > obj->size - 4) {
 			DRM_ERROR("Relocation beyond object bounds.\n");
+			drm_gem_object_unreference (target_obj);
 			return -EINVAL;
 		}
 		if (reloc.offset & 3) {
 			DRM_ERROR("Relocation not 4-byte aligned.\n");
+			drm_gem_object_unreference (target_obj);
 			return -EINVAL;
 		}
 
@@ -231,7 +236,10 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 				     (reloc.offset & ~(PAGE_SIZE - 1)),
 				     PAGE_SIZE);
 		if (reloc_page == NULL)
+		{
+			drm_gem_object_unreference (target_obj);
 			return -ENOMEM;
+		}
 
 		reloc_entry = (uint32_t *)((char *)reloc_page +
 					   (reloc.offset & (PAGE_SIZE - 1)));
@@ -242,6 +250,7 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		*reloc_entry = reloc_val;
 
 		iounmap(reloc_page);
+		drm_gem_object_unreference (target_obj);
 	}
 
 	return 0;
@@ -372,16 +381,21 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	ret = i915_gem_object_bind_to_gtt(obj, (unsigned) args->alignment);
-	if (ret != 0) {
-		DRM_ERROR("Failure to bind in i915_gem_pin_ioctl(): %d\n",
-			  ret);
-		return ret;
+	obj_priv = obj->driver_private;
+	if (obj_priv->gtt_space == NULL)
+	{
+		ret = i915_gem_object_bind_to_gtt(obj, (unsigned) args->alignment);
+		if (ret != 0) {
+			DRM_ERROR("Failure to bind in i915_gem_pin_ioctl(): %d\n",
+				  ret);
+			drm_gem_object_unreference (obj);
+			return ret;
+		}
 	}
 
-	obj_priv = obj->driver_private;
 	obj_priv->pin_count++;
 	args->offset = obj_priv->gtt_offset;
+	drm_gem_object_unreference (obj);
 
 	return 0;
 }
@@ -403,7 +417,7 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 
 	obj_priv = obj->driver_private;
 	obj_priv->pin_count--;
-
+	drm_gem_object_unreference (obj);
 	return 0;
 }
 

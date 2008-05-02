@@ -64,6 +64,22 @@
  * up at a later data, and as our interface with shmfs for memory allocation.
  */
 
+/**
+ * Initialize the GEM device fields
+ */
+
+int
+drm_gem_init (struct drm_device *dev)
+{
+	spin_lock_init (&dev->object_name_lock);
+	idr_init (&dev->object_name_idr);
+	atomic_set (&dev->object_count, 0);
+	return 0;
+}
+
+/**
+ * Allocate a GEM object of the specified size with shmfs backing store
+ */
 static struct drm_gem_object *
 drm_gem_object_alloc(struct drm_device *dev, size_t size)
 {
@@ -90,6 +106,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 		kfree(obj);
 		return NULL;
 	}
+	atomic_inc (&dev->object_count);
 	return obj;
 }
 
@@ -145,10 +162,9 @@ drm_gem_handle_create (struct drm_file *file_priv,
 	 */
 again:
 	/* ensure there is space available to allocate a handle */
-	if (idr_pre_get(&file_priv->object_idr, GFP_KERNEL) == 0) {
-		kfree(obj);
+	if (idr_pre_get(&file_priv->object_idr, GFP_KERNEL) == 0)
 		return -ENOMEM;
-	}
+
 	/* do the allocation under our spinlock */
 	spin_lock (&file_priv->table_lock);
 	ret = idr_get_new_above(&file_priv->object_idr, obj, 1, handlep);
@@ -198,6 +214,9 @@ drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	int handle, ret;
 
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
 	/* Round requested size up to page size */
 	args->size = (args->size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
 
@@ -227,6 +246,9 @@ drm_gem_unreference_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_unreference *args = data;
 	int ret;
 
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
 	ret = drm_gem_handle_delete(file_priv, args->handle);
 
 	return ret;
@@ -245,6 +267,9 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	ssize_t read;
 	loff_t offset;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
@@ -282,6 +307,9 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	loff_t offset;
 
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
 		return -EINVAL;
@@ -312,6 +340,9 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	ssize_t written;
 	loff_t offset;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
@@ -347,6 +378,9 @@ drm_gem_name_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_name *args = data;
 	struct drm_gem_object *obj;
 	int ret;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
@@ -396,6 +430,9 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
 	int ret;
 	int handle;
 
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
 	spin_lock (&dev->object_name_lock);
 	obj = idr_find (&dev->object_name_idr, (int) args->name);
 	if (obj)
@@ -423,6 +460,7 @@ void
 drm_gem_open(struct drm_device *dev, struct drm_file *file_private)
 {
 	idr_init(&file_private->object_idr);
+	spin_lock_init (&file_private->table_lock);
 }
 
 /** Called at device close to release the file's handle references on objects. */
@@ -464,7 +502,7 @@ drm_gem_object_free (struct kref *kref)
 		dev->driver->gem_free_object(obj);
 
 	fput(obj->filp);
-
+	atomic_dec (&dev->object_count);
 	kfree(obj);
 }
 EXPORT_SYMBOL(drm_gem_object_free);
