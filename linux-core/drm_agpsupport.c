@@ -497,9 +497,8 @@ drm_agp_bind_pages(struct drm_device *dev,
 		   unsigned long num_pages,
 		   uint32_t gtt_offset)
 {
-	struct page **cur_page, **last_page = pages + num_pages;
 	DRM_AGP_MEM *mem;
-	int ret;
+	int ret, i;
 
 	DRM_DEBUG("drm_agp_populate_ttm\n");
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
@@ -514,17 +513,14 @@ drm_agp_bind_pages(struct drm_device *dev,
 		return NULL;
 	}
 
-	mem->page_count = 0;
-	for (cur_page = pages; cur_page < last_page; ++cur_page) {
-		struct page *page = *cur_page;
-
-		mem->memory[mem->page_count++] =
-		    phys_to_gart(page_to_phys(page));
-	}
+	for (i = 0; i < num_pages; i++)
+		mem->memory[i] = phys_to_gart(page_to_phys(pages[i]));
+	mem->page_count = num_pages;
 
 	mem->is_flushed = TRUE;
-	ret = drm_agp_bind_memory(mem, gtt_offset);
+	ret = drm_agp_bind_memory(mem, gtt_offset / PAGE_SIZE);
 	if (ret != 0) {
+		DRM_ERROR("Failed to bind AGP memory: %d\n", ret);
 		agp_free_memory(mem);
 		return NULL;
 	}
