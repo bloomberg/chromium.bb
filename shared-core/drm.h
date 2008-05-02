@@ -967,25 +967,28 @@ struct drm_gem_alloc {
 	 *
 	 * The (page-aligned) allocated size for the object will be returned.
 	 */
-	uint32_t size;
+	uint64_t size;
 	/**
 	 * Returned handle for the object.
 	 *
 	 * Object handles are nonzero.
 	 */
 	uint32_t handle;
+	uint32_t pad;
 };
 
 struct drm_gem_unreference {
 	/** Handle of the object to be unreferenced. */
 	uint32_t handle;
+	uint32_t pad;
 };
 
 struct drm_gem_link {
 	/** Handle for the object being given a name. */
 	uint32_t handle;
+	uint32_t pad;
 	/** Requested file name to export the object under. */
-	char *name;
+	uint64_t name_ptr;	/* char *, but pointers are not 32/64 compatible */
 	/** Requested file mode to export the object under. */
 	mode_t mode;
 };
@@ -993,38 +996,41 @@ struct drm_gem_link {
 struct drm_gem_pread {
 	/** Handle for the object being read. */
 	uint32_t handle;
+	uint32_t pad;
 	/** Offset into the object to read from */
-	off_t offset;
+	uint64_t offset;
 	/** Length of data to read */
-	size_t size;
+	uint64_t size;
 	/** Pointer to write the data into. */
-	void *data;
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
 };
 
 struct drm_gem_pwrite {
 	/** Handle for the object being written to. */
 	uint32_t handle;
+	uint32_t pad;
 	/** Offset into the object to write to */
-	off_t offset;
+	uint64_t offset;
 	/** Length of data to write */
-	size_t size;
+	uint64_t size;
 	/** Pointer to read the data from. */
-	void *data;
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
 };
 
 struct drm_gem_mmap {
 	/** Handle for the object being mapped. */
 	uint32_t handle;
+	uint32_t pad;
 	/** Offset in the object to map. */
-	off_t offset;
+	uint64_t offset;
 	/**
 	 * Length of data to map.
 	 *
 	 * The value will be page-aligned.
 	 */
-	size_t size;
+	uint64_t size;
 	/** Returned pointer the data was mapped at */
-	void *addr;
+	uint64_t addr_ptr;	/* void *, but pointers are not 32/64 compatible */
 };
 
 /**

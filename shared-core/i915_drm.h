@@ -407,12 +407,12 @@ struct drm_i915_gem_init {
 	 * Beginning offset in the GTT to be managed by the DRM memory
 	 * manager.
 	 */
-	off_t gtt_start;
+	uint64_t gtt_start;
 	/**
 	 * Ending offset in the GTT to be managed by the DRM memory
 	 * manager.
 	 */
-	off_t gtt_end;
+	uint64_t gtt_end;
 };
 
 struct drm_i915_gem_relocation_entry {
@@ -425,14 +425,14 @@ struct drm_i915_gem_relocation_entry {
 	 */
 	uint32_t target_handle;
 
-	/** Offset in the buffer the relocation entry will be written into */
-	uint32_t offset;
-
 	/**
 	 * Value to be added to the offset of the target buffer to make up
 	 * the relocation entry.
 	 */
 	uint32_t delta;
+
+	/** Offset in the buffer the relocation entry will be written into */
+	uint64_t offset;
 
 	/**
 	 * Offset value of the target buffer that the relocation entry was last
@@ -442,7 +442,7 @@ struct drm_i915_gem_relocation_entry {
 	 * and writing the relocation.  This value is written back out by
 	 * the execbuffer ioctl when the relocation is written.
 	 */
-	uint32_t presumed_offset;
+	uint64_t presumed_offset;
 };
 
 struct drm_i915_gem_validate_entry {
@@ -457,8 +457,9 @@ struct drm_i915_gem_validate_entry {
 	 */
 	uint32_t buffer_offset;
 	/** List of relocations to be performed on this buffer */
-	struct drm_i915_gem_relocation_entry *relocs;
+	uint64_t relocs_ptr;	/* struct drm_i915_gem_relocation_entry *relocs */
 	uint32_t relocation_count;
+	uint32_t pad;
 };
 
 struct drm_i915_gem_execbuffer {
@@ -470,7 +471,7 @@ struct drm_i915_gem_execbuffer {
 	 * a buffer is performing refer to buffers that have already appeared
 	 * in the validate list.
 	 */
-	struct drm_i915_gem_validate_entry *buffers;
+	uint64_t buffers_ptr;	/* struct drm_i915_gem_validate_entry *buffers */
 	uint32_t buffer_count;
 
 	/** Offset in the batchbuffer to start execution from. */
@@ -480,12 +481,13 @@ struct drm_i915_gem_execbuffer {
 	uint32_t DR1;
 	uint32_t DR4;
 	uint32_t num_cliprects;
-	struct drm_clip_rect *cliprects;
+	uint64_t cliprects_ptr;	/* struct drm_clip_rect *cliprects */
 };
 
 struct drm_i915_gem_pin {
 	/** Handle of the buffer to be pinned. */
 	uint32_t handle;
+	uint32_t pad;
 
 	/** Returned GTT offset of the buffer. */
 	uint64_t offset;
@@ -494,6 +496,7 @@ struct drm_i915_gem_pin {
 struct drm_i915_gem_unpin {
 	/** Handle of the buffer to be unpinned. */
 	uint32_t handle;
+	uint32_t pad;
 };
 
 

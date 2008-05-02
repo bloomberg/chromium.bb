@@ -233,7 +233,7 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 
 	offset = args->offset;
 
-	read = obj->filp->f_op->read(obj->filp, (char __user *)args->data,
+	read = obj->filp->f_op->read(obj->filp, (char __user *)(uintptr_t)args->data_ptr,
 				     args->size, &offset);
 	if (read != args->size) {
 		drm_gem_object_unreference(dev, obj);
@@ -270,7 +270,7 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	offset = args->offset;
 
 	down_write(&current->mm->mmap_sem);
-	args->addr = (void *)do_mmap(obj->filp, 0, args->size,
+	args->addr_ptr = (uint64_t) do_mmap(obj->filp, 0, args->size,
 				    PROT_READ | PROT_WRITE, MAP_SHARED,
 				    args->offset);
 	up_write(&current->mm->mmap_sem);
@@ -300,7 +300,7 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 
 	offset = args->offset;
 
-	written = obj->filp->f_op->write(obj->filp, (char __user *)args->data,
+	written = obj->filp->f_op->write(obj->filp, (char __user *)args->data_ptr,
 					 args->size, &offset);
 	if (written != args->size) {
 		drm_gem_object_unreference(dev, obj);

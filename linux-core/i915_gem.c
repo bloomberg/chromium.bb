@@ -167,6 +167,7 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 				   struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_relocation_entry reloc;
+	struct drm_i915_gem_relocation_entry __user *relocs;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int i;
 
@@ -177,6 +178,7 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 			return -ENOMEM;
 	}
 
+	relocs = (struct drm_i915_gem_relocation_entry __user *) (uintptr_t) entry->relocs_ptr;
 	/* Apply the relocations, using the GTT aperture to avoid cache
 	 * flushing requirements.
 	 */
@@ -187,7 +189,7 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 		uint32_t reloc_val, *reloc_entry;
 		int ret;
 
-		ret = copy_from_user(&reloc, entry->relocs + i, sizeof(reloc));
+		ret = copy_from_user(&reloc, relocs + i, sizeof(reloc));
 		if (ret != 0)
 			return ret;
 
@@ -229,7 +231,7 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 		reloc_val = target_obj_priv->gtt_offset + reloc.delta;
 
 		DRM_DEBUG("Applied relocation: %p@0x%08x = 0x%08x\n",
-			  obj, reloc.offset, reloc_val);
+			  obj, (unsigned int) reloc.offset, reloc_val);
 		*reloc_entry = reloc_val;
 
 		iounmap(reloc_page);
@@ -299,8 +301,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		goto err;
 	}
 	ret = copy_from_user(validate_list,
-			     (struct drm_i915_relocation_entry __user*)
-			     args->buffers,
+			     (struct drm_i915_relocation_entry __user*)(uintptr_t)
+			     args->buffers_ptr,
 			     sizeof(*validate_list) * args->buffer_count);
 	if (ret != 0)
 		goto err;
@@ -329,8 +331,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		validate_list[i].buffer_offset = obj_priv->gtt_offset;
 	}
 	ret = copy_to_user(validate_list,
-			     (struct drm_i915_relocation_entry __user*)
-			     args->buffers,
+			     (struct drm_i915_relocation_entry __user*)(uintptr_t)
+			     args->buffers_ptr,
 			     sizeof(*validate_list) * args->buffer_count);
 
 	/* Clean up and return */
