@@ -618,6 +618,9 @@ struct drm_gem_object {
 	/** Reference count of this object */
 	struct kref refcount;
 
+	/** Handle count of this object. Each handle also holds a reference */
+	struct kref handlecount;
+
 	/** Related drm device */
 	struct drm_device *dev;
 	
@@ -629,6 +632,12 @@ struct drm_gem_object {
 	 * lifetime.
 	 */
 	size_t size;
+
+	/**
+	 * Global name for this object, starts at 1. 0 means unnamed.
+	 * Access is covered by the object_name_lock in the related drm_device
+	 */
+	int name;
 
 	void *driver_private;
 };
@@ -922,6 +931,12 @@ struct drm_device {
 	/*@{ */
 	spinlock_t drw_lock;
 	struct idr drw_idr;
+	/*@} */
+
+	/** \name GEM information */
+	/*@{ */
+	spinlock_t object_name_lock;
+	struct idr object_name_idr;
 	/*@} */
 };
 
@@ -1307,6 +1322,9 @@ static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 
 void
 drm_gem_object_free (struct kref *kref);
+
+void
+drm_gem_object_handle_free (struct kref *kref);
     
 /* Graphics Execution Manager library functions (drm_gem.c) */
 static inline void drm_gem_object_reference(struct drm_gem_object *obj)
@@ -1322,6 +1340,26 @@ static inline void drm_gem_object_unreference(struct drm_gem_object *obj)
 	kref_put (&obj->refcount, drm_gem_object_free);
 }
 
+static inline void drm_gem_object_handle_reference (struct drm_gem_object *obj)
+{
+	drm_gem_object_reference (obj);
+	kref_get(&obj->handlecount);
+}
+
+static inline void drm_gem_object_handle_unreference (struct drm_gem_object *obj)
+{
+	if (obj == NULL)
+		return;
+	
+	/*
+	 * Must bump handle count first as this may be the last
+	 * ref, in which case the object would disappear before we
+	 * checked for a name
+	 */
+	kref_put (&obj->handlecount, drm_gem_object_handle_free);
+	drm_gem_object_unreference (obj);
+}
+
 struct drm_gem_object *
 drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 		      int handle);
@@ -1335,6 +1373,11 @@ int drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv);
 int drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv);
+int drm_gem_name_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+int drm_gem_open_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+
 void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
 void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);
 

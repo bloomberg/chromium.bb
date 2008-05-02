@@ -105,8 +105,10 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 
 	if (alignment == 0)
 		alignment = PAGE_SIZE;
-	if (alignment & (PAGE_SIZE - 1))
+	if (alignment & (PAGE_SIZE - 1)) {
+		DRM_ERROR("Invalid object alignment requested %u\n", alignment);
 		return -EINVAL;
+	}
 
 	free_space = drm_memrange_search_free(&dev_priv->mm.gtt_space,
 					      obj->size,

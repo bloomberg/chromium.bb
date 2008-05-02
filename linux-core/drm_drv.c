@@ -156,6 +156,8 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_GEM_PREAD, drm_gem_pread_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_GEM_PWRITE, drm_gem_pwrite_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_GEM_MMAP, drm_gem_mmap_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_GEM_NAME, drm_gem_name_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_IOCTL_GEM_OPEN, drm_gem_open_ioctl, DRM_AUTH),
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )

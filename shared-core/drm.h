@@ -983,16 +983,6 @@ struct drm_gem_unreference {
 	uint32_t pad;
 };
 
-struct drm_gem_link {
-	/** Handle for the object being given a name. */
-	uint32_t handle;
-	uint32_t pad;
-	/** Requested file name to export the object under. */
-	uint64_t name_ptr;	/* char *, but pointers are not 32/64 compatible */
-	/** Requested file mode to export the object under. */
-	mode_t mode;
-};
-
 struct drm_gem_pread {
 	/** Handle for the object being read. */
 	uint32_t handle;
@@ -1033,6 +1023,25 @@ struct drm_gem_mmap {
 	uint64_t addr_ptr;	/* void *, but pointers are not 32/64 compatible */
 };
 
+struct drm_gem_name {
+	/** Handle for the object being named */
+	uint32_t handle;
+
+	/** Returned global name */
+	uint32_t name;
+};
+
+struct drm_gem_open {
+	/** Name of object being opened */
+	uint32_t name;
+
+	/** Returned handle for the object */
+	uint32_t handle;
+	
+	/** Returned size of the object */
+	uint64_t size;
+};
+
 /**
  * \name Ioctls Definitions
  */
@@ -1058,6 +1067,8 @@ struct drm_gem_mmap {
 #define DRM_IOCTL_GEM_PREAD		DRM_IOW(0x0b,  struct drm_gem_pread)
 #define DRM_IOCTL_GEM_PWRITE		DRM_IOW(0x0c,  struct drm_gem_pwrite)
 #define DRM_IOCTL_GEM_MMAP		DRM_IOWR(0x0d, struct drm_gem_mmap)
+#define DRM_IOCTL_GEM_NAME		DRM_IOWR(0x0e, struct drm_gem_name)
+#define DRM_IOCTL_GEM_OPEN		DRM_IOWR(0x0f, struct drm_gem_open)
 
 #define DRM_IOCTL_SET_UNIQUE		DRM_IOW( 0x10, struct drm_unique)
 #define DRM_IOCTL_AUTH_MAGIC		DRM_IOW( 0x11, struct drm_auth)

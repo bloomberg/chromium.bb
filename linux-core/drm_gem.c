@@ -81,6 +81,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 	}
 
 	kref_init (&obj->refcount);
+	kref_init (&obj->handlecount);
 	obj->size = size;
 
 	if (dev->driver->gem_init_object != NULL &&
@@ -96,8 +97,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
  * Removes the mapping from handle to filp for this object.
  */
 static int
-drm_gem_handle_delete(struct drm_device *dev, struct drm_file *filp,
-		      int handle)
+drm_gem_handle_delete(struct drm_file *filp, int handle)
 {
 	struct drm_gem_object *obj;
 
@@ -121,10 +121,45 @@ drm_gem_handle_delete(struct drm_device *dev, struct drm_file *filp,
 
 	/* Release reference and decrement refcount. */
 	idr_remove(&filp->object_idr, handle);
-	drm_gem_object_unreference(obj);
-
 	spin_unlock(&filp->table_lock);
 
+	drm_gem_object_handle_unreference(obj);
+
+	return 0;
+}
+
+/**
+ * Create a handle for this object. This adds a handle reference
+ * to the object, which includes a regular reference count. Callers
+ * will likely want to dereference the object afterwards.
+ */
+static int
+drm_gem_handle_create (struct drm_file *file_priv,
+		       struct drm_gem_object *obj,
+		       int *handlep)
+{
+	int	ret;
+
+	/*
+	 * Get the user-visible handle using idr.
+	 */
+again:
+	/* ensure there is space available to allocate a handle */
+	if (idr_pre_get(&file_priv->object_idr, GFP_KERNEL) == 0) {
+		kfree(obj);
+		return -ENOMEM;
+	}
+	/* do the allocation under our spinlock */
+	spin_lock (&file_priv->table_lock);
+	ret = idr_get_new_above(&file_priv->object_idr, obj, 1, handlep);
+	spin_unlock (&file_priv->table_lock);
+	if (ret == -EAGAIN)
+		goto again;
+
+	if (ret != 0)
+		return ret;
+	
+	drm_gem_object_handle_reference (obj);
 	return 0;
 }
 
@@ -171,27 +206,11 @@ drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 	if (obj == NULL)
 		return -ENOMEM;
 
-	/* Get the user-visible handle using idr.
-	 *
-	 * I'm not really sure why the idr api needs us to do this in two
-	 * repeating steps.  It handles internal locking of its data
-	 * structure, yet insists that we keep its memory allocation step
-	 * separate from its slot-finding step for locking purposes.
-	 */
-	do {
-		if (idr_pre_get(&file_priv->object_idr, GFP_KERNEL) == 0) {
-			kfree(obj);
-			return -EFAULT;
-		}
+	ret = drm_gem_handle_create (file_priv, obj, &handle);
+	drm_gem_object_handle_unreference(obj);
 
-		ret = idr_get_new_above(&file_priv->object_idr, obj, 1,
-					&handle);
-	} while (ret == -EAGAIN);
-
-	if (ret != 0) {
-		drm_gem_object_unreference(obj);
-		return -EFAULT;
-	}
+	if (ret)
+		return ret;
 
 	args->handle = handle;
 
@@ -208,7 +227,7 @@ drm_gem_unreference_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_unreference *args = data;
 	int ret;
 
-	ret = drm_gem_handle_delete(dev, file_priv, args->handle);
+	ret = drm_gem_handle_delete(file_priv, args->handle);
 
 	return ret;
 }
@@ -316,6 +335,87 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 }
 
 /**
+ * Create a global name for an object, returning the name.
+ *
+ * Note that the name does not hold a reference; when the object
+ * is freed, the name goes away.
+ */
+int
+drm_gem_name_ioctl(struct drm_device *dev, void *data,
+		   struct drm_file *file_priv)
+{
+	struct drm_gem_name *args = data;
+	struct drm_gem_object *obj;
+	int ret;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+again:
+	if (idr_pre_get(&dev->object_name_idr, GFP_KERNEL) == 0) {
+		return -ENOMEM;
+	}
+	spin_lock(&dev->object_name_lock);
+	if (obj->name) {
+		spin_unlock (&dev->object_name_lock);
+		return -EEXIST;
+	}
+	ret = idr_get_new_above (&dev->object_name_idr, obj, 1,
+				 &obj->name);
+	spin_unlock (&dev->object_name_lock);
+	if (ret == -EAGAIN)
+		goto again;
+
+	if (ret != 0) {
+		drm_gem_object_unreference(obj);
+		return ret;
+	}
+
+	/* 
+	 * Leave the reference from the lookup around as the
+	 * name table now holds one
+	 */
+	args->name = (uint64_t) obj->name;
+
+	return 0;
+}
+
+/**
+ * Open an object using the global name, returning a handle and the size.
+ *
+ * This handle (of course) holds a reference to the object, so the object
+ * will not go away until the handle is deleted.
+ */
+int
+drm_gem_open_ioctl(struct drm_device *dev, void *data,
+		   struct drm_file *file_priv)
+{
+	struct drm_gem_open *args = data;
+	struct drm_gem_object *obj;
+	int ret;
+	int handle;
+
+	spin_lock (&dev->object_name_lock);
+	obj = idr_find (&dev->object_name_idr, (int) args->name);
+	if (obj)
+		drm_gem_object_reference (obj);
+	spin_unlock (&dev->object_name_lock);
+	if (!obj)
+		return -ENOENT;
+
+	ret = drm_gem_handle_create (file_priv, obj, &handle);
+	drm_gem_object_unreference (obj);
+	if (ret)
+		return ret;
+
+	args->handle = handle;
+	args->size = obj->size;
+
+	return 0;
+}
+
+/**
  * Called at device open time, sets up the structure for handling refcounting
  * of mm objects.
  */
@@ -325,13 +425,13 @@ drm_gem_open(struct drm_device *dev, struct drm_file *file_private)
 	idr_init(&file_private->object_idr);
 }
 
-/** Called at device close to release the file's references on objects. */
+/** Called at device close to release the file's handle references on objects. */
 static int
-drm_gem_object_release(int id, void *ptr, void *data)
+drm_gem_object_release_handle (int id, void *ptr, void *data)
 {
 	struct drm_gem_object *obj = ptr;
 
-	drm_gem_object_unreference(obj);
+	drm_gem_object_handle_unreference(obj);
 
 	return 0;
 }
@@ -344,11 +444,16 @@ drm_gem_object_release(int id, void *ptr, void *data)
 void
 drm_gem_release(struct drm_device *dev, struct drm_file *file_private)
 {
-	idr_for_each(&file_private->object_idr, &drm_gem_object_release, NULL);
+	idr_for_each(&file_private->object_idr, &drm_gem_object_release_handle, NULL);
 
 	idr_destroy(&file_private->object_idr);
 }
 
+/**
+ * Called after the last reference to the object has been lost.
+ *
+ * Frees the object
+ */
 void
 drm_gem_object_free (struct kref *kref)
 {
@@ -359,6 +464,36 @@ drm_gem_object_free (struct kref *kref)
 		dev->driver->gem_free_object(obj);
 
 	fput(obj->filp);
+
 	kfree(obj);
 }
 EXPORT_SYMBOL(drm_gem_object_free);
+
+/**
+ * Called after the last handle to the object has been closed
+ *
+ * Removes any name for the object. Note that this must be
+ * called before drm_gem_object_free or we'll be touching
+ * freed memory
+ */
+void
+drm_gem_object_handle_free (struct kref *kref)
+{
+	struct drm_gem_object *obj = container_of (kref, struct drm_gem_object, handlecount);
+	struct drm_device *dev = obj->dev;
+
+	/* Remove any name for this object */
+	spin_lock (&dev->object_name_lock);
+	if (obj->name) {
+		idr_remove (&dev->object_name_idr, obj->name);
+		spin_unlock (&dev->object_name_lock);
+		/*
+		 * The object name held a reference to this object, drop
+		 * that now.
+		 */
+		drm_gem_object_unreference (obj);
+	} else
+		spin_unlock (&dev->object_name_lock);
+	
+}
+EXPORT_SYMBOL(drm_gem_object_handle_free);
