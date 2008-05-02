@@ -96,21 +96,26 @@ i915_gem_object_unbind(struct drm_device *dev, struct drm_gem_object *obj)
  * Finds free space in the GTT aperture and binds the object there.
  */
 static int
-i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj)
+i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj, unsigned alignment)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	struct drm_memrange_node *free_space;
 	int page_count, i;
 
+	if (alignment == 0)
+		alignment = PAGE_SIZE;
+	if (alignment & (PAGE_SIZE - 1))
+		return -EINVAL;
+
 	free_space = drm_memrange_search_free(&dev_priv->mm.gtt_space,
 					      obj->size,
-					      PAGE_SIZE, 0);
+					      alignment, 0);
 	if (free_space == NULL)
 		return -ENOMEM;
 	obj_priv->gtt_space = drm_memrange_get_block(free_space,
 						     obj->size,
-						     PAGE_SIZE);
+						     alignment);
 	if (obj_priv->gtt_space == NULL)
 		return -ENOMEM;
 
@@ -173,7 +178,7 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 
 	/* Choose the GTT offset for our buffer and put it there. */
 	if (obj_priv->gtt_space == NULL) {
-		i915_gem_object_bind_to_gtt(dev, obj);
+		i915_gem_object_bind_to_gtt(dev, obj, (unsigned) entry->alignment);
 		if (obj_priv->gtt_space == NULL)
 			return -ENOMEM;
 	}
@@ -367,7 +372,7 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	ret = i915_gem_object_bind_to_gtt(dev, obj);
+	ret = i915_gem_object_bind_to_gtt(dev, obj, (unsigned) args->alignment);
 	if (ret != 0) {
 		DRM_ERROR("Failure to bind in i915_gem_pin_ioctl(): %d\n",
 			  ret);

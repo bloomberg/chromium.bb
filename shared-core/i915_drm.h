@@ -451,15 +451,18 @@ struct drm_i915_gem_validate_entry {
 	 * operation.
 	 */
 	uint32_t buffer_handle;
+	
+	/** List of relocations to be performed on this buffer */
+	uint32_t relocation_count;
+	uint64_t relocs_ptr;	/* struct drm_i915_gem_relocation_entry *relocs */
+	
+	/** Required alignment in graphics aperture */
+	uint64_t alignment;
 	/**
 	 * Returned value of the updated offset of the buffer, for future
 	 * presumed_offset writes.
 	 */
-	uint32_t buffer_offset;
-	/** List of relocations to be performed on this buffer */
-	uint64_t relocs_ptr;	/* struct drm_i915_gem_relocation_entry *relocs */
-	uint32_t relocation_count;
-	uint32_t pad;
+	uint64_t buffer_offset;
 };
 
 struct drm_i915_gem_execbuffer {
@@ -488,6 +491,9 @@ struct drm_i915_gem_pin {
 	/** Handle of the buffer to be pinned. */
 	uint32_t handle;
 	uint32_t pad;
+	
+	/** alignment required within the aperture */
+	uint64_t alignment;
 
 	/** Returned GTT offset of the buffer. */
 	uint64_t offset;
