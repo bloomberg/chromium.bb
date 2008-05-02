@@ -49,8 +49,7 @@ i915_gem_init_ioctl(struct drm_device *dev, void *data,
 }
 
 static void
-i915_gem_object_free_page_list(struct drm_device *dev,
-			       struct drm_gem_object *obj)
+i915_gem_object_free_page_list(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int page_count = obj->size / PAGE_SIZE;
@@ -74,7 +73,7 @@ i915_gem_object_free_page_list(struct drm_device *dev,
  * Unbinds an object from the GTT aperture.
  */
 static void
-i915_gem_object_unbind(struct drm_device *dev, struct drm_gem_object *obj)
+i915_gem_object_unbind(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
@@ -86,7 +85,7 @@ i915_gem_object_unbind(struct drm_device *dev, struct drm_gem_object *obj)
 		drm_free_agp(obj_priv->agp_mem, obj->size / PAGE_SIZE);
 	}
 
-	i915_gem_object_free_page_list(dev, obj);
+	i915_gem_object_free_page_list(obj);
 
 	drm_memrange_put_block(obj_priv->gtt_space);
 	obj_priv->gtt_space = NULL;
@@ -96,8 +95,9 @@ i915_gem_object_unbind(struct drm_device *dev, struct drm_gem_object *obj)
  * Finds free space in the GTT aperture and binds the object there.
  */
 static int
-i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj, unsigned alignment)
+i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 {
+	struct drm_device *dev = obj->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	struct drm_memrange_node *free_space;
@@ -141,7 +141,7 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj, 
 		    find_or_create_page(obj->filp->f_mapping, i, GFP_HIGHUSER);
 
 		if (obj_priv->page_list[i] == NULL) {
-			i915_gem_object_free_page_list(dev, obj);
+			i915_gem_object_free_page_list(obj);
 			drm_memrange_put_block(obj_priv->gtt_space);
 			obj_priv->gtt_space = NULL;
 			return -ENOMEM;
@@ -156,7 +156,7 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj, 
 					       page_count,
 					       obj_priv->gtt_offset);
 	if (obj_priv->agp_mem == NULL) {
-		i915_gem_object_free_page_list(dev, obj);
+		i915_gem_object_free_page_list(obj);
 		drm_memrange_put_block(obj_priv->gtt_space);
 		obj_priv->gtt_space = NULL;
 		return -ENOMEM;
@@ -166,11 +166,11 @@ i915_gem_object_bind_to_gtt(struct drm_device *dev, struct drm_gem_object *obj, 
 }
 
 static int
-i915_gem_reloc_and_validate_object(struct drm_device *dev,
+i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 				   struct drm_file *file_priv,
-				   struct drm_i915_gem_validate_entry *entry,
-				   struct drm_gem_object *obj)
+				   struct drm_i915_gem_validate_entry *entry)
 {
+	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_relocation_entry reloc;
 	struct drm_i915_gem_relocation_entry __user *relocs;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
@@ -178,7 +178,7 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 
 	/* Choose the GTT offset for our buffer and put it there. */
 	if (obj_priv->gtt_space == NULL) {
-		i915_gem_object_bind_to_gtt(dev, obj, (unsigned) entry->alignment);
+		i915_gem_object_bind_to_gtt(obj, (unsigned) entry->alignment);
 		if (obj_priv->gtt_space == NULL)
 			return -ENOMEM;
 	}
@@ -198,7 +198,7 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 		if (ret != 0)
 			return ret;
 
-		target_obj = drm_gem_object_lookup(dev, file_priv,
+		target_obj = drm_gem_object_lookup(obj->dev, file_priv,
 						   reloc.target_handle);
 		if (target_obj == NULL)
 			return -EINVAL;
@@ -248,12 +248,11 @@ i915_gem_reloc_and_validate_object(struct drm_device *dev,
 static int
 evict_callback(struct drm_memrange_node *node, void *data)
 {
-	struct drm_device *dev = data;
 	struct drm_gem_object *obj = node->private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
 	if (obj_priv->pin_count == 0)
-		i915_gem_object_unbind(dev, obj);
+		i915_gem_object_unbind(obj);
 
 	return 0;
 }
@@ -274,7 +273,7 @@ i915_gem_sync_and_evict(struct drm_device *dev)
 		return ret;
 
 	/* Evict everything so we have space for sure. */
-	drm_memrange_for_each(&dev_priv->mm.gtt_space, evict_callback, dev);
+	drm_memrange_for_each(&dev_priv->mm.gtt_space, evict_callback, NULL);
 
 	return 0;
 }
@@ -321,9 +320,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			goto err;
 		}
 
-		i915_gem_reloc_and_validate_object(dev, file_priv,
-						   &validate_list[i],
-						   object_list[i]);
+		i915_gem_reloc_and_validate_object(object_list[i], file_priv,
+						   &validate_list[i]);
 	}
 
 	/* Exec the batchbuffer */
@@ -346,7 +344,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 err:
 	if (object_list != NULL) {
 		for (i = 0; i < args->buffer_count; i++)
-			drm_gem_object_unreference(dev, object_list[i]);
+			drm_gem_object_unreference(object_list[i]);
 	}
 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
@@ -372,7 +370,7 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	ret = i915_gem_object_bind_to_gtt(dev, obj, (unsigned) args->alignment);
+	ret = i915_gem_object_bind_to_gtt(obj, (unsigned) args->alignment);
 	if (ret != 0) {
 		DRM_ERROR("Failure to bind in i915_gem_pin_ioctl(): %d\n",
 			  ret);
@@ -407,7 +405,7 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 	return 0;
 }
 
-int i915_gem_init_object(struct drm_device *dev, struct drm_gem_object *obj)
+int i915_gem_init_object(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv;
 
@@ -420,9 +418,9 @@ int i915_gem_init_object(struct drm_device *dev, struct drm_gem_object *obj)
 	return 0;
 }
 
-void i915_gem_free_object(struct drm_device *dev, struct drm_gem_object *obj)
+void i915_gem_free_object(struct drm_gem_object *obj)
 {
-	i915_gem_object_unbind(dev, obj);
+	i915_gem_object_unbind(obj);
 
 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
 }

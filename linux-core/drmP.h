@@ -740,10 +740,8 @@ struct drm_driver {
 	 *
 	 * Returns 0 on success.
 	 */
-	int (*gem_init_object) (struct drm_device *dev,
-				struct drm_gem_object *obj);
-	void (*gem_free_object) (struct drm_device *dev,
-				 struct drm_gem_object *obj);
+	int (*gem_init_object) (struct drm_gem_object *obj);
+	void (*gem_free_object) (struct drm_gem_object *obj);
 
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
@@ -1307,11 +1305,23 @@ static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 	return block->mm;
 }
 
+void
+drm_gem_object_free (struct kref *kref);
+    
 /* Graphics Execution Manager library functions (drm_gem.c) */
-void drm_gem_object_reference(struct drm_device *dev,
-			      struct drm_gem_object *obj);
-void drm_gem_object_unreference(struct drm_device *dev,
-				struct drm_gem_object *obj);
+static inline void drm_gem_object_reference(struct drm_gem_object *obj)
+{
+	kref_get(&obj->refcount);
+}
+
+static inline void drm_gem_object_unreference(struct drm_gem_object *obj)
+{
+	if (obj == NULL)
+		return;
+
+	kref_put (&obj->refcount, drm_gem_object_free);
+}
+
 struct drm_gem_object *
 drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 		      int handle);
