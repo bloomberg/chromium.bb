@@ -54,6 +54,7 @@
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
 #include <linux/dma-mapping.h>
 #include <linux/mm.h>
+#include <linux/kref.h>
 #include <linux/pagemap.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
 #include <linux/mutex.h>
@@ -614,19 +615,20 @@ struct drm_ati_pcigart_info {
  * DRM for its buffer objects.
  */
 struct drm_gem_object {
+	/** Reference count of this object */
+	struct kref refcount;
+
+	/** Related drm device */
+	struct drm_device *dev;
+	
 	/** File representing the shmem storage */
 	struct file *filp;
-
-	spinlock_t lock;
 
 	/**
 	 * Size of the object, in bytes.  Immutable over the object's
 	 * lifetime.
 	 */
 	size_t size;
-
-	/** Reference count of this object, protected by object_lock */
-	int refcount;
 
 	void *driver_private;
 };

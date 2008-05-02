@@ -73,13 +73,14 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 
 	obj = kcalloc(1, sizeof(*obj), GFP_KERNEL);
 
+	obj->dev = dev;
 	obj->filp = shmem_file_setup("drm mm object", size, 0);
 	if (IS_ERR(obj->filp)) {
 		kfree(obj);
 		return NULL;
 	}
 
-	obj->refcount = 1;
+	kref_init (&obj->refcount);
 	obj->size = size;
 
 	if (dev->driver->gem_init_object != NULL &&
@@ -352,11 +353,22 @@ drm_gem_release(struct drm_device *dev, struct drm_file *file_private)
 void
 drm_gem_object_reference(struct drm_device *dev, struct drm_gem_object *obj)
 {
-	spin_lock(&obj->lock);
-	obj->refcount++;
-	spin_unlock(&obj->lock);
+	kref_get(&obj->refcount);
 }
 EXPORT_SYMBOL(drm_gem_object_reference);
+
+static void
+drm_gem_object_free (struct kref *kref)
+{
+	struct drm_gem_object *obj = (struct drm_gem_object *) kref;
+	struct drm_device *dev = obj->dev;
+
+	if (dev->driver->gem_free_object != NULL)
+		dev->driver->gem_free_object(dev, obj);
+
+	fput(obj->filp);
+	kfree(obj);
+}
 
 void
 drm_gem_object_unreference(struct drm_device *dev, struct drm_gem_object *obj)
@@ -364,15 +376,6 @@ drm_gem_object_unreference(struct drm_device *dev, struct drm_gem_object *obj)
 	if (obj == NULL)
 		return;
 
-	spin_lock(&obj->lock);
-	obj->refcount--;
-	spin_unlock(&obj->lock);
-	if (obj->refcount == 0) {
-		if (dev->driver->gem_free_object != NULL)
-			dev->driver->gem_free_object(dev, obj);
-
-		fput(obj->filp);
-		kfree(obj);
-	}
+	kref_put (&obj->refcount, drm_gem_object_free);
 }
 EXPORT_SYMBOL(drm_gem_object_unreference);
