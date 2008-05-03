@@ -291,10 +291,11 @@ int drm_memrange_for_each(struct drm_memrange *mm,
 		int ret;
 
 		cur = list_entry(list, struct drm_memrange_node, ml_entry);
-
-		ret = callback(cur, data);
-		if (ret != 0)
-			return ret;
+		if (!cur->free) {
+			ret = callback(cur, data);
+			if (ret != 0)
+				return ret;
+		}
 	}
 
 	return 0;
