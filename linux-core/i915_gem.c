@@ -122,7 +122,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 						     alignment);
 	if (obj_priv->gtt_space == NULL)
 		return -ENOMEM;
-
+	obj_priv->gtt_space->private = obj;
 	obj_priv->gtt_offset = obj_priv->gtt_space->start;
 
 	DRM_DEBUG("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
@@ -299,6 +299,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	int ret, i;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
+
+	i915_kernel_lost_context(dev);
 
 	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	/* Big hammer: flush and idle the hardware so we can map things in/out.
