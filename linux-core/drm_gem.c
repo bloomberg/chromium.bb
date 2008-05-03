@@ -306,6 +306,7 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_mmap *args = data;
 	struct drm_gem_object *obj;
 	loff_t offset;
+	unsigned long addr;
 
 	if (!(dev->driver->driver_features & DRIVER_GEM))
 		return -ENODEV;
@@ -317,12 +318,15 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	offset = args->offset;
 
 	down_write(&current->mm->mmap_sem);
-	args->addr_ptr = (uint64_t) do_mmap(obj->filp, 0, args->size,
-				    PROT_READ | PROT_WRITE, MAP_SHARED,
-				    args->offset);
+	addr = do_mmap(obj->filp, 0, args->size,
+		       PROT_READ | PROT_WRITE, MAP_SHARED,
+		       args->offset);
 	up_write(&current->mm->mmap_sem);
-
 	drm_gem_object_unreference(obj);
+	if (IS_ERR((void *)addr))
+		return (int) addr;
+
+	args->addr_ptr = (uint64_t) addr;
 
 	return 0;
 }
