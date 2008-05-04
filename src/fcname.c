@@ -74,7 +74,8 @@ static const FcObjectType _FcBaseObjectTypes[] = {
     { FC_FONTFORMAT,	FcTypeString },
     { FC_EMBOLDEN,	FcTypeBool },
     { FC_EMBEDDED_BITMAP,   FcTypeBool },
-    { FC_DECORATIVE,	FcTypeBool }, /* 40 */
+    { FC_DECORATIVE,	FcTypeBool },
+    { FC_LCD_FILTER,	FcTypeInteger }, /* 41 */
 };
 
 #define NUM_OBJECT_TYPES    (sizeof _FcBaseObjectTypes / sizeof _FcBaseObjectTypes[0])
@@ -435,6 +436,10 @@ static const FcConstant _FcBaseConstants[] = {
     { (FcChar8 *) "embolden",	    "embolden",	    FcTrue },
     { (FcChar8 *) "embeddedbitmap", "embeddedbitmap",	FcTrue },
     { (FcChar8 *) "decorative",	    "decorative",   FcTrue },
+    { (FcChar8 *) "lcdnone",	    "lcdfilter",    FC_LCD_NONE },
+    { (FcChar8 *) "lcddefault",	    "lcdfilter",    FC_LCD_DEFAULT },
+    { (FcChar8 *) "lcdlight",	    "lcdfilter",    FC_LCD_LIGHT },
+    { (FcChar8 *) "lcdlegacy",	    "lcdfilter",    FC_LCD_LEGACY },
 };
 
 #define NUM_FC_CONSTANTS   (sizeof _FcBaseConstants/sizeof _FcBaseConstants[0])

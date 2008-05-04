@@ -848,7 +848,8 @@ FcListPatternMatchAny (const FcPattern *p,
 #define FC_EMBOLDEN_OBJECT	38
 #define FC_EMBEDDED_BITMAP_OBJECT	39
 #define FC_DECORATIVE_OBJECT	40
-#define FC_MAX_BASE_OBJECT	FC_DECORATIVE_OBJECT
+#define FC_LCD_FILTER_OBJECT	41
+#define FC_MAX_BASE_OBJECT	FC_LCD_FILTER_OBJECT
 
 FcPrivate FcBool
 FcNameBool (const FcChar8 *v, FcBool *result);

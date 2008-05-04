@@ -111,6 +111,7 @@ typedef int		FcBool;
 #define FC_EMBOLDEN	    "embolden"		/* Bool - true if emboldening needed*/
 #define FC_EMBEDDED_BITMAP  "embeddedbitmap"	/* Bool - true to enable embedded bitmaps */
 #define FC_DECORATIVE	    "decorative"	/* Bool - true if style is a decorative variant */
+#define FC_LCD_FILTER	    "lcdfilter"		/* Int */
 
 #define FC_CACHE_SUFFIX		    ".cache-"FC_CACHE_VERSION
 #define FC_DIR_CACHE_FILE	    "fonts.cache-"FC_CACHE_VERSION
@@ -171,7 +172,13 @@ typedef int		FcBool;
 #define FC_HINT_SLIGHT      1
 #define FC_HINT_MEDIUM      2
 #define FC_HINT_FULL        3
- 
+
+/* LCD filter */
+#define FC_LCD_NONE	    0
+#define FC_LCD_DEFAULT	    1
+#define FC_LCD_LIGHT	    2
+#define FC_LCD_LEGACY	    3
+
 typedef enum _FcType {
     FcTypeVoid, 
     FcTypeInteger, 

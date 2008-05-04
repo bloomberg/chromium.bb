@@ -177,6 +177,7 @@ convenience for the applications rendering mechanism.
     dpi            FC_DPI               Double  Target dots per inch
     rgba           FC_RGBA              Int     unknown, rgb, bgr, vrgb,
                                                 vbgr, none - subpixel geometry
+    lcdfilter      FC_LCD_FILTER        Int     Type of LCD filter
     minspace       FC_MINSPACE          Bool    Eliminate leading from line
                                                 spacing
     charset        FC_CHARSET           CharSet Unicode chars encoded by
