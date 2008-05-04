@@ -70,7 +70,7 @@ if [ $version != $last ]; then
 	#
 	# header
 	#
-	(sed '/^2\.[0-9.]*$/,$d' README | 
+	(sed '/^2\.[0-9.]*/,$d' README | 
 		sed -e "s/Version.*/Version $version_note/" \
 		    -e "s/200.*/$date/" | awk '
 		    /^[ \t]/ {
@@ -98,7 +98,7 @@ if [ $version != $last ]; then
 	# previous changelogs
 	#
 	
-	sed -n '/^2\.[0-9.]*$/,$p' README) > README.tmp ||
+	sed -n '/^2\.[0-9.]*/,$p' README) > README.tmp ||
 		(echo "README update failed"; exit 1)
 	
 	mv README.tmp README
