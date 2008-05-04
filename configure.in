@@ -41,17 +41,17 @@ dnl libtool versioning
 dnl bump revision when fixing bugs
 dnl bump current and age, reset revision to zero when adding APIs
 dnl bump current, leave age, reset revision to zero when changing/removing APIS
-LT_CURRENT=4
-LT_REVISION=0
-AC_SUBST(LT_CURRENT)
-AC_SUBST(LT_REVISION)
-LT_AGE=3
+LIBT_CURRENT=4
+LIBT_REVISION=0
+AC_SUBST(LIBT_CURRENT)
+AC_SUBST(LIBT_REVISION)
+LIBT_AGE=3
 
-LT_VERSION_INFO="$LT_CURRENT:$LT_REVISION:$LT_AGE"
-AC_SUBST(LT_VERSION_INFO)
+LIBT_VERSION_INFO="$LIBT_CURRENT:$LIBT_REVISION:$LIBT_AGE"
+AC_SUBST(LIBT_VERSION_INFO)
 
-LT_CURRENT_MINUS_AGE=`expr $LT_CURRENT - $LT_AGE`
-AC_SUBST(LT_CURRENT_MINUS_AGE)
+LIBT_CURRENT_MINUS_AGE=`expr $LIBT_CURRENT - $LIBT_AGE`
+AC_SUBST(LIBT_CURRENT_MINUS_AGE)
 
 dnl ==========================================================================
 

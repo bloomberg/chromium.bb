@@ -112,7 +112,7 @@ libfontconfig_la_SOURCES = \
 lib_LTLIBRARIES = libfontconfig.la
 
 libfontconfig_la_LDFLAGS =			\
-	-version-info @LT_VERSION_INFO@ -no-undefined $(export_symbols)
+	-version-info @LIBT_VERSION_INFO@ -no-undefined $(export_symbols)
 
 libfontconfig_la_LIBADD = $(ICONV_LIBS) $(FREETYPE_LIBS) $(LIBXML2_LIBS) $(EXPAT_LIBS)
 
@@ -148,6 +148,6 @@ fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	(cat $(PUBLIC_FILES) $(PUBLIC_FT_FILES) || echo 'FcERROR ()' ) | \
  	grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$$//' -e 's/^/	/' | \
 	sort; \
-	echo LIBRARY libfontconfig-@LT_CURRENT_MINUS_AGE@.dll; \
-	echo VERSION @LT_CURRENT@.@LT_REVISION@) >$@
+	echo LIBRARY libfontconfig-@LIBT_CURRENT_MINUS_AGE@.dll; \
+	echo VERSION @LIBT_CURRENT@.@LIBT_REVISION@) >$@
 	@ ! grep -q FcERROR $@ || ($(RM) $@; false)

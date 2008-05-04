@@ -10,7 +10,7 @@ DEVZIP=/tmp/fontconfig-dev-@VERSION@.zip
 cd @prefix@
 rm -f $ZIP
 zip $ZIP -@ <<EOF
-bin/libfontconfig-@LT_CURRENT_MINUS_AGE@.dll
+bin/libfontconfig-@LIBT_CURRENT_MINUS_AGE@.dll
 etc/fonts/fonts.conf
 EOF
 
