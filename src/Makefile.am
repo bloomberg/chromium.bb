@@ -140,7 +140,7 @@ fcftaliastail.h: fcftalias.h
 fcftalias.h: $(top_srcdir)/src/makealias $(PUBLIC_FT_FILES)
 	sh $(top_srcdir)/src/makealias "$(top_srcdir)/src" fcftalias.h fcftaliastail.h $(PUBLIC_FT_FILES)
 
-CLEANFILES := $(ALIAS_FILES)
+CLEANFILES = $(ALIAS_FILES)
 
 fontconfig.def: $(PUBLIC_FILES)
 	echo Generating $@
