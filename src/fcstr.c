@@ -1025,11 +1025,14 @@ _FcStrSetAppend (FcStrSet *set, FcChar8 *s)
 	if (!strs)
 	    return FcFalse;
 	FcMemAlloc (FC_MEM_STRSET, (set->size + 2) * sizeof (FcChar8 *));
-	set->size = set->size + 1;
 	if (set->num)
 	    memcpy (strs, set->strs, set->num * sizeof (FcChar8 *));
 	if (set->strs)
+	{
+	    FcMemFree (FC_MEM_STRSET, (set->size + 1) * sizeof (FcChar8 *));
 	    free (set->strs);
+	}
+	set->size = set->size + 1;
 	set->strs = strs;
     }
     set->strs[set->num++] = s;
@@ -1118,9 +1121,11 @@ FcStrSetDestroy (FcStrSet *set)
     
 	for (i = 0; i < set->num; i++)
 	    FcStrFree (set->strs[i]);
-	FcMemFree (FC_MEM_STRSET, (set->size) * sizeof (FcChar8 *));
 	if (set->strs)
+	{
+	    FcMemFree (FC_MEM_STRSET, (set->size + 1) * sizeof (FcChar8 *));
 	    free (set->strs);
+	}
 	FcMemFree (FC_MEM_STRSET, sizeof (FcStrSet));
 	free (set);
     }

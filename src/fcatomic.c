@@ -205,7 +205,7 @@ void
 FcAtomicDestroy (FcAtomic *atomic)
 {
     FcMemFree (FC_MEM_ATOMIC, sizeof (FcAtomic) +
-	       strlen ((char *) atomic->file) * 4 + 1 +
+	       strlen ((char *) atomic->file) * 4 + 4 +
 	       sizeof (NEW_NAME) + sizeof (LCK_NAME) + 
 	       sizeof (TMP_NAME));
 

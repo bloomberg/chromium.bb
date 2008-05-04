@@ -141,6 +141,8 @@ FcFini (void)
 
     FcPatternFini ();
     FcCacheFini ();
+    if (FcDebug() & FC_DBG_MEMORY)
+	FcMemReport ();
 }
 
 /*

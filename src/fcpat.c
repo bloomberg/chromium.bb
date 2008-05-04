@@ -1054,7 +1054,7 @@ FcStrStaticNameFini (void)
 	    next = b->next;
 	    name = (char *) (b + 1);
 	    size = sizeof (struct objectBucket) + strlen (name) + 1;
-	    FcMemFree (FC_MEM_STATICSTR, size);
+	    FcMemFree (FC_MEM_STATICSTR, size + sizeof (int));
 	    free (b);
 	}
 	FcObjectBuckets[i] = 0;

@@ -1239,6 +1239,9 @@ FcCharSetFreezerDestroy (FcCharSetFreezer *freezer)
 	for (ent = freezer->set_hash_table[i]; ent; ent = next)
 	{
 	    next = ent->next;
+	    FcMemFree (FC_MEM_CHARSET, (sizeof (FcCharSetEnt) +
+					ent->set.num * sizeof (FcCharLeaf *) +
+					ent->set.num * sizeof (FcChar16)));
 	    free (ent);
 	}
     }
@@ -1254,7 +1257,10 @@ FcCharSetFreezerDestroy (FcCharSetFreezer *freezer)
     }
 
     for (i = 0; i < freezer->leaf_block_count; i++)
+    {
 	free (freezer->leaf_blocks[i]);
+	FcMemFree (FC_MEM_CHARLEAF, FC_CHAR_LEAF_BLOCK * sizeof (FcCharLeafEnt));
+    }
 
     free (freezer->leaf_blocks);
     free (freezer);
