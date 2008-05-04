@@ -202,7 +202,7 @@ main (int argc, char **argv)
 		if (FcPatternGetString (fs->fonts[j], FC_FAMILY, 0, &family) != FcResultMatch)
 		    family = (FcChar8 *) "<unknown family>";
 		if (FcPatternGetString (fs->fonts[j], FC_STYLE, 0, &style) != FcResultMatch)
-		    file = (FcChar8 *) "<unknown style>";
+		    style = (FcChar8 *) "<unknown style>";
 
 		printf ("%s: \"%s\" \"%s\"\n", file, family, style);
 	    }
