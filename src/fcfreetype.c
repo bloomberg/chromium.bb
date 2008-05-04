@@ -2501,11 +2501,15 @@ FcFreeTypeCharIndex (FT_Face face, FcChar32 ucs4)
 static FcBool
 FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4, 
 		      FT_UInt glyph, FcBlanks *blanks,
-		      FT_Pos *advance)
+		      FT_Pos *advance,
+		      FcBool using_strike)
 {
     FT_Int	    load_flags = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH | FT_LOAD_NO_SCALE | FT_LOAD_NO_HINTING;
     FT_GlyphSlot    slot;
     
+    if (using_strike)
+	load_flags &= ~FT_LOAD_NO_SCALE;
+
     /*
      * When using scalable fonts, only report those glyphs
      * which can be scaled; otherwise those fonts will
@@ -2559,8 +2563,8 @@ FcFreeTypeCheckGlyph (FT_Face face, FcChar32 ucs4,
 #define FC_ABS(a)   ((a) < 0 ? -(a) : (a))
 #define APPROXIMATELY_EQUAL(x,y) (FC_ABS ((x) - (y)) <= FC_MAX (FC_ABS (x), FC_ABS (y)) / 33)
 
-FcCharSet *
-FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
+static FcCharSet *
+FcFreeTypeCharSetAndSpacingForSize (FT_Face face, FcBlanks *blanks, int *spacing, FT_Int strike_index)
 {
     FcChar32	    page, off, ucs4;
 #ifdef CHECK
@@ -2574,11 +2578,18 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
     FT_UInt	    glyph;
     FT_Pos	    advance, advance_one = 0, advance_two = 0;
     FcBool	    has_advance = FcFalse, fixed_advance = FcTrue, dual_advance = FcFalse;
+    FcBool	    using_strike = FcFalse;
 
     fcs = FcCharSetCreate ();
     if (!fcs)
 	goto bail0;
     
+    if (strike_index >= 0) {
+	if (FT_Select_Size (face, strike_index) != FT_Err_Ok)
+	    goto bail1;
+	using_strike = FcTrue;
+    }
+
 #ifdef CHECK
     printf ("Family %s style %s\n", face->family_name, face->style_name);
 #endif
@@ -2598,7 +2609,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 		ucs4 = map->ent[i].bmp;
 		glyph = FT_Get_Char_Index (face, map->ent[i].encode);
 		if (glyph && 
-		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
+		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance, using_strike))
 		{
 		    /* 
 		     * ignore glyphs with zero advance. They’re
@@ -2646,7 +2657,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
             ucs4 = FT_Get_First_Char (face, &glyph);
             while (glyph != 0)
 	    {
-		if (FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
+		if (FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance, using_strike))
 		{
 		    if (advance)
 		    {
@@ -2713,7 +2724,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 	    {
 		ucs4 = FcGlyphNameToUcs4 (name_buf);
 		if (ucs4 != 0xffff && 
-		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
+		    FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance, using_strike))
 		{
 		    if (advance)
 		    {
@@ -2756,7 +2767,7 @@ FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
 
 	if (has_char && !has_bit)
 	{
-	    if (!FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance))
+	    if (!FcFreeTypeCheckGlyph (face, ucs4, glyph, blanks, &advance, using_strike))
 		printf ("Bitmap missing broken char 0x%x\n", ucs4);
 	    else
 		printf ("Bitmap missing char 0x%x\n", ucs4);
@@ -2776,6 +2787,39 @@ bail1:
     FcCharSetDestroy (fcs);
 bail0:
     return 0;
+}
+
+FcCharSet *
+FcFreeTypeCharSetAndSpacing (FT_Face face, FcBlanks *blanks, int *spacing)
+{
+    FcCharSet	*cs;
+    
+    cs = FcFreeTypeCharSetAndSpacingForSize (face, blanks, spacing, -1);
+    /*
+     * Check for bitmap-only ttf fonts that are missing the glyf table.
+     * In that case, pick a size and look for glyphs in that size instead
+     */
+    if (FcCharSetCount (cs) == 0) 
+    {
+	/* Check for non-scalable TT fonts */
+	if (!(face->face_flags & FT_FACE_FLAG_SCALABLE) &&
+	    face->num_fixed_sizes > 0 &&
+	    FT_Get_Sfnt_Table (face, ft_sfnt_head))
+	{
+	    FT_Int  strike_index = 0;
+	    int	    i;
+
+	    /* Select the face closest to 16 pixels tall */
+	    for (i = 1; i < face->num_fixed_sizes; i++) {
+		if (abs (face->available_sizes[i].height - 16) < 
+		    abs (face->available_sizes[strike_index].height - 16))
+		    strike_index = i;
+	    }
+	    FcCharSetDestroy (cs);
+	    cs = FcFreeTypeCharSetAndSpacingForSize (face, blanks, spacing, strike_index);
+	}
+    }
+    return cs;
 }
 
 FcCharSet *
