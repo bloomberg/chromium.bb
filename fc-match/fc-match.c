@@ -50,6 +50,7 @@
 #include <getopt.h>
 static const struct option longopts[] = {
     {"sort", 0, 0, 's'},
+    {"all", 0, 0, 'a'},
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
     {"help", 0, 0, '?'},
@@ -65,7 +66,7 @@ extern int optind, opterr, optopt;
 static void usage (char *program)
 {
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-svV?] [--sort] [--verbose] [--version] [--help] [pattern]\n",
+    fprintf (stderr, "usage: %s [-svV?] [--sort] [--all] [--verbose] [--version] [--help] [pattern]\n",
 	     program);
 #else
     fprintf (stderr, "usage: %s [-svV?] [pattern]\n",
@@ -75,11 +76,13 @@ static void usage (char *program)
     fprintf (stderr, "\n");
 #if HAVE_GETOPT_LONG
     fprintf (stderr, "  -s, --sort           display sorted list of matches\n");
+    fprintf (stderr, "  -a, --all            display unpruned sorted list of matches\n");
     fprintf (stderr, "  -v, --verbose        display entire font pattern\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
 #else
     fprintf (stderr, "  -s,        (sort)    display sorted list of matches\n");
+    fprintf (stderr, "  -a         (all)     display unpruned sorted list of matches\n");
     fprintf (stderr, "  -v         (verbose) display entire font pattern\n");
     fprintf (stderr, "  -V         (version) display font config version and exit\n");
     fprintf (stderr, "  -?         (help)    display this help and exit\n");
@@ -91,7 +94,7 @@ int
 main (int argc, char **argv)
 {
     int		verbose = 0;
-    int		sort = 0;
+    int		sort = 0, all = 0;
     int		i;
     FcFontSet	*fs;
     FcPattern   *pat;
@@ -100,12 +103,15 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "sVv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "asVv?", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "sVv?")) != -1)
+    while ((c = getopt (argc, argv, "asVv?")) != -1)
 #endif
     {
 	switch (c) {
+	case 'a':
+	    all = 1;
+	    break;
 	case 's':
 	    sort = 1;
 	    break;
@@ -143,11 +149,11 @@ main (int argc, char **argv)
     
     fs = FcFontSetCreate ();
 
-    if (sort)
+    if (sort || all)
     {
 	FcFontSet	*font_patterns;
 	int	j;
-	font_patterns = FcFontSort (0, pat, FcTrue, 0, &result);
+	font_patterns = FcFontSort (0, pat, all ? FcFalse : FcTrue, 0, &result);
 
 	for (j = 0; j < font_patterns->nfont; j++)
 	{
