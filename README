@@ -1,11 +1,47 @@
                               Fontconfig
              Font configuration and customization library
-                       Version 2.5.91 (2.6 RC1)
-                              2008-01-10
+                       Version 2.5.92 (2.6 RC2)
+                              2008-05-03
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.5.92 (2.6 RC2)
+
+Carlo Bramini (1):
+      Add FreeType-dependent functions to fontconfig.def file. (bug 15415)
+
+Changwoo Ryu (1):
+      Korean font in the default config - replacing baekmuk with un (bug 13569)
+
+Dennis Schridde (1):
+      Proper config path for static libraries in win32
+
+Eric Anholt (1):
+      Fix build with !ENABLE_DOCS and no built manpages.
+
+Frederic Crozat (1):
+      Merge some of Mandriva configuration into upstream configuration. Bug 13247
+
+Keith Packard (11):
+      Use DOLT if available
+      Work around for bitmap-only TrueType fonts that are missing the glyf table.
+      Remove size and dpi values from bitmap fonts. Bug 8765.
+      Add some sample cursive and fantasy families.
+      Add --all flag to fc-match to show the untrimmed list. Bug 13018.
+      Remove doltcompile in distclean
+      Use of ":=" in src/Makefile.am is unportable (bug 14420)
+      Make fc-match behave better when style is unknown (bug 15332)
+      Deal with libtool 2.2 which doesn't let us use LT_ variables. (bug 15692)
+      Allow for RC versions in README update
+      git ignore doltcompile
+
+Ryan Schmidt (1):
+      fontconfig build fails if "head" is missing or unusable (bug 14304)
+
+Sylvain Pasche (1):
+      Fontconfig options for freetype sub-pixel filter configuration
 
 2.5.91 (2.6 RC1)
 
