@@ -24,6 +24,7 @@ fontconfig.pc
 fontconfig.spec
 fonts.conf
 install-sh
+doltcompile
 libtool
 ltmain.sh
 missing
