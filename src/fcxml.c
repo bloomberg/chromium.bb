@@ -2058,7 +2058,27 @@ FcEndElement(void *userData, const XML_Char *name)
 	    break;
 	}
 #ifdef _WIN32
-	if (strcmp (data, "WINDOWSFONTDIR") == 0)
+	if (strcmp (data, "CUSTOMFONTDIR") == 0)
+	{
+		FcStrFree (data);
+		data = malloc (1000);
+		if (!data)
+		{
+			FcConfigMessage (parse, FcSevereError, "out of memory");
+			break;
+		}
+		FcMemAlloc (FC_MEM_STRING, 1000);
+		if(!GetModuleFileName(NULL, data, 1000))
+		{
+			FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
+			FcStrFree (data);
+			break;
+		}
+		char *p = strrchr (data, '\\');
+		if (p) *p = '\0';
+		strcat (data, "\\fonts");
+	}
+	else if (strcmp (data, "WINDOWSFONTDIR") == 0)
 	{
 	    int rc;
 	    FcStrFree (data);

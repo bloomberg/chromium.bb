@@ -1520,9 +1520,15 @@ FcConfigSubstitute (FcConfig	*config,
     return FcConfigSubstituteWithPat (config, p, 0, kind);
 }
 
-#if defined (_WIN32) && (defined (PIC) || defined (DLL_EXPORT))
+#if defined (_WIN32)
+
+#  define WIN32_LEAN_AND_MEAN
+#  define WIN32_EXTRA_LEAN
+#  include <windows.h>
 
 static FcChar8 fontconfig_path[1000] = "";
+
+#  if (defined (PIC) || defined (DLL_EXPORT))
 
 BOOL WINAPI
 DllMain (HINSTANCE hinstDLL,
@@ -1561,12 +1567,12 @@ DllMain (HINSTANCE hinstDLL,
   return TRUE;
 }
 
+#  endif /* !PIC */
+
 #undef FONTCONFIG_PATH
 #define FONTCONFIG_PATH fontconfig_path
 
-#else /* !(_WIN32 && PIC) */
-
-#endif /* !(_WIN32 && PIC) */
+#endif /* !_WIN32 */
 
 #ifndef FONTCONFIG_FILE
 #define FONTCONFIG_FILE	"fonts.conf"
@@ -1651,6 +1657,16 @@ FcConfigGetPath (void)
 	}
     }
     
+#ifdef _WIN32
+	if (fontconfig_path[0] == '\0')
+	{
+		if(!GetModuleFileName(NULL, fontconfig_path, sizeof(fontconfig_path)))
+			goto bail1;
+		char *p = strrchr (fontconfig_path, '\\');
+		if (p) *p = '\0';
+		strcat (fontconfig_path, "\\fonts");
+	}
+#endif
     dir = (FcChar8 *) FONTCONFIG_PATH;
     path[i] = malloc (strlen ((char *) dir) + 1);
     if (!path[i])
@@ -1707,7 +1723,7 @@ FcChar8 *
 FcConfigFilename (const FcChar8 *url)
 {
     FcChar8    *file, *dir, **path, **p;
-    
+
     if (!url || !*url)
     {
 	url = (FcChar8 *) getenv ("FONTCONFIG_FILE");
