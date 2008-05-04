@@ -1016,6 +1016,7 @@ static const FcStringConst  widthConsts[] = {
     { (FC8) "extraexpanded",	FC_WIDTH_EXTRAEXPANDED },
     { (FC8) "ultraexpanded",	FC_WIDTH_ULTRAEXPANDED },
     { (FC8) "expanded",		FC_WIDTH_EXPANDED },	/* must be after *expanded */
+    { (FC8) "extended",		FC_WIDTH_EXPANDED },
 };
 
 #define NUM_WIDTH_CONSTS    (int) (sizeof (widthConsts) / sizeof (widthConsts[0]))
@@ -1036,11 +1037,11 @@ static const FcStringConst  slantConsts[] = {
 
 static const FcStringConst  decorativeConsts[] = {
     { (FC8) "shadow",		FcTrue },
-    { (FC8) "smallcaps",    	FcTrue },
+    { (FC8) "caps",		FcTrue },
     { (FC8) "antiqua",		FcTrue },
     { (FC8) "romansc",		FcTrue },
     { (FC8) "embosed",		FcTrue },
-    { (FC8) "romansmallcaps",	FcTrue },
+    { (FC8) "dunhill",		FcTrue },
 };
 
 #define NUM_DECORATIVE_CONSTS	(int) (sizeof (decorativeConsts) / sizeof (decorativeConsts[0]))
