@@ -142,10 +142,10 @@ fcftalias.h: $(top_srcdir)/src/makealias $(PUBLIC_FT_FILES)
 
 CLEANFILES = $(ALIAS_FILES)
 
-fontconfig.def: $(PUBLIC_FILES)
+fontconfig.def: $(PUBLIC_FILES) $(PUBLIC_FT_FILES)
 	echo Generating $@
 	(echo EXPORTS; \
-	(cat $(PUBLIC_FILES) || echo 'FcERROR ()' ) | \
+	(cat $(PUBLIC_FILES) $(PUBLIC_FT_FILES) || echo 'FcERROR ()' ) | \
  	grep '^Fc[^ ]* *(' | sed -e 's/ *(.*$$//' -e 's/^/	/' | \
 	sort; \
 	echo LIBRARY libfontconfig-@LT_CURRENT_MINUS_AGE@.dll; \
