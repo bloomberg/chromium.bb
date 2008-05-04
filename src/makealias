@@ -17,7 +17,7 @@ while read name; do
 		hattr='__attribute((visibility("hidden")))'
 		echo "extern __typeof ($name) $alias $hattr;" >> $HEAD
 		echo "#define $name $alias" >> $HEAD
-		grep -l '^'$name'[ (]' "$SRCDIR"/*.c | head -1 | sed -e 's/^.*\/\([^.]*\)\.c/#ifdef __\1__/' >> $TAIL
+		grep -l '^'$name'[ (]' "$SRCDIR"/*.c | sed -n 1p | sed -e 's/^.*\/\([^.]*\)\.c/#ifdef __\1__/' >> $TAIL
 		echo "#undef $name" >> $TAIL
 		cattr='__attribute((alias("'$alias'"), visibility("default")))'
 		echo "extern __typeof ($name) $name $cattr;" >> $TAIL
