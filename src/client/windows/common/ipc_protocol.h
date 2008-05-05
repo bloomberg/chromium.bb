@@ -71,6 +71,11 @@ struct CustomInfoEntry {
     wcscpy_s(value, kValueMaxLength, value_arg);
   }
 
+  void set(const wchar_t* name_arg, const wchar_t* value_arg) {
+    set_name(name_arg);
+    set_value(value_arg);
+  }
+
   wchar_t name[kNameMaxLength];
   wchar_t value[kValueMaxLength];
 };
