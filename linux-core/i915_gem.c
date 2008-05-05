@@ -99,6 +99,23 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	DRM_INFO ("done\n");
 }
 
+static void
+i915_gem_dump_object (struct drm_gem_object *obj, int len, const char *where)
+{
+	struct drm_device *dev = obj->dev;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	uint32_t		*mem = kmap_atomic (obj_priv->page_list[0], KM_USER0);
+	volatile uint32_t	*gtt = ioremap(dev->agp->base + obj_priv->gtt_offset,
+					       PAGE_SIZE);
+	int			i;
+
+	DRM_INFO ("%s: object at offset %08x\n", where, obj_priv->gtt_offset);
+	for (i = 0; i < len/4; i++)
+		DRM_INFO ("%3d: mem %08x gtt %08x\n", i, mem[i], readl(gtt + i));
+	iounmap (gtt);
+	kunmap_atomic (mem, KM_USER0);
+}
+
 /**
  * Finds free space in the GTT aperture and binds the object there.
  */
@@ -176,20 +193,6 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		return -ENOMEM;
 	}
 
-	{
-		uint32_t		*mem = kmap_atomic (obj_priv->page_list[0], KM_USER0);
-		volatile uint32_t	*gtt = ioremap(dev->agp->base + obj_priv->gtt_offset,
-					       PAGE_SIZE);
-		int		i;
-
-		DRM_INFO ("object at offset %08x agp base %08x gtt addr %p\n",
-			  obj_priv->gtt_offset, (int) dev->agp->base, gtt);
-		for (i = 0; i < 16; i++)
-			DRM_INFO ("%3d: mem %08x gtt %08x\n", i, mem[i], gtt[i]);
-		iounmap (gtt);
-		kunmap_atomic (mem, KM_USER0);
-	}
-
 	return 0;
 }
 
@@ -220,7 +223,7 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		struct drm_gem_object *target_obj;
 		struct drm_i915_gem_object *target_obj_priv;
 		void *reloc_page;
-		uint32_t reloc_val, *reloc_entry;
+		uint32_t reloc_val, reloc_offset, *reloc_entry;
 		int ret;
 
 		ret = copy_from_user(&reloc, relocs + i, sizeof(reloc));
@@ -257,8 +260,9 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		/* Map the page containing the relocation we're going to
 		 * perform.
 		 */
+		reloc_offset = obj_priv->gtt_offset + reloc.offset;
 		reloc_page = ioremap(dev->agp->base +
-				     (reloc.offset & ~(PAGE_SIZE - 1)),
+				     (reloc_offset & ~(PAGE_SIZE - 1)),
 				     PAGE_SIZE);
 		if (reloc_page == NULL)
 		{
@@ -267,17 +271,19 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		}
 
 		reloc_entry = (uint32_t *)((char *)reloc_page +
-					   (reloc.offset & (PAGE_SIZE - 1)));
+					   (reloc_offset & (PAGE_SIZE - 1)));
 		reloc_val = target_obj_priv->gtt_offset + reloc.delta;
 
-		DRM_DEBUG("Applied relocation: %p@0x%08x = 0x%08x\n",
-			  obj, (unsigned int) reloc.offset, reloc_val);
-		*reloc_entry = reloc_val;
+		DRM_INFO("Applied relocation: %p@0x%08x %08x -> %08x\n",
+			  obj, (unsigned int) reloc.offset,
+			  readl (reloc_entry), reloc_val);
+		writel (reloc_val, reloc_entry);
 
 		iounmap(reloc_page);
 		drm_gem_object_unreference (target_obj);
 	}
 
+	i915_gem_dump_object (obj, 128, __FUNCTION__);
 	return 0;
 }
 
