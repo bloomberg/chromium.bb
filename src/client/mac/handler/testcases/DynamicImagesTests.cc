@@ -39,11 +39,12 @@
 
 DynamicImagesTests test2(TEST_INVOCATION(DynamicImagesTests,
                                          ReadTaskMemoryTest));
+DynamicImagesTests test3(TEST_INVOCATION(DynamicImagesTests,
+                                         ReadLibrariesFromLocalTaskTest));
 
 DynamicImagesTests::DynamicImagesTests(TestInvocation *invocation)
     : TestCase(invocation) {
 }
-
 
 DynamicImagesTests::~DynamicImagesTests() {
 }
@@ -69,4 +70,16 @@ void DynamicImagesTests::ReadTaskMemoryTest() {
   CPTAssert(0 == memcmp(buf, (const void*)addr, getpagesize()));
 
   free(buf);
+}
+
+void DynamicImagesTests::ReadLibrariesFromLocalTaskTest() {
+
+  mach_port_t me = mach_task_self();
+  google_breakpad::DynamicImages *d = new google_breakpad::DynamicImages(me);
+
+  fprintf(stderr,"Local task image count: %d\n", d->GetImageCount());
+
+  d->TestPrint();
+
+  CPTAssert(d->GetImageCount() > 0);
 }

@@ -210,7 +210,11 @@ void DynamicImage::CalculateMemoryInfo() {
     reinterpret_cast<const struct load_command *>(header + 1);
 
   for (unsigned int i = 0; cmd && (i < header->ncmds); ++i) {
+#ifdef __LP64__
+    if (cmd->cmd == LC_SEGMENT_64) {
+#else
     if (cmd->cmd == LC_SEGMENT) {
+#endif
       const breakpad_mach_segment_command *seg =
         reinterpret_cast<const breakpad_mach_segment_command *>(cmd);
 

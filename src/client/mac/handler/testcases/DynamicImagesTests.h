@@ -46,6 +46,7 @@ class DynamicImagesTests : public TestCase {
   virtual ~DynamicImagesTests();
 
   void ReadTaskMemoryTest();
+  void ReadLibrariesFromLocalTaskTest();
 };
 
 #endif /* _CLIENT_MAC_HANDLER_TESTCASES_DYNAMICIMAGESTESTS_H__ */
