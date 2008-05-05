@@ -131,7 +131,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	obj_priv->gtt_space->private = obj;
 	obj_priv->gtt_offset = obj_priv->gtt_space->start;
 
-	DRM_DEBUG("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
+	DRM_INFO ("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
 
 	/* Get the list of pages out of our struct file.  They'll be pinned
 	 * at this point until we release them.
@@ -157,6 +157,10 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 			return -ENOMEM;
 		}
 	}
+	
+	drm_ttm_cache_flush (obj_priv->page_list, page_count);
+	DRM_MEMORYBARRIER();
+	drm_agp_chipset_flush(dev);
 
 	/* Create an AGP memory structure pointing at our pages, and bind it
 	 * into the GTT.
@@ -170,6 +174,20 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		drm_memrange_put_block(obj_priv->gtt_space);
 		obj_priv->gtt_space = NULL;
 		return -ENOMEM;
+	}
+
+	{
+		uint32_t		*mem = kmap_atomic (obj_priv->page_list[0], KM_USER0);
+		volatile uint32_t	*gtt = ioremap(dev->agp->base + obj_priv->gtt_offset,
+					       PAGE_SIZE);
+		int		i;
+
+		DRM_INFO ("object at offset %08x agp base %08x gtt addr %p\n",
+			  obj_priv->gtt_offset, (int) dev->agp->base, gtt);
+		for (i = 0; i < 16; i++)
+			DRM_INFO ("%3d: mem %08x gtt %08x\n", i, mem[i], gtt[i]);
+		iounmap (gtt);
+		kunmap_atomic (mem, KM_USER0);
 	}
 
 	return 0;
@@ -434,8 +452,6 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	exec_offset = validate_list[args->buffer_count - 1].buffer_offset;
 
 	/* make sure all previous memory operations have passed */
-	DRM_MEMORYBARRIER();
-	drm_agp_chipset_flush(dev);
 
 	/* Exec the batchbuffer */
 	ret = i915_dispatch_gem_execbuffer (dev, args, exec_offset);
