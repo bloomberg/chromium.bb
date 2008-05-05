@@ -90,6 +90,10 @@
 struct drm_device;
 struct drm_file;
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+typedef unsigned long uintptr_t;
+#endif
+
 /* If you want the memory alloc debug functionality, change define below */
 /* #define DEBUG_MEMORY */
 

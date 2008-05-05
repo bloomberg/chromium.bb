@@ -458,9 +458,9 @@ static int i915_emit_cmds(struct drm_device *dev, int __user *buffer,
 	return 0;
 }
 
-static int i915_emit_box(struct drm_device * dev,
-			 struct drm_clip_rect __user * boxes,
-			 int i, int DR1, int DR4)
+int i915_emit_box(struct drm_device * dev,
+		  struct drm_clip_rect __user * boxes,
+		  int i, int DR1, int DR4)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_clip_rect box;

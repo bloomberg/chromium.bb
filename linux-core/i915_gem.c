@@ -79,18 +79,24 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
+	DRM_INFO ("%s:%d %p\n", __FUNCTION__, __LINE__, obj);
+	DRM_INFO ("gtt_space %p\n", obj_priv->gtt_space);
 	if (obj_priv->gtt_space == NULL)
 		return;
 
+	DRM_INFO ("agp_mem %p %ld pages\n", obj_priv->agp_mem, obj->size / PAGE_SIZE);
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);
 		drm_free_agp(obj_priv->agp_mem, obj->size / PAGE_SIZE);
 	}
 
+	DRM_INFO ("free_page_list\n");
 	i915_gem_object_free_page_list(obj);
 
+	DRM_INFO ("put_block\n");
 	drm_memrange_put_block(obj_priv->gtt_space);
 	obj_priv->gtt_space = NULL;
+	DRM_INFO ("done\n");
 }
 
 /**
@@ -259,9 +265,18 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 static int
 evict_callback(struct drm_memrange_node *node, void *data)
 {
-	struct drm_gem_object *obj = node->private;
-	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+	
+	DRM_INFO ("evict node %p\n", node);
+	
+	obj = node->private;
+	DRM_INFO ("evict obj %p\n", obj);
+	
+	obj_priv = obj->driver_private;
+	DRM_INFO ("evict priv %p\n", obj_priv);
 
+	DRM_INFO ("pin_count %d\n", obj_priv->pin_count);
 	if (obj_priv->pin_count == 0)
 		i915_gem_object_unbind(obj);
 
@@ -289,6 +304,58 @@ i915_gem_sync_and_evict(struct drm_device *dev)
 	return 0;
 }
 
+static int
+i915_dispatch_gem_execbuffer (struct drm_device * dev,
+			      struct drm_i915_gem_execbuffer * exec)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_clip_rect __user *boxes = (struct drm_clip_rect __user *) (uintptr_t) exec->cliprects_ptr;
+	int nbox = exec->num_cliprects;
+	int i = 0, count;
+	RING_LOCALS;
+
+	if ((exec->batch_start_offset | exec->batch_len) & 0x7) {
+		DRM_ERROR("alignment\n");
+		return -EINVAL;
+	}
+
+	i915_kernel_lost_context(dev);
+
+	count = nbox ? nbox : 1;
+
+	for (i = 0; i < count; i++) {
+		if (i < nbox) {
+			int ret = i915_emit_box(dev, boxes, i,
+						exec->DR1, exec->DR4);
+			if (ret)
+				return ret;
+		}
+
+		if (dev_priv->use_mi_batchbuffer_start) {
+			BEGIN_LP_RING(2);
+			if (IS_I965G(dev)) {
+				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6) | MI_BATCH_NON_SECURE_I965);
+				OUT_RING(exec->batch_start_offset);
+			} else {
+				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6));
+				OUT_RING(exec->batch_start_offset | MI_BATCH_NON_SECURE);
+			}
+			ADVANCE_LP_RING();
+
+		} else {
+			BEGIN_LP_RING(4);
+			OUT_RING(MI_BATCH_BUFFER);
+			OUT_RING(exec->batch_start_offset | MI_BATCH_NON_SECURE);
+			OUT_RING(exec->batch_start_offset + exec->batch_len - 4);
+			OUT_RING(0);
+			ADVANCE_LP_RING();
+		}
+	}
+
+	/* XXX breadcrumb */
+	return 0;
+}
+
 int
 i915_gem_execbuffer(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
@@ -300,39 +367,45 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
+	DRM_INFO ("buffers_ptr %d buffer_count %d\n",
+		  (int) args->buffers_ptr, args->buffer_count);
 	i915_kernel_lost_context(dev);
 
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	/* Big hammer: flush and idle the hardware so we can map things in/out.
 	 */
 	ret = i915_gem_sync_and_evict(dev);
-	if (ret != 0)
+	if (ret != 0) {
+		DRM_ERROR ("i915_gem_sync_and_evict failed %d\n", ret);
 		return ret;
+	}
 
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	/* Copy in the validate list from userland */
 	validate_list = drm_calloc(sizeof(*validate_list), args->buffer_count,
 				   DRM_MEM_DRIVER);
 	object_list = drm_calloc(sizeof(*object_list), args->buffer_count,
 				 DRM_MEM_DRIVER);
 	if (validate_list == NULL || object_list == NULL) {
+		DRM_ERROR ("Failed to allocate validate or object list for %d buffers\n",
+			   args->buffer_count);
 		ret = -ENOMEM;
 		goto err;
 	}
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	ret = copy_from_user(validate_list,
 			     (struct drm_i915_relocation_entry __user*)(uintptr_t)
 			     args->buffers_ptr,
 			     sizeof(*validate_list) * args->buffer_count);
-	if (ret != 0)
+	if (ret != 0) {
+		DRM_ERROR ("copy %d validate entries failed %d\n", args->buffer_count, ret);
 		goto err;
+	}
 
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	/* Look up object handles and perform the relocations */
 	for (i = 0; i < args->buffer_count; i++) {
 		object_list[i] = drm_gem_object_lookup(dev, file_priv,
 						       validate_list[i].buffer_handle);
 		if (object_list[i] == NULL) {
+			DRM_ERROR ("Invalid object handle %d at index %d\n",
+				   validate_list[i].buffer_handle, i);
 			ret = -EINVAL;
 			goto err;
 		}
@@ -342,8 +415,13 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	/* Exec the batchbuffer */
+	ret = i915_dispatch_gem_execbuffer (dev, args);
+	if (ret)
+	{
+		DRM_ERROR ("dispatch failed %d\n", ret);
+		goto err;
+	}
 
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	/* Copy the new buffer offsets back to the user's validate list. */
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_i915_gem_object *obj_priv =
@@ -351,29 +429,28 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 		validate_list[i].buffer_offset = obj_priv->gtt_offset;
 	}
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
-	ret = copy_to_user(validate_list,
-			     (struct drm_i915_relocation_entry __user*)(uintptr_t)
-			     args->buffers_ptr,
-			     sizeof(*validate_list) * args->buffer_count);
+	ret = copy_to_user((struct drm_i915_relocation_entry __user*)(uintptr_t)
+			   args->buffers_ptr,
+			   validate_list,
+			   sizeof(*validate_list) * args->buffer_count);
+	if (ret)
+		DRM_ERROR ("failed to copy %d validate entries back to user (%d)\n",
+			   args->buffer_count, ret);
 
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	/* Clean up and return */
 	ret = i915_gem_sync_and_evict(dev);
-
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
+	if (ret)
+		DRM_ERROR ("failed to sync/evict buffers %d\n", ret);
 err:
 	if (object_list != NULL) {
 		for (i = 0; i < args->buffer_count; i++)
 			drm_gem_object_unreference(object_list[i]);
 	}
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
 	drm_free(validate_list, sizeof(*validate_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
 
-	DRM_INFO ("%s:%d\n", __FUNCTION__, __LINE__);
 	return ret;
 }
 

@@ -299,6 +299,10 @@ extern int i915_dispatch_batchbuffer(struct drm_device * dev,
 				     drm_i915_batchbuffer_t * batch);
 extern int i915_quiescent(struct drm_device *dev);
 
+int i915_emit_box(struct drm_device * dev,
+		  struct drm_clip_rect __user * boxes,
+		  int i, int DR1, int DR4);
+
 /* i915_irq.c */
 extern int i915_irq_emit(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv);
