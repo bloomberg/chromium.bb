@@ -79,24 +79,22 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
+#if 0
 	DRM_INFO ("%s:%d %p\n", __FUNCTION__, __LINE__, obj);
 	DRM_INFO ("gtt_space %p\n", obj_priv->gtt_space);
+#endif
 	if (obj_priv->gtt_space == NULL)
 		return;
 
-	DRM_INFO ("agp_mem %p %ld pages\n", obj_priv->agp_mem, obj->size / PAGE_SIZE);
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);
 		drm_free_agp(obj_priv->agp_mem, obj->size / PAGE_SIZE);
 	}
 
-	DRM_INFO ("free_page_list\n");
 	i915_gem_object_free_page_list(obj);
 
-	DRM_INFO ("put_block\n");
 	drm_memrange_put_block(obj_priv->gtt_space);
 	obj_priv->gtt_space = NULL;
-	DRM_INFO ("done\n");
 }
 
 static void
@@ -148,7 +146,9 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	obj_priv->gtt_space->private = obj;
 	obj_priv->gtt_offset = obj_priv->gtt_space->start;
 
+#if 0
 	DRM_INFO ("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
+#endif
 
 	/* Get the list of pages out of our struct file.  They'll be pinned
 	 * at this point until we release them.
@@ -274,34 +274,27 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 					   (reloc_offset & (PAGE_SIZE - 1)));
 		reloc_val = target_obj_priv->gtt_offset + reloc.delta;
 
+#if 0
 		DRM_INFO("Applied relocation: %p@0x%08x %08x -> %08x\n",
 			  obj, (unsigned int) reloc.offset,
 			  readl (reloc_entry), reloc_val);
+#endif
 		writel (reloc_val, reloc_entry);
 
 		iounmap(reloc_page);
 		drm_gem_object_unreference (target_obj);
 	}
 
-	i915_gem_dump_object (obj, 128, __FUNCTION__);
+/*	i915_gem_dump_object (obj, 128, __FUNCTION__); */
 	return 0;
 }
 
 static int
 evict_callback(struct drm_memrange_node *node, void *data)
 {
-	struct drm_gem_object *obj;
-	struct drm_i915_gem_object *obj_priv;
+	struct drm_gem_object *obj = node->private;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	
-	DRM_INFO ("evict node %p\n", node);
-	
-	obj = node->private;
-	DRM_INFO ("evict obj %p\n", obj);
-	
-	obj_priv = obj->driver_private;
-	DRM_INFO ("evict priv %p\n", obj_priv);
-
-	DRM_INFO ("pin_count %d\n", obj_priv->pin_count);
 	if (obj_priv->pin_count == 0)
 		i915_gem_object_unbind(obj);
 
@@ -351,8 +344,10 @@ i915_dispatch_gem_execbuffer (struct drm_device * dev,
 
 	i915_kernel_lost_context(dev);
 
+#if 0
 	DRM_INFO ("execbuffer at %x+%d len %d\n",
 		  (uint32_t) exec_offset, exec->batch_start_offset, exec_len);
+#endif
 	
 	if (!exec_start)
 		return -EINVAL;
@@ -404,8 +399,10 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
+#if 0
 	DRM_INFO ("buffers_ptr %d buffer_count %d\n",
 		  (int) args->buffers_ptr, args->buffer_count);
+#endif
 	i915_kernel_lost_context(dev);
 
 	/* Big hammer: flush and idle the hardware so we can map things in/out.
