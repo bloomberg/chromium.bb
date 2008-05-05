@@ -290,36 +290,17 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 }
 
 static int
-evict_callback(struct drm_memrange_node *node, void *data)
-{
-	struct drm_gem_object *obj = node->private;
-	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-	
-	if (obj_priv->pin_count == 0)
-		i915_gem_object_unbind(obj);
-
-	return 0;
-}
-
-static int
-i915_gem_sync_and_evict(struct drm_device *dev)
+i915_gem_sync(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	int ret;
 	RING_LOCALS;
 
 	BEGIN_LP_RING(2);
 	OUT_RING(CMD_MI_FLUSH | MI_READ_FLUSH | MI_EXE_FLUSH);
 	OUT_RING(0); /* noop */
 	ADVANCE_LP_RING();
-	ret = i915_quiescent(dev);
-	if (ret != 0)
-		return ret;
 
-	/* Evict everything so we have space for sure. */
-	drm_memrange_for_each(&dev_priv->mm.gtt_space, evict_callback, NULL);
-
-	return 0;
+	return i915_quiescent(dev);
 }
 
 static int
@@ -407,9 +388,9 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	/* Big hammer: flush and idle the hardware so we can map things in/out.
 	 */
-	ret = i915_gem_sync_and_evict(dev);
+	ret = i915_gem_sync(dev);
 	if (ret != 0) {
-		DRM_ERROR ("i915_gem_sync_and_evict failed %d\n", ret);
+		DRM_ERROR ("i915_gem_sync failed %d\n", ret);
 		return ret;
 	}
 
@@ -474,9 +455,18 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			   args->buffer_count, ret);
 
 	/* Clean up and return */
-	ret = i915_gem_sync_and_evict(dev);
+	ret = i915_gem_sync(dev);
 	if (ret)
-		DRM_ERROR ("failed to sync/evict buffers %d\n", ret);
+		DRM_ERROR ("failed to sync %d\n", ret);
+
+	/* Evict all the buffers we moved in, leaving room for the next guy. */
+	for (i = 0; i < args->buffer_count; i++) {
+		struct drm_gem_object *obj = object_list[i];
+		struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
+		if (obj_priv->pin_count == 0)
+			i915_gem_object_unbind(obj);
+	}
 err:
 	if (object_list != NULL) {
 		for (i = 0; i < args->buffer_count; i++)
