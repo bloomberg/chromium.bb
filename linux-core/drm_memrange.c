@@ -275,33 +275,6 @@ int drm_memrange_init(struct drm_memrange * mm, unsigned long start, unsigned lo
 	return drm_memrange_create_tail_node(mm, start, size);
 }
 
-/**
- * Walks the list of allocated memory ranges and calls the callback on
- * one.
- */
-int drm_memrange_for_each(struct drm_memrange *mm,
-			  int (*callback)(struct drm_memrange_node *node,
-					  void *data),
-			  void *data)
-{
-	struct list_head *list, *next;
-
-	list_for_each_safe(list, next, &mm->ml_entry) {
-		struct drm_memrange_node *cur;
-		int ret;
-
-		cur = list_entry(list, struct drm_memrange_node, ml_entry);
-		if (!cur->free) {
-			ret = callback(cur, data);
-			if (ret != 0)
-				return ret;
-		}
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL(drm_memrange_for_each);
-
 EXPORT_SYMBOL(drm_memrange_init);
 
 void drm_memrange_takedown(struct drm_memrange * mm)
