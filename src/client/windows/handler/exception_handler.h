@@ -68,6 +68,7 @@
 #include <string>
 #include <vector>
 
+#include "client/windows/common/ipc_protocol.h"
 #include "client/windows/crash_generation/crash_generation_client.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "processor/scoped_ptr.h"
@@ -163,7 +164,8 @@ class ExceptionHandler {
                    void* callback_context,
                    int handler_types,
                    MINIDUMP_TYPE dump_type,
-                   const wchar_t* pipe_name);
+                   const wchar_t* pipe_name,
+                   const CustomClientInfo* custom_info);
 
   ~ExceptionHandler();
 
@@ -213,7 +215,8 @@ class ExceptionHandler {
                   void* callback_context,
                   int handler_types,
                   MINIDUMP_TYPE dump_type,
-                  const wchar_t* pipe_name);
+                  const wchar_t* pipe_name,
+                  const CustomClientInfo* custom_info);
 
   // Function pointer type for MiniDumpWriteDump, which is looked up
   // dynamically.

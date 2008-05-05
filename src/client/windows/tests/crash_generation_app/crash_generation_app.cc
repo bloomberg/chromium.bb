@@ -35,7 +35,7 @@
 namespace google_breakpad {
 
 const int kMaxLoadString = 100;
-const wchar_t kPipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\S-1-5-21-39260824-743453154-142223018-195347";
+const wchar_t kPipeName[] = L"\\\\.\\pipe\\GoogleCrashServices-Testing";
 
 const DWORD kEditBoxStyles = WS_CHILD |
                              WS_VISIBLE |
@@ -62,6 +62,13 @@ ATOM MyRegisterClass(HINSTANCE instance);
 BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
+
+static int k_custom_info_count = 2;
+static CustomInfoEntry k_custom_info_entries[] =
+    {
+      CustomInfoEntry(L"prod", L"CrashTestApp"),
+      CustomInfoEntry(L"ver", L"1.0"),
+    };
 
 static ExceptionHandler* handler = NULL;
 static CrashGenerationServer* crash_server = NULL;
@@ -211,6 +218,33 @@ static void _cdecl ShowClientCrashed(void* context,
   }
 
   QueueUserWorkItem(AppendTextWorker, line, WT_EXECUTEDEFAULT);
+
+  const CustomInfoEntry* custom_info = NULL;
+  int custom_info_count = client_info->GetCustomInfo(&custom_info);
+  if (custom_info_count <= 0) {
+    return;
+  }
+
+  wstring str_line;
+  for (int i = 0; i < custom_info_count; ++i) {
+    if (i > 0) {
+      str_line += L", ";
+    }
+    str_line += custom_info[i].name;
+    str_line += L": ";
+    str_line += custom_info[i].value;
+  }
+
+  line = new TCHAR[kMaximumLineLength];
+  result = swprintf_s(line,
+                      kMaximumLineLength,
+                      L"%s\n",
+                      str_line.c_str());
+  if (result == -1) {
+    delete[] line;
+    return;
+  }
+  QueueUserWorkItem(AppendTextWorker, line, WT_EXECUTEDEFAULT);
 }
 
 static void _cdecl ShowClientExited(void* context,
@@ -276,6 +310,7 @@ void RequestDump() {
   if (!handler->WriteMinidump()) {
     MessageBoxW(NULL, L"Dump request failed", L"Dumper", MB_OK);
   }
+  k_custom_info_entries[1].set_value(L"1.1");
 }
 
 void CleanUp() {
@@ -427,6 +462,8 @@ int APIENTRY _tWinMain(HINSTANCE instance,
   cs_edit = new CRITICAL_SECTION();
   InitializeCriticalSection(cs_edit);
 
+  CustomClientInfo custom_info = {k_custom_info_entries, k_custom_info_count};
+
   // This is needed for CRT to not show dialog for invalid param
   // failures and instead let the code handle it.
   _CrtSetReportMode(_CRT_ASSERT, 0);
@@ -436,7 +473,8 @@ int APIENTRY _tWinMain(HINSTANCE instance,
                                  NULL,
                                  ExceptionHandler::HANDLER_ALL,
                                  MiniDumpNormal,
-                                 kPipeName);
+                                 kPipeName,
+                                 &custom_info);
 
   // Initialize global strings.
   LoadString(instance, IDS_APP_TITLE, title, kMaxLoadString);

@@ -34,6 +34,7 @@
 
 #include "common/windows/string_utils-inl.h"
 
+#include "client/windows/common/ipc_protocol.h"
 #include "client/windows/handler/exception_handler.h"
 #include "common/windows/guid_string.h"
 
@@ -52,14 +53,16 @@ ExceptionHandler::ExceptionHandler(const wstring& dump_path,
                                    void* callback_context,
                                    int handler_types,
                                    MINIDUMP_TYPE dump_type,
-                                   const wchar_t* pipe_name) {
+                                   const wchar_t* pipe_name,
+                                   const CustomClientInfo* custom_info) {
   Initialize(dump_path,
              filter,
              callback,
              callback_context,
              handler_types,
              dump_type,
-             pipe_name);
+             pipe_name,
+             custom_info);
 }
 
 ExceptionHandler::ExceptionHandler(const wstring &dump_path,
@@ -73,6 +76,7 @@ ExceptionHandler::ExceptionHandler(const wstring &dump_path,
              callback_context,
              handler_types,
              MiniDumpNormal,
+             NULL,
              NULL);
 }
 
@@ -82,7 +86,8 @@ void ExceptionHandler::Initialize(const wstring& dump_path,
                                   void* callback_context,
                                   int handler_types,
                                   MINIDUMP_TYPE dump_type,
-                                  const wchar_t* pipe_name) {
+                                  const wchar_t* pipe_name,
+                                  const CustomClientInfo* custom_info) {
   filter_ = filter;
   callback_ = callback;
   callback_context_ = callback_context;
@@ -112,7 +117,9 @@ void ExceptionHandler::Initialize(const wstring& dump_path,
   // Attempt to use out-of-process if user has specified pipe name.
   if (pipe_name != NULL) {
     scoped_ptr<CrashGenerationClient> client(
-        new CrashGenerationClient(pipe_name, dump_type_));
+      new CrashGenerationClient(pipe_name,
+                                dump_type_,
+                                custom_info));
 
     // If successful in registering with the monitoring process,
     // there is no need to setup in-process crash generation.

@@ -220,7 +220,7 @@ bool CrashGenerationServer::Start() {
                           kInBufferSize,
                           0,
                           pipe_sec_attrs_);
-  if (!pipe_) {
+  if (pipe_ == INVALID_HANDLE_VALUE) {
     return false;
   }
 
@@ -400,7 +400,8 @@ void CrashGenerationServer::HandleReadDoneState() {
                      msg_.dump_type,
                      msg_.thread_id,
                      msg_.exception_pointers,
-                     msg_.assert_info));
+                     msg_.assert_info,
+                     msg_.custom_client_info));
 
   if (!client_info->Initialize()) {
     server_state_ = IPC_SERVER_STATE_DISCONNECTING;
@@ -726,6 +727,7 @@ void CALLBACK CrashGenerationServer::OnPipeConnected(void* context, BOOLEAN) {
 void CALLBACK CrashGenerationServer::OnDumpRequest(void* context, BOOLEAN) {
   assert(context);
   ClientInfo* client_info = reinterpret_cast<ClientInfo*>(context);
+  client_info->PopulateCustomInfo();
 
   CrashGenerationServer* crash_server = client_info->crash_server();
   assert(crash_server);

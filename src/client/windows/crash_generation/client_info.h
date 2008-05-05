@@ -32,7 +32,9 @@
 
 #include <Windows.h>
 #include <DbgHelp.h>
+#include "client/windows/common/ipc_protocol.h"
 #include "google_breakpad/common/minidump_format.h"
+#include "processor/scoped_ptr.h"
 
 namespace google_breakpad {
 
@@ -49,7 +51,8 @@ class ClientInfo {
              MINIDUMP_TYPE dump_type,
              DWORD* thread_id,
              EXCEPTION_POINTERS** ex_info,
-             MDRawAssertionInfo* assert_info);
+             MDRawAssertionInfo* assert_info,
+             const CustomClientInfo& custom_client_info);
 
   ~ClientInfo();
 
@@ -85,6 +88,10 @@ class ClientInfo {
   bool Initialize();
   bool GetClientExceptionInfo(EXCEPTION_POINTERS** ex_info) const;
   bool GetClientThreadId(DWORD* thread_id) const;
+  // Reads the custom information from the client process address space.
+  bool PopulateCustomInfo();
+  // Returns the client custom information.
+  int GetCustomInfo(CustomInfoEntry const** custom_info) const;
 
  private:
   // Crash generation server.
@@ -112,6 +119,14 @@ class ClientInfo {
   // WARNING: Do not dereference these pointers as they are pointers
   // in the address space of another process.
   MDRawAssertionInfo* assert_info_;
+
+  // Custom information about the client.
+  CustomClientInfo custom_client_info_;
+
+  // Contains the custom client info entries read from the client process
+  // memory. This will be populated only if the method GetClientCustomInfo
+  // is called.
+  scoped_array<CustomInfoEntry> custom_info_entries_;
 
   // Address of a variable in the client process address space that
   // will contain the thread id of the crashing client thread.

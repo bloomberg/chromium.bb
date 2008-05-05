@@ -28,6 +28,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "client/windows/crash_generation/client_info.h"
+#include "client/windows/common/ipc_protocol.h"
 
 namespace google_breakpad {
 
@@ -36,12 +37,14 @@ ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
                        MINIDUMP_TYPE dump_type,
                        DWORD* thread_id,
                        EXCEPTION_POINTERS** ex_info,
-                       MDRawAssertionInfo* assert_info)
+                       MDRawAssertionInfo* assert_info,
+                       const CustomClientInfo& custom_client_info)
     : crash_server_(crash_server),
       pid_(pid),
       dump_type_(dump_type),
       ex_info_(ex_info),
       assert_info_(assert_info),
+      custom_client_info_(custom_client_info),
       thread_id_(thread_id),
       process_handle_(NULL),
       dump_requested_handle_(NULL),
@@ -117,8 +120,7 @@ bool ClientInfo::UnregisterWaits() {
   return success;
 }
 
-bool ClientInfo::GetClientExceptionInfo(
-    EXCEPTION_POINTERS** ex_info) const {
+bool ClientInfo::GetClientExceptionInfo(EXCEPTION_POINTERS** ex_info) const {
   SIZE_T bytes_count = 0;
   if (!ReadProcessMemory(process_handle_,
                          ex_info_,
@@ -142,6 +144,34 @@ bool ClientInfo::GetClientThreadId(DWORD* thread_id) const {
   }
 
   return bytes_count == sizeof(*thread_id);
+}
+
+bool ClientInfo::PopulateCustomInfo() {
+  SIZE_T bytes_count = 0;
+  SIZE_T read_count = sizeof(CustomInfoEntry) * custom_client_info_.count;
+
+  // If the scoped array for custom info already has an array, it will be
+  // the same size as what we need. This is because the number of custom info
+  // entries is always the same. So allocate memory only if scoped array has
+  // a NULL pointer.
+  if (!custom_info_entries_.get()) {
+    custom_info_entries_.reset(new CustomInfoEntry[custom_client_info_.count]);
+  }
+
+  if (!ReadProcessMemory(process_handle_,
+                         custom_client_info_.entries,
+                         custom_info_entries_.get(),
+                         read_count,
+                         &bytes_count)) {
+    return false;
+  }
+
+  return bytes_count == read_count;
+}
+
+int ClientInfo::GetCustomInfo(CustomInfoEntry const** custom_info) const {
+  *custom_info = custom_info_entries_.get();
+  return custom_client_info_.count;
 }
 
 }  // namespace google_breakpad
