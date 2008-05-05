@@ -470,6 +470,7 @@ int i915_emit_box(struct drm_device * dev,
 		return -EFAULT;
 	}
 
+	DRM_INFO ("box %d,%d - %d,%d\n", box.x1, box.y1, box.x2, box.y2);
 	if (box.y2 <= box.y1 || box.x2 <= box.x1 || box.y2 <= 0 || box.x2 <= 0) {
 		DRM_ERROR("Bad box %d,%d..%d,%d\n",
 			  box.x1, box.y1, box.x2, box.y2);

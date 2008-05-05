@@ -192,6 +192,7 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		if (obj_priv->gtt_space == NULL)
 			return -ENOMEM;
 	}
+	entry->buffer_offset = obj_priv->gtt_offset;
 
 	relocs = (struct drm_i915_gem_relocation_entry __user *) (uintptr_t) entry->relocs_ptr;
 	/* Apply the relocations, using the GTT aperture to avoid cache
@@ -306,20 +307,31 @@ i915_gem_sync_and_evict(struct drm_device *dev)
 
 static int
 i915_dispatch_gem_execbuffer (struct drm_device * dev,
-			      struct drm_i915_gem_execbuffer * exec)
+			      struct drm_i915_gem_execbuffer * exec,
+			      uint64_t exec_offset)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_clip_rect __user *boxes = (struct drm_clip_rect __user *) (uintptr_t) exec->cliprects_ptr;
 	int nbox = exec->num_cliprects;
 	int i = 0, count;
+	uint32_t	exec_start, exec_len;
 	RING_LOCALS;
 
-	if ((exec->batch_start_offset | exec->batch_len) & 0x7) {
+	exec_start = (uint32_t) exec_offset + exec->batch_start_offset;
+	exec_len = (uint32_t) exec->batch_len;
+	
+	if ((exec_start | exec_len) & 0x7) {
 		DRM_ERROR("alignment\n");
 		return -EINVAL;
 	}
 
 	i915_kernel_lost_context(dev);
+
+	DRM_INFO ("execbuffer at %x+%d len %d\n",
+		  (uint32_t) exec_offset, exec->batch_start_offset, exec_len);
+	
+	if (!exec_start)
+		return -EINVAL;
 
 	count = nbox ? nbox : 1;
 
@@ -335,18 +347,18 @@ i915_dispatch_gem_execbuffer (struct drm_device * dev,
 			BEGIN_LP_RING(2);
 			if (IS_I965G(dev)) {
 				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6) | MI_BATCH_NON_SECURE_I965);
-				OUT_RING(exec->batch_start_offset);
+				OUT_RING(exec_start);
 			} else {
 				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6));
-				OUT_RING(exec->batch_start_offset | MI_BATCH_NON_SECURE);
+				OUT_RING(exec_start | MI_BATCH_NON_SECURE);
 			}
 			ADVANCE_LP_RING();
 
 		} else {
 			BEGIN_LP_RING(4);
 			OUT_RING(MI_BATCH_BUFFER);
-			OUT_RING(exec->batch_start_offset | MI_BATCH_NON_SECURE);
-			OUT_RING(exec->batch_start_offset + exec->batch_len - 4);
+			OUT_RING(exec_start | MI_BATCH_NON_SECURE);
+			OUT_RING(exec_start + exec_len - 4);
 			OUT_RING(0);
 			ADVANCE_LP_RING();
 		}
@@ -364,6 +376,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	struct drm_i915_gem_validate_entry *validate_list;
 	struct drm_gem_object **object_list;
 	int ret, i;
+	uint64_t exec_offset;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -410,12 +423,22 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			goto err;
 		}
 
-		i915_gem_reloc_and_validate_object(object_list[i], file_priv,
-						   &validate_list[i]);
+		ret = i915_gem_reloc_and_validate_object(object_list[i], file_priv,
+							 &validate_list[i]);
+		if (ret) {
+			DRM_ERROR ("reloc and validate failed %d\n", ret);
+			goto err;
+		}
 	}
 
+	exec_offset = validate_list[args->buffer_count - 1].buffer_offset;
+
+	/* make sure all previous memory operations have passed */
+	DRM_MEMORYBARRIER();
+	drm_agp_chipset_flush(dev);
+
 	/* Exec the batchbuffer */
-	ret = i915_dispatch_gem_execbuffer (dev, args);
+	ret = i915_dispatch_gem_execbuffer (dev, args, exec_offset);
 	if (ret)
 	{
 		DRM_ERROR ("dispatch failed %d\n", ret);
@@ -423,12 +446,6 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	/* Copy the new buffer offsets back to the user's validate list. */
-	for (i = 0; i < args->buffer_count; i++) {
-		struct drm_i915_gem_object *obj_priv =
-			object_list[i]->driver_private;
-
-		validate_list[i].buffer_offset = obj_priv->gtt_offset;
-	}
 	ret = copy_to_user((struct drm_i915_relocation_entry __user*)(uintptr_t)
 			   args->buffers_ptr,
 			   validate_list,
