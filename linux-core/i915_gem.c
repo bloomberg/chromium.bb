@@ -285,6 +285,9 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 			return -EINVAL;
 		}
 
+		if (target_obj_priv->gtt_offset == reloc.presumed_offset)
+			continue;
+
 		/* Map the page containing the relocation we're going to
 		 * perform.
 		 */
