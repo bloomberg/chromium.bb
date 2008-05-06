@@ -310,6 +310,14 @@ struct drm_nouveau_private {
 	struct nouveau_config config;
 
 	struct list_head gpuobj_list;
+
+	struct nouveau_suspend_resume {
+		uint32_t fifo_mode;
+		uint32_t graph_ctx_control;
+		uint32_t graph_state;
+		uint32_t *ramin_copy;
+		uint64_t ramin_size;
+	} susres;
 };
 
 #define NOUVEAU_CHECK_INITIALISED_WITH_RETURN do {         \
@@ -344,6 +352,10 @@ extern void nouveau_wait_for_idle(struct drm_device *);
 extern int  nouveau_card_init(struct drm_device *);
 extern int  nouveau_ioctl_card_init(struct drm_device *, void *data,
 				    struct drm_file *);
+extern int  nouveau_ioctl_suspend(struct drm_device *, void *data,
+				  struct drm_file *);
+extern int  nouveau_ioctl_resume(struct drm_device *, void *data,
+				 struct drm_file *);
 
 /* nouveau_mem.c */
 extern int  nouveau_mem_init_heap(struct mem_block **, uint64_t start,
@@ -391,6 +403,7 @@ extern int  nouveau_fifo_alloc(struct drm_device *dev,
 			       struct mem_block *pushbuf,
 			       uint32_t fb_ctxdma, uint32_t tt_ctxdma);
 extern void nouveau_fifo_free(struct nouveau_channel *);
+extern int  nouveau_channel_idle(struct nouveau_channel *chan);
 
 /* nouveau_object.c */
 extern int  nouveau_gpuobj_early_init(struct drm_device *);

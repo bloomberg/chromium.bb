@@ -1,5 +1,6 @@
 /*
  * Copyright 2005 Stephane Marchesin
+ * Copyright 2008 Stuart Bennett
  * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -697,4 +698,173 @@ void nouveau_wait_for_idle(struct drm_device *dev)
 			          status);
 	}
 	}
+}
+
+static int nouveau_suspend(struct drm_device *dev)
+{
+	struct mem_block *p;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_suspend_resume *susres = &dev_priv->susres;
+	struct nouveau_engine *engine = &dev_priv->Engine;
+	int i;
+
+	drm_free(susres->ramin_copy, susres->ramin_size, DRM_MEM_DRIVER);
+	susres->ramin_size = 0;
+	list_for_each(p, dev_priv->ramin_heap)
+		if (p->file_priv && (p->start + p->size) > susres->ramin_size)
+			susres->ramin_size = p->start + p->size;
+	if (!(susres->ramin_copy = drm_alloc(susres->ramin_size, DRM_MEM_DRIVER))) {
+		DRM_ERROR("Couldn't alloc RAMIN backing for suspend\n");
+		return -ENOMEM;
+	}
+
+	for (i = 0; i < engine->fifo.channels; i++) {
+		uint64_t t_start = engine->timer.read(dev);
+
+		if (dev_priv->fifos[i] == NULL)
+			continue;
+
+		/* Give the channel a chance to idle, wait 2s (hopefully) */
+		while (!nouveau_channel_idle(dev_priv->fifos[i]))
+			if (engine->timer.read(dev) - t_start > 2000000000ULL) {
+				DRM_ERROR("Failed to idle channel %d before"
+					  "suspend.", dev_priv->fifos[i]->id);
+				return -EBUSY;
+			}
+	}
+	nouveau_wait_for_idle(dev);
+
+	NV_WRITE(NV04_PGRAPH_FIFO, 0);
+	/* disable the fifo caches */
+	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH,
+		 NV_READ(NV04_PFIFO_CACHE1_DMA_PUSH) & ~1);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000000);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
+
+	susres->fifo_mode = NV_READ(NV04_PFIFO_MODE);
+
+	if (dev_priv->card_type >= NV_10) {
+		susres->graph_state = NV_READ(NV10_PGRAPH_STATE);
+		susres->graph_ctx_control = NV_READ(NV10_PGRAPH_CTX_CONTROL);
+	} else {
+		susres->graph_state = NV_READ(NV04_PGRAPH_STATE);
+		susres->graph_ctx_control = NV_READ(NV04_PGRAPH_CTX_CONTROL);
+	}
+
+	engine->fifo.save_context(dev_priv->fifos[engine->fifo.channel_id(dev)]);
+	engine->graph.save_context(dev_priv->fifos[engine->fifo.channel_id(dev)]);
+	nouveau_wait_for_idle(dev);
+
+	for (i = 0; i < susres->ramin_size / 4; i++)
+		susres->ramin_copy[i] = NV_RI32(i << 2);
+
+	/* reenable the fifo caches */
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH,
+		 NV_READ(NV04_PFIFO_CACHE1_DMA_PUSH) | 1);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000001);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000001);
+	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
+	NV_WRITE(NV04_PGRAPH_FIFO, 1);
+
+	return 0;
+}
+
+static int nouveau_resume(struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct nouveau_suspend_resume *susres = &dev_priv->susres;
+	struct nouveau_engine *engine = &dev_priv->Engine;
+	int i;
+
+	if (!susres->ramin_copy)
+		return -EINVAL;
+
+	DRM_DEBUG("Doing resume\n");
+
+	if (dev_priv->gart_info.type == NOUVEAU_GART_AGP) {
+		struct drm_agp_info info;
+		struct drm_agp_mode mode;
+
+		/* agp bridge drivers don't re-enable agp on resume. lame. */
+		if ((i = drm_agp_info(dev, &info))) {
+			DRM_ERROR("Unable to get AGP info: %d\n", i);
+			return i;
+		}
+		mode.mode = info.mode;
+		if ((i = drm_agp_enable(dev, mode))) {
+			DRM_ERROR("Unable to enable AGP: %d\n", i);
+			return i;
+		}
+	}
+
+	for (i = 0; i < susres->ramin_size / 4; i++)
+		NV_WI32(i << 2, susres->ramin_copy[i]);
+
+	engine->mc.init(dev);
+	engine->timer.init(dev);
+	engine->fb.init(dev);
+	engine->graph.init(dev);
+	engine->fifo.init(dev);
+
+	NV_WRITE(NV04_PGRAPH_FIFO, 0);
+	/* disable the fifo caches */
+	NV_WRITE(NV03_PFIFO_CACHES, 0x00000000);
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH,
+		 NV_READ(NV04_PFIFO_CACHE1_DMA_PUSH) & ~1);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000000);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000000);
+
+	/* PMC power cycling PFIFO in init clobbers some of the stuff stored in
+	 * PRAMIN (such as NV04_PFIFO_CACHE1_DMA_INSTANCE). this is unhelpful
+	 */
+	for (i = 0; i < susres->ramin_size / 4; i++)
+		NV_WI32(i << 2, susres->ramin_copy[i]);
+
+	engine->fifo.load_context(dev_priv->fifos[0]);
+	NV_WRITE(NV04_PFIFO_MODE, susres->fifo_mode);
+
+	engine->graph.load_context(dev_priv->fifos[0]);
+	nouveau_wait_for_idle(dev);
+
+	if (dev_priv->card_type >= NV_10) {
+		NV_WRITE(NV10_PGRAPH_STATE, susres->graph_state);
+		NV_WRITE(NV10_PGRAPH_CTX_CONTROL, susres->graph_ctx_control);
+	} else {
+		NV_WRITE(NV04_PGRAPH_STATE, susres->graph_state);
+		NV_WRITE(NV04_PGRAPH_CTX_CONTROL, susres->graph_ctx_control);
+	}
+
+	/* reenable the fifo caches */
+	NV_WRITE(NV04_PFIFO_CACHE1_DMA_PUSH,
+		 NV_READ(NV04_PFIFO_CACHE1_DMA_PUSH) | 1);
+	NV_WRITE(NV03_PFIFO_CACHE1_PUSH0, 0x00000001);
+	NV_WRITE(NV04_PFIFO_CACHE1_PULL0, 0x00000001);
+	NV_WRITE(NV03_PFIFO_CACHES, 0x00000001);
+	NV_WRITE(NV04_PGRAPH_FIFO, 0x1);
+
+	if (dev->irq_enabled)
+		nouveau_irq_postinstall(dev);
+
+	drm_free(susres->ramin_copy, susres->ramin_size, DRM_MEM_DRIVER);
+	susres->ramin_copy = NULL;
+	susres->ramin_size = 0;
+
+	return 0;
+}
+
+int nouveau_ioctl_suspend(struct drm_device *dev, void *data,
+				 struct drm_file *file_priv)
+{
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
+	return nouveau_suspend(dev);
+}
+
+int nouveau_ioctl_resume(struct drm_device *dev, void *data,
+				struct drm_file *file_priv)
+{
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
+	return nouveau_resume(dev);
 }
