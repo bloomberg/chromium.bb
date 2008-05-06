@@ -545,7 +545,7 @@ void i915_user_irq_off(drm_i915_private_t *dev_priv)
 }
 
 
-static int i915_wait_irq(struct drm_device * dev, int irq_nr)
+int i915_wait_irq(struct drm_device * dev, int irq_nr)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int ret = 0;
