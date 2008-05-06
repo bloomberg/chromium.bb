@@ -61,7 +61,6 @@ i915_gem_object_free_page_list(struct drm_gem_object *obj)
 	
 	for (i = 0; i < page_count; i++) {
 		if (obj_priv->page_list[i] != NULL) {
-			unlock_page (obj_priv->page_list[i]);
 			page_cache_release (obj_priv->page_list[i]);
 		}
 	}
@@ -109,7 +108,7 @@ i915_gem_dump_object (struct drm_gem_object *obj, int len, const char *where)
 
 	DRM_INFO ("%s: object at offset %08x\n", where, obj_priv->gtt_offset);
 	for (i = 0; i < len/4; i++)
-		DRM_INFO ("%3d: mem %08x gtt %08x\n", i, mem[i], readl(gtt + i));
+		DRM_INFO ("%04x: mem %08x gtt %08x\n", i * 4, mem[i], readl(gtt + i));
 	iounmap (gtt);
 	kunmap_atomic (mem, KM_USER0);
 }
@@ -173,6 +172,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 			obj_priv->gtt_space = NULL;
 			return -ENOMEM;
 		}
+		unlock_page (obj_priv->page_list[i]);
 	}
 	
 	drm_ttm_cache_flush (obj_priv->page_list, page_count);
