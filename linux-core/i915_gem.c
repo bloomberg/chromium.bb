@@ -74,6 +74,31 @@ i915_gem_object_free_page_list(struct drm_gem_object *obj)
 }
 
 /**
+ * Ensures that all rendering to the object has completed and the object is
+ * safe to unbind from the GTT.
+ */
+static int
+i915_gem_object_wait_rendering(struct drm_gem_object *obj)
+{
+	struct drm_device *dev = obj->dev;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	int ret;
+
+	/* If there is rendering queued on the buffer being evicted, wait for
+	 * it.
+	 */
+	if (obj_priv->last_rendering_cookie != 0) {
+		ret = i915_wait_irq(dev, obj_priv->last_rendering_cookie);
+		if (ret != 0)
+			return ret;
+		/* Clear it now that we know it's passed. */
+		obj_priv->last_rendering_cookie = 0;
+	}
+
+	return 0;
+}
+
+/**
  * Unbinds an object from the GTT aperture.
  */
 static void
@@ -88,6 +113,8 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	if (obj_priv->gtt_space == NULL)
 		return;
 
+	i915_gem_object_wait_rendering(obj);
+
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);
 		drm_free_agp(obj_priv->agp_mem, obj->size / PAGE_SIZE);
@@ -97,8 +124,10 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 
 	drm_memrange_put_block(obj_priv->gtt_space);
 	obj_priv->gtt_space = NULL;
+	list_del_init(&obj_priv->gtt_lru_entry);
 }
 
+#if 0
 static void
 i915_gem_dump_page (struct page *page, uint32_t start, uint32_t end, uint32_t bias, uint32_t mark)
 {
@@ -139,6 +168,39 @@ i915_gem_dump_object (struct drm_gem_object *obj, int len, const char *where, ui
 		}
 	}
 }
+#endif
+
+static int
+i915_gem_evict_something(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+	int ret;
+
+	/* Find the LRU buffer. */
+	BUG_ON(!list_empty(&dev_priv->mm.gtt_lru));
+	obj_priv = list_entry(dev_priv->mm.gtt_lru.prev,
+			      struct drm_i915_gem_object,
+			      gtt_lru_entry);
+	obj = obj_priv->obj;
+
+	/* Only unpinned buffers should be on this list. */
+	BUG_ON(obj_priv->pin_count != 0);
+
+	/* Do this separately from the wait_rendering in
+	 * i915_gem_object_unbind() because we want to catch interrupts and
+	 * return.
+	 */
+	ret = i915_gem_object_wait_rendering(obj);
+	if (ret != 0)
+		return ret;
+
+	/* Wait on the rendering and unbind the buffer. */
+	i915_gem_object_unbind(obj);
+
+	return 0;
+}
 
 /**
  * Finds free space in the GTT aperture and binds the object there.
@@ -150,7 +212,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	struct drm_memrange_node *free_space;
-	int page_count, i;
+	int page_count, i, ret;
 
 	if (alignment == 0)
 		alignment = PAGE_SIZE;
@@ -159,18 +221,31 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		return -EINVAL;
 	}
 
+ search_free:
 	free_space = drm_memrange_search_free(&dev_priv->mm.gtt_space,
 					      obj->size,
 					      alignment, 0);
-	if (free_space == NULL)
-		return -ENOMEM;
-	obj_priv->gtt_space = drm_memrange_get_block(free_space,
-						     obj->size,
-						     alignment);
-	if (obj_priv->gtt_space == NULL)
-		return -ENOMEM;
-	obj_priv->gtt_space->private = obj;
-	obj_priv->gtt_offset = obj_priv->gtt_space->start;
+	if (free_space != NULL) {
+		obj_priv->gtt_space =
+			drm_memrange_get_block(free_space, obj->size,
+					       alignment);
+		if (obj_priv->gtt_space != NULL) {
+			obj_priv->gtt_space->private = obj;
+			obj_priv->gtt_offset = obj_priv->gtt_space->start;
+		}
+	}
+	if (obj_priv->gtt_space == NULL) {
+		/* If the gtt is empty and we're still having trouble
+		 * fitting our object in, we're out of memory.
+		 */
+		if (list_empty(&dev_priv->mm.gtt_lru))
+			return -ENOMEM;
+
+		ret = i915_gem_evict_something(dev);
+		if (ret != 0)
+			return ret;
+		goto search_free;
+	}
 
 #if WATCH_BUF
 	DRM_INFO ("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
@@ -229,6 +304,7 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 				   struct drm_i915_gem_validate_entry *entry)
 {
 	struct drm_device *dev = obj->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_relocation_entry reloc;
 	struct drm_i915_gem_relocation_entry __user *relocs;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
@@ -243,6 +319,12 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 			return -ENOMEM;
 	}
 	entry->buffer_offset = obj_priv->gtt_offset;
+
+	if (obj_priv->pin_count == 0) {
+		/* Move our buffer to the head of the LRU. */
+		list_del_init(&obj_priv->gtt_lru_entry);
+		list_add(&obj_priv->gtt_lru_entry, &dev_priv->mm.gtt_lru);
+	}
 
 	relocs = (struct drm_i915_gem_relocation_entry __user *) (uintptr_t) entry->relocs_ptr;
 	/* Apply the relocations, using the GTT aperture to avoid cache
@@ -331,8 +413,8 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 	return 0;
 }
 
-static int
-i915_gem_sync(struct drm_device *dev)
+static void
+i915_gem_flush(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
@@ -341,8 +423,6 @@ i915_gem_sync(struct drm_device *dev)
 	OUT_RING(CMD_MI_FLUSH | MI_READ_FLUSH | MI_EXE_FLUSH);
 	OUT_RING(0); /* noop */
 	ADVANCE_LP_RING();
-
-	return i915_quiescent(dev);
 }
 
 static int
@@ -412,6 +492,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	struct drm_gem_object **object_list;
 	int ret, i;
 	uint64_t exec_offset;
+	uint32_t cookie;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -420,14 +501,6 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		  (int) args->buffers_ptr, args->buffer_count, args->batch_len);
 #endif
 	i915_kernel_lost_context(dev);
-
-	/* Big hammer: flush and idle the hardware so we can map things in/out.
-	 */
-	ret = i915_gem_sync(dev);
-	if (ret != 0) {
-		DRM_ERROR ("i915_gem_sync failed %d\n", ret);
-		return ret;
-	}
 
 	/* Copy in the validate list from userland */
 	validate_list = drm_calloc(sizeof(*validate_list), args->buffer_count,
@@ -468,6 +541,21 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		}
 	}
 
+	for (i = 0; i < args->buffer_count; i++) {
+		struct drm_gem_object *obj = object_list[i];
+		struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
+		if (obj_priv->gtt_space == NULL) {
+			/* We evicted the buffer in the process of validating
+			 * our set of buffers in.  We could try to recover by
+			 * kicking them everything out and trying again from
+			 * the start.
+			 */
+			ret = -ENOMEM;
+			goto err;
+		}
+	}
+
 	exec_offset = validate_list[args->buffer_count - 1].buffer_offset;
 
 	/* make sure all previous memory operations have passed */
@@ -487,6 +575,25 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		goto err;
 	}
 
+	/* Flush the rendering.  We want this flush to go away, which will
+	 * require intelligent cache management.
+	 */
+	i915_gem_flush(dev);
+
+	/* Get a cookie representing the flush of the current buffer, which we
+	 * can wait on.  We would like to mitigate these interrupts, likely by
+	 * only flushing occasionally (so that we have *some* interrupts
+	 * representing completion of buffers that we can wait on when trying
+	 * to clear up gtt space).
+	 */
+	cookie = i915_emit_irq(dev);
+	for (i = 0; i < args->buffer_count; i++) {
+		struct drm_gem_object *obj = object_list[i];
+		struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
+		obj_priv->last_rendering_cookie = cookie;
+	}
+
 	/* Copy the new buffer offsets back to the user's validate list. */
 	ret = copy_to_user((struct drm_i915_relocation_entry __user*)(uintptr_t)
 			   args->buffers_ptr,
@@ -495,28 +602,6 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	if (ret)
 		DRM_ERROR ("failed to copy %d validate entries back to user (%d)\n",
 			   args->buffer_count, ret);
-
-	/* Clean up and return */
-	ret = i915_gem_sync(dev);
-	if (ret)
-	{
-		drm_i915_private_t *dev_priv = dev->dev_private;
-		uint32_t acthd = I915_READ(IS_I965G(dev) ? I965REG_ACTHD : I915REG_ACTHD);
-		DRM_ERROR ("failed to sync %d acthd %08x\n", ret, acthd);
-		i915_gem_dump_object (object_list[args->buffer_count - 1],
-				      args->batch_len,
-				      __FUNCTION__,
-				      acthd);
-	}
-
-	/* Evict all the buffers we moved in, leaving room for the next guy. */
-	for (i = 0; i < args->buffer_count; i++) {
-		struct drm_gem_object *obj = object_list[i];
-		struct drm_i915_gem_object *obj_priv = obj->driver_private;
-
-		if (obj_priv->pin_count == 0)
-			i915_gem_object_unbind(obj);
-	}
 err:
 	if (object_list != NULL) {
 		for (i = 0; i < args->buffer_count; i++)
@@ -595,7 +680,7 @@ int i915_gem_init_object(struct drm_gem_object *obj)
 		return -ENOMEM;
 
 	obj->driver_private = obj_priv;
-
+	INIT_LIST_HEAD(&obj_priv->gtt_lru_entry);
 	return 0;
 }
 

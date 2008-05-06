@@ -244,6 +244,8 @@ typedef struct drm_i915_private {
 
 	struct {
 		struct drm_memrange gtt_space;
+		/** LRU List of unpinned objects in the GTT. */
+		struct list_head gtt_lru;
 	} mm;
 } drm_i915_private_t;
 
@@ -256,8 +258,12 @@ enum intel_chip_family {
 
 /** driver private structure attached to each drm_gem_object */
 struct drm_i915_gem_object {
+	struct drm_gem_object *obj;
+
 	/** Current space allocated to this object in the GTT, if any. */
 	struct drm_memrange_node *gtt_space;
+	/** This object's place on the GTT LRU list */
+	struct list_head gtt_lru_entry;
 
 	/** AGP memory structure for our GTT binding. */
 	DRM_AGP_MEM *agp_mem;
@@ -276,6 +282,9 @@ struct drm_i915_gem_object {
 
 	/** How many users have pinned this object in GTT space */
 	int pin_count;
+
+	/** Breadcrumb of last rendering to the buffer. */
+	uint32_t last_rendering_cookie;
 };
 
 extern struct drm_ioctl_desc i915_ioctls[];
@@ -318,6 +327,7 @@ extern int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 extern int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
 extern int i915_emit_irq(struct drm_device * dev);
+extern int i915_wait_irq(struct drm_device * dev, int irq_nr);
 extern int i915_enable_vblank(struct drm_device *dev, int crtc);
 extern void i915_disable_vblank(struct drm_device *dev, int crtc);
 extern u32 i915_get_vblank_counter(struct drm_device *dev, int crtc);
