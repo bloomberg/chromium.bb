@@ -30,6 +30,9 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
+#define WATCH_BUF  0
+#define WATCH_EXEC 0
+
 int
 i915_gem_init_ioctl(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
@@ -78,7 +81,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
-#if 0
+#if WATCH_BUF
 	DRM_INFO ("%s:%d %p\n", __FUNCTION__, __LINE__, obj);
 	DRM_INFO ("gtt_space %p\n", obj_priv->gtt_space);
 #endif
@@ -97,20 +100,44 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 }
 
 static void
-i915_gem_dump_object (struct drm_gem_object *obj, int len, const char *where)
+i915_gem_dump_page (struct page *page, uint32_t start, uint32_t end, uint32_t bias, uint32_t mark)
 {
-	struct drm_device *dev = obj->dev;
+	uint32_t *mem = kmap_atomic (page, KM_USER0);
+	int i;
+	for (i = start; i < end; i += 4)
+		DRM_INFO ("%08x: %08x%s\n",
+			  (int) (bias + i), mem[i / 4],
+			  (bias + i == mark) ? " ********" : "");
+	kunmap_atomic (mem, KM_USER0);
+	/* give syslog time to catch up */
+	msleep (1);
+}
+
+static void
+i915_gem_dump_object (struct drm_gem_object *obj, int len, const char *where, uint32_t mark)
+{
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-	uint32_t		*mem = kmap_atomic (obj_priv->page_list[0], KM_USER0);
-	volatile uint32_t	*gtt = ioremap(dev->agp->base + obj_priv->gtt_offset,
-					       PAGE_SIZE);
-	int			i;
+	int page;
 
 	DRM_INFO ("%s: object at offset %08x\n", where, obj_priv->gtt_offset);
-	for (i = 0; i < len/4; i++)
-		DRM_INFO ("%04x: mem %08x gtt %08x\n", i * 4, mem[i], readl(gtt + i));
-	iounmap (gtt);
-	kunmap_atomic (mem, KM_USER0);
+	for (page = 0; page < (len + PAGE_SIZE-1) / PAGE_SIZE; page++)
+	{
+		int page_len, chunk, chunk_len;
+
+		page_len = len - page * PAGE_SIZE;
+		if (page_len > PAGE_SIZE)
+			page_len = PAGE_SIZE;
+
+		for (chunk = 0; chunk < page_len; chunk += 128) {
+			chunk_len = page_len - chunk;
+			if (chunk_len > 128)
+				chunk_len = 128;
+			i915_gem_dump_page (obj_priv->page_list[page],
+					    chunk, chunk + chunk_len,
+					    obj_priv->gtt_offset + page * PAGE_SIZE,
+					    mark);
+		}
+	}
 }
 
 /**
@@ -145,7 +172,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	obj_priv->gtt_space->private = obj;
 	obj_priv->gtt_offset = obj_priv->gtt_space->start;
 
-#if 0
+#if WATCH_BUF
 	DRM_INFO ("Binding object of size %d at 0x%08x\n", obj->size, obj_priv->gtt_offset);
 #endif
 
@@ -274,7 +301,7 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 					   (reloc_offset & (PAGE_SIZE - 1)));
 		reloc_val = target_obj_priv->gtt_offset + reloc.delta;
 
-#if 0
+#if WATCH_BUF
 		DRM_INFO("Applied relocation: %p@0x%08x %08x -> %08x\n",
 			  obj, (unsigned int) reloc.offset,
 			  readl (reloc_entry), reloc_val);
@@ -285,7 +312,9 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		drm_gem_object_unreference (target_obj);
 	}
 
-/*	i915_gem_dump_object (obj, 128, __FUNCTION__); */
+#if WATCH_BUF
+	i915_gem_dump_object (obj, 128, __FUNCTION__, ~0);
+#endif
 	return 0;
 }
 
@@ -323,13 +352,6 @@ i915_dispatch_gem_execbuffer (struct drm_device * dev,
 		return -EINVAL;
 	}
 
-	i915_kernel_lost_context(dev);
-
-#if 0
-	DRM_INFO ("execbuffer at %x+%d len %d\n",
-		  (uint32_t) exec_offset, exec->batch_start_offset, exec_len);
-#endif
-	
 	if (!exec_start)
 		return -EINVAL;
 
@@ -380,9 +402,9 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
-#if 0
-	DRM_INFO ("buffers_ptr %d buffer_count %d\n",
-		  (int) args->buffers_ptr, args->buffer_count);
+#if WATCH_EXEC
+	DRM_INFO ("buffers_ptr %d buffer_count %d len %08x\n",
+		  (int) args->buffers_ptr, args->buffer_count, args->batch_len);
 #endif
 	i915_kernel_lost_context(dev);
 
@@ -437,6 +459,13 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	/* make sure all previous memory operations have passed */
 
+#if WATCH_EXEC
+	i915_gem_dump_object (object_list[args->buffer_count - 1],
+			      args->batch_len,
+			      __FUNCTION__,
+			      ~0);
+#endif
+	
 	/* Exec the batchbuffer */
 	ret = i915_dispatch_gem_execbuffer (dev, args, exec_offset);
 	if (ret)
@@ -457,7 +486,15 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	/* Clean up and return */
 	ret = i915_gem_sync(dev);
 	if (ret)
-		DRM_ERROR ("failed to sync %d\n", ret);
+	{
+		drm_i915_private_t *dev_priv = dev->dev_private;
+		uint32_t acthd = I915_READ(IS_I965G(dev) ? I965REG_ACTHD : I915REG_ACTHD);
+		DRM_ERROR ("failed to sync %d acthd %08x\n", ret, acthd);
+		i915_gem_dump_object (object_list[args->buffer_count - 1],
+				      args->batch_len,
+				      __FUNCTION__,
+				      acthd);
+	}
 
 	/* Evict all the buffers we moved in, leaving room for the next guy. */
 	for (i = 0; i < args->buffer_count; i++) {

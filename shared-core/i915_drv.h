@@ -544,6 +544,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define I915REG_INT_MASK_R	0x020a8
 #define I915REG_INT_ENABLE_R	0x020a0
 #define I915REG_INSTPM	        0x020c0
+#define I965REG_ACTHD		0x02074
+#define I915REG_ACTHD		0x020C8
 
 #define PIPEADSL		0x70000
 #define PIPEBDSL		0x71000
