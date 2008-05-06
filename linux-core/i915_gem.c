@@ -233,6 +233,8 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 	struct drm_i915_gem_relocation_entry __user *relocs;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int i;
+	uint32_t last_reloc_offset = -1;
+	void *reloc_page = NULL;
 
 	/* Choose the GTT offset for our buffer and put it there. */
 	if (obj_priv->gtt_space == NULL) {
@@ -249,7 +251,6 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 	for (i = 0; i < entry->relocation_count; i++) {
 		struct drm_gem_object *target_obj;
 		struct drm_i915_gem_object *target_obj_priv;
-		void *reloc_page;
 		uint32_t reloc_val, reloc_offset, *reloc_entry;
 		int ret;
 
@@ -288,13 +289,20 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		 * perform.
 		 */
 		reloc_offset = obj_priv->gtt_offset + reloc.offset;
-		reloc_page = ioremap(dev->agp->base +
-				     (reloc_offset & ~(PAGE_SIZE - 1)),
-				     PAGE_SIZE);
-		if (reloc_page == NULL)
-		{
-			drm_gem_object_unreference (target_obj);
-			return -ENOMEM;
+		if (reloc_page == NULL ||
+		    (last_reloc_offset & ~(PAGE_SIZE - 1)) !=
+		    (reloc_offset & ~(PAGE_SIZE - 1))) {
+			if (reloc_page != NULL)
+				iounmap(reloc_page);
+
+			reloc_page = ioremap(dev->agp->base +
+					     (reloc_offset & ~(PAGE_SIZE - 1)),
+					     PAGE_SIZE);
+			last_reloc_offset = reloc_offset;
+			if (reloc_page == NULL) {
+				drm_gem_object_unreference (target_obj);
+				return -ENOMEM;
+			}
 		}
 
 		reloc_entry = (uint32_t *)((char *)reloc_page +
@@ -308,9 +316,11 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 #endif
 		writel (reloc_val, reloc_entry);
 
-		iounmap(reloc_page);
 		drm_gem_object_unreference (target_obj);
 	}
+
+	if (reloc_page != NULL)
+		iounmap(reloc_page);
 
 #if WATCH_BUF
 	i915_gem_dump_object (obj, 128, __FUNCTION__, ~0);
