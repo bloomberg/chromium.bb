@@ -445,6 +445,28 @@ struct drm_i915_gem_relocation_entry {
 	uint64_t presumed_offset;
 };
 
+/**
+ * Intel memory domains
+ *
+ * Most of these just align with the various caches in
+ * the system and are used to flush and invalidate as
+ * objects end up cached in different domains.
+ *
+ * STOLEN is a domain for the stolen memory portion of the
+ * address space; those pages are accessible only through the
+ * GTT and, hence, look a lot like VRAM on a discrete card.
+ * We'll allow programs to move objects into stolen memory
+ * mostly as a way to demonstrate the VRAM capabilities of this
+ * API
+ */
+
+/* 0x00000001 is DRM_GEM_DOMAIN_CPU */
+#define DRM_GEM_DOMAIN_I915_RENDER	0x00000002	/* Render cache, used by 2D and 3D drawing */
+#define DRM_GEM_DOMAIN_I915_SAMPLER	0x00000004	/* Sampler cache, used by texture engine */
+#define DRM_GEM_DOMAIN_I915_COMMAND	0x00000008	/* Command queue, used to load batch buffers */
+#define DRM_GEM_DOMAIN_I915_INSTRUCTION	0x00000010	/* Instruction cache, used by shader programs */
+#define DRM_GEM_DOMAIN_I915_STOLEN	0x00000020	/* Stolen memory, needed by some objects */
+
 struct drm_i915_gem_validate_entry {
 	/**
 	 * User's handle for a buffer to be bound into the GTT for this
@@ -458,6 +480,11 @@ struct drm_i915_gem_validate_entry {
 	
 	/** Required alignment in graphics aperture */
 	uint64_t alignment;
+
+	/** Memory domains used in this execbuffer run */
+	uint32_t read_domains;
+	uint32_t write_domain;
+
 	/**
 	 * Returned value of the updated offset of the buffer, for future
 	 * presumed_offset writes.

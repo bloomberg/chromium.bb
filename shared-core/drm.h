@@ -1042,6 +1042,19 @@ struct drm_gem_open {
 	uint64_t size;
 };
 
+struct drm_gem_set_domain {
+	/** Handle for the object */
+	uint32_t handle;
+
+	/** New read domains */
+	uint32_t read_domains;
+
+	/** New write domain */
+	uint32_t write_domain;
+};
+
+#define DRM_GEM_DOMAIN_CPU		0x00000001
+
 /**
  * \name Ioctls Definitions
  */
@@ -1062,13 +1075,6 @@ struct drm_gem_open {
 #define DRM_IOCTL_GET_STATS             DRM_IOR( 0x06, struct drm_stats)
 #define DRM_IOCTL_SET_VERSION		DRM_IOWR(0x07, struct drm_set_version)
 #define DRM_IOCTL_MODESET_CTL           DRM_IOW(0x08,  struct drm_modeset_ctl)
-#define DRM_IOCTL_GEM_ALLOC		DRM_IOWR(0x09, struct drm_gem_alloc)
-#define DRM_IOCTL_GEM_UNREFERENCE	DRM_IOW(0x0a,  struct drm_gem_unreference)
-#define DRM_IOCTL_GEM_PREAD		DRM_IOW(0x0b,  struct drm_gem_pread)
-#define DRM_IOCTL_GEM_PWRITE		DRM_IOW(0x0c,  struct drm_gem_pwrite)
-#define DRM_IOCTL_GEM_MMAP		DRM_IOWR(0x0d, struct drm_gem_mmap)
-#define DRM_IOCTL_GEM_NAME		DRM_IOWR(0x0e, struct drm_gem_name)
-#define DRM_IOCTL_GEM_OPEN		DRM_IOWR(0x0f, struct drm_gem_open)
 
 #define DRM_IOCTL_SET_UNIQUE		DRM_IOW( 0x10, struct drm_unique)
 #define DRM_IOCTL_AUTH_MAGIC		DRM_IOW( 0x11, struct drm_auth)
@@ -1116,6 +1122,15 @@ struct drm_gem_open {
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, union drm_wait_vblank)
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, struct drm_update_draw)
+
+#define DRM_IOCTL_GEM_ALLOC		DRM_IOWR(0x09, struct drm_gem_alloc)
+#define DRM_IOCTL_GEM_UNREFERENCE	DRM_IOW (0x0a, struct drm_gem_unreference)
+#define DRM_IOCTL_GEM_PREAD		DRM_IOW (0x0b, struct drm_gem_pread)
+#define DRM_IOCTL_GEM_PWRITE		DRM_IOW (0x0c, struct drm_gem_pwrite)
+#define DRM_IOCTL_GEM_MMAP		DRM_IOWR(0x0d, struct drm_gem_mmap)
+#define DRM_IOCTL_GEM_NAME		DRM_IOWR(0x0e, struct drm_gem_name)
+#define DRM_IOCTL_GEM_OPEN		DRM_IOWR(0x0f, struct drm_gem_open)
+#define DRM_IOCTL_GEM_SET_DOMAIN	DRM_IOW (0xb7, struct drm_gem_set_domain)
 
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0xc0, struct drm_mm_init_arg)
 #define DRM_IOCTL_MM_TAKEDOWN           DRM_IOWR(0xc1, struct drm_mm_type_arg)

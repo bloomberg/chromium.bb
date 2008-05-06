@@ -643,6 +643,15 @@ struct drm_gem_object {
 	 */
 	int name;
 
+	/**
+	 * Memory domains. These monitor which caches contain read/write data
+	 * related to the object. When transitioning from one set of domains
+	 * to another, the driver is called to ensure that caches are suitably
+	 * flushed and invalidated
+	 */
+	uint32_t	read_domains;
+	uint32_t	write_domain;
+
 	void *driver_private;
 };
 
@@ -942,6 +951,8 @@ struct drm_device {
 	spinlock_t object_name_lock;
 	struct idr object_name_idr;
 	atomic_t object_count;
+	uint32_t invalidate_domains;	/* domains pending invalidation */
+	uint32_t flush_domains;		/* domains pending flush */
 	/*@} */
 };
 
@@ -1321,6 +1332,7 @@ static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 	return block->mm;
 }
 
+/* Graphics Execution Manager library functions (drm_gem.c) */
 int
 drm_gem_init (struct drm_device *dev);
 
@@ -1330,7 +1342,6 @@ drm_gem_object_free (struct kref *kref);
 void
 drm_gem_object_handle_free (struct kref *kref);
     
-/* Graphics Execution Manager library functions (drm_gem.c) */
 static inline void drm_gem_object_reference(struct drm_gem_object *obj)
 {
 	kref_get(&obj->refcount);
@@ -1384,6 +1395,17 @@ int drm_gem_open_ioctl(struct drm_device *dev, void *data,
 
 void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
 void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);
+
+
+/*
+ * Given the new read/write domains for an object,
+ * compute the invalidate/flush domains for the whole device.
+ *
+ */
+int drm_gem_object_set_domain (struct drm_gem_object *object,
+			       uint32_t read_domains,
+			       uint32_t write_domains);
+
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
