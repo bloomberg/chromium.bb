@@ -41,10 +41,14 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
 	u32 last_head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
+	u32 acthd_reg = IS_I965G(dev) ? I965REG_ACTHD : I915REG_ACTHD;
+	u32 last_acthd = I915_READ(acthd_reg);
+	u32 acthd;
 	int i;
 
-	for (i = 0; i < 10000; i++) {
+	for (i = 0; i < 100000; i++) {
 		ring->head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
+		acthd = I915_READ(acthd_reg);
 		ring->space = ring->head - (ring->tail + 8);
 		if (ring->space < 0)
 			ring->space += ring->Size;
@@ -54,8 +58,12 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 		if (ring->head != last_head)
 			i = 0;
 
+		if (acthd != last_acthd)
+			i = 0;
+
 		last_head = ring->head;
-		DRM_UDELAY(1);
+		last_acthd = acthd;
+		DRM_UDELAY(10);
 	}
 
 	return -EBUSY;
@@ -714,9 +722,19 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 int i915_quiescent(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+	int ret;
 
 	i915_kernel_lost_context(dev);
-	return i915_wait_ring(dev, dev_priv->ring.Size - 8, __FUNCTION__);
+	ret = i915_wait_ring(dev, dev_priv->ring.Size - 8, __FUNCTION__);
+	if (ret)
+	{
+		i915_kernel_lost_context (dev);
+		DRM_ERROR ("not quiescent head %08x tail %08x space %08x\n",
+			   dev_priv->ring.head,
+			   dev_priv->ring.tail,
+			   dev_priv->ring.space);
+	}
+	return ret;
 }
 
 static int i915_flush_ioctl(struct drm_device *dev, void *data,
