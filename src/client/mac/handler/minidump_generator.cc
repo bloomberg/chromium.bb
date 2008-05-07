@@ -210,7 +210,6 @@ bool MinidumpGenerator::Write(const char *path) {
         dir.CopyIndex(i, &local_dir);
     }
   }
-
   return result;
 }
 
@@ -218,8 +217,8 @@ size_t MinidumpGenerator::CalculateStackSize(mach_vm_address_t start_addr) {
   mach_vm_address_t stack_region_base = start_addr;
   mach_vm_size_t stack_region_size;
   natural_t nesting_level = 0;
-  vm_region_submap_info submap_info;
-  mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT;
+  vm_region_submap_info_64 submap_info;
+  mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
 
   vm_region_recurse_info_t region_info;
   region_info = reinterpret_cast<vm_region_recurse_info_t>(&submap_info);

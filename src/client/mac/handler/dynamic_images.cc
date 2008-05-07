@@ -55,8 +55,8 @@ static mach_vm_size_t GetMemoryRegionSize(task_port_t target_task,
   mach_vm_address_t region_base = (mach_vm_address_t)address;
   mach_vm_size_t region_size;
   natural_t nesting_level = 0;
-  vm_region_submap_info submap_info;
-  mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT;
+  vm_region_submap_info_64 submap_info;
+  mach_msg_type_number_t info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
 
   // Get information about the vm region containing |address|
   vm_region_recurse_info_t region_info;
