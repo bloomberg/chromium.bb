@@ -117,9 +117,9 @@ void ExceptionHandler::Initialize(const wstring& dump_path,
   // Attempt to use out-of-process if user has specified pipe name.
   if (pipe_name != NULL) {
     scoped_ptr<CrashGenerationClient> client(
-      new CrashGenerationClient(pipe_name,
-                                dump_type_,
-                                custom_info));
+        new CrashGenerationClient(pipe_name,
+                                  dump_type_,
+                                  custom_info));
 
     // If successful in registering with the monitoring process,
     // there is no need to setup in-process crash generation.

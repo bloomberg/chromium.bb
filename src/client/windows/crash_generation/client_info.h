@@ -88,10 +88,12 @@ class ClientInfo {
   bool Initialize();
   bool GetClientExceptionInfo(EXCEPTION_POINTERS** ex_info) const;
   bool GetClientThreadId(DWORD* thread_id) const;
+
   // Reads the custom information from the client process address space.
   bool PopulateCustomInfo();
+
   // Returns the client custom information.
-  int GetCustomInfo(CustomInfoEntry const** custom_info) const;
+  const CustomClientInfo& GetCustomInfo() const;
 
  private:
   // Crash generation server.

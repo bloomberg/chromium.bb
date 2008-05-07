@@ -63,12 +63,11 @@ BOOL InitInstance(HINSTANCE, int);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK About(HWND, UINT, WPARAM, LPARAM);
 
-static int k_custom_info_count = 2;
-static CustomInfoEntry k_custom_info_entries[] =
-    {
-      CustomInfoEntry(L"prod", L"CrashTestApp"),
-      CustomInfoEntry(L"ver", L"1.0"),
-    };
+static int kCustomInfoCount = 2;
+static CustomInfoEntry kCustomInfoEntries[] = {
+    CustomInfoEntry(L"prod", L"CrashTestApp"),
+    CustomInfoEntry(L"ver", L"1.0"),
+};
 
 static ExceptionHandler* handler = NULL;
 static CrashGenerationServer* crash_server = NULL;
@@ -175,6 +174,7 @@ bool ShowDumpResults(const wchar_t* dump_path,
                      MDRawAssertionInfo* assertion,
                      bool succeeded) {
   TCHAR* text = new TCHAR[kMaximumLineLength];
+  text[0] = _T('\0');
   int result = swprintf_s(text,
                           kMaximumLineLength,
                           TEXT("Dump generation request %s\r\n"),
@@ -190,6 +190,7 @@ bool ShowDumpResults(const wchar_t* dump_path,
 static void _cdecl ShowClientConnected(void* context,
                                        const ClientInfo* client_info) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
+  line[0] = _T('\0');
   int result = swprintf_s(line,
                           kMaximumLineLength,
                           L"Client connected:\t\t%d\r\n",
@@ -207,6 +208,7 @@ static void _cdecl ShowClientCrashed(void* context,
                                      const ClientInfo* client_info,
                                      const wstring* dump_path) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
+  line[0] = _T('\0');
   int result = swprintf_s(line,
                           kMaximumLineLength,
                           TEXT("Client requested dump:\t%d\r\n"),
@@ -219,23 +221,23 @@ static void _cdecl ShowClientCrashed(void* context,
 
   QueueUserWorkItem(AppendTextWorker, line, WT_EXECUTEDEFAULT);
 
-  const CustomInfoEntry* custom_info = NULL;
-  int custom_info_count = client_info->GetCustomInfo(&custom_info);
-  if (custom_info_count <= 0) {
+  const CustomClientInfo& custom_info = client_info->GetCustomInfo();
+  if (custom_info.count <= 0) {
     return;
   }
 
   wstring str_line;
-  for (int i = 0; i < custom_info_count; ++i) {
+  for (int i = 0; i < custom_info.count; ++i) {
     if (i > 0) {
       str_line += L", ";
     }
-    str_line += custom_info[i].name;
+    str_line += custom_info.entries[i].name;
     str_line += L": ";
-    str_line += custom_info[i].value;
+    str_line += custom_info.entries[i].value;
   }
 
   line = new TCHAR[kMaximumLineLength];
+  line[0] = _T('\0');
   result = swprintf_s(line,
                       kMaximumLineLength,
                       L"%s\n",
@@ -250,6 +252,7 @@ static void _cdecl ShowClientCrashed(void* context,
 static void _cdecl ShowClientExited(void* context,
                                     const ClientInfo* client_info) {
   TCHAR* line = new TCHAR[kMaximumLineLength];
+  line[0] = _T('\0');
   int result = swprintf_s(line,
                           kMaximumLineLength,
                           TEXT("Client exited:\t\t%d\r\n"),
@@ -310,7 +313,7 @@ void RequestDump() {
   if (!handler->WriteMinidump()) {
     MessageBoxW(NULL, L"Dump request failed", L"Dumper", MB_OK);
   }
-  k_custom_info_entries[1].set_value(L"1.1");
+  kCustomInfoEntries[1].set_value(L"1.1");
 }
 
 void CleanUp() {
@@ -462,7 +465,7 @@ int APIENTRY _tWinMain(HINSTANCE instance,
   cs_edit = new CRITICAL_SECTION();
   InitializeCriticalSection(cs_edit);
 
-  CustomClientInfo custom_info = {k_custom_info_entries, k_custom_info_count};
+  CustomClientInfo custom_info = {kCustomInfoEntries, kCustomInfoCount};
 
   // This is needed for CRT to not show dialog for invalid param
   // failures and instead let the code handle it.
