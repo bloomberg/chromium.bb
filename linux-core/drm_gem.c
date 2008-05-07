@@ -217,8 +217,7 @@ drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 	if (!(dev->driver->driver_features & DRIVER_GEM))
 		return -ENODEV;
 
-	/* Round requested size up to page size */
-	args->size = (args->size + PAGE_SIZE - 1) & ~(PAGE_SIZE - 1);
+	args->size = roundup(args->size, PAGE_SIZE);
 
 	/* Allocate the new object */
 	obj = drm_gem_object_alloc(dev, args->size);
@@ -277,8 +276,8 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 
 	offset = args->offset;
 
-	read = obj->filp->f_op->read(obj->filp, (char __user *)(uintptr_t)args->data_ptr,
-				     args->size, &offset);
+	read = vfs_read(obj->filp, (char __user *)(uintptr_t)args->data_ptr,
+			args->size, &offset);
 	if (read != args->size) {
 		drm_gem_object_unreference(obj);
 		if (read < 0)
@@ -324,7 +323,7 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	up_write(&current->mm->mmap_sem);
 	drm_gem_object_unreference(obj);
 	if (IS_ERR((void *)addr))
-		return (int) addr;
+		return addr;
 	
 	/* XXX hack until we have a driver callback to make this work */
 	obj->read_domains = DRM_GEM_DOMAIN_CPU;
@@ -358,8 +357,9 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 
 	offset = args->offset;
 
-	written = obj->filp->f_op->write(obj->filp, (char __user *)(uintptr_t) args->data_ptr,
-					 args->size, &offset);
+	written = vfs_write(obj->filp,
+			    (char __user *)(uintptr_t) args->data_ptr,
+			    args->size, &offset);
 	if (written != args->size) {
 		drm_gem_object_unreference(obj);
 		if (written < 0)
