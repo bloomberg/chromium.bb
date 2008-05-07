@@ -546,8 +546,17 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 			return -EINVAL;
 		}
 
+		/* If the relocation already has the right value in it, no
+		 * more work needs to be done.
+		 */
 		if (target_obj_priv->gtt_offset == reloc.presumed_offset)
 			continue;
+
+		/* Now that we're going to actually write some data in,
+		 * make sure that any rendering using this buffer's contents
+		 * is completed.
+		 */
+		i915_gem_object_wait_rendering(obj);
 
 		/* Map the page containing the relocation we're going to
 		 * perform.
