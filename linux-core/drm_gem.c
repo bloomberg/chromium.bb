@@ -325,6 +325,10 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	drm_gem_object_unreference(obj);
 	if (IS_ERR((void *)addr))
 		return (int) addr;
+	
+	/* XXX hack until we have a driver callback to make this work */
+	obj->read_domains = DRM_GEM_DOMAIN_CPU;
+	obj->write_domain = DRM_GEM_DOMAIN_CPU;
 
 	args->addr_ptr = (uint64_t) addr;
 
@@ -540,40 +544,3 @@ drm_gem_object_handle_free (struct kref *kref)
 }
 EXPORT_SYMBOL(drm_gem_object_handle_free);
 
-/*
- * Set the next domain for the specified object. This
- * may not actually perform the necessary flushing/invaliding though,
- * as that may want to be batched with other set_domain operations
- */
-int drm_gem_object_set_domain (struct drm_gem_object *obj,
-			       uint32_t read_domains,
-			       uint32_t write_domain)
-{
-	struct drm_device	*dev = obj->dev;
-	uint32_t		invalidate_domains = 0;
-	uint32_t		flush_domains = 0;
-	
-	/*
-	 * Flush the current write domain if
-	 * the new read domains don't match. Invalidate
-	 * any read domains which differ from the old
-	 * write domain
-	 */
-	if (obj->write_domain && obj->write_domain != read_domains)
-	{
-		flush_domains |= obj->write_domain;
-		invalidate_domains |= read_domains & ~obj->write_domain;
-	}
-	/*
-	 * Invalidate any read caches which may have
-	 * stale data. That is, any new read domains.
-	 */
-	invalidate_domains |= read_domains & ~obj->read_domains;
-	obj->write_domain = write_domain;
-	obj->read_domain = read_domains;
-	if ((flush_domains | invalidate_domains) & DRM_GEM_DOMAIN_CPU)
-		drm_gem_object_clflush (obj);
-	dev->invalidate_domains |= invalidate_domains & ~DRM_GEM_DOMAIN_CPU;
-	dev->flush_domains |= flush_domains & ~DRM_GEM_DOMAIN_CPU;
-}
-EXPORT_SYMBOL(drm_gem_object_set_domain);

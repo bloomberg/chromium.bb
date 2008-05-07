@@ -30,8 +30,8 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-#define WATCH_BUF  0
-#define WATCH_EXEC 0
+#define WATCH_BUF  1
+#define WATCH_EXEC 1
 
 int
 i915_gem_init_ioctl(struct drm_device *dev, void *data,
@@ -73,9 +73,33 @@ i915_gem_object_free_page_list(struct drm_gem_object *obj)
 	obj_priv->page_list = NULL;
 }
 
+static void
+i915_gem_flush(struct drm_device *dev, uint32_t domains)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	uint32_t	cmd;
+	RING_LOCALS;
+
+#if WATCH_EXEC
+	DRM_INFO ("%s: flush %08x\n", __FUNCTION__, domains);
+#endif
+	cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
+	if (domains & DRM_GEM_DOMAIN_I915_RENDER)
+		cmd &= ~MI_NO_WRITE_FLUSH;
+	if (domains & DRM_GEM_DOMAIN_I915_SAMPLER)
+		cmd |= MI_READ_FLUSH;
+	if (domains & DRM_GEM_DOMAIN_I915_INSTRUCTION)
+		cmd |= MI_EXE_FLUSH;
+	
+	BEGIN_LP_RING(2);
+	OUT_RING(cmd);
+	OUT_RING(0); /* noop */
+	ADVANCE_LP_RING();
+}
+
 /**
  * Ensures that all rendering to the object has completed and the object is
- * safe to unbind from the GTT.
+ * safe to unbind from the GTT or access from the CPU.
  */
 static int
 i915_gem_object_wait_rendering(struct drm_gem_object *obj)
@@ -84,10 +108,27 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int ret;
 
+	/* If there are writes queued to the buffer, flush and
+	 * create a new cookie to wait for.
+	 */
+	if (obj->write_domain & ~(DRM_GEM_DOMAIN_CPU))
+	{
+#if WATCH_BUF
+		DRM_INFO ("%s: flushing object %p from write domain %08x\n",
+			  __FUNCTION__, obj, obj->write_domain);
+#endif
+		i915_gem_flush (dev, obj->write_domain);
+		obj->write_domain = 0;
+		obj_priv->last_rendering_cookie = i915_emit_irq (dev);
+	}
 	/* If there is rendering queued on the buffer being evicted, wait for
 	 * it.
 	 */
 	if (obj_priv->last_rendering_cookie != 0) {
+#if WATCH_BUF
+		DRM_INFO ("%s: object %p wait for cookie %08x\n",
+			  __FUNCTION__, obj, obj_priv->last_rendering_cookie);
+#endif
 		ret = i915_wait_irq(dev, obj_priv->last_rendering_cookie);
 		if (ret != 0)
 			return ret;
@@ -125,6 +166,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	drm_memrange_put_block(obj_priv->gtt_space);
 	obj_priv->gtt_space = NULL;
 	list_del_init(&obj_priv->gtt_lru_entry);
+	drm_gem_object_unreference (obj);
 }
 
 #if 0
@@ -277,10 +319,6 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		unlock_page (obj_priv->page_list[i]);
 	}
 	
-	drm_ttm_cache_flush (obj_priv->page_list, page_count);
-	DRM_MEMORYBARRIER();
-	drm_agp_chipset_flush(dev);
-
 	/* Create an AGP memory structure pointing at our pages, and bind it
 	 * into the GTT.
 	 */
@@ -296,6 +334,73 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	}
 
 	return 0;
+}
+
+static void
+i915_gem_clflush_object (struct drm_gem_object *obj)
+{
+	struct drm_device		*dev = obj->dev;
+	struct drm_i915_gem_object	*obj_priv = obj->driver_private;
+
+	drm_ttm_cache_flush (obj_priv->page_list, obj->size / PAGE_SIZE);
+	drm_agp_chipset_flush(dev);
+}
+	
+/*
+ * Set the next domain for the specified object. This
+ * may not actually perform the necessary flushing/invaliding though,
+ * as that may want to be batched with other set_domain operations
+ */
+static void
+i915_gem_object_set_domain (struct drm_gem_object *obj,
+			    uint32_t read_domains,
+			    uint32_t write_domain)
+{
+	struct drm_device		*dev = obj->dev;
+	uint32_t			invalidate_domains = 0;
+	uint32_t			flush_domains = 0;
+	
+#if WATCH_BUF
+	DRM_INFO ("%s: object %p read %08x write %08x\n",
+		  __FUNCTION__, obj, read_domains, write_domain);
+#endif
+	/*
+	 * Flush the current write domain if
+	 * the new read domains don't match. Invalidate
+	 * any read domains which differ from the old
+	 * write domain
+	 */
+	if (obj->write_domain && obj->write_domain != read_domains)
+	{
+		flush_domains |= obj->write_domain;
+		invalidate_domains |= read_domains & ~obj->write_domain;
+	}
+	/*
+	 * Invalidate any read caches which may have
+	 * stale data. That is, any new read domains.
+	 */
+	invalidate_domains |= read_domains & ~obj->read_domains;
+	if ((flush_domains | invalidate_domains) & DRM_GEM_DOMAIN_CPU)
+	{
+#if WATCH_BUF
+		DRM_INFO ("%s: CPU domain flush %08x invalidate %08x\n",
+			  __FUNCTION__, flush_domains, invalidate_domains);
+#endif
+		/*
+		 * If we're invaliding the CPU cache and flushing a GPU cache,
+		 * then pause for rendering so that the GPU caches will be 
+		 * flushed before the cpu cache is invalidated
+		 */
+		if ((invalidate_domains & DRM_GEM_DOMAIN_CPU) &&
+		    (flush_domains & ~DRM_GEM_DOMAIN_CPU))
+			i915_gem_object_wait_rendering (obj);
+		i915_gem_clflush_object (obj);
+	}
+
+	obj->write_domain = write_domain;
+	obj->read_domains = read_domains;
+	dev->invalidate_domains |= invalidate_domains & ~DRM_GEM_DOMAIN_CPU;
+	dev->flush_domains |= flush_domains & ~DRM_GEM_DOMAIN_CPU;
 }
 
 static int
@@ -318,12 +423,17 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		if (obj_priv->gtt_space == NULL)
 			return -ENOMEM;
 	}
+
+	/* Do domain migration */
+	i915_gem_object_set_domain (obj, entry->read_domains, entry->write_domain);
+
 	entry->buffer_offset = obj_priv->gtt_offset;
 
 	if (obj_priv->pin_count == 0) {
 		/* Move our buffer to the head of the LRU. */
 		list_del_init(&obj_priv->gtt_lru_entry);
 		list_add(&obj_priv->gtt_lru_entry, &dev_priv->mm.gtt_lru);
+		drm_gem_object_reference (obj);
 	}
 
 	relocs = (struct drm_i915_gem_relocation_entry __user *) (uintptr_t) entry->relocs_ptr;
@@ -411,18 +521,6 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 	i915_gem_dump_object (obj, 128, __FUNCTION__, ~0);
 #endif
 	return 0;
-}
-
-static void
-i915_gem_flush(struct drm_device *dev)
-{
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	RING_LOCALS;
-
-	BEGIN_LP_RING(2);
-	OUT_RING(CMD_MI_FLUSH | MI_READ_FLUSH | MI_EXE_FLUSH);
-	OUT_RING(0); /* noop */
-	ADVANCE_LP_RING();
 }
 
 static int
@@ -556,6 +654,17 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		}
 	}
 
+	if (dev->invalidate_domains | dev->flush_domains)
+	{
+#if WATCH_EXEC
+		DRM_INFO ("%s: invalidate_domains %08x flush_domains %08x\n",
+			  __FUNCTION__, dev->invalidate_domains, dev->flush_domains);
+#endif
+		i915_gem_flush (dev, dev->invalidate_domains | dev->flush_domains);
+		dev->invalidate_domains = 0;
+		dev->flush_domains = 0;
+	}
+
 	exec_offset = validate_list[args->buffer_count - 1].buffer_offset;
 
 	/* make sure all previous memory operations have passed */
@@ -575,14 +684,9 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		goto err;
 	}
 
-	/* Flush the rendering.  We want this flush to go away, which will
-	 * require intelligent cache management.
-	 */
-	i915_gem_flush(dev);
-
-	/* Get a cookie representing the flush of the current buffer, which we
+	/* Get a cookie representing the execution of the current buffer, which we
 	 * can wait on.  We would like to mitigate these interrupts, likely by
-	 * only flushing occasionally (so that we have *some* interrupts
+	 * only creating cookies occasionally (so that we have *some* interrupts
 	 * representing completion of buffers that we can wait on when trying
 	 * to clear up gtt space).
 	 */
