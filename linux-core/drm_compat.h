@@ -343,4 +343,23 @@ extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 #define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) - 1)
 #endif
 
+#ifndef VM_CAN_NONLINEAR
+#define DRM_VM_NOPAGE 1
+#endif
+
+#ifdef DRM_VM_NOPAGE
+
+extern struct page *drm_vm_nopage(struct vm_area_struct *vma,
+				  unsigned long address, int *type);
+
+extern struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
+				      unsigned long address, int *type);
+
+extern struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
+				      unsigned long address, int *type);
+
+extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
+				     unsigned long address, int *type);
+#endif
+
 #endif
