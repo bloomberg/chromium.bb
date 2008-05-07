@@ -48,7 +48,7 @@ int do_read(int fd, int handle, void *buf, int offset, int size)
 
 	memset(&read, 0, sizeof(read));
 	read.handle = handle;
-	read.data = buf;
+	read.data_ptr = (uintptr_t)buf;
 	read.size = size;
 	read.offset = offset;
 
@@ -61,7 +61,7 @@ int do_write(int fd, int handle, void *buf, int offset, int size)
 
 	memset(&write, 0, sizeof(write));
 	write.handle = handle;
-	write.data = buf;
+	write.data_ptr = (uintptr_t)buf;
 	write.size = size;
 	write.offset = offset;
 
