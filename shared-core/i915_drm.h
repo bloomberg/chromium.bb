@@ -466,6 +466,7 @@ struct drm_i915_gem_relocation_entry {
 #define DRM_GEM_DOMAIN_I915_COMMAND	0x00000008	/* Command queue, used to load batch buffers */
 #define DRM_GEM_DOMAIN_I915_INSTRUCTION	0x00000010	/* Instruction cache, used by shader programs */
 #define DRM_GEM_DOMAIN_I915_STOLEN	0x00000020	/* Stolen memory, needed by some objects */
+#define DRM_GEM_DOMAIN_I915_VERTEX	0x00000040	/* Vertex address cache */
 
 struct drm_i915_gem_validate_entry {
 	/**

@@ -84,14 +84,41 @@ i915_gem_flush(struct drm_device *dev, uint32_t domains)
 #if WATCH_EXEC
 	DRM_INFO ("%s: flush %08x\n", __FUNCTION__, domains);
 #endif
+
+	/* read/write caches:
+	 * DRM_GEM_DOMAIN_I915_RENDER is always invalidated, but is
+	 * only flushed if MI_NO_WRITE_FLUSH is unset.  On 965, it is also
+	 * flushed at 2d versus 3d pipeline switches.
+	 *
+	 * read-only caches:
+	 * DRM_GEM_DOMAIN_I915_SAMPLER is flushed on pre-965 if MI_READ_FLUSH
+	 * is set, and is always flushed on 965.
+	 * DRM_GEM_DOMAIN_I915_COMMAND may not exist?
+	 * DRM_GEM_DOMAIN_I915_INSTRUCTION, which exists on 965, is invalidated
+	 * when MI_EXE_FLUSH is set.
+	 * DRM_GEM_DOMAIN_I915_VERTEX, which exists on 965, is invalidated with
+	 * every MI_FLUSH.
+	 *
+	 * TLBs:
+	 * On 965, TLBs associated with DRM_GEM_DOMAIN_I915_COMMAND and
+	 * DRM_GEM_DOMAIN_CPU in are invalidated at PTE write and
+	 * DRM_GEM_DOMAIN_I915_RENDER and DRM_GEM_DOMAIN_I915_SAMPLER are
+	 * flushed at any MI_FLUSH.
+	 */
+
 	cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
 	if (domains & DRM_GEM_DOMAIN_I915_RENDER)
 		cmd &= ~MI_NO_WRITE_FLUSH;
-	if (domains & DRM_GEM_DOMAIN_I915_SAMPLER)
-		cmd |= MI_READ_FLUSH;
+	if (!IS_I965G(dev)) {
+		/* On the 965, the sampler cache always gets flushed and this
+		 * bit is reserved.
+		 */
+		if (domains & DRM_GEM_DOMAIN_I915_SAMPLER)
+			cmd |= MI_READ_FLUSH;
+	}
 	if (domains & DRM_GEM_DOMAIN_I915_INSTRUCTION)
 		cmd |= MI_EXE_FLUSH;
-	
+
 	BEGIN_LP_RING(2);
 	OUT_RING(cmd);
 	OUT_RING(0); /* noop */
@@ -362,6 +389,13 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		obj_priv->gtt_space = NULL;
 		return -ENOMEM;
 	}
+
+	/* When we have just bound an object, we have no valid read
+	 * caches on it, regardless of where it was before.  We also need
+	 * an MI_FLUSH to occur so that the render and sampler TLBs
+	 * get flushed and pick up our binding change above.
+	 */
+	obj->read_domains = 0;
 
 	return 0;
 }
