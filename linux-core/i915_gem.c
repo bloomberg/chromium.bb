@@ -30,8 +30,9 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-#define WATCH_BUF  1
-#define WATCH_EXEC 1
+#define WATCH_BUF	0
+#define WATCH_EXEC	0
+#define WATCH_LRU	0
 
 int
 i915_gem_init_ioctl(struct drm_device *dev, void *data,
@@ -165,11 +166,14 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 
 	drm_memrange_put_block(obj_priv->gtt_space);
 	obj_priv->gtt_space = NULL;
-	list_del_init(&obj_priv->gtt_lru_entry);
-	drm_gem_object_unreference (obj);
+	if (!list_empty (&obj_priv->gtt_lru_entry))
+	{
+		list_del_init(&obj_priv->gtt_lru_entry);
+		drm_gem_object_unreference (obj);
+	}
 }
 
-#if 0
+#if WATCH_BUF | WATCH_EXEC
 static void
 i915_gem_dump_page (struct page *page, uint32_t start, uint32_t end, uint32_t bias, uint32_t mark)
 {
@@ -212,6 +216,21 @@ i915_gem_dump_object (struct drm_gem_object *obj, int len, const char *where, ui
 }
 #endif
 
+#if WATCH_LRU
+static void
+i915_dump_lru (struct drm_device *dev, const char *where)
+{
+	drm_i915_private_t		*dev_priv = dev->dev_private;
+	struct drm_i915_gem_object	*obj_priv;
+	
+	DRM_INFO ("GTT LRU %s {\n", where);
+	list_for_each_entry (obj_priv, &dev_priv->mm.gtt_lru, gtt_lru_entry) {
+		DRM_INFO ("    %p: %08x\n", obj_priv, obj_priv->last_rendering_cookie);
+	}
+	DRM_INFO ("}\n");
+}
+#endif
+
 static int
 i915_gem_evict_something(struct drm_device *dev)
 {
@@ -221,11 +240,14 @@ i915_gem_evict_something(struct drm_device *dev)
 	int ret;
 
 	/* Find the LRU buffer. */
-	BUG_ON(!list_empty(&dev_priv->mm.gtt_lru));
-	obj_priv = list_entry(dev_priv->mm.gtt_lru.prev,
-			      struct drm_i915_gem_object,
-			      gtt_lru_entry);
+	BUG_ON(list_empty(&dev_priv->mm.gtt_lru));
+	obj_priv = list_first_entry(&dev_priv->mm.gtt_lru,
+				    struct drm_i915_gem_object,
+				    gtt_lru_entry);
 	obj = obj_priv->obj;
+#if WATCH_LRU
+	DRM_INFO ("%s: evicting %p\n", __FUNCTION__, obj);
+#endif
 
 	/* Only unpinned buffers should be on this list. */
 	BUG_ON(obj_priv->pin_count != 0);
@@ -240,6 +262,9 @@ i915_gem_evict_something(struct drm_device *dev)
 
 	/* Wait on the rendering and unbind the buffer. */
 	i915_gem_object_unbind(obj);
+#if WATCH_LRU
+	DRM_INFO ("%s: evicted %p\n", __FUNCTION__, obj);
+#endif
 
 	return 0;
 }
@@ -280,8 +305,13 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		/* If the gtt is empty and we're still having trouble
 		 * fitting our object in, we're out of memory.
 		 */
-		if (list_empty(&dev_priv->mm.gtt_lru))
+#if WATCH_LRU
+		DRM_INFO ("%s: GTT full, evicting something\n", __FUNCTION__);
+#endif
+		if (list_empty(&dev_priv->mm.gtt_lru)) {
+			DRM_ERROR ("GTT full, but LRU list empty\n");
 			return -ENOMEM;
+		}
 
 		ret = i915_gem_evict_something(dev);
 		if (ret != 0)
@@ -431,9 +461,14 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 
 	if (obj_priv->pin_count == 0) {
 		/* Move our buffer to the head of the LRU. */
-		list_del_init(&obj_priv->gtt_lru_entry);
-		list_add(&obj_priv->gtt_lru_entry, &dev_priv->mm.gtt_lru);
-		drm_gem_object_reference (obj);
+		if (list_empty (&obj_priv->gtt_lru_entry)) {
+			drm_gem_object_reference (obj);
+			list_add_tail(&obj_priv->gtt_lru_entry, &dev_priv->mm.gtt_lru);
+		} else
+			list_move_tail(&obj_priv->gtt_lru_entry, &dev_priv->mm.gtt_lru);
+#if WATCH_LRU && 0
+		i915_dump_lru (dev, __FUNCTION__);
+#endif
 	}
 
 	relocs = (struct drm_i915_gem_relocation_entry __user *) (uintptr_t) entry->relocs_ptr;
@@ -784,6 +819,7 @@ int i915_gem_init_object(struct drm_gem_object *obj)
 		return -ENOMEM;
 
 	obj->driver_private = obj_priv;
+	obj_priv->obj = obj;
 	INIT_LIST_HEAD(&obj_priv->gtt_lru_entry);
 	return 0;
 }

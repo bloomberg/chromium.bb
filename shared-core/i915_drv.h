@@ -262,6 +262,7 @@ struct drm_i915_gem_object {
 
 	/** Current space allocated to this object in the GTT, if any. */
 	struct drm_memrange_node *gtt_space;
+	
 	/** This object's place on the GTT LRU list */
 	struct list_head gtt_lru_entry;
 
