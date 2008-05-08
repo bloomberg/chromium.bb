@@ -90,7 +90,7 @@ extern struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB);
 extern int intel_sdvo_supports_hotplug(struct drm_output *output);
 extern void intel_sdvo_set_hotplug(struct drm_output *output, int enable);
 
-extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
+extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output);
 extern int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
 extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
 

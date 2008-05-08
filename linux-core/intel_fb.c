@@ -46,10 +46,14 @@
 
 struct intelfb_par {
 	struct drm_device *dev;
+/*
 	struct drm_crtc *crtc;
 	struct drm_display_mode *fb_mode;
 	struct drm_framebuffer *fb;
+*/
+	struct drm_display_mode *our_mode;
 	struct drm_mode_set set;
+	struct drm_output *hack;
 };
 /*
 static int
@@ -68,8 +72,8 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->fb;
-	struct drm_crtc *crtc = par->crtc;
+	struct drm_framebuffer *fb = par->set.fb;
+	struct drm_crtc *crtc = par->set.crtc;
 
 	if (regno > 255)
 		return 1;
@@ -109,7 +113,7 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 {
 	struct intelfb_par *par = info->par;
 	/*struct drm_device *dev = par->dev;*/
-	struct drm_framebuffer *fb = par->fb;
+	struct drm_framebuffer *fb = par->set.fb;
 	/*struct drm_output *output;*/
 	int depth/*, found = 0*/;
 
@@ -223,13 +227,12 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 static int intelfb_set_par(struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_framebuffer *fb = par->fb;
+	struct drm_framebuffer *fb = par->set.fb;
 	struct drm_device *dev = par->dev;
 	struct drm_display_mode *drm_mode, *search_mode;
 	struct drm_output *output = NULL;
 	struct fb_var_screeninfo *var = &info->var;
 	int found = 0;
-	int changed = 0;
 
 	DRM_DEBUG("\n");
 
@@ -274,7 +277,7 @@ static int intelfb_set_par(struct fb_info *info)
 
 	found = 0;
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == par->crtc){
+		if (output->crtc == par->set.crtc){
 			found = 1;
 			break;
 		}
@@ -300,17 +303,24 @@ static int intelfb_set_par(struct fb_info *info)
 	* create a new attachment for the incoming user specified mode
 	*/
 	if (!found) {
-		if (par->fb_mode) {
+		if (par->our_mode) {
 			/* this also destroys the mode */
-			drm_mode_detachmode_crtc(dev, par->fb_mode);
+			drm_mode_detachmode_crtc(dev, par->our_mode);
 		}
 	
-		par->fb_mode = drm_mode;
+		par->set.mode = drm_mode;
+		par->our_mode = drm_mode;
 		drm_mode_debug_printmodeline(dev, drm_mode);
 		/* attach mode */
-		drm_mode_attachmode_crtc(dev, par->crtc, par->fb_mode);
+		drm_mode_attachmode_crtc(dev, par->set.crtc, par->set.mode);
+	} else {
+		par->set.mode = drm_mode;
+		if (par->our_mode)
+			drm_mode_detachmode_crtc(dev, par->our_mode);
+		par->our_mode = NULL;
 	}
 
+#if 0
 	/* re-attach fb */
 	if (!par->crtc->fb) {
 		par->crtc->fb = par->fb;
@@ -330,6 +340,9 @@ static int intelfb_set_par(struct fb_info *info)
 			return -EINVAL;
 
 	return 0;
+#else
+	return drm_crtc_set_config(&par->set);
+#endif
 }
 
 #if 0
@@ -481,27 +494,20 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 				struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_crtc *crtc = par->crtc;
-	int changed = 0;
+	int ret;
 	DRM_DEBUG("\n");
 
-	/* TODO add check size and pos*/
-	if (par->crtc->x != var->xoffset || par->crtc->y != var->yoffset)
-		changed = 1;
+	par->set.x = var->xoffset;
+	par->set.y = var->yoffset;
 
-	/* re-attach fb */
-	if (!crtc->fb) {
-		crtc->fb = par->fb;
-		changed = 1;
+	ret = drm_crtc_set_config(&par->set);
+
+	if (!ret) {
+		info->var.xoffset = var->xoffset;
+		info->var.yoffset = var->yoffset;
 	}
 
-	if (changed) 
-		drm_crtc_set_mode(crtc, &crtc->mode, var->xoffset, var->yoffset);
-
-	info->var.xoffset = var->xoffset;
-	info->var.yoffset = var->yoffset;
-
-	return 0;
+	return ret;
 }
 
 static struct fb_ops intelfb_ops = {
@@ -560,7 +566,7 @@ int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(intelfb_resize);
 
-int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
+int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output)
 {
 	struct fb_info *info;
 	struct intelfb_par *par;
@@ -574,6 +580,9 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	if (!info){
 		return -EINVAL;
 	}
+
+	if (!output)
+		return -EINVAL;
 
 	fb = drm_framebuffer_create(dev);
 	if (!fb) {
@@ -616,8 +625,11 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	par = info->par;
 
 	par->dev = dev;
-	par->crtc = crtc;
-	par->fb = fb;
+	par->set.crtc = crtc;
+	par->set.fb = fb;
+	par->hack = output;
+	par->set.outputs = &par->hack;
+	par->set.num_outputs = 1;
 
 	info->fbops = &intelfb_ops;
 

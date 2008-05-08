@@ -270,7 +270,7 @@ static struct fb_ops radeonfb_ops = {
 	.fb_imageblit = cfb_imageblit,
 };
 
-int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
+int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct fb_info *info;

@@ -605,6 +605,7 @@ extern struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev);
 extern void drm_framebuffer_destroy(struct drm_framebuffer *fb);
 extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
+extern int drm_crtc_set_config(struct drm_mode_set *set);
 extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 		       int x, int y);
 extern bool drm_crtc_in_use(struct drm_crtc *crtc);

@@ -743,7 +743,7 @@ struct drm_driver {
 			     struct drm_set_version *sv);
 
 	/* FB routines, if present */
-	int (*fb_probe)(struct drm_device *dev, struct drm_crtc *crtc);
+	int (*fb_probe)(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output);
 	int (*fb_remove)(struct drm_device *dev, struct drm_crtc *crtc);
 	int (*fb_resize)(struct drm_device *dev, struct drm_crtc *crtc);
 

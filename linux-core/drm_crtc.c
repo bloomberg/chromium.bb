@@ -540,8 +540,8 @@ done:
 		crtc->mode = saved_mode;
 		crtc->x = saved_x;
 		crtc->y = saved_y;
-	} 
-	
+	}
+
 	return ret;
 }
 EXPORT_SYMBOL(drm_crtc_set_mode);
@@ -1036,16 +1036,6 @@ bool drm_initial_config(struct drm_device *dev, bool can_grow)
 
 	drm_pick_crtcs(dev);
 
-	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-
-		/* can't setup the crtc if there's no assigned mode */
-		if (!crtc->desired_mode)
-			continue;
-
-		/* Now setup the fbdev for attached crtcs */
-		dev->driver->fb_probe(dev, crtc);
-	}
-
 	/* This is a little screwy, as we've already walked the outputs 
 	 * above, but it's a little bit of magic too. There's the potential
 	 * for things not to get setup above if an existing device gets
@@ -1057,6 +1047,8 @@ bool drm_initial_config(struct drm_device *dev, bool can_grow)
 		/* can't setup the output if there's no assigned mode */
 		if (!output->crtc || !output->crtc->desired_mode)
 			continue;
+
+		dev->driver->fb_probe(dev, output->crtc, output);
 
 		/* and needs an attached fb */
 		if (output->crtc->fb)
@@ -1140,12 +1132,15 @@ int drm_crtc_set_config(struct drm_mode_set *set)
 	struct drm_output *output;
 	int count = 0, ro;
 
+	DRM_DEBUG("\n");
+
 	if (!set)
 		return -EINVAL;
 
 	if (!set->crtc)
 		return -EINVAL;
 
+	DRM_DEBUG("crtc: %p fb: %p outputs: %p num_outputs: %i (x, y) (%i, %i)\n", set->crtc, set->fb, set->outputs, set->num_outputs, set->x, set->y);
 	dev = set->crtc->dev;
 
 	/* save previous config */
@@ -1223,6 +1218,7 @@ int drm_crtc_set_config(struct drm_mode_set *set)
 	kfree(save_crtcs);
 	return 0;
 }
+EXPORT_SYMBOL(drm_crtc_set_config);
 
 /**
  * drm_hotplug_stage_two
@@ -1267,7 +1263,7 @@ int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
 
 	/* We should really check if there is a fb using this crtc */
 	if (!has_config)
-		dev->driver->fb_probe(dev, output->crtc);
+		dev->driver->fb_probe(dev, output->crtc, output);
 	else {
 		dev->driver->fb_resize(dev, output->crtc);
 
