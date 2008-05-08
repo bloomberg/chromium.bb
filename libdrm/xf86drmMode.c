@@ -608,3 +608,24 @@ int drmCheckModesettingSupported(const char *busid)
 	return -ENOSYS;
 
 }
+
+int drmModeReplaceFB(int fd, uint32_t buffer_id,
+		     uint32_t width, uint32_t height, uint8_t depth,
+		     uint8_t bpp, uint32_t pitch, uint32_t bo_handle)
+{
+	struct drm_mode_fb_cmd f;
+	int ret;
+
+	f.width = width;
+	f.height = height;
+	f.pitch = pitch;
+	f.bpp = bpp;
+	f.depth = depth;
+	f.handle = bo_handle;
+	f.buffer_id = buffer_id;
+
+	if ((ret = ioctl(fd, DRM_IOCTL_MODE_REPLACEFB, &f)))
+		return ret;
+
+	return 0;
+}

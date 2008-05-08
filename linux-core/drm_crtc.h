@@ -649,6 +649,7 @@ extern int drm_mode_output_property_set_ioctl(struct drm_device *dev,
 					      void *data, struct drm_file *file_priv);
 extern int drm_mode_hotplug_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
-
+extern int drm_mode_replacefb(struct drm_device *dev,
+			      void *data, struct drm_file *file_priv);
 #endif /* __DRM_CRTC_H__ */
 

@@ -1276,6 +1276,7 @@ struct drm_mode_hotplug {
 #define DRM_IOCTL_MODE_HOTPLUG         DRM_IOWR(0xAD, struct drm_mode_hotplug)
 #define DRM_IOCTL_WAIT_HOTPLUG		DRM_IOWR(0xAE, union drm_wait_hotplug)
 
+#define DRM_IOCTL_MODE_REPLACEFB       DRM_IOWR(0xAF, struct drm_mode_fb_cmd)
 /*@}*/
 
 /**

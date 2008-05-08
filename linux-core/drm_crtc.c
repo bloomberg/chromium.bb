@@ -1879,8 +1879,8 @@ out:
 int drm_mode_rmfb(struct drm_device *dev,
 		   void *data, struct drm_file *file_priv)
 {
-	struct drm_framebuffer *fb = 0;
-	struct drm_framebuffer *fbl = 0;
+	struct drm_framebuffer *fb = NULL;
+	struct drm_framebuffer *fbl = NULL;
 	uint32_t *id = data;
 	int ret = 0;
 	int found = 0;
@@ -2513,3 +2513,54 @@ out:
 	return ret;
 }
 
+
+int drm_mode_replacefb(struct drm_device *dev,
+		       void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_fb_cmd *r = data;
+	struct drm_framebuffer *fb;
+	struct drm_crtc *crtc;
+	struct drm_buffer_object *bo;
+	int found = 0;
+	struct drm_framebuffer *fbl = NULL;
+	int ret = 0;
+	/* right replace the current bo attached to this fb with a new bo */
+	mutex_lock(&dev->mode_config.mutex);
+	ret = drm_get_buffer_object(dev, &bo, r->handle);
+	if (ret || !bo) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	fb = idr_find(&dev->mode_config.crtc_idr, r->buffer_id);
+	if (!fb || (r->buffer_id != fb->id)) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	list_for_each_entry(fbl, &file_priv->fbs, filp_head)
+		if (fb == fbl)
+			found = 1;
+
+	if (!found) {
+		DRM_ERROR("tried to replace an fb we didn't own\n");
+		ret = -EINVAL;
+		goto out;
+	}
+
+	if (fb->bo->type == drm_bo_type_kernel)
+		DRM_ERROR("the bo should not be a kernel bo\n");
+
+	fb->bo = bo;
+
+	/* find all crtcs connected to this fb */
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		if (crtc->fb->id == r->buffer_id) {
+			crtc->funcs->mode_set_base(crtc, crtc->x, crtc->y);
+		}
+	}
+out:
+	mutex_unlock(&dev->mode_config.mutex);
+	return ret;
+
+}
