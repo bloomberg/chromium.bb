@@ -2551,6 +2551,11 @@ int drm_mode_replacefb(struct drm_device *dev,
 	if (fb->bo->type == drm_bo_type_kernel)
 		DRM_ERROR("the bo should not be a kernel bo\n");
 
+	fb->width = r->width;
+	fb->height = r->height;
+	fb->pitch = r->pitch;
+	fb->bits_per_pixel = r->bpp;
+	fb->depth = r->depth;
 	fb->bo = bo;
 
 	/* find all crtcs connected to this fb */
