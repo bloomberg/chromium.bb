@@ -15,7 +15,7 @@ drm-objs    := drm_auth.o drm_bufs.o drm_context.o drm_dma.o drm_drawable.o \
 		drm_hashtab.o drm_mm.o drm_object.o drm_compat.o \
 	        drm_fence.o drm_ttm.o drm_bo.o drm_bo_move.o drm_crtc.o \
 		drm_edid.o drm_modes.o drm_bo_lock.o drm_regman.o \
-		drm_vm_nopage-compat.o
+		drm_vm_nopage_compat.o
 tdfx-objs   := tdfx_drv.o
 r128-objs   := r128_drv.o r128_cce.o r128_state.o r128_irq.o
 mga-objs    := mga_drv.o mga_dma.o mga_state.o mga_warp.o mga_irq.o
