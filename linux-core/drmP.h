@@ -652,6 +652,15 @@ struct drm_gem_object {
 	uint32_t	read_domains;
 	uint32_t	write_domain;
 
+	/**
+	 * While validating an exec operation, the
+	 * new read/write domain values are computed here.
+	 * They will be transferred to the above values
+	 * at the point that any cache flushing occurs
+	 */
+	uint32_t	pending_read_domains;
+	uint32_t	pending_write_domain;
+
 	void *driver_private;
 };
 
@@ -764,6 +773,13 @@ struct drm_driver {
 	 */
 	int (*gem_init_object) (struct drm_gem_object *obj);
 	void (*gem_free_object) (struct drm_gem_object *obj);
+
+	/**
+	 * Driver-specific callback to set memory domains from userspace
+	 */
+	int (*gem_set_domain) (struct drm_gem_object *obj,
+			       uint32_t read_domains,
+			       uint32_t write_domain);
 
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
@@ -1392,6 +1408,8 @@ int drm_gem_name_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv);
 int drm_gem_open_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv);
+int drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
+			     struct drm_file *file_priv);
 
 void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
 void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);

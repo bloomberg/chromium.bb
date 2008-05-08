@@ -33,6 +33,7 @@
 #define WATCH_BUF	0
 #define WATCH_EXEC	0
 #define WATCH_LRU	0
+#define WATCH_RELOC	0
 
 int
 i915_gem_init_ioctl(struct drm_device *dev, void *data,
@@ -75,54 +76,61 @@ i915_gem_object_free_page_list(struct drm_gem_object *obj)
 }
 
 static void
-i915_gem_flush(struct drm_device *dev, uint32_t domains)
+i915_gem_flush(struct drm_device *dev, uint32_t invalidate_domains, uint32_t flush_domains)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	uint32_t	cmd;
 	RING_LOCALS;
 
 #if WATCH_EXEC
-	DRM_INFO ("%s: flush %08x\n", __FUNCTION__, domains);
+	DRM_INFO ("%s: invalidate %08x flush %08x\n", __FUNCTION__,
+		  invalidate_domains, flush_domains);
 #endif
 
-	/* read/write caches:
-	 * DRM_GEM_DOMAIN_I915_RENDER is always invalidated, but is
-	 * only flushed if MI_NO_WRITE_FLUSH is unset.  On 965, it is also
-	 * flushed at 2d versus 3d pipeline switches.
-	 *
-	 * read-only caches:
-	 * DRM_GEM_DOMAIN_I915_SAMPLER is flushed on pre-965 if MI_READ_FLUSH
-	 * is set, and is always flushed on 965.
-	 * DRM_GEM_DOMAIN_I915_COMMAND may not exist?
-	 * DRM_GEM_DOMAIN_I915_INSTRUCTION, which exists on 965, is invalidated
-	 * when MI_EXE_FLUSH is set.
-	 * DRM_GEM_DOMAIN_I915_VERTEX, which exists on 965, is invalidated with
-	 * every MI_FLUSH.
-	 *
-	 * TLBs:
-	 * On 965, TLBs associated with DRM_GEM_DOMAIN_I915_COMMAND and
-	 * DRM_GEM_DOMAIN_CPU in are invalidated at PTE write and
-	 * DRM_GEM_DOMAIN_I915_RENDER and DRM_GEM_DOMAIN_I915_SAMPLER are
-	 * flushed at any MI_FLUSH.
-	 */
-
-	cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
-	if (domains & DRM_GEM_DOMAIN_I915_RENDER)
-		cmd &= ~MI_NO_WRITE_FLUSH;
-	if (!IS_I965G(dev)) {
-		/* On the 965, the sampler cache always gets flushed and this
-		 * bit is reserved.
+	if (flush_domains & DRM_GEM_DOMAIN_CPU)
+		drm_agp_chipset_flush(dev);
+		
+	if ((invalidate_domains|flush_domains) & ~DRM_GEM_DOMAIN_CPU)
+	{
+		/* read/write caches:
+		 * DRM_GEM_DOMAIN_I915_RENDER is always invalidated, but is
+		 * only flushed if MI_NO_WRITE_FLUSH is unset.  On 965, it is also
+		 * flushed at 2d versus 3d pipeline switches.
+		 *
+		 * read-only caches:
+		 * DRM_GEM_DOMAIN_I915_SAMPLER is flushed on pre-965 if MI_READ_FLUSH
+		 * is set, and is always flushed on 965.
+		 * DRM_GEM_DOMAIN_I915_COMMAND may not exist?
+		 * DRM_GEM_DOMAIN_I915_INSTRUCTION, which exists on 965, is invalidated
+		 * when MI_EXE_FLUSH is set.
+		 * DRM_GEM_DOMAIN_I915_VERTEX, which exists on 965, is invalidated with
+		 * every MI_FLUSH.
+		 *
+		 * TLBs:
+		 * On 965, TLBs associated with DRM_GEM_DOMAIN_I915_COMMAND and
+		 * DRM_GEM_DOMAIN_CPU in are invalidated at PTE write and
+		 * DRM_GEM_DOMAIN_I915_RENDER and DRM_GEM_DOMAIN_I915_SAMPLER are
+		 * flushed at any MI_FLUSH.
 		 */
-		if (domains & DRM_GEM_DOMAIN_I915_SAMPLER)
-			cmd |= MI_READ_FLUSH;
+	
+		cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
+		if ((invalidate_domains|flush_domains) & DRM_GEM_DOMAIN_I915_RENDER)
+			cmd &= ~MI_NO_WRITE_FLUSH;
+		if (!IS_I965G(dev)) {
+			/* On the 965, the sampler cache always gets flushed and this
+			 * bit is reserved.
+			 */
+			if (invalidate_domains & DRM_GEM_DOMAIN_I915_SAMPLER)
+				cmd |= MI_READ_FLUSH;
+		}
+		if (invalidate_domains & DRM_GEM_DOMAIN_I915_INSTRUCTION)
+			cmd |= MI_EXE_FLUSH;
+	
+		BEGIN_LP_RING(2);
+		OUT_RING(cmd);
+		OUT_RING(0); /* noop */
+		ADVANCE_LP_RING();
 	}
-	if (domains & DRM_GEM_DOMAIN_I915_INSTRUCTION)
-		cmd |= MI_EXE_FLUSH;
-
-	BEGIN_LP_RING(2);
-	OUT_RING(cmd);
-	OUT_RING(0); /* noop */
-	ADVANCE_LP_RING();
 }
 
 /**
@@ -145,8 +153,10 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		DRM_INFO ("%s: flushing object %p from write domain %08x\n",
 			  __FUNCTION__, obj, obj->write_domain);
 #endif
-		i915_gem_flush (dev, obj->write_domain);
+		i915_gem_flush (dev, 0, obj->write_domain);
 		obj->write_domain = 0;
+		if (obj_priv->last_rendering_cookie == 0)
+			drm_gem_object_reference (obj);
 		obj_priv->last_rendering_cookie = i915_emit_irq (dev);
 	}
 	/* If there is rendering queued on the buffer being evicted, wait for
@@ -162,6 +172,9 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 			return ret;
 		/* Clear it now that we know it's passed. */
 		obj_priv->last_rendering_cookie = 0;
+		
+		/* The cookie held a reference to the object, release that now */
+		drm_gem_object_unreference (obj);
 	}
 
 	return 0;
@@ -194,10 +207,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	drm_memrange_put_block(obj_priv->gtt_space);
 	obj_priv->gtt_space = NULL;
 	if (!list_empty (&obj_priv->gtt_lru_entry))
-	{
 		list_del_init(&obj_priv->gtt_lru_entry);
-		drm_gem_object_unreference (obj);
-	}
 }
 
 #if WATCH_BUF | WATCH_EXEC
@@ -403,11 +413,9 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 static void
 i915_gem_clflush_object (struct drm_gem_object *obj)
 {
-	struct drm_device		*dev = obj->dev;
 	struct drm_i915_gem_object	*obj_priv = obj->driver_private;
 
 	drm_ttm_cache_flush (obj_priv->page_list, obj->size / PAGE_SIZE);
-	drm_agp_chipset_flush(dev);
 }
 	
 /*
@@ -463,8 +471,32 @@ i915_gem_object_set_domain (struct drm_gem_object *obj,
 
 	obj->write_domain = write_domain;
 	obj->read_domains = read_domains;
-	dev->invalidate_domains |= invalidate_domains & ~DRM_GEM_DOMAIN_CPU;
-	dev->flush_domains |= flush_domains & ~DRM_GEM_DOMAIN_CPU;
+	dev->invalidate_domains |= invalidate_domains;
+	dev->flush_domains |= flush_domains;
+}
+
+/**
+ * Once all of the objects have been set in the proper domain,
+ * perform the necessary flush and invalidate operations
+ */
+
+static void
+i915_gem_dev_set_domain (struct drm_device *dev)
+{
+	/*
+	 * Now that all the buffers are synced to the proper domains,
+	 * flush and invalidate the collected domains
+	 */
+	if (dev->invalidate_domains | dev->flush_domains)
+	{
+#if WATCH_EXEC
+		DRM_INFO ("%s: invalidate_domains %08x flush_domains %08x\n",
+			  __FUNCTION__, dev->invalidate_domains, dev->flush_domains);
+#endif
+		i915_gem_flush (dev, dev->invalidate_domains, dev->flush_domains);
+		dev->invalidate_domains = 0;
+		dev->flush_domains = 0;
+	}
 }
 
 static int
@@ -488,17 +520,13 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 			return -ENOMEM;
 	}
 
-	/* Do domain migration */
-	i915_gem_object_set_domain (obj, entry->read_domains, entry->write_domain);
-
 	entry->buffer_offset = obj_priv->gtt_offset;
 
 	if (obj_priv->pin_count == 0) {
 		/* Move our buffer to the head of the LRU. */
-		if (list_empty (&obj_priv->gtt_lru_entry)) {
-			drm_gem_object_reference (obj);
+		if (list_empty (&obj_priv->gtt_lru_entry))
 			list_add_tail(&obj_priv->gtt_lru_entry, &dev_priv->mm.gtt_lru);
-		} else
+		else
 			list_move_tail(&obj_priv->gtt_lru_entry, &dev_priv->mm.gtt_lru);
 #if WATCH_LRU && 0
 		i915_dump_lru (dev, __FUNCTION__);
@@ -536,15 +564,43 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		}
 
 		if (reloc.offset > obj->size - 4) {
-			DRM_ERROR("Relocation beyond object bounds.\n");
+			DRM_ERROR("Relocation beyond object bounds: obj %p target %d offset %d size %d.\n",
+				  obj, reloc.target_handle, (int) reloc.offset, (int) obj->size);
 			drm_gem_object_unreference (target_obj);
 			return -EINVAL;
 		}
 		if (reloc.offset & 3) {
-			DRM_ERROR("Relocation not 4-byte aligned.\n");
+			DRM_ERROR("Relocation not 4-byte aligned: obj %p target %d offset %d.\n",
+				  obj, reloc.target_handle, (int) reloc.offset);
 			drm_gem_object_unreference (target_obj);
 			return -EINVAL;
 		}
+
+		if (reloc.write_domain && target_obj->pending_write_domain &&
+		    reloc.write_domain != target_obj->pending_write_domain)
+		{
+			DRM_ERROR("Write domain conflict: obj %p target %d offset %d new %08x old %08x\n",
+				  obj, reloc.target_handle, (int) reloc.offset,
+				  reloc.write_domain, target_obj->pending_write_domain);
+			drm_gem_object_unreference (target_obj);
+			return -EINVAL;
+		}
+		
+#if WATCH_RELOC
+		DRM_INFO ("%s: obj %p offset %08x target %d read %08x write %08x gtt %08x presumed %08x delta %08x\n",
+			  __FUNCTION__,
+			  obj,
+			  (int) reloc.offset,
+			  (int) reloc.target_handle,
+			  (int) reloc.read_domains,
+			  (int) reloc.write_domain,
+			  (int) target_obj_priv->gtt_offset,
+			  (int) reloc.presumed_offset,
+			  reloc.delta);
+#endif
+			  
+		target_obj->pending_read_domains |= reloc.read_domains;
+		target_obj->pending_write_domain |= reloc.write_domain;
 
 		/* If the relocation already has the right value in it, no
 		 * more work needs to be done.
@@ -557,6 +613,16 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		 * is completed.
 		 */
 		i915_gem_object_wait_rendering(obj);
+
+		/* As we're writing through the gtt, flush
+		 * any CPU writes before we write the relocations
+		 */
+		if (obj->write_domain & DRM_GEM_DOMAIN_CPU)
+		{
+			i915_gem_clflush_object (obj);
+			drm_agp_chipset_flush(dev);
+			obj->write_domain = 0;
+		}
 
 		/* Map the page containing the relocation we're going to
 		 * perform.
@@ -672,6 +738,19 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
+#if 0
+	/*
+	 * XXX wait for previous rendering to complete as we otherwise never
+	 * flush the LRU list
+	 */
+	{
+		drm_i915_private_t *dev_priv = dev->dev_private;
+		
+		while (!list_empty (&dev_priv->mm.gtt_lru))
+			i915_gem_evict_something (dev);
+	}
+#endif
+
 #if WATCH_EXEC
 	DRM_INFO ("buffers_ptr %d buffer_count %d len %08x\n",
 		  (int) args->buffers_ptr, args->buffer_count, args->batch_len);
@@ -717,6 +796,10 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		}
 	}
 
+	/* Set the pending read domains for the batch buffer to COMMAND */
+	object_list[args->buffer_count-1]->pending_read_domains = DRM_GEM_DOMAIN_I915_COMMAND;
+	object_list[args->buffer_count-1]->pending_write_domain = 0;
+
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_gem_object *obj = object_list[i];
 		struct drm_i915_gem_object *obj_priv = obj->driver_private;
@@ -730,22 +813,19 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			ret = -ENOMEM;
 			goto err;
 		}
+
+		/* make sure all previous memory operations have passed */
+		i915_gem_object_set_domain (obj,
+					    obj->pending_read_domains,
+					    obj->pending_write_domain);
+		obj->pending_read_domains = 0;
+		obj->pending_write_domain = 0;
 	}
 
-	if (dev->invalidate_domains | dev->flush_domains)
-	{
-#if WATCH_EXEC
-		DRM_INFO ("%s: invalidate_domains %08x flush_domains %08x\n",
-			  __FUNCTION__, dev->invalidate_domains, dev->flush_domains);
-#endif
-		i915_gem_flush (dev, dev->invalidate_domains | dev->flush_domains);
-		dev->invalidate_domains = 0;
-		dev->flush_domains = 0;
-	}
+	/* Flush/invalidate caches and chipset buffer */
+	i915_gem_dev_set_domain (dev);
 
 	exec_offset = validate_list[args->buffer_count - 1].buffer_offset;
-
-	/* make sure all previous memory operations have passed */
 
 #if WATCH_EXEC
 	i915_gem_dump_object (object_list[args->buffer_count - 1],
@@ -773,6 +853,12 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		struct drm_gem_object *obj = object_list[i];
 		struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
+		/*
+		 * Have the cookie hold a reference to this object
+		 * which is freed when the object is waited for
+		 */
+		if (obj_priv->last_rendering_cookie == 0)
+			drm_gem_object_reference (obj);
 		obj_priv->last_rendering_cookie = cookie;
 	}
 
@@ -789,6 +875,13 @@ err:
 		for (i = 0; i < args->buffer_count; i++)
 			drm_gem_object_unreference(object_list[i]);
 	}
+
+	/* XXX kludge for now as we don't clean the exec ring yet */
+	if (object_list != NULL) {
+		for (i = 0; i < args->buffer_count; i++)
+			i915_gem_object_wait_rendering (object_list[i]);
+	}
+
 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
 	drm_free(validate_list, sizeof(*validate_list) * args->buffer_count,
@@ -872,4 +965,14 @@ void i915_gem_free_object(struct drm_gem_object *obj)
 	i915_gem_object_unbind(obj);
 
 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
+}
+
+int
+i915_gem_set_domain_ioctl (struct drm_gem_object *obj,
+			   uint32_t read_domains,
+			   uint32_t write_domain)
+{
+	i915_gem_object_set_domain (obj, read_domains, write_domain);
+	i915_gem_dev_set_domain (obj->dev);
+	return 0;
 }

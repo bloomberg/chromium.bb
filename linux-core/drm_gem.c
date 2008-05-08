@@ -325,10 +325,6 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	if (IS_ERR((void *)addr))
 		return addr;
 	
-	/* XXX hack until we have a driver callback to make this work */
-	obj->read_domains = DRM_GEM_DOMAIN_CPU;
-	obj->write_domain = DRM_GEM_DOMAIN_CPU;
-
 	args->addr_ptr = (uint64_t) addr;
 
 	return 0;
@@ -458,6 +454,37 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
 	args->size = obj->size;
 
 	return 0;
+}
+
+/**
+ * Called when user space prepares to use an object
+ */
+int
+drm_gem_set_domain_ioctl (struct drm_device *dev, void *data,
+			  struct drm_file *file_priv)
+{
+	struct drm_gem_set_domain *args = data;
+	struct drm_gem_object *obj;
+	int ret;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	if (dev->driver->gem_set_domain) {
+		ret = dev->driver->gem_set_domain (obj,
+						   args->read_domains,
+						   args->write_domain);
+	} else {
+		obj->read_domains = args->read_domains;
+		obj->write_domain = args->write_domain;
+		ret = 0;
+	}
+	drm_gem_object_unreference (obj);
+	return ret;
 }
 
 /**

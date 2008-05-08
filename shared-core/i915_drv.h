@@ -383,6 +383,9 @@ int i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv);
 int i915_gem_init_object(struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_gem_object *obj);
+int i915_gem_set_domain_ioctl (struct drm_gem_object *obj,
+			       uint32_t read_domains,
+			       uint32_t write_domain);
 
 #endif
 

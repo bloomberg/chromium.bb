@@ -443,6 +443,20 @@ struct drm_i915_gem_relocation_entry {
 	 * the execbuffer ioctl when the relocation is written.
 	 */
 	uint64_t presumed_offset;
+
+	/**
+	 * Target memory domains read by this operation.
+	 */
+	uint32_t read_domains;
+
+	/**
+	 * Target memory domains written by this operation.
+	 *
+	 * Note that only one domain may be written by the whole
+	 * execbuffer operation, so that where there are conflicts,
+	 * the application will get -EINVAL back.
+	 */
+	uint32_t write_domain;
 };
 
 /**
@@ -451,13 +465,6 @@ struct drm_i915_gem_relocation_entry {
  * Most of these just align with the various caches in
  * the system and are used to flush and invalidate as
  * objects end up cached in different domains.
- *
- * STOLEN is a domain for the stolen memory portion of the
- * address space; those pages are accessible only through the
- * GTT and, hence, look a lot like VRAM on a discrete card.
- * We'll allow programs to move objects into stolen memory
- * mostly as a way to demonstrate the VRAM capabilities of this
- * API
  */
 
 /* 0x00000001 is DRM_GEM_DOMAIN_CPU */
@@ -465,8 +472,7 @@ struct drm_i915_gem_relocation_entry {
 #define DRM_GEM_DOMAIN_I915_SAMPLER	0x00000004	/* Sampler cache, used by texture engine */
 #define DRM_GEM_DOMAIN_I915_COMMAND	0x00000008	/* Command queue, used to load batch buffers */
 #define DRM_GEM_DOMAIN_I915_INSTRUCTION	0x00000010	/* Instruction cache, used by shader programs */
-#define DRM_GEM_DOMAIN_I915_STOLEN	0x00000020	/* Stolen memory, needed by some objects */
-#define DRM_GEM_DOMAIN_I915_VERTEX	0x00000040	/* Vertex address cache */
+#define DRM_GEM_DOMAIN_I915_VERTEX	0x00000020	/* Vertex address cache */
 
 struct drm_i915_gem_validate_entry {
 	/**
@@ -481,10 +487,6 @@ struct drm_i915_gem_validate_entry {
 	
 	/** Required alignment in graphics aperture */
 	uint64_t alignment;
-
-	/** Memory domains used in this execbuffer run */
-	uint32_t read_domains;
-	uint32_t write_domain;
 
 	/**
 	 * Returned value of the updated offset of the buffer, for future
