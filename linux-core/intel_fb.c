@@ -754,7 +754,12 @@ EXPORT_SYMBOL(intelfb_probe);
 int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct drm_framebuffer *fb = crtc->fb;
-	struct fb_info *info = fb->fbdev;
+	struct fb_info *info;
+
+	if (!fb)
+		return -EINVAL;
+
+	info = fb->fbdev;
 	
 	if (info) {
 		unregister_framebuffer(info);
