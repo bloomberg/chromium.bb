@@ -763,6 +763,7 @@ int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 		drm_framebuffer_destroy(fb);
 		framebuffer_release(info);
 	}
+	crtc->fb = NULL;
 	return 0;
 }
 EXPORT_SYMBOL(intelfb_remove);
