@@ -69,11 +69,11 @@
  */
 
 int
-drm_gem_init (struct drm_device *dev)
+drm_gem_init(struct drm_device *dev)
 {
-	spin_lock_init (&dev->object_name_lock);
-	idr_init (&dev->object_name_idr);
-	atomic_set (&dev->object_count, 0);
+	spin_lock_init(&dev->object_name_lock);
+	idr_init(&dev->object_name_idr);
+	atomic_set(&dev->object_count, 0);
 	return 0;
 }
 
@@ -96,8 +96,8 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 		return NULL;
 	}
 
-	kref_init (&obj->refcount);
-	kref_init (&obj->handlecount);
+	kref_init(&obj->refcount);
+	kref_init(&obj->handlecount);
 	obj->size = size;
 
 	if (dev->driver->gem_init_object != NULL &&
@@ -106,7 +106,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 		kfree(obj);
 		return NULL;
 	}
-	atomic_inc (&dev->object_count);
+	atomic_inc(&dev->object_count);
 	return obj;
 }
 
@@ -151,7 +151,7 @@ drm_gem_handle_delete(struct drm_file *filp, int handle)
  * will likely want to dereference the object afterwards.
  */
 static int
-drm_gem_handle_create (struct drm_file *file_priv,
+drm_gem_handle_create(struct drm_file *file_priv,
 		       struct drm_gem_object *obj,
 		       int *handlep)
 {
@@ -166,16 +166,16 @@ again:
 		return -ENOMEM;
 
 	/* do the allocation under our spinlock */
-	spin_lock (&file_priv->table_lock);
+	spin_lock(&file_priv->table_lock);
 	ret = idr_get_new_above(&file_priv->object_idr, obj, 1, handlep);
-	spin_unlock (&file_priv->table_lock);
+	spin_unlock(&file_priv->table_lock);
 	if (ret == -EAGAIN)
 		goto again;
 
 	if (ret != 0)
 		return ret;
-	
-	drm_gem_object_handle_reference (obj);
+
+	drm_gem_object_handle_reference(obj);
 	return 0;
 }
 
@@ -224,7 +224,7 @@ drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
 	if (obj == NULL)
 		return -ENOMEM;
 
-	ret = drm_gem_handle_create (file_priv, obj, &handle);
+	ret = drm_gem_handle_create(file_priv, obj, &handle);
 	drm_gem_object_handle_unreference(obj);
 
 	if (ret)
@@ -324,7 +324,7 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	drm_gem_object_unreference(obj);
 	if (IS_ERR((void *)addr))
 		return addr;
-	
+
 	args->addr_ptr = (uint64_t) addr;
 
 	return 0;
@@ -391,17 +391,17 @@ drm_gem_name_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 
 again:
-	if (idr_pre_get(&dev->object_name_idr, GFP_KERNEL) == 0) {
+	if (idr_pre_get(&dev->object_name_idr, GFP_KERNEL) == 0)
 		return -ENOMEM;
-	}
+
 	spin_lock(&dev->object_name_lock);
 	if (obj->name) {
-		spin_unlock (&dev->object_name_lock);
+		spin_unlock(&dev->object_name_lock);
 		return -EEXIST;
 	}
-	ret = idr_get_new_above (&dev->object_name_idr, obj, 1,
+	ret = idr_get_new_above(&dev->object_name_idr, obj, 1,
 				 &obj->name);
-	spin_unlock (&dev->object_name_lock);
+	spin_unlock(&dev->object_name_lock);
 	if (ret == -EAGAIN)
 		goto again;
 
@@ -410,7 +410,7 @@ again:
 		return ret;
 	}
 
-	/* 
+	/*
 	 * Leave the reference from the lookup around as the
 	 * name table now holds one
 	 */
@@ -437,16 +437,16 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
 	if (!(dev->driver->driver_features & DRIVER_GEM))
 		return -ENODEV;
 
-	spin_lock (&dev->object_name_lock);
-	obj = idr_find (&dev->object_name_idr, (int) args->name);
+	spin_lock(&dev->object_name_lock);
+	obj = idr_find(&dev->object_name_idr, (int) args->name);
 	if (obj)
-		drm_gem_object_reference (obj);
-	spin_unlock (&dev->object_name_lock);
+		drm_gem_object_reference(obj);
+	spin_unlock(&dev->object_name_lock);
 	if (!obj)
 		return -ENOENT;
 
-	ret = drm_gem_handle_create (file_priv, obj, &handle);
-	drm_gem_object_unreference (obj);
+	ret = drm_gem_handle_create(file_priv, obj, &handle);
+	drm_gem_object_unreference(obj);
 	if (ret)
 		return ret;
 
@@ -460,7 +460,7 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
  * Called when user space prepares to use an object
  */
 int
-drm_gem_set_domain_ioctl (struct drm_device *dev, void *data,
+drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 			  struct drm_file *file_priv)
 {
 	struct drm_gem_set_domain *args = data;
@@ -475,7 +475,7 @@ drm_gem_set_domain_ioctl (struct drm_device *dev, void *data,
 		return -EINVAL;
 
 	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain (obj,
+		ret = dev->driver->gem_set_domain(obj,
 						   args->read_domains,
 						   args->write_domain);
 	} else {
@@ -483,7 +483,7 @@ drm_gem_set_domain_ioctl (struct drm_device *dev, void *data,
 		obj->write_domain = args->write_domain;
 		ret = 0;
 	}
-	drm_gem_object_unreference (obj);
+	drm_gem_object_unreference(obj);
 	return ret;
 }
 
@@ -495,12 +495,15 @@ void
 drm_gem_open(struct drm_device *dev, struct drm_file *file_private)
 {
 	idr_init(&file_private->object_idr);
-	spin_lock_init (&file_private->table_lock);
+	spin_lock_init(&file_private->table_lock);
 }
 
-/** Called at device close to release the file's handle references on objects. */
+/**
+ * Called at device close to release the file's
+ * handle references on objects.
+ */
 static int
-drm_gem_object_release_handle (int id, void *ptr, void *data)
+drm_gem_object_release_handle(int id, void *ptr, void *data)
 {
 	struct drm_gem_object *obj = ptr;
 
@@ -517,7 +520,8 @@ drm_gem_object_release_handle (int id, void *ptr, void *data)
 void
 drm_gem_release(struct drm_device *dev, struct drm_file *file_private)
 {
-	idr_for_each(&file_private->object_idr, &drm_gem_object_release_handle, NULL);
+	idr_for_each(&file_private->object_idr,
+		     &drm_gem_object_release_handle, NULL);
 
 	idr_destroy(&file_private->object_idr);
 }
@@ -528,7 +532,7 @@ drm_gem_release(struct drm_device *dev, struct drm_file *file_private)
  * Frees the object
  */
 void
-drm_gem_object_free (struct kref *kref)
+drm_gem_object_free(struct kref *kref)
 {
 	struct drm_gem_object *obj = (struct drm_gem_object *) kref;
 	struct drm_device *dev = obj->dev;
@@ -537,7 +541,7 @@ drm_gem_object_free (struct kref *kref)
 		dev->driver->gem_free_object(obj);
 
 	fput(obj->filp);
-	atomic_dec (&dev->object_count);
+	atomic_dec(&dev->object_count);
 	kfree(obj);
 }
 EXPORT_SYMBOL(drm_gem_object_free);
@@ -550,24 +554,26 @@ EXPORT_SYMBOL(drm_gem_object_free);
  * freed memory
  */
 void
-drm_gem_object_handle_free (struct kref *kref)
+drm_gem_object_handle_free(struct kref *kref)
 {
-	struct drm_gem_object *obj = container_of (kref, struct drm_gem_object, handlecount);
+	struct drm_gem_object *obj = container_of(kref,
+						  struct drm_gem_object,
+						  handlecount);
 	struct drm_device *dev = obj->dev;
 
 	/* Remove any name for this object */
-	spin_lock (&dev->object_name_lock);
+	spin_lock(&dev->object_name_lock);
 	if (obj->name) {
-		idr_remove (&dev->object_name_idr, obj->name);
-		spin_unlock (&dev->object_name_lock);
+		idr_remove(&dev->object_name_idr, obj->name);
+		spin_unlock(&dev->object_name_lock);
 		/*
 		 * The object name held a reference to this object, drop
 		 * that now.
 		 */
-		drm_gem_object_unreference (obj);
+		drm_gem_object_unreference(obj);
 	} else
-		spin_unlock (&dev->object_name_lock);
-	
+		spin_unlock(&dev->object_name_lock);
+
 }
 EXPORT_SYMBOL(drm_gem_object_handle_free);
 

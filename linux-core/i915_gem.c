@@ -883,11 +883,13 @@ err:
 			drm_gem_object_unreference(object_list[i]);
 	}
 
+#if 0
 	/* XXX kludge for now as we don't clean the exec ring yet */
 	if (object_list != NULL) {
 		for (i = 0; i < args->buffer_count; i++)
 			i915_gem_object_wait_rendering (object_list[i]);
 	}
+#endif
 
 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
