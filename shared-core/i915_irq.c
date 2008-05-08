@@ -198,9 +198,6 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 		if ((counter[pipe] - vbl_swap->sequence) > (1<<23))
 			continue;
 
-		master_priv = vbl_swap->minor->master->driver_priv;
-		sarea_priv = master_priv->sarea_priv;
-		
 		list_del(list);
 		dev_priv->swaps_pending--;
 		drm_vblank_put(dev, pipe);
@@ -249,16 +246,6 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 
 	i915_kernel_lost_context(dev);
 
-	upper[0] = upper[1] = 0;
-	slice[0] = max(sarea_priv->planeA_h / nhits, 1);
-	slice[1] = max(sarea_priv->planeB_h / nhits, 1);
-	lower[0] = sarea_priv->planeA_y + slice[0];
-	lower[1] = sarea_priv->planeB_y + slice[0];
-
-	offsets[0] = sarea_priv->front_offset;
-	offsets[1] = sarea_priv->back_offset;
-	offsets[2] = sarea_priv->third_offset;
-	num_pages = sarea_priv->third_handle ? 3 : 2;
 
 	DRM_SPINLOCK(&dev->drw_lock);
 
@@ -272,8 +259,6 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 	     upper[1] = lower[1], lower[1] += slice[1]) {
 		int init_drawrect = 1;
 
-		if (i == nhits)
-			lower[0] = lower[1] = sarea_priv->height;
 
 		list_for_each(hit, &hits) {
 			struct drm_i915_vbl_swap *swap_hit =
@@ -281,6 +266,24 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			struct drm_clip_rect *rect;
 			int num_rects, plane, front, back;
 			unsigned short top, bottom;
+
+			sarea_priv = master_priv->sarea_priv;
+
+			upper[0] = upper[1] = 0;
+			slice[0] = max(sarea_priv->planeA_h / nhits, 1);
+			slice[1] = max(sarea_priv->planeB_h / nhits, 1);
+			lower[0] = sarea_priv->planeA_y + slice[0];
+			lower[1] = sarea_priv->planeB_y + slice[0];
+
+			offsets[0] = sarea_priv->front_offset;
+			offsets[1] = sarea_priv->back_offset;
+			offsets[2] = sarea_priv->third_offset;
+			num_pages = sarea_priv->third_handle ? 3 : 2;
+			if (i == nhits)
+				lower[0] = lower[1] = sarea_priv->height;
+
+			pitchropcpp = (sarea_priv->pitch * cpp) | (0xcc << 16) |
+					(cpp << 23) | (1 << 24);
 
 			drw = drm_get_drawable_info(dev, swap_hit->drw_id);
 
@@ -293,6 +296,8 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 				i915_dispatch_vsync_flip(dev, drw, plane);
 				continue;
 			}
+
+			master_priv = swap_hit->minor->master->driver_priv;
 
 			if (init_drawrect) {
 				int width  = sarea_priv->width;
@@ -331,6 +336,8 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			front = (master_priv->sarea_priv->pf_current_page >>
 				 (2 * plane)) & 0x3;
 			back = (front + 1) % num_pages;
+
+		
 
 			for (num_rects = drw->num_rects; num_rects--; rect++) {
 				int y1 = max(rect->y1, top);
