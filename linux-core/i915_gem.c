@@ -415,6 +415,13 @@ i915_gem_clflush_object (struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object	*obj_priv = obj->driver_private;
 
+	/* If we don't have a page list set up, then we're not pinned
+	 * to GPU, and we can ignore the cache flush because it'll happen
+	 * again at bind time.
+	 */
+	if (obj_priv->page_list == NULL)
+		return;
+
 	drm_ttm_cache_flush (obj_priv->page_list, obj->size / PAGE_SIZE);
 }
 	
