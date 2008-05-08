@@ -308,7 +308,7 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
  * Cursor manipulation
  */
 
-int drmModeSetCursor(int fd, uint32_t crtcId, drmBO *bo, uint32_t width, uint32_t height)
+int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width, uint32_t height)
 {
 	struct drm_mode_cursor arg;
 
@@ -316,10 +316,7 @@ int drmModeSetCursor(int fd, uint32_t crtcId, drmBO *bo, uint32_t width, uint32_
 	arg.crtc = crtcId;
 	arg.width = width;
 	arg.height = height;
-	if (bo)
-		arg.handle = bo->handle;
-	else
-		arg.handle = 0;
+	arg.handle = bo_handle;
 
 	return ioctl(fd, DRM_IOCTL_MODE_CURSOR, &arg);
 }
