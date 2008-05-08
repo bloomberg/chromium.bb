@@ -1130,15 +1130,26 @@ EXPORT_SYMBOL(drm_mode_config_cleanup);
  * RETURNS:
  * Zero. (FIXME)
  */
-int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, struct drm_display_mode *new_mode, struct drm_output **output_set, struct drm_framebuffer *fb)
+int drm_crtc_set_config(struct drm_mode_set *set)
 {
-	struct drm_device *dev = crtc->dev;
+	struct drm_device *dev;
 	struct drm_crtc **save_crtcs, *new_crtc;
-	bool save_enabled = crtc->enabled;
+	bool save_enabled;
 	bool changed = false;
 	bool flip_or_move = false;
 	struct drm_output *output;
 	int count = 0, ro;
+
+	if (!set)
+		return -EINVAL;
+
+	if (!set->crtc)
+		return -EINVAL;
+
+	dev = set->crtc->dev;
+
+	/* save previous config */
+	save_enabled = set->crtc->enabled;
 
 	/* this is meant to be num_output not num_crtc */
 	save_crtcs = kzalloc(dev->mode_config.num_output * sizeof(struct drm_crtc *), GFP_KERNEL);
@@ -1147,30 +1158,30 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 
 	/* We should be able to check here if the fb has the same properties
 	 * and then just flip_or_move it */
-	if (crtc->fb != fb)
+	if (set->crtc->fb != set->fb)
 		flip_or_move = true;
 
-	if (crtc_info->x != crtc->x || crtc_info->y != crtc->y)
+	if (set->x != set->crtc->x || set->y != set->crtc->y)
 		flip_or_move = true;
 
-	if (new_mode && !drm_mode_equal(new_mode, &crtc->mode)) {
+	if (set->mode && !drm_mode_equal(set->mode, &set->crtc->mode)) {
 		DRM_DEBUG("modes are different\n");
-		drm_mode_debug_printmodeline(dev, &crtc->mode);
-		drm_mode_debug_printmodeline(dev, new_mode);
+		drm_mode_debug_printmodeline(dev, &set->crtc->mode);
+		drm_mode_debug_printmodeline(dev, set->mode);
 		changed = true;
 	}
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
 		save_crtcs[count++] = output->crtc;
 
-		if (output->crtc == crtc)
+		if (output->crtc == set->crtc)
 			new_crtc = NULL;
 		else
 			new_crtc = output->crtc;
 
-		for (ro = 0; ro < crtc_info->count_outputs; ro++) {
-			if (output_set[ro] == output)
-				new_crtc = crtc;
+		for (ro = 0; ro < set->num_outputs; ro++) {
+			if (set->outputs[ro] == output)
+				new_crtc = set->crtc;
 		}
 		if (new_crtc != output->crtc) {
 			changed = true;
@@ -1179,33 +1190,34 @@ int drm_crtc_set_config(struct drm_crtc *crtc, struct drm_mode_crtc *crtc_info, 
 	}
 
 	/* mode_set_base is not a required function */
-	if (flip_or_move && !crtc->funcs->mode_set_base)
+	if (flip_or_move && !set->crtc->funcs->mode_set_base)
 		changed = true;
 
 	if (changed) {
-		crtc->fb = fb;
-		crtc->enabled = (new_mode != NULL);
-		if (new_mode != NULL) {
+		set->crtc->fb = set->fb;
+		set->crtc->enabled = (set->mode != NULL);
+		if (set->mode != NULL) {
 			DRM_DEBUG("attempting to set mode from userspace\n");
-			drm_mode_debug_printmodeline(dev, new_mode);
-			if (!drm_crtc_set_mode(crtc, new_mode, crtc_info->x,
-					       crtc_info->y)) {
-				crtc->enabled = save_enabled;
+			drm_mode_debug_printmodeline(dev, set->mode);
+			if (!drm_crtc_set_mode(set->crtc, set->mode, set->x,
+					       set->y)) {
+				set->crtc->enabled = save_enabled;
 				count = 0;
 				list_for_each_entry(output, &dev->mode_config.output_list, head)
 					output->crtc = save_crtcs[count++];
 				kfree(save_crtcs);
 				return -EINVAL;
 			}
-			crtc->desired_x = crtc_info->x;
-			crtc->desired_y = crtc_info->y;
-			crtc->desired_mode = new_mode;
+			/* TODO are these needed? */
+			set->crtc->desired_x = set->x;
+			set->crtc->desired_y = set->y;
+			set->crtc->desired_mode = set->mode;
 		}
 		drm_disable_unused_functions(dev);
 	} else if (flip_or_move) {
-		if (crtc->fb != fb)
-			crtc->fb = fb;
-		crtc->funcs->mode_set_base(crtc, crtc_info->x, crtc_info->y);
+		if (set->crtc->fb != set->fb)
+			set->crtc->fb = set->fb;
+		set->crtc->funcs->mode_set_base(set->crtc, set->x, set->y);
 	}
 
 	kfree(save_crtcs);
@@ -1648,6 +1660,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 	struct drm_output **output_set = NULL, *output;
 	struct drm_framebuffer *fb = NULL;
 	struct drm_display_mode *mode = NULL;
+	struct drm_mode_set set;
 	uint32_t __user *set_outputs_ptr;
 	int ret = 0;
 	int i;
@@ -1724,7 +1737,14 @@ int drm_mode_setcrtc(struct drm_device *dev,
 		}
 	}
 
-	ret = drm_crtc_set_config(crtc, crtc_req, mode, output_set, fb);
+	set.crtc = crtc;
+	set.x = crtc_req->x;
+	set.y = crtc_req->y;
+	set.mode = mode;
+	set.outputs = output_set;
+	set.num_outputs = crtc_req->count_outputs;
+	set.fb =fb;
+	ret = drm_crtc_set_config(&set);
 
 out:
 	kfree(output_set);

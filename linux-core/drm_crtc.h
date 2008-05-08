@@ -475,11 +475,17 @@ struct drm_output {
  *
  * Represents a single crtc the outputs that it drives with what mode
  * and from which framebuffer it scans out from.
+ *
+ * This is used to set modes.
  */
 struct drm_mode_set
 {
 	struct drm_framebuffer *fb;
 	struct drm_crtc *crtc;
+	struct drm_display_mode *mode;
+
+	uint32_t x;
+	uint32_t y;
 
 	struct drm_output **outputs;
 	size_t num_outputs;
