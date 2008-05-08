@@ -1448,8 +1448,13 @@ void intel_modeset_init(struct drm_device *dev)
 	dev->mode_config.min_width = 0;
 	dev->mode_config.min_height = 0;
 
-	dev->mode_config.max_width = 4096;
-	dev->mode_config.max_height = 4096;
+	if (IS_I965G(dev)) {
+		dev->mode_config.max_width = 8192;
+		dev->mode_config.max_height = 8192;
+	} else {
+		dev->mode_config.max_width = 2048;
+		dev->mode_config.max_height = 2048;
+	}
 
 	/* set memory base */
 	if (IS_I9XX(dev))
