@@ -243,6 +243,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		break;
 	case 0x50:
 	case 0x80: /* gotta love NVIDIA's consistency.. */
+	case 0x90:
 		engine->instmem.init	= nv50_instmem_init;
 		engine->instmem.takedown= nv50_instmem_takedown;
 		engine->instmem.populate	= nv50_instmem_populate;

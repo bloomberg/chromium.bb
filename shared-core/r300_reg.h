@@ -1632,6 +1632,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R500_RS_IP_0                    0x4074
 #define R500_RS_INST_0                  0x4320
 
+#define R500_US_CONFIG                  0x4600
+
 #endif /* _R300_REG_H */
 
 /* *INDENT-ON* */

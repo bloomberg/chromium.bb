@@ -235,6 +235,7 @@ void r300_init_reg_flags(struct drm_device *dev)
 	ADD_RANGE(R300_VAP_INPUT_ROUTE_1_0, 8);
 
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515) {
+		ADD_RANGE(R500_US_CONFIG, 2);
 		ADD_RANGE(R500_RS_IP_0, 16);
 		ADD_RANGE(R500_RS_INST_0, 16);
 	} else {
