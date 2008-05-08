@@ -34,6 +34,7 @@
 #include <DbgHelp.h>
 #include <string>
 #include <utility>
+#include "common/windows/string_utils-inl.h"
 #include "google_breakpad/common/minidump_format.h"
 
 namespace google_breakpad {
@@ -60,7 +61,7 @@ struct CustomInfoEntry {
       name[0] = L'\0';
       return;
     }
-    wcscpy_s(name, kNameMaxLength, name_arg);
+    WindowsStringUtils::safe_wcscpy(name, kNameMaxLength, name_arg);
   }
 
   void set_value(const wchar_t* value_arg) {
@@ -68,7 +69,8 @@ struct CustomInfoEntry {
       value[0] = L'\0';
       return;
     }
-    wcscpy_s(value, kValueMaxLength, value_arg);
+
+    WindowsStringUtils::safe_wcscpy(value, kValueMaxLength, value_arg);
   }
 
   void set(const wchar_t* name_arg, const wchar_t* value_arg) {

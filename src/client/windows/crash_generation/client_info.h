@@ -93,7 +93,7 @@ class ClientInfo {
   bool PopulateCustomInfo();
 
   // Returns the client custom information.
-  const CustomClientInfo& GetCustomInfo() const;
+  CustomClientInfo GetCustomInfo() const;
 
  private:
   // Crash generation server.

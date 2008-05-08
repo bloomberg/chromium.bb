@@ -169,8 +169,11 @@ bool ClientInfo::PopulateCustomInfo() {
   return bytes_count == read_count;
 }
 
-const CustomClientInfo& ClientInfo::GetCustomInfo() const {
-  return custom_client_info_;
+CustomClientInfo ClientInfo::GetCustomInfo() const {
+  CustomClientInfo custom_info;
+  custom_info.entries = custom_info_entries_.get();
+  custom_info.count = custom_client_info_.count;
+  return custom_info;
 }
 
 }  // namespace google_breakpad

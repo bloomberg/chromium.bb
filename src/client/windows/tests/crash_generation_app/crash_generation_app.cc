@@ -35,7 +35,7 @@
 namespace google_breakpad {
 
 const int kMaxLoadString = 100;
-const wchar_t kPipeName[] = L"\\\\.\\pipe\\GoogleCrashServices-Testing";
+const wchar_t kPipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\S-1-5-21-39260824-743453154-142223018-195347";
 
 const DWORD kEditBoxStyles = WS_CHILD |
                              WS_VISIBLE |
@@ -221,7 +221,7 @@ static void _cdecl ShowClientCrashed(void* context,
 
   QueueUserWorkItem(AppendTextWorker, line, WT_EXECUTEDEFAULT);
 
-  const CustomClientInfo& custom_info = client_info->GetCustomInfo();
+  CustomClientInfo custom_info = client_info->GetCustomInfo();
   if (custom_info.count <= 0) {
     return;
   }
