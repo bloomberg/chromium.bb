@@ -33,6 +33,8 @@
 /* General customization:
  */
 
+#include "intel_bios.h"
+
 #define DRIVER_AUTHOR		"Tungsten Graphics, Inc."
 
 #define DRIVER_NAME		"i915"
@@ -170,6 +172,10 @@ struct drm_i915_private {
 	/* DRI2 sarea */
 	struct drm_buffer_object *sarea_bo;
 	struct drm_bo_kmap_obj sarea_kmap;
+
+	/* BIOS data */
+	struct vbt_header *vbt;
+	struct bdb_header *bdb;
 
 	/* Register state */
 	u8 saveLBB;

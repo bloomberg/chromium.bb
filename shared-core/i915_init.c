@@ -12,6 +12,7 @@
 #include "drm_sarea.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
+#include "intel_bios.h"
 
 /**
  * i915_probe_agp - get AGP bootup configuration
@@ -257,6 +258,12 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		dev_priv->wq = create_singlethread_workqueue("i915");
 		if (dev_priv == 0) {
 		  DRM_DEBUG("Error\n");
+		}
+
+		ret = intel_find_bios(dev);
+		if (ret) {
+			DRM_ERROR("failed to find VBT\n");
+			return -ENODEV;
 		}
 
 		intel_modeset_init(dev);
