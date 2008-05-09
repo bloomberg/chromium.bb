@@ -640,8 +640,10 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		/* If the relocation already has the right value in it, no
 		 * more work needs to be done.
 		 */
-		if (target_obj_priv->gtt_offset == reloc.presumed_offset)
+		if (target_obj_priv->gtt_offset == reloc.presumed_offset) {
+			drm_gem_object_unreference(target_obj);
 			continue;
+		}
 
 		/* Now that we're going to actually write some data in,
 		 * make sure that any rendering using this buffer's contents
