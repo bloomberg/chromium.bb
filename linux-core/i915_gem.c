@@ -211,6 +211,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);
 		drm_free_agp(obj_priv->agp_mem, obj->size / PAGE_SIZE);
+		obj_priv->agp_mem = NULL;
 	}
 
 	i915_gem_object_free_page_list(obj);
