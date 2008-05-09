@@ -1052,6 +1052,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		_DRM_KERNEL | _DRM_DRIVER, &dev_priv->mmio_map);
 
 	INIT_LIST_HEAD(&dev_priv->mm.gtt_lru);
+	INIT_LIST_HEAD(&dev_priv->mm.execution_list);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
@@ -1093,6 +1094,7 @@ void i915_driver_lastclose(struct drm_device * dev)
 		dev_priv->val_bufs = NULL;
 	}
 #endif
+	i915_gem_lastclose(dev);
 
 	if (drm_getsarea(dev) && dev_priv->sarea_priv)
 		i915_do_cleanup_pageflip(dev);
