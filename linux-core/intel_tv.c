@@ -1597,12 +1597,11 @@ intel_tv_init(struct drm_device *dev)
 	char **tv_format_names;
 	int i, initial_mode = 0;
 
-	/* FIXME: better TV detection and/or quirks */
-#if 0
-	if (tv_priv->quirk_flag & QUIRK_IGNORE_TV)
-		return;
-#endif
 	if ((I915_READ(TV_CTL) & TV_FUSE_STATE_MASK) == TV_FUSE_STATE_DISABLED)
+		return;
+
+	/* Even if we have an encoder we may not have a connector */
+	if (!dev_priv->bdb->int_tv_support)
 		return;
 
 	/*
