@@ -256,7 +256,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		DRM_DEBUG("Enabled hardware status page\n");
 
 		dev_priv->wq = create_singlethread_workqueue("i915");
-		if (dev_priv == 0) {
+		if (dev_priv->wq == 0) {
 		  DRM_DEBUG("Error\n");
 		}
 
@@ -291,6 +291,7 @@ int i915_driver_unload(struct drm_device *dev)
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 		drm_irq_uninstall(dev);
 		intel_modeset_cleanup(dev);
+		destroy_workqueue(dev_priv->wq);
 	}
 
 #if 0
