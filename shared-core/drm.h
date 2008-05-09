@@ -961,7 +961,7 @@ struct drm_mm_info_arg {
 };
 
 
-struct drm_gem_alloc {
+struct drm_gem_create {
 	/**
 	 * Requested size for the object.
 	 *
@@ -977,8 +977,8 @@ struct drm_gem_alloc {
 	uint32_t pad;
 };
 
-struct drm_gem_unreference {
-	/** Handle of the object to be unreferenced. */
+struct drm_gem_close {
+	/** Handle of the object to be closed. */
 	uint32_t handle;
 	uint32_t pad;
 };
@@ -1023,7 +1023,7 @@ struct drm_gem_mmap {
 	uint64_t addr_ptr;	/* void *, but pointers are not 32/64 compatible */
 };
 
-struct drm_gem_name {
+struct drm_gem_flink {
 	/** Handle for the object being named */
 	uint32_t handle;
 
@@ -1123,12 +1123,12 @@ struct drm_gem_set_domain {
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, struct drm_update_draw)
 
-#define DRM_IOCTL_GEM_ALLOC		DRM_IOWR(0x09, struct drm_gem_alloc)
-#define DRM_IOCTL_GEM_UNREFERENCE	DRM_IOW (0x0a, struct drm_gem_unreference)
+#define DRM_IOCTL_GEM_CREATE		DRM_IOWR(0x09, struct drm_gem_create)
+#define DRM_IOCTL_GEM_CLOSE		DRM_IOW (0x0a, struct drm_gem_close)
 #define DRM_IOCTL_GEM_PREAD		DRM_IOW (0x0b, struct drm_gem_pread)
 #define DRM_IOCTL_GEM_PWRITE		DRM_IOW (0x0c, struct drm_gem_pwrite)
 #define DRM_IOCTL_GEM_MMAP		DRM_IOWR(0x0d, struct drm_gem_mmap)
-#define DRM_IOCTL_GEM_NAME		DRM_IOWR(0x0e, struct drm_gem_name)
+#define DRM_IOCTL_GEM_FLINK		DRM_IOWR(0x0e, struct drm_gem_flink)
 #define DRM_IOCTL_GEM_OPEN		DRM_IOWR(0x0f, struct drm_gem_open)
 #define DRM_IOCTL_GEM_SET_DOMAIN	DRM_IOW (0xb7, struct drm_gem_set_domain)
 

@@ -204,13 +204,13 @@ drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 EXPORT_SYMBOL(drm_gem_object_lookup);
 
 /**
- * Allocates a new mm object and returns a handle to it.
+ * Creates a new mm object and returns a handle to it.
  */
 int
-drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
+drm_gem_create_ioctl(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
 {
-	struct drm_gem_alloc *args = data;
+	struct drm_gem_create *args = data;
 	struct drm_gem_object *obj;
 	int handle, ret;
 
@@ -239,10 +239,10 @@ drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
  * Releases the handle to an mm object.
  */
 int
-drm_gem_unreference_ioctl(struct drm_device *dev, void *data,
-			  struct drm_file *file_priv)
+drm_gem_close_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	struct drm_gem_unreference *args = data;
+	struct drm_gem_close *args = data;
 	int ret;
 
 	if (!(dev->driver->driver_features & DRIVER_GEM))
@@ -376,10 +376,10 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
  * is freed, the name goes away.
  */
 int
-drm_gem_name_ioctl(struct drm_device *dev, void *data,
-		   struct drm_file *file_priv)
+drm_gem_flink_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
-	struct drm_gem_name *args = data;
+	struct drm_gem_flink *args = data;
 	struct drm_gem_object *obj;
 	int ret;
 

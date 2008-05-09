@@ -1394,18 +1394,18 @@ static inline void drm_gem_object_handle_unreference (struct drm_gem_object *obj
 struct drm_gem_object *
 drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 		      int handle);
-int drm_gem_alloc_ioctl(struct drm_device *dev, void *data,
+int drm_gem_create_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+int drm_gem_close_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
-int drm_gem_unreference_ioctl(struct drm_device *dev, void *data,
-			      struct drm_file *file_priv);
 int drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv);
 int drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv);
-int drm_gem_name_ioctl(struct drm_device *dev, void *data,
-		       struct drm_file *file_priv);
+int drm_gem_flink_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
 int drm_gem_open_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv);
 int drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
