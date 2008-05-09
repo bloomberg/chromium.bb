@@ -2406,8 +2406,14 @@ int drm_bo_driver_init(struct drm_device *dev)
 	 * Other types need to be driver / IOCTL initialized.
 	 */
 	ret = drm_bo_init_mm(dev, DRM_BO_MEM_LOCAL, 0, 0, 1);
-	if (ret)
+	if (ret) {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
+		ClearPageReserved(bm->dummy_read_page);
+#endif
+		__free_page(bm->dummy_read_page);
+		bm->dummy_read_page = NULL;
 		goto out_unlock;
+	}
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 	INIT_WORK(&bm->wq, &drm_bo_delayed_workqueue, dev);
