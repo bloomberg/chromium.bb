@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -15,8 +16,6 @@ void pan(int fd, struct fb_var_screeninfo *var, int x, int y);
 void cursor(int fd, int drmfd);
 void prettyColors(int fd);
 void prettyCursor(int fd, unsigned int handle, unsigned int color);
-
-extern void sleep(int);
 
 struct fb_var_screeninfo var;
 struct fb_fix_screeninfo fix;
@@ -152,7 +151,7 @@ void cursor(int fd, int drmfd)
 	}
 
 	prettyCursor(drmfd, bo.handle, 0xFFFF00FF);
-	drmModeSetCursor(drmfd, crtc, &bo, 64, 64);
+	drmModeSetCursor(drmfd, crtc, bo.handle, 64, 64);
 	drmModeMoveCursor(drmfd, crtc, 0, 0);
 	sleep(1);
 	prettyCursor(drmfd, bo.handle, 0xFFFF0000);
@@ -160,7 +159,7 @@ void cursor(int fd, int drmfd)
 	sleep(1);
 	drmModeMoveCursor(drmfd, crtc, 100, 100);
 	sleep(1);
-	drmModeSetCursor(drmfd, crtc, NULL, 0, 0);
+	drmModeSetCursor(drmfd, crtc, 0, 0, 0);
 	drmBOUnreference(drmfd, &bo);
 }
 

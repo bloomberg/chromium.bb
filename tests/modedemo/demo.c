@@ -603,7 +603,7 @@ void testCursor(int fd, uint32_t crtc)
 
 	prettyCursor(fd, bo.handle, 0xFFFF00FF);
 	printf("set cursor\n");
-	drmModeSetCursor(fd, crtc, &bo, 64, 64);
+	drmModeSetCursor(fd, crtc, bo.handle, 64, 64);
 	printf("move cursor 0, 0\n");
 	drmModeMoveCursor(fd, crtc, 0, 0);
 	sleep(1);
@@ -614,7 +614,7 @@ void testCursor(int fd, uint32_t crtc)
 	printf("move cursor 100, 100\n");
 	drmModeMoveCursor(fd, crtc, 100, 100);
 	sleep(1);
-	drmModeSetCursor(fd, crtc, NULL, 0, 0);
+	drmModeSetCursor(fd, crtc, 0, 0, 0);
 }
 
 void prettyCursor(int fd, unsigned int handle, unsigned int color)
