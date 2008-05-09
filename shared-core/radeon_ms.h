@@ -436,7 +436,7 @@ int r3xx_fence_types(struct drm_buffer_object *bo,
 
 /* radeon_ms_fb.c */
 int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output);
-int radeonfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
+int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 
 /* radeon_ms_gpu.c */
 int radeon_ms_gpu_initialize(struct drm_device *dev);

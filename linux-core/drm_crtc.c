@@ -1095,7 +1095,7 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 		if (fb->bo->type != drm_bo_type_kernel)
 			drm_framebuffer_destroy(fb);
 		else
-			dev->driver->fb_remove(dev, drm_crtc_from_fb(dev, fb));
+			dev->driver->fb_remove(dev, fb);
 	}
 
 	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {

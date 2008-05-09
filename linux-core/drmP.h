@@ -744,7 +744,7 @@ struct drm_driver {
 
 	/* FB routines, if present */
 	int (*fb_probe)(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output);
-	int (*fb_remove)(struct drm_device *dev, struct drm_crtc *crtc);
+	int (*fb_remove)(struct drm_device *dev, struct drm_framebuffer *fb);
 	int (*fb_resize)(struct drm_device *dev, struct drm_crtc *crtc);
 
 	/* Master routines */

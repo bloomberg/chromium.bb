@@ -767,9 +767,8 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_outp
 }
 EXPORT_SYMBOL(intelfb_probe);
 
-int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
+int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 {
-	struct drm_framebuffer *fb = crtc->fb;
 	struct fb_info *info;
 
 	if (!fb)
@@ -784,7 +783,6 @@ int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 		drm_framebuffer_destroy(fb);
 		framebuffer_release(info);
 	}
-	crtc->fb = NULL;
 	return 0;
 }
 EXPORT_SYMBOL(intelfb_remove);

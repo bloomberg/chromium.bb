@@ -91,7 +91,7 @@ extern int intel_sdvo_supports_hotplug(struct drm_output *output);
 extern void intel_sdvo_set_hotplug(struct drm_output *output, int enable);
 
 extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output);
-extern int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
+extern int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
 
 #endif /* __INTEL_DRV_H__ */

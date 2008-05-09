@@ -438,7 +438,7 @@ int radeonfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_out
 }
 EXPORT_SYMBOL(radeonfb_probe);
 
-int radeonfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
+int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *kern_fb)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct amd_fb *fb = dev_priv->fb;
