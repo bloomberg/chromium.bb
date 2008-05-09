@@ -217,7 +217,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 
 	mutex_lock(&bo->mutex);
 
-	err = drm_bo_wait(bo, 0, 1, 0);
+	err = drm_bo_wait(bo, 0, 1, 0, 1);
 	if (err) {
 		data->type = (err == -EAGAIN) ?
 			VM_FAULT_MINOR : VM_FAULT_SIGBUS;
