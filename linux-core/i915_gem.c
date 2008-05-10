@@ -48,7 +48,7 @@ i915_gem_init_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 
 	drm_memrange_init(&dev_priv->mm.gtt_space, args->gtt_start,
-	    args->gtt_end);
+	    args->gtt_end - args->gtt_start);
 
 	return 0;
 }
