@@ -192,11 +192,14 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 
 		/* Clear it now that we know it's passed. */
 		obj_priv->last_rendering_cookie = 0;
+
 		/* We were on the execution list since we had a cookie.
 		 * Move to the tail of the LRU list now since we're done.
 		 */
-		list_move_tail(&obj_priv->gtt_lru_entry,
-			       &dev_priv->mm.gtt_lru);
+		if (obj_priv->pin_count == 0)
+			list_move_tail(&obj_priv->gtt_lru_entry,
+				       &dev_priv->mm.gtt_lru);
+
 #if WATCH_LRU
 		DRM_INFO("%s: wait moves to lru list %p\n", __func__, obj);
 #endif
@@ -335,12 +338,15 @@ i915_gem_evict_something(struct drm_device *dev)
 					    struct drm_i915_gem_object,
 					    gtt_lru_entry);
 	} else if (!list_empty(&dev_priv->mm.execution_list)) {
-		/* If there's nothing unused and ready, grab the LRU
-		 * from the currently executing list.
+		/* If there's nothing unused and ready, grab the first
+		 * unpinned object from the currently executing list.
 		 */
-		obj_priv = list_first_entry(&dev_priv->mm.execution_list,
-					    struct drm_i915_gem_object,
-					    gtt_lru_entry);
+		list_for_each_entry(obj_priv, &dev_priv->mm.execution_list,
+				    gtt_lru_entry)
+			if (obj_priv->pin_count == 0)
+				break;
+		if (!obj_priv)
+			return -ENOMEM;
 	} else {
 		return -ENOMEM;
 	}
