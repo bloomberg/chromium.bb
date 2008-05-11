@@ -244,7 +244,12 @@ typedef struct drm_i915_private {
 
 	struct {
 		struct drm_memrange gtt_space;
-		/** LRU List of unpinned objects in the GTT. */
+		/**
+		 * List of objects currently involved in rendering from the
+		 * ringbuffer.
+		 */
+		struct list_head execution_list;
+		/** LRU List of non-executing objects still in the GTT. */
 		struct list_head gtt_lru;
 	} mm;
 } drm_i915_private_t;
@@ -386,7 +391,7 @@ void i915_gem_free_object(struct drm_gem_object *obj);
 int i915_gem_set_domain_ioctl (struct drm_gem_object *obj,
 			       uint32_t read_domains,
 			       uint32_t write_domain);
-
+void i915_gem_lastclose(struct drm_device *dev);
 #endif
 
 #ifdef __linux__
