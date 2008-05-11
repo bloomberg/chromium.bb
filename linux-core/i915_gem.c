@@ -525,7 +525,7 @@ i915_gem_dev_set_domain(struct drm_device *dev)
 static int
 i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 				   struct drm_file *file_priv,
-				   struct drm_i915_gem_validate_entry *entry)
+				   struct drm_i915_gem_exec_object *entry)
 {
 	struct drm_device *dev = obj->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -543,7 +543,7 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 			return -ENOMEM;
 	}
 
-	entry->buffer_offset = obj_priv->gtt_offset;
+	entry->offset = obj_priv->gtt_offset;
 
 	if (obj_priv->pin_count == 0) {
 		/* Move our buffer to the head of the LRU. */
@@ -768,7 +768,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
 	struct drm_i915_gem_execbuffer *args = data;
-	struct drm_i915_gem_validate_entry *validate_list;
+	struct drm_i915_gem_exec_object *validate_list;
 	struct drm_gem_object **object_list;
 	struct drm_gem_object *batch_obj;
 	int ret, i;
@@ -808,11 +808,10 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	/* Look up object handles and perform the relocations */
 	for (i = 0; i < args->buffer_count; i++) {
 		object_list[i] = drm_gem_object_lookup(dev, file_priv,
-						       validate_list[i].
-						       buffer_handle);
+						       validate_list[i].handle);
 		if (object_list[i] == NULL) {
 			DRM_ERROR("Invalid object handle %d at index %d\n",
-				   validate_list[i].buffer_handle, i);
+				   validate_list[i].handle, i);
 			ret = -EINVAL;
 			goto err;
 		}
@@ -856,7 +855,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	/* Flush/invalidate caches and chipset buffer */
 	i915_gem_dev_set_domain(dev);
 
-	exec_offset = validate_list[args->buffer_count - 1].buffer_offset;
+	exec_offset = validate_list[args->buffer_count - 1].offset;
 
 #if WATCH_EXEC
 	i915_gem_dump_object(object_list[args->buffer_count - 1],

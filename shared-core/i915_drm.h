@@ -474,12 +474,12 @@ struct drm_i915_gem_relocation_entry {
 #define DRM_GEM_DOMAIN_I915_INSTRUCTION	0x00000010	/* Instruction cache, used by shader programs */
 #define DRM_GEM_DOMAIN_I915_VERTEX	0x00000020	/* Vertex address cache */
 
-struct drm_i915_gem_validate_entry {
+struct drm_i915_gem_exec_object {
 	/**
 	 * User's handle for a buffer to be bound into the GTT for this
 	 * operation.
 	 */
-	uint32_t buffer_handle;
+	uint32_t handle;
 	
 	/** List of relocations to be performed on this buffer */
 	uint32_t relocation_count;
@@ -489,10 +489,10 @@ struct drm_i915_gem_validate_entry {
 	uint64_t alignment;
 
 	/**
-	 * Returned value of the updated offset of the buffer, for future
+	 * Returned value of the updated offset of the object, for future
 	 * presumed_offset writes.
 	 */
-	uint64_t buffer_offset;
+	uint64_t offset;
 };
 
 struct drm_i915_gem_execbuffer {
