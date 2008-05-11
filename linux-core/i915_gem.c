@@ -377,6 +377,37 @@ i915_gem_evict_something(struct drm_device *dev)
 	return 0;
 }
 
+static int
+i915_gem_object_get_page_list(struct drm_gem_object *obj)
+{
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	int page_count, i;
+	if (obj_priv->page_list)
+		return 0;
+
+	/* Get the list of pages out of our struct file.  They'll be pinned
+	 * at this point until we release them.
+	 */
+	page_count = obj->size / PAGE_SIZE;
+	BUG_ON(obj_priv->page_list != NULL);
+	obj_priv->page_list = drm_calloc(page_count, sizeof(struct page *),
+					 DRM_MEM_DRIVER);
+	if (obj_priv->page_list == NULL)
+		return -ENOMEM;
+
+	for (i = 0; i < page_count; i++) {
+		obj_priv->page_list[i] =
+		    find_or_create_page(obj->filp->f_mapping, i, GFP_HIGHUSER);
+
+		if (obj_priv->page_list[i] == NULL) {
+			i915_gem_object_free_page_list(obj);
+			return -ENOMEM;
+		}
+		unlock_page(obj_priv->page_list[i]);
+	}
+	return 0;
+}
+
 /**
  * Finds free space in the GTT aperture and binds the object there.
  */
@@ -387,7 +418,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	struct drm_memrange_node *free_space;
-	int page_count, i, ret;
+	int page_count, ret;
 
 	if (alignment == 0)
 		alignment = PAGE_SIZE;
@@ -432,33 +463,14 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	DRM_INFO("Binding object of size %d at 0x%08x\n",
 		 obj->size, obj_priv->gtt_offset);
 #endif
-
-	/* Get the list of pages out of our struct file.  They'll be pinned
-	 * at this point until we release them.
-	 */
-	page_count = obj->size / PAGE_SIZE;
-	BUG_ON(obj_priv->page_list != NULL);
-	obj_priv->page_list = drm_calloc(page_count, sizeof(struct page *),
-					 DRM_MEM_DRIVER);
-	if (obj_priv->page_list == NULL) {
-		drm_memrange_put_block(obj_priv->gtt_space);
+	ret = i915_gem_object_get_page_list (obj);
+	if (ret) {
+		drm_memrange_put_block (obj_priv->gtt_space);
 		obj_priv->gtt_space = NULL;
-		return -ENOMEM;
+		return ret;
 	}
 
-	for (i = 0; i < page_count; i++) {
-		obj_priv->page_list[i] =
-		    find_or_create_page(obj->filp->f_mapping, i, GFP_HIGHUSER);
-
-		if (obj_priv->page_list[i] == NULL) {
-			i915_gem_object_free_page_list(obj);
-			drm_memrange_put_block(obj_priv->gtt_space);
-			obj_priv->gtt_space = NULL;
-			return -ENOMEM;
-		}
-		unlock_page(obj_priv->page_list[i]);
-	}
-
+	page_count = obj->size / PAGE_SIZE;
 	/* Create an AGP memory structure pointing at our pages, and bind it
 	 * into the GTT.
 	 */
@@ -1052,11 +1064,36 @@ void i915_gem_free_object(struct drm_gem_object *obj)
 
 int
 i915_gem_set_domain_ioctl(struct drm_gem_object *obj,
-			   uint32_t read_domains,
-			   uint32_t write_domain)
+			  uint32_t read_domains,
+			  uint32_t write_domain)
 {
 	i915_gem_object_set_domain(obj, read_domains, write_domain);
 	i915_gem_dev_set_domain(obj->dev);
+	return 0;
+}
+
+int
+i915_gem_flush_pwrite(struct drm_gem_object *obj,
+		      uint64_t offset, uint64_t size)
+{
+	struct drm_device *dev = obj->dev;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	/*
+	 * As far as I can tell, writes of > 64 bytes will use non-temporal
+	 * stores which should obviate the need for this clflush.
+	 * It doesn't work for me though...
+	 */
+/*	if (size <= 64)  */{
+		if (obj_priv->gtt_space == NULL) {
+			int ret = i915_gem_object_get_page_list (obj);
+			if (ret)
+				 return ret;
+		}
+		i915_gem_clflush_object(obj);
+		if (obj_priv->gtt_space == NULL)
+			i915_gem_object_free_page_list (obj);
+	}
+	drm_agp_chipset_flush(dev);
 	return 0;
 }
 

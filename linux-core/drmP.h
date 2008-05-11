@@ -781,6 +781,13 @@ struct drm_driver {
 			       uint32_t read_domains,
 			       uint32_t write_domain);
 
+	/**
+	 * Driver-specific callback to flush pwrite through chipset
+	 */
+	int (*gem_flush_pwrite) (struct drm_gem_object *obj,
+				 uint64_t offset,
+				 uint64_t size);
+
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
 

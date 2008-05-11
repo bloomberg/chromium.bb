@@ -266,6 +266,7 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	ssize_t read;
 	loff_t offset;
+	int ret;
 
 	if (!(dev->driver->driver_features & DRIVER_GEM))
 		return -ENODEV;
@@ -274,6 +275,15 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 	if (obj == NULL)
 		return -EINVAL;
 
+	if (dev->driver->gem_set_domain) {
+		ret = dev->driver->gem_set_domain (obj,
+						   DRM_GEM_DOMAIN_CPU,
+						   0);
+		if (ret) {
+			drm_gem_object_unreference(obj);
+			return ret;
+		}
+	}
 	offset = args->offset;
 
 	read = vfs_read(obj->filp, (char __user *)(uintptr_t)args->data_ptr,
@@ -343,6 +353,7 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	ssize_t written;
 	loff_t offset;
+	int ret;
 
 	if (!(dev->driver->driver_features & DRIVER_GEM))
 		return -ENODEV;
@@ -351,11 +362,21 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	if (obj == NULL)
 		return -EINVAL;
 
+	if (dev->driver->gem_set_domain) {
+		ret = dev->driver->gem_set_domain (obj,
+						   DRM_GEM_DOMAIN_CPU,
+						   0);
+		if (ret) {
+			drm_gem_object_unreference(obj);
+			return ret;
+		}
+	}
 	offset = args->offset;
 
 	written = vfs_write(obj->filp,
 			    (char __user *)(uintptr_t) args->data_ptr,
 			    args->size, &offset);
+	
 	if (written != args->size) {
 		drm_gem_object_unreference(obj);
 		if (written < 0)
@@ -363,6 +384,11 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 		else
 			return -EINVAL;
 	}
+
+	if (dev->driver->gem_flush_pwrite)
+		dev->driver->gem_flush_pwrite(obj,
+					      args->offset,
+					      args->size);
 
 	drm_gem_object_unreference(obj);
 

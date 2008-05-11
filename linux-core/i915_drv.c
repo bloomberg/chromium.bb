@@ -589,6 +589,7 @@ static struct drm_driver driver = {
 	.gem_init_object = i915_gem_init_object,
 	.gem_free_object = i915_gem_free_object,
 	.gem_set_domain = i915_gem_set_domain_ioctl,
+	.gem_flush_pwrite = i915_gem_flush_pwrite,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,
