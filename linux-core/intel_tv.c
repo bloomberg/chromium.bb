@@ -1360,11 +1360,21 @@ intel_tv_detect_type (struct drm_crtc *crtc, struct drm_output *output)
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_output *intel_output = output->driver_private;
+	u32 pipeastat, pipeastat_save;
 	u32 tv_ctl, save_tv_ctl;
 	u32 tv_dac, save_tv_dac;
 	int type = ConnectorUnknown;
 
 	tv_dac = I915_READ(TV_DAC);
+
+	/* Disable TV interrupts around load detect or we'll recurse */
+	pipeastat = I915_READ(I915REG_PIPEASTAT);
+	pipeastat_save = pipeastat;
+	pipeastat &= ~I915_HOTPLUG_INTERRUPT_ENABLE;
+	pipeastat &= ~I915_HOTPLUG_TV_INTERRUPT_ENABLE;
+	I915_WRITE(I915REG_PIPEASTAT, pipeastat | I915_HOTPLUG_TV_CLEAR |
+		   I915_HOTPLUG_CLEAR);
+
 	/*
 	 * Detect TV by polling)
 	 */
@@ -1412,6 +1422,10 @@ intel_tv_detect_type (struct drm_crtc *crtc, struct drm_output *output)
 		type = -1;
 	}
 
+	/* Restore interrupt config */
+	I915_WRITE(I915REG_PIPEASTAT, pipeastat_save | I915_HOTPLUG_TV_CLEAR |
+		   I915_HOTPLUG_CLEAR);
+
 	return type;
 }
 
@@ -1434,10 +1448,15 @@ intel_tv_detect(struct drm_output *output)
 	mode = reported_modes[0];
 	drm_mode_set_crtcinfo(&mode, CRTC_INTERLACE_HALVE_V);
 
-	crtc = intel_get_load_detect_pipe(output, &mode, &dpms_mode);
-	if (crtc) {
-		type = intel_tv_detect_type(crtc, output);
-		intel_release_load_detect_pipe(output, dpms_mode);
+	if (output->crtc) {
+		type = intel_tv_detect_type(output->crtc, output);
+	} else {
+		crtc = intel_get_load_detect_pipe(output, &mode, &dpms_mode);
+		if (crtc) {
+			type = intel_tv_detect_type(crtc, output);
+			intel_release_load_detect_pipe(output, dpms_mode);
+		} else
+			type = -1;
 	}
 
 	if (type != tv_priv->type) {

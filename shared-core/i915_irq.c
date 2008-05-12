@@ -471,7 +471,6 @@ static void i915_hotplug_tv(struct drm_device *dev)
 	if (iout == 0)
 		goto unlock;
 
-	/* may need to I915_WRITE(TVDAC, 1<<31) to ack the interrupt */
 	status = output->funcs->detect(output);
 	drm_hotplug_stage_two(dev, output,
 			      status == output_status_connected ? 1 : 0);
@@ -631,7 +630,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	struct drm_i915_master_private *master_priv;
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	u32 iir;
-	u32 pipea_stats, pipeb_stats;
+	u32 pipea_stats = 0, pipeb_stats, tvdac;
 	int hotplug = 0;
 	int vblank = 0;
 
@@ -672,9 +671,16 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		}
 
 		/* This is a global event, and not a pipe A event */
-		if ((pipea_stats & I915_HOTPLUG_INTERRUPT_STATUS) ||
-		    (pipea_stats & I915_HOTPLUG_TV_INTERRUPT_STATUS))
+		if (pipea_stats & I915_HOTPLUG_INTERRUPT_STATUS)
 			hotplug = 1;
+
+		if (pipea_stats & I915_HOTPLUG_TV_INTERRUPT_STATUS) {
+			hotplug = 1;
+			/* Toggle hotplug detection to clear hotplug status */
+			tvdac = I915_READ(TV_DAC);
+			I915_WRITE(TV_DAC, tvdac & ~TVDAC_STATE_CHG_EN);
+			I915_WRITE(TV_DAC, tvdac | TVDAC_STATE_CHG_EN);
+		}
 
 		I915_WRITE(I915REG_PIPEASTAT, pipea_stats);
 	}
@@ -1001,6 +1007,9 @@ void i915_enable_interrupt (struct drm_device *dev)
 
 			I915_WRITE(SDVOB, I915_READ(SDVOB) | SDVO_INTERRUPT_ENABLE);
 			I915_WRITE(SDVOC, I915_READ(SDVOC) | SDVO_INTERRUPT_ENABLE);
+
+			/* TV */
+			I915_WRITE(TV_DAC, I915_READ(TV_DAC) | TVDAC_STATE_CHG_EN);
 		} else {
 			/* DVO ???? */
 		}
