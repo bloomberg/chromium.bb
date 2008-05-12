@@ -281,6 +281,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 		priv->is_master = 1;
 		priv->master = priv->minor->master;
 
+		priv->authenticated = 1;
 		mutex_unlock(&dev->struct_mutex);
 		if (dev->driver->master_create) {
 			ret = dev->driver->master_create(dev, priv->master);
