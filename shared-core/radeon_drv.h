@@ -1165,9 +1165,9 @@ do {								\
 #define RS400_WRITE_MCIND( addr, val )				\
 do {									\
 	RADEON_WRITE( RS400_NB_MC_INDEX,				\
-			((addr) & 0x7f) | RS400_NB_MC_IND_WR_EN);	\
+			((addr) & 0xff) | RS400_NB_MC_IND_WR_EN);	\
 	RADEON_WRITE( RS400_NB_MC_DATA, (val) );			\
-	RADEON_WRITE( RS400_NB_MC_INDEX, 0x7f );			\
+	RADEON_WRITE( RS400_NB_MC_INDEX, 0xff );			\
 } while (0)
 
 #define RS690_WRITE_MCIND( addr, val )					\

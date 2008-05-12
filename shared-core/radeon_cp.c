@@ -16114,9 +16114,9 @@ static u32 R500_READ_MCIND(drm_radeon_private_t *dev_priv, int addr)
 static u32 RS400_READ_MCIND(drm_radeon_private_t *dev_priv, int addr)
 {
 	u32 ret;
-	RADEON_WRITE(RS400_NB_MC_INDEX, addr & 0x7f);
+	RADEON_WRITE(RS400_NB_MC_INDEX, addr & 0xff);
 	ret = RADEON_READ(RS400_NB_MC_DATA);
-	RADEON_WRITE(RS400_NB_MC_INDEX, 0x7f);
+	RADEON_WRITE(RS400_NB_MC_INDEX, 0xff);
 	return ret;
 }
 
