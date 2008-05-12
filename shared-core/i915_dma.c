@@ -63,7 +63,7 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 
 		last_head = ring->head;
 		last_acthd = acthd;
-		DRM_UDELAY(10);
+		msleep_interruptible (10);
 	}
 
 	return -EBUSY;
