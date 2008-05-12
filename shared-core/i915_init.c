@@ -252,6 +252,38 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 			memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
 			
 			I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
+		} else {
+			size = 4 * 1024;
+			ret = drm_buffer_object_create(dev, size,
+					drm_bo_type_kernel,
+					DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+					DRM_BO_FLAG_MEM_VRAM |
+					DRM_BO_FLAG_NO_EVICT,
+					DRM_BO_HINT_DONT_FENCE, 0x1, 0,
+					&dev_priv->hws_bo);
+			if (ret < 0) {
+				DRM_ERROR("Unable to allocate or pin ring buffer\n");
+				return -EINVAL;
+			}
+			dev_priv->status_gfx_addr =
+				dev_priv->hws_bo->offset & (0x1ffff << 12);
+			dev_priv->hws_map.offset = dev->agp->base +
+				dev_priv->hws_bo->offset;
+			dev_priv->hws_map.size = size;
+			dev_priv->hws_map.type = 0;
+			dev_priv->hws_map.flags = 0;
+			dev_priv->hws_map.mtrr = 0;
+
+			drm_core_ioremap(&dev_priv->hws_map, dev);
+			if (dev_priv->hws_map.handle == NULL) {
+				dev_priv->status_gfx_addr = 0;
+				DRM_ERROR("can not ioremap virtual addr"
+					  " for G33 hw status page\n");
+				return -ENOMEM;
+			}
+			dev_priv->hw_status_page = dev_priv->hws_map.handle;
+			memset(dev_priv->hw_status_page, 0, size);
+			I915_WRITE(I915REG_HWS_PGA, dev_priv->status_gfx_addr);
 		}
 		DRM_DEBUG("Enabled hardware status page\n");
 
@@ -324,6 +356,7 @@ int i915_driver_unload(struct drm_device *dev)
 	if (dev_priv->status_gfx_addr) {
 		dev_priv->status_gfx_addr = 0;
 		drm_core_ioremapfree(&dev_priv->hws_map, dev);
+		drm_bo_usage_deref_unlocked(&dev_priv->hws_bo);
 		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
 	}
 

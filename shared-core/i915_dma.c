@@ -997,6 +997,10 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
+
 	DRM_DEBUG("set status page addr 0x%08x\n", (u32)hws->addr);
 
 	dev_priv->status_gfx_addr = hws->addr & (0x1ffff<<12);

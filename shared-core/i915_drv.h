@@ -124,6 +124,7 @@ struct drm_i915_private {
 	uint32_t counter;
 	unsigned int status_gfx_addr;
 	drm_local_map_t hws_map;
+	struct drm_buffer_object *hws_bo;
 
 	unsigned int cpp;
 	int use_mi_batchbuffer_start;
