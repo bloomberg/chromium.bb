@@ -175,6 +175,9 @@ static int drm_name_info(char *buf, char **start, off_t offset, int request,
 		return 0;
 	}
 
+	if (!master)
+		return 0;
+
 	*start = &buf[offset];
 	*eof = 0;
 
