@@ -1145,14 +1145,6 @@ do {									\
 	RADEON_WRITE( RADEON_CLOCK_CNTL_DATA, (val) );			\
 } while (0)
 
-#define RADEON_WRITE_IGPGART( addr, val )				\
-do {									\
-	RADEON_WRITE( RS400_NB_MC_INDEX,				\
-			((addr) & 0x7f) | RS400_NB_MC_IND_WR_EN);	\
-	RADEON_WRITE( RS400_NB_MC_DATA, (val) );			\
-	RADEON_WRITE( RS400_NB_MC_INDEX, 0x7f );			\
-} while (0)
-
 #define RADEON_WRITE_PCIE( addr, val )					\
 do {									\
 	RADEON_WRITE8( RADEON_PCIE_INDEX,				\
@@ -1160,18 +1152,34 @@ do {									\
 	RADEON_WRITE( RADEON_PCIE_DATA, (val) );			\
 } while (0)
 
-#define RADEON_WRITE_MCIND( addr, val )					\
-	do {								\
-		RADEON_WRITE(R520_MC_IND_INDEX, 0xff0000 | ((addr) & 0xff));	\
-		RADEON_WRITE(R520_MC_IND_DATA, (val));			\
-		RADEON_WRITE(R520_MC_IND_INDEX, 0);	\
-	} while (0)
+#define R500_WRITE_MCIND( addr, val )					\
+do {								\
+	RADEON_WRITE(R520_MC_IND_INDEX, 0xff0000 | ((addr) & 0xff));	\
+	RADEON_WRITE(R520_MC_IND_DATA, (val));			\
+	RADEON_WRITE(R520_MC_IND_INDEX, 0);	\
+} while (0)
+
+#define RS400_WRITE_MCIND( addr, val )				\
+do {									\
+	RADEON_WRITE( RS400_NB_MC_INDEX,				\
+			((addr) & 0x7f) | RS400_NB_MC_IND_WR_EN);	\
+	RADEON_WRITE( RS400_NB_MC_DATA, (val) );			\
+	RADEON_WRITE( RS400_NB_MC_INDEX, 0x7f );			\
+} while (0)
 
 #define RS690_WRITE_MCIND( addr, val )					\
 do {								\
 	RADEON_WRITE(RS690_MC_INDEX, RS690_MC_INDEX_WR_EN | ((addr) & RS690_MC_INDEX_MASK));	\
 	RADEON_WRITE(RS690_MC_DATA, val);			\
 	RADEON_WRITE(RS690_MC_INDEX, RS690_MC_INDEX_WR_ACK);	\
+} while (0)
+
+#define IGP_WRITE_MCIND( addr, val )				\
+do {									\
+        if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)       \
+	        RS690_WRITE_MCIND( addr, val );                         \
+	else                                                            \
+	        RS400_WRITE_MCIND( addr, val );                         \
 } while (0)
 
 #define CP_PACKET0( reg, n )						\
