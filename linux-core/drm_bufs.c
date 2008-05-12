@@ -345,7 +345,7 @@ int drm_addmap_ioctl(struct drm_device *dev, void *data,
 	struct drm_map_list *maplist;
 	int err;
 
-	if (!(capable(CAP_SYS_ADMIN) || map->type == _DRM_AGP))
+	if (!(capable(CAP_SYS_ADMIN) || map->type == _DRM_AGP || map->type == _DRM_SHM))
 		return -EPERM;
 
 	err = drm_addmap_core(dev, map->offset, map->size, map->type,
