@@ -276,9 +276,9 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 
 	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain (obj,
-						   DRM_GEM_DOMAIN_CPU,
-						   0);
+		ret = dev->driver->gem_set_domain(obj,
+						  DRM_GEM_DOMAIN_CPU,
+						  0);
 		if (ret) {
 			drm_gem_object_unreference(obj);
 			return ret;
@@ -363,9 +363,9 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 
 	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain (obj,
-						   DRM_GEM_DOMAIN_CPU,
-						   0);
+		ret = dev->driver->gem_set_domain(obj,
+						  DRM_GEM_DOMAIN_CPU,
+						  DRM_GEM_DOMAIN_CPU);
 		if (ret) {
 			drm_gem_object_unreference(obj);
 			return ret;
@@ -376,7 +376,7 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	written = vfs_write(obj->filp,
 			    (char __user *)(uintptr_t) args->data_ptr,
 			    args->size, &offset);
-	
+
 	if (written != args->size) {
 		drm_gem_object_unreference(obj);
 		if (written < 0)
