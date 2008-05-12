@@ -16308,7 +16308,7 @@ static int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv)
 	return -EBUSY;
 }
 
-static int radeon_init_pipes(drm_radeon_private_t * dev_priv)
+static void radeon_init_pipes(drm_radeon_private_t * dev_priv)
 {
 	int num_gb_pipes;
 	uint32_t gb_tile_config, gb_pipe_sel = 0;
