@@ -86,7 +86,7 @@ extern int xgi_fb_heap_init(struct xgi_info * info);
 extern int xgi_alloc(struct xgi_info * info, struct xgi_mem_alloc * alloc,
 	struct drm_file * filp);
 
-extern int xgi_free(struct xgi_info * info, unsigned long index,
+extern int xgi_free(struct xgi_info * info, unsigned int index,
 	struct drm_file * filp);
 
 extern int xgi_pcie_heap_init(struct xgi_info * info);
