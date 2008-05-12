@@ -50,7 +50,7 @@ subsystems, it does this with a modest amount of code.
 2. API Overview and Conventions
 
 All APIs here are defined in terms of ioctls appplied to the DRM file
-descriptor. To create and manipulate objects, an applications must be
+descriptor. To create and manipulate objects, an application must be
 'authorized' using the DRI or DRI2 protocols with the X server. To relax
 that, we will need to implement some better access control mechanisms within
 the hardware portion of the driver to prevent inappropriate
@@ -384,15 +384,15 @@ target-object relative value into the object.
 The Intel driver has a single relocation type:
 
 		struct drm_i915_gem_relocation_entry {
-			/*
+			/**
 			 * Handle of the buffer being pointed to by this
 			 * relocation entry.
-			/*
+			 *
 			 * It's appealing to make this be an index into the
-			 * mm_validate_entry list to refer to the buffer, but
-			 * handle lookup should be O(1) anyway, and prevents
-			 * O(n) search in userland to find what that index is.
-			
+			 * mm_validate_entry list to refer to the buffer,
+			 * but this allows the driver to create a relocation
+			 * list for state buffers and not re-write it per
+			 * exec using the buffer.
 			 */
 			uint32_t target_handle;
 		
@@ -545,7 +545,7 @@ to synchronize what is needed while leaving other cache contents intact.
 
 		struct drm_i915_gem_execbuffer {
 			/**
-			 * List of buffers to be validated wit their
+			 * List of buffers to be validated with their
 			 * relocations to be performend on them.
 			 *
 			 * These buffers must be listed in an order such that

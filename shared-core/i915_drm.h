@@ -420,8 +420,9 @@ struct drm_i915_gem_relocation_entry {
 	 * Handle of the buffer being pointed to by this relocation entry.
 	 *
 	 * It's appealing to make this be an index into the mm_validate_entry
-	 * list to refer to the buffer, but handle lookup should be O(1) anyway,
-	 * and prevents O(n) search in userland to find what that index is.
+	 * list to refer to the buffer, but this allows the driver to create
+	 * a relocation list for state buffers and not re-write it per
+	 * exec using the buffer.
 	 */
 	uint32_t target_handle;
 
@@ -497,7 +498,7 @@ struct drm_i915_gem_exec_object {
 
 struct drm_i915_gem_execbuffer {
 	/**
-	 * List of buffers to be validated wit their relocations to be
+	 * List of buffers to be validated with their relocations to be
 	 * performend on them.
 	 *
 	 * These buffers must be listed in an order such that all relocations
