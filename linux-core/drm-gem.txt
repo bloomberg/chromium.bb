@@ -358,6 +358,12 @@ to be generally true, this ioctl may be simplified further.
 	necessary CPU flushing will occur and the object will be correctly
 	synchronized with the GPU.
 
+	Note that this synchronization is not required for any accesses
+	going through the driver itself. The pread, pwrite and execbuffer
+	ioctls all perform the necessary domain management internally.
+	Explicit synchronization is only necessary when accessing the object
+	through the mmap'd address.
+
 7. Execution (Intel specific)
 
 Managing the command buffers is inherently chip-specific, so the core of gem
@@ -475,9 +481,9 @@ to synchronize what is needed while leaving other cache contents intact.
    needs to be flushed to the GPU.
    
  * DRM_GEM_DOMAIN_I915_INSTRUCTION
-   Fragment programs on Gen3 and all of the programs on later
-   chips use an instruction cache to speed program execution. It must be
-   explicitly flushed when new programs are written to memory by the CPU.
+   All of the programs on Gen4 and later chips use an instruction cache to
+   speed program execution. It must be explicitly flushed when new programs
+   are written to memory by the CPU.
 
  * DRM_GEM_DOMAIN_I915_VERTEX
    Vertex data uses two different vertex caches, but they're
