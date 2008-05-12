@@ -99,6 +99,181 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 	return 0;
 }
 
+int i915_load_modeset_init(struct drm_device *dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	unsigned long agp_size, prealloc_size;
+	int size, ret = 0;
+
+	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
+	printk("setting up %ld bytes of VRAM space\n", prealloc_size);
+	printk("setting up %ld bytes of TT space\n", (agp_size - prealloc_size));
+
+	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT, 1);
+	drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT,
+		       (agp_size - prealloc_size) >> PAGE_SHIFT, 1);
+	I915_WRITE(LP_RING + RING_LEN, 0);
+	I915_WRITE(LP_RING + RING_HEAD, 0);
+	I915_WRITE(LP_RING + RING_TAIL, 0);
+
+	size = PRIMARY_RINGBUFFER_SIZE;
+	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
+			DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+			DRM_BO_FLAG_MEM_VRAM |
+			DRM_BO_FLAG_NO_EVICT,
+			DRM_BO_HINT_DONT_FENCE, 0x1, 0,
+			&dev_priv->ring_buffer);
+	if (ret < 0) {
+		DRM_ERROR("Unable to allocate or pin ring buffer\n");
+		goto clean_mm;
+	}
+
+	/* remap the buffer object properly */
+	dev_priv->ring.Start = dev_priv->ring_buffer->offset;
+	dev_priv->ring.End = dev_priv->ring.Start + size;
+	dev_priv->ring.Size = size;
+	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
+
+	/* FIXME: need wrapper with PCI mem checks */
+	ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
+				  (void **) &dev_priv->ring.virtual_start);
+	if (ret) {
+		DRM_ERROR("error mapping ring buffer: %d\n", ret);
+		goto destroy_ringbuffer;
+	}
+
+	DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
+			dev_priv->ring.virtual_start, dev_priv->ring.Size);
+
+	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
+	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
+	I915_WRITE(LP_RING + RING_LEN,
+			((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
+			(RING_NO_REPORT | RING_VALID));
+
+	/* We are using separate values as placeholders for mechanisms for
+	 * private backbuffer/depthbuffer usage.
+	 */
+	dev_priv->use_mi_batchbuffer_start = 0;
+
+	/* Allow hardware batchbuffers unless told otherwise.
+	 */
+	dev_priv->allow_batchbuffer = 1;
+
+	/* Program Hardware Status Page */
+	if (!IS_G33(dev)) {
+		dev_priv->status_page_dmah = 
+			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
+
+		if (!dev_priv->status_page_dmah) {
+			DRM_ERROR("Can not allocate hardware status page\n");
+			ret = -ENOMEM;
+			goto destroy_ringbuffer;
+		}
+		dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
+		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+
+		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+
+		I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
+	} else {
+		size = 4 * 1024;
+		ret = drm_buffer_object_create(dev, size,
+				drm_bo_type_kernel,
+				DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
+				DRM_BO_FLAG_MEM_VRAM |
+				DRM_BO_FLAG_NO_EVICT,
+				DRM_BO_HINT_DONT_FENCE, 0x1, 0,
+				&dev_priv->hws_bo);
+		if (ret < 0) {
+			DRM_ERROR("Unable to allocate or pin hw status page\n");
+			ret = -EINVAL;
+			goto destroy_ringbuffer;
+		}
+
+		dev_priv->status_gfx_addr =
+			dev_priv->hws_bo->offset & (0x1ffff << 12);
+		dev_priv->hws_map.offset = dev->agp->base +
+			dev_priv->hws_bo->offset;
+		dev_priv->hws_map.size = size;
+		dev_priv->hws_map.type= 0;
+		dev_priv->hws_map.flags= 0;
+		dev_priv->hws_map.mtrr = 0;
+
+		drm_core_ioremap(&dev_priv->hws_map, dev);
+		if (dev_priv->hws_map.handle == NULL) {
+			dev_priv->status_gfx_addr = 0;
+			DRM_ERROR("can not ioremap virtual addr for"
+					"G33 hw status page\n");
+			ret = -ENOMEM;
+			goto destroy_hws;
+		}
+		dev_priv->hw_status_page = dev_priv->hws_map.handle;
+		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+		I915_WRITE(I915REG_HWS_PGA, dev_priv->status_gfx_addr);
+	}
+	DRM_DEBUG("Enabled hardware status page\n");
+
+	dev_priv->wq = create_singlethread_workqueue("i915");
+	if (dev_priv->wq == 0) {
+		DRM_DEBUG("Error\n");
+		ret = -EINVAL;
+		goto destroy_hws;
+	}
+
+	ret = intel_find_bios(dev);
+	if (ret) {
+		DRM_ERROR("failed to find VBT\n");
+		ret = -ENODEV;
+		goto destroy_wq;
+	}
+
+	intel_modeset_init(dev);
+	drm_initial_config(dev, false);
+
+	drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
+	drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");
+
+	dev->devname = kstrdup(DRIVER_NAME, GFP_KERNEL);
+	if (!dev->devname) {
+		ret = -ENOMEM;
+		goto modeset_cleanup;
+	}
+
+	ret = drm_irq_install(dev);
+	if (ret) {
+		kfree(dev->devname);
+		goto modeset_cleanup;
+	}
+	return 0;
+
+modeset_cleanup:
+	intel_modeset_cleanup(dev);
+destroy_wq:
+	destroy_workqueue(dev_priv->wq);
+destroy_hws:
+	if (!IS_G33(dev)) {
+		if (dev_priv->status_page_dmah)
+			drm_pci_free(dev, dev_priv->status_page_dmah);
+	} else {
+		if (dev_priv->hws_map.handle)
+			drm_core_ioremapfree(&dev_priv->hws_map, dev);
+		if (dev_priv->hws_bo)
+			drm_bo_usage_deref_unlocked(&dev_priv->hws_bo);
+	}
+	I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
+destroy_ringbuffer:
+	if (dev_priv->ring.virtual_start)
+		drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
+				    dev_priv->ring.virtual_start);
+	if (dev_priv->ring_buffer)
+		drm_bo_usage_deref_unlocked(&dev_priv->ring_buffer);
+clean_mm:
+	drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM, 1);
+	drm_bo_clean_mm(dev, DRM_BO_MEM_TT, 1);
+	return ret;
+}
+
 /**
  * i915_driver_load - setup chip and create an initial config
  * @dev: DRM device
@@ -113,8 +288,7 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 int i915_driver_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_i915_private *dev_priv;
-	unsigned long agp_size, prealloc_size;
-	int size, ret;
+	int ret = 0;
 
 	dev_priv = drm_alloc(sizeof(struct drm_i915_private), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
@@ -156,16 +330,18 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 			drm_get_resource_start(dev, 0) & 0xff000000;
 	} else {
 		DRM_ERROR("Unable to find MMIO registers\n");
-		return -ENODEV;
+		ret = -ENODEV;
+		goto free_priv;
 	}
 
 	DRM_DEBUG("fb_base: 0x%08lx\n", dev->mode_config.fb_base);
 
 	ret = drm_addmap(dev, dev_priv->mmiobase, dev_priv->mmiolen,
-			 _DRM_REGISTERS, _DRM_KERNEL|_DRM_READ_ONLY|_DRM_DRIVER, &dev_priv->mmio_map);
+			 _DRM_REGISTERS, _DRM_KERNEL|_DRM_READ_ONLY|_DRM_DRIVER,
+			 &dev_priv->mmio_map);
 	if (ret != 0) {
 		DRM_ERROR("Cannot add mapping for MMIO registers\n");
-		return ret;
+		goto free_priv;
 	}
 
 #ifdef __linux__
@@ -177,141 +353,28 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	/*
 	 * Initialize the memory manager for local and AGP space
 	 */
-	drm_bo_driver_init(dev);
-
-	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
-		i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
-		printk("setting up %ld bytes of VRAM space\n", prealloc_size);
-		printk("setting up %ld bytes of TT space\n", (agp_size - prealloc_size));
-		drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT, 1);
-		drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT, (agp_size - prealloc_size) >> PAGE_SHIFT, 1);
-		
-		I915_WRITE(LP_RING + RING_LEN, 0);
-		I915_WRITE(LP_RING + RING_HEAD, 0);
-		I915_WRITE(LP_RING + RING_TAIL, 0);
-
-		size = PRIMARY_RINGBUFFER_SIZE;
-		ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
-					       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
-					       DRM_BO_FLAG_MEM_VRAM |
-					       DRM_BO_FLAG_NO_EVICT,
-					       DRM_BO_HINT_DONT_FENCE, 0x1, 0,
-					       &dev_priv->ring_buffer);
-		if (ret < 0) {
-			DRM_ERROR("Unable to allocate or pin ring buffer\n");
-			return -EINVAL;
-		}
-		
-		/* remap the buffer object properly */
-		dev_priv->ring.Start = dev_priv->ring_buffer->offset;
-		dev_priv->ring.End = dev_priv->ring.Start + size;
-		dev_priv->ring.Size = size;
-		dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
-
-		/* FIXME: need wrapper with PCI mem checks */
-		ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
-					  (void **) &dev_priv->ring.virtual_start);
-		if (ret)
-			DRM_ERROR("error mapping ring buffer: %d\n", ret);
-		
-		DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
-			  dev_priv->ring.virtual_start, dev_priv->ring.Size);
-
-	//
-
-		memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
-		
-		I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
-		I915_WRITE(LP_RING + RING_LEN,
-			   ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
-			   (RING_NO_REPORT | RING_VALID));
-
-		/* We are using separate values as placeholders for mechanisms for
-		 * private backbuffer/depthbuffer usage.
-		 */
-		dev_priv->use_mi_batchbuffer_start = 0;
-		
-		/* Allow hardware batchbuffers unless told otherwise.
-		 */
-		dev_priv->allow_batchbuffer = 1;
-
-		/* Program Hardware Status Page */
-		if (!IS_G33(dev)) {
-			dev_priv->status_page_dmah = 
-				drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
-			
-			if (!dev_priv->status_page_dmah) {
-				dev->dev_private = (void *)dev_priv;
-				i915_dma_cleanup(dev);
-				DRM_ERROR("Can not allocate hardware status page\n");
-				return -ENOMEM;
-			}
-			dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-			dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-			
-			memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-			
-			I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
-		} else {
-			size = 4 * 1024;
-			ret = drm_buffer_object_create(dev, size,
-					drm_bo_type_kernel,
-					DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
-					DRM_BO_FLAG_MEM_VRAM |
-					DRM_BO_FLAG_NO_EVICT,
-					DRM_BO_HINT_DONT_FENCE, 0x1, 0,
-					&dev_priv->hws_bo);
-			if (ret < 0) {
-				DRM_ERROR("Unable to allocate or pin ring buffer\n");
-				return -EINVAL;
-			}
-			dev_priv->status_gfx_addr =
-				dev_priv->hws_bo->offset & (0x1ffff << 12);
-			dev_priv->hws_map.offset = dev->agp->base +
-				dev_priv->hws_bo->offset;
-			dev_priv->hws_map.size = size;
-			dev_priv->hws_map.type = 0;
-			dev_priv->hws_map.flags = 0;
-			dev_priv->hws_map.mtrr = 0;
-
-			drm_core_ioremap(&dev_priv->hws_map, dev);
-			if (dev_priv->hws_map.handle == NULL) {
-				dev_priv->status_gfx_addr = 0;
-				DRM_ERROR("can not ioremap virtual addr"
-					  " for G33 hw status page\n");
-				return -ENOMEM;
-			}
-			dev_priv->hw_status_page = dev_priv->hws_map.handle;
-			memset(dev_priv->hw_status_page, 0, size);
-			I915_WRITE(I915REG_HWS_PGA, dev_priv->status_gfx_addr);
-		}
-		DRM_DEBUG("Enabled hardware status page\n");
-
-		dev_priv->wq = create_singlethread_workqueue("i915");
-		if (dev_priv->wq == 0) {
-		  DRM_DEBUG("Error\n");
-		}
-
-		ret = intel_find_bios(dev);
-		if (ret) {
-			DRM_ERROR("failed to find VBT\n");
-			return -ENODEV;
-		}
-
-		intel_modeset_init(dev);
-		drm_initial_config(dev, false);
-
-		drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
-		drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");
-
-		dev->devname = kstrdup(DRIVER_NAME, GFP_KERNEL);
-		if (!dev->devname)
-			return -ENOMEM;
-
-		drm_irq_install(dev);
+	ret = drm_bo_driver_init(dev);
+	if (ret) {
+		DRM_ERROR("fail to init memory manager for local & AGP space\n");
+		goto out_rmmap;
 	}
 
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		ret = i915_load_modeset_init(dev);
+		if (ret < 0) {
+			DRM_ERROR("failed to init modeset\n");
+			goto driver_fini;
+		}
+	}
 	return 0;
+
+driver_fini:
+	drm_bo_driver_finish(dev);
+out_rmmap:
+	drm_rmmap(dev, dev_priv->mmio_map);
+free_priv:
+	drm_free(dev_priv, sizeof(struct drm_i915_private), DRM_MEM_DRIVER);
+	return ret;
 }
 
 int i915_driver_unload(struct drm_device *dev)
