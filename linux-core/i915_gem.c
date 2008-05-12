@@ -463,9 +463,9 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	DRM_INFO("Binding object of size %d at 0x%08x\n",
 		 obj->size, obj_priv->gtt_offset);
 #endif
-	ret = i915_gem_object_get_page_list (obj);
+	ret = i915_gem_object_get_page_list(obj);
 	if (ret) {
-		drm_memrange_put_block (obj_priv->gtt_space);
+		drm_memrange_put_block(obj_priv->gtt_space);
 		obj_priv->gtt_space = NULL;
 		return ret;
 	}
@@ -821,14 +821,43 @@ i915_dispatch_gem_execbuffer(struct drm_device *dev,
 	return 0;
 }
 
+/*
+ * Kludge -- wait for almost all rendering to complete
+ * before queuing more. This uses interrupts, so the wakeup
+ * occurs without any delay.
+ */
+static int
+i915_gem_wait_space(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
+	struct drm_i915_gem_object *obj_priv, *last_priv = NULL;
+	int ret = 0;
+
+	while (ring->space + 1024 < dev_priv->ring.Size &&
+	       !list_empty(&dev_priv->mm.execution_list)) {
+		obj_priv = list_first_entry(&dev_priv->mm.execution_list,
+					    struct drm_i915_gem_object,
+					    gtt_lru_entry);
+		if (obj_priv == last_priv)
+			break;
+		ret = i915_gem_object_wait_rendering(obj_priv->obj);
+		if (ret)
+			break;
+		last_priv = obj_priv;
+		i915_kernel_lost_context(dev);
+	}
+	return ret;
+}
+
 int
 i915_gem_execbuffer(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_execbuffer *args = data;
-	struct drm_i915_gem_exec_object *validate_list;
-	struct drm_gem_object **object_list;
+	struct drm_i915_gem_exec_object *validate_list = NULL;
+	struct drm_gem_object **object_list = NULL;
 	struct drm_gem_object *batch_obj;
 	int ret, i;
 	uint64_t exec_offset;
@@ -841,6 +870,10 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		  (int) args->buffers_ptr, args->buffer_count, args->batch_len);
 #endif
 	i915_kernel_lost_context(dev);
+
+	ret = i915_gem_wait_space(dev);
+	if (ret)
+		return ret;
 
 	/* Copy in the validate list from userland */
 	validate_list = drm_calloc(sizeof(*validate_list), args->buffer_count,
@@ -975,7 +1008,6 @@ err:
 		for (i = 0; i < args->buffer_count; i++)
 			drm_gem_object_unreference(object_list[i]);
 	}
-
 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
 	drm_free(validate_list, sizeof(*validate_list) * args->buffer_count,
@@ -1078,22 +1110,21 @@ i915_gem_flush_pwrite(struct drm_gem_object *obj,
 {
 	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
 	/*
-	 * As far as I can tell, writes of > 64 bytes will use non-temporal
-	 * stores which should obviate the need for this clflush.
-	 * It doesn't work for me though...
+	 * For writes much less than the size of the object and
+	 * which are already pinned in memory, do the flush right now
 	 */
-/*	if (size <= 64)  */{
-		if (obj_priv->gtt_space == NULL) {
-			int ret = i915_gem_object_get_page_list (obj);
-			if (ret)
-				 return ret;
-		}
-		i915_gem_clflush_object(obj);
-		if (obj_priv->gtt_space == NULL)
-			i915_gem_object_free_page_list (obj);
+
+	if ((size < obj->size >> 1) && obj_priv->page_list != NULL) {
+		unsigned long first_page = offset / PAGE_SIZE;
+		unsigned long beyond_page = roundup(offset + size, PAGE_SIZE);
+
+		drm_ttm_cache_flush(obj_priv->page_list + first_page,
+				    beyond_page - first_page);
+		drm_agp_chipset_flush(dev);
+		obj->write_domain = 0;
 	}
-	drm_agp_chipset_flush(dev);
 	return 0;
 }
 
