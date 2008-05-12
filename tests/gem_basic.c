@@ -36,48 +36,48 @@
 #include "drm.h"
 
 static void
-test_bad_unref(int fd)
+test_bad_close(int fd)
 {
-	struct drm_gem_unreference unref;
+	struct drm_gem_close close;
 	int ret;
 
-	printf("Testing error return on bad unreference ioctl.\n");
+	printf("Testing error return on bad close ioctl.\n");
 
-	unref.handle = 0x10101010;
-	ret = ioctl(fd, DRM_IOCTL_GEM_UNREFERENCE, &unref);
+	close.handle = 0x10101010;
+	ret = ioctl(fd, DRM_IOCTL_GEM_CLOSE, &close);
 
 	assert(ret == -1 && errno == EINVAL);
 }
 
 static void
-test_alloc_unref(int fd)
+test_create_close(int fd)
 {
-	struct drm_gem_alloc alloc;
-	struct drm_gem_unreference unref;
+	struct drm_gem_create create;
+	struct drm_gem_close close;
 	int ret;
 
-	printf("Testing allocating and unreferencing an object.\n");
+	printf("Testing creating and closing an object.\n");
 
-	memset(&alloc, 0, sizeof(alloc));
-	alloc.size = 16 * 1024;
-	ret = ioctl(fd, DRM_IOCTL_GEM_ALLOC, &alloc);
+	memset(&create, 0, sizeof(create));
+	create.size = 16 * 1024;
+	ret = ioctl(fd, DRM_IOCTL_GEM_CREATE, &create);
 	assert(ret == 0);
 
-	unref.handle = alloc.handle;
-	ret = ioctl(fd, DRM_IOCTL_GEM_UNREFERENCE, &unref);
+	close.handle = create.handle;
+	ret = ioctl(fd, DRM_IOCTL_GEM_CLOSE, &close);
 }
 
 static void
-test_alloc_close(int fd)
+test_create_fd_close(int fd)
 {
-	struct drm_gem_alloc alloc;
+	struct drm_gem_create create;
 	int ret;
 
 	printf("Testing closing with an object allocated.\n");
 
-	memset(&alloc, 0, sizeof(alloc));
-	alloc.size = 16 * 1024;
-	ret = ioctl(fd, DRM_IOCTL_GEM_ALLOC, &alloc);
+	memset(&create, 0, sizeof(create));
+	create.size = 16 * 1024;
+	ret = ioctl(fd, DRM_IOCTL_GEM_CREATE, &create);
 	assert(ret == 0);
 
 	close(fd);
@@ -89,11 +89,9 @@ int main(int argc, char **argv)
 
 	fd = drm_open_any();
 
-	test_bad_unref(fd);
-	test_alloc_unref(fd);
-	test_alloc_close(fd);
-
-	close(fd);
+	test_bad_close(fd);
+	test_create_close(fd);
+	test_create_fd_close(fd);
 
 	return 0;
 }

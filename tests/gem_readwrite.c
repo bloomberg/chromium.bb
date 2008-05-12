@@ -71,7 +71,7 @@ int do_write(int fd, int handle, void *buf, int offset, int size)
 int main(int argc, char **argv)
 {
 	int fd;
-	struct drm_gem_alloc alloc;
+	struct drm_gem_create create;
 	uint8_t expected[OBJECT_SIZE];
 	uint8_t buf[OBJECT_SIZE];
 	int ret;
@@ -79,13 +79,13 @@ int main(int argc, char **argv)
 
 	fd = drm_open_any();
 
-	memset(&alloc, 0, sizeof(alloc));
-	alloc.size = OBJECT_SIZE;
-	ret = ioctl(fd, DRM_IOCTL_GEM_ALLOC, &alloc);
+	memset(&create, 0, sizeof(create));
+	create.size = OBJECT_SIZE;
+	ret = ioctl(fd, DRM_IOCTL_GEM_CREATE, &create);
 	assert(ret == 0);
-	handle = alloc.handle;
+	handle = create.handle;
 
-	printf("Testing contents of newly allocated object.\n");
+	printf("Testing contents of newly created object.\n");
 	ret = do_read(fd, handle, buf, 0, OBJECT_SIZE);
 	assert(ret == 0);
 	memset(&expected, 0, sizeof(expected));

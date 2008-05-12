@@ -71,9 +71,9 @@ int do_write(int fd, int handle, void *buf, int offset, int size)
 int main(int argc, char **argv)
 {
 	int fd;
-	struct drm_gem_alloc alloc;
+	struct drm_gem_create create;
 	struct drm_gem_mmap mmap;
-	struct drm_gem_unreference unref;
+	struct drm_gem_close unref;
 	uint8_t expected[OBJECT_SIZE];
 	uint8_t buf[OBJECT_SIZE];
 	uint8_t *addr;
@@ -90,13 +90,13 @@ int main(int argc, char **argv)
 	ret = ioctl(fd, DRM_IOCTL_GEM_MMAP, &mmap);
 	assert(ret == -1 && errno == EINVAL);
 
-	memset(&alloc, 0, sizeof(alloc));
-	alloc.size = OBJECT_SIZE;
-	ret = ioctl(fd, DRM_IOCTL_GEM_ALLOC, &alloc);
+	memset(&create, 0, sizeof(create));
+	create.size = OBJECT_SIZE;
+	ret = ioctl(fd, DRM_IOCTL_GEM_CREATE, &create);
 	assert(ret == 0);
-	handle = alloc.handle;
+	handle = create.handle;
 
-	printf("Testing mmaping of newly allocated object.\n");
+	printf("Testing mmaping of newly created object.\n");
 	mmap.handle = handle;
 	mmap.offset = 0;
 	mmap.size = OBJECT_SIZE;
@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 	assert(ret == 0);
 	addr = (uint8_t *)(uintptr_t)mmap.addr_ptr;
 
-	printf("Testing contents of newly allocated object.\n");
+	printf("Testing contents of newly created object.\n");
 	memset(expected, 0, sizeof(expected));
 	assert(memcmp(addr, expected, sizeof(expected)) == 0);
 
@@ -116,9 +116,9 @@ int main(int argc, char **argv)
 	assert(ret == 0);
 	assert(memcmp(buf, addr, sizeof(buf)) == 0);
 
-	printf("Testing that mapping stays after unreference\n");
+	printf("Testing that mapping stays after close\n");
 	unref.handle = handle;
-	ret = ioctl(fd, DRM_IOCTL_GEM_UNREFERENCE, &unref);
+	ret = ioctl(fd, DRM_IOCTL_GEM_CLOSE, &unref);
 	assert(ret == 0);
 	assert(memcmp(buf, addr, sizeof(buf)) == 0);
 
