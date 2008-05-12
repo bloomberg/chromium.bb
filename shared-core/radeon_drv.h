@@ -491,10 +491,6 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RS400_GART_BASE                 0x2c
 #define RS400_GART_CACHE_CNTRL          0x2e
 #	define RS400_GART_CACHE_INVALIDATE (1 << 0) /* wait for it to clear */
-/* ??? */
-#       define RS690_MC_GART_CLEAR_STATUS   (1 << 1)
-#       define RS690_MC_GART_CLEAR_DONE     (0 << 1)
-#       define RS690_MC_GART_CLEAR_PENDING  (1 << 1)
 #define RS400_AGP_ADDRESS_SPACE_SIZE    0x38
 #	define RS400_GART_EN	        (1 << 0)
 #	define RS400_VA_SIZE_32MB	(0 << 1)
@@ -533,7 +529,7 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_MPP_TB_CONFIG		0x01c0
 #define RADEON_MEM_CNTL			0x0140
 #define RADEON_MEM_SDRAM_MODE_REG	0x0158
-#define RADEON_AGP_BASE_2		0x015c
+#define RADEON_AGP_BASE_2		0x015c /* r200+ only */
 #define RS400_AGP_BASE_2		0x0164
 #define RADEON_AGP_BASE			0x0170
 

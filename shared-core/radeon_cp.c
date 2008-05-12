@@ -16677,63 +16677,21 @@ static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 /* Enable or disable IGP GART on the chip */
 static void radeon_set_igpgart(drm_radeon_private_t * dev_priv, int on)
 {
-	u32 temp, tmp;
-
-	tmp = RADEON_READ(RADEON_AIC_CNTL);
-	DRM_DEBUG("setting igpgart AIC CNTL is %08X\n", tmp);
-	if (on) {
-		DRM_DEBUG("programming igpgart %08X %08lX %08X\n",
-			 dev_priv->gart_vm_start,
-			 (long)dev_priv->gart_info.bus_addr,
-			 dev_priv->gart_size);
-
-		IGP_WRITE_MCIND(RS400_MC_MISC_CNTL, RS400_GART_INDEX_REG_EN);
-		IGP_WRITE_MCIND(RS400_AGP_ADDRESS_SPACE_SIZE, (RS400_GART_EN |
-							       RS400_VA_SIZE_32MB));
-		IGP_WRITE_MCIND(RS400_GART_FEATURE_ID, (RS400_HANG_EN |
-							RS400_TLB_ENABLE |
-							RS400_GTW_LAC_EN |
-							RS400_1LEVEL_GART));
-		IGP_WRITE_MCIND(RS400_GART_BASE, dev_priv->gart_info.bus_addr);
-
-		temp = IGP_READ_MCIND(dev_priv, RS400_AGP_MODE_CNTL);
-		IGP_WRITE_MCIND(RS400_AGP_MODE_CNTL, temp);
-
-		RADEON_WRITE(RADEON_AGP_BASE, (unsigned int)dev_priv->gart_vm_start);
-		RADEON_WRITE(RS400_AGP_BASE_2, 0);
-
-		dev_priv->gart_size = 32*1024*1024;
-		radeon_write_agp_location(dev_priv,
-			     (((dev_priv->gart_vm_start - 1 +
-			       dev_priv->gart_size) & 0xffff0000) |
-			     (dev_priv->gart_vm_start >> 16)));
-
-		temp = IGP_READ_MCIND(dev_priv, RS400_AGP_ADDRESS_SPACE_SIZE);
-		IGP_WRITE_MCIND(RS400_AGP_ADDRESS_SPACE_SIZE, temp);
-
-		IGP_READ_MCIND(dev_priv, RS400_GART_CACHE_CNTRL);
-		IGP_WRITE_MCIND(RS400_GART_CACHE_CNTRL, RS400_GART_CACHE_INVALIDATE);
-		IGP_READ_MCIND(dev_priv, RS400_GART_CACHE_CNTRL);
-		IGP_WRITE_MCIND(RS400_GART_CACHE_CNTRL, 0);
-	} else {
-	    IGP_WRITE_MCIND(RS400_AGP_ADDRESS_SPACE_SIZE, 0);
-	}
-}
-
-/* Enable or disable RS690 GART on the chip */
-static void radeon_set_rs690gart(drm_radeon_private_t * dev_priv, int on)
-{
 	u32 temp;
 
 	if (on) {
-		DRM_DEBUG("programming rs690 gart %08X %08lX %08X\n",
+		DRM_DEBUG("programming igp gart %08X %08lX %08X\n",
 			 dev_priv->gart_vm_start,
 			 (long)dev_priv->gart_info.bus_addr,
 			 dev_priv->gart_size);
 
 		temp = IGP_READ_MCIND(dev_priv, RS400_MC_MISC_CNTL);
-		IGP_WRITE_MCIND(RS400_MC_MISC_CNTL, (RS400_GART_INDEX_REG_EN |
-						     RS690_BLOCK_GFX_D3_EN));
+
+		if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)
+			IGP_WRITE_MCIND(RS400_MC_MISC_CNTL, (RS400_GART_INDEX_REG_EN |
+							     RS690_BLOCK_GFX_D3_EN));
+		else
+			IGP_WRITE_MCIND(RS400_MC_MISC_CNTL, RS400_GART_INDEX_REG_EN);
 
 		IGP_WRITE_MCIND(RS400_AGP_ADDRESS_SPACE_SIZE, (RS400_GART_EN |
 							       RS400_VA_SIZE_32MB));
@@ -16752,46 +16710,46 @@ static void radeon_set_rs690gart(drm_radeon_private_t * dev_priv, int on)
 		IGP_WRITE_MCIND(RS400_AGP_MODE_CNTL, ((1 << RS400_REQ_TYPE_SNOOP_SHIFT) |
 						      RS400_REQ_TYPE_SNOOP_DIS));
 
-		IGP_WRITE_MCIND(RS690_MC_AGP_BASE,
-				(unsigned int)dev_priv->gart_vm_start);
-
-		IGP_WRITE_MCIND(RS690_MC_AGP_BASE_2, 0);
+		if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) {
+			IGP_WRITE_MCIND(RS690_MC_AGP_BASE,
+					(unsigned int)dev_priv->gart_vm_start);
+			IGP_WRITE_MCIND(RS690_MC_AGP_BASE_2, 0);
+		} else {
+			RADEON_WRITE(RADEON_AGP_BASE, (unsigned int)dev_priv->gart_vm_start);
+			RADEON_WRITE(RS400_AGP_BASE_2, 0);
+		}
 
 		dev_priv->gart_size = 32*1024*1024;
 		temp = (((dev_priv->gart_vm_start - 1 + dev_priv->gart_size) & 
 			0xffff0000) | (dev_priv->gart_vm_start >> 16));
 
-		/*RS690_WRITE_MCIND(RS690_MC_AGP_LOCATION, temp);*/
 		radeon_write_agp_location(dev_priv, temp);
 
 		temp = IGP_READ_MCIND(dev_priv, RS400_AGP_ADDRESS_SPACE_SIZE);
 		IGP_WRITE_MCIND(RS400_AGP_ADDRESS_SPACE_SIZE, (RS400_GART_EN |
 							       RS400_VA_SIZE_32MB));
 
-		/* ??? */
 		do {
-		    temp = IGP_READ_MCIND(dev_priv, RS400_GART_CACHE_CNTRL);
-		    if ((temp & RS690_MC_GART_CLEAR_STATUS) ==
-			    RS690_MC_GART_CLEAR_DONE)
-			break;
-		    DRM_UDELAY(1);
+			temp = IGP_READ_MCIND(dev_priv, RS400_GART_CACHE_CNTRL);
+			if ((temp & RS400_GART_CACHE_INVALIDATE) == 0)
+				break;
+			DRM_UDELAY(1);
 		} while(1);
 
 		IGP_WRITE_MCIND(RS400_GART_CACHE_CNTRL,
 				RS400_GART_CACHE_INVALIDATE);
-		/* ??? */
+
 		do {
-		    temp = IGP_READ_MCIND(dev_priv, RS400_GART_CACHE_CNTRL);
-		    if ((temp & RS690_MC_GART_CLEAR_STATUS) ==
-			    RS690_MC_GART_CLEAR_DONE)
-			break;
-		    DRM_UDELAY(1);
+			temp = IGP_READ_MCIND(dev_priv, RS400_GART_CACHE_CNTRL);
+			if ((temp & RS400_GART_CACHE_INVALIDATE) == 0)
+				break;
+			DRM_UDELAY(1);
 		} while(1);
 
 		IGP_WRITE_MCIND(RS400_GART_CACHE_CNTRL, 0);
-    } else {
-	IGP_WRITE_MCIND(RS400_AGP_ADDRESS_SPACE_SIZE, 0);
-    }
+	} else {
+		IGP_WRITE_MCIND(RS400_AGP_ADDRESS_SPACE_SIZE, 0);
+	}
 }
 
 static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
@@ -16828,13 +16786,8 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 {
 	u32 tmp;
 
-	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)
-	{
-		radeon_set_rs690gart(dev_priv, on);
-		return;
-	}
-	
-	if (dev_priv->flags & RADEON_IS_IGPGART) {
+	if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||
+	    (dev_priv->flags & RADEON_IS_IGPGART)) {
 		radeon_set_igpgart(dev_priv, on);
 		return;
 	}
