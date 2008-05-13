@@ -197,7 +197,9 @@ static int i915_initialize(struct drm_device * dev,
 
 
 #ifdef I915_HAVE_BUFFER
-	dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
+	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
+		dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
+	}
 #endif
 
 	if (!dev_priv->ring.Size) {
@@ -260,8 +262,11 @@ static int i915_initialize(struct drm_device * dev,
 		I915_WRITE(0x02080, dev_priv->dma_status_page);
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
+
 #ifdef I915_HAVE_BUFFER
-	mutex_init(&dev_priv->cmdbuf_mutex);
+	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
+		mutex_init(&dev_priv->cmdbuf_mutex);
+	}
 #endif
 
 	if (init->func == I915_INIT_DMA2) {
