@@ -154,10 +154,14 @@ int i915_load_modeset_init(struct drm_device *dev)
 	 * private backbuffer/depthbuffer usage.
 	 */
 	dev_priv->use_mi_batchbuffer_start = 0;
+	if (IS_I965G(dev)) /* 965 doesn't support older method */
+		dev_priv->use_mi_batchbuffer_start = 1;
 
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
 	dev_priv->allow_batchbuffer = 1;
+	dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
+	mutex_init(&dev_priv->cmdbuf_mutex);
 
 	/* Program Hardware Status Page */
 	if (!IS_G33(dev)) {
