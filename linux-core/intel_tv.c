@@ -1012,7 +1012,7 @@ intel_tv_restore(struct drm_output *output)
 		int pipeconf = I915_READ(pipeconf_reg);
 		int dspcntr = I915_READ(dspcntr_reg);
 		int dspbase_reg = (intel_crtc->plane == 0) ?
-			DSPABASE : DSPBBASE;
+			DSPAADDR : DSPBADDR;
 		/* Pipe must be off here */
 		I915_WRITE(dspcntr_reg, dspcntr & ~DISPLAY_PLANE_ENABLE);
 		/* Flush the plane changes */
@@ -1277,7 +1277,7 @@ intel_tv_mode_set(struct drm_output *output, struct drm_display_mode *mode,
 		int pipeconf = I915_READ(pipeconf_reg);
 		int dspcntr = I915_READ(dspcntr_reg);
 		int dspbase_reg = (intel_crtc->plane == 0) ?
-			DSPABASE : DSPBBASE;
+			DSPAADDR : DSPBADDR;
 		int xpos = 0x0, ypos = 0x0;
 		unsigned int xsize, ysize;
 		/* Pipe must be off here */
@@ -1368,12 +1368,12 @@ intel_tv_detect_type (struct drm_crtc *crtc, struct drm_output *output)
 	tv_dac = I915_READ(TV_DAC);
 
 	/* Disable TV interrupts around load detect or we'll recurse */
-	pipeastat = I915_READ(I915REG_PIPEASTAT);
+	pipeastat = I915_READ(PIPEASTAT);
 	pipeastat_save = pipeastat;
-	pipeastat &= ~I915_HOTPLUG_INTERRUPT_ENABLE;
-	pipeastat &= ~I915_HOTPLUG_TV_INTERRUPT_ENABLE;
-	I915_WRITE(I915REG_PIPEASTAT, pipeastat | I915_HOTPLUG_TV_CLEAR |
-		   I915_HOTPLUG_CLEAR);
+	pipeastat &= ~PIPE_HOTPLUG_INTERRUPT_ENABLE;
+	pipeastat &= ~PIPE_HOTPLUG_TV_INTERRUPT_ENABLE;
+	I915_WRITE(PIPEASTAT, pipeastat | PIPE_HOTPLUG_TV_INTERRUPT_STATUS |
+		   PIPE_HOTPLUG_INTERRUPT_STATUS);
 
 	/*
 	 * Detect TV by polling)
@@ -1423,8 +1423,8 @@ intel_tv_detect_type (struct drm_crtc *crtc, struct drm_output *output)
 	}
 
 	/* Restore interrupt config */
-	I915_WRITE(I915REG_PIPEASTAT, pipeastat_save | I915_HOTPLUG_TV_CLEAR |
-		   I915_HOTPLUG_CLEAR);
+	I915_WRITE(PIPEASTAT, pipeastat_save | PIPE_HOTPLUG_TV_INTERRUPT_STATUS |
+		   PIPE_HOTPLUG_INTERRUPT_STATUS);
 
 	return type;
 }

@@ -367,7 +367,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
 	unsigned long Start, Offset;
-	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
+	int dspbase = (pipe == 0 ? DSPAADDR : DSPBADDR);
 	int dspsurf = (pipe == 0 ? DSPASURF : DSPBSURF);
 	int dspstride = (pipe == 0) ? DSPASTRIDE : DSPBSTRIDE;
 	int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
@@ -456,7 +456,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	int pipe = intel_crtc->pipe;
 	int dpll_reg = (pipe == 0) ? DPLL_A : DPLL_B;
 	int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
-	int dspbase_reg = (pipe == 0) ? DSPABASE : DSPBBASE;
+	int dspbase_reg = (pipe == 0) ? DSPAADDR : DSPBADDR;
 	int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
 	u32 temp;
 	bool enabled;
@@ -617,16 +617,16 @@ static int intel_get_core_clock_speed(struct drm_device *dev)
 	else if (IS_I915GM(dev)) {
 		u16 gcfgc = 0;
 
-		pci_read_config_word(dev->pdev, I915_GCFGC, &gcfgc);
+		pci_read_config_word(dev->pdev, GCFGC, &gcfgc);
 		
-		if (gcfgc & I915_LOW_FREQUENCY_ENABLE)
+		if (gcfgc & GC_LOW_FREQUENCY_ENABLE)
 			return 133000;
 		else {
-			switch (gcfgc & I915_DISPLAY_CLOCK_MASK) {
-			case I915_DISPLAY_CLOCK_333_MHZ:
+			switch (gcfgc & GC_DISPLAY_CLOCK_MASK) {
+			case GC_DISPLAY_CLOCK_333_MHZ:
 				return 333000;
 			default:
-			case I915_DISPLAY_CLOCK_190_200_MHZ:
+			case GC_DISPLAY_CLOCK_190_200_MHZ:
 				return 190000;
 			}
 		}
@@ -635,20 +635,20 @@ static int intel_get_core_clock_speed(struct drm_device *dev)
 	else if (IS_I855(dev)) {
 #if 0
 		PCITAG bridge = pciTag(0, 0, 0); /* This is always the host bridge */
-		u16 hpllcc = pciReadWord(bridge, I855_HPLLCC);
+		u16 hpllcc = pciReadWord(bridge, HPLLCC);
 		
 #endif
 		u16 hpllcc = 0;
 		/* Assume that the hardware is in the high speed state.  This
 		 * should be the default.
 		 */
-		switch (hpllcc & I855_CLOCK_CONTROL_MASK) {
-		case I855_CLOCK_133_200:
-		case I855_CLOCK_100_200:
+		switch (hpllcc & GC_CLOCK_CONTROL_MASK) {
+		case GC_CLOCK_133_200:
+		case GC_CLOCK_100_200:
 			return 200000;
-		case I855_CLOCK_166_250:
+		case GC_CLOCK_166_250:
 			return 250000;
-		case I855_CLOCK_100_133:
+		case GC_CLOCK_100_133:
 			return 133000;
 		}
 	} else /* 852, 830 */
@@ -961,24 +961,6 @@ void intel_crtc_load_lut(struct drm_crtc *crtc)
 	}
 }
 
-#define CURSOR_A_CONTROL        0x70080
-#define CURSOR_A_BASE           0x70084
-#define CURSOR_A_POSITION       0x70088
-
-#define CURSOR_B_CONTROL        0x700C0
-#define CURSOR_B_BASE           0x700C4
-#define CURSOR_B_POSITION       0x700C8
-
-#define CURSOR_MODE_DISABLE     0x00
-#define CURSOR_MODE_64_32B_AX   0x07
-#define CURSOR_MODE_64_ARGB_AX  ((1 << 5) | CURSOR_MODE_64_32B_AX)
-#define MCURSOR_GAMMA_ENABLE    (1 << 26)
-
-#define CURSOR_POS_MASK         0x007FF
-#define CURSOR_POS_SIGN         0x8000
-#define CURSOR_X_SHIFT          0
-#define CURSOR_Y_SHIFT          16
-
 static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 				 struct drm_buffer_object *bo,
 				 uint32_t width, uint32_t height)
@@ -987,8 +969,8 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	int pipe = intel_crtc->pipe;
-	uint32_t control = (pipe == 0) ? CURSOR_A_CONTROL : CURSOR_B_CONTROL;
-	uint32_t base = (pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE;
+	uint32_t control = (pipe == 0) ? CURACNTR : CURBCNTR;
+	uint32_t base = (pipe == 0) ? CURABASE : CURBBASE;
 	uint32_t temp;
 	size_t addr;
 
@@ -1063,8 +1045,8 @@ static int intel_crtc_cursor_move(struct drm_crtc *crtc, int x, int y)
 	temp |= ((y & CURSOR_POS_MASK) << CURSOR_Y_SHIFT);
 
 	adder = intel_crtc->cursor_addr;
-	I915_WRITE((pipe == 0) ? CURSOR_A_POSITION : CURSOR_B_POSITION, temp);
-	I915_WRITE((pipe == 0) ? CURSOR_A_BASE : CURSOR_B_BASE, adder);
+	I915_WRITE((pipe == 0) ? CURAPOS : CURBPOS, temp);
+	I915_WRITE((pipe == 0) ? CURABASE : CURBBASE, adder);
 
 	return 0;
 }

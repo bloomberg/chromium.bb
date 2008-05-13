@@ -40,11 +40,11 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_ring_buffer *ring = &(dev_priv->ring);
-	u32 last_head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
+	u32 last_head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
 	int i;
 
 	for (i = 0; i < 10000; i++) {
-		ring->head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
+		ring->head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
 		ring->space = ring->head - (ring->tail + 8);
 		if (ring->space < 0)
 			ring->space += ring->Size;
@@ -71,8 +71,8 @@ void i915_kernel_lost_context(struct drm_device * dev)
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		return;
 
-	ring->head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
-	ring->tail = I915_READ(LP_RING + RING_TAIL) & TAIL_ADDR;
+	ring->head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
+	ring->tail = I915_READ(PRB0_TAIL) & TAIL_ADDR;
 	ring->space = ring->head - (ring->tail + 8);
 	if (ring->space < 0)
 		ring->space += ring->Size;
@@ -510,7 +510,7 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 	master_priv->sarea_priv->last_enqueue = dev_priv->counter;
 
 	BEGIN_LP_RING(4);
-	OUT_RING(CMD_STORE_DWORD_IDX);
+	OUT_RING(MI_STORE_DWORD_INDEX);
 	OUT_RING(20);
 	OUT_RING(dev_priv->counter);
 	OUT_RING(0);
@@ -521,7 +521,7 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	uint32_t flush_cmd = CMD_MI_FLUSH;
+	uint32_t flush_cmd = MI_FLUSH;
 	RING_LOCALS;
 
 	flush_cmd |= flush;
@@ -1022,7 +1022,7 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 	dev_priv->hw_status_page = dev_priv->hws_map.handle;
 
 	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-	I915_WRITE(I915REG_HWS_PGA, dev_priv->status_gfx_addr);
+	I915_WRITE(HWS_PGA, dev_priv->status_gfx_addr);
 	DRM_DEBUG("load hws 0x2080 with gfx mem 0x%x\n",
 			dev_priv->status_gfx_addr);
 	DRM_DEBUG("load hws at %p\n", dev_priv->hw_status_page);

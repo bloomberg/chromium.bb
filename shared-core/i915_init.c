@@ -112,9 +112,9 @@ int i915_load_modeset_init(struct drm_device *dev)
 	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT, 1);
 	drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT,
 		       (agp_size - prealloc_size) >> PAGE_SHIFT, 1);
-	I915_WRITE(LP_RING + RING_LEN, 0);
-	I915_WRITE(LP_RING + RING_HEAD, 0);
-	I915_WRITE(LP_RING + RING_TAIL, 0);
+	I915_WRITE(PRB0_CTL, 0);
+	I915_WRITE(PRB0_HEAD, 0);
+	I915_WRITE(PRB0_TAIL, 0);
 
 	size = PRIMARY_RINGBUFFER_SIZE;
 	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
@@ -146,10 +146,9 @@ int i915_load_modeset_init(struct drm_device *dev)
 			dev_priv->ring.virtual_start, dev_priv->ring.Size);
 
 	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
-	I915_WRITE(LP_RING + RING_START, dev_priv->ring.Start);
-	I915_WRITE(LP_RING + RING_LEN,
-			((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
-			(RING_NO_REPORT | RING_VALID));
+	I915_WRITE(PRB0_START, dev_priv->ring.Start);
+	I915_WRITE(PRB0_CTL, ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
+		   (RING_NO_REPORT | RING_VALID));
 
 	/* We are using separate values as placeholders for mechanisms for
 	 * private backbuffer/depthbuffer usage.
@@ -175,7 +174,7 @@ int i915_load_modeset_init(struct drm_device *dev)
 
 		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
 
-		I915_WRITE(I915REG_HWS_PGA, dev_priv->dma_status_page);
+		I915_WRITE(HWS_PGA, dev_priv->dma_status_page);
 	} else {
 		size = 4 * 1024;
 		ret = drm_buffer_object_create(dev, size,
@@ -210,7 +209,7 @@ int i915_load_modeset_init(struct drm_device *dev)
 		}
 		dev_priv->hw_status_page = dev_priv->hws_map.handle;
 		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-		I915_WRITE(I915REG_HWS_PGA, dev_priv->status_gfx_addr);
+		I915_WRITE(HWS_PGA, dev_priv->status_gfx_addr);
 	}
 	DRM_DEBUG("Enabled hardware status page\n");
 
@@ -261,7 +260,7 @@ destroy_hws:
 		if (dev_priv->hws_bo)
 			drm_bo_usage_deref_unlocked(&dev_priv->hws_bo);
 	}
-	I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
+	I915_WRITE(HWS_PGA, 0x1ffff000);
 destroy_ringbuffer:
 	if (dev_priv->ring.virtual_start)
 		drm_mem_reg_iounmap(dev, &dev_priv->ring_buffer->mem,
@@ -381,7 +380,7 @@ int i915_driver_unload(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
-	I915_WRITE(LP_RING + RING_LEN, 0);
+	I915_WRITE(PRB0_CTL, 0);
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 		drm_irq_uninstall(dev);
@@ -413,14 +412,14 @@ int i915_driver_unload(struct drm_device *dev)
 		dev_priv->hw_status_page = NULL;
 		dev_priv->dma_status_page = 0;
 		/* Need to rewrite hardware status page */
-		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
+		I915_WRITE(HWS_PGA, 0x1ffff000);
 	}
 
 	if (dev_priv->status_gfx_addr) {
 		dev_priv->status_gfx_addr = 0;
 		drm_core_ioremapfree(&dev_priv->hws_map, dev);
 		drm_bo_usage_deref_unlocked(&dev_priv->hws_bo);
-		I915_WRITE(I915REG_HWS_PGA, 0x1ffff000);
+		I915_WRITE(HWS_PGA, 0x1ffff000);
 	}
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {

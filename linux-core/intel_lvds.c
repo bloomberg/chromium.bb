@@ -106,10 +106,10 @@ static void intel_lvds_save(struct drm_output *output)
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
-	dev_priv->savePP_ON = I915_READ(LVDSPP_ON);
-	dev_priv->savePP_OFF = I915_READ(LVDSPP_OFF);
+	dev_priv->savePP_ON = I915_READ(PP_ON_DELAYS);
+	dev_priv->savePP_OFF = I915_READ(PP_OFF_DELAYS);
 	dev_priv->savePP_CONTROL = I915_READ(PP_CONTROL);
-	dev_priv->savePP_CYCLE = I915_READ(PP_CYCLE);
+	dev_priv->savePP_DIVISOR = I915_READ(PP_DIVISOR);
 	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
 	dev_priv->backlight_duty_cycle = (dev_priv->saveBLC_PWM_CTL &
 				       BACKLIGHT_DUTY_CYCLE_MASK);
@@ -128,9 +128,9 @@ static void intel_lvds_restore(struct drm_output *output)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	I915_WRITE(BLC_PWM_CTL, dev_priv->saveBLC_PWM_CTL);
-	I915_WRITE(LVDSPP_ON, dev_priv->savePP_ON);
-	I915_WRITE(LVDSPP_OFF, dev_priv->savePP_OFF);
-	I915_WRITE(PP_CYCLE, dev_priv->savePP_CYCLE);
+	I915_WRITE(PP_ON_DELAYS, dev_priv->savePP_ON);
+	I915_WRITE(PP_OFF_DELAYS, dev_priv->savePP_OFF);
+	I915_WRITE(PP_DIVISOR, dev_priv->savePP_DIVISOR);
 	I915_WRITE(PP_CONTROL, dev_priv->savePP_CONTROL);
 	if (dev_priv->savePP_CONTROL & POWER_TARGET_ON)
 		intel_lvds_set_power(dev, true);
