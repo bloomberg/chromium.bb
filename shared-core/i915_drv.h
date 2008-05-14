@@ -101,6 +101,8 @@ typedef struct _drm_i915_vbl_swap {
 } drm_i915_vbl_swap_t;
 
 typedef struct drm_i915_private {
+	struct drm_device *dev;
+
 	drm_local_map_t *sarea;
 	drm_local_map_t *mmio_map;
 
@@ -244,6 +246,7 @@ typedef struct drm_i915_private {
 
 	struct {
 		struct drm_memrange gtt_space;
+
 		/**
 		 * List of objects currently involved in rendering from the
 		 * ringbuffer.
@@ -251,10 +254,20 @@ typedef struct drm_i915_private {
 		 * A reference is held on the buffer while on this list.
 		 */
 		struct list_head active_list;
+
 		/**
-		 * LRU List of non-executing objects still in the GTT.
-		 * There may still be dirty cachelines that need to be flushed
-		 * before unbind.
+		 * List of objects which are not in the ringbuffer but which
+		 * still have a write_domain which needs to be flushed before
+		 * unbinding.
+		 *
+		 * A reference is held on the buffer while on this list.
+		 */
+		struct list_head flushing_list;
+
+		/**
+		 * LRU list of objects which are not in the ringbuffer and
+		 * are ready to unbind, but are still in the GTT.
+		 *
 		 * A reference is not held on the buffer while on this list,
 		 * as merely being GTT-bound shouldn't prevent its being
 		 * freed, and we'll pull it off the list in the free path.
@@ -269,6 +282,8 @@ typedef struct drm_i915_private {
 
 		uint32_t next_gem_seqno;
 	} mm;
+
+	struct work_struct user_interrupt_task;
 } drm_i915_private_t;
 
 enum intel_chip_family {
@@ -285,11 +300,11 @@ struct drm_i915_gem_object {
 	/** Current space allocated to this object in the GTT, if any. */
 	struct drm_memrange_node *gtt_space;
 
-	/** This object's place on the active or inactive lists */
+	/** This object's place on the active/flushing/inactive lists */
 	struct list_head list;
 
 	/**
-	 * This is set if the object is on the active list
+	 * This is set if the object is on the active or flushing lists
 	 * (has pending rendering), and is not set if it's on inactive (ready
 	 * to be unbound).
 	 */
@@ -333,6 +348,9 @@ struct drm_i915_gem_request {
 
 	/** Time at which this request was emitted, in jiffies. */
 	unsigned long emitted_jiffies;
+
+	/** Cache domains that were flushed at the start of the request. */
+	uint32_t flush_domains;
 
 	struct list_head list;
 };
@@ -385,6 +403,7 @@ extern int i915_vblank_swap(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
+extern void i915_user_interrupt_handler(struct work_struct *work);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(struct drm_device *dev, void *data,
@@ -438,6 +457,7 @@ int i915_gem_set_domain(struct drm_gem_object *obj,
 int i915_gem_flush_pwrite(struct drm_gem_object *obj,
 			  uint64_t offset, uint64_t size);
 void i915_gem_lastclose(struct drm_device *dev);
+void i915_gem_retire_requests(struct drm_device *dev);
 #endif
 
 #ifdef __linux__

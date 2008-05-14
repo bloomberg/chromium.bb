@@ -1043,6 +1043,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	memset(dev_priv, 0, sizeof(drm_i915_private_t));
 
 	dev->dev_private = (void *)dev_priv;
+	dev_priv->dev = dev;
 
 	/* Add register map (needed for suspend/resume) */
 	base = drm_get_resource_start(dev, mmio_bar);
@@ -1052,8 +1053,11 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		_DRM_KERNEL | _DRM_DRIVER, &dev_priv->mmio_map);
 
 	INIT_LIST_HEAD(&dev_priv->mm.active_list);
+	INIT_LIST_HEAD(&dev_priv->mm.flushing_list);
 	INIT_LIST_HEAD(&dev_priv->mm.inactive_list);
 	INIT_LIST_HEAD(&dev_priv->mm.request_list);
+	INIT_WORK(&dev_priv->user_interrupt_task,
+		  i915_user_interrupt_handler);
 	dev_priv->mm.next_gem_seqno = 1;
 
 #ifdef __linux__

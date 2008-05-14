@@ -124,7 +124,7 @@ i915_gem_object_move_to_inactive(struct drm_gem_object *obj)
  * Returned sequence numbers are nonzero on success.
  */
 static uint32_t
-i915_add_request(struct drm_device *dev)
+i915_add_request(struct drm_device *dev, uint32_t flush_domains)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_request *request;
@@ -155,9 +155,71 @@ i915_add_request(struct drm_device *dev)
 
 	request->seqno = seqno;
 	request->emitted_jiffies = jiffies;
+	request->flush_domains = flush_domains;
 	list_add_tail(&request->list, &dev_priv->mm.request_list);
 
 	return seqno;
+}
+
+/**
+ * Moves buffers associated only with the given active seqno from the active
+ * to inactive list, potentially freeing them.
+ */
+static void
+i915_gem_retire_request(struct drm_device *dev,
+			struct drm_i915_gem_request *request)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+
+	if (request->flush_domains != 0) {
+		struct drm_i915_gem_object *obj_priv, *next;
+
+		/* First clear any buffers that were only waiting for a flush
+		 * matching the one just retired.
+		 */
+
+		list_for_each_entry_safe(obj_priv, next,
+					 &dev_priv->mm.flushing_list, list) {
+			struct drm_gem_object *obj = obj_priv->obj;
+
+			if (obj->write_domain & request->flush_domains) {
+				obj->write_domain = 0;
+				i915_gem_object_move_to_inactive(obj);
+			}
+		}
+
+	}
+
+	/* Move any buffers on the active list that are no longer referenced
+	 * by the ringbuffer to the flushing/inactive lists as appropriate.
+	 */
+	while (!list_empty(&dev_priv->mm.active_list)) {
+		struct drm_gem_object *obj;
+		struct drm_i915_gem_object *obj_priv;
+
+		obj_priv = list_first_entry(&dev_priv->mm.active_list,
+					    struct drm_i915_gem_object,
+					    list);
+		obj = obj_priv->obj;
+
+		/* If the seqno being retired doesn't match the oldest in the
+		 * list, then the oldest in the list must still be newer than
+		 * this seqno.
+		 */
+		if (obj_priv->last_rendering_seqno != request->seqno)
+			return;
+#if WATCH_LRU
+		DRM_INFO("%s: retire %d moves to inactive list %p\n",
+			 __func__, seqno, obj);
+#endif
+
+		if (obj->write_domain != 0) {
+			list_move_tail(&obj_priv->list,
+				       &dev_priv->mm.flushing_list);
+		} else {
+			i915_gem_object_move_to_inactive(obj);
+		}
+	}
 }
 
 /**
@@ -198,6 +260,8 @@ i915_gem_retire_requests(struct drm_device *dev)
 		retiring_seqno = request->seqno;
 
 		if (i915_seqno_passed(seqno, retiring_seqno)) {
+			i915_gem_retire_request(dev, request);
+
 			list_del(&request->list);
 			drm_free(request, sizeof(*request), DRM_MEM_DRIVER);
 		} else
@@ -317,15 +381,17 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	 * create a new seqno to wait for.
 	 */
 	if (obj->write_domain & ~(DRM_GEM_DOMAIN_CPU)) {
+		uint32_t write_domain = obj->write_domain;
 #if WATCH_BUF
 		DRM_INFO("%s: flushing object %p from write domain %08x\n",
-			  __func__, obj, obj->write_domain);
+			  __func__, obj, write_domain);
 #endif
-		i915_gem_flush(dev, 0, obj->write_domain);
+		i915_gem_flush(dev, 0, write_domain);
 		obj->write_domain = 0;
 
 		i915_gem_object_move_to_active(obj);
-		obj_priv->last_rendering_seqno = i915_add_request(dev);
+		obj_priv->last_rendering_seqno = i915_add_request(dev,
+								  write_domain);
 		BUG_ON(obj_priv->last_rendering_seqno == 0);
 #if WATCH_LRU
 		DRM_INFO("%s: flush moves to exec list %p\n", __func__, obj);
@@ -343,11 +409,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		if (ret != 0)
 			return ret;
 
-		i915_gem_object_move_to_inactive(obj);
-
-#if WATCH_LRU
-		DRM_INFO("%s: wait moves to lru list %p\n", __func__, obj);
-#endif
+		BUG_ON(obj_priv->active);
 	}
 
 	return 0;
@@ -471,54 +533,73 @@ i915_gem_evict_something(struct drm_device *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
-	int ret;
 
-	/* Find the LRU buffer. */
-	if (!list_empty(&dev_priv->mm.inactive_list)) {
-		obj_priv = list_first_entry(&dev_priv->mm.inactive_list,
-					    struct drm_i915_gem_object,
-					    list);
-	} else if (!list_empty(&dev_priv->mm.active_list)) {
-		int found = 0;
-
-		/* If there's nothing unused and ready, grab the first
-		 * unpinned object from the currently executing list.
+	for (;;) {
+		/* If there's an inactive buffer available now, grab it
+		 * and be done.
 		 */
-		list_for_each_entry(obj_priv, &dev_priv->mm.active_list,
-				    list) {
-			if (obj_priv->pin_count == 0) {
-				found = 1;
-				break;
-			}
+		if (!list_empty(&dev_priv->mm.inactive_list)) {
+			obj_priv = list_first_entry(&dev_priv->mm.inactive_list,
+						    struct drm_i915_gem_object,
+						    list);
+			obj = obj_priv->obj;
+			BUG_ON(obj_priv->pin_count != 0);
+			break;
 		}
-		if (!found)
-			return -ENOMEM;
-	} else {
+
+		/* If we didn't get anything, but the ring is still processing
+		 * things, wait for one of those things to finish and hopefully
+		 * leave us a buffer to evict.
+		 */
+		if (!list_empty(&dev_priv->mm.request_list)) {
+			struct drm_i915_gem_request *request;
+			int ret;
+
+			request = list_first_entry(&dev_priv->mm.request_list,
+						   struct drm_i915_gem_request,
+						   list);
+
+			ret = i915_wait_request(dev, request->seqno);
+			if (ret != 0)
+				return ret;
+
+			continue;
+		}
+
+		/* If we didn't have anything on the request list but there
+		 * are buffers awaiting a flush, emit one and try again.
+		 * When we wait on it, those buffers waiting for that flush
+		 * will get moved to inactive.
+		 */
+		if (!list_empty(&dev_priv->mm.flushing_list)) {
+			obj_priv = list_first_entry(&dev_priv->mm.flushing_list,
+						    struct drm_i915_gem_object,
+						    list);
+			obj = obj_priv->obj;
+
+			i915_gem_flush(dev,
+				       obj->write_domain,
+				       obj->write_domain);
+			i915_add_request(dev, obj->write_domain);
+
+			obj = NULL;
+			continue;
+		}
+
+		/* If we didn't do any of the above, there's nothing to be done
+		 * and we just can't fit it in.
+		 */
 		return -ENOMEM;
 	}
-	obj = obj_priv->obj;
-	drm_gem_object_reference(obj);
+
 #if WATCH_LRU
 	DRM_INFO("%s: evicting %p\n", __func__, obj);
 #endif
 
-	/* Only unpinned buffers should be on this list. */
-	BUG_ON(obj_priv->pin_count != 0);
-
-	/* Do this separately from the wait_rendering in
-	 * i915_gem_object_unbind() because we want to catch interrupts and
-	 * return.
-	 */
-	ret = i915_gem_object_wait_rendering(obj);
-	if (ret != 0)
-		return ret;
+	BUG_ON(obj_priv->active);
 
 	/* Wait on the rendering and unbind the buffer. */
 	i915_gem_object_unbind(obj);
-#if WATCH_LRU
-	DRM_INFO("%s: evicted %p\n", __func__, obj);
-#endif
-	drm_gem_object_unreference(obj);
 
 	return 0;
 }
@@ -713,12 +794,15 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 
 /**
  * Once all of the objects have been set in the proper domain,
- * perform the necessary flush and invalidate operations
+ * perform the necessary flush and invalidate operations.
+ *
+ * Returns the write domains flushed, for use in flush tracking.
  */
-
-static void
+static uint32_t
 i915_gem_dev_set_domain(struct drm_device *dev)
 {
+	uint32_t flush_domains = dev->flush_domains;
+
 	/*
 	 * Now that all the buffers are synced to the proper domains,
 	 * flush and invalidate the collected domains
@@ -736,6 +820,8 @@ i915_gem_dev_set_domain(struct drm_device *dev)
 		dev->invalidate_domains = 0;
 		dev->flush_domains = 0;
 	}
+
+	return flush_domains;
 }
 
 static int
@@ -1014,7 +1100,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	struct drm_gem_object *batch_obj;
 	int ret, i;
 	uint64_t exec_offset;
-	uint32_t seqno;
+	uint32_t seqno, flush_domains;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -1099,7 +1185,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	/* Flush/invalidate caches and chipset buffer */
-	i915_gem_dev_set_domain(dev);
+	flush_domains = i915_gem_dev_set_domain(dev);
 
 	exec_offset = validate_list[args->buffer_count - 1].offset;
 
@@ -1124,7 +1210,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	 * *some* interrupts representing completion of buffers that we can
 	 * wait on when trying to clear up gtt space).
 	 */
-	seqno = i915_add_request(dev);
+	seqno = i915_add_request(dev, flush_domains);
 	BUG_ON(seqno == 0);
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_gem_object *obj = object_list[i];

@@ -436,6 +436,28 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	return count;
 }
 
+/**
+ * Handler for user interrupts in process context (able to sleep, do VFS
+ * operations, etc.
+ *
+ * If another IRQ comes in while we're in this handler, it will still get put
+ * on the queue again to be rerun when we finish.
+ */
+void
+i915_user_interrupt_handler(struct work_struct *work)
+{
+	drm_i915_private_t *dev_priv;
+	struct drm_device *dev;
+
+	dev_priv = container_of(work, drm_i915_private_t,
+				user_interrupt_task);
+	dev = dev_priv->dev;
+
+	mutex_lock(&dev->struct_mutex);
+	i915_gem_retire_requests(dev);
+	mutex_unlock(&dev->struct_mutex);
+}
+
 irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
@@ -493,6 +515,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		DRM_WAKEUP(&dev_priv->irq_queue);
 #ifdef I915_HAVE_FENCE
 		i915_fence_handler(dev);
+		schedule_work(&dev_priv->user_interrupt_task);
 #endif
 	}
 
