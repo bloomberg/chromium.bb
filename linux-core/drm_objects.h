@@ -65,7 +65,8 @@ struct drm_user_object {
 	struct drm_hash_item hash;
 	struct list_head list;
 	enum drm_object_type type;
-	atomic_t refcount;
+	struct kref refcount;
+
 	int shareable;
 	struct drm_file *owner;
 	void (*ref_struct_locked) (struct drm_file *priv,
@@ -86,8 +87,9 @@ struct drm_user_object {
 struct drm_ref_object {
 	struct drm_hash_item hash;
 	struct list_head list;
-	atomic_t refcount;
+	struct kref refcount;
 	enum drm_ref_type unref_action;
+	struct drm_file *owner;
 };
 
 /**
