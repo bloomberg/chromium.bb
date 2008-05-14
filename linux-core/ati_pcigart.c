@@ -161,12 +161,12 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 			switch(gart_info->gart_reg_if) {
 			case DRM_ATI_GART_IGP:
 				page_base |= (upper_32_bits(entry_addr) & 0xff) << 4;
-				page_base |= ATI_PCIE_READ | ATI_PCIE_WRITE;
+				page_base |= 0xc;
 				break;
 			case DRM_ATI_GART_PCIE:
 				page_base >>= 8;
 				page_base |= (upper_32_bits(entry_addr) & 0xff) << 24;
-				page_base |= 0xc;
+				page_base |= ATI_PCIE_READ | ATI_PCIE_WRITE;
 				break;
 			default:
 			case DRM_ATI_GART_PCI:
