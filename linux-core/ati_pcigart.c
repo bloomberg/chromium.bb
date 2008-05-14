@@ -34,6 +34,8 @@
 #include "drmP.h"
 
 # define ATI_PCIGART_PAGE_SIZE		4096	/**< PCI GART page size */
+# define ATI_PCIGART_PAGE_MASK		(~(ATI_PCIGART_PAGE_SIZE-1))
+
 static int drm_ati_alloc_pcigart_table(struct drm_device *dev,
 				       struct drm_ati_pcigart_info *gart_info)
 {
@@ -148,18 +150,23 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 			bus_address = 0;
 			goto done;
 		}
-		page_base = (u32) entry->busaddr[i];
 
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
 			switch(gart_info->gart_reg_if) {
 			case DRM_ATI_GART_IGP:
+				page_base = (u32) entry->busaddr[i] & ATI_PCIGART_PAGE_MASK;
+				page_base |= (upper_32_bits(entry->busaddr[i]) & 0xff) << 4;
 				*pci_gart = cpu_to_le32((page_base) | 0xc);
 				break;
 			case DRM_ATI_GART_PCIE:
+				page_base = (u32)(entry->busaddr[i] & ATI_PCIGART_PAGE_MASK);
+				page_base >>= 8;
+				page_base |= (upper_32_bits(entry->busaddr[i]) & 0xff) << 24;
 				*pci_gart = cpu_to_le32((page_base >> 8) | 0xc);
 				break;
 			default:
 			case DRM_ATI_GART_PCI:
+				page_base = (u32) entry->busaddr[i];
 				*pci_gart = cpu_to_le32(page_base);
 				break;
 			}
