@@ -39,7 +39,7 @@ int drm_add_user_object(struct drm_file *priv, struct drm_user_object *item,
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 
 	/* The refcount will be bumped to 1 when we add the ref object below. */
-	kref_init(&item->refcount);
+	atomic_set(&item->refcount, 0);
 	item->shareable = shareable;
 	item->owner = priv;
 
@@ -83,20 +83,16 @@ struct drm_user_object *drm_lookup_user_object(struct drm_file *priv, uint32_t k
 }
 EXPORT_SYMBOL(drm_lookup_user_object);
 
-static void drm_user_object_free(struct kref *kref)
+static void drm_deref_user_object(struct drm_file *priv, struct drm_user_object *item)
 {
-	struct drm_user_object *item = container_of(kref, struct drm_user_object, refcount);
+	struct drm_device *dev = priv->minor->dev;
 	int ret;
-	struct drm_device *dev = item->owner->minor->dev;
 
-	ret = drm_ht_remove_item(&dev->object_hash, &item->hash);
-	BUG_ON(ret);
-	item->remove(item->owner, item);
-}
-
-static void drm_deref_user_object(struct drm_user_object *item)
-{
-	kref_put(&item->refcount, drm_user_object_free);
+	if (atomic_dec_and_test(&item->refcount)) {
+		ret = drm_ht_remove_item(&dev->object_hash, &item->hash);
+		BUG_ON(ret);
+		item->remove(priv, item);
+	}
 }
 
 static int drm_object_ref_action(struct drm_file *priv, struct drm_user_object *ro,
@@ -106,7 +102,7 @@ static int drm_object_ref_action(struct drm_file *priv, struct drm_user_object *
 
 	switch (action) {
 	case _DRM_REF_USE:
-		kref_get(&ro->refcount);
+		atomic_inc(&ro->refcount);
 		break;
 	default:
 		if (!ro->ref_struct_locked) {
@@ -150,7 +146,7 @@ int drm_add_ref_object(struct drm_file *priv, struct drm_user_object *referenced
 	if (NULL !=
 	    (item =
 	     drm_lookup_ref_object(priv, referenced_object, ref_action))) {
-		kref_get(&item->refcount);
+		atomic_inc(&item->refcount);
 		return drm_object_ref_action(priv, referenced_object,
 					     ref_action);
 	}
@@ -161,10 +157,8 @@ int drm_add_ref_object(struct drm_file *priv, struct drm_user_object *referenced
 		return -ENOMEM;
 	}
 
-	kref_init(&item->refcount);
-	kref_get(&item->refcount);
+	atomic_set(&item->refcount, 1);
 	item->hash.key = (unsigned long)referenced_object;
-	item->owner = priv;
 	ret = drm_ht_insert_item(ht, &item->hash);
 	item->unref_action = ref_action;
 
@@ -211,34 +205,27 @@ static void drm_remove_other_references(struct drm_file *priv,
 	}
 }
 
-void drm_object_ref_free(struct kref *kref)
-{
-	struct drm_ref_object *item = container_of(kref, struct drm_ref_object, refcount);
-	struct drm_user_object *user_object = (struct drm_user_object *) item->hash.key;
-	struct drm_file *priv = item->owner;
-	struct drm_open_hash *ht = &priv->refd_object_hash[item->unref_action];
-	int ret;
-
-	ret = drm_ht_remove_item(ht, &item->hash);
-	BUG_ON(ret);
-	list_del_init(&item->list);
-	if (item->unref_action == _DRM_REF_USE)
-		drm_remove_other_references(priv, user_object);
-	drm_ctl_free(item, sizeof(*item), DRM_MEM_OBJECTS);
-}
-
 void drm_remove_ref_object(struct drm_file *priv, struct drm_ref_object *item)
 {
+	int ret;
 	struct drm_user_object *user_object = (struct drm_user_object *) item->hash.key;
+	struct drm_open_hash *ht = &priv->refd_object_hash[item->unref_action];
 	enum drm_ref_type unref_action;
 
 	DRM_ASSERT_LOCKED(&priv->minor->dev->struct_mutex);
 	unref_action = item->unref_action;
-	kref_put(&item->refcount, drm_object_ref_free);
+	if (atomic_dec_and_test(&item->refcount)) {
+		ret = drm_ht_remove_item(ht, &item->hash);
+		BUG_ON(ret);
+		list_del_init(&item->list);
+		if (unref_action == _DRM_REF_USE)
+			drm_remove_other_references(priv, user_object);
+		drm_ctl_free(item, sizeof(*item), DRM_MEM_OBJECTS);
+	}
 
 	switch (unref_action) {
 	case _DRM_REF_USE:
-		drm_deref_user_object(user_object);
+		drm_deref_user_object(priv, user_object);
 		break;
 	default:
 		BUG_ON(!user_object->unref);
