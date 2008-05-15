@@ -248,9 +248,9 @@ typedef struct drm_i915_private {
 		 * List of objects currently involved in rendering from the
 		 * ringbuffer.
 		 */
-		struct list_head execution_list;
+		struct list_head active_list;
 		/** LRU List of non-executing objects still in the GTT. */
-		struct list_head gtt_lru;
+		struct list_head inactive_list;
 	} mm;
 } drm_i915_private_t;
 
@@ -267,9 +267,9 @@ struct drm_i915_gem_object {
 
 	/** Current space allocated to this object in the GTT, if any. */
 	struct drm_memrange_node *gtt_space;
-	
-	/** This object's place on the GTT LRU list */
-	struct list_head gtt_lru_entry;
+
+	/** This object's place on the active or inactive lists */
+	struct list_head list;
 
 	/** AGP memory structure for our GTT binding. */
 	DRM_AGP_MEM *agp_mem;

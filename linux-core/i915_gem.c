@@ -170,8 +170,8 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 			drm_gem_object_reference(obj);
 		/* Move from whatever list we were on to the tail of execution.
 		 */
-		list_move_tail(&obj_priv->gtt_lru_entry,
-			       &dev_priv->mm.execution_list);
+		list_move_tail(&obj_priv->list,
+			       &dev_priv->mm.active_list);
 		obj_priv->last_rendering_cookie = i915_emit_irq(dev);
 		BUG_ON(obj_priv->last_rendering_cookie == 0);
 #if WATCH_LRU
@@ -197,8 +197,8 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		 * Move to the tail of the LRU list now since we're done.
 		 */
 		if (obj_priv->pin_count == 0)
-			list_move_tail(&obj_priv->gtt_lru_entry,
-				       &dev_priv->mm.gtt_lru);
+			list_move_tail(&obj_priv->list,
+				       &dev_priv->mm.inactive_list);
 
 #if WATCH_LRU
 		DRM_INFO("%s: wait moves to lru list %p\n", __func__, obj);
@@ -245,8 +245,8 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	obj_priv->gtt_space = NULL;
 
 	/* Remove ourselves from the LRU list if present. */
-	if (!list_empty(&obj_priv->gtt_lru_entry)) {
-		list_del_init(&obj_priv->gtt_lru_entry);
+	if (!list_empty(&obj_priv->list)) {
+		list_del_init(&obj_priv->list);
 		if (obj_priv->last_rendering_cookie) {
 			DRM_ERROR("Failed to wait on buffer when unbinding, "
 				  "continued anyway.\n");
@@ -309,14 +309,14 @@ i915_dump_lru(struct drm_device *dev, const char *where)
 	struct drm_i915_gem_object	*obj_priv;
 
 	DRM_INFO("GTT execution list %s {\n", where);
-	list_for_each_entry(obj_priv, &dev_priv->mm.execution_list,
-			    gtt_lru_entry)
+	list_for_each_entry(obj_priv, &dev_priv->mm.active_list,
+			    list)
 	{
 		DRM_INFO("    %p: %08x\n", obj_priv,
 			 obj_priv->last_rendering_cookie);
 	}
 	DRM_INFO("GTT LRU %s {\n", where);
-	list_for_each_entry(obj_priv, &dev_priv->mm.gtt_lru, gtt_lru_entry) {
+	list_for_each_entry(obj_priv, &dev_priv->mm.inactive_list, list) {
 		DRM_INFO("    %p: %08x\n", obj_priv,
 			 obj_priv->last_rendering_cookie);
 	}
@@ -333,16 +333,16 @@ i915_gem_evict_something(struct drm_device *dev)
 	int ret;
 
 	/* Find the LRU buffer. */
-	if (!list_empty(&dev_priv->mm.gtt_lru)) {
-		obj_priv = list_first_entry(&dev_priv->mm.gtt_lru,
+	if (!list_empty(&dev_priv->mm.inactive_list)) {
+		obj_priv = list_first_entry(&dev_priv->mm.inactive_list,
 					    struct drm_i915_gem_object,
-					    gtt_lru_entry);
-	} else if (!list_empty(&dev_priv->mm.execution_list)) {
+					    list);
+	} else if (!list_empty(&dev_priv->mm.active_list)) {
 		/* If there's nothing unused and ready, grab the first
 		 * unpinned object from the currently executing list.
 		 */
-		list_for_each_entry(obj_priv, &dev_priv->mm.execution_list,
-				    gtt_lru_entry)
+		list_for_each_entry(obj_priv, &dev_priv->mm.active_list,
+				    list)
 			if (obj_priv->pin_count == 0)
 				break;
 		if (!obj_priv)
@@ -447,8 +447,8 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 #if WATCH_LRU
 		DRM_INFO("%s: GTT full, evicting something\n", __func__);
 #endif
-		if (list_empty(&dev_priv->mm.gtt_lru) &&
-		    list_empty(&dev_priv->mm.execution_list)) {
+		if (list_empty(&dev_priv->mm.inactive_list) &&
+		    list_empty(&dev_priv->mm.active_list)) {
 			DRM_ERROR("GTT full, but LRU list empty\n");
 			return -ENOMEM;
 		}
@@ -835,10 +835,10 @@ i915_gem_wait_space(struct drm_device *dev)
 	int ret = 0;
 
 	while (ring->space + 1024 < dev_priv->ring.Size &&
-	       !list_empty(&dev_priv->mm.execution_list)) {
-		obj_priv = list_first_entry(&dev_priv->mm.execution_list,
+	       !list_empty(&dev_priv->mm.active_list)) {
+		obj_priv = list_first_entry(&dev_priv->mm.active_list,
 					    struct drm_i915_gem_object,
-					    gtt_lru_entry);
+					    list);
 		if (obj_priv == last_priv)
 			break;
 		ret = i915_gem_object_wait_rendering(obj_priv->obj);
@@ -984,8 +984,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		obj_priv->last_rendering_cookie = cookie;
 		BUG_ON(obj_priv->last_rendering_cookie == 0);
 		/* Move our buffer to the tail of the execution list. */
-		list_move_tail(&obj_priv->gtt_lru_entry,
-			       &dev_priv->mm.execution_list);
+		list_move_tail(&obj_priv->list,
+			       &dev_priv->mm.active_list);
 #if WATCH_LRU
 		DRM_INFO("%s: move to exec list %p\n", __func__, obj);
 #endif
@@ -1083,7 +1083,7 @@ int i915_gem_init_object(struct drm_gem_object *obj)
 
 	obj->driver_private = obj_priv;
 	obj_priv->obj = obj;
-	INIT_LIST_HEAD(&obj_priv->gtt_lru_entry);
+	INIT_LIST_HEAD(&obj_priv->list);
 	return 0;
 }
 
@@ -1138,14 +1138,14 @@ i915_gem_lastclose(struct drm_device *dev)
 	 * close, this is also the last ref and they'll go away.
 	 */
 
-	while (!list_empty(&dev_priv->mm.execution_list)) {
+	while (!list_empty(&dev_priv->mm.active_list)) {
 		struct drm_i915_gem_object *obj_priv;
 
-		obj_priv = list_first_entry(&dev_priv->mm.execution_list,
+		obj_priv = list_first_entry(&dev_priv->mm.active_list,
 					    struct drm_i915_gem_object,
-					    gtt_lru_entry);
+					    list);
 
-		list_del_init(&obj_priv->gtt_lru_entry);
+		list_del_init(&obj_priv->list);
 		obj_priv->last_rendering_cookie = 0;
 		obj_priv->obj->write_domain = 0;
 		drm_gem_object_unreference(obj_priv->obj);
