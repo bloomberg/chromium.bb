@@ -54,7 +54,7 @@ ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
 }
 
 bool ClientInfo::Initialize() {
-  process_handle_ = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid_);
+  process_handle_ = OpenProcess(GENERIC_ALL, FALSE, pid_);
   if (!process_handle_) {
     return false;
   }

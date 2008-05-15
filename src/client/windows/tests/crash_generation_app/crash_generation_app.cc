@@ -35,7 +35,7 @@
 namespace google_breakpad {
 
 const int kMaxLoadString = 100;
-const wchar_t kPipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\S-1-5-21-39260824-743453154-142223018-195347";
+const wchar_t kPipeName[] = L"\\\\.\\pipe\\BreakpadCrashServices\\TestServer";
 
 const DWORD kEditBoxStyles = WS_CHILD |
                              WS_VISIBLE |
