@@ -116,6 +116,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 static int
 drm_gem_handle_delete(struct drm_file *filp, int handle)
 {
+	struct drm_device *dev;
 	struct drm_gem_object *obj;
 
 	/* This is gross. The idr system doesn't let us try a delete and
@@ -135,12 +136,15 @@ drm_gem_handle_delete(struct drm_file *filp, int handle)
 		spin_unlock(&filp->table_lock);
 		return -EINVAL;
 	}
+	dev = obj->dev;
 
 	/* Release reference and decrement refcount. */
 	idr_remove(&filp->object_idr, handle);
 	spin_unlock(&filp->table_lock);
 
+	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_handle_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -225,7 +229,9 @@ drm_gem_create_ioctl(struct drm_device *dev, void *data,
 		return -ENOMEM;
 
 	ret = drm_gem_handle_create(file_priv, obj, &handle);
+	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_handle_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 
 	if (ret)
 		return ret;
@@ -275,12 +281,14 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 	if (obj == NULL)
 		return -EINVAL;
 
+	mutex_lock(&dev->struct_mutex);
 	if (dev->driver->gem_set_domain) {
 		ret = dev->driver->gem_set_domain(obj,
 						  DRM_GEM_DOMAIN_CPU,
 						  0);
 		if (ret) {
 			drm_gem_object_unreference(obj);
+			mutex_unlock(&dev->struct_mutex);
 			return ret;
 		}
 	}
@@ -290,6 +298,7 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 			args->size, &offset);
 	if (read != args->size) {
 		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
 		if (read < 0)
 			return read;
 		else
@@ -297,6 +306,7 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 	}
 
 	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -331,7 +341,9 @@ drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
 		       PROT_READ | PROT_WRITE, MAP_SHARED,
 		       args->offset);
 	up_write(&current->mm->mmap_sem);
+	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 	if (IS_ERR((void *)addr))
 		return addr;
 
@@ -362,12 +374,14 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	if (obj == NULL)
 		return -EINVAL;
 
+	mutex_lock(&dev->struct_mutex);
 	if (dev->driver->gem_set_domain) {
 		ret = dev->driver->gem_set_domain(obj,
 						  DRM_GEM_DOMAIN_CPU,
 						  DRM_GEM_DOMAIN_CPU);
 		if (ret) {
 			drm_gem_object_unreference(obj);
+			mutex_unlock(&dev->struct_mutex);
 			return ret;
 		}
 	}
@@ -379,6 +393,7 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 
 	if (written != args->size) {
 		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
 		if (written < 0)
 			return written;
 		else
@@ -391,6 +406,7 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 					      args->size);
 
 	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -432,7 +448,9 @@ again:
 		goto again;
 
 	if (ret != 0) {
+		mutex_lock(&dev->struct_mutex);
 		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
 		return ret;
 	}
 
@@ -472,7 +490,9 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
 		return -ENOENT;
 
 	ret = drm_gem_handle_create(file_priv, obj, &handle);
+	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 	if (ret)
 		return ret;
 
@@ -500,6 +520,7 @@ drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 	if (obj == NULL)
 		return -EINVAL;
 
+	mutex_lock(&dev->struct_mutex);
 	if (dev->driver->gem_set_domain) {
 		ret = dev->driver->gem_set_domain(obj,
 						   args->read_domains,
@@ -510,6 +531,7 @@ drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 		ret = 0;
 	}
 	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -546,10 +568,12 @@ drm_gem_object_release_handle(int id, void *ptr, void *data)
 void
 drm_gem_release(struct drm_device *dev, struct drm_file *file_private)
 {
+	mutex_lock(&dev->struct_mutex);
 	idr_for_each(&file_private->object_idr,
 		     &drm_gem_object_release_handle, NULL);
 
 	idr_destroy(&file_private->object_idr);
+	mutex_unlock(&dev->struct_mutex);
 }
 
 /**
@@ -562,6 +586,8 @@ drm_gem_object_free(struct kref *kref)
 {
 	struct drm_gem_object *obj = (struct drm_gem_object *) kref;
 	struct drm_device *dev = obj->dev;
+
+	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
 
 	if (dev->driver->gem_free_object != NULL)
 		dev->driver->gem_free_object(obj);

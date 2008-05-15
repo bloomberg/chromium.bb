@@ -42,13 +42,19 @@ i915_gem_init_ioctl(struct drm_device *dev, void *data,
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_init *args = data;
 
+	mutex_lock(&dev->struct_mutex);
+
 	if (args->gtt_start >= args->gtt_end ||
 	    (args->gtt_start & (PAGE_SIZE - 1)) != 0 ||
-	    (args->gtt_end & (PAGE_SIZE - 1)) != 0)
+	    (args->gtt_end & (PAGE_SIZE - 1)) != 0) {
+		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
+	}
 
 	drm_memrange_init(&dev_priv->mm.gtt_space, args->gtt_start,
 	    args->gtt_end - args->gtt_start);
+
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -834,6 +840,7 @@ i915_gem_wait_space(struct drm_device *dev)
 	struct drm_i915_gem_object *obj_priv, *last_priv = NULL;
 	int ret = 0;
 
+	mutex_lock(&dev->struct_mutex);
 	while (ring->space + 1024 < dev_priv->ring.Size &&
 	       !list_empty(&dev_priv->mm.active_list)) {
 		obj_priv = list_first_entry(&dev_priv->mm.active_list,
@@ -847,6 +854,7 @@ i915_gem_wait_space(struct drm_device *dev)
 		last_priv = obj_priv;
 		i915_kernel_lost_context(dev);
 	}
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -897,6 +905,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		goto err;
 	}
 
+	mutex_lock(&dev->struct_mutex);
 	/* Look up object handles and perform the relocations */
 	for (i = 0; i < args->buffer_count; i++) {
 		object_list[i] = drm_gem_object_lookup(dev, file_priv,
@@ -1008,6 +1017,8 @@ err:
 		for (i = 0; i < args->buffer_count; i++)
 			drm_gem_object_unreference(object_list[i]);
 	}
+	mutex_unlock(&dev->struct_mutex);
+
 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
 	drm_free(validate_list, sizeof(*validate_list) * args->buffer_count,
@@ -1025,10 +1036,13 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 	struct drm_i915_gem_object *obj_priv;
 	int ret;
 
+	mutex_lock(&dev->struct_mutex);
+
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL) {
 		DRM_ERROR("Bad handle in i915_gem_pin_ioctl(): %d\n",
 			  args->handle);
+		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
 
@@ -1041,6 +1055,7 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 				  "i915_gem_pin_ioctl(): %d\n",
 				  ret);
 			drm_gem_object_unreference(obj);
+			mutex_unlock(&dev->struct_mutex);
 			return ret;
 		}
 	}
@@ -1048,6 +1063,7 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 	obj_priv->pin_count++;
 	args->offset = obj_priv->gtt_offset;
 	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
 }
@@ -1060,16 +1076,19 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
 
+	mutex_lock(&dev->struct_mutex);
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL) {
 		DRM_ERROR("Bad handle in i915_gem_unpin_ioctl(): %d\n",
 			  args->handle);
+		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
 
 	obj_priv = obj->driver_private;
 	obj_priv->pin_count--;
 	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 	return 0;
 }
 
@@ -1095,12 +1114,17 @@ void i915_gem_free_object(struct drm_gem_object *obj)
 }
 
 int
-i915_gem_set_domain_ioctl(struct drm_gem_object *obj,
-			  uint32_t read_domains,
-			  uint32_t write_domain)
+i915_gem_set_domain(struct drm_gem_object *obj,
+		    uint32_t read_domains,
+		    uint32_t write_domain)
 {
+	struct drm_device *dev = obj->dev;
+
+	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
+
 	i915_gem_object_set_domain(obj, read_domains, write_domain);
 	i915_gem_dev_set_domain(obj->dev);
+
 	return 0;
 }
 
@@ -1133,6 +1157,8 @@ i915_gem_lastclose(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 
+	mutex_lock(&dev->struct_mutex);
+
 	/* Assume that the chip has been idled at this point. Just pull them
 	 * off the execution list and unref them.  Since this is the last
 	 * close, this is also the last ref and they'll go away.
@@ -1150,4 +1176,6 @@ i915_gem_lastclose(struct drm_device *dev)
 		obj_priv->obj->write_domain = 0;
 		drm_gem_object_unreference(obj_priv->obj);
 	}
+
+	mutex_unlock(&dev->struct_mutex);
 }
