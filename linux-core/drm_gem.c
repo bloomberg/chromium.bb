@@ -61,7 +61,7 @@
  * DRM terminology) to mimic fds, and implement the fd syscalls we need as
  * ioctls.  The objects themselves will still include the struct file so
  * that we can transition to fds if the required kernel infrastructure shows
- * up at a later data, and as our interface with shmfs for memory allocation.
+ * up at a later date, and as our interface with shmfs for memory allocation.
  */
 
 /**
