@@ -353,16 +353,17 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 #endif
 #endif
 
-	/*
-	 * Initialize the memory manager for local and AGP space
-	 */
-	ret = drm_bo_driver_init(dev);
-	if (ret) {
-		DRM_ERROR("fail to init memory manager for local & AGP space\n");
-		goto out_rmmap;
-	}
-
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		/*
+		 * Initialize the memory manager for local and AGP space
+		 */
+		ret = drm_bo_driver_init(dev);
+		if (ret) {
+			DRM_ERROR("fail to init memory manager for "
+				  "local & AGP space\n");
+			goto out_rmmap;
+		}
+
 		ret = i915_load_modeset_init(dev);
 		if (ret < 0) {
 			DRM_ERROR("failed to init modeset\n");
