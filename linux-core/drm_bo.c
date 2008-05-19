@@ -2361,10 +2361,12 @@ int drm_bo_driver_finish(struct drm_device *dev)
 	if (list_empty(&bm->unfenced))
 		DRM_DEBUG("Unfenced list was clean\n");
 
+	if (bm->dummy_read_page) {
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-	ClearPageReserved(bm->dummy_read_page);
+		ClearPageReserved(bm->dummy_read_page);
 #endif
-	__free_page(bm->dummy_read_page);
+		__free_page(bm->dummy_read_page);
+	}
 
 out:
 	mutex_unlock(&dev->struct_mutex);
