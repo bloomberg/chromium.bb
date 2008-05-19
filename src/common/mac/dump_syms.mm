@@ -287,6 +287,14 @@ static const int kTextSection = 1;
     NSString *ext = [src pathExtension];
     NSNumber *address = [NSNumber numberWithUnsignedLongLong:list->n_value];
 
+    // Leopard puts .c files with no code as an offset of 0, but a
+    // crash can't happen here and it throws off our code that matches
+    // symbols to line numbers so we ignore them..
+    // Return YES because this isn't an error, just something we don't
+    // care to handle.
+    if ([address unsignedLongValue] == 0) {
+      return YES;
+    }
     // TODO(waylonis):Ensure that we get the full path for the source file
     // from the first N_SO record
     // If there is an extension, we'll consider it source code
@@ -363,6 +371,8 @@ static const int kTextSection = 1;
         nlist64.n_desc = SwapShortIfNeeded(list->n_desc);
         nlist64.n_value = (uint64_t)SwapLongIfNeeded(list->n_value);
 
+        // TODO(nealsid): is this broken? we get NO if one symbol fails
+        // but then we lose that information if another suceeeds
         if ([self processSymbolItem:&nlist64 stringTable:strtab])
           result = YES;
       }
