@@ -260,6 +260,14 @@ typedef struct drm_i915_private {
 		 * freed, and we'll pull it off the list in the free path.
 		 */
 		struct list_head inactive_list;
+
+		/**
+		 * List of breadcrumbs associated with GPU requests currently
+		 * outstanding.
+		 */
+		struct list_head request_list;
+
+		uint32_t next_gem_seqno;
 	} mm;
 } drm_i915_private_t;
 
@@ -307,6 +315,23 @@ struct drm_i915_gem_object {
 
 	/** Breadcrumb of last rendering to the buffer. */
 	uint32_t last_rendering_seqno;
+};
+
+/**
+ * Request queue structure.
+ *
+ * The request queue allows us to note sequence numbers that have been emitted
+ * and may be associated with active buffers to be retired.
+ *
+ * By keeping this list, we can avoid having to do questionable
+ * sequence-number comparisons on buffer last_rendering_seqnos, and associate
+ * an emission time with seqnos for tracking how far ahead of the GPU we are.
+ */
+struct drm_i915_gem_request {
+	/** GEM sequence number associated with this request. */
+	uint32_t seqno;
+
+	struct list_head list;
 };
 
 extern struct drm_ioctl_desc i915_ioctls[];
@@ -506,7 +531,12 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
 #define CMD_REPORT_HEAD			(7<<23)
 #define CMD_STORE_DWORD_IMM             ((0x20<<23) | (0x1 << 22) | 0x1)
+/**
+ * Stores a 32-bit integer to the status page at the dword index given.
+ */
 #define CMD_STORE_DWORD_IDX		((0x21<<23) | 0x1)
+# define STORE_DWORD_INDEX_SHIFT		2
+
 #define CMD_OP_BATCH_BUFFER  ((0x0<<29)|(0x30<<23)|0x1)
 
 #define CMD_MI_FLUSH         (0x04 << 23)
@@ -855,7 +885,22 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
 
 #define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
+
+/**
+ * Reads a dword out of the status page, which is written to from the command
+ * queue by automatic updates, MI_REPORT_HEAD, MI_STORE_DATA_INDEX, or
+ * MI_STORE_DATA_IMM.
+ *
+ * The following dwords have a reserved meaning:
+ * 0: ISR copy, updated when an ISR bit not set in the HWSTAM changes.
+ * 4: ring 0 head pointer
+ * 5: ring 1 head pointer (915-class)
+ * 6: ring 2 head pointer (915-class)
+ *
+ * The area from dword 0x10 to 0x3ff is available for driver usage.
+ */
 #define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
+#define I915_GEM_HWS_INDEX		0x10
 
 #define BLC_PWM_CTL		0x61254
 #define BACKLIGHT_MODULATION_FREQ_SHIFT		(17)

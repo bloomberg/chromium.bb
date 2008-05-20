@@ -115,6 +115,123 @@ i915_gem_object_move_to_inactive(struct drm_gem_object *obj)
 	}
 }
 
+/**
+ * Creates a new sequence number, emitting a write of it to the status page
+ * plus an interrupt, which will trigger i915_user_interrupt_handler.
+ *
+ * Must be called with struct_lock held.
+ *
+ * Returned sequence numbers are nonzero on success.
+ */
+static uint32_t
+i915_add_request(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_gem_request *request;
+	uint32_t seqno;
+	RING_LOCALS;
+
+	request = drm_calloc(1, sizeof(*request), DRM_MEM_DRIVER);
+	if (request == NULL)
+		return 0;
+
+	/* Grab the seqno we're going to make this request be, and bump the
+	 * next (skipping 0 so it can be the reserved no-seqno value).
+	 */
+	seqno = dev_priv->mm.next_gem_seqno;
+	dev_priv->mm.next_gem_seqno++;
+	if (dev_priv->mm.next_gem_seqno == 0)
+		dev_priv->mm.next_gem_seqno++;
+
+	BEGIN_LP_RING(4);
+	OUT_RING(CMD_STORE_DWORD_IDX);
+	OUT_RING(I915_GEM_HWS_INDEX << STORE_DWORD_INDEX_SHIFT);
+	OUT_RING(seqno);
+
+	OUT_RING(GFX_OP_USER_INTERRUPT);
+	ADVANCE_LP_RING();
+
+	DRM_DEBUG("%d\n", seqno);
+
+	request->seqno = seqno;
+	list_add_tail(&request->list, &dev_priv->mm.request_list);
+
+	return seqno;
+}
+
+/**
+ * Returns true if seq1 is later than seq2.
+ */
+static int
+i915_seqno_passed(uint32_t seq1, uint32_t seq2)
+{
+	return (int32_t)(seq1 - seq2) >= 0;
+}
+
+static uint32_t
+i915_get_gem_seqno(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+
+	return READ_HWSP(dev_priv, I915_GEM_HWS_INDEX);
+}
+
+/**
+ * This function clears the request list as sequence numbers are passed.
+ */
+void
+i915_gem_retire_requests(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	uint32_t seqno;
+
+	seqno = i915_get_gem_seqno(dev);
+
+	while (!list_empty(&dev_priv->mm.request_list)) {
+		struct drm_i915_gem_request *request;
+		uint32_t retiring_seqno;
+
+		request = list_first_entry(&dev_priv->mm.request_list,
+					   struct drm_i915_gem_request,
+					   list);
+		retiring_seqno = request->seqno;
+
+		if (i915_seqno_passed(seqno, retiring_seqno)) {
+			list_del(&request->list);
+			drm_free(request, sizeof(*request), DRM_MEM_DRIVER);
+		} else
+		    break;
+	}
+}
+
+/**
+ * Waits for a sequence number to be signaled, and cleans up the
+ * request and object lists appropriately for that event.
+ */
+int
+i915_wait_request(struct drm_device *dev, uint32_t seqno)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	int ret = 0;
+
+	BUG_ON(seqno == 0);
+
+	i915_user_irq_on(dev_priv);
+	ret = wait_event_interruptible(dev_priv->irq_queue,
+				       i915_seqno_passed(i915_get_gem_seqno(dev),
+							 seqno));
+	i915_user_irq_off(dev_priv);
+
+	/* Directly dispatch request retiring.  While we have the work queue
+	 * to handle this, the waiter on a request often wants an associated
+	 * buffer to have made it to the inactive list, and we would need
+	 * a separate wait queue to handle that.
+	 */
+	if (ret == 0)
+		i915_gem_retire_requests(dev);
+
+	return ret;
+}
 
 static void
 i915_gem_flush(struct drm_device *dev,
@@ -207,7 +324,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		obj->write_domain = 0;
 
 		i915_gem_object_move_to_active(obj);
-		obj_priv->last_rendering_seqno = i915_emit_irq(dev);
+		obj_priv->last_rendering_seqno = i915_add_request(dev);
 		BUG_ON(obj_priv->last_rendering_seqno == 0);
 #if WATCH_LRU
 		DRM_INFO("%s: flush moves to exec list %p\n", __func__, obj);
@@ -221,7 +338,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		DRM_INFO("%s: object %p wait for seqno %08x\n",
 			  __func__, obj, obj_priv->last_rendering_seqno);
 #endif
-		ret = i915_wait_irq(dev, obj_priv->last_rendering_seqno);
+		ret = i915_wait_request(dev, obj_priv->last_rendering_seqno);
 		if (ret != 0)
 			return ret;
 
@@ -995,7 +1112,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	 * *some* interrupts representing completion of buffers that we can
 	 * wait on when trying to clear up gtt space).
 	 */
-	seqno = i915_emit_irq(dev);
+	seqno = i915_add_request(dev);
 	BUG_ON(seqno == 0);
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_gem_object *obj = object_list[i];
