@@ -196,7 +196,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	int ret;
 
 	/* If there are writes queued to the buffer, flush and
-	 * create a new cookie to wait for.
+	 * create a new seqno to wait for.
 	 */
 	if (obj->write_domain & ~(DRM_GEM_DOMAIN_CPU)) {
 #if WATCH_BUF
@@ -207,8 +207,8 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		obj->write_domain = 0;
 
 		i915_gem_object_move_to_active(obj);
-		obj_priv->last_rendering_cookie = i915_emit_irq(dev);
-		BUG_ON(obj_priv->last_rendering_cookie == 0);
+		obj_priv->last_rendering_seqno = i915_emit_irq(dev);
+		BUG_ON(obj_priv->last_rendering_seqno == 0);
 #if WATCH_LRU
 		DRM_INFO("%s: flush moves to exec list %p\n", __func__, obj);
 #endif
@@ -218,10 +218,10 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	 */
 	if (obj_priv->active) {
 #if WATCH_BUF
-		DRM_INFO("%s: object %p wait for cookie %08x\n",
-			  __func__, obj, obj_priv->last_rendering_cookie);
+		DRM_INFO("%s: object %p wait for seqno %08x\n",
+			  __func__, obj, obj_priv->last_rendering_seqno);
 #endif
-		ret = i915_wait_irq(dev, obj_priv->last_rendering_cookie);
+		ret = i915_wait_irq(dev, obj_priv->last_rendering_seqno);
 		if (ret != 0)
 			return ret;
 
@@ -336,12 +336,12 @@ i915_dump_lru(struct drm_device *dev, const char *where)
 			    list)
 	{
 		DRM_INFO("    %p: %08x\n", obj_priv,
-			 obj_priv->last_rendering_cookie);
+			 obj_priv->last_rendering_seqno);
 	}
 	DRM_INFO("GTT LRU %s {\n", where);
 	list_for_each_entry(obj_priv, &dev_priv->mm.inactive_list, list) {
 		DRM_INFO("    %p: %08x\n", obj_priv,
-			 obj_priv->last_rendering_cookie);
+			 obj_priv->last_rendering_seqno);
 	}
 	DRM_INFO("}\n");
 }
@@ -885,7 +885,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	struct drm_gem_object *batch_obj;
 	int ret, i;
 	uint64_t exec_offset;
-	uint32_t cookie;
+	uint32_t seqno;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -989,20 +989,20 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	/*
-	 * Get a cookie representing the execution of the current buffer,
+	 * Get a seqno representing the execution of the current buffer,
 	 * which we can wait on.  We would like to mitigate these interrupts,
-	 * likely by only creating cookies occasionally (so that we have
+	 * likely by only creating seqnos occasionally (so that we have
 	 * *some* interrupts representing completion of buffers that we can
 	 * wait on when trying to clear up gtt space).
 	 */
-	cookie = i915_emit_irq(dev);
-	BUG_ON(cookie == 0);
+	seqno = i915_emit_irq(dev);
+	BUG_ON(seqno == 0);
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_gem_object *obj = object_list[i];
 		struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
 		i915_gem_object_move_to_active(obj);
-		obj_priv->last_rendering_cookie = cookie;
+		obj_priv->last_rendering_seqno = seqno;
 #if WATCH_LRU
 		DRM_INFO("%s: move to exec list %p\n", __func__, obj);
 #endif

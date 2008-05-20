@@ -306,7 +306,7 @@ struct drm_i915_gem_object {
 	int pin_count;
 
 	/** Breadcrumb of last rendering to the buffer. */
-	uint32_t last_rendering_cookie;
+	uint32_t last_rendering_seqno;
 };
 
 extern struct drm_ioctl_desc i915_ioctls[];
