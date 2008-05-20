@@ -81,6 +81,42 @@ i915_gem_object_free_page_list(struct drm_gem_object *obj)
 }
 
 static void
+i915_gem_object_move_to_active(struct drm_gem_object *obj)
+{
+	struct drm_device *dev = obj->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
+	/* Add a reference if we're newly entering the active list. */
+	if (!obj_priv->active) {
+		drm_gem_object_reference(obj);
+		obj_priv->active = 1;
+	}
+	/* Move from whatever list we were on to the tail of execution. */
+	list_move_tail(&obj_priv->list,
+		       &dev_priv->mm.active_list);
+}
+
+static void
+i915_gem_object_move_to_inactive(struct drm_gem_object *obj)
+{
+	struct drm_device *dev = obj->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
+	if (obj_priv->pin_count != 0)
+		list_del_init(&obj_priv->list);
+	else
+		list_move_tail(&obj_priv->list, &dev_priv->mm.inactive_list);
+
+	if (obj_priv->active) {
+		obj_priv->active = 0;
+		drm_gem_object_unreference(obj);
+	}
+}
+
+
+static void
 i915_gem_flush(struct drm_device *dev,
 	       uint32_t invalidate_domains,
 	       uint32_t flush_domains)
@@ -156,7 +192,6 @@ static int
 i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 {
 	struct drm_device *dev = obj->dev;
-	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int ret;
 
@@ -171,13 +206,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		i915_gem_flush(dev, 0, obj->write_domain);
 		obj->write_domain = 0;
 
-		/* Add a reference since we're gaining a cookie. */
-		if (obj_priv->last_rendering_cookie == 0)
-			drm_gem_object_reference(obj);
-		/* Move from whatever list we were on to the tail of execution.
-		 */
-		list_move_tail(&obj_priv->list,
-			       &dev_priv->mm.active_list);
+		i915_gem_object_move_to_active(obj);
 		obj_priv->last_rendering_cookie = i915_emit_irq(dev);
 		BUG_ON(obj_priv->last_rendering_cookie == 0);
 #if WATCH_LRU
@@ -187,7 +216,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	/* If there is rendering queued on the buffer being evicted, wait for
 	 * it.
 	 */
-	if (obj_priv->last_rendering_cookie != 0) {
+	if (obj_priv->active) {
 #if WATCH_BUF
 		DRM_INFO("%s: object %p wait for cookie %08x\n",
 			  __func__, obj, obj_priv->last_rendering_cookie);
@@ -196,23 +225,11 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		if (ret != 0)
 			return ret;
 
-		/* Clear it now that we know it's passed. */
-		obj_priv->last_rendering_cookie = 0;
-
-		/* We were on the execution list since we had a cookie.
-		 * Move to the tail of the LRU list now since we're done.
-		 */
-		if (obj_priv->pin_count == 0)
-			list_move_tail(&obj_priv->list,
-				       &dev_priv->mm.inactive_list);
+		i915_gem_object_move_to_inactive(obj);
 
 #if WATCH_LRU
 		DRM_INFO("%s: wait moves to lru list %p\n", __func__, obj);
 #endif
-		/* The cookie held a reference to the object, release that
-		 * now
-		 */
-		drm_gem_object_unreference(obj);
 	}
 
 	return 0;
@@ -253,10 +270,10 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	/* Remove ourselves from the LRU list if present. */
 	if (!list_empty(&obj_priv->list)) {
 		list_del_init(&obj_priv->list);
-		if (obj_priv->last_rendering_cookie) {
+		if (obj_priv->active) {
 			DRM_ERROR("Failed to wait on buffer when unbinding, "
 				  "continued anyway.\n");
-			obj_priv->last_rendering_cookie = 0;
+			obj_priv->active = 0;
 			drm_gem_object_unreference(obj);
 		}
 	}
@@ -862,7 +879,6 @@ int
 i915_gem_execbuffer(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_execbuffer *args = data;
 	struct drm_i915_gem_exec_object *validate_list = NULL;
 	struct drm_gem_object **object_list = NULL;
@@ -980,21 +996,13 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	 * wait on when trying to clear up gtt space).
 	 */
 	cookie = i915_emit_irq(dev);
+	BUG_ON(cookie == 0);
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_gem_object *obj = object_list[i];
 		struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
-		/*
-		 * Have the cookie hold a reference to this object
-		 * which is freed when the object is waited for
-		 */
-		if (obj_priv->last_rendering_cookie == 0)
-			drm_gem_object_reference(obj);
+		i915_gem_object_move_to_active(obj);
 		obj_priv->last_rendering_cookie = cookie;
-		BUG_ON(obj_priv->last_rendering_cookie == 0);
-		/* Move our buffer to the tail of the execution list. */
-		list_move_tail(&obj_priv->list,
-			       &dev_priv->mm.active_list);
 #if WATCH_LRU
 		DRM_INFO("%s: move to exec list %p\n", __func__, obj);
 #endif
@@ -1172,7 +1180,7 @@ i915_gem_lastclose(struct drm_device *dev)
 					    list);
 
 		list_del_init(&obj_priv->list);
-		obj_priv->last_rendering_cookie = 0;
+		obj_priv->active = 0;
 		obj_priv->obj->write_domain = 0;
 		drm_gem_object_unreference(obj_priv->obj);
 	}

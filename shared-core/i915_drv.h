@@ -247,9 +247,18 @@ typedef struct drm_i915_private {
 		/**
 		 * List of objects currently involved in rendering from the
 		 * ringbuffer.
+		 *
+		 * A reference is held on the buffer while on this list.
 		 */
 		struct list_head active_list;
-		/** LRU List of non-executing objects still in the GTT. */
+		/**
+		 * LRU List of non-executing objects still in the GTT.
+		 * There may still be dirty cachelines that need to be flushed
+		 * before unbind.
+		 * A reference is not held on the buffer while on this list,
+		 * as merely being GTT-bound shouldn't prevent its being
+		 * freed, and we'll pull it off the list in the free path.
+		 */
 		struct list_head inactive_list;
 	} mm;
 } drm_i915_private_t;
@@ -270,6 +279,13 @@ struct drm_i915_gem_object {
 
 	/** This object's place on the active or inactive lists */
 	struct list_head list;
+
+	/**
+	 * This is set if the object is on the active list
+	 * (has pending rendering), and is not set if it's on inactive (ready
+	 * to be unbound).
+	 */
+	int active;
 
 	/** AGP memory structure for our GTT binding. */
 	DRM_AGP_MEM *agp_mem;
