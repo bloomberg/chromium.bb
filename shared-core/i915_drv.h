@@ -331,6 +331,9 @@ struct drm_i915_gem_request {
 	/** GEM sequence number associated with this request. */
 	uint32_t seqno;
 
+	/** Time at which this request was emitted, in jiffies. */
+	unsigned long emitted_jiffies;
+
 	struct list_head list;
 };
 

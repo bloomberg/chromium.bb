@@ -154,6 +154,7 @@ i915_add_request(struct drm_device *dev)
 	DRM_DEBUG("%d\n", seqno);
 
 	request->seqno = seqno;
+	request->emitted_jiffies = jiffies;
 	list_add_tail(&request->list, &dev_priv->mm.request_list);
 
 	return seqno;
@@ -966,34 +967,38 @@ i915_dispatch_gem_execbuffer(struct drm_device *dev,
 	return 0;
 }
 
-/*
- * Kludge -- wait for almost all rendering to complete
- * before queuing more. This uses interrupts, so the wakeup
- * occurs without any delay.
+/* Throttle our rendering by waiting until the ring has completed our requests
+ * emitted over 20 msec ago.
+ *
+ * This should get us reasonable parallelism between CPU and GPU but also
+ * relatively low latency when blocking on a particular request to finish.
  */
 static int
-i915_gem_wait_space(struct drm_device *dev)
+i915_gem_ring_throttle(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
-	struct drm_i915_gem_object *obj_priv, *last_priv = NULL;
 	int ret = 0;
 
 	mutex_lock(&dev->struct_mutex);
-	while (ring->space + 1024 < dev_priv->ring.Size &&
-	       !list_empty(&dev_priv->mm.active_list)) {
-		obj_priv = list_first_entry(&dev_priv->mm.active_list,
-					    struct drm_i915_gem_object,
-					    list);
-		if (obj_priv == last_priv)
-			break;
-		drm_gem_object_reference(obj_priv->obj);
-		ret = i915_gem_object_wait_rendering(obj_priv->obj);
-		drm_gem_object_unreference(obj_priv->obj);
-		if (ret)
-			break;
-		last_priv = obj_priv;
-		i915_kernel_lost_context(dev);
+	while (!list_empty(&dev_priv->mm.request_list)) {
+		struct drm_i915_gem_request *request;
+
+		request = list_first_entry(&dev_priv->mm.request_list,
+					   struct drm_i915_gem_request,
+					   list);
+
+		/* Break out if we're close enough. */
+		if (jiffies_to_msecs(jiffies - request->emitted_jiffies) < 20) {
+			mutex_unlock(&dev->struct_mutex);
+			return 0;
+		}
+
+		/* Wait on the last request if not. */
+		ret = i915_wait_request(dev, request->seqno);
+		if (ret != 0) {
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
+		}
 	}
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
@@ -1019,7 +1024,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 #endif
 	i915_kernel_lost_context(dev);
 
-	ret = i915_gem_wait_space(dev);
+	ret = i915_gem_ring_throttle(dev);
 	if (ret)
 		return ret;
 
