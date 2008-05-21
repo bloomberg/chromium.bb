@@ -408,8 +408,6 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		ret = i915_wait_request(dev, obj_priv->last_rendering_seqno);
 		if (ret != 0)
 			return ret;
-
-		BUG_ON(obj_priv->active);
 	}
 
 	return 0;
