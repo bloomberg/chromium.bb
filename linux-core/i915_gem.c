@@ -1163,6 +1163,7 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 
 	mutex_lock(&dev->struct_mutex);
 
+	i915_kernel_lost_context(dev);
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL) {
 		DRM_ERROR("Bad handle in i915_gem_pin_ioctl(): %d\n",
@@ -1202,6 +1203,8 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 	struct drm_i915_gem_object *obj_priv;
 
 	mutex_lock(&dev->struct_mutex);
+
+	i915_kernel_lost_context(dev);
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL) {
 		DRM_ERROR("Bad handle in i915_gem_unpin_ioctl(): %d\n",
@@ -1233,6 +1236,7 @@ int i915_gem_init_object(struct drm_gem_object *obj)
 
 void i915_gem_free_object(struct drm_gem_object *obj)
 {
+	i915_kernel_lost_context(obj->dev);
 	i915_gem_object_unbind(obj);
 
 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
@@ -1247,6 +1251,7 @@ i915_gem_set_domain(struct drm_gem_object *obj,
 
 	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
 
+	i915_kernel_lost_context(dev);
 	i915_gem_object_set_domain(obj, read_domains, write_domain);
 	i915_gem_dev_set_domain(obj->dev);
 
