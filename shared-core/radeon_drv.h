@@ -296,6 +296,7 @@ typedef struct drm_radeon_private {
 	int vblank_crtc;
 	uint32_t irq_enable_reg;
 	int irq_enabled;
+	uint32_t r500_disp_irq_reg;
 
 	struct radeon_surface surfaces[RADEON_MAX_SURFACES];
 	struct radeon_virt_surface virt_surfaces[2 * RADEON_MAX_SURFACES];
@@ -620,6 +621,8 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #	define RADEON_SW_INT_TEST		(1 << 25)
 #	define RADEON_SW_INT_TEST_ACK		(1 << 25)
 #	define RADEON_SW_INT_FIRE		(1 << 26)
+#       define R500_DISPLAY_INT_STATUS          (1 << 0)
+
 
 #define RADEON_HOST_PATH_CNTL		0x0130
 #	define RADEON_HDP_SOFT_RESET		(1 << 26)
@@ -1139,7 +1142,30 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_VHA_BACKFRAME0_OFF_V_2            0x1894
 #define RADEON_VHA_BACKFRAME1_OFF_PITCH_V_2      0x1898
 
+#define R500_D1CRTC_STATUS 0x609c
+#define R500_D2CRTC_STATUS 0x689c
+#define R500_CRTC_V_BLANK (1<<0)
 
+#define R500_D1CRTC_FRAME_COUNT 0x60a4
+#define R500_D2CRTC_FRAME_COUNT 0x68a4
+
+#define R500_D1MODE_V_COUNTER 0x6530
+#define R500_D2MODE_V_COUNTER 0x6d30
+
+#define R500_D1MODE_VBLANK_STATUS 0x6534
+#define R500_D2MODE_VBLANK_STATUS 0x6d34
+#define R500_VBLANK_OCCURED (1<<0)
+#define R500_VBLANK_ACK     (1<<4)
+#define R500_VBLANK_STAT    (1<<12)
+#define R500_VBLANK_INT     (1<<16)
+
+#define R500_DxMODE_INT_MASK 0x6540
+#define R500_D1MODE_INT_MASK (1<<0)
+#define R500_D2MODE_INT_MASK (1<<8)
+
+#define R500_DISP_INTERRUPT_STATUS 0x7edc
+#define R500_D1_VBLANK_INTERRUPT (1 << 4)
+#define R500_D2_VBLANK_INTERRUPT (1 << 5)
 
 /* Constants */
 #define RADEON_MAX_USEC_TIMEOUT		100000	/* 100 ms */
