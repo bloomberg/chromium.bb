@@ -478,14 +478,19 @@ i915_gem_evict_something(struct drm_device *dev)
 					    struct drm_i915_gem_object,
 					    list);
 	} else if (!list_empty(&dev_priv->mm.active_list)) {
+		int found = 0;
+
 		/* If there's nothing unused and ready, grab the first
 		 * unpinned object from the currently executing list.
 		 */
 		list_for_each_entry(obj_priv, &dev_priv->mm.active_list,
-				    list)
-			if (obj_priv->pin_count == 0)
+				    list) {
+			if (obj_priv->pin_count == 0) {
+				found = 1;
 				break;
-		if (!obj_priv)
+			}
+		}
+		if (!found)
 			return -ENOMEM;
 	} else {
 		return -ENOMEM;
