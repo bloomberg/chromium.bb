@@ -982,7 +982,9 @@ i915_gem_wait_space(struct drm_device *dev)
 					    list);
 		if (obj_priv == last_priv)
 			break;
+		drm_gem_object_reference(obj_priv->obj);
 		ret = i915_gem_object_wait_rendering(obj_priv->obj);
+		drm_gem_object_unreference(obj_priv->obj);
 		if (ret)
 			break;
 		last_priv = obj_priv;
