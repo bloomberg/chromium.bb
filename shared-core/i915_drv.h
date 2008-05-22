@@ -473,14 +473,23 @@ extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
 #define I915_WRITE16(reg,val)	DRM_WRITE16(dev_priv->mmio_map, (reg), (val))
 
 #define I915_VERBOSE 0
+#define I915_RING_VALIDATE 0
 
 #define RING_LOCALS	unsigned int outring, ringmask, outcount; \
 			volatile char *virt;
+
+#if I915_RING_VALIDATE
+void i915_ring_validate(struct drm_device *dev, const char *func, int line);
+#define I915_RING_DO_VALIDATE(dev) i915_ring_validate(dev, __FUNCTION__, __LINE__)
+#else
+#define I915_RING_DO_VALIDATE(dev)
+#endif
 
 #define BEGIN_LP_RING(n) do {				\
 	if (I915_VERBOSE)				\
 		DRM_DEBUG("BEGIN_LP_RING(%d)\n",	\
 	                         (n));		        \
+	I915_RING_DO_VALIDATE(dev);			\
 	if (dev_priv->ring.space < (n)*4)                      \
 		i915_wait_ring(dev, (n)*4, __FUNCTION__);      \
 	outcount = 0;					\
@@ -499,6 +508,7 @@ extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
 
 #define ADVANCE_LP_RING() do {						\
 	if (I915_VERBOSE) DRM_DEBUG("ADVANCE_LP_RING %x\n", outring);	\
+	I915_RING_DO_VALIDATE(dev);					\
 	dev_priv->ring.tail = outring;					\
 	dev_priv->ring.space -= outcount * 4;				\
 	I915_WRITE(LP_RING + RING_TAIL, outring);			\

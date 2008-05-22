@@ -69,6 +69,30 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 	return -EBUSY;
 }
 
+#if I915_RING_VALIDATE
+/**
+ * Validate the cached ring tail value
+ *
+ * If the X server writes to the ring and DRM doesn't
+ * reload the head and tail pointers, it will end up writing
+ * data to the wrong place in the ring, causing havoc.
+ */
+void i915_ring_validate(struct drm_device *dev, const char *func, int line)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
+	u32	tail = I915_READ(LP_RING+RING_TAIL) & HEAD_ADDR;
+	u32	head = I915_READ(LP_RING+RING_HEAD) & HEAD_ADDR;
+
+	if (tail != ring->tail) {
+		DRM_ERROR("%s:%d head sw %x, hw %x. tail sw %x hw %x\n",
+			  func, line,
+			  ring->head, head, ring->tail, tail);
+		BUG_ON(1);
+	}
+}
+#endif
+
 void i915_kernel_lost_context(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
