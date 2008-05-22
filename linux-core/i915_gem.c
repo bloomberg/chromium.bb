@@ -35,6 +35,11 @@
 #define WATCH_LRU	0
 #define WATCH_RELOC	0
 
+static void
+i915_gem_object_set_domain(struct drm_gem_object *obj,
+			    uint32_t read_domains,
+			    uint32_t write_domain);
+
 int
 i915_gem_init_ioctl(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
@@ -456,11 +461,14 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	if (obj_priv->gtt_space == NULL)
 		return;
 
-	/* Ignore the return value of wait_rendering.  If we're here but
-	 * a wait_rendering hasn't completed, we're in the freeing process,
-	 * and we want the buffer to go away even if the command queue is hung.
+	/* Move the object to the CPU domain to ensure that
+	 * any possible CPU writes while it's not in the GTT
+	 * are flushed when we go to remap it. This will
+	 * also ensure that all pending GPU writes are finished
+	 * before we unbind.
 	 */
-	(void)i915_gem_object_wait_rendering(obj);
+	i915_gem_object_set_domain (obj, DRM_GEM_DOMAIN_CPU,
+				    DRM_GEM_DOMAIN_CPU);
 
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);

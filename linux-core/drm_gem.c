@@ -100,6 +100,14 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 	kref_init(&obj->handlecount);
 	obj->size = size;
 
+	/*
+	 * We've just allocated pages from the kernel,
+	 * so they've just been written by the CPU with
+	 * zeros. They'll need to be clflushed before we
+	 * use them with the GPU.
+	 */
+	obj->write_domain = DRM_GEM_DOMAIN_CPU;
+	obj->read_domains = DRM_GEM_DOMAIN_CPU;
 	if (dev->driver->gem_init_object != NULL &&
 	    dev->driver->gem_init_object(obj) != 0) {
 		fput(obj->filp);
