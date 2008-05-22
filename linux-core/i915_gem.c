@@ -162,6 +162,31 @@ i915_add_request(struct drm_device *dev, uint32_t flush_domains)
 }
 
 /**
+ * Command execution barrier
+ *
+ * Ensures that all commands in the ring are finished
+ * before signalling the CPU
+ */
+
+uint32_t
+i915_retire_commands(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	uint32_t cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
+	uint32_t flush_domains = 0;
+	RING_LOCALS;
+
+	/* The sampler always gets flushed on i965 (sigh) */
+	if (IS_I965G(dev))
+		flush_domains |= DRM_GEM_DOMAIN_I915_SAMPLER;
+	BEGIN_LP_RING(2);
+	OUT_RING(cmd);
+	OUT_RING(0); /* noop */
+	ADVANCE_LP_RING();
+	return flush_domains;
+}
+
+/**
  * Moves buffers associated only with the given active seqno from the active
  * to inactive list, potentially freeing them.
  */
@@ -359,6 +384,9 @@ i915_gem_flush(struct drm_device *dev,
 		if (invalidate_domains & DRM_GEM_DOMAIN_I915_INSTRUCTION)
 			cmd |= MI_EXE_FLUSH;
 
+#if WATCH_EXEC
+		DRM_INFO("%s: queue flush %08x to ring\n", __func__, cmd);
+#endif
 		BEGIN_LP_RING(2);
 		OUT_RING(cmd);
 		OUT_RING(0); /* noop */
@@ -1200,6 +1228,12 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		DRM_ERROR("dispatch failed %d\n", ret);
 		goto err;
 	}
+
+	/*
+	 * Ensure that the commands in the batch buffer are
+	 * finished before the interrupt fires
+	 */
+	flush_domains |= i915_retire_commands(dev);
 
 	/*
 	 * Get a seqno representing the execution of the current buffer,
