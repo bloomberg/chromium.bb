@@ -106,7 +106,7 @@ static int i915_dma_cleanup(struct drm_device * dev)
 	return 0;
 }
 
-
+#if defined(I915_HAVE_BUFFER)
 #define DRI2_SAREA_BLOCK_TYPE(b) ((b) >> 16)
 #define DRI2_SAREA_BLOCK_SIZE(b) ((b) & 0xffff)
 #define DRI2_SAREA_BLOCK_NEXT(p)				\
@@ -165,15 +165,16 @@ setup_dri2_sarea(struct drm_device * dev,
 
 	return 0;
 }
-
+#endif
 
 static int i915_initialize(struct drm_device * dev,
 			   struct drm_file *file_priv,
 			   drm_i915_init_t * init)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+#if defined(I915_HAVE_BUFFER)
 	int ret;
-
+#endif
 	dev_priv->sarea = drm_getsarea(dev);
 	if (!dev_priv->sarea) {
 		DRM_ERROR("can not find sarea!\n");
@@ -265,7 +266,7 @@ static int i915_initialize(struct drm_device * dev,
 #ifdef I915_HAVE_BUFFER
 	mutex_init(&dev_priv->cmdbuf_mutex);
 #endif
-
+#if defined(I915_HAVE_BUFFER)
 	if (init->func == I915_INIT_DMA2) {
 		ret = setup_dri2_sarea(dev, file_priv, init);
 		if (ret) {
@@ -274,7 +275,7 @@ static int i915_initialize(struct drm_device * dev,
 			return ret;
 		}
 	}
-		
+#endif
 
 	return 0;
 }
@@ -790,7 +791,7 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
 	return 0;
 }
 
-#if DRM_DEBUG_CODE
+#if defined(DRM_DEBUG_CODE)
 #define DRM_DEBUG_RELOCATION	(drm_debug != 0)
 #else
 #define DRM_DEBUG_RELOCATION	0
@@ -1078,7 +1079,7 @@ void i915_driver_lastclose(struct drm_device * dev)
 		i915_do_cleanup_pageflip(dev);
 	if (dev_priv->agp_heap)
 		i915_mem_takedown(&(dev_priv->agp_heap));
-
+#if defined(I915_HAVE_BUFFER)
 	if (dev_priv->sarea_kmap.virtual) {
 		drm_bo_kunmap(&dev_priv->sarea_kmap);
 		dev_priv->sarea_kmap.virtual = NULL;
@@ -1092,7 +1093,7 @@ void i915_driver_lastclose(struct drm_device * dev)
 		mutex_unlock(&dev->struct_mutex);
 		dev_priv->sarea_bo = NULL;
 	}
-
+#endif
 	i915_dma_cleanup(dev);
 }
 

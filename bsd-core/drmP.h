@@ -621,9 +621,18 @@ struct drm_ati_pcigart_info {
 	int gart_reg_if;
 	void *addr;
 	dma_addr_t bus_addr;
+	dma_addr_t table_mask;
+	dma_addr_t member_mask;
+	struct drm_dma_handle *table_handle;
 	drm_local_map_t mapping;
 	int table_size;
 };
+
+#ifndef DMA_BIT_MASK
+#define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) - 1)
+#endif
+
+#define upper_32_bits(_val) (((u64)(_val)) >> 32)
 
 struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
@@ -649,11 +658,12 @@ struct drm_driver_info {
 					 int new);
 	int	(*kernel_context_switch_unlock)(struct drm_device *dev);
 	void	(*irq_preinstall)(struct drm_device *dev);
-	void	(*irq_postinstall)(struct drm_device *dev);
+	int	(*irq_postinstall)(struct drm_device *dev);
 	void	(*irq_uninstall)(struct drm_device *dev);
 	void	(*irq_handler)(DRM_IRQ_ARGS);
-	int	(*vblank_wait)(struct drm_device *dev, unsigned int *sequence);
-	int	(*vblank_wait2)(struct drm_device *dev, unsigned int *sequence);
+	u32	(*get_vblank_counter)(struct drm_device *dev, int crtc);
+	int	(*enable_vblank)(struct drm_device *dev, int crtc);
+	void	(*disable_vblank)(struct drm_device *dev, int crtc);
 
 	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
 
@@ -775,9 +785,25 @@ struct drm_device {
 
 	atomic_t	  context_flag;	/* Context swapping flag	   */
 	int		  last_context;	/* Last current context		   */
-   	int		  vbl_queue;	/* vbl wait channel */
-   	atomic_t          vbl_received;
-   	atomic_t          vbl_received2;
+	wait_queue_head_t *vbl_queue;	/* vblank wait queue */
+	atomic_t	  *_vblank_count;	/* number of VBLANK interrupts */
+						/* (driver must alloc the right number of counters) */
+	struct mtx	  vbl_lock;
+	struct drm_vbl_sig_list *vbl_sigs;	/* signal list to send on VBLANK */
+	atomic_t 	  vbl_signal_pending;	/* number of signals pending on all crtcs*/
+	atomic_t	  *vblank_refcount;	/* number of users of vblank interrupts per crtc */
+	u32		  *last_vblank;		/* protected by dev->vbl_lock, used */
+						/* for wraparound handling */
+
+	u32		  *vblank_offset;	/* used to track how many vblanks */
+	int		  *vblank_enabled;	/* so we don't call enable more than */
+						/* once per disable */
+	u32 		  *vblank_premodeset;	/* were lost during modeset */
+	struct callout	  vblank_disable_timer;
+	unsigned long	  max_vblank_count;	/* size of vblank counter register */
+	int		  num_crtcs;
+	atomic_t	  vbl_received;
+	atomic_t	  vbl_received2;
 
 #ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */
@@ -903,8 +929,16 @@ irqreturn_t drm_irq_handler(DRM_IRQ_ARGS);
 void	drm_driver_irq_preinstall(struct drm_device *dev);
 void	drm_driver_irq_postinstall(struct drm_device *dev);
 void	drm_driver_irq_uninstall(struct drm_device *dev);
+void	drm_handle_vblank(struct drm_device *dev, int crtc);
+u32	drm_vblank_count(struct drm_device *dev, int crtc);
+int	drm_vblank_get(struct drm_device *dev, int crtc);
+void	drm_vblank_put(struct drm_device *dev, int crtc);
+void	drm_update_vblank_count(struct drm_device *dev, int crtc);
 int	drm_vblank_wait(struct drm_device *dev, unsigned int *vbl_seq);
-void	drm_vbl_send_signals(struct drm_device *dev);
+int	drm_vblank_init(struct drm_device *dev, int num_crtcs);
+void	drm_vbl_send_signals(struct drm_device *dev, int crtc);
+int 	drm_modeset_ctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
 
 /* AGP/PCI Express/GART support (drm_agpsupport.c) */
 int	drm_device_is_agp(struct drm_device *dev);
@@ -1021,8 +1055,7 @@ int	drm_mapbufs(struct drm_device *dev, void *data,
 int	drm_dma(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
 /* IRQ support (drm_irq.c) */
-int	drm_control(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv);
+int	drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv);
 int	drm_wait_vblank(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 void	drm_locked_tasklet(struct drm_device *dev,
