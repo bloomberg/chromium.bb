@@ -746,12 +746,12 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		return -ENOMEM;
 	}
 
-	/* When we have just bound an object, we have no valid read
-	 * caches on it, regardless of where it was before.  We also need
-	 * an MI_FLUSH to occur so that the render and sampler TLBs
-	 * get flushed and pick up our binding change above.
+	/* Assert that the object is not currently in any GPU domain. As it
+	 * wasn't in the GTT, there shouldn't be any way it could have been in
+	 * a GPU cache
 	 */
-	obj->read_domains = 0;
+	BUG_ON(obj->read_domains & ~DRM_GEM_DOMAIN_CPU);
+	BUG_ON(obj->write_domain & ~DRM_GEM_DOMAIN_CPU);
 
 	return 0;
 }
@@ -775,6 +775,112 @@ i915_gem_clflush_object(struct drm_gem_object *obj)
  * Set the next domain for the specified object. This
  * may not actually perform the necessary flushing/invaliding though,
  * as that may want to be batched with other set_domain operations
+ *
+ * This is (we hope) the only really tricky part of gem. The goal
+ * is fairly simple -- track which caches hold bits of the object
+ * and make sure they remain coherent. A few concrete examples may
+ * help to explain how it works. For shorthand, we use the notation
+ * (read_domains, write_domain), e.g. (CPU, CPU) to indicate the
+ * a pair of read and write domain masks.
+ *
+ * Case 1: the batch buffer
+ *
+ *	1. Allocated
+ *	2. Written by CPU
+ *	3. Mapped to GTT
+ *	4. Read by GPU
+ *	5. Unmapped from GTT
+ *	6. Freed
+ *
+ *	Let's take these a step at a time
+ *
+ *	1. Allocated
+ *		Pages allocated from the kernel may still have
+ *		cache contents, so we set them to (CPU, CPU) always.
+ *	2. Written by CPU (using pwrite)
+ *		The pwrite function calls set_domain (CPU, CPU) and
+ *		this function does nothing (as nothing changes)
+ *	3. Mapped by GTT
+ *		This function asserts that the object is not
+ *		currently in any GPU-based read or write domains
+ *	4. Read by GPU
+ *		i915_gem_execbuffer calls set_domain (COMMAND, 0).
+ *		As write_domain is zero, this function adds in the
+ *		current read domains (CPU+COMMAND, 0).
+ *		flush_domains is set to CPU.
+ *		invalidate_domains is set to COMMAND
+ *		clflush is run to get data out of the CPU caches
+ *		then i915_dev_set_domain calls i915_gem_flush to
+ *		emit an MI_FLUSH and drm_agp_chipset_flush
+ *	5. Unmapped from GTT
+ *		i915_gem_object_unbind calls set_domain (CPU, CPU)
+ *		flush_domains and invalidate_domains end up both zero
+ *		so no flushing/invalidating happens
+ *	6. Freed
+ *		yay, done
+ *
+ * Case 2: The shared render buffer
+ *
+ *	1. Allocated
+ *	2. Mapped to GTT
+ *	3. Read/written by GPU
+ *	4. set_domain to (CPU,CPU)
+ *	5. Read/written by CPU
+ *	6. Read/written by GPU
+ *
+ *	1. Allocated
+ *		Same as last example, (CPU, CPU)
+ *	2. Mapped to GTT
+ *		Nothing changes (assertions find that it is not in the GPU)
+ *	3. Read/written by GPU
+ *		execbuffer calls set_domain (RENDER, RENDER)
+ *		flush_domains gets CPU
+ *		invalidate_domains gets GPU
+ *		clflush (obj)
+ *		MI_FLUSH and drm_agp_chipset_flush
+ *	4. set_domain (CPU, CPU)
+ *		flush_domains gets GPU
+ *		invalidate_domains gets CPU
+ *		wait_rendering (obj) to make sure all drawing is complete.
+ *		This will include an MI_FLUSH to get the data from GPU
+ *		to memory
+ *		clflush (obj) to invalidate the CPU cache
+ *		Another MI_FLUSH in i915_gem_flush (eliminate this somehow?)
+ *	5. Read/written by CPU
+ *		cache lines are loaded and dirtied
+ *	6. Read written by GPU
+ *		Same as last GPU access
+ *
+ * Case 3: The constant buffer
+ *
+ *	1. Allocated
+ *	2. Written by CPU
+ *	3. Read by GPU
+ *	4. Updated (written) by CPU again
+ *	5. Read by GPU
+ *
+ *	1. Allocated
+ *		(CPU, CPU)
+ *	2. Written by CPU
+ *		(CPU, CPU)
+ *	3. Read by GPU
+ *		(CPU+RENDER, 0)
+ *		flush_domains = CPU
+ *		invalidate_domains = RENDER
+ *		clflush (obj)
+ *		MI_FLUSH
+ *		drm_agp_chipset_flush
+ *	4. Updated (written) by CPU again
+ *		(CPU, CPU)
+ *		flush_domains = 0 (no previous write domain)
+ *		invalidate_domains = 0 (no new read domains)
+ *	5. Read by GPU
+ *		(CPU+RENDER, 0)
+ *		flush_domains = CPU
+ *		invalidate_domains = RENDER
+ *		clflush (obj)
+ *		MI_FLUSH
+ *		drm_agp_chipset_flush
  */
 static void
 i915_gem_object_set_domain(struct drm_gem_object *obj,
@@ -789,6 +895,13 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 	DRM_INFO("%s: object %p read %08x write %08x\n",
 		 __func__, obj, read_domains, write_domain);
 #endif
+	/*
+	 * If the object isn't moving to a new write domain,
+	 * let the object stay in multiple read domains
+	 */
+	if (write_domain == 0)
+		read_domains |= obj->read_domains;
+
 	/*
 	 * Flush the current write domain if
 	 * the new read domains don't match. Invalidate
