@@ -221,6 +221,7 @@ new string.
 @DESC@
 This is just a wrapper around free(3) which helps track memory usage of
 strings within the fontconfig library.
+@@
 
 @RET@		FcChar8 *
 @FUNC@		FcStrDirname
