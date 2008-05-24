@@ -404,7 +404,7 @@ void drm_crtc_probe_single_output_modes(struct drm_output *output, int maxX, int
 		mode->vrefresh = drm_mode_vrefresh(mode);
 		
 		drm_mode_set_crtcinfo(mode, CRTC_INTERLACE_HALVE_V);
-		drm_mode_debug_printmodeline(dev, mode);
+		drm_mode_debug_printmodeline(mode);
 	}
 }
 
@@ -1161,8 +1161,8 @@ int drm_crtc_set_config(struct drm_mode_set *set)
 
 	if (set->mode && !drm_mode_equal(set->mode, &set->crtc->mode)) {
 		DRM_DEBUG("modes are different\n");
-		drm_mode_debug_printmodeline(dev, &set->crtc->mode);
-		drm_mode_debug_printmodeline(dev, set->mode);
+		drm_mode_debug_printmodeline(&set->crtc->mode);
+		drm_mode_debug_printmodeline(set->mode);
 		changed = true;
 	}
 
@@ -1193,7 +1193,7 @@ int drm_crtc_set_config(struct drm_mode_set *set)
 		set->crtc->enabled = (set->mode != NULL);
 		if (set->mode != NULL) {
 			DRM_DEBUG("attempting to set mode from userspace\n");
-			drm_mode_debug_printmodeline(dev, set->mode);
+			drm_mode_debug_printmodeline(set->mode);
 			if (!drm_crtc_set_mode(set->crtc, set->mode, set->x,
 					       set->y)) {
 				set->crtc->enabled = save_enabled;

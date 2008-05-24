@@ -288,9 +288,9 @@ static int intelfb_set_par(struct fb_info *info)
 		return -EINVAL;
 
 	found = 0;
-	drm_mode_debug_printmodeline(dev, drm_mode);
+	drm_mode_debug_printmodeline(drm_mode);
 	list_for_each_entry(search_mode, &output->modes, head) {
-		drm_mode_debug_printmodeline(dev, search_mode);
+		drm_mode_debug_printmodeline(search_mode);
 		if (drm_mode_equal(drm_mode, search_mode)) {
 			drm_mode_destroy(dev, drm_mode);
 			drm_mode = search_mode;
@@ -310,7 +310,7 @@ static int intelfb_set_par(struct fb_info *info)
 	
 		par->set.mode = drm_mode;
 		par->our_mode = drm_mode;
-		drm_mode_debug_printmodeline(dev, drm_mode);
+		drm_mode_debug_printmodeline(drm_mode);
 		/* attach mode */
 		drm_mode_attachmode_crtc(dev, par->set.crtc, par->set.mode);
 	} else {
@@ -330,8 +330,8 @@ static int intelfb_set_par(struct fb_info *info)
 	if (par->crtc->x != var->xoffset || par->crtc->y != var->yoffset)
 		changed = 1;
 	
-	drm_mode_debug_printmodeline(dev, drm_mode);
-	drm_mode_debug_printmodeline(dev, &par->crtc->mode);
+	drm_mode_debug_printmodeline(drm_mode);
+	drm_mode_debug_printmodeline(&par->crtc->mode);
 	if (!drm_mode_equal(drm_mode, &par->crtc->mode))
 		changed = 1;
 	

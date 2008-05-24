@@ -846,7 +846,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 		I915_WRITE(PFIT_CONTROL, 0);
 
 	DRM_DEBUG("Mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
-	drm_mode_debug_printmodeline(dev, mode);
+	drm_mode_debug_printmodeline(mode);
 	
 #if 0
 	if (!xf86ModesEqual(mode, adjusted_mode)) {
@@ -1014,8 +1014,6 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 	/* set the pipe for the cursor */
 	temp |= (pipe << 28);
 	temp |= CURSOR_MODE_64_ARGB_AX | MCURSOR_GAMMA_ENABLE;
-
-	DRM_DEBUG("cusror base %x\n", addr);
 
 	I915_WRITE(control, temp);
 	I915_WRITE(base, addr);

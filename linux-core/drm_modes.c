@@ -43,8 +43,7 @@
  *
  * Describe @mode using DRM_DEBUG.
  */
-void drm_mode_debug_printmodeline(struct drm_device *dev,
-				  struct drm_display_mode *mode)
+void drm_mode_debug_printmodeline(struct drm_display_mode *mode)
 {
 	DRM_DEBUG("Modeline %d:\"%s\" %d %d %d %d %d %d %d %d %d %d 0x%x 0x%x\n",
 		  mode->mode_id, mode->name, mode->vrefresh, mode->clock,
@@ -388,7 +387,7 @@ void drm_mode_prune_invalid(struct drm_device *dev,
 		if (mode->status != MODE_OK) {
 			list_del(&mode->head);
 			if (verbose) {
-				drm_mode_debug_printmodeline(dev, mode);
+				drm_mode_debug_printmodeline(mode);
 				DRM_DEBUG("Not using %s mode %d\n", mode->name, mode->status);
 			}
 			kfree(mode);

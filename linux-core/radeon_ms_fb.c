@@ -221,9 +221,9 @@ static int radeonfb_set_par(struct fb_info *info)
                         break;
         }
 
-	drm_mode_debug_printmodeline(dev, drm_mode);    
+	drm_mode_debug_printmodeline(drm_mode);    
         list_for_each_entry(search_mode, &output->modes, head) {
-		drm_mode_debug_printmodeline(dev, search_mode);
+		drm_mode_debug_printmodeline(search_mode);
 		if (radeonfb_mode_equal(drm_mode, search_mode)) {
 			drm_mode_destroy(dev, drm_mode);
 			drm_mode = search_mode;
@@ -237,7 +237,7 @@ static int radeonfb_set_par(struct fb_info *info)
 			drm_mode_detachmode_crtc(dev, par->fb_mode);
 		}
 		par->fb_mode = drm_mode;
-		drm_mode_debug_printmodeline(dev, drm_mode);
+		drm_mode_debug_printmodeline(drm_mode);
 		/* attach mode */
 		drm_mode_attachmode_crtc(dev, par->crtc, par->fb_mode);
 	}

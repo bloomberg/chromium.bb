@@ -561,8 +561,7 @@ extern void drm_mode_probed_add(struct drm_output *output, struct drm_display_mo
 extern void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode);
 extern struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
 						   struct drm_display_mode *mode);
-extern void drm_mode_debug_printmodeline(struct drm_device *dev,
-					 struct drm_display_mode *mode);
+extern void drm_mode_debug_printmodeline(struct drm_display_mode *mode);
 extern void drm_mode_config_init(struct drm_device *dev);
 extern void drm_mode_config_cleanup(struct drm_device *dev);
 extern void drm_mode_set_name(struct drm_display_mode *mode);
