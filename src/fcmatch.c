@@ -226,17 +226,16 @@ static FcMatcher _FcMatchers [] = {
 #define MATCH_WIDTH_INDEX   10
     
     { FC_DECORATIVE_OBJECT,	FcCompareBool,		11, 11 },
-#define MATCH_DECORATIVE	11
-#define MATCH_DECORATIVE_INDEX	12
+#define MATCH_DECORATIVE	10
+#define MATCH_DECORATIVE_INDEX	11
 
     { FC_ANTIALIAS_OBJECT,	FcCompareBool,		12, 12 },
-    
 #define MATCH_ANTIALIAS		    11
 #define MATCH_ANTIALIAS_INDEX	    12
     
     { FC_RASTERIZER_OBJECT,	FcCompareString,	13, 13 },
 #define MATCH_RASTERIZER	    12
-#define MATCH_RASTERIZER_INDEX	    12
+#define MATCH_RASTERIZER_INDEX	    13
 
     { FC_OUTLINE_OBJECT,	FcCompareBool,		14, 14 },
 #define MATCH_OUTLINE		    13
