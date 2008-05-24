@@ -156,7 +156,18 @@ FcConfigUptoDate (FcConfig *config)
 	(config_dir_time.set && (config_dir_time.time - config->rescanTime) > 0) ||
 	(font_time.set && (font_time.time - config->rescanTime) > 0))
     {
-	return FcFalse;
+	/* We need to check for potential clock problems here (OLPC ticket #6046) */
+	if ((config_time.set && (config_time.time - now) > 0) ||
+    	(config_dir_time.set && (config_dir_time.time - now) > 0) ||
+        (font_time.set && (font_time.time - now) > 0))
+	{
+	    fprintf (stderr,
+                    "Fontconfig warning: Directory/file mtime in the future. New fonts may not be detected\n");
+	    config->rescanTime = now;
+	    return FcTrue;
+	}
+	else
+	    return FcFalse;
     }
     config->rescanTime = now;
     return FcTrue;
