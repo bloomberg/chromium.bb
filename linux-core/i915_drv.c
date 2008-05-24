@@ -387,7 +387,7 @@ static int i915_suspend(struct drm_device *dev, pm_message_t state)
 
 	/* Scratch space */
 	for (i = 0; i < 16; i++) {
-		dev_priv->saveSWF0[i] = I915_READ(SWF0 + (i << 2));
+		dev_priv->saveSWF0[i] = I915_READ(SWF00 + (i << 2));
 		dev_priv->saveSWF1[i] = I915_READ(SWF10 + (i << 2));
 	}
 	for (i = 0; i < 3; i++)
@@ -551,7 +551,7 @@ static int i915_resume(struct drm_device *dev)
 	I915_WRITE (MI_ARB_STATE, dev_priv->saveMI_ARB_STATE | 0xffff0000);
 
 	for (i = 0; i < 16; i++) {
-		I915_WRITE(SWF0 + (i << 2), dev_priv->saveSWF0[i]);
+		I915_WRITE(SWF00 + (i << 2), dev_priv->saveSWF0[i]);
 		I915_WRITE(SWF10 + (i << 2), dev_priv->saveSWF1[i+7]);
 	}
 	for (i = 0; i < 3; i++)

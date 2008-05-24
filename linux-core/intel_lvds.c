@@ -380,6 +380,17 @@ void intel_lvds_init(struct drm_device *dev)
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
 
+
+	/*
+	 * LVDS discovery:
+	 * 1) check for EDID on DDC
+	 * 2) check for VBT data
+	 * 3) check to see if LVDS is already on
+	 *    if none of the above, no panel
+	 * 4) make sure lid is open
+	 *    if closed, act like it's not there for now
+	 */
+
 	/* Set up the DDC bus. */
 	intel_output->ddc_bus = intel_i2c_create(dev, GPIOC, "LVDSDDC_C");
 	if (!intel_output->ddc_bus) {
@@ -401,6 +412,11 @@ void intel_lvds_init(struct drm_device *dev)
 			goto out; /* FIXME: check for quirks */
 		}
 	}
+
+	/* Failed to get EDID, what about VBT? */
+	if (dev_priv->vbt_mode)
+		dev_priv->panel_fixed_mode =
+			drm_mode_duplicate(dev, dev_priv->vbt_mode);
 
 	/*
 	 * If we didn't get EDID, try checking if the panel is already turned
@@ -424,38 +440,8 @@ void intel_lvds_init(struct drm_device *dev)
 	if (!dev_priv->panel_fixed_mode)
 		goto failed;
 
-	/* FIXME: probe the BIOS for modes and check for LVDS quirks */
 #if 0
-	/* Get the LVDS fixed mode out of the BIOS.  We should support LVDS
-	 * with the BIOS being unavailable or broken, but lack the
-	 * configuration options for now.
-	 */
-	bios_mode = intel_bios_get_panel_mode(pScrn);
-	if (bios_mode != NULL) {
-		if (dev_priv->panel_fixed_mode != NULL) {
-			if (dev_priv->debug_modes &&
-			    !xf86ModesEqual(dev_priv->panel_fixed_mode,
-					    bios_mode))
-			{
-				xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-					   "BIOS panel mode data doesn't match probed data, "
-					   "continuing with probed.\n");
-				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BIOS mode:\n");
-				xf86PrintModeline(pScrn->scrnIndex, bios_mode);
-				xf86DrvMsg(pScrn->scrnIndex, X_INFO, "probed mode:\n");
-				xf86PrintModeline(pScrn->scrnIndex, dev_priv->panel_fixed_mode);
-				xfree(bios_mode->name);
-				xfree(bios_mode);
-			}
-		}  else {
-			dev_priv->panel_fixed_mode = bios_mode;
-		}
-	} else {
-		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-			   "Couldn't detect panel mode.  Disabling panel\n");
-		goto disable_exit;
-	}
-
+	/* FIXME: detect aopen & mac mini type stuff automatically? */
 	/*
 	 * Blacklist machines with BIOSes that list an LVDS panel without
 	 * actually having one.

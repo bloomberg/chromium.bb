@@ -1620,7 +1620,7 @@ intel_tv_init(struct drm_device *dev)
 		return;
 
 	/* Even if we have an encoder we may not have a connector */
-	if (!dev_priv->bdb->int_tv_support)
+	if (!dev_priv->int_tv_support)
 		return;
 
 	/*

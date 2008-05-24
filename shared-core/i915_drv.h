@@ -174,14 +174,17 @@ struct drm_i915_private {
 	int backlight_duty_cycle;  /* restore backlight to this value */
 	bool panel_wants_dither;
 	struct drm_display_mode *panel_fixed_mode;
+	struct drm_display_mode *vbt_mode; /* if any */
 
 	/* DRI2 sarea */
 	struct drm_buffer_object *sarea_bo;
 	struct drm_bo_kmap_obj sarea_kmap;
 
-	/* BIOS data */
-	struct vbt_header *vbt;
-	struct bdb_header *bdb;
+	/* Feature bits from the VBIOS */
+	int int_tv_support:1;
+	int lvds_dither:1;
+	int lvds_vbt:1;
+	int int_crt_support:1;
 
 	/* Register state */
 	u8 saveLBB;
@@ -1680,15 +1683,16 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define DSPATILEOFF		0x701A4 /* 965+ only */
 
 /* VBIOS flags */
-#define SWF0			0x71410
-#define SWF1			0x71414
-#define SWF2			0x71418
-#define SWF3			0x7141c
-#define SWF4			0x71420
-#define SWF5			0x71424
-#define SWF6			0x71428
-
+#define SWF00			0x71410
+#define SWF01			0x71414
+#define SWF02			0x71418
+#define SWF03			0x7141c
+#define SWF04			0x71420
+#define SWF05			0x71424
+#define SWF06			0x71428
 #define SWF10			0x70410
+#define SWF11			0x70414
+#define SWF14			0x71420
 #define SWF30			0x72414
 #define SWF31			0x72418
 #define SWF32			0x7241c

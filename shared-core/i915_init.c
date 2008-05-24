@@ -224,9 +224,9 @@ int i915_load_modeset_init(struct drm_device *dev)
 		goto destroy_hws;
 	}
 
-	ret = intel_find_bios(dev);
+	ret = intel_init_bios(dev);
 	if (ret) {
-		DRM_ERROR("failed to find VBT\n");
+		DRM_ERROR("failed to find VBIOS tables\n");
 		ret = -ENODEV;
 		goto destroy_wq;
 	}
