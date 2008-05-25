@@ -1,11 +1,41 @@
                               Fontconfig
              Font configuration and customization library
-                       Version 2.5.92 (2.6 RC2)
-                              2008-05-03
+                       Version 2.5.93 (2.6 RC3)
+                              2008-05-24
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.5.93 (2.6 RC3)
+
+Alexey Khoroshilov (1):
+      Fix FcStrDirname documentation. (bug 16068)
+
+Behdad Esfahbod (1):
+      Persian conf update. (bug 16066).
+
+Evgeniy Stepanov (1):
+      Fix index/offset for 'decorative' matcher. Bug 15890.
+
+Glen Low (1):
+      Fix Win32 build error: install tries to run fc-cache locally (bug 15928).
+
+Keith Packard (8):
+      Call FcFini to make memory debugging easier
+      Fix a few memory tracking mistakes.
+      Add extended, caps, dunhill style mappings.
+      Freetype 2.3.5 (2007-jul-02) fixes indic font hinting. re-enable (bug 15822)
+      Add a copy of dolt.m4 to acinclude.m4.
+      Libs.private needs freetype libraries
+      Oops. Fix for bug 15928 used wrong path for installed fc-cache.
+      Ignore empty <dir></dir> elements
+
+Neskie Manuel (1):
+      Add Secwepemctsin Orthography. Bug 15996.
+
+Sayamindu Dasgupta (1):
+      FcConfigUptoDate breaks if directory mtime is in the future. Bug 14424.
 
 2.5.92 (2.6 RC2)
 
