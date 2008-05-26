@@ -1471,6 +1471,31 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 	return 0;
 }
 
+int
+i915_gem_busy_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_i915_gem_busy *args = data;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+
+	mutex_lock(&dev->struct_mutex);
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL) {
+		DRM_ERROR("Bad handle in i915_gem_busy_ioctl(): %d\n",
+			  args->handle);
+		mutex_unlock(&dev->struct_mutex);
+		return -EINVAL;
+	}
+
+	obj_priv = obj->driver_private;
+	args->busy = obj_priv->active;
+	
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+	return 0;
+}
+
 int i915_gem_init_object(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv;

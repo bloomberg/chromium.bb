@@ -180,6 +180,7 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_GEM_EXECBUFFER	0x14
 #define DRM_I915_GEM_PIN	0x15
 #define DRM_I915_GEM_UNPIN	0x16
+#define DRM_I915_GEM_BUSY	0x17
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -203,6 +204,7 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_GEM_EXECBUFFER	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_EXECBUFFER, struct drm_i915_gem_execbuffer)
 #define DRM_IOCTL_I915_GEM_PIN		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_PIN, struct drm_i915_gem_pin)
 #define DRM_IOCTL_I915_GEM_UNPIN	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_UNPIN, struct drm_i915_gem_unpin)
+#define DRM_IOCTL_I915_GEM_BUSY		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_BUSY, struct drm_i915_gem_busy)
 
 /* Asynchronous page flipping:
  */
@@ -536,5 +538,12 @@ struct drm_i915_gem_unpin {
 	uint32_t pad;
 };
 
+struct drm_i915_gem_busy {
+	/** Handle of the buffer to check for busy */
+	uint32_t handle;
+	
+	/** Return busy status (1 if busy, 0 if idle) */
+	uint32_t busy;
+};
 
 #endif				/* _I915_DRM_H_ */
