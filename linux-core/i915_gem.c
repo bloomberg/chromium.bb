@@ -1523,7 +1523,7 @@ i915_gem_flush_pwrite(struct drm_gem_object *obj,
 
 	if ((size < obj->size >> 1) && obj_priv->page_list != NULL) {
 		unsigned long first_page = offset / PAGE_SIZE;
-		unsigned long beyond_page = roundup(offset + size, PAGE_SIZE);
+		unsigned long beyond_page = roundup(offset + size, PAGE_SIZE) / PAGE_SIZE;
 
 		drm_ttm_cache_flush(obj_priv->page_list + first_page,
 				    beyond_page - first_page);
