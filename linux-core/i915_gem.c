@@ -1221,7 +1221,7 @@ i915_gem_ring_throttle(struct drm_device *dev)
 					   list);
 
 		/* Break out if we're close enough. */
-		if (jiffies_to_msecs(jiffies - request->emitted_jiffies) < 20) {
+		if ((long) (jiffies - request->emitted_jiffies) <= (20 * HZ) / 1000) {
 			mutex_unlock(&dev->struct_mutex);
 			return 0;
 		}
