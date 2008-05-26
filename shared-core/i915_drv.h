@@ -131,7 +131,7 @@ typedef struct drm_i915_private {
 	DRM_SPINTYPE user_irq_lock;
 	int user_irq_refcount;
 	int fence_irq_on;
-	uint32_t irq_enable_reg;
+	uint32_t irq_mask_reg;
 	int irq_enabled;
 
 #ifdef I915_HAVE_FENCE

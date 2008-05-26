@@ -311,11 +311,13 @@ i915_wait_request(struct drm_device *dev, uint32_t seqno)
 
 	BUG_ON(seqno == 0);
 
-	i915_user_irq_on(dev_priv);
-	ret = wait_event_interruptible(dev_priv->irq_queue,
-				       i915_seqno_passed(i915_get_gem_seqno(dev),
-							 seqno));
-	i915_user_irq_off(dev_priv);
+	if (!i915_seqno_passed(i915_get_gem_seqno(dev), seqno)) {
+		i915_user_irq_on(dev_priv);
+		ret = wait_event_interruptible(dev_priv->irq_queue,
+					       i915_seqno_passed(i915_get_gem_seqno(dev),
+								 seqno));
+		i915_user_irq_off(dev_priv);
+	}
 
 	/* Directly dispatch request retiring.  While we have the work queue
 	 * to handle this, the waiter on a request often wants an associated
@@ -1538,6 +1540,7 @@ int
 i915_gem_flush_pwrite(struct drm_gem_object *obj,
 		      uint64_t offset, uint64_t size)
 {
+#if 0
 	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
@@ -1555,6 +1558,7 @@ i915_gem_flush_pwrite(struct drm_gem_object *obj,
 		drm_agp_chipset_flush(dev);
 		obj->write_domain = 0;
 	}
+#endif
 	return 0;
 }
 
