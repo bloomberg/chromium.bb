@@ -314,6 +314,7 @@ typedef struct drm_radeon_private {
 	uint32_t flags;		/* see radeon_chip_flags */
 	unsigned long fb_aper_offset;
 
+	int num_gb_pipes;
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
