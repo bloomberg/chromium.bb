@@ -136,8 +136,10 @@ int drm_update_draw(struct drm_device *dev, void *data,
 		if (info->rects == NULL) {
 			info->rects = drm_alloc(sizeof(*info->rects) *
 			    update->num, DRM_MEM_DRAWABLE);
-			if (info->rects == NULL)
+			if (info->rects == NULL) {
+				DRM_SPINUNLOCK(&dev->drw_lock);
 				return ENOMEM;
+			}
 			info->num_rects = update->num;
 		}
 		/* For some reason the pointer arg is unsigned long long. */
