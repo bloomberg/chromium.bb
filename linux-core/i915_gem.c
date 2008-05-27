@@ -1529,9 +1529,11 @@ i915_gem_set_domain(struct drm_gem_object *obj,
 
 	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
 
+	drm_idlelock_take (&dev->lock);
 	i915_kernel_lost_context(dev);
 	i915_gem_object_set_domain(obj, read_domains, write_domain);
 	i915_gem_dev_set_domain(obj->dev);
+	drm_idlelock_release (&dev->lock);
 
 	return 0;
 }
