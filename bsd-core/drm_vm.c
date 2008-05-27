@@ -67,9 +67,9 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 			unsigned long page = offset >> PAGE_SHIFT;
 			unsigned long phys = dma->pagelist[page];
 
+			DRM_SPINUNLOCK(&dev->dma_lock);
 #if defined(__FreeBSD__) && __FreeBSD_version >= 500102
 			*paddr = phys;
-			DRM_SPINUNLOCK(&dev->dma_lock);
 			return 0;
 #else
 			return atop(phys);
@@ -78,7 +78,6 @@ paddr_t drm_mmap(dev_t kdev, off_t offset, int prot)
 			DRM_SPINUNLOCK(&dev->dma_lock);
 			return -1;
 		}
-		DRM_SPINUNLOCK(&dev->dma_lock);
 	}
 
 				/* A sequential search of a linked list is
