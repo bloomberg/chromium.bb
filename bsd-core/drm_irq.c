@@ -35,7 +35,8 @@
 
 static void drm_locked_task(void *context, int pending __unused);
 
-int drm_irq_by_busid(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_irq_by_busid(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
 {
 	drm_irq_busid_t *irq = data;
 
@@ -57,7 +58,7 @@ int drm_irq_by_busid(drm_device_t *dev, void *data, struct drm_file *file_priv)
 static irqreturn_t
 drm_irq_handler_wrap(DRM_IRQ_ARGS)
 {
-	drm_device_t *dev = (drm_device_t *)arg;
+	struct drm_device *dev = arg;
 
 	DRM_SPINLOCK(&dev->irq_lock);
 	dev->driver.irq_handler(arg);
@@ -65,7 +66,7 @@ drm_irq_handler_wrap(DRM_IRQ_ARGS)
 }
 #endif
 
-int drm_irq_install(drm_device_t *dev)
+int drm_irq_install(struct drm_device *dev)
 {
 	int retcode;
 #ifdef __NetBSD__
@@ -147,7 +148,7 @@ err:
 	return retcode;
 }
 
-int drm_irq_uninstall(drm_device_t *dev)
+int drm_irq_uninstall(struct drm_device *dev)
 {
 #ifdef __FreeBSD__
 	int irqrid;
@@ -179,7 +180,7 @@ int drm_irq_uninstall(drm_device_t *dev)
 	return 0;
 }
 
-int drm_control(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_control_t *ctl = data;
 	int err;
@@ -207,7 +208,7 @@ int drm_control(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	}
 }
 
-int drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_wait_vblank_t *vblwait = data;
 	struct timeval now;
@@ -288,12 +289,12 @@ int drm_wait_vblank(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	return ret;
 }
 
-void drm_vbl_send_signals(drm_device_t *dev)
+void drm_vbl_send_signals(struct drm_device *dev)
 {
 }
 
 #if 0 /* disabled */
-void drm_vbl_send_signals( drm_device_t *dev )
+void drm_vbl_send_signals( struct drm_device *dev )
 {
 	drm_vbl_sig_t *vbl_sig;
 	unsigned int vbl_seq = atomic_read( &dev->vbl_received );
@@ -318,7 +319,7 @@ void drm_vbl_send_signals( drm_device_t *dev )
 
 static void drm_locked_task(void *context, int pending __unused)
 {
-	drm_device_t *dev = context;
+	struct drm_device *dev = context;
 
 	DRM_LOCK();
 	for (;;) {
@@ -352,7 +353,8 @@ static void drm_locked_task(void *context, int pending __unused)
 }
 
 void
-drm_locked_tasklet(drm_device_t *dev, void (*tasklet)(drm_device_t *dev))
+drm_locked_tasklet(struct drm_device *dev,
+		   void (*tasklet)(struct drm_device *dev))
 {
 	dev->locked_task_call = tasklet;
 	taskqueue_enqueue(taskqueue_swi, &dev->locked_task);

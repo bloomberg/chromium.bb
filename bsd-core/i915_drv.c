@@ -40,7 +40,7 @@ static drm_pci_id_list_t i915_pciidlist[] = {
 	i915_PCI_IDS
 };
 
-static void i915_configure(drm_device_t *dev)
+static void i915_configure(struct drm_device *dev)
 {
 	dev->driver.buf_priv_size	= 1;	/* No dev_priv */
 	dev->driver.load		= i915_driver_load;
@@ -82,9 +82,9 @@ i915_probe(device_t dev)
 static int
 i915_attach(device_t nbdev)
 {
-	drm_device_t *dev = device_get_softc(nbdev);
+	struct drm_device *dev = device_get_softc(nbdev);
 
-	bzero(dev, sizeof(drm_device_t));
+	bzero(dev, sizeof(struct drm_device));
 	i915_configure(dev);
 	return drm_attach(nbdev, i915_pciidlist);
 }
@@ -105,7 +105,7 @@ static driver_t i915_driver = {
 	"drmsub",
 #endif
 	i915_methods,
-	sizeof(drm_device_t)
+	sizeof(struct drm_device)
 };
 
 extern devclass_t drm_devclass;

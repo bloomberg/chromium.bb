@@ -80,7 +80,7 @@ void drm_free(void *pt, size_t size, int area)
 	free(pt, M_DRM);
 }
 
-void *drm_ioremap(drm_device_t *dev, drm_local_map_t *map)
+void *drm_ioremap(struct drm_device *dev, drm_local_map_t *map)
 {
 #ifdef __FreeBSD__
 	return pmap_mapdev(map->offset, map->size);

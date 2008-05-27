@@ -45,14 +45,14 @@ int drm_debug_flag = 1;
 int drm_debug_flag = 0;
 #endif
 
-static int drm_load(drm_device_t *dev);
-static void drm_unload(drm_device_t *dev);
+static int drm_load(struct drm_device *dev);
+static void drm_unload(struct drm_device *dev);
 static drm_pci_id_list_t *drm_find_description(int vendor, int device,
     drm_pci_id_list_t *idlist);
 
 #ifdef __FreeBSD__
 #define DRIVER_SOFTC(unit) \
-	((drm_device_t *)devclass_get_softc(drm_devclass, unit))
+	((struct drm_device *)devclass_get_softc(drm_devclass, unit))
 
 MODULE_VERSION(drm, 1);
 MODULE_DEPEND(drm, agp, 1, 1, 1);
@@ -64,7 +64,7 @@ MODULE_DEPEND(drm, mem, 1, 1, 1);
 
 #if defined(__NetBSD__) || defined(__OpenBSD__)
 #define DRIVER_SOFTC(unit) \
-	((drm_device_t *)device_lookup(&drm_cd, unit))
+	((struct drm_device *)device_lookup(&drm_cd, unit))
 #endif /* __NetBSD__ || __OpenBSD__ */
 
 static drm_ioctl_desc_t		  drm_ioctls[256] = {
@@ -180,7 +180,7 @@ int drm_probe(device_t dev, drm_pci_id_list_t *idlist)
 
 int drm_attach(device_t nbdev, drm_pci_id_list_t *idlist)
 {
-	drm_device_t *dev;
+	struct drm_device *dev;
 	drm_pci_id_list_t *id_entry;
 	int unit;
 
@@ -319,14 +319,15 @@ void drm_attach(struct pci_attach_args *pa, dev_t kdev,
     drm_pci_id_list_t *idlist)
 {
 	int i;
-	drm_device_t *dev;
+	struct drm_device *dev;
 	drm_pci_id_list_t *id_entry;
 
 	config_makeroom(kdev, &drm_cd);
-	drm_cd.cd_devs[(kdev)] = malloc(sizeof(drm_device_t), M_DRM, M_WAITOK);
+	drm_cd.cd_devs[(kdev)] = malloc(sizeof(struct drm_device),
+					M_DRM, M_WAITOK);
 	dev = DRIVER_SOFTC(kdev);
 
-	memset(dev, 0, sizeof(drm_device_t));
+	memset(dev, 0, sizeof(struct drm_device));
 	memcpy(&dev->pa, pa, sizeof(dev->pa));
 
 	dev->irq = pa->pa_intrline;
@@ -346,7 +347,7 @@ void drm_attach(struct pci_attach_args *pa, dev_t kdev,
 
 int drm_detach(struct device *self, int flags)
 {
-	drm_unload((drm_device_t *)self);
+	drm_unload((struct drm_device *)self);
 	return 0;
 }
 
@@ -379,7 +380,7 @@ drm_pci_id_list_t *drm_find_description(int vendor, int device,
 	return NULL;
 }
 
-static int drm_firstopen(drm_device_t *dev)
+static int drm_firstopen(struct drm_device *dev)
 {
 	drm_local_map_t *map;
 	int i;
@@ -425,7 +426,7 @@ static int drm_firstopen(drm_device_t *dev)
 	return 0;
 }
 
-static int drm_lastclose(drm_device_t *dev)
+static int drm_lastclose(struct drm_device *dev)
 {
 	drm_magic_entry_t *pt, *next;
 	drm_local_map_t *map, *mapsave;
@@ -498,7 +499,7 @@ static int drm_lastclose(drm_device_t *dev)
 	return 0;
 }
 
-static int drm_load(drm_device_t *dev)
+static int drm_load(struct drm_device *dev)
 {
 	int i, retcode;
 
@@ -599,7 +600,7 @@ error:
 	return retcode;
 }
 
-static void drm_unload(drm_device_t *dev)
+static void drm_unload(struct drm_device *dev)
 {
 	int i;
 
@@ -654,7 +655,7 @@ static void drm_unload(drm_device_t *dev)
 }
 
 
-int drm_version(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_version(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_version_t *version = data;
 	int len;
@@ -681,7 +682,7 @@ int drm_version(drm_device_t *dev, void *data, struct drm_file *file_priv)
 
 int drm_open(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 {
-	drm_device_t *dev = NULL;
+	struct drm_device *dev = NULL;
 	int retcode = 0;
 
 	dev = DRIVER_SOFTC(minor(kdev));
@@ -706,7 +707,7 @@ int drm_open(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 
 int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 {
-	drm_device_t *dev = drm_get_device_from_kdev(kdev);
+	struct drm_device *dev = drm_get_device_from_kdev(kdev);
 	drm_file_t *file_priv;
 	int retcode = 0;
 
@@ -827,10 +828,10 @@ done:
 int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags, 
     DRM_STRUCTPROC *p)
 {
-	drm_device_t *dev = drm_get_device_from_kdev(kdev);
+	struct drm_device *dev = drm_get_device_from_kdev(kdev);
 	int retcode = 0;
 	drm_ioctl_desc_t *ioctl;
-	int (*func)(drm_device_t *dev, void *data, struct drm_file *file_priv);
+	int (*func)(struct drm_device *dev, void *data, struct drm_file *file_priv);
 	int nr = DRM_IOCTL_NR(cmd);
 	int is_driver_ioctl = 0;
 	drm_file_t *file_priv;
@@ -929,7 +930,7 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	return retcode;
 }
 
-drm_local_map_t *drm_getsarea(drm_device_t *dev)
+drm_local_map_t *drm_getsarea(struct drm_device *dev)
 {
 	drm_local_map_t *map;
 

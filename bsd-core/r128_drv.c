@@ -42,7 +42,7 @@ static drm_pci_id_list_t r128_pciidlist[] = {
 	r128_PCI_IDS
 };
 
-static void r128_configure(drm_device_t *dev)
+static void r128_configure(struct drm_device *dev)
 {
 	dev->driver.buf_priv_size	= sizeof(drm_r128_buf_priv_t);
 	dev->driver.preclose		= r128_driver_preclose;
@@ -83,9 +83,9 @@ r128_probe(device_t dev)
 static int
 r128_attach(device_t nbdev)
 {
-	drm_device_t *dev = device_get_softc(nbdev);
+	struct drm_device *dev = device_get_softc(nbdev);
 
-	bzero(dev, sizeof(drm_device_t));
+	bzero(dev, sizeof(struct drm_device));
 	r128_configure(dev);
 	return drm_attach(nbdev, r128_pciidlist);
 }
@@ -102,7 +102,7 @@ static device_method_t r128_methods[] = {
 static driver_t r128_driver = {
 	"drm",
 	r128_methods,
-	sizeof(drm_device_t)
+	sizeof(struct drm_device)
 };
 
 extern devclass_t drm_devclass;
@@ -117,7 +117,7 @@ MODULE_DEPEND(r128, drm, 1, 1, 1);
 #ifdef _LKM
 CFDRIVER_DECL(r128, DV_TTY, NULL);
 #else
-CFATTACH_DECL(r128, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
-    drm_activate);
+CFATTACH_DECL(r128, sizeof(struct drm_device), drm_probe, drm_attach,
+    drm_detach, drm_activate);
 #endif
 #endif

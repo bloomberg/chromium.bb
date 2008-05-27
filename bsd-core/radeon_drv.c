@@ -42,7 +42,7 @@ static drm_pci_id_list_t radeon_pciidlist[] = {
 	radeon_PCI_IDS
 };
 
-static void radeon_configure(drm_device_t *dev)
+static void radeon_configure(struct drm_device *dev)
 {
 	dev->driver.buf_priv_size	= sizeof(drm_radeon_buf_priv_t);
 	dev->driver.load		= radeon_driver_load;
@@ -90,9 +90,9 @@ radeon_probe(device_t dev)
 static int
 radeon_attach(device_t nbdev)
 {
-	drm_device_t *dev = device_get_softc(nbdev);
+	struct drm_device *dev = device_get_softc(nbdev);
 
-	bzero(dev, sizeof(drm_device_t));
+	bzero(dev, sizeof(struct drm_device));
 	radeon_configure(dev);
 	return drm_attach(nbdev, radeon_pciidlist);
 }
@@ -109,7 +109,7 @@ static device_method_t radeon_methods[] = {
 static driver_t radeon_driver = {
 	"drm",
 	radeon_methods,
-	sizeof(drm_device_t)
+	sizeof(struct drm_device)
 };
 
 extern devclass_t drm_devclass;
@@ -124,7 +124,7 @@ MODULE_DEPEND(radeon, drm, 1, 1, 1);
 #ifdef _LKM
 CFDRIVER_DECL(radeon, DV_TTY, NULL);
 #else
-CFATTACH_DECL(radeon, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
-    drm_activate);
+CFATTACH_DECL(radeon, sizeof(struct drm_device), drm_probe, drm_attach,
+    drm_detach, drm_activate);
 #endif
 #endif /* __FreeBSD__ */

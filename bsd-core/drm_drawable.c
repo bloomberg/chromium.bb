@@ -56,7 +56,7 @@ RB_GENERATE_STATIC(drawable_tree, bsd_drm_drawable_info, tree,
     drm_drawable_compare);
 
 struct drm_drawable_info *
-drm_get_drawable_info(drm_device_t *dev, int handle)
+drm_get_drawable_info(struct drm_device *dev, int handle)
 {
 	struct bsd_drm_drawable_info find, *result;
 
@@ -66,7 +66,7 @@ drm_get_drawable_info(drm_device_t *dev, int handle)
 	return &result->info;
 }
 
-int drm_adddraw(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_adddraw(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_draw_t *draw = data;
 	struct bsd_drm_drawable_info *info;
@@ -87,7 +87,7 @@ int drm_adddraw(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	return 0;
 }
 
-int drm_rmdraw(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_rmdraw(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_draw_t *draw = (drm_draw_t *)data;
 	struct drm_drawable_info *info;
@@ -108,7 +108,8 @@ int drm_rmdraw(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	}
 }
 
-int drm_update_draw(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_update_draw(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
 {
 	struct drm_drawable_info *info;
 	struct drm_update_draw *update = (struct drm_update_draw *)data;

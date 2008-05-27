@@ -59,7 +59,7 @@ static drm_pci_id_list_t mga_pciidlist[] = {
  * This function needs to be filled in!  The implementation in
  * linux-core/mga_drv.c shows what needs to be done.
  */
-static int mga_driver_device_is_agp(drm_device_t * dev)
+static int mga_driver_device_is_agp(struct drm_device * dev)
 {
 	device_t bus;
 
@@ -84,7 +84,7 @@ static int mga_driver_device_is_agp(drm_device_t * dev)
 		return DRM_MIGHT_BE_AGP;
 }
 
-static void mga_configure(drm_device_t *dev)
+static void mga_configure(struct drm_device *dev)
 {
 	dev->driver.buf_priv_size	= sizeof(drm_mga_buf_priv_t);
 	dev->driver.load		= mga_driver_load;
@@ -129,9 +129,9 @@ mga_probe(device_t dev)
 static int
 mga_attach(device_t nbdev)
 {
-	drm_device_t *dev = device_get_softc(nbdev);
+	struct drm_device *dev = device_get_softc(nbdev);
 
-	bzero(dev, sizeof(drm_device_t));
+	bzero(dev, sizeof(struct drm_device));
 	mga_configure(dev);
 	return drm_attach(nbdev, mga_pciidlist);
 }
@@ -148,7 +148,7 @@ static device_method_t mga_methods[] = {
 static driver_t mga_driver = {
 	"drm",
 	mga_methods,
-	sizeof(drm_device_t)
+	sizeof(struct drm_device)
 };
 
 extern devclass_t drm_devclass;
@@ -163,7 +163,7 @@ MODULE_DEPEND(mga, drm, 1, 1, 1);
 #ifdef _LKM
 CFDRIVER_DECL(mga, DV_TTY, NULL);
 #else
-CFATTACH_DECL(mga, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
+CFATTACH_DECL(mga, sizeof(struct drm_device), drm_probe, drm_attach, drm_detach,
     drm_activate);
 #endif
 #endif
