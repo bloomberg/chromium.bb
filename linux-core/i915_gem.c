@@ -240,7 +240,7 @@ i915_gem_retire_request(struct drm_device *dev,
 			return;
 #if WATCH_LRU
 		DRM_INFO("%s: retire %d moves to inactive list %p\n",
-			 __func__, seqno, obj);
+			 __func__, request->seqno, obj);
 #endif
 
 		if (obj->write_domain != 0) {
@@ -547,14 +547,23 @@ i915_dump_lru(struct drm_device *dev, const char *where)
 	drm_i915_private_t		*dev_priv = dev->dev_private;
 	struct drm_i915_gem_object	*obj_priv;
 
-	DRM_INFO("GTT execution list %s {\n", where);
+	DRM_INFO("active list %s {\n", where);
 	list_for_each_entry(obj_priv, &dev_priv->mm.active_list,
 			    list)
 	{
 		DRM_INFO("    %p: %08x\n", obj_priv,
 			 obj_priv->last_rendering_seqno);
 	}
-	DRM_INFO("GTT LRU %s {\n", where);
+	DRM_INFO("}\n");
+	DRM_INFO("flushing list %s {\n", where);
+	list_for_each_entry(obj_priv, &dev_priv->mm.flushing_list,
+			    list)
+	{
+		DRM_INFO("    %p: %08x\n", obj_priv,
+			 obj_priv->last_rendering_seqno);
+	}
+	DRM_INFO("}\n");
+	DRM_INFO("inactive %s {\n", where);
 	list_for_each_entry(obj_priv, &dev_priv->mm.inactive_list, list) {
 		DRM_INFO("    %p: %08x\n", obj_priv,
 			 obj_priv->last_rendering_seqno);
@@ -1377,7 +1386,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		DRM_INFO("%s: move to exec list %p\n", __func__, obj);
 #endif
 	}
-#if WATCH_LRU && 0
+#if WATCH_LRU
 	i915_dump_lru(dev, __func__);
 #endif
 
