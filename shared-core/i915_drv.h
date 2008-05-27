@@ -600,7 +600,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define HEAD_WRAP_ONE		0x00200000
 #define HEAD_ADDR		0x001FFFFC
 #define RING_START		0x08
-#define START_ADDR		0x0xFFFFF000
+#define START_ADDR		0xFFFFF000
 #define RING_LEN		0x0C
 #define RING_NR_PAGES		0x001FF000
 #define RING_REPORT_MASK	0x00000006
