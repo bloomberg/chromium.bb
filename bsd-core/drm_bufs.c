@@ -152,8 +152,10 @@ int drm_addmap(struct drm_device * dev, unsigned long offset,
 	 * initialization necessary.
 	 */
 	map = malloc(sizeof(*map), M_DRM, M_ZERO | M_NOWAIT);
-	if ( !map )
+	if ( !map ) {
+		DRM_LOCK();
 		return ENOMEM;
+	}
 
 	map->offset = offset;
 	map->size = size;
@@ -176,6 +178,7 @@ int drm_addmap(struct drm_device * dev, unsigned long offset,
 			   map->size, drm_order(map->size), map->handle );
 		if ( !map->handle ) {
 			free(map, M_DRM);
+			DRM_LOCK();
 			return ENOMEM;
 		}
 		map->offset = (unsigned long)map->handle;
@@ -216,12 +219,14 @@ int drm_addmap(struct drm_device * dev, unsigned long offset,
 		}
 		if (!valid) {
 			free(map, M_DRM);
+			DRM_LOCK();
 			return EACCES;
 		}*/
 		break;
 	case _DRM_SCATTER_GATHER:
 		if (!dev->sg) {
 			free(map, M_DRM);
+			DRM_LOCK();
 			return EINVAL;
 		}
 		map->offset = map->offset + dev->sg->handle;
@@ -239,6 +244,7 @@ int drm_addmap(struct drm_device * dev, unsigned long offset,
 		map->dmah = drm_pci_alloc(dev, map->size, align, 0xfffffffful);
 		if (map->dmah == NULL) {
 			free(map, M_DRM);
+			DRM_LOCK();
 			return ENOMEM;
 		}
 		map->handle = map->dmah->vaddr;
@@ -247,6 +253,7 @@ int drm_addmap(struct drm_device * dev, unsigned long offset,
 	default:
 		DRM_ERROR("Bad map type %d\n", map->type);
 		free(map, M_DRM);
+		DRM_LOCK();
 		return EINVAL;
 	}
 
@@ -788,14 +795,14 @@ int drm_addbufs_agp(struct drm_device *dev, drm_buf_desc_t *request)
 {
 	int order, ret;
 
-	DRM_SPINLOCK(&dev->dma_lock);
-
 	if (request->count < 0 || request->count > 4096)
 		return EINVAL;
 	
 	order = drm_order(request->size);
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER)
 		return EINVAL;
+
+	DRM_SPINLOCK(&dev->dma_lock);
 
 	/* No more allocations after first buffer-using ioctl. */
 	if (dev->buf_use != 0) {
@@ -819,14 +826,14 @@ int drm_addbufs_sg(struct drm_device *dev, drm_buf_desc_t *request)
 {
 	int order, ret;
 
-	DRM_SPINLOCK(&dev->dma_lock);
-
 	if (!DRM_SUSER(DRM_CURPROC))
 		return EACCES;
 
 	if (request->count < 0 || request->count > 4096)
 		return EINVAL;
-	
+
+	DRM_SPINLOCK(&dev->dma_lock);
+
 	order = drm_order(request->size);
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER)
 		return EINVAL;
@@ -853,17 +860,17 @@ int drm_addbufs_pci(struct drm_device *dev, drm_buf_desc_t *request)
 {
 	int order, ret;
 
-	DRM_SPINLOCK(&dev->dma_lock);
-
 	if (!DRM_SUSER(DRM_CURPROC))
 		return EACCES;
 
 	if (request->count < 0 || request->count > 4096)
 		return EINVAL;
-	
+
 	order = drm_order(request->size);
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER)
 		return EINVAL;
+
+	DRM_SPINLOCK(&dev->dma_lock);
 
 	/* No more allocations after first buffer-using ioctl. */
 	if (dev->buf_use != 0) {
@@ -967,6 +974,7 @@ int drm_markbufs(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	DRM_SPINLOCK(&dev->dma_lock);
 	if (request->low_mark > dma->bufs[order].buf_count ||
 	    request->high_mark > dma->bufs[order].buf_count) {
+		DRM_SPINUNLOCK(&dev->dma_lock);
 		return EINVAL;
 	}
 
