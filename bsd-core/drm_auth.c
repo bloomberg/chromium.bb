@@ -80,7 +80,6 @@ static int drm_add_magic(struct drm_device *dev, drm_file_t *priv,
 	entry->priv  = priv;
 	entry->next  = NULL;
 
-	DRM_LOCK();
 	if (dev->magiclist[hash].tail) {
 		dev->magiclist[hash].tail->next = entry;
 		dev->magiclist[hash].tail	= entry;
@@ -88,7 +87,6 @@ static int drm_add_magic(struct drm_device *dev, drm_file_t *priv,
 		dev->magiclist[hash].head	= entry;
 		dev->magiclist[hash].tail	= entry;
 	}
-	DRM_UNLOCK();
 
 	return 0;
 }
