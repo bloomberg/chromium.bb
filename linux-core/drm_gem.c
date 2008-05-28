@@ -291,7 +291,7 @@ drm_gem_pread_ioctl(struct drm_device *dev, void *data,
 
 	mutex_lock(&dev->struct_mutex);
 	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain(obj,
+		ret = dev->driver->gem_set_domain(obj, file_priv,
 						  DRM_GEM_DOMAIN_CPU,
 						  0);
 		if (ret) {
@@ -384,7 +384,7 @@ drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 
 	mutex_lock(&dev->struct_mutex);
 	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain(obj,
+		ret = dev->driver->gem_set_domain(obj, file_priv,
 						  DRM_GEM_DOMAIN_CPU,
 						  DRM_GEM_DOMAIN_CPU);
 		if (ret) {
@@ -530,7 +530,7 @@ drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 
 	mutex_lock(&dev->struct_mutex);
 	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain(obj,
+		ret = dev->driver->gem_set_domain(obj, file_priv,
 						   args->read_domains,
 						   args->write_domain);
 	} else {

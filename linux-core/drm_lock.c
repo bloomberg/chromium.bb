@@ -215,22 +215,16 @@ int drm_lock_take(struct drm_lock_data *lock_data,
 	} while (prev != old);
 	spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
 
-	if (_DRM_LOCKING_CONTEXT(old) == context) {
-		if (old & _DRM_LOCK_HELD) {
-			if (context != DRM_KERNEL_CONTEXT) {
-				DRM_ERROR("%d holds heavyweight lock\n",
-					  context);
-			}
-			return 0;
+	/* Warn on recursive locking of user contexts. */
+	if (_DRM_LOCKING_CONTEXT(old) == context && _DRM_LOCK_IS_HELD(old)) {
+		if (context != DRM_KERNEL_CONTEXT) {
+			DRM_ERROR("%d holds heavyweight lock\n",
+				  context);
 		}
+		return 0;
 	}
 
-	if ((_DRM_LOCKING_CONTEXT(new)) == context && (new & _DRM_LOCK_HELD)) {
-		/* Have lock */
-
-		return 1;
-	}
-	return 0;
+	return !_DRM_LOCK_IS_HELD(old);
 }
 
 /**
@@ -385,6 +379,60 @@ void drm_idlelock_release(struct drm_lock_data *lock_data)
 	spin_unlock_irqrestore(&lock_data->spinlock, irqflags);
 }
 EXPORT_SYMBOL(drm_idlelock_release);
+
+/**
+ * Takes the lock on behalf of the client if needed, using the kernel context.
+ *
+ * This allows us to hide the hardware lock when it's required for protection
+ * of data structures (such as command ringbuffer) shared with the X Server, and
+ * a way for us to transition to lockless for those requests when the X Server
+ * stops accessing the ringbuffer directly, without having to update the
+ * other userland clients.
+ */
+int drm_client_lock_take(struct drm_device *dev, struct drm_file *file_priv)
+{
+	int ret;
+	unsigned long irqflags;
+
+	/* If the client has the lock, we're already done. */
+	if (drm_i_have_hw_lock(dev, file_priv))
+		return 0;
+
+	/* Client doesn't hold the lock.  Block taking the lock with the kernel
+	 * context on behalf of the client, and return whether we were
+	 * successful.
+	 */
+	spin_lock_irqsave(&dev->lock.spinlock, irqflags);
+	dev->lock.user_waiters++;
+	spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
+	ret = wait_event_interruptible(dev->lock.lock_queue,
+				       drm_lock_take(&dev->lock,
+						     DRM_KERNEL_CONTEXT));
+	spin_lock_irqsave(&dev->lock.spinlock, irqflags);
+	dev->lock.user_waiters--;
+	if (ret != 0) {
+		spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
+		return ret;
+	} else {
+		dev->lock.file_priv = file_priv;
+		dev->lock.lock_time = jiffies;
+		dev->lock.kernel_held = 1;
+		file_priv->lock_count++;
+		spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
+		return 0;
+	}
+}
+EXPORT_SYMBOL(drm_client_lock_take);
+
+void drm_client_lock_release(struct drm_device *dev)
+{
+	if (dev->lock.kernel_held) {
+		dev->lock.kernel_held = 0;
+		dev->lock.file_priv = NULL;
+		drm_lock_free(&dev->lock, DRM_KERNEL_CONTEXT);
+	}
+}
+EXPORT_SYMBOL(drm_client_lock_release);
 
 
 int drm_i_have_hw_lock(struct drm_device *dev, struct drm_file *file_priv)

@@ -474,6 +474,11 @@ struct drm_lock_data {
 	uint32_t kernel_waiters;
 	uint32_t user_waiters;
 	int idle_has_lock;
+	/**
+	 * Boolean signaling that the lock is held on behalf of the
+	 * file_priv client by the kernel in an ioctl handler.
+	 */
+	int kernel_held;
 };
 
 /**
@@ -778,6 +783,7 @@ struct drm_driver {
 	 * Driver-specific callback to set memory domains from userspace
 	 */
 	int (*gem_set_domain) (struct drm_gem_object *obj,
+			       struct drm_file *file_priv,
 			       uint32_t read_domains,
 			       uint32_t write_domain);
 
@@ -1178,6 +1184,9 @@ extern int drm_lock_take(struct drm_lock_data *lock_data, unsigned int context);
 extern int drm_lock_free(struct drm_lock_data *lock_data, unsigned int context);
 extern void drm_idlelock_take(struct drm_lock_data *lock_data);
 extern void drm_idlelock_release(struct drm_lock_data *lock_data);
+extern int drm_client_lock_take(struct drm_device *dev,
+				struct drm_file *file_priv);
+extern void drm_client_lock_release(struct drm_device *dev);
 
 /*
  * These are exported to drivers so that they can implement fencing using

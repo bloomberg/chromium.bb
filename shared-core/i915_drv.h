@@ -454,6 +454,7 @@ int i915_gem_busy_ioctl(struct drm_device *dev, void *data,
 int i915_gem_init_object(struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_gem_object *obj);
 int i915_gem_set_domain(struct drm_gem_object *obj,
+			struct drm_file *file_priv,
 			uint32_t read_domains,
 			uint32_t write_domain);
 int i915_gem_flush_pwrite(struct drm_gem_object *obj,

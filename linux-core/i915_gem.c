@@ -1522,6 +1522,7 @@ void i915_gem_free_object(struct drm_gem_object *obj)
 
 int
 i915_gem_set_domain(struct drm_gem_object *obj,
+		    struct drm_file *file_priv,
 		    uint32_t read_domains,
 		    uint32_t write_domain)
 {
@@ -1529,11 +1530,11 @@ i915_gem_set_domain(struct drm_gem_object *obj,
 
 	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
 
-	drm_idlelock_take (&dev->lock);
+	drm_client_lock_take(dev, file_priv);
 	i915_kernel_lost_context(dev);
 	i915_gem_object_set_domain(obj, read_domains, write_domain);
 	i915_gem_dev_set_domain(obj->dev);
-	drm_idlelock_release (&dev->lock);
+	drm_client_lock_release(dev);
 
 	return 0;
 }
