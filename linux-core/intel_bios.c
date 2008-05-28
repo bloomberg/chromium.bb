@@ -236,5 +236,7 @@ intel_init_bios(struct drm_device *dev)
 	parse_general_features(dev_priv, bdb);
 	parse_panel_data(dev_priv, bdb);
 
+	pci_unmap_rom(pdev, bios);
+
 	return 0;
 }
