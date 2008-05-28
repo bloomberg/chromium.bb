@@ -39,7 +39,7 @@ static drm_pci_id_list_t via_pciidlist[] = {
 	viadrv_PCI_IDS
 };
 
-static void via_configure(drm_device_t *dev)
+static void via_configure(struct drm_device *dev)
 {
 	dev->driver.buf_priv_size	= 1;
 	dev->driver.load		= via_driver_load;
@@ -79,9 +79,9 @@ via_probe(device_t dev)
 static int
 via_attach(device_t nbdev)
 {
-	drm_device_t *dev = device_get_softc(nbdev);
+	struct drm_device *dev = device_get_softc(nbdev);
 
-	bzero(dev, sizeof(drm_device_t));
+	bzero(dev, sizeof(struct drm_device));
 	via_configure(dev);
 	return drm_attach(nbdev, via_pciidlist);
 }
@@ -98,7 +98,7 @@ static device_method_t via_methods[] = {
 static driver_t via_driver = {
 	"drm",
 	via_methods,
-	sizeof(drm_device_t)
+	sizeof(struct drm_device)
 };
 
 extern devclass_t drm_devclass;
@@ -109,7 +109,7 @@ MODULE_DEPEND(via, drm, 1, 1, 1);
 #ifdef _LKM
 CFDRIVER_DECL(via, DV_TTY, NULL);
 #else
-CFATTACH_DECL(via, sizeof(drm_device_t), drm_probe, drm_attach, drm_detach,
+CFATTACH_DECL(via, sizeof(struct drm_device), drm_probe, drm_attach, drm_detach,
     drm_activate);
 #endif
 #endif

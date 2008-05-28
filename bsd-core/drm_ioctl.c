@@ -41,7 +41,8 @@
  * before setunique has been called.  The format for the bus-specific part of
  * the unique is not defined for any other bus.
  */
-int drm_getunique(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_getunique(struct drm_device *dev, void *data,
+		  struct drm_file *file_priv)
 {
 	drm_unique_t	 *u = data;
 
@@ -57,7 +58,8 @@ int drm_getunique(drm_device_t *dev, void *data, struct drm_file *file_priv)
 /* Deprecated in DRM version 1.1, and will return EBUSY when setversion has
  * requested version 1.1 or greater.
  */
-int drm_setunique(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_setunique(struct drm_device *dev, void *data,
+		  struct drm_file *file_priv)
 {
 	drm_unique_t *u = data;
 	int domain, bus, slot, func, ret;
@@ -112,7 +114,7 @@ int drm_setunique(drm_device_t *dev, void *data, struct drm_file *file_priv)
 
 
 static int
-drm_set_busid(drm_device_t *dev)
+drm_set_busid(struct drm_device *dev)
 {
 
 	DRM_LOCK();
@@ -137,7 +139,7 @@ drm_set_busid(drm_device_t *dev)
 	return 0;
 }
 
-int drm_getmap(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_getmap(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_map_t    *map = data;
 	drm_local_map_t    *mapinlist;
@@ -173,7 +175,8 @@ int drm_getmap(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	return 0;
 }
 
-int drm_getclient(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_getclient(struct drm_device *dev, void *data,
+		  struct drm_file *file_priv)
 {
 	drm_client_t *client = data;
 	drm_file_t   *pt;
@@ -200,7 +203,7 @@ int drm_getclient(drm_device_t *dev, void *data, struct drm_file *file_priv)
 	return EINVAL;
 }
 
-int drm_getstats(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_getstats(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_stats_t  *stats = data;
 	int          i;
@@ -229,7 +232,8 @@ int drm_getstats(drm_device_t *dev, void *data, struct drm_file *file_priv)
 #define DRM_IF_MAJOR	1
 #define DRM_IF_MINOR	2
 
-int drm_setversion(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_setversion(struct drm_device *dev, void *data,
+		   struct drm_file *file_priv)
 {
 	drm_set_version_t *sv = data;
 	drm_set_version_t ver;
@@ -273,7 +277,7 @@ int drm_setversion(drm_device_t *dev, void *data, struct drm_file *file_priv)
 }
 
 
-int drm_noop(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_noop(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	DRM_DEBUG("\n");
 	return 0;

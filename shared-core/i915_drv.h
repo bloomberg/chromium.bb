@@ -176,6 +176,7 @@ struct drm_i915_private {
 	struct drm_display_mode *panel_fixed_mode;
 	struct drm_display_mode *vbt_mode; /* if any */
 
+#if defined(I915_HAVE_BUFFER)
 	/* DRI2 sarea */
 	struct drm_buffer_object *sarea_bo;
 	struct drm_bo_kmap_obj sarea_kmap;
@@ -185,6 +186,7 @@ struct drm_i915_private {
 	int lvds_dither:1;
 	int lvds_vbt:1;
 	int int_crt_support:1;
+#endif
 
 	/* Register state */
 	u8 saveLBB;
@@ -588,7 +590,6 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define   HEAD_WRAP_COUNT	0xFFE00000
 #define   HEAD_WRAP_ONE		0x00200000
 #define   HEAD_ADDR		0x001FFFFC
-#define   START_ADDR		0x0xFFFFF000
 #define   RING_NR_PAGES		0x001FF000
 #define   RING_REPORT_MASK	0x00000006
 #define   RING_REPORT_64K	0x00000002
@@ -734,8 +735,85 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define   DPLL_P2_CLOCK_DIV_MASK	0x03000000 /* i915 */
 #define   DPLL_FPA01_P1_POST_DIV_MASK	0x00ff0000 /* i915 */
 /*
- *  The i830 generation, in DAC/serial mode, defines p1 as two plus this
- * bitfield, or just 2 if PLL_P1_DIVIDE_BY_TWO is set.
+ * Pixel within the current frame is counted in the PIPEAFRAMEPIXEL register
+ * and is 24 bits wide.
+ */
+#define PIPE_PIXEL_MASK         0x00ffffff
+#define PIPE_PIXEL_SHIFT        0
+
+#define I915_FIFO_UNDERRUN_STATUS		(1UL<<31)
+#define I915_CRC_ERROR_ENABLE			(1UL<<29)
+#define I915_CRC_DONE_ENABLE			(1UL<<28)
+#define I915_GMBUS_EVENT_ENABLE			(1UL<<27)
+#define I915_VSYNC_INTERRUPT_ENABLE		(1UL<<25)
+#define I915_DISPLAY_LINE_COMPARE_ENABLE	(1UL<<24)
+#define I915_DPST_EVENT_ENABLE			(1UL<<23)
+#define I915_LEGACY_BLC_EVENT_ENABLE		(1UL<<22)
+#define I915_ODD_FIELD_INTERRUPT_ENABLE		(1UL<<21)
+#define I915_EVEN_FIELD_INTERRUPT_ENABLE	(1UL<<20)
+#define I915_START_VBLANK_INTERRUPT_ENABLE	(1UL<<18)	/* 965 or later */
+#define I915_VBLANK_INTERRUPT_ENABLE		(1UL<<17)
+#define I915_OVERLAY_UPDATED_ENABLE		(1UL<<16)
+#define I915_CRC_ERROR_INTERRUPT_STATUS		(1UL<<13)
+#define I915_CRC_DONE_INTERRUPT_STATUS		(1UL<<12)
+#define I915_GMBUS_INTERRUPT_STATUS		(1UL<<11)
+#define I915_VSYNC_INTERRUPT_STATUS		(1UL<<9)
+#define I915_DISPLAY_LINE_COMPARE_STATUS	(1UL<<8)
+#define I915_DPST_EVENT_STATUS			(1UL<<7)
+#define I915_LEGACY_BLC_EVENT_STATUS		(1UL<<6)
+#define I915_ODD_FIELD_INTERRUPT_STATUS		(1UL<<5)
+#define I915_EVEN_FIELD_INTERRUPT_STATUS	(1UL<<4)
+#define I915_START_VBLANK_INTERRUPT_STATUS	(1UL<<2)	/* 965 or later */
+#define I915_VBLANK_INTERRUPT_STATUS		(1UL<<1)
+#define I915_OVERLAY_UPDATED_STATUS		(1UL<<0)
+
+#define SRX_INDEX		0x3c4
+#define SRX_DATA		0x3c5
+#define SR01			1
+#define SR01_SCREEN_OFF		(1<<5)
+
+#define PPCR			0x61204
+#define PPCR_ON			(1<<0)
+
+#define DVOB			0x61140
+#define DVOB_ON			(1<<31)
+#define DVOC			0x61160
+#define DVOC_ON			(1<<31)
+#define LVDS			0x61180
+#define LVDS_ON			(1<<31)
+
+#define ADPA			0x61100
+#define ADPA_DPMS_MASK		(~(3<<10))
+#define ADPA_DPMS_ON		(0<<10)
+#define ADPA_DPMS_SUSPEND	(1<<10)
+#define ADPA_DPMS_STANDBY	(2<<10)
+#define ADPA_DPMS_OFF		(3<<10)
+
+#define LP_RING			0x2030
+#define HP_RING			0x2040
+/* The binner has its own ring buffer:
+ */
+#define HWB_RING		0x2400
+
+#define RING_TAIL		0x00
+#define TAIL_ADDR		0x001FFFF8
+#define RING_HEAD		0x04
+#define HEAD_WRAP_COUNT		0xFFE00000
+#define HEAD_WRAP_ONE		0x00200000
+#define HEAD_ADDR		0x001FFFFC
+#define RING_START		0x08
+#define START_ADDR		0xFFFFF000
+#define RING_LEN		0x0C
+#define RING_NR_PAGES		0x001FF000
+#define RING_REPORT_MASK	0x00000006
+#define RING_REPORT_64K		0x00000002
+#define RING_REPORT_128K	0x00000004
+#define RING_NO_REPORT		0x00000000
+#define RING_VALID_MASK		0x00000001
+#define RING_VALID		0x00000001
+#define RING_INVALID		0x00000000
+
+/* Scratch pad debug 0 reg:
  */
 #define   DPLL_FPA01_P1_POST_DIV_MASK_I830	0x001f0000
 /*

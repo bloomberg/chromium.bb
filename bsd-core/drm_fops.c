@@ -36,7 +36,7 @@
 
 #include "drmP.h"
 
-drm_file_t *drm_find_file_by_proc(drm_device_t *dev, DRM_STRUCTPROC *p)
+drm_file_t *drm_find_file_by_proc(struct drm_device *dev, DRM_STRUCTPROC *p)
 {
 #if __FreeBSD_version >= 500021
 	uid_t uid = p->td_ucred->cr_svuid;
@@ -57,7 +57,7 @@ drm_file_t *drm_find_file_by_proc(drm_device_t *dev, DRM_STRUCTPROC *p)
 
 /* drm_open_helper is called whenever a process opens /dev/drm. */
 int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
-		    drm_device_t *dev)
+		    struct drm_device *dev)
 {
 	int	     m = minor(kdev);
 	drm_file_t   *priv;

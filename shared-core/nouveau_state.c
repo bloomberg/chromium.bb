@@ -615,7 +615,7 @@ int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *
 		break;
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
-			getparam->value=(uint64_t) dev->sg->virtual;
+			getparam->value=(unsigned long)dev->sg->virtual;
 		else
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");

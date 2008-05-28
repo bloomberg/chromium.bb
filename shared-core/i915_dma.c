@@ -117,7 +117,7 @@ int i915_dma_cleanup(struct drm_device * dev)
 	return 0;
 }
 
-
+#if defined(I915_HAVE_BUFFER)
 #define DRI2_SAREA_BLOCK_TYPE(b) ((b) >> 16)
 #define DRI2_SAREA_BLOCK_SIZE(b) ((b) & 0xffff)
 #define DRI2_SAREA_BLOCK_NEXT(p)				\
@@ -176,7 +176,7 @@ setup_dri2_sarea(struct drm_device * dev,
 
 	return 0;
 }
-
+#endif
 
 static int i915_initialize(struct drm_device * dev,
 			   struct drm_file *file_priv,
@@ -268,7 +268,7 @@ static int i915_initialize(struct drm_device * dev,
 		mutex_init(&dev_priv->cmdbuf_mutex);
 	}
 #endif
-
+#if defined(I915_HAVE_BUFFER)
 	if (init->func == I915_INIT_DMA2) {
 		int ret = setup_dri2_sarea(dev, file_priv, init);
 		if (ret) {
@@ -277,6 +277,7 @@ static int i915_initialize(struct drm_device * dev,
 			return ret;
 		}
 	}
+#endif
 
 	return 0;
 }
@@ -794,7 +795,7 @@ static int i915_cmdbuffer(struct drm_device *dev, void *data,
 	return 0;
 }
 
-#if DRM_DEBUG_CODE
+#if defined(DRM_DEBUG_CODE)
 #define DRM_DEBUG_RELOCATION	(drm_debug != 0)
 #else
 #define DRM_DEBUG_RELOCATION	0
