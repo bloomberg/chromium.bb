@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20060524"
+#define DRIVER_DATE		"20080528"
 
 /* Interface history:
  *
@@ -98,10 +98,11 @@
  * 1.26- Add support for variable size PCI(E) gart aperture
  * 1.27- Add support for IGP GART
  * 1.28- Add support for VBL on CRTC2
+ * 1.29- R500 3D cmd buffer support
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		28
+#define DRIVER_MINOR		29
 #define DRIVER_PATCHLEVEL	0
 
 /*
