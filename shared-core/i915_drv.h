@@ -148,7 +148,7 @@ typedef struct drm_i915_private {
 	DRM_SPINTYPE swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
-#if defined(DRI2)
+#if defined(I915_HAVE_BUFFER)
 	/* DRI2 sarea */
 	struct drm_buffer_object *sarea_bo;
 	struct drm_bo_kmap_obj sarea_kmap;
