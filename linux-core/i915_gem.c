@@ -1137,6 +1137,16 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 #endif
 		writel(reloc_val, reloc_entry);
 
+		/* Write the updated presumed offset for this entry back out
+		 * to the user.
+		 */
+		reloc.presumed_offset = target_obj_priv->gtt_offset;
+		ret = copy_to_user(relocs + i, &reloc, sizeof(reloc));
+		if (ret != 0) {
+			drm_gem_object_unreference(target_obj);
+			return ret;
+		}
+
 		drm_gem_object_unreference(target_obj);
 	}
 
