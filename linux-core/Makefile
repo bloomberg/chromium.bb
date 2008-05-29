@@ -328,7 +328,7 @@ ifneq (,$(findstring xgi,$(DRM_MODULES)))
 CONFIG_DRM_XGI := m
 endif
 ifneq (,$(findstring radeon_ms,$(DRM_MODULES)))
-CONFIG_DRM_RADEON_MS := m
+#CONFIG_DRM_RADEON_MS := m
 endif
 
 # These require AGP support
