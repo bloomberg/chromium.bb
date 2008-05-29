@@ -14,6 +14,7 @@
 #include <linux/fb.h>
 
 struct drm_device;
+struct drm_mode_set;
 
 /*
  * Note on terminology:  here, for brevity and convenience, we refer to output
@@ -313,20 +314,6 @@ struct drm_crtc_funcs {
 	/* Restore CRTC state */
 	void (*restore)(struct drm_crtc *crtc); /* resume? */
 
-	void (*prepare)(struct drm_crtc *crtc);
-	void (*commit)(struct drm_crtc *crtc);
-
-	/* Provider can fixup or change mode timings before modeset occurs */
-	bool (*mode_fixup)(struct drm_crtc *crtc,
-			   struct drm_display_mode *mode,
-			   struct drm_display_mode *adjusted_mode);
-	/* Actually set the mode */
-	void (*mode_set)(struct drm_crtc *crtc, struct drm_display_mode *mode,
-			 struct drm_display_mode *adjusted_mode, int x, int y);
-
-	/* Move the crtc on the current fb to the given position *optional* */
-	void (*mode_set_base)(struct drm_crtc *crtc, int x, int y);
-
 	/* cursor controls */
 	int (*cursor_set)(struct drm_crtc *crtc, struct drm_buffer_object *bo,
 			  uint32_t width, uint32_t height);
@@ -337,6 +324,8 @@ struct drm_crtc_funcs {
 			  int regno);
 	/* Driver cleanup routine */
 	void (*cleanup)(struct drm_crtc *crtc);
+
+	int (*set_config)(struct drm_mode_set *set);
 };
 
 /**
@@ -371,6 +360,9 @@ struct drm_crtc {
 	int desired_x, desired_y;
 	const struct drm_crtc_funcs *funcs;
 	void *driver_private;
+
+	/* if you are using the helper */
+	void *helper_private;
 };
 
 extern struct drm_crtc *drm_crtc_create(struct drm_device *dev,
@@ -399,21 +391,14 @@ struct drm_output_funcs {
 	void (*dpms)(struct drm_output *output, int mode);
 	void (*save)(struct drm_output *output);
 	void (*restore)(struct drm_output *output);
-	int (*mode_valid)(struct drm_output *output,
-			  struct drm_display_mode *mode);
-	bool (*mode_fixup)(struct drm_output *output,
-			   struct drm_display_mode *mode,
-			   struct drm_display_mode *adjusted_mode);
-	void (*prepare)(struct drm_output *output);
-	void (*commit)(struct drm_output *output);
-	void (*mode_set)(struct drm_output *output,
-			 struct drm_display_mode *mode,
-			 struct drm_display_mode *adjusted_mode);
 	enum drm_output_status (*detect)(struct drm_output *output);
 	int (*get_modes)(struct drm_output *output);
 	bool (*set_property)(struct drm_output *output, struct drm_property *property,
 			     uint64_t val);
 	void (*cleanup)(struct drm_output *output);
+  	int (*mode_valid)(struct drm_output *output,
+			  struct drm_display_mode *mode);
+
 };
 
 #define DRM_OUTPUT_MAX_UMODES 16
@@ -468,6 +453,8 @@ struct drm_output {
 	struct drm_property_blob *edid_blob_ptr;
 	u32 property_ids[DRM_OUTPUT_MAX_PROPERTY];
 	uint64_t property_values[DRM_OUTPUT_MAX_PROPERTY];
+
+	void *helper_private;
 };
 
 /**
@@ -501,7 +488,7 @@ struct drm_mode_set
  * the CRTC<->output mappings as needed and update its view of the screen.
  */
 struct drm_mode_config_funcs {
-	bool (*resize)(struct drm_device *dev, int width, int height);
+	bool (*resize_fb)(struct drm_device *dev, struct drm_framebuffer *fb);
 };
 
 /**
@@ -597,18 +584,14 @@ extern int drm_output_property_get_value(struct drm_output *output,
 					 struct drm_property *property,
 					 uint64_t *value);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
-extern bool drm_initial_config(struct drm_device *dev, bool cangrow);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
 				       unsigned long handle);
 extern struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev);
 extern void drm_framebuffer_destroy(struct drm_framebuffer *fb);
 extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
-extern int drm_crtc_set_config(struct drm_mode_set *set);
-extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
-		       int x, int y);
+extern void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY);
 extern bool drm_crtc_in_use(struct drm_crtc *crtc);
-extern int drm_hotplug_stage_two(struct drm_device *dev, struct drm_output *output, bool connected);
 
 extern int drm_output_attach_property(struct drm_output *output,
 				      struct drm_property *property, uint64_t init_val);

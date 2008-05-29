@@ -1590,15 +1590,18 @@ out:
 	return ret;
 }
 
+static const struct drm_output_helper_funcs intel_tv_helper_funcs = {
+	.mode_fixup = intel_tv_mode_fixup,
+	.prepare = intel_output_prepare,
+	.mode_set = intel_tv_mode_set,
+	.commit = intel_output_commit,
+};
+
 static const struct drm_output_funcs intel_tv_output_funcs = {
 	.dpms = intel_tv_dpms,
 	.save = intel_tv_save,
 	.restore = intel_tv_restore,
 	.mode_valid = intel_tv_mode_valid,
-	.mode_fixup = intel_tv_mode_fixup,
-	.prepare = intel_output_prepare,
-	.mode_set = intel_tv_mode_set,
-	.commit = intel_output_commit,
 	.detect = intel_tv_detect,
 	.get_modes = intel_tv_get_modes,
 	.cleanup = intel_tv_destroy,
@@ -1674,6 +1677,7 @@ intel_tv_init(struct drm_device *dev)
     
 	tv_priv->tv_format = kstrdup(tv_modes[initial_mode].name, GFP_KERNEL);
     
+	drm_output_helper_add(output, &intel_tv_helper_funcs);
 	output->driver_private = intel_output;
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;

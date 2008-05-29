@@ -972,18 +972,21 @@ static void intel_sdvo_destroy(struct drm_output *output)
 	}
 }
 
-static const struct drm_output_funcs intel_sdvo_output_funcs = {
-	.dpms = intel_sdvo_dpms,
-	.save = intel_sdvo_save,
-	.restore = intel_sdvo_restore,
-	.mode_valid = intel_sdvo_mode_valid,
+static const struct drm_output_helper_funcs intel_sdvo_helper_funcs = {
 	.mode_fixup = intel_sdvo_mode_fixup,
 	.prepare = intel_output_prepare,
 	.mode_set = intel_sdvo_mode_set,
 	.commit = intel_output_commit,
+};
+
+static const struct drm_output_funcs intel_sdvo_output_funcs = {
+	.dpms = intel_sdvo_dpms,
+	.save = intel_sdvo_save,
+	.restore = intel_sdvo_restore,
 	.detect = intel_sdvo_detect,
 	.get_modes = intel_sdvo_get_modes,
-	.cleanup = intel_sdvo_destroy
+	.cleanup = intel_sdvo_destroy,
+	.mode_valid = intel_sdvo_mode_valid,
 };
 
 void intel_sdvo_init(struct drm_device *dev, int output_device)
@@ -1010,6 +1013,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 
 	sdvo_priv = (struct intel_sdvo_priv *)(intel_output + 1);
 	intel_output->type = INTEL_OUTPUT_SDVO;
+	drm_output_helper_add(output, &intel_sdvo_helper_funcs);
 	output->driver_private = intel_output;
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;

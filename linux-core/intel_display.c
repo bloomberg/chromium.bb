@@ -30,6 +30,8 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
+#include "drm_crtc_helper.h"
+
 bool intel_pipe_has_type (struct drm_crtc *crtc, int type);
 
 typedef struct {
@@ -1090,6 +1092,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 	struct drm_crtc *possible_crtc;
 	struct drm_crtc *supported_crtc =NULL;
 	struct drm_crtc *crtc = NULL;
+	struct drm_output_helper_funcs *output_funcs;
 	int i = -1;
 
 	/*
@@ -1147,14 +1150,15 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 	if (!crtc->enabled) {
 		if (!mode)
 			mode = &load_detect_mode;
-		drm_crtc_set_mode(crtc, mode, 0, 0);
+		drm_crtc_helper_set_mode(crtc, mode, 0, 0);
 	} else {
 		if (intel_crtc->dpms_mode != DPMSModeOn)
 			crtc->funcs->dpms(crtc, DPMSModeOn);
 
+		output_funcs = output->helper_private;
 		/* Add this output to the crtc */
-		output->funcs->mode_set(output, &crtc->mode, &crtc->mode);
-		output->funcs->commit(output);
+		output_funcs->mode_set(output, &crtc->mode, &crtc->mode);
+		output_funcs->commit(output);
 	}
 	/* let the output get through one full cycle before testing */
 	intel_wait_for_vblank(dev);
@@ -1293,16 +1297,20 @@ struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
 	return mode;
 }
 
-static const struct drm_crtc_funcs intel_crtc_funcs = {
-	.dpms = intel_crtc_dpms,
+static const struct drm_crtc_helper_funcs intel_helper_funcs = {
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
 	.mode_set_base = intel_pipe_set_base,
+	.prepare = intel_crtc_prepare,
+	.commit = intel_crtc_commit,
+};
+
+static const struct drm_crtc_funcs intel_crtc_funcs = {
+	.dpms = intel_crtc_dpms,
 	.cursor_set = intel_crtc_cursor_set,
 	.cursor_move = intel_crtc_cursor_move,
 	.gamma_set = intel_crtc_gamma_set,
-	.prepare = intel_crtc_prepare,
-	.commit = intel_crtc_commit,
+	.set_config = drm_crtc_helper_set_config,
 };
 
 
@@ -1331,6 +1339,7 @@ void intel_crtc_init(struct drm_device *dev, int pipe)
 
 	intel_crtc->cursor_addr = 0;
 	intel_crtc->dpms_mode = DPMSModeOff;
+	drm_crtc_helper_add(crtc, &intel_helper_funcs);
 
 	crtc->driver_private = intel_crtc;
 }
@@ -1418,6 +1427,10 @@ static void intel_setup_outputs(struct drm_device *dev)
 	}
 }
 
+static const struct drm_mode_config_funcs intel_mode_funcs = {
+	.resize_fb = NULL,
+};
+
 void intel_modeset_init(struct drm_device *dev)
 {
 	int num_pipe;
@@ -1427,6 +1440,8 @@ void intel_modeset_init(struct drm_device *dev)
 
 	dev->mode_config.min_width = 0;
 	dev->mode_config.min_height = 0;
+
+	dev->mode_config.funcs = (void *)&intel_mode_funcs;
 
 	if (IS_I965G(dev)) {
 		dev->mode_config.max_width = 8192;

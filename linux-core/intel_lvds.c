@@ -332,18 +332,21 @@ static void intel_lvds_destroy(struct drm_output *output)
 	kfree(output->driver_private);
 }
 
-static const struct drm_output_funcs intel_lvds_output_funcs = {
-	.dpms = intel_lvds_dpms,
-	.save = intel_lvds_save,
-	.restore = intel_lvds_restore,
-	.mode_valid = intel_lvds_mode_valid,
+static const struct drm_output_helper_funcs intel_lvds_helper_funcs = {
 	.mode_fixup = intel_lvds_mode_fixup,
 	.prepare = intel_lvds_prepare,
 	.mode_set = intel_lvds_mode_set,
 	.commit = intel_lvds_commit,
+};
+
+static const struct drm_output_funcs intel_lvds_output_funcs = {
+	.dpms = intel_lvds_dpms,
+	.save = intel_lvds_save,
+	.restore = intel_lvds_restore,
 	.detect = intel_lvds_detect,
 	.get_modes = intel_lvds_get_modes,
-	.cleanup = intel_lvds_destroy
+	.cleanup = intel_lvds_destroy,
+	.mode_valid = intel_lvds_mode_valid,
 };
 
 /**
@@ -375,6 +378,7 @@ void intel_lvds_init(struct drm_device *dev)
 	}
 
 	intel_output->type = INTEL_OUTPUT_LVDS;
+	drm_output_helper_add(output, &intel_lvds_helper_funcs);
 	output->driver_private = intel_output;
 	output->display_info.subpixel_order = SubPixelHorizontalRGB;
 	output->interlace_allowed = FALSE;

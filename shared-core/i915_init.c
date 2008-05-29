@@ -13,6 +13,7 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 #include "intel_bios.h"
+#include "intel_drv.h"
 
 /**
  * i915_probe_agp - get AGP bootup configuration
@@ -232,7 +233,7 @@ int i915_load_modeset_init(struct drm_device *dev)
 	}
 
 	intel_modeset_init(dev);
-	drm_initial_config(dev, false);
+	drm_helper_initial_config(dev, false);
 
 	drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
 	drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");

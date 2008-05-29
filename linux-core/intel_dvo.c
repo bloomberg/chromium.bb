@@ -325,19 +325,21 @@ static struct drm_crtc *intel_dvo_get_crtc(struct drm_output *output)
 }
 #endif
 
+static const struct drm_output_helper_funcs intel_dvo_helper_funcs = {
+	.mode_fixup = intel_dvo_mode_fixup,
+	.prepare = intel_output_prepare,
+	.mode_set = intel_dvo_mode_set,
+	.commit = intel_output_commit,
+};
 
 static const struct drm_output_funcs intel_dvo_output_funcs = {
 	.dpms = intel_dvo_dpms,
 	.save = intel_dvo_save,
 	.restore = intel_dvo_restore,
-	.mode_valid = intel_dvo_mode_valid,
-	.mode_fixup = intel_dvo_mode_fixup,
-	.prepare = intel_output_prepare,
-	.mode_set = intel_dvo_mode_set,
-	.commit = intel_output_commit,
 	.detect = intel_dvo_detect,
 	.get_modes = intel_dvo_get_modes,
-	.cleanup = intel_dvo_destroy
+	.cleanup = intel_dvo_destroy,
+	.mode_valid = intel_dvo_mode_valid,
 };
 
 /**
@@ -457,6 +459,7 @@ void intel_dvo_init(struct drm_device *dev)
 			goto free_i2c;
 		}
 
+		drm_output_helper_add(output, &intel_dvo_helper_funcs);
 		output->driver_private = intel_output;
 		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output->interlace_allowed = false;

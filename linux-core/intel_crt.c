@@ -28,6 +28,7 @@
 #include "drmP.h"
 #include "drm.h"
 #include "drm_crtc.h"
+#include "drm_crtc_helper.h"
 #include "intel_drv.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
@@ -220,19 +221,24 @@ static bool intel_crt_set_property(struct drm_output *output,
 /*
  * Routines for controlling stuff on the analog port
  */
+
+static const struct drm_output_helper_funcs intel_crt_helper_funcs = {
+	.mode_fixup = intel_crt_mode_fixup,
+	.prepare = intel_output_prepare,
+	.commit = intel_output_commit,
+	.mode_set = intel_crt_mode_set,
+};
+
 static const struct drm_output_funcs intel_crt_output_funcs = {
 	.dpms = intel_crt_dpms,
 	.save = intel_crt_save,
 	.restore = intel_crt_restore,
-	.mode_valid = intel_crt_mode_valid,
-	.mode_fixup = intel_crt_mode_fixup,
-	.prepare = intel_output_prepare,
-	.mode_set = intel_crt_mode_set,
-	.commit = intel_output_commit,
 	.detect = intel_crt_detect,
 	.get_modes = intel_crt_get_modes,
 	.cleanup = intel_crt_destroy,
 	.set_property = intel_crt_set_property,
+	.mode_valid = intel_crt_mode_valid,
+
 };
 
 void intel_crt_init(struct drm_device *dev)
@@ -261,6 +267,7 @@ void intel_crt_init(struct drm_device *dev)
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;
 
+	drm_output_helper_add(output, &intel_crt_helper_funcs);
 	drm_sysfs_output_add(output);
 
 	drm_output_attach_property(output, dev->mode_config.connector_type_property, ConnectorVGA);

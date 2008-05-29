@@ -341,7 +341,7 @@ static int intelfb_set_par(struct fb_info *info)
 
 	return 0;
 #else
-	return drm_crtc_set_config(&par->set);
+	return par->set.crtc->funcs->set_config(&par->set);
 #endif
 }
 
@@ -496,11 +496,11 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 	struct intelfb_par *par = info->par;
 	int ret;
 	DRM_DEBUG("\n");
-
+	
 	par->set.x = var->xoffset;
 	par->set.y = var->yoffset;
 
-	ret = drm_crtc_set_config(&par->set);
+	ret = par->set.crtc->funcs->set_config(&par->set);
 
 	if (!ret) {
 		info->var.xoffset = var->xoffset;

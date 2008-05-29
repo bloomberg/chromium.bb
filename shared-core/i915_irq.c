@@ -31,6 +31,7 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 #include "intel_drv.h"
+#include "drm_crtc_helper.h"
 
 #define MAX_NOPID ((u32)~0)
 
@@ -471,8 +472,8 @@ static void i915_hotplug_tv(struct drm_device *dev)
 		goto unlock;
 
 	status = output->funcs->detect(output);
-	drm_hotplug_stage_two(dev, output,
-			      status == output_status_connected ? 1 : 0);
+	drm_helper_hotplug_stage_two(dev, output,
+				     status == output_status_connected ? 1 : 0);
 
 unlock:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -497,7 +498,7 @@ static void i915_hotplug_crt(struct drm_device *dev, bool isconnected)
 	if (iout == 0)
 		goto unlock;
 
-	drm_hotplug_stage_two(dev, output, isconnected);
+	drm_helper_hotplug_stage_two(dev, output, isconnected);
 
 unlock:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -518,9 +519,9 @@ static void i915_hotplug_sdvo(struct drm_device *dev, int sdvoB)
 	status = output->funcs->detect(output);
 
 	if (status != output_status_connected)
-		drm_hotplug_stage_two(dev, output, false);
+		drm_helper_hotplug_stage_two(dev, output, false);
 	else
-		drm_hotplug_stage_two(dev, output, true);
+		drm_helper_hotplug_stage_two(dev, output, true);
 
 	intel_sdvo_set_hotplug(output, 1);
 
