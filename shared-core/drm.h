@@ -1062,8 +1062,14 @@ struct drm_mode_get_encoder {
 	uint32_t clones;
 };
 
+#define DRM_MODE_ENCODER_NONE 0
+#define DRM_MODE_ENCODER_DAC  1
+#define DRM_MODE_ENCODER_TMDS 2
+#define DRM_MODE_ENCODER_LVDS 3
+#define DRM_MODE_ENCODER_TVDAC 4
+
 #define DRM_MODE_OUTPUT_NONE 0
-#define DRM_MODE_OUTPUT_DAC  1
+#define DRM_MODE_OUTPUT_VGA  1
 #define DRM_MODE_OUTPUT_TMDS 2
 #define DRM_MODE_OUTPUT_LVDS 3
 #define DRM_MODE_OUTPUT_TVDAC 4

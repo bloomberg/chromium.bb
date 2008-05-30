@@ -77,7 +77,7 @@ static struct drm_prop_enum_list drm_conn_enum_list[] =
 };
 static struct drm_prop_enum_list drm_output_enum_list[] =
 { { DRM_MODE_OUTPUT_NONE, "None" },
-  { DRM_MODE_OUTPUT_DAC, "DAC" },
+  { DRM_MODE_OUTPUT_VGA, "VGA" },
   { DRM_MODE_OUTPUT_TMDS, "TMDS" },
   { DRM_MODE_OUTPUT_LVDS, "LVDS" },
   { DRM_MODE_OUTPUT_TVDAC, "TV" },
@@ -541,11 +541,13 @@ EXPORT_SYMBOL(drm_output_cleanup);
 
 void drm_encoder_init(struct drm_device *dev,
 		      struct drm_encoder *encoder,
+		      const struct drm_encoder_funcs *funcs,
 		      int encoder_type)
 {
 	encoder->dev = dev;
 	encoder->id = drm_idr_get(dev, encoder);
 	encoder->encoder_type = encoder_type;
+	encoder->funcs = funcs;
 
 	mutex_lock(&dev->mode_config.mutex);
 	list_add_tail(&encoder->head, &dev->mode_config.encoder_list);
@@ -791,6 +793,10 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	struct drm_framebuffer *fb, *fbt;
 	struct drm_property *property, *pt;
 
+	list_for_each_entry_safe(encoder, enct, &dev->mode_config.encoder_list, head) {
+		encoder->funcs->destroy(encoder);
+	}
+
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
 		drm_sysfs_output_remove(output);
 		output->funcs->destroy(output);
@@ -806,10 +812,6 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 			drm_framebuffer_destroy(fb);
 		else
 			dev->driver->fb_remove(dev, fb);
-	}
-
-	list_for_each_entry_safe(encoder, enct, &dev->mode_config.encoder_list, head) {
-		encoder->funcs->destroy(encoder);
 	}
 
 	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {

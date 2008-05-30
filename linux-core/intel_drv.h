@@ -48,6 +48,8 @@ struct intel_i2c_chan {
 
 struct intel_output {
 	struct drm_output base;
+
+	struct drm_encoder enc;
 	int type;
 	struct intel_i2c_chan *i2c_bus; /* for control functions */
 	struct intel_i2c_chan *ddc_bus; /* for DDC only stuff */

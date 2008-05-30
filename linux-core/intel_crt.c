@@ -242,6 +242,15 @@ static const struct drm_output_funcs intel_crt_output_funcs = {
 
 };
 
+void intel_crt_enc_destroy(struct drm_encoder *encoder)
+{
+	drm_encoder_cleanup(encoder);
+}
+
+static const struct drm_encoder_funcs intel_crt_enc_funcs = {
+	.destroy = intel_crt_enc_destroy,
+};
+
 void intel_crt_init(struct drm_device *dev)
 {
 	struct drm_output *output;
@@ -252,7 +261,11 @@ void intel_crt_init(struct drm_device *dev)
 		return;
 
 	output = &intel_output->base;
-	drm_output_init(dev, &intel_output->base, &intel_crt_output_funcs, DRM_MODE_OUTPUT_DAC);
+	drm_output_init(dev, &intel_output->base, &intel_crt_output_funcs, DRM_MODE_OUTPUT_VGA);
+
+	drm_encoder_init(dev, &intel_output->enc, &intel_crt_enc_funcs, DRM_MODE_ENCODER_DAC);
+
+	drm_mode_output_attach_encoder(&intel_output->base, &intel_output->enc);
 
 	/* Set up the DDC bus. */
 	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
@@ -268,7 +281,6 @@ void intel_crt_init(struct drm_device *dev)
 	output->doublescan_allowed = 0;
 
 	drm_output_helper_add(output, &intel_crt_helper_funcs);
-	drm_sysfs_output_add(output);
 
-	drm_output_attach_property(output, dev->mode_config.connector_type_property, ConnectorVGA);
+	drm_sysfs_output_add(output);
 }

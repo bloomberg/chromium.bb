@@ -1059,14 +1059,14 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB0;
 		output->display_info.subpixel_order = SubPixelHorizontalRGB;
-		output_type = DRM_MODE_OUTPUT_DAC;
+		output_type = DRM_MODE_OUTPUT_VGA;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_RGB1)
 	{
 		sdvo_priv->active_outputs = SDVO_OUTPUT_RGB1;
 		output->display_info.subpixel_order = SubPixelHorizontalRGB;
-		output_type = DRM_MODE_OUTPUT_DAC;
+		output_type = DRM_MODE_OUTPUT_VGA;
 		connector_type = ConnectorVGA;
 	}
 	else if (sdvo_priv->caps.output_flags & SDVO_OUTPUT_TMDS0)

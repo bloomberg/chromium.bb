@@ -556,12 +556,19 @@ extern void drm_crtc_init(struct drm_device *dev,
 			  const struct drm_crtc_funcs *funcs);
 extern void drm_crtc_cleanup(struct drm_crtc *crtc);
 
-void drm_output_init(struct drm_device *dev,
-		     struct drm_output *output,
-		     const struct drm_output_funcs *funcs,
-		     int output_type);
+extern void drm_output_init(struct drm_device *dev,
+			    struct drm_output *output,
+			    const struct drm_output_funcs *funcs,
+			    int output_type);
 
-void drm_output_cleanup(struct drm_output *output);
+extern void drm_output_cleanup(struct drm_output *output);
+
+extern void drm_encoder_init(struct drm_device *dev,
+			     struct drm_encoder *encoder,
+			     const struct drm_encoder_funcs *funcs,
+			     int encoder_type);
+
+extern void drm_encoder_cleanup(struct drm_encoder *encoder);
 
 extern char *drm_get_output_name(struct drm_output *output);
 extern char *drm_get_dpms_name(int val);
