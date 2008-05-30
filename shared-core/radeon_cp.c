@@ -127,7 +127,7 @@ static void radeon_write_agp_base(drm_radeon_private_t *dev_priv, u64 agp_base)
 		R500_WRITE_MCIND(R520_MC_AGP_BASE, agp_base_lo);
 		R500_WRITE_MCIND(R520_MC_AGP_BASE_2, agp_base_hi);
 	} else {
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_base_lo);
+		RADEON_WRITE(RADEON_AGP_BASE, agp_base_lo);
 		if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R200)
 			RADEON_WRITE(RADEON_AGP_BASE_2, agp_base_hi);
 	}
