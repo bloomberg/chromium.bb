@@ -88,7 +88,7 @@ struct intel_dvo_device intel_dvo_devices[] = {
 static void intel_dvo_dpms(struct drm_output *output, int mode)
 {
 	struct drm_i915_private *dev_priv = output->dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 	u32 dvo_reg = dvo->dvo_reg;
 	u32 temp = I915_READ(dvo_reg);
@@ -107,7 +107,7 @@ static void intel_dvo_dpms(struct drm_output *output, int mode)
 static void intel_dvo_save(struct drm_output *output)
 {
 	struct drm_i915_private *dev_priv = output->dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	/* Each output should probably just save the registers it touches,
@@ -123,7 +123,7 @@ static void intel_dvo_save(struct drm_output *output)
 static void intel_dvo_restore(struct drm_output *output)
 {
 	struct drm_i915_private *dev_priv = output->dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	dvo->dev_ops->restore(dvo);
@@ -136,7 +136,7 @@ static void intel_dvo_restore(struct drm_output *output)
 static int intel_dvo_mode_valid(struct drm_output *output,
 				struct drm_display_mode *mode)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	if (mode->flags & V_DBLSCAN)
@@ -158,7 +158,7 @@ static bool intel_dvo_mode_fixup(struct drm_output *output,
 				 struct drm_display_mode *mode,
 				 struct drm_display_mode *adjusted_mode)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	/* If we have timings from the BIOS for the panel, put them in
@@ -193,8 +193,8 @@ static void intel_dvo_mode_set(struct drm_output *output,
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = output->crtc->driver_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(output->crtc);
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 	int pipe = intel_crtc->pipe;
 	u32 dvo_val;
@@ -249,7 +249,7 @@ static void intel_dvo_mode_set(struct drm_output *output,
  */
 static enum drm_output_status intel_dvo_detect(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	return dvo->dev_ops->detect(dvo);
@@ -257,7 +257,7 @@ static enum drm_output_status intel_dvo_detect(struct drm_output *output)
 
 static int intel_dvo_get_modes(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	/* We should probably have an i2c driver get_modes function for those
@@ -291,7 +291,7 @@ static int intel_dvo_get_modes(struct drm_output *output)
 
 static void intel_dvo_destroy (struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	if (dvo) {
@@ -302,14 +302,12 @@ static void intel_dvo_destroy (struct drm_output *output)
 		/* no need, in i830_dvoices[] now */
 		//kfree(dvo);
 	}
-	if (intel_output) {
-		if (intel_output->i2c_bus)
-			intel_i2c_destroy(intel_output->i2c_bus);
-		if (intel_output->ddc_bus)
-			intel_i2c_destroy(intel_output->ddc_bus);
-		kfree(intel_output);
-		output->driver_private = NULL;
-	}
+	if (intel_output->i2c_bus)
+		intel_i2c_destroy(intel_output->i2c_bus);
+	if (intel_output->ddc_bus)
+		intel_i2c_destroy(intel_output->ddc_bus);
+	drm_output_cleanup(output);
+	kfree(output);
 }
 
 #ifdef RANDR_GET_CRTC_INTERFACE
@@ -317,7 +315,7 @@ static struct drm_crtc *intel_dvo_get_crtc(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 	int pipe = !!(I915_READ(dvo->dvo_reg) & SDVO_PIPE_B_SELECT);
 
@@ -338,7 +336,7 @@ static const struct drm_output_funcs intel_dvo_output_funcs = {
 	.restore = intel_dvo_restore,
 	.detect = intel_dvo_detect,
 	.get_modes = intel_dvo_get_modes,
-	.cleanup = intel_dvo_destroy,
+	.destroy = intel_dvo_destroy,
 	.mode_valid = intel_dvo_mode_valid,
 };
 
@@ -353,7 +351,7 @@ intel_dvo_get_current_mode (struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 	uint32_t dvo_reg = dvo->dvo_reg;
 	uint32_t dvo_val = I915_READ(dvo_reg);
@@ -403,7 +401,7 @@ void intel_dvo_init(struct drm_device *dev)
 
 	/* Now, try to find a controller */
 	for (i = 0; i < ARRAY_SIZE(intel_dvo_devices); i++) {
-		struct drm_output *output = NULL;
+		struct drm_output *output = &intel_output->base;
 		int gpio;
 
 		dvo = &intel_dvo_devices[i];
@@ -445,22 +443,17 @@ void intel_dvo_init(struct drm_device *dev)
 		switch (dvo->type) {
 		case INTEL_DVO_CHIP_TMDS:
 			connector = ConnectorDVID;
-			output = drm_output_create(dev, &intel_dvo_output_funcs,
+			drm_output_init(dev, output, &intel_dvo_output_funcs,
 					DRM_MODE_OUTPUT_TMDS);
 			break;
 		case INTEL_DVO_CHIP_LVDS:
 			connector = ConnectorLVDS;
-			output = drm_output_create(dev, &intel_dvo_output_funcs,
+			drm_output_init(dev, output, &intel_dvo_output_funcs,
 					DRM_MODE_OUTPUT_LVDS);
 			break;
 		}
-		if (output == NULL) {
-			dvo->dev_ops->destroy(dvo);
-			goto free_i2c;
-		}
 
 		drm_output_helper_add(output, &intel_dvo_helper_funcs);
-		output->driver_private = intel_output;
 		output->display_info.subpixel_order = SubPixelHorizontalRGB;
 		output->interlace_allowed = false;
 		output->doublescan_allowed = false;
@@ -487,7 +480,6 @@ void intel_dvo_init(struct drm_device *dev)
 		return;
 	}
 
-free_i2c:
 	intel_i2c_destroy(intel_output->ddc_bus);
 	/* Didn't find a chip, so tear down. */
 	if (i2cbus != NULL)

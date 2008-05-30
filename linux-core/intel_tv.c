@@ -920,7 +920,7 @@ intel_tv_save(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
 	int i;
 
@@ -970,7 +970,7 @@ intel_tv_restore(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
 	struct drm_crtc *crtc = output->crtc;
 	struct intel_crtc *intel_crtc;
@@ -980,7 +980,7 @@ intel_tv_restore(struct drm_output *output)
 	if (!crtc)
 		return;
 
-	intel_crtc = crtc->driver_private;
+	intel_crtc = to_intel_crtc(crtc);
 	I915_WRITE(TV_H_CTL_1, tv_priv->save_TV_H_CTL_1);
 	I915_WRITE(TV_H_CTL_2, tv_priv->save_TV_H_CTL_2);
 	I915_WRITE(TV_H_CTL_3, tv_priv->save_TV_H_CTL_3);
@@ -1069,7 +1069,7 @@ intel_tv_mode_lookup (char *tv_format)
 static const struct tv_mode *
 intel_tv_mode_find (struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
 
 	return intel_tv_mode_lookup(tv_priv->tv_format);
@@ -1117,8 +1117,8 @@ intel_tv_mode_set(struct drm_output *output, struct drm_display_mode *mode,
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_crtc *crtc = output->crtc;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
 	const struct tv_mode *tv_mode = intel_tv_mode_find(output);
 	u32 tv_ctl;
@@ -1359,7 +1359,7 @@ intel_tv_detect_type (struct drm_crtc *crtc, struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	u32 pipeastat, pipeastat_save;
 	u32 tv_ctl, save_tv_ctl;
 	u32 tv_dac, save_tv_dac;
@@ -1440,7 +1440,7 @@ intel_tv_detect(struct drm_output *output)
 {
 	struct drm_crtc *crtc;
 	struct drm_display_mode mode;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
 	int dpms_mode;
 	int type = tv_priv->type;
@@ -1547,17 +1547,20 @@ intel_tv_get_modes(struct drm_output *output)
 static void
 intel_tv_destroy (struct drm_output *output)
 {
-	if (output->driver_private)
-		drm_free(output->driver_private, sizeof(struct intel_tv_priv),
-			 DRM_MEM_DRIVER);
+	struct intel_output *intel_output = to_intel_output(output);
+
+	drm_output_cleanup(output);
+	drm_free(intel_output, sizeof(struct intel_output) + sizeof(struct intel_tv_priv),
+		 DRM_MEM_DRIVER);
 }
+
 
 static bool
 intel_tv_set_property(struct drm_output *output, struct drm_property *property,
 		      uint64_t val)
 {
 	struct drm_device *dev = output->dev;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_tv_priv *tv_priv = intel_output->dev_priv;
 	int ret = 0;
 
@@ -1604,7 +1607,7 @@ static const struct drm_output_funcs intel_tv_output_funcs = {
 	.mode_valid = intel_tv_mode_valid,
 	.detect = intel_tv_detect,
 	.get_modes = intel_tv_get_modes,
-	.cleanup = intel_tv_destroy,
+	.destroy = intel_tv_destroy,
 	.set_property = intel_tv_set_property,
 };
 
@@ -1649,18 +1652,15 @@ intel_tv_init(struct drm_device *dev)
 	    (tv_dac_off & TVDAC_STATE_CHG_EN) != 0)
 		return;
 
-	output = drm_output_create(dev, &intel_tv_output_funcs,
-				   DRM_MODE_OUTPUT_TVDAC);
-
-	if (!output)
-		return;
-
 	intel_output = drm_calloc(1, sizeof(struct intel_output) +
 				  sizeof(struct intel_tv_priv), DRM_MEM_DRIVER);
 	if (!intel_output) {
-		drm_output_destroy(output);
 		return;
 	}
+	output = &intel_output->base;
+
+	drm_output_init(dev, output, &intel_tv_output_funcs,
+			DRM_MODE_OUTPUT_TVDAC);
 
 	tv_priv = (struct intel_tv_priv *)(intel_output + 1);
 	intel_output->type = INTEL_OUTPUT_TVOUT;
@@ -1678,7 +1678,6 @@ intel_tv_init(struct drm_device *dev)
 	tv_priv->tv_format = kstrdup(tv_modes[initial_mode].name, GFP_KERNEL);
     
 	drm_output_helper_add(output, &intel_tv_helper_funcs);
-	output->driver_private = intel_output;
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
 

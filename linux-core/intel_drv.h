@@ -47,6 +47,7 @@ struct intel_i2c_chan {
 };
 
 struct intel_output {
+	struct drm_output base;
 	int type;
 	struct intel_i2c_chan *i2c_bus; /* for control functions */
 	struct intel_i2c_chan *ddc_bus; /* for DDC only stuff */
@@ -55,12 +56,16 @@ struct intel_output {
 };
 
 struct intel_crtc {
+	struct drm_crtc base;
 	int pipe;
 	int plane;
 	uint32_t cursor_addr;
 	u8 lut_r[256], lut_g[256], lut_b[256];
 	int dpms_mode;
 };
+
+#define to_intel_crtc(x) container_of(x, struct intel_crtc, base)
+#define to_intel_output(x) container_of(x, struct intel_output, base)
 
 struct intel_i2c_chan *intel_i2c_create(struct drm_device *dev, const u32 reg,
 					const char *name);

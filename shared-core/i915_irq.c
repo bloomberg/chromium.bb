@@ -461,7 +461,7 @@ static void i915_hotplug_tv(struct drm_device *dev)
 
 	/* find the crt output */
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		iout = output->driver_private;
+		iout = to_intel_output(output);
 		if (iout->type == INTEL_OUTPUT_TVOUT)
 			break;
 		else
@@ -488,7 +488,7 @@ static void i915_hotplug_crt(struct drm_device *dev, bool isconnected)
 
 	/* find the crt output */
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		iout = output->driver_private;
+		iout = to_intel_output(output);
 		if (iout->type == INTEL_OUTPUT_ANALOG)
 			break;
 		else

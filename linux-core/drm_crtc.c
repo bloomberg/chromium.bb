@@ -232,27 +232,19 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 EXPORT_SYMBOL(drm_framebuffer_destroy);
 
 /**
- * drm_crtc_create - create a new CRTC object
+ * drm_crtc_init - Initialise a new CRTC object
  * @dev: DRM device
+ * @crtc: CRTC object to init
  * @funcs: callbacks for the new CRTC
  *
  * LOCKING:
  * Caller must hold mode config lock.
  *
- * Creates a new CRTC object and adds it to @dev's mode_config structure.
- *
- * RETURNS:
- * Pointer to new CRTC object or NULL on error.
+ * Inits a new object created as base part of an driver crtc object.
  */
-struct drm_crtc *drm_crtc_create(struct drm_device *dev,
-				 const struct drm_crtc_funcs *funcs)
+void drm_crtc_init(struct drm_device *dev, struct drm_crtc *crtc,
+		   const struct drm_crtc_funcs *funcs)
 {
-	struct drm_crtc *crtc;
-
-	crtc = kzalloc(sizeof(struct drm_crtc), GFP_KERNEL);
-	if (!crtc)
-		return NULL;
-
 	crtc->dev = dev;
 	crtc->funcs = funcs;
 
@@ -260,34 +252,28 @@ struct drm_crtc *drm_crtc_create(struct drm_device *dev,
 
 	list_add_tail(&crtc->head, &dev->mode_config.crtc_list);
 	dev->mode_config.num_crtc++;
-
-	return crtc;
 }
-EXPORT_SYMBOL(drm_crtc_create);
+EXPORT_SYMBOL(drm_crtc_init);
 
 /**
- * drm_crtc_destroy - remove a CRTC object
- * @crtc: CRTC to remove
+ * drm_crtc_cleanup - Cleans up the core crtc usage.
+ * @crtc: CRTC to cleanup
  *
  * LOCKING:
  * Caller must hold mode config lock.
  *
- * Cleanup @crtc.  Calls @crtc's cleanup function, then removes @crtc from
- * its associated DRM device's mode_config.  Frees it afterwards.
+ * Cleanup @crtc. Removes from drm modesetting space
+ * does NOT free object, caller does that.
  */
-void drm_crtc_destroy(struct drm_crtc *crtc)
+void drm_crtc_cleanup(struct drm_crtc *crtc)
 {
 	struct drm_device *dev = crtc->dev;
-
-	if (crtc->funcs->cleanup)
-		(*crtc->funcs->cleanup)(crtc);
 
 	drm_idr_put(dev, crtc->id);
 	list_del(&crtc->head);
 	dev->mode_config.num_crtc--;
-	kfree(crtc);
 }
-EXPORT_SYMBOL(drm_crtc_destroy);
+EXPORT_SYMBOL(drm_crtc_cleanup);
 
 /**
  * drm_crtc_in_use - check if a given CRTC is in a mode_config
@@ -481,30 +467,23 @@ void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode)
 EXPORT_SYMBOL(drm_mode_remove);
 
 /**
- * drm_output_create - create a new output
+ * drm_output_init - Init a preallocated output
  * @dev: DRM device
+ * @output: the output to init
  * @funcs: callbacks for this output
  * @name: user visible name of the output
  *
  * LOCKING:
  * Caller must hold @dev's mode_config lock.
  *
- * Creates a new drm_output structure and adds it to @dev's mode_config
- * structure.
- *
- * RETURNS:
- * Pointer to the new output or NULL on error.
+ * Initialises a preallocated output. Outputs should be
+ * subclassed as part of driver output objects.
  */
-struct drm_output *drm_output_create(struct drm_device *dev,
-				     const struct drm_output_funcs *funcs,
-				     int output_type)
+void drm_output_init(struct drm_device *dev,
+		     struct drm_output *output,
+		     const struct drm_output_funcs *funcs,
+		     int output_type)
 {
-	struct drm_output *output = NULL;
-
-	output = kzalloc(sizeof(struct drm_output), GFP_KERNEL);
-	if (!output)
-		return NULL;
-		
 	output->dev = dev;
 	output->funcs = funcs;
 	output->id = drm_idr_get(dev, output);
@@ -526,29 +505,22 @@ struct drm_output *drm_output_create(struct drm_device *dev,
 	drm_output_attach_property(output, dev->mode_config.dpms_property, 0);
 
 	mutex_unlock(&dev->mode_config.mutex);
-
-	return output;
-
 }
-EXPORT_SYMBOL(drm_output_create);
+EXPORT_SYMBOL(drm_output_init);
 
 /**
- * drm_output_destroy - remove an output
- * @output: output to remove
+ * drm_output_cleanup - cleans up an initialised output
+ * @output: output to cleanup
  *
  * LOCKING:
  * Caller must hold @dev's mode_config lock.
  *
- * Call @output's cleanup function, then remove the output from the DRM
- * mode_config after freeing @output's modes.
+ * Cleans up the output but doesn't free the object.
  */
-void drm_output_destroy(struct drm_output *output)
+void drm_output_cleanup(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_display_mode *mode, *t;
-
-	if (*output->funcs->cleanup)
-		(*output->funcs->cleanup)(output);
 
 	list_for_each_entry_safe(mode, t, &output->probed_modes, head)
 		drm_mode_remove(output, mode);
@@ -563,9 +535,8 @@ void drm_output_destroy(struct drm_output *output)
 	drm_idr_put(dev, output->id);
 	list_del(&output->head);
 	mutex_unlock(&dev->mode_config.mutex);
-	kfree(output);
 }
-EXPORT_SYMBOL(drm_output_destroy);
+EXPORT_SYMBOL(drm_output_cleanup);
 
 
 /**
@@ -793,7 +764,7 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 
 	list_for_each_entry_safe(output, ot, &dev->mode_config.output_list, head) {
 		drm_sysfs_output_remove(output);
-		drm_output_destroy(output);
+		output->funcs->destroy(output);
 	}
 
 	list_for_each_entry_safe(property, pt, &dev->mode_config.property_list, head) {
@@ -809,7 +780,7 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	}
 
 	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
-		drm_crtc_destroy(crtc);
+		crtc->funcs->destroy(crtc);
 	}
 
 }

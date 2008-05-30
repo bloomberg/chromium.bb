@@ -96,7 +96,7 @@ static void intel_crt_mode_set(struct drm_output *output,
 {
 	struct drm_device *dev = output->dev;
 	struct drm_crtc *crtc = output->crtc;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	int dpll_md_reg;
 	u32 adpa, dpll_md;
@@ -166,7 +166,7 @@ static bool intel_crt_detect_hotplug(struct drm_output *output)
 
 static bool intel_crt_detect_ddc(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 
 	/* CRT should always be at 0, but check anyway */
 	if (intel_output->type != INTEL_OUTPUT_ANALOG)
@@ -195,10 +195,11 @@ static enum drm_output_status intel_crt_detect(struct drm_output *output)
 
 static void intel_crt_destroy(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 
 	intel_i2c_destroy(intel_output->ddc_bus);
-	kfree(output->driver_private);
+	drm_output_cleanup(output);
+	kfree(output);
 }
 
 static int intel_crt_get_modes(struct drm_output *output)
@@ -235,7 +236,7 @@ static const struct drm_output_funcs intel_crt_output_funcs = {
 	.restore = intel_crt_restore,
 	.detect = intel_crt_detect,
 	.get_modes = intel_crt_get_modes,
-	.cleanup = intel_crt_destroy,
+	.destroy = intel_crt_destroy,
 	.set_property = intel_crt_set_property,
 	.mode_valid = intel_crt_mode_valid,
 
@@ -246,24 +247,23 @@ void intel_crt_init(struct drm_device *dev)
 	struct drm_output *output;
 	struct intel_output *intel_output;
 
-	output = drm_output_create(dev, &intel_crt_output_funcs,
-				   DRM_MODE_OUTPUT_DAC);
-
-	intel_output = kmalloc(sizeof(struct intel_output), GFP_KERNEL);
-	if (!intel_output) {
-		drm_output_destroy(output);
+	intel_output = kzalloc(sizeof(struct intel_output), GFP_KERNEL);
+	if (!intel_output)
 		return;
-	}
+
+	output = &intel_output->base;
+	drm_output_init(dev, &intel_output->base, &intel_crt_output_funcs, DRM_MODE_OUTPUT_DAC);
+
 	/* Set up the DDC bus. */
 	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
 	if (!intel_output->ddc_bus) {
 		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
 			   "failed.\n");
+		intel_crt_destroy(output);
 		return;
 	}
 
 	intel_output->type = INTEL_OUTPUT_ANALOG;
-	output->driver_private = intel_output;
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;
 

@@ -161,7 +161,7 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = output->crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(output->crtc);
 	struct drm_output *tmp_output;
 
 	/* Should never happen!! */
@@ -241,7 +241,7 @@ static void intel_lvds_mode_set(struct drm_output *output,
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = output->crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(output->crtc);
 	u32 pfit_control;
 
 	/*
@@ -326,10 +326,11 @@ static int intel_lvds_get_modes(struct drm_output *output)
  */
 static void intel_lvds_destroy(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 
 	intel_i2c_destroy(intel_output->ddc_bus);
-	kfree(output->driver_private);
+	drm_output_cleanup(output);
+	kfree(output);
 }
 
 static const struct drm_output_helper_funcs intel_lvds_helper_funcs = {
@@ -345,7 +346,7 @@ static const struct drm_output_funcs intel_lvds_output_funcs = {
 	.restore = intel_lvds_restore,
 	.detect = intel_lvds_detect,
 	.get_modes = intel_lvds_get_modes,
-	.cleanup = intel_lvds_destroy,
+	.destroy = intel_lvds_destroy,
 	.mode_valid = intel_lvds_mode_valid,
 };
 
@@ -359,27 +360,25 @@ static const struct drm_output_funcs intel_lvds_output_funcs = {
 void intel_lvds_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_output *output;
 	struct intel_output *intel_output;
+	struct drm_output *output;
 	struct drm_display_mode *scan; /* *modes, *bios_mode; */
 	struct drm_crtc *crtc;
 	u32 lvds;
 	int pipe;
 
-	output = drm_output_create(dev, &intel_lvds_output_funcs,
-				   DRM_MODE_OUTPUT_LVDS);
-	if (!output)
-		return;
-
 	intel_output = kmalloc(sizeof(struct intel_output), GFP_KERNEL);
 	if (!intel_output) {
-		drm_output_destroy(output);
 		return;
 	}
 
+	output = &intel_output->base;
+	drm_output_init(dev, &intel_output->base, &intel_lvds_output_funcs,
+			DRM_MODE_OUTPUT_LVDS);
+
 	intel_output->type = INTEL_OUTPUT_LVDS;
+
 	drm_output_helper_add(output, &intel_lvds_helper_funcs);
-	output->driver_private = intel_output;
 	output->display_info.subpixel_order = SubPixelHorizontalRGB;
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
@@ -400,6 +399,7 @@ void intel_lvds_init(struct drm_device *dev)
 	if (!intel_output->ddc_bus) {
 		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
 			   "failed.\n");
+		intel_lvds_destroy(output);
 		return;
 	}
 
@@ -487,5 +487,5 @@ out:
 
 failed:
         DRM_DEBUG("No LVDS modes found, disabling.\n");
-	drm_output_destroy(output); /* calls intel_lvds_destroy above */
+	intel_lvds_destroy(output);
 }

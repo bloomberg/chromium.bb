@@ -229,7 +229,7 @@ bool intel_pipe_has_type (struct drm_crtc *crtc, int type)
 
     list_for_each_entry(l_entry, &mode_config->output_list, head) {
 	    if (l_entry->crtc == crtc) {
-		    struct intel_output *intel_output = l_entry->driver_private;
+		    struct intel_output *intel_output = to_intel_output(l_entry);
 		    if (intel_output->type == type)
 			    return true;
 	    }
@@ -344,7 +344,7 @@ intel_set_vblank(struct drm_device *dev)
 	int vbl_pipe = 0;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		intel_crtc = crtc->driver_private;
+		intel_crtc = to_intel_crtc(crtc);
 
 		if (crtc->enabled)
 			vbl_pipe |= (1<<intel_crtc->pipe);
@@ -366,7 +366,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_master_private *master_priv;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int pipe = intel_crtc->pipe;
 	unsigned long Start, Offset;
 	int dspbase = (pipe == 0 ? DSPAADDR : DSPBADDR);
@@ -454,7 +454,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_master_private *master_priv;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int pipe = intel_crtc->pipe;
 	int dpll_reg = (pipe == 0) ? DPLL_A : DPLL_B;
 	int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
@@ -694,7 +694,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int pipe = intel_crtc->pipe;
 	int fp_reg = (pipe == 0) ? FPA0 : FPB0;
 	int dpll_reg = (pipe == 0) ? DPLL_A : DPLL_B;
@@ -719,7 +719,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	struct drm_output *output;
 
 	list_for_each_entry(output, &mode_config->output_list, head) {
-		struct intel_output *intel_output = output->driver_private;
+		struct intel_output *intel_output = to_intel_output(output);
 
 		if (output->crtc != crtc)
 			continue;
@@ -947,7 +947,7 @@ void intel_crtc_load_lut(struct drm_crtc *crtc)
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int palreg = (intel_crtc->pipe == 0) ? PALETTE_A : PALETTE_B;
 	int i;
 
@@ -969,7 +969,7 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int pipe = intel_crtc->pipe;
 	uint32_t control = (pipe == 0) ? CURACNTR : CURBCNTR;
 	uint32_t base = (pipe == 0) ? CURABASE : CURBBASE;
@@ -1027,7 +1027,7 @@ static int intel_crtc_cursor_move(struct drm_crtc *crtc, int x, int y)
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int pipe = intel_crtc->pipe;
 	uint32_t temp = 0;
 	uint32_t adder;
@@ -1055,8 +1055,8 @@ static int intel_crtc_cursor_move(struct drm_crtc *crtc, int x, int y)
 static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				 u16 blue, int regno)
 {
-	struct intel_crtc *intel_crtc = crtc->driver_private;
-	
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+
 	intel_crtc->lut_r[regno] = red >> 8;
 	intel_crtc->lut_g[regno] = green >> 8;
 	intel_crtc->lut_b[regno] = blue >> 8;
@@ -1087,7 +1087,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 					    int *dpms_mode)
 {
 	struct drm_device *dev = output->dev;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_crtc *intel_crtc;
 	struct drm_crtc *possible_crtc;
 	struct drm_crtc *supported_crtc =NULL;
@@ -1109,7 +1109,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 	if (output->crtc) {
 		crtc = output->crtc;
 		/* Make sure the crtc and output are running */
-		intel_crtc = crtc->driver_private;
+		intel_crtc = to_intel_crtc(crtc);
 		*dpms_mode = intel_crtc->dpms_mode;
 		if (intel_crtc->dpms_mode != DPMSModeOn) {
 			crtc->funcs->dpms(crtc, DPMSModeOn);
@@ -1144,7 +1144,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 	output->crtc = crtc;
 	intel_output->load_detect_temp = TRUE;
     
-	intel_crtc = crtc->driver_private;
+	intel_crtc = to_intel_crtc(crtc);
 	*dpms_mode = intel_crtc->dpms_mode;
 
 	if (!crtc->enabled) {
@@ -1169,7 +1169,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 void intel_release_load_detect_pipe(struct drm_output *output, int dpms_mode)
 {
 	struct drm_device *dev = output->dev;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct drm_crtc *crtc = output->crtc;
     
 	if (intel_output->load_detect_temp) {
@@ -1191,7 +1191,7 @@ void intel_release_load_detect_pipe(struct drm_output *output, int dpms_mode)
 static int intel_crtc_clock_get(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int pipe = intel_crtc->pipe;
 	u32 dpll = I915_READ((pipe == 0) ? DPLL_A : DPLL_B);
 	u32 fp;
@@ -1269,7 +1269,7 @@ struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
 					     struct drm_crtc *crtc)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	int pipe = intel_crtc->pipe;
 	struct drm_display_mode *mode;
 	int htot = I915_READ((pipe == 0) ? HTOTAL_A : HTOTAL_B);
@@ -1297,6 +1297,14 @@ struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
 	return mode;
 }
 
+static void intel_crtc_destroy(struct drm_crtc *crtc)
+{
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+
+	drm_crtc_cleanup(crtc);
+	kfree(intel_crtc);
+}
+
 static const struct drm_crtc_helper_funcs intel_helper_funcs = {
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
@@ -1311,24 +1319,20 @@ static const struct drm_crtc_funcs intel_crtc_funcs = {
 	.cursor_move = intel_crtc_cursor_move,
 	.gamma_set = intel_crtc_gamma_set,
 	.set_config = drm_crtc_helper_set_config,
+	.destroy = intel_crtc_destroy,
 };
 
 
 void intel_crtc_init(struct drm_device *dev, int pipe)
 {
-	struct drm_crtc *crtc;
 	struct intel_crtc *intel_crtc;
 	int i;
 
-	crtc = drm_crtc_create(dev, &intel_crtc_funcs);
-	if (crtc == NULL)
+	intel_crtc = kzalloc(sizeof(struct intel_crtc), GFP_KERNEL);
+	if (intel_crtc == NULL)
 		return;
 
-	intel_crtc = kzalloc(sizeof(struct intel_crtc), GFP_KERNEL);
-	if (intel_crtc == NULL) {
-		kfree(crtc);
-		return;
-	}
+	drm_crtc_init(dev, &intel_crtc->base, &intel_crtc_funcs);
 
 	intel_crtc->pipe = pipe;
 	for (i = 0; i < 256; i++) {
@@ -1339,9 +1343,7 @@ void intel_crtc_init(struct drm_device *dev, int pipe)
 
 	intel_crtc->cursor_addr = 0;
 	intel_crtc->dpms_mode = DPMSModeOff;
-	drm_crtc_helper_add(crtc, &intel_helper_funcs);
-
-	crtc->driver_private = intel_crtc;
+	drm_crtc_helper_add(&intel_crtc->base, &intel_helper_funcs);
 }
 
 struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe)
@@ -1349,7 +1351,7 @@ struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe)
 	struct drm_crtc *crtc = NULL;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		struct intel_crtc *intel_crtc = crtc->driver_private;
+		struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 		if (intel_crtc->pipe == pipe)
 			break;
 	}
@@ -1363,7 +1365,7 @@ int intel_output_clones(struct drm_device *dev, int type_mask)
 	int entry = 0;
 
         list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		struct intel_output *intel_output = output->driver_private;
+		struct intel_output *intel_output = to_intel_output(output);
 		if (type_mask & (1 << intel_output->type))
 			index_mask |= (1 << entry);
 		entry++;
@@ -1392,7 +1394,7 @@ static void intel_setup_outputs(struct drm_device *dev)
 		intel_tv_init(dev);
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		struct intel_output *intel_output = output->driver_private;
+		struct intel_output *intel_output = to_intel_output(output);
 		int crtc_mask = 0, clone_mask = 0;
 		
 		/* valid crtcs */

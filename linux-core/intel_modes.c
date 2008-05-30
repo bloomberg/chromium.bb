@@ -15,7 +15,7 @@
  */
 bool intel_ddc_probe(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	u8 out_buf[] = { 0x0, 0x0};
 	u8 buf[2];
 	int ret;
@@ -49,7 +49,7 @@ bool intel_ddc_probe(struct drm_output *output)
  */
 int intel_ddc_get_modes(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct edid *edid;
 	int ret = 0;
 

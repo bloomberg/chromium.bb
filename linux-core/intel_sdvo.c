@@ -64,7 +64,7 @@ void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv   *sdvo_priv = intel_output->dev_priv;
 	u32 bval = val, cval = val;
 	int i;
@@ -91,7 +91,7 @@ void intel_sdvo_write_sdvox(struct drm_output *output, u32 val)
 static bool intel_sdvo_read_byte(struct drm_output *output, u8 addr,
 				 u8 *ch)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u8 out_buf[2];
 	u8 buf[2];
@@ -129,7 +129,7 @@ static bool intel_sdvo_read_byte(struct drm_output *output, u8 addr,
 static bool intel_sdvo_write_byte(struct drm_output *output, int addr,
 				  u8 ch)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	u8 out_buf[2];
 	struct i2c_msg msgs[] = {
 		{ 
@@ -201,7 +201,7 @@ const static struct _sdvo_cmd_name {
 static void intel_sdvo_write_cmd(struct drm_output *output, u8 cmd,
 				 void *args, int args_len)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int i;
 
@@ -242,7 +242,7 @@ static const char *cmd_status_names[] = {
 static u8 intel_sdvo_read_response(struct drm_output *output, void *response,
 				   int response_len)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int i;
 	u8 status;
@@ -493,7 +493,7 @@ static bool intel_sdvo_set_output_timing(struct drm_output *output,
 static bool intel_sdvo_get_preferred_input_timing(struct drm_output *output,
 						  struct intel_sdvo_dtd *dtd)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u8 status;
 
@@ -563,8 +563,8 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_crtc *crtc = output->crtc;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u16 width, height;
 	u16 h_blank_len, h_sync_len, v_blank_len, v_sync_len;
@@ -693,7 +693,7 @@ static void intel_sdvo_dpms(struct drm_output *output, int mode)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u32 temp;
 
@@ -743,7 +743,7 @@ static void intel_sdvo_save(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int o;
 
@@ -780,7 +780,7 @@ static void intel_sdvo_restore(struct drm_output *output)
 {
 	struct drm_device *dev = output->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	int o;
 	int i;
@@ -828,7 +828,7 @@ static void intel_sdvo_restore(struct drm_output *output)
 static int intel_sdvo_mode_valid(struct drm_output *output,
 				 struct drm_display_mode *mode)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 
 	if (mode->flags & V_DBLSCAN)
@@ -863,7 +863,7 @@ struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB)
 
 	/* find the sdvo output */
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		iout = output->driver_private;
+		iout = to_intel_output(output);
 
 		if (iout->type != INTEL_OUTPUT_SDVO)
 			continue;
@@ -961,15 +961,13 @@ static int intel_sdvo_get_modes(struct drm_output *output)
 
 static void intel_sdvo_destroy(struct drm_output *output)
 {
-	struct intel_output *intel_output = output->driver_private;
+	struct intel_output *intel_output = to_intel_output(output);
 
 	if (intel_output->i2c_bus)
 		intel_i2c_destroy(intel_output->i2c_bus);
 
-	if (intel_output) {
-		kfree(intel_output);
-		output->driver_private = NULL;
-	}
+	drm_output_cleanup(output);
+	kfree(intel_output);
 }
 
 static const struct drm_output_helper_funcs intel_sdvo_helper_funcs = {
@@ -985,7 +983,7 @@ static const struct drm_output_funcs intel_sdvo_output_funcs = {
 	.restore = intel_sdvo_restore,
 	.detect = intel_sdvo_detect,
 	.get_modes = intel_sdvo_get_modes,
-	.cleanup = intel_sdvo_destroy,
+	.destroy = intel_sdvo_destroy,
 	.mode_valid = intel_sdvo_mode_valid,
 };
 
@@ -1000,21 +998,19 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	int i;
 	int output_type, output_id;
 
-	output = drm_output_create(dev, &intel_sdvo_output_funcs,
-				   DRM_MODE_OUTPUT_NONE);
-	if (!output)
-		return;
-
 	intel_output = kcalloc(sizeof(struct intel_output)+sizeof(struct intel_sdvo_priv), 1, GFP_KERNEL);
 	if (!intel_output) {
-		drm_output_destroy(output);
 		return;
 	}
+
+	output = &intel_output->base;
+
+	drm_output_init(dev, output, &intel_sdvo_output_funcs,
+			DRM_MODE_OUTPUT_NONE);
 
 	sdvo_priv = (struct intel_sdvo_priv *)(intel_output + 1);
 	intel_output->type = INTEL_OUTPUT_SDVO;
 	drm_output_helper_add(output, &intel_sdvo_helper_funcs);
-	output->driver_private = intel_output;
 	output->interlace_allowed = 0;
 	output->doublescan_allowed = 0;
 
@@ -1025,7 +1021,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		i2cbus = intel_i2c_create(dev, GPIOE, "SDVOCTRL_E for SDVOC");
 
 	if (i2cbus == NULL) {
-		drm_output_destroy(output);
+		intel_sdvo_destroy(output);
 		return;
 	}
 
@@ -1049,7 +1045,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		if (!intel_sdvo_read_byte(output, i, &ch[i])) {
 			DRM_DEBUG("No SDVO device found on SDVO%c\n",
 				  output_device == SDVOB ? 'B' : 'C');
-			drm_output_destroy(output);
+			intel_sdvo_destroy(output);
 			return;
 		}
 	}
@@ -1095,7 +1091,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		DRM_DEBUG("%s: No active RGB or TMDS outputs (0x%02x%02x)\n",
 			  SDVO_NAME(sdvo_priv),
 			  bytes[0], bytes[1]);
-		drm_output_destroy(output);
+		intel_sdvo_destroy(output);
 		return;
 	}
 	

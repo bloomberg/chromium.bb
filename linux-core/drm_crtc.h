@@ -291,7 +291,7 @@ struct drm_output;
  * @mode_fixup: fixup proposed mode
  * @mode_set: set the desired mode on the CRTC
  * @gamma_set: specify color ramp for CRTC
- * @cleanup: cleanup driver private state prior to close
+ * @destroy: deinit and free object.
  *
  * The drm_crtc_funcs structure is the central CRTC management structure
  * in the DRM.  Each CRTC controls one or more outputs (note that the name
@@ -322,8 +322,8 @@ struct drm_crtc_funcs {
 	/* Set gamma on the CRTC */
 	void (*gamma_set)(struct drm_crtc *crtc, u16 r, u16 g, u16 b,
 			  int regno);
-	/* Driver cleanup routine */
-	void (*cleanup)(struct drm_crtc *crtc);
+	/* Object destroy routine */
+	void (*destroy)(struct drm_crtc *crtc);
 
 	int (*set_config)(struct drm_mode_set *set);
 };
@@ -337,7 +337,6 @@ struct drm_crtc_funcs {
  * @desired_x: desired x for desired_mode
  * @desired_y: desired y for desired_mode
  * @funcs: CRTC control functions
- * @driver_private: arbitrary driver data
  *
  * Each CRTC may have one or more outputs associated with it.  This structure
  * allows the CRTC to be controlled.
@@ -359,14 +358,10 @@ struct drm_crtc {
 	struct drm_display_mode *desired_mode;
 	int desired_x, desired_y;
 	const struct drm_crtc_funcs *funcs;
-	void *driver_private;
 
 	/* if you are using the helper */
 	void *helper_private;
 };
-
-extern struct drm_crtc *drm_crtc_create(struct drm_device *dev,
-					const struct drm_crtc_funcs *funcs);
 
 /**
  * drm_output_funcs - control outputs on a given device
@@ -380,7 +375,7 @@ extern struct drm_crtc *drm_crtc_create(struct drm_device *dev,
  * @detect: is this output active?
  * @get_modes: get mode list for this output
  * @set_property: property for this output may need update
- * @cleanup: output is going away, cleanup
+ * @destroy: make object go away
  *
  * Each CRTC may have one or more outputs attached to it.  The functions
  * below allow the core DRM code to control outputs, enumerate available modes,
@@ -395,7 +390,7 @@ struct drm_output_funcs {
 	int (*get_modes)(struct drm_output *output);
 	bool (*set_property)(struct drm_output *output, struct drm_property *property,
 			     uint64_t val);
-	void (*cleanup)(struct drm_output *output);
+	void (*destroy)(struct drm_output *output);
   	int (*mode_valid)(struct drm_output *output,
 			  struct drm_display_mode *mode);
 
@@ -416,7 +411,6 @@ struct drm_output_funcs {
  * @initial_y: initial y position for this output
  * @status: output connected?
  * @funcs: output control functions
- * @driver_private: private driver data
  *
  * Each output may be connected to one or more CRTCs, or may be clonable by
  * another output if they can share a CRTC.  Each output also has a specific
@@ -447,7 +441,6 @@ struct drm_output {
 	
 	struct drm_display_info display_info;
   	const struct drm_output_funcs *funcs;
-	void *driver_private;
 
 	struct list_head user_modes;
 	struct drm_property_blob *edid_blob_ptr;
@@ -532,13 +525,21 @@ struct drm_mode_config {
 	uint32_t hotplug_counter;
 };
 
-struct drm_output *drm_output_create(struct drm_device *dev,
-				     const struct drm_output_funcs *funcs,
-				     int type);
+
+extern void drm_crtc_init(struct drm_device *dev,
+			  struct drm_crtc *crtc,
+			  const struct drm_crtc_funcs *funcs);
+extern void drm_crtc_cleanup(struct drm_crtc *crtc);
+
+void drm_output_init(struct drm_device *dev,
+		     struct drm_output *output,
+		     const struct drm_output_funcs *funcs,
+		     int output_type);
+
+void drm_output_cleanup(struct drm_output *output);
 
 extern char *drm_get_output_name(struct drm_output *output);
 extern char *drm_get_dpms_name(int val);
-extern void drm_output_destroy(struct drm_output *output);
 extern void drm_fb_release(struct file *filp);
 
 extern struct edid *drm_get_edid(struct drm_output *output,
