@@ -43,7 +43,7 @@ static int drm_hash_magic(drm_magic_t magic)
 /**
  * Returns the file private associated with the given magic number.
  */
-static drm_file_t *drm_find_file(drm_device_t *dev, drm_magic_t magic)
+static drm_file_t *drm_find_file(struct drm_device *dev, drm_magic_t magic)
 {
 	drm_magic_entry_t *pt;
 	int hash = drm_hash_magic(magic);
@@ -63,7 +63,8 @@ static drm_file_t *drm_find_file(drm_device_t *dev, drm_magic_t magic)
  * Inserts the given magic number into the hash table of used magic number
  * lists.
  */
-static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
+static int drm_add_magic(struct drm_device *dev, drm_file_t *priv,
+			 drm_magic_t magic)
 {
 	int		  hash;
 	drm_magic_entry_t *entry;
@@ -79,7 +80,6 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 	entry->priv  = priv;
 	entry->next  = NULL;
 
-	DRM_LOCK();
 	if (dev->magiclist[hash].tail) {
 		dev->magiclist[hash].tail->next = entry;
 		dev->magiclist[hash].tail	= entry;
@@ -87,7 +87,6 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 		dev->magiclist[hash].head	= entry;
 		dev->magiclist[hash].tail	= entry;
 	}
-	DRM_UNLOCK();
 
 	return 0;
 }
@@ -96,7 +95,7 @@ static int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
  * Removes the given magic number from the hash table of used magic number
  * lists.
  */
-static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
+static int drm_remove_magic(struct drm_device *dev, drm_magic_t magic)
 {
 	drm_magic_entry_t *prev = NULL;
 	drm_magic_entry_t *pt;
@@ -134,7 +133,7 @@ static int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
  * connection that the magic is passed over) to determine if the magic number
  * should be authenticated.
  */
-int drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_getmagic(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	static drm_magic_t sequence = 0;
 	drm_auth_t *auth = data;
@@ -165,7 +164,8 @@ int drm_getmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
 /**
  * Marks the client associated with the given magic number as authenticated.
  */
-int drm_authmagic(drm_device_t *dev, void *data, struct drm_file *file_priv)
+int drm_authmagic(struct drm_device *dev, void *data,
+		  struct drm_file *file_priv)
 {
 	drm_auth_t *auth = data;
 	drm_file_t *priv;

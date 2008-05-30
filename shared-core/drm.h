@@ -555,10 +555,9 @@ union drm_wait_vblank {
 	struct drm_wait_vblank_reply reply;
 };
 
-enum drm_modeset_ctl_cmd {
-	_DRM_PRE_MODESET = 1,
-	_DRM_POST_MODESET = 2,
-};
+
+#define _DRM_PRE_MODESET 1
+#define _DRM_POST_MODESET 2
 
 /**
  * DRM_IOCTL_MODESET_CTL ioctl argument type
@@ -566,8 +565,8 @@ enum drm_modeset_ctl_cmd {
  * \sa drmModesetCtl().
  */
 struct drm_modeset_ctl {
-	unsigned long arg;
-	enum drm_modeset_ctl_cmd cmd;
+	uint32_t crtc;
+	uint32_t cmd;
 };
 
 /**

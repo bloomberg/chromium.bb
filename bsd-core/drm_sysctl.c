@@ -52,7 +52,7 @@ struct drm_sysctl_info {
 	char		       name[2];
 };
 
-int drm_sysctl_init(drm_device_t *dev)
+int drm_sysctl_init(struct drm_device *dev)
 {
 	struct drm_sysctl_info *info;
 	struct sysctl_oid *oid;
@@ -106,7 +106,7 @@ int drm_sysctl_init(drm_device_t *dev)
 	return 0;
 }
 
-int drm_sysctl_cleanup(drm_device_t *dev)
+int drm_sysctl_cleanup(struct drm_device *dev)
 {
 	int error;
 	error = sysctl_ctx_free( &dev->sysctl->ctx );
@@ -127,7 +127,7 @@ do {								\
 
 static int drm_name_info DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t *dev = arg1;
+	struct drm_device *dev = arg1;
 	char buf[128];
 	int retcode;
 	int hasunique = 0;
@@ -152,7 +152,7 @@ done:
 
 static int drm_vm_info DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t *dev = arg1;
+	struct drm_device *dev = arg1;
 	drm_local_map_t *map, *tempmaps;
 	const char   *types[] = { "FB", "REG", "SHM", "AGP", "SG" };
 	const char *type, *yesno;
@@ -211,7 +211,7 @@ done:
 
 static int drm_bufs_info DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t	 *dev = arg1;
+	struct drm_device	 *dev = arg1;
 	drm_device_dma_t *dma = dev->dma;
 	drm_device_dma_t tempdma;
 	int *templists;
@@ -267,7 +267,7 @@ done:
 
 static int drm_clients_info DRM_SYSCTL_HANDLER_ARGS
 {
-	drm_device_t *dev = arg1;
+	struct drm_device *dev = arg1;
 	drm_file_t *priv, *tempprivs;
 	char buf[128];
 	int retcode;

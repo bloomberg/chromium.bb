@@ -243,6 +243,7 @@ static int nouveau_init_engine_ptrs(struct drm_device *dev)
 		break;
 	case 0x50:
 	case 0x80: /* gotta love NVIDIA's consistency.. */
+	case 0x90:
 		engine->instmem.init	= nv50_instmem_init;
 		engine->instmem.takedown= nv50_instmem_takedown;
 		engine->instmem.populate	= nv50_instmem_populate;
@@ -614,7 +615,7 @@ int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *
 		break;
 	case NOUVEAU_GETPARAM_PCI_PHYSICAL:
 		if ( dev -> sg )
-			getparam->value=(uint64_t) (uintptr_t) dev->sg->virtual;
+			getparam->value=(unsigned long)dev->sg->virtual;
 		else
 		     {
 		     DRM_ERROR("Requested PCIGART address, while no PCIGART was created\n");

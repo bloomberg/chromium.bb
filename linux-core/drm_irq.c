@@ -437,7 +437,7 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 	int crtc, ret = 0;
 	u32 new;
 
-	crtc = modeset->arg;
+	crtc = modeset->crtc;
 	if (crtc >= dev->num_crtcs) {
 		ret = -EINVAL;
 		goto out;

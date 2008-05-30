@@ -150,11 +150,11 @@ typedef struct drm_i915_private {
 	DRM_SPINTYPE swaps_lock;
 	drm_i915_vbl_swap_t vbl_swaps;
 	unsigned int swaps_pending;
-
+#if defined(I915_HAVE_BUFFER)
 	/* DRI2 sarea */
 	struct drm_buffer_object *sarea_bo;
 	struct drm_bo_kmap_obj sarea_kmap;
-
+#endif
 	/* Register state */
 	u8 saveLBB;
 	u32 saveDSPACNTR;
@@ -239,10 +239,10 @@ typedef struct drm_i915_private {
 	u8 saveSR[8];
 	u8 saveGR[25];
 	u8 saveAR_INDEX;
-	u8 saveAR[20];
+	u8 saveAR[21];
 	u8 saveDACMASK;
 	u8 saveDACDATA[256*3]; /* 256 3-byte colors */
-	u8 saveCR[36];
+	u8 saveCR[37];
 
 	struct {
 		struct drm_memrange gtt_space;
@@ -748,7 +748,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define HEAD_WRAP_ONE		0x00200000
 #define HEAD_ADDR		0x001FFFFC
 #define RING_START		0x08
-#define START_ADDR		0x0xFFFFF000
+#define START_ADDR		0xFFFFF000
 #define RING_LEN		0x0C
 #define RING_NR_PAGES		0x001FF000
 #define RING_REPORT_MASK	0x00000006
