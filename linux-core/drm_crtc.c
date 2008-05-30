@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2006-2007 Intel Corporation
  * Copyright (c) 2007 Dave Airlie <airlied@linux.ie>
+ * Copyright (c) 2008 Red Hat Inc.
  *
  * DRM core CRTC related functions
  *
