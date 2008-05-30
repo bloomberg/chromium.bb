@@ -784,6 +784,7 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 {
 	struct drm_output *output, *ot;
 	struct drm_crtc *crtc, *ct;
+	struct drm_encoder *encoder, *enct;
 	struct drm_framebuffer *fb, *fbt;
 	struct drm_property *property, *pt;
 
@@ -802,6 +803,10 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 			drm_framebuffer_destroy(fb);
 		else
 			dev->driver->fb_remove(dev, fb);
+	}
+
+	list_for_each_entry_safe(encoder, enct, &dev->mode_config.encoder_list, head) {
+		encoder->funcs->destroy(encoder);
 	}
 
 	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
@@ -911,14 +916,17 @@ int drm_mode_getresources(struct drm_device *dev,
 	struct drm_framebuffer *fb;
 	struct drm_output *output;
 	struct drm_crtc *crtc;
+	struct drm_encoder *encoder;
 	int ret = 0;
 	int output_count = 0;
 	int crtc_count = 0;
 	int fb_count = 0;
+	int encoder_count = 0;
 	int copied = 0;
 	uint32_t __user *fb_id;
 	uint32_t __user *crtc_id;
 	uint32_t __user *output_id;
+	uint32_t __user *encoder_id;
 
 	mutex_lock(&dev->mode_config.mutex);
 
@@ -930,6 +938,9 @@ int drm_mode_getresources(struct drm_device *dev,
 
 	list_for_each(lh, &dev->mode_config.output_list)
 		output_count++;
+
+	list_for_each(lh, &dev->mode_config.encoder_list)
+		encoder_count++;
 
 	card_res->max_height = dev->mode_config.max_height;
 	card_res->min_height = dev->mode_config.min_height;
@@ -982,9 +993,25 @@ int drm_mode_getresources(struct drm_device *dev,
 		}
 	}
 	card_res->count_outputs = output_count;
+
+	/* Encoders */
+	if (card_res->count_encoders >= encoder_count) {
+		copied = 0;
+		encoder_id = (uint32_t *)(unsigned long)card_res->encoder_id_ptr;
+		list_for_each_entry(encoder, &dev->mode_config.encoder_list,
+				    head) {
+ 			DRM_DEBUG("ENCODER ID is %d\n", encoder->id);
+			if (put_user(encoder->id, encoder_id + copied)) {
+				ret = -EFAULT;
+				goto out;
+			}
+			copied++;
+		}
+	}
+	card_res->count_encoders = encoder_count;
 	
-	DRM_DEBUG("Counted %d %d\n", card_res->count_crtcs,
-		  card_res->count_outputs);
+	DRM_DEBUG("Counted %d %d %d\n", card_res->count_crtcs,
+		  card_res->count_outputs, card_res->count_encoders);
 
 out:	
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1160,6 +1187,31 @@ int drm_mode_getoutput(struct drm_device *dev,
 	}
 	out_resp->count_props = props_count;
 
+out:
+	mutex_unlock(&dev->mode_config.mutex);
+	return ret;
+}
+
+int drm_mode_getencoder(struct drm_device *dev,
+			void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_get_encoder *enc_resp = data;
+	struct drm_encoder *encoder;
+	int ret = 0;
+	
+	mutex_lock(&dev->mode_config.mutex);
+	encoder = idr_find(&dev->mode_config.crtc_idr, enc_resp->encoder_id);
+	if (!encoder || (encoder->id != enc_resp->encoder_id)) {
+		DRM_DEBUG("Unknown encoder ID %d\n", enc_resp->encoder_id);
+		ret = -EINVAL;
+		goto out;
+	}
+
+	enc_resp->encoder_type = encoder->encoder_type;
+	enc_resp->encoder_id = encoder->id;
+	enc_resp->crtcs = encoder->possible_crtcs;
+	enc_resp->clones = encoder->possible_clones;
+	
 out:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;

@@ -366,7 +366,6 @@ struct drm_crtc {
 
 /**
  * drm_output_funcs - control outputs on a given device
- * @init: setup this output
  * @dpms: set power state (see drm_crtc_funcs above)
  * @save: save output state
  * @restore: restore output state
@@ -417,6 +416,7 @@ struct drm_encoder {
 	uint32_t possible_clones;
 
 	const struct drm_encoder_funcs *funcs;
+	void *helper_private;
 };
 
 /**
@@ -663,5 +663,7 @@ extern int drm_mode_hotplug_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
 extern int drm_mode_replacefb(struct drm_device *dev,
 			      void *data, struct drm_file *file_priv);
+int drm_mode_getencoder(struct drm_device *dev,
+			void *data, struct drm_file *file_priv);
 #endif /* __DRM_CRTC_H__ */
 

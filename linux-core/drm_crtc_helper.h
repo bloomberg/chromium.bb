@@ -47,6 +47,15 @@ struct drm_output_helper_funcs {
 			 struct drm_display_mode *adjusted_mode);
 };
 
+struct drm_encoder_helper_funcs {
+	void (*prepare)(struct drm_output *output);
+	void (*commit)(struct drm_output *output);
+	void (*mode_set)(struct drm_output *output,
+			 struct drm_display_mode *mode,
+			 struct drm_display_mode *adjusted_mode);
+};
+	
+
 extern int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
 					bool connected);
 extern bool drm_helper_initial_config(struct drm_device *dev, bool can_grow);
