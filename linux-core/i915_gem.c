@@ -945,7 +945,8 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 		i915_gem_clflush_object(obj);
 	}
 
-	obj->write_domain = write_domain;
+	if ((write_domain | flush_domains) != 0)
+		obj->write_domain = write_domain;
 	obj->read_domains = read_domains;
 	dev->invalidate_domains |= invalidate_domains;
 	dev->flush_domains |= flush_domains;
@@ -1225,7 +1226,8 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		iounmap(reloc_page);
 
 #if WATCH_BUF
-	i915_gem_dump_object(obj, 128, __func__, ~0);
+	if (0)
+		i915_gem_dump_object(obj, 128, __func__, ~0);
 #endif
 	return 0;
 }
