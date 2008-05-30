@@ -1104,6 +1104,7 @@ int drm_mode_getoutput(struct drm_device *dev,
 	struct drm_display_mode *mode;
 	int mode_count = 0;
 	int props_count = 0;
+	int encoders_count = 0;
 	int ret = 0;
 	int copied = 0;
 	int i;
@@ -1111,6 +1112,7 @@ int drm_mode_getoutput(struct drm_device *dev,
 	struct drm_mode_modeinfo __user *mode_ptr;
 	uint32_t __user *prop_ptr;
 	uint64_t __user *prop_values;
+	uint32_t __user *encoder_ptr;
 
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
@@ -1129,6 +1131,12 @@ int drm_mode_getoutput(struct drm_device *dev,
 	for (i = 0; i < DRM_OUTPUT_MAX_PROPERTY; i++) {
 		if (output->property_ids[i] != 0) {
 			props_count++;
+		}
+	}
+
+	for (i = 0; i < DRM_OUTPUT_MAX_ENCODER; i++) {
+		if (output->encoder_ids[i] != 0) {
+			encoders_count++;
 		}
 	}
 
@@ -1186,6 +1194,21 @@ int drm_mode_getoutput(struct drm_device *dev,
 		}
 	}
 	out_resp->count_props = props_count;
+
+	if ((out_resp->count_encoders >= encoders_count) && encoders_count) {
+		copied = 0;
+		encoder_ptr = (uint32_t *)(unsigned long)(out_resp->encoders_ptr);
+		for (i = 0; i < DRM_OUTPUT_MAX_ENCODER; i++) {
+			if (output->encoder_ids[i] != 0) {
+				if (put_user(output->encoder_ids[i], encoder_ptr + copied)) {
+					ret = -EFAULT;
+					goto out;
+				}
+				copied++;
+			}
+		}
+	}
+	out_resp->count_encoders = encoders_count;
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);

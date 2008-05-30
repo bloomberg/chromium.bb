@@ -402,6 +402,7 @@ struct drm_encoder_funcs {
 #define DRM_OUTPUT_MAX_UMODES 16
 #define DRM_OUTPUT_MAX_PROPERTY 16
 #define DRM_OUTPUT_LEN 32
+#define DRM_OUTPUT_MAX_ENCODER 2
 
 /**
  * drm_encoder - central DRM encoder structure 
@@ -468,6 +469,8 @@ struct drm_output {
 	uint64_t property_values[DRM_OUTPUT_MAX_PROPERTY];
 
 	void *helper_private;
+
+	u32 encoder_ids[DRM_OUTPUT_MAX_ENCODER];
 };
 
 /**
