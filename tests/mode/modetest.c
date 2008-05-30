@@ -52,6 +52,7 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 	int i = 0, j;
 	struct drm_mode_modeinfo *mode = NULL;
 	drmModePropertyPtr props;
+	drmModeEncoderPtr enc;
 	unsigned char *name = NULL;
 
 	printf("Output: %d-%d\n", output->output_type, output->output_type_id);
@@ -65,6 +66,14 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 	printf("\tclones       : %i\n", output->clones);
 	printf("\tcount_modes  : %i\n", output->count_modes);
 	printf("\tcount_props  : %i\n", output->count_props);
+	printf("\tcount_encs   : %i\n", output->count_encoders);
+
+	for (i = 0; i < output->count_encoders; i++) {
+		enc = drmModeGetEncoder(fd, output->encoders[i]);
+		if (enc) {
+			printf("Encoder: %d %d %d %d\n", enc->encoder_id, enc->encoder_type, enc->crtcs, enc->clones);
+		}
+	}
 
 	for (i = 0; i < output->count_props; i++) {
 		props = drmModeGetProperty(fd, output->props[i]);
@@ -121,6 +130,16 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 	return 0;
 }
 
+int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t id)
+{
+	printf("Encoder\n");
+	printf("\tid            :%i\n", id);
+	printf("\ttype          :%d\n", encoder->encoder_type);
+	printf("\tcrtcs          :%d\n", encoder->crtcs);
+	printf("\tclones          :%d\n", encoder->clones);
+	return 0;
+}
+
 int printCrtc(int fd, drmModeResPtr res, drmModeCrtcPtr crtc, uint32_t id)
 {
 	printf("Crtc\n");
@@ -158,6 +177,7 @@ int printRes(int fd, drmModeResPtr res)
 	drmModeOutputPtr output;
 	drmModeCrtcPtr crtc;
 	drmModeFBPtr fb;
+	drmModeEncoderPtr encoder;
 
 	for (i = 0; i < res->count_outputs; i++) {
 		output = drmModeGetOutput(fd, res->outputs[i]);
@@ -169,6 +189,18 @@ int printRes(int fd, drmModeResPtr res)
 			drmModeFreeOutput(output);
 		}
 	}
+
+	for (i = 0; i < res->count_encoders; i++) {
+		encoder = drmModeGetEncoder(fd, res->encoders[i]);
+
+		if (!encoder)
+			printf("Could not get encoder %i\n", i);
+		else {
+			printEncoder(fd, res, encoder, res->encoders[i]);
+			drmModeFreeEncoder(encoder);
+		}
+	}
+
 
 	for (i = 0; i < res->count_crtcs; i++) {
 		crtc = drmModeGetCrtc(fd, res->crtcs[i]);
