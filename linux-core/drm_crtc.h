@@ -277,6 +277,7 @@ struct drm_property {
 
 struct drm_crtc;
 struct drm_output;
+struct drm_encoder;
 
 /**
  * drm_crtc_funcs - control CRTCs for a given device
@@ -396,9 +397,29 @@ struct drm_output_funcs {
 
 };
 
+struct drm_encoder_funcs {
+	void (*destroy)(struct drm_encoder *encoder);
+};
+
 #define DRM_OUTPUT_MAX_UMODES 16
 #define DRM_OUTPUT_MAX_PROPERTY 16
 #define DRM_OUTPUT_LEN 32
+
+/**
+ * drm_encoder - central DRM encoder structure 
+ */
+struct drm_encoder {
+	struct drm_device *dev;
+	struct list_head head;
+
+	int id;
+	int encoder_type;
+	uint32_t possible_crtcs;
+	uint32_t possible_clones;
+
+	const struct drm_encoder_funcs *funcs;
+};
+
 /**
  * drm_output - central DRM output control structure
  * @crtc: CRTC this output is currently connected to, NULL if none
@@ -496,6 +517,8 @@ struct drm_mode_config {
 	struct list_head fb_list;
 	int num_output;
 	struct list_head output_list;
+	int num_encoder;
+	struct list_head encoder_list;
 
 	int num_crtc;
 	struct list_head crtc_list;

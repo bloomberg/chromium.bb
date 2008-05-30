@@ -538,6 +538,31 @@ void drm_output_cleanup(struct drm_output *output)
 }
 EXPORT_SYMBOL(drm_output_cleanup);
 
+void drm_encoder_init(struct drm_device *dev,
+		      struct drm_encoder *encoder,
+		      int encoder_type)
+{
+	encoder->dev = dev;
+	encoder->id = drm_idr_get(dev, encoder);
+	encoder->encoder_type = encoder_type;
+
+	mutex_lock(&dev->mode_config.mutex);
+	list_add_tail(&encoder->head, &dev->mode_config.encoder_list);
+	dev->mode_config.num_encoder++;
+
+	mutex_unlock(&dev->mode_config.mutex);
+}
+EXPORT_SYMBOL(drm_encoder_init);
+
+void drm_encoder_cleanup(struct drm_encoder *encoder)
+{
+	struct drm_device *dev = encoder->dev;
+	mutex_lock(&dev->mode_config.mutex);
+	drm_idr_put(dev, encoder->id);
+	list_del(&encoder->head);
+	mutex_unlock(&dev->mode_config.mutex);
+}
+EXPORT_SYMBOL(drm_encoder_cleanup);
 
 /**
  * drm_mode_create - create a new display mode
