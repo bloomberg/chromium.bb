@@ -629,6 +629,11 @@ extern int drm_property_add_enum(struct drm_property *property, int index,
 extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
 				     char *formats[]);
 
+extern int drm_mode_output_attach_encoder(struct drm_output *output,
+					  struct drm_encoder *encoder);
+extern void drm_mode_output_detach_encoder(struct drm_output *output,
+					   struct drm_encoder *encoder);
+
 /* IOCTLs */
 extern int drm_mode_getresources(struct drm_device *dev,
 				 void *data, struct drm_file *file_priv);

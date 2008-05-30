@@ -2202,3 +2202,31 @@ out:
 	return ret;
 
 }
+
+int drm_mode_output_attach_encoder(struct drm_output *output,
+				   struct drm_encoder *encoder)
+{
+	int i;
+
+	for (i = 0; i < DRM_OUTPUT_MAX_ENCODER; i++) {
+		if (output->encoder_ids[i] == 0) {
+			output->encoder_ids[i] = encoder->id;
+			return 0;
+		}
+	}
+	return -ENOMEM;
+}
+EXPORT_SYMBOL(drm_mode_output_attach_encoder);
+
+void drm_mode_output_detach_encoder(struct drm_output *output,
+				    struct drm_encoder *encoder)
+{
+	int i;
+	for (i = 0; i < DRM_OUTPUT_MAX_ENCODER; i++) {
+		if (output->encoder_ids[i] == encoder->id) {
+			output->encoder_ids[i] = 0;
+			break;
+		}
+	}
+}
+EXPORT_SYMBOL(drm_mode_output_detach_encoder);
