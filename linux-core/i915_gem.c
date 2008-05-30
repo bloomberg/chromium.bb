@@ -30,6 +30,7 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
+#define WATCH_COHERENCY	0
 #define WATCH_BUF	0
 #define WATCH_EXEC	0
 #define WATCH_LRU	0
@@ -982,6 +983,76 @@ i915_gem_dev_set_domain(struct drm_device *dev)
 	return flush_domains;
 }
 
+#if WATCH_COHERENCY
+static void
+i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle)
+{
+	struct drm_device *dev = obj->dev;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	int page;
+	uint32_t *gtt_mapping;
+	uint32_t *backing_map = NULL;
+	int bad_count = 0;
+
+	DRM_INFO("%s: checking coherency of object %p@0x%08x (%d, %dkb):\n",
+		 __FUNCTION__, obj, obj_priv->gtt_offset, handle,
+		 obj->size / 1024);
+
+	gtt_mapping = ioremap(dev->agp->base + obj_priv->gtt_offset,
+			      obj->size);
+	if (gtt_mapping == NULL) {
+		DRM_ERROR("failed to map GTT space\n");
+		return;
+	}
+
+	for (page = 0; page < obj->size / PAGE_SIZE; page++) {
+		int i;
+
+		backing_map = kmap_atomic(obj_priv->page_list[page], KM_USER0);
+
+		if (backing_map == NULL) {
+			DRM_ERROR("failed to map backing page\n");
+			goto out;
+		}
+
+		for (i = 0; i < PAGE_SIZE / 4; i++) {
+			uint32_t cpuval = backing_map[i];
+			uint32_t gttval = readl(gtt_mapping +
+						page * 1024 + i);
+
+			if (cpuval != gttval) {
+				DRM_INFO("incoherent CPU vs GPU at 0x%08x: "
+					 "0x%08x vs 0x%08x\n",
+					 (int)(obj_priv->gtt_offset +
+					       page * PAGE_SIZE + i * 4),
+					 cpuval, gttval);
+				if (bad_count++ >= 8) {
+					DRM_INFO("...\n");
+					goto out;
+				}
+			}
+		}
+		kunmap_atomic(backing_map, KM_USER0);
+		backing_map = NULL;
+	}
+
+ out:
+	if (backing_map != NULL)
+		kunmap_atomic(backing_map, KM_USER0);
+	iounmap(gtt_mapping);
+
+	/* give syslog time to catch up */
+	msleep(1);
+
+	/* Directly flush the object, since we just loaded values with the CPU
+	 * from thebacking pages and we don't want to disturb the cache
+	 * management that we're trying to observe.
+	 */
+
+	i915_gem_clflush_object(obj);
+}
+#endif
+
 static int
 i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 				   struct drm_file *file_priv,
@@ -1354,6 +1425,13 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	/* Flush/invalidate caches and chipset buffer */
 	flush_domains = i915_gem_dev_set_domain(dev);
+
+#if WATCH_COHERENCY
+	for (i = 0; i < args->buffer_count; i++) {
+		i915_gem_object_check_coherency(object_list[i],
+						validate_list[i].handle);
+	}
+#endif
 
 	exec_offset = validate_list[args->buffer_count - 1].offset;
 
