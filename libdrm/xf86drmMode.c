@@ -381,6 +381,8 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	out.count_props  = 0;
 	out.props_ptr    = 0;
 	out.prop_values_ptr = 0;
+	out.count_encoders  = 0;
+	out.encoders_ptr = 0;
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETOUTPUT, &out))
 		return 0;
@@ -392,6 +394,9 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 
 	if (out.count_modes)
 		out.modes_ptr = VOID2U64(drmMalloc(out.count_modes*sizeof(struct drm_mode_modeinfo)));
+
+	if (out.count_encoders)
+		out.encoders_ptr = VOID2U64(drmMalloc(out.count_encoders*sizeof(uint32_t)));
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETOUTPUT, &out))
 		goto err_allocs;
@@ -416,6 +421,8 @@ drmModeOutputPtr drmModeGetOutput(int fd, uint32_t output_id)
 	r->props        = drmAllocCpy(U642VOID(out.props_ptr), out.count_props, sizeof(uint32_t));
 	r->prop_values  = drmAllocCpy(U642VOID(out.prop_values_ptr), out.count_props, sizeof(uint64_t));
 	r->modes        = drmAllocCpy(U642VOID(out.modes_ptr), out.count_modes, sizeof(struct drm_mode_modeinfo));
+	r->count_encoders = out.count_encoders;
+	r->encoders     = drmAllocCpy(U642VOID(out.encoders_ptr), out.count_encoders, sizeof(uint32_t));
 	r->output_type  = out.output_type;
 	r->output_type_id = out.output_type_id;
 
@@ -423,6 +430,7 @@ err_allocs:
 	drmFree(U642VOID(out.prop_values_ptr));
 	drmFree(U642VOID(out.props_ptr));
 	drmFree(U642VOID(out.modes_ptr));
+	drmFree(U642VOID(out.encoders_ptr));
 
 	return r;
 }

@@ -154,6 +154,8 @@ typedef struct _drmModeOutput {
 	uint32_t *props; /**< List of property ids */
 	uint64_t *prop_values; /**< List of property values */
 
+	int count_encoders;
+	uint32_t *encoders; /**< List of encoder ids */
 } drmModeOutput, *drmModeOutputPtr;
 
 

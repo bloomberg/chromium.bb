@@ -1026,9 +1026,11 @@ struct drm_mode_card_res {
 	uint64_t fb_id_ptr;
 	uint64_t crtc_id_ptr;
 	uint64_t output_id_ptr;
+	uint64_t encoder_id_ptr;
 	int count_fbs;
 	int count_crtcs;
 	int count_outputs;
+	int count_encoders;
 	int min_width, max_width;
 	int min_height, max_height;
 };
@@ -1051,6 +1053,15 @@ struct drm_mode_crtc {
 	struct drm_mode_modeinfo mode;
 };
 
+struct drm_mode_get_encoder {
+
+	uint32_t encoder_type;
+	uint32_t encoder_id;
+
+	uint32_t crtcs;
+	uint32_t clones;
+};
+
 #define DRM_MODE_OUTPUT_NONE 0
 #define DRM_MODE_OUTPUT_DAC  1
 #define DRM_MODE_OUTPUT_TMDS 2
@@ -1059,12 +1070,15 @@ struct drm_mode_crtc {
 
 struct drm_mode_get_output {
 
+	uint64_t encoders_ptr;
 	uint64_t modes_ptr;
 	uint64_t props_ptr;
 	uint64_t prop_values_ptr;
 
 	int count_modes;
 	int count_props;
+	int count_encoders;
+
 	unsigned int output; /**< Id */
 	unsigned int crtc; /**< Id of crtc */
 	unsigned int output_type;
@@ -1277,6 +1291,7 @@ struct drm_mode_hotplug {
 #define DRM_IOCTL_WAIT_HOTPLUG		DRM_IOWR(0xAE, union drm_wait_hotplug)
 
 #define DRM_IOCTL_MODE_REPLACEFB       DRM_IOWR(0xAF, struct drm_mode_fb_cmd)
+#define DRM_IOCTL_MODE_GETENCODER      DRM_IOWR(0xB0, struct drm_mode_get_encoder)
 /*@}*/
 
 /**
