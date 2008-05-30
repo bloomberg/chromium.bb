@@ -139,6 +139,8 @@ drmModeResPtr drmModeGetResources(int fd)
 		res.crtc_id_ptr = VOID2U64(drmMalloc(res.count_crtcs*sizeof(uint32_t)));
 	if (res.count_outputs)
 		res.output_id_ptr = VOID2U64(drmMalloc(res.count_outputs*sizeof(uint32_t)));
+	if (res.count_encoders)
+		res.encoder_id_ptr = VOID2U64(drmMalloc(res.count_encoders*sizeof(uint32_t)));
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETRESOURCES, &res)) {
 		r = NULL;
@@ -164,11 +166,13 @@ drmModeResPtr drmModeGetResources(int fd)
 	r->fbs           = drmAllocCpy(U642VOID(res.fb_id_ptr), res.count_fbs, sizeof(uint32_t));
 	r->crtcs         = drmAllocCpy(U642VOID(res.crtc_id_ptr), res.count_crtcs, sizeof(uint32_t));
 	r->outputs       = drmAllocCpy(U642VOID(res.output_id_ptr), res.count_outputs, sizeof(uint32_t));
+	r->encoders      = drmAllocCpy(U642VOID(res.encoder_id_ptr), res.count_encoders, sizeof(uint32_t));
 
 err_allocs:
 	drmFree(U642VOID(res.fb_id_ptr));
 	drmFree(U642VOID(res.crtc_id_ptr));
 	drmFree(U642VOID(res.output_id_ptr));
+	drmFree(U642VOID(res.encoder_id_ptr));
 
 	return r;
 }
@@ -331,6 +335,29 @@ int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
 	arg.y = y;
 
 	return ioctl(fd, DRM_IOCTL_MODE_CURSOR, &arg);
+}
+
+/*
+ * Encoder get 
+ */
+drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
+{
+	struct drm_mode_get_encoder enc;
+	drmModeEncoderPtr r = NULL;
+
+	enc.encoder_id = encoder_id;
+	enc.encoder_type = 0;
+	enc.crtcs = 0;
+	enc.clones = 0;
+
+	if (ioctl(fd, DRM_IOCTL_MODE_GETENCODER, &enc))
+		return 0;
+
+	r->encoder_type = enc.encoder_type;
+	r->crtcs = enc.crtcs;
+	r->clones = enc.clones;
+
+	return r;
 }
 
 /*

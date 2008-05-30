@@ -63,6 +63,9 @@ typedef struct _drmModeRes {
 	int count_outputs;
 	uint32_t *outputs;
 
+	int count_encoders;
+	uint32_t *encoders;
+
 	uint32_t min_width, max_width;
 	uint32_t min_height, max_height;
 } drmModeRes, *drmModeResPtr;
@@ -105,6 +108,13 @@ typedef struct _drmModeCrtc {
 	int gamma_size; /**< Number of gamma stops */
 
 } drmModeCrtc, *drmModeCrtcPtr;
+
+typedef struct _drmModeEncoder {
+	unsigned int encoder_id;
+	unsigned int encoder_type;
+	uint32_t crtcs;
+	uint32_t clones;
+} drmModeEncoder, *drmModeEncoderPtr;
 
 typedef enum {
 	DRM_MODE_CONNECTED         = 1,
@@ -220,6 +230,11 @@ int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width
  * Move the cursor on crtc
  */
 int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y);
+
+/**
+ * Encoder functions
+ */
+drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id);
 
 /*
  * Output manipulation
