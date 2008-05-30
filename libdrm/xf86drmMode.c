@@ -167,6 +167,7 @@ drmModeResPtr drmModeGetResources(int fd)
 	r->count_fbs     = res.count_fbs;
 	r->count_crtcs   = res.count_crtcs;
 	r->count_outputs = res.count_outputs;
+	r->count_encoders = res.count_encoders;
 	/* TODO we realy should test if these allocs fails. */
 	r->fbs           = drmAllocCpy(U642VOID(res.fb_id_ptr), res.count_fbs, sizeof(uint32_t));
 	r->crtcs         = drmAllocCpy(U642VOID(res.crtc_id_ptr), res.count_crtcs, sizeof(uint32_t));
@@ -356,6 +357,9 @@ drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
 	enc.clones = 0;
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETENCODER, &enc))
+		return 0;
+
+	if (!(r = drmMalloc(sizeof(*r))))
 		return 0;
 
 	r->encoder_type = enc.encoder_type;
