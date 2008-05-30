@@ -186,28 +186,32 @@ static bool ivch_read(struct intel_dvo_device *dvo, int addr, uint16_t *data)
 {
 	struct ivch_priv *priv = dvo->dev_priv;
 	struct intel_i2c_chan *i2cbus = dvo->i2c_bus;
-	u8 out_buf[2];
+	u8 out_buf[1];
 	u8 in_buf[2];
 
 	struct i2c_msg msgs[] = {
 		{
 			.addr = i2cbus->slave_addr,
-			.flags = 0,
+			.flags = I2C_M_RD,
+			.len = 0,
+		},
+		{
+			.addr = 0,
+			.flags = I2C_M_NOSTART,
 			.len = 1,
 			.buf = out_buf,
 		},
 		{
 			.addr = i2cbus->slave_addr,
-			.flags = I2C_M_RD,
+			.flags = I2C_M_RD | I2C_M_NOSTART,
 			.len = 2,
 			.buf = in_buf,
 		}
 	};
 
 	out_buf[0] = addr;
-	out_buf[1] = 0;
 
-	if (i2c_transfer(&i2cbus->adapter, msgs, 2) == 2) {
+	if (i2c_transfer(&i2cbus->adapter, msgs, 3) == 3) {
 		*data = (in_buf[1] << 8) | in_buf[0];
 		return true;
 	};
