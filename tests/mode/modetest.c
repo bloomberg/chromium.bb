@@ -60,10 +60,6 @@ int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uin
 	printf("\tcrtc id      : %i\n", connector->crtc);
 	printf("\tconn         : %s\n", getConnectionText(connector->connection));
 	printf("\tsize         : %ix%i (mm)\n", connector->mmWidth, connector->mmHeight);
-	printf("\tcount_crtcs  : %i\n", connector->count_crtcs);
-	printf("\tcrtcs        : %i\n", connector->crtcs);
-	printf("\tcount_clones : %i\n", connector->count_clones);
-	printf("\tclones       : %i\n", connector->clones);
 	printf("\tcount_modes  : %i\n", connector->count_modes);
 	printf("\tcount_props  : %i\n", connector->count_props);
 	printf("\tcount_encs   : %i\n", connector->count_encoders);
