@@ -708,6 +708,7 @@ void drm_mode_config_init(struct drm_device *dev)
 	INIT_LIST_HEAD(&dev->mode_config.fb_list);
 	INIT_LIST_HEAD(&dev->mode_config.crtc_list);
 	INIT_LIST_HEAD(&dev->mode_config.output_list);
+	INIT_LIST_HEAD(&dev->mode_config.encoder_list);
 	INIT_LIST_HEAD(&dev->mode_config.property_list);
 	INIT_LIST_HEAD(&dev->mode_config.property_blob_list);
 	idr_init(&dev->mode_config.crtc_idr);
@@ -718,6 +719,7 @@ void drm_mode_config_init(struct drm_device *dev)
 	dev->mode_config.num_fb = 0;
 	dev->mode_config.num_output = 0;
 	dev->mode_config.num_crtc = 0;
+	dev->mode_config.num_encoder = 0;
 	dev->mode_config.hotplug_counter = 0;
 }
 EXPORT_SYMBOL(drm_mode_config_init);
