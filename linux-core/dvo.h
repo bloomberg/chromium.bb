@@ -126,7 +126,7 @@ struct intel_dvo_dev_ops {
 	/*
 	 * Probe for a connected output, and return detect_status.
 	 */
-	enum drm_output_status (*detect)(struct intel_dvo_device *dvo);
+	enum drm_connector_status (*detect)(struct intel_dvo_device *dvo);
 
 	/**
 	 * Query the device for the modes it provides.

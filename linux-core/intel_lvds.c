@@ -89,9 +89,9 @@ static void intel_lvds_set_power(struct drm_device *dev, bool on)
 	}
 }
 
-static void intel_lvds_dpms(struct drm_output *output, int mode)
+static void intel_lvds_dpms(struct drm_connector *connector, int mode)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 
 	if (mode == DPMSModeOn)
 		intel_lvds_set_power(dev, true);
@@ -101,9 +101,9 @@ static void intel_lvds_dpms(struct drm_output *output, int mode)
 	/* XXX: We never power down the LVDS pairs. */
 }
 
-static void intel_lvds_save(struct drm_output *output)
+static void intel_lvds_save(struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	dev_priv->savePP_ON = I915_READ(PP_ON_DELAYS);
@@ -122,9 +122,9 @@ static void intel_lvds_save(struct drm_output *output)
 			intel_lvds_get_max_backlight(dev);
 }
 
-static void intel_lvds_restore(struct drm_output *output)
+static void intel_lvds_restore(struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	I915_WRITE(BLC_PWM_CTL, dev_priv->saveBLC_PWM_CTL);
@@ -138,10 +138,10 @@ static void intel_lvds_restore(struct drm_output *output)
 		intel_lvds_set_power(dev, false);
 }
 
-static int intel_lvds_mode_valid(struct drm_output *output,
+static int intel_lvds_mode_valid(struct drm_connector *connector,
 				 struct drm_display_mode *mode)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_display_mode *fixed_mode = dev_priv->panel_fixed_mode;
 
@@ -155,14 +155,14 @@ static int intel_lvds_mode_valid(struct drm_output *output,
 	return MODE_OK;
 }
 
-static bool intel_lvds_mode_fixup(struct drm_output *output,
+static bool intel_lvds_mode_fixup(struct drm_connector *connector,
 				  struct drm_display_mode *mode,
 				  struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = to_intel_crtc(output->crtc);
-	struct drm_output *tmp_output;
+	struct intel_crtc *intel_crtc = to_intel_crtc(connector->crtc);
+	struct drm_connector *tmp_connector;
 
 	/* Should never happen!! */
 	if (!IS_I965G(dev) && intel_crtc->pipe == 0) {
@@ -171,10 +171,10 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	}
 
 	/* Should never happen!! */
-	list_for_each_entry(tmp_output, &dev->mode_config.output_list, head) {
-		if (tmp_output != output && tmp_output->crtc == output->crtc) {
+	list_for_each_entry(tmp_connector, &dev->mode_config.connector_list, head) {
+		if (tmp_connector != connector && tmp_connector->crtc == connector->crtc) {
 			printk(KERN_ERR "Can't enable LVDS and another "
-			       "output on the same pipe\n");
+			       "connector on the same pipe\n");
 			return false;
 		}
 	}
@@ -211,9 +211,9 @@ static bool intel_lvds_mode_fixup(struct drm_output *output,
 	return true;
 }
 
-static void intel_lvds_prepare(struct drm_output *output)
+static void intel_lvds_prepare(struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
@@ -223,9 +223,9 @@ static void intel_lvds_prepare(struct drm_output *output)
 	intel_lvds_set_power(dev, false);
 }
 
-static void intel_lvds_commit( struct drm_output *output)
+static void intel_lvds_commit( struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	if (dev_priv->backlight_duty_cycle == 0)
@@ -235,13 +235,13 @@ static void intel_lvds_commit( struct drm_output *output)
 	intel_lvds_set_power(dev, true);
 }
 
-static void intel_lvds_mode_set(struct drm_output *output,
+static void intel_lvds_mode_set(struct drm_connector *connector,
 				struct drm_display_mode *mode,
 				struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = to_intel_crtc(output->crtc);
+	struct intel_crtc *intel_crtc = to_intel_crtc(connector->crtc);
 	u32 pfit_control;
 
 	/*
@@ -276,24 +276,25 @@ static void intel_lvds_mode_set(struct drm_output *output,
 /**
  * Detect the LVDS connection.
  *
- * This always returns OUTPUT_STATUS_CONNECTED.  This output should only have
+ * This always returns CONNECTOR_STATUS_CONNECTED.  This connector should only have
  * been set up if the LVDS was actually connected anyway.
  */
-static enum drm_output_status intel_lvds_detect(struct drm_output *output)
+static enum drm_connector_status intel_lvds_detect(struct drm_connector *connector)
 {
-	return output_status_connected;
+	return connector_status_connected;
 }
 
 /**
  * Return the list of DDC modes if available, or the BIOS fixed mode otherwise.
  */
-static int intel_lvds_get_modes(struct drm_output *output)
+static int intel_lvds_get_modes(struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
+	struct intel_output *intel_output = to_intel_output(connector);
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	int ret = 0;
 
-	ret = intel_ddc_get_modes(output);
+	ret = intel_ddc_get_modes(intel_output);
 
 	if (ret)
 		return ret;
@@ -302,15 +303,15 @@ static int intel_lvds_get_modes(struct drm_output *output)
 	 * Set wide sync ranges so we get all modes
 	 * handed to valid_mode for checking
 	 */
-	output->display_info.min_vfreq = 0;
-	output->display_info.max_vfreq = 200;
-	output->display_info.min_hfreq = 0;
-	output->display_info.max_hfreq = 200;
+	connector->display_info.min_vfreq = 0;
+	connector->display_info.max_vfreq = 200;
+	connector->display_info.min_hfreq = 0;
+	connector->display_info.max_hfreq = 200;
 
 	if (dev_priv->panel_fixed_mode != NULL) {
 		struct drm_display_mode *mode =
 			drm_mode_duplicate(dev, dev_priv->panel_fixed_mode);
-		drm_mode_probed_add(output, mode);
+		drm_mode_probed_add(connector, mode);
 		return 1;
 	}
 
@@ -319,28 +320,28 @@ static int intel_lvds_get_modes(struct drm_output *output)
 
 /**
  * intel_lvds_destroy - unregister and free LVDS structures
- * @output: output to free
+ * @connector: connector to free
  *
- * Unregister the DDC bus for this output then free the driver private
+ * Unregister the DDC bus for this connector then free the driver private
  * structure.
  */
-static void intel_lvds_destroy(struct drm_output *output)
+static void intel_lvds_destroy(struct drm_connector *connector)
 {
-	struct intel_output *intel_output = to_intel_output(output);
+	struct intel_output *intel_output = to_intel_output(connector);
 
 	intel_i2c_destroy(intel_output->ddc_bus);
-	drm_output_cleanup(output);
-	kfree(output);
+	drm_connector_cleanup(connector);
+	kfree(connector);
 }
 
-static const struct drm_output_helper_funcs intel_lvds_helper_funcs = {
+static const struct drm_connector_helper_funcs intel_lvds_helper_funcs = {
 	.mode_fixup = intel_lvds_mode_fixup,
 	.prepare = intel_lvds_prepare,
 	.mode_set = intel_lvds_mode_set,
 	.commit = intel_lvds_commit,
 };
 
-static const struct drm_output_funcs intel_lvds_output_funcs = {
+static const struct drm_connector_funcs intel_lvds_connector_funcs = {
 	.dpms = intel_lvds_dpms,
 	.save = intel_lvds_save,
 	.restore = intel_lvds_restore,
@@ -350,18 +351,28 @@ static const struct drm_output_funcs intel_lvds_output_funcs = {
 	.mode_valid = intel_lvds_mode_valid,
 };
 
+
+static void intel_lvds_enc_destroy(struct drm_encoder *encoder)
+{
+	drm_encoder_cleanup(encoder);
+}
+
+static const struct drm_encoder_funcs intel_lvds_enc_funcs = {
+	.destroy = intel_lvds_enc_destroy,
+};
+
 /**
- * intel_lvds_init - setup LVDS outputs on this device
+ * intel_lvds_init - setup LVDS connectors on this device
  * @dev: drm device
  *
- * Create the output, register the LVDS DDC bus, and try to figure out what
+ * Create the connector, register the LVDS DDC bus, and try to figure out what
  * modes we can display on the LVDS panel (if present).
  */
 void intel_lvds_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_output *intel_output;
-	struct drm_output *output;
+	struct drm_connector *connector;
 	struct drm_display_mode *scan; /* *modes, *bios_mode; */
 	struct drm_crtc *crtc;
 	u32 lvds;
@@ -372,16 +383,19 @@ void intel_lvds_init(struct drm_device *dev)
 		return;
 	}
 
-	output = &intel_output->base;
-	drm_output_init(dev, &intel_output->base, &intel_lvds_output_funcs,
-			DRM_MODE_OUTPUT_LVDS);
+	connector = &intel_output->base;
+	drm_connector_init(dev, &intel_output->base, &intel_lvds_connector_funcs,
+			   DRM_MODE_CONNECTOR_LVDS);
+
+	drm_encoder_init(dev, &intel_output->enc, &intel_lvds_enc_funcs,
+			 DRM_MODE_ENCODER_LVDS);
 
 	intel_output->type = INTEL_OUTPUT_LVDS;
 
-	drm_output_helper_add(output, &intel_lvds_helper_funcs);
-	output->display_info.subpixel_order = SubPixelHorizontalRGB;
-	output->interlace_allowed = FALSE;
-	output->doublescan_allowed = FALSE;
+	drm_connector_helper_add(connector, &intel_lvds_helper_funcs);
+	connector->display_info.subpixel_order = SubPixelHorizontalRGB;
+	connector->interlace_allowed = FALSE;
+	connector->doublescan_allowed = FALSE;
 
 
 	/*
@@ -399,7 +413,7 @@ void intel_lvds_init(struct drm_device *dev)
 	if (!intel_output->ddc_bus) {
 		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
 			   "failed.\n");
-		intel_lvds_destroy(output);
+		intel_lvds_destroy(connector);
 		return;
 	}
 
@@ -407,9 +421,9 @@ void intel_lvds_init(struct drm_device *dev)
 	 * Attempt to get the fixed panel mode from DDC.  Assume that the
 	 * preferred mode is the right one.
 	 */
-	intel_ddc_get_modes(output);
+	intel_ddc_get_modes(intel_output);
 
-	list_for_each_entry(scan, &output->probed_modes, head) {
+	list_for_each_entry(scan, &connector->probed_modes, head) {
 		if (scan->type & DRM_MODE_TYPE_PREFERRED) {
 			dev_priv->panel_fixed_mode = 
 				drm_mode_duplicate(dev, scan);
@@ -481,11 +495,10 @@ void intel_lvds_init(struct drm_device *dev)
 #endif
 
 out:
-	drm_sysfs_output_add(output);
-	drm_output_attach_property(output, dev->mode_config.connector_type_property, ConnectorLVDS);
+	drm_sysfs_connector_add(connector);
 	return;
 
 failed:
         DRM_DEBUG("No LVDS modes found, disabling.\n");
-	intel_lvds_destroy(output);
+	intel_lvds_destroy(connector);
 }

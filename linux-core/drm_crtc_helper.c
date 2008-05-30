@@ -36,7 +36,7 @@
 
 
 /**
- * drm_pick_crtcs - pick crtcs for output devices
+ * drm_pick_crtcs - pick crtcs for connector devices
  * @dev: DRM device
  *
  * LOCKING:
@@ -45,36 +45,36 @@
 static void drm_pick_crtcs (struct drm_device *dev)
 {
 	int c, o, assigned;
-	struct drm_output *output, *output_equal;
+	struct drm_connector *connector, *connector_equal;
 	struct drm_crtc   *crtc;
 	struct drm_display_mode *des_mode = NULL, *modes, *modes_equal;
 	int found;
 
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-       		output->crtc = NULL;
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+       		connector->crtc = NULL;
     
-    		/* Don't hook up outputs that are disconnected ??
+    		/* Don't hook up connectors that are disconnected ??
 		 *
 		 * This is debateable. Do we want fixed /dev/fbX or
 		 * dynamic on hotplug (need mode code for that though) ?
 		 *
-		 * If we don't hook up outputs now, then we only create
-		 * /dev/fbX for the output that's enabled, that's good as
-		 * the users console will be on that output.
+		 * If we don't hook up connectors now, then we only create
+		 * /dev/fbX for the connector that's enabled, that's good as
+		 * the users console will be on that connector.
 		 *
-		 * If we do hook up outputs that are disconnected now, then
+		 * If we do hook up connectors that are disconnected now, then
 		 * the user may end up having to muck about with the fbcon
-		 * map flags to assign his console to the enabled output. Ugh.
+		 * map flags to assign his console to the enabled connector. Ugh.
 		 */
-    		if (output->status != output_status_connected)
+    		if (connector->status != connector_status_connected)
 			continue;
 
-		if (list_empty(&output->modes))
+		if (list_empty(&connector->modes))
 			continue;
 
 		des_mode = NULL;
 		found = 0;
-		list_for_each_entry(des_mode, &output->modes, head) {
+		list_for_each_entry(des_mode, &connector->modes, head) {
 			if (des_mode->type & DRM_MODE_TYPE_PREFERRED) {
 				found = 1;
 				break;
@@ -84,7 +84,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 		/* No preferred mode, let's just select the first available */
 		if (!found) {
 			des_mode = NULL;
-			list_for_each_entry(des_mode, &output->modes, head) {
+			list_for_each_entry(des_mode, &connector->modes, head) {
 				break;
 			}
 		}
@@ -94,15 +94,15 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			assigned = 0;
 
 			c++;
-			if ((output->possible_crtcs & (1 << c)) == 0)
+			if ((connector->possible_crtcs & (1 << c)) == 0)
 		    		continue;
 	
-			list_for_each_entry(output_equal, &dev->mode_config.output_list, head) {
-				if (output->id == output_equal->id)
+			list_for_each_entry(connector_equal, &dev->mode_config.connector_list, head) {
+				if (connector->id == connector_equal->id)
 					continue;
 
 				/* Find out if crtc has been assigned before */
-				if (output_equal->crtc == crtc)
+				if (connector_equal->crtc == crtc)
 					assigned = 1;
 			}
 
@@ -112,16 +112,16 @@ static void drm_pick_crtcs (struct drm_device *dev)
 #endif
 
 			o = -1;
-			list_for_each_entry(output_equal, &dev->mode_config.output_list, head) {
+			list_for_each_entry(connector_equal, &dev->mode_config.connector_list, head) {
 				o++;
-				if (output->id == output_equal->id)
+				if (connector->id == connector_equal->id)
 					continue;
 
-				list_for_each_entry(modes, &output->modes, head) {
-					list_for_each_entry(modes_equal, &output_equal->modes, head) {
+				list_for_each_entry(modes, &connector->modes, head) {
+					list_for_each_entry(modes_equal, &connector_equal->modes, head) {
 						if (drm_mode_equal (modes, modes_equal)) {
-							if ((output->possible_clones & output_equal->possible_clones) && (output_equal->crtc == crtc)) {
-								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_output_name(output),output->possible_clones,drm_get_output_name(output_equal),output_equal->possible_clones);
+							if ((connector->possible_clones & connector_equal->possible_clones) && (connector_equal->crtc == crtc)) {
+								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_connector_name(connector),connector->possible_clones,drm_get_connector_name(connector_equal),connector_equal->possible_clones);
 								des_mode = modes;
 								assigned = 0;
 								goto clone;
@@ -137,10 +137,10 @@ clone:
 				continue;
 
 			/* Found a CRTC to attach to, do it ! */
-			output->crtc = crtc;
-			output->crtc->desired_mode = des_mode;
-			output->initial_x = 0;
-			output->initial_y = 0;
+			connector->crtc = crtc;
+			connector->crtc->desired_mode = des_mode;
+			connector->initial_x = 0;
+			connector->initial_y = 0;
 			DRM_DEBUG("Desired mode for CRTC %d is 0x%x:%s\n",c,des_mode->mode_id, des_mode->name);
 			break;
     		}
@@ -158,7 +158,7 @@ EXPORT_SYMBOL(drm_pick_crtcs);
  * LOCKING:
  * Caller must hold mode config lock.
  *
- * Try to set @mode on @crtc.  Give @crtc and its associated outputs a chance
+ * Try to set @mode on @crtc.  Give @crtc and its associated connectors a chance
  * to fixup or reject the mode prior to trying to set it.
  *
  * RETURNS:
@@ -170,9 +170,9 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 	struct drm_device *dev = crtc->dev;
 	struct drm_display_mode *adjusted_mode, saved_mode;
 	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
-	struct drm_output_helper_funcs *output_funcs;
+	struct drm_connector_helper_funcs *connector_funcs;
 	int saved_x, saved_y;
-	struct drm_output *output;
+	struct drm_connector *connector;
 	bool ret = true;
 
 	adjusted_mode = drm_mode_duplicate(dev, mode);
@@ -200,16 +200,16 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		}
 	}
 
-	/* Pass our mode to the outputs and the CRTC to give them a chance to
-	 * adjust it according to limitations or output properties, and also
+	/* Pass our mode to the connectors and the CRTC to give them a chance to
+	 * adjust it according to limitations or connector properties, and also
 	 * a chance to reject the mode entirely.
 	 */
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		
-		if (output->crtc != crtc)
+		if (connector->crtc != crtc)
 			continue;
-		output_funcs = output->helper_private;
-		if (!(ret = output_funcs->mode_fixup(output, mode, adjusted_mode))) {
+		connector_funcs = connector->helper_private;
+		if (!(ret = connector_funcs->mode_fixup(connector, mode, adjusted_mode))) {
 			goto done;
 		}
 	}
@@ -218,47 +218,47 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		goto done;
 	}
 
-	/* Prepare the outputs and CRTCs before setting the mode. */
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+	/* Prepare the connectors and CRTCs before setting the mode. */
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 
-		if (output->crtc != crtc)
+		if (connector->crtc != crtc)
 			continue;
-		output_funcs = output->helper_private;
-		/* Disable the output as the first thing we do. */
-		output_funcs->prepare(output);
+		connector_funcs = connector->helper_private;
+		/* Disable the connector as the first thing we do. */
+		connector_funcs->prepare(connector);
 	}
 	
 	crtc_funcs->prepare(crtc);
 	
-	/* Set up the DPLL and any output state that needs to adjust or depend
+	/* Set up the DPLL and any connector state that needs to adjust or depend
 	 * on the DPLL.
 	 */
 	crtc_funcs->mode_set(crtc, mode, adjusted_mode, x, y);
 
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 
-		if (output->crtc != crtc)
+		if (connector->crtc != crtc)
 			continue;
 		
-		DRM_INFO("%s: set mode %s %x\n", drm_get_output_name(output), mode->name, mode->mode_id);
-		output_funcs = output->helper_private;
-		output_funcs->mode_set(output, mode, adjusted_mode);
+		DRM_INFO("%s: set mode %s %x\n", drm_get_connector_name(connector), mode->name, mode->mode_id);
+		connector_funcs = connector->helper_private;
+		connector_funcs->mode_set(connector, mode, adjusted_mode);
 	}
 	
-	/* Now, enable the clocks, plane, pipe, and outputs that we set up. */
+	/* Now, enable the clocks, plane, pipe, and connectors that we set up. */
 	crtc_funcs->commit(crtc);
 
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 
-		if (output->crtc != crtc)
+		if (connector->crtc != crtc)
 			continue;
 
-		output_funcs = output->helper_private;		
-		output_funcs->commit(output);
+		connector_funcs = connector->helper_private;		
+		connector_funcs->commit(connector);
 
 #if 0 // TODO def RANDR_12_INTERFACE
-		if (output->randr_output)
-			RRPostPendingProperties (output->randr_output);
+		if (connector->randr_connector)
+			RRPostPendingProperties (connector->randr_connector);
 #endif
 	}
 	
@@ -285,7 +285,7 @@ EXPORT_SYMBOL(drm_crtc_helper_set_mode);
  * @crtc: CRTC to setup
  * @crtc_info: user provided configuration
  * @new_mode: new mode to set
- * @output_set: set of outputs for the new config
+ * @connector_set: set of connectors for the new config
  * @fb: new framebuffer
  *
  * LOCKING:
@@ -304,7 +304,7 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 	bool save_enabled;
 	bool changed = false;
 	bool flip_or_move = false;
-	struct drm_output *output;
+	struct drm_connector *connector;
 	int count = 0, ro;
 	struct drm_crtc_helper_funcs *crtc_funcs;
 
@@ -321,14 +321,14 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 	
 	crtc_funcs = set->crtc->helper_private;
        
-	DRM_DEBUG("crtc: %p fb: %p outputs: %p num_outputs: %i (x, y) (%i, %i)\n", set->crtc, set->fb, set->outputs, set->num_outputs, set->x, set->y);
+	DRM_DEBUG("crtc: %p fb: %p connectors: %p num_connectors: %i (x, y) (%i, %i)\n", set->crtc, set->fb, set->connectors, set->num_connectors, set->x, set->y);
 	dev = set->crtc->dev;
 
 	/* save previous config */
 	save_enabled = set->crtc->enabled;
 
-	/* this is meant to be num_output not num_crtc */
-	save_crtcs = kzalloc(dev->mode_config.num_output * sizeof(struct drm_crtc *), GFP_KERNEL);
+	/* this is meant to be num_connector not num_crtc */
+	save_crtcs = kzalloc(dev->mode_config.num_connector * sizeof(struct drm_crtc *), GFP_KERNEL);
 	if (!save_crtcs)
 		return -ENOMEM;
 
@@ -347,21 +347,21 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 		changed = true;
 	}
 
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		save_crtcs[count++] = output->crtc;
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		save_crtcs[count++] = connector->crtc;
 
-		if (output->crtc == set->crtc)
+		if (connector->crtc == set->crtc)
 			new_crtc = NULL;
 		else
-			new_crtc = output->crtc;
+			new_crtc = connector->crtc;
 
-		for (ro = 0; ro < set->num_outputs; ro++) {
-			if (set->outputs[ro] == output)
+		for (ro = 0; ro < set->num_connectors; ro++) {
+			if (set->connectors[ro] == connector)
 				new_crtc = set->crtc;
 		}
-		if (new_crtc != output->crtc) {
+		if (new_crtc != connector->crtc) {
 			changed = true;
-			output->crtc = new_crtc;
+			connector->crtc = new_crtc;
 		}
 	}
 
@@ -379,8 +379,8 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 					       set->y)) {
 				set->crtc->enabled = save_enabled;
 				count = 0;
-				list_for_each_entry(output, &dev->mode_config.output_list, head)
-					output->crtc = save_crtcs[count++];
+				list_for_each_entry(connector, &dev->mode_config.connector_list, head)
+					connector->crtc = save_crtcs[count++];
 				kfree(save_crtcs);
 				return -EINVAL;
 			}
@@ -402,14 +402,14 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 EXPORT_SYMBOL(drm_crtc_helper_set_config);
 
 /**
- * drm_initial_config - setup a sane initial output configuration
+ * drm_initial_config - setup a sane initial connector configuration
  * @dev: DRM device
  * @can_grow: this configuration is growable
  *
  * LOCKING:
  * Called at init time, must take mode config lock.
  *
- * Scan the CRTCs and outputs and try to put together an initial setup.
+ * Scan the CRTCs and connectors and try to put together an initial setup.
  * At the moment, this is a cloned configuration across all heads with
  * a new framebuffer object as the backing store.
  *
@@ -418,32 +418,32 @@ EXPORT_SYMBOL(drm_crtc_helper_set_config);
  */
 bool drm_helper_initial_config(struct drm_device *dev, bool can_grow)
 {
-	struct drm_output *output;
+	struct drm_connector *connector;
 	int ret = false;
 
 	mutex_lock(&dev->mode_config.mutex);
 
-	drm_crtc_probe_output_modes(dev, 2048, 2048);
+	drm_crtc_probe_connector_modes(dev, 2048, 2048);
 
 	drm_pick_crtcs(dev);
 
-	/* This is a little screwy, as we've already walked the outputs 
+	/* This is a little screwy, as we've already walked the connectors 
 	 * above, but it's a little bit of magic too. There's the potential
 	 * for things not to get setup above if an existing device gets
-	 * re-assigned thus confusing the hardware. By walking the outputs
+	 * re-assigned thus confusing the hardware. By walking the connectors
 	 * this fixes up their crtc's.
 	 */
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 
-		/* can't setup the output if there's no assigned mode */
-		if (!output->crtc || !output->crtc->desired_mode)
+		/* can't setup the connector if there's no assigned mode */
+		if (!connector->crtc || !connector->crtc->desired_mode)
 			continue;
 
-		dev->driver->fb_probe(dev, output->crtc, output);
+		dev->driver->fb_probe(dev, connector->crtc, connector);
 
 		/* and needs an attached fb */
-		if (output->crtc->fb)
-			drm_crtc_helper_set_mode(output->crtc, output->crtc->desired_mode, 0, 0);
+		if (connector->crtc->fb)
+			drm_crtc_helper_set_mode(connector->crtc, connector->crtc->desired_mode, 0, 0);
 	}
 
 	drm_disable_unused_functions(dev);
@@ -456,7 +456,7 @@ EXPORT_SYMBOL(drm_helper_initial_config);
 /**
  * drm_hotplug_stage_two
  * @dev DRM device
- * @output hotpluged output
+ * @connector hotpluged connector
  *
  * LOCKING.
  * Caller must hold mode config lock, function might grab struct lock.
@@ -466,7 +466,7 @@ EXPORT_SYMBOL(drm_helper_initial_config);
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
+int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *connector,
 				 bool connected)
 {
 	int has_config = 0;
@@ -479,29 +479,29 @@ int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_output *outp
 		return 0;
 	}
 
-	if (output->crtc && output->crtc->desired_mode) {
-		DRM_DEBUG("drm thinks that the output already has a config\n");
+	if (connector->crtc && connector->crtc->desired_mode) {
+		DRM_DEBUG("drm thinks that the connector already has a config\n");
 		has_config = 1;
 	}
 
-	drm_crtc_probe_output_modes(dev, 2048, 2048);
+	drm_crtc_probe_connector_modes(dev, 2048, 2048);
 
 	if (!has_config)
 		drm_pick_crtcs(dev);
 
-	if (!output->crtc || !output->crtc->desired_mode) {
-		DRM_DEBUG("could not find a desired mode or crtc for output\n");
+	if (!connector->crtc || !connector->crtc->desired_mode) {
+		DRM_DEBUG("could not find a desired mode or crtc for connector\n");
 		return 1;
 	}
 
 	/* We should really check if there is a fb using this crtc */
 	if (!has_config)
-		dev->driver->fb_probe(dev, output->crtc, output);
+		dev->driver->fb_probe(dev, connector->crtc, connector);
 	else {
-		dev->driver->fb_resize(dev, output->crtc);
+		dev->driver->fb_resize(dev, connector->crtc);
 
 #if 0
-		if (!drm_crtc_set_mode(output->crtc, output->crtc->desired_mode, 0, 0))
+		if (!drm_crtc_set_mode(connector->crtc, connector->crtc->desired_mode, 0, 0))
 			DRM_ERROR("failed to set mode after hotplug\n");
 #endif
 	}

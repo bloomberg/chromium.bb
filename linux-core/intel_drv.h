@@ -47,7 +47,7 @@ struct intel_i2c_chan {
 };
 
 struct intel_output {
-	struct drm_output base;
+	struct drm_connector base;
 
 	struct drm_encoder enc;
 	int type;
@@ -72,8 +72,8 @@ struct intel_crtc {
 struct intel_i2c_chan *intel_i2c_create(struct drm_device *dev, const u32 reg,
 					const char *name);
 void intel_i2c_destroy(struct intel_i2c_chan *chan);
-int intel_ddc_get_modes(struct drm_output *output);
-extern bool intel_ddc_probe(struct drm_output *output);
+int intel_ddc_get_modes(struct intel_output *intel_output);
+extern bool intel_ddc_probe(struct intel_output *intel_output);
 
 extern void intel_crt_init(struct drm_device *dev);
 extern void intel_sdvo_init(struct drm_device *dev, int output_device);
@@ -82,23 +82,23 @@ extern void intel_tv_init(struct drm_device *dev);
 extern void intel_lvds_init(struct drm_device *dev);
 
 extern void intel_crtc_load_lut(struct drm_crtc *crtc);
-extern void intel_output_prepare (struct drm_output *output);
-extern void intel_output_commit (struct drm_output *output);
+extern void intel_connector_prepare (struct drm_connector *connector);
+extern void intel_connector_commit (struct drm_connector *connector);
 extern struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
  						    struct drm_crtc *crtc);
 extern void intel_wait_for_vblank(struct drm_device *dev);
 extern struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe);
-extern struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
+extern struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
 						   struct drm_display_mode *mode,
 						   int *dpms_mode);
-extern void intel_release_load_detect_pipe(struct drm_output *output,
+extern void intel_release_load_detect_pipe(struct drm_connector *connector,
 					   int dpms_mode);
 
-extern struct drm_output* intel_sdvo_find(struct drm_device *dev, int sdvoB);
-extern int intel_sdvo_supports_hotplug(struct drm_output *output);
-extern void intel_sdvo_set_hotplug(struct drm_output *output, int enable);
+extern struct drm_connector* intel_sdvo_find(struct drm_device *dev, int sdvoB);
+extern int intel_sdvo_supports_hotplug(struct drm_connector *connector);
+extern void intel_sdvo_set_hotplug(struct drm_connector *connector, int enable);
 
-extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output);
+extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_connector *connector);
 extern int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
 

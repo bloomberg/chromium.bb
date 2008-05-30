@@ -60,8 +60,8 @@ typedef struct _drmModeRes {
 	int count_crtcs;
 	uint32_t *crtcs;
 
-	int count_outputs;
-	uint32_t *outputs;
+	int count_connectors;
+	uint32_t *connectors;
 
 	int count_encoders;
 	uint32_t *encoders;
@@ -99,11 +99,11 @@ typedef struct _drmModeCrtc {
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
 
-	int count_outputs;
-	uint32_t outputs; /**< Outputs that are connected */
+	int count_connectors;
+	uint32_t connectors; /**< Connectors that are connected */
 
 	int count_possibles;
-	uint32_t possibles; /**< Outputs that can be connected */
+	uint32_t possibles; /**< Connectors that can be connected */
 
 	int gamma_size; /**< Number of gamma stops */
 
@@ -131,12 +131,12 @@ typedef enum {
 	DRM_MODE_SUBPIXEL_NONE           = 6
 } drmModeSubPixel;
 
-typedef struct _drmModeOutput {
-	unsigned int output_id;
+typedef struct _drmModeConnector {
+	unsigned int connector_id;
 
 	unsigned int crtc; /**< Crtc currently connected to */
-	unsigned int output_type;
-	unsigned int output_type_id;
+	unsigned int connector_type;
+	unsigned int connector_type_id;
 	drmModeConnection connection;
 	uint32_t mmWidth, mmHeight; /**< HxW in millimeters */
 	drmModeSubPixel subpixel;
@@ -156,7 +156,7 @@ typedef struct _drmModeOutput {
 
 	int count_encoders;
 	uint32_t *encoders; /**< List of encoder ids */
-} drmModeOutput, *drmModeOutputPtr;
+} drmModeConnector, *drmModeConnectorPtr;
 
 
 
@@ -164,7 +164,7 @@ extern void drmModeFreeModeInfo( struct drm_mode_modeinfo *ptr );
 extern void drmModeFreeResources( drmModeResPtr ptr );
 extern void drmModeFreeFB( drmModeFBPtr ptr );
 extern void drmModeFreeCrtc( drmModeCrtcPtr ptr );
-extern void drmModeFreeOutput( drmModeOutputPtr ptr );
+extern void drmModeFreeConnector( drmModeConnectorPtr ptr );
 extern void drmModeFreeEncoder( drmModeEncoderPtr ptr );
 
 /**
@@ -217,7 +217,7 @@ extern drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId);
  * Set the mode on a crtc crtcId with the given mode modeId.
  */
 int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
-                   uint32_t x, uint32_t y, uint32_t *outputs, int count,
+                   uint32_t x, uint32_t y, uint32_t *connectors, int count,
 		   struct drm_mode_modeinfo *mode);
 
 /*
@@ -240,31 +240,31 @@ int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y);
 drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id);
 
 /*
- * Output manipulation
+ * Connector manipulation
  */
 
 /**
- * Retrive information about the output outputId.
+ * Retrive information about the connector connectorId.
  */
-extern drmModeOutputPtr drmModeGetOutput(int fd,
-		uint32_t outputId);
+extern drmModeConnectorPtr drmModeGetConnector(int fd,
+		uint32_t connectorId);
 
 /**
- * Attaches the given mode to an output.
+ * Attaches the given mode to an connector.
  */
-extern int drmModeAttachMode(int fd, uint32_t outputId, struct drm_mode_modeinfo *mode_info);
+extern int drmModeAttachMode(int fd, uint32_t connectorId, struct drm_mode_modeinfo *mode_info);
 
 /**
- * Detaches a mode from the output
+ * Detaches a mode from the connector
  * must be unused, by the given mode.
  */
-extern int drmModeDetachMode(int fd, uint32_t outputId, struct drm_mode_modeinfo *mode_info);
+extern int drmModeDetachMode(int fd, uint32_t connectorId, struct drm_mode_modeinfo *mode_info);
 
 extern drmModePropertyPtr drmModeGetProperty(int fd, uint32_t propertyId);
 extern void drmModeFreeProperty(drmModePropertyPtr ptr);
 
 extern drmModePropertyBlobPtr drmModeGetPropertyBlob(int fd, uint32_t blob_id);
 extern void drmModeFreePropertyBlob(drmModePropertyBlobPtr ptr);
-extern int drmModeOutputSetProperty(int fd, uint32_t output_id, uint32_t property_id,
+extern int drmModeConnectorSetProperty(int fd, uint32_t connector_id, uint32_t property_id,
 				    uint64_t value);
 extern int drmCheckModesettingSupported(const char *busid);

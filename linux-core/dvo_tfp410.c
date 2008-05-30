@@ -207,16 +207,16 @@ out:
 	return false;
 }
 
-static enum drm_output_status tfp410_detect(struct intel_dvo_device *dvo)
+static enum drm_connector_status tfp410_detect(struct intel_dvo_device *dvo)
 {
-	enum drm_output_status ret = output_status_disconnected;
+	enum drm_connector_status ret = connector_status_disconnected;
 	uint8_t ctl2;
 
 	if (tfp410_readb(dvo, TFP410_CTL_2, &ctl2)) {
 		if (ctl2 & TFP410_CTL_2_HTPLG)
-			ret = output_status_connected;
+			ret = connector_status_connected;
 		else
-			ret = output_status_disconnected;
+			ret = connector_status_disconnected;
 	}
 
 	return ret;

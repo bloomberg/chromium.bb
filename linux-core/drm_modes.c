@@ -521,27 +521,27 @@ void drm_mode_sort(struct list_head *mode_list)
 
 
 /**
- * drm_mode_output_list_update - update the mode list for the output
- * @output: the output to update
+ * drm_mode_connector_list_update - update the mode list for the connector
+ * @connector: the connector to update
  *
  * LOCKING:
  * Caller must hold a lock protecting @mode_list.
  *
- * This moves the modes from the @output probed_modes list
+ * This moves the modes from the @connector probed_modes list
  * to the actual mode list. It compares the probed mode against the current
  * list and only adds different modes. All modes unverified after this point
  * will be removed by the prune invalid modes.
  */
-void drm_mode_output_list_update(struct drm_output *output)
+void drm_mode_connector_list_update(struct drm_connector *connector)
 {
 	struct drm_display_mode *mode;
 	struct drm_display_mode *pmode, *pt;
 	int found_it;
-	list_for_each_entry_safe(pmode, pt, &output->probed_modes,
+	list_for_each_entry_safe(pmode, pt, &connector->probed_modes,
 				 head) {
 		found_it = 0;
 		/* go through current modes checking for the new probed mode */
-		list_for_each_entry(mode, &output->modes, head) {
+		list_for_each_entry(mode, &connector->modes, head) {
 			if (drm_mode_equal(pmode, mode)) {
 				found_it = 1;
 				/* if equal delete the probed mode */
@@ -553,7 +553,7 @@ void drm_mode_output_list_update(struct drm_output *output)
 		}
 
 		if (!found_it) {
-			list_move_tail(&pmode->head, &output->modes);
+			list_move_tail(&pmode->head, &connector->modes);
 		}
 	}
 }

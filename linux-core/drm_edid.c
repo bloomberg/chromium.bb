@@ -211,9 +211,9 @@ static struct drm_display_mode edid_est_modes[] = {
  * Each EDID block contains a bitmap of the supported "established modes" list
  * (defined above).  Tease them out and add them to the global modes list.
  */
-static int add_established_modes(struct drm_output *output, struct edid *edid)
+static int add_established_modes(struct drm_connector *connector, struct edid *edid)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	unsigned long est_bits = edid->established_timings.t1 |
 		(edid->established_timings.t2 << 8) |
 		((edid->established_timings.mfg_rsvd & 0x80) << 9);
@@ -224,7 +224,7 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
 			struct drm_display_mode *newmode;
 			newmode = drm_mode_duplicate(dev, &edid_est_modes[i]);
 			if (newmode) {
-				drm_mode_probed_add(output, newmode);
+				drm_mode_probed_add(connector, newmode);
 				modes++;
 			}
 		}
@@ -239,9 +239,9 @@ static int add_established_modes(struct drm_output *output, struct edid *edid)
  * Standard modes can be calculated using the CVT standard.  Grab them from
  * @edid, calculate them, and add them to the list.
  */
-static int add_standard_modes(struct drm_output *output, struct edid *edid)
+static int add_standard_modes(struct drm_connector *connector, struct edid *edid)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	int i, modes = 0;
 
 	for (i = 0; i < EDID_STD_TIMINGS; i++) {
@@ -254,7 +254,7 @@ static int add_standard_modes(struct drm_output *output, struct edid *edid)
 
 		newmode = drm_mode_std(dev, &edid->standard_timings[i]);
 		if (newmode) {
-			drm_mode_probed_add(output, newmode);
+			drm_mode_probed_add(connector, newmode);
 			modes++;
 		}
 	}
@@ -269,9 +269,9 @@ static int add_standard_modes(struct drm_output *output, struct edid *edid)
  * Some of the detailed timing sections may contain mode information.  Grab
  * it and add it to the list.
  */
-static int add_detailed_info(struct drm_output *output, struct edid *edid)
+static int add_detailed_info(struct drm_connector *connector, struct edid *edid)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	int i, j, modes = 0;
 
 	for (i = 0; i < EDID_DETAILED_TIMINGS; i++) {
@@ -290,11 +290,11 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 			if (newmode) {
 				if (i == 0 && edid->preferred_timing)
 					newmode->type |= DRM_MODE_TYPE_PREFERRED;
-				drm_mode_probed_add(output, newmode);
+				drm_mode_probed_add(connector, newmode);
 
-				/* Use first one for output's preferred mode */
-				if (!output->display_info.preferred_mode)
-					output->display_info.preferred_mode =
+				/* Use first one for connector's preferred mode */
+				if (!connector->display_info.preferred_mode)
+					connector->display_info.preferred_mode =
 						newmode;
 				modes++;
 			}
@@ -323,7 +323,7 @@ static int add_detailed_info(struct drm_output *output, struct edid *edid)
 				std = &data->data.timings[j];
 				newmode = drm_mode_std(dev, std);
 				if (newmode) {
-					drm_mode_probed_add(output, newmode);
+					drm_mode_probed_add(connector, newmode);
 					modes++;
 				}
 			}
@@ -440,32 +440,32 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 
 /**
  * drm_get_edid - get EDID data, if available
- * @output: output we're probing
+ * @connector: connector we're probing
  * @adapter: i2c adapter to use for DDC
  *
- * Poke the given output's i2c channel to grab EDID data if possible.
+ * Poke the given connector's i2c channel to grab EDID data if possible.
  * 
  * Return edid data or NULL if we couldn't find any.
  */
-struct edid *drm_get_edid(struct drm_output *output,
+struct edid *drm_get_edid(struct drm_connector *connector,
 			  struct i2c_adapter *adapter)
 {
 	struct edid *edid;
 
 	edid = (struct edid *)drm_ddc_read(adapter);
 	if (!edid) {
-		dev_warn(&output->dev->pdev->dev, "%s: no EDID data\n",
-			 drm_get_output_name(output));
+		dev_warn(&connector->dev->pdev->dev, "%s: no EDID data\n",
+			 drm_get_connector_name(connector));
 		return NULL;
 	}
 	if (!edid_valid(edid)) {
-		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
-			 drm_get_output_name(output));
+		dev_warn(&connector->dev->pdev->dev, "%s: EDID invalid.\n",
+			 drm_get_connector_name(connector));
 		kfree(edid);
 		return NULL;
 	}
 
-	output->display_info.raw_edid = (char *)edid;
+	connector->display_info.raw_edid = (char *)edid;
 
 	return edid;
 }
@@ -473,14 +473,14 @@ EXPORT_SYMBOL(drm_get_edid);
 
 /**
  * drm_add_edid_modes - add modes from EDID data, if available
- * @output: output we're probing
+ * @connector: connector we're probing
  * @edid: edid data
  *
- * Add the specified modes to the output's mode list.
+ * Add the specified modes to the connector's mode list.
  *
  * Return number of modes added or 0 if we couldn't find any.
  */
-int drm_add_edid_modes(struct drm_output *output, struct edid *edid)
+int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid)
 {
 	int num_modes = 0;
 
@@ -488,31 +488,31 @@ int drm_add_edid_modes(struct drm_output *output, struct edid *edid)
 		return 0;
 	}
 	if (!edid_valid(edid)) {
-		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
-			 drm_get_output_name(output));
+		dev_warn(&connector->dev->pdev->dev, "%s: EDID invalid.\n",
+			 drm_get_connector_name(connector));
 		return 0;
 	}
-	num_modes += add_established_modes(output, edid);
-	num_modes += add_standard_modes(output, edid);
-	num_modes += add_detailed_info(output, edid);
+	num_modes += add_established_modes(connector, edid);
+	num_modes += add_standard_modes(connector, edid);
+	num_modes += add_detailed_info(connector, edid);
 
-	output->display_info.serration_vsync = edid->serration_vsync;
-	output->display_info.sync_on_green = edid->sync_on_green;
-	output->display_info.composite_sync = edid->composite_sync;
-	output->display_info.separate_syncs = edid->separate_syncs;
-	output->display_info.blank_to_black = edid->blank_to_black;
-	output->display_info.video_level = edid->video_level;
-	output->display_info.digital = edid->digital;
-	output->display_info.width_mm = edid->width_cm * 10;
-	output->display_info.height_mm = edid->height_cm * 10;
-	output->display_info.gamma = edid->gamma;
-	output->display_info.gtf_supported = edid->default_gtf;
-	output->display_info.standard_color = edid->standard_color;
-	output->display_info.display_type = edid->display_type;
-	output->display_info.active_off_supported = edid->pm_active_off;
-	output->display_info.suspend_supported = edid->pm_suspend;
-	output->display_info.standby_supported = edid->pm_standby;
-	output->display_info.gamma = edid->gamma;
+	connector->display_info.serration_vsync = edid->serration_vsync;
+	connector->display_info.sync_on_green = edid->sync_on_green;
+	connector->display_info.composite_sync = edid->composite_sync;
+	connector->display_info.separate_syncs = edid->separate_syncs;
+	connector->display_info.blank_to_black = edid->blank_to_black;
+	connector->display_info.video_level = edid->video_level;
+	connector->display_info.digital = edid->digital;
+	connector->display_info.width_mm = edid->width_cm * 10;
+	connector->display_info.height_mm = edid->height_cm * 10;
+	connector->display_info.gamma = edid->gamma;
+	connector->display_info.gtf_supported = edid->default_gtf;
+	connector->display_info.standard_color = edid->standard_color;
+	connector->display_info.display_type = edid->display_type;
+	connector->display_info.active_off_supported = edid->pm_active_off;
+	connector->display_info.suspend_supported = edid->pm_suspend;
+	connector->display_info.standby_supported = edid->pm_standby;
+	connector->display_info.gamma = edid->gamma;
 
 	return num_modes;
 }

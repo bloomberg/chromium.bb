@@ -36,27 +36,27 @@ struct drm_crtc_helper_funcs {
 	void (*mode_set_base)(struct drm_crtc *crtc, int x, int y);
 };
 
-struct drm_output_helper_funcs {
-	bool (*mode_fixup)(struct drm_output *output,
+struct drm_connector_helper_funcs {
+	bool (*mode_fixup)(struct drm_connector *connector,
 			   struct drm_display_mode *mode,
 			   struct drm_display_mode *adjusted_mode);
-	void (*prepare)(struct drm_output *output);
-	void (*commit)(struct drm_output *output);
-	void (*mode_set)(struct drm_output *output,
+	void (*prepare)(struct drm_connector *connector);
+	void (*commit)(struct drm_connector *connector);
+	void (*mode_set)(struct drm_connector *connector,
 			 struct drm_display_mode *mode,
 			 struct drm_display_mode *adjusted_mode);
 };
 
 struct drm_encoder_helper_funcs {
-	void (*prepare)(struct drm_output *output);
-	void (*commit)(struct drm_output *output);
-	void (*mode_set)(struct drm_output *output,
+	void (*prepare)(struct drm_connector *connector);
+	void (*commit)(struct drm_connector *connector);
+	void (*mode_set)(struct drm_connector *connector,
 			 struct drm_display_mode *mode,
 			 struct drm_display_mode *adjusted_mode);
 };
 	
 
-extern int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
+extern int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *connector,
 					bool connected);
 extern bool drm_helper_initial_config(struct drm_device *dev, bool can_grow);
 extern int drm_crtc_helper_set_config(struct drm_mode_set *set);
@@ -68,9 +68,9 @@ static inline void drm_crtc_helper_add(struct drm_crtc *crtc, const struct drm_c
 	crtc->helper_private = (void *)funcs;
 }
 
-static inline void drm_output_helper_add(struct drm_output *output, const struct drm_output_helper_funcs *funcs)
+static inline void drm_connector_helper_add(struct drm_connector *connector, const struct drm_connector_helper_funcs *funcs)
 {
-	output->helper_private = (void *)funcs;
+	connector->helper_private = (void *)funcs;
 }
 
 

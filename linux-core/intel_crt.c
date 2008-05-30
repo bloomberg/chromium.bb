@@ -33,9 +33,9 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-static void intel_crt_dpms(struct drm_output *output, int mode)
+static void intel_crt_dpms(struct drm_connector *connector, int mode)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 temp;
 	
@@ -61,17 +61,17 @@ static void intel_crt_dpms(struct drm_output *output, int mode)
 	I915_WRITE(ADPA, temp);
 }
 
-static void intel_crt_save(struct drm_output *output)
+static void intel_crt_save(struct drm_connector *connector)
 {
 	
 }
 
-static void intel_crt_restore(struct drm_output *output)
+static void intel_crt_restore(struct drm_connector *connector)
 {
 
 }
 
-static int intel_crt_mode_valid(struct drm_output *output,
+static int intel_crt_mode_valid(struct drm_connector *connector,
 				struct drm_display_mode *mode)
 {
 	if (mode->flags & V_DBLSCAN)
@@ -83,19 +83,19 @@ static int intel_crt_mode_valid(struct drm_output *output,
 	return MODE_OK;
 }
 
-static bool intel_crt_mode_fixup(struct drm_output *output,
+static bool intel_crt_mode_fixup(struct drm_connector *connector,
 				 struct drm_display_mode *mode,
 				 struct drm_display_mode *adjusted_mode)
 {
 	return true;
 }
 
-static void intel_crt_mode_set(struct drm_output *output,
+static void intel_crt_mode_set(struct drm_connector *connector,
 			       struct drm_display_mode *mode,
 			       struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = output->dev;
-	struct drm_crtc *crtc = output->crtc;
+	struct drm_device *dev = connector->dev;
+	struct drm_crtc *crtc = connector->crtc;
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	int dpll_md_reg;
@@ -138,9 +138,9 @@ static void intel_crt_mode_set(struct drm_output *output,
  * \return TRUE if CRT is connected.
  * \return FALSE if CRT is disconnected.
  */
-static bool intel_crt_detect_hotplug(struct drm_output *output)
+static bool intel_crt_detect_hotplug(struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 temp;
 
@@ -164,57 +164,58 @@ static bool intel_crt_detect_hotplug(struct drm_output *output)
 	return false;
 }
 
-static bool intel_crt_detect_ddc(struct drm_output *output)
+static bool intel_crt_detect_ddc(struct drm_connector *connector)
 {
-	struct intel_output *intel_output = to_intel_output(output);
+	struct intel_output *intel_output = to_intel_output(connector);
 
 	/* CRT should always be at 0, but check anyway */
 	if (intel_output->type != INTEL_OUTPUT_ANALOG)
 		return false;
 	
-	return intel_ddc_probe(output);
+	return intel_ddc_probe(intel_output);
 }
 
-static enum drm_output_status intel_crt_detect(struct drm_output *output)
+static enum drm_connector_status intel_crt_detect(struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	
 	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
-		if (intel_crt_detect_hotplug(output))
-			return output_status_connected;
+		if (intel_crt_detect_hotplug(connector))
+			return connector_status_connected;
 		else
-			return output_status_disconnected;
+			return connector_status_disconnected;
 	}
 
-	if (intel_crt_detect_ddc(output))
-		return output_status_connected;
+	if (intel_crt_detect_ddc(connector))
+		return connector_status_connected;
 
 	/* TODO use load detect */
-	return output_status_unknown;
+	return connector_status_unknown;
 }
 
-static void intel_crt_destroy(struct drm_output *output)
+static void intel_crt_destroy(struct drm_connector *connector)
 {
-	struct intel_output *intel_output = to_intel_output(output);
+	struct intel_output *intel_output = to_intel_output(connector);
 
 	intel_i2c_destroy(intel_output->ddc_bus);
-	drm_output_cleanup(output);
-	kfree(output);
+	drm_connector_cleanup(connector);
+	kfree(connector);
 }
 
-static int intel_crt_get_modes(struct drm_output *output)
+static int intel_crt_get_modes(struct drm_connector *connector)
 {
-	return intel_ddc_get_modes(output);
+	struct intel_output *intel_output = to_intel_output(connector);
+	return intel_ddc_get_modes(intel_output);
 }
 
-static bool intel_crt_set_property(struct drm_output *output,
+static bool intel_crt_set_property(struct drm_connector *connector,
 				  struct drm_property *property,
 				  uint64_t value)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 
 	if (property == dev->mode_config.dpms_property)
-		intel_crt_dpms(output, (uint32_t)(value & 0xf));
+		intel_crt_dpms(connector, (uint32_t)(value & 0xf));
 
 	return true;
 }
@@ -223,14 +224,14 @@ static bool intel_crt_set_property(struct drm_output *output,
  * Routines for controlling stuff on the analog port
  */
 
-static const struct drm_output_helper_funcs intel_crt_helper_funcs = {
+static const struct drm_connector_helper_funcs intel_crt_helper_funcs = {
 	.mode_fixup = intel_crt_mode_fixup,
-	.prepare = intel_output_prepare,
-	.commit = intel_output_commit,
+	.prepare = intel_connector_prepare,
+	.commit = intel_connector_commit,
 	.mode_set = intel_crt_mode_set,
 };
 
-static const struct drm_output_funcs intel_crt_output_funcs = {
+static const struct drm_connector_funcs intel_crt_connector_funcs = {
 	.dpms = intel_crt_dpms,
 	.save = intel_crt_save,
 	.restore = intel_crt_restore,
@@ -253,34 +254,36 @@ static const struct drm_encoder_funcs intel_crt_enc_funcs = {
 
 void intel_crt_init(struct drm_device *dev)
 {
-	struct drm_output *output;
+	struct drm_connector *connector;
 	struct intel_output *intel_output;
 
 	intel_output = kzalloc(sizeof(struct intel_output), GFP_KERNEL);
 	if (!intel_output)
 		return;
 
-	output = &intel_output->base;
-	drm_output_init(dev, &intel_output->base, &intel_crt_output_funcs, DRM_MODE_OUTPUT_VGA);
+	connector = &intel_output->base;
+	drm_connector_init(dev, &intel_output->base, &intel_crt_connector_funcs, DRM_MODE_CONNECTOR_VGA);
 
 	drm_encoder_init(dev, &intel_output->enc, &intel_crt_enc_funcs, DRM_MODE_ENCODER_DAC);
 
-	drm_mode_output_attach_encoder(&intel_output->base, &intel_output->enc);
+	drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc);
 
 	/* Set up the DDC bus. */
 	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
 	if (!intel_output->ddc_bus) {
 		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
 			   "failed.\n");
-		intel_crt_destroy(output);
+		intel_crt_destroy(connector);
 		return;
 	}
 
 	intel_output->type = INTEL_OUTPUT_ANALOG;
-	output->interlace_allowed = 0;
-	output->doublescan_allowed = 0;
+	connector->interlace_allowed = 0;
+	connector->doublescan_allowed = 0;
 
-	drm_output_helper_add(output, &intel_crt_helper_funcs);
+	drm_connector_helper_add(connector, &intel_crt_helper_funcs);
 
-	drm_sysfs_output_add(output);
+	drm_sysfs_connector_add(connector);
+
+
 }

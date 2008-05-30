@@ -558,7 +558,7 @@ union drm_wait_vblank {
 /* Handle monitor hotplug.
  *
  * May want to extend this later to pass reply information which
- * details the outputs which generated the hotplug event.
+ * details the connectors which generated the hotplug event.
  * Some chipsets can't determine that though, and we'd need to leave
  * it to the higher levels to determine exactly what changed.
  */
@@ -998,7 +998,7 @@ struct drm_mm_info_arg {
  * Drm mode setting
  */
 #define DRM_DISPLAY_INFO_LEN 32
-#define DRM_OUTPUT_NAME_LEN 32
+#define DRM_CONNECTOR_NAME_LEN 32
 #define DRM_DISPLAY_MODE_LEN 32
 #define DRM_PROP_NAME_LEN 32
 
@@ -1025,29 +1025,29 @@ struct drm_mode_modeinfo {
 struct drm_mode_card_res {
 	uint64_t fb_id_ptr;
 	uint64_t crtc_id_ptr;
-	uint64_t output_id_ptr;
+	uint64_t connector_id_ptr;
 	uint64_t encoder_id_ptr;
 	int count_fbs;
 	int count_crtcs;
-	int count_outputs;
+	int count_connectors;
 	int count_encoders;
 	int min_width, max_width;
 	int min_height, max_height;
 };
 
 struct drm_mode_crtc {
-	uint64_t set_outputs_ptr;
+	uint64_t set_connectors_ptr;
 
 	unsigned int crtc_id; /**< Id */
 	unsigned int fb_id; /**< Id of framebuffer */
 
 	int x, y; /**< Position on the frameuffer */
 
-	int count_outputs;
-	unsigned int outputs; /**< Outputs that are connected */
+	int count_connectors;
+	unsigned int connectors; /**< Connectors that are connected */
 
 	int count_possibles;
-	unsigned int possibles; /**< Outputs that can be connected */
+	unsigned int possibles; /**< Connectors that can be connected */
 	int gamma_size;
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
@@ -1068,13 +1068,7 @@ struct drm_mode_get_encoder {
 #define DRM_MODE_ENCODER_LVDS 3
 #define DRM_MODE_ENCODER_TVDAC 4
 
-#define DRM_MODE_OUTPUT_NONE 0
-#define DRM_MODE_OUTPUT_VGA  1
-#define DRM_MODE_OUTPUT_TMDS 2
-#define DRM_MODE_OUTPUT_LVDS 3
-#define DRM_MODE_OUTPUT_TVDAC 4
-
-struct drm_mode_get_output {
+struct drm_mode_get_connector {
 
 	uint64_t encoders_ptr;
 	uint64_t modes_ptr;
@@ -1085,10 +1079,10 @@ struct drm_mode_get_output {
 	int count_props;
 	int count_encoders;
 
-	unsigned int output; /**< Id */
+	unsigned int connector; /**< Id */
 	unsigned int crtc; /**< Id of crtc */
-	unsigned int output_type;
-	unsigned int output_type_id;
+	unsigned int connector_type;
+	unsigned int connector_type_id;
 
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */
@@ -1122,10 +1116,10 @@ struct drm_mode_get_property {
 	int count_enum_blobs;
 };
 
-struct drm_mode_output_set_property {
+struct drm_mode_connector_set_property {
 	uint64_t value;
 	unsigned int prop_id;
-	unsigned int output_id;
+	unsigned int connector_id;
 };
 
 struct drm_mode_get_blob {
@@ -1144,7 +1138,7 @@ struct drm_mode_fb_cmd {
 };
 
 struct drm_mode_mode_cmd {
-	unsigned int output_id;
+	unsigned int connector_id;
 	struct drm_mode_modeinfo mode;
 };
 
@@ -1280,13 +1274,13 @@ struct drm_mode_hotplug {
 
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
 #define DRM_IOCTL_MODE_GETCRTC          DRM_IOWR(0xA1, struct drm_mode_crtc)
-#define DRM_IOCTL_MODE_GETOUTPUT        DRM_IOWR(0xA2, struct drm_mode_get_output)
+#define DRM_IOCTL_MODE_GETCONNECTOR        DRM_IOWR(0xA2, struct drm_mode_get_connector)
 #define DRM_IOCTL_MODE_SETCRTC          DRM_IOWR(0xA3, struct drm_mode_crtc)
 #define DRM_IOCTL_MODE_ADDFB            DRM_IOWR(0xA4, struct drm_mode_fb_cmd)
 #define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
 #define DRM_IOCTL_MODE_GETFB            DRM_IOWR(0xA6, struct drm_mode_fb_cmd)
 
-#define DRM_IOCTL_MODE_SETPROPERTY     DRM_IOWR(0xA7, struct drm_mode_output_set_property)
+#define DRM_IOCTL_MODE_SETPROPERTY     DRM_IOWR(0xA7, struct drm_mode_connector_set_property)
 #define DRM_IOCTL_MODE_GETPROPBLOB     DRM_IOWR(0xA8, struct drm_mode_get_blob)
 #define DRM_IOCTL_MODE_ATTACHMODE      DRM_IOWR(0xA9, struct drm_mode_mode_cmd)
 #define DRM_IOCTL_MODE_DETACHMODE      DRM_IOWR(0xAA, struct drm_mode_mode_cmd)

@@ -453,15 +453,15 @@ static spinlock_t hotplug_lock = SPIN_LOCK_UNLOCKED;
 
 static void i915_hotplug_tv(struct drm_device *dev)
 {
-	struct drm_output *output;
+	struct drm_connector *connector;
 	struct intel_output *iout;
-	enum drm_output_status status;
+	enum drm_connector_status status;
 
 	mutex_lock(&dev->mode_config.mutex);
 
 	/* find the crt output */
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		iout = to_intel_output(output);
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		iout = to_intel_output(connector);
 		if (iout->type == INTEL_OUTPUT_TVOUT)
 			break;
 		else
@@ -471,9 +471,9 @@ static void i915_hotplug_tv(struct drm_device *dev)
 	if (iout == 0)
 		goto unlock;
 
-	status = output->funcs->detect(output);
-	drm_helper_hotplug_stage_two(dev, output,
-				     status == output_status_connected ? 1 : 0);
+	status = connector->funcs->detect(connector);
+	drm_helper_hotplug_stage_two(dev, connector,
+				     status == connector_status_connected ? 1 : 0);
 
 unlock:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -481,14 +481,14 @@ unlock:
 
 static void i915_hotplug_crt(struct drm_device *dev, bool isconnected)
 {
-	struct drm_output *output;
+	struct drm_connector *connector;
 	struct intel_output *iout;
 
 	mutex_lock(&dev->mode_config.mutex);
 
 	/* find the crt output */
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		iout = to_intel_output(output);
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		iout = to_intel_output(connector);
 		if (iout->type == INTEL_OUTPUT_ANALOG)
 			break;
 		else
@@ -498,7 +498,7 @@ static void i915_hotplug_crt(struct drm_device *dev, bool isconnected)
 	if (iout == 0)
 		goto unlock;
 
-	drm_helper_hotplug_stage_two(dev, output, isconnected);
+	drm_helper_hotplug_stage_two(dev, connector, isconnected);
 
 unlock:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -506,24 +506,24 @@ unlock:
 
 static void i915_hotplug_sdvo(struct drm_device *dev, int sdvoB)
 {
-	struct drm_output *output = 0;
-	enum drm_output_status status;
+	struct drm_connector *connector = 0;
+	enum drm_connector_status status;
 
 	mutex_lock(&dev->mode_config.mutex);
 
-	output = intel_sdvo_find(dev, sdvoB);
+	connector = intel_sdvo_find(dev, sdvoB);
 
-	if (!output)
+	if (!connector)
 		goto unlock;
 
-	status = output->funcs->detect(output);
+	status = connector->funcs->detect(connector);
 
-	if (status != output_status_connected)
-		drm_helper_hotplug_stage_two(dev, output, false);
+	if (status != connector_status_connected)
+		drm_helper_hotplug_stage_two(dev, connector, false);
 	else
-		drm_helper_hotplug_stage_two(dev, output, true);
+		drm_helper_hotplug_stage_two(dev, connector, true);
 
-	intel_sdvo_set_hotplug(output, 1);
+	intel_sdvo_set_hotplug(connector, 1);
 
 unlock:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -961,15 +961,15 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 void i915_enable_interrupt (struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	struct drm_output *o;
+	struct drm_connector *o;
 
 	dev_priv->irq_enable_reg |= I915_USER_INTERRUPT;
 
 	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
-		if (dev->mode_config.num_output)
+		if (dev->mode_config.num_connector)
 			dev_priv->irq_enable_reg |= I915_DISPLAY_PORT_INTERRUPT;
 	} else {
-		if (dev->mode_config.num_output)
+		if (dev->mode_config.num_connector)
 			dev_priv->irq_enable_reg |= I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
 
 		/* Enable global interrupts for hotplug - not a pipeA event */

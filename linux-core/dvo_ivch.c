@@ -293,9 +293,9 @@ out:
 	return false;
 }
 
-static enum drm_output_status ivch_detect(struct intel_dvo_device *dvo)
+static enum drm_connector_status ivch_detect(struct intel_dvo_device *dvo)
 {
-	return output_status_connected;
+	return connector_status_connected;
 }
 
 static enum drm_mode_status ivch_mode_valid(struct intel_dvo_device *dvo,

@@ -17,10 +17,10 @@ struct drm_device;
 struct drm_mode_set;
 
 /*
- * Note on terminology:  here, for brevity and convenience, we refer to output
- * control chips as 'CRTCs'.  They can control any type of output, VGA, LVDS,
+ * Note on terminology:  here, for brevity and convenience, we refer to connector
+ * control chips as 'CRTCs'.  They can control any type of connector, VGA, LVDS,
  * DVI, etc.  And 'screen' refers to the whole of the visible display, which
- * may span multiple monitors (and therefore multiple CRTC and output
+ * may span multiple monitors (and therefore multiple CRTC and connector
  * structures).
  */
 
@@ -80,7 +80,7 @@ struct drm_display_mode {
 	struct list_head head;
 	char name[DRM_DISPLAY_MODE_LEN];
 	int mode_id;
-	int output_count;
+	int connector_count;
 	enum drm_mode_status status;
 	int type;
 
@@ -149,24 +149,24 @@ struct drm_display_mode {
 #define DPMSModeSuspend 2
 #define DPMSModeOff 3
 
-#define ConnectorUnknown 0
-#define ConnectorVGA 1
-#define ConnectorDVII 2
-#define ConnectorDVID 3
-#define ConnectorDVIA 4
-#define ConnectorComposite 5
-#define ConnectorSVIDEO 6
-#define ConnectorLVDS 7
-#define ConnectorComponent 8
-#define Connector9PinDIN 9
-#define ConnectorDisplayPort 10
-#define ConnectorHDMIA 11
-#define ConnectorHDMIB 12
+#define DRM_MODE_CONNECTOR_Unknown 0
+#define DRM_MODE_CONNECTOR_VGA 1
+#define DRM_MODE_CONNECTOR_DVII 2
+#define DRM_MODE_CONNECTOR_DVID 3
+#define DRM_MODE_CONNECTOR_DVIA 4
+#define DRM_MODE_CONNECTOR_Composite 5
+#define DRM_MODE_CONNECTOR_SVIDEO 6
+#define DRM_MODE_CONNECTOR_LVDS 7
+#define DRM_MODE_CONNECTOR_Component 8
+#define DRM_MODE_CONNECTOR_9PinDIN 9
+#define DRM_MODE_CONNECTOR_DisplayPort 10
+#define DRM_MODE_CONNECTOR_HDMIA 11
+#define DRM_MODE_CONNECTOR_HDMIB 12
 
-enum drm_output_status {
-	output_status_connected = 1,
-	output_status_disconnected = 2,
-	output_status_unknown = 3,
+enum drm_connector_status {
+	connector_status_connected = 1,
+	connector_status_disconnected = 2,
+	connector_status_unknown = 3,
 };
 
 enum subpixel_order {
@@ -276,7 +276,7 @@ struct drm_property {
 };
 
 struct drm_crtc;
-struct drm_output;
+struct drm_connector;
 struct drm_encoder;
 
 /**
@@ -295,9 +295,9 @@ struct drm_encoder;
  * @destroy: deinit and free object.
  *
  * The drm_crtc_funcs structure is the central CRTC management structure
- * in the DRM.  Each CRTC controls one or more outputs (note that the name
+ * in the DRM.  Each CRTC controls one or more connectors (note that the name
  * CRTC is simply historical, a CRTC may control LVDS, VGA, DVI, TV out, etc.
- * outputs, not just CRTs).
+ * connectors, not just CRTs).
  *
  * Each driver is responsible for filling out this structure at startup time,
  * in addition to providing other modesetting features, like i2c and DDC
@@ -339,7 +339,7 @@ struct drm_crtc_funcs {
  * @desired_y: desired y for desired_mode
  * @funcs: CRTC control functions
  *
- * Each CRTC may have one or more outputs associated with it.  This structure
+ * Each CRTC may have one or more connectors associated with it.  This structure
  * allows the CRTC to be controlled.
  */
 struct drm_crtc {
@@ -348,7 +348,7 @@ struct drm_crtc {
 
 	int id; /* idr assigned */
 
-	/* framebuffer the output is currently bound to */
+	/* framebuffer the connector is currently bound to */
 	struct drm_framebuffer *fb;
 
 	bool enabled;
@@ -365,32 +365,32 @@ struct drm_crtc {
 };
 
 /**
- * drm_output_funcs - control outputs on a given device
+ * drm_connector_funcs - control connectors on a given device
  * @dpms: set power state (see drm_crtc_funcs above)
- * @save: save output state
- * @restore: restore output state
- * @mode_valid: is this mode valid on the given output?
- * @mode_fixup: try to fixup proposed mode for this output
+ * @save: save connector state
+ * @restore: restore connector state
+ * @mode_valid: is this mode valid on the given connector?
+ * @mode_fixup: try to fixup proposed mode for this connector
  * @mode_set: set this mode
- * @detect: is this output active?
- * @get_modes: get mode list for this output
- * @set_property: property for this output may need update
+ * @detect: is this connector active?
+ * @get_modes: get mode list for this connector
+ * @set_property: property for this connector may need update
  * @destroy: make object go away
  *
- * Each CRTC may have one or more outputs attached to it.  The functions
- * below allow the core DRM code to control outputs, enumerate available modes,
+ * Each CRTC may have one or more connectors attached to it.  The functions
+ * below allow the core DRM code to control connectors, enumerate available modes,
  * etc.
  */
-struct drm_output_funcs {
-	void (*dpms)(struct drm_output *output, int mode);
-	void (*save)(struct drm_output *output);
-	void (*restore)(struct drm_output *output);
-	enum drm_output_status (*detect)(struct drm_output *output);
-	int (*get_modes)(struct drm_output *output);
-	bool (*set_property)(struct drm_output *output, struct drm_property *property,
+struct drm_connector_funcs {
+	void (*dpms)(struct drm_connector *connector, int mode);
+	void (*save)(struct drm_connector *connector);
+	void (*restore)(struct drm_connector *connector);
+	enum drm_connector_status (*detect)(struct drm_connector *connector);
+	int (*get_modes)(struct drm_connector *connector);
+	bool (*set_property)(struct drm_connector *connector, struct drm_property *property,
 			     uint64_t val);
-	void (*destroy)(struct drm_output *output);
-  	int (*mode_valid)(struct drm_output *output,
+	void (*destroy)(struct drm_connector *connector);
+  	int (*mode_valid)(struct drm_connector *connector,
 			  struct drm_display_mode *mode);
 
 };
@@ -399,10 +399,10 @@ struct drm_encoder_funcs {
 	void (*destroy)(struct drm_encoder *encoder);
 };
 
-#define DRM_OUTPUT_MAX_UMODES 16
-#define DRM_OUTPUT_MAX_PROPERTY 16
-#define DRM_OUTPUT_LEN 32
-#define DRM_OUTPUT_MAX_ENCODER 2
+#define DRM_CONNECTOR_MAX_UMODES 16
+#define DRM_CONNECTOR_MAX_PROPERTY 16
+#define DRM_CONNECTOR_LEN 32
+#define DRM_CONNECTOR_MAX_ENCODER 2
 
 /**
  * drm_encoder - central DRM encoder structure 
@@ -421,24 +421,24 @@ struct drm_encoder {
 };
 
 /**
- * drm_output - central DRM output control structure
- * @crtc: CRTC this output is currently connected to, NULL if none
- * @possible_crtcs: bitmap of CRTCS this output could be attached to
- * @possible_clones: bitmap of possible outputs this output could clone
- * @interlace_allowed: can this output handle interlaced modes?
- * @doublescan_allowed: can this output handle doublescan?
- * @available_modes: modes available on this output (from get_modes() + user)
- * @initial_x: initial x position for this output
- * @initial_y: initial y position for this output
- * @status: output connected?
- * @funcs: output control functions
+ * drm_connector - central DRM connector control structure
+ * @crtc: CRTC this connector is currently connected to, NULL if none
+ * @possible_crtcs: bitmap of CRTCS this connector could be attached to
+ * @possible_clones: bitmap of possible connectors this connector could clone
+ * @interlace_allowed: can this connector handle interlaced modes?
+ * @doublescan_allowed: can this connector handle doublescan?
+ * @available_modes: modes available on this connector (from get_modes() + user)
+ * @initial_x: initial x position for this connector
+ * @initial_y: initial y position for this connector
+ * @status: connector connected?
+ * @funcs: connector control functions
  *
- * Each output may be connected to one or more CRTCs, or may be clonable by
- * another output if they can share a CRTC.  Each output also has a specific
+ * Each connector may be connected to one or more CRTCs, or may be clonable by
+ * another connector if they can share a CRTC.  Each connector also has a specific
  * position in the broader display (referred to as a 'screen' though it could
  * span multiple monitors).
  */
-struct drm_output {
+struct drm_connector {
 	struct drm_device *dev;
 	struct device kdev;
 	struct device_attribute *attr;
@@ -446,37 +446,37 @@ struct drm_output {
 	struct drm_crtc *crtc;
 	int id; /* idr assigned */
 
-	int output_type;
-	int output_type_id;
+	int connector_type;
+	int connector_type_id;
 	unsigned long possible_crtcs;
 	unsigned long possible_clones;
 	bool interlace_allowed;
 	bool doublescan_allowed;
-	struct list_head modes; /* list of modes on this output */
+	struct list_head modes; /* list of modes on this connector */
 
 	int initial_x, initial_y;
-	enum drm_output_status status;
+	enum drm_connector_status status;
 
 	/* these are modes added by probing with DDC or the BIOS */
 	struct list_head probed_modes;
 	
 	struct drm_display_info display_info;
-  	const struct drm_output_funcs *funcs;
+  	const struct drm_connector_funcs *funcs;
 
 	struct list_head user_modes;
 	struct drm_property_blob *edid_blob_ptr;
-	u32 property_ids[DRM_OUTPUT_MAX_PROPERTY];
-	uint64_t property_values[DRM_OUTPUT_MAX_PROPERTY];
+	u32 property_ids[DRM_CONNECTOR_MAX_PROPERTY];
+	uint64_t property_values[DRM_CONNECTOR_MAX_PROPERTY];
 
 	void *helper_private;
 
-	u32 encoder_ids[DRM_OUTPUT_MAX_ENCODER];
+	u32 encoder_ids[DRM_CONNECTOR_MAX_ENCODER];
 };
 
 /**
  * struct drm_mode_set
  *
- * Represents a single crtc the outputs that it drives with what mode
+ * Represents a single crtc the connectors that it drives with what mode
  * and from which framebuffer it scans out from.
  *
  * This is used to set modes.
@@ -490,8 +490,8 @@ struct drm_mode_set
 	uint32_t x;
 	uint32_t y;
 
-	struct drm_output **outputs;
-	size_t num_outputs;
+	struct drm_connector **connectors;
+	size_t num_connectors;
 };
 
 /**
@@ -501,7 +501,7 @@ struct drm_mode_set
  * Currently only a resize hook is available.  DRM will call back into the
  * driver with a new screen width and height.  If the driver can't support
  * the proposed size, it can return false.  Otherwise it should adjust
- * the CRTC<->output mappings as needed and update its view of the screen.
+ * the CRTC<->connector mappings as needed and update its view of the screen.
  */
 struct drm_mode_config_funcs {
 	bool (*resize_fb)(struct drm_device *dev, struct drm_framebuffer *fb);
@@ -513,12 +513,12 @@ struct drm_mode_config_funcs {
  */
 struct drm_mode_config {
 	struct mutex mutex; /* protects configuration and IDR */
-	struct idr crtc_idr; /* use this idr for all IDs, fb, crtc, output, modes - just makes life easier */
+	struct idr crtc_idr; /* use this idr for all IDs, fb, crtc, connector, modes - just makes life easier */
 	/* this is limited to one for now */
 	int num_fb;
 	struct list_head fb_list;
-	int num_output;
-	struct list_head output_list;
+	int num_connector;
+	struct list_head connector_list;
 	int num_encoder;
 	struct list_head encoder_list;
 
@@ -536,8 +536,6 @@ struct drm_mode_config {
 	struct list_head property_blob_list;
 	struct drm_property *edid_property;
 	struct drm_property *dpms_property;
-	struct drm_property *connector_type_property;
-	struct drm_property *connector_num_property;
 
 	/* TV properties */
 	struct drm_property *tv_mode_property;
@@ -556,12 +554,12 @@ extern void drm_crtc_init(struct drm_device *dev,
 			  const struct drm_crtc_funcs *funcs);
 extern void drm_crtc_cleanup(struct drm_crtc *crtc);
 
-extern void drm_output_init(struct drm_device *dev,
-			    struct drm_output *output,
-			    const struct drm_output_funcs *funcs,
-			    int output_type);
+extern void drm_connector_init(struct drm_device *dev,
+			    struct drm_connector *connector,
+			    const struct drm_connector_funcs *funcs,
+			    int connector_type);
 
-extern void drm_output_cleanup(struct drm_output *output);
+extern void drm_connector_cleanup(struct drm_connector *connector);
 
 extern void drm_encoder_init(struct drm_device *dev,
 			     struct drm_encoder *encoder,
@@ -570,15 +568,15 @@ extern void drm_encoder_init(struct drm_device *dev,
 
 extern void drm_encoder_cleanup(struct drm_encoder *encoder);
 
-extern char *drm_get_output_name(struct drm_output *output);
+extern char *drm_get_connector_name(struct drm_connector *connector);
 extern char *drm_get_dpms_name(int val);
 extern void drm_fb_release(struct file *filp);
 
-extern struct edid *drm_get_edid(struct drm_output *output,
+extern struct edid *drm_get_edid(struct drm_connector *connector,
 				 struct i2c_adapter *adapter);
-extern int drm_add_edid_modes(struct drm_output *output, struct edid *edid);
-extern void drm_mode_probed_add(struct drm_output *output, struct drm_display_mode *mode);
-extern void drm_mode_remove(struct drm_output *output, struct drm_display_mode *mode);
+extern int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid);
+extern void drm_mode_probed_add(struct drm_connector *connector, struct drm_display_mode *mode);
+extern void drm_mode_remove(struct drm_connector *connector, struct drm_display_mode *mode);
 extern struct drm_display_mode *drm_mode_duplicate(struct drm_device *dev,
 						   struct drm_display_mode *mode);
 extern void drm_mode_debug_printmodeline(struct drm_display_mode *mode);
@@ -607,13 +605,13 @@ extern void drm_mode_sort(struct list_head *mode_list);
 extern int drm_mode_vrefresh(struct drm_display_mode *mode);
 extern void drm_mode_set_crtcinfo(struct drm_display_mode *p,
 				  int adjust_flags);
-extern void drm_mode_output_list_update(struct drm_output *output);
-extern int drm_mode_output_update_edid_property(struct drm_output *output,
+extern void drm_mode_connector_list_update(struct drm_connector *connector);
+extern int drm_mode_connector_update_edid_property(struct drm_connector *connector,
 						struct edid *edid);
-extern int drm_output_property_set_value(struct drm_output *output,
+extern int drm_connector_property_set_value(struct drm_connector *connector,
 					 struct drm_property *property,
 					 uint64_t value);
-extern int drm_output_property_get_value(struct drm_output *output,
+extern int drm_connector_property_get_value(struct drm_connector *connector,
 					 struct drm_property *property,
 					 uint64_t *value);
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
@@ -623,10 +621,10 @@ extern struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev);
 extern void drm_framebuffer_destroy(struct drm_framebuffer *fb);
 extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
-extern void drm_crtc_probe_output_modes(struct drm_device *dev, int maxX, int maxY);
+extern void drm_crtc_probe_connector_modes(struct drm_device *dev, int maxX, int maxY);
 extern bool drm_crtc_in_use(struct drm_crtc *crtc);
 
-extern int drm_output_attach_property(struct drm_output *output,
+extern int drm_connector_attach_property(struct drm_connector *connector,
 				      struct drm_property *property, uint64_t init_val);
 extern struct drm_property *drm_property_create(struct drm_device *dev, int flags,
 						const char *name, int num_values);
@@ -636,9 +634,9 @@ extern int drm_property_add_enum(struct drm_property *property, int index,
 extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
 				     char *formats[]);
 
-extern int drm_mode_output_attach_encoder(struct drm_output *output,
+extern int drm_mode_connector_attach_encoder(struct drm_connector *connector,
 					  struct drm_encoder *encoder);
-extern void drm_mode_output_detach_encoder(struct drm_output *output,
+extern void drm_mode_connector_detach_encoder(struct drm_connector *connector,
 					   struct drm_encoder *encoder);
 
 /* IOCTLs */
@@ -647,7 +645,7 @@ extern int drm_mode_getresources(struct drm_device *dev,
 
 extern int drm_mode_getcrtc(struct drm_device *dev,
 			    void *data, struct drm_file *file_priv);
-extern int drm_mode_getoutput(struct drm_device *dev,
+extern int drm_mode_getconnector(struct drm_device *dev,
 			      void *data, struct drm_file *file_priv);
 extern int drm_mode_setcrtc(struct drm_device *dev,
 			    void *data, struct drm_file *file_priv);
@@ -672,7 +670,7 @@ extern int drm_mode_getproperty_ioctl(struct drm_device *dev,
 				      void *data, struct drm_file *file_priv);
 extern int drm_mode_getblob_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
-extern int drm_mode_output_property_set_ioctl(struct drm_device *dev,
+extern int drm_mode_connector_property_set_ioctl(struct drm_device *dev,
 					      void *data, struct drm_file *file_priv);
 extern int drm_mode_hotplug_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
