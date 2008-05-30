@@ -383,7 +383,6 @@ struct drm_crtc {
  * etc.
  */
 struct drm_output_funcs {
-	void (*init)(struct drm_output *output);
 	void (*dpms)(struct drm_output *output, int mode);
 	void (*save)(struct drm_output *output);
 	void (*restore)(struct drm_output *output);
