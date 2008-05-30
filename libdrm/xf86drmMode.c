@@ -119,6 +119,11 @@ void drmModeFreeOutput(drmModeOutputPtr ptr)
 
 }
 
+void drmModeFreeEncoder(drmModeEncoderPtr ptr)
+{
+	drmFree(ptr);
+}
+
 /*
  * ModeSetting functions.
  */
