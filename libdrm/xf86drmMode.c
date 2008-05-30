@@ -381,10 +381,6 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	conn.connector = connector_id;
 	conn.connector_type_id = 0;
 	conn.connector_type  = 0;
-	conn.count_crtcs  = 0;
-	conn.crtcs        = 0;
-	conn.count_clones = 0;
-	conn.clones       = 0;
 	conn.count_modes  = 0;
 	conn.modes_ptr    = 0;
 	conn.count_props  = 0;
@@ -420,12 +416,8 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	r->mmWidth      = conn.mm_width;
 	r->mmHeight     = conn.mm_height;
 	r->subpixel     = conn.subpixel;
-	r->count_crtcs  = conn.count_crtcs;
-	r->count_clones = conn.count_clones;
 	r->count_modes  = conn.count_modes;
 	/* TODO we should test if these alloc & cpy fails. */
-	r->crtcs        = conn.crtcs;
-	r->clones       = conn.clones;
 	r->count_props  = conn.count_props;
 	r->props        = drmAllocCpy(U642VOID(conn.props_ptr), conn.count_props, sizeof(uint32_t));
 	r->prop_values  = drmAllocCpy(U642VOID(conn.prop_values_ptr), conn.count_props, sizeof(uint64_t));

@@ -46,6 +46,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 {
 	int c, o, assigned;
 	struct drm_connector *connector, *connector_equal;
+	struct drm_encoder *encoder, *encoder_equal;
 	struct drm_crtc   *crtc;
 	struct drm_display_mode *des_mode = NULL, *modes, *modes_equal;
 	int found;
@@ -89,12 +90,16 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			}
 		}
 
+		list_for_each_entry(encoder, &dev->mode_config.encoder_list, head)
+			if (encoder->id == connector->current_encoder_id)
+				break;
+
 		c = -1;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 			assigned = 0;
 
 			c++;
-			if ((connector->possible_crtcs & (1 << c)) == 0)
+			if ((encoder->possible_crtcs & (1 << c)) == 0)
 		    		continue;
 	
 			list_for_each_entry(connector_equal, &dev->mode_config.connector_list, head) {
@@ -117,11 +122,15 @@ static void drm_pick_crtcs (struct drm_device *dev)
 				if (connector->id == connector_equal->id)
 					continue;
 
+				list_for_each_entry(encoder_equal, &dev->mode_config.encoder_list, head)
+					if (encoder_equal->id == connector_equal->current_encoder_id)
+						break;
+
 				list_for_each_entry(modes, &connector->modes, head) {
 					list_for_each_entry(modes_equal, &connector_equal->modes, head) {
 						if (drm_mode_equal (modes, modes_equal)) {
-							if ((connector->possible_clones & connector_equal->possible_clones) && (connector_equal->crtc == crtc)) {
-								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_connector_name(connector),connector->possible_clones,drm_get_connector_name(connector_equal),connector_equal->possible_clones);
+							if ((encoder->possible_clones & encoder_equal->possible_clones) && (connector_equal->crtc == crtc)) {
+								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_connector_name(connector),encoder->possible_clones,drm_get_connector_name(connector_equal),encoder_equal->possible_clones);
 								des_mode = modes;
 								assigned = 0;
 								goto clone;

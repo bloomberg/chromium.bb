@@ -1091,6 +1091,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
 	struct intel_crtc *intel_crtc;
 	struct drm_crtc *possible_crtc;
 	struct drm_crtc *supported_crtc =NULL;
+	struct drm_encoder *encoder = NULL;
 	struct drm_crtc *crtc = NULL;
 	struct drm_connector_helper_funcs *connector_funcs;
 	int i = -1;
@@ -1118,10 +1119,14 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
 		return crtc;
 	}
 
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head)
+		if (encoder->id == connector->current_encoder_id)
+			break;
+
 	/* Find an unused one (if possible) */
 	list_for_each_entry(possible_crtc, &dev->mode_config.crtc_list, head) {
 		i++;
-		if (!(connector->possible_crtcs & (1 << i)))
+		if (!(encoder->possible_crtcs & (1 << i)))
 			continue;
 		if (!possible_crtc->enabled) {
 			crtc = possible_crtc;
@@ -1395,6 +1400,7 @@ static void intel_setup_outputs(struct drm_device *dev)
 
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		struct intel_output *intel_output = to_intel_output(connector);
+		struct drm_encoder *encoder = &intel_output->enc;
 		int crtc_mask = 0, clone_mask = 0;
 		
 		/* valid crtcs */
@@ -1424,8 +1430,8 @@ static void intel_setup_outputs(struct drm_device *dev)
 			clone_mask = (1 << INTEL_OUTPUT_TVOUT);
 			break;
 		}
-		connector->possible_crtcs = crtc_mask;
-		connector->possible_clones = intel_connector_clones(dev, clone_mask);
+		encoder->possible_crtcs = crtc_mask;
+		encoder->possible_clones = intel_connector_clones(dev, clone_mask);
 	}
 }
 

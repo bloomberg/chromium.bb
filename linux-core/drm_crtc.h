@@ -423,8 +423,6 @@ struct drm_encoder {
 /**
  * drm_connector - central DRM connector control structure
  * @crtc: CRTC this connector is currently connected to, NULL if none
- * @possible_crtcs: bitmap of CRTCS this connector could be attached to
- * @possible_clones: bitmap of possible connectors this connector could clone
  * @interlace_allowed: can this connector handle interlaced modes?
  * @doublescan_allowed: can this connector handle doublescan?
  * @available_modes: modes available on this connector (from get_modes() + user)
@@ -448,8 +446,6 @@ struct drm_connector {
 
 	int connector_type;
 	int connector_type_id;
-	unsigned long possible_crtcs;
-	unsigned long possible_clones;
 	bool interlace_allowed;
 	bool doublescan_allowed;
 	struct list_head modes; /* list of modes on this connector */
@@ -470,7 +466,9 @@ struct drm_connector {
 
 	void *helper_private;
 
-	u32 encoder_ids[DRM_CONNECTOR_MAX_ENCODER];
+	uint32_t encoder_ids[DRM_CONNECTOR_MAX_ENCODER];
+	uint32_t force_encoder_id;
+	uint32_t current_encoder_id;
 };
 
 /**

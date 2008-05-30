@@ -141,12 +141,6 @@ typedef struct _drmModeConnector {
 	uint32_t mmWidth, mmHeight; /**< HxW in millimeters */
 	drmModeSubPixel subpixel;
 
-	int count_crtcs;
-	uint32_t crtcs; /**< Possible crtc to connect to */
-
-	int count_clones;
-	uint32_t clones; /**< Mask of clones */
-
 	int count_modes;
 	struct drm_mode_modeinfo *modes;
 

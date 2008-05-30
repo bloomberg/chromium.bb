@@ -1148,9 +1148,6 @@ int drm_mode_getconnector(struct drm_device *dev,
 	else
 		out_resp->crtc = 0;
 
-	out_resp->crtcs = connector->possible_crtcs;
-	out_resp->clones = connector->possible_clones;
-
 	if ((out_resp->count_modes >= mode_count) && mode_count) {
 		copied = 0;
 		mode_ptr = (struct drm_mode_modeinfo *)(unsigned long)out_resp->modes_ptr;
@@ -2201,6 +2198,9 @@ int drm_mode_connector_attach_encoder(struct drm_connector *connector,
 	for (i = 0; i < DRM_CONNECTOR_MAX_ENCODER; i++) {
 		if (connector->encoder_ids[i] == 0) {
 			connector->encoder_ids[i] = encoder->id;
+			/* pick the first added encoder as the current */
+			if (i == 0)
+				connector->current_encoder_id = encoder->id;
 			return 0;
 		}
 	}

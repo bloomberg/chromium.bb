@@ -1087,10 +1087,6 @@ struct drm_mode_get_connector {
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */
 	unsigned int subpixel;
-	int count_crtcs;
-	int count_clones;
-	unsigned int crtcs; /**< possible crtc to connect to */
-	unsigned int clones; /**< list of clones */
 };
 
 #define DRM_MODE_PROP_PENDING (1<<0)
