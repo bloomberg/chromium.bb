@@ -108,11 +108,15 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
   // relevant. The Breakpad processor does not require this information but
   // can function better with Breakpad-generated dumps when it is present.
   // The native debugger is not harmed by the presence of this information.
-  MDRawBreakpadInfo breakpad_info;
-  breakpad_info.validity = MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID |
-                           MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID;
-  breakpad_info.dump_thread_id = thread_id;
-  breakpad_info.requesting_thread_id = requesting_thread_id;
+  MDRawBreakpadInfo breakpad_info = {0};
+  if (!is_client_pointers) {
+    // Set the dump thread id and requesting thread id only in case of
+    // in-process dump generation.
+    breakpad_info.validity = MD_BREAKPAD_INFO_VALID_DUMP_THREAD_ID |
+                             MD_BREAKPAD_INFO_VALID_REQUESTING_THREAD_ID;
+    breakpad_info.dump_thread_id = thread_id;
+    breakpad_info.requesting_thread_id = requesting_thread_id;
+  }
 
   // Leave room in user_stream_array for a possible assertion info stream.
   MINIDUMP_USER_STREAM user_stream_array[2];
