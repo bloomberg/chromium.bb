@@ -1,11 +1,13 @@
                               Fontconfig
              Font configuration and customization library
-                       Version 2.5.93 (2.6 RC3)
-                              2008-05-24
+                              Version 2.6
+                              2008-05-31
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.6
 
 2.5.93 (2.6 RC3)
 
