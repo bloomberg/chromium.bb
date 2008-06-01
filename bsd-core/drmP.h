@@ -788,11 +788,10 @@ struct drm_device {
 	wait_queue_head_t *vbl_queue;	/* vblank wait queue */
 	atomic_t	  *_vblank_count;	/* number of VBLANK interrupts */
 						/* (driver must alloc the right number of counters) */
-	struct mtx	  vbl_lock;
 	struct drm_vbl_sig_list *vbl_sigs;	/* signal list to send on VBLANK */
 	atomic_t 	  vbl_signal_pending;	/* number of signals pending on all crtcs*/
 	atomic_t	  *vblank_refcount;	/* number of users of vblank interrupts per crtc */
-	u32		  *last_vblank;		/* protected by dev->vbl_lock, used */
+	u32		  *last_vblank;		/* protected by dev->irq_lock, used */
 						/* for wraparound handling */
 
 	u32		  *vblank_offset;	/* used to track how many vblanks */
@@ -802,8 +801,6 @@ struct drm_device {
 	struct callout	  vblank_disable_timer;
 	unsigned long	  max_vblank_count;	/* size of vblank counter register */
 	int		  num_crtcs;
-	atomic_t	  vbl_received;
-	atomic_t	  vbl_received2;
 
 #ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */

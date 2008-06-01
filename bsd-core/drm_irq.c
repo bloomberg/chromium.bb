@@ -73,13 +73,13 @@ static void vblank_disable_fn(void *arg)
 	int i;
 
 	for (i = 0; i < dev->num_crtcs; i++) {
-		DRM_SPINLOCK_IRQSAVE(&dev->vbl_lock, irqflags);
+		DRM_SPINLOCK_IRQSAVE(&dev->irq_lock, irqflags);
 		if (atomic_read(&dev->vblank_refcount[i]) == 0 &&
 		    dev->vblank_enabled[i]) {
 			dev->driver.disable_vblank(dev, i);
 			dev->vblank_enabled[i] = 0;
 		}
-		DRM_SPINUNLOCK_IRQRESTORE(&dev->vbl_lock, irqflags);
+		DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
 	}
 }
 
@@ -92,7 +92,6 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 	callout_drain(&dev->vblank_disable_timer);
 
 	vblank_disable_fn((void *)dev);
-	DRM_SPINUNINIT(&dev->vbl_lock);
 
 	drm_free(dev->vbl_queue, sizeof(*dev->vbl_queue) * dev->num_crtcs,
 	    DRM_MEM_DRIVER);
@@ -119,7 +118,6 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	int i, ret = -ENOMEM;
 
 	callout_init(&dev->vblank_disable_timer, 0);
-	DRM_SPININIT(&dev->vbl_lock, "drm_vblk");
 	atomic_set(&dev->vbl_signal_pending, 0);
 	dev->num_crtcs = num_crtcs;
 
@@ -339,7 +337,7 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 	 * a long time.
 	 */
 	cur_vblank = dev->driver.get_vblank_counter(dev, crtc);
-	DRM_SPINLOCK_IRQSAVE(&dev->vbl_lock, irqflags);
+	DRM_SPINLOCK_IRQSAVE(&dev->irq_lock, irqflags);
 	if (cur_vblank < dev->last_vblank[crtc]) {
 		diff = dev->max_vblank_count -
 			dev->last_vblank[crtc];
@@ -348,7 +346,7 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 		diff = cur_vblank - dev->last_vblank[crtc];
 	}
 	dev->last_vblank[crtc] = cur_vblank;
-	DRM_SPINUNLOCK_IRQRESTORE(&dev->vbl_lock, irqflags);
+	DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
 
 	atomic_add(diff, &dev->_vblank_count[crtc]);
 }
@@ -358,7 +356,7 @@ int drm_vblank_get(struct drm_device *dev, int crtc)
 	unsigned long irqflags;
 	int ret = 0;
 
-	DRM_SPINLOCK_IRQSAVE(&dev->vbl_lock, irqflags);
+	DRM_SPINLOCK_IRQSAVE(&dev->irq_lock, irqflags);
 	/* Going from 0->1 means we have to enable interrupts again */
 	atomic_add_acq_int(&dev->vblank_refcount[crtc], 1);
 	if (dev->vblank_refcount[crtc] == 1 &&
@@ -369,7 +367,7 @@ int drm_vblank_get(struct drm_device *dev, int crtc)
 		else
 			dev->vblank_enabled[crtc] = 1;
 	}
-	DRM_SPINUNLOCK_IRQRESTORE(&dev->vbl_lock, irqflags);
+	DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
 
 	return ret;
 }
