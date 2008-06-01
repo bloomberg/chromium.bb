@@ -72,23 +72,40 @@ static void vblank_disable_fn(void *arg)
 	unsigned long irqflags;
 	int i;
 
+	DRM_SPINLOCK_IRQSAVE(&dev->irq_lock, irqflags);
+	if (callout_pending(&dev->vblank_disable_timer)) {
+		/* callout was reset */
+		DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
+		return;
+	}
+	if (!callout_active(&dev->vblank_disable_timer)) {
+		/* callout was stopped */
+		DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
+		return;
+	}
+	callout_deactivate(&dev->vblank_disable_timer);
+
 	for (i = 0; i < dev->num_crtcs; i++) {
-		DRM_SPINLOCK_IRQSAVE(&dev->irq_lock, irqflags);
 		if (atomic_read(&dev->vblank_refcount[i]) == 0 &&
 		    dev->vblank_enabled[i]) {
 			dev->driver.disable_vblank(dev, i);
 			dev->vblank_enabled[i] = 0;
 		}
-		DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
 	}
+	DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
 }
 
 static void drm_vblank_cleanup(struct drm_device *dev)
 {
+	unsigned long irqflags;
+
 	/* Bail if the driver didn't call drm_vblank_init() */
 	if (dev->num_crtcs == 0)
 	    return;
 
+	DRM_SPINLOCK_IRQSAVE(&dev->irq_lock, irqflags);
+	callout_stop(&dev->vblank_disable_timer);
+	DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
 	callout_drain(&dev->vblank_disable_timer);
 
 	vblank_disable_fn((void *)dev);
@@ -117,7 +134,7 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 {
 	int i, ret = -ENOMEM;
 
-	callout_init(&dev->vblank_disable_timer, 0);
+	callout_init_mtx(&dev->vblank_disable_timer, &dev->irq_lock, 1);
 	atomic_set(&dev->vbl_signal_pending, 0);
 	dev->num_crtcs = num_crtcs;
 
@@ -374,11 +391,15 @@ int drm_vblank_get(struct drm_device *dev, int crtc)
 
 void drm_vblank_put(struct drm_device *dev, int crtc)
 {
+	unsigned long irqflags;
+
+	DRM_SPINLOCK_IRQSAVE(&dev->irq_lock, irqflags);
 	/* Last user schedules interrupt disable */
 	atomic_subtract_acq_int(&dev->vblank_refcount[crtc], 1);
 	if (dev->vblank_refcount[crtc] == 0)
 	    callout_reset(&dev->vblank_disable_timer, jiffies + 5*DRM_HZ,
 		(timeout_t *)vblank_disable_fn, (void *)dev);
+	DRM_SPINUNLOCK_IRQRESTORE(&dev->irq_lock, irqflags);
 }
 
 int drm_modeset_ctl(struct drm_device *dev, void *data,
