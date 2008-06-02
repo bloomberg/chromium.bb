@@ -202,7 +202,9 @@ int drm_attach(device_t nbdev, drm_pci_id_list_t *idlist)
 			DRM_DEV_MODE,
 			"dri/card%d", unit);
 #if __FreeBSD_version >= 500000
-	mtx_init(&dev->dev_lock, "drm device", NULL, MTX_DEF);
+	mtx_init(&dev->dev_lock, "drmdev", NULL, MTX_DEF);
+	mtx_init(&dev->irq_lock, "drmirq", NULL, MTX_DEF);
+	mtx_init(&dev->vbl_lock, "drmvbl", NULL, MTX_DEF);
 	mtx_init(&dev->drw_lock, "drmdrw", NULL, MTX_DEF);
 #endif
 
@@ -594,6 +596,9 @@ error:
 #ifdef __FreeBSD__
 	destroy_dev(dev->devnode);
 #if __FreeBSD_version >= 500000
+	mtx_destroy(&dev->drw_lock);
+	mtx_destroy(&dev->irq_lock);
+	mtx_destroy(&dev->vbl_lock);
 	mtx_destroy(&dev->dev_lock);
 #endif
 #endif

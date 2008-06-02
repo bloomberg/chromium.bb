@@ -733,6 +733,7 @@ struct drm_device {
 
 				/* Locks */
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
+	struct mtx	  vbl_lock;	/* protects vblank operations */
 	struct mtx	  dma_lock;	/* protects dev->dma */
 	struct mtx	  irq_lock;	/* protects irq condition checks */
 	struct mtx	  dev_lock;	/* protects everything else */
@@ -791,7 +792,7 @@ struct drm_device {
 	struct drm_vbl_sig_list *vbl_sigs;	/* signal list to send on VBLANK */
 	atomic_t 	  vbl_signal_pending;	/* number of signals pending on all crtcs*/
 	atomic_t	  *vblank_refcount;	/* number of users of vblank interrupts per crtc */
-	u32		  *last_vblank;		/* protected by dev->irq_lock, used */
+	u32		  *last_vblank;		/* protected by dev->vbl_lock, used */
 						/* for wraparound handling */
 
 	u32		  *vblank_offset;	/* used to track how many vblanks */
