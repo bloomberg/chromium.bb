@@ -1058,6 +1058,7 @@ struct drm_mode_get_encoder {
 	uint32_t encoder_type;
 	uint32_t encoder_id;
 
+	unsigned int crtc; /**< Id of crtc */
 	uint32_t crtcs;
 	uint32_t clones;
 };
@@ -1079,8 +1080,8 @@ struct drm_mode_get_connector {
 	int count_props;
 	int count_encoders;
 
+	unsigned int encoder; /**< Current Encoder */
 	unsigned int connector; /**< Id */
-	unsigned int crtc; /**< Id of crtc */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
 

@@ -89,9 +89,9 @@ static void intel_lvds_set_power(struct drm_device *dev, bool on)
 	}
 }
 
-static void intel_lvds_dpms(struct drm_connector *connector, int mode)
+static void intel_lvds_dpms(struct drm_encoder *encoder, int mode)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 
 	if (mode == DPMSModeOn)
 		intel_lvds_set_power(dev, true);
@@ -155,14 +155,14 @@ static int intel_lvds_mode_valid(struct drm_connector *connector,
 	return MODE_OK;
 }
 
-static bool intel_lvds_mode_fixup(struct drm_connector *connector,
+static bool intel_lvds_mode_fixup(struct drm_encoder *encoder,
 				  struct drm_display_mode *mode,
 				  struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = to_intel_crtc(connector->crtc);
-	struct drm_connector *tmp_connector;
+	struct intel_crtc *intel_crtc = to_intel_crtc(encoder->crtc);
+	struct drm_encoder *tmp_encoder;
 
 	/* Should never happen!! */
 	if (!IS_I965G(dev) && intel_crtc->pipe == 0) {
@@ -171,10 +171,10 @@ static bool intel_lvds_mode_fixup(struct drm_connector *connector,
 	}
 
 	/* Should never happen!! */
-	list_for_each_entry(tmp_connector, &dev->mode_config.connector_list, head) {
-		if (tmp_connector != connector && tmp_connector->crtc == connector->crtc) {
+	list_for_each_entry(tmp_encoder, &dev->mode_config.encoder_list, head) {
+		if (tmp_encoder != encoder && tmp_encoder->crtc == encoder->crtc) {
 			printk(KERN_ERR "Can't enable LVDS and another "
-			       "connector on the same pipe\n");
+			       "encoder on the same pipe\n");
 			return false;
 		}
 	}
@@ -211,9 +211,9 @@ static bool intel_lvds_mode_fixup(struct drm_connector *connector,
 	return true;
 }
 
-static void intel_lvds_prepare(struct drm_connector *connector)
+static void intel_lvds_prepare(struct drm_encoder *encoder)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
@@ -223,9 +223,9 @@ static void intel_lvds_prepare(struct drm_connector *connector)
 	intel_lvds_set_power(dev, false);
 }
 
-static void intel_lvds_commit( struct drm_connector *connector)
+static void intel_lvds_commit( struct drm_encoder *encoder)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	if (dev_priv->backlight_duty_cycle == 0)
@@ -235,13 +235,13 @@ static void intel_lvds_commit( struct drm_connector *connector)
 	intel_lvds_set_power(dev, true);
 }
 
-static void intel_lvds_mode_set(struct drm_connector *connector,
+static void intel_lvds_mode_set(struct drm_encoder *encoder,
 				struct drm_display_mode *mode,
 				struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = to_intel_crtc(connector->crtc);
+	struct intel_crtc *intel_crtc = to_intel_crtc(encoder->crtc);
 	u32 pfit_control;
 
 	/*
@@ -334,7 +334,8 @@ static void intel_lvds_destroy(struct drm_connector *connector)
 	kfree(connector);
 }
 
-static const struct drm_connector_helper_funcs intel_lvds_helper_funcs = {
+static const struct drm_encoder_helper_funcs intel_lvds_helper_funcs = {
+	.dpms = intel_lvds_dpms,
 	.mode_fixup = intel_lvds_mode_fixup,
 	.prepare = intel_lvds_prepare,
 	.mode_set = intel_lvds_mode_set,
@@ -342,7 +343,6 @@ static const struct drm_connector_helper_funcs intel_lvds_helper_funcs = {
 };
 
 static const struct drm_connector_funcs intel_lvds_connector_funcs = {
-	.dpms = intel_lvds_dpms,
 	.save = intel_lvds_save,
 	.restore = intel_lvds_restore,
 	.detect = intel_lvds_detect,
@@ -373,6 +373,7 @@ void intel_lvds_init(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_output *intel_output;
 	struct drm_connector *connector;
+	struct drm_encoder *encoder;
 	struct drm_display_mode *scan; /* *modes, *bios_mode; */
 	struct drm_crtc *crtc;
 	u32 lvds;
@@ -384,6 +385,7 @@ void intel_lvds_init(struct drm_device *dev)
 	}
 
 	connector = &intel_output->base;
+	encoder = &intel_output->enc;
 	drm_connector_init(dev, &intel_output->base, &intel_lvds_connector_funcs,
 			   DRM_MODE_CONNECTOR_LVDS);
 
@@ -392,7 +394,7 @@ void intel_lvds_init(struct drm_device *dev)
 
 	intel_output->type = INTEL_OUTPUT_LVDS;
 
-	drm_connector_helper_add(connector, &intel_lvds_helper_funcs);
+	drm_encoder_helper_add(encoder, &intel_lvds_helper_funcs);
 	connector->display_info.subpixel_order = SubPixelHorizontalRGB;
 	connector->interlace_allowed = FALSE;
 	connector->doublescan_allowed = FALSE;

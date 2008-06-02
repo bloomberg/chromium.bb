@@ -33,9 +33,9 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
-static void intel_crt_dpms(struct drm_connector *connector, int mode)
+static void intel_crt_dpms(struct drm_encoder *encoder, int mode)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 temp;
 	
@@ -83,19 +83,20 @@ static int intel_crt_mode_valid(struct drm_connector *connector,
 	return MODE_OK;
 }
 
-static bool intel_crt_mode_fixup(struct drm_connector *connector,
+static bool intel_crt_mode_fixup(struct drm_encoder *encoder,
 				 struct drm_display_mode *mode,
 				 struct drm_display_mode *adjusted_mode)
 {
 	return true;
 }
 
-static void intel_crt_mode_set(struct drm_connector *connector,
+static void intel_crt_mode_set(struct drm_encoder *encoder,
 			       struct drm_display_mode *mode,
 			       struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = connector->dev;
-	struct drm_crtc *crtc = connector->crtc;
+	
+	struct drm_device *dev = encoder->dev;
+	struct drm_crtc *crtc = encoder->crtc;
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	int dpll_md_reg;
@@ -214,8 +215,8 @@ static bool intel_crt_set_property(struct drm_connector *connector,
 {
 	struct drm_device *dev = connector->dev;
 
-	if (property == dev->mode_config.dpms_property)
-		intel_crt_dpms(connector, (uint32_t)(value & 0xf));
+	if (property == dev->mode_config.dpms_property && connector->encoder)
+		intel_crt_dpms(connector->encoder, (uint32_t)(value & 0xf));
 
 	return true;
 }
@@ -224,15 +225,15 @@ static bool intel_crt_set_property(struct drm_connector *connector,
  * Routines for controlling stuff on the analog port
  */
 
-static const struct drm_connector_helper_funcs intel_crt_helper_funcs = {
+static const struct drm_encoder_helper_funcs intel_crt_helper_funcs = {
+	.dpms = intel_crt_dpms,
 	.mode_fixup = intel_crt_mode_fixup,
-	.prepare = intel_connector_prepare,
-	.commit = intel_connector_commit,
+	.prepare = intel_encoder_prepare,
+	.commit = intel_encoder_commit,
 	.mode_set = intel_crt_mode_set,
 };
 
 static const struct drm_connector_funcs intel_crt_connector_funcs = {
-	.dpms = intel_crt_dpms,
 	.save = intel_crt_save,
 	.restore = intel_crt_restore,
 	.detect = intel_crt_detect,
@@ -281,7 +282,7 @@ void intel_crt_init(struct drm_device *dev)
 	connector->interlace_allowed = 0;
 	connector->doublescan_allowed = 0;
 
-	drm_connector_helper_add(connector, &intel_crt_helper_funcs);
+	drm_encoder_helper_add(&intel_output->enc, &intel_crt_helper_funcs);
 
 	drm_sysfs_connector_add(connector);
 

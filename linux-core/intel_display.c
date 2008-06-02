@@ -228,7 +228,7 @@ bool intel_pipe_has_type (struct drm_crtc *crtc, int type)
     struct drm_connector *l_entry;
 
     list_for_each_entry(l_entry, &mode_config->connector_list, head) {
-	    if (l_entry->crtc == crtc) {
+	    if (l_entry->encoder->crtc == crtc) {
 		    struct intel_output *intel_output = to_intel_output(l_entry);
 		    if (intel_output->type == type)
 			    return true;
@@ -575,24 +575,28 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 
 static void intel_crtc_prepare (struct drm_crtc *crtc)
 {
-	crtc->funcs->dpms(crtc, DPMSModeOff);
+	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+	crtc_funcs->dpms(crtc, DPMSModeOff);
 }
 
 static void intel_crtc_commit (struct drm_crtc *crtc)
 {
-	crtc->funcs->dpms(crtc, DPMSModeOn);
+	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+	crtc_funcs->dpms(crtc, DPMSModeOn);
 }
 
-void intel_connector_prepare (struct drm_connector *connector)
+void intel_encoder_prepare (struct drm_encoder *encoder)
 {
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
 	/* lvds has its own version of prepare see intel_lvds_prepare */
-	connector->funcs->dpms(connector, DPMSModeOff);
+	encoder_funcs->dpms(encoder, DPMSModeOff);
 }
 
-void intel_connector_commit (struct drm_connector *connector)
+void intel_encoder_commit (struct drm_encoder *encoder)
 {
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
 	/* lvds has its own version of commit see intel_lvds_commit */
-	connector->funcs->dpms(connector, DPMSModeOn);
+	encoder_funcs->dpms(encoder, DPMSModeOn);
 }
 
 static bool intel_crtc_mode_fixup(struct drm_crtc *crtc,
@@ -721,7 +725,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	list_for_each_entry(connector, &mode_config->connector_list, head) {
 		struct intel_output *intel_output = to_intel_output(connector);
 
-		if (connector->crtc != crtc)
+		if (!connector->encoder || connector->encoder->crtc != crtc)
 			continue;
 
 		switch (intel_output->type) {
@@ -1082,18 +1086,18 @@ static struct drm_display_mode load_detect_mode = {
 		 704, 832, 0, 480, 489, 491, 520, 0, V_NHSYNC | V_NVSYNC),
 };
 
-struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
+struct drm_crtc *intel_get_load_detect_pipe(struct intel_output *intel_output,
 					    struct drm_display_mode *mode,
 					    int *dpms_mode)
 {
-	struct drm_device *dev = connector->dev;
-	struct intel_output *intel_output = to_intel_output(connector);
 	struct intel_crtc *intel_crtc;
 	struct drm_crtc *possible_crtc;
 	struct drm_crtc *supported_crtc =NULL;
-	struct drm_encoder *encoder = NULL;
+	struct drm_encoder *encoder = &intel_output->enc;
 	struct drm_crtc *crtc = NULL;
-	struct drm_connector_helper_funcs *connector_funcs;
+	struct drm_device *dev = encoder->dev;
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
+	struct drm_crtc_helper_funcs *crtc_funcs;
 	int i = -1;
 
 	/*
@@ -1107,21 +1111,18 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
 	 */
 
 	/* See if we already have a CRTC for this connector */
-	if (connector->crtc) {
-		crtc = connector->crtc;
+	if (encoder->crtc) {
+		crtc = encoder->crtc;
 		/* Make sure the crtc and connector are running */
 		intel_crtc = to_intel_crtc(crtc);
 		*dpms_mode = intel_crtc->dpms_mode;
 		if (intel_crtc->dpms_mode != DPMSModeOn) {
-			crtc->funcs->dpms(crtc, DPMSModeOn);
-			connector->funcs->dpms(connector, DPMSModeOn);
+			crtc_funcs = crtc->helper_private;
+			crtc_funcs->dpms(crtc, DPMSModeOn);
+			encoder_funcs->dpms(encoder, DPMSModeOn);
 		}
 		return crtc;
 	}
-
-	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head)
-		if (encoder->id == connector->current_encoder_id)
-			break;
 
 	/* Find an unused one (if possible) */
 	list_for_each_entry(possible_crtc, &dev->mode_config.crtc_list, head) {
@@ -1146,7 +1147,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
 			return NULL;
 	}
 
-	connector->crtc = crtc;
+	encoder->crtc = crtc;
 	intel_output->load_detect_temp = TRUE;
     
 	intel_crtc = to_intel_crtc(crtc);
@@ -1157,13 +1158,14 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
 			mode = &load_detect_mode;
 		drm_crtc_helper_set_mode(crtc, mode, 0, 0);
 	} else {
-		if (intel_crtc->dpms_mode != DPMSModeOn)
-			crtc->funcs->dpms(crtc, DPMSModeOn);
+		if (intel_crtc->dpms_mode != DPMSModeOn) {
+			crtc_funcs = crtc->helper_private;
+			crtc_funcs->dpms(crtc, DPMSModeOn);
+		}
 
-		connector_funcs = connector->helper_private;
 		/* Add this connector to the crtc */
-		connector_funcs->mode_set(connector, &crtc->mode, &crtc->mode);
-		connector_funcs->commit(connector);
+		encoder_funcs->mode_set(encoder, &crtc->mode, &crtc->mode);
+		encoder_funcs->commit(encoder);
 	}
 	/* let the connector get through one full cycle before testing */
 	intel_wait_for_vblank(dev);
@@ -1171,24 +1173,26 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
 	return crtc;
 }
 
-void intel_release_load_detect_pipe(struct drm_connector *connector, int dpms_mode)
+void intel_release_load_detect_pipe(struct intel_output *intel_output, int dpms_mode)
 {
-	struct drm_device *dev = connector->dev;
-	struct intel_output *intel_output = to_intel_output(connector);
-	struct drm_crtc *crtc = connector->crtc;
+	struct drm_encoder *encoder = &intel_output->enc;
+	struct drm_device *dev = encoder->dev;
+	struct drm_crtc *crtc = encoder->crtc;
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
+	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
     
 	if (intel_output->load_detect_temp) {
-		connector->crtc = NULL;
+		encoder->crtc = NULL;
 		intel_output->load_detect_temp = FALSE;
 		crtc->enabled = drm_crtc_in_use(crtc);
-		drm_disable_unused_functions(dev);
+		drm_helper_disable_unused_functions(dev);
 	}
 
 	/* Switch crtc and output back off if necessary */
 	if (crtc->enabled && dpms_mode != DPMSModeOn) {
-		if (connector->crtc == crtc)
-			connector->funcs->dpms(connector, dpms_mode);
-		crtc->funcs->dpms(crtc, dpms_mode);
+		if (encoder->crtc == crtc)
+			encoder_funcs->dpms(encoder, dpms_mode);
+		crtc_funcs->dpms(crtc, dpms_mode);
 	}
 }
 
@@ -1311,6 +1315,7 @@ static void intel_crtc_destroy(struct drm_crtc *crtc)
 }
 
 static const struct drm_crtc_helper_funcs intel_helper_funcs = {
+	.dpms = intel_crtc_dpms,
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
 	.mode_set_base = intel_pipe_set_base,
@@ -1319,7 +1324,6 @@ static const struct drm_crtc_helper_funcs intel_helper_funcs = {
 };
 
 static const struct drm_crtc_funcs intel_crtc_funcs = {
-	.dpms = intel_crtc_dpms,
 	.cursor_set = intel_crtc_cursor_set,
 	.cursor_move = intel_crtc_cursor_move,
 	.gamma_set = intel_crtc_gamma_set,

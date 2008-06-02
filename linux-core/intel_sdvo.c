@@ -539,7 +539,7 @@ static bool intel_sdvo_set_clock_rate_mult(struct intel_output *intel_output, u8
 	return true;
 }
 
-static bool intel_sdvo_mode_fixup(struct drm_connector *connector,
+static bool intel_sdvo_mode_fixup(struct drm_encoder *encoder,
 				  struct drm_display_mode *mode,
 				  struct drm_display_mode *adjusted_mode)
 {
@@ -550,15 +550,15 @@ static bool intel_sdvo_mode_fixup(struct drm_connector *connector,
 	return true;
 }
 
-static void intel_sdvo_mode_set(struct drm_connector *connector,
+static void intel_sdvo_mode_set(struct drm_encoder *encoder,
 				struct drm_display_mode *mode,
 				struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_crtc *crtc = connector->crtc;
+	struct drm_crtc *crtc = encoder->crtc;
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
-	struct intel_output *intel_output = to_intel_output(connector);
+	struct intel_output *intel_output = enc_to_intel_output(encoder);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u16 width, height;
 	u16 h_blank_len, h_sync_len, v_blank_len, v_sync_len;
@@ -624,13 +624,13 @@ static void intel_sdvo_mode_set(struct drm_connector *connector,
 	 * output the preferred timing, and we don't support that currently.
 	 */
 #if 0
-	success = intel_sdvo_create_preferred_input_timing(connector, clock,
+	success = intel_sdvo_create_preferred_input_timing(intel_output, clock,
 							   width, height);
 	if (success) {
 		struct intel_sdvo_dtd *input_dtd;
 		
-		intel_sdvo_get_preferred_input_timing(connector, &input_dtd);
-		intel_sdvo_set_input_timing(connector, &input_dtd);
+		intel_sdvo_get_preferred_input_timing(intel_output, &input_dtd);
+		intel_sdvo_set_input_timing(intel_output, &input_dtd);
 	}
 #else
 	intel_sdvo_set_input_timing(intel_output, &output_dtd);
@@ -683,11 +683,11 @@ static void intel_sdvo_mode_set(struct drm_connector *connector,
 	intel_sdvo_write_sdvox(intel_output, sdvox);
 }
 
-static void intel_sdvo_dpms(struct drm_connector *connector, int mode)
+static void intel_sdvo_dpms(struct drm_encoder *encoder, int mode)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_output *intel_output = to_intel_output(connector);
+	struct intel_output *intel_output = enc_to_intel_output(encoder);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u32 temp;
 
@@ -971,15 +971,15 @@ static void intel_sdvo_destroy(struct drm_connector *connector)
 	kfree(intel_output);
 }
 
-static const struct drm_connector_helper_funcs intel_sdvo_helper_funcs = {
+static const struct drm_encoder_helper_funcs intel_sdvo_helper_funcs = {
+	.dpms = intel_sdvo_dpms,
 	.mode_fixup = intel_sdvo_mode_fixup,
-	.prepare = intel_connector_prepare,
+	.prepare = intel_encoder_prepare,
 	.mode_set = intel_sdvo_mode_set,
-	.commit = intel_connector_commit,
+	.commit = intel_encoder_commit,
 };
 
 static const struct drm_connector_funcs intel_sdvo_connector_funcs = {
-	.dpms = intel_sdvo_dpms,
 	.save = intel_sdvo_save,
 	.restore = intel_sdvo_restore,
 	.detect = intel_sdvo_detect,
@@ -1022,7 +1022,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 
 	sdvo_priv = (struct intel_sdvo_priv *)(intel_output + 1);
 	intel_output->type = INTEL_OUTPUT_SDVO;
-	drm_connector_helper_add(connector, &intel_sdvo_helper_funcs);
+
 	connector->interlace_allowed = 0;
 	connector->doublescan_allowed = 0;
 
@@ -1108,6 +1108,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	}
 	
 	drm_encoder_init(dev, &intel_output->enc, &intel_sdvo_enc_funcs, encoder_type);
+	drm_encoder_helper_add(&intel_output->enc, &intel_sdvo_helper_funcs);
 	connector->connector_type = connector_type;
 
 	drm_sysfs_connector_add(connector);

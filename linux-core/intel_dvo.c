@@ -85,10 +85,10 @@ struct intel_dvo_device intel_dvo_devices[] = {
 	}
 };
 
-static void intel_dvo_dpms(struct drm_connector *connector, int mode)
+static void intel_dvo_dpms(struct drm_encoder *encoder, int mode)
 {
-	struct drm_i915_private *dev_priv = connector->dev->dev_private;
-	struct intel_output *intel_output = to_intel_output(connector);
+	struct drm_i915_private *dev_priv = encoder->dev->dev_private;
+	struct intel_output *intel_output = enc_to_intel_output(encoder);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 	u32 dvo_reg = dvo->dvo_reg;
 	u32 temp = I915_READ(dvo_reg);
@@ -154,11 +154,11 @@ static int intel_dvo_mode_valid(struct drm_connector *connector,
 	return dvo->dev_ops->mode_valid(dvo, mode);
 }
 
-static bool intel_dvo_mode_fixup(struct drm_connector *connector,
+static bool intel_dvo_mode_fixup(struct drm_encoder *encoder,
 				 struct drm_display_mode *mode,
 				 struct drm_display_mode *adjusted_mode)
 {
-	struct intel_output *intel_output = to_intel_output(connector);
+	struct intel_output *intel_output = enc_to_intel_output(encoder);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
 	/* If we have timings from the BIOS for the panel, put them in
@@ -187,14 +187,14 @@ static bool intel_dvo_mode_fixup(struct drm_connector *connector,
 	return true;
 }
 
-static void intel_dvo_mode_set(struct drm_connector *connector,
+static void intel_dvo_mode_set(struct drm_encoder *encoder,
 			       struct drm_display_mode *mode,
 			       struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = encoder->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = to_intel_crtc(connector->crtc);
-	struct intel_output *intel_output = to_intel_output(connector);
+	struct intel_crtc *intel_crtc = to_intel_crtc(encoder->crtc);
+	struct intel_output *intel_output = enc_to_intel_output(encoder);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 	int pipe = intel_crtc->pipe;
 	u32 dvo_val;
@@ -323,15 +323,15 @@ static struct drm_crtc *intel_dvo_get_crtc(struct drm_connector *connector)
 }
 #endif
 
-static const struct drm_connector_helper_funcs intel_dvo_helper_funcs = {
+static const struct drm_encoder_helper_funcs intel_dvo_helper_funcs = {
+	.dpms = intel_dvo_dpms,
 	.mode_fixup = intel_dvo_mode_fixup,
-	.prepare = intel_connector_prepare,
+	.prepare = intel_encoder_prepare,
 	.mode_set = intel_dvo_mode_set,
-	.commit = intel_connector_commit,
+	.commit = intel_encoder_commit,
 };
 
 static const struct drm_connector_funcs intel_dvo_connector_funcs = {
-	.dpms = intel_dvo_dpms,
 	.save = intel_dvo_save,
 	.restore = intel_dvo_restore,
 	.detect = intel_dvo_detect,
@@ -464,7 +464,6 @@ void intel_dvo_init(struct drm_device *dev)
 			break;
 		}
 
-		drm_connector_helper_add(connector, &intel_dvo_helper_funcs);
 		connector->display_info.subpixel_order = SubPixelHorizontalRGB;
 		connector->interlace_allowed = false;
 		connector->doublescan_allowed = false;
@@ -473,6 +472,8 @@ void intel_dvo_init(struct drm_device *dev)
 		intel_output->i2c_bus = i2cbus;
 
 		drm_encoder_init(dev, &intel_output->enc, &intel_dvo_enc_funcs, encoder_type);
+		drm_encoder_helper_add(&intel_output->enc, &intel_dvo_helper_funcs);
+
 		if (dvo->type == INTEL_DVO_CHIP_LVDS) {
 			/* For our LVDS chipsets, we should hopefully be able
 			 * to dig the fixed panel mode out of the BIOS data.

@@ -83,6 +83,15 @@ static struct drm_prop_enum_list drm_encoder_enum_list[] =
   { DRM_MODE_ENCODER_TVDAC, "TV" },
 };
 
+char *drm_get_encoder_name(struct drm_encoder *encoder)
+{
+	static char buf[32];
+
+	snprintf(buf, 32, "%s-%d", drm_encoder_enum_list[encoder->encoder_type].name,
+		 encoder->id);
+	return buf;
+}
+
 char *drm_get_connector_name(struct drm_connector *connector)
 {
 	static char buf[32];
@@ -290,11 +299,11 @@ EXPORT_SYMBOL(drm_crtc_cleanup);
  */
 bool drm_crtc_in_use(struct drm_crtc *crtc)
 {
-	struct drm_connector *connector;
+	struct drm_encoder *encoder;
 	struct drm_device *dev = crtc->dev;
 	/* FIXME: Locking around list access? */
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head)
-		if (connector->crtc == crtc)
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head)
+		if (encoder->crtc == crtc)
 			return true;
 	return false;
 }
@@ -405,33 +414,6 @@ void drm_crtc_probe_connector_modes(struct drm_device *dev, int maxX, int maxY)
 }
 EXPORT_SYMBOL(drm_crtc_probe_connector_modes);
 
-
-/**
- * drm_disable_unused_functions - disable unused objects
- * @dev: DRM device
- *
- * LOCKING:
- * Caller must hold mode config lock.
- *
- * If an connector or CRTC isn't part of @dev's mode_config, it can be disabled
- * by calling its dpms function, which should power it off.
- */
-void drm_disable_unused_functions(struct drm_device *dev)
-{
-	struct drm_connector *connector;
-	struct drm_crtc *crtc;
-
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		if (!connector->crtc)
-			(*connector->funcs->dpms)(connector, DPMSModeOff);
-	}
-
-	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		if (!crtc->enabled)
-			crtc->funcs->dpms(crtc, DPMSModeOff);
-	}
-}
-EXPORT_SYMBOL(drm_disable_unused_functions);
 
 /**
  * drm_mode_probed_add - add a mode to the specified connector's probed mode list
@@ -1059,7 +1041,7 @@ int drm_mode_getcrtc(struct drm_device *dev,
 		crtc_resp->mode_valid = 1;
 		ocount = 0;
 		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-			if (connector->crtc == crtc)
+			if (connector->encoder->crtc == crtc)
 				crtc_resp->connectors |= 1 << (ocount++);
 		}
 		
@@ -1143,10 +1125,10 @@ int drm_mode_getconnector(struct drm_device *dev,
 	out_resp->mm_height = connector->display_info.height_mm;
 	out_resp->subpixel = connector->display_info.subpixel_order;
 	out_resp->connection = connector->status;
-	if (connector->crtc)
-		out_resp->crtc = connector->crtc->id;
+	if (connector->encoder)
+		out_resp->encoder = connector->encoder->id;
 	else
-		out_resp->crtc = 0;
+		out_resp->encoder = 0;
 
 	if ((out_resp->count_modes >= mode_count) && mode_count) {
 		copied = 0;
@@ -1220,6 +1202,10 @@ int drm_mode_getencoder(struct drm_device *dev,
 		goto out;
 	}
 
+	if (encoder->crtc)
+		enc_resp->crtc = encoder->crtc->id;
+	else
+		enc_resp->crtc = 0;
 	enc_resp->encoder_type = encoder->encoder_type;
 	enc_resp->encoder_id = encoder->id;
 	enc_resp->crtcs = encoder->possible_crtcs;
@@ -1630,7 +1616,9 @@ int drm_mode_attachmode_crtc(struct drm_device *dev, struct drm_crtc *crtc,
 	struct drm_display_mode *dup_mode;
 	int need_dup = 0;
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		if (connector->crtc == crtc) {
+		if (!connector->encoder)
+			break;
+		if (connector->encoder->crtc == crtc) {
 			if (need_dup)
 				dup_mode = drm_mode_duplicate(dev, mode);
 			else
@@ -2200,7 +2188,7 @@ int drm_mode_connector_attach_encoder(struct drm_connector *connector,
 			connector->encoder_ids[i] = encoder->id;
 			/* pick the first added encoder as the current */
 			if (i == 0)
-				connector->current_encoder_id = encoder->id;
+				connector->encoder = encoder;
 			return 0;
 		}
 	}
@@ -2215,6 +2203,8 @@ void drm_mode_connector_detach_encoder(struct drm_connector *connector,
 	for (i = 0; i < DRM_CONNECTOR_MAX_ENCODER; i++) {
 		if (connector->encoder_ids[i] == encoder->id) {
 			connector->encoder_ids[i] = 0;
+			if (connector->encoder == encoder)
+				connector->encoder = NULL;
 			break;
 		}
 	}

@@ -304,12 +304,6 @@ struct drm_encoder;
  * bus accessors.
  */
 struct drm_crtc_funcs {
-	/*
-	 * Control power levels on the CRTC.  If the mode passed in is
-	 * unsupported, the provider must use the next lowest power level.
-	 */
-	void (*dpms)(struct drm_crtc *crtc, int mode);
-
 	/* Save CRTC state */
 	void (*save)(struct drm_crtc *crtc); /* suspend? */
 	/* Restore CRTC state */
@@ -416,6 +410,7 @@ struct drm_encoder {
 	uint32_t possible_crtcs;
 	uint32_t possible_clones;
 
+	struct drm_crtc *crtc;
 	const struct drm_encoder_funcs *funcs;
 	void *helper_private;
 };
@@ -441,7 +436,6 @@ struct drm_connector {
 	struct device kdev;
 	struct device_attribute *attr;
 	struct list_head head;
-	struct drm_crtc *crtc;
 	int id; /* idr assigned */
 
 	int connector_type;
@@ -468,7 +462,7 @@ struct drm_connector {
 
 	uint32_t encoder_ids[DRM_CONNECTOR_MAX_ENCODER];
 	uint32_t force_encoder_id;
-	uint32_t current_encoder_id;
+	struct drm_encoder *encoder; /* currently active encoder */
 };
 
 /**
@@ -582,7 +576,6 @@ extern void drm_mode_config_init(struct drm_device *dev);
 extern void drm_mode_config_cleanup(struct drm_device *dev);
 extern void drm_mode_set_name(struct drm_display_mode *mode);
 extern bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2);
-extern void drm_disable_unused_functions(struct drm_device *dev);
 
 /* for us by fb module */
 extern int drm_mode_attachmode_crtc(struct drm_device *dev,
@@ -631,6 +624,7 @@ extern int drm_property_add_enum(struct drm_property *property, int index,
 				 uint64_t value, const char *name);
 extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
 				     char *formats[]);
+extern char *drm_get_encoder_name(struct drm_encoder *encoder);
 
 extern int drm_mode_connector_attach_encoder(struct drm_connector *connector,
 					  struct drm_encoder *encoder);

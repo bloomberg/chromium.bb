@@ -34,6 +34,35 @@
 #include "drm_crtc.h"
 #include "drm_crtc_helper.h"
 
+/**
+ * drm_disable_unused_functions - disable unused objects
+ * @dev: DRM device
+ *
+ * LOCKING:
+ * Caller must hold mode config lock.
+ *
+ * If an connector or CRTC isn't part of @dev's mode_config, it can be disabled
+ * by calling its dpms function, which should power it off.
+ */
+void drm_helper_disable_unused_functions(struct drm_device *dev)
+{
+	struct drm_encoder *encoder;
+	struct drm_encoder_helper_funcs *encoder_funcs;
+	struct drm_crtc *crtc;
+
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
+		encoder_funcs = encoder->helper_private;
+		if (!encoder->crtc)
+			(*encoder_funcs->dpms)(encoder, DPMSModeOff);
+	}
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+		if (!crtc->enabled)
+			crtc_funcs->dpms(crtc, DPMSModeOff);
+	}
+}
+EXPORT_SYMBOL(drm_helper_disable_unused_functions);
 
 /**
  * drm_pick_crtcs - pick crtcs for connector devices
@@ -52,7 +81,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 	int found;
 
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-       		connector->crtc = NULL;
+       		connector->encoder->crtc = NULL;
     
     		/* Don't hook up connectors that are disconnected ??
 		 *
@@ -90,9 +119,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			}
 		}
 
-		list_for_each_entry(encoder, &dev->mode_config.encoder_list, head)
-			if (encoder->id == connector->current_encoder_id)
-				break;
+		encoder = connector->encoder;
 
 		c = -1;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
@@ -107,7 +134,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 					continue;
 
 				/* Find out if crtc has been assigned before */
-				if (connector_equal->crtc == crtc)
+				if (connector_equal->encoder->crtc == crtc)
 					assigned = 1;
 			}
 
@@ -122,14 +149,12 @@ static void drm_pick_crtcs (struct drm_device *dev)
 				if (connector->id == connector_equal->id)
 					continue;
 
-				list_for_each_entry(encoder_equal, &dev->mode_config.encoder_list, head)
-					if (encoder_equal->id == connector_equal->current_encoder_id)
-						break;
+				encoder_equal = connector_equal->encoder;
 
 				list_for_each_entry(modes, &connector->modes, head) {
 					list_for_each_entry(modes_equal, &connector_equal->modes, head) {
 						if (drm_mode_equal (modes, modes_equal)) {
-							if ((encoder->possible_clones & encoder_equal->possible_clones) && (connector_equal->crtc == crtc)) {
+							if ((encoder->possible_clones & encoder_equal->possible_clones) && (connector_equal->encoder->crtc == crtc)) {
 								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_connector_name(connector),encoder->possible_clones,drm_get_connector_name(connector_equal),encoder_equal->possible_clones);
 								des_mode = modes;
 								assigned = 0;
@@ -146,8 +171,8 @@ clone:
 				continue;
 
 			/* Found a CRTC to attach to, do it ! */
-			connector->crtc = crtc;
-			connector->crtc->desired_mode = des_mode;
+			connector->encoder->crtc = crtc;
+			connector->encoder->crtc->desired_mode = des_mode;
 			connector->initial_x = 0;
 			connector->initial_y = 0;
 			DRM_DEBUG("Desired mode for CRTC %d is 0x%x:%s\n",c,des_mode->mode_id, des_mode->name);
@@ -179,9 +204,9 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 	struct drm_device *dev = crtc->dev;
 	struct drm_display_mode *adjusted_mode, saved_mode;
 	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
-	struct drm_connector_helper_funcs *connector_funcs;
+	struct drm_encoder_helper_funcs *encoder_funcs;
 	int saved_x, saved_y;
-	struct drm_connector *connector;
+	struct drm_encoder *encoder;
 	bool ret = true;
 
 	adjusted_mode = drm_mode_duplicate(dev, mode);
@@ -213,12 +238,12 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 	 * adjust it according to limitations or connector properties, and also
 	 * a chance to reject the mode entirely.
 	 */
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		
-		if (connector->crtc != crtc)
+		if (encoder->crtc != crtc)
 			continue;
-		connector_funcs = connector->helper_private;
-		if (!(ret = connector_funcs->mode_fixup(connector, mode, adjusted_mode))) {
+		encoder_funcs = encoder->helper_private;
+		if (!(ret = encoder_funcs->mode_fixup(encoder, mode, adjusted_mode))) {
 			goto done;
 		}
 	}
@@ -227,48 +252,44 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		goto done;
 	}
 
-	/* Prepare the connectors and CRTCs before setting the mode. */
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+	/* Prepare the encoders and CRTCs before setting the mode. */
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 
-		if (connector->crtc != crtc)
+		if (encoder->crtc != crtc)
 			continue;
-		connector_funcs = connector->helper_private;
-		/* Disable the connector as the first thing we do. */
-		connector_funcs->prepare(connector);
+		encoder_funcs = encoder->helper_private;
+		/* Disable the encoders as the first thing we do. */
+		encoder_funcs->prepare(encoder);
 	}
 	
 	crtc_funcs->prepare(crtc);
 	
-	/* Set up the DPLL and any connector state that needs to adjust or depend
+	/* Set up the DPLL and any encoders state that needs to adjust or depend
 	 * on the DPLL.
 	 */
 	crtc_funcs->mode_set(crtc, mode, adjusted_mode, x, y);
 
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 
-		if (connector->crtc != crtc)
+		if (encoder->crtc != crtc)
 			continue;
 		
-		DRM_INFO("%s: set mode %s %x\n", drm_get_connector_name(connector), mode->name, mode->mode_id);
-		connector_funcs = connector->helper_private;
-		connector_funcs->mode_set(connector, mode, adjusted_mode);
+		DRM_INFO("%s: set mode %s %x\n", drm_get_encoder_name(encoder), mode->name, mode->mode_id);
+		encoder_funcs = encoder->helper_private;
+		encoder_funcs->mode_set(encoder, mode, adjusted_mode);
 	}
 	
 	/* Now, enable the clocks, plane, pipe, and connectors that we set up. */
 	crtc_funcs->commit(crtc);
 
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 
-		if (connector->crtc != crtc)
+		if (encoder->crtc != crtc)
 			continue;
 
-		connector_funcs = connector->helper_private;		
-		connector_funcs->commit(connector);
+		encoder_funcs = encoder->helper_private;
+		encoder_funcs->commit(encoder);
 
-#if 0 // TODO def RANDR_12_INTERFACE
-		if (connector->randr_connector)
-			RRPostPendingProperties (connector->randr_connector);
-#endif
 	}
 	
 	/* XXX free adjustedmode */
@@ -357,20 +378,23 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 	}
 
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		save_crtcs[count++] = connector->crtc;
+		if (!connector->encoder)
+			continue;
 
-		if (connector->crtc == set->crtc)
+		save_crtcs[count++] = connector->encoder->crtc;
+
+		if (connector->encoder->crtc == set->crtc)
 			new_crtc = NULL;
 		else
-			new_crtc = connector->crtc;
+			new_crtc = connector->encoder->crtc;
 
 		for (ro = 0; ro < set->num_connectors; ro++) {
 			if (set->connectors[ro] == connector)
 				new_crtc = set->crtc;
 		}
-		if (new_crtc != connector->crtc) {
+		if (new_crtc != connector->encoder->crtc) {
 			changed = true;
-			connector->crtc = new_crtc;
+			connector->encoder->crtc = new_crtc;
 		}
 	}
 
@@ -389,7 +413,7 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 				set->crtc->enabled = save_enabled;
 				count = 0;
 				list_for_each_entry(connector, &dev->mode_config.connector_list, head)
-					connector->crtc = save_crtcs[count++];
+					connector->encoder->crtc = save_crtcs[count++];
 				kfree(save_crtcs);
 				return -EINVAL;
 			}
@@ -398,7 +422,7 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 			set->crtc->desired_y = set->y;
 			set->crtc->desired_mode = set->mode;
 		}
-		drm_disable_unused_functions(dev);
+		drm_helper_disable_unused_functions(dev);
 	} else if (flip_or_move) {
 		if (set->crtc->fb != set->fb)
 			set->crtc->fb = set->fb;
@@ -444,18 +468,19 @@ bool drm_helper_initial_config(struct drm_device *dev, bool can_grow)
 	 */
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 
+		struct drm_crtc *crtc = connector->encoder->crtc;
 		/* can't setup the connector if there's no assigned mode */
-		if (!connector->crtc || !connector->crtc->desired_mode)
+		if (!crtc || !crtc->desired_mode)
 			continue;
 
-		dev->driver->fb_probe(dev, connector->crtc, connector);
+		dev->driver->fb_probe(dev, crtc, connector);
 
 		/* and needs an attached fb */
-		if (connector->crtc->fb)
-			drm_crtc_helper_set_mode(connector->crtc, connector->crtc->desired_mode, 0, 0);
+		if (crtc->fb)
+			drm_crtc_helper_set_mode(crtc, crtc->desired_mode, 0, 0);
 	}
 
-	drm_disable_unused_functions(dev);
+	drm_helper_disable_unused_functions(dev);
 
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
@@ -488,7 +513,7 @@ int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *c
 		return 0;
 	}
 
-	if (connector->crtc && connector->crtc->desired_mode) {
+	if (connector->encoder->crtc && connector->encoder->crtc->desired_mode) {
 		DRM_DEBUG("drm thinks that the connector already has a config\n");
 		has_config = 1;
 	}
@@ -498,27 +523,28 @@ int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *c
 	if (!has_config)
 		drm_pick_crtcs(dev);
 
-	if (!connector->crtc || !connector->crtc->desired_mode) {
+	if (!connector->encoder->crtc || !connector->encoder->crtc->desired_mode) {
 		DRM_DEBUG("could not find a desired mode or crtc for connector\n");
 		return 1;
 	}
 
 	/* We should really check if there is a fb using this crtc */
 	if (!has_config)
-		dev->driver->fb_probe(dev, connector->crtc, connector);
+		dev->driver->fb_probe(dev, connector->encoder->crtc, connector);
 	else {
-		dev->driver->fb_resize(dev, connector->crtc);
+		dev->driver->fb_resize(dev, connector->encoder->crtc);
 
 #if 0
-		if (!drm_crtc_set_mode(connector->crtc, connector->crtc->desired_mode, 0, 0))
+		if (!drm_crtc_set_mode(connector->encoder->crtc, connector->encoder->crtc->desired_mode, 0, 0))
 			DRM_ERROR("failed to set mode after hotplug\n");
 #endif
 	}
 
 	drm_sysfs_hotplug_event(dev);
 
-	drm_disable_unused_functions(dev);
+	drm_helper_disable_unused_functions(dev);
 
 	return 0;
 }
 EXPORT_SYMBOL(drm_helper_hotplug_stage_two);
+

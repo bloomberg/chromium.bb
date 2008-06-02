@@ -68,6 +68,7 @@ struct intel_crtc {
 
 #define to_intel_crtc(x) container_of(x, struct intel_crtc, base)
 #define to_intel_output(x) container_of(x, struct intel_output, base)
+#define enc_to_intel_output(x) container_of(x, struct intel_output, enc)
 
 struct intel_i2c_chan *intel_i2c_create(struct drm_device *dev, const u32 reg,
 					const char *name);
@@ -82,16 +83,16 @@ extern void intel_tv_init(struct drm_device *dev);
 extern void intel_lvds_init(struct drm_device *dev);
 
 extern void intel_crtc_load_lut(struct drm_crtc *crtc);
-extern void intel_connector_prepare (struct drm_connector *connector);
-extern void intel_connector_commit (struct drm_connector *connector);
+extern void intel_encoder_prepare (struct drm_encoder *encoder);
+extern void intel_encoder_commit (struct drm_encoder *encoder);
 extern struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
  						    struct drm_crtc *crtc);
 extern void intel_wait_for_vblank(struct drm_device *dev);
 extern struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe);
-extern struct drm_crtc *intel_get_load_detect_pipe(struct drm_connector *connector,
+extern struct drm_crtc *intel_get_load_detect_pipe(struct intel_output *intel_output,
 						   struct drm_display_mode *mode,
 						   int *dpms_mode);
-extern void intel_release_load_detect_pipe(struct drm_connector *connector,
+extern void intel_release_load_detect_pipe(struct intel_output *intel_output,
 					   int dpms_mode);
 
 extern struct drm_connector* intel_sdvo_find(struct drm_device *dev, int sdvoB);
