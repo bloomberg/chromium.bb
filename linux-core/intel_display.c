@@ -228,7 +228,8 @@ bool intel_pipe_has_type (struct drm_crtc *crtc, int type)
     struct drm_connector *l_entry;
 
     list_for_each_entry(l_entry, &mode_config->connector_list, head) {
-	    if (l_entry->encoder->crtc == crtc) {
+	    if (l_entry->encoder &&
+	        l_entry->encoder->crtc == crtc) {
 		    struct intel_output *intel_output = to_intel_output(l_entry);
 		    if (intel_output->type == type)
 			    return true;

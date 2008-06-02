@@ -277,7 +277,8 @@ static int intelfb_set_par(struct fb_info *info)
 
 	found = 0;
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		if (connector->encoder->crtc == par->set.crtc){
+		if (connector->encoder &&
+		    connector->encoder->crtc == par->set.crtc){
 			found = 1;
 			break;
 		}

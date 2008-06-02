@@ -662,7 +662,14 @@ bool drm_helper_initial_config(struct drm_device *dev, bool can_grow)
 	 */
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 
-		struct drm_crtc *crtc = connector->encoder->crtc;
+		struct drm_encoder *encoder = connector->encoder;
+		struct drm_crtc *crtc;
+
+		if (!encoder)
+			continue;
+
+		crtc = connector->encoder->crtc;
+
 		/* can't setup the connector if there's no assigned mode */
 		if (!crtc || !crtc->desired_mode)
 			continue;
