@@ -36,7 +36,7 @@
 #define WATCH_LRU	0
 #define WATCH_RELOC	0
 
-static void
+static int
 i915_gem_object_set_domain(struct drm_gem_object *obj,
 			    uint32_t read_domains,
 			    uint32_t write_domain);
@@ -452,17 +452,18 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 /**
  * Unbinds an object from the GTT aperture.
  */
-static void
+static int
 i915_gem_object_unbind(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	int ret = 0;
 
 #if WATCH_BUF
 	DRM_INFO("%s:%d %p\n", __func__, __LINE__, obj);
 	DRM_INFO("gtt_space %p\n", obj_priv->gtt_space);
 #endif
 	if (obj_priv->gtt_space == NULL)
-		return;
+		return 0;
 
 	/* Move the object to the CPU domain to ensure that
 	 * any possible CPU writes while it's not in the GTT
@@ -470,8 +471,10 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	 * also ensure that all pending GPU writes are finished
 	 * before we unbind.
 	 */
-	i915_gem_object_set_domain (obj, DRM_GEM_DOMAIN_CPU,
-				    DRM_GEM_DOMAIN_CPU);
+	ret = i915_gem_object_set_domain (obj, DRM_GEM_DOMAIN_CPU,
+					  DRM_GEM_DOMAIN_CPU);
+	if (ret)
+		return ret;
 
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);
@@ -494,6 +497,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 			drm_gem_object_unreference(obj);
 		}
 	}
+	return 0;
 }
 
 #if WATCH_BUF | WATCH_EXEC
@@ -579,6 +583,7 @@ i915_gem_evict_something(struct drm_device *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
+	int ret;
 
 	for (;;) {
 		/* If there's an inactive buffer available now, grab it
@@ -645,9 +650,9 @@ i915_gem_evict_something(struct drm_device *dev)
 	BUG_ON(obj_priv->active);
 
 	/* Wait on the rendering and unbind the buffer. */
-	i915_gem_object_unbind(obj);
+	ret = i915_gem_object_unbind(obj);
 
-	return 0;
+	return ret;
 }
 
 static int
@@ -894,7 +899,7 @@ i915_gem_clflush_object(struct drm_gem_object *obj)
  *		MI_FLUSH
  *		drm_agp_chipset_flush
  */
-static void
+static int
 i915_gem_object_set_domain(struct drm_gem_object *obj,
 			    uint32_t read_domains,
 			    uint32_t write_domain)
@@ -902,6 +907,7 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 	struct drm_device		*dev = obj->dev;
 	uint32_t			invalidate_domains = 0;
 	uint32_t			flush_domains = 0;
+	int				ret;
 
 #if WATCH_BUF
 	DRM_INFO("%s: object %p read %08x write %08x\n",
@@ -940,8 +946,11 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 		 * flushed before the cpu cache is invalidated
 		 */
 		if ((invalidate_domains & DRM_GEM_DOMAIN_CPU) &&
-		    (flush_domains & ~DRM_GEM_DOMAIN_CPU))
-			i915_gem_object_wait_rendering(obj);
+		    (flush_domains & ~DRM_GEM_DOMAIN_CPU)) {
+			ret = i915_gem_object_wait_rendering(obj);
+			if (ret)
+				return ret;
+		}
 		i915_gem_clflush_object(obj);
 	}
 
@@ -950,6 +959,7 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 	obj->read_domains = read_domains;
 	dev->invalidate_domains |= invalidate_domains;
 	dev->flush_domains |= flush_domains;
+	return 0;
 }
 
 /**
@@ -1378,6 +1388,14 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	mutex_lock(&dev->struct_mutex);
+
+	/* Zero the gloabl flush/invalidate flags. These
+	 * will be modified as each object is bound to the
+	 * gtt
+	 */
+	dev->invalidate_domains = 0;
+	dev->flush_domains = 0;
+
 	/* Look up object handles and perform the relocations */
 	for (i = 0; i < args->buffer_count; i++) {
 		object_list[i] = drm_gem_object_lookup(dev, file_priv,
@@ -1389,6 +1407,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			goto err;
 		}
 
+		object_list[i]->pending_read_domains = 0;
+		object_list[i]->pending_write_domain = 0;
 		ret = i915_gem_reloc_and_validate_object(object_list[i],
 							 file_priv,
 							 &validate_list[i]);
@@ -1418,11 +1438,11 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		}
 
 		/* make sure all previous memory operations have passed */
-		i915_gem_object_set_domain(obj,
-					    obj->pending_read_domains,
-					    obj->pending_write_domain);
-		obj->pending_read_domains = 0;
-		obj->pending_write_domain = 0;
+		ret = i915_gem_object_set_domain(obj,
+						 obj->pending_read_domains,
+						 obj->pending_write_domain);
+		if (ret)
+			goto err;
 	}
 
 	/* Flush/invalidate caches and chipset buffer */
@@ -1626,15 +1646,19 @@ i915_gem_set_domain(struct drm_gem_object *obj,
 		    uint32_t write_domain)
 {
 	struct drm_device *dev = obj->dev;
+	int ret;
 
 	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
 
 	drm_client_lock_take(dev, file_priv);
 	i915_kernel_lost_context(dev);
-	i915_gem_object_set_domain(obj, read_domains, write_domain);
+	ret = i915_gem_object_set_domain(obj, read_domains, write_domain);
+	if (ret) {
+		drm_client_lock_release(dev);
+		return ret;
+	}
 	i915_gem_dev_set_domain(obj->dev);
 	drm_client_lock_release(dev);
-
 	return 0;
 }
 
