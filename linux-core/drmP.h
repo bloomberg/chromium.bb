@@ -792,7 +792,7 @@ struct drm_minor {
 	struct drm_master *master; /* currently active master for this node */
 	struct list_head master_list;
 
-	/* possibly needs a list of configured modesetting pieces */
+	struct drm_mode_group mode_group;
 };
 
 

@@ -378,6 +378,11 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		if ((ret = dev->driver->load(dev, ent->driver_data)))
 			goto err_g5;
 
+	/* setup the grouping for the legacy output */
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		if (drm_mode_group_init_legacy_group(dev, &dev->primary->mode_group))
+		    goto err_g5;
+
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
 		 driver->date, dev->primary->index);

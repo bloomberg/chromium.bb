@@ -519,6 +519,15 @@ struct drm_mode_config_funcs {
 	bool (*resize_fb)(struct drm_device *dev, struct drm_framebuffer *fb);
 };
 
+struct drm_mode_group {
+	uint32_t num_crtcs;
+	uint32_t num_encoders;
+	uint32_t num_connectors;
+
+	/* list of object IDs for this group */
+	uint32_t *id_list;
+};
+
 /**
  * drm_mode_config - Mode configuration control structure
  *
@@ -591,7 +600,7 @@ extern void drm_encoder_cleanup(struct drm_encoder *encoder);
 extern char *drm_get_connector_name(struct drm_connector *connector);
 extern char *drm_get_dpms_name(int val);
 extern void drm_fb_release(struct file *filp);
-
+extern int drm_mode_group_init_legacy_group(struct drm_device *dev, struct drm_mode_group *group);
 extern struct edid *drm_get_edid(struct drm_connector *connector,
 				 struct i2c_adapter *adapter);
 extern int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid);
