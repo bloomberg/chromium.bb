@@ -386,7 +386,7 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		
 		if (encoder->crtc != crtc)
 			continue;
-		encoder_funcs = encoder->helper_private;
+ 		encoder_funcs = encoder->helper_private;
 		if (!(ret = encoder_funcs->mode_fixup(encoder, mode, adjusted_mode))) {
 			goto done;
 		}
@@ -475,12 +475,14 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 {
 	struct drm_device *dev;
 	struct drm_crtc **save_crtcs, *new_crtc;
+	struct drm_encoder **save_encoders, *new_encoder;
 	bool save_enabled;
 	bool changed = false;
 	bool flip_or_move = false;
 	struct drm_connector *connector;
-	int count = 0, ro;
+	int count = 0, ro, fail = 0;
 	struct drm_crtc_helper_funcs *crtc_funcs;
+	int ret = 0;
 
 	DRM_DEBUG("\n");
 
@@ -506,6 +508,12 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 	if (!save_crtcs)
 		return -ENOMEM;
 
+	save_encoders = kzalloc(dev->mode_config.num_connector * sizeof(struct drm_encoders *), GFP_KERNEL);
+	if (!save_encoders) {
+		kfree(save_crtcs);
+		return -ENOMEM;
+	}
+
 	/* We should be able to check here if the fb has the same properties
 	 * and then just flip_or_move it */
 	if (set->crtc->fb != set->fb)
@@ -521,6 +529,35 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 		changed = true;
 	}
 
+	/* a) traverse passed in connector list and get encoders for them */
+	count = 0;
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		struct drm_connector_helper_funcs *connector_funcs = connector->helper_private;
+		save_encoders[count++] = connector->encoder;
+		new_encoder = NULL;
+		for (ro = 0; ro < set->num_connectors; ro++) {
+			if (set->connectors[ro] == connector) {
+				new_encoder = connector_funcs->best_encoder(connector);
+				/* if we can't get an encoder for a connector
+				   we are setting now - then fail */
+				if (new_encoder == NULL)
+					/* don't break so fail path works correct */
+					fail = 1;
+				break;
+			}
+		}
+
+		if (new_encoder != connector->encoder) {
+			changed = true;
+			connector->encoder = new_encoder;
+		}
+	}
+
+	if (fail) {
+		ret = -EINVAL;
+		goto fail_no_encoder;
+	}
+	
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		if (!connector->encoder)
 			continue;
@@ -553,13 +590,9 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 			DRM_DEBUG("attempting to set mode from userspace\n");
 			drm_mode_debug_printmodeline(set->mode);
 			if (!drm_crtc_helper_set_mode(set->crtc, set->mode, set->x,
-					       set->y)) {
-				set->crtc->enabled = save_enabled;
-				count = 0;
-				list_for_each_entry(connector, &dev->mode_config.connector_list, head)
-					connector->encoder->crtc = save_crtcs[count++];
-				kfree(save_crtcs);
-				return -EINVAL;
+						      set->y)) {
+				ret = -EINVAL;
+				goto fail_set_mode;
 			}
 			/* TODO are these needed? */
 			set->crtc->desired_x = set->x;
@@ -573,8 +606,25 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 		crtc_funcs->mode_set_base(set->crtc, set->x, set->y);
 	}
 
+	kfree(save_encoders);
 	kfree(save_crtcs);
 	return 0;
+
+fail_set_mode:
+	set->crtc->enabled = save_enabled;
+	count = 0;
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head)
+		connector->encoder->crtc = save_crtcs[count++];
+fail_no_encoder:
+	kfree(save_crtcs);
+	count = 0;
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		connector->encoder = save_encoders[count++];
+	}
+	kfree(save_encoders);
+	return ret;
+		
+	
 }
 EXPORT_SYMBOL(drm_crtc_helper_set_config);
 
