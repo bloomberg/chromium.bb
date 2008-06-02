@@ -1064,10 +1064,15 @@ i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle)
 }
 #endif
 
+/**
+ * Bind an object to the GTT and evaluate the relocations landing in it
+ *
+ * 
+ */
 static int
-i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
-				   struct drm_file *file_priv,
-				   struct drm_i915_gem_exec_object *entry)
+i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
+				  struct drm_file *file_priv,
+				  struct drm_i915_gem_exec_object *entry)
 {
 	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_relocation_entry reloc;
@@ -1108,7 +1113,7 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 		target_obj_priv = target_obj->driver_private;
 
 		/* The target buffer should have appeared before us in the
-		 * validate list, so it should have a GTT space bound by now.
+		 * exec_object list, so it should have a GTT space bound by now.
 		 */
 		if (target_obj_priv->gtt_space == NULL) {
 			DRM_ERROR("No GTT space found for object %d\n",
@@ -1242,6 +1247,8 @@ i915_gem_reloc_and_validate_object(struct drm_gem_object *obj,
 	return 0;
 }
 
+/** Dispatch a batchbuffer to the ring
+ */
 static int
 i915_dispatch_gem_execbuffer(struct drm_device *dev,
 			      struct drm_i915_gem_execbuffer *exec,
@@ -1346,7 +1353,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
 	struct drm_i915_gem_execbuffer *args = data;
-	struct drm_i915_gem_exec_object *validate_list = NULL;
+	struct drm_i915_gem_exec_object *exec_list = NULL;
 	struct drm_gem_object **object_list = NULL;
 	struct drm_gem_object *batch_obj;
 	int ret, i;
@@ -1365,26 +1372,26 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	if (ret)
 		return ret;
 
-	/* Copy in the validate list from userland */
-	validate_list = drm_calloc(sizeof(*validate_list), args->buffer_count,
-				   DRM_MEM_DRIVER);
+	/* Copy in the exec list from userland */
+	exec_list = drm_calloc(sizeof(*exec_list), args->buffer_count,
+			       DRM_MEM_DRIVER);
 	object_list = drm_calloc(sizeof(*object_list), args->buffer_count,
 				 DRM_MEM_DRIVER);
-	if (validate_list == NULL || object_list == NULL) {
-		DRM_ERROR("Failed to allocate validate or object list "
+	if (exec_list == NULL || object_list == NULL) {
+		DRM_ERROR("Failed to allocate exec or object list "
 			  "for %d buffers\n",
 			  args->buffer_count);
 		ret = -ENOMEM;
-		goto err;
+		goto pre_mutex_err;
 	}
-	ret = copy_from_user(validate_list,
+	ret = copy_from_user(exec_list,
 			     (struct drm_i915_relocation_entry __user *)
 			     (uintptr_t) args->buffers_ptr,
-			     sizeof(*validate_list) * args->buffer_count);
+			     sizeof(*exec_list) * args->buffer_count);
 	if (ret != 0) {
-		DRM_ERROR("copy %d validate entries failed %d\n",
+		DRM_ERROR("copy %d exec entries failed %d\n",
 			  args->buffer_count, ret);
-		goto err;
+		goto pre_mutex_err;
 	}
 
 	mutex_lock(&dev->struct_mutex);
@@ -1399,21 +1406,21 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	/* Look up object handles and perform the relocations */
 	for (i = 0; i < args->buffer_count; i++) {
 		object_list[i] = drm_gem_object_lookup(dev, file_priv,
-						       validate_list[i].handle);
+						       exec_list[i].handle);
 		if (object_list[i] == NULL) {
 			DRM_ERROR("Invalid object handle %d at index %d\n",
-				   validate_list[i].handle, i);
+				   exec_list[i].handle, i);
 			ret = -EINVAL;
 			goto err;
 		}
 
 		object_list[i]->pending_read_domains = 0;
 		object_list[i]->pending_write_domain = 0;
-		ret = i915_gem_reloc_and_validate_object(object_list[i],
-							 file_priv,
-							 &validate_list[i]);
+		ret = i915_gem_object_bind_and_relocate(object_list[i],
+							file_priv,
+							&exec_list[i]);
 		if (ret) {
-			DRM_ERROR("reloc and validate failed %d\n", ret);
+			DRM_ERROR("object bind and relocate failed %d\n", ret);
 			goto err;
 		}
 	}
@@ -1451,11 +1458,11 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 #if WATCH_COHERENCY
 	for (i = 0; i < args->buffer_count; i++) {
 		i915_gem_object_check_coherency(object_list[i],
-						validate_list[i].handle);
+						exec_list[i].handle);
 	}
 #endif
 
-	exec_offset = validate_list[args->buffer_count - 1].offset;
+	exec_offset = exec_list[args->buffer_count - 1].offset;
 
 #if WATCH_EXEC
 	i915_gem_dump_object(object_list[args->buffer_count - 1],
@@ -1500,13 +1507,13 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	i915_dump_lru(dev, __func__);
 #endif
 
-	/* Copy the new buffer offsets back to the user's validate list. */
+	/* Copy the new buffer offsets back to the user's exec list. */
 	ret = copy_to_user((struct drm_i915_relocation_entry __user *)
 			   (uintptr_t) args->buffers_ptr,
-			   validate_list,
-			   sizeof(*validate_list) * args->buffer_count);
+			   exec_list,
+			   sizeof(*exec_list) * args->buffer_count);
 	if (ret)
-		DRM_ERROR("failed to copy %d validate entries "
+		DRM_ERROR("failed to copy %d exec entries "
 			  "back to user (%d)\n",
 			   args->buffer_count, ret);
 err:
@@ -1516,9 +1523,10 @@ err:
 	}
 	mutex_unlock(&dev->struct_mutex);
 
+pre_mutex_err:
 	drm_free(object_list, sizeof(*object_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
-	drm_free(validate_list, sizeof(*validate_list) * args->buffer_count,
+	drm_free(exec_list, sizeof(*exec_list) * args->buffer_count,
 		 DRM_MEM_DRIVER);
 
 	return ret;
