@@ -780,7 +780,7 @@ int drm_mode_getresources(struct drm_device *dev,
 
 	mutex_lock(&dev->mode_config.mutex);
 
-	list_for_each(lh, &dev->mode_config.fb_list)
+	list_for_each(lh, &file_priv->fbs)
 		fb_count++;
 
 	list_for_each(lh, &dev->mode_config.crtc_list)
@@ -802,7 +802,7 @@ int drm_mode_getresources(struct drm_device *dev,
 	if (card_res->count_fbs >= fb_count) {
 		copied = 0;
 		fb_id = (uint32_t *)(unsigned long)card_res->fb_id_ptr;
-		list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
+		list_for_each_entry(fb, &file_priv->fbs, head) {
 			if (put_user(fb->id, fb_id + copied)) {
 				ret = -EFAULT;
 				goto out;
