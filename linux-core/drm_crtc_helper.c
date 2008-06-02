@@ -299,7 +299,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 					list_for_each_entry(modes_equal, &connector_equal->modes, head) {
 						if (drm_mode_equal (modes, modes_equal)) {
 							if ((encoder->possible_clones & encoder_equal->possible_clones) && (connector_equal->encoder->crtc == crtc)) {
-								printk("Cloning %s (0x%lx) to %s (0x%lx)\n",drm_get_connector_name(connector),encoder->possible_clones,drm_get_connector_name(connector_equal),encoder_equal->possible_clones);
+								printk("Cloning %s (0x%x) to %s (0x%x)\n",drm_get_connector_name(connector),encoder->possible_clones,drm_get_connector_name(connector_equal),encoder_equal->possible_clones);
 								des_mode = modes;
 								assigned = 0;
 								goto clone;
