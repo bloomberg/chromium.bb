@@ -237,12 +237,15 @@ static const struct drm_connector_funcs intel_crt_connector_funcs = {
 	.save = intel_crt_save,
 	.restore = intel_crt_restore,
 	.detect = intel_crt_detect,
-	.get_modes = intel_crt_get_modes,
+	.fill_modes = drm_helper_probe_single_connector_modes,
 	.destroy = intel_crt_destroy,
 	.set_property = intel_crt_set_property,
-	.mode_valid = intel_crt_mode_valid,
-
 };
+
+static const struct drm_connector_helper_funcs intel_crt_connector_helper_funcs = {
+	.mode_valid = intel_crt_mode_valid,
+	.get_modes = intel_crt_get_modes,
+};	
 
 void intel_crt_enc_destroy(struct drm_encoder *encoder)
 {
@@ -283,6 +286,7 @@ void intel_crt_init(struct drm_device *dev)
 	connector->doublescan_allowed = 0;
 
 	drm_encoder_helper_add(&intel_output->enc, &intel_crt_helper_funcs);
+	drm_connector_helper_add(connector, &intel_crt_connector_helper_funcs);
 
 	drm_sysfs_connector_add(connector);
 

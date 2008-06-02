@@ -983,11 +983,14 @@ static const struct drm_connector_funcs intel_sdvo_connector_funcs = {
 	.save = intel_sdvo_save,
 	.restore = intel_sdvo_restore,
 	.detect = intel_sdvo_detect,
-	.get_modes = intel_sdvo_get_modes,
+	.fill_modes = drm_helper_probe_single_connector_modes,
 	.destroy = intel_sdvo_destroy,
-	.mode_valid = intel_sdvo_mode_valid,
 };
 
+static const struct drm_connector_helper_funcs intel_sdvo_connector_helper_funcs = {
+	.get_modes = intel_sdvo_get_modes,
+	.mode_valid = intel_sdvo_mode_valid,
+};
 
 void intel_sdvo_enc_destroy(struct drm_encoder *encoder)
 {
@@ -1019,7 +1022,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 
 	drm_connector_init(dev, connector, &intel_sdvo_connector_funcs,
 			   DRM_MODE_CONNECTOR_Unknown);
-
+	drm_connector_helper_add(connector, &intel_sdvo_connector_helper_funcs);
 	sdvo_priv = (struct intel_sdvo_priv *)(intel_output + 1);
 	intel_output->type = INTEL_OUTPUT_SDVO;
 

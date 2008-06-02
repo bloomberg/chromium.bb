@@ -55,8 +55,14 @@ struct drm_encoder_helper_funcs {
 			 struct drm_display_mode *mode,
 			 struct drm_display_mode *adjusted_mode);
 };
-	
 
+struct drm_connector_helper_funcs {
+	int (*get_modes)(struct drm_connector *connector);
+  	int (*mode_valid)(struct drm_connector *connector,
+			  struct drm_display_mode *mode);
+};
+	
+extern void drm_helper_probe_single_connector_modes(struct drm_connector *connector, uint32_t maxX, uint32_t maxY);
 extern void drm_helper_disable_unused_functions(struct drm_device *dev);
 extern int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *connector,
 					bool connected);
@@ -64,7 +70,7 @@ extern bool drm_helper_initial_config(struct drm_device *dev, bool can_grow);
 extern int drm_crtc_helper_set_config(struct drm_mode_set *set);
 extern bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 				     int x, int y);
-
+extern bool drm_helper_crtc_in_use(struct drm_crtc *crtc);
 static inline void drm_crtc_helper_add(struct drm_crtc *crtc, const struct drm_crtc_helper_funcs *funcs)
 {
 	crtc->helper_private = (void *)funcs;
@@ -73,6 +79,11 @@ static inline void drm_crtc_helper_add(struct drm_crtc *crtc, const struct drm_c
 static inline void drm_encoder_helper_add(struct drm_encoder *encoder, const struct drm_encoder_helper_funcs *funcs)
 {
 	encoder->helper_private = (void *)funcs;
+}
+
+static inline void drm_connector_helper_add(struct drm_connector *connector, const struct drm_connector_helper_funcs *funcs)
+{
+	connector->helper_private = (void *)funcs;
 }
 
 

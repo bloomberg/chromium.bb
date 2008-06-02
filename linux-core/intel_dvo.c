@@ -335,9 +335,13 @@ static const struct drm_connector_funcs intel_dvo_connector_funcs = {
 	.save = intel_dvo_save,
 	.restore = intel_dvo_restore,
 	.detect = intel_dvo_detect,
-	.get_modes = intel_dvo_get_modes,
 	.destroy = intel_dvo_destroy,
+	.fill_modes = drm_helper_probe_single_connector_modes,
+};
+
+static const struct drm_connector_helper_funcs intel_dvo_connector_helper_funcs = {
 	.mode_valid = intel_dvo_mode_valid,
+	.get_modes = intel_dvo_get_modes,
 };
 
 void intel_dvo_enc_destroy(struct drm_encoder *encoder)
@@ -464,6 +468,7 @@ void intel_dvo_init(struct drm_device *dev)
 			break;
 		}
 
+		drm_connector_helper_add(connector, &intel_dvo_connector_helper_funcs);
 		connector->display_info.subpixel_order = SubPixelHorizontalRGB;
 		connector->interlace_allowed = false;
 		connector->doublescan_allowed = false;

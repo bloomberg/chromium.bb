@@ -1608,11 +1608,15 @@ static const struct drm_encoder_helper_funcs intel_tv_helper_funcs = {
 static const struct drm_connector_funcs intel_tv_connector_funcs = {
 	.save = intel_tv_save,
 	.restore = intel_tv_restore,
-	.mode_valid = intel_tv_mode_valid,
 	.detect = intel_tv_detect,
-	.get_modes = intel_tv_get_modes,
 	.destroy = intel_tv_destroy,
 	.set_property = intel_tv_set_property,
+	.fill_modes = drm_helper_probe_single_connector_modes,
+};
+
+static const struct drm_connector_helper_funcs intel_tv_connector_helper_funcs = {
+	.mode_valid = intel_tv_mode_valid,
+	.get_modes = intel_tv_get_modes,
 };
 
 void intel_tv_enc_destroy(struct drm_encoder *encoder)
@@ -1695,6 +1699,7 @@ intel_tv_init(struct drm_device *dev)
 	tv_priv->tv_format = kstrdup(tv_modes[initial_mode].name, GFP_KERNEL);
     
 	drm_encoder_helper_add(&intel_output->enc, &intel_tv_helper_funcs);
+	drm_connector_helper_add(connector, &intel_tv_connector_helper_funcs);
 	connector->interlace_allowed = FALSE;
 	connector->doublescan_allowed = FALSE;
 

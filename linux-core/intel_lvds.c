@@ -342,13 +342,17 @@ static const struct drm_encoder_helper_funcs intel_lvds_helper_funcs = {
 	.commit = intel_lvds_commit,
 };
 
+static const struct drm_connector_helper_funcs intel_lvds_connector_helper_funcs = {
+	.get_modes = intel_lvds_get_modes,
+	.mode_valid = intel_lvds_mode_valid,
+};	
+
 static const struct drm_connector_funcs intel_lvds_connector_funcs = {
 	.save = intel_lvds_save,
 	.restore = intel_lvds_restore,
 	.detect = intel_lvds_detect,
-	.get_modes = intel_lvds_get_modes,
+	.fill_modes = drm_helper_probe_single_connector_modes,
 	.destroy = intel_lvds_destroy,
-	.mode_valid = intel_lvds_mode_valid,
 };
 
 
@@ -360,6 +364,8 @@ static void intel_lvds_enc_destroy(struct drm_encoder *encoder)
 static const struct drm_encoder_funcs intel_lvds_enc_funcs = {
 	.destroy = intel_lvds_enc_destroy,
 };
+
+
 
 /**
  * intel_lvds_init - setup LVDS connectors on this device
@@ -395,6 +401,7 @@ void intel_lvds_init(struct drm_device *dev)
 	intel_output->type = INTEL_OUTPUT_LVDS;
 
 	drm_encoder_helper_add(encoder, &intel_lvds_helper_funcs);
+	drm_connector_helper_add(connector, &intel_lvds_connector_helper_funcs);
 	connector->display_info.subpixel_order = SubPixelHorizontalRGB;
 	connector->interlace_allowed = FALSE;
 	connector->doublescan_allowed = FALSE;

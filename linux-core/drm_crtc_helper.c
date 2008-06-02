@@ -34,6 +34,136 @@
 #include "drm_crtc.h"
 #include "drm_crtc_helper.h"
 
+/*
+ * Detailed mode info for a standard 640x480@60Hz monitor
+ */
+static struct drm_display_mode std_mode[] = {
+	{ DRM_MODE("640x480", DRM_MODE_TYPE_DEFAULT, 25200, 640, 656,
+		   752, 800, 0, 480, 490, 492, 525, 0,
+		   V_NHSYNC | V_NVSYNC) }, /* 640x480@60Hz */
+};
+
+/**
+ * drm_helper_probe_connector_modes - get complete set of display modes
+ * @dev: DRM device
+ * @maxX: max width for modes
+ * @maxY: max height for modes
+ *
+ * LOCKING:
+ * Caller must hold mode config lock.
+ *
+ * Based on @dev's mode_config layout, scan all the connectors and try to detect
+ * modes on them.  Modes will first be added to the connector's probed_modes
+ * list, then culled (based on validity and the @maxX, @maxY parameters) and
+ * put into the normal modes list.
+ *
+ * Intended to be used either at bootup time or when major configuration
+ * changes have occurred.
+ *
+ * FIXME: take into account monitor limits
+ */
+void drm_helper_probe_single_connector_modes(struct drm_connector *connector, uint32_t maxX, uint32_t maxY)
+{
+	struct drm_device *dev = connector->dev;
+	struct drm_display_mode *mode, *t;
+	struct drm_connector_helper_funcs *connector_funcs = connector->helper_private;
+	int ret;
+
+	/* set all modes to the unverified state */
+	list_for_each_entry_safe(mode, t, &connector->modes, head)
+		mode->status = MODE_UNVERIFIED;
+		
+	connector->status = (*connector->funcs->detect)(connector);
+	
+	if (connector->status == connector_status_disconnected) {
+		DRM_DEBUG("%s is disconnected\n", drm_get_connector_name(connector));
+		/* TODO set EDID to NULL */
+		return;
+	}
+	
+	ret = (*connector_funcs->get_modes)(connector);
+	
+	if (ret) {
+		drm_mode_connector_list_update(connector);
+	}
+	
+	if (maxX && maxY)
+		drm_mode_validate_size(dev, &connector->modes, maxX,
+				       maxY, 0);
+	list_for_each_entry_safe(mode, t, &connector->modes, head) {
+		if (mode->status == MODE_OK)
+			mode->status = (*connector_funcs->mode_valid)(connector,mode);
+	}
+	
+	
+	drm_mode_prune_invalid(dev, &connector->modes, TRUE);
+	
+	if (list_empty(&connector->modes)) {
+		struct drm_display_mode *stdmode;
+		
+		DRM_DEBUG("No valid modes on %s\n", drm_get_connector_name(connector));
+		
+		/* Should we do this here ???
+		 * When no valid EDID modes are available we end up
+		 * here and bailed in the past, now we add a standard
+		 * 640x480@60Hz mode and carry on.
+		 */
+		stdmode = drm_mode_duplicate(dev, &std_mode[0]);
+		drm_mode_probed_add(connector, stdmode);
+		drm_mode_list_concat(&connector->probed_modes,
+				     &connector->modes);
+		
+		DRM_DEBUG("Adding standard 640x480 @ 60Hz to %s\n",
+			  drm_get_connector_name(connector));
+	}
+	
+	drm_mode_sort(&connector->modes);
+	
+	DRM_DEBUG("Probed modes for %s\n", drm_get_connector_name(connector));
+	list_for_each_entry_safe(mode, t, &connector->modes, head) {
+		mode->vrefresh = drm_mode_vrefresh(mode);
+		
+		drm_mode_set_crtcinfo(mode, CRTC_INTERLACE_HALVE_V);
+		drm_mode_debug_printmodeline(mode);
+	}
+}
+EXPORT_SYMBOL(drm_helper_probe_single_connector_modes);
+
+void drm_helper_probe_connector_modes(struct drm_device *dev, uint32_t maxX, uint32_t maxY)
+{
+	struct drm_connector *connector;
+
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		drm_helper_probe_single_connector_modes(connector, maxX, maxY);
+	}
+}
+EXPORT_SYMBOL(drm_helper_probe_connector_modes);
+
+
+/**
+ * drm_helper_crtc_in_use - check if a given CRTC is in a mode_config
+ * @crtc: CRTC to check
+ *
+ * LOCKING:
+ * Caller must hold mode config lock.
+ *
+ * Walk @crtc's DRM device's mode_config and see if it's in use.
+ *
+ * RETURNS:
+ * True if @crtc is part of the mode_config, false otherwise.
+ */
+bool drm_helper_crtc_in_use(struct drm_crtc *crtc)
+{
+	struct drm_encoder *encoder;
+	struct drm_device *dev = crtc->dev;
+	/* FIXME: Locking around list access? */
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head)
+		if (encoder->crtc == crtc)
+			return true;
+	return false;
+}
+EXPORT_SYMBOL(drm_helper_crtc_in_use);
+
 /**
  * drm_disable_unused_functions - disable unused objects
  * @dev: DRM device
@@ -81,8 +211,8 @@ static void drm_pick_crtcs (struct drm_device *dev)
 	int found;
 
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-       		connector->encoder->crtc = NULL;
-    
+		connector->encoder->crtc = NULL;
+
     		/* Don't hook up connectors that are disconnected ??
 		 *
 		 * This is debateable. Do we want fixed /dev/fbX or
@@ -211,7 +341,7 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 
 	adjusted_mode = drm_mode_duplicate(dev, mode);
 
-	crtc->enabled = drm_crtc_in_use(crtc);
+	crtc->enabled = drm_helper_crtc_in_use(crtc);
 
 	if (!crtc->enabled)
 		return true;
@@ -456,7 +586,7 @@ bool drm_helper_initial_config(struct drm_device *dev, bool can_grow)
 
 	mutex_lock(&dev->mode_config.mutex);
 
-	drm_crtc_probe_connector_modes(dev, 2048, 2048);
+	drm_helper_probe_connector_modes(dev, 2048, 2048);
 
 	drm_pick_crtcs(dev);
 
@@ -518,7 +648,7 @@ int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *c
 		has_config = 1;
 	}
 
-	drm_crtc_probe_connector_modes(dev, 2048, 2048);
+	drm_helper_probe_connector_modes(dev, 2048, 2048);
 
 	if (!has_config)
 		drm_pick_crtcs(dev);
