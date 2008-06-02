@@ -16,6 +16,20 @@
 struct drm_device;
 struct drm_mode_set;
 
+
+#define DRM_MODE_OBJECT_CRTC 0xcccccccc
+#define DRM_MODE_OBJECT_CONNECTOR 0xc0c0c0c0
+#define DRM_MODE_OBJECT_ENCODER 0xe0e0e0e0
+#define DRM_MODE_OBJECT_MODE 0xdededede
+#define DRM_MODE_OBJECT_PROPERTY 0xb0b0b0b0
+#define DRM_MODE_OBJECT_FB 0xfbfbfbfb
+#define DRM_MODE_OBJECT_BLOB 0xbbbbbbbb
+
+struct drm_mode_object {
+	uint32_t id;
+	uint32_t type;
+};
+
 /*
  * Note on terminology:  here, for brevity and convenience, we refer to connector
  * control chips as 'CRTCs'.  They can control any type of connector, VGA, LVDS,
@@ -78,8 +92,10 @@ enum drm_mode_status {
 struct drm_display_mode {
 	/* Header */
 	struct list_head head;
+	struct drm_mode_object base;
+
 	char name[DRM_DISPLAY_MODE_LEN];
-	int mode_id;
+
 	int connector_count;
 	enum drm_mode_status status;
 	int type;
@@ -178,6 +194,7 @@ enum subpixel_order {
 	SubPixelNone,
 };
 
+
 /*
  * Describes a given display (e.g. CRT or flat panel) and its limitations.
  */
@@ -236,7 +253,7 @@ struct drm_display_info {
 struct drm_framebuffer {
 	struct drm_device *dev;
 	struct list_head head;
-	int id; /* idr assigned */
+	struct drm_mode_object base;
 	unsigned int pitch;
 	unsigned int width;
 	unsigned int height;
@@ -252,9 +269,9 @@ struct drm_framebuffer {
 };
 
 struct drm_property_blob {
+	struct drm_mode_object base;
 	struct list_head head;
 	unsigned int length;
-	unsigned int id;
 	void *data;
 };
 
@@ -266,7 +283,7 @@ struct drm_property_enum {
 
 struct drm_property {
 	struct list_head head;
-	int id; /* idr assigned */
+	struct drm_mode_object base;
 	uint32_t flags;
 	char name[DRM_PROP_NAME_LEN];
 	uint32_t num_values;
@@ -340,7 +357,7 @@ struct drm_crtc {
 	struct drm_device *dev;
 	struct list_head head;
 
-	int id; /* idr assigned */
+	struct drm_mode_object base;
 
 	/* framebuffer the connector is currently bound to */
 	struct drm_framebuffer *fb;
@@ -361,6 +378,7 @@ struct drm_crtc {
 	/* if you are using the helper */
 	void *helper_private;
 };
+
 
 /**
  * drm_connector_funcs - control connectors on a given device
@@ -406,7 +424,7 @@ struct drm_encoder {
 	struct drm_device *dev;
 	struct list_head head;
 
-	int id;
+	struct drm_mode_object base;
 	int encoder_type;
 	uint32_t possible_crtcs;
 	uint32_t possible_clones;
@@ -437,7 +455,8 @@ struct drm_connector {
 	struct device kdev;
 	struct device_attribute *attr;
 	struct list_head head;
-	int id; /* idr assigned */
+
+	struct drm_mode_object base;
 
 	int connector_type;
 	int connector_type_id;
@@ -540,6 +559,14 @@ struct drm_mode_config {
 	/* hotplug */
 	uint32_t hotplug_counter;
 };
+
+#define obj_to_crtc(x) container_of(x, struct drm_crtc, base)
+#define obj_to_connector(x) container_of(x, struct drm_connector, base)
+#define obj_to_encoder(x) container_of(x, struct drm_encoder, base)
+#define obj_to_mode(x) container_of(x, struct drm_display_mode, base)
+#define obj_to_fb(x) container_of(x, struct drm_framebuffer, base)
+#define obj_to_property(x) container_of(x, struct drm_property, base)
+#define obj_to_blob(x) container_of(x, struct drm_property_blob, base)
 
 
 extern void drm_crtc_init(struct drm_device *dev,

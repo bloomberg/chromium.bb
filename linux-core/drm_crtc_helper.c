@@ -271,7 +271,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 		    		continue;
 	
 			list_for_each_entry(encoder_equal, &dev->mode_config.encoder_list, head) {
-				if (encoder->id == encoder_equal->id)
+				if (encoder->base.id == encoder_equal->base.id)
 					continue;
 
 				/* Find out if crtc has been assigned before */
@@ -287,7 +287,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			o = -1;
 			list_for_each_entry(connector_equal, &dev->mode_config.connector_list, head) {
 				o++;
-				if (connector->id == connector_equal->id)
+				if (connector->base.id == connector_equal->base.id)
 					continue;
 
 				encoder_equal = connector_equal->encoder;
@@ -319,7 +319,7 @@ clone:
 			encoder->crtc->desired_mode = des_mode;
 			connector->initial_x = 0;
 			connector->initial_y = 0;
-			DRM_DEBUG("Desired mode for CRTC %d is 0x%x:%s\n",c,des_mode->mode_id, des_mode->name);
+			DRM_DEBUG("Desired mode for CRTC %d is 0x%x:%s\n",c,des_mode->base.id, des_mode->name);
 			break;
     		}
 	}
@@ -418,7 +418,7 @@ bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		if (encoder->crtc != crtc)
 			continue;
 		
-		DRM_INFO("%s: set mode %s %x\n", drm_get_encoder_name(encoder), mode->name, mode->mode_id);
+		DRM_INFO("%s: set mode %s %x\n", drm_get_encoder_name(encoder), mode->name, mode->base.id);
 		encoder_funcs = encoder->helper_private;
 		encoder_funcs->mode_set(encoder, mode, adjusted_mode);
 	}
