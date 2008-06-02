@@ -1617,6 +1617,7 @@ static const struct drm_connector_funcs intel_tv_connector_funcs = {
 static const struct drm_connector_helper_funcs intel_tv_connector_helper_funcs = {
 	.mode_valid = intel_tv_mode_valid,
 	.get_modes = intel_tv_get_modes,
+	.best_encoder = intel_best_encoder,
 };
 
 void intel_tv_enc_destroy(struct drm_encoder *encoder)
@@ -1683,6 +1684,7 @@ intel_tv_init(struct drm_device *dev)
 	drm_encoder_init(dev, &intel_output->enc, &intel_tv_enc_funcs,
 			 DRM_MODE_ENCODER_TVDAC);
 
+	drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc);
 	tv_priv = (struct intel_tv_priv *)(intel_output + 1);
 	intel_output->type = INTEL_OUTPUT_TVOUT;
 	intel_output->enc.possible_crtcs = ((1 << 0) | (1 << 1));

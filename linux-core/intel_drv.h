@@ -85,6 +85,9 @@ extern void intel_lvds_init(struct drm_device *dev);
 extern void intel_crtc_load_lut(struct drm_crtc *crtc);
 extern void intel_encoder_prepare (struct drm_encoder *encoder);
 extern void intel_encoder_commit (struct drm_encoder *encoder);
+
+extern struct drm_encoder *intel_best_encoder(struct drm_connector *connector);
+
 extern struct drm_display_mode *intel_crtc_mode_get(struct drm_device *dev,
  						    struct drm_crtc *crtc);
 extern void intel_wait_for_vblank(struct drm_device *dev);
@@ -98,7 +101,6 @@ extern void intel_release_load_detect_pipe(struct intel_output *intel_output,
 extern struct drm_connector* intel_sdvo_find(struct drm_device *dev, int sdvoB);
 extern int intel_sdvo_supports_hotplug(struct drm_connector *connector);
 extern void intel_sdvo_set_hotplug(struct drm_connector *connector, int enable);
-
 extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_connector *connector);
 extern int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);

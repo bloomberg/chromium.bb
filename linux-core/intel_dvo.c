@@ -342,6 +342,7 @@ static const struct drm_connector_funcs intel_dvo_connector_funcs = {
 static const struct drm_connector_helper_funcs intel_dvo_connector_helper_funcs = {
 	.mode_valid = intel_dvo_mode_valid,
 	.get_modes = intel_dvo_get_modes,
+	.best_encoder = intel_best_encoder,
 };
 
 void intel_dvo_enc_destroy(struct drm_encoder *encoder)
@@ -479,6 +480,7 @@ void intel_dvo_init(struct drm_device *dev)
 		drm_encoder_init(dev, &intel_output->enc, &intel_dvo_enc_funcs, encoder_type);
 		drm_encoder_helper_add(&intel_output->enc, &intel_dvo_helper_funcs);
 
+		drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc);
 		if (dvo->type == INTEL_DVO_CHIP_LVDS) {
 			/* For our LVDS chipsets, we should hopefully be able
 			 * to dig the fixed panel mode out of the BIOS data.

@@ -624,7 +624,7 @@ extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
 extern char *drm_get_encoder_name(struct drm_encoder *encoder);
 
 extern int drm_mode_connector_attach_encoder(struct drm_connector *connector,
-					  struct drm_encoder *encoder);
+					     struct drm_encoder *encoder);
 extern void drm_mode_connector_detach_encoder(struct drm_connector *connector,
 					   struct drm_encoder *encoder);
 

@@ -990,6 +990,7 @@ static const struct drm_connector_funcs intel_sdvo_connector_funcs = {
 static const struct drm_connector_helper_funcs intel_sdvo_connector_helper_funcs = {
 	.get_modes = intel_sdvo_get_modes,
 	.mode_valid = intel_sdvo_mode_valid,
+	.best_encoder = intel_best_encoder,
 };
 
 void intel_sdvo_enc_destroy(struct drm_encoder *encoder)
@@ -1114,6 +1115,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	drm_encoder_helper_add(&intel_output->enc, &intel_sdvo_helper_funcs);
 	connector->connector_type = connector_type;
 
+	drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc);
 	drm_sysfs_connector_add(connector);
 
 	/* Set the input timing to the screen. Assume always input 0. */

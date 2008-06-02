@@ -60,6 +60,7 @@ struct drm_connector_helper_funcs {
 	int (*get_modes)(struct drm_connector *connector);
   	int (*mode_valid)(struct drm_connector *connector,
 			  struct drm_display_mode *mode);
+	struct drm_encoder *(*best_encoder)(struct drm_connector *connector);
 };
 	
 extern void drm_helper_probe_single_connector_modes(struct drm_connector *connector, uint32_t maxX, uint32_t maxY);

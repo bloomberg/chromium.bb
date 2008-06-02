@@ -345,6 +345,7 @@ static const struct drm_encoder_helper_funcs intel_lvds_helper_funcs = {
 static const struct drm_connector_helper_funcs intel_lvds_connector_helper_funcs = {
 	.get_modes = intel_lvds_get_modes,
 	.mode_valid = intel_lvds_mode_valid,
+	.best_encoder = intel_best_encoder,
 };	
 
 static const struct drm_connector_funcs intel_lvds_connector_funcs = {
@@ -398,6 +399,7 @@ void intel_lvds_init(struct drm_device *dev)
 	drm_encoder_init(dev, &intel_output->enc, &intel_lvds_enc_funcs,
 			 DRM_MODE_ENCODER_LVDS);
 
+	drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc);
 	intel_output->type = INTEL_OUTPUT_LVDS;
 
 	drm_encoder_helper_add(encoder, &intel_lvds_helper_funcs);

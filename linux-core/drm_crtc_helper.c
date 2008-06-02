@@ -208,10 +208,17 @@ static void drm_pick_crtcs (struct drm_device *dev)
 	struct drm_encoder *encoder, *encoder_equal;
 	struct drm_crtc   *crtc;
 	struct drm_display_mode *des_mode = NULL, *modes, *modes_equal;
+	struct drm_connector_helper_funcs *connector_funcs;
 	int found;
 
+	/* clean out all the encoder/crtc combos */
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
+		encoder->crtc = NULL;
+	}
+	
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		connector->encoder->crtc = NULL;
+		connector_funcs = connector->helper_private;
+		connector->encoder = NULL;
 
     		/* Don't hook up connectors that are disconnected ??
 		 *
@@ -249,7 +256,11 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			}
 		}
 
-		encoder = connector->encoder;
+		encoder = connector_funcs->best_encoder(connector);
+		if (!encoder)
+			continue;
+
+		connector->encoder = encoder;
 
 		c = -1;
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
@@ -259,12 +270,12 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			if ((encoder->possible_crtcs & (1 << c)) == 0)
 		    		continue;
 	
-			list_for_each_entry(connector_equal, &dev->mode_config.connector_list, head) {
-				if (connector->id == connector_equal->id)
+			list_for_each_entry(encoder_equal, &dev->mode_config.encoder_list, head) {
+				if (encoder->id == encoder_equal->id)
 					continue;
 
 				/* Find out if crtc has been assigned before */
-				if (connector_equal->encoder->crtc == crtc)
+				if (encoder_equal->crtc == crtc)
 					assigned = 1;
 			}
 
@@ -280,6 +291,9 @@ static void drm_pick_crtcs (struct drm_device *dev)
 					continue;
 
 				encoder_equal = connector_equal->encoder;
+
+				if (!encoder_equal)
+					continue;
 
 				list_for_each_entry(modes, &connector->modes, head) {
 					list_for_each_entry(modes_equal, &connector_equal->modes, head) {
@@ -301,8 +315,8 @@ clone:
 				continue;
 
 			/* Found a CRTC to attach to, do it ! */
-			connector->encoder->crtc = crtc;
-			connector->encoder->crtc->desired_mode = des_mode;
+			encoder->crtc = crtc;
+			encoder->crtc->desired_mode = des_mode;
 			connector->initial_x = 0;
 			connector->initial_y = 0;
 			DRM_DEBUG("Desired mode for CRTC %d is 0x%x:%s\n",c,des_mode->mode_id, des_mode->name);

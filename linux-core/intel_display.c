@@ -1489,3 +1489,14 @@ void intel_modeset_cleanup(struct drm_device *dev)
 {
 	drm_mode_config_cleanup(dev);
 }
+
+
+/* current intel driver doesn't take advantage of encoders
+   always give back the encoder for the connector
+*/
+struct drm_encoder *intel_best_encoder(struct drm_connector *connector)
+{
+	struct intel_output *intel_output = to_intel_output(connector);
+
+	return &intel_output->enc;
+}
