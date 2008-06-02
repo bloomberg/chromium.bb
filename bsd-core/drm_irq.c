@@ -69,18 +69,14 @@ drm_irq_handler_wrap(DRM_IRQ_ARGS)
 static void vblank_disable_fn(void *arg)
 {
 	struct drm_device *dev = (struct drm_device *)arg;
-	unsigned long irqflags;
 	int i;
 
-	DRM_SPINLOCK_IRQSAVE(&dev->vbl_lock, irqflags);
 	if (callout_pending(&dev->vblank_disable_timer)) {
 		/* callout was reset */
-		DRM_SPINUNLOCK_IRQRESTORE(&dev->vbl_lock, irqflags);
 		return;
 	}
 	if (!callout_active(&dev->vblank_disable_timer)) {
 		/* callout was stopped */
-		DRM_SPINUNLOCK_IRQRESTORE(&dev->vbl_lock, irqflags);
 		return;
 	}
 	callout_deactivate(&dev->vblank_disable_timer);
@@ -92,7 +88,6 @@ static void vblank_disable_fn(void *arg)
 			dev->vblank_enabled[i] = 0;
 		}
 	}
-	DRM_SPINUNLOCK_IRQRESTORE(&dev->vbl_lock, irqflags);
 }
 
 static void drm_vblank_cleanup(struct drm_device *dev)
@@ -106,6 +101,7 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 	DRM_SPINLOCK_IRQSAVE(&dev->vbl_lock, irqflags);
 	callout_stop(&dev->vblank_disable_timer);
 	DRM_SPINUNLOCK_IRQRESTORE(&dev->vbl_lock, irqflags);
+
 	callout_drain(&dev->vblank_disable_timer);
 
 	vblank_disable_fn((void *)dev);
