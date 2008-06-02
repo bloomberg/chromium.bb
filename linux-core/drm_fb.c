@@ -58,9 +58,6 @@ static int drmfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 		return 1;
 
 	if (fb->depth == 8) {
-		if (crtc->funcs->gamma_set) {
-			crtc->funcs->gamma_set(crtc, red, green, blue, regno);
-		}
 		return 0;
 	}
 	

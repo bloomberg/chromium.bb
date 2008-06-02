@@ -54,9 +54,9 @@ static int radeonfb_setcolreg(unsigned regno, unsigned red,
 	if (regno > 255) {
 		return 1;
 	}
-	if (crtc->funcs->gamma_set) {
-		crtc->funcs->gamma_set(crtc, red, green, blue, regno);
-	}
+	//	if (crtc->funcs->gamma_set) {
+	//		crtc->funcs->gamma_set(crtc, red, green, blue, regno);
+	//	}
 	if (regno < 16) {
 		switch (fb->depth) {
 		case 15:

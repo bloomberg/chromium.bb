@@ -279,6 +279,11 @@ void drm_crtc_cleanup(struct drm_crtc *crtc)
 {
 	struct drm_device *dev = crtc->dev;
 
+	if (crtc->gamma_store) {
+		kfree(crtc->gamma_store);
+		crtc->gamma_store = NULL;
+	}
+
 	drm_idr_put(dev, crtc->id);
 	list_del(&crtc->head);
 	dev->mode_config.num_crtc--;
@@ -896,6 +901,7 @@ int drm_mode_getcrtc(struct drm_device *dev,
 
 	crtc_resp->x = crtc->x;
 	crtc_resp->y = crtc->y;
+	crtc_resp->gamma_size = crtc->gamma_size;
 
 	if (crtc->fb)
 		crtc_resp->fb_id = crtc->fb->id;
@@ -2070,3 +2076,112 @@ void drm_mode_connector_detach_encoder(struct drm_connector *connector,
 	}
 }
 EXPORT_SYMBOL(drm_mode_connector_detach_encoder);
+
+bool drm_mode_crtc_set_gamma_size(struct drm_crtc *crtc,
+				  int gamma_size)
+{
+	crtc->gamma_size = gamma_size;
+
+	crtc->gamma_store = kzalloc(gamma_size * sizeof(uint16_t) * 3, GFP_KERNEL);
+	if (!crtc->gamma_store) {
+		crtc->gamma_size = 0;
+		return false;
+	}
+
+	return true;
+}
+EXPORT_SYMBOL(drm_mode_crtc_set_gamma_size);
+
+int drm_mode_gamma_set_ioctl(struct drm_device *dev,
+			     void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_crtc_lut *crtc_lut = data;
+	struct drm_crtc *crtc;
+	void *r_base, *g_base, *b_base;
+	int size;
+	int ret = 0;
+
+	mutex_lock(&dev->mode_config.mutex);
+	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_lut->crtc_id);
+	if (!crtc || (crtc->id != crtc_lut->crtc_id)) {
+		ret = -EINVAL;
+		goto out;
+	}
+	
+	/* memcpy into gamma store */
+	if (crtc_lut->gamma_size != crtc->gamma_size) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	size = crtc_lut->gamma_size * (sizeof(uint16_t));
+	r_base = crtc->gamma_store;
+	if (copy_from_user(r_base, (void __user *)(unsigned long)crtc_lut->red, size)) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	g_base = r_base + size;
+	if (copy_from_user(g_base, (void __user *)(unsigned long)crtc_lut->green, size)) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	b_base = g_base + size;
+	if (copy_from_user(b_base, (void __user *)(unsigned long)crtc_lut->blue, size)) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	crtc->funcs->gamma_set(crtc, r_base, g_base, b_base, crtc->gamma_size);
+
+out:
+	mutex_unlock(&dev->mode_config.mutex);
+	return ret;
+
+}
+
+int drm_mode_gamma_get_ioctl(struct drm_device *dev,
+			     void *data, struct drm_file *file_priv)
+{
+	struct drm_mode_crtc_lut *crtc_lut = data;
+	struct drm_crtc *crtc;
+	void *r_base, *g_base, *b_base;
+	int size;
+	int ret = 0;
+
+	mutex_lock(&dev->mode_config.mutex);
+	crtc = idr_find(&dev->mode_config.crtc_idr, crtc_lut->crtc_id);
+	if (!crtc || (crtc->id != crtc_lut->crtc_id)) {
+		ret = -EINVAL;
+		goto out;
+	}
+	
+	/* memcpy into gamma store */
+	if (crtc_lut->gamma_size != crtc->gamma_size) {
+		ret = -EINVAL;
+		goto out;
+	}
+
+	size = crtc_lut->gamma_size * (sizeof(uint16_t));
+	r_base = crtc->gamma_store;
+	if (copy_to_user((void __user *)(unsigned long)crtc_lut->red, r_base, size)) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	g_base = r_base + size;
+	if (copy_to_user((void __user *)(unsigned long)crtc_lut->green, g_base, size)) {
+		ret = -EFAULT;
+		goto out;
+	}
+
+	b_base = g_base + size;
+	if (copy_to_user((void __user *)(unsigned long)crtc_lut->blue, b_base, size)) {
+		ret = -EFAULT;
+		goto out;
+	}
+out:
+	mutex_unlock(&dev->mode_config.mutex);
+	return ret;
+}

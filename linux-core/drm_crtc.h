@@ -315,8 +315,8 @@ struct drm_crtc_funcs {
 	int (*cursor_move)(struct drm_crtc *crtc, int x, int y);
 
 	/* Set gamma on the CRTC */
-	void (*gamma_set)(struct drm_crtc *crtc, u16 r, u16 g, u16 b,
-			  int regno);
+	void (*gamma_set)(struct drm_crtc *crtc, u16 *r, u16 *g, u16 *b,
+			  uint32_t size);
 	/* Object destroy routine */
 	void (*destroy)(struct drm_crtc *crtc);
 
@@ -353,6 +353,10 @@ struct drm_crtc {
 	struct drm_display_mode *desired_mode;
 	int desired_x, desired_y;
 	const struct drm_crtc_funcs *funcs;
+
+	/* CRTC gamma size for reporting to userspace */
+	uint32_t gamma_size;
+	uint16_t *gamma_store;
 
 	/* if you are using the helper */
 	void *helper_private;
@@ -627,7 +631,8 @@ extern int drm_mode_connector_attach_encoder(struct drm_connector *connector,
 					     struct drm_encoder *encoder);
 extern void drm_mode_connector_detach_encoder(struct drm_connector *connector,
 					   struct drm_encoder *encoder);
-
+extern bool drm_mode_crtc_set_gamma_size(struct drm_crtc *crtc,
+					 int gamma_size);
 /* IOCTLs */
 extern int drm_mode_getresources(struct drm_device *dev,
 				 void *data, struct drm_file *file_priv);
@@ -665,7 +670,11 @@ extern int drm_mode_hotplug_ioctl(struct drm_device *dev,
 				  void *data, struct drm_file *file_priv);
 extern int drm_mode_replacefb(struct drm_device *dev,
 			      void *data, struct drm_file *file_priv);
-int drm_mode_getencoder(struct drm_device *dev,
-			void *data, struct drm_file *file_priv);
+extern int drm_mode_getencoder(struct drm_device *dev,
+			       void *data, struct drm_file *file_priv);
+extern int drm_mode_gamma_get_ioctl(struct drm_device *dev,
+				    void *data, struct drm_file *file_priv);
+extern int drm_mode_gamma_set_ioctl(struct drm_device *dev,
+				    void *data, struct drm_file *file_priv);
 #endif /* __DRM_CRTC_H__ */
 

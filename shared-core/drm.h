@@ -1048,7 +1048,7 @@ struct drm_mode_crtc {
 
 	int count_possibles;
 	unsigned int possibles; /**< Connectors that can be connected */
-	int gamma_size;
+	uint32_t gamma_size;
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
 };
@@ -1173,6 +1173,16 @@ struct drm_mode_hotplug {
 	uint32_t counter;
 };
 
+struct drm_mode_crtc_lut {
+
+	uint32_t crtc_id;
+	uint32_t gamma_size;
+
+	uint64_t red;
+	uint64_t green;
+	uint64_t blue;
+};
+
 /**
  * \name Ioctls Definitions
  */
@@ -1289,6 +1299,9 @@ struct drm_mode_hotplug {
 
 #define DRM_IOCTL_MODE_REPLACEFB       DRM_IOWR(0xAF, struct drm_mode_fb_cmd)
 #define DRM_IOCTL_MODE_GETENCODER      DRM_IOWR(0xB0, struct drm_mode_get_encoder)
+#define DRM_IOCTL_MODE_GETGAMMA        DRM_IOWR(0xB1, struct drm_mode_crtc_lut)
+#define DRM_IOCTL_MODE_SETGAMMA        DRM_IOWR(0xB2, struct drm_mode_crtc_lut)
+
 /*@}*/
 
 /**

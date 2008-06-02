@@ -657,3 +657,39 @@ int drmModeReplaceFB(int fd, uint32_t buffer_id,
 
 	return 0;
 }
+
+int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
+			uint16_t *red, uint16_t *green, uint16_t *blue)
+{
+	int ret;
+	struct drm_mode_crtc_lut l;
+
+	l.crtc_id = crtc_id;
+	l.gamma_size = size;
+	l.red = VOID2U64(red);
+	l.green = VOID2U64(green);
+	l.blue = VOID2U64(blue);
+	
+	if ((ret = ioctl(fd, DRM_IOCTL_MODE_GETGAMMA, &l)))
+		return ret;
+
+	return 0;
+}
+
+int drmModeCrtcSetGamma(int fd, uint32_t crtc_id, uint32_t size,
+			uint16_t *red, uint16_t *green, uint16_t *blue)
+{
+	int ret;
+	struct drm_mode_crtc_lut l;
+
+	l.crtc_id = crtc_id;
+	l.gamma_size = size;
+	l.red = VOID2U64(red);
+	l.green = VOID2U64(green);
+	l.blue = VOID2U64(blue);
+	
+	if ((ret = ioctl(fd, DRM_IOCTL_MODE_SETGAMMA, &l)))
+		return ret;
+
+	return 0;
+}

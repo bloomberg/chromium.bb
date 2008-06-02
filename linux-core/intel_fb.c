@@ -41,6 +41,7 @@
 #include "drmP.h"
 #include "drm.h"
 #include "drm_crtc.h"
+#include "intel_drv.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
 
@@ -79,8 +80,7 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 		return 1;
 
 	if (fb->depth == 8) {
-		if (crtc->funcs->gamma_set)
-			crtc->funcs->gamma_set(crtc, red, green, blue, regno);
+		intel_crtc_fb_gamma_set(crtc, red, green, blue, regno);
 		return 0;
 	}
 

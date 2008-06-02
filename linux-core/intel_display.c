@@ -1056,7 +1056,7 @@ static int intel_crtc_cursor_move(struct drm_crtc *crtc, int x, int y)
 }
 
 /** Sets the color ramps on behalf of RandR */
-static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
+void intel_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				 u16 blue, int regno)
 {
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
@@ -1064,6 +1064,24 @@ static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 	intel_crtc->lut_r[regno] = red >> 8;
 	intel_crtc->lut_g[regno] = green >> 8;
 	intel_crtc->lut_b[regno] = blue >> 8;
+}
+
+static void intel_crtc_gamma_set(struct drm_crtc *crtc, u16 *red, u16 *green,
+				 u16 *blue, uint32_t size)
+{
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+	int i;
+
+	if (size != 256)
+		return;
+
+	for (i = 0; i < 256; i++) {
+		intel_crtc->lut_r[i] = red[i] >> 8;
+		intel_crtc->lut_g[i] = green[i] >> 8;
+		intel_crtc->lut_b[i] = blue[i] >> 8;
+	}
+
+	intel_crtc_load_lut(crtc);
 }
 
 /**
@@ -1343,6 +1361,7 @@ void intel_crtc_init(struct drm_device *dev, int pipe)
 
 	drm_crtc_init(dev, &intel_crtc->base, &intel_crtc_funcs);
 
+	drm_mode_crtc_set_gamma_size(&intel_crtc->base, 256);
 	intel_crtc->pipe = pipe;
 	for (i = 0; i < 256; i++) {
 		intel_crtc->lut_r[i] = i;

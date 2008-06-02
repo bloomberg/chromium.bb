@@ -104,5 +104,6 @@ extern void intel_sdvo_set_hotplug(struct drm_connector *connector, int enable);
 extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_connector *connector);
 extern int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
-
+extern void intel_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
+				    u16 blue, int regno);
 #endif /* __INTEL_DRV_H__ */
