@@ -53,7 +53,7 @@ struct intelfb_par {
 */
 	struct drm_display_mode *our_mode;
 	struct drm_mode_set set;
-	struct drm_output *hack;
+	struct drm_connector *hack;
 };
 /*
 static int
@@ -114,7 +114,7 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 	struct intelfb_par *par = info->par;
 	/*struct drm_device *dev = par->dev;*/
 	struct drm_framebuffer *fb = par->set.fb;
-	/*struct drm_output *output;*/
+	/*struct drm_connector *connector;*/
 	int depth/*, found = 0*/;
 
 	if (!var->pixclock)
@@ -195,17 +195,17 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 	}
 
 #if 0
-	/* Here we walk the output mode list and look for modes. If we haven't
+	/* Here we walk the connector mode list and look for modes. If we haven't
 	* got it, then bail. Not very nice, so this is disabled.
 	* In the set_par code, we create our mode based on the incoming
 	* parameters. Nicer, but may not be desired by some.
 	*/
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == par->crtc)
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		if (connector->crtc == par->crtc)
 			break;
 	}
 
-	list_for_each_entry(drm_mode, &output->modes, head) {
+	list_for_each_entry(drm_mode, &connector->modes, head) {
 		if (drm_mode->hdisplay == var->xres &&
 		drm_mode->vdisplay == var->yres &&
 		(((PICOS2KHZ(var->pixclock))/1000) >= ((drm_mode->clock/1000)-1)) &&
@@ -230,7 +230,7 @@ static int intelfb_set_par(struct fb_info *info)
 	struct drm_framebuffer *fb = par->set.fb;
 	struct drm_device *dev = par->dev;
 	struct drm_display_mode *drm_mode, *search_mode;
-	struct drm_output *output = NULL;
+	struct drm_connector *connector = NULL;
 	struct fb_var_screeninfo *var = &info->var;
 	int found = 0;
 
@@ -276,20 +276,20 @@ static int intelfb_set_par(struct fb_info *info)
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 
 	found = 0;
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		if (output->crtc == par->set.crtc){
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		if (connector->encoder->crtc == par->set.crtc){
 			found = 1;
 			break;
 		}
 	}
 
-	/* no output bound, bail */
+	/* no connector bound, bail */
 	if (!found)
 		return -EINVAL;
 
 	found = 0;
 	drm_mode_debug_printmodeline(drm_mode);
-	list_for_each_entry(search_mode, &output->modes, head) {
+	list_for_each_entry(search_mode, &connector->modes, head) {
 		drm_mode_debug_printmodeline(search_mode);
 		if (drm_mode_equal(drm_mode, search_mode)) {
 			drm_mode_destroy(dev, drm_mode);
@@ -299,7 +299,7 @@ static int intelfb_set_par(struct fb_info *info)
 		}
 	}
 	
-	/* If we didn't find a matching mode that exists on our output,
+	/* If we didn't find a matching mode that exists on our connector,
 	* create a new attachment for the incoming user specified mode
 	*/
 	if (!found) {
@@ -566,7 +566,7 @@ int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(intelfb_resize);
 
-int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output)
+int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_connector *connector)
 {
 	struct fb_info *info;
 	struct intelfb_par *par;
@@ -581,7 +581,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_outp
 		return -EINVAL;
 	}
 
-	if (!output)
+	if (!connector)
 		return -EINVAL;
 
 	fb = drm_framebuffer_create(dev);
@@ -627,9 +627,9 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_outp
 	par->dev = dev;
 	par->set.crtc = crtc;
 	par->set.fb = fb;
-	par->hack = output;
-	par->set.outputs = &par->hack;
-	par->set.num_outputs = 1;
+	par->hack = connector;
+	par->set.connectors = &par->hack;
+	par->set.num_connectors = 1;
 
 	info->fbops = &intelfb_ops;
 

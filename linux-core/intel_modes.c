@@ -13,9 +13,8 @@
  * intel_ddc_probe
  *
  */
-bool intel_ddc_probe(struct drm_output *output)
+bool intel_ddc_probe(struct intel_output *intel_output)
 {
-	struct intel_output *intel_output = to_intel_output(output);
 	u8 out_buf[] = { 0x0, 0x0};
 	u8 buf[2];
 	int ret;
@@ -43,20 +42,19 @@ bool intel_ddc_probe(struct drm_output *output)
 
 /**
  * intel_ddc_get_modes - get modelist from monitor
- * @output: DRM output device to use
+ * @connector: DRM connector device to use
  *
- * Fetch the EDID information from @output using the DDC bus.
+ * Fetch the EDID information from @connector using the DDC bus.
  */
-int intel_ddc_get_modes(struct drm_output *output)
+int intel_ddc_get_modes(struct intel_output *intel_output)
 {
-	struct intel_output *intel_output = to_intel_output(output);
 	struct edid *edid;
 	int ret = 0;
 
-	edid = drm_get_edid(output, &intel_output->ddc_bus->adapter);
+	edid = drm_get_edid(&intel_output->base, &intel_output->ddc_bus->adapter);
 	if (edid) {
-		drm_mode_output_update_edid_property(output, edid);
-		ret = drm_add_edid_modes(output, edid);
+		drm_mode_connector_update_edid_property(&intel_output->base, edid);
+		ret = drm_add_edid_modes(&intel_output->base, edid);
 		kfree(edid);
 	}
 	return ret;

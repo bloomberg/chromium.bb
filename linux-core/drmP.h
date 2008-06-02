@@ -743,7 +743,7 @@ struct drm_driver {
 			     struct drm_set_version *sv);
 
 	/* FB routines, if present */
-	int (*fb_probe)(struct drm_device *dev, struct drm_crtc *crtc, struct drm_output *output);
+	int (*fb_probe)(struct drm_device *dev, struct drm_crtc *crtc, struct drm_connector *connector);
 	int (*fb_remove)(struct drm_device *dev, struct drm_framebuffer *fb);
 	int (*fb_resize)(struct drm_device *dev, struct drm_crtc *crtc);
 
@@ -1317,9 +1317,9 @@ extern void drm_sysfs_destroy(void);
 extern int drm_sysfs_device_add(struct drm_minor *minor);
 extern void drm_sysfs_hotplug_event(struct drm_device *dev);
 extern void drm_sysfs_device_remove(struct drm_minor *minor);
-extern char *drm_get_output_status_name(enum drm_output_status status);
-extern int drm_sysfs_output_add(struct drm_output *output);
-extern void drm_sysfs_output_remove(struct drm_output *output);
+extern char *drm_get_connector_status_name(enum drm_connector_status status);
+extern int drm_sysfs_connector_add(struct drm_connector *connector);
+extern void drm_sysfs_connector_remove(struct drm_connector *connector);
 
 /*
  * Basic memory manager support (drm_mm.c)

@@ -147,27 +147,27 @@ static void drm_sysfs_device_release(struct device *dev)
 }
 
 /*
- * Output properties
+ * Connector properties
  */
 static ssize_t status_show(struct device *device,
 			   struct device_attribute *attr,
 			   char *buf)
 {
-	struct drm_output *output = container_of(device, struct drm_output, kdev);
+	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
 	return snprintf(buf, PAGE_SIZE, "%s",
-			drm_get_output_status_name(output->funcs->detect(output)));
+			drm_get_connector_status_name(connector->funcs->detect(connector)));
 }
 
 static ssize_t dpms_show(struct device *device,
 			   struct device_attribute *attr,
 			   char *buf)
 {
-	struct drm_output *output = container_of(device, struct drm_output, kdev);
-	struct drm_device *dev = output->dev;
+	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
+	struct drm_device *dev = connector->dev;
 	uint64_t dpms_status;
 	int ret;
 
-	ret = drm_output_property_get_value(output,
+	ret = drm_connector_property_get_value(connector,
 					    dev->mode_config.dpms_property,
 					    &dpms_status);
 	if (ret)
@@ -179,17 +179,17 @@ static ssize_t dpms_show(struct device *device,
 static ssize_t edid_show(struct kobject *kobj, struct bin_attribute *attr,
 			 char *buf, loff_t off, size_t count)
 {
-	struct device *output_dev = container_of(kobj, struct device, kobj);
-	struct drm_output *output = container_of(output_dev, struct drm_output,
+	struct device *connector_dev = container_of(kobj, struct device, kobj);
+	struct drm_connector *connector = container_of(connector_dev, struct drm_connector,
 						 kdev);
 	unsigned char *edid;
 	size_t size;
 
-	if (!output->edid_blob_ptr)
+	if (!connector->edid_blob_ptr)
 		return 0;
 
-	edid = output->edid_blob_ptr->data;
-	size = output->edid_blob_ptr->length;
+	edid = connector->edid_blob_ptr->data;
+	size = connector->edid_blob_ptr->length;
 	if (!edid)
 		return 0;
 		
@@ -207,11 +207,11 @@ static ssize_t modes_show(struct device *device,
 			   struct device_attribute *attr,
 			   char *buf)
 {
-	struct drm_output *output = container_of(device, struct drm_output, kdev);
+	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
 	struct drm_display_mode *mode;
 	int written = 0;
 
-	list_for_each_entry(mode, &output->modes, head) {
+	list_for_each_entry(mode, &connector->modes, head) {
 		written += snprintf(buf + written, PAGE_SIZE - written, "%s\n",
 				    mode->name);
 	}
@@ -219,7 +219,7 @@ static ssize_t modes_show(struct device *device,
 	return written;
 }
 
-static struct device_attribute output_attrs[] = {
+static struct device_attribute connector_attrs[] = {
 	__ATTR_RO(status),
 	__ATTR_RO(dpms),
 	__ATTR_RO(modes),
@@ -232,48 +232,48 @@ static struct bin_attribute edid_attr = {
 };
 
 /**
- * drm_sysfs_output_add - add an output to sysfs
- * @output: output to add
+ * drm_sysfs_connector_add - add an connector to sysfs
+ * @connector: connector to add
  *
- * Create an output device in sysfs, along with its associated output
+ * Create an connector device in sysfs, along with its associated connector
  * properties (so far, connection status, dpms, mode list & edid) and
- * generate a hotplug event so userspace knows there's a new output
+ * generate a hotplug event so userspace knows there's a new connector
  * available.
  */
-int drm_sysfs_output_add(struct drm_output *output)
+int drm_sysfs_connector_add(struct drm_connector *connector)
 {
-	struct drm_device *dev = output->dev;
+	struct drm_device *dev = connector->dev;
 	int ret = 0, i, j;
 
-	if (device_is_registered(&output->kdev))
+	if (device_is_registered(&connector->kdev))
 	    return 0;
 
-	output->kdev.parent = &dev->primary->kdev;
-	output->kdev.class = drm_class;
-	output->kdev.release = drm_sysfs_device_release;
+	connector->kdev.parent = &dev->primary->kdev;
+	connector->kdev.class = drm_class;
+	connector->kdev.release = drm_sysfs_device_release;
 
-	DRM_DEBUG("adding \"%s\" to sysfs\n", drm_get_output_name(output));
+	DRM_DEBUG("adding \"%s\" to sysfs\n", drm_get_connector_name(connector));
 
-	snprintf(output->kdev.bus_id, BUS_ID_SIZE, "card%d-%s",
-		 dev->primary->index, drm_get_output_name(output));
-	ret = device_register(&output->kdev);
+	snprintf(connector->kdev.bus_id, BUS_ID_SIZE, "card%d-%s",
+		 dev->primary->index, drm_get_connector_name(connector));
+	ret = device_register(&connector->kdev);
 
 	if (ret) {
-		DRM_ERROR("failed to register output device: %d\n", ret);
+		DRM_ERROR("failed to register connector device: %d\n", ret);
 		goto out;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(output_attrs); i++) {
-		ret = device_create_file(&output->kdev, &output_attrs[i]);
+	for (i = 0; i < ARRAY_SIZE(connector_attrs); i++) {
+		ret = device_create_file(&connector->kdev, &connector_attrs[i]);
 		if (ret)
 			goto err_out_files;
 	}
 
-	ret = sysfs_create_bin_file(&output->kdev.kobj, &edid_attr);
+	ret = sysfs_create_bin_file(&connector->kdev.kobj, &edid_attr);
 	if (ret)
 		goto err_out_files;
 
-	/* Let userspace know we have a new output */
+	/* Let userspace know we have a new connector */
 	drm_sysfs_hotplug_event(dev);
 
 	return 0;
@@ -281,33 +281,33 @@ int drm_sysfs_output_add(struct drm_output *output)
 err_out_files:
 	if (i > 0)
 		for (j = 0; j < i; j++)
-			device_remove_file(&output->kdev, &output_attrs[i]);
-	device_unregister(&output->kdev);
+			device_remove_file(&connector->kdev, &connector_attrs[i]);
+	device_unregister(&connector->kdev);
 
 out:
 	return ret;
 }
-EXPORT_SYMBOL(drm_sysfs_output_add);
+EXPORT_SYMBOL(drm_sysfs_connector_add);
 
 /**
- * drm_sysfs_output_remove - remove an output device from sysfs
- * @output: output to remove
+ * drm_sysfs_connector_remove - remove an connector device from sysfs
+ * @connector: connector to remove
  *
- * Remove @output and its associated attributes from sysfs.  Note that
+ * Remove @connector and its associated attributes from sysfs.  Note that
  * the device model core will take care of sending the "remove" uevent
  * at this time, so we don't need to do it.
  */
-void drm_sysfs_output_remove(struct drm_output *output)
+void drm_sysfs_connector_remove(struct drm_connector *connector)
 {
 	int i;
 
-	DRM_DEBUG("removing \"%s\" from sysfs\n", drm_get_output_name(output));
-	for (i = 0; i < ARRAY_SIZE(output_attrs); i++)
-		device_remove_file(&output->kdev, &output_attrs[i]);
-	sysfs_remove_bin_file(&output->kdev.kobj, &edid_attr);
-	device_unregister(&output->kdev);
+	DRM_DEBUG("removing \"%s\" from sysfs\n", drm_get_connector_name(connector));
+	for (i = 0; i < ARRAY_SIZE(connector_attrs); i++)
+		device_remove_file(&connector->kdev, &connector_attrs[i]);
+	sysfs_remove_bin_file(&connector->kdev.kobj, &edid_attr);
+	device_unregister(&connector->kdev);
 }
-EXPORT_SYMBOL(drm_sysfs_output_remove);
+EXPORT_SYMBOL(drm_sysfs_connector_remove);
 
 /**
  * drm_sysfs_hotplug_event - generate a DRM uevent

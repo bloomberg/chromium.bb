@@ -230,7 +230,7 @@ out:
 	return false;
 }
 
-static enum drm_output_status ch7xxx_detect(struct intel_dvo_device *dvo)
+static enum drm_connector_status ch7xxx_detect(struct intel_dvo_device *dvo)
 {
 	uint8_t cdet, orig_pm, pm;
 
@@ -247,8 +247,8 @@ static enum drm_output_status ch7xxx_detect(struct intel_dvo_device *dvo)
 	ch7xxx_writeb(dvo, CH7xxx_PM, orig_pm);
 
 	if (cdet & CH7xxx_CDET_DVI) 
-		return output_status_connected;
-	return output_status_disconnected;
+		return connector_status_connected;
+	return connector_status_disconnected;
 }
 
 static enum drm_mode_status ch7xxx_mode_valid(struct intel_dvo_device *dvo,

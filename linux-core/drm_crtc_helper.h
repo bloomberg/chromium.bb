@@ -21,6 +21,11 @@
 #include <linux/fb.h>
 
 struct drm_crtc_helper_funcs {
+	/*
+	 * Control power levels on the CRTC.  If the mode passed in is
+	 * unsupported, the provider must use the next lowest power level.
+	 */
+	void (*dpms)(struct drm_crtc *crtc, int mode);
   	void (*prepare)(struct drm_crtc *crtc);
 	void (*commit)(struct drm_crtc *crtc);
 
@@ -36,32 +41,50 @@ struct drm_crtc_helper_funcs {
 	void (*mode_set_base)(struct drm_crtc *crtc, int x, int y);
 };
 
-struct drm_output_helper_funcs {
-	bool (*mode_fixup)(struct drm_output *output,
+struct drm_encoder_helper_funcs {
+	void (*dpms)(struct drm_encoder *encoder, int mode);
+	void (*save)(struct drm_encoder *encoder);
+	void (*restore)(struct drm_encoder *encoder);
+
+	bool (*mode_fixup)(struct drm_encoder *encoder,
 			   struct drm_display_mode *mode,
 			   struct drm_display_mode *adjusted_mode);
-	void (*prepare)(struct drm_output *output);
-	void (*commit)(struct drm_output *output);
-	void (*mode_set)(struct drm_output *output,
+	void (*prepare)(struct drm_encoder *encoder);
+	void (*commit)(struct drm_encoder *encoder);
+	void (*mode_set)(struct drm_encoder *encoder,
 			 struct drm_display_mode *mode,
 			 struct drm_display_mode *adjusted_mode);
 };
 
-extern int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_output *output,
+struct drm_connector_helper_funcs {
+	int (*get_modes)(struct drm_connector *connector);
+  	int (*mode_valid)(struct drm_connector *connector,
+			  struct drm_display_mode *mode);
+	struct drm_encoder *(*best_encoder)(struct drm_connector *connector);
+};
+	
+extern void drm_helper_probe_single_connector_modes(struct drm_connector *connector, uint32_t maxX, uint32_t maxY);
+extern void drm_helper_disable_unused_functions(struct drm_device *dev);
+extern int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *connector,
 					bool connected);
 extern bool drm_helper_initial_config(struct drm_device *dev, bool can_grow);
 extern int drm_crtc_helper_set_config(struct drm_mode_set *set);
 extern bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mode,
 				     int x, int y);
-
+extern bool drm_helper_crtc_in_use(struct drm_crtc *crtc);
 static inline void drm_crtc_helper_add(struct drm_crtc *crtc, const struct drm_crtc_helper_funcs *funcs)
 {
 	crtc->helper_private = (void *)funcs;
 }
 
-static inline void drm_output_helper_add(struct drm_output *output, const struct drm_output_helper_funcs *funcs)
+static inline void drm_encoder_helper_add(struct drm_encoder *encoder, const struct drm_encoder_helper_funcs *funcs)
 {
-	output->helper_private = (void *)funcs;
+	encoder->helper_private = (void *)funcs;
+}
+
+static inline void drm_connector_helper_add(struct drm_connector *connector, const struct drm_connector_helper_funcs *funcs)
+{
+	connector->helper_private = (void *)funcs;
 }
 
 

@@ -180,16 +180,16 @@ out:
 	return false;
 }
 
-static enum drm_output_status sil164_detect(struct intel_dvo_device *dvo)
+static enum drm_connector_status sil164_detect(struct intel_dvo_device *dvo)
 {
 	uint8_t reg9;
 
 	sil164_readb(dvo, SIL164_REG9, &reg9);
 
 	if (reg9 & SIL164_9_HTPLG)
-		return output_status_connected;
+		return connector_status_connected;
 	else
-		return output_status_disconnected;
+		return connector_status_disconnected;
 }
 
 static enum drm_mode_status sil164_mode_valid(struct intel_dvo_device *dvo,

@@ -47,27 +47,32 @@ int printMode(struct drm_mode_modeinfo *mode)
 	return 0;
 }
 
-int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
+int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uint32_t id)
 {
 	int i = 0, j;
 	struct drm_mode_modeinfo *mode = NULL;
 	drmModePropertyPtr props;
+	drmModeEncoderPtr enc;
 	unsigned char *name = NULL;
 
-	printf("Output: %d-%d\n", output->output_type, output->output_type_id);
+	printf("Connector: %d-%d\n", connector->connector_type, connector->connector_type_id);
 	printf("\tid           : %i\n", id);
-	printf("\tcrtc id      : %i\n", output->crtc);
-	printf("\tconn         : %s\n", getConnectionText(output->connection));
-	printf("\tsize         : %ix%i (mm)\n", output->mmWidth, output->mmHeight);
-	printf("\tcount_crtcs  : %i\n", output->count_crtcs);
-	printf("\tcrtcs        : %i\n", output->crtcs);
-	printf("\tcount_clones : %i\n", output->count_clones);
-	printf("\tclones       : %i\n", output->clones);
-	printf("\tcount_modes  : %i\n", output->count_modes);
-	printf("\tcount_props  : %i\n", output->count_props);
+	printf("\tencoder id      : %i\n", connector->encoder);
+	printf("\tconn         : %s\n", getConnectionText(connector->connection));
+	printf("\tsize         : %ix%i (mm)\n", connector->mmWidth, connector->mmHeight);
+	printf("\tcount_modes  : %i\n", connector->count_modes);
+	printf("\tcount_props  : %i\n", connector->count_props);
+	printf("\tcount_encs   : %i\n", connector->count_encoders);
 
-	for (i = 0; i < output->count_props; i++) {
-		props = drmModeGetProperty(fd, output->props[i]);
+	for (i = 0; i < connector->count_encoders; i++) {
+		enc = drmModeGetEncoder(fd, connector->encoders[i]);
+		if (enc) {
+			printf("Encoder: %d %d %d %d %d\n", enc->crtc, enc->encoder_id, enc->encoder_type, enc->crtcs, enc->clones);
+		}
+	}
+
+	for (i = 0; i < connector->count_props; i++) {
+		props = drmModeGetProperty(fd, connector->props[i]);
 		name = NULL;
 		if (props) {
 			printf("Property: %s\n", props->name);
@@ -82,7 +87,7 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 			if (props->flags & DRM_MODE_PROP_BLOB) {
 				drmModePropertyBlobPtr blob;
 
-				blob = drmModeGetPropertyBlob(fd, output->prop_values[i]);
+				blob = drmModeGetPropertyBlob(fd, connector->prop_values[i]);
 				if (blob) {
 					printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
 					drmModeFreePropertyBlob(blob);
@@ -94,15 +99,15 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 
 				for (j = 0; j < props->count_enums; j++) {
 				  printf("\t\t%lld = %s\n", props->enums[j].value, props->enums[j].name);
-					if (output->prop_values[i] == props->enums[j].value)
+					if (connector->prop_values[i] == props->enums[j].value)
 						name = props->enums[j].name;
 
 				}
 
 				if (props->count_enums && name) {
-					printf("\toutput property name %s %s\n", props->name, name);
+					printf("\tconnector property name %s %s\n", props->name, name);
 				} else {
-					printf("\toutput property id %s %lli\n", props->name, output->prop_values[i]);
+					printf("\tconnector property id %s %lli\n", props->name, connector->prop_values[i]);
 				}
 			}
 
@@ -110,14 +115,24 @@ int printOutput(int fd, drmModeResPtr res, drmModeOutputPtr output, uint32_t id)
 		}
 	}
 
-	for (i = 0; i < output->count_modes; i++) {
-		mode = &output->modes[i];
+	for (i = 0; i < connector->count_modes; i++) {
+		mode = &connector->modes[i];
 		if (mode)
 			printMode(mode);
 		else
-			printf("\t\tmode: Invalid mode %p\n", &output->modes[i]);
+			printf("\t\tmode: Invalid mode %p\n", &connector->modes[i]);
 	}
 
+	return 0;
+}
+
+int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t id)
+{
+	printf("Encoder\n");
+	printf("\tid            :%i\n", id);
+	printf("\ttype          :%d\n", encoder->encoder_type);
+	printf("\tcrtcs          :%d\n", encoder->crtcs);
+	printf("\tclones          :%d\n", encoder->clones);
 	return 0;
 }
 
@@ -130,8 +145,8 @@ int printCrtc(int fd, drmModeResPtr res, drmModeCrtcPtr crtc, uint32_t id)
 	printf("\twidth        : %i\n", crtc->width);
 	printf("\theight       : %i\n", crtc->height);
 	printf("\tmode         : %p\n", &crtc->mode);
-	printf("\tnum outputs  : %i\n", crtc->count_outputs);
-	printf("\toutputs      : %i\n", crtc->outputs);
+	printf("\tnum connectors  : %i\n", crtc->count_connectors);
+	printf("\tconnectors      : %i\n", crtc->connectors);
 	printf("\tnum possible : %i\n", crtc->count_possibles);
 	printf("\tpossibles    : %i\n", crtc->possibles);
 
@@ -155,20 +170,33 @@ int printFrameBuffer(int fd, drmModeResPtr res, drmModeFBPtr fb)
 int printRes(int fd, drmModeResPtr res)
 {
 	int i;
-	drmModeOutputPtr output;
+	drmModeConnectorPtr connector;
 	drmModeCrtcPtr crtc;
 	drmModeFBPtr fb;
+	drmModeEncoderPtr encoder;
 
-	for (i = 0; i < res->count_outputs; i++) {
-		output = drmModeGetOutput(fd, res->outputs[i]);
+	for (i = 0; i < res->count_connectors; i++) {
+		connector = drmModeGetConnector(fd, res->connectors[i]);
 
-		if (!output)
-			printf("Could not get output %i\n", i);
+		if (!connector)
+			printf("Could not get connector %i\n", i);
 		else {
-			printOutput(fd, res, output, res->outputs[i]);
-			drmModeFreeOutput(output);
+			printConnector(fd, res, connector, res->connectors[i]);
+			drmModeFreeConnector(connector);
 		}
 	}
+
+	for (i = 0; i < res->count_encoders; i++) {
+		encoder = drmModeGetEncoder(fd, res->encoders[i]);
+
+		if (!encoder)
+			printf("Could not get encoder %i\n", i);
+		else {
+			printEncoder(fd, res, encoder, res->encoders[i]);
+			drmModeFreeEncoder(encoder);
+		}
+	}
+
 
 	for (i = 0; i < res->count_crtcs; i++) {
 		crtc = drmModeGetCrtc(fd, res->crtcs[i]);
@@ -214,24 +242,24 @@ static struct drm_mode_modeinfo mode = {
 
 int testMode(int fd, drmModeResPtr res)
 {
-	uint32_t output = res->outputs[0];
+	uint32_t connector = res->connectors[0];
 	uint32_t newMode = 0;
 	int ret = 0;
 	int error = 0;
 
-	printf("Test: adding mode to output %i\n", output);
+	printf("Test: adding mode to connector %i\n", connector);
 
 	/* printMode(&mode); */
 
-	printf("\tAttaching mode %i to output %i\n", newMode, output);
+	printf("\tAttaching mode %i to connector %i\n", newMode, connector);
 
-	ret = drmModeAttachMode(fd, output, &mode);
+	ret = drmModeAttachMode(fd, connector, &mode);
 
 	if (ret)
 		goto err_mode;
 
-	printf("\tDetaching mode %i from output %i\n", newMode, output);
-	ret = drmModeDetachMode(fd, output, &mode);
+	printf("\tDetaching mode %i from connector %i\n", newMode, connector);
+	ret = drmModeDetachMode(fd, connector, &mode);
 
 	if (ret)
 		goto err_mode;
@@ -330,15 +358,15 @@ err:
 
 int testDPMS(int fd, drmModeResPtr res)
 {
-	int output_id;
+	int connector_id;
 	int i;
 
-	for (i = 0; i < res->count_outputs; i++) {
-		output_id = res->outputs[i];
-		/* turn output off */
-		drmModeOutputSetProperty(fd, output_id, dpms_prop_id, 3);
+	for (i = 0; i < res->count_connectors; i++) {
+		connector_id = res->connectors[i];
+		/* turn connector off */
+		drmModeConnectorSetProperty(fd, connector_id, dpms_prop_id, 3);
 		sleep(2);
-		drmModeOutputSetProperty(fd, output_id, dpms_prop_id, 0);
+		drmModeConnectorSetProperty(fd, connector_id, dpms_prop_id, 0);
 	}
 	return 1;
 

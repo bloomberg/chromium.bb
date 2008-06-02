@@ -225,10 +225,10 @@ bool intel_pipe_has_type (struct drm_crtc *crtc, int type)
 {
     struct drm_device *dev = crtc->dev;
     struct drm_mode_config *mode_config = &dev->mode_config;
-    struct drm_output *l_entry;
+    struct drm_connector *l_entry;
 
-    list_for_each_entry(l_entry, &mode_config->output_list, head) {
-	    if (l_entry->crtc == crtc) {
+    list_for_each_entry(l_entry, &mode_config->connector_list, head) {
+	    if (l_entry->encoder->crtc == crtc) {
 		    struct intel_output *intel_output = to_intel_output(l_entry);
 		    if (intel_output->type == type)
 			    return true;
@@ -240,7 +240,7 @@ bool intel_pipe_has_type (struct drm_crtc *crtc, int type)
 #define INTELPllInvalid(s)   { /* ErrorF (s) */; return false; }
 /**
  * Returns whether the given set of divisors are valid for a given refclk with
- * the given outputs.
+ * the given connectors.
  */
 
 static bool intel_PLL_is_valid(struct drm_crtc *crtc, intel_clock_t *clock)
@@ -264,7 +264,7 @@ static bool intel_PLL_is_valid(struct drm_crtc *crtc, intel_clock_t *clock)
 	if (clock->vco < limit->vco.min || limit->vco.max < clock->vco)
 		INTELPllInvalid ("vco out of range\n");
 	/* XXX: We may need to be checking "Dot clock" depending on the multiplier,
-	 * output, etc., rather than just a single range.
+	 * connector, etc., rather than just a single range.
 	 */
 	if (clock->dot < limit->dot.min || limit->dot.max < clock->dot)
 		INTELPllInvalid ("dot out of range\n");
@@ -575,24 +575,28 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 
 static void intel_crtc_prepare (struct drm_crtc *crtc)
 {
-	crtc->funcs->dpms(crtc, DPMSModeOff);
+	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+	crtc_funcs->dpms(crtc, DPMSModeOff);
 }
 
 static void intel_crtc_commit (struct drm_crtc *crtc)
 {
-	crtc->funcs->dpms(crtc, DPMSModeOn);
+	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+	crtc_funcs->dpms(crtc, DPMSModeOn);
 }
 
-void intel_output_prepare (struct drm_output *output)
+void intel_encoder_prepare (struct drm_encoder *encoder)
 {
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
 	/* lvds has its own version of prepare see intel_lvds_prepare */
-	output->funcs->dpms(output, DPMSModeOff);
+	encoder_funcs->dpms(encoder, DPMSModeOff);
 }
 
-void intel_output_commit (struct drm_output *output)
+void intel_encoder_commit (struct drm_encoder *encoder)
 {
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
 	/* lvds has its own version of commit see intel_lvds_commit */
-	output->funcs->dpms(output, DPMSModeOn);
+	encoder_funcs->dpms(encoder, DPMSModeOn);
 }
 
 static bool intel_crtc_mode_fixup(struct drm_crtc *crtc,
@@ -716,12 +720,12 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	bool ok, is_sdvo = false, is_dvo = false;
 	bool is_crt = false, is_lvds = false, is_tv = false;
 	struct drm_mode_config *mode_config = &dev->mode_config;
-	struct drm_output *output;
+	struct drm_connector *connector;
 
-	list_for_each_entry(output, &mode_config->output_list, head) {
-		struct intel_output *intel_output = to_intel_output(output);
+	list_for_each_entry(connector, &mode_config->connector_list, head) {
+		struct intel_output *intel_output = to_intel_output(connector);
 
-		if (output->crtc != crtc)
+		if (!connector->encoder || connector->encoder->crtc != crtc)
 			continue;
 
 		switch (intel_output->type) {
@@ -1082,38 +1086,40 @@ static struct drm_display_mode load_detect_mode = {
 		 704, 832, 0, 480, 489, 491, 520, 0, V_NHSYNC | V_NVSYNC),
 };
 
-struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
+struct drm_crtc *intel_get_load_detect_pipe(struct intel_output *intel_output,
 					    struct drm_display_mode *mode,
 					    int *dpms_mode)
 {
-	struct drm_device *dev = output->dev;
-	struct intel_output *intel_output = to_intel_output(output);
 	struct intel_crtc *intel_crtc;
 	struct drm_crtc *possible_crtc;
 	struct drm_crtc *supported_crtc =NULL;
+	struct drm_encoder *encoder = &intel_output->enc;
 	struct drm_crtc *crtc = NULL;
-	struct drm_output_helper_funcs *output_funcs;
+	struct drm_device *dev = encoder->dev;
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
+	struct drm_crtc_helper_funcs *crtc_funcs;
 	int i = -1;
 
 	/*
 	 * Algorithm gets a little messy:
-	 *   - if the output already has an assigned crtc, use it (but make
+	 *   - if the connector already has an assigned crtc, use it (but make
 	 *     sure it's on first)
-	 *   - try to find the first unused crtc that can drive this output,
+	 *   - try to find the first unused crtc that can drive this connector,
 	 *     and use that if we find one
 	 *   - if there are no unused crtcs available, try to use the first
-	 *     one we found that supports the output
+	 *     one we found that supports the connector
 	 */
 
-	/* See if we already have a CRTC for this output */
-	if (output->crtc) {
-		crtc = output->crtc;
-		/* Make sure the crtc and output are running */
+	/* See if we already have a CRTC for this connector */
+	if (encoder->crtc) {
+		crtc = encoder->crtc;
+		/* Make sure the crtc and connector are running */
 		intel_crtc = to_intel_crtc(crtc);
 		*dpms_mode = intel_crtc->dpms_mode;
 		if (intel_crtc->dpms_mode != DPMSModeOn) {
-			crtc->funcs->dpms(crtc, DPMSModeOn);
-			output->funcs->dpms(output, DPMSModeOn);
+			crtc_funcs = crtc->helper_private;
+			crtc_funcs->dpms(crtc, DPMSModeOn);
+			encoder_funcs->dpms(encoder, DPMSModeOn);
 		}
 		return crtc;
 	}
@@ -1121,7 +1127,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 	/* Find an unused one (if possible) */
 	list_for_each_entry(possible_crtc, &dev->mode_config.crtc_list, head) {
 		i++;
-		if (!(output->possible_crtcs & (1 << i)))
+		if (!(encoder->possible_crtcs & (1 << i)))
 			continue;
 		if (!possible_crtc->enabled) {
 			crtc = possible_crtc;
@@ -1133,7 +1139,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 
 	/*
 	 * If we didn't find an unused CRTC, use the first available one
-	 * that can drive this output.
+	 * that can drive this connector.
 	 */
 	if (!crtc) {
 		crtc = supported_crtc;
@@ -1141,7 +1147,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 			return NULL;
 	}
 
-	output->crtc = crtc;
+	encoder->crtc = crtc;
 	intel_output->load_detect_temp = TRUE;
     
 	intel_crtc = to_intel_crtc(crtc);
@@ -1152,38 +1158,41 @@ struct drm_crtc *intel_get_load_detect_pipe(struct drm_output *output,
 			mode = &load_detect_mode;
 		drm_crtc_helper_set_mode(crtc, mode, 0, 0);
 	} else {
-		if (intel_crtc->dpms_mode != DPMSModeOn)
-			crtc->funcs->dpms(crtc, DPMSModeOn);
+		if (intel_crtc->dpms_mode != DPMSModeOn) {
+			crtc_funcs = crtc->helper_private;
+			crtc_funcs->dpms(crtc, DPMSModeOn);
+		}
 
-		output_funcs = output->helper_private;
-		/* Add this output to the crtc */
-		output_funcs->mode_set(output, &crtc->mode, &crtc->mode);
-		output_funcs->commit(output);
+		/* Add this connector to the crtc */
+		encoder_funcs->mode_set(encoder, &crtc->mode, &crtc->mode);
+		encoder_funcs->commit(encoder);
 	}
-	/* let the output get through one full cycle before testing */
+	/* let the connector get through one full cycle before testing */
 	intel_wait_for_vblank(dev);
 
 	return crtc;
 }
 
-void intel_release_load_detect_pipe(struct drm_output *output, int dpms_mode)
+void intel_release_load_detect_pipe(struct intel_output *intel_output, int dpms_mode)
 {
-	struct drm_device *dev = output->dev;
-	struct intel_output *intel_output = to_intel_output(output);
-	struct drm_crtc *crtc = output->crtc;
+	struct drm_encoder *encoder = &intel_output->enc;
+	struct drm_device *dev = encoder->dev;
+	struct drm_crtc *crtc = encoder->crtc;
+	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
+	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
     
 	if (intel_output->load_detect_temp) {
-		output->crtc = NULL;
+		encoder->crtc = NULL;
 		intel_output->load_detect_temp = FALSE;
-		crtc->enabled = drm_crtc_in_use(crtc);
-		drm_disable_unused_functions(dev);
+		crtc->enabled = drm_helper_crtc_in_use(crtc);
+		drm_helper_disable_unused_functions(dev);
 	}
 
 	/* Switch crtc and output back off if necessary */
 	if (crtc->enabled && dpms_mode != DPMSModeOn) {
-		if (output->crtc == crtc)
-			output->funcs->dpms(output, dpms_mode);
-		crtc->funcs->dpms(crtc, dpms_mode);
+		if (encoder->crtc == crtc)
+			encoder_funcs->dpms(encoder, dpms_mode);
+		crtc_funcs->dpms(crtc, dpms_mode);
 	}
 }
 
@@ -1257,7 +1266,7 @@ static int intel_crtc_clock_get(struct drm_device *dev, struct drm_crtc *crtc)
 	}
 
 	/* XXX: It would be nice to validate the clocks, but we can't reuse
-	 * i830PllIsValid() because it relies on the xf86_config output
+	 * i830PllIsValid() because it relies on the xf86_config connector
 	 * configuration being accurate, which it isn't necessarily.
 	 */
 
@@ -1306,6 +1315,7 @@ static void intel_crtc_destroy(struct drm_crtc *crtc)
 }
 
 static const struct drm_crtc_helper_funcs intel_helper_funcs = {
+	.dpms = intel_crtc_dpms,
 	.mode_fixup = intel_crtc_mode_fixup,
 	.mode_set = intel_crtc_mode_set,
 	.mode_set_base = intel_pipe_set_base,
@@ -1314,7 +1324,6 @@ static const struct drm_crtc_helper_funcs intel_helper_funcs = {
 };
 
 static const struct drm_crtc_funcs intel_crtc_funcs = {
-	.dpms = intel_crtc_dpms,
 	.cursor_set = intel_crtc_cursor_set,
 	.cursor_move = intel_crtc_cursor_move,
 	.gamma_set = intel_crtc_gamma_set,
@@ -1358,14 +1367,14 @@ struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pipe)
 	return crtc;
 }
 
-int intel_output_clones(struct drm_device *dev, int type_mask)
+int intel_connector_clones(struct drm_device *dev, int type_mask)
 {
 	int index_mask = 0;
-	struct drm_output *output;
+	struct drm_connector *connector;
 	int entry = 0;
 
-        list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		struct intel_output *intel_output = to_intel_output(output);
+        list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		struct intel_output *intel_output = to_intel_output(connector);
 		if (type_mask & (1 << intel_output->type))
 			index_mask |= (1 << entry);
 		entry++;
@@ -1376,7 +1385,7 @@ int intel_output_clones(struct drm_device *dev, int type_mask)
 
 static void intel_setup_outputs(struct drm_device *dev)
 {
-	struct drm_output *output;
+	struct drm_connector *connector;
 
 	intel_crt_init(dev);
 
@@ -1393,8 +1402,9 @@ static void intel_setup_outputs(struct drm_device *dev)
 	if (IS_I9XX(dev) && !IS_I915G(dev))
 		intel_tv_init(dev);
 
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-		struct intel_output *intel_output = to_intel_output(output);
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		struct intel_output *intel_output = to_intel_output(connector);
+		struct drm_encoder *encoder = &intel_output->enc;
 		int crtc_mask = 0, clone_mask = 0;
 		
 		/* valid crtcs */
@@ -1424,8 +1434,8 @@ static void intel_setup_outputs(struct drm_device *dev)
 			clone_mask = (1 << INTEL_OUTPUT_TVOUT);
 			break;
 		}
-		output->possible_crtcs = crtc_mask;
-		output->possible_clones = intel_output_clones(dev, clone_mask);
+		encoder->possible_crtcs = crtc_mask;
+		encoder->possible_clones = intel_connector_clones(dev, clone_mask);
 	}
 }
 
@@ -1478,4 +1488,15 @@ void intel_modeset_init(struct drm_device *dev)
 void intel_modeset_cleanup(struct drm_device *dev)
 {
 	drm_mode_config_cleanup(dev);
+}
+
+
+/* current intel driver doesn't take advantage of encoders
+   always give back the encoder for the connector
+*/
+struct drm_encoder *intel_best_encoder(struct drm_connector *connector)
+{
+	struct intel_output *intel_output = to_intel_output(connector);
+
+	return &intel_output->enc;
 }

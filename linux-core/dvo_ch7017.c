@@ -258,9 +258,9 @@ fail:
 	return false;
 }
 
-static enum drm_output_status ch7017_detect(struct intel_dvo_device *dvo)
+static enum drm_connector_status ch7017_detect(struct intel_dvo_device *dvo)
 {
-	return output_status_unknown;
+	return connector_status_unknown;
 }
 
 static enum drm_mode_status ch7017_mode_valid(struct intel_dvo_device *dvo,
