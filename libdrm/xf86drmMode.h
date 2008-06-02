@@ -112,6 +112,7 @@ typedef struct _drmModeCrtc {
 typedef struct _drmModeEncoder {
 	unsigned int encoder_id;
 	unsigned int encoder_type;
+	uint32_t crtc;
 	uint32_t crtcs;
 	uint32_t clones;
 } drmModeEncoder, *drmModeEncoderPtr;
@@ -134,7 +135,7 @@ typedef enum {
 typedef struct _drmModeConnector {
 	unsigned int connector_id;
 
-	unsigned int crtc; /**< Crtc currently connected to */
+	unsigned int encoder; /**< Crtc currently connected to */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
 	drmModeConnection connection;

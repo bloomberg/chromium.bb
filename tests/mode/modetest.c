@@ -57,7 +57,7 @@ int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uin
 
 	printf("Connector: %d-%d\n", connector->connector_type, connector->connector_type_id);
 	printf("\tid           : %i\n", id);
-	printf("\tcrtc id      : %i\n", connector->crtc);
+	printf("\tencoder id      : %i\n", connector->encoder);
 	printf("\tconn         : %s\n", getConnectionText(connector->connection));
 	printf("\tsize         : %ix%i (mm)\n", connector->mmWidth, connector->mmHeight);
 	printf("\tcount_modes  : %i\n", connector->count_modes);
@@ -67,7 +67,7 @@ int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uin
 	for (i = 0; i < connector->count_encoders; i++) {
 		enc = drmModeGetEncoder(fd, connector->encoders[i]);
 		if (enc) {
-			printf("Encoder: %d %d %d %d\n", enc->encoder_id, enc->encoder_type, enc->crtcs, enc->clones);
+			printf("Encoder: %d %d %d %d %d\n", enc->crtc, enc->encoder_id, enc->encoder_type, enc->crtcs, enc->clones);
 		}
 	}
 

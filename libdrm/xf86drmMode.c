@@ -254,10 +254,6 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 	struct drm_mode_crtc crtc;
 	drmModeCrtcPtr r;
 
-	crtc.count_connectors   = 0;
-	crtc.connectors         = 0;
-	crtc.count_possibles = 0;
-	crtc.possibles       = 0;
 	crtc.crtc_id = crtcId;
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETCRTC, &crtc))
@@ -278,12 +274,6 @@ drmModeCrtcPtr drmModeGetCrtc(int fd, uint32_t crtcId)
 		memcpy(&r->mode, &crtc.mode, sizeof(struct drm_mode_modeinfo));
 	r->buffer_id       = crtc.fb_id;
 	r->gamma_size      = crtc.gamma_size;
-	r->count_connectors   = crtc.count_connectors;
-	r->count_possibles = crtc.count_possibles;
-	/* TODO we realy should test if these alloc & cpy fails. */
-	r->connectors         = crtc.connectors;
-	r->possibles       = crtc.possibles;
-
 	return r;
 }
 
@@ -362,6 +352,8 @@ drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
 	if (!(r = drmMalloc(sizeof(*r))))
 		return 0;
 
+	r->encoder_id = enc.encoder_id;
+	r->crtc = enc.crtc;
 	r->encoder_type = enc.encoder_type;
 	r->crtcs = enc.crtcs;
 	r->clones = enc.clones;
@@ -411,7 +403,7 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	}
 
 	r->connector_id = conn.connector;
-	r->crtc = conn.crtc;
+	r->encoder = conn.encoder;
 	r->connection   = conn.connection;
 	r->mmWidth      = conn.mm_width;
 	r->mmHeight     = conn.mm_height;

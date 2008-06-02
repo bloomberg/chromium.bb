@@ -1015,8 +1015,6 @@ int drm_mode_getcrtc(struct drm_device *dev,
 {
 	struct drm_mode_crtc *crtc_resp = data;
 	struct drm_crtc *crtc;
-	struct drm_connector *connector;
-	int ocount;
 	int ret = 0;
 
 	mutex_lock(&dev->mode_config.mutex);
@@ -1039,11 +1037,6 @@ int drm_mode_getcrtc(struct drm_device *dev,
 
 		drm_crtc_convert_to_umode(&crtc_resp->mode, &crtc->mode);
 		crtc_resp->mode_valid = 1;
-		ocount = 0;
-		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-			if (connector->encoder->crtc == crtc)
-				crtc_resp->connectors |= 1 << (ocount++);
-		}
 		
 	} else {
 		crtc_resp->mode_valid = 0;
