@@ -112,8 +112,6 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 		 DRM_MEM_DRIVER);
 	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_offset, sizeof(*dev->vblank_offset) * dev->num_crtcs,
-		 DRM_MEM_DRIVER);
 
 	dev->num_crtcs = 0;
 }
@@ -160,10 +158,6 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	dev->vblank_premodeset = drm_calloc(num_crtcs, sizeof(u32),
 					    DRM_MEM_DRIVER);
 	if (!dev->vblank_premodeset)
-		goto err;
-
-	dev->vblank_offset = drm_calloc(num_crtcs, sizeof(u32), DRM_MEM_DRIVER);
-	if (!dev->vblank_offset)
 		goto err;
 
 	/* Zero per-crtc vblank stuff */
@@ -330,8 +324,7 @@ int drm_control(struct drm_device *dev, void *data,
  */
 u32 drm_vblank_count(struct drm_device *dev, int crtc)
 {
-	return atomic_read(&dev->_vblank_count[crtc]) +
-		dev->vblank_offset[crtc];
+	return atomic_read(&dev->_vblank_count[crtc]);
 }
 EXPORT_SYMBOL(drm_vblank_count);
 
@@ -457,7 +450,18 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 		break;
 	case _DRM_POST_MODESET:
 		new = dev->driver->get_vblank_counter(dev, crtc);
-		dev->vblank_offset[crtc] = dev->vblank_premodeset[crtc] - new;
+
+		/* Compensate for spurious wraparound */
+		if (new < dev->vblank_premodeset[crtc]) {
+			atomic_sub(dev->max_vblank_count + new -
+				   dev->vblank_premodeset[crtc],
+				   &dev->_vblank_count[crtc]);
+			DRM_DEBUG("vblank_premodeset[%d]=0x%x, new=0x%x "
+				 "=> _vblank_count[%d]-=0x%x\n", crtc,
+				 dev->vblank_premodeset[crtc], new,
+				 crtc, dev->max_vblank_count + new -
+				 dev->vblank_premodeset[crtc]);
+		}
 		break;
 	default:
 		ret = -EINVAL;

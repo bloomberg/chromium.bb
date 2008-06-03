@@ -840,13 +840,12 @@ struct drm_device {
 	atomic_t *vblank_refcount;	/* number of users of vblank interrupts per crtc */
 	u32 *last_vblank;		/* protected by dev->vbl_lock, used */
 					/* for wraparound handling */
-	u32 *vblank_offset;		/* used to track how many vblanks */
 	int *vblank_enabled;		/* so we don't call enable more than
 					   once per disable */
-	u32 *vblank_premodeset;		/*  were lost during modeset */
+	u32 *vblank_premodeset;		/* for compensation of spurious wraparounds */
 	struct timer_list vblank_disable_timer;
 
-	unsigned long max_vblank_count; /**< size of vblank counter register */
+	u32 max_vblank_count;		/**< size of vblank counter register */
 	spinlock_t tasklet_lock;	/**< For drm_locked_tasklet */
 	void (*locked_tasklet_func)(struct drm_device *dev);
 
