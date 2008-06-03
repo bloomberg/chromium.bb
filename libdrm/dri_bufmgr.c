@@ -28,7 +28,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "mtypes.h"
 #include "dri_bufmgr.h"
 
 /** @file dri_bufmgr.c
@@ -38,29 +37,9 @@
 
 dri_bo *
 dri_bo_alloc(dri_bufmgr *bufmgr, const char *name, unsigned long size,
-	     unsigned int alignment, uint64_t location_mask)
+	     unsigned int alignment)
 {
-   assert((location_mask & ~(DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_MEM_TT |
-			     DRM_BO_FLAG_MEM_VRAM | DRM_BO_FLAG_MEM_PRIV0 |
-			     DRM_BO_FLAG_MEM_PRIV1 | DRM_BO_FLAG_MEM_PRIV2 |
-			     DRM_BO_FLAG_MEM_PRIV3 | DRM_BO_FLAG_MEM_PRIV4 |
-			     DRM_BO_FLAG_CACHED | DRM_BO_FLAG_CACHED_MAPPED)) == 0);
-   return bufmgr->bo_alloc(bufmgr, name, size, alignment, location_mask);
-}
-
-dri_bo *
-dri_bo_alloc_static(dri_bufmgr *bufmgr, const char *name, unsigned long offset,
-		    unsigned long size, void *virtual,
-		    uint64_t location_mask)
-{
-   assert((location_mask & ~(DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_MEM_TT |
-			     DRM_BO_FLAG_MEM_VRAM | DRM_BO_FLAG_MEM_PRIV0 |
-			     DRM_BO_FLAG_MEM_PRIV1 | DRM_BO_FLAG_MEM_PRIV2 |
-			     DRM_BO_FLAG_MEM_PRIV3 |
-			     DRM_BO_FLAG_MEM_PRIV4)) == 0);
-
-   return bufmgr->bo_alloc_static(bufmgr, name, offset, size, virtual,
-				  location_mask);
+   return bufmgr->bo_alloc(bufmgr, name, size, alignment);
 }
 
 void
@@ -79,7 +58,7 @@ dri_bo_unreference(dri_bo *bo)
 }
 
 int
-dri_bo_map(dri_bo *buf, GLboolean write_enable)
+dri_bo_map(dri_bo *buf, int write_enable)
 {
    return buf->bufmgr->bo_map(buf, write_enable);
 }
@@ -100,7 +79,7 @@ dri_bo_subdata(dri_bo *bo, unsigned long offset,
    if (size == 0 || data == NULL)
       return 0;
 
-   ret = dri_bo_map(bo, GL_TRUE);
+   ret = dri_bo_map(bo, 1);
    if (ret)
        return ret;
    memcpy((unsigned char *)bo->virtual + offset, data, size);
@@ -119,7 +98,7 @@ dri_bo_get_subdata(dri_bo *bo, unsigned long offset,
    if (size == 0 || data == NULL)
       return 0;
 
-   ret = dri_bo_map(bo, GL_FALSE);
+   ret = dri_bo_map(bo, 0);
    if (ret)
        return ret;
    memcpy(data, (unsigned char *)bo->virtual + offset, size);
@@ -139,15 +118,6 @@ dri_bufmgr_destroy(dri_bufmgr *bufmgr)
    bufmgr->destroy(bufmgr);
 }
 
-
-int dri_emit_reloc(dri_bo *reloc_buf,
-		   uint32_t read_domains, uint32_t write_domain,
-		   uint32_t delta, uint32_t offset, dri_bo *target_buf)
-{
-   return reloc_buf->bufmgr->emit_reloc(reloc_buf, read_domains, write_domain,
-					delta, offset, target_buf);
-}
-
 void *dri_process_relocs(dri_bo *batch_buf)
 {
    return batch_buf->bufmgr->process_relocs(batch_buf);
@@ -159,7 +129,7 @@ void dri_post_submit(dri_bo *batch_buf)
 }
 
 void
-dri_bufmgr_set_debug(dri_bufmgr *bufmgr, GLboolean enable_debug)
+dri_bufmgr_set_debug(dri_bufmgr *bufmgr, int enable_debug)
 {
    bufmgr->debug = enable_debug;
 }

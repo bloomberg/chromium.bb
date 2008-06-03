@@ -44,14 +44,11 @@
 #include <sys/mman.h>
 
 #include "errno.h"
-#include "mtypes.h"
 #include "dri_bufmgr.h"
+#include "intel_bufmgr.h"
 #include "string.h"
-#include "imports.h"
 
 #include "i915_drm.h"
-
-#include "intel_bufmgr_gem.h"
 
 #define DBG(...) do {					\
    if (bufmgr_gem->bufmgr.debug)			\
@@ -89,9 +86,11 @@ struct dri_gem_bo_bucket {
 typedef struct _dri_bufmgr_gem {
     dri_bufmgr bufmgr;
 
+    struct intel_bufmgr intel_bufmgr;
+
     int fd;
 
-    uint32_t max_relocs;
+    int max_relocs;
 
     struct drm_i915_gem_exec_object *exec_objects;
     dri_bo **exec_bos;
@@ -108,7 +107,8 @@ typedef struct _dri_bo_gem {
     dri_bo bo;
 
     int refcount;
-    GLboolean mapped;
+    /** Boolean whether the mmap ioctl has been called for this buffer yet. */
+    int mapped;
     uint32_t gem_handle;
     const char *name;
 
@@ -119,11 +119,11 @@ typedef struct _dri_bo_gem {
     int validate_index;
 
     /**
-     * Tracks whether set_domain to CPU is current
+     * Boolean whether set_domain to CPU is current
      * Set when set_domain has been called
      * Cleared when a batch has been submitted
      */
-    GLboolean cpu_domain_set;
+    int cpu_domain_set;
 
     /** Array passed to the DRM containing relocation information. */
     struct drm_i915_gem_relocation_entry *relocs;
@@ -138,8 +138,8 @@ typedef struct _dri_bo_gem {
 static int
 logbase2(int n)
 {
-   GLint i = 1;
-   GLint log2 = 0;
+   int i = 1;
+   int log2 = 0;
 
    while (n > i) {
       i *= 2;
@@ -262,15 +262,14 @@ intel_setup_reloc_list(dri_bo *bo)
 
 static dri_bo *
 dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
-		 unsigned long size, unsigned int alignment,
-		 uint64_t location_mask)
+		 unsigned long size, unsigned int alignment)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bufmgr;
     dri_bo_gem *bo_gem;
     unsigned int page_size = getpagesize();
     int ret;
     struct dri_gem_bo_bucket *bucket;
-    GLboolean alloc_from_cache = GL_FALSE;
+    int alloc_from_cache = 0;
 
     bo_gem = calloc(1, sizeof(*bo_gem));
     if (!bo_gem)
@@ -338,18 +337,6 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
     return &bo_gem->bo;
 }
 
-/* Our GEM backend doesn't allow creation of static buffers, as that requires
- * privelege for the non-fake case, and the lock in the fake case where we were
- * working around the X Server not creating buffers and passing handles to us.
- */
-static dri_bo *
-dri_gem_bo_alloc_static(dri_bufmgr *bufmgr, const char *name,
-			unsigned long offset, unsigned long size, void *virtual,
-			uint64_t location_mask)
-{
-    return NULL;
-}
-
 /**
  * Returns a dri_bo wrapping the given buffer object handle.
  *
@@ -357,7 +344,7 @@ dri_gem_bo_alloc_static(dri_bufmgr *bufmgr, const char *name,
  * to another.
  */
 dri_bo *
-intel_gem_bo_create_from_handle(dri_bufmgr *bufmgr, const char *name,
+intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
 			      unsigned int handle)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bufmgr;
@@ -465,7 +452,7 @@ dri_gem_bo_unreference(dri_bo *bo)
 }
 
 static int
-dri_gem_bo_map(dri_bo *bo, GLboolean write_enable)
+dri_gem_bo_map(dri_bo *bo, int write_enable)
 {
     dri_bufmgr_gem *bufmgr_gem;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
@@ -499,7 +486,7 @@ dri_gem_bo_map(dri_bo *bo, GLboolean write_enable)
 	    bo_gem->virtual = (void *)(uintptr_t)mmap_arg.addr_ptr;
 	}
 	bo->virtual = bo_gem->virtual;
-	bo_gem->mapped = GL_TRUE;
+	bo_gem->mapped = 1;
 	DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name, bo_gem->virtual);
     }
 
@@ -514,7 +501,7 @@ dri_gem_bo_map(dri_bo *bo, GLboolean write_enable)
 		     bo_gem->gem_handle, set_domain.read_domains, set_domain.write_domain,
 		     strerror (errno));
 	}
-	bo_gem->cpu_domain_set = GL_TRUE;
+	bo_gem->cpu_domain_set = 1;
     }
 
     return 0;
@@ -763,7 +750,7 @@ dri_gem_post_submit(dri_bo *batch_buf)
 	dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
 
 	/* Need to call set_domain on next bo_map */
-	bo_gem->cpu_domain_set = GL_FALSE;
+	bo_gem->cpu_domain_set = 0;
 
 	/* Disconnect the buffer from the validate list */
 	bo_gem->validate_index = -1;
@@ -781,7 +768,7 @@ dri_gem_post_submit(dri_bo *batch_buf)
  * in flight at once.
  */
 void
-intel_gem_enable_bo_reuse(dri_bufmgr *bufmgr)
+intel_bufmgr_gem_enable_reuse(dri_bufmgr *bufmgr)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bufmgr;
     int i;
@@ -824,7 +811,6 @@ intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->max_relocs = batch_size / sizeof(uint32_t) / 2 - 2;
 
     bufmgr_gem->bufmgr.bo_alloc = dri_gem_bo_alloc;
-    bufmgr_gem->bufmgr.bo_alloc_static = dri_gem_bo_alloc_static;
     bufmgr_gem->bufmgr.bo_reference = dri_gem_bo_reference;
     bufmgr_gem->bufmgr.bo_unreference = dri_gem_bo_unreference;
     bufmgr_gem->bufmgr.bo_map = dri_gem_bo_map;
@@ -833,11 +819,11 @@ intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.bo_get_subdata = dri_gem_bo_get_subdata;
     bufmgr_gem->bufmgr.bo_wait_rendering = dri_gem_bo_wait_rendering;
     bufmgr_gem->bufmgr.destroy = dri_bufmgr_gem_destroy;
-    bufmgr_gem->bufmgr.emit_reloc = dri_gem_emit_reloc;
     bufmgr_gem->bufmgr.process_relocs = dri_gem_process_reloc;
     bufmgr_gem->bufmgr.post_submit = dri_gem_post_submit;
-    bufmgr_gem->bufmgr.debug = GL_FALSE;
+    bufmgr_gem->bufmgr.debug = 0;
     bufmgr_gem->bufmgr.check_aperture_space = dri_gem_check_aperture_space;
+    bufmgr_gem->intel_bufmgr.emit_reloc = dri_gem_emit_reloc;
     /* Initialize the linked lists for BO reuse cache. */
     for (i = 0; i < INTEL_GEM_BO_BUCKETS; i++)
 	bufmgr_gem->cache_bucket[i].tail = &bufmgr_gem->cache_bucket[i].head;
@@ -845,3 +831,15 @@ intel_bufmgr_gem_init(int fd, int batch_size)
     return &bufmgr_gem->bufmgr;
 }
 
+int
+intel_bo_emit_reloc(dri_bo *reloc_buf,
+		    uint32_t read_domains, uint32_t write_domain,
+		    uint32_t delta, uint32_t offset, dri_bo *target_buf)
+{
+    struct intel_bufmgr *intel_bufmgr;
+
+    intel_bufmgr = (struct intel_bufmgr *)(reloc_buf->bufmgr + 1);
+
+    return intel_bufmgr->emit_reloc(reloc_buf, read_domains, write_domain,
+				    delta, offset, target_buf);
+}

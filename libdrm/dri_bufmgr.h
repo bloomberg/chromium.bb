@@ -75,18 +75,7 @@ struct _dri_bufmgr {
     * to be used from the graphics device.
     */
    dri_bo *(*bo_alloc)(dri_bufmgr *bufmgr_ctx, const char *name,
-		       unsigned long size, unsigned int alignment,
-		       uint64_t location_mask);
-
-   /**
-    * Allocates a buffer object for a static allocation.
-    *
-    * Static allocations are ones such as the front buffer that are offered by
-    * the X Server, which are never evicted and never moved.
-    */
-   dri_bo *(*bo_alloc_static)(dri_bufmgr *bufmgr_ctx, const char *name,
-			      unsigned long offset, unsigned long size,
-			      void *virtual, uint64_t location_mask);
+		       unsigned long size, unsigned int alignment);
 
    /** Takes a reference on a buffer object */
    void (*bo_reference)(dri_bo *bo);
@@ -104,7 +93,7 @@ struct _dri_bufmgr {
     * buffer to complete, first.  The resulting mapping is available at
     * buf->virtual.
     */
-   int (*bo_map)(dri_bo *buf, GLboolean write_enable);
+   int (*bo_map)(dri_bo *buf, int write_enable);
 
    /** Reduces the refcount on the userspace mapping of the buffer object. */
    int (*bo_unmap)(dri_bo *buf);
@@ -141,31 +130,6 @@ struct _dri_bufmgr {
    void (*destroy)(dri_bufmgr *bufmgr);
 
    /**
-    * Add relocation entry in reloc_buf, which will be updated with the
-    * target buffer's real offset on on command submission.
-    *
-    * Relocations remain in place for the lifetime of the buffer object.
-    *
-    * \param reloc_buf Buffer to write the relocation into.
-    * \param flags BO flags to be used in validating the target buffer.
-    *	     Applicable flags include:
-    *	     - DRM_BO_FLAG_READ: The buffer will be read in the process of
-    *	       command execution.
-    *	     - DRM_BO_FLAG_WRITE: The buffer will be written in the process of
-    *	       command execution.
-    *	     - DRM_BO_FLAG_MEM_TT: The buffer should be validated in TT memory.
-    *	     - DRM_BO_FLAG_MEM_VRAM: The buffer should be validated in video
-    *	       memory.
-    * \param delta Constant value to be added to the relocation target's offset.
-    * \param offset Byte offset within batch_buf of the relocated pointer.
-    * \param target Buffer whose offset should be written into the relocation
-    *	     entry.
-    */
-   int (*emit_reloc)(dri_bo *reloc_buf,
-		     uint32_t read_domains, uint32_t write_domain,
-		     uint32_t delta, uint32_t offset, dri_bo *target);
-
-   /**
     * Processes the relocations, either in userland or by converting the list
     * for use in batchbuffer submission.
     *
@@ -183,17 +147,14 @@ struct _dri_bufmgr {
    void (*post_submit)(dri_bo *batch_buf);
 
    int (*check_aperture_space)(dri_bo *bo);
-   GLboolean debug; /**< Enables verbose debugging printouts */
+   int debug; /**< Enables verbose debugging printouts */
 };
 
 dri_bo *dri_bo_alloc(dri_bufmgr *bufmgr, const char *name, unsigned long size,
-		     unsigned int alignment, uint64_t location_mask);
-dri_bo *dri_bo_alloc_static(dri_bufmgr *bufmgr, const char *name,
-			    unsigned long offset, unsigned long size,
-			    void *virtual, uint64_t location_mask);
+		     unsigned int alignment);
 void dri_bo_reference(dri_bo *bo);
 void dri_bo_unreference(dri_bo *bo);
-int dri_bo_map(dri_bo *buf, GLboolean write_enable);
+int dri_bo_map(dri_bo *buf, int write_enable);
 int dri_bo_unmap(dri_bo *buf);
 
 int dri_bo_subdata(dri_bo *bo, unsigned long offset,
@@ -202,12 +163,9 @@ int dri_bo_get_subdata(dri_bo *bo, unsigned long offset,
 		       unsigned long size, void *data);
 void dri_bo_wait_rendering(dri_bo *bo);
 
-void dri_bufmgr_set_debug(dri_bufmgr *bufmgr, GLboolean enable_debug);
+void dri_bufmgr_set_debug(dri_bufmgr *bufmgr, int enable_debug);
 void dri_bufmgr_destroy(dri_bufmgr *bufmgr);
 
-int dri_emit_reloc(dri_bo *reloc_buf,
-		   uint32_t read_domains, uint32_t write_domain,
-		   uint32_t delta, uint32_t offset, dri_bo *target_buf);
 void *dri_process_relocs(dri_bo *batch_buf);
 void dri_post_process_relocs(dri_bo *batch_buf);
 void dri_post_submit(dri_bo *batch_buf);
