@@ -484,7 +484,6 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
 	union drm_wait_vblank *vblwait = data;
-	struct timeval now;
 	int ret = 0;
 	unsigned int flags, seq, crtc;
 
@@ -588,11 +587,16 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 			    (((cur_vblank = drm_vblank_count(dev, crtc))
 			      - vblwait->request.sequence) <= (1 << 23)));
 		drm_vblank_put(dev, crtc);
-		do_gettimeofday(&now);
 
-		vblwait->reply.tval_sec = now.tv_sec;
-		vblwait->reply.tval_usec = now.tv_usec;
-		vblwait->reply.sequence = cur_vblank;
+		if (ret != -EINTR) {
+			struct timeval now;
+
+			do_gettimeofday(&now);
+
+			vblwait->reply.tval_sec = now.tv_sec;
+			vblwait->reply.tval_usec = now.tv_usec;
+			vblwait->reply.sequence = cur_vblank;
+		}
 	}
 
       done:
