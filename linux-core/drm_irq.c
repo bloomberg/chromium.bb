@@ -112,6 +112,8 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 		 DRM_MEM_DRIVER);
 	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->vblank_suspend, sizeof(*dev->vblank_suspend) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
 
 	dev->num_crtcs = 0;
 }
@@ -158,6 +160,11 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	dev->vblank_premodeset = drm_calloc(num_crtcs, sizeof(u32),
 					    DRM_MEM_DRIVER);
 	if (!dev->vblank_premodeset)
+		goto err;
+
+	dev->vblank_suspend = drm_calloc(num_crtcs, sizeof(int),
+					 DRM_MEM_DRIVER);
+	if (!dev->vblank_suspend)
 		goto err;
 
 	/* Zero per-crtc vblank stuff */
@@ -343,6 +350,9 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 	unsigned long irqflags;
 	u32 cur_vblank, diff;
 
+	if (dev->vblank_suspend[crtc])
+		return;
+
 	/*
 	 * Interrupts were disabled prior to this call, so deal with counter
 	 * wrap if needed.
@@ -435,7 +445,6 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 {
 	struct drm_modeset_ctl *modeset = data;
 	int crtc, ret = 0;
-	u32 new;
 
 	crtc = modeset->crtc;
 	if (crtc >= dev->num_crtcs) {
@@ -447,21 +456,25 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 	case _DRM_PRE_MODESET:
 		dev->vblank_premodeset[crtc] =
 			dev->driver->get_vblank_counter(dev, crtc);
+		dev->vblank_suspend[crtc] = 1;
 		break;
 	case _DRM_POST_MODESET:
-		new = dev->driver->get_vblank_counter(dev, crtc);
+		if (dev->vblank_suspend[crtc]) {
+			u32 new = dev->driver->get_vblank_counter(dev, crtc);
 
-		/* Compensate for spurious wraparound */
-		if (new < dev->vblank_premodeset[crtc]) {
-			atomic_sub(dev->max_vblank_count + new -
-				   dev->vblank_premodeset[crtc],
-				   &dev->_vblank_count[crtc]);
-			DRM_DEBUG("vblank_premodeset[%d]=0x%x, new=0x%x "
-				 "=> _vblank_count[%d]-=0x%x\n", crtc,
-				 dev->vblank_premodeset[crtc], new,
-				 crtc, dev->max_vblank_count + new -
-				 dev->vblank_premodeset[crtc]);
+			/* Compensate for spurious wraparound */
+			if (new < dev->vblank_premodeset[crtc]) {
+				atomic_sub(dev->max_vblank_count + new -
+					   dev->vblank_premodeset[crtc],
+					   &dev->_vblank_count[crtc]);
+				DRM_DEBUG("vblank_premodeset[%d]=0x%x, new=0x%x"
+					  " => _vblank_count[%d]-=0x%x\n", crtc,
+					  dev->vblank_premodeset[crtc], new,
+					  crtc, dev->max_vblank_count + new -
+					  dev->vblank_premodeset[crtc]);
+			}
 		}
+		dev->vblank_suspend[crtc] = 0;
 		break;
 	default:
 		ret = -EINVAL;
@@ -538,6 +551,9 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 		struct list_head *vbl_sigs = &dev->vbl_sigs[crtc];
 		struct drm_vbl_sig *vbl_sig;
 
+		if (dev->vblank_suspend[crtc])
+			return -EBUSY;
+
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
 
 		/* Check if this task has already scheduled the same signal
@@ -589,15 +605,15 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 
 		vblwait->reply.sequence = seq;
 	} else {
-		unsigned long cur_vblank;
-
-		ret = drm_vblank_get(dev, crtc);
-		if (ret)
-			return ret;
-		DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
-			    (((cur_vblank = drm_vblank_count(dev, crtc))
-			      - vblwait->request.sequence) <= (1 << 23)));
-		drm_vblank_put(dev, crtc);
+		if (!dev->vblank_suspend[crtc]) {
+			ret = drm_vblank_get(dev, crtc);
+			if (ret)
+				return ret;
+			DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
+				    ((drm_vblank_count(dev, crtc)
+				      - vblwait->request.sequence) <= (1 << 23)));
+			drm_vblank_put(dev, crtc);
+		}
 
 		if (ret != -EINTR) {
 			struct timeval now;
@@ -606,7 +622,7 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 
 			vblwait->reply.tval_sec = now.tv_sec;
 			vblwait->reply.tval_usec = now.tv_usec;
-			vblwait->reply.sequence = cur_vblank;
+			vblwait->reply.sequence = drm_vblank_count(dev, crtc);
 		}
 	}
 
