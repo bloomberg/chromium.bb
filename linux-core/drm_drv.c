@@ -655,7 +655,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		retcode = func(dev, kdata, file_priv);
 	}
 
-	if ((retcode == 0) && (cmd & IOC_OUT)) {
+	if (cmd & IOC_OUT) {
 		if (copy_to_user((void __user *)arg, kdata,
 				 _IOC_SIZE(cmd)) != 0)
 			retcode = -EACCES;
