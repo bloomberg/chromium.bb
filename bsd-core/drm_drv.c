@@ -655,6 +655,9 @@ static void drm_unload(struct drm_device *dev)
 
 	drm_mem_uninit();
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
+	mtx_destroy(&dev->drw_lock);
+	mtx_destroy(&dev->irq_lock);
+	mtx_destroy(&dev->vbl_lock);
 	mtx_destroy(&dev->dev_lock);
 #endif
 }
