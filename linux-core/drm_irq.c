@@ -360,9 +360,16 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 	cur_vblank = dev->driver->get_vblank_counter(dev, crtc);
 	spin_lock_irqsave(&dev->vbl_lock, irqflags);
 	if (cur_vblank < dev->last_vblank[crtc]) {
-		diff = dev->max_vblank_count -
-			dev->last_vblank[crtc];
-		diff += cur_vblank;
+		if (cur_vblank == dev->last_vblank[crtc] - 1) {
+			diff = 0;
+		} else {
+			diff = dev->max_vblank_count -
+				dev->last_vblank[crtc];
+			diff += cur_vblank;
+		}
+
+		DRM_DEBUG("last_vblank[%d]=0x%x, cur_vblank=0x%x => diff=0x%x\n",
+			  crtc, dev->last_vblank[crtc], cur_vblank, diff);
 	} else {
 		diff = cur_vblank - dev->last_vblank[crtc];
 	}
