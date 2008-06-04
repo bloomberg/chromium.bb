@@ -301,6 +301,9 @@ void drm_sysfs_connector_remove(struct drm_connector *connector)
 {
 	int i;
 
+	if (!device_is_registered(&connector->kdev))
+		return;
+
 	DRM_DEBUG("removing \"%s\" from sysfs\n", drm_get_connector_name(connector));
 	for (i = 0; i < ARRAY_SIZE(connector_attrs); i++)
 		device_remove_file(&connector->kdev, &connector_attrs[i]);
