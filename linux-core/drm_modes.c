@@ -276,8 +276,15 @@ EXPORT_SYMBOL(drm_mode_duplicate);
  */
 bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2)
 {
-	if (mode1->clock == mode2->clock &&
-	    mode1->hdisplay == mode2->hdisplay &&
+	/* do clock check convert to PICOS so fb modes get matched
+	 * the same */
+	if (mode1->clock && mode2->clock) {
+		if (KHZ2PICOS(mode1->clock) != KHZ2PICOS(mode2->clock))
+			return false;
+	} else if (mode1->clock != mode2->clock)
+		return false;
+
+	if (mode1->hdisplay == mode2->hdisplay &&
 	    mode1->hsync_start == mode2->hsync_start &&
 	    mode1->hsync_end == mode2->hsync_end &&
 	    mode1->htotal == mode2->htotal &&
