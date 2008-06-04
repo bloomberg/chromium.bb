@@ -1257,7 +1257,6 @@ int drm_mode_cursor_ioctl(struct drm_device *dev,
 	struct drm_mode_cursor *req = data;
 	struct drm_mode_object *obj;
 	struct drm_crtc *crtc;
-	struct drm_buffer_object *bo = NULL; /* must be set */
 	int ret = 0;
 
 	DRM_DEBUG("\n");
