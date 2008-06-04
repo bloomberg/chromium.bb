@@ -619,53 +619,6 @@ int drm_mode_group_init_legacy_group(struct drm_device *dev, struct drm_mode_gro
 }
 
 /**
- * drm_get_buffer_object - find the buffer object for a given handle
- * @dev: DRM device
- * @bo: pointer to caller's buffer_object pointer
- * @handle: handle to lookup
- *
- * LOCKING:
- * Must take @dev's struct_mutex to protect buffer object lookup.
- *
- * Given @handle, lookup the buffer object in @dev and put it in the caller's
- * @bo pointer.
- *
- * RETURNS:
- * Zero on success, -EINVAL if the handle couldn't be found.
- */
-static int drm_get_buffer_object(struct drm_device *dev, struct drm_buffer_object **bo, unsigned long handle)
-{
-	struct drm_user_object *uo;
-	struct drm_hash_item *hash;
-	int ret;
-
-	*bo = NULL;
-
-	mutex_lock(&dev->struct_mutex);
-	ret = drm_ht_find_item(&dev->object_hash, handle, &hash);
-	if (ret) {
-		DRM_ERROR("Couldn't find handle.\n");
-		ret = -EINVAL;
-		goto out_err;
-	}
-
-	uo = drm_hash_entry(hash, struct drm_user_object, hash);
-	if (uo->type != drm_buffer_type) {
-		ret = -EINVAL;
-		goto out_err;
-	}
-	
-	*bo = drm_user_object_entry(uo, struct drm_buffer_object, base);
-	ret = 0;
-out_err:
-	mutex_unlock(&dev->struct_mutex);
-	return ret;
-}
-
-
-
-
-/**
  * drm_mode_config_cleanup - free up DRM mode_config info
  * @dev: DRM device
  *
@@ -1328,17 +1281,8 @@ int drm_mode_cursor_ioctl(struct drm_device *dev,
 
 	if (req->flags & DRM_MODE_CURSOR_BO) {
 		/* Turn of the cursor if handle is 0 */
-		if (req->handle)
-			ret = drm_get_buffer_object(dev, &bo, req->handle);
-
-		if (ret) {
-			DRM_ERROR("invalid buffer id\n");
-			ret = -EINVAL;
-			goto out;
-		}
-
 		if (crtc->funcs->cursor_set) {
-			ret = crtc->funcs->cursor_set(crtc, bo, req->width, req->height);
+			ret = crtc->funcs->cursor_set(crtc, req->handle, req->width, req->height);
 		} else {
 			DRM_ERROR("crtc does not support cursor\n");
 			ret = -EFAULT;

@@ -972,22 +972,24 @@ void intel_crtc_load_lut(struct drm_crtc *crtc)
 }
 
 static int intel_crtc_cursor_set(struct drm_crtc *crtc,
-				 struct drm_buffer_object *bo,
+				 uint32_t handle,
 				 uint32_t width, uint32_t height)
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+	struct drm_buffer_object *bo;
 	int pipe = intel_crtc->pipe;
 	uint32_t control = (pipe == 0) ? CURACNTR : CURBCNTR;
 	uint32_t base = (pipe == 0) ? CURABASE : CURBBASE;
 	uint32_t temp;
+	int ret;
 	size_t addr;
 
 	DRM_DEBUG("\n");
 
 	/* if we want to turn of the cursor ignore width and height */
-	if (!bo) {
+	if (!handle) {
 		DRM_DEBUG("cursor off\n");
 		/* turn of the cursor */
 		temp = 0;
@@ -1001,6 +1003,11 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 	/* Currently we only support 64x64 cursors */
 	if (width != 64 || height != 64) {
 		DRM_ERROR("we currently only support 64x64 cursors\n");
+		return -EINVAL;
+	}
+
+	ret = drm_get_buffer_object(dev, &bo, handle);
+	if (ret) {
 		return -EINVAL;
 	}
 
