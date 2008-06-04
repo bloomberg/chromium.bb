@@ -1553,6 +1553,7 @@ intel_tv_destroy (struct drm_connector *connector)
 {
 	struct intel_output *intel_output = to_intel_output(connector);
 
+	drm_sysfs_connector_remove(connector);
 	drm_connector_cleanup(connector);
 	drm_free(intel_output, sizeof(struct intel_output) + sizeof(struct intel_tv_priv),
 		 DRM_MEM_DRIVER);

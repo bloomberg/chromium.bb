@@ -643,7 +643,6 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	}
 
 	list_for_each_entry_safe(connector, ot, &dev->mode_config.connector_list, head) {
-		drm_sysfs_connector_remove(connector);
 		connector->funcs->destroy(connector);
 	}
 
@@ -661,8 +660,6 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
-
-
 
 int drm_mode_hotplug_ioctl(struct drm_device *dev,
 			   void *data, struct drm_file *file_priv)

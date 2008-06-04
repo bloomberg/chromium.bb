@@ -966,7 +966,7 @@ static void intel_sdvo_destroy(struct drm_connector *connector)
 
 	if (intel_output->i2c_bus)
 		intel_i2c_destroy(intel_output->i2c_bus);
-
+	drm_sysfs_connector_remove(connector);
 	drm_connector_cleanup(connector);
 	kfree(intel_output);
 }

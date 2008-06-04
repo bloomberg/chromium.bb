@@ -199,6 +199,7 @@ static void intel_crt_destroy(struct drm_connector *connector)
 	struct intel_output *intel_output = to_intel_output(connector);
 
 	intel_i2c_destroy(intel_output->ddc_bus);
+	drm_sysfs_connector_remove(connector);
 	drm_connector_cleanup(connector);
 	kfree(connector);
 }
