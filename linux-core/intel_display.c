@@ -1491,7 +1491,7 @@ struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
 {
 	struct intel_framebuffer *intel_fb;
 
-	intel_fb = kmalloc(sizeof(*intel_fb), GFP_KERNEL);
+	intel_fb = kzalloc(sizeof(*intel_fb), GFP_KERNEL);
 	if (!intel_fb)
 		return NULL;
 
