@@ -40,10 +40,38 @@ static drm_pci_id_list_t i915_pciidlist[] = {
 	i915_PCI_IDS
 };
 
+static int i915_suspend(device_t nbdev)
+{
+	struct drm_device *dev = device_get_softc(nbdev);
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	if (!dev || !dev_priv) {
+		DRM_ERROR("dev: 0x%lx, dev_priv: 0x%lx\n",
+			(unsigned long) dev, (unsigned long) dev_priv);
+		DRM_ERROR("DRM not initialized, aborting suspend.\n");
+		return -ENODEV;
+	}
+
+	i915_save_state(dev);
+
+	return (bus_generic_suspend(nbdev));
+}
+
+static int i915_resume(device_t nbdev)
+{
+	struct drm_device *dev = device_get_softc(nbdev);
+
+	i915_restore_state(dev);
+
+	return (bus_generic_resume(nbdev));
+}
+
 static void i915_configure(struct drm_device *dev)
 {
-	dev->driver.buf_priv_size	= 1;	/* No dev_priv */
+	dev->driver.buf_priv_size	= sizeof(drm_i915_private_t);
 	dev->driver.load		= i915_driver_load;
+	dev->driver.unload		= i915_driver_unload;
+	dev->driver.firstopen		= i915_driver_firstopen;
 	dev->driver.preclose		= i915_driver_preclose;
 	dev->driver.lastclose		= i915_driver_lastclose;
 	dev->driver.device_is_agp	= i915_driver_device_is_agp;
@@ -94,6 +122,8 @@ static device_method_t i915_methods[] = {
 	/* Device interface */
 	DEVMETHOD(device_probe,		i915_probe),
 	DEVMETHOD(device_attach,	i915_attach),
+	DEVMETHOD(device_suspend,	i915_suspend),
+	DEVMETHOD(device_resume,	i915_resume),
 	DEVMETHOD(device_detach,	drm_detach),
 
 	{ 0, 0 }

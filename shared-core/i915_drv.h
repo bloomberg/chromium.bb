@@ -307,6 +307,11 @@ extern void i915_mem_takedown(struct mem_block **heap);
 extern void i915_mem_release(struct drm_device * dev,
 			     struct drm_file *file_priv,
 			     struct mem_block *heap);
+
+/* i915_suspend.c */
+extern int i915_save_state(struct drm_device *dev);
+extern int i915_restore_state(struct drm_device *dev);
+
 #ifdef I915_HAVE_FENCE
 /* i915_fence.c */
 extern void i915_fence_handler(struct drm_device *dev);
@@ -343,6 +348,12 @@ extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
 #define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
 #define I915_READ16(reg)	DRM_READ16(dev_priv->mmio_map, (reg))
 #define I915_WRITE16(reg,val)	DRM_WRITE16(dev_priv->mmio_map, (reg), (val))
+#define I915_READ8(reg)		DRM_READ8(dev_priv->mmio_map, (reg))
+#define I915_WRITE8(reg,val)	DRM_WRITE8(dev_priv->mmio_map, (reg), (val))
+
+#if defined(__FreeBSD__)
+typedef boolean_t bool;
+#endif
 
 #define I915_VERBOSE 0
 
