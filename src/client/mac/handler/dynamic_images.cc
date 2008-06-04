@@ -385,6 +385,14 @@ void DynamicImages::ReadImageInfoForTask() {
 
       // sorts based on loading address
       sort(image_list_.begin(), image_list_.end() );
+      // remove duplicates - this happens in certain strange cases
+      // You can see it in DashboardClient when Google Gadgets plugin
+      // is installed.  Apple's crash reporter log and gdb "info shared"
+      // both show the same library multiple times at the same address
+
+      vector<DynamicImageRef>::iterator it = unique(image_list_.begin(),
+                                                    image_list_.end() );
+      image_list_.erase(it, image_list_.end());
     }
   }
 }

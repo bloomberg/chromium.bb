@@ -230,6 +230,11 @@ class DynamicImageRef {
       < (*const_cast<DynamicImageRef&>(inRef).p);
   }
 
+  bool operator==(const DynamicImageRef &inInfo) const {
+    return (*const_cast<DynamicImageRef*>(this)->p).GetLoadAddress() ==
+        (*const_cast<DynamicImageRef&>(inInfo)).GetLoadAddress();
+  }
+
   // Be just like DynamicImage*
   DynamicImage  *operator->() {return p;}
   operator DynamicImage*() {return p;}
