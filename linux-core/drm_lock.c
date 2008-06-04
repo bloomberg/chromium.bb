@@ -393,6 +393,7 @@ int drm_client_lock_take(struct drm_device *dev, struct drm_file *file_priv)
 	if (drm_i_have_hw_lock(dev, file_priv))
 		return 0;
 
+	mutex_unlock (&dev->struct_mutex);
 	/* Client doesn't hold the lock.  Block taking the lock with the kernel
 	 * context on behalf of the client, and return whether we were
 	 * successful.
@@ -407,15 +408,15 @@ int drm_client_lock_take(struct drm_device *dev, struct drm_file *file_priv)
 	dev->lock.user_waiters--;
 	if (ret != 0) {
 		spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
-		return ret;
 	} else {
 		dev->lock.file_priv = file_priv;
 		dev->lock.lock_time = jiffies;
 		dev->lock.kernel_held = 1;
 		file_priv->lock_count++;
 		spin_unlock_irqrestore(&dev->lock.spinlock, irqflags);
-		return 0;
 	}
+	mutex_lock (&dev->struct_mutex);
+	return ret;
 }
 EXPORT_SYMBOL(drm_client_lock_take);
 
