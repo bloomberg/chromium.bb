@@ -387,7 +387,7 @@ void intel_lvds_init(struct drm_device *dev)
 	u32 lvds;
 	int pipe;
 
-	intel_output = kmalloc(sizeof(struct intel_output), GFP_KERNEL);
+	intel_output = kzalloc(sizeof(struct intel_output), GFP_KERNEL);
 	if (!intel_output) {
 		return;
 	}
