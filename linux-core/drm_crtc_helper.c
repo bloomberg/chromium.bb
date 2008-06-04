@@ -712,15 +712,22 @@ int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *c
 		return 0;
 	}
 
-	if (connector->encoder->crtc && connector->encoder->crtc->desired_mode) {
-		DRM_DEBUG("drm thinks that the connector already has a config\n");
-		has_config = 1;
+	if (connector->encoder) {
+		if (connector->encoder->crtc && connector->encoder->crtc->desired_mode) {
+			DRM_DEBUG("drm thinks that the connector already has a config\n");
+			has_config = 1;
+		}
 	}
 
 	drm_helper_probe_connector_modes(dev, 2048, 2048);
 
 	if (!has_config)
 		drm_pick_crtcs(dev);
+
+	if (!connector->encoder) {
+		DRM_DEBUG("could not find a desired mode or crtc for connector\n");
+		return 1;
+	}
 
 	if (!connector->encoder->crtc || !connector->encoder->crtc->desired_mode) {
 		DRM_DEBUG("could not find a desired mode or crtc for connector\n");
