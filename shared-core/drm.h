@@ -1033,6 +1033,7 @@ struct drm_mode_card_res {
 	int count_encoders;
 	int min_width, max_width;
 	int min_height, max_height;
+	uint32_t generation;
 };
 
 struct drm_mode_crtc {
@@ -1042,6 +1043,8 @@ struct drm_mode_crtc {
 	unsigned int fb_id; /**< Id of framebuffer */
 
 	int x, y; /**< Position on the frameuffer */
+
+	uint32_t generation;
 
 	int count_connectors;
 	unsigned int connectors; /**< Connectors that are connected */
@@ -1054,6 +1057,8 @@ struct drm_mode_crtc {
 };
 
 struct drm_mode_get_encoder {
+
+	uint32_t generation;
 
 	uint32_t encoder_type;
 	uint32_t encoder_id;
@@ -1084,6 +1089,8 @@ struct drm_mode_get_connector {
 	unsigned int connector; /**< Id */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
+
+	uint32_t generation;
 
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */

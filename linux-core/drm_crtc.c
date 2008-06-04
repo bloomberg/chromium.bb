@@ -571,6 +571,7 @@ void drm_mode_config_init(struct drm_device *dev)
 	drm_mode_create_standard_connector_properties(dev);
 
 	/* Just to be sure */
+	dev->mode_config.current_generation = 0;
 	dev->mode_config.num_fb = 0;
 	dev->mode_config.num_connector = 0;
 	dev->mode_config.num_crtc = 0;
@@ -801,6 +802,7 @@ int drm_mode_getresources(struct drm_device *dev,
 	card_res->min_height = dev->mode_config.min_height;
 	card_res->max_width = dev->mode_config.max_width;
 	card_res->min_width = dev->mode_config.min_width;
+	card_res->generation = dev->mode_config.current_generation;
 
 	/* handle this in 4 parts */
 	/* FBs */
@@ -943,7 +945,7 @@ int drm_mode_getcrtc(struct drm_device *dev,
 	crtc_resp->x = crtc->x;
 	crtc_resp->y = crtc->y;
 	crtc_resp->gamma_size = crtc->gamma_size;
-
+	crtc_resp->generation = dev->mode_config.current_generation;
 	if (crtc->fb)
 		crtc_resp->fb_id = crtc->fb->base.id;
 	else
@@ -1032,6 +1034,7 @@ int drm_mode_getconnector(struct drm_device *dev,
 		connector->funcs->fill_modes(connector, dev->mode_config.max_width, dev->mode_config.max_height);
 	}
 
+	out_resp->generation = dev->mode_config.current_generation;
 	out_resp->connector_type = connector->connector_type;
 	out_resp->connector_type_id = connector->connector_type_id;
 	out_resp->mm_width = connector->display_info.width_mm;
@@ -1120,6 +1123,7 @@ int drm_mode_getencoder(struct drm_device *dev,
 		enc_resp->crtc = encoder->crtc->base.id;
 	else
 		enc_resp->crtc = 0;
+	enc_resp->generation = dev->mode_config.current_generation;
 	enc_resp->encoder_type = encoder->encoder_type;
 	enc_resp->encoder_id = encoder->base.id;
 	enc_resp->crtcs = encoder->possible_crtcs;

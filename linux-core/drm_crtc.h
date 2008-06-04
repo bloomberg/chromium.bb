@@ -554,6 +554,9 @@ struct drm_mode_config {
 
 	struct list_head property_list;
 
+	/* currently in use generation id */
+	int current_generation;
+
 	int min_width, min_height;
 	int max_width, max_height;
 	struct drm_mode_config_funcs *funcs;
