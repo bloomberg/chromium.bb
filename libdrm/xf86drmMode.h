@@ -32,7 +32,6 @@
  */
 
 #include <drm.h>
-#include "xf86mm.h"
 
 /*
  * This is the interface for modesetting for drm.
