@@ -573,7 +573,10 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_conn
 	struct intelfb_par *par;
 	struct device *device = &dev->pdev->dev; 
 	struct drm_framebuffer *fb;
+	struct intel_framebuffer *intel_fb;
 	struct drm_display_mode *mode = crtc->desired_mode;
+	struct drm_mode_fb_cmd mode_cmd;
+
 	struct drm_buffer_object *fbo = NULL;
 	int ret;
 
@@ -585,22 +588,14 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_conn
 	if (!connector)
 		return -EINVAL;
 
-	fb = drm_framebuffer_create(dev);
-	if (!fb) {
-		framebuffer_release(info);
-		DRM_ERROR("failed to allocate fb.\n");
-		return -EINVAL;
-	}
-	crtc->fb = fb;
+	mode_cmd.width = 2048;/* crtc->desired_mode->hdisplay; */
+	mode_cmd.height = 2048;/* crtc->desired_mode->vdisplay; */
+	
+	mode_cmd.bpp = 32;
+	mode_cmd.pitch = mode_cmd.width * ((mode_cmd.bpp + 1) / 8);
+	mode_cmd.depth = 24;
 
-	/* To allow resizeing without swapping buffers */
-	fb->width = 2048;/* crtc->desired_mode->hdisplay; */
-	fb->height = 2048;/* crtc->desired_mode->vdisplay; */
-
-	fb->bits_per_pixel = 32;
-	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
-	fb->depth = 24;
-	ret = drm_buffer_object_create(dev, fb->pitch * fb->height, 
+	ret = drm_buffer_object_create(dev, mode_cmd.pitch * mode_cmd.height, 
 					drm_bo_type_kernel,
 					DRM_BO_FLAG_READ |
 					DRM_BO_FLAG_WRITE |
@@ -611,14 +606,27 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_conn
 					&fbo);
 	if (ret || !fbo) {
 		printk(KERN_ERR "failed to allocate framebuffer\n");
-		drm_framebuffer_destroy(fb);
 		framebuffer_release(info);
 		return -EINVAL;
 	}
+	
 
-	fb->bo = fbo;
-	printk("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
-			fb->height, fbo->offset, fbo);
+	fb = intel_user_framebuffer_create(dev, NULL, &mode_cmd);
+	if (!fb) {
+		framebuffer_release(info);
+		drm_bo_usage_deref_unlocked(&fbo);
+		DRM_ERROR("failed to allocate fb.\n");
+		return -EINVAL;
+	}
+
+	intel_fb = to_intel_framebuffer(fb);
+
+	intel_fb->bo = fbo;
+	crtc->fb = fb;
+
+	/* To allow resizeing without swapping buffers */
+	printk("allocated %dx%d fb: 0x%08lx, bo %p\n", intel_fb->base.width,
+	       intel_fb->base.height, intel_fb->bo->offset, fbo);
 
 
 	fb->fbdev = info;
@@ -653,16 +661,16 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_conn
  	}
 
 	info->fix.line_length = fb->pitch;
-	info->fix.smem_start = fb->bo->offset + dev->mode_config.fb_base;
+	info->fix.smem_start = intel_fb->bo->offset + dev->mode_config.fb_base;
 	info->fix.smem_len = info->fix.line_length * fb->height;
 
 	info->flags = FBINFO_DEFAULT;
 
- 	ret = drm_bo_kmap(fb->bo, 0, fb->bo->num_pages, &fb->kmap);
+ 	ret = drm_bo_kmap(intel_fb->bo, 0, intel_fb->bo->num_pages, &intel_fb->kmap);
 	if (ret)
 		DRM_ERROR("error mapping fb: %d\n", ret);
 
- 	info->screen_base = fb->kmap.virtual;
+ 	info->screen_base = intel_fb->kmap.virtual;
 	info->screen_size = info->fix.smem_len; /* FIXME */
 	info->pseudo_palette = fb->pseudo_palette;
 	info->var.xres_virtual = fb->width;
@@ -771,6 +779,7 @@ EXPORT_SYMBOL(intelfb_probe);
 int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 {
 	struct fb_info *info;
+	struct intel_framebuffer *intel_fb = to_intel_framebuffer(fb);
 
 	if (!fb)
 		return -EINVAL;
@@ -779,9 +788,8 @@ int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 	
 	if (info) {
 		unregister_framebuffer(info);
-		drm_bo_kunmap(&fb->kmap);
-		drm_bo_usage_deref_unlocked(&fb->bo);
-		drm_framebuffer_destroy(fb);
+		drm_bo_kunmap(&intel_fb->kmap);
+		drm_bo_usage_deref_unlocked(&intel_fb->bo);
 		framebuffer_release(info);
 	}
 	return 0;

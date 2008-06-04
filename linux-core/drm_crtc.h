@@ -15,6 +15,7 @@
 
 struct drm_device;
 struct drm_mode_set;
+struct drm_framebuffer;
 
 
 #define DRM_MODE_OBJECT_CRTC 0xcccccccc
@@ -250,10 +251,15 @@ struct drm_display_info {
 	char *raw_edid; /* if any */
 };
 
+struct drm_framebuffer_funcs {
+	void (*destroy)(struct drm_framebuffer *framebuffer);
+};
+
 struct drm_framebuffer {
 	struct drm_device *dev;
 	struct list_head head;
 	struct drm_mode_object base;
+	const struct drm_framebuffer_funcs *funcs;
 	unsigned int pitch;
 	unsigned int width;
 	unsigned int height;
@@ -261,11 +267,10 @@ struct drm_framebuffer {
 	unsigned int depth;
 	int bits_per_pixel;
 	int flags;
-	struct drm_buffer_object *bo;
 	void *fbdev;
 	u32 pseudo_palette[17];
-	struct drm_bo_kmap_obj kmap;
 	struct list_head filp_head;
+	uint32_t mm_handle;
 };
 
 struct drm_property_blob {
@@ -517,6 +522,7 @@ struct drm_mode_set
  */
 struct drm_mode_config_funcs {
 	bool (*resize_fb)(struct drm_device *dev, struct drm_framebuffer *fb);
+	struct drm_framebuffer *(*fb_create)(struct drm_device *dev, struct drm_file *file_priv, struct drm_mode_fb_cmd *mode_cmd);
 };
 
 struct drm_mode_group {
@@ -645,8 +651,9 @@ extern int drm_connector_property_get_value(struct drm_connector *connector,
 extern struct drm_display_mode *drm_crtc_mode_create(struct drm_device *dev);
 extern void drm_framebuffer_set_object(struct drm_device *dev,
 				       unsigned long handle);
-extern struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev);
-extern void drm_framebuffer_destroy(struct drm_framebuffer *fb);
+extern struct drm_framebuffer *drm_framebuffer_init(struct drm_device *dev, struct drm_framebuffer *fb,
+						    const struct drm_framebuffer_funcs *funcs);
+extern void drm_framebuffer_cleanup(struct drm_framebuffer *fb);
 extern int drmfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int drmfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern void drm_crtc_probe_connector_modes(struct drm_device *dev, int maxX, int maxY);

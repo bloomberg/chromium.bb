@@ -368,6 +368,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_master_private *master_priv;
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+	struct intel_framebuffer *intel_fb;
 	int pipe = intel_crtc->pipe;
 	unsigned long Start, Offset;
 	int dspbase = (pipe == 0 ? DSPAADDR : DSPBADDR);
@@ -382,7 +383,9 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 		return;
 	}
 
-	Start = crtc->fb->bo->offset;
+	intel_fb = to_intel_framebuffer(crtc->fb);
+
+	Start = intel_fb->bo->offset;
 	Offset = y * crtc->fb->pitch + x * (crtc->fb->bits_per_pixel / 8);
 
 	I915_WRITE(dspstride, crtc->fb->pitch);
@@ -1459,8 +1462,50 @@ static void intel_setup_outputs(struct drm_device *dev)
 	}
 }
 
+static void intel_user_framebuffer_destroy(struct drm_framebuffer *fb)
+{
+	struct intel_framebuffer *intel_fb = to_intel_framebuffer(fb);
+	struct drm_device *dev = fb->dev;
+	if (fb->fbdev)
+		intelfb_remove(dev, fb);
+
+	drm_framebuffer_cleanup(fb);
+
+	kfree(intel_fb);
+}
+      
+static const struct drm_framebuffer_funcs intel_fb_funcs = {
+	.destroy = intel_user_framebuffer_destroy,
+};
+
+struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
+						      struct drm_file *file_priv,
+						      struct drm_mode_fb_cmd *mode_cmd)
+{
+	struct intel_framebuffer *intel_fb;
+
+	intel_fb = kmalloc(sizeof(*intel_fb), GFP_KERNEL);
+	if (!intel_fb)
+		return NULL;
+
+	drm_framebuffer_init(dev, &intel_fb->base, &intel_fb_funcs);
+	drm_helper_mode_fill_fb_struct(&intel_fb->base, mode_cmd);
+
+	if (file_priv) {
+		mutex_lock(&dev->struct_mutex);
+		intel_fb->bo = drm_lookup_buffer_object(file_priv, intel_fb->base.mm_handle, 0);
+		mutex_unlock(&dev->struct_mutex);
+		if (!intel_fb->bo) {
+			kfree(intel_fb);
+			return NULL;
+		}
+	}
+	return &intel_fb->base;
+}
+
 static const struct drm_mode_config_funcs intel_mode_funcs = {
 	.resize_fb = NULL,
+	.fb_create = intel_user_framebuffer_create,
 };
 
 void intel_modeset_init(struct drm_device *dev)

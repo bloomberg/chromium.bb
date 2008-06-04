@@ -46,6 +46,12 @@ struct intel_i2c_chan {
         u8 slave_addr;
 };
 
+struct intel_framebuffer {
+	struct drm_framebuffer base;
+	struct drm_buffer_object *bo;
+	struct drm_bo_kmap_obj kmap;
+};
+
 struct intel_output {
 	struct drm_connector base;
 
@@ -69,6 +75,7 @@ struct intel_crtc {
 #define to_intel_crtc(x) container_of(x, struct intel_crtc, base)
 #define to_intel_output(x) container_of(x, struct intel_output, base)
 #define enc_to_intel_output(x) container_of(x, struct intel_output, enc)
+#define to_intel_framebuffer(x) container_of(x, struct intel_framebuffer, base)
 
 struct intel_i2c_chan *intel_i2c_create(struct drm_device *dev, const u32 reg,
 					const char *name);
@@ -106,4 +113,8 @@ extern int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
 extern void intel_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				    u16 blue, int regno);
+
+extern struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
+							     struct drm_file *file_priv,
+							     struct drm_mode_fb_cmd *mode_cmd);
 #endif /* __INTEL_DRV_H__ */

@@ -208,25 +208,21 @@ struct drm_crtc *drm_crtc_from_fb(struct drm_device *dev,
  * RETURNS:
  * Pointer to new framebuffer or NULL on error.
  */
-struct drm_framebuffer *drm_framebuffer_create(struct drm_device *dev)
+struct drm_framebuffer *drm_framebuffer_init(struct drm_device *dev, struct drm_framebuffer *fb,
+					     const struct drm_framebuffer_funcs *funcs)
 {
-	struct drm_framebuffer *fb;
-
-	fb = kzalloc(sizeof(struct drm_framebuffer), GFP_KERNEL);
-	if (!fb)
-		return NULL;
-	
 	drm_mode_object_get(dev, &fb->base, DRM_MODE_OBJECT_FB);
 	fb->dev = dev;
+	fb->funcs = funcs;
 	dev->mode_config.num_fb++;
 	list_add(&fb->head, &dev->mode_config.fb_list);
 
 	return fb;
 }
-EXPORT_SYMBOL(drm_framebuffer_create);
+EXPORT_SYMBOL(drm_framebuffer_init);
 
 /**
- * drm_framebuffer_destroy - remove a framebuffer object
+ * drm_framebuffer_cleanup - remove a framebuffer object
  * @fb: framebuffer to remove
  *
  * LOCKING:
@@ -235,7 +231,7 @@ EXPORT_SYMBOL(drm_framebuffer_create);
  * Scans all the CRTCs in @dev's mode_config.  If they're using @fb, removes
  * it, setting it to NULL.
  */
-void drm_framebuffer_destroy(struct drm_framebuffer *fb)
+void drm_framebuffer_cleanup(struct drm_framebuffer *fb)
 {
 	struct drm_device *dev = fb->dev;
 	struct drm_crtc *crtc;
@@ -249,10 +245,8 @@ void drm_framebuffer_destroy(struct drm_framebuffer *fb)
 	drm_mode_object_put(dev, &fb->base);
 	list_del(&fb->head);
 	dev->mode_config.num_fb--;
-
-	kfree(fb);
 }
-EXPORT_SYMBOL(drm_framebuffer_destroy);
+EXPORT_SYMBOL(drm_framebuffer_cleanup);
 
 /**
  * drm_crtc_init - Initialise a new CRTC object
@@ -705,11 +699,7 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 	}
 
 	list_for_each_entry_safe(fb, fbt, &dev->mode_config.fb_list, head) {
-		/* there should only be bo of kernel type left */
-		if (fb->bo->type != drm_bo_type_kernel)
-			drm_framebuffer_destroy(fb);
-		else
-			dev->driver->fb_remove(dev, fb);
+		fb->funcs->destroy(fb);
 	}
 
 	list_for_each_entry_safe(crtc, ct, &dev->mode_config.crtc_list, head) {
@@ -1393,7 +1383,6 @@ int drm_mode_addfb(struct drm_device *dev,
 	struct drm_mode_fb_cmd *r = data;
 	struct drm_mode_config *config = &dev->mode_config;
 	struct drm_framebuffer *fb;
-	struct drm_buffer_object *bo;
 	int ret = 0;
 
 	if ((config->min_width > r->width) || (r->width > config->max_width)) {
@@ -1406,33 +1395,18 @@ int drm_mode_addfb(struct drm_device *dev,
 	}
 
 	mutex_lock(&dev->mode_config.mutex);
-	/* TODO check limits are okay */
-	ret = drm_get_buffer_object(dev, &bo, r->handle);
-	if (ret || !bo) {
-		DRM_ERROR("BO handle not valid\n");
-		ret = -EINVAL;
-		goto out;
-	}
 
 	/* TODO check buffer is sufficently large */
 	/* TODO setup destructor callback */
 
-	fb = drm_framebuffer_create(dev);
+	fb = dev->mode_config.funcs->fb_create(dev, file_priv, r);
 	if (!fb) {
 		DRM_ERROR("could not create framebuffer\n");
 		ret = -EINVAL;
 		goto out;
 	}
 
-	fb->width = r->width;
-	fb->height = r->height;
-	fb->pitch = r->pitch;
-	fb->bits_per_pixel = r->bpp;
-	fb->depth = r->depth;
-	fb->bo = bo;
-
 	r->buffer_id = fb->base.id;
-
 	list_add(&fb->filp_head, &file_priv->fbs);
 
 out:
@@ -1490,11 +1464,8 @@ int drm_mode_rmfb(struct drm_device *dev,
 	/* TODO release all crtc connected to the framebuffer */
 	/* TODO unhock the destructor from the buffer object */
 
-	if (fb->bo->type == drm_bo_type_kernel)
-		DRM_ERROR("the bo type should not be of kernel type\n");
-
 	list_del(&fb->filp_head);
-	drm_framebuffer_destroy(fb);
+	fb->funcs->destroy(fb);
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
@@ -1539,7 +1510,7 @@ int drm_mode_getfb(struct drm_device *dev,
 	r->width = fb->width;
 	r->depth = fb->depth;
 	r->bpp = fb->bits_per_pixel;
-	r->handle = fb->bo->base.hash.key;
+	r->handle = fb->mm_handle;
 	r->pitch = fb->pitch;
 
 out:
@@ -1570,10 +1541,7 @@ void drm_fb_release(struct file *filp)
 	mutex_lock(&dev->mode_config.mutex);
 	list_for_each_entry_safe(fb, tfb, &priv->fbs, filp_head) {
 		list_del(&fb->filp_head);
-		if (fb->bo->type == drm_bo_type_kernel)
-			DRM_ERROR("the bo type should not be of kernel_type, the kernel will probably explode, why Dave\n");
-
-		drm_framebuffer_destroy(fb);
+		fb->funcs->destroy(fb);
 	}
 	mutex_unlock(&dev->mode_config.mutex);
 }
@@ -2118,17 +2086,12 @@ int drm_mode_replacefb(struct drm_device *dev,
 	struct drm_mode_fb_cmd *r = data;
 	struct drm_mode_object *obj;
 	struct drm_framebuffer *fb;
-	struct drm_buffer_object *bo;
 	int found = 0;
 	struct drm_framebuffer *fbl = NULL;
 	int ret = 0;
+
 	/* right replace the current bo attached to this fb with a new bo */
 	mutex_lock(&dev->mode_config.mutex);
-	ret = drm_get_buffer_object(dev, &bo, r->handle);
-	if (ret || !bo) {
-		ret = -EINVAL;
-		goto out;
-	}
 	obj = drm_mode_object_find(dev, r->buffer_id, DRM_MODE_OBJECT_FB);
 	if (!obj) {
 		ret = -EINVAL;
@@ -2146,15 +2109,12 @@ int drm_mode_replacefb(struct drm_device *dev,
 		goto out;
 	}
 
-	if (fb->bo->type == drm_bo_type_kernel)
-		DRM_ERROR("the bo should not be a kernel bo\n");
-
 	fb->width = r->width;
 	fb->height = r->height;
 	fb->pitch = r->pitch;
 	fb->bits_per_pixel = r->bpp;
 	fb->depth = r->depth;
-	fb->bo = bo;
+	fb->mm_handle = r->handle;
 
 	if (dev->mode_config.funcs->resize_fb)
 	  dev->mode_config.funcs->resize_fb(dev, fb);
