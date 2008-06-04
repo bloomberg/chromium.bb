@@ -1680,7 +1680,7 @@ intel_tv_init(struct drm_device *dev)
 	connector = &intel_output->base;
 
 	drm_connector_init(dev, connector, &intel_tv_connector_funcs,
-			   DRM_MODE_CONNECTOR_Unknown);
+			   DRM_MODE_CONNECTOR_SVIDEO);
 
 	drm_encoder_init(dev, &intel_output->enc, &intel_tv_enc_funcs,
 			 DRM_MODE_ENCODER_TVDAC);
