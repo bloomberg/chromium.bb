@@ -375,6 +375,7 @@ extern void radeon_mem_release(struct drm_file *file_priv,
 			       struct mem_block *heap);
 
 				/* radeon_irq.c */
+extern void radeon_irq_set_state(struct drm_device *dev, u32 mask, int state);
 extern int radeon_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_irq_wait(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
