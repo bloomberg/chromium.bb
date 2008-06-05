@@ -544,6 +544,8 @@ static int drm_load(struct drm_device *dev)
 		/* Shared code returns -errno. */
 		retcode = -dev->driver.load(dev,
 		    dev->id_entry->driver_private);
+		if (pci_enable_busmaster(dev->device))
+			DRM_ERROR("Request to enable bus-master failed.\n");
 		DRM_UNLOCK();
 		if (retcode != 0)
 			goto error;
@@ -654,6 +656,10 @@ static void drm_unload(struct drm_device *dev)
 	delete_unrhdr(dev->drw_unrhdr);
 
 	drm_mem_uninit();
+
+	if (pci_disable_busmaster(dev->device))
+		DRM_ERROR("Request to disable bus-master failed.\n");
+
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
 	mtx_destroy(&dev->drw_lock);
 	mtx_destroy(&dev->irq_lock);
