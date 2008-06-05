@@ -1036,10 +1036,8 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	else
 		i2cbus = intel_i2c_create(dev, GPIOE, "SDVOCTRL_E for SDVOC");
 
-	if (i2cbus == NULL) {
-		intel_sdvo_destroy(connector);
-		return;
-	}
+	if (!i2cbus)
+		goto err_connector;
 
 	sdvo_priv->i2c_bus = i2cbus;
 
@@ -1061,8 +1059,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		if (!intel_sdvo_read_byte(intel_output, i, &ch[i])) {
 			DRM_DEBUG("No SDVO device found on SDVO%c\n",
 				  output_device == SDVOB ? 'B' : 'C');
-			intel_sdvo_destroy(connector);
-			return;
+			goto err_i2c;
 		}
 	}
 
@@ -1107,8 +1104,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		DRM_DEBUG("%s: No active RGB or TMDS outputs (0x%02x%02x)\n",
 			  SDVO_NAME(sdvo_priv),
 			  bytes[0], bytes[1]);
-		intel_sdvo_destroy(connector);
-		return;
+		goto err_i2c;
 	}
 	
 	drm_encoder_init(dev, &intel_output->enc, &intel_sdvo_enc_funcs, encoder_type);
@@ -1143,6 +1139,15 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 		  sdvo_priv->caps.output_flags & 
 		  	(SDVO_OUTPUT_TMDS1 | SDVO_OUTPUT_RGB1) ? 'Y' : 'N');
 
-	intel_output->ddc_bus = i2cbus;	
+	intel_output->ddc_bus = i2cbus;
 
+	return;
+
+err_i2c:
+	intel_i2c_destroy(intel_output->i2c_bus);
+err_connector:
+	drm_connector_cleanup(connector);
+	kfree(intel_output);
+
+	return;
 }

@@ -239,20 +239,26 @@ static struct bin_attribute edid_attr = {
  * properties (so far, connection status, dpms, mode list & edid) and
  * generate a hotplug event so userspace knows there's a new connector
  * available.
+ *
+ * Note:
+ * This routine should only be called *once* for each DRM minor registered.
+ * A second call for an already registered device will trigger the BUG_ON
+ * below.
  */
 int drm_sysfs_connector_add(struct drm_connector *connector)
 {
 	struct drm_device *dev = connector->dev;
 	int ret = 0, i, j;
 
-	if (device_is_registered(&connector->kdev))
-	    return 0;
+	/* We shouldn't get called more than once for the same connector */
+	BUG_ON(device_is_registered(&connector->kdev));
 
 	connector->kdev.parent = &dev->primary->kdev;
 	connector->kdev.class = drm_class;
 	connector->kdev.release = drm_sysfs_device_release;
 
-	DRM_DEBUG("adding \"%s\" to sysfs\n", drm_get_connector_name(connector));
+	DRM_DEBUG("adding \"%s\" to sysfs\n",
+		  drm_get_connector_name(connector));
 
 	snprintf(connector->kdev.bus_id, BUS_ID_SIZE, "card%d-%s",
 		 dev->primary->index, drm_get_connector_name(connector));
@@ -296,15 +302,19 @@ EXPORT_SYMBOL(drm_sysfs_connector_add);
  * Remove @connector and its associated attributes from sysfs.  Note that
  * the device model core will take care of sending the "remove" uevent
  * at this time, so we don't need to do it.
+ *
+ * Note:
+ * This routine should only be called if the connector was previously
+ * successfully registered.  If @connector hasn't been registered yet,
+ * you'll likely see a panic somewhere deep in sysfs code when called.
  */
 void drm_sysfs_connector_remove(struct drm_connector *connector)
 {
 	int i;
 
-	if (!device_is_registered(&connector->kdev))
-		return;
+	DRM_DEBUG("removing \"%s\" from sysfs\n",
+		  drm_get_connector_name(connector));
 
-	DRM_DEBUG("removing \"%s\" from sysfs\n", drm_get_connector_name(connector));
 	for (i = 0; i < ARRAY_SIZE(connector_attrs); i++)
 		device_remove_file(&connector->kdev, &connector_attrs[i]);
 	sysfs_remove_bin_file(&connector->kdev.kobj, &edid_attr);
@@ -342,6 +352,11 @@ static struct device_attribute dri_attrs[] = {
  * Add a DRM device to the DRM's device model class.  We use @dev's PCI device
  * as the parent for the Linux device, and make sure it has a file containing
  * the driver we're using (for userspace compatibility).
+ *
+ * Note:
+ * This routine should only be called *once* for each DRM minor registered.
+ * A second call for an already registered device will trigger the BUG_ON
+ * below.
  */
 int drm_sysfs_device_add(struct drm_minor *minor)
 {
@@ -361,6 +376,11 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 		minor_str = "card%d";
 	
 	snprintf(minor->kdev.bus_id, BUS_ID_SIZE, minor_str, minor->index);
+
+	/* Shouldn't register more than once */
+	BUG_ON(device_is_registered(&minor->kdev));
+
+	DRM_DEBUG("registering DRM device \"%s\"\n", minor->kdev.bus_id);
 
 	err = device_register(&minor->kdev);
 	if (err) {

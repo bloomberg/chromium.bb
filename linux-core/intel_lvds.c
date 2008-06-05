@@ -329,7 +329,8 @@ static void intel_lvds_destroy(struct drm_connector *connector)
 {
 	struct intel_output *intel_output = to_intel_output(connector);
 
-	intel_i2c_destroy(intel_output->ddc_bus);
+	if (intel_output->ddc_bus)
+		intel_i2c_destroy(intel_output->ddc_bus);
 	drm_sysfs_connector_remove(connector);
 	drm_connector_cleanup(connector);
 	kfree(connector);
@@ -425,8 +426,7 @@ void intel_lvds_init(struct drm_device *dev)
 	if (!intel_output->ddc_bus) {
 		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
 			   "failed.\n");
-		intel_lvds_destroy(connector);
-		return;
+		goto failed;
 	}
 
 	/*
@@ -470,19 +470,18 @@ void intel_lvds_init(struct drm_device *dev)
 	if (!dev_priv->panel_fixed_mode)
 		goto failed;
 
-#if 0
 	/* FIXME: detect aopen & mac mini type stuff automatically? */
 	/*
 	 * Blacklist machines with BIOSes that list an LVDS panel without
 	 * actually having one.
 	 */
-	if (dev_priv->PciInfo->chipType == PCI_CHIP_I945_GM) {
+	if (IS_I945GM(dev)) {
 		/* aopen mini pc */
-		if (dev_priv->PciInfo->subsysVendor == 0xa0a0)
-			goto disable_exit;
+		if (dev->pdev->subsystem_vendor == 0xa0a0)
+			goto failed;
 
-		if ((dev_priv->PciInfo->subsysVendor == 0x8086) &&
-		    (dev_priv->PciInfo->subsysCard == 0x7270)) {
+		if ((dev->pdev->subsystem_vendor == 0x8086) &&
+		    (dev->pdev->subsystem_device == 0x7270)) {
 			/* It's a Mac Mini or Macbook Pro.
 			 *
 			 * Apple hardware is out to get us.  The macbook pro
@@ -494,23 +493,23 @@ void intel_lvds_init(struct drm_device *dev)
 			 */
 
 			if (dev_priv->panel_fixed_mode != NULL &&
-			    dev_priv->panel_fixed_mode->HDisplay == 800 &&
-			    dev_priv->panel_fixed_mode->VDisplay == 600)
-			{
-				xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-					   "Suspected Mac Mini, ignoring the LVDS\n");
-				goto disable_exit;
+			    dev_priv->panel_fixed_mode->hdisplay == 800 &&
+			    dev_priv->panel_fixed_mode->vdisplay == 600) {
+				DRM_DEBUG("Suspected Mac Mini, ignoring the LVDS\n");
+				goto failed;
 			}
 		}
 	}
 
-#endif
 
 out:
 	drm_sysfs_connector_add(connector);
 	return;
 
 failed:
-        DRM_DEBUG("No LVDS modes found, disabling.\n");
-	intel_lvds_destroy(connector);
+	DRM_DEBUG("No LVDS modes found, disabling.\n");
+ 	if (intel_output->ddc_bus)
+		intel_i2c_destroy(intel_output->ddc_bus);
+	drm_connector_cleanup(connector);
+	kfree(connector);
 }

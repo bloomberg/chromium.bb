@@ -268,18 +268,20 @@ void intel_crt_init(struct drm_device *dev)
 		return;
 
 	connector = &intel_output->base;
-	drm_connector_init(dev, &intel_output->base, &intel_crt_connector_funcs, DRM_MODE_CONNECTOR_VGA);
+	drm_connector_init(dev, &intel_output->base,
+			   &intel_crt_connector_funcs, DRM_MODE_CONNECTOR_VGA);
 
-	drm_encoder_init(dev, &intel_output->enc, &intel_crt_enc_funcs, DRM_MODE_ENCODER_DAC);
+	drm_encoder_init(dev, &intel_output->enc, &intel_crt_enc_funcs,
+			 DRM_MODE_ENCODER_DAC);
 
-	drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc);
+	drm_mode_connector_attach_encoder(&intel_output->base,
+					  &intel_output->enc);
 
 	/* Set up the DDC bus. */
 	intel_output->ddc_bus = intel_i2c_create(dev, GPIOA, "CRTDDC_A");
 	if (!intel_output->ddc_bus) {
 		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
 			   "failed.\n");
-		intel_crt_destroy(connector);
 		return;
 	}
 
@@ -291,6 +293,4 @@ void intel_crt_init(struct drm_device *dev)
 	drm_connector_helper_add(connector, &intel_crt_connector_helper_funcs);
 
 	drm_sysfs_connector_add(connector);
-
-
 }
