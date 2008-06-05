@@ -1519,6 +1519,7 @@ struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
 static const struct drm_mode_config_funcs intel_mode_funcs = {
 	.resize_fb = NULL,
 	.fb_create = intel_user_framebuffer_create,
+	.fb_changed = intelfb_probe,
 };
 
 void intel_modeset_init(struct drm_device *dev)

@@ -200,9 +200,7 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 static int intelfb_set_par(struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_device *dev = par->dev;
 	struct fb_var_screeninfo *var = &info->var;
-	int found = 0;
 
 	DRM_DEBUG("%d %d\n", var->xres, var->pixclock);
 
@@ -215,6 +213,9 @@ static int intelfb_set_par(struct fb_info *info)
 		struct drm_framebuffer *fb = &intel_fb->base;
 		struct drm_display_mode *drm_mode, *search_mode;
 		struct drm_connector *connector = NULL;
+		struct drm_device *dev = par->dev;
+
+		int found = 0;
 
 		switch (var->bits_per_pixel) {
 		case 16:
@@ -756,6 +757,7 @@ static int intelfb_create_crtcmodesets(struct intel_framebuffer *intel_fb, int n
 		modeset->connectors = (struct drm_connector **)(modeset + 1);
 		list_add_tail(&modeset->head, &par->mode_set_list);
 	}
+	return 0;
 
 fail:
 	list_for_each_entry(modeset, &par->mode_set_list, head) {
@@ -860,7 +862,8 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 		info->var.pixclock = -1;
 		if (register_framebuffer(info) < 0)
 			return -EINVAL;
-	}
+	} else
+		intelfb_set_par(info);
 		
 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
 	       info->fix.id);
