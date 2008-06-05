@@ -69,6 +69,44 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 	return -EBUSY;
 }
 
+int i915_init_hardware_status(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	/* Program Hardware Status Page */
+	dev_priv->status_page_dmah =
+		drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
+
+	if (!dev_priv->status_page_dmah) {
+		DRM_ERROR("Can not allocate hardware status page\n");
+		return -ENOMEM;
+	}
+	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
+	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+
+	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+
+	I915_WRITE(0x02080, dev_priv->dma_status_page);
+	DRM_DEBUG("Enabled hardware status page\n");
+	return 0;
+}
+
+void i915_free_hardware_status(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	if (dev_priv->status_page_dmah) {
+		drm_pci_free(dev, dev_priv->status_page_dmah);
+		dev_priv->status_page_dmah = NULL;
+		/* Need to rewrite hardware status page */
+		I915_WRITE(0x02080, 0x1ffff000);
+	}
+
+	if (dev_priv->status_gfx_addr) {
+		dev_priv->status_gfx_addr = 0;
+		drm_core_ioremapfree(&dev_priv->hws_map, dev);
+		I915_WRITE(0x02080, 0x1ffff000);
+	}
+}
+
 #if I915_RING_VALIDATE
 /**
  * Validate the cached ring tail value
@@ -122,18 +160,8 @@ static int i915_dma_cleanup(struct drm_device * dev)
 		dev_priv->ring.map.size = 0;
 	}
 
-	if (dev_priv->status_page_dmah) {
-		drm_pci_free(dev, dev_priv->status_page_dmah);
-		dev_priv->status_page_dmah = NULL;
-		/* Need to rewrite hardware status page */
-		I915_WRITE(0x02080, 0x1ffff000);
-	}
-
-	if (dev_priv->status_gfx_addr) {
-		dev_priv->status_gfx_addr = 0;
-		drm_core_ioremapfree(&dev_priv->hws_map, dev);
-		I915_WRITE(0x02080, 0x1ffff000);
-	}
+	if (I915_NEED_GFX_HWS(dev))
+		i915_free_hardware_status(dev);
 
 	return 0;
 }
@@ -269,24 +297,6 @@ static int i915_initialize(struct drm_device * dev,
 	 */
 	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 
-	/* Program Hardware Status Page */
-	if (!I915_NEED_GFX_HWS(dev)) {
-		dev_priv->status_page_dmah =
-			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
-
-		if (!dev_priv->status_page_dmah) {
-			i915_dma_cleanup(dev);
-			DRM_ERROR("Can not allocate hardware status page\n");
-			return -ENOMEM;
-		}
-		dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-
-		memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-
-		I915_WRITE(0x02080, dev_priv->dma_status_page);
-	}
-	DRM_DEBUG("Enabled hardware status page\n");
 #ifdef I915_HAVE_BUFFER
 	mutex_init(&dev_priv->cmdbuf_mutex);
 #endif
@@ -1078,6 +1088,14 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 #endif
 #endif
 
+	/* Init HWS
+	 */
+	if (!I915_NEED_GFX_HWS(dev)) {	
+		ret = i915_init_hardware_status(dev);
+		if(ret)
+			return ret;
+	}
+
 	return ret;
 }
 
@@ -1095,6 +1113,8 @@ int i915_driver_unload(struct drm_device *dev)
 	intel_fini_chipset_flush_compat(dev);
 #endif
 #endif
+	i915_free_hardware_status(dev);
+
 	return 0;
 }
 
