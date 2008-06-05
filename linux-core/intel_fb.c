@@ -557,8 +557,8 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	struct device *device = &dev->pdev->dev; 
 	int ret;
 
-	mode_cmd.width = fb_width;/* crtc->desired_mode->hdisplay; */
-	mode_cmd.height = fb_height;/* crtc->desired_mode->vdisplay; */
+	mode_cmd.width = surface_width;/* crtc->desired_mode->hdisplay; */
+	mode_cmd.height = surface_height;/* crtc->desired_mode->vdisplay; */
 	
 	mode_cmd.bpp = 32;
 	mode_cmd.pitch = mode_cmd.width * ((mode_cmd.bpp + 1) / 8);
