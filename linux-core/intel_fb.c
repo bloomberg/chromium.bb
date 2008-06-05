@@ -623,9 +623,12 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
  	info->screen_base = intel_fb->kmap.virtual;
 	info->screen_size = info->fix.smem_len; /* FIXME */
+
+	memset(intel_fb->kmap.virtual, 0, info->screen_size);
+
 	info->pseudo_palette = fb->pseudo_palette;
-	info->var.xres_virtual = surface_width;
-	info->var.yres_virtual = surface_height;
+	info->var.xres_virtual = fb->width;
+	info->var.yres_virtual = fb->height;
 	info->var.bits_per_pixel = fb->bits_per_pixel;
 	info->var.xoffset = 0;
 	info->var.yoffset = 0;
