@@ -585,6 +585,8 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 		return -EINVAL;
 	}
 
+	list_add(&fb->filp_head, &dev->mode_config.fb_kernel_list);
+
 	intel_fb = to_intel_framebuffer(fb);
 	*intel_fb_p = intel_fb;
 
@@ -721,129 +723,181 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	return 0;
 }
 
-int intelfb_probe(struct drm_device *dev)
+#define INTELFB_CONN_LIMIT 4
+
+static int intelfb_create_crtcmodesets(struct intel_framebuffer *intel_fb, int num_sets, int crtc_base)
 {
-	struct fb_info *info;
+	int i,j;
+	struct drm_device *dev = intel_fb->base.dev;
 	struct intelfb_par *par;
-	struct device *device = &dev->pdev->dev; 
-	struct intel_framebuffer *intel_fb;
 	struct drm_mode_set *modeset;
 	struct drm_crtc *crtc;
-	struct drm_connector *connector;
-	int ret;
-	int crtc_count = 0, i;
-	unsigned int fb_width = (unsigned)-1, fb_height = (unsigned)-1;
-	unsigned int surface_width = 0, surface_height = 0;
+	struct fb_info *info;
 
-	DRM_DEBUG("\n");
-
-	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		if (crtc->desired_mode) {
-			if (crtc->desired_mode->hdisplay < fb_width)
-				fb_width = crtc->desired_mode->hdisplay;
-
-			if (crtc->desired_mode->vdisplay < fb_height)
-				fb_height = crtc->desired_mode->vdisplay;
-
-			if (crtc->desired_mode->hdisplay > surface_width)
-				surface_width = crtc->desired_mode->hdisplay;
-
-			if (crtc->desired_mode->vdisplay > surface_height)
-				surface_height = crtc->desired_mode->vdisplay;
-		}
-		crtc_count++;
-	}
-
-	if (fb_width == -1 || fb_height == -1) {
-		return -EINVAL;
-	}
-
-	DRM_DEBUG("here %d %d %d %d\n", fb_width, fb_height, surface_width, surface_height);
-	ret = intelfb_create(dev, fb_width, fb_height, surface_width, surface_height, &intel_fb);
-	if (ret)
-		return -EINVAL;
-
-	DRM_DEBUG("here %p\n", intel_fb);
 	info = intel_fb->base.fbdev;
 	par = info->par;
 
-	DRM_DEBUG("crtc count is %d\n", crtc_count);
-	/* make up a couple of config sets */
-	for (i = 0; i < crtc_count; i++) {
-		int conn_count = 0;
+	for (i = 0; i < num_sets; i++) {
+		modeset = kzalloc(sizeof(struct drm_mode_set) + (INTELFB_CONN_LIMIT * sizeof(struct drm_connector *)), GFP_KERNEL);
+		if (!modeset)
+			goto fail;
 
-		modeset = kzalloc(sizeof(struct drm_mode_set), GFP_KERNEL);
+		/* attach a CRTC to the modeset */
+		j = 0;
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			if (j == i + crtc_base) {
+				modeset->crtc = crtc;
+				break;
+			}
+			j++;
+		}
 		modeset->fb = &intel_fb->base;
 
-		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-			struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
-			if (intel_crtc->pipe == i)
-				modeset->crtc = crtc;
-		}
-
-
-		DRM_DEBUG("1\n");
-		/* find out how many connectors are on this */
-		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-			if (connector->encoder)
-				if (connector->encoder->crtc == modeset->crtc)
-					conn_count++;
-		}
-
+		modeset->connectors = (struct drm_connector **)(modeset + 1);
 		list_add_tail(&modeset->head, &par->mode_set_list);
+	}
 
-		if (!conn_count)
-			continue;
-		
-		DRM_DEBUG("cc %d\n", conn_count);
-		modeset->connectors = kcalloc(conn_count, sizeof(struct drm_connector *), GFP_KERNEL);
-		if (!modeset->connectors) {
-			ret = -ENOMEM;
-			goto fail;
+fail:
+	list_for_each_entry(modeset, &par->mode_set_list, head) {
+		list_del(&modeset->head);
+		kfree(modeset);
+	}
+
+	return -ENOMEM;
+}
+
+static int intelfb_single_fb_probe(struct drm_device *dev)
+{
+	struct drm_crtc *crtc;
+	struct drm_connector *connector;
+	unsigned int fb_width = (unsigned)-1, fb_height = (unsigned)-1;
+	unsigned int surface_width = 0, surface_height = 0;
+	int new_fb = 0;
+	int crtc_count = 0;
+	int ret, i, conn_count = 0;
+	struct intel_framebuffer *intel_fb;
+	struct fb_info *info;
+	struct intelfb_par *par;
+	struct drm_mode_set *modeset;
+
+	/* first up get a count of crtcs now in use and new min/maxes width/heights */
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		if (drm_helper_crtc_in_use(crtc)) {
+			if (crtc->desired_mode) {
+				if (crtc->desired_mode->hdisplay < fb_width)
+					fb_width = crtc->desired_mode->hdisplay;
+				
+				if (crtc->desired_mode->vdisplay < fb_height)
+					fb_height = crtc->desired_mode->vdisplay;
+				
+				if (crtc->desired_mode->hdisplay > surface_width)
+					surface_width = crtc->desired_mode->hdisplay;
+				
+				if (crtc->desired_mode->vdisplay > surface_height)
+				surface_height = crtc->desired_mode->vdisplay;
+			}
+		crtc_count++;
 		}
+	}
 
-		modeset->num_connectors = conn_count;
+	if (crtc_count == 0 || fb_width == -1 || fb_height == -1) {
+		/* hmm everyone went away - assume VGA cable just fell out
+		   and will come back later. */
+		return 0;
+	}
+
+	/* do we have an fb already? */
+	if (list_empty(&dev->mode_config.fb_kernel_list)) {
+		/* create an fb if we don't have one */
+		ret = intelfb_create(dev, fb_width, fb_height, surface_width, surface_height, &intel_fb);
+		if (ret)
+			return -EINVAL;
+
+		/* create a set per crtc connected to this fb */
+		ret = intelfb_create_crtcmodesets(intel_fb, dev->mode_config.num_crtc, 0);
+		if (ret)
+			return ret;
+		new_fb = 1;
+	} else {
+		struct drm_framebuffer *fb;
+		fb = list_first_entry(&dev->mode_config.fb_kernel_list, struct drm_framebuffer, filp_head);
+		intel_fb = to_intel_framebuffer(fb);
+
+		/* check if we are going to have a size issue */
+		/* do a surface compare */
+		if ((fb->width < surface_width) || (fb->height < surface_height)) {
+			DRM_ERROR("NEED BIGGER SURFACE DUDE\n");
+			return -EINVAL;
+		}
+	}
+
+	info = intel_fb->base.fbdev;
+	par = info->par;
+
+	/* okay we need to setup new connector sets in the crtcs */
+	list_for_each_entry(modeset, &par->mode_set_list, head) {
 		
 		conn_count = 0;
 		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 			if (connector->encoder)
-				if (connector->encoder->crtc == modeset->crtc)
-					modeset->connectors[conn_count++] = connector;
+				if(connector->encoder->crtc == modeset->crtc) {
+					modeset->connectors[conn_count] = connector;
+					conn_count++;
+					if (conn_count > INTELFB_CONN_LIMIT)
+						BUG();
+				}
 		}
-		modeset->mode = modeset->crtc->desired_mode;
+
+		for (i = conn_count; i < INTELFB_CONN_LIMIT; i++)
+			modeset->connectors[i] = NULL;
+
+		modeset->num_connectors = conn_count;
+		if (modeset->mode != modeset->crtc->desired_mode)
+			modeset->mode = modeset->crtc->desired_mode;
 	}
-       
-	info->var.pixclock = -1;
-#if 0
-	info->var.right_margin = mode->hsync_start - mode->hdisplay;
-	info->var.hsync_len = mode->hsync_end - mode->hsync_start;
-	info->var.left_margin = mode->htotal - mode->hsync_end;
-	info->var.lower_margin = mode->vsync_start - mode->vdisplay;
-	info->var.vsync_len = mode->vsync_end - mode->vsync_start;
-	info->var.upper_margin = mode->vtotal - mode->vsync_end;
-	info->var.pixclock = KHZ2PICOS(mode->clock);
 
-	if (mode->flags & V_PHSYNC)
-		info->var.sync |= FB_SYNC_HOR_HIGH_ACT;
-
-	if (mode->flags & V_PVSYNC)
-		info->var.sync |= FB_SYNC_VERT_HIGH_ACT;
-
-	if (mode->flags & V_INTERLACE)
-		info->var.vmode = FB_VMODE_INTERLACED;
-	else if (mode->flags & V_DBLSCAN)
-		info->var.vmode = FB_VMODE_DOUBLE;
-	else
-		info->var.vmode = FB_VMODE_NONINTERLACED;
-
-#endif
-
-	if (register_framebuffer(info) < 0)
-		return -EINVAL;
-
+	if (new_fb) {
+		info->var.pixclock = -1;
+		if (register_framebuffer(info) < 0)
+			return -EINVAL;
+	}
+		
 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
-		info->fix.id);
+	       info->fix.id);
 	return 0;
+}
+
+int intelfb_probe(struct drm_device *dev)
+{
+	int ret;
+
+	DRM_DEBUG("\n");
+
+	/* something has changed in the lower levels of hell - deal with it 
+	   here */
+
+	/* two modes : a) 1 fb to rule all crtcs.
+	               b) one fb per crtc.
+	   two actions 1) new connected device
+ 	               2) device removed.
+	   case a/1 : if the fb surface isn't big enough - resize the surface fb.
+	              if the fb size isn't big enough - resize fb into surface.
+		      if everything big enough configure the new crtc/etc.
+	   case a/2 : undo the configuration
+	              possibly resize down the fb to fit the new configuration.
+           case b/1 : see if it is on a new crtc - setup a new fb and add it.
+	   case b/2 : teardown the new fb.
+	*/
+
+	/* mode a first */
+	/* search for an fb */
+	if (i915_fbpercrtc == 1) {
+		ret = -EINVAL;
+		goto fail;
+	}
+
+	ret = intelfb_single_fb_probe(dev);
+
 fail:
 	/*  TODO */
 	return ret;

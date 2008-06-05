@@ -498,8 +498,7 @@ struct drm_connector {
  *
  * This is used to set modes.
  */
-struct drm_mode_set
-{
+struct drm_mode_set {
 	struct list_head head;
 
 	struct drm_framebuffer *fb;
@@ -556,6 +555,9 @@ struct drm_mode_config {
 	struct list_head crtc_list;
 
 	struct list_head property_list;
+
+	/* in-kernel framebuffers - hung of filp_head in drm_framebuffer */
+	struct list_head fb_kernel_list;
 
 	/* currently in use generation id */
 	int current_generation;
