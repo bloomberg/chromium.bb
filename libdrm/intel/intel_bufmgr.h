@@ -85,6 +85,7 @@ void intel_bo_fake_disable_backing_store(dri_bo *bo,
 					 void (*invalidate_cb)(dri_bo *bo,
 							       void *ptr),
 					 void *ptr);
+void intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr);
 
 int intel_bo_emit_reloc(dri_bo *reloc_buf,
 			uint32_t read_domains, uint32_t write_domain,

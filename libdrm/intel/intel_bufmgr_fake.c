@@ -125,7 +125,6 @@ typedef struct _bufmgr_fake {
     * List of blocks which have an expired fence and are ready to be evicted.
     */
    struct block lru;
-                                /* then to bufmgr->lru or free() */
 
    unsigned int last_fence;
 
@@ -1139,6 +1138,40 @@ dri_fake_check_aperture_space(dri_bo *bo)
    bo_fake->size_accounted = 1;
    DBG("drm_check_space: buf %d, %s %d %d\n", bo_fake->id, bo_fake->name, bo->size, bufmgr_fake->current_total_size);
    return 0;
+}
+
+/**
+ * Evicts all buffers, waiting for fences to pass and copying contents out
+ * as necessary.
+ *
+ * Used by the X Server on LeaveVT, when the card memory is no longer our
+ * own.
+ */
+void
+intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
+   struct block *block, *tmp;
+
+   bufmgr_fake->need_fence = 1;
+   bufmgr_fake->fail = 0;
+
+   /* Wait for hardware idle.  We don't know where acceleration has been
+    * happening, so we'll need to wait anyway before letting anything get
+    * put on the card again.
+    */
+   dri_bufmgr_fake_wait_idle(bufmgr_fake);
+
+   /* Check that we hadn't released the lock without having fenced the last
+    * set of buffers.
+    */
+   assert(DRMLISTEMPTY(&bufmgr_fake->fenced));
+   assert(DRMLISTEMPTY(&bufmgr_fake->on_hardware));
+
+   DRMLISTFOREACHSAFE(block, tmp, &bufmgr_fake->lru) {
+      /* Releases the memory, and memcpys dirty contents out if necessary. */
+      free_block(bufmgr_fake, block);
+   }
 }
 
 dri_bufmgr *
