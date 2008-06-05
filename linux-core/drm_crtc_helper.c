@@ -643,15 +643,20 @@ EXPORT_SYMBOL(drm_crtc_helper_set_config);
  */
 bool drm_helper_initial_config(struct drm_device *dev, bool can_grow)
 {
-	struct drm_connector *connector;
 	int ret = false;
 
 	mutex_lock(&dev->mode_config.mutex);
 
-	drm_helper_probe_connector_modes(dev, 2048, 2048);
+	drm_helper_probe_connector_modes(dev, dev->mode_config.max_width, dev->mode_config.max_height);
 
 	drm_pick_crtcs(dev);
 
+	/* use all the info we have to setup the fb */
+	dev->driver->fb_probe(dev);
+#if 0
+	/* have to do a driver pick here */
+	/* get the lowest common denom of width height that will fit nicely - size the fb to this 
+	   size, however may need a wider stride for crtc alignment */
 	/* This is a little screwy, as we've already walked the connectors 
 	 * above, but it's a little bit of magic too. There's the potential
 	 * for things not to get setup above if an existing device gets
@@ -680,7 +685,7 @@ bool drm_helper_initial_config(struct drm_device *dev, bool can_grow)
 	}
 
 	drm_helper_disable_unused_functions(dev);
-
+#endif
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
 }
@@ -736,7 +741,7 @@ int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *c
 
 	/* We should really check if there is a fb using this crtc */
 	if (!has_config)
-		dev->driver->fb_probe(dev, connector->encoder->crtc, connector);
+		dev->driver->fb_probe(dev);
 	else {
 		dev->driver->fb_resize(dev, connector->encoder->crtc);
 

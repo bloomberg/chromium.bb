@@ -500,6 +500,8 @@ struct drm_connector {
  */
 struct drm_mode_set
 {
+	struct list_head head;
+
 	struct drm_framebuffer *fb;
 	struct drm_crtc *crtc;
 	struct drm_display_mode *mode;

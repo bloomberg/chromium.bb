@@ -372,6 +372,8 @@ int i915_execbuffer(struct drm_device *dev, void *data,
 
 #endif
 
+extern unsigned int i915_fbpercrtc;
+
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 extern void intel_init_chipset_flush_compat(struct drm_device *dev);

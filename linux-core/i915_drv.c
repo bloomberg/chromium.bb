@@ -42,6 +42,12 @@ static struct pci_device_id pciidlist[] = {
 unsigned int i915_modeset = 0;
 module_param_named(modeset, i915_modeset, int, 0400);
 
+unsigned int i915_fbpercrtc = 1;
+module_param_named(fbpercrtc, i915_fbpercrtc, int, 0400);
+
+unsigned int i915_rightof = 1;
+module_param_named(i915_rightof, i915_rightof, int, 0400);
+
 #ifdef I915_HAVE_FENCE
 extern struct drm_fence_driver i915_fence_driver;
 #endif

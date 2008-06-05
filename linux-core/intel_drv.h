@@ -52,6 +52,7 @@ struct intel_framebuffer {
 	struct drm_bo_kmap_obj kmap;
 };
 
+
 struct intel_output {
 	struct drm_connector base;
 
@@ -70,6 +71,7 @@ struct intel_crtc {
 	uint32_t cursor_addr;
 	u8 lut_r[256], lut_g[256], lut_b[256];
 	int dpms_mode;
+	struct intel_framebuffer *fbdev_fb;
 };
 
 #define to_intel_crtc(x) container_of(x, struct intel_crtc, base)
@@ -108,7 +110,7 @@ extern void intel_release_load_detect_pipe(struct intel_output *intel_output,
 extern struct drm_connector* intel_sdvo_find(struct drm_device *dev, int sdvoB);
 extern int intel_sdvo_supports_hotplug(struct drm_connector *connector);
 extern void intel_sdvo_set_hotplug(struct drm_connector *connector, int enable);
-extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc, struct drm_connector *connector);
+extern int intelfb_probe(struct drm_device *dev);
 extern int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
 extern void intel_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
