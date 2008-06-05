@@ -319,6 +319,9 @@ i915_wait_request(struct drm_device *dev, uint32_t seqno)
 								 seqno));
 		i915_user_irq_off(dev_priv);
 	}
+	if (ret)
+		DRM_ERROR ("%s returns %d (awaiting %d at %d)\n",
+			   __func__, ret, seqno, i915_get_gem_seqno(dev));
 
 	/* Directly dispatch request retiring.  While we have the work queue
 	 * to handle this, the waiter on a request often wants an associated
