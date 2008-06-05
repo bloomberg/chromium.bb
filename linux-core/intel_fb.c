@@ -544,7 +544,9 @@ int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(intelfb_resize);
 
-int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height, struct intel_framebuffer **intel_fb_p)
+int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height, 
+		   uint32_t surface_width, uint32_t surface_height,
+		   struct intel_framebuffer **intel_fb_p)
 {
 	struct fb_info *info;
 	struct intelfb_par *par;
@@ -622,8 +624,8 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
  	info->screen_base = intel_fb->kmap.virtual;
 	info->screen_size = info->fix.smem_len; /* FIXME */
 	info->pseudo_palette = fb->pseudo_palette;
-	info->var.xres_virtual = fb->width;
-	info->var.yres_virtual = fb->height;
+	info->var.xres_virtual = surface_width;
+	info->var.yres_virtual = surface_height;
 	info->var.bits_per_pixel = fb->bits_per_pixel;
 	info->var.xoffset = 0;
 	info->var.yoffset = 0;
@@ -729,6 +731,7 @@ int intelfb_probe(struct drm_device *dev)
 	int ret;
 	int crtc_count = 0, i;
 	unsigned int fb_width = (unsigned)-1, fb_height = (unsigned)-1;
+	unsigned int surface_width = 0, surface_height = 0;
 
 	DRM_DEBUG("\n");
 
@@ -739,6 +742,12 @@ int intelfb_probe(struct drm_device *dev)
 
 			if (crtc->desired_mode->vdisplay < fb_height)
 				fb_height = crtc->desired_mode->vdisplay;
+
+			if (crtc->desired_mode->hdisplay > surface_width)
+				surface_width = crtc->desired_mode->hdisplay;
+
+			if (crtc->desired_mode->vdisplay > surface_height)
+				surface_height = crtc->desired_mode->vdisplay;
 		}
 		crtc_count++;
 	}
@@ -747,8 +756,8 @@ int intelfb_probe(struct drm_device *dev)
 		return -EINVAL;
 	}
 
-	DRM_DEBUG("here %d %d\n", fb_width, fb_height);
-	ret = intelfb_create(dev, fb_width, fb_height, &intel_fb);
+	DRM_DEBUG("here %d %d %d %d\n", fb_width, fb_height, surface_width, surface_height);
+	ret = intelfb_create(dev, fb_width, fb_height, surface_width, surface_height, &intel_fb);
 	if (ret)
 		return -EINVAL;
 
