@@ -57,11 +57,6 @@
 
 typedef struct _dri_bo_gem dri_bo_gem;
 
-struct intel_validate_entry {
-    dri_bo_gem *bo_gem;
-    struct drm_i915_op_arg bo_arg;
-};
-
 struct dri_gem_bo_bucket_entry {
     dri_bo_gem *bo_gem;
     struct dri_gem_bo_bucket_entry *next;
