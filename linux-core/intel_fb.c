@@ -469,7 +469,6 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 	struct intelfb_par *par = info->par;
 	struct drm_mode_set *modeset;
 	int ret = 0;
-	DRM_DEBUG("\n");
 
 	list_for_each_entry(modeset, &par->mode_set_list, head) {
 		modeset->x = var->xoffset;

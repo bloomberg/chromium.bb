@@ -496,6 +496,7 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 	crtc_funcs = set->crtc->helper_private;
        
 	DRM_DEBUG("crtc: %p fb: %p connectors: %p num_connectors: %i (x, y) (%i, %i)\n", set->crtc, set->fb, set->connectors, set->num_connectors, set->x, set->y);
+
 	dev = set->crtc->dev;
 
 	/* save previous config */
@@ -532,7 +533,7 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		struct drm_connector_helper_funcs *connector_funcs = connector->helper_private;
 		save_encoders[count++] = connector->encoder;
-		new_encoder = NULL;
+		new_encoder = connector->encoder;
 		for (ro = 0; ro < set->num_connectors; ro++) {
 			if (set->connectors[ro] == connector) {
 				new_encoder = connector_funcs->best_encoder(connector);
@@ -626,6 +627,20 @@ fail_no_encoder:
 }
 EXPORT_SYMBOL(drm_crtc_helper_set_config);
 
+bool drm_helper_plugged_event(struct drm_device *dev)
+{
+	drm_helper_probe_connector_modes(dev, dev->mode_config.max_width, dev->mode_config.max_height);
+
+	drm_pick_crtcs(dev);
+
+	/* alert the driver fb layer */
+	dev->mode_config.funcs->fb_changed(dev);
+
+	drm_helper_disable_unused_functions(dev);
+
+	drm_sysfs_hotplug_event(dev);
+	return true;
+}
 /**
  * drm_initial_config - setup a sane initial connector configuration
  * @dev: DRM device
@@ -645,48 +660,7 @@ bool drm_helper_initial_config(struct drm_device *dev, bool can_grow)
 {
 	int ret = false;
 
-	mutex_lock(&dev->mode_config.mutex);
-
-	drm_helper_probe_connector_modes(dev, dev->mode_config.max_width, dev->mode_config.max_height);
-
-	drm_pick_crtcs(dev);
-
-	/* use all the info we have to setup the fb */
-	dev->driver->fb_probe(dev);
-#if 0
-	/* have to do a driver pick here */
-	/* get the lowest common denom of width height that will fit nicely - size the fb to this 
-	   size, however may need a wider stride for crtc alignment */
-	/* This is a little screwy, as we've already walked the connectors 
-	 * above, but it's a little bit of magic too. There's the potential
-	 * for things not to get setup above if an existing device gets
-	 * re-assigned thus confusing the hardware. By walking the connectors
-	 * this fixes up their crtc's.
-	 */
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-
-		struct drm_encoder *encoder = connector->encoder;
-		struct drm_crtc *crtc;
-
-		if (!encoder)
-			continue;
-
-		crtc = connector->encoder->crtc;
-
-		/* can't setup the connector if there's no assigned mode */
-		if (!crtc || !crtc->desired_mode)
-			continue;
-
-		dev->driver->fb_probe(dev, crtc, connector);
-
-		/* and needs an attached fb */
-		if (crtc->fb)
-			drm_crtc_helper_set_mode(crtc, crtc->desired_mode, 0, 0);
-	}
-
-	drm_helper_disable_unused_functions(dev);
-#endif
-	mutex_unlock(&dev->mode_config.mutex);
+	drm_helper_plugged_event(dev);
 	return ret;
 }
 EXPORT_SYMBOL(drm_helper_initial_config);
@@ -707,58 +681,13 @@ EXPORT_SYMBOL(drm_helper_initial_config);
 int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *connector,
 				 bool connected)
 {
-	int has_config = 0;
-
 	dev->mode_config.hotplug_counter++;
 
-	/* We might want to do something more here */
-	if (!connected) {
-		DRM_DEBUG("not connected\n");
-		return 0;
-	}
-
-	if (connector->encoder) {
-		if (connector->encoder->crtc && connector->encoder->crtc->desired_mode) {
-			DRM_DEBUG("drm thinks that the connector already has a config\n");
-			has_config = 1;
-		}
-	}
-
-	drm_helper_probe_connector_modes(dev, 2048, 2048);
-
-	if (!has_config)
-		drm_pick_crtcs(dev);
-
-	if (!connector->encoder) {
-		DRM_DEBUG("could not find a desired mode or crtc for connector\n");
-		return 1;
-	}
-
-	if (!connector->encoder->crtc || !connector->encoder->crtc->desired_mode) {
-		DRM_DEBUG("could not find a desired mode or crtc for connector\n");
-		return 1;
-	}
-
-	/* We should really check if there is a fb using this crtc */
-	if (!has_config)
-		dev->driver->fb_probe(dev);
-	else {
-		dev->driver->fb_resize(dev, connector->encoder->crtc);
-
-#if 0
-		if (!drm_crtc_set_mode(connector->encoder->crtc, connector->encoder->crtc->desired_mode, 0, 0))
-			DRM_ERROR("failed to set mode after hotplug\n");
-#endif
-	}
-
-	drm_sysfs_hotplug_event(dev);
-
-	drm_helper_disable_unused_functions(dev);
+	drm_helper_plugged_event(dev);
 
 	return 0;
 }
 EXPORT_SYMBOL(drm_helper_hotplug_stage_two);
-
 
 int drm_helper_mode_fill_fb_struct(struct drm_framebuffer *fb,
 				   struct drm_mode_fb_cmd *mode_cmd)
