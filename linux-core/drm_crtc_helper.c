@@ -67,6 +67,7 @@ void drm_helper_probe_single_connector_modes(struct drm_connector *connector, ui
 	struct drm_connector_helper_funcs *connector_funcs = connector->helper_private;
 	int ret;
 
+	DRM_DEBUG("%s\n", drm_get_connector_name(connector));
 	/* set all modes to the unverified state */
 	list_for_each_entry_safe(mode, t, &connector->modes, head)
 		mode->status = MODE_UNVERIFIED;
@@ -186,8 +187,11 @@ void drm_helper_disable_unused_functions(struct drm_device *dev)
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
-		if (!crtc->enabled)
+		crtc->enabled = drm_helper_crtc_in_use(crtc);
+		if (!crtc->enabled) {
 			crtc_funcs->dpms(crtc, DPMSModeOff);
+			crtc->fb = NULL;
+		}
 	}
 }
 EXPORT_SYMBOL(drm_helper_disable_unused_functions);
@@ -209,6 +213,7 @@ static void drm_pick_crtcs (struct drm_device *dev)
 	struct drm_connector_helper_funcs *connector_funcs;
 	int found;
 
+	DRM_DEBUG("\n");
 	/* clean out all the encoder/crtc combos */
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		encoder->crtc = NULL;
@@ -515,8 +520,13 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 
 	/* We should be able to check here if the fb has the same properties
 	 * and then just flip_or_move it */
-	if (set->crtc->fb != set->fb)
-		flip_or_move = true;
+	if (set->crtc->fb != set->fb) {
+		/* if we have no fb then its a change not a flip */
+		if (set->crtc->fb == NULL)
+			changed = true;
+		else
+			flip_or_move = true;
+	}
 
 	if (set->x != set->crtc->x || set->y != set->crtc->y)
 		flip_or_move = true;
@@ -629,6 +639,8 @@ EXPORT_SYMBOL(drm_crtc_helper_set_config);
 
 bool drm_helper_plugged_event(struct drm_device *dev)
 {
+	DRM_DEBUG("\n");
+
 	drm_helper_probe_connector_modes(dev, dev->mode_config.max_width, dev->mode_config.max_height);
 
 	drm_pick_crtcs(dev);

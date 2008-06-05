@@ -309,11 +309,9 @@ static int intelfb_set_par(struct fb_info *info)
 		int ret;
 
 		list_for_each_entry(modeset, &par->mode_set_list, head) {
-			if (modeset->num_connectors) {
-				ret = modeset->crtc->funcs->set_config(modeset);
-				if (ret)
-					return ret;
-			}
+			ret = modeset->crtc->funcs->set_config(modeset);
+			if (ret)
+				return ret;
 		}
 		return 0;
 	}
@@ -782,6 +780,7 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 	struct intelfb_par *par;
 	struct drm_mode_set *modeset;
 
+	DRM_DEBUG("\n");
 	/* first up get a count of crtcs now in use and new min/maxes width/heights */
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		if (drm_helper_crtc_in_use(crtc)) {
