@@ -57,14 +57,8 @@
 
 typedef struct _dri_bo_gem dri_bo_gem;
 
-struct dri_gem_bo_bucket_entry {
-    dri_bo_gem *bo_gem;
-    struct dri_gem_bo_bucket_entry *next;
-};
-
 struct dri_gem_bo_bucket {
-   struct dri_gem_bo_bucket_entry *head;
-   struct dri_gem_bo_bucket_entry **tail;
+   dri_bo_gem *head, **tail;
    /**
     * Limit on the number of entries in this bucket.
     *
@@ -129,6 +123,9 @@ struct _dri_bo_gem {
     int reloc_count;
     /** Mapped address for the buffer */
     void *virtual;
+
+    /** free list */
+    dri_bo_gem *next;
 };
 
 static int
@@ -285,22 +282,19 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 
     /* Get a buffer out of the cache if available */
     if (bucket != NULL && bucket->num_entries > 0) {
-	struct dri_gem_bo_bucket_entry *entry = bucket->head;
 	struct drm_i915_gem_busy busy;
 	
-        bo_gem = entry->bo_gem;
+	bo_gem = bucket->head;
         busy.handle = bo_gem->gem_handle;
 
         ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
         alloc_from_cache = (ret == 0 && busy.busy == 0);
 
 	if (alloc_from_cache) {
-	    bucket->head = entry->next;
-	    if (entry->next == NULL)
+	    bucket->head = bo_gem->next;
+	    if (bo_gem->next == NULL)
 		bucket->tail = &bucket->head;
 	    bucket->num_entries--;
-
-	    free(entry);
 	}
     }
 
@@ -417,20 +411,15 @@ dri_gem_bo_unreference(dri_bo *bo)
 	     (bucket->max_entries > 0 &&
 	      bucket->num_entries < bucket->max_entries)))
 	{
-	    struct dri_gem_bo_bucket_entry *entry;
-
 	    bo_gem->name = 0;
 	    bo_gem->validate_index = -1;
 	    bo_gem->relocs = NULL;
 	    bo_gem->reloc_target_bo = NULL;
 	    bo_gem->reloc_count = 0;
 
-	    entry = calloc(1, sizeof(*entry));
-	    entry->bo_gem = bo_gem;
-
-	    entry->next = NULL;
-	    *bucket->tail = entry;
-	    bucket->tail = &entry->next;
+	    bo_gem->next = NULL;
+	    *bucket->tail = bo_gem;
+	    bucket->tail = &bo_gem->next;
 	    bucket->num_entries++;
 	} else {
 	    struct drm_gem_close close;
@@ -599,19 +588,17 @@ dri_bufmgr_gem_destroy(dri_bufmgr *bufmgr)
     /* Free any cached buffer objects we were going to reuse */
     for (i = 0; i < INTEL_GEM_BO_BUCKETS; i++) {
 	struct dri_gem_bo_bucket *bucket = &bufmgr_gem->cache_bucket[i];
-	struct dri_gem_bo_bucket_entry *entry;
+	dri_bo_gem *bo_gem;
 
-	while ((entry = bucket->head) != NULL) {
+	while ((bo_gem = bucket->head) != NULL) {
 	    struct drm_gem_close close;
-	    dri_bo_gem *bo_gem;
 	    int ret;
 
-	    bucket->head = entry->next;
-	    if (entry->next == NULL)
+	    bucket->head = bo_gem->next;
+	    if (bo_gem->next == NULL)
 		bucket->tail = &bucket->head;
 	    bucket->num_entries--;
 
-	    bo_gem = entry->bo_gem;
 	    if (bo_gem->mapped)
 		munmap (bo_gem->virtual, bo_gem->bo.size);
 	    
@@ -624,7 +611,6 @@ dri_bufmgr_gem_destroy(dri_bufmgr *bufmgr)
 	    }
 
 	    free(bo_gem);
-	    free(entry);
 	}
     }
 
