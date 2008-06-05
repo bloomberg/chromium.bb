@@ -55,15 +55,16 @@
       fprintf(stderr, __VA_ARGS__);			\
 } while (0)
 
+typedef struct _dri_bo_gem dri_bo_gem;
+
 struct intel_validate_entry {
-    dri_bo *bo;
+    dri_bo_gem *bo_gem;
     struct drm_i915_op_arg bo_arg;
 };
 
 struct dri_gem_bo_bucket_entry {
-   uint32_t gem_handle;
-   uint32_t last_offset;
-   struct dri_gem_bo_bucket_entry *next;
+    dri_bo_gem *bo_gem;
+    struct dri_gem_bo_bucket_entry *next;
 };
 
 struct dri_gem_bo_bucket {
@@ -103,7 +104,7 @@ typedef struct _dri_bufmgr_gem {
     struct drm_i915_gem_execbuffer exec_arg;
 } dri_bufmgr_gem;
 
-typedef struct _dri_bo_gem {
+struct _dri_bo_gem {
     dri_bo bo;
 
     int refcount;
@@ -133,7 +134,7 @@ typedef struct _dri_bo_gem {
     int reloc_count;
     /** Mapped address for the buffer */
     void *virtual;
-} dri_bo_gem;
+};
 
 static int
 logbase2(int n)
@@ -270,24 +271,21 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
     int ret;
     struct dri_gem_bo_bucket *bucket;
     int alloc_from_cache = 0;
-
-    bo_gem = calloc(1, sizeof(*bo_gem));
-    if (!bo_gem)
-	return NULL;
+    unsigned long bo_size;
 
     /* Round the allocated size up to a power of two number of pages. */
-    bo_gem->bo.size = 1 << logbase2(size);
-    if (bo_gem->bo.size < page_size)
-	bo_gem->bo.size = page_size;
-    bucket = dri_gem_bo_bucket_for_size(bufmgr_gem, bo_gem->bo.size);
+    bo_size = 1 << logbase2(size);
+    if (bo_size < page_size)
+	bo_size = page_size;
+    bucket = dri_gem_bo_bucket_for_size(bufmgr_gem, bo_size);
 
     /* If we don't have caching at this size, don't actually round the
      * allocation up.
      */
     if (bucket == NULL || bucket->max_entries == 0) {
-	bo_gem->bo.size = size;
-	if (bo_gem->bo.size < page_size)
-	    bo_gem->bo.size = page_size;
+	bo_size = size;
+	if (bo_size < page_size)
+	    bo_size = page_size;
     }
 
     /* Get a buffer out of the cache if available */
@@ -295,7 +293,9 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 	struct dri_gem_bo_bucket_entry *entry = bucket->head;
 	struct drm_i915_gem_busy busy;
 	
-        busy.handle = entry->gem_handle;
+        bo_gem = entry->bo_gem;
+        busy.handle = bo_gem->gem_handle;
+
         ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
         alloc_from_cache = (ret == 0 && busy.busy == 0);
 
@@ -305,8 +305,6 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 		bucket->tail = &bucket->head;
 	    bucket->num_entries--;
 
-	    bo_gem->gem_handle = entry->gem_handle;
-	    bo_gem->bo.offset = entry->last_offset;
 	    free(entry);
 	}
     }
@@ -314,8 +312,13 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
     if (!alloc_from_cache) {
 	struct drm_gem_create create;
 
+	bo_gem = calloc(1, sizeof(*bo_gem));
+	if (!bo_gem)
+	    return NULL;
+
+	bo_gem->bo.size = bo_size;
 	memset(&create, 0, sizeof(create));
-	create.size = bo_gem->bo.size;
+	create.size = bo_size;
 
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CREATE, &create);
 	bo_gem->gem_handle = create.handle;
@@ -323,10 +326,9 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 	    free(bo_gem);
 	    return NULL;
 	}
+	bo_gem->bo.bufmgr = bufmgr;
     }
 
-    bo_gem->bo.virtual = NULL;
-    bo_gem->bo.bufmgr = bufmgr;
     bo_gem->name = name;
     bo_gem->refcount = 1;
     bo_gem->validate_index = -1;
@@ -400,9 +402,6 @@ dri_gem_bo_unreference(dri_bo *bo)
 	struct dri_gem_bo_bucket *bucket;
 	int ret;
 
-	if (bo_gem->mapped)
-	    munmap (bo_gem->virtual, bo->size);
-
 	if (bo_gem->relocs != NULL) {
 	    int i;
 
@@ -413,6 +412,9 @@ dri_gem_bo_unreference(dri_bo *bo)
 	    free(bo_gem->relocs);
 	}
 
+	DBG("bo_unreference final: %d (%s)\n",
+	    bo_gem->gem_handle, bo_gem->name);
+
 	bucket = dri_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
 	if (bucket != NULL &&
@@ -422,9 +424,14 @@ dri_gem_bo_unreference(dri_bo *bo)
 	{
 	    struct dri_gem_bo_bucket_entry *entry;
 
+	    bo_gem->name = 0;
+	    bo_gem->validate_index = -1;
+	    bo_gem->relocs = NULL;
+	    bo_gem->reloc_target_bo = NULL;
+	    bo_gem->reloc_count = 0;
+
 	    entry = calloc(1, sizeof(*entry));
-	    entry->gem_handle = bo_gem->gem_handle;
-	    entry->last_offset = bo->offset;
+	    entry->bo_gem = bo_gem;
 
 	    entry->next = NULL;
 	    *bucket->tail = entry;
@@ -441,12 +448,9 @@ dri_gem_bo_unreference(dri_bo *bo)
 		       "DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
 		       bo_gem->gem_handle, bo_gem->name, strerror(-ret));
 	    }
+	    free(bo);
 	}
 
-	DBG("bo_unreference final: %d (%s)\n",
-	    bo_gem->gem_handle, bo_gem->name);
-
-	free(bo);
 	return;
     }
 }
@@ -604,6 +608,7 @@ dri_bufmgr_gem_destroy(dri_bufmgr *bufmgr)
 
 	while ((entry = bucket->head) != NULL) {
 	    struct drm_gem_close close;
+	    dri_bo_gem *bo_gem;
 	    int ret;
 
 	    bucket->head = entry->next;
@@ -611,14 +616,19 @@ dri_bufmgr_gem_destroy(dri_bufmgr *bufmgr)
 		bucket->tail = &bucket->head;
 	    bucket->num_entries--;
 
+	    bo_gem = entry->bo_gem;
+	    if (bo_gem->mapped)
+		munmap (bo_gem->virtual, bo_gem->bo.size);
+	    
 	    /* Close this object */
-	    close.handle = entry->gem_handle;
+	    close.handle = bo_gem->gem_handle;
 	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close);
 	    if (ret != 0) {
 	       fprintf(stderr, "DRM_IOCTL_GEM_CLOSE failed: %s\n",
 		       strerror(-ret));
 	    }
 
+	    free(bo_gem);
 	    free(entry);
 	}
     }
