@@ -30,6 +30,8 @@
 #include "client/windows/crash_generation/client_info.h"
 #include "client/windows/common/ipc_protocol.h"
 
+static const wchar_t kCustomInfoProcessUptimeName[] = L"ptime";
+
 namespace google_breakpad {
 
 ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
@@ -51,6 +53,7 @@ ClientInfo::ClientInfo(CrashGenerationServer* crash_server,
       dump_generated_handle_(NULL),
       dump_request_wait_handle_(NULL),
       process_exit_wait_handle_(NULL) {
+  GetSystemTimeAsFileTime(&start_time_);
 }
 
 bool ClientInfo::Initialize() {
@@ -146,6 +149,26 @@ bool ClientInfo::GetClientThreadId(DWORD* thread_id) const {
   return bytes_count == sizeof(*thread_id);
 }
 
+void ClientInfo::SetProcessUptime() {
+  FILETIME now = {0};
+  GetSystemTimeAsFileTime(&now);
+
+  ULARGE_INTEGER time_start;
+  time_start.HighPart = start_time_.dwHighDateTime;
+  time_start.LowPart = start_time_.dwLowDateTime;
+
+  ULARGE_INTEGER time_now;
+  time_now.HighPart = now.dwHighDateTime;
+  time_now.LowPart = now.dwLowDateTime;
+
+  // Calculate the delay and convert it from 100-nanoseconds to milliseconds.
+  __int64 delay = (time_now.QuadPart - time_start.QuadPart) / 10 / 1000;
+
+  // Convert it to a string.
+  wchar_t* value = custom_info_entries_.get()[custom_client_info_.count].value;
+  _i64tow_s(delay, value, CustomInfoEntry::kValueMaxLength, 10);
+}
+
 bool ClientInfo::PopulateCustomInfo() {
   SIZE_T bytes_count = 0;
   SIZE_T read_count = sizeof(CustomInfoEntry) * custom_client_info_.count;
@@ -155,7 +178,12 @@ bool ClientInfo::PopulateCustomInfo() {
   // entries is always the same. So allocate memory only if scoped array has
   // a NULL pointer.
   if (!custom_info_entries_.get()) {
-    custom_info_entries_.reset(new CustomInfoEntry[custom_client_info_.count]);
+    // Allocate an extra entry for reporting uptime for the client process.
+    custom_info_entries_.reset(
+        new CustomInfoEntry[custom_client_info_.count + 1]);
+    // Use the last element in the array for uptime.
+    custom_info_entries_.get()[custom_client_info_.count].set_name(
+        kCustomInfoProcessUptimeName);
   }
 
   if (!ReadProcessMemory(process_handle_,
@@ -166,13 +194,16 @@ bool ClientInfo::PopulateCustomInfo() {
     return false;
   }
 
-  return bytes_count == read_count;
+  SetProcessUptime();
+  return (bytes_count != read_count);
 }
 
 CustomClientInfo ClientInfo::GetCustomInfo() const {
   CustomClientInfo custom_info;
   custom_info.entries = custom_info_entries_.get();
-  custom_info.count = custom_client_info_.count;
+  // Add 1 to the count from the client process to account for extra entry for
+  // process uptime.
+  custom_info.count = custom_client_info_.count + 1;
   return custom_info;
 }
 

@@ -96,6 +96,10 @@ class ClientInfo {
   CustomClientInfo GetCustomInfo() const;
 
  private:
+  // Calcualtes the uptime for the client process, converts it to a string and
+  // stores it in the last entry of client custom info.
+  void SetProcessUptime();
+
   // Crash generation server.
   CrashGenerationServer* crash_server_;
 
@@ -151,6 +155,10 @@ class ClientInfo {
 
   // Wait handle for process exit event.
   HANDLE process_exit_wait_handle_;
+
+  // Time when the client process started. It is used to determine the uptime
+  // for the client process when it signals a crash.
+  FILETIME start_time_;
 
   // Disallow copy ctor and operator=.
   ClientInfo(const ClientInfo& client_info);
