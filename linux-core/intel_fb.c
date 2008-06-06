@@ -815,10 +815,12 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 		fb = list_first_entry(&dev->mode_config.fb_kernel_list, struct drm_framebuffer, filp_head);
 		intel_fb = to_intel_framebuffer(fb);
 
-		/* check if we are going to have a size issue */
-		/* do a surface compare */
+		/* if someone hotplugs something bigger than we have already allocated, we are pwned.
+		   As really we can't resize an fbdev that is in the wild currently due to fbdev
+		   not really being designed for the lower layers moving stuff around under it.
+		   - so in the grand style of things - punt. */
 		if ((fb->width < surface_width) || (fb->height < surface_height)) {
-			DRM_ERROR("NEED BIGGER SURFACE DUDE\n");
+			DRM_ERROR("Framebuffer not large enough to scale console onto.\n");
 			return -EINVAL;
 		}
 	}
