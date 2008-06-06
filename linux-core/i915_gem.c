@@ -1315,7 +1315,14 @@ i915_dispatch_gem_execbuffer(struct drm_device *dev,
 				return ret;
 		}
 
-		if (dev_priv->use_mi_batchbuffer_start) {
+		if (IS_I830(dev) || IS_845G(dev)) {
+			BEGIN_LP_RING(4);
+			OUT_RING(MI_BATCH_BUFFER);
+			OUT_RING(exec_start | MI_BATCH_NON_SECURE);
+			OUT_RING(exec_start + exec_len - 4);
+			OUT_RING(0);
+			ADVANCE_LP_RING();
+		} else {
 			BEGIN_LP_RING(2);
 			if (IS_I965G(dev)) {
 				OUT_RING(MI_BATCH_BUFFER_START |
@@ -1327,14 +1334,6 @@ i915_dispatch_gem_execbuffer(struct drm_device *dev,
 					 (2 << 6));
 				OUT_RING(exec_start | MI_BATCH_NON_SECURE);
 			}
-			ADVANCE_LP_RING();
-
-		} else {
-			BEGIN_LP_RING(4);
-			OUT_RING(MI_BATCH_BUFFER);
-			OUT_RING(exec_start | MI_BATCH_NON_SECURE);
-			OUT_RING(exec_start + exec_len - 4);
-			OUT_RING(0);
 			ADVANCE_LP_RING();
 		}
 	}
