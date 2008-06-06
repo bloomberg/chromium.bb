@@ -162,6 +162,9 @@ i915_add_request(struct drm_device *dev, uint32_t flush_domains)
 	request->seqno = seqno;
 	request->emitted_jiffies = jiffies;
 	request->flush_domains = flush_domains;
+	if (list_empty(&dev_priv->mm.request_list))
+		mod_timer(&dev_priv->mm.retire_timer, jiffies + HZ);
+
 	list_add_tail(&request->list, &dev_priv->mm.request_list);
 
 	return seqno;
@@ -298,6 +301,32 @@ i915_gem_retire_requests(struct drm_device *dev)
 		} else
 		    break;
 	}
+}
+
+void
+i915_gem_retire_timeout(unsigned long data)
+{
+	struct drm_device *dev = (struct drm_device *) data;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+
+	schedule_work(&dev_priv->mm.retire_task);
+}
+
+void
+i915_gem_retire_handler(struct work_struct *work)
+{
+	drm_i915_private_t *dev_priv;
+	struct drm_device *dev;
+
+	dev_priv = container_of(work, drm_i915_private_t,
+				mm.retire_task);
+	dev = dev_priv->dev;
+
+	mutex_lock(&dev->struct_mutex);
+	i915_gem_retire_requests(dev);
+	if (!list_empty(&dev_priv->mm.request_list))
+		mod_timer(&dev_priv->mm.retire_timer, jiffies + HZ);
+	mutex_unlock(&dev->struct_mutex);
 }
 
 /**

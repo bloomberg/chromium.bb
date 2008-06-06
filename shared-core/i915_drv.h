@@ -280,6 +280,16 @@ typedef struct drm_i915_private {
 		 */
 		struct list_head request_list;
 
+		/**
+		 * We leave the user IRQ off as much as possible,
+		 * but this means that requests will finish and never
+		 * be retired once the system goes idle. Set a timer to
+		 * fire periodically while the ring is running. When it
+		 * fires, go retire requests.
+		 */
+		struct timer_list retire_timer;
+		struct work_struct retire_task;
+		
 		uint32_t next_gem_seqno;
 	} mm;
 
@@ -463,6 +473,8 @@ int i915_gem_flush_pwrite(struct drm_gem_object *obj,
 			  uint64_t offset, uint64_t size);
 void i915_gem_lastclose(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
+void i915_gem_retire_timeout(unsigned long data);
+void i915_gem_retire_handler(struct work_struct *work);
 #endif
 
 #ifdef __linux__

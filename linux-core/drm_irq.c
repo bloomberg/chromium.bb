@@ -124,6 +124,7 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 
 	setup_timer(&dev->vblank_disable_timer, vblank_disable_fn,
 		    (unsigned long)dev);
+	init_timer_deferrable(&dev->vblank_disable_timer);
 	spin_lock_init(&dev->vbl_lock);
 	atomic_set(&dev->vbl_signal_pending, 0);
 	dev->num_crtcs = num_crtcs;
