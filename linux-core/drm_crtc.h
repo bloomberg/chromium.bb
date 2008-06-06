@@ -522,9 +522,9 @@ struct drm_mode_set {
  * the CRTC<->connector mappings as needed and update its view of the screen.
  */
 struct drm_mode_config_funcs {
-	bool (*resize_fb)(struct drm_device *dev, struct drm_framebuffer *fb);
+	int (*resize_fb)(struct drm_device *dev, struct drm_file *file_priv, struct drm_framebuffer *fb, struct drm_mode_fb_cmd *mode_cmd);
 	struct drm_framebuffer *(*fb_create)(struct drm_device *dev, struct drm_file *file_priv, struct drm_mode_fb_cmd *mode_cmd);
-	void (*fb_changed)(struct drm_device *dev);
+	int (*fb_changed)(struct drm_device *dev);
 };
 
 struct drm_mode_group {

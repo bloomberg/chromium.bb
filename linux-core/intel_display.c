@@ -1517,8 +1517,38 @@ struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
 	return &intel_fb->base;
 }
 
+static int intel_insert_new_fb(struct drm_device *dev, struct drm_file *file_priv,
+				struct drm_framebuffer *fb, struct drm_mode_fb_cmd *mode_cmd)
+{
+	struct intel_framebuffer *intel_fb;
+	struct drm_buffer_object *bo;
+	struct drm_crtc *crtc;
+
+	intel_fb = to_intel_framebuffer(fb);
+
+	mutex_lock(&dev->struct_mutex);
+	bo = drm_lookup_buffer_object(file_priv, mode_cmd->handle, 0);
+	mutex_unlock(&dev->struct_mutex);
+	
+	if (!bo)
+		return -EINVAL;
+	drm_helper_mode_fill_fb_struct(fb, mode_cmd);
+       
+	drm_bo_usage_deref_unlocked(&intel_fb->bo);
+
+	intel_fb->bo = bo;
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		if (crtc->fb == fb) {
+			struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+			crtc_funcs->mode_set_base(crtc, crtc->x, crtc->y);
+		}
+	}
+	return 0;
+}
+
 static const struct drm_mode_config_funcs intel_mode_funcs = {
-	.resize_fb = NULL,
+	.resize_fb = intel_insert_new_fb,
 	.fb_create = intel_user_framebuffer_create,
 	.fb_changed = intelfb_probe,
 };

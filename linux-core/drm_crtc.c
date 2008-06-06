@@ -2055,25 +2055,10 @@ int drm_mode_replacefb(struct drm_device *dev,
 		goto out;
 	}
 
-	fb->width = r->width;
-	fb->height = r->height;
-	fb->pitch = r->pitch;
-	fb->bits_per_pixel = r->bpp;
-	fb->depth = r->depth;
-	fb->mm_handle = r->handle;
-
 	if (dev->mode_config.funcs->resize_fb)
-	  dev->mode_config.funcs->resize_fb(dev, fb);
+		ret = dev->mode_config.funcs->resize_fb(dev, file_priv, fb, r);
 	else
-	  ret = -EINVAL;
-#if 0
-	/* find all crtcs connected to this fb */
-	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		if (crtc->fb->base.id == r->buffer_id) {
-			crtc->funcs->mode_set_base(crtc, crtc->x, crtc->y);
-		}
-	}
-#endif
+		ret = -EINVAL;
 out:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;
