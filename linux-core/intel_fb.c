@@ -218,7 +218,6 @@ static int intelfb_set_par(struct fb_info *info)
 
 	DRM_DEBUG("%d %d\n", var->xres, var->pixclock);
 
-
 	if (var->pixclock != -1) {
 
 		DRM_ERROR("PIXEL CLCOK SET\n");
@@ -332,9 +331,11 @@ static int intelfb_set_par(struct fb_info *info)
 			if (i == par->crtc_count)
 				continue;
 
-			ret = crtc->funcs->set_config(&intel_crtc->mode_set);
-			if (ret)
-				return ret;
+			if (crtc->fb == intel_crtc->mode_set.fb) {
+				ret = crtc->funcs->set_config(&intel_crtc->mode_set);
+				if (ret)
+					return ret;
+			}
 		}
 		return 0;
 	}
@@ -984,8 +985,6 @@ int intelfb_probe(struct drm_device *dev)
 		ret = intelfb_single_fb_probe(dev);
 	}
 
-fail:
-	/*  TODO */
 	return ret;
 }
 EXPORT_SYMBOL(intelfb_probe);
