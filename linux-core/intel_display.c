@@ -1167,13 +1167,10 @@ struct drm_crtc *intel_get_load_detect_pipe(struct intel_output *intel_output,
 	}
 
 	/*
-	 * If we didn't find an unused CRTC, use the first available one
-	 * that can drive this connector.
+	 * If we didn't find an unused CRTC, don't use any.
 	 */
 	if (!crtc) {
-		crtc = supported_crtc;
-		if (!crtc)
-			return NULL;
+		return NULL;
 	}
 
 	encoder->crtc = crtc;
