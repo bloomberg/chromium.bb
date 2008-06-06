@@ -759,6 +759,94 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	return 0;
 }
 
+static int intelfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *crtc)
+{
+	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+	struct intel_framebuffer *intel_fb;
+	struct drm_framebuffer *fb;
+	struct drm_connector *connector;
+	struct fb_info *info;
+	struct intelfb_par *par;
+	struct drm_mode_set *modeset;
+	unsigned int width, height;
+	int new_fb = 0;
+	int ret, i, conn_count;
+
+	if (!drm_helper_crtc_in_use(crtc))
+		return 0;
+
+	if (!crtc->desired_mode)
+		return 0;
+
+	width = crtc->desired_mode->hdisplay;
+	height = crtc->desired_mode->vdisplay;
+
+	/* is there an fb bound to this crtc already */
+	if (!intel_crtc->mode_set.fb) {
+		ret = intelfb_create(dev, width, height, width, height, &intel_fb);
+		if (ret)
+			return -EINVAL;
+		new_fb = 1;
+	} else {
+		fb = intel_crtc->mode_set.fb;
+		intel_fb = to_intel_framebuffer(fb);
+		if ((intel_fb->base.width < width) || (intel_fb->base.height < height))
+			return -EINVAL;
+	}
+	
+	info = intel_fb->base.fbdev;
+	par = info->par;
+
+	modeset = &intel_crtc->mode_set;
+	modeset->fb = &intel_fb->base;
+	conn_count = 0;
+	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
+		if (connector->encoder)
+			if (connector->encoder->crtc == modeset->crtc) {
+				modeset->connectors[conn_count] = connector;
+				conn_count++;
+				if (conn_count > INTELFB_CONN_LIMIT)
+					BUG();
+			}
+	}
+	
+	for (i = conn_count; i < INTELFB_CONN_LIMIT; i++)
+		modeset->connectors[i] = NULL;
+
+	par->crtc_ids[0] = crtc->base.id;
+
+	modeset->num_connectors = conn_count;
+	if (modeset->mode != modeset->crtc->desired_mode)
+		modeset->mode = modeset->crtc->desired_mode;
+
+	par->crtc_count = 1;
+
+	if (new_fb) {
+		info->var.pixclock = -1;
+		if (register_framebuffer(info) < 0)
+			return -EINVAL;
+	} else
+		intelfb_set_par(info);
+
+	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
+	       info->fix.id);
+	return 0;
+}
+
+static int intelfb_multi_fb_probe(struct drm_device *dev)
+{
+
+	struct drm_crtc *crtc;
+	int ret = 0;
+
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		ret = intelfb_multi_fb_probe_crtc(dev, crtc);
+		if (ret)
+			return ret;
+	}
+	return ret;
+}
+
 static int intelfb_single_fb_probe(struct drm_device *dev)
 {
 	struct drm_crtc *crtc;
@@ -891,11 +979,10 @@ int intelfb_probe(struct drm_device *dev)
 	/* mode a first */
 	/* search for an fb */
 	if (i915_fbpercrtc == 1) {
-		ret = -EINVAL;
-		goto fail;
+		ret = intelfb_multi_fb_probe(dev);
+	} else {
+		ret = intelfb_single_fb_probe(dev);
 	}
-
-	ret = intelfb_single_fb_probe(dev);
 
 fail:
 	/*  TODO */
