@@ -690,8 +690,7 @@ EXPORT_SYMBOL(drm_helper_initial_config);
  * RETURNS:
  * Zero on success, errno on failure.
  */
-int drm_helper_hotplug_stage_two(struct drm_device *dev, struct drm_connector *connector,
-				 bool connected)
+int drm_helper_hotplug_stage_two(struct drm_device *dev)
 {
 	dev->mode_config.hotplug_counter++;
 

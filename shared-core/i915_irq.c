@@ -441,93 +441,8 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	return count;
 }
 
-#define HOTPLUG_CMD_CRT 1
-#define HOTPLUG_CMD_CRT_DIS 2
-#define HOTPLUG_CMD_SDVOB 4
-#define HOTPLUG_CMD_SDVOC 8
-#define HOTPLUG_CMD_TV 16
-
 static struct drm_device *hotplug_dev;
-static int hotplug_cmd = 0;
-static spinlock_t hotplug_lock = SPIN_LOCK_UNLOCKED;
 
-static void i915_hotplug_tv(struct drm_device *dev)
-{
-	struct drm_connector *connector;
-	struct intel_output *iout;
-	enum drm_connector_status status;
-
-	mutex_lock(&dev->mode_config.mutex);
-
-	/* find the crt output */
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		iout = to_intel_output(connector);
-		if (iout->type == INTEL_OUTPUT_TVOUT)
-			break;
-		else
-			iout = 0;
-	}
-
-	if (iout == 0)
-		goto unlock;
-
-	status = connector->funcs->detect(connector);
-	drm_helper_hotplug_stage_two(dev, connector,
-				     status == connector_status_connected ? 1 : 0);
-
-unlock:
-	mutex_unlock(&dev->mode_config.mutex);
-}
-
-static void i915_hotplug_crt(struct drm_device *dev, bool isconnected)
-{
-	struct drm_connector *connector;
-	struct intel_output *iout;
-
-	mutex_lock(&dev->mode_config.mutex);
-
-	/* find the crt output */
-	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
-		iout = to_intel_output(connector);
-		if (iout->type == INTEL_OUTPUT_ANALOG)
-			break;
-		else
-			iout = 0;
-	}
-
-	if (iout == 0)
-		goto unlock;
-
-	drm_helper_hotplug_stage_two(dev, connector, isconnected);
-
-unlock:
-	mutex_unlock(&dev->mode_config.mutex);
-}
-
-static void i915_hotplug_sdvo(struct drm_device *dev, int sdvoB)
-{
-	struct drm_connector *connector = 0;
-	enum drm_connector_status status;
-
-	mutex_lock(&dev->mode_config.mutex);
-
-	connector = intel_sdvo_find(dev, sdvoB);
-
-	if (!connector)
-		goto unlock;
-
-	status = connector->funcs->detect(connector);
-
-	if (status != connector_status_connected)
-		drm_helper_hotplug_stage_two(dev, connector, false);
-	else
-		drm_helper_hotplug_stage_two(dev, connector, true);
-
-	intel_sdvo_set_hotplug(connector, 1);
-
-unlock:
-	mutex_unlock(&dev->mode_config.mutex);
-}
 /*
  * This code is called in a more safe envirmoent to handle the hotplugs.
  * Add code here for hotplug love to userspace.
@@ -539,34 +454,8 @@ static void i915_hotplug_work_func(struct work_struct *work)
 #endif
 {
 	struct drm_device *dev = hotplug_dev;
-	int crt;
-	int crtDis;
-	int sdvoB;
-	int sdvoC;
-	int tv;
 
-	spin_lock(&hotplug_lock);
-	tv = hotplug_cmd & HOTPLUG_CMD_TV;
-	crt = hotplug_cmd & HOTPLUG_CMD_CRT;
-	crtDis = hotplug_cmd & HOTPLUG_CMD_CRT_DIS;
-	sdvoB = hotplug_cmd & HOTPLUG_CMD_SDVOB;
-	sdvoC = hotplug_cmd & HOTPLUG_CMD_SDVOC;
-	hotplug_cmd = 0;
-	spin_unlock(&hotplug_lock);
-
-	if (tv)
-		i915_hotplug_tv(dev);
-	if (crt)
-		i915_hotplug_crt(dev, true);
-	if (crtDis)
-		i915_hotplug_crt(dev, false);
-
-	if (sdvoB)
-		i915_hotplug_sdvo(dev, 1);
-
-	if (sdvoC)
-		i915_hotplug_sdvo(dev, 0);
-
+	drm_helper_hotplug_stage_two(dev);
 	drm_handle_hotplug(dev);
 }
 
@@ -583,40 +472,18 @@ static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 
 	if (stat & TV_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("TV event\n");
-
-		spin_lock(&hotplug_lock);
-		hotplug_cmd |= HOTPLUG_CMD_TV;
-		spin_unlock(&hotplug_lock);
 	}
 
 	if (stat & CRT_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("CRT event\n");
-
-		if (stat & CRT_HOTPLUG_MONITOR_MASK) {
-			spin_lock(&hotplug_lock);
-			hotplug_cmd |= HOTPLUG_CMD_CRT;
-			spin_unlock(&hotplug_lock);
-		} else {
-			spin_lock(&hotplug_lock);
-			hotplug_cmd |= HOTPLUG_CMD_CRT_DIS;
-			spin_unlock(&hotplug_lock);
-		}
 	}
 
 	if (stat & SDVOB_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("sDVOB event\n");
-
-		spin_lock(&hotplug_lock);
-		hotplug_cmd |= HOTPLUG_CMD_SDVOB;
-		spin_unlock(&hotplug_lock);
 	}
 
 	if (stat & SDVOC_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("sDVOC event\n");
-
-		spin_lock(&hotplug_lock);
-		hotplug_cmd |= HOTPLUG_CMD_SDVOC;
-		spin_unlock(&hotplug_lock);
 	}
 
 	queue_work(dev_priv->wq, &hotplug);
