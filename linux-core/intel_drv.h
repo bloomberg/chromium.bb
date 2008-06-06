@@ -20,6 +20,8 @@
 /* The i830->i865 use multiple DVOs with multiple i2cs */
 /* the i915, i945 have a single sDVO i2c bus - which is different */
 #define MAX_OUTPUTS 6
+/* maximum connectors per crtcs in the mode set */
+#define INTELFB_CONN_LIMIT 4
 
 #define INTEL_I2C_BUS_DVO 1
 #define INTEL_I2C_BUS_SDVO 2
@@ -72,6 +74,8 @@ struct intel_crtc {
 	u8 lut_r[256], lut_g[256], lut_b[256];
 	int dpms_mode;
 	struct intel_framebuffer *fbdev_fb;
+	/* a mode_set for fbdev users on this crtc */
+	struct drm_mode_set mode_set;
 };
 
 #define to_intel_crtc(x) container_of(x, struct intel_crtc, base)

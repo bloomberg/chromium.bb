@@ -50,7 +50,8 @@ struct intelfb_par {
 	struct drm_display_mode *our_mode;
 	struct intel_framebuffer *intel_fb;
 	int crtc_count;
-	struct list_head mode_set_list;
+	/* crtc currently bound to this */
+	uint32_t crtc_ids[2];
 };
 /*
 static int
@@ -69,11 +70,22 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
-	struct drm_mode_set *modeset;
+	struct drm_device *dev = par->dev;
+	struct drm_crtc *crtc;
+	int i;
 
-	list_for_each_entry(modeset, &par->mode_set_list, head) {
-		struct drm_crtc *crtc = modeset->crtc;
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+		struct drm_mode_set *modeset = &intel_crtc->mode_set;
 		struct drm_framebuffer *fb = modeset->fb;
+
+		for (i = 0; i < par->crtc_count; i++)
+			if (crtc->base.id == par->crtc_ids[i])
+				break;
+
+		if (i == par->crtc_count)
+			continue;
+		
 
 		if (regno > 255)
 			return 1;
@@ -200,7 +212,9 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 static int intelfb_set_par(struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
+	struct drm_device *dev = par->dev;
 	struct fb_var_screeninfo *var = &info->var;
+	int i;
 
 	DRM_DEBUG("%d %d\n", var->xres, var->pixclock);
 
@@ -305,11 +319,20 @@ static int intelfb_set_par(struct fb_info *info)
 #endif
 		return -EINVAL;
 	} else {
-		struct drm_mode_set *modeset;
+		struct drm_crtc *crtc;
 		int ret;
 
-		list_for_each_entry(modeset, &par->mode_set_list, head) {
-			ret = modeset->crtc->funcs->set_config(modeset);
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+
+			for (i = 0; i < par->crtc_count; i++)
+				if (crtc->base.id == par->crtc_ids[i])
+					break;
+
+			if (i == par->crtc_count)
+				continue;
+
+			ret = crtc->funcs->set_config(&intel_crtc->mode_set);
 			if (ret)
 				return ret;
 		}
@@ -466,15 +489,30 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 				struct fb_info *info)
 {
 	struct intelfb_par *par = info->par;
+	struct drm_device *dev = par->dev;
 	struct drm_mode_set *modeset;
+	struct drm_crtc *crtc;
+	struct intel_crtc *intel_crtc;
 	int ret = 0;
+	int i;
 
-	list_for_each_entry(modeset, &par->mode_set_list, head) {
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		
+		for (i = 0; i < par->crtc_count; i++)
+			if (crtc->base.id == par->crtc_ids[i])
+				break;
+
+		if (i == par->crtc_count)
+			continue;
+
+		intel_crtc = to_intel_crtc(crtc);
+		modeset = &intel_crtc->mode_set;
+
 		modeset->x = var->xoffset;
 		modeset->y = var->yoffset;
 
 		if (modeset->num_connectors) {
-			ret = modeset->crtc->funcs->set_config(modeset);
+			ret = crtc->funcs->set_config(modeset);
 		  
 			if (!ret) {
 				info->var.xoffset = var->xoffset;
@@ -711,9 +749,8 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	fb->fbdev = info;
 
-	INIT_LIST_HEAD(&par->mode_set_list);
-
 	par->intel_fb = intel_fb;
+	par->dev = dev;
 
 	/* To allow resizeing without swapping buffers */
 	printk("allocated %dx%d fb: 0x%08lx, bo %p\n", intel_fb->base.width,
@@ -723,48 +760,6 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 }
 
 #define INTELFB_CONN_LIMIT 4
-
-static int intelfb_create_crtcmodesets(struct intel_framebuffer *intel_fb, int num_sets, int crtc_base)
-{
-	int i,j;
-	struct drm_device *dev = intel_fb->base.dev;
-	struct intelfb_par *par;
-	struct drm_mode_set *modeset;
-	struct drm_crtc *crtc;
-	struct fb_info *info;
-
-	info = intel_fb->base.fbdev;
-	par = info->par;
-
-	for (i = 0; i < num_sets; i++) {
-		modeset = kzalloc(sizeof(struct drm_mode_set) + (INTELFB_CONN_LIMIT * sizeof(struct drm_connector *)), GFP_KERNEL);
-		if (!modeset)
-			goto fail;
-
-		/* attach a CRTC to the modeset */
-		j = 0;
-		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-			if (j == i + crtc_base) {
-				modeset->crtc = crtc;
-				break;
-			}
-			j++;
-		}
-		modeset->fb = &intel_fb->base;
-
-		modeset->connectors = (struct drm_connector **)(modeset + 1);
-		list_add_tail(&modeset->head, &par->mode_set_list);
-	}
-	return 0;
-
-fail:
-	list_for_each_entry(modeset, &par->mode_set_list, head) {
-		list_del(&modeset->head);
-		kfree(modeset);
-	}
-
-	return -ENOMEM;
-}
 
 static int intelfb_single_fb_probe(struct drm_device *dev)
 {
@@ -795,7 +790,8 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 					surface_width = crtc->desired_mode->hdisplay;
 				
 				if (crtc->desired_mode->vdisplay > surface_height)
-				surface_height = crtc->desired_mode->vdisplay;
+					surface_height = crtc->desired_mode->vdisplay;
+
 			}
 		crtc_count++;
 		}
@@ -813,11 +809,6 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 		ret = intelfb_create(dev, fb_width, fb_height, surface_width, surface_height, &intel_fb);
 		if (ret)
 			return -EINVAL;
-
-		/* create a set per crtc connected to this fb */
-		ret = intelfb_create_crtcmodesets(intel_fb, dev->mode_config.num_crtc, 0);
-		if (ret)
-			return ret;
 		new_fb = 1;
 	} else {
 		struct drm_framebuffer *fb;
@@ -835,9 +826,12 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 	info = intel_fb->base.fbdev;
 	par = info->par;
 
+	crtc_count = 0;
 	/* okay we need to setup new connector sets in the crtcs */
-	list_for_each_entry(modeset, &par->mode_set_list, head) {
-		
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+		modeset = &intel_crtc->mode_set;
+		modeset->fb = &intel_fb->base;
 		conn_count = 0;
 		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 			if (connector->encoder)
@@ -852,10 +846,13 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 		for (i = conn_count; i < INTELFB_CONN_LIMIT; i++)
 			modeset->connectors[i] = NULL;
 
+		par->crtc_ids[crtc_count++] = crtc->base.id;
+
 		modeset->num_connectors = conn_count;
 		if (modeset->mode != modeset->crtc->desired_mode)
 			modeset->mode = modeset->crtc->desired_mode;
 	}
+	par->crtc_count = crtc_count;
 
 	if (new_fb) {
 		info->var.pixclock = -1;
