@@ -1103,8 +1103,9 @@ int i915_driver_unload(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
-	if (dev_priv->mmio_map)
-		drm_rmmap(dev, dev_priv->mmio_map);
+	i915_free_hardware_status(dev);
+
+    	drm_rmmap(dev, dev_priv->mmio_map);
 
 	drm_free(dev->dev_private, sizeof(drm_i915_private_t),
 		 DRM_MEM_DRIVER);
@@ -1113,8 +1114,6 @@ int i915_driver_unload(struct drm_device *dev)
 	intel_fini_chipset_flush_compat(dev);
 #endif
 #endif
-	i915_free_hardware_status(dev);
-
 	return 0;
 }
 
