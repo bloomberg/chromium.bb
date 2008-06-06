@@ -1371,10 +1371,6 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 #endif
 	i915_kernel_lost_context(dev);
 
-	ret = i915_gem_ring_throttle(dev);
-	if (ret)
-		return ret;
-
 	/* Copy in the exec list from userland */
 	exec_list = drm_calloc(sizeof(*exec_list), args->buffer_count,
 			       DRM_MEM_DRIVER);
@@ -1626,6 +1622,13 @@ i915_gem_busy_ioctl(struct drm_device *dev, void *data,
 	drm_gem_object_unreference(obj);
 	mutex_unlock(&dev->struct_mutex);
 	return 0;
+}
+
+int
+i915_gem_throttle_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
+{
+    return i915_gem_ring_throttle(dev);
 }
 
 int i915_gem_init_object(struct drm_gem_object *obj)
