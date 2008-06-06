@@ -759,8 +759,6 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	return 0;
 }
 
-#define INTELFB_CONN_LIMIT 4
-
 static int intelfb_single_fb_probe(struct drm_device *dev)
 {
 	struct drm_crtc *crtc;
