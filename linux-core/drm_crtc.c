@@ -357,6 +357,7 @@ void drm_connector_init(struct drm_device *dev,
 	INIT_LIST_HEAD(&connector->user_modes);
 	INIT_LIST_HEAD(&connector->probed_modes);
 	INIT_LIST_HEAD(&connector->modes);
+	connector->edid_blob_ptr = NULL;
 	/* randr_connector? */
 	/* connector_set_monitor(connector)? */
 	/* check for connector_ignored(connector)? */
