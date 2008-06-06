@@ -232,9 +232,6 @@ static int i915_initialize(struct drm_device * dev,
 	/* We are using separate values as placeholders for mechanisms for
 	 * private backbuffer/depthbuffer usage.
 	 */
-	dev_priv->use_mi_batchbuffer_start = 0;
-	if (IS_I965G(dev)) /* 965 doesn't support older method */
-		dev_priv->use_mi_batchbuffer_start = 1;
 
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
@@ -610,7 +607,14 @@ int i915_dispatch_batchbuffer(struct drm_device * dev,
 				return ret;
 		}
 
-		if (dev_priv->use_mi_batchbuffer_start) {
+		if (IS_I830(dev) || IS_845G(dev)) {
+			BEGIN_LP_RING(4);
+			OUT_RING(MI_BATCH_BUFFER);
+			OUT_RING(batch->start | MI_BATCH_NON_SECURE);
+			OUT_RING(batch->start + batch->used - 4);
+			OUT_RING(0);
+			ADVANCE_LP_RING();
+		} else {
 			BEGIN_LP_RING(2);
 			if (IS_I965G(dev)) {
 				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6) | MI_BATCH_NON_SECURE_I965);
@@ -619,14 +623,6 @@ int i915_dispatch_batchbuffer(struct drm_device * dev,
 				OUT_RING(MI_BATCH_BUFFER_START | (2 << 6));
 				OUT_RING(batch->start | MI_BATCH_NON_SECURE);
 			}
-			ADVANCE_LP_RING();
-
-		} else {
-			BEGIN_LP_RING(4);
-			OUT_RING(MI_BATCH_BUFFER);
-			OUT_RING(batch->start | MI_BATCH_NON_SECURE);
-			OUT_RING(batch->start + batch->used - 4);
-			OUT_RING(0);
 			ADVANCE_LP_RING();
 		}
 	}
@@ -896,8 +892,6 @@ static int i915_setparam(struct drm_device *dev, void *data,
 
 	switch (param->param) {
 	case I915_SETPARAM_USE_MI_BATCHBUFFER_START:
-		if (!IS_I965G(dev))
-			dev_priv->use_mi_batchbuffer_start = param->value;
 		break;
 	case I915_SETPARAM_TEX_LRU_LOG_GRANULARITY:
 		dev_priv->tex_lru_log_granularity = param->value;

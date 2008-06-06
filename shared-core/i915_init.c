@@ -151,13 +151,6 @@ int i915_load_modeset_init(struct drm_device *dev)
 	I915_WRITE(PRB0_CTL, ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
 		   (RING_NO_REPORT | RING_VALID));
 
-	/* We are using separate values as placeholders for mechanisms for
-	 * private backbuffer/depthbuffer usage.
-	 */
-	dev_priv->use_mi_batchbuffer_start = 0;
-	if (IS_I965G(dev)) /* 965 doesn't support older method */
-		dev_priv->use_mi_batchbuffer_start = 1;
-
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
 	dev_priv->allow_batchbuffer = 1;

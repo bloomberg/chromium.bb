@@ -132,7 +132,6 @@ struct drm_i915_private {
 	struct drm_buffer_object *hws_bo;
 
 	unsigned int cpp;
-	int use_mi_batchbuffer_start;
 
 	wait_queue_head_t irq_queue;
 	atomic_t irq_received;
