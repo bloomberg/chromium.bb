@@ -379,6 +379,28 @@ dri_gem_bo_reference(dri_bo *bo)
 }
 
 static void
+dri_gem_bo_free(dri_bo *bo)
+{
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
+    dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
+    struct drm_gem_close close;
+    int ret;
+
+    if (bo_gem->mapped)
+	munmap (bo_gem->virtual, bo_gem->bo.size);
+
+    /* Close this object */
+    close.handle = bo_gem->gem_handle;
+    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close);
+    if (ret != 0) {
+	fprintf(stderr,
+		"DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
+		bo_gem->gem_handle, bo_gem->name, strerror(-ret));
+    }
+    free(bo);
+}
+
+static void
 dri_gem_bo_unreference(dri_bo *bo)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
@@ -389,7 +411,6 @@ dri_gem_bo_unreference(dri_bo *bo)
 
     if (--bo_gem->refcount == 0) {
 	struct dri_gem_bo_bucket *bucket;
-	int ret;
 
 	if (bo_gem->relocs != NULL) {
 	    int i;
@@ -422,17 +443,7 @@ dri_gem_bo_unreference(dri_bo *bo)
 	    bucket->tail = &bo_gem->next;
 	    bucket->num_entries++;
 	} else {
-	    struct drm_gem_close close;
-
-	    /* Close this object */
-	    close.handle = bo_gem->gem_handle;
-	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close);
-	    if (ret != 0) {
-	       fprintf(stderr,
-		       "DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
-		       bo_gem->gem_handle, bo_gem->name, strerror(-ret));
-	    }
-	    free(bo);
+	    dri_gem_bo_free(bo);
 	}
 
 	return;
@@ -591,26 +602,12 @@ dri_bufmgr_gem_destroy(dri_bufmgr *bufmgr)
 	dri_bo_gem *bo_gem;
 
 	while ((bo_gem = bucket->head) != NULL) {
-	    struct drm_gem_close close;
-	    int ret;
-
 	    bucket->head = bo_gem->next;
 	    if (bo_gem->next == NULL)
 		bucket->tail = &bucket->head;
 	    bucket->num_entries--;
 
-	    if (bo_gem->mapped)
-		munmap (bo_gem->virtual, bo_gem->bo.size);
-	    
-	    /* Close this object */
-	    close.handle = bo_gem->gem_handle;
-	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close);
-	    if (ret != 0) {
-	       fprintf(stderr, "DRM_IOCTL_GEM_CLOSE failed: %s\n",
-		       strerror(-ret));
-	    }
-
-	    free(bo_gem);
+	    dri_gem_bo_free(&bo_gem->bo);
 	}
     }
 
