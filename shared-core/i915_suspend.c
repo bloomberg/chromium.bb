@@ -149,7 +149,7 @@ static void i915_save_vga(struct drm_device *dev)
 	i915_write_indexed(dev, cr_index, cr_data, 0x11,
 			   i915_read_indexed(dev, cr_index, cr_data, 0x11) &
 			   (~0x80));
-	for (i = 0; i < 0x24; i++)
+	for (i = 0; i <= 0x24; i++)
 		dev_priv->saveCR[i] =
 			i915_read_indexed(dev, cr_index, cr_data, i);
 	/* Make sure we don't turn off CR group 0 writes */
