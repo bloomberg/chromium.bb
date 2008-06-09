@@ -78,6 +78,16 @@ bool ClientInfo::Initialize() {
 }
 
 ClientInfo::~ClientInfo() {
+  if (dump_request_wait_handle_) {
+    // Wait for callbacks that might already be running to finish.
+    UnregisterWaitEx(dump_request_wait_handle_, INVALID_HANDLE_VALUE);
+  }
+
+  if (process_exit_wait_handle_) {
+    // Wait for the callback that might already be running to finish.
+    UnregisterWaitEx(process_exit_wait_handle_, INVALID_HANDLE_VALUE);
+  }
+
   if (process_handle_) {
     CloseHandle(process_handle_);
   }
@@ -88,16 +98,6 @@ ClientInfo::~ClientInfo() {
 
   if (dump_generated_handle_) {
     CloseHandle(dump_generated_handle_);
-  }
-
-  if (dump_request_wait_handle_) {
-    // Wait for callbacks that might already be running to finish.
-    UnregisterWaitEx(dump_request_wait_handle_, INVALID_HANDLE_VALUE);
-  }
-
-  if (process_exit_wait_handle_) {
-    // Wait for the callback that might already be running to finish.
-    UnregisterWaitEx(process_exit_wait_handle_, INVALID_HANDLE_VALUE);
   }
 }
 
