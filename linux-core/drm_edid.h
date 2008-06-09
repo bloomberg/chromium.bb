@@ -122,8 +122,8 @@ struct detailed_timing {
 struct edid {
 	u8 header[8];
 	/* Vendor & product info */
-	u16 mfg_id; /* FIXME: byte order */
-	u16 prod_code; /* FIXME: byte order */
+	u8 mfg_id[2];
+	u8 prod_code[2];
 	u32 serial; /* FIXME: byte order */
 	u8 mfg_week;
 	u8 mfg_year;
@@ -172,5 +172,7 @@ struct edid {
 	/* Checksum */
 	u8 checksum;
 } __attribute__((packed));
+
+#define EDID_PRODUCT_ID(e) ((e)->prod_code[0] | ((e)->prod_code[1] << 8))
 
 #endif /* __DRM_EDID_H__ */

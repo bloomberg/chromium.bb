@@ -1,28 +1,120 @@
 /*
+ * Copyright (c) 2006 Luc Verhaegen (quirks list)
  * Copyright (c) 2007 Intel Corporation
  *   Jesse Barnes <jesse.barnes@intel.com>
  *
  * DDC probing routines (drm_ddc_read & drm_do_probe_ddc_edid) originally from
  * FB layer.
  *   Copyright (C) 2006 Dennis Munsie <dmunsie@cecropia.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sub license,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
+#include <linux/kernel.h>
 #include <linux/i2c.h>
 #include <linux/i2c-algo-bit.h>
 #include "drmP.h"
 #include "drm_edid.h"
 
+/*
+ * TODO:
+ *   - support EDID 1.4
+ *   - port quirks from X server code
+ */
+
+/*
+ * EDID blocks out in the wild have a variety of bugs, try to collect
+ * them here (note that userspace may work around broken monitors first,
+ * but fixes should make their way here so that the kernel "just works"
+ * on as many displays as possible).
+ */
+
+/* First detailed mode wrong, use largest 60Hz mode */
+#define EDID_QUIRK_PREFER_LARGE_60		(1 << 0)
+/* Reported 135MHz pixel clock is too high, needs adjustment */
+#define EDID_QUIRK_135_CLOCK_TOO_HIGH		(1 << 1)
+/* Prefer the largest mode at 75 Hz */
+#define EDID_QUIRK_PREFER_LARGE_75		(1 << 2)
+/* Detail timing is in cm not mm */
+#define EDID_QUIRK_DETAILED_IN_CM		(1 << 3)
+/* Detailed timing descriptors have bogus size values, so just take the
+ * maximum size and use that.
+ */
+#define EDID_QUIRK_DETAILED_USE_MAXIMUM_SIZE	(1 << 4)
+/* Monitor forgot to set the first detailed is preferred bit. */
+#define EDID_QUIRK_FIRST_DETAILED_PREFERRED	(1 << 5)
+/* use +hsync +vsync for detailed mode */
+#define EDID_QUIRK_DETAILED_SYNC_PP		(1 << 6)
+
+static struct edid_quirk {
+	char *vendor;
+	int product_id;
+	u32 quirks;
+} edid_quirk_list[] = {
+	/* Acer AL1706 */
+	{ "ACR", 44358, EDID_QUIRK_PREFER_LARGE_60 },
+	/* Acer F51 */
+	{ "API", 0x7602, EDID_QUIRK_PREFER_LARGE_60 },
+	/* Unknown Acer */
+	{ "ACR", 2423, EDID_QUIRK_FIRST_DETAILED_PREFERRED },
+
+	/* Belinea 10 15 55 */
+	{ "MAX", 1516, EDID_QUIRK_PREFER_LARGE_60 },
+	{ "MAX", 0x77e, EDID_QUIRK_PREFER_LARGE_60 },
+
+	/* Envision Peripherals, Inc. EN-7100e */
+	{ "EPI", 59264, EDID_QUIRK_135_CLOCK_TOO_HIGH },
+
+	/* Funai Electronics PM36B */
+	{ "FCM", 13600, EDID_QUIRK_PREFER_LARGE_75 |
+	  EDID_QUIRK_DETAILED_IN_CM },
+
+	/* LG Philips LCD LP154W01-A5 */
+	{ "LPL", 0, EDID_QUIRK_DETAILED_USE_MAXIMUM_SIZE },
+	{ "LPL", 0x2a00, EDID_QUIRK_DETAILED_USE_MAXIMUM_SIZE },
+
+	/* Philips 107p5 CRT */
+	{ "PHL", 57364, EDID_QUIRK_FIRST_DETAILED_PREFERRED },
+
+	/* Proview AY765C */
+	{ "PTS", 765, EDID_QUIRK_FIRST_DETAILED_PREFERRED },
+
+	/* Samsung SyncMaster 205BW.  Note: irony */
+	{ "SAM", 541, EDID_QUIRK_DETAILED_SYNC_PP },
+	/* Samsung SyncMaster 22[5-6]BW */
+	{ "SAM", 596, EDID_QUIRK_PREFER_LARGE_60 },
+	{ "SAM", 638, EDID_QUIRK_PREFER_LARGE_60 },
+};
+
+
 /* Valid EDID header has these bytes */
 static u8 edid_header[] = { 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00 };
 
 /**
- * edid_valid - sanity check EDID data
+ * edid_is_valid - sanity check EDID data
  * @edid: EDID data
  *
  * Sanity check the EDID block by looking at the header, the version number
  * and the checksum.  Return 0 if the EDID doesn't check out, or 1 if it's
  * valid.
  */
-static bool edid_valid(struct edid *edid)
+static bool edid_is_valid(struct edid *edid)
 {
 	int i;
 	u8 csum = 0;
@@ -44,6 +136,97 @@ static bool edid_valid(struct edid *edid)
 
 bad:
 	return 0;
+}
+
+/**
+ * edid_vendor - match a string against EDID's obfuscated vendor field
+ * @edid: EDID to match
+ * @vendor: vendor string
+ *
+ * Returns true if @vendor is in @edid, false otherwise
+ */
+static bool edid_vendor(struct edid *edid, char *vendor)
+{
+	char edid_vendor[3];
+
+	edid_vendor[0] = ((edid->mfg_id[0] & 0x7c) >> 2) + '@';
+	edid_vendor[1] = (((edid->mfg_id[0] & 0x3) << 3) |
+			  ((edid->mfg_id[1] & 0xe0) >> 5)) + '@';
+	edid_vendor[2] = (edid->mfg_id[2] & 0x1f) + '@';
+
+	return !strncmp(edid_vendor, vendor, 3);
+}
+
+/**
+ * edid_get_quirks - return quirk flags for a given EDID
+ * @edid: EDID to process
+ *
+ * This tells subsequent routines what fixes they need to apply.
+ */
+static u32 edid_get_quirks(struct edid *edid)
+{
+	struct edid_quirk *quirk;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(edid_quirk_list); i++) {
+		quirk = &edid_quirk_list[i];
+
+		if (edid_vendor(edid, quirk->vendor) &&
+		    (EDID_PRODUCT_ID(edid) == quirk->product_id))
+			return quirk->quirks;
+	}
+
+	return 0;
+}
+
+#define MODE_SIZE(m) ((m)->hdisplay * (m)->vdisplay)
+#define MODE_REFRESH_DIFF(m,r) (abs((m)->vrefresh - target_refresh))
+
+
+/**
+ * edid_fixup_preferred - set preferred modes based on quirk list
+ * @connector: has mode list to fix up
+ * @quirks: quirks list
+ *
+ * Walk the mode list for @connector, clearing the preferred status
+ * on existing modes and setting it anew for the right mode ala @quirks.
+ */
+static void edid_fixup_preferred(struct drm_connector *connector,
+				 u32 quirks)
+{
+	struct drm_display_mode *t, *cur_mode, *preferred_mode;
+	int target_refresh;
+
+	if (list_empty(&connector->probed_modes))
+		return;
+
+	if (quirks & EDID_QUIRK_PREFER_LARGE_60)
+		target_refresh = 60;
+	if (quirks & EDID_QUIRK_PREFER_LARGE_75)
+		target_refresh = 75;
+
+	preferred_mode = list_first_entry(&connector->probed_modes,
+					  struct drm_display_mode, head);
+
+	list_for_each_entry_safe(cur_mode, t, &connector->probed_modes, head) {
+		cur_mode->type &= ~DRM_MODE_TYPE_PREFERRED;
+
+		if (cur_mode == preferred_mode)
+			continue;
+
+		/* Largest mode is preferred */
+		if (MODE_SIZE(cur_mode) > MODE_SIZE(preferred_mode))
+			preferred_mode = cur_mode;
+
+		/* At a given size, try to get closest to target refresh */
+		if ((MODE_SIZE(cur_mode) == MODE_SIZE(preferred_mode)) &&
+		    MODE_REFRESH_DIFF(cur_mode, target_refresh) <
+		    MODE_REFRESH_DIFF(preferred_mode, target_refresh)) {
+			preferred_mode = cur_mode;
+		}
+	}
+
+	preferred_mode->type |= DRM_MODE_TYPE_PREFERRED;
 }
 
 /**
@@ -86,16 +269,18 @@ struct drm_display_mode *drm_mode_std(struct drm_device *dev,
 
 /**
  * drm_mode_detailed - create a new mode from an EDID detailed timing section
+ * @dev: DRM device (needed to create new mode)
+ * @edid: EDID block
  * @timing: EDID detailed timing info
- * @preferred: is this a preferred mode?
+ * @quirks: quirks to apply
  *
  * An EDID detailed timing block contains enough info for us to create and
- * return a new struct drm_display_mode.  The @preferred flag will be set
- * if this is the display's preferred timing, and we'll use it to indicate
- * to the other layers that this mode is desired.
+ * return a new struct drm_display_mode.
  */
-struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
-					   struct detailed_timing *timing)
+static struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
+						  struct edid *edid,
+						  struct detailed_timing *timing,
+						  u32 quirks)
 {
 	struct drm_display_mode *mode;
 	struct detailed_pixel_timing *pt = &timing->data.pixel_data;
@@ -114,6 +299,10 @@ struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 		return NULL;
 
 	mode->type = DRM_MODE_TYPE_DRIVER;
+
+	if (quirks & EDID_QUIRK_135_CLOCK_TOO_HIGH)
+		timing->pixel_clock = 1088;
+
 	mode->clock = timing->pixel_clock * 10;
 
 	mode->hdisplay = (pt->hactive_hi << 8) | pt->hactive_lo;
@@ -137,8 +326,26 @@ struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 	if (pt->interlaced)
 		mode->flags |= V_INTERLACE;
 
+	if (quirks & EDID_QUIRK_DETAILED_SYNC_PP) {
+		pt->hsync_positive = 1;
+		pt->vsync_positive = 1;
+	}
+
 	mode->flags |= pt->hsync_positive ? V_PHSYNC : V_NHSYNC;
 	mode->flags |= pt->vsync_positive ? V_PVSYNC : V_NVSYNC;
+
+	mode->width_mm = pt->width_mm_lo | (pt->width_mm_hi << 8);
+	mode->height_mm = pt->height_mm_lo | (pt->height_mm_hi << 8);
+
+	if (quirks & EDID_QUIRK_DETAILED_IN_CM) {
+		mode->width_mm *= 10;
+		mode->height_mm *= 10;
+	}
+
+	if (quirks & EDID_QUIRK_DETAILED_USE_MAXIMUM_SIZE) {
+		mode->width_mm = edid->width_cm * 10;
+		mode->height_mm = edid->height_cm * 10;
+	}
 
 	return mode;
 }
@@ -264,12 +471,15 @@ static int add_standard_modes(struct drm_connector *connector, struct edid *edid
 
 /**
  * add_detailed_modes - get detailed mode info from EDID data
+ * @connector: attached connector
  * @edid: EDID block to scan
+ * @quirks: quirks to apply
  *
  * Some of the detailed timing sections may contain mode information.  Grab
  * it and add it to the list.
  */
-static int add_detailed_info(struct drm_connector *connector, struct edid *edid)
+static int add_detailed_info(struct drm_connector *connector,
+			     struct edid *edid, u32 quirks)
 {
 	struct drm_device *dev = connector->dev;
 	int i, j, modes = 0;
@@ -285,19 +495,16 @@ static int add_detailed_info(struct drm_connector *connector, struct edid *edid)
 
 		/* Detailed mode timing */
 		if (timing->pixel_clock) {
-			newmode = drm_mode_detailed(dev, timing);
-			/* First detailed mode is preferred */
-			if (newmode) {
-				if (i == 0 && edid->preferred_timing)
-					newmode->type |= DRM_MODE_TYPE_PREFERRED;
-				drm_mode_probed_add(connector, newmode);
+			newmode = drm_mode_detailed(dev, edid, timing, quirks);
+			if (!newmode)
+				continue;
 
-				/* Use first one for connector's preferred mode */
-				if (!connector->display_info.preferred_mode)
-					connector->display_info.preferred_mode =
-						newmode;
-				modes++;
-			}
+			/* First detailed mode is preferred */
+			if (i == 0 && edid->preferred_timing)
+				newmode->type |= DRM_MODE_TYPE_PREFERRED;
+			drm_mode_probed_add(connector, newmode);
+
+			modes++;
 			continue;
 		}
 
@@ -458,7 +665,7 @@ struct edid *drm_get_edid(struct drm_connector *connector,
 			 drm_get_connector_name(connector));
 		return NULL;
 	}
-	if (!edid_valid(edid)) {
+	if (!edid_is_valid(edid)) {
 		dev_warn(&connector->dev->pdev->dev, "%s: EDID invalid.\n",
 			 drm_get_connector_name(connector));
 		kfree(edid);
@@ -483,18 +690,25 @@ EXPORT_SYMBOL(drm_get_edid);
 int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid)
 {
 	int num_modes = 0;
+	u32 quirks;
 
 	if (edid == NULL) {
 		return 0;
 	}
-	if (!edid_valid(edid)) {
+	if (!edid_is_valid(edid)) {
 		dev_warn(&connector->dev->pdev->dev, "%s: EDID invalid.\n",
 			 drm_get_connector_name(connector));
 		return 0;
 	}
+
+	quirks = edid_get_quirks(edid);
+
 	num_modes += add_established_modes(connector, edid);
 	num_modes += add_standard_modes(connector, edid);
-	num_modes += add_detailed_info(connector, edid);
+	num_modes += add_detailed_info(connector, edid, quirks);
+
+	if (quirks & (EDID_QUIRK_PREFER_LARGE_60 | EDID_QUIRK_PREFER_LARGE_75))
+		edid_fixup_preferred(connector, quirks);
 
 	connector->display_info.serration_vsync = edid->serration_vsync;
 	connector->display_info.sync_on_green = edid->sync_on_green;

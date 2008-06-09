@@ -115,6 +115,10 @@ struct drm_display_mode {
 	int vscan;
 	unsigned int flags;
 
+	/* Addressable image size (may be 0 for projectors, etc.) */
+	int width_mm;
+	int height_mm;
+
 	/* Actual mode we give to hw */
 	int clock_index;
 	int synth_clock;
@@ -246,8 +250,6 @@ struct drm_display_info {
 
 	enum subpixel_order subpixel_order;
 
-	/* Preferred mode (if any) */
-	struct drm_display_mode *preferred_mode;
 	char *raw_edid; /* if any */
 };
 
