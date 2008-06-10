@@ -69,6 +69,12 @@
 # define DEPRECATED  __attribute__ ((deprecated))
 #else
 # define DEPRECATED
+# ifndef __FUNCTION__
+#  define __FUNCTION__ __func__ /* C99 */
+# endif
+# ifndef __volatile__
+#  define __volatile__ volatile
+# endif
 #endif
 
 #if defined(__linux__)
