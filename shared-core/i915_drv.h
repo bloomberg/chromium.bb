@@ -74,14 +74,13 @@ struct drm_i915_validate_buffer;
 
 typedef struct _drm_i915_ring_buffer {
 	int tail_mask;
-	unsigned long Start;
-	unsigned long End;
 	unsigned long Size;
 	u8 *virtual_start;
 	int head;
 	int tail;
 	int space;
 	drm_local_map_t map;
+	struct drm_gem_object *ring_obj;
 } drm_i915_ring_buffer_t;
 
 struct mem_block {
@@ -290,6 +289,16 @@ typedef struct drm_i915_private {
 		struct work_struct retire_task;
 		
 		uint32_t next_gem_seqno;
+
+		/**
+		 * Flag if the X Server, and thus DRM, is not currently in
+		 * control of the device.
+		 *
+		 * This is set between LeaveVT and EnterVT.  It needs to be
+		 * replaced with a semaphore.  It also needs to be
+		 * transitioned away from for kernel modesetting.
+		 */
+		int suspended;
 	} mm;
 
 	struct work_struct user_interrupt_task;
@@ -462,8 +471,14 @@ int i915_gem_busy_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_throttle_ioctl(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
+int i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv);
+int i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
+			   struct drm_file *file_priv);
 int i915_gem_init_object(struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_gem_object *obj);
+int i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment);
+void i915_gem_object_unpin(struct drm_gem_object *obj);
 int i915_gem_set_domain(struct drm_gem_object *obj,
 			struct drm_file *file_priv,
 			uint32_t read_domains,

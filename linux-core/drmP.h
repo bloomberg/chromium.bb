@@ -1371,6 +1371,9 @@ drm_gem_init (struct drm_device *dev);
 void
 drm_gem_object_free (struct kref *kref);
 
+struct drm_gem_object *
+drm_gem_object_alloc(struct drm_device *dev, size_t size);
+
 void
 drm_gem_object_handle_free (struct kref *kref);
     

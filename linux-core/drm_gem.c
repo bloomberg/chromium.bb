@@ -80,7 +80,7 @@ drm_gem_init(struct drm_device *dev)
 /**
  * Allocate a GEM object of the specified size with shmfs backing store
  */
-static struct drm_gem_object *
+struct drm_gem_object *
 drm_gem_object_alloc(struct drm_device *dev, size_t size)
 {
 	struct drm_gem_object *obj;
@@ -117,6 +117,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 	atomic_inc(&dev->object_count);
 	return obj;
 }
+EXPORT_SYMBOL(drm_gem_object_alloc);
 
 /**
  * Removes the mapping from handle to filp for this object.
