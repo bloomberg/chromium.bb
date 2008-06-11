@@ -74,6 +74,7 @@ struct xgi_info {
 	struct xgi_cmdring_info cmdring;
 
 	DRM_SPINTYPE fence_lock;
+	wait_queue_head_t fence_queue;
 	unsigned complete_sequence;
 	unsigned next_sequence;
 };
@@ -98,12 +99,24 @@ extern void xgi_disable_mmio(struct xgi_info * info);
 extern void xgi_enable_ge(struct xgi_info * info);
 extern void xgi_disable_ge(struct xgi_info * info);
 
+/* TTM-style fences.
+ */
+#ifdef XGI_HAVE_FENCE
 extern void xgi_poke_flush(struct drm_device * dev, uint32_t class);
 extern int xgi_fence_emit_sequence(struct drm_device * dev, uint32_t class,
 	uint32_t flags, uint32_t * sequence, uint32_t * native_type);
 extern void xgi_fence_handler(struct drm_device * dev);
 extern int xgi_fence_has_irq(struct drm_device *dev, uint32_t class,
 	uint32_t flags);
+#endif /* XGI_HAVE_FENCE */
+
+
+/* Non-TTM-style fences.
+ */
+extern int xgi_set_fence_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
+extern int xgi_wait_fence_ioctl(struct drm_device * dev, void * data,
+	struct drm_file * filp);
 
 extern int xgi_alloc_ioctl(struct drm_device * dev, void * data,
 	struct drm_file * filp);
