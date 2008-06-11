@@ -573,11 +573,15 @@ struct drm_i915_gem_exec_object {
 	 * operation.
 	 */
 	uint32_t handle;
-	
-	/** List of relocations to be performed on this buffer */
+
+	/** Number of relocations to be performed on this buffer */
 	uint32_t relocation_count;
-	uint64_t relocs_ptr;	/* struct drm_i915_gem_relocation_entry *relocs */
-	
+	/**
+	 * Pointer to array of struct drm_i915_gem_relocation_entry containing
+	 * the relocations to be performed in this buffer.
+	 */
+	uint64_t relocs_ptr;
+
 	/** Required alignment in graphics aperture */
 	uint64_t alignment;
 
@@ -593,11 +597,13 @@ struct drm_i915_gem_execbuffer {
 	 * List of buffers to be validated with their relocations to be
 	 * performend on them.
 	 *
+	 * This is a pointer to an array of struct drm_i915_gem_validate_entry.
+	 *
 	 * These buffers must be listed in an order such that all relocations
 	 * a buffer is performing refer to buffers that have already appeared
 	 * in the validate list.
 	 */
-	uint64_t buffers_ptr;	/* struct drm_i915_gem_validate_entry *buffers */
+	uint64_t buffers_ptr;
 	uint32_t buffer_count;
 
 	/** Offset in the batchbuffer to start execution from. */
@@ -614,7 +620,7 @@ struct drm_i915_gem_pin {
 	/** Handle of the buffer to be pinned. */
 	uint32_t handle;
 	uint32_t pad;
-	
+
 	/** alignment required within the aperture */
 	uint64_t alignment;
 
@@ -631,7 +637,7 @@ struct drm_i915_gem_unpin {
 struct drm_i915_gem_busy {
 	/** Handle of the buffer to check for busy */
 	uint32_t handle;
-	
+
 	/** Return busy status (1 if busy, 0 if idle) */
 	uint32_t busy;
 };

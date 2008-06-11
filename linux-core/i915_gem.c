@@ -547,8 +547,8 @@ i915_wait_request(struct drm_device *dev, uint32_t seqno)
 		i915_user_irq_off(dev_priv);
 	}
 	if (ret)
-		DRM_ERROR ("%s returns %d (awaiting %d at %d)\n",
-			   __func__, ret, seqno, i915_get_gem_seqno(dev));
+		DRM_ERROR("%s returns %d (awaiting %d at %d)\n",
+			  __func__, ret, seqno, i915_get_gem_seqno(dev));
 
 	/* Directly dispatch request retiring.  While we have the work queue
 	 * to handle this, the waiter on a request often wants an associated
@@ -701,8 +701,8 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	 * also ensure that all pending GPU writes are finished
 	 * before we unbind.
 	 */
-	ret = i915_gem_object_set_domain (obj, I915_GEM_DOMAIN_CPU,
-					  I915_GEM_DOMAIN_CPU);
+	ret = i915_gem_object_set_domain(obj, I915_GEM_DOMAIN_CPU,
+					 I915_GEM_DOMAIN_CPU);
 	if (ret)
 		return ret;
 
@@ -1242,7 +1242,7 @@ i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle)
 	int bad_count = 0;
 
 	DRM_INFO("%s: checking coherency of object %p@0x%08x (%d, %dkb):\n",
-		 __FUNCTION__, obj, obj_priv->gtt_offset, handle,
+		 __func__, obj, obj_priv->gtt_offset, handle,
 		 obj->size / 1024);
 
 	gtt_mapping = ioremap(dev->agp->base + obj_priv->gtt_offset,
@@ -1301,9 +1301,7 @@ i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle)
 #endif
 
 /**
- * Bind an object to the GTT and evaluate the relocations landing in it
- *
- * 
+ * Bind an object to the GTT and evaluate the relocations landing in it.
  */
 static int
 i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
@@ -1567,7 +1565,8 @@ i915_gem_ring_throttle(struct drm_device *dev)
 					   list);
 
 		/* Break out if we're close enough. */
-		if ((long) (jiffies - request->emitted_jiffies) <= (20 * HZ) / 1000) {
+		if ((long) (jiffies - request->emitted_jiffies) <=
+		    (20 * HZ) / 1000) {
 			mutex_unlock(&dev->struct_mutex);
 			return 0;
 		}
@@ -1877,7 +1876,7 @@ i915_gem_busy_ioctl(struct drm_device *dev, void *data,
 
 	obj_priv = obj->driver_private;
 	args->busy = obj_priv->active;
-	
+
 	drm_gem_object_unreference(obj);
 	mutex_unlock(&dev->struct_mutex);
 	return 0;
