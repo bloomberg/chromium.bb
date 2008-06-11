@@ -440,7 +440,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	struct drm_device *dev = (struct drm_device *) arg;
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u32 iir;
-	u32 pipea_stats, pipeb_stats;
+	u32 pipea_stats = 0, pipeb_stats = 0;
 	int vblank = 0;
 
 	iir = I915_READ(I915REG_INT_IDENTITY_R);
@@ -463,30 +463,18 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	 */
 	if (iir & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT) {
 		pipea_stats = I915_READ(I915REG_PIPEASTAT);
-		if (pipea_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
-				   I915_VBLANK_INTERRUPT_STATUS))
-		{
-			vblank++;
-			drm_handle_vblank(dev, i915_get_plane(dev, 0));
-		}
 		I915_WRITE(I915REG_PIPEASTAT, pipea_stats);
 	}
 	if (iir & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT) {
 		pipeb_stats = I915_READ(I915REG_PIPEBSTAT);
-		if (pipeb_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
-				   I915_VBLANK_INTERRUPT_STATUS))
-		{
-			vblank++;
-			drm_handle_vblank(dev, i915_get_plane(dev, 1));
-		}
 		I915_WRITE(I915REG_PIPEBSTAT, pipeb_stats);
 	}
 
+	I915_WRITE(I915REG_INT_IDENTITY_R, iir);
+	(void) I915_READ(I915REG_INT_IDENTITY_R); /* Flush posted writes */
+
 	if (dev_priv->sarea_priv)
 	    dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
-
-	I915_WRITE(I915REG_INT_IDENTITY_R, iir);
-	(void) I915_READ(I915REG_INT_IDENTITY_R); /* Flush posted write */
 
 	if (iir & I915_USER_INTERRUPT) {
 		DRM_WAKEUP(&dev_priv->irq_queue);
@@ -495,6 +483,16 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 #endif
 	}
 
+	if (pipea_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
+			   I915_VBLANK_INTERRUPT_STATUS)) {
+		vblank = 1;
+		drm_handle_vblank(dev, i915_get_plane(dev, 0));
+	}
+	if (pipeb_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
+			   I915_VBLANK_INTERRUPT_STATUS)) {
+		vblank = 1;
+		drm_handle_vblank(dev, i915_get_plane(dev, 1));
+	}
 	if (vblank) {
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
@@ -526,9 +524,11 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 {
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount == 1)){
-		dev_priv->irq_mask_reg &= ~I915_USER_INTERRUPT;
-		I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
-		(void) I915_READ (I915REG_INT_ENABLE_R);
+		if ((dev_priv->irq_mask_reg & I915_USER_INTERRUPT) != 0) {
+			dev_priv->irq_mask_reg &= ~I915_USER_INTERRUPT;
+			I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
+			(void) I915_READ (I915REG_INT_MASK_R);
+		}
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
@@ -539,9 +539,11 @@ void i915_user_irq_off(drm_i915_private_t *dev_priv)
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	BUG_ON(dev_priv->irq_enabled && dev_priv->user_irq_refcount <= 0);
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
-		dev_priv->irq_mask_reg |= I915_USER_INTERRUPT;
-		I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
-		(void) I915_READ(I915REG_INT_MASK_R);
+		if ((dev_priv->irq_mask_reg & I915_USER_INTERRUPT) == 0) {
+			dev_priv->irq_mask_reg |= I915_USER_INTERRUPT;
+			I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
+			(void) I915_READ(I915REG_INT_MASK_R);
+		}
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 }
