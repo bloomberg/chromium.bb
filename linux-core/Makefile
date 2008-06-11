@@ -116,7 +116,7 @@ V := $(shell if [ -f $(BOOTVERSION_PREFIX)version.h ]; then \
 
 ifeq ($(V),"$(RUNNING_REL)")
 HEADERFROMBOOT := 1
-GETCONFIG := MAKEFILES=$(shell pwd)/.config
+GETCONFIG := MAKEFILES=$(shell /bin/pwd)/.config
 HAVECONFIG := y
 endif
 
@@ -163,7 +163,7 @@ endif
 all: modules
 
 modules: includes
-	+make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules
+	+make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`/bin/pwd` DRMSRCDIR=`/bin/pwd` modules
 
 ifeq ($(HEADERFROMBOOT),1)
 
@@ -239,7 +239,7 @@ drmstat: drmstat.c
 	$(CC) $(PRGCFLAGS) $< -o $@ $(DRMSTATLIBS)
 
 install:
-	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`pwd` DRMSRCDIR=`pwd` modules_install
+	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`/bin/pwd` DRMSRCDIR=`/bin/pwd` modules_install
 
 else
 
