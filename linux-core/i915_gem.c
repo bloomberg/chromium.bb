@@ -333,6 +333,7 @@ i915_add_request(struct drm_device *dev, uint32_t flush_domains)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_request *request;
 	uint32_t seqno;
+	int was_empty;
 	RING_LOCALS;
 
 	request = drm_calloc(1, sizeof(*request), DRM_MEM_DRIVER);
@@ -360,11 +361,11 @@ i915_add_request(struct drm_device *dev, uint32_t flush_domains)
 	request->seqno = seqno;
 	request->emitted_jiffies = jiffies;
 	request->flush_domains = flush_domains;
-	if (list_empty(&dev_priv->mm.request_list))
-		mod_timer(&dev_priv->mm.retire_timer, jiffies + HZ);
-
+	was_empty = list_empty(&dev_priv->mm.request_list);
 	list_add_tail(&request->list, &dev_priv->mm.request_list);
 
+	if (was_empty)
+		schedule_delayed_work (&dev_priv->mm.retire_work, HZ);
 	return seqno;
 }
 
