@@ -1930,14 +1930,11 @@ i915_gem_set_domain(struct drm_gem_object *obj,
 
 	BUG_ON(!mutex_is_locked(&dev->struct_mutex));
 
-	drm_client_lock_take(dev, file_priv);
 	ret = i915_gem_object_set_domain(obj, read_domains, write_domain);
-	if (ret) {
-		drm_client_lock_release(dev);
+	if (ret)
 		return ret;
-	}
 	i915_gem_dev_set_domain(obj->dev);
-	drm_client_lock_release(dev);
+
 	return 0;
 }
 
