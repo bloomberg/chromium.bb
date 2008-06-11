@@ -29,7 +29,7 @@
 #include "mm.h"
 
 void
-drmmmDumpMemInfo(const struct mem_block *heap)
+mmDumpMemInfo(const struct mem_block *heap)
 {
    drmMsg("Memory heap %p:\n", (void *)heap);
    if (heap == 0) {
@@ -56,7 +56,7 @@ drmmmDumpMemInfo(const struct mem_block *heap)
 }
 
 struct mem_block *
-drmmmInit(int ofs, int size)
+mmInit(int ofs, int size)
 {
    struct mem_block *heap, *block;
   
@@ -163,7 +163,7 @@ SliceBlock(struct mem_block *p,
 
 
 struct mem_block *
-drmmmAllocMem(struct mem_block *heap, int size, int align2, int startSearch)
+mmAllocMem(struct mem_block *heap, int size, int align2, int startSearch)
 {
    struct mem_block *p;
    const int mask = (1 << align2)-1;
@@ -196,7 +196,7 @@ drmmmAllocMem(struct mem_block *heap, int size, int align2, int startSearch)
 
 
 struct mem_block *
-drmmmFindBlock(struct mem_block *heap, int start)
+mmFindBlock(struct mem_block *heap, int start)
 {
    struct mem_block *p;
 
@@ -235,7 +235,7 @@ Join2Blocks(struct mem_block *p)
 }
 
 int
-drmmmFreeMem(struct mem_block *b)
+mmFreeMem(struct mem_block *b)
 {
    if (!b)
       return 0;
@@ -264,7 +264,7 @@ drmmmFreeMem(struct mem_block *b)
 
 
 void
-drmmmDestroy(struct mem_block *heap)
+mmDestroy(struct mem_block *heap)
 {
    struct mem_block *p;
 
