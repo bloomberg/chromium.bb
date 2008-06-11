@@ -560,7 +560,7 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 void i915_user_irq_off(drm_i915_private_t *dev_priv)
 {
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
-	BUG_ON(dev_priv->user_irq_refcount <= 0);
+	BUG_ON(dev_priv->irq_enabled && dev_priv->user_irq_refcount <= 0);
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
 		dev_priv->irq_mask_reg |= I915_USER_INTERRUPT;
 		I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
