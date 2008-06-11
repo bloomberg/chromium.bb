@@ -41,28 +41,35 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 			    uint32_t read_domains,
 			    uint32_t write_domain);
 
+int i915_gem_do_init(struct drm_device *dev, unsigned long start,
+		     unsigned long end)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	if (start >= end ||
+	    (start & (PAGE_SIZE - 1)) != 0 ||
+	    (end & (PAGE_SIZE - 1)) != 0) {
+		return -EINVAL;
+	}
+
+	drm_memrange_init(&dev_priv->mm.gtt_space, start,
+			  end - start);
+
+	return 0;
+}
+
 int
 i915_gem_init_ioctl(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_gem_init *args = data;
+	int ret;
 
 	mutex_lock(&dev->struct_mutex);
-
-	if (args->gtt_start >= args->gtt_end ||
-	    (args->gtt_start & (PAGE_SIZE - 1)) != 0 ||
-	    (args->gtt_end & (PAGE_SIZE - 1)) != 0) {
-		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
-	}
-
-	drm_memrange_init(&dev_priv->mm.gtt_space, args->gtt_start,
-	    args->gtt_end - args->gtt_start);
-
+	ret = i915_gem_do_init(dev, args->gtt_start, args->gtt_end);
 	mutex_unlock(&dev->struct_mutex);
 
-	return 0;
+	return ret;
 }
 
 static void
@@ -1834,17 +1841,16 @@ i915_gem_init_ringbuffer(struct drm_device *dev)
 	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	/* Stop the ring if it's running. */
-	I915_WRITE(LP_RING + RING_LEN, 0);
-	I915_WRITE(LP_RING + RING_HEAD, 0);
-	I915_WRITE(LP_RING + RING_TAIL, 0);
-	I915_WRITE(LP_RING + RING_START, 0);
+	I915_WRITE(PRB0_CTL, 0);
+        I915_WRITE(PRB0_HEAD, 0);
+        I915_WRITE(PRB0_TAIL, 0);
+	I915_WRITE(PRB0_START, 0);
 
 	/* Initialize the ring. */
-	I915_WRITE(LP_RING + RING_START, obj_priv->gtt_offset);
-	I915_WRITE(LP_RING + RING_LEN,
-		   ((obj->size - 4096) & RING_NR_PAGES) |
-		   RING_NO_REPORT |
-		   RING_VALID);
+	I915_WRITE(PRB0_START, obj_priv->gtt_offset);
+	I915_WRITE(PRB0_CTL, (((obj->size - 4096) & RING_NR_PAGES) |
+			      RING_NO_REPORT |
+			      RING_VALID));
 
 	/* Update our cache of the ring state */
 	i915_kernel_lost_context(dev);
@@ -1852,7 +1858,7 @@ i915_gem_init_ringbuffer(struct drm_device *dev)
 	return 0;
 }
 
-static void
+void
 i915_gem_cleanup_ringbuffer(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;

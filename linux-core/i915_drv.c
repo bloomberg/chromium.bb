@@ -48,11 +48,11 @@ module_param_named(fbpercrtc, i915_fbpercrtc, int, 0400);
 unsigned int i915_rightof = 1;
 module_param_named(i915_rightof, i915_rightof, int, 0400);
 
-#ifdef I915_HAVE_FENCE
+#if defined(I915_HAVE_FENCE) && defined(I915_TTM)
 extern struct drm_fence_driver i915_fence_driver;
 #endif
 
-#ifdef I915_HAVE_BUFFER
+#if defined(I915_HAVE_BUFFER) && defined(I915_TTM)
 
 static uint32_t i915_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
 static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
@@ -71,7 +71,7 @@ static struct drm_bo_driver i915_bo_driver = {
 	.ttm_cache_flush = i915_flush_ttm,
 	.command_stream_barrier = NULL,
 };
-#endif
+#endif /* ttm */
 
 static bool i915_pipe_enabled(struct drm_device *dev, enum pipe pipe)
 {
@@ -619,10 +619,10 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 		},
-#ifdef I915_HAVE_FENCE
+#if defined(I915_HAVE_FENCE) && defined(I915_TTM)
 	.fence_driver = &i915_fence_driver,
 #endif
-#ifdef I915_HAVE_BUFFER
+#if defined(I915_HAVE_BUFFER) && defined(I915_TTM)
 	.bo_driver = &i915_bo_driver,
 #endif
 	.name = DRIVER_NAME,

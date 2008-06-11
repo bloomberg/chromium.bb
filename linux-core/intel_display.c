@@ -369,6 +369,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_i915_master_private *master_priv;
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	struct intel_framebuffer *intel_fb;
+	struct drm_i915_gem_object *obj_priv;
 	int pipe = intel_crtc->pipe;
 	unsigned long Start, Offset;
 	int dspbase = (pipe == 0 ? DSPAADDR : DSPBADDR);
@@ -385,7 +386,9 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 
 	intel_fb = to_intel_framebuffer(crtc->fb);
 
-	Start = intel_fb->bo->offset;
+	obj_priv = intel_fb->obj->driver_private;
+
+	Start = obj_priv->gtt_offset;
 	Offset = y * crtc->fb->pitch + x * (crtc->fb->bits_per_pixel / 8);
 
 	I915_WRITE(dspstride, crtc->fb->pitch);
@@ -1493,7 +1496,7 @@ static const struct drm_framebuffer_funcs intel_fb_funcs = {
 };
 
 struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
-						      struct drm_file *file_priv,
+						      struct drm_file *filp,
 						      struct drm_mode_fb_cmd *mode_cmd)
 {
 	struct intel_framebuffer *intel_fb;
@@ -1505,15 +1508,15 @@ struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
 	drm_framebuffer_init(dev, &intel_fb->base, &intel_fb_funcs);
 	drm_helper_mode_fill_fb_struct(&intel_fb->base, mode_cmd);
 
-	if (file_priv) {
-		mutex_lock(&dev->struct_mutex);
-		intel_fb->bo = drm_lookup_buffer_object(file_priv, intel_fb->base.mm_handle, 0);
-		mutex_unlock(&dev->struct_mutex);
-		if (!intel_fb->bo) {
+	if (filp) {
+		intel_fb->obj = drm_gem_object_lookup(dev, filp,
+						      mode_cmd->handle);
+		if (!intel_fb->obj) {
 			kfree(intel_fb);
 			return NULL;
 		}
 	}
+	drm_gem_object_unreference(intel_fb->obj);
 	return &intel_fb->base;
 }
 
@@ -1521,22 +1524,25 @@ static int intel_insert_new_fb(struct drm_device *dev, struct drm_file *file_pri
 				struct drm_framebuffer *fb, struct drm_mode_fb_cmd *mode_cmd)
 {
 	struct intel_framebuffer *intel_fb;
-	struct drm_buffer_object *bo;
+	struct drm_gem_object *obj;
 	struct drm_crtc *crtc;
 
 	intel_fb = to_intel_framebuffer(fb);
 
 	mutex_lock(&dev->struct_mutex);
-	bo = drm_lookup_buffer_object(file_priv, mode_cmd->handle, 0);
-	mutex_unlock(&dev->struct_mutex);
+	obj = drm_gem_object_lookup(dev, file_priv, mode_cmd->handle);
 	
-	if (!bo)
+	if (!obj) {
+		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
+	}
 	drm_helper_mode_fill_fb_struct(fb, mode_cmd);
-       
-	drm_bo_usage_deref_unlocked(&intel_fb->bo);
 
-	intel_fb->bo = bo;
+	drm_gem_object_unreference(intel_fb->obj);
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+
+	intel_fb->obj = obj;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		if (crtc->fb == fb) {

@@ -590,9 +590,10 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	struct drm_framebuffer *fb;
 	struct intel_framebuffer *intel_fb;
 	struct drm_mode_fb_cmd mode_cmd;
-	struct drm_buffer_object *fbo = NULL;
+	struct drm_gem_object *fbo = NULL;
+	struct drm_i915_gem_object *obj_priv;
 	struct device *device = &dev->pdev->dev; 
-	int ret;
+	int size, aligned_size, ret;
 
 	mode_cmd.width = surface_width;/* crtc->desired_mode->hdisplay; */
 	mode_cmd.height = surface_height;/* crtc->desired_mode->vdisplay; */
@@ -601,26 +602,28 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	mode_cmd.pitch = mode_cmd.width * ((mode_cmd.bpp + 1) / 8);
 	mode_cmd.depth = 24;
 
-	ret = drm_buffer_object_create(dev, mode_cmd.pitch * mode_cmd.height, 
-					drm_bo_type_kernel,
-					DRM_BO_FLAG_READ |
-					DRM_BO_FLAG_WRITE |
-					DRM_BO_FLAG_MEM_TT |
-					DRM_BO_FLAG_MEM_VRAM |
-					DRM_BO_FLAG_NO_EVICT,
-					DRM_BO_HINT_DONT_FENCE, 0, 0,
-					&fbo);
-	if (ret || !fbo) {
+	size = mode_cmd.pitch * mode_cmd.height;
+	aligned_size = ALIGN(size, PAGE_SIZE);
+	fbo = drm_gem_object_alloc(dev, aligned_size);
+	if (!fbo) {
 		printk(KERN_ERR "failed to allocate framebuffer\n");
-		return -EINVAL;
+		ret = -ENOMEM;
+		goto out;
 	}
-	
+	obj_priv = fbo->driver_private;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = i915_gem_object_pin(fbo, PAGE_SIZE);
+	if (ret) {
+		DRM_ERROR("failed to pin fb: %d\n", ret);
+		goto out_unref;
+	}
 
 	fb = intel_user_framebuffer_create(dev, NULL, &mode_cmd);
 	if (!fb) {
-		drm_bo_usage_deref_unlocked(&fbo);
 		DRM_ERROR("failed to allocate fb.\n");
-		return -EINVAL;
+		ret = -ENOMEM;
+		goto out_unref;
 	}
 
 	list_add(&fb->filp_head, &dev->mode_config.fb_kernel_list);
@@ -628,11 +631,13 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	intel_fb = to_intel_framebuffer(fb);
 	*intel_fb_p = intel_fb;
 
-	intel_fb->bo = fbo;
+	intel_fb->obj = fbo;
 
 	info = framebuffer_alloc(sizeof(struct intelfb_par), device);
-	if (!info)
-		return -EINVAL;
+	if (!info) {
+		ret = -ENOMEM;
+		goto out_unref;
+	}
 
 	par = info->par;
 
@@ -651,19 +656,20 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	info->fbops = &intelfb_ops;
 
 	info->fix.line_length = fb->pitch;
-	info->fix.smem_start = intel_fb->bo->offset + dev->mode_config.fb_base;
-	info->fix.smem_len = info->fix.line_length * fb->height;
+	info->fix.smem_start = dev->mode_config.fb_base + obj_priv->gtt_offset;
+	info->fix.smem_len = size;
 
 	info->flags = FBINFO_DEFAULT;
 
- 	ret = drm_bo_kmap(intel_fb->bo, 0, intel_fb->bo->num_pages, &intel_fb->kmap);
-	if (ret)
-		DRM_ERROR("error mapping fb: %d\n", ret);
+ 	info->screen_base = ioremap(dev->agp->base + obj_priv->gtt_offset,
+				    size);
+	if (!info->screen_base) {
+		ret = -ENOSPC;
+		goto out_unref;
+	}
+	info->screen_size = size;
 
- 	info->screen_base = intel_fb->kmap.virtual;
-	info->screen_size = info->fix.smem_len; /* FIXME */
-
-	memset(intel_fb->kmap.virtual, 0, info->screen_size);
+	memset(info->screen_base, 0, size);
 
 	info->pseudo_palette = fb->pseudo_palette;
 	info->var.xres_virtual = fb->width;
@@ -754,10 +760,17 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	par->dev = dev;
 
 	/* To allow resizeing without swapping buffers */
-	printk("allocated %dx%d fb: 0x%08lx, bo %p\n", intel_fb->base.width,
-	       intel_fb->base.height, intel_fb->bo->offset, fbo);
+	printk("allocated %dx%d fb: 0x%08x, bo %p\n", intel_fb->base.width,
+	       intel_fb->base.height, obj_priv->gtt_offset, fbo);
 
+	mutex_unlock(&dev->struct_mutex);
 	return 0;
+
+out_unref:
+	drm_gem_object_unreference(fbo);
+	mutex_unlock(&dev->struct_mutex);
+out:
+	return ret;
 }
 
 static int intelfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *crtc)
@@ -1001,8 +1014,10 @@ int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 	
 	if (info) {
 		unregister_framebuffer(info);
-		drm_bo_kunmap(&intel_fb->kmap);
-		drm_bo_usage_deref_unlocked(&intel_fb->bo);
+		iounmap(info->screen_base);
+		mutex_lock(&dev->struct_mutex);
+		drm_gem_object_unreference(intel_fb->obj);
+		mutex_unlock(&dev->struct_mutex);
 		framebuffer_release(info);
 	}
 	return 0;

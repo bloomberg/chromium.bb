@@ -115,8 +115,6 @@ struct drm_i915_master_private {
 struct drm_i915_private {
         struct drm_device *dev;
 
-	struct drm_buffer_object *ring_buffer;
-
 	drm_local_map_t *mmio_map;
 
 	unsigned long mmiobase;
@@ -125,12 +123,12 @@ struct drm_i915_private {
 	struct drm_i915_ring_buffer ring;
 
 	struct drm_dma_handle *status_page_dmah;
-	void *hw_status_page;
 	dma_addr_t dma_status_page;
 	uint32_t counter;
-	unsigned int status_gfx_addr;
+	uint32_t hws_agpoffset;
 	drm_local_map_t hws_map;
-	struct drm_buffer_object *hws_bo;
+	void *hws_vaddr;
+	struct drm_memrange_node *hws;
 
 	unsigned int cpp;
 
@@ -151,6 +149,8 @@ struct drm_i915_private {
 	struct workqueue_struct *wq;
 
 	bool cursor_needs_physical;
+
+	struct drm_memrange vram;
 
 #ifdef I915_HAVE_FENCE
 	uint32_t flush_sequence;
@@ -176,17 +176,17 @@ struct drm_i915_private {
 	struct drm_display_mode *panel_fixed_mode;
 	struct drm_display_mode *vbt_mode; /* if any */
 
-#if defined(I915_HAVE_BUFFER)
+#if defined(I915_HAVE_BUFFER) && defined(DRI2)
 	/* DRI2 sarea */
-	struct drm_buffer_object *sarea_bo;
-	struct drm_bo_kmap_obj sarea_kmap;
+	struct drm_gem_object *sarea_object;
+        struct drm_bo_kmap_obj sarea_kmap;
+#endif
 
 	/* Feature bits from the VBIOS */
 	int int_tv_support:1;
 	int lvds_dither:1;
 	int lvds_vbt:1;
 	int int_crt_support:1;
-#endif
 
 	struct {
 		struct drm_memrange gtt_space;
@@ -483,7 +483,7 @@ extern void i915_invalidate_reported_sequence(struct drm_device *dev);
 
 #endif
 
-#ifdef I915_HAVE_BUFFER
+#if defined(I915_HAVE_BUFFER) && defined(I915_TTM)
 /* i915_buffer.c */
 extern struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev);
 extern int i915_fence_type(struct drm_buffer_object *bo, uint32_t *fclass,
@@ -495,6 +495,8 @@ extern uint64_t i915_evict_flags(struct drm_buffer_object *bo);
 extern int i915_move(struct drm_buffer_object *bo, int evict,
 		int no_wait, struct drm_bo_mem_reg *new_mem);
 void i915_flush_ttm(struct drm_ttm *ttm);
+#endif /* ttm */
+#ifdef I915_HAVE_BUFFER
 /* i915_execbuf.c */
 int i915_execbuffer(struct drm_device *dev, void *data,
 				   struct drm_file *file_priv);
@@ -530,6 +532,9 @@ void i915_gem_retire_requests(struct drm_device *dev);
 void i915_gem_retire_timeout(unsigned long data);
 void i915_gem_retire_handler(struct work_struct *work);
 int i915_gem_init_ringbuffer(struct drm_device *dev);
+void i915_gem_cleanup_ringbuffer(struct drm_device *dev);
+int i915_gem_do_init(struct drm_device *dev, unsigned long start,
+		     unsigned long end);
 #endif
 
 extern unsigned int i915_fbpercrtc;
@@ -595,12 +600,6 @@ void i915_ring_validate(struct drm_device *dev, const char *func, int line);
 	dev_priv->ring.space -= outcount * 4;				\
 	I915_WRITE(PRB0_TAIL, outring);			\
 } while(0)
-
-#define BREADCRUMB_BITS 31
-#define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
-
-#define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
-#define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
 
 extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
@@ -713,7 +712,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define BREADCRUMB_BITS 31
 #define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
 
-#define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
+#define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hws_vaddr))[5])
 
 /**
  * Reads a dword out of the status page, which is written to from the command
@@ -728,7 +727,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  *
  * The area from dword 0x10 to 0x3ff is available for driver usage.
  */
-#define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
+#define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hws_vaddr))[reg])
 #define I915_GEM_HWS_INDEX		0x10
 
 /*
@@ -985,12 +984,6 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define ADPA_DPMS_SUSPEND	(1<<10)
 #define ADPA_DPMS_STANDBY	(2<<10)
 #define ADPA_DPMS_OFF		(3<<10)
-
-#define LP_RING			0x2030
-#define HP_RING			0x2040
-/* The binner has its own ring buffer:
- */
-#define HWB_RING		0x2400
 
 #define RING_TAIL		0x00
 #define TAIL_ADDR		0x001FFFF8

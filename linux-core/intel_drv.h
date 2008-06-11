@@ -50,8 +50,7 @@ struct intel_i2c_chan {
 
 struct intel_framebuffer {
 	struct drm_framebuffer base;
-	struct drm_buffer_object *bo;
-	struct drm_bo_kmap_obj kmap;
+	struct drm_gem_object *obj;
 };
 
 
