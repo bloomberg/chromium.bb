@@ -109,47 +109,9 @@ int i915_load_modeset_init(struct drm_device *dev)
 	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
 	printk("setting up %ld bytes of VRAM space\n", prealloc_size);
 	printk("setting up %ld bytes of TT space\n", (agp_size - prealloc_size));
-
-	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, prealloc_size >> PAGE_SHIFT, 1);
-	drm_bo_init_mm(dev, DRM_BO_MEM_TT, prealloc_size >> PAGE_SHIFT,
-		       (agp_size - prealloc_size) >> PAGE_SHIFT, 1);
-	I915_WRITE(PRB0_CTL, 0);
-	I915_WRITE(PRB0_HEAD, 0);
-	I915_WRITE(PRB0_TAIL, 0);
-
-	size = PRIMARY_RINGBUFFER_SIZE;
-	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
-			DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE |
-			DRM_BO_FLAG_MEM_VRAM |
-			DRM_BO_FLAG_NO_EVICT,
-			DRM_BO_HINT_DONT_FENCE, 0x1, 0,
-			&dev_priv->ring_buffer);
-	if (ret < 0) {
-		DRM_ERROR("Unable to allocate or pin ring buffer\n");
-		goto clean_mm;
-	}
-
-	/* remap the buffer object properly */
-	dev_priv->ring.Start = dev_priv->ring_buffer->offset;
-	dev_priv->ring.End = dev_priv->ring.Start + size;
-	dev_priv->ring.Size = size;
-	dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
-
-	/* FIXME: need wrapper with PCI mem checks */
-	ret = drm_mem_reg_ioremap(dev, &dev_priv->ring_buffer->mem,
-				  (void **) &dev_priv->ring.virtual_start);
-	if (ret) {
-		DRM_ERROR("error mapping ring buffer: %d\n", ret);
-		goto destroy_ringbuffer;
-	}
-
-	DRM_DEBUG("ring start %08lX, %p, %08lX\n", dev_priv->ring.Start,
-			dev_priv->ring.virtual_start, dev_priv->ring.Size);
-
-	memset((void *)(dev_priv->ring.virtual_start), 0, dev_priv->ring.Size);
-	I915_WRITE(PRB0_START, dev_priv->ring.Start);
-	I915_WRITE(PRB0_CTL, ((dev_priv->ring.Size - 4096) & RING_NR_PAGES) |
-		   (RING_NO_REPORT | RING_VALID));
+	ret = i915_gem_init_ringbuffer(dev);
+	if (ret)
+		goto out;
 
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
@@ -262,9 +224,7 @@ destroy_ringbuffer:
 				    dev_priv->ring.virtual_start);
 	if (dev_priv->ring_buffer)
 		drm_bo_usage_deref_unlocked(&dev_priv->ring_buffer);
-clean_mm:
-	drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM, 1);
-	drm_bo_clean_mm(dev, DRM_BO_MEM_TT, 1);
+out:
 	return ret;
 }
 

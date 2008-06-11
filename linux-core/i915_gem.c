@@ -702,14 +702,17 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
 	BUG_ON(obj_priv->page_list != NULL);
 	obj_priv->page_list = drm_calloc(page_count, sizeof(struct page *),
 					 DRM_MEM_DRIVER);
-	if (obj_priv->page_list == NULL)
+	if (obj_priv->page_list == NULL) {
+		DRM_ERROR("Faled to allocate page list\n");
 		return -ENOMEM;
+	}
 
 	for (i = 0; i < page_count; i++) {
 		obj_priv->page_list[i] =
 		    find_or_create_page(obj->filp->f_mapping, i, GFP_HIGHUSER);
 
 		if (obj_priv->page_list[i] == NULL) {
+			DRM_ERROR("Failed to find_or_create_page()\n");
 			i915_gem_object_free_page_list(obj);
 			return -ENOMEM;
 		}
@@ -758,14 +761,17 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 		DRM_INFO("%s: GTT full, evicting something\n", __func__);
 #endif
 		if (list_empty(&dev_priv->mm.inactive_list) &&
+		    list_empty(&dev_priv->mm.flushing_list) &&
 		    list_empty(&dev_priv->mm.active_list)) {
 			DRM_ERROR("GTT full, but LRU list empty\n");
 			return -ENOMEM;
 		}
 
 		ret = i915_gem_evict_something(dev);
-		if (ret != 0)
+		if (ret != 0) {
+			DRM_ERROR("Failed to evict a buffer\n");
 			return ret;
+		}
 		goto search_free;
 	}
 
@@ -1383,6 +1389,7 @@ int
 i915_gem_execbuffer(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_gem_execbuffer *args = data;
 	struct drm_i915_gem_exec_object *exec_list = NULL;
 	struct drm_gem_object **object_list = NULL;
@@ -1422,6 +1429,12 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	}
 
 	mutex_lock(&dev->struct_mutex);
+
+	if (dev_priv->mm.suspended) {
+		DRM_ERROR("Execbuf while VT-switched.\n");
+		mutex_unlock(&dev->struct_mutex);
+		return -EBUSY;
+	}
 
 	/* Zero the gloabl flush/invalidate flags. These
 	 * will be modified as each object is bound to the
@@ -1560,6 +1573,37 @@ pre_mutex_err:
 }
 
 int
+i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment)
+{
+	struct drm_device *dev = obj->dev;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	int ret;
+
+	if (obj_priv->gtt_space == NULL) {
+		ret = i915_gem_object_bind_to_gtt(obj, alignment);
+		if (ret != 0) {
+			DRM_ERROR("Failure to bind in "
+				  "i915_gem_pin_ioctl(): %d\n",
+				  ret);
+			drm_gem_object_unreference(obj);
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
+		}
+	}
+
+	obj_priv->pin_count++;
+	return 0;
+}
+
+void
+i915_gem_object_unpin(struct drm_gem_object *obj)
+{
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
+	obj_priv->pin_count--;
+}
+
+int
 i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
 {
@@ -1578,22 +1622,15 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
-
 	obj_priv = obj->driver_private;
-	if (obj_priv->gtt_space == NULL) {
-		ret = i915_gem_object_bind_to_gtt(obj,
-						  (unsigned) args->alignment);
-		if (ret != 0) {
-			DRM_ERROR("Failure to bind in "
-				  "i915_gem_pin_ioctl(): %d\n",
-				  ret);
-			drm_gem_object_unreference(obj);
-			mutex_unlock(&dev->struct_mutex);
-			return ret;
-		}
+
+	ret = i915_gem_object_pin(obj, args->alignment);
+	if (ret != 0) {
+		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
 	}
 
-	obj_priv->pin_count++;
 	args->offset = obj_priv->gtt_offset;
 	drm_gem_object_unreference(obj);
 	mutex_unlock(&dev->struct_mutex);
@@ -1607,7 +1644,6 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 {
 	struct drm_i915_gem_pin *args = data;
 	struct drm_gem_object *obj;
-	struct drm_i915_gem_object *obj_priv;
 
 	mutex_lock(&dev->struct_mutex);
 
@@ -1620,8 +1656,8 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	obj_priv = obj->driver_private;
-	obj_priv->pin_count--;
+	i915_gem_object_unpin(obj);
+
 	drm_gem_object_unreference(obj);
 	mutex_unlock(&dev->struct_mutex);
 	return 0;
@@ -1756,4 +1792,174 @@ i915_gem_lastclose(struct drm_device *dev)
 	}
 
 	mutex_unlock(&dev->struct_mutex);
+}
+
+int
+i915_gem_init_ringbuffer(struct drm_device *dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+	int ret;
+
+	obj = drm_gem_object_alloc(dev, 128 * 1024);
+	if (obj == NULL) {
+		DRM_ERROR("Failed to allocate ringbuffer\n");
+		return -ENOMEM;
+	}
+	obj_priv = obj->driver_private;
+
+	ret = i915_gem_object_pin(obj, 4096);
+	if (ret != 0)
+		return ret;
+
+	/* Set up the kernel mapping for the ring. */
+	dev_priv->ring.Size = obj->size;
+	dev_priv->ring.tail_mask = obj->size - 1;
+
+	dev_priv->ring.map.offset = dev->agp->base + obj_priv->gtt_offset;
+	dev_priv->ring.map.size = obj->size;
+	dev_priv->ring.map.type = 0;
+	dev_priv->ring.map.flags = 0;
+	dev_priv->ring.map.mtrr = 0;
+
+	drm_core_ioremap(&dev_priv->ring.map, dev);
+	if (dev_priv->ring.map.handle == NULL) {
+		DRM_ERROR("Failed to map ringbuffer.\n");
+		memset(&dev_priv->ring, 0, sizeof(dev_priv->ring));
+		drm_gem_object_unreference(obj);
+		return -EINVAL;
+	}
+	dev_priv->ring.ring_obj = obj;
+	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
+
+	/* Stop the ring if it's running. */
+	I915_WRITE(LP_RING + RING_LEN, 0);
+	I915_WRITE(LP_RING + RING_HEAD, 0);
+	I915_WRITE(LP_RING + RING_TAIL, 0);
+	I915_WRITE(LP_RING + RING_START, 0);
+
+	/* Initialize the ring. */
+	I915_WRITE(LP_RING + RING_START, obj_priv->gtt_offset);
+	I915_WRITE(LP_RING + RING_LEN,
+		   ((obj->size - 4096) & RING_NR_PAGES) |
+		   RING_NO_REPORT |
+		   RING_VALID);
+
+	/* Update our cache of the ring state */
+	i915_kernel_lost_context(dev);
+
+	return 0;
+}
+
+static void
+i915_gem_cleanup_ringbuffer(struct drm_device *dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	if (dev_priv->ring.ring_obj == NULL)
+		return;
+
+	drm_core_ioremapfree(&dev_priv->ring.map, dev);
+
+	i915_gem_object_unpin(dev_priv->ring.ring_obj);
+	drm_gem_object_unreference(dev_priv->ring.ring_obj);
+
+	memset(&dev_priv->ring, 0, sizeof(dev_priv->ring));
+}
+
+int
+i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	int ret;
+
+	ret = i915_gem_init_ringbuffer(dev);
+	if (ret != 0)
+		return ret;
+
+	mutex_lock(&dev->struct_mutex);
+	dev_priv->mm.suspended = 0;
+	mutex_unlock(&dev->struct_mutex);
+	return 0;
+}
+
+/** Unbinds all objects that are on the given buffer list. */
+static int
+i915_gem_evict_from_list(struct drm_device *dev, struct list_head *head)
+{
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+	int ret;
+
+	while (!list_empty(head)) {
+		obj_priv = list_first_entry(head,
+					    struct drm_i915_gem_object,
+					    list);
+		obj = obj_priv->obj;
+
+		if (obj_priv->pin_count != 0) {
+			DRM_ERROR("Pinned object in unbind list\n");
+			mutex_unlock(&dev->struct_mutex);
+			return -EINVAL;
+		}
+
+		ret = i915_gem_object_unbind(obj);
+		if (ret != 0) {
+			DRM_ERROR("Error unbinding object in LeaveVT: %d\n",
+				  ret);
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
+		}
+	}
+
+
+	return 0;
+}
+
+int
+i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	mutex_lock(&dev->struct_mutex);
+	/* Hack!  Don't let anybody do execbuf while we don't control the chip.
+	 * We need to replace this with a semaphore, or something.
+	 */
+	dev_priv->mm.suspended = 1;
+
+	/* Move all buffers out of the GTT. */
+	i915_gem_evict_from_list(dev, &dev_priv->mm.active_list);
+	i915_gem_evict_from_list(dev, &dev_priv->mm.flushing_list);
+	i915_gem_evict_from_list(dev, &dev_priv->mm.inactive_list);
+
+	/* Make sure the harware's idle. */
+	while (!list_empty(&dev_priv->mm.request_list)) {
+		struct drm_i915_gem_request *request;
+		int ret;
+
+		request = list_first_entry(&dev_priv->mm.request_list,
+					   struct drm_i915_gem_request,
+					   list);
+
+		ret = i915_wait_request(dev, request->seqno);
+		if (ret != 0) {
+			DRM_ERROR("Error waiting for idle at LeaveVT: %d\n",
+				  ret);
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
+		}
+	}
+
+	BUG_ON(!list_empty(&dev_priv->mm.active_list));
+	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
+	BUG_ON(!list_empty(&dev_priv->mm.inactive_list));
+
+	i915_gem_cleanup_ringbuffer(dev);
+
+	mutex_unlock(&dev->struct_mutex);
+
+	return 0;
 }

@@ -670,7 +670,7 @@ void i915_user_irq_off(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
-	BUG_ON(dev_priv->user_irq_refcount <= 0);
+	BUG_ON(dev_priv->irq_enabled && dev_priv->user_irq_refcount <= 0);
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
 		dev_priv->irq_mask_reg |= I915_USER_INTERRUPT;
 		if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
@@ -688,6 +688,11 @@ int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	struct drm_i915_master_private *master_priv;
 	int ret = 0;
+
+	if (!dev_priv) {
+		DRM_ERROR("called with no initialization\n");
+		return -EINVAL;
+	}
 
 	DRM_DEBUG("irq_nr=%d breadcrumb=%d\n", irq_nr,
 		  READ_BREADCRUMB(dev_priv));
