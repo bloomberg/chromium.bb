@@ -34,12 +34,13 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include "drm.h"
+#include "i915_drm.h"
 
 #define OBJECT_SIZE 16384
 
 int do_read(int fd, int handle, void *buf, int offset, int size)
 {
-	struct drm_gem_pread read;
+	struct drm_i915_gem_pread read;
 
 	/* Ensure that we don't have any convenient data in buf in case
 	 * we fail.
@@ -52,12 +53,12 @@ int do_read(int fd, int handle, void *buf, int offset, int size)
 	read.size = size;
 	read.offset = offset;
 
-	return ioctl(fd, DRM_IOCTL_GEM_PREAD, &read);
+	return ioctl(fd, DRM_IOCTL_I915_GEM_PREAD, &read);
 }
 
 int do_write(int fd, int handle, void *buf, int offset, int size)
 {
-	struct drm_gem_pwrite write;
+	struct drm_i915_gem_pwrite write;
 
 	memset(&write, 0, sizeof(write));
 	write.handle = handle;
@@ -65,14 +66,14 @@ int do_write(int fd, int handle, void *buf, int offset, int size)
 	write.size = size;
 	write.offset = offset;
 
-	return ioctl(fd, DRM_IOCTL_GEM_PWRITE, &write);
+	return ioctl(fd, DRM_IOCTL_I915_GEM_PWRITE, &write);
 }
 
 int main(int argc, char **argv)
 {
 	int fd;
-	struct drm_gem_create create;
-	struct drm_gem_mmap mmap;
+	struct drm_i915_gem_create create;
+	struct drm_i915_gem_mmap mmap;
 	struct drm_gem_close unref;
 	uint8_t expected[OBJECT_SIZE];
 	uint8_t buf[OBJECT_SIZE];
@@ -87,12 +88,12 @@ int main(int argc, char **argv)
 	mmap.offset = 0;
 	mmap.size = 4096;
 	printf("Testing mmaping of bad object.\n");
-	ret = ioctl(fd, DRM_IOCTL_GEM_MMAP, &mmap);
+	ret = ioctl(fd, DRM_IOCTL_I915_GEM_MMAP, &mmap);
 	assert(ret == -1 && errno == EINVAL);
 
 	memset(&create, 0, sizeof(create));
 	create.size = OBJECT_SIZE;
-	ret = ioctl(fd, DRM_IOCTL_GEM_CREATE, &create);
+	ret = ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create);
 	assert(ret == 0);
 	handle = create.handle;
 
@@ -100,7 +101,7 @@ int main(int argc, char **argv)
 	mmap.handle = handle;
 	mmap.offset = 0;
 	mmap.size = OBJECT_SIZE;
-	ret = ioctl(fd, DRM_IOCTL_GEM_MMAP, &mmap);
+	ret = ioctl(fd, DRM_IOCTL_I915_GEM_MMAP, &mmap);
 	assert(ret == 0);
 	addr = (uint8_t *)(uintptr_t)mmap.addr_ptr;
 

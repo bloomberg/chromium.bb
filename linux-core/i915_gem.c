@@ -40,6 +40,11 @@ static int
 i915_gem_object_set_domain(struct drm_gem_object *obj,
 			    uint32_t read_domains,
 			    uint32_t write_domain);
+int
+i915_gem_set_domain(struct drm_gem_object *obj,
+		    struct drm_file *file_priv,
+		    uint32_t read_domains,
+		    uint32_t write_domain);
 
 int
 i915_gem_init_ioctl(struct drm_device *dev, void *data,
@@ -61,6 +66,199 @@ i915_gem_init_ioctl(struct drm_device *dev, void *data,
 	    args->gtt_end - args->gtt_start);
 
 	mutex_unlock(&dev->struct_mutex);
+
+	return 0;
+}
+
+
+/**
+ * Creates a new mm object and returns a handle to it.
+ */
+int
+i915_gem_create_ioctl(struct drm_device *dev, void *data,
+		      struct drm_file *file_priv)
+{
+	struct drm_i915_gem_create *args = data;
+	struct drm_gem_object *obj;
+	int handle, ret;
+
+	args->size = roundup(args->size, PAGE_SIZE);
+
+	/* Allocate the new object */
+	obj = drm_gem_object_alloc(dev, args->size);
+	if (obj == NULL)
+		return -ENOMEM;
+
+	ret = drm_gem_handle_create(file_priv, obj, &handle);
+	mutex_lock(&dev->struct_mutex);
+	drm_gem_object_handle_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+
+	if (ret)
+		return ret;
+
+	args->handle = handle;
+
+	return 0;
+}
+
+/**
+ * Reads data from the object referenced by handle.
+ *
+ * On error, the contents of *data are undefined.
+ */
+int
+i915_gem_pread_ioctl(struct drm_device *dev, void *data,
+		     struct drm_file *file_priv)
+{
+	struct drm_i915_gem_pread *args = data;
+	struct drm_gem_object *obj;
+	ssize_t read;
+	loff_t offset;
+	int ret;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = i915_gem_set_domain(obj, file_priv,
+				  I915_GEM_DOMAIN_CPU, 0);
+	if (ret) {
+		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
+	}
+	offset = args->offset;
+
+	read = vfs_read(obj->filp, (char __user *)(uintptr_t)args->data_ptr,
+			args->size, &offset);
+	if (read != args->size) {
+		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
+		if (read < 0)
+			return read;
+		else
+			return -EINVAL;
+	}
+
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+
+	return 0;
+}
+
+/**
+ * Writes data to the object referenced by handle.
+ *
+ * On error, the contents of the buffer that were to be modified are undefined.
+ */
+int
+i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+		      struct drm_file *file_priv)
+{
+	struct drm_i915_gem_pwrite *args = data;
+	struct drm_gem_object *obj;
+	ssize_t written;
+	loff_t offset;
+	int ret;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = i915_gem_set_domain(obj, file_priv,
+				  I915_GEM_DOMAIN_CPU, I915_GEM_DOMAIN_CPU);
+	if (ret) {
+		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
+	}
+	offset = args->offset;
+
+	written = vfs_write(obj->filp,
+			    (char __user *)(uintptr_t) args->data_ptr,
+			    args->size, &offset);
+
+	if (written != args->size) {
+		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
+		if (written < 0)
+			return written;
+		else
+			return -EINVAL;
+	}
+
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+
+	return 0;
+}
+
+/**
+ * Called when user space prepares to use an object
+ */
+int
+i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
+			  struct drm_file *file_priv)
+{
+	struct drm_i915_gem_set_domain *args = data;
+	struct drm_gem_object *obj;
+	int ret;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = i915_gem_set_domain(obj, file_priv,
+				  args->read_domains, args->write_domain);
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
+}
+
+/**
+ * Maps the contents of an object, returning the address it is mapped
+ * into.
+ *
+ * While the mapping holds a reference on the contents of the object, it doesn't
+ * imply a ref on the object itself.
+ */
+int
+i915_gem_mmap_ioctl(struct drm_device *dev, void *data,
+		   struct drm_file *file_priv)
+{
+	struct drm_i915_gem_mmap *args = data;
+	struct drm_gem_object *obj;
+	loff_t offset;
+	unsigned long addr;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	offset = args->offset;
+
+	down_write(&current->mm->mmap_sem);
+	addr = do_mmap(obj->filp, 0, args->size,
+		       PROT_READ | PROT_WRITE, MAP_SHARED,
+		       args->offset);
+	up_write(&current->mm->mmap_sem);
+	mutex_lock(&dev->struct_mutex);
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+	if (IS_ERR((void *)addr))
+		return addr;
+
+	args->addr_ptr = (uint64_t) addr;
 
 	return 0;
 }
@@ -187,7 +385,7 @@ i915_retire_commands(struct drm_device *dev)
 
 	/* The sampler always gets flushed on i965 (sigh) */
 	if (IS_I965G(dev))
-		flush_domains |= DRM_GEM_DOMAIN_I915_SAMPLER;
+		flush_domains |= I915_GEM_DOMAIN_SAMPLER;
 	BEGIN_LP_RING(2);
 	OUT_RING(cmd);
 	OUT_RING(0); /* noop */
@@ -377,51 +575,51 @@ i915_gem_flush(struct drm_device *dev,
 		  invalidate_domains, flush_domains);
 #endif
 
-	if (flush_domains & DRM_GEM_DOMAIN_CPU)
+	if (flush_domains & I915_GEM_DOMAIN_CPU)
 		drm_agp_chipset_flush(dev);
 
-	if ((invalidate_domains|flush_domains) & ~DRM_GEM_DOMAIN_CPU) {
+	if ((invalidate_domains|flush_domains) & ~I915_GEM_DOMAIN_CPU) {
 		/*
 		 * read/write caches:
 		 *
-		 * DRM_GEM_DOMAIN_I915_RENDER is always invalidated, but is
+		 * I915_GEM_DOMAIN_RENDER is always invalidated, but is
 		 * only flushed if MI_NO_WRITE_FLUSH is unset.  On 965, it is
 		 * also flushed at 2d versus 3d pipeline switches.
 		 *
 		 * read-only caches:
 		 *
-		 * DRM_GEM_DOMAIN_I915_SAMPLER is flushed on pre-965 if
+		 * I915_GEM_DOMAIN_SAMPLER is flushed on pre-965 if
 		 * MI_READ_FLUSH is set, and is always flushed on 965.
 		 *
-		 * DRM_GEM_DOMAIN_I915_COMMAND may not exist?
+		 * I915_GEM_DOMAIN_COMMAND may not exist?
 		 *
-		 * DRM_GEM_DOMAIN_I915_INSTRUCTION, which exists on 965, is
+		 * I915_GEM_DOMAIN_INSTRUCTION, which exists on 965, is
 		 * invalidated when MI_EXE_FLUSH is set.
 		 *
-		 * DRM_GEM_DOMAIN_I915_VERTEX, which exists on 965, is
+		 * I915_GEM_DOMAIN_VERTEX, which exists on 965, is
 		 * invalidated with every MI_FLUSH.
 		 *
 		 * TLBs:
 		 *
-		 * On 965, TLBs associated with DRM_GEM_DOMAIN_I915_COMMAND
-		 * and DRM_GEM_DOMAIN_CPU in are invalidated at PTE write and
-		 * DRM_GEM_DOMAIN_I915_RENDER and DRM_GEM_DOMAIN_I915_SAMPLER
+		 * On 965, TLBs associated with I915_GEM_DOMAIN_COMMAND
+		 * and I915_GEM_DOMAIN_CPU in are invalidated at PTE write and
+		 * I915_GEM_DOMAIN_RENDER and I915_GEM_DOMAIN_SAMPLER
 		 * are flushed at any MI_FLUSH.
 		 */
 
 		cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
 		if ((invalidate_domains|flush_domains) &
-		    DRM_GEM_DOMAIN_I915_RENDER)
+		    I915_GEM_DOMAIN_RENDER)
 			cmd &= ~MI_NO_WRITE_FLUSH;
 		if (!IS_I965G(dev)) {
 			/*
 			 * On the 965, the sampler cache always gets flushed
 			 * and this bit is reserved.
 			 */
-			if (invalidate_domains & DRM_GEM_DOMAIN_I915_SAMPLER)
+			if (invalidate_domains & I915_GEM_DOMAIN_SAMPLER)
 				cmd |= MI_READ_FLUSH;
 		}
-		if (invalidate_domains & DRM_GEM_DOMAIN_I915_INSTRUCTION)
+		if (invalidate_domains & I915_GEM_DOMAIN_INSTRUCTION)
 			cmd |= MI_EXE_FLUSH;
 
 #if WATCH_EXEC
@@ -448,7 +646,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	/* If there are writes queued to the buffer, flush and
 	 * create a new seqno to wait for.
 	 */
-	if (obj->write_domain & ~(DRM_GEM_DOMAIN_CPU)) {
+	if (obj->write_domain & ~(I915_GEM_DOMAIN_CPU)) {
 		uint32_t write_domain = obj->write_domain;
 #if WATCH_BUF
 		DRM_INFO("%s: flushing object %p from write domain %08x\n",
@@ -503,8 +701,8 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	 * also ensure that all pending GPU writes are finished
 	 * before we unbind.
 	 */
-	ret = i915_gem_object_set_domain (obj, DRM_GEM_DOMAIN_CPU,
-					  DRM_GEM_DOMAIN_CPU);
+	ret = i915_gem_object_set_domain (obj, I915_GEM_DOMAIN_CPU,
+					  I915_GEM_DOMAIN_CPU);
 	if (ret)
 		return ret;
 
@@ -805,8 +1003,8 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	 * wasn't in the GTT, there shouldn't be any way it could have been in
 	 * a GPU cache
 	 */
-	BUG_ON(obj->read_domains & ~DRM_GEM_DOMAIN_CPU);
-	BUG_ON(obj->write_domain & ~DRM_GEM_DOMAIN_CPU);
+	BUG_ON(obj->read_domains & ~I915_GEM_DOMAIN_CPU);
+	BUG_ON(obj->write_domain & ~I915_GEM_DOMAIN_CPU);
 
 	return 0;
 }
@@ -973,7 +1171,7 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 	 * stale data. That is, any new read domains.
 	 */
 	invalidate_domains |= read_domains & ~obj->read_domains;
-	if ((flush_domains | invalidate_domains) & DRM_GEM_DOMAIN_CPU) {
+	if ((flush_domains | invalidate_domains) & I915_GEM_DOMAIN_CPU) {
 #if WATCH_BUF
 		DRM_INFO("%s: CPU domain flush %08x invalidate %08x\n",
 			 __func__, flush_domains, invalidate_domains);
@@ -983,8 +1181,8 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 		 * then pause for rendering so that the GPU caches will be
 		 * flushed before the cpu cache is invalidated
 		 */
-		if ((invalidate_domains & DRM_GEM_DOMAIN_CPU) &&
-		    (flush_domains & ~DRM_GEM_DOMAIN_CPU)) {
+		if ((invalidate_domains & I915_GEM_DOMAIN_CPU) &&
+		    (flush_domains & ~I915_GEM_DOMAIN_CPU)) {
 			ret = i915_gem_object_wait_rendering(obj);
 			if (ret)
 				return ret;
@@ -1225,7 +1423,7 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 		/* As we're writing through the gtt, flush
 		 * any CPU writes before we write the relocations
 		 */
-		if (obj->write_domain & DRM_GEM_DOMAIN_CPU) {
+		if (obj->write_domain & I915_GEM_DOMAIN_CPU) {
 			i915_gem_clflush_object(obj);
 			drm_agp_chipset_flush(dev);
 			obj->write_domain = 0;
@@ -1466,7 +1664,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	/* Set the pending read domains for the batch buffer to COMMAND */
 	batch_obj = object_list[args->buffer_count-1];
-	batch_obj->pending_read_domains = DRM_GEM_DOMAIN_I915_COMMAND;
+	batch_obj->pending_read_domains = I915_GEM_DOMAIN_COMMAND;
 	batch_obj->pending_write_domain = 0;
 
 	for (i = 0; i < args->buffer_count; i++) {
@@ -1700,6 +1898,15 @@ int i915_gem_init_object(struct drm_gem_object *obj)
 	if (obj_priv == NULL)
 		return -ENOMEM;
 
+	/*
+	 * We've just allocated pages from the kernel,
+	 * so they've just been written by the CPU with
+	 * zeros. They'll need to be clflushed before we
+	 * use them with the GPU.
+	 */
+	obj->write_domain = I915_GEM_DOMAIN_CPU;
+	obj->read_domains = I915_GEM_DOMAIN_CPU;
+
 	obj->driver_private = obj_priv;
 	obj_priv->obj = obj;
 	INIT_LIST_HEAD(&obj_priv->list);
@@ -1732,32 +1939,6 @@ i915_gem_set_domain(struct drm_gem_object *obj,
 	}
 	i915_gem_dev_set_domain(obj->dev);
 	drm_client_lock_release(dev);
-	return 0;
-}
-
-int
-i915_gem_flush_pwrite(struct drm_gem_object *obj,
-		      uint64_t offset, uint64_t size)
-{
-#if 0
-	struct drm_device *dev = obj->dev;
-	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-
-	/*
-	 * For writes much less than the size of the object and
-	 * which are already pinned in memory, do the flush right now
-	 */
-
-	if ((size < obj->size >> 1) && obj_priv->page_list != NULL) {
-		unsigned long first_page = offset / PAGE_SIZE;
-		unsigned long beyond_page = roundup(offset + size, PAGE_SIZE) / PAGE_SIZE;
-
-		drm_ttm_cache_flush(obj_priv->page_list + first_page,
-				    beyond_page - first_page);
-		drm_agp_chipset_flush(dev);
-		obj->write_domain = 0;
-	}
-#endif
 	return 0;
 }
 

@@ -183,7 +183,12 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_GEM_BUSY	0x17
 #define DRM_I915_GEM_THROTTLE	0x18
 #define DRM_I915_GEM_ENTERVT	0x19
-#define DRM_I915_GEM_LEAVEVT	0x20
+#define DRM_I915_GEM_LEAVEVT	0x1a
+#define DRM_I915_GEM_CREATE	0x1b
+#define DRM_I915_GEM_PREAD	0x1c
+#define DRM_I915_GEM_PWRITE	0x1d
+#define DRM_I915_GEM_MMAP	0x1e
+#define DRM_I915_GEM_SET_DOMAIN	0x1f
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -211,6 +216,11 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_GEM_THROTTLE	DRM_IO ( DRM_COMMAND_BASE + DRM_I915_GEM_THROTTLE)
 #define DRM_IOCTL_I915_GEM_ENTERVT	DRM_IO(DRM_COMMAND_BASE + DRM_I915_GEM_ENTERVT)
 #define DRM_IOCTL_I915_GEM_LEAVEVT	DRM_IO(DRM_COMMAND_BASE + DRM_I915_GEM_LEAVEVT)
+#define DRM_IOCTL_I915_GEM_CREATE	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_CREATE, struct drm_i915_gem_create)
+#define DRM_IOCTL_I915_GEM_PREAD	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_PREAD, struct drm_i915_gem_pread)
+#define DRM_IOCTL_I915_GEM_PWRITE	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_PWRITE, struct drm_i915_gem_pwrite)
+#define DRM_IOCTL_I915_GEM_MMAP		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_MMAP, struct drm_i915_gem_mmap)
+#define DRM_IOCTL_I915_GEM_SET_DOMAIN	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_SET_DOMAIN, struct drm_i915_gem_set_domain)
 
 /* Asynchronous page flipping:
  */
@@ -424,6 +434,73 @@ struct drm_i915_gem_init {
 	uint64_t gtt_end;
 };
 
+struct drm_i915_gem_create {
+	/**
+	 * Requested size for the object.
+	 *
+	 * The (page-aligned) allocated size for the object will be returned.
+	 */
+	uint64_t size;
+	/**
+	 * Returned handle for the object.
+	 *
+	 * Object handles are nonzero.
+	 */
+	uint32_t handle;
+	uint32_t pad;
+};
+
+struct drm_i915_gem_pread {
+	/** Handle for the object being read. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset into the object to read from */
+	uint64_t offset;
+	/** Length of data to read */
+	uint64_t size;
+	/** Pointer to write the data into. */
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_i915_gem_pwrite {
+	/** Handle for the object being written to. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset into the object to write to */
+	uint64_t offset;
+	/** Length of data to write */
+	uint64_t size;
+	/** Pointer to read the data from. */
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_i915_gem_mmap {
+	/** Handle for the object being mapped. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset in the object to map. */
+	uint64_t offset;
+	/**
+	 * Length of data to map.
+	 *
+	 * The value will be page-aligned.
+	 */
+	uint64_t size;
+	/** Returned pointer the data was mapped at */
+	uint64_t addr_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_i915_gem_set_domain {
+	/** Handle for the object */
+	uint32_t handle;
+
+	/** New read domains */
+	uint32_t read_domains;
+
+	/** New write domain */
+	uint32_t write_domain;
+};
+
 struct drm_i915_gem_relocation_entry {
 	/**
 	 * Handle of the buffer being pointed to by this relocation entry.
@@ -469,20 +546,26 @@ struct drm_i915_gem_relocation_entry {
 	uint32_t write_domain;
 };
 
-/**
+/** @{
  * Intel memory domains
  *
  * Most of these just align with the various caches in
  * the system and are used to flush and invalidate as
  * objects end up cached in different domains.
  */
-
-/* 0x00000001 is DRM_GEM_DOMAIN_CPU */
-#define DRM_GEM_DOMAIN_I915_RENDER	0x00000002	/* Render cache, used by 2D and 3D drawing */
-#define DRM_GEM_DOMAIN_I915_SAMPLER	0x00000004	/* Sampler cache, used by texture engine */
-#define DRM_GEM_DOMAIN_I915_COMMAND	0x00000008	/* Command queue, used to load batch buffers */
-#define DRM_GEM_DOMAIN_I915_INSTRUCTION	0x00000010	/* Instruction cache, used by shader programs */
-#define DRM_GEM_DOMAIN_I915_VERTEX	0x00000020	/* Vertex address cache */
+/** CPU cache */
+#define I915_GEM_DOMAIN_CPU		0x00000001
+/** Render cache, used by 2D and 3D drawing */
+#define I915_GEM_DOMAIN_RENDER		0x00000002
+/** Sampler cache, used by texture engine */
+#define I915_GEM_DOMAIN_SAMPLER		0x00000004
+/** Command queue, used to load batch buffers */
+#define I915_GEM_DOMAIN_COMMAND		0x00000008
+/** Instruction cache, used by shader programs */
+#define I915_GEM_DOMAIN_INSTRUCTION	0x00000010
+/** Vertex address cache */
+#define I915_GEM_DOMAIN_VERTEX		0x00000020
+/** @} */
 
 struct drm_i915_gem_exec_object {
 	/**

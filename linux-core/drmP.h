@@ -779,21 +779,6 @@ struct drm_driver {
 	int (*gem_init_object) (struct drm_gem_object *obj);
 	void (*gem_free_object) (struct drm_gem_object *obj);
 
-	/**
-	 * Driver-specific callback to set memory domains from userspace
-	 */
-	int (*gem_set_domain) (struct drm_gem_object *obj,
-			       struct drm_file *file_priv,
-			       uint32_t read_domains,
-			       uint32_t write_domain);
-
-	/**
-	 * Driver-specific callback to flush pwrite through chipset
-	 */
-	int (*gem_flush_pwrite) (struct drm_gem_object *obj,
-				 uint64_t offset,
-				 uint64_t size);
-
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
 
@@ -1390,6 +1375,11 @@ static inline void drm_gem_object_unreference(struct drm_gem_object *obj)
 	kref_put (&obj->refcount, drm_gem_object_free);
 }
 
+int
+drm_gem_handle_create(struct drm_file *file_priv,
+		      struct drm_gem_object *obj,
+		      int *handlep);
+
 static inline void drm_gem_object_handle_reference (struct drm_gem_object *obj)
 {
 	drm_gem_object_reference (obj);
@@ -1413,36 +1403,15 @@ static inline void drm_gem_object_handle_unreference (struct drm_gem_object *obj
 struct drm_gem_object *
 drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 		      int handle);
-int drm_gem_create_ioctl(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv);
 int drm_gem_close_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
-int drm_gem_pread_ioctl(struct drm_device *dev, void *data,
-			struct drm_file *file_priv);
-int drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv);
-int drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
-		       struct drm_file *file_priv);
 int drm_gem_flink_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int drm_gem_open_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv);
-int drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
-			     struct drm_file *file_priv);
 
 void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
 void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);
-
-
-/*
- * Given the new read/write domains for an object,
- * compute the invalidate/flush domains for the whole device.
- *
- */
-int drm_gem_object_set_domain (struct drm_gem_object *object,
-			       uint32_t read_domains,
-			       uint32_t write_domains);
-
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);

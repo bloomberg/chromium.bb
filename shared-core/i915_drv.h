@@ -37,7 +37,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20080312"
+#define DRIVER_DATE		"20080611"
 
 #if defined(__linux__)
 #define I915_HAVE_FENCE
@@ -61,7 +61,7 @@
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		13
+#define DRIVER_MINOR		14
 #else
 #define DRIVER_MINOR		6
 #endif
@@ -461,6 +461,16 @@ int i915_execbuffer(struct drm_device *dev, void *data,
 /* i915_gem.c */
 int i915_gem_init_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
+int i915_gem_create_ioctl(struct drm_device *dev, void *data,
+			  struct drm_file *file_priv);
+int i915_gem_pread_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+int i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+			  struct drm_file *file_priv);
+int i915_gem_mmap_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
 int i915_gem_execbuffer(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_pin_ioctl(struct drm_device *dev, void *data,
@@ -479,12 +489,6 @@ int i915_gem_init_object(struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_gem_object *obj);
 int i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment);
 void i915_gem_object_unpin(struct drm_gem_object *obj);
-int i915_gem_set_domain(struct drm_gem_object *obj,
-			struct drm_file *file_priv,
-			uint32_t read_domains,
-			uint32_t write_domain);
-int i915_gem_flush_pwrite(struct drm_gem_object *obj,
-			  uint64_t offset, uint64_t size);
 void i915_gem_lastclose(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
 void i915_gem_retire_timeout(unsigned long data);

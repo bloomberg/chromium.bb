@@ -1062,7 +1062,7 @@ dri_fake_process_relocs(dri_bo *batch_buf)
 
    dri_fake_calculate_domains(batch_buf);
 
-   batch_fake->read_domains = DRM_GEM_DOMAIN_I915_COMMAND;
+   batch_fake->read_domains = I915_GEM_DOMAIN_COMMAND;
 
    /* we've ran out of RAM so blow the whole lot away and retry */
  restart:

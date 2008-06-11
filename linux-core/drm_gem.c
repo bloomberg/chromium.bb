@@ -99,15 +99,6 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 	kref_init(&obj->refcount);
 	kref_init(&obj->handlecount);
 	obj->size = size;
-
-	/*
-	 * We've just allocated pages from the kernel,
-	 * so they've just been written by the CPU with
-	 * zeros. They'll need to be clflushed before we
-	 * use them with the GPU.
-	 */
-	obj->write_domain = DRM_GEM_DOMAIN_CPU;
-	obj->read_domains = DRM_GEM_DOMAIN_CPU;
 	if (dev->driver->gem_init_object != NULL &&
 	    dev->driver->gem_init_object(obj) != 0) {
 		fput(obj->filp);
@@ -163,7 +154,7 @@ drm_gem_handle_delete(struct drm_file *filp, int handle)
  * to the object, which includes a regular reference count. Callers
  * will likely want to dereference the object afterwards.
  */
-static int
+int
 drm_gem_handle_create(struct drm_file *file_priv,
 		       struct drm_gem_object *obj,
 		       int *handlep)
@@ -191,6 +182,7 @@ again:
 	drm_gem_object_handle_reference(obj);
 	return 0;
 }
+EXPORT_SYMBOL(drm_gem_handle_create);
 
 /** Returns a reference to the object named by the handle. */
 struct drm_gem_object *
@@ -217,40 +209,6 @@ drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 EXPORT_SYMBOL(drm_gem_object_lookup);
 
 /**
- * Creates a new mm object and returns a handle to it.
- */
-int
-drm_gem_create_ioctl(struct drm_device *dev, void *data,
-		     struct drm_file *file_priv)
-{
-	struct drm_gem_create *args = data;
-	struct drm_gem_object *obj;
-	int handle, ret;
-
-	if (!(dev->driver->driver_features & DRIVER_GEM))
-		return -ENODEV;
-
-	args->size = roundup(args->size, PAGE_SIZE);
-
-	/* Allocate the new object */
-	obj = drm_gem_object_alloc(dev, args->size);
-	if (obj == NULL)
-		return -ENOMEM;
-
-	ret = drm_gem_handle_create(file_priv, obj, &handle);
-	mutex_lock(&dev->struct_mutex);
-	drm_gem_object_handle_unreference(obj);
-	mutex_unlock(&dev->struct_mutex);
-
-	if (ret)
-		return ret;
-
-	args->handle = handle;
-
-	return 0;
-}
-
-/**
  * Releases the handle to an mm object.
  */
 int
@@ -266,158 +224,6 @@ drm_gem_close_ioctl(struct drm_device *dev, void *data,
 	ret = drm_gem_handle_delete(file_priv, args->handle);
 
 	return ret;
-}
-
-/**
- * Reads data from the object referenced by handle.
- *
- * On error, the contents of *data are undefined.
- */
-int
-drm_gem_pread_ioctl(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
-{
-	struct drm_gem_pread *args = data;
-	struct drm_gem_object *obj;
-	ssize_t read;
-	loff_t offset;
-	int ret;
-
-	if (!(dev->driver->driver_features & DRIVER_GEM))
-		return -ENODEV;
-
-	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->struct_mutex);
-	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain(obj, file_priv,
-						  DRM_GEM_DOMAIN_CPU,
-						  0);
-		if (ret) {
-			drm_gem_object_unreference(obj);
-			mutex_unlock(&dev->struct_mutex);
-			return ret;
-		}
-	}
-	offset = args->offset;
-
-	read = vfs_read(obj->filp, (char __user *)(uintptr_t)args->data_ptr,
-			args->size, &offset);
-	if (read != args->size) {
-		drm_gem_object_unreference(obj);
-		mutex_unlock(&dev->struct_mutex);
-		if (read < 0)
-			return read;
-		else
-			return -EINVAL;
-	}
-
-	drm_gem_object_unreference(obj);
-	mutex_unlock(&dev->struct_mutex);
-
-	return 0;
-}
-
-/**
- * Maps the contents of an object, returning the address it is mapped
- * into.
- *
- * While the mapping holds a reference on the contents of the object, it doesn't
- * imply a ref on the object itself.
- */
-int
-drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
-		   struct drm_file *file_priv)
-{
-	struct drm_gem_mmap *args = data;
-	struct drm_gem_object *obj;
-	loff_t offset;
-	unsigned long addr;
-
-	if (!(dev->driver->driver_features & DRIVER_GEM))
-		return -ENODEV;
-
-	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
-		return -EINVAL;
-
-	offset = args->offset;
-
-	down_write(&current->mm->mmap_sem);
-	addr = do_mmap(obj->filp, 0, args->size,
-		       PROT_READ | PROT_WRITE, MAP_SHARED,
-		       args->offset);
-	up_write(&current->mm->mmap_sem);
-	mutex_lock(&dev->struct_mutex);
-	drm_gem_object_unreference(obj);
-	mutex_unlock(&dev->struct_mutex);
-	if (IS_ERR((void *)addr))
-		return addr;
-
-	args->addr_ptr = (uint64_t) addr;
-
-	return 0;
-}
-
-/**
- * Writes data to the object referenced by handle.
- *
- * On error, the contents of the buffer that were to be modified are undefined.
- */
-int
-drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
-		     struct drm_file *file_priv)
-{
-	struct drm_gem_pwrite *args = data;
-	struct drm_gem_object *obj;
-	ssize_t written;
-	loff_t offset;
-	int ret;
-
-	if (!(dev->driver->driver_features & DRIVER_GEM))
-		return -ENODEV;
-
-	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->struct_mutex);
-	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain(obj, file_priv,
-						  DRM_GEM_DOMAIN_CPU,
-						  DRM_GEM_DOMAIN_CPU);
-		if (ret) {
-			drm_gem_object_unreference(obj);
-			mutex_unlock(&dev->struct_mutex);
-			return ret;
-		}
-	}
-	offset = args->offset;
-
-	written = vfs_write(obj->filp,
-			    (char __user *)(uintptr_t) args->data_ptr,
-			    args->size, &offset);
-
-	if (written != args->size) {
-		drm_gem_object_unreference(obj);
-		mutex_unlock(&dev->struct_mutex);
-		if (written < 0)
-			return written;
-		else
-			return -EINVAL;
-	}
-
-	if (dev->driver->gem_flush_pwrite)
-		dev->driver->gem_flush_pwrite(obj,
-					      args->offset,
-					      args->size);
-
-	drm_gem_object_unreference(obj);
-	mutex_unlock(&dev->struct_mutex);
-
-	return 0;
 }
 
 /**
@@ -509,39 +315,6 @@ drm_gem_open_ioctl(struct drm_device *dev, void *data,
 	args->size = obj->size;
 
 	return 0;
-}
-
-/**
- * Called when user space prepares to use an object
- */
-int
-drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
-			  struct drm_file *file_priv)
-{
-	struct drm_gem_set_domain *args = data;
-	struct drm_gem_object *obj;
-	int ret;
-
-	if (!(dev->driver->driver_features & DRIVER_GEM))
-		return -ENODEV;
-
-	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
-		return -EINVAL;
-
-	mutex_lock(&dev->struct_mutex);
-	if (dev->driver->gem_set_domain) {
-		ret = dev->driver->gem_set_domain(obj, file_priv,
-						   args->read_domains,
-						   args->write_domain);
-	} else {
-		obj->read_domains = args->read_domains;
-		obj->write_domain = args->write_domain;
-		ret = 0;
-	}
-	drm_gem_object_unreference(obj);
-	mutex_unlock(&dev->struct_mutex);
-	return ret;
 }
 
 /**
