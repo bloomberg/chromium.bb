@@ -228,9 +228,6 @@ int i915_load_modeset_init(struct drm_device *dev)
 	intel_modeset_init(dev);
 	drm_helper_initial_config(dev, false);
 
-	drm_mm_print(&dev->bm.man[DRM_BO_MEM_VRAM].manager, "VRAM");
-	drm_mm_print(&dev->bm.man[DRM_BO_MEM_TT].manager, "TT");
-
 	dev->devname = kstrdup(DRIVER_NAME, GFP_KERNEL);
 	if (!dev->devname) {
 		ret = -ENOMEM;
@@ -293,7 +290,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 
 	memset(dev_priv, 0, sizeof(struct drm_i915_private));
 	dev->dev_private = (void *)dev_priv;
-//	dev_priv->flags = flags;
+	dev_priv->dev = dev;
 
 	/* i915 has 4 more counters */
 	dev->counters += 4;
@@ -340,6 +337,19 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		DRM_ERROR("Cannot add mapping for MMIO registers\n");
 		goto free_priv;
 	}
+
+	INIT_LIST_HEAD(&dev_priv->mm.active_list);
+	INIT_LIST_HEAD(&dev_priv->mm.flushing_list);
+	INIT_LIST_HEAD(&dev_priv->mm.inactive_list);
+	INIT_LIST_HEAD(&dev_priv->mm.request_list);
+	dev_priv->mm.retire_timer.function = i915_gem_retire_timeout;
+	dev_priv->mm.retire_timer.data = (unsigned long) dev;
+	init_timer_deferrable (&dev_priv->mm.retire_timer);
+	INIT_WORK(&dev_priv->mm.retire_task,
+		  i915_gem_retire_handler);
+	INIT_WORK(&dev_priv->user_interrupt_task,
+		  i915_user_interrupt_handler);
+	dev_priv->mm.next_gem_seqno = 1;
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
@@ -500,7 +510,7 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
 void i915_driver_preclose(struct drm_device * dev, struct drm_file *file_priv)
 {
         struct drm_i915_private *dev_priv = dev->dev_private;
-	if (drm_core_check_feature(dev, DRIVER_MODESET))
+	if (!drm_core_check_feature(dev, DRIVER_MODESET))
 		i915_mem_release(dev, file_priv, dev_priv->agp_heap);
 }
 
@@ -511,8 +521,33 @@ void i915_driver_lastclose(struct drm_device * dev)
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		return;
 
+#ifdef I915_HAVE_BUFFER
+	if (dev_priv->val_bufs) {
+		vfree(dev_priv->val_bufs);
+		dev_priv->val_bufs = NULL;
+	}
+#endif
+
+	i915_gem_lastclose(dev);
+
 	if (dev_priv->agp_heap)
 		i915_mem_takedown(&(dev_priv->agp_heap));
+
+#if defined(I915_HAVE_BUFFER)
+	if (dev_priv->sarea_kmap.virtual) {
+		drm_bo_kunmap(&dev_priv->sarea_kmap);
+		dev_priv->sarea_kmap.virtual = NULL;
+		dev->control->master->lock.hw_lock = NULL;
+		dev->sigdata.lock = NULL;
+	}
+
+	if (dev_priv->sarea_bo) {
+		mutex_lock(&dev->struct_mutex);
+		drm_bo_usage_deref_locked(&dev_priv->sarea_bo);
+		mutex_unlock(&dev->struct_mutex);
+		dev_priv->sarea_bo = NULL;
+	}
+#endif
 	
 	i915_dma_cleanup(dev);
 }

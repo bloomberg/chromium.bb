@@ -443,9 +443,12 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 
 static struct drm_device *hotplug_dev;
 
-/*
- * This code is called in a more safe envirmoent to handle the hotplugs.
- * Add code here for hotplug love to userspace.
+/**
+ * Handler for user interrupts in process context (able to sleep, do VFS
+ * operations, etc.
+ *
+ * If another IRQ comes in while we're in this handler, it will still get put
+ * on the queue again to be rerun when we finish.
  */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
 static void i915_hotplug_work_func(void *work)
@@ -485,10 +488,24 @@ static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 	if (stat & SDVOC_HOTPLUG_INT_STATUS) {
 		DRM_DEBUG("sDVOC event\n");
 	}
-
 	queue_work(dev_priv->wq, &hotplug);
 
 	return 0;
+}
+
+void
+i915_user_interrupt_handler(struct work_struct *work)
+{
+	struct drm_i915_private *dev_priv;
+	struct drm_device *dev;
+
+	dev_priv = container_of(work, struct drm_i915_private,
+				user_interrupt_task);
+	dev = dev_priv->dev;
+
+	mutex_lock(&dev->struct_mutex);
+	i915_gem_retire_requests(dev);
+	mutex_unlock(&dev->struct_mutex);
 }
 
 irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
@@ -507,7 +524,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	else
 		iir = I915_READ16(IIR);
 
-	iir &= (dev_priv->irq_enable_reg | I915_USER_INTERRUPT);
+	iir &= (dev_priv->irq_mask_reg | I915_USER_INTERRUPT);
 
 #if 0
 	DRM_DEBUG("flag=%08x\n", iir);
@@ -581,6 +598,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		DRM_WAKEUP(&dev_priv->irq_queue);
 #ifdef I915_HAVE_FENCE
 		i915_fence_handler(dev);
+		schedule_work(&dev_priv->user_interrupt_task);
 #endif
 	}
 
@@ -636,11 +654,12 @@ void i915_user_irq_on(struct drm_device *dev)
 
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount == 1)){
-		dev_priv->irq_enable_reg |= I915_USER_INTERRUPT;
+		dev_priv->irq_mask_reg &= ~I915_USER_INTERRUPT;
 		if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
-			I915_WRITE(IER, dev_priv->irq_enable_reg);
+			I915_WRITE(IMR, dev_priv->irq_mask_reg);
 		else
-			I915_WRITE16(IER, dev_priv->irq_enable_reg);
+			I915_WRITE16(IMR, dev_priv->irq_mask_reg);
+		I915_READ16(IMR);
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
@@ -651,18 +670,20 @@ void i915_user_irq_off(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
+	BUG_ON(dev_priv->user_irq_refcount <= 0);
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0)) {
-		//		dev_priv->irq_enable_reg &= ~I915_USER_INTERRUPT;
-		//		if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
-		//			I915_WRITE(IER, dev_priv->irq_enable_reg);
-		//		else
-		//			I915_WRITE16(IER, dev_priv->irq_enable_reg);
+		dev_priv->irq_mask_reg |= I915_USER_INTERRUPT;
+		if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
+			I915_WRITE(IMR, dev_priv->irq_mask_reg);
+		else
+			I915_WRITE16(IMR, dev_priv->irq_mask_reg);
+		I915_READ16(IMR);
 	}
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 }
 
 
-static int i915_wait_irq(struct drm_device * dev, int irq_nr)
+int i915_wait_irq(struct drm_device * dev, int irq_nr)
 {
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	struct drm_i915_master_private *master_priv;
@@ -739,16 +760,17 @@ int i915_enable_vblank(struct drm_device *dev, int plane)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	int pipe = i915_get_pipe(dev, plane);
 	u32	pipestat_reg = 0;
+	u32	mask_reg = 0;
 	u32	pipestat;
 
 	switch (pipe) {
 	case 0:
 		pipestat_reg = PIPEASTAT;
-		dev_priv->irq_enable_reg |= I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
+		mask_reg |= I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
 		break;
 	case 1:
 		pipestat_reg = PIPEBSTAT;
-		dev_priv->irq_enable_reg |= I915_DISPLAY_PIPE_B_EVENT_INTERRUPT;
+		mask_reg |= I915_DISPLAY_PIPE_B_EVENT_INTERRUPT;
 		break;
 	default:
 		DRM_ERROR("tried to enable vblank on non-existent pipe %d\n",
@@ -775,11 +797,13 @@ int i915_enable_vblank(struct drm_device *dev, int plane)
 		I915_WRITE(pipestat_reg, pipestat);
 	}
 
+	DRM_SPINLOCK(&dev_priv->user_irq_lock);
+	dev_priv->irq_mask_reg &= ~mask_reg;
 	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
-		I915_WRITE(IER, dev_priv->irq_enable_reg);
+		I915_WRITE(IMR, dev_priv->irq_mask_reg);
 	else
-		I915_WRITE16(IER, dev_priv->irq_enable_reg);
-
+		I915_WRITE16(IMR, dev_priv->irq_mask_reg);
+	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
 	return 0;
 }
@@ -789,16 +813,17 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	int pipe = i915_get_pipe(dev, plane);
 	u32	pipestat_reg = 0;
+	u32	mask_reg = 0;
 	u32	pipestat;
 
 	switch (pipe) {
 	case 0:
 		pipestat_reg = PIPEASTAT;
-		dev_priv->irq_enable_reg &= ~I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
+		mask_reg |= I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
 		break;
 	case 1:
 		pipestat_reg = PIPEBSTAT;
-		dev_priv->irq_enable_reg &= ~I915_DISPLAY_PIPE_B_EVENT_INTERRUPT;
+		mask_reg |= I915_DISPLAY_PIPE_B_EVENT_INTERRUPT;
 		break;
 	default:
 		DRM_ERROR("tried to disable vblank on non-existent pipe %d\n",
@@ -806,13 +831,15 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 		break;
 	}
 
+	DRM_SPINLOCK(&dev_priv->user_irq_lock);
+	dev_priv->irq_mask_reg |= mask_reg;
 	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
-		I915_WRITE(IER, dev_priv->irq_enable_reg);
+		I915_WRITE(IMR, dev_priv->irq_mask_reg);
 	else
-		I915_WRITE16(IER, dev_priv->irq_enable_reg);
+		I915_WRITE16(IMR, dev_priv->irq_mask_reg);
+	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
-	if (pipestat_reg)
-	{
+	if (pipestat_reg) {
 		pipestat = I915_READ (pipestat_reg);
 		pipestat &= ~(PIPE_START_VBLANK_INTERRUPT_ENABLE |
 			      PIPE_VBLANK_INTERRUPT_ENABLE);
@@ -822,6 +849,7 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 		pipestat |= (PIPE_START_VBLANK_INTERRUPT_STATUS |
 			     PIPE_VBLANK_INTERRUPT_STATUS);
 		I915_WRITE(pipestat_reg, pipestat);
+		(void) I915_READ(pipestat_reg);
 	}
 }
 
@@ -830,14 +858,14 @@ void i915_enable_interrupt (struct drm_device *dev)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	struct drm_connector *o;
 
-	dev_priv->irq_enable_reg |= I915_USER_INTERRUPT;
+	dev_priv->irq_mask_reg &= ~I915_USER_INTERRUPT;
 
 	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
 		if (dev->mode_config.num_connector)
-			dev_priv->irq_enable_reg |= I915_DISPLAY_PORT_INTERRUPT;
+			dev_priv->irq_mask_reg &= ~I915_DISPLAY_PORT_INTERRUPT;
 	} else {
 		if (dev->mode_config.num_connector)
-			dev_priv->irq_enable_reg |= I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
+			dev_priv->irq_mask_reg &= ~I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
 
 		/* Enable global interrupts for hotplug - not a pipeA event */
 		I915_WRITE(PIPEASTAT, I915_READ(PIPEASTAT) |
@@ -847,7 +875,8 @@ void i915_enable_interrupt (struct drm_device *dev)
 			   PIPE_HOTPLUG_INTERRUPT_STATUS);
 	}
 
-	if (dev_priv->irq_enable_reg & (I915_DISPLAY_PORT_INTERRUPT | I915_DISPLAY_PIPE_A_EVENT_INTERRUPT)) {
+	if (!(dev_priv->irq_mask_reg & I915_DISPLAY_PORT_INTERRUPT) ||
+	    !(dev_priv->irq_mask_reg & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT)) {
 		u32 temp = 0;
 
 		if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
@@ -891,10 +920,13 @@ void i915_enable_interrupt (struct drm_device *dev)
 		}
 	}
 
-	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev))
-		I915_WRITE(IER, dev_priv->irq_enable_reg);
-	else
-		I915_WRITE16(IER, dev_priv->irq_enable_reg);
+	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
+		I915_WRITE(IMR, dev_priv->irq_mask_reg);
+		I915_WRITE(IER, ~dev_priv->irq_mask_reg);
+	} else {
+		I915_WRITE16(IMR, dev_priv->irq_mask_reg);
+		I915_WRITE16(IER, ~(u16)dev_priv->irq_mask_reg);
+	}
 
 	dev_priv->irq_enabled = 1;
 }
@@ -1134,7 +1166,6 @@ void i915_driver_irq_preinstall(struct drm_device * dev)
 		tmp = I915_READ16(IIR);
 		I915_WRITE16(IIR, tmp);
 	}
-
 }
 
 int i915_driver_irq_postinstall(struct drm_device * dev)
@@ -1148,7 +1179,7 @@ int i915_driver_irq_postinstall(struct drm_device * dev)
 
 	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
 	dev_priv->user_irq_refcount = 0;
-	dev_priv->irq_enable_reg = 0;
+	dev_priv->irq_mask_reg = ~0;
 
 	ret = drm_vblank_init(dev, num_pipes);
 	if (ret)
@@ -1179,7 +1210,7 @@ void i915_driver_irq_uninstall(struct drm_device * dev)
 	if (!dev_priv)
 		return;
 
-	dev_priv->irq_enabled = 0;
+	dev_priv->irq_enabled = 1;
 
 	temp = I915_READ(PIPEASTAT);
 	I915_WRITE(PIPEASTAT, temp);

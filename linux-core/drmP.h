@@ -54,6 +54,7 @@
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
 #include <linux/dma-mapping.h>
 #include <linux/mm.h>
+#include <linux/kref.h>
 #include <linux/pagemap.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
 #include <linux/mutex.h>
@@ -89,6 +90,10 @@
 struct drm_device;
 struct drm_file;
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+typedef unsigned long uintptr_t;
+#endif
+
 /* If you want the memory alloc debug functionality, change define below */
 /* #define DEBUG_MEMORY */
 
@@ -108,7 +113,7 @@ struct drm_file;
 #define DRIVER_DMA_QUEUE   0x100
 #define DRIVER_FB_DMA      0x200
 #define DRIVER_MODESET     0x400
-
+#define DRIVER_GEM	   0x800
 
 /*@}*/
 
@@ -427,6 +432,11 @@ struct drm_file {
 
 	struct list_head refd_objects;
 
+	/** Mapping of mm object handles to object pointers. */
+	struct idr object_idr;
+	/** Lock for synchronization of access to object_idr. */
+	spinlock_t table_lock;
+
 	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;
 	void *driver_priv;
@@ -469,6 +479,11 @@ struct drm_lock_data {
 	uint32_t kernel_waiters;
 	uint32_t user_waiters;
 	int idle_has_lock;
+	/**
+	 * Boolean signaling that the lock is held on behalf of the
+	 * file_priv client by the kernel in an ioctl handler.
+	 */
+	int kernel_held;
 };
 
 /**
@@ -544,17 +559,17 @@ struct drm_sigdata {
  * Generic memory manager structs
  */
 
-struct drm_mm_node {
+struct drm_memrange_node {
 	struct list_head fl_entry;
 	struct list_head ml_entry;
 	int free;
 	unsigned long start;
 	unsigned long size;
-	struct drm_mm *mm;
+	struct drm_memrange *mm;
 	void *private;
 };
 
-struct drm_mm {
+struct drm_memrange {
 	struct list_head fl_entry;
 	struct list_head ml_entry;
 };
@@ -568,9 +583,9 @@ struct drm_map_list {
 	struct drm_hash_item hash;
 	struct drm_map *map;			/**< mapping */
 	uint64_t user_token;
-	struct drm_mm_node *file_offset_node;
 	struct drm_master *master; /** if this map is associated with a specific
 				       master */
+	struct drm_memrange_node *file_offset_node;
 };
 
 typedef struct drm_map drm_local_map_t;
@@ -616,6 +631,56 @@ struct drm_ati_pcigart_info {
 	struct drm_dma_handle *table_handle;
 	drm_local_map_t mapping;
 	int table_size;
+};
+
+/**
+ * This structure defines the drm_mm memory object, which will be used by the
+ * DRM for its buffer objects.
+ */
+struct drm_gem_object {
+	/** Reference count of this object */
+	struct kref refcount;
+
+	/** Handle count of this object. Each handle also holds a reference */
+	struct kref handlecount;
+
+	/** Related drm device */
+	struct drm_device *dev;
+	
+	/** File representing the shmem storage */
+	struct file *filp;
+
+	/**
+	 * Size of the object, in bytes.  Immutable over the object's
+	 * lifetime.
+	 */
+	size_t size;
+
+	/**
+	 * Global name for this object, starts at 1. 0 means unnamed.
+	 * Access is covered by the object_name_lock in the related drm_device
+	 */
+	int name;
+
+	/**
+	 * Memory domains. These monitor which caches contain read/write data
+	 * related to the object. When transitioning from one set of domains
+	 * to another, the driver is called to ensure that caches are suitably
+	 * flushed and invalidated
+	 */
+	uint32_t	read_domains;
+	uint32_t	write_domain;
+
+	/**
+	 * While validating an exec operation, the
+	 * new read/write domain values are computed here.
+	 * They will be transferred to the above values
+	 * at the point that any cache flushing occurs
+	 */
+	uint32_t	pending_read_domains;
+	uint32_t	pending_write_domain;
+
+	void *driver_private;
 };
 
 #include "drm_objects.h"
@@ -745,6 +810,29 @@ struct drm_driver {
 	/* Master routines */
 	int (*master_create)(struct drm_device *dev, struct drm_master *master);
 	void (*master_destroy)(struct drm_device *dev, struct drm_master *master);
+	/**
+	 * Driver-specific constructor for drm_gem_objects, to set up
+	 * obj->driver_private.
+	 *
+	 * Returns 0 on success.
+	 */
+	int (*gem_init_object) (struct drm_gem_object *obj);
+	void (*gem_free_object) (struct drm_gem_object *obj);
+
+	/**
+	 * Driver-specific callback to set memory domains from userspace
+	 */
+	int (*gem_set_domain) (struct drm_gem_object *obj,
+			       struct drm_file *file_priv,
+			       uint32_t read_domains,
+			       uint32_t write_domain);
+
+	/**
+	 * Driver-specific callback to flush pwrite through chipset
+	 */
+	int (*gem_flush_pwrite) (struct drm_gem_object *obj,
+				 uint64_t offset,
+				 uint64_t size);
 
 	struct drm_fence_driver *fence_driver;
 	struct drm_bo_driver *bo_driver;
@@ -827,7 +915,7 @@ struct drm_device {
 	struct list_head maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
 	struct drm_open_hash map_hash;       /**< User token hash table for maps */
-	struct drm_mm offset_manager;        /**< User token manager */
+	struct drm_memrange offset_manager;  /**< User token manager */
 	struct drm_open_hash object_hash;    /**< User token hash table for objects */
 	struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
 	struct page *ttm_dummy_page;
@@ -943,6 +1031,15 @@ struct drm_device {
 
 	/* DRM mode setting */
 	struct drm_mode_config mode_config;
+
+	/** \name GEM information */
+	/*@{ */
+	spinlock_t object_name_lock;
+	struct idr object_name_idr;
+	atomic_t object_count;
+	uint32_t invalidate_domains;	/* domains pending invalidation */
+	uint32_t flush_domains;		/* domains pending flush */
+	/*@} */
 };
 
 #if __OS_HAS_AGP
@@ -1069,6 +1166,10 @@ extern void drm_free_pages(unsigned long address, int order, int area);
 extern DRM_AGP_MEM *drm_alloc_agp(struct drm_device *dev, int pages, u32 type);
 extern int drm_free_agp(DRM_AGP_MEM * handle, int pages);
 extern int drm_bind_agp(DRM_AGP_MEM * handle, unsigned int start);
+extern DRM_AGP_MEM *drm_agp_bind_pages(struct drm_device *dev,
+					      struct page **pages,
+					      unsigned long num_pages,
+					      uint32_t gtt_offset);
 extern int drm_unbind_agp(DRM_AGP_MEM * handle);
 
 extern void drm_free_memctl(size_t size);
@@ -1151,6 +1252,10 @@ extern int drm_lock_take(struct drm_lock_data *lock_data, unsigned int context);
 extern int drm_lock_free(struct drm_lock_data *lock_data, unsigned int context);
 extern void drm_idlelock_take(struct drm_lock_data *lock_data);
 extern void drm_idlelock_release(struct drm_lock_data *lock_data);
+extern int drm_client_lock_take(struct drm_device *dev,
+				struct drm_file *file_priv);
+extern void drm_client_lock_release(struct drm_device *dev,
+				    struct drm_file *file_priv);
 
 /*
  * These are exported to drivers so that they can implement fencing using
@@ -1317,26 +1422,106 @@ extern int drm_sysfs_connector_add(struct drm_connector *connector);
 extern void drm_sysfs_connector_remove(struct drm_connector *connector);
 
 /*
- * Basic memory manager support (drm_mm.c)
+ * Basic memory manager support (drm_memrange.c)
  */
 
-extern struct drm_mm_node * drm_mm_get_block(struct drm_mm_node * parent, unsigned long size,
-					       unsigned alignment);
-extern void drm_mm_put_block(struct drm_mm_node *cur);
-extern struct drm_mm_node *drm_mm_search_free(const struct drm_mm *mm, unsigned long size,
-						unsigned alignment, int best_match);
-extern int drm_mm_init(struct drm_mm *mm, unsigned long start, unsigned long size);
-extern void drm_mm_takedown(struct drm_mm *mm);
-extern int drm_mm_clean(struct drm_mm *mm);
-extern unsigned long drm_mm_tail_space(struct drm_mm *mm);
-extern int drm_mm_remove_space_from_tail(struct drm_mm *mm, unsigned long size);
-extern int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size);
-extern void drm_mm_print(struct drm_mm *mm, const char *name);
-
-static inline struct drm_mm *drm_get_mm(struct drm_mm_node *block)
+extern struct drm_memrange_node *drm_memrange_get_block(struct drm_memrange_node * parent,
+							unsigned long size,
+							unsigned alignment);
+extern void drm_memrange_put_block(struct drm_memrange_node *cur);
+extern struct drm_memrange_node *drm_memrange_search_free(const struct drm_memrange *mm,
+							  unsigned long size,
+							  unsigned alignment, int best_match);
+extern int drm_memrange_init(struct drm_memrange *mm,
+			     unsigned long start, unsigned long size);
+extern void drm_memrange_takedown(struct drm_memrange *mm);
+extern int drm_memrange_clean(struct drm_memrange *mm);
+extern unsigned long drm_memrange_tail_space(struct drm_memrange *mm);
+extern int drm_memrange_remove_space_from_tail(struct drm_memrange *mm,
+					       unsigned long size);
+extern int drm_memrange_add_space_to_tail(struct drm_memrange *mm,
+					  unsigned long size);
+static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
 {
 	return block->mm;
 }
+
+/* Graphics Execution Manager library functions (drm_gem.c) */
+int
+drm_gem_init (struct drm_device *dev);
+
+void
+drm_gem_object_free (struct kref *kref);
+
+void
+drm_gem_object_handle_free (struct kref *kref);
+    
+static inline void drm_gem_object_reference(struct drm_gem_object *obj)
+{
+	kref_get(&obj->refcount);
+}
+
+static inline void drm_gem_object_unreference(struct drm_gem_object *obj)
+{
+	if (obj == NULL)
+		return;
+
+	kref_put (&obj->refcount, drm_gem_object_free);
+}
+
+static inline void drm_gem_object_handle_reference (struct drm_gem_object *obj)
+{
+	drm_gem_object_reference (obj);
+	kref_get(&obj->handlecount);
+}
+
+static inline void drm_gem_object_handle_unreference (struct drm_gem_object *obj)
+{
+	if (obj == NULL)
+		return;
+	
+	/*
+	 * Must bump handle count first as this may be the last
+	 * ref, in which case the object would disappear before we
+	 * checked for a name
+	 */
+	kref_put (&obj->handlecount, drm_gem_object_handle_free);
+	drm_gem_object_unreference (obj);
+}
+
+struct drm_gem_object *
+drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
+		      int handle);
+int drm_gem_create_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+int drm_gem_close_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int drm_gem_pread_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int drm_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+int drm_gem_mmap_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+int drm_gem_flink_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int drm_gem_open_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv);
+int drm_gem_set_domain_ioctl(struct drm_device *dev, void *data,
+			     struct drm_file *file_priv);
+
+void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
+void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);
+
+
+/*
+ * Given the new read/write domains for an object,
+ * compute the invalidate/flush domains for the whole device.
+ *
+ */
+int drm_gem_object_set_domain (struct drm_gem_object *object,
+			       uint32_t read_domains,
+			       uint32_t write_domains);
+
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);

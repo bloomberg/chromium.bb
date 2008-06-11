@@ -30,6 +30,7 @@
 #
 #    make DRM_MODULES="r128 radeon"
 #
+DRM_MODULES=i915
 
 SHELL=/bin/sh
 

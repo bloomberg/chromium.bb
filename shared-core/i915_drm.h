@@ -176,6 +176,12 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_MMIO		0x10
 #define DRM_I915_HWS_ADDR	0x11
 #define DRM_I915_EXECBUFFER	0x12
+#define DRM_I915_GEM_INIT	0x13
+#define DRM_I915_GEM_EXECBUFFER	0x14
+#define DRM_I915_GEM_PIN	0x15
+#define DRM_I915_GEM_UNPIN	0x16
+#define DRM_I915_GEM_BUSY	0x17
+#define DRM_I915_GEM_THROTTLE	0x18
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -195,6 +201,12 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
 #define DRM_IOCTL_I915_MMIO             DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_MMIO, drm_i915_mmio)
 #define DRM_IOCTL_I915_EXECBUFFER	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_EXECBUFFER, struct drm_i915_execbuffer)
+#define DRM_IOCTL_I915_GEM_INIT		DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_INIT, struct drm_i915_gem_init)
+#define DRM_IOCTL_I915_GEM_EXECBUFFER	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_EXECBUFFER, struct drm_i915_gem_execbuffer)
+#define DRM_IOCTL_I915_GEM_PIN		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_PIN, struct drm_i915_gem_pin)
+#define DRM_IOCTL_I915_GEM_UNPIN	DRM_IOW(DRM_COMMAND_BASE + DRM_I915_GEM_UNPIN, struct drm_i915_gem_unpin)
+#define DRM_IOCTL_I915_GEM_BUSY		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_BUSY, struct drm_i915_gem_busy)
+#define DRM_IOCTL_I915_GEM_THROTTLE	DRM_IO ( DRM_COMMAND_BASE + DRM_I915_GEM_THROTTLE)
 
 /* Asynchronous page flipping:
  */
@@ -397,6 +409,148 @@ struct drm_i915_execbuffer {
 	struct drm_i915_batchbuffer batch;
 	drm_context_t context; /* for lockless use in the future */
 	struct drm_fence_arg fence_arg;
+};
+
+struct drm_i915_gem_init {
+	/**
+	 * Beginning offset in the GTT to be managed by the DRM memory
+	 * manager.
+	 */
+	uint64_t gtt_start;
+	/**
+	 * Ending offset in the GTT to be managed by the DRM memory
+	 * manager.
+	 */
+	uint64_t gtt_end;
+};
+
+struct drm_i915_gem_relocation_entry {
+	/**
+	 * Handle of the buffer being pointed to by this relocation entry.
+	 *
+	 * It's appealing to make this be an index into the mm_validate_entry
+	 * list to refer to the buffer, but this allows the driver to create
+	 * a relocation list for state buffers and not re-write it per
+	 * exec using the buffer.
+	 */
+	uint32_t target_handle;
+
+	/**
+	 * Value to be added to the offset of the target buffer to make up
+	 * the relocation entry.
+	 */
+	uint32_t delta;
+
+	/** Offset in the buffer the relocation entry will be written into */
+	uint64_t offset;
+
+	/**
+	 * Offset value of the target buffer that the relocation entry was last
+	 * written as.
+	 *
+	 * If the buffer has the same offset as last time, we can skip syncing
+	 * and writing the relocation.  This value is written back out by
+	 * the execbuffer ioctl when the relocation is written.
+	 */
+	uint64_t presumed_offset;
+
+	/**
+	 * Target memory domains read by this operation.
+	 */
+	uint32_t read_domains;
+
+	/**
+	 * Target memory domains written by this operation.
+	 *
+	 * Note that only one domain may be written by the whole
+	 * execbuffer operation, so that where there are conflicts,
+	 * the application will get -EINVAL back.
+	 */
+	uint32_t write_domain;
+};
+
+/**
+ * Intel memory domains
+ *
+ * Most of these just align with the various caches in
+ * the system and are used to flush and invalidate as
+ * objects end up cached in different domains.
+ */
+
+/* 0x00000001 is DRM_GEM_DOMAIN_CPU */
+#define DRM_GEM_DOMAIN_I915_RENDER	0x00000002	/* Render cache, used by 2D and 3D drawing */
+#define DRM_GEM_DOMAIN_I915_SAMPLER	0x00000004	/* Sampler cache, used by texture engine */
+#define DRM_GEM_DOMAIN_I915_COMMAND	0x00000008	/* Command queue, used to load batch buffers */
+#define DRM_GEM_DOMAIN_I915_INSTRUCTION	0x00000010	/* Instruction cache, used by shader programs */
+#define DRM_GEM_DOMAIN_I915_VERTEX	0x00000020	/* Vertex address cache */
+
+struct drm_i915_gem_exec_object {
+	/**
+	 * User's handle for a buffer to be bound into the GTT for this
+	 * operation.
+	 */
+	uint32_t handle;
+	
+	/** List of relocations to be performed on this buffer */
+	uint32_t relocation_count;
+	uint64_t relocs_ptr;	/* struct drm_i915_gem_relocation_entry *relocs */
+	
+	/** Required alignment in graphics aperture */
+	uint64_t alignment;
+
+	/**
+	 * Returned value of the updated offset of the object, for future
+	 * presumed_offset writes.
+	 */
+	uint64_t offset;
+};
+
+struct drm_i915_gem_execbuffer {
+	/**
+	 * List of buffers to be validated with their relocations to be
+	 * performend on them.
+	 *
+	 * These buffers must be listed in an order such that all relocations
+	 * a buffer is performing refer to buffers that have already appeared
+	 * in the validate list.
+	 */
+	uint64_t buffers_ptr;	/* struct drm_i915_gem_validate_entry *buffers */
+	uint32_t buffer_count;
+
+	/** Offset in the batchbuffer to start execution from. */
+	uint32_t batch_start_offset;
+	/** Bytes used in batchbuffer from batch_start_offset */
+	uint32_t batch_len;
+	uint32_t DR1;
+	uint32_t DR4;
+	uint32_t num_cliprects;
+	uint64_t cliprects_ptr;	/* struct drm_clip_rect *cliprects */
+};
+
+struct drm_i915_gem_pin {
+	/** Handle of the buffer to be pinned. */
+	uint32_t handle;
+	uint32_t pad;
+	
+	/** alignment required within the aperture */
+	uint64_t alignment;
+
+	/** Returned GTT offset of the buffer. */
+	uint64_t offset;
+};
+
+struct drm_i915_gem_unpin {
+	/** Handle of the buffer to be unpinned. */
+	uint32_t handle;
+	uint32_t pad;
+};
+
+struct drm_i915_gem_busy {
+	/** Handle of the buffer to check for busy */
+	uint32_t handle;
+	
+	/** Return busy status (1 if busy, 0 if idle) */
+	uint32_t busy;
 };
 
 #endif				/* _I915_DRM_H_ */

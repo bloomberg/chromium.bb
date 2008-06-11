@@ -575,7 +575,7 @@ static struct drm_driver driver = {
 	 */
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | /* DRIVER_USE_MTRR | */
-	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
+	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_GEM,
 	.load = i915_driver_load,
 	.unload = i915_driver_unload,
 	.firstopen = i915_driver_firstopen,
@@ -597,6 +597,10 @@ static struct drm_driver driver = {
 	.master_create = i915_master_create,
 	.master_destroy = i915_master_destroy,
 	.ioctls = i915_ioctls,
+	.gem_init_object = i915_gem_init_object,
+	.gem_free_object = i915_gem_free_object,
+	.gem_set_domain = i915_gem_set_domain,
+	.gem_flush_pwrite = i915_gem_flush_pwrite,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,

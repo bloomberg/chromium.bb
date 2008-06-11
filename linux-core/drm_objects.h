@@ -300,7 +300,12 @@ struct drm_ttm_backend_func {
 	void (*destroy) (struct drm_ttm_backend *backend);
 };
 
-
+/**
+ * This structure associates a set of flags and methods with a drm_ttm
+ * object, and will also be subclassed by the particular backend.
+ *
+ * \sa #drm_agp_ttm_backend
+ */
 struct drm_ttm_backend {
 	struct drm_device *dev;
 	uint32_t flags;
@@ -412,7 +417,7 @@ extern int drm_ttm_destroy(struct drm_ttm *ttm);
  */
 
 struct drm_bo_mem_reg {
-	struct drm_mm_node *mm_node;
+	struct drm_memrange_node *mm_node;
 	unsigned long size;
 	unsigned long num_pages;
 	uint32_t page_alignment;
@@ -493,7 +498,7 @@ struct drm_buffer_object {
 	unsigned long num_pages;
 
 	/* For pinned buffers */
-	struct drm_mm_node *pinned_node;
+	struct drm_memrange_node *pinned_node;
 	uint32_t pinned_mem_type;
 	struct list_head pinned_lru;
 
@@ -528,7 +533,7 @@ struct drm_mem_type_manager {
 	int has_type;
 	int use_type;
 	int kern_init_type;
-	struct drm_mm manager;
+	struct drm_memrange manager;
 	struct list_head lru;
 	struct list_head pinned;
 	uint32_t flags;

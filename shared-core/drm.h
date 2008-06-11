@@ -993,6 +993,93 @@ struct drm_mm_info_arg {
 	uint64_t p_size;
 };
 
+struct drm_gem_create {
+	/**
+	 * Requested size for the object.
+	 *
+	 * The (page-aligned) allocated size for the object will be returned.
+	 */
+	uint64_t size;
+	/**
+	 * Returned handle for the object.
+	 *
+	 * Object handles are nonzero.
+	 */
+	uint32_t handle;
+	uint32_t pad;
+};
+
+struct drm_gem_close {
+	/** Handle of the object to be closed. */
+	uint32_t handle;
+	uint32_t pad;
+};
+
+struct drm_gem_pread {
+	/** Handle for the object being read. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset into the object to read from */
+	uint64_t offset;
+	/** Length of data to read */
+	uint64_t size;
+	/** Pointer to write the data into. */
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_gem_pwrite {
+	/** Handle for the object being written to. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset into the object to write to */
+	uint64_t offset;
+	/** Length of data to write */
+	uint64_t size;
+	/** Pointer to read the data from. */
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_gem_mmap {
+	/** Handle for the object being mapped. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset in the object to map. */
+	uint64_t offset;
+	/**
+	 * Length of data to map.
+	 *
+	 * The value will be page-aligned.
+	 */
+	uint64_t size;
+	/** Returned pointer the data was mapped at */
+	uint64_t addr_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_gem_flink {
+	/** Handle for the object being named */
+	uint32_t handle;
+	/** Returned global name */
+	uint32_t name;
+};
+
+struct drm_gem_open {
+	/** Name of object being opened */
+	uint32_t name;
+	/** Returned handle for the object */
+	uint32_t handle;	
+	/** Returned size of the object */
+	uint64_t size;
+};
+
+struct drm_gem_set_domain {
+	/** Handle for the object */
+	uint32_t handle;
+	/** New read domains */
+	uint32_t read_domains;
+	/** New write domain */
+	uint32_t write_domain;
+};
+#define DRM_GEM_DOMAIN_CPU		0x00000001
 
 /*
  * Drm mode setting
@@ -1209,7 +1296,7 @@ struct drm_mode_crtc_lut {
 #define DRM_IOCTL_GET_CLIENT            DRM_IOWR(0x05, struct drm_client)
 #define DRM_IOCTL_GET_STATS             DRM_IOR( 0x06, struct drm_stats)
 #define DRM_IOCTL_SET_VERSION		DRM_IOWR(0x07, struct drm_set_version)
-#define DRM_IOCTL_MODESET_CTL           DRM_IOW(0x08, struct drm_modeset_ctl)
+#define DRM_IOCTL_MODESET_CTL           DRM_IOW(0x08,  struct drm_modeset_ctl)
 
 #define DRM_IOCTL_SET_UNIQUE		DRM_IOW( 0x10, struct drm_unique)
 #define DRM_IOCTL_AUTH_MAGIC		DRM_IOW( 0x11, struct drm_auth)
@@ -1260,6 +1347,15 @@ struct drm_mode_crtc_lut {
 #define DRM_IOCTL_WAIT_VBLANK		DRM_IOWR(0x3a, union drm_wait_vblank)
 
 #define DRM_IOCTL_UPDATE_DRAW           DRM_IOW(0x3f, struct drm_update_draw)
+
+#define DRM_IOCTL_GEM_CREATE		DRM_IOWR(0x09, struct drm_gem_create)
+#define DRM_IOCTL_GEM_CLOSE		DRM_IOW (0x0a, struct drm_gem_close)
+#define DRM_IOCTL_GEM_PREAD		DRM_IOW (0x0b, struct drm_gem_pread)
+#define DRM_IOCTL_GEM_PWRITE		DRM_IOW (0x0c, struct drm_gem_pwrite)
+#define DRM_IOCTL_GEM_MMAP		DRM_IOWR(0x0d, struct drm_gem_mmap)
+#define DRM_IOCTL_GEM_FLINK		DRM_IOWR(0x0e, struct drm_gem_flink)
+#define DRM_IOCTL_GEM_OPEN		DRM_IOWR(0x0f, struct drm_gem_open)
+#define DRM_IOCTL_GEM_SET_DOMAIN	DRM_IOW (0xb7, struct drm_gem_set_domain)
 
 #define DRM_IOCTL_MM_INIT               DRM_IOWR(0xc0, struct drm_mm_init_arg)
 #define DRM_IOCTL_MM_TAKEDOWN           DRM_IOWR(0xc1, struct drm_mm_type_arg)

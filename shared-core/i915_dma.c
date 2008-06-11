@@ -41,10 +41,14 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_ring_buffer *ring = &(dev_priv->ring);
 	u32 last_head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
+	u32 acthd_reg = IS_I965G(dev) ? I965REG_ACTHD : I915REG_ACTHD;
+	u32 last_acthd = I915_READ(acthd_reg);
+	u32 acthd;
 	int i;
 
 	for (i = 0; i < 10000; i++) {
 		ring->head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
+		acthd = I915_READ(acthd_reg);
 		ring->space = ring->head - (ring->tail + 8);
 		if (ring->space < 0)
 			ring->space += ring->Size;
@@ -54,12 +58,40 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 		if (ring->head != last_head)
 			i = 0;
 
+		if (acthd != last_acthd)
+			i = 0;
+
 		last_head = ring->head;
-		DRM_UDELAY(1);
+		last_acthd = acthd;
+		msleep_interruptible (10);
 	}
 
 	return -EBUSY;
 }
+
+#if I915_RING_VALIDATE
+/**
+ * Validate the cached ring tail value
+ *
+ * If the X server writes to the ring and DRM doesn't
+ * reload the head and tail pointers, it will end up writing
+ * data to the wrong place in the ring, causing havoc.
+ */
+void i915_ring_validate(struct drm_device *dev, const char *func, int line)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
+	u32	tail = I915_READ(LP_RING+RING_TAIL) & HEAD_ADDR;
+	u32	head = I915_READ(LP_RING+RING_HEAD) & HEAD_ADDR;
+
+	if (tail != ring->tail) {
+		DRM_ERROR("%s:%d head sw %x, hw %x. tail sw %x hw %x\n",
+			  func, line,
+			  ring->head, head, ring->tail, tail);
+		BUG_ON(1);
+	}
+}
+#endif
 
 void i915_kernel_lost_context(struct drm_device * dev)
 {
@@ -112,7 +144,6 @@ int i915_dma_cleanup(struct drm_device * dev)
                 drm_core_ioremapfree(&dev_priv->hws_map, dev);
                 I915_WRITE(0x02080, 0x1ffff000);
         }
-
 
 	return 0;
 }
@@ -195,7 +226,6 @@ static int i915_initialize(struct drm_device * dev,
 		}
 	}
 
-
 #ifdef I915_HAVE_BUFFER
 	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
 		dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
@@ -264,8 +294,7 @@ static int i915_initialize(struct drm_device * dev,
 	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
 		mutex_init(&dev_priv->cmdbuf_mutex);
 	}
-#endif
-#if defined(I915_HAVE_BUFFER)
+
 	if (init->func == I915_INIT_DMA2) {
 		int ret = setup_dri2_sarea(dev, file_priv, init);
 		if (ret) {
@@ -287,11 +316,6 @@ static int i915_dma_resume(struct drm_device * dev)
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		return 0;
-
-	if (!dev_priv->mmio_map) {
-		DRM_ERROR("can not find mmio map!\n");
-		return -EINVAL;
-	}
 
 	if (dev_priv->ring.map.handle == NULL) {
 		DRM_ERROR("can not ioremap virtual address for"
@@ -456,9 +480,9 @@ static int i915_emit_cmds(struct drm_device *dev, int __user *buffer,
 	return 0;
 }
 
-static int i915_emit_box(struct drm_device * dev,
-			 struct drm_clip_rect __user * boxes,
-			 int i, int DR1, int DR4)
+int i915_emit_box(struct drm_device * dev,
+		  struct drm_clip_rect __user * boxes,
+		  int i, int DR1, int DR4)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_clip_rect box;
@@ -514,7 +538,7 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 
 	BEGIN_LP_RING(4);
 	OUT_RING(MI_STORE_DWORD_INDEX);
-	OUT_RING(20);
+	OUT_RING(5 << MI_STORE_DWORD_INDEX_SHIFT);
 	OUT_RING(dev_priv->counter);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
@@ -713,9 +737,19 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 int i915_quiescent(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
+	int ret;
 
 	i915_kernel_lost_context(dev);
-	return i915_wait_ring(dev, dev_priv->ring.Size - 8, __FUNCTION__);
+	ret = i915_wait_ring(dev, dev_priv->ring.Size - 8, __FUNCTION__);
+	if (ret)
+	{
+		i915_kernel_lost_context (dev);
+		DRM_ERROR ("not quiescent head %08x tail %08x space %08x\n",
+			   dev_priv->ring.head,
+			   dev_priv->ring.tail,
+			   dev_priv->ring.space);
+	}
+	return ret;
 }
 
 static int i915_flush_ioctl(struct drm_device *dev, void *data,
@@ -1051,6 +1085,12 @@ struct drm_ioctl_desc i915_ioctls[] = {
 #ifdef I915_HAVE_BUFFER
 	DRM_IOCTL_DEF(DRM_I915_EXECBUFFER, i915_execbuffer, DRM_AUTH),
 #endif
+	DRM_IOCTL_DEF(DRM_I915_GEM_INIT, i915_gem_init_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_I915_GEM_EXECBUFFER, i915_gem_execbuffer, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_I915_GEM_PIN, i915_gem_pin_ioctl, DRM_AUTH|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_I915_GEM_UNPIN, i915_gem_unpin_ioctl, DRM_AUTH|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_I915_GEM_BUSY, i915_gem_busy_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_I915_GEM_THROTTLE, i915_gem_throttle_ioctl, DRM_AUTH),
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);

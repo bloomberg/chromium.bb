@@ -113,7 +113,7 @@ static int drmDebugPrint(const char *format, va_list ap)
 
 static int (*drm_debug_print)(const char *format, va_list ap) = drmDebugPrint;
 
-static void
+void
 drmMsg(const char *format, ...)
 {
     va_list	ap;

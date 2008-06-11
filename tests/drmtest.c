@@ -26,6 +26,7 @@
  */
 
 #include <fcntl.h>
+#include <sys/stat.h>
 #include "drmtest.h"
 
 /** Open the first DRM device we can find, searching up to 16 device nodes */
@@ -80,4 +81,3 @@ int drm_open_any_master(void)
 	fprintf(stderr, "Couldn't find an un-controlled DRM device\n");
 	abort();
 }
-

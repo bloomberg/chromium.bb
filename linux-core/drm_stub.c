@@ -201,15 +201,15 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER))
 		return -ENOMEM;
 
-	if (drm_mm_init(&dev->offset_manager, DRM_FILE_PAGE_OFFSET_START,
-			DRM_FILE_PAGE_OFFSET_SIZE)) {
+	if (drm_memrange_init(&dev->offset_manager, DRM_FILE_PAGE_OFFSET_START,
+			      DRM_FILE_PAGE_OFFSET_SIZE)) {
 		drm_ht_remove(&dev->map_hash);
 		return -ENOMEM;
 	}
 
 	if (drm_ht_create(&dev->object_hash, DRM_OBJECT_HASH_ORDER)) {
 		drm_ht_remove(&dev->map_hash);
-		drm_mm_takedown(&dev->offset_manager);
+		drm_memrange_takedown(&dev->offset_manager);
 		return -ENOMEM;
 	}
 
@@ -249,7 +249,16 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 		goto error_out_unreg;
 	}
 
+	if (driver->driver_features & DRIVER_GEM) {
+		retcode = drm_gem_init (dev);
+		if (retcode) {
+			DRM_ERROR("Cannot initialize graphics execution manager (GEM)\n");
+			goto error_out_unreg;
+		}
+	}
+
 	drm_fence_manager_init(dev);
+
 	return 0;
 
 error_out_unreg:

@@ -44,26 +44,26 @@
 #include "drmP.h"
 #include <linux/slab.h>
 
-unsigned long drm_mm_tail_space(struct drm_mm *mm)
+unsigned long drm_memrange_tail_space(struct drm_memrange *mm)
 {
 	struct list_head *tail_node;
-	struct drm_mm_node *entry;
+	struct drm_memrange_node *entry;
 
 	tail_node = mm->ml_entry.prev;
-	entry = list_entry(tail_node, struct drm_mm_node, ml_entry);
+	entry = list_entry(tail_node, struct drm_memrange_node, ml_entry);
 	if (!entry->free)
 		return 0;
 
 	return entry->size;
 }
 
-int drm_mm_remove_space_from_tail(struct drm_mm *mm, unsigned long size)
+int drm_memrange_remove_space_from_tail(struct drm_memrange *mm, unsigned long size)
 {
 	struct list_head *tail_node;
-	struct drm_mm_node *entry;
+	struct drm_memrange_node *entry;
 
 	tail_node = mm->ml_entry.prev;
-	entry = list_entry(tail_node, struct drm_mm_node, ml_entry);
+	entry = list_entry(tail_node, struct drm_memrange_node, ml_entry);
 	if (!entry->free)
 		return -ENOMEM;
 
@@ -75,13 +75,13 @@ int drm_mm_remove_space_from_tail(struct drm_mm *mm, unsigned long size)
 }
 
 
-static int drm_mm_create_tail_node(struct drm_mm *mm,
+static int drm_memrange_create_tail_node(struct drm_memrange *mm,
 			    unsigned long start,
 			    unsigned long size)
 {
-	struct drm_mm_node *child;
+	struct drm_memrange_node *child;
 
-	child = (struct drm_mm_node *)
+	child = (struct drm_memrange_node *)
 		drm_ctl_alloc(sizeof(*child), DRM_MEM_MM);
 	if (!child)
 		return -ENOMEM;
@@ -98,26 +98,26 @@ static int drm_mm_create_tail_node(struct drm_mm *mm,
 }
 
 
-int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size)
+int drm_memrange_add_space_to_tail(struct drm_memrange *mm, unsigned long size)
 {
 	struct list_head *tail_node;
-	struct drm_mm_node *entry;
+	struct drm_memrange_node *entry;
 
 	tail_node = mm->ml_entry.prev;
-	entry = list_entry(tail_node, struct drm_mm_node, ml_entry);
+	entry = list_entry(tail_node, struct drm_memrange_node, ml_entry);
 	if (!entry->free) {
-		return drm_mm_create_tail_node(mm, entry->start + entry->size, size);
+		return drm_memrange_create_tail_node(mm, entry->start + entry->size, size);
 	}
 	entry->size += size;
 	return 0;
 }
 
-static struct drm_mm_node *drm_mm_split_at_start(struct drm_mm_node *parent,
+static struct drm_memrange_node *drm_memrange_split_at_start(struct drm_memrange_node *parent,
 					    unsigned long size)
 {
-	struct drm_mm_node *child;
+	struct drm_memrange_node *child;
 
-	child = (struct drm_mm_node *)
+	child = (struct drm_memrange_node *)
 		drm_ctl_alloc(sizeof(*child), DRM_MEM_MM);
 	if (!child)
 		return NULL;
@@ -137,19 +137,19 @@ static struct drm_mm_node *drm_mm_split_at_start(struct drm_mm_node *parent,
 	return child;
 }
 
-struct drm_mm_node *drm_mm_get_block(struct drm_mm_node * parent,
+struct drm_memrange_node *drm_memrange_get_block(struct drm_memrange_node * parent,
 				unsigned long size, unsigned alignment)
 {
 
-	struct drm_mm_node *align_splitoff = NULL;
-	struct drm_mm_node *child;
+	struct drm_memrange_node *align_splitoff = NULL;
+	struct drm_memrange_node *child;
 	unsigned tmp = 0;
 
 	if (alignment)
 		tmp = parent->start % alignment;
 
 	if (tmp) {
-		align_splitoff = drm_mm_split_at_start(parent, alignment - tmp);
+		align_splitoff = drm_memrange_split_at_start(parent, alignment - tmp);
 		if (!align_splitoff)
 			return NULL;
 	}
@@ -159,40 +159,41 @@ struct drm_mm_node *drm_mm_get_block(struct drm_mm_node * parent,
 		parent->free = 0;
 		return parent;
 	} else {
-		child = drm_mm_split_at_start(parent, size);
+		child = drm_memrange_split_at_start(parent, size);
 	}
 
 	if (align_splitoff)
-		drm_mm_put_block(align_splitoff);
+		drm_memrange_put_block(align_splitoff);
 
 	return child;
 }
+EXPORT_SYMBOL(drm_memrange_get_block);
 
 /*
  * Put a block. Merge with the previous and / or next block if they are free.
  * Otherwise add to the free stack.
  */
 
-void drm_mm_put_block(struct drm_mm_node * cur)
+void drm_memrange_put_block(struct drm_memrange_node * cur)
 {
 
-	struct drm_mm *mm = cur->mm;
+	struct drm_memrange *mm = cur->mm;
 	struct list_head *cur_head = &cur->ml_entry;
 	struct list_head *root_head = &mm->ml_entry;
-	struct drm_mm_node *prev_node = NULL;
-	struct drm_mm_node *next_node;
+	struct drm_memrange_node *prev_node = NULL;
+	struct drm_memrange_node *next_node;
 
 	int merged = 0;
 
 	if (cur_head->prev != root_head) {
-		prev_node = list_entry(cur_head->prev, struct drm_mm_node, ml_entry);
+		prev_node = list_entry(cur_head->prev, struct drm_memrange_node, ml_entry);
 		if (prev_node->free) {
 			prev_node->size += cur->size;
 			merged = 1;
 		}
 	}
 	if (cur_head->next != root_head) {
-		next_node = list_entry(cur_head->next, struct drm_mm_node, ml_entry);
+		next_node = list_entry(cur_head->next, struct drm_memrange_node, ml_entry);
 		if (next_node->free) {
 			if (merged) {
 				prev_node->size += next_node->size;
@@ -215,16 +216,16 @@ void drm_mm_put_block(struct drm_mm_node * cur)
 		drm_ctl_free(cur, sizeof(*cur), DRM_MEM_MM);
 	}
 }
-EXPORT_SYMBOL(drm_mm_put_block);
+EXPORT_SYMBOL(drm_memrange_put_block);
 
-struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
+struct drm_memrange_node *drm_memrange_search_free(const struct drm_memrange * mm,
 				  unsigned long size,
 				  unsigned alignment, int best_match)
 {
 	struct list_head *list;
 	const struct list_head *free_stack = &mm->fl_entry;
-	struct drm_mm_node *entry;
-	struct drm_mm_node *best;
+	struct drm_memrange_node *entry;
+	struct drm_memrange_node *best;
 	unsigned long best_size;
 	unsigned wasted;
 
@@ -232,7 +233,7 @@ struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
 	best_size = ~0UL;
 
 	list_for_each(list, free_stack) {
-		entry = list_entry(list, struct drm_mm_node, fl_entry);
+		entry = list_entry(list, struct drm_memrange_node, fl_entry);
 		wasted = 0;
 
 		if (entry->size < size)
@@ -257,30 +258,31 @@ struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
 
 	return best;
 }
+EXPORT_SYMBOL(drm_memrange_search_free);
 
-int drm_mm_clean(struct drm_mm * mm)
+int drm_memrange_clean(struct drm_memrange * mm)
 {
 	struct list_head *head = &mm->ml_entry;
 
 	return (head->next->next == head);
 }
 
-int drm_mm_init(struct drm_mm * mm, unsigned long start, unsigned long size)
+int drm_memrange_init(struct drm_memrange * mm, unsigned long start, unsigned long size)
 {
 	INIT_LIST_HEAD(&mm->ml_entry);
 	INIT_LIST_HEAD(&mm->fl_entry);
 
-	return drm_mm_create_tail_node(mm, start, size);
+	return drm_memrange_create_tail_node(mm, start, size);
 }
 
-EXPORT_SYMBOL(drm_mm_init);
+EXPORT_SYMBOL(drm_memrange_init);
 
-void drm_mm_takedown(struct drm_mm * mm)
+void drm_memrange_takedown(struct drm_memrange * mm)
 {
 	struct list_head *bnode = mm->fl_entry.next;
-	struct drm_mm_node *entry;
+	struct drm_memrange_node *entry;
 
-	entry = list_entry(bnode, struct drm_mm_node, fl_entry);
+	entry = list_entry(bnode, struct drm_memrange_node, fl_entry);
 
 	if (entry->ml_entry.next != &mm->ml_entry ||
 	    entry->fl_entry.next != &mm->fl_entry) {
@@ -292,20 +294,4 @@ void drm_mm_takedown(struct drm_mm * mm)
 	list_del(&entry->ml_entry);
 	drm_ctl_free(entry, sizeof(*entry), DRM_MEM_MM);
 }
-
-EXPORT_SYMBOL(drm_mm_takedown);
-
-void drm_mm_print(struct drm_mm *mm, const char *name)
-{
-	struct list_head *list;
-	const struct list_head *mm_stack = &mm->ml_entry;
-	struct drm_mm_node *entry;
-
-	DRM_DEBUG("Memory usage for '%s'\n", name ? name : "unknown");
-	list_for_each(list, mm_stack) {
-		entry = list_entry(list, struct drm_mm_node, ml_entry);
-		DRM_DEBUG("\t0x%08lx %li %s pages\n", entry->start, entry->size,
-			entry->free ? "free" : "used");
-	}
-}
-EXPORT_SYMBOL(drm_mm_print);
+EXPORT_SYMBOL(drm_memrange_takedown);
