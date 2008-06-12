@@ -507,7 +507,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	if (dev_priv->sarea_priv)
 	    dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
-	I915_WRITE(I915REG_INT_IDENTITY_R, iir | I915_USER_INTERRUPT);
+	I915_WRITE(I915REG_INT_IDENTITY_R, iir);
 	(void) I915_READ(I915REG_INT_IDENTITY_R); /* Flush posted write */
 
 	if (iir & I915_USER_INTERRUPT) {
