@@ -805,7 +805,7 @@ i915_gem_evict_something(struct drm_device *dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
-	int ret;
+	int ret = 0;
 
 	for (;;) {
 		/* If there's an inactive buffer available now, grab it
@@ -817,6 +817,13 @@ i915_gem_evict_something(struct drm_device *dev)
 						    list);
 			obj = obj_priv->obj;
 			BUG_ON(obj_priv->pin_count != 0);
+#if WATCH_LRU
+			DRM_INFO("%s: evicting %p\n", __func__, obj);
+#endif
+			BUG_ON(obj_priv->active);
+
+			/* Wait on the rendering and unbind the buffer. */
+			ret = i915_gem_object_unbind(obj);
 			break;
 		}
 
@@ -826,17 +833,21 @@ i915_gem_evict_something(struct drm_device *dev)
 		 */
 		if (!list_empty(&dev_priv->mm.request_list)) {
 			struct drm_i915_gem_request *request;
-			int ret;
 
 			request = list_first_entry(&dev_priv->mm.request_list,
 						   struct drm_i915_gem_request,
 						   list);
 
 			ret = i915_wait_request(dev, request->seqno);
-			if (ret != 0)
-				return ret;
-
-			continue;
+			
+			/* if waiting caused an object to become inactive,
+			 * then loop around and wait for it. Otherwise, we
+			 * assume that waiting freed and unbound something,
+			 * so there should now be some space in the GTT
+			 */
+			if (!list_empty(&dev_priv->mm.inactive_list))
+				continue;
+			break;
 		}
 
 		/* If we didn't have anything on the request list but there
@@ -859,21 +870,15 @@ i915_gem_evict_something(struct drm_device *dev)
 			continue;
 		}
 
+		DRM_ERROR("inactive empty %d request empty %d flushing empty %d\n",
+			  list_empty(&dev_priv->mm.inactive_list),
+			  list_empty(&dev_priv->mm.request_list),
+			  list_empty(&dev_priv->mm.flushing_list));
 		/* If we didn't do any of the above, there's nothing to be done
 		 * and we just can't fit it in.
 		 */
 		return -ENOMEM;
 	}
-
-#if WATCH_LRU
-	DRM_INFO("%s: evicting %p\n", __func__, obj);
-#endif
-
-	BUG_ON(obj_priv->active);
-
-	/* Wait on the rendering and unbind the buffer. */
-	ret = i915_gem_object_unbind(obj);
-
 	return ret;
 }
 
@@ -959,7 +964,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 
 		ret = i915_gem_evict_something(dev);
 		if (ret != 0) {
-			DRM_ERROR("Failed to evict a buffer\n");
+			DRM_ERROR("Failed to evict a buffer %d\n", ret);
 			return ret;
 		}
 		goto search_free;
