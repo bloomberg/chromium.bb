@@ -560,6 +560,7 @@ static int i915_resume(struct drm_device *dev)
 }
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+static void remove(struct pci_dev *pdev);
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should
 	 * deal with them for intel hardware.
@@ -604,7 +605,7 @@ static struct drm_driver driver = {
 		.name = DRIVER_NAME,
 		.id_table = pciidlist,
 		.probe = probe,
-		.remove = __devexit_p(drm_cleanup_pci),
+		.remove = remove,
 		},
 #ifdef I915_HAVE_FENCE
 	.fence_driver = &i915_fence_driver,
@@ -622,7 +623,19 @@ static struct drm_driver driver = {
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	return drm_get_dev(pdev, ent, &driver);
+	int ret;
+
+	(void) pci_enable_msi(pdev);
+	ret = drm_get_dev(pdev, ent, &driver);
+	if (ret && pdev->msi_enabled)
+		pci_disable_msi(pdev);
+	return ret;
+}
+static void remove(struct pci_dev *pdev)
+{
+	if (pdev->msi_enabled)
+		pci_disable_msi(pdev);
+	drm_cleanup_pci(pdev);
 }
 
 static int __init i915_init(void)

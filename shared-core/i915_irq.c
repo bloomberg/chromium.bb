@@ -33,6 +33,13 @@
 
 #define MAX_NOPID ((u32)~0)
 
+/*
+ * These are the interrupts used by the driver
+ */
+#define I915_INTERRUPT_ENABLE_MASK (I915_USER_INTERRUPT | \
+				    I915_DISPLAY_PIPE_A_EVENT_INTERRUPT | \
+				    I915_DISPLAY_PIPE_B_EVENT_INTERRUPT)
+
 /**
  * i915_get_pipe - return the the pipe associated with a given plane
  * @dev: DRM device
@@ -443,6 +450,8 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	u32 pipea_stats = 0, pipeb_stats = 0;
 	int vblank = 0;
 
+	if (dev->pdev->msi_enabled)
+		I915_WRITE(I915REG_INT_ENABLE_R, 0);
 	iir = I915_READ(I915REG_INT_IDENTITY_R);
 #if 0
 	DRM_DEBUG("flag=%08x\n", iir);
@@ -454,6 +463,9 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			   I915_READ(I915REG_INT_ENABLE_R),
 			   I915_READ(I915REG_PIPEASTAT),
 			   I915_READ(I915REG_PIPEBSTAT));
+		if (dev->pdev->msi_enabled)
+			I915_WRITE(I915REG_INT_ENABLE_R,
+				   I915_INTERRUPT_ENABLE_MASK);
 		return IRQ_NONE;
 	}
 
@@ -498,6 +510,8 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
 	}
 
+	if (dev->pdev->msi_enabled)
+		I915_WRITE(I915REG_INT_ENABLE_R, I915_INTERRUPT_ENABLE_MASK);
 	return IRQ_HANDLED;
 }
 
@@ -724,11 +738,9 @@ static void i915_enable_interrupt (struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	
-	dev_priv->irq_mask_reg = (I915_USER_INTERRUPT |
-				  I915_DISPLAY_PIPE_A_EVENT_INTERRUPT |
-				  I915_DISPLAY_PIPE_B_EVENT_INTERRUPT);
+	dev_priv->irq_mask_reg = I915_INTERRUPT_ENABLE_MASK;
 	I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
-	I915_WRITE(I915REG_INT_ENABLE_R, dev_priv->irq_mask_reg);
+	I915_WRITE(I915REG_INT_ENABLE_R, I915_INTERRUPT_ENABLE_MASK);
 	(void) I915_READ (I915REG_INT_ENABLE_R);
 	dev_priv->irq_enabled = 1;
 }
