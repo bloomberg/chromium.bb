@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20080528"
+#define DRIVER_DATE		"20080613"
 
 /* Interface history:
  *
