@@ -301,6 +301,13 @@ typedef struct drm_i915_private {
 	} mm;
 } drm_i915_private_t;
 
+struct drm_i915_file_private {
+	struct {
+		uint32_t last_gem_seqno;
+		uint32_t last_gem_throttle_seqno;
+	} mm;
+};
+
 enum intel_chip_family {
 	CHIP_I8XX = 0x01,
 	CHIP_I9XX = 0x02,
@@ -378,8 +385,11 @@ extern void i915_kernel_lost_context(struct drm_device * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);
 extern int i915_driver_unload(struct drm_device *);
 extern void i915_driver_lastclose(struct drm_device * dev);
+extern int i915_driver_open(struct drm_device *dev, struct drm_file *file_priv);
 extern void i915_driver_preclose(struct drm_device *dev,
 				 struct drm_file *file_priv);
+extern void i915_driver_postclose(struct drm_device *dev,
+				  struct drm_file *file_priv);
 extern int i915_driver_device_is_agp(struct drm_device * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);

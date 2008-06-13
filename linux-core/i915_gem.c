@@ -1548,33 +1548,17 @@ i915_dispatch_gem_execbuffer(struct drm_device *dev,
  * relatively low latency when blocking on a particular request to finish.
  */
 static int
-i915_gem_ring_throttle(struct drm_device *dev)
+i915_gem_ring_throttle(struct drm_device *dev, struct drm_file *file_priv)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_file_private *i915_file_priv = file_priv->driver_priv;
 	int ret = 0;
+	uint32_t seqno;
 
 	mutex_lock(&dev->struct_mutex);
-	while (!list_empty(&dev_priv->mm.request_list)) {
-		struct drm_i915_gem_request *request;
-
-		request = list_first_entry(&dev_priv->mm.request_list,
-					   struct drm_i915_gem_request,
-					   list);
-
-		/* Break out if we're close enough. */
-		if ((long) (jiffies - request->emitted_jiffies) <=
-		    (20 * HZ) / 1000) {
-			mutex_unlock(&dev->struct_mutex);
-			return 0;
-		}
-
-		/* Wait on the last request if not. */
-		ret = i915_wait_request(dev, request->seqno);
-		if (ret != 0) {
-			mutex_unlock(&dev->struct_mutex);
-			return ret;
-		}
-	}
+	seqno = i915_file_priv->mm.last_gem_throttle_seqno;
+	i915_file_priv->mm.last_gem_throttle_seqno = i915_file_priv->mm.last_gem_seqno;
+	if (seqno)
+		ret = i915_wait_request(dev, seqno);
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
@@ -1584,6 +1568,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_file_private *i915_file_priv = file_priv->driver_priv;
 	struct drm_i915_gem_execbuffer *args = data;
 	struct drm_i915_gem_exec_object *exec_list = NULL;
 	struct drm_gem_object **object_list = NULL;
@@ -1724,6 +1709,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	 */
 	seqno = i915_add_request(dev, flush_domains);
 	BUG_ON(seqno == 0);
+	i915_file_priv->mm.last_gem_seqno = seqno;
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_gem_object *obj = object_list[i];
 		struct drm_i915_gem_object *obj_priv = obj->driver_private;
@@ -1881,7 +1867,7 @@ int
 i915_gem_throttle_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv)
 {
-    return i915_gem_ring_throttle(dev);
+    return i915_gem_ring_throttle(dev, file_priv);
 }
 
 int i915_gem_init_object(struct drm_gem_object *obj)

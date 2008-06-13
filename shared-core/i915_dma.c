@@ -1149,10 +1149,36 @@ void i915_driver_lastclose(struct drm_device * dev)
 	i915_dma_cleanup(dev);
 }
 
+int i915_driver_open(struct drm_device *dev, struct drm_file *file_priv)
+{
+	struct drm_i915_file_private *i915_file_priv;
+
+	DRM_DEBUG("\n");
+	i915_file_priv = (struct drm_i915_file_private *)
+	    drm_alloc(sizeof(*i915_file_priv), DRM_MEM_FILES);
+
+	if (!i915_file_priv)
+		return -ENOMEM;
+
+	file_priv->driver_priv = i915_file_priv;
+
+	i915_file_priv->mm.last_gem_seqno = 0;
+	i915_file_priv->mm.last_gem_throttle_seqno = 0;
+
+	return 0;
+}
+
 void i915_driver_preclose(struct drm_device * dev, struct drm_file *file_priv)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	i915_mem_release(dev, file_priv, dev_priv->agp_heap);
+}
+
+void i915_driver_postclose(struct drm_device *dev, struct drm_file *file_priv)
+{
+	struct drm_i915_file_private *i915_file_priv = file_priv->driver_priv;
+
+	drm_free(i915_file_priv, sizeof(*i915_file_priv), DRM_MEM_FILES);
 }
 
 struct drm_ioctl_desc i915_ioctls[] = {

@@ -561,6 +561,7 @@ static int i915_resume(struct drm_device *dev)
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static void remove(struct pci_dev *pdev);
+
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should
 	 * deal with them for intel hardware.
@@ -571,8 +572,10 @@ static struct drm_driver driver = {
 	.load = i915_driver_load,
 	.unload = i915_driver_unload,
 	.firstopen = i915_driver_firstopen,
+	.open = i915_driver_open,
 	.lastclose = i915_driver_lastclose,
 	.preclose = i915_driver_preclose,
+	.postclose = i915_driver_postclose,
 	.suspend = i915_suspend,
 	.resume = i915_resume,
 	.device_is_agp = i915_driver_device_is_agp,
