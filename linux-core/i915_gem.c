@@ -1647,7 +1647,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			DRM_ERROR("object bind and relocate failed %d\n", ret);
 			goto err;
 		}
-		pinned = i;
+		pinned = i + 1;
 	}
 
 	/* Set the pending read domains for the batch buffer to COMMAND */
@@ -1745,7 +1745,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 err:
 	if (object_list != NULL) {
 		for (i = 0; i < pinned; i++)
-			i915_gem_object_unpin (object_list[i]);
+			i915_gem_object_unpin(object_list[i]);
+
 		for (i = 0; i < args->buffer_count; i++)
 			drm_gem_object_unreference(object_list[i]);
 	}
