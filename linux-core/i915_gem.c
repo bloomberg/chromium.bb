@@ -1298,27 +1298,25 @@ i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle)
 #endif
 
 /**
- * Bind an object to the GTT and evaluate the relocations landing in it.
+ * Pin an object to the GTT and evaluate the relocations landing in it.
  */
 static int
-i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
-				  struct drm_file *file_priv,
-				  struct drm_i915_gem_exec_object *entry)
+i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
+				 struct drm_file *file_priv,
+				 struct drm_i915_gem_exec_object *entry)
 {
 	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_relocation_entry reloc;
 	struct drm_i915_gem_relocation_entry __user *relocs;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-	int i;
+	int i, ret;
 	uint32_t last_reloc_offset = -1;
 	void *reloc_page = NULL;
 
 	/* Choose the GTT offset for our buffer and put it there. */
-	if (obj_priv->gtt_space == NULL) {
-		i915_gem_object_bind_to_gtt(obj, (unsigned) entry->alignment);
-		if (obj_priv->gtt_space == NULL)
-			return -ENOMEM;
-	}
+	ret = i915_gem_object_pin(obj, (uint32_t) entry->alignment);
+	if (ret)
+		return ret;
 
 	entry->offset = obj_priv->gtt_offset;
 
@@ -1334,13 +1332,17 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 		int ret;
 
 		ret = copy_from_user(&reloc, relocs + i, sizeof(reloc));
-		if (ret != 0)
+		if (ret != 0) {
+			i915_gem_object_unpin(obj);
 			return ret;
+		}
 
 		target_obj = drm_gem_object_lookup(obj->dev, file_priv,
 						   reloc.target_handle);
-		if (target_obj == NULL)
+		if (target_obj == NULL) {
+			i915_gem_object_unpin(obj);
 			return -EINVAL;
+		}
 		target_obj_priv = target_obj->driver_private;
 
 		/* The target buffer should have appeared before us in the
@@ -1350,6 +1352,7 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 			DRM_ERROR("No GTT space found for object %d\n",
 				  reloc.target_handle);
 			drm_gem_object_unreference(target_obj);
+			i915_gem_object_unpin(obj);
 			return -EINVAL;
 		}
 
@@ -1359,6 +1362,7 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 				  obj, reloc.target_handle,
 				  (int) reloc.offset, (int) obj->size);
 			drm_gem_object_unreference(target_obj);
+			i915_gem_object_unpin(obj);
 			return -EINVAL;
 		}
 		if (reloc.offset & 3) {
@@ -1367,6 +1371,7 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 				  obj, reloc.target_handle,
 				  (int) reloc.offset);
 			drm_gem_object_unreference(target_obj);
+			i915_gem_object_unpin(obj);
 			return -EINVAL;
 		}
 
@@ -1380,6 +1385,7 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 				  reloc.write_domain,
 				  target_obj->pending_write_domain);
 			drm_gem_object_unreference(target_obj);
+			i915_gem_object_unpin(obj);
 			return -EINVAL;
 		}
 
@@ -1440,6 +1446,7 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 			last_reloc_offset = reloc_offset;
 			if (reloc_page == NULL) {
 				drm_gem_object_unreference(target_obj);
+				i915_gem_object_unpin(obj);
 				return -ENOMEM;
 			}
 		}
@@ -1462,6 +1469,7 @@ i915_gem_object_bind_and_relocate(struct drm_gem_object *obj,
 		ret = copy_to_user(relocs + i, &reloc, sizeof(reloc));
 		if (ret != 0) {
 			drm_gem_object_unreference(target_obj);
+			i915_gem_object_unpin(obj);
 			return ret;
 		}
 
@@ -1573,7 +1581,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	struct drm_i915_gem_exec_object *exec_list = NULL;
 	struct drm_gem_object **object_list = NULL;
 	struct drm_gem_object *batch_obj;
-	int ret, i;
+	int ret, i, pinned = 0;
 	uint64_t exec_offset;
 	uint32_t seqno, flush_domains;
 
@@ -1632,13 +1640,14 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 		object_list[i]->pending_read_domains = 0;
 		object_list[i]->pending_write_domain = 0;
-		ret = i915_gem_object_bind_and_relocate(object_list[i],
-							file_priv,
-							&exec_list[i]);
+		ret = i915_gem_object_pin_and_relocate(object_list[i],
+						       file_priv,
+						       &exec_list[i]);
 		if (ret) {
 			DRM_ERROR("object bind and relocate failed %d\n", ret);
 			goto err;
 		}
+		pinned = i;
 	}
 
 	/* Set the pending read domains for the batch buffer to COMMAND */
@@ -1735,6 +1744,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			   args->buffer_count, ret);
 err:
 	if (object_list != NULL) {
+		for (i = 0; i < pinned; i++)
+			i915_gem_object_unpin (object_list[i]);
 		for (i = 0; i < args->buffer_count; i++)
 			drm_gem_object_unreference(object_list[i]);
 	}
@@ -1752,32 +1763,47 @@ pre_mutex_err:
 int
 i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment)
 {
-	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int ret;
 
 	if (obj_priv->gtt_space == NULL) {
 		ret = i915_gem_object_bind_to_gtt(obj, alignment);
 		if (ret != 0) {
-			DRM_ERROR("Failure to bind in "
-				  "i915_gem_pin_ioctl(): %d\n",
-				  ret);
-			drm_gem_object_unreference(obj);
-			mutex_unlock(&dev->struct_mutex);
+			DRM_ERROR("Failure to bind: %d", ret);
 			return ret;
 		}
 	}
-
 	obj_priv->pin_count++;
+
+	/* If the object is not active and not pending a flush,
+	 * remove it from the inactive list
+	 */
+	if (obj_priv->pin_count == 1 &&
+	    !obj_priv->active &&
+	    obj->write_domain == 0)
+		list_del_init(&obj_priv->list);
+
 	return 0;
 }
 
 void
 i915_gem_object_unpin(struct drm_gem_object *obj)
 {
+	struct drm_device *dev = obj->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
 	obj_priv->pin_count--;
+	BUG_ON(obj_priv->pin_count < 0);
+	BUG_ON(obj_priv->gtt_space == NULL);
+	
+	/* If the object is no longer pinned, and is
+	 * neither active nor being flushed, then stick it on
+	 * the inactive list
+	 */
+	if (obj_priv->pin_count == 0 && 
+	    !obj_priv->active && obj->write_domain == 0)
+		list_move_tail(&obj_priv->list, &dev_priv->mm.inactive_list);
 }
 
 int
@@ -1963,8 +1989,10 @@ i915_gem_init_ringbuffer(struct drm_device *dev)
 	obj_priv = obj->driver_private;
 
 	ret = i915_gem_object_pin(obj, 4096);
-	if (ret != 0)
+	if (ret != 0) {
+		drm_gem_object_unreference(obj);
 		return ret;
+	}
 
 	/* Set up the kernel mapping for the ring. */
 	dev_priv->ring.Size = obj->size;
