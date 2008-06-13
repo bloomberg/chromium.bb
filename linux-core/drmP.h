@@ -965,6 +965,11 @@ struct drm_device {
 	spinlock_t object_name_lock;
 	struct idr object_name_idr;
 	atomic_t object_count;
+	atomic_t object_memory;
+	atomic_t pin_count;
+	atomic_t pin_memory;
+	atomic_t gtt_count;
+	atomic_t gtt_memory;
 	uint32_t invalidate_domains;	/* domains pending invalidation */
 	uint32_t flush_domains;		/* domains pending flush */
 	/*@} */
