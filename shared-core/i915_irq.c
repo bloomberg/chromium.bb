@@ -560,8 +560,12 @@ int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	DRM_DEBUG("irq_nr=%d breadcrumb=%d\n", irq_nr,
 		  READ_BREADCRUMB(dev_priv));
 
-	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
+	if (READ_BREADCRUMB(dev_priv) >= irq_nr) {
+		if (dev_priv->sarea_priv)
+			dev_priv->sarea_priv->last_dispatch =
+				READ_BREADCRUMB(dev_priv);
 		return 0;
+	}
 
 	i915_user_irq_on(dev_priv);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
