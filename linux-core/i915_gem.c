@@ -1595,8 +1595,6 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	uint64_t exec_offset;
 	uint32_t seqno, flush_domains;
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
-
 #if WATCH_EXEC
 	DRM_INFO("buffers_ptr %d buffer_count %d len %08x\n",
 		  (int) args->buffers_ptr, args->buffer_count, args->batch_len);
