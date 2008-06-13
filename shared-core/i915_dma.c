@@ -1077,8 +1077,6 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	init_timer_deferrable (&dev_priv->mm.retire_timer);
 	INIT_WORK(&dev_priv->mm.retire_task,
 		  i915_gem_retire_handler);
-	INIT_WORK(&dev_priv->user_interrupt_task,
-		  i915_user_interrupt_handler);
 	dev_priv->mm.next_gem_seqno = 1;
 
 #ifdef __linux__

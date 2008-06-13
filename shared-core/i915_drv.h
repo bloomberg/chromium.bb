@@ -300,8 +300,6 @@ typedef struct drm_i915_private {
 		 */
 		int suspended;
 	} mm;
-
-	struct work_struct user_interrupt_task;
 } drm_i915_private_t;
 
 enum intel_chip_family {
@@ -421,7 +419,6 @@ extern int i915_vblank_swap(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
 extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
 extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
-extern void i915_user_interrupt_handler(struct work_struct *work);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(struct drm_device *dev, void *data,
