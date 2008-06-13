@@ -493,7 +493,10 @@ dri_gem_bo_map(dri_bo *bo, int write_enable)
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_CPU;
 	set_domain.write_domain = write_enable ? I915_GEM_DOMAIN_CPU : 0;
-	ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
+	do {
+	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
+			&set_domain);
+	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
 	    fprintf (stderr, "%s:%d: Error setting memory domains %d (%08x %08x): %s .\n",
 		     __FILE__, __LINE__,
@@ -533,7 +536,9 @@ dri_gem_bo_subdata (dri_bo *bo, unsigned long offset,
     pwrite.offset = offset;
     pwrite.size = size;
     pwrite.data_ptr = (uint64_t) (uintptr_t) data;
-    ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PWRITE, &pwrite);
+    do {
+	ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PWRITE, &pwrite);
+    } while (ret == -1 && errno == EINTR);
     if (ret != 0) {
 	fprintf (stderr, "%s:%d: Error writing data to buffer %d: (%d %d) %s .\n",
 		 __FILE__, __LINE__,
@@ -557,7 +562,9 @@ dri_gem_bo_get_subdata (dri_bo *bo, unsigned long offset,
     pread.offset = offset;
     pread.size = size;
     pread.data_ptr = (uint64_t) (uintptr_t) data;
-    ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PREAD, &pread);
+    do {
+	ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PREAD, &pread);
+    } while (ret == -1 && errno == EINTR);
     if (ret != 0) {
 	fprintf (stderr, "%s:%d: Error reading data from buffer %d: (%d %d) %s .\n",
 		 __FILE__, __LINE__,
