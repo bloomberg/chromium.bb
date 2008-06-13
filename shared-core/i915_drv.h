@@ -285,8 +285,7 @@ typedef struct drm_i915_private {
 		 * fire periodically while the ring is running. When it
 		 * fires, go retire requests.
 		 */
-		struct timer_list retire_timer;
-		struct work_struct retire_task;
+		struct delayed_work retire_work;
 		
 		uint32_t next_gem_seqno;
 
@@ -488,8 +487,7 @@ int i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment);
 void i915_gem_object_unpin(struct drm_gem_object *obj);
 void i915_gem_lastclose(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
-void i915_gem_retire_timeout(unsigned long data);
-void i915_gem_retire_handler(struct work_struct *work);
+void i915_gem_retire_work_handler(struct work_struct *work);
 #endif
 
 #ifdef __linux__
@@ -915,6 +913,9 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define XY_SRC_COPY_BLT_SRC_TILED	(1<<15)
 #define XY_SRC_COPY_BLT_DST_TILED	(1<<11)
 
+#define MI_NOOP			(0)
+#define  MI_NOOP_ENABLE_NOPID	(1 << 22)
+#define  MI_NOOP_ID_MASK	((1 << 22) - 1)
 
 #define MI_BATCH_BUFFER		((0x30<<23)|1)
 #define MI_BATCH_BUFFER_START	(0x31<<23)

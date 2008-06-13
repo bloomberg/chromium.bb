@@ -1072,11 +1072,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	INIT_LIST_HEAD(&dev_priv->mm.flushing_list);
 	INIT_LIST_HEAD(&dev_priv->mm.inactive_list);
 	INIT_LIST_HEAD(&dev_priv->mm.request_list);
-	dev_priv->mm.retire_timer.function = i915_gem_retire_timeout;
-	dev_priv->mm.retire_timer.data = (unsigned long) dev;
-	init_timer_deferrable (&dev_priv->mm.retire_timer);
-	INIT_WORK(&dev_priv->mm.retire_task,
-		  i915_gem_retire_handler);
+	INIT_DELAYED_WORK(&dev_priv->mm.retire_work,
+			  i915_gem_retire_work_handler);
 	dev_priv->mm.next_gem_seqno = 1;
 
 #ifdef __linux__
