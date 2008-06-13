@@ -44,6 +44,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <pthread.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
@@ -83,6 +84,8 @@ typedef struct _dri_bufmgr_gem {
     int fd;
 
     int max_relocs;
+
+    pthread_mutex_t lock;
 
     struct drm_i915_gem_exec_object *exec_objects;
     dri_bo **exec_bos;
@@ -132,6 +135,8 @@ struct _dri_bo_gem {
     /** free list */
     dri_bo_gem *next;
 };
+
+static void dri_gem_bo_reference_locked(dri_bo *bo);
 
 static int
 logbase2(int n)
@@ -237,7 +242,7 @@ intel_add_validate_buffer(dri_bo *bo)
     bufmgr_gem->exec_objects[index].alignment = 0;
     bufmgr_gem->exec_objects[index].offset = 0;
     bufmgr_gem->exec_bos[index] = bo;
-    dri_bo_reference(bo);
+    dri_gem_bo_reference_locked(bo);
     bufmgr_gem->exec_count++;
 }
 
@@ -285,6 +290,7 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 	    bo_size = page_size;
     }
 
+    pthread_mutex_lock(&bufmgr_gem->lock);
     /* Get a buffer out of the cache if available */
     if (bucket != NULL && bucket->num_entries > 0) {
 	struct drm_i915_gem_busy busy;
@@ -302,6 +308,7 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 	    bucket->num_entries--;
 	}
     }
+    pthread_mutex_unlock(&bufmgr_gem->lock);
 
     if (!alloc_from_cache) {
 	struct drm_i915_gem_create create;
@@ -380,6 +387,17 @@ intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
 static void
 dri_gem_bo_reference(dri_bo *bo)
 {
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
+    dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
+
+    pthread_mutex_lock(&bufmgr_gem->lock);
+    bo_gem->refcount++;
+    pthread_mutex_unlock(&bufmgr_gem->lock);
+}
+
+static void
+dri_gem_bo_reference_locked(dri_bo *bo)
+{
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
 
     bo_gem->refcount++;
@@ -408,13 +426,10 @@ dri_gem_bo_free(dri_bo *bo)
 }
 
 static void
-dri_gem_bo_unreference(dri_bo *bo)
+dri_gem_bo_unreference_locked(dri_bo *bo)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
-
-    if (!bo)
-	return;
 
     if (--bo_gem->refcount == 0) {
 	struct dri_gem_bo_bucket *bucket;
@@ -424,7 +439,7 @@ dri_gem_bo_unreference(dri_bo *bo)
 
 	    /* Unreference all the target buffers */
 	    for (i = 0; i < bo_gem->reloc_count; i++)
-		 dri_bo_unreference(bo_gem->reloc_target_bo[i]);
+		 dri_gem_bo_unreference_locked(bo_gem->reloc_target_bo[i]);
 	    free(bo_gem->reloc_target_bo);
 	    free(bo_gem->relocs);
 	}
@@ -452,20 +467,28 @@ dri_gem_bo_unreference(dri_bo *bo)
 	} else {
 	    dri_gem_bo_free(bo);
 	}
-
-	return;
     }
+}
+
+static void
+dri_gem_bo_unreference(dri_bo *bo)
+{
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
+
+    pthread_mutex_lock(&bufmgr_gem->lock);
+    dri_gem_bo_unreference_locked(bo);
+    pthread_mutex_unlock(&bufmgr_gem->lock);
 }
 
 static int
 dri_gem_bo_map(dri_bo *bo, int write_enable)
 {
-    dri_bufmgr_gem *bufmgr_gem;
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
     struct drm_i915_gem_set_domain set_domain;
     int ret;
 
-    bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
+    pthread_mutex_lock(&bufmgr_gem->lock);
 
     /* Allow recursive mapping. Mesa may recursively map buffers with
      * nested display loops.
@@ -515,6 +538,8 @@ dri_gem_bo_map(dri_bo *bo, int write_enable)
 	bo_gem->swrast = 1;
     }
 
+    pthread_mutex_unlock(&bufmgr_gem->lock);
+
     return 0;
 }
 
@@ -531,6 +556,7 @@ dri_gem_bo_unmap(dri_bo *bo)
 
     assert(bo_gem->mapped);
 
+    pthread_mutex_lock(&bufmgr_gem->lock);
     if (bo_gem->swrast) {
 	sw_finish.handle = bo_gem->gem_handle;
 	do {
@@ -539,6 +565,7 @@ dri_gem_bo_unmap(dri_bo *bo)
 	} while (ret == -1 && errno == EINTR);
 	bo_gem->swrast = 0;
     }
+    pthread_mutex_unlock(&bufmgr_gem->lock);
     return 0;
 }
 
@@ -623,6 +650,8 @@ dri_bufmgr_gem_destroy(dri_bufmgr *bufmgr)
     free(bufmgr_gem->exec_objects);
     free(bufmgr_gem->exec_bos);
 
+    pthread_mutex_destroy(&bufmgr_gem->lock);
+
     /* Free any cached buffer objects we were going to reuse */
     for (i = 0; i < INTEL_GEM_BO_BUCKETS; i++) {
 	struct dri_gem_bo_bucket *bucket = &bufmgr_gem->cache_bucket[i];
@@ -658,6 +687,8 @@ dri_gem_bo_emit_reloc(dri_bo *bo, uint32_t read_domains, uint32_t write_domain,
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
     dri_bo_gem *target_bo_gem = (dri_bo_gem *)target_bo;
 
+    pthread_mutex_lock(&bufmgr_gem->lock);
+
     /* Create a new relocation list if needed */
     if (bo_gem->relocs == NULL)
 	intel_setup_reloc_list(bo);
@@ -678,9 +709,12 @@ dri_gem_bo_emit_reloc(dri_bo *bo, uint32_t read_domains, uint32_t write_domain,
     bo_gem->relocs[bo_gem->reloc_count].presumed_offset = target_bo->offset;
 
     bo_gem->reloc_target_bo[bo_gem->reloc_count] = target_bo;
-    dri_bo_reference(target_bo);
+    dri_gem_bo_reference_locked(target_bo);
 
     bo_gem->reloc_count++;
+
+    pthread_mutex_unlock(&bufmgr_gem->lock);
+
     return 0;
 }
 
@@ -737,6 +771,7 @@ dri_gem_bo_exec(dri_bo *bo, int used,
     struct drm_i915_gem_execbuffer execbuf;
     int ret, i;
 
+    pthread_mutex_lock(&bufmgr_gem->lock);
     /* Update indices and set up the validate list. */
     dri_gem_bo_process_reloc(bo);
 
@@ -772,10 +807,11 @@ dri_gem_bo_exec(dri_bo *bo, int used,
 
 	/* Disconnect the buffer from the validate list */
 	bo_gem->validate_index = -1;
-	dri_bo_unreference(bo);
+	dri_gem_bo_unreference_locked(bo);
 	bufmgr_gem->exec_bos[i] = NULL;
     }
     bufmgr_gem->exec_count = 0;
+    pthread_mutex_unlock(&bufmgr_gem->lock);
 
     return 0;
 }
@@ -899,6 +935,11 @@ intel_bufmgr_gem_init(int fd, int batch_size)
 
     bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
     bufmgr_gem->fd = fd;
+
+    if (pthread_mutex_init(&bufmgr_gem->lock, NULL) != 0) {
+      free(bufmgr_gem);
+      return NULL;
+   }
 
     /* Let's go with one relocation per every 2 dwords (but round down a bit
      * since a power of two will mean an extra page allocation for the reloc

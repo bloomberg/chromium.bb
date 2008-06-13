@@ -43,6 +43,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <xf86drm.h>
+#include <pthread.h>
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "drm.h"
@@ -111,6 +112,8 @@ struct block {
 
 typedef struct _bufmgr_fake {
    dri_bufmgr bufmgr;
+
+   pthread_mutex_t lock;
 
    unsigned long low_offset;
    unsigned long size;
@@ -716,10 +719,16 @@ dri_fake_bo_wait_rendering(dri_bo *bo)
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
 
-   if (bo_fake->block == NULL || !bo_fake->block->fenced)
+   pthread_mutex_lock(&bufmgr_fake->lock);
+
+   if (bo_fake->block == NULL || !bo_fake->block->fenced) {
+      pthread_mutex_unlock(&bufmgr_fake->lock);
       return;
+   }
 
    _fence_wait_internal(bufmgr_fake, bo_fake->block->fence);
+
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
 /* Specifically ignore texture memory sharing.
@@ -731,6 +740,8 @@ intel_bufmgr_fake_contended_lock_take(dri_bufmgr *bufmgr)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
    struct block *block, *tmp;
+
+   pthread_mutex_lock(&bufmgr_fake->lock);
 
    bufmgr_fake->need_fence = 1;
    bufmgr_fake->fail = 0;
@@ -751,6 +762,8 @@ intel_bufmgr_fake_contended_lock_take(dri_bufmgr *bufmgr)
       assert(_fence_test(bufmgr_fake, block->fence));
       set_dirty(block->bo);
    }
+
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
 static dri_bo *
@@ -825,20 +838,28 @@ intel_bo_fake_alloc_static(dri_bufmgr *bufmgr, const char *name,
 static void
 dri_fake_bo_reference(dri_bo *bo)
 {
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
+   dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
+
+   pthread_mutex_lock(&bufmgr_fake->lock);
+   bo_fake->refcount++;
+   pthread_mutex_unlock(&bufmgr_fake->lock);
+}
+
+static void
+dri_fake_bo_reference_locked(dri_bo *bo)
+{
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
 
    bo_fake->refcount++;
 }
 
 static void
-dri_fake_bo_unreference(dri_bo *bo)
+dri_fake_bo_unreference_locked(dri_bo *bo)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
    int i;
-
-   if (!bo)
-      return;
 
    if (--bo_fake->refcount == 0) {
       assert(bo_fake->map_count == 0);
@@ -848,15 +869,23 @@ dri_fake_bo_unreference(dri_bo *bo)
       free_backing_store(bo);
 
       for (i = 0; i < bo_fake->nr_relocs; i++)
-	 dri_bo_unreference(bo_fake->relocs[i].target_buf);
+	 dri_fake_bo_unreference_locked(bo_fake->relocs[i].target_buf);
 
       DBG("drm_bo_unreference: free buf %d %s\n", bo_fake->id, bo_fake->name);
 
       free(bo_fake->relocs);
       free(bo);
-
-      return;
    }
+}
+
+static void
+dri_fake_bo_unreference(dri_bo *bo)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
+
+   pthread_mutex_lock(&bufmgr_fake->lock);
+   dri_fake_bo_unreference_locked(bo);
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
 /**
@@ -870,6 +899,8 @@ void intel_bo_fake_disable_backing_store(dri_bo *bo,
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
+
+   pthread_mutex_lock(&bufmgr_fake->lock);
 
    if (bo_fake->backing_store)
       free_backing_store(bo);
@@ -887,6 +918,8 @@ void intel_bo_fake_disable_backing_store(dri_bo *bo,
     */
    if (invalidate_cb != NULL)
       invalidate_cb(bo, ptr);
+
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
 /**
@@ -894,7 +927,7 @@ void intel_bo_fake_disable_backing_store(dri_bo *bo,
  * BM_NO_BACKING_STORE or BM_PINNED) or backing store, as necessary.
  */
 static int
-dri_fake_bo_map(dri_bo *bo, int write_enable)
+dri_fake_bo_map_locked(dri_bo *bo, int write_enable)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
@@ -952,7 +985,20 @@ dri_fake_bo_map(dri_bo *bo, int write_enable)
 }
 
 static int
-dri_fake_bo_unmap(dri_bo *bo)
+dri_fake_bo_map(dri_bo *bo, int write_enable)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
+   int ret;
+
+   pthread_mutex_lock(&bufmgr_fake->lock);
+   ret = dri_fake_bo_map_locked(bo, write_enable);
+   pthread_mutex_unlock(&bufmgr_fake->lock);
+
+   return ret;
+}
+
+static int
+dri_fake_bo_unmap_locked(dri_bo *bo)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
@@ -973,10 +1019,25 @@ dri_fake_bo_unmap(dri_bo *bo)
    return 0;
 }
 
+static int
+dri_fake_bo_unmap(dri_bo *bo)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
+   int ret;
+
+   pthread_mutex_lock(&bufmgr_fake->lock);
+   ret = dri_fake_bo_unmap_locked(bo);
+   pthread_mutex_unlock(&bufmgr_fake->lock);
+
+   return ret;
+}
+
 static void
 dri_fake_kick_all(dri_bufmgr_fake *bufmgr_fake)
 {
    struct block *block, *tmp;
+
+   pthread_mutex_lock(&bufmgr_fake->lock);
 
    bufmgr_fake->performed_rendering = 0;
    /* okay for ever BO that is on the HW kick it off.
@@ -991,6 +1052,8 @@ dri_fake_kick_all(dri_bufmgr_fake *bufmgr_fake)
       if (!(bo_fake->flags & BM_NO_BACKING_STORE))
          bo_fake->dirty = 1;
    }
+
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
 static int
@@ -999,9 +1062,6 @@ dri_fake_bo_validate(dri_bo *bo)
    dri_bufmgr_fake *bufmgr_fake;
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
 
-   /* XXX: Sanity-check whether we've already validated this one under
-    * different flags.  See drmAddValidateItem().
-    */
    bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
 
    DBG("drm_bo_validate: (buf %d: %s, %d kb)\n", bo_fake->id, bo_fake->name,
@@ -1084,6 +1144,7 @@ dri_fake_destroy(dri_bufmgr *bufmgr)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
 
+   pthread_mutex_destroy(&bufmgr_fake->lock);
    mmDestroy(bufmgr_fake->heap);
    free(bufmgr);
 }
@@ -1099,6 +1160,8 @@ dri_fake_emit_reloc(dri_bo *reloc_buf,
    dri_bo_fake *target_fake = (dri_bo_fake *)target_buf;
    int i;
 
+   pthread_mutex_lock(&bufmgr_fake->lock);
+
    assert(reloc_buf);
    assert(target_buf);
 
@@ -1111,7 +1174,7 @@ dri_fake_emit_reloc(dri_bo *reloc_buf,
 
    assert(reloc_fake->nr_relocs <= MAX_RELOCS);
 
-   dri_bo_reference(target_buf);
+   dri_fake_bo_reference_locked(target_buf);
 
    if (!target_fake->is_static)
       reloc_fake->child_size += ALIGN(target_buf->size, target_fake->alignment);
@@ -1131,6 +1194,8 @@ dri_fake_emit_reloc(dri_bo *reloc_buf,
 	 assert(r->offset != r2->offset);
       }
    }
+
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 
    return 0;
 }
@@ -1178,7 +1243,7 @@ dri_fake_reloc_and_validate_buffer(dri_bo *bo)
          ret = dri_fake_reloc_and_validate_buffer(r->target_buf);
          if (ret != 0) {
             if (bo->virtual != NULL)
-                dri_bo_unmap(bo);
+                dri_fake_bo_unmap_locked(bo);
             return ret;
          }
       }
@@ -1188,7 +1253,7 @@ dri_fake_reloc_and_validate_buffer(dri_bo *bo)
 	 reloc_data = r->target_buf->offset + r->delta;
 
 	 if (bo->virtual == NULL)
-	    dri_bo_map(bo, 1);
+	    dri_fake_bo_map_locked(bo, 1);
 
 	 *(uint32_t *)((uint8_t *)bo->virtual + r->offset) = reloc_data;
 
@@ -1197,7 +1262,7 @@ dri_fake_reloc_and_validate_buffer(dri_bo *bo)
    }
 
    if (bo->virtual != NULL)
-      dri_bo_unmap(bo);
+      dri_fake_bo_unmap_locked(bo);
 
    if (bo_fake->write_domain != 0) {
       if (!(bo_fake->flags & (BM_NO_BACKING_STORE|BM_PINNED))) {
@@ -1261,6 +1326,8 @@ dri_fake_bo_exec(dri_bo *bo, int used,
    int ret;
    int retry_count = 0;
 
+   pthread_mutex_lock(&bufmgr_fake->lock);
+
    bufmgr_fake->performed_rendering = 0;
 
    dri_fake_calculate_domains(bo);
@@ -1304,6 +1371,8 @@ dri_fake_bo_exec(dri_bo *bo, int used,
    dri_fake_fence_validated(bo->bufmgr);
 
    dri_bo_fake_post_submit(bo);
+
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 
    return 0;
 }
@@ -1357,6 +1426,8 @@ intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr)
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
    struct block *block, *tmp;
 
+   pthread_mutex_lock(&bufmgr_fake->lock);
+
    bufmgr_fake->need_fence = 1;
    bufmgr_fake->fail = 0;
 
@@ -1376,6 +1447,8 @@ intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr)
       /* Releases the memory, and memcpys dirty contents out if necessary. */
       free_block(bufmgr_fake, block);
    }
+
+   pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 void intel_bufmgr_fake_set_last_dispatch(dri_bufmgr *bufmgr,
 					 volatile unsigned int *last_dispatch)
@@ -1394,6 +1467,11 @@ intel_bufmgr_fake_init(int fd,
    dri_bufmgr_fake *bufmgr_fake;
 
    bufmgr_fake = calloc(1, sizeof(*bufmgr_fake));
+
+   if (pthread_mutex_init(&bufmgr_fake->lock, NULL) != 0) {
+      free(bufmgr_fake);
+      return NULL;
+   }
 
    /* Initialize allocator */
    DRMINITLISTHEAD(&bufmgr_fake->fenced);
