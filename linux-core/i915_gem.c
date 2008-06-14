@@ -65,6 +65,8 @@ i915_gem_init_ioctl(struct drm_device *dev, void *data,
 	drm_memrange_init(&dev_priv->mm.gtt_space, args->gtt_start,
 	    args->gtt_end - args->gtt_start);
 
+	dev->gtt_total = (uint32_t) (args->gtt_end - args->gtt_start);
+	
 	mutex_unlock(&dev->struct_mutex);
 
 	return 0;

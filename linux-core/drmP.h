@@ -970,6 +970,7 @@ struct drm_device {
 	atomic_t pin_memory;
 	atomic_t gtt_count;
 	atomic_t gtt_memory;
+	uint32_t gtt_total;
 	uint32_t invalidate_domains;	/* domains pending invalidation */
 	uint32_t flush_domains;		/* domains pending flush */
 	/*@} */
