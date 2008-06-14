@@ -66,7 +66,7 @@ i915_gem_init_ioctl(struct drm_device *dev, void *data,
 	    args->gtt_end - args->gtt_start);
 
 	dev->gtt_total = (uint32_t) (args->gtt_end - args->gtt_start);
-	
+
 	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
@@ -500,7 +500,7 @@ i915_gem_retire_requests(struct drm_device *dev)
 			list_del(&request->list);
 			drm_free(request, sizeof(*request), DRM_MEM_DRIVER);
 		} else
-		    break;
+			break;
 	}
 }
 
@@ -858,7 +858,7 @@ i915_gem_evict_something(struct drm_device *dev)
 						   list);
 
 			ret = i915_wait_request(dev, request->seqno);
-			
+
 			/* if waiting caused an object to become inactive,
 			 * then loop around and wait for it. Otherwise, we
 			 * assume that waiting freed and unbound something,
