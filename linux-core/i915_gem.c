@@ -734,14 +734,18 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	 */
 	ret = i915_gem_object_set_domain(obj, I915_GEM_DOMAIN_CPU,
 					 I915_GEM_DOMAIN_CPU);
-	if (ret)
+	if (ret) {
+		DRM_ERROR("set_domain failed: %d\n", ret);
 		return ret;
+	}
 
 	if (obj_priv->agp_mem != NULL) {
 		drm_unbind_agp(obj_priv->agp_mem);
 		drm_free_agp(obj_priv->agp_mem, obj->size / PAGE_SIZE);
 		obj_priv->agp_mem = NULL;
 	}
+
+	BUG_ON(obj_priv->active);
 
 	i915_gem_object_free_page_list(obj);
 
@@ -752,15 +756,9 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	obj_priv->gtt_space = NULL;
 
 	/* Remove ourselves from the LRU list if present. */
-	if (!list_empty(&obj_priv->list)) {
+	if (!list_empty(&obj_priv->list))
 		list_del_init(&obj_priv->list);
-		if (obj_priv->active) {
-			DRM_ERROR("Failed to wait on buffer when unbinding, "
-				  "continued anyway.\n");
-			obj_priv->active = 0;
-			drm_gem_object_unreference(obj);
-		}
-	}
+
 	return 0;
 }
 
