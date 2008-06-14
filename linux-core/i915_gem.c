@@ -688,6 +688,19 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 	if (obj_priv->gtt_space == NULL)
 		return 0;
 
+	if (obj_priv->pin_count != 0) {
+		DRM_ERROR("Attempting to unbind pinned buffer\n");
+		return -EINVAL;
+	}
+
+	/* Wait for any rendering to complete
+	 */
+	ret = i915_gem_object_wait_rendering(obj);
+	if (ret) {
+		DRM_ERROR ("wait_rendering failed: %d\n", ret);
+		return ret;
+	}
+
 	/* Move the object to the CPU domain to ensure that
 	 * any possible CPU writes while it's not in the GTT
 	 * are flushed when we go to remap it. This will
