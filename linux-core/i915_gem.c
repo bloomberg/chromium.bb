@@ -35,6 +35,7 @@
 #define WATCH_EXEC	0
 #define WATCH_LRU	0
 #define WATCH_RELOC	0
+#define WATCH_INACTIVE	0
 
 static int
 i915_gem_object_set_domain(struct drm_gem_object *obj,
@@ -303,6 +304,26 @@ i915_gem_object_move_to_active(struct drm_gem_object *obj)
 		       &dev_priv->mm.active_list);
 }
 
+#if WATCH_INACTIVE
+static void
+i915_verify_inactive(struct drm_device *dev, char *file, int line)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+
+	list_for_each_entry(obj_priv, &dev_priv->mm.inactive_list, list) {
+		obj = obj_priv->obj;
+		if (obj_priv->pin_count || obj_priv->active || (obj->write_domain & ~I915_GEM_DOMAIN_CPU))
+			DRM_ERROR("inactive %p (p %d a %d w %x)  %s:%d\n",
+				  obj,
+				  obj_priv->pin_count, obj_priv->active, obj->write_domain, file, line);
+	}
+}
+#else
+#define i915_verify_inactive(dev,file,line)
+#endif
+
 static void
 i915_gem_object_move_to_inactive(struct drm_gem_object *obj)
 {
@@ -310,6 +331,7 @@ i915_gem_object_move_to_inactive(struct drm_gem_object *obj)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 	if (obj_priv->pin_count != 0)
 		list_del_init(&obj_priv->list);
 	else
@@ -319,6 +341,7 @@ i915_gem_object_move_to_inactive(struct drm_gem_object *obj)
 		obj_priv->active = 0;
 		drm_gem_object_unreference(obj);
 	}
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 }
 
 /**
@@ -1635,6 +1658,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 
 	mutex_lock(&dev->struct_mutex);
 
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 	if (dev_priv->mm.suspended) {
 		DRM_ERROR("Execbuf while VT-switched.\n");
 		mutex_unlock(&dev->struct_mutex);
@@ -1676,6 +1700,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	batch_obj->pending_read_domains = I915_GEM_DOMAIN_COMMAND;
 	batch_obj->pending_write_domain = 0;
 
+	i915_verify_inactive(dev, __FILE__, __LINE__);
+
 	for (i = 0; i < args->buffer_count; i++) {
 		struct drm_gem_object *obj = object_list[i];
 		struct drm_i915_gem_object *obj_priv = obj->driver_private;
@@ -1698,8 +1724,12 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 			goto err;
 	}
 
+	i915_verify_inactive(dev, __FILE__, __LINE__);
+
 	/* Flush/invalidate caches and chipset buffer */
 	flush_domains = i915_gem_dev_set_domain(dev);
+
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 
 #if WATCH_COHERENCY
 	for (i = 0; i < args->buffer_count; i++) {
@@ -1730,6 +1760,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	 */
 	flush_domains |= i915_retire_commands(dev);
 
+	i915_verify_inactive(dev, __FILE__, __LINE__);
+
 	/*
 	 * Get a seqno representing the execution of the current buffer,
 	 * which we can wait on.  We would like to mitigate these interrupts,
@@ -1753,6 +1785,8 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 #if WATCH_LRU
 	i915_dump_lru(dev, __func__);
 #endif
+
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 
 	/* Copy the new buffer offsets back to the user's exec list. */
 	ret = copy_to_user((struct drm_i915_relocation_entry __user *)
@@ -1789,6 +1823,7 @@ i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment)
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int ret;
 
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 	if (obj_priv->gtt_space == NULL) {
 		ret = i915_gem_object_bind_to_gtt(obj, alignment);
 		if (ret != 0) {
@@ -1807,6 +1842,7 @@ i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment)
 		if (!obj_priv->active && obj->write_domain == 0)
 			list_del_init(&obj_priv->list);
 	}
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 
 	return 0;
 }
@@ -1818,10 +1854,11 @@ i915_gem_object_unpin(struct drm_gem_object *obj)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 	obj_priv->pin_count--;
 	BUG_ON(obj_priv->pin_count < 0);
 	BUG_ON(obj_priv->gtt_space == NULL);
-	
+
 	/* If the object is no longer pinned, and is
 	 * neither active nor being flushed, then stick it on
 	 * the inactive list
@@ -1832,6 +1869,7 @@ i915_gem_object_unpin(struct drm_gem_object *obj)
 		atomic_dec(&dev->pin_count);
 		atomic_sub(obj->size, &dev->pin_memory);
 	}
+	i915_verify_inactive(dev, __FILE__, __LINE__);
 }
 
 int
