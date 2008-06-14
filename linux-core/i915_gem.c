@@ -2127,6 +2127,10 @@ i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 		return ret;
 
 	mutex_lock(&dev->struct_mutex);
+	BUG_ON(!list_empty(&dev_priv->mm.active_list));
+	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
+	BUG_ON(!list_empty(&dev_priv->mm.inactive_list));
+	BUG_ON(!list_empty(&dev_priv->mm.request_list));
 	dev_priv->mm.suspended = 0;
 	mutex_unlock(&dev->struct_mutex);
 	return 0;
@@ -2170,6 +2174,8 @@ i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
+	uint32_t seqno;
+	int ret;
 
 	mutex_lock(&dev->struct_mutex);
 	/* Hack!  Don't let anybody do execbuf while we don't control the chip.
@@ -2177,32 +2183,40 @@ i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
 	 */
 	dev_priv->mm.suspended = 1;
 
-	/* Move all buffers out of the GTT. */
-	i915_gem_evict_from_list(dev, &dev_priv->mm.active_list);
-	i915_gem_evict_from_list(dev, &dev_priv->mm.flushing_list);
-	i915_gem_evict_from_list(dev, &dev_priv->mm.inactive_list);
+	i915_kernel_lost_context(dev);
 
-	/* Make sure the harware's idle. */
-	while (!list_empty(&dev_priv->mm.request_list)) {
-		struct drm_i915_gem_request *request;
-		int ret;
-
-		request = list_first_entry(&dev_priv->mm.request_list,
-					   struct drm_i915_gem_request,
-					   list);
-
-		ret = i915_wait_request(dev, request->seqno);
-		if (ret != 0) {
-			DRM_ERROR("Error waiting for idle at LeaveVT: %d\n",
-				  ret);
-			mutex_unlock(&dev->struct_mutex);
-			return ret;
-		}
+	/* Flush the GPU along with all non-CPU write domains
+	 */
+	i915_gem_flush(dev, ~I915_GEM_DOMAIN_CPU, ~I915_GEM_DOMAIN_CPU);
+	seqno = i915_add_request(dev, ~I915_GEM_DOMAIN_CPU);
+	if (seqno == 0) {
+		mutex_unlock(&dev->struct_mutex);
+		return -ENOMEM;
 	}
+	ret = i915_wait_request(dev, seqno);
+	if (ret) {
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
+	}
+
+	/* Active and flushing should now be empty as we've
+	 * waited for a sequence higher than any pending execbuffer
+	 */
+	BUG_ON(!list_empty(&dev_priv->mm.active_list));
+	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
+
+	/* Request should now be empty as we've also waited
+	 * for the last request in the list
+	 */
+	BUG_ON(!list_empty(&dev_priv->mm.request_list));
+
+	/* Move all buffers out of the GTT. */
+	i915_gem_evict_from_list(dev, &dev_priv->mm.inactive_list);
 
 	BUG_ON(!list_empty(&dev_priv->mm.active_list));
 	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
 	BUG_ON(!list_empty(&dev_priv->mm.inactive_list));
+	BUG_ON(!list_empty(&dev_priv->mm.request_list));
 
 	i915_gem_cleanup_ringbuffer(dev);
 
