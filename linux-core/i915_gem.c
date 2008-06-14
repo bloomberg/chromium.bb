@@ -1837,7 +1837,8 @@ i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment)
 	if (obj_priv->pin_count == 1) {
 		atomic_inc(&dev->pin_count);
 		atomic_add(obj->size, &dev->pin_memory);
-		if (!obj_priv->active && obj->write_domain == 0)
+		if (!obj_priv->active && (obj->write_domain & ~I915_GEM_DOMAIN_CPU) == 0 &&
+		    !list_empty(&obj_priv->list))
 			list_del_init(&obj_priv->list);
 	}
 	i915_verify_inactive(dev, __FILE__, __LINE__);
@@ -1862,8 +1863,9 @@ i915_gem_object_unpin(struct drm_gem_object *obj)
 	 * the inactive list
 	 */
 	if (obj_priv->pin_count == 0) {
-		if (!obj_priv->active && obj->write_domain == 0)
-			list_move_tail(&obj_priv->list, &dev_priv->mm.inactive_list);
+		if (!obj_priv->active && (obj->write_domain & ~I915_GEM_DOMAIN_CPU) == 0)
+			list_move_tail(&obj_priv->list,
+				       &dev_priv->mm.inactive_list);
 		atomic_dec(&dev->pin_count);
 		atomic_sub(obj->size, &dev->pin_memory);
 	}
