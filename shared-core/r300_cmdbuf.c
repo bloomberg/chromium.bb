@@ -757,22 +757,27 @@ static __inline__ int r300_emit_packet3(drm_radeon_private_t *dev_priv,
 static __inline__ void r300_pacify(drm_radeon_private_t *dev_priv)
 {
 	RING_LOCALS;
+	uint32_t cache_z, cache_3d, cache_2d;
 	
-	if ((dev_priv->track_flush & RADEON_PURGE_EMITED)) {
-		/* purge already emited without vertex in btw don't purge
-		 * again or lockup will likely happen */
-		return;
+	cache_z = R300_ZC_FLUSH;
+	cache_2d = R300_RB2D_DC_FLUSH;
+	cache_3d = R300_RB3D_DC_FLUSH;
+	if (!(dev_priv->track_flush & RADEON_PURGE_EMITED)) {
+		/* we can purge, primitive where draw since last purge */
+		cache_z |= R300_ZC_FREE;
+		cache_2d |= R300_RB2D_DC_FREE;
+		cache_3d |= R300_RB3D_DC_FREE;
 	}
 
 	/* flush & purge zbuffer */
 	BEGIN_RING(2);
 	OUT_RING(CP_PACKET0(R300_ZB_ZCACHE_CTLSTAT, 0));
-	OUT_RING(R300_ZC_FLUSH | R300_ZC_FREE);
+	OUT_RING(cache_z);
 	ADVANCE_RING();
 	/* flush & purge 3d */
 	BEGIN_RING(2);
 	OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));
-	OUT_RING(R300_RB3D_DC_FLUSH | R300_RB3D_DC_FREE);
+	OUT_RING(cache_3d);
 	ADVANCE_RING();
 	/* flush & purge texture */
 	BEGIN_RING(2);
@@ -791,7 +796,7 @@ static __inline__ void r300_pacify(drm_radeon_private_t *dev_priv)
 	/* flush & purge 2d through E2 as RB2D will trigger lockup */
 	BEGIN_RING(4);
 	OUT_RING(CP_PACKET0(R300_DSTCACHE_CTLSTAT, 0));
-	OUT_RING(R300_RB2D_DC_FLUSH | R300_RB2D_DC_FREE);
+	OUT_RING(cache_2d);
 	OUT_RING(CP_PACKET0(RADEON_WAIT_UNTIL, 0));
 	OUT_RING(RADEON_WAIT_2D_IDLECLEAN |
 		 RADEON_WAIT_HOST_IDLECLEAN);
@@ -979,11 +984,8 @@ int r300_do_cp_cmdbuf(struct drm_device *dev,
 
 	DRM_DEBUG("\n");
 
-	/* start by a wait, should be necessary */
-	BEGIN_RING(2);
-	OUT_RING(CP_PACKET0(RADEON_WAIT_UNTIL, 0));
-	OUT_RING(RADEON_WAIT_3D_IDLE | RADEON_WAIT_2D_IDLE);
-	ADVANCE_RING();
+	/* pacify */
+	r300_pacify(dev_priv);
 
 	if (cmdbuf->nbox <= R300_SIMULTANEOUS_CLIPRECTS) {
 		ret = r300_emit_cliprects(dev_priv, cmdbuf, 0);
