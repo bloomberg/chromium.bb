@@ -980,7 +980,6 @@ int r300_do_cp_cmdbuf(struct drm_device *dev,
 	struct drm_buf *buf = NULL;
 	int emit_dispatch_age = 0;
 	int ret = 0;
-	RING_LOCALS;
 
 	DRM_DEBUG("\n");
 
