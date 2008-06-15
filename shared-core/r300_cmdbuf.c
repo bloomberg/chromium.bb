@@ -649,9 +649,6 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
 		return r300_emit_bitblt_multi(dev_priv, cmdbuf);
 
 	case RADEON_CP_INDX_BUFFER:
-		/* whenever we send vertex we clear flush & purge */
-		dev_priv->track_flush ^= (RADEON_FLUSH_EMITED |
-					  RADEON_PURGE_EMITED);
 		/* DRAW_INDX_2 without INDX_BUFFER seems to lock up the gpu */
 		return r300_emit_indx_buffer(dev_priv, cmdbuf);
 	case RADEON_CP_3D_DRAW_IMMD_2:
@@ -660,11 +657,12 @@ static __inline__ int r300_emit_raw_packet3(drm_radeon_private_t *dev_priv,
 		/* triggers drawing of vertex buffers setup elsewhere */
 	case RADEON_CP_3D_DRAW_INDX_2:
 		/* triggers drawing using indices to vertex buffer */
+		/* whenever we send vertex we clear flush & purge */
+		dev_priv->track_flush &= ~(RADEON_FLUSH_EMITED |
+					   RADEON_PURGE_EMITED);
+		break;
 	case RADEON_WAIT_FOR_IDLE:
 	case RADEON_CP_NOP:
-		/* whenever we send vertex we clear flush & purge */
-		dev_priv->track_flush ^= (RADEON_FLUSH_EMITED |
-					  RADEON_PURGE_EMITED);
 		/* these packets are safe */
 		break;
 	default:
