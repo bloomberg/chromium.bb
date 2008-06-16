@@ -628,7 +628,16 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
 	int ret;
 
-	(void) pci_enable_msi(pdev);
+	/* On the 945G/GM, the chipset reports the MSI capability on the
+	 * integrated graphics even though the support isn't actually there
+	 * according to the published specs.  It doesn't appear to function
+	 * correctly in testing on 945G.
+	 * This may be a side effect of MSI having been made available for PEG
+	 * and the registers being closely associated.
+	 */
+	if (pdev->device != 0x2772 && pdev->device != 0x27A2)
+		(void )pci_enable_msi(pdev);
+
 	ret = drm_get_dev(pdev, ent, &driver);
 	if (ret && pdev->msi_enabled)
 		pci_disable_msi(pdev);
