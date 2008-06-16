@@ -63,7 +63,7 @@ int drm_irq_by_busid(struct drm_device *dev, void *data,
 	    p->devnum != PCI_SLOT(dev->pdev->devfn) || p->funcnum != PCI_FUNC(dev->pdev->devfn))
 		return -EINVAL;
 
-	p->irq = dev->irq;
+	p->irq = dev->pdev->irq;
 
 	DRM_DEBUG("%d:%d:%d => IRQ %d\n", p->busnum, p->devnum, p->funcnum,
 		  p->irq);
@@ -200,7 +200,7 @@ int drm_irq_install(struct drm_device * dev)
 	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 		return -EINVAL;
 
-	if (dev->irq == 0)
+	if (dev->pdev->irq == 0)
 		return -EINVAL;
 
 	mutex_lock(&dev->struct_mutex);
@@ -218,7 +218,7 @@ int drm_irq_install(struct drm_device * dev)
 	dev->irq_enabled = 1;
 	mutex_unlock(&dev->struct_mutex);
 
-	DRM_DEBUG("irq=%d\n", dev->irq);
+	DRM_DEBUG("irq=%d\n", dev->pdev->irq);
 
 	/* Before installing handler */
 	dev->driver->irq_preinstall(dev);
@@ -227,7 +227,7 @@ int drm_irq_install(struct drm_device * dev)
 	if (drm_core_check_feature(dev, DRIVER_IRQ_SHARED))
 		sh_flags = IRQF_SHARED;
 
-	ret = request_irq(dev->irq, dev->driver->irq_handler,
+	ret = request_irq(dev->pdev->irq, dev->driver->irq_handler,
 			  sh_flags, dev->devname, dev);
 	if (ret < 0) {
 		mutex_lock(&dev->struct_mutex);
@@ -235,6 +235,10 @@ int drm_irq_install(struct drm_device * dev)
 		mutex_unlock(&dev->struct_mutex);
 		return ret;
 	}
+	/* Expose the device irq to device drivers that want to export it for
+	 * whatever reason.
+	 */
+	dev->irq = dev->pdev->irq;
 
 	/* After installing handler */
 	ret = dev->driver->irq_postinstall(dev);
@@ -270,11 +274,11 @@ int drm_irq_uninstall(struct drm_device * dev)
 	if (!irq_enabled)
 		return -EINVAL;
 
-	DRM_DEBUG("irq=%d\n", dev->irq);
+	DRM_DEBUG("irq=%d\n", dev->pdev->irq);
 
 	dev->driver->irq_uninstall(dev);
 
-	free_irq(dev->irq, dev);
+	free_irq(dev->pdev->irq, dev);
 
 	drm_vblank_cleanup(dev);
 
@@ -308,7 +312,7 @@ int drm_control(struct drm_device *dev, void *data,
 		if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
-		    ctl->irq != dev->irq)
+		    ctl->irq != dev->pdev->irq)
 			return -EINVAL;
 		return drm_irq_install(dev);
 	case DRM_UNINST_HANDLER:
@@ -489,7 +493,7 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 	int ret = 0;
 	unsigned int flags, seq, crtc;
 
-	if ((!dev->irq) || (!dev->irq_enabled))
+	if ((!dev->pdev->irq) || (!dev->irq_enabled))
 		return -EINVAL;
 
 	if (vblwait->request.type &
