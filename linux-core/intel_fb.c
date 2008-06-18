@@ -525,6 +525,92 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 	return ret;
 }
 
+static void intelfb_on(struct fb_info *info)
+{
+	struct intelfb_par *par = info->par;
+	struct drm_device *dev = par->dev;
+	struct drm_crtc *crtc;
+	struct drm_encoder *encoder;
+	int i;
+
+	/*
+	 * For each CRTC in this fb, find all associated encoders
+	 * and turn them off, then turn off the CRTC.
+	 */
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+
+		for (i = 0; i < par->crtc_count; i++)
+			if (crtc->base.id == par->crtc_ids[i])
+				break;
+
+		crtc_funcs->dpms(crtc, DPMSModeOn);
+
+		/* Found a CRTC on this fb, now find encoders */
+		list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
+			if (encoder->crtc == crtc) {
+				struct drm_encoder_helper_funcs *encoder_funcs;
+				encoder_funcs = encoder->helper_private;
+				encoder_funcs->dpms(encoder, DPMSModeOn);
+			}
+		}
+	}
+}
+
+static void intelfb_off(struct fb_info *info, int dpms_mode)
+{
+	struct intelfb_par *par = info->par;
+	struct drm_device *dev = par->dev;
+	struct drm_crtc *crtc;
+	struct drm_encoder *encoder;
+	int i;
+
+	/*
+	 * For each CRTC in this fb, find all associated encoders
+	 * and turn them off, then turn off the CRTC.
+	 */
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+		struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
+
+		for (i = 0; i < par->crtc_count; i++)
+			if (crtc->base.id == par->crtc_ids[i])
+				break;
+
+		/* Found a CRTC on this fb, now find encoders */
+		list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
+			if (encoder->crtc == crtc) {
+				struct drm_encoder_helper_funcs *encoder_funcs;
+				encoder_funcs = encoder->helper_private;
+				encoder_funcs->dpms(encoder, dpms_mode);
+			}
+		}
+		if (dpms_mode == DPMSModeOff)
+			crtc_funcs->dpms(crtc, dpms_mode);
+	}
+}
+
+int intelfb_blank(int blank, struct fb_info *info)
+{
+	switch (blank) {
+	case FB_BLANK_UNBLANK:
+		intelfb_on(info);
+		break;
+	case FB_BLANK_NORMAL:
+		intelfb_off(info, DPMSModeStandby);
+		break;
+	case FB_BLANK_HSYNC_SUSPEND:
+		intelfb_off(info, DPMSModeStandby);
+		break;
+	case FB_BLANK_VSYNC_SUSPEND:
+		intelfb_off(info, DPMSModeSuspend);
+		break;
+	case FB_BLANK_POWERDOWN:
+		intelfb_off(info, DPMSModeOff);
+		break;
+	}
+	return 0;
+}
+
 static struct fb_ops intelfb_ops = {
 	.owner = THIS_MODULE,
 	//.fb_open = intelfb_open,
@@ -539,6 +625,7 @@ static struct fb_ops intelfb_ops = {
 	.fb_copyarea = cfb_copyarea, //intelfb_copyarea,
 	.fb_imageblit = cfb_imageblit, //intelfb_imageblit,
 	.fb_pan_display = intelfb_pan_display,
+	.fb_blank = intelfb_blank,
 };
 
 /**
