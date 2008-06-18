@@ -656,9 +656,9 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 }
 static void remove(struct pci_dev *pdev)
 {
+	drm_cleanup_pci(pdev);
 	if (pdev->msi_enabled)
 		pci_disable_msi(pdev);
-	drm_cleanup_pci(pdev);
 }
 
 static int __init i915_init(void)
