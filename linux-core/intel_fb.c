@@ -581,6 +581,22 @@ int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 }
 EXPORT_SYMBOL(intelfb_resize);
 
+static struct drm_mode_set panic_mode;
+
+int intelfb_panic(struct notifier_block *n, unsigned long ununsed,
+		  void *panic_str)
+{
+	DRM_ERROR("panic occurred, switching back to text console\n");
+	drm_crtc_helper_set_config(&panic_mode);
+
+	return 0;
+}
+EXPORT_SYMBOL(intelfb_panic);
+ 
+static struct notifier_block paniced = {
+	.notifier_call = intelfb_panic,
+};
+
 int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height, 
 		   uint32_t surface_width, uint32_t surface_height,
 		   struct intel_framebuffer **intel_fb_p)
@@ -831,6 +847,12 @@ static int intelfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *
 
 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
 	       info->fix.id);
+
+	/* Switch back to kernel console on panic */
+	panic_mode = *modeset;
+	atomic_notifier_chain_register(&panic_notifier_list, &paniced);
+	printk(KERN_INFO "registered panic notifier\n");
+
 	return 0;
 }
 
@@ -952,6 +974,12 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 		
 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
 	       info->fix.id);
+
+	/* Switch back to kernel console on panic */
+	panic_mode = *modeset;
+	atomic_notifier_chain_register(&panic_notifier_list, &paniced);
+	printk(KERN_INFO "registered panic notifier\n");
+
 	return 0;
 }
 
@@ -1005,6 +1033,9 @@ int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 		drm_bo_usage_deref_unlocked(&intel_fb->bo);
 		framebuffer_release(info);
 	}
+
+	atomic_notifier_chain_unregister(&panic_notifier_list, &paniced);
+	memset(&panic_mode, 0, sizeof(struct drm_mode_set));
 	return 0;
 }
 EXPORT_SYMBOL(intelfb_remove);
