@@ -35,6 +35,13 @@
 
 #define MAX_NOPID ((u32)~0)
 
+/*
+ * These are the interrupts used by the driver
+ */
+#define I915_INTERRUPT_ENABLE_MASK (I915_USER_INTERRUPT | \
+				    I915_DISPLAY_PIPE_A_EVENT_INTERRUPT | \
+				    I915_DISPLAY_PIPE_B_EVENT_INTERRUPT)
+
 /**
  * i915_get_pipe - return the the pipe associated with a given plane
  * @dev: DRM device
@@ -493,28 +500,13 @@ static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
 	return 0;
 }
 
-void
-i915_user_interrupt_handler(struct work_struct *work)
-{
-	struct drm_i915_private *dev_priv;
-	struct drm_device *dev;
-
-	dev_priv = container_of(work, struct drm_i915_private,
-				user_interrupt_task);
-	dev = dev_priv->dev;
-
-	mutex_lock(&dev->struct_mutex);
-	i915_gem_retire_requests(dev);
-	mutex_unlock(&dev->struct_mutex);
-}
-
 irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
 	struct drm_i915_master_private *master_priv;
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 	u32 iir;
-	u32 pipea_stats = 0, pipeb_stats, tvdac;
+	u32 pipea_stats = 0, pipeb_stats = 0, tvdac;
 	int hotplug = 0;
 	int vblank = 0;
 
@@ -524,22 +516,11 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	else
 		iir = I915_READ16(IIR);
 
-	iir &= (dev_priv->irq_mask_reg | I915_USER_INTERRUPT);
+	if (dev->pdev->msi_enabled)
+		I915_WRITE(IER, 0);
 
-#if 0
-	DRM_DEBUG("flag=%08x\n", iir);
-#endif
-	if (iir == 0) {
-#if 0
-		DRM_DEBUG ("iir 0x%08x im 0x%08x ie 0x%08x pipea 0x%08x pipeb 0x%08x\n",
-			   iir,
-			   I915_READ(IMR),
-			   I915_READ(IER),
-			   I915_READ(PIPEASTAT),
-			   I915_READ(PIPEBSTAT));
-#endif
+	if (!iir)
 		return IRQ_NONE;
-	}
 
 	/*
 	 * Clear the PIPE(A|B)STAT regs before the IIR otherwise
@@ -598,10 +579,19 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		DRM_WAKEUP(&dev_priv->irq_queue);
 #ifdef I915_HAVE_FENCE
 		i915_fence_handler(dev);
-		schedule_work(&dev_priv->user_interrupt_task);
 #endif
 	}
 
+	if (pipea_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
+			   I915_VBLANK_INTERRUPT_STATUS)) {
+		vblank = 1;
+		drm_handle_vblank(dev, i915_get_plane(dev, 0));
+	}
+	if (pipeb_stats & (I915_START_VBLANK_INTERRUPT_STATUS|
+			   I915_VBLANK_INTERRUPT_STATUS)) {
+		vblank = 1;
+		drm_handle_vblank(dev, i915_get_plane(dev, 1));
+	}
 	if (vblank) {
 		if (dev_priv->swaps_pending > 0)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
@@ -625,6 +615,9 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		}
 		i915_run_hotplug_tasklet(dev, temp2);
 	}
+
+	if (dev->pdev->msi_enabled)
+		I915_WRITE(IER, I915_INTERRUPT_ENABLE_MASK);
 
 	return IRQ_HANDLED;
 }
@@ -697,8 +690,17 @@ int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	DRM_DEBUG("irq_nr=%d breadcrumb=%d\n", irq_nr,
 		  READ_BREADCRUMB(dev_priv));
 
-	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
+	master_priv = dev->primary->master->driver_priv;
+
+	if (!master_priv) {
+		DRM_ERROR("no master priv?\n");
+		return -EINVAL;
+	}
+
+	if (READ_BREADCRUMB(dev_priv) >= irq_nr) {
+		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 		return 0;
+	}
 
 	i915_user_irq_on(dev);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
@@ -710,10 +712,8 @@ int i915_wait_irq(struct drm_device * dev, int irq_nr)
 			  READ_BREADCRUMB(dev_priv), (int)dev_priv->counter);
 	}
 	
-	if (dev->primary->master) {
-		master_priv = dev->primary->master->driver_priv;
+	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
 		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
-	}
 
 	return ret;
 }

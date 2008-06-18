@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include "drm.h"
+#include "i915_drm.h"
 
 static void
 test_bad_close(int fd)
@@ -52,7 +53,7 @@ test_bad_close(int fd)
 static void
 test_create_close(int fd)
 {
-	struct drm_gem_create create;
+	struct drm_i915_gem_create create;
 	struct drm_gem_close close;
 	int ret;
 
@@ -60,7 +61,7 @@ test_create_close(int fd)
 
 	memset(&create, 0, sizeof(create));
 	create.size = 16 * 1024;
-	ret = ioctl(fd, DRM_IOCTL_GEM_CREATE, &create);
+	ret = ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create);
 	assert(ret == 0);
 
 	close.handle = create.handle;
@@ -70,14 +71,14 @@ test_create_close(int fd)
 static void
 test_create_fd_close(int fd)
 {
-	struct drm_gem_create create;
+	struct drm_i915_gem_create create;
 	int ret;
 
 	printf("Testing closing with an object allocated.\n");
 
 	memset(&create, 0, sizeof(create));
 	create.size = 16 * 1024;
-	ret = ioctl(fd, DRM_IOCTL_GEM_CREATE, &create);
+	ret = ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create);
 	assert(ret == 0);
 
 	close(fd);

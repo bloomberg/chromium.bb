@@ -39,7 +39,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20080312"
+#define DRIVER_DATE		"20080611"
 
 #if defined(__linux__)
 #define I915_HAVE_FENCE
@@ -63,7 +63,7 @@
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		13
+#define DRIVER_MINOR		14
 #else
 #define DRIVER_MINOR		6
 #endif
@@ -162,7 +162,7 @@ struct drm_i915_private {
 	void *agp_iomap;
 	unsigned int max_validate_buffers;
 	struct mutex cmdbuf_mutex;
-	size_t stolen_base;
+	u32 stolen_base;
 	struct drm_i915_validate_buffer *val_bufs;
 #endif
 
@@ -231,8 +231,7 @@ struct drm_i915_private {
 		 * fire periodically while the ring is running. When it
 		 * fires, go retire requests.
 		 */
-		struct timer_list retire_timer;
-		struct work_struct retire_task;
+		struct delayed_work retire_work;
 		
 		uint32_t next_gem_seqno;
 
@@ -339,6 +338,13 @@ struct drm_i915_private {
 	u8 saveCR[37];
 };
 
+struct drm_i915_file_private {
+	struct {
+		uint32_t last_gem_seqno;
+		uint32_t last_gem_throttle_seqno;
+	} mm;
+};
+
 enum intel_chip_family {
 	CHIP_I8XX = 0x01,
 	CHIP_I9XX = 0x02,
@@ -418,8 +424,11 @@ extern void i915_kernel_lost_context(struct drm_device * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);
 extern int i915_driver_unload(struct drm_device *dev);
 extern void i915_driver_lastclose(struct drm_device * dev);
+extern int i915_driver_open(struct drm_device *dev, struct drm_file *file_priv);
 extern void i915_driver_preclose(struct drm_device *dev,
 				 struct drm_file *file_priv);
+extern void i915_driver_postclose(struct drm_device *dev,
+				  struct drm_file *file_priv);
 extern int i915_driver_device_is_agp(struct drm_device * dev);
 extern long i915_compat_ioctl(struct file *filp, unsigned int cmd,
 			      unsigned long arg);
@@ -461,7 +470,6 @@ extern int i915_vblank_swap(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
 extern void i915_user_irq_on(struct drm_device *dev);
 extern void i915_user_irq_off(struct drm_device *dev);
-extern void i915_user_interrupt_handler(struct work_struct *work);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(struct drm_device *dev, void *data,
@@ -503,6 +511,16 @@ int i915_execbuffer(struct drm_device *dev, void *data,
 /* i915_gem.c */
 int i915_gem_init_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
+int i915_gem_create_ioctl(struct drm_device *dev, void *data,
+			  struct drm_file *file_priv);
+int i915_gem_pread_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv);
+int i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+			  struct drm_file *file_priv);
+int i915_gem_mmap_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
 int i915_gem_execbuffer(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_pin_ioctl(struct drm_device *dev, void *data,
@@ -521,20 +539,13 @@ int i915_gem_init_object(struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_gem_object *obj);
 int i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment);
 void i915_gem_object_unpin(struct drm_gem_object *obj);
-int i915_gem_set_domain(struct drm_gem_object *obj,
-			struct drm_file *file_priv,
-			uint32_t read_domains,
-			uint32_t write_domain);
-int i915_gem_flush_pwrite(struct drm_gem_object *obj,
-			  uint64_t offset, uint64_t size);
 void i915_gem_lastclose(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
-void i915_gem_retire_timeout(unsigned long data);
-void i915_gem_retire_handler(struct work_struct *work);
 int i915_gem_init_ringbuffer(struct drm_device *dev);
 void i915_gem_cleanup_ringbuffer(struct drm_device *dev);
 int i915_gem_do_init(struct drm_device *dev, unsigned long start,
 		     unsigned long end);
+void i915_gem_retire_work_handler(struct work_struct *work);
 #endif
 
 extern unsigned int i915_fbpercrtc;

@@ -40,13 +40,21 @@ struct mem_block {
    unsigned int reserved:1;
 };
 
-
+/* Rename the variables in the drm copy of this code so that it doesn't
+ * conflict with mesa or whoever else has copied it around.
+ */
+#define mmInit drm_mmInit
+#define mmAllocMem drm_mmAllocMem
+#define mmFreeMem drm_mmFreeMem
+#define mmFindBlock drm_mmFindBlock
+#define mmDestroy drm_mmDestroy
+#define mmDumpMemInfo drm_mmDumpMemInfo
 
 /** 
  * input: total size in bytes
  * return: a heap pointer if OK, NULL if error
  */
-extern struct mem_block *drmmmInit(int ofs, int size);
+extern struct mem_block *mmInit(int ofs, int size);
 
 /**
  * Allocate 'size' bytes with 2^align2 bytes alignment,
@@ -58,7 +66,7 @@ extern struct mem_block *drmmmInit(int ofs, int size);
  *		startSearch = linear offset from start of heap to begin search
  * return: pointer to the allocated block, 0 if error
  */
-extern struct mem_block *drmmmAllocMem(struct mem_block *heap, int size,
+extern struct mem_block *mmAllocMem(struct mem_block *heap, int size,
 				       int align2, int startSearch);
 
 /**
@@ -66,23 +74,23 @@ extern struct mem_block *drmmmAllocMem(struct mem_block *heap, int size,
  * input: pointer to a block
  * return: 0 if OK, -1 if error
  */
-extern int drmmmFreeMem(struct mem_block *b);
+extern int mmFreeMem(struct mem_block *b);
 
 /**
  * Free block starts at offset
  * input: pointer to a heap, start offset
  * return: pointer to a block
  */
-extern struct mem_block *drmmmFindBlock(struct mem_block *heap, int start);
+extern struct mem_block *mmFindBlock(struct mem_block *heap, int start);
 
 /**
  * destroy MM
  */
-extern void drmmmDestroy(struct mem_block *mmInit);
+extern void mmDestroy(struct mem_block *mmInit);
 
 /**
  * For debuging purpose.
  */
-extern void drmmmDumpMemInfo(const struct mem_block *mmInit);
+extern void mmDumpMemInfo(const struct mem_block *mmInit);
 
 #endif

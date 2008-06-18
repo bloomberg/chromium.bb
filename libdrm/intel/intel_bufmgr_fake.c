@@ -252,7 +252,7 @@ alloc_block(dri_bo *bo)
 
    sz = (bo->size + bo_fake->alignment - 1) & ~(bo_fake->alignment - 1);
 
-   block->mem = drmmmAllocMem(bufmgr_fake->heap, sz, align_log2, 0);
+   block->mem = mmAllocMem(bufmgr_fake->heap, sz, align_log2, 0);
    if (!block->mem) {
       free(block);
       return 0;
@@ -300,7 +300,7 @@ static void free_block(dri_bufmgr_fake *bufmgr_fake, struct block *block)
       DBG("    - free immediately\n");
       DRMLISTDEL(block);
 
-      drmmmFreeMem(block->mem);
+      mmFreeMem(block->mem);
       free(block);
    }
 }
@@ -415,7 +415,7 @@ static int clear_fenced(dri_bufmgr_fake *bufmgr_fake,
 	    DBG("delayed free: offset %x sz %x\n",
 		block->mem->ofs, block->mem->size);
 	    DRMLISTDEL(block);
-	    drmmmFreeMem(block->mem);
+	    mmFreeMem(block->mem);
 	    free(block);
 	 }
 	 else {
@@ -923,7 +923,7 @@ dri_fake_destroy(dri_bufmgr *bufmgr)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
 
-   drmmmDestroy(bufmgr_fake->heap);
+   mmDestroy(bufmgr_fake->heap);
    free(bufmgr);
 }
 
@@ -1062,7 +1062,7 @@ dri_fake_process_relocs(dri_bo *batch_buf)
 
    dri_fake_calculate_domains(batch_buf);
 
-   batch_fake->read_domains = DRM_GEM_DOMAIN_I915_COMMAND;
+   batch_fake->read_domains = I915_GEM_DOMAIN_COMMAND;
 
    /* we've ran out of RAM so blow the whole lot away and retry */
  restart:
@@ -1074,7 +1074,7 @@ dri_fake_process_relocs(dri_bo *batch_buf)
          bufmgr_fake->fail = 0;
          goto restart;
       } else /* dump out the memory here */
-         drmmmDumpMemInfo(bufmgr_fake->heap);
+         mmDumpMemInfo(bufmgr_fake->heap);
    }
 
    assert(ret == 0);
@@ -1193,7 +1193,7 @@ intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
    bufmgr_fake->low_offset = low_offset;
    bufmgr_fake->virtual = low_virtual;
    bufmgr_fake->size = size;
-   bufmgr_fake->heap = drmmmInit(low_offset, size);
+   bufmgr_fake->heap = mmInit(low_offset, size);
 
    /* Hook in methods */
    bufmgr_fake->bufmgr.bo_alloc = dri_fake_bo_alloc;

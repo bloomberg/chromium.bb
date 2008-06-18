@@ -299,7 +299,7 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
     }
 
     if (!alloc_from_cache) {
-	struct drm_gem_create create;
+	struct drm_i915_gem_create create;
 
 	bo_gem = calloc(1, sizeof(*bo_gem));
 	if (!bo_gem)
@@ -309,7 +309,7 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 	memset(&create, 0, sizeof(create));
 	create.size = bo_size;
 
-	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CREATE, &create);
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CREATE, &create);
 	bo_gem->gem_handle = create.handle;
 	if (ret != 0) {
 	    free(bo_gem);
@@ -455,7 +455,7 @@ dri_gem_bo_map(dri_bo *bo, int write_enable)
 {
     dri_bufmgr_gem *bufmgr_gem;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
-    struct drm_gem_set_domain set_domain;
+    struct drm_i915_gem_set_domain set_domain;
     int ret;
 
     bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
@@ -470,13 +470,13 @@ dri_gem_bo_map(dri_bo *bo, int write_enable)
 	DBG("bo_map: %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
     
 	if (bo_gem->virtual == NULL) {
-	    struct drm_gem_mmap mmap_arg;
+	    struct drm_i915_gem_mmap mmap_arg;
     
 	    memset(&mmap_arg, 0, sizeof(mmap_arg));
 	    mmap_arg.handle = bo_gem->gem_handle;
 	    mmap_arg.offset = 0;
 	    mmap_arg.size = bo->size;
-	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_MMAP, &mmap_arg);
+	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP, &mmap_arg);
 	    if (ret != 0) {
 		fprintf(stderr, "%s:%d: Error mapping buffer %d (%s): %s .\n",
 			__FILE__, __LINE__,
@@ -491,9 +491,12 @@ dri_gem_bo_map(dri_bo *bo, int write_enable)
 
     if (!bo_gem->cpu_domain_set) {
 	set_domain.handle = bo_gem->gem_handle;
-	set_domain.read_domains = DRM_GEM_DOMAIN_CPU;
-	set_domain.write_domain = write_enable ? DRM_GEM_DOMAIN_CPU : 0;
-	ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_GEM_SET_DOMAIN, &set_domain);
+	set_domain.read_domains = I915_GEM_DOMAIN_CPU;
+	set_domain.write_domain = write_enable ? I915_GEM_DOMAIN_CPU : 0;
+	do {
+	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
+			&set_domain);
+	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
 	    fprintf (stderr, "%s:%d: Error setting memory domains %d (%08x %08x): %s .\n",
 		     __FILE__, __LINE__,
@@ -525,7 +528,7 @@ dri_gem_bo_subdata (dri_bo *bo, unsigned long offset,
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
-    struct drm_gem_pwrite pwrite;
+    struct drm_i915_gem_pwrite pwrite;
     int ret;
 
     memset (&pwrite, 0, sizeof (pwrite));
@@ -533,7 +536,9 @@ dri_gem_bo_subdata (dri_bo *bo, unsigned long offset,
     pwrite.offset = offset;
     pwrite.size = size;
     pwrite.data_ptr = (uint64_t) (uintptr_t) data;
-    ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_GEM_PWRITE, &pwrite);
+    do {
+	ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PWRITE, &pwrite);
+    } while (ret == -1 && errno == EINTR);
     if (ret != 0) {
 	fprintf (stderr, "%s:%d: Error writing data to buffer %d: (%d %d) %s .\n",
 		 __FILE__, __LINE__,
@@ -549,7 +554,7 @@ dri_gem_bo_get_subdata (dri_bo *bo, unsigned long offset,
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
-    struct drm_gem_pread pread;
+    struct drm_i915_gem_pread pread;
     int ret;
 
     memset (&pread, 0, sizeof (pread));
@@ -557,7 +562,9 @@ dri_gem_bo_get_subdata (dri_bo *bo, unsigned long offset,
     pread.offset = offset;
     pread.size = size;
     pread.data_ptr = (uint64_t) (uintptr_t) data;
-    ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_GEM_PREAD, &pread);
+    do {
+	ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PREAD, &pread);
+    } while (ret == -1 && errno == EINTR);
     if (ret != 0) {
 	fprintf (stderr, "%s:%d: Error reading data from buffer %d: (%d %d) %s .\n",
 		 __FILE__, __LINE__,
@@ -572,13 +579,13 @@ dri_gem_bo_wait_rendering(dri_bo *bo)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
-    struct drm_gem_set_domain set_domain;
+    struct drm_i915_gem_set_domain set_domain;
     int ret;
 
     set_domain.handle = bo_gem->gem_handle;
-    set_domain.read_domains = DRM_GEM_DOMAIN_CPU;
+    set_domain.read_domains = I915_GEM_DOMAIN_CPU;
     set_domain.write_domain = 0;
-    ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_GEM_SET_DOMAIN, &set_domain);
+    ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
     if (ret != 0) {
 	fprintf (stderr, "%s:%d: Error setting memory domains %d (%08x %08x): %s .\n",
 		 __FILE__, __LINE__,

@@ -658,7 +658,12 @@ static int drm_gem_object_info(char *buf, char **start, off_t offset,
 
 	*start = &buf[offset];
 	*eof = 0;
-	DRM_PROC_PRINT ("%d objects\n", atomic_read (&dev->object_count));
+	DRM_PROC_PRINT("%d objects\n", atomic_read (&dev->object_count));
+	DRM_PROC_PRINT("%d object bytes\n", atomic_read (&dev->object_memory));
+	DRM_PROC_PRINT("%d pinned\n", atomic_read (&dev->pin_count));
+	DRM_PROC_PRINT("%d pin bytes\n", atomic_read (&dev->pin_memory));
+	DRM_PROC_PRINT("%d gtt bytes\n", atomic_read (&dev->gtt_memory));
+	DRM_PROC_PRINT("%d gtt total\n", dev->gtt_total);
 	if (len > request + offset)
 		return request;
 	*eof = 1;

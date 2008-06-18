@@ -294,10 +294,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	if (IS_I965G(dev) || IS_G33(dev))
 		dev_priv->cursor_needs_physical = false;
 
-	if (IS_I9XX(dev)) {
+	if (IS_I9XX(dev))
 		pci_read_config_dword(dev->pdev, 0x5C, &dev_priv->stolen_base);
-		DRM_DEBUG("stolen base %p\n", (void*)dev_priv->stolen_base);
-	}
 
 	if (IS_I9XX(dev)) {
 		dev_priv->mmiobase = drm_get_resource_start(dev, 0);
@@ -329,13 +327,8 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 	INIT_LIST_HEAD(&dev_priv->mm.flushing_list);
 	INIT_LIST_HEAD(&dev_priv->mm.inactive_list);
 	INIT_LIST_HEAD(&dev_priv->mm.request_list);
-	dev_priv->mm.retire_timer.function = i915_gem_retire_timeout;
-	dev_priv->mm.retire_timer.data = (unsigned long) dev;
-	init_timer_deferrable (&dev_priv->mm.retire_timer);
-	INIT_WORK(&dev_priv->mm.retire_task,
-		  i915_gem_retire_handler);
-	INIT_WORK(&dev_priv->user_interrupt_task,
-		  i915_user_interrupt_handler);
+	INIT_DELAYED_WORK(&dev_priv->mm.retire_work,
+			  i915_gem_retire_work_handler);
 	dev_priv->mm.next_gem_seqno = 1;
 
 #ifdef __linux__
@@ -455,6 +448,32 @@ void i915_master_destroy(struct drm_device *dev, struct drm_master *master)
 	drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
 
 	master->driver_priv = NULL;
+}
+
+int i915_driver_open(struct drm_device *dev, struct drm_file *file_priv)
+{
+	struct drm_i915_file_private *i915_file_priv;
+
+	DRM_DEBUG("\n");
+	i915_file_priv = (struct drm_i915_file_private *)
+	    drm_alloc(sizeof(*i915_file_priv), DRM_MEM_FILES);
+
+	if (!i915_file_priv)
+		return -ENOMEM;
+
+	file_priv->driver_priv = i915_file_priv;
+
+	i915_file_priv->mm.last_gem_seqno = 0;
+	i915_file_priv->mm.last_gem_throttle_seqno = 0;
+
+	return 0;
+}
+
+void i915_driver_postclose(struct drm_device *dev, struct drm_file *file_priv)
+{
+	struct drm_i915_file_private *i915_file_priv = file_priv->driver_priv;
+
+	drm_free(i915_file_priv, sizeof(*i915_file_priv), DRM_MEM_FILES);
 }
 
 void i915_driver_preclose(struct drm_device * dev, struct drm_file *file_priv)
