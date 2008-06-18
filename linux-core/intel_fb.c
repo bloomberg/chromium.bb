@@ -677,8 +677,8 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	info->flags = FBINFO_DEFAULT;
 
- 	info->screen_base = ioremap(dev->agp->base + obj_priv->gtt_offset,
-				    size);
+ 	info->screen_base = ioremap_wc(dev->agp->base + obj_priv->gtt_offset,
+				       size);
 	if (!info->screen_base) {
 		ret = -ENOSPC;
 		goto out_unref;
