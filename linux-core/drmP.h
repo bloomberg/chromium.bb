@@ -770,6 +770,9 @@ struct drm_driver {
 	void (*set_version) (struct drm_device *dev,
 			     struct drm_set_version *sv);
 
+	int (*proc_init)(struct drm_minor *minor);
+	void (*proc_cleanup)(struct drm_minor *minor);
+
 	/**
 	 * Driver-specific constructor for drm_gem_objects, to set up
 	 * obj->driver_private.
@@ -1287,7 +1290,7 @@ extern void drm_agp_chipset_flush(struct drm_device *dev);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
 extern int drm_put_dev(struct drm_device *dev);
-extern int drm_put_minor(struct drm_minor **minor);
+extern int drm_put_minor(struct drm_device *dev);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 
 extern struct class *drm_class;
