@@ -756,8 +756,8 @@ static __inline__ int r300_emit_packet3(drm_radeon_private_t *dev_priv,
  */
 static __inline__ void r300_pacify(drm_radeon_private_t *dev_priv)
 {
-	RING_LOCALS;
 	uint32_t cache_z, cache_3d, cache_2d;
+	RING_LOCALS;
 	
 	cache_z = R300_ZC_FLUSH;
 	cache_2d = R300_RB2D_DC_FLUSH;
