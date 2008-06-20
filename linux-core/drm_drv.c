@@ -613,9 +613,10 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	if ((nr >= DRM_COMMAND_BASE) && (nr < DRM_COMMAND_END)
 		&& (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
 		ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
-	else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE))
+	else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE)) {
 		ioctl = &drm_ioctls[nr];
-	else {
+		cmd = ioctl->cmd;
+	} else {
 		retcode = -EINVAL;
 		goto err_i1;
 	}
@@ -631,7 +632,6 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		goto err_i1;
 	}
 #endif
-	cmd = ioctl->cmd;
 
 	func = ioctl->func;
 	/* is there a local override? */
