@@ -477,6 +477,8 @@ int i915_gem_mmap_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 			      struct drm_file *file_priv);
+int i915_gem_sw_finish_ioctl(struct drm_device *dev, void *data,
+			     struct drm_file *file_priv);
 int i915_gem_execbuffer(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_pin_ioctl(struct drm_device *dev, void *data,
