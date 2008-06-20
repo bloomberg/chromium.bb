@@ -332,6 +332,12 @@ struct drm_i915_gem_object {
 	 */
 	int active;
 
+	/**
+	 * This is set if the object has been written to since last bound
+	 * to the GTT
+	 */
+	int dirty;
+
 	/** AGP memory structure for our GTT binding. */
 	DRM_AGP_MEM *agp_mem;
 

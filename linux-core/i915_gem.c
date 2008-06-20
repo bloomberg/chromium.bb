@@ -320,8 +320,13 @@ i915_gem_object_free_page_list(struct drm_gem_object *obj)
 
 
 	for (i = 0; i < page_count; i++)
-		if (obj_priv->page_list[i] != NULL)
+		if (obj_priv->page_list[i] != NULL) {
+			if (obj_priv->dirty)
+				set_page_dirty(obj_priv->page_list[i]);
+			mark_page_accessed(obj_priv->page_list[i]);
 			page_cache_release(obj_priv->page_list[i]);
+		}
+	obj_priv->dirty = 0;
 
 	drm_free(obj_priv->page_list,
 		 page_count * sizeof(struct page *),
@@ -969,6 +974,11 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
 {
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int page_count, i;
+	struct address_space *mapping;
+	struct inode *inode;
+	struct page *page;
+	int ret;
+	
 	if (obj_priv->page_list)
 		return 0;
 
@@ -984,16 +994,25 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
 		return -ENOMEM;
 	}
 
+	inode = obj->filp->f_path.dentry->d_inode;
+	mapping = inode->i_mapping;
 	for (i = 0; i < page_count; i++) {
-		obj_priv->page_list[i] =
-		    find_or_create_page(obj->filp->f_mapping, i, GFP_HIGHUSER);
-
-		if (obj_priv->page_list[i] == NULL) {
-			DRM_ERROR("Failed to find_or_create_page()\n");
-			i915_gem_object_free_page_list(obj);
-			return -ENOMEM;
+		page = find_get_page(mapping, i);
+		if (page == NULL || !PageUptodate(page)) {
+			if (page) {
+				page_cache_release(page);
+				page = NULL;
+			}
+			ret = shmem_getpage(inode, i, &page, SGP_DIRTY, NULL);
+	
+			if (ret) {
+				DRM_ERROR("shmem_getpage failed: %d\n", ret);
+				i915_gem_object_free_page_list(obj);
+				return ret;
+			}
+			unlock_page(page);
 		}
-		unlock_page(obj_priv->page_list[i]);
+		obj_priv->page_list[i] = page;
 	}
 	return 0;
 }
@@ -1239,6 +1258,8 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 	 */
 	if (write_domain == 0)
 		read_domains |= obj->read_domains;
+	else
+		obj_priv->dirty = 1;
 
 	/*
 	 * Flush the current write domain if
@@ -2046,6 +2067,11 @@ int i915_gem_init_object(struct drm_gem_object *obj)
 
 void i915_gem_free_object(struct drm_gem_object *obj)
 {
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+
+	while (obj_priv->pin_count > 0)
+		i915_gem_object_unpin(obj);
+
 	i915_gem_object_unbind(obj);
 
 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
