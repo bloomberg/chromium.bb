@@ -2486,15 +2486,55 @@ static int i915_gem_seqno_info(char *buf, char **start, off_t offset,
 }
 
 
+static int i915_interrupt_info(char *buf, char **start, off_t offset,
+			       int request, int *eof, void *data)
+{
+	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_device *dev = minor->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	int len = 0;
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	DRM_PROC_PRINT("Interrupt enable:    %08x\n",
+		       I915_READ(I915REG_INT_ENABLE_R));
+	DRM_PROC_PRINT("Interrupt identity:  %08x\n",
+		       I915_READ(I915REG_INT_IDENTITY_R));
+	DRM_PROC_PRINT("Interrupt mask:      %08x\n",
+		       I915_READ(I915REG_INT_MASK_R));
+	DRM_PROC_PRINT("Pipe A stat:         %08x\n",
+		       I915_READ(I915REG_PIPEASTAT));
+	DRM_PROC_PRINT("Pipe B stat:         %08x\n",
+		       I915_READ(I915REG_PIPEBSTAT));
+	DRM_PROC_PRINT("Interrupts received: %d\n",
+		       atomic_read(&dev_priv->irq_received));
+	DRM_PROC_PRINT("Current sequence:    %d\n",
+		       i915_get_gem_seqno(dev));
+	DRM_PROC_PRINT("Waiter sequence:     %d\n",
+		       dev_priv->mm.waiting_gem_seqno);
+	DRM_PROC_PRINT("IRQ sequence:        %d\n",
+		       dev_priv->mm.irq_gem_seqno);
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
 static struct drm_proc_list {
 	const char *name;	/**< file name */
 	int (*f) (char *, char **, off_t, int, int *, void *);		/**< proc callback*/
 } i915_gem_proc_list[] = {
-	{"gem_active", i915_gem_active_info},
-	{"gem_flushing", i915_gem_flushing_info},
-	{"gem_inactive", i915_gem_inactive_info},
-	{"gem_request", i915_gem_request_info},
-	{"gem_seqno", i915_gem_seqno_info},
+	{"i915_gem_active", i915_gem_active_info},
+	{"i915_gem_flushing", i915_gem_flushing_info},
+	{"i915_gem_inactive", i915_gem_inactive_info},
+	{"i915_gem_request", i915_gem_request_info},
+	{"i915_gem_seqno", i915_gem_seqno_info},
+	{"i915_gem_interrupt", i915_interrupt_info},
 };
 
 #define I915_GEM_PROC_ENTRIES ARRAY_SIZE(i915_gem_proc_list)
