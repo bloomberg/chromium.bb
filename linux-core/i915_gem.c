@@ -2140,7 +2140,6 @@ i915_gem_idle(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	uint32_t seqno, cur_seqno, last_seqno;
-	int ret;
 	int stuck;
 
 	if (dev_priv->mm.suspended)
