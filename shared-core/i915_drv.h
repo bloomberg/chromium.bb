@@ -290,6 +290,16 @@ typedef struct drm_i915_private {
 		uint32_t next_gem_seqno;
 
 		/**
+		 * Waiting sequence number, if any
+		 */
+		uint32_t waiting_gem_seqno;
+	
+		/**
+		 * Last seq seen at irq time
+		 */
+		uint32_t irq_gem_seqno;
+
+		/**
 		 * Flag if the X Server, and thus DRM, is not currently in
 		 * control of the device.
 		 *
@@ -499,11 +509,14 @@ int i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
 int i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
+int i915_gem_proc_init(struct drm_minor *minor);
+void i915_gem_proc_cleanup(struct drm_minor *minor);
 int i915_gem_init_object(struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_gem_object *obj);
 int i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment);
 void i915_gem_object_unpin(struct drm_gem_object *obj);
 void i915_gem_lastclose(struct drm_device *dev);
+uint32_t i915_get_gem_seqno(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
 void i915_gem_retire_work_handler(struct work_struct *work);
 #endif

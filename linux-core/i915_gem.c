@@ -536,7 +536,7 @@ i915_seqno_passed(uint32_t seq1, uint32_t seq2)
 	return (int32_t)(seq1 - seq2) >= 0;
 }
 
-static uint32_t
+uint32_t
 i915_get_gem_seqno(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
@@ -604,11 +604,13 @@ i915_wait_request(struct drm_device *dev, uint32_t seqno)
 	BUG_ON(seqno == 0);
 
 	if (!i915_seqno_passed(i915_get_gem_seqno(dev), seqno)) {
+		dev_priv->mm.waiting_gem_seqno = seqno;
 		i915_user_irq_on(dev_priv);
 		ret = wait_event_interruptible(dev_priv->irq_queue,
 					       i915_seqno_passed(i915_get_gem_seqno(dev),
 								 seqno));
 		i915_user_irq_off(dev_priv);
+		dev_priv->mm.waiting_gem_seqno = 0;
 	}
 	if (ret)
 		DRM_ERROR("%s returns %d (awaiting %d at %d)\n",
@@ -2296,6 +2298,223 @@ i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
 	mutex_unlock(&dev->struct_mutex);
 
 	return 0;
+}
+
+static int i915_gem_active_info(char *buf, char **start, off_t offset,
+				int request, int *eof, void *data)
+{
+	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_device *dev = minor->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_gem_object *obj_priv;
+	int len = 0;
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	DRM_PROC_PRINT("Active:\n");
+	list_for_each_entry(obj_priv, &dev_priv->mm.active_list,
+			    list)
+	{
+		struct drm_gem_object *obj = obj_priv->obj;
+		if (obj->name) {
+			DRM_PROC_PRINT("    %p(%d): %08x %08x %d\n",
+				       obj, obj->name,
+				       obj->read_domains, obj->write_domain,
+				       obj_priv->last_rendering_seqno);
+		} else {
+			DRM_PROC_PRINT("       %p: %08x %08x %d\n",
+				       obj,
+				       obj->read_domains, obj->write_domain,
+				       obj_priv->last_rendering_seqno);
+		}
+	}
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
+static int i915_gem_flushing_info(char *buf, char **start, off_t offset,
+				  int request, int *eof, void *data)
+{
+	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_device *dev = minor->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_gem_object *obj_priv;
+	int len = 0;
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	DRM_PROC_PRINT("Flushing:\n");
+	list_for_each_entry(obj_priv, &dev_priv->mm.flushing_list,
+			    list)
+	{
+		struct drm_gem_object *obj = obj_priv->obj;
+		if (obj->name) {
+			DRM_PROC_PRINT("    %p(%d): %08x %08x %d\n",
+				       obj, obj->name,
+				       obj->read_domains, obj->write_domain,
+				       obj_priv->last_rendering_seqno);
+		} else {
+			DRM_PROC_PRINT("       %p: %08x %08x %d\n", obj,
+				       obj->read_domains, obj->write_domain,
+				       obj_priv->last_rendering_seqno);
+		}
+	}
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
+static int i915_gem_inactive_info(char *buf, char **start, off_t offset,
+				  int request, int *eof, void *data)
+{
+	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_device *dev = minor->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_gem_object *obj_priv;
+	int len = 0;
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	DRM_PROC_PRINT("Inactive:\n");
+	list_for_each_entry(obj_priv, &dev_priv->mm.inactive_list,
+			    list)
+	{
+		struct drm_gem_object *obj = obj_priv->obj;
+		if (obj->name) {
+			DRM_PROC_PRINT("    %p(%d): %08x %08x %d\n",
+				       obj, obj->name,
+				       obj->read_domains, obj->write_domain,
+				       obj_priv->last_rendering_seqno);
+		} else {
+			DRM_PROC_PRINT("       %p: %08x %08x %d\n", obj,
+				       obj->read_domains, obj->write_domain,
+				       obj_priv->last_rendering_seqno);
+		}
+	}
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
+static int i915_gem_request_info(char *buf, char **start, off_t offset,
+				 int request, int *eof, void *data)
+{
+	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_device *dev = minor->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_gem_request *gem_request;
+	int len = 0;
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	DRM_PROC_PRINT("Request:\n");
+	list_for_each_entry(gem_request, &dev_priv->mm.request_list,
+			    list)
+	{
+		DRM_PROC_PRINT ("    %d @ %d %08x\n",
+				gem_request->seqno,
+				(int) (jiffies - gem_request->emitted_jiffies),
+				gem_request->flush_domains);
+	}
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
+static int i915_gem_seqno_info(char *buf, char **start, off_t offset,
+			       int request, int *eof, void *data)
+{
+	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_device *dev = minor->dev;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	int len = 0;
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+	DRM_PROC_PRINT("Current sequence: %d\n", i915_get_gem_seqno(dev));
+	DRM_PROC_PRINT("Waiter sequence:  %d\n", dev_priv->mm.waiting_gem_seqno);
+	DRM_PROC_PRINT("IRQ sequence:     %d\n", dev_priv->mm.irq_gem_seqno);
+	if (len > request + offset)
+		return request;
+	*eof = 1;
+	return len - offset;
+}
+
+
+static struct drm_proc_list {
+	const char *name;	/**< file name */
+	int (*f) (char *, char **, off_t, int, int *, void *);		/**< proc callback*/
+} i915_gem_proc_list[] = {
+	{"gem_active", i915_gem_active_info},
+	{"gem_flushing", i915_gem_flushing_info},
+	{"gem_inactive", i915_gem_inactive_info},
+	{"gem_request", i915_gem_request_info},
+	{"gem_seqno", i915_gem_seqno_info},
+};
+
+#define I915_GEM_PROC_ENTRIES ARRAY_SIZE(i915_gem_proc_list)
+
+int i915_gem_proc_init(struct drm_minor *minor)
+{
+	struct proc_dir_entry *ent;
+	int i, j;
+
+	for (i = 0; i < I915_GEM_PROC_ENTRIES; i++) {
+		ent = create_proc_entry(i915_gem_proc_list[i].name,
+					S_IFREG | S_IRUGO, minor->dev_root);
+		if (!ent) {
+			DRM_ERROR("Cannot create /proc/dri/.../%s\n",
+				  i915_gem_proc_list[i].name);
+			for (j = 0; j < i; j++)
+				remove_proc_entry(i915_gem_proc_list[i].name,
+						  minor->dev_root);
+			return -1;
+		}
+		ent->read_proc = i915_gem_proc_list[i].f;
+		ent->data = minor;
+	}
+	return 0;
+}
+
+void i915_gem_proc_cleanup(struct drm_minor *minor)
+{
+	int i;
+
+	if (!minor->dev_root)
+		return;
+
+	for (i = 0; i < I915_GEM_PROC_ENTRIES; i++)
+		remove_proc_entry(i915_gem_proc_list[i].name, minor->dev_root);
 }
 
 void
