@@ -2139,8 +2139,9 @@ static int
 i915_gem_idle(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	uint32_t seqno;
+	uint32_t seqno, cur_seqno, last_seqno;
 	int ret;
+	int stuck;
 
 	if (dev_priv->mm.suspended)
 		return 0;
@@ -2161,11 +2162,26 @@ i915_gem_idle(struct drm_device *dev)
 		mutex_unlock(&dev->struct_mutex);
 		return -ENOMEM;
 	}
-	ret = i915_wait_request(dev, seqno);
-	if (ret) {
-		mutex_unlock(&dev->struct_mutex);
-		return ret;
+
+	dev_priv->mm.waiting_gem_seqno = seqno;
+	last_seqno = 0;
+	stuck = 0;
+	for (;;) {
+		cur_seqno = i915_get_gem_seqno(dev);
+		if (i915_seqno_passed(cur_seqno, seqno))
+			break;
+		if (last_seqno == cur_seqno) {
+			if (stuck++ > 100) {
+				DRM_ERROR("hardware wedged\n");
+				break;
+			}
+		}
+		msleep(10);
+		last_seqno = cur_seqno;
 	}
+	dev_priv->mm.waiting_gem_seqno = 0;
+
+	i915_gem_retire_requests(dev);
 
 	/* Active and flushing should now be empty as we've
 	 * waited for a sequence higher than any pending execbuffer
@@ -2521,14 +2537,17 @@ void
 i915_gem_lastclose(struct drm_device *dev)
 {
 	int ret;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 
 	mutex_lock(&dev->struct_mutex);
 
-	ret = i915_gem_idle(dev);
-	if (ret)
-		DRM_ERROR("failed to idle hardware: %d\n", ret);
-
-	i915_gem_cleanup_ringbuffer(dev);
+	if (dev_priv->ring.ring_obj != NULL) {
+		ret = i915_gem_idle(dev);
+		if (ret)
+			DRM_ERROR("failed to idle hardware: %d\n", ret);
+	
+		i915_gem_cleanup_ringbuffer(dev);
+	}
 	
 	mutex_unlock(&dev->struct_mutex);
 }
