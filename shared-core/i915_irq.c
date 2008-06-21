@@ -451,7 +451,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	int vblank = 0;
 
 	if (dev->pdev->msi_enabled)
-		I915_WRITE(I915REG_INT_ENABLE_R, 0);
+		I915_WRITE(I915REG_INT_MASK_R, ~0);
 	iir = I915_READ(I915REG_INT_IDENTITY_R);
 #if 0
 	DRM_DEBUG("flag=%08x\n", iir);
@@ -464,9 +464,11 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			   I915_READ(I915REG_INT_ENABLE_R),
 			   I915_READ(I915REG_PIPEASTAT),
 			   I915_READ(I915REG_PIPEBSTAT));
-		if (dev->pdev->msi_enabled)
-			I915_WRITE(I915REG_INT_ENABLE_R,
-				   I915_INTERRUPT_ENABLE_MASK);
+		if (dev->pdev->msi_enabled) {
+			I915_WRITE(I915REG_INT_MASK_R,
+				   dev_priv->irq_mask_reg);
+			(void) I915_READ(I915REG_INT_MASK_R);
+		}
 		return IRQ_NONE;
 	}
 
@@ -484,6 +486,8 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	}
 
 	I915_WRITE(I915REG_INT_IDENTITY_R, iir);
+	if (dev->pdev->msi_enabled)
+		I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
 	(void) I915_READ(I915REG_INT_IDENTITY_R); /* Flush posted writes */
 
 	if (dev_priv->sarea_priv)
@@ -512,8 +516,6 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
 	}
 
-	if (dev->pdev->msi_enabled)
-		I915_WRITE(I915REG_INT_ENABLE_R, I915_INTERRUPT_ENABLE_MASK);
 	return IRQ_HANDLED;
 }
 
@@ -543,6 +545,7 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 		if ((dev_priv->irq_mask_reg & I915_USER_INTERRUPT) != 0) {
 			dev_priv->irq_mask_reg &= ~I915_USER_INTERRUPT;
 			I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
+			I915_WRITE(I915REG_INT_IDENTITY_R, I915_USER_INTERRUPT);
 			(void) I915_READ (I915REG_INT_MASK_R);
 		}
 	}
@@ -740,7 +743,7 @@ static void i915_enable_interrupt (struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	
-	dev_priv->irq_mask_reg = I915_INTERRUPT_ENABLE_MASK;
+	dev_priv->irq_mask_reg = ~0;
 	I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
 	I915_WRITE(I915REG_INT_ENABLE_R, I915_INTERRUPT_ENABLE_MASK);
 	(void) I915_READ (I915REG_INT_ENABLE_R);
