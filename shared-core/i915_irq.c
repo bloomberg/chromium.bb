@@ -456,6 +456,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 #if 0
 	DRM_DEBUG("flag=%08x\n", iir);
 #endif
+	atomic_inc(&dev_priv->irq_received);
 	if (iir == 0) {
 		DRM_DEBUG ("iir 0x%08x im 0x%08x ie 0x%08x pipea 0x%08x pipeb 0x%08x\n",
 			   iir,
@@ -963,6 +964,7 @@ void i915_driver_irq_preinstall(struct drm_device * dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
+	atomic_set(&dev_priv->irq_received, 0);
 	I915_WRITE(I915REG_HWSTAM, 0xffff);
 	I915_WRITE(I915REG_INT_ENABLE_R, 0x0);
 	I915_WRITE(I915REG_INT_MASK_R, 0xffffffff);
