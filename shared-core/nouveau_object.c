@@ -248,7 +248,7 @@ nouveau_gpuobj_new(struct drm_device *dev, struct nouveau_channel *chan,
 	/* Allocate a chunk of the PRAMIN aperture */
 	gpuobj->im_pramin = nouveau_mem_alloc_block(pramin, size,
 						    drm_order(align),
-						    (struct drm_file *)-2);
+						    (struct drm_file *)-2, 0);
 	if (!gpuobj->im_pramin) {
 		nouveau_gpuobj_del(dev, &gpuobj);
 		return -ENOMEM;
