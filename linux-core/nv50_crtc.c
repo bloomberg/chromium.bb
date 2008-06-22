@@ -463,6 +463,7 @@ int nv50_crtc_create(struct drm_device *dev, int index)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nv50_crtc *crtc = NULL;
 	struct nv50_display *display = NULL;
+	int rval = 0;
 
 	NV50_DEBUG("\n");
 
@@ -476,8 +477,10 @@ int nv50_crtc_create(struct drm_device *dev, int index)
 	crtc->dev = dev;
 
 	display = nv50_get_display(dev);
-	if (!display)
+	if (!display) {
+		rval = -EINVAL;
 		goto out;
+	}
 
 	list_add_tail(&crtc->head, &display->crtcs);
 
@@ -485,6 +488,11 @@ int nv50_crtc_create(struct drm_device *dev, int index)
 
 	crtc->mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
 	crtc->native_mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
+
+	if (!crtc->mode || crtc->native_mode) {
+		rval = -ENOMEM;
+		goto out;
+	}
 
 	nv50_fb_create(crtc);
 	nv50_lut_create(crtc);
@@ -511,5 +519,5 @@ out:
 	if (dev_priv->free_crtc)
 		dev_priv->free_crtc(crtc);
 
-	return -EINVAL;
+	return rval;
 }

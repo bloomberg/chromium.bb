@@ -44,21 +44,21 @@
 /* Link internal modesetting structure to interface. */
 
 struct nv50_kms_crtc {
-	struct list_head head;
+	struct list_head item;
 
 	struct nv50_crtc priv;
 	struct drm_crtc pub;
 };
 
 struct nv50_kms_encoder {
-	struct list_head head;
+	struct list_head item;
 
 	struct nv50_output priv;
 	struct drm_encoder pub;
 };
 
 struct nv50_kms_connector {
-	struct list_head head;
+	struct list_head item;
 
 	struct nv50_connector priv;
 	struct drm_connector pub;

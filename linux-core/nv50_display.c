@@ -189,6 +189,9 @@ int nv50_display_create(struct drm_device *dev)
 
 	NV50_DEBUG("\n");
 
+	if (!display)
+		return -ENOMEM;
+
 	INIT_LIST_HEAD(&display->crtcs);
 	INIT_LIST_HEAD(&display->outputs);
 	INIT_LIST_HEAD(&display->connectors);

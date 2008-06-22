@@ -140,6 +140,8 @@ int nv50_cursor_create(struct nv50_crtc *crtc)
 		return -EINVAL;
 
 	crtc->cursor = kzalloc(sizeof(struct nv50_cursor), GFP_KERNEL);
+	if (!crtc->cursor)
+		return -ENOMEM;
 
 	/* function pointers */
 	crtc->cursor->show = nv50_cursor_show;

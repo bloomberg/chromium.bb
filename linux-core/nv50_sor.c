@@ -138,6 +138,7 @@ int nv50_sor_create(struct drm_device *dev, int dcb_entry)
 	struct nv50_output *output = NULL;
 	struct nv50_display *display = NULL;
 	struct dcb_entry *entry = NULL;
+	int rval = 0;
 
 	NV50_DEBUG("\n");
 
@@ -151,12 +152,16 @@ int nv50_sor_create(struct drm_device *dev, int dcb_entry)
 	output->dev = dev;
 
 	display = nv50_get_display(dev);
-	if (!display)
+	if (!display) {
+		rval = -EINVAL;
 		goto out;
+	}
 
 	entry = &dev_priv->dcb_table.entry[dcb_entry];
-	if (!entry)
+	if (!entry) {
+		rval = -EINVAL;
 		goto out;
+	}
 
 	switch (entry->type) {
 		case DCB_OUTPUT_TMDS:
@@ -168,6 +173,7 @@ int nv50_sor_create(struct drm_device *dev, int dcb_entry)
 			DRM_INFO("Detected a LVDS output\n");
 			break;
 		default:
+			rval = -EINVAL;
 			goto out;
 	}
 
@@ -177,6 +183,10 @@ int nv50_sor_create(struct drm_device *dev, int dcb_entry)
 	list_add_tail(&output->head, &display->outputs);
 
 	output->native_mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
+	if (!output->native_mode) {
+		rval = -ENOMEM;
+		goto out;
+	}
 
 	/* Set function pointers. */
 	output->validate_mode = nv50_sor_validate_mode;
@@ -200,5 +210,5 @@ out:
 		kfree(output->native_mode);
 	if (dev_priv->free_output)
 		dev_priv->free_output(output);
-	return -EINVAL;
+	return rval;
 }

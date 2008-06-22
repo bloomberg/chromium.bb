@@ -48,7 +48,10 @@ static void *nv50_kms_alloc_crtc(struct drm_device *dev)
 	struct nv50_kms_priv *kms_priv = nv50_get_kms_priv(dev);
 	struct nv50_kms_crtc *crtc = kzalloc(sizeof(struct nv50_kms_crtc), GFP_KERNEL);
 
-	list_add_tail(&crtc->head, &kms_priv->crtcs);
+	if (!crtc)
+		return NULL;
+
+	list_add_tail(&crtc->item, &kms_priv->crtcs);
 
 	return &(crtc->priv);
 }
@@ -58,7 +61,10 @@ static void *nv50_kms_alloc_output(struct drm_device *dev)
 	struct nv50_kms_priv *kms_priv = nv50_get_kms_priv(dev);
 	struct nv50_kms_encoder *encoder = kzalloc(sizeof(struct nv50_kms_encoder), GFP_KERNEL);
 
-	list_add_tail(&encoder->head, &kms_priv->encoders);
+	if (!encoder)
+		return NULL;
+
+	list_add_tail(&encoder->item, &kms_priv->encoders);
 
 	return &(encoder->priv);
 }
@@ -68,7 +74,10 @@ static void *nv50_kms_alloc_connector(struct drm_device *dev)
 	struct nv50_kms_priv *kms_priv = nv50_get_kms_priv(dev);
 	struct nv50_kms_connector *connector = kzalloc(sizeof(struct nv50_kms_connector), GFP_KERNEL);
 
-	list_add_tail(&connector->head, &kms_priv->connectors);
+	if (!connector)
+		return NULL;
+
+	list_add_tail(&connector->item, &kms_priv->connectors);
 
 	return &(connector->priv);
 }
@@ -77,7 +86,7 @@ static void nv50_kms_free_crtc(void *crtc)
 {
 	struct nv50_kms_crtc *kms_crtc = from_nv50_crtc(crtc);
 
-	list_del(&kms_crtc->head);
+	list_del(&kms_crtc->item);
 
 	kfree(kms_crtc);
 }
@@ -86,7 +95,7 @@ static void nv50_kms_free_output(void *output)
 {
 	struct nv50_kms_encoder *kms_encoder = from_nv50_output(output);
 
-	list_del(&kms_encoder->head);
+	list_del(&kms_encoder->item);
 
 	kfree(kms_encoder);
 }
@@ -95,7 +104,7 @@ static void nv50_kms_free_connector(void *connector)
 {
 	struct nv50_kms_connector *kms_connector = from_nv50_connector(connector);
 
-	list_del(&kms_connector->head);
+	list_del(&kms_connector->item);
 
 	kfree(kms_connector);
 }
@@ -107,6 +116,8 @@ static void nv50_kms_free_connector(void *connector)
 static struct nouveau_hw_mode *nv50_kms_to_hw_mode(struct drm_display_mode *mode)
 {
 	struct nouveau_hw_mode *hw_mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
+	if (!hw_mode)
+		return NULL;
 
 	/* create hw values. */
 	hw_mode->clock = mode->clock;
@@ -869,6 +880,9 @@ int nv50_kms_init(struct drm_device *dev)
 	struct nv50_kms_priv *kms_priv = kzalloc(sizeof(struct nv50_kms_priv), GFP_KERNEL);
 	struct nv50_display *display = NULL;
 	int rval = 0;
+
+	if (!kms_priv)
+		return -ENOMEM;
 
 	dev_priv->kms_priv = kms_priv;
 

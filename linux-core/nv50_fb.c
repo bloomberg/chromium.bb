@@ -119,6 +119,9 @@ int nv50_fb_create(struct nv50_crtc *crtc)
 
 	crtc->fb = kzalloc(sizeof(struct nv50_fb), GFP_KERNEL);
 
+	if (!crtc->fb)
+		return -ENOMEM;
+
 	crtc->fb->bind = nv50_fb_bind;
 
 	return 0;

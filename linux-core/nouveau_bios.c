@@ -532,6 +532,8 @@ int nouveau_parse_bios(struct drm_device *dev)
 	int offset;
 
 	dev_priv->bios.data = kzalloc(NV50_PROM__ESIZE, GFP_KERNEL);
+	if (!dev_priv->bios.data)
+		return -ENOMEM;
 
 	if (!nv_shadow_bios(dev, dev_priv->bios.data))
 		return -EINVAL;

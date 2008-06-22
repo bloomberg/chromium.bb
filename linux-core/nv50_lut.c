@@ -37,6 +37,9 @@ static int nv50_lut_alloc(struct nv50_crtc *crtc)
 
 	NV50_DEBUG("\n");
 
+	if (!file_priv)
+		return -ENOMEM;
+
 	/* Any file_priv should do as it's pointer is used as identification. */
 	block = nouveau_mem_alloc(crtc->dev, 0, 4096, flags, file_priv);
 
@@ -136,6 +139,9 @@ int nv50_lut_create(struct nv50_crtc *crtc)
 		return -EINVAL;
 
 	crtc->lut = kzalloc(sizeof(struct nv50_lut), GFP_KERNEL);
+
+	if (!crtc->lut)
+		return -ENOMEM;
 
 	rval = nv50_lut_alloc(crtc);
 	if (rval != 0)
