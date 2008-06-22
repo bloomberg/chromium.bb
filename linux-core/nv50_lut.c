@@ -34,6 +34,7 @@ static int nv50_lut_alloc(struct nv50_crtc *crtc)
 	struct mem_block *block;
 	struct drm_file *file_priv = kzalloc(sizeof(struct drm_file), GFP_KERNEL);
 	uint32_t flags = NOUVEAU_MEM_INTERNAL | NOUVEAU_MEM_FB | NOUVEAU_MEM_MAPPED;
+	int rval = 0;
 
 	NV50_DEBUG("\n");
 
@@ -43,12 +44,20 @@ static int nv50_lut_alloc(struct nv50_crtc *crtc)
 	/* Any file_priv should do as it's pointer is used as identification. */
 	block = nouveau_mem_alloc(crtc->dev, 0, 4096, flags, file_priv);
 
-	if (!block)
-		return -ENOMEM;
+	if (!block) {
+		rval = -ENOMEM;
+		goto out;
+	}
 
 	crtc->lut->block = block;
 
 	return 0;
+
+out:
+	if (file_priv)
+		kfree(file_priv);
+
+	return rval;
 }
 
 static int nv50_lut_free(struct nv50_crtc *crtc)
@@ -144,8 +153,9 @@ int nv50_lut_create(struct nv50_crtc *crtc)
 		return -ENOMEM;
 
 	rval = nv50_lut_alloc(crtc);
-	if (rval != 0)
-		return rval;
+	if (rval != 0) {
+		goto out;
+	}
 
 	/* lut will be inited when fb is bound */
 	crtc->lut->depth = 0;
@@ -154,6 +164,12 @@ int nv50_lut_create(struct nv50_crtc *crtc)
 	crtc->lut->set = nv50_lut_set;
 
 	return 0;
+
+out:
+	if (crtc->lut)
+		kfree(crtc->lut);
+
+	return rval;
 }
 
 int nv50_lut_destroy(struct nv50_crtc *crtc)
