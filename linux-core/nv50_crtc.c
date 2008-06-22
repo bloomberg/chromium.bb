@@ -489,7 +489,7 @@ int nv50_crtc_create(struct drm_device *dev, int index)
 	crtc->mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
 	crtc->native_mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
 
-	if (!crtc->mode || crtc->native_mode) {
+	if (!crtc->mode || !crtc->native_mode) {
 		rval = -ENOMEM;
 		goto out;
 	}
