@@ -36,6 +36,8 @@ noinst_PROGRAMS=fc-case
 
 noinst_MANS=fc-case.man
 
+noinst_HEADERS=$(TARG)
+
 fc_case_SRCS= \
 	fc-case.c \
 	fccaseint.h \
@@ -52,7 +54,7 @@ $(TARG): $(STMPL) fc-case$(EXEEXT) $(SCASEFOLDING)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
-BUILT_SOURCES = $(ALIAS_FILES) $(TARG)
+BUILT_SOURCES = $(ALIAS_FILES)
 
 $(ALIAS_FILES): 
 	touch $(ALIAS_FILES)
