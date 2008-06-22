@@ -593,8 +593,11 @@ nouveau_mem_alloc(struct drm_device *dev, int alignment, uint64_t size,
 	/* Align allocation sizes to 64KiB blocks on G8x.  We use a 64KiB
 	 * page size in the GPU VM.
 	 */
-	if (flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50)
+	if (flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50) {
 		size = (size + (64 * 1024)) & ~((64 * 1024) - 1);
+		if (alignment < 16)
+			alignment = 16;
+	}
 
 	/*
 	 * Warn about 0 sized allocations, but let it go through. It'll return 1 page
