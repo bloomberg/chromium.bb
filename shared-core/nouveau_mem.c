@@ -806,6 +806,7 @@ int
 nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data,
 			struct drm_file *file_priv)
 {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_alloc *alloc = data;
 	struct mem_block *block;
 
@@ -822,16 +823,24 @@ nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data,
 	alloc->offset=block->start;
 	alloc->flags=block->flags;
 
+	if (dev_priv->card_type >= NV_50 && alloc->flags & NOUVEAU_MEM_FB)
+		alloc->offset += 512*1024*1024;
+
 	return 0;
 }
 
-int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *file_priv)
+int
+nouveau_ioctl_mem_free(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_free *memfree = data;
 	struct mem_block *block;
 
 	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
+	if (dev_priv->card_type >= NV_50 && memfree->flags & NOUVEAU_MEM_FB)
+		memfree->offset -= 512*1024*1024;
 
 	block=NULL;
 	if (memfree->flags & NOUVEAU_MEM_FB)
