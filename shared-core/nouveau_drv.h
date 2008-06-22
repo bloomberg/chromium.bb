@@ -350,7 +350,7 @@ extern int  nouveau_mem_init_heap(struct mem_block **, uint64_t start,
 				 uint64_t size);
 extern struct mem_block *nouveau_mem_alloc_block(struct mem_block *,
 						 uint64_t size, int align2,
-						 struct drm_file *);
+						 struct drm_file *, int tail);
 extern void nouveau_mem_takedown(struct mem_block **heap);
 extern void nouveau_mem_free_block(struct mem_block *);
 extern uint64_t nouveau_mem_fb_amount(struct drm_device *);

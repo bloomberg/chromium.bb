@@ -94,7 +94,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 	}
 
 	mem = nouveau_mem_alloc_block(chan->notifier_heap, count*32, 0,
-				      (struct drm_file *)-2);
+				      (struct drm_file *)-2, 0);
 	if (!mem) {
 		DRM_ERROR("Channel %d notifier block full\n", chan->id);
 		return -ENOMEM;
