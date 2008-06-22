@@ -557,6 +557,10 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 		return -EINVAL;
 	}
 
+	/* For those who think they want to be funny. */
+	if (dev_priv->card_type < NV_50)
+		dev->driver->driver_features &= ~DRIVER_MODESET;
+
 	/* Special flags */
 	if (dev->pci_device == 0x01a0) {
 		dev_priv->flags |= NV_NFORCE;
