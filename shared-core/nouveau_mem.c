@@ -108,6 +108,17 @@ static struct mem_block *find_block(struct mem_block *heap, uint64_t start)
 	return NULL;
 }
 
+struct mem_block *find_block_by_handle(struct mem_block *heap, drm_handle_t handle)
+{
+	struct mem_block *p;
+
+	list_for_each(p, heap)
+		if (p->map_handle == handle)
+			return p;
+
+	return NULL;
+}
+
 void nouveau_mem_free_block(struct mem_block *p)
 {
 	p->file_priv = NULL;

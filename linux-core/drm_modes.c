@@ -89,6 +89,7 @@ void drm_mode_list_concat(struct list_head *head, struct list_head *new)
 		list_move_tail(entry, new);
 	}
 }
+EXPORT_SYMBOL(drm_mode_list_concat);
 
 /**
  * drm_mode_width - get the width of a mode
@@ -401,6 +402,7 @@ void drm_mode_prune_invalid(struct drm_device *dev,
 		}
 	}
 }
+EXPORT_SYMBOL(drm_mode_prune_invalid);
 
 /**
  * drm_mode_compare - compare modes for favorability
@@ -525,7 +527,7 @@ void drm_mode_sort(struct list_head *mode_list)
 {
 	list_sort(mode_list, drm_mode_compare);
 }
-
+EXPORT_SYMBOL(drm_mode_sort);
 
 /**
  * drm_mode_connector_list_update - update the mode list for the connector
@@ -564,3 +566,4 @@ void drm_mode_connector_list_update(struct drm_connector *connector)
 		}
 	}
 }
+EXPORT_SYMBOL(drm_mode_connector_list_update);

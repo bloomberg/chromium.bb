@@ -116,6 +116,9 @@
 
 #define NV04_PBUS_PCI_NV_1                                 0x00001804
 #define NV04_PBUS_PCI_NV_19                                0x0000184C
+#define NV04_PBUS_PCI_NV_20				0x00001850
+#	define NV04_PBUS_PCI_NV_20_ROM_SHADOW_DISABLED		(0 << 0)
+#	define NV04_PBUS_PCI_NV_20_ROM_SHADOW_ENABLED		(1 << 0)
 
 #define NV04_PTIMER_INTR_0                                 0x00009100
 #define NV04_PTIMER_INTR_EN_0                              0x00009140
@@ -542,6 +545,8 @@
 /* This name is a partial guess. */
 #define NV50_DISPLAY_SUPERVISOR                     0x00610024
 
+#define NV04_PRAMIN						0x00700000
+
 /* Fifo commands. These are not regs, neither masks */
 #define NV03_FIFO_CMD_JUMP                                 0x20000000
 #define NV03_FIFO_CMD_JUMP_OFFSET_MASK                     0x1ffffffc
@@ -591,3 +596,296 @@
 #define NV40_RAMFC_UNK_48                                        0x48
 #define NV40_RAMFC_UNK_4C                                        0x4C
 #define NV40_RAMFC_UNK_50                                        0x50
+
+/* This is a partial import from rules-ng, a few things may be duplicated.
+ * Eventually we should completely import everything from rules-ng.
+ * For the moment check rules-ng for docs.
+  */
+
+#define NV50_PMC                                            0x00000000
+#define NV50_PMC__LEN                                              0x1
+#define NV50_PMC__ESIZE                                         0x2000
+#    define NV50_PMC_BOOT_0                                 0x00000000
+#        define NV50_PMC_BOOT_0_REVISION                    0x000000ff
+#        define NV50_PMC_BOOT_0_REVISION__SHIFT                      0
+#        define NV50_PMC_BOOT_0_ARCH                        0x0ff00000
+#        define NV50_PMC_BOOT_0_ARCH__SHIFT                         20
+#    define NV50_PMC_INTR_0                                 0x00000100
+#        define NV50_PMC_INTR_0_PFIFO                           (1<<8)
+#        define NV50_PMC_INTR_0_PGRAPH                         (1<<12)
+#        define NV50_PMC_INTR_0_PTIMER                         (1<<20)
+#        define NV50_PMC_INTR_0_HOTPLUG                        (1<<21)
+#        define NV50_PMC_INTR_0_DISPLAY                        (1<<26)
+#    define NV50_PMC_INTR_EN_0                              0x00000140
+#        define NV50_PMC_INTR_EN_0_MASTER                       (1<<0)
+#            define NV50_PMC_INTR_EN_0_MASTER_DISABLED          (0<<0)
+#            define NV50_PMC_INTR_EN_0_MASTER_ENABLED           (1<<0)
+#    define NV50_PMC_ENABLE                                 0x00000200
+#        define NV50_PMC_ENABLE_PFIFO                           (1<<8)
+#        define NV50_PMC_ENABLE_PGRAPH                         (1<<12)
+
+#define NV50_PCONNECTOR                                     0x0000e000
+#define NV50_PCONNECTOR__LEN                                       0x1
+#define NV50_PCONNECTOR__ESIZE                                  0x1000
+#    define NV50_PCONNECTOR_HOTPLUG_INTR                    0x0000e050
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C0          (1<<0)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C1          (1<<1)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C2          (1<<2)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C3          (1<<3)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C4          (1<<4)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C5          (1<<5)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C6          (1<<6)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C7          (1<<7)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C8          (1<<8)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C9          (1<<9)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C10        (1<<10)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C11        (1<<11)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C12        (1<<12)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C13        (1<<13)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C14        (1<<14)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_PLUG_I2C15        (1<<15)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C0       (1<<16)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C1       (1<<17)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C2       (1<<18)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C3       (1<<19)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C4       (1<<20)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C5       (1<<21)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C6       (1<<22)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C7       (1<<23)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C8       (1<<24)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C9       (1<<25)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C10      (1<<26)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C11      (1<<27)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C12      (1<<28)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C13      (1<<29)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C14      (1<<30)
+#        define NV50_PCONNECTOR_HOTPLUG_INTR_UNPLUG_I2C15      (1<<31)
+#    define NV50_PCONNECTOR_HOTPLUG_CTRL                    0x0000e054
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C0          (1<<0)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C1          (1<<1)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C2          (1<<2)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C3          (1<<3)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C4          (1<<4)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C5          (1<<5)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C6          (1<<6)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C7          (1<<7)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C8          (1<<8)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C9          (1<<9)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C10        (1<<10)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C11        (1<<11)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C12        (1<<12)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C13        (1<<13)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C14        (1<<14)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_PLUG_I2C15        (1<<15)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C0       (1<<16)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C1       (1<<17)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C2       (1<<18)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C3       (1<<19)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C4       (1<<20)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C5       (1<<21)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C6       (1<<22)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C7       (1<<23)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C8       (1<<24)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C9       (1<<25)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C10      (1<<26)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C11      (1<<27)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C12      (1<<28)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C13      (1<<29)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C14      (1<<30)
+#        define NV50_PCONNECTOR_HOTPLUG_CTRL_UNPLUG_I2C15      (1<<31)
+#    define NV50_PCONNECTOR_HOTPLUG_STATE1                  0x0000e104
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C0 (1<<2)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C1 (1<<6)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C2 (1<<10)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C3 (1<<14)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C4 (1<<18)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C5 (1<<22)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C6 (1<<26)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE1_PIN_CONNECTED_I2C7 (1<<30)
+#    define NV50_PCONNECTOR_HOTPLUG_STATE2                  0x0000e108
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C8 (1<<2)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C9 (1<<6)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C10 (1<<10)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C11 (1<<14)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C12 (1<<18)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C13 (1<<22)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C14 (1<<26)
+#        define NV50_PCONNECTOR_HOTPLUG_STATE2_PIN_CONNECTED_I2C15 (1<<30)
+#    define NV50_PCONNECTOR_I2C                             0x0000e138
+#    define NV50_PCONNECTOR_I2C__LEN                              0x10
+#    define NV50_PCONNECTOR_I2C__ESIZE                            0x18
+#        define NV50_PCONNECTOR_I2C_PORT(i)      (0x0000e138+(i)*0x18)
+
+
+#define NV50_PBUS                                           0x00088000
+#define NV50_PBUS__LEN                                             0x1
+#define NV50_PBUS__ESIZE                                        0x1000
+#    define NV50_PBUS_PCI_ID                                0x00088000
+#        define NV50_PBUS_PCI_ID_VENDOR_ID                  0x0000ffff
+#        define NV50_PBUS_PCI_ID_VENDOR_ID__SHIFT                    0
+#        define NV50_PBUS_PCI_ID_DEVICE_ID                  0xffff0000
+#        define NV50_PBUS_PCI_ID_DEVICE_ID__SHIFT                   16
+
+#define NV50_PFB                                            0x00100000
+#define NV50_PFB__LEN                                              0x1
+#define NV50_PFB__ESIZE                                         0x1000
+
+#define NV50_PEXTDEV                                        0x00101000
+#define NV50_PEXTDEV__LEN                                          0x1
+#define NV50_PEXTDEV__ESIZE                                     0x1000
+
+#define NV50_PROM                                           0x00300000
+#define NV50_PROM__LEN                                             0x1
+#define NV50_PROM__ESIZE                                       0x10000
+
+#define NV50_PGRAPH                                         0x00400000
+#define NV50_PGRAPH__LEN                                           0x1
+#define NV50_PGRAPH__ESIZE                                     0x10000
+
+#define NV50_PDISPLAY                                       0x00610000
+#define NV50_PDISPLAY__LEN                                         0x1
+#define NV50_PDISPLAY__ESIZE                                   0x10000
+#    define NV50_PDISPLAY_SUPERVISOR                        0x00610024
+#        define NV50_PDISPLAY_SUPERVISOR_CRTCn              0x0000000c
+#        define NV50_PDISPLAY_SUPERVISOR_CRTCn__SHIFT                2
+#        define NV50_PDISPLAY_SUPERVISOR_CRTC0                  (1<<2)
+#        define NV50_PDISPLAY_SUPERVISOR_CRTC1                  (1<<3)
+#        define NV50_PDISPLAY_SUPERVISOR_CLK_MASK           0x00000070
+#        define NV50_PDISPLAY_SUPERVISOR_CLK_MASK__SHIFT             4
+#        define NV50_PDISPLAY_SUPERVISOR_CLK_UPDATE             (1<<5)
+#    define NV50_PDISPLAY_SUPERVISOR_INTR                   0x0061002c
+#        define NV50_PDISPLAY_SUPERVISOR_INTR_VBLANK_CRTC0      (1<<2)
+#        define NV50_PDISPLAY_SUPERVISOR_INTR_VBLANK_CRTC1      (1<<3)
+#        define NV50_PDISPLAY_SUPERVISOR_INTR_UNK1              (1<<4)
+#        define NV50_PDISPLAY_SUPERVISOR_INTR_CLK_UPDATE        (1<<5)
+#        define NV50_PDISPLAY_SUPERVISOR_INTR_UNK4              (1<<6)
+#    define NV50_PDISPLAY_UNK30_CTRL                        0x00610030
+#        define NV50_PDISPLAY_UNK30_CTRL_UPDATE_VCLK0           (1<<9)
+#        define NV50_PDISPLAY_UNK30_CTRL_UPDATE_VCLK1          (1<<10)
+#        define NV50_PDISPLAY_UNK30_CTRL_PENDING               (1<<31)
+#    define NV50_PDISPLAY_UNK50_CTRL                        0x00610050
+#        define NV50_PDISPLAY_UNK50_CTRL_CRTC0_ACTIVE           (1<<1)
+#        define NV50_PDISPLAY_UNK50_CTRL_CRTC0_ACTIVE_MASK  0x00000003
+#        define NV50_PDISPLAY_UNK50_CTRL_CRTC0_ACTIVE_MASK__SHIFT    0
+#        define NV50_PDISPLAY_UNK50_CTRL_CRTC1_ACTIVE           (1<<9)
+#        define NV50_PDISPLAY_UNK50_CTRL_CRTC1_ACTIVE_MASK  0x00000300
+#        define NV50_PDISPLAY_UNK50_CTRL_CRTC1_ACTIVE_MASK__SHIFT    8
+#    define NV50_PDISPLAY_UNK200_CTRL                       0x00610200
+#    define NV50_PDISPLAY_CURSOR                            0x00610270
+#    define NV50_PDISPLAY_CURSOR__LEN                              0x2
+#    define NV50_PDISPLAY_CURSOR__ESIZE                           0x10
+#        define NV50_PDISPLAY_CURSOR_CURSOR_CTRL2(i) (0x00610270+(i)*0x10)
+#            define NV50_PDISPLAY_CURSOR_CURSOR_CTRL2_ON        (1<<0)
+#            define NV50_PDISPLAY_CURSOR_CURSOR_CTRL2_STATUS_MASK 0x00030000
+#            define NV50_PDISPLAY_CURSOR_CURSOR_CTRL2_STATUS_MASK__SHIFT 16
+#            define NV50_PDISPLAY_CURSOR_CURSOR_CTRL2_STATUS_ACTIVE (1<<16)
+
+#    define NV50_PDISPLAY_CTRL_STATE                        0x00610300
+#        define NV50_PDISPLAY_CTRL_STATE_ENABLE                 (1<<0)
+#        define NV50_PDISPLAY_CTRL_STATE_PENDING               (1<<31)
+#    define NV50_PDISPLAY_CTRL_VAL                          0x00610304
+#    define NV50_PDISPLAY_UNK_380                           0x00610380
+#    define NV50_PDISPLAY_RAM_AMOUNT                        0x00610384
+#    define NV50_PDISPLAY_UNK_388                           0x00610388
+#    define NV50_PDISPLAY_UNK_38C                           0x0061038c
+#    define NV50_PDISPLAY_CRTC_VAL                          0x00610a00
+#    define NV50_PDISPLAY_CRTC_VAL__LEN                            0x2
+#            define NV50_PDISPLAY_CRTC_VAL_UNK_900(i,j) (0x00610a18+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_CLUT_MODE(i,j) (0x00610a24+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_INTERLACE(i,j) (0x00610a48+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_SCALE_CTRL(i,j) (0x00610a50+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_CURSOR_CTRL(i,j) (0x00610a58+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_UNK_904(i,j) (0x00610ab8+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_DEPTH(i,j) (0x00610ac8+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_CLOCK(i,j) (0x00610ad0+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_COLOR_CTRL(i,j) (0x00610ae0+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_SYNC_START_TO_BLANK_END(i,j) (0x00610ae8+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_MODE_UNK1(i,j) (0x00610af0+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_DISPLAY_TOTAL(i,j) (0x00610af8+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_SYNC_DURATION(i,j) (0x00610b00+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_MODE_UNK2(i,j) (0x00610b08+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_UNK_828(i,j) (0x00610b10+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_FB_SIZE(i,j) (0x00610b18+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_FB_PITCH(i,j) (0x00610b20+(i)*0x540+(j)*0x4)
+#                define NV50_PDISPLAY_CRTC_VAL_FB_PITCH_LINEAR_FB (1<<20)
+#            define NV50_PDISPLAY_CRTC_VAL_FB_POS(i,j) (0x00610b28+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_SCALE_CENTER_OFFSET(i,j) (0x00610b38+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_REAL_RES(i,j) (0x00610b40+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_SCALE_RES1(i,j) (0x00610b48+(i)*0x540+(j)*0x4)
+#            define NV50_PDISPLAY_CRTC_VAL_SCALE_RES2(i,j) (0x00610b50+(i)*0x540+(j)*0x4)
+
+
+#            define NV50_PDISPLAY_DAC_VAL_MODE_CTRL(i,j) (0x00610b58+(i)*0x8+(j)*0x4)
+
+
+#            define NV50_PDISPLAY_SOR_VAL_MODE_CTRL(i,j) (0x00610b70+(i)*0x8+(j)*0x4)
+
+
+#            define NV50_PDISPLAY_DAC_VAL_MODE_CTRL2(i,j) (0x00610bdc+(i)*0x8+(j)*0x4)
+
+
+#    define NV50_PDISPLAY_CRTC_CLK                          0x00614000
+#    define NV50_PDISPLAY_CRTC_CLK__LEN                            0x2
+#        define NV50_PDISPLAY_CRTC_CLK_CLK_CTRL1(i) (0x00614100+(i)*0x800)
+#            define NV50_PDISPLAY_CRTC_CLK_CLK_CTRL1_CONNECTED 0x00000600
+#            define NV50_PDISPLAY_CRTC_CLK_CLK_CTRL1_CONNECTED__SHIFT 9
+#        define NV50_PDISPLAY_CRTC_CLK_VPLL_A(i) (0x00614104+(i)*0x800)
+#        define NV50_PDISPLAY_CRTC_CLK_VPLL_B(i) (0x00614108+(i)*0x800)
+#        define NV50_PDISPLAY_CRTC_CLK_CLK_CTRL2(i) (0x00614200+(i)*0x800)
+
+#    define NV50_PDISPLAY_DAC_CLK                           0x00614000
+#    define NV50_PDISPLAY_DAC_CLK__LEN                             0x3
+#        define NV50_PDISPLAY_DAC_CLK_CLK_CTRL2(i) (0x00614280+(i)*0x800)
+
+#    define NV50_PDISPLAY_SOR_CLK                           0x00614000
+#    define NV50_PDISPLAY_SOR_CLK__LEN                             0x3
+#        define NV50_PDISPLAY_SOR_CLK_CLK_CTRL2(i) (0x00614300+(i)*0x800)
+
+#    define NV50_PDISPLAY_DAC_REGS                          0x0061a000
+#    define NV50_PDISPLAY_DAC_REGS__LEN                            0x3
+#    define NV50_PDISPLAY_DAC_REGS__ESIZE                        0x800
+#        define NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(i) (0x0061a004+(i)*0x800)
+#            define NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_HSYNC_OFF  (1<<0)
+#            define NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_VSYNC_OFF  (1<<2)
+#            define NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_BLANKED    (1<<4)
+#            define NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_OFF        (1<<6)
+#            define NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING   (1<<31)
+#        define NV50_PDISPLAY_DAC_REGS_LOAD_CTRL(i) (0x0061a00c+(i)*0x800)
+#            define NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_ACTIVE    (1<<20)
+#            define NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_PRESENT 0x38000000
+#            define NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_PRESENT__SHIFT 29
+#            define NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_DONE      (1<<31)
+#        define NV50_PDISPLAY_DAC_REGS_CLK_CTRL1(i) (0x0061a010+(i)*0x800)
+#            define NV50_PDISPLAY_DAC_REGS_CLK_CTRL1_CONNECTED 0x00000600
+#            define NV50_PDISPLAY_DAC_REGS_CLK_CTRL1_CONNECTED__SHIFT 9
+
+#    define NV50_PDISPLAY_SOR_REGS                          0x0061c000
+#    define NV50_PDISPLAY_SOR_REGS__LEN                            0x2
+#    define NV50_PDISPLAY_SOR_REGS__ESIZE                        0x800
+#        define NV50_PDISPLAY_SOR_REGS_DPMS_CTRL(i) (0x0061c004+(i)*0x800)
+#            define NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_ON         (1<<0)
+#            define NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_PENDING   (1<<31)
+#        define NV50_PDISPLAY_SOR_REGS_CLK_CTRL1(i) (0x0061c008+(i)*0x800)
+#            define NV50_PDISPLAY_SOR_REGS_CLK_CTRL1_CONNECTED 0x00000600
+#            define NV50_PDISPLAY_SOR_REGS_CLK_CTRL1_CONNECTED__SHIFT 9
+#        define NV50_PDISPLAY_SOR_REGS_UNK_00C(i) (0x0061c00c+(i)*0x800)
+#        define NV50_PDISPLAY_SOR_REGS_UNK_010(i) (0x0061c010+(i)*0x800)
+#        define NV50_PDISPLAY_SOR_REGS_UNK_014(i) (0x0061c014+(i)*0x800)
+#        define NV50_PDISPLAY_SOR_REGS_UNK_018(i) (0x0061c018+(i)*0x800)
+#        define NV50_PDISPLAY_SOR_REGS_DPMS_STATE(i) (0x0061c030+(i)*0x800)
+#            define NV50_PDISPLAY_SOR_REGS_DPMS_STATE_ACTIVE 0x00030000
+#            define NV50_PDISPLAY_SOR_REGS_DPMS_STATE_ACTIVE__SHIFT 16
+#            define NV50_PDISPLAY_SOR_REGS_DPMS_STATE_BLANKED  (1<<19)
+#            define NV50_PDISPLAY_SOR_REGS_DPMS_STATE_WAIT     (1<<28)
+
+
+#define NV50_UNK640000                                      0x00640000
+#define NV50_UNK640000__LEN                                        0x6
+#define NV50_UNK640000__ESIZE                                   0x1000
+#    define NV50_UNK640000_UNK_000(i)          (0x00640000+(i)*0x1000)
+
+#define NV50_HW_CURSOR                                      0x00647000
+#define NV50_HW_CURSOR__LEN                                        0x2
+#define NV50_HW_CURSOR__ESIZE                                   0x1000
+#    define NV50_HW_CURSOR_POS_CTRL(i)              (0x00647080+(i)*0x1000)
+#    define NV50_HW_CURSOR_POS(i)         (0x00647084+(i)*0x1000)

@@ -100,6 +100,7 @@ char *drm_get_connector_name(struct drm_connector *connector)
 		 connector->connector_type_id);
 	return buf;
 }
+EXPORT_SYMBOL(drm_get_connector_name);
 
 char *drm_get_connector_status_name(enum drm_connector_status status)
 {

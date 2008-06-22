@@ -122,19 +122,30 @@ static bool edid_is_valid(struct edid *edid)
 
 	if (memcmp(edid->header, edid_header, sizeof(edid_header)))
 		goto bad;
-	if (edid->version != 1)
+	if (edid->version != 1) {
+		DRM_ERROR("EDID has major version %d, instead of 1\n", edid->version);
 		goto bad;
-	if (edid->revision <= 0 || edid->revision > 3)
+	}
+	if (edid->revision <= 0 || edid->revision > 3) {
+		DRM_ERROR("EDID has minor version %d, which is not between 0-3\n", edid->revision);
 		goto bad;
+	}
 
 	for (i = 0; i < EDID_LENGTH; i++)
 		csum += raw_edid[i];
-	if (csum)
+	if (csum) {
+		DRM_ERROR("EDID checksum is invalid, remainder is %d\n", csum);
 		goto bad;
+	}
 
 	return 1;
 
 bad:
+	if (raw_edid) {
+		DRM_ERROR("Raw EDID:\n");
+		print_hex_dump_bytes(KERN_ERR, DUMP_PREFIX_NONE, raw_edid, EDID_LENGTH);
+		printk("\n");
+	}
 	return 0;
 }
 
@@ -545,7 +556,7 @@ static int add_detailed_info(struct drm_connector *connector,
 
 #define DDC_ADDR 0x50
 
-static unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
+unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
 {
 	unsigned char start = 0x0;
 	unsigned char *buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
@@ -576,6 +587,7 @@ static unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
 	kfree(buf);
 	return NULL;
 }
+EXPORT_SYMBOL(drm_do_probe_ddc_edid);
 
 static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 {
@@ -589,15 +601,15 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 	 *   Then set clock & data low
 	 */
 	algo_data->setscl(algo_data->data, 1);
-	udelay(550); /* startup delay */
-	algo_data->setscl(algo_data->data, 0);
-	algo_data->setsda(algo_data->data, 0);
+	//udelay(550); /* startup delay */
+	//algo_data->setscl(algo_data->data, 0);
+	//algo_data->setsda(algo_data->data, 0);
 
 	for (i = 0; i < 3; i++) {
 		/* For some old monitors we need the
 		 * following process to initialize/stop DDC
 		 */
-		algo_data->setsda(algo_data->data, 0);
+		algo_data->setsda(algo_data->data, 1);
 		msleep(13);
 
 		algo_data->setscl(algo_data->data, 1);
@@ -632,16 +644,16 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 		algo_data->setsda(algo_data->data, 1);
 		msleep(15);
 		algo_data->setscl(algo_data->data, 0);
+		algo_data->setsda(algo_data->data, 0);
 		if (edid)
 			break;
 	}
 	/* Release the DDC lines when done or the Apple Cinema HD display
 	 * will switch off
 	 */
-	algo_data->setsda(algo_data->data, 0);
-	algo_data->setscl(algo_data->data, 0);
+	algo_data->setsda(algo_data->data, 1);
 	algo_data->setscl(algo_data->data, 1);
-
+	
 	return edid;
 }
 

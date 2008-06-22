@@ -37,6 +37,11 @@
 #include "nouveau_reg.h"
 #include "nouveau_swmthd.h"
 
+/* needed for interrupt based vpll changes */
+#include "nv50_display.h"
+#include "nv50_crtc.h"
+#include "nv50_output.h"
+
 void
 nouveau_irq_preinstall(struct drm_device *dev)
 {
@@ -503,11 +508,82 @@ static void
 nouveau_nv50_display_irq_handler(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	uint32_t val = NV_READ(NV50_DISPLAY_SUPERVISOR);
+	uint32_t val = NV_READ(NV50_PDISPLAY_SUPERVISOR);
 
 	DRM_INFO("NV50_DISPLAY_INTR - 0x%08X\n", val);
 
-	NV_WRITE(NV50_DISPLAY_SUPERVISOR, val);
+	/* vblank interrupts */
+	if (val & NV50_PDISPLAY_SUPERVISOR_CRTCn) {
+		NV_WRITE(NV50_PDISPLAY_SUPERVISOR, val & NV50_PDISPLAY_SUPERVISOR_CRTCn);
+		val &= ~NV50_PDISPLAY_SUPERVISOR_CRTCn;
+	}
+
+	/* clock setting amongst other things. */
+	if (val & NV50_PDISPLAY_SUPERVISOR_CLK_MASK) {
+		uint32_t state = (val & NV50_PDISPLAY_SUPERVISOR_CLK_MASK) >> NV50_PDISPLAY_SUPERVISOR_CLK_MASK__SHIFT;
+
+		NV50_DEBUG("state %d\n", state);
+
+		/* Set pll */
+		if (state == 2) {
+			struct nv50_display *display = nv50_get_display(dev);
+			struct nv50_output *output = NULL;
+			struct nv50_crtc *crtc = NULL;
+			int crtc_index;
+
+			uint32_t unk30 = NV_READ(NV50_PDISPLAY_UNK30_CTRL);
+
+			for (crtc_index = 0; crtc_index < 2; crtc_index++) {
+				bool clock_change = false;
+				bool clock_ack = false;
+
+				if (crtc_index == 0 && (unk30 & NV50_PDISPLAY_UNK30_CTRL_UPDATE_VCLK0))
+					clock_change = true;
+
+				if (crtc_index == 1 && (unk30 & NV50_PDISPLAY_UNK30_CTRL_UPDATE_VCLK1))
+					clock_change = true;
+
+				if (clock_change)
+					clock_ack = true;
+
+				if (display->last_crtc == crtc_index)
+					clock_ack = true;
+
+				list_for_each_entry(crtc, &display->crtcs, head) {
+					if (crtc->index == crtc_index)
+						break;
+				}
+
+				if (clock_change)
+					crtc->set_clock(crtc);
+
+				NV50_DEBUG("index %d clock_change %d clock_ack %d\n", crtc_index, clock_change, clock_ack);
+
+				if (!clock_ack)
+					continue;
+
+				crtc->set_clock_mode(crtc);
+
+				list_for_each_entry(output, &display->outputs, head) {
+					if (!output->crtc)
+						continue;
+
+					if (output->crtc == crtc)
+						output->set_clock_mode(output);
+				}
+			}
+		}
+
+		NV_WRITE(NV50_PDISPLAY_UNK30_CTRL, NV50_PDISPLAY_UNK30_CTRL_PENDING);
+		NV_WRITE(NV50_PDISPLAY_SUPERVISOR, val & NV50_PDISPLAY_SUPERVISOR_CLK_MASK);
+
+		val &= ~NV50_PDISPLAY_SUPERVISOR_CLK_MASK;
+	}
+
+	if (val)
+		DRM_ERROR("unsupported NV50_DISPLAY_INTR - 0x%08X\n", val);
+
+	NV_WRITE(NV50_PDISPLAY_SUPERVISOR, val);
 }
 
 static void
