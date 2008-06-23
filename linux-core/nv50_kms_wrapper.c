@@ -303,7 +303,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		goto out;
 	}
 
-	if (!set->crtc || !set->connectors) {
+	if (!set->crtc) {
 		NV50_DEBUG("Sanity check failed\n");
 		goto out;
 	}
@@ -321,6 +321,11 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		}
 	} else {
 		blank = true;
+	}
+
+	if (!set->connectors && modeset) {
+		NV50_DEBUG("Sanity check failed\n");
+		goto out;
 	}
 
 	if (!modeset && !switch_fb && !blank) {
@@ -439,28 +444,15 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	}
 
 	/**
-	 * Unwire encoders and connectors, etc.
+	 * Disable crtc.
 	 */
 
 	if (blank) {
-		crtc = to_nv50_crtc(drm_crtc);
+		crtc = to_nv50_crtc(set->crtc);
 
+		/* keeping the encoders and connectors attached, so they can be tracked */
 		crtc->active = false;
 		set->crtc->enabled = false;
-
-		/* find encoders that use this crtc. */
-		list_for_each_entry(drm_encoder, &dev->mode_config.encoder_list, head) {
-			if (drm_encoder->crtc == set->crtc) {
-				/* find the connector that goes with it */
-				list_for_each_entry(drm_connector, &dev->mode_config.connector_list, head) {
-					if (drm_connector->encoder == drm_encoder) {
-						drm_connector->encoder =  NULL;
-						break;
-					}
-				}
-				drm_encoder->crtc = NULL;
-			}
-		}
 	}
 
 	/**
@@ -517,13 +509,26 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			DRM_ERROR("blanking failed\n");
 			goto out;
 		}
+
+		/* detach any outputs that are currently running on this crtc */
+		list_for_each_entry(drm_encoder, &dev->mode_config.encoder_list, head) {
+			if (drm_encoder->crtc == set->crtc) {
+				output = to_nv50_output(drm_encoder);
+
+				rval = output->execute_mode(output, TRUE);
+				if (rval != 0) {
+					DRM_ERROR("detaching output failed\n");
+					goto out;
+				}
+			}
+		}
 	}
 
 	/**
 	 * Change framebuffer, without changing mode.
 	 */
 
-	if (switch_fb && !modeset) {
+	if (switch_fb && !modeset && !blank) {
 		crtc = to_nv50_crtc(set->crtc);
 
 		rval = crtc->blank(crtc, TRUE);
@@ -553,10 +558,15 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	if (modeset) {
 		/* disconnect unused outputs */
 		list_for_each_entry(output, &display->outputs, head) {
-			if (output->crtc)
+			if (output->crtc) {
 				crtc_mask |= 1 << output->crtc->index;
-			else
-				output->execute_mode(output, TRUE);
+			} else {
+				rval = output->execute_mode(output, TRUE);
+				if (rval != 0) {
+					DRM_ERROR("detaching output failed\n");
+					goto out;
+				}
+			}
 		}
 
 		rval = crtc->set_mode(crtc, hw_mode);
@@ -627,7 +637,8 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	return 0;
 
 out:
-	display->update(display);
+	if (display)
+		display->update(display);
 
 	kfree(hw_mode);
 
