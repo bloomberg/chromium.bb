@@ -653,7 +653,7 @@ i915_gem_retire_requests(struct drm_device *dev)
 					   list);
 		retiring_seqno = request->seqno;
 
-		if (i915_seqno_passed(seqno, retiring_seqno)) {
+		if (i915_seqno_passed(seqno, retiring_seqno) || dev_priv->mm.wedged) {
 			i915_gem_retire_request(dev, request);
 
 			list_del(&request->list);
@@ -697,10 +697,13 @@ i915_wait_request(struct drm_device *dev, uint32_t seqno)
 		i915_user_irq_on(dev_priv);
 		ret = wait_event_interruptible(dev_priv->irq_queue,
 					       i915_seqno_passed(i915_get_gem_seqno(dev),
-								 seqno));
+								 seqno) || dev_priv->mm.wedged);
 		i915_user_irq_off(dev_priv);
 		dev_priv->mm.waiting_gem_seqno = 0;
 	}
+	if (dev_priv->mm.wedged)
+		ret = -EIO;
+
 	if (ret)
 		DRM_ERROR("%s returns %d (awaiting %d at %d)\n",
 			  __func__, ret, seqno, i915_get_gem_seqno(dev));
@@ -1019,6 +1022,8 @@ i915_gem_evict_something(struct drm_device *dev)
 						   list);
 
 			ret = i915_wait_request(dev, request->seqno);
+			if (ret)
+				break;
 
 			/* if waiting caused an object to become inactive,
 			 * then loop around and wait for it. Otherwise, we
@@ -1822,6 +1827,13 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 	mutex_lock(&dev->struct_mutex);
 
 	i915_verify_inactive(dev, __FILE__, __LINE__);
+
+	if (dev_priv->mm.wedged) {
+		DRM_ERROR("Execbuf while wedged\n");
+		mutex_unlock(&dev->struct_mutex);
+		return -EIO;
+	}
+		
 	if (dev_priv->mm.suspended) {
 		DRM_ERROR("Execbuf while VT-switched.\n");
 		mutex_unlock(&dev->struct_mutex);
@@ -2264,6 +2276,8 @@ i915_gem_idle(struct drm_device *dev)
 		if (last_seqno == cur_seqno) {
 			if (stuck++ > 100) {
 				DRM_ERROR("hardware wedged\n");
+				dev_priv->mm.wedged = 1;
+				DRM_WAKEUP(&dev_priv->irq_queue);
 				break;
 			}
 		}
@@ -2377,6 +2391,11 @@ i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int ret;
+
+	if (dev_priv->mm.wedged) {
+		DRM_ERROR("Renabling wedged hardware, good luck\n");
+		dev_priv->mm.wedged = 0;
+	}
 
 	ret = i915_gem_init_ringbuffer(dev);
 	if (ret != 0)
