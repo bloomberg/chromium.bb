@@ -508,7 +508,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	int vblank = 0;
 
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
-//	if (dev->pdev->msi_enabled)
+	if (dev->pdev->msi_enabled)
 		i915_disable_irqs(dev_priv);
 	iir = I915_READ(I915REG_INT_IDENTITY_R);
 #if 0
@@ -522,7 +522,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			   I915_READ(I915REG_INT_ENABLE_R),
 			   I915_READ(I915REG_PIPEASTAT),
 			   I915_READ(I915REG_PIPEBSTAT));
-//		if (dev->pdev->msi_enabled)
+		if (dev->pdev->msi_enabled)
 			i915_enable_irqs(dev_priv);
 
 		DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
@@ -545,7 +545,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	I915_WRITE(I915REG_INT_IDENTITY_R, iir);
 	(void) I915_READ(I915REG_INT_IDENTITY_R); /* Flush posted writes */
 
-//	if (dev->pdev->msi_enabled)
+	if (dev->pdev->msi_enabled)
 		i915_enable_irqs(dev_priv);
 
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
