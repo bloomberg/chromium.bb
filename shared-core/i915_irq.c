@@ -788,7 +788,7 @@ static void i915_enable_interrupt (struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	
-	dev_priv->irq_use_mask = 0;
+	dev_priv->irq_use_mask = 1;
 	if (dev_priv->irq_use_mask) {
 		dev_priv->irq_mask_reg = I915_INTERRUPT_ENABLE_MASK;
 		dev_priv->irq_enable_reg = I915_INTERRUPT_ENABLE_MASK;
