@@ -309,6 +309,15 @@ typedef struct drm_i915_private {
 		 * transitioned away from for kernel modesetting.
 		 */
 		int suspended;
+
+		/**
+		 * Flag if the hardware appears to be wedged.
+		 *
+		 * This is set when attempts to idle the device timeout.
+		 * It prevents command submission from occuring and makes
+		 * every pending request fail
+		 */
+		int wedged;
 	} mm;
 } drm_i915_private_t;
 
