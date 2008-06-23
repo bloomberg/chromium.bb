@@ -596,7 +596,7 @@ dri_gem_bo_wait_rendering(dri_bo *bo)
     int ret;
 
     set_domain.handle = bo_gem->gem_handle;
-    set_domain.read_domains = I915_GEM_DOMAIN_CPU;
+    set_domain.read_domains = I915_GEM_DOMAIN_GTT;
     set_domain.write_domain = 0;
     ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
     if (ret != 0) {
