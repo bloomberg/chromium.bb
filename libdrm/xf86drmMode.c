@@ -419,6 +419,9 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	r->connector_type  = conn.connector_type;
 	r->connector_type_id = conn.connector_type_id;
 
+	if (!r->props || !r->prop_values || !r->modes || !r->encoders)
+		goto err_allocs;
+
 err_allocs:
 	drmFree(U642VOID(conn.prop_values_ptr));
 	drmFree(U642VOID(conn.props_ptr));
