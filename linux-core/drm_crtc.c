@@ -1018,9 +1018,6 @@ int drm_mode_getconnector(struct drm_device *dev,
 	}
 	connector = obj_to_connector(obj);
 
-	list_for_each_entry(mode, &connector->modes, head)
-		mode_count++;
-	
 	for (i = 0; i < DRM_CONNECTOR_MAX_PROPERTY; i++) {
 		if (connector->property_ids[i] != 0) {
 			props_count++;
@@ -1037,6 +1034,10 @@ int drm_mode_getconnector(struct drm_device *dev,
 		connector->funcs->fill_modes(connector, dev->mode_config.max_width, dev->mode_config.max_height);
 	}
 
+	/* delayed so we get modes regardless of pre-fill_modes state */
+	list_for_each_entry(mode, &connector->modes, head)
+		mode_count++;
+
 	out_resp->generation = dev->mode_config.current_generation;
 	out_resp->connector_type = connector->connector_type;
 	out_resp->connector_type_id = connector->connector_type_id;
@@ -1049,6 +1050,7 @@ int drm_mode_getconnector(struct drm_device *dev,
 	else
 		out_resp->encoder = 0;
 
+	/* this ioctl is called twice, once to determine how much space is needed, and the 2nd time to fill it */
 	if ((out_resp->count_modes >= mode_count) && mode_count) {
 		copied = 0;
 		mode_ptr = (struct drm_mode_modeinfo *)(unsigned long)out_resp->modes_ptr;
@@ -1060,7 +1062,6 @@ int drm_mode_getconnector(struct drm_device *dev,
 				goto out;
 			}
 			copied++;
-			
 		}
 	}
 	out_resp->count_modes = mode_count;
