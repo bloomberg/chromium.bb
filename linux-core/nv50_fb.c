@@ -40,8 +40,9 @@ static int nv50_fb_bind(struct nv50_crtc *crtc, struct nv50_fb_info *info)
 		return -EINVAL;
 	}
 
-	if (!info->block || !info->width || !info->height || !info->depth || !info->bpp) {
-		DRM_ERROR("block %p width %d height %d depth %d bpp %d\n", info->block, info->width, info->height, info->depth, info->bpp);
+	if (!info->block || !info->width || !info->height || !info->depth || !info->bpp || !info->pitch) {
+		DRM_ERROR("block %p width %d height %d depth %d bpp %d pitch %d\n", info->block, info->width, 
+			info->height, info->depth, info->bpp, info->pitch);
 		return -EINVAL;
 	}
 
@@ -54,6 +55,8 @@ static int nv50_fb_bind(struct nv50_crtc *crtc, struct nv50_fb_info *info)
 
 	crtc->fb->depth = info->depth;
 	crtc->fb->bpp = info->bpp;
+
+	crtc->fb->pitch = info->pitch;
 
 	/* update lut if needed */
 	if (crtc->fb->depth != crtc->lut->depth) {

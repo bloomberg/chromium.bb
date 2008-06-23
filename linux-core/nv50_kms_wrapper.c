@@ -284,12 +284,17 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	struct nouveau_hw_mode *hw_mode = NULL;
 	struct nv50_fb_info fb_info;
 
+	bool blank = false;
+	bool switch_fb = false;
+	bool modeset = false;
+
 	NV50_DEBUG("\n");
 
 	/*
-	 * Initial approach is very simple, always set a mode.
-	 * Always bail out completely if something is wrong.
-	 * Later this could be extended to be more smart.
+	 * Supported operations:
+	 * - Switch mode.
+	 * - Switch framebuffer.
+	 * - Blank screen.
 	 */
 
 	/* Sanity checking */
@@ -298,8 +303,28 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		goto out;
 	}
 
-	if (!set->crtc || !set->fb || !set->mode || !set->connectors) {
+	if (!set->crtc || !set->connectors) {
 		NV50_DEBUG("Sanity check failed\n");
+		goto out;
+	}
+
+	if (set->mode) {
+		if (set->fb) {
+			if (!drm_mode_equal(set->mode, &set->crtc->mode))
+				modeset = true;
+
+			if (set->fb != set->crtc->fb)
+				switch_fb = true;
+
+			if (set->x != set->crtc->x || set->y != set->crtc->y)
+				switch_fb = true;
+		}
+	} else {
+		blank = true;
+	}
+
+	if (!modeset && !switch_fb && !blank) {
+		DRM_ERROR("There is nothing to do, bad input.\n");
 		goto out;
 	}
 
@@ -309,127 +334,169 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	display = nv50_get_display(dev);
 	crtc = to_nv50_crtc(set->crtc);
 
-	/* Mode validation */
-	hw_mode = nv50_kms_to_hw_mode(set->mode);
+	/**
+	 * Wiring up the encoders and connectors.
+	 */
 
-	rval = crtc->validate_mode(crtc, hw_mode);
+	if (modeset) {
+		/* Mode validation */
+		hw_mode = nv50_kms_to_hw_mode(set->mode);
 
-	if (rval != MODE_OK) {
-		NV50_DEBUG("Mode not ok\n");
-		goto out;
-	}
+		rval = crtc->validate_mode(crtc, hw_mode);
 
-	for (i = 0; i < set->num_connectors; i++) {
-		drm_connector = set->connectors[i];
-		if (!drm_connector) {
-			NV50_DEBUG("No connector\n");
-			goto out;
-		}
-		connector = to_nv50_connector(drm_connector);
-
-		output = connector->to_output(connector, connector->digital);
-		if (!output) {
-			NV50_DEBUG("No output\n");
-			goto out;
-		}
-
-		rval = output->validate_mode(output, hw_mode);
 		if (rval != MODE_OK) {
 			NV50_DEBUG("Mode not ok\n");
 			goto out;
 		}
-	}
 
-	/* Validation done, move on to cleaning of existing structures. */
-
-	/* find encoders that use this crtc. */
-	list_for_each_entry(drm_encoder, &dev->mode_config.encoder_list, head) {
-		if (drm_encoder->crtc == set->crtc) {
-			/* find the connector that goes with it */
-			list_for_each_entry(drm_connector, &dev->mode_config.connector_list, head) {
-				if (drm_connector->encoder == drm_encoder) {
-					drm_connector->encoder =  NULL;
-					break;
-				}
+		for (i = 0; i < set->num_connectors; i++) {
+			drm_connector = set->connectors[i];
+			if (!drm_connector) {
+				NV50_DEBUG("No connector\n");
+				goto out;
 			}
+			connector = to_nv50_connector(drm_connector);
+
+			output = connector->to_output(connector, connector->digital);
+			if (!output) {
+				NV50_DEBUG("No output\n");
+				goto out;
+			}
+
+			rval = output->validate_mode(output, hw_mode);
+			if (rval != MODE_OK) {
+				NV50_DEBUG("Mode not ok\n");
+				goto out;
+			}
+		}
+
+		/* Validation done, move on to cleaning of existing structures. */
+
+		/* find encoders that use this crtc. */
+		list_for_each_entry(drm_encoder, &dev->mode_config.encoder_list, head) {
+			if (drm_encoder->crtc == set->crtc) {
+				/* find the connector that goes with it */
+				list_for_each_entry(drm_connector, &dev->mode_config.connector_list, head) {
+					if (drm_connector->encoder == drm_encoder) {
+						drm_connector->encoder =  NULL;
+						break;
+					}
+				}
+				drm_encoder->crtc = NULL;
+			}
+		}
+
+		/* now find if our desired encoders or connectors are in use already. */
+		for (i = 0; i < set->num_connectors; i++) {
+			drm_connector = set->connectors[i];
+			if (!drm_connector) {
+				NV50_DEBUG("No connector\n");
+				goto out;
+			}
+
+			if (!drm_connector->encoder)
+				continue;
+
+			drm_encoder = drm_connector->encoder;
+			drm_connector->encoder = NULL;
+
+			if (!drm_encoder->crtc)
+				continue;
+
+			drm_crtc = drm_encoder->crtc;
 			drm_encoder->crtc = NULL;
+
+			crtc = to_nv50_crtc(drm_crtc);
+			crtc->active = false;
+			drm_crtc->enabled = false;
+		}
+
+		/* Time to wire up the public encoder, the private one will be handled later. */
+		for (i = 0; i < set->num_connectors; i++) {
+			drm_connector = set->connectors[i];
+			if (!drm_connector) {
+				NV50_DEBUG("No connector\n");
+				goto out;
+			}
+
+			output = connector->to_output(connector, connector->digital);
+			if (!output) {
+				NV50_DEBUG("No output\n");
+				goto out;
+			}
+
+			/* find the encoder public structure that matches out output structure. */
+			drm_encoder = to_nv50_kms_encoder(output);
+
+			if (!drm_encoder) {
+				NV50_DEBUG("No encoder\n");
+				goto out;
+			}
+
+			drm_encoder->crtc = set->crtc;
+			drm_connector->encoder = drm_encoder;
 		}
 	}
 
-	/* now find if our desired encoders or connectors are in use already. */
-	for (i = 0; i < set->num_connectors; i++) {
-		drm_connector = set->connectors[i];
-		if (!drm_connector) {
-			NV50_DEBUG("No connector\n");
-			goto out;
-		}
+	/**
+	 * Unwire encoders and connectors, etc.
+	 */
 
-		if (!drm_connector->encoder)
-			continue;
-
-		drm_encoder = drm_connector->encoder;
-		drm_connector->encoder = NULL;
-
-		if (!drm_encoder->crtc)
-			continue;
-
-		drm_crtc = drm_encoder->crtc;
-		drm_encoder->crtc = NULL;
-
+	if (blank) {
 		crtc = to_nv50_crtc(drm_crtc);
+
 		crtc->active = false;
-		drm_crtc->enabled = false;
+		set->crtc->enabled = false;
+
+		/* find encoders that use this crtc. */
+		list_for_each_entry(drm_encoder, &dev->mode_config.encoder_list, head) {
+			if (drm_encoder->crtc == set->crtc) {
+				/* find the connector that goes with it */
+				list_for_each_entry(drm_connector, &dev->mode_config.connector_list, head) {
+					if (drm_connector->encoder == drm_encoder) {
+						drm_connector->encoder =  NULL;
+						break;
+					}
+				}
+				drm_encoder->crtc = NULL;
+			}
+		}
 	}
 
-	/* set framebuffer */
-	set->crtc->fb = set->fb;
-
-	/* Time to wire up the public encoder, the private one will be handled later. */
-	for (i = 0; i < set->num_connectors; i++) {
-		drm_connector = set->connectors[i];
-		if (!drm_connector) {
-			NV50_DEBUG("No connector\n");
-			goto out;
-		}
-
-		output = connector->to_output(connector, connector->digital);
-		if (!output) {
-			NV50_DEBUG("No output\n");
-			goto out;
-		}
-
-		/* find the encoder public structure that matches out output structure. */
-		drm_encoder = to_nv50_kms_encoder(output);
-
-		if (!drm_encoder) {
-			NV50_DEBUG("No encoder\n");
-			goto out;
-		}
-
-
-		drm_encoder->crtc = set->crtc;
-		drm_connector->encoder = drm_encoder;
-	}
+	/**
+	 * All state should now be updated, now onto the real work.
+	 */
 
 	/* mirror everything to the private structs */
 	nv50_kms_mirror_routing(dev);
 
-	/* set private framebuffer */
-	crtc = to_nv50_crtc(set->crtc);
-	fb_info.block = find_block_by_handle(dev_priv->fb_heap, set->fb->mm_handle);
-	fb_info.width = set->fb->width;
-	fb_info.height = set->fb->height;
-	fb_info.depth = set->fb->depth;
-	fb_info.bpp = set->fb->bits_per_pixel;
-	fb_info.x = set->x;
-	fb_info.y = set->y;
+	/**
+	 * Bind framebuffer.
+	 */
 
-	rval = crtc->fb->bind(crtc, &fb_info);
-	if (rval != 0) {
-		NV50_DEBUG("fb_bind failed\n");
-		goto out;
+	if (switch_fb) {
+		/* set framebuffer */
+		set->crtc->fb = set->fb;
+
+		/* set private framebuffer */
+		crtc = to_nv50_crtc(set->crtc);
+		fb_info.block = find_block_by_handle(dev_priv->fb_heap, set->fb->mm_handle);
+		fb_info.width = set->fb->width;
+		fb_info.height = set->fb->height;
+		fb_info.depth = set->fb->depth;
+		fb_info.bpp = set->fb->bits_per_pixel;
+		fb_info.pitch = set->fb->pitch;
+		fb_info.x = set->x;
+		fb_info.y = set->y;
+
+		rval = crtc->fb->bind(crtc, &fb_info);
+		if (rval != 0) {
+			NV50_DEBUG("fb_bind failed\n");
+			goto out;
+		}
 	}
 
+	/* this is !cursor_show */
 	if (!crtc->cursor->enabled) {
 		rval = crtc->cursor->enable(crtc);
 		if (rval != 0) {
@@ -438,74 +505,119 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		}
 	}
 
-	/* modeset time, finally */
+	/**
+	 * Blanking.
+	 */
 
-	/* disconnect unused outputs */
-	list_for_each_entry(output, &display->outputs, head) {
-		if (output->crtc)
-			crtc_mask |= 1 << output->crtc->index;
-		else
-			output->execute_mode(output, TRUE);
-	}
+	if (blank) {
+		crtc = to_nv50_crtc(set->crtc);
 
-	rval = crtc->set_mode(crtc, hw_mode);
-	if (rval != 0) {
-		NV50_DEBUG("crtc mode set failed\n");
-		goto out;
-	}
-
-	/* find native mode. */
-	list_for_each_entry(output, &display->outputs, head) {
-		if (output->crtc != crtc)
-			continue;
-
-		*crtc->native_mode = *output->native_mode;
-		list_for_each_entry(connector, &display->connectors, head) {
-			if (connector->output != output)
-				continue;
-
-			crtc->scaling_mode = connector->scaling_mode;
-			break;
-		}
-
-		if (crtc->scaling_mode == SCALE_PANEL)
-			crtc->use_native_mode = false;
-		else
-			crtc->use_native_mode = true;
-
-		break; /* no use in finding more than one mode */
-	}
-
-	rval = crtc->execute_mode(crtc);
-	if (rval != 0) {
-		NV50_DEBUG("crtc execute mode failed\n");
-		goto out;
-	}
-
-	list_for_each_entry(output, &display->outputs, head) {
-		if (output->crtc != crtc)
-			continue;
-
-		rval = output->execute_mode(output, FALSE);
+		rval = crtc->blank(crtc, TRUE);
 		if (rval != 0) {
-			NV50_DEBUG("output execute mode failed\n");
+			DRM_ERROR("blanking failed\n");
 			goto out;
 		}
 	}
 
-	rval = crtc->set_scale(crtc);
-	if (rval != 0) {
-		NV50_DEBUG("crtc set scale failed\n");
-		goto out;
+	/**
+	 * Change framebuffer, without changing mode.
+	 */
+
+	if (switch_fb && !modeset) {
+		crtc = to_nv50_crtc(set->crtc);
+
+		rval = crtc->blank(crtc, TRUE);
+		if (rval != 0) {
+			DRM_ERROR("blanking failed\n");
+			goto out;
+		}
+
+		rval = crtc->set_fb(crtc);
+		if (rval != 0) {
+			DRM_ERROR("set_fb failed\n");
+			goto out;
+		}
+
+		/* this also sets the fb offset */
+		rval = crtc->blank(crtc, FALSE);
+		if (rval != 0) {
+			DRM_ERROR("unblanking failed\n");
+			goto out;
+		}
 	}
 
-	/* next line changes crtc, so putting it here is important */
-	display->last_crtc = crtc->index;
+	/**
+	 * Normal modesetting.
+	 */
 
-	/* blank any unused crtcs */
-	list_for_each_entry(crtc, &display->crtcs, head) {
-		if (!(crtc_mask & (1 << crtc->index)))
-			crtc->blank(crtc, TRUE);
+	if (modeset) {
+		/* disconnect unused outputs */
+		list_for_each_entry(output, &display->outputs, head) {
+			if (output->crtc)
+				crtc_mask |= 1 << output->crtc->index;
+			else
+				output->execute_mode(output, TRUE);
+		}
+
+		rval = crtc->set_mode(crtc, hw_mode);
+		if (rval != 0) {
+			NV50_DEBUG("crtc mode set failed\n");
+			goto out;
+		}
+
+		/* find native mode. */
+		list_for_each_entry(output, &display->outputs, head) {
+			if (output->crtc != crtc)
+				continue;
+
+			*crtc->native_mode = *output->native_mode;
+			list_for_each_entry(connector, &display->connectors, head) {
+				if (connector->output != output)
+					continue;
+
+				crtc->scaling_mode = connector->scaling_mode;
+				break;
+			}
+
+			if (crtc->scaling_mode == SCALE_PANEL)
+				crtc->use_native_mode = false;
+			else
+				crtc->use_native_mode = true;
+
+			break; /* no use in finding more than one mode */
+		}
+
+		rval = crtc->execute_mode(crtc);
+		if (rval != 0) {
+			NV50_DEBUG("crtc execute mode failed\n");
+			goto out;
+		}
+
+		list_for_each_entry(output, &display->outputs, head) {
+			if (output->crtc != crtc)
+				continue;
+
+			rval = output->execute_mode(output, FALSE);
+			if (rval != 0) {
+				NV50_DEBUG("output execute mode failed\n");
+				goto out;
+			}
+		}
+
+		rval = crtc->set_scale(crtc);
+		if (rval != 0) {
+			NV50_DEBUG("crtc set scale failed\n");
+			goto out;
+		}
+
+		/* next line changes crtc, so putting it here is important */
+		display->last_crtc = crtc->index;
+
+		/* blank any unused crtcs */
+		list_for_each_entry(crtc, &display->crtcs, head) {
+			if (!(crtc_mask & (1 << crtc->index)))
+				crtc->blank(crtc, TRUE);
+		}
 	}
 
 	display->update(display);
@@ -631,35 +743,34 @@ static int nv50_kms_encoders_init(struct drm_device *dev)
 void nv50_kms_connector_detect_all(struct drm_device *dev)
 {
 	struct drm_connector *drm_connector = NULL;
-	enum drm_connector_status old, new;
-	bool notify = false;
 
 	list_for_each_entry(drm_connector, &dev->mode_config.connector_list, head) {
-		old = drm_connector->status;
-		new = drm_connector->funcs->detect(drm_connector);
-
-		if (new != old) {
-			notify = true;
-			drm_connector->funcs->fill_modes(drm_connector, 0, 0);
-		}
+		drm_connector->funcs->detect(drm_connector);
 	}
-
-	/* I think this is the hook that notifies of changes. */
-	if (notify)
-		dev->mode_config.funcs->fb_changed(dev);
 }
 
 static enum drm_connector_status nv50_kms_connector_detect(struct drm_connector *drm_connector)
 {
 	struct nv50_connector *connector = to_nv50_connector(drm_connector);
+	struct drm_device *dev = drm_connector->dev;
 	bool connected;
+	int old_status;
 
 	connected = connector->detect(connector);
+
+	old_status = drm_connector->status;
 
 	if (connected)
 		drm_connector->status = connector_status_connected;
 	else
 		drm_connector->status = connector_status_disconnected;
+
+	/* update our modes whenever there is reason to */
+	if (old_status != drm_connector->status) {
+		drm_connector->funcs->fill_modes(drm_connector, 0, 0);
+		/* notify fb of changes */
+		dev->mode_config.funcs->fb_changed(dev);
+	}
 
 	return drm_connector->status;
 }
@@ -695,7 +806,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	struct drm_display_mode *mode, *t;
 	struct edid *edid = NULL;
 
-	DRM_DEBUG("%s\n", drm_get_connector_name(drm_connector));
+	NV50_DEBUG("%s\n", drm_get_connector_name(drm_connector));
 	/* set all modes to the unverified state */
 	list_for_each_entry_safe(mode, t, &drm_connector->modes, head)
 		mode->status = MODE_UNVERIFIED;
@@ -708,7 +819,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 		drm_connector->status = connector_status_disconnected;
 
 	if (!connected) {
-		DRM_DEBUG("%s is disconnected\n", drm_get_connector_name(drm_connector));
+		NV50_DEBUG("%s is disconnected\n", drm_get_connector_name(drm_connector));
 		/* TODO set EDID to NULL */
 		return;
 	}
@@ -762,7 +873,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 		struct nouveau_hw_mode *hw_mode;
 		struct nv50_output *output;
 
-		DRM_DEBUG("No valid modes on %s\n", drm_get_connector_name(drm_connector));
+		NV50_DEBUG("No valid modes on %s\n", drm_get_connector_name(drm_connector));
 
 		/* Should we do this here ???
 		 * When no valid EDID modes are available we end up
@@ -787,7 +898,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 
 	drm_mode_sort(&drm_connector->modes);
 
-	DRM_DEBUG("Probed modes for %s\n", drm_get_connector_name(drm_connector));
+	NV50_DEBUG("Probed modes for %s\n", drm_get_connector_name(drm_connector));
 
 	list_for_each_entry_safe(mode, t, &drm_connector->modes, head) {
 		mode->vrefresh = drm_mode_vrefresh(mode);

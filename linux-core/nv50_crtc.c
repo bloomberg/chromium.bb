@@ -72,7 +72,6 @@ static int nv50_crtc_execute_mode(struct nv50_crtc *crtc)
 	uint32_t hsync_dur,  vsync_dur, hsync_start_to_end, vsync_start_to_end;
 	uint32_t hunk1, vunk1, vunk2a, vunk2b;
 	uint32_t offset = crtc->index * 0x400;
-	uint32_t pitch;
 
 	NV50_DEBUG("index %d\n", crtc->index);
 	NV50_DEBUG("%s native mode\n", crtc->use_native_mode ? "using" : "not using");
@@ -119,12 +118,31 @@ static int nv50_crtc_execute_mode(struct nv50_crtc *crtc)
 	if (hw_mode->flags & V_INTERLACE) {
 		OUT_MODE(NV50_CRTC0_MODE_UNK2 + offset, (vunk2b - 1) << 16 | (vunk2a - 1));
 	}
+
+	crtc->set_fb(crtc);
+	crtc->set_dither(crtc);
+
+	/* This is the actual resolution of the mode. */
+	OUT_MODE(NV50_CRTC0_REAL_RES + offset, (crtc->mode->vdisplay << 16) | crtc->mode->hdisplay);
+	OUT_MODE(NV50_CRTC0_SCALE_CENTER_OFFSET + offset, NV50_CRTC_SCALE_CENTER_OFFSET_VAL(0,0));
+
+	/* Maybe move this as well? */
+	crtc->blank(crtc, FALSE);
+
+	return 0;
+}
+
+static int nv50_crtc_set_fb(struct nv50_crtc *crtc)
+{
+	struct drm_nouveau_private *dev_priv = crtc->dev->dev_private;
+	uint32_t offset = crtc->index * 0x400;
+
+	NV50_DEBUG("\n");
+
 	OUT_MODE(NV50_CRTC0_FB_SIZE + offset, crtc->fb->height << 16 | crtc->fb->width);
 
 	/* I suspect this flag indicates a linear fb. */
-	pitch = ((crtc->fb->width + 63) & ~63) * (crtc->fb->bpp)/8;
-	NV50_DEBUG("fb_pitch %d\n", pitch);
-	OUT_MODE(NV50_CRTC0_FB_PITCH + offset, pitch | 0x100000);
+	OUT_MODE(NV50_CRTC0_FB_PITCH + offset, crtc->fb->pitch | 0x100000);
 
 	switch (crtc->fb->depth) {
 		case 8:
@@ -140,15 +158,9 @@ static int nv50_crtc_execute_mode(struct nv50_crtc *crtc)
 			OUT_MODE(NV50_CRTC0_DEPTH + offset, NV50_CRTC0_DEPTH_24BPP); 
 			break;
 	}
-	crtc->set_dither(crtc);
+
 	OUT_MODE(NV50_CRTC0_COLOR_CTRL + offset, NV50_CRTC_COLOR_CTRL_MODE_COLOR);
 	OUT_MODE(NV50_CRTC0_FB_POS + offset, (crtc->fb->y << 16) | (crtc->fb->x));
-	/* This is the actual resolution of the mode. */
-	OUT_MODE(NV50_CRTC0_REAL_RES + offset, (crtc->mode->vdisplay << 16) | crtc->mode->hdisplay);
-	OUT_MODE(NV50_CRTC0_SCALE_CENTER_OFFSET + offset, NV50_CRTC_SCALE_CENTER_OFFSET_VAL(0,0));
-
-	/* Maybe move this as well? */
-	crtc->blank(crtc, FALSE);
 
 	return 0;
 }
@@ -178,20 +190,8 @@ static int nv50_crtc_blank(struct nv50_crtc *crtc, bool blanked)
 		if (dev_priv->chipset != 0x50)
 			OUT_MODE(NV84_CRTC0_BLANK_UNK2 + offset, NV84_CRTC0_BLANK_UNK2_BLANK);
 	} else {
-		uint32_t ram_amount;
-
 		OUT_MODE(NV50_CRTC0_FB_OFFSET + offset, crtc->fb->block->start >> 8);
 		OUT_MODE(0x864 + offset, 0);
-		/* maybe this needs to be moved. */
-		NV_WRITE(NV50_PDISPLAY_UNK_380, 0);
-		/* RAM is clamped to 256 MiB. */
-		ram_amount = nouveau_mem_fb_amount(crtc->dev);
-		NV50_DEBUG("ram_amount %d\n", ram_amount);
-		if (ram_amount > 256*1024*1024)
-			ram_amount = 256*1024*1024;
-		NV_WRITE(NV50_PDISPLAY_RAM_AMOUNT, ram_amount - 1);
-		NV_WRITE(NV50_PDISPLAY_UNK_388, 0x150000);
-		NV_WRITE(NV50_PDISPLAY_UNK_38C, 0);
 		if (crtc->cursor->block)
 			OUT_MODE(NV50_CRTC0_CURSOR_OFFSET + offset, crtc->cursor->block->start >> 8);
 		else
@@ -502,6 +502,7 @@ int nv50_crtc_create(struct drm_device *dev, int index)
 	crtc->validate_mode = nv50_crtc_validate_mode;
 	crtc->set_mode = nv50_crtc_set_mode;
 	crtc->execute_mode = nv50_crtc_execute_mode;
+	crtc->set_fb = nv50_crtc_set_fb;
 	crtc->blank = nv50_crtc_blank;
 	crtc->set_dither = nv50_crtc_set_dither;
 	crtc->set_scale = nv50_crtc_set_scale;

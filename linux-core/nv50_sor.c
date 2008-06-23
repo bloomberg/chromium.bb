@@ -100,6 +100,10 @@ static int nv50_sor_set_clock_mode(struct nv50_output *output)
 
 	NV50_DEBUG("or %d\n", nv50_output_or_offset(output));
 
+	/* We don't yet know what to do, if anything at all. */
+	if (output->type == OUTPUT_LVDS)
+		return 0;
+
 	if (crtc->use_native_mode)
 		hw_mode = crtc->native_mode;
 	else

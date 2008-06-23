@@ -35,6 +35,7 @@ struct nv50_fb_info {
 	struct mem_block *block;
 	int width, height;
 	int bpp, depth;
+	int pitch;
 	int x,y;
 };
 
@@ -42,6 +43,7 @@ struct nv50_fb {
 	struct mem_block *block;
 	int width, height;
 	int bpp, depth;
+	int pitch;
 
 	int x,y;
 

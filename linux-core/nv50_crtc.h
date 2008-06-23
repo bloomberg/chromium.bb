@@ -54,6 +54,7 @@ struct nv50_crtc {
 	int (*validate_mode) (struct nv50_crtc *crtc, struct nouveau_hw_mode *mode);
 	int (*set_mode) (struct nv50_crtc *crtc, struct nouveau_hw_mode *mode);
 	int (*execute_mode) (struct nv50_crtc *crtc);
+	int (*set_fb) (struct nv50_crtc *crtc);
 	int (*blank) (struct nv50_crtc *crtc, bool blanked);
 	int (*set_dither) (struct nv50_crtc *crtc);
 	int (*set_scale) (struct nv50_crtc *crtc);

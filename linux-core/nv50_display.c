@@ -34,6 +34,7 @@ static int nv50_display_pre_init(struct nv50_display *display)
 	struct drm_device *dev = display->dev;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	int i;
+	uint32_t ram_amount;
 
 	NV50_DEBUG("\n");
 
@@ -66,6 +67,17 @@ static int nv50_display_pre_init(struct nv50_display *display)
 		NV_WRITE(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(i), 0x00550000 | NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING);
 		NV_WRITE(NV50_PDISPLAY_DAC_REGS_CLK_CTRL1(i), 0x00000001);
 	}
+
+	/* This used to be in crtc unblank, but seems out of place there. */
+	NV_WRITE(NV50_PDISPLAY_UNK_380, 0);
+	/* RAM is clamped to 256 MiB. */
+	ram_amount = nouveau_mem_fb_amount(display->dev);
+	NV50_DEBUG("ram_amount %d\n", ram_amount);
+	if (ram_amount > 256*1024*1024)
+		ram_amount = 256*1024*1024;
+	NV_WRITE(NV50_PDISPLAY_RAM_AMOUNT, ram_amount - 1);
+	NV_WRITE(NV50_PDISPLAY_UNK_388, 0x150000);
+	NV_WRITE(NV50_PDISPLAY_UNK_38C, 0);
 
 	display->preinit_done = TRUE;
 
