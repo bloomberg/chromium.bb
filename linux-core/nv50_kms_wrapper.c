@@ -233,20 +233,35 @@ static int nv50_kms_crtc_cursor_set(struct drm_crtc *drm_crtc, uint32_t buffer_h
 {
 	struct nv50_crtc *crtc = to_nv50_crtc(drm_crtc);
 	struct nv50_display *display = nv50_get_display(crtc->dev);
-	int rval;
+	int rval = 0;
 
 	if (width != 64 || height != 64)
 		return -EINVAL;
 
-	rval = crtc->cursor->set_bo(crtc, (drm_handle_t) buffer_handle);
+	/* set bo before doing show cursor */
+	if (buffer_handle) {
+		rval = crtc->cursor->set_bo(crtc, (drm_handle_t) buffer_handle);
+		if (rval != 0)
+			goto out;
+	}
+
+	if (buffer_handle) {
+		rval = crtc->cursor->show(crtc);
+		if (rval != 0)
+			goto out;
+	} else { /* no handle implies hiding the cursor */
+		rval = crtc->cursor->hide(crtc);
+		goto out;
+	}
 
 	if (rval != 0)
 		return rval;
 
+out:
 	/* in case this triggers any other cursor changes */
 	display->update(display);
 
-	return 0;
+	return rval;
 }
 
 static int nv50_kms_crtc_cursor_move(struct drm_crtc *drm_crtc, int x, int y)

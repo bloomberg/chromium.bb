@@ -126,6 +126,7 @@ static int nv50_cursor_set_bo(struct nv50_crtc *crtc, drm_handle_t handle)
 				crtc->cursor->show(crtc);
 		}
 	} else {
+		DRM_ERROR("Unable to find cursor bo with handle 0x%X\n", handle);
 		return -EINVAL;
 	}
 
@@ -150,9 +151,6 @@ int nv50_cursor_create(struct nv50_crtc *crtc)
 	crtc->cursor->set_bo = nv50_cursor_set_bo;
 	crtc->cursor->enable = nv50_cursor_enable;
 	crtc->cursor->disable = nv50_cursor_disable;
-
-	/* defaults */
-	crtc->cursor->visible = true; /* won't happen until there is a cursor bo */
 
 	return 0;
 }
