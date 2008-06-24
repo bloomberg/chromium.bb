@@ -794,14 +794,15 @@ int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_vblank_pipe_t *pipe = data;
-	u16 flag;
+	u32 flag = 0;
 
 	if (!dev_priv) {
 		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
-	flag = I915_READ(I915REG_INT_ENABLE_R);
+	if (dev_priv->irq_enabled)
+	    flag = ~dev_priv->irq_mask_reg;
 	pipe->pipe = 0;
 	if (flag & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT)
 		pipe->pipe |= DRM_I915_VBLANK_PIPE_A;
