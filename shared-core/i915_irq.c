@@ -62,7 +62,7 @@ static inline void
 i915_disable_irq(drm_i915_private_t *dev_priv, uint32_t mask)
 {
 	if (dev_priv->irq_use_mask) {
-		if ((dev_priv->irq_enable_reg & mask) != mask) {
+		if ((dev_priv->irq_mask_reg & mask) != mask) {
 			dev_priv->irq_mask_reg |= mask;
 			I915_WRITE(I915REG_INT_MASK_R, dev_priv->irq_mask_reg);
 			(void) I915_READ(I915REG_INT_MASK_R);
