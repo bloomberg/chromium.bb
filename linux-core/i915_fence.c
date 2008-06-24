@@ -46,7 +46,7 @@ static inline void i915_initiate_rwflush(struct drm_i915_private *dev_priv,
 		dev_priv->flush_sequence = (uint32_t) READ_BREADCRUMB(dev_priv);
 		dev_priv->flush_flags = fc->pending_flush;
 		dev_priv->saved_flush_status = READ_HWSP(dev_priv, 0);
-		I915_WRITE(I915REG_INSTPM, (1 << 5) | (1 << 21));
+		I915_WRITE(INSTPM, (1 << 5) | (1 << 21));
 		dev_priv->flush_pending = 1;
 		fc->pending_flush &= ~DRM_I915_FENCE_TYPE_RW;
 	}
