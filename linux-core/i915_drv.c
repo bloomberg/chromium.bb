@@ -91,8 +91,6 @@ static int i915_suspend(struct drm_device *dev, pm_message_t state)
 
 static int i915_resume(struct drm_device *dev)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
-
 	pci_set_power_state(dev->pdev, PCI_D0);
 	pci_restore_state(dev->pdev);
 	if (pci_enable_device(dev->pdev))
