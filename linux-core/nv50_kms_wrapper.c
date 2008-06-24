@@ -245,6 +245,8 @@ static int nv50_kms_crtc_cursor_set(struct drm_crtc *drm_crtc, uint32_t buffer_h
 			goto out;
 	}
 
+	crtc->cursor->visible = buffer_handle ? true : false;
+
 	if (buffer_handle) {
 		rval = crtc->cursor->show(crtc);
 		if (rval != 0)
@@ -858,6 +860,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 		drm_mode_connector_update_edid_property(drm_connector, edid);
 		ret = drm_add_edid_modes(drm_connector, edid);
 		connector->digital = edid->digital; /* cache */
+		kfree(edid);
 	}
 
 	if (ret) /* number of modes  > 1 */
