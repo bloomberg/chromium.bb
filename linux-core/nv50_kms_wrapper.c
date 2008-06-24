@@ -299,12 +299,12 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 	/* Sanity checking */
 	if (!set) {
-		NV50_DEBUG("Sanity check failed\n");
+		DRM_ERROR("Sanity check failed\n");
 		goto out;
 	}
 
 	if (!set->crtc) {
-		NV50_DEBUG("Sanity check failed\n");
+		DRM_ERROR("Sanity check failed\n");
 		goto out;
 	}
 
@@ -324,7 +324,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	}
 
 	if (!set->connectors && modeset) {
-		NV50_DEBUG("Sanity check failed\n");
+		DRM_ERROR("Sanity check failed\n");
 		goto out;
 	}
 
@@ -350,27 +350,27 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		rval = crtc->validate_mode(crtc, hw_mode);
 
 		if (rval != MODE_OK) {
-			NV50_DEBUG("Mode not ok\n");
+			DRM_ERROR("Mode not ok\n");
 			goto out;
 		}
 
 		for (i = 0; i < set->num_connectors; i++) {
 			drm_connector = set->connectors[i];
 			if (!drm_connector) {
-				NV50_DEBUG("No connector\n");
+				DRM_ERROR("No connector\n");
 				goto out;
 			}
 			connector = to_nv50_connector(drm_connector);
 
 			output = connector->to_output(connector, connector->digital);
 			if (!output) {
-				NV50_DEBUG("No output\n");
+				DRM_ERROR("No output\n");
 				goto out;
 			}
 
 			rval = output->validate_mode(output, hw_mode);
 			if (rval != MODE_OK) {
-				NV50_DEBUG("Mode not ok\n");
+				DRM_ERROR("Mode not ok\n");
 				goto out;
 			}
 		}
@@ -395,7 +395,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		for (i = 0; i < set->num_connectors; i++) {
 			drm_connector = set->connectors[i];
 			if (!drm_connector) {
-				NV50_DEBUG("No connector\n");
+				DRM_ERROR("No connector\n");
 				goto out;
 			}
 
@@ -420,13 +420,13 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		for (i = 0; i < set->num_connectors; i++) {
 			drm_connector = set->connectors[i];
 			if (!drm_connector) {
-				NV50_DEBUG("No connector\n");
+				DRM_ERROR("No connector\n");
 				goto out;
 			}
 
 			output = connector->to_output(connector, connector->digital);
 			if (!output) {
-				NV50_DEBUG("No output\n");
+				DRM_ERROR("No output\n");
 				goto out;
 			}
 
@@ -434,7 +434,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			drm_encoder = to_nv50_kms_encoder(output);
 
 			if (!drm_encoder) {
-				NV50_DEBUG("No encoder\n");
+				DRM_ERROR("No encoder\n");
 				goto out;
 			}
 
@@ -483,7 +483,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 		rval = crtc->fb->bind(crtc, &fb_info);
 		if (rval != 0) {
-			NV50_DEBUG("fb_bind failed\n");
+			DRM_ERROR("fb_bind failed\n");
 			goto out;
 		}
 	}
@@ -492,7 +492,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	if (!crtc->cursor->enabled) {
 		rval = crtc->cursor->enable(crtc);
 		if (rval != 0) {
-			NV50_DEBUG("cursor_enable failed\n");
+			DRM_ERROR("cursor_enable failed\n");
 			goto out;
 		}
 	}
@@ -571,7 +571,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 		rval = crtc->set_mode(crtc, hw_mode);
 		if (rval != 0) {
-			NV50_DEBUG("crtc mode set failed\n");
+			DRM_ERROR("crtc mode set failed\n");
 			goto out;
 		}
 
@@ -599,7 +599,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 		rval = crtc->execute_mode(crtc);
 		if (rval != 0) {
-			NV50_DEBUG("crtc execute mode failed\n");
+			DRM_ERROR("crtc execute mode failed\n");
 			goto out;
 		}
 
@@ -609,14 +609,14 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 			rval = output->execute_mode(output, FALSE);
 			if (rval != 0) {
-				NV50_DEBUG("output execute mode failed\n");
+				DRM_ERROR("output execute mode failed\n");
 				goto out;
 			}
 		}
 
 		rval = crtc->set_scale(crtc);
 		if (rval != 0) {
-			NV50_DEBUG("crtc set scale failed\n");
+			DRM_ERROR("crtc set scale failed\n");
 			goto out;
 		}
 
