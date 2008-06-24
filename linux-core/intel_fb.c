@@ -882,7 +882,7 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 	struct intel_framebuffer *intel_fb;
 	struct fb_info *info;
 	struct intelfb_par *par;
-	struct drm_mode_set *modeset;
+	struct drm_mode_set *modeset = NULL;
 
 	DRM_DEBUG("\n");
 	/* first up get a count of crtcs now in use and new min/maxes width/heights */
