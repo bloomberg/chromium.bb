@@ -83,8 +83,6 @@ static int nv50_sor_execute_mode(struct nv50_output *output, bool disconnect)
 	if (desired_mode->flags & V_NVSYNC)
 		mode_ctl |= NV50_SOR_MODE_CTRL_NVSYNC;
 
-	/* TODO: DPMS ?????? */
-
 	OUT_MODE(NV50_SOR0_MODE_CTRL + offset, mode_ctl);
 
 	return 0;
