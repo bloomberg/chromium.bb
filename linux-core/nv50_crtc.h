@@ -39,6 +39,7 @@ struct nv50_crtc {
 	struct drm_device *dev;
 	int index;
 	bool active;
+	bool blanked;
 
 	struct nouveau_hw_mode *mode;
 	struct nouveau_hw_mode *native_mode;

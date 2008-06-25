@@ -103,6 +103,21 @@ static int nv50_cursor_set_pos(struct nv50_crtc *crtc, int x, int y)
 	return 0;
 }
 
+static int nv50_cursor_set_offset(struct nv50_crtc *crtc)
+{
+	struct drm_nouveau_private *dev_priv = crtc->dev->dev_private;
+
+	NV50_DEBUG("\n");
+
+	if (crtc->cursor->block) {
+		OUT_MODE(NV50_CRTC0_CURSOR_OFFSET + crtc->index * 0x400, crtc->cursor->block->start >> 8);
+	} else {
+		OUT_MODE(NV50_CRTC0_CURSOR_OFFSET + crtc->index * 0x400, 0);
+	}
+
+	return 0;
+}
+
 static int nv50_cursor_set_bo(struct nv50_crtc *crtc, drm_handle_t handle)
 {
 	struct mem_block *block = NULL;
@@ -121,7 +136,7 @@ static int nv50_cursor_set_bo(struct nv50_crtc *crtc, drm_handle_t handle)
 
 		/* set the cursor offset cursor */
 		if (first_time) {
-			OUT_MODE(NV50_CRTC0_CURSOR_OFFSET + crtc->index * 0x400, crtc->cursor->block->start >> 8);
+			crtc->cursor->set_offset(crtc);
 			if (crtc->cursor->visible)
 				crtc->cursor->show(crtc);
 		}
@@ -148,6 +163,7 @@ int nv50_cursor_create(struct nv50_crtc *crtc)
 	crtc->cursor->show = nv50_cursor_show;
 	crtc->cursor->hide = nv50_cursor_hide;
 	crtc->cursor->set_pos = nv50_cursor_set_pos;
+	crtc->cursor->set_offset = nv50_cursor_set_offset;
 	crtc->cursor->set_bo = nv50_cursor_set_bo;
 	crtc->cursor->enable = nv50_cursor_enable;
 	crtc->cursor->disable = nv50_cursor_disable;

@@ -40,6 +40,7 @@ struct nv50_cursor {
 	int (*show) (struct nv50_crtc *crtc);
 	int (*hide) (struct nv50_crtc *crtc);
 	int (*set_pos) (struct nv50_crtc *crtc, int x, int y);
+	int (*set_offset) (struct nv50_crtc *crtc);
 	int (*set_bo) (struct nv50_crtc *crtc, drm_handle_t handle);
 	int (*enable) (struct nv50_crtc *crtc);
 	int (*disable) (struct nv50_crtc *crtc);

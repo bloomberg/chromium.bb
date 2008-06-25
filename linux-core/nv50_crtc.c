@@ -192,10 +192,9 @@ static int nv50_crtc_blank(struct nv50_crtc *crtc, bool blanked)
 	} else {
 		OUT_MODE(NV50_CRTC0_FB_OFFSET + offset, crtc->fb->block->start >> 8);
 		OUT_MODE(0x864 + offset, 0);
-		if (crtc->cursor->block)
-			OUT_MODE(NV50_CRTC0_CURSOR_OFFSET + offset, crtc->cursor->block->start >> 8);
-		else
-			OUT_MODE(NV50_CRTC0_CURSOR_OFFSET + offset, 0);
+
+		crtc->cursor->set_offset(crtc);
+
 		if (dev_priv->chipset != 0x50)
 			OUT_MODE(NV84_CRTC0_BLANK_UNK2 + offset, NV84_CRTC0_BLANK_UNK2_UNBLANK);
 
@@ -211,6 +210,9 @@ static int nv50_crtc_blank(struct nv50_crtc *crtc, bool blanked)
 			OUT_MODE(NV84_CRTC0_BLANK_UNK1 + offset, NV84_CRTC0_BLANK_UNK1_UNBLANK);
 		OUT_MODE(NV50_CRTC0_BLANK_CTRL + offset, NV50_CRTC0_BLANK_CTRL_UNBLANK);
 	}
+
+	/* sometimes you need to know if a screen is already blanked. */
+	crtc->blanked = blanked;
 
 	return 0;
 }
