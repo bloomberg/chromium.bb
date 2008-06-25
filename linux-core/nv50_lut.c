@@ -33,7 +33,7 @@ static int nv50_lut_alloc(struct nv50_crtc *crtc)
 {
 	struct mem_block *block;
 	struct drm_file *file_priv = kzalloc(sizeof(struct drm_file), GFP_KERNEL);
-	uint32_t flags = NOUVEAU_MEM_INTERNAL | NOUVEAU_MEM_FB | NOUVEAU_MEM_MAPPED;
+	uint32_t flags = NOUVEAU_MEM_FB | NOUVEAU_MEM_MAPPED;
 	int rval = 0;
 
 	NV50_DEBUG("\n");

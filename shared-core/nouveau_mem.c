@@ -742,9 +742,6 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 				if (crtc->fb->block == block) {
 					crtc->fb->block = NULL;
 
-					/* this will force a lut change next time a fb is loaded */
-					crtc->lut->depth = 0;
-
 					if (!crtc->blanked)
 						crtc->blank(crtc, TRUE);
 				}
