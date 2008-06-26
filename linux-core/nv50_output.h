@@ -49,6 +49,8 @@ struct nv50_output {
 	int (*validate_mode) (struct nv50_output *output, struct nouveau_hw_mode *mode);
 	int (*execute_mode) (struct nv50_output *output, bool disconnect);
 	int (*set_clock_mode) (struct nv50_output *output);
+	/* this is not a normal modeset call, it is a direct register write, so it's executed immediately */
+	int (*set_power_mode) (struct nv50_output *output, int mode);
 	bool (*detect) (struct nv50_output *output);
 	int (*destroy) (struct nv50_output *output);
 };

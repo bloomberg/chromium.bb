@@ -114,6 +114,29 @@ static int nv50_sor_set_clock_mode(struct nv50_output *output)
 	return 0;
 }
 
+static int nv50_sor_set_power_mode(struct nv50_output *output, int mode)
+{
+	struct drm_nouveau_private *dev_priv = output->dev->dev_private;
+	uint32_t val;
+	int or = nv50_output_or_offset(output);
+
+	NV50_DEBUG("or %d\n", nv50_output_or_offset(output));
+
+	/* wait for it to be done */
+	while (NV_READ(NV50_PDISPLAY_SOR_REGS_DPMS_CTRL(or)) & NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_PENDING);
+
+	val = NV_READ(NV50_PDISPLAY_SOR_REGS_DPMS_CTRL(or));
+
+	if (mode == DPMSModeOn)
+		val |= NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_ON;
+	else
+		val &= ~NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_ON;
+
+	NV_WRITE(NV50_PDISPLAY_SOR_REGS_DPMS_CTRL(or), val | NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_PENDING);
+
+	return 0;
+}
+
 static int nv50_sor_destroy(struct nv50_output *output)
 {
 	struct drm_device *dev = output->dev;
@@ -194,6 +217,7 @@ int nv50_sor_create(struct drm_device *dev, int dcb_entry)
 	output->validate_mode = nv50_sor_validate_mode;
 	output->execute_mode = nv50_sor_execute_mode;
 	output->set_clock_mode = nv50_sor_set_clock_mode;
+	output->set_power_mode = nv50_sor_set_power_mode;
 	output->detect = NULL;
 	output->destroy = nv50_sor_destroy;
 

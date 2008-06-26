@@ -96,6 +96,43 @@ static int nv50_dac_set_clock_mode(struct nv50_output *output)
 	return 0;
 }
 
+static int nv50_dac_set_power_mode(struct nv50_output *output, int mode)
+{
+	struct drm_nouveau_private *dev_priv = output->dev->dev_private;
+	uint32_t val;
+	int or = nv50_output_or_offset(output);
+
+	NV50_DEBUG("or %d\n", or);
+
+	/* wait for it to be done */
+	while (NV_READ(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or)) & NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING);
+
+	val = NV_READ(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or)) & ~0x7F;
+
+	if (mode != DPMSModeOn)
+		val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_BLANKED;
+
+	switch (mode) {
+		case DPMSModeStandby:
+			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_HSYNC_OFF;
+			break;
+		case DPMSModeSuspend:
+			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_VSYNC_OFF;
+			break;
+		case DPMSModeOff:
+			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_OFF;
+			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_HSYNC_OFF;
+			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_VSYNC_OFF;
+			break;
+		default:
+			break;
+	}
+
+	NV_WRITE(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or), val | NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING);
+
+	return 0;
+}
+
 static int nv50_dac_destroy(struct nv50_output *output)
 {
 	struct drm_device *dev = output->dev;
@@ -172,6 +209,7 @@ int nv50_dac_create(struct drm_device *dev, int dcb_entry)
 	output->validate_mode = nv50_dac_validate_mode;
 	output->execute_mode = nv50_dac_execute_mode;
 	output->set_clock_mode = nv50_dac_set_clock_mode;
+	output->set_power_mode = nv50_dac_set_power_mode;
 	output->detect = NULL; /* TODO */
 	output->destroy = nv50_dac_destroy;
 

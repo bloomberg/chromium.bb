@@ -640,6 +640,18 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		/* next line changes crtc, so putting it here is important */
 		display->last_crtc = crtc->index;
 
+		/* this is executed immediately */
+		list_for_each_entry(output, &display->outputs, head) {
+			if (output->crtc != crtc)
+				continue;
+
+			rval = output->set_power_mode(output, DPMSModeOn);
+			if (rval != 0) {
+				DRM_ERROR("output set power mode failed\n");
+				goto out;
+			}
+		}
+
 		/* blank any unused crtcs */
 		list_for_each_entry(crtc, &display->crtcs, head) {
 			if (!(crtc_mask & (1 << crtc->index)))
@@ -654,9 +666,6 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	return 0;
 
 out:
-	if (display)
-		display->update(display);
-
 	kfree(hw_mode);
 
 	if (rval != 0)
@@ -938,12 +947,31 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	}
 }
 
+static bool nv50_kms_connector_set_property(struct drm_connector *connector,
+					struct drm_property *property,
+					uint64_t value)
+{
+	struct drm_device *dev = connector->dev;
+
+	if (property == dev->mode_config.dpms_property && connector->encoder) {
+		struct nv50_output *output = to_nv50_output(connector->encoder);
+
+		if (!output->set_power_mode(output, (int) value))
+			return true;
+		else
+			return false;
+	}
+
+	return false;
+}
+
 static const struct drm_connector_funcs nv50_kms_connector_funcs = {
 	.save = NULL,
 	.restore = NULL,
 	.detect = nv50_kms_connector_detect,
 	.destroy = nv50_kms_connector_destroy,
 	.fill_modes = nv50_kms_connector_fill_modes,
+	.set_property = nv50_kms_connector_set_property
 };
 
 static int nv50_kms_connectors_init(struct drm_device *dev)
