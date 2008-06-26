@@ -677,8 +677,7 @@ extern struct drm_property *drm_property_create(struct drm_device *dev, int flag
 extern void drm_property_destroy(struct drm_device *dev, struct drm_property *property);
 extern int drm_property_add_enum(struct drm_property *property, int index, 
 				 uint64_t value, const char *name);
-extern bool drm_mode_create_dpms_property(struct drm_device *dev);
-extern bool drm_mode_create_tv_properties(struct drm_device *dev, int num_formats,
+extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
 				     char *formats[]);
 extern char *drm_get_encoder_name(struct drm_encoder *encoder);
 
