@@ -2394,7 +2394,7 @@ i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 	int ret;
 
 	if (dev_priv->mm.wedged) {
-		DRM_ERROR("Renabling wedged hardware, good luck\n");
+		DRM_ERROR("Reenabling wedged hardware, good luck\n");
 		dev_priv->mm.wedged = 0;
 	}
 
