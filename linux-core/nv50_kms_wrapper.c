@@ -484,6 +484,8 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	 */
 
 	if (switch_fb) {
+		crtc = to_nv50_crtc(set->crtc);
+
 		/* set framebuffer */
 		set->crtc->fb = set->fb;
 
@@ -573,6 +575,8 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	 */
 
 	if (modeset) {
+		crtc = to_nv50_crtc(set->crtc);
+
 		/* disconnect unused outputs */
 		list_for_each_entry(output, &display->outputs, head) {
 			if (output->crtc) {
@@ -585,6 +589,14 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 				}
 			}
 		}
+
+		/* blank any unused crtcs */
+		list_for_each_entry(crtc, &display->crtcs, head) {
+			if (!(crtc_mask & (1 << crtc->index)))
+				crtc->blank(crtc, TRUE);
+		}
+
+		crtc = to_nv50_crtc(set->crtc);
 
 		rval = crtc->set_mode(crtc, hw_mode);
 		if (rval != 0) {
@@ -650,12 +662,6 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 				DRM_ERROR("output set power mode failed\n");
 				goto out;
 			}
-		}
-
-		/* blank any unused crtcs */
-		list_for_each_entry(crtc, &display->crtcs, head) {
-			if (!(crtc_mask & (1 << crtc->index)))
-				crtc->blank(crtc, TRUE);
 		}
 	}
 
