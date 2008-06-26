@@ -292,5 +292,9 @@ void intel_crt_init(struct drm_device *dev)
 	drm_encoder_helper_add(&intel_output->enc, &intel_crt_helper_funcs);
 	drm_connector_helper_add(connector, &intel_crt_connector_helper_funcs);
 
+	/* create dpms property */
+	drm_mode_create_dpms_property(dev);
+	drm_connector_attach_property(connector, dev->mode_config.dpms_property, 0);
+
 	drm_sysfs_connector_add(connector);
 }

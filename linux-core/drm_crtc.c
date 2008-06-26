@@ -43,10 +43,10 @@ struct drm_prop_enum_list {
  * Global properties
  */
 static struct drm_prop_enum_list drm_dpms_enum_list[] =
-{ { DPMSModeOn, "On" },
-  { DPMSModeStandby, "Standby" },
-  { DPMSModeSuspend, "Suspend" },
-  { DPMSModeOff, "Off" }
+{ 	{ DPMSModeOn, "On" },
+	{ DPMSModeStandby, "Standby" },
+	{ DPMSModeSuspend, "Suspend" },
+	{ DPMSModeOff, "Off" }
 };
 
 char *drm_get_dpms_name(int val)
@@ -61,26 +61,26 @@ char *drm_get_dpms_name(int val)
 }
 
 static struct drm_prop_enum_list drm_connector_enum_list[] = 
-{ { DRM_MODE_CONNECTOR_Unknown, "Unknown" },
-  { DRM_MODE_CONNECTOR_VGA, "VGA" },
-  { DRM_MODE_CONNECTOR_DVII, "DVI-I" },
-  { DRM_MODE_CONNECTOR_DVID, "DVI-D" },
-  { DRM_MODE_CONNECTOR_DVIA, "DVI-A" },
-  { DRM_MODE_CONNECTOR_Composite, "Composite" },
-  { DRM_MODE_CONNECTOR_SVIDEO, "SVIDEO" },
-  { DRM_MODE_CONNECTOR_LVDS, "LVDS" },
-  { DRM_MODE_CONNECTOR_Component, "Component" },
-  { DRM_MODE_CONNECTOR_9PinDIN, "9-pin DIN" },
-  { DRM_MODE_CONNECTOR_DisplayPort, "DisplayPort" },
-  { DRM_MODE_CONNECTOR_HDMIA, "HDMI Type A" },
-  { DRM_MODE_CONNECTOR_HDMIB, "HDMI Type B" },
+{ 	{ DRM_MODE_CONNECTOR_Unknown, "Unknown" },
+	{ DRM_MODE_CONNECTOR_VGA, "VGA" },
+	{ DRM_MODE_CONNECTOR_DVII, "DVI-I" },
+	{ DRM_MODE_CONNECTOR_DVID, "DVI-D" },
+	{ DRM_MODE_CONNECTOR_DVIA, "DVI-A" },
+	{ DRM_MODE_CONNECTOR_Composite, "Composite" },
+	{ DRM_MODE_CONNECTOR_SVIDEO, "SVIDEO" },
+	{ DRM_MODE_CONNECTOR_LVDS, "LVDS" },
+	{ DRM_MODE_CONNECTOR_Component, "Component" },
+	{ DRM_MODE_CONNECTOR_9PinDIN, "9-pin DIN" },
+	{ DRM_MODE_CONNECTOR_DisplayPort, "DisplayPort" },
+	{ DRM_MODE_CONNECTOR_HDMIA, "HDMI Type A" },
+	{ DRM_MODE_CONNECTOR_HDMIB, "HDMI Type B" },
 };
 static struct drm_prop_enum_list drm_encoder_enum_list[] =
-{ { DRM_MODE_ENCODER_NONE, "None" },
-  { DRM_MODE_ENCODER_DAC, "DAC" },
-  { DRM_MODE_ENCODER_TMDS, "TMDS" },
-  { DRM_MODE_ENCODER_LVDS, "LVDS" },
-  { DRM_MODE_ENCODER_TVDAC, "TV" },
+{ 	{ DRM_MODE_ENCODER_NONE, "None" },
+	{ DRM_MODE_ENCODER_DAC, "DAC" },
+	{ DRM_MODE_ENCODER_TMDS, "TMDS" },
+	{ DRM_MODE_ENCODER_LVDS, "LVDS" },
+	{ DRM_MODE_ENCODER_TVDAC, "TV" },
 };
 
 char *drm_get_encoder_name(struct drm_encoder *encoder)
@@ -164,7 +164,7 @@ static void drm_mode_object_put(struct drm_device *dev, struct drm_mode_object *
 static void *drm_mode_object_find(struct drm_device *dev, uint32_t id, uint32_t type)
 {
 	struct drm_mode_object *obj;
-	
+
 	obj = idr_find(&dev->mode_config.crtc_idr, id);
 	if (!obj || (obj->type != type) || (obj->id != id))
 		return NULL;
@@ -369,8 +369,6 @@ void drm_connector_init(struct drm_device *dev,
 
 	drm_connector_attach_property(connector, dev->mode_config.edid_property, 0);
 
-	drm_connector_attach_property(connector, dev->mode_config.dpms_property, 0);
-
 	mutex_unlock(&dev->mode_config.mutex);
 }
 EXPORT_SYMBOL(drm_connector_init);
@@ -479,14 +477,30 @@ EXPORT_SYMBOL(drm_mode_destroy);
 
 static int drm_mode_create_standard_connector_properties(struct drm_device *dev)
 {
-	int i;
-
 	/*
 	 * Standard properties (apply to all connectors)
 	 */
 	dev->mode_config.edid_property =
 		drm_property_create(dev, DRM_MODE_PROP_BLOB | DRM_MODE_PROP_IMMUTABLE,
 				    "EDID", 0);
+
+	return 0;
+}
+
+/**
+ * drm_mode_create_dpms_property - create dpms connector property
+ * @dev: DRM device
+ *
+ * Called by a driver wanting to support the dpms property.
+ * Caller is responsible for attaching it to the appropriate connector.
+ */
+bool drm_mode_create_dpms_property(struct drm_device *dev)
+{
+	int i;
+
+	/* already allocated */
+	if (dev->mode_config.dpms_property)
+		return 0;
 
 	dev->mode_config.dpms_property =
 		drm_property_create(dev, DRM_MODE_PROP_ENUM, 
@@ -496,6 +510,7 @@ static int drm_mode_create_standard_connector_properties(struct drm_device *dev)
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_mode_create_dpms_property);
 
 /**
  * drm_create_tv_properties - create TV specific connector properties
@@ -508,10 +523,14 @@ static int drm_mode_create_standard_connector_properties(struct drm_device *dev)
  * responsible for allocating a list of format names and passing them to
  * this routine.
  */
-bool drm_create_tv_properties(struct drm_device *dev, int num_modes,
+bool drm_mode_create_tv_properties(struct drm_device *dev, int num_modes,
 			      char *modes[])
 {
 	int i;
+
+	/* already allocated */
+	if (dev->mode_config.tv_mode_property)
+		return 0;
 
 	dev->mode_config.tv_left_margin_property =
 		drm_property_create(dev, DRM_MODE_PROP_RANGE |
@@ -547,7 +566,7 @@ bool drm_create_tv_properties(struct drm_device *dev, int num_modes,
 
 	return 0;
 }
-EXPORT_SYMBOL(drm_create_tv_properties);
+EXPORT_SYMBOL(drm_mode_create_tv_properties);
 
 /**
  * drm_mode_config_init - initialize DRM mode_configuration structure

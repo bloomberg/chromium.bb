@@ -1713,7 +1713,7 @@ intel_tv_init(struct drm_device *dev)
 		goto out;
 	for (i = 0; i < NUM_TV_MODES; i++)
 		tv_format_names[i] = tv_modes[i].name;
-	drm_create_tv_properties(dev, NUM_TV_MODES, tv_format_names);
+	drm_mode_create_tv_properties(dev, NUM_TV_MODES, tv_format_names);
 
 	drm_connector_attach_property(connector, dev->mode_config.tv_mode_property,
 				   initial_mode);
