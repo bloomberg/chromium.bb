@@ -36,7 +36,7 @@
 #define OUTPUT_TV 4
 
 struct nv50_output {
-	struct list_head head;
+	struct list_head item;
 
 	struct drm_device *dev;
 	int bus;

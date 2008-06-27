@@ -144,7 +144,7 @@ static int nv50_dac_destroy(struct nv50_output *output)
 	if (!display || !output)
 		return -EINVAL;
 
-	list_del(&output->head);
+	list_del(&output->item);
 
 	kfree(output->native_mode);
 	if (dev_priv->free_output)
@@ -197,7 +197,7 @@ int nv50_dac_create(struct drm_device *dev, int dcb_entry)
 	output->dcb_entry = dcb_entry;
 	output->bus = entry->bus;
 
-	list_add_tail(&output->head, &display->outputs);
+	list_add_tail(&output->item, &display->outputs);
 
 	output->native_mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
 	if (!output->native_mode) {

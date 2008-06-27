@@ -34,7 +34,7 @@ struct nv50_lut;
 struct nv50_fb;
 
 struct nv50_crtc {
-	struct list_head head;
+	struct list_head item;
 
 	struct drm_device *dev;
 	int index;

@@ -549,7 +549,7 @@ nouveau_nv50_display_irq_handler(struct drm_device *dev)
 				if (display->last_crtc == crtc_index)
 					clock_ack = true;
 
-				list_for_each_entry(crtc, &display->crtcs, head) {
+				list_for_each_entry(crtc, &display->crtcs, item) {
 					if (crtc->index == crtc_index)
 						break;
 				}
@@ -564,7 +564,7 @@ nouveau_nv50_display_irq_handler(struct drm_device *dev)
 
 				crtc->set_clock_mode(crtc);
 
-				list_for_each_entry(output, &display->outputs, head) {
+				list_for_each_entry(output, &display->outputs, item) {
 					if (!output->crtc)
 						continue;
 

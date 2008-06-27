@@ -445,7 +445,7 @@ static int nv50_crtc_destroy(struct nv50_crtc *crtc)
 	if (!display || !crtc)
 		return -EINVAL;
 
-	list_del(&crtc->head);
+	list_del(&crtc->item);
 
 	nv50_fb_destroy(crtc);
 	nv50_lut_destroy(crtc);
@@ -484,7 +484,7 @@ int nv50_crtc_create(struct drm_device *dev, int index)
 		goto out;
 	}
 
-	list_add_tail(&crtc->head, &display->crtcs);
+	list_add_tail(&crtc->item, &display->crtcs);
 
 	crtc->index = index;
 

@@ -738,7 +738,7 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 			struct nv50_crtc *crtc = NULL;
 			struct nv50_display *display = nv50_get_display(dev);
 
-			list_for_each_entry(crtc, &display->crtcs, head) {
+			list_for_each_entry(crtc, &display->crtcs, item) {
 				if (crtc->fb->block == block) {
 					crtc->fb->block = NULL;
 

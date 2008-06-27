@@ -60,7 +60,7 @@ static struct nv50_output *nv50_connector_to_output(struct nv50_connector *conne
 	if (!digital_possible && digital)
 		return NULL;
 
-	list_for_each_entry(output, &display->outputs, head) {
+	list_for_each_entry(output, &display->outputs, item) {
 		if (connector->bus != output->bus)
 			continue;
 		if (digital && output->type == OUTPUT_TMDS)
@@ -122,7 +122,7 @@ static int nv50_connector_destroy(struct nv50_connector *connector)
 	if (!display || !connector)
 		return -EINVAL;
 
-	list_del(&connector->head);
+	list_del(&connector->item);
 
 	if (connector->i2c_chan)
 		nv50_i2c_channel_destroy(connector->i2c_chan);
@@ -157,7 +157,7 @@ int nv50_connector_create(struct drm_device *dev, int bus, int i2c_index, int ty
 	if (type == CONNECTOR_UNKNOWN)
 		goto out;
 
-	list_add_tail(&connector->head, &display->connectors);
+	list_add_tail(&connector->item, &display->connectors);
 
 	connector->bus = bus;
 	connector->type = type;

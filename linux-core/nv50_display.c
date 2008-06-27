@@ -139,14 +139,14 @@ static int nv50_display_disable(struct nv50_display *display)
 
 	NV50_DEBUG("\n");
 
-	list_for_each_entry(crtc, &display->crtcs, head) {
+	list_for_each_entry(crtc, &display->crtcs, item) {
 		crtc->blank(crtc, TRUE);
 	}
 
 	display->update(display);
 
 	/* Almost like ack'ing a vblank interrupt, maybe in the spirit of cleaning up? */
-	list_for_each_entry(crtc, &display->crtcs, head) {
+	list_for_each_entry(crtc, &display->crtcs, item) {
 		if (crtc->active) {
 			uint32_t mask;
 
@@ -305,15 +305,15 @@ int nv50_display_destroy(struct drm_device *dev)
 	if (display->init_done)
 		display->disable(display);
 
-	list_for_each_entry(connector, &display->connectors, head) {
+	list_for_each_entry(connector, &display->connectors, item) {
 		connector->destroy(connector);
 	}
 
-	list_for_each_entry(output, &display->outputs, head) {
+	list_for_each_entry(output, &display->outputs, item) {
 		output->destroy(output);
 	}
 
-	list_for_each_entry(crtc, &display->crtcs, head) {
+	list_for_each_entry(crtc, &display->crtcs, item) {
 		crtc->destroy(crtc);
 	}
 

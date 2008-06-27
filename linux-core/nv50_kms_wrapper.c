@@ -155,11 +155,11 @@ static void nv50_kms_mirror_routing(struct drm_device *dev)
 	struct drm_connector *drm_connector = NULL;
 
 	/* Wipe all previous connections. */
-	list_for_each_entry(connector, &display->connectors, head) {
+	list_for_each_entry(connector, &display->connectors, item) {
 		connector->output = NULL;
 	}
 
-	list_for_each_entry(output, &display->outputs, head) {
+	list_for_each_entry(output, &display->outputs, item) {
 		output->crtc = NULL;
 	}
 
@@ -578,7 +578,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		crtc = to_nv50_crtc(set->crtc);
 
 		/* disconnect unused outputs */
-		list_for_each_entry(output, &display->outputs, head) {
+		list_for_each_entry(output, &display->outputs, item) {
 			if (output->crtc) {
 				crtc_mask |= 1 << output->crtc->index;
 			} else {
@@ -591,7 +591,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		}
 
 		/* blank any unused crtcs */
-		list_for_each_entry(crtc, &display->crtcs, head) {
+		list_for_each_entry(crtc, &display->crtcs, item) {
 			if (!(crtc_mask & (1 << crtc->index)))
 				crtc->blank(crtc, TRUE);
 		}
@@ -605,12 +605,12 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		}
 
 		/* find native mode. */
-		list_for_each_entry(output, &display->outputs, head) {
+		list_for_each_entry(output, &display->outputs, item) {
 			if (output->crtc != crtc)
 				continue;
 
 			*crtc->native_mode = *output->native_mode;
-			list_for_each_entry(connector, &display->connectors, head) {
+			list_for_each_entry(connector, &display->connectors, item) {
 				if (connector->output != output)
 					continue;
 
@@ -632,7 +632,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			goto out;
 		}
 
-		list_for_each_entry(output, &display->outputs, head) {
+		list_for_each_entry(output, &display->outputs, item) {
 			if (output->crtc != crtc)
 				continue;
 
@@ -653,7 +653,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		display->last_crtc = crtc->index;
 
 		/* this is executed immediately */
-		list_for_each_entry(output, &display->outputs, head) {
+		list_for_each_entry(output, &display->outputs, item) {
 			if (output->crtc != crtc)
 				continue;
 
@@ -727,7 +727,7 @@ static int nv50_kms_crtcs_init(struct drm_device *dev)
 	 * The internal structure is already allocated and so is the public one.
 	 * Just a matter of getting to the memory and register it.
 	 */
-	list_for_each_entry(crtc, &display->crtcs, head) {
+	list_for_each_entry(crtc, &display->crtcs, item) {
 		struct drm_crtc *drm_crtc = to_nv50_kms_crtc(crtc);
 
 		drm_crtc_init(dev, drm_crtc, &nv50_kms_crtc_funcs);
@@ -759,7 +759,7 @@ static int nv50_kms_encoders_init(struct drm_device *dev)
 	struct nv50_display *display = nv50_get_display(dev);
 	struct nv50_output *output = NULL;
 
-	list_for_each_entry(output, &display->outputs, head) {
+	list_for_each_entry(output, &display->outputs, item) {
 		struct drm_encoder *drm_encoder = to_nv50_kms_encoder(output);
 		uint32_t type = DRM_MODE_ENCODER_NONE;
 
@@ -1003,7 +1003,7 @@ static int nv50_kms_connectors_init(struct drm_device *dev)
 	struct nv50_connector *connector = NULL;
 	int i;
 
-	list_for_each_entry(connector, &display->connectors, head) {
+	list_for_each_entry(connector, &display->connectors, item) {
 		struct drm_connector *drm_connector = to_nv50_kms_connector(connector);
 		uint32_t type = DRM_MODE_CONNECTOR_Unknown;
 

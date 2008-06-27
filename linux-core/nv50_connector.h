@@ -38,7 +38,7 @@
 #define CONNECTOR_TV 5
 
 struct nv50_connector {
-	struct list_head head;
+	struct list_head item;
 
 	struct drm_device *dev;
 	int type;
