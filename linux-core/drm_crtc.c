@@ -1837,7 +1837,6 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 	out_resp->count_values = value_count;
 
 	if (property->flags & DRM_MODE_PROP_ENUM) {
-
 		if ((out_resp->count_enum_blobs >= enum_count) && enum_count) {
 			copied = 0;
 			enum_ptr = (struct drm_mode_property_enum *)(unsigned long)out_resp->enum_blob_ptr;
@@ -1879,7 +1878,7 @@ int drm_mode_getproperty_ioctl(struct drm_device *dev,
 				copied++;
 			}
 		}
-		out_resp->count_enum_blobs = enum_count;
+		out_resp->count_enum_blobs = blob_count;
 	}
 done:
 	mutex_unlock(&dev->mode_config.mutex);
