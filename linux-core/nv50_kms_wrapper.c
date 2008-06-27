@@ -663,6 +663,23 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 				goto out;
 			}
 		}
+
+		/* update dpms state to DPMSModeOn */
+		for (i = 0; i < set->num_connectors; i++) {
+			drm_connector = set->connectors[i];
+			if (!drm_connector) {
+				DRM_ERROR("No connector\n");
+				goto out;
+			}
+
+			rval = drm_connector_property_set_value(drm_connector,
+					dev->mode_config.dpms_property,
+					DPMSModeOn);
+			if (rval != 0) {
+				DRM_ERROR("failed to update dpms state\n");
+				goto out;
+			}
+		}
 	}
 
 	display->update(display);

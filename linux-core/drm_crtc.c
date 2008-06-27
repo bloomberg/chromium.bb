@@ -2017,6 +2017,9 @@ int drm_mode_connector_property_set_ioctl(struct drm_device *dev,
 		}
 	}
 
+	/* store the property value */
+	drm_connector_property_set_value(connector, property, out_resp->value);
+
 	if (connector->funcs->set_property)
 		ret = connector->funcs->set_property(connector, property, out_resp->value);
 
