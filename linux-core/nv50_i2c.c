@@ -28,18 +28,62 @@
 
 #include "nv50_i2c.h"
 
+static uint32_t nv50_i2c_port(int index)
+{
+	uint32_t port = 0;
+
+	switch (index) {
+		case 0:
+			port = NV50_PCONNECTOR_I2C_PORT_0;
+			break;
+		case 1:
+			port = NV50_PCONNECTOR_I2C_PORT_1;
+			break;
+		case 2:
+			port = NV50_PCONNECTOR_I2C_PORT_2;
+			break;
+		case 3:
+			port = NV50_PCONNECTOR_I2C_PORT_3;
+			break;
+		case 4:
+			port = NV50_PCONNECTOR_I2C_PORT_4;
+			break;
+		case 5:
+			port = NV50_PCONNECTOR_I2C_PORT_5;
+			break;
+		default:
+			break;
+	}
+
+	if (!port) {
+		DRM_ERROR("Invalid i2c port, returning 0.\n");
+		BUG();
+	}
+
+	return port;
+}
+
 static void nv50_i2c_set_bits(struct nv50_i2c_channel *chan, int clock_high, int data_high)
 {
 	struct drm_nouveau_private *dev_priv = chan->dev->dev_private;
+	uint32_t port = nv50_i2c_port(chan->index);
 
-	NV_WRITE(NV50_PCONNECTOR_I2C_PORT(chan->index), 4 | (data_high << 1) | clock_high);
+	if (!port)
+		return;
+
+	NV_WRITE(port, 4 | (data_high << 1) | clock_high);
 }
 
 static void nv50_i2c_get_bits(struct nv50_i2c_channel *chan, int *clock_high, int *data_high)
 {
 	struct drm_nouveau_private *dev_priv = chan->dev->dev_private;
+	uint32_t port = nv50_i2c_port(chan->index);
+	uint32_t val;
 
-	uint32_t val = NV_READ(NV50_PCONNECTOR_I2C_PORT(chan->index));
+	if (!port)
+		return;
+
+	val = NV_READ(port);
 
 	if (val & 1)
 		*clock_high = 1;
