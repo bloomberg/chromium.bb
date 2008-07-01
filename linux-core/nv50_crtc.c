@@ -232,17 +232,18 @@ static int nv50_crtc_set_dither(struct nv50_crtc *crtc)
 
 static void nv50_crtc_calc_scale(struct nv50_crtc *crtc, uint32_t *outX, uint32_t *outY)
 {
-	float hor_scale, ver_scale;
+	uint32_t hor_scale, ver_scale;
 
-	hor_scale = (float)crtc->native_mode->hdisplay/(float)crtc->mode->hdisplay;
-	ver_scale = (float)crtc->native_mode->vdisplay/(float)crtc->mode->vdisplay;
+	/* max res is 8192, which is 2^13, which leaves 19 bits */
+	hor_scale = (crtc->native_mode->hdisplay << 19)/crtc->mode->hdisplay;
+	ver_scale = (crtc->native_mode->vdisplay << 19)/crtc->mode->vdisplay;
 
 	if (ver_scale > hor_scale) {
-		*outX = crtc->mode->hdisplay * hor_scale;
-		*outY = crtc->mode->vdisplay * hor_scale;
+		*outX = (crtc->mode->hdisplay * hor_scale) >> 19;
+		*outY = (crtc->mode->vdisplay * hor_scale) >> 19;
 	} else {
-		*outX = crtc->mode->hdisplay * ver_scale;
-		*outY = crtc->mode->vdisplay * ver_scale;
+		*outX = (crtc->mode->hdisplay * ver_scale) >> 19;
+		*outY = (crtc->mode->vdisplay * ver_scale) >> 19;
 	}
 }
 
