@@ -114,6 +114,7 @@ typedef struct drm_i915_private {
 	uint32_t counter;
 	unsigned int status_gfx_addr;
 	drm_local_map_t hws_map;
+	struct drm_gem_object *hws_obj;
 
 	unsigned int cpp;
 
@@ -853,6 +854,11 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define RING_VALID_MASK		0x00000001
 #define RING_VALID		0x00000001
 #define RING_INVALID		0x00000000
+
+/* Hardware status page address */
+#define HWS_PGA			0x2080
+#define HWS_ADDRESS_MASK	0xfffff000
+#define HWS_START_ADDRES_SHIFT	4
 
 /* Instruction parser error reg:
  */

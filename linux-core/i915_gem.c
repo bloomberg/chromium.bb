@@ -2312,12 +2312,66 @@ i915_gem_idle(struct drm_device *dev)
 }
 
 static int
+i915_gem_init_hws(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+	int ret;
+
+	/* If we need a physical address for the status page, it's already
+	 * initialized at driver load time.
+	 */
+	if (!I915_NEED_GFX_HWS(dev))
+		return 0;
+
+	obj = drm_gem_object_alloc(dev, 4096);
+	if (obj == NULL) {
+		DRM_ERROR("Failed to allocate status page\n");
+		return -ENOMEM;
+	}
+	obj_priv = obj->driver_private;
+
+	ret = i915_gem_object_pin(obj, 4096);
+	if (ret != 0) {
+		drm_gem_object_unreference(obj);
+		return ret;
+	}
+
+	dev_priv->status_gfx_addr = obj_priv->gtt_offset;
+	dev_priv->hws_map.offset = dev->agp->base + obj_priv->gtt_offset;
+	dev_priv->hws_map.size = 4096;
+	dev_priv->hws_map.type = 0;
+	dev_priv->hws_map.flags = 0;
+	dev_priv->hws_map.mtrr = 0;
+
+	drm_core_ioremap(&dev_priv->hws_map, dev);
+	if (dev_priv->hws_map.handle == NULL) {
+		DRM_ERROR("Failed to map status page.\n");
+		memset(&dev_priv->hws_map, 0, sizeof(dev_priv->hws_map));
+		drm_gem_object_unreference(obj);
+		return -EINVAL;
+	}
+	dev_priv->hws_obj = obj;
+	dev_priv->hw_status_page = dev_priv->hws_map.handle;
+	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+	I915_WRITE(HWS_PGA, dev_priv->status_gfx_addr);
+	DRM_DEBUG("hws offset: 0x%08x\n", dev_priv->status_gfx_addr);
+
+	return 0;
+}
+
+static int
 i915_gem_init_ringbuffer(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
 	int ret;
+
+	ret = i915_gem_init_hws(dev);
+	if (ret != 0)
+		return ret;
 
 	obj = drm_gem_object_alloc(dev, 128 * 1024);
 	if (obj == NULL) {
@@ -2383,8 +2437,18 @@ i915_gem_cleanup_ringbuffer(struct drm_device *dev)
 
 	i915_gem_object_unpin(dev_priv->ring.ring_obj);
 	drm_gem_object_unreference(dev_priv->ring.ring_obj);
-
+	dev_priv->ring.ring_obj = NULL;
 	memset(&dev_priv->ring, 0, sizeof(dev_priv->ring));
+
+	if (dev_priv->hws_obj != NULL) {
+		i915_gem_object_unpin(dev_priv->hws_obj);
+		drm_gem_object_unreference(dev_priv->hws_obj);
+		dev_priv->hws_obj = NULL;
+		memset(&dev_priv->hws_map, 0, sizeof(dev_priv->hws_map));
+
+		/* Write high address into HWS_PGA when disabling. */
+		I915_WRITE(HWS_PGA, 0x1ffff000);
+	}
 }
 
 int
