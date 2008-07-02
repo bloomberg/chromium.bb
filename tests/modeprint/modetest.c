@@ -55,12 +55,63 @@ int printMode(struct drm_mode_modeinfo *mode)
 	return 0;
 }
 
+int printProperty(int fd, drmModeResPtr res, drmModePropertyPtr props, uint64_t value)
+{
+	const unsigned char *name = NULL;
+	int j;
+
+	printf("Property: %s\n", props->name);
+	printf("\tid           : %i\n", props->prop_id);
+	printf("\tflags        : %i\n", props->flags);
+	printf("\tcount_values : %d\n", props->count_values);
+
+
+	if (props->count_values) {
+		printf("\tvalues       :");
+		for (j = 0; j < props->count_values; j++)
+			printf(" %lld", props->values[j]);
+		printf("\n");
+	}
+
+
+	printf("\tcount_enums  : %d\n", props->count_enums);
+
+	if (props->flags & DRM_MODE_PROP_BLOB) {
+		drmModePropertyBlobPtr blob;
+
+		blob = drmModeGetPropertyBlob(fd, value);
+		if (blob) {
+			printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
+			drmModeFreePropertyBlob(blob);
+		} else {
+			printf("error getting blob %lld\n", value);
+		}
+
+	} else {
+		if (!strncmp(props->name, "DPMS", 4))
+			;
+
+		for (j = 0; j < props->count_enums; j++) {
+			printf("\t\t%lld = %s\n", props->enums[j].value, props->enums[j].name);
+			if (props->enums[j].value == value)
+				name = props->enums[j].name;
+		}
+
+		if (props->count_enums && name) {
+			printf("\tcon_value    : %s\n", name);
+		} else {
+			printf("\tcon_value    : %lld\n", value);
+		}
+	}
+
+	return 0;
+}
+
 int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uint32_t id)
 {
-	int i = 0, j;
+	int i = 0;
 	struct drm_mode_modeinfo *mode = NULL;
 	drmModePropertyPtr props;
-	unsigned char *name = NULL;
 
 	printf("Connector: %d-%d\n", connector->connector_type, connector->connector_type_id);
 	printf("\tid             : %i\n", id);
@@ -69,72 +120,35 @@ int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uin
 	printf("\tsize           : %ix%i (mm)\n", connector->mmWidth, connector->mmHeight);
 	printf("\tcount_modes    : %i\n", connector->count_modes);
 	printf("\tcount_props    : %i\n", connector->count_props);
-	printf("\tcount_encoders : %i\n", connector->count_encoders);
-
-	if (connector->count_encoders) {
-		printf("\t\tencoders");
-		for (i = 0; i < connector->count_encoders; i++)
-			printf(" %i", connector->encoders[i]);
+	if (connector->count_props) {
+		printf("\tprops          :");
+		for (i = 0; i < connector->count_props; i++)
+			printf(" %i", connector->props[i]);
 		printf("\n");
 	}
 
-	if (full_props) {
-		for (i = 0; i < connector->count_props; i++) {
-			props = drmModeGetProperty(fd, connector->props[i]);
-			name = NULL;
-			if (props) {
-				printf("Property: %s\n", props->name);
-				printf("\tid:        %i\n", props->prop_id);
-				printf("\tflags:     %i\n", props->flags);
-				printf("\tvalues %d: ", props->count_values);
-				for (j = 0; j < props->count_values; j++)
-					printf("%lld ", props->values[j]);
-
-				printf("\n\tenums %d: \n", props->count_enums);
-
-				if (props->flags & DRM_MODE_PROP_BLOB) {
-					drmModePropertyBlobPtr blob;
-
-					blob = drmModeGetPropertyBlob(fd, connector->prop_values[i]);
-					if (blob) {
-						printf("blob is %d length, %08X\n", blob->length, *(uint32_t *)blob->data);
-						drmModeFreePropertyBlob(blob);
-					}
-
-				} else {
-					if (!strncmp(props->name, "DPMS", 4))
-						;
-
-					for (j = 0; j < props->count_enums; j++) {
-						printf("\t\t%lld = %s\n", props->enums[j].value, props->enums[j].name);
-						if (connector->prop_values[i] == props->enums[j].value)
-							name = props->enums[j].name;
-
-					}
-
-					if (props->count_enums && name) {
-						printf("\tconnector property name %s %s\n", props->name, name);
-					} else {
-						printf("\tconnector property id %s %lli\n", props->name, connector->prop_values[i]);
-					}
-				}
-
-				drmModeFreeProperty(props);
-			}
-		}
-	} else {
-		if (connector->count_props) {
-			printf("\t\tprops");
-			for (i = 0; i < connector->count_props; i++)
-				printf(" %i", connector->props[i]);
-			printf("\n");
-		}
+	printf("\tcount_encoders : %i\n", connector->count_encoders);
+	if (connector->count_encoders) {
+		printf("\tencoders       :");
+		for (i = 0; i < connector->count_encoders; i++)
+			printf(" %i", connector->encoders[i]);
+		printf("\n");
 	}
 
 	if (modes) {
 		for (i = 0; i < connector->count_modes; i++) {
 			mode = &connector->modes[i];
 			printMode(mode);
+		}
+	}
+
+	if (full_props) {
+		for (i = 0; i < connector->count_props; i++) {
+			props = drmModeGetProperty(fd, connector->props[i]);
+			if (props) {
+				printProperty(fd, res, props, connector->prop_values[i]);
+				drmModeFreeProperty(props);
+			}
 		}
 	}
 
@@ -310,13 +324,13 @@ void args(int argc, char **argv)
 
 	if (argc == 1) {
 		fbs = 1;
-		modes = 1;
-		full_modes = 0;
-		encoders = 1;
-		connectors = 1;
-		crtcs = 1;
-		full_props = 0;
 		edid = 1;
+		crtcs = 1;
+		modes = 1;
+		encoders = 1;
+		full_modes = 0;
+		full_props = 0;
+		connectors = 1;
 	}
 }
 int main(int argc, char **argv)
