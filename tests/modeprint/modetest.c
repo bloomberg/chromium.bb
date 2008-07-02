@@ -176,10 +176,6 @@ int printCrtc(int fd, drmModeResPtr res, drmModeCrtcPtr crtc, uint32_t id)
 	printf("\theight         : %i\n", crtc->height);
 	printf("\tmode           : %p\n", &crtc->mode);
 	printf("\tgamma size     : %d\n", crtc->gamma_size);
-	printf("\tnum connectors : %i\n", crtc->count_connectors);
-	printf("\tconnectors     : %i\n", crtc->connectors);
-	printf("\tnum possible   : %i\n", crtc->count_possibles);
-	printf("\tpossibles      : %i\n", crtc->possibles);
 
 	return 0;
 }
