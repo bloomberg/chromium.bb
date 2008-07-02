@@ -106,12 +106,6 @@ typedef struct _drmModeCrtc {
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
 
-	int count_connectors;
-	uint32_t connectors; /**< Connectors that are connected */
-
-	int count_possibles;
-	uint32_t possibles; /**< Connectors that can be connected */
-
 	int gamma_size; /**< Number of gamma stops */
 
 } drmModeCrtc, *drmModeCrtcPtr;
