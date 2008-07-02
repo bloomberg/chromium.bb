@@ -337,10 +337,11 @@ void nv50_display_command(struct drm_nouveau_private *dev_priv, uint32_t mthd, u
 
 	while (NV_READ(NV50_PDISPLAY_CTRL_STATE) & NV50_PDISPLAY_CTRL_STATE_PENDING) {
 		counter++;
-		if (counter > 25000) {
+		if (counter > 1000000) {
 			DRM_ERROR("You probably need a reboot now\n");
 			break;
 		}
+		udelay(1);
 	}
 }
 

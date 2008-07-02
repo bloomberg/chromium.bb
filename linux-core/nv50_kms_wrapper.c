@@ -153,6 +153,7 @@ static void nv50_kms_mirror_routing(struct drm_device *dev)
 	struct nv50_output *output = NULL;
 	struct nv50_connector *connector = NULL;
 	struct drm_connector *drm_connector = NULL;
+	struct drm_crtc *drm_crtc = NULL;
 
 	/* Wipe all previous connections. */
 	list_for_each_entry(connector, &display->connectors, item) {
@@ -178,6 +179,13 @@ static void nv50_kms_mirror_routing(struct drm_device *dev)
 				output->crtc = crtc;
 			}
 		}
+	}
+
+	/* mirror crtc active state */
+	list_for_each_entry(drm_crtc, &dev->mode_config.crtc_list, head) {
+		crtc = to_nv50_crtc(drm_crtc);
+
+		crtc->active = drm_crtc->enabled;
 	}
 }
 
@@ -428,8 +436,6 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			drm_crtc = drm_encoder->crtc;
 			drm_encoder->crtc = NULL;
 
-			crtc = to_nv50_crtc(drm_crtc);
-			crtc->active = false;
 			drm_crtc->enabled = false;
 		}
 
@@ -456,6 +462,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			}
 
 			drm_encoder->crtc = set->crtc;
+			set->crtc->enabled = true;
 			drm_connector->encoder = drm_encoder;
 		}
 	}
@@ -468,7 +475,6 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		crtc = to_nv50_crtc(set->crtc);
 
 		/* keeping the encoders and connectors attached, so they can be tracked */
-		crtc->active = false;
 		set->crtc->enabled = false;
 	}
 
