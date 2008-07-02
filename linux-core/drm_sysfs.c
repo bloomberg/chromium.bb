@@ -176,6 +176,19 @@ static ssize_t dpms_show(struct device *device,
 	return snprintf(buf, PAGE_SIZE, "%s", drm_get_dpms_name((int)dpms_status));
 }
 
+static ssize_t connected_show(struct device *device,
+			   struct device_attribute *attr,
+			   char *buf)
+{
+	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
+	struct drm_device *dev = connector->dev;
+
+	if (connector->encoder)
+		return snprintf(buf, PAGE_SIZE, "connected");
+	else
+		return snprintf(buf, PAGE_SIZE, "disconnected");
+}
+
 static ssize_t edid_show(struct kobject *kobj, struct bin_attribute *attr,
 			 char *buf, loff_t off, size_t count)
 {
@@ -221,6 +234,7 @@ static ssize_t modes_show(struct device *device,
 
 static struct device_attribute connector_attrs[] = {
 	__ATTR_RO(status),
+	__ATTR_RO(connected),
 	__ATTR_RO(dpms),
 	__ATTR_RO(modes),
 };
