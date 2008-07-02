@@ -220,7 +220,7 @@ int printRes(int fd, drmModeResPtr res)
 			connector = drmModeGetConnector(fd, res->connectors[i]);
 
 			if (!connector)
-				printf("Could not get connector %i\n", i);
+				printf("Could not get connector %i\n", res->connectors[i]);
 			else {
 				printConnector(fd, res, connector, res->connectors[i]);
 				drmModeFreeConnector(connector);
@@ -235,7 +235,7 @@ int printRes(int fd, drmModeResPtr res)
 			encoder = drmModeGetEncoder(fd, res->encoders[i]);
 
 			if (!encoder)
-				printf("Could not get encoder %i\n", i);
+				printf("Could not get encoder %i\n", res->encoders[i]);
 			else {
 				printEncoder(fd, res, encoder, res->encoders[i]);
 				drmModeFreeEncoder(encoder);
@@ -249,7 +249,7 @@ int printRes(int fd, drmModeResPtr res)
 			crtc = drmModeGetCrtc(fd, res->crtcs[i]);
 
 			if (!crtc)
-				printf("Could not get crtc %i\n", i);
+				printf("Could not get crtc %i\n", res->crtcs[i]);
 			else {
 				printCrtc(fd, res, crtc, res->crtcs[i]);
 				drmModeFreeCrtc(crtc);
