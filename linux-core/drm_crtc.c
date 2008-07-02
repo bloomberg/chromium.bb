@@ -1926,7 +1926,7 @@ int drm_mode_getblob_ioctl(struct drm_device *dev,
 	void *blob_ptr;
 
 	mutex_lock(&dev->mode_config.mutex);
-	obj = drm_mode_object_find(dev, out_resp->blob_id, DRM_MODE_OBJECT_CONNECTOR);
+	obj = drm_mode_object_find(dev, out_resp->blob_id, DRM_MODE_OBJECT_BLOB);
 	if (!obj) {
 		ret = -EINVAL;
 		goto done;
