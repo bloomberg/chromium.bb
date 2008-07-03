@@ -98,7 +98,7 @@ typedef struct _drmModeProperty {
 
 typedef struct _drmModeCrtc {
 	unsigned int crtc_id;
-	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect*/
+	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect */
 	uint32_t generation;
 
 	uint32_t x, y; /**< Position on the frameuffer */
@@ -137,7 +137,7 @@ typedef enum {
 typedef struct _drmModeConnector {
 	uint32_t generation;
 	unsigned int connector_id;
-	unsigned int encoder; /**< Crtc currently connected to */
+	unsigned int encoder; /**< Encoder currently connected to */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
 	drmModeConnection connection;
