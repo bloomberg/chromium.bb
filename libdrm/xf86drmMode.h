@@ -50,16 +50,8 @@
  * buffer object interface. This object needs to be pinned.
  */
 
-/*
- * generation - these are to be read by userspace, and if it notices
- * while calling a get output or get crtc that the generation has changed
- * it should re-call the mode resource functions resync its view of the
- * outputs with current view.
- */
-
 typedef struct _drmModeRes {
 
-	uint32_t generation;
 	int count_fbs;
 	uint32_t *fbs;
 
@@ -99,7 +91,6 @@ typedef struct _drmModeProperty {
 typedef struct _drmModeCrtc {
 	unsigned int crtc_id;
 	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect */
-	uint32_t generation;
 
 	uint32_t x, y; /**< Position on the frameuffer */
 	uint32_t width, height;
@@ -111,7 +102,6 @@ typedef struct _drmModeCrtc {
 } drmModeCrtc, *drmModeCrtcPtr;
 
 typedef struct _drmModeEncoder {
-	uint32_t generation;
 	unsigned int encoder_id;
 	unsigned int encoder_type;
 	uint32_t crtc;
@@ -135,7 +125,6 @@ typedef enum {
 } drmModeSubPixel;
 
 typedef struct _drmModeConnector {
-	uint32_t generation;
 	unsigned int connector_id;
 	unsigned int encoder; /**< Encoder currently connected to */
 	unsigned int connector_type;

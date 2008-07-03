@@ -561,9 +561,6 @@ struct drm_mode_config {
 	/* in-kernel framebuffers - hung of filp_head in drm_framebuffer */
 	struct list_head fb_kernel_list;
 
-	/* currently in use generation id */
-	int current_generation;
-
 	int min_width, min_height;
 	int max_width, max_height;
 	struct drm_mode_config_funcs *funcs;
