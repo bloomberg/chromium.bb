@@ -79,7 +79,7 @@ static int nv50_display_pre_init(struct nv50_display *display)
 	NV_WRITE(NV50_PDISPLAY_UNK_388, 0x150000);
 	NV_WRITE(NV50_PDISPLAY_UNK_38C, 0);
 
-	display->preinit_done = TRUE;
+	display->preinit_done = true;
 
 	return 0;
 }
@@ -125,7 +125,7 @@ static int nv50_display_init(struct nv50_display *display)
 	/* enable clock change interrupts. */
 	NV_WRITE(NV50_PDISPLAY_SUPERVISOR_INTR, NV_READ(NV50_PDISPLAY_SUPERVISOR_INTR) | 0x70);
 
-	display->init_done = TRUE;
+	display->init_done = true;
 
 	return 0;
 }
@@ -140,7 +140,7 @@ static int nv50_display_disable(struct nv50_display *display)
 	NV50_DEBUG("\n");
 
 	list_for_each_entry(crtc, &display->crtcs, item) {
-		crtc->blank(crtc, TRUE);
+		crtc->blank(crtc, true);
 	}
 
 	display->update(display);

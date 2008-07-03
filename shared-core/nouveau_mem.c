@@ -743,7 +743,7 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 					crtc->fb->block = NULL;
 
 					if (!crtc->blanked)
-						crtc->blank(crtc, TRUE);
+						crtc->blank(crtc, true);
 				}
 
 				if (crtc->cursor->block == block) {

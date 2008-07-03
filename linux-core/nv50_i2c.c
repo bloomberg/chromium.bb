@@ -106,19 +106,19 @@ static bool nv50_i2c_raise_clock(struct nv50_i2c_channel *chan, int data)
 	for (i = 2200; i > 0; i -= 2) {
 		nv50_i2c_get_bits(chan, &clock, &data);
 		if (clock)
-			return TRUE;
+			return true;
 		udelay(2);
 	}
 
 	printk("a timeout occured in nv50_i2c_raise_clock\n");
 
-	return FALSE;
+	return false;
 }
 
 static bool nv50_i2c_start(struct nv50_i2c_channel *chan)
 {
 	if (!nv50_i2c_raise_clock(chan, 1))
-		return FALSE;
+		return false;
 
 	nv50_i2c_set_bits(chan, 1, 0);
 	udelay(5);
@@ -126,7 +126,7 @@ static bool nv50_i2c_start(struct nv50_i2c_channel *chan)
 	nv50_i2c_set_bits(chan, 0, 0);
 	udelay(5);
 
-	return TRUE;
+	return true;
 }
 
 static void nv50_i2c_stop(struct nv50_i2c_channel *chan)
@@ -181,7 +181,7 @@ static bool nv50_i2c_write_byte(struct nv50_i2c_channel *chan, uint8_t byte)
 
 	for (i = 7; i >= 0; i--)
 		if (!nv50_i2c_write_bit(chan, (byte >> i) & 1))
-			return FALSE;
+			return false;
 
 	nv50_i2c_set_bits(chan, 0, 1);
 	udelay(5);
@@ -198,7 +198,7 @@ static bool nv50_i2c_write_byte(struct nv50_i2c_channel *chan, uint8_t byte)
 
 		if (i <= 0) {
 			printk("a timeout occured in nv50_i2c_write_byte\n");
-			rval = FALSE;
+			rval = false;
 		}
 	}
 
@@ -222,14 +222,14 @@ static bool nv50_i2c_read_byte(struct nv50_i2c_channel *chan, uint8_t *byte, boo
 			if (bit)
 				*byte |= (1 << i);
 		} else {
-			return FALSE;
+			return false;
 		}
 	}
 
 	if (!nv50_i2c_write_bit(chan, last ? 1 : 0))
-		return FALSE;
+		return false;
 
-	return TRUE;
+	return true;
 }
 
 /* only 7 bits addresses. */
@@ -241,13 +241,13 @@ static bool nv50_i2c_address(struct nv50_i2c_channel *chan, uint8_t address, boo
 			real_addr |= 1;
 
 		if (nv50_i2c_write_byte(chan, real_addr))
-			return TRUE;
+			return true;
 
 		/* failure, so issue stop */
 		nv50_i2c_stop(chan);
 	}
 
-	return FALSE;
+	return false;
 }
 
 static bool nv50_i2c_read(struct nv50_i2c_channel *chan, uint8_t address, uint8_t *buffer, uint32_t length)
@@ -257,9 +257,9 @@ static bool nv50_i2c_read(struct nv50_i2c_channel *chan, uint8_t address, uint8_
 
 	/* retries */
 	for (i = 0; i < 4; i++) {
-		rval = nv50_i2c_address(chan, address, FALSE);
+		rval = nv50_i2c_address(chan, address, false);
 		if (!rval)
-			return FALSE;
+			return false;
 
 		for (j = 0; j < length; j++) {
 			last = false;
@@ -292,9 +292,9 @@ static bool nv50_i2c_write(struct nv50_i2c_channel *chan, uint8_t address, uint8
 
 	/* retries */
 	for (i = 0; i < 4; i++) {
-		rval = nv50_i2c_address(chan, address, TRUE);
+		rval = nv50_i2c_address(chan, address, true);
 		if (!rval)
-			return FALSE;
+			return false;
 
 		for (j = 0; j < length; j++) {
 			rval = nv50_i2c_write_byte(chan, buffer[j]);

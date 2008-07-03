@@ -529,7 +529,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	if (blank) {
 		crtc = to_nv50_crtc(set->crtc);
 
-		rval = crtc->blank(crtc, TRUE);
+		rval = crtc->blank(crtc, true);
 		if (rval != 0) {
 			DRM_ERROR("blanking failed\n");
 			goto out;
@@ -540,7 +540,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			if (drm_encoder->crtc == set->crtc) {
 				output = to_nv50_output(drm_encoder);
 
-				rval = output->execute_mode(output, TRUE);
+				rval = output->execute_mode(output, true);
 				if (rval != 0) {
 					DRM_ERROR("detaching output failed\n");
 					goto out;
@@ -556,7 +556,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	if (switch_fb && !modeset && !blank) {
 		crtc = to_nv50_crtc(set->crtc);
 
-		rval = crtc->blank(crtc, TRUE);
+		rval = crtc->blank(crtc, true);
 		if (rval != 0) {
 			DRM_ERROR("blanking failed\n");
 			goto out;
@@ -569,7 +569,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		}
 
 		/* this also sets the fb offset */
-		rval = crtc->blank(crtc, FALSE);
+		rval = crtc->blank(crtc, false);
 		if (rval != 0) {
 			DRM_ERROR("unblanking failed\n");
 			goto out;
@@ -588,7 +588,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			if (output->crtc) {
 				crtc_mask |= 1 << output->crtc->index;
 			} else {
-				rval = output->execute_mode(output, TRUE);
+				rval = output->execute_mode(output, true);
 				if (rval != 0) {
 					DRM_ERROR("detaching output failed\n");
 					goto out;
@@ -599,7 +599,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		/* blank any unused crtcs */
 		list_for_each_entry(crtc, &display->crtcs, item) {
 			if (!(crtc_mask & (1 << crtc->index)))
-				crtc->blank(crtc, TRUE);
+				crtc->blank(crtc, true);
 		}
 
 		crtc = to_nv50_crtc(set->crtc);
@@ -642,7 +642,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			if (output->crtc != crtc)
 				continue;
 
-			rval = output->execute_mode(output, FALSE);
+			rval = output->execute_mode(output, false);
 			if (rval != 0) {
 				DRM_ERROR("output execute mode failed\n");
 				goto out;
@@ -933,7 +933,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 		}
 	}
 
-	drm_mode_prune_invalid(drm_connector->dev, &drm_connector->modes, TRUE);
+	drm_mode_prune_invalid(drm_connector->dev, &drm_connector->modes, true);
 
 	if (list_empty(&drm_connector->modes)) {
 		struct drm_display_mode *stdmode;
