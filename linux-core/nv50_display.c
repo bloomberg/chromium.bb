@@ -147,7 +147,7 @@ static int nv50_display_disable(struct nv50_display *display)
 
 	/* Almost like ack'ing a vblank interrupt, maybe in the spirit of cleaning up? */
 	list_for_each_entry(crtc, &display->crtcs, item) {
-		if (crtc->active) {
+		if (crtc->enabled) {
 			uint32_t mask;
 
 			if (crtc->index == 1)

@@ -185,7 +185,7 @@ static void nv50_kms_mirror_routing(struct drm_device *dev)
 	list_for_each_entry(drm_crtc, &dev->mode_config.crtc_list, head) {
 		crtc = to_nv50_crtc(drm_crtc);
 
-		crtc->active = drm_crtc->enabled;
+		crtc->enabled = drm_crtc->enabled;
 	}
 }
 
