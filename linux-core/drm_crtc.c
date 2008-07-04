@@ -592,6 +592,9 @@ int drm_mode_create_tv_properties(struct drm_device *dev, int num_modes,
 
 	dev->mode_config.tv_select_subconnector_property = drm_property_create(dev, DRM_MODE_PROP_ENUM,
 				    "select subconnector", 4);
+	/* add enum element 0 */
+	drm_property_add_enum(dev->mode_config.tv_select_subconnector_property, 0, drm_select_subconnector_enum_list[0].type,
+				drm_select_subconnector_enum_list[0].name);
 	/* add enum element 3-5 */
 	for (i = 1; i < 4; i++)
 		drm_property_add_enum(dev->mode_config.tv_select_subconnector_property, i, drm_select_subconnector_enum_list[i + 2].type,
@@ -600,6 +603,9 @@ int drm_mode_create_tv_properties(struct drm_device *dev, int num_modes,
 	/* This is a property which indicates the most likely thing to be connected. */
 	dev->mode_config.tv_subconnector_property = drm_property_create(dev, DRM_MODE_PROP_ENUM | DRM_MODE_PROP_IMMUTABLE,
 				    "subconnector", 4);
+	/* add enum element 0 */
+	drm_property_add_enum(dev->mode_config.tv_subconnector_property, 0, drm_subconnector_enum_list[0].type,
+				drm_subconnector_enum_list[0].name);
 	/* add enum element 3-5 */
 	for (i = 1; i < 4; i++)
 		drm_property_add_enum(dev->mode_config.tv_subconnector_property, i, drm_subconnector_enum_list[i + 2].type,
