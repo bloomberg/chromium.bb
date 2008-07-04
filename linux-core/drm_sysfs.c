@@ -231,11 +231,89 @@ static ssize_t modes_show(struct device *device,
 	return written;
 }
 
+static ssize_t subconnector_show(struct device *device,
+			   struct device_attribute *attr,
+			   char *buf)
+{
+	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
+	struct drm_device *dev = connector->dev;
+	struct drm_property *prop = NULL;
+	uint64_t subconnector;
+	int ret;
+
+	switch (connector->connector_type) {
+		case DRM_MODE_CONNECTOR_DVII:
+			prop = dev->mode_config.dvi_i_subconnector_property;
+			break;
+		case DRM_MODE_CONNECTOR_Composite:
+		case DRM_MODE_CONNECTOR_SVIDEO:
+		case DRM_MODE_CONNECTOR_Component:
+			prop = dev->mode_config.tv_subconnector_property;
+			break;
+		default:
+			DRM_ERROR("Wrong connector type for this property\n");
+			return 0;
+	}
+
+	if (!prop) {
+		DRM_ERROR("Unable to find subconnector property\n");
+		return 0;
+	}
+
+	ret = drm_connector_property_get_value(connector, prop, &subconnector);
+	if (ret)
+		return 0;
+
+	return snprintf(buf, PAGE_SIZE, "%s", drm_get_subconnector_name((int)subconnector));
+}
+
+static ssize_t select_subconnector_show(struct device *device,
+			   struct device_attribute *attr,
+			   char *buf)
+{
+	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
+	struct drm_device *dev = connector->dev;
+	struct drm_property *prop = NULL;
+	uint64_t subconnector;
+	int ret;
+
+	switch (connector->connector_type) {
+		case DRM_MODE_CONNECTOR_DVII:
+			prop = dev->mode_config.dvi_i_select_subconnector_property;
+			break;
+		case DRM_MODE_CONNECTOR_Composite:
+		case DRM_MODE_CONNECTOR_SVIDEO:
+		case DRM_MODE_CONNECTOR_Component:
+			prop = dev->mode_config.tv_select_subconnector_property;
+			break;
+		default:
+			DRM_ERROR("Wrong connector type for this property\n");
+			return 0;
+	}
+
+	if (!prop) {
+		DRM_ERROR("Unable to find select subconnector property\n");
+		return 0;
+	}
+
+	ret = drm_connector_property_get_value(connector, prop, &subconnector);
+	if (ret)
+		return 0;
+
+	return snprintf(buf, PAGE_SIZE, "%s", drm_get_select_subconnector_name((int)subconnector));
+}
+
 static struct device_attribute connector_attrs[] = {
 	__ATTR_RO(status),
 	__ATTR_RO(enabled),
 	__ATTR_RO(dpms),
 	__ATTR_RO(modes),
+};
+
+/* These attributes are for both DVI-I connectors and all types of tv-out. */
+static struct device_attribute connector_attrs_opt1[] = {
+	__ATTR_RO(subconnector),
+	__ATTR_RO(select_subconnector),
 };
 
 static struct bin_attribute edid_attr = {
@@ -282,10 +360,30 @@ int drm_sysfs_connector_add(struct drm_connector *connector)
 		goto out;
 	}
 
+	/* Standard attributes */
+
 	for (i = 0; i < ARRAY_SIZE(connector_attrs); i++) {
 		ret = device_create_file(&connector->kdev, &connector_attrs[i]);
 		if (ret)
 			goto err_out_files;
+	}
+
+	/* Optional attributes */
+	/* On the long run it maybe a good idea to make one set of optionals per connector type. */
+
+	switch (connector->connector_type) {
+		case DRM_MODE_CONNECTOR_DVII:
+		case DRM_MODE_CONNECTOR_Composite:
+		case DRM_MODE_CONNECTOR_SVIDEO:
+		case DRM_MODE_CONNECTOR_Component:
+			for (i = 0; i < ARRAY_SIZE(connector_attrs_opt1); i++) {
+				ret = device_create_file(&connector->kdev, &connector_attrs_opt1[i]);
+				if (ret)
+					goto err_out_files;
+			}
+			break;
+		default:
+			break;
 	}
 
 	ret = sysfs_create_bin_file(&connector->kdev.kobj, &edid_attr);

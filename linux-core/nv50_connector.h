@@ -48,7 +48,6 @@ struct nv50_connector {
 	struct nv50_output *output;
 
 	int scaling_mode;
-	bool digital; /* last connected output, this has to be set from the outside*/
 
 	bool (*detect) (struct nv50_connector *connector);
 	int (*destroy) (struct nv50_connector *connector);

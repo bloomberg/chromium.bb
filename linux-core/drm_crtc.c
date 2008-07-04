@@ -60,6 +60,48 @@ char *drm_get_dpms_name(int val)
 	return "unknown";
 }
 
+static struct drm_prop_enum_list drm_select_subconnector_enum_list[] =
+{
+	{ DRM_MODE_SUBCONNECTOR_Automatic, "Automatic" }, /* DVI-I and TV-out */
+	{ DRM_MODE_SUBCONNECTOR_DVID,      "DVI-D"     }, /* DVI-I  */
+	{ DRM_MODE_SUBCONNECTOR_DVIA,      "DVI-A"     }, /* DVI-I  */
+	{ DRM_MODE_SUBCONNECTOR_Composite, "Composite" }, /* TV-out */
+	{ DRM_MODE_SUBCONNECTOR_SVIDEO,    "SVIDEO"    }, /* TV-out */
+	{ DRM_MODE_SUBCONNECTOR_Component, "Component" }, /* TV-out */
+};
+
+char *drm_get_select_subconnector_name(int val)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(drm_select_subconnector_enum_list); i++)
+		if (drm_select_subconnector_enum_list[i].type == val)
+			return drm_select_subconnector_enum_list[i].name;
+
+	return "unknown";
+}
+
+static struct drm_prop_enum_list drm_subconnector_enum_list[] =
+{
+	{ DRM_MODE_SUBCONNECTOR_Unknown,   "Unknown"    }, /* DVI-I and TV-out */
+	{ DRM_MODE_SUBCONNECTOR_DVID,      "DVI-D"     }, /* DVI-I  */
+	{ DRM_MODE_SUBCONNECTOR_DVIA,      "DVI-A"     }, /* DVI-I  */
+	{ DRM_MODE_SUBCONNECTOR_Composite, "Composite" }, /* TV-out */
+	{ DRM_MODE_SUBCONNECTOR_SVIDEO,    "SVIDEO"    }, /* TV-out */
+	{ DRM_MODE_SUBCONNECTOR_Component, "Component" }, /* TV-out */
+};
+
+char *drm_get_subconnector_name(int val)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(drm_subconnector_enum_list); i++)
+		if (drm_subconnector_enum_list[i].type == val)
+			return drm_subconnector_enum_list[i].name;
+
+	return "unknown";
+}
+
 static struct drm_prop_enum_list drm_connector_enum_list[] = 
 {	{ DRM_MODE_CONNECTOR_Unknown, "Unknown" },
 	{ DRM_MODE_CONNECTOR_VGA, "VGA" },
@@ -498,6 +540,38 @@ static int drm_mode_create_standard_connector_properties(struct drm_device *dev)
 }
 
 /**
+ * drm_mode_create_dvi_i_properties - create DVI-I specific connector properties
+ * @dev: DRM device
+ *
+ * Called by a driver the first time a DVI-I connector is made.
+ */
+int drm_mode_create_dvi_i_properties(struct drm_device *dev)
+{
+	int i;
+
+	if (dev->mode_config.dvi_i_select_subconnector_property)
+		return 0;
+
+	dev->mode_config.dvi_i_select_subconnector_property = drm_property_create(dev, DRM_MODE_PROP_ENUM,
+				    "select subconnector", 3);
+	/* add enum element 0-2 */
+	for (i = 0; i < 3; i++)
+		drm_property_add_enum(dev->mode_config.dvi_i_select_subconnector_property, i, drm_select_subconnector_enum_list[i].type,
+				drm_select_subconnector_enum_list[i].name);
+
+	/* This is a property which indicates the most likely thing to be connected. */
+	dev->mode_config.dvi_i_subconnector_property = drm_property_create(dev, DRM_MODE_PROP_ENUM | DRM_MODE_PROP_IMMUTABLE,
+				    "subconnector", 3);
+	/* add enum element 0-2 */
+	for (i = 0; i < 3; i++)
+		drm_property_add_enum(dev->mode_config.dvi_i_subconnector_property, i, drm_subconnector_enum_list[i].type,
+				drm_subconnector_enum_list[i].name);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_mode_create_dvi_i_properties);
+
+/**
  * drm_create_tv_properties - create TV specific connector properties
  * @dev: DRM device
  * @num_modes: number of different TV formats (modes) supported
@@ -508,10 +582,28 @@ static int drm_mode_create_standard_connector_properties(struct drm_device *dev)
  * responsible for allocating a list of format names and passing them to
  * this routine.
  */
-bool drm_create_tv_properties(struct drm_device *dev, int num_modes,
+int drm_mode_create_tv_properties(struct drm_device *dev, int num_modes,
 			      char *modes[])
 {
 	int i;
+
+	if (dev->mode_config.tv_select_subconnector_property) /* already done */
+		return 0;
+
+	dev->mode_config.tv_select_subconnector_property = drm_property_create(dev, DRM_MODE_PROP_ENUM,
+				    "select subconnector", 4);
+	/* add enum element 3-5 */
+	for (i = 1; i < 4; i++)
+		drm_property_add_enum(dev->mode_config.tv_select_subconnector_property, i, drm_select_subconnector_enum_list[i + 2].type,
+				drm_select_subconnector_enum_list[i + 2].name);
+
+	/* This is a property which indicates the most likely thing to be connected. */
+	dev->mode_config.tv_subconnector_property = drm_property_create(dev, DRM_MODE_PROP_ENUM | DRM_MODE_PROP_IMMUTABLE,
+				    "subconnector", 4);
+	/* add enum element 3-5 */
+	for (i = 1; i < 4; i++)
+		drm_property_add_enum(dev->mode_config.tv_subconnector_property, i, drm_subconnector_enum_list[i + 2].type,
+				drm_subconnector_enum_list[i + 2].name);
 
 	dev->mode_config.tv_left_margin_property =
 		drm_property_create(dev, DRM_MODE_PROP_RANGE |
@@ -547,7 +639,7 @@ bool drm_create_tv_properties(struct drm_device *dev, int num_modes,
 
 	return 0;
 }
-EXPORT_SYMBOL(drm_create_tv_properties);
+EXPORT_SYMBOL(drm_mode_create_tv_properties);
 
 /**
  * drm_mode_config_init - initialize DRM mode_configuration structure

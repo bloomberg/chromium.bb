@@ -387,7 +387,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			}
 			connector = to_nv50_connector(drm_connector);
 
-			output = connector->to_output(connector, connector->digital);
+			output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
 			if (!output) {
 				DRM_ERROR("No output\n");
 				goto out;
@@ -447,7 +447,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 				goto out;
 			}
 
-			output = connector->to_output(connector, connector->digital);
+			output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
 			if (!output) {
 				DRM_ERROR("No output\n");
 				goto out;
@@ -806,6 +806,63 @@ static int nv50_kms_encoders_init(struct drm_device *dev)
  * Connector functions
  */
 
+bool nv50_kms_connector_is_digital(struct drm_connector *drm_connector)
+{
+	struct drm_device *dev = drm_connector->dev;
+
+	switch (drm_connector->connector_type) {
+		case DRM_MODE_CONNECTOR_VGA:
+		case DRM_MODE_CONNECTOR_SVIDEO:
+			return false;
+		case DRM_MODE_CONNECTOR_DVID:
+		case DRM_MODE_CONNECTOR_LVDS:
+			return true;
+		default:
+			break;
+	}
+
+	if (drm_connector->connector_type == DRM_MODE_CONNECTOR_DVII) {
+		int rval;
+		uint64_t prop_val;
+
+		rval = drm_connector_property_get_value(drm_connector, dev->mode_config.dvi_i_select_subconnector_property, &prop_val);
+		if (!rval) {
+			DRM_ERROR("Unable to find select subconnector property, defaulting to DVI-D\n");
+			return true;
+		}
+
+		/* Is a subconnector explicitly selected? */
+		switch (prop_val) {
+			case DRM_MODE_SUBCONNECTOR_DVID:
+				return true;
+			case DRM_MODE_SUBCONNECTOR_DVIA:
+				return false;
+			default:
+				break;
+		}
+
+		rval = drm_connector_property_get_value(drm_connector, dev->mode_config.dvi_i_subconnector_property, &prop_val);
+		if (!rval) {
+			DRM_ERROR("Unable to find subconnector property, defaulting to DVI-D\n");
+			return true;
+		}
+
+		/* Do we know what subconnector we currently have connected? */
+		switch (prop_val) {
+			case DRM_MODE_SUBCONNECTOR_DVID:
+				return true;
+			case DRM_MODE_SUBCONNECTOR_DVIA:
+				return false;
+			default:
+				DRM_ERROR("Unknown subconnector value, defaulting to DVI-D\n");
+				return true;
+		}
+	}
+
+	DRM_ERROR("Unknown connector type, defaulting to analog\n");
+	return false;
+}
+
 void nv50_kms_connector_detect_all(struct drm_device *dev)
 {
 	struct drm_connector *drm_connector = NULL;
@@ -867,7 +924,8 @@ static struct drm_display_mode std_mode[] = {
 static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, uint32_t maxX, uint32_t maxY)
 {
 	struct nv50_connector *connector = to_nv50_connector(drm_connector);
-	int ret = 0;
+	struct drm_device *dev = drm_connector->dev;
+	int rval = 0;
 	bool connected;
 	struct drm_display_mode *mode, *t;
 	struct edid *edid = NULL;
@@ -896,21 +954,32 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 
 	if (edid) {
 		drm_mode_connector_update_edid_property(drm_connector, edid);
-		ret = drm_add_edid_modes(drm_connector, edid);
-		connector->digital = edid->digital; /* cache */
+		rval = drm_add_edid_modes(drm_connector, edid);
+
+		/* 2 encoders per connector */
+		/* eventually do this based on load detect and hot plug detect */
+		if (drm_connector->connector_type == DRM_MODE_CONNECTOR_DVII) {
+			uint64_t subtype = 0;
+			if (edid->digital)
+				subtype = DRM_MODE_SUBCONNECTOR_DVID;
+			else
+				subtype = DRM_MODE_SUBCONNECTOR_DVIA;
+			drm_connector_property_set_value(drm_connector, dev->mode_config.dvi_i_subconnector_property, subtype);
+		}
+
 		kfree(edid);
 	}
 
-	if (ret) /* number of modes  > 1 */
+	if (rval) /* number of modes  > 1 */
 		drm_mode_connector_list_update(drm_connector);
 
 	if (maxX && maxY)
-		drm_mode_validate_size(drm_connector->dev, &drm_connector->modes, maxX, maxY, 0);
+		drm_mode_validate_size(dev, &drm_connector->modes, maxX, maxY, 0);
 
 	list_for_each_entry_safe(mode, t, &drm_connector->modes, head) {
 		if (mode->status == MODE_OK) {
 			struct nouveau_hw_mode *hw_mode = nv50_kms_to_hw_mode(mode);
-			struct nv50_output *output = connector->to_output(connector, connector->digital);
+			struct nv50_output *output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
 
 			mode->status = output->validate_mode(output, hw_mode);
 			/* find native mode, TODO: also check if we actually found one */
@@ -926,14 +995,14 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	list_for_each_entry_safe(mode, t, &drm_connector->modes, head) {
 		if (mode->status == MODE_OK) {
 			struct nouveau_hw_mode *hw_mode = nv50_kms_to_hw_mode(mode);
-			struct nv50_output *output = connector->to_output(connector, connector->digital);
+			struct nv50_output *output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
 
 			mode->status = output->validate_mode(output, hw_mode);
 			kfree(hw_mode);
 		}
 	}
 
-	drm_mode_prune_invalid(drm_connector->dev, &drm_connector->modes, true);
+	drm_mode_prune_invalid(dev, &drm_connector->modes, true);
 
 	if (list_empty(&drm_connector->modes)) {
 		struct drm_display_mode *stdmode;
@@ -947,14 +1016,14 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 		 * here and bailed in the past, now we add a standard
 		 * 640x480@60Hz mode and carry on.
 		 */
-		stdmode = drm_mode_duplicate(drm_connector->dev, &std_mode[0]);
+		stdmode = drm_mode_duplicate(dev, &std_mode[0]);
 		drm_mode_probed_add(drm_connector, stdmode);
 		drm_mode_list_concat(&drm_connector->probed_modes,
 				     &drm_connector->modes);
 
 		/* also add it as native mode */
 		hw_mode = nv50_kms_to_hw_mode(mode);
-		output = connector->to_output(connector, connector->digital);
+		output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
 
 		if (hw_mode)
 			*output->native_mode = *hw_mode;
@@ -1044,6 +1113,13 @@ static int nv50_kms_connectors_init(struct drm_device *dev)
 		drm_connector->doublescan_allowed = false;
 
 		drm_connector_init(dev, drm_connector, &nv50_kms_connector_funcs, type);
+
+		/* Init DVI-I specific properties */
+		if (type == DRM_MODE_CONNECTOR_DVII) {
+			drm_mode_create_dvi_i_properties(dev);
+			drm_connector_attach_property(drm_connector, dev->mode_config.dvi_i_subconnector_property, 0);
+			drm_connector_attach_property(drm_connector, dev->mode_config.dvi_i_select_subconnector_property, 0);
+		}
 
 		/* attach encoders, possibilities are analog + digital */
 		for (i = 0; i < 2; i++) {

@@ -170,6 +170,14 @@ struct drm_display_mode {
 #define DPMSModeSuspend 2
 #define DPMSModeOff 3
 
+#define DRM_MODE_SUBCONNECTOR_Automatic 0
+#define DRM_MODE_SUBCONNECTOR_Unknown 0
+#define DRM_MODE_SUBCONNECTOR_DVID 3
+#define DRM_MODE_SUBCONNECTOR_DVIA 4
+#define DRM_MODE_SUBCONNECTOR_Composite 5
+#define DRM_MODE_SUBCONNECTOR_SVIDEO 6
+#define DRM_MODE_SUBCONNECTOR_Component 8
+
 #define DRM_MODE_CONNECTOR_Unknown 0
 #define DRM_MODE_CONNECTOR_VGA 1
 #define DRM_MODE_CONNECTOR_DVII 2
@@ -571,7 +579,13 @@ struct drm_mode_config {
 	struct drm_property *edid_property;
 	struct drm_property *dpms_property;
 
+	/* optional properties */
+	struct drm_property *dvi_i_subconnector_property;
+	struct drm_property *dvi_i_select_subconnector_property;
+
 	/* TV properties */
+	struct drm_property *tv_subconnector_property;
+	struct drm_property *tv_select_subconnector_property;
 	struct drm_property *tv_mode_property;
 	struct drm_property *tv_left_margin_property;
 	struct drm_property *tv_right_margin_property;
@@ -612,6 +626,8 @@ extern void drm_encoder_cleanup(struct drm_encoder *encoder);
 
 extern char *drm_get_connector_name(struct drm_connector *connector);
 extern char *drm_get_dpms_name(int val);
+extern char *drm_get_select_subconnector_name(int val);
+extern char *drm_get_subconnector_name(int val);
 extern void drm_fb_release(struct file *filp);
 extern int drm_mode_group_init_legacy_group(struct drm_device *dev, struct drm_mode_group *group);
 extern struct edid *drm_get_edid(struct drm_connector *connector,
@@ -674,7 +690,8 @@ extern struct drm_property *drm_property_create(struct drm_device *dev, int flag
 extern void drm_property_destroy(struct drm_device *dev, struct drm_property *property);
 extern int drm_property_add_enum(struct drm_property *property, int index, 
 				 uint64_t value, const char *name);
-extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
+extern int drm_mode_create_dvi_i_properties(struct drm_device *dev);
+extern int drm_mode_create_tv_properties(struct drm_device *dev, int num_formats,
 				     char *formats[]);
 extern char *drm_get_encoder_name(struct drm_encoder *encoder);
 
