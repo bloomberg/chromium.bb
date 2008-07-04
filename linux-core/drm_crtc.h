@@ -90,6 +90,8 @@ enum drm_mode_status {
 	.vsync_start = (vss), .vsync_end = (vse), .vtotal = (vt), \
 	.vscan = (vs), .flags = (f), .vrefresh = 0
 
+#define CRTC_INTERLACE_HALVE_V 0x1 /* halve V values for interlacing */
+
 struct drm_display_mode {
 	/* Header */
 	struct list_head head;
@@ -146,51 +148,6 @@ struct drm_display_mode {
 	int vrefresh;
 	float hsync;
 };
-
-/* Video mode flags */
-#define V_PHSYNC	(1<<0)
-#define V_NHSYNC	(1<<1)
-#define V_PVSYNC	(1<<2)
-#define V_NVSYNC	(1<<3)
-#define V_INTERLACE	(1<<4)
-#define V_DBLSCAN	(1<<5)
-#define V_CSYNC		(1<<6)
-#define V_PCSYNC	(1<<7)
-#define V_NCSYNC	(1<<8)
-#define V_HSKEW		(1<<9) /* hskew provided */
-#define V_BCAST		(1<<10)
-#define V_PIXMUX	(1<<11)
-#define V_DBLCLK	(1<<12)
-#define V_CLKDIV2	(1<<13)
-
-#define CRTC_INTERLACE_HALVE_V 0x1 /* halve V values for interlacing */
-
-#define DPMSModeOn 0
-#define DPMSModeStandby 1
-#define DPMSModeSuspend 2
-#define DPMSModeOff 3
-
-#define DRM_MODE_SUBCONNECTOR_Automatic 0
-#define DRM_MODE_SUBCONNECTOR_Unknown 0
-#define DRM_MODE_SUBCONNECTOR_DVID 3
-#define DRM_MODE_SUBCONNECTOR_DVIA 4
-#define DRM_MODE_SUBCONNECTOR_Composite 5
-#define DRM_MODE_SUBCONNECTOR_SVIDEO 6
-#define DRM_MODE_SUBCONNECTOR_Component 8
-
-#define DRM_MODE_CONNECTOR_Unknown 0
-#define DRM_MODE_CONNECTOR_VGA 1
-#define DRM_MODE_CONNECTOR_DVII 2
-#define DRM_MODE_CONNECTOR_DVID 3
-#define DRM_MODE_CONNECTOR_DVIA 4
-#define DRM_MODE_CONNECTOR_Composite 5
-#define DRM_MODE_CONNECTOR_SVIDEO 6
-#define DRM_MODE_CONNECTOR_LVDS 7
-#define DRM_MODE_CONNECTOR_Component 8
-#define DRM_MODE_CONNECTOR_9PinDIN 9
-#define DRM_MODE_CONNECTOR_DisplayPort 10
-#define DRM_MODE_CONNECTOR_HDMIA 11
-#define DRM_MODE_CONNECTOR_HDMIB 12
 
 enum drm_connector_status {
 	connector_status_connected = 1,

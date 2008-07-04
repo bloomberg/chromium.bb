@@ -1010,6 +1010,28 @@ struct drm_mm_info_arg {
 #define DRM_MODE_TYPE_USERDEF	(1<<5)
 #define DRM_MODE_TYPE_DRIVER	(1<<6)
 
+/* Video mode flags */
+#define V_PHSYNC	(1<<0)
+#define V_NHSYNC	(1<<1)
+#define V_PVSYNC	(1<<2)
+#define V_NVSYNC	(1<<3)
+#define V_INTERLACE	(1<<4)
+#define V_DBLSCAN	(1<<5)
+#define V_CSYNC		(1<<6)
+#define V_PCSYNC	(1<<7)
+#define V_NCSYNC	(1<<8)
+#define V_HSKEW		(1<<9) /* hskew provided */
+#define V_BCAST		(1<<10)
+#define V_PIXMUX	(1<<11)
+#define V_DBLCLK	(1<<12)
+#define V_CLKDIV2	(1<<13)
+
+/* DPMS flags */
+#define DPMSModeOn 0
+#define DPMSModeStandby 1
+#define DPMSModeSuspend 2
+#define DPMSModeOff 3
+
 struct drm_mode_modeinfo {
 	unsigned int clock;
 	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;
@@ -1053,6 +1075,12 @@ struct drm_mode_crtc {
 	struct drm_mode_modeinfo mode;
 };
 
+#define DRM_MODE_ENCODER_NONE 0
+#define DRM_MODE_ENCODER_DAC  1
+#define DRM_MODE_ENCODER_TMDS 2
+#define DRM_MODE_ENCODER_LVDS 3
+#define DRM_MODE_ENCODER_TVDAC 4
+
 struct drm_mode_get_encoder {
 
 	uint32_t encoder_type;
@@ -1063,11 +1091,29 @@ struct drm_mode_get_encoder {
 	uint32_t clones;
 };
 
-#define DRM_MODE_ENCODER_NONE 0
-#define DRM_MODE_ENCODER_DAC  1
-#define DRM_MODE_ENCODER_TMDS 2
-#define DRM_MODE_ENCODER_LVDS 3
-#define DRM_MODE_ENCODER_TVDAC 4
+/* This is for connectors with multiple signal types. */
+/* Try to match DRM_MODE_CONNECTOR_X as closely as possible. */
+#define DRM_MODE_SUBCONNECTOR_Automatic 0
+#define DRM_MODE_SUBCONNECTOR_Unknown 0
+#define DRM_MODE_SUBCONNECTOR_DVID 3
+#define DRM_MODE_SUBCONNECTOR_DVIA 4
+#define DRM_MODE_SUBCONNECTOR_Composite 5
+#define DRM_MODE_SUBCONNECTOR_SVIDEO 6
+#define DRM_MODE_SUBCONNECTOR_Component 8
+
+#define DRM_MODE_CONNECTOR_Unknown 0
+#define DRM_MODE_CONNECTOR_VGA 1
+#define DRM_MODE_CONNECTOR_DVII 2
+#define DRM_MODE_CONNECTOR_DVID 3
+#define DRM_MODE_CONNECTOR_DVIA 4
+#define DRM_MODE_CONNECTOR_Composite 5
+#define DRM_MODE_CONNECTOR_SVIDEO 6
+#define DRM_MODE_CONNECTOR_LVDS 7
+#define DRM_MODE_CONNECTOR_Component 8
+#define DRM_MODE_CONNECTOR_9PinDIN 9
+#define DRM_MODE_CONNECTOR_DisplayPort 10
+#define DRM_MODE_CONNECTOR_HDMIA 11
+#define DRM_MODE_CONNECTOR_HDMIB 12
 
 struct drm_mode_get_connector {
 
