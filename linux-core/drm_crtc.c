@@ -612,8 +612,7 @@ int drm_mode_create_tv_properties(struct drm_device *dev, int num_modes,
 				drm_subconnector_enum_list[i + 2].name);
 
 	dev->mode_config.tv_left_margin_property =
-		drm_property_create(dev, DRM_MODE_PROP_RANGE |
-				    DRM_MODE_PROP_IMMUTABLE,
+		drm_property_create(dev, DRM_MODE_PROP_RANGE,
 				    "left margin", 2);
 	dev->mode_config.tv_left_margin_property->values[0] = 0;
 	dev->mode_config.tv_left_margin_property->values[1] = 100;
