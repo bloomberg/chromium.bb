@@ -1059,17 +1059,13 @@ struct drm_mode_card_res {
 
 struct drm_mode_crtc {
 	uint64_t set_connectors_ptr;
+	int count_connectors;
 
 	unsigned int crtc_id; /**< Id */
 	unsigned int fb_id; /**< Id of framebuffer */
 
 	int x, y; /**< Position on the frameuffer */
 
-	int count_connectors;
-	unsigned int connectors; /**< Connectors that are connected */
-
-	int count_possibles;
-	unsigned int possibles; /**< Connectors that can be connected */
 	uint32_t gamma_size;
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
@@ -1083,12 +1079,13 @@ struct drm_mode_crtc {
 
 struct drm_mode_get_encoder {
 
-	uint32_t encoder_type;
-	uint32_t encoder_id;
+	unsigned int encoder_type;
+	unsigned int encoder_id;
 
-	unsigned int crtc; /**< Id of crtc */
-	uint32_t crtcs;
-	uint32_t clones;
+	unsigned int crtc_id; /**< Id of crtc */
+
+	uint32_t possible_crtcs;
+	uint32_t possible_clones;
 };
 
 /* This is for connectors with multiple signal types. */
@@ -1126,8 +1123,8 @@ struct drm_mode_get_connector {
 	int count_props;
 	int count_encoders;
 
-	unsigned int encoder; /**< Current Encoder */
-	unsigned int connector; /**< Id */
+	unsigned int encoder_id; /**< Current Encoder */
+	unsigned int connector_id; /**< Id */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
 

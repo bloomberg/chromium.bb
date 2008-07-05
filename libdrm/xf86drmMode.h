@@ -92,7 +92,7 @@ typedef struct _drmModeCrtc {
 	unsigned int crtc_id;
 	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect */
 
-	uint32_t x, y; /**< Position on the frameuffer */
+	uint32_t x, y; /**< Position on the framebuffer */
 	uint32_t width, height;
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
@@ -104,9 +104,9 @@ typedef struct _drmModeCrtc {
 typedef struct _drmModeEncoder {
 	unsigned int encoder_id;
 	unsigned int encoder_type;
-	uint32_t crtc;
-	uint32_t crtcs;
-	uint32_t clones;
+	unsigned int crtc_id;
+	uint32_t possible_crtcs;
+	uint32_t possible_clones;
 } drmModeEncoder, *drmModeEncoderPtr;
 
 typedef enum {
@@ -126,7 +126,7 @@ typedef enum {
 
 typedef struct _drmModeConnector {
 	unsigned int connector_id;
-	unsigned int encoder; /**< Encoder currently connected to */
+	unsigned int encoder_id; /**< Encoder currently connected to */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
 	drmModeConnection connection;

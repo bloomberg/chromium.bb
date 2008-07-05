@@ -17,6 +17,7 @@ int full_modes;
 int encoders;
 int crtcs;
 int fbs;
+char *module_name;
 
 const char* getConnectionText(drmModeConnection conn)
 {
@@ -115,7 +116,7 @@ int printConnector(int fd, drmModeResPtr res, drmModeConnectorPtr connector, uin
 
 	printf("Connector: %d-%d\n", connector->connector_type, connector->connector_type_id);
 	printf("\tid             : %i\n", id);
-	printf("\tencoder id     : %i\n", connector->encoder);
+	printf("\tencoder id     : %i\n", connector->encoder_id);
 	printf("\tconn           : %s\n", getConnectionText(connector->connection));
 	printf("\tsize           : %ix%i (mm)\n", connector->mmWidth, connector->mmHeight);
 	printf("\tcount_modes    : %i\n", connector->count_modes);
@@ -159,10 +160,10 @@ int printEncoder(int fd, drmModeResPtr res, drmModeEncoderPtr encoder, uint32_t 
 {
 	printf("Encoder\n");
 	printf("\tid     :%i\n", id);
-	printf("\tcrtc   :%d\n", encoder->crtc);
+	printf("\tcrtc_id   :%d\n", encoder->crtc_id);
 	printf("\ttype   :%d\n", encoder->encoder_type);
-	printf("\tcrtcs  :%d\n", encoder->crtcs);
-	printf("\tclones :%d\n", encoder->clones);
+	printf("\tpossible_crtcs  :%d\n", encoder->possible_crtcs);
+	printf("\tpossible_clones :%d\n", encoder->possible_clones);
 	return 0;
 }
 
@@ -283,7 +284,9 @@ void args(int argc, char **argv)
 	full_props = 0;
 	connectors = 0;
 
-	for (i = 1; i < argc; i++) {
+	module_name = argv[1];
+
+	for (i = 2; i < argc; i++) {
 		if (strcmp(argv[i], "-fb") == 0) {
 			fbs = 1;
 		} else if (strcmp(argv[i], "-crtcs") == 0) {
@@ -316,9 +319,9 @@ void args(int argc, char **argv)
 			full_props = 1;
 			connectors = 1;
 		}
-    }
+	}
 
-	if (argc == 1) {
+	if (argc == 2) {
 		fbs = 1;
 		edid = 1;
 		crtcs = 1;
@@ -329,16 +332,22 @@ void args(int argc, char **argv)
 		connectors = 1;
 	}
 }
+
 int main(int argc, char **argv)
 {
 	int fd;
 	drmModeResPtr res;
 
+	if (argc == 1) {
+		printf("Please add modulename as first argument\n");
+		return 1;
+	}
+
 	args(argc, argv);
 
 	printf("Starting test\n");
 
-	fd = drmOpen("i915", NULL);
+	fd = drmOpen(module_name, NULL);
 
 	if (fd < 0) {
 		printf("Failed to open the card fd (%d)\n",fd);

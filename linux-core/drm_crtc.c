@@ -1046,7 +1046,6 @@ int drm_mode_getcrtc(struct drm_device *dev,
 	else
 		crtc_resp->fb_id = 0;
 
-	crtc_resp->connectors = 0;
 	if (crtc->enabled) {
 
 		drm_crtc_convert_to_umode(&crtc_resp->mode, &crtc->mode);
@@ -1099,11 +1098,11 @@ int drm_mode_getconnector(struct drm_device *dev,
 
 	memset(&u_mode, 0, sizeof(struct drm_mode_modeinfo));
 
-	DRM_DEBUG("connector id %d:\n", out_resp->connector);
+	DRM_DEBUG("connector id %d:\n", out_resp->connector_id);
 
 	mutex_lock(&dev->mode_config.mutex);
 
-	obj = drm_mode_object_find(dev, out_resp->connector, DRM_MODE_OBJECT_CONNECTOR);
+	obj = drm_mode_object_find(dev, out_resp->connector_id, DRM_MODE_OBJECT_CONNECTOR);
 	if (!obj) {
 		ret = -EINVAL;
 		goto out;
@@ -1130,6 +1129,7 @@ int drm_mode_getconnector(struct drm_device *dev,
 	list_for_each_entry(mode, &connector->modes, head)
 		mode_count++;
 
+	out_resp->connector_id = connector->base.id;
 	out_resp->connector_type = connector->connector_type;
 	out_resp->connector_type_id = connector->connector_type_id;
 	out_resp->mm_width = connector->display_info.width_mm;
@@ -1137,9 +1137,9 @@ int drm_mode_getconnector(struct drm_device *dev,
 	out_resp->subpixel = connector->display_info.subpixel_order;
 	out_resp->connection = connector->status;
 	if (connector->encoder)
-		out_resp->encoder = connector->encoder->base.id;
+		out_resp->encoder_id = connector->encoder->base.id;
 	else
-		out_resp->encoder = 0;
+		out_resp->encoder_id = 0;
 
 	/* this ioctl is called twice, once to determine how much space is needed, and the 2nd time to fill it */
 	if ((out_resp->count_modes >= mode_count) && mode_count) {
@@ -1215,13 +1215,13 @@ int drm_mode_getencoder(struct drm_device *dev,
 	encoder = obj_to_encoder(obj);
 
 	if (encoder->crtc)
-		enc_resp->crtc = encoder->crtc->base.id;
+		enc_resp->crtc_id = encoder->crtc->base.id;
 	else
-		enc_resp->crtc = 0;
+		enc_resp->crtc_id = 0;
 	enc_resp->encoder_type = encoder->encoder_type;
 	enc_resp->encoder_id = encoder->base.id;
-	enc_resp->crtcs = encoder->possible_crtcs;
-	enc_resp->clones = encoder->possible_clones;
+	enc_resp->possible_crtcs = encoder->possible_crtcs;
+	enc_resp->possible_clones = encoder->possible_clones;
 
 out:
 	mutex_unlock(&dev->mode_config.mutex);
