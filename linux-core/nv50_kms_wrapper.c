@@ -348,7 +348,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		blank = true;
 	}
 
-	if (!set->connectors && modeset) {
+	if (!set->connectors && (modeset || switch_fb)) {
 		DRM_ERROR("Sanity check failed\n");
 		goto out;
 	}
@@ -368,7 +368,8 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	 * Wiring up the encoders and connectors.
 	 */
 
-	if (modeset) {
+	/* for switch_fb we verify if any important changes happened */
+	if (modeset || switch_fb) {
 		/* Mode validation */
 		hw_mode = nv50_kms_to_hw_mode(set->mode);
 
@@ -398,10 +399,18 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 				DRM_ERROR("Mode not ok\n");
 				goto out;
 			}
+
+			/* verify if any "sneaky" changes happened */
+			if (output != connector->output)
+				modeset = true;
+
+			if (output->crtc != crtc)
+				modeset = true;
 		}
+	}
 
-		/* Validation done, move on to cleaning of existing structures. */
-
+	/* Validation done, move on to cleaning of existing structures. */
+	if (modeset) {
 		/* find encoders that use this crtc. */
 		list_for_each_entry(drm_encoder, &dev->mode_config.encoder_list, head) {
 			if (drm_encoder->crtc == set->crtc) {
@@ -474,8 +483,18 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	if (blank) {
 		crtc = to_nv50_crtc(set->crtc);
 
-		/* keeping the encoders and connectors attached, so they can be tracked */
 		set->crtc->enabled = false;
+
+		/* disconnect encoders and connectors */
+		for (i = 0; i < set->num_connectors; i++) {
+			drm_connector = set->connectors[i];
+
+			if (!drm_connector->encoder)
+				continue;
+
+			drm_connector->encoder->crtc = NULL;
+			drm_connector->encoder = NULL;
+		}
 	}
 
 	/**
@@ -535,9 +554,9 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			goto out;
 		}
 
-		/* detach any outputs that are currently running on this crtc */
+		/* detach any outputs that are currently unused */
 		list_for_each_entry(drm_encoder, &dev->mode_config.encoder_list, head) {
-			if (drm_encoder->crtc == set->crtc) {
+			if (!drm_encoder->crtc) {
 				output = to_nv50_output(drm_encoder);
 
 				rval = output->execute_mode(output, true);
@@ -555,12 +574,6 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 	if (switch_fb && !modeset && !blank) {
 		crtc = to_nv50_crtc(set->crtc);
-
-		rval = crtc->blank(crtc, true);
-		if (rval != 0) {
-			DRM_ERROR("blanking failed\n");
-			goto out;
-		}
 
 		rval = crtc->set_fb(crtc);
 		if (rval != 0) {
@@ -657,7 +670,9 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 		/* next line changes crtc, so putting it here is important */
 		display->last_crtc = crtc->index;
+	}
 
+	if (switch_fb || modeset) {
 		/* this is executed immediately */
 		list_for_each_entry(output, &display->outputs, item) {
 			if (output->crtc != crtc)
@@ -689,6 +704,13 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	}
 
 	display->update(display);
+
+	/* Update the current mode, now that all has gone well. */
+	if (modeset) {
+		set->crtc->mode = *(set->mode);
+		set->crtc->x = set->x;
+		set->crtc->y = set->y;
+	}
 
 	kfree(hw_mode);
 
@@ -826,7 +848,7 @@ bool nv50_kms_connector_is_digital(struct drm_connector *drm_connector)
 		uint64_t prop_val;
 
 		rval = drm_connector_property_get_value(drm_connector, dev->mode_config.dvi_i_select_subconnector_property, &prop_val);
-		if (!rval) {
+		if (rval) {
 			DRM_ERROR("Unable to find select subconnector property, defaulting to DVI-D\n");
 			return true;
 		}
@@ -842,7 +864,7 @@ bool nv50_kms_connector_is_digital(struct drm_connector *drm_connector)
 		}
 
 		rval = drm_connector_property_get_value(drm_connector, dev->mode_config.dvi_i_subconnector_property, &prop_val);
-		if (!rval) {
+		if (rval) {
 			DRM_ERROR("Unable to find subconnector property, defaulting to DVI-D\n");
 			return true;
 		}
