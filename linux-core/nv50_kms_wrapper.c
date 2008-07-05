@@ -348,13 +348,8 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		blank = true;
 	}
 
-	if (!set->connectors && (modeset || switch_fb)) {
+	if (!set->connectors && !blank) {
 		DRM_ERROR("Sanity check failed\n");
-		goto out;
-	}
-
-	if (!modeset && !switch_fb && !blank) {
-		DRM_ERROR("There is nothing to do, bad input.\n");
 		goto out;
 	}
 
@@ -369,7 +364,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	 */
 
 	/* for switch_fb we verify if any important changes happened */
-	if (modeset || switch_fb) {
+	if (!blank) {
 		/* Mode validation */
 		hw_mode = nv50_kms_to_hw_mode(set->mode);
 
@@ -387,6 +382,9 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 				goto out;
 			}
 			connector = to_nv50_connector(drm_connector);
+
+			/* This is to ensure it knows the connector subtype. */
+			drm_connector->funcs->fill_modes(drm_connector, 0, 0);
 
 			output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
 			if (!output) {
@@ -407,6 +405,12 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			if (output->crtc != crtc)
 				modeset = true;
 		}
+	}
+
+	/* Now we verified if anything changed, fail if nothing has. */
+	if (!modeset && !switch_fb && !blank) {
+		DRM_ERROR("There is nothing to do, bad input.\n");
+		goto out;
 	}
 
 	/* Validation done, move on to cleaning of existing structures. */
@@ -913,6 +917,7 @@ static enum drm_connector_status nv50_kms_connector_detect(struct drm_connector 
 	/* update our modes whenever there is reason to */
 	if (old_status != drm_connector->status) {
 		drm_connector->funcs->fill_modes(drm_connector, 0, 0);
+
 		/* notify fb of changes */
 		dev->mode_config.funcs->fb_changed(dev);
 	}
@@ -966,16 +971,16 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 
 	if (!connected) {
 		NV50_DEBUG("%s is disconnected\n", drm_get_connector_name(drm_connector));
-		/* TODO set EDID to NULL */
-		return;
 	}
 
 	/* Not all connnectors have an i2c channel. */
-	if (connector->i2c_chan)
+	if (connected && connector->i2c_chan)
 		edid = (struct edid *) drm_do_probe_ddc_edid(&connector->i2c_chan->adapter);
 
+	/* This will remove edid if needed. */
+	drm_mode_connector_update_edid_property(drm_connector, edid);
+
 	if (edid) {
-		drm_mode_connector_update_edid_property(drm_connector, edid);
 		rval = drm_add_edid_modes(drm_connector, edid);
 
 		/* 2 encoders per connector */
@@ -1025,6 +1030,10 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	}
 
 	drm_mode_prune_invalid(dev, &drm_connector->modes, true);
+
+	/* pruning is done, so bail out. */
+	if (!connected)
+		return;
 
 	if (list_empty(&drm_connector->modes)) {
 		struct drm_display_mode *stdmode;

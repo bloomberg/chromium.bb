@@ -284,22 +284,50 @@ static int nv50_fbcon_set_par(struct fb_info *info)
 		}
 		mode_set.mode = drm_mode;
 
-		list_for_each_entry(drm_crtc, &dev->mode_config.crtc_list, head) {
-			if (crtc_used[crtc_count]) {
-				crtc_count++;
-				continue;
+		/* choose crtc it already has, if possible */
+		if (drm_connector->encoder) {
+			struct drm_encoder *drm_encoder = drm_connector->encoder;
+
+			if (drm_encoder->crtc) {
+				list_for_each_entry(drm_crtc, &dev->mode_config.crtc_list, head) {
+					crtc_count++;
+
+					if (drm_crtc == drm_encoder->crtc) {
+						if (!crtc_used[crtc_count]) /* still available? */
+							mode_set.crtc = drm_crtc;
+						break;
+					}
+				}
 			}
-
-			/* found a crtc */
-			mode_set.crtc = drm_crtc;
-
-			break;
 		}
 
 		/* proceed as planned */
 		if (mode_set.crtc) {
 			mode_set.crtc->funcs->set_config(&mode_set);
 			crtc_used[crtc_count] = true;
+		}
+
+		if (!mode_set.crtc) {
+			crtc_count = 0; /* reset */
+
+			/* choose a "random" crtc */
+			list_for_each_entry(drm_crtc, &dev->mode_config.crtc_list, head) {
+				if (crtc_used[crtc_count]) {
+					crtc_count++;
+					continue;
+				}
+
+				/* found a crtc */
+				mode_set.crtc = drm_crtc;
+
+				break;
+			}
+
+			/* proceed as planned */
+			if (mode_set.crtc) {
+				mode_set.crtc->funcs->set_config(&mode_set);
+				crtc_used[crtc_count] = true;
+			}
 		}
 
 		kfree(mode_set.connectors);

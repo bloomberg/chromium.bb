@@ -2046,6 +2046,13 @@ int drm_mode_connector_update_edid_property(struct drm_connector *connector, str
 	if (connector->edid_blob_ptr)
 		drm_property_destroy_blob(dev, connector->edid_blob_ptr);
 
+	/* Delete edid, when there is none. */
+	if (!edid) {
+		connector->edid_blob_ptr = NULL;
+		ret = drm_connector_property_set_value(connector, dev->mode_config.edid_property, 0);
+		return ret;
+	}
+
 	connector->edid_blob_ptr = drm_property_create_blob(connector->dev, 128, edid);
 
 	ret = drm_connector_property_set_value(connector, dev->mode_config.edid_property, connector->edid_blob_ptr->base.id);
