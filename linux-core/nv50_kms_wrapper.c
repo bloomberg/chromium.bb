@@ -762,6 +762,9 @@ static int nv50_kms_crtcs_init(struct drm_device *dev)
 		struct drm_crtc *drm_crtc = to_nv50_kms_crtc(crtc);
 
 		drm_crtc_init(dev, drm_crtc, &nv50_kms_crtc_funcs);
+
+		/* init lut storage */
+		drm_mode_crtc_set_gamma_size(drm_crtc, 256);
 	}
 
 	return 0;
