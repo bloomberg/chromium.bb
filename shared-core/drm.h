@@ -1028,10 +1028,11 @@ struct drm_mm_info_arg {
 #define DRM_MODE_FLAG_CLKDIV2	(1<<13)
 
 /* DPMS flags */
-#define DPMSModeOn 0
-#define DPMSModeStandby 1
-#define DPMSModeSuspend 2
-#define DPMSModeOff 3
+/* bit compatible with the xorg definitions. */
+#define DRM_MODE_DPMS_ON 0
+#define DRM_MODE_DPMS_STANDBY 1
+#define DRM_MODE_DPMS_SUSPEND 2
+#define DRM_MODE_DPMS_OFF 3
 
 struct drm_mode_modeinfo {
 	unsigned int clock;

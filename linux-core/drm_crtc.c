@@ -43,10 +43,10 @@ struct drm_prop_enum_list {
  * Global properties
  */
 static struct drm_prop_enum_list drm_dpms_enum_list[] =
-{	{ DPMSModeOn, "On" },
-	{ DPMSModeStandby, "Standby" },
-	{ DPMSModeSuspend, "Suspend" },
-	{ DPMSModeOff, "Off" }
+{	{ DRM_MODE_DPMS_ON, "On" },
+	{ DRM_MODE_DPMS_STANDBY, "Standby" },
+	{ DRM_MODE_DPMS_SUSPEND, "Suspend" },
+	{ DRM_MODE_DPMS_OFF, "Off" }
 };
 
 char *drm_get_dpms_name(int val)

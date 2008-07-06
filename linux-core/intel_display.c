@@ -468,12 +468,12 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	bool enabled;
 
 	/* XXX: When our outputs are all unaware of DPMS modes other than off
-	 * and on, we should map those modes to DPMSModeOff in the CRTC.
+	 * and on, we should map those modes to DRM_MODE_DPMS_OFF in the CRTC.
 	 */
 	switch (mode) {
-	case DPMSModeOn:
-	case DPMSModeStandby:
-	case DPMSModeSuspend:
+	case DRM_MODE_DPMS_ON:
+	case DRM_MODE_DPMS_STANDBY:
+	case DRM_MODE_DPMS_SUSPEND:
 		/* Enable the DPLL */
 		temp = I915_READ(dpll_reg);
 		if ((temp & DPLL_VCO_ENABLE) == 0) {
@@ -509,7 +509,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		/* Give the overlay scaler a chance to enable if it's on this pipe */
 		//intel_crtc_dpms_video(crtc, TRUE); TODO
 	break;
-	case DPMSModeOff:
+	case DRM_MODE_DPMS_OFF:
 		/* Give the overlay scaler a chance to disable if it's on this pipe */
 		//intel_crtc_dpms_video(crtc, FALSE); TODO
 		
@@ -558,7 +558,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	if (!master_priv->sarea_priv)
 		return;
 
-	enabled = crtc->enabled && mode != DPMSModeOff;
+	enabled = crtc->enabled && mode != DRM_MODE_DPMS_OFF;
 	
 	switch (pipe) {
 	case 0:
@@ -580,27 +580,27 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 static void intel_crtc_prepare (struct drm_crtc *crtc)
 {
 	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
-	crtc_funcs->dpms(crtc, DPMSModeOff);
+	crtc_funcs->dpms(crtc, DRM_MODE_DPMS_OFF);
 }
 
 static void intel_crtc_commit (struct drm_crtc *crtc)
 {
 	struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
-	crtc_funcs->dpms(crtc, DPMSModeOn);
+	crtc_funcs->dpms(crtc, DRM_MODE_DPMS_ON);
 }
 
 void intel_encoder_prepare (struct drm_encoder *encoder)
 {
 	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
 	/* lvds has its own version of prepare see intel_lvds_prepare */
-	encoder_funcs->dpms(encoder, DPMSModeOff);
+	encoder_funcs->dpms(encoder, DRM_MODE_DPMS_OFF);
 }
 
 void intel_encoder_commit (struct drm_encoder *encoder)
 {
 	struct drm_encoder_helper_funcs *encoder_funcs = encoder->helper_private;
 	/* lvds has its own version of commit see intel_lvds_commit */
-	encoder_funcs->dpms(encoder, DPMSModeOn);
+	encoder_funcs->dpms(encoder, DRM_MODE_DPMS_ON);
 }
 
 static bool intel_crtc_mode_fixup(struct drm_crtc *crtc,
@@ -1145,10 +1145,10 @@ struct drm_crtc *intel_get_load_detect_pipe(struct intel_output *intel_output,
 		/* Make sure the crtc and connector are running */
 		intel_crtc = to_intel_crtc(crtc);
 		*dpms_mode = intel_crtc->dpms_mode;
-		if (intel_crtc->dpms_mode != DPMSModeOn) {
+		if (intel_crtc->dpms_mode != DRM_MODE_DPMS_ON) {
 			crtc_funcs = crtc->helper_private;
-			crtc_funcs->dpms(crtc, DPMSModeOn);
-			encoder_funcs->dpms(encoder, DPMSModeOn);
+			crtc_funcs->dpms(crtc, DRM_MODE_DPMS_ON);
+			encoder_funcs->dpms(encoder, DRM_MODE_DPMS_ON);
 		}
 		return crtc;
 	}
@@ -1184,9 +1184,9 @@ struct drm_crtc *intel_get_load_detect_pipe(struct intel_output *intel_output,
 			mode = &load_detect_mode;
 		drm_crtc_helper_set_mode(crtc, mode, 0, 0);
 	} else {
-		if (intel_crtc->dpms_mode != DPMSModeOn) {
+		if (intel_crtc->dpms_mode != DRM_MODE_DPMS_ON) {
 			crtc_funcs = crtc->helper_private;
-			crtc_funcs->dpms(crtc, DPMSModeOn);
+			crtc_funcs->dpms(crtc, DRM_MODE_DPMS_ON);
 		}
 
 		/* Add this connector to the crtc */
@@ -1215,7 +1215,7 @@ void intel_release_load_detect_pipe(struct intel_output *intel_output, int dpms_
 	}
 
 	/* Switch crtc and output back off if necessary */
-	if (crtc->enabled && dpms_mode != DPMSModeOn) {
+	if (crtc->enabled && dpms_mode != DRM_MODE_DPMS_ON) {
 		if (encoder->crtc == crtc)
 			encoder_funcs->dpms(encoder, dpms_mode);
 		crtc_funcs->dpms(crtc, dpms_mode);
@@ -1378,7 +1378,7 @@ void intel_crtc_init(struct drm_device *dev, int pipe)
 	}
 
 	intel_crtc->cursor_addr = 0;
-	intel_crtc->dpms_mode = DPMSModeOff;
+	intel_crtc->dpms_mode = DRM_MODE_DPMS_OFF;
 	drm_crtc_helper_add(&intel_crtc->base, &intel_helper_funcs);
 
 	intel_crtc->mode_set.crtc = &intel_crtc->base;

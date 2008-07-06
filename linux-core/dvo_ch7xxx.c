@@ -301,7 +301,7 @@ static void ch7xxx_mode_set(struct intel_dvo_device *dvo,
 /* set the CH7xxx power state */
 static void ch7xxx_dpms(struct intel_dvo_device *dvo, int mode)
 {
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		ch7xxx_writeb(dvo, CH7xxx_PM, CH7xxx_PM_DVIL | CH7xxx_PM_DVIP);
 	else
 		ch7xxx_writeb(dvo, CH7xxx_PM, CH7xxx_PM_FPD);

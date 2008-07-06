@@ -109,17 +109,17 @@ static int nv50_dac_set_power_mode(struct nv50_output *output, int mode)
 
 	val = NV_READ(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or)) & ~0x7F;
 
-	if (mode != DPMSModeOn)
+	if (mode != DRM_MODE_DPMS_ON)
 		val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_BLANKED;
 
 	switch (mode) {
-		case DPMSModeStandby:
+		case DRM_MODE_DPMS_STANDBY:
 			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_HSYNC_OFF;
 			break;
-		case DPMSModeSuspend:
+		case DRM_MODE_DPMS_SUSPEND:
 			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_VSYNC_OFF;
 			break;
-		case DPMSModeOff:
+		case DRM_MODE_DPMS_OFF:
 			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_OFF;
 			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_HSYNC_OFF;
 			val |= NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_VSYNC_OFF;

@@ -44,16 +44,16 @@ static void intel_crt_dpms(struct drm_encoder *encoder, int mode)
 	temp &= ~ADPA_DAC_ENABLE;
 	
 	switch(mode) {
-	case DPMSModeOn:
+	case DRM_MODE_DPMS_ON:
 		temp |= ADPA_DAC_ENABLE;
 		break;
-	case DPMSModeStandby:
+	case DRM_MODE_DPMS_STANDBY:
 		temp |= ADPA_DAC_ENABLE | ADPA_HSYNC_CNTL_DISABLE;
 		break;
-	case DPMSModeSuspend:
+	case DRM_MODE_DPMS_SUSPEND:
 		temp |= ADPA_DAC_ENABLE | ADPA_VSYNC_CNTL_DISABLE;
 		break;
-	case DPMSModeOff:
+	case DRM_MODE_DPMS_OFF:
 		temp |= ADPA_HSYNC_CNTL_DISABLE | ADPA_VSYNC_CNTL_DISABLE;
 		break;
 	}

@@ -248,7 +248,7 @@ static void tfp410_dpms(struct intel_dvo_device *dvo, int mode)
 	if (!tfp410_readb(dvo, TFP410_CTL_1, &ctl1))
 		return;
 
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		ctl1 |= TFP410_CTL_1_PD;
 	else
 		ctl1 &= ~TFP410_CTL_1_PD;

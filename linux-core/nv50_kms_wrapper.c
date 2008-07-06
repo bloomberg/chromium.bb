@@ -681,7 +681,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			if (output->crtc != crtc)
 				continue;
 
-			rval = output->set_power_mode(output, DPMSModeOn);
+			rval = output->set_power_mode(output, DRM_MODE_DPMS_ON);
 			if (rval != 0) {
 				DRM_ERROR("output set power mode failed\n");
 				goto out;
@@ -698,7 +698,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 
 			rval = drm_connector_property_set_value(drm_connector,
 					dev->mode_config.dpms_property,
-					DPMSModeOn);
+					DRM_MODE_DPMS_ON);
 			if (rval != 0) {
 				DRM_ERROR("failed to update dpms state\n");
 				goto out;

@@ -226,7 +226,7 @@ static void sil164_dpms(struct intel_dvo_device *dvo, int mode)
 	if (ret == false)
 		return;
 
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		ch |= SIL164_8_PD;
 	else
 		ch &= ~SIL164_8_PD;

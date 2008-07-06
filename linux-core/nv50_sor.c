@@ -127,7 +127,7 @@ static int nv50_sor_set_power_mode(struct nv50_output *output, int mode)
 
 	val = NV_READ(NV50_PDISPLAY_SOR_REGS_DPMS_CTRL(or));
 
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		val |= NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_ON;
 	else
 		val &= ~NV50_PDISPLAY_SOR_REGS_DPMS_CTRL_ON;
