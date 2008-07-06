@@ -408,10 +408,8 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 	}
 
 	/* Now we verified if anything changed, fail if nothing has. */
-	if (!modeset && !switch_fb && !blank) {
-		DRM_ERROR("There is nothing to do, bad input.\n");
-		goto out;
-	}
+	if (!modeset && !switch_fb && !blank)
+		DRM_INFO("A seemingly empty modeset encountered, this could be a bug.\n");
 
 	/* Validation done, move on to cleaning of existing structures. */
 	if (modeset) {
@@ -676,7 +674,8 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 		display->last_crtc = crtc->index;
 	}
 
-	if (switch_fb || modeset) {
+	/* always reset dpms, regardless if any other modesetting is done. */
+	if (!blank) {
 		/* this is executed immediately */
 		list_for_each_entry(output, &display->outputs, item) {
 			if (output->crtc != crtc)
