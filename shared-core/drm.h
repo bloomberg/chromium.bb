@@ -1011,20 +1011,21 @@ struct drm_mm_info_arg {
 #define DRM_MODE_TYPE_DRIVER	(1<<6)
 
 /* Video mode flags */
-#define V_PHSYNC	(1<<0)
-#define V_NHSYNC	(1<<1)
-#define V_PVSYNC	(1<<2)
-#define V_NVSYNC	(1<<3)
-#define V_INTERLACE	(1<<4)
-#define V_DBLSCAN	(1<<5)
-#define V_CSYNC		(1<<6)
-#define V_PCSYNC	(1<<7)
-#define V_NCSYNC	(1<<8)
-#define V_HSKEW		(1<<9) /* hskew provided */
-#define V_BCAST		(1<<10)
-#define V_PIXMUX	(1<<11)
-#define V_DBLCLK	(1<<12)
-#define V_CLKDIV2	(1<<13)
+/* bit compatible with the xorg definitions. */
+#define DRM_MODE_FLAG_PHSYNC	(1<<0)
+#define DRM_MODE_FLAG_NHSYNC	(1<<1)
+#define DRM_MODE_FLAG_PVSYNC	(1<<2)
+#define DRM_MODE_FLAG_NVSYNC	(1<<3)
+#define DRM_MODE_FLAG_INTERLACE	(1<<4)
+#define DRM_MODE_FLAG_DBLSCAN	(1<<5)
+#define DRM_MODE_FLAG_CSYNC	(1<<6)
+#define DRM_MODE_FLAG_PCSYNC	(1<<7)
+#define DRM_MODE_FLAG_NCSYNC	(1<<8)
+#define DRM_MODE_FLAG_HSKEW	(1<<9) /* hskew provided */
+#define DRM_MODE_FLAG_BCAST	(1<<10)
+#define DRM_MODE_FLAG_PIXMUX	(1<<11)
+#define DRM_MODE_FLAG_DBLCLK	(1<<12)
+#define DRM_MODE_FLAG_CLKDIV2	(1<<13)
 
 /* DPMS flags */
 #define DPMSModeOn 0

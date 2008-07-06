@@ -74,7 +74,7 @@ static void intel_crt_restore(struct drm_connector *connector)
 static int intel_crt_mode_valid(struct drm_connector *connector,
 				struct drm_display_mode *mode)
 {
-	if (mode->flags & V_DBLSCAN)
+	if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
 		return MODE_NO_DBLESCAN;
 
 	if (mode->clock > 400000 || mode->clock < 25000)
@@ -118,9 +118,9 @@ static void intel_crt_mode_set(struct drm_encoder *encoder,
 	}
 	
 	adpa = 0;
-	if (adjusted_mode->flags & V_PHSYNC)
+	if (adjusted_mode->flags & DRM_MODE_FLAG_PHSYNC)
 		adpa |= ADPA_HSYNC_ACTIVE_HIGH;
-	if (adjusted_mode->flags & V_PVSYNC)
+	if (adjusted_mode->flags & DRM_MODE_FLAG_PVSYNC)
 		adpa |= ADPA_VSYNC_ACTIVE_HIGH;
 	
 	if (intel_crtc->pipe == 0)

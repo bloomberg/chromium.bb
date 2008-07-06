@@ -38,7 +38,7 @@
 static struct drm_display_mode std_mode[] = {
 	{ DRM_MODE("640x480", DRM_MODE_TYPE_DEFAULT, 25200, 640, 656,
 		   752, 800, 0, 480, 490, 492, 525, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 640x480@60Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 640x480@60Hz */
 };
 
 /**

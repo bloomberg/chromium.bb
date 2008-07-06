@@ -162,9 +162,9 @@ int drm_mode_vrefresh(struct drm_display_mode *mode)
 		calc_val /= mode->vtotal;
 
 		refresh = calc_val;
-		if (mode->flags & V_INTERLACE)
+		if (mode->flags & DRM_MODE_FLAG_INTERLACE)
 			refresh *= 2;
-		if (mode->flags & V_DBLSCAN)
+		if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
 			refresh /= 2;
 		if (mode->vscan > 1)
 			refresh /= mode->vscan;
@@ -198,7 +198,7 @@ void drm_mode_set_crtcinfo(struct drm_display_mode *p, int adjust_flags)
 	p->crtc_vsync_end = p->vsync_end;
 	p->crtc_vtotal = p->vtotal;
 
-	if (p->flags & V_INTERLACE) {
+	if (p->flags & DRM_MODE_FLAG_INTERLACE) {
 		if (adjust_flags & CRTC_INTERLACE_HALVE_V) {
 			p->crtc_vdisplay /= 2;
 			p->crtc_vsync_start /= 2;
@@ -209,7 +209,7 @@ void drm_mode_set_crtcinfo(struct drm_display_mode *p, int adjust_flags)
 		p->crtc_vtotal |= 1;
 	}
 
-	if (p->flags & V_DBLSCAN) {
+	if (p->flags & DRM_MODE_FLAG_DBLSCAN) {
 		p->crtc_vdisplay *= 2;
 		p->crtc_vsync_start *= 2;
 		p->crtc_vsync_end *= 2;

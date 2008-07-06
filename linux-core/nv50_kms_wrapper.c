@@ -941,10 +941,10 @@ static void nv50_kms_connector_destroy(struct drm_connector *drm_connector)
 static struct drm_display_mode std_mode[] = {
 	/*{ DRM_MODE("640x480", DRM_MODE_TYPE_DEFAULT, 25200, 640, 656,
 		 752, 800, 0, 480, 490, 492, 525, 0,
-		 V_NHSYNC | V_NVSYNC) },*/ /* 640x480@60Hz */
+		 DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) },*/ /* 640x480@60Hz */
 	{ DRM_MODE("1280x1024", DRM_MODE_TYPE_DEFAULT, 135000, 1280, 1296,
 		   1440, 1688, 0, 1024, 1025, 1028, 1066, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 1280x1024@75Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 1280x1024@75Hz */
 };
 
 static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, uint32_t maxX, uint32_t maxY)

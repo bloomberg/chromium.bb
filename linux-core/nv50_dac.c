@@ -73,10 +73,10 @@ static int nv50_dac_execute_mode(struct nv50_output *output, bool disconnect)
 		mode_ctl |= 0x100;
 	}
 
-	if (desired_mode->flags & V_NHSYNC)
+	if (desired_mode->flags & DRM_MODE_FLAG_NHSYNC)
 		mode_ctl2 |= NV50_DAC_MODE_CTRL2_NHSYNC;
 
-	if (desired_mode->flags & V_NVSYNC)
+	if (desired_mode->flags & DRM_MODE_FLAG_NVSYNC)
 		mode_ctl2 |= NV50_DAC_MODE_CTRL2_NVSYNC;
 
 	OUT_MODE(NV50_DAC0_MODE_CTRL + offset, mode_ctl);

@@ -92,14 +92,14 @@ static int nv50_crtc_execute_mode(struct nv50_crtc *crtc)
 	vunk2a = 2*hw_mode->vtotal - hw_mode->vsync_start + hw_mode->vblank_start;
 	vunk2b = hw_mode->vtotal - hw_mode->vsync_start + hw_mode->vblank_end;
 
-	if (hw_mode->flags & V_INTERLACE) {
+	if (hw_mode->flags & DRM_MODE_FLAG_INTERLACE) {
 		vsync_dur /= 2;
 		vsync_start_to_end  /= 2;
 		vunk1 /= 2;
 		vunk2a /= 2;
 		vunk2b /= 2;
 		/* magic */
-		if (hw_mode->flags & V_DBLSCAN) {
+		if (hw_mode->flags & DRM_MODE_FLAG_DBLSCAN) {
 			vsync_start_to_end -= 1;
 			vunk1 -= 1;
 			vunk2a -= 1;
@@ -108,14 +108,14 @@ static int nv50_crtc_execute_mode(struct nv50_crtc *crtc)
 	}
 
 	OUT_MODE(NV50_CRTC0_CLOCK + offset, hw_mode->clock | 0x800000);
-	OUT_MODE(NV50_CRTC0_INTERLACE + offset, (hw_mode->flags & V_INTERLACE) ? 2 : 0);
+	OUT_MODE(NV50_CRTC0_INTERLACE + offset, (hw_mode->flags & DRM_MODE_FLAG_INTERLACE) ? 2 : 0);
 	OUT_MODE(NV50_CRTC0_DISPLAY_START + offset, 0);
 	OUT_MODE(NV50_CRTC0_UNK82C + offset, 0);
 	OUT_MODE(NV50_CRTC0_DISPLAY_TOTAL + offset, hw_mode->vtotal << 16 | hw_mode->htotal);
 	OUT_MODE(NV50_CRTC0_SYNC_DURATION + offset, (vsync_dur - 1) << 16 | (hsync_dur - 1));
 	OUT_MODE(NV50_CRTC0_SYNC_START_TO_BLANK_END + offset, (vsync_start_to_end - 1) << 16 | (hsync_start_to_end - 1));
 	OUT_MODE(NV50_CRTC0_MODE_UNK1 + offset, (vunk1 - 1) << 16 | (hunk1 - 1));
-	if (hw_mode->flags & V_INTERLACE) {
+	if (hw_mode->flags & DRM_MODE_FLAG_INTERLACE) {
 		OUT_MODE(NV50_CRTC0_MODE_UNK2 + offset, (vunk2b - 1) << 16 | (vunk2a - 1));
 	}
 
@@ -273,7 +273,7 @@ static int nv50_crtc_set_scale(struct nv50_crtc *crtc)
 
 	/* Got a better name for SCALER_ACTIVE? */
 	/* One day i've got to really figure out why this is needed. */
-	if ((crtc->mode->flags & V_DBLSCAN) || (crtc->mode->flags & V_INTERLACE) ||
+	if ((crtc->mode->flags & DRM_MODE_FLAG_DBLSCAN) || (crtc->mode->flags & DRM_MODE_FLAG_INTERLACE) ||
 		crtc->mode->hdisplay != outX || crtc->mode->vdisplay != outY) {
 		OUT_MODE(NV50_CRTC0_SCALE_CTRL + offset, NV50_CRTC0_SCALE_CTRL_SCALER_ACTIVE);
 	} else {

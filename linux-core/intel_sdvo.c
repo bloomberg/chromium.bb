@@ -602,9 +602,9 @@ static void intel_sdvo_mode_set(struct drm_encoder *encoder,
 		((v_sync_len & 0x30) >> 4);
 	
 	output_dtd.part2.dtd_flags = 0x18;
-	if (mode->flags & V_PHSYNC)
+	if (mode->flags & DRM_MODE_FLAG_PHSYNC)
 		output_dtd.part2.dtd_flags |= 0x2;
-	if (mode->flags & V_PVSYNC)
+	if (mode->flags & DRM_MODE_FLAG_PVSYNC)
 		output_dtd.part2.dtd_flags |= 0x4;
 
 	output_dtd.part2.sdvo_flags = 0;
@@ -825,7 +825,7 @@ static int intel_sdvo_mode_valid(struct drm_connector *connector,
 	struct intel_output *intel_output = to_intel_output(connector);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 
-	if (mode->flags & V_DBLSCAN)
+	if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
 		return MODE_NO_DBLESCAN;
 
 	if (sdvo_priv->pixel_clock_min > mode->clock)
