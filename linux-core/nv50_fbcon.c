@@ -290,13 +290,13 @@ static int nv50_fbcon_set_par(struct fb_info *info)
 
 			if (drm_encoder->crtc) {
 				list_for_each_entry(drm_crtc, &dev->mode_config.crtc_list, head) {
-					crtc_count++;
-
 					if (drm_crtc == drm_encoder->crtc) {
 						if (!crtc_used[crtc_count]) /* still available? */
 							mode_set.crtc = drm_crtc;
 						break;
 					}
+
+					crtc_count++;
 				}
 			}
 		}
