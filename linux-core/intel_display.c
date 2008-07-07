@@ -510,7 +510,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		intel_crtc_load_lut(crtc);
 		
 		/* Give the overlay scaler a chance to enable if it's on this pipe */
-		//intel_crtc_dpms_video(crtc, TRUE); TODO
+		//intel_crtc_dpms_video(crtc, true); TODO
 	break;
 	case DPMSModeOff:
 		/* Give the overlay scaler a chance to disable if it's on this pipe */
@@ -737,19 +737,19 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 
 		switch (intel_output->type) {
 		case INTEL_OUTPUT_LVDS:
-			is_lvds = TRUE;
+			is_lvds = true;
 			break;
 		case INTEL_OUTPUT_SDVO:
-			is_sdvo = TRUE;
+			is_sdvo = true;
 			break;
 		case INTEL_OUTPUT_DVO:
-			is_dvo = TRUE;
+			is_dvo = true;
 			break;
 		case INTEL_OUTPUT_TVOUT:
-			is_tv = TRUE;
+			is_tv = true;
 			break;
 		case INTEL_OUTPUT_ANALOG:
-			is_crt = TRUE;
+			is_crt = true;
 			break;
 		}
 	}
@@ -1177,7 +1177,7 @@ struct drm_crtc *intel_get_load_detect_pipe(struct intel_output *intel_output,
 	}
 
 	encoder->crtc = crtc;
-	intel_output->load_detect_temp = TRUE;
+	intel_output->load_detect_temp = true;
     
 	intel_crtc = to_intel_crtc(crtc);
 	*dpms_mode = intel_crtc->dpms_mode;
@@ -1212,7 +1212,7 @@ void intel_release_load_detect_pipe(struct intel_output *intel_output, int dpms_
     
 	if (intel_output->load_detect_temp) {
 		encoder->crtc = NULL;
-		intel_output->load_detect_temp = FALSE;
+		intel_output->load_detect_temp = false;
 		crtc->enabled = drm_helper_crtc_in_use(crtc);
 		drm_helper_disable_unused_functions(dev);
 	}

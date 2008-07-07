@@ -407,8 +407,8 @@ void intel_lvds_init(struct drm_device *dev)
 	drm_encoder_helper_add(encoder, &intel_lvds_helper_funcs);
 	drm_connector_helper_add(connector, &intel_lvds_connector_helper_funcs);
 	connector->display_info.subpixel_order = SubPixelHorizontalRGB;
-	connector->interlace_allowed = FALSE;
-	connector->doublescan_allowed = FALSE;
+	connector->interlace_allowed = false;
+	connector->doublescan_allowed = false;
 
 
 	/*

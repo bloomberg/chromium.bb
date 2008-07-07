@@ -95,7 +95,7 @@ void drm_helper_probe_single_connector_modes(struct drm_connector *connector, ui
 	}
 	
 	
-	drm_mode_prune_invalid(dev, &connector->modes, TRUE);
+	drm_mode_prune_invalid(dev, &connector->modes, true);
 	
 	if (list_empty(&connector->modes)) {
 		struct drm_display_mode *stdmode;

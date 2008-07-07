@@ -422,18 +422,18 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end	= 64,		    .hblank_end		= 124,
 		.hblank_start	= 836,		    .htotal		= 857,
 
-		.progressive	= FALSE,	    .trilevel_sync = FALSE,
+		.progressive	= false,	    .trilevel_sync = false,
 
 		.vsync_start_f1	= 6,		    .vsync_start_f2	= 7,
 		.vsync_len	= 6,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 0,
+		.veq_ena	= true,		    .veq_start_f1    	= 0,
 		.veq_start_f2	= 1,		    .veq_len		= 18,
 
 		.vi_end_f1	= 20,		    .vi_end_f2		= 21,
 		.nbr_end	= 240,
 
-		.burst_ena	= TRUE,
+		.burst_ena	= true,
 		.hburst_start	= 72,		    .hburst_len		= 34,
 		.vburst_start_f1 = 9,		    .vburst_end_f1	= 240,
 		.vburst_start_f2 = 10,		    .vburst_end_f2	= 240,
@@ -445,7 +445,7 @@ const static struct tv_mode tv_modes[] = {
 		.dda2_inc	=   7624,	    .dda2_size		=  20013,
 		.dda3_inc	=      0,	    .dda3_size		=      0,
 		.sc_reset	= TV_SC_RESET_EVERY_4,
-		.pal_burst	= FALSE,
+		.pal_burst	= false,
 
 		.composite_levels = &ntsc_m_levels_composite,
 		.composite_color = &ntsc_m_csc_composite,
@@ -464,12 +464,12 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end	= 64,		    .hblank_end		= 124,
 		.hblank_start	= 836,		    .htotal		= 857,
 
-		.progressive	= FALSE,	    .trilevel_sync = FALSE,
+		.progressive	= false,	    .trilevel_sync = false,
 
 		.vsync_start_f1 = 6,		    .vsync_start_f2	= 7,
 		.vsync_len	= 6,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 0,
+		.veq_ena	= true,		    .veq_start_f1    	= 0,
 		.veq_start_f2	= 1,		    .veq_len		= 18,
 
 		.vi_end_f1	= 20,		    .vi_end_f2		= 21,
@@ -487,7 +487,7 @@ const static struct tv_mode tv_modes[] = {
 		.dda2_inc       =  18557,       .dda2_size      =  20625,
 		.dda3_inc       =      0,       .dda3_size      =      0,
 		.sc_reset   = TV_SC_RESET_EVERY_8,
-		.pal_burst  = TRUE,
+		.pal_burst  = true,
 
 		.composite_levels = &ntsc_m_levels_composite,
 		.composite_color = &ntsc_m_csc_composite,
@@ -507,18 +507,18 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end	= 64,		    .hblank_end		= 124,
 		.hblank_start = 836,	    .htotal		= 857,
 
-		.progressive	= FALSE,    .trilevel_sync = FALSE,
+		.progressive	= false,    .trilevel_sync = false,
 
 		.vsync_start_f1	= 6,	    .vsync_start_f2	= 7,
 		.vsync_len	= 6,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 0,
+		.veq_ena	= true,		    .veq_start_f1    	= 0,
 		.veq_start_f2 = 1,	    .veq_len		= 18,
 
 		.vi_end_f1	= 20,		    .vi_end_f2		= 21,
 		.nbr_end	= 240,
 
-		.burst_ena	= TRUE,
+		.burst_ena	= true,
 		.hburst_start	= 72,		    .hburst_len		= 34,
 		.vburst_start_f1 = 9,		    .vburst_end_f1	= 240,
 		.vburst_start_f2 = 10,		    .vburst_end_f2	= 240,
@@ -530,7 +530,7 @@ const static struct tv_mode tv_modes[] = {
 		.dda2_inc	=   7624,	    .dda2_size		=  20013,
 		.dda3_inc	=      0,	    .dda3_size		=      0,
 		.sc_reset	= TV_SC_RESET_EVERY_4,
-		.pal_burst	= FALSE,
+		.pal_burst	= false,
 
 		.composite_levels = &ntsc_j_levels_composite,
 		.composite_color = &ntsc_j_csc_composite,
@@ -550,18 +550,18 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end	= 64,		  .hblank_end		= 124,
 		.hblank_start = 836,	  .htotal		= 857,
 
-		.progressive	= FALSE,	    .trilevel_sync = FALSE,
+		.progressive	= false,	    .trilevel_sync = false,
 
 		.vsync_start_f1	= 6,		    .vsync_start_f2	= 7,
 		.vsync_len	= 6,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 0,
+		.veq_ena	= true,		    .veq_start_f1    	= 0,
 		.veq_start_f2	= 1,		    .veq_len		= 18,
 
 		.vi_end_f1	= 20,		    .vi_end_f2		= 21,
 		.nbr_end	= 240,
 
-		.burst_ena	= TRUE,
+		.burst_ena	= true,
 		.hburst_start	= 72,		    .hburst_len		= 34,
 		.vburst_start_f1 = 9,		    .vburst_end_f1	= 240,
 		.vburst_start_f2 = 10,		    .vburst_end_f2	= 240,
@@ -573,7 +573,7 @@ const static struct tv_mode tv_modes[] = {
 		.dda2_inc	=    7624,	    .dda2_size		=  20013,
 		.dda3_inc	=      0,	    .dda3_size		=      0,
 		.sc_reset	= TV_SC_RESET_EVERY_4,
-		.pal_burst  = FALSE,
+		.pal_burst  = false,
 
 		.composite_levels = &pal_m_levels_composite,
 		.composite_color = &pal_m_csc_composite,
@@ -593,19 +593,19 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end	= 64,		    .hblank_end		= 128,
 		.hblank_start = 844,	    .htotal		= 863,
 
-		.progressive  = FALSE,    .trilevel_sync = FALSE,
+		.progressive  = false,    .trilevel_sync = false,
 
 
 		.vsync_start_f1	= 6,	   .vsync_start_f2	= 7,
 		.vsync_len	= 6,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 0,
+		.veq_ena	= true,		    .veq_start_f1    	= 0,
 		.veq_start_f2	= 1,		    .veq_len		= 18,
 
 		.vi_end_f1	= 24,		    .vi_end_f2		= 25,
 		.nbr_end	= 286,
 
-		.burst_ena	= TRUE,
+		.burst_ena	= true,
 		.hburst_start = 73,	    	    .hburst_len		= 34,
 		.vburst_start_f1 = 8,	    .vburst_end_f1	= 285,
 		.vburst_start_f2 = 8,	    .vburst_end_f2	= 286,
@@ -618,7 +618,7 @@ const static struct tv_mode tv_modes[] = {
 		.dda2_inc       =  18557,       .dda2_size      =  20625,
 		.dda3_inc       =      0,       .dda3_size      =      0,
 		.sc_reset   = TV_SC_RESET_EVERY_8,
-		.pal_burst  = TRUE,
+		.pal_burst  = true,
 
 		.composite_levels = &pal_n_levels_composite,
 		.composite_color = &pal_n_csc_composite,
@@ -638,18 +638,18 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end	= 64,		    .hblank_end		= 128,
 		.hblank_start	= 844,	    .htotal		= 863,
 
-		.progressive	= FALSE,    .trilevel_sync = FALSE,
+		.progressive	= false,    .trilevel_sync = false,
 
 		.vsync_start_f1	= 5,	    .vsync_start_f2	= 6,
 		.vsync_len	= 5,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 0,
+		.veq_ena	= true,		    .veq_start_f1    	= 0,
 		.veq_start_f2	= 1,	    .veq_len		= 15,
 
 		.vi_end_f1	= 24,		    .vi_end_f2		= 25,
 		.nbr_end	= 286,
 
-		.burst_ena	= TRUE,
+		.burst_ena	= true,
 		.hburst_start	= 73,		    .hburst_len		= 32,
 		.vburst_start_f1 = 8,		    .vburst_end_f1	= 285,
 		.vburst_start_f2 = 8,		    .vburst_end_f2	= 286,
@@ -661,7 +661,7 @@ const static struct tv_mode tv_modes[] = {
 		.dda2_inc       =  18557,       .dda2_size      =  20625,
 		.dda3_inc       =      0,       .dda3_size      =      0,
 		.sc_reset   = TV_SC_RESET_EVERY_8,
-		.pal_burst  = TRUE,
+		.pal_burst  = true,
 
 		.composite_levels = &pal_levels_composite,
 		.composite_color = &pal_csc_composite,
@@ -680,17 +680,17 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 64,               .hblank_end         = 122,
 		.hblank_start   = 842,              .htotal             = 857,
 
-		.progressive    = TRUE,.trilevel_sync = FALSE,
+		.progressive    = true,.trilevel_sync = false,
 
 		.vsync_start_f1 = 12,               .vsync_start_f2     = 12,
 		.vsync_len      = 12,
 
-		.veq_ena        = FALSE,
+		.veq_ena        = false,
 
 		.vi_end_f1      = 44,               .vi_end_f2          = 44,
 		.nbr_end        = 496,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -704,17 +704,17 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 64,               .hblank_end         = 122,
 		.hblank_start   = 842,              .htotal             = 856,
 
-		.progressive    = TRUE,.trilevel_sync = FALSE,
+		.progressive    = true,.trilevel_sync = false,
 
 		.vsync_start_f1 = 12,               .vsync_start_f2     = 12,
 		.vsync_len      = 12,
 
-		.veq_ena        = FALSE,
+		.veq_ena        = false,
 
 		.vi_end_f1      = 44,               .vi_end_f2          = 44,
 		.nbr_end        = 496,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -728,17 +728,17 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 64,               .hblank_end         = 139,
 		.hblank_start   = 859,              .htotal             = 863,
 
-		.progressive    = TRUE,		.trilevel_sync = FALSE,
+		.progressive    = true,		.trilevel_sync = false,
 
 		.vsync_start_f1 = 10,               .vsync_start_f2     = 10,
 		.vsync_len      = 10,
 
-		.veq_ena        = FALSE,
+		.veq_ena        = false,
 
 		.vi_end_f1      = 48,               .vi_end_f2          = 48,
 		.nbr_end        = 575,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -752,17 +752,17 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 80,               .hblank_end         = 300,
 		.hblank_start   = 1580,             .htotal             = 1649,
 
-		.progressive    = TRUE, 	    .trilevel_sync = TRUE,
+		.progressive    = true, 	    .trilevel_sync = true,
 
 		.vsync_start_f1 = 10,               .vsync_start_f2     = 10,
 		.vsync_len      = 10,
 
-		.veq_ena        = FALSE,
+		.veq_ena        = false,
 
 		.vi_end_f1      = 29,               .vi_end_f2          = 29,
 		.nbr_end        = 719,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -776,17 +776,17 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 80,               .hblank_end         = 300,
 		.hblank_start   = 1580,             .htotal             = 1651,
 
-		.progressive    = TRUE, 	    .trilevel_sync = TRUE,
+		.progressive    = true, 	    .trilevel_sync = true,
 
 		.vsync_start_f1 = 10,               .vsync_start_f2     = 10,
 		.vsync_len      = 10,
 
-		.veq_ena        = FALSE,
+		.veq_ena        = false,
 
 		.vi_end_f1      = 29,               .vi_end_f2          = 29,
 		.nbr_end        = 719,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -800,17 +800,17 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 80,               .hblank_end         = 300,
 		.hblank_start   = 1580,             .htotal             = 1979,
 
-		.progressive    = TRUE, 	        .trilevel_sync = TRUE,
+		.progressive    = true, 	        .trilevel_sync = true,
 
 		.vsync_start_f1 = 10,               .vsync_start_f2     = 10,
 		.vsync_len      = 10,
 
-		.veq_ena        = FALSE,
+		.veq_ena        = false,
 
 		.vi_end_f1      = 29,               .vi_end_f2          = 29,
 		.nbr_end        = 719,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 		.max_srcw = 800
@@ -825,19 +825,19 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 88,               .hblank_end         = 235,
 		.hblank_start   = 2155,             .htotal             = 2639,
 
-		.progressive    = FALSE, 	    .trilevel_sync = TRUE,
+		.progressive    = false, 	    .trilevel_sync = true,
 
 		.vsync_start_f1 = 4,              .vsync_start_f2     = 5,
 		.vsync_len      = 10,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 4,
+		.veq_ena	= true,		    .veq_start_f1    	= 4,
 		.veq_start_f2   = 4,	    .veq_len		= 10,
 
 
 		.vi_end_f1      = 21,           .vi_end_f2          = 22,
 		.nbr_end        = 539,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -851,19 +851,19 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 88,               .hblank_end         = 235,
 		.hblank_start   = 2155,             .htotal             = 2199,
 
-		.progressive    = FALSE, 	    .trilevel_sync = TRUE,
+		.progressive    = false, 	    .trilevel_sync = true,
 
 		.vsync_start_f1 = 4,               .vsync_start_f2     = 5,
 		.vsync_len      = 10,
 
-		.veq_ena	= TRUE,		    .veq_start_f1    	= 4,
+		.veq_ena	= true,		    .veq_start_f1    	= 4,
 		.veq_start_f2	= 4,		    .veq_len		= 10,
 
 
 		.vi_end_f1      = 21,               .vi_end_f2          = 22,
 		.nbr_end        = 539,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -877,19 +877,19 @@ const static struct tv_mode tv_modes[] = {
 		.hsync_end      = 88,               .hblank_end         = 235,
 		.hblank_start   = 2155,             .htotal             = 2200,
 
-		.progressive    = FALSE, 	    .trilevel_sync = TRUE,
+		.progressive    = false, 	    .trilevel_sync = true,
 
 		.vsync_start_f1 = 4,            .vsync_start_f2    = 5,
 		.vsync_len      = 10,
 
-		.veq_ena	= TRUE,		    .veq_start_f1	= 4,
+		.veq_ena	= true,		    .veq_start_f1	= 4,
 		.veq_start_f2 = 4,	    	    .veq_len = 10,
 
 
 		.vi_end_f1      = 21,           .vi_end_f2         	= 22,
 		.nbr_end        = 539,
 
-		.burst_ena      = FALSE,
+		.burst_ena      = false,
 
 		.filter_table = filter_table,
 	},
@@ -1098,17 +1098,17 @@ intel_tv_mode_fixup(struct drm_encoder *encoder, struct drm_display_mode *mode,
 	struct drm_encoder *other_encoder;
 
 	if (!tv_mode)
-		return FALSE;
+		return false;
     
 	/* FIXME: lock encoder list */
 	list_for_each_entry(other_encoder, &drm_config->encoder_list, head) {
 		if (other_encoder != encoder &&
 		    other_encoder->crtc == encoder->crtc)
-			return FALSE;
+			return false;
 	}
 
 	adjusted_mode->clock = tv_mode->clock;
-	return TRUE;
+	return true;
 }
 
 static void
@@ -1152,7 +1152,7 @@ intel_tv_mode_set(struct drm_encoder *encoder, struct drm_display_mode *mode,
 			color_conversion = &sdtv_csc_yprpb;
 		else
 			color_conversion = &hdtv_csc_yprpb;
-		burst_ena = FALSE;
+		burst_ena = false;
 		break;
 	case DRM_MODE_CONNECTOR_SVIDEO:
 		tv_ctl |= TV_ENC_OUTPUT_SVIDEO;
@@ -1352,8 +1352,8 @@ static const struct drm_display_mode reported_modes[] = {
  *
  * Requires that the current pipe's DPLL is active.
 
- * \return TRUE if TV is connected.
- * \return FALSE if TV is disconnected.
+ * \return true if TV is connected.
+ * \return false if TV is disconnected.
  */
 static int
 intel_tv_detect_type (struct drm_crtc *crtc, struct intel_output *intel_output)
@@ -1703,8 +1703,8 @@ intel_tv_init(struct drm_device *dev)
     
 	drm_encoder_helper_add(&intel_output->enc, &intel_tv_helper_funcs);
 	drm_connector_helper_add(connector, &intel_tv_connector_helper_funcs);
-	connector->interlace_allowed = FALSE;
-	connector->doublescan_allowed = FALSE;
+	connector->interlace_allowed = false;
+	connector->doublescan_allowed = false;
 
 	/* Create TV properties then attach current values */
 	tv_format_names = drm_alloc(sizeof(char *) * NUM_TV_MODES,

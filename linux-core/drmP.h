@@ -54,6 +54,7 @@
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
 #include <linux/dma-mapping.h>
 #include <linux/mm.h>
+#include <linux/swap.h>
 #include <linux/kref.h>
 #include <linux/pagemap.h>
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)

@@ -187,7 +187,7 @@ static bool tfp410_init(struct intel_dvo_device *dvo,
 	dvo->i2c_bus = i2cbus;
 	dvo->i2c_bus->slave_addr = dvo->slave_addr;
 	dvo->dev_priv = tfp;
-	tfp->quiet = TRUE;
+	tfp->quiet = true;
 
 	if ((id = tfp410_getid(dvo, TFP410_VID_LO)) != TFP410_VID) {
 		DRM_DEBUG("tfp410 not detected got VID %X: from %s Slave %d.\n",
@@ -200,7 +200,7 @@ static bool tfp410_init(struct intel_dvo_device *dvo,
 			  id, i2cbus->adapter.name, i2cbus->slave_addr);
 		goto out;
 	}
-	tfp->quiet = FALSE;
+	tfp->quiet = false;
 	return true;
 out:
 	kfree(tfp);

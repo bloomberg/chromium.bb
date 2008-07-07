@@ -221,7 +221,7 @@ static bool ch7xxx_init(struct intel_dvo_device *dvo,
 		goto out;
 	}
 
-	ch7xxx->quiet = FALSE;
+	ch7xxx->quiet = false;
 	DRM_DEBUG("Detected %s chipset, vendor/device ID 0x%02x/0x%02x\n",
 		  name, vendor, device);
 	return true;

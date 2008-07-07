@@ -136,8 +136,8 @@ static void intel_crt_mode_set(struct drm_encoder *encoder,
  *
  * Not for i915G/i915GM
  *
- * \return TRUE if CRT is connected.
- * \return FALSE if CRT is disconnected.
+ * \return true if CRT is connected.
+ * \return false if CRT is disconnected.
  */
 static bool intel_crt_detect_hotplug(struct drm_connector *connector)
 {

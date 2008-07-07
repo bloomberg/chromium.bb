@@ -265,7 +265,7 @@ static bool ivch_init(struct intel_dvo_device *dvo,
 	dvo->i2c_bus = i2cbus;
 	dvo->i2c_bus->slave_addr = dvo->slave_addr;
 	dvo->dev_priv = priv;
-	priv->quiet = TRUE;
+	priv->quiet = true;
 
 	if (!ivch_read(dvo, VR00, &temp))
 		goto out;
