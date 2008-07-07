@@ -134,7 +134,6 @@ struct drm_i915_private {
 
 	wait_queue_head_t irq_queue;
 	atomic_t irq_received;
-	atomic_t irq_emitted;
 
 	int tex_lru_log_granularity;
 	int allow_batchbuffer;
@@ -235,15 +234,34 @@ struct drm_i915_private {
 		
 		uint32_t next_gem_seqno;
 
-                /**
-                 * Flag if the X Server, and thus DRM, is not currently in
-                 * control of the device.
-                 *
-                 * This is set between LeaveVT and EnterVT.  It needs to be
-                 * replaced with a semaphore.  It also needs to be
-                 * transitioned away from for kernel modesetting.
-                 */
-                int suspended;
+		/**
+		 * Waiting sequence number, if any
+		 */
+		uint32_t waiting_gem_seqno;
+	
+		/**
+		 * Last seq seen at irq time
+		 */
+		uint32_t irq_gem_seqno;
+
+		/**
+		 * Flag if the X Server, and thus DRM, is not currently in
+		 * control of the device.
+		 *
+		 * This is set between LeaveVT and EnterVT.  It needs to be
+		 * replaced with a semaphore.  It also needs to be
+		 * transitioned away from for kernel modesetting.
+		 */
+		int suspended;
+
+		/**
+		 * Flag if the hardware appears to be wedged.
+		 *
+		 * This is set when attempts to idle the device timeout.
+		 * It prevents command submission from occuring and makes
+		 * every pending request fail
+		 */
+		int wedged;
 	} mm;
 
 	struct work_struct user_interrupt_task;
@@ -368,6 +386,12 @@ struct drm_i915_gem_object {
 	 * to be unbound).
 	 */
 	int active;
+
+	/**
+	 * This is set if the object has been written to since last bound
+	 * to the GTT
+	 */
+	int dirty;
 
 	/** AGP memory structure for our GTT binding. */
 	DRM_AGP_MEM *agp_mem;
@@ -521,6 +545,8 @@ int i915_gem_mmap_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 			      struct drm_file *file_priv);
+int i915_gem_sw_finish_ioctl(struct drm_device *dev, void *data,
+			     struct drm_file *file_priv);
 int i915_gem_execbuffer(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 int i915_gem_pin_ioctl(struct drm_device *dev, void *data,
@@ -535,11 +561,14 @@ int i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
 int i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
+int i915_gem_proc_init(struct drm_minor *minor);
+void i915_gem_proc_cleanup(struct drm_minor *minor);
 int i915_gem_init_object(struct drm_gem_object *obj);
 void i915_gem_free_object(struct drm_gem_object *obj);
 int i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment);
 void i915_gem_object_unpin(struct drm_gem_object *obj);
 void i915_gem_lastclose(struct drm_device *dev);
+uint32_t i915_get_gem_seqno(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
 int i915_gem_init_ringbuffer(struct drm_device *dev);
 void i915_gem_cleanup_ringbuffer(struct drm_device *dev);

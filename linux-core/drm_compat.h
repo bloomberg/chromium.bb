@@ -353,7 +353,7 @@ static inline int kobject_uevent_env(struct kobject *kobj,
 #endif
 
 
-#if (defined(CONFIG_X86) && defined(CONFIG_X86_32) && defined(CONFIG_HIMEM))
+#if (defined(CONFIG_X86) && defined(CONFIG_X86_32) && defined(CONFIG_HIGHMEM))
 #define DRM_KMAP_ATOMIC_PROT_PFN
 extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 				  pgprot_t protection);

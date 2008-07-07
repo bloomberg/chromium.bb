@@ -189,6 +189,7 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_GEM_PWRITE	0x1d
 #define DRM_I915_GEM_MMAP	0x1e
 #define DRM_I915_GEM_SET_DOMAIN	0x1f
+#define DRM_I915_GEM_SW_FINISH	0x20
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -221,6 +222,7 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_GEM_PWRITE	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_PWRITE, struct drm_i915_gem_pwrite)
 #define DRM_IOCTL_I915_GEM_MMAP		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_MMAP, struct drm_i915_gem_mmap)
 #define DRM_IOCTL_I915_GEM_SET_DOMAIN	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_SET_DOMAIN, struct drm_i915_gem_set_domain)
+#define DRM_IOCTL_I915_GEM_SW_FINISH	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_SW_FINISH, struct drm_i915_gem_sw_finish)
 
 /* Asynchronous page flipping:
  */
@@ -505,6 +507,11 @@ struct drm_i915_gem_set_domain {
 	uint32_t write_domain;
 };
 
+struct drm_i915_gem_sw_finish {
+	/** Handle for the object */
+	uint32_t handle;
+};
+
 struct drm_i915_gem_relocation_entry {
 	/**
 	 * Handle of the buffer being pointed to by this relocation entry.
@@ -569,6 +576,8 @@ struct drm_i915_gem_relocation_entry {
 #define I915_GEM_DOMAIN_INSTRUCTION	0x00000010
 /** Vertex address cache */
 #define I915_GEM_DOMAIN_VERTEX		0x00000020
+/** GTT domain - aperture and scanout */
+#define I915_GEM_DOMAIN_GTT		0x00000040
 /** @} */
 
 struct drm_i915_gem_exec_object {

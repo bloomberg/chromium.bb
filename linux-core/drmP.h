@@ -811,6 +811,10 @@ struct drm_driver {
 	/* Master routines */
 	int (*master_create)(struct drm_device *dev, struct drm_master *master);
 	void (*master_destroy)(struct drm_device *dev, struct drm_master *master);
+
+	int (*proc_init)(struct drm_minor *minor);
+	void (*proc_cleanup)(struct drm_minor *minor);
+
 	/**
 	 * Driver-specific constructor for drm_gem_objects, to set up
 	 * obj->driver_private.
@@ -1366,7 +1370,7 @@ extern void drm_put_master(struct drm_master *master);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
 extern int drm_put_dev(struct drm_device *dev);
-extern int drm_put_minor(struct drm_minor **minor);
+extern int drm_put_minor(struct drm_device *dev, struct drm_minor **p);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 
 extern struct class *drm_class;

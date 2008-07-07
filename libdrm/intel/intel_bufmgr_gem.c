@@ -109,11 +109,11 @@ struct _dri_bo_gem {
     int validate_index;
 
     /**
-     * Boolean whether set_domain to CPU is current
-     * Set when set_domain has been called
-     * Cleared when a batch has been submitted
+     * Boolean whether we've started swrast
+     * Set when the buffer has been mapped
+     * Cleared when the buffer is unmapped
      */
-    int cpu_domain_set;
+    int swrast;
 
     /** Array passed to the DRM containing relocation information. */
     struct drm_i915_gem_relocation_entry *relocs;
@@ -485,25 +485,27 @@ dri_gem_bo_map(dri_bo *bo, int write_enable)
 	    bo_gem->virtual = (void *)(uintptr_t)mmap_arg.addr_ptr;
 	}
 	bo->virtual = bo_gem->virtual;
+	bo_gem->swrast = 0;
 	bo_gem->mapped = 1;
 	DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name, bo_gem->virtual);
     }
 
-    if (!bo_gem->cpu_domain_set) {
+    if (!bo_gem->swrast) {
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_CPU;
-	set_domain.write_domain = write_enable ? I915_GEM_DOMAIN_CPU : 0;
+	if (write_enable)
+	    set_domain.write_domain = I915_GEM_DOMAIN_CPU;
+	else
+	    set_domain.write_domain = 0;
 	do {
 	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
 			&set_domain);
 	} while (ret == -1 && errno == EINTR);
 	if (ret != 0) {
-	    fprintf (stderr, "%s:%d: Error setting memory domains %d (%08x %08x): %s .\n",
-		     __FILE__, __LINE__,
-		     bo_gem->gem_handle, set_domain.read_domains, set_domain.write_domain,
-		     strerror (errno));
+	    fprintf (stderr, "%s:%d: Error setting swrast %d: %s\n",
+		     __FILE__, __LINE__, bo_gem->gem_handle, strerror (errno));
 	}
-	bo_gem->cpu_domain_set = 1;
+	bo_gem->swrast = 1;
     }
 
     return 0;
@@ -512,13 +514,24 @@ dri_gem_bo_map(dri_bo *bo, int write_enable)
 static int
 dri_gem_bo_unmap(dri_bo *bo)
 {
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
+    struct drm_i915_gem_sw_finish sw_finish;
+    int ret;
 
     if (bo == NULL)
 	return 0;
 
     assert(bo_gem->mapped);
 
+    if (bo_gem->swrast) {
+	sw_finish.handle = bo_gem->gem_handle;
+	do {
+	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SW_FINISH,
+			&sw_finish);
+	} while (ret == -1 && errno == EINTR);
+	bo_gem->swrast = 0;
+    }
     return 0;
 }
 
@@ -583,7 +596,7 @@ dri_gem_bo_wait_rendering(dri_bo *bo)
     int ret;
 
     set_domain.handle = bo_gem->gem_handle;
-    set_domain.read_domains = I915_GEM_DOMAIN_CPU;
+    set_domain.read_domains = I915_GEM_DOMAIN_GTT;
     set_domain.write_domain = 0;
     ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
     if (ret != 0) {
@@ -744,8 +757,8 @@ dri_gem_post_submit(dri_bo *batch_buf)
 	dri_bo *bo = bufmgr_gem->exec_bos[i];
 	dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
 
-	/* Need to call set_domain on next bo_map */
-	bo_gem->cpu_domain_set = 0;
+	/* Need to call swrast on next bo_map */
+	bo_gem->swrast = 0;
 
 	/* Disconnect the buffer from the validate list */
 	bo_gem->validate_index = -1;
