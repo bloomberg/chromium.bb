@@ -595,21 +595,13 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 	unsigned char *edid = NULL;
 	int i, j;
 
-	/*
-	 * Startup the bus:
-	 *   Set clock line high (but give it time to come up)
-	 *   Then set clock & data low
-	 */
 	algo_data->setscl(algo_data->data, 1);
-	udelay(550); /* startup delay */
-	algo_data->setscl(algo_data->data, 0);
-	algo_data->setsda(algo_data->data, 0);
 
 	for (i = 0; i < 3; i++) {
 		/* For some old monitors we need the
 		 * following process to initialize/stop DDC
 		 */
-		algo_data->setsda(algo_data->data, 0);
+		algo_data->setsda(algo_data->data, 1);
 		msleep(13);
 
 		algo_data->setscl(algo_data->data, 1);
@@ -644,6 +636,7 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 		algo_data->setsda(algo_data->data, 1);
 		msleep(15);
 		algo_data->setscl(algo_data->data, 0);
+		algo_data->setsda(algo_data->data, 0);
 		if (edid)
 			break;
 	}
