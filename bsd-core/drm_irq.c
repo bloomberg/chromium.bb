@@ -578,41 +578,42 @@ static void drm_locked_task(void *context, int pending __unused)
 {
 	struct drm_device *dev = context;
 
-	DRM_LOCK();
-	for (;;) {
-		int ret;
+	DRM_SPINLOCK(&dev->tsk_lock);
 
-		if (drm_lock_take(&dev->lock.hw_lock->lock,
-		    DRM_KERNEL_CONTEXT))
-		{
-			dev->lock.file_priv = NULL; /* kernel owned */
-			dev->lock.lock_time = jiffies;
-			atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
-			break;  /* Got lock */
-		}
-
-		/* Contention */
-#if defined(__FreeBSD__) && __FreeBSD_version > 500000
-		ret = mtx_sleep((void *)&dev->lock.lock_queue, &dev->dev_lock,
-		    PZERO | PCATCH, "drmlk2", 0);
-#else
-		ret = tsleep((void *)&dev->lock.lock_queue, PZERO | PCATCH,
-		    "drmlk2", 0);
-#endif
-		if (ret != 0)
-			return;
+	DRM_LOCK(); /* XXX drm_lock_take() should do it's own locking */
+	if (dev->locked_task_call == NULL ||
+	    drm_lock_take(&dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT) == 0) {
+		DRM_UNLOCK();
+		DRM_SPINUNLOCK(&dev->tsk_lock);
+		return;
 	}
+
+	dev->lock.file_priv = NULL; /* kernel owned */
+	dev->lock.lock_time = jiffies;
+	atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
+
 	DRM_UNLOCK();
 
 	dev->locked_task_call(dev);
 
 	drm_lock_free(dev, &dev->lock.hw_lock->lock, DRM_KERNEL_CONTEXT);
+
+	dev->locked_task_call = NULL;
+
+	DRM_SPINUNLOCK(&dev->tsk_lock);
 }
 
 void
 drm_locked_tasklet(struct drm_device *dev,
 		   void (*tasklet)(struct drm_device *dev))
 {
+	DRM_SPINLOCK(&dev->tsk_lock);
+	if (dev->locked_task_call != NULL) {
+		DRM_SPINUNLOCK(&dev->tsk_lock);
+		return;
+	}
+
 	dev->locked_task_call = tasklet;
+	DRM_SPINUNLOCK(&dev->tsk_lock);
 	taskqueue_enqueue(taskqueue_swi, &dev->locked_task);
 }

@@ -739,6 +739,7 @@ struct drm_device {
 	struct mtx	  dev_lock;	/* protects everything else */
 #endif
 	DRM_SPINTYPE	  drw_lock;
+	DRM_SPINTYPE	  tsk_lock;
 
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
