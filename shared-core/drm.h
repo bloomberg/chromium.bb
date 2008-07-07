@@ -993,15 +993,30 @@ struct drm_mm_info_arg {
 	uint64_t p_size;
 };
 
-struct drm_gem_set_domain {
-	/** Handle for the object */
+struct drm_gem_close {
+	/** Handle of the object to be closed. */
 	uint32_t handle;
-	/** New read domains */
-	uint32_t read_domains;
-	/** New write domain */
-	uint32_t write_domain;
+	uint32_t pad;
 };
-#define DRM_GEM_DOMAIN_CPU		0x00000001
+
+struct drm_gem_flink {
+	/** Handle for the object being named */
+	uint32_t handle;
+
+	/** Returned global name */
+	uint32_t name;
+};
+
+struct drm_gem_open {
+	/** Name of object being opened */
+	uint32_t name;
+
+	/** Returned handle for the object */
+	uint32_t handle;
+	
+	/** Returned size of the object */
+	uint64_t size;
+};
 
 /*
  * Drm mode setting

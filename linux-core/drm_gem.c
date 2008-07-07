@@ -117,6 +117,45 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 EXPORT_SYMBOL(drm_gem_object_alloc);
 
 /**
+ * Removes the mapping from handle to filp for this object.
+ */
+static int
+drm_gem_handle_delete(struct drm_file *filp, int handle)
+{
+	struct drm_device *dev;
+	struct drm_gem_object *obj;
+
+	/* This is gross. The idr system doesn't let us try a delete and
+	 * return an error code.  It just spews if you fail at deleting.
+	 * So, we have to grab a lock around finding the object and then
+	 * doing the delete on it and dropping the refcount, or the user
+	 * could race us to double-decrement the refcount and cause a
+	 * use-after-free later.  Given the frequency of our handle lookups,
+	 * we may want to use ida for number allocation and a hash table
+	 * for the pointers, anyway.
+	 */
+	spin_lock(&filp->table_lock);
+
+	/* Check if we currently have a reference on the object */
+	obj = idr_find(&filp->object_idr, handle);
+	if (obj == NULL) {
+		spin_unlock(&filp->table_lock);
+		return -EINVAL;
+	}
+	dev = obj->dev;
+
+	/* Release reference and decrement refcount. */
+	idr_remove(&filp->object_idr, handle);
+	spin_unlock(&filp->table_lock);
+
+	mutex_lock(&dev->struct_mutex);
+	drm_gem_object_handle_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+
+	return 0;
+}
+
+/**
  * Create a handle for this object. This adds a handle reference
  * to the object, which includes a regular reference count. Callers
  * will likely want to dereference the object afterwards.
@@ -174,6 +213,115 @@ drm_gem_object_lookup(struct drm_device *dev, struct drm_file *filp,
 	return obj;
 }
 EXPORT_SYMBOL(drm_gem_object_lookup);
+
+/**
+ * Releases the handle to an mm object.
+ */
+int
+drm_gem_close_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_gem_close *args = data;
+	int ret;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
+	ret = drm_gem_handle_delete(file_priv, args->handle);
+
+	return ret;
+}
+
+/**
+ * Create a global name for an object, returning the name.
+ *
+ * Note that the name does not hold a reference; when the object
+ * is freed, the name goes away.
+ */
+int
+drm_gem_flink_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_gem_flink *args = data;
+	struct drm_gem_object *obj;
+	int ret;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+again:
+	if (idr_pre_get(&dev->object_name_idr, GFP_KERNEL) == 0)
+		return -ENOMEM;
+
+	spin_lock(&dev->object_name_lock);
+	if (obj->name) {
+		spin_unlock(&dev->object_name_lock);
+		return -EEXIST;
+	}
+	ret = idr_get_new_above(&dev->object_name_idr, obj, 1,
+				 &obj->name);
+	spin_unlock(&dev->object_name_lock);
+	if (ret == -EAGAIN)
+		goto again;
+
+	if (ret != 0) {
+		mutex_lock(&dev->struct_mutex);
+		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
+	}
+
+	/*
+	 * Leave the reference from the lookup around as the
+	 * name table now holds one
+	 */
+	args->name = (uint64_t) obj->name;
+
+	return 0;
+}
+
+/**
+ * Open an object using the global name, returning a handle and the size.
+ *
+ * This handle (of course) holds a reference to the object, so the object
+ * will not go away until the handle is deleted.
+ */
+int
+drm_gem_open_ioctl(struct drm_device *dev, void *data,
+		   struct drm_file *file_priv)
+{
+	struct drm_gem_open *args = data;
+	struct drm_gem_object *obj;
+	int ret;
+	int handle;
+
+	if (!(dev->driver->driver_features & DRIVER_GEM))
+		return -ENODEV;
+
+	spin_lock(&dev->object_name_lock);
+	obj = idr_find(&dev->object_name_idr, (int) args->name);
+	if (obj)
+		drm_gem_object_reference(obj);
+	spin_unlock(&dev->object_name_lock);
+	if (!obj)
+		return -ENOENT;
+
+	ret = drm_gem_handle_create(file_priv, obj, &handle);
+	mutex_lock(&dev->struct_mutex);
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+	if (ret)
+		return ret;
+
+	args->handle = handle;
+	args->size = obj->size;
+
+	return 0;
+}
 
 /**
  * Called at device open time, sets up the structure for handling refcounting
