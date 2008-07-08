@@ -46,41 +46,41 @@ static bool xgi_validate_signal(struct drm_map * map)
 		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 
 		if ((check & 0x3f) != ((check & 0x3f00) >> 8)) {
-			return FALSE;
+			return false;
 		}
 
 		/* Check RO channel */
 		DRM_WRITE8(map, 0x235c, 0x83);
 		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
-			return FALSE;
+			return false;
 		}
 
 		/* Check RW channel */
 		DRM_WRITE8(map, 0x235c, 0x88);
 		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if ((check & 0x0f) != ((check & 0xf0) >> 4)) {
-			return FALSE;
+			return false;
 		}
 
 		/* Check RO channel outstanding */
 		DRM_WRITE8(map, 0x235c, 0x8f);
 		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if (0 != (check & 0x3ff)) {
-			return FALSE;
+			return false;
 		}
 
 		/* Check RW channel outstanding */
 		DRM_WRITE8(map, 0x235c, 0x90);
 		check = le16_to_cpu(DRM_READ16(map, 0x2360));
 		if (0 != (check & 0x3ff)) {
-			return FALSE;
+			return false;
 		}
 
 		/* No pending PCIE request. GE stall. */
 	}
 
-	return TRUE;
+	return true;
 }
 
 
@@ -138,7 +138,7 @@ static void xgi_ge_hang_reset(struct drm_map * map)
 bool xgi_ge_irq_handler(struct xgi_info * info)
 {
 	const u32 int_status = le32_to_cpu(DRM_READ32(info->mmio_map, 0x2810));
-	bool is_support_auto_reset = FALSE;
+	bool is_support_auto_reset = false;
 
 	/* Check GE on/off */
 	if (0 == (0xffffc0f0 & int_status)) {
@@ -179,15 +179,15 @@ bool xgi_ge_irq_handler(struct xgi_info * info)
 				    cpu_to_le32((int_status & ~0x01) | 0x04000000));
 		}
 
-		return TRUE;
+		return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 bool xgi_crt_irq_handler(struct xgi_info * info)
 {
-	bool ret = FALSE;
+	bool ret = false;
 	u8 save_3ce = DRM_READ8(info->mmio_map, 0x3ce);
 
 	/* CRT1 interrupt just happened
@@ -205,7 +205,7 @@ bool xgi_crt_irq_handler(struct xgi_info * info)
 		op3cf_3d = IN3CFB(info->mmio_map, 0x3d);
 		OUT3CFB(info->mmio_map, 0x3d, (op3cf_3d | 0x04));
 		OUT3CFB(info->mmio_map, 0x3d, (op3cf_3d & ~0x04));
-		ret = TRUE;
+		ret = true;
 	}
 	DRM_WRITE8(info->mmio_map, 0x3ce, save_3ce);
 
@@ -214,7 +214,7 @@ bool xgi_crt_irq_handler(struct xgi_info * info)
 
 bool xgi_dvi_irq_handler(struct xgi_info * info)
 {
-	bool ret = FALSE;
+	bool ret = false;
 	const u8 save_3ce = DRM_READ8(info->mmio_map, 0x3ce);
 
 	/* DVI interrupt just happened
@@ -242,7 +242,7 @@ bool xgi_dvi_irq_handler(struct xgi_info * info)
 		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 & ~0x01));
 		OUT3C5B(info->mmio_map, 0x39, (op3cf_39 | 0x01));
 
-		ret = TRUE;
+		ret = true;
 	}
 	DRM_WRITE8(info->mmio_map, 0x3ce, save_3ce);
 
