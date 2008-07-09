@@ -284,11 +284,6 @@ int drmModeSetCrtc(int fd, uint32_t crtcId, uint32_t bufferId,
 {
 	struct drm_mode_crtc crtc;
 
-	crtc.count_connectors   = 0;
-	crtc.connectors         = 0;
-	crtc.count_possibles = 0;
-	crtc.possibles       = 0;
-
 	crtc.x             = x;
 	crtc.y             = y;
 	crtc.crtc_id       = crtcId;
@@ -343,8 +338,8 @@ drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
 
 	enc.encoder_id = encoder_id;
 	enc.encoder_type = 0;
-	enc.crtcs = 0;
-	enc.clones = 0;
+	enc.possible_crtcs = 0;
+	enc.possible_clones = 0;
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETENCODER, &enc))
 		return 0;
@@ -353,10 +348,10 @@ drmModeEncoderPtr drmModeGetEncoder(int fd, uint32_t encoder_id)
 		return 0;
 
 	r->encoder_id = enc.encoder_id;
-	r->crtc = enc.crtc;
+	r->crtc_id = enc.crtc_id;
 	r->encoder_type = enc.encoder_type;
-	r->crtcs = enc.crtcs;
-	r->clones = enc.clones;
+	r->possible_crtcs = enc.possible_crtcs;
+	r->possible_clones = enc.possible_clones;
 
 	return r;
 }
@@ -370,7 +365,7 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	struct drm_mode_get_connector conn;
 	drmModeConnectorPtr r = NULL;
 
-	conn.connector = connector_id;
+	conn.connector_id = connector_id;
 	conn.connector_type_id = 0;
 	conn.connector_type  = 0;
 	conn.count_modes  = 0;
@@ -402,8 +397,8 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 		goto err_allocs;
 	}
 
-	r->connector_id = conn.connector;
-	r->encoder = conn.encoder;
+	r->connector_id = conn.connector_id;
+	r->encoder_id = conn.encoder_id;
 	r->connection   = conn.connection;
 	r->mmWidth      = conn.mm_width;
 	r->mmHeight     = conn.mm_height;
@@ -418,6 +413,9 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	r->encoders     = drmAllocCpy(U642VOID(conn.encoders_ptr), conn.count_encoders, sizeof(uint32_t));
 	r->connector_type  = conn.connector_type;
 	r->connector_type_id = conn.connector_type_id;
+
+	if (!r->props || !r->prop_values || !r->modes || !r->encoders)
+		goto err_allocs;
 
 err_allocs:
 	drmFree(U642VOID(conn.prop_values_ptr));
@@ -492,7 +490,7 @@ drmModePropertyPtr drmModeGetProperty(int fd, uint32_t property_id)
 	if (prop.flags & DRM_MODE_PROP_ENUM) {
 		r->count_enums = prop.count_enum_blobs;
 		r->enums = drmAllocCpy(U642VOID(prop.enum_blob_ptr), prop.count_enum_blobs, sizeof(struct drm_mode_property_enum));
-	} else	if (prop.flags & DRM_MODE_PROP_ENUM) {
+	} else if (prop.flags & DRM_MODE_PROP_BLOB) {
 		r->values = drmAllocCpy(U642VOID(prop.values_ptr), prop.count_enum_blobs, sizeof(uint32_t));
 		r->blob_ids = drmAllocCpy(U642VOID(prop.enum_blob_ptr), prop.count_enum_blobs, sizeof(uint32_t));
 		r->count_blobs = prop.count_enum_blobs;

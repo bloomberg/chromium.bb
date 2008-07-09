@@ -90,6 +90,8 @@ enum drm_mode_status {
 	.vsync_start = (vss), .vsync_end = (vse), .vtotal = (vt), \
 	.vscan = (vs), .flags = (f), .vrefresh = 0
 
+#define CRTC_INTERLACE_HALVE_V 0x1 /* halve V values for interlacing */
+
 struct drm_display_mode {
 	/* Header */
 	struct list_head head;
@@ -146,43 +148,6 @@ struct drm_display_mode {
 	int vrefresh;
 	float hsync;
 };
-
-/* Video mode flags */
-#define V_PHSYNC	(1<<0)
-#define V_NHSYNC	(1<<1)
-#define V_PVSYNC	(1<<2)
-#define V_NVSYNC	(1<<3)
-#define V_INTERLACE	(1<<4)
-#define V_DBLSCAN	(1<<5)
-#define V_CSYNC		(1<<6)
-#define V_PCSYNC	(1<<7)
-#define V_NCSYNC	(1<<8)
-#define V_HSKEW		(1<<9) /* hskew provided */
-#define V_BCAST		(1<<10)
-#define V_PIXMUX	(1<<11)
-#define V_DBLCLK	(1<<12)
-#define V_CLKDIV2	(1<<13)
-
-#define CRTC_INTERLACE_HALVE_V 0x1 /* halve V values for interlacing */
-
-#define DPMSModeOn 0
-#define DPMSModeStandby 1
-#define DPMSModeSuspend 2
-#define DPMSModeOff 3
-
-#define DRM_MODE_CONNECTOR_Unknown 0
-#define DRM_MODE_CONNECTOR_VGA 1
-#define DRM_MODE_CONNECTOR_DVII 2
-#define DRM_MODE_CONNECTOR_DVID 3
-#define DRM_MODE_CONNECTOR_DVIA 4
-#define DRM_MODE_CONNECTOR_Composite 5
-#define DRM_MODE_CONNECTOR_SVIDEO 6
-#define DRM_MODE_CONNECTOR_LVDS 7
-#define DRM_MODE_CONNECTOR_Component 8
-#define DRM_MODE_CONNECTOR_9PinDIN 9
-#define DRM_MODE_CONNECTOR_DisplayPort 10
-#define DRM_MODE_CONNECTOR_HDMIA 11
-#define DRM_MODE_CONNECTOR_HDMIB 12
 
 enum drm_connector_status {
 	connector_status_connected = 1,
@@ -561,9 +526,6 @@ struct drm_mode_config {
 	/* in-kernel framebuffers - hung of filp_head in drm_framebuffer */
 	struct list_head fb_kernel_list;
 
-	/* currently in use generation id */
-	int current_generation;
-
 	int min_width, min_height;
 	int max_width, max_height;
 	struct drm_mode_config_funcs *funcs;
@@ -574,7 +536,13 @@ struct drm_mode_config {
 	struct drm_property *edid_property;
 	struct drm_property *dpms_property;
 
+	/* optional properties */
+	struct drm_property *dvi_i_subconnector_property;
+	struct drm_property *dvi_i_select_subconnector_property;
+
 	/* TV properties */
+	struct drm_property *tv_subconnector_property;
+	struct drm_property *tv_select_subconnector_property;
 	struct drm_property *tv_mode_property;
 	struct drm_property *tv_left_margin_property;
 	struct drm_property *tv_right_margin_property;
@@ -615,10 +583,13 @@ extern void drm_encoder_cleanup(struct drm_encoder *encoder);
 
 extern char *drm_get_connector_name(struct drm_connector *connector);
 extern char *drm_get_dpms_name(int val);
+extern char *drm_get_select_subconnector_name(int val);
+extern char *drm_get_subconnector_name(int val);
 extern void drm_fb_release(struct file *filp);
 extern int drm_mode_group_init_legacy_group(struct drm_device *dev, struct drm_mode_group *group);
 extern struct edid *drm_get_edid(struct drm_connector *connector,
 				 struct i2c_adapter *adapter);
+extern unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter);
 extern int drm_add_edid_modes(struct drm_connector *connector, struct edid *edid);
 extern void drm_mode_probed_add(struct drm_connector *connector, struct drm_display_mode *mode);
 extern void drm_mode_remove(struct drm_connector *connector, struct drm_display_mode *mode);
@@ -676,7 +647,8 @@ extern struct drm_property *drm_property_create(struct drm_device *dev, int flag
 extern void drm_property_destroy(struct drm_device *dev, struct drm_property *property);
 extern int drm_property_add_enum(struct drm_property *property, int index, 
 				 uint64_t value, const char *name);
-extern bool drm_create_tv_properties(struct drm_device *dev, int num_formats,
+extern int drm_mode_create_dvi_i_properties(struct drm_device *dev);
+extern int drm_mode_create_tv_properties(struct drm_device *dev, int num_formats,
 				     char *formats[]);
 extern char *drm_get_encoder_name(struct drm_encoder *encoder);
 

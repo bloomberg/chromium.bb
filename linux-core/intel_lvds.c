@@ -93,7 +93,7 @@ static void intel_lvds_dpms(struct drm_encoder *encoder, int mode)
 {
 	struct drm_device *dev = encoder->dev;
 
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		intel_lvds_set_power(dev, true);
 	else
 		intel_lvds_set_power(dev, false);

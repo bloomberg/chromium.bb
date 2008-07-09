@@ -122,19 +122,30 @@ static bool edid_is_valid(struct edid *edid)
 
 	if (memcmp(edid->header, edid_header, sizeof(edid_header)))
 		goto bad;
-	if (edid->version != 1)
+	if (edid->version != 1) {
+		DRM_ERROR("EDID has major version %d, instead of 1\n", edid->version);
 		goto bad;
-	if (edid->revision <= 0 || edid->revision > 3)
+	}
+	if (edid->revision <= 0 || edid->revision > 3) {
+		DRM_ERROR("EDID has minor version %d, which is not between 0-3\n", edid->revision);
 		goto bad;
+	}
 
 	for (i = 0; i < EDID_LENGTH; i++)
 		csum += raw_edid[i];
-	if (csum)
+	if (csum) {
+		DRM_ERROR("EDID checksum is invalid, remainder is %d\n", csum);
 		goto bad;
+	}
 
 	return 1;
 
 bad:
+	if (raw_edid) {
+		DRM_ERROR("Raw EDID:\n");
+		print_hex_dump_bytes(KERN_ERR, DUMP_PREFIX_NONE, raw_edid, EDID_LENGTH);
+		printk("\n");
+	}
 	return 0;
 }
 
@@ -324,15 +335,15 @@ static struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 	drm_mode_set_name(mode);
 
 	if (pt->interlaced)
-		mode->flags |= V_INTERLACE;
+		mode->flags |= DRM_MODE_FLAG_INTERLACE;
 
 	if (quirks & EDID_QUIRK_DETAILED_SYNC_PP) {
 		pt->hsync_positive = 1;
 		pt->vsync_positive = 1;
 	}
 
-	mode->flags |= pt->hsync_positive ? V_PHSYNC : V_NHSYNC;
-	mode->flags |= pt->vsync_positive ? V_PVSYNC : V_NVSYNC;
+	mode->flags |= pt->hsync_positive ? DRM_MODE_FLAG_PHSYNC : DRM_MODE_FLAG_NHSYNC;
+	mode->flags |= pt->vsync_positive ? DRM_MODE_FLAG_PVSYNC : DRM_MODE_FLAG_NVSYNC;
 
 	mode->width_mm = pt->width_mm_lo | (pt->width_mm_hi << 8);
 	mode->height_mm = pt->height_mm_lo | (pt->height_mm_hi << 8);
@@ -356,55 +367,55 @@ static struct drm_display_mode *drm_mode_detailed(struct drm_device *dev,
 static struct drm_display_mode edid_est_modes[] = {
 	{ DRM_MODE("800x600", DRM_MODE_TYPE_DRIVER, 40000, 800, 840,
 		   968, 1056, 0, 600, 601, 605, 628, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 800x600@60Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 800x600@60Hz */
 	{ DRM_MODE("800x600", DRM_MODE_TYPE_DRIVER, 36000, 800, 824,
 		   896, 1024, 0, 600, 601, 603,  625, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 800x600@56Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 800x600@56Hz */
 	{ DRM_MODE("640x480", DRM_MODE_TYPE_DRIVER, 31500, 640, 656,
 		   720, 840, 0, 480, 481, 484, 500, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 640x480@75Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 640x480@75Hz */
 	{ DRM_MODE("640x480", DRM_MODE_TYPE_DRIVER, 31500, 640, 664,
 		   704,  832, 0, 480, 489, 491, 520, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 640x480@72Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 640x480@72Hz */
 	{ DRM_MODE("640x480", DRM_MODE_TYPE_DRIVER, 30240, 640, 704,
 		   768,  864, 0, 480, 483, 486, 525, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 640x480@67Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 640x480@67Hz */
 	{ DRM_MODE("640x480", DRM_MODE_TYPE_DRIVER, 25200, 640, 656,
 		   752, 800, 0, 480, 490, 492, 525, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 640x480@60Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 640x480@60Hz */
 	{ DRM_MODE("720x400", DRM_MODE_TYPE_DRIVER, 35500, 720, 738,
 		   846, 900, 0, 400, 421, 423,  449, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 720x400@88Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 720x400@88Hz */
 	{ DRM_MODE("720x400", DRM_MODE_TYPE_DRIVER, 28320, 720, 738,
 		   846,  900, 0, 400, 412, 414, 449, 0,
-		   V_NHSYNC | V_PVSYNC) }, /* 720x400@70Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 720x400@70Hz */
 	{ DRM_MODE("1280x1024", DRM_MODE_TYPE_DRIVER, 135000, 1280, 1296,
 		   1440, 1688, 0, 1024, 1025, 1028, 1066, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 1280x1024@75Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 1280x1024@75Hz */
 	{ DRM_MODE("1024x768", DRM_MODE_TYPE_DRIVER, 78800, 1024, 1040,
 		   1136, 1312, 0,  768, 769, 772, 800, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 1024x768@75Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 1024x768@75Hz */
 	{ DRM_MODE("1024x768", DRM_MODE_TYPE_DRIVER, 75000, 1024, 1048,
 		   1184, 1328, 0,  768, 771, 777, 806, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 1024x768@70Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 1024x768@70Hz */
 	{ DRM_MODE("1024x768", DRM_MODE_TYPE_DRIVER, 65000, 1024, 1048,
 		   1184, 1344, 0,  768, 771, 777, 806, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 1024x768@60Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 1024x768@60Hz */
 	{ DRM_MODE("1024x768", DRM_MODE_TYPE_DRIVER,44900, 1024, 1032,
 		   1208, 1264, 0, 768, 768, 776, 817, 0,
-		   V_PHSYNC | V_PVSYNC | V_INTERLACE) }, /* 1024x768@43Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC | DRM_MODE_FLAG_INTERLACE) }, /* 1024x768@43Hz */
 	{ DRM_MODE("832x624", DRM_MODE_TYPE_DRIVER, 57284, 832, 864,
 		   928, 1152, 0, 624, 625, 628, 667, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 832x624@75Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 832x624@75Hz */
 	{ DRM_MODE("800x600", DRM_MODE_TYPE_DRIVER, 49500, 800, 816,
 		   896, 1056, 0, 600, 601, 604,  625, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 800x600@75Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 800x600@75Hz */
 	{ DRM_MODE("800x600", DRM_MODE_TYPE_DRIVER, 50000, 800, 856,
 		   976, 1040, 0, 600, 637, 643, 666, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 800x600@72Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 800x600@72Hz */
 	{ DRM_MODE("1152x864", DRM_MODE_TYPE_DRIVER, 108000, 1152, 1216,
 		   1344, 1600, 0,  864, 865, 868, 900, 0,
-		   V_PHSYNC | V_PVSYNC) }, /* 1152x864@75Hz */
+		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC) }, /* 1152x864@75Hz */
 };
 
 #define EDID_EST_TIMINGS 16
@@ -545,7 +556,7 @@ static int add_detailed_info(struct drm_connector *connector,
 
 #define DDC_ADDR 0x50
 
-static unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
+unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
 {
 	unsigned char start = 0x0;
 	unsigned char *buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
@@ -576,6 +587,7 @@ static unsigned char *drm_do_probe_ddc_edid(struct i2c_adapter *adapter)
 	kfree(buf);
 	return NULL;
 }
+EXPORT_SYMBOL(drm_do_probe_ddc_edid);
 
 static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 {
@@ -583,21 +595,13 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 	unsigned char *edid = NULL;
 	int i, j;
 
-	/*
-	 * Startup the bus:
-	 *   Set clock line high (but give it time to come up)
-	 *   Then set clock & data low
-	 */
 	algo_data->setscl(algo_data->data, 1);
-	udelay(550); /* startup delay */
-	algo_data->setscl(algo_data->data, 0);
-	algo_data->setsda(algo_data->data, 0);
 
 	for (i = 0; i < 3; i++) {
 		/* For some old monitors we need the
 		 * following process to initialize/stop DDC
 		 */
-		algo_data->setsda(algo_data->data, 0);
+		algo_data->setsda(algo_data->data, 1);
 		msleep(13);
 
 		algo_data->setscl(algo_data->data, 1);
@@ -632,16 +636,16 @@ static unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 		algo_data->setsda(algo_data->data, 1);
 		msleep(15);
 		algo_data->setscl(algo_data->data, 0);
+		algo_data->setsda(algo_data->data, 0);
 		if (edid)
 			break;
 	}
 	/* Release the DDC lines when done or the Apple Cinema HD display
 	 * will switch off
 	 */
-	algo_data->setsda(algo_data->data, 0);
-	algo_data->setscl(algo_data->data, 0);
+	algo_data->setsda(algo_data->data, 1);
 	algo_data->setscl(algo_data->data, 1);
-
+	
 	return edid;
 }
 

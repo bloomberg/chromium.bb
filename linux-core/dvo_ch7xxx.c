@@ -289,10 +289,10 @@ static void ch7xxx_mode_set(struct intel_dvo_device *dvo,
 	ch7xxx_readb(dvo, CH7xxx_IDF, &idf);
 
 	idf &= ~(CH7xxx_IDF_HSP | CH7xxx_IDF_VSP);
-	if (mode->flags & V_PHSYNC)
+	if (mode->flags & DRM_MODE_FLAG_PHSYNC)
 		idf |= CH7xxx_IDF_HSP;
 
-	if (mode->flags & V_PVSYNC)
+	if (mode->flags & DRM_MODE_FLAG_PVSYNC)
 		idf |= CH7xxx_IDF_HSP;
 
 	ch7xxx_writeb(dvo, CH7xxx_IDF, idf);
@@ -301,7 +301,7 @@ static void ch7xxx_mode_set(struct intel_dvo_device *dvo,
 /* set the CH7xxx power state */
 static void ch7xxx_dpms(struct intel_dvo_device *dvo, int mode)
 {
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		ch7xxx_writeb(dvo, CH7xxx_PM, CH7xxx_PM_DVIL | CH7xxx_PM_DVIP);
 	else
 		ch7xxx_writeb(dvo, CH7xxx_PM, CH7xxx_PM_FPD);

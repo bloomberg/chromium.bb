@@ -38,7 +38,7 @@
 static struct drm_display_mode std_mode[] = {
 	{ DRM_MODE("640x480", DRM_MODE_TYPE_DEFAULT, 25200, 640, 656,
 		   752, 800, 0, 480, 490, 492, 525, 0,
-		   V_NHSYNC | V_NVSYNC) }, /* 640x480@60Hz */
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) }, /* 640x480@60Hz */
 };
 
 /**
@@ -182,14 +182,14 @@ void drm_helper_disable_unused_functions(struct drm_device *dev)
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		encoder_funcs = encoder->helper_private;
 		if (!encoder->crtc)
-			(*encoder_funcs->dpms)(encoder, DPMSModeOff);
+			(*encoder_funcs->dpms)(encoder, DRM_MODE_DPMS_OFF);
 	}
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		struct drm_crtc_helper_funcs *crtc_funcs = crtc->helper_private;
 		crtc->enabled = drm_helper_crtc_in_use(crtc);
 		if (!crtc->enabled) {
-			crtc_funcs->dpms(crtc, DPMSModeOff);
+			crtc_funcs->dpms(crtc, DRM_MODE_DPMS_OFF);
 			crtc->fb = NULL;
 		}
 	}

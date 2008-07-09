@@ -93,7 +93,7 @@ static void intel_dvo_dpms(struct drm_encoder *encoder, int mode)
 	u32 dvo_reg = dvo->dvo_reg;
 	u32 temp = I915_READ(dvo_reg);
 
-	if (mode == DPMSModeOn) {
+	if (mode == DRM_MODE_DPMS_ON) {
 		I915_WRITE(dvo_reg, temp | DVO_ENABLE);
 		I915_READ(dvo_reg);
 		dvo->dev_ops->dpms(dvo, mode);
@@ -139,7 +139,7 @@ static int intel_dvo_mode_valid(struct drm_connector *connector,
 	struct intel_output *intel_output = to_intel_output(connector);
 	struct intel_dvo_device *dvo = intel_output->dev_priv;
 
-	if (mode->flags & V_DBLSCAN)
+	if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
 		return MODE_NO_DBLESCAN;
 
 	/* XXX: Validate clock range */
@@ -225,9 +225,9 @@ static void intel_dvo_mode_set(struct drm_encoder *encoder,
 	if (pipe == 1)
 		dvo_val |= DVO_PIPE_B_SELECT;
 	dvo_val |= DVO_PIPE_STALL;
-	if (adjusted_mode->flags & V_PHSYNC)
+	if (adjusted_mode->flags & DRM_MODE_FLAG_PHSYNC)
 		dvo_val |= DVO_HSYNC_ACTIVE_HIGH;
-	if (adjusted_mode->flags & V_PVSYNC)
+	if (adjusted_mode->flags & DRM_MODE_FLAG_PVSYNC)
 		dvo_val |= DVO_VSYNC_ACTIVE_HIGH;
 
 	I915_WRITE(dpll_reg, I915_READ(dpll_reg) | DPLL_DVO_HIGH_SPEED);
@@ -387,9 +387,9 @@ intel_dvo_get_current_mode (struct drm_connector *connector)
 			if (mode) {
 				mode->type |= DRM_MODE_TYPE_PREFERRED;
 				if (dvo_val & DVO_HSYNC_ACTIVE_HIGH)
-					mode->flags |= V_PHSYNC;
+					mode->flags |= DRM_MODE_FLAG_PHSYNC;
 				if (dvo_val & DVO_VSYNC_ACTIVE_HIGH)
-					mode->flags |= V_PVSYNC;
+					mode->flags |= DRM_MODE_FLAG_PVSYNC;
 			}
 		}
 	}

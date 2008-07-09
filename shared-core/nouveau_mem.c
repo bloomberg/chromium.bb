@@ -34,9 +34,12 @@
 #include "drm.h"
 #include "drm_sarea.h"
 #include "nouveau_drv.h"
+#include "nv50_kms_wrapper.h"
 
-static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64_t size,
-		struct drm_file *file_priv)
+
+static struct mem_block *
+split_block(struct mem_block *p, uint64_t start, uint64_t size,
+	    struct drm_file *file_priv)
 {
 	/* Maybe cut off the start of an existing block */
 	if (start > p->start) {
@@ -77,10 +80,9 @@ out:
 	return p;
 }
 
-struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap,
-					  uint64_t size,
-					  int align2,
-					  struct drm_file *file_priv)
+struct mem_block *
+nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
+			int align2, struct drm_file *file_priv, int tail)
 {
 	struct mem_block *p;
 	uint64_t mask = (1 << align2) - 1;
@@ -88,10 +90,22 @@ struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap,
 	if (!heap)
 		return NULL;
 
-	list_for_each(p, heap) {
-		uint64_t start = (p->start + mask) & ~mask;
-		if (p->file_priv == 0 && start + size <= p->start + p->size)
-			return split_block(p, start, size, file_priv);
+	if (tail) {
+		list_for_each_prev(p, heap) {
+			uint64_t start = ((p->start + p->size) - size) & ~mask;
+
+			if (p->file_priv == 0 && start >= p->start &&
+			    start + size <= p->start + p->size)
+				return split_block(p, start, size, file_priv);
+		}
+	} else {
+		list_for_each(p, heap) {
+			uint64_t start = (p->start + mask) & ~mask;
+
+			if (p->file_priv == 0 &&
+			    start + size <= p->start + p->size)
+				return split_block(p, start, size, file_priv);
+		}
 	}
 
 	return NULL;
@@ -103,6 +117,17 @@ static struct mem_block *find_block(struct mem_block *heap, uint64_t start)
 
 	list_for_each(p, heap)
 		if (p->start == start)
+			return p;
+
+	return NULL;
+}
+
+struct mem_block *find_block_by_handle(struct mem_block *heap, drm_handle_t handle)
+{
+	struct mem_block *p;
+
+	list_for_each(p, heap)
+		if (p->map_handle == handle)
 			return p;
 
 	return NULL;
@@ -563,13 +588,13 @@ int nouveau_mem_init(struct drm_device *dev)
 	return 0;
 }
 
-struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
-				    uint64_t size, int flags,
-				    struct drm_file *file_priv)
+struct mem_block *
+nouveau_mem_alloc(struct drm_device *dev, int alignment, uint64_t size,
+		  int flags, struct drm_file *file_priv)
 {
-	struct mem_block *block;
-	int type;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct mem_block *block;
+	int type, tail = !(flags & NOUVEAU_MEM_USER);
 
 	/*
 	 * Make things easier on ourselves: all allocations are page-aligned.
@@ -600,14 +625,14 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
 #define NOUVEAU_MEM_ALLOC_AGP {\
 		type=NOUVEAU_MEM_AGP;\
                 block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,\
-                                                alignment, file_priv); \
+                                                alignment, file_priv, tail); \
                 if (block) goto alloc_ok;\
 	        }
 
 #define NOUVEAU_MEM_ALLOC_PCI {\
                 type = NOUVEAU_MEM_PCI;\
                 block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, \
-						alignment, file_priv); \
+						alignment, file_priv, tail); \
                 if ( block ) goto alloc_ok;\
 	        }
 
@@ -616,11 +641,11 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
                 if (!(flags&NOUVEAU_MEM_MAPPED)) {\
                         block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,\
                                                         size, alignment, \
-							file_priv); \
+							file_priv, tail); \
                         if (block) goto alloc_ok;\
                 }\
                 block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,\
-                                                alignment, file_priv);\
+                                                alignment, file_priv, tail);\
                 if (block) goto alloc_ok;\
 	        }
 
@@ -707,6 +732,30 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 
 	DRM_DEBUG("freeing 0x%llx type=0x%08x\n", block->start, block->flags);
 
+	/* Check if the deallocations cause problems for our modesetting system. */
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		if (dev_priv->card_type >= NV_50) {
+			struct nv50_crtc *crtc = NULL;
+			struct nv50_display *display = nv50_get_display(dev);
+
+			list_for_each_entry(crtc, &display->crtcs, item) {
+				if (crtc->fb->block == block) {
+					crtc->fb->block = NULL;
+
+					if (!crtc->blanked)
+						crtc->blank(crtc, true);
+				}
+
+				if (crtc->cursor->block == block) {
+					crtc->cursor->block = NULL;
+
+					if (crtc->cursor->visible)
+						crtc->cursor->hide(crtc);
+				}
+			}
+		}
+	}
+
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);
 
@@ -738,7 +787,9 @@ out_free:
  * Ioctls
  */
 
-int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
+int
+nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
 {
 	struct drm_nouveau_mem_alloc *alloc = data;
 	struct mem_block *block;
@@ -748,8 +799,8 @@ int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file 
 	if (alloc->flags & NOUVEAU_MEM_INTERNAL)
 		return -EINVAL;
 
-	block=nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
-				alloc->flags, file_priv);
+	block = nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
+				  alloc->flags | NOUVEAU_MEM_USER, file_priv);
 	if (!block)
 		return -ENOMEM;
 	alloc->map_handle=block->map_handle;

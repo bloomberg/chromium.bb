@@ -89,6 +89,7 @@ void drm_mode_list_concat(struct list_head *head, struct list_head *new)
 		list_move_tail(entry, new);
 	}
 }
+EXPORT_SYMBOL(drm_mode_list_concat);
 
 /**
  * drm_mode_width - get the width of a mode
@@ -161,9 +162,9 @@ int drm_mode_vrefresh(struct drm_display_mode *mode)
 		calc_val /= mode->vtotal;
 
 		refresh = calc_val;
-		if (mode->flags & V_INTERLACE)
+		if (mode->flags & DRM_MODE_FLAG_INTERLACE)
 			refresh *= 2;
-		if (mode->flags & V_DBLSCAN)
+		if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
 			refresh /= 2;
 		if (mode->vscan > 1)
 			refresh /= mode->vscan;
@@ -197,7 +198,7 @@ void drm_mode_set_crtcinfo(struct drm_display_mode *p, int adjust_flags)
 	p->crtc_vsync_end = p->vsync_end;
 	p->crtc_vtotal = p->vtotal;
 
-	if (p->flags & V_INTERLACE) {
+	if (p->flags & DRM_MODE_FLAG_INTERLACE) {
 		if (adjust_flags & CRTC_INTERLACE_HALVE_V) {
 			p->crtc_vdisplay /= 2;
 			p->crtc_vsync_start /= 2;
@@ -208,7 +209,7 @@ void drm_mode_set_crtcinfo(struct drm_display_mode *p, int adjust_flags)
 		p->crtc_vtotal |= 1;
 	}
 
-	if (p->flags & V_DBLSCAN) {
+	if (p->flags & DRM_MODE_FLAG_DBLSCAN) {
 		p->crtc_vdisplay *= 2;
 		p->crtc_vsync_start *= 2;
 		p->crtc_vsync_end *= 2;
@@ -401,6 +402,7 @@ void drm_mode_prune_invalid(struct drm_device *dev,
 		}
 	}
 }
+EXPORT_SYMBOL(drm_mode_prune_invalid);
 
 /**
  * drm_mode_compare - compare modes for favorability
@@ -525,7 +527,7 @@ void drm_mode_sort(struct list_head *mode_list)
 {
 	list_sort(mode_list, drm_mode_compare);
 }
-
+EXPORT_SYMBOL(drm_mode_sort);
 
 /**
  * drm_mode_connector_list_update - update the mode list for the connector
@@ -564,3 +566,4 @@ void drm_mode_connector_list_update(struct drm_connector *connector)
 		}
 	}
 }
+EXPORT_SYMBOL(drm_mode_connector_list_update);

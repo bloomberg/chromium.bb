@@ -904,12 +904,12 @@ intel_tv_dpms(struct drm_encoder *encoder, int mode)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	switch(mode) {
-	case DPMSModeOn:
+	case DRM_MODE_DPMS_ON:
 		I915_WRITE(TV_CTL, I915_READ(TV_CTL) | TV_ENC_ENABLE);
 		break;
-	case DPMSModeStandby:
-	case DPMSModeSuspend:
-	case DPMSModeOff:
+	case DRM_MODE_DPMS_STANDBY:
+	case DRM_MODE_DPMS_SUSPEND:
+	case DRM_MODE_DPMS_OFF:
 		I915_WRITE(TV_CTL, I915_READ(TV_CTL) & ~TV_ENC_ENABLE);
 		break;
 	}
@@ -1713,7 +1713,7 @@ intel_tv_init(struct drm_device *dev)
 		goto out;
 	for (i = 0; i < NUM_TV_MODES; i++)
 		tv_format_names[i] = tv_modes[i].name;
-	drm_create_tv_properties(dev, NUM_TV_MODES, tv_format_names);
+	drm_mode_create_tv_properties(dev, NUM_TV_MODES, tv_format_names);
 
 	drm_connector_attach_property(connector, dev->mode_config.tv_mode_property,
 				   initial_mode);

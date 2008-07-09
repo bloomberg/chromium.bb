@@ -1034,6 +1034,30 @@ struct drm_gem_open {
 #define DRM_MODE_TYPE_USERDEF	(1<<5)
 #define DRM_MODE_TYPE_DRIVER	(1<<6)
 
+/* Video mode flags */
+/* bit compatible with the xorg definitions. */
+#define DRM_MODE_FLAG_PHSYNC	(1<<0)
+#define DRM_MODE_FLAG_NHSYNC	(1<<1)
+#define DRM_MODE_FLAG_PVSYNC	(1<<2)
+#define DRM_MODE_FLAG_NVSYNC	(1<<3)
+#define DRM_MODE_FLAG_INTERLACE	(1<<4)
+#define DRM_MODE_FLAG_DBLSCAN	(1<<5)
+#define DRM_MODE_FLAG_CSYNC	(1<<6)
+#define DRM_MODE_FLAG_PCSYNC	(1<<7)
+#define DRM_MODE_FLAG_NCSYNC	(1<<8)
+#define DRM_MODE_FLAG_HSKEW	(1<<9) /* hskew provided */
+#define DRM_MODE_FLAG_BCAST	(1<<10)
+#define DRM_MODE_FLAG_PIXMUX	(1<<11)
+#define DRM_MODE_FLAG_DBLCLK	(1<<12)
+#define DRM_MODE_FLAG_CLKDIV2	(1<<13)
+
+/* DPMS flags */
+/* bit compatible with the xorg definitions. */
+#define DRM_MODE_DPMS_ON 0
+#define DRM_MODE_DPMS_STANDBY 1
+#define DRM_MODE_DPMS_SUSPEND 2
+#define DRM_MODE_DPMS_OFF 3
+
 struct drm_mode_modeinfo {
 	unsigned int clock;
 	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;
@@ -1057,39 +1081,20 @@ struct drm_mode_card_res {
 	int count_encoders;
 	int min_width, max_width;
 	int min_height, max_height;
-	uint32_t generation;
 };
 
 struct drm_mode_crtc {
 	uint64_t set_connectors_ptr;
+	int count_connectors;
 
 	unsigned int crtc_id; /**< Id */
 	unsigned int fb_id; /**< Id of framebuffer */
 
 	int x, y; /**< Position on the frameuffer */
 
-	uint32_t generation;
-
-	int count_connectors;
-	unsigned int connectors; /**< Connectors that are connected */
-
-	int count_possibles;
-	unsigned int possibles; /**< Connectors that can be connected */
 	uint32_t gamma_size;
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
-};
-
-struct drm_mode_get_encoder {
-
-	uint32_t generation;
-
-	uint32_t encoder_type;
-	uint32_t encoder_id;
-
-	unsigned int crtc; /**< Id of crtc */
-	uint32_t crtcs;
-	uint32_t clones;
 };
 
 #define DRM_MODE_ENCODER_NONE 0
@@ -1097,6 +1102,41 @@ struct drm_mode_get_encoder {
 #define DRM_MODE_ENCODER_TMDS 2
 #define DRM_MODE_ENCODER_LVDS 3
 #define DRM_MODE_ENCODER_TVDAC 4
+
+struct drm_mode_get_encoder {
+
+	unsigned int encoder_type;
+	unsigned int encoder_id;
+
+	unsigned int crtc_id; /**< Id of crtc */
+
+	uint32_t possible_crtcs;
+	uint32_t possible_clones;
+};
+
+/* This is for connectors with multiple signal types. */
+/* Try to match DRM_MODE_CONNECTOR_X as closely as possible. */
+#define DRM_MODE_SUBCONNECTOR_Automatic 0
+#define DRM_MODE_SUBCONNECTOR_Unknown 0
+#define DRM_MODE_SUBCONNECTOR_DVID 3
+#define DRM_MODE_SUBCONNECTOR_DVIA 4
+#define DRM_MODE_SUBCONNECTOR_Composite 5
+#define DRM_MODE_SUBCONNECTOR_SVIDEO 6
+#define DRM_MODE_SUBCONNECTOR_Component 8
+
+#define DRM_MODE_CONNECTOR_Unknown 0
+#define DRM_MODE_CONNECTOR_VGA 1
+#define DRM_MODE_CONNECTOR_DVII 2
+#define DRM_MODE_CONNECTOR_DVID 3
+#define DRM_MODE_CONNECTOR_DVIA 4
+#define DRM_MODE_CONNECTOR_Composite 5
+#define DRM_MODE_CONNECTOR_SVIDEO 6
+#define DRM_MODE_CONNECTOR_LVDS 7
+#define DRM_MODE_CONNECTOR_Component 8
+#define DRM_MODE_CONNECTOR_9PinDIN 9
+#define DRM_MODE_CONNECTOR_DisplayPort 10
+#define DRM_MODE_CONNECTOR_HDMIA 11
+#define DRM_MODE_CONNECTOR_HDMIB 12
 
 struct drm_mode_get_connector {
 
@@ -1109,12 +1149,10 @@ struct drm_mode_get_connector {
 	int count_props;
 	int count_encoders;
 
-	unsigned int encoder; /**< Current Encoder */
-	unsigned int connector; /**< Id */
+	unsigned int encoder_id; /**< Current Encoder */
+	unsigned int connector_id; /**< Id */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
-
-	uint32_t generation;
 
 	unsigned int connection;
 	unsigned int mm_width, mm_height; /**< HxW in millimeters */

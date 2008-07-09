@@ -88,9 +88,11 @@ struct drm_nouveau_gpuobj_free {
 #define NOUVEAU_MEM_INSTANCE		0x00000200 /* internal */
 #define NOUVEAU_MEM_NOTIFIER            0x00000400 /* internal */
 #define NOUVEAU_MEM_NOVM		0x00000800 /* internal */
+#define NOUVEAU_MEM_USER		0x00001000 /* internal */
 #define NOUVEAU_MEM_INTERNAL (NOUVEAU_MEM_INSTANCE | \
 			      NOUVEAU_MEM_NOTIFIER | \
-			      NOUVEAU_MEM_NOVM)
+			      NOUVEAU_MEM_NOVM | \
+			      NOUVEAU_MEM_USER)
 
 struct drm_nouveau_mem_alloc {
 	int flags;

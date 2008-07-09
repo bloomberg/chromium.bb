@@ -321,13 +321,13 @@ static void ivch_dpms(struct intel_dvo_device *dvo, int mode)
 	if (!ivch_read(dvo, VR01, &vr01))
 		return;
 
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		backlight = 1;
 	else
 		backlight = 0;
 	ivch_write(dvo, VR80, backlight);
 
-	if (mode == DPMSModeOn)
+	if (mode == DRM_MODE_DPMS_ON)
 		vr01 |= VR01_LCD_ENABLE | VR01_DVO_ENABLE;
 	else
 		vr01 &= ~(VR01_LCD_ENABLE | VR01_DVO_ENABLE);
@@ -339,7 +339,7 @@ static void ivch_dpms(struct intel_dvo_device *dvo, int mode)
 		if (!ivch_read(dvo, VR30, &vr30))
 			break;
 
-		if (((vr30 & VR30_PANEL_ON) != 0) == (mode == DPMSModeOn))
+		if (((vr30 & VR30_PANEL_ON) != 0) == (mode == DRM_MODE_DPMS_ON))
 			break;
 		udelay(1000);
 	}

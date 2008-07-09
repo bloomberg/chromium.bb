@@ -363,16 +363,16 @@ static bool intel_sdvo_set_encoder_power_state(struct intel_output *intel_output
 	u8 status, state = SDVO_ENCODER_STATE_ON;
 
 	switch (mode) {
-	case DPMSModeOn:
+	case DRM_MODE_DPMS_ON:
 		state = SDVO_ENCODER_STATE_ON;
 		break;
-	case DPMSModeStandby:
+	case DRM_MODE_DPMS_STANDBY:
 		state = SDVO_ENCODER_STATE_STANDBY;
 		break;
-	case DPMSModeSuspend:
+	case DRM_MODE_DPMS_SUSPEND:
 		state = SDVO_ENCODER_STATE_SUSPEND;
 		break;
-	case DPMSModeOff:
+	case DRM_MODE_DPMS_OFF:
 		state = SDVO_ENCODER_STATE_OFF;
 		break;
 	}
@@ -602,9 +602,9 @@ static void intel_sdvo_mode_set(struct drm_encoder *encoder,
 		((v_sync_len & 0x30) >> 4);
 	
 	output_dtd.part2.dtd_flags = 0x18;
-	if (mode->flags & V_PHSYNC)
+	if (mode->flags & DRM_MODE_FLAG_PHSYNC)
 		output_dtd.part2.dtd_flags |= 0x2;
-	if (mode->flags & V_PVSYNC)
+	if (mode->flags & DRM_MODE_FLAG_PVSYNC)
 		output_dtd.part2.dtd_flags |= 0x4;
 
 	output_dtd.part2.sdvo_flags = 0;
@@ -691,12 +691,12 @@ static void intel_sdvo_dpms(struct drm_encoder *encoder, int mode)
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 	u32 temp;
 
-	if (mode != DPMSModeOn) {
+	if (mode != DRM_MODE_DPMS_ON) {
 		intel_sdvo_set_active_outputs(intel_output, 0);
 		if (0)
 			intel_sdvo_set_encoder_power_state(intel_output, mode);
 
-		if (mode == DPMSModeOff) {
+		if (mode == DRM_MODE_DPMS_OFF) {
 			temp = I915_READ(sdvo_priv->output_device);
 			if ((temp & SDVO_ENABLE) != 0) {
 				intel_sdvo_write_sdvox(intel_output, temp & ~SDVO_ENABLE);
@@ -825,7 +825,7 @@ static int intel_sdvo_mode_valid(struct drm_connector *connector,
 	struct intel_output *intel_output = to_intel_output(connector);
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 
-	if (mode->flags & V_DBLSCAN)
+	if (mode->flags & DRM_MODE_FLAG_DBLSCAN)
 		return MODE_NO_DBLESCAN;
 
 	if (sdvo_priv->pixel_clock_min > mode->clock)

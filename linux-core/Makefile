@@ -90,7 +90,7 @@ VIAHEADERS =	via_drm.h via_drv.h via_3d_reg.h via_verifier.h $(DRMHEADERS)
 MACH64HEADERS = mach64_drv.h mach64_drm.h $(DRMHEADERS)
 NVHEADERS =     nv_drv.h $(DRMHEADERS)
 FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
-NOUVEAUHEADERS = nouveau_drv.h nouveau_drm.h nouveau_reg.h $(DRMHEADERS)
+NOUVEAUHEADERS = nouveau_drv.h nouveau_drm.h nouveau_reg.h nouveau_display.h $(DRMHEADERS)
 XGIHEADERS = xgi_cmdlist.h xgi_drv.h xgi_misc.h xgi_regs.h $(DRMHEADERS)
 RADEONMSHEADERS = radeon_ms_driver.h $(DRMHEADERS) 
 

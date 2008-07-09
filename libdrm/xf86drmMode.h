@@ -50,16 +50,8 @@
  * buffer object interface. This object needs to be pinned.
  */
 
-/*
- * generation - these are to be read by userspace, and if it notices
- * while calling a get output or get crtc that the generation has changed
- * it should re-call the mode resource functions resync its view of the
- * outputs with current view.
- */
-
 typedef struct _drmModeRes {
 
-	uint32_t generation;
 	int count_fbs;
 	uint32_t *fbs;
 
@@ -98,31 +90,23 @@ typedef struct _drmModeProperty {
 
 typedef struct _drmModeCrtc {
 	unsigned int crtc_id;
-	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect*/
-	uint32_t generation;
+	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect */
 
-	uint32_t x, y; /**< Position on the frameuffer */
+	uint32_t x, y; /**< Position on the framebuffer */
 	uint32_t width, height;
 	int mode_valid;
 	struct drm_mode_modeinfo mode;
-
-	int count_connectors;
-	uint32_t connectors; /**< Connectors that are connected */
-
-	int count_possibles;
-	uint32_t possibles; /**< Connectors that can be connected */
 
 	int gamma_size; /**< Number of gamma stops */
 
 } drmModeCrtc, *drmModeCrtcPtr;
 
 typedef struct _drmModeEncoder {
-	uint32_t generation;
 	unsigned int encoder_id;
 	unsigned int encoder_type;
-	uint32_t crtc;
-	uint32_t crtcs;
-	uint32_t clones;
+	unsigned int crtc_id;
+	uint32_t possible_crtcs;
+	uint32_t possible_clones;
 } drmModeEncoder, *drmModeEncoderPtr;
 
 typedef enum {
@@ -141,9 +125,8 @@ typedef enum {
 } drmModeSubPixel;
 
 typedef struct _drmModeConnector {
-	uint32_t generation;
 	unsigned int connector_id;
-	unsigned int encoder; /**< Crtc currently connected to */
+	unsigned int encoder_id; /**< Encoder currently connected to */
 	unsigned int connector_type;
 	unsigned int connector_type_id;
 	drmModeConnection connection;

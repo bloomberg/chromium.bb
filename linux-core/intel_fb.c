@@ -263,8 +263,8 @@ static int intelfb_set_par(struct fb_info *info)
 		drm_mode->clock = PICOS2KHZ(var->pixclock);
 		drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
 		drm_mode->flags = 0;
-		drm_mode->flags |= var->sync & FB_SYNC_HOR_HIGH_ACT ? V_PHSYNC : V_NHSYNC;
-		drm_mode->flags |= var->sync & FB_SYNC_VERT_HIGH_ACT ? V_PVSYNC : V_NVSYNC;
+		drm_mode->flags |= var->sync & FB_SYNC_HOR_HIGH_ACT ? DRM_MODE_FLAG_PHSYNC : DRM_MODE_FLAG_NHSYNC;
+		drm_mode->flags |= var->sync & FB_SYNC_VERT_HIGH_ACT ? DRM_MODE_FLAG_PVSYNC : DRM_MODE_FLAG_NVSYNC;
 		
 		drm_mode_set_name(drm_mode);
 		drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
@@ -982,7 +982,7 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 	struct intel_framebuffer *intel_fb;
 	struct fb_info *info;
 	struct intelfb_par *par;
-	struct drm_mode_set *modeset;
+	struct drm_mode_set *modeset = NULL;
 
 	DRM_DEBUG("\n");
 	/* first up get a count of crtcs now in use and new min/maxes width/heights */
