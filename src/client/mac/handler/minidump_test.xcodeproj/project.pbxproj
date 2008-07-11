@@ -112,6 +112,8 @@
 		D2F651080BEF949A00920385 /* dynamic_images.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = dynamic_images.h; sourceTree = "<group>"; };
 		D2F6510C0BEF94EB00920385 /* macho_walker.cc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = macho_walker.cc; path = ../../../common/mac/macho_walker.cc; sourceTree = SOURCE_ROOT; };
 		D2F6510D0BEF94EB00920385 /* macho_walker.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macho_walker.h; path = ../../../common/mac/macho_walker.h; sourceTree = SOURCE_ROOT; };
+		F917C4F70E03265A00F86017 /* breakpad_exc_server.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = breakpad_exc_server.c; sourceTree = "<group>"; };
+		F917C4F80E03265A00F86017 /* breakpad_exc_server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = breakpad_exc_server.h; sourceTree = "<group>"; };
 		F982089A0DB3280D0017AECA /* breakpad_nlist_test.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = breakpad_nlist_test.h; sourceTree = "<group>"; };
 		F982089B0DB3280D0017AECA /* breakpad_nlist_test.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = breakpad_nlist_test.cc; sourceTree = "<group>"; };
 		F98208A10DB32CAE0017AECA /* breakpad_nlist_64.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = breakpad_nlist_64.cc; sourceTree = "<group>"; };
@@ -168,6 +170,8 @@
 		08FB7794FE84155DC02AAC07 /* MinidumpWriter */ = {
 			isa = PBXGroup;
 			children = (
+				F917C4F70E03265A00F86017 /* breakpad_exc_server.c */,
+				F917C4F80E03265A00F86017 /* breakpad_exc_server.h */,
 				F98208A10DB32CAE0017AECA /* breakpad_nlist_64.cc */,
 				F98208A20DB32CAE0017AECA /* breakpad_nlist_64.h */,
 				D2F6510C0BEF94EB00920385 /* macho_walker.cc */,

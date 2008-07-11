@@ -137,7 +137,78 @@ extern "C"
                                    mach_msg_type_number_t thread_state_count,
                                    thread_state_t thread_state,
                                    mach_msg_type_number_t *thread_state_count);
+  
+  kern_return_t breakpad_exception_raise_state(mach_port_t exception_port,
+                                               exception_type_t exception,
+                                               const exception_data_t code,
+                                               mach_msg_type_number_t codeCnt,
+                                               int *flavor,
+                                               const thread_state_t old_state,
+                                               mach_msg_type_number_t old_stateCnt,
+                                               thread_state_t new_state,
+                                               mach_msg_type_number_t *new_stateCnt
+                                               );
+  
+  kern_return_t breakpad_exception_raise_state_identity(mach_port_t exception_port,
+                                                        mach_port_t thread,
+                                                        mach_port_t task,
+                                                        exception_type_t exception,
+                                                        exception_data_t code,
+                                                        mach_msg_type_number_t codeCnt,
+                                                        int *flavor,
+                                                        thread_state_t old_state,
+                                                        mach_msg_type_number_t old_stateCnt,
+                                                        thread_state_t new_state,
+                                                        mach_msg_type_number_t *new_stateCnt
+                                                        );
+  
+  kern_return_t breakpad_exception_raise(mach_port_t port, mach_port_t failed_thread,
+                                         mach_port_t task,
+                                         exception_type_t exception,
+                                         exception_data_t code,
+                                         mach_msg_type_number_t code_count);  
 }
+
+
+
+kern_return_t breakpad_exception_raise_state(mach_port_t exception_port,
+					     exception_type_t exception,
+					     const exception_data_t code,
+					     mach_msg_type_number_t codeCnt,
+					     int *flavor,
+					     const thread_state_t old_state,
+					     mach_msg_type_number_t old_stateCnt,
+					     thread_state_t new_state,
+					     mach_msg_type_number_t *new_stateCnt
+                                             )
+{
+  return KERN_SUCCESS;
+}
+
+kern_return_t breakpad_exception_raise_state_identity(mach_port_t exception_port,
+						      mach_port_t thread,
+						      mach_port_t task,
+						      exception_type_t exception,
+						      exception_data_t code,
+						      mach_msg_type_number_t codeCnt,
+						      int *flavor,
+						      thread_state_t old_state,
+						      mach_msg_type_number_t old_stateCnt,
+						      thread_state_t new_state,
+						      mach_msg_type_number_t *new_stateCnt
+                                                      )
+{
+  return KERN_SUCCESS;
+}
+
+kern_return_t breakpad_exception_raise(mach_port_t port, mach_port_t failed_thread,
+                                       mach_port_t task,
+                                       exception_type_t exception,
+                                       exception_data_t code,
+                                       mach_msg_type_number_t code_count) {
+  return ForwardException(task, failed_thread, exception, code, code_count);
+}
+
 
 ExceptionHandler::ExceptionHandler(const string &dump_path,
                                    FilterCallback filter,
