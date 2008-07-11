@@ -316,6 +316,11 @@ typedef struct drm_i915_private {
 		 * every pending request fail
 		 */
 		int wedged;
+
+		/** Bit 6 swizzling required for X tiling */
+		uint32_t bit_6_swizzle_x;
+		/** Bit 6 swizzling required for Y tiling */
+		uint32_t bit_6_swizzle_y;
 	} mm;
 } drm_i915_private_t;
 
@@ -376,6 +381,9 @@ struct drm_i915_gem_object {
 
 	/** Breadcrumb of last rendering to the buffer. */
 	uint32_t last_rendering_seqno;
+
+	/** Current tiling mode for the object. */
+	uint32_t tiling_mode;
 };
 
 /**
@@ -517,6 +525,11 @@ int i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
 int i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
+int i915_gem_set_tiling(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int i915_gem_get_tiling(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+void i915_gem_load(struct drm_device *dev);
 int i915_gem_proc_init(struct drm_minor *minor);
 void i915_gem_proc_cleanup(struct drm_minor *minor);
 int i915_gem_init_object(struct drm_gem_object *obj);
@@ -528,6 +541,9 @@ uint32_t i915_get_gem_seqno(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
 void i915_gem_retire_work_handler(struct work_struct *work);
 #endif
+
+/* i915_gem_tiling.c */
+void i915_gem_detect_bit_6_swizzle(struct drm_device *dev);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
@@ -584,6 +600,19 @@ void i915_ring_validate(struct drm_device *dev, const char *func, int line);
 } while(0)
 
 extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
+
+/* MCH MMIO space */
+/** 915-945 and GM965 MCH register controlling DRAM channel access */
+#define DCC		0x200
+#define DCC_ADDRESSING_MODE_SINGLE_CHANNEL		(0 << 0)
+#define DCC_ADDRESSING_MODE_DUAL_CHANNEL_ASYMMETRIC	(1 << 0)
+#define DCC_ADDRESSING_MODE_DUAL_CHANNEL_INTERLEAVED	(2 << 0)
+#define DCC_ADDRESSING_MODE_MASK			(3 << 0)
+#define DCC_CHANNEL_XOR_DISABLE				(1 << 10)
+
+/** 965 MCH register controlling DRAM channel configuration */
+#define CHDECMISC		0x111
+#define CHDECMISC_FLEXMEMORY		(1 << 1)
 
 /* Extended config space */
 #define LBB 0xf4

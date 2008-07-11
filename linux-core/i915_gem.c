@@ -2702,3 +2702,18 @@ i915_gem_lastclose(struct drm_device *dev)
 	
 	mutex_unlock(&dev->struct_mutex);
 }
+
+void i915_gem_load(struct drm_device *dev)
+{
+	drm_i915_private_t *dev_priv = dev->dev_private;
+
+	INIT_LIST_HEAD(&dev_priv->mm.active_list);
+	INIT_LIST_HEAD(&dev_priv->mm.flushing_list);
+	INIT_LIST_HEAD(&dev_priv->mm.inactive_list);
+	INIT_LIST_HEAD(&dev_priv->mm.request_list);
+	INIT_DELAYED_WORK(&dev_priv->mm.retire_work,
+			  i915_gem_retire_work_handler);
+	dev_priv->mm.next_gem_seqno = 1;
+
+	i915_gem_detect_bit_6_swizzle(dev);
+}
