@@ -155,7 +155,10 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 		 */
 		chdecmisc = readb(mchbar + CHDECMISC);
 
-		if (chdecmisc & CHDECMISC_FLEXMEMORY) {
+		if (chdecmisc == 0xff) {
+			DRM_ERROR("Couldn't read from MCHBAR.  "
+				  "Disabling tiling.\n");
+		} else if (chdecmisc & CHDECMISC_FLEXMEMORY) {
 			swizzle_x = I915_BIT_6_SWIZZLE_NONE;
 			swizzle_y = I915_BIT_6_SWIZZLE_NONE;
 		} else {
@@ -196,6 +199,12 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 				swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
 			}
 			break;
+		}
+		if (dcc == 0xffffffff) {
+			DRM_ERROR("Couldn't read from MCHBAR.  "
+				  "Disabling tiling.\n");
+			swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
+			swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
 		}
 	}
 
