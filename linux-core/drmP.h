@@ -1255,6 +1255,7 @@ static inline struct drm_mm *drm_get_mm(struct drm_mm_node *block)
 }
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
+extern void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
 
 static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,
