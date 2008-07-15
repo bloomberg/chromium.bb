@@ -354,6 +354,7 @@ void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev)
 {
 	map->handle = ioremap_wc(map->offset, map->size);
 }
+EXPORT_SYMBOL_GPL(drm_core_ioremap_wc);
 #endif
 
 void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev)
