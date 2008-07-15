@@ -474,14 +474,32 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	}
 	if (iir & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT) {
 		pipeb_stats = I915_READ(PIPEBSTAT);
+		/* Ack the event */
+		I915_WRITE(PIPEBSTAT, pipeb_stats);
+
+		/* The vblank interrupt gets enabled even if we didn't ask for
+		   it, so make sure it's shut down again */
+		if (!(dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B))
+			pipeb_stats &= ~(I915_VBLANK_INTERRUPT_ENABLE);
+
 		if (pipeb_stats & (PIPE_START_VBLANK_INTERRUPT_STATUS|
 				   PIPE_VBLANK_INTERRUPT_STATUS))
 		{
 			vblank++;
 			drm_handle_vblank(dev, i915_get_plane(dev, 1));
 		}
+
+#ifdef __linux__
+		if (pipeb_stats & I915_LEGACY_BLC_EVENT_ENABLE)
+			opregion_asle_intr(dev);
+#endif
 		I915_WRITE(PIPEBSTAT, pipeb_stats);
 	}
+
+#ifdef __linux__
+	if (iir & I915_ASLE_INTERRUPT)
+		opregion_asle_intr(dev);
+#endif
 
 	if (dev_priv->sarea_priv)
 	    dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
@@ -702,6 +720,10 @@ static void i915_enable_interrupt (struct drm_device *dev)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	
 	dev_priv->irq_enable_reg |= I915_USER_INTERRUPT;
+
+#ifdef __linux__
+	opregion_enable_asle(dev);
+#endif
 
 	I915_WRITE(IER, dev_priv->irq_enable_reg);
 	dev_priv->irq_enabled = 1;

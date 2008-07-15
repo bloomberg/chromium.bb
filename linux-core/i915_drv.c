@@ -80,6 +80,8 @@ static int i915_suspend(struct drm_device *dev, pm_message_t state)
 
 	i915_save_state(dev);
 
+	intel_opregion_free(dev);
+
 	if (state.event == PM_EVENT_SUSPEND) {
 		/* Shut down the device */
 		pci_disable_device(dev->pdev);
@@ -98,6 +100,8 @@ static int i915_resume(struct drm_device *dev)
 	pci_set_master(dev->pdev);
 
 	i915_restore_state(dev);
+
+	intel_opregion_init(dev);
 
 	return 0;
 }
