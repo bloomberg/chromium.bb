@@ -1088,6 +1088,8 @@ drm_dma_handle_t *drm_pci_alloc(struct drm_device *dev, size_t size,
 				size_t align, dma_addr_t maxaddr);
 void	drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah);
 
+#define drm_core_ioremap_wc drm_core_ioremap
+
 /* Inline replacements for DRM_IOREMAP macros */
 static __inline__ void
 drm_core_ioremap(struct drm_local_map *map, struct drm_device *dev)
