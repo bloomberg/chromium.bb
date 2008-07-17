@@ -787,6 +787,7 @@ struct drm_device {
 
 	atomic_t	  context_flag;	/* Context swapping flag	   */
 	int		  last_context;	/* Last current context		   */
+	int		  vblank_disable_allowed;
 	wait_queue_head_t *vbl_queue;	/* vblank wait queue */
 	atomic_t	  *_vblank_count;	/* number of VBLANK interrupts */
 						/* (driver must alloc the right number of counters) */
