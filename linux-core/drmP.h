@@ -832,6 +832,14 @@ struct drm_device {
 	/** \name VBLANK IRQ support */
 	/*@{ */
 
+	/*
+	 * At load time, disabling the vblank interrupt won't be allowed since
+	 * old clients may not call the modeset ioctl and therefore misbehave.
+	 * Once the modeset ioctl *has* been called though, we can safely
+	 * disable them when unused.
+	 */
+	int vblank_disable_allowed;
+
 	wait_queue_head_t *vbl_queue;	/**< VBLANK wait queue */
 	atomic_t *_vblank_count;	/**< number of VBLANK interrupts (driver must alloc the right number of counters) */
 	spinlock_t vbl_lock;

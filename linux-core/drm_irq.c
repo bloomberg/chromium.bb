@@ -77,10 +77,16 @@ static void vblank_disable_fn(unsigned long arg)
 	unsigned long irqflags;
 	int i;
 
+	if (!dev->vblank_disable_allowed)
+		return;
+
 	for (i = 0; i < dev->num_crtcs; i++) {
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
 		if (atomic_read(&dev->vblank_refcount[i]) == 0 &&
 		    dev->vblank_enabled[i]) {
+			DRM_DEBUG("disabling vblank on crtc %d\n", i);
+			dev->last_vblank[i] =
+				dev->driver->get_vblank_counter(dev, i);
 			dev->driver->disable_vblank(dev, i);
 			dev->vblank_enabled[i] = 0;
 		}
@@ -174,6 +180,8 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 		atomic_set(&dev->_vblank_count[i], 0);
 		atomic_set(&dev->vblank_refcount[i], 0);
 	}
+
+	dev->vblank_disable_allowed = 0;
 
 	return 0;
 
@@ -344,10 +352,15 @@ EXPORT_SYMBOL(drm_vblank_count);
  * (specified by @crtc).  Deal with wraparound, if it occurred, and
  * update the last read value so we can deal with wraparound on the next
  * call if necessary.
+ *
+ * Only necessary when going from off->on, to account for frames we
+ * didn't get an interrupt for.
+ *
+ * Note: caller must hold dev->vbl_lock since this reads & writes
+ * device vblank fields.
  */
 void drm_update_vblank_count(struct drm_device *dev, int crtc)
 {
-	unsigned long irqflags;
 	u32 cur_vblank, diff;
 
 	if (dev->vblank_suspend[crtc])
@@ -361,7 +374,6 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 	 * a long time.
 	 */
 	cur_vblank = dev->driver->get_vblank_counter(dev, crtc);
-	spin_lock_irqsave(&dev->vbl_lock, irqflags);
 	if (cur_vblank < dev->last_vblank[crtc]) {
 		if (cur_vblank == dev->last_vblank[crtc] - 1) {
 			diff = 0;
@@ -377,11 +389,12 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 		diff = cur_vblank - dev->last_vblank[crtc];
 	}
 	dev->last_vblank[crtc] = cur_vblank;
-	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
+
+	DRM_DEBUG("enabling vblank interrupts on crtc %d, missed %d\n",
+		  crtc, diff);
 
 	atomic_add(diff, &dev->_vblank_count[crtc]);
 }
-EXPORT_SYMBOL(drm_update_vblank_count);
 
 /**
  * drm_vblank_get - get a reference count on vblank events
@@ -389,9 +402,7 @@ EXPORT_SYMBOL(drm_update_vblank_count);
  * @crtc: which CRTC to own
  *
  * Acquire a reference count on vblank events to avoid having them disabled
- * while in use.  Note callers will probably want to update the master counter
- * using drm_update_vblank_count() above before calling this routine so that
- * wakeups occur on the right vblank event.
+ * while in use.
  *
  * RETURNS
  * Zero on success, nonzero on failure.
@@ -408,8 +419,10 @@ int drm_vblank_get(struct drm_device *dev, int crtc)
 		ret = dev->driver->enable_vblank(dev, crtc);
 		if (ret)
 			atomic_dec(&dev->vblank_refcount[crtc]);
-		else
+		else {
 			dev->vblank_enabled[crtc] = 1;
+			drm_update_vblank_count(dev, crtc);
+		}
 	}
 	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
@@ -439,11 +452,18 @@ EXPORT_SYMBOL(drm_vblank_put);
  *
  * Applications should call the %_DRM_PRE_MODESET and %_DRM_POST_MODESET
  * ioctls around modesetting so that any lost vblank events are accounted for.
+ *
+ * Generally the counter will reset across mode sets.  If interrupts are
+ * enabled around this call, we don't have to do anything since the counter
+ * will have already been incremented.  If interrupts are off though, we need
+ * to make sure we account for the lost events at %_DRM_POST_MODESET time.
  */
 int drm_modeset_ctl(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
 	struct drm_modeset_ctl *modeset = data;
+	unsigned long irqflags;
+	u32 new, diff;
 	int crtc, ret = 0;
 
 	crtc = modeset->crtc;
@@ -454,27 +474,28 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 
 	switch (modeset->cmd) {
 	case _DRM_PRE_MODESET:
-		dev->vblank_premodeset[crtc] =
-			dev->driver->get_vblank_counter(dev, crtc);
-		dev->vblank_suspend[crtc] = 1;
+		spin_lock_irqsave(&dev->vbl_lock, irqflags);
+		dev->vblank_disable_allowed = 1;
+		if (!dev->vblank_enabled[crtc]) {
+			dev->vblank_premodeset[crtc] =
+				dev->driver->get_vblank_counter(dev, crtc);
+			dev->vblank_suspend[crtc] = 1;
+		}
+		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 		break;
 	case _DRM_POST_MODESET:
-		if (dev->vblank_suspend[crtc]) {
-			u32 new = dev->driver->get_vblank_counter(dev, crtc);
-
-			/* Compensate for spurious wraparound */
-			if (new < dev->vblank_premodeset[crtc]) {
-				atomic_sub(dev->max_vblank_count + new -
-					   dev->vblank_premodeset[crtc],
-					   &dev->_vblank_count[crtc]);
-				DRM_DEBUG("vblank_premodeset[%d]=0x%x, new=0x%x"
-					  " => _vblank_count[%d]-=0x%x\n", crtc,
-					  dev->vblank_premodeset[crtc], new,
-					  crtc, dev->max_vblank_count + new -
-					  dev->vblank_premodeset[crtc]);
-			}
+		spin_lock_irqsave(&dev->vbl_lock, irqflags);
+		dev->vblank_disable_allowed = 1;
+		new = dev->driver->get_vblank_counter(dev, crtc);
+		if (dev->vblank_suspend[crtc] && !dev->vblank_enabled[crtc]) {
+			if (new > dev->vblank_premodeset[crtc])
+				diff = dev->vblank_premodeset[crtc] - new;
+			else
+				diff = new;
+			atomic_add(diff, &dev->_vblank_count[crtc]);
 		}
 		dev->vblank_suspend[crtc] = 0;
+		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 		break;
 	default:
 		ret = -EINVAL;
@@ -528,7 +549,6 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 	if (crtc >= dev->num_crtcs)
 		return -EINVAL;
 
-	drm_update_vblank_count(dev, crtc);
 	seq = drm_vblank_count(dev, crtc);
 
 	switch (vblwait->request.type & _DRM_VBLANK_TYPES_MASK) {
@@ -680,7 +700,7 @@ static void drm_vbl_send_signals(struct drm_device * dev, int crtc)
  */
 void drm_handle_vblank(struct drm_device *dev, int crtc)
 {
-	drm_update_vblank_count(dev, crtc);
+	atomic_inc(&dev->_vblank_count[crtc]);
 	DRM_WAKEUP(&dev->vbl_queue[crtc]);
 	drm_vbl_send_signals(dev, crtc);
 }
