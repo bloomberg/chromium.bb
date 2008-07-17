@@ -206,6 +206,12 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 			swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
 			swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
 		}
+	} else {
+		/* As far as we know, the 865 doesn't have these bit 6
+		 * swizzling issues.
+		 */
+		swizzle_x = I915_BIT_6_SWIZZLE_NONE;
+		swizzle_y = I915_BIT_6_SWIZZLE_NONE;
 	}
 
 	iounmap(mchbar);
