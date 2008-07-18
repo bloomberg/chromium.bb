@@ -30,6 +30,7 @@
 #include "drm_compat.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
+#include <linux/swap.h>
 
 #define WATCH_COHERENCY	0
 #define WATCH_BUF	0

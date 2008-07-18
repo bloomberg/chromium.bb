@@ -30,6 +30,9 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
+extern int pci_read_base(struct pci_dev *dev, unsigned int reg,
+    struct resource *res);
+
 /** @file i915_gem_tiling.c
  *
  * Support for managing tiling state of buffer objects.
