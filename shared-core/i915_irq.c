@@ -769,6 +769,13 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
 
+	/*
+	 * We take the ref here and put it when the swap actually completes
+	 * in the tasklet.
+	 */
+	ret = drm_vblank_get(dev, pipe);
+	if (ret)
+		return ret;
 	curseq = drm_vblank_count(dev, pipe);
 
 	if (seqtype == _DRM_VBLANK_RELATIVE)
@@ -779,6 +786,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 			swap->sequence = curseq + 1;
 		} else {
 			DRM_DEBUG("Missed target sequence\n");
+			drm_vblank_put(dev, pipe);
 			return -EINVAL;
 		}
 	}
@@ -800,6 +808,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 				    irqflags);
 				DRM_DEBUG("Invalid drawable ID %d\n",
 					  swap->drawable);
+				drm_vblank_put(dev, pipe);
 				return -EINVAL;
 			}
 
@@ -807,6 +816,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 			DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
 
+			drm_vblank_put(dev, pipe);
 			return 0;
 		}
 	}
@@ -830,6 +840,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	if (dev_priv->swaps_pending >= 100) {
 		DRM_DEBUG("Too many swaps queued\n");
+		drm_vblank_put(dev, pipe);
 		return -EBUSY;
 	}
 
@@ -837,16 +848,11 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	if (!vbl_swap) {
 		DRM_ERROR("Failed to allocate memory to queue swap\n");
+		drm_vblank_put(dev, pipe);
 		return -ENOMEM;
 	}
 
 	DRM_DEBUG("\n");
-
-	ret = drm_vblank_get(dev, pipe);
-	if (ret) {
-		drm_free(vbl_swap, sizeof(*vbl_swap), DRM_MEM_DRIVER);
-		return ret;
-	}
 
 	vbl_swap->drw_id = swap->drawable;
 	vbl_swap->plane = plane;
