@@ -1119,6 +1119,10 @@ static int nv50_kms_connector_set_property(struct drm_connector *drm_connector,
 				break;
 		}
 
+		/* LVDS always needs gpu scaling */
+		if (connector->type == CONNECTOR_LVDS && internal_value == SCALE_NON_GPU)
+			return -EINVAL;
+
 		connector->scaling_mode = internal_value;
 
 		if (drm_connector->encoder && drm_connector->encoder->crtc)
