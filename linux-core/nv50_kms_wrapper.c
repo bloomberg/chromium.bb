@@ -636,10 +636,11 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 					continue;
 
 				crtc->scaling_mode = connector->scaling_mode;
+				crtc->use_dithering = connector->use_dithering;
 				break;
 			}
 
-			if (crtc->scaling_mode == SCALE_PANEL)
+			if (crtc->scaling_mode == SCALE_NON_GPU)
 				crtc->use_native_mode = false;
 			else
 				crtc->use_native_mode = true;
@@ -1078,19 +1079,93 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	}
 }
 
-static bool nv50_kms_connector_set_property(struct drm_connector *connector,
+static bool nv50_kms_connector_set_property(struct drm_connector *drm_connector,
 					struct drm_property *property,
 					uint64_t value)
 {
-	struct drm_device *dev = connector->dev;
+	struct drm_device *dev = drm_connector->dev;
+	struct nv50_connector *connector = to_nv50_connector(drm_connector);
 
-	if (property == dev->mode_config.dpms_property && connector->encoder) {
-		struct nv50_output *output = to_nv50_output(connector->encoder);
+	/* DPMS */
+	if (property == dev->mode_config.dpms_property && drm_connector->encoder) {
+		struct nv50_output *output = to_nv50_output(drm_connector->encoder);
 
 		if (!output->set_power_mode(output, (int) value))
 			return true;
 		else
 			return false;
+	}
+
+	/* Scaling mode */
+	if (property == dev->mode_config.scaling_mode_property) {
+		struct nv50_crtc *crtc = NULL;
+		struct nv50_display *display = nv50_get_display(dev);
+		int internal_value = 0;
+		int rval = 0;
+
+		switch (value) {
+			case DRM_MODE_SCALE_NON_GPU:
+				internal_value = SCALE_NON_GPU;
+				break;
+			case DRM_MODE_SCALE_FULLSCREEN:
+				internal_value = SCALE_FULLSCREEN;
+				break;
+			case DRM_MODE_SCALE_NO_SCALE:
+				internal_value = SCALE_NOSCALE;
+				break;
+			case DRM_MODE_SCALE_ASPECT:
+				internal_value = SCALE_ASPECT;
+				break;
+			default:
+				break;
+		}
+
+		connector->scaling_mode = internal_value;
+
+		if (drm_connector->encoder && drm_connector->encoder->crtc)
+			crtc = to_nv50_crtc(drm_connector->encoder->crtc);
+
+		if (!crtc)
+			return true;
+
+		crtc->scaling_mode = connector->scaling_mode;
+		rval = crtc->set_scale(crtc);
+		if (rval)
+			return false;
+
+		/* process command buffer */
+		display->update(display);
+
+		return true;
+	}
+
+	/* Dithering */
+	if (property == dev->mode_config.dithering_mode_property) {
+		struct nv50_crtc *crtc = NULL;
+		struct nv50_display *display = nv50_get_display(dev);
+		int rval = 0;
+
+		if (value == DRM_MODE_DITHERING_ON)
+			connector->use_dithering = true;
+		else
+			connector->use_dithering = false;
+
+		if (drm_connector->encoder && drm_connector->encoder->crtc)
+			crtc = to_nv50_crtc(drm_connector->encoder->crtc);
+
+		if (!crtc)
+			return true;
+
+		/* update hw state */
+		crtc->use_dithering = connector->use_dithering;
+		rval = crtc->set_dither(crtc);
+		if (rval)
+			return false;
+
+		/* process command buffer */
+		display->update(display);
+
+		return true;
 	}
 
 	return false;
@@ -1105,11 +1180,47 @@ static const struct drm_connector_funcs nv50_kms_connector_funcs = {
 	.set_property = nv50_kms_connector_set_property
 };
 
+static int nv50_kms_get_scaling_mode(struct drm_connector *drm_connector)
+{
+	struct nv50_connector *connector = NULL;
+	int drm_mode = 0;
+
+	if (!drm_connector) {
+		DRM_ERROR("drm_connector is NULL\n");
+		return 0;
+	}
+
+	connector = to_nv50_connector(drm_connector);
+
+	switch (connector->scaling_mode) {
+		case SCALE_NON_GPU:
+			drm_mode = DRM_MODE_SCALE_NON_GPU;
+			break;
+		case SCALE_FULLSCREEN:
+			drm_mode = DRM_MODE_SCALE_FULLSCREEN;
+			break;
+		case SCALE_NOSCALE:
+			drm_mode = DRM_MODE_SCALE_NO_SCALE;
+			break;
+		case SCALE_ASPECT:
+			drm_mode = DRM_MODE_SCALE_ASPECT;
+			break;
+		default:
+			break;
+	}
+
+	return drm_mode;
+}
+
 static int nv50_kms_connectors_init(struct drm_device *dev)
 {
 	struct nv50_display *display = nv50_get_display(dev);
 	struct nv50_connector *connector = NULL;
 	int i;
+
+	/* Initialise some optional connector properties. */
+	drm_mode_create_scaling_mode_property(dev);
+	drm_mode_create_dithering_property(dev);
 
 	list_for_each_entry(connector, &display->connectors, item) {
 		struct drm_connector *drm_connector = to_nv50_kms_connector(connector);
@@ -1153,6 +1264,13 @@ static int nv50_kms_connectors_init(struct drm_device *dev)
 			drm_connector_attach_property(drm_connector, dev->mode_config.dvi_i_subconnector_property, 0);
 			drm_connector_attach_property(drm_connector, dev->mode_config.dvi_i_select_subconnector_property, 0);
 		}
+
+		/* If supported in the future, it will have to use the scalers internally and not expose them. */
+		if (type != DRM_MODE_CONNECTOR_SVIDEO) {
+			drm_connector_attach_property(drm_connector, dev->mode_config.scaling_mode_property, nv50_kms_get_scaling_mode(drm_connector));
+		}
+
+		drm_connector_attach_property(drm_connector, dev->mode_config.dithering_mode_property, connector->use_dithering ? DRM_MODE_DITHERING_ON : DRM_MODE_DITHERING_OFF);
 
 		/* attach encoders, possibilities are analog + digital */
 		for (i = 0; i < 2; i++) {

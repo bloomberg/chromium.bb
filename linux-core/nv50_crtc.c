@@ -264,7 +264,7 @@ static int nv50_crtc_set_scale(struct nv50_crtc *crtc)
 			outY = crtc->native_mode->vdisplay;
 			break;
 		case SCALE_NOSCALE:
-		case SCALE_PANEL:
+		case SCALE_NON_GPU:
 		default:
 			outX = crtc->mode->hdisplay;
 			outY = crtc->mode->vdisplay;

@@ -48,6 +48,7 @@ struct nv50_connector {
 	struct nv50_output *output;
 
 	int scaling_mode;
+	bool use_dithering;
 
 	bool (*detect) (struct nv50_connector *connector);
 	int (*destroy) (struct nv50_connector *connector);

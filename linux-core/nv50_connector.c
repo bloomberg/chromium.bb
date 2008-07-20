@@ -187,7 +187,9 @@ int nv50_connector_create(struct drm_device *dev, int bus, int i2c_index, int ty
 	if (type == CONNECTOR_DVI_D || type == CONNECTOR_DVI_I || type == CONNECTOR_LVDS)
 		connector->scaling_mode = SCALE_FULLSCREEN;
 	else
-		connector->scaling_mode = SCALE_PANEL;
+		connector->scaling_mode = SCALE_NON_GPU;
+
+	connector->use_dithering = false;
 
 	if (i2c_index < 0xf)
 		connector->i2c_chan = nv50_i2c_channel_create(dev, i2c_index);
