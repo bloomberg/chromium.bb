@@ -1079,21 +1079,21 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	}
 }
 
-static bool nv50_kms_connector_set_property(struct drm_connector *drm_connector,
+static int nv50_kms_connector_set_property(struct drm_connector *drm_connector,
 					struct drm_property *property,
 					uint64_t value)
 {
 	struct drm_device *dev = drm_connector->dev;
 	struct nv50_connector *connector = to_nv50_connector(drm_connector);
+	int rval = 0;
 
 	/* DPMS */
 	if (property == dev->mode_config.dpms_property && drm_connector->encoder) {
 		struct nv50_output *output = to_nv50_output(drm_connector->encoder);
 
-		if (!output->set_power_mode(output, (int) value))
-			return true;
-		else
-			return false;
+		rval = output->set_power_mode(output, (int) value);
+
+		return rval;
 	}
 
 	/* Scaling mode */
@@ -1101,7 +1101,6 @@ static bool nv50_kms_connector_set_property(struct drm_connector *drm_connector,
 		struct nv50_crtc *crtc = NULL;
 		struct nv50_display *display = nv50_get_display(dev);
 		int internal_value = 0;
-		int rval = 0;
 
 		switch (value) {
 			case DRM_MODE_SCALE_NON_GPU:
@@ -1126,24 +1125,23 @@ static bool nv50_kms_connector_set_property(struct drm_connector *drm_connector,
 			crtc = to_nv50_crtc(drm_connector->encoder->crtc);
 
 		if (!crtc)
-			return true;
+			return 0;
 
 		crtc->scaling_mode = connector->scaling_mode;
 		rval = crtc->set_scale(crtc);
 		if (rval)
-			return false;
+			return rval;
 
 		/* process command buffer */
 		display->update(display);
 
-		return true;
+		return 0;
 	}
 
 	/* Dithering */
 	if (property == dev->mode_config.dithering_mode_property) {
 		struct nv50_crtc *crtc = NULL;
 		struct nv50_display *display = nv50_get_display(dev);
-		int rval = 0;
 
 		if (value == DRM_MODE_DITHERING_ON)
 			connector->use_dithering = true;
@@ -1154,21 +1152,21 @@ static bool nv50_kms_connector_set_property(struct drm_connector *drm_connector,
 			crtc = to_nv50_crtc(drm_connector->encoder->crtc);
 
 		if (!crtc)
-			return true;
+			return 0;
 
 		/* update hw state */
 		crtc->use_dithering = connector->use_dithering;
 		rval = crtc->set_dither(crtc);
 		if (rval)
-			return false;
+			return rval;
 
 		/* process command buffer */
 		display->update(display);
 
-		return true;
+		return 0;
 	}
 
-	return false;
+	return -EINVAL;
 }
 
 static const struct drm_connector_funcs nv50_kms_connector_funcs = {

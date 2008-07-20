@@ -210,7 +210,7 @@ static int intel_crt_get_modes(struct drm_connector *connector)
 	return intel_ddc_get_modes(intel_output);
 }
 
-static bool intel_crt_set_property(struct drm_connector *connector,
+static int intel_crt_set_property(struct drm_connector *connector,
 				  struct drm_property *property,
 				  uint64_t value)
 {
@@ -219,7 +219,7 @@ static bool intel_crt_set_property(struct drm_connector *connector,
 	if (property == dev->mode_config.dpms_property && connector->encoder)
 		intel_crt_dpms(connector->encoder, (uint32_t)(value & 0xf));
 
-	return true;
+	return 0;
 }
 
 /*
