@@ -255,7 +255,7 @@ static int nv50_crtc_set_scale(struct nv50_crtc *crtc)
 
 	NV50_DEBUG("\n");
 
-	switch (crtc->scaling_mode) {
+	switch (crtc->requested_scaling_mode) {
 		case SCALE_ASPECT:
 			nv50_crtc_calc_scale(crtc, &outX, &outY);
 			break;
@@ -282,6 +282,9 @@ static int nv50_crtc_set_scale(struct nv50_crtc *crtc)
 
 	OUT_MODE(NV50_CRTC0_SCALE_RES1 + offset, outY << 16 | outX);
 	OUT_MODE(NV50_CRTC0_SCALE_RES2 + offset, outY << 16 | outX);
+
+	/* processed */
+	crtc->scaling_mode = crtc->requested_scaling_mode;
 
 	return 0;
 }
@@ -491,6 +494,9 @@ int nv50_crtc_create(struct drm_device *dev, int index)
 
 	crtc->mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
 	crtc->native_mode = kzalloc(sizeof(struct nouveau_hw_mode), GFP_KERNEL);
+
+	crtc->requested_scaling_mode = SCALE_INVALID;
+	crtc->scaling_mode = SCALE_INVALID;
 
 	if (!crtc->mode || !crtc->native_mode) {
 		rval = -ENOMEM;

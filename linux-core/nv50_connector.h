@@ -47,7 +47,8 @@ struct nv50_connector {
 	struct nv50_i2c_channel *i2c_chan;
 	struct nv50_output *output;
 
-	int scaling_mode;
+	int requested_scaling_mode;
+
 	bool use_dithering;
 
 	bool (*detect) (struct nv50_connector *connector);

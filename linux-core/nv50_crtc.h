@@ -46,6 +46,10 @@ struct nv50_crtc {
 
 	bool use_native_mode;
 	bool use_dithering;
+
+	/* Changing scaling modes requires a modeset sometimes. */
+	/* We need to know the currently active hw mode, as well as the requested one by the user. */
+	int requested_scaling_mode;
 	int scaling_mode;
 
 	struct nv50_cursor *cursor;
