@@ -79,7 +79,6 @@ static struct nv50_output *nv50_connector_to_output(struct nv50_connector *conne
 static int nv50_connector_hpd_detect(struct nv50_connector *connector)
 {
 	struct drm_nouveau_private *dev_priv = connector->dev->dev_private;
-	struct nv50_output *output = NULL;
 	bool present = 0;
 	uint32_t reg = 0;
 

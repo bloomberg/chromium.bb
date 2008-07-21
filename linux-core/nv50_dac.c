@@ -146,7 +146,14 @@ static int nv50_dac_detect(struct nv50_output *output)
 	NV_WRITE(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or), 0x00150000 | NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING);
 	while (NV_READ(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or)) & NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING);
 
-	load_pattern = 340; /* TODO: use a bios table for this */
+	/* Use bios provided value if possible. */
+	if (dev_priv->bios.dactestval) {
+		load_pattern = dev_priv->bios.dactestval;
+		NV50_DEBUG("Using bios provided load_pattern of %d\n", load_pattern);
+	} else {
+		load_pattern = 340;
+		NV50_DEBUG("Using default load_pattern of %d\n", load_pattern);
+	}
 
 	NV_WRITE(NV50_PDISPLAY_DAC_REGS_LOAD_CTRL(or), NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_ACTIVE | load_pattern);
 	udelay(10000); /* give it some time to process */
