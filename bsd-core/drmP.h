@@ -632,7 +632,7 @@ struct drm_ati_pcigart_info {
 #define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) - 1)
 #endif
 
-#define upper_32_bits(_val) (((u64)(_val)) >> 32)
+#define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
 
 struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
