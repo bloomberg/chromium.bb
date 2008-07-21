@@ -1079,6 +1079,10 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 
 		NV50_DEBUG("No valid modes on %s\n", drm_get_connector_name(drm_connector));
 
+		/* Making up native modes for LVDS is a bad idea. */
+		if (drm_connector->connector_type == DRM_MODE_CONNECTOR_LVDS)
+			return;
+
 		/* Should we do this here ???
 		 * When no valid EDID modes are available we end up
 		 * here and bailed in the past, now we add a standard
