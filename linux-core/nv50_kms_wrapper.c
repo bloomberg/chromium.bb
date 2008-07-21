@@ -386,7 +386,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 			/* This is to ensure it knows the connector subtype. */
 			drm_connector->funcs->fill_modes(drm_connector, 0, 0);
 
-			output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
+			output = connector->to_output(connector, nv50_kms_connector_get_digital(drm_connector));
 			if (!output) {
 				DRM_ERROR("No output\n");
 				goto out;
@@ -458,7 +458,7 @@ int nv50_kms_crtc_set_config(struct drm_mode_set *set)
 				goto out;
 			}
 
-			output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
+			output = connector->to_output(connector, nv50_kms_connector_get_digital(drm_connector));
 			if (!output) {
 				DRM_ERROR("No output\n");
 				goto out;
@@ -835,7 +835,9 @@ static int nv50_kms_encoders_init(struct drm_device *dev)
  * Connector functions
  */
 
-bool nv50_kms_connector_is_digital(struct drm_connector *drm_connector)
+
+/* These 2 functions wrap the connector properties that deal with multiple encoders per connector. */
+bool nv50_kms_connector_get_digital(struct drm_connector *drm_connector)
 {
 	struct drm_device *dev = drm_connector->dev;
 
@@ -892,6 +894,33 @@ bool nv50_kms_connector_is_digital(struct drm_connector *drm_connector)
 	return false;
 }
 
+static void nv50_kms_connector_set_digital(struct drm_connector *drm_connector, int digital, bool force)
+{
+	struct drm_device *dev = drm_connector->dev;
+
+	if (drm_connector->connector_type == DRM_MODE_CONNECTOR_DVII) {
+		uint64_t cur_value, new_value;
+
+		int rval = drm_connector_property_get_value(drm_connector, dev->mode_config.dvi_i_subconnector_property, &cur_value);
+		if (rval) {
+			DRM_ERROR("Unable to find subconnector property\n");
+			return;
+		}
+
+		/* Only set when unknown or when forced to do so. */
+		if (cur_value != DRM_MODE_SUBCONNECTOR_Unknown && !force)
+			return;
+
+		if (digital == 1)
+			new_value = DRM_MODE_SUBCONNECTOR_DVID;
+		else if (digital == 0)
+			new_value = DRM_MODE_SUBCONNECTOR_DVIA;
+		else
+			new_value = DRM_MODE_SUBCONNECTOR_Unknown;
+		drm_connector_property_set_value(drm_connector, dev->mode_config.dvi_i_subconnector_property, new_value);
+	}
+}
+
 void nv50_kms_connector_detect_all(struct drm_device *dev)
 {
 	struct drm_connector *drm_connector = NULL;
@@ -903,16 +932,32 @@ void nv50_kms_connector_detect_all(struct drm_device *dev)
 
 static enum drm_connector_status nv50_kms_connector_detect(struct drm_connector *drm_connector)
 {
-	struct nv50_connector *connector = to_nv50_connector(drm_connector);
 	struct drm_device *dev = drm_connector->dev;
-	bool connected;
-	int old_status;
+	struct nv50_connector *connector = to_nv50_connector(drm_connector);
+	struct nv50_output *output = NULL;
+	int hpd_detect = 0, load_detect = 0, i2c_detect = 0;
+	int old_status = drm_connector->status;
 
-	connected = connector->detect(connector);
+	/* hotplug detect */
+	hpd_detect = connector->hpd_detect(connector);
 
-	old_status = drm_connector->status;
+	/* load detect */
+	output = connector->to_output(connector, FALSE); /* analog */
+	if (output && output->detect)
+		load_detect = output->detect(output);
 
-	if (connected)
+	if (hpd_detect < 0 || load_detect < 0) /* did an error occur? */
+		i2c_detect = connector->i2c_detect(connector);
+
+	if (load_detect == 1) {
+		nv50_kms_connector_set_digital(drm_connector, 0, TRUE); /* analog, forced */
+	} else if (hpd_detect == 1 && load_detect == 0) {
+		nv50_kms_connector_set_digital(drm_connector, 1, TRUE); /* digital, forced */
+	} else {
+		nv50_kms_connector_set_digital(drm_connector, -1, TRUE); /* unknown, forced */
+	}
+
+	if (hpd_detect == 1 || load_detect == 1 || i2c_detect == 1)
 		drm_connector->status = connector_status_connected;
 	else
 		drm_connector->status = connector_status_disconnected;
@@ -956,7 +1001,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	struct nv50_connector *connector = to_nv50_connector(drm_connector);
 	struct drm_device *dev = drm_connector->dev;
 	int rval = 0;
-	bool connected;
+	bool connected = false;
 	struct drm_display_mode *mode, *t;
 	struct edid *edid = NULL;
 
@@ -965,16 +1010,13 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	list_for_each_entry_safe(mode, t, &drm_connector->modes, head)
 		mode->status = MODE_UNVERIFIED;
 
-	connected = connector->detect(connector);
+	if (nv50_kms_connector_detect(drm_connector) == connector_status_connected)
+		connected = true;
 
 	if (connected)
-		drm_connector->status = connector_status_connected;
+		NV50_DEBUG("%s is connected\n", drm_get_connector_name(drm_connector));
 	else
-		drm_connector->status = connector_status_disconnected;
-
-	if (!connected) {
 		NV50_DEBUG("%s is disconnected\n", drm_get_connector_name(drm_connector));
-	}
 
 	/* Not all connnectors have an i2c channel. */
 	if (connected && connector->i2c_chan)
@@ -986,16 +1028,8 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	if (edid) {
 		rval = drm_add_edid_modes(drm_connector, edid);
 
-		/* 2 encoders per connector */
-		/* eventually do this based on load detect and hot plug detect */
-		if (drm_connector->connector_type == DRM_MODE_CONNECTOR_DVII) {
-			uint64_t subtype = 0;
-			if (edid->digital)
-				subtype = DRM_MODE_SUBCONNECTOR_DVID;
-			else
-				subtype = DRM_MODE_SUBCONNECTOR_DVIA;
-			drm_connector_property_set_value(drm_connector, dev->mode_config.dvi_i_subconnector_property, subtype);
-		}
+		/* Only update when relevant and when detect couldn't determine type. */
+		nv50_kms_connector_set_digital(drm_connector, edid->digital ? 1 : 0, FALSE);
 
 		kfree(edid);
 	}
@@ -1009,7 +1043,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	list_for_each_entry_safe(mode, t, &drm_connector->modes, head) {
 		if (mode->status == MODE_OK) {
 			struct nouveau_hw_mode *hw_mode = nv50_kms_to_hw_mode(mode);
-			struct nv50_output *output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
+			struct nv50_output *output = connector->to_output(connector, nv50_kms_connector_get_digital(drm_connector));
 
 			mode->status = output->validate_mode(output, hw_mode);
 			/* find native mode, TODO: also check if we actually found one */
@@ -1025,7 +1059,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 	list_for_each_entry_safe(mode, t, &drm_connector->modes, head) {
 		if (mode->status == MODE_OK) {
 			struct nouveau_hw_mode *hw_mode = nv50_kms_to_hw_mode(mode);
-			struct nv50_output *output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
+			struct nv50_output *output = connector->to_output(connector, nv50_kms_connector_get_digital(drm_connector));
 
 			mode->status = output->validate_mode(output, hw_mode);
 			kfree(hw_mode);
@@ -1057,7 +1091,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 
 		/* also add it as native mode */
 		hw_mode = nv50_kms_to_hw_mode(mode);
-		output = connector->to_output(connector, nv50_kms_connector_is_digital(drm_connector));
+		output = connector->to_output(connector, nv50_kms_connector_get_digital(drm_connector));
 
 		if (hw_mode)
 			*output->native_mode = *hw_mode;

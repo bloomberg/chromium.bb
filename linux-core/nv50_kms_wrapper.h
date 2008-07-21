@@ -87,7 +87,7 @@ struct nv50_kms_priv {
 
 struct nv50_kms_priv *nv50_get_kms_priv(struct drm_device *dev);
 void nv50_kms_connector_detect_all(struct drm_device *dev);
-bool nv50_kms_connector_is_digital(struct drm_connector *drm_connector);
+bool nv50_kms_connector_get_digital(struct drm_connector *drm_connector);
 
 int nv50_kms_init(struct drm_device *dev);
 int nv50_kms_destroy(struct drm_device *dev);

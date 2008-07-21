@@ -51,7 +51,8 @@ struct nv50_connector {
 
 	bool use_dithering;
 
-	bool (*detect) (struct nv50_connector *connector);
+	int (*hpd_detect) (struct nv50_connector *connector);
+	int (*i2c_detect) (struct nv50_connector *connector);
 	int (*destroy) (struct nv50_connector *connector);
 	struct nv50_output *(*to_output) (struct nv50_connector *connector, bool digital);
 };
