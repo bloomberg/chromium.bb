@@ -82,11 +82,13 @@ static void vblank_disable_fn(unsigned long arg)
 
 	for (i = 0; i < dev->num_crtcs; i++) {
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
-		if (atomic_read(&dev->vblank_refcount[i]) == 0) {
+		if (atomic_read(&dev->vblank_refcount[i]) == 0 &&
+		    dev->vblank_enabled[i]) {
 			DRM_DEBUG("disabling vblank on crtc %d\n", i);
 			dev->last_vblank[i] =
 				dev->driver->get_vblank_counter(dev, i);
 			dev->driver->disable_vblank(dev, i);
+			dev->vblank_enabled[i] = 0;
 		}
 		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 	}
@@ -109,6 +111,8 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 	drm_free(dev->_vblank_count, sizeof(*dev->_vblank_count) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
 	drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
+		 dev->num_crtcs, DRM_MEM_DRIVER);
+	drm_free(dev->vblank_enabled, sizeof(*dev->vblank_enabled) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
 	drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * dev->num_crtcs,
 		 DRM_MEM_DRIVER);
@@ -146,6 +150,11 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	dev->vblank_refcount = drm_alloc(sizeof(atomic_t) * num_crtcs,
 					 DRM_MEM_DRIVER);
 	if (!dev->vblank_refcount)
+		goto err;
+
+	dev->vblank_enabled = drm_calloc(num_crtcs, sizeof(int),
+					 DRM_MEM_DRIVER);
+	if (!dev->vblank_enabled)
 		goto err;
 
 	dev->last_vblank = drm_calloc(num_crtcs, sizeof(u32), DRM_MEM_DRIVER);
@@ -387,12 +396,15 @@ int drm_vblank_get(struct drm_device *dev, int crtc)
 
 	spin_lock_irqsave(&dev->vbl_lock, irqflags);
 	/* Going from 0->1 means we have to enable interrupts again */
-	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1) {
+	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1 &&
+	    !dev->vblank_enabled[crtc]) {
 		ret = dev->driver->enable_vblank(dev, crtc);
 		if (ret)
 			atomic_dec(&dev->vblank_refcount[crtc]);
-		else
+		else {
+			dev->vblank_enabled[crtc] = 1;
 			drm_update_vblank_count(dev, crtc);
+		}
 	}
 	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
