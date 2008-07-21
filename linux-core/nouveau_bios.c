@@ -341,11 +341,12 @@ parse_dcb_entry(struct drm_device *dev, int index, uint8_t dcb_version, uint16_t
 					entry->lvdsconf.use_power_scripts = true;
 			}
 			if (conf & mask) {
-				DRM_ERROR(
-					   "Unknown LVDS configuration bits, please report\n");
-				/* cause output setting to fail, so message is seen */
-				dev_priv->dcb_table.entries = 0;
-				return false;
+				if (dcb_version < 0x40) { /* we know g80 cards have unknown bits */
+					DRM_ERROR("Unknown LVDS configuration bits, please report\n");
+					/* cause output setting to fail, so message is seen */
+					dev_priv->dcb_table.entries = 0;
+					return false;
+				}
 			}
 			break;
 			}
