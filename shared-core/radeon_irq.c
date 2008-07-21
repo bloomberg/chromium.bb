@@ -255,7 +255,7 @@ u32 radeon_get_vblank_counter(struct drm_device *dev, int crtc)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
-	if (!dev_priv || crtc < 0 || crtc > 1) {
+	if (!dev_priv) {
 		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
