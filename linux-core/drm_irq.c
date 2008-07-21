@@ -118,7 +118,7 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 		 DRM_MEM_DRIVER);
 	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_suspend, sizeof(*dev->vblank_suspend) *
+	drm_free(dev->vblank_inmodeset, sizeof(*dev->vblank_inmodeset) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
 
 	dev->num_crtcs = 0;
@@ -168,9 +168,9 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	if (!dev->vblank_premodeset)
 		goto err;
 
-	dev->vblank_suspend = drm_calloc(num_crtcs, sizeof(int),
+	dev->vblank_inmodeset = drm_calloc(num_crtcs, sizeof(int),
 					 DRM_MEM_DRIVER);
-	if (!dev->vblank_suspend)
+	if (!dev->vblank_inmodeset)
 		goto err;
 
 	/* Zero per-crtc vblank stuff */
@@ -363,9 +363,6 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 {
 	u32 cur_vblank, diff;
 
-	if (dev->vblank_suspend[crtc])
-		return;
-
 	/*
 	 * Interrupts were disabled prior to this call, so deal with counter
 	 * wrap if needed.
@@ -483,18 +480,18 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 	 */
 	switch (modeset->cmd) {
 	case _DRM_PRE_MODESET:
-		if (!dev->vblank_suspend[crtc]) {
+		if (!dev->vblank_inmodeset[crtc]) {
 			spin_lock_irqsave(&dev->vbl_lock, irqflags);
-			dev->vblank_suspend[crtc] = 1;
+			dev->vblank_inmodeset[crtc] = 1;
 			spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 			drm_vblank_get(dev, crtc);
 		}
 		break;
 	case _DRM_POST_MODESET:
-		if (dev->vblank_suspend[crtc]) {
+		if (dev->vblank_inmodeset[crtc]) {
 			spin_lock_irqsave(&dev->vbl_lock, irqflags);
 			dev->vblank_disable_allowed = 1;
-			dev->vblank_suspend[crtc] = 0;
+			dev->vblank_inmodeset[crtc] = 0;
 			spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 			drm_vblank_put(dev, crtc);
 		}
@@ -577,11 +574,6 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 		struct list_head *vbl_sigs = &dev->vbl_sigs[crtc];
 		struct drm_vbl_sig *vbl_sig;
 
-		if (dev->vblank_suspend[crtc]) {
-			ret = -EBUSY;
-			goto done;
-		}
-
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
 
 		/* Check if this task has already scheduled the same signal
@@ -636,11 +628,9 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
 
 		vblwait->reply.sequence = seq;
 	} else {
-		if (!dev->vblank_suspend[crtc]) {
-			DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
-				    ((drm_vblank_count(dev, crtc)
-				      - vblwait->request.sequence) <= (1 << 23)));
-		}
+		DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
+			    ((drm_vblank_count(dev, crtc)
+			      - vblwait->request.sequence) <= (1 << 23)));
 
 		if (ret != -EINTR) {
 			struct timeval now;

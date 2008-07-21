@@ -851,7 +851,7 @@ struct drm_device {
 	int *vblank_enabled;		/* so we don't call enable more than
 					   once per disable */
 	u32 *vblank_premodeset;		/* for compensation of spurious wraparounds */
-	int *vblank_suspend;		/* Don't wait while crtc is likely disabled */
+	int *vblank_inmodeset;		/* Display driver is setting mode */
 	struct timer_list vblank_disable_timer;
 
 	u32 max_vblank_count;		/**< size of vblank counter register */
