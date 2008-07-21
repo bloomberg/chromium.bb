@@ -848,9 +848,6 @@ struct drm_device {
 	atomic_t *vblank_refcount;	/* number of users of vblank interrupts per crtc */
 	u32 *last_vblank;		/* protected by dev->vbl_lock, used */
 					/* for wraparound handling */
-	int *vblank_enabled;		/* so we don't call enable more than
-					   once per disable */
-	u32 *vblank_premodeset;		/* for compensation of spurious wraparounds */
 	int *vblank_inmodeset;		/* Display driver is setting mode */
 	struct timer_list vblank_disable_timer;
 
@@ -1153,7 +1150,6 @@ extern int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *
 extern int drm_vblank_wait(struct drm_device * dev, unsigned int *vbl_seq);
 extern void drm_locked_tasklet(struct drm_device *dev, void(*func)(struct drm_device*));
 extern u32 drm_vblank_count(struct drm_device *dev, int crtc);
-extern void drm_update_vblank_count(struct drm_device *dev, int crtc);
 extern void drm_handle_vblank(struct drm_device *dev, int crtc);
 extern int drm_vblank_get(struct drm_device *dev, int crtc);
 extern void drm_vblank_put(struct drm_device *dev, int crtc);

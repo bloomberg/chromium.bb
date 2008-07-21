@@ -82,13 +82,11 @@ static void vblank_disable_fn(unsigned long arg)
 
 	for (i = 0; i < dev->num_crtcs; i++) {
 		spin_lock_irqsave(&dev->vbl_lock, irqflags);
-		if (atomic_read(&dev->vblank_refcount[i]) == 0 &&
-		    dev->vblank_enabled[i]) {
+		if (atomic_read(&dev->vblank_refcount[i]) == 0) {
 			DRM_DEBUG("disabling vblank on crtc %d\n", i);
 			dev->last_vblank[i] =
 				dev->driver->get_vblank_counter(dev, i);
 			dev->driver->disable_vblank(dev, i);
-			dev->vblank_enabled[i] = 0;
 		}
 		spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 	}
@@ -112,12 +110,8 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 		 dev->num_crtcs, DRM_MEM_DRIVER);
 	drm_free(dev->vblank_refcount, sizeof(*dev->vblank_refcount) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
-	drm_free(dev->vblank_enabled, sizeof(*dev->vblank_enabled) *
-		 dev->num_crtcs, DRM_MEM_DRIVER);
 	drm_free(dev->last_vblank, sizeof(*dev->last_vblank) * dev->num_crtcs,
 		 DRM_MEM_DRIVER);
-	drm_free(dev->vblank_premodeset, sizeof(*dev->vblank_premodeset) *
-		 dev->num_crtcs, DRM_MEM_DRIVER);
 	drm_free(dev->vblank_inmodeset, sizeof(*dev->vblank_inmodeset) *
 		 dev->num_crtcs, DRM_MEM_DRIVER);
 
@@ -154,18 +148,8 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	if (!dev->vblank_refcount)
 		goto err;
 
-	dev->vblank_enabled = drm_calloc(num_crtcs, sizeof(int),
-					 DRM_MEM_DRIVER);
-	if (!dev->vblank_enabled)
-		goto err;
-
 	dev->last_vblank = drm_calloc(num_crtcs, sizeof(u32), DRM_MEM_DRIVER);
 	if (!dev->last_vblank)
-		goto err;
-
-	dev->vblank_premodeset = drm_calloc(num_crtcs, sizeof(u32),
-					    DRM_MEM_DRIVER);
-	if (!dev->vblank_premodeset)
 		goto err;
 
 	dev->vblank_inmodeset = drm_calloc(num_crtcs, sizeof(int),
@@ -359,7 +343,7 @@ EXPORT_SYMBOL(drm_vblank_count);
  * Note: caller must hold dev->vbl_lock since this reads & writes
  * device vblank fields.
  */
-void drm_update_vblank_count(struct drm_device *dev, int crtc)
+static void drm_update_vblank_count(struct drm_device *dev, int crtc)
 {
 	u32 cur_vblank, diff;
 
@@ -385,7 +369,6 @@ void drm_update_vblank_count(struct drm_device *dev, int crtc)
 	} else {
 		diff = cur_vblank - dev->last_vblank[crtc];
 	}
-	dev->last_vblank[crtc] = cur_vblank;
 
 	DRM_DEBUG("enabling vblank interrupts on crtc %d, missed %d\n",
 		  crtc, diff);
@@ -411,15 +394,12 @@ int drm_vblank_get(struct drm_device *dev, int crtc)
 
 	spin_lock_irqsave(&dev->vbl_lock, irqflags);
 	/* Going from 0->1 means we have to enable interrupts again */
-	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1 &&
-	    !dev->vblank_enabled[crtc]) {
+	if (atomic_add_return(1, &dev->vblank_refcount[crtc]) == 1) {
 		ret = dev->driver->enable_vblank(dev, crtc);
 		if (ret)
 			atomic_dec(&dev->vblank_refcount[crtc]);
-		else {
-			dev->vblank_enabled[crtc] = 1;
+		else
 			drm_update_vblank_count(dev, crtc);
-		}
 	}
 	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 
@@ -481,9 +461,7 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 	switch (modeset->cmd) {
 	case _DRM_PRE_MODESET:
 		if (!dev->vblank_inmodeset[crtc]) {
-			spin_lock_irqsave(&dev->vbl_lock, irqflags);
 			dev->vblank_inmodeset[crtc] = 1;
-			spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
 			drm_vblank_get(dev, crtc);
 		}
 		break;
