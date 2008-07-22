@@ -72,7 +72,7 @@ void drm_ttm_cache_flush(struct page *pages[], unsigned long num_pages)
 		return;
 	}
 #endif
-	if (on_each_cpu(drm_ttm_ipi_handler, NULL, 1, 1) != 0)
+	if (drm_on_each_cpu(drm_ttm_ipi_handler, NULL, 1) != 0)
 		DRM_ERROR("Timed out waiting for drm cache flush.\n");
 }
 EXPORT_SYMBOL(drm_ttm_cache_flush);
