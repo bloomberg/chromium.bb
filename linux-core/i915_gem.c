@@ -55,6 +55,9 @@ i915_gem_set_domain(struct drm_gem_object *obj,
 		    struct drm_file *file_priv,
 		    uint32_t read_domains,
 		    uint32_t write_domain);
+static int i915_gem_object_get_page_list(struct drm_gem_object *obj);
+static void i915_gem_object_free_page_list(struct drm_gem_object *obj);
+static int i915_gem_object_wait_rendering(struct drm_gem_object *obj);
 
 static void
 i915_gem_clflush_object(struct drm_gem_object *obj);
@@ -128,6 +131,7 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 {
 	struct drm_i915_gem_pread *args = data;
 	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
 	ssize_t read;
 	loff_t offset;
 	int ret;
@@ -135,15 +139,52 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
 		return -EINVAL;
+	obj_priv = obj->driver_private;
+
+	/* Bounds check source.
+	 *
+	 * XXX: This could use review for overflow issues...
+	 */
+	if (args->offset > obj->size || args->size > obj->size ||
+	    args->offset + args->size > obj->size) {
+		drm_gem_object_unreference(obj);
+		return -EFAULT;
+	}
 
 	mutex_lock(&dev->struct_mutex);
-	ret = i915_gem_set_domain(obj, file_priv,
-				  I915_GEM_DOMAIN_CPU, 0);
-	if (ret) {
-		drm_gem_object_unreference(obj);
-		mutex_unlock(&dev->struct_mutex);
-		return ret;
+
+	/* Do a partial equivalent of i915_gem_set_domain(CPU, 0), as
+	 * we don't want to clflush whole objects to read a portion of them.
+	 *
+	 * The side effect of doing this is that repeated preads of the same
+	 * contents would take extra clflush overhead, since we don't track
+	 * flushedness on a page basis.
+	 */
+	if (obj->write_domain & ~(I915_GEM_DOMAIN_CPU|I915_GEM_DOMAIN_GTT)) {
+		ret = i915_gem_object_wait_rendering(obj);
+		if (ret) {
+			drm_gem_object_unreference(obj);
+			mutex_unlock(&dev->struct_mutex);
+			return ret;
+		}
 	}
+	if ((obj->read_domains & I915_GEM_DOMAIN_CPU) == 0) {
+		int got_page_list = 0;
+		int first_page = args->offset / PAGE_SIZE;
+		int last_page = (args->offset + args->size) / PAGE_SIZE;
+
+		if (obj_priv->page_list == NULL) {
+			i915_gem_object_get_page_list(obj);
+			got_page_list = 1;
+		}
+
+		drm_ttm_cache_flush(&obj_priv->page_list[first_page],
+				    last_page - first_page + 1);
+
+		if (got_page_list)
+			i915_gem_object_free_page_list(obj);
+	}
+
 	offset = args->offset;
 
 	read = vfs_read(obj->filp, (char __user *)(uintptr_t)args->data_ptr,
@@ -329,8 +370,10 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	 * XXX: This could use review for overflow issues...
 	 */
 	if (args->offset > obj->size || args->size > obj->size || 
-	    args->offset + args->size > obj->size)
+	    args->offset + args->size > obj->size) {
+		drm_gem_object_unreference(obj);
 		return -EFAULT;
+	}
 
 	/* We can only do the GTT pwrite on untiled buffers, as otherwise
 	 * it would end up going through the fenced access, and we'll get
