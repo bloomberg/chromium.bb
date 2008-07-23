@@ -165,18 +165,12 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 
 #include "drm_compat.h"
 
-/**
- * Writes data to the object referenced by handle.
- *
- * On error, the contents of the buffer that were to be modified are undefined.
- */
-int
-i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
-		      struct drm_file *file_priv)
+static int
+i915_gem_gtt_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
+		    struct drm_i915_gem_pwrite *args,
+		    struct drm_file *file_priv)
 {
-	struct drm_i915_gem_pwrite *args = data;
-	struct drm_gem_object *obj;
-	struct drm_i915_gem_object *obj_priv;
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	ssize_t remain;
 	loff_t offset;
 	char __user *user_data;
@@ -185,18 +179,6 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	int ret = 0;
 	unsigned long pfn;
 	unsigned long unwritten;
-
-	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
-		return -EINVAL;
-
-	/** Bounds check destination.
-	 *
-	 * XXX: This could use review for overflow issues...
-	 */
-	if (args->offset > obj->size || args->size > obj->size || 
-	    args->offset + args->size > obj->size)
-		return -EFAULT;
 
 	user_data = (char __user *) (uintptr_t) args->data_ptr;
 	remain = args->size;
@@ -207,7 +189,6 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	mutex_lock(&dev->struct_mutex);
 	ret = i915_gem_object_pin(obj, 0);
 	if (ret) {
-		drm_gem_object_unreference(obj);
 		mutex_unlock(&dev->struct_mutex);
 		return ret;
 	}
@@ -283,13 +264,92 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 
 fail:
 	i915_gem_object_unpin (obj);
-	drm_gem_object_unreference(obj);
 	mutex_unlock(&dev->struct_mutex);
+
+	return ret;
+}
+
+int
+i915_gem_shmem_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
+		      struct drm_i915_gem_pwrite *args,
+		      struct drm_file *file_priv)
+{
+	int ret;
+	loff_t offset;
+	ssize_t written;
+
+	mutex_lock(&dev->struct_mutex);
+
+	ret = i915_gem_set_domain(obj, file_priv,
+				  I915_GEM_DOMAIN_CPU, I915_GEM_DOMAIN_CPU);
+	if (ret) {
+		mutex_unlock(&dev->struct_mutex);
+		return ret;
+	}
+
+	offset = args->offset;
+
+	written = vfs_write(obj->filp,
+			    (char __user *)(uintptr_t) args->data_ptr,
+			    args->size, &offset);
+	if (written != args->size) {
+		mutex_unlock(&dev->struct_mutex);
+		if (written < 0)
+			return written;
+		else
+			return -EINVAL;
+	}
+
+	mutex_unlock(&dev->struct_mutex);
+
+	return 0;
+}
+
+/**
+ * Writes data to the object referenced by handle.
+ *
+ * On error, the contents of the buffer that were to be modified are undefined.
+ */
+int
+i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+		      struct drm_file *file_priv)
+{
+	struct drm_i915_gem_pwrite *args = data;
+	struct drm_gem_object *obj;
+	struct drm_i915_gem_object *obj_priv;
+	int ret = 0;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+	obj_priv = obj->driver_private;
+
+	/** Bounds check destination.
+	 *
+	 * XXX: This could use review for overflow issues...
+	 */
+	if (args->offset > obj->size || args->size > obj->size || 
+	    args->offset + args->size > obj->size)
+		return -EFAULT;
+
+	/* We can only do the GTT pwrite on untiled buffers, as otherwise
+	 * it would end up going through the fenced access, and we'll get
+	 * different detiling behavior between reading and writing.
+	 * pread/pwrite currently are reading and writing from the CPU
+	 * perspective, requiring manual detiling by the client.
+	 */
+	if (obj_priv->tiling_mode == I915_TILING_NONE)
+		ret = i915_gem_gtt_pwrite(dev, obj, args, file_priv);
+	else
+		ret = i915_gem_shmem_pwrite(dev, obj, args, file_priv);
 
 #if WATCH_PWRITE
 	if (ret)
 		DRM_INFO("pwrite failed %d\n", ret);
 #endif
+
+	drm_gem_object_unreference(obj);
+
 	return ret;
 }
 
