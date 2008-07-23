@@ -169,20 +169,16 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 		}
 	}
 	if ((obj->read_domains & I915_GEM_DOMAIN_CPU) == 0) {
-		int got_page_list = 0;
 		int first_page = args->offset / PAGE_SIZE;
-		int last_page = (args->offset + args->size) / PAGE_SIZE;
+		int last_page = (args->offset + args->size - 1) / PAGE_SIZE;
 
-		if (obj_priv->page_list == NULL) {
-			i915_gem_object_get_page_list(obj);
-			got_page_list = 1;
-		}
+		/* If we don't have the page list, the pages are unpinned
+		 * and swappable, and thus should already be in the CPU domain.
+		 */
+		BUG_ON(obj_priv->page_list == NULL);
 
 		drm_ttm_cache_flush(&obj_priv->page_list[first_page],
 				    last_page - first_page + 1);
-
-		if (got_page_list)
-			i915_gem_object_free_page_list(obj);
 	}
 
 	offset = args->offset;
