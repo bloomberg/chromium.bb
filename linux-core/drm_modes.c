@@ -398,7 +398,7 @@ void drm_mode_prune_invalid(struct drm_device *dev,
 				drm_mode_debug_printmodeline(mode);
 				DRM_DEBUG("Not using %s mode %d\n", mode->name, mode->status);
 			}
-			kfree(mode);
+			drm_mode_destroy(dev, mode);
 		}
 	}
 }
@@ -556,7 +556,7 @@ void drm_mode_connector_list_update(struct drm_connector *connector)
 				/* if equal delete the probed mode */
 				mode->status = pmode->status;
 				list_del(&pmode->head);
-				kfree(pmode);
+				drm_mode_destroy(connector->dev, pmode);
 				break;
 			}
 		}
