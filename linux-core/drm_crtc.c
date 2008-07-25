@@ -1445,7 +1445,7 @@ int drm_mode_cursor_ioctl(struct drm_device *dev,
 	if (req->flags & DRM_MODE_CURSOR_BO) {
 		/* Turn of the cursor if handle is 0 */
 		if (crtc->funcs->cursor_set) {
-			ret = crtc->funcs->cursor_set(crtc, req->handle, req->width, req->height);
+			ret = crtc->funcs->cursor_set(crtc, file_priv, req->handle, req->width, req->height);
 		} else {
 			DRM_ERROR("crtc does not support cursor\n");
 			ret = -EFAULT;

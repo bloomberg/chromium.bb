@@ -299,8 +299,8 @@ struct drm_crtc_funcs {
 	void (*restore)(struct drm_crtc *crtc); /* resume? */
 
 	/* cursor controls */
-	int (*cursor_set)(struct drm_crtc *crtc, uint32_t buffer_handle,
-			  uint32_t width, uint32_t height);
+	int (*cursor_set)(struct drm_crtc *crtc, struct drm_file *file_priv,
+			  uint32_t handle, uint32_t width, uint32_t height);
 	int (*cursor_move)(struct drm_crtc *crtc, int x, int y);
 
 	/* Set gamma on the CRTC */
