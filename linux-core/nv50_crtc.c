@@ -127,7 +127,7 @@ static int nv50_crtc_execute_mode(struct nv50_crtc *crtc)
 	OUT_MODE(NV50_CRTC0_SCALE_CENTER_OFFSET + offset, NV50_CRTC_SCALE_CENTER_OFFSET_VAL(0,0));
 
 	/* Maybe move this as well? */
-	crtc->blank(crtc, FALSE);
+	crtc->blank(crtc, false);
 
 	return 0;
 }
