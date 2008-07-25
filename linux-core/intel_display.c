@@ -975,6 +975,7 @@ void intel_crtc_load_lut(struct drm_crtc *crtc)
 }
 
 static int intel_crtc_cursor_set(struct drm_crtc *crtc,
+				 struct drm_file *file_priv,
 				 uint32_t handle,
 				 uint32_t width, uint32_t height)
 {

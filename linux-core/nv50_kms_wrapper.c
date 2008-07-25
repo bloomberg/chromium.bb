@@ -236,8 +236,10 @@ static const struct drm_mode_config_funcs nv50_kms_mode_funcs = {
  * CRTC functions.
  */
 
-static int nv50_kms_crtc_cursor_set(struct drm_crtc *drm_crtc, uint32_t buffer_handle,
-			  uint32_t width, uint32_t height)
+static int nv50_kms_crtc_cursor_set(struct drm_crtc *drm_crtc, 
+				    struct drm_file *file_priv,
+				    uint32_t buffer_handle,
+				    uint32_t width, uint32_t height)
 {
 	struct nv50_crtc *crtc = to_nv50_crtc(drm_crtc);
 	struct nv50_display *display = nv50_get_display(crtc->dev);
