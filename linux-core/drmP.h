@@ -1046,8 +1046,7 @@ struct drm_agp_ttm_backend {
 	int populated;
 };
 #endif
-
-typedef struct ati_pcigart_ttm_backend {
+struct ati_pcigart_ttm_backend {
 	struct drm_ttm_backend backend;
 	int populated;
 	void (*gart_flush_fn)(struct drm_device *dev);
@@ -1057,7 +1056,8 @@ typedef struct ati_pcigart_ttm_backend {
 	int num_pages;
 	int bound;
 	struct drm_device *dev;
-} ati_pcigart_ttm_backend_t;
+};
+extern struct drm_ttm_backend *ati_pcigart_init_ttm(struct drm_device *dev, struct drm_ati_pcigart_info *info, void (*gart_flush_fn)(struct drm_device *dev));
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
@@ -1396,6 +1396,8 @@ extern int drm_sg_free(struct drm_device *dev, void *data,
 			       /* ATI PCIGART support (ati_pcigart.h) */
 extern int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info);
 extern int drm_ati_pcigart_cleanup(struct drm_device *dev, struct drm_ati_pcigart_info *gart_info);
+extern int drm_ati_alloc_pcigart_table(struct drm_device *dev,
+				       struct drm_ati_pcigart_info *gart_info);
 
 extern drm_dma_handle_t *drm_pci_alloc(struct drm_device *dev, size_t size,
 			   size_t align, dma_addr_t maxaddr);

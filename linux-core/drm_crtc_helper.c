@@ -500,7 +500,7 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 	
 	crtc_funcs = set->crtc->helper_private;
        
-	DRM_DEBUG("crtc: %p fb: %p connectors: %p num_connectors: %i (x, y) (%i, %i)\n", set->crtc, set->fb, set->connectors, set->num_connectors, set->x, set->y);
+	DRM_DEBUG("crtc: %p %d fb: %p connectors: %p num_connectors: %i (x, y) (%i, %i)\n", set->crtc, set->crtc->base.id, set->fb, set->connectors, set->num_connectors, set->x, set->y);
 
 	dev = set->crtc->dev;
 

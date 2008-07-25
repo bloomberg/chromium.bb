@@ -457,12 +457,6 @@ typedef struct {
 	unsigned int last_fence;
 } drm_radeon_sarea_t;
 
-/* The only fence class we support */
-#define DRM_RADEON_FENCE_CLASS_ACCEL 0
-/* Fence type that guarantees read-write flush */
-#define DRM_RADEON_FENCE_TYPE_RW 2
-/* cache flushes programmed just before the fence */
-#define DRM_RADEON_FENCE_FLAG_FLUSHED 0x01000000
 
 /* WARNING: If you change any of these defines, make sure to change the
  * defines in the Xserver file (xf86drmRadeon.h)
@@ -502,6 +496,17 @@ typedef struct {
 #define DRM_RADEON_SURF_ALLOC 0x1a
 #define DRM_RADEON_SURF_FREE  0x1b
 
+#define DRM_RADEON_GEM_INFO   0x1c
+#define DRM_RADEON_GEM_CREATE 0x1d
+#define DRM_RADEON_GEM_MMAP   0x1e
+#define DRM_RADEON_GEM_PIN    0x1f
+#define DRM_RADEON_GEM_UNPIN  0x20
+#define DRM_RADEON_GEM_PREAD  0x21
+#define DRM_RADEON_GEM_PWRITE 0x22
+#define DRM_RADEON_GEM_SET_DOMAIN 0x23
+#define DRM_RADEON_GEM_INDIRECT 0x24 // temporary for X server
+
+
 #define DRM_IOCTL_RADEON_CP_INIT    DRM_IOW( DRM_COMMAND_BASE + DRM_RADEON_CP_INIT, drm_radeon_init_t)
 #define DRM_IOCTL_RADEON_CP_START   DRM_IO(  DRM_COMMAND_BASE + DRM_RADEON_CP_START)
 #define DRM_IOCTL_RADEON_CP_STOP    DRM_IOW( DRM_COMMAND_BASE + DRM_RADEON_CP_STOP, drm_radeon_cp_stop_t)
@@ -529,6 +534,18 @@ typedef struct {
 #define DRM_IOCTL_RADEON_SETPARAM   DRM_IOW( DRM_COMMAND_BASE + DRM_RADEON_SETPARAM, drm_radeon_setparam_t)
 #define DRM_IOCTL_RADEON_SURF_ALLOC DRM_IOW( DRM_COMMAND_BASE + DRM_RADEON_SURF_ALLOC, drm_radeon_surface_alloc_t)
 #define DRM_IOCTL_RADEON_SURF_FREE  DRM_IOW( DRM_COMMAND_BASE + DRM_RADEON_SURF_FREE, drm_radeon_surface_free_t)
+
+#define DRM_IOCTL_RADEON_GEM_INFO   DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_INFO, struct drm_radeon_gem_info)
+#define DRM_IOCTL_RADEON_GEM_CREATE   DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_CREATE, struct drm_radeon_gem_create)
+#define DRM_IOCTL_RADEON_GEM_MMAP   DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_MMAP, struct drm_radeon_gem_mmap)
+#define DRM_IOCTL_RADEON_GEM_PIN   DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_PIN, struct drm_radeon_gem_pin)
+#define DRM_IOCTL_RADEON_GEM_UNPIN   DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_UNPIN, struct drm_radeon_gem_unpin)
+#define DRM_IOCTL_RADEON_GEM_PREAD   DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_PREAD, struct drm_radeon_gem_pread)
+#define DRM_IOCTL_RADEON_GEM_PWRITE   DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_PWRITE, struct drm_radeon_gem_pwrite)
+#define DRM_IOCTL_RADEON_GEM_SET_DOMAIN  DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_SET_DOMAIN, struct drm_radeon_gem_set_domain)
+#define DRM_IOCTL_RADEON_GEM_INDIRECT DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_INDIRECT, struct drm_radeon_gem_indirect)
+
+
 
 typedef struct drm_radeon_init {
 	enum {
@@ -755,5 +772,93 @@ typedef struct drm_radeon_surface_free {
 
 #define	DRM_RADEON_VBLANK_CRTC1		1
 #define	DRM_RADEON_VBLANK_CRTC2		2
+
+#define RADEON_GEM_DOMAIN_CPU 0x1
+#define RADEON_GEM_DOMAIN_VRAM 0x2
+#define RADEON_GEM_DOMAIN_2D 0x4
+#define RADEON_GEM_DOMAIN_3D 0x8
+#define RADEON_GEM_DOMAIN_TEXTURE 0x10
+#define RADEON_GEM_DOMAIN_GPU 0x20 // for vertex buffers
+
+/* return to userspace start/size of gtt and vram apertures */
+struct drm_radeon_gem_info {
+	uint64_t gart_start;
+	uint64_t gart_size;
+	uint64_t vram_start;
+	uint64_t vram_size;
+	uint64_t vram_visible;
+};
+
+struct drm_radeon_gem_create {
+	uint64_t size;
+	uint64_t alignment;
+	uint32_t handle;
+	uint32_t initial_domain; // to allow VRAM to be created
+	uint32_t no_backing_store; // for VRAM objects - select whether they need backing store
+	// pretty much front/back/depth don't need it - other things do
+};
+
+struct drm_radeon_gem_mmap {
+	uint32_t handle;
+	uint32_t pad;
+	uint64_t offset;
+	uint64_t size;
+	uint64_t addr_ptr;
+};
+
+struct drm_radeon_gem_set_domain {
+	uint32_t handle;
+	uint32_t read_domains;
+	uint32_t write_domain;
+};
+
+struct drm_radeon_gem_exec_buffer {
+};
+
+struct drm_radeon_gem_pin {
+	uint32_t handle;
+	uint32_t pad;
+	uint64_t alignment;
+	uint64_t offset;
+};
+
+struct drm_radeon_gem_unpin {
+	uint32_t handle;
+	uint32_t pad;
+};
+
+struct drm_radeon_gem_busy {
+	uint32_t handle;
+	uint32_t busy;
+};
+
+struct drm_radeon_gem_pread {
+	/** Handle for the object being read. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset into the object to read from */
+	uint64_t offset;
+	/** Length of data to read */
+	uint64_t size;
+	/** Pointer to write the data into. */
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_radeon_gem_pwrite {
+	/** Handle for the object being written to. */
+	uint32_t handle;
+	uint32_t pad;
+	/** Offset into the object to write to */
+	uint64_t offset;
+	/** Length of data to write */
+	uint64_t size;
+	/** Pointer to read the data from. */
+	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+};
+
+struct drm_radeon_gem_indirect {
+	uint32_t handle;
+	uint32_t used;
+};
 
 #endif

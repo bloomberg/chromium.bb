@@ -781,19 +781,17 @@ EXPORT_SYMBOL(pci_get_bus_and_slot);
 #endif
 
 #if defined(DRM_KMAP_ATOMIC_PROT_PFN)
-#define drm_kmap_get_fixmap_pte(vaddr)					\
-	pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr), vaddr), (vaddr)), (vaddr))
-
 void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 			   pgprot_t protection)
 {
 	enum fixed_addresses idx;
 	unsigned long vaddr;
 	static pte_t *km_pte;
+	int level;
 	static int initialized = 0;
 
 	if (unlikely(!initialized)) {
-		km_pte = drm_kmap_get_fixmap_pte(__fix_to_virt(FIX_KMAP_BEGIN));
+		km_pte = lookup_address(__fix_to_virt(FIX_KMAP_BEGIN), &level);
 		initialized = 1;
 	}
 

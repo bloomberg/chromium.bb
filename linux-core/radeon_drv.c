@@ -37,9 +37,16 @@
 #include "drm_pciids.h"
 
 int radeon_no_wb;
+int radeon_dynclks = 1;
 
 MODULE_PARM_DESC(no_wb, "Disable AGP writeback for scratch registers\n");
 module_param_named(no_wb, radeon_no_wb, int, 0444);
+
+unsigned int radeon_modeset = 0;
+module_param_named(modeset, radeon_modeset, int, 0400);
+
+MODULE_PARM_DESC(dynclks, "Disable/Enable dynamic clocks");
+module_param_named(dynclks, radeon_dynclks, int, 0444);
 
 static int dri_library_name(struct drm_device * dev, char * buf)
 {
@@ -56,11 +63,29 @@ static struct pci_device_id pciidlist[] = {
 	radeon_PCI_IDS
 };
 
+extern struct drm_fence_driver radeon_fence_driver;
+
+static uint32_t radeon_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
+static uint32_t radeon_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
+
+static struct drm_bo_driver radeon_bo_driver = {
+	.mem_type_prio = radeon_mem_prios,
+	.mem_busy_prio = radeon_busy_prios,
+	.num_mem_type_prio = sizeof(radeon_mem_prios)/sizeof(uint32_t),
+	.num_mem_busy_prio = sizeof(radeon_busy_prios)/sizeof(uint32_t),
+	.create_ttm_backend_entry = radeon_create_ttm_backend_entry,
+	.fence_type = radeon_fence_types,
+	.invalidate_caches = radeon_invalidate_caches,
+	.init_mem_type = radeon_init_mem_type,
+	.move = radeon_move,
+	.evict_flags = radeon_evict_flags,
+};
+
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 static struct drm_driver driver = {
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA | DRIVER_SG |
-	    DRIVER_HAVE_IRQ | DRIVER_HAVE_DMA | DRIVER_IRQ_SHARED,
+	    DRIVER_HAVE_IRQ | DRIVER_HAVE_DMA | DRIVER_IRQ_SHARED | DRIVER_GEM,
 	.dev_priv_size = sizeof(drm_radeon_buf_priv_t),
 	.load = radeon_driver_load,
 	.firstopen = radeon_driver_firstopen,
@@ -81,7 +106,11 @@ static struct drm_driver driver = {
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.ioctls = radeon_ioctls,
+	.gem_init_object = radeon_gem_init_object,
+	.gem_free_object = radeon_gem_free_object,
 	.dma_ioctl = radeon_cp_buffers,
+	.master_create = radeon_master_create,
+	.master_destroy = radeon_master_destroy,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,
@@ -101,6 +130,9 @@ static struct drm_driver driver = {
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
 
+	.fence_driver = &radeon_fence_driver,
+	.bo_driver = &radeon_bo_driver,
+
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = DRIVER_DATE,
@@ -117,6 +149,10 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 static int __init radeon_init(void)
 {
 	driver.num_ioctls = radeon_max_ioctl;
+
+	if (radeon_modeset == 1)
+		driver.driver_features |= DRIVER_MODESET;
+
 	return drm_init(&driver, pciidlist);
 }
 

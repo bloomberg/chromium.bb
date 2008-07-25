@@ -680,6 +680,8 @@ extern int drm_bo_pci_offset(struct drm_device *dev,
 			     unsigned long *bus_size);
 extern int drm_mem_reg_is_pci(struct drm_device *dev, struct drm_bo_mem_reg *mem);
 
+extern int drm_bo_add_user_object(struct drm_file *file_priv,
+				  struct drm_buffer_object *bo, int shareable);
 extern void drm_bo_usage_deref_locked(struct drm_buffer_object **bo);
 extern void drm_bo_usage_deref_unlocked(struct drm_buffer_object **bo);
 extern void drm_putback_buffer_objects(struct drm_device *dev);
@@ -718,6 +720,8 @@ extern int drm_bo_do_validate(struct drm_buffer_object *bo,
 			      uint32_t fence_class,
 			      struct drm_bo_info_rep *rep);
 extern int drm_bo_evict_cached(struct drm_buffer_object *bo);
+
+extern void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo);
 /*
  * Buffer object memory move- and map helpers.
  * drm_bo_move.c

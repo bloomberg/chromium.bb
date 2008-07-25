@@ -198,8 +198,10 @@ irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS)
 	stat &= dev_priv->irq_enable_reg;
 
 	/* SW interrupt */
-	if (stat & RADEON_SW_INT_TEST)
+	if (stat & RADEON_SW_INT_TEST) {
 		DRM_WAKEUP(&dev_priv->swi_queue);
+		radeon_fence_handler(dev);
+	}
 
 	/* VBLANK interrupt */
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690) {
@@ -216,14 +218,13 @@ irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_HANDLED;
 }
 
-static int radeon_emit_irq(struct drm_device * dev)
+int radeon_emit_irq(struct drm_device * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	unsigned int ret;
 	RING_LOCALS;
 
-	atomic_inc(&dev_priv->swi_emitted);
-	ret = atomic_read(&dev_priv->swi_emitted);
+	ret = radeon_update_breadcrumb(dev);
 
 	BEGIN_RING(4);
 	OUT_RING_REG(RADEON_LAST_SWI_REG, ret);
@@ -240,13 +241,13 @@ static int radeon_wait_irq(struct drm_device * dev, int swi_nr)
 	    (drm_radeon_private_t *) dev->dev_private;
 	int ret = 0;
 
-	if (RADEON_READ(RADEON_LAST_SWI_REG) >= swi_nr)
+	if (READ_BREADCRUMB(dev_priv) >= swi_nr)
 		return 0;
 
 	dev_priv->stats.boxes |= RADEON_BOX_WAIT_IDLE;
 
 	DRM_WAIT_ON(ret, dev_priv->swi_queue, 3 * DRM_HZ,
-		    RADEON_READ(RADEON_LAST_SWI_REG) >= swi_nr);
+		    READ_BREADCRUMB(dev_priv) >= swi_nr);
 
 	return ret;
 }
@@ -349,7 +350,6 @@ int radeon_driver_irq_postinstall(struct drm_device * dev)
 	    (drm_radeon_private_t *) dev->dev_private;
 	int ret;
 
-	atomic_set(&dev_priv->swi_emitted, 0);
 	DRM_INIT_WAITQUEUE(&dev_priv->swi_queue);
 
 	ret = drm_vblank_init(dev, 2);

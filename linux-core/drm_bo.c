@@ -51,7 +51,6 @@
 
 static void drm_bo_destroy_locked(struct drm_buffer_object *bo);
 static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo);
-static void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo);
 static void drm_bo_unmap_virtual(struct drm_buffer_object *bo);
 
 static inline uint64_t drm_bo_type_flags(unsigned type)
@@ -458,6 +457,7 @@ static void drm_bo_destroy_locked(struct drm_buffer_object *bo)
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 
+	DRM_DEBUG("freeing %p\n", bo);
 	if (list_empty(&bo->lru) && bo->mem.mm_node == NULL &&
 	    list_empty(&bo->pinned_lru) && bo->pinned_node == NULL &&
 	    list_empty(&bo->ddestroy) && atomic_read(&bo->usage) == 0) {
@@ -1838,8 +1838,8 @@ out_err_unlocked:
 EXPORT_SYMBOL(drm_buffer_object_create);
 
 
-static int drm_bo_add_user_object(struct drm_file *file_priv,
-				  struct drm_buffer_object *bo, int shareable)
+int drm_bo_add_user_object(struct drm_file *file_priv,
+			   struct drm_buffer_object *bo, int shareable)
 {
 	struct drm_device *dev = file_priv->minor->dev;
 	int ret;
@@ -1858,6 +1858,7 @@ out:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_add_user_object);
 
 int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
@@ -2705,7 +2706,7 @@ void drm_bo_unmap_virtual(struct drm_buffer_object *bo)
  * Remove any associated vm mapping on the drm device node that
  * would have been created for a drm_bo_type_device buffer
  */
-static void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
+void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
 {
 	struct drm_map_list *list;
 	drm_local_map_t *map;
@@ -2734,6 +2735,7 @@ static void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
 	list->user_token = 0ULL;
 	drm_bo_usage_deref_locked(&bo);
 }
+EXPORT_SYMBOL(drm_bo_takedown_vm_locked);
 
 /**
  * drm_bo_setup_vm_locked:

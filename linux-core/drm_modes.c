@@ -546,6 +546,7 @@ void drm_mode_connector_list_update(struct drm_connector *connector)
 	struct drm_display_mode *mode;
 	struct drm_display_mode *pmode, *pt;
 	int found_it;
+
 	list_for_each_entry_safe(pmode, pt, &connector->probed_modes,
 				 head) {
 		found_it = 0;

@@ -54,6 +54,8 @@ struct drm_encoder_helper_funcs {
 	void (*mode_set)(struct drm_encoder *encoder,
 			 struct drm_display_mode *mode,
 			 struct drm_display_mode *adjusted_mode);
+	/* detect for DAC style encoders */
+	enum drm_connector_status (*detect)(struct drm_encoder *encoder, struct drm_connector *connector);
 };
 
 struct drm_connector_helper_funcs {

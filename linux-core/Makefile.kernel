@@ -13,9 +13,9 @@ drm-objs    := drm_auth.o drm_bufs.o drm_context.o drm_dma.o drm_drawable.o \
 		drm_sysfs.o drm_pci.o drm_agpsupport.o drm_scatter.o \
 		drm_memory_debug.o ati_pcigart.o drm_sman.o \
 		drm_hashtab.o drm_memrange.o drm_object.o drm_compat.o \
-	        drm_fence.o drm_ttm.o drm_bo.o drm_bo_move.o drm_crtc.o \
-		drm_edid.o drm_modes.o drm_bo_lock.o drm_regman.o \
-		drm_vm_nopage_compat.o drm_crtc_helper.o drm_gem.o
+	        drm_fence.o drm_ttm.o drm_bo.o drm_bo_move.o drm_bo_lock.o \
+		drm_crtc.o drm_edid.o drm_modes.o drm_crtc_helper.o \
+		drm_regman.o drm_vm_nopage_compat.o drm_gem.o
 tdfx-objs   := tdfx_drv.o
 r128-objs   := r128_drv.o r128_cce.o r128_state.o r128_irq.o
 mga-objs    := mga_drv.o mga_dma.o mga_state.o mga_warp.o mga_irq.o
@@ -40,15 +40,9 @@ nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
 		nv50_crtc.o nv50_cursor.o nv50_lut.o nv50_fb.o nv50_output.o nv50_sor.o nv50_dac.o nv50_connector.o nv50_i2c.o nv50_display.o \
 		nv50_kms_wrapper.o \
 		nv50_fbcon.o
-radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o
-radeon_ms-objs := radeon_ms_drv.o radeon_ms_drm.o radeon_ms_family.o \
-		radeon_ms_state.o radeon_ms_bo.o radeon_ms_irq.o \
-		radeon_ms_bus.o radeon_ms_fence.o \
-		radeon_ms_cp.o radeon_ms_cp_mc.o radeon_ms_i2c.o \
-		radeon_ms_output.o radeon_ms_crtc.o radeon_ms_fb.o \
-		radeon_ms_exec.o radeon_ms_gpu.o radeon_ms_dac.o \
-		radeon_ms_properties.o radeon_ms_rom.o radeon_ms_combios.o \
-		amd_legacy_cbuffer.o
+radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o radeon_gem.o \
+	 radeon_buffer.o radeon_fence.o atom.o radeon_display.o radeon_atombios.o radeon_i2c.o radeon_connectors.o \
+	atombios_crtc.o radeon_encoders.o radeon_fb.o radeon_combios.o
 sis-objs    := sis_drv.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o
 savage-objs := savage_drv.o savage_bci.o savage_state.o

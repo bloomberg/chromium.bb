@@ -41,14 +41,14 @@
 #include "drmP.h"
 #include "drm.h"
 #include "drm_crtc.h"
-#include "intel_drv.h"
-#include "i915_drm.h"
-#include "i915_drv.h"
+#include "drm_crtc_helper.h"
+#include "radeon_drm.h"
+#include "radeon_drv.h"
 
-struct intelfb_par {
+struct radeonfb_par {
 	struct drm_device *dev;
 	struct drm_display_mode *our_mode;
-	struct intel_framebuffer *intel_fb;
+	struct radeon_framebuffer *radeon_fb;
 	int crtc_count;
 	/* crtc currently bound to this */
 	uint32_t crtc_ids[2];
@@ -65,18 +65,18 @@ var_to_refresh(const struct fb_var_screeninfo *var)
 	return (1000000000 / var->pixclock * 1000 + 500) / xtot / ytot;
 }*/
 
-static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+static int radeonfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			unsigned blue, unsigned transp,
 			struct fb_info *info)
 {
-	struct intelfb_par *par = info->par;
+	struct radeonfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
 	struct drm_crtc *crtc;
 	int i;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
-		struct drm_mode_set *modeset = &intel_crtc->mode_set;
+		struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+		struct drm_mode_set *modeset = &radeon_crtc->mode_set;
 		struct drm_framebuffer *fb = modeset->fb;
 
 		for (i = 0; i < par->crtc_count; i++)
@@ -91,7 +91,7 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			return 1;
 
 		if (fb->depth == 8) {
-			intel_crtc_fb_gamma_set(crtc, red, green, blue, regno);
+			radeon_crtc_fb_gamma_set(crtc, red, green, blue, regno);
 			return 0;
 		}
 
@@ -119,12 +119,12 @@ static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 	return 0;
 }
 
-static int intelfb_check_var(struct fb_var_screeninfo *var,
+static int radeonfb_check_var(struct fb_var_screeninfo *var,
 			struct fb_info *info)
 {
-	struct intelfb_par *par = info->par;
-	struct intel_framebuffer *intel_fb = par->intel_fb;
-	struct drm_framebuffer *fb = &intel_fb->base;
+	struct radeonfb_par *par = info->par;
+	struct radeon_framebuffer *radeon_fb = par->radeon_fb;
+	struct drm_framebuffer *fb = &radeon_fb->base;
 	int depth;
 
 	if (var->pixclock == -1 || !var->pixclock)
@@ -209,9 +209,9 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
 
 /* this will let fbcon do the mode init */
 /* FIXME: take mode config lock? */
-static int intelfb_set_par(struct fb_info *info)
+static int radeonfb_set_par(struct fb_info *info)
 {
-	struct intelfb_par *par = info->par;
+	struct radeonfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
 	struct fb_var_screeninfo *var = &info->var;
 	int i;
@@ -222,8 +222,8 @@ static int intelfb_set_par(struct fb_info *info)
 
 		DRM_ERROR("PIXEL CLCOK SET\n");
 #if 0
-		struct intel_framebuffer *intel_fb = par->intel_fb;
-		struct drm_framebuffer *fb = &intel_fb->base;
+		struct radeon_framebuffer *radeon_fb = par->radeon_fb;
+		struct drm_framebuffer *fb = &radeon_fb->base;
 		struct drm_display_mode *drm_mode, *search_mode;
 		struct drm_connector *connector = NULL;
 		struct drm_device *dev = par->dev;
@@ -322,7 +322,7 @@ static int intelfb_set_par(struct fb_info *info)
 		int ret;
 
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-			struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
+			struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 
 			for (i = 0; i < par->crtc_count; i++)
 				if (crtc->base.id == par->crtc_ids[i])
@@ -331,8 +331,8 @@ static int intelfb_set_par(struct fb_info *info)
 			if (i == par->crtc_count)
 				continue;
 
-			if (crtc->fb == intel_crtc->mode_set.fb) {
-				ret = crtc->funcs->set_config(&intel_crtc->mode_set);
+			if (crtc->fb == radeon_crtc->mode_set.fb) {
+				ret = crtc->funcs->set_config(&radeon_crtc->mode_set);
 				if (ret)
 					return ret;
 			}
@@ -342,10 +342,10 @@ static int intelfb_set_par(struct fb_info *info)
 }
 
 #if 0
-static void intelfb_copyarea(struct fb_info *info,
+static void radeonfb_copyarea(struct fb_info *info,
 			const struct fb_copyarea *region)
 {
-	struct intelfb_par *par = info->par;
+	struct radeonfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 src_x1, src_y1, dst_x1, dst_y1, dst_x2, dst_y2, offset;
@@ -388,9 +388,9 @@ static void intelfb_copyarea(struct fb_info *info,
 #define ROUND_UP_TO(x, y)	(((x) + (y) - 1) / (y) * (y))
 #define ROUND_DOWN_TO(x, y)	((x) / (y) * (y))
 
-void intelfb_imageblit(struct fb_info *info, const struct fb_image *image)
+void radeonfb_imageblit(struct fb_info *info, const struct fb_image *image)
 {
-	struct intelfb_par *par = info->par;
+	struct radeonfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	u32 cmd, rop_pitch_depth, tmp;
@@ -486,14 +486,14 @@ void intelfb_imageblit(struct fb_info *info, const struct fb_image *image)
 	ADVANCE_LP_RING();
 }
 #endif
-static int intelfb_pan_display(struct fb_var_screeninfo *var,
+static int radeonfb_pan_display(struct fb_var_screeninfo *var,
 				struct fb_info *info)
 {
-	struct intelfb_par *par = info->par;
+	struct radeonfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
 	struct drm_mode_set *modeset;
 	struct drm_crtc *crtc;
-	struct intel_crtc *intel_crtc;
+	struct radeon_crtc *radeon_crtc;
 	int ret = 0;
 	int i;
 
@@ -506,8 +506,8 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 		if (i == par->crtc_count)
 			continue;
 
-		intel_crtc = to_intel_crtc(crtc);
-		modeset = &intel_crtc->mode_set;
+		radeon_crtc = to_radeon_crtc(crtc);
+		modeset = &radeon_crtc->mode_set;
 
 		modeset->x = var->xoffset;
 		modeset->y = var->yoffset;
@@ -525,9 +525,9 @@ static int intelfb_pan_display(struct fb_var_screeninfo *var,
 	return ret;
 }
 
-static void intelfb_on(struct fb_info *info)
+static void radeonfb_on(struct fb_info *info)
 {
-	struct intelfb_par *par = info->par;
+	struct radeonfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
 	struct drm_crtc *crtc;
 	struct drm_encoder *encoder;
@@ -557,9 +557,9 @@ static void intelfb_on(struct fb_info *info)
 	}
 }
 
-static void intelfb_off(struct fb_info *info, int dpms_mode)
+static void radeonfb_off(struct fb_info *info, int dpms_mode)
 {
-	struct intelfb_par *par = info->par;
+	struct radeonfb_par *par = info->par;
 	struct drm_device *dev = par->dev;
 	struct drm_crtc *crtc;
 	struct drm_encoder *encoder;
@@ -589,43 +589,43 @@ static void intelfb_off(struct fb_info *info, int dpms_mode)
 	}
 }
 
-int intelfb_blank(int blank, struct fb_info *info)
+int radeonfb_blank(int blank, struct fb_info *info)
 {
 	switch (blank) {
 	case FB_BLANK_UNBLANK:
-		intelfb_on(info);
+		radeonfb_on(info);
 		break;
 	case FB_BLANK_NORMAL:
-		intelfb_off(info, DRM_MODE_DPMS_STANDBY);
+		radeonfb_off(info, DRM_MODE_DPMS_STANDBY);
 		break;
 	case FB_BLANK_HSYNC_SUSPEND:
-		intelfb_off(info, DRM_MODE_DPMS_STANDBY);
+		radeonfb_off(info, DRM_MODE_DPMS_STANDBY);
 		break;
 	case FB_BLANK_VSYNC_SUSPEND:
-		intelfb_off(info, DRM_MODE_DPMS_SUSPEND);
+		radeonfb_off(info, DRM_MODE_DPMS_SUSPEND);
 		break;
 	case FB_BLANK_POWERDOWN:
-		intelfb_off(info, DRM_MODE_DPMS_OFF);
+		radeonfb_off(info, DRM_MODE_DPMS_OFF);
 		break;
 	}
 	return 0;
 }
 
-static struct fb_ops intelfb_ops = {
+static struct fb_ops radeonfb_ops = {
 	.owner = THIS_MODULE,
-	//.fb_open = intelfb_open,
-	//.fb_read = intelfb_read,
-	//.fb_write = intelfb_write,
-	//.fb_release = intelfb_release,
-	//.fb_ioctl = intelfb_ioctl,
-	.fb_check_var = intelfb_check_var,
-	.fb_set_par = intelfb_set_par,
-	.fb_setcolreg = intelfb_setcolreg,
+	//.fb_open = radeonfb_open,
+	//.fb_read = radeonfb_read,
+	//.fb_write = radeonfb_write,
+	//.fb_release = radeonfb_release,
+	//.fb_ioctl = radeonfb_ioctl,
+	.fb_check_var = radeonfb_check_var,
+	.fb_set_par = radeonfb_set_par,
+	.fb_setcolreg = radeonfb_setcolreg,
 	.fb_fillrect = cfb_fillrect,
-	.fb_copyarea = cfb_copyarea, //intelfb_copyarea,
-	.fb_imageblit = cfb_imageblit, //intelfb_imageblit,
-	.fb_pan_display = intelfb_pan_display,
-	.fb_blank = intelfb_blank,
+	.fb_copyarea = cfb_copyarea, //radeonfb_copyarea,
+	.fb_imageblit = cfb_imageblit, //radeonfb_imageblit,
+	.fb_pan_display = radeonfb_pan_display,
+	.fb_blank = radeonfb_blank,
 };
 
 /**
@@ -635,7 +635,7 @@ static struct fb_ops intelfb_ops = {
  * caller should hold the mode config lock.
  *
  */
-int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
+int radeonfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct fb_info *info;
 	struct drm_framebuffer *fb;
@@ -666,11 +666,11 @@ int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc)
 
 	return 0;
 }
-EXPORT_SYMBOL(intelfb_resize);
+EXPORT_SYMBOL(radeonfb_resize);
 
 static struct drm_mode_set panic_mode;
 
-int intelfb_panic(struct notifier_block *n, unsigned long ununsed,
+int radeonfb_panic(struct notifier_block *n, unsigned long ununsed,
 		  void *panic_str)
 {
 	DRM_ERROR("panic occurred, switching back to text console\n");
@@ -678,23 +678,42 @@ int intelfb_panic(struct notifier_block *n, unsigned long ununsed,
 
 	return 0;
 }
-EXPORT_SYMBOL(intelfb_panic);
+EXPORT_SYMBOL(radeonfb_panic);
  
 static struct notifier_block paniced = {
-	.notifier_call = intelfb_panic,
+	.notifier_call = radeonfb_panic,
 };
 
-int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height, 
+static int radeon_align_pitch(struct drm_device *dev, int width, int bpp)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	int aligned = width;
+	int align_large = (radeon_is_avivo(dev_priv));
+	int pitch_mask = 0;
+
+	switch(bpp / 8) {
+	case 1: pitch_mask = align_large ? 255 : 127; break;
+	case 2: pitch_mask = align_large ? 127 : 31; break;
+	case 3: 
+	case 4: pitch_mask = align_large ? 63 : 15; break;
+	}
+
+	aligned += pitch_mask;
+	aligned &= ~pitch_mask;
+	return aligned;
+}
+
+int radeonfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height, 
 		   uint32_t surface_width, uint32_t surface_height,
-		   struct intel_framebuffer **intel_fb_p)
+		   struct radeon_framebuffer **radeon_fb_p)
 {
 	struct fb_info *info;
-	struct intelfb_par *par;
+	struct radeonfb_par *par;
 	struct drm_framebuffer *fb;
-	struct intel_framebuffer *intel_fb;
+	struct radeon_framebuffer *radeon_fb;
 	struct drm_mode_fb_cmd mode_cmd;
 	struct drm_gem_object *fbo = NULL;
-	struct drm_i915_gem_object *obj_priv;
+	struct drm_radeon_gem_object *obj_priv;
 	struct device *device = &dev->pdev->dev; 
 	int size, aligned_size, ret;
 
@@ -702,12 +721,14 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	mode_cmd.height = surface_height;/* crtc->desired_mode->vdisplay; */
 	
 	mode_cmd.bpp = 32;
-	mode_cmd.pitch = mode_cmd.width * ((mode_cmd.bpp + 1) / 8);
+	/* need to align pitch with crtc limits */
+	mode_cmd.pitch = radeon_align_pitch(dev, mode_cmd.width, mode_cmd.bpp) * ((mode_cmd.bpp + 1) / 8);
 	mode_cmd.depth = 24;
 
 	size = mode_cmd.pitch * mode_cmd.height;
 	aligned_size = ALIGN(size, PAGE_SIZE);
-	fbo = drm_gem_object_alloc(dev, aligned_size);
+
+	fbo = radeon_gem_object_alloc(dev, aligned_size, 1, RADEON_GEM_DOMAIN_VRAM);
 	if (!fbo) {
 		printk(KERN_ERR "failed to allocate framebuffer\n");
 		ret = -ENOMEM;
@@ -715,14 +736,15 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	}
 	obj_priv = fbo->driver_private;
 
-	mutex_lock(&dev->struct_mutex);
-	ret = i915_gem_object_pin(fbo, PAGE_SIZE);
+	ret = radeon_gem_object_pin(fbo, PAGE_SIZE);
 	if (ret) {
 		DRM_ERROR("failed to pin fb: %d\n", ret);
+		mutex_lock(&dev->struct_mutex);
 		goto out_unref;
 	}
 
-	fb = intel_user_framebuffer_create(dev, NULL, &mode_cmd);
+	mutex_lock(&dev->struct_mutex);
+	fb = radeon_user_framebuffer_create(dev, NULL, &mode_cmd);
 	if (!fb) {
 		DRM_ERROR("failed to allocate fb.\n");
 		ret = -ENOMEM;
@@ -731,12 +753,12 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	list_add(&fb->filp_head, &dev->mode_config.fb_kernel_list);
 
-	intel_fb = to_intel_framebuffer(fb);
-	*intel_fb_p = intel_fb;
+	radeon_fb = to_radeon_framebuffer(fb);
+	*radeon_fb_p = radeon_fb;
 
-	intel_fb->obj = fbo;
+	radeon_fb->obj = fbo;
 
-	info = framebuffer_alloc(sizeof(struct intelfb_par), device);
+	info = framebuffer_alloc(sizeof(struct radeonfb_par), device);
 	if (!info) {
 		ret = -ENOMEM;
 		goto out_unref;
@@ -744,7 +766,7 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	par = info->par;
 
-	strcpy(info->fix.id, "inteldrmfb");
+	strcpy(info->fix.id, "radeondrmfb");
 	info->fix.type = FB_TYPE_PACKED_PIXELS;
 	info->fix.visual = FB_VISUAL_TRUECOLOR;
 	info->fix.type_aux = 0;
@@ -756,16 +778,17 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	info->flags = FBINFO_DEFAULT;
 
-	info->fbops = &intelfb_ops;
+	info->fbops = &radeonfb_ops;
 
 	info->fix.line_length = fb->pitch;
-	info->fix.smem_start = dev->mode_config.fb_base + obj_priv->gtt_offset;
+	info->fix.smem_start = dev->mode_config.fb_base + obj_priv->bo->offset;
 	info->fix.smem_len = size;
 
 	info->flags = FBINFO_DEFAULT;
 
- 	info->screen_base = ioremap_wc(dev->agp->base + obj_priv->gtt_offset,
-				       size);
+	ret = drm_bo_kmap(obj_priv->bo, 0, PAGE_ALIGN(size) >> PAGE_SHIFT,
+			  &radeon_fb->kmap_obj);
+	info->screen_base = radeon_fb->kmap_obj.virtual;
 	if (!info->screen_base) {
 		ret = -ENOSPC;
 		goto out_unref;
@@ -787,13 +810,8 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	info->var.xres = fb_width;
 	info->var.yres = fb_height;
 
- 	if (IS_I9XX(dev)) {
- 		info->fix.mmio_start = pci_resource_start(dev->pdev, 0);
- 		info->fix.mmio_len = pci_resource_len(dev->pdev, 0);
- 	} else {
- 		info->fix.mmio_start = pci_resource_start(dev->pdev, 1);
- 		info->fix.mmio_len = pci_resource_len(dev->pdev, 1);
- 	}
+	info->fix.mmio_start = pci_resource_start(dev->pdev, 2);
+	info->fix.mmio_len = pci_resource_len(dev->pdev, 2);
 
 	info->pixmap.size = 64*1024;
 	info->pixmap.buf_align = 8;
@@ -859,12 +877,12 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	fb->fbdev = info;
 
-	par->intel_fb = intel_fb;
+	par->radeon_fb = radeon_fb;
 	par->dev = dev;
 
 	/* To allow resizeing without swapping buffers */
-	printk("allocated %dx%d fb: 0x%08x, bo %p\n", intel_fb->base.width,
-	       intel_fb->base.height, obj_priv->gtt_offset, fbo);
+	printk("allocated %p %dx%d fb: 0x%08x, bo %p\n", dev, radeon_fb->base.width,
+	       radeon_fb->base.height, obj_priv->bo->offset, fbo);
 
 	mutex_unlock(&dev->struct_mutex);
 	return 0;
@@ -876,14 +894,14 @@ out:
 	return ret;
 }
 
-static int intelfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *crtc)
+static int radeonfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *crtc)
 {
-	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
-	struct intel_framebuffer *intel_fb;
+	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+	struct radeon_framebuffer *radeon_fb;
 	struct drm_framebuffer *fb;
 	struct drm_connector *connector;
 	struct fb_info *info;
-	struct intelfb_par *par;
+	struct radeonfb_par *par;
 	struct drm_mode_set *modeset;
 	unsigned int width, height;
 	int new_fb = 0;
@@ -899,35 +917,35 @@ static int intelfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *
 	height = crtc->desired_mode->vdisplay;
 
 	/* is there an fb bound to this crtc already */
-	if (!intel_crtc->mode_set.fb) {
-		ret = intelfb_create(dev, width, height, width, height, &intel_fb);
+	if (!radeon_crtc->mode_set.fb) {
+		ret = radeonfb_create(dev, width, height, width, height, &radeon_fb);
 		if (ret)
 			return -EINVAL;
 		new_fb = 1;
 	} else {
-		fb = intel_crtc->mode_set.fb;
-		intel_fb = to_intel_framebuffer(fb);
-		if ((intel_fb->base.width < width) || (intel_fb->base.height < height))
+		fb = radeon_crtc->mode_set.fb;
+		radeon_fb = to_radeon_framebuffer(fb);
+		if ((radeon_fb->base.width < width) || (radeon_fb->base.height < height))
 			return -EINVAL;
 	}
 	
-	info = intel_fb->base.fbdev;
+	info = radeon_fb->base.fbdev;
 	par = info->par;
 
-	modeset = &intel_crtc->mode_set;
-	modeset->fb = &intel_fb->base;
+	modeset = &radeon_crtc->mode_set;
+	modeset->fb = &radeon_fb->base;
 	conn_count = 0;
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		if (connector->encoder)
 			if (connector->encoder->crtc == modeset->crtc) {
 				modeset->connectors[conn_count] = connector;
 				conn_count++;
-				if (conn_count > INTELFB_CONN_LIMIT)
+				if (conn_count > RADEONFB_CONN_LIMIT)
 					BUG();
 			}
 	}
 	
-	for (i = conn_count; i < INTELFB_CONN_LIMIT; i++)
+	for (i = conn_count; i < RADEONFB_CONN_LIMIT; i++)
 		modeset->connectors[i] = NULL;
 
 	par->crtc_ids[0] = crtc->base.id;
@@ -943,7 +961,7 @@ static int intelfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *
 		if (register_framebuffer(info) < 0)
 			return -EINVAL;
 	} else
-		intelfb_set_par(info);
+		radeonfb_set_par(info);
 
 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
 	       info->fix.id);
@@ -956,21 +974,21 @@ static int intelfb_multi_fb_probe_crtc(struct drm_device *dev, struct drm_crtc *
 	return 0;
 }
 
-static int intelfb_multi_fb_probe(struct drm_device *dev)
+static int radeonfb_multi_fb_probe(struct drm_device *dev)
 {
 
 	struct drm_crtc *crtc;
 	int ret = 0;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		ret = intelfb_multi_fb_probe_crtc(dev, crtc);
+		ret = radeonfb_multi_fb_probe_crtc(dev, crtc);
 		if (ret)
 			return ret;
 	}
 	return ret;
 }
 
-static int intelfb_single_fb_probe(struct drm_device *dev)
+static int radeonfb_single_fb_probe(struct drm_device *dev)
 {
 	struct drm_crtc *crtc;
 	struct drm_connector *connector;
@@ -979,9 +997,9 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 	int new_fb = 0;
 	int crtc_count = 0;
 	int ret, i, conn_count = 0;
-	struct intel_framebuffer *intel_fb;
+	struct radeon_framebuffer *radeon_fb;
 	struct fb_info *info;
-	struct intelfb_par *par;
+	struct radeonfb_par *par;
 	struct drm_mode_set *modeset = NULL;
 
 	DRM_DEBUG("\n");
@@ -1015,14 +1033,14 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 	/* do we have an fb already? */
 	if (list_empty(&dev->mode_config.fb_kernel_list)) {
 		/* create an fb if we don't have one */
-		ret = intelfb_create(dev, fb_width, fb_height, surface_width, surface_height, &intel_fb);
+		ret = radeonfb_create(dev, fb_width, fb_height, surface_width, surface_height, &radeon_fb);
 		if (ret)
 			return -EINVAL;
 		new_fb = 1;
 	} else {
 		struct drm_framebuffer *fb;
 		fb = list_first_entry(&dev->mode_config.fb_kernel_list, struct drm_framebuffer, filp_head);
-		intel_fb = to_intel_framebuffer(fb);
+		radeon_fb = to_radeon_framebuffer(fb);
 
 		/* if someone hotplugs something bigger than we have already allocated, we are pwned.
 		   As really we can't resize an fbdev that is in the wild currently due to fbdev
@@ -1034,29 +1052,30 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 		}
 	}
 
-	info = intel_fb->base.fbdev;
+	info = radeon_fb->base.fbdev;
 	par = info->par;
 
 	crtc_count = 0;
 	/* okay we need to setup new connector sets in the crtcs */
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-		struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
-		modeset = &intel_crtc->mode_set;
-		modeset->fb = &intel_fb->base;
+		struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+		modeset = &radeon_crtc->mode_set;
+		modeset->fb = &radeon_fb->base;
 		conn_count = 0;
 		list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 			if (connector->encoder)
 				if(connector->encoder->crtc == modeset->crtc) {
 					modeset->connectors[conn_count] = connector;
 					conn_count++;
-					if (conn_count > INTELFB_CONN_LIMIT)
+					if (conn_count > RADEONFB_CONN_LIMIT)
 						BUG();
 				}
 		}
 
-		for (i = conn_count; i < INTELFB_CONN_LIMIT; i++)
+		for (i = conn_count; i < RADEONFB_CONN_LIMIT; i++)
 			modeset->connectors[i] = NULL;
 
+		
 		par->crtc_ids[crtc_count++] = crtc->base.id;
 
 		modeset->num_connectors = conn_count;
@@ -1070,7 +1089,7 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 		if (register_framebuffer(info) < 0)
 			return -EINVAL;
 	} else
-		intelfb_set_par(info);
+		radeonfb_set_par(info);
 		
 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node,
 	       info->fix.id);
@@ -1083,7 +1102,7 @@ static int intelfb_single_fb_probe(struct drm_device *dev)
 	return 0;
 }
 
-int intelfb_probe(struct drm_device *dev)
+int radeonfb_probe(struct drm_device *dev)
 {
 	int ret;
 
@@ -1107,20 +1126,20 @@ int intelfb_probe(struct drm_device *dev)
 
 	/* mode a first */
 	/* search for an fb */
-	if (i915_fbpercrtc == 1) {
-		ret = intelfb_multi_fb_probe(dev);
-	} else {
-		ret = intelfb_single_fb_probe(dev);
-	}
+	//	if (radeon_fbpercrtc == 1) {
+	//		ret = radeonfb_multi_fb_probe(dev);
+	//	} else {
+	ret = radeonfb_single_fb_probe(dev);
+		//	}
 
 	return ret;
 }
-EXPORT_SYMBOL(intelfb_probe);
+EXPORT_SYMBOL(radeonfb_probe);
 
-int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
+int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 {
 	struct fb_info *info;
-	struct intel_framebuffer *intel_fb = to_intel_framebuffer(fb);
+	struct radeon_framebuffer *radeon_fb = to_radeon_framebuffer(fb);
 
 	if (!fb)
 		return -EINVAL;
@@ -1129,9 +1148,9 @@ int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 	
 	if (info) {
 		unregister_framebuffer(info);
-		iounmap(info->screen_base);
+		drm_bo_kunmap(&radeon_fb->kmap_obj);
 		mutex_lock(&dev->struct_mutex);
-		drm_gem_object_unreference(intel_fb->obj);
+		drm_gem_object_unreference(radeon_fb->obj);
 		mutex_unlock(&dev->struct_mutex);
 		framebuffer_release(info);
 	}
@@ -1140,5 +1159,5 @@ int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 	memset(&panic_mode, 0, sizeof(struct drm_mode_set));
 	return 0;
 }
-EXPORT_SYMBOL(intelfb_remove);
+EXPORT_SYMBOL(radeonfb_remove);
 MODULE_LICENSE("GPL");

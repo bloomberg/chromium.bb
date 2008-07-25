@@ -122,24 +122,31 @@ char *drm_get_subconnector_name(int val)
 	return "unknown";
 }
 
+struct drm_conn_prop_enum_list {
+	int type;
+	char *name;
+	int count;
+};
+
 /*
  * Connector and encoder types.
  */
-static struct drm_prop_enum_list drm_connector_enum_list[] = 
-{	{ DRM_MODE_CONNECTOR_Unknown, "Unknown" },
-	{ DRM_MODE_CONNECTOR_VGA, "VGA" },
-	{ DRM_MODE_CONNECTOR_DVII, "DVI-I" },
-	{ DRM_MODE_CONNECTOR_DVID, "DVI-D" },
-	{ DRM_MODE_CONNECTOR_DVIA, "DVI-A" },
-	{ DRM_MODE_CONNECTOR_Composite, "Composite" },
-	{ DRM_MODE_CONNECTOR_SVIDEO, "SVIDEO" },
-	{ DRM_MODE_CONNECTOR_LVDS, "LVDS" },
-	{ DRM_MODE_CONNECTOR_Component, "Component" },
-	{ DRM_MODE_CONNECTOR_9PinDIN, "9-pin DIN" },
-	{ DRM_MODE_CONNECTOR_DisplayPort, "DisplayPort" },
-	{ DRM_MODE_CONNECTOR_HDMIA, "HDMI Type A" },
-	{ DRM_MODE_CONNECTOR_HDMIB, "HDMI Type B" },
+static struct drm_conn_prop_enum_list drm_connector_enum_list[] = 
+{	{ DRM_MODE_CONNECTOR_Unknown, "Unknown", 0 },
+	{ DRM_MODE_CONNECTOR_VGA, "VGA", 0 },
+	{ DRM_MODE_CONNECTOR_DVII, "DVI-I", 0 },
+	{ DRM_MODE_CONNECTOR_DVID, "DVI-D", 0 },
+	{ DRM_MODE_CONNECTOR_DVIA, "DVI-A", 0 },
+	{ DRM_MODE_CONNECTOR_Composite, "Composite", 0 },
+	{ DRM_MODE_CONNECTOR_SVIDEO, "SVIDEO", 0 },
+	{ DRM_MODE_CONNECTOR_LVDS, "LVDS", 0 },
+	{ DRM_MODE_CONNECTOR_Component, "Component", 0 },
+	{ DRM_MODE_CONNECTOR_9PinDIN, "9-pin DIN", 0 },
+	{ DRM_MODE_CONNECTOR_DisplayPort, "DisplayPort", 0 },
+	{ DRM_MODE_CONNECTOR_HDMIA, "HDMI Type A", 0 },
+	{ DRM_MODE_CONNECTOR_HDMIB, "HDMI Type B", 0 },
 };
+
 static struct drm_prop_enum_list drm_encoder_enum_list[] =
 {	{ DRM_MODE_ENCODER_NONE, "None" },
 	{ DRM_MODE_ENCODER_DAC, "DAC" },
@@ -226,7 +233,7 @@ static void drm_mode_object_put(struct drm_device *dev, struct drm_mode_object *
 	idr_remove(&dev->mode_config.crtc_idr, object->id);
 }
 
-static void *drm_mode_object_find(struct drm_device *dev, uint32_t id, uint32_t type)
+void *drm_mode_object_find(struct drm_device *dev, uint32_t id, uint32_t type)
 {
 	struct drm_mode_object *obj;
 
@@ -236,6 +243,7 @@ static void *drm_mode_object_find(struct drm_device *dev, uint32_t id, uint32_t 
 
 	return obj;
 }
+EXPORT_SYMBOL(drm_mode_object_find);
 
 /**
  * drm_crtc_from_fb - find the CRTC structure associated with an fb
@@ -419,7 +427,7 @@ void drm_connector_init(struct drm_device *dev,
 	connector->funcs = funcs;
 	drm_mode_object_get(dev, &connector->base, DRM_MODE_OBJECT_CONNECTOR);
 	connector->connector_type = connector_type;
-	connector->connector_type_id = 1; /* TODO */
+	connector->connector_type_id = ++drm_connector_enum_list[connector_type].count; /* TODO */
 	INIT_LIST_HEAD(&connector->user_modes);
 	INIT_LIST_HEAD(&connector->probed_modes);
 	INIT_LIST_HEAD(&connector->modes);
@@ -756,6 +764,9 @@ int drm_mode_group_init(struct drm_device *dev, struct drm_mode_group *group)
 	total_objects += dev->mode_config.num_connector;
 	total_objects += dev->mode_config.num_encoder;
 
+	if (total_objects == 0)
+		return -EINVAL;
+
 	group->id_list = kzalloc(total_objects * sizeof(uint32_t), GFP_KERNEL);
 	if (!group->id_list)
 		return -ENOMEM;
@@ -771,9 +782,10 @@ int drm_mode_group_init_legacy_group(struct drm_device *dev, struct drm_mode_gro
 	struct drm_crtc *crtc;
 	struct drm_encoder *encoder;
 	struct drm_connector *connector;
+	int ret;
 
-	if (drm_mode_group_init(dev, group))
-		return -ENOMEM;
+	if ((ret = drm_mode_group_init(dev, group)))
+		return ret;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head)
 		group->id_list[group->num_crtcs++] = crtc->base.id;

@@ -100,7 +100,6 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 		kfree(obj);
 		return NULL;
 	}
-
 	kref_init(&obj->refcount);
 	kref_init(&obj->handlecount);
 	obj->size = size;
