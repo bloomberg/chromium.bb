@@ -950,11 +950,11 @@ static enum drm_connector_status nv50_kms_connector_detect(struct drm_connector 
 		i2c_detect = connector->i2c_detect(connector);
 
 	if (load_detect == 1) {
-		nv50_kms_connector_set_digital(drm_connector, 0, TRUE); /* analog, forced */
+		nv50_kms_connector_set_digital(drm_connector, 0, true); /* analog, forced */
 	} else if (hpd_detect == 1 && load_detect == 0) {
-		nv50_kms_connector_set_digital(drm_connector, 1, TRUE); /* digital, forced */
+		nv50_kms_connector_set_digital(drm_connector, 1, true); /* digital, forced */
 	} else {
-		nv50_kms_connector_set_digital(drm_connector, -1, TRUE); /* unknown, forced */
+		nv50_kms_connector_set_digital(drm_connector, -1, true); /* unknown, forced */
 	}
 
 	if (hpd_detect == 1 || load_detect == 1 || i2c_detect == 1)

@@ -171,7 +171,7 @@ static int nv50_display_disable(struct nv50_display *display)
 	/* disable clock change interrupts. */
 	NV_WRITE(NV50_PDISPLAY_SUPERVISOR_INTR, NV_READ(NV50_PDISPLAY_SUPERVISOR_INTR) & ~0x70);
 
-	display->init_done = FALSE;
+	display->init_done = false;
 
 	return 0;
 }
