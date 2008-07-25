@@ -133,6 +133,46 @@ static int nv50_dac_set_power_mode(struct nv50_output *output, int mode)
 	return 0;
 }
 
+static int nv50_dac_detect(struct nv50_output *output)
+{
+	struct drm_nouveau_private *dev_priv = output->dev->dev_private;
+	int or = nv50_output_or_offset(output);
+	bool present = 0;
+	uint32_t dpms_state, load_pattern, load_state;
+
+	NV_WRITE(NV50_PDISPLAY_DAC_REGS_CLK_CTRL1(or), 0x00000001);
+	dpms_state = NV_READ(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or));
+
+	NV_WRITE(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or), 0x00150000 | NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING);
+	while (NV_READ(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or)) & NV50_PDISPLAY_DAC_REGS_DPMS_CTRL_PENDING);
+
+	/* Use bios provided value if possible. */
+	if (dev_priv->bios.dactestval) {
+		load_pattern = dev_priv->bios.dactestval;
+		NV50_DEBUG("Using bios provided load_pattern of %d\n", load_pattern);
+	} else {
+		load_pattern = 340;
+		NV50_DEBUG("Using default load_pattern of %d\n", load_pattern);
+	}
+
+	NV_WRITE(NV50_PDISPLAY_DAC_REGS_LOAD_CTRL(or), NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_ACTIVE | load_pattern);
+	udelay(10000); /* give it some time to process */
+	load_state = NV_READ(NV50_PDISPLAY_DAC_REGS_LOAD_CTRL(or));
+
+	NV_WRITE(NV50_PDISPLAY_DAC_REGS_LOAD_CTRL(or), 0);
+	NV_WRITE(NV50_PDISPLAY_DAC_REGS_DPMS_CTRL(or), dpms_state);
+
+	if ((load_state & NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_PRESENT) == NV50_PDISPLAY_DAC_REGS_LOAD_CTRL_PRESENT)
+		present = 1;
+
+	if (present)
+		NV50_DEBUG("Load was detected on output with or %d\n", or);
+	else
+		NV50_DEBUG("Load was not detected on output with or %d\n", or);
+
+	return present;
+}
+
 static int nv50_dac_destroy(struct nv50_output *output)
 {
 	struct drm_device *dev = output->dev;
@@ -210,7 +250,7 @@ int nv50_dac_create(struct drm_device *dev, int dcb_entry)
 	output->execute_mode = nv50_dac_execute_mode;
 	output->set_clock_mode = nv50_dac_set_clock_mode;
 	output->set_power_mode = nv50_dac_set_power_mode;
-	output->detect = NULL; /* TODO */
+	output->detect = nv50_dac_detect;
 	output->destroy = nv50_dac_destroy;
 
 	return 0;

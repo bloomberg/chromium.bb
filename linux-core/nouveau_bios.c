@@ -128,6 +128,39 @@ struct bit_entry {
 	uint16_t offset;
 };
 
+static int parse_bit_A_tbl_entry(struct drm_device *dev, struct bios *bios, struct bit_entry *bitentry)
+{
+	/* Parses the load detect value table.
+	 *
+	 * Starting at bitentry->offset:
+	 *
+	 * offset + 0 (16 bits): table pointer
+	 */
+
+	uint16_t load_table_pointer;
+
+	if (bitentry->length != 3) {
+		DRM_ERROR("Do not understand BIT loadval table\n");
+		return 0;
+	}
+
+	load_table_pointer = le16_to_cpu(*((uint16_t *)(&bios->data[bitentry->offset])));
+
+	if (load_table_pointer == 0x0) {
+		DRM_ERROR("Pointer to loadval table invalid\n");
+		return 0;
+	}
+
+	/* Some kind of signature */
+	if (bios->data[load_table_pointer] != 16 || bios->data[load_table_pointer + 1] != 4 || 
+		bios->data[load_table_pointer + 2] != 4 || bios->data[load_table_pointer + 3] != 2)
+		return 0;
+
+	bios->dactestval = le32_to_cpu(*((uint32_t *)&bios->data[load_table_pointer + 4])) & 0x3FF;
+
+	return 1;
+}
+
 static int parse_bit_C_tbl_entry(struct drm_device *dev, struct bios *bios, struct bit_entry *bitentry)
 {
 	/* offset + 8  (16 bits): PLL limits table pointer
@@ -136,7 +169,7 @@ static int parse_bit_C_tbl_entry(struct drm_device *dev, struct bios *bios, stru
 	 */
 
 	if (bitentry->length < 10) {
-		DRM_ERROR( "Do not understand BIT C table\n");
+		DRM_ERROR("Do not understand BIT C table\n");
 		return 0;
 	}
 
@@ -149,7 +182,7 @@ static void parse_bit_structure(struct drm_device *dev, struct bios *bios, const
 {
 	int entries = bios->data[bitoffset + 4];
 	/* parse i first, I next (which needs C & M before it), and L before D */
-	char parseorder[] = "iCMILDT";
+	char parseorder[] = "iCMILDTA";
 	struct bit_entry bitentry;
 	int i, j, offset;
 
@@ -164,6 +197,9 @@ static void parse_bit_structure(struct drm_device *dev, struct bios *bios, const
 				continue;
 
 			switch (bitentry.id[0]) {
+			case 'A':
+				parse_bit_A_tbl_entry(dev, bios, &bitentry);
+				break;
 			case 'C':
 				parse_bit_C_tbl_entry(dev, bios, &bitentry);
 				break;
@@ -305,11 +341,12 @@ parse_dcb_entry(struct drm_device *dev, int index, uint8_t dcb_version, uint16_t
 					entry->lvdsconf.use_power_scripts = true;
 			}
 			if (conf & mask) {
-				DRM_ERROR(
-					   "Unknown LVDS configuration bits, please report\n");
-				/* cause output setting to fail, so message is seen */
-				dev_priv->dcb_table.entries = 0;
-				return false;
+				if (dcb_version < 0x40) { /* we know g80 cards have unknown bits */
+					DRM_ERROR("Unknown LVDS configuration bits, please report\n");
+					/* cause output setting to fail, so message is seen */
+					dev_priv->dcb_table.entries = 0;
+					return false;
+				}
 			}
 			break;
 			}

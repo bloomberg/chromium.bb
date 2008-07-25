@@ -1560,7 +1560,7 @@ intel_tv_destroy (struct drm_connector *connector)
 }
 
 
-static bool
+static int
 intel_tv_set_property(struct drm_connector *connector, struct drm_property *property,
 		      uint64_t val)
 {

@@ -76,7 +76,44 @@ static struct nv50_output *nv50_connector_to_output(struct nv50_connector *conne
 	return NULL;
 }
 
-static bool nv50_connector_detect(struct nv50_connector *connector)
+static int nv50_connector_hpd_detect(struct nv50_connector *connector)
+{
+	struct drm_nouveau_private *dev_priv = connector->dev->dev_private;
+	bool present = 0;
+	uint32_t reg = 0;
+
+	/* Assume connected for the moment. */
+	if (connector->type == CONNECTOR_LVDS) {
+		NV50_DEBUG("LVDS is defaulting to connected for the moment.\n");
+		return 1;
+	}
+
+	/* No i2c port, no idea what to do for hotplug. */
+	if (connector->i2c_chan->index == 15) {
+		DRM_ERROR("You have a non-LVDS SOR with no i2c port, please report\n");
+		return -EINVAL;
+	}
+
+	if (connector->i2c_chan->index > 3) {
+		DRM_ERROR("You have an unusual configuration, index is %d\n", connector->i2c_chan->index);
+		DRM_ERROR("Please report.\n");
+		return -EINVAL;
+	}
+
+	/* Check hotplug pins. */
+	reg = NV_READ(NV50_PCONNECTOR_HOTPLUG_STATE);
+	if (reg & (NV50_PCONNECTOR_HOTPLUG_STATE_PIN_CONNECTED_I2C0 << (4 * connector->i2c_chan->index)))
+		present = 1;
+
+	if (present)
+		NV50_DEBUG("Hotplug detect returned positive for bus %d\n", connector->bus);
+	else
+		NV50_DEBUG("Hotplug detect returned negative for bus %d\n", connector->bus);
+
+	return present;
+}
+
+static int nv50_connector_i2c_detect(struct nv50_connector *connector)
 {
 	/* kindly borrrowed from the intel driver, hope it works. */
 	uint8_t out_buf[] = { 0x0, 0x0};
@@ -97,13 +134,11 @@ static bool nv50_connector_detect(struct nv50_connector *connector)
 		}
 	};
 
-	NV50_DEBUG("\n");
-
 	if (!connector->i2c_chan)
-		return false;
+		return -EINVAL;
 
 	ret = i2c_transfer(&connector->i2c_chan->adapter, msgs, 2);
-	DRM_INFO("I2C detect returned %d\n", ret);
+	NV50_DEBUG("I2C detect returned %d\n", ret);
 
 	if (ret == 2)
 		return true;
@@ -185,15 +220,18 @@ int nv50_connector_create(struct drm_device *dev, int bus, int i2c_index, int ty
 
 	/* some reasonable defaults */
 	if (type == CONNECTOR_DVI_D || type == CONNECTOR_DVI_I || type == CONNECTOR_LVDS)
-		connector->scaling_mode = SCALE_FULLSCREEN;
+		connector->requested_scaling_mode = SCALE_FULLSCREEN;
 	else
-		connector->scaling_mode = SCALE_PANEL;
+		connector->requested_scaling_mode = SCALE_NON_GPU;
+
+	connector->use_dithering = false;
 
 	if (i2c_index < 0xf)
 		connector->i2c_chan = nv50_i2c_channel_create(dev, i2c_index);
 
 	/* set function pointers */
-	connector->detect = nv50_connector_detect;
+	connector->hpd_detect = nv50_connector_hpd_detect;
+	connector->i2c_detect = nv50_connector_i2c_detect;
 	connector->destroy = nv50_connector_destroy;
 	connector->to_output = nv50_connector_to_output;
 

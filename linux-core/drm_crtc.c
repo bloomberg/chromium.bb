@@ -60,6 +60,26 @@ char *drm_get_dpms_name(int val)
 	return "unknown";
 }
 
+/*
+ * Optional properties
+ */
+static struct drm_prop_enum_list drm_scaling_mode_enum_list[] =
+{
+	{ DRM_MODE_SCALE_NON_GPU, "Non-GPU" },
+	{ DRM_MODE_SCALE_FULLSCREEN, "Fullscreen" },
+	{ DRM_MODE_SCALE_NO_SCALE, "No scale" },
+	{ DRM_MODE_SCALE_ASPECT, "Aspect" },
+};
+
+static struct drm_prop_enum_list drm_dithering_mode_enum_list[] =
+{
+	{ DRM_MODE_DITHERING_OFF, "Off" },
+	{ DRM_MODE_DITHERING_ON, "On" },
+};
+
+/*
+ * Non-global properties, but "required" for certain connectors.
+ */
 static struct drm_prop_enum_list drm_select_subconnector_enum_list[] =
 {
 	{ DRM_MODE_SUBCONNECTOR_Automatic, "Automatic" }, /* DVI-I and TV-out */
@@ -102,6 +122,9 @@ char *drm_get_subconnector_name(int val)
 	return "unknown";
 }
 
+/*
+ * Connector and encoder types.
+ */
 static struct drm_prop_enum_list drm_connector_enum_list[] = 
 {	{ DRM_MODE_CONNECTOR_Unknown, "Unknown" },
 	{ DRM_MODE_CONNECTOR_VGA, "VGA" },
@@ -645,6 +668,52 @@ int drm_mode_create_tv_properties(struct drm_device *dev, int num_modes,
 	return 0;
 }
 EXPORT_SYMBOL(drm_mode_create_tv_properties);
+
+/**
+ * drm_mode_create_scaling_mode_property - create scaling mode property
+ * @dev: DRM device
+ *
+ * Called by a driver the first time it's needed, must be attached to desired connectors.
+ */
+int drm_mode_create_scaling_mode_property(struct drm_device *dev)
+{
+	int i;
+
+	if (dev->mode_config.scaling_mode_property) /* already done */
+		return 0;
+
+	dev->mode_config.scaling_mode_property =
+		drm_property_create(dev, DRM_MODE_PROP_ENUM, 
+			"scaling mode", ARRAY_SIZE(drm_scaling_mode_enum_list));
+	for (i = 0; i < ARRAY_SIZE(drm_scaling_mode_enum_list); i++)
+		drm_property_add_enum(dev->mode_config.scaling_mode_property, i, drm_scaling_mode_enum_list[i].type, drm_scaling_mode_enum_list[i].name);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_mode_create_scaling_mode_property);
+
+/**
+ * drm_mode_create_dithering_property - create dithering property
+ * @dev: DRM device
+ *
+ * Called by a driver the first time it's needed, must be attached to desired connectors.
+ */
+int drm_mode_create_dithering_property(struct drm_device *dev)
+{
+	int i;
+
+	if (dev->mode_config.dithering_mode_property) /* already done */
+		return 0;
+
+	dev->mode_config.dithering_mode_property =
+		drm_property_create(dev, DRM_MODE_PROP_ENUM, 
+			"dithering", ARRAY_SIZE(drm_dithering_mode_enum_list));
+	for (i = 0; i < ARRAY_SIZE(drm_dithering_mode_enum_list); i++)
+		drm_property_add_enum(dev->mode_config.dithering_mode_property, i, drm_dithering_mode_enum_list[i].type, drm_dithering_mode_enum_list[i].name);
+
+	return 0;
+}
+EXPORT_SYMBOL(drm_mode_create_dithering_property);
 
 /**
  * drm_mode_config_init - initialize DRM mode_configuration structure
@@ -2115,12 +2184,12 @@ int drm_mode_connector_property_set_ioctl(struct drm_device *dev,
 		}
 	}
 
-	/* store the property value */
-	drm_connector_property_set_value(connector, property, out_resp->value);
-
 	if (connector->funcs->set_property)
 		ret = connector->funcs->set_property(connector, property, out_resp->value);
 
+	/* store the property value if succesful */
+	if (!ret)
+		drm_connector_property_set_value(connector, property, out_resp->value);
 out:
 	mutex_unlock(&dev->mode_config.mutex);
 	return ret;

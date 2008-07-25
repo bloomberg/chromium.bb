@@ -375,7 +375,7 @@ struct drm_connector_funcs {
 	void (*restore)(struct drm_connector *connector);
 	enum drm_connector_status (*detect)(struct drm_connector *connector);
 	void (*fill_modes)(struct drm_connector *connector, uint32_t max_width, uint32_t max_height);
-	bool (*set_property)(struct drm_connector *connector, struct drm_property *property,
+	int (*set_property)(struct drm_connector *connector, struct drm_property *property,
 			     uint64_t val);
 	void (*destroy)(struct drm_connector *connector);
 };
@@ -536,7 +536,7 @@ struct drm_mode_config {
 	struct drm_property *edid_property;
 	struct drm_property *dpms_property;
 
-	/* optional properties */
+	/* DVI-I properties */
 	struct drm_property *dvi_i_subconnector_property;
 	struct drm_property *dvi_i_select_subconnector_property;
 
@@ -548,6 +548,10 @@ struct drm_mode_config {
 	struct drm_property *tv_right_margin_property;
 	struct drm_property *tv_top_margin_property;
 	struct drm_property *tv_bottom_margin_property;
+
+	/* Optional properties */
+	struct drm_property *scaling_mode_property;
+	struct drm_property *dithering_mode_property;
 
 	/* hotplug */
 	uint32_t hotplug_counter;
@@ -650,6 +654,8 @@ extern int drm_property_add_enum(struct drm_property *property, int index,
 extern int drm_mode_create_dvi_i_properties(struct drm_device *dev);
 extern int drm_mode_create_tv_properties(struct drm_device *dev, int num_formats,
 				     char *formats[]);
+extern int drm_mode_create_scaling_mode_property(struct drm_device *dev);
+extern int drm_mode_create_dithering_property(struct drm_device *dev);
 extern char *drm_get_encoder_name(struct drm_encoder *encoder);
 
 extern int drm_mode_connector_attach_encoder(struct drm_connector *connector,

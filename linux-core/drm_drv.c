@@ -246,7 +246,10 @@ int drm_lastclose(struct drm_device * dev)
 		dev->agp->acquired = 0;
 		dev->agp->enabled = 0;
 	}
-	if (drm_core_check_feature(dev, DRIVER_SG) && dev->sg) {
+
+	/* You're supposed to have a real memory manager for modesetting, but this'll suffice as a temporary workaround. */
+	/* This assumes sgdma is inited at load time. */
+	if (drm_core_check_feature(dev, DRIVER_SG) && !drm_core_check_feature(dev, DRIVER_MODESET) && dev->sg) {
 		drm_sg_cleanup(dev->sg);
 		dev->sg = NULL;
 	}

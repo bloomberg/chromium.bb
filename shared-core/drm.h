@@ -1058,6 +1058,16 @@ struct drm_gem_open {
 #define DRM_MODE_DPMS_SUSPEND 2
 #define DRM_MODE_DPMS_OFF 3
 
+/* Scaling mode options */
+#define DRM_MODE_SCALE_NON_GPU 0
+#define DRM_MODE_SCALE_FULLSCREEN 1
+#define DRM_MODE_SCALE_NO_SCALE 2
+#define DRM_MODE_SCALE_ASPECT 3
+
+/* Dithering mode options */
+#define DRM_MODE_DITHERING_OFF 0
+#define DRM_MODE_DITHERING_ON 1
+
 struct drm_mode_modeinfo {
 	unsigned int clock;
 	unsigned short hdisplay, hsync_start, hsync_end, htotal, hskew;

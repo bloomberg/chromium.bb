@@ -68,7 +68,7 @@ struct nv50_display {
 };
 
 enum scaling_modes {
-	SCALE_PANEL,
+	SCALE_NON_GPU,
 	SCALE_FULLSCREEN,
 	SCALE_ASPECT,
 	SCALE_NOSCALE,

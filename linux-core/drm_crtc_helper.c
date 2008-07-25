@@ -566,7 +566,8 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 		ret = -EINVAL;
 		goto fail_no_encoder;
 	}
-	
+
+	count = 0;
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head) {
 		if (!connector->encoder)
 			continue;

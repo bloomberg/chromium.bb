@@ -1036,8 +1036,7 @@ nouveau_gpuobj_channel_init(struct nouveau_channel *chan,
 	/* VRAM ctxdma */
 	if (dev_priv->card_type >= NV_50) {
 		ret = nouveau_gpuobj_dma_new(chan, NV_CLASS_DMA_IN_MEMORY,
-					     512*1024*1024,
-					     dev_priv->fb_available_size,
+					     0, 0x100000000ULL,
 					     NV_DMA_ACCESS_RW,
 					     NV_DMA_TARGET_AGP, &vram);
 		if (ret) {
@@ -1059,6 +1058,9 @@ nouveau_gpuobj_channel_init(struct nouveau_channel *chan,
 	}
 
 	/* TT memory ctxdma */
+	if (dev_priv->card_type >= NV_50) {
+		tt = vram;
+	} else
 	if (dev_priv->gart_info.type != NOUVEAU_GART_NONE) {
 		ret = nouveau_gpuobj_gart_dma_new(chan, 0,
 						  dev_priv->gart_info.aper_size,
