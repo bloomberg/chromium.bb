@@ -944,7 +944,7 @@ static enum drm_connector_status nv50_kms_connector_detect(struct drm_connector 
 	hpd_detect = connector->hpd_detect(connector);
 
 	/* load detect */
-	output = connector->to_output(connector, FALSE); /* analog */
+	output = connector->to_output(connector, false); /* analog */
 	if (output && output->detect)
 		load_detect = output->detect(output);
 
@@ -1031,7 +1031,7 @@ static void nv50_kms_connector_fill_modes(struct drm_connector *drm_connector, u
 		rval = drm_add_edid_modes(drm_connector, edid);
 
 		/* Only update when relevant and when detect couldn't determine type. */
-		nv50_kms_connector_set_digital(drm_connector, edid->digital ? 1 : 0, FALSE);
+		nv50_kms_connector_set_digital(drm_connector, edid->digital ? 1 : 0, false);
 
 		kfree(edid);
 	}
