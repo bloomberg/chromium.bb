@@ -36,6 +36,12 @@ static int
 i915_gem_object_set_domain(struct drm_gem_object *obj,
 			    uint32_t read_domains,
 			    uint32_t write_domain);
+static int
+i915_gem_object_set_domain_range(struct drm_gem_object *obj,
+				 uint64_t offset,
+				 uint64_t size,
+				 uint32_t read_domains,
+				 uint32_t write_domain);
 int
 i915_gem_set_domain(struct drm_gem_object *obj,
 		    struct drm_file *file_priv,
@@ -136,32 +142,11 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 
 	mutex_lock(&dev->struct_mutex);
 
-	/* Do a partial equivalent of i915_gem_set_domain(CPU, 0), as
-	 * we don't want to clflush whole objects to read a portion of them.
-	 *
-	 * The side effect of doing this is that repeated preads of the same
-	 * contents would take extra clflush overhead, since we don't track
-	 * flushedness on a page basis.
-	 */
-	if (obj->write_domain & ~(I915_GEM_DOMAIN_CPU|I915_GEM_DOMAIN_GTT)) {
-		ret = i915_gem_object_wait_rendering(obj);
-		if (ret) {
-			drm_gem_object_unreference(obj);
-			mutex_unlock(&dev->struct_mutex);
-			return ret;
-		}
-	}
-	if ((obj->read_domains & I915_GEM_DOMAIN_CPU) == 0) {
-		int first_page = args->offset / PAGE_SIZE;
-		int last_page = (args->offset + args->size - 1) / PAGE_SIZE;
-
-		/* If we don't have the page list, the pages are unpinned
-		 * and swappable, and thus should already be in the CPU domain.
-		 */
-		BUG_ON(obj_priv->page_list == NULL);
-
-		drm_ttm_cache_flush(&obj_priv->page_list[first_page],
-				    last_page - first_page + 1);
+	ret = i915_gem_object_set_domain_range(obj, args->offset, args->size,
+					       I915_GEM_DOMAIN_CPU, 0);
+	if (ret != 0) {
+		drm_gem_object_unreference(obj);
+		mutex_unlock(&dev->struct_mutex);
 	}
 
 	offset = args->offset;
@@ -1383,7 +1368,17 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 
 	if ((write_domain | flush_domains) != 0)
 		obj->write_domain = write_domain;
+
+	/* If we're invalidating the CPU domain, clear the per-page CPU
+	 * domain list as well.
+	 */
+	if (obj_priv->page_cpu_valid != NULL &&
+	    (obj->read_domains & I915_GEM_DOMAIN_CPU) &&
+	    ((read_domains & I915_GEM_DOMAIN_CPU) == 0)) {
+		memset(obj_priv->page_cpu_valid, 0, obj->size / PAGE_SIZE);
+	}
 	obj->read_domains = read_domains;
+
 	dev->invalidate_domains |= invalidate_domains;
 	dev->flush_domains |= flush_domains;
 #if WATCH_BUF
@@ -1392,6 +1387,57 @@ i915_gem_object_set_domain(struct drm_gem_object *obj,
 		 obj->read_domains, obj->write_domain,
 		 dev->invalidate_domains, dev->flush_domains);
 #endif
+	return 0;
+}
+
+/**
+ * Set the read/write domain on a range of the object.
+ *
+ * Currently only implemented for CPU reads, otherwise drops to normal
+ * i915_gem_object_set_domain().
+ */
+static int
+i915_gem_object_set_domain_range(struct drm_gem_object *obj,
+				 uint64_t offset,
+				 uint64_t size,
+				 uint32_t read_domains,
+				 uint32_t write_domain)
+{
+	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+	int ret, i;
+
+	if (obj->read_domains & I915_GEM_DOMAIN_CPU)
+		return 0;
+
+	if (read_domains != I915_GEM_DOMAIN_CPU ||
+	    write_domain != 0)
+		return i915_gem_object_set_domain(obj,
+						  read_domains, write_domain);
+
+	/* Wait on any GPU rendering to the object to be flushed. */
+	if (obj->write_domain & ~(I915_GEM_DOMAIN_CPU | I915_GEM_DOMAIN_GTT)) {
+		ret = i915_gem_object_wait_rendering(obj);
+		if (ret)
+			return ret;
+	}
+
+	if (obj_priv->page_cpu_valid == NULL) {
+		obj_priv->page_cpu_valid = drm_calloc(1, obj->size / PAGE_SIZE,
+						      DRM_MEM_DRIVER);
+	}
+
+	/* Flush the cache on any pages that are still invalid from the CPU's
+	 * perspective.
+	 */
+	for (i = offset / PAGE_SIZE; i < (offset + size - 1) / PAGE_SIZE; i++) {
+		if (obj_priv->page_cpu_valid[i])
+			continue;
+
+		drm_ttm_cache_flush(obj_priv->page_list + i, 1);
+
+		obj_priv->page_cpu_valid[i] = 1;
+	}
+
 	return 0;
 }
 
@@ -2097,6 +2143,7 @@ void i915_gem_free_object(struct drm_gem_object *obj)
 
 	i915_gem_object_unbind(obj);
 
+	drm_free(obj_priv->page_cpu_valid, 1, DRM_MEM_DRIVER);
 	drm_free(obj->driver_private, 1, DRM_MEM_DRIVER);
 }
 

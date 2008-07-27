@@ -393,6 +393,12 @@ struct drm_i915_gem_object {
 
 	/** Current tiling mode for the object. */
 	uint32_t tiling_mode;
+
+	/**
+	 * Flagging of which individual pages are valid in GEM_DOMAIN_CPU when
+	 * GEM_DOMAIN_CPU is not in the object's read domain.
+	 */
+	uint8_t *page_cpu_valid;
 };
 
 /**
