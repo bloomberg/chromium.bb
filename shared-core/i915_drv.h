@@ -72,6 +72,14 @@
 struct drm_i915_validate_buffer;
 #endif
 
+#define WATCH_COHERENCY	0
+#define WATCH_BUF	0
+#define WATCH_EXEC	0
+#define WATCH_LRU	0
+#define WATCH_RELOC	0
+#define WATCH_INACTIVE	0
+#define WATCH_PWRITE	0
+
 typedef struct _drm_i915_ring_buffer {
 	int tail_mask;
 	unsigned long Size;
@@ -541,10 +549,24 @@ void i915_gem_lastclose(struct drm_device *dev);
 uint32_t i915_get_gem_seqno(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
 void i915_gem_retire_work_handler(struct work_struct *work);
+void i915_gem_clflush_object(struct drm_gem_object *obj);
 #endif
 
 /* i915_gem_tiling.c */
 void i915_gem_detect_bit_6_swizzle(struct drm_device *dev);
+
+/* i915_gem_debug.c */
+void i915_gem_dump_object(struct drm_gem_object *obj, int len,
+			  const char *where, uint32_t mark);
+#if WATCH_INACTIVE
+void i915_verify_inactive(struct drm_device *dev, char *file, int line);
+#else
+#define i915_verify_inactive(dev,file,line)
+#endif
+void i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle);
+void i915_gem_dump_object(struct drm_gem_object *obj, int len,
+			  const char *where, uint32_t mark);
+void i915_dump_lru(struct drm_device *dev, const char *where);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
