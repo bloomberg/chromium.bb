@@ -658,8 +658,8 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 					 ((dev_priv->gart_vm_start - 1) & 0xffff0000)
 					 | (dev_priv->fb_location >> 16));
 	
-	if (dev_priv->mm.ring) {
-		ring_start = dev_priv->mm.ring->offset +
+	if (dev_priv->mm.ring.bo) {
+		ring_start = dev_priv->mm.ring.bo->offset +
 			dev_priv->gart_vm_start;
 	} else
 #if __OS_HAS_AGP
@@ -692,9 +692,9 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	dev_priv->ring.tail = cur_read_ptr;
 
 
-	if (dev_priv->mm.ring_read_ptr) {
+	if (dev_priv->mm.ring_read.bo) {
 		RADEON_WRITE(RADEON_CP_RB_RPTR_ADDR,
-			     dev_priv->mm.ring_read_ptr->offset +
+			     dev_priv->mm.ring_read.bo->offset +
 			     dev_priv->gart_vm_start);
 	} else
 #if __OS_HAS_AGP
@@ -745,9 +745,9 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	RADEON_WRITE(RADEON_SCRATCH_ADDR, RADEON_READ(RADEON_CP_RB_RPTR_ADDR)
 		     + RADEON_SCRATCH_REG_OFFSET);
 
-	if (dev_priv->mm.ring_read_ptr)
+	if (dev_priv->mm.ring_read.bo)
 		dev_priv->scratch = ((__volatile__ u32 *)
-				     dev_priv->mm.ring_read_ptr_map.virtual +
+				     dev_priv->mm.ring_read.kmap.virtual +
 				     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
 	else
 		dev_priv->scratch = ((__volatile__ u32 *)
@@ -772,12 +772,18 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	radeon_do_wait_for_idle(dev_priv);
 
 	/* Sync everything up */
+	if (dev_priv->chip_family > CHIP_RV280) {
 	RADEON_WRITE(RADEON_ISYNC_CNTL,
 		     (RADEON_ISYNC_ANY2D_IDLE3D |
 		      RADEON_ISYNC_ANY3D_IDLE2D |
 		      RADEON_ISYNC_WAIT_IDLEGUI |
 		      RADEON_ISYNC_CPSCRATCH_IDLEGUI));
-
+	} else {
+	RADEON_WRITE(RADEON_ISYNC_CNTL,
+		     (RADEON_ISYNC_ANY2D_IDLE3D |
+		      RADEON_ISYNC_ANY3D_IDLE2D |
+		      RADEON_ISYNC_WAIT_IDLEGUI));
+	}
 }
 
 static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
@@ -785,8 +791,8 @@ static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 	u32 tmp;
 	void *ring_read_ptr;
 
-	if (dev_priv->mm.ring_read_ptr)
-		ring_read_ptr = dev_priv->mm.ring_read_ptr_map.virtual;
+	if (dev_priv->mm.ring_read.bo)
+		ring_read_ptr = dev_priv->mm.ring_read.kmap.virtual;
 	else
 		ring_read_ptr = dev_priv->ring_rptr->handle;
 
@@ -2282,8 +2288,8 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->ring.size = RADEON_DEFAULT_RING_SIZE;
 	dev_priv->cp_mode = RADEON_CSQ_PRIBM_INDBM;
 
-	dev_priv->ring.start = (u32 *)(void *)(unsigned long)dev_priv->mm.ring_map.virtual;
-	dev_priv->ring.end = (u32 *)(void *)(unsigned long)dev_priv->mm.ring_map.virtual +
+	dev_priv->ring.start = (u32 *)(void *)(unsigned long)dev_priv->mm.ring.kmap.virtual;
+	dev_priv->ring.end = (u32 *)(void *)(unsigned long)dev_priv->mm.ring.kmap.virtual +
 		dev_priv->ring.size / sizeof(u32);
 	dev_priv->ring.size_l2qw = drm_order(dev_priv->ring.size / 8);
 	dev_priv->ring.rptr_update = 4096;
@@ -2297,7 +2303,7 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 
 	radeon_cp_load_microcode(dev_priv);
 	
-	DRM_DEBUG("ring offset is %x %x\n", dev_priv->mm.ring->offset, dev_priv->mm.ring_read_ptr->offset);
+	DRM_DEBUG("ring offset is %x %x\n", dev_priv->mm.ring.bo->offset, dev_priv->mm.ring_read.bo->offset);
 
 	radeon_cp_init_ring_buffer(dev, dev_priv);
 

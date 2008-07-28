@@ -195,11 +195,11 @@ enum radeon_mac_model {
 
 
 #define GET_RING_HEAD(dev_priv)	(dev_priv->writeback_works ? \
-				 (dev_priv->mm.ring_read_ptr ? readl(dev_priv->mm.ring_read_ptr_map.virtual + 0) : DRM_READ32((dev_priv)->ring_rptr, 0 )) : \
+				 (dev_priv->mm.ring_read.bo ? readl(dev_priv->mm.ring_read.kmap.virtual + 0) : DRM_READ32((dev_priv)->ring_rptr, 0 )) : \
 				 RADEON_READ(RADEON_CP_RB_RPTR))
 
-#define SET_RING_HEAD(dev_priv,val) (dev_priv->mm.ring_read_ptr ? \
-				     writel((val), dev_priv->mm.ring_read_ptr_map.virtual) : \
+#define SET_RING_HEAD(dev_priv,val) (dev_priv->mm.ring_read.bo ? \
+				     writel((val), dev_priv->mm.ring_read.kmap.virtual) : \
 				     DRM_WRITE32((dev_priv)->ring_rptr, 0, (val)))
 
 typedef struct drm_radeon_freelist {
@@ -261,6 +261,11 @@ struct radeon_virt_surface {
 	struct drm_file *file_priv;
 };
 
+struct radeon_mm_obj {
+	struct drm_buffer_object *bo;
+	struct drm_bo_kmap_obj kmap;
+};
+
 struct radeon_mm_info {
 	uint64_t vram_offset; // Offset into GPU space
 	uint64_t vram_size;
@@ -268,15 +273,10 @@ struct radeon_mm_info {
 	
 	uint64_t gart_start;
 	uint64_t gart_size;
-
-	struct drm_buffer_object *pcie_table;
-	struct drm_bo_kmap_obj pcie_table_map;
-
-	struct drm_buffer_object *ring;
-	struct drm_bo_kmap_obj ring_map;
-
-	struct drm_buffer_object *ring_read_ptr;
-	struct drm_bo_kmap_obj ring_read_ptr_map;
+	
+	struct radeon_mm_obj pcie_table;
+	struct radeon_mm_obj ring;
+	struct radeon_mm_obj ring_read;
 };
 
 #include "radeon_mode.h"
@@ -284,6 +284,25 @@ struct radeon_mm_info {
 struct drm_radeon_master_private {
 	drm_local_map_t *sarea;
 	drm_radeon_sarea_t *sarea_priv;
+};
+
+/* command submission struct */
+struct drm_radeon_cs_priv {
+	uint32_t id_wcnt;
+	uint32_t id_scnt;
+	uint32_t id_last_wcnt;
+	uint32_t id_last_scnt;
+
+	int (*parse)(struct drm_device *dev, void *ib,
+			uint32_t *packets, uint32_t dwords);
+	void (*id_emit)(struct drm_device *dev, uint32_t *id);
+	uint32_t (*id_last_get)(struct drm_device *dev);
+	/* this ib handling callback are for hidding memory manager drm
+	 * from memory manager less drm, free have to emit ib discard
+	 * sequence into the ring */
+	int (*ib_get)(struct drm_device *dev, void **ib, uint32_t dwords);
+	uint32_t (*ib_get_ptr)(struct drm_device *dev, void *ib);
+	void (*ib_free)(struct drm_device *dev, void *ib, uint32_t dwords);
 };
 
 typedef struct drm_radeon_private {
@@ -392,7 +411,11 @@ typedef struct drm_radeon_private {
 	u32 ram_width;
 
 	enum radeon_pll_errata pll_errata;
-	
+
+	struct radeon_mm_obj **ib_objs;
+	/* ib bitmap */
+	uint64_t ib_alloc_bitmap; // TO DO replace with a real bitmap
+	struct drm_radeon_cs_priv cs;
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
@@ -669,14 +692,15 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_SCRATCH_REG3		0x15ec
 #define RADEON_SCRATCH_REG4		0x15f0
 #define RADEON_SCRATCH_REG5		0x15f4
+#define RADEON_SCRATCH_REG6		0x15f8
 #define RADEON_SCRATCH_UMSK		0x0770
 #define RADEON_SCRATCH_ADDR		0x0774
 
 #define RADEON_SCRATCHOFF( x )		(RADEON_SCRATCH_REG_OFFSET + 4*(x))
 
 #define GET_SCRATCH( x )	(dev_priv->writeback_works ?			\
-				 (dev_priv->mm.ring_read_ptr ? \
-				  readl(dev_priv->mm.ring_read_ptr_map.virtual + RADEON_SCRATCHOFF(0)) : \
+				 (dev_priv->mm.ring_read.bo ? \
+				  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(0)) : \
 				  DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(x))) : \
 				 RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x)))
 
@@ -1593,4 +1617,6 @@ extern void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on);
 extern int radeon_master_create(struct drm_device *dev, struct drm_master *master);
 extern void radeon_master_destroy(struct drm_device *dev, struct drm_master *master);
 extern void radeon_cp_dispatch_flip(struct drm_device * dev, struct drm_master *master);
+extern int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
+extern int radeon_cs_init(struct drm_device *dev);
 #endif				/* __RADEON_DRV_H__ */

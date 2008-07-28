@@ -3086,6 +3086,10 @@
 #       define RADEON_CSQ_PRIPIO_INDBM         (3    << 28)
 #       define RADEON_CSQ_PRIBM_INDBM          (4    << 28)
 #       define RADEON_CSQ_PRIPIO_INDPIO        (15   << 28)
+
+#define R300_CP_RESYNC_ADDR                 0x778
+#define R300_CP_RESYNC_DATA                 0x77c
+
 #define RADEON_CP_CSQ_STAT                  0x07f8
 #       define RADEON_CSQ_RPTR_PRIMARY_MASK    (0xff <<  0)
 #       define RADEON_CSQ_WPTR_PRIMARY_MASK    (0xff <<  8)

@@ -506,6 +506,7 @@ typedef struct {
 #define DRM_RADEON_GEM_SET_DOMAIN 0x23
 #define DRM_RADEON_GEM_INDIRECT 0x24 // temporary for X server
 
+#define DRM_RADEON_CS           0x25
 
 #define DRM_IOCTL_RADEON_CP_INIT    DRM_IOW( DRM_COMMAND_BASE + DRM_RADEON_CP_INIT, drm_radeon_init_t)
 #define DRM_IOCTL_RADEON_CP_START   DRM_IO(  DRM_COMMAND_BASE + DRM_RADEON_CP_START)
@@ -545,6 +546,7 @@ typedef struct {
 #define DRM_IOCTL_RADEON_GEM_SET_DOMAIN  DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_SET_DOMAIN, struct drm_radeon_gem_set_domain)
 #define DRM_IOCTL_RADEON_GEM_INDIRECT DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_INDIRECT, struct drm_radeon_gem_indirect)
 
+#define DRM_IOCTL_RADEON_CS DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_CS, struct drm_radeon_cs)
 
 
 typedef struct drm_radeon_init {
@@ -860,5 +862,18 @@ struct drm_radeon_gem_indirect {
 	uint32_t handle;
 	uint32_t used;
 };
+
+/* New interface which obsolete all previous interface.
+ */
+
+
+struct drm_radeon_cs {
+//	uint32_t __user     *packets;
+	uint32_t            dwords;
+	uint32_t            cs_id;
+	uint64_t            packets;
+
+};
+
 
 #endif

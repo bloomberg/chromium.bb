@@ -27,6 +27,9 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
+static int radeon_gem_ib_init(struct drm_device *dev);
+static int radeon_gem_ib_destroy(struct drm_device *dev);
+
 int radeon_gem_init_object(struct drm_gem_object *obj)
 {
 	struct drm_radeon_gem_object *obj_priv;
@@ -513,19 +516,19 @@ static int radeon_gart_init(struct drm_device *dev)
 		ret = drm_buffer_object_create(dev, RADEON_PCIGART_TABLE_SIZE,
 					       drm_bo_type_kernel,
 					       DRM_BO_FLAG_READ | DRM_BO_FLAG_MEM_VRAM | DRM_BO_FLAG_MAPPABLE | DRM_BO_FLAG_NO_EVICT,
-					       0, 1, 0, &dev_priv->mm.pcie_table);
+					       0, 1, 0, &dev_priv->mm.pcie_table.bo);
 		if (ret)
 			return -EINVAL;
 
-		DRM_DEBUG("pcie table bo created %p, %x\n", dev_priv->mm.pcie_table, dev_priv->mm.pcie_table->offset);
-		ret = drm_bo_kmap(dev_priv->mm.pcie_table, 0, RADEON_PCIGART_TABLE_SIZE >> PAGE_SHIFT,
-				  &dev_priv->mm.pcie_table_map);
+		DRM_DEBUG("pcie table bo created %p, %x\n", dev_priv->mm.pcie_table.bo, dev_priv->mm.pcie_table.bo->offset);
+		ret = drm_bo_kmap(dev_priv->mm.pcie_table.bo, 0, RADEON_PCIGART_TABLE_SIZE >> PAGE_SHIFT,
+				  &dev_priv->mm.pcie_table.kmap);
 		if (ret)
 			return -EINVAL;
 
 		dev_priv->pcigart_offset_set = 2;
-		dev_priv->gart_info.bus_addr =  dev_priv->fb_location + dev_priv->mm.pcie_table->offset;
-		dev_priv->gart_info.addr = dev_priv->mm.pcie_table_map.virtual;
+		dev_priv->gart_info.bus_addr =  dev_priv->fb_location + dev_priv->mm.pcie_table.bo->offset;
+		dev_priv->gart_info.addr = dev_priv->mm.pcie_table.kmap.virtual;
 		dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCIE;
 		dev_priv->gart_info.gart_table_location = DRM_ATI_GART_FB;
 		memset(dev_priv->gart_info.addr, 0, RADEON_PCIGART_TABLE_SIZE);
@@ -566,14 +569,14 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ | DRM_BO_FLAG_MEM_TT |
 				       DRM_BO_FLAG_MAPPABLE | DRM_BO_FLAG_NO_EVICT,
-				       0, 1, 0, &dev_priv->mm.ring);
+				       0, 1, 0, &dev_priv->mm.ring.bo);
 	if (ret) {
 		DRM_ERROR("failed to allocate ring\n");
 		return -EINVAL;
 	}
 
-	ret = drm_bo_kmap(dev_priv->mm.ring, 0, RADEON_DEFAULT_RING_SIZE >> PAGE_SHIFT,
-			  &dev_priv->mm.ring_map);
+	ret = drm_bo_kmap(dev_priv->mm.ring.bo, 0, RADEON_DEFAULT_RING_SIZE >> PAGE_SHIFT,
+			  &dev_priv->mm.ring.kmap);
 	if (ret) {
 		DRM_ERROR("failed to map ring\n");
 		return -EINVAL;
@@ -583,24 +586,26 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_WRITE |DRM_BO_FLAG_READ | DRM_BO_FLAG_MEM_TT |
 				       DRM_BO_FLAG_MAPPABLE | DRM_BO_FLAG_NO_EVICT,
-				       0, 1, 0, &dev_priv->mm.ring_read_ptr);
+				       0, 1, 0, &dev_priv->mm.ring_read.bo);
 	if (ret) {
 		DRM_ERROR("failed to allocate ring read\n");
 		return -EINVAL;
 	}
 
-	ret = drm_bo_kmap(dev_priv->mm.ring_read_ptr, 0,
+	ret = drm_bo_kmap(dev_priv->mm.ring_read.bo, 0,
 			  PAGE_SIZE >> PAGE_SHIFT,
-			  &dev_priv->mm.ring_read_ptr_map);
+			  &dev_priv->mm.ring_read.kmap);
 	if (ret) {
 		DRM_ERROR("failed to map ring read\n");
 		return -EINVAL;
 	}
 
 	DRM_DEBUG("Ring ptr %p mapped at %d %p, read ptr %p maped at %d %p\n",
-		  dev_priv->mm.ring, dev_priv->mm.ring->offset, dev_priv->mm.ring_map.virtual,
-		  dev_priv->mm.ring_read_ptr, dev_priv->mm.ring_read_ptr->offset, dev_priv->mm.ring_read_ptr_map.virtual);
+		  dev_priv->mm.ring.bo, dev_priv->mm.ring.bo->offset, dev_priv->mm.ring.kmap.virtual,
+		  dev_priv->mm.ring_read.bo, dev_priv->mm.ring_read.bo->offset, dev_priv->mm.ring_read.kmap.virtual);
 
+	/* init the indirect buffers */
+	radeon_gem_ib_init(dev);
 	return 0;			  
 
 }
@@ -634,6 +639,8 @@ int radeon_gem_mm_init(struct drm_device *dev)
 	ret = radeon_alloc_gart_objects(dev);
 	if (ret)
 		return -EINVAL;
+
+	
 	return 0;
 }
 
@@ -641,16 +648,19 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
+	radeon_gem_ib_destroy(dev);
+
 	mutex_lock(&dev->struct_mutex);
 
-	if (dev_priv->mm.ring_read_ptr) {
-		drm_bo_kunmap(&dev_priv->mm.ring_read_ptr_map);
-		drm_bo_usage_deref_locked(&dev_priv->mm.ring_read_ptr);
+	
+	if (dev_priv->mm.ring_read.bo) {
+		drm_bo_kunmap(&dev_priv->mm.ring_read.kmap);
+		drm_bo_usage_deref_locked(&dev_priv->mm.ring_read.bo);
 	}
 
-	if (dev_priv->mm.ring) {
-		drm_bo_kunmap(&dev_priv->mm.ring_map);
-		drm_bo_usage_deref_locked(&dev_priv->mm.ring);
+	if (dev_priv->mm.ring.bo) {
+		drm_bo_kunmap(&dev_priv->mm.ring.kmap);
+		drm_bo_usage_deref_locked(&dev_priv->mm.ring.bo);
 	}
 
 	if (drm_bo_clean_mm(dev, DRM_BO_MEM_TT, 1)) {
@@ -658,9 +668,9 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 	}
 
 	if (dev_priv->flags & RADEON_IS_PCIE) {
-		if (dev_priv->mm.pcie_table) {
-			drm_bo_kunmap(&dev_priv->mm.pcie_table_map);
-			drm_bo_usage_deref_locked(&dev_priv->mm.pcie_table);
+		if (dev_priv->mm.pcie_table.bo) {
+			drm_bo_kunmap(&dev_priv->mm.pcie_table.kmap);
+			drm_bo_usage_deref_locked(&dev_priv->mm.pcie_table.bo);
 		}
 	}
 
@@ -683,5 +693,160 @@ int radeon_gem_object_pin(struct drm_gem_object *obj,
 				 DRM_BO_HINT_DONT_FENCE, 0, NULL);
 
 	return ret;
+}
+
+#define RADEON_IB_MEMORY (1*1024*1024)
+#define RADEON_IB_SIZE (65536)
+
+#define RADEON_NUM_IB (RADEON_IB_MEMORY / RADEON_IB_SIZE)
+
+int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords)
+{
+	int i, index = -1;
+	int ret;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	for (i = 0; i < RADEON_NUM_IB; i++) {
+		if (!(dev_priv->ib_alloc_bitmap & (1 << i))){
+			index = i;
+			break;
+		}
+	}
+
+	/* if all in use we need to wait */
+	if (index == -1) {
+		for (i = 0; i < RADEON_NUM_IB; i++) {
+			if (dev_priv->ib_alloc_bitmap & (1 << i)) {
+				mutex_lock(&dev_priv->ib_objs[i]->bo->mutex);
+				ret = drm_bo_wait(dev_priv->ib_objs[i]->bo, 0, 1, 0, 0);
+				mutex_unlock(&dev_priv->ib_objs[i]->bo->mutex);
+				if (ret)
+					continue;
+				dev_priv->ib_alloc_bitmap &= ~(1 << i);
+				index = i;
+				break;
+			}
+		}
+	}
+
+	if (index == -1) {
+		DRM_ERROR("Major case fail to allocate IB from freelist %x\n", dev_priv->ib_alloc_bitmap);
+		return -EINVAL;
+	}
+		
+
+	if (dwords > RADEON_IB_SIZE / sizeof(uint32_t))
+		return -EINVAL;
+
+	*ib = dev_priv->ib_objs[index]->kmap.virtual;
+	dev_priv->ib_alloc_bitmap |= (1 << i);
+	return 0;
+}
+
+static void radeon_gem_ib_free(struct drm_device *dev, void *ib, uint32_t dwords)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_fence_object *fence;
+	int ret;
+	int i;
+	RING_LOCALS;
+
+	for (i = 0; i < RADEON_NUM_IB; i++) {
+
+		if (dev_priv->ib_objs[i]->kmap.virtual == ib) {
+			ret = drm_bo_do_validate(dev_priv->ib_objs[i]->bo, 0,
+				 DRM_BO_FLAG_NO_EVICT,
+				 0, 0, NULL);
+			if (ret)
+				DRM_ERROR("FAiled to validate\n");
+
+			DRM_DEBUG("validated IB %x, %d\n", dev_priv->ib_objs[i]->bo->offset, dwords);
+			BEGIN_RING(4);
+			
+			OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
+			OUT_RING(dev_priv->gart_vm_start + dev_priv->ib_objs[i]->bo->offset);
+			OUT_RING(dwords);
+			OUT_RING(CP_PACKET2());
+
+			ADVANCE_RING();
+
+			COMMIT_RING();
+
+			/* emit a fence object */
+			ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
+			if (ret) {
+				
+				drm_putback_buffer_objects(dev);
+			}
+			/* dereference the fence object */
+			if (fence)
+				drm_fence_usage_deref_unlocked(&fence);
+		}
+	}
+
+}
+
+static int radeon_gem_ib_destroy(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	int i;
+
+	if (dev_priv->ib_objs) {
+		for (i = 0; i < RADEON_NUM_IB; i++) {
+			if (dev_priv->ib_objs[i]) {
+				drm_bo_kunmap(&dev_priv->ib_objs[i]->kmap);
+				drm_bo_usage_deref_unlocked(&dev_priv->ib_objs[i]->bo);
+			}
+			drm_free(dev_priv->ib_objs[i], sizeof(struct radeon_mm_obj), DRM_MEM_DRIVER);
+		}
+		drm_free(dev_priv->ib_objs, RADEON_NUM_IB*sizeof(struct radeon_mm_obj *), DRM_MEM_DRIVER);
+	}
+	dev_priv->ib_objs = NULL;
+	return 0;
+}
+
+/* allocate 1MB of 64k IBs the the kernel can keep mapped */
+static int radeon_gem_ib_init(struct drm_device *dev)
+{
+
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	int i;
+	int ret;
+
+	dev_priv->ib_objs = drm_calloc(RADEON_NUM_IB, sizeof(struct radeon_mm_obj *), DRM_MEM_DRIVER);
+	if (!dev_priv->ib_objs)
+		goto free_all;
+
+	for (i = 0; i  < RADEON_NUM_IB; i++) {
+		dev_priv->ib_objs[i] = drm_calloc(1, sizeof(struct radeon_mm_obj), DRM_MEM_DRIVER);
+		if (!dev_priv->ib_objs[i])
+			goto free_all;
+
+		ret = drm_buffer_object_create(dev, RADEON_IB_SIZE,
+					       drm_bo_type_kernel,
+					       DRM_BO_FLAG_READ | DRM_BO_FLAG_MEM_TT |
+					       DRM_BO_FLAG_MAPPABLE, 0,
+					       0, 0, &dev_priv->ib_objs[i]->bo);
+		if (ret)
+			goto free_all;
+
+		ret = drm_bo_kmap(dev_priv->ib_objs[i]->bo, 0, RADEON_IB_SIZE >> PAGE_SHIFT,
+				  &dev_priv->ib_objs[i]->kmap);
+
+		if (ret)
+			goto free_all;
+	}
+
+	dev_priv->ib_alloc_bitmap = 0;
+
+	dev_priv->cs.ib_get = radeon_gem_ib_get;
+	dev_priv->cs.ib_free = radeon_gem_ib_free;
+
+	radeon_cs_init(dev);
+	return 0;
+
+free_all:
+	radeon_gem_ib_destroy(dev);
+	return -ENOMEM;
 }
 
