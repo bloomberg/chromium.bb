@@ -594,20 +594,20 @@ struct drm_gem_name_info_data {
 	int			eof;
 };
 
-static int drm_gem_one_name_info (int id, void *ptr, void *data)
+static int drm_gem_one_name_info(int id, void *ptr, void *data)
 {
 	struct drm_gem_object *obj = ptr;
 	struct drm_gem_name_info_data	*nid = data;
 
-	DRM_INFO ("name %d size %d\n", obj->name, obj->size);
+	DRM_INFO("name %d size %d\n", obj->name, obj->size);
 	if (nid->eof)
 		return 0;
-	
-	nid->len += sprintf (&nid->buf[nid->len],
-			     "%6d%9d%8d%9d\n",
-			     obj->name, obj->size,
-			     atomic_read(&obj->handlecount.refcount),
-			     atomic_read(&obj->refcount.refcount));
+
+	nid->len += sprintf(&nid->buf[nid->len],
+			    "%6d%9d%8d%9d\n",
+			    obj->name, obj->size,
+			    atomic_read(&obj->handlecount.refcount),
+			    atomic_read(&obj->refcount.refcount));
 	if (nid->len > DRM_PROC_LIMIT) {
 		nid->eof = 1;
 		return 0;
@@ -618,20 +618,20 @@ static int drm_gem_one_name_info (int id, void *ptr, void *data)
 static int drm_gem_name_info(char *buf, char **start, off_t offset,
 			     int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	struct drm_gem_name_info_data nid;
-	
+
 	if (offset > DRM_PROC_LIMIT) {
 		*eof = 1;
 		return 0;
 	}
 
-	nid.len = sprintf (buf, "  name     size handles refcount\n");
+	nid.len = sprintf(buf, "  name     size handles refcount\n");
 	nid.buf = buf;
 	nid.eof = 0;
-	idr_for_each (&dev->object_name_idr, drm_gem_one_name_info, &nid);
-	
+	idr_for_each(&dev->object_name_idr, drm_gem_one_name_info, &nid);
+
 	*start = &buf[offset];
 	*eof = 0;
 	if (nid.len > request + offset)
@@ -643,10 +643,10 @@ static int drm_gem_name_info(char *buf, char **start, off_t offset,
 static int drm_gem_object_info(char *buf, char **start, off_t offset,
 			       int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	int len = 0;
-	
+
 	if (offset > DRM_PROC_LIMIT) {
 		*eof = 1;
 		return 0;
@@ -654,11 +654,11 @@ static int drm_gem_object_info(char *buf, char **start, off_t offset,
 
 	*start = &buf[offset];
 	*eof = 0;
-	DRM_PROC_PRINT("%d objects\n", atomic_read (&dev->object_count));
-	DRM_PROC_PRINT("%d object bytes\n", atomic_read (&dev->object_memory));
-	DRM_PROC_PRINT("%d pinned\n", atomic_read (&dev->pin_count));
-	DRM_PROC_PRINT("%d pin bytes\n", atomic_read (&dev->pin_memory));
-	DRM_PROC_PRINT("%d gtt bytes\n", atomic_read (&dev->gtt_memory));
+	DRM_PROC_PRINT("%d objects\n", atomic_read(&dev->object_count));
+	DRM_PROC_PRINT("%d object bytes\n", atomic_read(&dev->object_memory));
+	DRM_PROC_PRINT("%d pinned\n", atomic_read(&dev->pin_count));
+	DRM_PROC_PRINT("%d pin bytes\n", atomic_read(&dev->pin_memory));
+	DRM_PROC_PRINT("%d gtt bytes\n", atomic_read(&dev->gtt_memory));
 	DRM_PROC_PRINT("%d gtt total\n", dev->gtt_total);
 	if (len > request + offset)
 		return request;
