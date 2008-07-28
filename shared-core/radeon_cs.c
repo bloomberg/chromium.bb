@@ -156,7 +156,25 @@ int radeon_cs_parse(struct drm_device *dev, void *ib,
 
 		case RADEON_CP_PACKET3:
 			reg = hdr & 0xff00;
-			DRM_DEBUG("Packet 3: %d  %x\n", num_dw, reg);
+			
+			switch(reg) {
+			case RADEON_CNTL_HOSTDATA_BLT:
+			case RADEON_CNTL_BITBLT_MULTI:
+			case RADEON_3D_LOAD_VBPNTR:	/* load vertex array pointers */
+			case RADEON_CP_INDX_BUFFER:
+				DRM_ERROR("need relocate packet 3 for %x\n", reg);
+				break;
+
+			case RADEON_CP_3D_DRAW_IMMD_2:	/* triggers drawing using in-packet vertex data */
+			case RADEON_CP_3D_DRAW_VBUF_2:	/* triggers drawing of vertex buffers setup elsewhere */
+			case RADEON_CP_3D_DRAW_INDX_2:	/* triggers drawing using indices to vertex buffer */
+			case RADEON_WAIT_FOR_IDLE:
+			case RADEON_CP_NOP:
+				break;
+			default:
+				DRM_ERROR("unknown packet 3 %x\n", reg);
+				ret = -EINVAL;
+			}
 			break;
 		}
 
