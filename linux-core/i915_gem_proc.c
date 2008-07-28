@@ -35,7 +35,7 @@
 static int i915_gem_active_info(char *buf, char **start, off_t offset,
 				int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv;
@@ -74,7 +74,7 @@ static int i915_gem_active_info(char *buf, char **start, off_t offset,
 static int i915_gem_flushing_info(char *buf, char **start, off_t offset,
 				  int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv;
@@ -112,7 +112,7 @@ static int i915_gem_flushing_info(char *buf, char **start, off_t offset,
 static int i915_gem_inactive_info(char *buf, char **start, off_t offset,
 				  int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv;
@@ -150,7 +150,7 @@ static int i915_gem_inactive_info(char *buf, char **start, off_t offset,
 static int i915_gem_request_info(char *buf, char **start, off_t offset,
 				 int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_request *gem_request;
@@ -167,10 +167,10 @@ static int i915_gem_request_info(char *buf, char **start, off_t offset,
 	list_for_each_entry(gem_request, &dev_priv->mm.request_list,
 			    list)
 	{
-		DRM_PROC_PRINT ("    %d @ %d %08x\n",
-				gem_request->seqno,
-				(int) (jiffies - gem_request->emitted_jiffies),
-				gem_request->flush_domains);
+		DRM_PROC_PRINT("    %d @ %d %08x\n",
+			       gem_request->seqno,
+			       (int) (jiffies - gem_request->emitted_jiffies),
+			       gem_request->flush_domains);
 	}
 	if (len > request + offset)
 		return request;
@@ -181,7 +181,7 @@ static int i915_gem_request_info(char *buf, char **start, off_t offset,
 static int i915_gem_seqno_info(char *buf, char **start, off_t offset,
 			       int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int len = 0;
@@ -194,7 +194,8 @@ static int i915_gem_seqno_info(char *buf, char **start, off_t offset,
 	*start = &buf[offset];
 	*eof = 0;
 	DRM_PROC_PRINT("Current sequence: %d\n", i915_get_gem_seqno(dev));
-	DRM_PROC_PRINT("Waiter sequence:  %d\n", dev_priv->mm.waiting_gem_seqno);
+	DRM_PROC_PRINT("Waiter sequence:  %d\n",
+		       dev_priv->mm.waiting_gem_seqno);
 	DRM_PROC_PRINT("IRQ sequence:     %d\n", dev_priv->mm.irq_gem_seqno);
 	if (len > request + offset)
 		return request;
@@ -206,7 +207,7 @@ static int i915_gem_seqno_info(char *buf, char **start, off_t offset,
 static int i915_interrupt_info(char *buf, char **start, off_t offset,
 			       int request, int *eof, void *data)
 {
-	struct drm_minor *minor = (struct drm_minor *) data; 
+	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	int len = 0;
@@ -243,8 +244,10 @@ static int i915_interrupt_info(char *buf, char **start, off_t offset,
 }
 
 static struct drm_proc_list {
-	const char *name;	/**< file name */
-	int (*f) (char *, char **, off_t, int, int *, void *);		/**< proc callback*/
+	/** file name */
+	const char *name;
+	/** proc callback*/
+	int (*f) (char *, char **, off_t, int, int *, void *);
 } i915_gem_proc_list[] = {
 	{"i915_gem_active", i915_gem_active_info},
 	{"i915_gem_flushing", i915_gem_flushing_info},

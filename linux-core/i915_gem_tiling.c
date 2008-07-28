@@ -91,10 +91,10 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 	uint32_t swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
 	uint32_t swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
 	int mchbar_offset;
-	volatile char *mchbar;
+	char __iomem *mchbar;
 	int ret;
 
-	bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0,0));
+	bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0, 0));
 	if (bridge == NULL) {
 		DRM_ERROR("Couldn't get bridge device\n");
 		return;
@@ -165,7 +165,7 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 			swizzle_x = I915_BIT_6_SWIZZLE_9_10;
 			swizzle_y = I915_BIT_6_SWIZZLE_9;
 		}
-	} else if (IS_I9XX(dev)){
+	} else if (IS_I9XX(dev)) {
 		uint32_t dcc;
 
 		/* On 915-945 and GM965, channel interleave by the CPU is

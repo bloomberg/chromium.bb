@@ -294,14 +294,14 @@ typedef struct drm_i915_private {
 		 * fires, go retire requests.
 		 */
 		struct delayed_work retire_work;
-		
+
 		uint32_t next_gem_seqno;
 
 		/**
 		 * Waiting sequence number, if any
 		 */
 		uint32_t waiting_gem_seqno;
-	
+
 		/**
 		 * Last seq seen at irq time
 		 */
