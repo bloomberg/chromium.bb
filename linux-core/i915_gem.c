@@ -127,7 +127,7 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
-		return -EINVAL;
+		return -EBADF;
 	obj_priv = obj->driver_private;
 
 	/* Bounds check source.
@@ -137,7 +137,7 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 	if (args->offset > obj->size || args->size > obj->size ||
 	    args->offset + args->size > obj->size) {
 		drm_gem_object_unreference(obj);
-		return -EFAULT;
+		return -EINVAL;
 	}
 
 	mutex_lock(&dev->struct_mutex);
@@ -326,7 +326,7 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
-		return -EINVAL;
+		return -EBADF;
 	obj_priv = obj->driver_private;
 
 	/** Bounds check destination.
@@ -336,7 +336,7 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	if (args->offset > obj->size || args->size > obj->size || 
 	    args->offset + args->size > obj->size) {
 		drm_gem_object_unreference(obj);
-		return -EFAULT;
+		return -EINVAL;
 	}
 
 	/* We can only do the GTT pwrite on untiled buffers, as otherwise
@@ -345,7 +345,8 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	 * pread/pwrite currently are reading and writing from the CPU
 	 * perspective, requiring manual detiling by the client.
 	 */
-	if (obj_priv->tiling_mode == I915_TILING_NONE)
+	if (obj_priv->tiling_mode == I915_TILING_NONE &&
+	    dev->gtt_total != 0)
 		ret = i915_gem_gtt_pwrite(dev, obj, args, file_priv);
 	else
 		ret = i915_gem_shmem_pwrite(dev, obj, args, file_priv);
@@ -376,7 +377,7 @@ i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
-		return -EINVAL;
+		return -EBADF;
 
 	mutex_lock(&dev->struct_mutex);
 	ret = i915_gem_set_domain(obj, file_priv,
@@ -405,7 +406,7 @@ i915_gem_sw_finish_ioctl(struct drm_device *dev, void *data,
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL) {
 		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
+		return -EBADF;
 	}
 
 #if WATCH_BUF
@@ -446,7 +447,7 @@ i915_gem_mmap_ioctl(struct drm_device *dev, void *data,
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
-		return -EINVAL;
+		return -EBADF;
 
 	offset = args->offset;
 
@@ -1517,7 +1518,7 @@ i915_gem_object_pin_and_relocate(struct drm_gem_object *obj,
 						   reloc.target_handle);
 		if (target_obj == NULL) {
 			i915_gem_object_unpin(obj);
-			return -EINVAL;
+			return -EBADF;
 		}
 		target_obj_priv = target_obj->driver_private;
 
@@ -1818,7 +1819,7 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
 		if (object_list[i] == NULL) {
 			DRM_ERROR("Invalid object handle %d at index %d\n",
 				   exec_list[i].handle, i);
-			ret = -EINVAL;
+			ret = -EBADF;
 			goto err;
 		}
 
@@ -2029,7 +2030,7 @@ i915_gem_pin_ioctl(struct drm_device *dev, void *data,
 		DRM_ERROR("Bad handle in i915_gem_pin_ioctl(): %d\n",
 			  args->handle);
 		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
+		return -EBADF;
 	}
 	obj_priv = obj->driver_private;
 
@@ -2069,7 +2070,7 @@ i915_gem_unpin_ioctl(struct drm_device *dev, void *data,
 		DRM_ERROR("Bad handle in i915_gem_unpin_ioctl(): %d\n",
 			  args->handle);
 		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
+		return -EBADF;
 	}
 
 	i915_gem_object_unpin(obj);
@@ -2093,7 +2094,7 @@ i915_gem_busy_ioctl(struct drm_device *dev, void *data,
 		DRM_ERROR("Bad handle in i915_gem_busy_ioctl(): %d\n",
 			  args->handle);
 		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
+		return -EBADF;
 	}
 
 	obj_priv = obj->driver_private;

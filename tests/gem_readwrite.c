@@ -94,6 +94,7 @@ int main(int argc, char **argv)
 
 	printf("Testing read beyond end of buffer.\n");
 	ret = do_read(fd, handle, buf, OBJECT_SIZE / 2, OBJECT_SIZE);
+	printf("%d %d\n", ret, errno);
 	assert(ret == -1 && errno == EINVAL);
 
 	printf("Testing full write of buffer\n");
@@ -119,6 +120,14 @@ int main(int argc, char **argv)
 	ret = do_read(fd, handle, buf, 512, 1024);
 	assert(ret == 0);
 	assert(memcmp(buf, expected + 512, 1024) == 0);
+
+	printf("Testing read of bad buffer handle\n");
+	ret = do_read(fd, 1234, buf, 0, 1024);
+	assert(ret == -1 && errno == EBADF);
+
+	printf("Testing write of bad buffer handle\n");
+	ret = do_write(fd, 1234, buf, 0, 1024);
+	assert(ret == -1 && errno == EBADF);
 
 	close(fd);
 
