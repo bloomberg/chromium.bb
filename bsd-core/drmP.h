@@ -632,7 +632,7 @@ struct drm_ati_pcigart_info {
 #define DMA_BIT_MASK(n) (((n) == 64) ? ~0ULL : (1ULL<<(n)) - 1)
 #endif
 
-#define upper_32_bits(_val) (((u64)(_val)) >> 32)
+#define upper_32_bits(n) ((u32)(((n) >> 16) >> 16))
 
 struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
@@ -733,11 +733,13 @@ struct drm_device {
 
 				/* Locks */
 #if defined(__FreeBSD__) && __FreeBSD_version > 500000
+	struct mtx	  vbl_lock;	/* protects vblank operations */
 	struct mtx	  dma_lock;	/* protects dev->dma */
 	struct mtx	  irq_lock;	/* protects irq condition checks */
 	struct mtx	  dev_lock;	/* protects everything else */
 #endif
 	DRM_SPINTYPE	  drw_lock;
+	DRM_SPINTYPE	  tsk_lock;
 
 				/* Usage Counters */
 	int		  open_count;	/* Outstanding files open	   */
@@ -785,25 +787,21 @@ struct drm_device {
 
 	atomic_t	  context_flag;	/* Context swapping flag	   */
 	int		  last_context;	/* Last current context		   */
+	int		  vblank_disable_allowed;
 	wait_queue_head_t *vbl_queue;	/* vblank wait queue */
 	atomic_t	  *_vblank_count;	/* number of VBLANK interrupts */
 						/* (driver must alloc the right number of counters) */
-	struct mtx	  vbl_lock;
 	struct drm_vbl_sig_list *vbl_sigs;	/* signal list to send on VBLANK */
 	atomic_t 	  vbl_signal_pending;	/* number of signals pending on all crtcs*/
 	atomic_t	  *vblank_refcount;	/* number of users of vblank interrupts per crtc */
 	u32		  *last_vblank;		/* protected by dev->vbl_lock, used */
 						/* for wraparound handling */
-
-	u32		  *vblank_offset;	/* used to track how many vblanks */
 	int		  *vblank_enabled;	/* so we don't call enable more than */
 						/* once per disable */
-	u32 		  *vblank_premodeset;	/* were lost during modeset */
+	int 		  *vblank_inmodeset;	/* Display driver is setting mode */
 	struct callout	  vblank_disable_timer;
-	unsigned long	  max_vblank_count;	/* size of vblank counter register */
+	u32		  max_vblank_count;	/* size of vblank counter register */
 	int		  num_crtcs;
-	atomic_t	  vbl_received;
-	atomic_t	  vbl_received2;
 
 #ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */
@@ -933,7 +931,6 @@ void	drm_handle_vblank(struct drm_device *dev, int crtc);
 u32	drm_vblank_count(struct drm_device *dev, int crtc);
 int	drm_vblank_get(struct drm_device *dev, int crtc);
 void	drm_vblank_put(struct drm_device *dev, int crtc);
-void	drm_update_vblank_count(struct drm_device *dev, int crtc);
 int	drm_vblank_wait(struct drm_device *dev, unsigned int *vbl_seq);
 int	drm_vblank_init(struct drm_device *dev, int num_crtcs);
 void	drm_vbl_send_signals(struct drm_device *dev, int crtc);
@@ -1089,6 +1086,8 @@ int	drm_sg_free(struct drm_device *dev, void *data,
 drm_dma_handle_t *drm_pci_alloc(struct drm_device *dev, size_t size,
 				size_t align, dma_addr_t maxaddr);
 void	drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah);
+
+#define drm_core_ioremap_wc drm_core_ioremap
 
 /* Inline replacements for DRM_IOREMAP macros */
 static __inline__ void

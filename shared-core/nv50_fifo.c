@@ -289,6 +289,7 @@ void
 nv50_fifo_destroy_context(struct nouveau_channel *chan)
 {
 	struct drm_device *dev = chan->dev;
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("ch%d\n", chan->id);
 
@@ -297,6 +298,9 @@ nv50_fifo_destroy_context(struct nouveau_channel *chan)
 	/* Dummy channel, also used on ch 127 */
 	if (chan->id == 0)
 		nv50_fifo_channel_disable(dev, 127, 0);
+
+	if ((NV_READ(NV03_PFIFO_CACHE1_PUSH1) & 0xffff) == chan->id)
+		NV_WRITE(NV03_PFIFO_CACHE1_PUSH1, 127);
 
 	nouveau_gpuobj_ref_del(dev, &chan->ramfc);
 }

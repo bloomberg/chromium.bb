@@ -125,6 +125,7 @@ static drm_ioctl_desc_t		  drm_ioctls[256] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_SG_FREE, drm_sg_free, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_WAIT_VBLANK, drm_wait_vblank, 0),
+	DRM_IOCTL_DEF(DRM_IOCTL_MODESET_CTL, drm_modeset_ctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_UPDATE_DRAW, drm_update_draw, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 };
 
@@ -202,8 +203,11 @@ int drm_attach(device_t nbdev, drm_pci_id_list_t *idlist)
 			DRM_DEV_MODE,
 			"dri/card%d", unit);
 #if __FreeBSD_version >= 500000
-	mtx_init(&dev->dev_lock, "drm device", NULL, MTX_DEF);
+	mtx_init(&dev->dev_lock, "drmdev", NULL, MTX_DEF);
+	mtx_init(&dev->irq_lock, "drmirq", NULL, MTX_DEF);
+	mtx_init(&dev->vbl_lock, "drmvbl", NULL, MTX_DEF);
 	mtx_init(&dev->drw_lock, "drmdrw", NULL, MTX_DEF);
+	mtx_init(&dev->tsk_lock, "drmtsk", NULL, MTX_DEF);
 #endif
 
 	id_entry = drm_find_description(pci_get_vendor(dev->device),
@@ -542,6 +546,8 @@ static int drm_load(struct drm_device *dev)
 		/* Shared code returns -errno. */
 		retcode = -dev->driver.load(dev,
 		    dev->id_entry->driver_private);
+		if (pci_enable_busmaster(dev->device))
+			DRM_ERROR("Request to enable bus-master failed.\n");
 		DRM_UNLOCK();
 		if (retcode != 0)
 			goto error;
@@ -594,6 +600,9 @@ error:
 #ifdef __FreeBSD__
 	destroy_dev(dev->devnode);
 #if __FreeBSD_version >= 500000
+	mtx_destroy(&dev->drw_lock);
+	mtx_destroy(&dev->irq_lock);
+	mtx_destroy(&dev->vbl_lock);
 	mtx_destroy(&dev->dev_lock);
 #endif
 #endif
@@ -649,7 +658,14 @@ static void drm_unload(struct drm_device *dev)
 	delete_unrhdr(dev->drw_unrhdr);
 
 	drm_mem_uninit();
+
+	if (pci_disable_busmaster(dev->device))
+		DRM_ERROR("Request to disable bus-master failed.\n");
+
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
+	mtx_destroy(&dev->drw_lock);
+	mtx_destroy(&dev->irq_lock);
+	mtx_destroy(&dev->vbl_lock);
 	mtx_destroy(&dev->dev_lock);
 #endif
 }

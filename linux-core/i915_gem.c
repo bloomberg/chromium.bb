@@ -561,11 +561,11 @@ i915_add_request(struct drm_device *dev, uint32_t flush_domains)
 		dev_priv->mm.next_gem_seqno++;
 
 	BEGIN_LP_RING(4);
-	OUT_RING(CMD_STORE_DWORD_IDX);
-	OUT_RING(I915_GEM_HWS_INDEX << STORE_DWORD_INDEX_SHIFT);
+	OUT_RING(MI_STORE_DWORD_INDEX);
+	OUT_RING(I915_GEM_HWS_INDEX << MI_STORE_DWORD_INDEX_SHIFT);
 	OUT_RING(seqno);
 
-	OUT_RING(GFX_OP_USER_INTERRUPT);
+	OUT_RING(MI_USER_INTERRUPT);
 	ADVANCE_LP_RING();
 
 	DRM_DEBUG("%d\n", seqno);
@@ -591,7 +591,7 @@ uint32_t
 i915_retire_commands(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	uint32_t cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
+	uint32_t cmd = MI_FLUSH | MI_NO_WRITE_FLUSH;
 	uint32_t flush_domains = 0;
 	RING_LOCALS;
 
@@ -818,7 +818,7 @@ i915_gem_flush(struct drm_device *dev,
 		 * are flushed at any MI_FLUSH.
 		 */
 
-		cmd = CMD_MI_FLUSH | MI_NO_WRITE_FLUSH;
+		cmd = MI_FLUSH | MI_NO_WRITE_FLUSH;
 		if ((invalidate_domains|flush_domains) &
 		    I915_GEM_DOMAIN_RENDER)
 			cmd &= ~MI_NO_WRITE_FLUSH;
@@ -2381,14 +2381,14 @@ i915_gem_init_ringbuffer(struct drm_device *dev)
 	dev_priv->ring.virtual_start = dev_priv->ring.map.handle;
 
 	/* Stop the ring if it's running. */
-	I915_WRITE(LP_RING + RING_LEN, 0);
-	I915_WRITE(LP_RING + RING_HEAD, 0);
-	I915_WRITE(LP_RING + RING_TAIL, 0);
-	I915_WRITE(LP_RING + RING_START, 0);
+	I915_WRITE(PRB0_CTL, 0);
+	I915_WRITE(PRB0_HEAD, 0);
+	I915_WRITE(PRB0_TAIL, 0);
+	I915_WRITE(PRB0_START, 0);
 
 	/* Initialize the ring. */
-	I915_WRITE(LP_RING + RING_START, obj_priv->gtt_offset);
-	I915_WRITE(LP_RING + RING_LEN,
+	I915_WRITE(PRB0_START, obj_priv->gtt_offset);
+	I915_WRITE(PRB0_CTL,
 		   ((obj->size - 4096) & RING_NR_PAGES) |
 		   RING_NO_REPORT |
 		   RING_VALID);

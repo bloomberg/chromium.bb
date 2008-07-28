@@ -93,7 +93,7 @@ int xgi_alloc_ioctl(struct drm_device * dev, void * data,
 }
 
 
-int xgi_free(struct xgi_info * info, unsigned long index,
+int xgi_free(struct xgi_info * info, unsigned int index,
 	     struct drm_file * filp)
 {
 	int err;
@@ -111,7 +111,7 @@ int xgi_free_ioctl(struct drm_device * dev, void * data,
 {
 	struct xgi_info *info = dev->dev_private;
 
-	return xgi_free(info, *(unsigned long *) data, filp);
+	return xgi_free(info, *(unsigned int *) data, filp);
 }
 
 

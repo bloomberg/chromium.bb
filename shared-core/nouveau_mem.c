@@ -35,8 +35,9 @@
 #include "drm_sarea.h"
 #include "nouveau_drv.h"
 
-static struct mem_block *split_block(struct mem_block *p, uint64_t start, uint64_t size,
-		struct drm_file *file_priv)
+static struct mem_block *
+split_block(struct mem_block *p, uint64_t start, uint64_t size,
+	    struct drm_file *file_priv)
 {
 	/* Maybe cut off the start of an existing block */
 	if (start > p->start) {
@@ -77,10 +78,9 @@ out:
 	return p;
 }
 
-struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap,
-					  uint64_t size,
-					  int align2,
-					  struct drm_file *file_priv)
+struct mem_block *
+nouveau_mem_alloc_block(struct mem_block *heap, uint64_t size,
+			int align2, struct drm_file *file_priv, int tail)
 {
 	struct mem_block *p;
 	uint64_t mask = (1 << align2) - 1;
@@ -88,10 +88,22 @@ struct mem_block *nouveau_mem_alloc_block(struct mem_block *heap,
 	if (!heap)
 		return NULL;
 
-	list_for_each(p, heap) {
-		uint64_t start = (p->start + mask) & ~mask;
-		if (p->file_priv == 0 && start + size <= p->start + p->size)
-			return split_block(p, start, size, file_priv);
+	if (tail) {
+		list_for_each_prev(p, heap) {
+			uint64_t start = ((p->start + p->size) - size) & ~mask;
+
+			if (p->file_priv == 0 && start >= p->start &&
+			    start + size <= p->start + p->size)
+				return split_block(p, start, size, file_priv);
+		}
+	} else {
+		list_for_each(p, heap) {
+			uint64_t start = (p->start + mask) & ~mask;
+
+			if (p->file_priv == 0 &&
+			    start + size <= p->start + p->size)
+				return split_block(p, start, size, file_priv);
+		}
 	}
 
 	return NULL;
@@ -563,13 +575,13 @@ int nouveau_mem_init(struct drm_device *dev)
 	return 0;
 }
 
-struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
-				    uint64_t size, int flags,
-				    struct drm_file *file_priv)
+struct mem_block *
+nouveau_mem_alloc(struct drm_device *dev, int alignment, uint64_t size,
+		  int flags, struct drm_file *file_priv)
 {
-	struct mem_block *block;
-	int type;
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct mem_block *block;
+	int type, tail = !(flags & NOUVEAU_MEM_USER);
 
 	/*
 	 * Make things easier on ourselves: all allocations are page-aligned.
@@ -581,8 +593,11 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
 	/* Align allocation sizes to 64KiB blocks on G8x.  We use a 64KiB
 	 * page size in the GPU VM.
 	 */
-	if (flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50)
-		size = (size + (64 * 1024)) & ~((64 * 1024) - 1);
+	if (flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50) {
+		size = (size + 65535) & ~65535;
+		if (alignment < 16)
+			alignment = 16;
+	}
 
 	/*
 	 * Warn about 0 sized allocations, but let it go through. It'll return 1 page
@@ -600,14 +615,14 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
 #define NOUVEAU_MEM_ALLOC_AGP {\
 		type=NOUVEAU_MEM_AGP;\
                 block = nouveau_mem_alloc_block(dev_priv->agp_heap, size,\
-                                                alignment, file_priv); \
+                                                alignment, file_priv, tail); \
                 if (block) goto alloc_ok;\
 	        }
 
 #define NOUVEAU_MEM_ALLOC_PCI {\
                 type = NOUVEAU_MEM_PCI;\
                 block = nouveau_mem_alloc_block(dev_priv->pci_heap, size, \
-						alignment, file_priv); \
+						alignment, file_priv, tail); \
                 if ( block ) goto alloc_ok;\
 	        }
 
@@ -616,11 +631,11 @@ struct mem_block* nouveau_mem_alloc(struct drm_device *dev, int alignment,
                 if (!(flags&NOUVEAU_MEM_MAPPED)) {\
                         block = nouveau_mem_alloc_block(dev_priv->fb_nomap_heap,\
                                                         size, alignment, \
-							file_priv); \
+							file_priv, tail); \
                         if (block) goto alloc_ok;\
                 }\
                 block = nouveau_mem_alloc_block(dev_priv->fb_heap, size,\
-                                                alignment, file_priv);\
+                                                alignment, file_priv, tail);\
                 if (block) goto alloc_ok;\
 	        }
 
@@ -644,6 +659,7 @@ alloc_ok:
 		struct nouveau_gpuobj *pt = dev_priv->vm_vram_pt;
 		unsigned offset = block->start;
 		unsigned count = block->size / 65536;
+		unsigned tile = 0;
 
 		if (!pt) {
 			DRM_ERROR("vm alloc without vm pt\n");
@@ -651,11 +667,22 @@ alloc_ok:
 			return NULL;
 		}
 
+		/* The tiling stuff is *not* what NVIDIA does - but both the
+		 * 2D and 3D engines seem happy with this simpler method.
+		 * Should look into why NVIDIA do what they do at some point.
+		 */
+		if (flags & NOUVEAU_MEM_TILE) {
+			if (flags & NOUVEAU_MEM_TILE_ZETA)
+				tile = 0x00002800;
+			else
+				tile = 0x00007000;
+		}
+
 		while (count--) {
 			unsigned pte = offset / 65536;
 
 			INSTANCE_WR(pt, (pte * 2) + 0, offset | 1);
-			INSTANCE_WR(pt, (pte * 2) + 1, 0x00000000);
+			INSTANCE_WR(pt, (pte * 2) + 1, 0x00000000 | tile);
 			offset += 65536;
 		}
 	} else {
@@ -738,8 +765,11 @@ out_free:
  * Ioctls
  */
 
-int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv)
+int
+nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
 {
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_alloc *alloc = data;
 	struct mem_block *block;
 
@@ -748,24 +778,32 @@ int nouveau_ioctl_mem_alloc(struct drm_device *dev, void *data, struct drm_file 
 	if (alloc->flags & NOUVEAU_MEM_INTERNAL)
 		return -EINVAL;
 
-	block=nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
-				alloc->flags, file_priv);
+	block = nouveau_mem_alloc(dev, alloc->alignment, alloc->size,
+				  alloc->flags | NOUVEAU_MEM_USER, file_priv);
 	if (!block)
 		return -ENOMEM;
 	alloc->map_handle=block->map_handle;
 	alloc->offset=block->start;
 	alloc->flags=block->flags;
 
+	if (dev_priv->card_type >= NV_50 && alloc->flags & NOUVEAU_MEM_FB)
+		alloc->offset += 512*1024*1024;
+
 	return 0;
 }
 
-int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *file_priv)
+int
+nouveau_ioctl_mem_free(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_nouveau_mem_free *memfree = data;
 	struct mem_block *block;
 
 	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
+	if (dev_priv->card_type >= NV_50 && memfree->flags & NOUVEAU_MEM_FB)
+		memfree->offset -= 512*1024*1024;
 
 	block=NULL;
 	if (memfree->flags & NOUVEAU_MEM_FB)
@@ -782,3 +820,53 @@ int nouveau_ioctl_mem_free(struct drm_device *dev, void *data, struct drm_file *
 	nouveau_mem_free(dev, block);
 	return 0;
 }
+
+int
+nouveau_ioctl_mem_tile(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	struct drm_nouveau_mem_tile *memtile = data;
+	struct mem_block *block = NULL;
+
+	NOUVEAU_CHECK_INITIALISED_WITH_RETURN;
+
+	if (dev_priv->card_type < NV_50)
+		return -EINVAL;
+	
+	if (memtile->flags & NOUVEAU_MEM_FB) {
+		memtile->offset -= 512*1024*1024;
+		block = find_block(dev_priv->fb_heap, memtile->offset);
+	}
+
+	if (!block)
+		return -EINVAL;
+
+	if (block->file_priv != file_priv)
+		return -EPERM;
+
+	{
+		struct nouveau_gpuobj *pt = dev_priv->vm_vram_pt;
+		unsigned offset = block->start + memtile->delta;
+		unsigned count = memtile->size / 65536;
+		unsigned tile = 0;
+
+		if (memtile->flags & NOUVEAU_MEM_TILE) {
+			if (memtile->flags & NOUVEAU_MEM_TILE_ZETA)
+				tile = 0x00002800;
+			else
+				tile = 0x00007000;
+		}
+
+		while (count--) {
+			unsigned pte = offset / 65536;
+
+			INSTANCE_WR(pt, (pte * 2) + 0, offset | 1);
+			INSTANCE_WR(pt, (pte * 2) + 1, 0x00000000 | tile);
+			offset += 65536;
+		}
+	}
+
+	return 0;
+}
+

@@ -20,7 +20,8 @@ r128-objs   := r128_drv.o r128_cce.o r128_state.o r128_irq.o
 mga-objs    := mga_drv.o mga_dma.o mga_state.o mga_warp.o mga_irq.o
 i810-objs   := i810_drv.o i810_dma.o
 i915-objs   := i915_drv.o i915_dma.o i915_irq.o i915_mem.o i915_fence.o \
-		i915_buffer.o i915_compat.o i915_execbuf.o \
+		i915_buffer.o i915_compat.o i915_execbuf.o i915_suspend.o \
+		i915_opregion.o \
 		i915_gem.o i915_gem_debug.o i915_gem_proc.o i915_gem_tiling.o
 nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
 		nouveau_object.o nouveau_irq.o nouveau_notifier.o nouveau_swmthd.o \

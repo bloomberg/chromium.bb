@@ -40,14 +40,14 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
-	u32 last_head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
-	u32 acthd_reg = IS_I965G(dev) ? I965REG_ACTHD : I915REG_ACTHD;
+	u32 last_head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
+	u32 acthd_reg = IS_I965G(dev) ? ACTHD_I965 : ACTHD;
 	u32 last_acthd = I915_READ(acthd_reg);
 	u32 acthd;
 	int i;
 
 	for (i = 0; i < 100000; i++) {
-		ring->head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
+		ring->head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
 		acthd = I915_READ(acthd_reg);
 		ring->space = ring->head - (ring->tail + 8);
 		if (ring->space < 0)
@@ -136,8 +136,8 @@ void i915_kernel_lost_context(struct drm_device * dev)
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
 
-	ring->head = I915_READ(LP_RING + RING_HEAD) & HEAD_ADDR;
-	ring->tail = I915_READ(LP_RING + RING_TAIL) & TAIL_ADDR;
+	ring->head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
+	ring->tail = I915_READ(PRB0_TAIL) & TAIL_ADDR;
 	ring->space = ring->head - (ring->tail + 8);
 	if (ring->space < 0)
 		ring->space += ring->Size;
@@ -542,8 +542,8 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 		dev_priv->sarea_priv->last_enqueue = dev_priv->counter;
 
 	BEGIN_LP_RING(4);
-	OUT_RING(CMD_STORE_DWORD_IDX);
-	OUT_RING(5 << STORE_DWORD_INDEX_SHIFT);
+	OUT_RING(MI_STORE_DWORD_INDEX);
+	OUT_RING(5 << MI_STORE_DWORD_INDEX_SHIFT);
 	OUT_RING(dev_priv->counter);
 	OUT_RING(0);
 	ADVANCE_LP_RING();
@@ -553,7 +553,7 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	uint32_t flush_cmd = CMD_MI_FLUSH;
+	uint32_t flush_cmd = MI_FLUSH;
 	RING_LOCALS;
 
 	flush_cmd |= flush;
@@ -1032,7 +1032,7 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 	dev_priv->hw_status_page = dev_priv->hws_map.handle;
 
 	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
-	I915_WRITE(0x02080, dev_priv->status_gfx_addr);
+	I915_WRITE(HWS_PGA, dev_priv->status_gfx_addr);
 	DRM_DEBUG("load hws 0x2080 with gfx mem 0x%x\n",
 			dev_priv->status_gfx_addr);
 	DRM_DEBUG("load hws at %p\n", dev_priv->hw_status_page);
@@ -1041,9 +1041,9 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 
 int i915_driver_load(struct drm_device *dev, unsigned long flags)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv;
 	unsigned long base, size;
-	int ret = 0, mmio_bar = IS_I9XX(dev) ? 0 : 1;
+	int ret = 0, num_pipes = 2, mmio_bar = IS_I9XX(dev) ? 0 : 1;
 
 	/* i915 has 4 more counters */
 	dev->counters += 4;
@@ -1074,15 +1074,43 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_init_chipset_flush_compat(dev);
 #endif
+	intel_opregion_init(dev);
 #endif
 
-	/* Init HWS
-	 */
-	if (!I915_NEED_GFX_HWS(dev)) {	
+	/* Init HWS */
+	if (!I915_NEED_GFX_HWS(dev)) {
 		ret = i915_init_hardware_status(dev);
 		if(ret)
 			return ret;
 	}
+
+	I915_WRITE16(HWSTAM, 0xeffe);
+	I915_WRITE16(IMR, 0x0);
+	I915_WRITE16(IER, 0x0);
+
+	DRM_SPININIT(&dev_priv->swaps_lock, "swap");
+	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
+	dev_priv->swaps_pending = 0;
+
+	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
+	dev_priv->user_irq_refcount = 0;
+	dev_priv->irq_mask_reg = ~0;
+
+	ret = drm_vblank_init(dev, num_pipes);
+	if (ret)
+		return ret;
+
+	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B;
+	dev->max_vblank_count = 0xffffff; /* only 24 bits of frame count */
+
+	i915_enable_interrupt(dev);
+	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
+
+	/*
+	 * Initialize the hardware status page IRQ location.
+	 */
+
+	I915_WRITE(INSTPM, (1 << 5) | (1 << 21));
 
 	return ret;
 }
@@ -1090,10 +1118,31 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 int i915_driver_unload(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
+	u32 temp;
+
+	if (dev_priv) {
+		dev_priv->vblank_pipe = 0;
+
+		dev_priv->irq_enabled = 0;
+		I915_WRITE(HWSTAM, 0xffffffff);
+		I915_WRITE(IMR, 0xffffffff);
+		I915_WRITE(IER, 0x0);
+
+		temp = I915_READ(PIPEASTAT);
+		I915_WRITE(PIPEASTAT, temp);
+		temp = I915_READ(PIPEBSTAT);
+		I915_WRITE(PIPEBSTAT, temp);
+		temp = I915_READ(IIR);
+		I915_WRITE(IIR, temp);
+	}
 
 	i915_free_hardware_status(dev);
 
     	drm_rmmap(dev, dev_priv->mmio_map);
+
+#ifdef __linux__
+	intel_opregion_free(dev);
+#endif
 
 	drm_free(dev->dev_private, sizeof(drm_i915_private_t),
 		 DRM_MEM_DRIVER);

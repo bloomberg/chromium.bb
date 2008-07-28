@@ -597,7 +597,7 @@ static int drm_agp_bind_ttm(struct drm_ttm_backend *backend,
 	int snooped = (bo_mem->flags & DRM_BO_FLAG_CACHED) && !(bo_mem->flags & DRM_BO_FLAG_CACHED_MAPPED);
 
 	DRM_DEBUG("drm_agp_bind_ttm\n");
-	mem->is_flushed = TRUE;
+	mem->is_flushed = true;
 	mem->type = AGP_USER_MEMORY;
 	/* CACHED MAPPED implies not snooped memory */
 	if (snooped)
@@ -696,7 +696,7 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 	agp_be->mem = NULL;
 
 	agp_be->bridge = dev->agp->bridge;
-	agp_be->populated = FALSE;
+	agp_be->populated = false;
 	agp_be->backend.func = &agp_ttm_backend;
 	agp_be->backend.dev = dev;
 

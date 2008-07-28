@@ -220,15 +220,15 @@ static int i915_interrupt_info(char *buf, char **start, off_t offset,
 	*start = &buf[offset];
 	*eof = 0;
 	DRM_PROC_PRINT("Interrupt enable:    %08x\n",
-		       I915_READ(I915REG_INT_ENABLE_R));
+		       I915_READ(IER));
 	DRM_PROC_PRINT("Interrupt identity:  %08x\n",
-		       I915_READ(I915REG_INT_IDENTITY_R));
+		       I915_READ(IIR));
 	DRM_PROC_PRINT("Interrupt mask:      %08x\n",
-		       I915_READ(I915REG_INT_MASK_R));
+		       I915_READ(IMR));
 	DRM_PROC_PRINT("Pipe A stat:         %08x\n",
-		       I915_READ(I915REG_PIPEASTAT));
+		       I915_READ(PIPEASTAT));
 	DRM_PROC_PRINT("Pipe B stat:         %08x\n",
-		       I915_READ(I915REG_PIPEBSTAT));
+		       I915_READ(PIPEBSTAT));
 	DRM_PROC_PRINT("Interrupts received: %d\n",
 		       atomic_read(&dev_priv->irq_received));
 	DRM_PROC_PRINT("Current sequence:    %d\n",

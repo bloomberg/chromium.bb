@@ -135,7 +135,7 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 		DRM_DEBUG("info->cmdring.last_ptr != NULL\n");
 
 		if (pCmdInfo->type == BTYPE_3D) {
-			xgi_emit_flush(info, FALSE);
+			xgi_emit_flush(info, false);
 		}
 
 		info->cmdring.last_ptr[1] = cpu_to_le32(begin[1]);
@@ -148,7 +148,9 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 	}
 
 	info->cmdring.last_ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
+#ifdef XGI_HAVE_FENCE
 	drm_fence_flush_old(info->dev, 0, info->next_sequence);
+#endif /* XGI_HAVE_FENCE */
 	return 0;
 }
 
@@ -214,7 +216,7 @@ void xgi_cmdlist_cleanup(struct xgi_info * info)
 		 * list chain with a flush command.
 		 */
 		if (info->cmdring.last_ptr != NULL) {
-			xgi_emit_flush(info, FALSE);
+			xgi_emit_flush(info, false);
 			xgi_emit_nop(info);
 		}
 
@@ -322,5 +324,5 @@ void xgi_emit_irq(struct xgi_info * info)
 	if (info->cmdring.last_ptr == NULL)
 		return;
 
-	xgi_emit_flush(info, TRUE);
+	xgi_emit_flush(info, true);
 }

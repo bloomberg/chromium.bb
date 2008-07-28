@@ -909,6 +909,14 @@ struct drm_device {
 	/** \name VBLANK IRQ support */
 	/*@{ */
 
+	/*
+	 * At load time, disabling the vblank interrupt won't be allowed since
+	 * old clients may not call the modeset ioctl and therefore misbehave.
+	 * Once the modeset ioctl *has* been called though, we can safely
+	 * disable them when unused.
+	 */
+	int vblank_disable_allowed;
+
 	wait_queue_head_t *vbl_queue;	/**< VBLANK wait queue */
 	atomic_t *_vblank_count;	/**< number of VBLANK interrupts (driver must alloc the right number of counters) */
 	spinlock_t vbl_lock;
@@ -917,13 +925,12 @@ struct drm_device {
 	atomic_t *vblank_refcount;	/* number of users of vblank interrupts per crtc */
 	u32 *last_vblank;		/* protected by dev->vbl_lock, used */
 					/* for wraparound handling */
-	u32 *vblank_offset;		/* used to track how many vblanks */
 	int *vblank_enabled;		/* so we don't call enable more than
 					   once per disable */
-	u32 *vblank_premodeset;		/*  were lost during modeset */
+	int *vblank_inmodeset;		/* Display driver is setting mode */
 	struct timer_list vblank_disable_timer;
 
-	unsigned long max_vblank_count; /**< size of vblank counter register */
+	u32 max_vblank_count;		/**< size of vblank counter register */
 	spinlock_t tasklet_lock;	/**< For drm_locked_tasklet */
 	void (*locked_tasklet_func)(struct drm_device *dev);
 
@@ -1241,7 +1248,6 @@ extern int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *
 extern int drm_vblank_wait(struct drm_device * dev, unsigned int *vbl_seq);
 extern void drm_locked_tasklet(struct drm_device *dev, void(*func)(struct drm_device*));
 extern u32 drm_vblank_count(struct drm_device *dev, int crtc);
-extern void drm_update_vblank_count(struct drm_device *dev, int crtc);
 extern void drm_handle_vblank(struct drm_device *dev, int crtc);
 extern int drm_vblank_get(struct drm_device *dev, int crtc);
 extern void drm_vblank_put(struct drm_device *dev, int crtc);
@@ -1420,6 +1426,7 @@ void drm_gem_open(struct drm_device *dev, struct drm_file *file_private);
 void drm_gem_release(struct drm_device *dev, struct drm_file *file_private);
 
 extern void drm_core_ioremap(struct drm_map *map, struct drm_device *dev);
+extern void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev);
 extern void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev);
 
 static __inline__ struct drm_map *drm_core_findmap(struct drm_device *dev,

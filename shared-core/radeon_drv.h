@@ -38,7 +38,7 @@
 
 #define DRIVER_NAME		"radeon"
 #define DRIVER_DESC		"ATI Radeon"
-#define DRIVER_DATE		"20080528"
+#define DRIVER_DATE		"20080613"
 
 /* Interface history:
  *
@@ -124,6 +124,7 @@ enum radeon_family {
 	CHIP_RV380,
 	CHIP_R420,
 	CHIP_RV410,
+	CHIP_RS400,
 	CHIP_RS480,
 	CHIP_RS690,
 	CHIP_RV515,
@@ -133,12 +134,6 @@ enum radeon_family {
 	CHIP_RV570,
 	CHIP_R580,
 	CHIP_LAST,
-};
-
-enum radeon_cp_microcode_version {
-	UCODE_R100,
-	UCODE_R200,
-	UCODE_R300,
 };
 
 /*
@@ -221,6 +216,9 @@ struct radeon_virt_surface {
 	struct drm_file *file_priv;
 };
 
+#define RADEON_FLUSH_EMITED	(1 < 0)
+#define RADEON_PURGE_EMITED	(1 < 1)
+
 typedef struct drm_radeon_private {
 
 	drm_radeon_ring_buffer_t ring;
@@ -244,8 +242,6 @@ typedef struct drm_radeon_private {
 	int writeback_works;
 
 	int usec_timeout;
-
-	int microcode_version;
 
 	struct {
 		u32 boxes;
@@ -316,6 +312,8 @@ typedef struct drm_radeon_private {
 	unsigned long fb_aper_offset;
 
 	int num_gb_pipes;
+	int track_flush;
+	uint32_t chip_family; /* extract from flags */
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
@@ -375,6 +373,7 @@ extern void radeon_mem_release(struct drm_file *file_priv,
 			       struct mem_block *heap);
 
 				/* radeon_irq.c */
+extern void radeon_irq_set_state(struct drm_device *dev, u32 mask, int state);
 extern int radeon_irq_emit(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int radeon_irq_wait(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
@@ -671,11 +670,12 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_PP_TXFILTER_1		0x1c6c
 #define RADEON_PP_TXFILTER_2		0x1c84
 
-#define RADEON_RB2D_DSTCACHE_CTLSTAT	0x342c
-#	define RADEON_RB2D_DC_FLUSH		(3 << 0)
-#	define RADEON_RB2D_DC_FREE		(3 << 2)
-#	define RADEON_RB2D_DC_FLUSH_ALL		0xf
-#	define RADEON_RB2D_DC_BUSY		(1 << 31)
+#define R300_RB2D_DSTCACHE_CTLSTAT	0x342c /* use R300_DSTCACHE_CTLSTAT */
+#define R300_DSTCACHE_CTLSTAT		0x1714
+#	define R300_RB2D_DC_FLUSH		(3 << 0)
+#	define R300_RB2D_DC_FREE		(3 << 2)
+#	define R300_RB2D_DC_FLUSH_ALL		0xf
+#	define R300_RB2D_DC_BUSY		(1 << 31)
 #define RADEON_RB3D_CNTL		0x1c3c
 #	define RADEON_ALPHA_BLEND_ENABLE	(1 << 0)
 #	define RADEON_PLANE_MASK_ENABLE		(1 << 1)
@@ -701,7 +701,6 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define R300_ZB_ZCACHE_CTLSTAT                  0x4f18
 #	define R300_ZC_FLUSH		        (1 << 0)
 #	define R300_ZC_FREE		        (1 << 1)
-#	define R300_ZC_FLUSH_ALL		0x3
 #	define R300_ZC_BUSY		        (1 << 31)
 #define RADEON_RB3D_DSTCACHE_CTLSTAT            0x325c
 #	define RADEON_RB3D_DC_FLUSH		(3 << 0)
@@ -709,6 +708,8 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #	define RADEON_RB3D_DC_FLUSH_ALL		0xf
 #	define RADEON_RB3D_DC_BUSY		(1 << 31)
 #define R300_RB3D_DSTCACHE_CTLSTAT              0x4e4c
+#	define R300_RB3D_DC_FLUSH		(2 << 0)
+#	define R300_RB3D_DC_FREE		(2 << 2)
 #	define R300_RB3D_DC_FINISH		(1 << 4)
 #define RADEON_RB3D_ZSTENCILCNTL	0x1c2c
 #	define RADEON_Z_TEST_MASK		(7 << 4)
@@ -1278,21 +1279,21 @@ do {									\
 
 #define RADEON_FLUSH_CACHE() do {					\
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV280) {	\
-	        OUT_RING( CP_PACKET0( RADEON_RB3D_DSTCACHE_CTLSTAT, 0 ) ); \
-	        OUT_RING( RADEON_RB3D_DC_FLUSH );			\
+	        OUT_RING(CP_PACKET0(RADEON_RB3D_DSTCACHE_CTLSTAT, 0));	\
+	        OUT_RING(RADEON_RB3D_DC_FLUSH);				\
 	} else {                                                        \
-	        OUT_RING( CP_PACKET0( R300_RB3D_DSTCACHE_CTLSTAT, 0 ) ); \
-	        OUT_RING( RADEON_RB3D_DC_FLUSH );			\
+	        OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));	\
+	        OUT_RING(R300_RB3D_DC_FLUSH);				\
         }                                                               \
 } while (0)
 
 #define RADEON_PURGE_CACHE() do {					\
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV280) {	\
-	        OUT_RING( CP_PACKET0( RADEON_RB3D_DSTCACHE_CTLSTAT, 0 ) ); \
-	        OUT_RING( RADEON_RB3D_DC_FLUSH_ALL );			\
+	        OUT_RING(CP_PACKET0( RADEON_RB3D_DSTCACHE_CTLSTAT, 0));	\
+	        OUT_RING(RADEON_RB3D_DC_FLUSH | RADEON_RB3D_DC_FREE);	\
 	} else {                                                        \
-	        OUT_RING( CP_PACKET0( R300_RB3D_DSTCACHE_CTLSTAT, 0 ) ); \
-	        OUT_RING( RADEON_RB3D_DC_FLUSH_ALL );			\
+	        OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));	\
+	        OUT_RING(R300_RB3D_DC_FLUSH | R300_RB3D_DC_FREE );	\
         }                                                               \
 } while (0)
 
@@ -1308,11 +1309,11 @@ do {									\
 
 #define RADEON_PURGE_ZCACHE() do {					\
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV280) {	\
-	        OUT_RING( CP_PACKET0( RADEON_RB3D_ZCACHE_CTLSTAT, 0 ) ); \
-	        OUT_RING( RADEON_RB3D_ZC_FLUSH_ALL );			\
+	        OUT_RING(CP_PACKET0(RADEON_RB3D_ZCACHE_CTLSTAT, 0));	\
+	        OUT_RING(RADEON_RB3D_ZC_FLUSH | RADEON_RB3D_ZC_FREE);	\
 	} else {                                                        \
-	        OUT_RING( CP_PACKET0( R300_RB3D_DSTCACHE_CTLSTAT, 0 ) ); \
-	        OUT_RING( R300_ZC_FLUSH_ALL );				\
+	        OUT_RING(CP_PACKET0(R300_ZB_ZCACHE_CTLSTAT, 0));	\
+	        OUT_RING(R300_ZC_FLUSH | R300_ZC_FREE);			\
         }                                                               \
 } while (0)
 

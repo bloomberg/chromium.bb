@@ -617,9 +617,10 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	if ((nr >= DRM_COMMAND_BASE) && (nr < DRM_COMMAND_END)
 		&& (nr < DRM_COMMAND_BASE + dev->driver->num_ioctls))
 		ioctl = &dev->driver->ioctls[nr - DRM_COMMAND_BASE];
-	else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE))
+	else if ((nr >= DRM_COMMAND_END) || (nr < DRM_COMMAND_BASE)) {
 		ioctl = &drm_ioctls[nr];
-	else {
+		cmd = ioctl->cmd;
+	} else {
 		retcode = -EINVAL;
 		goto err_i1;
 	}
@@ -635,6 +636,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		goto err_i1;
 	}
 #endif
+
 	func = ioctl->func;
 	/* is there a local override? */
 	if ((nr == DRM_IOCTL_NR(DRM_IOCTL_DMA)) && dev->driver->dma_ioctl)
@@ -659,7 +661,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		retcode = func(dev, kdata, file_priv);
 	}
 
-	if ((retcode == 0) && (cmd & IOC_OUT)) {
+	if (cmd & IOC_OUT) {
 		if (copy_to_user((void __user *)arg, kdata,
 				 _IOC_SIZE(cmd)) != 0)
 			retcode = -EACCES;

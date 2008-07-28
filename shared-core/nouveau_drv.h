@@ -34,7 +34,7 @@
 
 #define DRIVER_MAJOR		0
 #define DRIVER_MINOR		0
-#define DRIVER_PATCHLEVEL	10
+#define DRIVER_PATCHLEVEL	11
 
 #define NOUVEAU_FAMILY   0x0000FFFF
 #define NOUVEAU_FLAGS    0xFFFF0000
@@ -350,7 +350,7 @@ extern int  nouveau_mem_init_heap(struct mem_block **, uint64_t start,
 				 uint64_t size);
 extern struct mem_block *nouveau_mem_alloc_block(struct mem_block *,
 						 uint64_t size, int align2,
-						 struct drm_file *);
+						 struct drm_file *, int tail);
 extern void nouveau_mem_takedown(struct mem_block **heap);
 extern void nouveau_mem_free_block(struct mem_block *);
 extern uint64_t nouveau_mem_fb_amount(struct drm_device *);
@@ -358,6 +358,8 @@ extern void nouveau_mem_release(struct drm_file *, struct mem_block *heap);
 extern int  nouveau_ioctl_mem_alloc(struct drm_device *, void *data,
 				    struct drm_file *);
 extern int  nouveau_ioctl_mem_free(struct drm_device *, void *data,
+				   struct drm_file *);
+extern int  nouveau_ioctl_mem_tile(struct drm_device *, void *data,
 				   struct drm_file *);
 extern struct mem_block* nouveau_mem_alloc(struct drm_device *,
 					   int alignment, uint64_t size,

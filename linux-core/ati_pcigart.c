@@ -39,6 +39,28 @@
 #define ATI_PCIE_WRITE 0x4
 #define ATI_PCIE_READ 0x8
 
+static __inline__ void gart_insert_page_into_table(struct drm_ati_pcigart_info *gart_info, dma_addr_t addr, u32 *pci_gart)
+{
+	u32 page_base;
+
+	page_base = (u32)addr & ATI_PCIGART_PAGE_MASK;
+	switch(gart_info->gart_reg_if) {
+	case DRM_ATI_GART_IGP:
+		page_base |= (upper_32_bits(addr) & 0xff) << 4;
+		page_base |= 0xc;
+		break;
+	case DRM_ATI_GART_PCIE:
+		page_base >>= 8;
+		page_base |= (upper_32_bits(addr) & 0xff) << 24;
+		page_base |= ATI_PCIE_READ | ATI_PCIE_WRITE;
+		break;
+	default:
+	case DRM_ATI_GART_PCI:
+		break;
+	}
+	*pci_gart = cpu_to_le32(page_base);
+}
+
 static int drm_ati_alloc_pcigart_table(struct drm_device *dev,
 				       struct drm_ati_pcigart_info *gart_info)
 {
@@ -80,7 +102,7 @@ int drm_ati_pcigart_cleanup(struct drm_device *dev, struct drm_ati_pcigart_info 
 		for (i = 0; i < pages; i++) {
 			if (!entry->busaddr[i])
 				break;
-			pci_unmap_single(dev->pdev, entry->busaddr[i],
+			pci_unmap_page(dev->pdev, entry->busaddr[i],
 					 PAGE_SIZE, PCI_DMA_TODEVICE);
 		}
 
@@ -104,7 +126,7 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 	struct drm_sg_mem *entry = dev->sg;
 	void *address = NULL;
 	unsigned long pages;
-	u32 *pci_gart, page_base;
+	u32 *pci_gart;
 	dma_addr_t bus_address = 0;
 	int i, j, ret = 0;
 	int max_pages;
@@ -143,10 +165,8 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 
 	for (i = 0; i < pages; i++) {
 		/* we need to support large memory configurations */
-		entry->busaddr[i] = pci_map_single(dev->pdev,
-						   page_address(entry->
-								pagelist[i]),
-						   PAGE_SIZE, PCI_DMA_TODEVICE);
+		entry->busaddr[i] = pci_map_page(dev->pdev, entry->pagelist[i],
+						 0, PAGE_SIZE, PCI_DMA_TODEVICE);
 		if (entry->busaddr[i] == 0) {
 			DRM_ERROR("unable to map PCIGART pages!\n");
 			drm_ati_pcigart_cleanup(dev, gart_info);
@@ -157,22 +177,7 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 
 		entry_addr = entry->busaddr[i];
 		for (j = 0; j < (PAGE_SIZE / ATI_PCIGART_PAGE_SIZE); j++) {
-			page_base = (u32) entry_addr & ATI_PCIGART_PAGE_MASK;
-			switch(gart_info->gart_reg_if) {
-			case DRM_ATI_GART_IGP:
-				page_base |= (upper_32_bits(entry_addr) & 0xff) << 4;
-				page_base |= 0xc;
-				break;
-			case DRM_ATI_GART_PCIE:
-				page_base >>= 8;
-				page_base |= (upper_32_bits(entry_addr) & 0xff) << 24;
-				page_base |= ATI_PCIE_READ | ATI_PCIE_WRITE;
-				break;
-			default:
-			case DRM_ATI_GART_PCI:
-				break;
-			}
-			*pci_gart = cpu_to_le32(page_base);
+			gart_insert_page_into_table(gart_info, entry_addr, pci_gart);
 			pci_gart++;
 			entry_addr += ATI_PCIGART_PAGE_SIZE;
 		}
