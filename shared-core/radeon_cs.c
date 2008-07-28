@@ -88,6 +88,31 @@ out:
 	return r;
 }
 
+static __inline__ int radeon_cs_check_offset(struct drm_device *dev,
+					     uint32_t reg, uint32_t val)
+{
+	uint32_t offset;
+
+	switch(reg) {
+	case RADEON_DST_PITCH_OFFSET:
+	case RADEON_SRC_PITCH_OFFSET:
+		offset = val & ((1 << 22) - 1);
+		offset <<= 10;
+		break;
+	case R300_RB3D_COLOROFFSET0:
+	case R300_RB3D_DEPTHOFFSET:
+		offset = val;
+		break;
+	case R300_TX_OFFSET_0:
+	case R300_TX_OFFSET_0+4:
+		offset = val & 0xffffffe0;
+		break;
+	}
+	
+	DRM_ERROR("Offset check %x %x\n", reg, offset);
+	return 0;
+}
+
 int radeon_cs_packet0(struct drm_device *dev, uint32_t *packets,
 		      uint32_t offset_dw)
 {
@@ -113,9 +138,11 @@ int radeon_cs_packet0(struct drm_device *dev, uint32_t *packets,
 			break;
 		case 1:
 			flags = r300_get_reg_flags(reg);
-			if (flags == MARK_CHECK_OFFSET)
+			if (flags == MARK_CHECK_OFFSET) {
+				radeon_cs_check_offset(dev, reg, packets[offset_dw+count_dw]);
+				
 				DRM_DEBUG("need to relocate %x %d\n", reg, flags);
-			else if (flags == MARK_CHECK_SCISSOR) {
+			} else if (flags == MARK_CHECK_SCISSOR) {
 				DRM_DEBUG("need to validate scissor %x %d\n", reg, flags);
 			} else {
 				DRM_DEBUG("illegal register %x %d\n", reg, flags);
@@ -159,6 +186,13 @@ int radeon_cs_parse(struct drm_device *dev, void *ib,
 			
 			switch(reg) {
 			case RADEON_CNTL_HOSTDATA_BLT:
+			{
+				uint32_t offset;
+				offset = packets[count_dw+2] & ((1 << 22) - 1);
+				offset <<= 10;
+				DRM_ERROR("Offset check for Packet 3 %x %x\n", reg, offset);
+				break;
+			}
 			case RADEON_CNTL_BITBLT_MULTI:
 			case RADEON_3D_LOAD_VBPNTR:	/* load vertex array pointers */
 			case RADEON_CP_INDX_BUFFER:
