@@ -88,11 +88,84 @@ out:
 	return r;
 }
 
+int radeon_cs_packet0(struct drm_device *dev, uint32_t *packets,
+		      uint32_t offset_dw)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	int hdr = packets[offset_dw];
+	int num_dw = ((hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16) + 2;
+	int need_reloc = 0;
+	int reg = (hdr & R300_CP_PACKET0_REG_MASK) << 2;
+	int count_dw = 1;
+	int ret;
+
+	while (count_dw < num_dw) {
+		/* need to have something like the r300 validation here - 
+		   list of allowed registers */
+		int flags;
+
+		ret = r300_check_range(reg, 1);
+		switch(ret) {
+		case -1:
+			DRM_ERROR("Illegal register %x\n", reg);
+			break;
+		case 0:
+			break;
+		case 1:
+			flags = r300_get_reg_flags(reg);
+			if (flags == MARK_CHECK_OFFSET)
+				DRM_DEBUG("need to relocate %x %d\n", reg, flags);
+			else if (flags == MARK_CHECK_SCISSOR) {
+				DRM_DEBUG("need to validate scissor %x %d\n", reg, flags);
+			} else {
+				DRM_DEBUG("illegal register %x %d\n", reg, flags);
+				return -EINVAL;
+			}
+			break;
+		}
+		count_dw++;
+		reg += 4;
+	}
+	return 0;
+}
+
 int radeon_cs_parse(struct drm_device *dev, void *ib,
 		    uint32_t *packets, uint32_t dwords)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	volatile int rb;
+	int size_dw = dwords;
+	/* scan the packet for various things */
+	int count_dw = 0;
+	int ret = 0;
+
+	while (count_dw < size_dw && ret == 0) {
+		int hdr = packets[count_dw];
+		int num_dw = (hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16;
+		int reg;
+
+		switch (hdr & RADEON_CP_PACKET_MASK) {
+		case RADEON_CP_PACKET0:
+			ret = radeon_cs_packet0(dev, packets, count_dw);
+			break;
+		case RADEON_CP_PACKET1:
+		case RADEON_CP_PACKET2:
+			reg = hdr & RADEON_CP_PACKET0_REG_MASK;
+			DRM_DEBUG("Packet 1/2: %d  %x\n", num_dw, reg);
+			break;
+
+		case RADEON_CP_PACKET3:
+			reg = hdr & 0xff00;
+			DRM_DEBUG("Packet 3: %d  %x\n", num_dw, reg);
+			break;
+		}
+
+		count_dw += num_dw+2;
+	}
+
+	if (ret)
+		return ret;
+	     
 
 	/* copy the packet into the IB */
 	memcpy(ib, packets, dwords * sizeof(uint32_t));

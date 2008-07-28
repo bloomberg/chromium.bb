@@ -2301,6 +2301,8 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 
 	dev_priv->new_memmap = 1;
 
+	r300_init_reg_flags(dev);
+		
 	radeon_cp_load_microcode(dev_priv);
 	
 	DRM_DEBUG("ring offset is %x %x\n", dev_priv->mm.ring.bo->offset, dev_priv->mm.ring_read.bo->offset);

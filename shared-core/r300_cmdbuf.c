@@ -151,8 +151,6 @@ void r300_init_reg_flags(struct drm_device *dev)
 		for(i=((reg)>>2);i<((reg)>>2)+(count);i++)\
 			r300_reg_flags[i]|=(mark);
 
-#define MARK_SAFE		1
-#define MARK_CHECK_OFFSET	2
 
 #define ADD_RANGE(reg, count)	ADD_RANGE_MARK(reg, count, MARK_SAFE)
 
@@ -234,6 +232,11 @@ void r300_init_reg_flags(struct drm_device *dev)
 	ADD_RANGE(R300_VAP_INPUT_ROUTE_0_0, 8);
 	ADD_RANGE(R300_VAP_INPUT_ROUTE_1_0, 8);
 
+	ADD_RANGE(R500_SU_REG_DEST, 1);
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV410) {
+		ADD_RANGE(R300_DST_PIPE_CONFIG, 1);
+	}
+
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515) {
 		ADD_RANGE(R500_VAP_INDEX_OFFSET, 1);
 		ADD_RANGE(R500_US_CONFIG, 2);
@@ -243,6 +246,8 @@ void r300_init_reg_flags(struct drm_device *dev)
 		ADD_RANGE(R500_RS_INST_0, 16);
 		ADD_RANGE(R500_RB3D_COLOR_CLEAR_VALUE_AR, 2);
 		ADD_RANGE(R500_RB3D_CONSTANT_COLOR_AR, 2);
+
+		ADD_RANGE(R500_GA_US_VECTOR_INDEX, 2);
 	} else {
 		ADD_RANGE(R300_PFS_CNTL_0, 3);
 		ADD_RANGE(R300_PFS_NODE_0, 4);
@@ -255,9 +260,39 @@ void r300_init_reg_flags(struct drm_device *dev)
 		ADD_RANGE(R300_RS_ROUTE_0, 8);
 
 	}
+
+	/* add 2d blit engine registers for DDX */
+	ADD_RANGE(RADEON_SRC_Y_X, 3); /* 1434, 1438, 143c, 
+					 SRC_Y_X, DST_Y_X, DST_HEIGHT_WIDTH
+				       */
+	ADD_RANGE(RADEON_DP_GUI_MASTER_CNTL, 1); /* 146c */
+	ADD_RANGE(RADEON_DP_BRUSH_BKGD_CLR, 2); /* 1478, 147c */
+	ADD_RANGE(RADEON_DP_SRC_FRGD_CLR, 2); /* 15d8, 15dc */
+	ADD_RANGE(RADEON_DP_CNTL, 1); /* 16c0 */
+	ADD_RANGE(RADEON_DP_WRITE_MASK, 1); /* 16cc */
+	ADD_RANGE(RADEON_DEFAULT_SC_BOTTOM_RIGHT, 1); /* 16e8 */
+
+	ADD_RANGE(RADEON_DSTCACHE_CTLSTAT, 1);
+	ADD_RANGE(RADEON_WAIT_UNTIL, 1);
+
+	ADD_RANGE_MARK(RADEON_DST_OFFSET, 1, MARK_CHECK_OFFSET);
+	ADD_RANGE_MARK(RADEON_SRC_OFFSET, 1, MARK_CHECK_OFFSET);
+
+	ADD_RANGE_MARK(RADEON_DST_PITCH_OFFSET, 1, MARK_CHECK_OFFSET);
+	ADD_RANGE_MARK(RADEON_SRC_PITCH_OFFSET, 1, MARK_CHECK_OFFSET);
+
+	/* TODO SCISSOR */
+	ADD_RANGE_MARK(R300_SC_SCISSOR0, 2, MARK_CHECK_SCISSOR);
+
+	ADD_RANGE(R300_SC_CLIP_0_A, 2);
+	ADD_RANGE(R300_SC_CLIP_RULE, 1);
+	ADD_RANGE(R300_SC_SCREENDOOR, 1);
+
+	ADD_RANGE(R300_VAP_PVS_CODE_CNTL_0, 4);
+	ADD_RANGE(R300_VAP_PVS_VECTOR_INDX_REG, 2);
 }
 
-static __inline__ int r300_check_range(unsigned reg, int count)
+int r300_check_range(unsigned reg, int count)
 {
 	int i;
 	if (reg & ~0xffff)
@@ -266,6 +301,13 @@ static __inline__ int r300_check_range(unsigned reg, int count)
 		if (r300_reg_flags[i] != MARK_SAFE)
 			return 1;
 	return 0;
+}
+
+int r300_get_reg_flags(unsigned reg)
+{
+	if (reg & ~0xffff)
+		return -1;
+	return r300_reg_flags[(reg >> 2)];
 }
 
 static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t *
