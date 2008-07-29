@@ -805,10 +805,45 @@ static int radeon_gem_ib_destroy(struct drm_device *dev)
 	return 0;
 }
 
+static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_priv,
+				uint32_t *reloc, uint32_t *offset)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	/* relocate the handle */
+	int domains = reloc[2];
+	struct drm_gem_object *obj;
+	int flags = 0;
+	int ret;
+	struct drm_radeon_gem_object *obj_priv;
+
+	obj = drm_gem_object_lookup(dev, file_priv, reloc[1]);
+	if (!obj)
+		return false;
+
+	obj_priv = obj->driver_private;
+	if (domains == RADEON_GEM_DOMAIN_VRAM) {
+		flags = DRM_BO_FLAG_MEM_VRAM;
+	} else {
+		flags = DRM_BO_FLAG_MEM_TT;
+	}
+
+	ret = drm_bo_do_validate(obj_priv->bo, flags, DRM_BO_MASK_MEM, 0, 0, NULL);
+	if (ret)
+		return ret;
+
+	if (flags == DRM_BO_FLAG_MEM_VRAM)
+		*offset = obj_priv->bo->offset + dev_priv->fb_location;
+	else
+		*offset = obj_priv->bo->offset + dev_priv->gart_vm_start;
+
+	/* BAD BAD BAD - LINKED LIST THE OBJS and UNREF ONCE IB is SUBMITTED */
+	drm_gem_object_unreference(obj);
+	return 0;
+}
+
 /* allocate 1MB of 64k IBs the the kernel can keep mapped */
 static int radeon_gem_ib_init(struct drm_device *dev)
 {
-
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	int i;
 	int ret;
@@ -843,6 +878,7 @@ static int radeon_gem_ib_init(struct drm_device *dev)
 	dev_priv->cs.ib_free = radeon_gem_ib_free;
 
 	radeon_cs_init(dev);
+	dev_priv->cs.relocate = radeon_gem_relocate;
 	return 0;
 
 free_all:

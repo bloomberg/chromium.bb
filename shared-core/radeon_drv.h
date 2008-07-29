@@ -293,8 +293,8 @@ struct drm_radeon_cs_priv {
 	uint32_t id_last_wcnt;
 	uint32_t id_last_scnt;
 
-	int (*parse)(struct drm_device *dev, void *ib,
-			uint32_t *packets, uint32_t dwords);
+	int (*parse)(struct drm_device *dev, struct drm_file *file_priv,
+		     void *ib, uint32_t *packets, uint32_t dwords);
 	void (*id_emit)(struct drm_device *dev, uint32_t *id);
 	uint32_t (*id_last_get)(struct drm_device *dev);
 	/* this ib handling callback are for hidding memory manager drm
@@ -303,6 +303,9 @@ struct drm_radeon_cs_priv {
 	int (*ib_get)(struct drm_device *dev, void **ib, uint32_t dwords);
 	uint32_t (*ib_get_ptr)(struct drm_device *dev, void *ib);
 	void (*ib_free)(struct drm_device *dev, void *ib, uint32_t dwords);
+	/* do a relocation either MM or non-MM */
+	bool (*relocate)(struct drm_device *dev, struct drm_file *file_priv,
+			 uint32_t *reloc, uint32_t *offset);
 };
 
 typedef struct drm_radeon_private {
@@ -391,6 +394,7 @@ typedef struct drm_radeon_private {
 
 	int num_gb_pipes;
 
+	int mm_disabled; /* on OSes with no MM this will be 1*/
 	struct radeon_mm_info mm;
 	drm_local_map_t *mmio;
 
