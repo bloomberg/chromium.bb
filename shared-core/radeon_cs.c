@@ -31,19 +31,21 @@
 
 int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 {
-	struct drm_radeon_private *radeon = dev->dev_private;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct drm_radeon_cs *cs = data;
 	uint32_t *packets = NULL;
 	uint32_t cs_id;
+	uint32_t card_offset;
 	void *ib = NULL;
 	long size;
 	int r;
+	RING_LOCALS;
 
 	/* set command stream id to 0 which is fake id */
 	cs_id = 0;
 	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
 
-	if (radeon == NULL) {
+	if (dev_priv == NULL) {
 		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
@@ -68,22 +70,31 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 		goto out;
 	}
 	/* get ib */
-	r = radeon->cs.ib_get(dev, &ib, cs->dwords);
+	r = dev_priv->cs.ib_get(dev, &ib, cs->dwords, &card_offset);
 	if (r) {
 		goto out;
 	}
 
 	/* now parse command stream */
-	r = radeon->cs.parse(dev, fpriv, ib, packets, cs->dwords);
+	r = dev_priv->cs.parse(dev, fpriv, ib, packets, cs->dwords);
 	if (r) {
 		goto out;
 	}
 
+	BEGIN_RING(4);
+	OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
+	OUT_RING(card_offset);
+	OUT_RING(cs->dwords);
+	OUT_RING(CP_PACKET2());
+	ADVANCE_RING();
+
 	/* emit cs id sequence */
-	radeon->cs.id_emit(dev, &cs_id);
+	dev_priv->cs.id_emit(dev, &cs_id);
+	COMMIT_RING();
+
 	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
 out:
-	radeon->cs.ib_free(dev, ib, cs->dwords);
+	dev_priv->cs.ib_free(dev, ib, cs->dwords);
 	drm_free(packets, size, DRM_MEM_DRIVER);
 	return r;
 }
@@ -97,8 +108,8 @@ static int radeon_nomm_relocate(struct drm_device *dev, struct drm_file *file_pr
 #define RELOC_SIZE 2
 #define RADEON_2D_OFFSET_MASK 0x3fffff
 
-static __inline__ int radeon_cs_relocate_offset(struct drm_device *dev, struct drm_file *file_priv,
-						uint32_t *packets, uint32_t offset_dw)
+static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct drm_file *file_priv,
+						 uint32_t *packets, uint32_t offset_dw)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	uint32_t hdr = packets[offset_dw];
@@ -107,7 +118,7 @@ static __inline__ int radeon_cs_relocate_offset(struct drm_device *dev, struct d
 	uint32_t packet3_hdr = packets[offset_dw+2];
 	uint32_t tmp, offset;
 	int ret;
-	
+
 	/* this is too strict we may want to expand the length in the future and have
 	 old kernels ignore it. */ 
 	if (packet3_hdr != (RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16))) {
@@ -132,8 +143,6 @@ static __inline__ int radeon_cs_relocate_offset(struct drm_device *dev, struct d
 	case R300_RB3D_DEPTHOFFSET:
 	case R300_TX_OFFSET_0:
 	case R300_TX_OFFSET_0+4:
-		offset = packets[offset_dw + 3];
-
 	        ret = dev_priv->cs.relocate(dev, file_priv, packets + offset_dw + 2, &offset);
 		if (ret)
 			return ret;
@@ -151,6 +160,40 @@ static __inline__ int radeon_cs_relocate_offset(struct drm_device *dev, struct d
 
 	return 0;
 }
+
+static int radeon_cs_relocate_packet3(struct drm_device *dev, struct drm_file *file_priv,
+				      uint32_t *packets, uint32_t offset_dw)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t hdr = packets[offset_dw];
+	int num_dw = (hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16;
+	uint32_t reg = hdr & 0xff00;
+	uint32_t offset, val, tmp;
+	int ret;
+
+	switch(reg) {
+	case RADEON_CNTL_HOSTDATA_BLT:
+	{
+		val = packets[offset_dw + 2];
+		ret = dev_priv->cs.relocate(dev, file_priv, packets + offset_dw + num_dw + 2, &offset);
+		if (ret)
+			return ret;
+
+		tmp = (val & RADEON_2D_OFFSET_MASK) << 10;
+		val &= ~RADEON_2D_OFFSET_MASK;
+		offset += tmp;
+		offset >>= 10;
+		val |= offset;
+
+		DRM_ERROR("New offset %x %x %x\n", packets[offset_dw+2], val, offset);
+		packets[offset_dw + 2] = val;
+	}
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
 static __inline__ int radeon_cs_check_offset(struct drm_device *dev,
 					     uint32_t reg, uint32_t val)
 {
@@ -207,7 +250,7 @@ int radeon_cs_packet0(struct drm_device *dev, struct drm_file *file_priv,
 					return -EINVAL;
 				}
 
-				ret = radeon_cs_relocate_offset(dev, file_priv, packets, offset_dw);
+				ret = radeon_cs_relocate_packet0(dev, file_priv, packets, offset_dw);
 				if (ret)
 					return ret;
 				DRM_DEBUG("need to relocate %x %d\n", reg, flags);
@@ -256,14 +299,9 @@ int radeon_cs_parse(struct drm_device *dev, struct drm_file *file_priv,
 			
 			switch(reg) {
 			case RADEON_CNTL_HOSTDATA_BLT:
-			{
-				uint32_t offset;
-				offset = packets[count_dw+2] & ((1 << 22) - 1);
-				offset <<= 10;
-				DRM_ERROR("Offset check for Packet 3 %x %x\n", reg, offset);
-				/* okay it should be followed by a NOP */
+				radeon_cs_relocate_packet3(dev, file_priv, packets, count_dw);
 				break;
-			}
+
 			case RADEON_CNTL_BITBLT_MULTI:
 			case RADEON_3D_LOAD_VBPNTR:	/* load vertex array pointers */
 			case RADEON_CP_INDX_BUFFER:

@@ -300,11 +300,11 @@ struct drm_radeon_cs_priv {
 	/* this ib handling callback are for hidding memory manager drm
 	 * from memory manager less drm, free have to emit ib discard
 	 * sequence into the ring */
-	int (*ib_get)(struct drm_device *dev, void **ib, uint32_t dwords);
+	int (*ib_get)(struct drm_device *dev, void **ib, uint32_t dwords, uint32_t *card_offset);
 	uint32_t (*ib_get_ptr)(struct drm_device *dev, void *ib);
 	void (*ib_free)(struct drm_device *dev, void *ib, uint32_t dwords);
 	/* do a relocation either MM or non-MM */
-	bool (*relocate)(struct drm_device *dev, struct drm_file *file_priv,
+	int (*relocate)(struct drm_device *dev, struct drm_file *file_priv,
 			 uint32_t *reloc, uint32_t *offset);
 };
 

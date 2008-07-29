@@ -700,7 +700,7 @@ int radeon_gem_object_pin(struct drm_gem_object *obj,
 
 #define RADEON_NUM_IB (RADEON_IB_MEMORY / RADEON_IB_SIZE)
 
-int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords)
+int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32_t *card_offset)
 {
 	int i, index = -1;
 	int ret;
@@ -738,6 +738,15 @@ int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords)
 	if (dwords > RADEON_IB_SIZE / sizeof(uint32_t))
 		return -EINVAL;
 
+	ret = drm_bo_do_validate(dev_priv->ib_objs[index]->bo, 0,
+				 DRM_BO_FLAG_NO_EVICT,
+				 0, 0, NULL);
+	if (ret) {
+		DRM_ERROR("Failed to validate IB %d\n", index);
+		return -EINVAL;
+	}
+		
+	*card_offset = dev_priv->gart_vm_start + dev_priv->ib_objs[index]->bo->offset;
 	*ib = dev_priv->ib_objs[index]->kmap.virtual;
 	dev_priv->ib_alloc_bitmap |= (1 << i);
 	return 0;
@@ -754,24 +763,6 @@ static void radeon_gem_ib_free(struct drm_device *dev, void *ib, uint32_t dwords
 	for (i = 0; i < RADEON_NUM_IB; i++) {
 
 		if (dev_priv->ib_objs[i]->kmap.virtual == ib) {
-			ret = drm_bo_do_validate(dev_priv->ib_objs[i]->bo, 0,
-				 DRM_BO_FLAG_NO_EVICT,
-				 0, 0, NULL);
-			if (ret)
-				DRM_ERROR("FAiled to validate\n");
-
-			DRM_DEBUG("validated IB %x, %d\n", dev_priv->ib_objs[i]->bo->offset, dwords);
-			BEGIN_RING(4);
-			
-			OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
-			OUT_RING(dev_priv->gart_vm_start + dev_priv->ib_objs[i]->bo->offset);
-			OUT_RING(dwords);
-			OUT_RING(CP_PACKET2());
-
-			ADVANCE_RING();
-
-			COMMIT_RING();
-
 			/* emit a fence object */
 			ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
 			if (ret) {
