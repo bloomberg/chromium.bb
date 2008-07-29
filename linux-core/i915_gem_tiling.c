@@ -115,7 +115,11 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 	 * since the bridge would only ever use standard BARs 0-1 (though it
 	 * doesn't anyway)
 	 */
-	pci_read_base(bridge, mchbar_offset, &bridge->resource[2]);
+	ret = pci_read_base(bridge, mchbar_offset, &bridge->resource[2]);
+	if (ret != 0) {
+		DRM_ERROR("pci_read_base failed: %d\n", ret);
+		return;
+	}
 
 	mchbar = ioremap(pci_resource_start(bridge, 2),
 			 pci_resource_len(bridge, 2));
