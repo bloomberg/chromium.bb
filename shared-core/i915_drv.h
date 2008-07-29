@@ -887,7 +887,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define ACTHD_I965	0x02074
 #define HWS_PGA		0x02080
 #define HWS_ADDRESS_MASK	0xfffff000
-#define HWS_START_ADDRES_SHIFT	4
+#define HWS_START_ADDRESS_SHIFT	4
 #define IPEIR		0x02088
 #define NOPID		0x02094
 #define HWSTAM		0x02098
