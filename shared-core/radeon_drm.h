@@ -455,6 +455,13 @@ typedef struct {
 	int tiling_enabled;	/* set by drm, read by 2d + 3d clients */
 
 	unsigned int last_fence;
+
+	uint32_t front_handle;
+	uint32_t back_handle;
+	uint32_t depth_handle;
+	uint32_t front_pitch;
+	uint32_t back_pitch;
+	uint32_t depth_pitch;
 } drm_radeon_sarea_t;
 
 
@@ -705,6 +712,7 @@ typedef struct drm_radeon_indirect {
 #define RADEON_PARAM_VBLANK_CRTC           13   /* VBLANK CRTC */
 #define RADEON_PARAM_FB_LOCATION           14   /* FB location */
 #define RADEON_PARAM_NUM_GB_PIPES          15   /* num GB pipes */
+#define RADEON_PARAM_KERNEL_MM             16
 
 typedef struct drm_radeon_getparam {
 	int param;
