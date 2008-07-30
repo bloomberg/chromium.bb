@@ -243,9 +243,12 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 	DRM_DEBUG("got here %p %p %d\n", obj, obj_priv->bo, atomic_read(&obj_priv->bo->usage));
 	/* validate into a pin with no fence */
 
-	ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
-				 DRM_BO_HINT_DONT_FENCE,
-				 0, NULL);
+	if (!(obj_priv->bo->type != drm_bo_type_kernel && !DRM_SUSER(DRM_CURPROC))) {
+	  ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
+				   DRM_BO_HINT_DONT_FENCE,
+				   0, NULL);
+	} else
+	  ret = 0;
 
 	args->offset = obj_priv->bo->offset;
 	DRM_DEBUG("got here %p %p\n", obj, obj_priv->bo);
