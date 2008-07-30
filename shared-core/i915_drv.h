@@ -37,7 +37,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20080611"
+#define DRIVER_DATE		"20080730"
 
 #if defined(__linux__)
 #define I915_HAVE_FENCE
@@ -61,7 +61,7 @@
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		14
+#define DRIVER_MINOR		13
 #else
 #define DRIVER_MINOR		6
 #endif
