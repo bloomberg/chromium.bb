@@ -80,7 +80,9 @@ static int i915_suspend(struct drm_device *dev, pm_message_t state)
 
 	i915_save_state(dev);
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 	intel_opregion_free(dev);
+#endif
 
 	if (state.event == PM_EVENT_SUSPEND) {
 		/* Shut down the device */
@@ -101,7 +103,9 @@ static int i915_resume(struct drm_device *dev)
 
 	i915_restore_state(dev);
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 	intel_opregion_init(dev);
+#endif
 
 	return 0;
 }

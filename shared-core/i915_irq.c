@@ -443,15 +443,19 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		}
 
 #ifdef __linux__
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 		if (pipeb_stats & I915_LEGACY_BLC_EVENT_ENABLE)
 			opregion_asle_intr(dev);
+#endif
 #endif
 		I915_WRITE(PIPEBSTAT, pipeb_stats);
 	}
 
 #ifdef __linux__
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 	if (iir & I915_ASLE_INTERRUPT)
 		opregion_asle_intr(dev);
+#endif
 #endif
 
 	if (dev_priv->sarea_priv)
@@ -675,7 +679,9 @@ void i915_enable_interrupt (struct drm_device *dev)
 	dev_priv->irq_enable_reg |= I915_USER_INTERRUPT;
 
 #ifdef __linux__
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 	opregion_enable_asle(dev);
+#endif
 #endif
 
 	I915_WRITE(IER, dev_priv->irq_enable_reg);
