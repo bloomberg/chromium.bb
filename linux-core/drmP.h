@@ -474,11 +474,6 @@ struct drm_lock_data {
 	uint32_t kernel_waiters;
 	uint32_t user_waiters;
 	int idle_has_lock;
-	/**
-	 * Boolean signaling that the lock is held on behalf of the
-	 * file_priv client by the kernel in an ioctl handler.
-	 */
-	int kernel_held;
 };
 
 /**
