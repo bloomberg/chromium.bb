@@ -277,7 +277,7 @@ typedef struct drm_i915_private {
 	u8 saveCR[37];
 
 	struct {
-		struct drm_memrange gtt_space;
+		struct drm_mm gtt_space;
 
 		/**
 		 * List of objects currently involved in rendering from the
@@ -378,7 +378,7 @@ struct drm_i915_gem_object {
 	struct drm_gem_object *obj;
 
 	/** Current space allocated to this object in the GTT, if any. */
-	struct drm_memrange_node *gtt_space;
+	struct drm_mm_node *gtt_space;
 
 	/** This object's place on the active/flushing/inactive lists */
 	struct list_head list;

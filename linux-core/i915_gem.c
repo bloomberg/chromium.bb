@@ -67,7 +67,7 @@ i915_gem_init_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	drm_memrange_init(&dev_priv->mm.gtt_space, args->gtt_start,
+	drm_mm_init(&dev_priv->mm.gtt_space, args->gtt_start,
 	    args->gtt_end - args->gtt_start);
 
 	dev->gtt_total = (uint32_t) (args->gtt_end - args->gtt_start);
@@ -947,7 +947,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
 		atomic_dec(&dev->gtt_count);
 		atomic_sub(obj->size, &dev->gtt_memory);
 
-		drm_memrange_put_block(obj_priv->gtt_space);
+		drm_mm_put_block(obj_priv->gtt_space);
 		obj_priv->gtt_space = NULL;
 	}
 
@@ -1101,7 +1101,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	struct drm_device *dev = obj->dev;
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
-	struct drm_memrange_node *free_space;
+	struct drm_mm_node *free_space;
 	int page_count, ret;
 
 	if (alignment == 0)
@@ -1112,13 +1112,11 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 	}
 
  search_free:
-	free_space = drm_memrange_search_free(&dev_priv->mm.gtt_space,
-					      obj->size,
-					      alignment, 0);
+	free_space = drm_mm_search_free(&dev_priv->mm.gtt_space,
+					obj->size, alignment, 0);
 	if (free_space != NULL) {
-		obj_priv->gtt_space =
-			drm_memrange_get_block(free_space, obj->size,
-					       alignment);
+		obj_priv->gtt_space = drm_mm_get_block(free_space, obj->size,
+						       alignment);
 		if (obj_priv->gtt_space != NULL) {
 			obj_priv->gtt_space->private = obj;
 			obj_priv->gtt_offset = obj_priv->gtt_space->start;
@@ -1152,7 +1150,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 #endif
 	ret = i915_gem_object_get_page_list(obj);
 	if (ret) {
-		drm_memrange_put_block(obj_priv->gtt_space);
+		drm_mm_put_block(obj_priv->gtt_space);
 		obj_priv->gtt_space = NULL;
 		return ret;
 	}
@@ -1167,7 +1165,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
 					       obj_priv->gtt_offset);
 	if (obj_priv->agp_mem == NULL) {
 		i915_gem_object_free_page_list(obj);
-		drm_memrange_put_block(obj_priv->gtt_space);
+		drm_mm_put_block(obj_priv->gtt_space);
 		obj_priv->gtt_space = NULL;
 		return -ENOMEM;
 	}
