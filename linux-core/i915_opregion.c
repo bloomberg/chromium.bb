@@ -32,6 +32,7 @@
 #include "i915_drm.h"
 #include "i915_drv.h"
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 #define PCI_ASLE 0xe4
 #define PCI_ASLS 0xfc
 
@@ -384,3 +385,4 @@ void intel_opregion_free(struct drm_device *dev)
 	
 	opregion->enabled = 0;
 }
+#endif

@@ -1038,7 +1038,9 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_init_chipset_flush_compat(dev);
 #endif
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 	intel_opregion_init(dev);
+#endif
 #endif
 
 	I915_WRITE16(HWSTAM, 0xeffe);
@@ -1097,7 +1099,9 @@ int i915_driver_unload(struct drm_device *dev)
 		drm_rmmap(dev, dev_priv->mmio_map);
 
 #ifdef __linux__
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 	intel_opregion_free(dev);
+#endif
 #endif
 
 	drm_free(dev->dev_private, sizeof(drm_i915_private_t),
