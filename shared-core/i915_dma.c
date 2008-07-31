@@ -689,7 +689,6 @@ static void i915_do_dispatch_flip(struct drm_device * dev, int plane, int sync)
 
 void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
 	int i;
 

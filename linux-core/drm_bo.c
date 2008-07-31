@@ -1061,7 +1061,7 @@ static int drm_bo_modify_proposed_flags (struct drm_buffer_object *bo,
  * Doesn't do any fence flushing as opposed to the drm_bo_busy function.
  */
 
-static int drm_bo_quick_busy(struct drm_buffer_object *bo, int check_unfenced)
+int drm_bo_quick_busy(struct drm_buffer_object *bo, int check_unfenced)
 {
 	struct drm_fence_object *fence = bo->fence;
 
@@ -1712,7 +1712,7 @@ EXPORT_SYMBOL(drm_bo_clean_mm);
  *point since we have the hardware lock.
  */
 
-static int drm_bo_lock_mm(struct drm_device *dev, unsigned mem_type)
+int drm_bo_lock_mm(struct drm_device *dev, unsigned mem_type)
 {
 	int ret;
 	struct drm_buffer_manager *bm = &dev->bm;
@@ -1861,7 +1861,6 @@ int drm_bo_driver_init(struct drm_device *dev)
 	int ret = -EINVAL;
 
 	bm->dummy_read_page = NULL;
-	drm_bo_init_lock(&bm->bm_lock);
 	mutex_lock(&dev->struct_mutex);
 	if (!driver)
 		goto out_unlock;

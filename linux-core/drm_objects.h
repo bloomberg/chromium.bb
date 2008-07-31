@@ -879,23 +879,6 @@ extern int drm_mem_reg_ioremap(struct drm_device *dev, struct drm_bo_mem_reg * m
 			       void **virtual);
 extern void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg * mem,
 				void *virtual);
-/*
- * drm_bo_lock.c
- * Simple replacement for the hardware lock on buffer manager init and clean.
- */
-
-
-extern void drm_bo_init_lock(struct drm_bo_lock *lock);
-extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
-extern int drm_bo_read_lock(struct drm_bo_lock *lock,
-			    int interruptible);
-extern int drm_bo_write_lock(struct drm_bo_lock *lock,
-			     int interruptible,
-			     struct drm_file *file_priv);
-
-extern int drm_bo_write_unlock(struct drm_bo_lock *lock,
-			       struct drm_file *file_priv);
-
 #ifdef CONFIG_DEBUG_MUTEXES
 #define DRM_ASSERT_LOCKED(_mutex)					\
 	BUG_ON(!mutex_is_locked(_mutex) ||				\

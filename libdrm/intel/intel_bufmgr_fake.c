@@ -649,7 +649,7 @@ intel_bo_fake_alloc_static(dri_bufmgr *bufmgr, const char *name,
    bo_fake->refcount = 1;
    bo_fake->id = ++bufmgr_fake->buf_nr;
    bo_fake->name = name;
-   bo_fake->flags = BM_PINNED | DRM_BO_FLAG_NO_MOVE;
+   bo_fake->flags = BM_PINNED;
    bo_fake->is_static = 1;
 
    DBG("drm_bo_alloc_static: (buf %d: %s, %d kb)\n", bo_fake->id, bo_fake->name,
