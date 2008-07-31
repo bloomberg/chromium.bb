@@ -405,14 +405,6 @@ struct drm_buf_entry {
 	struct drm_freelist freelist;
 };
 
-
-enum drm_ref_type {
-	_DRM_REF_USE = 0,
-	_DRM_REF_TYPE1,
-	_DRM_NO_REF_TYPES
-};
-
-
 /** File private data */
 struct drm_file {
 	int authenticated;
@@ -424,21 +416,11 @@ struct drm_file {
 	struct drm_minor *minor;
 	unsigned long lock_count;
 
-	/*
-	 * The user object hash table is global and resides in the
-	 * drm_device structure. We protect the lists and hash tables with the
-	 * device struct_mutex. A bit coarse-grained but probably the best
-	 * option.
-	 */
-
-	struct list_head refd_objects;
-
 	/** Mapping of mm object handles to object pointers. */
 	struct idr object_idr;
 	/** Lock for synchronization of access to object_idr. */
 	spinlock_t table_lock;
 
-	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;
 	void *driver_priv;
 

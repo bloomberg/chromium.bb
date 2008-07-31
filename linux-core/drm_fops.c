@@ -221,7 +221,6 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	int minor_id = iminor(inode);
 	struct drm_file *priv;
 	int ret;
-	int i, j;
 
 	if (filp->f_flags & O_EXCL)
 		return -EBUSY;	/* No exclusive opens */
@@ -246,21 +245,7 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	priv->lock_count = 0;
 
 	INIT_LIST_HEAD(&priv->lhead);
-	INIT_LIST_HEAD(&priv->refd_objects);
 	INIT_LIST_HEAD(&priv->fbs);
-
-	for (i = 0; i < _DRM_NO_REF_TYPES; ++i) {
-		ret = drm_ht_create(&priv->refd_object_hash[i],
-				    DRM_FILE_HASH_ORDER);
-		if (ret)
-			break;
-	}
-
-	if (ret) {
-		for (j = 0; j < i; ++j)
-			drm_ht_remove(&priv->refd_object_hash[j]);
-		goto out_free;
-	}
 
 	if (dev->driver->driver_features & DRIVER_GEM)
 		drm_gem_open(dev, priv);
@@ -345,33 +330,6 @@ int drm_fasync(int fd, struct file *filp, int on)
 	return 0;
 }
 EXPORT_SYMBOL(drm_fasync);
-
-static void drm_object_release(struct file *filp)
-{
-	struct drm_file *priv = filp->private_data;
-	struct list_head *head;
-	struct drm_ref_object *ref_object;
-	int i;
-
-	/*
-	 * Free leftover ref objects created by me. Note that we cannot use
-	 * list_for_each() here, as the struct_mutex may be temporarily
-	 * released by the remove_() functions, and thus the lists may be
-	 * altered.
-	 * Also, a drm_remove_ref_object() will not remove it
-	 * from the list unless its refcount is 1.
-	 */
-
-	head = &priv->refd_objects;
-	while (head->next != head) {
-		ref_object = list_entry(head->next, struct drm_ref_object, list);
-		drm_remove_ref_object(priv, ref_object);
-		head = &priv->refd_objects;
-	}
-
-	for (i = 0; i < _DRM_NO_REF_TYPES; ++i)
-		drm_ht_remove(&priv->refd_object_hash[i]);
-}
 
 /**
  * Release file.
@@ -512,7 +470,6 @@ int drm_release(struct inode *inode, struct file *filp)
 	file_priv->is_master = 0;
 
 	mutex_lock(&dev->struct_mutex);
-	drm_object_release(filp);
 
 	list_del(&file_priv->lhead);
 

@@ -245,8 +245,7 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 
 	if (!(obj_priv->bo->type != drm_bo_type_kernel && !DRM_SUSER(DRM_CURPROC))) {
 	  ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
-				   DRM_BO_HINT_DONT_FENCE,
-				   0, NULL);
+				   DRM_BO_HINT_DONT_FENCE, 0);
 	} else
 	  ret = 0;
 
@@ -276,8 +275,7 @@ int radeon_gem_unpin_ioctl(struct drm_device *dev, void *data,
 	/* validate into a pin with no fence */
 
 	ret = drm_bo_do_validate(obj_priv->bo, DRM_BO_FLAG_NO_EVICT, DRM_BO_FLAG_NO_EVICT,
-				 DRM_BO_HINT_DONT_FENCE,
-				 0, NULL);
+				 DRM_BO_HINT_DONT_FENCE, 0);
 
 	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_unreference(obj);
@@ -321,7 +319,7 @@ int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
 	//VB_AGE_TEST_WITH_RETURN(dev_priv);
 
 	ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
-				 0 , 0, NULL);
+				 0 , 0);
 	if (ret)
 		return ret;
 
@@ -693,7 +691,7 @@ int radeon_gem_object_pin(struct drm_gem_object *obj,
 	obj_priv = obj->driver_private;
 
 	ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
-				 DRM_BO_HINT_DONT_FENCE, 0, NULL);
+				 DRM_BO_HINT_DONT_FENCE, 0);
 
 	return ret;
 }
@@ -743,7 +741,7 @@ int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32
 
 	ret = drm_bo_do_validate(dev_priv->ib_objs[index]->bo, 0,
 				 DRM_BO_FLAG_NO_EVICT,
-				 0, 0, NULL);
+				 0, 0);
 	if (ret) {
 		DRM_ERROR("Failed to validate IB %d\n", index);
 		return -EINVAL;
@@ -761,7 +759,6 @@ static void radeon_gem_ib_free(struct drm_device *dev, void *ib, uint32_t dwords
 	struct drm_fence_object *fence;
 	int ret;
 	int i;
-	RING_LOCALS;
 
 	for (i = 0; i < RADEON_NUM_IB; i++) {
 
@@ -821,7 +818,7 @@ static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_pri
 		flags = DRM_BO_FLAG_MEM_TT;
 	}
 
-	ret = drm_bo_do_validate(obj_priv->bo, flags, DRM_BO_MASK_MEM, 0, 0, NULL);
+	ret = drm_bo_do_validate(obj_priv->bo, flags, DRM_BO_MASK_MEM, 0, 0);
 	if (ret)
 		return ret;
 
