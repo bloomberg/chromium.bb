@@ -37,7 +37,9 @@ static struct pci_device_id pciidlist[] = {
 	xgi_PCI_IDS
 };
 
+#ifdef XGI_HAVE_FENCE
 extern struct drm_fence_driver xgi_fence_driver;
+#endif /* XGI_HAVE_FENCE */
 
 int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
 
@@ -47,6 +49,8 @@ static struct drm_ioctl_desc xgi_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_XGI_FREE, xgi_free_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_XGI_SUBMIT_CMDLIST, xgi_submit_cmdlist, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_XGI_STATE_CHANGE, xgi_state_change_ioctl, DRM_AUTH|DRM_MASTER),
+	DRM_IOCTL_DEF(DRM_XGI_SET_FENCE, xgi_set_fence_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_XGI_WAIT_FENCE, xgi_wait_fence_ioctl, DRM_AUTH),
 };
 
 static const int xgi_max_ioctl = DRM_ARRAY_SIZE(xgi_ioctls);
@@ -58,6 +62,7 @@ static void xgi_driver_lastclose(struct drm_device * dev);
 static void xgi_reclaim_buffers_locked(struct drm_device * dev,
 	struct drm_file * filp);
 static irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS);
+static int xgi_kern_isr_postinstall(struct drm_device * dev);
 
 
 static struct drm_driver driver = {
@@ -70,7 +75,7 @@ static struct drm_driver driver = {
 	.lastclose = xgi_driver_lastclose,
 	.dma_quiescent = NULL,
 	.irq_preinstall = NULL,
-	.irq_postinstall = NULL,
+	.irq_postinstall = xgi_kern_isr_postinstall,
 	.irq_uninstall = NULL,
 	.irq_handler = xgi_kern_isr,
 	.reclaim_buffers = drm_core_reclaim_buffers,
@@ -100,7 +105,9 @@ static struct drm_driver driver = {
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
 
+#ifdef XGI_HAVE_FENCE
 	.fence_driver = &xgi_fence_driver,
+#endif /* XGI_HAVE_FENCE */
 
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
@@ -355,11 +362,23 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 		DRM_WRITE32(info->mmio_map,
 			    0x2800 + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			    cpu_to_le32(M2REG_AUTO_LINK_SETTING_COMMAND | irq_bits));
+#ifdef XGI_HAVE_FENCE
 		xgi_fence_handler(dev);
+#endif /* XGI_HAVE_FENCE */
+		DRM_WAKEUP(&info->fence_queue);
 		return IRQ_HANDLED;
 	} else {
 		return IRQ_NONE;
 	}
+}
+
+
+int xgi_kern_isr_postinstall(struct drm_device * dev)
+{
+	struct xgi_info *info = dev->dev_private;
+
+	DRM_INIT_WAITQUEUE(&info->fence_queue);
+	return 0;
 }
 
 

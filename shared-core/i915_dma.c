@@ -1049,6 +1049,7 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 				" G33 hw status page\n");
 		return -ENOMEM;
 	}
+
 	dev_priv->hws_vaddr = dev_priv->hws_map.handle;
 
 	memset(dev_priv->hws_vaddr, 0, PAGE_SIZE);

@@ -30,6 +30,76 @@
 #include "xgi_misc.h"
 #include "xgi_cmdlist.h"
 
+static int xgi_low_level_fence_emit(struct drm_device *dev, u32 *sequence)
+{
+	struct xgi_info *const info = dev->dev_private;
+
+	if (info == NULL) {
+		DRM_ERROR("called with no initialization\n");
+		return -EINVAL;
+	}
+
+	DRM_SPINLOCK(&info->fence_lock);
+	info->next_sequence++;
+	if (info->next_sequence > BEGIN_BEGIN_IDENTIFICATION_MASK) {
+		info->next_sequence = 1;
+	}
+
+	*sequence = (u32) info->next_sequence;
+	DRM_SPINUNLOCK(&info->fence_lock);
+
+
+	xgi_emit_irq(info);
+	return 0;
+}
+
+#define GET_BEGIN_ID(i) (le32_to_cpu(DRM_READ32((i)->mmio_map, 0x2820)) \
+				 & BEGIN_BEGIN_IDENTIFICATION_MASK)
+
+static int xgi_low_level_fence_wait(struct drm_device *dev, unsigned *sequence)
+{
+	struct xgi_info *const info = dev->dev_private;
+	unsigned int cur_fence;
+	int ret = 0;
+
+	if (info == NULL) {
+		DRM_ERROR("called with no initialization\n");
+		return -EINVAL;
+	}
+
+	/* Assume that the user has missed the current sequence number
+	 * by about a day rather than she wants to wait for years
+	 * using fences.
+	 */
+	DRM_WAIT_ON(ret, info->fence_queue, 3 * DRM_HZ,
+		    ((((cur_fence = GET_BEGIN_ID(info))
+		      - *sequence) & BEGIN_BEGIN_IDENTIFICATION_MASK)
+		     <= (1 << 18)));
+
+	info->complete_sequence = cur_fence;
+	*sequence = cur_fence;
+
+	return ret;
+}
+
+
+int xgi_set_fence_ioctl(struct drm_device * dev, void * data,
+			struct drm_file * filp)
+{
+	(void) filp;
+	return xgi_low_level_fence_emit(dev, (u32 *) data);
+}
+
+
+int xgi_wait_fence_ioctl(struct drm_device * dev, void * data,
+			 struct drm_file * filp)
+{
+	(void) filp;
+	return xgi_low_level_fence_wait(dev, (u32 *) data);
+}
+
+
+#ifdef XGI_HAVE_FENCE
 static void xgi_fence_poll(struct drm_device * dev, uint32_t class, 
 			   uint32_t waiting_types)
 {
@@ -68,25 +138,18 @@ int xgi_fence_emit_sequence(struct drm_device * dev, uint32_t class,
 			    uint32_t flags, uint32_t * sequence,
 			    uint32_t * native_type)
 {
-	struct xgi_info * info = dev->dev_private;
+	int err;
 
-	if ((info == NULL) || (class != 0))
+	(void) flags;
+
+	if (class != 0)
 		return -EINVAL;
 
+	err = xgi_low_level_fence_emit(dev, sequence);
+	if (err)
+		return err;
 
-	DRM_SPINLOCK(&info->fence_lock);
-	info->next_sequence++;
-	if (info->next_sequence > BEGIN_BEGIN_IDENTIFICATION_MASK) {
-		info->next_sequence = 1;
-	}
-	DRM_SPINUNLOCK(&info->fence_lock);
-
-
-	xgi_emit_irq(info);
-
-	*sequence = (uint32_t) info->next_sequence;
 	*native_type = DRM_FENCE_TYPE_EXE;
-
 	return 0;
 }
 
@@ -120,3 +183,4 @@ struct drm_fence_driver xgi_fence_driver = {
 	.wait = NULL
 };
 
+#endif /* XGI_HAVE_FENCE */

@@ -350,6 +350,15 @@ void drm_core_ioremap(struct drm_map *map, struct drm_device *dev)
 }
 EXPORT_SYMBOL_GPL(drm_core_ioremap);
 
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26)
+void drm_core_ioremap_wc(struct drm_map *map, struct drm_device *dev)
+{
+	map->handle = ioremap_wc(map->offset, map->size);
+}
+EXPORT_SYMBOL_GPL(drm_core_ioremap_wc);
+#endif
+
 void drm_core_ioremapfree(struct drm_map *map, struct drm_device *dev)
 {
 	if (!map->handle || !map->size)

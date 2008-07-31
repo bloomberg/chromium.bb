@@ -832,11 +832,11 @@ int drm_addbufs_sg(struct drm_device *dev, drm_buf_desc_t *request)
 	if (request->count < 0 || request->count > 4096)
 		return EINVAL;
 
-	DRM_SPINLOCK(&dev->dma_lock);
-
 	order = drm_order(request->size);
 	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER)
 		return EINVAL;
+
+	DRM_SPINLOCK(&dev->dma_lock);
 
 	/* No more allocations after first buffer-using ioctl. */
 	if (dev->buf_use != 0) {

@@ -192,11 +192,11 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 	u32 ropcpp = (0xcc << 16) | ((cpp - 1) << 24);
 	RING_LOCALS;
 	
-	if (sarea_priv->front_tiled) {
+	if (IS_I965G(dev) && sarea_priv->front_tiled) {
 		cmd |= XY_SRC_COPY_BLT_DST_TILED;
 		dst_pitch >>= 2;
 	}
-	if (sarea_priv->back_tiled) {
+	if (IS_I965G(dev) && sarea_priv->back_tiled) {
 		cmd |= XY_SRC_COPY_BLT_SRC_TILED;
 		src_pitch >>= 2;
 	}
@@ -394,28 +394,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 		drm_free(swap_hit, sizeof(*swap_hit), DRM_MEM_DRIVER);
 	}
 }
-#if 0
-static int i915_in_vblank(struct drm_device *dev, int pipe)
-{
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	unsigned long pipedsl, vblank, vtotal;
-	unsigned long vbl_start, vbl_end, cur_line;
 
-	pipedsl = pipe ? PIPEBDSL : PIPEADSL;
-	vblank = pipe ? VBLANK_B : VBLANK_A;
-	vtotal = pipe ? VTOTAL_B : VTOTAL_A;
-
-	vbl_start = I915_READ(vblank) & VBLANK_START_MASK;
-	vbl_end = (I915_READ(vblank) >> VBLANK_END_SHIFT) & VBLANK_END_MASK;
-
-	cur_line = I915_READ(pipedsl);
-
-	if (cur_line >= vbl_start)
-		return 1;
-
-	return 0;
-}
-#endif
 u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 {
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
@@ -449,22 +428,6 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 
 	count = (high1 << 8) | low;
 
-	/*
-	 * If we're in the middle of the vblank period, the
-	 * above regs won't have been updated yet, so return
-	 * an incremented count to stay accurate
-	 */
-#if 0
-	if (i915_in_vblank(dev, pipe))
-		count++;
-#endif
-	/* count may be reset by other driver(e.g. 2D driver), 
-	   we have no way to know if it is wrapped or resetted 
-	   when count is zero. do a rough guess.
-	*/
-	if (count == 0 && dev->last_vblank[pipe] < dev->max_vblank_count/2)
-		dev->last_vblank[pipe] = 0; 
-	
 	return count;
 }
 
@@ -533,23 +496,12 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	if (dev->pdev->msi_enabled)
 		I915_WRITE(IMR, ~0);
 	iir = I915_READ(IIR);
-#if 0
-	DRM_DEBUG("flag=%08x\n", iir);
-#endif
 	atomic_inc(&dev_priv->irq_received);
 	if (iir == 0) {
-		DRM_DEBUG ("iir 0x%08x im 0x%08x ie 0x%08x pipea 0x%08x pipeb 0x%08x\n",
-			   iir,
-			   I915_READ(IMR),
-			   I915_READ(IER),
-			   I915_READ(PIPEASTAT),
-			   I915_READ(PIPEBSTAT));
 		if (dev->pdev->msi_enabled) {
-			I915_WRITE(IMR,
-				   dev_priv->irq_mask_reg);
+			I915_WRITE(IMR, dev_priv->irq_mask_reg);
 			(void) I915_READ(IMR);
 		}
-		return IRQ_NONE;
 	}
 
 	/*
@@ -588,6 +540,16 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 	}
 
+#ifdef __linux__
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
+	if ((iir & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT) &&
+	    (pipeb_stats & I915_LEGACY_BLC_EVENT_ENABLE))
+		opregion_asle_intr(dev);
+	if (iir & I915_ASLE_INTERRUPT)
+		opregion_asle_intr(dev);
+#endif
+#endif
+
 	if (iir & I915_USER_INTERRUPT) {
 		dev_priv->mm.irq_gem_seqno = i915_get_gem_seqno(dev);
 		DRM_WAKEUP(&dev_priv->irq_queue);
@@ -601,6 +563,11 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		vblank++;
 		drm_handle_vblank(dev, i915_get_plane(dev, 0));
 	}
+
+	/* The vblank interrupt gets enabled even if we didn't ask for
+	   it, so make sure it's shut down again */
+	if (!(dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B))
+		pipeb_stats &= ~(I915_VBLANK_INTERRUPT_ENABLE);
 
 	if (pipeb_stats & (PIPE_START_VBLANK_INTERRUPT_STATUS|
 			   PIPE_VBLANK_INTERRUPT_STATUS)) {
@@ -917,9 +884,16 @@ void i915_enable_interrupt (struct drm_device *dev)
 		}
 	}
 
+#ifdef __linux__
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
+	opregion_enable_asle(dev);
+#endif
+#endif
+
 	I915_WRITE(IMR, dev_priv->irq_mask_reg);
 	I915_WRITE(IER, I915_INTERRUPT_ENABLE_MASK);
 	(void) I915_READ (IER);
+
 	dev_priv->irq_enabled = 1;
 }
 
@@ -929,19 +903,11 @@ int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_i915_vblank_pipe *pipe = data;
 
 	if (!dev_priv) {
 		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
-
-	if (pipe->pipe & ~(DRM_I915_VBLANK_PIPE_A|DRM_I915_VBLANK_PIPE_B)) {
-		DRM_ERROR("called with invalid pipe 0x%x\n", pipe->pipe);
-		return -EINVAL;
-	}
-
-	dev_priv->vblank_pipe = pipe->pipe;
 
 	return 0;
 }
@@ -1032,7 +998,13 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
 
-	drm_update_vblank_count(dev, pipe);
+	/*
+	 * We take the ref here and put it when the swap actually completes
+	 * in the tasklet.
+	 */
+	ret = drm_vblank_get(dev, pipe);
+	if (ret)
+		return ret;
 	curseq = drm_vblank_count(dev, pipe);
 
 	if (seqtype == _DRM_VBLANK_RELATIVE)
@@ -1043,6 +1015,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 			swap->sequence = curseq + 1;
 		} else {
 			DRM_DEBUG("Missed target sequence\n");
+			drm_vblank_put(dev, pipe);
 			return -EINVAL;
 		}
 	}
@@ -1064,6 +1037,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 				    irqflags);
 				DRM_DEBUG("Invalid drawable ID %d\n",
 					  swap->drawable);
+				drm_vblank_put(dev, pipe);
 				return -EINVAL;
 			}
 
@@ -1071,6 +1045,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 			DRM_SPINUNLOCK_IRQRESTORE(&dev->drw_lock, irqflags);
 
+			drm_vblank_put(dev, pipe);
 			return 0;
 		}
 	}
@@ -1094,6 +1069,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	if (dev_priv->swaps_pending >= 100) {
 		DRM_DEBUG("Too many swaps queued\n");
+		drm_vblank_put(dev, pipe);
 		return -EBUSY;
 	}
 
@@ -1101,16 +1077,11 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 
 	if (!vbl_swap) {
 		DRM_ERROR("Failed to allocate memory to queue swap\n");
+		drm_vblank_put(dev, pipe);
 		return -ENOMEM;
 	}
 
 	DRM_DEBUG("\n");
-
-	ret = drm_vblank_get(dev, pipe);
-	if (ret) {
-		drm_free(vbl_swap, sizeof(*vbl_swap), DRM_MEM_DRIVER);
-		return ret;
-	}
 
 	vbl_swap->drw_id = swap->drawable;
 	vbl_swap->plane = plane;
@@ -1135,83 +1106,15 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 */
 void i915_driver_irq_preinstall(struct drm_device * dev)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	u32 tmp;
-
-	tmp = I915_READ(PIPEASTAT);
-	I915_WRITE(PIPEASTAT, tmp);
-	tmp = I915_READ(PIPEBSTAT);
-	I915_WRITE(PIPEBSTAT, tmp);
-
-	atomic_set(&dev_priv->irq_received, 0);
-	I915_WRITE(HWSTAM, 0xffff);
-	I915_WRITE(IER, 0x0);
-	I915_WRITE(IMR, 0xffffffff);
-	I915_WRITE(IIR, 0xffffffff);
-	(void) I915_READ(IIR);
+	return;
 }
 
 int i915_driver_irq_postinstall(struct drm_device * dev)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	int ret, num_pipes = 2;
-
-	DRM_SPININIT(&dev_priv->swaps_lock, "swap");
-	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
-	dev_priv->swaps_pending = 0;
-
-	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
-	dev_priv->user_irq_refcount = 0;
-	dev_priv->irq_mask_reg = ~0;
-
-	ret = drm_vblank_init(dev, num_pipes);
-	if (ret)
-		return ret;
-
-	ret = drm_hotplug_init(dev);
-	if (ret)
-		return ret;
-
-	dev->max_vblank_count = 0xffffff; /* only 24 bits of frame count */
-
-	i915_enable_interrupt(dev);
-	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
-
-	/*
-	 * Initialize the hardware status page IRQ location.
-	 */
-
-	I915_WRITE(INSTPM, (1 << 5) | (1 << 21));
 	return 0;
 }
 
 void i915_driver_irq_uninstall(struct drm_device * dev)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	u32 temp;
-
-	if (!dev_priv)
-		return;
-
-	dev_priv->irq_enabled = 1;
-
-	temp = I915_READ(PIPEASTAT);
-	I915_WRITE(PIPEASTAT, temp);
-	temp = I915_READ(PIPEBSTAT);
-	I915_WRITE(PIPEBSTAT, temp);
-	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
-		I915_WRITE(HWSTAM, 0xffffffff);
-		I915_WRITE(IMR, 0xffffffff);
-		I915_WRITE(IER, 0x0);
-
-		temp = I915_READ(IIR);
-		I915_WRITE(IIR, temp);
-	} else {
-		I915_WRITE16(HWSTAM, 0xffff);
-		I915_WRITE16(IMR, 0xffff);
-		I915_WRITE16(IER, 0x0);
-
-		temp = I915_READ16(IIR);
-		I915_WRITE16(IIR, temp);
-	}
+	return;
 }

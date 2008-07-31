@@ -3953,7 +3953,6 @@
 #       define R300_TILE_SIZE_32                        (2 << 4)
 #       define R300_SUBPIXEL_1_12                       (0 << 16)
 #       define R300_SUBPIXEL_1_16                       (1 << 16)
-#define R300_GB_SELECT				        0x401c
 #define R300_GB_ENABLE				        0x4008
 #define R300_GB_AA_CONFIG				0x4020
 #define R400_GB_PIPE_SELECT                             0x402c
@@ -4031,17 +4030,6 @@
 #       define R300_GL_CLIP_SPACE_DEF                   (0 << 22)
 #       define R300_DX_CLIP_SPACE_DEF                   (1 << 22)
 #       define R500_TCL_STATE_OPTIMIZATION              (1 << 23)
-#define R300_VAP_VTE_CNTL				0x20B0
-#       define R300_VPORT_X_SCALE_ENA                   (1 << 0)
-#       define R300_VPORT_X_OFFSET_ENA                  (1 << 1)
-#       define R300_VPORT_Y_SCALE_ENA                   (1 << 2)
-#       define R300_VPORT_Y_OFFSET_ENA                  (1 << 3)
-#       define R300_VPORT_Z_SCALE_ENA                   (1 << 4)
-#       define R300_VPORT_Z_OFFSET_ENA                  (1 << 5)
-#       define R300_VTX_XY_FMT                          (1 << 8)
-#       define R300_VTX_Z_FMT                           (1 << 9)
-#       define R300_VTX_W0_FMT                          (1 << 10)
-#define R300_VAP_VTX_STATE_CNTL		                0x2180
 #define R300_VAP_PSC_SGN_NORM_CNTL		        0x21DC
 #define R300_VAP_PROG_STREAM_CNTL_0		        0x2150
 #       define R300_DATA_TYPE_0_SHIFT                   0
@@ -4431,8 +4419,6 @@
 #       define R300_ENDIAN_SWAP_HALF_DWORD              (3 << 0)
 #       define R300_MACRO_TILE                          (1 << 2)
 
-#define R300_TX_BORDER_COLOR_0			        0x45c0
-
 #define R300_TX_ENABLE				        0x4104
 #       define R300_TEX_0_ENABLE                        (1 << 0)
 #       define R300_TEX_1_ENABLE                        (1 << 1)
@@ -4719,24 +4705,7 @@
 #       define R300_READ_ENABLE                         (1 << 2)
 #define R300_RB3D_ABLENDCNTL			        0x4e08
 #define R300_RB3D_DSTCACHE_CTLSTAT		        0x4e4c
-#define R300_RB3D_COLOROFFSET0			        0x4e28
-#define R300_RB3D_COLORPITCH0			        0x4e38
-#       define R300_COLORTILE                           (1 << 16)
-#       define R300_COLORENDIAN_WORD                    (1 << 19)
-#       define R300_COLORENDIAN_DWORD                   (2 << 19)
-#       define R300_COLORENDIAN_HALF_DWORD              (3 << 19)
-#       define R300_COLORFORMAT_ARGB1555                (3 << 21)
-#       define R300_COLORFORMAT_RGB565                  (4 << 21)
-#       define R300_COLORFORMAT_ARGB8888                (6 << 21)
-#       define R300_COLORFORMAT_ARGB32323232            (7 << 21)
-#       define R300_COLORFORMAT_I8                      (9 << 21)
-#       define R300_COLORFORMAT_ARGB16161616            (10 << 21)
-#       define R300_COLORFORMAT_VYUY                    (11 << 21)
-#       define R300_COLORFORMAT_YVYU                    (12 << 21)
-#       define R300_COLORFORMAT_UV88                    (13 << 21)
-#       define R300_COLORFORMAT_ARGB4444                (15 << 21)
 
-#define R300_RB3D_AARESOLVE_CTL			        0x4e88
 #define R300_RB3D_COLOR_CHANNEL_MASK	                0x4e0c
 #       define R300_BLUE_MASK_EN                        (1 << 0)
 #       define R300_GREEN_MASK_EN                       (1 << 1)

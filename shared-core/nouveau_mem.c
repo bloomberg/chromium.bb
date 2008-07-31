@@ -36,7 +36,6 @@
 #include "nouveau_drv.h"
 #include "nv50_kms_wrapper.h"
 
-
 static struct mem_block *
 split_block(struct mem_block *p, uint64_t start, uint64_t size,
 	    struct drm_file *file_priv)

@@ -394,4 +394,8 @@ extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 	on_each_cpu(handler, data, wait, 1)
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
+#define drm_core_ioremap_wc drm_core_ioremap
+#endif
+
 #endif

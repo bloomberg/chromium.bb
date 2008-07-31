@@ -40,6 +40,7 @@
 #define RADEON_FIFO_DEBUG	0
 
 static int radeon_do_cleanup_cp(struct drm_device * dev);
+static void radeon_do_cp_start(drm_radeon_private_t * dev_priv);
 
 static u32 R500_READ_MCIND(drm_radeon_private_t *dev_priv, int addr)
 {
@@ -144,8 +145,12 @@ static void radeon_write_agp_base(drm_radeon_private_t *dev_priv, u64 agp_base)
 	} else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515) {
 		R500_WRITE_MCIND(R520_MC_AGP_BASE, agp_base_lo);
 		R500_WRITE_MCIND(R520_MC_AGP_BASE_2, agp_base_hi);
+	} else if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS400) ||
+		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS480)) {
+		RADEON_WRITE(RADEON_AGP_BASE, agp_base_lo);
+		RADEON_WRITE(RS480_AGP_BASE_2, agp_base_hi);
 	} else {
-		RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_base_lo);
+		RADEON_WRITE(RADEON_AGP_BASE, agp_base_lo);
 		if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R200)
 			RADEON_WRITE(RADEON_AGP_BASE_2, agp_base_hi);
 	}
@@ -290,23 +295,8 @@ static int radeon_do_pixcache_flush(drm_radeon_private_t * dev_priv)
 			DRM_UDELAY(1);
 		}
 	} else {
-		/* 3D */
-		tmp = RADEON_READ(R300_RB3D_DSTCACHE_CTLSTAT);
-		tmp |= RADEON_RB3D_DC_FLUSH_ALL;
-		RADEON_WRITE(R300_RB3D_DSTCACHE_CTLSTAT, tmp);
-
-		/* 2D */
-		tmp = RADEON_READ(RADEON_RB2D_DSTCACHE_CTLSTAT);
-		tmp |= RADEON_RB3D_DC_FLUSH_ALL;
-		RADEON_WRITE(RADEON_RB3D_DSTCACHE_CTLSTAT, tmp);
-
-		for (i = 0; i < dev_priv->usec_timeout; i++) {
-			if (!(RADEON_READ(RADEON_RB2D_DSTCACHE_CTLSTAT)
-			  & RADEON_RB3D_DC_BUSY)) {
-				return 0;
-			}
-			DRM_UDELAY(1);
-		}
+		/* don't flush or purge cache here or lockup */
+		return 0;
 	}
 
 #if RADEON_FIFO_DEBUG
@@ -329,6 +319,9 @@ static int radeon_do_wait_for_fifo(drm_radeon_private_t * dev_priv, int entries)
 			return 0;
 		DRM_UDELAY(1);
 	}
+	DRM_INFO("wait for fifo failed status : 0x%08X 0x%08X\n",
+		 RADEON_READ(RADEON_RBBM_STATUS),
+		 RADEON_READ(R300_VAP_CNTL_STATUS));
 
 #if RADEON_FIFO_DEBUG
 	DRM_ERROR("failed!\n");
@@ -355,6 +348,9 @@ static int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv)
 		}
 		DRM_UDELAY(1);
 	}
+	DRM_INFO("wait idle failed status : 0x%08X 0x%08X\n",
+		 RADEON_READ(RADEON_RBBM_STATUS),
+		 RADEON_READ(R300_VAP_CNTL_STATUS));
 
 #if RADEON_FIFO_DEBUG
 	DRM_ERROR("failed!\n");
@@ -448,6 +444,7 @@ static void radeon_cp_load_microcode(drm_radeon_private_t * dev_priv)
 		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_R350) ||
 		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV350) ||
 		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV380) ||
+		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS400) ||
 		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS480)) {
 		DRM_INFO("Loading R300 Microcode\n");
 		for (i = 0; i < 256; i++) {
@@ -536,14 +533,20 @@ static void radeon_do_cp_start(drm_radeon_private_t * dev_priv)
 
 	dev_priv->cp_running = 1;
 
-	BEGIN_RING(6);
-
+	BEGIN_RING(8);
+	/* isync can only be written through cp on r5xx write it here */
+	OUT_RING(CP_PACKET0(RADEON_ISYNC_CNTL, 0));
+	OUT_RING(RADEON_ISYNC_ANY2D_IDLE3D |
+		 RADEON_ISYNC_ANY3D_IDLE2D |
+		 RADEON_ISYNC_WAIT_IDLEGUI |
+		 RADEON_ISYNC_CPSCRATCH_IDLEGUI);
 	RADEON_PURGE_CACHE();
 	RADEON_PURGE_ZCACHE();
 	RADEON_WAIT_UNTIL_IDLE();
-
 	ADVANCE_RING();
 	COMMIT_RING();
+
+	dev_priv->track_flush |= RADEON_FLUSH_EMITED | RADEON_PURGE_EMITED;
 }
 
 /* Reset the Command Processor.  This will not flush any pending
@@ -858,14 +861,7 @@ static void radeon_set_igpgart(drm_radeon_private_t * dev_priv, int on)
 		IGP_WRITE_MCIND(RS480_AGP_MODE_CNTL, ((1 << RS480_REQ_TYPE_SNOOP_SHIFT) |
 						      RS480_REQ_TYPE_SNOOP_DIS));
 
-		if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) {
-			IGP_WRITE_MCIND(RS690_MC_AGP_BASE,
-					(unsigned int)dev_priv->gart_vm_start);
-			IGP_WRITE_MCIND(RS690_MC_AGP_BASE_2, 0);
-		} else {
-			RADEON_WRITE(RADEON_AGP_BASE, (unsigned int)dev_priv->gart_vm_start);
-			RADEON_WRITE(RS480_AGP_BASE_2, 0);
-		}
+		radeon_write_agp_base(dev_priv, dev_priv->gart_vm_start);
 
 		dev_priv->gart_size = 32*1024*1024;
 		temp = (((dev_priv->gart_vm_start - 1 + dev_priv->gart_size) & 
@@ -1064,7 +1060,7 @@ static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
 	dev_priv->depth_clear.rb3d_cntl = (RADEON_PLANE_MASK_ENABLE |
 					   (dev_priv->color_fmt << 10) |
 					   (dev_priv->chip_family < CHIP_R200 ? RADEON_ZBLOCK16 : 0));
-	
+
 	dev_priv->depth_clear.rb3d_zstencilcntl =
 	    (dev_priv->depth_fmt |
 	     RADEON_Z_TEST_ALWAYS |
@@ -1258,7 +1254,6 @@ static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
 		dev_priv->gart_info.table_mask = DMA_BIT_MASK(32);
 		/* if we have an offset set from userspace */
 		if (dev_priv->pcigart_offset_set) {
-
 			/* if it came from userspace - remap it */
 			if (dev_priv->pcigart_offset_set == 1) {
 				dev_priv->gart_info.bus_addr =
@@ -1409,6 +1404,7 @@ static int radeon_do_resume_cp(struct drm_device * dev)
 	radeon_cp_init_ring_buffer(dev, dev_priv);
 
 	radeon_do_engine_reset(dev);
+	radeon_irq_set_state(dev, RADEON_SW_INT_ENABLE, 1);
 
 	DRM_DEBUG("radeon_do_resume_cp() complete\n");
 

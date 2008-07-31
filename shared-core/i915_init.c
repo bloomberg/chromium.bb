@@ -269,7 +269,8 @@ out:
 int i915_driver_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_i915_private *dev_priv;
-	int ret = 0;
+	int ret = 0, num_pipes = 2;
+	u32 tmp;
 
 	dev_priv = drm_alloc(sizeof(struct drm_i915_private), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
@@ -333,9 +334,50 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
-        intel_init_chipset_flush_compat(dev);
+	intel_init_chipset_flush_compat(dev);
+#endif
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
+	intel_opregion_init(dev);
 #endif
 #endif
+
+	tmp = I915_READ(PIPEASTAT);
+	I915_WRITE(PIPEASTAT, tmp);
+	tmp = I915_READ(PIPEBSTAT);
+	I915_WRITE(PIPEBSTAT, tmp);
+
+	atomic_set(&dev_priv->irq_received, 0);
+	I915_WRITE(HWSTAM, 0xeffe);
+	I915_WRITE(IMR, 0x0);
+	I915_WRITE(IER, 0x0);
+
+	DRM_SPININIT(&dev_priv->swaps_lock, "swap");
+	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
+	dev_priv->swaps_pending = 0;
+
+	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
+	dev_priv->user_irq_refcount = 0;
+	dev_priv->irq_mask_reg = ~0;
+
+	ret = drm_vblank_init(dev, num_pipes);
+	if (ret)
+		goto out_rmmap;
+
+	ret = drm_hotplug_init(dev);
+	if (ret)
+		goto out_rmmap;
+
+	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B;
+	dev->max_vblank_count = 0xffffff; /* only 24 bits of frame count */
+
+	i915_enable_interrupt(dev);
+	DRM_INIT_WAITQUEUE(&dev_priv->irq_queue);
+
+	/*
+	 * Initialize the hardware status page IRQ location.
+	 */
+
+	I915_WRITE(INSTPM, (1 << 5) | (1 << 21));
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 		ret = i915_load_modeset_init(dev);
@@ -344,6 +386,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 			goto out_rmmap;
 		}
 	}
+
 	return 0;
 
 out_rmmap:
@@ -356,6 +399,23 @@ free_priv:
 int i915_driver_unload(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
+
+	u32 temp;
+
+	dev_priv->vblank_pipe = 0;
+
+	dev_priv->irq_enabled = 0;
+
+	I915_WRITE(HWSTAM, 0xffffffff);
+	I915_WRITE(IMR, 0xffffffff);
+	I915_WRITE(IER, 0x0);
+
+	temp = I915_READ(PIPEASTAT);
+	I915_WRITE(PIPEASTAT, temp);
+	temp = I915_READ(PIPEBSTAT);
+	I915_WRITE(PIPEBSTAT, temp);
+	temp = I915_READ(IIR);
+	I915_WRITE(IIR, temp);
 
 	I915_WRITE(PRB0_CTL, 0);
 
@@ -395,14 +455,16 @@ int i915_driver_unload(struct drm_device *dev)
 		i915_gem_lastclose(dev);
 	}
 
-#ifdef __linux__
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
-        intel_init_chipset_flush_compat(dev);
-#endif
-#endif
-
-        DRM_DEBUG("%p\n", dev_priv->mmio_map);
         drm_rmmap(dev, dev_priv->mmio_map);
+
+#ifdef __linux__
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
+	intel_opregion_free(dev);
+#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+	intel_fini_chipset_flush_compat(dev);
+#endif
+#endif
 
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 

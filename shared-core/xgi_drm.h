@@ -123,11 +123,15 @@ struct xgi_state_info {
 #define DRM_XGI_FREE                2
 #define DRM_XGI_SUBMIT_CMDLIST      3
 #define DRM_XGI_STATE_CHANGE        4
+#define DRM_XGI_SET_FENCE           5
+#define DRM_XGI_WAIT_FENCE          6
 
 #define XGI_IOCTL_BOOTSTRAP         DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_BOOTSTRAP, struct xgi_bootstrap)
 #define XGI_IOCTL_ALLOC             DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_ALLOC, struct xgi_mem_alloc)
 #define XGI_IOCTL_FREE              DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_FREE, __u32)
 #define XGI_IOCTL_SUBMIT_CMDLIST    DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_SUBMIT_CMDLIST, struct xgi_cmd_info)
 #define XGI_IOCTL_STATE_CHANGE      DRM_IOW(DRM_COMMAND_BASE + DRM_XGI_STATE_CHANGE, struct xgi_state_info)
+#define XGI_IOCTL_SET_FENCE         DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_SET_FENCE, u32)
+#define XGI_IOCTL_WAIT_FENCE        DRM_IOWR(DRM_COMMAND_BASE + DRM_XGI_WAIT_FENCE, u32)
 
 #endif /* _XGI_DRM_H_ */
