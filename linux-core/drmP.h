@@ -480,11 +480,6 @@ struct drm_lock_data {
 	uint32_t kernel_waiters;
 	uint32_t user_waiters;
 	int idle_has_lock;
-	/**
-	 * Boolean signaling that the lock is held on behalf of the
-	 * file_priv client by the kernel in an ioctl handler.
-	 */
-	int kernel_held;
 };
 
 /**
@@ -560,17 +555,17 @@ struct drm_sigdata {
  * Generic memory manager structs
  */
 
-struct drm_memrange_node {
+struct drm_mm_node {
 	struct list_head fl_entry;
 	struct list_head ml_entry;
 	int free;
 	unsigned long start;
 	unsigned long size;
-	struct drm_memrange *mm;
+	struct drm_mm *mm;
 	void *private;
 };
 
-struct drm_memrange {
+struct drm_mm {
 	struct list_head fl_entry;
 	struct list_head ml_entry;
 };
@@ -586,7 +581,7 @@ struct drm_map_list {
 	uint64_t user_token;
 	struct drm_master *master; /** if this map is associated with a specific
 				       master */
-	struct drm_memrange_node *file_offset_node;
+	struct drm_mm_node *file_offset_node;
 };
 
 typedef struct drm_map drm_local_map_t;
@@ -905,7 +900,7 @@ struct drm_device {
 	struct list_head maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
 	struct drm_open_hash map_hash;       /**< User token hash table for maps */
-	struct drm_memrange offset_manager;  /**< User token manager */
+	struct drm_mm offset_manager;        /**< User token manager */
 	struct drm_open_hash object_hash;    /**< User token hash table for objects */
 	struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
 	struct page *ttm_dummy_page;
@@ -1422,26 +1417,22 @@ extern int drm_sysfs_connector_add(struct drm_connector *connector);
 extern void drm_sysfs_connector_remove(struct drm_connector *connector);
 
 /*
- * Basic memory manager support (drm_memrange.c)
+ * Basic memory manager support (drm_mm.c)
  */
 
-extern struct drm_memrange_node *drm_memrange_get_block(struct drm_memrange_node * parent,
-							unsigned long size,
-							unsigned alignment);
-extern void drm_memrange_put_block(struct drm_memrange_node *cur);
-extern struct drm_memrange_node *drm_memrange_search_free(const struct drm_memrange *mm,
-							  unsigned long size,
-							  unsigned alignment, int best_match);
-extern int drm_memrange_init(struct drm_memrange *mm,
-			     unsigned long start, unsigned long size);
-extern void drm_memrange_takedown(struct drm_memrange *mm);
-extern int drm_memrange_clean(struct drm_memrange *mm);
-extern unsigned long drm_memrange_tail_space(struct drm_memrange *mm);
-extern int drm_memrange_remove_space_from_tail(struct drm_memrange *mm,
-					       unsigned long size);
-extern int drm_memrange_add_space_to_tail(struct drm_memrange *mm,
-					  unsigned long size);
-static inline struct drm_memrange *drm_get_mm(struct drm_memrange_node *block)
+extern struct drm_mm_node * drm_mm_get_block(struct drm_mm_node * parent, unsigned long size,
+					       unsigned alignment);
+extern void drm_mm_put_block(struct drm_mm_node *cur);
+extern struct drm_mm_node *drm_mm_search_free(const struct drm_mm *mm, unsigned long size,
+						unsigned alignment, int best_match);
+extern int drm_mm_init(struct drm_mm *mm, unsigned long start, unsigned long size);
+extern void drm_mm_takedown(struct drm_mm *mm);
+extern int drm_mm_clean(struct drm_mm *mm);
+extern unsigned long drm_mm_tail_space(struct drm_mm *mm);
+extern int drm_mm_remove_space_from_tail(struct drm_mm *mm, unsigned long size);
+extern int drm_mm_add_space_to_tail(struct drm_mm *mm, unsigned long size);
+
+static inline struct drm_mm *drm_get_mm(struct drm_mm_node *block)
 {
 	return block->mm;
 }

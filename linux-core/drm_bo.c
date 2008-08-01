@@ -417,14 +417,14 @@ static void drm_bo_cleanup_refs(struct drm_buffer_object *bo, int remove_all)
 	if (!bo->fence) {
 		list_del_init(&bo->lru);
 		if (bo->mem.mm_node) {
-			drm_memrange_put_block(bo->mem.mm_node);
+			drm_mm_put_block(bo->mem.mm_node);
 			if (bo->pinned_node == bo->mem.mm_node)
 				bo->pinned_node = NULL;
 			bo->mem.mm_node = NULL;
 		}
 		list_del_init(&bo->pinned_lru);
 		if (bo->pinned_node) {
-			drm_memrange_put_block(bo->pinned_node);
+			drm_mm_put_block(bo->pinned_node);
 			bo->pinned_node = NULL;
 		}
 		list_del_init(&bo->ddestroy);
@@ -790,7 +790,7 @@ out:
 	mutex_lock(&dev->struct_mutex);
 	if (evict_mem.mm_node) {
 		if (evict_mem.mm_node != bo->pinned_node)
-			drm_memrange_put_block(evict_mem.mm_node);
+			drm_mm_put_block(evict_mem.mm_node);
 		evict_mem.mm_node = NULL;
 	}
 	drm_bo_add_to_lru(bo);
@@ -809,7 +809,7 @@ static int drm_bo_mem_force_space(struct drm_device *dev,
 				  struct drm_bo_mem_reg *mem,
 				  uint32_t mem_type, int no_wait)
 {
-	struct drm_memrange_node *node;
+	struct drm_mm_node *node;
 	struct drm_buffer_manager *bm = &dev->bm;
 	struct drm_buffer_object *entry;
 	struct drm_mem_type_manager *man = &bm->man[mem_type];
@@ -819,7 +819,7 @@ static int drm_bo_mem_force_space(struct drm_device *dev,
 
 	mutex_lock(&dev->struct_mutex);
 	do {
-		node = drm_memrange_search_free(&man->manager, num_pages,
+		node = drm_mm_search_free(&man->manager, num_pages,
 					  mem->page_alignment, 1);
 		if (node)
 			break;
@@ -845,7 +845,7 @@ static int drm_bo_mem_force_space(struct drm_device *dev,
 		return -ENOMEM;
 	}
 
-	node = drm_memrange_get_block(node, num_pages, mem->page_alignment);
+	node = drm_mm_get_block(node, num_pages, mem->page_alignment);
 	if (unlikely(!node)) {
 		mutex_unlock(&dev->struct_mutex);
 		return -ENOMEM;
@@ -923,7 +923,7 @@ int drm_bo_mem_space(struct drm_buffer_object *bo,
 	int type_found = 0;
 	int type_ok = 0;
 	int has_eagain = 0;
-	struct drm_memrange_node *node = NULL;
+	struct drm_mm_node *node = NULL;
 	int ret;
 
 	mem->mm_node = NULL;
@@ -951,10 +951,10 @@ int drm_bo_mem_space(struct drm_buffer_object *bo,
 		mutex_lock(&dev->struct_mutex);
 		if (man->has_type && man->use_type) {
 			type_found = 1;
-			node = drm_memrange_search_free(&man->manager, mem->num_pages,
+			node = drm_mm_search_free(&man->manager, mem->num_pages,
 						  mem->page_alignment, 1);
 			if (node)
-				node = drm_memrange_get_block(node, mem->num_pages,
+				node = drm_mm_get_block(node, mem->num_pages,
 							mem->page_alignment);
 		}
 		mutex_unlock(&dev->struct_mutex);
@@ -1339,7 +1339,7 @@ out_unlock:
 	if (ret || !move_unfenced) {
 		if (mem.mm_node) {
 			if (mem.mm_node != bo->pinned_node)
-				drm_memrange_put_block(mem.mm_node);
+				drm_mm_put_block(mem.mm_node);
 			mem.mm_node = NULL;
 		}
 		drm_bo_add_to_lru(bo);
@@ -1431,7 +1431,7 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 
 		if (bo->pinned_node != bo->mem.mm_node) {
 			if (bo->pinned_node != NULL)
-				drm_memrange_put_block(bo->pinned_node);
+				drm_mm_put_block(bo->pinned_node);
 			bo->pinned_node = bo->mem.mm_node;
 		}
 
@@ -1442,7 +1442,7 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 		mutex_lock(&dev->struct_mutex);
 
 		if (bo->pinned_node != bo->mem.mm_node)
-			drm_memrange_put_block(bo->pinned_node);
+			drm_mm_put_block(bo->pinned_node);
 
 		list_del_init(&bo->pinned_lru);
 		bo->pinned_node = NULL;
@@ -2082,7 +2082,7 @@ static int drm_bo_leave_list(struct drm_buffer_object *bo,
 		if (bo->pinned_node == bo->mem.mm_node)
 			bo->pinned_node = NULL;
 		if (bo->pinned_node != NULL) {
-			drm_memrange_put_block(bo->pinned_node);
+			drm_mm_put_block(bo->pinned_node);
 			bo->pinned_node = NULL;
 		}
 		mutex_unlock(&dev->struct_mutex);
@@ -2223,8 +2223,8 @@ int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type, int kern_clean)
 		drm_bo_force_list_clean(dev, &man->lru, mem_type, 1, 0, 0);
 		drm_bo_force_list_clean(dev, &man->pinned, mem_type, 1, 0, 1);
 
-		if (drm_memrange_clean(&man->manager)) {
-			drm_memrange_takedown(&man->manager);
+		if (drm_mm_clean(&man->manager)) {
+			drm_mm_takedown(&man->manager);
 		} else {
 			ret = -EBUSY;
 		}
@@ -2295,7 +2295,7 @@ int drm_bo_init_mm(struct drm_device *dev, unsigned type,
 			DRM_ERROR("Zero size memory manager type %d\n", type);
 			return ret;
 		}
-		ret = drm_memrange_init(&man->manager, p_offset, p_size);
+		ret = drm_mm_init(&man->manager, p_offset, p_size);
 		if (ret)
 			return ret;
 	}
@@ -2722,7 +2722,7 @@ void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
 		list->user_token = 0;
 	}
 	if (list->file_offset_node) {
-		drm_memrange_put_block(list->file_offset_node);
+		drm_mm_put_block(list->file_offset_node);
 		list->file_offset_node = NULL;
 	}
 
@@ -2766,7 +2766,7 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 	atomic_inc(&bo->usage);
 	map->handle = (void *)bo;
 
-	list->file_offset_node = drm_memrange_search_free(&dev->offset_manager,
+	list->file_offset_node = drm_mm_search_free(&dev->offset_manager,
 						    bo->mem.num_pages, 0, 0);
 
 	if (unlikely(!list->file_offset_node)) {
@@ -2774,7 +2774,7 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 		return -ENOMEM;
 	}
 
-	list->file_offset_node = drm_memrange_get_block(list->file_offset_node,
+	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
 						  bo->mem.num_pages, 0);
 
 	if (unlikely(!list->file_offset_node)) {

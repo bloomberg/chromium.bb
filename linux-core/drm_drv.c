@@ -428,7 +428,7 @@ static void drm_cleanup(struct drm_device * dev)
 
 	drm_ctxbitmap_cleanup(dev);
 	drm_ht_remove(&dev->map_hash);
-	drm_memrange_takedown(&dev->offset_manager);
+	drm_mm_takedown(&dev->offset_manager);
 	drm_ht_remove(&dev->object_hash);
 
 	drm_put_minor(dev, &dev->primary);

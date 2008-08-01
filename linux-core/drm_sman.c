@@ -88,34 +88,34 @@ EXPORT_SYMBOL(drm_sman_init);
 static void *drm_sman_mm_allocate(void *private, unsigned long size,
 				  unsigned alignment)
 {
-	struct drm_memrange *mm = (struct drm_memrange *) private;
-	struct drm_memrange_node *tmp;
+	struct drm_mm *mm = (struct drm_mm *) private;
+	struct drm_mm_node *tmp;
 
-	tmp = drm_memrange_search_free(mm, size, alignment, 1);
+	tmp = drm_mm_search_free(mm, size, alignment, 1);
 	if (!tmp) {
 		return NULL;
 	}
-	tmp = drm_memrange_get_block(tmp, size, alignment);
+	tmp = drm_mm_get_block(tmp, size, alignment);
 	return tmp;
 }
 
 static void drm_sman_mm_free(void *private, void *ref)
 {
-	struct drm_memrange_node *node = (struct drm_memrange_node *) ref;
+	struct drm_mm_node *node = (struct drm_mm_node *) ref;
 
-	drm_memrange_put_block(node);
+	drm_mm_put_block(node);
 }
 
 static void drm_sman_mm_destroy(void *private)
 {
-	struct drm_memrange *mm = (struct drm_memrange *) private;
-	drm_memrange_takedown(mm);
+	struct drm_mm *mm = (struct drm_mm *) private;
+	drm_mm_takedown(mm);
 	drm_free(mm, sizeof(*mm), DRM_MEM_MM);
 }
 
 static unsigned long drm_sman_mm_offset(void *private, void *ref)
 {
-	struct drm_memrange_node *node = (struct drm_memrange_node *) ref;
+	struct drm_mm_node *node = (struct drm_mm_node *) ref;
 	return node->start;
 }
 
@@ -124,7 +124,7 @@ drm_sman_set_range(struct drm_sman * sman, unsigned int manager,
 		   unsigned long start, unsigned long size)
 {
 	struct drm_sman_mm *sman_mm;
-	struct drm_memrange *mm;
+	struct drm_mm *mm;
 	int ret;
 
 	BUG_ON(manager >= sman->num_managers);
@@ -135,7 +135,7 @@ drm_sman_set_range(struct drm_sman * sman, unsigned int manager,
 		return -ENOMEM;
 	}
 	sman_mm->private = mm;
-	ret = drm_memrange_init(mm, start, size);
+	ret = drm_mm_init(mm, start, size);
 
 	if (ret) {
 		drm_free(mm, sizeof(*mm), DRM_MEM_MM);

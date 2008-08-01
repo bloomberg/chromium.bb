@@ -502,6 +502,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			I915_WRITE(IMR, dev_priv->irq_mask_reg);
 			(void) I915_READ(IMR);
 		}
+		return IRQ_NONE;
 	}
 
 	/*
@@ -768,7 +769,6 @@ int i915_enable_vblank(struct drm_device *dev, int plane)
 			     PIPE_VBLANK_INTERRUPT_STATUS);
 		I915_WRITE(pipestat_reg, pipestat);
 	}
-
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	i915_enable_irq(dev_priv, mask_reg);
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
@@ -889,11 +889,6 @@ void i915_enable_interrupt (struct drm_device *dev)
 	opregion_enable_asle(dev);
 #endif
 #endif
-
-	I915_WRITE(IMR, dev_priv->irq_mask_reg);
-	I915_WRITE(IER, I915_INTERRUPT_ENABLE_MASK);
-	(void) I915_READ (IER);
-
 	dev_priv->irq_enabled = 1;
 }
 

@@ -280,7 +280,7 @@ nouveau_sgdma_nottm_hack_init(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct drm_ttm_backend *be;
 	struct drm_scatter_gather sgreq;
-	struct drm_memrange_node mm_node;
+	struct drm_mm_node mm_node;
 	struct drm_bo_mem_reg mem;
 	int ret;
 

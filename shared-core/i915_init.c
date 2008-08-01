@@ -100,92 +100,6 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 	return 0;
 }
 
-static int i915_init_hwstatus(struct drm_device *dev)
-{
-	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_memrange_node *free_space;
-	int ret = 0;
-
-	/* Program Hardware Status Page */
-	if (!IS_G33(dev)) {
-		dev_priv->status_page_dmah = 
-			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
-
-		if (!dev_priv->status_page_dmah) {
-			DRM_ERROR("Can not allocate hardware status page\n");
-			ret = -ENOMEM;
-			goto out;
-		}
-		dev_priv->hws_vaddr = dev_priv->status_page_dmah->vaddr;
-		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-
-		I915_WRITE(HWS_PGA, dev_priv->dma_status_page);
-	} else {
-		free_space = drm_memrange_search_free(&dev_priv->vram,
-						      PAGE_SIZE,
-						      PAGE_SIZE, 0);
-		if (!free_space) {
-			DRM_ERROR("No free vram available, aborting\n");
-			ret = -ENOMEM;
-			goto out;
-		}
-
-		dev_priv->hws = drm_memrange_get_block(free_space, PAGE_SIZE,
-						       PAGE_SIZE);
-		if (!dev_priv->hws) {
-			DRM_ERROR("Unable to allocate or pin hw status page\n");
-			ret = -EINVAL;
-			goto out;
-		}
-
-		dev_priv->hws_agpoffset = dev_priv->hws->start;
-		dev_priv->hws_map.offset = dev->agp->base +
-			dev_priv->hws->start;
-		dev_priv->hws_map.size = PAGE_SIZE;
-		dev_priv->hws_map.type= 0;
-		dev_priv->hws_map.flags= 0;
-		dev_priv->hws_map.mtrr = 0;
-
-		drm_core_ioremap(&dev_priv->hws_map, dev);
-		if (dev_priv->hws_map.handle == NULL) {
-			dev_priv->hws_agpoffset = 0;
-			DRM_ERROR("can not ioremap virtual addr for"
-					"G33 hw status page\n");
-			ret = -ENOMEM;
-			goto out_free;
-		}
-		dev_priv->hws_vaddr = dev_priv->hws_map.handle;
-		I915_WRITE(HWS_PGA, dev_priv->hws_agpoffset);
-	}
-
-	memset(dev_priv->hws_vaddr, 0, PAGE_SIZE);
-
-	DRM_DEBUG("Enabled hardware status page\n");
-
-	return 0;
-
-out_free:
-	/* free hws */
-out:
-	return ret;
-}
-
-static void i915_cleanup_hwstatus(struct drm_device *dev)
-{
-	struct drm_i915_private *dev_priv = dev->dev_private;
-
-	if (!IS_G33(dev)) {
-		if (dev_priv->status_page_dmah)
-			drm_pci_free(dev, dev_priv->status_page_dmah);
-	} else {
-		if (dev_priv->hws_map.handle)
-			drm_core_ioremapfree(&dev_priv->hws_map, dev);
-		if (dev_priv->hws)
-			drm_memrange_put_block(dev_priv->hws);
-	}
-	I915_WRITE(HWS_PGA, 0x1ffff000);
-}
-
 static int i915_load_modeset_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -195,17 +109,13 @@ static int i915_load_modeset_init(struct drm_device *dev)
 	i915_probe_agp(dev->pdev, &agp_size, &prealloc_size);
 
 	/* Basic memrange allocator for stolen space (aka vram) */
-	drm_memrange_init(&dev_priv->vram, 0, prealloc_size);
+	drm_mm_init(&dev_priv->vram, 0, prealloc_size);
 	/* Let GEM Manage from end of prealloc space to end of aperture */
 	i915_gem_do_init(dev, prealloc_size, agp_size);
 
 	ret = i915_gem_init_ringbuffer(dev);
 	if (ret)
 		goto out;
-
-	ret = i915_init_hwstatus(dev);
-	if (ret)
-		goto destroy_ringbuffer;
 
 	/* Allow hardware batchbuffers unless told otherwise.
 	 */
@@ -217,7 +127,7 @@ static int i915_load_modeset_init(struct drm_device *dev)
 	if (dev_priv->wq == 0) {
 		DRM_DEBUG("Error\n");
 		ret = -EINVAL;
-		goto destroy_hws;
+		goto destroy_ringbuffer;
 	}
 
 	ret = intel_init_bios(dev);
@@ -247,8 +157,6 @@ modeset_cleanup:
 	intel_modeset_cleanup(dev);
 destroy_wq:
 	destroy_workqueue(dev_priv->wq);
-destroy_hws:
-	i915_cleanup_hwstatus(dev);
 destroy_ringbuffer:
 	i915_gem_cleanup_ringbuffer(dev);
 out:
@@ -324,13 +232,7 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 		goto free_priv;
 	}
 
-	INIT_LIST_HEAD(&dev_priv->mm.active_list);
-	INIT_LIST_HEAD(&dev_priv->mm.flushing_list);
-	INIT_LIST_HEAD(&dev_priv->mm.inactive_list);
-	INIT_LIST_HEAD(&dev_priv->mm.request_list);
-	INIT_DELAYED_WORK(&dev_priv->mm.retire_work,
-			  i915_gem_retire_work_handler);
-	dev_priv->mm.next_gem_seqno = 1;
+	i915_gem_load(dev);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
@@ -445,13 +347,12 @@ int i915_driver_unload(struct drm_device *dev)
 		dev_priv->sarea_bo = NULL;
 	}
 #endif
-	i915_cleanup_hwstatus(dev);
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 		mutex_lock(&dev->struct_mutex);
 		i915_gem_cleanup_ringbuffer(dev);
 		mutex_unlock(&dev->struct_mutex);
-		drm_memrange_takedown(&dev_priv->vram);
+		drm_mm_takedown(&dev_priv->vram);
 		i915_gem_lastclose(dev);
 	}
 

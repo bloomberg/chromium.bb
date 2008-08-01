@@ -229,7 +229,7 @@ out_cleanup:
         if (tmp_mem.mm_node) {
                 mutex_lock(&dev->struct_mutex);
                 if (tmp_mem.mm_node != bo->pinned_node)
-                        drm_memrange_put_block(tmp_mem.mm_node);
+                        drm_mm_put_block(tmp_mem.mm_node);
                 tmp_mem.mm_node = NULL;
                 mutex_unlock(&dev->struct_mutex);
         }

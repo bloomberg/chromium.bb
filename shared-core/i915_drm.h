@@ -190,6 +190,8 @@ typedef struct drm_i915_sarea {
 #define DRM_I915_GEM_MMAP	0x1e
 #define DRM_I915_GEM_SET_DOMAIN	0x1f
 #define DRM_I915_GEM_SW_FINISH	0x20
+#define DRM_I915_GEM_SET_TILING	0x21
+#define DRM_I915_GEM_GET_TILING	0x22
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -223,6 +225,8 @@ typedef struct drm_i915_sarea {
 #define DRM_IOCTL_I915_GEM_MMAP		DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_GEM_MMAP, struct drm_i915_gem_mmap)
 #define DRM_IOCTL_I915_GEM_SET_DOMAIN	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_SET_DOMAIN, struct drm_i915_gem_set_domain)
 #define DRM_IOCTL_I915_GEM_SW_FINISH	DRM_IOW (DRM_COMMAND_BASE + DRM_I915_GEM_SW_FINISH, struct drm_i915_gem_sw_finish)
+#define DRM_IOCTL_I915_GEM_SET_TILING	DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_SET_TILING, struct drm_i915_gem_set_tiling)
+#define DRM_IOCTL_I915_GEM_GET_TILING	DRM_IOWR (DRM_COMMAND_BASE + DRM_I915_GEM_GET_TILING, struct drm_i915_gem_get_tiling)
 
 /* Asynchronous page flipping:
  */
@@ -276,6 +280,7 @@ typedef struct drm_i915_irq_wait {
 #define I915_PARAM_ALLOW_BATCHBUFFER     2
 #define I915_PARAM_LAST_DISPATCH         3
 #define I915_PARAM_CHIPSET_ID            4
+#define I915_PARAM_HAS_GEM               5
 
 typedef struct drm_i915_getparam {
 	int param;
@@ -653,6 +658,66 @@ struct drm_i915_gem_busy {
 
 	/** Return busy status (1 if busy, 0 if idle) */
 	uint32_t busy;
+};
+
+#define I915_TILING_NONE	0
+#define I915_TILING_X		1
+#define I915_TILING_Y		2
+
+#define I915_BIT_6_SWIZZLE_NONE		0
+#define I915_BIT_6_SWIZZLE_9		1
+#define I915_BIT_6_SWIZZLE_9_10		2
+#define I915_BIT_6_SWIZZLE_9_11		3
+#define I915_BIT_6_SWIZZLE_9_10_11	4
+/* Not seen by userland */
+#define I915_BIT_6_SWIZZLE_UNKNOWN	5
+
+struct drm_i915_gem_set_tiling {
+	/** Handle of the buffer to have its tiling state updated */
+	uint32_t handle;
+
+	/**
+	 * Tiling mode for the object (I915_TILING_NONE, I915_TILING_X,
+	 * I915_TILING_Y).
+	 *
+	 * This value is to be set on request, and will be updated by the
+	 * kernel on successful return with the actual chosen tiling layout.
+	 *
+	 * The tiling mode may be demoted to I915_TILING_NONE when the system
+	 * has bit 6 swizzling that can't be managed correctly by GEM.
+	 *
+	 * Buffer contents become undefined when changing tiling_mode.
+	 */
+	uint32_t tiling_mode;
+
+	/**
+	 * Stride in bytes for the object when in I915_TILING_X or
+	 * I915_TILING_Y.
+	 */
+	uint32_t stride;
+
+	/**
+	 * Returned address bit 6 swizzling required for CPU access through
+	 * mmap mapping.
+	 */
+	uint32_t swizzle_mode;
+};
+
+struct drm_i915_gem_get_tiling {
+	/** Handle of the buffer to get tiling state for. */
+	uint32_t handle;
+
+	/**
+	 * Current tiling mode for the object (I915_TILING_NONE, I915_TILING_X,
+	 * I915_TILING_Y).
+	 */
+	uint32_t tiling_mode;
+
+	/**
+	 * Returned address bit 6 swizzling required for CPU access through
+	 * mmap mapping.
+	 */
+	uint32_t swizzle_mode;
 };
 
 #endif				/* _I915_DRM_H_ */

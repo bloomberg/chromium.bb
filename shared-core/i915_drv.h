@@ -39,7 +39,7 @@
 
 #define DRIVER_NAME		"i915"
 #define DRIVER_DESC		"Intel Graphics"
-#define DRIVER_DATE		"20080611"
+#define DRIVER_DATE		"20080730"
 
 #if defined(__linux__)
 #define I915_HAVE_FENCE
@@ -63,7 +63,7 @@
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		14
+#define DRIVER_MINOR		13
 #else
 #define DRIVER_MINOR		6
 #endif
@@ -78,6 +78,14 @@ enum pipe {
 #define I915_MAX_VALIDATE_BUFFERS 4096
 struct drm_i915_validate_buffer;
 #endif
+
+#define WATCH_COHERENCY	0
+#define WATCH_BUF	0
+#define WATCH_EXEC	0
+#define WATCH_LRU	0
+#define WATCH_RELOC	0
+#define WATCH_INACTIVE	0
+#define WATCH_PWRITE	0
 
 struct drm_i915_ring_buffer {
 	int tail_mask;
@@ -140,12 +148,12 @@ struct drm_i915_private {
 	struct drm_i915_ring_buffer ring;
 
 	struct drm_dma_handle *status_page_dmah;
+	void *hw_status_page;
 	dma_addr_t dma_status_page;
 	uint32_t counter;
-	uint32_t hws_agpoffset;
+	uint32_t status_gfx_addr;
 	drm_local_map_t hws_map;
-	void *hws_vaddr;
-	struct drm_memrange_node *hws;
+	struct drm_gem_object *hws_obj;
 
 	unsigned int cpp;
 
@@ -166,7 +174,7 @@ struct drm_i915_private {
 
 	bool cursor_needs_physical;
 
-	struct drm_memrange vram;
+	struct drm_mm vram;
 
 #ifdef I915_HAVE_FENCE
 	uint32_t flush_sequence;
@@ -203,83 +211,6 @@ struct drm_i915_private {
 	int lvds_dither:1;
 	int lvds_vbt:1;
 	int int_crt_support:1;
-
-	struct {
-		struct drm_memrange gtt_space;
-
-		/**
-		 * List of objects currently involved in rendering from the
-		 * ringbuffer.
-		 *
-		 * A reference is held on the buffer while on this list.
-		 */
-		struct list_head active_list;
-
-		/**
-		 * List of objects which are not in the ringbuffer but which
-		 * still have a write_domain which needs to be flushed before
-		 * unbinding.
-		 *
-		 * A reference is held on the buffer while on this list.
-		 */
-		struct list_head flushing_list;
-
-		/**
-		 * LRU list of objects which are not in the ringbuffer and
-		 * are ready to unbind, but are still in the GTT.
-		 *
-		 * A reference is not held on the buffer while on this list,
-		 * as merely being GTT-bound shouldn't prevent its being
-		 * freed, and we'll pull it off the list in the free path.
-		 */
-		struct list_head inactive_list;
-
-		/**
-		 * List of breadcrumbs associated with GPU requests currently
-		 * outstanding.
-		 */
-		struct list_head request_list;
-
-		/**
-		 * We leave the user IRQ off as much as possible,
-		 * but this means that requests will finish and never
-		 * be retired once the system goes idle. Set a timer to
-		 * fire periodically while the ring is running. When it
-		 * fires, go retire requests.
-		 */
-		struct delayed_work retire_work;
-		
-		uint32_t next_gem_seqno;
-
-		/**
-		 * Waiting sequence number, if any
-		 */
-		uint32_t waiting_gem_seqno;
-	
-		/**
-		 * Last seq seen at irq time
-		 */
-		uint32_t irq_gem_seqno;
-
-		/**
-		 * Flag if the X Server, and thus DRM, is not currently in
-		 * control of the device.
-		 *
-		 * This is set between LeaveVT and EnterVT.  It needs to be
-		 * replaced with a semaphore.  It also needs to be
-		 * transitioned away from for kernel modesetting.
-		 */
-		int suspended;
-
-		/**
-		 * Flag if the hardware appears to be wedged.
-		 *
-		 * This is set when attempts to idle the device timeout.
-		 * It prevents command submission from occuring and makes
-		 * every pending request fail
-		 */
-		int wedged;
-	} mm;
 
 	struct work_struct user_interrupt_task;
 
@@ -375,7 +306,89 @@ struct drm_i915_private {
 	u8 saveDACMASK;
 	u8 saveDACDATA[256*3]; /* 256 3-byte colors */
 	u8 saveCR[37];
-};
+
+	struct {
+		struct drm_mm gtt_space;
+
+		/**
+		 * List of objects currently involved in rendering from the
+		 * ringbuffer.
+		 *
+		 * A reference is held on the buffer while on this list.
+		 */
+		struct list_head active_list;
+
+		/**
+		 * List of objects which are not in the ringbuffer but which
+		 * still have a write_domain which needs to be flushed before
+		 * unbinding.
+		 *
+		 * A reference is held on the buffer while on this list.
+		 */
+		struct list_head flushing_list;
+
+		/**
+		 * LRU list of objects which are not in the ringbuffer and
+		 * are ready to unbind, but are still in the GTT.
+		 *
+		 * A reference is not held on the buffer while on this list,
+		 * as merely being GTT-bound shouldn't prevent its being
+		 * freed, and we'll pull it off the list in the free path.
+		 */
+		struct list_head inactive_list;
+
+		/**
+		 * List of breadcrumbs associated with GPU requests currently
+		 * outstanding.
+		 */
+		struct list_head request_list;
+
+		/**
+		 * We leave the user IRQ off as much as possible,
+		 * but this means that requests will finish and never
+		 * be retired once the system goes idle. Set a timer to
+		 * fire periodically while the ring is running. When it
+		 * fires, go retire requests.
+		 */
+		struct delayed_work retire_work;
+
+		uint32_t next_gem_seqno;
+
+		/**
+		 * Waiting sequence number, if any
+		 */
+		uint32_t waiting_gem_seqno;
+
+		/**
+		 * Last seq seen at irq time
+		 */
+		uint32_t irq_gem_seqno;
+
+		/**
+		 * Flag if the X Server, and thus DRM, is not currently in
+		 * control of the device.
+		 *
+		 * This is set between LeaveVT and EnterVT.  It needs to be
+		 * replaced with a semaphore.  It also needs to be
+		 * transitioned away from for kernel modesetting.
+		 */
+		int suspended;
+
+		/**
+		 * Flag if the hardware appears to be wedged.
+		 *
+		 * This is set when attempts to idle the device timeout.
+		 * It prevents command submission from occuring and makes
+		 * every pending request fail
+		 */
+		int wedged;
+
+		/** Bit 6 swizzling required for X tiling */
+		uint32_t bit_6_swizzle_x;
+		/** Bit 6 swizzling required for Y tiling */
+		uint32_t bit_6_swizzle_y;
+	} mm;
+} drm_i915_private_t;
 
 struct drm_i915_file_private {
 	struct {
@@ -396,7 +409,7 @@ struct drm_i915_gem_object {
 	struct drm_gem_object *obj;
 
 	/** Current space allocated to this object in the GTT, if any. */
-	struct drm_memrange_node *gtt_space;
+	struct drm_mm_node *gtt_space;
 
 	/** This object's place on the active/flushing/inactive lists */
 	struct list_head list;
@@ -434,6 +447,15 @@ struct drm_i915_gem_object {
 
 	/** Breadcrumb of last rendering to the buffer. */
 	uint32_t last_rendering_seqno;
+
+	/** Current tiling mode for the object. */
+	uint32_t tiling_mode;
+
+	/**
+	 * Flagging of which individual pages are valid in GEM_DOMAIN_CPU when
+	 * GEM_DOMAIN_CPU is not in the object's read domain.
+	 */
+	uint8_t *page_cpu_valid;
 };
 
 /**
@@ -588,6 +610,11 @@ int i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
 int i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
 			   struct drm_file *file_priv);
+int i915_gem_set_tiling(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+int i915_gem_get_tiling(struct drm_device *dev, void *data,
+			struct drm_file *file_priv);
+void i915_gem_load(struct drm_device *dev);
 int i915_gem_proc_init(struct drm_minor *minor);
 void i915_gem_proc_cleanup(struct drm_minor *minor);
 int i915_gem_init_object(struct drm_gem_object *obj);
@@ -602,9 +629,26 @@ void i915_gem_cleanup_ringbuffer(struct drm_device *dev);
 int i915_gem_do_init(struct drm_device *dev, unsigned long start,
 		     unsigned long end);
 void i915_gem_retire_work_handler(struct work_struct *work);
+void i915_gem_clflush_object(struct drm_gem_object *obj);
 #endif
 
 extern unsigned int i915_fbpercrtc;
+
+/* i915_gem_tiling.c */
+void i915_gem_detect_bit_6_swizzle(struct drm_device *dev);
+
+/* i915_gem_debug.c */
+void i915_gem_dump_object(struct drm_gem_object *obj, int len,
+			  const char *where, uint32_t mark);
+#if WATCH_INACTIVE
+void i915_verify_inactive(struct drm_device *dev, char *file, int line);
+#else
+#define i915_verify_inactive(dev,file,line)
+#endif
+void i915_gem_object_check_coherency(struct drm_gem_object *obj, int handle);
+void i915_gem_dump_object(struct drm_gem_object *obj, int len,
+			  const char *where, uint32_t mark);
+void i915_dump_lru(struct drm_device *dev, const char *where);
 
 #ifdef __linux__
 /* i915_opregion.c */
@@ -685,6 +729,39 @@ void i915_ring_validate(struct drm_device *dev, const char *func, int line);
 } while(0)
 
 extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
+
+#define BREADCRUMB_BITS 31
+#define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
+
+#define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
+/**
+ * Reads a dword out of the status page, which is written to from the command
+ * queue by automatic updates, MI_REPORT_HEAD, MI_STORE_DATA_INDEX, or
+ * MI_STORE_DATA_IMM.
+ *
+ * The following dwords have a reserved meaning:
+ * 0: ISR copy, updated when an ISR bit not set in the HWSTAM changes.
+ * 4: ring 0 head pointer
+ * 5: ring 1 head pointer (915-class)
+ * 6: ring 2 head pointer (915-class)
+ *
+ * The area from dword 0x10 to 0x3ff is available for driver usage.
+ */
+#define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
+#define I915_GEM_HWS_INDEX		0x10
+
+/* MCH MMIO space */
+/** 915-945 and GM965 MCH register controlling DRAM channel access */
+#define DCC		0x200
+#define DCC_ADDRESSING_MODE_SINGLE_CHANNEL		(0 << 0)
+#define DCC_ADDRESSING_MODE_DUAL_CHANNEL_ASYMMETRIC	(1 << 0)
+#define DCC_ADDRESSING_MODE_DUAL_CHANNEL_INTERLEAVED	(2 << 0)
+#define DCC_ADDRESSING_MODE_MASK			(3 << 0)
+#define DCC_CHANNEL_XOR_DISABLE				(1 << 10)
+
+/** 965 MCH register controlling DRAM channel configuration */
+#define CHDECMISC		0x111
+#define CHDECMISC_FLEXMEMORY		(1 << 1)
 
 /*
  * The Bridge device's PCI config space has information about the
@@ -793,27 +870,6 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define   MI_BATCH_NON_SECURE_I965 (1<<8)
 #define MI_BATCH_BUFFER_START	MI_INSTR(0x31, 0)
 
-#define BREADCRUMB_BITS 31
-#define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
-
-#define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hws_vaddr))[5])
-
-/**
- * Reads a dword out of the status page, which is written to from the command
- * queue by automatic updates, MI_REPORT_HEAD, MI_STORE_DATA_INDEX, or
- * MI_STORE_DATA_IMM.
- *
- * The following dwords have a reserved meaning:
- * 0: ISR copy, updated when an ISR bit not set in the HWSTAM changes.
- * 4: ring 0 head pointer
- * 5: ring 1 head pointer (915-class)
- * 6: ring 2 head pointer (915-class)
- *
- * The area from dword 0x10 to 0x3ff is available for driver usage.
- */
-#define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hws_vaddr))[reg])
-#define I915_GEM_HWS_INDEX		0x10
-
 /*
  * 3D instructions used by the kernel
  */
@@ -837,6 +893,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define GFX_OP_STIPPLE           ((0x3<<29)|(0x1d<<24)|(0x83<<16))
 #define GFX_OP_MAP_INFO          ((0x3<<29)|(0x1d<<24)|0x4)
 #define GFX_OP_DESTBUFFER_VARS   ((0x3<<29)|(0x1d<<24)|(0x85<<16)|0x0)
+#define GFX_OP_DESTBUFFER_INFO	 ((0x3<<29)|(0x1d<<24)|(0x8e<<16)|1)
 #define GFX_OP_DRAWRECT_INFO     ((0x3<<29)|(0x1d<<24)|(0x80<<16)|(0x3))
 #define GFX_OP_DRAWRECT_INFO_I965  ((0x7900<<16)|0x2)
 #define SRC_COPY_BLT_CMD                ((2<<29)|(0x43<<22)|4)
@@ -880,8 +937,10 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define PRB1_HEAD	0x02044 /* 915+ only */
 #define PRB1_START	0x02048 /* 915+ only */
 #define PRB1_CTL	0x0204c /* 915+ only */
-#define I965REG_ACTHD	0x02074
+#define ACTHD_I965	0x02074
 #define HWS_PGA		0x02080
+#define HWS_ADDRESS_MASK	0xfffff000
+#define HWS_START_ADDRESS_SHIFT	4
 #define IPEIR		0x02088
 #define NOPID		0x02094
 #define HWSTAM		0x02098
@@ -911,7 +970,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define EMR		0x020b4
 #define ESR		0x020b8
 #define INSTPM	        0x020c0
-#define I915REG_ACTHD	0x020C8
+#define ACTHD	        0x020c8
 #define FW_BLC		0x020d8
 #define FW_BLC_SELF	0x020e0 /* 915+ only */
 #define MI_ARB_STATE	0x020e4 /* 915+ only */
@@ -961,7 +1020,6 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 /*
  * GPIO regs
  */
-
 #define GPIOA			0x5010
 #define GPIOB			0x5014
 #define GPIOC			0x5018

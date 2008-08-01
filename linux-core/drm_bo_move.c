@@ -41,7 +41,7 @@ static void drm_bo_free_old_node(struct drm_buffer_object *bo)
 
 	if (old_mem->mm_node && (old_mem->mm_node != bo->pinned_node)) {
 		mutex_lock(&bo->dev->struct_mutex);
-		drm_memrange_put_block(old_mem->mm_node);
+		drm_mm_put_block(old_mem->mm_node);
 		mutex_unlock(&bo->dev->struct_mutex);
 	}
 	old_mem->mm_node = NULL;

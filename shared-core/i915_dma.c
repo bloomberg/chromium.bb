@@ -41,12 +41,12 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_ring_buffer *ring = &(dev_priv->ring);
 	u32 last_head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
-	u32 acthd_reg = IS_I965G(dev) ? I965REG_ACTHD : I915REG_ACTHD;
+	u32 acthd_reg = IS_I965G(dev) ? ACTHD_I965 : ACTHD;
 	u32 last_acthd = I915_READ(acthd_reg);
 	u32 acthd;
 	int i;
 
-	for (i = 0; i < 10000; i++) {
+	for (i = 0; i < 100000; i++) {
 		ring->head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
 		acthd = I915_READ(acthd_reg);
 		ring->space = ring->head - (ring->tail + 8);
@@ -130,19 +130,6 @@ int i915_dma_cleanup(struct drm_device * dev)
                 dev_priv->ring.map.handle = 0;
                 dev_priv->ring.map.size = 0;
 		dev_priv->ring.Size = 0;
-        }
-
-        if (dev_priv->status_page_dmah) {
-                drm_pci_free(dev, dev_priv->status_page_dmah);
-                dev_priv->status_page_dmah = NULL;
-                /* Need to rewrite hardware status page */
-                I915_WRITE(0x02080, 0x1ffff000);
-        }
-
-        if (dev_priv->hws_agpoffset) {
-                dev_priv->hws_agpoffset = 0;
-                drm_core_ioremapfree(&dev_priv->hws_map, dev);
-                I915_WRITE(0x02080, 0x1ffff000);
         }
 
 	return 0;
@@ -266,25 +253,6 @@ static int i915_initialize(struct drm_device * dev,
 	 */
 	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 
-	/* Program Hardware Status Page */
-	if (!I915_NEED_GFX_HWS(dev)) {
-		dev_priv->status_page_dmah =
-			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
-
-		if (!dev_priv->status_page_dmah) {
-			i915_dma_cleanup(dev);
-			DRM_ERROR("Can not allocate hardware status page\n");
-			return -ENOMEM;
-		}
-		dev_priv->hws_vaddr = dev_priv->status_page_dmah->vaddr;
-		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-
-		memset(dev_priv->hws_vaddr, 0, PAGE_SIZE);
-
-		I915_WRITE(0x02080, dev_priv->dma_status_page);
-	}
-	DRM_DEBUG("Enabled hardware status page\n");
-
 #ifdef I915_HAVE_BUFFER
 	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
 		mutex_init(&dev_priv->cmdbuf_mutex);
@@ -320,14 +288,14 @@ static int i915_dma_resume(struct drm_device * dev)
 	}
 
 	/* Program Hardware Status Page */
-	if (!dev_priv->hws_vaddr) {
+	if (!dev_priv->hw_status_page) {
 		DRM_ERROR("Can not find hardware status page\n");
 		return -EINVAL;
 	}
-	DRM_DEBUG("hw status page @ %p\n", dev_priv->hws_vaddr);
+	DRM_DEBUG("hw status page @ %p\n", dev_priv->hw_status_page);
 
-	if (dev_priv->hws_agpoffset != 0)
-		I915_WRITE(HWS_PGA, dev_priv->hws_agpoffset);
+	if (dev_priv->status_gfx_addr != 0)
+		I915_WRITE(HWS_PGA, dev_priv->status_gfx_addr);
 	else
 		I915_WRITE(HWS_PGA, dev_priv->dma_status_page);
 	DRM_DEBUG("Enabled hardware status page\n");
@@ -896,6 +864,9 @@ static int i915_getparam(struct drm_device *dev, void *data,
 	case I915_PARAM_CHIPSET_ID:
 		value = dev->pci_device;
 		break;
+	case I915_PARAM_HAS_GEM:
+		value = 1;
+		break;
 	default:
 		DRM_ERROR("Unknown parameter %d\n", param->param);
 		return -EINVAL;
@@ -1033,7 +1004,7 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 
 	DRM_DEBUG("set status page addr 0x%08x\n", (u32)hws->addr);
 
-	dev_priv->hws_agpoffset = hws->addr & (0x1ffff<<12);
+	dev_priv->status_gfx_addr = hws->addr & (0x1ffff<<12);
 
 	dev_priv->hws_map.offset = dev->agp->base + hws->addr;
 	dev_priv->hws_map.size = 4*1024;
@@ -1044,17 +1015,17 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 	drm_core_ioremap(&dev_priv->hws_map, dev);
 	if (dev_priv->hws_map.handle == NULL) {
 		i915_dma_cleanup(dev);
-		dev_priv->hws_agpoffset = 0;
+		dev_priv->status_gfx_addr = 0;
 		DRM_ERROR("can not ioremap virtual address for"
 				" G33 hw status page\n");
 		return -ENOMEM;
 	}
 
-	dev_priv->hws_vaddr = dev_priv->hws_map.handle;
+	dev_priv->hw_status_page = dev_priv->hws_map.handle;
 
-	memset(dev_priv->hws_vaddr, 0, PAGE_SIZE);
-	I915_WRITE(HWS_PGA, dev_priv->hws_agpoffset);
-	DRM_DEBUG("load hws at %p\n", dev_priv->hws_vaddr);
+	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+	I915_WRITE(HWS_PGA, dev_priv->status_gfx_addr);
+	DRM_DEBUG("load hws at %p\n", dev_priv->hw_status_page);
 
 	return 0;
 }
@@ -1095,6 +1066,8 @@ struct drm_ioctl_desc i915_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_I915_GEM_MMAP, i915_gem_mmap_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_I915_GEM_SET_DOMAIN, i915_gem_set_domain_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_I915_GEM_SW_FINISH, i915_gem_sw_finish_ioctl, 0),
+	DRM_IOCTL_DEF(DRM_I915_GEM_SET_TILING, i915_gem_set_tiling, 0),
+	DRM_IOCTL_DEF(DRM_I915_GEM_GET_TILING, i915_gem_get_tiling, 0),
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);
