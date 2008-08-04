@@ -1096,11 +1096,6 @@ typedef struct drm_agp_binding drm_agp_binding_t;
 typedef struct drm_agp_info drm_agp_info_t;
 typedef struct drm_scatter_gather drm_scatter_gather_t;
 typedef struct drm_set_version drm_set_version_t;
-
-typedef struct drm_fence_arg drm_fence_arg_t;
-typedef struct drm_mm_type_arg drm_mm_type_arg_t;
-typedef struct drm_mm_init_arg drm_mm_init_arg_t;
-typedef enum drm_bo_type drm_bo_type_t;
 #endif
 
 #endif
