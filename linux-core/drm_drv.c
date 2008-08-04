@@ -191,11 +191,6 @@ int drm_lastclose(struct drm_device * dev)
 	drm_drawable_free_all(dev);
 	del_timer(&dev->timer);
 
-	if (dev->primary->master) {
-		drm_put_master(dev->primary->master);
-		dev->primary->master = NULL;
-	}
-	
 	/* Clear AGP information */
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		struct drm_agp_mem *entry, *tempe;
@@ -400,9 +395,10 @@ static void drm_cleanup(struct drm_device * dev)
 	drm_ht_remove(&dev->map_hash);
 	drm_memrange_takedown(&dev->offset_manager);
 
-	drm_put_minor(dev, &dev->primary);
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		drm_put_minor(dev, &dev->control);
+		drm_put_minor(&dev->control);
+
+	drm_put_minor(&dev->primary);
 
 	if (drm_put_dev(dev))
 		DRM_ERROR("Cannot unload module\n");

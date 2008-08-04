@@ -88,30 +88,7 @@ again:
 	return new_id;
 }
 
-int drm_setmaster_ioctl(struct drm_device *dev, void *data,
-			struct drm_file *file_priv)
-{
-	if (file_priv->minor->master && file_priv->minor->master != file_priv->master)
-		return -EINVAL;
-
-	if (!file_priv->master)
-		return -EINVAL;
-
-	if (!file_priv->minor->master && file_priv->minor->master != file_priv->master)
-		file_priv->minor->master = file_priv->master;
-	return 0;
-}
-
-int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv)
-{
-	if (!file_priv->master)
-		return -EINVAL;
-	file_priv->minor->master = NULL;
-	return 0;
-}
-
-struct drm_master *drm_get_master(struct drm_minor *minor)
+struct drm_master *drm_master_create(struct drm_minor *minor)
 {
 	struct drm_master *master;
 
@@ -119,7 +96,7 @@ struct drm_master *drm_get_master(struct drm_minor *minor)
 	if (!master)
 		return NULL;
 
-//	INIT_LIST_HEAD(&master->filelist);
+	kref_init(&master->refcount);
 	spin_lock_init(&master->lock.spinlock);
 	init_waitqueue_head(&master->lock.lock_queue);
 	drm_ht_create(&master->magiclist, DRM_MAGIC_HASH_ORDER);
@@ -131,8 +108,15 @@ struct drm_master *drm_get_master(struct drm_minor *minor)
 	return master;
 }
 
-void drm_put_master(struct drm_master *master)
+struct drm_master *drm_master_get(struct drm_master *master)
 {
+	kref_get(&master->refcount);
+	return master;
+}
+
+static void drm_master_destroy(struct kref *kref)
+{
+	struct drm_master *master = container_of(kref, struct drm_master, refcount);
 	struct drm_magic_entry *pt, *next;
 	struct drm_device *dev = master->minor->dev;
 
@@ -166,21 +150,56 @@ void drm_put_master(struct drm_master *master)
 	drm_free(master, sizeof(*master), DRM_MEM_DRIVER);
 }
 
+void drm_master_put(struct drm_master **master)
+{
+	kref_put(&(*master)->refcount, drm_master_destroy);
+	*master = NULL;
+}
+
+int drm_setmaster_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
+{
+	if (file_priv->minor->master && file_priv->minor->master != file_priv->master)
+		return -EINVAL;
+
+	if (!file_priv->master)
+		return -EINVAL;
+
+	if (!file_priv->minor->master && file_priv->minor->master != file_priv->master) {
+		mutex_lock(&dev->struct_mutex);
+		file_priv->minor->master = drm_master_get(file_priv->master);
+		mutex_unlock(&dev->struct_mutex);
+	}
+
+	return 0;
+}
+
+int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
+			 struct drm_file *file_priv)
+{
+	if (!file_priv->master)
+		return -EINVAL;
+	mutex_lock(&dev->struct_mutex);
+	drm_master_put(&file_priv->minor->master);
+	mutex_unlock(&dev->struct_mutex);
+	return 0;
+}
+
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 			   const struct pci_device_id *ent,
 			   struct drm_driver *driver)
 {
 	int retcode;
 
+	INIT_LIST_HEAD(&dev->filelist);
 	INIT_LIST_HEAD(&dev->ctxlist);
 	INIT_LIST_HEAD(&dev->vmalist);
 	INIT_LIST_HEAD(&dev->maplist);
-	INIT_LIST_HEAD(&dev->filelist);
 
 	spin_lock_init(&dev->count_lock);
 	spin_lock_init(&dev->drw_lock);
 	spin_lock_init(&dev->tasklet_lock);
-//	spin_lock_init(&dev->lock.spinlock);
+
 	init_timer(&dev->timer);
 	mutex_init(&dev->struct_mutex);
 	mutex_init(&dev->ctxlist_mutex);
@@ -402,10 +421,10 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	return 0;
 err_g5:
-	drm_put_minor(dev, &dev->primary);
+	drm_put_minor(&dev->primary);
 err_g4:
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		drm_put_minor(dev, &dev->control);
+		drm_put_minor(&dev->control);
 err_g3:
 	if (!drm_fb_loaded)
 		pci_disable_device(pdev);
@@ -456,14 +475,14 @@ int drm_put_dev(struct drm_device * dev)
  * last minor released.
  *
  */
-int drm_put_minor(struct drm_device *dev, struct drm_minor **minor_p)
+int drm_put_minor(struct drm_minor **minor_p)
 {
 	struct drm_minor *minor = *minor_p;
 	DRM_DEBUG("release secondary minor %d\n", minor->index);
 
 	if (minor->type == DRM_MINOR_LEGACY) {
-		if (dev->driver->proc_cleanup)
-			dev->driver->proc_cleanup(minor);
+		if (minor->dev->driver->proc_cleanup)
+			minor->dev->driver->proc_cleanup(minor);
 		drm_proc_cleanup(minor, drm_proc_root);
 	}
 	drm_sysfs_device_remove(minor);

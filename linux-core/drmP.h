@@ -670,7 +670,9 @@ struct drm_gem_object {
 
 /* per-master structure */
 struct drm_master {
-	
+
+	struct kref refcount; /* refcount for this master */
+
 	struct list_head head; /**< each minor contains a list of masters */
 	struct drm_minor *minor; /**< link back to minor we are a master for */
 
@@ -1345,12 +1347,13 @@ extern int drm_setmaster_ioctl(struct drm_device *dev, void *data,
 			       struct drm_file *file_priv);
 extern int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
-extern struct drm_master *drm_get_master(struct drm_minor *minor);
-extern void drm_put_master(struct drm_master *master);
+struct drm_master *drm_master_create(struct drm_minor *minor);
+extern struct drm_master *drm_master_get(struct drm_master *master);
+extern void drm_master_put(struct drm_master **master);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
-		     struct drm_driver *driver);
+		       struct drm_driver *driver);
 extern int drm_put_dev(struct drm_device *dev);
-extern int drm_put_minor(struct drm_device *dev, struct drm_minor **p);
+extern int drm_put_minor(struct drm_minor **minor_p);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 
 extern struct class *drm_class;

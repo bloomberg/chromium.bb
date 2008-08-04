@@ -260,28 +260,34 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	/* if there is no current master make this fd it */
 	mutex_lock(&dev->struct_mutex);
 	if (!priv->minor->master) {
-		priv->minor->master = drm_get_master(priv->minor);
+		/* create a new master */
+		priv->minor->master = drm_master_create(priv->minor);
 		if (!priv->minor->master) {
 			ret = -ENOMEM;
 			goto out_free;
 		}
 
 		priv->is_master = 1;
-		priv->master = priv->minor->master;
+		/* take another reference for the copy in the local file priv */
+		priv->master = drm_master_get(priv->minor->master);
 
 		priv->authenticated = 1;
+
 		mutex_unlock(&dev->struct_mutex);
 		if (dev->driver->master_create) {
 			ret = dev->driver->master_create(dev, priv->master);
 			if (ret) {
-				drm_put_master(priv->minor->master);
-				priv->minor->master = priv->master = NULL;
+				mutex_lock(&dev->struct_mutex);
+				/* drop both references if this fails */
+				drm_master_put(&priv->minor->master);
+				drm_master_put(&priv->master);
 				mutex_unlock(&dev->struct_mutex);
 				goto out_free;
 			}
 		}
 	} else {
-		priv->master = priv->minor->master;
+		/* get a reference to the master */
+		priv->master = drm_master_get(priv->minor->master);
 		mutex_unlock(&dev->struct_mutex);
 	}
 
@@ -453,6 +459,8 @@ int drm_release(struct inode *inode, struct file *filp)
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		drm_fb_release(filp);
 
+	mutex_lock(&dev->struct_mutex);
+
 	if (file_priv->is_master) {
 		struct drm_file *temp;
 		list_for_each_entry(temp, &dev->filelist, lhead) {
@@ -461,18 +469,17 @@ int drm_release(struct inode *inode, struct file *filp)
 				temp->authenticated = 0;
 		}
 
-		if (file_priv->minor->master == file_priv->master)
-			file_priv->minor->master = NULL;
-		drm_put_master(file_priv->master);
+		if (file_priv->minor->master == file_priv->master) {
+			/* drop the reference held my the minor */
+			drm_master_put(&file_priv->minor->master);
+		}
 	}
 
-	file_priv->master = NULL;
+	/* drop the reference held my the file priv */
+	drm_master_put(&file_priv->master);
 	file_priv->is_master = 0;
 
-	mutex_lock(&dev->struct_mutex);
-
 	list_del(&file_priv->lhead);
-
 	mutex_unlock(&dev->struct_mutex);
 
 	if (dev->driver->postclose)
