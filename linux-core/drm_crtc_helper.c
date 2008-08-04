@@ -203,7 +203,7 @@ EXPORT_SYMBOL(drm_helper_disable_unused_functions);
  * LOCKING:
  * Caller must hold mode config lock.
  */
-static void drm_pick_crtcs (struct drm_device *dev)
+void drm_pick_crtcs (struct drm_device *dev)
 {
 	int c, o, assigned;
 	struct drm_connector *connector, *connector_equal;
