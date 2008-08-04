@@ -3182,6 +3182,9 @@ static int radeon_cp_setparam(struct drm_device *dev, void *data, struct drm_fil
 	case RADEON_SETPARAM_VBLANK_CRTC:
 		return radeon_vblank_crtc_set(dev, sp->value);
 		break;
+	case RADEON_SETPARAM_MM_INIT:
+		dev_priv->user_mm_enable = true;
+		return radeon_gem_mm_init(dev);
 	default:
 		DRM_DEBUG("Invalid parameter %d\n", sp->param);
 		return -EINVAL;

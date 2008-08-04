@@ -768,6 +768,7 @@ typedef struct drm_radeon_setparam {
 #define RADEON_SETPARAM_NEW_MEMMAP 4		/* Use new memory map */
 #define RADEON_SETPARAM_PCIGART_TABLE_SIZE 5    /* PCI GART Table Size */
 #define RADEON_SETPARAM_VBLANK_CRTC 6           /* VBLANK CRTC */
+#define RADEON_SETPARAM_MM_INIT 7		/* Initialise the mm */
 /* 1.14: Clients can allocate/free a surface
  */
 typedef struct drm_radeon_surface_alloc {

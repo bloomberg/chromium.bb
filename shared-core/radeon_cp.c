@@ -1364,8 +1364,7 @@ static int radeon_do_cleanup_cp(struct drm_device * dev)
 		if (dev_priv->gart_info.bus_addr) {
 			/* Turn off PCI GART */
 			radeon_set_pcigart(dev_priv, 0);
-			if (!drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info))
-				DRM_ERROR("failed to cleanup PCI GART!\n");
+			drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info);
 		}
 
 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB)
@@ -1373,6 +1372,7 @@ static int radeon_do_cleanup_cp(struct drm_device * dev)
 			if (dev_priv->pcigart_offset_set == 1) {
 				drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
 				dev_priv->gart_info.addr = NULL;
+				dev_priv->pcigart_offset_set = 0;
 			}
 		}
 	}
@@ -1563,8 +1563,10 @@ void radeon_do_release(struct drm_device * dev)
 		radeon_mem_takedown(&(dev_priv->gart_heap));
 		radeon_mem_takedown(&(dev_priv->fb_heap));
 
-
-		radeon_gem_mm_fini(dev);
+		if (dev_priv->user_mm_enable) {
+			radeon_gem_mm_fini(dev);
+			dev_priv->user_mm_enable = false;
+		}
 
 		/* deallocate kernel resources */
 		radeon_do_cleanup_cp(dev);

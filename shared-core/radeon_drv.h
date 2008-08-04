@@ -314,6 +314,8 @@ typedef struct drm_radeon_private {
 
 	int new_memmap;
 
+	bool user_mm_enable;
+
 	int gart_size;
 	u32 gart_vm_start;
 	unsigned long gart_buffers_offset;
