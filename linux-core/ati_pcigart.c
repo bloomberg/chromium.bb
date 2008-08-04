@@ -111,7 +111,6 @@ int drm_ati_pcigart_cleanup(struct drm_device *dev, struct drm_ati_pcigart_info 
 
 	/* we need to support large memory configurations */
 	if (!entry) {
-		DRM_ERROR("no scatter/gather memory!\n");
 		return 0;
 	}
 
