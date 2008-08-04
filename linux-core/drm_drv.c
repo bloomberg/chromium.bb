@@ -170,8 +170,6 @@ int drm_lastclose(struct drm_device * dev)
 
 	DRM_DEBUG("\n");
 
-	if (!drm_core_check_feature(dev, DRIVER_MODESET))
-		drm_bo_driver_finish(dev);
 
 	/*
 	 * We can't do much about this function failing.
@@ -181,6 +179,8 @@ int drm_lastclose(struct drm_device * dev)
 		dev->driver->lastclose(dev);
 	DRM_DEBUG("driver lastclose completed\n");
 
+	if (!drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_bo_driver_finish(dev);
 
 /*	if (dev->irq_enabled)
 		drm_irq_uninstall(dev); */
