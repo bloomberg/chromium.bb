@@ -381,6 +381,10 @@ i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 		return -EBADF;
 
 	mutex_lock(&dev->struct_mutex);
+#if WATCH_BUF
+	DRM_INFO("set_domain_ioctl %p(%d), %08x %08x\n",
+		 obj, obj->size, args->read_domains, args->write_domain);
+#endif
 	ret = i915_gem_set_domain(obj, file_priv,
 				  args->read_domains, args->write_domain);
 	drm_gem_object_unreference(obj);
@@ -411,8 +415,8 @@ i915_gem_sw_finish_ioctl(struct drm_device *dev, void *data,
 	}
 
 #if WATCH_BUF
-	DRM_INFO("%s: sw_finish %d (%p)\n",
-		 __func__, args->handle, obj);
+	DRM_INFO("%s: sw_finish %d (%p %d)\n",
+		 __func__, args->handle, obj, obj->size);
 #endif
 	obj_priv = obj->driver_private;
 
@@ -853,18 +857,18 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int ret;
+	uint32_t write_domain;
 
 	/* If there are writes queued to the buffer, flush and
 	 * create a new seqno to wait for.
 	 */
-	if (obj->write_domain & ~(I915_GEM_DOMAIN_CPU|I915_GEM_DOMAIN_GTT)) {
-		uint32_t write_domain = obj->write_domain;
+	write_domain = obj->write_domain & ~(I915_GEM_DOMAIN_CPU|I915_GEM_DOMAIN_GTT);
+	if (write_domain) {
 #if WATCH_BUF
 		DRM_INFO("%s: flushing object %p from write domain %08x\n",
 			  __func__, obj, write_domain);
 #endif
 		i915_gem_flush(dev, 0, write_domain);
-		obj->write_domain = 0;
 
 		i915_gem_object_move_to_active(obj);
 		obj_priv->last_rendering_seqno = i915_add_request(dev,
@@ -874,6 +878,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		DRM_INFO("%s: flush moves to exec list %p\n", __func__, obj);
 #endif
 	}
+
 	/* If there is rendering queued on the buffer being evicted, wait for
 	 * it.
 	 */
@@ -885,6 +890,13 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		ret = i915_wait_request(dev, obj_priv->last_rendering_seqno);
 		if (ret != 0)
 			return ret;
+		if (write_domain) {
+#if WATCH_BUF
+			DRM_INFO("%s: flushed object %p from write domain %08x\n",
+				 __func__, obj, write_domain);
+#endif
+			obj->write_domain = 0;
+		}
 	}
 
 	return 0;
