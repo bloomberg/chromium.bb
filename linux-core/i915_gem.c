@@ -661,6 +661,12 @@ i915_gem_retire_request(struct drm_device *dev,
 			 __func__, request->seqno, obj);
 #endif
 
+		/* If this request flushes the write domain,
+		 * clear the write domain from the object now
+		 */
+		if (request->flush_domains & obj->write_domain)
+		    obj->write_domain = 0;
+
 		if (obj->write_domain != 0) {
 			list_move_tail(&obj_priv->list,
 				       &dev_priv->mm.flushing_list);
@@ -760,7 +766,7 @@ i915_wait_request(struct drm_device *dev, uint32_t seqno)
 	if (dev_priv->mm.wedged)
 		ret = -EIO;
 
-	if (ret)
+	if (ret && ret != -ERESTARTSYS)
 		DRM_ERROR("%s returns %d (awaiting %d at %d)\n",
 			  __func__, ret, seqno, i915_get_gem_seqno(dev));
 
@@ -890,13 +896,6 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		ret = i915_wait_request(dev, obj_priv->last_rendering_seqno);
 		if (ret != 0)
 			return ret;
-		if (write_domain) {
-#if WATCH_BUF
-			DRM_INFO("%s: flushed object %p from write domain %08x\n",
-				 __func__, obj, write_domain);
-#endif
-			obj->write_domain = 0;
-		}
 	}
 
 	return 0;
