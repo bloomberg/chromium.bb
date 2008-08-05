@@ -2095,16 +2095,19 @@
 #       define RADEON_STENCIL_ENABLE           (1  <<  7)
 #       define RADEON_Z_ENABLE                 (1  <<  8)
 #       define RADEON_DEPTH_XZ_OFFEST_ENABLE   (1  <<  9)
-#       define RADEON_COLOR_FORMAT_ARGB1555    (3  << 10)
-#       define RADEON_COLOR_FORMAT_RGB565      (4  << 10)
-#       define RADEON_COLOR_FORMAT_ARGB8888    (6  << 10)
-#       define RADEON_COLOR_FORMAT_RGB332      (7  << 10)
-#       define RADEON_COLOR_FORMAT_Y8          (8  << 10)
-#       define RADEON_COLOR_FORMAT_RGB8        (9  << 10)
-#       define RADEON_COLOR_FORMAT_YUV422_VYUY (11 << 10)
-#       define RADEON_COLOR_FORMAT_YUV422_YVYU (12 << 10)
-#       define RADEON_COLOR_FORMAT_aYUV444     (14 << 10)
-#       define RADEON_COLOR_FORMAT_ARGB4444    (15 << 10)
+#       define RADEON_RB3D_COLOR_FORMAT_SHIFT  10
+
+#       define RADEON_COLOR_FORMAT_ARGB1555    3
+#       define RADEON_COLOR_FORMAT_RGB565      4
+#       define RADEON_COLOR_FORMAT_ARGB8888    6
+#       define RADEON_COLOR_FORMAT_RGB332      7
+#       define RADEON_COLOR_FORMAT_Y8          8
+#       define RADEON_COLOR_FORMAT_RGB8        9
+#       define RADEON_COLOR_FORMAT_YUV422_VYUY 11
+#       define RADEON_COLOR_FORMAT_YUV422_YVYU 12
+#       define RADEON_COLOR_FORMAT_aYUV444     14
+#       define RADEON_COLOR_FORMAT_ARGB4444    15
+
 #       define RADEON_CLRCMP_FLIP_ENABLE       (1  << 14)
 #define RADEON_RB3D_COLOROFFSET             0x1c40
 #       define RADEON_COLOROFFSET_MASK      0xfffffff0
