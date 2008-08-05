@@ -1083,20 +1083,12 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
 	inode = obj->filp->f_path.dentry->d_inode;
 	mapping = inode->i_mapping;
 	for (i = 0; i < page_count; i++) {
-		page = find_get_page(mapping, i);
-		if (page == NULL || !PageUptodate(page)) {
-			if (page) {
-				page_cache_release(page);
-				page = NULL;
-			}
-			ret = shmem_getpage(inode, i, &page, SGP_DIRTY, NULL);
-
-			if (ret) {
-				DRM_ERROR("shmem_getpage failed: %d\n", ret);
-				i915_gem_object_free_page_list(obj);
-				return ret;
-			}
-			unlock_page(page);
+		page = read_mapping_page(mapping, i, NULL);
+		if (IS_ERR(page)) {
+			ret = PTR_ERR(page);
+			DRM_ERROR("read_mapping_page failed: %d\n", ret);
+			i915_gem_object_free_page_list(obj);
+			return ret;
 		}
 		obj_priv->page_list[i] = page;
 	}
