@@ -265,6 +265,6 @@ uint64_t radeon_evict_flags(struct drm_buffer_object *bo)
 	case DRM_BO_MEM_TT:
 		return DRM_BO_FLAG_MEM_LOCAL;
 	default:
-		return DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED;
+		return DRM_BO_FLAG_MEM_TT;
 	}
 }
