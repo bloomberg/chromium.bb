@@ -2301,7 +2301,7 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->ring.tail_mask = (dev_priv->ring.size / sizeof(u32)) - 1;
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
 
-	dev_priv->new_memmap = 1;
+	dev_priv->new_memmap = true;
 
 	r300_init_reg_flags(dev);
 		

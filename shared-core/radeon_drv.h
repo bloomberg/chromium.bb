@@ -312,7 +312,7 @@ typedef struct drm_radeon_private {
 
 	drm_radeon_ring_buffer_t ring;
 
-	int new_memmap;
+	bool new_memmap;
 
 	bool user_mm_enable;
 
