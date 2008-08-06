@@ -90,7 +90,7 @@ int drm_ati_alloc_pcigart_table(struct drm_device *dev,
 	if (gart_info->table_handle == NULL)
 		return -ENOMEM;
 
-	memset(gart_info->table_handle, 0, gart_info->table_size);
+	memset(gart_info->table_handle->vaddr, 0, gart_info->table_size);
 	return 0;
 }
 EXPORT_SYMBOL(drm_ati_alloc_pcigart_table);
@@ -205,11 +205,7 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 
 	ret = 1;
 
-#if defined(__i386__) || defined(__x86_64__)
-	wbinvd();
-#else
 	mb();
-#endif
 
       done:
 	gart_info->addr = address;
@@ -265,11 +261,7 @@ static int ati_pcigart_bind_ttm(struct drm_ttm_backend *backend,
 		gart_insert_page_into_table(info, page_base, pci_gart + j);
         }
 
-#if defined(__i386__) || defined(__x86_64__)
-	wbinvd();
-#else
 	mb();
-#endif
 
 	atipci_be->gart_flush_fn(atipci_be->dev);
 
