@@ -182,8 +182,8 @@ int drm_lastclose(struct drm_device * dev)
 	if (!drm_core_check_feature(dev, DRIVER_MODESET))
 		drm_bo_driver_finish(dev);
 
-/*	if (dev->irq_enabled)
-		drm_irq_uninstall(dev); */
+	if (dev->irq_enabled && !drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_irq_uninstall(dev);
 
 	/* Free drawable information memory */
 	mutex_lock(&dev->struct_mutex);
@@ -192,7 +192,7 @@ int drm_lastclose(struct drm_device * dev)
 	del_timer(&dev->timer);
 
 	/* Clear AGP information */
-	if (drm_core_has_AGP(dev) && dev->agp) {
+	if (drm_core_has_AGP(dev) && dev->agp && !drm_core_check_feature(dev, DRIVER_MODESET)) {
 		struct drm_agp_mem *entry, *tempe;
 
 		/* Remove AGP resources, but leave dev->agp
