@@ -485,6 +485,7 @@ static int radeon_gart_init(struct drm_device *dev)
 
 	/* setup a 32MB GART */
 	dev_priv->gart_size = dev_priv->mm.gart_size;
+	dev_priv->gart_info.table_size = RADEON_PCIGART_TABLE_SIZE;
 
 #if __OS_HAS_AGP
 	/* setup VRAM vs GART here */
@@ -547,8 +548,8 @@ static int radeon_gart_init(struct drm_device *dev)
 			dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_IGP;
 		else
 			dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
-		dev_priv->gart_info.addr = NULL;
-		dev_priv->gart_info.bus_addr = 0;
+		dev_priv->gart_info.addr = dev_priv->gart_info.table_handle->vaddr;
+		dev_priv->gart_info.bus_addr = dev_priv->gart_info.table_handle->busaddr;
 	}
 	
 	/* gart values setup - start the GART */
@@ -843,7 +844,7 @@ static int radeon_gem_ib_init(struct drm_device *dev)
 	if (!dev_priv->ib_objs)
 		goto free_all;
 
-	for (i = 0; i  < RADEON_NUM_IB; i++) {
+	for (i = 0; i < RADEON_NUM_IB; i++) {
 		dev_priv->ib_objs[i] = drm_calloc(1, sizeof(struct radeon_mm_obj), DRM_MEM_DRIVER);
 		if (!dev_priv->ib_objs[i])
 			goto free_all;
