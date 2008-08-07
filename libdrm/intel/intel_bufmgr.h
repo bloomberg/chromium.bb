@@ -61,6 +61,33 @@ struct intel_bufmgr {
     int (*emit_reloc)(dri_bo *reloc_buf,
 		      uint32_t read_domains, uint32_t write_domain,
 		      uint32_t delta, uint32_t offset, dri_bo *target);
+    /**
+     * Pin a buffer to the aperture and fix the offset until unpinned
+     *
+     * \param buf Buffer to pin
+     * \param alignment Required alignment for aperture, in bytes
+     */
+    int (*pin) (dri_bo *buf, uint32_t alignment);
+    /**
+     * Unpin a buffer from the aperture, allowing it to be removed
+     *
+     * \param buf Buffer to unpin
+     */
+    int (*unpin) (dri_bo *buf);
+    /**
+     * Ask that the buffer be placed in tiling mode
+     *
+     * \param buf Buffer to set tiling mode for
+     * \param tiling_mode desired, and returned tiling mode
+     */
+    int (*set_tiling) (dri_bo *bo, uint32_t *tiling_mode);
+    /**
+     * Create a visible name for a buffer which can be used by other apps
+     *
+     * \param buf Buffer to create a name for
+     * \param name Returned name
+     */
+    int (*flink) (dri_bo *buf, uint32_t *name);
 };
 
 /* intel_bufmgr_gem.c */
@@ -90,6 +117,14 @@ void intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr);
 int intel_bo_emit_reloc(dri_bo *reloc_buf,
 			uint32_t read_domains, uint32_t write_domain,
 			uint32_t delta, uint32_t offset, dri_bo *target_buf);
+
+int intel_bo_pin(dri_bo *buf, uint32_t alignment);
+
+int intel_bo_unpin(dri_bo *buf);
+
+int intel_bo_set_tiling(dri_bo *buf, uint32_t *tiling_mode);
+
+int intel_bo_flink(dri_bo *buf, uint32_t *name);
 
 #endif /* INTEL_BUFMGR_GEM_H */
 

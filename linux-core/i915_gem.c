@@ -388,6 +388,10 @@ i915_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 		return -EBADF;
 
 	mutex_lock(&dev->struct_mutex);
+#if WATCH_BUF
+	DRM_INFO("set_domain_ioctl %p(%d), %08x %08x\n",
+		 obj, obj->size, args->read_domains, args->write_domain);
+#endif
 	ret = i915_gem_set_domain(obj, file_priv,
 				  args->read_domains, args->write_domain);
 	drm_gem_object_unreference(obj);
@@ -418,8 +422,8 @@ i915_gem_sw_finish_ioctl(struct drm_device *dev, void *data,
 	}
 
 #if WATCH_BUF
-	DRM_INFO("%s: sw_finish %d (%p)\n",
-		 __func__, args->handle, obj);
+	DRM_INFO("%s: sw_finish %d (%p %d)\n",
+		 __func__, args->handle, obj, obj->size);
 #endif
 	obj_priv = obj->driver_private;
 
@@ -664,6 +668,12 @@ i915_gem_retire_request(struct drm_device *dev,
 			 __func__, request->seqno, obj);
 #endif
 
+		/* If this request flushes the write domain,
+		 * clear the write domain from the object now
+		 */
+		if (request->flush_domains & obj->write_domain)
+		    obj->write_domain = 0;
+
 		if (obj->write_domain != 0) {
 			list_move_tail(&obj_priv->list,
 				       &dev_priv->mm.flushing_list);
@@ -763,7 +773,7 @@ i915_wait_request(struct drm_device *dev, uint32_t seqno)
 	if (dev_priv->mm.wedged)
 		ret = -EIO;
 
-	if (ret)
+	if (ret && ret != -ERESTARTSYS)
 		DRM_ERROR("%s returns %d (awaiting %d at %d)\n",
 			  __func__, ret, seqno, i915_get_gem_seqno(dev));
 
@@ -860,18 +870,18 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 	struct drm_device *dev = obj->dev;
 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
 	int ret;
+	uint32_t write_domain;
 
 	/* If there are writes queued to the buffer, flush and
 	 * create a new seqno to wait for.
 	 */
-	if (obj->write_domain & ~(I915_GEM_DOMAIN_CPU|I915_GEM_DOMAIN_GTT)) {
-		uint32_t write_domain = obj->write_domain;
+	write_domain = obj->write_domain & ~(I915_GEM_DOMAIN_CPU|I915_GEM_DOMAIN_GTT);
+	if (write_domain) {
 #if WATCH_BUF
 		DRM_INFO("%s: flushing object %p from write domain %08x\n",
 			  __func__, obj, write_domain);
 #endif
 		i915_gem_flush(dev, 0, write_domain);
-		obj->write_domain = 0;
 
 		i915_gem_object_move_to_active(obj);
 		obj_priv->last_rendering_seqno = i915_add_request(dev,
@@ -881,6 +891,7 @@ i915_gem_object_wait_rendering(struct drm_gem_object *obj)
 		DRM_INFO("%s: flush moves to exec list %p\n", __func__, obj);
 #endif
 	}
+
 	/* If there is rendering queued on the buffer being evicted, wait for
 	 * it.
 	 */
@@ -1079,20 +1090,12 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
 	inode = obj->filp->f_path.dentry->d_inode;
 	mapping = inode->i_mapping;
 	for (i = 0; i < page_count; i++) {
-		page = find_get_page(mapping, i);
-		if (page == NULL || !PageUptodate(page)) {
-			if (page) {
-				page_cache_release(page);
-				page = NULL;
-			}
-			ret = shmem_getpage(inode, i, &page, SGP_DIRTY, NULL);
-
-			if (ret) {
-				DRM_ERROR("shmem_getpage failed: %d\n", ret);
-				i915_gem_object_free_page_list(obj);
-				return ret;
-			}
-			unlock_page(page);
+		page = read_mapping_page(mapping, i, NULL);
+		if (IS_ERR(page)) {
+			ret = PTR_ERR(page);
+			DRM_ERROR("read_mapping_page failed: %d\n", ret);
+			i915_gem_object_free_page_list(obj);
+			return ret;
 		}
 		obj_priv->page_list[i] = page;
 	}
