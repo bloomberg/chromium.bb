@@ -42,6 +42,7 @@
 #include "drm.h"
 #include "i915_drm.h"
 #include "mm.h"
+#include "libdrm_lists.h"
 
 #define ALIGN(value, alignment)  ((value + alignment - 1) & ~(alignment - 1))
 

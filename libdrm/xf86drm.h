@@ -659,6 +659,4 @@ extern int drmOpenOnce(void *unused, const char *BusID, int *newlyopened);
 extern void drmCloseOnce(int fd);
 extern void drmMsg(const char *format, ...);
 
-#include "xf86mm.h"
-
 #endif
