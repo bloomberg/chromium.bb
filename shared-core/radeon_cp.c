@@ -2282,6 +2282,7 @@ static void radeon_set_dynamic_clock(struct drm_device *dev, int mode)
 int radeon_modeset_cp_init(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t tmp;
 
 	/* allocate a ring and ring rptr bits from GART space */
 	/* these are allocated in GEM files */
@@ -2310,6 +2311,11 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	DRM_DEBUG("ring offset is %x %x\n", dev_priv->mm.ring.bo->offset, dev_priv->mm.ring_read.bo->offset);
 
 	radeon_cp_init_ring_buffer(dev, dev_priv);
+
+	/* need to enable BUS mastering in Buscntl */
+	tmp = RADEON_READ(RADEON_BUS_CNTL);
+	tmp &= ~RADEON_BUS_MASTER_DIS;
+	RADEON_WRITE(RADEON_BUS_CNTL, tmp);
 
 	radeon_do_engine_reset(dev);
 	radeon_test_writeback(dev_priv);
@@ -2381,8 +2387,8 @@ int radeon_modeset_preinit(struct drm_device *dev)
 
 	if (dev_priv->is_atom_bios) {
 		dev_priv->mode_info.atom_context = atom_parse(&card, dev_priv->bios);
-		radeon_get_clock_info(dev);
 	}
+	radeon_get_clock_info(dev);
 	return 0;
 }
 

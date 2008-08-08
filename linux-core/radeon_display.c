@@ -116,38 +116,7 @@ void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 	radeon_crtc->lut_b[regno] = blue >> 8;
 }
 
-void radeon_crtc_dpms(struct drm_crtc *crtc, int mode)
-{
-}
 
-
-
-static bool radeon_crtc_mode_fixup(struct drm_crtc *crtc,
-				   struct drm_display_mode *mode,
-				   struct drm_display_mode *adjusted_mode)
-{
-	return true;
-}
-
-static void radeon_crtc_mode_set(struct drm_crtc *crtc,
-				 struct drm_display_mode *mode,
-				 struct drm_display_mode *adjusted_mode,
-				 int x, int y)
-{
-
-}
-
-void radeon_crtc_set_base(struct drm_crtc *crtc, int x, int y)
-{
-}
-
-static void radeon_crtc_prepare(struct drm_crtc *crtc)
-{
-}
-
-static void radeon_crtc_commit(struct drm_crtc *crtc)
-{
-}
 
 static void avivo_lock_cursor(struct drm_crtc *crtc, bool lock)
 {
@@ -263,15 +232,6 @@ static void radeon_crtc_destroy(struct drm_crtc *crtc)
 	kfree(radeon_crtc);
 }
 
-static const struct drm_crtc_helper_funcs radeon_helper_funcs = {
-	.dpms = radeon_crtc_dpms,
-	.mode_fixup = radeon_crtc_mode_fixup,
-	.mode_set = radeon_crtc_mode_set,
-	.mode_set_base = radeon_crtc_set_base,
-	.prepare = radeon_crtc_prepare,
-	.commit = radeon_crtc_commit,
-};
-
 static const struct drm_crtc_funcs radeon_crtc_funcs = {
 	.cursor_set = radeon_crtc_cursor_set,
 	.cursor_move = radeon_crtc_cursor_move,
@@ -309,7 +269,7 @@ static void radeon_crtc_init(struct drm_device *dev, int index)
 	if (dev_priv->is_atom_bios && dev_priv->chip_family > CHIP_RS690)
 		radeon_atombios_init_crtc(dev, radeon_crtc);
 	else
-		drm_crtc_helper_add(&radeon_crtc->base, &radeon_helper_funcs);
+		radeon_legacy_init_crtc(dev, radeon_crtc);
 }
 
 bool radeon_legacy_setup_enc_conn(struct drm_device *dev)
@@ -360,8 +320,14 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 		if ((mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_I) ||
 		    (mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_A) ||
 		    (mode_info->bios_connector[i].connector_type == CONNECTOR_VGA)) {
-			if (radeon_is_avivo(dev_priv))
+			if (radeon_is_avivo(dev_priv)) {
 				encoder = radeon_encoder_atom_dac_add(dev, i, mode_info->bios_connector[i].dac_type, 0);
+			} else {
+				if (mode_info->bios_connector[i].dac_type == DAC_PRIMARY)
+					encoder = radeon_encoder_legacy_primary_dac_add(dev, i, 0);
+//				else if (mode_info->bios_connector[i].dac_type == DAC_TVDAC)
+//					encoder radeon_encoder_legacy_secondary_dac_add(dev, i, 0);
+			}
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
 		}
@@ -371,6 +337,10 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 		    (mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_D)) {
 			if (radeon_is_avivo(dev_priv))
 				encoder = radeon_encoder_atom_tmds_add(dev, i, mode_info->bios_connector[i].dac_type);
+			else {
+				if (mode_info->bios_connector[i].tmds_type == TMDS_INT)
+					encoder = radeon_encoder_legacy_tmds_int_add(dev, i);
+			}
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
 		}

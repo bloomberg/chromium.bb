@@ -115,6 +115,11 @@ struct radeon_bios_connector {
 	int igp_lane_info;
 };
 
+struct radeon_tmds_pll {
+    uint32_t freq;
+    uint32_t value;
+};
+
 #define RADEON_MAX_BIOS_CONNECTOR 16
 	
 #define RADEON_PLL_USE_BIOS_DIVS   (1 << 0)
@@ -124,27 +129,177 @@ struct radeon_bios_connector {
 #define RADEON_PLL_PREFER_LOW_REF_DIV (1 << 4)
 
 struct radeon_pll {
-    uint16_t          reference_freq;
-    uint16_t          reference_div;
-    uint32_t          pll_in_min;
-    uint32_t          pll_in_max;
-    uint32_t          pll_out_min;
-    uint32_t          pll_out_max;
-    uint16_t          xclk;
+	uint16_t reference_freq;
+	uint16_t reference_div;
+	uint32_t pll_in_min;
+	uint32_t pll_in_max;
+	uint32_t pll_out_min;
+	uint32_t pll_out_max;
+	uint16_t xclk;
 
-    uint32_t          min_ref_div;
-    uint32_t          max_ref_div;
-    uint32_t          min_post_div;
-    uint32_t          max_post_div;
-    uint32_t          min_feedback_div;
-    uint32_t          max_feedback_div;
-    uint32_t          best_vco;
+	uint32_t min_ref_div;
+	uint32_t max_ref_div;
+	uint32_t min_post_div;
+	uint32_t max_post_div;
+	uint32_t min_feedback_div;
+	uint32_t max_feedback_div;
+	uint32_t best_vco;
+};
+
+#define MAX_H_CODE_TIMING_LEN 32
+#define MAX_V_CODE_TIMING_LEN 32
+
+struct radeon_legacy_state {
+
+	uint32_t bus_cntl;
+
+	/* DAC */
+	uint32_t dac_cntl;
+	uint32_t dac2_cntl;
+	uint32_t dac_macro_cntl;
+
+	/* CRTC 1 */
+	uint32_t crtc_gen_cntl;
+	uint32_t crtc_ext_cntl;
+	uint32_t crtc_h_total_disp;
+	uint32_t crtc_h_sync_strt_wid;
+	uint32_t crtc_v_total_disp;
+	uint32_t crtc_v_sync_strt_wid;
+	uint32_t crtc_offset;
+	uint32_t crtc_offset_cntl;
+	uint32_t crtc_pitch;
+	uint32_t disp_merge_cntl;
+	uint32_t grph_buffer_cntl;
+	uint32_t crtc_more_cntl;
+	uint32_t crtc_tile_x0_y0;
+
+	/* CRTC 2 */
+	uint32_t crtc2_gen_cntl;
+	uint32_t crtc2_h_total_disp;
+	uint32_t crtc2_h_sync_strt_wid;
+	uint32_t crtc2_v_total_disp;
+	uint32_t crtc2_v_sync_strt_wid;
+	uint32_t crtc2_offset;
+	uint32_t crtc2_offset_cntl;
+	uint32_t crtc2_pitch;
+	uint32_t crtc2_tile_x0_y0;
+
+	uint32_t disp_output_cntl;
+	uint32_t disp_tv_out_cntl;
+	uint32_t disp_hw_debug;
+	uint32_t disp2_merge_cntl;
+	uint32_t grph2_buffer_cntl;
+
+	/* FP regs */
+	uint32_t fp_crtc_h_total_disp;
+	uint32_t fp_crtc_v_total_disp;
+	uint32_t fp_gen_cntl;
+	uint32_t fp2_gen_cntl;
+	uint32_t fp_h_sync_strt_wid;
+	uint32_t fp_h2_sync_strt_wid;
+	uint32_t fp_horz_stretch;
+	uint32_t fp_horz_vert_active;
+	uint32_t fp_panel_cntl;
+	uint32_t fp_v_sync_strt_wid;
+	uint32_t fp_v2_sync_strt_wid;
+	uint32_t fp_vert_stretch;
+	uint32_t lvds_gen_cntl;
+	uint32_t lvds_pll_cntl;
+	uint32_t tmds_pll_cntl;
+	uint32_t tmds_transmitter_cntl;
+
+	/* Computed values for PLL */
+	uint32_t dot_clock_freq;
+	uint32_t pll_output_freq;
+	int  feedback_div;
+	int  reference_div;
+	int  post_div;
+
+	/* PLL registers */
+	uint32_t ppll_ref_div;
+	uint32_t ppll_div_3;
+	uint32_t htotal_cntl;
+	uint32_t vclk_ecp_cntl;
+
+	/* Computed values for PLL2 */
+	uint32_t dot_clock_freq_2;
+	uint32_t pll_output_freq_2;
+	int feedback_div_2;
+	int reference_div_2;
+	int post_div_2;
+
+	/* PLL2 registers */
+	uint32_t p2pll_ref_div;
+	uint32_t p2pll_div_0;
+	uint32_t htotal_cntl2;
+	uint32_t pixclks_cntl;
+
+	bool palette_valid;
+	uint32_t palette[256];
+	uint32_t palette2[256];
+
+	uint32_t disp2_req_cntl1;
+	uint32_t disp2_req_cntl2;
+	uint32_t dmif_mem_cntl1;
+	uint32_t disp1_req_cntl1;
+
+	uint32_t fp_2nd_gen_cntl;
+	uint32_t fp2_2_gen_cntl;
+	uint32_t tmds2_cntl;
+	uint32_t tmds2_transmitter_cntl;
+
+	/* TV out registers */
+	uint32_t tv_master_cntl;
+	uint32_t tv_htotal;
+	uint32_t tv_hsize;
+	uint32_t tv_hdisp;
+	uint32_t tv_hstart;
+	uint32_t tv_vtotal;
+	uint32_t tv_vdisp;
+	uint32_t tv_timing_cntl;
+	uint32_t tv_vscaler_cntl1;
+	uint32_t tv_vscaler_cntl2;
+	uint32_t tv_sync_size;
+	uint32_t tv_vrestart;
+	uint32_t tv_hrestart;
+	uint32_t tv_frestart;
+	uint32_t tv_ftotal;
+	uint32_t tv_clock_sel_cntl;
+	uint32_t tv_clkout_cntl;
+	uint32_t tv_data_delay_a;
+	uint32_t tv_data_delay_b;
+	uint32_t tv_dac_cntl;
+	uint32_t tv_pll_cntl;
+	uint32_t tv_pll_cntl1;
+	uint32_t tv_pll_fine_cntl;
+	uint32_t tv_modulator_cntl1;
+	uint32_t tv_modulator_cntl2;
+	uint32_t tv_frame_lock_cntl;
+	uint32_t tv_pre_dac_mux_cntl;
+	uint32_t tv_rgb_cntl;
+	uint32_t tv_y_saw_tooth_cntl;
+	uint32_t tv_y_rise_cntl;
+	uint32_t tv_y_fall_cntl;
+	uint32_t tv_uv_adr;
+	uint32_t tv_upsamp_and_gain_cntl;
+	uint32_t tv_gain_limit_settings;
+	uint32_t tv_linear_gain_settings;
+	uint32_t tv_crc_cntl;
+	uint32_t tv_sync_cntl;
+	uint32_t gpiopad_a;
+	uint32_t pll_test_cntl;
+
+	uint16_t h_code_timing[MAX_H_CODE_TIMING_LEN];
+	uint16_t v_code_timing[MAX_V_CODE_TIMING_LEN];
+
+
 };
 
 struct radeon_mode_info {
 	struct atom_context *atom_context;
 	struct radeon_bios_connector bios_connector[RADEON_MAX_BIOS_CONNECTOR];
 	struct radeon_pll pll;
+	struct radeon_legacy_state legacy_state;
 };
 
 struct radeon_crtc {
@@ -185,6 +340,7 @@ struct radeon_encoder {
 	uint32_t vblank;
 	uint32_t panel_pwr_delay;
 	uint32_t dotclock;
+	struct radeon_tmds_pll tmds_pll[4];
 };
 
 struct radeon_connector {
@@ -221,6 +377,8 @@ struct drm_encoder *radeon_encoder_lvtma_add(struct drm_device *dev, int bios_in
 struct drm_encoder *radeon_encoder_atom_dac_add(struct drm_device *dev, int bios_index, int dac_id, int with_tv);
 struct drm_encoder *radeon_encoder_atom_tmds_add(struct drm_device *dev, int bios_index, int tmds_type);
 struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int bios_index);
+struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev, int bios_index, int with_tv);
+struct drm_encoder *radeon_encoder_legacy_tmds_int_add(struct drm_device *dev, int bios_index);
 
 extern void radeon_crtc_load_lut(struct drm_crtc *crtc);
 extern void atombios_crtc_set_base(struct drm_crtc *crtc, int x, int y);
@@ -233,6 +391,7 @@ extern bool radeon_atom_get_clock_info(struct drm_device *dev);
 extern bool radeon_combios_get_clock_info(struct drm_device *dev);
 extern void radeon_get_lvds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder);
+extern bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder);
 extern void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				     u16 blue, int regno);
 struct drm_framebuffer *radeon_user_framebuffer_create(struct drm_device *dev,
@@ -245,11 +404,18 @@ int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *fb);
 bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev);
 void radeon_atombios_init_crtc(struct drm_device *dev,
 			       struct radeon_crtc *radeon_crtc);
+void radeon_legacy_init_crtc(struct drm_device *dev,
+			     struct radeon_crtc *radeon_crtc);
 void avivo_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state);
 
 void radeon_atom_static_pwrmgt_setup(struct drm_device *dev, int enable);
 void radeon_atom_dyn_clk_setup(struct drm_device *dev, int enable);
 void radeon_get_clock_info(struct drm_device *dev);
 extern bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device *dev);
+
+void radeon_rmx_mode_fixup(struct drm_encoder *encoder,
+			   struct drm_display_mode *mode,
+			   struct drm_display_mode *adjusted_mode);
+void radeon_enc_destroy(struct drm_encoder *encoder);
 
 #endif

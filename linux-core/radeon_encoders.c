@@ -30,9 +30,9 @@
 
 extern int atom_debug;
 
-static void radeon_rmx_mode_fixup(struct drm_encoder *encoder,
-				  struct drm_display_mode *mode,
-				  struct drm_display_mode *adjusted_mode)
+void radeon_rmx_mode_fixup(struct drm_encoder *encoder,
+			   struct drm_display_mode *mode,
+			   struct drm_display_mode *adjusted_mode)
 {
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	if (mode->hdisplay < radeon_encoder->panel_xres ||
@@ -319,7 +319,7 @@ static const struct drm_encoder_helper_funcs radeon_atom_lvtma_helper_funcs = {
 	.commit = radeon_lvtma_commit,
 };
 
-static void radeon_enc_destroy(struct drm_encoder *encoder)
+void radeon_enc_destroy(struct drm_encoder *encoder)
 {
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	drm_encoder_cleanup(encoder);
@@ -895,68 +895,3 @@ struct drm_encoder *radeon_encoder_atom_tmds_add(struct drm_device *dev, int bio
 	return encoder;
 }
 
-static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
-{
-	struct drm_device *dev = encoder->dev;
-}
-
-static void radeon_legacy_lvds_prepare(struct drm_encoder *encoder)
-{
-	radeon_legacy_lvds_dpms(encoder, DRM_MODE_DPMS_OFF);
-}
-
-static void radeon_legacy_lvds_commit(struct drm_encoder *encoder)
-{
-	radeon_legacy_lvds_dpms(encoder, DRM_MODE_DPMS_ON);
-}
-
-static void radeon_legacy_lvds_mode_set(struct drm_encoder *encoder,
-				  struct drm_display_mode *mode,
-				  struct drm_display_mode *adjusted_mode)
-{
-
-
-}
-
-static const struct drm_encoder_helper_funcs radeon_legacy_lvds_helper_funcs = {
-	.dpms = radeon_legacy_lvds_dpms,
-	.mode_fixup = radeon_lvtma_mode_fixup,
-	.prepare = radeon_legacy_lvds_prepare,
-	.mode_set = radeon_legacy_lvds_mode_set,
-	.commit = radeon_legacy_lvds_commit,
-};
-
-
-static const struct drm_encoder_funcs radeon_legacy_lvds_enc_funcs = {
-	.destroy = radeon_enc_destroy,
-};
-
-struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int bios_index)
-{
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
-	struct radeon_encoder *radeon_encoder;
-	struct drm_encoder *encoder;
-	radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
-	if (!radeon_encoder) {
-		return NULL;
-	}
-
-	encoder = &radeon_encoder->base;
-
-	encoder->possible_crtcs = 0x3;
-	encoder->possible_clones = 0;
-	drm_encoder_init(dev, encoder, &radeon_legacy_lvds_enc_funcs,
-			 DRM_MODE_ENCODER_LVDS);
-
-	drm_encoder_helper_add(encoder, &radeon_legacy_lvds_helper_funcs);
-
-	/* TODO get the LVDS info from the BIOS for panel size etc. */
-	/* get the lvds info from the bios */
-	radeon_combios_get_lvds_info(radeon_encoder);
-
-	/* LVDS gets default RMX full scaling */
-	radeon_encoder->rmx_type = RMX_FULL;
-
-	return encoder;
-}

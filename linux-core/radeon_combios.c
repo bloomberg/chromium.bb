@@ -175,6 +175,45 @@ bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder)
 	return true;
 }
 
+bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder)
+{
+	struct drm_device *dev = encoder->base.dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint16_t tmp;
+	int i, n;
+	uint8_t ver;
+
+	tmp = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x34);
+	if (!tmp) {
+		DRM_INFO("No TMDS info found in BIOS\n");
+		return false;
+	}
+
+	ver = radeon_bios8(dev_priv, tmp);
+	DRM_INFO("DFP table revision: %d\n", ver);
+	if (ver == 3) {
+		n = radeon_bios8(dev_priv, tmp + 5) + 1;
+		if (n > 4) n = 4;
+		for (i = 0; i < n; i++) {
+			encoder->tmds_pll[i].value = radeon_bios32(dev_priv, tmp+i*10+0x08);
+			encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmp+i*10+0x10);	
+		}
+		return true;
+	} else if (ver == 4) {
+		int stride = 0;
+		n = radeon_bios8(dev_priv, tmp + 5) + 1;
+		if (n > 4) n = 4;
+		for (i = 0; i < n; i++) {
+			encoder->tmds_pll[i].value = radeon_bios32(dev_priv, tmp+stride+0x08);
+			encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmp+stride+0x10);
+			if (i == 0) stride += 10;
+			else stride += 6;
+		}
+		return true;
+	}
+	return false;
+}
+
 static void radeon_apply_legacy_quirks(struct drm_device *dev, int bios_index)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
