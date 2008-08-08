@@ -685,8 +685,8 @@ EXPORT_SYMBOL(drm_mmap);
  * \c Pagefault method for buffer objects.
  *
  * \param vma Virtual memory area.
- * \param address File offset.
- * \return Error or refault. The pfn is manually inserted.
+ * \param vmf vm fault data
+ * \return Error or VM_FAULT_NOPAGE:. The pfn is manually inserted.
  *
  * It's important that pfns are inserted while holding the bo->mutex lock.
  * otherwise we might race with unmap_mapping_range() which is always
@@ -699,8 +699,8 @@ EXPORT_SYMBOL(drm_mmap);
  */
 
 #ifdef DRM_FULL_MM_COMPAT
-static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
-				     unsigned long address)
+static int drm_bo_vm_fault(struct vm_area_struct *vma,
+				     struct vm_fault *vmf)
 {
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
@@ -712,25 +712,22 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 	unsigned long bus_base;
 	unsigned long bus_offset;
 	unsigned long bus_size;
-	unsigned long ret = NOPFN_REFAULT;
-
-	if (address > vma->vm_end)
-		return NOPFN_SIGBUS;
+	unsigned long ret = VM_FAULT_NOPAGE;
 
 	dev = bo->dev;
 	err = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (err)
-		return NOPFN_REFAULT;
+		return VM_FAULT_NOPAGE;
 
 	err = mutex_lock_interruptible(&bo->mutex);
 	if (err) {
 		drm_bo_read_unlock(&dev->bm.bm_lock);
-		return NOPFN_REFAULT;
+		return VM_FAULT_NOPAGE;
 	}
 
 	err = drm_bo_wait(bo, 0, 1, 0, 1);
 	if (err) {
-		ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
+		ret = (err != -EAGAIN) ? VM_FAULT_SIGBUS : VM_FAULT_NOPAGE;
 		bo->priv_flags &= ~_DRM_BO_FLAG_UNLOCKED;
 		goto out_unlock;
 	}
@@ -748,7 +745,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 			DRM_BO_FLAG_FORCE_MAPPABLE;
 		err = drm_bo_move_buffer(bo, new_flags, 0, 0);
 		if (err) {
-			ret = (err != -EAGAIN) ? NOPFN_SIGBUS : NOPFN_REFAULT;
+			ret = (err != -EAGAIN) ? VM_FAULT_SIGBUS : VM_FAULT_NOPAGE;
 			goto out_unlock;
 		}
 	}
@@ -757,11 +754,11 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 				&bus_size);
 
 	if (err) {
-		ret = NOPFN_SIGBUS;
+		ret = VM_FAULT_SIGBUS;
 		goto out_unlock;
 	}
 
-	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
+	page_offset = ((unsigned long)vmf->virtual_address - vma->vm_start) >> PAGE_SHIFT;
 
 	if (bus_size) {
 		struct drm_mem_type_manager *man = &dev->bm.man[bo->mem.mem_type];
@@ -774,7 +771,7 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 		drm_ttm_fixup_caching(ttm);
 		page = drm_ttm_get_page(ttm, page_offset);
 		if (!page) {
-			ret = NOPFN_OOM;
+			ret = VM_FAULT_OOM;
 			goto out_unlock;
 		}
 		pfn = page_to_pfn(page);
@@ -783,9 +780,9 @@ static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 			drm_io_prot(_DRM_TTM, vma);
 	}
 
-	err = vm_insert_pfn(vma, address, pfn);
+	err = vm_insert_pfn(vma, (unsigned long)vmf->virtual_address, pfn);
 	if (err) {
-		ret = (err != -EAGAIN) ? NOPFN_OOM : NOPFN_REFAULT;
+		ret = (err != -EAGAIN) ? VM_FAULT_OOM : VM_FAULT_NOPAGE;
 		goto out_unlock;
 	}
 out_unlock:
@@ -849,7 +846,11 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 
 static struct vm_operations_struct drm_bo_vm_ops = {
 #ifdef DRM_FULL_MM_COMPAT
+#ifdef DRM_NO_FAULT
 	.nopfn = drm_bo_vm_nopfn,
+#else
+	.fault = drm_bo_vm_fault,
+#endif
 #else
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
 	.nopfn = drm_bo_vm_nopfn,

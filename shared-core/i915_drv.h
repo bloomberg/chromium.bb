@@ -388,7 +388,7 @@ struct drm_i915_private {
 		/** Bit 6 swizzling required for Y tiling */
 		uint32_t bit_6_swizzle_y;
 	} mm;
-} drm_i915_private_t;
+};
 
 struct drm_i915_file_private {
 	struct {
@@ -523,7 +523,6 @@ extern irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS);
 extern void i915_driver_irq_preinstall(struct drm_device * dev);
 extern int i915_driver_irq_postinstall(struct drm_device * dev);
 extern void i915_driver_irq_uninstall(struct drm_device * dev);
-extern void i915_enable_interrupt(struct drm_device *dev);
 extern int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
 extern int i915_vblank_pipe_get(struct drm_device *dev, void *data,

@@ -35,7 +35,7 @@
 void
 i915_verify_inactive(struct drm_device *dev, char *file, int line)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
 
@@ -102,7 +102,7 @@ i915_gem_dump_object(struct drm_gem_object *obj, int len,
 void
 i915_dump_lru(struct drm_device *dev, const char *where)
 {
-	drm_i915_private_t		*dev_priv = dev->dev_private;
+	struct drm_i915_private		*dev_priv = dev->dev_private;
 	struct drm_i915_gem_object	*obj_priv;
 
 	DRM_INFO("active list %s {\n", where);
