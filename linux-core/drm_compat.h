@@ -389,4 +389,12 @@ extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 				     unsigned long address, int *type);
 #endif
 
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,26)
+#define drm_on_each_cpu(handler, data, wait) \
+        on_each_cpu(handler, data, wait)
+#else
+#define drm_on_each_cpu(handler, data, wait) \
+        on_each_cpu(handler, data, wait, 1)
+#endif
+
 #endif
