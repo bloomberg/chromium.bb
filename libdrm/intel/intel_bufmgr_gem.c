@@ -873,7 +873,7 @@ intel_bufmgr_gem_enable_reuse(dri_bufmgr *bufmgr)
  *
  */
 static int
-dri_gem_check_aperture_space(dri_bo *bo_array, int count)
+dri_gem_check_aperture_space(dri_bo **bo_array, int count)
 {
     return 0;
 }
