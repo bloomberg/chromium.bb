@@ -274,6 +274,9 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 		goto out_free;
 	}
 
+	if (dev->driver->driver_features & DRIVER_GEM)
+		drm_gem_open(dev, priv);
+
 	if (dev->driver->open) {
 		ret = dev->driver->open(dev, priv);
 		if (ret < 0)
@@ -443,6 +446,9 @@ int drm_release(struct inode *inode, struct file *filp)
 	    !dev->driver->reclaim_buffers_locked) {
 		dev->driver->reclaim_buffers(dev, file_priv);
 	}
+
+	if (dev->driver->driver_features & DRIVER_GEM)
+		drm_gem_release(dev, file_priv);
 
 	drm_fasync(-1, filp, 0);
 

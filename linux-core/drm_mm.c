@@ -167,6 +167,7 @@ struct drm_mm_node *drm_mm_get_block(struct drm_mm_node * parent,
 
 	return child;
 }
+EXPORT_SYMBOL(drm_mm_get_block);
 
 /*
  * Put a block. Merge with the previous and / or next block if they are free.
@@ -257,6 +258,7 @@ struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
 
 	return best;
 }
+EXPORT_SYMBOL(drm_mm_search_free);
 
 int drm_mm_clean(struct drm_mm * mm)
 {

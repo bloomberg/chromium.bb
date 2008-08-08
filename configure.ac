@@ -19,7 +19,7 @@
 #  CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 AC_PREREQ(2.57)
-AC_INIT([libdrm], 2.3.1, [dri-devel@lists.sourceforge.net], libdrm)
+AC_INIT([libdrm], 2.4.0, [dri-devel@lists.sourceforge.net], libdrm)
 AC_CONFIG_SRCDIR([Makefile.am])
 AM_INIT_AUTOMAKE([dist-bzip2])
 
@@ -35,9 +35,77 @@ AC_SYS_LARGEFILE
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
 
+
+dnl ===========================================================================
+dnl check compiler flags
+AC_DEFUN([LIBDRM_CC_TRY_FLAG], [
+  AC_MSG_CHECKING([whether $CC supports $1])
+
+  libdrm_save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS $1"
+
+  AC_COMPILE_IFELSE([ ], [libdrm_cc_flag=yes], [libdrm_cc_flag=no])
+  CFLAGS="$libdrm_save_CFLAGS"
+
+  if test "x$libdrm_cc_flag" = "xyes"; then
+    ifelse([$2], , :, [$2])
+  else
+    ifelse([$3], , :, [$3])
+  fi
+  AC_MSG_RESULT([$libdrm_cc_flag])
+])
+
+dnl Use lots of warning flags with with gcc and compatible compilers
+
+dnl Note: if you change the following variable, the cache is automatically
+dnl skipped and all flags rechecked.  So there's no need to do anything
+dnl else.  If for any reason you need to force a recheck, just change
+dnl MAYBE_WARN in an ignorable way (like adding whitespace)
+
+MAYBE_WARN="-Wall -Wextra \
+-Wsign-compare -Werror-implicit-function-declaration \
+-Wpointer-arith -Wwrite-strings -Wstrict-prototypes \
+-Wmissing-prototypes -Wmissing-declarations -Wnested-externs \
+-Wpacked -Wswitch-enum -Wmissing-format-attribute \
+-Wstrict-aliasing=2 -Winit-self -Wunsafe-loop-optimizations \
+-Wdeclaration-after-statement -Wold-style-definition \
+-Wno-missing-field-initializers -Wno-unused-parameter \
+-Wno-attributes -Wno-long-long -Winline"
+
+# invalidate cached value if MAYBE_WARN has changed
+if test "x$libdrm_cv_warn_maybe" != "x$MAYBE_WARN"; then
+	unset libdrm_cv_warn_cflags
+fi
+AC_CACHE_CHECK([for supported warning flags], libdrm_cv_warn_cflags, [
+	echo
+	WARN_CFLAGS=""
+
+	# Some warning options are not supported by all versions of
+	# gcc, so test all desired options against the current
+	# compiler.
+	#
+	# Note that there are some order dependencies
+	# here. Specifically, an option that disables a warning will
+	# have no net effect if a later option then enables that
+	# warnings, (perhaps implicitly). So we put some grouped
+	# options (-Wall and -Wextra) up front and the -Wno options
+	# last.
+
+	for W in $MAYBE_WARN; do
+		LIBDRM_CC_TRY_FLAG([$W], [WARN_CFLAGS="$WARN_CFLAGS $W"])
+	done
+
+	libdrm_cv_warn_cflags=$WARN_CFLAGS
+	libdrm_cv_warn_maybe=$MAYBE_WARN
+
+	AC_MSG_CHECKING([which warning flags were supported])])
+WARN_CFLAGS="$libdrm_cv_warn_cflags"
+
+AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([
 	Makefile
 	libdrm/Makefile
+	libdrm/intel/Makefile
 	shared-core/Makefile
 	tests/Makefile
 	libdrm.pc])

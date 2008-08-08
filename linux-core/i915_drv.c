@@ -111,18 +111,22 @@ static int i915_resume(struct drm_device *dev)
 }
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+static void remove(struct pci_dev *pdev);
+
 static struct drm_driver driver = {
 	/* don't use mtrr's here, the Xserver or user space app should
 	 * deal with them for intel hardware.
 	 */
 	.driver_features =
 	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | /* DRIVER_USE_MTRR | */
-	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED,
+	    DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | DRIVER_GEM,
 	.load = i915_driver_load,
 	.unload = i915_driver_unload,
 	.firstopen = i915_driver_firstopen,
+	.open = i915_driver_open,
 	.lastclose = i915_driver_lastclose,
 	.preclose = i915_driver_preclose,
+	.postclose = i915_driver_postclose,
 	.suspend = i915_suspend,
 	.resume = i915_resume,
 	.device_is_agp = i915_driver_device_is_agp,
@@ -136,7 +140,11 @@ static struct drm_driver driver = {
 	.reclaim_buffers = drm_core_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
+	.proc_init = i915_gem_proc_init,
+	.proc_cleanup = i915_gem_proc_cleanup,
 	.ioctls = i915_ioctls,
+	.gem_init_object = i915_gem_init_object,
+	.gem_free_object = i915_gem_free_object,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,
@@ -153,7 +161,7 @@ static struct drm_driver driver = {
 		.name = DRIVER_NAME,
 		.id_table = pciidlist,
 		.probe = probe,
-		.remove = __devexit_p(drm_cleanup_pci),
+		.remove = remove,
 		},
 #ifdef I915_HAVE_FENCE
 	.fence_driver = &i915_fence_driver,
@@ -171,7 +179,28 @@ static struct drm_driver driver = {
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
-	return drm_get_dev(pdev, ent, &driver);
+	int ret;
+
+	/* On the 945G/GM, the chipset reports the MSI capability on the
+	 * integrated graphics even though the support isn't actually there
+	 * according to the published specs.  It doesn't appear to function
+	 * correctly in testing on 945G.
+	 * This may be a side effect of MSI having been made available for PEG
+	 * and the registers being closely associated.
+	 */
+	if (pdev->device != 0x2772 && pdev->device != 0x27A2)
+		(void )pci_enable_msi(pdev);
+
+	ret = drm_get_dev(pdev, ent, &driver);
+	if (ret && pdev->msi_enabled)
+		pci_disable_msi(pdev);
+	return ret;
+}
+static void remove(struct pci_dev *pdev)
+{
+	if (pdev->msi_enabled)
+		pci_disable_msi(pdev);
+	drm_cleanup_pci(pdev);
 }
 
 static int __init i915_init(void)

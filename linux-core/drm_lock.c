@@ -218,22 +218,16 @@ int drm_lock_take(struct drm_lock_data *lock_data,
 	} while (prev != old);
 	spin_unlock_bh(&lock_data->spinlock);
 
-	if (_DRM_LOCKING_CONTEXT(old) == context) {
-		if (old & _DRM_LOCK_HELD) {
-			if (context != DRM_KERNEL_CONTEXT) {
-				DRM_ERROR("%d holds heavyweight lock\n",
-					  context);
-			}
-			return 0;
+	/* Warn on recursive locking of user contexts. */
+	if (_DRM_LOCKING_CONTEXT(old) == context && _DRM_LOCK_IS_HELD(old)) {
+		if (context != DRM_KERNEL_CONTEXT) {
+			DRM_ERROR("%d holds heavyweight lock\n",
+				  context);
 		}
+		return 0;
 	}
 
-	if ((_DRM_LOCKING_CONTEXT(new)) == context && (new & _DRM_LOCK_HELD)) {
-		/* Have lock */
-
-		return 1;
-	}
-	return 0;
+	return !_DRM_LOCK_IS_HELD(old);
 }
 
 /**
@@ -385,7 +379,6 @@ void drm_idlelock_release(struct drm_lock_data *lock_data)
 	spin_unlock_bh(&lock_data->spinlock);
 }
 EXPORT_SYMBOL(drm_idlelock_release);
-
 
 int drm_i_have_hw_lock(struct drm_device *dev, struct drm_file *file_priv)
 {

@@ -22,7 +22,10 @@ TESTS = auth \
 	getstats \
 	lock \
 	setversion \
-	updatedraw
+	updatedraw \
+	gem_basic \
+	gem_readwrite \
+	gem_mmap
 
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)

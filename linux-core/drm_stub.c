@@ -163,7 +163,16 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 		goto error_out_unreg;
 	}
 
+	if (driver->driver_features & DRIVER_GEM) {
+		retcode = drm_gem_init (dev);
+		if (retcode) {
+			DRM_ERROR("Cannot initialize graphics execution manager (GEM)\n");
+			goto error_out_unreg;
+		}
+	}
+
 	drm_fence_manager_init(dev);
+
 	return 0;
 
 error_out_unreg:
@@ -213,6 +222,13 @@ static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int t
 			DRM_ERROR("DRM: Failed to initialize /proc/dri.\n");
 			goto err_mem;
 		}
+		if (dev->driver->proc_init) {
+			ret = dev->driver->proc_init(new_minor);
+			if (ret) {
+				DRM_ERROR("DRM: Driver failed to initialize /proc/dri.\n");
+				goto err_mem;
+			}
+		}
 	} else
 		new_minor->dev_root = NULL;
 
@@ -229,8 +245,11 @@ static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int t
 
 
 err_g2:
-	if (new_minor->type == DRM_MINOR_LEGACY)
+	if (new_minor->type == DRM_MINOR_LEGACY) {
+		if (dev->driver->proc_cleanup)
+			dev->driver->proc_cleanup(new_minor);
 		drm_proc_cleanup(new_minor, drm_proc_root);
+	}
 err_mem:
 	kfree(new_minor);
 err_idr:
@@ -293,7 +312,7 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 
 	return 0;
 err_g4:
-	drm_put_minor(&dev->primary);
+	drm_put_minor(dev);
 err_g3:
 	if (!drm_fb_loaded)
 		pci_disable_device(pdev);
@@ -349,13 +368,17 @@ int drm_put_dev(struct drm_device * dev)
  * last minor released.
  *
  */
-int drm_put_minor(struct drm_minor **minor_p)
+int drm_put_minor(struct drm_device *dev)
 {
+	struct drm_minor **minor_p = &dev->primary;
 	struct drm_minor *minor = *minor_p;
 	DRM_DEBUG("release secondary minor %d\n", minor->index);
 
-	if (minor->type == DRM_MINOR_LEGACY)
+	if (minor->type == DRM_MINOR_LEGACY) {
+		if (dev->driver->proc_cleanup)
+			dev->driver->proc_cleanup(minor);
 		drm_proc_cleanup(minor, drm_proc_root);
+	}
 	drm_sysfs_device_remove(minor);
 
 	idr_remove(&drm_minors_idr, minor->index);
