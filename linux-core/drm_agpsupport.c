@@ -517,7 +517,7 @@ drm_agp_bind_pages(struct drm_device *dev,
 		mem->memory[i] = phys_to_gart(page_to_phys(pages[i]));
 	mem->page_count = num_pages;
 
-	mem->is_flushed = TRUE;
+	mem->is_flushed = true;
 	ret = drm_agp_bind_memory(mem, gtt_offset / PAGE_SIZE);
 	if (ret != 0) {
 		DRM_ERROR("Failed to bind AGP memory: %d\n", ret);
