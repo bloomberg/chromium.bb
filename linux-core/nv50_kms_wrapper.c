@@ -970,6 +970,9 @@ static enum drm_connector_status nv50_kms_connector_detect(struct drm_connector 
 
 		/* notify fb of changes */
 		dev->mode_config.funcs->fb_changed(dev);
+
+		/* sent a hotplug event when appropriate. */
+		drm_sysfs_hotplug_event(dev);
 	}
 
 	return drm_connector->status;

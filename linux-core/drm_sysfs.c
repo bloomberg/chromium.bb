@@ -450,6 +450,7 @@ void drm_sysfs_hotplug_event(struct drm_device *dev)
 
 	kobject_uevent_env(&dev->primary->kdev.kobj, KOBJ_CHANGE, envp);
 }
+EXPORT_SYMBOL(drm_sysfs_hotplug_event);
 
 static struct device_attribute dri_attrs[] = {
 	__ATTR(dri_library_name, S_IRUGO, show_dri, NULL),
