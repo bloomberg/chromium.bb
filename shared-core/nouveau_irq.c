@@ -41,6 +41,8 @@
 #include "nv50_display.h"
 #include "nv50_crtc.h"
 #include "nv50_output.h"
+/* needed for hotplug irq */
+#include "nv50_kms_wrapper.h"
 
 void
 nouveau_irq_preinstall(struct drm_device *dev)
@@ -591,10 +593,13 @@ nouveau_nv50_i2c_irq_handler(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
-	DRM_INFO("NV50_I2C_INTR - 0x%08X\n", NV_READ(NV50_I2C_CONTROLLER));
+	DRM_INFO("NV50_I2C_INTR - 0x%08X\n", NV_READ(NV50_PCONNECTOR_HOTPLUG_CTRL));
 
 	/* This seems to be the way to acknowledge an interrupt. */
-	NV_WRITE(NV50_I2C_CONTROLLER, 0x7FFF7FFF);
+	NV_WRITE(NV50_PCONNECTOR_HOTPLUG_CTRL, 0x7FFF7FFF);
+
+	/* Do a "dumb" detect all */
+	nv50_kms_connector_detect_all(dev);
 }
 
 irqreturn_t

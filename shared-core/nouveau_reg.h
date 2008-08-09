@@ -128,8 +128,6 @@
 #define NV04_PTIMER_TIME_1                                 0x00009410
 #define NV04_PTIMER_ALARM_0                                0x00009420
 
-#define NV50_I2C_CONTROLLER                           0x0000E054
-
 #define NV04_PFB_CFG0                                      0x00100200
 #define NV04_PFB_CFG1                                      0x00100204
 #define NV40_PFB_020C                                      0x0010020C

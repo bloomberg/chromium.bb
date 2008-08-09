@@ -125,6 +125,9 @@ static int nv50_display_init(struct nv50_display *display)
 	/* enable clock change interrupts. */
 	NV_WRITE(NV50_PDISPLAY_SUPERVISOR_INTR, NV_READ(NV50_PDISPLAY_SUPERVISOR_INTR) | 0x70);
 
+	/* enable hotplug interrupts */
+	NV_WRITE(NV50_PCONNECTOR_HOTPLUG_INTR, 0x7FFF7FFF);
+
 	display->init_done = true;
 
 	return 0;
@@ -170,6 +173,9 @@ static int nv50_display_disable(struct nv50_display *display)
 
 	/* disable clock change interrupts. */
 	NV_WRITE(NV50_PDISPLAY_SUPERVISOR_INTR, NV_READ(NV50_PDISPLAY_SUPERVISOR_INTR) & ~0x70);
+
+	/* disable hotplug interrupts */
+	NV_WRITE(NV50_PCONNECTOR_HOTPLUG_INTR, 0);
 
 	display->init_done = false;
 
