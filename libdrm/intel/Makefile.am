@@ -24,6 +24,7 @@
 
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
+	-I$(top_srcdir)/libdrm \
 	-I$(top_srcdir)/shared-core
 
 noinst_LTLIBRARIES = libdrm_intel.la
