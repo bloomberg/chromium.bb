@@ -698,7 +698,7 @@ EXPORT_SYMBOL(drm_mmap);
  * protected by the bo->mutex lock.
  */
 
-#ifdef DRM_FULL_MM_COMPAT
+#if defined(DRM_FULL_MM_COMPAT) && !defined(DRM_NO_FAULT)
 static int drm_bo_vm_fault(struct vm_area_struct *vma,
 				     struct vm_fault *vmf)
 {
