@@ -440,12 +440,23 @@ static void radeon_legacy_primary_dac_mode_set(struct drm_encoder *encoder,
 	RADEON_WRITE(RADEON_DAC_MACRO_CNTL, dac_macro_cntl);
 }
 
+static enum drm_connector_status radeon_legacy_primary_dac_detect(struct drm_encoder *encoder, struct drm_connector *connector)
+{
+	struct drm_device *dev = encoder->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
+
+	return connector_status_disconnected;
+
+}
+
 static const struct drm_encoder_helper_funcs radeon_legacy_primary_dac_helper_funcs = {
 	.dpms = radeon_legacy_primary_dac_dpms,
 	.mode_fixup = radeon_legacy_primary_dac_mode_fixup,
 	.prepare = radeon_legacy_primary_dac_prepare,
 	.mode_set = radeon_legacy_primary_dac_mode_set,
 	.commit = radeon_legacy_primary_dac_commit,
+	.detect = radeon_legacy_primary_dac_detect,
 };
 
 
@@ -940,12 +951,23 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 
 }
 
+static enum drm_connector_status radeon_legacy_tv_dac_detect(struct drm_encoder *encoder, struct drm_connector *connector)
+{
+	struct drm_device *dev = encoder->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
+
+	return connector_status_disconnected;
+
+}
+
 static const struct drm_encoder_helper_funcs radeon_legacy_tv_dac_helper_funcs = {
 	.dpms = radeon_legacy_tv_dac_dpms,
 	.mode_fixup = radeon_legacy_tv_dac_mode_fixup,
 	.prepare = radeon_legacy_tv_dac_prepare,
 	.mode_set = radeon_legacy_tv_dac_mode_set,
 	.commit = radeon_legacy_tv_dac_commit,
+	.detect = radeon_legacy_tv_dac_detect,
 };
 
 
