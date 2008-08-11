@@ -72,33 +72,43 @@ static void avivo_crtc_load_lut(struct drm_crtc *crtc)
 	RADEON_WRITE(AVIVO_D1GRPH_LUT_SEL + radeon_crtc->crtc_offset, radeon_crtc->crtc_id);
 }
 
+static void legacy_crtc_load_lut(struct drm_crtc *crtc)
+{
+	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+	struct drm_device *dev = crtc->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	int i;
+	uint32_t dac2_cntl;
+
+	dac2_cntl = RADEON_READ(RADEON_DAC_CNTL2);
+	if (radeon_crtc->crtc_id == 0)
+		dac2_cntl &= (uint32_t)~RADEON_DAC2_PALETTE_ACC_CTL;
+	else
+		dac2_cntl |= RADEON_DAC2_PALETTE_ACC_CTL;
+	RADEON_WRITE(RADEON_DAC_CNTL2, dac2_cntl);
+
+	for (i = 0; i < 256; i++) {
+		RADEON_WRITE8(RADEON_PALETTE_INDEX, i);
+		RADEON_WRITE(RADEON_PALETTE_DATA,
+			     (radeon_crtc->lut_r[i] << 16) |
+			     (radeon_crtc->lut_g[i] << 8) |
+			     (radeon_crtc->lut_b[i] << 0));
+	}
+}
 
 void radeon_crtc_load_lut(struct drm_crtc *crtc)
 {
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	u32 temp;
-	int i;
+
 	if (!crtc->enabled)
 		return;
 
-	if (radeon_is_avivo(dev_priv)) {
+	if (radeon_is_avivo(dev_priv))
 		avivo_crtc_load_lut(crtc);
-		return;
-	}
-
-	temp = RADEON_READ(RADEON_DAC_CNTL2);
-	if (radeon_crtc->crtc_id == 0)
-		temp &= (uint32_t)~RADEON_DAC2_PALETTE_ACC_CTL;
 	else
-		temp |= RADEON_DAC2_PALETTE_ACC_CTL;
-	RADEON_WRITE(RADEON_DAC_CNTL2, temp);
-
-	for (i = 0; i < 256; i++) {
-//		OUTPAL(i, radeon_crtc->lut_r[i], radeon_crtc->lut_g[i], radeon_crtc->lut_b[i]);
-	}
-
+		legacy_crtc_load_lut(crtc);
 }
 
 /** Sets the color ramps on behalf of RandR */
@@ -208,15 +218,28 @@ static void radeon_crtc_gamma_set(struct drm_crtc *crtc, u16 *red, u16 *green,
 				  u16 *blue, uint32_t size)
 {
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
-	int i;
+	int i, j;
 
 	if (size != 256)
 		return;
 
-	for (i = 0; i < 256; i++) {
-		radeon_crtc->lut_r[i] = red[i] >> 8;
-		radeon_crtc->lut_g[i] = green[i] >> 8;
-		radeon_crtc->lut_b[i] = blue[i] >> 8;
+	if (crtc->fb->depth == 16) {
+		for (i = 0; i < 64; i++) {
+			if (i <= 31) {
+				for (j = 0; j < 8; j++) {
+					radeon_crtc->lut_r[i * 8 + j] = red[i] >> 8;
+					radeon_crtc->lut_b[i * 8 + j] = blue[i] >> 8;
+				}
+			}
+			for (j = 0; j < 4; j++)
+				radeon_crtc->lut_g[i * 4 + j] = green[i] >> 8;
+		}
+	} else {
+		for (i = 0; i < 256; i++) {
+			radeon_crtc->lut_r[i] = red[i] >> 8;
+			radeon_crtc->lut_g[i] = green[i] >> 8;
+			radeon_crtc->lut_b[i] = blue[i] >> 8;
+		}
 	}
 
 	radeon_crtc_load_lut(crtc);
