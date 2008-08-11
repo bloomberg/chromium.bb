@@ -41,7 +41,8 @@ nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
 		nv50_fbcon.o
 radeon-objs := radeon_drv.o radeon_cp.o radeon_state.o radeon_mem.o radeon_irq.o r300_cmdbuf.o radeon_gem.o \
 	 radeon_buffer.o radeon_fence.o atom.o radeon_display.o radeon_atombios.o radeon_i2c.o radeon_connectors.o radeon_cs.o \
-	atombios_crtc.o radeon_encoders.o radeon_fb.o radeon_combios.o radeon_legacy_crtc.o radeon_legacy_encoders.o
+	atombios_crtc.o radeon_encoders.o radeon_fb.o radeon_combios.o radeon_legacy_crtc.o radeon_legacy_encoders.o \
+	radeon_cursor.o
 sis-objs    := sis_drv.o sis_mm.o
 ffb-objs    := ffb_drv.o ffb_context.o
 savage-objs := savage_drv.o savage_bci.o savage_state.o

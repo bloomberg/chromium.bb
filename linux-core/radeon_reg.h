@@ -374,6 +374,9 @@
 #       define RADEON_CRTC_ICON_EN          (1 << 15)
 #       define RADEON_CRTC_CUR_EN           (1 << 16)
 #       define RADEON_CRTC_CUR_MODE_MASK    (7 << 20)
+#       define RADEON_CRTC_CUR_MODE_SHIFT   20
+#       define RADEON_CRTC_CUR_MODE_MONO    0
+#       define RADEON_CRTC_CUR_MODE_24BPP   2
 #       define RADEON_CRTC_EXT_DISP_EN      (1 << 24)
 #       define RADEON_CRTC_EN               (1 << 25)
 #       define RADEON_CRTC_DISP_REQ_EN_B    (1 << 26)
@@ -3591,14 +3594,14 @@
 #define AVIVO_D1GRPH_X_END                                      0x6134
 #define AVIVO_D1GRPH_Y_END                                      0x6138
 #define AVIVO_D1GRPH_UPDATE                                     0x6144
-#       define AVIVO_D1GRPH_UPDATE_LOCK                 (1<<16)
+#       define AVIVO_D1GRPH_UPDATE_LOCK                         (1 << 16)
 #define AVIVO_D1GRPH_FLIP_CONTROL                               0x6148
 
 #define AVIVO_D1CUR_CONTROL                     0x6400
-#       define AVIVO_D1CURSOR_EN           (1<<0)
-#       define AVIVO_D1CURSOR_MODE_SHIFT  8
-#       define AVIVO_D1CURSOR_MODE_MASK   (0x3<<8)
-#       define AVIVO_D1CURSOR_MODE_24BPP  (0x2)
+#       define AVIVO_D1CURSOR_EN                (1 << 0)
+#       define AVIVO_D1CURSOR_MODE_SHIFT        8
+#       define AVIVO_D1CURSOR_MODE_MASK         (3 << 8)
+#       define AVIVO_D1CURSOR_MODE_24BPP        2
 #define AVIVO_D1CUR_SURFACE_ADDRESS             0x6408
 #define AVIVO_D1CUR_SIZE                        0x6410
 #define AVIVO_D1CUR_POSITION                    0x6414

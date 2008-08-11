@@ -393,6 +393,15 @@ extern void atombios_crtc_mode_set(struct drm_crtc *crtc,
 				   struct drm_display_mode *adjusted_mode,
 				   int x, int y);
 extern void atombios_crtc_dpms(struct drm_crtc *crtc, int mode);
+
+extern int radeon_crtc_cursor_set(struct drm_crtc *crtc,
+				  struct drm_file *file_priv,
+				  uint32_t handle,
+				  uint32_t width,
+				  uint32_t height);
+extern int radeon_crtc_cursor_move(struct drm_crtc *crtc,
+				   int x, int y);
+
 extern bool radeon_atom_get_clock_info(struct drm_device *dev);
 extern bool radeon_combios_get_clock_info(struct drm_device *dev);
 extern void radeon_get_lvds_info(struct radeon_encoder *encoder);

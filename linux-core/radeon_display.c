@@ -32,9 +32,6 @@
 
 #include "drm_crtc_helper.h"
 
-#define CURSOR_WIDTH 64
-#define CURSOR_HEIGHT 64
-
 int radeon_ddc_dump(struct drm_connector *connector);
 
 
@@ -122,96 +119,6 @@ void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 	radeon_crtc->lut_r[regno] = red >> 8;
 	radeon_crtc->lut_g[regno] = green >> 8;
 	radeon_crtc->lut_b[regno] = blue >> 8;
-}
-
-
-
-static void avivo_lock_cursor(struct drm_crtc *crtc, bool lock)
-{
-	struct drm_radeon_private *dev_priv = crtc->dev->dev_private;
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
-
-	uint32_t tmp;
-
-	tmp = RADEON_READ(AVIVO_D1CUR_UPDATE + radeon_crtc->crtc_offset);
-	if (lock)
-		tmp |= AVIVO_D1CURSOR_UPDATE_LOCK;
-	else
-		tmp &= ~AVIVO_D1CURSOR_UPDATE_LOCK;
-
-	RADEON_WRITE(AVIVO_D1CUR_UPDATE + radeon_crtc->crtc_offset, tmp);
-}
-
-static int radeon_crtc_cursor_set(struct drm_crtc *crtc,
-				  struct drm_file *file_priv,
-				  uint32_t handle,
-				  uint32_t width,
-				  uint32_t height)
-{
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
-	struct drm_radeon_private *dev_priv = crtc->dev->dev_private;
-	struct drm_gem_object *obj;
-	struct drm_radeon_gem_object *obj_priv;
-
-	if (!handle) {
-		RADEON_WRITE(AVIVO_D1CUR_CONTROL + radeon_crtc->crtc_offset, 0);
-		return 0;
-		/* turn off cursor */
-	}
-
-	obj = drm_gem_object_lookup(crtc->dev, file_priv, handle);
-	if (!obj) {
-		DRM_ERROR("Cannot find cursor object %x for crtc %d\n", handle, radeon_crtc->crtc_id);
-		return -EINVAL;
-	}
-
-	obj_priv = obj->driver_private;
-
-	RADEON_WRITE(AVIVO_D1CUR_CONTROL + radeon_crtc->crtc_offset, 0);
-	if (radeon_is_avivo(dev_priv)) {
-		RADEON_WRITE(AVIVO_D1CUR_SURFACE_ADDRESS + radeon_crtc->crtc_offset,
-			     dev_priv->fb_location + obj_priv->bo->offset);
-		RADEON_WRITE(AVIVO_D1CUR_SIZE + radeon_crtc->crtc_offset,
-			     (CURSOR_WIDTH - 1) << 16 | (CURSOR_HEIGHT - 1));
-		RADEON_WRITE(AVIVO_D1CUR_CONTROL + radeon_crtc->crtc_offset,
-			     AVIVO_D1CURSOR_EN | (AVIVO_D1CURSOR_MODE_24BPP << AVIVO_D1CURSOR_MODE_SHIFT));
-	}
-
-	mutex_lock(&crtc->dev->struct_mutex);
-	drm_gem_object_unreference(obj);
-	mutex_unlock(&crtc->dev->struct_mutex);
-
-	return 0;
-}
-
-static int radeon_crtc_cursor_move(struct drm_crtc *crtc,
-				   int x, int y)
-{
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
-	struct drm_radeon_private *dev_priv = crtc->dev->dev_private;
-	int xorigin = 0, yorigin = 0;
-
-	if (x < 0) xorigin = -x+1;
-	if (y < 0) yorigin = -x+1;
-	if (xorigin >= CURSOR_WIDTH) xorigin = CURSOR_WIDTH - 1;
-	if (yorigin >= CURSOR_WIDTH) yorigin = CURSOR_WIDTH - 1;
-
-	if (crtc->mode.flags & DRM_MODE_FLAG_INTERLACE)
-		y /= 2;
-	else if (crtc->mode.flags & DRM_MODE_FLAG_DBLSCAN)
-		y *= 2;
-
-	if (radeon_is_avivo(dev_priv)) {
-		avivo_lock_cursor(crtc, true);
-
-		RADEON_WRITE(AVIVO_D1CUR_POSITION + radeon_crtc->crtc_offset,
-			     ((xorigin ? 0: x) << 16) |
-			     (yorigin ? 0 : y));
-		RADEON_WRITE(AVIVO_D1CUR_HOT_SPOT + radeon_crtc->crtc_offset, (xorigin << 16) | yorigin);
-		avivo_lock_cursor(crtc, false);
-	}
-
-	return 0;
 }
 
 static void radeon_crtc_gamma_set(struct drm_crtc *crtc, u16 *red, u16 *green,
