@@ -185,7 +185,7 @@ void radeon_pll_errata_after_data(struct drm_radeon_private *dev_priv)
 	}
 }
 
-int RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr)
+u32 RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr)
 {
 	uint32_t data;
 

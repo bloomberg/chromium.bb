@@ -336,7 +336,7 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 		if ((mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_I) ||
 		    (mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_D)) {
 			if (radeon_is_avivo(dev_priv))
-				encoder = radeon_encoder_atom_tmds_add(dev, i, mode_info->bios_connector[i].dac_type);
+				encoder = radeon_encoder_atom_tmds_add(dev, i, mode_info->bios_connector[i].tmds_type);
 			else {
 				if (mode_info->bios_connector[i].tmds_type == TMDS_INT)
 					encoder = radeon_encoder_legacy_tmds_int_add(dev, i);

@@ -279,7 +279,7 @@ static void radeon_lvtma_dpms(struct drm_encoder *encoder, int mode)
 	case DRM_MODE_DPMS_ON:
 		atombios_display_device_control(encoder, index, ATOM_ENABLE);
 		break;
-	case DRM_MODE_DPMS_STANDBY:	
+	case DRM_MODE_DPMS_STANDBY:
 	case DRM_MODE_DPMS_SUSPEND:
 	case DRM_MODE_DPMS_OFF:
 		atombios_display_device_control(encoder, index, ATOM_DISABLE);
@@ -792,7 +792,7 @@ static void radeon_atom_tmds_dpms(struct drm_encoder *encoder, int mode)
 	case DRM_MODE_DPMS_ON:
 		atombios_display_device_control(encoder, index, ATOM_ENABLE);
 		break;
-	case DRM_MODE_DPMS_STANDBY:	
+	case DRM_MODE_DPMS_STANDBY:
 	case DRM_MODE_DPMS_SUSPEND:
 	case DRM_MODE_DPMS_OFF:
 		atombios_display_device_control(encoder, index, ATOM_DISABLE);

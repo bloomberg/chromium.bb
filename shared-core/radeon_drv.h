@@ -1277,7 +1277,7 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_READ8(reg)	DRM_READ8(  dev_priv->mmio, (reg) )
 #define RADEON_WRITE8(reg,val)	DRM_WRITE8( dev_priv->mmio, (reg), (val) )
 
-extern int RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr);
+extern u32 RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr);
 extern void RADEON_WRITE_PLL(struct drm_radeon_private *dev_priv, int addr, uint32_t data);
 
 #define RADEON_WRITE_P(reg, val, mask)		\
