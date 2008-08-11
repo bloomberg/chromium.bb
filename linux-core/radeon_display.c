@@ -48,11 +48,11 @@ static void avivo_crtc_load_lut(struct drm_crtc *crtc)
 
 	DRM_DEBUG("%d\n", radeon_crtc->crtc_id);
 	RADEON_WRITE(AVIVO_DC_LUTA_CONTROL + radeon_crtc->crtc_offset, 0);
-	
+
 	RADEON_WRITE(AVIVO_DC_LUTA_BLACK_OFFSET_BLUE + radeon_crtc->crtc_offset, 0);
 	RADEON_WRITE(AVIVO_DC_LUTA_BLACK_OFFSET_GREEN + radeon_crtc->crtc_offset, 0);
 	RADEON_WRITE(AVIVO_DC_LUTA_BLACK_OFFSET_RED + radeon_crtc->crtc_offset, 0);
-		
+
 	RADEON_WRITE(AVIVO_DC_LUTA_WHITE_OFFSET_BLUE + radeon_crtc->crtc_offset, 0xffff);
 	RADEON_WRITE(AVIVO_DC_LUTA_WHITE_OFFSET_GREEN + radeon_crtc->crtc_offset, 0xffff);
 	RADEON_WRITE(AVIVO_DC_LUTA_WHITE_OFFSET_RED + radeon_crtc->crtc_offset, 0xffff);
@@ -62,7 +62,6 @@ static void avivo_crtc_load_lut(struct drm_crtc *crtc)
 	RADEON_WRITE(AVIVO_DC_LUT_WRITE_EN_MASK, 0x0000003f);
 
 	for (i = 0; i < 256; i++) {
-		
 		RADEON_WRITE8(AVIVO_DC_LUT_RW_INDEX, i);
 		RADEON_WRITE(AVIVO_DC_LUT_30_COLOR,
 			     (radeon_crtc->lut_r[i] << 22) |
@@ -84,7 +83,6 @@ void radeon_crtc_load_lut(struct drm_crtc *crtc)
 	if (!crtc->enabled)
 		return;
 
-	
 	if (radeon_is_avivo(dev_priv)) {
 		avivo_crtc_load_lut(crtc);
 		return;
@@ -158,7 +156,7 @@ static int radeon_crtc_cursor_set(struct drm_crtc *crtc,
 	}
 
 	obj_priv = obj->driver_private;
-	
+
 	RADEON_WRITE(AVIVO_D1CUR_CONTROL + radeon_crtc->crtc_offset, 0);
 	if (radeon_is_avivo(dev_priv)) {
 		RADEON_WRITE(AVIVO_D1CUR_SURFACE_ADDRESS + radeon_crtc->crtc_offset,
@@ -172,7 +170,7 @@ static int radeon_crtc_cursor_set(struct drm_crtc *crtc,
 	mutex_lock(&crtc->dev->struct_mutex);
 	drm_gem_object_unreference(obj);
 	mutex_unlock(&crtc->dev->struct_mutex);
-	
+
 	return 0;
 }
 
@@ -202,7 +200,7 @@ static int radeon_crtc_cursor_move(struct drm_crtc *crtc,
 		RADEON_WRITE(AVIVO_D1CUR_HOT_SPOT + radeon_crtc->crtc_offset, (xorigin << 16) | yorigin);
 		avivo_lock_cursor(crtc, false);
 	}
-	
+
 	return 0;
 }
 
@@ -325,8 +323,8 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 			} else {
 				if (mode_info->bios_connector[i].dac_type == DAC_PRIMARY)
 					encoder = radeon_encoder_legacy_primary_dac_add(dev, i, 0);
-//				else if (mode_info->bios_connector[i].dac_type == DAC_TVDAC)
-//					encoder radeon_encoder_legacy_secondary_dac_add(dev, i, 0);
+				else if (mode_info->bios_connector[i].dac_type == DAC_TVDAC)
+					encoder = radeon_encoder_legacy_tv_dac_add(dev, i, 0);
 			}
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
@@ -340,6 +338,8 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 			else {
 				if (mode_info->bios_connector[i].tmds_type == TMDS_INT)
 					encoder = radeon_encoder_legacy_tmds_int_add(dev, i);
+				else if (mode_info->bios_connector[i].dac_type == TMDS_EXT)
+					encoder = radeon_encoder_legacy_tmds_ext_add(dev, i);
 			}
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
@@ -349,6 +349,10 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 		if (mode_info->bios_connector[i].connector_type == CONNECTOR_DIN) {
 			if (radeon_is_avivo(dev_priv))
 				encoder = radeon_encoder_atom_dac_add(dev, i, mode_info->bios_connector[i].dac_type, 1);
+			else {
+				if (mode_info->bios_connector[i].dac_type == DAC_TVDAC)
+					encoder = radeon_encoder_legacy_tv_dac_add(dev, i, 0);
+			}
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
 		}
@@ -357,41 +361,6 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 	list_for_each_entry(connector, &dev->mode_config.connector_list, head)
 		radeon_ddc_dump(connector);
 	return true;
-}
-
-
-
-void radeon_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state)
-{
-	struct drm_radeon_private *dev_priv = radeon_connector->base.dev->dev_private;
-	uint32_t temp;
-	struct radeon_i2c_bus_rec *rec = &radeon_connector->ddc_bus->rec;
-
-	if (lock_state) {
-		temp = RADEON_READ(rec->a_clk_reg);
-		temp &= ~(rec->a_clk_mask);
-		RADEON_WRITE(rec->a_clk_reg, temp);
-
-		temp = RADEON_READ(rec->a_data_reg);
-		temp &= ~(rec->a_data_mask);
-		RADEON_WRITE(rec->a_data_reg, temp);
-	}
-
-	temp = RADEON_READ(rec->mask_clk_reg);
-	if (lock_state)
-		temp |= rec->mask_clk_mask;
-	else
-		temp &= ~rec->mask_clk_mask;
-	RADEON_WRITE(rec->mask_clk_reg, temp);
-	temp = RADEON_READ(rec->mask_clk_reg);
-
-	temp = RADEON_READ(rec->mask_data_reg);
-	if (lock_state)
-		temp |= rec->mask_data_mask;
-	else
-		temp &= ~rec->mask_data_mask;
-	RADEON_WRITE(rec->mask_data_reg, temp);
-	temp = RADEON_READ(rec->mask_data_reg);
 }
 
 int radeon_ddc_get_modes(struct radeon_connector *radeon_connector)
@@ -422,7 +391,9 @@ int radeon_ddc_dump(struct drm_connector *connector)
 
 	if (!radeon_connector->ddc_bus)
 		return -1;
+	radeon_i2c_do_lock(radeon_connector, 1);
 	edid = drm_get_edid(connector, &radeon_connector->ddc_bus->adapter);
+	radeon_i2c_do_lock(radeon_connector, 0);
 	if (edid) {
 		kfree(edid);
 	}
@@ -433,7 +404,7 @@ static inline uint32_t radeon_div(uint64_t n, uint32_t d)
 {
 	uint64_t x, y, result;
 	uint64_t mod;
-	
+
 	n += d / 2;
 
 	mod = do_div(n, d);
@@ -519,7 +490,7 @@ void radeon_compute_pll(struct radeon_pll *pll,
 
 				current_freq = radeon_div((uint64_t)pll->reference_freq * 10000 * feedback_div,
 							  ref_div * post_div);
-				
+
 				error = abs(current_freq - freq);
 				vco_diff = abs(vco - best_vco);
 
@@ -550,7 +521,7 @@ void radeon_compute_pll(struct radeon_pll *pll,
 						best_vco_diff = vco_diff;
 					}
 				}
-				
+
 				if (current_freq < freq)
 					min_feed_div = feedback_div+1;
 				else
@@ -558,7 +529,7 @@ void radeon_compute_pll(struct radeon_pll *pll,
 			}
 		}
 	}
-	
+
 	*dot_clock_p = best_freq / 10000;
 	*fb_div_p = best_feedback_div;
 	*ref_div_p = best_ref_div;
@@ -680,7 +651,7 @@ int radeon_modeset_init(struct drm_device *dev)
 
 	if (!ret)
 		return ret;
-	
+
 	drm_helper_initial_config(dev, false);
 
 	return 0;
