@@ -57,8 +57,10 @@ struct radeon_i2c_bus_rec combios_setup_i2c_bus(int ddc_line)
 {
 	struct radeon_i2c_bus_rec i2c;
 
-	i2c.mask_clk_mask = RADEON_GPIO_EN_1 | RADEON_GPIO_Y_1;
-	i2c.mask_data_mask =  RADEON_GPIO_EN_0 | RADEON_GPIO_Y_0;
+	i2c.mask_clk_mask = RADEON_GPIO_EN_1;
+	i2c.mask_data_mask = RADEON_GPIO_EN_0;
+	i2c.a_clk_mask = RADEON_GPIO_A_1;
+	i2c.a_data_mask = RADEON_GPIO_A_0;
 	i2c.put_clk_mask = RADEON_GPIO_EN_1;
 	i2c.put_data_mask = RADEON_GPIO_EN_0;
 	i2c.get_clk_mask = RADEON_GPIO_Y_1;
@@ -67,6 +69,8 @@ struct radeon_i2c_bus_rec combios_setup_i2c_bus(int ddc_line)
 	    (ddc_line == RADEON_MDGPIO_EN_REG)) {
 		i2c.mask_clk_reg = ddc_line;
 		i2c.mask_data_reg = ddc_line;
+		i2c.a_clk_reg = ddc_line;
+		i2c.a_data_reg = ddc_line;
 		i2c.put_clk_reg = ddc_line;
 		i2c.put_data_reg = ddc_line;
 		i2c.get_clk_reg = ddc_line + 4;
@@ -74,17 +78,19 @@ struct radeon_i2c_bus_rec combios_setup_i2c_bus(int ddc_line)
 	} else {
 		i2c.mask_clk_reg = ddc_line;
 		i2c.mask_data_reg = ddc_line;
+		i2c.a_clk_reg = ddc_line;
+		i2c.a_data_reg = ddc_line;
 		i2c.put_clk_reg = ddc_line;
 		i2c.put_data_reg = ddc_line;
 		i2c.get_clk_reg = ddc_line;
 		i2c.get_data_reg = ddc_line;
 	}
-	
+
 	if (ddc_line)
 		i2c.valid = true;
 	else
 		i2c.valid = false;
-	
+
 	return i2c;
 }
 
@@ -196,7 +202,7 @@ bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder)
 		if (n > 4) n = 4;
 		for (i = 0; i < n; i++) {
 			encoder->tmds_pll[i].value = radeon_bios32(dev_priv, tmp+i*10+0x08);
-			encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmp+i*10+0x10);	
+			encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmp+i*10+0x10);
 		}
 		return true;
 	} else if (ver == 4) {
@@ -219,7 +225,7 @@ static void radeon_apply_legacy_quirks(struct drm_device *dev, int bios_index)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 
-	/* on XPRESS chips, CRT2_DDC and MONID_DCC both use the 
+	/* on XPRESS chips, CRT2_DDC and MONID_DCC both use the
 	 * MONID gpio, but use different pins.
 	 * CRT2_DDC uses the standard pinout, MONID_DDC uses
 	 * something else.
@@ -229,17 +235,6 @@ static void radeon_apply_legacy_quirks(struct drm_device *dev, int bios_index)
 	    mode_info->bios_connector[bios_index].connector_type == CONNECTOR_VGA &&
 	    mode_info->bios_connector[bios_index].ddc_i2c.mask_clk_reg == RADEON_GPIO_CRT2_DDC) {
 		mode_info->bios_connector[bios_index].ddc_i2c = combios_setup_i2c_bus(RADEON_GPIO_MONID);
-	}
-
-	/* XPRESS desktop chips seem to have a proprietary connector listed for
-	 * DVI-D, try and do the right thing here.
-	 */
-	if ((dev_priv->flags & RADEON_IS_MOBILITY) &&
-	    (mode_info->bios_connector[bios_index].connector_type == CONNECTOR_LVDS)) {
-	  DRM_INFO("proprietary connector found. assuming DVI-D\n");
-	  mode_info->bios_connector[bios_index].dac_type = DAC_NONE;
-	  mode_info->bios_connector[bios_index].tmds_type = TMDS_EXT;
-	  mode_info->bios_connector[bios_index].connector_type = CONNECTOR_DVI_D;
 	}
 
 	/* Certain IBM chipset RN50s have a BIOS reporting two VGAs,
@@ -272,16 +267,16 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 	enum radeon_combios_ddc ddctype;
 	enum radeon_combios_connector connector_type;
 	int i;
-	
+
 	DRM_DEBUG("\n");
 	offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x50);
 	if (offset) {
 		for (i = 0; i < 4; i++) {
 			entry = offset + 2 + i * 2;
-	
+
 			if (!radeon_bios16(dev_priv, entry))
 				    break;
-			
+
 			mode_info->bios_connector[i].valid = true;
 
 			tmp = radeon_bios16(dev_priv, entry);
@@ -291,7 +286,7 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 
 			switch(connector_type) {
 			case CONNECTOR_PROPRIETARY_LEGACY:
-				mode_info->bios_connector[i].connector_type = CONNECTOR_LVDS;
+				mode_info->bios_connector[i].connector_type = CONNECTOR_DVI_D;
 				break;
 			case CONNECTOR_CRT_LEGACY:
 				mode_info->bios_connector[i].connector_type = CONNECTOR_VGA;
@@ -406,7 +401,7 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 	for (i = 0; i < ATOM_MAX_SUPPORTED_DEVICE; i++) {
 		if (!mode_info->bios_connector[i].valid)
 			continue;
-		
+
 		DRM_DEBUG("Port %d: ddc_type 0x%x, dac_type %d, tmds_type %d, connector type %d, hpd_mask %d\n",
 			  i, mode_info->bios_connector[i].ddc_i2c.mask_clk_reg,
 			  mode_info->bios_connector[i].dac_type,
@@ -417,4 +412,4 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 
 	return true;
 }
-		
+

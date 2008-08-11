@@ -361,25 +361,35 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 
 
 
-void avivo_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state)
+void radeon_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state)
 {
 	struct drm_radeon_private *dev_priv = radeon_connector->base.dev->dev_private;
 	uint32_t temp;
 	struct radeon_i2c_bus_rec *rec = &radeon_connector->ddc_bus->rec;
 
+	if (lock_state) {
+		temp = RADEON_READ(rec->a_clk_reg);
+		temp &= ~(rec->a_clk_mask);
+		RADEON_WRITE(rec->a_clk_reg, temp);
+
+		temp = RADEON_READ(rec->a_data_reg);
+		temp &= ~(rec->a_data_mask);
+		RADEON_WRITE(rec->a_data_reg, temp);
+	}
+
 	temp = RADEON_READ(rec->mask_clk_reg);
 	if (lock_state)
-		temp |= rec->put_clk_mask;
+		temp |= rec->mask_clk_mask;
 	else
-		temp &= ~rec->put_clk_mask;
+		temp &= ~rec->mask_clk_mask;
 	RADEON_WRITE(rec->mask_clk_reg, temp);
 	temp = RADEON_READ(rec->mask_clk_reg);
 
 	temp = RADEON_READ(rec->mask_data_reg);
 	if (lock_state)
-		temp |= rec->put_data_mask;
+		temp |= rec->mask_data_mask;
 	else
-		temp &= ~rec->put_data_mask;
+		temp &= ~rec->mask_data_mask;
 	RADEON_WRITE(rec->mask_data_reg, temp);
 	temp = RADEON_READ(rec->mask_data_reg);
 }
@@ -392,12 +402,9 @@ int radeon_ddc_get_modes(struct radeon_connector *radeon_connector)
 
 	if (!radeon_connector->ddc_bus)
 		return -1;
-	
-	if (radeon_is_avivo(dev_priv))
-		avivo_i2c_do_lock(radeon_connector, 1);
+	radeon_i2c_do_lock(radeon_connector, 1);
 	edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
-	if (radeon_is_avivo(dev_priv))
-		avivo_i2c_do_lock(radeon_connector, 0);
+	radeon_i2c_do_lock(radeon_connector, 0);
 	if (edid) {
 		drm_mode_connector_update_edid_property(&radeon_connector->base, edid);
 		ret = drm_add_edid_modes(&radeon_connector->base, edid);

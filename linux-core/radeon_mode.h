@@ -91,6 +91,8 @@ struct radeon_i2c_bus_rec {
 	bool valid;
 	uint32_t mask_clk_reg;
 	uint32_t mask_data_reg;
+	uint32_t a_clk_reg;
+	uint32_t a_data_reg;
 	uint32_t put_clk_reg;
 	uint32_t put_data_reg;
 	uint32_t get_clk_reg;
@@ -101,6 +103,8 @@ struct radeon_i2c_bus_rec {
 	uint32_t put_data_mask;
 	uint32_t get_clk_mask;
 	uint32_t get_data_mask;
+	uint32_t a_clk_mask;
+	uint32_t a_data_mask;
 };
 
 struct radeon_bios_connector {
@@ -121,7 +125,7 @@ struct radeon_tmds_pll {
 };
 
 #define RADEON_MAX_BIOS_CONNECTOR 16
-	
+
 #define RADEON_PLL_USE_BIOS_DIVS   (1 << 0)
 #define RADEON_PLL_NO_ODD_POST_DIV (1 << 1)
 #define RADEON_PLL_USE_REF_DIV     (1 << 2)
@@ -406,7 +410,7 @@ void radeon_atombios_init_crtc(struct drm_device *dev,
 			       struct radeon_crtc *radeon_crtc);
 void radeon_legacy_init_crtc(struct drm_device *dev,
 			     struct radeon_crtc *radeon_crtc);
-void avivo_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state);
+void radeon_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state);
 
 void radeon_atom_static_pwrmgt_setup(struct drm_device *dev, int enable);
 void radeon_atom_dyn_clk_setup(struct drm_device *dev, int enable);
