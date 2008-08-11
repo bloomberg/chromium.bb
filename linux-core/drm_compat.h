@@ -369,4 +369,12 @@ extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 #define drm_core_ioremap_wc drm_core_ioremap
 #endif
 
+#ifndef OS_HAS_GEM
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+#define OS_HAS_GEM 1
+#else
+#define OS_HAS_GEM 0
+#endif
+#endif
+
 #endif
