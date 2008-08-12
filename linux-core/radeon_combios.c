@@ -428,7 +428,7 @@ bool radeon_combios_get_clock_info(struct drm_device *dev)
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	uint16_t pll_info;
 	struct radeon_pll *pll = &mode_info->pll;
-	int rev;
+	int8_t rev;
 
 	pll_info = combios_get_table_offset(dev, COMBIOS_PLL_INFO_TABLE);
 	if (pll_info) {
@@ -450,8 +450,143 @@ bool radeon_combios_get_clock_info(struct drm_device *dev)
 		pll->xclk = radeon_bios16(dev_priv, pll_info + 0x08);
 
 		// sclk/mclk use fixed point
+		//sclk = radeon_bios16(pll_info + 8) / 100.0;
+		//mclk = radeon_bios16(pll_info + 10) / 100.0;
+		//if (sclk == 0) sclk = 200;
+		//if (mclk == 0) mclk = 200;
 
 		return true;
+	}
+	return false;
+}
+
+bool radeon_combios_get_tv_dac_info(struct radeon_encoder *encoder)
+{
+	struct drm_device *dev = encoder->base.dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint16_t dac_info;
+	uint8_t rev, bg, dac;
+
+	/* first check TV table */
+	dac_info = combios_get_table_offset(dev, COMBIOS_TV_INFO_TABLE);
+	if (dac_info) {
+		rev = radeon_bios8(dev_priv, dac_info + 0x3);
+		if (rev > 4) {
+			bg = radeon_bios8(dev_priv, dac_info + 0xc) & 0xf;
+			dac = radeon_bios8(dev_priv, dac_info + 0xd) & 0xf;
+			encoder->ps2_tvdac_adj = (bg << 16) | (dac << 20);
+
+			bg = radeon_bios8(dev_priv, dac_info + 0xe) & 0xf;
+			dac = radeon_bios8(dev_priv, dac_info + 0xf) & 0xf;
+			encoder->pal_tvdac_adj = (bg << 16) | (dac << 20);
+
+			bg = radeon_bios8(dev_priv, dac_info + 0x10) & 0xf;
+			dac = radeon_bios8(dev_priv, dac_info + 0x11) & 0xf;
+			encoder->ntsc_tvdac_adj = (bg << 16) | (dac << 20);
+
+			return true;
+		} else if (rev > 1) {
+			bg = radeon_bios8(dev_priv, dac_info + 0xc) & 0xf;
+			dac = (radeon_bios8(dev_priv, dac_info + 0xc) >> 4) & 0xf;
+			encoder->ps2_tvdac_adj = (bg << 16) | (dac << 20);
+
+			bg = radeon_bios8(dev_priv, dac_info + 0xd) & 0xf;
+			dac = (radeon_bios8(dev_priv, dac_info + 0xd) >> 4) & 0xf;
+			encoder->pal_tvdac_adj = (bg << 16) | (dac << 20);
+
+			bg = radeon_bios8(dev_priv, dac_info + 0xe) & 0xf;
+			dac = (radeon_bios8(dev_priv, dac_info + 0xe) >> 4) & 0xf;
+			encoder->ntsc_tvdac_adj = (bg << 16) | (dac << 20);
+
+			return true;
+		}
+	}
+
+	/* then check CRT table */
+	dac_info = combios_get_table_offset(dev, COMBIOS_CRT_INFO_TABLE);
+	if (dac_info) {
+		rev = radeon_bios8(dev_priv, dac_info) & 0x3;
+		if (rev < 2) {
+			bg = radeon_bios8(dev_priv, dac_info + 0x3) & 0xf;
+			dac = (radeon_bios8(dev_priv, dac_info + 0x3) >> 4) & 0xf;
+			encoder->ps2_tvdac_adj = (bg << 16) | (dac << 20);
+			encoder->pal_tvdac_adj = encoder->ps2_tvdac_adj;
+			encoder->ntsc_tvdac_adj = encoder->ps2_tvdac_adj;
+
+			return true;
+		} else {
+			bg = radeon_bios8(dev_priv, dac_info + 0x4) & 0xf;
+			dac = radeon_bios8(dev_priv, dac_info + 0x5) & 0xf;
+			encoder->ps2_tvdac_adj = (bg << 16) | (dac << 20);
+			encoder->pal_tvdac_adj = encoder->ps2_tvdac_adj;
+			encoder->ntsc_tvdac_adj = encoder->ps2_tvdac_adj;
+
+			return true;
+		}
+
+	}
+
+	return false;
+}
+
+bool radeon_combios_get_tv_info(struct radeon_encoder *encoder)
+{
+	struct drm_device *dev = encoder->base.dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint16_t tv_info;
+
+	tv_info = combios_get_table_offset(dev, COMBIOS_TV_INFO_TABLE);
+	if (tv_info) {
+		if (radeon_bios8(dev_priv, tv_info + 6) == 'T') {
+			switch (radeon_bios8(dev_priv, tv_info + 7) & 0xf) {
+			case 1:
+				encoder->tv_std = TV_STD_NTSC;
+				DRM_INFO("Default TV standard: NTSC\n");
+				break;
+			case 2:
+				encoder->tv_std = TV_STD_PAL;
+				DRM_INFO("Default TV standard: PAL\n");
+				break;
+			case 3:
+				encoder->tv_std = TV_STD_PAL_M;
+				DRM_INFO("Default TV standard: PAL-M\n");
+				break;
+			case 4:
+				encoder->tv_std = TV_STD_PAL_60;
+				DRM_INFO("Default TV standard: PAL-60\n");
+				break;
+			case 5:
+				encoder->tv_std = TV_STD_NTSC_J;
+				DRM_INFO("Default TV standard: NTSC-J\n");
+				break;
+			case 6:
+				encoder->tv_std = TV_STD_SCART_PAL;
+				DRM_INFO("Default TV standard: SCART-PAL\n");
+				break;
+			default:
+				encoder->tv_std = TV_STD_NTSC;
+				DRM_INFO("Unknown TV standard; defaulting to NTSC\n");
+				break;
+			}
+
+			switch ((radeon_bios8(dev_priv, tv_info + 9) >> 2) & 0x3) {
+			case 0:
+				DRM_INFO("29.498928713 MHz TV ref clk\n");
+				break;
+			case 1:
+				DRM_INFO("28.636360000 MHz TV ref clk\n");
+				break;
+			case 2:
+				DRM_INFO("14.318180000 MHz TV ref clk\n");
+				break;
+			case 3:
+				DRM_INFO("27.000000000 MHz TV ref clk\n");
+				break;
+			default:
+				break;
+			}
+			return true;
+		}
 	}
 	return false;
 }
@@ -461,6 +596,7 @@ bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder)
 	struct drm_device *dev = encoder->base.dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint16_t lcd_info;
+	uint32_t panel_setup;
 	char stmp[30];
 	int tmp, i;
 
@@ -478,9 +614,57 @@ bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder)
 
 		DRM_INFO("Panel Size %dx%d\n", encoder->panel_xres, encoder->panel_yres);
 
-		encoder->panel_pwr_delay = radeon_bios16(dev_priv, lcd_info + 44);
-		if (encoder->panel_pwr_delay > 2000 || encoder->panel_pwr_delay < 0)
-			encoder->panel_pwr_delay = 2000;
+		encoder->panel_vcc_delay = radeon_bios16(dev_priv, lcd_info + 44);
+		if (encoder->panel_vcc_delay > 2000 || encoder->panel_vcc_delay < 0)
+			encoder->panel_vcc_delay = 2000;
+
+		encoder->panel_pwr_delay = radeon_bios16(dev_priv, lcd_info + 0x24);
+		encoder->panel_digon_delay = radeon_bios16(dev_priv, lcd_info + 0x38) & 0xf;
+		encoder->panel_blon_delay = (radeon_bios16(dev_priv, lcd_info + 0x38) >> 4) & 0xf;
+
+		encoder->panel_ref_divider = radeon_bios16(dev_priv, lcd_info + 46);
+		encoder->panel_post_divider = radeon_bios8(dev_priv, lcd_info + 48);
+		encoder->panel_fb_divider = radeon_bios16(dev_priv, lcd_info + 49);
+		if ((encoder->panel_ref_divider != 0) &&
+		    (encoder->panel_fb_divider > 3))
+			encoder->use_bios_dividers = true;
+
+		panel_setup = radeon_bios32(dev_priv, lcd_info + 0x39);
+		encoder->lvds_gen_cntl = 0;
+		if (panel_setup & 0x1)
+			encoder->lvds_gen_cntl |= RADEON_LVDS_PANEL_FORMAT;
+
+		if ((panel_setup >> 4) & 0x1)
+			encoder->lvds_gen_cntl |= RADEON_LVDS_PANEL_TYPE;
+
+		switch ((panel_setup >> 8) & 0x8) {
+		case 0:
+			encoder->lvds_gen_cntl |= RADEON_LVDS_NO_FM;
+			break;
+		case 1:
+			encoder->lvds_gen_cntl |= RADEON_LVDS_2_GREY;
+			break;
+		case 2:
+			encoder->lvds_gen_cntl |= RADEON_LVDS_4_GREY;
+			break;
+		default:
+			break;
+		}
+
+		if ((panel_setup >> 16) & 0x1)
+			encoder->lvds_gen_cntl |= RADEON_LVDS_FP_POL_LOW;
+
+		if ((panel_setup >> 17) & 0x1)
+			encoder->lvds_gen_cntl |= RADEON_LVDS_LP_POL_LOW;
+
+		if ((panel_setup >> 18) & 0x1)
+			encoder->lvds_gen_cntl |= RADEON_LVDS_DTM_POL_LOW;
+
+		if ((panel_setup >> 23) & 0x1)
+			encoder->lvds_gen_cntl |= RADEON_LVDS_BL_CLK_SEL;
+
+		encoder->lvds_gen_cntl |= (panel_setup & 0xf0000000);
+
 
 		for (i = 0; i < 32; i++) {
 			tmp = radeon_bios16(dev_priv, lcd_info + 64 + i * 2);

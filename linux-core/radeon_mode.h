@@ -87,6 +87,17 @@ enum radeon_rmx_type {
 	RMX_CENTER,
 };
 
+enum radeon_tv_std {
+	TV_STD_NTSC,
+	TV_STD_PAL,
+	TV_STD_PAL_M,
+	TV_STD_PAL_60,
+	TV_STD_NTSC_J,
+	TV_STD_SCART_PAL,
+	TV_STD_SECAM,
+	TV_STD_PAL_CN,
+};
+
 struct radeon_i2c_bus_rec {
 	bool valid;
 	uint32_t mask_clk_reg;
@@ -337,13 +348,33 @@ struct radeon_encoder {
 		enum radeon_tmds_type tmds;
 	} type;
 	int atom_device; /* atom devices */
+
+	/* preferred mode */
 	uint32_t panel_xres, panel_yres;
 	uint32_t hoverplus, hsync_width;
 	uint32_t hblank;
 	uint32_t voverplus, vsync_width;
 	uint32_t vblank;
-	uint32_t panel_pwr_delay;
 	uint32_t dotclock;
+
+	/* legacy lvds */
+	uint16_t panel_vcc_delay;
+	uint16_t panel_pwr_delay;
+	uint16_t panel_digon_delay;
+	uint16_t panel_blon_delay;
+	uint32_t panel_ref_divider;
+	uint32_t panel_post_divider;
+	uint32_t panel_fb_divider;
+	bool use_bios_dividers;
+	uint32_t lvds_gen_cntl;
+
+	/* legacy tv dac */
+	uint32_t ps2_tvdac_adj;
+	uint32_t ntsc_tvdac_adj;
+	uint32_t pal_tvdac_adj;
+	enum radeon_tv_std tv_std;
+
+	/* legacy int tmds */
 	struct radeon_tmds_pll tmds_pll[4];
 };
 
@@ -351,7 +382,6 @@ struct radeon_connector {
 	struct drm_connector base;
 	struct radeon_i2c_chan *ddc_bus;
 	int use_digital;
-	
 };
 
 struct radeon_framebuffer {
@@ -407,6 +437,8 @@ extern bool radeon_combios_get_clock_info(struct drm_device *dev);
 extern void radeon_get_lvds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder);
+extern bool radeon_combios_get_tv_info(struct radeon_encoder *encoder);
+extern bool radeon_combios_get_tv_dac_info(struct radeon_encoder *encoder);
 extern void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				     u16 blue, int regno);
 struct drm_framebuffer *radeon_user_framebuffer_create(struct drm_device *dev,

@@ -356,13 +356,9 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 		uint32_t tv_dac_cntl = RADEON_READ(RADEON_TV_DAC_CNTL);
 		uint32_t dac2_cntl = RADEON_READ(RADEON_DAC_CNTL2);
 		uint32_t crtc2_gen_cntl = RADEON_READ(RADEON_CRTC2_GEN_CNTL);
-//		state->dac2_cntl = info->StatedReg->dac2_cntl;
-//		state->tv_dac_cntl = info->StatedReg->tv_dac_cntl;
-//		state->crtc2_gen_cntl = info->StatedReg->crtc2_gen_cntl;
-//		state->disp_hw_debug = info->StatedReg->disp_hw_debug;
 
-//		state->dac2_cntl &= ~RADEON_DAC2_DAC_CLK_SEL;
-//		state->dac2_cntl |= RADEON_DAC2_DAC2_CLK_SEL;
+		dac2_cntl &= ~RADEON_DAC2_DAC_CLK_SEL;
+		dac2_cntl |= RADEON_DAC2_DAC2_CLK_SEL;
 
 		/* For CRT on DAC2, don't turn it on if BIOS didn't
 		   enable it, even it's detected.
@@ -395,19 +391,22 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 	return true;
 }
 
-static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode, int flags)
+static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode)
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct drm_encoder *encoder;
 	uint32_t feedback_div = 0;
 	uint32_t reference_div = 0;
 	uint32_t post_divider = 0;
 	uint32_t freq = 0;
 	uint8_t pll_gain;
+	int pll_flags = RADEON_PLL_LEGACY | RADEON_PLL_PREFER_LOW_REF_DIV;
+	bool use_bios_divs = false;
 	/* PLL registers */
-	uint32_t ppll_ref_div;
-        uint32_t ppll_div_3;
-        uint32_t htotal_cntl;
+	uint32_t ppll_ref_div = 0;
+        uint32_t ppll_div_3 = 0;
+        uint32_t htotal_cntl = 0;
         uint32_t vclk_ecp_cntl;
 
 	struct radeon_pll *pll = &dev_priv->mode_info.pll;
@@ -432,44 +431,56 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
 		{  0, 0 }
 	};
 
-#if 0 // TODO
-	if ((flags & RADEON_PLL_USE_BIOS_DIVS) && info->UseBiosDividers) {
-		ppll_ref_div = info->RefDivider;
-		ppll_div_3   = info->FeedbackDivider | (info->PostDivider << 16);
-		htotal_cntl  = 0;
-		return;
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
+		if (encoder->crtc == crtc) {
+			if (encoder->encoder_type != DRM_MODE_ENCODER_DAC)
+				pll_flags |= RADEON_PLL_NO_ODD_POST_DIV;
+			if (encoder->encoder_type == DRM_MODE_ENCODER_LVDS) {
+				struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
+
+				if (radeon_encoder->use_bios_dividers) {
+					ppll_ref_div = radeon_encoder->panel_ref_divider;
+					ppll_div_3   = (radeon_encoder->panel_fb_divider |
+							(radeon_encoder->panel_post_divider << 16));
+					htotal_cntl  = 0;
+					use_bios_divs = true;
+				} else
+					pll_flags |= RADEON_PLL_USE_REF_DIV;
+			}
+		}
 	}
-#endif
 
 	DRM_DEBUG("\n");
-	radeon_compute_pll(pll, mode->clock, &freq, &feedback_div, &reference_div, &post_divider, flags);
 
-	for (post_div = &post_divs[0]; post_div->divider; ++post_div) {
-		if (post_div->divider == post_divider)
-			break;
-	}
+	if (!use_bios_divs) {
+		radeon_compute_pll(pll, mode->clock, &freq, &feedback_div, &reference_div, &post_divider, pll_flags);
 
-	if (!post_div->divider) {
-		post_div = &post_divs[0];
-	}
+		for (post_div = &post_divs[0]; post_div->divider; ++post_div) {
+			if (post_div->divider == post_divider)
+				break;
+		}
 
-	DRM_DEBUG("dc=%u, fd=%d, rd=%d, pd=%d\n",
-		  (unsigned)freq,
-		  feedback_div,
-		  reference_div,
-		  post_divider);
+		if (!post_div->divider) {
+			post_div = &post_divs[0];
+		}
 
-	ppll_ref_div   = reference_div;
+		DRM_DEBUG("dc=%u, fd=%d, rd=%d, pd=%d\n",
+			  (unsigned)freq,
+			  feedback_div,
+			  reference_div,
+			  post_divider);
 
+		ppll_ref_div   = reference_div;
 #if defined(__powerpc__) && (0) /* TODO */
-	/* apparently programming this otherwise causes a hang??? */
-	if (info->MacModel == RADEON_MAC_IBOOK)
-		state->ppll_div_3 = 0x000600ad;
-	else
+		/* apparently programming this otherwise causes a hang??? */
+		if (info->MacModel == RADEON_MAC_IBOOK)
+			state->ppll_div_3 = 0x000600ad;
+		else
 #endif
-		ppll_div_3     = (feedback_div | (post_div->bitvalue << 16));
+			ppll_div_3     = (feedback_div | (post_div->bitvalue << 16));
+		htotal_cntl    = mode->htotal & 0x7;
 
-	htotal_cntl    = mode->htotal & 0x7;
+	}
 
 	vclk_ecp_cntl = (RADEON_READ_PLL(dev_priv, RADEON_VCLK_ECP_CNTL) &
 			 ~RADEON_VCLK_SRC_SEL_MASK) | RADEON_VCLK_SRC_SEL_PPLLCLK;
@@ -783,19 +794,22 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
 
 }
 
-static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode, int flags)
+static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode)
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct drm_encoder *encoder;
 	uint32_t feedback_div = 0;
 	uint32_t reference_div = 0;
 	uint32_t post_divider = 0;
 	uint32_t freq = 0;
 	uint8_t pll_gain;
+	int pll_flags = RADEON_PLL_LEGACY | RADEON_PLL_PREFER_LOW_REF_DIV;
+	bool use_bios_divs = false;
 	/* PLL2 registers */
-	uint32_t p2pll_ref_div;
-	uint32_t p2pll_div_0;
-	uint32_t htotal_cntl2;
+	uint32_t p2pll_ref_div = 0;
+	uint32_t p2pll_div_0 = 0;
+	uint32_t htotal_cntl2 = 0;
 	uint32_t pixclks_cntl;
 
 	struct radeon_pll *pll = &dev_priv->mode_info.pll;
@@ -819,37 +833,50 @@ static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode
 		{  0, 0 }
 	};
 
-#if 0
-	if ((flags & RADEON_PLL_USE_BIOS_DIVS) && info->UseBiosDividers) {
-		p2pll_ref_div = info->RefDivider;
-		p2pll_div_0   = info->FeedbackDivider | (info->PostDivider << 16);
-		htotal_cntl2  = 0;
-		return;
+	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
+		if (encoder->crtc == crtc) {
+			if (encoder->encoder_type != DRM_MODE_ENCODER_DAC)
+				pll_flags |= RADEON_PLL_NO_ODD_POST_DIV;
+			if (encoder->encoder_type == DRM_MODE_ENCODER_LVDS) {
+				struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
+
+				if (radeon_encoder->use_bios_dividers) {
+					p2pll_ref_div = radeon_encoder->panel_ref_divider;
+					p2pll_div_0   = (radeon_encoder->panel_fb_divider |
+							(radeon_encoder->panel_post_divider << 16));
+					htotal_cntl2  = 0;
+					use_bios_divs = true;
+				} else
+					pll_flags |= RADEON_PLL_USE_REF_DIV;
+			}
+		}
 	}
-#endif
 
-	radeon_compute_pll(pll, mode->clock, &freq, &feedback_div, &reference_div, &post_divider, flags);
+	DRM_DEBUG("\n");
 
-	for (post_div = &post_divs[0]; post_div->divider; ++post_div) {
-		if (post_div->divider == post_divider)
-			break;
+	if (!use_bios_divs) {
+		radeon_compute_pll(pll, mode->clock, &freq, &feedback_div, &reference_div, &post_divider, pll_flags);
+
+		for (post_div = &post_divs[0]; post_div->divider; ++post_div) {
+			if (post_div->divider == post_divider)
+				break;
+		}
+
+		if (!post_div->divider) {
+			post_div = &post_divs[0];
+		}
+
+		DRM_DEBUG("dc=%u, fd=%d, rd=%d, pd=%d\n",
+			  (unsigned)freq,
+			  feedback_div,
+			  reference_div,
+			  post_divider);
+
+		p2pll_ref_div    = reference_div;
+		p2pll_div_0      = (feedback_div | (post_div->bitvalue << 16));
+		htotal_cntl2     = mode->htotal & 0x7;
+
 	}
-
-	if (!post_div->divider) {
-		post_div = &post_divs[0];
-	}
-
-	DRM_DEBUG("dc=%u, fd=%d, rd=%d, pd=%d\n",
-		  (unsigned)freq,
-		  feedback_div,
-		  reference_div,
-		  post_divider);
-
-	p2pll_ref_div    = reference_div;
-
-	p2pll_div_0      = (feedback_div | (post_div->bitvalue << 16));
-
-	htotal_cntl2     = mode->htotal & 0x7;
 
 	pixclks_cntl     = ((RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL) &
 			     ~(RADEON_PIX2CLK_SRC_SEL_MASK)) |
@@ -946,21 +973,8 @@ static void radeon_crtc_mode_set(struct drm_crtc *crtc,
 				 int x, int y)
 {
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
-	struct drm_device *dev = crtc->dev;
-	struct drm_encoder *encoder;
-	int pll_flags = RADEON_PLL_LEGACY | RADEON_PLL_PREFER_LOW_REF_DIV;
 
 	DRM_DEBUG("\n");
-
-	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
-
-		if (encoder->crtc == crtc) {
-			if (encoder->encoder_type != DRM_MODE_ENCODER_DAC)
-				pll_flags |= RADEON_PLL_NO_ODD_POST_DIV;
-			if (encoder->encoder_type == DRM_MODE_ENCODER_LVDS)
-				pll_flags |= RADEON_PLL_USE_BIOS_DIVS | RADEON_PLL_USE_REF_DIV;
-		}
-	}
 
 	/* TODO TV */
 
@@ -969,11 +983,11 @@ static void radeon_crtc_mode_set(struct drm_crtc *crtc,
 	switch(radeon_crtc->crtc_id) {
 	case 0:
 		radeon_set_crtc1_timing(crtc, adjusted_mode);
-		radeon_set_pll1(crtc, adjusted_mode, pll_flags);
+		radeon_set_pll1(crtc, adjusted_mode);
 		break;
 	case 1:
 		radeon_set_crtc2_timing(crtc, adjusted_mode);
-		radeon_set_pll2(crtc, adjusted_mode, pll_flags);
+		radeon_set_pll2(crtc, adjusted_mode);
 		break;
 
 	}

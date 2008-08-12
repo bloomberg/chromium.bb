@@ -1027,14 +1027,23 @@
 #       define RADEON_LVDS_DISPLAY_DIS      (1   <<  1)
 #       define RADEON_LVDS_PANEL_TYPE       (1   <<  2)
 #       define RADEON_LVDS_PANEL_FORMAT     (1   <<  3)
+#       define RADEON_LVDS_NO_FM            (0   <<  4)
+#       define RADEON_LVDS_2_GREY           (1   <<  4)
+#       define RADEON_LVDS_4_GREY           (2   <<  4)
 #       define RADEON_LVDS_RST_FM           (1   <<  6)
 #       define RADEON_LVDS_EN               (1   <<  7)
 #       define RADEON_LVDS_BL_MOD_LEVEL_SHIFT 8
 #       define RADEON_LVDS_BL_MOD_LEVEL_MASK (0xff << 8)
 #       define RADEON_LVDS_BL_MOD_EN        (1   << 16)
+#       define RADEON_LVDS_BL_CLK_SEL       (1   << 17)
 #       define RADEON_LVDS_DIGON            (1   << 18)
 #       define RADEON_LVDS_BLON             (1   << 19)
+#       define RADEON_LVDS_FP_POL_LOW       (1   << 20)
+#       define RADEON_LVDS_LP_POL_LOW       (1   << 21)
+#       define RADEON_LVDS_DTM_POL_LOW      (1   << 22)
 #       define RADEON_LVDS_SEL_CRTC2        (1   << 23)
+#       define RADEON_LVDS_FPDI_EN          (1   << 27)
+#       define RADEON_LVDS_HSYNC_DELAY_SHIFT        28
 #define RADEON_LVDS_PLL_CNTL                0x02d4
 #       define RADEON_HSYNC_DELAY_SHIFT     28
 #       define RADEON_HSYNC_DELAY_MASK      (0xf << 28)

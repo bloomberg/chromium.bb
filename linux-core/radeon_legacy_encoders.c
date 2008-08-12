@@ -213,10 +213,20 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 		lvds_pll_cntl = RADEON_READ(RADEON_LVDS_PLL_CNTL);
 		lvds_pll_cntl &= ~RADEON_LVDS_PLL_RESET;
 		RADEON_WRITE(RADEON_LVDS_PLL_CNTL, lvds_pll_cntl);
+
+		/* enable lvds, turn on voltage */
 		lvds_gen_cntl = RADEON_READ(RADEON_LVDS_GEN_CNTL);
-		lvds_gen_cntl |= (RADEON_LVDS_ON | RADEON_LVDS_BLON | RADEON_LVDS_EN);
+		lvds_gen_cntl |= (RADEON_LVDS_ON | RADEON_LVDS_EN | RADEON_LVDS_DIGON);
+		RADEON_WRITE(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
+		udelay(radeon_encoder->panel_digon_delay * 1000);
+
+		/* enable data */
 		lvds_gen_cntl &= ~(RADEON_LVDS_DISPLAY_DIS);
-		udelay(radeon_encoder->panel_pwr_delay * 1000);
+		RADEON_WRITE(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
+		udelay(radeon_encoder->panel_blon_delay * 1000);
+
+		/* enable backlight */
+		lvds_gen_cntl |= RADEON_LVDS_BLON;
 		RADEON_WRITE(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
 		break;
 	case DRM_MODE_DPMS_STANDBY:
@@ -226,7 +236,7 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 		RADEON_WRITE_PLL_P(dev_priv, RADEON_PIXCLKS_CNTL, 0, ~RADEON_PIXCLK_LVDS_ALWAYS_ONb);
                 lvds_gen_cntl = RADEON_READ(RADEON_LVDS_GEN_CNTL);
                 lvds_gen_cntl |= RADEON_LVDS_DISPLAY_DIS;
-                lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_BLON | RADEON_LVDS_EN);
+                lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_BLON | RADEON_LVDS_EN | RADEON_LVDS_DIGON);
                 RADEON_WRITE(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
 		RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, pixclks_cntl);
 		break;
@@ -260,7 +270,10 @@ static void radeon_legacy_lvds_mode_set(struct drm_encoder *encoder,
 
 	lvds_pll_cntl = RADEON_READ(RADEON_LVDS_PLL_CNTL);
 	lvds_pll_cntl &= ~RADEON_LVDS_PLL_EN;
-	lvds_gen_cntl = RADEON_READ(RADEON_LVDS_GEN_CNTL);
+	if (radeon_encoder->lvds_gen_cntl)
+		lvds_gen_cntl = radeon_encoder->lvds_gen_cntl;
+	else
+		lvds_gen_cntl = RADEON_READ(RADEON_LVDS_GEN_CNTL);
 	lvds_gen_cntl |= RADEON_LVDS_DISPLAY_DIS;
 	lvds_gen_cntl &= ~(RADEON_LVDS_ON |
 			   RADEON_LVDS_BLON |
@@ -339,7 +352,6 @@ struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int b
 
 	drm_encoder_helper_add(encoder, &radeon_legacy_lvds_helper_funcs);
 
-	/* TODO get the LVDS info from the BIOS for panel size etc. */
 	/* get the lvds info from the bios */
 	radeon_combios_get_lvds_info(radeon_encoder);
 
@@ -659,6 +671,7 @@ struct drm_encoder *radeon_encoder_legacy_tmds_int_add(struct drm_device *dev, i
 	drm_encoder_helper_add(encoder, &radeon_legacy_tmds_int_helper_funcs);
 
 	radeon_combios_get_tmds_info(radeon_encoder);
+
 	return encoder;
 }
 
@@ -893,6 +906,7 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	uint32_t tv_dac_cntl, gpiopad_a = 0, dac2_cntl, disp_output_cntl = 0;
 	uint32_t disp_hw_debug = 0, fp2_gen_cntl = 0;
 
@@ -924,8 +938,8 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 		// FIXME TV
 		tv_dac_cntl |= (RADEON_TV_DAC_NBLANK |
 				RADEON_TV_DAC_NHOLD |
-				RADEON_TV_DAC_STD_PS2 /*|
-				radeon_encoder->ps2_tvdac_adj*/); // fixme, get from bios
+				RADEON_TV_DAC_STD_PS2 |
+				radeon_encoder->ps2_tvdac_adj);
 
 		RADEON_WRITE(RADEON_TV_DAC_CNTL, tv_dac_cntl);
 	}
@@ -1015,8 +1029,9 @@ struct drm_encoder *radeon_encoder_legacy_tv_dac_add(struct drm_device *dev, int
 
 	drm_encoder_helper_add(encoder, &radeon_legacy_tv_dac_helper_funcs);
 
-	/* TODO get the tv dac vals from bios tables */
-	//radeon_combios_get_lvds_info(radeon_encoder);
+	/* get the tv dac vals from bios tables */
+	radeon_combios_get_tv_info(radeon_encoder);
+	radeon_combios_get_tv_dac_info(radeon_encoder);
 
 	return encoder;
 }
