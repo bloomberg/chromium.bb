@@ -2060,6 +2060,7 @@ FcEndElement(void *userData, const XML_Char *name)
 #ifdef _WIN32
 	if (strcmp (data, "CUSTOMFONTDIR") == 0)
 	{
+		char *p;
 		FcStrFree (data);
 		data = malloc (1000);
 		if (!data)
@@ -2074,7 +2075,7 @@ FcEndElement(void *userData, const XML_Char *name)
 			FcStrFree (data);
 			break;
 		}
-		char *p = strrchr (data, '\\');
+		p = strrchr (data, '\\');
 		if (p) *p = '\0';
 		strcat (data, "\\fonts");
 	}

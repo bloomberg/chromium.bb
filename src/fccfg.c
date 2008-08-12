@@ -1671,9 +1671,10 @@ FcConfigGetPath (void)
 #ifdef _WIN32
 	if (fontconfig_path[0] == '\0')
 	{
+		char *p;
 		if(!GetModuleFileName(NULL, fontconfig_path, sizeof(fontconfig_path)))
 			goto bail1;
-		char *p = strrchr (fontconfig_path, '\\');
+		p = strrchr (fontconfig_path, '\\');
 		if (p) *p = '\0';
 		strcat (fontconfig_path, "\\fonts");
 	}
