@@ -30,6 +30,57 @@
 
 /* old legacy ATI BIOS routines */
 
+/* COMBIOS table offsets */
+enum radeon_combios_table_offset
+{
+	/* absolute offset tables */
+	COMBIOS_ASIC_INIT_1_TABLE,
+	COMBIOS_BIOS_SUPPORT_TABLE,
+	COMBIOS_DAC_PROGRAMMING_TABLE,
+	COMBIOS_MAX_COLOR_DEPTH_TABLE,
+	COMBIOS_CRTC_INFO_TABLE,
+	COMBIOS_PLL_INFO_TABLE,
+	COMBIOS_TV_INFO_TABLE,
+	COMBIOS_DFP_INFO_TABLE,
+	COMBIOS_HW_CONFIG_INFO_TABLE,
+	COMBIOS_MULTIMEDIA_INFO_TABLE,
+	COMBIOS_TV_STD_PATCH_TABLE,
+	COMBIOS_LCD_INFO_TABLE,
+	COMBIOS_MOBILE_INFO_TABLE,
+	COMBIOS_PLL_INIT_TABLE,
+	COMBIOS_MEM_CONFIG_TABLE,
+	COMBIOS_SAVE_MASK_TABLE,
+	COMBIOS_HARDCODED_EDID_TABLE,
+	COMBIOS_ASIC_INIT_2_TABLE,
+	COMBIOS_CONNECTOR_INFO_TABLE,
+	COMBIOS_DYN_CLK_1_TABLE,
+	COMBIOS_RESERVED_MEM_TABLE,
+	COMBIOS_EXT_TDMS_INFO_TABLE,
+	COMBIOS_MEM_CLK_INFO_TABLE,
+	COMBIOS_EXT_DAC_INFO_TABLE,
+	COMBIOS_MISC_INFO_TABLE,
+	COMBIOS_CRT_INFO_TABLE,
+	COMBIOS_INTEGRATED_SYSTEM_INFO_TABLE,
+	COMBIOS_COMPONENT_VIDEO_INFO_TABLE,
+	COMBIOS_FAN_SPEED_INFO_TABLE,
+	COMBIOS_OVERDRIVE_INFO_TABLE,
+	COMBIOS_OEM_INFO_TABLE,
+	COMBIOS_DYN_CLK_2_TABLE,
+	COMBIOS_POWER_CONNECTOR_INFO_TABLE,
+	COMBIOS_I2C_INFO_TABLE,
+	/* relative offset tables */
+	COMBIOS_ASIC_INIT_3_TABLE,	/* offset from misc info */
+	COMBIOS_ASIC_INIT_4_TABLE,	/* offset from misc info */
+	COMBIOS_ASIC_INIT_5_TABLE,	/* offset from misc info */
+	COMBIOS_RAM_RESET_TABLE,	/* offset from mem config */
+	COMBIOS_POWERPLAY_TABLE,	/* offset from mobile info */
+	COMBIOS_GPIO_INFO_TABLE,	/* offset from mobile info */
+	COMBIOS_LCD_DDC_INFO_TABLE,	/* offset from mobile info */
+	COMBIOS_TMDS_POWER_TABLE,	/* offset from mobile info */
+	COMBIOS_TMDS_POWER_ON_TABLE,	/* offset from tmds power */
+	COMBIOS_TMDS_POWER_OFF_TABLE,	/* offset from tmds power */
+};
+
 enum radeon_combios_ddc
 {
     DDC_NONE_DETECTED,
@@ -52,6 +103,283 @@ enum radeon_combios_connector
     CONNECTOR_STV_LEGACY,
     CONNECTOR_UNSUPPORTED_LEGACY
 };
+
+static uint16_t combios_get_table_offset(struct drm_device *dev, enum radeon_combios_table_offset table)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	int rev;
+	uint16_t offset = 0, check_offset;
+
+	switch (table) {
+	/* absolute offset tables */
+	case COMBIOS_ASIC_INIT_1_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0xc);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_BIOS_SUPPORT_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x14);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_DAC_PROGRAMMING_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x2a);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_MAX_COLOR_DEPTH_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x2c);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_CRTC_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x2e);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_PLL_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x30);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_TV_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x32);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_DFP_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x34);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_HW_CONFIG_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x36);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_MULTIMEDIA_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x38);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_TV_STD_PATCH_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x3e);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_LCD_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x40);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_MOBILE_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x42);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_PLL_INIT_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x46);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_MEM_CONFIG_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x48);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_SAVE_MASK_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x4a);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_HARDCODED_EDID_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x4c);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_ASIC_INIT_2_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x4e);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_CONNECTOR_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x50);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_DYN_CLK_1_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x52);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_RESERVED_MEM_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x54);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_EXT_TDMS_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x58);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_MEM_CLK_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x5a);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_EXT_DAC_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x5c);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_MISC_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x5e);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_CRT_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x60);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_INTEGRATED_SYSTEM_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x62);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_COMPONENT_VIDEO_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x64);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_FAN_SPEED_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x66);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_OVERDRIVE_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x68);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_OEM_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x6a);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_DYN_CLK_2_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x6c);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_POWER_CONNECTOR_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x6e);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	case COMBIOS_I2C_INFO_TABLE:
+		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x70);
+		if (check_offset)
+			offset = check_offset;
+		break;
+	/* relative offset tables */
+	case COMBIOS_ASIC_INIT_3_TABLE:	/* offset from misc info */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MISC_INFO_TABLE);
+		if (check_offset) {
+			rev = radeon_bios8(dev_priv, check_offset);
+			if (rev > 0) {
+				check_offset = radeon_bios16(dev_priv, check_offset + 0x3);
+				if (check_offset)
+					offset = check_offset;
+			}
+		}
+		break;
+	case COMBIOS_ASIC_INIT_4_TABLE:	/* offset from misc info */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MISC_INFO_TABLE);
+		if (check_offset) {
+			rev = radeon_bios8(dev_priv, check_offset);
+			if (rev > 0) {
+				check_offset = radeon_bios16(dev_priv, check_offset + 0x5);
+				if (check_offset)
+					offset = check_offset;
+			}
+		}
+		break;
+	case COMBIOS_ASIC_INIT_5_TABLE:	/* offset from misc info */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MISC_INFO_TABLE);
+		if (check_offset) {
+			rev = radeon_bios8(dev_priv, check_offset);
+			if (rev == 2) {
+				check_offset = radeon_bios16(dev_priv, check_offset + 0x9);
+				if (check_offset)
+					offset = check_offset;
+			}
+		}
+		break;
+	case COMBIOS_RAM_RESET_TABLE:	/* offset from mem config */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MEM_CONFIG_TABLE);
+		if (check_offset) {
+			while (radeon_bios8(dev_priv, check_offset++));
+			check_offset += 2;
+			if (check_offset)
+				offset = check_offset;
+		}
+		break;
+	case COMBIOS_POWERPLAY_TABLE:	/* offset from mobile info */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MOBILE_INFO_TABLE);
+		if (check_offset) {
+			check_offset = radeon_bios16(dev_priv, check_offset + 0x11);
+			if (check_offset)
+				offset = check_offset;
+		}
+		break;
+	case COMBIOS_GPIO_INFO_TABLE:	/* offset from mobile info */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MOBILE_INFO_TABLE);
+		if (check_offset) {
+			check_offset = radeon_bios16(dev_priv, check_offset + 0x13);
+			if (check_offset)
+				offset = check_offset;
+		}
+		break;
+	case COMBIOS_LCD_DDC_INFO_TABLE:	/* offset from mobile info */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MOBILE_INFO_TABLE);
+		if (check_offset) {
+			check_offset = radeon_bios16(dev_priv, check_offset + 0x15);
+			if (check_offset)
+				offset = check_offset;
+		}
+		break;
+	case COMBIOS_TMDS_POWER_TABLE:	        /* offset from mobile info */
+		check_offset = combios_get_table_offset(dev, COMBIOS_MOBILE_INFO_TABLE);
+		if (check_offset) {
+			check_offset = radeon_bios16(dev_priv, check_offset + 0x17);
+			if (check_offset)
+				offset = check_offset;
+		}
+		break;
+	case COMBIOS_TMDS_POWER_ON_TABLE:	/* offset from tmds power */
+		check_offset = combios_get_table_offset(dev, COMBIOS_TMDS_POWER_TABLE);
+		if (check_offset) {
+			check_offset = radeon_bios16(dev_priv, check_offset + 0x2);
+			if (check_offset)
+				offset = check_offset;
+		}
+		break;
+	case COMBIOS_TMDS_POWER_OFF_TABLE:	/* offset from tmds power */
+		check_offset = combios_get_table_offset(dev, COMBIOS_TMDS_POWER_TABLE);
+		if (check_offset) {
+			check_offset = radeon_bios16(dev_priv, check_offset + 0x4);
+			if (check_offset)
+				offset = check_offset;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return offset;
+
+}
 
 struct radeon_i2c_bus_rec combios_setup_i2c_bus(int ddc_line)
 {
@@ -98,125 +426,130 @@ bool radeon_combios_get_clock_info(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
-	uint16_t pll_info_block;
+	uint16_t pll_info;
 	struct radeon_pll *pll = &mode_info->pll;
 	int rev;
 
-	pll_info_block = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x30);
-	rev = radeon_bios8(dev_priv, pll_info_block);
+	pll_info = combios_get_table_offset(dev, COMBIOS_PLL_INFO_TABLE);
+	if (pll_info) {
+		rev = radeon_bios8(dev_priv, pll_info);
 
-	pll->reference_freq = radeon_bios16(dev_priv, pll_info_block + 0xe);
-	pll->reference_div = radeon_bios16(dev_priv, pll_info_block + 0x10);
-	pll->pll_out_min = radeon_bios32(dev_priv, pll_info_block + 0x12);
-	pll->pll_out_max = radeon_bios32(dev_priv, pll_info_block + 0x16);
+		pll->reference_freq = radeon_bios16(dev_priv, pll_info + 0xe);
+		pll->reference_div = radeon_bios16(dev_priv, pll_info + 0x10);
+		pll->pll_out_min = radeon_bios32(dev_priv, pll_info + 0x12);
+		pll->pll_out_max = radeon_bios32(dev_priv, pll_info + 0x16);
 
-	if (rev > 9) {
-		pll->pll_in_min = radeon_bios32(dev_priv, pll_info_block + 0x36);
-		pll->pll_in_max = radeon_bios32(dev_priv, pll_info_block + 0x3a);
-	} else {
-		pll->pll_in_min = 40;
-		pll->pll_in_max = 500;
+		if (rev > 9) {
+			pll->pll_in_min = radeon_bios32(dev_priv, pll_info + 0x36);
+			pll->pll_in_max = radeon_bios32(dev_priv, pll_info + 0x3a);
+		} else {
+			pll->pll_in_min = 40;
+			pll->pll_in_max = 500;
+		}
+
+		pll->xclk = radeon_bios16(dev_priv, pll_info + 0x08);
+
+		// sclk/mclk use fixed point
+
+		return true;
 	}
-
-	pll->xclk = radeon_bios16(dev_priv, pll_info_block + 0x08);
-
-	// sclk/mclk use fixed point
-	
-	return true;
-
+	return false;
 }
 
 bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder)
 {
 	struct drm_device *dev = encoder->base.dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	uint16_t tmp;
+	uint16_t lcd_info;
 	char stmp[30];
-	int tmp0;
-	int i;
+	int tmp, i;
 
-	tmp = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x40);
-	if (!tmp) {
-		DRM_INFO("No panel info found in BIOS\n");
-		return false;
+	lcd_info = combios_get_table_offset(dev, COMBIOS_LCD_INFO_TABLE);
 
-	}
+	if (lcd_info) {
+		for (i = 0; i < 24; i++)
+			stmp[i] = radeon_bios8(dev_priv, lcd_info + i + 1);
+		stmp[24] = 0;
 
-	for (i = 0; i < 24; i++)
-		stmp[i] = radeon_bios8(dev_priv, tmp + i + 1);
-	stmp[24] = 0;
+		DRM_INFO("Panel ID String: %s\n", stmp);
 
-	DRM_INFO("Panel ID String: %s\n", stmp);
+		encoder->panel_xres = radeon_bios16(dev_priv, lcd_info + 25);
+		encoder->panel_yres = radeon_bios16(dev_priv, lcd_info + 27);
 
-	encoder->panel_xres = radeon_bios16(dev_priv, tmp + 25);
-	encoder->panel_yres = radeon_bios16(dev_priv, tmp + 27);
+		DRM_INFO("Panel Size %dx%d\n", encoder->panel_xres, encoder->panel_yres);
 
-	DRM_INFO("Panel Size %dx%d\n", encoder->panel_xres, encoder->panel_yres);
+		encoder->panel_pwr_delay = radeon_bios16(dev_priv, lcd_info + 44);
+		if (encoder->panel_pwr_delay > 2000 || encoder->panel_pwr_delay < 0)
+			encoder->panel_pwr_delay = 2000;
 
-	encoder->panel_pwr_delay = radeon_bios16(dev_priv, tmp + 44);
-	if (encoder->panel_pwr_delay > 2000 || encoder->panel_pwr_delay < 0)
-		encoder->panel_pwr_delay = 2000;
+		for (i = 0; i < 32; i++) {
+			tmp = radeon_bios16(dev_priv, lcd_info + 64 + i * 2);
+			if (tmp == 0) break;
 
-	for (i = 0; i < 32; i++) {
-		tmp0 = radeon_bios16(dev_priv, tmp + 64 + i * 2);
-		if (tmp0 == 0) break;
+			if ((radeon_bios16(dev_priv, tmp) == encoder->panel_xres) &&
+			    (radeon_bios16(dev_priv, tmp + 2) == encoder->panel_yres)) {
+				encoder->hblank = (radeon_bios16(dev_priv, tmp + 17) -
+						   radeon_bios16(dev_priv, tmp + 19)) * 8;
+				encoder->hoverplus = (radeon_bios16(dev_priv, tmp + 21) -
+						      radeon_bios16(dev_priv, tmp + 19) - 1) * 8;
+				encoder->hsync_width = radeon_bios8(dev_priv, tmp + 23) * 8;
 
-		if ((radeon_bios16(dev_priv, tmp0) == encoder->panel_xres) &&
-		    (radeon_bios16(dev_priv, tmp0 + 2) == encoder->panel_yres)) {
-			encoder->hblank = (radeon_bios16(dev_priv, tmp0 + 17) -
-					   radeon_bios16(dev_priv, tmp0 + 19)) * 8;
-			encoder->hoverplus = (radeon_bios16(dev_priv, tmp0 + 21) -
-					      radeon_bios16(dev_priv, tmp0 + 19) - 1) * 8;
-			encoder->hsync_width = radeon_bios8(dev_priv, tmp0 + 23) * 8;
-
-			encoder->vblank = (radeon_bios16(dev_priv, tmp0 + 24) -
-					   radeon_bios16(dev_priv, tmp0 + 26));
-			encoder->voverplus = ((radeon_bios16(dev_priv, tmp0 + 28) & 0x7fff) -
-					      radeon_bios16(dev_priv, tmp0 + 26));
-			encoder->vsync_width = ((radeon_bios16(dev_priv, tmp0 + 28) & 0xf800) >> 11);
-			encoder->dotclock = radeon_bios16(dev_priv, tmp0 + 9) * 10;
-			encoder->flags = 0;
+				encoder->vblank = (radeon_bios16(dev_priv, tmp + 24) -
+						   radeon_bios16(dev_priv, tmp + 26));
+				encoder->voverplus = ((radeon_bios16(dev_priv, tmp + 28) & 0x7fff) -
+						      radeon_bios16(dev_priv, tmp + 26));
+				encoder->vsync_width = ((radeon_bios16(dev_priv, tmp + 28) & 0xf800) >> 11);
+				encoder->dotclock = radeon_bios16(dev_priv, tmp + 9) * 10;
+				encoder->flags = 0;
+			}
 		}
+		return true;
 	}
-	return true;
+	DRM_INFO("No panel info found in BIOS\n");
+	return false;
+
 }
 
 bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder)
 {
 	struct drm_device *dev = encoder->base.dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	uint16_t tmp;
+	uint16_t tmds_info;
 	int i, n;
 	uint8_t ver;
 
-	tmp = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x34);
-	if (!tmp) {
-		DRM_INFO("No TMDS info found in BIOS\n");
-		return false;
+	tmds_info = combios_get_table_offset(dev, COMBIOS_DFP_INFO_TABLE);
+
+	if (tmds_info) {
+		ver = radeon_bios8(dev_priv, tmds_info);
+		DRM_INFO("DFP table revision: %d\n", ver);
+		if (ver == 3) {
+			n = radeon_bios8(dev_priv, tmds_info + 5) + 1;
+			if (n > 4)
+				n = 4;
+			for (i = 0; i < n; i++) {
+				encoder->tmds_pll[i].value = radeon_bios32(dev_priv, tmds_info + i * 10 + 0x08);
+				encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmds_info + i * 10 + 0x10);
+			}
+			return true;
+		} else if (ver == 4) {
+			int stride = 0;
+			n = radeon_bios8(dev_priv, tmds_info + 5) + 1;
+			if (n > 4)
+				n = 4;
+			for (i = 0; i < n; i++) {
+				encoder->tmds_pll[i].value = radeon_bios32(dev_priv, tmds_info + stride + 0x08);
+				encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmds_info + stride + 0x10);
+				if (i == 0)
+					stride += 10;
+				else
+					stride += 6;
+			}
+			return true;
+		}
 	}
 
-	ver = radeon_bios8(dev_priv, tmp);
-	DRM_INFO("DFP table revision: %d\n", ver);
-	if (ver == 3) {
-		n = radeon_bios8(dev_priv, tmp + 5) + 1;
-		if (n > 4) n = 4;
-		for (i = 0; i < n; i++) {
-			encoder->tmds_pll[i].value = radeon_bios32(dev_priv, tmp+i*10+0x08);
-			encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmp+i*10+0x10);
-		}
-		return true;
-	} else if (ver == 4) {
-		int stride = 0;
-		n = radeon_bios8(dev_priv, tmp + 5) + 1;
-		if (n > 4) n = 4;
-		for (i = 0; i < n; i++) {
-			encoder->tmds_pll[i].value = radeon_bios32(dev_priv, tmp+stride+0x08);
-			encoder->tmds_pll[i].freq = radeon_bios16(dev_priv, tmp+stride+0x10);
-			if (i == 0) stride += 10;
-			else stride += 6;
-		}
-		return true;
-	}
+	DRM_INFO("No TMDS info found in BIOS\n");
 	return false;
 }
 
@@ -262,17 +595,17 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
-	uint32_t offset, entry;
-	uint16_t tmp0, tmp1, tmp;
-	enum radeon_combios_ddc ddctype;
+	uint32_t conn_info, entry;
+	uint16_t tmp;
+	enum radeon_combios_ddc ddc_type;
 	enum radeon_combios_connector connector_type;
 	int i;
 
 	DRM_DEBUG("\n");
-	offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x50);
-	if (offset) {
+	conn_info = combios_get_table_offset(dev, COMBIOS_CONNECTOR_INFO_TABLE);
+	if (conn_info) {
 		for (i = 0; i < 4; i++) {
-			entry = offset + 2 + i * 2;
+			entry = conn_info + 2 + i * 2;
 
 			if (!radeon_bios16(dev_priv, entry))
 				    break;
@@ -311,8 +644,8 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 
 			mode_info->bios_connector[i].ddc_i2c.valid = false;
 
-			ddctype = (tmp >> 8) & 0xf;
-			switch (ddctype) {
+			ddc_type = (tmp >> 8) & 0xf;
+			switch (ddc_type) {
 			case DDC_MONID:
 				mode_info->bios_connector[i].ddc_i2c = combios_setup_i2c_bus(RADEON_GPIO_MONID);
 				break;
@@ -347,9 +680,8 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 			radeon_apply_legacy_quirks(dev, i);
 		}
 	} else {
-		DRM_INFO("no connector table found in BIOS\n");
-		offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x34);
-		if (offset) {
+		uint16_t tmds_info = combios_get_table_offset(dev, COMBIOS_DFP_INFO_TABLE);
+		if (tmds_info) {
 			DRM_DEBUG("Found DFP table, assuming DVI connector\n");
 
 			mode_info->bios_connector[0].valid = true;
@@ -358,44 +690,107 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 			mode_info->bios_connector[0].tmds_type = TMDS_INT;
 			mode_info->bios_connector[0].ddc_i2c = combios_setup_i2c_bus(RADEON_GPIO_DVI_DDC);
 		} else {
-			DRM_DEBUG("No table found\n");
+			DRM_DEBUG("No connector info found\n");
 			return false;
 		}
 	}
 
-	if (dev_priv->flags & RADEON_IS_MOBILITY) {
-		offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x40);
-		if (offset) {
+	if (dev_priv->flags & RADEON_IS_MOBILITY ||
+	    dev_priv->chip_family == CHIP_RS400 ||
+	    dev_priv->chip_family == CHIP_RS480) {
+		uint16_t lcd_info = combios_get_table_offset(dev, COMBIOS_LCD_INFO_TABLE);
+		if (lcd_info) {
+			uint16_t lcd_ddc_info = lcd_ddc_info = combios_get_table_offset(dev, COMBIOS_LCD_DDC_INFO_TABLE);
+
 			mode_info->bios_connector[4].valid = true;
 			mode_info->bios_connector[4].connector_type = CONNECTOR_LVDS;
 			mode_info->bios_connector[4].dac_type = DAC_NONE;
 			mode_info->bios_connector[4].tmds_type = TMDS_NONE;
 			mode_info->bios_connector[4].ddc_i2c.valid = false;
 
-			tmp = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x42);
-			if (tmp) {
-				tmp0 = radeon_bios16(dev_priv, tmp + 0x15);
-				if (tmp0) {
-					tmp1 = radeon_bios8(dev_priv, tmp0 + 2) & 0x07;
-					if (tmp1) {
-						ddctype = tmp1;
-
-						switch(ddctype) {
-						case DDC_MONID:
-						case DDC_DVI:
-						case DDC_CRT2:
-						case DDC_LCD:
-						case DDC_GPIO:
-						default:
-							break;
-						}
-						DRM_DEBUG("LCD DDC Info Table found!\n");
-					}
+			if (lcd_ddc_info) {
+				ddc_type = radeon_bios8(dev_priv, lcd_ddc_info + 2);
+				switch(ddc_type) {
+				case DDC_MONID:
+					mode_info->bios_connector[4].ddc_i2c =
+						combios_setup_i2c_bus(RADEON_GPIO_MONID);
+					break;
+				case DDC_DVI:
+					mode_info->bios_connector[4].ddc_i2c =
+						combios_setup_i2c_bus(RADEON_GPIO_DVI_DDC);
+					break;
+				case DDC_VGA:
+					mode_info->bios_connector[4].ddc_i2c =
+						combios_setup_i2c_bus(RADEON_GPIO_VGA_DDC);
+					break;
+				case DDC_CRT2:
+					mode_info->bios_connector[4].ddc_i2c =
+						combios_setup_i2c_bus(RADEON_GPIO_CRT2_DDC);
+					break;
+				case DDC_LCD:
+					mode_info->bios_connector[4].ddc_i2c =
+						combios_setup_i2c_bus(RADEON_LCD_GPIO_MASK);
+					mode_info->bios_connector[4].ddc_i2c.mask_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.mask_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					mode_info->bios_connector[4].ddc_i2c.a_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.a_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					mode_info->bios_connector[4].ddc_i2c.put_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.put_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					mode_info->bios_connector[4].ddc_i2c.get_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.get_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					break;
+				case DDC_GPIO:
+					mode_info->bios_connector[4].ddc_i2c =
+						combios_setup_i2c_bus(RADEON_MDGPIO_EN_REG);
+					mode_info->bios_connector[4].ddc_i2c.mask_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.mask_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					mode_info->bios_connector[4].ddc_i2c.a_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.a_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					mode_info->bios_connector[4].ddc_i2c.put_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.put_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					mode_info->bios_connector[4].ddc_i2c.get_clk_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 3);
+					mode_info->bios_connector[4].ddc_i2c.get_data_mask =
+						radeon_bios32(dev_priv, lcd_ddc_info + 7);
+					break;
+				default:
+					break;
 				}
-			} else
-				mode_info->bios_connector[4].ddc_i2c.valid = false;
+				DRM_DEBUG("LCD DDC Info Table found!\n");
+			}
+		} else
+			mode_info->bios_connector[4].ddc_i2c.valid = false;
+	}
+
+	/* check TV table */
+	if (dev_priv->chip_family != CHIP_R100 &&
+	    dev_priv->chip_family != CHIP_R200) {
+		uint32_t tv_info = combios_get_table_offset(dev, COMBIOS_TV_INFO_TABLE);
+		if (tv_info) {
+			if (radeon_bios8(dev_priv, tv_info + 6) == 'T') {
+				mode_info->bios_connector[5].valid = true;
+				mode_info->bios_connector[5].connector_type = CONNECTOR_DIN;
+				mode_info->bios_connector[5].dac_type = DAC_TVDAC;
+				mode_info->bios_connector[5].tmds_type = TMDS_NONE;
+				mode_info->bios_connector[5].ddc_i2c.valid = false;
+			}
 		}
 	}
+
 
 	DRM_DEBUG("BIOS Connector table\n");
 	for (i = 0; i < ATOM_MAX_SUPPORTED_DEVICE; i++) {
