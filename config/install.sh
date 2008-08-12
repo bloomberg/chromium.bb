@@ -1,6 +1,6 @@
 #! /bin/sh
 #
-# $RCSId: $
+# fontconfig/config/install.sh
 #
 # install - install a program, script, or datafile
 # This comes from X11R5.

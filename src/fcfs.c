@@ -1,5 +1,5 @@
 /*
- * $RCSId: $
+ * fontconfig/src/fcfs.c
  *
  * Copyright © 2000 Keith Packard
  *

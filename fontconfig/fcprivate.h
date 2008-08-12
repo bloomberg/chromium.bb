@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/fontconfig/fcprivate.h,v 1.5 2002/08/19 19:32:04 keithp Exp $
+ * fontconfig/fontconfig/fcprivate.h
  *
  * Copyright © 2001 Keith Packard
  *

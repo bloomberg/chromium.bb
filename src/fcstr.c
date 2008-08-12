@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/src/fcstr.c,v 1.10 2002/08/31 22:17:32 keithp Exp $
+ * fontconfig/src/fcstr.c
  *
  * Copyright © 2000 Keith Packard
  *

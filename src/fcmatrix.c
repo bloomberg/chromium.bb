@@ -1,5 +1,5 @@
 /*
- * $RCSId: $
+ * fontconfig/src/fcmatrix.c
  *
  * Copyright © 2000 Tuomas J. Lukka
  *

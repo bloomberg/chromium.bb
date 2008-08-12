@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/src/fcfreetype.c,v 1.11 2002/08/31 22:17:32 keithp Exp $
+ * fontconfig/src/fcfreetype.c
  *
  * Copyright © 2001 Keith Packard
  *

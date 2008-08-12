@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/src/fclist.c,v 1.11tsi Exp $
+ * fontconfig/src/fclist.c
  *
  * Copyright © 2000 Keith Packard
  *

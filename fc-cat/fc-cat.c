@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/fc-cache/fc-cache.c,v 1.8tsi Exp $
+ * fontconfig/fc-cat/fc-cat.c
  *
  * Copyright © 2002 Keith Packard
  *

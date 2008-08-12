@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/src/fcdir.c,v 1.9 2002/08/31 22:17:32 keithp Exp $
+ * fontconfig/src/fcdir.c
  *
  * Copyright © 2000 Keith Packard
  *

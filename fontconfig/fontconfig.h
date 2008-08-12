@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/fontconfig/fontconfig.h,v 1.30 2002/09/26 00:17:27 keithp Exp $
+ * fontconfig/fontconfig/fontconfig.h
  *
  * Copyright © 2001 Keith Packard
  *

@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/src/fcmatch.c,v 1.20 2002/08/31 22:17:32 keithp Exp $
+ * fontconfig/src/fcmatch.c
  *
  * Copyright © 2000 Keith Packard
  *

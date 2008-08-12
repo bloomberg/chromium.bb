@@ -1,5 +1,5 @@
 /*
- * $RCSId:$
+ * fontconfig/src/fcblanks.c
  *
  * Copyright © 2002 Keith Packard
  *

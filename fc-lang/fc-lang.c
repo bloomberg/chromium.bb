@@ -1,5 +1,5 @@
 /*
- * $RCSId: xc/lib/fontconfig/fc-lang/fc-lang.c,v 1.3 2002/08/22 07:36:43 keithp Exp $
+ * fontconfig/fc-lang/fc-lang.c
  *
  * Copyright © 2002 Keith Packard
  *
