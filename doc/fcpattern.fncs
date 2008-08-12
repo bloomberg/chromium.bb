@@ -245,14 +245,16 @@ within the pattern directly.  Applications must not free this value.
 @FUNC++++++@	FcPatternGetFTFace
 @TYPE1++++++@ 	FcPattern * 			@ARG1++++++@ 	p
 @TYPE2++++++@	const char *			@ARG2++++++@	object
-@TYPE3++++++@	const FT_Face *			@ARG3++++++@	f
+@TYPE3+++++@ 	int%  				@ARG3+++++@ 	n
+@TYPE3++++++@	FT_Face *			@ARG3++++++@	f
 
 @PROTOTYPE+++++++@
 @RET+++++++@	FcBool
 @FUNC+++++++@	FcPatternGetLangSet
 @TYPE1+++++++@ 	FcPattern * 			@ARG1+++++++@ 	p
 @TYPE2+++++++@	const char *			@ARG2+++++++@	object
-@TYPE3+++++++@	const FcLangSet **		@ARG3+++++++@	l
+@TYPE3+++++@ 	int%  				@ARG3+++++@ 	n
+@TYPE3+++++++@	FcLangSet **			@ARG3+++++++@	l
 
 @PURPOSE@	Return a typed value from a pattern
 @DESC@
