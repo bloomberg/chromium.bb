@@ -173,7 +173,6 @@ void radeon_crtc_dpms(struct drm_crtc *crtc, int mode)
 
 static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 {
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_framebuffer *radeon_fb;
@@ -267,7 +266,6 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 
 static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mode *mode)
 {
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	int format;
@@ -399,7 +397,6 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 
 static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode, int flags)
 {
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t feedback_div = 0;
@@ -583,7 +580,6 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
 
 static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 {
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_framebuffer *radeon_fb;
@@ -675,7 +671,6 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 
 static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mode *mode)
 {
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	int format;
@@ -790,7 +785,6 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
 
 static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode, int flags)
 {
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t feedback_div = 0;
@@ -953,15 +947,12 @@ static void radeon_crtc_mode_set(struct drm_crtc *crtc,
 {
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct drm_encoder *encoder;
 	int pll_flags = RADEON_PLL_LEGACY | RADEON_PLL_PREFER_LOW_REF_DIV;
-	int i;
 
 	DRM_DEBUG("\n");
 
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
-		struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 
 		if (encoder->crtc == crtc) {
 			if (encoder->encoder_type != DRM_MODE_ENCODER_DAC)

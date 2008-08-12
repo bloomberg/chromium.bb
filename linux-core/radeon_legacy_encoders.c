@@ -35,7 +35,6 @@ static void radeon_legacy_rmx_mode_set(struct drm_encoder *encoder,
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	int    xres = mode->hdisplay;
 	int    yres = mode->vdisplay;
@@ -207,6 +206,7 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 		disp_pwr_man = RADEON_READ(RADEON_DISP_PWR_MAN);
 		disp_pwr_man |= RADEON_AUTO_PWRUP_EN;
 		RADEON_WRITE(RADEON_DISP_PWR_MAN, disp_pwr_man);
+		lvds_pll_cntl = RADEON_READ(RADEON_LVDS_PLL_CNTL);
 		lvds_pll_cntl |= RADEON_LVDS_PLL_EN;
 		RADEON_WRITE(RADEON_LVDS_PLL_CNTL, lvds_pll_cntl);
 		udelay(1000);
@@ -320,8 +320,6 @@ static const struct drm_encoder_funcs radeon_legacy_lvds_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int bios_index)
 {
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -454,10 +452,7 @@ static void radeon_legacy_primary_dac_mode_set(struct drm_encoder *encoder,
 
 static enum drm_connector_status radeon_legacy_primary_dac_detect(struct drm_encoder *encoder, struct drm_connector *connector)
 {
-	struct drm_device *dev = encoder->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-
+	// FIXME
 	return connector_status_disconnected;
 
 }
@@ -478,8 +473,6 @@ static const struct drm_encoder_funcs radeon_legacy_primary_dac_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev, int bios_index, int has_tv)
 {
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -507,8 +500,8 @@ struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev
 
 
 static bool radeon_legacy_tmds_int_mode_fixup(struct drm_encoder *encoder,
-						 struct drm_display_mode *mode,
-						 struct drm_display_mode *adjusted_mode)
+					      struct drm_display_mode *mode,
+					      struct drm_display_mode *adjusted_mode)
 {
 	return true;
 }
@@ -646,8 +639,6 @@ static const struct drm_encoder_funcs radeon_legacy_tmds_int_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_tmds_int_add(struct drm_device *dev, int bios_index)
 {
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -784,8 +775,6 @@ static const struct drm_encoder_funcs radeon_legacy_tmds_ext_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_tmds_ext_add(struct drm_device *dev, int bios_index)
 {
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -820,7 +809,8 @@ static void radeon_legacy_tv_dac_dpms(struct drm_encoder *encoder, int mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	uint32_t fp2_gen_cntl, crtc2_gen_cntl, tv_master_cntl, tv_dac_cntl;
+	uint32_t fp2_gen_cntl = 0, crtc2_gen_cntl = 0, tv_dac_cntl = 0;
+	//uint32_t tv_master_cntl = 0;
 
 	DRM_DEBUG("\n");
 
@@ -903,9 +893,8 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
-	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-	uint32_t tv_dac_cntl, gpiopad_a, dac2_cntl, disp_output_cntl, fp2_gen_cntl;
-	uint32_t disp_hw_debug;
+	uint32_t tv_dac_cntl, gpiopad_a = 0, dac2_cntl, disp_output_cntl = 0;
+	uint32_t disp_hw_debug = 0, fp2_gen_cntl = 0;
 
 	DRM_DEBUG("\n");
 
@@ -986,10 +975,7 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 
 static enum drm_connector_status radeon_legacy_tv_dac_detect(struct drm_encoder *encoder, struct drm_connector *connector)
 {
-	struct drm_device *dev = encoder->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-
+	// FIXME
 	return connector_status_disconnected;
 
 }
@@ -1010,8 +996,6 @@ static const struct drm_encoder_funcs radeon_legacy_tv_dac_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_tv_dac_add(struct drm_device *dev, int bios_index, int has_tv)
 {
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
