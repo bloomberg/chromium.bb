@@ -917,6 +917,21 @@ static bool radeon_crtc_mode_fixup(struct drm_crtc *crtc,
 	return true;
 }
 
+void radeon_crtc_set_base(struct drm_crtc *crtc, int x, int y)
+{
+	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+
+	switch(radeon_crtc->crtc_id) {
+	case 0:
+		radeon_set_crtc1_base(crtc, x, y);
+		break;
+	case 1:
+		radeon_set_crtc2_base(crtc, x, y);
+		break;
+
+	}
+}
+
 static void radeon_crtc_mode_set(struct drm_crtc *crtc,
 				 struct drm_display_mode *mode,
 				 struct drm_display_mode *adjusted_mode,
@@ -942,6 +957,8 @@ static void radeon_crtc_mode_set(struct drm_crtc *crtc,
 
 	/* TODO TV */
 
+	radeon_crtc_set_base(crtc, x, y);
+
 	switch(radeon_crtc->crtc_id) {
 	case 0:
 		radeon_set_crtc1_timing(crtc, adjusted_mode);
@@ -950,21 +967,6 @@ static void radeon_crtc_mode_set(struct drm_crtc *crtc,
 	case 1:
 		radeon_set_crtc2_timing(crtc, adjusted_mode);
 		radeon_set_pll2(crtc, adjusted_mode, pll_flags);
-		break;
-
-	}
-}
-
-void radeon_crtc_set_base(struct drm_crtc *crtc, int x, int y)
-{
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
-
-	switch(radeon_crtc->crtc_id) {
-	case 0:
-		radeon_set_crtc1_base(crtc, x, y);
-		break;
-	case 1:
-		radeon_set_crtc2_base(crtc, x, y);
 		break;
 
 	}
