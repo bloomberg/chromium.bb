@@ -558,16 +558,31 @@ static void radeon_apply_legacy_quirks(struct drm_device *dev, int bios_index)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 
-	/* on XPRESS chips, CRT2_DDC and MONID_DCC both use the
-	 * MONID gpio, but use different pins.
-	 * CRT2_DDC uses the standard pinout, MONID_DDC uses
-	 * something else.
-	 */
+	/* XPRESS DDC quirks */
 	if ((dev_priv->chip_family == CHIP_RS400 ||
 	     dev_priv->chip_family == CHIP_RS480) &&
-	    mode_info->bios_connector[bios_index].connector_type == CONNECTOR_VGA &&
 	    mode_info->bios_connector[bios_index].ddc_i2c.mask_clk_reg == RADEON_GPIO_CRT2_DDC) {
 		mode_info->bios_connector[bios_index].ddc_i2c = combios_setup_i2c_bus(RADEON_GPIO_MONID);
+	} else if ((dev_priv->chip_family == CHIP_RS400 ||
+		    dev_priv->chip_family == CHIP_RS480) &&
+		   mode_info->bios_connector[bios_index].ddc_i2c.mask_clk_reg == RADEON_GPIO_MONID) {
+		mode_info->bios_connector[bios_index].ddc_i2c.valid = true;
+		mode_info->bios_connector[bios_index].ddc_i2c.mask_clk_mask = (0x20 << 8);
+		mode_info->bios_connector[bios_index].ddc_i2c.mask_data_mask = 0x80;
+		mode_info->bios_connector[bios_index].ddc_i2c.a_clk_mask = (0x20 << 8);
+		mode_info->bios_connector[bios_index].ddc_i2c.a_data_mask = 0x80;
+		mode_info->bios_connector[bios_index].ddc_i2c.put_clk_mask = (0x20 << 8);
+		mode_info->bios_connector[bios_index].ddc_i2c.put_data_mask = 0x80;
+		mode_info->bios_connector[bios_index].ddc_i2c.get_clk_mask = (0x20 << 8);
+		mode_info->bios_connector[bios_index].ddc_i2c.get_data_mask = 0x80;
+		mode_info->bios_connector[bios_index].ddc_i2c.mask_clk_reg = RADEON_GPIOPAD_MASK;
+		mode_info->bios_connector[bios_index].ddc_i2c.mask_data_reg = RADEON_GPIOPAD_MASK;
+		mode_info->bios_connector[bios_index].ddc_i2c.a_clk_reg = RADEON_GPIOPAD_A;
+		mode_info->bios_connector[bios_index].ddc_i2c.a_data_reg = RADEON_GPIOPAD_A;
+		mode_info->bios_connector[bios_index].ddc_i2c.put_clk_reg = RADEON_GPIOPAD_EN;
+		mode_info->bios_connector[bios_index].ddc_i2c.put_data_reg = RADEON_GPIOPAD_EN;
+		mode_info->bios_connector[bios_index].ddc_i2c.get_clk_reg = RADEON_LCD_GPIO_Y_REG;
+		mode_info->bios_connector[bios_index].ddc_i2c.get_data_reg = RADEON_LCD_GPIO_Y_REG;
 	}
 
 	/* Certain IBM chipset RN50s have a BIOS reporting two VGAs,
@@ -587,6 +602,15 @@ static void radeon_apply_legacy_quirks(struct drm_device *dev, int bios_index)
 		if (mode_info->bios_connector[bios_index].connector_type == CONNECTOR_DVI_I)
 			mode_info->bios_connector[bios_index].connector_type = CONNECTOR_VGA;
 
+	}
+
+	/* X300 card with extra non-existent DVI port */
+	if (dev->pdev->device == 0x5B60 &&
+	    dev->pdev->subsystem_vendor == 0x17af &&
+	    dev->pdev->subsystem_device == 0x201e &&
+	    bios_index == 2) {
+		if (mode_info->bios_connector[bios_index].connector_type == CONNECTOR_DVI_I)
+			mode_info->bios_connector[bios_index].valid = false;
 	}
 
 }
