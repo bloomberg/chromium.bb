@@ -287,7 +287,7 @@ The FcFontSet returned by FcFontSort is destroyed by caling FcFontSetDestroy.
 Creates a new pattern consisting of elements of <parameter>font</parameter> not appearing
 in <parameter>pat</parameter>, elements of <parameter>pat</parameter> not appearing in <parameter>font</parameter> and the best matching
 value from <parameter>pat</parameter> for elements appearing in both.  The result is passed to
-FcConfigSubstitute with <parameter>kind</parameter> FcMatchFont and then returned.
+FcConfigSubstituteWithPat with <parameter>kind</parameter> FcMatchFont and then returned.
 @@
 
 @RET@           FcFontSet *
