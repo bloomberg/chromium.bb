@@ -902,6 +902,9 @@ FcStrCanonAbsoluteFilename (const FcChar8 *s)
 	    if (slash)
 	    {
 		switch (s - slash) {
+		case 1:
+		    f -= 1;	/* squash // and trim final / from file */
+		    break;
 		case 2:
 		    if (!strncmp ((char *) slash, "/.", 2))
 		    {
