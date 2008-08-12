@@ -47,6 +47,7 @@ static void radeon_legacy_rmx_mode_set(struct drm_encoder *encoder,
 	uint32_t fp_horz_stretch, fp_vert_stretch, crtc_more_cntl, fp_horz_vert_active;
 	uint32_t fp_h_sync_strt_wid, fp_v_sync_strt_wid, fp_crtc_h_total_disp, fp_crtc_v_total_disp;
 
+	DRM_DEBUG("\n");
 
 	fp_vert_stretch = RADEON_READ(RADEON_FP_VERT_STRETCH) &
 		(RADEON_VERT_STRETCH_RESERVED |
@@ -199,7 +200,9 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	uint32_t lvds_gen_cntl, lvds_pll_cntl, pixclks_cntl, disp_pwr_man;
 
-	switch(mode) {
+	DRM_DEBUG("\n");
+
+	switch (mode) {
 	case DRM_MODE_DPMS_ON:
 		disp_pwr_man = RADEON_READ(RADEON_DISP_PWR_MAN);
 		disp_pwr_man |= RADEON_AUTO_PWRUP_EN;
@@ -249,6 +252,8 @@ static void radeon_legacy_lvds_mode_set(struct drm_encoder *encoder,
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	uint32_t lvds_pll_cntl, lvds_gen_cntl;
+
+	DRM_DEBUG("\n");
 
 	if (radeon_crtc->crtc_id == 0)
 		radeon_legacy_rmx_mode_set(encoder, mode, adjusted_mode);
@@ -319,6 +324,9 @@ struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int b
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
+
+	DRM_DEBUG("\n");
+
 	radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
 	if (!radeon_encoder) {
 		return NULL;
@@ -357,6 +365,8 @@ static void radeon_legacy_primary_dac_dpms(struct drm_encoder *encoder, int mode
 	uint32_t crtc_ext_cntl = RADEON_READ(RADEON_CRTC_EXT_CNTL);
 	uint32_t dac_cntl = RADEON_READ(RADEON_DAC_CNTL);
 	uint32_t dac_macro_cntl = RADEON_READ(RADEON_DAC_MACRO_CNTL);
+
+	DRM_DEBUG("\n");
 
 	switch(mode) {
 	case DRM_MODE_DPMS_ON:
@@ -401,6 +411,8 @@ static void radeon_legacy_primary_dac_mode_set(struct drm_encoder *encoder,
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
 	uint32_t disp_output_cntl, dac_cntl, dac2_cntl, dac_macro_cntl;
+
+	DRM_DEBUG("\n");
 
 	if (radeon_crtc->crtc_id == 0)
 		radeon_legacy_rmx_mode_set(encoder, mode, adjusted_mode);
@@ -470,6 +482,9 @@ struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
+
+	DRM_DEBUG("\n");
+
 	radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
 	if (!radeon_encoder) {
 		return NULL;
@@ -503,6 +518,8 @@ static void radeon_legacy_tmds_int_dpms(struct drm_encoder *encoder, int mode)
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t fp_gen_cntl = RADEON_READ(RADEON_FP_GEN_CNTL);
+
+	DRM_DEBUG("\n");
 
 	switch(mode) {
 	case DRM_MODE_DPMS_ON:
@@ -538,6 +555,8 @@ static void radeon_legacy_tmds_int_mode_set(struct drm_encoder *encoder,
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	uint32_t tmp, tmds_pll_cntl, tmds_transmitter_cntl, fp_gen_cntl;
 	int i;
+
+	DRM_DEBUG("\n");
 
 	if (radeon_crtc->crtc_id == 0)
 		radeon_legacy_rmx_mode_set(encoder, mode, adjusted_mode);
@@ -631,6 +650,9 @@ struct drm_encoder *radeon_encoder_legacy_tmds_int_add(struct drm_device *dev, i
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
+
+	DRM_DEBUG("\n");
+
 	radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
 	if (!radeon_encoder) {
 		return NULL;
@@ -661,6 +683,8 @@ static void radeon_legacy_tmds_ext_dpms(struct drm_encoder *encoder, int mode)
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);
+
+	DRM_DEBUG("\n");
 
 	switch(mode) {
 	case DRM_MODE_DPMS_ON:
@@ -697,6 +721,8 @@ static void radeon_legacy_tmds_ext_mode_set(struct drm_encoder *encoder,
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	uint32_t fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);
+
+	DRM_DEBUG("\n");
 
 	if (radeon_crtc->crtc_id == 0)
 		radeon_legacy_rmx_mode_set(encoder, mode, adjusted_mode);
@@ -762,6 +788,9 @@ struct drm_encoder *radeon_encoder_legacy_tmds_ext_add(struct drm_device *dev, i
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
+
+	DRM_DEBUG("\n");
+
 	radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
 	if (!radeon_encoder) {
 		return NULL;
@@ -792,6 +821,8 @@ static void radeon_legacy_tv_dac_dpms(struct drm_encoder *encoder, int mode)
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	uint32_t fp2_gen_cntl, crtc2_gen_cntl, tv_master_cntl, tv_dac_cntl;
+
+	DRM_DEBUG("\n");
 
 	if (dev_priv->chip_family == CHIP_R200)
 		fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);
@@ -875,6 +906,8 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	uint32_t tv_dac_cntl, gpiopad_a, dac2_cntl, disp_output_cntl, fp2_gen_cntl;
 	uint32_t disp_hw_debug;
+
+	DRM_DEBUG("\n");
 
 	if (radeon_crtc->crtc_id == 0)
 		radeon_legacy_rmx_mode_set(encoder, mode, adjusted_mode);
@@ -981,6 +1014,9 @@ struct drm_encoder *radeon_encoder_legacy_tv_dac_add(struct drm_device *dev, int
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
+
+	DRM_DEBUG("\n");
+
 	radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
 	if (!radeon_encoder) {
 		return NULL;

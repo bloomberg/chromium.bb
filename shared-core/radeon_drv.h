@@ -1283,7 +1283,7 @@ extern void RADEON_WRITE_PLL(struct drm_radeon_private *dev_priv, int addr, uint
 #define RADEON_WRITE_P(reg, val, mask)		\
 do {						\
 	uint32_t tmp = RADEON_READ(reg);	\
-	tmp &= ~(mask);				\
+	tmp &= (mask);				\
 	tmp |= ((val) & ~(mask));		\
 	RADEON_WRITE(reg, tmp);			\
 } while(0)

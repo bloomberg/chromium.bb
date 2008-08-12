@@ -123,8 +123,9 @@ void radeon_crtc_dpms(struct drm_crtc *crtc, int mode)
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-
 	uint32_t mask;
+
+	DRM_DEBUG("\n");
 
 	mask = radeon_crtc->crtc_id ?
 		(RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_VSYNC_DIS | RADEON_CRTC2_HSYNC_DIS | RADEON_CRTC2_DISP_REQ_EN_B) :
@@ -132,33 +133,33 @@ void radeon_crtc_dpms(struct drm_crtc *crtc, int mode)
 
 	switch(mode) {
 	case DRM_MODE_DPMS_ON:
-		if (radeon_crtc->crtc_id) {
+		if (radeon_crtc->crtc_id)
 			RADEON_WRITE_P(RADEON_CRTC2_GEN_CNTL, 0, ~mask);
-		} else {
+		else {
 			RADEON_WRITE_P(RADEON_CRTC_GEN_CNTL, 0, ~RADEON_CRTC_DISP_REQ_EN_B);
 			RADEON_WRITE_P(RADEON_CRTC_EXT_CNTL, 0, ~mask);
 		}
 		break;
 	case DRM_MODE_DPMS_STANDBY:
-		if (radeon_crtc->crtc_id) {
+		if (radeon_crtc->crtc_id)
 			RADEON_WRITE_P(RADEON_CRTC2_GEN_CNTL, (RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_HSYNC_DIS), ~mask);
-		} else {
+		else {
 			RADEON_WRITE_P(RADEON_CRTC_GEN_CNTL, 0, ~RADEON_CRTC_DISP_REQ_EN_B);
 			RADEON_WRITE_P(RADEON_CRTC_EXT_CNTL, (RADEON_CRTC_DISPLAY_DIS | RADEON_CRTC_HSYNC_DIS), ~mask);
 		}
 		break;
 	case DRM_MODE_DPMS_SUSPEND:
-		if (radeon_crtc->crtc_id) {
+		if (radeon_crtc->crtc_id)
 			RADEON_WRITE_P(RADEON_CRTC2_GEN_CNTL, (RADEON_CRTC2_DISP_DIS | RADEON_CRTC2_VSYNC_DIS), ~mask);
-		} else {
+		else {
 			RADEON_WRITE_P(RADEON_CRTC_GEN_CNTL, 0, ~RADEON_CRTC_DISP_REQ_EN_B);
 			RADEON_WRITE_P(RADEON_CRTC_EXT_CNTL, (RADEON_CRTC_DISPLAY_DIS | RADEON_CRTC_VSYNC_DIS), ~mask);
 		}
 		break;
 	case DRM_MODE_DPMS_OFF:
-		if (radeon_crtc->crtc_id) {
+		if (radeon_crtc->crtc_id)
 			RADEON_WRITE_P(RADEON_CRTC2_GEN_CNTL, mask, ~mask);
-		} else {
+		else {
 			RADEON_WRITE_P(RADEON_CRTC_GEN_CNTL, RADEON_CRTC_DISP_REQ_EN_B, ~RADEON_CRTC_DISP_REQ_EN_B);
 			RADEON_WRITE_P(RADEON_CRTC_EXT_CNTL, mask, ~mask);
 		}
@@ -179,6 +180,9 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_radeon_gem_object *obj_priv;
 	uint32_t base;
 	uint32_t crtc_offset, crtc_offset_cntl, crtc_tile_x0_y0 = 0;
+	uint32_t crtc_pitch;
+
+	DRM_DEBUG("\n");
 
 	radeon_fb = to_radeon_framebuffer(crtc->fb);
 
@@ -243,11 +247,20 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 
 	crtc_offset = base;
 
+	crtc_pitch  = ((((crtc->fb->pitch / (crtc->fb->bits_per_pixel / 8)) * crtc->fb->bits_per_pixel) +
+			((crtc->fb->bits_per_pixel * 8) - 1)) /
+		       (crtc->fb->bits_per_pixel * 8));
+	crtc_pitch |= crtc_pitch << 16;
+
+	DRM_DEBUG("mc_fb_location: 0x%x\n", dev_priv->fb_location);
+
+	RADEON_WRITE(RADEON_DISPLAY_BASE_ADDR, dev_priv->fb_location);
+
 	if (radeon_is_r300(dev_priv))
 		RADEON_WRITE(R300_CRTC_TILE_X0_Y0, crtc_tile_x0_y0);
-
 	RADEON_WRITE(RADEON_CRTC_OFFSET_CNTL, crtc_offset_cntl);
 	RADEON_WRITE(RADEON_CRTC_OFFSET, crtc_offset);
+	RADEON_WRITE(RADEON_CRTC_PITCH, crtc_pitch);
 
 	return true;
 }
@@ -267,10 +280,11 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 	uint32_t crtc_h_sync_strt_wid;
 	uint32_t crtc_v_total_disp;
 	uint32_t crtc_v_sync_strt_wid;
-	uint32_t crtc_pitch;
 	uint32_t disp_merge_cntl;
 
-	switch (crtc->fb->depth) {
+	DRM_DEBUG("\n");
+
+	switch (crtc->fb->bits_per_pixel) {
 		
 	case 15:      /*  555 */
 		format = 3;
@@ -302,7 +316,7 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 			    : 0));
 
 	crtc_ext_cntl = RADEON_READ(RADEON_CRTC_EXT_CNTL);
-	crtc_ext_cntl |= (RADEON_XCRT_CNT_EN|
+	crtc_ext_cntl |= (RADEON_XCRT_CNT_EN |
 			  RADEON_CRTC_VSYNC_DIS |
 			  RADEON_CRTC_HSYNC_DIS |
 			  RADEON_CRTC_DISPLAY_DIS);
@@ -337,11 +351,6 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 				| ((mode->flags & DRM_MODE_FLAG_NVSYNC)
 				   ? RADEON_CRTC_V_SYNC_POL
 				   : 0));
-
-	crtc_pitch  = (((crtc->fb->pitch * crtc->fb->bits_per_pixel) +
-			((crtc->fb->bits_per_pixel * 8) -1)) /
-		       (crtc->fb->bits_per_pixel * 8));
-	crtc_pitch |= crtc_pitch << 16;
 
 	/* TODO -> Dell Server */
 	if (0) {
@@ -381,7 +390,6 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 	RADEON_WRITE(RADEON_CRTC_V_TOTAL_DISP, crtc_v_total_disp);
 	RADEON_WRITE(RADEON_CRTC_V_SYNC_STRT_WID, crtc_v_sync_strt_wid);
 
-	RADEON_WRITE(RADEON_CRTC_PITCH, crtc_pitch);
 	RADEON_WRITE(RADEON_DISP_MERGE_CNTL, disp_merge_cntl);
 
 	RADEON_WRITE(RADEON_CRTC_GEN_CNTL, crtc_gen_cntl);
@@ -569,7 +577,7 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
 			   RADEON_VCLK_SRC_SEL_PPLLCLK,
 			   ~(RADEON_VCLK_SRC_SEL_MASK));
 
-	/*RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, state->vclk_ecp_cntl);*/
+	/*RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, vclk_ecp_cntl);*/
 
 }
 
@@ -580,8 +588,11 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_framebuffer *radeon_fb;
 	struct drm_radeon_gem_object *obj_priv;
-	uint32_t crtc2_offset, crtc2_offset_cntl, crtc2_tile_x0_y0 = 0;
 	uint32_t base;
+	uint32_t crtc2_offset, crtc2_offset_cntl, crtc2_tile_x0_y0 = 0;
+        uint32_t crtc2_pitch;
+
+	DRM_DEBUG("\n");
 
 	radeon_fb = to_radeon_framebuffer(crtc->fb);
 
@@ -646,10 +657,18 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 
 	crtc2_offset = base;
 
+	crtc2_pitch  = ((((crtc->fb->pitch / (crtc->fb->bits_per_pixel / 8)) * crtc->fb->bits_per_pixel) +
+			((crtc->fb->bits_per_pixel * 8) - 1)) /
+		       (crtc->fb->bits_per_pixel * 8));
+	crtc2_pitch |= crtc2_pitch << 16;
+
+	RADEON_WRITE(RADEON_DISPLAY2_BASE_ADDR, dev_priv->fb_location);
+
 	if (radeon_is_r300(dev_priv))
 		RADEON_WRITE(R300_CRTC2_TILE_X0_Y0, crtc2_tile_x0_y0);
 	RADEON_WRITE(RADEON_CRTC2_OFFSET_CNTL, crtc2_offset_cntl);
 	RADEON_WRITE(RADEON_CRTC2_OFFSET, crtc2_offset);
+	RADEON_WRITE(RADEON_CRTC2_PITCH, crtc2_pitch);
 
 	return true;
 }
@@ -668,12 +687,13 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
         uint32_t crtc2_h_sync_strt_wid;
         uint32_t crtc2_v_total_disp;
         uint32_t crtc2_v_sync_strt_wid;
-        uint32_t crtc2_pitch;
 	uint32_t disp2_merge_cntl;
 	uint32_t fp_h2_sync_strt_wid;
 	uint32_t fp_v2_sync_strt_wid;
 
-	switch (crtc->fb->depth) {
+	DRM_DEBUG("\n");
+
+	switch (crtc->fb->bits_per_pixel) {
 		
 	case 15:      /*  555 */
 		format = 3;
@@ -720,11 +740,6 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
 				    ? RADEON_CRTC2_V_SYNC_POL
 				    : 0));
 
-	crtc2_pitch  = (((crtc->fb->pitch * crtc->fb->bits_per_pixel) +
-			((crtc->fb->bits_per_pixel * 8) -1)) /
-		       (crtc->fb->bits_per_pixel * 8));
-	crtc2_pitch |= crtc2_pitch << 16;
-
 	/* check to see if TV DAC is enabled for another crtc and keep it enabled */
 	if (RADEON_READ(RADEON_CRTC2_GEN_CNTL) & RADEON_CRTC2_CRT2_ON)
 		crtc2_gen_cntl = RADEON_CRTC2_CRT2_ON;
@@ -765,7 +780,6 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
 	RADEON_WRITE(RADEON_FP_H2_SYNC_STRT_WID,   fp_h2_sync_strt_wid);
 	RADEON_WRITE(RADEON_FP_V2_SYNC_STRT_WID,   fp_v2_sync_strt_wid);
 
-	RADEON_WRITE(RADEON_CRTC2_PITCH,           crtc2_pitch);
 	RADEON_WRITE(RADEON_DISP2_MERGE_CNTL,      disp2_merge_cntl);
 
 	RADEON_WRITE(RADEON_CRTC2_GEN_CNTL,        crtc2_gen_cntl);
@@ -943,6 +957,8 @@ static void radeon_crtc_mode_set(struct drm_crtc *crtc,
 	struct drm_encoder *encoder;
 	int pll_flags = RADEON_PLL_LEGACY | RADEON_PLL_PREFER_LOW_REF_DIV;
 	int i;
+
+	DRM_DEBUG("\n");
 
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
