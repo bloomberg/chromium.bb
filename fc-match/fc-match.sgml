@@ -153,6 +153,7 @@ are printed.  The <option>--all</option> option works like
       <command>fc-cat</command>(1)
       <command>fc-cache</command>(1)
       <command>fc-list</command>(1)
+      <command>fc-query</command>(1)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:

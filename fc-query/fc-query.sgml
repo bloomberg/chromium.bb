@@ -8,7 +8,7 @@
 manpage.1: manpage.sgml
 	docbook-to-man $< > $@
 
-    
+
 	The docbook-to-man binary is found in the docbook-to-man package.
 	Please remember that if you create the nroff version in one of the
 	debian/rules file targets (such as build), you will need to include
@@ -17,19 +17,18 @@ manpage.1: manpage.sgml
   -->
 
   <!-- Fill in your name for FIRSTNAME and SURNAME. -->
-  <!ENTITY dhfirstname "<firstname>Patrick</firstname>">
-  <!ENTITY dhsurname   "<surname>Lam</surname>">
+  <!ENTITY dhfirstname "<firstname>Behdad</firstname>">
+  <!ENTITY dhsurname   "<surname>Esfahbod</surname>">
   <!-- Please adjust the date whenever revising the manpage. -->
   <!ENTITY dhdate      "<date>Aug 13, 2008</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
-  <!ENTITY dhemail     "<email>plam@mit.edu</email>">
-  <!ENTITY dhusername  "Patrick Lam">
-  <!ENTITY dhucpackage "<refentrytitle>fc-cat</refentrytitle>">
-  <!ENTITY dhpackage   "fc-cat">
+  <!ENTITY dhemail     "<email>behdad@behdad.org</email>">
+  <!ENTITY dhusername  "Behdad Esfahbod">
+  <!ENTITY dhucpackage "<refentrytitle>fc-query</refentrytitle>">
+  <!ENTITY dhpackage   "fc-query">
 
-  <!ENTITY debian      "<productname>Debian</productname>">
   <!ENTITY gnu         "<acronym>GNU</acronym>">
   <!ENTITY gpl         "&gnu; <acronym>GPL</acronym>">
 ]>
@@ -44,7 +43,7 @@ manpage.1: manpage.sgml
       &dhsurname;
     </author>
     <copyright>
-      <year>2005</year>
+      <year>2008</year>
       <holder>&dhusername;</holder>
     </copyright>
     &dhdate;
@@ -57,31 +56,32 @@ manpage.1: manpage.sgml
   <refnamediv>
     <refname>&dhpackage;</refname>
 
-    <refpurpose>read font information cache files</refpurpose>
+    <refpurpose>query font files</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
       <command>&dhpackage;</command>
 
-      <arg><option>-rvV?</option></arg>
-      <arg><option>--recurse</option></arg>
-      <arg><option>--verbose</option></arg>
+      <arg><option>-V?</option></arg>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
       <sbr>
-      <group rep="repeat">
-          <arg><option><replaceable>fonts-cache-2-files</replaceable></option></arg>
-          <arg><option><replaceable>dirs</replaceable></option></arg>
+      <group>
+        <arg><option>-i</option> <option><replaceable>index</replaceable></option></arg>
+        <arg><option>--index</option> <option><replaceable>index</replaceable></option></arg>
       </group>
-      
+      <arg choice="req" rep="repeat"><option><replaceable>font-file</replaceable></option></arg>
+
      </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
     <title>DESCRIPTION</title>
 
-      <para><command>&dhpackage;</command> reads the font information from
-        cache files or related to font directories
-        and emits it in ASCII form.</para>
+    <para><command>&dhpackage;</command> queries
+    <replaceable>font-file</replaceable>(s) using the normal fontconfig
+    rules and prints out font pattern for each face found.
+    If <option>--index</option> is given, only one face of each file is
+    queried, otherwise all faces are queried.</para>
 
   </refsect1>
   <refsect1>
@@ -92,22 +92,6 @@ manpage.1: manpage.sgml
       options is included below.</para>
 
     <variablelist>
-      <varlistentry>
-        <term><option>-r</option>
-          <option>--recurse</option>
-        </term>
-        <listitem>
-          <para>Recurse into subdirectories.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-v</option>
-          <option>--verbose</option>
-        </term>
-        <listitem>
-          <para>Be verbose.</para>
-        </listitem>
-      </varlistentry>
       <varlistentry>
         <term><option>-?</option>
           <option>--help</option>
@@ -124,17 +108,40 @@ manpage.1: manpage.sgml
           <para>Show version of the program and exit.</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option>-i</option>
+          <option>--index</option>
+	  <option><replaceable>index</replaceable></option>
+        </term>
+        <listitem>
+          <para>Only query face indexed <replaceable>index</replaceable> of
+	  each file.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option><replaceable>font-file</replaceable></option>
+        </term>
+        <listitem>
+          <para>Query <replaceable>font-file</replaceable> for font faces.</para>
+        </listitem>
+      </varlistentry>
     </variablelist>
+  </refsect1>
+
+  <refsect1>
+    <title>RETURN CODES</title>
+    <para><command>fc-query</command> returns error code 0 for successful parsing,
+    or 1 if any errors occured or if at least one font face could not be opened.</para>
   </refsect1>
 
   <refsect1>
     <title>SEE ALSO</title>
 
     <para>
+      <command>fc-cat</command>(1)
       <command>fc-cache</command>(1)
       <command>fc-list</command>(1)
       <command>fc-match</command>(1)
-      <command>fc-query</command>(1)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:
@@ -144,7 +151,7 @@ manpage.1: manpage.sgml
   <refsect1>
     <title>AUTHOR</title>
 
-    <para>This manual page was written by &dhusername; &dhemail;.</para>
+    <para>This manual page was updated by &dhusername; &dhemail;.</para>
 
   </refsect1>
 </refentry>
