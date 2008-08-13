@@ -1152,7 +1152,6 @@ void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master
 	struct drm_radeon_gem_object *obj_priv;
 
 	/* update front_pitch_offset and back_pitch_offset */
-	DRM_ERROR("old front %x back %x\n", dev_priv->front_pitch_offset, dev_priv->back_pitch_offset);
 	obj = gem_object_get(dev, sarea_priv->front_handle);
 	if (obj) {
 		obj_priv = obj->driver_private;

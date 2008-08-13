@@ -154,10 +154,7 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct 
 		break;
 	}
 
-
-	DRM_ERROR("New offset %x %x %x\n", packets[offset_dw+1], val, offset);
 	packets[offset_dw + 1] = val;
-
 	return 0;
 }
 
@@ -185,7 +182,6 @@ static int radeon_cs_relocate_packet3(struct drm_device *dev, struct drm_file *f
 		offset >>= 10;
 		val |= offset;
 
-		DRM_ERROR("New offset %x %x %x\n", packets[offset_dw+2], val, offset);
 		packets[offset_dw + 2] = val;
 	}
 	default:
@@ -215,7 +211,6 @@ static __inline__ int radeon_cs_check_offset(struct drm_device *dev,
 		break;
 	}
 	
-	DRM_ERROR("Offset check %x %x\n", reg, offset);
 	return 0;
 }
 
