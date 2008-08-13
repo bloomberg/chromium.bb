@@ -285,7 +285,9 @@ struct drm_crtc *drm_crtc_from_fb(struct drm_device *dev,
 struct drm_framebuffer *drm_framebuffer_init(struct drm_device *dev, struct drm_framebuffer *fb,
 					     const struct drm_framebuffer_funcs *funcs)
 {
-	drm_mode_object_get(dev, &fb->base, DRM_MODE_OBJECT_FB);
+	if(drm_mode_object_get(dev, &fb->base, DRM_MODE_OBJECT_FB))
+		return NULL;
+
 	fb->dev = dev;
 	fb->funcs = funcs;
 	dev->mode_config.num_fb++;

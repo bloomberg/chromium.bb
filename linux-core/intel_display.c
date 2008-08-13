@@ -1506,7 +1506,9 @@ struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
 	if (!intel_fb)
 		return NULL;
 
-	drm_framebuffer_init(dev, &intel_fb->base, &intel_fb_funcs);
+	if (!drm_framebuffer_init(dev, &intel_fb->base, &intel_fb_funcs))
+		return NULL;
+
 	drm_helper_mode_fill_fb_struct(&intel_fb->base, mode_cmd);
 
 	if (filp) {
