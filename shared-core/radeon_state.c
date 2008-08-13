@@ -3121,6 +3121,9 @@ static int radeon_cp_getparam(struct drm_device *dev, void *data, struct drm_fil
 		/* BSD TODO */
 		value = 1;
 		break;
+	case RADEON_PARAM_KERNEL_MM:
+		value = !dev_priv->mm_disabled;
+		break;
 	default:
 		DRM_DEBUG( "Invalid parameter %d\n", param->param );
 		return -EINVAL;
