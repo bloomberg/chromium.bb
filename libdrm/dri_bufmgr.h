@@ -58,6 +58,10 @@ struct _dri_bo {
    void *virtual;
    /** Buffer manager context associated with this buffer object */
    dri_bufmgr *bufmgr;
+   /**
+    * MM-specific handle for accessing object
+    */
+   int handle;
 };
 
 /**

@@ -311,6 +311,7 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CREATE, &create);
 	bo_gem->gem_handle = create.handle;
+	bo_gem->bo.handle = bo_gem->gem_handle;
 	if (ret != 0) {
 	    free(bo_gem);
 	    return NULL;
