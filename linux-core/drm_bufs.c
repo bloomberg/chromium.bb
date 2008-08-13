@@ -1528,6 +1528,7 @@ int drm_mapbufs(struct drm_device *dev, void *data,
 	dev->buf_use++;		/* Can't allocate more after this call */
 	spin_unlock(&dev->count_lock);
 
+	DRM_DEBUG("dma buf count %d, req count %d\n", request->count, dma->buf_count);
 	if (request->count >= dma->buf_count) {
 		if ((drm_core_has_AGP(dev) && (dma->flags & _DRM_DMA_USE_AGP))
 		    || (drm_core_check_feature(dev, DRIVER_SG)
@@ -1538,10 +1539,12 @@ int drm_mapbufs(struct drm_device *dev, void *data,
 			unsigned long token = dev->agp_buffer_token;
 
 			if (!map) {
+				DRM_DEBUG("No map\n");
 				retcode = -EINVAL;
 				goto done;
 			}
 			down_write(&current->mm->mmap_sem);
+			DRM_DEBUG("%x %d\n", token, map->size);
 			virtual = do_mmap(file_priv->filp, 0, map->size,
 					  PROT_READ | PROT_WRITE,
 					  MAP_SHARED,
@@ -1555,6 +1558,7 @@ int drm_mapbufs(struct drm_device *dev, void *data,
 			up_write(&current->mm->mmap_sem);
 		}
 		if (virtual > -1024UL) {
+			DRM_DEBUG("mmap failed\n");
 			/* Real error */
 			retcode = (signed long)virtual;
 			goto done;

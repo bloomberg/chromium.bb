@@ -190,7 +190,7 @@ void radeon_pll_errata_after_data(struct drm_radeon_private *dev_priv)
 	}
 }
 
-int RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr)
+u32 RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr)
 {
 	uint32_t data;
 
@@ -661,8 +661,8 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 					 ((dev_priv->gart_vm_start - 1) & 0xffff0000)
 					 | (dev_priv->fb_location >> 16));
 	
-	if (dev_priv->mm.ring) {
-		ring_start = dev_priv->mm.ring->offset +
+	if (dev_priv->mm.ring.bo) {
+		ring_start = dev_priv->mm.ring.bo->offset +
 			dev_priv->gart_vm_start;
 	} else
 #if __OS_HAS_AGP
@@ -695,9 +695,9 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	dev_priv->ring.tail = cur_read_ptr;
 
 
-	if (dev_priv->mm.ring_read_ptr) {
+	if (dev_priv->mm.ring_read.bo) {
 		RADEON_WRITE(RADEON_CP_RB_RPTR_ADDR,
-			     dev_priv->mm.ring_read_ptr->offset +
+			     dev_priv->mm.ring_read.bo->offset +
 			     dev_priv->gart_vm_start);
 	} else
 #if __OS_HAS_AGP
@@ -748,9 +748,9 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	RADEON_WRITE(RADEON_SCRATCH_ADDR, RADEON_READ(RADEON_CP_RB_RPTR_ADDR)
 		     + RADEON_SCRATCH_REG_OFFSET);
 
-	if (dev_priv->mm.ring_read_ptr)
+	if (dev_priv->mm.ring_read.bo)
 		dev_priv->scratch = ((__volatile__ u32 *)
-				     dev_priv->mm.ring_read_ptr_map.virtual +
+				     dev_priv->mm.ring_read.kmap.virtual +
 				     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
 	else
 		dev_priv->scratch = ((__volatile__ u32 *)
@@ -775,12 +775,18 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	radeon_do_wait_for_idle(dev_priv);
 
 	/* Sync everything up */
+	if (dev_priv->chip_family > CHIP_RV280) {
 	RADEON_WRITE(RADEON_ISYNC_CNTL,
 		     (RADEON_ISYNC_ANY2D_IDLE3D |
 		      RADEON_ISYNC_ANY3D_IDLE2D |
 		      RADEON_ISYNC_WAIT_IDLEGUI |
 		      RADEON_ISYNC_CPSCRATCH_IDLEGUI));
-
+	} else {
+	RADEON_WRITE(RADEON_ISYNC_CNTL,
+		     (RADEON_ISYNC_ANY2D_IDLE3D |
+		      RADEON_ISYNC_ANY3D_IDLE2D |
+		      RADEON_ISYNC_WAIT_IDLEGUI));
+	}
 }
 
 static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
@@ -788,8 +794,8 @@ static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 	u32 tmp;
 	void *ring_read_ptr;
 
-	if (dev_priv->mm.ring_read_ptr)
-		ring_read_ptr = dev_priv->mm.ring_read_ptr_map.virtual;
+	if (dev_priv->mm.ring_read.bo)
+		ring_read_ptr = dev_priv->mm.ring_read.kmap.virtual;
 	else
 		ring_read_ptr = dev_priv->ring_rptr->handle;
 
@@ -1353,8 +1359,7 @@ static int radeon_do_cleanup_cp(struct drm_device * dev)
 		if (dev_priv->gart_info.bus_addr) {
 			/* Turn off PCI GART */
 			radeon_set_pcigart(dev_priv, 0);
-			if (!drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info))
-				DRM_ERROR("failed to cleanup PCI GART!\n");
+			drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info);
 		}
 
 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB)
@@ -1362,6 +1367,7 @@ static int radeon_do_cleanup_cp(struct drm_device * dev)
 			if (dev_priv->pcigart_offset_set == 1) {
 				drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
 				dev_priv->gart_info.addr = NULL;
+				dev_priv->pcigart_offset_set = 0;
 			}
 		}
 	}
@@ -1553,8 +1559,10 @@ void radeon_do_release(struct drm_device * dev)
 		radeon_mem_takedown(&(dev_priv->gart_heap));
 		radeon_mem_takedown(&(dev_priv->fb_heap));
 
-
-		radeon_gem_mm_fini(dev);
+		if (dev_priv->user_mm_enable) {
+			radeon_gem_mm_fini(dev);
+			dev_priv->user_mm_enable = false;
+		}
 
 		/* deallocate kernel resources */
 		radeon_do_cleanup_cp(dev);
@@ -2270,6 +2278,7 @@ static void radeon_set_dynamic_clock(struct drm_device *dev, int mode)
 int radeon_modeset_cp_init(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t tmp;
 
 	/* allocate a ring and ring rptr bits from GART space */
 	/* these are allocated in GEM files */
@@ -2278,8 +2287,8 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->ring.size = RADEON_DEFAULT_RING_SIZE;
 	dev_priv->cp_mode = RADEON_CSQ_PRIBM_INDBM;
 
-	dev_priv->ring.start = (u32 *)(void *)(unsigned long)dev_priv->mm.ring_map.virtual;
-	dev_priv->ring.end = (u32 *)(void *)(unsigned long)dev_priv->mm.ring_map.virtual +
+	dev_priv->ring.start = (u32 *)(void *)(unsigned long)dev_priv->mm.ring.kmap.virtual;
+	dev_priv->ring.end = (u32 *)(void *)(unsigned long)dev_priv->mm.ring.kmap.virtual +
 		dev_priv->ring.size / sizeof(u32);
 	dev_priv->ring.size_l2qw = drm_order(dev_priv->ring.size / 8);
 	dev_priv->ring.rptr_update = 4096;
@@ -2289,13 +2298,20 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->ring.tail_mask = (dev_priv->ring.size / sizeof(u32)) - 1;
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
 
-	dev_priv->new_memmap = 1;
+	dev_priv->new_memmap = true;
 
+	r300_init_reg_flags(dev);
+		
 	radeon_cp_load_microcode(dev_priv);
 	
-	DRM_DEBUG("ring offset is %x %x\n", dev_priv->mm.ring->offset, dev_priv->mm.ring_read_ptr->offset);
+	DRM_DEBUG("ring offset is %x %x\n", dev_priv->mm.ring.bo->offset, dev_priv->mm.ring_read.bo->offset);
 
 	radeon_cp_init_ring_buffer(dev, dev_priv);
+
+	/* need to enable BUS mastering in Buscntl */
+	tmp = RADEON_READ(RADEON_BUS_CNTL);
+	tmp &= ~RADEON_BUS_MASTER_DIS;
+	RADEON_WRITE(RADEON_BUS_CNTL, tmp);
 
 	radeon_do_engine_reset(dev);
 	radeon_test_writeback(dev_priv);
@@ -2367,8 +2383,8 @@ int radeon_modeset_preinit(struct drm_device *dev)
 
 	if (dev_priv->is_atom_bios) {
 		dev_priv->mode_info.atom_context = atom_parse(&card, dev_priv->bios);
-		radeon_get_clock_info(dev);
 	}
+	radeon_get_clock_info(dev);
 	return 0;
 }
 
@@ -2523,7 +2539,7 @@ void radeon_master_destroy(struct drm_device *dev, struct drm_master *master)
 
 	master_priv->sarea_priv = NULL;
 	if (master_priv->sarea)
-		drm_rmmap(dev, master_priv->sarea);
+		drm_rmmap_locked(dev, master_priv->sarea);
 		
 	drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
 

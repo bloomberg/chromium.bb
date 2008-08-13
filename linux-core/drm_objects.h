@@ -34,110 +34,201 @@
 struct drm_device;
 struct drm_bo_mem_reg;
 
-/***************************************************
- * User space objects. (drm_object.c)
- */
-
-#define drm_user_object_entry(_ptr, _type, _member) container_of(_ptr, _type, _member)
-
-enum drm_object_type {
-	drm_fence_type,
-	drm_buffer_type,
-	drm_lock_type,
-	    /*
-	     * Add other user space object types here.
-	     */
-	drm_driver_type0 = 256,
-	drm_driver_type1,
-	drm_driver_type2,
-	drm_driver_type3,
-	drm_driver_type4
-};
-
-/*
- * A user object is a structure that helps the drm give out user handles
- * to kernel internal objects and to keep track of these objects so that
- * they can be destroyed, for example when the user space process exits.
- * Designed to be accessible using a user space 32-bit handle.
- */
-
-struct drm_user_object {
-	struct drm_hash_item hash;
-	struct list_head list;
-	enum drm_object_type type;
-	atomic_t refcount;
-	int shareable;
-	struct drm_file *owner;
-	void (*ref_struct_locked) (struct drm_file *priv,
-				   struct drm_user_object *obj,
-				   enum drm_ref_type ref_action);
-	void (*unref) (struct drm_file *priv, struct drm_user_object *obj,
-		       enum drm_ref_type unref_action);
-	void (*remove) (struct drm_file *priv, struct drm_user_object *obj);
-};
-
-/*
- * A ref object is a structure which is used to
- * keep track of references to user objects and to keep track of these
- * references so that they can be destroyed for example when the user space
- * process exits. Designed to be accessible using a pointer to the _user_ object.
- */
-
-struct drm_ref_object {
-	struct drm_hash_item hash;
-	struct list_head list;
-	atomic_t refcount;
-	enum drm_ref_type unref_action;
-};
-
+#define DRM_FENCE_FLAG_EMIT                0x00000001
+#define DRM_FENCE_FLAG_SHAREABLE           0x00000002
 /**
- * Must be called with the struct_mutex held.
+ * On hardware with no interrupt events for operation completion,
+ * indicates that the kernel should sleep while waiting for any blocking
+ * operation to complete rather than spinning.
+ *
+ * Has no effect otherwise.
+ */
+#define DRM_FENCE_FLAG_WAIT_LAZY           0x00000004
+#define DRM_FENCE_FLAG_NO_USER             0x00000010
+
+/* Reserved for driver use */
+#define DRM_FENCE_MASK_DRIVER              0xFF000000
+
+#define DRM_FENCE_TYPE_EXE                 0x00000001
+
+struct drm_fence_arg {
+	unsigned int handle;
+	unsigned int fence_class;
+	unsigned int type;
+	unsigned int flags;
+	unsigned int signaled;
+	unsigned int error;
+	unsigned int sequence;
+	unsigned int pad64;
+	uint64_t expand_pad[2]; /*Future expansion */
+};
+
+/* Buffer permissions, referring to how the GPU uses the buffers.
+ * these translate to fence types used for the buffers.
+ * Typically a texture buffer is read, A destination buffer is write and
+ *  a command (batch-) buffer is exe. Can be or-ed together.
  */
 
-extern int drm_add_user_object(struct drm_file *priv, struct drm_user_object *item,
-			       int shareable);
+#define DRM_BO_FLAG_READ        (1ULL << 0)
+#define DRM_BO_FLAG_WRITE       (1ULL << 1)
+#define DRM_BO_FLAG_EXE         (1ULL << 2)
+
+/*
+ * All of the bits related to access mode
+ */
+#define DRM_BO_MASK_ACCESS	(DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_EXE)
+/*
+ * Status flags. Can be read to determine the actual state of a buffer.
+ * Can also be set in the buffer mask before validation.
+ */
+
+/*
+ * Mask: Never evict this buffer. Not even with force. This type of buffer is only
+ * available to root and must be manually removed before buffer manager shutdown
+ * or lock.
+ * Flags: Acknowledge
+ */
+#define DRM_BO_FLAG_NO_EVICT    (1ULL << 4)
+
+/*
+ * Mask: Require that the buffer is placed in mappable memory when validated.
+ *       If not set the buffer may or may not be in mappable memory when validated.
+ * Flags: If set, the buffer is in mappable memory.
+ */
+#define DRM_BO_FLAG_MAPPABLE    (1ULL << 5)
+
+/* Mask: The buffer should be shareable with other processes.
+ * Flags: The buffer is shareable with other processes.
+ */
+#define DRM_BO_FLAG_SHAREABLE   (1ULL << 6)
+
+/* Mask: If set, place the buffer in cache-coherent memory if available.
+ *       If clear, never place the buffer in cache coherent memory if validated.
+ * Flags: The buffer is currently in cache-coherent memory.
+ */
+#define DRM_BO_FLAG_CACHED      (1ULL << 7)
+
+/* Mask: Make sure that every time this buffer is validated,
+ *       it ends up on the same location provided that the memory mask is the same.
+ *       The buffer will also not be evicted when claiming space for
+ *       other buffers. Basically a pinned buffer but it may be thrown out as
+ *       part of buffer manager shutdown or locking.
+ * Flags: Acknowledge.
+ */
+#define DRM_BO_FLAG_NO_MOVE     (1ULL << 8)
+
+/* Mask: Make sure the buffer is in cached memory when mapped.  In conjunction
+ * with DRM_BO_FLAG_CACHED it also allows the buffer to be bound into the GART
+ * with unsnooped PTEs instead of snooped, by using chipset-specific cache
+ * flushing at bind time.  A better name might be DRM_BO_FLAG_TT_UNSNOOPED,
+ * as the eviction to local memory (TTM unbind) on map is just a side effect
+ * to prevent aggressive cache prefetch from the GPU disturbing the cache
+ * management that the DRM is doing.
+ *
+ * Flags: Acknowledge.
+ * Buffers allocated with this flag should not be used for suballocators
+ * This type may have issues on CPUs with over-aggressive caching
+ * http://marc.info/?l=linux-kernel&m=102376926732464&w=2
+ */
+#define DRM_BO_FLAG_CACHED_MAPPED    (1ULL << 19)
+
+
+/* Mask: Force DRM_BO_FLAG_CACHED flag strictly also if it is set.
+ * Flags: Acknowledge.
+ */
+#define DRM_BO_FLAG_FORCE_CACHING  (1ULL << 13)
+
+/*
+ * Mask: Force DRM_BO_FLAG_MAPPABLE flag strictly also if it is clear.
+ * Flags: Acknowledge.
+ */
+#define DRM_BO_FLAG_FORCE_MAPPABLE (1ULL << 14)
+#define DRM_BO_FLAG_TILE           (1ULL << 15)
+
+/*
+ * Memory type flags that can be or'ed together in the mask, but only
+ * one appears in flags.
+ */
+
+/* System memory */
+#define DRM_BO_FLAG_MEM_LOCAL  (1ULL << 24)
+/* Translation table memory */
+#define DRM_BO_FLAG_MEM_TT     (1ULL << 25)
+/* Vram memory */
+#define DRM_BO_FLAG_MEM_VRAM   (1ULL << 26)
+/* Up to the driver to define. */
+#define DRM_BO_FLAG_MEM_PRIV0  (1ULL << 27)
+#define DRM_BO_FLAG_MEM_PRIV1  (1ULL << 28)
+#define DRM_BO_FLAG_MEM_PRIV2  (1ULL << 29)
+#define DRM_BO_FLAG_MEM_PRIV3  (1ULL << 30)
+#define DRM_BO_FLAG_MEM_PRIV4  (1ULL << 31)
+/* We can add more of these now with a 64-bit flag type */
+
+/*
+ * This is a mask covering all of the memory type flags; easier to just
+ * use a single constant than a bunch of | values. It covers
+ * DRM_BO_FLAG_MEM_LOCAL through DRM_BO_FLAG_MEM_PRIV4
+ */
+#define DRM_BO_MASK_MEM         0x00000000FF000000ULL
+/*
+ * This adds all of the CPU-mapping options in with the memory
+ * type to label all bits which change how the page gets mapped
+ */
+#define DRM_BO_MASK_MEMTYPE     (DRM_BO_MASK_MEM | \
+				 DRM_BO_FLAG_CACHED_MAPPED | \
+				 DRM_BO_FLAG_CACHED | \
+				 DRM_BO_FLAG_MAPPABLE)
+				 
+/* Driver-private flags */
+#define DRM_BO_MASK_DRIVER      0xFFFF000000000000ULL
+
+/*
+ * Don't block on validate and map. Instead, return EBUSY.
+ */
+#define DRM_BO_HINT_DONT_BLOCK  0x00000002
+/*
+ * Don't place this buffer on the unfenced list. This means
+ * that the buffer will not end up having a fence associated
+ * with it as a result of this operation
+ */
+#define DRM_BO_HINT_DONT_FENCE  0x00000004
 /**
- * Must be called with the struct_mutex held.
+ * On hardware with no interrupt events for operation completion,
+ * indicates that the kernel should sleep while waiting for any blocking
+ * operation to complete rather than spinning.
+ *
+ * Has no effect otherwise.
  */
-
-extern struct drm_user_object *drm_lookup_user_object(struct drm_file *priv,
-						 uint32_t key);
-
+#define DRM_BO_HINT_WAIT_LAZY   0x00000008
 /*
- * Must be called with the struct_mutex held. May temporarily release it.
+ * The client has compute relocations refering to this buffer using the
+ * offset in the presumed_offset field. If that offset ends up matching
+ * where this buffer lands, the kernel is free to skip executing those
+ * relocations
  */
+#define DRM_BO_HINT_PRESUMED_OFFSET 0x00000010
 
-extern int drm_add_ref_object(struct drm_file *priv,
-			      struct drm_user_object *referenced_object,
-			      enum drm_ref_type ref_action);
 
-/*
- * Must be called with the struct_mutex held.
- */
+#define DRM_BO_MEM_LOCAL 0
+#define DRM_BO_MEM_TT 1
+#define DRM_BO_MEM_VRAM 2
+#define DRM_BO_MEM_PRIV0 3
+#define DRM_BO_MEM_PRIV1 4
+#define DRM_BO_MEM_PRIV2 5
+#define DRM_BO_MEM_PRIV3 6
+#define DRM_BO_MEM_PRIV4 7
 
-struct drm_ref_object *drm_lookup_ref_object(struct drm_file *priv,
-					struct drm_user_object *referenced_object,
-					enum drm_ref_type ref_action);
-/*
- * Must be called with the struct_mutex held.
- * If "item" has been obtained by a call to drm_lookup_ref_object. You may not
- * release the struct_mutex before calling drm_remove_ref_object.
- * This function may temporarily release the struct_mutex.
- */
+#define DRM_BO_MEM_TYPES 8 /* For now. */
 
-extern void drm_remove_ref_object(struct drm_file *priv, struct drm_ref_object *item);
-extern int drm_user_object_ref(struct drm_file *priv, uint32_t user_token,
-			       enum drm_object_type type,
-			       struct drm_user_object **object);
-extern int drm_user_object_unref(struct drm_file *priv, uint32_t user_token,
-				 enum drm_object_type type);
+#define DRM_BO_LOCK_UNLOCK_BM       (1 << 0)
+#define DRM_BO_LOCK_IGNORE_NO_EVICT (1 << 1)
+
 
 /***************************************************
  * Fence objects. (drm_fence.c)
  */
 
 struct drm_fence_object {
-	struct drm_user_object base;
 	struct drm_device *dev;
 	atomic_t usage;
 
@@ -470,7 +561,6 @@ enum drm_bo_type {
 
 struct drm_buffer_object {
 	struct drm_device *dev;
-	struct drm_user_object base;
 
 	/*
 	 * If there is a possibility that the usage variable is zero,
@@ -546,7 +636,7 @@ struct drm_mem_type_manager {
 };
 
 struct drm_bo_lock {
-	struct drm_user_object base;
+  //	struct drm_user_object base;
 	wait_queue_head_t queue;
 	atomic_t write_lock_pending;
 	atomic_t readers;
@@ -655,22 +745,10 @@ struct drm_bo_driver {
 /*
  * buffer objects (drm_bo.c)
  */
-extern int drm_bo_create_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_destroy_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_map_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_unmap_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_reference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
+int drm_bo_do_validate(struct drm_buffer_object *bo,
+		       uint64_t flags, uint64_t mask, uint32_t hint,
+		       uint32_t fence_class);
 extern int drm_bo_set_pin(struct drm_device *dev, struct drm_buffer_object *bo, int pin);
-extern int drm_bo_unreference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_wait_idle_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_setstatus_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_mm_init_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_mm_takedown_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_mm_lock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_mm_unlock_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_mm_info_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
-extern int drm_bo_version_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv);
 extern int drm_bo_driver_finish(struct drm_device *dev);
 extern int drm_bo_driver_init(struct drm_device *dev);
 extern int drm_bo_pci_offset(struct drm_device *dev,
@@ -707,18 +785,9 @@ extern int drm_bo_clean_mm(struct drm_device *dev, unsigned mem_type, int kern_c
 extern int drm_bo_init_mm(struct drm_device *dev, unsigned type,
 			  unsigned long p_offset, unsigned long p_size,
 			  int kern_init);
-extern int drm_bo_handle_validate(struct drm_file *file_priv, uint32_t handle,
-				  uint64_t flags, uint64_t mask, uint32_t hint,
-				  uint32_t fence_class,
-				  struct drm_bo_info_rep *rep,
-				  struct drm_buffer_object **bo_rep);
 extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file *file_priv,
 							  uint32_t handle,
 							  int check_owner);
-extern int drm_bo_do_validate(struct drm_buffer_object *bo,
-			      uint64_t flags, uint64_t mask, uint32_t hint,
-			      uint32_t fence_class,
-			      struct drm_bo_info_rep *rep);
 extern int drm_bo_evict_cached(struct drm_buffer_object *bo);
 
 extern void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo);
@@ -766,8 +835,6 @@ extern int drm_bo_pfn_prot(struct drm_buffer_object *bo,
 			   unsigned long dst_offset,
 			   unsigned long *pfn,
 			   pgprot_t *prot);
-extern void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
-				struct drm_bo_info_rep *rep);
 
 
 /*
@@ -812,23 +879,6 @@ extern int drm_mem_reg_ioremap(struct drm_device *dev, struct drm_bo_mem_reg * m
 			       void **virtual);
 extern void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg * mem,
 				void *virtual);
-/*
- * drm_bo_lock.c
- * Simple replacement for the hardware lock on buffer manager init and clean.
- */
-
-
-extern void drm_bo_init_lock(struct drm_bo_lock *lock);
-extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
-extern int drm_bo_read_lock(struct drm_bo_lock *lock,
-			    int interruptible);
-extern int drm_bo_write_lock(struct drm_bo_lock *lock,
-			     int interruptible,
-			     struct drm_file *file_priv);
-
-extern int drm_bo_write_unlock(struct drm_bo_lock *lock,
-			       struct drm_file *file_priv);
-
 #ifdef CONFIG_DEBUG_MUTEXES
 #define DRM_ASSERT_LOCKED(_mutex)					\
 	BUG_ON(!mutex_is_locked(_mutex) ||				\

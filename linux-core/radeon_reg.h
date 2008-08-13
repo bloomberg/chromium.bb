@@ -374,6 +374,9 @@
 #       define RADEON_CRTC_ICON_EN          (1 << 15)
 #       define RADEON_CRTC_CUR_EN           (1 << 16)
 #       define RADEON_CRTC_CUR_MODE_MASK    (7 << 20)
+#       define RADEON_CRTC_CUR_MODE_SHIFT   20
+#       define RADEON_CRTC_CUR_MODE_MONO    0
+#       define RADEON_CRTC_CUR_MODE_24BPP   2
 #       define RADEON_CRTC_EXT_DISP_EN      (1 << 24)
 #       define RADEON_CRTC_EN               (1 << 25)
 #       define RADEON_CRTC_DISP_REQ_EN_B    (1 << 26)
@@ -556,6 +559,24 @@
 #       define RADEON_DAC_PDWN_R            (1 << 16)
 #       define RADEON_DAC_PDWN_G            (1 << 17)
 #       define RADEON_DAC_PDWN_B            (1 << 18)
+#define RADEON_DISP_PWR_MAN                 0x0d08
+#       define RADEON_DISP_PWR_MAN_D3_CRTC_EN      (1 << 0)
+#       define RADEON_DISP_PWR_MAN_D3_CRTC2_EN     (1 << 4)
+#       define RADEON_DISP_PWR_MAN_DPMS_ON  (0 << 8)
+#       define RADEON_DISP_PWR_MAN_DPMS_STANDBY    (1 << 8)
+#       define RADEON_DISP_PWR_MAN_DPMS_SUSPEND    (2 << 8)
+#       define RADEON_DISP_PWR_MAN_DPMS_OFF (3 << 8)
+#       define RADEON_DISP_D3_RST           (1 << 16)
+#       define RADEON_DISP_D3_REG_RST       (1 << 17)
+#       define RADEON_DISP_D3_GRPH_RST      (1 << 18)
+#       define RADEON_DISP_D3_SUBPIC_RST    (1 << 19)
+#       define RADEON_DISP_D3_OV0_RST       (1 << 20)
+#       define RADEON_DISP_D1D2_GRPH_RST    (1 << 21)
+#       define RADEON_DISP_D1D2_SUBPIC_RST  (1 << 22)
+#       define RADEON_DISP_D1D2_OV0_RST     (1 << 23)
+#       define RADEON_DIG_TMDS_ENABLE_RST   (1 << 24)
+#       define RADEON_TV_ENABLE_RST         (1 << 25)
+#       define RADEON_AUTO_PWRUP_EN         (1 << 26)
 #define RADEON_TV_DAC_CNTL                  0x088c
 #       define RADEON_TV_DAC_NBLANK         (1 << 0)
 #       define RADEON_TV_DAC_NHOLD          (1 << 1)
@@ -1006,14 +1027,23 @@
 #       define RADEON_LVDS_DISPLAY_DIS      (1   <<  1)
 #       define RADEON_LVDS_PANEL_TYPE       (1   <<  2)
 #       define RADEON_LVDS_PANEL_FORMAT     (1   <<  3)
+#       define RADEON_LVDS_NO_FM            (0   <<  4)
+#       define RADEON_LVDS_2_GREY           (1   <<  4)
+#       define RADEON_LVDS_4_GREY           (2   <<  4)
 #       define RADEON_LVDS_RST_FM           (1   <<  6)
 #       define RADEON_LVDS_EN               (1   <<  7)
 #       define RADEON_LVDS_BL_MOD_LEVEL_SHIFT 8
 #       define RADEON_LVDS_BL_MOD_LEVEL_MASK (0xff << 8)
 #       define RADEON_LVDS_BL_MOD_EN        (1   << 16)
+#       define RADEON_LVDS_BL_CLK_SEL       (1   << 17)
 #       define RADEON_LVDS_DIGON            (1   << 18)
 #       define RADEON_LVDS_BLON             (1   << 19)
+#       define RADEON_LVDS_FP_POL_LOW       (1   << 20)
+#       define RADEON_LVDS_LP_POL_LOW       (1   << 21)
+#       define RADEON_LVDS_DTM_POL_LOW      (1   << 22)
 #       define RADEON_LVDS_SEL_CRTC2        (1   << 23)
+#       define RADEON_LVDS_FPDI_EN          (1   << 27)
+#       define RADEON_LVDS_HSYNC_DELAY_SHIFT        28
 #define RADEON_LVDS_PLL_CNTL                0x02d4
 #       define RADEON_HSYNC_DELAY_SHIFT     28
 #       define RADEON_HSYNC_DELAY_MASK      (0xf << 28)
@@ -2095,16 +2125,19 @@
 #       define RADEON_STENCIL_ENABLE           (1  <<  7)
 #       define RADEON_Z_ENABLE                 (1  <<  8)
 #       define RADEON_DEPTH_XZ_OFFEST_ENABLE   (1  <<  9)
-#       define RADEON_COLOR_FORMAT_ARGB1555    (3  << 10)
-#       define RADEON_COLOR_FORMAT_RGB565      (4  << 10)
-#       define RADEON_COLOR_FORMAT_ARGB8888    (6  << 10)
-#       define RADEON_COLOR_FORMAT_RGB332      (7  << 10)
-#       define RADEON_COLOR_FORMAT_Y8          (8  << 10)
-#       define RADEON_COLOR_FORMAT_RGB8        (9  << 10)
-#       define RADEON_COLOR_FORMAT_YUV422_VYUY (11 << 10)
-#       define RADEON_COLOR_FORMAT_YUV422_YVYU (12 << 10)
-#       define RADEON_COLOR_FORMAT_aYUV444     (14 << 10)
-#       define RADEON_COLOR_FORMAT_ARGB4444    (15 << 10)
+#       define RADEON_RB3D_COLOR_FORMAT_SHIFT  10
+
+#       define RADEON_COLOR_FORMAT_ARGB1555    3
+#       define RADEON_COLOR_FORMAT_RGB565      4
+#       define RADEON_COLOR_FORMAT_ARGB8888    6
+#       define RADEON_COLOR_FORMAT_RGB332      7
+#       define RADEON_COLOR_FORMAT_Y8          8
+#       define RADEON_COLOR_FORMAT_RGB8        9
+#       define RADEON_COLOR_FORMAT_YUV422_VYUY 11
+#       define RADEON_COLOR_FORMAT_YUV422_YVYU 12
+#       define RADEON_COLOR_FORMAT_aYUV444     14
+#       define RADEON_COLOR_FORMAT_ARGB4444    15
+
 #       define RADEON_CLRCMP_FLIP_ENABLE       (1  << 14)
 #define RADEON_RB3D_COLOROFFSET             0x1c40
 #       define RADEON_COLOROFFSET_MASK      0xfffffff0
@@ -3086,6 +3119,10 @@
 #       define RADEON_CSQ_PRIPIO_INDBM         (3    << 28)
 #       define RADEON_CSQ_PRIBM_INDBM          (4    << 28)
 #       define RADEON_CSQ_PRIPIO_INDPIO        (15   << 28)
+
+#define R300_CP_RESYNC_ADDR                 0x778
+#define R300_CP_RESYNC_DATA                 0x77c
+
 #define RADEON_CP_CSQ_STAT                  0x07f8
 #       define RADEON_CSQ_RPTR_PRIMARY_MASK    (0xff <<  0)
 #       define RADEON_CSQ_WPTR_PRIMARY_MASK    (0xff <<  8)
@@ -3121,6 +3158,7 @@
 #       define RADEON_CP_PACKET_COUNT_MASK          0x3fff0000
 #       define RADEON_CP_PACKET_MAX_DWORDS          (1 << 12)
 #       define RADEON_CP_PACKET0_REG_MASK           0x000007ff
+#       define R300_CP_PACKET0_REG_MASK             0x00001fff
 #       define RADEON_CP_PACKET1_REG0_MASK          0x000007ff
 #       define RADEON_CP_PACKET1_REG1_MASK          0x003ff800
 
@@ -3565,14 +3603,14 @@
 #define AVIVO_D1GRPH_X_END                                      0x6134
 #define AVIVO_D1GRPH_Y_END                                      0x6138
 #define AVIVO_D1GRPH_UPDATE                                     0x6144
-#       define AVIVO_D1GRPH_UPDATE_LOCK                 (1<<16)
+#       define AVIVO_D1GRPH_UPDATE_LOCK                         (1 << 16)
 #define AVIVO_D1GRPH_FLIP_CONTROL                               0x6148
 
 #define AVIVO_D1CUR_CONTROL                     0x6400
-#       define AVIVO_D1CURSOR_EN           (1<<0)
-#       define AVIVO_D1CURSOR_MODE_SHIFT  8
-#       define AVIVO_D1CURSOR_MODE_MASK   (0x3<<8)
-#       define AVIVO_D1CURSOR_MODE_24BPP  (0x2)
+#       define AVIVO_D1CURSOR_EN                (1 << 0)
+#       define AVIVO_D1CURSOR_MODE_SHIFT        8
+#       define AVIVO_D1CURSOR_MODE_MASK         (3 << 8)
+#       define AVIVO_D1CURSOR_MODE_24BPP        2
 #define AVIVO_D1CUR_SURFACE_ADDRESS             0x6408
 #define AVIVO_D1CUR_SIZE                        0x6410
 #define AVIVO_D1CUR_POSITION                    0x6414
@@ -4419,6 +4457,8 @@
 #       define R300_ENDIAN_SWAP_HALF_DWORD              (3 << 0)
 #       define R300_MACRO_TILE                          (1 << 2)
 
+#define R300_TX_BORDER_COLOR_0                          0x45c0
+
 #define R300_TX_ENABLE				        0x4104
 #       define R300_TEX_0_ENABLE                        (1 << 0)
 #       define R300_TEX_1_ENABLE                        (1 << 1)
@@ -4705,7 +4745,24 @@
 #       define R300_READ_ENABLE                         (1 << 2)
 #define R300_RB3D_ABLENDCNTL			        0x4e08
 #define R300_RB3D_DSTCACHE_CTLSTAT		        0x4e4c
+#define R300_RB3D_COLOROFFSET0                          0x4e28
+#define R300_RB3D_COLORPITCH0                           0x4e38
+#       define R300_COLORTILE                           (1 << 16)
+#       define R300_COLORENDIAN_WORD                    (1 << 19)
+#       define R300_COLORENDIAN_DWORD                   (2 << 19)
+#       define R300_COLORENDIAN_HALF_DWORD              (3 << 19)
+#       define R300_COLORFORMAT_ARGB1555                (3 << 21)
+#       define R300_COLORFORMAT_RGB565                  (4 << 21)
+#       define R300_COLORFORMAT_ARGB8888                (6 << 21)
+#       define R300_COLORFORMAT_ARGB32323232            (7 << 21)
+#       define R300_COLORFORMAT_I8                      (9 << 21)
+#       define R300_COLORFORMAT_ARGB16161616            (10 << 21)
+#       define R300_COLORFORMAT_VYUY                    (11 << 21)
+#       define R300_COLORFORMAT_YVYU                    (12 << 21)
+#       define R300_COLORFORMAT_UV88                    (13 << 21)
+#       define R300_COLORFORMAT_ARGB4444                (15 << 21)
 
+#define R300_RB3D_AARESOLVE_CTL                         0x4e88
 #define R300_RB3D_COLOR_CHANNEL_MASK	                0x4e0c
 #       define R300_BLUE_MASK_EN                        (1 << 0)
 #       define R300_GREEN_MASK_EN                       (1 << 1)

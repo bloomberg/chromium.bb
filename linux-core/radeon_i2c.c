@@ -27,6 +27,38 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
+void radeon_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state)
+{
+	struct drm_radeon_private *dev_priv = radeon_connector->base.dev->dev_private;
+	uint32_t temp;
+	struct radeon_i2c_bus_rec *rec = &radeon_connector->ddc_bus->rec;
+
+	if (lock_state) {
+		temp = RADEON_READ(rec->a_clk_reg);
+		temp &= ~(rec->a_clk_mask);
+		RADEON_WRITE(rec->a_clk_reg, temp);
+
+		temp = RADEON_READ(rec->a_data_reg);
+		temp &= ~(rec->a_data_mask);
+		RADEON_WRITE(rec->a_data_reg, temp);
+	}
+
+	temp = RADEON_READ(rec->mask_clk_reg);
+	if (lock_state)
+		temp |= rec->mask_clk_mask;
+	else
+		temp &= ~rec->mask_clk_mask;
+	RADEON_WRITE(rec->mask_clk_reg, temp);
+	temp = RADEON_READ(rec->mask_clk_reg);
+
+	temp = RADEON_READ(rec->mask_data_reg);
+	if (lock_state)
+		temp |= rec->mask_data_mask;
+	else
+		temp &= ~rec->mask_data_mask;
+	RADEON_WRITE(rec->mask_data_reg, temp);
+	temp = RADEON_READ(rec->mask_data_reg);
+}
 
 static int get_clock(void *i2c_priv)
 {
@@ -88,7 +120,7 @@ struct radeon_i2c_chan *radeon_i2c_create(struct drm_device *dev,
 	i2c = drm_calloc(1, sizeof(struct radeon_i2c_chan), DRM_MEM_DRIVER);
 	if (i2c == NULL)
 		return NULL;
-	
+
 	i2c->adapter.owner = THIS_MODULE;
 	i2c->adapter.id = I2C_HW_B_RADEON;
 	i2c->adapter.algo_data = &i2c->algo;
@@ -113,7 +145,7 @@ struct radeon_i2c_chan *radeon_i2c_create(struct drm_device *dev,
 out_free:
 	drm_free(i2c, sizeof(struct radeon_i2c_chan), DRM_MEM_DRIVER);
 	return NULL;
-	
+
 }
 
 void radeon_i2c_destroy(struct radeon_i2c_chan *i2c)

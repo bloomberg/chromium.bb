@@ -166,7 +166,6 @@ typedef unsigned long uintptr_t;
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
 #define DRM_MAP_HASH_OFFSET 0x10000000
 #define DRM_MAP_HASH_ORDER 12
-#define DRM_OBJECT_HASH_ORDER 12
 #define DRM_FILE_PAGE_OFFSET_START ((0xFFFFFFFFUL >> PAGE_SHIFT) + 1)
 #define DRM_FILE_PAGE_OFFSET_SIZE ((0xFFFFFFFFUL >> PAGE_SHIFT) * 16)
 /*
@@ -405,14 +404,6 @@ struct drm_buf_entry {
 	struct drm_freelist freelist;
 };
 
-
-enum drm_ref_type {
-	_DRM_REF_USE = 0,
-	_DRM_REF_TYPE1,
-	_DRM_NO_REF_TYPES
-};
-
-
 /** File private data */
 struct drm_file {
 	int authenticated;
@@ -424,21 +415,11 @@ struct drm_file {
 	struct drm_minor *minor;
 	unsigned long lock_count;
 
-	/*
-	 * The user object hash table is global and resides in the
-	 * drm_device structure. We protect the lists and hash tables with the
-	 * device struct_mutex. A bit coarse-grained but probably the best
-	 * option.
-	 */
-
-	struct list_head refd_objects;
-
 	/** Mapping of mm object handles to object pointers. */
 	struct idr object_idr;
 	/** Lock for synchronization of access to object_idr. */
 	spinlock_t table_lock;
 
-	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;
 	void *driver_priv;
 
@@ -684,7 +665,9 @@ struct drm_gem_object {
 
 /* per-master structure */
 struct drm_master {
-	
+
+	struct kref refcount; /* refcount for this master */
+
 	struct list_head head; /**< each minor contains a list of masters */
 	struct drm_minor *minor; /**< link back to minor we are a master for */
 
@@ -901,7 +884,6 @@ struct drm_device {
 	int map_count;			/**< Number of mappable regions */
 	struct drm_open_hash map_hash;       /**< User token hash table for maps */
 	struct drm_mm offset_manager;        /**< User token manager */
-	struct drm_open_hash object_hash;    /**< User token hash table for objects */
 	struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
 	struct page *ttm_dummy_page;
 
@@ -1366,12 +1348,13 @@ extern int drm_setmaster_ioctl(struct drm_device *dev, void *data,
 			       struct drm_file *file_priv);
 extern int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
-extern struct drm_master *drm_get_master(struct drm_minor *minor);
-extern void drm_put_master(struct drm_master *master);
+struct drm_master *drm_master_create(struct drm_minor *minor);
+extern struct drm_master *drm_master_get(struct drm_master *master);
+extern void drm_master_put(struct drm_master **master);
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
-		     struct drm_driver *driver);
+		       struct drm_driver *driver);
 extern int drm_put_dev(struct drm_device *dev);
-extern int drm_put_minor(struct drm_device *dev, struct drm_minor **p);
+extern int drm_put_minor(struct drm_minor **minor_p);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 
 extern struct class *drm_class;

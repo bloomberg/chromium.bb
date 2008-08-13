@@ -135,7 +135,7 @@ int i915_dma_cleanup(struct drm_device * dev)
 	return 0;
 }
 
-#if defined(I915_HAVE_BUFFER) && defined(DRI2)
+#if defined(DRI2)
 #define DRI2_SAREA_BLOCK_TYPE(b) ((b) >> 16)
 #define DRI2_SAREA_BLOCK_SIZE(b) ((b) & 0xffff)
 #define DRI2_SAREA_BLOCK_NEXT(p)				\
@@ -213,12 +213,7 @@ static int i915_initialize(struct drm_device * dev,
 		}
 	}
 
-#ifdef I915_HAVE_BUFFER
-	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
-		dev_priv->max_validate_buffers = I915_MAX_VALIDATE_BUFFERS;
-	}
-#endif
-
+	
 	if (init->ring_size != 0) {
 		dev_priv->ring.Size = init->ring_size;
 		dev_priv->ring.tail_mask = dev_priv->ring.Size - 1;
@@ -253,10 +248,25 @@ static int i915_initialize(struct drm_device * dev,
 	 */
 	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 
-#ifdef I915_HAVE_BUFFER
-	if (!drm_core_check_feature(dev, DRIVER_MODESET)) {
-		mutex_init(&dev_priv->cmdbuf_mutex);
+	/* Program Hardware Status Page */
+	if (!I915_NEED_GFX_HWS(dev)) {
+		dev_priv->status_page_dmah =
+			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
+
+		if (!dev_priv->status_page_dmah) {
+			i915_dma_cleanup(dev);
+			DRM_ERROR("Can not allocate hardware status page\n");
+			return -ENOMEM;
+		}
+		dev_priv->hws_vaddr = dev_priv->status_page_dmah->vaddr;
+		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+
+		memset(dev_priv->hws_vaddr, 0, PAGE_SIZE);
+
+		I915_WRITE(0x02080, dev_priv->dma_status_page);
 	}
+	DRM_DEBUG("Enabled hardware status page\n");
+
 #ifdef DRI2
 	if (init->func == I915_INIT_DMA2) {
 		int ret = setup_dri2_sarea(dev, file_priv, init);
@@ -267,7 +277,6 @@ static int i915_initialize(struct drm_device * dev,
 		}
 	}
 #endif /* DRI2 */
-#endif /* I915_HAVE_BUFFER */
 
 	return 0;
 }
@@ -533,9 +542,6 @@ int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush)
 static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 				   struct drm_i915_cmdbuffer * cmd)
 {
-#ifdef I915_HAVE_FENCE
-	struct drm_i915_private *dev_priv = dev->dev_private;
-#endif
 	int nbox = cmd->num_cliprects;
 	int i = 0, count, ret;
 
@@ -562,10 +568,6 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 	}
 
 	i915_emit_breadcrumb(dev);
-#ifdef I915_HAVE_FENCE
-	if (unlikely((dev_priv->counter & 0xFF) == 0))
-		drm_fence_flush_old(dev, 0, dev_priv->counter);
-#endif
 	return 0;
 }
 
@@ -616,10 +618,6 @@ int i915_dispatch_batchbuffer(struct drm_device * dev,
 	}
 
 	i915_emit_breadcrumb(dev);
-#ifdef I915_HAVE_FENCE
-	if (unlikely((dev_priv->counter & 0xFF) == 0))
-		drm_fence_flush_old(dev, 0, dev_priv->counter);
-#endif
 	return 0;
 }
 
@@ -678,7 +676,6 @@ static void i915_do_dispatch_flip(struct drm_device * dev, int plane, int sync)
 
 void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
 	int i;
 
@@ -692,10 +689,6 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 			i915_do_dispatch_flip(dev, i, sync);
 
 	i915_emit_breadcrumb(dev);
-#ifdef I915_HAVE_FENCE
-	if (unlikely(!sync && ((dev_priv->counter & 0xFF) == 0)))
-		drm_fence_flush_old(dev, 0, dev_priv->counter);
-#endif
 }
 
 int i915_quiescent(struct drm_device *dev)
@@ -1049,9 +1042,6 @@ struct drm_ioctl_desc i915_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_MMIO, i915_mmio, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
-#ifdef I915_HAVE_BUFFER
-	DRM_IOCTL_DEF(DRM_I915_EXECBUFFER, i915_execbuffer, DRM_AUTH),
-#endif
 	DRM_IOCTL_DEF(DRM_I915_GEM_INIT, i915_gem_init_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_GEM_EXECBUFFER, i915_gem_execbuffer, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_GEM_PIN, i915_gem_pin_ioctl, DRM_AUTH|DRM_ROOT_ONLY),
