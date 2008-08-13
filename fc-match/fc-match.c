@@ -66,10 +66,10 @@ extern int optind, opterr, optopt;
 static void usage (char *program)
 {
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-svV?] [--sort] [--all] [--verbose] [--version] [--help] [pattern]\n",
+    fprintf (stderr, "usage: %s [-savV?] [--sort] [--all] [--verbose] [--version] [--help] [pattern]\n",
 	     program);
 #else
-    fprintf (stderr, "usage: %s [-svV?] [pattern]\n",
+    fprintf (stderr, "usage: %s [-savV?] [pattern]\n",
 	     program);
 #endif
     fprintf (stderr, "List fonts matching [pattern]\n");
