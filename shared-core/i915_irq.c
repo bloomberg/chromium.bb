@@ -948,11 +948,9 @@ int i915_driver_irq_postinstall(struct drm_device * dev)
 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int ret, num_pipes = 2;
 
-	DRM_SPININIT(&dev_priv->swaps_lock, "swap");
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
 
-	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
 	dev_priv->user_irq_refcount = 0;
 	dev_priv->irq_mask_reg = ~0;
 

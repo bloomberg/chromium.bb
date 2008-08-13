@@ -1073,6 +1073,9 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 
 	i915_gem_load(dev);
 
+	DRM_SPININIT(&dev_priv->swaps_lock, "swap");
+	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
+
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_init_chipset_flush_compat(dev);
@@ -1099,6 +1102,9 @@ int i915_driver_unload(struct drm_device *dev)
 	i915_free_hardware_status(dev);
 
     	drm_rmmap(dev, dev_priv->mmio_map);
+
+	DRM_SPINUNINIT(&dev_priv->swaps_lock);
+	DRM_SPINUNINIT(&dev_priv->user_irq_lock);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
