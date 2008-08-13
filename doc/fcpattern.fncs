@@ -31,7 +31,7 @@ Creates a pattern with no properties; used to build patterns from scratch.
 
 @RET@		FcPattern *	
 @FUNC@		FcPatternDuplicate
-@TYPE1@		FcPattern * 			@ARG1@		 p
+@TYPE1@		const FcPattern * 		@ARG1@		 p
 @PURPOSE@	Copy a pattern
 @DESC@
 Copy a pattern, returning a new pattern that matches
