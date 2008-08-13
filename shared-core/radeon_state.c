@@ -3121,10 +3121,6 @@ static int radeon_cp_getparam(struct drm_device *dev, void *data, struct drm_fil
 		value = dev_priv->num_gb_pipes;
 		break;
 	case RADEON_PARAM_KERNEL_MM:
-		/* BSD TODO */
-		value = 1;
-		break;
-	case RADEON_PARAM_KERNEL_MM:
 		value = dev_priv->mm_enabled;
 		break;
 	default:
