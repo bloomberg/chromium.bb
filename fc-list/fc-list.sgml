@@ -20,7 +20,7 @@ manpage.1: manpage.sgml
   <!ENTITY dhfirstname "<firstname>Josselin</firstname>">
   <!ENTITY dhsurname   "<surname>Mouette</surname>">
   <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY dhdate      "<date>Sep 16, 2003</date>">
+  <!ENTITY dhdate      "<date>Aug 13, 2008</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
@@ -67,8 +67,8 @@ manpage.1: manpage.sgml
       <arg><option>--verbose</option></arg>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
-      <arg><option><replaceable>pattern</replaceable></option></arg>
-      <arg><option><replaceable>element</replaceable></option></arg>
+      <sbr>
+      <arg><option><replaceable>pattern</replaceable></option> <arg rep="repeat"><option><replaceable>element</replaceable></option></arg> </arg>
       
      </cmdsynopsis>
   </refsynopsisdiv>
@@ -155,7 +155,11 @@ manpage.1: manpage.sgml
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para><command>fc-cache</command> (1).</para>
+    <para>
+      <command>fc-cat</command>(1)
+      <command>fc-cache</command>(1)
+      <command>fc-match</command>(1)
+    </para>
 
     <para>The fontconfig user's guide, in HTML format:
       <filename>/usr/share/doc/fontconfig/fontconfig-user.html</filename>.</para>

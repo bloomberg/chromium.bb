@@ -20,7 +20,7 @@ manpage.1: manpage.sgml
   <!ENTITY dhfirstname "<firstname>Patrick</firstname>">
   <!ENTITY dhsurname   "<surname>Lam</surname>">
   <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY dhdate      "<date>Apr  6, 2006</date>">
+  <!ENTITY dhdate      "<date>Aug 13, 2008</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
@@ -63,7 +63,8 @@ manpage.1: manpage.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
 
-      <arg><option>-svV?</option></arg>
+      <arg><option>-asvV?</option></arg>
+      <arg><option>--all</option></arg>
       <arg><option>--sort</option></arg>
       <arg><option>--verbose</option></arg>
       <arg><option>--version</option></arg>
@@ -75,12 +76,14 @@ manpage.1: manpage.sgml
   <refsect1>
     <title>DESCRIPTION</title>
 
-    <para><command>&dhpackage;</command> matches font-pattern (empty
+    <para><command>&dhpackage;</command> matches
+    <replaceable>font-pattern</replaceable> (empty
 pattern by default) using the normal fontconfig matching rules to find
-the best font available.  If --sort is given, the sorted list of best
-matching fonts is displayed.  With --verbose, the whole font pattern
+the best font available.  If <option>--sort</option> is given, the sorted list of best
+matching fonts is displayed.  With <option>--verbose</option>, the whole font pattern
 for each match is printed, otherwise only the file, family and style
-are printed..</para>
+are printed.  The <option>--all</option> option works like
+<option>--sort</option> except that no pruning is done on the list of fonts.</para>
 
   </refsect1>
   <refsect1>
@@ -116,6 +119,15 @@ are printed..</para>
         </listitem>
       </varlistentry>
       <varlistentry>
+        <term><option>-a</option>
+          <option>--all</option>
+        </term>
+        <listitem>
+          <para>Displays sorted list of best matching fonts, but do not do any
+		pruning on the list.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
         <term><option>-s</option>
           <option>--sort</option>
         </term>
@@ -137,7 +149,11 @@ are printed..</para>
   <refsect1>
     <title>SEE ALSO</title>
 
-    <para><command>fc-list</command> (1).</para>
+    <para>
+      <command>fc-cat</command>(1)
+      <command>fc-cache</command>(1)
+      <command>fc-list</command>(1)
+    </para>
 
     <para>The fontconfig user's guide, in HTML format:
       <filename>/usr/share/doc/fontconfig/fontconfig-user.html</filename>.</para>
