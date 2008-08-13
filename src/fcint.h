@@ -863,6 +863,9 @@ FcObjectFromName (const char * name);
 FcPrivate const char *
 FcObjectName (FcObject object);
 
+FcPrivate FcObjectSet *
+FcObjectGetSet (void);
+
 FcPrivate FcBool
 FcObjectInit (void);
 

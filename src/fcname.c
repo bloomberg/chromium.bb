@@ -327,6 +327,20 @@ FcObjectFromName (const char * name)
     return 0;
 }
 
+FcObjectSet *
+FcObjectGetSet (void)
+{
+    int		i;
+    FcObjectSet	*os = NULL;
+
+
+    os = FcObjectSetCreate ();
+    for (i = 0; i < FcObjectsNumber; i++)
+	FcObjectSetAdd (os, FcObjects[i].object);
+
+    return os;
+}
+
 FcBool
 FcObjectInit (void)
 {

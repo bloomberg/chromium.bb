@@ -76,8 +76,10 @@ manpage.1: manpage.sgml
     <title>DESCRIPTION</title>
 
     <para><command>&dhpackage;</command> lists fonts and styles
-      available on the system for applications using fontconfig.</para>
-
+      available on the system for applications using fontconfig.
+      With <option>--verbose</option>, the whole font pattern
+      for each font is printed, otherwise only the elements requested
+      are printed (family and style if none provided).</para>
   </refsect1>
   <refsect1>
     <title>OPTIONS</title>
@@ -92,7 +94,9 @@ manpage.1: manpage.sgml
           <option>--verbose</option>
         </term>
         <listitem>
-          <para>Display status information while busy.</para>
+          <para>Print whole font pattern for each match.  Provided
+	        <replaceable>element</replaceable>s are ignored in this
+		case.</para>
         </listitem>
       </varlistentry>
       <varlistentry>

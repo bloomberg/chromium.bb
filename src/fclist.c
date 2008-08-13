@@ -457,6 +457,7 @@ FcFontSetList (FcConfig	    *config,
     FcListHashTable table;
     int		    i;
     FcListBucket    *bucket;
+    int             destroy_os = 0;
 
     if (!config)
     {
@@ -468,6 +469,13 @@ FcFontSetList (FcConfig	    *config,
 	    goto bail0;
     }
     FcListHashTableInit (&table);
+
+    if (!os)
+    {
+	os = FcObjectGetSet ();
+	destroy_os = 1;
+    }
+
     /*
      * Walk all available fonts adding those that
      * match to the hash table
@@ -532,6 +540,8 @@ bail2:
 bail1:
     FcListHashTableCleanup (&table);
 bail0:
+    if (destroy_os)
+	FcObjectSetDestroy (os);
     return 0;
 }
 

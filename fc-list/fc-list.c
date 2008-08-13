@@ -71,11 +71,11 @@ static void usage (char *program)
     fprintf (stderr, "List fonts matching [pattern]\n");
     fprintf (stderr, "\n");
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "  -v, --verbose        display status information while busy\n");
+    fprintf (stderr, "  -v, --verbose        display entire font pattern\n");
     fprintf (stderr, "  -V, --version        display font config version and exit\n");
     fprintf (stderr, "  -?, --help           display this help and exit\n");
 #else
-    fprintf (stderr, "  -v         (verbose) display status information while busy\n");
+    fprintf (stderr, "  -v         (verbose) display entire font pattern\n");
     fprintf (stderr, "  -V         (version) display font config version and exit\n");
     fprintf (stderr, "  -?         (help)    display this help and exit\n");
 #endif
@@ -85,7 +85,7 @@ static void usage (char *program)
 int
 main (int argc, char **argv)
 {
-    /*int		verbose = 0;*/
+    int		verbose = 0;
     int		i;
     FcObjectSet *os = 0;
     FcFontSet	*fs;
@@ -105,7 +105,7 @@ main (int argc, char **argv)
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
 	case 'v':
-	    /* verbose = 1; */
+	    verbose = 1;
 	    break;
 	default:
 	    usage (argv[0]);
@@ -124,20 +124,22 @@ main (int argc, char **argv)
     if (argv[i])
     {
 	pat = FcNameParse ((FcChar8 *) argv[i]);
-	while (argv[++i])
-	{
-	    if (!os)
-		os = FcObjectSetCreate ();
-	    FcObjectSetAdd (os, argv[i]);
-	}
+	if (!verbose)
+	    while (argv[++i])
+	    {
+		if (!os)
+		    os = FcObjectSetCreate ();
+		FcObjectSetAdd (os, argv[i]);
+	    }
     }
     else
 	pat = FcPatternCreate ();
     
-    if (!os)
+    if (!verbose && !os)
 	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, (char *) 0);
     fs = FcFontList (0, pat, os);
-    FcObjectSetDestroy (os);
+    if (os)
+	FcObjectSetDestroy (os);
     if (pat)
 	FcPatternDestroy (pat);
 
@@ -150,11 +152,16 @@ main (int argc, char **argv)
 	    FcChar8 *font;
 	    FcChar8 *file;
 
-	    font = FcNameUnparse (fs->fonts[j]);
-	    if (FcPatternGetString (fs->fonts[j], FC_FILE, 0, &file) == FcResultMatch)
-		printf ("%s: ", file);
-	    printf ("%s\n", font);
-	    free (font);
+	    if (verbose)
+		FcPatternPrint (fs->fonts[j]);
+	    else
+	    {
+		font = FcNameUnparse (fs->fonts[j]);
+		if (FcPatternGetString (fs->fonts[j], FC_FILE, 0, &file) == FcResultMatch)
+		    printf ("%s: ", file);
+		printf ("%s\n", font);
+		free (font);
+	    }
 	}
 	FcFontSetDestroy (fs);
     }
