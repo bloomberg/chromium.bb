@@ -170,6 +170,7 @@ blanks were present in the configuration, this function will return 0.
 Returns the interval between automatic checks of the configuration (in
 seconds) specified in <parameter>config</parameter>.  The configuration is checked during
 a call to FcFontList when this interval has passed since the last check.
+An interval setting of zero disables automatic checks.
 @@
 
 @RET@           FcBool
@@ -180,6 +181,7 @@ a call to FcFontList when this interval has passed since the last check.
 @DESC@
 Sets the rescan interval. Returns FcFalse if the interval cannot be set (due
 to allocation failure). Otherwise returns FcTrue.
+An interval setting of zero disables automatic checks.
 @@
 
 @RET@           FcBool
