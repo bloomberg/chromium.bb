@@ -77,6 +77,18 @@ Returns whether <parameter>pa</parameter> and <parameter>pb</parameter> have exa
 objects in <parameter>os</parameter>.
 @@
 
+@RET@		FcPattern *
+@FUNC@		FcPatternFilter
+@TYPE1@		FcPattern * 			@ARG1@		 p
+@TYPE2@		const FcObjectSet * 		@ARG1@		 os
+@PURPOSE@	Filter the objects of pattern
+@DESC@
+Returns a new pattern that only has those objects from
+<parameter>p</parameter> that are in <parameter>os</parameter>.
+If <parameter>os</parameter> is NULL, a duplicate of
+<parameter>p</parameter> is returned.
+@@
+
 @RET@		FcChar32
 @FUNC@		FcPatternHash
 @TYPE1@		const FcPattern *		@ARG1@		p

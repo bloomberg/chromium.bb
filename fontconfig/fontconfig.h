@@ -740,6 +740,9 @@ FcPatternDuplicate (const FcPattern *p);
 FcPublic void
 FcPatternReference (FcPattern *p);
 
+FcPublic FcPattern *
+FcPatternFilter (FcPattern *p, const FcObjectSet *os);
+
 FcPublic void
 FcValueDestroy (FcValue v);
 

@@ -997,6 +997,43 @@ FcPatternAppend (FcPattern *p, FcPattern *s)
     return FcTrue;
 }
 
+FcPattern *
+FcPatternFilter (FcPattern *p, const FcObjectSet *os)
+{
+    int		    i;
+    FcPattern	    *ret;
+    FcPatternElt    *e;
+    FcValueListPtr  v;
+
+    if (!os)
+	return FcPatternDuplicate (p);
+
+    ret = FcPatternCreate ();
+    if (!ret)
+	return NULL;
+
+    for (i = 0; i < os->nobject; i++)
+    {
+	FcObject object = FcObjectFromName (os->objects[i]);
+	e = FcPatternObjectFindElt (p, object);
+	if (e)
+	{
+	    for (v = FcPatternEltValues(e); v; v = FcValueListNext(v))
+	    {
+		if (!FcPatternObjectAddWithBinding (ret, e->object,
+						    FcValueCanonicalize(&v->value),
+						    v->binding, FcTrue))
+		    goto bail0;
+	    }
+	}
+    }
+    return p;
+
+bail0:
+    FcPatternDestroy (ret);
+    return NULL;
+}
+
 #define OBJECT_HASH_SIZE    31
 static struct objectBucket {
     struct objectBucket	*next;
