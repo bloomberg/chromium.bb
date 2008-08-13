@@ -844,10 +844,10 @@ dri_gem_flink(dri_bo *bo, uint32_t *name)
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink);
 	if (ret != 0)
 	    return -errno;
-	bo_gem->gem_handle = flink.name;
+	bo_gem->global_name = flink.name;
     }
     
-    *name = bo_gem->gem_handle;
+    *name = bo_gem->global_name;
     return 0;
 }
 
