@@ -65,13 +65,14 @@ Checks all of the files related to <parameter>config</parameter> and returns
 whether any of them has been modified since the configuration was created.
 @@
 
-@RET@		FcBool
+@RET@		FcChar8 *
 @FUNC@		FcConfigHome
 @TYPE1@		void
 @PURPOSE@	return the current home directory.
 @DESC@
 Return the current user's home directory, if it is available, and if using it
-is enabled. See also <function>FcConfigEnableHome</function>).
+is enabled, and NULL otherwise.
+See also <function>FcConfigEnableHome</function>).
 @@
 
 @RET@		FcBol
