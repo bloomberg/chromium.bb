@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * fontconfig/doc/edit-sgml.c
  *
  * Copyright © 2003 Keith Packard
  *

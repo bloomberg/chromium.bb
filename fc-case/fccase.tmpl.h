@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * fontconfig/fc-case/fccase.tmpl.h
  *
  * Copyright © 2003 Keith Packard
  *

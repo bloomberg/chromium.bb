@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * fontconfig/fc-glyphname/fc-glyphname.c
  *
  * Copyright © 2003 Keith Packard
  *

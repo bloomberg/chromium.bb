@@ -21,7 +21,7 @@
 <!ENTITY version SYSTEM "version.sgml">
 ]>
 <!--
-    $Id$
+    fontconfig/doc/local-fontconfig-devel.sgml
    
     Copyright © 2003 Keith Packard
    

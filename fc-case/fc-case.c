@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * fontconfig/fc-case/fc-case.c
  *
  * Copyright © 2004 Keith Packard
  *

@@ -1,5 +1,5 @@
 # 
-#  $Id$
+#  fontconfig/fc-list/Makefile.am
 # 
 #  Copyright © 2003 Keith Packard
 # 

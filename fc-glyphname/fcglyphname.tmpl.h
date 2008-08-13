@@ -1,5 +1,5 @@
 /*
- * $Id$
+ * fontconfig/fc-glyphname/fcglyphname.tmpl.h
  *
  * Copyright © 2003 Keith Packard
  *
