@@ -100,6 +100,32 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 	return 0;
 }
 
+static int
+i915_init_hws_phys(struct drm_device *dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	int ret = 0;
+
+	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE,
+						   0xffffffff);
+
+	if (!dev_priv->status_page_dmah) {
+		DRM_ERROR("Can not allocate hardware status page\n");
+		ret = -ENOMEM;
+		goto out;
+	}
+	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
+	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+
+	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
+
+	I915_WRITE(HWS_PGA, dev_priv->dma_status_page);
+	DRM_DEBUG("hws kernel virt: 0x%p\n", dev_priv->hw_status_page);
+
+out:
+	return ret;
+}
+
 static int i915_load_modeset_init(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -112,6 +138,9 @@ static int i915_load_modeset_init(struct drm_device *dev)
 	drm_mm_init(&dev_priv->vram, 0, prealloc_size);
 	/* Let GEM Manage from end of prealloc space to end of aperture */
 	i915_gem_do_init(dev, prealloc_size, agp_size);
+
+	if (!I915_NEED_GFX_HWS(dev))
+		i915_init_hws_phys(dev);
 
 	ret = i915_gem_init_ringbuffer(dev);
 	if (ret)
@@ -354,6 +383,8 @@ int i915_driver_unload(struct drm_device *dev)
 		mutex_unlock(&dev->struct_mutex);
 		drm_mm_takedown(&dev_priv->vram);
 		i915_gem_lastclose(dev);
+		if (!I915_NEED_GFX_HWS(dev))
+			drm_pci_free(dev, dev_priv->status_page_dmah);
 	}
 
         drm_rmmap(dev, dev_priv->mmio_map);
