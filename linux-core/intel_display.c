@@ -982,12 +982,12 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 	struct drm_device *dev = crtc->dev;
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
-	struct drm_buffer_object *bo;
+	struct drm_gem_object *bo;
+	struct drm_i915_gem_object *obj_priv;
 	int pipe = intel_crtc->pipe;
 	uint32_t control = (pipe == 0) ? CURACNTR : CURBCNTR;
 	uint32_t base = (pipe == 0) ? CURABASE : CURBBASE;
 	uint32_t temp;
-	int ret;
 	size_t addr;
 
 	DRM_DEBUG("\n");
@@ -1010,25 +1010,22 @@ static int intel_crtc_cursor_set(struct drm_crtc *crtc,
 		return -EINVAL;
 	}
 
-	ret = drm_get_buffer_object(dev, &bo, handle);
-	if (ret) {
-		return -EINVAL;
-	}
+	bo = drm_gem_object_lookup(dev, file_priv, handle);
+	if (!bo)
+		return -ENOENT;
 
-	if ((bo->mem.flags & DRM_BO_MASK_MEM) != DRM_BO_FLAG_MEM_VRAM) {
-		DRM_ERROR("buffer needs to be in VRAM\n");
-		return -ENOMEM;
-	}
+	obj_priv = bo->driver_private;
 
-	if (bo->mem.size < width * height * 4) {
+	if (bo->size < width * height * 4) {
 		DRM_ERROR("buffer is to small\n");
 		return -ENOMEM;
 	}
 
-	if (dev_priv->cursor_needs_physical)
-		addr = dev_priv->stolen_base + bo->offset;
-	else
-		addr = bo->offset;
+	if (dev_priv->cursor_needs_physical) {
+		addr = dev->agp->base + obj_priv->gtt_offset;
+	} else {
+		addr = obj_priv->gtt_offset;
+	}
 
 	intel_crtc->cursor_addr = addr;
 	temp = 0;
