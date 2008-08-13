@@ -1664,6 +1664,7 @@ extern void radeon_master_destroy(struct drm_device *dev, struct drm_master *mas
 extern void radeon_cp_dispatch_flip(struct drm_device * dev, struct drm_master *master);
 extern int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
 extern int radeon_cs_init(struct drm_device *dev);
+void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master);
 
 #define MARK_SAFE		1
 #define MARK_CHECK_OFFSET	2

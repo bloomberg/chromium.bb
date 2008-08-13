@@ -2223,6 +2223,9 @@ static int radeon_cp_swap(struct drm_device *dev, void *data, struct drm_file *f
 	if (sarea_priv->nbox > RADEON_NR_SAREA_CLIPRECTS)
 		sarea_priv->nbox = RADEON_NR_SAREA_CLIPRECTS;
 
+	if (dev_priv->mm.vram_offset)
+		radeon_gem_update_offsets(dev, file_priv->master);
+
 	radeon_cp_dispatch_swap(dev, file_priv->master);
 	sarea_priv->ctx_owner = 0;
 

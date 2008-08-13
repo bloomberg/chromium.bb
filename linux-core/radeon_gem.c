@@ -1126,3 +1126,50 @@ static void radeon_gem_dma_bufs_destroy(struct drm_device *dev)
 	drm_bo_kunmap(&dev_priv->mm.dma_bufs.kmap);
 	drm_bo_usage_deref_unlocked(&dev_priv->mm.dma_bufs.bo);
 }
+
+
+static struct drm_gem_object *gem_object_get(struct drm_device *dev, uint32_t name)
+{
+	struct drm_gem_object *obj;
+
+	spin_lock(&dev->object_name_lock);
+	obj = idr_find(&dev->object_name_idr, name);
+	if (obj)
+		drm_gem_object_reference(obj);
+	spin_unlock(&dev->object_name_lock);
+	return obj;
+}
+
+void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_radeon_master_private *master_priv = master->driver_priv;
+	drm_radeon_sarea_t *sarea_priv = master_priv->sarea_priv;
+	struct drm_gem_object *obj;
+	struct drm_radeon_gem_object *obj_priv;
+
+	/* update front_pitch_offset and back_pitch_offset */
+	DRM_ERROR("old front %x back %x\n", dev_priv->front_pitch_offset, dev_priv->back_pitch_offset);
+	obj = gem_object_get(dev, sarea_priv->front_handle);
+	if (obj) {
+		obj_priv = obj->driver_private;
+
+		dev_priv->front_offset = obj_priv->bo->offset;
+		dev_priv->front_pitch_offset = (((sarea_priv->front_pitch / 64) << 22) |
+						((obj_priv->bo->offset
+						  + dev_priv->fb_location) >> 10));
+		drm_gem_object_unreference(obj);
+	}
+
+	obj = gem_object_get(dev, sarea_priv->back_handle);
+	if (obj) {
+		obj_priv = obj->driver_private;
+		dev_priv->back_offset = obj_priv->bo->offset;
+		dev_priv->back_pitch_offset = (((sarea_priv->back_pitch / 64) << 22) |
+						((obj_priv->bo->offset
+						  + dev_priv->fb_location) >> 10));
+		drm_gem_object_unreference(obj);
+	}
+	dev_priv->color_fmt = RADEON_COLOR_FORMAT_ARGB8888;
+
+}
