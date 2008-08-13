@@ -1116,7 +1116,7 @@ static int radeon_gem_dma_bufs_init(struct drm_device *dev)
 	dev_priv->mm.fake_agp_map.size = size;
 	
 	dev->agp_buffer_map = &dev_priv->mm.fake_agp_map;
-
+	dev_priv->gart_buffers_offset = dev_priv->mm.dma_bufs.bo->offset + dev_priv->gart_vm_start;
 	return 0;
 }
 
