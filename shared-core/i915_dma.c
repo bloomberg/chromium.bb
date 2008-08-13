@@ -248,25 +248,6 @@ static int i915_initialize(struct drm_device * dev,
 	 */
 	dev_priv->vblank_pipe = DRM_I915_VBLANK_PIPE_A;
 
-	/* Program Hardware Status Page */
-	if (!I915_NEED_GFX_HWS(dev)) {
-		dev_priv->status_page_dmah =
-			drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
-
-		if (!dev_priv->status_page_dmah) {
-			i915_dma_cleanup(dev);
-			DRM_ERROR("Can not allocate hardware status page\n");
-			return -ENOMEM;
-		}
-		dev_priv->hws_vaddr = dev_priv->status_page_dmah->vaddr;
-		dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
-
-		memset(dev_priv->hws_vaddr, 0, PAGE_SIZE);
-
-		I915_WRITE(0x02080, dev_priv->dma_status_page);
-	}
-	DRM_DEBUG("Enabled hardware status page\n");
-
 #ifdef DRI2
 	if (init->func == I915_INIT_DMA2) {
 		int ret = setup_dri2_sarea(dev, file_priv, init);
