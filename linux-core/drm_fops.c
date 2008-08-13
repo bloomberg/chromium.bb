@@ -54,10 +54,11 @@ static int drm_setup(struct drm_device * dev)
 
 	atomic_set(&dev->ioctl_count, 0);
 	atomic_set(&dev->vma_count, 0);
-	dev->buf_use = 0;
-	atomic_set(&dev->buf_alloc, 0);
 
-	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA)) {
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) && !drm_core_check_feature(dev, DRIVER_MODESET)) {
+		dev->buf_use = 0;
+		atomic_set(&dev->buf_alloc, 0);
+
 		i = drm_dma_setup(dev);
 		if (i < 0)
 			return i;

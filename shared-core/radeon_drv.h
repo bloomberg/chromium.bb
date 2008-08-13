@@ -277,6 +277,9 @@ struct radeon_mm_info {
 	struct radeon_mm_obj pcie_table;
 	struct radeon_mm_obj ring;
 	struct radeon_mm_obj ring_read;
+
+	struct radeon_mm_obj dma_bufs;
+	struct drm_map fake_agp_map;
 };
 
 #include "radeon_mode.h"

@@ -250,7 +250,7 @@ int drm_lastclose(struct drm_device * dev)
 	}
 	dev->queue_count = 0;
 
-	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) && !drm_core_check_feature(dev, DRIVER_MODESET))
 		drm_dma_takedown(dev);
 
 	dev->dev_mapping = NULL;

@@ -29,6 +29,8 @@
 
 static int radeon_gem_ib_init(struct drm_device *dev);
 static int radeon_gem_ib_destroy(struct drm_device *dev);
+static int radeon_gem_dma_bufs_init(struct drm_device *dev);
+static void radeon_gem_dma_bufs_destroy(struct drm_device *dev);
 
 int radeon_gem_init_object(struct drm_gem_object *obj)
 {
@@ -608,6 +610,7 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 
 	/* init the indirect buffers */
 	radeon_gem_ib_init(dev);
+	radeon_gem_dma_bufs_init(dev);
 	return 0;			  
 
 }
@@ -650,6 +653,7 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
+	radeon_gem_dma_bufs_destroy(dev);
 	radeon_gem_ib_destroy(dev);
 
 	mutex_lock(&dev->struct_mutex);
@@ -878,3 +882,247 @@ free_all:
 	return -ENOMEM;
 }
 
+#define RADEON_DMA_BUFFER_SIZE (64 * 1024)
+#define RADEON_DMA_BUFFER_COUNT (16)
+
+
+/**
+ * Cleanup after an error on one of the addbufs() functions.
+ *
+ * \param dev DRM device.
+ * \param entry buffer entry where the error occurred.
+ *
+ * Frees any pages and buffers associated with the given entry.
+ */
+static void drm_cleanup_buf_error(struct drm_device * dev,
+				  struct drm_buf_entry * entry)
+{
+	int i;
+
+	if (entry->seg_count) {
+		for (i = 0; i < entry->seg_count; i++) {
+			if (entry->seglist[i]) {
+				drm_pci_free(dev, entry->seglist[i]);
+			}
+		}
+		drm_free(entry->seglist,
+			 entry->seg_count *
+			 sizeof(*entry->seglist), DRM_MEM_SEGS);
+
+		entry->seg_count = 0;
+	}
+
+	if (entry->buf_count) {
+		for (i = 0; i < entry->buf_count; i++) {
+			if (entry->buflist[i].dev_private) {
+				drm_free(entry->buflist[i].dev_private,
+					 entry->buflist[i].dev_priv_size,
+					 DRM_MEM_BUFS);
+			}
+		}
+		drm_free(entry->buflist,
+			 entry->buf_count *
+			 sizeof(*entry->buflist), DRM_MEM_BUFS);
+
+		entry->buf_count = 0;
+	}
+}
+
+static int radeon_gem_addbufs(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct drm_device_dma *dma = dev->dma;
+	struct drm_buf_entry *entry;
+	struct drm_buf *buf;
+	unsigned long offset;
+	unsigned long agp_offset;
+	int count;
+	int order;
+	int size;
+	int alignment;
+	int page_order;
+	int total;
+	int byte_count;
+	int i;
+	struct drm_buf **temp_buflist;
+	
+	if (!dma)
+		return -EINVAL;
+
+	count = RADEON_DMA_BUFFER_COUNT;
+	order = drm_order(RADEON_DMA_BUFFER_SIZE);
+	size = 1 << order;
+
+	alignment = PAGE_ALIGN(size);
+	page_order = order - PAGE_SHIFT > 0 ? order - PAGE_SHIFT : 0;
+	total = PAGE_SIZE << page_order;
+
+	byte_count = 0;
+	agp_offset = dev_priv->mm.dma_bufs.bo->offset;
+
+	DRM_DEBUG("count:      %d\n", count);
+	DRM_DEBUG("order:      %d\n", order);
+	DRM_DEBUG("size:       %d\n", size);
+	DRM_DEBUG("agp_offset: %lu\n", agp_offset);
+	DRM_DEBUG("alignment:  %d\n", alignment);
+	DRM_DEBUG("page_order: %d\n", page_order);
+	DRM_DEBUG("total:      %d\n", total);
+
+	if (order < DRM_MIN_ORDER || order > DRM_MAX_ORDER)
+		return -EINVAL;
+	if (dev->queue_count)
+		return -EBUSY;	/* Not while in use */
+
+	spin_lock(&dev->count_lock);
+	if (dev->buf_use) {
+		spin_unlock(&dev->count_lock);
+		return -EBUSY;
+	}
+	atomic_inc(&dev->buf_alloc);
+	spin_unlock(&dev->count_lock);
+
+	mutex_lock(&dev->struct_mutex);
+	entry = &dma->bufs[order];
+	if (entry->buf_count) {
+		mutex_unlock(&dev->struct_mutex);
+		atomic_dec(&dev->buf_alloc);
+		return -ENOMEM;	/* May only call once for each order */
+	}
+
+	if (count < 0 || count > 4096) {
+		mutex_unlock(&dev->struct_mutex);
+		atomic_dec(&dev->buf_alloc);
+		return -EINVAL;
+	}
+
+	entry->buflist = drm_alloc(count * sizeof(*entry->buflist),
+				   DRM_MEM_BUFS);
+	if (!entry->buflist) {
+		mutex_unlock(&dev->struct_mutex);
+		atomic_dec(&dev->buf_alloc);
+		return -ENOMEM;
+	}
+	memset(entry->buflist, 0, count * sizeof(*entry->buflist));
+
+	entry->buf_size = size;
+	entry->page_order = page_order;
+
+	offset = 0;
+
+	while (entry->buf_count < count) {
+		buf = &entry->buflist[entry->buf_count];
+		buf->idx = dma->buf_count + entry->buf_count;
+		buf->total = alignment;
+		buf->order = order;
+		buf->used = 0;
+
+		buf->offset = (dma->byte_count + offset);
+		buf->bus_address = dev_priv->gart_vm_start + agp_offset + offset;
+		buf->address = (void *)(agp_offset + offset);
+		buf->next = NULL;
+		buf->waiting = 0;
+		buf->pending = 0;
+		init_waitqueue_head(&buf->dma_wait);
+		buf->file_priv = NULL;
+
+		buf->dev_priv_size = dev->driver->dev_priv_size;
+		buf->dev_private = drm_alloc(buf->dev_priv_size, DRM_MEM_BUFS);
+		if (!buf->dev_private) {
+			/* Set count correctly so we free the proper amount. */
+			entry->buf_count = count;
+			drm_cleanup_buf_error(dev, entry);
+			mutex_unlock(&dev->struct_mutex);
+			atomic_dec(&dev->buf_alloc);
+			return -ENOMEM;
+		}
+
+		memset(buf->dev_private, 0, buf->dev_priv_size);
+
+		DRM_DEBUG("buffer %d @ %p\n", entry->buf_count, buf->address);
+
+		offset += alignment;
+		entry->buf_count++;
+		byte_count += PAGE_SIZE << page_order;
+	}
+
+	DRM_DEBUG("byte_count: %d\n", byte_count);
+
+	temp_buflist = drm_realloc(dma->buflist,
+				   dma->buf_count * sizeof(*dma->buflist),
+				   (dma->buf_count + entry->buf_count)
+				   * sizeof(*dma->buflist), DRM_MEM_BUFS);
+	if (!temp_buflist) {
+		/* Free the entry because it isn't valid */
+		drm_cleanup_buf_error(dev, entry);
+		mutex_unlock(&dev->struct_mutex);
+		atomic_dec(&dev->buf_alloc);
+		return -ENOMEM;
+	}
+	dma->buflist = temp_buflist;
+
+	for (i = 0; i < entry->buf_count; i++) {
+		dma->buflist[i + dma->buf_count] = &entry->buflist[i];
+	}
+
+	dma->buf_count += entry->buf_count;
+	dma->seg_count += entry->seg_count;
+	dma->page_count += byte_count >> PAGE_SHIFT;
+	dma->byte_count += byte_count;
+
+	DRM_DEBUG("dma->buf_count : %d\n", dma->buf_count);
+	DRM_DEBUG("entry->buf_count : %d\n", entry->buf_count);
+
+	mutex_unlock(&dev->struct_mutex);
+
+	dma->flags = _DRM_DMA_USE_SG;
+	atomic_dec(&dev->buf_alloc);
+	return 0;
+}
+
+static int radeon_gem_dma_bufs_init(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	int size = RADEON_DMA_BUFFER_SIZE * RADEON_DMA_BUFFER_COUNT;
+	int ret;
+
+	ret = drm_dma_setup(dev);
+	if (ret < 0)
+		return ret;
+
+	ret = drm_buffer_object_create(dev, size, drm_bo_type_device,
+				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_NO_EVICT |
+				       DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MAPPABLE, 0,
+				       0, 0, &dev_priv->mm.dma_bufs.bo);
+	if (ret) {
+		DRM_ERROR("Failed to create DMA bufs\n");
+		return -ENOMEM;
+	}
+
+	ret = drm_bo_kmap(dev_priv->mm.dma_bufs.bo, 0, size >> PAGE_SHIFT,
+			  &dev_priv->mm.dma_bufs.kmap);
+	if (ret) {
+		DRM_ERROR("Failed to mmap DMA buffers\n");
+		return -ENOMEM;
+	}
+	DRM_DEBUG("\n");
+	radeon_gem_addbufs(dev);
+
+	DRM_DEBUG("%x %d\n", dev_priv->mm.dma_bufs.bo->map_list.hash.key, size);
+	dev->agp_buffer_token = dev_priv->mm.dma_bufs.bo->map_list.hash.key << PAGE_SHIFT;
+	dev_priv->mm.fake_agp_map.handle = dev_priv->mm.dma_bufs.kmap.virtual;
+	dev_priv->mm.fake_agp_map.size = size;
+	
+	dev->agp_buffer_map = &dev_priv->mm.fake_agp_map;
+
+	return 0;
+}
+
+static void radeon_gem_dma_bufs_destroy(struct drm_device *dev)
+{
+
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	drm_dma_takedown(dev);
+
+	drm_bo_kunmap(&dev_priv->mm.dma_bufs.kmap);
+	drm_bo_usage_deref_unlocked(&dev_priv->mm.dma_bufs.bo);
+}
