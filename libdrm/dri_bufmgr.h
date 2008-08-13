@@ -150,7 +150,7 @@ struct _dri_bufmgr {
 
    void (*post_submit)(dri_bo *batch_buf);
 
-   int (*check_aperture_space)(dri_bo *bo);
+   int (*check_aperture_space)(dri_bo **bo_array, int count);
    int debug; /**< Enables verbose debugging printouts */
 };
 
@@ -173,6 +173,6 @@ void dri_bufmgr_destroy(dri_bufmgr *bufmgr);
 void *dri_process_relocs(dri_bo *batch_buf);
 void dri_post_process_relocs(dri_bo *batch_buf);
 void dri_post_submit(dri_bo *batch_buf);
-int dri_bufmgr_check_aperture_space(dri_bo *bo);
+int dri_bufmgr_check_aperture_space(dri_bo **bo_array, int count);
 
 #endif

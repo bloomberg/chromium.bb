@@ -135,7 +135,7 @@ dri_bufmgr_set_debug(dri_bufmgr *bufmgr, int enable_debug)
 }
 
 int
-dri_bufmgr_check_aperture_space(dri_bo *bo)
+dri_bufmgr_check_aperture_space(dri_bo **bo_array, int count)
 {
-    return bo->bufmgr->check_aperture_space(bo);
+	return bo_array[0]->bufmgr->check_aperture_space(bo_array, count);
 }

@@ -25,6 +25,12 @@
  *
  */
 
+#include <linux/version.h>
+
+#include "drmP.h"
+
+#if OS_HAS_GEM
+
 #include <linux/types.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
@@ -34,7 +40,6 @@
 #include <linux/module.h>
 #include <linux/mman.h>
 #include <linux/pagemap.h>
-#include "drmP.h"
 
 /** @file drm_gem.c
  *
@@ -417,3 +422,22 @@ drm_gem_object_handle_free(struct kref *kref)
 }
 EXPORT_SYMBOL(drm_gem_object_handle_free);
 
+#else
+
+int drm_gem_init(struct drm_device *dev)
+{
+	return 0;
+}
+
+void drm_gem_open(struct drm_device *dev, struct drm_file *file_private)
+{
+
+}
+
+void
+drm_gem_release(struct drm_device *dev, struct drm_file *file_private)
+{
+
+}
+
+#endif

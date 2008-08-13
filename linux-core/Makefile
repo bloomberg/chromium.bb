@@ -271,6 +271,10 @@ ifneq ($(PAGE_AGP),0)
 EXTRA_CFLAGS += -DHAVE_PAGE_AGP
 endif
 
+ifeq ($(OS_HAS_GEM), 1)
+EXTRA_CFLAGS += -DOS_HAS_GEM=1
+endif
+
 # Start with all modules turned off.
 CONFIG_DRM_GAMMA := n
 CONFIG_DRM_TDFX := n
@@ -337,7 +341,9 @@ ifneq (,$(findstring i810,$(DRM_MODULES)))
 CONFIG_DRM_I810 := m
 endif
 ifneq (,$(findstring i915,$(DRM_MODULES)))
+ifeq ($(OS_HAS_GEM), 1)
 CONFIG_DRM_I915 := m
+endif
 endif
 
 GIT_REVISION := $(shell cd "$(DRMSRCDIR)" && git-describe --abbrev=17)

@@ -103,6 +103,11 @@ struct _dri_bo_gem {
     const char *name;
 
     /**
+     * Kenel-assigned global name for this object
+     */
+    unsigned int global_name;
+    
+    /**
      * Index of the buffer within the validation list while preparing a
      * batchbuffer execution.
      */
@@ -834,13 +839,16 @@ dri_gem_flink(dri_bo *bo, uint32_t *name)
     struct drm_gem_flink flink;
     int ret;
 
-    flink.handle = bo_gem->gem_handle;
-
-    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink);
-    if (ret != 0)
-	return -errno;
-
-    *name = flink.name;
+    if (!bo_gem->global_name) {
+	flink.handle = bo_gem->gem_handle;
+    
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink);
+	if (ret != 0)
+	    return -errno;
+	bo_gem->global_name = flink.name;
+    }
+    
+    *name = bo_gem->global_name;
     return 0;
 }
 
@@ -866,7 +874,7 @@ intel_bufmgr_gem_enable_reuse(dri_bufmgr *bufmgr)
  *
  */
 static int
-dri_gem_check_aperture_space(dri_bo *bo)
+dri_gem_check_aperture_space(dri_bo **bo_array, int count)
 {
     return 0;
 }

@@ -664,6 +664,4 @@ extern void drmMsg(const char *format, ...);
 extern int drmSetMaster(int fd);
 extern int drmDropMaster(int fd);
 
-#include "xf86mm.h"
-
 #endif

@@ -1119,6 +1119,7 @@ int i915_driver_irq_postinstall(struct drm_device * dev)
 
 	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
 	dev_priv->user_irq_refcount = 0;
+	dev_priv->irq_mask_reg = ~0;
 
 	ret = drm_vblank_init(dev, num_pipes);
 	if (ret)

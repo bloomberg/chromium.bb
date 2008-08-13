@@ -42,6 +42,9 @@
 #include "drm.h"
 #include "i915_drm.h"
 #include "mm.h"
+#include "libdrm_lists.h"
+
+#define ALIGN(value, alignment)  ((value + alignment - 1) & ~(alignment - 1))
 
 #define DBG(...) do {					\
    if (bufmgr_fake->bufmgr.debug)			\
@@ -147,9 +150,6 @@ typedef struct _bufmgr_fake {
    int debug;
 
    int performed_rendering;
-
-   /* keep track of the current total size of objects we have relocs for */
-   unsigned long current_total_size;
 } dri_bufmgr_fake;
 
 typedef struct _dri_bo_fake {
@@ -159,8 +159,8 @@ typedef struct _dri_bo_fake {
    const char *name;
 
    unsigned dirty:1;
-   unsigned size_accounted:1; /*this buffers size has been accounted against the aperture */
-   unsigned card_dirty:1; /* has the card written to this buffer - we make need to copy it back */
+   /** has the card written to this buffer - we make need to copy it back */
+   unsigned card_dirty:1;
    unsigned int refcount;
    /* Flags may consist of any of the DRM_BO flags, plus
     * DRM_BO_NO_BACKING_STORE and BM_NO_FENCE_SUBDATA, which are the first two
@@ -179,6 +179,12 @@ typedef struct _dri_bo_fake {
    /** relocation list */
    struct fake_buffer_reloc *relocs;
    int nr_relocs;
+   /**
+    * Total size of the target_bos of this buffer.
+    *
+    * Used for estimation in check_aperture.
+    */
+   unsigned int child_size;
 
    struct block *block;
    void *backing_store;
@@ -188,8 +194,6 @@ typedef struct _dri_bo_fake {
 
 static int clear_fenced(dri_bufmgr_fake *bufmgr_fake,
 			unsigned int fence_cookie);
-
-static int dri_fake_check_aperture_space(dri_bo *bo);
 
 #define MAXFENCE 0x7fffffff
 
@@ -855,9 +859,6 @@ dri_fake_bo_validate(dri_bo *bo)
       return 0;
    }
 
-   /* reset size accounted */
-   bo_fake->size_accounted = 0;
-
    /* Allocate the card memory */
    if (!bo_fake->block && !evict_and_alloc_block(bo)) {
       bufmgr_fake->fail = 1;
@@ -941,8 +942,6 @@ dri_fake_emit_reloc(dri_bo *reloc_buf,
    assert(reloc_buf);
    assert(target_buf);
 
-   assert(target_fake->is_static || target_fake->size_accounted);
-
    if (reloc_fake->relocs == NULL) {
       reloc_fake->relocs = malloc(sizeof(struct fake_buffer_reloc) *
 				  MAX_RELOCS);
@@ -953,6 +952,9 @@ dri_fake_emit_reloc(dri_bo *reloc_buf,
    assert(reloc_fake->nr_relocs <= MAX_RELOCS);
 
    dri_bo_reference(target_buf);
+
+   if (!target_fake->is_static)
+      reloc_fake->child_size += ALIGN(target_buf->size, target_fake->alignment);
 
    r->target_buf = target_buf;
    r->offset = offset;
@@ -1079,7 +1081,6 @@ dri_fake_process_relocs(dri_bo *batch_buf)
 
    assert(ret == 0);
 
-   bufmgr_fake->current_total_size = 0;
    return NULL;
 }
 
@@ -1117,26 +1118,39 @@ dri_fake_post_submit(dri_bo *batch_buf)
    dri_bo_fake_post_submit(batch_buf);
 }
 
+/**
+ * Return an error if the list of BOs will exceed the aperture size.
+ *
+ * This is a rough guess and likely to fail, as during the validate sequence we
+ * may place a buffer in an inopportune spot early on and then fail to fit
+ * a set smaller than the aperture.
+ */
 static int
-dri_fake_check_aperture_space(dri_bo *bo)
+dri_fake_check_aperture_space(dri_bo **bo_array, int count)
 {
-   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
-   dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
-   unsigned int sz;
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo_array[0]->bufmgr;
+   unsigned int sz = 0;
+   int i;
 
-   sz = (bo->size + bo_fake->alignment - 1) & ~(bo_fake->alignment - 1);
+   for (i = 0; i < count; i++) {
+      dri_bo_fake *bo_fake = (dri_bo_fake *)bo_array[i];
 
-   if (bo_fake->size_accounted || bo_fake->is_static)
-      return 0;
+      if (bo_fake == NULL)
+	 continue;
 
-   if (bufmgr_fake->current_total_size + sz > bufmgr_fake->size) {
-     DBG("check_space: %s bo %d %d overflowed bufmgr size %d\n", bo_fake->name, bo_fake->id, sz, bufmgr_fake->size);
+      if (!bo_fake->is_static)
+	 sz += ALIGN(bo_array[i]->size, bo_fake->alignment);
+      sz += bo_fake->child_size;
+   }
+
+   if (sz > bufmgr_fake->size) {
+      DBG("check_space: overflowed bufmgr size, %dkb vs %dkb\n",
+	  sz / 1024, bufmgr_fake->size / 1024);
       return -1;
    }
 
-   bufmgr_fake->current_total_size += sz;
-   bo_fake->size_accounted = 1;
-   DBG("drm_check_space: buf %d, %s %d %d\n", bo_fake->id, bo_fake->name, bo->size, bufmgr_fake->current_total_size);
+   DBG("drm_check_space: sz %dkb vs bufgr %dkb\n", sz / 1024 ,
+       bufmgr_fake->size / 1024);
    return 0;
 }
 

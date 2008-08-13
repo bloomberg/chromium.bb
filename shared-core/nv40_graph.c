@@ -1544,6 +1544,8 @@ nv40_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 	tmp |= NV40_PGRAPH_CTXCTL_0304_XFER_CTX;
 	NV_WRITE(NV40_PGRAPH_CTXCTL_0304, tmp);
 
+	nouveau_wait_for_idle(dev);
+
 	for (i = 0; i < tv; i++) {
 		if (NV_READ(NV40_PGRAPH_CTXCTL_030C) == 0)
 			break;
@@ -1565,9 +1567,7 @@ nv40_graph_transfer_context(struct drm_device *dev, uint32_t inst, int save)
 	return 0;
 }
 
-/* Save current context (from PGRAPH) into the channel's context
- *XXX: fails sometimes, not sure why..
- */
+/* Save current context (from PGRAPH) into the channel's context */
 int
 nv40_graph_save_context(struct nouveau_channel *chan)
 {
@@ -1581,9 +1581,7 @@ nv40_graph_save_context(struct nouveau_channel *chan)
 	return nv40_graph_transfer_context(dev, inst, 1);
 }
 
-/* Restore the context for a specific channel into PGRAPH
- * XXX: fails sometimes.. not sure why
- */
+/* Restore the context for a specific channel into PGRAPH */
 int
 nv40_graph_load_context(struct nouveau_channel *chan)
 {
