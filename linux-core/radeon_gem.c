@@ -645,7 +645,7 @@ int radeon_gem_mm_init(struct drm_device *dev)
 	if (ret)
 		return -EINVAL;
 
-	
+	dev_priv->mm_enabled = true;
 	return 0;
 }
 
@@ -685,6 +685,9 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 	}
 
 	mutex_unlock(&dev->struct_mutex);
+
+	drm_bo_driver_finish(dev);
+ 	dev_priv->mm_enabled = false;
 }
 
 int radeon_gem_object_pin(struct drm_gem_object *obj,

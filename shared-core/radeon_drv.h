@@ -399,7 +399,7 @@ typedef struct drm_radeon_private {
 
 	int num_gb_pipes;
 
-	int mm_disabled; /* on OSes with no MM this will be 1*/
+	bool mm_enabled;
 	struct radeon_mm_info mm;
 	drm_local_map_t *mmio;
 
