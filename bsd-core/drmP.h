@@ -608,6 +608,19 @@ typedef struct drm_vbl_sig {
 	int		pid;
 } drm_vbl_sig_t;
 
+struct drm_vblank_info {
+	wait_queue_head_t queue;	/* vblank wait queue */
+	atomic_t count;			/* number of VBLANK interrupts */
+					/* (driver must alloc the right number of counters) */
+	struct drm_vbl_sig_list sigs;	/* signal list to send on VBLANK */
+	atomic_t refcount;		/* number of users of vblank interrupts */
+	u32 last;			/* protected by dev->vbl_lock, used */
+					/* for wraparound handling */
+	int enabled;			/* so we don't call enable more than */
+					/* once per disable */
+	int inmodeset;			/* Display driver is setting mode */
+};
+
 /* location of GART table */
 #define DRM_ATI_GART_MAIN 1
 #define DRM_ATI_GART_FB   2
@@ -787,20 +800,12 @@ struct drm_device {
 
 	atomic_t	  context_flag;	/* Context swapping flag	   */
 	int		  last_context;	/* Last current context		   */
+
 	int		  vblank_disable_allowed;
-	wait_queue_head_t *vbl_queue;	/* vblank wait queue */
-	atomic_t	  *_vblank_count;	/* number of VBLANK interrupts */
-						/* (driver must alloc the right number of counters) */
-	struct drm_vbl_sig_list *vbl_sigs;	/* signal list to send on VBLANK */
-	atomic_t 	  vbl_signal_pending;	/* number of signals pending on all crtcs*/
-	atomic_t	  *vblank_refcount;	/* number of users of vblank interrupts per crtc */
-	u32		  *last_vblank;		/* protected by dev->vbl_lock, used */
-						/* for wraparound handling */
-	int		  *vblank_enabled;	/* so we don't call enable more than */
-						/* once per disable */
-	int 		  *vblank_inmodeset;	/* Display driver is setting mode */
+	atomic_t 	  vbl_signal_pending;	/* number of signals pending on all crtcs */
 	struct callout	  vblank_disable_timer;
 	u32		  max_vblank_count;	/* size of vblank counter register */
+	struct drm_vblank_info *vblank;		/* per crtc vblank info */
 	int		  num_crtcs;
 
 #ifdef __FreeBSD__
