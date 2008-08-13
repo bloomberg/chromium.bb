@@ -1016,3 +1016,258 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 	return true;
 }
 
+static void combios_parse_mmio_table(struct drm_device *dev, uint16_t offset)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+
+	if (offset) {
+		while (radeon_bios16(dev_priv, offset)) {
+			uint16_t cmd  = ((radeon_bios16(dev_priv, offset) & 0xe000) >> 13);
+			uint32_t addr = (radeon_bios16(dev_priv, offset) & 0x1fff);
+			uint32_t val, and_mask, or_mask;
+			uint32_t tmp;
+
+			offset += 2;
+			switch (cmd) {
+			case 0:
+				val = radeon_bios32(dev_priv, offset);
+				offset += 4;
+				RADEON_WRITE(addr, val);
+				break;
+			case 1:
+				val = radeon_bios32(dev_priv, offset);
+				offset += 4;
+				RADEON_WRITE(addr, val);
+				break;
+			case 2:
+				and_mask = radeon_bios32(dev_priv, offset);
+				offset += 4;
+				or_mask = radeon_bios32(dev_priv, offset);
+				offset += 4;
+				tmp = RADEON_READ(addr);
+				tmp &= and_mask;
+				tmp |= or_mask;
+				RADEON_WRITE(addr, tmp);
+				break;
+			case 3:
+				and_mask = radeon_bios32(dev_priv, offset);
+				offset += 4;
+				or_mask = radeon_bios32(dev_priv, offset);
+				offset += 4;
+				tmp = RADEON_READ(addr);
+				tmp &= and_mask;
+				tmp |= or_mask;
+				RADEON_WRITE(addr, tmp);
+				break;
+			case 4:
+				val = radeon_bios16(dev_priv, offset);
+				offset += 2;
+				udelay(val);
+				break;
+			case 5:
+				val = radeon_bios16(dev_priv, offset);
+				offset += 2;
+				switch (addr) {
+				case 8:
+					while (val--) {
+						if (!(RADEON_READ_PLL(dev_priv, RADEON_CLK_PWRMGT_CNTL) &
+						      RADEON_MC_BUSY))
+							break;
+					}
+					break;
+				case 9:
+					while (val--) {
+						if ((RADEON_READ(RADEON_MC_STATUS) &
+						      RADEON_MC_IDLE))
+							break;
+					}
+					break;
+				default:
+					break;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
+static void combios_parse_pll_table(struct drm_device *dev, uint16_t offset)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+
+	if (offset) {
+		while (radeon_bios8(dev_priv, offset)) {
+			uint8_t cmd  = ((radeon_bios8(dev_priv, offset) & 0xc0) >> 6);
+			uint8_t addr = (radeon_bios8(dev_priv, offset) & 0x3f);
+			uint32_t val, shift, tmp;
+			uint32_t and_mask, or_mask;
+
+			offset++;
+			switch (cmd) {
+			case 0:
+				val = radeon_bios32(dev_priv, offset);
+				offset += 4;
+				RADEON_WRITE_PLL(dev_priv, addr, val);
+				break;
+			case 1:
+				shift = radeon_bios8(dev_priv, offset) * 8;
+				offset++;
+				and_mask = radeon_bios8(dev_priv, offset) << shift;
+				and_mask |= ~(0xff << shift);
+				offset++;
+				or_mask = radeon_bios8(dev_priv, offset) << shift;
+				offset++;
+				tmp = RADEON_READ_PLL(dev_priv, addr);
+				tmp &= and_mask;
+				tmp |= or_mask;
+				RADEON_WRITE_PLL(dev_priv, addr, tmp);
+				break;
+			case 2:
+			case 3:
+				tmp = 1000;
+				switch (addr) {
+				case 1:
+					udelay(150);
+					break;
+				case 2:
+					udelay(1000);
+					break;
+				case 3:
+					while (tmp--) {
+						if (!(RADEON_READ_PLL(dev_priv, RADEON_CLK_PWRMGT_CNTL) &
+						      RADEON_MC_BUSY))
+							break;
+					}
+					break;
+				case 4:
+					while (tmp--) {
+						if (RADEON_READ_PLL(dev_priv, RADEON_CLK_PWRMGT_CNTL) &
+						    RADEON_DLL_READY)
+							break;
+					}
+					break;
+				case 5:
+					tmp = RADEON_READ_PLL(dev_priv, RADEON_CLK_PWRMGT_CNTL);
+					if (tmp & RADEON_CG_NO1_DEBUG_0) {
+#if 0
+						uint32_t mclk_cntl = RADEON_READ_PLL(RADEON_MCLK_CNTL);
+						mclk_cntl &= 0xffff0000;
+						//mclk_cntl |= 0x00001111; /* ??? */
+						RADEON_WRITE_PLL(dev_priv, RADEON_MCLK_CNTL, mclk_cntl);
+						udelay(10000);
+#endif
+						RADEON_WRITE_PLL(dev_priv, RADEON_CLK_PWRMGT_CNTL,
+								 tmp & ~RADEON_CG_NO1_DEBUG_0);
+						udelay(10000);
+					}
+					break;
+				default:
+					break;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
+static void combios_parse_ram_reset_table(struct drm_device *dev, uint16_t offset)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t tmp;
+
+	if (offset) {
+		uint8_t val = radeon_bios8(dev_priv, offset);
+		while (val != 0xff) {
+			offset++;
+
+			if (val == 0x0f) {
+				uint32_t channel_complete_mask;
+
+				if (radeon_is_r300(dev_priv))
+					channel_complete_mask = R300_MEM_PWRUP_COMPLETE;
+				else
+					channel_complete_mask = RADEON_MEM_PWRUP_COMPLETE;
+				tmp = 20000;
+				while (tmp--) {
+					if ((RADEON_READ(RADEON_MEM_STR_CNTL) &
+					     channel_complete_mask) ==
+					    channel_complete_mask)
+						break;
+				}
+			} else {
+				uint32_t or_mask = radeon_bios16(dev_priv, offset);
+				offset += 2;
+
+				tmp = RADEON_READ(RADEON_MEM_SDRAM_MODE_REG);
+				tmp &= RADEON_SDRAM_MODE_MASK;
+				tmp |= or_mask;
+				RADEON_WRITE(RADEON_MEM_SDRAM_MODE_REG, tmp);
+
+				or_mask = val << 24;
+				tmp = RADEON_READ(RADEON_MEM_SDRAM_MODE_REG);
+				tmp &= RADEON_B3MEM_RESET_MASK;
+				tmp |= or_mask;
+				RADEON_WRITE(RADEON_MEM_SDRAM_MODE_REG, tmp);
+			}
+			val = radeon_bios8(dev_priv, offset);
+		}
+	}
+}
+
+void radeon_combios_dyn_clk_setup(struct drm_device *dev, int enable)
+{
+	uint16_t dyn_clk_info = combios_get_table_offset(dev, COMBIOS_DYN_CLK_1_TABLE);
+
+	if (dyn_clk_info)
+		combios_parse_pll_table(dev, dyn_clk_info);
+}
+
+void radeon_combios_asic_init(struct drm_device *dev)
+{
+	uint16_t table;
+
+	/* ASIC INIT 1 */
+	table = combios_get_table_offset(dev, COMBIOS_ASIC_INIT_1_TABLE);
+	if (table)
+		combios_parse_mmio_table(dev, table);
+
+	/* PLL INIT */
+	table = combios_get_table_offset(dev, COMBIOS_PLL_INIT_TABLE);
+	if (table)
+		combios_parse_pll_table(dev, table);
+
+	/* ASIC INIT 2 */
+	table = combios_get_table_offset(dev, COMBIOS_ASIC_INIT_2_TABLE);
+	if (table)
+		combios_parse_mmio_table(dev, table);
+
+	/* ASIC INIT 4 */
+	table = combios_get_table_offset(dev, COMBIOS_ASIC_INIT_4_TABLE);
+	if (table)
+		combios_parse_mmio_table(dev, table);
+
+	/* RAM RESET */
+	table = combios_get_table_offset(dev, COMBIOS_RAM_RESET_TABLE);
+	if (table)
+		combios_parse_ram_reset_table(dev, table);
+
+	/* ASIC INIT 3 */
+	table = combios_get_table_offset(dev, COMBIOS_ASIC_INIT_3_TABLE);
+	if (table)
+		combios_parse_mmio_table(dev, table);
+
+	/* DYN CLK 1 */
+	table = combios_get_table_offset(dev, COMBIOS_DYN_CLK_1_TABLE);
+	if (table)
+		combios_parse_pll_table(dev, table);
+
+	/* ASIC INIT 5 */
+	table = combios_get_table_offset(dev, COMBIOS_ASIC_INIT_5_TABLE);
+	if (table)
+		combios_parse_mmio_table(dev, table);
+
+}
