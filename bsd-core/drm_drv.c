@@ -600,9 +600,10 @@ error:
 #ifdef __FreeBSD__
 	destroy_dev(dev->devnode);
 #if __FreeBSD_version >= 500000
+	mtx_destroy(&dev->tsk_lock);
 	mtx_destroy(&dev->drw_lock);
-	mtx_destroy(&dev->irq_lock);
 	mtx_destroy(&dev->vbl_lock);
+	mtx_destroy(&dev->irq_lock);
 	mtx_destroy(&dev->dev_lock);
 #endif
 #endif
@@ -663,9 +664,10 @@ static void drm_unload(struct drm_device *dev)
 		DRM_ERROR("Request to disable bus-master failed.\n");
 
 #if defined(__FreeBSD__) &&  __FreeBSD_version >= 500000
+	mtx_destroy(&dev->tsk_lock);
 	mtx_destroy(&dev->drw_lock);
-	mtx_destroy(&dev->irq_lock);
 	mtx_destroy(&dev->vbl_lock);
+	mtx_destroy(&dev->irq_lock);
 	mtx_destroy(&dev->dev_lock);
 #endif
 }
