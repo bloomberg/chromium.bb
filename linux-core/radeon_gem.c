@@ -704,14 +704,18 @@ int radeon_gem_mm_init(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	int ret;
+	u32 pg_offset;
 
 	/* size the mappable VRAM memory for now */
 	radeon_vram_setup(dev);
 	
 	radeon_init_memory_map(dev);
 
-	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, /*dev_priv->mm.vram_offset >> PAGE_SHIFT,*/
-		       (dev_priv->mm.vram_visible) >> PAGE_SHIFT,
+#define VRAM_RESERVE_TEXT (64*1024)
+	dev_priv->mm.vram_visible -= VRAM_RESERVE_TEXT;
+	pg_offset = VRAM_RESERVE_TEXT >> PAGE_SHIFT;
+	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, pg_offset, /*dev_priv->mm.vram_offset >> PAGE_SHIFT,*/
+		       ((dev_priv->mm.vram_visible) >> PAGE_SHIFT) - 16,
 		       0);
 
 
