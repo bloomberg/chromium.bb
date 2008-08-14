@@ -303,6 +303,13 @@ void r300_init_reg_flags(struct drm_device *dev)
 
 	ADD_RANGE(R300_VAP_PVS_CODE_CNTL_0, 4);
 	ADD_RANGE(R300_VAP_PVS_VECTOR_INDX_REG, 2);
+
+	if (dev_priv->chip_family <= CHIP_RV280) {
+		ADD_RANGE(RADEON_RE_TOP_LEFT, 1);
+		ADD_RANGE(RADEON_RE_WIDTH_HEIGHT, 1);
+		ADD_RANGE(RADEON_AUX_SC_CNTL, 1);
+		ADD_RANGE(RADEON_RB3D_DSTCACHE_CTLSTAT, 1);
+	}
 }
 
 int r300_check_range(unsigned reg, int count)
