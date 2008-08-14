@@ -822,10 +822,10 @@ FcPublic FcResult
 FcPatternGetLangSet (const FcPattern *p, const char *object, int n, FcLangSet **ls);
 
 FcPublic FcPattern *
-FcPatternVaBuild (FcPattern *orig, va_list va);
+FcPatternVaBuild (FcPattern *p, va_list va);
     
 FcPublic FcPattern *
-FcPatternBuild (FcPattern *orig, ...) FC_ATTRIBUTE_SENTINEL(0);
+FcPatternBuild (FcPattern *p, ...) FC_ATTRIBUTE_SENTINEL(0);
 
 /* fcstr.c */
 

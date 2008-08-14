@@ -954,23 +954,23 @@ FcPatternReference (FcPattern *p)
 }
 
 FcPattern *
-FcPatternVaBuild (FcPattern *orig, va_list va)
+FcPatternVaBuild (FcPattern *p, va_list va)
 {
     FcPattern	*ret;
     
-    FcPatternVapBuild (ret, orig, va);
+    FcPatternVapBuild (ret, p, va);
     return ret;
 }
 
 FcPattern *
-FcPatternBuild (FcPattern *orig, ...)
+FcPatternBuild (FcPattern *p, ...)
 {
     va_list	va;
     
-    va_start (va, orig);
-    FcPatternVapBuild (orig, orig, va);
+    va_start (va, p);
+    FcPatternVapBuild (p, p, va);
     va_end (va);
-    return orig;
+    return p;
 }
 
 /*

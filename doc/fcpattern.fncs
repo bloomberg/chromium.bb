@@ -279,20 +279,20 @@ in preference to FcPatternGet to provide compile-time typechecking.
 
 @RET@		FcPattern *
 @FUNC@		FcPatternBuild
-@TYPE1@		FcPattern *			@ARG1@		orig
+@TYPE1@		FcPattern *			@ARG1@		pattern
 @TYPE2@ 	...
 
 @PROTOTYPE+@
 @RET+@		FcPattern *
 @FUNC+@		FcPatternVaBuild
-@TYPE1+@	FcPattern *			@ARG1+@		orig
+@TYPE1+@	FcPattern *			@ARG1+@		pattern
 @TYPE2+@	va_list% 			@ARG2+@		va
 
 @PROTOTYPE++@
 @RET++@		void
 @FUNC++@	FcPatternVapBuild
 @TYPE1++@	FcPattern *			@ARG1++@	result
-@TYPE2++@	FcPattern *			@ARG2++@	orig
+@TYPE2++@	FcPattern *			@ARG2++@	pattern
 @TYPE3++@	va_list%			@ARG3++@	va
 
 @PURPOSE@	Create patterns from arguments
