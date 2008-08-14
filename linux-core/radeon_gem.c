@@ -615,6 +615,90 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 
 }
 
+static void radeon_init_memory_map(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	u32 mem_size, aper_size;
+
+	dev_priv->mc_fb_location = radeon_read_fb_location(dev_priv);
+	radeon_read_agp_location(dev_priv, &dev_priv->mc_agp_loc_lo, &dev_priv->mc_agp_loc_hi);
+
+	if (dev_priv->chip_family >= CHIP_R600) {
+		mem_size = RADEON_READ(R600_CONFIG_MEMSIZE);
+		aper_size = RADEON_READ(R600_CONFIG_APER_SIZE);
+	} else {
+		mem_size = RADEON_READ(RADEON_CONFIG_MEMSIZE);
+		aper_size = RADEON_READ(RADEON_CONFIG_APER_SIZE);
+	}
+
+	/* M6s report illegal memory size */
+	if (mem_size == 0)
+		mem_size = 8 * 1024 * 1024;
+
+	/* for RN50/M6/M7 - Novell bug 204882 */
+	if (aper_size > mem_size)
+		mem_size = aper_size;
+
+	if ((dev_priv->chip_family != CHIP_RS600) &&
+	    (dev_priv->chip_family != CHIP_RS690) &&
+	    (dev_priv->chip_family != CHIP_RS740)) {
+		if (dev_priv->flags & RADEON_IS_IGP)
+			dev_priv->mc_fb_location = RADEON_READ(RADEON_NB_TOM);
+		else {
+			uint32_t aper0_base;
+
+			if (dev_priv->chip_family >= CHIP_R600)
+				aper0_base = RADEON_READ(R600_CONFIG_F0_BASE);
+			else
+				aper0_base = RADEON_READ(RADEON_CONFIG_APER_0_BASE);
+
+
+			/* Some chips have an "issue" with the memory controller, the
+			 * location must be aligned to the size. We just align it down,
+			 * too bad if we walk over the top of system memory, we don't
+			 * use DMA without a remapped anyway.
+			 * Affected chips are rv280, all r3xx, and all r4xx, but not IGP
+			 */
+			if (dev_priv->chip_family == CHIP_RV280 ||
+			    dev_priv->chip_family == CHIP_R300 ||
+			    dev_priv->chip_family == CHIP_R350 ||
+			    dev_priv->chip_family == CHIP_RV350 ||
+			    dev_priv->chip_family == CHIP_RV380 ||
+			    dev_priv->chip_family == CHIP_R420 ||
+			    dev_priv->chip_family == CHIP_RV410)
+				aper0_base &= ~(mem_size - 1);
+
+			if (dev_priv->chip_family >= CHIP_R600) {
+				dev_priv->mc_fb_location = (aper0_base >> 24) |
+					(((aper0_base + mem_size - 1) & 0xff000000U) >> 8);
+			} else {
+				dev_priv->mc_fb_location = (aper0_base >> 16) |
+					((aper0_base + mem_size - 1) & 0xffff0000U);
+			}
+		}
+	}
+	
+	if (dev_priv->chip_family >= CHIP_R600)
+		dev_priv->fb_location = (dev_priv->mc_fb_location & 0xffff) << 24;
+	else
+		dev_priv->fb_location = (dev_priv->mc_fb_location & 0xffff) << 16;
+
+	if (radeon_is_avivo(dev_priv)) {
+		if (dev_priv->chip_family >= CHIP_R600) 
+			RADEON_WRITE(R600_HDP_NONSURFACE_BASE, (dev_priv->mc_fb_location << 16) & 0xff0000);
+		else
+			RADEON_WRITE(AVIVO_HDP_FB_LOCATION, dev_priv->mc_fb_location);
+	}
+
+	radeon_write_fb_location(dev_priv, dev_priv->mc_fb_location);
+
+	dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffff) << 16;
+	dev_priv->fb_size =
+		((radeon_read_fb_location(dev_priv) & 0xffff0000u) + 0x10000)
+		- dev_priv->fb_location;
+
+}
+
 /* init memory manager - start with all of VRAM and a 32MB GART aperture for now */
 int radeon_gem_mm_init(struct drm_device *dev)
 {
@@ -624,6 +708,8 @@ int radeon_gem_mm_init(struct drm_device *dev)
 	/* size the mappable VRAM memory for now */
 	radeon_vram_setup(dev);
 	
+	radeon_init_memory_map(dev);
+
 	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0, /*dev_priv->mm.vram_offset >> PAGE_SHIFT,*/
 		       (dev_priv->mm.vram_visible) >> PAGE_SHIFT,
 		       0);

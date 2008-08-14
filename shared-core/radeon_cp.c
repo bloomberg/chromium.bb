@@ -107,7 +107,33 @@ u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
 		return RADEON_READ(RADEON_MC_FB_LOCATION);
 }
 
-static void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
+void radeon_read_agp_location(drm_radeon_private_t *dev_priv, u32 *agp_lo, u32 *agp_hi)
+{
+	if (dev_priv->chip_family == CHIP_RV770) {
+
+	} else if (dev_priv->chip_family == CHIP_R600) {
+		*agp_lo = RADEON_READ(R600_MC_VM_AGP_BOT);
+		*agp_hi = RADEON_READ(R600_MC_VM_AGP_TOP);
+	} else if (dev_priv->chip_family == CHIP_RV515) {
+		*agp_lo = radeon_read_mc_reg(dev_priv, RV515_MC_FB_LOCATION);
+		*agp_hi = 0;
+	} else if (dev_priv->chip_family == CHIP_RS600) {
+		*agp_lo = 0;
+		*agp_hi = 0;
+	} else if (dev_priv->chip_family == CHIP_RS690 ||
+		   dev_priv->chip_family == CHIP_RS740) {
+		*agp_lo = radeon_read_mc_reg(dev_priv, RS690_MC_AGP_LOCATION);
+		*agp_hi = 0;
+	} else if (dev_priv->chip_family >= CHIP_R520) {
+		*agp_lo = radeon_read_mc_reg(dev_priv, R520_MC_AGP_LOCATION);
+		*agp_hi = 0;
+	} else {
+		*agp_lo = RADEON_READ(RADEON_MC_FB_LOCATION);
+		*agp_hi = 0;
+	}
+}
+
+void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
 {
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
 		R500_WRITE_MCIND(RV515_MC_FB_LOCATION, fb_loc);
@@ -119,7 +145,7 @@ static void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
 		RADEON_WRITE(RADEON_MC_FB_LOCATION, fb_loc);
 }
 
-static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_loc)
+static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_loc, u32 agp_loc_hi)
 {
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
 		R500_WRITE_MCIND(RV515_MC_AGP_LOCATION, agp_loc);
@@ -672,7 +698,7 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 		radeon_write_agp_location(dev_priv,
 			     (((dev_priv->gart_vm_start - 1 +
 				dev_priv->gart_size) & 0xffff0000) |
-			      (dev_priv->gart_vm_start >> 16)));
+			      (dev_priv->gart_vm_start >> 16)), 0);
 
 		ring_start = (dev_priv->cp_ring->offset
 			      - dev->agp->base
@@ -873,7 +899,7 @@ static void radeon_set_igpgart(drm_radeon_private_t * dev_priv, int on)
 		temp = (((dev_priv->gart_vm_start - 1 + dev_priv->gart_size) & 
 			0xffff0000) | (dev_priv->gart_vm_start >> 16));
 
-		radeon_write_agp_location(dev_priv, temp);
+		radeon_write_agp_location(dev_priv, temp, 0);
 
 		temp = IGP_READ_MCIND(dev_priv, RS480_AGP_ADDRESS_SPACE_SIZE);
 		IGP_WRITE_MCIND(RS480_AGP_ADDRESS_SPACE_SIZE, (RS480_GART_EN |
@@ -921,7 +947,7 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 				  dev_priv->gart_vm_start +
 				  dev_priv->gart_size - 1);
 
-		radeon_write_agp_location(dev_priv, 0xffffffc0); /* ?? */
+		radeon_write_agp_location(dev_priv, 0xffffffc0, 0); /* ?? */
 
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL,
 				  RADEON_PCIE_TX_GART_EN);
@@ -965,7 +991,7 @@ void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 
 		/* Turn off AGP aperture -- is this required for PCI GART?
 		 */
-		radeon_write_agp_location(dev_priv, 0xffffffc0);
+		radeon_write_agp_location(dev_priv, 0xffffffc0, 0);
 		RADEON_WRITE(RADEON_AGP_COMMAND, 0);	/* clear AGP_COMMAND */
 	} else {
 		RADEON_WRITE(RADEON_AIC_CNTL,
@@ -2482,10 +2508,6 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 	
-		dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffff) << 16;
-		dev_priv->fb_size =
-			((radeon_read_fb_location(dev_priv) & 0xffff0000u) + 0x10000)
-			- dev_priv->fb_location;
 		radeon_gem_mm_init(dev);
 		radeon_modeset_init(dev);
 

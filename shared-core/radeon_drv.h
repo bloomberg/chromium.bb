@@ -418,6 +418,10 @@ typedef struct drm_radeon_private {
 	bool is_ddr;
 	u32 ram_width;
 
+	uint32_t mc_fb_location;
+	uint32_t mc_agp_loc_lo;
+	uint32_t mc_agp_loc_hi;
+
 	enum radeon_pll_errata pll_errata;
 	
 	int num_gb_pipes;
@@ -1655,7 +1659,8 @@ int radeon_modeset_init(struct drm_device *dev);
 void radeon_modeset_cleanup(struct drm_device *dev);
 extern u32 radeon_read_mc_reg(drm_radeon_private_t *dev_priv, int addr);
 extern void radeon_write_mc_reg(drm_radeon_private_t *dev_priv, u32 addr, u32 val);
-
+void radeon_read_agp_location(drm_radeon_private_t *dev_priv, u32 *agp_lo, u32 *agp_hi);
+void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc);
 extern void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on);
 #define RADEONFB_CONN_LIMIT 4
 
