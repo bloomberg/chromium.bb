@@ -43,7 +43,7 @@ static int radeon_lvds_get_modes(struct drm_connector *connector)
 		drm_mode_connector_update_edid_property(&radeon_connector->base, edid);
 		ret = drm_add_edid_modes(&radeon_connector->base, edid);
 		kfree(edid);
-		return 0;
+		return ret;
 	}
 
 #if 0
