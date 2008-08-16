@@ -716,11 +716,17 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 	obj_priv = fbo->driver_private;
 
 	mutex_lock(&dev->struct_mutex);
+	/* Flush everything out, we'll be doing GTT only from now on */
+	i915_gem_object_set_domain(fbo, I915_GEM_DOMAIN_GTT,
+				   I915_GEM_DOMAIN_GTT);
+
 	ret = i915_gem_object_pin(fbo, PAGE_SIZE);
 	if (ret) {
 		DRM_ERROR("failed to pin fb: %d\n", ret);
 		goto out_unref;
 	}
+
+	i915_gem_clflush_object(fbo);
 
 	fb = intel_user_framebuffer_create(dev, NULL, &mode_cmd);
 	if (!fb) {

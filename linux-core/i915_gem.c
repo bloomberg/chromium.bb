@@ -33,10 +33,6 @@
 #include <linux/swap.h>
 
 static int
-i915_gem_object_set_domain(struct drm_gem_object *obj,
-			    uint32_t read_domains,
-			    uint32_t write_domain);
-static int
 i915_gem_object_set_domain_range(struct drm_gem_object *obj,
 				 uint64_t offset,
 				 uint64_t size,
@@ -1318,7 +1314,7 @@ i915_gem_clflush_object(struct drm_gem_object *obj)
  *		MI_FLUSH
  *		drm_agp_chipset_flush
  */
-static int
+int
 i915_gem_object_set_domain(struct drm_gem_object *obj,
 			    uint32_t read_domains,
 			    uint32_t write_domain)
