@@ -55,10 +55,14 @@ int radeon_invalidate_caches(struct drm_device * dev, uint64_t flags)
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
+	if (!dev_priv->cp_running)
+		return 0;
+
 	BEGIN_RING(4);
 	RADEON_FLUSH_CACHE();
 	RADEON_FLUSH_ZCACHE();
 	ADVANCE_RING();
+	COMMIT_RING();
 	return 0;
 }
 
@@ -261,6 +265,6 @@ uint64_t radeon_evict_flags(struct drm_buffer_object *bo)
 	case DRM_BO_MEM_TT:
 		return DRM_BO_FLAG_MEM_LOCAL;
 	default:
-		return DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_CACHED;
+		return DRM_BO_FLAG_MEM_TT;
 	}
 }

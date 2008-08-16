@@ -58,6 +58,7 @@ int drm_dma_setup(struct drm_device *dev)
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_dma_setup);
 
 /**
  * Cleanup the DMA resources.
@@ -120,6 +121,7 @@ void drm_dma_takedown(struct drm_device *dev)
 	drm_free(dev->dma, sizeof(*dev->dma), DRM_MEM_DRIVER);
 	dev->dma = NULL;
 }
+EXPORT_SYMBOL(drm_dma_takedown);
 
 /**
  * Free a buffer.

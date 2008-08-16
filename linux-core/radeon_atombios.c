@@ -62,12 +62,16 @@ static inline struct radeon_i2c_bus_rec radeon_lookup_gpio_for_ddc(struct drm_de
 	i2c.put_data_reg = le16_to_cpu(gpio.usDataEnRegisterIndex) * 4;
 	i2c.get_clk_reg = le16_to_cpu(gpio.usClkY_RegisterIndex) * 4;
 	i2c.get_data_reg = le16_to_cpu(gpio.usDataY_RegisterIndex) * 4;
+	i2c.a_clk_reg = le16_to_cpu(gpio.usClkA_RegisterIndex) * 4;
+	i2c.a_data_reg = le16_to_cpu(gpio.usDataA_RegisterIndex) * 4;
 	i2c.mask_clk_mask = (1 << gpio.ucClkMaskShift);
 	i2c.mask_data_mask = (1 << gpio.ucDataMaskShift);
 	i2c.put_clk_mask = (1 << gpio.ucClkEnShift);
 	i2c.put_data_mask = (1 << gpio.ucDataEnShift);
 	i2c.get_clk_mask = (1 << gpio.ucClkY_Shift);
 	i2c.get_data_mask = (1 <<  gpio.ucDataY_Shift);
+	i2c.a_clk_mask = (1 << gpio.ucClkA_Shift);
+	i2c.a_data_mask = (1 <<  gpio.ucDataA_Shift);
 	i2c.valid = true;
 
 	return i2c;
@@ -94,7 +98,7 @@ static void radeon_atom_apply_quirks(struct drm_device *dev, int index)
 			mode_info->bios_connector[index].ddc_i2c.valid = false;
 		}
 	}
-}   
+}
 
 bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device *dev)
 {
@@ -146,7 +150,7 @@ bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device 
 		}
 
 		mode_info->bios_connector[i].dac_type = ci.sucConnectorInfo.sbfAccess.bfAssociatedDAC;
-		
+
 		if ((i == ATOM_DEVICE_TV1_INDEX) ||
 		    (i == ATOM_DEVICE_TV2_INDEX) ||
 		    (i == ATOM_DEVICE_TV1_INDEX))
@@ -161,7 +165,7 @@ bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device 
 				mode_info->bios_connector[i].ddc_i2c =
 					radeon_lookup_gpio_for_ddc(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux);
 		} else
-			mode_info->bios_connector[i].ddc_i2c = 
+			mode_info->bios_connector[i].ddc_i2c =
 				radeon_lookup_gpio_for_ddc(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux);
 
 		if (i == ATOM_DEVICE_DFP1_INDEX)
@@ -243,7 +247,7 @@ bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device 
 		}
 	}
 
-	
+
 	DRM_DEBUG("BIOS Connector table\n");
 	for (i = 0; i < ATOM_MAX_SUPPORTED_DEVICE; i++) {
 		if (!mode_info->bios_connector[i].valid)
@@ -265,7 +269,7 @@ union firmware_info {
 	ATOM_FIRMWARE_INFO_V1_3 info_13;
 	ATOM_FIRMWARE_INFO_V1_4 info_14;
 };
-	
+
 bool radeon_atom_get_clock_info(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
@@ -284,8 +288,8 @@ bool radeon_atom_get_clock_info(struct drm_device *dev)
 	pll->reference_div = 0;
 
 	pll->pll_out_min = le16_to_cpu(firmware_info->info.usMinPixelClockPLL_Output);
-	pll->pll_out_max = le32_to_cpu(firmware_info->info.ulMaxPixelClockPLL_Output);	
-	
+	pll->pll_out_max = le32_to_cpu(firmware_info->info.ulMaxPixelClockPLL_Output);
+
 	if (pll->pll_out_min == 0) {
 		if (radeon_is_avivo(dev_priv))
 			pll->pll_out_min = 64800;
@@ -298,7 +302,7 @@ bool radeon_atom_get_clock_info(struct drm_device *dev)
 
 	pll->xclk = le16_to_cpu(firmware_info->info.usMaxPixelClock);
 
-	return true;				     
+	return true;
 }
 
 union lvds_info {
@@ -330,7 +334,7 @@ void radeon_get_lvds_info(struct radeon_encoder *encoder)
 	encoder->vblank = le16_to_cpu(lvds_info->info.sLCDTiming.usVBlanking_Time);
 	encoder->hoverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncOffset);
 	encoder->hsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncWidth);
-	encoder->panel_pwr_delay = le16_to_cpu(lvds_info->info.usOffDelayInMs); 
+	encoder->panel_pwr_delay = le16_to_cpu(lvds_info->info.usOffDelayInMs);
 }
 
 void radeon_atom_dyn_clk_setup(struct drm_device *dev, int enable)
@@ -342,7 +346,7 @@ void radeon_atom_dyn_clk_setup(struct drm_device *dev, int enable)
 	int index = GetIndexIntoMasterTable(COMMAND, DynamicClockGating);
 
 	args.ucEnable = enable;
-	
+
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
 }
 
@@ -355,7 +359,7 @@ void radeon_atom_static_pwrmgt_setup(struct drm_device *dev, int enable)
 	int index = GetIndexIntoMasterTable(COMMAND, EnableASIC_StaticPwrMgt);
 
 	args.ucEnable = enable;
-	
+
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
 }
 

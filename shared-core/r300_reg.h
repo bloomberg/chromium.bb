@@ -129,15 +129,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* END: Wild guesses */
 
 #define R300_SE_VTE_CNTL                  0x20b0
-#	define     R300_VPORT_X_SCALE_ENA                0x00000001
-#	define     R300_VPORT_X_OFFSET_ENA               0x00000002
-#	define     R300_VPORT_Y_SCALE_ENA                0x00000004
-#	define     R300_VPORT_Y_OFFSET_ENA               0x00000008
-#	define     R300_VPORT_Z_SCALE_ENA                0x00000010
-#	define     R300_VPORT_Z_OFFSET_ENA               0x00000020
-#	define     R300_VTX_XY_FMT                       0x00000100
-#	define     R300_VTX_Z_FMT                        0x00000200
-#	define     R300_VTX_W0_FMT                       0x00000400
 #	define     R300_VTX_W0_NORMALIZE                 0x00000800
 #	define     R300_VTX_ST_DENORMALIZED              0x00001000
 
@@ -493,7 +484,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #	define R300_OFIFO_HIGHWATER_SHIFT	22	/* two bits only */
 #	define R300_CUBE_FIFO_HIGHWATER_COL_SHIFT	24
 
-#define R300_GB_SELECT	0x401C
+
 #	define R300_GB_FOG_SELECT_C0A		0
 #	define R300_GB_FOG_SELECT_C1A		1
 #	define R300_GB_FOG_SELECT_C2A		2
@@ -955,7 +946,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 /* 32 bit chroma key */
 #define R300_TX_CHROMA_KEY_0                      0x4580
 /* ff00ff00 == { 0, 1.0, 0, 1.0 } */
-#define R300_TX_BORDER_COLOR_0              0x45C0
 
 /* END: Texture specification */
 
@@ -1340,7 +1330,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* gap */
 
-#define R300_RB3D_COLOROFFSET0              0x4E28
 #       define R300_COLOROFFSET_MASK             0xFFFFFFF0 /* GUESS */
 #define R300_RB3D_COLOROFFSET1              0x4E2C /* GUESS */
 #define R300_RB3D_COLOROFFSET2              0x4E30 /* GUESS */
@@ -1352,7 +1341,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Bit 17: 4x2 tiles
  * Bit 18: Extremely weird tile like, but some pixels duplicated?
  */
-#define R300_RB3D_COLORPITCH0               0x4E38
 #       define R300_COLORPITCH_MASK              0x00001FF8 /* GUESS */
 #       define R300_COLOR_TILE_ENABLE            (1 << 16) /* GUESS */
 #       define R300_COLOR_MICROTILE_ENABLE       (1 << 17) /* GUESS */

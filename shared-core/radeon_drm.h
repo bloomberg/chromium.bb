@@ -455,6 +455,13 @@ typedef struct {
 	int tiling_enabled;	/* set by drm, read by 2d + 3d clients */
 
 	unsigned int last_fence;
+
+	uint32_t front_handle;
+	uint32_t back_handle;
+	uint32_t depth_handle;
+	uint32_t front_pitch;
+	uint32_t back_pitch;
+	uint32_t depth_pitch;
 } drm_radeon_sarea_t;
 
 
@@ -506,6 +513,7 @@ typedef struct {
 #define DRM_RADEON_GEM_SET_DOMAIN 0x23
 #define DRM_RADEON_GEM_INDIRECT 0x24 // temporary for X server
 
+#define DRM_RADEON_CS           0x25
 
 #define DRM_IOCTL_RADEON_CP_INIT    DRM_IOW( DRM_COMMAND_BASE + DRM_RADEON_CP_INIT, drm_radeon_init_t)
 #define DRM_IOCTL_RADEON_CP_START   DRM_IO(  DRM_COMMAND_BASE + DRM_RADEON_CP_START)
@@ -545,6 +553,7 @@ typedef struct {
 #define DRM_IOCTL_RADEON_GEM_SET_DOMAIN  DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_SET_DOMAIN, struct drm_radeon_gem_set_domain)
 #define DRM_IOCTL_RADEON_GEM_INDIRECT DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_GEM_INDIRECT, struct drm_radeon_gem_indirect)
 
+#define DRM_IOCTL_RADEON_CS DRM_IOWR(DRM_COMMAND_BASE + DRM_RADEON_CS, struct drm_radeon_cs)
 
 
 typedef struct drm_radeon_init {
@@ -703,6 +712,7 @@ typedef struct drm_radeon_indirect {
 #define RADEON_PARAM_VBLANK_CRTC           13   /* VBLANK CRTC */
 #define RADEON_PARAM_FB_LOCATION           14   /* FB location */
 #define RADEON_PARAM_NUM_GB_PIPES          15   /* num GB pipes */
+#define RADEON_PARAM_KERNEL_MM             16
 
 typedef struct drm_radeon_getparam {
 	int param;
@@ -758,6 +768,7 @@ typedef struct drm_radeon_setparam {
 #define RADEON_SETPARAM_NEW_MEMMAP 4		/* Use new memory map */
 #define RADEON_SETPARAM_PCIGART_TABLE_SIZE 5    /* PCI GART Table Size */
 #define RADEON_SETPARAM_VBLANK_CRTC 6           /* VBLANK CRTC */
+#define RADEON_SETPARAM_MM_INIT 7		/* Initialise the mm */
 /* 1.14: Clients can allocate/free a surface
  */
 typedef struct drm_radeon_surface_alloc {
@@ -860,5 +871,18 @@ struct drm_radeon_gem_indirect {
 	uint32_t handle;
 	uint32_t used;
 };
+
+/* New interface which obsolete all previous interface.
+ */
+
+
+struct drm_radeon_cs {
+//	uint32_t __user     *packets;
+	uint32_t            dwords;
+	uint32_t            cs_id;
+	uint64_t            packets;
+
+};
+
 
 #endif

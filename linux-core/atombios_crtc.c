@@ -31,6 +31,22 @@
 #include "atom.h"
 #include "atom-bits.h"
 
+static void atombios_lock_crtc(struct drm_crtc *crtc, int lock)
+{
+	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+	struct drm_device *dev = crtc->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	int index = GetIndexIntoMasterTable(COMMAND, UpdateCRTC_DoubleBufferRegisters);
+	ENABLE_CRTC_PS_ALLOCATION args;
+
+	memset(&args, 0, sizeof(args));
+
+	args.ucCRTC = radeon_crtc->crtc_id;
+	args.ucEnable = lock;
+
+	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
+}
+
 static void atombios_enable_crtc(struct drm_crtc *crtc, int state)
 {
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
@@ -127,7 +143,7 @@ void atombios_crtc_set_timing(struct drm_crtc *crtc, SET_CRTC_TIMING_PARAMETERS_
 	conv_param.ucOverscanRight          = crtc_param->ucOverscanRight;
 	conv_param.ucOverscanLeft           = crtc_param->ucOverscanLeft;
 	conv_param.ucOverscanBottom         = crtc_param->ucOverscanBottom;
-	conv_param.ucOverscanTop            = crtc_param->ucOverscanTop; 
+	conv_param.ucOverscanTop            = crtc_param->ucOverscanTop;
 	conv_param.ucReserved               = crtc_param->ucReserved;
 
 	printk("executing set crtc timing\n");
@@ -150,29 +166,21 @@ void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode,
 
 	memset(&spc_param, 0, sizeof(SET_PIXEL_CLOCK_PS_ALLOCATION));
 
+	pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
+
+	radeon_compute_pll(&dev_priv->mode_info.pll, mode->clock,
+			   &sclock, &fb_div, &ref_div, &post_div, pll_flags);
+
 	if (radeon_is_avivo(dev_priv)) {
-		uint32_t temp;
-
-		pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
-
-		radeon_compute_pll(&dev_priv->mode_info.pll, mode->clock,
-				   &temp, &fb_div, &ref_div, &post_div, pll_flags);
-		sclock = temp;
+		uint32_t ss_cntl;
 
 		if (radeon_crtc->crtc_id == 0) {
-			temp = RADEON_READ(AVIVO_P1PLL_INT_SS_CNTL);
-			RADEON_WRITE(AVIVO_P1PLL_INT_SS_CNTL, temp & ~1);
+			ss_cntl = RADEON_READ(AVIVO_P1PLL_INT_SS_CNTL);
+			RADEON_WRITE(AVIVO_P1PLL_INT_SS_CNTL, ss_cntl & ~1);
 		} else {
-			temp = RADEON_READ(AVIVO_P2PLL_INT_SS_CNTL);
-			RADEON_WRITE(AVIVO_P2PLL_INT_SS_CNTL, temp & ~1);
+			ss_cntl = RADEON_READ(AVIVO_P2PLL_INT_SS_CNTL);
+			RADEON_WRITE(AVIVO_P2PLL_INT_SS_CNTL, ss_cntl & ~1);
 		}
-	} else {
-#if 0 // TODO r400
-		sclock = save->dot_clock_freq;
-		fb_div = save->feedback_div;
-		post_div = save->post_div;
-		ref_div = save->ppll_ref_div;
-#endif
 	}
 
 	/* */
@@ -201,7 +209,7 @@ void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode,
 			spc3_ptr->ucPostDiv = post_div;
 			spc3_ptr->ucPpll = radeon_crtc->crtc_id ? ATOM_PPLL2 : ATOM_PPLL1;
 			spc3_ptr->ucMiscInfo = (radeon_crtc->crtc_id << 2);
-			
+
 			/* TODO insert output encoder object stuff herre for r600 */
 			break;
 		default:
@@ -220,7 +228,7 @@ void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode,
 
 void atombios_crtc_set_base(struct drm_crtc *crtc, int x, int y)
 {
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);	
+	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_framebuffer *radeon_fb;
@@ -251,19 +259,17 @@ void atombios_crtc_set_base(struct drm_crtc *crtc, int x, int y)
 		DRM_ERROR("Unsupported screen depth %d\n", crtc->fb->bits_per_pixel);
 		return;
 	}
-	
+
 	/* TODO tiling */
 	if (radeon_crtc->crtc_id == 0)
 		RADEON_WRITE(AVIVO_D1VGA_CONTROL, 0);
 	else
 		RADEON_WRITE(AVIVO_D2VGA_CONTROL, 0);
-	
-	RADEON_WRITE(AVIVO_D1GRPH_UPDATE + radeon_crtc->crtc_offset, AVIVO_D1GRPH_UPDATE_LOCK);
-	
+
 	RADEON_WRITE(AVIVO_D1GRPH_PRIMARY_SURFACE_ADDRESS + radeon_crtc->crtc_offset, fb_location);
 	RADEON_WRITE(AVIVO_D1GRPH_SECONDARY_SURFACE_ADDRESS + radeon_crtc->crtc_offset, fb_location);
 	RADEON_WRITE(AVIVO_D1GRPH_CONTROL + radeon_crtc->crtc_offset, fb_format);
-	
+
 	RADEON_WRITE(AVIVO_D1GRPH_SURFACE_OFFSET_X + radeon_crtc->crtc_offset, 0);
 	RADEON_WRITE(AVIVO_D1GRPH_SURFACE_OFFSET_Y + radeon_crtc->crtc_offset, 0);
 	RADEON_WRITE(AVIVO_D1GRPH_X_START + radeon_crtc->crtc_offset, x);
@@ -274,20 +280,13 @@ void atombios_crtc_set_base(struct drm_crtc *crtc, int x, int y)
 	fb_pitch_pixels = crtc->fb->pitch / (crtc->fb->bits_per_pixel / 8);
 	RADEON_WRITE(AVIVO_D1GRPH_PITCH + radeon_crtc->crtc_offset, fb_pitch_pixels);
 	RADEON_WRITE(AVIVO_D1GRPH_ENABLE + radeon_crtc->crtc_offset, 1);
-	
-	/* unlock the grph regs */
-	RADEON_WRITE(AVIVO_D1GRPH_UPDATE + radeon_crtc->crtc_offset, 0);
-	
-	/* lock the mode regs */
-	RADEON_WRITE(AVIVO_D1SCL_UPDATE + radeon_crtc->crtc_offset, AVIVO_D1SCL_UPDATE_LOCK);
-	
+
 	RADEON_WRITE(AVIVO_D1MODE_DESKTOP_HEIGHT + radeon_crtc->crtc_offset,
 		     crtc->mode.vdisplay);
 	RADEON_WRITE(AVIVO_D1MODE_VIEWPORT_START + radeon_crtc->crtc_offset, (x << 16) | y);
 	RADEON_WRITE(AVIVO_D1MODE_VIEWPORT_SIZE + radeon_crtc->crtc_offset,
 		     (crtc->mode.hdisplay << 16) | crtc->mode.vdisplay);
-	/* unlock the mode regs */
-	RADEON_WRITE(AVIVO_D1SCL_UPDATE + radeon_crtc->crtc_offset, 0);
+
 }
 
 void atombios_crtc_mode_set(struct drm_crtc *crtc,
@@ -324,7 +323,7 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 
 	if (adjusted_mode->flags & DRM_MODE_FLAG_NVSYNC)
 		crtc_timing.susModeMiscInfo.usAccess |= ATOM_VSYNC_POLARITY;
-	
+
 	if (adjusted_mode->flags & DRM_MODE_FLAG_NHSYNC)
 		crtc_timing.susModeMiscInfo.usAccess |= ATOM_HSYNC_POLARITY;
 
@@ -337,9 +336,8 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 	if (adjusted_mode->flags & DRM_MODE_FLAG_DBLSCAN)
 		crtc_timing.susModeMiscInfo.usAccess |= ATOM_DOUBLE_CLOCK_MODE;
 
-	if (radeon_is_avivo(dev_priv)) {
+	if (radeon_is_avivo(dev_priv))
 		atombios_crtc_set_base(crtc, x, y);
-	}
 
 	atombios_crtc_set_pll(crtc, adjusted_mode, pll_flags);
 
@@ -357,11 +355,13 @@ static bool atombios_crtc_mode_fixup(struct drm_crtc *crtc,
 static void atombios_crtc_prepare(struct drm_crtc *crtc)
 {
 	atombios_crtc_dpms(crtc, DRM_MODE_DPMS_OFF);
+	atombios_lock_crtc(crtc, 1);
 }
 
 static void atombios_crtc_commit(struct drm_crtc *crtc)
 {
 	atombios_crtc_dpms(crtc, DRM_MODE_DPMS_ON);
+	atombios_lock_crtc(crtc, 0);
 }
 
 static const struct drm_crtc_helper_funcs atombios_helper_funcs = {

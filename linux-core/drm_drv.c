@@ -146,36 +146,6 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETGAMMA, drm_mode_gamma_get_ioctl, DRM_MASTER),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_SETGAMMA, drm_mode_gamma_set_ioctl, DRM_MASTER),
 
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_CREATE, drm_fence_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_REFERENCE, drm_fence_reference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_UNREFERENCE, drm_fence_unreference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_SIGNALED, drm_fence_signaled_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_FLUSH, drm_fence_flush_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_WAIT, drm_fence_wait_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_EMIT, drm_fence_emit_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_BUFFERS, drm_fence_buffers_ioctl, DRM_AUTH),
-
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_CREATE, drm_bo_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_MAP, drm_bo_map_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNMAP, drm_bo_unmap_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_REFERENCE, drm_bo_reference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNREFERENCE, drm_bo_unreference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_SETSTATUS, drm_bo_setstatus_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_INFO, drm_bo_info_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_WAIT_IDLE, drm_bo_wait_idle_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_VERSION, drm_bo_version_ioctl, 0),
-
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INFO, drm_mm_info_ioctl, 0),
-
 #if OS_HAS_GEM
 	DRM_IOCTL_DEF(DRM_IOCTL_GEM_CLOSE, drm_gem_close_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_GEM_FLINK, drm_gem_flink_ioctl, DRM_AUTH),
@@ -202,8 +172,6 @@ int drm_lastclose(struct drm_device * dev)
 
 	DRM_DEBUG("\n");
 
-	if (!drm_core_check_feature(dev, DRIVER_MODESET))
-		drm_bo_driver_finish(dev);
 
 	/*
 	 * We can't do much about this function failing.
@@ -213,9 +181,11 @@ int drm_lastclose(struct drm_device * dev)
 		dev->driver->lastclose(dev);
 	DRM_DEBUG("driver lastclose completed\n");
 
+	if (!drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_bo_driver_finish(dev);
 
-/*	if (dev->irq_enabled)
-		drm_irq_uninstall(dev); */
+	if (dev->irq_enabled && !drm_core_check_feature(dev, DRIVER_MODESET))
+		drm_irq_uninstall(dev);
 
 	/* Free drawable information memory */
 	mutex_lock(&dev->struct_mutex);
@@ -223,13 +193,8 @@ int drm_lastclose(struct drm_device * dev)
 	drm_drawable_free_all(dev);
 	del_timer(&dev->timer);
 
-	if (dev->primary->master) {
-		drm_put_master(dev->primary->master);
-		dev->primary->master = NULL;
-	}
-	
 	/* Clear AGP information */
-	if (drm_core_has_AGP(dev) && dev->agp) {
+	if (drm_core_has_AGP(dev) && dev->agp && !drm_core_check_feature(dev, DRIVER_MODESET)) {
 		struct drm_agp_mem *entry, *tempe;
 
 		/* Remove AGP resources, but leave dev->agp
@@ -287,7 +252,7 @@ int drm_lastclose(struct drm_device * dev)
 	}
 	dev->queue_count = 0;
 
-	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA))
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) && !drm_core_check_feature(dev, DRIVER_MODESET))
 		drm_dma_takedown(dev);
 
 	dev->dev_mapping = NULL;
@@ -431,11 +396,11 @@ static void drm_cleanup(struct drm_device * dev)
 	drm_ctxbitmap_cleanup(dev);
 	drm_ht_remove(&dev->map_hash);
 	drm_mm_takedown(&dev->offset_manager);
-	drm_ht_remove(&dev->object_hash);
 
-	drm_put_minor(dev, &dev->primary);
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		drm_put_minor(dev, &dev->control);
+		drm_put_minor(&dev->control);
+
+	drm_put_minor(&dev->primary);
 
 	if (drm_put_dev(dev))
 		DRM_ERROR("Cannot unload module\n");
