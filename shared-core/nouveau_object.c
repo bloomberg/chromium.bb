@@ -739,7 +739,12 @@ nouveau_gpuobj_dma_new(struct nouveau_channel *chan, int class,
 							     PAGE_SIZE,
 							     DMA_BIDIRECTIONAL);
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+					/* Not a 100% sure this is the right kdev in all cases. */
+					if (dma_mapping_error(&dev->primary->kdev, dev->sg->busaddr[idx])) {
+#else
 					if (dma_mapping_error(dev->sg->busaddr[idx])) {
+#endif
 						return -ENOMEM;
 					}
 				}
