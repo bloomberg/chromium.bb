@@ -42,7 +42,6 @@
 #define DRIVER_DATE		"20080730"
 
 #if defined(__linux__)
-#define I915_HAVE_FENCE
 #define I915_HAVE_BUFFER
 #endif
 
@@ -62,7 +61,7 @@
  * 1.12: TTM relocation optimization
  */
 #define DRIVER_MAJOR		1
-#if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
+#if defined(I915_HAVE_BUFFER)
 #define DRIVER_MINOR		13
 #else
 #define DRIVER_MINOR		6
@@ -176,12 +175,6 @@ struct drm_i915_private {
 
 	struct drm_mm vram;
 
-#ifdef I915_HAVE_FENCE
-	uint32_t flush_sequence;
-	uint32_t flush_flags;
-	uint32_t flush_pending;
-	uint32_t saved_flush_status;
-#endif
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
 	unsigned int max_validate_buffers;
@@ -556,30 +549,7 @@ extern void i915_mem_release(struct drm_device * dev,
 extern int i915_save_state(struct drm_device *dev);
 extern int i915_restore_state(struct drm_device *dev);
 
-#ifdef I915_HAVE_FENCE
-/* i915_fence.c */
-extern void i915_fence_handler(struct drm_device *dev);
-extern void i915_invalidate_reported_sequence(struct drm_device *dev);
-
-#endif
-
-#if defined(I915_HAVE_BUFFER) && defined(I915_TTM)
-/* i915_buffer.c */
-extern struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev);
-extern int i915_fence_type(struct drm_buffer_object *bo, uint32_t *fclass,
-			   uint32_t *type);
-extern int i915_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
-extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
-			       struct drm_mem_type_manager *man);
-extern uint64_t i915_evict_flags(struct drm_buffer_object *bo);
-extern int i915_move(struct drm_buffer_object *bo, int evict,
-		int no_wait, struct drm_bo_mem_reg *new_mem);
-void i915_flush_ttm(struct drm_ttm *ttm);
-#endif /* ttm */
 #ifdef I915_HAVE_BUFFER
-/* i915_execbuf.c */
-int i915_execbuffer(struct drm_device *dev, void *data,
-				   struct drm_file *file_priv);
 /* i915_gem.c */
 int i915_gem_init_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);

@@ -48,31 +48,6 @@ module_param_named(fbpercrtc, i915_fbpercrtc, int, 0400);
 unsigned int i915_rightof = 1;
 module_param_named(i915_rightof, i915_rightof, int, 0400);
 
-#if defined(I915_HAVE_FENCE) && defined(I915_TTM)
-extern struct drm_fence_driver i915_fence_driver;
-#endif
-
-#if defined(I915_HAVE_BUFFER) && defined(I915_TTM)
-
-static uint32_t i915_mem_prios[] = {DRM_BO_MEM_VRAM, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
-static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_VRAM, DRM_BO_MEM_LOCAL};
-
-static struct drm_bo_driver i915_bo_driver = {
-	.mem_type_prio = i915_mem_prios,
-	.mem_busy_prio = i915_busy_prios,
-	.num_mem_type_prio = sizeof(i915_mem_prios)/sizeof(uint32_t),
-	.num_mem_busy_prio = sizeof(i915_busy_prios)/sizeof(uint32_t),
-	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
-	.fence_type = i915_fence_type,
-	.invalidate_caches = i915_invalidate_caches,
-	.init_mem_type = i915_init_mem_type,
-	.evict_flags = i915_evict_flags,
-	.move = i915_move,
-	.ttm_cache_flush = i915_flush_ttm,
-	.command_stream_barrier = NULL,
-};
-#endif /* ttm */
-
 static int i915_suspend(struct drm_device *dev, pm_message_t state)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
@@ -175,12 +150,6 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = remove,
 		},
-#if defined(I915_HAVE_FENCE) && defined(I915_TTM)
-	.fence_driver = &i915_fence_driver,
-#endif
-#if defined(I915_HAVE_BUFFER) && defined(I915_TTM)
-	.bo_driver = &i915_bo_driver,
-#endif
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = DRIVER_DATE,

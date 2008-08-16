@@ -519,8 +519,5 @@ int i915_driver_firstopen(struct drm_device *dev)
 {
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		return 0;
-#if defined(I915_HAVE_BUFFER) && defined(I915_TTM)
-	drm_bo_driver_init(dev);
-#endif
 	return 0;
 }
