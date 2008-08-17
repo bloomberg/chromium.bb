@@ -511,11 +511,68 @@ static void radeon_legacy_primary_dac_mode_set(struct drm_encoder *encoder,
 	RADEON_WRITE(RADEON_DAC_MACRO_CNTL, dac_macro_cntl);
 }
 
-static enum drm_connector_status radeon_legacy_primary_dac_detect(struct drm_encoder *encoder, struct drm_connector *connector)
+static enum drm_connector_status radeon_legacy_primary_dac_detect(struct drm_encoder *encoder,
+								  struct drm_connector *connector)
 {
-	// FIXME
-	return connector_status_disconnected;
+	struct drm_device *dev = encoder->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t vclk_ecp_cntl, crtc_ext_cntl;
+	uint32_t dac_ext_cntl, dac_cntl, dac_macro_cntl, tmp;
+	enum drm_connector_status found = connector_status_disconnected;
+	bool color = true;
 
+	/* save the regs we need */
+	vclk_ecp_cntl = RADEON_READ_PLL(dev_priv, RADEON_VCLK_ECP_CNTL);
+	crtc_ext_cntl = RADEON_READ(RADEON_CRTC_EXT_CNTL);
+	dac_ext_cntl = RADEON_READ(RADEON_DAC_EXT_CNTL);
+	dac_cntl = RADEON_READ(RADEON_DAC_CNTL);
+	dac_macro_cntl = RADEON_READ(RADEON_DAC_MACRO_CNTL);
+
+	tmp = vclk_ecp_cntl &
+		~(RADEON_PIXCLK_ALWAYS_ONb | RADEON_PIXCLK_DAC_ALWAYS_ONb);
+	RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, tmp);
+
+	tmp = crtc_ext_cntl | RADEON_CRTC_CRT_ON;
+	RADEON_WRITE(RADEON_CRTC_EXT_CNTL, tmp);
+
+	tmp = RADEON_DAC_FORCE_BLANK_OFF_EN |
+		RADEON_DAC_FORCE_DATA_EN;
+
+	if (color)
+		tmp |= RADEON_DAC_FORCE_DATA_SEL_RGB;
+	else
+		tmp |= RADEON_DAC_FORCE_DATA_SEL_G;
+
+	if (radeon_is_r300(dev_priv))
+		tmp |= (0x1b6 << RADEON_DAC_FORCE_DATA_SHIFT);
+	else
+		tmp |= (0x180 << RADEON_DAC_FORCE_DATA_SHIFT);
+
+	RADEON_WRITE(RADEON_DAC_EXT_CNTL, tmp);
+
+	tmp = dac_cntl & ~(RADEON_DAC_RANGE_CNTL_MASK | RADEON_DAC_PDWN);
+	tmp |= RADEON_DAC_RANGE_CNTL_PS2 | RADEON_DAC_CMP_EN;
+	RADEON_WRITE(RADEON_DAC_CNTL, tmp);
+
+	tmp &= ~(RADEON_DAC_PDWN_R |
+		 RADEON_DAC_PDWN_G |
+		 RADEON_DAC_PDWN_B);
+
+	RADEON_WRITE(RADEON_DAC_MACRO_CNTL, tmp);
+
+	udelay(2000);
+
+	if (RADEON_READ(RADEON_DAC_CNTL) & RADEON_DAC_CMP_OUTPUT)
+		found = connector_status_connected;
+
+	/* restore the regs we used */
+	RADEON_WRITE(RADEON_DAC_CNTL, dac_cntl);
+	RADEON_WRITE(RADEON_DAC_MACRO_CNTL, dac_macro_cntl);
+	RADEON_WRITE(RADEON_DAC_EXT_CNTL, dac_ext_cntl);
+	RADEON_WRITE(RADEON_CRTC_EXT_CNTL, crtc_ext_cntl);
+	RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, vclk_ecp_cntl);
+
+	return found;
 }
 
 static const struct drm_encoder_helper_funcs radeon_legacy_primary_dac_helper_funcs = {
@@ -1102,9 +1159,100 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 
 }
 
-static enum drm_connector_status radeon_legacy_tv_dac_detect(struct drm_encoder *encoder, struct drm_connector *connector)
+static enum drm_connector_status radeon_legacy_tv_dac_detect(struct drm_encoder *encoder,
+							     struct drm_connector *connector)
 {
-	// FIXME
+	struct drm_device *dev = encoder->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t crtc2_gen_cntl, tv_dac_cntl, dac_cntl2, dac_ext_cntl;
+	uint32_t disp_hw_debug, disp_output_cntl, gpiopad_a, pixclks_cntl, tmp;
+	enum drm_connector_status found = connector_status_disconnected;
+	bool color = true;
+
+	// FIXME tv
+
+	/* save the regs we need */
+	pixclks_cntl = RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL);
+	gpiopad_a = radeon_is_r300(dev_priv) ? RADEON_READ(RADEON_GPIOPAD_A) : 0;
+	disp_output_cntl = radeon_is_r300(dev_priv) ? RADEON_READ(RADEON_DISP_OUTPUT_CNTL) : 0;
+	disp_hw_debug = radeon_is_r300(dev_priv) ? 0 : RADEON_READ(RADEON_DISP_HW_DEBUG);
+	crtc2_gen_cntl = RADEON_READ(RADEON_CRTC2_GEN_CNTL);
+	tv_dac_cntl = RADEON_READ(RADEON_TV_DAC_CNTL);
+	dac_ext_cntl = RADEON_READ(RADEON_DAC_EXT_CNTL);
+	dac_cntl2 = RADEON_READ(RADEON_DAC_CNTL2);
+
+	tmp = pixclks_cntl & ~(RADEON_PIX2CLK_ALWAYS_ONb
+			       | RADEON_PIX2CLK_DAC_ALWAYS_ONb);
+	RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, tmp);
+
+	if (radeon_is_r300(dev_priv))
+		RADEON_WRITE_P(RADEON_GPIOPAD_A, 1, ~1);
+
+	tmp = crtc2_gen_cntl & ~RADEON_CRTC2_PIX_WIDTH_MASK;
+	tmp |= RADEON_CRTC2_CRT2_ON |
+		(2 << RADEON_CRTC2_PIX_WIDTH_SHIFT);
+
+	RADEON_WRITE(RADEON_CRTC2_GEN_CNTL, tmp);
+
+	if (radeon_is_r300(dev_priv)) {
+		tmp = disp_output_cntl & ~RADEON_DISP_TVDAC_SOURCE_MASK;
+		tmp |= RADEON_DISP_TVDAC_SOURCE_CRTC2;
+		RADEON_WRITE(RADEON_DISP_OUTPUT_CNTL, tmp);
+	} else {
+		tmp = disp_hw_debug & ~RADEON_CRT2_DISP1_SEL;
+		RADEON_WRITE(RADEON_DISP_HW_DEBUG, tmp);
+	}
+
+	tmp = RADEON_TV_DAC_NBLANK |
+		RADEON_TV_DAC_NHOLD |
+		RADEON_TV_MONITOR_DETECT_EN |
+		RADEON_TV_DAC_STD_PS2;
+
+	RADEON_WRITE(RADEON_TV_DAC_CNTL, tmp);
+
+	tmp = RADEON_DAC2_FORCE_BLANK_OFF_EN |
+		RADEON_DAC2_FORCE_DATA_EN;
+
+	if (color)
+		tmp |= RADEON_DAC_FORCE_DATA_SEL_RGB;
+	else
+		tmp |= RADEON_DAC_FORCE_DATA_SEL_G;
+
+	if (radeon_is_r300(dev_priv))
+		tmp |= (0x1b6 << RADEON_DAC_FORCE_DATA_SHIFT);
+	else
+		tmp |= (0x180 << RADEON_DAC_FORCE_DATA_SHIFT);
+
+	RADEON_WRITE(RADEON_DAC_EXT_CNTL, tmp);
+
+	tmp = dac_cntl2 | RADEON_DAC2_DAC2_CLK_SEL | RADEON_DAC2_CMP_EN;
+	RADEON_WRITE(RADEON_DAC_CNTL2, tmp);
+
+	udelay(10000);
+
+	if (radeon_is_r300(dev_priv)) {
+		if (RADEON_READ(RADEON_DAC_CNTL2) & RADEON_DAC2_CMP_OUT_B)
+			found = connector_status_connected;
+	} else {
+		if (RADEON_READ(RADEON_DAC_CNTL2) & RADEON_DAC2_CMP_OUTPUT)
+			found = connector_status_connected;
+	}
+
+	/* restore regs we used */
+	RADEON_WRITE(RADEON_DAC_CNTL2, dac_cntl2);
+	RADEON_WRITE(RADEON_DAC_EXT_CNTL, dac_ext_cntl);
+	RADEON_WRITE(RADEON_TV_DAC_CNTL, tv_dac_cntl);
+	RADEON_WRITE(RADEON_CRTC2_GEN_CNTL, crtc2_gen_cntl);
+
+	if (radeon_is_r300(dev_priv)) {
+		RADEON_WRITE(RADEON_DISP_OUTPUT_CNTL, disp_output_cntl);
+		RADEON_WRITE_P(RADEON_GPIOPAD_A, gpiopad_a, ~1 );
+	} else {
+		RADEON_WRITE(RADEON_DISP_HW_DEBUG, disp_hw_debug);
+	}
+	RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, pixclks_cntl);
+
+	//return found;
 	return connector_status_disconnected;
 
 }
