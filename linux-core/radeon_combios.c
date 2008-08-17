@@ -460,6 +460,36 @@ bool radeon_combios_get_clock_info(struct drm_device *dev)
 	return false;
 }
 
+bool radeon_combios_get_primary_dac_info(struct radeon_encoder *encoder)
+{
+	struct drm_device *dev = encoder->base.dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint16_t dac_info;
+	uint8_t rev, bg, dac;
+
+	/* check CRT table */
+	dac_info = combios_get_table_offset(dev, COMBIOS_CRT_INFO_TABLE);
+	if (dac_info) {
+		rev = radeon_bios8(dev_priv, dac_info) & 0x3;
+		if (rev < 2) {
+			bg = radeon_bios8(dev_priv, dac_info + 0x2) & 0xf;
+			dac = (radeon_bios8(dev_priv, dac_info + 0x2) >> 4) & 0xf;
+			encoder->ps2_pdac_adj = (bg << 8) | (dac);
+
+			return true;
+		} else {
+			bg = radeon_bios8(dev_priv, dac_info + 0x2) & 0xf;
+			dac = radeon_bios8(dev_priv, dac_info + 0x3) & 0xf;
+			encoder->ps2_pdac_adj = (bg << 8) | (dac);
+
+			return true;
+		}
+
+	}
+
+	return false;
+}
+
 bool radeon_combios_get_tv_dac_info(struct radeon_encoder *encoder)
 {
 	struct drm_device *dev = encoder->base.dev;
@@ -908,7 +938,7 @@ bool radeon_get_legacy_connector_info_from_bios(struct drm_device *dev)
 	    dev_priv->chip_family == CHIP_RS480) {
 		uint16_t lcd_info = combios_get_table_offset(dev, COMBIOS_LCD_INFO_TABLE);
 		if (lcd_info) {
-			uint16_t lcd_ddc_info = lcd_ddc_info = combios_get_table_offset(dev, COMBIOS_LCD_DDC_INFO_TABLE);
+			uint16_t lcd_ddc_info = combios_get_table_offset(dev, COMBIOS_LCD_DDC_INFO_TABLE);
 
 			mode_info->bios_connector[4].valid = true;
 			mode_info->bios_connector[4].connector_type = CONNECTOR_LVDS;

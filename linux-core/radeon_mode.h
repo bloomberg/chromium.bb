@@ -368,6 +368,9 @@ struct radeon_encoder {
 	bool use_bios_dividers;
 	uint32_t lvds_gen_cntl;
 
+	/* legacy primary dac */
+	uint32_t ps2_pdac_adj;
+
 	/* legacy tv dac */
 	uint32_t ps2_tvdac_adj;
 	uint32_t ntsc_tvdac_adj;
@@ -439,6 +442,7 @@ extern bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tv_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tv_dac_info(struct radeon_encoder *encoder);
+extern bool radeon_combios_get_primary_dac_info(struct radeon_encoder *encoder);
 extern void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				     u16 blue, int regno);
 struct drm_framebuffer *radeon_user_framebuffer_create(struct drm_device *dev,

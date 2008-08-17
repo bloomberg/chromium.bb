@@ -420,6 +420,7 @@ static void radeon_legacy_primary_dac_mode_set(struct drm_encoder *encoder,
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	uint32_t disp_output_cntl, dac_cntl, dac2_cntl, dac_macro_cntl;
 
 	DRM_DEBUG("\n");
@@ -458,7 +459,11 @@ static void radeon_legacy_primary_dac_mode_set(struct drm_encoder *encoder,
 		       RADEON_DAC_RANGE_CNTL |
 		       RADEON_DAC_BLANKING);
 
-	dac_macro_cntl = RADEON_READ(RADEON_DAC_MACRO_CNTL);
+	if (radeon_encoder->ps2_pdac_adj)
+		dac_macro_cntl = radeon_encoder->ps2_pdac_adj;
+	else
+		dac_macro_cntl = RADEON_READ(RADEON_DAC_MACRO_CNTL);
+	dac_macro_cntl |= RADEON_DAC_PDWN_R | RADEON_DAC_PDWN_G | RADEON_DAC_PDWN_B;
 	RADEON_WRITE(RADEON_DAC_MACRO_CNTL, dac_macro_cntl);
 }
 
@@ -504,8 +509,8 @@ struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev
 
 	drm_encoder_helper_add(encoder, &radeon_legacy_primary_dac_helper_funcs);
 
-	/* TODO get the primary dac vals from bios tables */
-	//radeon_combios_get_lvds_info(radeon_encoder);
+	/* get the primary dac bg/adj vals from bios tables */
+	radeon_combios_get_primary_dac_info(radeon_encoder);
 
 	return encoder;
 }
