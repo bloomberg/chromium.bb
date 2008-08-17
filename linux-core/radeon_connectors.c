@@ -66,6 +66,7 @@ static int radeon_lvds_mode_valid(struct drm_connector *connector,
 
 static enum drm_connector_status radeon_lvds_detect(struct drm_connector *connector)
 {
+	// check acpi lid status ???
 	return connector_status_connected;
 }
 
@@ -240,7 +241,7 @@ struct drm_encoder *radeon_dvi_encoder(struct drm_connector *connector)
 	}
 
 	/* see if we have a default encoder  TODO */
-	
+
 	/* then check use digitial */
 	/* pick the first one */
 	if (enc_id) {

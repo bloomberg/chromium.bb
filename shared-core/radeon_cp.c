@@ -2409,8 +2409,12 @@ int radeon_modeset_preinit(struct drm_device *dev)
 
 	if (dev_priv->is_atom_bios) {
 		dev_priv->mode_info.atom_context = atom_parse(&card, dev_priv->bios);
-	}
+		radeon_atom_initialize_bios_scratch_regs(dev);
+	} else
+		radeon_combios_initialize_bios_scratch_regs(dev);
+
 	radeon_get_clock_info(dev);
+
 	return 0;
 }
 

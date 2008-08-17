@@ -225,7 +225,7 @@ int radeon_gem_mmap_ioctl(struct drm_device *dev, void *data,
 	args->addr_ptr = (uint64_t) addr;
 
 	return 0;
-	
+
 }
 
 int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,

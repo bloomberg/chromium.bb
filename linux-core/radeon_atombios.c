@@ -363,3 +363,55 @@ void radeon_atom_static_pwrmgt_setup(struct drm_device *dev, int enable)
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
 }
 
+void radeon_atom_initialize_bios_scratch_regs(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t bios_2_scratch, bios_6_scratch;
+
+	if (dev_priv->chip_family >= CHIP_R600) {
+		bios_2_scratch = RADEON_READ(RADEON_BIOS_0_SCRATCH);
+		bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
+	} else {
+		bios_2_scratch = RADEON_READ(RADEON_BIOS_0_SCRATCH);
+		bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
+	}
+
+	/* let the bios control the backlight */
+	bios_2_scratch &= ~ATOM_S2_VRI_BRIGHT_ENABLE;
+
+	/* tell the bios not to handle mode switching */
+	bios_6_scratch |= (ATOM_S6_ACC_BLOCK_DISPLAY_SWITCH |
+			   ATOM_S6_ACC_MODE);
+
+	if (dev_priv->chip_family >= CHIP_R600) {
+		RADEON_WRITE(R600_BIOS_2_SCRATCH, bios_2_scratch);
+		RADEON_WRITE(R600_BIOS_6_SCRATCH, bios_6_scratch);
+	} else {
+		RADEON_WRITE(RADEON_BIOS_2_SCRATCH, bios_2_scratch);
+		RADEON_WRITE(RADEON_BIOS_6_SCRATCH, bios_6_scratch);
+	}
+
+}
+
+void
+radeon_atom_output_lock(struct drm_encoder *encoder, bool lock)
+{
+	struct drm_device *dev = encoder->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t bios_6_scratch;
+
+	if (dev_priv->chip_family >= CHIP_R600)
+		bios_6_scratch = RADEON_READ(R600_BIOS_6_SCRATCH);
+	else
+		bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
+
+	if (lock)
+		bios_6_scratch |= ATOM_S6_CRITICAL_STATE;
+	else
+		bios_6_scratch &= ~ATOM_S6_CRITICAL_STATE;
+
+	if (dev_priv->chip_family >= CHIP_R600)
+		RADEON_WRITE(R600_BIOS_6_SCRATCH, bios_6_scratch);
+	else
+		RADEON_WRITE(RADEON_BIOS_6_SCRATCH, bios_6_scratch);
+}

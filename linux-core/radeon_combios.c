@@ -1301,3 +1301,44 @@ void radeon_combios_asic_init(struct drm_device *dev)
 		combios_parse_mmio_table(dev, table);
 
 }
+
+void radeon_combios_initialize_bios_scratch_regs(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t bios_0_scratch, bios_6_scratch, bios_7_scratch;
+
+	bios_0_scratch = RADEON_READ(RADEON_BIOS_0_SCRATCH);
+	bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
+	//bios_7_scratch = RADEON_READ(RADEON_BIOS_7_SCRATCH);
+
+	/* let the bios control the backlight */
+	bios_0_scratch &= ~RADEON_DRIVER_BRIGHTNESS_EN;
+
+	/* tell the bios not to handle mode switching */
+	bios_6_scratch |= (RADEON_DISPLAY_SWITCHING_DIS |
+				 RADEON_ACC_MODE_CHANGE);
+
+	/* tell the bios a driver is loaded */
+	//bios_7_scratch |= RADEON_DRV_LOADED;
+
+	RADEON_WRITE(RADEON_BIOS_0_SCRATCH, bios_0_scratch);
+	RADEON_WRITE(RADEON_BIOS_6_SCRATCH, bios_6_scratch);
+	//RADEON_WRITE(RADEON_BIOS_7_SCRATCH, bios_7_scratch);
+}
+
+void
+radeon_combios_output_lock(struct drm_encoder *encoder, bool lock)
+{
+	struct drm_device *dev = encoder->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t bios_6_scratch;
+
+	bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
+
+	if (lock)
+		bios_6_scratch |= RADEON_DRIVER_CRITICAL;
+	else
+		bios_6_scratch &= ~RADEON_DRIVER_CRITICAL;
+
+	RADEON_WRITE(RADEON_BIOS_6_SCRATCH, bios_6_scratch);
+}

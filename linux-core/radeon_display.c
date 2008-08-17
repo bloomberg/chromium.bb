@@ -600,4 +600,3 @@ void radeon_modeset_cleanup(struct drm_device *dev)
 {
 	drm_mode_config_cleanup(dev);
 }
-

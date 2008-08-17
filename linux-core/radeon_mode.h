@@ -293,6 +293,10 @@ extern bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tv_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tv_dac_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_primary_dac_info(struct radeon_encoder *encoder);
+extern void radeon_combios_output_lock(struct drm_encoder *encoder, bool lock);
+extern void radeon_combios_initialize_bios_scratch_regs(struct drm_device *dev);
+extern void radeon_atom_output_lock(struct drm_encoder *encoder, bool lock);
+extern void radeon_atom_initialize_bios_scratch_regs(struct drm_device *dev);
 extern void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				     u16 blue, int regno);
 struct drm_framebuffer *radeon_user_framebuffer_create(struct drm_device *dev,
@@ -311,6 +315,7 @@ void radeon_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_stat
 
 void radeon_atom_static_pwrmgt_setup(struct drm_device *dev, int enable);
 void radeon_atom_dyn_clk_setup(struct drm_device *dev, int enable);
+void radeon_combios_dyn_clk_setup(struct drm_device *dev, int enable);
 void radeon_get_clock_info(struct drm_device *dev);
 extern bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device *dev);
 
