@@ -175,7 +175,7 @@ static char *drmStrdup(const char *s)
  * Call ioctl, restarting if it is interupted
  */
 static int
-drmIoctl(int fd, int request, void *arg)
+drmIoctl(int fd, unsigned long request, void *arg)
 {
     int	ret;
 
