@@ -1053,6 +1053,9 @@
 #       define R300_LVDS_SRC_SEL_CRTC1      (0   << 18)
 #       define R300_LVDS_SRC_SEL_CRTC2      (1   << 18)
 #       define R300_LVDS_SRC_SEL_RMX        (2   << 18)
+#define RADEON_LVDS_SS_GEN_CNTL             0x02ec
+#       define RADEON_LVDS_PWRSEQ_DELAY1_SHIFT     16
+#       define RADEON_LVDS_PWRSEQ_DELAY2_SHIFT     20
 
 #define RADEON_MAX_LATENCY                  0x0f3f /* PCI */
 #define RADEON_MC_AGP_LOCATION              0x014c
