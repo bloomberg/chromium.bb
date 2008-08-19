@@ -717,7 +717,7 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 
 #define GET_SCRATCH( x )	(dev_priv->writeback_works ?			\
 				 (dev_priv->mm.ring_read.bo ? \
-				  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(0)) : \
+				  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(x)) : \
 				  DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(x))) : \
 				 RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x)))
 
