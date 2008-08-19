@@ -29,7 +29,7 @@
 
 #include "drm_crtc_helper.h"
 
-void radeon_restore_common_regs(struct drm_device *dev, struct radeon_legacy_state *state)
+void radeon_restore_common_regs(struct drm_device *dev)
 {
 	/* don't need this yet */
 }
