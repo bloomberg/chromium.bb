@@ -1142,6 +1142,8 @@ void i915_driver_lastclose(struct drm_device * dev)
 
 	if (drm_getsarea(dev) && dev_priv->sarea_priv)
 		i915_do_cleanup_pageflip(dev);
+	if (dev_priv->sarea_priv)
+		dev_priv->sarea_priv = NULL;
 	if (dev_priv->agp_heap)
 		i915_mem_takedown(&(dev_priv->agp_heap));
 #if defined(I915_HAVE_BUFFER)
