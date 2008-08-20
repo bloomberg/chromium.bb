@@ -1114,6 +1114,8 @@ int i915_driver_unload(struct drm_device *dev)
 
 	drm_free(dev->dev_private, sizeof(drm_i915_private_t),
 		 DRM_MEM_DRIVER);
+	dev->dev_private = NULL;
+
 #ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 	intel_fini_chipset_flush_compat(dev);
