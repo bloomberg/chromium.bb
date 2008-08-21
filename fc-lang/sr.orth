@@ -1,7 +1,7 @@
 #
 # fontconfig/fc-lang/sr.orth
 #
-# Copyright © 2002 Keith Packard
+# Copyright © 2008 Danilo Šegan
 #
 # Permission to use, copy, modify, distribute, and sell this software and its
 # documentation for any purpose is hereby granted without fee, provided that
@@ -23,23 +23,13 @@
 #
 # Serbian (SR)
 #
-# Sources:
-#	www.evertype.com
-#	www.eki.ee/letter
-#
-# evertype.com marks a subset of the standard Cyrillic alphabet; I've
-# simply included all of it here.
-#
 0402
-0408
-0409
-040a
-040b
+0408-040b
 040f
-0410-044f
+0410-0418
+041a-0428
+0430-0438
+043a-0448
 0452
-0458
-0459
-045a
-045b
+0458-045b
 045f
