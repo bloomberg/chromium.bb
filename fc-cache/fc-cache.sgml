@@ -63,7 +63,7 @@ manpage.1: manpage.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
 
-      <arg><option>-fsvV?</option></arg>
+      <arg><option>-fsvVh</option></arg>
       <arg><option>--force</option></arg>
       <arg><option>--system-only</option></arg>
       <arg><option>--verbose</option></arg>
@@ -131,7 +131,7 @@ manpage.1: manpage.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-?</option>
+        <term><option>-h</option>
           <option>--help</option>
         </term>
         <listitem>

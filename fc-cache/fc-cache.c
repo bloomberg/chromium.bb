@@ -72,7 +72,7 @@ const struct option longopts[] = {
     {"system-only", 0, 0, 's'},
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
-    {"help", 0, 0, '?'},
+    {"help", 0, 0, 'h'},
     {NULL,0,0,0},
 };
 #else
@@ -83,34 +83,35 @@ extern int optind, opterr, optopt;
 #endif
 
 static void
-usage (char *program)
+usage (char *program, int error)
 {
+    FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-frsvV?] [--force|--really-force] [--system-only] [--verbose] [--version] [--help] [dirs]\n",
+    fprintf (file, "usage: %s [-frsvVh] [--force|--really-force] [--system-only] [--verbose] [--version] [--help] [dirs]\n",
 	     program);
 #else
-    fprintf (stderr, "usage: %s [-frsvV?] [dirs]\n",
+    fprintf (file, "usage: %s [-frsvVh] [dirs]\n",
 	     program);
 #endif
-    fprintf (stderr, "Build font information caches in [dirs]\n"
+    fprintf (file, "Build font information caches in [dirs]\n"
 	     "(all directories in font configuration by default).\n");
-    fprintf (stderr, "\n");
+    fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "  -f, --force          scan directories with apparently valid caches\n");
-    fprintf (stderr, "  -r, --really-force   erase all existing caches, then rescan\n");
-    fprintf (stderr, "  -s, --system-only    scan system-wide directories only\n");
-    fprintf (stderr, "  -v, --verbose        display status information while busy\n");
-    fprintf (stderr, "  -V, --version        display font config version and exit\n");
-    fprintf (stderr, "  -?, --help           display this help and exit\n");
+    fprintf (file, "  -f, --force          scan directories with apparently valid caches\n");
+    fprintf (file, "  -r, --really-force   erase all existing caches, then rescan\n");
+    fprintf (file, "  -s, --system-only    scan system-wide directories only\n");
+    fprintf (file, "  -v, --verbose        display status information while busy\n");
+    fprintf (file, "  -V, --version        display font config version and exit\n");
+    fprintf (file, "  -h, --help           display this help and exit\n");
 #else
-    fprintf (stderr, "  -f         (force)   scan directories with apparently valid caches\n");
-    fprintf (stderr, "  -r,   (really force) erase all existing caches, then rescan\n");
-    fprintf (stderr, "  -s         (system)  scan system-wide directories only\n");
-    fprintf (stderr, "  -v         (verbose) display status information while busy\n");
-    fprintf (stderr, "  -V         (version) display font config version and exit\n");
-    fprintf (stderr, "  -?         (help)    display this help and exit\n");
+    fprintf (file, "  -f         (force)   scan directories with apparently valid caches\n");
+    fprintf (file, "  -r,   (really force) erase all existing caches, then rescan\n");
+    fprintf (file, "  -s         (system)  scan system-wide directories only\n");
+    fprintf (file, "  -v         (verbose) display status information while busy\n");
+    fprintf (file, "  -V         (version) display font config version and exit\n");
+    fprintf (file, "  -h         (help)    display this help and exit\n");
 #endif
-    exit (1);
+    exit (error);
 }
 
 static FcStrSet *processed_dirs;
@@ -373,9 +374,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "frsVv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "frsVvh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "frsVv?")) != -1)
+    while ((c = getopt (argc, argv, "frsVvh")) != -1)
 #endif
     {
 	switch (c) {
@@ -395,8 +396,10 @@ main (int argc, char **argv)
 	case 'v':
 	    verbose = FcTrue;
 	    break;
+	case 'h':
+	    usage (argv[0], 0);
 	default:
-	    usage (argv[0]);
+	    usage (argv[0], 1);
 	}
     }
     i = optind;

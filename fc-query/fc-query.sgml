@@ -62,7 +62,7 @@ manpage.1: manpage.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
 
-      <arg><option>-V?</option></arg>
+      <arg><option>-Vh</option></arg>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
       <sbr>
@@ -93,7 +93,7 @@ manpage.1: manpage.sgml
 
     <variablelist>
       <varlistentry>
-        <term><option>-?</option>
+        <term><option>-h</option>
           <option>--help</option>
         </term>
         <listitem>

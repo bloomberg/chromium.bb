@@ -54,7 +54,7 @@
 static const struct option longopts[] = {
     {"index", 1, 0, 'i'},
     {"version", 0, 0, 'V'},
-    {"help", 0, 0, '?'},
+    {"help", 0, 0, 'h'},
     {NULL,0,0,0},
 };
 #else
@@ -64,28 +64,30 @@ extern int optind, opterr, optopt;
 #endif
 #endif
 
-static void usage (char *program)
+static void
+usage (char *program, int error)
 {
+    FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-V?] [-i index] [--index index] [--version] [--help] font-file...\n",
+    fprintf (file, "usage: %s [-Vh] [-i index] [--index index] [--version] [--help] font-file...\n",
 	     program);
 #else
-    fprintf (stderr, "usage: %s [-V?] [-i index] font-file...\n",
+    fprintf (file, "usage: %s [-Vh] [-i index] font-file...\n",
 	     program);
 #endif
-    fprintf (stderr, "Query font files and print resulting pattern(s)\n");
-    fprintf (stderr, "\n");
+    fprintf (file, "Query font files and print resulting pattern(s)\n");
+    fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "  -i, --index INDEX    display the INDEX face of each font file only\n");
-    fprintf (stderr, "  -V, --version        display font config version and exit\n");
-    fprintf (stderr, "  -?, --help           display this help and exit\n");
+    fprintf (file, "  -i, --index INDEX    display the INDEX face of each font file only\n");
+    fprintf (file, "  -V, --version        display font config version and exit\n");
+    fprintf (file, "  -h, --help           display this help and exit\n");
 #else
-    fprintf (stderr, "  -i INDEX   (index)   display the INDEX face of each font file only\n");
-    fprintf (stderr, "  -a         (all)     display unpruned sorted list of matches\n");
-    fprintf (stderr, "  -V         (version) display font config version and exit\n");
-    fprintf (stderr, "  -?         (help)    display this help and exit\n");
+    fprintf (file, "  -i INDEX   (index)   display the INDEX face of each font file only\n");
+    fprintf (file, "  -a         (all)     display unpruned sorted list of matches\n");
+    fprintf (file, "  -V         (version) display font config version and exit\n");
+    fprintf (file, "  -h         (help)    display this help and exit\n");
 #endif
-    exit (1);
+    exit (error);
 }
 
 int
@@ -100,9 +102,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "i:sVv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "i:sVvh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "i:asVv?")) != -1)
+    while ((c = getopt (argc, argv, "i:asVvh")) != -1)
 #endif
     {
 	switch (c) {
@@ -114,8 +116,10 @@ main (int argc, char **argv)
 	    fprintf (stderr, "fontconfig version %d.%d.%d\n",
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
+	case 'h':
+	    usage (argv[0], 0);
 	default:
-	    usage (argv[0]);
+	    usage (argv[0], 1);
 	}
     }
     i = optind;
@@ -124,7 +128,7 @@ main (int argc, char **argv)
 #endif
 
     if (i == argc)
-	usage (argv[0]);
+	usage (argv[0], 1);
 
     if (!FcInit ())
     {

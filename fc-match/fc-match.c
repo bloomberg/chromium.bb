@@ -53,7 +53,7 @@ static const struct option longopts[] = {
     {"all", 0, 0, 'a'},
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
-    {"help", 0, 0, '?'},
+    {"help", 0, 0, 'h'},
     {NULL,0,0,0},
 };
 #else
@@ -63,31 +63,33 @@ extern int optind, opterr, optopt;
 #endif
 #endif
 
-static void usage (char *program)
+static void
+usage (char *program, int error)
 {
+    FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-savV?] [--sort] [--all] [--verbose] [--version] [--help] [pattern]\n",
+    fprintf (file, "usage: %s [-savVh] [--sort] [--all] [--verbose] [--version] [--help] [pattern]\n",
 	     program);
 #else
-    fprintf (stderr, "usage: %s [-savV?] [pattern]\n",
+    fprintf (file, "usage: %s [-savVh] [pattern]\n",
 	     program);
 #endif
-    fprintf (stderr, "List fonts matching [pattern]\n");
-    fprintf (stderr, "\n");
+    fprintf (file, "List fonts matching [pattern]\n");
+    fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "  -s, --sort           display sorted list of matches\n");
-    fprintf (stderr, "  -a, --all            display unpruned sorted list of matches\n");
-    fprintf (stderr, "  -v, --verbose        display entire font pattern\n");
-    fprintf (stderr, "  -V, --version        display font config version and exit\n");
-    fprintf (stderr, "  -?, --help           display this help and exit\n");
+    fprintf (file, "  -s, --sort           display sorted list of matches\n");
+    fprintf (file, "  -a, --all            display unpruned sorted list of matches\n");
+    fprintf (file, "  -v, --verbose        display entire font pattern\n");
+    fprintf (file, "  -V, --version        display font config version and exit\n");
+    fprintf (file, "  -h, --help           display this help and exit\n");
 #else
-    fprintf (stderr, "  -s,        (sort)    display sorted list of matches\n");
-    fprintf (stderr, "  -a         (all)     display unpruned sorted list of matches\n");
-    fprintf (stderr, "  -v         (verbose) display entire font pattern\n");
-    fprintf (stderr, "  -V         (version) display font config version and exit\n");
-    fprintf (stderr, "  -?         (help)    display this help and exit\n");
+    fprintf (file, "  -s,        (sort)    display sorted list of matches\n");
+    fprintf (file, "  -a         (all)     display unpruned sorted list of matches\n");
+    fprintf (file, "  -v         (verbose) display entire font pattern\n");
+    fprintf (file, "  -V         (version) display font config version and exit\n");
+    fprintf (file, "  -h         (help)    display this help and exit\n");
 #endif
-    exit (1);
+    exit (error);
 }
 
 int
@@ -103,9 +105,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "asVv?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "asVvh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "asVv?")) != -1)
+    while ((c = getopt (argc, argv, "asVvh")) != -1)
 #endif
     {
 	switch (c) {
@@ -122,8 +124,10 @@ main (int argc, char **argv)
 	case 'v':
 	    verbose = 1;
 	    break;
+	case 'h':
+	    usage (argv[0], 0);
 	default:
-	    usage (argv[0]);
+	    usage (argv[0], 1);
 	}
     }
     i = optind;

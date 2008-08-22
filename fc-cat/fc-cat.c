@@ -56,7 +56,7 @@ const struct option longopts[] = {
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
     {"recurse", 0, 0, 'r'},
-    {"help", 0, 0, '?'},
+    {"help", 0, 0, 'h'},
     {NULL,0,0,0},
 };
 #else
@@ -146,32 +146,33 @@ write_string (FILE *f, const FcChar8 *string)
 }
 
 static void
-usage (char *program)
+usage (char *program, int error)
 {
+    FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "usage: %s [-rv] [--recurse] [--verbose] [*-%s.cache-2|directory]...\n",
+    fprintf (file, "usage: %s [-rv] [--recurse] [--verbose] [*-%s.cache-2|directory]...\n",
 	     program, FC_ARCHITECTURE);
-    fprintf (stderr, "       %s [-V?] [--version] [--help]\n", program);
+    fprintf (file, "       %s [-Vh] [--version] [--help]\n", program);
 #else
-    fprintf (stderr, "usage: %s [-rvV?] [*-%s.cache-2|directory]...\n",
+    fprintf (file, "usage: %s [-rvVh] [*-%s.cache-2|directory]...\n",
 	     program, FC_ARCHITECTURE);
 #endif
-    fprintf (stderr, "Reads font information cache from:\n"); 
-    fprintf (stderr, " 1) specified fontconfig cache file\n");
-    fprintf (stderr, " 2) related to a particular font directory\n");
-    fprintf (stderr, "\n");
+    fprintf (file, "Reads font information cache from:\n");
+    fprintf (file, " 1) specified fontconfig cache file\n");
+    fprintf (file, " 2) related to a particular font directory\n");
+    fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
-    fprintf (stderr, "  -r, --recurse        recurse into subdirectories\n");
-    fprintf (stderr, "  -v, --verbose        be verbose\n");
-    fprintf (stderr, "  -V, --version        display font config version and exit\n");
-    fprintf (stderr, "  -?, --help           display this help and exit\n");
+    fprintf (file, "  -r, --recurse        recurse into subdirectories\n");
+    fprintf (file, "  -v, --verbose        be verbose\n");
+    fprintf (file, "  -V, --version        display font config version and exit\n");
+    fprintf (file, "  -h, --help           display this help and exit\n");
 #else
-    fprintf (stderr, "  -r         (recurse) recurse into subdirectories\n");
-    fprintf (stderr, "  -v         (verbose) be verbose\n");
-    fprintf (stderr, "  -V         (version) display font config version and exit\n");
-    fprintf (stderr, "  -?         (help)    display this help and exit\n");
+    fprintf (file, "  -r         (recurse) recurse into subdirectories\n");
+    fprintf (file, "  -v         (verbose) be verbose\n");
+    fprintf (file, "  -V         (version) display font config version and exit\n");
+    fprintf (file, "  -h         (help)    display this help and exit\n");
 #endif
-    exit (1);
+    exit (error);
 }
 
 /*
@@ -282,9 +283,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "Vvr?", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "Vvrh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "Vvr?")) != -1)
+    while ((c = getopt (argc, argv, "Vvrh")) != -1)
 #endif
     {
 	switch (c) {
@@ -298,8 +299,10 @@ main (int argc, char **argv)
 	case 'r':
 	    recurse++;
 	    break;
+	case 'h':
+	    usage (argv[0], 0);
 	default:
-	    usage (argv[0]);
+	    usage (argv[0], 1);
 	}
     }
     i = optind;

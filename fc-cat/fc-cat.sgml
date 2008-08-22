@@ -63,7 +63,7 @@ manpage.1: manpage.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
 
-      <arg><option>-rvV?</option></arg>
+      <arg><option>-rvVh</option></arg>
       <arg><option>--recurse</option></arg>
       <arg><option>--verbose</option></arg>
       <arg><option>--version</option></arg>
@@ -109,7 +109,7 @@ manpage.1: manpage.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-?</option>
+        <term><option>-h</option>
           <option>--help</option>
         </term>
         <listitem>

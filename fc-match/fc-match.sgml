@@ -63,7 +63,7 @@ manpage.1: manpage.sgml
     <cmdsynopsis>
       <command>&dhpackage;</command>
 
-      <arg><option>-asvV?</option></arg>
+      <arg><option>-asvVh</option></arg>
       <arg><option>--all</option></arg>
       <arg><option>--sort</option></arg>
       <arg><option>--verbose</option></arg>
@@ -103,7 +103,7 @@ are printed.  The <option>--all</option> option works like
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-?</option>
+        <term><option>-h</option>
           <option>--help</option>
         </term>
         <listitem>
