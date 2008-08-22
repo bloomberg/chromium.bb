@@ -483,6 +483,8 @@ struct _FcConfig {
      */
     time_t	rescanTime;	    /* last time information was scanned */
     int		rescanInterval;	    /* interval between scans */
+
+    int		ref;                /* reference count */
 };
  
 extern FcPrivate FcConfig	*_fcConfig;

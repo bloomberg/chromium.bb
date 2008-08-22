@@ -29,14 +29,28 @@
 Creates an empty configuration.
 @@
 
+@RET@           FcConfig *
+@FUNC@          FcConfigReference
+@TYPE1@         FcConfig *                      @ARG1@          config
+@PURPOSE@	Increment config reference count
+@DESC@
+Add another reference to <parameter>config</parameter>. Configs are freed only
+when the reference count reaches zero.
+If <parameter>config</parameter> is NULL, the current configuration is used.
+In that case this function will be similar to FcConfigGetCurrent() except that
+it increments the reference count before returning and the user is responsible
+for destroying the configuration when not needed anymore.
+@@
+
 @RET@           void
 @FUNC@          FcConfigDestroy
 @TYPE1@         FcConfig *                      @ARG1@          config
 @PURPOSE@	Destroy a configuration
 @DESC@
-Destroys a configuration and any data associated with it.  Note that calling
-this function with the return from FcConfigGetCurrent will place the library
-in an indeterminate state.
+Decrements the config reference count. If all references are gone, destroys
+the configuration and any data associated with it.
+Note that calling this function with the return from FcConfigGetCurrent will
+cause a new configuration to be created for use as current configuration.
 @@
 
 @RET@           FcBool

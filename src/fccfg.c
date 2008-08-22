@@ -92,6 +92,8 @@ FcConfigCreate (void)
 
     config->rescanTime = time(0);
     config->rescanInterval = 30;    
+
+    config->ref = 1;
     
     return config;
 
@@ -191,10 +193,28 @@ FcSubstDestroy (FcSubst *s)
     }
 }
 
+FcConfig *
+FcConfigReference (FcConfig *config)
+{
+    if (!config)
+    {
+	config = FcConfigGetCurrent ();
+	if (!config)
+	    return 0;
+    }
+
+    config->ref++;
+
+    return config;
+}
+
 void
 FcConfigDestroy (FcConfig *config)
 {
     FcSetName	set;
+
+    if (--config->ref > 0)
+	return;
 
     if (config == _fcConfig)
 	_fcConfig = 0;

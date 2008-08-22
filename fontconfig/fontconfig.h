@@ -342,6 +342,9 @@ FcConfigFilename (const FcChar8 *url);
 FcPublic FcConfig *
 FcConfigCreate (void);
 
+FcPublic FcConfig *
+FcConfigReference (FcConfig *config);
+
 FcPublic void
 FcConfigDestroy (FcConfig *config);
 
