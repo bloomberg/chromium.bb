@@ -555,6 +555,9 @@ FcFontList (FcConfig	*config,
 
     if (!config)
     {
+	if (!FcInitBringUptoDate ())
+	    return 0;
+
 	config = FcConfigGetCurrent ();
 	if (!config)
 	    return 0;

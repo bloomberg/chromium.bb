@@ -62,6 +62,8 @@ Selects fonts matching <parameter>pattern</parameter> from
 <parameter>sets</parameter>, creates patterns from those
 fonts containing only the objects in <parameter>object_set</parameter> and returns
 the set of unique such patterns.
+If <parameter>config</parameter> is NULL, the default configuration is checked
+to be up to date, and used.
 @@
 
 @RET@		FcPattern *
@@ -80,6 +82,7 @@ pattern. This function should be called only after
 <function>FcConfigSubstitute</function> and
 <function>FcDefaultSubstitute</function> have been called for
 <parameter>pattern</parameter>; otherwise the results will not be correct.
+If <parameter>config</parameter> is NULL, the current configuration is used.
 Returns NULL if an error occurs during this process.
 @@
 
