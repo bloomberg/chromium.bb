@@ -1031,6 +1031,9 @@ int	drm_update_draw(struct drm_device *dev, void *data,
 struct drm_drawable_info *drm_get_drawable_info(struct drm_device *dev,
 						int handle);
 
+/* Drawable support (drm_drawable.c) */
+void drm_drawable_free_all(struct drm_device *dev);
+
 /* Authentication IOCTL support (drm_auth.c) */
 int	drm_getmagic(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv);

@@ -460,6 +460,8 @@ static int drm_lastclose(struct drm_device *dev)
 		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
 
+	drm_drawable_free_all(dev);
+
 				/* Clear AGP information */
 	if ( dev->agp ) {
 		drm_agp_mem_t *entry;

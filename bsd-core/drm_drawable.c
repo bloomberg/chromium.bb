@@ -151,3 +151,22 @@ int drm_update_draw(struct drm_device *dev, void *data,
 		return EINVAL;
 	}
 }
+
+void drm_drawable_free_all(struct drm_device *dev)
+{
+	struct bsd_drm_drawable_info *info, *next;
+
+	DRM_SPINLOCK(&dev->drw_lock);
+	for (info = RB_MIN(drawable_tree, &dev->drw_head);
+	    info != NULL ; info = next) {
+		next = RB_NEXT(drawable_tree, &dev->drw_head, info);
+		RB_REMOVE(drawable_tree, &dev->drw_head,
+		    (struct bsd_drm_drawable_info *)info);
+		DRM_SPINUNLOCK(&dev->drw_lock);
+		free_unr(dev->drw_unrhdr, info->handle);
+		drm_free(info, sizeof(struct bsd_drm_drawable_info),
+		    DRM_MEM_DRAWABLE);
+		DRM_SPINLOCK(&dev->drw_lock);
+	}
+	DRM_SPINUNLOCK(&dev->drw_lock);
+}
