@@ -34,6 +34,9 @@ AC_SYS_LARGEFILE
 
 pkgconfigdir=${libdir}/pkgconfig
 AC_SUBST(pkgconfigdir)
+AC_ARG_ENABLE(udev,	AS_HELP_STRING([--enable-udev],
+				[Enable support for using udev instead of mknod (default: disabled)]),
+				[UDEV=$enableval], [UDEV=no])
 
 
 dnl ===========================================================================
@@ -100,6 +103,10 @@ AC_CACHE_CHECK([for supported warning flags], libdrm_cv_warn_cflags, [
 
 	AC_MSG_CHECKING([which warning flags were supported])])
 WARN_CFLAGS="$libdrm_cv_warn_cflags"
+
+if test "x$UDEV" = xyes; then
+	AC_DEFINE(UDEV, 1, [Have UDEV support])
+fi
 
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([
