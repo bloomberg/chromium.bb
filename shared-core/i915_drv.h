@@ -42,6 +42,7 @@
 #if defined(__linux__)
 #define I915_HAVE_FENCE
 #define I915_HAVE_BUFFER
+#define I915_HAVE_GEM
 #endif
 
 /* Interface history:
@@ -277,8 +278,9 @@ typedef struct drm_i915_private {
 	u8 saveCR[37];
 
 	struct {
+#ifdef __linux__
 		struct drm_mm gtt_space;
-
+#endif
 		/**
 		 * List of objects currently involved in rendering from the
 		 * ringbuffer.
@@ -311,7 +313,7 @@ typedef struct drm_i915_private {
 		 * outstanding.
 		 */
 		struct list_head request_list;
-
+#ifdef __linux__
 		/**
 		 * We leave the user IRQ off as much as possible,
 		 * but this means that requests will finish and never
@@ -320,7 +322,7 @@ typedef struct drm_i915_private {
 		 * fires, go retire requests.
 		 */
 		struct delayed_work retire_work;
-
+#endif
 		uint32_t next_gem_seqno;
 
 		/**
@@ -473,6 +475,8 @@ extern int i915_driver_firstopen(struct drm_device *dev);
 extern int i915_dispatch_batchbuffer(struct drm_device * dev,
 				     drm_i915_batchbuffer_t * batch);
 extern int i915_quiescent(struct drm_device *dev);
+extern int i915_init_hardware_status(struct drm_device *dev);
+extern void i915_free_hardware_status(struct drm_device *dev);
 
 int i915_emit_box(struct drm_device * dev,
 		  struct drm_clip_rect __user * boxes,
@@ -593,8 +597,6 @@ void i915_gem_clflush_object(struct drm_gem_object *obj);
 void i915_gem_detect_bit_6_swizzle(struct drm_device *dev);
 
 /* i915_gem_debug.c */
-void i915_gem_dump_object(struct drm_gem_object *obj, int len,
-			  const char *where, uint32_t mark);
 #if WATCH_INACTIVE
 void i915_verify_inactive(struct drm_device *dev, char *file, int line);
 #else

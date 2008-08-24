@@ -432,19 +432,22 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	u32 iir;
 	u32 pipea_stats = 0, pipeb_stats = 0;
 	int vblank = 0;
-
+#ifdef __linux__
 	if (dev->pdev->msi_enabled)
 		I915_WRITE(IMR, ~0);
+#endif
 	iir = I915_READ(IIR);
 #if 0
 	DRM_DEBUG("flag=%08x\n", iir);
 #endif
 	atomic_inc(&dev_priv->irq_received);
 	if (iir == 0) {
+#ifdef __linux__
 		if (dev->pdev->msi_enabled) {
 			I915_WRITE(IMR, dev_priv->irq_mask_reg);
 			(void) I915_READ(IMR);
 		}
+#endif
 		return IRQ_NONE;
 	}
 
@@ -499,12 +502,16 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	    dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
 	I915_WRITE(IIR, iir);
+#ifdef __linux__
 	if (dev->pdev->msi_enabled)
 		I915_WRITE(IMR, dev_priv->irq_mask_reg);
+#endif
 	(void) I915_READ(IIR); /* Flush posted writes */
 
 	if (iir & I915_USER_INTERRUPT) {
+#ifdef I915_HAVE_GEM
 		dev_priv->mm.irq_gem_seqno = i915_get_gem_seqno(dev);
+#endif
 		DRM_WAKEUP(&dev_priv->irq_queue);
 #ifdef I915_HAVE_FENCE
 		i915_fence_handler(dev);
@@ -549,7 +556,9 @@ void i915_user_irq_on(drm_i915_private_t *dev_priv)
 void i915_user_irq_off(drm_i915_private_t *dev_priv)
 {
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
+#ifdef __linux__
 	BUG_ON(dev_priv->irq_enabled && dev_priv->user_irq_refcount <= 0);
+#endif
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0))
 		i915_disable_irq(dev_priv, I915_USER_INTERRUPT);
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
