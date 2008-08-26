@@ -784,12 +784,9 @@ typedef struct drm_radeon_surface_free {
 #define	DRM_RADEON_VBLANK_CRTC1		1
 #define	DRM_RADEON_VBLANK_CRTC2		2
 
-#define RADEON_GEM_DOMAIN_CPU 0x1
-#define RADEON_GEM_DOMAIN_VRAM 0x2
-#define RADEON_GEM_DOMAIN_2D 0x4
-#define RADEON_GEM_DOMAIN_3D 0x8
-#define RADEON_GEM_DOMAIN_TEXTURE 0x10
-#define RADEON_GEM_DOMAIN_GPU 0x20 // for vertex buffers
+#define RADEON_GEM_DOMAIN_CPU 0x1   // Cached CPU domain
+#define RADEON_GEM_DOMAIN_GTT 0x2   // GTT or cache flushed
+#define RADEON_GEM_DOMAIN_VRAM 0x4  // VRAM domain
 
 /* return to userspace start/size of gtt and vram apertures */
 struct drm_radeon_gem_info {

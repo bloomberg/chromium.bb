@@ -82,16 +82,18 @@ struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size,
 	int ret;
 	uint32_t flags;
 
-	DRM_DEBUG("size 0x%x, alignment %d, initial_domain %d\n", size, alignment, initial_domain);
 	obj = drm_gem_object_alloc(dev, size);
 	if (!obj)
 		return NULL;;
 
 	obj_priv = obj->driver_private;
+	flags = DRM_BO_FLAG_MAPPABLE;
 	if (initial_domain == RADEON_GEM_DOMAIN_VRAM)
-		flags = DRM_BO_FLAG_MEM_VRAM | DRM_BO_FLAG_MAPPABLE;
+		flags |= DRM_BO_FLAG_MEM_VRAM;
+	else if (initial_domain == RADEON_GEM_DOMAIN_GTT)
+		flags |= DRM_BO_FLAG_MEM_TT;
 	else
-		flags = DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MAPPABLE;
+		flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 
 	flags |= DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_EXE;
 	/* create a TTM BO */
@@ -102,6 +104,7 @@ struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size,
 	if (ret)
 		goto fail;
 
+	DRM_DEBUG("%p : size 0x%x, alignment %d, initial_domain %d\n", obj_priv->bo, size, alignment, initial_domain);
 	return obj;
 fail:
 
@@ -144,6 +147,55 @@ fail:
 	return ret;
 }
 
+int radeon_gem_set_domain(struct drm_gem_object *obj, uint32_t read_domains, uint32_t write_domain, uint32_t *flags_p, bool unfenced)
+{
+	struct drm_device *dev = obj->dev;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_radeon_gem_object *obj_priv;
+	uint32_t flags = 0;
+	int ret;
+
+	obj_priv = obj->driver_private;
+
+	/* work out where to validate the buffer to */
+	if (write_domain) { /* write domains always win */
+		if (write_domain == RADEON_GEM_DOMAIN_VRAM)
+			flags = DRM_BO_FLAG_MEM_VRAM;
+		else if (write_domain == RADEON_GEM_DOMAIN_GTT)
+			flags = DRM_BO_FLAG_MEM_TT; // need a can write gart check
+		else
+			return -EINVAL; // we can't write to system RAM
+	} else {
+		/* okay for a read domain - prefer wherever the object is now or close enough */
+		if ((read_domains == 0) || (read_domains == RADEON_GEM_DOMAIN_CPU))
+			return -EINVAL;
+		
+		/* simple case no choice in domains */
+		if (read_domains == RADEON_GEM_DOMAIN_VRAM)
+			flags = DRM_BO_FLAG_MEM_VRAM;
+		else if (read_domains == RADEON_GEM_DOMAIN_GTT)
+			flags = DRM_BO_FLAG_MEM_TT;
+		else if ((obj_priv->bo->mem.mem_type == DRM_BO_MEM_VRAM) && (read_domains & RADEON_GEM_DOMAIN_VRAM))
+			flags = DRM_BO_FLAG_MEM_VRAM;
+		else if ((obj_priv->bo->mem.mem_type == DRM_BO_MEM_TT) && (read_domains & RADEON_GEM_DOMAIN_GTT))
+			flags = DRM_BO_FLAG_MEM_TT;
+		else if (read_domains & RADEON_GEM_DOMAIN_VRAM)
+			flags = DRM_BO_FLAG_MEM_VRAM;
+		else if (read_domains & RADEON_GEM_DOMAIN_GTT)
+			flags = DRM_BO_FLAG_MEM_TT;
+	}
+
+	ret = drm_bo_do_validate(obj_priv->bo, flags, DRM_BO_MASK_MEM | DRM_BO_FLAG_CACHED,
+				 unfenced ? DRM_BO_HINT_DONT_FENCE : 0, 0);
+	if (ret)
+		return ret;
+
+	if (flags_p)
+		*flags_p = flags;
+	return 0;
+    
+}
+
 int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 				struct drm_file *file_priv)
 {
@@ -152,6 +204,7 @@ int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	struct drm_radeon_gem_object *obj_priv;
 	int ret;
+
 	/* for now if someone requests domain CPU - just make sure the buffer is finished with */
 
 	/* just do a BO wait for now */
@@ -161,9 +214,7 @@ int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 
 	obj_priv = obj->driver_private;
 
-	mutex_lock(&obj_priv->bo->mutex);
-	ret = drm_bo_wait(obj_priv->bo, 0, 1, 0, 0);
-	mutex_unlock(&obj_priv->bo->mutex);
+	ret = radeon_gem_set_domain(obj, args->read_domains, args->write_domain, NULL, true);
 
 	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_unreference(obj);
@@ -180,7 +231,41 @@ int radeon_gem_pread_ioctl(struct drm_device *dev, void *data,
 int radeon_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 			  struct drm_file *file_priv)
 {
-	return -ENOSYS;
+	struct drm_radeon_gem_pwrite *args = data;
+	struct drm_gem_object *obj;
+	struct drm_radeon_gem_object *obj_priv;
+	int ret;
+
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	obj_priv = obj->driver_private;
+	
+	/* check where the buffer is first - if not in VRAM
+	   fallback to userspace copying for now */
+	mutex_lock(&obj_priv->bo->mutex);
+	if (obj_priv->bo->mem.mem_type != DRM_BO_MEM_VRAM) {
+		ret = -EINVAL;
+		goto out_unlock;
+	}
+
+	DRM_ERROR("pwriting data->size %lld %llx\n", args->size, args->offset);
+	ret = -EINVAL;
+
+#if 0
+	/* so need to grab an IB, copy the data into it in a loop
+	   and send them to VRAM using HDB */
+	while ((buf = radeon_host_data_blit(dev, cpp, w, dst_pitch_off, &buf_pitch,
+					    x, &y, (unsigned int*)&h, &hpass)) != 0) {
+		radeon_host_data_blit_copy_pass(dev, cpp, buf, (uint8_t *)src,
+						hpass, buf_pitch, src_pitch);
+		src += hpass * src_pitch;
+	}
+#endif
+out_unlock:
+	mutex_unlock(&obj_priv->bo->mutex);
+	return ret;
 }
 
 int radeon_gem_mmap_ioctl(struct drm_device *dev, void *data,
@@ -215,7 +300,7 @@ int radeon_gem_mmap_ioctl(struct drm_device *dev, void *data,
 			     obj_priv->bo->map_list.hash.key);
 	up_write(&current->mm->mmap_sem);
 
-	DRM_DEBUG("got here %p\n", obj);
+	DRM_DEBUG("got here %p %d\n", obj, obj_priv->bo->mem.mem_type);
 	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_unreference(obj);
 	mutex_unlock(&dev->struct_mutex);
@@ -246,8 +331,8 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 	/* validate into a pin with no fence */
 
 	if (!(obj_priv->bo->type != drm_bo_type_kernel && !DRM_SUSER(DRM_CURPROC))) {
-	  ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
-				   DRM_BO_HINT_DONT_FENCE, 0);
+		ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
+					 DRM_BO_HINT_DONT_FENCE, 0);
 	} else
 	  ret = 0;
 
@@ -342,18 +427,6 @@ int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
 			      + obj_priv->bo->offset + start);
 		int dwords = (end - start + 3) / sizeof(u32);
 
-#if 0
-		/* Indirect buffer data must be an even number of
-		 * dwords, so if we've been given an odd number we must
-		 * pad the data with a Type-2 CP packet.
-		 */
-		if (dwords & 1) {
-			u32 *data = (u32 *)
-			    ((char *)dev->agp_buffer_map->handle
-			     + buf->offset + start);
-			data[dwords++] = RADEON_CP_PACKET2;
-		}
-#endif
 		/* Fire off the indirect buffer */
 		BEGIN_RING(3);
 
@@ -487,6 +560,7 @@ static int radeon_gart_init(struct drm_device *dev)
 
 	/* setup a 32MB GART */
 	dev_priv->gart_size = dev_priv->mm.gart_size;
+
 	dev_priv->gart_info.table_size = RADEON_PCIGART_TABLE_SIZE;
 
 #if __OS_HAS_AGP
@@ -706,6 +780,9 @@ int radeon_gem_mm_init(struct drm_device *dev)
 	int ret;
 	u32 pg_offset;
 
+	/* init TTM underneath */
+	drm_bo_driver_init(dev);
+
 	/* size the mappable VRAM memory for now */
 	radeon_vram_setup(dev);
 	
@@ -747,8 +824,7 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 	radeon_gem_ib_destroy(dev);
 
 	mutex_lock(&dev->struct_mutex);
-
-	
+		
 	if (dev_priv->mm.ring_read.bo) {
 		drm_bo_kunmap(&dev_priv->mm.ring_read.kmap);
 		drm_bo_usage_deref_locked(&dev_priv->mm.ring_read.bo);
@@ -771,13 +847,13 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 	}
 
 	if (drm_bo_clean_mm(dev, DRM_BO_MEM_VRAM, 1)) {
-		DRM_DEBUG("delaying takedown of TTM memory\n");
+		DRM_DEBUG("delaying takedown of VRAM memory\n");
 	}
 
 	mutex_unlock(&dev->struct_mutex);
 
 	drm_bo_driver_finish(dev);
- 	dev_priv->mm_enabled = false;
+	dev_priv->mm_enabled = false;
 }
 
 int radeon_gem_object_pin(struct drm_gem_object *obj,
@@ -899,7 +975,8 @@ static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_pri
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	/* relocate the handle */
-	int domains = reloc[2];
+	uint32_t read_domains = reloc[2];
+	uint32_t write_domain = reloc[3];
 	struct drm_gem_object *obj;
 	int flags = 0;
 	int ret;
@@ -910,19 +987,11 @@ static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_pri
 		return false;
 
 	obj_priv = obj->driver_private;
-	if (domains == RADEON_GEM_DOMAIN_VRAM) {
-		flags = DRM_BO_FLAG_MEM_VRAM;
-	} else {
-		flags = DRM_BO_FLAG_MEM_TT;
-	}
-
-	ret = drm_bo_do_validate(obj_priv->bo, flags, DRM_BO_MASK_MEM, 0, 0);
-	if (ret)
-		return ret;
+	radeon_gem_set_domain(obj, read_domains, write_domain, &flags, false);
 
 	if (flags == DRM_BO_FLAG_MEM_VRAM)
 		*offset = obj_priv->bo->offset + dev_priv->fb_location;
-	else
+	else if (flags == DRM_BO_FLAG_MEM_TT)
 		*offset = obj_priv->bo->offset + dev_priv->gart_vm_start;
 
 	/* BAD BAD BAD - LINKED LIST THE OBJS and UNREF ONCE IB is SUBMITTED */
