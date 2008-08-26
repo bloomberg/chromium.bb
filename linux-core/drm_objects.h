@@ -808,6 +808,8 @@ extern int drm_bo_move_ttm(struct drm_buffer_object *bo,
 extern int drm_bo_move_memcpy(struct drm_buffer_object *bo,
 			      int evict,
 			      int no_wait, struct drm_bo_mem_reg *new_mem);
+extern int drm_bo_move_zero(struct drm_buffer_object *bo,
+			    int evict, int no_wait, struct drm_bo_mem_reg *new_mem);
 extern int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
 				     int evict, int no_wait,
 				     uint32_t fence_class, uint32_t fence_type,
