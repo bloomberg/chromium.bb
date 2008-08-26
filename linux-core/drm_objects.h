@@ -801,6 +801,7 @@ extern void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo);
  * drm_bo_move.c
  */
 
+extern int drm_bo_add_ttm(struct drm_buffer_object *bo);
 extern int drm_bo_move_ttm(struct drm_buffer_object *bo,
 			   int evict, int no_wait,
 			   struct drm_bo_mem_reg *new_mem);

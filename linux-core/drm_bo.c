@@ -132,7 +132,7 @@ static void drm_bo_vm_post_move(struct drm_buffer_object *bo)
  * Call bo->mutex locked.
  */
 
-static int drm_bo_add_ttm(struct drm_buffer_object *bo)
+int drm_bo_add_ttm(struct drm_buffer_object *bo)
 {
 	struct drm_device *dev = bo->dev;
 	int ret = 0;
@@ -174,6 +174,7 @@ static int drm_bo_add_ttm(struct drm_buffer_object *bo)
 
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_add_ttm);
 
 static int drm_bo_handle_move_mem(struct drm_buffer_object *bo,
 				  struct drm_bo_mem_reg *mem,
