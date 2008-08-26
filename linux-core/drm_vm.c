@@ -792,6 +792,9 @@ static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 {
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 
+	/* clear the clean flags */
+	bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
+
 	drm_vm_open_locked(vma);
 	atomic_inc(&bo->usage);
 #ifdef DRM_ODD_MM_COMPAT

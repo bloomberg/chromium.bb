@@ -146,6 +146,12 @@ struct drm_fence_arg {
 #define DRM_BO_FLAG_TILE           (1ULL << 15)
 
 /*
+ * Buffer has been mapped or touched since creation
+ * for VRAM we don't need to migrate, just fill with 0s for non-dirty
+ */
+#define DRM_BO_FLAG_CLEAN  (1ULL << 16)
+
+/*
  * Memory type flags that can be or'ed together in the mask, but only
  * one appears in flags.
  */
@@ -207,7 +213,6 @@ struct drm_fence_arg {
  * relocations
  */
 #define DRM_BO_HINT_PRESUMED_OFFSET 0x00000010
-
 
 #define DRM_BO_MEM_LOCAL 0
 #define DRM_BO_MEM_TT 1

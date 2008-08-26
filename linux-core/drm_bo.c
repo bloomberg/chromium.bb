@@ -1170,6 +1170,9 @@ out_unlock:
 		DRM_FLAG_MASKED(bo->priv_flags, _DRM_BO_FLAG_UNFENCED,
 				_DRM_BO_FLAG_UNFENCED);
 	}
+	/* clear the clean flags */
+	bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
+
 	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&bm->evict_mutex);
 	return ret;
@@ -1493,12 +1496,14 @@ int drm_buffer_object_create(struct drm_device *dev,
 	bo->buffer_start = buffer_start & PAGE_MASK;
 	bo->priv_flags = 0;
 	bo->mem.flags = (DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED |
-			 DRM_BO_FLAG_MAPPABLE);
+			 DRM_BO_FLAG_MAPPABLE | DRM_BO_FLAG_CLEAN);
 	bo->mem.proposed_flags = 0;
 	atomic_inc(&bm->count);
 	/*
 	 * Use drm_bo_modify_proposed_flags to error-check the proposed flags
 	 */
+	flags |= DRM_BO_FLAG_CLEAN; /* or in the clean flag */
+
 	ret = drm_bo_modify_proposed_flags (bo, flags, flags);
 	if (ret)
 		goto out_err;
