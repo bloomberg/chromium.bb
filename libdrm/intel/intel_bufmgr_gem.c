@@ -369,6 +369,7 @@ intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
     bo_gem->refcount = 1;
     bo_gem->validate_index = -1;
     bo_gem->gem_handle = open_arg.handle;
+    bo_gem->global_name = handle;
 
     DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
