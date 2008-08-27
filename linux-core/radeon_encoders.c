@@ -869,7 +869,7 @@ static void radeon_atom_tmds_dpms(struct drm_encoder *encoder, int mode)
 	int index = -1;
 	uint32_t bios_2_scratch, bios_3_scratch;
 
-	if (radeon_crtc) {
+	if (encoder->crtc) {
 		radeon_crtc = to_radeon_crtc(encoder->crtc);
 		crtc_id = radeon_crtc->crtc_id;
 	} else if (mode == DRM_MODE_DPMS_ON)
