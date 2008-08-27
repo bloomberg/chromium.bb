@@ -341,7 +341,7 @@ CONFIG_DRM_I915 := m
 endif
 endif
 
-GIT_REVISION := $(shell cd "$(DRMSRCDIR)" && git-describe --abbrev=17)
+GIT_REVISION := $(shell cd "$(DRMSRCDIR)" && git describe --abbrev=17)
 ifneq ($(GIT_REVISION),)
 EXTRA_CFLAGS+=-D"GIT_REVISION=\"$(GIT_REVISION)\""
 endif
