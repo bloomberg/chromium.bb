@@ -887,11 +887,11 @@ struct drm_mode_get_blob {
 };
 
 struct drm_mode_fb_cmd {
-        unsigned int buffer_id;
-        unsigned int width, height;
-        unsigned int pitch;
-        unsigned int bpp;
-        unsigned int handle;
+	unsigned int buffer_id;
+	unsigned int width, height;
+	unsigned int pitch;
+	unsigned int bpp;
+	unsigned int handle;
 	unsigned int depth;
 };
 
