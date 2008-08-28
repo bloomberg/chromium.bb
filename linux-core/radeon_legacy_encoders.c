@@ -374,7 +374,8 @@ struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int b
 
 	encoder = &radeon_encoder->base;
 
-	encoder->possible_crtcs = 0x3;
+	/* Limit LVDS to crtc 0 for RMX */
+	encoder->possible_crtcs = 0x1;
 	encoder->possible_clones = 0;
 	drm_encoder_init(dev, encoder, &radeon_legacy_lvds_enc_funcs,
 			 DRM_MODE_ENCODER_LVDS);

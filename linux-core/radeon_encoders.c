@@ -376,7 +376,8 @@ struct drm_encoder *radeon_encoder_lvtma_add(struct drm_device *dev, int bios_in
 
 	encoder = &radeon_encoder->base;
 
-	encoder->possible_crtcs = 0x3;
+	/* Set LVTMA to only use crtc 0 */
+	encoder->possible_crtcs = 0x1;
 	encoder->possible_clones = 0;
 	drm_encoder_init(dev, encoder, &radeon_atom_lvtma_enc_funcs,
 			 DRM_MODE_ENCODER_LVDS);
