@@ -183,7 +183,7 @@ void *drm_realloc(void *oldpt, size_t oldsize, size_t size, int area)
 	if (!(pt = kmalloc(size, GFP_KERNEL)))
 		return NULL;
 	if (oldpt && oldsize) {
-		memcpy(pt, oldpt, oldsize);
+		memcpy(pt, oldpt, DRM_MIN(oldsize,size));
 		kfree(oldpt);
 	}
 	return pt;
