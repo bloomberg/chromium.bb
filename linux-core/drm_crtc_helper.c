@@ -291,9 +291,8 @@ static int drm_pick_crtcs(struct drm_device *dev,
 	best_crtcs[n] = NULL;
 	best_crtc = NULL;
 	best_score = drm_pick_crtcs(dev, best_crtcs, modes, n+1, width, height);
-	if (modes[n] == NULL) {
+	if (modes[n] == NULL)
 		return best_score;
-	}
 
 	crtcs = kmalloc(dev->mode_config.num_connector * sizeof(struct drm_crtc *), GFP_KERNEL);
 	if (!crtcs)
