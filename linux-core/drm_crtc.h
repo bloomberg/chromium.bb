@@ -604,6 +604,8 @@ extern void drm_mode_config_init(struct drm_device *dev);
 extern void drm_mode_config_cleanup(struct drm_device *dev);
 extern void drm_mode_set_name(struct drm_display_mode *mode);
 extern bool drm_mode_equal(struct drm_display_mode *mode1, struct drm_display_mode *mode2);
+extern int drm_mode_width(struct drm_display_mode *mode);
+extern int drm_mode_height(struct drm_display_mode *mode);
 
 /* for us by fb module */
 extern int drm_mode_attachmode_crtc(struct drm_device *dev,
