@@ -197,18 +197,23 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_crtc *radeon_crtc;
 	uint32_t lvds_gen_cntl, lvds_pll_cntl, pixclks_cntl, disp_pwr_man;
 	uint32_t bios_5_scratch, bios_6_scratch;
-
+	int crtc_id = 0;
 	DRM_DEBUG("\n");
+
+	if (encoder->crtc) {
+		radeon_crtc = to_radeon_crtc(encoder->crtc);
+		crtc_id = radeon_crtc->crtc_id;
+	}
 
 	// FIXME atom/legacy cards like r4xx
 	bios_5_scratch = RADEON_READ(RADEON_BIOS_5_SCRATCH);
 	bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
 
 	bios_5_scratch &= ~RADEON_LCD1_CRTC_MASK;
-	bios_5_scratch |= (radeon_crtc->crtc_id << RADEON_LCD1_CRTC_SHIFT);
+	bios_5_scratch |= (crtc_id << RADEON_LCD1_CRTC_SHIFT);
 
 	switch (mode) {
 	case DRM_MODE_DPMS_ON:
@@ -396,20 +401,26 @@ static void radeon_legacy_primary_dac_dpms(struct drm_encoder *encoder, int mode
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_crtc *radeon_crtc;
 	uint32_t crtc_ext_cntl = RADEON_READ(RADEON_CRTC_EXT_CNTL);
 	uint32_t dac_cntl = RADEON_READ(RADEON_DAC_CNTL);
 	uint32_t dac_macro_cntl = RADEON_READ(RADEON_DAC_MACRO_CNTL);
 	uint32_t bios_5_scratch, bios_6_scratch;
+	int crtc_id = 0;
 
 	DRM_DEBUG("\n");
+
+	if (encoder->crtc) {
+		radeon_crtc = to_radeon_crtc(encoder->crtc);
+		crtc_id = radeon_crtc->crtc_id;
+	}
 
 	// FIXME atom/legacy cards like r4xx
 	bios_5_scratch = RADEON_READ(RADEON_BIOS_5_SCRATCH);
 	bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
 
 	bios_5_scratch &= ~RADEON_CRT1_CRTC_MASK;
-	bios_5_scratch |= (radeon_crtc->crtc_id << RADEON_CRT1_CRTC_SHIFT);
+	bios_5_scratch |= (crtc_id << RADEON_CRT1_CRTC_SHIFT);
 
 	DRM_DEBUG("\n");
 
@@ -629,18 +640,23 @@ static void radeon_legacy_tmds_int_dpms(struct drm_encoder *encoder, int mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_crtc *radeon_crtc;
 	uint32_t fp_gen_cntl = RADEON_READ(RADEON_FP_GEN_CNTL);
 	uint32_t bios_5_scratch, bios_6_scratch;
-
+	int crtc_id = 0;
 	DRM_DEBUG("\n");
+
+	if (encoder->crtc) {
+		radeon_crtc = to_radeon_crtc(encoder->crtc);
+		crtc_id = radeon_crtc->crtc_id;
+	}
 
 	// FIXME atom/legacy cards like r4xx
 	bios_5_scratch = RADEON_READ(RADEON_BIOS_5_SCRATCH);
 	bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
 
 	bios_5_scratch &= ~RADEON_DFP1_CRTC_MASK;
-	bios_5_scratch |= (radeon_crtc->crtc_id << RADEON_DFP1_CRTC_SHIFT);
+	bios_5_scratch |= (crtc_id << RADEON_DFP1_CRTC_SHIFT);
 
 	switch(mode) {
 	case DRM_MODE_DPMS_ON:
@@ -813,18 +829,23 @@ static void radeon_legacy_tmds_ext_dpms(struct drm_encoder *encoder, int mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_crtc *radeon_crtc;
 	uint32_t fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);
 	uint32_t bios_5_scratch, bios_6_scratch;
-
+	int crtc_id = 0;
 	DRM_DEBUG("\n");
+
+	if (encoder->crtc) {
+		radeon_crtc = to_radeon_crtc(encoder->crtc);
+		crtc_id = radeon_crtc->crtc_id;
+	}
 
 	// FIXME atom/legacy cards like r4xx
 	bios_5_scratch = RADEON_READ(RADEON_BIOS_5_SCRATCH);
 	bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
 
 	bios_5_scratch &= ~RADEON_DFP2_CRTC_MASK;
-	bios_5_scratch |= (radeon_crtc->crtc_id << RADEON_DFP2_CRTC_SHIFT);
+	bios_5_scratch |= (crtc_id << RADEON_DFP2_CRTC_SHIFT);
 
 	switch(mode) {
 	case DRM_MODE_DPMS_ON:
@@ -969,22 +990,28 @@ static void radeon_legacy_tv_dac_dpms(struct drm_encoder *encoder, int mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_crtc *radeon_crtc;
 	uint32_t fp2_gen_cntl = 0, crtc2_gen_cntl = 0, tv_dac_cntl = 0;
 	//uint32_t tv_master_cntl = 0;
 	uint32_t bios_5_scratch, bios_6_scratch;
+	int crtc_id = 0;
 
 	DRM_DEBUG("\n");
+
+	if (encoder->crtc) {
+		radeon_crtc = to_radeon_crtc(encoder->crtc);
+		crtc_id = radeon_crtc->crtc_id;
+	}
 
 	// FIXME atom/legacy cards like r4xx
 	bios_5_scratch = RADEON_READ(RADEON_BIOS_5_SCRATCH);
 	bios_6_scratch = RADEON_READ(RADEON_BIOS_6_SCRATCH);
 
 	bios_5_scratch &= ~RADEON_CRT2_CRTC_MASK;
-	bios_5_scratch |= (radeon_crtc->crtc_id << RADEON_CRT2_CRTC_SHIFT);
+	bios_5_scratch |= (crtc_id << RADEON_CRT2_CRTC_SHIFT);
 	// FIXME TV
 	//bios_5_scratch &= ~RADEON_TV1_CRTC_MASK;
-	//bios_5_scratch |= (radeon_crtc->crtc_id << RADEON_TV1_CRTC_SHIFT);
+	//bios_5_scratch |= (crtc_id << RADEON_TV1_CRTC_SHIFT);
 
 	if (dev_priv->chip_family == CHIP_R200)
 		fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);

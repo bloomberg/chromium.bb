@@ -273,9 +273,15 @@ static void radeon_lvtma_dpms(struct drm_encoder *encoder, int mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_crtc *radeon_crtc;
 	int index = GetIndexIntoMasterTable(COMMAND, LCD1OutputControl);
 	uint32_t bios_2_scratch, bios_3_scratch;
+	int crtc_id = 0;
+
+	if (encoder->crtc) {
+		struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+		crtc_id = radeon_crtc->crtc_id;
+	}
 
 	if (dev_priv->chip_family >= CHIP_R600) {
 		bios_2_scratch = RADEON_READ(R600_BIOS_2_SCRATCH);
@@ -286,7 +292,7 @@ static void radeon_lvtma_dpms(struct drm_encoder *encoder, int mode)
 	}
 
 	bios_2_scratch &= ~ATOM_S3_LCD1_CRTC_ACTIVE;
-	bios_3_scratch |= (radeon_crtc->crtc_id << 17);
+	bios_3_scratch |= (crtc_id << 17);
 
 	switch(mode) {
 	case DRM_MODE_DPMS_ON:
@@ -393,10 +399,16 @@ static void radeon_atom_dac_dpms(struct drm_encoder *encoder, int mode)
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
+	struct radeon_crtc *radeon_crtc;
 	int atom_type = -1;
 	int index;
 	uint32_t bios_2_scratch, bios_3_scratch;
+	int crtc_id = 0;
+
+	if (encoder->crtc) {
+		radeon_crtc = to_radeon_crtc(encoder->crtc);
+		crtc_id = radeon_crtc->crtc_id;
+	}
 
 	atom_type = atom_dac_find_atom_type(radeon_encoder, NULL);
 	if (atom_type == -1)
@@ -414,7 +426,7 @@ static void radeon_atom_dac_dpms(struct drm_encoder *encoder, int mode)
 	case ATOM_DEVICE_CRT1_INDEX:
 		index = GetIndexIntoMasterTable(COMMAND, DAC1OutputControl);
 		bios_2_scratch &= ~ATOM_S3_CRT1_CRTC_ACTIVE;
-		bios_3_scratch |= (radeon_crtc->crtc_id << 16);
+		bios_3_scratch |= (crtc_id << 16);
 		switch(mode) {
 		case DRM_MODE_DPMS_ON:
 			bios_2_scratch &= ~ATOM_S2_CRT1_DPMS_STATE;
@@ -431,7 +443,7 @@ static void radeon_atom_dac_dpms(struct drm_encoder *encoder, int mode)
 	case ATOM_DEVICE_CRT2_INDEX:
 		index = GetIndexIntoMasterTable(COMMAND, DAC2OutputControl);
 		bios_2_scratch &= ~ATOM_S3_CRT2_CRTC_ACTIVE;
-		bios_3_scratch |= (radeon_crtc->crtc_id << 20);
+		bios_3_scratch |= (crtc_id << 20);
 		switch(mode) {
 		case DRM_MODE_DPMS_ON:
 			bios_2_scratch &= ~ATOM_S2_CRT2_DPMS_STATE;
@@ -448,7 +460,7 @@ static void radeon_atom_dac_dpms(struct drm_encoder *encoder, int mode)
 	case ATOM_DEVICE_TV1_INDEX:
 		index = GetIndexIntoMasterTable(COMMAND, TV1OutputControl);
 		bios_3_scratch &= ~ATOM_S3_TV1_CRTC_ACTIVE;
-		bios_3_scratch |= (radeon_crtc->crtc_id << 18);
+		bios_3_scratch |= (crtc_id << 18);
 		switch(mode) {
 		case DRM_MODE_DPMS_ON:
 			bios_2_scratch &= ~ATOM_S2_TV1_DPMS_STATE;
@@ -465,7 +477,7 @@ static void radeon_atom_dac_dpms(struct drm_encoder *encoder, int mode)
 	case ATOM_DEVICE_CV_INDEX:
 		index = GetIndexIntoMasterTable(COMMAND, CV1OutputControl);
 		bios_2_scratch &= ~ATOM_S3_CV_CRTC_ACTIVE;
-		bios_3_scratch |= (radeon_crtc->crtc_id << 24);
+		bios_3_scratch |= (crtc_id << 24);
 		switch(mode) {
 		case DRM_MODE_DPMS_ON:
 			bios_2_scratch &= ~ATOM_S2_CV_DPMS_STATE;
