@@ -332,8 +332,8 @@ void radeon_get_lvds_info(struct radeon_encoder *encoder)
 	encoder->hsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usHSyncWidth);
 
 	encoder->vblank = le16_to_cpu(lvds_info->info.sLCDTiming.usVBlanking_Time);
-	encoder->hoverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncOffset);
-	encoder->hsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncWidth);
+	encoder->voverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncOffset);
+	encoder->vsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncWidth);
 	encoder->panel_pwr_delay = le16_to_cpu(lvds_info->info.usOffDelayInMs);
 }
 
