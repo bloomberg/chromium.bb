@@ -46,6 +46,10 @@ static drm_pci_id_list_t mach64_pciidlist[] = {
 
 static void mach64_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA |
+	    DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ;
+
 	dev->driver->buf_priv_size	= 1; /* No dev_priv */
 	dev->driver->lastclose		= mach64_driver_lastclose;
 	dev->driver->get_vblank_counter	= mach64_get_vblank_counter;
@@ -66,13 +70,6 @@ static void mach64_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->use_mtrr		= 1;
-	dev->driver->use_pci_dma	= 1;
-	dev->driver->use_dma		= 1;
-	dev->driver->use_irq		= 1;
-	dev->driver->use_vbl_irq	= 1;
 }
 
 #ifdef __FreeBSD__

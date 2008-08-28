@@ -39,6 +39,10 @@ static drm_pci_id_list_t savage_pciidlist[] = {
 
 static void savage_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA |
+	    DRIVER_HAVE_DMA;
+
 	dev->driver->buf_priv_size	= sizeof(drm_savage_buf_priv_t);
 	dev->driver->load		= savage_driver_load;
 	dev->driver->firstopen		= savage_driver_firstopen;
@@ -56,11 +60,6 @@ static void savage_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->use_mtrr		= 1;
-	dev->driver->use_pci_dma	= 1;
-	dev->driver->use_dma		= 1;
 }
 
 #ifdef __FreeBSD__

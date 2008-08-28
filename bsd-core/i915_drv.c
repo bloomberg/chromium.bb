@@ -68,6 +68,10 @@ static int i915_resume(device_t nbdev)
 
 static void i915_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	   DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | DRIVER_USE_MTRR |
+	   DRIVER_HAVE_IRQ;
+
 	dev->driver->buf_priv_size	= sizeof(drm_i915_private_t);
 	dev->driver->load		= i915_driver_load;
 	dev->driver->unload		= i915_driver_unload;
@@ -92,13 +96,6 @@ static void i915_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->require_agp	= 1;
-	dev->driver->use_mtrr		= 1;
-	dev->driver->use_irq		= 1;
-	dev->driver->use_vbl_irq	= 1;
-	dev->driver->use_vbl_irq2	= 1;
 }
 
 #ifdef __FreeBSD__

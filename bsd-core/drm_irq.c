@@ -272,14 +272,14 @@ int drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv)
 		/* Handle drivers whose DRM used to require IRQ setup but the
 		 * no longer does.
 		 */
-		if (!dev->driver->use_irq)
+		if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl->irq != dev->irq)
 			return EINVAL;
 		return drm_irq_install(dev);
 	case DRM_UNINST_HANDLER:
-		if (!dev->driver->use_irq)
+		if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
 			return 0;
 		DRM_LOCK();
 		err = drm_irq_uninstall(dev);

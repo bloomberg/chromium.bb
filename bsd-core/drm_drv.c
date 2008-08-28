@@ -402,7 +402,7 @@ static int drm_firstopen(struct drm_device *dev)
 
 	dev->buf_use = 0;
 
-	if (dev->driver->use_dma) {
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA)) {
 		i = drm_dma_setup(dev);
 		if (i != 0)
 			return i;
@@ -557,10 +557,11 @@ static int drm_load(struct drm_device *dev)
 			goto error;
 	}
 
-	if (dev->driver->use_agp) {
+	if (drm_core_has_AGP(dev)) {
 		if (drm_device_is_agp(dev))
 			dev->agp = drm_agp_init();
-		if (dev->driver->require_agp && dev->agp == NULL) {
+		if (drm_core_check_feature(dev, DRIVER_REQUIRE_AGP) &&
+		    dev->agp == NULL) {
 			DRM_ERROR("Card isn't AGP, or couldn't initialize "
 			    "AGP.\n");
 			retcode = ENOMEM;
@@ -814,7 +815,8 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		}
 	}
 
-	if (dev->driver->use_dma && !dev->driver->reclaim_buffers_locked)
+	if (drm_core_check_feature(dev, DRIVER_HAVE_DMA) &&
+	    !dev->driver->reclaim_buffers_locked)
 		drm_reclaim_buffers(dev, file_priv);
 
 #if defined (__FreeBSD__) && (__FreeBSD_version >= 500000)

@@ -126,7 +126,8 @@ int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	    lock->context, DRM_CURRENTPID, dev->lock.hw_lock->lock,
 	    lock->flags);
 
-        if (dev->driver->use_dma_queue && lock->context < 0)
+	if (drm_core_check_feature(dev, DRIVER_DMA_QUEUE) &&
+	    lock->context < 0)
                 return EINVAL;
 
 	DRM_LOCK();

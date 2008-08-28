@@ -44,6 +44,10 @@ static drm_pci_id_list_t radeon_pciidlist[] = {
 
 static void radeon_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA |
+	    DRIVER_SG | DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ;
+
 	dev->driver->buf_priv_size	= sizeof(drm_radeon_buf_priv_t);
 	dev->driver->load		= radeon_driver_load;
 	dev->driver->unload		= radeon_driver_unload;
@@ -70,15 +74,6 @@ static void radeon_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->use_mtrr		= 1;
-	dev->driver->use_pci_dma	= 1;
-	dev->driver->use_sg		= 1;
-	dev->driver->use_dma		= 1;
-	dev->driver->use_irq		= 1;
-	dev->driver->use_vbl_irq	= 1;
-	dev->driver->use_vbl_irq2	= 1;
 }
 
 #ifdef __FreeBSD__

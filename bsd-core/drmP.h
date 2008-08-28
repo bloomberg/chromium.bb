@@ -135,6 +135,17 @@ typedef struct drm_file drm_file_t;
 #define DRM_LINUX 0
 #endif
 
+/* driver capabilities and requirements mask */
+#define DRIVER_USE_AGP     0x1
+#define DRIVER_REQUIRE_AGP 0x2
+#define DRIVER_USE_MTRR    0x4
+#define DRIVER_PCI_DMA     0x8
+#define DRIVER_SG          0x10
+#define DRIVER_HAVE_DMA    0x20
+#define DRIVER_HAVE_IRQ    0x40
+#define DRIVER_DMA_QUEUE   0x100
+
+
 #define DRM_HASH_SIZE	      16 /* Size of key hash table		  */
 #define DRM_KERNEL_CONTEXT    0	 /* Change drm_resctx if changed	  */
 #define DRM_RESERVED_CONTEXTS 1	 /* Change drm_resctx if changed	  */
@@ -705,16 +716,7 @@ struct drm_driver_info {
 	const char *desc;		/* Longer driver name		   */
 	const char *date;		/* Date of last major changes.	   */
 
-	unsigned use_agp :1;
-	unsigned require_agp :1;
-	unsigned use_sg :1;
-	unsigned use_dma :1;
-	unsigned use_pci_dma :1;
-	unsigned use_dma_queue :1;
-	unsigned use_irq :1;
-	unsigned use_vbl_irq :1;
-	unsigned use_vbl_irq2 :1;
-	unsigned use_mtrr :1;
+	u32 driver_features;
 };
 
 /* Length for the array of resource pointers for drm_get_resource_*. */
@@ -831,6 +833,21 @@ struct drm_device {
 	struct task	  locked_task;
 	void		  (*locked_task_call)(struct drm_device *dev);
 };
+
+static __inline__ int drm_core_check_feature(struct drm_device *dev,
+					     int feature)
+{
+	return ((dev->driver->driver_features & feature) ? 1 : 0);
+}
+
+#if __OS_HAS_AGP
+static inline int drm_core_has_AGP(struct drm_device *dev)
+{
+	return drm_core_check_feature(dev, DRIVER_USE_AGP);
+}
+#else
+#define drm_core_has_AGP(dev) (0)
+#endif
 
 extern int	drm_debug_flag;
 

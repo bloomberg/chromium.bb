@@ -44,6 +44,10 @@ static drm_pci_id_list_t r128_pciidlist[] = {
 
 static void r128_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_PCI_DMA |
+	    DRIVER_SG | DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ;
+
 	dev->driver->buf_priv_size	= sizeof(drm_r128_buf_priv_t);
 	dev->driver->preclose		= r128_driver_preclose;
 	dev->driver->lastclose		= r128_driver_lastclose;
@@ -65,14 +69,6 @@ static void r128_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->use_mtrr		= 1;
-	dev->driver->use_pci_dma	= 1;
-	dev->driver->use_sg		= 1;
-	dev->driver->use_dma		= 1;
-	dev->driver->use_irq		= 1;
-	dev->driver->use_vbl_irq	= 1;
 }
 
 #ifdef __FreeBSD__

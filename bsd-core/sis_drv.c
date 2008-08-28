@@ -38,6 +38,9 @@ static drm_pci_id_list_t sis_pciidlist[] = {
 
 static void sis_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR;
+
 	dev->driver->buf_priv_size	= 1; /* No dev_priv */
 	dev->driver->context_ctor	= sis_init_context;
 	dev->driver->context_dtor	= sis_final_context;
@@ -51,9 +54,6 @@ static void sis_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->use_mtrr		= 1;
 }
 
 #ifdef __FreeBSD__

@@ -86,6 +86,10 @@ static int mga_driver_device_is_agp(struct drm_device * dev)
 
 static void mga_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	    DRIVER_USE_AGP | DRIVER_REQUIRE_AGP | DRIVER_USE_MTRR |
+	    DRIVER_HAVE_DMA | DRIVER_HAVE_IRQ;
+
 	dev->driver->buf_priv_size	= sizeof(drm_mga_buf_priv_t);
 	dev->driver->load		= mga_driver_load;
 	dev->driver->unload		= mga_driver_unload;
@@ -110,13 +114,6 @@ static void mga_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->require_agp	= 1;
-	dev->driver->use_mtrr		= 1;
-	dev->driver->use_dma		= 1;
-	dev->driver->use_irq		= 1;
-	dev->driver->use_vbl_irq	= 1;
 }
 
 

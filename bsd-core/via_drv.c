@@ -41,6 +41,9 @@ static drm_pci_id_list_t via_pciidlist[] = {
 
 static void via_configure(struct drm_device *dev)
 {
+	dev->driver->driver_features =
+	    DRIVER_USE_AGP | DRIVER_USE_MTRR | DRIVER_HAVE_IRQ;
+
 	dev->driver->buf_priv_size	= 1;
 	dev->driver->load		= via_driver_load;
 	dev->driver->unload		= via_driver_unload;
@@ -64,11 +67,6 @@ static void via_configure(struct drm_device *dev)
 	dev->driver->major		= DRIVER_MAJOR;
 	dev->driver->minor		= DRIVER_MINOR;
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
-
-	dev->driver->use_agp		= 1;
-	dev->driver->use_mtrr		= 1;
-	dev->driver->use_irq		= 1;
-	dev->driver->use_vbl_irq	= 1;
 }
 
 #ifdef __FreeBSD__
