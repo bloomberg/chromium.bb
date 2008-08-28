@@ -29,49 +29,6 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
-static int radeon_lvds_get_modes(struct drm_connector *connector)
-{
-	struct radeon_connector *radeon_connector = to_radeon_connector(connector);
-	struct drm_encoder *lvds_encoder;
-	int ret = 0;
-	struct edid *edid;
-
-	radeon_i2c_do_lock(radeon_connector, 1);
-	edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
-	radeon_i2c_do_lock(radeon_connector, 0);
-	if (edid) {
-		drm_mode_connector_update_edid_property(&radeon_connector->base, edid);
-		ret = drm_add_edid_modes(&radeon_connector->base, edid);
-		kfree(edid);
-		return ret;
-	}
-
-#if 0
-	lvds_encoder = radeon_best_single_encoder(connector);
-
-	if (!lvds_encoder)
-		return ret;
-
-	radeon_encoder_update_panel_size(lvds_encoder, connector);
-#endif
-	return ret;
-}
-
-static int radeon_lvds_mode_valid(struct drm_connector *connector,
-				  struct drm_display_mode *mode)
-{
-
-	return MODE_OK;
-}
-
-static enum drm_connector_status radeon_lvds_detect(struct drm_connector *connector)
-{
-	// check acpi lid status ???
-	return connector_status_connected;
-}
-
-
-
 struct drm_encoder *radeon_best_single_encoder(struct drm_connector *connector)
 {
 	int enc_id = connector->encoder_ids[0];
@@ -87,6 +44,81 @@ struct drm_encoder *radeon_best_single_encoder(struct drm_connector *connector)
 		return encoder;
 	}
 	return NULL;
+}
+
+static struct drm_display_mode *radeon_fp_native_mode(struct drm_encoder *encoder)
+{
+	struct drm_device *dev = encoder->dev;
+	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
+	struct drm_display_mode *mode = NULL;
+
+	if (radeon_encoder->panel_xres != 0 &&
+	    radeon_encoder->panel_yres != 0 &&
+	    radeon_encoder->dotclock != 0) {
+		mode = drm_mode_create(dev);
+
+		mode->hdisplay = radeon_encoder->panel_xres;
+		mode->vdisplay = radeon_encoder->panel_yres;
+
+		mode->htotal = mode->hdisplay + radeon_encoder->hblank;
+		mode->hsync_start = mode->hdisplay + radeon_encoder->hoverplus;
+		mode->hsync_end = mode->hsync_start + radeon_encoder->hsync_width;
+		mode->vtotal = mode->vdisplay + radeon_encoder->vblank;
+		mode->vsync_start = mode->vdisplay + radeon_encoder->voverplus;
+		mode->vsync_end = mode->vsync_start + radeon_encoder->vsync_width;
+		mode->clock = radeon_encoder->dotclock;
+		mode->flags = 0;
+
+		mode->type = DRM_MODE_TYPE_PREFERRED | DRM_MODE_TYPE_DRIVER;
+
+		DRM_DEBUG("Adding native panel mode %dx%d\n",
+			  radeon_encoder->panel_xres, radeon_encoder->panel_yres);
+	}
+	return mode;
+}
+
+static int radeon_lvds_get_modes(struct drm_connector *connector)
+{
+	struct radeon_connector *radeon_connector = to_radeon_connector(connector);
+	struct drm_encoder *encoder;
+	int ret = 0;
+	struct edid *edid;
+	struct drm_display_mode *mode;
+
+	if (radeon_connector->ddc_bus) {
+		radeon_i2c_do_lock(radeon_connector, 1);
+		edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
+		radeon_i2c_do_lock(radeon_connector, 0);
+		if (edid) {
+			drm_mode_connector_update_edid_property(&radeon_connector->base, edid);
+			ret = drm_add_edid_modes(&radeon_connector->base, edid);
+			kfree(edid);
+			return ret;
+		}
+	}
+
+	encoder = radeon_best_single_encoder(connector);
+	if (!encoder)
+		return connector_status_disconnected;
+	/* we have no EDID modes */
+	mode = radeon_fp_native_mode(encoder);
+	if (mode) {
+		ret = 1;
+		drm_mode_probed_add(connector, mode);
+	}
+	return ret;
+}
+
+static int radeon_lvds_mode_valid(struct drm_connector *connector,
+				  struct drm_display_mode *mode)
+{
+	return MODE_OK;
+}
+
+static enum drm_connector_status radeon_lvds_detect(struct drm_connector *connector)
+{
+	// check acpi lid status ???
+	return connector_status_connected;
 }
 
 static void radeon_connector_destroy(struct drm_connector *connector)
