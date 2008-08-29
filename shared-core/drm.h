@@ -1095,7 +1095,7 @@ struct drm_gem_open {
 #define DRM_COMMAND_END                 0xA0
 
 /* typedef area */
-#if !defined(__KERNEL__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
+#ifndef __KERNEL__
 typedef struct drm_clip_rect drm_clip_rect_t;
 typedef struct drm_tex_region drm_tex_region_t;
 typedef struct drm_hw_lock drm_hw_lock_t;

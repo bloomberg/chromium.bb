@@ -109,7 +109,7 @@ int drm_device_is_pcie(struct drm_device *dev)
 	return (drm_device_find_capability(dev, PCIY_EXPRESS));
 }
 
-int drm_agp_info(struct drm_device * dev, drm_agp_info_t *info)
+int drm_agp_info(struct drm_device * dev, struct drm_agp_info *info)
 {
 	struct agp_info *kern;
 
@@ -135,13 +135,13 @@ int drm_agp_info_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv)
 {
 	int err;
-	drm_agp_info_t info;
+	struct drm_agp_info info;
 
 	err = drm_agp_info(dev, &info);
 	if (err != 0)
 		return err;
 
-	*(drm_agp_info_t *) data = info;
+	*(struct drm_agp_info *) data = info;
 	return 0;
 }
 
@@ -183,7 +183,7 @@ int drm_agp_release(struct drm_device * dev)
 	return 0;
 }
 
-int drm_agp_enable(struct drm_device *dev, drm_agp_mode_t mode)
+int drm_agp_enable(struct drm_device *dev, struct drm_agp_mode mode)
 {
 
 	if (!dev->agp || !dev->agp->acquired)
@@ -198,14 +198,14 @@ int drm_agp_enable(struct drm_device *dev, drm_agp_mode_t mode)
 int drm_agp_enable_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
-	drm_agp_mode_t mode;
+	struct drm_agp_mode mode;
 
-	mode = *(drm_agp_mode_t *) data;
+	mode = *(struct drm_agp_mode *) data;
 
 	return drm_agp_enable(dev, mode);
 }
 
-int drm_agp_alloc(struct drm_device *dev, drm_agp_buffer_t *request)
+int drm_agp_alloc(struct drm_device *dev, struct drm_agp_buffer *request)
 {
 	drm_agp_mem_t    *entry;
 	void	         *handle;
@@ -251,16 +251,16 @@ int drm_agp_alloc(struct drm_device *dev, drm_agp_buffer_t *request)
 int drm_agp_alloc_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv)
 {
-	drm_agp_buffer_t request;
+	struct drm_agp_buffer request;
 	int retcode;
 
-	request = *(drm_agp_buffer_t *) data;
+	request = *(struct drm_agp_buffer *) data;
 
 	DRM_LOCK();
 	retcode = drm_agp_alloc(dev, &request);
 	DRM_UNLOCK();
 
-	*(drm_agp_buffer_t *) data = request;
+	*(struct drm_agp_buffer *) data = request;
 
 	return retcode;
 }
@@ -276,7 +276,7 @@ static drm_agp_mem_t * drm_agp_lookup_entry(struct drm_device *dev,
 	return NULL;
 }
 
-int drm_agp_unbind(struct drm_device *dev, drm_agp_binding_t *request)
+int drm_agp_unbind(struct drm_device *dev, struct drm_agp_binding *request)
 {
 	drm_agp_mem_t     *entry;
 	int retcode;
@@ -301,10 +301,10 @@ int drm_agp_unbind(struct drm_device *dev, drm_agp_binding_t *request)
 int drm_agp_unbind_ioctl(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
-	drm_agp_binding_t request;
+	struct drm_agp_binding request;
 	int retcode;
 
-	request = *(drm_agp_binding_t *) data;
+	request = *(struct drm_agp_binding *) data;
 
 	DRM_LOCK();
 	retcode = drm_agp_unbind(dev, &request);
@@ -313,7 +313,7 @@ int drm_agp_unbind_ioctl(struct drm_device *dev, void *data,
 	return retcode;
 }
 
-int drm_agp_bind(struct drm_device *dev, drm_agp_binding_t *request)
+int drm_agp_bind(struct drm_device *dev, struct drm_agp_binding *request)
 {
 	drm_agp_mem_t     *entry;
 	int               retcode;
@@ -342,10 +342,10 @@ int drm_agp_bind(struct drm_device *dev, drm_agp_binding_t *request)
 int drm_agp_bind_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv)
 {
-	drm_agp_binding_t request;
+	struct drm_agp_binding request;
 	int retcode;
 
-	request = *(drm_agp_binding_t *) data;
+	request = *(struct drm_agp_binding *) data;
 
 	DRM_LOCK();
 	retcode = drm_agp_bind(dev, &request);
@@ -354,7 +354,7 @@ int drm_agp_bind_ioctl(struct drm_device *dev, void *data,
 	return retcode;
 }
 
-int drm_agp_free(struct drm_device *dev, drm_agp_buffer_t *request)
+int drm_agp_free(struct drm_device *dev, struct drm_agp_buffer *request)
 {
 	drm_agp_mem_t    *entry;
 	
@@ -387,10 +387,10 @@ int drm_agp_free(struct drm_device *dev, drm_agp_buffer_t *request)
 int drm_agp_free_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv)
 {
-	drm_agp_buffer_t request;
+	struct drm_agp_buffer request;
 	int retcode;
 
-	request = *(drm_agp_buffer_t *) data;
+	request = *(struct drm_agp_buffer *) data;
 
 	DRM_LOCK();
 	retcode = drm_agp_free(dev, &request);

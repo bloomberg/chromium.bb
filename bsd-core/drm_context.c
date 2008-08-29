@@ -140,7 +140,7 @@ void drm_ctxbitmap_cleanup(struct drm_device *dev)
 int drm_getsareactx(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
-	drm_ctx_priv_map_t *request = data;
+	struct drm_ctx_priv_map *request = data;
 	drm_local_map_t *map;
 
 	DRM_LOCK();
@@ -161,7 +161,7 @@ int drm_getsareactx(struct drm_device *dev, void *data,
 int drm_setsareactx(struct drm_device *dev, void *data,
 		    struct drm_file *file_priv)
 {
-	drm_ctx_priv_map_t *request = data;
+	struct drm_ctx_priv_map *request = data;
 	drm_local_map_t *map = NULL;
 
 	DRM_LOCK();
@@ -221,8 +221,8 @@ int drm_context_switch_complete(struct drm_device *dev, int new)
 
 int drm_resctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_ctx_res_t *res = data;
-	drm_ctx_t ctx;
+	struct drm_ctx_res *res = data;
+	struct drm_ctx ctx;
 	int i;
 
 	if ( res->count >= DRM_RESERVED_CONTEXTS ) {
@@ -241,7 +241,7 @@ int drm_resctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 
 int drm_addctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_ctx_t *ctx = data;
+	struct drm_ctx *ctx = data;
 
 	ctx->handle = drm_ctxbitmap_next(dev);
 	if ( ctx->handle == DRM_KERNEL_CONTEXT ) {
@@ -272,7 +272,7 @@ int drm_modctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 
 int drm_getctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_ctx_t *ctx = data;
+	struct drm_ctx *ctx = data;
 
 	/* This is 0, because we don't handle any context flags */
 	ctx->flags = 0;
@@ -283,7 +283,7 @@ int drm_getctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 int drm_switchctx(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
-	drm_ctx_t *ctx = data;
+	struct drm_ctx *ctx = data;
 
 	DRM_DEBUG( "%d\n", ctx->handle );
 	return drm_context_switch(dev, dev->last_context, ctx->handle);
@@ -291,7 +291,7 @@ int drm_switchctx(struct drm_device *dev, void *data,
 
 int drm_newctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_ctx_t *ctx = data;
+	struct drm_ctx *ctx = data;
 
 	DRM_DEBUG( "%d\n", ctx->handle );
 	drm_context_switch_complete(dev, ctx->handle);
@@ -301,7 +301,7 @@ int drm_newctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 
 int drm_rmctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_ctx_t *ctx = data;
+	struct drm_ctx *ctx = data;
 
 	DRM_DEBUG( "%d\n", ctx->handle );
 	if ( ctx->handle != DRM_KERNEL_CONTEXT ) {

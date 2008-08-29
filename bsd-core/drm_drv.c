@@ -682,7 +682,7 @@ static void drm_unload(struct drm_device *dev)
 
 int drm_version(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_version_t *version = data;
+	struct drm_version *version = data;
 	int len;
 
 #define DRM_COPY( name, value )						\

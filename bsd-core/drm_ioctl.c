@@ -44,7 +44,7 @@
 int drm_getunique(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
-	drm_unique_t	 *u = data;
+	struct drm_unique *u = data;
 
 	if (u->unique_len >= dev->unique_len) {
 		if (DRM_COPY_TO_USER(u->unique, dev->unique, dev->unique_len))
@@ -61,7 +61,7 @@ int drm_getunique(struct drm_device *dev, void *data,
 int drm_setunique(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
-	drm_unique_t *u = data;
+	struct drm_unique *u = data;
 	int domain, bus, slot, func, ret;
 	char *busid;
 
@@ -141,7 +141,7 @@ drm_set_busid(struct drm_device *dev)
 
 int drm_getmap(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_map_t    *map = data;
+	struct drm_map     *map = data;
 	drm_local_map_t    *mapinlist;
 	int          idx;
 	int	     i = 0;
@@ -178,7 +178,7 @@ int drm_getmap(struct drm_device *dev, void *data, struct drm_file *file_priv)
 int drm_getclient(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
-	drm_client_t *client = data;
+	struct drm_client *client = data;
 	drm_file_t   *pt;
 	int          idx;
 	int          i = 0;
@@ -205,10 +205,10 @@ int drm_getclient(struct drm_device *dev, void *data,
 
 int drm_getstats(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_stats_t  *stats = data;
+	struct drm_stats *stats = data;
 	int          i;
 
-	memset(stats, 0, sizeof(drm_stats_t));
+	memset(stats, 0, sizeof(struct drm_stats));
 	
 	DRM_LOCK();
 
@@ -235,8 +235,8 @@ int drm_getstats(struct drm_device *dev, void *data, struct drm_file *file_priv)
 int drm_setversion(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
 {
-	drm_set_version_t *sv = data;
-	drm_set_version_t ver;
+	struct drm_set_version *sv = data;
+	struct drm_set_version ver;
 	int if_version;
 
 	/* Save the incoming data, and set the response before continuing

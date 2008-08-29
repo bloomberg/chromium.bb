@@ -38,7 +38,7 @@ static void drm_locked_task(void *context, int pending __unused);
 int drm_irq_by_busid(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv)
 {
-	drm_irq_busid_t *irq = data;
+	struct drm_irq_busid *irq = data;
 
 	if ((irq->busnum >> 8) != dev->pci_domain ||
 	    (irq->busnum & 0xff) != dev->pci_bus ||
@@ -264,7 +264,7 @@ int drm_irq_uninstall(struct drm_device *dev)
 
 int drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_control_t *ctl = data;
+	struct drm_control *ctl = data;
 	int err;
 
 	switch ( ctl->func ) {
@@ -412,7 +412,7 @@ out:
 
 int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_wait_vblank_t *vblwait = data;
+	union drm_wait_vblank *vblwait = data;
 	int ret = 0;
 	int flags, seq, crtc;
 

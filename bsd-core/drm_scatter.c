@@ -45,7 +45,7 @@ void drm_sg_cleanup(drm_sg_mem_t *entry)
 	free(entry, M_DRM);
 }
 
-int drm_sg_alloc(struct drm_device * dev, drm_scatter_gather_t * request)
+int drm_sg_alloc(struct drm_device * dev, struct drm_scatter_gather * request)
 {
 	drm_sg_mem_t *entry;
 	unsigned long pages;
@@ -101,7 +101,7 @@ int drm_sg_alloc(struct drm_device * dev, drm_scatter_gather_t * request)
 int drm_sg_alloc_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv)
 {
-	drm_scatter_gather_t *request = data;
+	struct drm_scatter_gather *request = data;
 	int ret;
 
 	DRM_DEBUG( "%s\n", __FUNCTION__ );
@@ -112,7 +112,7 @@ int drm_sg_alloc_ioctl(struct drm_device *dev, void *data,
 
 int drm_sg_free(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
-	drm_scatter_gather_t *request = data;
+	struct drm_scatter_gather *request = data;
 	drm_sg_mem_t *entry;
 
 	DRM_LOCK();

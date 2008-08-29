@@ -136,7 +136,7 @@ static int drm_remove_magic(struct drm_device *dev, drm_magic_t magic)
 int drm_getmagic(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	static drm_magic_t sequence = 0;
-	drm_auth_t *auth = data;
+	struct drm_auth *auth = data;
 
 				/* Find unique magic */
 	if (file_priv->magic) {
@@ -167,7 +167,7 @@ int drm_getmagic(struct drm_device *dev, void *data, struct drm_file *file_priv)
 int drm_authmagic(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
-	drm_auth_t *auth = data;
+	struct drm_auth *auth = data;
 	drm_file_t *priv;
 
 	DRM_DEBUG("%u\n", auth->magic);

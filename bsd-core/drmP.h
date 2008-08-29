@@ -523,7 +523,7 @@ struct drm_file {
 };
 
 typedef struct drm_lock_data {
-	drm_hw_lock_t	  *hw_lock;	/* Hardware lock		   */
+	struct drm_hw_lock	*hw_lock;	/* Hardware lock		   */
 	struct drm_file   *file_priv;   /* Unique identifier of holding process (NULL is kernel)*/
 	int		  lock_queue;	/* Queue of blocked processes	   */
 	unsigned long	  lock_time;	/* Time of last lock in jiffies	   */
@@ -586,8 +586,8 @@ typedef TAILQ_HEAD(drm_map_list, drm_local_map) drm_map_list_t;
 typedef struct drm_local_map {
 	unsigned long	offset;	 /* Physical address (0 for SAREA)*/
 	unsigned long	size;	 /* Physical size (bytes)	    */
-	drm_map_type_t	type;	 /* Type of memory mapped		    */
-	drm_map_flags_t flags;	 /* Flags				    */
+	enum drm_map_type	type;	 /* Type of memory mapped		    */
+	enum drm_map_flags	flags;	 /* Flags				    */
 	void		*handle; /* User-space: "Handle" to pass to mmap    */
 				 /* Kernel-space: kernel-virtual address    */
 	int		mtrr;	 /* Boolean: MTRR used */
@@ -662,9 +662,9 @@ struct drm_driver_info {
 	void	(*dma_ready)(struct drm_device *);
 	int	(*dma_quiescent)(struct drm_device *);
 	int	(*dma_flush_block_and_flush)(struct drm_device *, int context,
-					     drm_lock_flags_t flags);
+					     enum drm_lock_flags flags);
 	int	(*dma_flush_unblock)(struct drm_device *, int context,
-				     drm_lock_flags_t flags);
+				     enum drm_lock_flags flags);
 	int	(*context_ctor)(struct drm_device *dev, int context);
 	int	(*context_dtor)(struct drm_device *dev, int context);
 	int	(*kernel_context_switch)(struct drm_device *dev, int old,
@@ -760,7 +760,7 @@ struct drm_device {
 
 				/* Performance counters */
 	unsigned long     counters;
-	drm_stat_type_t   types[15];
+	enum drm_stat_type	types[15];
 	atomic_t          counts[15];
 
 				/* Authentication */
@@ -912,11 +912,11 @@ void	drm_rmmap(struct drm_device *dev, drm_local_map_t *map);
 int	drm_order(unsigned long size);
 int	drm_addmap(struct drm_device *dev, unsigned long offset,
 		   unsigned long size,
-		   drm_map_type_t type, drm_map_flags_t flags,
+		   enum drm_map_type type, enum drm_map_flags flags,
 		   drm_local_map_t **map_ptr);
-int	drm_addbufs_pci(struct drm_device *dev, drm_buf_desc_t *request);
-int	drm_addbufs_sg(struct drm_device *dev, drm_buf_desc_t *request);
-int	drm_addbufs_agp(struct drm_device *dev, drm_buf_desc_t *request);
+int	drm_addbufs_pci(struct drm_device *dev, struct drm_buf_desc *request);
+int	drm_addbufs_sg(struct drm_device *dev, struct drm_buf_desc *request);
+int	drm_addbufs_agp(struct drm_device *dev, struct drm_buf_desc *request);
 
 /* DMA support (drm_dma.c) */
 int	drm_dma_setup(struct drm_device *dev);
@@ -948,20 +948,20 @@ int	drm_device_is_pcie(struct drm_device *dev);
 drm_agp_head_t *drm_agp_init(void);
 int	drm_agp_acquire(struct drm_device *dev);
 int	drm_agp_release(struct drm_device *dev);
-int	drm_agp_info(struct drm_device * dev, drm_agp_info_t *info);
-int	drm_agp_enable(struct drm_device *dev, drm_agp_mode_t mode);
+int	drm_agp_info(struct drm_device * dev, struct drm_agp_info *info);
+int	drm_agp_enable(struct drm_device *dev, struct drm_agp_mode mode);
 void	*drm_agp_allocate_memory(size_t pages, u32 type);
 int	drm_agp_free_memory(void *handle);
 int	drm_agp_bind_memory(void *handle, off_t start);
 int	drm_agp_unbind_memory(void *handle);
-int	drm_agp_alloc(struct drm_device *dev, drm_agp_buffer_t *request);
-int	drm_agp_free(struct drm_device *dev, drm_agp_buffer_t *request);
-int	drm_agp_bind(struct drm_device *dev, drm_agp_binding_t *request);
-int	drm_agp_unbind(struct drm_device *dev, drm_agp_binding_t *request);
+int	drm_agp_alloc(struct drm_device *dev, struct drm_agp_buffer *request);
+int	drm_agp_free(struct drm_device *dev, struct drm_agp_buffer *request);
+int	drm_agp_bind(struct drm_device *dev, struct drm_agp_binding *request);
+int	drm_agp_unbind(struct drm_device *dev, struct drm_agp_binding *request);
 
 /* Scatter Gather Support (drm_scatter.c) */
 void	drm_sg_cleanup(drm_sg_mem_t *entry);
-int	drm_sg_alloc(struct drm_device *dev, drm_scatter_gather_t * request);
+int	drm_sg_alloc(struct drm_device *dev, struct drm_scatter_gather * request);
 
 #ifdef __FreeBSD__
 /* sysctl support (drm_sysctl.h) */
