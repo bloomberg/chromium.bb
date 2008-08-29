@@ -311,7 +311,7 @@ static void drm_update_vblank_count(struct drm_device *dev, int crtc)
 	if (cur_vblank < dev->vblank[crtc].last) {
 		diff += dev->max_vblank_count;
 
-		DRM_DEBUG("last_vblank[%d]=0x%x, cur_vblank=0x%x => diff=0x%x\n",
+		DRM_DEBUG("vblank[%d].last=0x%x, cur_vblank=0x%x => diff=0x%x\n",
 		    crtc, dev->vblank[crtc].last, cur_vblank, diff);
 	}
 
