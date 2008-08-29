@@ -81,6 +81,7 @@ static void vblank_disable_fn(void *arg)
 	}
 	callout_deactivate(&dev->vblank_disable_timer);
 
+	DRM_DEBUG("vblank_disable_allowed=%d\n", dev->vblank_disable_allowed);
 	if (!dev->vblank_disable_allowed)
 		return;
 
@@ -130,6 +131,8 @@ int drm_vblank_init(struct drm_device *dev, int num_crtcs)
 	    DRM_MEM_DRIVER);
 	if (!dev->vblank)
 	    goto err;
+
+	DRM_DEBUG("\n");
 
 	/* Zero per-crtc vblank stuff */
 	for (i = 0; i < num_crtcs; i++) {
@@ -361,11 +364,13 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 	unsigned long irqflags;
 	int crtc, ret = 0;
 
+	DRM_DEBUG("num_crtcs=%d\n", dev->num_crtcs);
 	/* If drm_vblank_init() hasn't been called yet, just no-op */
 	if (!dev->num_crtcs)
 	    goto out;
 
 	crtc = modeset->crtc;
+	DRM_DEBUG("crtc=%d\n", crtc);
 	if (crtc >= dev->num_crtcs) {
 		ret = EINVAL;
 		goto out;
@@ -380,12 +385,14 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 	 */
 	switch (modeset->cmd) {
 	case _DRM_PRE_MODESET:
+		DRM_DEBUG("pre-modeset\n");
 		if (!dev->vblank[crtc].inmodeset) {
 			dev->vblank[crtc].inmodeset = 1;
 			drm_vblank_get(dev, crtc);
 		}
 		break;
 	case _DRM_POST_MODESET:
+		DRM_DEBUG("post-modeset\n");
 		if (dev->vblank[crtc].inmodeset) {
 			DRM_SPINLOCK_IRQSAVE(&dev->vbl_lock, irqflags);
 			dev->vblank_disable_allowed = 1;
