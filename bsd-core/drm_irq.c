@@ -61,7 +61,7 @@ drm_irq_handler_wrap(DRM_IRQ_ARGS)
 	struct drm_device *dev = arg;
 
 	DRM_SPINLOCK(&dev->irq_lock);
-	dev->driver.irq_handler(arg);
+	dev->driver->irq_handler(arg);
 	DRM_SPINUNLOCK(&dev->irq_lock);
 }
 #endif
@@ -90,8 +90,8 @@ static void vblank_disable_fn(void *arg)
 		    dev->vblank[i].enabled) {
 			DRM_DEBUG("disabling vblank on crtc %d\n", i);
 			dev->vblank[i].last =
-			    dev->driver.get_vblank_counter(dev, i);
-			dev->driver.disable_vblank(dev, i);
+			    dev->driver->get_vblank_counter(dev, i);
+			dev->driver->disable_vblank(dev, i);
 			dev->vblank[i].enabled = 0;
 		}
 	}
@@ -173,7 +173,7 @@ int drm_irq_install(struct drm_device *dev)
 	dev->context_flag = 0;
 
 				/* Before installing handler */
-	dev->driver.irq_preinstall(dev);
+	dev->driver->irq_preinstall(dev);
 	DRM_UNLOCK();
 
 				/* Install handler */
@@ -211,7 +211,7 @@ int drm_irq_install(struct drm_device *dev)
 
 				/* After installing handler */
 	DRM_LOCK();
-	dev->driver.irq_postinstall(dev);
+	dev->driver->irq_postinstall(dev);
 	DRM_UNLOCK();
 
 	TASK_INIT(&dev->locked_task, 0, drm_locked_task, dev);
@@ -247,7 +247,7 @@ int drm_irq_uninstall(struct drm_device *dev)
 
 	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
 
-	dev->driver.irq_uninstall(dev);
+	dev->driver->irq_uninstall(dev);
 
 #ifdef __FreeBSD__
 	DRM_UNLOCK();
@@ -272,14 +272,14 @@ int drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv)
 		/* Handle drivers whose DRM used to require IRQ setup but the
 		 * no longer does.
 		 */
-		if (!dev->driver.use_irq)
+		if (!dev->driver->use_irq)
 			return 0;
 		if (dev->if_version < DRM_IF_VERSION(1, 2) &&
 		    ctl->irq != dev->irq)
 			return EINVAL;
 		return drm_irq_install(dev);
 	case DRM_UNINST_HANDLER:
-		if (!dev->driver.use_irq)
+		if (!dev->driver->use_irq)
 			return 0;
 		DRM_LOCK();
 		err = drm_irq_uninstall(dev);
@@ -306,7 +306,7 @@ static void drm_update_vblank_count(struct drm_device *dev, int crtc)
 	 * here if the register is small or we had vblank interrupts off for
 	 * a long time.
 	 */
-	cur_vblank = dev->driver.get_vblank_counter(dev, crtc);
+	cur_vblank = dev->driver->get_vblank_counter(dev, crtc);
 	diff = cur_vblank - dev->vblank[crtc].last;
 	if (cur_vblank < dev->vblank[crtc].last) {
 		diff += dev->max_vblank_count;
@@ -331,7 +331,7 @@ int drm_vblank_get(struct drm_device *dev, int crtc)
 	atomic_add_acq_int(&dev->vblank[crtc].refcount, 1);
 	if (dev->vblank[crtc].refcount == 1 &&
 	    !dev->vblank[crtc].enabled) {
-		ret = dev->driver.enable_vblank(dev, crtc);
+		ret = dev->driver->enable_vblank(dev, crtc);
 		if (ret)
 			atomic_dec(&dev->vblank[crtc].refcount);
 		else {

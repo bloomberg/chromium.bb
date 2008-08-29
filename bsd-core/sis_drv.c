@@ -38,22 +38,22 @@ static drm_pci_id_list_t sis_pciidlist[] = {
 
 static void sis_configure(struct drm_device *dev)
 {
-	dev->driver.buf_priv_size	= 1; /* No dev_priv */
-	dev->driver.context_ctor	= sis_init_context;
-	dev->driver.context_dtor	= sis_final_context;
+	dev->driver->buf_priv_size	= 1; /* No dev_priv */
+	dev->driver->context_ctor	= sis_init_context;
+	dev->driver->context_dtor	= sis_final_context;
 
-	dev->driver.ioctls		= sis_ioctls;
-	dev->driver.max_ioctl		= sis_max_ioctl;
+	dev->driver->ioctls		= sis_ioctls;
+	dev->driver->max_ioctl		= sis_max_ioctl;
 
-	dev->driver.name		= DRIVER_NAME;
-	dev->driver.desc		= DRIVER_DESC;
-	dev->driver.date		= DRIVER_DATE;
-	dev->driver.major		= DRIVER_MAJOR;
-	dev->driver.minor		= DRIVER_MINOR;
-	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
+	dev->driver->name		= DRIVER_NAME;
+	dev->driver->desc		= DRIVER_DESC;
+	dev->driver->date		= DRIVER_DATE;
+	dev->driver->major		= DRIVER_MAJOR;
+	dev->driver->minor		= DRIVER_MINOR;
+	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->driver.use_agp		= 1;
-	dev->driver.use_mtrr		= 1;
+	dev->driver->use_agp		= 1;
+	dev->driver->use_mtrr		= 1;
 }
 
 #ifdef __FreeBSD__
@@ -69,15 +69,28 @@ sis_attach(device_t nbdev)
 	struct drm_device *dev = device_get_softc(nbdev);
 
 	bzero(dev, sizeof(struct drm_device));
+
+	dev->driver = malloc(sizeof(struct drm_driver_info), M_DRM, M_ZERO);
 	sis_configure(dev);
+
 	return drm_attach(nbdev, sis_pciidlist);
+}
+
+static int
+sis_detach(device_t nbdev)
+{
+	struct drm_device *dev = device_get_softc(nbdev);
+
+	free(dev->driver, M_DRM);
+
+	return drm_detach(nbdev);
 }
 
 static device_method_t sis_methods[] = {
 	/* Device interface */
 	DEVMETHOD(device_probe,		sis_probe),
 	DEVMETHOD(device_attach,	sis_attach),
-	DEVMETHOD(device_detach,	drm_detach),
+	DEVMETHOD(device_detach,	sis_detach),
 
 	{ 0, 0 }
 };

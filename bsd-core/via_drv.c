@@ -41,34 +41,34 @@ static drm_pci_id_list_t via_pciidlist[] = {
 
 static void via_configure(struct drm_device *dev)
 {
-	dev->driver.buf_priv_size	= 1;
-	dev->driver.load		= via_driver_load;
-	dev->driver.unload		= via_driver_unload;
-	dev->driver.context_ctor	= via_init_context;
-	dev->driver.context_dtor	= via_final_context;
-	dev->driver.get_vblank_counter	= via_get_vblank_counter;
-	dev->driver.enable_vblank	= via_enable_vblank;
-	dev->driver.disable_vblank	= via_disable_vblank;
-	dev->driver.irq_preinstall	= via_driver_irq_preinstall;
-	dev->driver.irq_postinstall	= via_driver_irq_postinstall;
-	dev->driver.irq_uninstall	= via_driver_irq_uninstall;
-	dev->driver.irq_handler		= via_driver_irq_handler;
-	dev->driver.dma_quiescent	= via_driver_dma_quiescent;
+	dev->driver->buf_priv_size	= 1;
+	dev->driver->load		= via_driver_load;
+	dev->driver->unload		= via_driver_unload;
+	dev->driver->context_ctor	= via_init_context;
+	dev->driver->context_dtor	= via_final_context;
+	dev->driver->get_vblank_counter	= via_get_vblank_counter;
+	dev->driver->enable_vblank	= via_enable_vblank;
+	dev->driver->disable_vblank	= via_disable_vblank;
+	dev->driver->irq_preinstall	= via_driver_irq_preinstall;
+	dev->driver->irq_postinstall	= via_driver_irq_postinstall;
+	dev->driver->irq_uninstall	= via_driver_irq_uninstall;
+	dev->driver->irq_handler	= via_driver_irq_handler;
+	dev->driver->dma_quiescent	= via_driver_dma_quiescent;
 
-	dev->driver.ioctls		= via_ioctls;
-	dev->driver.max_ioctl		= via_max_ioctl;
+	dev->driver->ioctls		= via_ioctls;
+	dev->driver->max_ioctl		= via_max_ioctl;
 
-	dev->driver.name		= DRIVER_NAME;
-	dev->driver.desc		= DRIVER_DESC;
-	dev->driver.date		= DRIVER_DATE;
-	dev->driver.major		= DRIVER_MAJOR;
-	dev->driver.minor		= DRIVER_MINOR;
-	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
+	dev->driver->name		= DRIVER_NAME;
+	dev->driver->desc		= DRIVER_DESC;
+	dev->driver->date		= DRIVER_DATE;
+	dev->driver->major		= DRIVER_MAJOR;
+	dev->driver->minor		= DRIVER_MINOR;
+	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->driver.use_agp		= 1;
-	dev->driver.use_mtrr		= 1;
-	dev->driver.use_irq		= 1;
-	dev->driver.use_vbl_irq		= 1;
+	dev->driver->use_agp		= 1;
+	dev->driver->use_mtrr		= 1;
+	dev->driver->use_irq		= 1;
+	dev->driver->use_vbl_irq	= 1;
 }
 
 #ifdef __FreeBSD__
@@ -84,15 +84,28 @@ via_attach(device_t nbdev)
 	struct drm_device *dev = device_get_softc(nbdev);
 
 	bzero(dev, sizeof(struct drm_device));
+
+	dev->driver = malloc(sizeof(struct drm_driver_info), M_DRM, M_ZERO);
 	via_configure(dev);
+
 	return drm_attach(nbdev, via_pciidlist);
+}
+
+static int
+via_detach(device_t nbdev)
+{
+	struct drm_device *dev = device_get_softc(nbdev);
+
+	free(dev->driver, M_DRM);
+
+	return drm_detach(nbdev);
 }
 
 static device_method_t via_methods[] = {
 	/* Device interface */
 	DEVMETHOD(device_probe,		via_probe),
 	DEVMETHOD(device_attach,	via_attach),
-	DEVMETHOD(device_detach,	drm_detach),
+	DEVMETHOD(device_detach,	via_detach),
 
 	{ 0, 0 }
 };

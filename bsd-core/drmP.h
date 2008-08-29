@@ -728,7 +728,7 @@ struct drm_device {
 	struct device	  device; /* softc is an extension of struct device */
 #endif
 
-	struct drm_driver_info driver;
+	struct drm_driver_info *driver;
 	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
 
 	u_int16_t pci_device;		/* PCI device id */

@@ -46,33 +46,33 @@ static drm_pci_id_list_t mach64_pciidlist[] = {
 
 static void mach64_configure(struct drm_device *dev)
 {
-	dev->driver.buf_priv_size	= 1; /* No dev_priv */
-	dev->driver.lastclose		= mach64_driver_lastclose;
-	dev->driver.get_vblank_counter	= mach64_get_vblank_counter;
-	dev->driver.enable_vblank	= mach64_enable_vblank;
-	dev->driver.disable_vblank	= mach64_disable_vblank;
-	dev->driver.irq_preinstall	= mach64_driver_irq_preinstall;
-	dev->driver.irq_postinstall	= mach64_driver_irq_postinstall;
-	dev->driver.irq_uninstall	= mach64_driver_irq_uninstall;
-	dev->driver.irq_handler		= mach64_driver_irq_handler;
-	dev->driver.dma_ioctl		= mach64_dma_buffers;
+	dev->driver->buf_priv_size	= 1; /* No dev_priv */
+	dev->driver->lastclose		= mach64_driver_lastclose;
+	dev->driver->get_vblank_counter	= mach64_get_vblank_counter;
+	dev->driver->enable_vblank	= mach64_enable_vblank;
+	dev->driver->disable_vblank	= mach64_disable_vblank;
+	dev->driver->irq_preinstall	= mach64_driver_irq_preinstall;
+	dev->driver->irq_postinstall	= mach64_driver_irq_postinstall;
+	dev->driver->irq_uninstall	= mach64_driver_irq_uninstall;
+	dev->driver->irq_handler	= mach64_driver_irq_handler;
+	dev->driver->dma_ioctl		= mach64_dma_buffers;
 
-	dev->driver.ioctls		= mach64_ioctls;
-	dev->driver.max_ioctl		= mach64_max_ioctl;
+	dev->driver->ioctls		= mach64_ioctls;
+	dev->driver->max_ioctl		= mach64_max_ioctl;
 
-	dev->driver.name		= DRIVER_NAME;
-	dev->driver.desc		= DRIVER_DESC;
-	dev->driver.date		= DRIVER_DATE;
-	dev->driver.major		= DRIVER_MAJOR;
-	dev->driver.minor		= DRIVER_MINOR;
-	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
+	dev->driver->name		= DRIVER_NAME;
+	dev->driver->desc		= DRIVER_DESC;
+	dev->driver->date		= DRIVER_DATE;
+	dev->driver->major		= DRIVER_MAJOR;
+	dev->driver->minor		= DRIVER_MINOR;
+	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->driver.use_agp		= 1;
-	dev->driver.use_mtrr		= 1;
-	dev->driver.use_pci_dma		= 1;
-	dev->driver.use_dma		= 1;
-	dev->driver.use_irq		= 1;
-	dev->driver.use_vbl_irq		= 1;
+	dev->driver->use_agp		= 1;
+	dev->driver->use_mtrr		= 1;
+	dev->driver->use_pci_dma	= 1;
+	dev->driver->use_dma		= 1;
+	dev->driver->use_irq		= 1;
+	dev->driver->use_vbl_irq	= 1;
 }
 
 #ifdef __FreeBSD__
@@ -88,15 +88,28 @@ mach64_attach(device_t nbdev)
 	struct drm_device *dev = device_get_softc(nbdev);
 
 	bzero(dev, sizeof(struct drm_device));
+
+	dev->driver = malloc(sizeof(struct drm_driver_info), M_DRM, M_ZERO);
 	mach64_configure(dev);
+
 	return drm_attach(nbdev, mach64_pciidlist);
+}
+
+static int
+mach64_detach(device_t nbdev)
+{
+	struct drm_device *dev = device_get_softc(nbdev);
+
+	free(dev->driver, M_DRM);
+
+	return drm_detach(nbdev);
 }
 
 static device_method_t mach64_methods[] = {
 	/* Device interface */
 	DEVMETHOD(device_probe,		mach64_probe),
 	DEVMETHOD(device_attach,	mach64_attach),
-	DEVMETHOD(device_detach,	drm_detach),
+	DEVMETHOD(device_detach,	mach64_detach),
 
 	{ 0, 0 }
 };

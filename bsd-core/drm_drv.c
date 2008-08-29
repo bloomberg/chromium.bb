@@ -343,7 +343,7 @@ void drm_attach(struct pci_attach_args *pa, dev_t kdev,
 
 	id_entry = drm_find_description(PCI_VENDOR(pa->pa_id),
 	    PCI_PRODUCT(pa->pa_id), idlist);
-	dev->driver.pci_id_entry = id_entry;
+	dev->driver->pci_id_entry = id_entry;
 
 	DRM_INFO("%s", id_entry->name);
 	drm_load(dev);
@@ -397,12 +397,12 @@ static int drm_firstopen(struct drm_device *dev)
 	if (i != 0)
 		return i;
 
-	if (dev->driver.firstopen)
-		dev->driver.firstopen(dev);
+	if (dev->driver->firstopen)
+		dev->driver->firstopen(dev);
 
 	dev->buf_use = 0;
 
-	if (dev->driver.use_dma) {
+	if (dev->driver->use_dma) {
 		i = drm_dma_setup(dev);
 		if (i != 0)
 			return i;
@@ -440,8 +440,8 @@ static int drm_lastclose(struct drm_device *dev)
 
 	DRM_DEBUG( "\n" );
 
-	if (dev->driver.lastclose != NULL)
-		dev->driver.lastclose(dev);
+	if (dev->driver->lastclose != NULL)
+		dev->driver->lastclose(dev);
 
 	if (dev->irq_enabled)
 		drm_irq_uninstall(dev);
@@ -545,10 +545,10 @@ static int drm_load(struct drm_device *dev)
 	for ( i = 0 ; i < DRM_ARRAY_SIZE(dev->counts) ; i++ )
 		atomic_set( &dev->counts[i], 0 );
 
-	if (dev->driver.load != NULL) {
+	if (dev->driver->load != NULL) {
 		DRM_LOCK();
 		/* Shared code returns -errno. */
-		retcode = -dev->driver.load(dev,
+		retcode = -dev->driver->load(dev,
 		    dev->id_entry->driver_private);
 		if (pci_enable_busmaster(dev->device))
 			DRM_ERROR("Request to enable bus-master failed.\n");
@@ -557,10 +557,10 @@ static int drm_load(struct drm_device *dev)
 			goto error;
 	}
 
-	if (dev->driver.use_agp) {
+	if (dev->driver->use_agp) {
 		if (drm_device_is_agp(dev))
 			dev->agp = drm_agp_init();
-		if (dev->driver.require_agp && dev->agp == NULL) {
+		if (dev->driver->require_agp && dev->agp == NULL) {
 			DRM_ERROR("Card isn't AGP, or couldn't initialize "
 			    "AGP.\n");
 			retcode = ENOMEM;
@@ -586,11 +586,11 @@ static int drm_load(struct drm_device *dev)
 	}
 
 	DRM_INFO("Initialized %s %d.%d.%d %s\n",
-	  	dev->driver.name,
-	  	dev->driver.major,
-	  	dev->driver.minor,
-	  	dev->driver.patchlevel,
-	  	dev->driver.date);
+		dev->driver->name,
+		dev->driver->major,
+		dev->driver->minor,
+		dev->driver->patchlevel,
+		dev->driver->date);
 
 	return 0;
 
@@ -657,9 +657,9 @@ static void drm_unload(struct drm_device *dev)
 		dev->agp = NULL;
 	}
 
-	if (dev->driver.unload != NULL) {
+	if (dev->driver->unload != NULL) {
 		DRM_LOCK();
-		dev->driver.unload(dev);
+		dev->driver->unload(dev);
 		DRM_UNLOCK();
 	}
 
@@ -694,13 +694,13 @@ int drm_version(struct drm_device *dev, void *data, struct drm_file *file_priv)
 			return EFAULT;				\
 	}
 
-	version->version_major		= dev->driver.major;
-	version->version_minor		= dev->driver.minor;
-	version->version_patchlevel	= dev->driver.patchlevel;
+	version->version_major		= dev->driver->major;
+	version->version_minor		= dev->driver->minor;
+	version->version_patchlevel	= dev->driver->patchlevel;
 
-	DRM_COPY(version->name, dev->driver.name);
-	DRM_COPY(version->date, dev->driver.date);
-	DRM_COPY(version->desc, dev->driver.desc);
+	DRM_COPY(version->name, dev->driver->name);
+	DRM_COPY(version->date, dev->driver->date);
+	DRM_COPY(version->desc, dev->driver->desc);
 
 	return 0;
 }
@@ -750,8 +750,8 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	if (--file_priv->refs != 0)
 		goto done;
 
-	if (dev->driver.preclose != NULL)
-		dev->driver.preclose(dev, file_priv);
+	if (dev->driver->preclose != NULL)
+		dev->driver->preclose(dev, file_priv);
 
 	/* ========================================================
 	 * Begin inline drm_release
@@ -770,8 +770,8 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 		DRM_DEBUG("Process %d dead, freeing lock for context %d\n",
 			  DRM_CURRENTPID,
 			  _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
-		if (dev->driver.reclaim_buffers_locked != NULL)
-			dev->driver.reclaim_buffers_locked(dev, file_priv);
+		if (dev->driver->reclaim_buffers_locked != NULL)
+			dev->driver->reclaim_buffers_locked(dev, file_priv);
 
 		drm_lock_free(dev, &dev->lock.hw_lock->lock,
 		    _DRM_LOCKING_CONTEXT(dev->lock.hw_lock->lock));
@@ -780,7 +780,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
                                    hardware at this point, possibly
                                    processed via a callback to the X
                                    server. */
-	} else if (dev->driver.reclaim_buffers_locked != NULL &&
+	} else if (dev->driver->reclaim_buffers_locked != NULL &&
 	    dev->lock.hw_lock != NULL) {
 		/* The lock is required to reclaim buffers */
 		for (;;) {
@@ -808,13 +808,13 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 				break;
 		}
 		if (retcode == 0) {
-			dev->driver.reclaim_buffers_locked(dev, file_priv);
+			dev->driver->reclaim_buffers_locked(dev, file_priv);
 			drm_lock_free(dev, &dev->lock.hw_lock->lock,
 			    DRM_KERNEL_CONTEXT);
 		}
 	}
 
-	if (dev->driver.use_dma && !dev->driver.reclaim_buffers_locked)
+	if (dev->driver->use_dma && !dev->driver->reclaim_buffers_locked)
 		drm_reclaim_buffers(dev, file_priv);
 
 #if defined (__FreeBSD__) && (__FreeBSD_version >= 500000)
@@ -825,8 +825,8 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	dev->buf_pgid = 0;
 #endif /* __NetBSD__  || __OpenBSD__ */
 
-	if (dev->driver.postclose != NULL)
-		dev->driver.postclose(dev, file_priv);
+	if (dev->driver->postclose != NULL)
+		dev->driver->postclose(dev, file_priv);
 	TAILQ_REMOVE(&dev->files, file_priv, link);
 	free(file_priv, M_DRM);
 
@@ -920,12 +920,12 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	if (ioctl->func == NULL && nr >= DRM_COMMAND_BASE) {
 		/* The array entries begin at DRM_COMMAND_BASE ioctl nr */
 		nr -= DRM_COMMAND_BASE;
-		if (nr > dev->driver.max_ioctl) {
+		if (nr > dev->driver->max_ioctl) {
 			DRM_DEBUG("Bad driver ioctl number, 0x%x (of 0x%x)\n",
-			    nr, dev->driver.max_ioctl);
+			    nr, dev->driver->max_ioctl);
 			return EINVAL;
 		}
-		ioctl = &dev->driver.ioctls[nr];
+		ioctl = &dev->driver->ioctls[nr];
 		is_driver_ioctl = 1;
 	}
 	func = ioctl->func;

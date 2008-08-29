@@ -126,7 +126,7 @@ int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	    lock->context, DRM_CURRENTPID, dev->lock.hw_lock->lock,
 	    lock->flags);
 
-        if (dev->driver.use_dma_queue && lock->context < 0)
+        if (dev->driver->use_dma_queue && lock->context < 0)
                 return EINVAL;
 
 	DRM_LOCK();
@@ -157,9 +157,9 @@ int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 
 	/* XXX: Add signal blocking here */
 
-	if (dev->driver.dma_quiescent != NULL &&
+	if (dev->driver->dma_quiescent != NULL &&
 	    (lock->flags & _DRM_LOCK_QUIESCENT))
-		dev->driver.dma_quiescent(dev);
+		dev->driver->dma_quiescent(dev);
 
 	return 0;
 }

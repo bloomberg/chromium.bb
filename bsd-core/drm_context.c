@@ -255,9 +255,9 @@ int drm_addctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 		return ENOMEM;
 	}
 
-	if (dev->driver.context_ctor && ctx->handle != DRM_KERNEL_CONTEXT) {
+	if (dev->driver->context_ctor && ctx->handle != DRM_KERNEL_CONTEXT) {
 		DRM_LOCK();
-		dev->driver.context_ctor(dev, ctx->handle);
+		dev->driver->context_ctor(dev, ctx->handle);
 		DRM_UNLOCK();
 	}
 
@@ -305,9 +305,9 @@ int drm_rmctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 
 	DRM_DEBUG( "%d\n", ctx->handle );
 	if ( ctx->handle != DRM_KERNEL_CONTEXT ) {
-		if (dev->driver.context_dtor) {
+		if (dev->driver->context_dtor) {
 			DRM_LOCK();
-			dev->driver.context_dtor(dev, ctx->handle);
+			dev->driver->context_dtor(dev, ctx->handle);
 			DRM_UNLOCK();
 		}
 

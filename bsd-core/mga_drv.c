@@ -86,37 +86,37 @@ static int mga_driver_device_is_agp(struct drm_device * dev)
 
 static void mga_configure(struct drm_device *dev)
 {
-	dev->driver.buf_priv_size	= sizeof(drm_mga_buf_priv_t);
-	dev->driver.load		= mga_driver_load;
-	dev->driver.unload		= mga_driver_unload;
-	dev->driver.lastclose		= mga_driver_lastclose;
-	dev->driver.get_vblank_counter	= mga_get_vblank_counter;
-	dev->driver.enable_vblank	= mga_enable_vblank;
-	dev->driver.disable_vblank	= mga_disable_vblank;
-	dev->driver.irq_preinstall	= mga_driver_irq_preinstall;
-	dev->driver.irq_postinstall	= mga_driver_irq_postinstall;
-	dev->driver.irq_uninstall	= mga_driver_irq_uninstall;
-	dev->driver.irq_handler		= mga_driver_irq_handler;
-	dev->driver.dma_ioctl		= mga_dma_buffers;
-	dev->driver.dma_quiescent	= mga_driver_dma_quiescent;
-	dev->driver.device_is_agp	= mga_driver_device_is_agp;
+	dev->driver->buf_priv_size	= sizeof(drm_mga_buf_priv_t);
+	dev->driver->load		= mga_driver_load;
+	dev->driver->unload		= mga_driver_unload;
+	dev->driver->lastclose		= mga_driver_lastclose;
+	dev->driver->get_vblank_counter	= mga_get_vblank_counter;
+	dev->driver->enable_vblank	= mga_enable_vblank;
+	dev->driver->disable_vblank	= mga_disable_vblank;
+	dev->driver->irq_preinstall	= mga_driver_irq_preinstall;
+	dev->driver->irq_postinstall	= mga_driver_irq_postinstall;
+	dev->driver->irq_uninstall	= mga_driver_irq_uninstall;
+	dev->driver->irq_handler	= mga_driver_irq_handler;
+	dev->driver->dma_ioctl		= mga_dma_buffers;
+	dev->driver->dma_quiescent	= mga_driver_dma_quiescent;
+	dev->driver->device_is_agp	= mga_driver_device_is_agp;
 
-	dev->driver.ioctls		= mga_ioctls;
-	dev->driver.max_ioctl		= mga_max_ioctl;
+	dev->driver->ioctls		= mga_ioctls;
+	dev->driver->max_ioctl		= mga_max_ioctl;
 
-	dev->driver.name		= DRIVER_NAME;
-	dev->driver.desc		= DRIVER_DESC;
-	dev->driver.date		= DRIVER_DATE;
-	dev->driver.major		= DRIVER_MAJOR;
-	dev->driver.minor		= DRIVER_MINOR;
-	dev->driver.patchlevel		= DRIVER_PATCHLEVEL;
+	dev->driver->name		= DRIVER_NAME;
+	dev->driver->desc		= DRIVER_DESC;
+	dev->driver->date		= DRIVER_DATE;
+	dev->driver->major		= DRIVER_MAJOR;
+	dev->driver->minor		= DRIVER_MINOR;
+	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 
-	dev->driver.use_agp		= 1;
-	dev->driver.require_agp		= 1;
-	dev->driver.use_mtrr		= 1;
-	dev->driver.use_dma		= 1;
-	dev->driver.use_irq		= 1;
-	dev->driver.use_vbl_irq		= 1;
+	dev->driver->use_agp		= 1;
+	dev->driver->require_agp	= 1;
+	dev->driver->use_mtrr		= 1;
+	dev->driver->use_dma		= 1;
+	dev->driver->use_irq		= 1;
+	dev->driver->use_vbl_irq	= 1;
 }
 
 
@@ -134,15 +134,28 @@ mga_attach(device_t nbdev)
 	struct drm_device *dev = device_get_softc(nbdev);
 
 	bzero(dev, sizeof(struct drm_device));
+
+	dev->driver = malloc(sizeof(struct drm_driver_info), M_DRM, M_ZERO);
 	mga_configure(dev);
+
 	return drm_attach(nbdev, mga_pciidlist);
+}
+
+static int
+mga_detach(device_t nbdev)
+{
+	struct drm_device *dev = device_get_softc(nbdev);
+
+	free(dev->driver, M_DRM);
+
+	return drm_detach(nbdev);
 }
 
 static device_method_t mga_methods[] = {
 	/* Device interface */
 	DEVMETHOD(device_probe,		mga_probe),
 	DEVMETHOD(device_attach,	mga_attach),
-	DEVMETHOD(device_detach,	drm_detach),
+	DEVMETHOD(device_detach,	mga_detach),
 
 	{ 0, 0 }
 };

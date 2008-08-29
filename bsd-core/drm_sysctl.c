@@ -132,7 +132,7 @@ static int drm_name_info DRM_SYSCTL_HANDLER_ARGS
 	int retcode;
 	int hasunique = 0;
 
-	DRM_SYSCTL_PRINT("%s 0x%x", dev->driver.name, dev2udev(dev->devnode));
+	DRM_SYSCTL_PRINT("%s 0x%x", dev->driver->name, dev2udev(dev->devnode));
 	
 	DRM_LOCK();
 	if (dev->unique) {
