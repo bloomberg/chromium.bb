@@ -62,7 +62,7 @@ int drm_ctxbitmap_next(struct drm_device *dev)
 		return -1;
 
 	DRM_LOCK();
-	bit = find_first_zero_bit( dev->ctx_bitmap, DRM_MAX_CTXBITMAP );
+	bit = find_first_zero_bit(dev->ctx_bitmap, DRM_MAX_CTXBITMAP);
 	if (bit >= DRM_MAX_CTXBITMAP) {
 		DRM_UNLOCK();
 		return -1;
@@ -116,9 +116,9 @@ int drm_ctxbitmap_init(struct drm_device *dev)
 	dev->max_context = -1;
 	DRM_UNLOCK();
 
-	for ( i = 0 ; i < DRM_RESERVED_CONTEXTS ; i++ ) {
+	for (i = 0; i < DRM_RESERVED_CONTEXTS; i++) {
 		temp = drm_ctxbitmap_next(dev);
-	   	DRM_DEBUG( "drm_ctxbitmap_init : %d\n", temp );
+		DRM_DEBUG("drm_ctxbitmap_init : %d\n", temp);
 	}
 
 	return 0;
@@ -188,33 +188,33 @@ bad:
 
 int drm_context_switch(struct drm_device *dev, int old, int new)
 {
-        if ( test_and_set_bit( 0, &dev->context_flag ) ) {
-                DRM_ERROR( "Reentering -- FIXME\n" );
-                return EBUSY;
-        }
+	if (test_and_set_bit(0, &dev->context_flag)) {
+		DRM_ERROR("Reentering -- FIXME\n");
+		return EBUSY;
+	}
 
-        DRM_DEBUG( "Context switch from %d to %d\n", old, new );
+	DRM_DEBUG("Context switch from %d to %d\n", old, new);
 
-        if ( new == dev->last_context ) {
-                clear_bit( 0, &dev->context_flag );
-                return 0;
-        }
+	if (new == dev->last_context) {
+		clear_bit(0, &dev->context_flag);
+		return 0;
+	}
 
-        return 0;
+	return 0;
 }
 
 int drm_context_switch_complete(struct drm_device *dev, int new)
 {
-        dev->last_context = new;  /* PRE/POST: This is the _only_ writer. */
+	dev->last_context = new;  /* PRE/POST: This is the _only_ writer. */
 
-        if ( !_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock) ) {
-                DRM_ERROR( "Lock isn't held after context switch\n" );
-        }
+	if (!_DRM_LOCK_IS_HELD(dev->lock.hw_lock->lock)) {
+		DRM_ERROR("Lock isn't held after context switch\n");
+	}
 
-				/* If a context switch is ever initiated
-                                   when the kernel holds the lock, release
-                                   that lock here. */
-        clear_bit( 0, &dev->context_flag );
+	/* If a context switch is ever initiated
+	   when the kernel holds the lock, release
+	   that lock here. */
+        clear_bit(0, &dev->context_flag);
 
         return 0;
 }
@@ -225,12 +225,12 @@ int drm_resctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	struct drm_ctx ctx;
 	int i;
 
-	if ( res->count >= DRM_RESERVED_CONTEXTS ) {
+	if (res->count >= DRM_RESERVED_CONTEXTS) {
 		bzero(&ctx, sizeof(ctx));
-		for ( i = 0 ; i < DRM_RESERVED_CONTEXTS ; i++ ) {
+		for (i = 0; i < DRM_RESERVED_CONTEXTS; i++) {
 			ctx.handle = i;
-			if ( DRM_COPY_TO_USER( &res->contexts[i],
-					   &ctx, sizeof(ctx) ) )
+			if (DRM_COPY_TO_USER( &res->contexts[i],
+			    &ctx, sizeof(ctx)))
 				return EFAULT;
 		}
 	}
@@ -244,14 +244,14 @@ int drm_addctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	struct drm_ctx *ctx = data;
 
 	ctx->handle = drm_ctxbitmap_next(dev);
-	if ( ctx->handle == DRM_KERNEL_CONTEXT ) {
-				/* Skip kernel's context and get a new one. */
+	if (ctx->handle == DRM_KERNEL_CONTEXT) {
+		/* Skip kernel's context and get a new one. */
 		ctx->handle = drm_ctxbitmap_next(dev);
 	}
-	DRM_DEBUG( "%d\n", ctx->handle );
-	if ( ctx->handle == -1 ) {
-		DRM_DEBUG( "Not enough free contexts.\n" );
-				/* Should this return -EBUSY instead? */
+	DRM_DEBUG("%d\n", ctx->handle);
+	if (ctx->handle == -1) {
+		DRM_DEBUG("Not enough free contexts.\n");
+		/* Should this return -EBUSY instead? */
 		return ENOMEM;
 	}
 
@@ -285,7 +285,7 @@ int drm_switchctx(struct drm_device *dev, void *data,
 {
 	struct drm_ctx *ctx = data;
 
-	DRM_DEBUG( "%d\n", ctx->handle );
+	DRM_DEBUG("%d\n", ctx->handle);
 	return drm_context_switch(dev, dev->last_context, ctx->handle);
 }
 
@@ -293,7 +293,7 @@ int drm_newctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	struct drm_ctx *ctx = data;
 
-	DRM_DEBUG( "%d\n", ctx->handle );
+	DRM_DEBUG("%d\n", ctx->handle);
 	drm_context_switch_complete(dev, ctx->handle);
 
 	return 0;
@@ -303,8 +303,8 @@ int drm_rmctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	struct drm_ctx *ctx = data;
 
-	DRM_DEBUG( "%d\n", ctx->handle );
-	if ( ctx->handle != DRM_KERNEL_CONTEXT ) {
+	DRM_DEBUG("%d\n", ctx->handle);
+	if (ctx->handle != DRM_KERNEL_CONTEXT) {
 		if (dev->driver->context_dtor) {
 			DRM_LOCK();
 			dev->driver->context_dtor(dev, ctx->handle);

@@ -49,7 +49,7 @@ int drm_irq_by_busid(struct drm_device *dev, void *data,
 	irq->irq = dev->irq;
 
 	DRM_DEBUG("%d:%d:%d => IRQ %d\n",
-		  irq->busnum, irq->devnum, irq->funcnum, irq->irq);
+	    irq->busnum, irq->devnum, irq->funcnum, irq->irq);
 
 	return 0;
 }
@@ -161,7 +161,7 @@ int drm_irq_install(struct drm_device *dev)
 	if (dev->irq == 0 || dev->dev_private == NULL)
 		return EINVAL;
 
-	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
+	DRM_DEBUG("irq=%d\n", dev->irq);
 
 	DRM_LOCK();
 	if (dev->irq_enabled) {
@@ -172,11 +172,11 @@ int drm_irq_install(struct drm_device *dev)
 
 	dev->context_flag = 0;
 
-				/* Before installing handler */
+	/* Before installing handler */
 	dev->driver->irq_preinstall(dev);
 	DRM_UNLOCK();
 
-				/* Install handler */
+	/* Install handler */
 #ifdef __FreeBSD__
 	dev->irqrid = 0;
 	dev->irqr = bus_alloc_resource_any(dev->device, SYS_RES_IRQ, 
@@ -209,7 +209,7 @@ int drm_irq_install(struct drm_device *dev)
 	}
 #endif
 
-				/* After installing handler */
+	/* After installing handler */
 	DRM_LOCK();
 	dev->driver->irq_postinstall(dev);
 	DRM_UNLOCK();
@@ -245,7 +245,7 @@ int drm_irq_uninstall(struct drm_device *dev)
 	dev->irqrid = 0;
 #endif
 
-	DRM_DEBUG( "%s: irq=%d\n", __FUNCTION__, dev->irq );
+	DRM_DEBUG("irq=%d\n", dev->irq);
 
 	dev->driver->irq_uninstall(dev);
 
@@ -267,7 +267,7 @@ int drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	struct drm_control *ctl = data;
 	int err;
 
-	switch ( ctl->func ) {
+	switch (ctl->func) {
 	case DRM_INST_HANDLER:
 		/* Handle drivers whose DRM used to require IRQ setup but the
 		 * no longer does.
@@ -367,7 +367,7 @@ int drm_modeset_ctl(struct drm_device *dev, void *data,
 	DRM_DEBUG("num_crtcs=%d\n", dev->num_crtcs);
 	/* If drm_vblank_init() hasn't been called yet, just no-op */
 	if (!dev->num_crtcs)
-	    goto out;
+		goto out;
 
 	crtc = modeset->crtc;
 	DRM_DEBUG("crtc=%d\n", crtc);
@@ -435,7 +435,7 @@ int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *file_pr
 
 	ret = drm_vblank_get(dev, crtc);
 	if (ret)
-	    return ret;
+		return ret;
 	seq = drm_vblank_count(dev, crtc);
 
 	switch (vblwait->request.type & _DRM_VBLANK_TYPES_MASK) {
@@ -512,7 +512,7 @@ void drm_vbl_send_signals(struct drm_device *dev, int crtc )
 	while (vbl_sig != NULL) {
 		drm_vbl_sig_t *next = TAILQ_NEXT(vbl_sig, link);
 
-		if ( ( vbl_seq - vbl_sig->sequence ) <= (1<<23) ) {
+		if ((vbl_seq - vbl_sig->sequence) <= (1 << 23)) {
 			p = pfind(vbl_sig->pid);
 			if (p != NULL)
 				psignal(p, vbl_sig->signo);

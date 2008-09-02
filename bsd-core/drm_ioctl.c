@@ -155,7 +155,7 @@ int drm_getmap(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	}
 
 	TAILQ_FOREACH(mapinlist, &dev->maplist, link) {
-		if (i==idx) {
+		if (i == idx) {
 			map->offset = mapinlist->offset;
 			map->size   = mapinlist->size;
 			map->type   = mapinlist->type;
@@ -186,8 +186,7 @@ int drm_getclient(struct drm_device *dev, void *data,
 	idx = client->idx;
 	DRM_LOCK();
 	TAILQ_FOREACH(pt, &dev->files, link) {
-		if (i==idx)
-		{
+		if (i == idx) {
 			client->auth  = pt->authenticated;
 			client->pid   = pt->pid;
 			client->uid   = pt->uid;

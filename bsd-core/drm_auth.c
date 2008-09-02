@@ -138,7 +138,7 @@ int drm_getmagic(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	static drm_magic_t sequence = 0;
 	struct drm_auth *auth = data;
 
-				/* Find unique magic */
+	/* Find unique magic */
 	if (file_priv->magic) {
 		auth->magic = file_priv->magic;
 	} else {
