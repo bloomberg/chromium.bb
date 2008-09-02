@@ -72,7 +72,7 @@ tdfx_attach(device_t nbdev)
 
 	bzero(dev, sizeof(struct drm_device));
 
-	dev->driver = malloc(sizeof(struct drm_driver_info), M_DRM, M_ZERO);
+	dev->driver = malloc(sizeof(struct drm_driver_info), M_DRM, M_NOWAIT | M_ZERO);
 	tdfx_configure(dev);
 
 	return drm_attach(nbdev, tdfx_pciidlist);
