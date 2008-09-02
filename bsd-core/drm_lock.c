@@ -49,70 +49,6 @@
 
 #include "drmP.h"
 
-int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
-{
-	unsigned int old, new;
-
-	do {
-		old = *lock;
-		if (old & _DRM_LOCK_HELD)
-			new = old | _DRM_LOCK_CONT;
-		else
-			new = context | _DRM_LOCK_HELD;
-	} while (!atomic_cmpset_int(lock, old, new));
-
-	if (_DRM_LOCKING_CONTEXT(old) == context) {
-		if (old & _DRM_LOCK_HELD) {
-			if (context != DRM_KERNEL_CONTEXT) {
-				DRM_ERROR("%d holds heavyweight lock\n",
-				    context);
-			}
-			return 0;
-		}
-	}
-	if (new == (context | _DRM_LOCK_HELD)) {
-		/* Have lock */
-		return 1;
-	}
-	return 0;
-}
-
-/* This takes a lock forcibly and hands it to context.	Should ONLY be used
-   inside *_unlock to give lock to kernel before calling *_dma_schedule. */
-int drm_lock_transfer(struct drm_device *dev,
-		       __volatile__ unsigned int *lock, unsigned int context)
-{
-	unsigned int old, new;
-
-	dev->lock.file_priv = NULL;
-	do {
-		old = *lock;
-		new = context | _DRM_LOCK_HELD;
-	} while (!atomic_cmpset_int(lock, old, new));
-
-	return 1;
-}
-
-int drm_lock_free(struct drm_device *dev,
-		   __volatile__ unsigned int *lock, unsigned int context)
-{
-	unsigned int old, new;
-
-	dev->lock.file_priv = NULL;
-	do {
-		old = *lock;
-		new = 0;
-	} while (!atomic_cmpset_int(lock, old, new));
-
-	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
-		DRM_ERROR("%d freed heavyweight lock held by %d\n",
-			  context, _DRM_LOCKING_CONTEXT(old));
-		return 1;
-	}
-	DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);
-	return 0;
-}
-
 int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	struct drm_lock *lock = data;
@@ -200,5 +136,69 @@ int drm_unlock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	}
 	DRM_UNLOCK();
 
+	return 0;
+}
+
+int drm_lock_take(__volatile__ unsigned int *lock, unsigned int context)
+{
+	unsigned int old, new;
+
+	do {
+		old = *lock;
+		if (old & _DRM_LOCK_HELD)
+			new = old | _DRM_LOCK_CONT;
+		else
+			new = context | _DRM_LOCK_HELD;
+	} while (!atomic_cmpset_int(lock, old, new));
+
+	if (_DRM_LOCKING_CONTEXT(old) == context) {
+		if (old & _DRM_LOCK_HELD) {
+			if (context != DRM_KERNEL_CONTEXT) {
+				DRM_ERROR("%d holds heavyweight lock\n",
+				    context);
+			}
+			return 0;
+		}
+	}
+	if (new == (context | _DRM_LOCK_HELD)) {
+		/* Have lock */
+		return 1;
+	}
+	return 0;
+}
+
+/* This takes a lock forcibly and hands it to context.	Should ONLY be used
+   inside *_unlock to give lock to kernel before calling *_dma_schedule. */
+int drm_lock_transfer(struct drm_device *dev,
+		       __volatile__ unsigned int *lock, unsigned int context)
+{
+	unsigned int old, new;
+
+	dev->lock.file_priv = NULL;
+	do {
+		old = *lock;
+		new = context | _DRM_LOCK_HELD;
+	} while (!atomic_cmpset_int(lock, old, new));
+
+	return 1;
+}
+
+int drm_lock_free(struct drm_device *dev,
+		   __volatile__ unsigned int *lock, unsigned int context)
+{
+	unsigned int old, new;
+
+	dev->lock.file_priv = NULL;
+	do {
+		old = *lock;
+		new = 0;
+	} while (!atomic_cmpset_int(lock, old, new));
+
+	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
+		DRM_ERROR("%d freed heavyweight lock held by %d\n",
+			  context, _DRM_LOCKING_CONTEXT(old));
+		return 1;
+	}
+	DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);
 	return 0;
 }
