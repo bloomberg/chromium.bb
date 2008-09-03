@@ -24,6 +24,7 @@ TESTS = auth \
 	setversion \
 	updatedraw \
 	gem_basic \
+	gem_flink \
 	gem_readwrite \
 	gem_mmap
 
