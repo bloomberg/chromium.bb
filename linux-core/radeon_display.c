@@ -194,7 +194,7 @@ static void radeon_crtc_init(struct drm_device *dev, int index)
 		radeon_crtc->lut_b[i] = i;
 	}
 
-	if (dev_priv->is_atom_bios && dev_priv->chip_family > CHIP_RS690)
+	if (dev_priv->is_atom_bios && radeon_is_avivo(dev_priv))
 		radeon_atombios_init_crtc(dev, radeon_crtc);
 	else
 		radeon_legacy_init_crtc(dev, radeon_crtc);

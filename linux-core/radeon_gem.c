@@ -483,7 +483,7 @@ static uint32_t radeon_get_accessible_vram(struct drm_device *dev)
 	    dev_priv->chip_family == CHIP_RV380 ||
 	    dev_priv->chip_family == CHIP_R420 ||
 	    dev_priv->chip_family == CHIP_RV410 ||
-	    dev_priv->chip_family >= CHIP_RS600) {
+	    radeon_is_avivo(dev_priv)) {
 		uint32_t temp = RADEON_READ(RADEON_HOST_PATH_CNTL);
 		temp |= RADEON_HDP_APER_CNTL;
 		RADEON_WRITE(RADEON_HOST_PATH_CNTL, temp);
@@ -515,7 +515,7 @@ void radeon_vram_setup(struct drm_device *dev)
 	uint32_t vram;
 	uint32_t accessible,  bar_size;
 
-	if ((dev_priv->chip_family <= CHIP_RV515) && (dev_priv->flags & RADEON_IS_IGP)) {
+	if (!radeon_is_avivo(dev_priv) && (dev_priv->flags & RADEON_IS_IGP)) {
 		uint32_t tom = RADEON_READ(RADEON_NB_TOM);
 
 		vram = (((tom >> 16) - (tom & 0xffff) + 1) << 6);
