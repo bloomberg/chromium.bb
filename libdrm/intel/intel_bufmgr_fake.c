@@ -37,8 +37,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "dri_bufmgr.h"
+#include <xf86drm.h>
 #include "intel_bufmgr.h"
+#include "intel_bufmgr_priv.h"
 #include "drm.h"
 #include "i915_drm.h"
 #include "mm.h"
@@ -105,7 +106,6 @@ struct block {
 
 typedef struct _bufmgr_fake {
    dri_bufmgr bufmgr;
-   struct intel_bufmgr intel_bufmgr;
 
    unsigned long low_offset;
    unsigned long size;
@@ -1216,12 +1216,12 @@ intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
    bufmgr_fake->bufmgr.bo_map = dri_fake_bo_map;
    bufmgr_fake->bufmgr.bo_unmap = dri_fake_bo_unmap;
    bufmgr_fake->bufmgr.bo_wait_rendering = dri_fake_bo_wait_rendering;
+   bufmgr_fake->bufmgr.bo_emit_reloc = dri_fake_emit_reloc;
    bufmgr_fake->bufmgr.destroy = dri_fake_destroy;
    bufmgr_fake->bufmgr.process_relocs = dri_fake_process_relocs;
    bufmgr_fake->bufmgr.post_submit = dri_fake_post_submit;
    bufmgr_fake->bufmgr.check_aperture_space = dri_fake_check_aperture_space;
    bufmgr_fake->bufmgr.debug = 0;
-   bufmgr_fake->intel_bufmgr.emit_reloc = dri_fake_emit_reloc;
 
    bufmgr_fake->fence_emit = fence_emit;
    bufmgr_fake->fence_wait = fence_wait;

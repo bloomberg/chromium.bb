@@ -31,64 +31,64 @@
  * Public definitions of Intel-specific bufmgr functions.
  */
 
-#ifndef INTEL_BUFMGR_GEM_H
-#define INTEL_BUFMGR_GEM_H
+#ifndef INTEL_BUFMGR_H
+#define INTEL_BUFMGR_H
 
-#include "dri_bufmgr.h"
+#include <stdint.h>
 
-/**
- * Intel-specific bufmgr bits that follow immediately after the
- * generic bufmgr structure.
- */
-struct intel_bufmgr {
+typedef struct _dri_bufmgr dri_bufmgr;
+typedef struct _dri_bo dri_bo;
+
+struct _dri_bo {
     /**
-     * Add relocation entry in reloc_buf, which will be updated with the
-     * target buffer's real offset on on command submission.
+     * Size in bytes of the buffer object.
      *
-     * Relocations remain in place for the lifetime of the buffer object.
-     *
-     * \param reloc_buf Buffer to write the relocation into.
-     * \param read_domains GEM read domains which the buffer will be read into
-     *	      by the command that this relocation is part of.
-     * \param write_domains GEM read domains which the buffer will be dirtied
-     *	      in by the command that this relocation is part of.
-     * \param delta Constant value to be added to the relocation target's
-     *	       offset.
-     * \param offset Byte offset within batch_buf of the relocated pointer.
-     * \param target Buffer whose offset should be written into the relocation
-     *	     entry.
+     * The size may be larger than the size originally requested for the
+     * allocation, such as being aligned to page size.
      */
-    int (*emit_reloc)(dri_bo *reloc_buf,
-		      uint32_t read_domains, uint32_t write_domain,
-		      uint32_t delta, uint32_t offset, dri_bo *target);
+    unsigned long size;
     /**
-     * Pin a buffer to the aperture and fix the offset until unpinned
-     *
-     * \param buf Buffer to pin
-     * \param alignment Required alignment for aperture, in bytes
+     * Card virtual address (offset from the beginning of the aperture) for the
+     * object.  Only valid while validated.
      */
-    int (*pin) (dri_bo *buf, uint32_t alignment);
+    unsigned long offset;
     /**
-     * Unpin a buffer from the aperture, allowing it to be removed
-     *
-     * \param buf Buffer to unpin
+     * Virtual address for accessing the buffer data.  Only valid while mapped.
      */
-    int (*unpin) (dri_bo *buf);
-    /**
-     * Ask that the buffer be placed in tiling mode
-     *
-     * \param buf Buffer to set tiling mode for
-     * \param tiling_mode desired, and returned tiling mode
-     */
-    int (*set_tiling) (dri_bo *bo, uint32_t *tiling_mode);
-    /**
-     * Create a visible name for a buffer which can be used by other apps
-     *
-     * \param buf Buffer to create a name for
-     * \param name Returned name
-     */
-    int (*flink) (dri_bo *buf, uint32_t *name);
+    void *virtual;
+
+    /** Buffer manager context associated with this buffer object */
+    dri_bufmgr *bufmgr;
 };
+
+dri_bo *dri_bo_alloc(dri_bufmgr *bufmgr, const char *name, unsigned long size,
+		     unsigned int alignment);
+void dri_bo_reference(dri_bo *bo);
+void dri_bo_unreference(dri_bo *bo);
+int dri_bo_map(dri_bo *buf, int write_enable);
+int dri_bo_unmap(dri_bo *buf);
+
+int dri_bo_subdata(dri_bo *bo, unsigned long offset,
+		   unsigned long size, const void *data);
+int dri_bo_get_subdata(dri_bo *bo, unsigned long offset,
+		       unsigned long size, void *data);
+void dri_bo_wait_rendering(dri_bo *bo);
+
+void dri_bufmgr_set_debug(dri_bufmgr *bufmgr, int enable_debug);
+void dri_bufmgr_destroy(dri_bufmgr *bufmgr);
+
+void *dri_process_relocs(dri_bo *batch_buf);
+void dri_post_process_relocs(dri_bo *batch_buf);
+void dri_post_submit(dri_bo *batch_buf);
+int dri_bufmgr_check_aperture_space(dri_bo **bo_array, int count);
+
+int dri_bo_emit_reloc(dri_bo *reloc_buf,
+		      uint32_t read_domains, uint32_t write_domain,
+		      uint32_t delta, uint32_t offset, dri_bo *target_buf);
+int dri_bo_pin(dri_bo *buf, uint32_t alignment);
+int dri_bo_unpin(dri_bo *buf);
+int dri_bo_set_tiling(dri_bo *buf, uint32_t *tiling_mode);
+int dri_bo_flink(dri_bo *buf, uint32_t *name);
 
 /* intel_bufmgr_gem.c */
 dri_bufmgr *intel_bufmgr_gem_init(int fd, int batch_size);
@@ -106,25 +106,13 @@ dri_bufmgr *intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
 dri_bo *intel_bo_fake_alloc_static(dri_bufmgr *bufmgr, const char *name,
 				   unsigned long offset, unsigned long size,
 				   void *virtual);
-
-void intel_bufmgr_fake_contended_lock_take(dri_bufmgr *bufmgr);
 void intel_bo_fake_disable_backing_store(dri_bo *bo,
 					 void (*invalidate_cb)(dri_bo *bo,
 							       void *ptr),
 					 void *ptr);
+
+void intel_bufmgr_fake_contended_lock_take(dri_bufmgr *bufmgr);
 void intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr);
 
-int intel_bo_emit_reloc(dri_bo *reloc_buf,
-			uint32_t read_domains, uint32_t write_domain,
-			uint32_t delta, uint32_t offset, dri_bo *target_buf);
-
-int intel_bo_pin(dri_bo *buf, uint32_t alignment);
-
-int intel_bo_unpin(dri_bo *buf);
-
-int intel_bo_set_tiling(dri_bo *buf, uint32_t *tiling_mode);
-
-int intel_bo_flink(dri_bo *buf, uint32_t *name);
-
-#endif /* INTEL_BUFMGR_GEM_H */
+#endif /* INTEL_BUFMGR_H */
 
