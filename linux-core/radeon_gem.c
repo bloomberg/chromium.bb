@@ -613,17 +613,18 @@ static int radeon_gart_init(struct drm_device *dev)
 	} else if (!(dev_priv->flags & RADEON_IS_AGP)) {
 		/* allocate PCI GART table */
 		dev_priv->gart_info.table_mask = DMA_BIT_MASK(32);
+		dev_priv->gart_info.gart_table_location = DRM_ATI_GART_MAIN;
+		if (dev_priv->flags & RADEON_IS_IGPGART)
+			dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_IGP;
+		else
+			dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
+
 		ret = drm_ati_alloc_pcigart_table(dev, &dev_priv->gart_info);
 		if (ret) {
 			DRM_ERROR("cannot allocate PCI GART page!\n");
 			return -EINVAL;
 		}
 
-		dev_priv->gart_info.gart_table_location = DRM_ATI_GART_MAIN;
-		if (dev_priv->flags & RADEON_IS_IGPGART)
-			dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_IGP;
-		else
-			dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
 		dev_priv->gart_info.addr = dev_priv->gart_info.table_handle->vaddr;
 		dev_priv->gart_info.bus_addr = dev_priv->gart_info.table_handle->busaddr;
 	}

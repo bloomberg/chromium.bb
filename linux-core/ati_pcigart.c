@@ -90,6 +90,12 @@ int drm_ati_alloc_pcigart_table(struct drm_device *dev,
 	if (gart_info->table_handle == NULL)
 		return -ENOMEM;
 
+#ifdef CONFIG_X86
+	/* IGPs only exist on x86 in any case */
+	if (gart_info->gart_reg_if == DRM_ATI_GART_IGP)
+		set_memory_uc(gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
+#endif
+
 	memset(gart_info->table_handle->vaddr, 0, gart_info->table_size);
 	return 0;
 }
@@ -98,6 +104,11 @@ EXPORT_SYMBOL(drm_ati_alloc_pcigart_table);
 static void drm_ati_free_pcigart_table(struct drm_device *dev,
 				       struct drm_ati_pcigart_info *gart_info)
 {
+#ifdef CONFIG_X86
+	/* IGPs only exist on x86 in any case */
+	if (gart_info->gart_reg_if == DRM_ATI_GART_IGP)
+		set_memory_wb(gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
+#endif
 	drm_pci_free(dev, gart_info->table_handle);
 	gart_info->table_handle = NULL;
 }
