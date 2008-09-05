@@ -119,8 +119,8 @@ void i915_ring_validate(struct drm_device *dev, const char *func, int line)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
 	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
-	u32	tail = I915_READ(LP_RING+RING_TAIL) & HEAD_ADDR;
-	u32	head = I915_READ(LP_RING+RING_HEAD) & HEAD_ADDR;
+	u32	tail = I915_READ(PRB0_TAIL) & HEAD_ADDR;
+	u32	head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
 
 	if (tail != ring->tail) {
 		DRM_ERROR("%s:%d head sw %x, hw %x. tail sw %x hw %x\n",
