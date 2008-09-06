@@ -72,16 +72,24 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 int i915_init_hardware_status(struct drm_device *dev)
 {
 	drm_i915_private_t *dev_priv = dev->dev_private;
-	/* Program Hardware Status Page */
-	dev_priv->status_page_dmah =
-		drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
+	drm_dma_handle_t *dmah;
 
-	if (!dev_priv->status_page_dmah) {
+	/* Program Hardware Status Page */
+#ifdef __FreeBSD__
+	DRM_UNLOCK();
+#endif
+	dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE, 0xffffffff);
+#ifdef __FreeBSD__
+	DRM_LOCK();
+#endif
+	if (!dmah) {
 		DRM_ERROR("Can not allocate hardware status page\n");
 		return -ENOMEM;
 	}
-	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+
+	dev_priv->status_page_dmah = dmah;
+	dev_priv->hw_status_page = dmah->vaddr;
+	dev_priv->dma_status_page = dmah->busaddr;
 
 	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
 
