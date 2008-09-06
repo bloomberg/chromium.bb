@@ -825,7 +825,7 @@ struct drm_radeon_gem_exec_buffer {
 
 struct drm_radeon_gem_pin {
 	uint32_t handle;
-	uint32_t pad;
+	uint32_t pin_domain;
 	uint64_t alignment;
 	uint64_t offset;
 };
