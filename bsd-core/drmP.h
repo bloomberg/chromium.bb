@@ -911,13 +911,11 @@ void	drm_ctxbitmap_free(struct drm_device *dev, int ctx_handle);
 int	drm_ctxbitmap_next(struct drm_device *dev);
 
 /* Locking IOCTL support (drm_lock.c) */
-int	drm_lock_take(__volatile__ unsigned int *lock,
-				    unsigned int context);
-int	drm_lock_transfer(struct drm_device *dev,
-			  __volatile__ unsigned int *lock,
+int	drm_lock_take(struct drm_lock_data *lock_data,
+		      unsigned int context);
+int	drm_lock_transfer(struct drm_lock_data *lock_data,
 			  unsigned int context);
-int	drm_lock_free(struct drm_device *dev,
-		      __volatile__ unsigned int *lock,
+int	drm_lock_free(struct drm_lock_data *lock_data,
 		      unsigned int context);
 
 /* Buffer management support (drm_bufs.c) */
