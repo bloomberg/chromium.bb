@@ -36,22 +36,6 @@
 
 #include "drmP.h"
 
-/*
- * Compute order.  Can be made faster.
- */
-int drm_order(unsigned long size)
-{
-	int order;
-	unsigned long tmp;
-
-	for (order = 0, tmp = size; tmp >>= 1; ++order);
-
-	if (size & ~(1 << order))
-		++order;
-
-	return order;
-}
-
 /* Allocation of PCI memory resources (framebuffer, registers, etc.) for
  * drm_get_resource_*.  Note that they are not RF_ACTIVE, so there's no virtual
  * address for accessing them.  Cleaned up at unload.
@@ -1130,4 +1114,20 @@ int drm_mapbufs(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	DRM_DEBUG("%d buffers, retcode = %d\n", request->count, retcode);
 
 	return retcode;
+}
+
+/*
+ * Compute order.  Can be made faster.
+ */
+int drm_order(unsigned long size)
+{
+	int order;
+	unsigned long tmp;
+
+	for (order = 0, tmp = size; tmp >>= 1; ++order);
+
+	if (size & ~(1 << order))
+		++order;
+
+	return order;
 }
