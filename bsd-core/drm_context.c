@@ -108,7 +108,7 @@ int drm_ctxbitmap_init(struct drm_device *dev)
 
 	DRM_LOCK();
 	dev->ctx_bitmap = malloc(PAGE_SIZE, M_DRM, M_NOWAIT | M_ZERO);
-	if ( dev->ctx_bitmap == NULL ) {
+	if (dev->ctx_bitmap == NULL) {
 		DRM_UNLOCK();
 		return ENOMEM;
 	}
@@ -214,9 +214,9 @@ int drm_context_switch_complete(struct drm_device *dev, int new)
 	/* If a context switch is ever initiated
 	   when the kernel holds the lock, release
 	   that lock here. */
-        clear_bit(0, &dev->context_flag);
+	clear_bit(0, &dev->context_flag);
 
-        return 0;
+	return 0;
 }
 
 int drm_resctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
@@ -229,7 +229,7 @@ int drm_resctx(struct drm_device *dev, void *data, struct drm_file *file_priv)
 		bzero(&ctx, sizeof(ctx));
 		for (i = 0; i < DRM_RESERVED_CONTEXTS; i++) {
 			ctx.handle = i;
-			if (DRM_COPY_TO_USER( &res->contexts[i],
+			if (DRM_COPY_TO_USER(&res->contexts[i],
 			    &ctx, sizeof(ctx)))
 				return EFAULT;
 		}

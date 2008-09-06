@@ -75,7 +75,8 @@ static int drm_add_magic(struct drm_device *dev, drm_file_t *priv,
 
 	hash = drm_hash_magic(magic);
 	entry = malloc(sizeof(*entry), M_DRM, M_ZERO | M_NOWAIT);
-	if (!entry) return ENOMEM;
+	if (!entry)
+		return ENOMEM;
 	entry->magic = magic;
 	entry->priv  = priv;
 	entry->next  = NULL;

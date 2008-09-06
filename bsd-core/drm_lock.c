@@ -196,7 +196,7 @@ int drm_lock_free(struct drm_device *dev,
 
 	if (_DRM_LOCK_IS_HELD(old) && _DRM_LOCKING_CONTEXT(old) != context) {
 		DRM_ERROR("%d freed heavyweight lock held by %d\n",
-			  context, _DRM_LOCKING_CONTEXT(old));
+		    context, _DRM_LOCKING_CONTEXT(old));
 		return 1;
 	}
 	DRM_WAKEUP_INT((void *)&dev->lock.lock_queue);

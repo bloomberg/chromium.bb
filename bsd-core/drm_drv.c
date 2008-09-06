@@ -408,7 +408,7 @@ static int drm_firstopen(struct drm_device *dev)
 			return i;
 	}
 
-	for ( i = 0 ; i < DRM_HASH_SIZE ; i++ ) {
+	for (i = 0; i < DRM_HASH_SIZE; i++) {
 		dev->magiclist[i].head = NULL;
 		dev->magiclist[i].tail = NULL;
 	}
@@ -474,7 +474,7 @@ static int drm_lastclose(struct drm_device *dev)
 		 */
 		for (entry = dev->agp->memory; entry; entry = nexte) {
 			nexte = entry->next;
-			if ( entry->bound )
+			if (entry->bound)
 				drm_agp_unbind_memory(entry->handle);
 			drm_agp_free_memory(entry->handle);
 			free(entry, M_DRM);
@@ -543,7 +543,7 @@ static int drm_load(struct drm_device *dev)
 	dev->types[5]  = _DRM_STAT_UNLOCKS;
 
 	for (i = 0; i < DRM_ARRAY_SIZE(dev->counts); i++)
-		atomic_set( &dev->counts[i], 0 );
+		atomic_set(&dev->counts[i], 0);
 
 	if (dev->driver->load != NULL) {
 		DRM_LOCK();
@@ -718,7 +718,7 @@ int drm_open(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	retcode = drm_open_helper(kdev, flags, fmt, p, dev);
 
 	if (!retcode) {
-		atomic_inc( &dev->counts[_DRM_STAT_OPENS] );
+		atomic_inc(&dev->counts[_DRM_STAT_OPENS]);
 		DRM_LOCK();
 #ifdef __FreeBSD__
 		device_busy(dev->device);
@@ -794,7 +794,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 			    DRM_KERNEL_CONTEXT)) {
 				dev->lock.file_priv = file_priv;
 				dev->lock.lock_time = jiffies;
-                                atomic_inc( &dev->counts[_DRM_STAT_LOCKS] );
+				atomic_inc(&dev->counts[_DRM_STAT_LOCKS]);
 				break;	/* Got lock */
 			}
 				/* Contention */
@@ -837,7 +837,7 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	 */
 
 done:
-	atomic_inc( &dev->counts[_DRM_STAT_CLOSES] );
+	atomic_inc(&dev->counts[_DRM_STAT_CLOSES]);
 #ifdef __FreeBSD__
 	device_unbusy(dev->device);
 #endif
@@ -871,7 +871,7 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 		return EINVAL;
 	}
 
-	atomic_inc( &dev->counts[_DRM_STAT_IOCTLS] );
+	atomic_inc(&dev->counts[_DRM_STAT_IOCTLS]);
 	++file_priv->ioctl_count;
 
 #ifdef __FreeBSD__

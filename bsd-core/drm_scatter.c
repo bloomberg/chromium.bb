@@ -123,7 +123,7 @@ int drm_sg_free(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	if (!entry || entry->handle != request->handle)
 		return EINVAL;
 
-	DRM_DEBUG("sg free virtual  = 0x%lx\n", entry->handle);
+	DRM_DEBUG("sg free virtual = 0x%lx\n", entry->handle);
 
 	drm_sg_cleanup(entry);
 

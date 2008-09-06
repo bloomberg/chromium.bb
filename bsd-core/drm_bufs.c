@@ -611,14 +611,14 @@ static int drm_do_addbufs_pci(struct drm_device *dev, struct drm_buf_desc *reque
 		entry->seglist[entry->seg_count++] = dmah;
 		for (i = 0; i < (1 << page_order); i++) {
 			DRM_DEBUG("page %d @ %p\n",
-				  dma->page_count + page_count,
-				  (char *)dmah->vaddr + PAGE_SIZE * i);
+			    dma->page_count + page_count,
+			    (char *)dmah->vaddr + PAGE_SIZE * i);
 			temp_pagelist[dma->page_count + page_count++] = 
 			    (long)dmah->vaddr + PAGE_SIZE * i;
 		}
 		for (offset = 0;
-		     offset + size <= total && entry->buf_count < count;
-		     offset += alignment, ++entry->buf_count) {
+		    offset + size <= total && entry->buf_count < count;
+		    offset += alignment, ++entry->buf_count) {
 			buf	     = &entry->buflist[entry->buf_count];
 			buf->idx     = dma->buf_count + entry->buf_count;
 			buf->total   = alignment;

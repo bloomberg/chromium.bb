@@ -103,7 +103,7 @@ static void drm_vblank_cleanup(struct drm_device *dev)
 
 	/* Bail if the driver didn't call drm_vblank_init() */
 	if (dev->num_crtcs == 0)
-	    return;
+		return;
 
 	DRM_SPINLOCK_IRQSAVE(&dev->vbl_lock, irqflags);
 	callout_stop(&dev->vblank_disable_timer);
