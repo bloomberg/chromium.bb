@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <errno.h>
 #include <xf86drm.h>
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
@@ -135,17 +136,10 @@ typedef struct _bufmgr_fake {
    unsigned need_fence:1;
    int thrashing;
 
-   /**
-    * Driver callback to emit a fence, returning the cookie.
-    *
-    * Currently, this also requires that a write flush be emitted before
-    * emitting the fence, but this should change.
-    */
-   unsigned int (*fence_emit)(void *private);
-   /** Driver callback to wait for a fence cookie to have passed. */
-   int (*fence_wait)(void *private, unsigned int fence_cookie);
-   /** Driver-supplied argument to driver callbacks */
-   void *driver_priv;
+   /* Pointer to kernel-updated sarea data for the last completed user irq */
+   volatile unsigned int *last_dispatch;
+
+   int fd;
 
    int debug;
 
@@ -214,18 +208,64 @@ static int FENCE_LTE( unsigned a, unsigned b )
 static unsigned int
 _fence_emit_internal(dri_bufmgr_fake *bufmgr_fake)
 {
-   bufmgr_fake->last_fence = bufmgr_fake->fence_emit(bufmgr_fake->driver_priv);
+   struct drm_i915_irq_emit ie;
+   int ret, seq = 1;
+
+   ie.irq_seq = &seq;
+   ret = drmCommandWriteRead(bufmgr_fake->fd, DRM_I915_IRQ_EMIT,
+			     &ie, sizeof(ie));
+   if (ret) {
+      drmMsg("%s: drm_i915_irq_emit: %d\n", __FUNCTION__, ret);
+      abort();
+   }
+
+   /* The kernel implementation of IRQ_WAIT is broken for wraparound, and has
+    * been since it was first introduced.  It only checks for
+    * completed_seq >= seq, and thus returns success early for wrapped irq
+    * values if the CPU wins a race.
+    *
+    * We have to do it up front at emit when we discover wrap, so that another
+    * client can't race (after we drop the lock) to emit and wait and fail.
+    */
+   if (seq == 0 || seq == 1) {
+      drmCommandWriteRead(bufmgr_fake->fd, DRM_I915_FLUSH, &ie, sizeof(ie));
+   }
+
+   DBG("emit 0x%08x\n", seq);
+   bufmgr_fake->last_fence = seq;
    return bufmgr_fake->last_fence;
 }
 
 static void
 _fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, unsigned int cookie)
 {
+   struct drm_i915_irq_wait iw;
+   unsigned int last_dispatch;
    int ret;
 
-   ret = bufmgr_fake->fence_wait(bufmgr_fake->driver_priv, cookie);
+   DBG("wait 0x%08x\n", iw.irq_seq);
+
+   /* The kernel implementation of IRQ_WAIT is broken for wraparound, and has
+    * been since it was first introduced.  It only checks for
+    * completed_seq >= seq, and thus never returns for pre-wrapped irq values
+    * if the GPU wins the race.
+    *
+    * So, check if it looks like a pre-wrapped value and just return success.
+    */
+   if (*bufmgr_fake->last_dispatch - cookie > 0x4000000)
+      return;
+
+   iw.irq_seq = cookie;
+
+   do {
+      last_dispatch = *bufmgr_fake->last_dispatch;
+      ret = drmCommandWrite(bufmgr_fake->fd, DRM_I915_IRQ_WAIT,
+			    &iw, sizeof(iw));
+   } while (ret == -EAGAIN || ret == -EINTR ||
+	    (ret == -EBUSY && last_dispatch != *bufmgr_fake->last_dispatch));
+
    if (ret != 0) {
-      drmMsg("%s:%d: Error %d waiting for fence.\n", __FILE__, __LINE__);
+      drmMsg("%s:%d: Error %d waiting for fence.\n", __FILE__, __LINE__, ret);
       abort();
    }
    clear_fenced(bufmgr_fake, cookie);
@@ -540,7 +580,7 @@ dri_bufmgr_fake_wait_idle(dri_bufmgr_fake *bufmgr_fake)
 {
    unsigned int cookie;
 
-   cookie = bufmgr_fake->fence_emit(bufmgr_fake->driver_priv);
+   cookie = _fence_emit_internal(bufmgr_fake);
    _fence_wait_internal(bufmgr_fake, cookie);
 }
 
@@ -1187,13 +1227,19 @@ intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr)
       free_block(bufmgr_fake, block);
    }
 }
+void intel_bufmgr_fake_set_last_dispatch(dri_bufmgr *bufmgr,
+					 volatile unsigned int *last_dispatch)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
+
+   bufmgr_fake->last_dispatch = last_dispatch;
+}
 
 dri_bufmgr *
-intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
+intel_bufmgr_fake_init(int fd,
+		       unsigned long low_offset, void *low_virtual,
 		       unsigned long size,
-		       unsigned int (*fence_emit)(void *private),
-		       int (*fence_wait)(void *private, unsigned int cookie),
-		       void *driver_priv)
+		       volatile unsigned int *last_dispatch)
 {
    dri_bufmgr_fake *bufmgr_fake;
 
@@ -1223,9 +1269,8 @@ intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
    bufmgr_fake->bufmgr.check_aperture_space = dri_fake_check_aperture_space;
    bufmgr_fake->bufmgr.debug = 0;
 
-   bufmgr_fake->fence_emit = fence_emit;
-   bufmgr_fake->fence_wait = fence_wait;
-   bufmgr_fake->driver_priv = driver_priv;
+   bufmgr_fake->fd = fd;
+   bufmgr_fake->last_dispatch = last_dispatch;
 
    return &bufmgr_fake->bufmgr;
 }

@@ -172,29 +172,5 @@ struct _dri_bufmgr {
     int debug; /**< Enables verbose debugging printouts */
 };
 
-/* intel_bufmgr_gem.c */
-dri_bufmgr *intel_bufmgr_gem_init(int fd, int batch_size);
-dri_bo *intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
-				      unsigned int handle);
-void intel_bufmgr_gem_enable_reuse(dri_bufmgr *bufmgr);
-
-/* intel_bufmgr_fake.c */
-dri_bufmgr *intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
-				   unsigned long size,
-				   unsigned int (*fence_emit)(void *private),
-				   int (*fence_wait)(void *private,
-						     unsigned int cookie),
-				   void *driver_priv);
-dri_bo *intel_bo_fake_alloc_static(dri_bufmgr *bufmgr, const char *name,
-				   unsigned long offset, unsigned long size,
-				   void *virtual);
-
-void intel_bufmgr_fake_contended_lock_take(dri_bufmgr *bufmgr);
-void intel_bo_fake_disable_backing_store(dri_bo *bo,
-					 void (*invalidate_cb)(dri_bo *bo,
-							       void *ptr),
-					 void *ptr);
-void intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr);
-
 #endif /* INTEL_BUFMGR_PRIV_H */
 
