@@ -70,6 +70,7 @@ typedef struct drm_file drm_file_t;
 #include <machine/pmap.h>
 #include <machine/bus.h>
 #include <machine/resource.h>
+#include <machine/specialreg.h>
 #include <machine/sysarch.h>
 #include <sys/endian.h>
 #include <sys/mman.h>
@@ -897,6 +898,7 @@ void	*drm_calloc(size_t nmemb, size_t size, int area);
 void	*drm_realloc(void *oldpt, size_t oldsize, size_t size,
 				   int area);
 void	drm_free(void *pt, size_t size, int area);
+void	*drm_ioremap_wc(struct drm_device *dev, drm_local_map_t *map);
 void	*drm_ioremap(struct drm_device *dev, drm_local_map_t *map);
 void	drm_ioremapfree(drm_local_map_t *map);
 int	drm_mtrr_add(unsigned long offset, size_t size, int flags);
@@ -1110,9 +1112,12 @@ drm_dma_handle_t *drm_pci_alloc(struct drm_device *dev, size_t size,
 				size_t align, dma_addr_t maxaddr);
 void	drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah);
 
-#define drm_core_ioremap_wc drm_core_ioremap
-
 /* Inline replacements for DRM_IOREMAP macros */
+static __inline__ void
+drm_core_ioremap_wc(struct drm_local_map *map, struct drm_device *dev)
+{
+	map->handle = drm_ioremap_wc(dev, map);
+}
 static __inline__ void
 drm_core_ioremap(struct drm_local_map *map, struct drm_device *dev)
 {
