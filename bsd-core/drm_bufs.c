@@ -562,8 +562,9 @@ static int drm_do_addbufs_pci(struct drm_device *dev, struct drm_buf_desc *reque
 
 	if (entry->buflist == NULL || entry->seglist == NULL || 
 	    temp_pagelist == NULL) {
-		free(entry->buflist, M_DRM);
+		free(temp_pagelist, M_DRM);
 		free(entry->seglist, M_DRM);
+		free(entry->buflist, M_DRM);
 		return ENOMEM;
 	}
 
