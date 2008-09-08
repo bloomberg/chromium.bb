@@ -82,10 +82,13 @@ static int
 tdfx_detach(device_t nbdev)
 {
 	struct drm_device *dev = device_get_softc(nbdev);
+	int ret;
+
+	ret = drm_detach(nbdev);
 
 	free(dev->driver, M_DRM);
 
-	return drm_detach(nbdev);
+	return ret;
 }
 
 static device_method_t tdfx_methods[] = {
