@@ -87,8 +87,6 @@ typedef struct _dri_bufmgr_gem {
 
     /** Array of lists of cached gem objects of power-of-two sizes */
     struct dri_gem_bo_bucket cache_bucket[INTEL_GEM_BO_BUCKETS];
-
-    struct drm_i915_gem_execbuffer exec_arg;
 } dri_bufmgr_gem;
 
 struct _dri_bo_gem {
@@ -706,27 +704,6 @@ dri_gem_bo_process_reloc(dri_bo *bo)
     }
 }
 
-static void *
-dri_gem_process_reloc(dri_bo *batch_buf)
-{
-    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *) batch_buf->bufmgr;
-
-    /* Update indices and set up the validate list. */
-    dri_gem_bo_process_reloc(batch_buf);
-
-    /* Add the batch buffer to the validation list.  There are no relocations
-     * pointing to it.
-     */
-    intel_add_validate_buffer(batch_buf);
-
-    bufmgr_gem->exec_arg.buffers_ptr = (uintptr_t)bufmgr_gem->exec_objects;
-    bufmgr_gem->exec_arg.buffer_count = bufmgr_gem->exec_count;
-    bufmgr_gem->exec_arg.batch_start_offset = 0;
-    bufmgr_gem->exec_arg.batch_len = 0;	/* written in intel_exec_ioctl */
-
-    return &bufmgr_gem->exec_arg;
-}
-
 static void
 intel_update_buffer_offsets (dri_bufmgr_gem *bufmgr_gem)
 {
@@ -746,11 +723,35 @@ intel_update_buffer_offsets (dri_bufmgr_gem *bufmgr_gem)
     }
 }
 
-static void
-dri_gem_post_submit(dri_bo *batch_buf)
+static int
+dri_gem_bo_exec(dri_bo *bo, int used,
+		drm_clip_rect_t *cliprects, int num_cliprects,
+		int DR4)
 {
-    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)batch_buf->bufmgr;
-    int i;
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
+    struct drm_i915_gem_execbuffer execbuf;
+    int ret, i;
+
+    /* Update indices and set up the validate list. */
+    dri_gem_bo_process_reloc(bo);
+
+    /* Add the batch buffer to the validation list.  There are no relocations
+     * pointing to it.
+     */
+    intel_add_validate_buffer(bo);
+
+    execbuf.buffers_ptr = (uintptr_t)bufmgr_gem->exec_objects;
+    execbuf.buffer_count = bufmgr_gem->exec_count;
+    execbuf.batch_start_offset = 0;
+    execbuf.batch_len = used;
+    execbuf.cliprects_ptr = (uintptr_t)cliprects;
+    execbuf.num_cliprects = num_cliprects;
+    execbuf.DR1 = 0;
+    execbuf.DR4 = DR4;
+
+    do {
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_EXECBUFFER, &execbuf);
+    } while (ret == -EAGAIN);
 
     intel_update_buffer_offsets (bufmgr_gem);
 
@@ -770,6 +771,8 @@ dri_gem_post_submit(dri_bo *batch_buf)
 	bufmgr_gem->exec_bos[i] = NULL;
     }
     bufmgr_gem->exec_count = 0;
+
+    return 0;
 }
 
 static int
@@ -913,9 +916,8 @@ intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.bo_unpin = dri_gem_bo_unpin;
     bufmgr_gem->bufmgr.bo_set_tiling = dri_gem_bo_set_tiling;
     bufmgr_gem->bufmgr.bo_flink = dri_gem_bo_flink;
+    bufmgr_gem->bufmgr.bo_exec = dri_gem_bo_exec;
     bufmgr_gem->bufmgr.destroy = dri_bufmgr_gem_destroy;
-    bufmgr_gem->bufmgr.process_relocs = dri_gem_process_reloc;
-    bufmgr_gem->bufmgr.post_submit = dri_gem_post_submit;
     bufmgr_gem->bufmgr.debug = 0;
     bufmgr_gem->bufmgr.check_aperture_space = dri_gem_check_aperture_space;
     /* Initialize the linked lists for BO reuse cache. */

@@ -103,23 +103,6 @@ struct _dri_bufmgr {
     */
    void (*destroy)(dri_bufmgr *bufmgr);
 
-   /**
-    * Processes the relocations, either in userland or by converting the list
-    * for use in batchbuffer submission.
-    *
-    * Kernel-based implementations will return a pointer to the arguments
-    * to be handed with batchbuffer submission to the kernel.  The userland
-    * implementation performs the buffer validation and emits relocations
-    * into them the appopriate order.
-    *
-    * \param batch_buf buffer at the root of the tree of relocations
-    * \return argument to be completed and passed to the execbuffers ioctl
-    *   (if any).
-    */
-   void *(*process_relocs)(dri_bo *batch_buf);
-
-   void (*post_submit)(dri_bo *batch_buf);
-
     /**
      * Add relocation entry in reloc_buf, which will be updated with the
      * target buffer's real offset on on command submission.
@@ -140,6 +123,12 @@ struct _dri_bufmgr {
     int (*bo_emit_reloc)(dri_bo *reloc_buf,
 			 uint32_t read_domains, uint32_t write_domain,
 			 uint32_t delta, uint32_t offset, dri_bo *target);
+
+    /** Executes the command buffer pointed to by bo. */
+    int (*bo_exec)(dri_bo *bo, int used,
+		   drm_clip_rect_t *cliprects, int num_cliprects,
+		   int DR4);
+
     /**
      * Pin a buffer to the aperture and fix the offset until unpinned
      *

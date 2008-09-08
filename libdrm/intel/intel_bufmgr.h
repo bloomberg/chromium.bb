@@ -76,10 +76,9 @@ void dri_bo_wait_rendering(dri_bo *bo);
 
 void dri_bufmgr_set_debug(dri_bufmgr *bufmgr, int enable_debug);
 void dri_bufmgr_destroy(dri_bufmgr *bufmgr);
-
-void *dri_process_relocs(dri_bo *batch_buf);
-void dri_post_process_relocs(dri_bo *batch_buf);
-void dri_post_submit(dri_bo *batch_buf);
+int dri_bo_exec(dri_bo *bo, int used,
+		drm_clip_rect_t *cliprects, int num_cliprects,
+		int DR4);
 int dri_bufmgr_check_aperture_space(dri_bo **bo_array, int count);
 
 int dri_bo_emit_reloc(dri_bo *reloc_buf,
@@ -103,6 +102,16 @@ dri_bufmgr *intel_bufmgr_fake_init(int fd,
 				   volatile unsigned int *last_dispatch);
 void intel_bufmgr_fake_set_last_dispatch(dri_bufmgr *bufmgr,
 					 volatile unsigned int *last_dispatch);
+void intel_bufmgr_fake_set_exec_callback(dri_bufmgr *bufmgr,
+					 int (*exec)(dri_bo *bo,
+						     unsigned int used,
+						     void *priv),
+					 void *priv);
+void intel_bufmgr_fake_set_fence_callback(dri_bufmgr *bufmgr,
+					  unsigned int (*emit)(void *priv),
+					  void (*wait)(unsigned int fence,
+						       void *priv),
+					  void *priv);
 dri_bo *intel_bo_fake_alloc_static(dri_bufmgr *bufmgr, const char *name,
 				   unsigned long offset, unsigned long size,
 				   void *virtual);

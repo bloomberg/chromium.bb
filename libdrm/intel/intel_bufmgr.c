@@ -123,14 +123,12 @@ dri_bufmgr_destroy(dri_bufmgr *bufmgr)
    bufmgr->destroy(bufmgr);
 }
 
-void *dri_process_relocs(dri_bo *batch_buf)
+int
+dri_bo_exec(dri_bo *bo, int used,
+	    drm_clip_rect_t *cliprects, int num_cliprects,
+	    int DR4)
 {
-   return batch_buf->bufmgr->process_relocs(batch_buf);
-}
-
-void dri_post_submit(dri_bo *batch_buf)
-{
-   batch_buf->bufmgr->post_submit(batch_buf);
+   return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4);
 }
 
 void

@@ -136,6 +136,31 @@ typedef struct _bufmgr_fake {
    unsigned need_fence:1;
    int thrashing;
 
+   /**
+    * Driver callback to emit a fence, returning the cookie.
+    *
+    * This allows the driver to hook in a replacement for the DRM usage in
+    * bufmgr_fake.
+    *
+    * Currently, this also requires that a write flush be emitted before
+    * emitting the fence, but this should change.
+    */
+   unsigned int (*fence_emit)(void *private);
+   /** Driver callback to wait for a fence cookie to have passed. */
+   void (*fence_wait)(unsigned int fence, void *private);
+   void *fence_priv;
+
+   /**
+    * Driver callback to execute a buffer.
+    *
+    * This allows the driver to hook in a replacement for the DRM usage in
+    * bufmgr_fake.
+    */
+   int (*exec)(dri_bo *bo, unsigned int used, void *priv);
+   void *exec_priv;
+
+   /** Driver-supplied argument to driver callbacks */
+   void *driver_priv;
    /* Pointer to kernel-updated sarea data for the last completed user irq */
    volatile unsigned int *last_dispatch;
 
@@ -205,11 +230,27 @@ static int FENCE_LTE( unsigned a, unsigned b )
    return 0;
 }
 
+void intel_bufmgr_fake_set_fence_callback(dri_bufmgr *bufmgr,
+					  unsigned int (*emit)(void *priv),
+					  void (*wait)(unsigned int fence,
+						       void *priv),
+					  void *priv)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
+
+   bufmgr_fake->fence_emit = emit;
+   bufmgr_fake->fence_wait = wait;
+   bufmgr_fake->fence_priv = priv;
+}
+
 static unsigned int
 _fence_emit_internal(dri_bufmgr_fake *bufmgr_fake)
 {
    struct drm_i915_irq_emit ie;
    int ret, seq = 1;
+
+   if (bufmgr_fake->fence_emit != NULL)
+      return bufmgr_fake->fence_emit(bufmgr_fake->fence_priv);
 
    ie.irq_seq = &seq;
    ret = drmCommandWriteRead(bufmgr_fake->fd, DRM_I915_IRQ_EMIT,
@@ -242,6 +283,11 @@ _fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, unsigned int cookie)
    struct drm_i915_irq_wait iw;
    unsigned int last_dispatch;
    int ret;
+
+   if (bufmgr_fake->fence_wait != NULL) {
+      bufmgr_fake->fence_wait(cookie, bufmgr_fake->fence_priv);
+      return;
+   }
 
    DBG("wait 0x%08x\n", iw.irq_seq);
 
@@ -1092,38 +1138,6 @@ dri_fake_reloc_and_validate_buffer(dri_bo *bo)
    return dri_fake_bo_validate(bo);
 }
 
-static void *
-dri_fake_process_relocs(dri_bo *batch_buf)
-{
-   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)batch_buf->bufmgr;
-   dri_bo_fake *batch_fake = (dri_bo_fake *)batch_buf;
-   int ret;
-   int retry_count = 0;
-
-   bufmgr_fake->performed_rendering = 0;
-
-   dri_fake_calculate_domains(batch_buf);
-
-   batch_fake->read_domains = I915_GEM_DOMAIN_COMMAND;
-
-   /* we've ran out of RAM so blow the whole lot away and retry */
- restart:
-   ret = dri_fake_reloc_and_validate_buffer(batch_buf);
-   if (bufmgr_fake->fail == 1) {
-      if (retry_count == 0) {
-         retry_count++;
-         dri_fake_kick_all(bufmgr_fake);
-         bufmgr_fake->fail = 0;
-         goto restart;
-      } else /* dump out the memory here */
-         mmDumpMemInfo(bufmgr_fake->heap);
-   }
-
-   assert(ret == 0);
-
-   return NULL;
-}
-
 static void
 dri_bo_fake_post_submit(dri_bo *bo)
 {
@@ -1150,12 +1164,74 @@ dri_bo_fake_post_submit(dri_bo *bo)
 }
 
 
-static void
-dri_fake_post_submit(dri_bo *batch_buf)
+void intel_bufmgr_fake_set_exec_callback(dri_bufmgr *bufmgr,
+					 int (*exec)(dri_bo *bo,
+						     unsigned int used,
+						     void *priv),
+					 void *priv)
 {
-   dri_fake_fence_validated(batch_buf->bufmgr);
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
 
-   dri_bo_fake_post_submit(batch_buf);
+   bufmgr_fake->exec = exec;
+   bufmgr_fake->exec_priv = exec;
+}
+
+static int
+dri_fake_bo_exec(dri_bo *bo, int used,
+		 drm_clip_rect_t *cliprects, int num_cliprects,
+		 int DR4)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
+   dri_bo_fake *batch_fake = (dri_bo_fake *)bo;
+   struct drm_i915_batchbuffer batch;
+   int ret;
+   int retry_count = 0;
+
+   bufmgr_fake->performed_rendering = 0;
+
+   dri_fake_calculate_domains(bo);
+
+   batch_fake->read_domains = I915_GEM_DOMAIN_COMMAND;
+
+   /* we've ran out of RAM so blow the whole lot away and retry */
+ restart:
+   ret = dri_fake_reloc_and_validate_buffer(bo);
+   if (bufmgr_fake->fail == 1) {
+      if (retry_count == 0) {
+         retry_count++;
+         dri_fake_kick_all(bufmgr_fake);
+         bufmgr_fake->fail = 0;
+         goto restart;
+      } else /* dump out the memory here */
+         mmDumpMemInfo(bufmgr_fake->heap);
+   }
+
+   assert(ret == 0);
+
+   if (bufmgr_fake->exec != NULL) {
+      int ret = bufmgr_fake->exec(bo, used, bufmgr_fake->exec_priv);
+      if (ret != 0)
+	 return ret;
+   } else {
+      batch.start = bo->offset;
+      batch.used = used;
+      batch.cliprects = cliprects;
+      batch.num_cliprects = num_cliprects;
+      batch.DR1 = 0;
+      batch.DR4 = DR4;
+
+      if (drmCommandWrite(bufmgr_fake->fd, DRM_I915_BATCHBUFFER, &batch,
+			  sizeof(batch))) {
+	 drmMsg("DRM_I915_BATCHBUFFER: %d\n", -errno);
+	 return -errno;
+      }
+   }
+
+   dri_fake_fence_validated(bo->bufmgr);
+
+   dri_bo_fake_post_submit(bo);
+
+   return 0;
 }
 
 /**
@@ -1264,8 +1340,7 @@ intel_bufmgr_fake_init(int fd,
    bufmgr_fake->bufmgr.bo_wait_rendering = dri_fake_bo_wait_rendering;
    bufmgr_fake->bufmgr.bo_emit_reloc = dri_fake_emit_reloc;
    bufmgr_fake->bufmgr.destroy = dri_fake_destroy;
-   bufmgr_fake->bufmgr.process_relocs = dri_fake_process_relocs;
-   bufmgr_fake->bufmgr.post_submit = dri_fake_post_submit;
+   bufmgr_fake->bufmgr.bo_exec = dri_fake_bo_exec;
    bufmgr_fake->bufmgr.check_aperture_space = dri_fake_check_aperture_space;
    bufmgr_fake->bufmgr.debug = 0;
 
