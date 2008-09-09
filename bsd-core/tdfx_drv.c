@@ -58,7 +58,6 @@ static void tdfx_configure(struct drm_device *dev)
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 }
 
-#ifdef __FreeBSD__
 static int
 tdfx_probe(device_t dev)
 {
@@ -113,12 +112,3 @@ DRIVER_MODULE(tdfx, vgapci, tdfx_driver, drm_devclass, 0, 0);
 DRIVER_MODULE(tdfx, pci, tdfx_driver, drm_devclass, 0, 0);
 #endif
 MODULE_DEPEND(tdfx, drm, 1, 1, 1);
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-#ifdef _LKM
-CFDRIVER_DECL(tdfx, DV_TTY, NULL);
-#else
-CFATTACH_DECL(tdfx, sizeof(struct drm_device), drm_probe, drm_attach,
-    drm_detach, drm_activate);
-#endif
-#endif

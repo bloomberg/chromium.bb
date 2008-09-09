@@ -62,7 +62,6 @@ static void savage_configure(struct drm_device *dev)
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 }
 
-#ifdef __FreeBSD__
 static int
 savage_probe(device_t dev)
 {
@@ -117,7 +116,3 @@ DRIVER_MODULE(savage, vgapci, savage_driver, drm_devclass, 0, 0);
 DRIVER_MODULE(savage, pci, savage_driver, drm_devclass, 0, 0);
 #endif
 MODULE_DEPEND(savage, drm, 1, 1, 1);
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-CFDRIVER_DECL(savage, DV_TTY, NULL);
-#endif

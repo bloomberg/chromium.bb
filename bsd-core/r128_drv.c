@@ -71,7 +71,6 @@ static void r128_configure(struct drm_device *dev)
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 }
 
-#ifdef __FreeBSD__
 static int
 r128_probe(device_t dev)
 {
@@ -126,12 +125,3 @@ DRIVER_MODULE(r128, vgapci, r128_driver, drm_devclass, 0, 0);
 DRIVER_MODULE(r128, pci, r128_driver, drm_devclass, 0, 0);
 #endif
 MODULE_DEPEND(r128, drm, 1, 1, 1);
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-#ifdef _LKM
-CFDRIVER_DECL(r128, DV_TTY, NULL);
-#else
-CFATTACH_DECL(r128, sizeof(struct drm_device), drm_probe, drm_attach,
-    drm_detach, drm_activate);
-#endif
-#endif

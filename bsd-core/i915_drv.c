@@ -98,7 +98,6 @@ static void i915_configure(struct drm_device *dev)
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 }
 
-#ifdef __FreeBSD__
 static int
 i915_probe(device_t dev)
 {
@@ -159,7 +158,3 @@ DRIVER_MODULE(i915, vgapci, i915_driver, drm_devclass, 0, 0);
 DRIVER_MODULE(i915, agp, i915_driver, drm_devclass, 0, 0);
 #endif
 MODULE_DEPEND(i915, drm, 1, 1, 1);
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-CFDRIVER_DECL(i915, DV_TTY, NULL);
-#endif

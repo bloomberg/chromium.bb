@@ -54,7 +54,6 @@ int drm_irq_by_busid(struct drm_device *dev, void *data,
 	return 0;
 }
 
-#if defined(__FreeBSD__) && __FreeBSD_version >= 500000
 static irqreturn_t
 drm_irq_handler_wrap(DRM_IRQ_ARGS)
 {
@@ -64,7 +63,6 @@ drm_irq_handler_wrap(DRM_IRQ_ARGS)
 	dev->driver->irq_handler(arg);
 	DRM_SPINUNLOCK(&dev->irq_lock);
 }
-#endif
 
 static void vblank_disable_fn(void *arg)
 {
@@ -154,9 +152,6 @@ err:
 int drm_irq_install(struct drm_device *dev)
 {
 	int retcode;
-#ifdef __NetBSD__
-	pci_intr_handle_t ih;
-#endif
 
 	if (dev->irq == 0 || dev->dev_private == NULL)
 		return EINVAL;
@@ -177,7 +172,6 @@ int drm_irq_install(struct drm_device *dev)
 	DRM_UNLOCK();
 
 	/* Install handler */
-#ifdef __FreeBSD__
 	dev->irqrid = 0;
 	dev->irqr = bus_alloc_resource_any(dev->device, SYS_RES_IRQ, 
 				      &dev->irqrid, RF_SHAREABLE);
@@ -196,18 +190,6 @@ int drm_irq_install(struct drm_device *dev)
 #endif
 	if (retcode != 0)
 		goto err;
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-	if (pci_intr_map(&dev->pa, &ih) != 0) {
-		retcode = ENOENT;
-		goto err;
-	}
-	dev->irqh = pci_intr_establish(&dev->pa.pa_pc, ih, IPL_TTY,
-	    (irqreturn_t (*)(void *))dev->irq_handler, dev);
-	if (!dev->irqh) {
-		retcode = ENOENT;
-		goto err;
-	}
-#endif
 
 	/* After installing handler */
 	DRM_LOCK();
@@ -219,44 +201,35 @@ int drm_irq_install(struct drm_device *dev)
 err:
 	DRM_LOCK();
 	dev->irq_enabled = 0;
-#ifdef ___FreeBSD__
 	if (dev->irqrid != 0) {
 		bus_release_resource(dev->device, SYS_RES_IRQ, dev->irqrid,
 		    dev->irqr);
 		dev->irqrid = 0;
 	}
-#endif
 	DRM_UNLOCK();
 	return retcode;
 }
 
 int drm_irq_uninstall(struct drm_device *dev)
 {
-#ifdef __FreeBSD__
 	int irqrid;
-#endif
 
 	if (!dev->irq_enabled)
 		return EINVAL;
 
 	dev->irq_enabled = 0;
-#ifdef __FreeBSD__
 	irqrid = dev->irqrid;
 	dev->irqrid = 0;
-#endif
 
 	DRM_DEBUG("irq=%d\n", dev->irq);
 
 	dev->driver->irq_uninstall(dev);
 
-#ifdef __FreeBSD__
 	DRM_UNLOCK();
 	bus_teardown_intr(dev->device, dev->irqr, dev->irqh);
 	bus_release_resource(dev->device, SYS_RES_IRQ, irqrid, dev->irqr);
 	DRM_LOCK();
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-	pci_intr_disestablish(&dev->pa.pa_pc, dev->irqh);
-#endif
+
 	drm_vblank_cleanup(dev);
 
 	return 0;

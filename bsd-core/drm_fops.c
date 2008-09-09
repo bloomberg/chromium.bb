@@ -38,13 +38,8 @@
 
 drm_file_t *drm_find_file_by_proc(struct drm_device *dev, DRM_STRUCTPROC *p)
 {
-#if __FreeBSD_version >= 500021
 	uid_t uid = p->td_ucred->cr_svuid;
 	pid_t pid = p->td_proc->p_pid;
-#else
-	uid_t uid = p->p_cred->p_svuid;
-	pid_t pid = p->p_pid;
-#endif
 	drm_file_t *priv;
 
 	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
@@ -79,14 +74,8 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 			DRM_UNLOCK();
 			return ENOMEM;
 		}
-#if __FreeBSD_version >= 500000
 		priv->uid		= p->td_ucred->cr_svuid;
 		priv->pid		= p->td_proc->p_pid;
-#else
-		priv->uid		= p->p_cred->p_svuid;
-		priv->pid		= p->p_pid;
-#endif
-
 		priv->refs		= 1;
 		priv->minor		= m;
 		priv->ioctl_count 	= 0;
@@ -110,9 +99,7 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		TAILQ_INSERT_TAIL(&dev->files, priv, link);
 	}
 	DRM_UNLOCK();
-#ifdef __FreeBSD__
 	kdev->si_drv1 = dev;
-#endif
 	return 0;
 }
 

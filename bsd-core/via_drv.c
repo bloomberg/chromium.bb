@@ -69,7 +69,6 @@ static void via_configure(struct drm_device *dev)
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 }
 
-#ifdef __FreeBSD__
 static int
 via_probe(device_t dev)
 {
@@ -120,12 +119,3 @@ static driver_t via_driver = {
 extern devclass_t drm_devclass;
 DRIVER_MODULE(via, pci, via_driver, drm_devclass, 0, 0);
 MODULE_DEPEND(via, drm, 1, 1, 1);
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-#ifdef _LKM
-CFDRIVER_DECL(via, DV_TTY, NULL);
-#else
-CFATTACH_DECL(via, sizeof(struct drm_device), drm_probe, drm_attach, drm_detach,
-    drm_activate);
-#endif
-#endif

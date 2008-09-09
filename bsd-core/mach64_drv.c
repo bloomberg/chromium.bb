@@ -72,7 +72,6 @@ static void mach64_configure(struct drm_device *dev)
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 }
 
-#ifdef __FreeBSD__
 static int
 mach64_probe(device_t dev)
 {
@@ -127,7 +126,3 @@ DRIVER_MODULE(mach64, vgapci, mach64_driver, drm_devclass, 0, 0);
 DRIVER_MODULE(mach64, pci, mach64_driver, drm_devclass, 0, 0);
 #endif
 MODULE_DEPEND(mach64, drm, 1, 1, 1);
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-CFDRIVER_DECL(mach64, DV_TTY, NULL);
-#endif

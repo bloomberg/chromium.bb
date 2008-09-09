@@ -78,13 +78,8 @@ int drm_lock(struct drm_device *dev, void *data, struct drm_file *file_priv)
 		}
 
 		/* Contention */
-#if defined(__FreeBSD__) && __FreeBSD_version > 500000
 		ret = mtx_sleep((void *)&dev->lock.lock_queue, &dev->dev_lock,
 		    PZERO | PCATCH, "drmlk2", 0);
-#else
-		ret = tsleep((void *)&dev->lock.lock_queue, PZERO | PCATCH,
-		    "drmlk2", 0);
-#endif
 		if (ret != 0)
 			break;
 	}

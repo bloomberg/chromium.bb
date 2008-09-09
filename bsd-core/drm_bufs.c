@@ -1016,30 +1016,13 @@ int drm_mapbufs(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	const int zero = 0;
 	vm_offset_t address;
 	struct vmspace *vms;
-#ifdef __FreeBSD__
 	vm_ooffset_t foff;
 	vm_size_t size;
 	vm_offset_t vaddr;
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-	struct vnode *vn;
-	voff_t foff;
-	vsize_t size;
-	vaddr_t vaddr;
-#endif /* __NetBSD__ || __OpenBSD__ */
-
 	struct drm_buf_map *request = data;
 	int i;
 
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-	if (!vfinddev(kdev, VCHR, &vn))
-		return 0;	/* FIXME: Shouldn't this be EINVAL or something? */
-#endif /* __NetBSD__ || __OpenBSD */
-
-#if defined(__FreeBSD__) && __FreeBSD_version >= 500000
 	vms = DRM_CURPROC->td_proc->p_vmspace;
-#else
-	vms = DRM_CURPROC->p_vmspace;
-#endif
 
 	DRM_SPINLOCK(&dev->dma_lock);
 	dev->buf_use++;		/* Can't allocate more after this call */
@@ -1064,7 +1047,6 @@ int drm_mapbufs(struct drm_device *dev, void *data, struct drm_file *file_priv)
 		foff = 0;
 	}
 
-#ifdef __FreeBSD__
 	vaddr = round_page((vm_offset_t)vms->vm_daddr + MAXDSIZ);
 #if __FreeBSD_version >= 600023
 	retcode = vm_mmap(&vms->vm_map, &vaddr, size, PROT_READ | PROT_WRITE,
@@ -1074,12 +1056,6 @@ int drm_mapbufs(struct drm_device *dev, void *data, struct drm_file *file_priv)
 	    VM_PROT_ALL, MAP_SHARED, SLIST_FIRST(&dev->devnode->si_hlist),
 	    foff);
 #endif
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-	vaddr = round_page((vaddr_t)vms->vm_daddr + MAXDSIZ);
-	retcode = uvm_mmap(&vms->vm_map, &vaddr, size,
-	    UVM_PROT_READ | UVM_PROT_WRITE, UVM_PROT_ALL, MAP_SHARED,
-	    &vn->v_uobj, foff, p->p_rlimit[RLIMIT_MEMLOCK].rlim_cur);
-#endif /* __NetBSD__ || __OpenBSD */
 	if (retcode)
 		goto done;
 

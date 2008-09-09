@@ -35,20 +35,17 @@
 
 #include "drmP.h"
 
-#ifdef __FreeBSD__
 #if __FreeBSD_version >= 800004
 #include <dev/agp/agpreg.h>
 #else /* __FreeBSD_version >= 800004 */
 #include <pci/agpreg.h>
 #endif /* __FreeBSD_version >= 800004 */
 #include <dev/pci/pcireg.h>
-#endif
 
 /* Returns 1 if AGP or 0 if not. */
 static int
 drm_device_find_capability(struct drm_device *dev, int cap)
 {
-#ifdef __FreeBSD__
 #if __FreeBSD_version >= 602102
 
 	return (pci_find_extcap(dev->device, cap, NULL) == 0);
@@ -81,10 +78,6 @@ drm_device_find_capability(struct drm_device *dev, int cap)
 	}
 
 	return 0;
-#endif
-#else
-	/* XXX: fill me in for non-FreeBSD */
-	return 1;
 #endif
 }
 

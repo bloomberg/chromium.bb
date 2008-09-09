@@ -74,7 +74,6 @@ typedef struct drm_file drm_file_t;
 #include <machine/sysarch.h>
 #include <sys/endian.h>
 #include <sys/mman.h>
-#if defined(__FreeBSD__)
 #include <sys/rman.h>
 #include <sys/memrange.h>
 #if __FreeBSD_version >= 800004
@@ -83,31 +82,9 @@ typedef struct drm_file drm_file_t;
 #include <pci/agpvar.h>
 #endif /* __FreeBSD_version >= 800004 */
 #include <sys/agpio.h>
-#if __FreeBSD_version >= 500000
 #include <sys/mutex.h>
 #include <dev/pci/pcivar.h>
 #include <sys/selinfo.h>
-#else /* __FreeBSD_version >= 500000 */
-#include <pci/pcivar.h>
-#include <sys/select.h>
-#endif /* __FreeBSD_version < 500000 */
-#elif defined(__NetBSD__)
-#include <machine/mtrr.h>
-#include <sys/vnode.h>
-#include <sys/select.h>
-#include <sys/device.h>
-#include <sys/resourcevar.h>
-#include <sys/lkm.h>
-#include <sys/agpio.h>
-#include <sys/ttycom.h>
-#include <uvm/uvm.h>
-#include <dev/pci/pcireg.h>
-#include <dev/pci/pcivar.h>
-#include <dev/pci/agpvar.h>
-#elif defined(__OpenBSD__)
-#include <sys/lkm.h>
-#include <uvm/uvm.h>
-#endif
 #include <sys/bus.h>
 
 #include "drm.h"
@@ -115,13 +92,11 @@ typedef struct drm_file drm_file_t;
 #include "drm_atomic.h"
 #include "drm_internal.h"
 
-#ifdef __FreeBSD__
 #include <opt_drm.h>
 #ifdef DRM_DEBUG
 #undef DRM_DEBUG
 #define DRM_DEBUG_DEFAULT_ON 1
 #endif /* DRM_DEBUG */
-#endif
 
 #if defined(DRM_LINUX) && DRM_LINUX && !defined(__amd64__)
 #include <sys/file.h>
@@ -195,12 +170,6 @@ MALLOC_DECLARE(M_DRM);
 #define DRM_WAKEUP_INT(w)	wakeup(w)
 #define DRM_INIT_WAITQUEUE(queue) do {(void)(queue);} while (0)
 
-#if defined(__FreeBSD__) && __FreeBSD_version < 502109
-#define bus_alloc_resource_any(dev, type, rid, flags) \
-	bus_alloc_resource(dev, type, rid, 0ul, ~0ul, 1, flags)
-#endif
-
-#if defined(__FreeBSD__) && __FreeBSD_version >= 500000
 #define DRM_CURPROC		curthread
 #define DRM_STRUCTPROC		struct thread
 #define DRM_SPINTYPE		struct mtx
@@ -218,21 +187,6 @@ MALLOC_DECLARE(M_DRM);
 #define DRM_LOCK()		mtx_lock(&dev->dev_lock)
 #define DRM_UNLOCK() 		mtx_unlock(&dev->dev_lock)
 #define DRM_SYSCTL_HANDLER_ARGS	(SYSCTL_HANDLER_ARGS)
-#else /* __FreeBSD__ && __FreeBSD_version >= 500000 */
-#define DRM_CURPROC		curproc
-#define DRM_STRUCTPROC		struct proc
-#define DRM_SPINTYPE		struct simplelock
-#define DRM_SPININIT(l,name)
-#define DRM_SPINUNINIT(l)
-#define DRM_SPINLOCK(l)	
-#define DRM_SPINUNLOCK(u)
-#define DRM_SPINLOCK_ASSERT(l)
-#define DRM_CURRENTPID		curproc->p_pid
-#define DRM_LOCK()
-#define DRM_UNLOCK()
-#define DRM_SYSCTL_HANDLER_ARGS	SYSCTL_HANDLER_ARGS
-#define spldrm()		spltty()
-#endif /* __NetBSD__ || __OpenBSD__ */
 
 #define DRM_IRQ_ARGS		void *arg
 typedef void			irqreturn_t;
@@ -246,16 +200,8 @@ enum {
 };
 #define DRM_AGP_MEM		struct agp_memory_info
 
-#if defined(__FreeBSD__)
 #define drm_get_device_from_kdev(_kdev) (_kdev->si_drv1)
-#elif defined(__NetBSD__)
-#define drm_get_device_from_kdev(_kdev) device_lookup(&drm_cd, minor(_kdev))
-#elif defined(__OpenBSD__)
-#define drm_get_device_from_kdev(_kdev) device_lookup(&drm_cd, \
-    minor(_kdev)))->dv_cfdata->cf_driver->cd_devs[minor(_kdev)]
-#endif
 
-#if defined(__FreeBSD__)
 #define PAGE_ALIGN(addr) round_page(addr)
 /* DRM_SUSER returns true if the user is superuser */
 #if __FreeBSD_version >= 700000
@@ -266,20 +212,6 @@ enum {
 #define DRM_AGP_FIND_DEVICE()	agp_find_device()
 #define DRM_MTRR_WC		MDF_WRITECOMBINE
 #define jiffies			ticks
-
-#else /* __FreeBSD__ */
-
-#define CDEV_MAJOR		34
-#define PAGE_ALIGN(addr)	(((addr) + PAGE_SIZE - 1) & PAGE_MASK)
-/* DRM_SUSER returns true if the user is superuser */
-#define DRM_SUSER(p)		(suser(p->p_ucred, &p->p_acflag) == 0)
-#define DRM_AGP_FIND_DEVICE()	agp_find_device(0)
-#define DRM_MTRR_WC		MTRR_TYPE_WC
-#define jiffies			hardclock_ticks
-
-typedef struct drm_device *device_t;
-extern struct cfdriver drm_cd;
-#endif /* !__FreeBSD__ */
 
 /* Capabilities taken from src/sys/dev/pci/pcireg.h. */
 #ifndef PCIY_AGP
@@ -318,7 +250,6 @@ typedef u_int8_t u8;
 					"lock; addl $0,0(%%rsp)" : : : "memory");
 #endif
 
-#ifdef __FreeBSD__
 #define DRM_READ8(map, offset)						\
 	*(volatile u_int8_t *) (((unsigned long)(map)->handle) + (offset))
 #define DRM_READ16(map, offset)						\
@@ -335,27 +266,6 @@ typedef u_int8_t u8;
 #define DRM_VERIFYAREA_READ( uaddr, size )		\
 	(!useracc(__DECONST(caddr_t, uaddr), size, VM_PROT_READ))
 
-#else /* __FreeBSD__ */
-
-typedef vaddr_t vm_offset_t;
-
-#define DRM_READ8(map, offset)		\
-	bus_space_read_1( (map)->bst, (map)->bsh, (offset))
-#define DRM_READ16(map, offset)		\
-	bus_space_read_2( (map)->bst, (map)->bsh, (offset))
-#define DRM_READ32(map, offset)		\
-	bus_space_read_4( (map)->bst, (map)->bsh, (offset))
-#define DRM_WRITE8(map, offset, val)	\
-	bus_space_write_1((map)->bst, (map)->bsh, (offset), (val))
-#define DRM_WRITE16(map, offset, val)	\
-	bus_space_write_2((map)->bst, (map)->bsh, (offset), (val))
-#define DRM_WRITE32(map, offset, val)	\
-	bus_space_write_4((map)->bst, (map)->bsh, (offset), (val))
-
-#define DRM_VERIFYAREA_READ( uaddr, size )		\
-	(!uvm_useracc((caddr_t)uaddr, size, VM_PROT_READ))
-#endif /* !__FreeBSD__ */
-
 #define DRM_COPY_TO_USER(user, kern, size) \
 	copyout(kern, user, size)
 #define DRM_COPY_FROM_USER(kern, user, size) \
@@ -364,13 +274,8 @@ typedef vaddr_t vm_offset_t;
 	copyin(arg2, arg1, arg3)
 #define DRM_COPY_TO_USER_UNCHECKED(arg1, arg2, arg3)	\
 	copyout(arg2, arg1, arg3)
-#if __FreeBSD_version > 500000
 #define DRM_GET_USER_UNCHECKED(val, uaddr)		\
 	((val) = fuword32(uaddr), 0)
-#else
-#define DRM_GET_USER_UNCHECKED(val, uaddr)		\
-	((val) = fuword(uaddr), 0)
-#endif
 
 #define cpu_to_le32(x) htole32(x)
 #define le32_to_cpu(x) le32toh(x)
@@ -393,7 +298,6 @@ do {									\
 	}								\
 } while (0)
 
-#if defined(__FreeBSD__) && __FreeBSD_version > 500000
 /* Returns -errno to shared code */
 #define DRM_WAIT_ON( ret, queue, timeout, condition )		\
 for ( ret = 0 ; !ret && !(condition) ; ) {			\
@@ -405,17 +309,6 @@ for ( ret = 0 ; !ret && !(condition) ; ) {			\
 	mtx_unlock(&dev->irq_lock);				\
 	DRM_LOCK();						\
 }
-#else
-/* Returns -errno to shared code */
-#define DRM_WAIT_ON( ret, queue, timeout, condition )	\
-for ( ret = 0 ; !ret && !(condition) ; ) {		\
-        int s = spldrm();				\
-	if (!(condition))				\
-	   ret = -tsleep( &(queue), PZERO | PCATCH, 	\
-			 "drmwtq", (timeout) );		\
-	splx(s);					\
-}
-#endif
 
 #define DRM_ERROR(fmt, arg...) \
 	printf("error: [" DRM_NAME ":pid%d:%s] *ERROR* " fmt,		\
@@ -501,12 +394,8 @@ typedef struct drm_freelist {
 typedef struct drm_dma_handle {
 	void *vaddr;
 	bus_addr_t busaddr;
-#if defined(__FreeBSD__)
 	bus_dma_tag_t tag;
 	bus_dmamap_t map;
-#elif defined(__NetBSD__)
-	bus_dma_segment_t seg;
-#endif
 } drm_dma_handle_t;
 
 typedef struct drm_buf_entry {
@@ -727,10 +616,6 @@ struct drm_driver_info {
  * DRM device functions structure
  */
 struct drm_device {
-#if defined(__NetBSD__) || defined(__OpenBSD__)
-	struct device	  device; /* softc is an extension of struct device */
-#endif
-
 	struct drm_driver_info *driver;
 	drm_pci_id_list_t *id_entry;	/* PCI ID, name, and chipset private */
 
@@ -739,21 +624,17 @@ struct drm_device {
 
 	char		  *unique;	/* Unique identifier: e.g., busid  */
 	int		  unique_len;	/* Length of unique field	   */
-#ifdef __FreeBSD__
 	device_t	  device;	/* Device instance from newbus     */
-#endif
 	struct cdev	  *devnode;	/* Device number for mknod	   */
 	int		  if_version;	/* Highest interface version set */
 
 	int		  flags;	/* Flags to open(2)		   */
 
 				/* Locks */
-#if defined(__FreeBSD__) && __FreeBSD_version > 500000
 	struct mtx	  vbl_lock;	/* protects vblank operations */
 	struct mtx	  dma_lock;	/* protects dev->dma */
 	struct mtx	  irq_lock;	/* protects irq condition checks */
 	struct mtx	  dev_lock;	/* protects everything else */
-#endif
 	DRM_SPINTYPE	  drw_lock;
 	DRM_SPINTYPE	  tsk_lock;
 
@@ -784,12 +665,8 @@ struct drm_device {
 				/* Context support */
 	int		  irq;		/* Interrupt used by board	   */
 	int		  irq_enabled;	/* True if the irq handler is enabled */
-#ifdef __FreeBSD__
 	int		  irqrid;	/* Interrupt used by board */
 	struct resource   *irqr;	/* Resource for interrupt used by board	   */
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-	struct pci_attach_args  pa;
-#endif
 	void		  *irqh;	/* Handle from bus_setup_intr      */
 
 	/* Storage of resource pointers for drm_get_resource_* */
@@ -811,11 +688,7 @@ struct drm_device {
 	struct drm_vblank_info *vblank;		/* per crtc vblank info */
 	int		  num_crtcs;
 
-#ifdef __FreeBSD__
 	struct sigio      *buf_sigio;	/* Processes waiting for SIGIO     */
-#elif defined(__NetBSD__)
-	pid_t		  buf_pgid;
-#endif
 
 				/* Sysctl support */
 	struct drm_sysctl_info *sysctl;
@@ -853,7 +726,6 @@ static inline int drm_core_has_AGP(struct drm_device *dev)
 extern int	drm_debug_flag;
 
 /* Device setup support (drm_drv.c) */
-#ifdef __FreeBSD__
 int	drm_probe(device_t nbdev, drm_pci_id_list_t *idlist);
 int	drm_attach(device_t nbdev, drm_pci_id_list_t *idlist);
 int	drm_detach(device_t nbdev);
@@ -863,32 +735,14 @@ d_close_t drm_close;
 d_read_t drm_read;
 d_poll_t drm_poll;
 d_mmap_t drm_mmap;
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-int	drm_probe(struct pci_attach_args *pa, drm_pci_id_list_t *idlist);
-int	drm_attach(struct pci_attach_args *pa, dev_t kdev, drm_pci_id_list_t *idlist);
-dev_type_ioctl(drm_ioctl);
-dev_type_open(drm_open);
-dev_type_close(drm_close);
-dev_type_read(drm_read);
-dev_type_poll(drm_poll);
-dev_type_mmap(drm_mmap);
-#endif
 extern drm_local_map_t	*drm_getsarea(struct drm_device *dev);
 
 /* File operations helpers (drm_fops.c) */
-#ifdef __FreeBSD__
 extern int		drm_open_helper(struct cdev *kdev, int flags, int fmt,
 					 DRM_STRUCTPROC *p,
 					struct drm_device *dev);
 extern drm_file_t	*drm_find_file_by_proc(struct drm_device *dev,
 					       DRM_STRUCTPROC *p);
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-extern int		drm_open_helper(dev_t kdev, int flags, int fmt,
-					DRM_STRUCTPROC *p,
-					struct drm_device *dev);
-extern drm_file_t	*drm_find_file_by_proc(struct drm_device *dev,
-					       DRM_STRUCTPROC *p);
-#endif /* __NetBSD__ || __OpenBSD__ */
 
 /* Memory management support (drm_memory.c) */
 void	drm_mem_init(void);
@@ -980,11 +834,9 @@ int	drm_agp_unbind(struct drm_device *dev, struct drm_agp_binding *request);
 void	drm_sg_cleanup(drm_sg_mem_t *entry);
 int	drm_sg_alloc(struct drm_device *dev, struct drm_scatter_gather * request);
 
-#ifdef __FreeBSD__
 /* sysctl support (drm_sysctl.h) */
 extern int		drm_sysctl_init(struct drm_device *dev);
 extern int		drm_sysctl_cleanup(struct drm_device *dev);
-#endif /* __FreeBSD__ */
 
 /* ATI PCIGART support (ati_pcigart.c) */
 int	drm_ati_pcigart_init(struct drm_device *dev,

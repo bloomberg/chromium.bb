@@ -76,7 +76,6 @@ static void radeon_configure(struct drm_device *dev)
 	dev->driver->patchlevel		= DRIVER_PATCHLEVEL;
 }
 
-#ifdef __FreeBSD__
 static int
 radeon_probe(device_t dev)
 {
@@ -131,12 +130,3 @@ DRIVER_MODULE(radeon, vgapci, radeon_driver, drm_devclass, 0, 0);
 DRIVER_MODULE(radeon, pci, radeon_driver, drm_devclass, 0, 0);
 #endif
 MODULE_DEPEND(radeon, drm, 1, 1, 1);
-
-#elif defined(__NetBSD__) || defined(__OpenBSD__)
-#ifdef _LKM
-CFDRIVER_DECL(radeon, DV_TTY, NULL);
-#else
-CFATTACH_DECL(radeon, sizeof(struct drm_device), drm_probe, drm_attach,
-    drm_detach, drm_activate);
-#endif
-#endif /* __FreeBSD__ */
