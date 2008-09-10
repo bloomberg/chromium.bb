@@ -34,6 +34,10 @@
  *	    Dave Airlie <airlied@linux.ie>
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <xf86drm.h>
 #include <stdio.h>
 #include <stdlib.h>
