@@ -224,6 +224,7 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 		lvds_pll_cntl |= RADEON_LVDS_PLL_EN;
 		RADEON_WRITE(RADEON_LVDS_PLL_CNTL, lvds_pll_cntl);
 		udelay(1000);
+
 		lvds_pll_cntl = RADEON_READ(RADEON_LVDS_PLL_CNTL);
 		lvds_pll_cntl &= ~RADEON_LVDS_PLL_RESET;
 		RADEON_WRITE(RADEON_LVDS_PLL_CNTL, lvds_pll_cntl);
@@ -231,7 +232,7 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 		lvds_gen_cntl = RADEON_READ(RADEON_LVDS_GEN_CNTL);
 		lvds_gen_cntl |= (RADEON_LVDS_ON | RADEON_LVDS_EN | RADEON_LVDS_DIGON | RADEON_LVDS_BLON);
 		lvds_gen_cntl &= ~(RADEON_LVDS_DISPLAY_DIS);
-		udelay(radeon_encoder->panel_pwr_delay);
+		udelay(radeon_encoder->panel_pwr_delay * 1000);
 		RADEON_WRITE(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
 
 		/* update bios scratch regs */
@@ -242,13 +243,13 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 	case DRM_MODE_DPMS_STANDBY:
 	case DRM_MODE_DPMS_SUSPEND:
 	case DRM_MODE_DPMS_OFF:
-                pixclks_cntl = RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL);
+		pixclks_cntl = RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL);
 		RADEON_WRITE_PLL_P(dev_priv, RADEON_PIXCLKS_CNTL, 0, ~RADEON_PIXCLK_LVDS_ALWAYS_ONb);
-                lvds_gen_cntl = RADEON_READ(RADEON_LVDS_GEN_CNTL);
-                lvds_gen_cntl |= RADEON_LVDS_DISPLAY_DIS;
-                lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_BLON | RADEON_LVDS_EN | RADEON_LVDS_DIGON);
-		udelay(radeon_encoder->panel_pwr_delay);
-                RADEON_WRITE(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
+		lvds_gen_cntl = RADEON_READ(RADEON_LVDS_GEN_CNTL);
+		lvds_gen_cntl |= RADEON_LVDS_DISPLAY_DIS;
+		lvds_gen_cntl &= ~(RADEON_LVDS_ON | RADEON_LVDS_BLON | RADEON_LVDS_EN | RADEON_LVDS_DIGON);
+		udelay(radeon_encoder->panel_pwr_delay * 1000);
+		RADEON_WRITE(RADEON_LVDS_GEN_CNTL, lvds_gen_cntl);
 		RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, pixclks_cntl);
 
 		bios_5_scratch &= ~RADEON_LCD1_ON;
@@ -300,6 +301,8 @@ static void radeon_legacy_lvds_mode_set(struct drm_encoder *encoder,
 			   RADEON_LVDS_EN |
 			   RADEON_LVDS_RST_FM);
 
+	DRM_INFO("bios LVDS_GEN_CNTL: 0x%x\n", radeon_encoder->lvds_gen_cntl);
+
 	if (radeon_is_r300(dev_priv))
 		lvds_pll_cntl &= ~(R300_LVDS_SRC_SEL_MASK);
 
@@ -310,9 +313,9 @@ static void radeon_legacy_lvds_mode_set(struct drm_encoder *encoder,
 		} else
 			lvds_gen_cntl &= ~RADEON_LVDS_SEL_CRTC2;
 	} else {
-		if (radeon_is_r300(dev_priv)) {
+		if (radeon_is_r300(dev_priv))
 			lvds_pll_cntl |= R300_LVDS_SRC_SEL_CRTC2;
-		} else
+		else
 			lvds_gen_cntl |= RADEON_LVDS_SEL_CRTC2;
 	}
 
@@ -326,6 +329,7 @@ static void radeon_legacy_lvds_mode_set(struct drm_encoder *encoder,
 				      (0xf << RADEON_LVDS_PWRSEQ_DELAY2_SHIFT));
 		lvds_ss_gen_cntl |= ((radeon_encoder->panel_digon_delay << RADEON_LVDS_PWRSEQ_DELAY1_SHIFT) |
 				     (radeon_encoder->panel_blon_delay << RADEON_LVDS_PWRSEQ_DELAY2_SHIFT));
+		RADEON_WRITE(RADEON_LVDS_SS_GEN_CNTL, lvds_ss_gen_cntl);
 	}
 
 	if (dev_priv->chip_family == CHIP_RV410)

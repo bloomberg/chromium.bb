@@ -660,14 +660,14 @@ bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder)
 			encoder->use_bios_dividers = true;
 
 		panel_setup = radeon_bios32(dev_priv, lcd_info + 0x39);
-		encoder->lvds_gen_cntl = 0;
+		encoder->lvds_gen_cntl = 0xff00;
 		if (panel_setup & 0x1)
 			encoder->lvds_gen_cntl |= RADEON_LVDS_PANEL_FORMAT;
 
 		if ((panel_setup >> 4) & 0x1)
 			encoder->lvds_gen_cntl |= RADEON_LVDS_PANEL_TYPE;
 
-		switch ((panel_setup >> 8) & 0x8) {
+		switch ((panel_setup >> 8) & 0x7) {
 		case 0:
 			encoder->lvds_gen_cntl |= RADEON_LVDS_NO_FM;
 			break;
