@@ -942,7 +942,7 @@ nouveau_gpuobj_channel_init_pramin(struct nouveau_channel *chan)
 		/* RAMFC */
 		size += 0x1000;
 		/* PGRAPH context */
-		size += 0x60000;
+		size += 0x70000;
 	}
 
 	DRM_DEBUG("ch%d PRAMIN size: 0x%08x bytes, base alloc=0x%08x\n",
