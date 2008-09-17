@@ -785,4 +785,22 @@ int drm_helper_mode_fill_fb_struct(struct drm_framebuffer *fb,
 }
 EXPORT_SYMBOL(drm_helper_mode_fill_fb_struct);
 
+int drm_helper_resume_force_mode(struct drm_device *dev)
+{
+	struct drm_crtc *crtc;
+	int ret;
 
+	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+
+		if (!crtc->enabled)
+			continue;
+		
+		ret = drm_crtc_helper_set_mode(crtc, &crtc->mode, crtc->x,
+					       crtc->y);
+
+		if (ret == false)
+			DRM_ERROR("failed to set mode on crtc %p\n", crtc);
+	}
+	return 0;
+}
+EXPORT_SYMBOL(drm_helper_resume_force_mode);

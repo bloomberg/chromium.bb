@@ -92,6 +92,5 @@ static inline void drm_connector_helper_add(struct drm_connector *connector, con
 	connector->helper_private = (void *)funcs;
 }
 
-extern int drm_get_buffer_object(struct drm_device *dev, struct drm_buffer_object **bo, unsigned long handle);
-
+extern int drm_helper_resume_force_mode(struct drm_device *dev);
 #endif
