@@ -543,6 +543,51 @@ void radeon_get_clock_info(struct drm_device *dev)
 
 }
 
+/* not sure of the best place for these */
+/* 10 khz */
+void radeon_legacy_set_engine_clock(struct drm_device *dev, int eng_clock)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
+	struct radeon_pll *spll = &mode_info->spll;
+	uint32_t ref_div, fb_div;
+	uint32_t m_spll_ref_fb_div;
+
+	/* FIXME wait for idle */
+
+	m_spll_ref_fb_div = RADEON_READ_PLL(dev_priv, RADEON_M_SPLL_REF_FB_DIV);
+	m_spll_ref_fb_div &= ((RADEON_M_SPLL_REF_DIV_MASK << RADEON_M_SPLL_REF_DIV_SHIFT) |
+			      (RADEON_MPLL_FB_DIV_MASK << RADEON_MPLL_FB_DIV_SHIFT));
+	ref_div = m_spll_ref_fb_div & RADEON_M_SPLL_REF_DIV_MASK;
+
+	fb_div = radeon_div(eng_clock * ref_div, spll->reference_freq);
+	m_spll_ref_fb_div |= (fb_div & RADEON_SPLL_FB_DIV_MASK) << RADEON_SPLL_FB_DIV_SHIFT;
+	RADEON_WRITE_PLL(dev_priv, RADEON_M_SPLL_REF_FB_DIV, m_spll_ref_fb_div);
+
+}
+
+/* 10 khz */
+void radeon_legacy_set_memory_clock(struct drm_device *dev, int mem_clock)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
+	struct radeon_pll *mpll = &mode_info->mpll;
+	uint32_t ref_div, fb_div;
+	uint32_t m_spll_ref_fb_div;
+
+	/* FIXME wait for idle */
+
+	m_spll_ref_fb_div = RADEON_READ_PLL(dev_priv, RADEON_M_SPLL_REF_FB_DIV);
+	m_spll_ref_fb_div &= ((RADEON_M_SPLL_REF_DIV_MASK << RADEON_M_SPLL_REF_DIV_SHIFT) |
+			      (RADEON_SPLL_FB_DIV_MASK << RADEON_SPLL_FB_DIV_SHIFT));
+	ref_div = m_spll_ref_fb_div & RADEON_M_SPLL_REF_DIV_MASK;
+
+	fb_div = radeon_div(mem_clock * ref_div, mpll->reference_freq);
+	m_spll_ref_fb_div |= (fb_div & RADEON_MPLL_FB_DIV_MASK) << RADEON_MPLL_FB_DIV_SHIFT;
+	RADEON_WRITE_PLL(dev_priv, RADEON_M_SPLL_REF_FB_DIV, m_spll_ref_fb_div);
+
+}
+
 static void radeon_user_framebuffer_destroy(struct drm_framebuffer *fb)
 {
 	struct radeon_framebuffer *radeon_fb = to_radeon_framebuffer(fb);

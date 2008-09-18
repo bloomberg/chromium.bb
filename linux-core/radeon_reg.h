@@ -1549,6 +1549,13 @@
 #define RADEON_SC_TOP_LEFT_C                0x1c88
 #       define RADEON_SC_SIGN_MASK_LO       0x8000
 #       define RADEON_SC_SIGN_MASK_HI       0x80000000
+#define RADEON_M_SPLL_REF_FB_DIV            0x000a /* PLL */
+#	define RADEON_M_SPLL_REF_DIV_SHIFT  0
+#	define RADEON_M_SPLL_REF_DIV_MASK   0xff
+#	define RADEON_MPLL_FB_DIV_SHIFT    8
+#	define RADEON_MPLL_FB_DIV_MASK     0xff
+#	define RADEON_SPLL_FB_DIV_SHIFT    16
+#	define RADEON_SPLL_FB_DIV_MASK     0xff
 #define RADEON_SCLK_CNTL                    0x000d /* PLL */
 #       define RADEON_SCLK_SRC_SEL_MASK     0x0007
 #       define RADEON_DYN_STOP_LAT_MASK     0x00007ff8

@@ -450,6 +450,32 @@ void radeon_atom_static_pwrmgt_setup(struct drm_device *dev, int enable)
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
 }
 
+void radeon_atom_set_engine_clock(struct drm_device *dev, int eng_clock)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
+	struct atom_context *ctx = mode_info->atom_context;
+	SET_ENGINE_CLOCK_PS_ALLOCATION args;
+	int index = GetIndexIntoMasterTable(COMMAND, SetEngineClock);
+
+	args.ulTargetEngineClock = eng_clock; /* 10 khz */
+
+	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
+}
+
+void radeon_atom_set_memory_clock(struct drm_device *dev, int mem_clock)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
+	struct atom_context *ctx = mode_info->atom_context;
+	SET_MEMORY_CLOCK_PS_ALLOCATION args;
+	int index = GetIndexIntoMasterTable(COMMAND, SetMemoryClock);
+
+	args.ulTargetMemoryClock = mem_clock; /* 10 khz */
+
+	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
+}
+
 void radeon_atom_initialize_bios_scratch_regs(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
