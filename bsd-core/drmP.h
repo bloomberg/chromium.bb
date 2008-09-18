@@ -37,7 +37,7 @@
 #if defined(_KERNEL) || defined(__KERNEL__)
 
 struct drm_device;
-typedef struct drm_file drm_file_t;
+struct drm_file;
 
 #include <sys/param.h>
 #include <sys/queue.h>
@@ -412,12 +412,12 @@ typedef struct drm_buf_entry {
 typedef TAILQ_HEAD(drm_file_list, drm_file) drm_file_list_t;
 struct drm_file {
 	TAILQ_ENTRY(drm_file) link;
+	struct drm_device *dev;
 	int		  authenticated;
 	int		  master;
 	int		  minor;
 	pid_t		  pid;
 	uid_t		  uid;
-	int		  refs;
 	drm_magic_t	  magic;
 	unsigned long	  ioctl_count;
 	void		 *driver_priv;
@@ -551,9 +551,9 @@ struct drm_ati_pcigart_info {
 struct drm_driver_info {
 	int	(*load)(struct drm_device *, unsigned long flags);
 	int	(*firstopen)(struct drm_device *);
-	int	(*open)(struct drm_device *, drm_file_t *);
+	int	(*open)(struct drm_device *, struct drm_file *);
 	void	(*preclose)(struct drm_device *, struct drm_file *file_priv);
-	void	(*postclose)(struct drm_device *, drm_file_t *);
+	void	(*postclose)(struct drm_device *, struct drm_file *);
 	void	(*lastclose)(struct drm_device *);
 	int	(*unload)(struct drm_device *);
 	void	(*reclaim_buffers_locked)(struct drm_device *,
@@ -728,10 +728,10 @@ extern int	drm_debug_flag;
 /* Device setup support (drm_drv.c) */
 int	drm_probe(device_t nbdev, drm_pci_id_list_t *idlist);
 int	drm_attach(device_t nbdev, drm_pci_id_list_t *idlist);
+void	drm_close(void *data);
 int	drm_detach(device_t nbdev);
 d_ioctl_t drm_ioctl;
 d_open_t drm_open;
-d_close_t drm_close;
 d_read_t drm_read;
 d_poll_t drm_poll;
 d_mmap_t drm_mmap;
@@ -741,8 +741,6 @@ extern drm_local_map_t	*drm_getsarea(struct drm_device *dev);
 extern int		drm_open_helper(struct cdev *kdev, int flags, int fmt,
 					 DRM_STRUCTPROC *p,
 					struct drm_device *dev);
-extern drm_file_t	*drm_find_file_by_proc(struct drm_device *dev,
-					       DRM_STRUCTPROC *p);
 
 /* Memory management support (drm_memory.c) */
 void	drm_mem_init(void);
@@ -874,7 +872,7 @@ int	drm_noop(struct drm_device *dev, void *data,
 int	drm_resctx(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv);
 int	drm_addctx(struct drm_device *dev, void *data,
-struct drm_file *file_priv);
+		   struct drm_file *file_priv);
 int	drm_modctx(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv);
 int	drm_getctx(struct drm_device *dev, void *data,
@@ -929,7 +927,8 @@ int	drm_mapbufs(struct drm_device *dev, void *data,
 int	drm_dma(struct drm_device *dev, void *data, struct drm_file *file_priv);
 
 /* IRQ support (drm_irq.c) */
-int	drm_control(struct drm_device *dev, void *data, struct drm_file *file_priv);
+int	drm_control(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv);
 int	drm_wait_vblank(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
 void	drm_locked_tasklet(struct drm_device *dev,

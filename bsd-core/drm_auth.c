@@ -43,7 +43,7 @@ static int drm_hash_magic(drm_magic_t magic)
 /**
  * Returns the file private associated with the given magic number.
  */
-static drm_file_t *drm_find_file(struct drm_device *dev, drm_magic_t magic)
+static struct drm_file *drm_find_file(struct drm_device *dev, drm_magic_t magic)
 {
 	drm_magic_entry_t *pt;
 	int hash = drm_hash_magic(magic);
@@ -63,7 +63,7 @@ static drm_file_t *drm_find_file(struct drm_device *dev, drm_magic_t magic)
  * Inserts the given magic number into the hash table of used magic number
  * lists.
  */
-static int drm_add_magic(struct drm_device *dev, drm_file_t *priv,
+static int drm_add_magic(struct drm_device *dev, struct drm_file *priv,
 			 drm_magic_t magic)
 {
 	int		  hash;
@@ -169,7 +169,7 @@ int drm_authmagic(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
 	struct drm_auth *auth = data;
-	drm_file_t *priv;
+	struct drm_file *priv;
 
 	DRM_DEBUG("%u\n", auth->magic);
 

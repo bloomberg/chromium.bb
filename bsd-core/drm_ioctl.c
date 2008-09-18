@@ -179,9 +179,9 @@ int drm_getclient(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
 	struct drm_client *client = data;
-	drm_file_t   *pt;
-	int          idx;
-	int          i = 0;
+	struct drm_file *pt;
+	int idx;
+	int i = 0;
 
 	idx = client->idx;
 	DRM_LOCK();

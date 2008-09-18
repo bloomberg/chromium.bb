@@ -268,7 +268,7 @@ done:
 static int drm_clients_info DRM_SYSCTL_HANDLER_ARGS
 {
 	struct drm_device *dev = arg1;
-	drm_file_t *priv, *tempprivs;
+	struct drm_file *priv, *tempprivs;
 	char buf[128];
 	int retcode;
 	int privcount, i;
@@ -279,7 +279,7 @@ static int drm_clients_info DRM_SYSCTL_HANDLER_ARGS
 	TAILQ_FOREACH(priv, &dev->files, link)
 		privcount++;
 
-	tempprivs = malloc(sizeof(drm_file_t) * privcount, M_DRM, M_NOWAIT);
+	tempprivs = malloc(sizeof(struct drm_file) * privcount, M_DRM, M_NOWAIT);
 	if (tempprivs == NULL) {
 		DRM_UNLOCK();
 		return ENOMEM;

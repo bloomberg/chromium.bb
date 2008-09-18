@@ -32,20 +32,20 @@ int drm_mmap(struct cdev *kdev, vm_offset_t offset, vm_paddr_t *paddr,
     int prot)
 {
 	struct drm_device *dev = drm_get_device_from_kdev(kdev);
+	struct drm_file *file_priv;
 	drm_local_map_t *map;
-	drm_file_t *priv;
 	enum drm_map_type type;
 	vm_paddr_t phys;
 
 	DRM_LOCK();
-	priv = drm_find_file_by_proc(dev, DRM_CURPROC);
+	TAILQ_FOREACH(file_priv, &dev->files, link)
+		if (file_priv->pid == curthread->td_proc->p_pid &&
+		    file_priv->uid == curthread->td_ucred->cr_svuid &&
+		    file_priv->authenticated == 1)
+			break;
 	DRM_UNLOCK();
-	if (priv == NULL) {
-		DRM_ERROR("can't find authenticator\n");
-		return EINVAL;
-	}
 
-	if (!priv->authenticated)
+	if (!file_priv)
 		return EACCES;
 
 	if (dev->dma && offset >= 0 && offset < ptoa(dev->dma->page_count)) {

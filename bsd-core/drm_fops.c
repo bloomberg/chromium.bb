@@ -36,26 +36,12 @@
 
 #include "drmP.h"
 
-drm_file_t *drm_find_file_by_proc(struct drm_device *dev, DRM_STRUCTPROC *p)
-{
-	uid_t uid = p->td_ucred->cr_svuid;
-	pid_t pid = p->td_proc->p_pid;
-	drm_file_t *priv;
-
-	DRM_SPINLOCK_ASSERT(&dev->dev_lock);
-
-	TAILQ_FOREACH(priv, &dev->files, link)
-		if (priv->pid == pid && priv->uid == uid)
-			return priv;
-	return NULL;
-}
-
 /* drm_open_helper is called whenever a process opens /dev/drm. */
 int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 		    struct drm_device *dev)
 {
-	int	     m = minor(kdev);
-	drm_file_t   *priv;
+	struct drm_file *priv;
+	int m = minor(kdev);
 	int retcode;
 
 	if (flags & O_EXCL)
@@ -64,40 +50,42 @@ int drm_open_helper(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p,
 
 	DRM_DEBUG("pid = %d, minor = %d\n", DRM_CURRENTPID, m);
 
-	DRM_LOCK();
-	priv = drm_find_file_by_proc(dev, p);
-	if (priv) {
-		priv->refs++;
-	} else {
-		priv = malloc(sizeof(*priv), M_DRM, M_NOWAIT | M_ZERO);
-		if (priv == NULL) {
-			DRM_UNLOCK();
-			return ENOMEM;
-		}
-		priv->uid		= p->td_ucred->cr_svuid;
-		priv->pid		= p->td_proc->p_pid;
-		priv->refs		= 1;
-		priv->minor		= m;
-		priv->ioctl_count 	= 0;
-
-		/* for compatibility root is always authenticated */
-		priv->authenticated	= DRM_SUSER(p);
-
-		if (dev->driver->open) {
-			/* shared code returns -errno */
-			retcode = -dev->driver->open(dev, priv);
-			if (retcode != 0) {
-				free(priv, M_DRM);
-				DRM_UNLOCK();
-				return retcode;
-			}
-		}
-
-		/* first opener automatically becomes master */
-		priv->master = TAILQ_EMPTY(&dev->files);
-
-		TAILQ_INSERT_TAIL(&dev->files, priv, link);
+	priv = malloc(sizeof(*priv), M_DRM, M_NOWAIT | M_ZERO);
+	if (priv == NULL) {
+		return ENOMEM;
 	}
+
+	retcode = devfs_set_cdevpriv(priv, drm_close);
+	if (retcode != 0) {
+		free(priv, M_DRM);
+		return retcode;
+	}
+
+	DRM_LOCK();
+	priv->dev		= dev;
+	priv->uid		= p->td_ucred->cr_svuid;
+	priv->pid		= p->td_proc->p_pid;
+	priv->minor		= m;
+	priv->ioctl_count 	= 0;
+
+	/* for compatibility root is always authenticated */
+	priv->authenticated	= DRM_SUSER(p);
+
+	if (dev->driver->open) {
+		/* shared code returns -errno */
+		retcode = -dev->driver->open(dev, priv);
+		if (retcode != 0) {
+			devfs_clear_cdevpriv();
+			free(priv, M_DRM);
+			DRM_UNLOCK();
+			return retcode;
+		}
+	}
+
+	/* first opener automatically becomes master */
+	priv->master = TAILQ_EMPTY(&dev->files);
+
+	TAILQ_INSERT_TAIL(&dev->files, priv, link);
 	DRM_UNLOCK();
 	kdev->si_drv1 = dev;
 	return 0;

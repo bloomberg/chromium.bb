@@ -123,7 +123,6 @@ static drm_ioctl_desc_t		  drm_ioctls[256] = {
 static struct cdevsw drm_cdevsw = {
 	.d_version =	D_VERSION,
 	.d_open =	drm_open,
-	.d_close =	drm_close,
 	.d_read =	drm_read,
 	.d_ioctl =	drm_ioctl,
 	.d_poll =	drm_poll,
@@ -553,25 +552,15 @@ int drm_open(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	return retcode;
 }
 
-int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
+void drm_close(void *data)
 {
-	struct drm_device *dev = drm_get_device_from_kdev(kdev);
-	drm_file_t *file_priv;
+	struct drm_file *file_priv = data;
+	struct drm_device *dev = file_priv->dev;
 	int retcode = 0;
 
 	DRM_DEBUG("open_count = %d\n", dev->open_count);
 
 	DRM_LOCK();
-
-	file_priv = drm_find_file_by_proc(dev, p);
-	if (!file_priv) {
-		DRM_UNLOCK();
-		DRM_ERROR("can't find authenticator\n");
-		return EINVAL;
-	}
-
-	if (--file_priv->refs != 0)
-		goto done;
 
 	if (dev->driver->preclose != NULL)
 		dev->driver->preclose(dev, file_priv);
@@ -640,7 +629,6 @@ int drm_close(struct cdev *kdev, int flags, int fmt, DRM_STRUCTPROC *p)
 	 * End inline drm_release
 	 */
 
-done:
 	atomic_inc(&dev->counts[_DRM_STAT_CLOSES]);
 	device_unbusy(dev->device);
 	if (--dev->open_count == 0) {
@@ -648,8 +636,6 @@ done:
 	}
 
 	DRM_UNLOCK();
-	
-	return retcode;
 }
 
 /* drm_ioctl is called whenever a process performs an ioctl on /dev/drm.
@@ -663,12 +649,12 @@ int drm_ioctl(struct cdev *kdev, u_long cmd, caddr_t data, int flags,
 	int (*func)(struct drm_device *dev, void *data, struct drm_file *file_priv);
 	int nr = DRM_IOCTL_NR(cmd);
 	int is_driver_ioctl = 0;
-	drm_file_t *file_priv;
+	struct drm_file *file_priv;
 
 	DRM_LOCK();
-	file_priv = drm_find_file_by_proc(dev, p);
+	retcode = devfs_get_cdevpriv((void **)&file_priv);
 	DRM_UNLOCK();
-	if (file_priv == NULL) {
+	if (retcode != 0) {
 		DRM_ERROR("can't find authenticator\n");
 		return EINVAL;
 	}
