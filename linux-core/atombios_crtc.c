@@ -150,8 +150,7 @@ void atombios_crtc_set_timing(struct drm_crtc *crtc, SET_CRTC_TIMING_PARAMETERS_
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&conv_param);
 }
 
-void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode,
-			   int pll_flags)
+void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode)
 {
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
 	struct drm_device *dev = crtc->dev;
@@ -164,10 +163,17 @@ void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	uint32_t sclock = mode->clock;
 	uint32_t ref_div = 0, fb_div = 0, post_div = 0;
 	struct radeon_pll *pll;
+	int pll_flags = 0;
 
 	memset(&spc_param, 0, sizeof(SET_PIXEL_CLOCK_PS_ALLOCATION));
 
-	pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
+	if (!radeon_is_avivo(dev_priv))
+		pll_flags |= RADEON_PLL_LEGACY;
+
+	if (mode->clock > 120000) /* range limits??? */
+		pll_flags |= RADEON_PLL_PREFER_HIGH_FB_DIV;
+	else
+		pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
 
 	if (radeon_crtc->crtc_id == 0)
 		pll = &dev_priv->mode_info.p1pll;
@@ -293,6 +299,12 @@ void atombios_crtc_set_base(struct drm_crtc *crtc, int x, int y)
 	RADEON_WRITE(AVIVO_D1MODE_VIEWPORT_SIZE + radeon_crtc->crtc_offset,
 		     (crtc->mode.hdisplay << 16) | crtc->mode.vdisplay);
 
+	if (crtc->mode.flags & DRM_MODE_FLAG_INTERLACE)
+		RADEON_WRITE(AVIVO_D1MODE_DATA_FORMAT + radeon_crtc->crtc_offset,
+			     AVIVO_D1MODE_INTERLEAVE_EN);
+	else
+		RADEON_WRITE(AVIVO_D1MODE_DATA_FORMAT + radeon_crtc->crtc_offset,
+			     0);
 }
 
 void atombios_crtc_mode_set(struct drm_crtc *crtc,
@@ -305,7 +317,6 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct drm_encoder *encoder;
 	SET_CRTC_TIMING_PARAMETERS_PS_ALLOCATION crtc_timing;
-	int pll_flags = 0;
 	/* TODO color tiling */
 
 	memset(&crtc_timing, 0, sizeof(crtc_timing));
@@ -347,9 +358,10 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 	else
 		radeon_crtc_set_base(crtc, x, y);
 
-	atombios_crtc_set_pll(crtc, adjusted_mode, pll_flags);
+	atombios_crtc_set_pll(crtc, adjusted_mode);
 
 	atombios_crtc_set_timing(crtc, &crtc_timing);
+
 }
 
 static bool atombios_crtc_mode_fixup(struct drm_crtc *crtc,

@@ -517,9 +517,15 @@ static void radeon_atom_dac_dpms(struct drm_encoder *encoder, int mode)
 }
 
 static bool radeon_atom_dac_mode_fixup(struct drm_encoder *encoder,
-				  struct drm_display_mode *mode,
-				  struct drm_display_mode *adjusted_mode)
+				       struct drm_display_mode *mode,
+				       struct drm_display_mode *adjusted_mode)
 {
+
+	/* hw bug */
+	if ((mode->flags & DRM_MODE_FLAG_INTERLACE)
+	    && (mode->crtc_vsync_start < (mode->crtc_vdisplay + 2)))
+		adjusted_mode->crtc_vsync_start = adjusted_mode->crtc_vdisplay + 2;
+
 	return true;
 }
 
@@ -987,6 +993,12 @@ static bool radeon_atom_tmds_mode_fixup(struct drm_encoder *encoder,
 				  struct drm_display_mode *mode,
 				  struct drm_display_mode *adjusted_mode)
 {
+
+	/* hw bug */
+	if ((mode->flags & DRM_MODE_FLAG_INTERLACE)
+	    && (mode->crtc_vsync_start < (mode->crtc_vdisplay + 2)))
+		adjusted_mode->crtc_vsync_start = adjusted_mode->crtc_vdisplay + 2;
+
 	return true;
 }
 

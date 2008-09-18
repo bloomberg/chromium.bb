@@ -401,7 +401,7 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
 	uint32_t post_divider = 0;
 	uint32_t freq = 0;
 	uint8_t pll_gain;
-	int pll_flags = RADEON_PLL_LEGACY | RADEON_PLL_PREFER_LOW_REF_DIV;
+	int pll_flags = RADEON_PLL_LEGACY;
 	bool use_bios_divs = false;
 	/* PLL registers */
 	uint32_t ppll_ref_div = 0;
@@ -430,6 +430,11 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
 		{ 12, 7 },              /* VCLK_SRC/12              */
 		{  0, 0 }
 	};
+
+	if (mode->clock > 120000) /* range limits??? */
+		pll_flags |= RADEON_PLL_PREFER_HIGH_FB_DIV;
+	else
+		pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
 
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		if (encoder->crtc == crtc) {

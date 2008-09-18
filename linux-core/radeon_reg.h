@@ -3583,7 +3583,7 @@
 #define AVIVO_D1CRTC_V_SYNC_B_CNTL                              0x6034
 
 #define AVIVO_D1CRTC_CONTROL                                    0x6080
-#       define AVIVO_CRTC_EN                            (1<<0)
+#       define AVIVO_CRTC_EN                                    (1 << 0)
 #define AVIVO_D1CRTC_BLANK_CONTROL                              0x6084
 #define AVIVO_D1CRTC_INTERLACE_CONTROL                          0x6088
 #define AVIVO_D1CRTC_INTERLACE_STATUS                           0x608c
@@ -3595,30 +3595,30 @@
 
 #define AVIVO_D1GRPH_ENABLE                                     0x6100
 #define AVIVO_D1GRPH_CONTROL                                    0x6104
-#       define AVIVO_D1GRPH_CONTROL_DEPTH_8BPP          (0<<0)
-#       define AVIVO_D1GRPH_CONTROL_DEPTH_16BPP         (1<<0)
-#       define AVIVO_D1GRPH_CONTROL_DEPTH_32BPP         (2<<0)
-#       define AVIVO_D1GRPH_CONTROL_DEPTH_64BPP         (3<<0)
+#       define AVIVO_D1GRPH_CONTROL_DEPTH_8BPP                  (0 << 0)
+#       define AVIVO_D1GRPH_CONTROL_DEPTH_16BPP                 (1 << 0)
+#       define AVIVO_D1GRPH_CONTROL_DEPTH_32BPP                 (2 << 0)
+#       define AVIVO_D1GRPH_CONTROL_DEPTH_64BPP                 (3 << 0)
 
-#       define AVIVO_D1GRPH_CONTROL_8BPP_INDEXED        (0<<8)
+#       define AVIVO_D1GRPH_CONTROL_8BPP_INDEXED                (0 << 8)
 
-#       define AVIVO_D1GRPH_CONTROL_16BPP_ARGB1555      (0<<8)
-#       define AVIVO_D1GRPH_CONTROL_16BPP_RGB565        (1<<8)
-#       define AVIVO_D1GRPH_CONTROL_16BPP_ARGB4444      (2<<8)
-#       define AVIVO_D1GRPH_CONTROL_16BPP_AI88          (3<<8)
-#       define AVIVO_D1GRPH_CONTROL_16BPP_MONO16        (4<<8)
+#       define AVIVO_D1GRPH_CONTROL_16BPP_ARGB1555              (0 << 8)
+#       define AVIVO_D1GRPH_CONTROL_16BPP_RGB565                (1 << 8)
+#       define AVIVO_D1GRPH_CONTROL_16BPP_ARGB4444              (2 << 8)
+#       define AVIVO_D1GRPH_CONTROL_16BPP_AI88                  (3 << 8)
+#       define AVIVO_D1GRPH_CONTROL_16BPP_MONO16                (4 << 8)
 
-#       define AVIVO_D1GRPH_CONTROL_32BPP_ARGB8888      (0<<8)
-#       define AVIVO_D1GRPH_CONTROL_32BPP_ARGB2101010   (1<<8)
-#       define AVIVO_D1GRPH_CONTROL_32BPP_DIGITAL       (2<<8)
-#       define AVIVO_D1GRPH_CONTROL_32BPP_8B_ARGB2101010 (3<<8)
+#       define AVIVO_D1GRPH_CONTROL_32BPP_ARGB8888              (0 << 8)
+#       define AVIVO_D1GRPH_CONTROL_32BPP_ARGB2101010           (1 << 8)
+#       define AVIVO_D1GRPH_CONTROL_32BPP_DIGITAL               (2 << 8)
+#       define AVIVO_D1GRPH_CONTROL_32BPP_8B_ARGB2101010        (3 << 8)
 
 
-#       define AVIVO_D1GRPH_CONTROL_64BPP_ARGB16161616  (0<<8)
+#       define AVIVO_D1GRPH_CONTROL_64BPP_ARGB16161616          (0 << 8)
 
-#       define AVIVO_D1GRPH_SWAP_RB                     (1<<16)
-#       define AVIVO_D1GRPH_TILED                       (1<<20)
-#       define AVIVO_D1GRPH_MACRO_ADDRESS_MODE          (1<<21)
+#       define AVIVO_D1GRPH_SWAP_RB                             (1 << 16)
+#       define AVIVO_D1GRPH_TILED                               (1 << 20)
+#       define AVIVO_D1GRPH_MACRO_ADDRESS_MODE                  (1 << 21)
 
 #define AVIVO_D1GRPH_LUT_SEL                                    0x6108
 #define AVIVO_D1GRPH_PRIMARY_SURFACE_ADDRESS                    0x6110
@@ -3644,7 +3644,7 @@
 #define AVIVO_D1CUR_POSITION                    0x6414
 #define AVIVO_D1CUR_HOT_SPOT                    0x6418
 #define AVIVO_D1CUR_UPDATE                      0x6424
-#       define AVIVO_D1CURSOR_UPDATE_LOCK (1 << 16)
+#       define AVIVO_D1CURSOR_UPDATE_LOCK       (1 << 16)
 
 #define AVIVO_DC_LUT_RW_SELECT                  0x6480
 #define AVIVO_DC_LUT_RW_MODE                    0x6484
@@ -3664,7 +3664,8 @@
 #define AVIVO_DC_LUTA_WHITE_OFFSET_GREEN        0x64d4
 #define AVIVO_DC_LUTA_WHITE_OFFSET_RED          0x64d8
 
-
+#define AVIVO_D1MODE_DATA_FORMAT                0x6528
+#       define AVIVO_D1MODE_INTERLEAVE_EN       (1 << 0)
 #define AVIVO_D1MODE_DESKTOP_HEIGHT             0x652C
 #define AVIVO_D1MODE_VIEWPORT_START             0x6580
 #define AVIVO_D1MODE_VIEWPORT_SIZE              0x6584
@@ -3674,7 +3675,7 @@
 #define AVIVO_D1SCL_SCALER_ENABLE               0x6590
 #define AVIVO_D1SCL_SCALER_TAP_CONTROL	 	0x6594
 #define AVIVO_D1SCL_UPDATE                      0x65cc
-#       define AVIVO_D1SCL_UPDATE_LOCK         (1<<16)
+#       define AVIVO_D1SCL_UPDATE_LOCK          (1 << 16)
 
 /* second crtc */
 #define AVIVO_D2CRTC_H_TOTAL					0x6800

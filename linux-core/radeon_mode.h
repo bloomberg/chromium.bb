@@ -137,11 +137,16 @@ struct radeon_tmds_pll {
 
 #define RADEON_MAX_BIOS_CONNECTOR 16
 
-#define RADEON_PLL_USE_BIOS_DIVS   (1 << 0)
-#define RADEON_PLL_NO_ODD_POST_DIV (1 << 1)
-#define RADEON_PLL_USE_REF_DIV     (1 << 2)
-#define RADEON_PLL_LEGACY          (1 << 3)
-#define RADEON_PLL_PREFER_LOW_REF_DIV (1 << 4)
+#define RADEON_PLL_USE_BIOS_DIVS        (1 << 0)
+#define RADEON_PLL_NO_ODD_POST_DIV      (1 << 1)
+#define RADEON_PLL_USE_REF_DIV          (1 << 2)
+#define RADEON_PLL_LEGACY               (1 << 3)
+#define RADEON_PLL_PREFER_LOW_REF_DIV   (1 << 4)
+#define RADEON_PLL_PREFER_HIGH_REF_DIV  (1 << 5)
+#define RADEON_PLL_PREFER_LOW_FB_DIV    (1 << 6)
+#define RADEON_PLL_PREFER_HIGH_FB_DIV   (1 << 7)
+#define RADEON_PLL_PREFER_LOW_POST_DIV  (1 << 8)
+#define RADEON_PLL_PREFER_HIGH_POST_DIV (1 << 9)
 
 struct radeon_pll {
 	uint16_t reference_freq;
