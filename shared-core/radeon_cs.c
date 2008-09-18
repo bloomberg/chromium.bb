@@ -368,13 +368,14 @@ void r300_cs_id_emit(struct drm_device *dev, uint32_t *id)
 	/* ISYNC_CNTL should not have CPSCRACTH bit set */
 	*id = radeon_cs_id_get(dev_priv);
 	/* emit id in SCRATCH6 */
-	BEGIN_RING(6);
+	BEGIN_RING(8);
 	OUT_RING(CP_PACKET0(R300_CP_RESYNC_ADDR, 0));
 	OUT_RING(6);
 	OUT_RING(CP_PACKET0(R300_CP_RESYNC_DATA, 0));
 	OUT_RING(*id);
 	OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));
 	OUT_RING(R300_RB3D_DC_FINISH);
+	RADEON_WAIT_UNTIL_3D_IDLE();
 	ADVANCE_RING();	
 }
 

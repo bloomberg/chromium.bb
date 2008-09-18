@@ -407,9 +407,6 @@ int radeon_move(struct drm_buffer_object * bo,
 	if (new_mem->mem_type == DRM_BO_MEM_VRAM) {
 		if (radeon_move_vram(bo, evict, no_wait, new_mem))
 			goto fallback;
-	} else if (new_mem->mem_type == DRM_BO_MEM_LOCAL){ 
-		if (radeon_move_flip(bo, evict, no_wait, new_mem))
-			goto fallback;
 	} else {
 		if (radeon_move_flip(bo, evict, no_wait, new_mem))
 			goto fallback;
