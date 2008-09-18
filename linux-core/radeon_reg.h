@@ -274,6 +274,24 @@
 #define RADEON_BUS_CNTL1                    0x0034
 #       define RADEON_BUS_WAIT_ON_LOCK_EN    (1 << 4)
 
+//#define RADEON_PCIE_INDEX                   0x0030
+//#define RADEON_PCIE_DATA                    0x0034
+#define RADEON_PCIE_LC_LINK_WIDTH_CNTL             0xa2 /* PCIE */
+#       define RADEON_PCIE_LC_LINK_WIDTH_SHIFT     0
+#       define RADEON_PCIE_LC_LINK_WIDTH_MASK      0x7
+#       define RADEON_PCIE_LC_LINK_WIDTH_X0        0
+#       define RADEON_PCIE_LC_LINK_WIDTH_X1        1
+#       define RADEON_PCIE_LC_LINK_WIDTH_X2        2
+#       define RADEON_PCIE_LC_LINK_WIDTH_X4        3
+#       define RADEON_PCIE_LC_LINK_WIDTH_X8        4
+#       define RADEON_PCIE_LC_LINK_WIDTH_X12       5
+#       define RADEON_PCIE_LC_LINK_WIDTH_X16       6
+#       define RADEON_PCIE_LC_LINK_WIDTH_RD_SHIFT  4
+#       define RADEON_PCIE_LC_LINK_WIDTH_RD_MASK   0x70
+#       define RADEON_PCIE_LC_RECONFIG_NOW         (1 << 8)
+#       define RADEON_PCIE_LC_RECONFIG_LATER       (1 << 9)
+#       define RADEON_PCIE_LC_SHORT_RECONFIG_EN    (1 << 10)
+
 #define RADEON_CACHE_CNTL                   0x1724
 #define RADEON_CACHE_LINE                   0x0f0c /* PCI */
 #define RADEON_CAPABILITIES_ID              0x0f50 /* PCI */

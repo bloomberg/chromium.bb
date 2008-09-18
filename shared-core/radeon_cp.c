@@ -235,7 +235,7 @@ void RADEON_WRITE_PLL(struct drm_radeon_private *dev_priv, int addr, uint32_t da
 	radeon_pll_errata_after_data(dev_priv);
 }
 
-static u32 RADEON_READ_PCIE(drm_radeon_private_t *dev_priv, int addr)
+u32 RADEON_READ_PCIE(drm_radeon_private_t *dev_priv, int addr)
 {
 	RADEON_WRITE8(RADEON_PCIE_INDEX, addr & 0xff);
 	return RADEON_READ(RADEON_PCIE_DATA);

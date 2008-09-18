@@ -178,3 +178,63 @@ int radeon_resume(struct drm_device *dev)
 
 	return 0;
 }
+
+bool radeon_set_pcie_lanes(struct drm_device *dev, int lanes)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t link_width_cntl, mask;
+
+	/* FIXME wait for idle */
+
+
+	switch (lanes) {
+	case 0:
+		mask = RADEON_PCIE_LC_LINK_WIDTH_X0;
+		break;
+	case 1:
+		mask = RADEON_PCIE_LC_LINK_WIDTH_X1;
+		break;
+	case 2:
+		mask = RADEON_PCIE_LC_LINK_WIDTH_X2;
+		break;
+	case 4:
+		mask = RADEON_PCIE_LC_LINK_WIDTH_X4;
+		break;
+	case 8:
+		mask = RADEON_PCIE_LC_LINK_WIDTH_X8;
+		break;
+	case 12:
+		mask = RADEON_PCIE_LC_LINK_WIDTH_X12;
+		break;
+	case 16:
+	default:
+		mask = RADEON_PCIE_LC_LINK_WIDTH_X16;
+		break;
+	}
+
+	link_width_cntl = RADEON_READ_PCIE(dev_priv, RADEON_PCIE_LC_LINK_WIDTH_CNTL);
+
+	if ((link_width_cntl & RADEON_PCIE_LC_LINK_WIDTH_RD_MASK) ==
+	    (mask << RADEON_PCIE_LC_LINK_WIDTH_RD_SHIFT))
+		return true;
+
+	link_width_cntl &= ~(RADEON_PCIE_LC_LINK_WIDTH_MASK |
+			     RADEON_PCIE_LC_RECONFIG_NOW |
+			     RADEON_PCIE_LC_RECONFIG_LATER |
+			     RADEON_PCIE_LC_SHORT_RECONFIG_EN);
+	link_width_cntl |= mask;
+	RADEON_WRITE_PCIE(RADEON_PCIE_LC_LINK_WIDTH_CNTL, link_width_cntl);
+	RADEON_WRITE_PCIE(RADEON_PCIE_LC_LINK_WIDTH_CNTL, link_width_cntl | RADEON_PCIE_LC_RECONFIG_NOW);
+
+	/* wait for lane set to complete */
+	link_width_cntl = RADEON_READ_PCIE(dev_priv, RADEON_PCIE_LC_LINK_WIDTH_CNTL);
+	while (link_width_cntl == 0xffffffff)
+		link_width_cntl = RADEON_READ_PCIE(dev_priv, RADEON_PCIE_LC_LINK_WIDTH_CNTL);
+
+	if ((link_width_cntl & RADEON_PCIE_LC_LINK_WIDTH_RD_MASK) ==
+	    (mask << RADEON_PCIE_LC_LINK_WIDTH_RD_SHIFT))
+		return true;
+	else
+		return false;
+}
+

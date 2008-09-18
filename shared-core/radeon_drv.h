@@ -1298,6 +1298,7 @@ int radeon_resume(struct drm_device *dev);
 
 extern u32 RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr);
 extern void RADEON_WRITE_PLL(struct drm_radeon_private *dev_priv, int addr, uint32_t data);
+extern u32 RADEON_READ_PCIE(drm_radeon_private_t *dev_priv, int addr);
 
 #define RADEON_WRITE_P(reg, val, mask)		\
 do {						\
