@@ -326,5 +326,12 @@ void radeon_rmx_mode_fixup(struct drm_encoder *encoder,
 			   struct drm_display_mode *mode,
 			   struct drm_display_mode *adjusted_mode);
 void radeon_enc_destroy(struct drm_encoder *encoder);
+void radeon_emit_copy_blit(struct drm_device * dev,
+			   uint32_t src_offset,
+			   uint32_t dst_offset,
+			   uint32_t pages);
+void radeon_copy_fb(struct drm_device *dev, struct drm_gem_object *dst_obj);
+void radeon_combios_asic_init(struct drm_device *dev);
+extern int radeon_static_clocks_init(struct drm_device *dev);
 
 #endif

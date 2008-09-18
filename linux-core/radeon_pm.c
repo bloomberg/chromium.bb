@@ -151,7 +151,7 @@ int radeon_resume(struct drm_device *dev)
 	/* reset swi reg */
 	RADEON_WRITE(RADEON_LAST_SWI_REG, dev_priv->counter);
 
-	radeon_enable_interrupt(dev);
+//	radeon_enable_interrupt(dev);
 
 	/* reset the context for userspace */
 	if (dev->primary->master) {
