@@ -2338,11 +2338,9 @@ int radeon_modeset_cp_resume(struct drm_device *dev)
 	}
 	radeon_gart_flush(dev);
 
-	DRM_ERROR("microcode loading\n");
 	radeon_cp_load_microcode(dev_priv);
 	radeon_cp_init_ring_buffer(dev, dev_priv);
 
-	DRM_ERROR("engine init\n");
 	radeon_do_engine_reset(dev);
 
 	radeon_do_cp_start(dev_priv);

@@ -612,7 +612,6 @@ static int radeon_gart_init(struct drm_device *dev)
 		if (!dev_priv->mm.pcie_table_backup)
 			return -EINVAL;
 
-		DRM_ERROR("pcie table bo created %p, %x\n", dev_priv->mm.pcie_table.bo, dev_priv->mm.pcie_table.bo->offset);
 		ret = drm_bo_kmap(dev_priv->mm.pcie_table.bo, 0, RADEON_PCIGART_TABLE_SIZE >> PAGE_SHIFT,
 				  &dev_priv->mm.pcie_table.kmap);
 		if (ret)
