@@ -491,6 +491,7 @@ extern struct drm_buf *radeon_freelist_get(struct drm_device * dev);
 
 extern int radeon_wait_ring(drm_radeon_private_t * dev_priv, int n);
 
+extern int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv);
 extern int radeon_do_cp_idle(drm_radeon_private_t * dev_priv);
 
 extern int radeon_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv);

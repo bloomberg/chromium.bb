@@ -356,7 +356,7 @@ static int radeon_do_wait_for_fifo(drm_radeon_private_t * dev_priv, int entries)
 	return -EBUSY;
 }
 
-static int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv)
+int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv)
 {
 	int i, ret;
 

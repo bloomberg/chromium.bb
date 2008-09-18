@@ -707,6 +707,176 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 
 }
 
+static bool avivo_get_mc_idle(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	if (dev_priv->chip_family >= CHIP_R600) {
+		/* no idea where this is on r600 yet */
+		return true;
+	} else if (dev_priv->chip_family == CHIP_RV515) {
+		if (radeon_read_mc_reg(dev_priv, RV515_MC_STATUS) & RV515_MC_STATUS_IDLE)
+			return true;
+		else
+			return false;
+	} else if (dev_priv->chip_family == CHIP_RS600) {
+		if (radeon_read_mc_reg(dev_priv, RS600_MC_STATUS) & RS600_MC_STATUS_IDLE)
+			return true;
+		else
+			return false;
+	} else if ((dev_priv->chip_family == CHIP_RS690) ||
+		   (dev_priv->chip_family == CHIP_RS740)) {
+		if (radeon_read_mc_reg(dev_priv, RS690_MC_STATUS) & RS690_MC_STATUS_IDLE)
+			return true;
+		else
+			return false;
+	} else {
+		if (radeon_read_mc_reg(dev_priv, R520_MC_STATUS) & R520_MC_STATUS_IDLE)
+			return true;
+		else
+			return false;
+	}
+}
+
+
+static void avivo_disable_mc_clients(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t tmp;
+	int timeout;
+
+	radeon_do_wait_for_idle(dev_priv);
+
+	RADEON_WRITE(AVIVO_D1VGA_CONTROL, RADEON_READ(AVIVO_D1VGA_CONTROL) & ~AVIVO_DVGA_CONTROL_MODE_ENABLE);
+	RADEON_WRITE(AVIVO_D2VGA_CONTROL, RADEON_READ(AVIVO_D2VGA_CONTROL) & ~AVIVO_DVGA_CONTROL_MODE_ENABLE);
+
+	tmp = RADEON_READ(AVIVO_D1CRTC_CONTROL);	
+	RADEON_WRITE(AVIVO_D1CRTC_CONTROL, tmp & ~AVIVO_CRTC_EN);
+
+	tmp = RADEON_READ(AVIVO_D2CRTC_CONTROL);	
+	RADEON_WRITE(AVIVO_D2CRTC_CONTROL, tmp & ~AVIVO_CRTC_EN);
+
+	tmp = RADEON_READ(AVIVO_D2CRTC_CONTROL);
+
+	udelay(1000);
+
+	timeout = 0;
+	while (!(avivo_get_mc_idle(dev))) {
+		if (++timeout > 100000) {
+			DRM_ERROR("Timeout waiting for memory controller to update settings\n");
+			DRM_ERROR("Bad things may or may not happen\n");
+		}
+		udelay(10);
+	}
+}
+
+static inline u32 radeon_busy_wait(struct drm_device *dev, uint32_t reg, uint32_t bits,
+				  unsigned int timeout)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	u32 status;
+
+	do {
+		udelay(10);
+		status = RADEON_READ(reg);
+		timeout--;
+	} while(status != 0xffffffff && (status & bits) && (timeout > 0));
+
+	if (timeout == 0)
+		status = 0xffffffff;
+	     
+	return status;
+}
+
+/* Wait for vertical sync on primary CRTC */
+static void radeon_wait_for_vsync(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t       crtc_gen_cntl;
+	int ret;
+
+	crtc_gen_cntl = RADEON_READ(RADEON_CRTC_GEN_CNTL);
+	if ((crtc_gen_cntl & RADEON_CRTC_DISP_REQ_EN_B) ||
+	    !(crtc_gen_cntl & RADEON_CRTC_EN))
+		return;
+
+	/* Clear the CRTC_VBLANK_SAVE bit */
+	RADEON_WRITE(RADEON_CRTC_STATUS, RADEON_CRTC_VBLANK_SAVE_CLEAR);
+
+	radeon_busy_wait(dev, RADEON_CRTC_STATUS, RADEON_CRTC_VBLANK_SAVE, 2000);
+
+}
+
+/* Wait for vertical sync on primary CRTC */
+static void radeon_wait_for_vsync2(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t       crtc2_gen_cntl;
+	struct timeval timeout;
+
+	crtc2_gen_cntl = RADEON_READ(RADEON_CRTC2_GEN_CNTL);
+	if ((crtc2_gen_cntl & RADEON_CRTC2_DISP_REQ_EN_B) ||
+	    !(crtc2_gen_cntl & RADEON_CRTC2_EN))
+		return;
+
+	/* Clear the CRTC_VBLANK_SAVE bit */
+	RADEON_WRITE(RADEON_CRTC2_STATUS, RADEON_CRTC2_VBLANK_SAVE_CLEAR);
+
+	radeon_busy_wait(dev, RADEON_CRTC2_STATUS, RADEON_CRTC2_VBLANK_SAVE, 2000);
+}
+
+static void legacy_disable_mc_clients(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	uint32_t old_mc_status, status_idle;
+	uint32_t ov0_scale_cntl, crtc_ext_cntl, crtc_gen_cntl, crtc2_gen_cntl;
+	uint32_t status;
+
+	radeon_do_wait_for_idle(dev_priv);
+
+	if (dev_priv->flags & RADEON_IS_IGP)
+		return;
+
+	old_mc_status = RADEON_READ(RADEON_MC_STATUS);
+
+	/* stop display and memory access */
+	ov0_scale_cntl = RADEON_READ(RADEON_OV0_SCALE_CNTL);
+	RADEON_WRITE(RADEON_OV0_SCALE_CNTL, ov0_scale_cntl & ~RADEON_SCALER_ENABLE);
+	crtc_ext_cntl = RADEON_READ(RADEON_CRTC_EXT_CNTL);
+	RADEON_WRITE(RADEON_CRTC_EXT_CNTL, crtc_ext_cntl | RADEON_CRTC_DISPLAY_DIS);
+	crtc_gen_cntl = RADEON_READ(RADEON_CRTC_GEN_CNTL);
+
+	radeon_wait_for_vsync(dev);
+
+	RADEON_WRITE(RADEON_CRTC_GEN_CNTL,
+		     (crtc_gen_cntl & ~(RADEON_CRTC_CUR_EN | RADEON_CRTC_ICON_EN)) |
+		     RADEON_CRTC_DISP_REQ_EN_B | RADEON_CRTC_EXT_DISP_EN);
+
+	if (!(dev_priv->flags & RADEON_SINGLE_CRTC)) {
+		crtc2_gen_cntl = RADEON_READ(RADEON_CRTC2_GEN_CNTL);
+
+		radeon_wait_for_vsync2(dev);
+		RADEON_WRITE(RADEON_CRTC2_GEN_CNTL,
+			     (crtc2_gen_cntl & 
+			      ~(RADEON_CRTC2_CUR_EN | RADEON_CRTC2_ICON_EN)) |
+			     RADEON_CRTC2_DISP_REQ_EN_B);
+	}
+
+	udelay(500);
+
+	if (radeon_is_r300(dev_priv))
+		status_idle = R300_MC_IDLE;
+	else
+		status_idle = RADEON_MC_IDLE;
+
+	status = radeon_busy_wait(dev, RADEON_MC_STATUS, status_idle, 200000);
+	if (status == 0xffffffff) {
+		DRM_ERROR("Timeout waiting for memory controller to update settings\n");
+		DRM_ERROR("Bad things may or may not happen\n");
+	}
+}
+
+
 void radeon_init_memory_map(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
@@ -776,14 +946,20 @@ void radeon_init_memory_map(struct drm_device *dev)
 	else
 		dev_priv->fb_location = (dev_priv->mc_fb_location & 0xffff) << 16;
 
+	/* updating mc regs here */
+	if (radeon_is_avivo(dev_priv))
+		avivo_disable_mc_clients(dev);
+	else
+		legacy_disable_mc_clients(dev);
+
+	radeon_write_fb_location(dev_priv, dev_priv->mc_fb_location);
+
 	if (radeon_is_avivo(dev_priv)) {
 		if (dev_priv->chip_family >= CHIP_R600) 
 			RADEON_WRITE(R600_HDP_NONSURFACE_BASE, (dev_priv->mc_fb_location << 16) & 0xff0000);
 		else
 			RADEON_WRITE(AVIVO_HDP_FB_LOCATION, dev_priv->mc_fb_location);
 	}
-
-	radeon_write_fb_location(dev_priv, dev_priv->mc_fb_location);
 
 	dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffff) << 16;
 	dev_priv->fb_size =
