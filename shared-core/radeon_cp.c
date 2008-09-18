@@ -2549,7 +2549,9 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 	
-		radeon_gem_mm_init(dev);
+		ret = radeon_gem_mm_init(dev);
+ 		if (ret)
+ 			goto modeset_fail;
 		radeon_modeset_init(dev);
 
 		radeon_modeset_cp_init(dev);
@@ -2559,6 +2561,10 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	}
 
 
+	return ret;
+modeset_fail:
+	dev->driver->driver_features &= ~DRIVER_MODESET;
+	drm_put_minor(&dev->control);
 	return ret;
 }
 

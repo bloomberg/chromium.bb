@@ -667,7 +667,10 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 				       DRM_BO_FLAG_MAPPABLE | DRM_BO_FLAG_NO_EVICT,
 				       0, 1, 0, &dev_priv->mm.ring.bo);
 	if (ret) {
-		DRM_ERROR("failed to allocate ring\n");
+		if (dev_priv->flags & RADEON_IS_AGP)
+			DRM_ERROR("failed to allocate ring - most likely an AGP driver bug\n");
+		else
+			DRM_ERROR("failed to allocate ring\n");
 		return -EINVAL;
 	}
 
@@ -1004,8 +1007,10 @@ int radeon_gem_mm_init(struct drm_device *dev)
 	/* need to allocate some objects in the GART */
 	/* ring + ring read ptr */
 	ret = radeon_alloc_gart_objects(dev);
-	if (ret)
+	if (ret) {
+		radeon_gem_mm_fini(dev);
 		return -EINVAL;
+	}
 
 	dev_priv->mm_enabled = true;
 	return 0;
@@ -1508,8 +1513,10 @@ static void radeon_gem_dma_bufs_destroy(struct drm_device *dev)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	drm_dma_takedown(dev);
 
-	drm_bo_kunmap(&dev_priv->mm.dma_bufs.kmap);
-	drm_bo_usage_deref_unlocked(&dev_priv->mm.dma_bufs.bo);
+	if (dev_priv->mm.dma_bufs.bo) {
+		drm_bo_kunmap(&dev_priv->mm.dma_bufs.kmap);
+		drm_bo_usage_deref_unlocked(&dev_priv->mm.dma_bufs.bo);
+	}
 }
 
 
