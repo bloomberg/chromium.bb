@@ -492,3 +492,5 @@ int drm_put_minor(struct drm_minor **minor_p)
 	*minor_p = NULL;
 	return 0;
 }
+
+EXPORT_SYMBOL(drm_put_minor);
