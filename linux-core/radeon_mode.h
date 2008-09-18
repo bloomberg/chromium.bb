@@ -292,7 +292,7 @@ extern void radeon_atombios_get_lvds_info(struct radeon_encoder *encoder);
 extern void radeon_atombios_get_tmds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder);
-extern bool radeon_combios_get_ext_tmds_info(struct radeon_encoder *encoder);
+extern void radeon_combios_get_ext_tmds_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tv_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_tv_dac_info(struct radeon_encoder *encoder);
 extern bool radeon_combios_get_primary_dac_info(struct radeon_encoder *encoder);

@@ -767,7 +767,7 @@ bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder)
 	return false;
 }
 
-bool radeon_combios_get_ext_tmds_info(struct radeon_encoder *encoder)
+void radeon_combios_get_ext_tmds_info(struct radeon_encoder *encoder)
 {
 	struct drm_device *dev = encoder->base.dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
