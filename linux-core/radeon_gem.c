@@ -264,6 +264,9 @@ int radeon_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 #endif
 out_unlock:
 	mutex_unlock(&obj_priv->bo->mutex);
+	mutex_lock(&dev->struct_mutex);
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }
 
@@ -322,14 +325,7 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 	int flags = DRM_BO_FLAG_NO_EVICT;
 	int mask = DRM_BO_FLAG_NO_EVICT;
 
-	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
-	if (obj == NULL)
-		return -EINVAL;
-
-	obj_priv = obj->driver_private;
-
-	DRM_DEBUG("got here %p %p %d\n", obj, obj_priv->bo, atomic_read(&obj_priv->bo->usage));
-	/* validate into a pin with no fence */
+	/* check for valid args */
 	if (args->pin_domain) {
 		mask |= DRM_BO_MASK_MEM;
 		if (args->pin_domain == RADEON_GEM_DOMAIN_GTT)
@@ -340,6 +336,14 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 			return -EINVAL;
 	}
 
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	obj_priv = obj->driver_private;
+
+	/* validate into a pin with no fence */
+	DRM_DEBUG("got here %p %p %d\n", obj, obj_priv->bo, atomic_read(&obj_priv->bo->usage));
 	if (!(obj_priv->bo->type != drm_bo_type_kernel && !DRM_SUSER(DRM_CURPROC))) {
 		ret = drm_bo_do_validate(obj_priv->bo, flags, mask,
 					 DRM_BO_HINT_DONT_FENCE, 0);
@@ -1027,7 +1031,7 @@ static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_pri
 
 	obj = drm_gem_object_lookup(dev, file_priv, reloc[1]);
 	if (!obj)
-		return false;
+		return -EINVAL;
 
 	obj_priv = obj->driver_private;
 	radeon_gem_set_domain(obj, read_domains, write_domain, &flags, false);
