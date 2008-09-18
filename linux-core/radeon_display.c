@@ -31,6 +31,7 @@
 #include <asm/div64.h>
 
 #include "drm_crtc_helper.h"
+#include "drm_edid.h"
 
 int radeon_ddc_dump(struct drm_connector *connector);
 
@@ -305,6 +306,11 @@ int radeon_ddc_get_modes(struct radeon_connector *radeon_connector)
 	edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
 	radeon_i2c_do_lock(radeon_connector, 0);
 	if (edid) {
+		/* update digital bits here */
+		if (edid->digital)
+			radeon_connector->use_digital = 1;
+		else
+			radeon_connector->use_digital = 0;
 		drm_mode_connector_update_edid_property(&radeon_connector->base, edid);
 		ret = drm_add_edid_modes(&radeon_connector->base, edid);
 		kfree(edid);

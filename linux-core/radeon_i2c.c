@@ -27,6 +27,38 @@
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 
+/**
+ * radeon_ddc_probe
+ *
+ */
+bool radeon_ddc_probe(struct radeon_connector *radeon_connector)
+{
+        u8 out_buf[] = { 0x0, 0x0};
+        u8 buf[2];
+        int ret;
+        struct i2c_msg msgs[] = {
+                {
+                        .addr = 0x50,
+                        .flags = 0,
+                        .len = 1,
+                        .buf = out_buf,
+                },
+                {
+                        .addr = 0x50,
+                        .flags = I2C_M_RD,
+                        .len = 1,
+                        .buf = buf,
+                }
+        };
+
+        ret = i2c_transfer(&radeon_connector->ddc_bus->adapter, msgs, 2);
+        if (ret == 2)
+                return true;
+
+        return false;
+}
+
+
 void radeon_i2c_do_lock(struct radeon_connector *radeon_connector, int lock_state)
 {
 	struct drm_radeon_private *dev_priv = radeon_connector->base.dev->dev_private;
@@ -161,3 +193,4 @@ struct drm_encoder *radeon_best_encoder(struct drm_connector *connector)
 {
 	return NULL;
 }
+

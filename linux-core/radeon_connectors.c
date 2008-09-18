@@ -163,18 +163,16 @@ static int radeon_vga_mode_valid(struct drm_connector *connector,
 
 static enum drm_connector_status radeon_vga_detect(struct drm_connector *connector)
 {
-	struct edid *edid;
 	struct radeon_connector *radeon_connector = to_radeon_connector(connector);
 	struct drm_encoder *encoder;
 	struct drm_encoder_helper_funcs *encoder_funcs;
+	bool ret;
 
 	radeon_i2c_do_lock(radeon_connector, 1);
-	edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
+	ret = radeon_ddc_probe(radeon_connector);
 	radeon_i2c_do_lock(radeon_connector, 0);
-	if (edid) {
-		kfree(edid);
+	if (ret)
 		return connector_status_connected;
-	}
 
 	/* if EDID fails to a load detect */
 	encoder = radeon_best_single_encoder(connector);
@@ -200,27 +198,19 @@ struct drm_connector_funcs radeon_vga_connector_funcs = {
 
 static enum drm_connector_status radeon_dvi_detect(struct drm_connector *connector)
 {
-	struct edid *edid;
 	struct radeon_connector *radeon_connector = to_radeon_connector(connector);
 	struct drm_encoder *encoder;
 	struct drm_encoder_helper_funcs *encoder_funcs;
 	struct drm_mode_object *obj;
 	int i;
 	enum drm_connector_status ret;
+	bool dret;
 
 	radeon_i2c_do_lock(radeon_connector, 1);
-	edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
+	dret = radeon_ddc_probe(radeon_connector);
 	radeon_i2c_do_lock(radeon_connector, 0);
-	if (edid) {
-		/* if the monitor is digital - set the bits */
-		if (edid->digital)
-			radeon_connector->use_digital = 1;
-		else
-			radeon_connector->use_digital = 0;
-
-		kfree(edid);
+	if (dret)
 		return connector_status_connected;
-	}
 
 	for (i = 0; i < DRM_CONNECTOR_MAX_ENCODER; i++) {
 		if (connector->encoder_ids[i] == 0)
