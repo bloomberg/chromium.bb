@@ -2506,8 +2506,6 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	else
 		dev_priv->flags |= RADEON_IS_PCI;
 
-
-	    
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & RADEON_IS_AGP) ? "AGP" : (((dev_priv->flags & RADEON_IS_PCIE) ? "PCIE" : "PCI"))));
 
@@ -2527,7 +2525,7 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	if (dev_priv->chip_family == CHIP_R300 &&
 	    (RADEON_READ(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK) == RADEON_CFG_ATI_REV_A11)
 		dev_priv->pll_errata |= CHIP_ERRATA_R300_CG;
-		
+
 	if (dev_priv->chip_family == CHIP_RV200 ||
 	    dev_priv->chip_family == CHIP_RS200)
 		dev_priv->pll_errata |= CHIP_ERRATA_PLL_DUMMYREADS;

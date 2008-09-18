@@ -396,7 +396,10 @@ void radeon_compute_pll(struct radeon_pll *pll,
 			    (post_div == 7) ||
 			    (post_div == 9) ||
 			    (post_div == 10) ||
-			    (post_div == 11))
+			    (post_div == 11) ||
+			    (post_div == 13) ||
+			    (post_div == 14) ||
+			    (post_div == 15))
 				continue;
 		}
 
@@ -475,7 +478,10 @@ void radeon_compute_pll(struct radeon_pll *pll,
 void radeon_get_clock_info(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	struct radeon_pll *pll = &dev_priv->mode_info.pll;
+	struct radeon_pll *p1pll = &dev_priv->mode_info.p1pll;
+	struct radeon_pll *p2pll = &dev_priv->mode_info.p2pll;
+	struct radeon_pll *spll = &dev_priv->mode_info.spll;
+	struct radeon_pll *mpll = &dev_priv->mode_info.mpll;
 	int ret;
 
 	if (dev_priv->is_atom_bios)
@@ -484,25 +490,56 @@ void radeon_get_clock_info(struct drm_device *dev)
 		ret = radeon_combios_get_clock_info(dev);
 
 	if (ret) {
-
-		if (pll->reference_div < 2) pll->reference_div = 12;
+		if (p1pll->reference_div < 2)
+			p1pll->reference_div = 12;
+		if (p2pll->reference_div < 2)
+			p2pll->reference_div = 12;
 	} else {
 		// TODO FALLBACK
 	}
 
+	/* pixel clocks */
 	if (radeon_is_avivo(dev_priv)) {
-		pll->min_post_div = 2;
-		pll->max_post_div = 0x7f;
+		p1pll->min_post_div = 2;
+		p1pll->max_post_div = 0x7f;
+		p2pll->min_post_div = 2;
+		p2pll->max_post_div = 0x7f;
 	} else {
-		pll->min_post_div = 1;
-		pll->max_post_div = 12; // 16 on crtc 0??
+		p1pll->min_post_div = 1;
+		p1pll->max_post_div = 16;
+		p2pll->min_post_div = 1;
+		p2pll->max_post_div = 12;
 	}
 
-	pll->min_ref_div = 2;
-	pll->max_ref_div = 0x3ff;
-	pll->min_feedback_div = 4;
-	pll->max_feedback_div = 0x7ff;
-	pll->best_vco = 0;
+	p1pll->min_ref_div = 2;
+	p1pll->max_ref_div = 0x3ff;
+	p1pll->min_feedback_div = 4;
+	p1pll->max_feedback_div = 0x7ff;
+	p1pll->best_vco = 0;
+
+	p2pll->min_ref_div = 2;
+	p2pll->max_ref_div = 0x3ff;
+	p2pll->min_feedback_div = 4;
+	p2pll->max_feedback_div = 0x7ff;
+	p2pll->best_vco = 0;
+
+	/* system clock */
+	spll->min_post_div = 1;
+	spll->max_post_div = 1;
+	spll->min_ref_div = 2;
+	spll->max_ref_div = 0xff;
+	spll->min_feedback_div = 4;
+	spll->max_feedback_div = 0xff;
+	spll->best_vco = 0;
+
+	/* memory clock */
+	mpll->min_post_div = 1;
+	mpll->max_post_div = 1;
+	mpll->min_ref_div = 2;
+	mpll->max_ref_div = 0xff;
+	mpll->min_feedback_div = 4;
+	mpll->max_feedback_div = 0xff;
+	mpll->best_vco = 0;
 
 }
 

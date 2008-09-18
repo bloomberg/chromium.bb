@@ -161,10 +161,22 @@ struct radeon_pll {
 	uint32_t best_vco;
 };
 
+struct radeon_i2c_chan {
+	struct drm_device *dev;
+	struct i2c_adapter adapter;
+	struct i2c_algo_bit_data algo;
+	struct radeon_i2c_bus_rec rec;
+};
+
 struct radeon_mode_info {
 	struct atom_context *atom_context;
 	struct radeon_bios_connector bios_connector[RADEON_MAX_BIOS_CONNECTOR];
-	struct radeon_pll pll;
+	struct radeon_pll p1pll;
+	struct radeon_pll p2pll;
+	struct radeon_pll spll;
+	struct radeon_pll mpll;
+	uint32_t mclk;
+	uint32_t sclk;
 };
 
 struct radeon_crtc {
@@ -177,14 +189,6 @@ struct radeon_crtc {
 	struct radeon_framebuffer *fbdev_fb;
 	struct drm_mode_set mode_set;
 };
-
-struct radeon_i2c_chan {
-	struct drm_device *dev;
-	struct i2c_adapter adapter;
-	struct i2c_algo_bit_data algo;
-	struct radeon_i2c_bus_rec rec;
-};
-
 
 #define RADEON_USE_RMX 1
 
@@ -277,6 +281,8 @@ extern void atombios_crtc_mode_set(struct drm_crtc *crtc,
 				   struct drm_display_mode *adjusted_mode,
 				   int x, int y);
 extern void atombios_crtc_dpms(struct drm_crtc *crtc, int mode);
+
+extern void radeon_crtc_set_base(struct drm_crtc *crtc, int x, int y);
 
 extern int radeon_crtc_cursor_set(struct drm_crtc *crtc,
 				  struct drm_file *file_priv,

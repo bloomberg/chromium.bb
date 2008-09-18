@@ -409,7 +409,7 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
         uint32_t htotal_cntl = 0;
         uint32_t vclk_ecp_cntl;
 
-	struct radeon_pll *pll = &dev_priv->mode_info.pll;
+	struct radeon_pll *pll = &dev_priv->mode_info.p1pll;
 
 	struct {
 		int divider;
@@ -485,7 +485,7 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
 	vclk_ecp_cntl = (RADEON_READ_PLL(dev_priv, RADEON_VCLK_ECP_CNTL) &
 			 ~RADEON_VCLK_SRC_SEL_MASK) | RADEON_VCLK_SRC_SEL_PPLLCLK;
 
-	pll_gain = radeon_compute_pll_gain(dev_priv->mode_info.pll.reference_freq,
+	pll_gain = radeon_compute_pll_gain(dev_priv->mode_info.p1pll.reference_freq,
 					   ppll_ref_div & RADEON_PPLL_REF_DIV_MASK,
 					   ppll_div_3 & RADEON_PPLL_FB3_DIV_MASK);
 
@@ -812,7 +812,7 @@ static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode
 	uint32_t htotal_cntl2 = 0;
 	uint32_t pixclks_cntl;
 
-	struct radeon_pll *pll = &dev_priv->mode_info.pll;
+	struct radeon_pll *pll = &dev_priv->mode_info.p2pll;
 
 	struct {
 		int divider;
@@ -882,7 +882,7 @@ static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode
 			     ~(RADEON_PIX2CLK_SRC_SEL_MASK)) |
 			    RADEON_PIX2CLK_SRC_SEL_P2PLLCLK);
 
-	pll_gain = radeon_compute_pll_gain(dev_priv->mode_info.pll.reference_freq,
+	pll_gain = radeon_compute_pll_gain(dev_priv->mode_info.p2pll.reference_freq,
 					   p2pll_ref_div & RADEON_P2PLL_REF_DIV_MASK,
 					   p2pll_div_0 & RADEON_P2PLL_FB0_DIV_MASK);
 

@@ -37,7 +37,7 @@ union atom_supported_devices {
   struct _ATOM_SUPPORTED_DEVICES_INFO_2d1 info_2d1;
 };
 
-static inline struct radeon_i2c_bus_rec radeon_lookup_gpio_for_ddc(struct drm_device *dev, uint8_t id)
+static inline struct radeon_i2c_bus_rec radeon_lookup_gpio(struct drm_device *dev, uint8_t id)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct atom_context *ctx = dev_priv->mode_info.atom_context;
@@ -160,13 +160,13 @@ bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device 
 			 (dev_priv->chip_family == CHIP_RS740)) {
 			if ((i == ATOM_DEVICE_DFP2_INDEX) || (i == ATOM_DEVICE_DFP3_INDEX))
 				mode_info->bios_connector[i].ddc_i2c =
-					radeon_lookup_gpio_for_ddc(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux + 1);
+					radeon_lookup_gpio(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux + 1);
 			else
 				mode_info->bios_connector[i].ddc_i2c =
-					radeon_lookup_gpio_for_ddc(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux);
+					radeon_lookup_gpio(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux);
 		} else
 			mode_info->bios_connector[i].ddc_i2c =
-				radeon_lookup_gpio_for_ddc(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux);
+				radeon_lookup_gpio(dev, ci.sucI2cId.sbfAccess.bfI2C_LineMux);
 
 		if (i == ATOM_DEVICE_DFP1_INDEX)
 			mode_info->bios_connector[i].tmds_type = TMDS_INT;
@@ -277,32 +277,79 @@ bool radeon_atom_get_clock_info(struct drm_device *dev)
 	int index = GetIndexIntoMasterTable(DATA, FirmwareInfo);
 	union firmware_info *firmware_info;
 	uint8_t frev, crev;
-	struct radeon_pll *pll = &mode_info->pll;
+	struct radeon_pll *p1pll = &mode_info->p1pll;
+	struct radeon_pll *p2pll = &mode_info->p2pll;
+	struct radeon_pll *spll = &mode_info->spll;
+	struct radeon_pll *mpll = &mode_info->mpll;
 	uint16_t data_offset;
 
 	atom_parse_data_header(mode_info->atom_context, index, NULL, &frev, &crev, &data_offset);
 
 	firmware_info = (union firmware_info *)(mode_info->atom_context->bios + data_offset);
 
-	pll->reference_freq = le16_to_cpu(firmware_info->info.usReferenceClock);
-	pll->reference_div = 0;
+	if (firmware_info) {
+		/* pixel clocks */
+		p1pll->reference_freq = le16_to_cpu(firmware_info->info.usReferenceClock);
+		p1pll->reference_div = 0;
 
-	pll->pll_out_min = le16_to_cpu(firmware_info->info.usMinPixelClockPLL_Output);
-	pll->pll_out_max = le32_to_cpu(firmware_info->info.ulMaxPixelClockPLL_Output);
+		p1pll->pll_out_min = le16_to_cpu(firmware_info->info.usMinPixelClockPLL_Output);
+		p1pll->pll_out_max = le32_to_cpu(firmware_info->info.ulMaxPixelClockPLL_Output);
 
-	if (pll->pll_out_min == 0) {
-		if (radeon_is_avivo(dev_priv))
-			pll->pll_out_min = 64800;
-		else
-			pll->pll_out_min = 20000;
+		if (p1pll->pll_out_min == 0) {
+			if (radeon_is_avivo(dev_priv))
+				p1pll->pll_out_min = 64800;
+			else
+				p1pll->pll_out_min = 20000;
+		}
+
+		p1pll->pll_in_min = le16_to_cpu(firmware_info->info.usMinPixelClockPLL_Input);
+		p1pll->pll_in_max = le16_to_cpu(firmware_info->info.usMaxPixelClockPLL_Input);
+
+		*p2pll = *p1pll;
+
+		/* system clock */
+		spll->reference_freq = le16_to_cpu(firmware_info->info.usReferenceClock);
+		spll->reference_div = 0;
+
+		spll->pll_out_min = le16_to_cpu(firmware_info->info.usMinEngineClockPLL_Output);
+		spll->pll_out_max = le32_to_cpu(firmware_info->info.ulMaxEngineClockPLL_Output);
+
+		/* ??? */
+		if (spll->pll_out_min == 0) {
+			if (radeon_is_avivo(dev_priv))
+				spll->pll_out_min = 64800;
+			else
+				spll->pll_out_min = 20000;
+		}
+
+		spll->pll_in_min = le16_to_cpu(firmware_info->info.usMinEngineClockPLL_Input);
+		spll->pll_in_max = le16_to_cpu(firmware_info->info.usMaxEngineClockPLL_Input);
+
+
+		/* memory clock */
+		mpll->reference_freq = le16_to_cpu(firmware_info->info.usReferenceClock);
+		mpll->reference_div = 0;
+
+		mpll->pll_out_min = le16_to_cpu(firmware_info->info.usMinMemoryClockPLL_Output);
+		mpll->pll_out_max = le32_to_cpu(firmware_info->info.ulMaxMemoryClockPLL_Output);
+
+		/* ??? */
+		if (mpll->pll_out_min == 0) {
+			if (radeon_is_avivo(dev_priv))
+				mpll->pll_out_min = 64800;
+			else
+				mpll->pll_out_min = 20000;
+		}
+
+		mpll->pll_in_min = le16_to_cpu(firmware_info->info.usMinMemoryClockPLL_Input);
+		mpll->pll_in_max = le16_to_cpu(firmware_info->info.usMaxMemoryClockPLL_Input);
+
+		mode_info->sclk = le32_to_cpu(firmware_info->info.ulDefaultEngineClock);
+		mode_info->mclk = le32_to_cpu(firmware_info->info.ulDefaultMemoryClock);
+
+		return true;
 	}
-
-	pll->pll_in_min = le16_to_cpu(firmware_info->info.usMinPixelClockPLL_Input);
-	pll->pll_in_max = le16_to_cpu(firmware_info->info.usMaxPixelClockPLL_Input);
-
-	pll->xclk = le16_to_cpu(firmware_info->info.usMaxPixelClock);
-
-	return true;
+	return false;
 }
 
 
@@ -322,21 +369,23 @@ void radeon_atombios_get_tmds_info(struct radeon_encoder *encoder)
 
 	tmds_info = (struct _ATOM_TMDS_INFO *)(mode_info->atom_context->bios + data_offset);
 
-	maxfreq = le16_to_cpu(tmds_info->usMaxFrequency);
-	for (i = 0; i < 4; i++) {
-		encoder->tmds_pll[i].freq = le16_to_cpu(tmds_info->asMiscInfo[i].usFrequency);
-		encoder->tmds_pll[i].value = tmds_info->asMiscInfo[i].ucPLL_ChargePump & 0x3f;
-		encoder->tmds_pll[i].value |= (tmds_info->asMiscInfo[i].ucPLL_VCO_Gain & 0x3f << 6);
-		encoder->tmds_pll[i].value |= (tmds_info->asMiscInfo[i].ucPLL_DutyCycle & 0xf << 12);
-		encoder->tmds_pll[i].value |= (tmds_info->asMiscInfo[i].ucPLL_VoltageSwing & 0xf << 16);
+	if (tmds_info) {
+		maxfreq = le16_to_cpu(tmds_info->usMaxFrequency);
+		for (i = 0; i < 4; i++) {
+			encoder->tmds_pll[i].freq = le16_to_cpu(tmds_info->asMiscInfo[i].usFrequency);
+			encoder->tmds_pll[i].value = tmds_info->asMiscInfo[i].ucPLL_ChargePump & 0x3f;
+			encoder->tmds_pll[i].value |= (tmds_info->asMiscInfo[i].ucPLL_VCO_Gain & 0x3f << 6);
+			encoder->tmds_pll[i].value |= (tmds_info->asMiscInfo[i].ucPLL_DutyCycle & 0xf << 12);
+			encoder->tmds_pll[i].value |= (tmds_info->asMiscInfo[i].ucPLL_VoltageSwing & 0xf << 16);
 
-		DRM_DEBUG("TMDS PLL From BIOS %u %x\n",
-			  encoder->tmds_pll[i].freq,
-			   encoder->tmds_pll[i].value);
+			DRM_DEBUG("TMDS PLL From BIOS %u %x\n",
+				  encoder->tmds_pll[i].freq,
+				  encoder->tmds_pll[i].value);
 
-		if (maxfreq == encoder->tmds_pll[i].freq) {
-			encoder->tmds_pll[i].freq = 0xffffffff;
-			break;
+			if (maxfreq == encoder->tmds_pll[i].freq) {
+				encoder->tmds_pll[i].freq = 0xffffffff;
+				break;
+			}
 		}
 	}
 }
@@ -360,17 +409,19 @@ void radeon_atombios_get_lvds_info(struct radeon_encoder *encoder)
 
 	lvds_info = (union lvds_info *)(mode_info->atom_context->bios + data_offset);
 
-	encoder->dotclock = le16_to_cpu(lvds_info->info.sLCDTiming.usPixClk) * 10;
-	encoder->panel_xres = le16_to_cpu(lvds_info->info.sLCDTiming.usHActive);
-	encoder->panel_yres = le16_to_cpu(lvds_info->info.sLCDTiming.usVActive);
-	encoder->hblank = le16_to_cpu(lvds_info->info.sLCDTiming.usHBlanking_Time);
-	encoder->hoverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usHSyncOffset);
-	encoder->hsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usHSyncWidth);
+	if (lvds_info) {
+		encoder->dotclock = le16_to_cpu(lvds_info->info.sLCDTiming.usPixClk) * 10;
+		encoder->panel_xres = le16_to_cpu(lvds_info->info.sLCDTiming.usHActive);
+		encoder->panel_yres = le16_to_cpu(lvds_info->info.sLCDTiming.usVActive);
+		encoder->hblank = le16_to_cpu(lvds_info->info.sLCDTiming.usHBlanking_Time);
+		encoder->hoverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usHSyncOffset);
+		encoder->hsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usHSyncWidth);
 
-	encoder->vblank = le16_to_cpu(lvds_info->info.sLCDTiming.usVBlanking_Time);
-	encoder->voverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncOffset);
-	encoder->vsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncWidth);
-	encoder->panel_pwr_delay = le16_to_cpu(lvds_info->info.usOffDelayInMs);
+		encoder->vblank = le16_to_cpu(lvds_info->info.sLCDTiming.usVBlanking_Time);
+		encoder->voverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncOffset);
+		encoder->vsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncWidth);
+		encoder->panel_pwr_delay = le16_to_cpu(lvds_info->info.usOffDelayInMs);
+	}
 }
 
 void radeon_atom_dyn_clk_setup(struct drm_device *dev, int enable)

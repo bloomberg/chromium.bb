@@ -163,13 +163,19 @@ void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode,
 	PIXEL_CLOCK_PARAMETERS_V3 *spc3_ptr;
 	uint32_t sclock = mode->clock;
 	uint32_t ref_div = 0, fb_div = 0, post_div = 0;
+	struct radeon_pll *pll;
 
 	memset(&spc_param, 0, sizeof(SET_PIXEL_CLOCK_PS_ALLOCATION));
 
 	pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
 
-	radeon_compute_pll(&dev_priv->mode_info.pll, mode->clock,
-			   &sclock, &fb_div, &ref_div, &post_div, pll_flags);
+	if (radeon_crtc->crtc_id == 0)
+		pll = &dev_priv->mode_info.p1pll;
+	else
+		pll = &dev_priv->mode_info.p2pll;
+
+	radeon_compute_pll(pll, mode->clock, &sclock,
+			   &fb_div, &ref_div, &post_div, pll_flags);
 
 	if (radeon_is_avivo(dev_priv)) {
 		uint32_t ss_cntl;
@@ -338,6 +344,8 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 
 	if (radeon_is_avivo(dev_priv))
 		atombios_crtc_set_base(crtc, x, y);
+	else
+		radeon_crtc_set_base(crtc, x, y);
 
 	atombios_crtc_set_pll(crtc, adjusted_mode, pll_flags);
 

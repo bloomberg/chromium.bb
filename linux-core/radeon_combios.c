@@ -73,7 +73,7 @@ enum radeon_combios_table_offset
 	COMBIOS_ASIC_INIT_4_TABLE,	/* offset from misc info */
 	COMBIOS_ASIC_INIT_5_TABLE,	/* offset from misc info */
 	COMBIOS_RAM_RESET_TABLE,	/* offset from mem config */
-	COMBIOS_POWERPLAY_TABLE,	/* offset from mobile info */
+	COMBIOS_POWERPLAY_INFO_TABLE,	/* offset from mobile info */
 	COMBIOS_GPIO_INFO_TABLE,	/* offset from mobile info */
 	COMBIOS_LCD_DDC_INFO_TABLE,	/* offset from mobile info */
 	COMBIOS_TMDS_POWER_TABLE,	/* offset from mobile info */
@@ -325,7 +325,7 @@ static uint16_t combios_get_table_offset(struct drm_device *dev, enum radeon_com
 				offset = check_offset;
 		}
 		break;
-	case COMBIOS_POWERPLAY_TABLE:	/* offset from mobile info */
+	case COMBIOS_POWERPLAY_INFO_TABLE:	/* offset from mobile info */
 		check_offset = combios_get_table_offset(dev, COMBIOS_MOBILE_INFO_TABLE);
 		if (check_offset) {
 			check_offset = radeon_bios16(dev_priv, check_offset + 0x11);
@@ -427,33 +427,72 @@ bool radeon_combios_get_clock_info(struct drm_device *dev)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
 	uint16_t pll_info;
-	struct radeon_pll *pll = &mode_info->pll;
+	struct radeon_pll *p1pll = &mode_info->p1pll;
+	struct radeon_pll *p2pll = &mode_info->p2pll;
+	struct radeon_pll *spll = &mode_info->spll;
+	struct radeon_pll *mpll = &mode_info->mpll;
 	int8_t rev;
+	uint16_t sclk, mclk;
 
 	pll_info = combios_get_table_offset(dev, COMBIOS_PLL_INFO_TABLE);
 	if (pll_info) {
 		rev = radeon_bios8(dev_priv, pll_info);
 
-		pll->reference_freq = radeon_bios16(dev_priv, pll_info + 0xe);
-		pll->reference_div = radeon_bios16(dev_priv, pll_info + 0x10);
-		pll->pll_out_min = radeon_bios32(dev_priv, pll_info + 0x12);
-		pll->pll_out_max = radeon_bios32(dev_priv, pll_info + 0x16);
+		/* pixel clocks */
+		p1pll->reference_freq = radeon_bios16(dev_priv, pll_info + 0xe);
+		p1pll->reference_div = radeon_bios16(dev_priv, pll_info + 0x10);
+		p1pll->pll_out_min = radeon_bios32(dev_priv, pll_info + 0x12);
+		p1pll->pll_out_max = radeon_bios32(dev_priv, pll_info + 0x16);
 
 		if (rev > 9) {
-			pll->pll_in_min = radeon_bios32(dev_priv, pll_info + 0x36);
-			pll->pll_in_max = radeon_bios32(dev_priv, pll_info + 0x3a);
+			p1pll->pll_in_min = radeon_bios32(dev_priv, pll_info + 0x36);
+			p1pll->pll_in_max = radeon_bios32(dev_priv, pll_info + 0x3a);
 		} else {
-			pll->pll_in_min = 40;
-			pll->pll_in_max = 500;
+			p1pll->pll_in_min = 40;
+			p1pll->pll_in_max = 500;
+		}
+		*p2pll = *p1pll;
+
+		/* system clock */
+		spll->reference_freq = radeon_bios16(dev_priv, pll_info + 0x1a);
+		spll->reference_div = radeon_bios16(dev_priv, pll_info + 0x1c);
+		spll->pll_out_min = radeon_bios32(dev_priv, pll_info + 0x1e);
+		spll->pll_out_max = radeon_bios32(dev_priv, pll_info + 0x22);
+
+		if (rev > 10) {
+			spll->pll_in_min = radeon_bios32(dev_priv, pll_info + 0x48);
+			spll->pll_in_max = radeon_bios32(dev_priv, pll_info + 0x4c);
+		} else {
+			/* ??? */
+			spll->pll_in_min = 40;
+			spll->pll_in_max = 500;
 		}
 
-		pll->xclk = radeon_bios16(dev_priv, pll_info + 0x08);
+		/* memory clock */
+		mpll->reference_freq = radeon_bios16(dev_priv, pll_info + 0x26);
+		mpll->reference_div = radeon_bios16(dev_priv, pll_info + 0x28);
+		mpll->pll_out_min = radeon_bios32(dev_priv, pll_info + 0x2a);
+		mpll->pll_out_max = radeon_bios32(dev_priv, pll_info + 0x2e);
 
-		// sclk/mclk use fixed point
-		//sclk = radeon_bios16(pll_info + 8) / 100.0;
-		//mclk = radeon_bios16(pll_info + 10) / 100.0;
-		//if (sclk == 0) sclk = 200;
-		//if (mclk == 0) mclk = 200;
+		if (rev > 10) {
+			mpll->pll_in_min = radeon_bios32(dev_priv, pll_info + 0x5a);
+			mpll->pll_in_max = radeon_bios32(dev_priv, pll_info + 0x5e);
+		} else {
+			/* ??? */
+			mpll->pll_in_min = 40;
+			mpll->pll_in_max = 500;
+		}
+
+		/* default sclk/mclk */
+		sclk = radeon_bios16(dev_priv, pll_info + 0x8);
+		mclk = radeon_bios16(dev_priv, pll_info + 0xa);
+		if (sclk == 0)
+			sclk = 200;
+		if (mclk == 0)
+			mclk = 200;
+
+		mode_info->sclk = sclk;
+		mode_info->mclk = mclk;
 
 		return true;
 	}
