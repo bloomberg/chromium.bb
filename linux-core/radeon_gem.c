@@ -166,8 +166,16 @@ int radeon_gem_set_domain(struct drm_gem_object *obj, uint32_t read_domains, uin
 			return -EINVAL; // we can't write to system RAM
 	} else {
 		/* okay for a read domain - prefer wherever the object is now or close enough */
-		if ((read_domains == 0) || (read_domains == RADEON_GEM_DOMAIN_CPU))
+		if (read_domains == 0)
 			return -EINVAL;
+
+		/* if its already a local memory and CPU is valid do nothing */
+		if (read_domains & RADEON_GEM_DOMAIN_CPU) {
+			if (obj_priv->bo->mem.mem_type == DRM_BO_MEM_LOCAL)
+				return 0;
+			if (read_domains == RADEON_GEM_DOMAIN_CPU)
+				return -EINVAL;
+		}
 		
 		/* simple case no choice in domains */
 		if (read_domains == RADEON_GEM_DOMAIN_VRAM)
@@ -178,12 +186,19 @@ int radeon_gem_set_domain(struct drm_gem_object *obj, uint32_t read_domains, uin
 			flags = DRM_BO_FLAG_MEM_VRAM;
 		else if ((obj_priv->bo->mem.mem_type == DRM_BO_MEM_TT) && (read_domains & RADEON_GEM_DOMAIN_GTT))
 			flags = DRM_BO_FLAG_MEM_TT;
+		else if ((obj_priv->bo->mem.mem_type == DRM_BO_MEM_LOCAL) && (read_domains & RADEON_GEM_DOMAIN_GTT))
+			flags = DRM_BO_FLAG_MEM_TT;
 		else if (read_domains & RADEON_GEM_DOMAIN_VRAM)
 			flags = DRM_BO_FLAG_MEM_VRAM;
 		else if (read_domains & RADEON_GEM_DOMAIN_GTT)
 			flags = DRM_BO_FLAG_MEM_TT;
 	}
 
+	/* if this BO is pinned then we ain't moving it anywhere */
+	if (obj_priv->bo->pinned_mem_type && unfenced) 
+		return 0;
+
+	DRM_DEBUG("validating %p from %d into %x %d %d\n", obj_priv->bo, obj_priv->bo->mem.mem_type, flags, read_domains, write_domain);
 	ret = drm_bo_do_validate(obj_priv->bo, flags, DRM_BO_MASK_MEM | DRM_BO_FLAG_CACHED,
 				 unfenced ? DRM_BO_HINT_DONT_FENCE : 0, 0);
 	if (ret)
@@ -1217,6 +1232,7 @@ static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_pri
 	obj_priv = obj->driver_private;
 	radeon_gem_set_domain(obj, read_domains, write_domain, &flags, false);
 
+	obj_priv->bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
 	if (flags == DRM_BO_FLAG_MEM_VRAM)
 		*offset = obj_priv->bo->offset + dev_priv->fb_location;
 	else if (flags == DRM_BO_FLAG_MEM_TT)
