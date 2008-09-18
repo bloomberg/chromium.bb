@@ -1478,7 +1478,7 @@ do {									\
  * Ring control
  */
 
-#define RADEON_VERBOSE	1
+#define RADEON_VERBOSE	0
 
 #define RING_LOCALS	int write, _nr; unsigned int mask; u32 *ring;
 

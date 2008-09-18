@@ -804,7 +804,7 @@ int radeon_gem_mm_init(struct drm_device *dev)
 	
 	radeon_init_memory_map(dev);
 
-#define VRAM_RESERVE_TEXT (64*1024)
+#define VRAM_RESERVE_TEXT (256*1024) /* need to reserve 256 for text mode for now */
 	dev_priv->mm.vram_visible -= VRAM_RESERVE_TEXT;
 	pg_offset = VRAM_RESERVE_TEXT >> PAGE_SHIFT;
 	drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, pg_offset, /*dev_priv->mm.vram_offset >> PAGE_SHIFT,*/
