@@ -55,7 +55,7 @@ enum radeon_combios_table_offset
 	COMBIOS_CONNECTOR_INFO_TABLE,
 	COMBIOS_DYN_CLK_1_TABLE,
 	COMBIOS_RESERVED_MEM_TABLE,
-	COMBIOS_EXT_TDMS_INFO_TABLE,
+	COMBIOS_EXT_TMDS_INFO_TABLE,
 	COMBIOS_MEM_CLK_INFO_TABLE,
 	COMBIOS_EXT_DAC_INFO_TABLE,
 	COMBIOS_MISC_INFO_TABLE,
@@ -217,7 +217,7 @@ static uint16_t combios_get_table_offset(struct drm_device *dev, enum radeon_com
 		if (check_offset)
 			offset = check_offset;
 		break;
-	case COMBIOS_EXT_TDMS_INFO_TABLE:
+	case COMBIOS_EXT_TMDS_INFO_TABLE:
 		check_offset = radeon_bios16(dev_priv, dev_priv->bios_header_start + 0x58);
 		if (check_offset)
 			offset = check_offset;
@@ -765,6 +765,21 @@ bool radeon_combios_get_tmds_info(struct radeon_encoder *encoder)
 
 	DRM_INFO("No TMDS info found in BIOS\n");
 	return false;
+}
+
+bool radeon_combios_get_ext_tmds_info(struct radeon_encoder *encoder)
+{
+	struct drm_device *dev = encoder->base.dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint16_t ext_tmds_info;
+	uint8_t ver;
+
+	ext_tmds_info = combios_get_table_offset(dev, COMBIOS_EXT_TMDS_INFO_TABLE);
+	if (ext_tmds_info) {
+		ver = radeon_bios8(dev_priv, ext_tmds_info);
+		DRM_INFO("External TMDS Table revision: %d\n", ver);
+		// TODO
+	}
 }
 
 static void radeon_apply_legacy_quirks(struct drm_device *dev, int bios_index)

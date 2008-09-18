@@ -262,16 +262,20 @@ static void radeon_legacy_lvds_dpms(struct drm_encoder *encoder, int mode)
 
 static void radeon_legacy_lvds_prepare(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, true);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, true);
 	radeon_legacy_lvds_dpms(encoder, DRM_MODE_DPMS_OFF);
 }
 
 static void radeon_legacy_lvds_commit(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	radeon_legacy_lvds_dpms(encoder, DRM_MODE_DPMS_ON);
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, false);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, false);
 }
 
 static void radeon_legacy_lvds_mode_set(struct drm_encoder *encoder,
@@ -366,6 +370,7 @@ static const struct drm_encoder_funcs radeon_legacy_lvds_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int bios_index)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -387,7 +392,10 @@ struct drm_encoder *radeon_encoder_legacy_lvds_add(struct drm_device *dev, int b
 	drm_encoder_helper_add(encoder, &radeon_legacy_lvds_helper_funcs);
 
 	/* get the lvds info from the bios */
-	radeon_combios_get_lvds_info(radeon_encoder);
+	if (dev_priv->is_atom_bios)
+		radeon_atombios_get_lvds_info(radeon_encoder);
+	else
+		radeon_combios_get_lvds_info(radeon_encoder);
 
 	/* LVDS gets default RMX full scaling */
 	radeon_encoder->rmx_type = RMX_FULL;
@@ -462,16 +470,20 @@ static void radeon_legacy_primary_dac_dpms(struct drm_encoder *encoder, int mode
 
 static void radeon_legacy_primary_dac_prepare(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, true);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, true);
 	radeon_legacy_primary_dac_dpms(encoder, DRM_MODE_DPMS_OFF);
 }
 
 static void radeon_legacy_primary_dac_commit(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	radeon_legacy_primary_dac_dpms(encoder, DRM_MODE_DPMS_ON);
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, false);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, false);
 }
 
 static void radeon_legacy_primary_dac_mode_set(struct drm_encoder *encoder,
@@ -608,6 +620,7 @@ static const struct drm_encoder_funcs radeon_legacy_primary_dac_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev, int bios_index, int has_tv)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -628,7 +641,8 @@ struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev
 	drm_encoder_helper_add(encoder, &radeon_legacy_primary_dac_helper_funcs);
 
 	/* get the primary dac bg/adj vals from bios tables */
-	radeon_combios_get_primary_dac_info(radeon_encoder);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_get_primary_dac_info(radeon_encoder);
 
 	return encoder;
 }
@@ -686,16 +700,20 @@ static void radeon_legacy_tmds_int_dpms(struct drm_encoder *encoder, int mode)
 
 static void radeon_legacy_tmds_int_prepare(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, true);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, true);
 	radeon_legacy_tmds_int_dpms(encoder, DRM_MODE_DPMS_OFF);
 }
 
 static void radeon_legacy_tmds_int_commit(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	radeon_legacy_tmds_int_dpms(encoder, DRM_MODE_DPMS_ON);
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, true);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, true);
 }
 
 static void radeon_legacy_tmds_int_mode_set(struct drm_encoder *encoder,
@@ -799,6 +817,7 @@ static const struct drm_encoder_funcs radeon_legacy_tmds_int_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_tmds_int_add(struct drm_device *dev, int bios_index)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -818,7 +837,10 @@ struct drm_encoder *radeon_encoder_legacy_tmds_int_add(struct drm_device *dev, i
 
 	drm_encoder_helper_add(encoder, &radeon_legacy_tmds_int_helper_funcs);
 
-	radeon_combios_get_tmds_info(radeon_encoder);
+	if (dev_priv->is_atom_bios)
+		radeon_atombios_get_tmds_info(radeon_encoder);
+	else
+		radeon_combios_get_tmds_info(radeon_encoder);
 
 	return encoder;
 }
@@ -877,16 +899,20 @@ static void radeon_legacy_tmds_ext_dpms(struct drm_encoder *encoder, int mode)
 
 static void radeon_legacy_tmds_ext_prepare(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, true);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, true);
 	radeon_legacy_tmds_ext_dpms(encoder, DRM_MODE_DPMS_OFF);
 }
 
 static void radeon_legacy_tmds_ext_commit(struct drm_encoder *encoder)
 {
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
 	radeon_legacy_tmds_ext_dpms(encoder, DRM_MODE_DPMS_ON);
 	// fix me: atom/legacy r4xx
-	radeon_combios_output_lock(encoder, false);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_output_lock(encoder, false);
 }
 
 static void radeon_legacy_tmds_ext_mode_set(struct drm_encoder *encoder,
@@ -961,6 +987,7 @@ static const struct drm_encoder_funcs radeon_legacy_tmds_ext_enc_funcs = {
 
 struct drm_encoder *radeon_encoder_legacy_tmds_ext_add(struct drm_device *dev, int bios_index)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_encoder *radeon_encoder;
 	struct drm_encoder *encoder;
 
@@ -980,7 +1007,8 @@ struct drm_encoder *radeon_encoder_legacy_tmds_ext_add(struct drm_device *dev, i
 
 	drm_encoder_helper_add(encoder, &radeon_legacy_tmds_ext_helper_funcs);
 
-	//radeon_combios_get_tmds_info(radeon_encoder);
+	if (!dev_priv->is_atom_bios)
+		radeon_combios_get_ext_tmds_info(radeon_encoder);
 	return encoder;
 }
 

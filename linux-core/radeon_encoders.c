@@ -387,7 +387,7 @@ struct drm_encoder *radeon_encoder_lvtma_add(struct drm_device *dev, int bios_in
 
 	/* TODO get the LVDS info from the BIOS for panel size etc. */
 	/* get the lvds info from the bios */
-	radeon_get_lvds_info(radeon_encoder);
+	radeon_atombios_get_lvds_info(radeon_encoder);
 
 	/* LVDS gets default RMX full scaling */
 	radeon_encoder->rmx_type = RMX_FULL;
