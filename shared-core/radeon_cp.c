@@ -521,7 +521,6 @@ static void radeon_do_cp_flush(drm_radeon_private_t * dev_priv)
 	DRM_DEBUG("\n");
 #if 0
 	u32 tmp;
-
 	tmp = RADEON_READ(RADEON_CP_RB_WPTR) | (1 << 31);
 	RADEON_WRITE(RADEON_CP_RB_WPTR, tmp);
 #endif
@@ -761,8 +760,6 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 		     dev_priv->ring.size_l2qw);
 #endif
 
-	/* Start with assuming that writeback doesn't work */
-	dev_priv->writeback_works = 0;
 
 	/* Initialize the scratch register pointer.  This will cause
 	 * the scratch register values to be written out to memory
@@ -1340,6 +1337,9 @@ static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
 		/* Turn on PCI GART */
 		radeon_set_pcigart(dev_priv, 1);
 	}
+
+	/* Start with assuming that writeback doesn't work */
+	dev_priv->writeback_works = 0;
 
 	radeon_cp_load_microcode(dev_priv);
 	radeon_cp_init_ring_buffer(dev, dev_priv);
@@ -2301,14 +2301,64 @@ static void radeon_set_dynamic_clock(struct drm_device *dev, int mode)
 	
 }
 
-int radeon_modeset_cp_init(struct drm_device *dev)
+int radeon_modeset_cp_suspend(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	int ret;
+
+	ret = radeon_do_cp_idle(dev_priv);
+	if (ret)
+		DRM_ERROR("failed to idle CP on suspend\n");
+
+	radeon_do_cp_stop(dev_priv);
+	radeon_do_engine_reset(dev);
+	if (dev_priv->flags & RADEON_IS_AGP) {
+	} else {
+		radeon_set_pcigart(dev_priv, 0);
+	}
+	
+	return 0;
+}
+
+int radeon_modeset_cp_resume(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	uint32_t tmp;
 
+	radeon_do_wait_for_idle(dev_priv);
+#if __OS_HAS_AGP
+	if (dev_priv->flags & RADEON_IS_AGP) {
+		/* Turn off PCI GART */
+		radeon_set_pcigart(dev_priv, 0);
+	} else
+#endif
+	{
+		/* Turn on PCI GART */
+		radeon_set_pcigart(dev_priv, 1);
+	}
+	radeon_gart_flush(dev);
+
+	DRM_ERROR("microcode loading\n");
+	radeon_cp_load_microcode(dev_priv);
+	radeon_cp_init_ring_buffer(dev, dev_priv);
+
+	DRM_ERROR("engine init\n");
+	radeon_do_engine_reset(dev);
+
+	radeon_do_cp_start(dev_priv);
+	return 0;
+}
+
+int radeon_modeset_cp_init(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
 	/* allocate a ring and ring rptr bits from GART space */
 	/* these are allocated in GEM files */
 	
+	/* Start with assuming that writeback doesn't work */
+	dev_priv->writeback_works = 0;
+
 	dev_priv->usec_timeout = RADEON_DEFAULT_CP_TIMEOUT;
 	dev_priv->ring.size = RADEON_DEFAULT_RING_SIZE;
 	dev_priv->cp_mode = RADEON_CSQ_PRIBM_INDBM;
@@ -2327,23 +2377,8 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->new_memmap = true;
 
 	r300_init_reg_flags(dev);
-		
-	radeon_cp_load_microcode(dev_priv);
 	
-	DRM_DEBUG("ring offset is %x %x\n", dev_priv->mm.ring.bo->offset, dev_priv->mm.ring_read.bo->offset);
-
-	radeon_cp_init_ring_buffer(dev, dev_priv);
-
-	/* need to enable BUS mastering in Buscntl */
-	tmp = RADEON_READ(RADEON_BUS_CNTL);
-	tmp &= ~RADEON_BUS_MASTER_DIS;
-	RADEON_WRITE(RADEON_BUS_CNTL, tmp);
-
-	radeon_do_engine_reset(dev);
-	radeon_test_writeback(dev_priv);
-
-	radeon_do_cp_start(dev_priv);
-	return 0;
+	return radeon_modeset_cp_resume(dev);
 }
 
 static bool radeon_get_bios(struct drm_device *dev)
@@ -2418,6 +2453,20 @@ int radeon_modeset_preinit(struct drm_device *dev)
 	return 0;
 }
 
+int radeon_static_clocks_init(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	if ((dev_priv->flags & RADEON_IS_MOBILITY) && !radeon_is_avivo(dev_priv)) {
+		radeon_set_dynamic_clock(dev, radeon_dynclks);
+	} else if (radeon_is_avivo(dev_priv)) {
+		if (radeon_dynclks) {
+			radeon_atom_static_pwrmgt_setup(dev, 1);
+			radeon_atom_dyn_clk_setup(dev, 1);
+		}
+	}
+	radeon_force_some_clocks(dev);
+}
 
 int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 {
@@ -2473,7 +2522,6 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	if (drm_core_check_feature(dev, DRIVER_MODESET))
 		radeon_modeset_preinit(dev);
 
-
 	radeon_get_vram_type(dev);
 
 	dev_priv->pll_errata = 0;
@@ -2493,17 +2541,8 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 		dev_priv->pll_errata |= CHIP_ERRATA_PLL_DELAY;
 
 
-	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
-		if ((dev_priv->flags & RADEON_IS_MOBILITY) && !radeon_is_avivo(dev_priv)) {
-			radeon_set_dynamic_clock(dev, radeon_dynclks);
-		} else if (radeon_is_avivo(dev_priv)) {
-			if (radeon_dynclks) {
-				radeon_atom_static_pwrmgt_setup(dev, 1);
-				radeon_atom_dyn_clk_setup(dev, 1);
-			}
-		}
-		radeon_force_some_clocks(dev);
-	}
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		radeon_static_clocks_init(dev);
 		
 	/* init memory manager - start with all of VRAM and a 32MB GART aperture for now */
 	dev_priv->fb_aper_offset = drm_get_resource_start(dev, 0);

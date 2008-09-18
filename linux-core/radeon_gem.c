@@ -43,7 +43,6 @@ int radeon_gem_init_object(struct drm_gem_object *obj)
 
 	obj->driver_private = obj_priv;
 	obj_priv->obj = obj;
-	
 	return 0;
 }
 
@@ -320,6 +319,8 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 	struct drm_gem_object *obj;
 	struct drm_radeon_gem_object *obj_priv;
 	int ret;
+	int flags = DRM_BO_FLAG_NO_EVICT;
+	int mask = DRM_BO_FLAG_NO_EVICT;
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
@@ -329,15 +330,24 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 
 	DRM_DEBUG("got here %p %p %d\n", obj, obj_priv->bo, atomic_read(&obj_priv->bo->usage));
 	/* validate into a pin with no fence */
+	if (args->pin_domain) {
+		mask |= DRM_BO_MASK_MEM;
+		if (args->pin_domain == RADEON_GEM_DOMAIN_GTT)
+			flags |= DRM_BO_FLAG_MEM_TT;
+		else if (args->pin_domain == RADEON_GEM_DOMAIN_VRAM)
+			flags |= DRM_BO_FLAG_MEM_VRAM;
+		else
+			return -EINVAL;
+	}
 
 	if (!(obj_priv->bo->type != drm_bo_type_kernel && !DRM_SUSER(DRM_CURPROC))) {
-		ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
+		ret = drm_bo_do_validate(obj_priv->bo, flags, mask,
 					 DRM_BO_HINT_DONT_FENCE, 0);
 	} else
 	  ret = 0;
 
 	args->offset = obj_priv->bo->offset;
-	DRM_DEBUG("got here %p %p\n", obj, obj_priv->bo);
+	DRM_DEBUG("got here %p %p %x\n", obj, obj_priv->bo, obj_priv->bo->offset);
 
 	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_unreference(obj);
@@ -361,7 +371,7 @@ int radeon_gem_unpin_ioctl(struct drm_device *dev, void *data,
 
 	/* validate into a pin with no fence */
 
-	ret = drm_bo_do_validate(obj_priv->bo, DRM_BO_FLAG_NO_EVICT, DRM_BO_FLAG_NO_EVICT,
+	ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
 				 DRM_BO_HINT_DONT_FENCE, 0);
 
 	mutex_lock(&dev->struct_mutex);
@@ -598,7 +608,11 @@ static int radeon_gart_init(struct drm_device *dev)
 		if (ret)
 			return -EINVAL;
 
-		DRM_DEBUG("pcie table bo created %p, %x\n", dev_priv->mm.pcie_table.bo, dev_priv->mm.pcie_table.bo->offset);
+		dev_priv->mm.pcie_table_backup = kzalloc(RADEON_PCIGART_TABLE_SIZE, GFP_KERNEL);
+		if (!dev_priv->mm.pcie_table_backup)
+			return -EINVAL;
+
+		DRM_ERROR("pcie table bo created %p, %x\n", dev_priv->mm.pcie_table.bo, dev_priv->mm.pcie_table.bo->offset);
 		ret = drm_bo_kmap(dev_priv->mm.pcie_table.bo, 0, RADEON_PCIGART_TABLE_SIZE >> PAGE_SHIFT,
 				  &dev_priv->mm.pcie_table.kmap);
 		if (ret)
@@ -690,10 +704,11 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 
 }
 
-static void radeon_init_memory_map(struct drm_device *dev)
+void radeon_init_memory_map(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	u32 mem_size, aper_size;
+	u32 tmp;
 
 	dev_priv->mc_fb_location = radeon_read_fb_location(dev_priv);
 	radeon_read_agp_location(dev_priv, &dev_priv->mc_agp_loc_lo, &dev_priv->mc_agp_loc_hi);
@@ -841,6 +856,10 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 	}
 
 	if (dev_priv->flags & RADEON_IS_PCIE) {
+		if (dev_priv->mm.pcie_table_backup) {
+			kfree(dev_priv->mm.pcie_table_backup);
+			dev_priv->mm.pcie_table_backup = NULL;
+		}
 		if (dev_priv->mm.pcie_table.bo) {
 			drm_bo_kunmap(&dev_priv->mm.pcie_table.kmap);
 			drm_bo_usage_deref_locked(&dev_priv->mm.pcie_table.bo);
@@ -858,7 +877,31 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 }
 
 int radeon_gem_object_pin(struct drm_gem_object *obj,
-			  uint32_t alignment)
+			  uint32_t alignment, uint32_t pin_domain)
+{
+	struct drm_radeon_gem_object *obj_priv;
+	int ret;
+	uint32_t flags = DRM_BO_FLAG_NO_EVICT;
+	uint32_t mask = DRM_BO_FLAG_NO_EVICT;
+
+	obj_priv = obj->driver_private;
+
+	if (pin_domain) {
+		mask |= DRM_BO_MASK_MEM;
+		if (pin_domain == RADEON_GEM_DOMAIN_GTT)
+			flags |= DRM_BO_FLAG_MEM_TT;
+		else if (pin_domain == RADEON_GEM_DOMAIN_VRAM)
+			flags |= DRM_BO_FLAG_MEM_VRAM;
+		else
+			return -EINVAL;
+	}
+	ret = drm_bo_do_validate(obj_priv->bo, flags, mask,
+				 DRM_BO_HINT_DONT_FENCE, 0);
+
+	return ret;
+}
+
+int radeon_gem_object_unpin(struct drm_gem_object *obj)
 {
 	struct drm_radeon_gem_object *obj_priv;
 	int ret;
@@ -1335,3 +1378,5 @@ void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master
 	dev_priv->color_fmt = RADEON_COLOR_FORMAT_ARGB8888;
 
 }
+
+

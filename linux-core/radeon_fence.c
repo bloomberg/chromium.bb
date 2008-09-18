@@ -45,6 +45,8 @@ int radeon_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 		return -EINVAL;
 
 	radeon_emit_irq(dev);
+
+	DRM_DEBUG("emitting %d\n", dev_priv->counter);
 	*sequence = (uint32_t) dev_priv->counter;
 	*native_type = DRM_FENCE_TYPE_EXE;
 
@@ -60,6 +62,7 @@ static void radeon_fence_poll(struct drm_device *dev, uint32_t fence_class,
 
                 sequence = READ_BREADCRUMB(dev_priv);
 
+		DRM_DEBUG("polling %d\n", sequence);
                 drm_fence_handler(dev, 0, sequence,
                                   DRM_FENCE_TYPE_EXE, 0);
         }

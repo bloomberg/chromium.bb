@@ -59,28 +59,6 @@ static int dri_library_name(struct drm_device * dev, char * buf)
 		"r300"));
 }
 
-static int radeon_suspend(struct drm_device *dev, pm_message_t state)
-{
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-
-	/* Disable *all* interrupts */
-	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
-		RADEON_WRITE(R500_DxMODE_INT_MASK, 0);
-	RADEON_WRITE(RADEON_GEN_INT_CNTL, 0);
-	return 0;
-}
-
-static int radeon_resume(struct drm_device *dev)
-{
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-
-	/* Restore interrupt registers */
-	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RS690)
-		RADEON_WRITE(R500_DxMODE_INT_MASK, dev_priv->r500_disp_irq_reg);
-	RADEON_WRITE(RADEON_GEN_INT_CNTL, dev_priv->irq_enable_reg);
-	return 0;
-}
-
 static struct pci_device_id pciidlist[] = {
 	radeon_PCI_IDS
 };

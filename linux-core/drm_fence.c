@@ -381,7 +381,6 @@ int drm_fence_object_wait(struct drm_fence_object *fence,
 	if (driver->wait)
 		return driver->wait(fence, lazy, !ignore_signals, mask);
 
-
 	drm_fence_object_flush(fence, mask);
 	if (driver->has_irq(dev, fence->fence_class, mask)) {
 		if (!ignore_signals)
@@ -408,8 +407,6 @@ int drm_fence_object_wait(struct drm_fence_object *fence,
 				      _end);
 }
 EXPORT_SYMBOL(drm_fence_object_wait);
-
-
 
 int drm_fence_object_emit(struct drm_fence_object *fence, uint32_t fence_flags,
 			  uint32_t fence_class, uint32_t type)

@@ -736,7 +736,7 @@ int radeonfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_heigh
 	}
 	obj_priv = fbo->driver_private;
 
-	ret = radeon_gem_object_pin(fbo, PAGE_SIZE);
+	ret = radeon_gem_object_pin(fbo, PAGE_SIZE, RADEON_GEM_DOMAIN_VRAM);
 	if (ret) {
 		DRM_ERROR("failed to pin fb: %d\n", ret);
 		mutex_lock(&dev->struct_mutex);

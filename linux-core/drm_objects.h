@@ -796,6 +796,7 @@ extern struct drm_buffer_object *drm_lookup_buffer_object(struct drm_file *file_
 extern int drm_bo_evict_cached(struct drm_buffer_object *bo);
 
 extern void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo);
+extern void drm_bo_evict_mm(struct drm_device *dev, int mem_type, int no_wait);
 /*
  * Buffer object memory move- and map helpers.
  * drm_bo_move.c

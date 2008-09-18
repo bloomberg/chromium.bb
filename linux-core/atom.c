@@ -270,7 +270,6 @@ static uint32_t atom_get_src_int(atom_exec_context *ctx, uint8_t attr, int *ptr,
 	if(print)
 	    DEBUG("MC[0x%02X]", idx);
 	val = gctx->card->mc_read(gctx->card, idx);
-	printk(KERN_INFO "MC registers are not implemented.\n");
 	return 0;
     }
     if(saved)
@@ -452,7 +451,6 @@ static void atom_put_dst(atom_exec_context *ctx, int arg, uint8_t attr, int *ptr
 	(*ptr)++;
 	DEBUG("MC[0x%02X]", idx);
 	gctx->card->mc_write(gctx->card, idx, val);
-	printk(KERN_INFO "MC registers are not implemented.\n");
 	return;
     }
     switch(align) {

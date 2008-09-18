@@ -273,6 +273,8 @@ struct radeon_mm_info {
 	
 	uint64_t gart_start;
 	uint64_t gart_size;
+
+	void *pcie_table_backup;
 	
 	struct radeon_mm_obj pcie_table;
 	struct radeon_mm_obj ring;
@@ -312,6 +314,11 @@ struct drm_radeon_cs_priv {
 	/* do a relocation either MM or non-MM */
 	int (*relocate)(struct drm_device *dev, struct drm_file *file_priv,
 			 uint32_t *reloc, uint32_t *offset);
+};
+
+struct radeon_pm_regs {
+	uint32_t crtc_ext_cntl;
+	uint32_t bios_scratch[8];
 };
 
 typedef struct drm_radeon_private {
@@ -432,6 +439,8 @@ typedef struct drm_radeon_private {
 	/* ib bitmap */
 	uint64_t ib_alloc_bitmap; // TO DO replace with a real bitmap
 	struct drm_radeon_cs_priv cs;
+
+	struct radeon_pm_regs pmregs;
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
@@ -527,6 +536,11 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 			     struct drm_file *file_priv,
 			     drm_radeon_kcmd_buffer_t *cmdbuf);
 
+extern int radeon_modeset_cp_suspend(struct drm_device *dev);
+extern int radeon_modeset_cp_resume(struct drm_device *dev);
+/* radeon_pm.c */
+int radeon_suspend(struct drm_device *dev, pm_message_t state);
+int radeon_resume(struct drm_device *dev);
 /* Flags for stats.boxes
  */
 #define RADEON_BOX_DMA_IDLE      0x1
@@ -1464,7 +1478,7 @@ do {									\
  * Ring control
  */
 
-#define RADEON_VERBOSE	0
+#define RADEON_VERBOSE	1
 
 #define RING_LOCALS	int write, _nr; unsigned int mask; u32 *ring;
 
@@ -1648,7 +1662,8 @@ extern int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 extern int radeon_gem_unpin_ioctl(struct drm_device *dev, void *data,
 				  struct drm_file *file_priv);
 int radeon_gem_object_pin(struct drm_gem_object *obj,
-			  uint32_t alignment);
+			  uint32_t alignment, uint32_t pin_domain);
+int radeon_gem_object_unpin(struct drm_gem_object *obj);
 int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
 			      struct drm_file *file_priv);
 int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
@@ -1670,6 +1685,8 @@ extern void radeon_cp_dispatch_flip(struct drm_device * dev, struct drm_master *
 extern int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
 extern int radeon_cs_init(struct drm_device *dev);
 void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master);
+void radeon_init_memory_map(struct drm_device *dev);
+
 
 #define MARK_SAFE		1
 #define MARK_CHECK_OFFSET	2

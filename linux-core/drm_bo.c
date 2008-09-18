@@ -511,6 +511,7 @@ static void drm_bo_delayed_delete(struct drm_device *dev, int remove_all)
 		entry = list_entry(list, struct drm_buffer_object, ddestroy);
 
 		nentry = NULL;
+		DRM_DEBUG("bo is %p, %d\n", entry, entry->num_pages);
 		if (next != &bm->ddestroy) {
 			nentry = list_entry(next, struct drm_buffer_object,
 					    ddestroy);
@@ -1330,13 +1331,14 @@ static int drm_bo_prepare_for_validate(struct drm_buffer_object *bo,
 
 	int ret;
 
-	DRM_DEBUG("Proposed flags 0x%016llx, Old flags 0x%016llx\n",
-		  (unsigned long long) bo->mem.proposed_flags,
-		  (unsigned long long) bo->mem.flags);
 
 	ret = drm_bo_modify_proposed_flags (bo, flags, mask);
 	if (ret)
 		return ret;
+
+	DRM_DEBUG("Proposed flags 0x%016llx, Old flags 0x%016llx\n",
+		  (unsigned long long) bo->mem.proposed_flags,
+		  (unsigned long long) bo->mem.flags);
 
 	ret = drm_bo_wait_unmapped(bo, no_wait);
 	if (ret)
@@ -2084,3 +2086,48 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 
 	return 0;
 }
+
+/* used to EVICT VRAM lru at suspend time */
+void drm_bo_evict_mm(struct drm_device *dev, int mem_type, int no_wait)
+{
+	struct drm_buffer_manager *bm = &dev->bm;
+	struct drm_mem_type_manager *man = &bm->man[mem_type];
+	struct drm_buffer_object *entry;
+	/* we need to migrate all objects in VRAM */
+	struct list_head *lru;
+	int ret;
+	/* evict all buffers on the LRU - won't evict pinned buffers */
+
+	mutex_lock(&dev->struct_mutex);
+	do {
+		lru = &man->lru;
+
+		if (lru->next == lru) {
+			DRM_ERROR("lru empty\n");
+			break;
+		}
+
+		entry = list_entry(lru->next, struct drm_buffer_object, lru);
+		atomic_inc(&entry->usage);
+		mutex_unlock(&dev->struct_mutex);
+		mutex_lock(&entry->mutex);
+
+		DRM_ERROR("Evicting %p %d\n", entry, entry->num_pages);
+		ret = drm_bo_evict(entry, mem_type, no_wait);
+		mutex_unlock(&entry->mutex);
+
+		if (ret)
+			DRM_ERROR("Evict failed for BO\n");
+
+		mutex_lock(&entry->mutex);
+		(void)drm_bo_expire_fence(entry, 0);
+		mutex_unlock(&entry->mutex);
+		drm_bo_usage_deref_unlocked(&entry);
+
+		mutex_lock(&dev->struct_mutex);
+	} while(0);
+
+	mutex_unlock(&dev->struct_mutex);
+
+}
+EXPORT_SYMBOL(drm_bo_evict_mm);
