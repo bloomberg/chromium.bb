@@ -749,7 +749,7 @@ bool radeon_combios_get_lvds_info(struct radeon_encoder *encoder)
 
 				encoder->vblank = (radeon_bios16(dev_priv, tmp + 24) -
 						   radeon_bios16(dev_priv, tmp + 26));
-				encoder->voverplus = ((radeon_bios16(dev_priv, tmp + 28) & 0x7fff) -
+				encoder->voverplus = ((radeon_bios16(dev_priv, tmp + 28) & 0x7ff) -
 						      radeon_bios16(dev_priv, tmp + 26));
 				encoder->vsync_width = ((radeon_bios16(dev_priv, tmp + 28) & 0xf800) >> 11);
 				encoder->dotclock = radeon_bios16(dev_priv, tmp + 9) * 10;
