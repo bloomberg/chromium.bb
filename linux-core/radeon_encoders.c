@@ -35,47 +35,50 @@ void radeon_rmx_mode_fixup(struct drm_encoder *encoder,
 			   struct drm_display_mode *adjusted_mode)
 {
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
+	struct drm_device *dev = encoder->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+
 	if (mode->hdisplay < radeon_encoder->panel_xres ||
 	    mode->vdisplay < radeon_encoder->panel_yres) {
 		radeon_encoder->flags |= RADEON_USE_RMX;
-		adjusted_mode->hdisplay = radeon_encoder->panel_xres;
-		adjusted_mode->vdisplay = radeon_encoder->panel_yres;
-		adjusted_mode->htotal = radeon_encoder->panel_xres + radeon_encoder->hblank;
-		adjusted_mode->hsync_start = radeon_encoder->panel_xres + radeon_encoder->hoverplus;
-		adjusted_mode->hsync_end = adjusted_mode->hsync_start + radeon_encoder->hsync_width;
-		adjusted_mode->vtotal = radeon_encoder->panel_yres + radeon_encoder->vblank;
-		adjusted_mode->vsync_start = radeon_encoder->panel_yres + radeon_encoder->voverplus;
-		adjusted_mode->vsync_end = adjusted_mode->vsync_start + radeon_encoder->vsync_width;
-		/* update crtc values */
-		drm_mode_set_crtcinfo(adjusted_mode, CRTC_INTERLACE_HALVE_V);
-		/* adjust crtc values */
-		adjusted_mode->crtc_hdisplay = radeon_encoder->panel_xres;
-		adjusted_mode->crtc_vdisplay = radeon_encoder->panel_yres;
-		adjusted_mode->crtc_htotal = adjusted_mode->crtc_hdisplay + radeon_encoder->hblank;
-		adjusted_mode->crtc_hsync_start = adjusted_mode->crtc_hdisplay + radeon_encoder->hoverplus;
-		adjusted_mode->crtc_hsync_end = adjusted_mode->crtc_hsync_start + radeon_encoder->hsync_width;
-		adjusted_mode->crtc_vtotal = adjusted_mode->crtc_vdisplay + radeon_encoder->vblank;
-		adjusted_mode->crtc_vsync_start = adjusted_mode->crtc_vdisplay + radeon_encoder->voverplus;
-		adjusted_mode->crtc_vsync_end = adjusted_mode->crtc_vsync_start + radeon_encoder->vsync_width;
-	} else {
-		adjusted_mode->htotal = radeon_encoder->panel_xres + radeon_encoder->hblank;
-		adjusted_mode->hsync_start = radeon_encoder->panel_xres + radeon_encoder->hoverplus;
-		adjusted_mode->hsync_end = adjusted_mode->hsync_start + radeon_encoder->hsync_width;
-		adjusted_mode->vtotal = radeon_encoder->panel_yres + radeon_encoder->vblank;
-		adjusted_mode->vsync_start = radeon_encoder->panel_yres + radeon_encoder->voverplus;
-		adjusted_mode->vsync_end = adjusted_mode->vsync_start + radeon_encoder->vsync_width;
-		/* update crtc values */
-		drm_mode_set_crtcinfo(adjusted_mode, CRTC_INTERLACE_HALVE_V);
-		/* adjust crtc values */
-		adjusted_mode->crtc_htotal = adjusted_mode->crtc_hdisplay + radeon_encoder->hblank;
-		adjusted_mode->crtc_hsync_start = adjusted_mode->crtc_hdisplay + radeon_encoder->hoverplus;
-		adjusted_mode->crtc_hsync_end = adjusted_mode->crtc_hsync_start + radeon_encoder->hsync_width;
-		adjusted_mode->crtc_vtotal = adjusted_mode->crtc_vdisplay + radeon_encoder->vblank;
-		adjusted_mode->crtc_vsync_start = adjusted_mode->crtc_vdisplay + radeon_encoder->voverplus;
-		adjusted_mode->crtc_vsync_end = adjusted_mode->crtc_vsync_start + radeon_encoder->vsync_width;
+		if (radeon_is_avivo(dev_priv)) {
+			adjusted_mode->hdisplay = radeon_encoder->panel_xres;
+			adjusted_mode->vdisplay = radeon_encoder->panel_yres;
+			adjusted_mode->htotal = radeon_encoder->panel_xres + radeon_encoder->hblank;
+			adjusted_mode->hsync_start = radeon_encoder->panel_xres + radeon_encoder->hoverplus;
+			adjusted_mode->hsync_end = adjusted_mode->hsync_start + radeon_encoder->hsync_width;
+			adjusted_mode->vtotal = radeon_encoder->panel_yres + radeon_encoder->vblank;
+			adjusted_mode->vsync_start = radeon_encoder->panel_yres + radeon_encoder->voverplus;
+			adjusted_mode->vsync_end = adjusted_mode->vsync_start + radeon_encoder->vsync_width;
+			/* update crtc values */
+			drm_mode_set_crtcinfo(adjusted_mode, CRTC_INTERLACE_HALVE_V);
+			/* adjust crtc values */
+			adjusted_mode->crtc_hdisplay = radeon_encoder->panel_xres;
+			adjusted_mode->crtc_vdisplay = radeon_encoder->panel_yres;
+			adjusted_mode->crtc_htotal = adjusted_mode->crtc_hdisplay + radeon_encoder->hblank;
+			adjusted_mode->crtc_hsync_start = adjusted_mode->crtc_hdisplay + radeon_encoder->hoverplus;
+			adjusted_mode->crtc_hsync_end = adjusted_mode->crtc_hsync_start + radeon_encoder->hsync_width;
+			adjusted_mode->crtc_vtotal = adjusted_mode->crtc_vdisplay + radeon_encoder->vblank;
+			adjusted_mode->crtc_vsync_start = adjusted_mode->crtc_vdisplay + radeon_encoder->voverplus;
+			adjusted_mode->crtc_vsync_end = adjusted_mode->crtc_vsync_start + radeon_encoder->vsync_width;
+		} else {
+			adjusted_mode->htotal = radeon_encoder->panel_xres + radeon_encoder->hblank;
+			adjusted_mode->hsync_start = radeon_encoder->panel_xres + radeon_encoder->hoverplus;
+			adjusted_mode->hsync_end = adjusted_mode->hsync_start + radeon_encoder->hsync_width;
+			adjusted_mode->vtotal = radeon_encoder->panel_yres + radeon_encoder->vblank;
+			adjusted_mode->vsync_start = radeon_encoder->panel_yres + radeon_encoder->voverplus;
+			adjusted_mode->vsync_end = adjusted_mode->vsync_start + radeon_encoder->vsync_width;
+			/* update crtc values */
+			drm_mode_set_crtcinfo(adjusted_mode, CRTC_INTERLACE_HALVE_V);
+			/* adjust crtc values */
+			adjusted_mode->crtc_htotal = adjusted_mode->crtc_hdisplay + radeon_encoder->hblank;
+			adjusted_mode->crtc_hsync_start = adjusted_mode->crtc_hdisplay + radeon_encoder->hoverplus;
+			adjusted_mode->crtc_hsync_end = adjusted_mode->crtc_hsync_start + radeon_encoder->hsync_width;
+			adjusted_mode->crtc_vtotal = adjusted_mode->crtc_vdisplay + radeon_encoder->vblank;
+			adjusted_mode->crtc_vsync_start = adjusted_mode->crtc_vdisplay + radeon_encoder->voverplus;
+			adjusted_mode->crtc_vsync_end = adjusted_mode->crtc_vsync_start + radeon_encoder->vsync_width;
+		}
 	}
-	adjusted_mode->clock = radeon_encoder->dotclock;
-	adjusted_mode->flags = radeon_encoder->flags;
 }
 
 
