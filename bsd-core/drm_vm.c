@@ -32,20 +32,23 @@ int drm_mmap(struct cdev *kdev, vm_offset_t offset, vm_paddr_t *paddr,
     int prot)
 {
 	struct drm_device *dev = drm_get_device_from_kdev(kdev);
-	struct drm_file *file_priv;
+	struct drm_file *file_priv = NULL;
 	drm_local_map_t *map;
 	enum drm_map_type type;
 	vm_paddr_t phys;
+	int error;
 
-	DRM_LOCK();
-	TAILQ_FOREACH(file_priv, &dev->files, link)
-		if (file_priv->pid == curthread->td_proc->p_pid &&
-		    file_priv->uid == curthread->td_ucred->cr_svuid &&
-		    file_priv->authenticated == 1)
-			break;
-	DRM_UNLOCK();
+	/* d_mmap gets called twice, we can only reference file_priv during
+	 * the first call.  We need to assume that if error is EBADF the
+	 * call was succesful and the client is authenticated.
+	 */
+	error = devfs_get_cdevpriv((void **)&file_priv);
+	if (error == ENOENT) {
+		DRM_ERROR("Could not find authenticator!\n");
+		return EINVAL;
+	}
 
-	if (!file_priv)
+	if (file_priv && !file_priv->authenticated)
 		return EACCES;
 
 	if (dev->dma && offset >= 0 && offset < ptoa(dev->dma->page_count)) {
