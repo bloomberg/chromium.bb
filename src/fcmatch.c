@@ -590,33 +590,40 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
     while (nnode--)
     {
 	node = *n++;
-	if (FcPatternGetCharSet (node->pattern, FC_CHARSET, 0, &ncs) == 
-	    FcResultMatch)
-	{
-	    /*
-	     * If this font isn't a subset of the previous fonts,
-	     * add it to the list
-	     */
-	    if (!trim || !*cs || !FcCharSetIsSubset (ncs, *cs))
-	    {
-                if (trim || build_cs)
-                {
-		    *cs = FcCharSetMerge (*cs, ncs);
-		    if (*cs == NULL)
-			return FcFalse;
-                }
 
-		FcPatternReference (node->pattern);
-		if (FcDebug () & FC_DBG_MATCHV)
-		{
-		    printf ("Add ");
-		    FcPatternPrint (node->pattern);
-		}
-		if (!FcFontSetAdd (fs, node->pattern))
-		{
-		    FcPatternDestroy (node->pattern);
+	/*
+	 * Only fetch node charset if we'd need it
+	 */
+	if (trim || build_cs)
+	{
+	    if (FcPatternGetCharSet (node->pattern, FC_CHARSET, 0, &ncs) !=
+		FcResultMatch)
+	        continue;
+	}
+
+	/*
+	 * If this font isn't a subset of the previous fonts,
+	 * add it to the list
+	 */
+	if (!trim || !*cs || !FcCharSetIsSubset (ncs, *cs))
+	{
+	    if (trim || build_cs)
+	    {
+		*cs = FcCharSetMerge (*cs, ncs);
+		if (*cs == NULL)
 		    return FcFalse;
-		}
+	    }
+
+	    FcPatternReference (node->pattern);
+	    if (FcDebug () & FC_DBG_MATCHV)
+	    {
+		printf ("Add ");
+		FcPatternPrint (node->pattern);
+	    }
+	    if (!FcFontSetAdd (fs, node->pattern))
+	    {
+		FcPatternDestroy (node->pattern);
+		return FcFalse;
 	    }
 	}
     }
