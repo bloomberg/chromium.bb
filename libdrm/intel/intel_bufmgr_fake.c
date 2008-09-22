@@ -1177,7 +1177,7 @@ void intel_bufmgr_fake_set_exec_callback(dri_bufmgr *bufmgr,
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
 
    bufmgr_fake->exec = exec;
-   bufmgr_fake->exec_priv = exec;
+   bufmgr_fake->exec_priv = priv;
 }
 
 static int
