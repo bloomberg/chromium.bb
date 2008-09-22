@@ -1997,8 +1997,10 @@ FcParsePatelt (FcConfigParse *parse)
 	if (!FcPatternAdd (pattern, name, value, FcTrue))
 	{
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
+            FcValueDestroy(value);
 	    break;
 	}
+        FcValueDestroy(value);
     }
 
     FcVStackPushPattern (parse, pattern);

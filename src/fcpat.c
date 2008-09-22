@@ -27,7 +27,7 @@
 #include <assert.h>
 
 static FcBool
-FcStrHashed (const FcChar8 *name);
+FcHashOwnsName(const FcChar8 *name);
 
 FcPattern *
 FcPatternCreate (void)
@@ -50,7 +50,7 @@ FcValueDestroy (FcValue v)
 {
     switch (v.type) {
     case FcTypeString:
-        if (!FcStrHashed (v.u.s))
+        if (!FcHashOwnsName(v.u.s))
             FcStrFree ((FcChar8 *) v.u.s);
 	break;
     case FcTypeMatrix:
@@ -131,7 +131,7 @@ FcValueListDestroy (FcValueListPtr l)
     {
 	switch (l->value.type) {
 	case FcTypeString:
-            if (!FcStrHashed ((FcChar8 *)l->value.u.s))
+            if (!FcHashOwnsName((FcChar8 *)l->value.u.s))
                 FcStrFree ((FcChar8 *)l->value.u.s);
 	    break;
 	case FcTypeMatrix:
@@ -1041,14 +1041,14 @@ static struct objectBucket {
 } *FcObjectBuckets[OBJECT_HASH_SIZE];
 
 static FcBool
-FcStrHashed (const FcChar8 *name)
+FcHashOwnsName (const FcChar8 *name)
 {
     FcChar32		hash = FcStringHash (name);
     struct objectBucket	**p;
     struct objectBucket	*b;
 
     for (p = &FcObjectBuckets[hash % OBJECT_HASH_SIZE]; (b = *p); p = &(b->next))
-	if (b->hash == hash && !strcmp ((char *)name, (char *) (b + 1)))
+	if (b->hash == hash && ((char *)name == (char *) (b + 1)))
             return FcTrue;
     return FcFalse;
 }
