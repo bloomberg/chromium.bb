@@ -166,7 +166,7 @@ typedef struct _bufmgr_fake {
    /** Driver-supplied argument to driver callbacks */
    void *driver_priv;
    /* Pointer to kernel-updated sarea data for the last completed user irq */
-   volatile unsigned int *last_dispatch;
+   volatile int *last_dispatch;
 
    int fd;
 
@@ -264,61 +264,114 @@ _fence_emit_internal(dri_bufmgr_fake *bufmgr_fake)
       abort();
    }
 
-   /* The kernel implementation of IRQ_WAIT is broken for wraparound, and has
-    * been since it was first introduced.  It only checks for
-    * completed_seq >= seq, and thus returns success early for wrapped irq
-    * values if the CPU wins a race.
-    *
-    * We have to do it up front at emit when we discover wrap, so that another
-    * client can't race (after we drop the lock) to emit and wait and fail.
-    */
-   if (seq == 0 || seq == 1) {
-      drmCommandWriteRead(bufmgr_fake->fd, DRM_I915_FLUSH, &ie, sizeof(ie));
-   }
-
    DBG("emit 0x%08x\n", seq);
    bufmgr_fake->last_fence = seq;
    return bufmgr_fake->last_fence;
 }
 
 static void
-_fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, unsigned int cookie)
+_fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, int seq)
 {
    struct drm_i915_irq_wait iw;
-   unsigned int last_dispatch;
+   int hw_seq;
    int ret;
+   int kernel_lied;
 
    if (bufmgr_fake->fence_wait != NULL) {
-      bufmgr_fake->fence_wait(cookie, bufmgr_fake->fence_priv);
+      bufmgr_fake->fence_wait(seq, bufmgr_fake->fence_priv);
       return;
    }
 
    DBG("wait 0x%08x\n", iw.irq_seq);
 
-   /* The kernel implementation of IRQ_WAIT is broken for wraparound, and has
-    * been since it was first introduced.  It only checks for
-    * completed_seq >= seq, and thus never returns for pre-wrapped irq values
-    * if the GPU wins the race.
+   iw.irq_seq = seq;
+
+   /* The kernel IRQ_WAIT implementation is all sorts of broken.
+    * 1) It returns 1 to 0x7fffffff instead of using the full 32-bit unsigned
+    *    range.
+    * 2) It returns 0 if hw_seq >= seq, not seq - hw_seq < 0 on the 32-bit
+    *    signed range.
+    * 3) It waits if seq < hw_seq, not seq - hw_seq > 0 on the 32-bit
+    *    signed range.
+    * 4) It returns -EBUSY in 3 seconds even if the hardware is still
+    *    successfully chewing through buffers.
     *
-    * So, check if it looks like a pre-wrapped value and just return success.
+    * Assume that in userland we treat sequence numbers as ints, which makes
+    * some of the comparisons convenient, since the sequence numbers are
+    * all postive signed integers.
+    *
+    * From this we get several cases we need to handle.  Here's a timeline.
+    * 0x2   0x7                                         0x7ffffff8   0x7ffffffd
+    *   |    |                                                   |    |
+    * -------------------------------------------------------------------
+    *
+    * A) Normal wait for hw to catch up
+    * hw_seq seq
+    *   |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 5.  If we call IRQ_WAIT, it will wait for hw to catch up.
+    *
+    * B) Normal wait for a sequence number that's already passed.
+    * seq    hw_seq
+    *   |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = -5.  If we call IRQ_WAIT, it returns 0 quickly.
+    *
+    * C) Hardware has already wrapped around ahead of us
+    * hw_seq                                                         seq
+    *   |                                                             |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 0x80000000 - 5.  If we called IRQ_WAIT, it would wait
+    * for hw_seq >= seq, which may never occur.  Thus, we want to catch this
+    * in userland and return 0.
+    *
+    * D) We've wrapped around ahead of the hardware.
+    * seq                                                           hw_seq
+    *   |                                                             |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = -(0x80000000 - 5).  If we called IRQ_WAIT, it would return
+    * 0 quickly because hw_seq >= seq, even though the hardware isn't caught up.
+    * Thus, we need to catch this early return in userland and bother the
+    * kernel until the hardware really does catch up.
+    *
+    * E) Hardware might wrap after we test in userland.
+    *                                                         hw_seq  seq
+    *                                                            |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 5.  If we call IRQ_WAIT, it will likely see seq >= hw_seq
+    * and wait.  However, suppose hw_seq wraps before we make it into the
+    * kernel.  The kernel sees hw_seq >= seq and waits for 3 seconds then
+    * returns -EBUSY.  This is case C).  We should catch this and then return
+    * successfully.
     */
-   if (*bufmgr_fake->last_dispatch - cookie > 0x4000000)
-      return;
-
-   iw.irq_seq = cookie;
-
    do {
-      last_dispatch = *bufmgr_fake->last_dispatch;
+      /* Keep a copy of last_dispatch so that if the wait -EBUSYs because the
+       * hardware didn't catch up in 3 seconds, we can see if it at least made
+       * progress and retry.
+       */
+      hw_seq = *bufmgr_fake->last_dispatch;
+
+      /* Catch case C */
+      if (seq - hw_seq > 0x40000000)
+	 return;
+
       ret = drmCommandWrite(bufmgr_fake->fd, DRM_I915_IRQ_WAIT,
 			    &iw, sizeof(iw));
-   } while (ret == -EAGAIN || ret == -EINTR ||
-	    (ret == -EBUSY && last_dispatch != *bufmgr_fake->last_dispatch));
+      /* Catch case D */
+      kernel_lied = (ret == 0) && (seq - *bufmgr_fake->last_dispatch <
+				   -0x40000000);
+
+      /* Catch case E */
+      if (ret == -EBUSY && (seq - *bufmgr_fake->last_dispatch > 0x40000000))
+	 ret = 0;
+   } while (kernel_lied || ret == -EAGAIN || ret == -EINTR ||
+	    (ret == -EBUSY && hw_seq != *bufmgr_fake->last_dispatch));
 
    if (ret != 0) {
       drmMsg("%s:%d: Error %d waiting for fence.\n", __FILE__, __LINE__, ret);
       abort();
    }
-   clear_fenced(bufmgr_fake, cookie);
+   clear_fenced(bufmgr_fake, seq);
 }
 
 static int
@@ -1312,7 +1365,7 @@ void intel_bufmgr_fake_set_last_dispatch(dri_bufmgr *bufmgr,
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
 
-   bufmgr_fake->last_dispatch = last_dispatch;
+   bufmgr_fake->last_dispatch = (volatile int *)last_dispatch;
 }
 
 dri_bufmgr *
@@ -1349,7 +1402,7 @@ intel_bufmgr_fake_init(int fd,
    bufmgr_fake->bufmgr.debug = 0;
 
    bufmgr_fake->fd = fd;
-   bufmgr_fake->last_dispatch = last_dispatch;
+   bufmgr_fake->last_dispatch = (volatile int *)last_dispatch;
 
    return &bufmgr_fake->bufmgr;
 }
