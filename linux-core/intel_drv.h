@@ -50,7 +50,6 @@ struct intel_i2c_chan {
 
 struct intel_framebuffer {
 	struct drm_framebuffer base;
-	struct drm_gem_object *obj;
 };
 
 
@@ -119,7 +118,8 @@ extern int intelfb_resize(struct drm_device *dev, struct drm_crtc *crtc);
 extern void intel_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				    u16 blue, int regno);
 
-extern struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
-							     struct drm_file *file_priv,
-							     struct drm_mode_fb_cmd *mode_cmd);
+extern struct drm_framebuffer *
+intel_framebuffer_create(struct drm_device *dev,
+			 struct drm_mode_fb_cmd *mode_cmd,
+			 void *mm_private);
 #endif /* __INTEL_DRV_H__ */

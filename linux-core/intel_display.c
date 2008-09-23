@@ -370,6 +370,7 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 	struct intel_crtc *intel_crtc = to_intel_crtc(crtc);
 	struct intel_framebuffer *intel_fb;
 	struct drm_i915_gem_object *obj_priv;
+	struct drm_gem_object *obj;
 	int pipe = intel_crtc->pipe;
 	unsigned long Start, Offset;
 	int dspbase = (pipe == 0 ? DSPAADDR : DSPBADDR);
@@ -386,7 +387,8 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 
 	intel_fb = to_intel_framebuffer(crtc->fb);
 
-	obj_priv = intel_fb->obj->driver_private;
+	obj = intel_fb->base.mm_private;
+	obj_priv = obj->driver_private;
 
 	Start = obj_priv->gtt_offset;
 	Offset = y * crtc->fb->pitch + x * (crtc->fb->bits_per_pixel / 8);
@@ -1481,21 +1483,34 @@ static void intel_user_framebuffer_destroy(struct drm_framebuffer *fb)
 {
 	struct intel_framebuffer *intel_fb = to_intel_framebuffer(fb);
 	struct drm_device *dev = fb->dev;
+
 	if (fb->fbdev)
 		intelfb_remove(dev, fb);
 
 	drm_framebuffer_cleanup(fb);
+	drm_gem_object_unreference(fb->mm_private);
 
 	kfree(intel_fb);
+}
+
+static int intel_user_framebuffer_create_handle(struct drm_framebuffer *fb,
+						struct drm_file *file_priv,
+						unsigned int *handle)
+{
+	struct drm_gem_object *object = fb->mm_private;
+
+	return drm_gem_handle_create(file_priv, object, handle);
 }
       
 static const struct drm_framebuffer_funcs intel_fb_funcs = {
 	.destroy = intel_user_framebuffer_destroy,
+	.create_handle = intel_user_framebuffer_create_handle,
 };
 
-struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
-						      struct drm_file *filp,
-						      struct drm_mode_fb_cmd *mode_cmd)
+struct drm_framebuffer *
+intel_framebuffer_create(struct drm_device *dev,
+			 struct drm_mode_fb_cmd *mode_cmd,
+			 void *mm_private)
 {
 	struct intel_framebuffer *intel_fb;
 
@@ -1506,18 +1521,24 @@ struct drm_framebuffer *intel_user_framebuffer_create(struct drm_device *dev,
 	if (!drm_framebuffer_init(dev, &intel_fb->base, &intel_fb_funcs))
 		return NULL;
 
-	drm_helper_mode_fill_fb_struct(&intel_fb->base, mode_cmd);
+	drm_helper_mode_fill_fb_struct(&intel_fb->base, mode_cmd, mm_private);
 
-	if (filp) {
-		intel_fb->obj = drm_gem_object_lookup(dev, filp,
-						      mode_cmd->handle);
-		if (!intel_fb->obj) {
-			kfree(intel_fb);
-			return NULL;
-		}
-	}
-	drm_gem_object_unreference(intel_fb->obj);
 	return &intel_fb->base;
+}
+
+
+static struct drm_framebuffer *
+intel_user_framebuffer_create(struct drm_device *dev,
+			      struct drm_file *filp,
+			      struct drm_mode_fb_cmd *mode_cmd)
+{
+	struct drm_gem_object *obj;
+
+	obj = drm_gem_object_lookup(dev, filp, mode_cmd->handle);
+	if (!obj)
+		return NULL;
+
+	return intel_framebuffer_create(dev, mode_cmd, obj);
 }
 
 static int intel_insert_new_fb(struct drm_device *dev, struct drm_file *file_priv,
@@ -1536,13 +1557,9 @@ static int intel_insert_new_fb(struct drm_device *dev, struct drm_file *file_pri
 		mutex_unlock(&dev->struct_mutex);
 		return -EINVAL;
 	}
-	drm_helper_mode_fill_fb_struct(fb, mode_cmd);
-
-	drm_gem_object_unreference(intel_fb->obj);
-	drm_gem_object_unreference(obj);
+	drm_gem_object_unreference(intel_fb->base.mm_private);
+	drm_helper_mode_fill_fb_struct(fb, mode_cmd, obj);
 	mutex_unlock(&dev->struct_mutex);
-
-	intel_fb->obj = obj;
 
 	list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
 		if (crtc->fb == fb) {

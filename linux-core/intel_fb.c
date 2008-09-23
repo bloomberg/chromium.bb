@@ -728,7 +728,7 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	i915_gem_clflush_object(fbo);
 
-	fb = intel_user_framebuffer_create(dev, NULL, &mode_cmd);
+	fb = intel_framebuffer_create(dev, &mode_cmd, fbo);
 	if (!fb) {
 		DRM_ERROR("failed to allocate fb.\n");
 		ret = -ENOMEM;
@@ -739,8 +739,6 @@ int intelfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_height
 
 	intel_fb = to_intel_framebuffer(fb);
 	*intel_fb_p = intel_fb;
-
-	intel_fb->obj = fbo;
 
 	info = framebuffer_alloc(sizeof(struct intelfb_par), device);
 	if (!info) {
@@ -1137,7 +1135,7 @@ int intelfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 		unregister_framebuffer(info);
 		iounmap(info->screen_base);
 		mutex_lock(&dev->struct_mutex);
-		drm_gem_object_unreference(intel_fb->obj);
+		drm_gem_object_unreference(intel_fb->base.mm_private);
 		mutex_unlock(&dev->struct_mutex);
 		framebuffer_release(info);
 	}
