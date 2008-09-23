@@ -269,7 +269,7 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 			else {
 				if (mode_info->bios_connector[i].tmds_type == TMDS_INT)
 					encoder = radeon_encoder_legacy_tmds_int_add(dev, i);
-				else if (mode_info->bios_connector[i].dac_type == TMDS_EXT)
+				else if (mode_info->bios_connector[i].tmds_type == TMDS_EXT)
 					encoder = radeon_encoder_legacy_tmds_ext_add(dev, i);
 			}
 			if (encoder)
