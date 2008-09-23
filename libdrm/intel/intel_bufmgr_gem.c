@@ -357,7 +357,7 @@ intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_OPEN, &open_arg);
     if (ret != 0) {
 	fprintf(stderr, "Couldn't reference %s handle 0x%08x: %s\n",
-	       name, handle, strerror(-ret));
+	       name, handle, strerror(errno));
 	free(bo_gem);
 	return NULL;
     }
@@ -401,7 +401,7 @@ dri_gem_bo_free(dri_bo *bo)
     if (ret != 0) {
 	fprintf(stderr,
 		"DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
-		bo_gem->gem_handle, bo_gem->name, strerror(-ret));
+		bo_gem->gem_handle, bo_gem->name, strerror(errno));
     }
     free(bo);
 }
