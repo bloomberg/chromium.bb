@@ -75,7 +75,8 @@ extern bool drm_crtc_helper_set_mode(struct drm_crtc *crtc, struct drm_display_m
 extern bool drm_helper_crtc_in_use(struct drm_crtc *crtc);
 
 extern int drm_helper_mode_fill_fb_struct(struct drm_framebuffer *fb,
-					  struct drm_mode_fb_cmd *mode_cmd);
+					  struct drm_mode_fb_cmd *mode_cmd,
+					  void *mm_private);
 
 static inline void drm_crtc_helper_add(struct drm_crtc *crtc, const struct drm_crtc_helper_funcs *funcs)
 {

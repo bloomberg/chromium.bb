@@ -220,6 +220,9 @@ struct drm_display_info {
 
 struct drm_framebuffer_funcs {
 	void (*destroy)(struct drm_framebuffer *framebuffer);
+	int (*create_handle)(struct drm_framebuffer *fb,
+			     struct drm_file *file_priv,
+			     unsigned int *handle);
 };
 
 struct drm_framebuffer {
@@ -237,7 +240,7 @@ struct drm_framebuffer {
 	void *fbdev;
 	u32 pseudo_palette[17];
 	struct list_head filp_head;
-	uint32_t mm_handle;
+	void *mm_private;
 };
 
 struct drm_property_blob {

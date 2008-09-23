@@ -248,7 +248,6 @@ struct radeon_connector {
 
 struct radeon_framebuffer {
 	struct drm_framebuffer base;
-	struct drm_gem_object *obj;
 	struct drm_bo_kmap_obj kmap_obj;
 };
 
@@ -313,9 +312,9 @@ extern void radeon_atom_output_lock(struct drm_encoder *encoder, bool lock);
 extern void radeon_atom_initialize_bios_scratch_regs(struct drm_device *dev);
 extern void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				     u16 blue, int regno);
-struct drm_framebuffer *radeon_user_framebuffer_create(struct drm_device *dev,
-						       struct drm_file *filp,
-						       struct drm_mode_fb_cmd *mode_cmd);
+struct drm_framebuffer *radeon_framebuffer_create(struct drm_device *dev,
+						  struct drm_mode_fb_cmd *mode_cmd,
+						  void *mm_private);
 
 int radeonfb_probe(struct drm_device *dev);
 

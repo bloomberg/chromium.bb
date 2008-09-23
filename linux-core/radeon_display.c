@@ -605,15 +605,25 @@ static void radeon_user_framebuffer_destroy(struct drm_framebuffer *fb)
 	kfree(radeon_fb);
 }
 
+static int radeon_user_framebuffer_create_handle(struct drm_framebuffer *fb,
+						  struct drm_file *file_priv,
+						  unsigned int *handle)
+{
+	struct drm_gem_object *object = fb->mm_private;
+
+	return drm_gem_handle_create(file_priv, object, handle);
+}
+
 static const struct drm_framebuffer_funcs radeon_fb_funcs = {
 	.destroy = radeon_user_framebuffer_destroy,
+	.create_handle = radeon_user_framebuffer_create_handle,
 };
 
-struct drm_framebuffer *radeon_user_framebuffer_create(struct drm_device *dev,
-						       struct drm_file *filp,
-						       struct drm_mode_fb_cmd *mode_cmd)
+struct drm_framebuffer *
+radeon_framebuffer_create(struct drm_device *dev,
+			  struct drm_mode_fb_cmd *mode_cmd,
+			  void *mm_private)
 {
-
 	struct radeon_framebuffer *radeon_fb;
 
 	radeon_fb = kzalloc(sizeof(*radeon_fb), GFP_KERNEL);
@@ -621,18 +631,20 @@ struct drm_framebuffer *radeon_user_framebuffer_create(struct drm_device *dev,
 		return NULL;
 
 	drm_framebuffer_init(dev, &radeon_fb->base, &radeon_fb_funcs);
-	drm_helper_mode_fill_fb_struct(&radeon_fb->base, mode_cmd);
-
-	if (filp) {
-		radeon_fb->obj = drm_gem_object_lookup(dev, filp,
-						       mode_cmd->handle);
-		if (!radeon_fb->obj) {
-			kfree(radeon_fb);
-			return NULL;
-		}
-		drm_gem_object_unreference(radeon_fb->obj);
-	}
+	drm_helper_mode_fill_fb_struct(&radeon_fb->base, mode_cmd, mm_private);
 	return &radeon_fb->base;
+}
+
+static struct drm_framebuffer *
+radeon_user_framebuffer_create(struct drm_device *dev,
+			       struct drm_file *file_priv,
+			       struct drm_mode_fb_cmd *mode_cmd)
+{
+	struct radeon_framebuffer *radeon_fb;
+	void *mm_private;
+
+	mm_private = drm_gem_object_lookup(dev, file_priv, mode_cmd->handle);
+	return radeon_framebuffer_create(dev, mode_cmd, mm_private);
 }
 
 static const struct drm_mode_config_funcs radeon_mode_funcs = {

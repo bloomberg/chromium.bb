@@ -744,7 +744,7 @@ int radeonfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_heigh
 	}
 
 	mutex_lock(&dev->struct_mutex);
-	fb = radeon_user_framebuffer_create(dev, NULL, &mode_cmd);
+	fb = radeon_framebuffer_create(dev, &mode_cmd, fbo);
 	if (!fb) {
 		DRM_ERROR("failed to allocate fb.\n");
 		ret = -ENOMEM;
@@ -755,8 +755,6 @@ int radeonfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_heigh
 
 	radeon_fb = to_radeon_framebuffer(fb);
 	*radeon_fb_p = radeon_fb;
-
-	radeon_fb->obj = fbo;
 
 	info = framebuffer_alloc(sizeof(struct radeonfb_par), device);
 	if (!info) {
@@ -1150,7 +1148,7 @@ int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 		unregister_framebuffer(info);
 		drm_bo_kunmap(&radeon_fb->kmap_obj);
 		mutex_lock(&dev->struct_mutex);
-		drm_gem_object_unreference(radeon_fb->obj);
+		drm_gem_object_unreference(fb->mm_private);
 		mutex_unlock(&dev->struct_mutex);
 		framebuffer_release(info);
 	}

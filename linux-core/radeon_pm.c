@@ -54,10 +54,10 @@ int radeon_suspend(struct drm_device *dev, pm_message_t state)
 		if (!radeon_fb)
 			continue;
 
-		if (!radeon_fb->obj)
+		if (!radeon_fb->base.mm_private)
 			continue;
 		
-		radeon_gem_object_unpin(radeon_fb->obj);
+		radeon_gem_object_unpin(radeon_fb->base.mm_private);
 	}
 
 	if (!(dev_priv->flags & RADEON_IS_IGP))
@@ -168,10 +168,11 @@ int radeon_resume(struct drm_device *dev)
 		if (!radeon_fb)
 			continue;
 
-		if (!radeon_fb->obj)
+		if (!radeon_fb->base.mm_private)
 			continue;
 		
-		radeon_gem_object_pin(radeon_fb->obj, PAGE_SIZE, RADEON_GEM_DOMAIN_VRAM);
+		radeon_gem_object_pin(radeon_fb->base.mm_private,
+				      PAGE_SIZE, RADEON_GEM_DOMAIN_VRAM);
 	}
 	/* blat the mode back in */
 	drm_helper_resume_force_mode(dev);

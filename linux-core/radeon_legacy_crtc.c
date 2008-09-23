@@ -176,6 +176,7 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_framebuffer *radeon_fb;
+	struct drm_gem_object *obj;
 	struct drm_radeon_gem_object *obj_priv;
 	uint32_t base;
 	uint32_t crtc_offset, crtc_offset_cntl, crtc_tile_x0_y0 = 0;
@@ -185,7 +186,8 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 
 	radeon_fb = to_radeon_framebuffer(crtc->fb);
 
-	obj_priv = radeon_fb->obj->driver_private;
+	obj = radeon_fb->base.mm_private;
+	obj_priv = obj->driver_private;
 
 	crtc_offset = obj_priv->bo->offset;
 
@@ -599,6 +601,7 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_framebuffer *radeon_fb;
+	struct drm_gem_object *obj;
 	struct drm_radeon_gem_object *obj_priv;
 	uint32_t base;
 	uint32_t crtc2_offset, crtc2_offset_cntl, crtc2_tile_x0_y0 = 0;
@@ -608,7 +611,8 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 
 	radeon_fb = to_radeon_framebuffer(crtc->fb);
 
-	obj_priv = radeon_fb->obj->driver_private;
+	obj = radeon_fb->base.mm_private;
+	obj_priv = obj->driver_private;
 
 	crtc2_offset = obj_priv->bo->offset;
 
