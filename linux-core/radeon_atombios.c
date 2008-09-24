@@ -77,6 +77,11 @@ static inline struct radeon_i2c_bus_rec radeon_lookup_gpio(struct drm_device *de
 	return i2c;
 }
 
+static struct radeon_i2c_bus_rec radeon_parse_i2c_record(struct drm_device *dev, ATOM_I2C_RECORD *record)
+{
+    return radeon_lookup_gpio(dev, record->sucI2cId.bfI2C_LineMux);
+}
+
 static void radeon_atom_apply_quirks(struct drm_device *dev, int index)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
@@ -100,6 +105,165 @@ static void radeon_atom_apply_quirks(struct drm_device *dev, int index)
 	}
 }
 
+const int object_connector_convert[] =
+{ CONNECTOR_NONE,
+  CONNECTOR_DVI_I,
+  CONNECTOR_DVI_I,
+  CONNECTOR_DVI_D,
+  CONNECTOR_DVI_D,
+  CONNECTOR_VGA,
+  CONNECTOR_CTV,
+  CONNECTOR_STV,
+  CONNECTOR_NONE,
+  CONNECTOR_DIN,
+  CONNECTOR_SCART,
+  CONNECTOR_HDMI_TYPE_A,
+  CONNECTOR_HDMI_TYPE_B,
+  CONNECTOR_HDMI_TYPE_B,
+  CONNECTOR_LVDS,
+  CONNECTOR_DIN,
+  CONNECTOR_NONE,
+  CONNECTOR_NONE,
+  CONNECTOR_NONE,
+  CONNECTOR_DISPLAY_PORT,
+};
+
+bool radeon_get_atom_connector_info_from_bios_object_table(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
+	struct atom_context *ctx = mode_info->atom_context;
+	int index = GetIndexIntoMasterTable(DATA, Object_Header);
+	uint16_t size, data_offset;
+	uint8_t frev, crev;
+	ATOM_CONNECTOR_OBJECT_TABLE *con_obj;
+	ATOM_INTEGRATED_SYSTEM_INFO_V2 *igp_obj = NULL;
+	ATOM_OBJECT_HEADER *obj_header;
+	int i, j;
+
+	atom_parse_data_header(ctx, index, &size, &frev, &crev, &data_offset);
+
+	if (crev < 2)
+		return false;
+
+
+	obj_header = (ATOM_OBJECT_HEADER *)(ctx->bios + data_offset);
+
+	con_obj = (ATOM_CONNECTOR_OBJECT_TABLE *)(ctx->bios + data_offset + obj_header->usConnectorObjectTableOffset);
+	DRM_ERROR("Num of objects %d\n", con_obj->ucNumberOfObjects);
+
+	for (i = 0; i < con_obj->ucNumberOfObjects; i++) {
+		ATOM_SRC_DST_TABLE_FOR_ONE_OBJECT *src_dst_table;
+		ATOM_COMMON_RECORD_HEADER *record;
+		uint8_t obj_id, num, obj_type;
+		int record_base;
+		uint16_t con_obj_id = le16_to_cpu(con_obj->asObjects[i].usObjectID);
+
+		obj_id = (con_obj_id & OBJECT_ID_MASK) >> OBJECT_ID_SHIFT;
+		num = (con_obj_id & ENUM_ID_MASK) >> ENUM_ID_SHIFT;
+		obj_type = (con_obj_id & OBJECT_TYPE_MASK) >> OBJECT_TYPE_SHIFT;
+		if (obj_type != GRAPH_OBJECT_TYPE_CONNECTOR)
+			continue;
+
+		DRM_ERROR("offset is %04x\n", le16_to_cpu(con_obj->asObjects[i].usSrcDstTableOffset));
+		src_dst_table = (ATOM_SRC_DST_TABLE_FOR_ONE_OBJECT *)
+			(ctx->bios + data_offset + le16_to_cpu(con_obj->asObjects[i].usSrcDstTableOffset));
+
+		DRM_ERROR("object id %04x %02x\n", obj_id, src_dst_table->ucNumberOfSrc);
+	       
+		if ((dev_priv->chip_family == CHIP_RS780) &&
+		    (obj_id == CONNECTOR_OBJECT_ID_PCIE_CONNECTOR)) {
+			uint32_t slot_config, ct;
+
+			// TODO
+		} else
+			mode_info->bios_connector[i].connector_type = object_connector_convert[obj_id];
+
+		if (mode_info->bios_connector[i].connector_type == CONNECTOR_NONE)
+			mode_info->bios_connector[i].valid = false;
+		else
+			mode_info->bios_connector[i].valid = true;
+		mode_info->bios_connector[i].devices = 0;
+
+		for (j = 0; j < src_dst_table->ucNumberOfSrc; j++) {
+			uint8_t sobj_id;
+
+			sobj_id = (src_dst_table->usSrcObjectID[j] & OBJECT_ID_MASK) >> OBJECT_ID_SHIFT;
+			DRM_ERROR("src object id %04x %d\n", src_dst_table->usSrcObjectID[j], sobj_id);
+
+			switch(sobj_id) {
+			case ENCODER_OBJECT_ID_INTERNAL_LVDS:
+				mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_LCD1_INDEX);
+				break;
+			case ENCODER_OBJECT_ID_INTERNAL_TMDS1:
+			case ENCODER_OBJECT_ID_INTERNAL_KLDSCP_TMDS1:
+				mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_DFP1_INDEX);
+				break;
+			case ENCODER_OBJECT_ID_INTERNAL_UNIPHY:
+				if (num == 1)
+					mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_DFP1_INDEX);
+				else
+					mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_DFP2_INDEX);
+				mode_info->bios_connector[i].tmds_type = TMDS_UNIPHY;
+				break;
+			case ENCODER_OBJECT_ID_INTERNAL_TMDS2:
+			case ENCODER_OBJECT_ID_INTERNAL_KLDSCP_DVO1:
+				mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_DFP2_INDEX);
+				mode_info->bios_connector[i].tmds_type = TMDS_EXT;
+				break;
+			case ENCODER_OBJECT_ID_INTERNAL_LVTM1:
+			case ENCODER_OBJECT_ID_INTERNAL_KLDSCP_LVTMA:
+				mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_DFP3_INDEX);
+				mode_info->bios_connector[i].tmds_type = TMDS_LVTMA;
+				break;
+			case ENCODER_OBJECT_ID_INTERNAL_DAC1:
+			case ENCODER_OBJECT_ID_INTERNAL_KLDSCP_DAC1:
+				if (mode_info->bios_connector[i].connector_type == CONNECTOR_DIN ||
+				    mode_info->bios_connector[i].connector_type == CONNECTOR_STV ||
+				    mode_info->bios_connector[i].connector_type == CONNECTOR_CTV)
+					mode_info->bios_connector[i].valid = false;
+				else
+					mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_CRT1_INDEX);
+				mode_info->bios_connector[i].dac_type = DAC_PRIMARY;
+				break;
+			case ENCODER_OBJECT_ID_INTERNAL_DAC2:
+			case ENCODER_OBJECT_ID_INTERNAL_KLDSCP_DAC2:
+				if (mode_info->bios_connector[i].connector_type == CONNECTOR_DIN ||
+				    mode_info->bios_connector[i].connector_type == CONNECTOR_STV ||
+				    mode_info->bios_connector[i].connector_type == CONNECTOR_CTV)
+					mode_info->bios_connector[i].valid = false;
+				else
+					mode_info->bios_connector[i].devices |= (1 << ATOM_DEVICE_CRT2_INDEX);
+				mode_info->bios_connector[i].dac_type = DAC_TVDAC;
+				break;
+			}
+		}
+
+		record = (ATOM_COMMON_RECORD_HEADER *)
+			(ctx->bios + data_offset + le16_to_cpu(con_obj->asObjects[i].usRecordOffset));
+		record_base = le16_to_cpu(con_obj->asObjects[i].usRecordOffset);
+
+		while (record->ucRecordType > 0 &&
+		       record->ucRecordType <= ATOM_MAX_OBJECT_RECORD_NUMBER) {
+			DRM_ERROR("record type %d\n", record->ucRecordType);
+
+			switch(record->ucRecordType) {
+			case ATOM_I2C_RECORD_TYPE:
+				mode_info->bios_connector[i].ddc_i2c = radeon_parse_i2c_record(dev, (ATOM_I2C_RECORD *)record);
+				break;
+			case ATOM_HPD_INT_RECORD_TYPE:
+				break;
+			case ATOM_CONNECTOR_DEVICE_TAG_RECORD_TYPE:
+				break;
+			}
+			record = (ATOM_COMMON_RECORD_HEADER *)((char *)record + record->ucRecordSize);
+		}
+
+	}
+	return true;
+}
+
+
 bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device *dev)
 {
 	struct drm_radeon_private *dev_priv = dev->dev_private;
@@ -112,6 +276,10 @@ bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device 
 
 	union atom_supported_devices *supported_devices;
 	int i,j;
+
+	if (radeon_get_atom_connector_info_from_bios_object_table(dev))
+		return true;
+
 	atom_parse_data_header(ctx, index, &size, &frev, &crev, &data_offset);
 
 	supported_devices = (union atom_supported_devices *)(ctx->bios + data_offset);
