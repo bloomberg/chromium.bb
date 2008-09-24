@@ -273,7 +273,7 @@ static void
 _fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, int seq)
 {
    struct drm_i915_irq_wait iw;
-   int hw_seq;
+   int hw_seq, busy_count = 0;
    int ret;
    int kernel_lied;
 
@@ -343,7 +343,17 @@ _fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, int seq)
     * kernel.  The kernel sees hw_seq >= seq and waits for 3 seconds then
     * returns -EBUSY.  This is case C).  We should catch this and then return
     * successfully.
+    *
+    * F) Hardware might take a long time on a buffer.
+    * hw_seq seq
+    *   |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 5.  If we call IRQ_WAIT, if sequence 2 through 5 take too
+    * long, it will return -EBUSY.  Batchbuffers in the gltestperf demo were
+    * seen to take up to 7 seconds.  We should catch early -EBUSY return
+    * and keep trying.
     */
+
    do {
       /* Keep a copy of last_dispatch so that if the wait -EBUSYs because the
        * hardware didn't catch up in 3 seconds, we can see if it at least made
@@ -364,11 +374,18 @@ _fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, int seq)
       /* Catch case E */
       if (ret == -EBUSY && (seq - *bufmgr_fake->last_dispatch > 0x40000000))
 	 ret = 0;
+
+      /* Catch case F: Allow up to 15 seconds chewing on one buffer. */
+      if ((ret == -EBUSY) && (hw_seq != *bufmgr_fake->last_dispatch))
+	 busy_count = 0;
+      else
+	 busy_count++;
    } while (kernel_lied || ret == -EAGAIN || ret == -EINTR ||
-	    (ret == -EBUSY && hw_seq != *bufmgr_fake->last_dispatch));
+	    (ret == -EBUSY && busy_count < 5));
 
    if (ret != 0) {
-      drmMsg("%s:%d: Error %d waiting for fence.\n", __FILE__, __LINE__, ret);
+      drmMsg("%s:%d: Error waiting for fence: %s.\n", __FILE__, __LINE__,
+	     strerror(-ret));
       abort();
    }
    clear_fenced(bufmgr_fake, seq);
