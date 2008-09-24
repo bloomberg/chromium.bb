@@ -979,10 +979,16 @@ void radeon_init_memory_map(struct drm_device *dev)
 			RADEON_WRITE(AVIVO_HDP_FB_LOCATION, dev_priv->mc_fb_location);
 	}
 
-	dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffff) << 16;
-	dev_priv->fb_size =
-		((radeon_read_fb_location(dev_priv) & 0xffff0000u) + 0x10000)
-		- dev_priv->fb_location;
+	if (dev_priv->chip_family >= CHIP_R600) {
+		dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffffff) << 24;
+		dev_priv->fb_size = ((radeon_read_fb_location(dev_priv) & 0xff000000u) + 0x1000000)
+			- dev_priv->fb_location;
+	} else {
+		dev_priv->fb_location = (radeon_read_fb_location(dev_priv) & 0xffff) << 16;
+		dev_priv->fb_size =
+			((radeon_read_fb_location(dev_priv) & 0xffff0000u) + 0x10000)
+			- dev_priv->fb_location;
+	}
 
 }
 
@@ -1008,6 +1014,11 @@ int radeon_gem_mm_init(struct drm_device *dev)
 		       ((dev_priv->mm.vram_visible) >> PAGE_SHIFT) - 16,
 		       0);
 
+
+	if (dev_priv->chip_family > CHIP_R600) {
+		dev_priv->mm_enabled = true;
+		return 0;
+	}
 
 	dev_priv->mm.gart_size = (32 * 1024 * 1024);
 	dev_priv->mm.gart_start = 0;

@@ -101,6 +101,10 @@ u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
 		return R500_READ_MCIND(dev_priv, RV515_MC_FB_LOCATION);
 	else if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)
 		return RS690_READ_MCIND(dev_priv, RS690_MC_FB_LOCATION);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV770)
+		return RADEON_READ(R700_MC_VM_FB_LOCATION);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R600)
+		return RADEON_READ(R600_MC_VM_FB_LOCATION);
 	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
 		return R500_READ_MCIND(dev_priv, R520_MC_FB_LOCATION);
 	else
@@ -110,7 +114,8 @@ u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
 void radeon_read_agp_location(drm_radeon_private_t *dev_priv, u32 *agp_lo, u32 *agp_hi)
 {
 	if (dev_priv->chip_family == CHIP_RV770) {
-
+		*agp_lo = RADEON_READ(R600_MC_VM_AGP_BOT);
+		*agp_hi = RADEON_READ(R600_MC_VM_AGP_TOP);
 	} else if (dev_priv->chip_family == CHIP_R600) {
 		*agp_lo = RADEON_READ(R600_MC_VM_AGP_BOT);
 		*agp_hi = RADEON_READ(R600_MC_VM_AGP_TOP);
@@ -139,6 +144,10 @@ void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
 		R500_WRITE_MCIND(RV515_MC_FB_LOCATION, fb_loc);
 	else if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)
 		RS690_WRITE_MCIND(RS690_MC_FB_LOCATION, fb_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV770)
+		RADEON_WRITE(R700_MC_VM_FB_LOCATION, fb_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R600)
+		RADEON_WRITE(R600_MC_VM_FB_LOCATION, fb_loc);
 	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
 		R500_WRITE_MCIND(R520_MC_FB_LOCATION, fb_loc);
 	else
@@ -151,7 +160,10 @@ static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_lo
 		R500_WRITE_MCIND(RV515_MC_AGP_LOCATION, agp_loc);
 	else if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)
 		RS690_WRITE_MCIND(RS690_MC_AGP_LOCATION, agp_loc);
-	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R600) {
+		RADEON_WRITE(R600_MC_VM_AGP_BOT, agp_loc);
+		RADEON_WRITE(R600_MC_VM_AGP_TOP, agp_loc_hi);
+	} else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
 		R500_WRITE_MCIND(R520_MC_AGP_LOCATION, agp_loc);
 	else
 		RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_loc);
@@ -2356,6 +2368,9 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	
 	/* Start with assuming that writeback doesn't work */
 	dev_priv->writeback_works = 0;
+
+	if (dev_priv->chip_family > CHIP_R600)
+		return;
 
 	dev_priv->usec_timeout = RADEON_DEFAULT_CP_TIMEOUT;
 	dev_priv->ring.size = RADEON_DEFAULT_RING_SIZE;
