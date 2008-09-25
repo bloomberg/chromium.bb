@@ -146,6 +146,10 @@ static void atombios_scaler_setup(struct drm_encoder *encoder, struct drm_displa
 	ENABLE_SCALER_PS_ALLOCATION args;
 	int index = GetIndexIntoMasterTable(COMMAND, EnableScaler);
 
+	/* pre-avivo chips only have 1 scaler */
+	if (!radeon_is_avivo(dev_priv) && radeon_crtc->crtc_id)
+		return;
+
 	memset(&args, 0, sizeof(args));
 	args.ucScaler = radeon_crtc->crtc_id;
 
@@ -154,8 +158,12 @@ static void atombios_scaler_setup(struct drm_encoder *encoder, struct drm_displa
 			args.ucEnable = ATOM_SCALER_EXPANSION;
 		else if (radeon_encoder->rmx_type == RMX_CENTER)
 			args.ucEnable = ATOM_SCALER_CENTER;
-	} else
-		args.ucEnable = ATOM_SCALER_DISABLE;
+	} else {
+		if (radeon_is_avivo(dev_priv))
+			args.ucEnable = ATOM_SCALER_DISABLE;
+		else
+			args.ucEnable = ATOM_SCALER_CENTER;
+	}
 
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
 }
@@ -224,6 +232,9 @@ static void radeon_dfp_disable_dither(struct drm_encoder *encoder, int device)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
+
+	if (!radeon_is_avivo(dev_priv))
+		return;
 
 	switch (device) {
 	case ATOM_DEVICE_DFP1_INDEX:

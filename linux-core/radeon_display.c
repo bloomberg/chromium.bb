@@ -195,7 +195,7 @@ static void radeon_crtc_init(struct drm_device *dev, int index)
 		radeon_crtc->lut_b[i] = i;
 	}
 
-	if (dev_priv->is_atom_bios && radeon_is_avivo(dev_priv))
+	if (dev_priv->is_atom_bios)
 		radeon_atombios_init_crtc(dev, radeon_crtc);
 	else
 		radeon_legacy_init_crtc(dev, radeon_crtc);
@@ -237,10 +237,7 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 		encoder = NULL;
 		/* if we find an LVDS connector */
 		if (mode_info->bios_connector[i].connector_type == CONNECTOR_LVDS) {
-			if (radeon_is_avivo(dev_priv))
-				encoder = radeon_encoder_lvtma_add(dev, i);
-			else
-				encoder = radeon_encoder_legacy_lvds_add(dev, i);
+			encoder = radeon_encoder_lvtma_add(dev, i);
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
 		}
@@ -249,14 +246,7 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 		if ((mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_I) ||
 		    (mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_A) ||
 		    (mode_info->bios_connector[i].connector_type == CONNECTOR_VGA)) {
-			if (radeon_is_avivo(dev_priv)) {
-				encoder = radeon_encoder_atom_dac_add(dev, i, mode_info->bios_connector[i].dac_type, 0);
-			} else {
-				if (mode_info->bios_connector[i].dac_type == DAC_PRIMARY)
-					encoder = radeon_encoder_legacy_primary_dac_add(dev, i, 0);
-				else if (mode_info->bios_connector[i].dac_type == DAC_TVDAC)
-					encoder = radeon_encoder_legacy_tv_dac_add(dev, i, 0);
-			}
+			encoder = radeon_encoder_atom_dac_add(dev, i, mode_info->bios_connector[i].dac_type, 0);
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
 		}
@@ -264,26 +254,14 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 		/* TMDS on DVI */
 		if ((mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_I) ||
 		    (mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_D)) {
-			if (radeon_is_avivo(dev_priv))
-				encoder = radeon_encoder_atom_tmds_add(dev, i, mode_info->bios_connector[i].tmds_type);
-			else {
-				if (mode_info->bios_connector[i].tmds_type == TMDS_INT)
-					encoder = radeon_encoder_legacy_tmds_int_add(dev, i);
-				else if (mode_info->bios_connector[i].tmds_type == TMDS_EXT)
-					encoder = radeon_encoder_legacy_tmds_ext_add(dev, i);
-			}
+			encoder = radeon_encoder_atom_tmds_add(dev, i, mode_info->bios_connector[i].tmds_type);
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
 		}
 
 		/* TVDAC on DIN */
 		if (mode_info->bios_connector[i].connector_type == CONNECTOR_DIN) {
-			if (radeon_is_avivo(dev_priv))
-				encoder = radeon_encoder_atom_dac_add(dev, i, mode_info->bios_connector[i].dac_type, 1);
-			else {
-				if (mode_info->bios_connector[i].dac_type == DAC_TVDAC)
-					encoder = radeon_encoder_legacy_tv_dac_add(dev, i, 0);
-			}
+			encoder = radeon_encoder_atom_dac_add(dev, i, mode_info->bios_connector[i].dac_type, 1);
 			if (encoder)
 				drm_mode_connector_attach_encoder(connector, encoder);
 		}

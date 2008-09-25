@@ -121,6 +121,29 @@ void atombios_crtc_dpms(struct drm_crtc *crtc, int mode)
 	}
 }
 
+static void
+atombios_set_crtc_dtd_timing(struct drm_crtc *crtc, SET_CRTC_USING_DTD_TIMING_PARAMETERS *crtc_param)
+{
+	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+	struct drm_device *dev = crtc->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	SET_CRTC_USING_DTD_TIMING_PARAMETERS conv_param;
+	int index = GetIndexIntoMasterTable(COMMAND, SetCRTC_UsingDTDTiming);
+
+	conv_param.usH_Size		        = cpu_to_le16(crtc_param->usH_Size);
+	conv_param.usH_Blanking_Time	= cpu_to_le16(crtc_param->usH_Blanking_Time);
+	conv_param.usV_Size		        = cpu_to_le16(crtc_param->usV_Size);
+	conv_param.usV_Blanking_Time	= cpu_to_le16(crtc_param->usV_Blanking_Time);
+	conv_param.usH_SyncOffset		= cpu_to_le16(crtc_param->usH_SyncOffset);
+	conv_param.usH_SyncWidth		= cpu_to_le16(crtc_param->usH_SyncWidth);
+	conv_param.usV_SyncOffset		= cpu_to_le16(crtc_param->usV_SyncOffset);
+	conv_param.usV_SyncWidth		= cpu_to_le16(crtc_param->usV_SyncWidth);
+	conv_param.susModeMiscInfo.usAccess = cpu_to_le16(crtc_param->susModeMiscInfo.usAccess);
+	conv_param.ucCRTC			= crtc_param->ucCRTC;
+
+	printk("executing set crtc dtd timing\n");
+	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&conv_param);
+}
 
 void atombios_crtc_set_timing(struct drm_crtc *crtc, SET_CRTC_TIMING_PARAMETERS_PS_ALLOCATION *crtc_param)
 {
@@ -170,7 +193,7 @@ void atombios_crtc_set_pll(struct drm_crtc *crtc, struct drm_display_mode *mode)
 	if (!radeon_is_avivo(dev_priv))
 		pll_flags |= RADEON_PLL_LEGACY;
 
-	if (mode->clock > 120000) /* range limits??? */
+	if (mode->clock > 200000) /* range limits??? */
 		pll_flags |= RADEON_PLL_PREFER_HIGH_FB_DIV;
 	else
 		pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
@@ -319,8 +342,8 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct drm_encoder *encoder;
 	SET_CRTC_TIMING_PARAMETERS_PS_ALLOCATION crtc_timing;
-	/* TODO color tiling */
 
+	/* TODO color tiling */
 	memset(&crtc_timing, 0, sizeof(crtc_timing));
 
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
@@ -355,14 +378,48 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 	if (adjusted_mode->flags & DRM_MODE_FLAG_DBLSCAN)
 		crtc_timing.susModeMiscInfo.usAccess |= ATOM_DOUBLE_CLOCK_MODE;
 
+	atombios_crtc_set_pll(crtc, adjusted_mode);
+	atombios_crtc_set_timing(crtc, &crtc_timing);
+
 	if (radeon_is_avivo(dev_priv))
 		atombios_crtc_set_base(crtc, x, y);
-	else
+	else {
+		if (radeon_crtc->crtc_id == 0) {
+			SET_CRTC_USING_DTD_TIMING_PARAMETERS crtc_dtd_timing;
+			memset(&crtc_dtd_timing, 0, sizeof(crtc_dtd_timing));
+
+			/* setup FP shadow regs on R4xx */
+			crtc_dtd_timing.ucCRTC = radeon_crtc->crtc_id;
+			crtc_dtd_timing.usH_Size = adjusted_mode->crtc_hdisplay;
+			crtc_dtd_timing.usV_Size = adjusted_mode->crtc_vdisplay;
+			crtc_dtd_timing.usH_Blanking_Time = adjusted_mode->crtc_hblank_end - adjusted_mode->crtc_hdisplay;
+			crtc_dtd_timing.usV_Blanking_Time = adjusted_mode->crtc_vblank_end - adjusted_mode->crtc_vdisplay;
+			crtc_dtd_timing.usH_SyncOffset = adjusted_mode->crtc_hsync_start - adjusted_mode->crtc_hdisplay;
+			crtc_dtd_timing.usV_SyncOffset = adjusted_mode->crtc_vsync_start - adjusted_mode->crtc_vdisplay;
+			crtc_dtd_timing.usH_SyncWidth = adjusted_mode->crtc_hsync_end - adjusted_mode->crtc_hsync_start;
+			crtc_dtd_timing.usV_SyncWidth = adjusted_mode->crtc_vsync_end - adjusted_mode->crtc_vsync_start;
+			//crtc_dtd_timing.ucH_Border = adjusted_mode->crtc_hborder;
+			//crtc_dtd_timing.ucV_Border = adjusted_mode->crtc_vborder;
+
+			if (adjusted_mode->flags & DRM_MODE_FLAG_NVSYNC)
+				crtc_dtd_timing.susModeMiscInfo.usAccess |= ATOM_VSYNC_POLARITY;
+
+			if (adjusted_mode->flags & DRM_MODE_FLAG_NHSYNC)
+				crtc_dtd_timing.susModeMiscInfo.usAccess |= ATOM_HSYNC_POLARITY;
+
+			if (adjusted_mode->flags & DRM_MODE_FLAG_CSYNC)
+				crtc_dtd_timing.susModeMiscInfo.usAccess |= ATOM_COMPOSITESYNC;
+
+			if (adjusted_mode->flags & DRM_MODE_FLAG_INTERLACE)
+				crtc_dtd_timing.susModeMiscInfo.usAccess |= ATOM_INTERLACE;
+
+			if (adjusted_mode->flags & DRM_MODE_FLAG_DBLSCAN)
+				crtc_dtd_timing.susModeMiscInfo.usAccess |= ATOM_DOUBLE_CLOCK_MODE;
+
+			atombios_set_crtc_dtd_timing(crtc, &crtc_dtd_timing);
+		}
 		radeon_crtc_set_base(crtc, x, y);
-
-	atombios_crtc_set_pll(crtc, adjusted_mode);
-
-	atombios_crtc_set_timing(crtc, &crtc_timing);
+	}
 
 }
 

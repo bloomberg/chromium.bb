@@ -171,6 +171,50 @@ void radeon_crtc_dpms(struct drm_crtc *crtc, int mode)
 	}
 }
 
+/* properly set crtc bpp when using atombios */
+static void radeon_legacy_atom_set_surface(struct drm_crtc *crtc)
+{
+	struct drm_device *dev = crtc->dev;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct radeon_crtc *radeon_crtc = to_radeon_crtc(crtc);
+	int format;
+	uint32_t crtc_gen_cntl, crtc2_gen_cntl;
+
+	switch (crtc->fb->bits_per_pixel) {
+	case 15:      /*  555 */
+		format = 3;
+		break;
+	case 16:      /*  565 */
+		format = 4;
+		break;
+	case 24:      /*  RGB */
+		format = 5;
+		break;
+	case 32:      /* xRGB */
+		format = 6;
+		break;
+	default:
+		return;
+	}
+
+	switch (radeon_crtc->crtc_id) {
+	case 0:
+		crtc_gen_cntl = RADEON_READ(RADEON_CRTC_GEN_CNTL) & 0xfffff0ff;
+		crtc_gen_cntl |= (format << 8);
+		crtc_gen_cntl |= RADEON_CRTC_EXT_DISP_EN;
+		RADEON_WRITE(RADEON_CRTC_GEN_CNTL, crtc_gen_cntl);
+		break;
+	case 1:
+		crtc2_gen_cntl = RADEON_READ(RADEON_CRTC2_GEN_CNTL) & 0xfffff0ff;
+		crtc2_gen_cntl |= (format << 8);
+		RADEON_WRITE(RADEON_CRTC2_GEN_CNTL, crtc2_gen_cntl);
+		// not sure we need these...
+		RADEON_WRITE(RADEON_FP_H2_SYNC_STRT_WID,   RADEON_READ(RADEON_CRTC2_H_SYNC_STRT_WID));
+		RADEON_WRITE(RADEON_FP_V2_SYNC_STRT_WID,   RADEON_READ(RADEON_CRTC2_V_SYNC_STRT_WID));
+		break;
+	}
+}
+
 static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 {
 	struct drm_device *dev = crtc->dev;
@@ -181,6 +225,7 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 	uint32_t base;
 	uint32_t crtc_offset, crtc_offset_cntl, crtc_tile_x0_y0 = 0;
 	uint32_t crtc_pitch;
+	uint32_t disp_merge_cntl;
 
 	DRM_DEBUG("\n");
 
@@ -263,6 +308,13 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 	RADEON_WRITE(RADEON_CRTC_OFFSET, crtc_offset);
 	RADEON_WRITE(RADEON_CRTC_PITCH, crtc_pitch);
 
+	disp_merge_cntl = RADEON_READ(RADEON_DISP_MERGE_CNTL);
+	disp_merge_cntl &= ~RADEON_DISP_RGB_OFFSET_EN;
+	RADEON_WRITE(RADEON_DISP_MERGE_CNTL, disp_merge_cntl);
+
+	if (dev_priv->is_atom_bios)
+		radeon_legacy_atom_set_surface(crtc);
+
 	return true;
 }
 
@@ -280,12 +332,10 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 	uint32_t crtc_h_sync_strt_wid;
 	uint32_t crtc_v_total_disp;
 	uint32_t crtc_v_sync_strt_wid;
-	uint32_t disp_merge_cntl;
 
 	DRM_DEBUG("\n");
 
 	switch (crtc->fb->bits_per_pixel) {
-		
 	case 15:      /*  555 */
 		format = 3;
 		break;
@@ -320,9 +370,6 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 			  RADEON_CRTC_VSYNC_DIS |
 			  RADEON_CRTC_HSYNC_DIS |
 			  RADEON_CRTC_DISPLAY_DIS);
-
-	disp_merge_cntl = RADEON_READ(RADEON_DISP_MERGE_CNTL);
-	disp_merge_cntl &= ~RADEON_DISP_RGB_OFFSET_EN;
 
 	crtc_h_total_disp = ((((mode->crtc_htotal / 8) - 1) & 0x3ff)
 			     | ((((mode->crtc_hdisplay / 8) - 1) & 0x1ff) << 16));
@@ -386,8 +433,6 @@ static bool radeon_set_crtc1_timing(struct drm_crtc *crtc, struct drm_display_mo
 	RADEON_WRITE(RADEON_CRTC_V_TOTAL_DISP, crtc_v_total_disp);
 	RADEON_WRITE(RADEON_CRTC_V_SYNC_STRT_WID, crtc_v_sync_strt_wid);
 
-	RADEON_WRITE(RADEON_DISP_MERGE_CNTL, disp_merge_cntl);
-
 	RADEON_WRITE(RADEON_CRTC_GEN_CNTL, crtc_gen_cntl);
 
 	return true;
@@ -433,7 +478,7 @@ static void radeon_set_pll1(struct drm_crtc *crtc, struct drm_display_mode *mode
 		{  0, 0 }
 	};
 
-	if (mode->clock > 120000) /* range limits??? */
+	if (mode->clock > 200000) /* range limits??? */
 		pll_flags |= RADEON_PLL_PREFER_HIGH_FB_DIV;
 	else
 		pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
@@ -606,6 +651,7 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 	uint32_t base;
 	uint32_t crtc2_offset, crtc2_offset_cntl, crtc2_tile_x0_y0 = 0;
         uint32_t crtc2_pitch;
+	uint32_t disp2_merge_cntl;
 
 	DRM_DEBUG("\n");
 
@@ -686,6 +732,13 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 	RADEON_WRITE(RADEON_CRTC2_OFFSET, crtc2_offset);
 	RADEON_WRITE(RADEON_CRTC2_PITCH, crtc2_pitch);
 
+	disp2_merge_cntl = RADEON_READ(RADEON_DISP2_MERGE_CNTL);
+	disp2_merge_cntl &= ~RADEON_DISP2_RGB_OFFSET_EN;
+	RADEON_WRITE(RADEON_DISP2_MERGE_CNTL,      disp2_merge_cntl);
+
+	if (dev_priv->is_atom_bios)
+		radeon_legacy_atom_set_surface(crtc);
+
 	return true;
 }
 
@@ -702,7 +755,6 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
         uint32_t crtc2_h_sync_strt_wid;
         uint32_t crtc2_v_total_disp;
         uint32_t crtc2_v_sync_strt_wid;
-	uint32_t disp2_merge_cntl;
 	uint32_t fp_h2_sync_strt_wid;
 	uint32_t fp_v2_sync_strt_wid;
 
@@ -776,9 +828,6 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
 			      ? RADEON_CRTC2_INTERLACE_EN
 			      : 0));
 
-	disp2_merge_cntl = RADEON_READ(RADEON_DISP2_MERGE_CNTL);
-	disp2_merge_cntl &= ~RADEON_DISP2_RGB_OFFSET_EN;
-
 	fp_h2_sync_strt_wid = crtc2_h_sync_strt_wid;
 	fp_v2_sync_strt_wid = crtc2_v_sync_strt_wid;
 
@@ -794,8 +843,6 @@ static bool radeon_set_crtc2_timing(struct drm_crtc *crtc, struct drm_display_mo
 
 	RADEON_WRITE(RADEON_FP_H2_SYNC_STRT_WID,   fp_h2_sync_strt_wid);
 	RADEON_WRITE(RADEON_FP_V2_SYNC_STRT_WID,   fp_v2_sync_strt_wid);
-
-	RADEON_WRITE(RADEON_DISP2_MERGE_CNTL,      disp2_merge_cntl);
 
 	RADEON_WRITE(RADEON_CRTC2_GEN_CNTL,        crtc2_gen_cntl);
 
@@ -813,7 +860,7 @@ static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode
 	uint32_t post_divider = 0;
 	uint32_t freq = 0;
 	uint8_t pll_gain;
-	int pll_flags = RADEON_PLL_LEGACY | RADEON_PLL_PREFER_LOW_REF_DIV;
+	int pll_flags = RADEON_PLL_LEGACY;
 	bool use_bios_divs = false;
 	/* PLL2 registers */
 	uint32_t p2pll_ref_div = 0;
@@ -841,6 +888,11 @@ static void radeon_set_pll2(struct drm_crtc *crtc, struct drm_display_mode *mode
 		{ 12, 7 },              /* VCLK_SRC/12              */
 		{  0, 0 }
 	};
+
+	if (mode->clock > 200000) /* range limits??? */
+		pll_flags |= RADEON_PLL_PREFER_HIGH_FB_DIV;
+	else
+		pll_flags |= RADEON_PLL_PREFER_LOW_REF_DIV;
 
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		if (encoder->crtc == crtc) {
