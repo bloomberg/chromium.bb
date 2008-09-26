@@ -101,21 +101,28 @@ int i915_probe_agp(struct pci_dev *pdev, unsigned long *aperture_size,
 }
 
 static int
-i915_init_hws_phys(struct drm_device *dev)
+i915_init_hardware_status(struct drm_device *dev)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_dma_handle_t *dmah;
 	int ret = 0;
 
-	dev_priv->status_page_dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE,
+#ifdef __FreeBSD__
+	DRM_UNLOCK();
+#endif
+	dmah = drm_pci_alloc(dev, PAGE_SIZE, PAGE_SIZE,
 						   0xffffffff);
-
-	if (!dev_priv->status_page_dmah) {
+#ifdef __FreeBSD__
+	DRM_LOCK();
+#endif
+	if (!dmah) {
 		DRM_ERROR("Can not allocate hardware status page\n");
 		ret = -ENOMEM;
 		goto out;
 	}
-	dev_priv->hw_status_page = dev_priv->status_page_dmah->vaddr;
-	dev_priv->dma_status_page = dev_priv->status_page_dmah->busaddr;
+	dev_priv->status_page_dmah = dmah;
+	dev_priv->hw_status_page = dmah->vaddr;
+	dev_priv->dma_status_page = dmah->busaddr;
 
 	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
 
@@ -124,6 +131,23 @@ i915_init_hws_phys(struct drm_device *dev)
 
 out:
 	return ret;
+}
+
+void i915_free_hardware_status(struct drm_device *dev)
+{
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	if (dev_priv->status_page_dmah) {
+		drm_pci_free(dev, dev_priv->status_page_dmah);
+		dev_priv->status_page_dmah = NULL;
+		/* Need to rewrite hardware status page */
+		I915_WRITE(0x02080, 0x1ffff000);
+	}
+
+	if (dev_priv->status_gfx_addr) {
+		dev_priv->status_gfx_addr = 0;
+		drm_core_ioremapfree(&dev_priv->hws_map, dev);
+		I915_WRITE(0x02080, 0x1ffff000);
+	}
 }
 
 static int i915_load_modeset_init(struct drm_device *dev)
@@ -138,9 +162,6 @@ static int i915_load_modeset_init(struct drm_device *dev)
 	drm_mm_init(&dev_priv->vram, 0, prealloc_size);
 	/* Let GEM Manage from end of prealloc space to end of aperture */
 	i915_gem_do_init(dev, prealloc_size, agp_size);
-
-	if (!I915_NEED_GFX_HWS(dev))
-		i915_init_hws_phys(dev);
 
 	ret = i915_gem_init_ringbuffer(dev);
 	if (ret)
@@ -310,6 +331,12 @@ int i915_driver_load(struct drm_device *dev, unsigned long flags)
 
 	I915_WRITE(INSTPM, (1 << 5) | (1 << 21));
 
+	if (!I915_NEED_GFX_HWS(dev)) {
+		ret = i915_init_hardware_status(dev);
+		if (ret)
+			return ret;
+	}
+
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
 		ret = i915_load_modeset_init(dev);
 		if (ret < 0) {
@@ -332,6 +359,8 @@ int i915_driver_unload(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 
 	u32 temp;
+
+	i915_free_hardware_status(dev);
 
 	dev_priv->vblank_pipe = 0;
 

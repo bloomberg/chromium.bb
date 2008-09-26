@@ -25,11 +25,16 @@
 AM_CFLAGS = \
 	$(WARN_CFLAGS) \
 	-I$(top_srcdir)/libdrm \
+	-I$(top_srcdir)/libdrm/intel \
 	-I$(top_srcdir)/shared-core
 
-noinst_LTLIBRARIES = libdrm_intel.la
+libdrm_intel_la_LTLIBRARIES = libdrm_intel.la
+libdrm_intel_ladir = $(libdir)
+libdrm_intel_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 
 libdrm_intel_la_SOURCES = \
+	intel_bufmgr.c \
+	intel_bufmgr_priv.h \
 	intel_bufmgr_fake.c \
 	intel_bufmgr_gem.c \
 	mm.c \

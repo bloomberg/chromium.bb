@@ -408,7 +408,7 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	low_frame = pipe ? PIPEBFRAMEPIXEL : PIPEAFRAMEPIXEL;
 
 	if (!i915_pipe_enabled(dev, pipe)) {
-	    DRM_ERROR("trying to get vblank count for disabled pipe %d\n", pipe);
+	    DRM_DEBUG("trying to get vblank count for disabled pipe %d\n", pipe);
 	    return 0;
 	}
 
@@ -492,16 +492,19 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	u32 pipea_stats = 0, pipeb_stats = 0, tvdac;
 	int hotplug = 0;
 	int vblank = 0;
-
+#ifdef __linux__
 	if (dev->pdev->msi_enabled)
 		I915_WRITE(IMR, ~0);
+#endif
 	iir = I915_READ(IIR);
 	atomic_inc(&dev_priv->irq_received);
 	if (iir == 0) {
+#ifdef __linux__
 		if (dev->pdev->msi_enabled) {
 			I915_WRITE(IMR, dev_priv->irq_mask_reg);
 			(void) I915_READ(IMR);
 		}
+#endif
 		return IRQ_NONE;
 	}
 
@@ -520,8 +523,11 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	}
 
 	I915_WRITE(IIR, iir);
+#ifdef __linux__
 	if (dev->pdev->msi_enabled)
 		I915_WRITE(IMR, dev_priv->irq_mask_reg);
+#endif
+
 	(void) I915_READ(IIR); /* Flush posted writes */
 
 	/* This is a global event, and not a pipe A event */
@@ -552,7 +558,9 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 #endif
 
 	if (iir & I915_USER_INTERRUPT) {
+#ifdef I915_HAVE_GEM
 		dev_priv->mm.irq_gem_seqno = i915_get_gem_seqno(dev);
+#endif
 		DRM_WAKEUP(&dev_priv->irq_queue);
 	}
 
@@ -634,7 +642,9 @@ void i915_user_irq_off(struct drm_device *dev)
 	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
+#ifdef __linux__
 	BUG_ON(dev_priv->irq_enabled && dev_priv->user_irq_refcount <= 0);
+#endif
 	if (dev_priv->irq_enabled && (--dev_priv->user_irq_refcount == 0))
 		i915_disable_irq(dev_priv, I915_USER_INTERRUPT);
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
@@ -1110,11 +1120,9 @@ int i915_driver_irq_postinstall(struct drm_device * dev)
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	int ret, num_pipes = 2;
 
-	DRM_SPININIT(&dev_priv->swaps_lock, "swap");
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
 	dev_priv->swaps_pending = 0;
 
-	DRM_SPININIT(&dev_priv->user_irq_lock, "userirq");
 	dev_priv->user_irq_refcount = 0;
 	dev_priv->irq_mask_reg = ~0;
 

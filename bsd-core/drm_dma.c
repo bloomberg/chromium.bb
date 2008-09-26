@@ -58,14 +58,12 @@ void drm_dma_takedown(struct drm_device *dev)
 	if (dma == NULL)
 		return;
 
-				/* Clear dma buffers */
+	/* Clear dma buffers */
 	for (i = 0; i <= DRM_MAX_ORDER; i++) {
 		if (dma->bufs[i].seg_count) {
 			DRM_DEBUG("order %d: buf_count = %d,"
-				  " seg_count = %d\n",
-				  i,
-				  dma->bufs[i].buf_count,
-				  dma->bufs[i].seg_count);
+			    " seg_count = %d\n", i, dma->bufs[i].buf_count,
+			    dma->bufs[i].seg_count);
 			for (j = 0; j < dma->bufs[i].seg_count; j++) {
 				drm_pci_free(dev, dma->bufs[i].seglist[j]);
 			}
@@ -91,7 +89,8 @@ void drm_dma_takedown(struct drm_device *dev)
 
 void drm_free_buffer(struct drm_device *dev, drm_buf_t *buf)
 {
-	if (!buf) return;
+	if (!buf)
+		return;
 
 	buf->pending  = 0;
 	buf->file_priv= NULL;
@@ -103,7 +102,9 @@ void drm_reclaim_buffers(struct drm_device *dev, struct drm_file *file_priv)
 	drm_device_dma_t *dma = dev->dma;
 	int		 i;
 
-	if (!dma) return;
+	if (!dma)
+		return;
+
 	for (i = 0; i < dma->buf_count; i++) {
 		if (dma->buflist[i]->file_priv == file_priv) {
 			switch (dma->buflist[i]->list) {
@@ -125,9 +126,9 @@ void drm_reclaim_buffers(struct drm_device *dev, struct drm_file *file_priv)
 int drm_dma(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 
-	if (dev->driver.dma_ioctl) {
+	if (dev->driver->dma_ioctl) {
 		/* shared code returns -errno */
-		return -dev->driver.dma_ioctl(dev, data, file_priv);
+		return -dev->driver->dma_ioctl(dev, data, file_priv);
 	} else {
 		DRM_DEBUG("DMA ioctl on driver with no dma handler\n");
 		return EINVAL;

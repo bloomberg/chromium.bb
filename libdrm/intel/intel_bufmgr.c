@@ -25,10 +25,19 @@
  *
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <assert.h>
-#include "dri_bufmgr.h"
+#include <errno.h>
+#include <drm.h>
+#include <i915_drm.h>
+#include "intel_bufmgr.h"
+#include "intel_bufmgr_priv.h"
 
 /** @file dri_bufmgr.c
  *
@@ -118,14 +127,12 @@ dri_bufmgr_destroy(dri_bufmgr *bufmgr)
    bufmgr->destroy(bufmgr);
 }
 
-void *dri_process_relocs(dri_bo *batch_buf)
+int
+dri_bo_exec(dri_bo *bo, int used,
+	    drm_clip_rect_t *cliprects, int num_cliprects,
+	    int DR4)
 {
-   return batch_buf->bufmgr->process_relocs(batch_buf);
-}
-
-void dri_post_submit(dri_bo *batch_buf)
-{
-   batch_buf->bufmgr->post_submit(batch_buf);
+   return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4);
 }
 
 void
@@ -138,4 +145,50 @@ int
 dri_bufmgr_check_aperture_space(dri_bo **bo_array, int count)
 {
 	return bo_array[0]->bufmgr->check_aperture_space(bo_array, count);
+}
+
+int
+dri_bo_flink(dri_bo *bo, uint32_t *name)
+{
+    if (bo->bufmgr->bo_flink)
+	return bo->bufmgr->bo_flink(bo, name);
+
+    return -ENODEV;
+}
+
+int
+dri_bo_emit_reloc(dri_bo *reloc_buf,
+		  uint32_t read_domains, uint32_t write_domain,
+		  uint32_t delta, uint32_t offset, dri_bo *target_buf)
+{
+    return reloc_buf->bufmgr->bo_emit_reloc(reloc_buf,
+					    read_domains, write_domain,
+					    delta, offset, target_buf);
+}
+
+int
+dri_bo_pin(dri_bo *bo, uint32_t alignment)
+{
+    if (bo->bufmgr->bo_pin)
+	return bo->bufmgr->bo_pin(bo, alignment);
+
+    return -ENODEV;
+}
+
+int
+dri_bo_unpin(dri_bo *bo)
+{
+    if (bo->bufmgr->bo_unpin)
+	return bo->bufmgr->bo_unpin(bo);
+
+    return -ENODEV;
+}
+
+int dri_bo_set_tiling(dri_bo *bo, uint32_t *tiling_mode)
+{
+    if (bo->bufmgr->bo_set_tiling)
+	return bo->bufmgr->bo_set_tiling(bo, tiling_mode);
+
+    *tiling_mode = I915_TILING_NONE;
+    return 0;
 }

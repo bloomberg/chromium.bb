@@ -772,7 +772,6 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 		     dev_priv->ring.size_l2qw);
 #endif
 
-
 	/* Initialize the scratch register pointer.  This will cause
 	 * the scratch register values to be written out to memory
 	 * whenever they are updated.

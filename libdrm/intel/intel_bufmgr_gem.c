@@ -34,6 +34,10 @@
  *	    Dave Airlie <airlied@linux.ie>
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <xf86drm.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,8 +48,8 @@
 #include <sys/mman.h>
 
 #include "errno.h"
-#include "dri_bufmgr.h"
 #include "intel_bufmgr.h"
+#include "intel_bufmgr_priv.h"
 #include "string.h"
 
 #include "i915_drm.h"
@@ -76,8 +80,6 @@ struct dri_gem_bo_bucket {
 typedef struct _dri_bufmgr_gem {
     dri_bufmgr bufmgr;
 
-    struct intel_bufmgr intel_bufmgr;
-
     int fd;
 
     int max_relocs;
@@ -89,8 +91,6 @@ typedef struct _dri_bufmgr_gem {
 
     /** Array of lists of cached gem objects of power-of-two sizes */
     struct dri_gem_bo_bucket cache_bucket[INTEL_GEM_BO_BUCKETS];
-
-    struct drm_i915_gem_execbuffer exec_arg;
 } dri_bufmgr_gem;
 
 struct _dri_bo_gem {
@@ -316,7 +316,7 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
 
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CREATE, &create);
 	bo_gem->gem_handle = create.handle;
-	bo_gem->bo.handle = bo_gem->gem_handle;
+	//bo_gem->bo.handle = bo_gem->gem_handle;
 	if (ret != 0) {
 	    free(bo_gem);
 	    return NULL;
@@ -358,7 +358,7 @@ intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_OPEN, &open_arg);
     if (ret != 0) {
 	fprintf(stderr, "Couldn't reference %s handle 0x%08x: %s\n",
-	       name, handle, strerror(-ret));
+	       name, handle, strerror(errno));
 	free(bo_gem);
 	return NULL;
     }
@@ -370,6 +370,7 @@ intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
     bo_gem->refcount = 1;
     bo_gem->validate_index = -1;
     bo_gem->gem_handle = open_arg.handle;
+    bo_gem->global_name = handle;
 
     DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
@@ -401,7 +402,7 @@ dri_gem_bo_free(dri_bo *bo)
     if (ret != 0) {
 	fprintf(stderr,
 		"DRM_IOCTL_GEM_CLOSE %d failed (%s): %s\n",
-		bo_gem->gem_handle, bo_gem->name, strerror(-ret));
+		bo_gem->gem_handle, bo_gem->name, strerror(errno));
     }
     free(bo);
 }
@@ -650,8 +651,8 @@ dri_bufmgr_gem_destroy(dri_bufmgr *bufmgr)
  * last known offset in target_bo.
  */
 static int
-dri_gem_emit_reloc(dri_bo *bo, uint32_t read_domains, uint32_t write_domain,
-		   uint32_t delta, uint32_t offset, dri_bo *target_bo)
+dri_gem_bo_emit_reloc(dri_bo *bo, uint32_t read_domains, uint32_t write_domain,
+		      uint32_t delta, uint32_t offset, dri_bo *target_bo)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
@@ -708,27 +709,6 @@ dri_gem_bo_process_reloc(dri_bo *bo)
     }
 }
 
-static void *
-dri_gem_process_reloc(dri_bo *batch_buf)
-{
-    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *) batch_buf->bufmgr;
-
-    /* Update indices and set up the validate list. */
-    dri_gem_bo_process_reloc(batch_buf);
-
-    /* Add the batch buffer to the validation list.  There are no relocations
-     * pointing to it.
-     */
-    intel_add_validate_buffer(batch_buf);
-
-    bufmgr_gem->exec_arg.buffers_ptr = (uintptr_t)bufmgr_gem->exec_objects;
-    bufmgr_gem->exec_arg.buffer_count = bufmgr_gem->exec_count;
-    bufmgr_gem->exec_arg.batch_start_offset = 0;
-    bufmgr_gem->exec_arg.batch_len = 0;	/* written in intel_exec_ioctl */
-
-    return &bufmgr_gem->exec_arg;
-}
-
 static void
 intel_update_buffer_offsets (dri_bufmgr_gem *bufmgr_gem)
 {
@@ -748,11 +728,35 @@ intel_update_buffer_offsets (dri_bufmgr_gem *bufmgr_gem)
     }
 }
 
-static void
-dri_gem_post_submit(dri_bo *batch_buf)
+static int
+dri_gem_bo_exec(dri_bo *bo, int used,
+		drm_clip_rect_t *cliprects, int num_cliprects,
+		int DR4)
 {
-    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)batch_buf->bufmgr;
-    int i;
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
+    struct drm_i915_gem_execbuffer execbuf;
+    int ret, i;
+
+    /* Update indices and set up the validate list. */
+    dri_gem_bo_process_reloc(bo);
+
+    /* Add the batch buffer to the validation list.  There are no relocations
+     * pointing to it.
+     */
+    intel_add_validate_buffer(bo);
+
+    execbuf.buffers_ptr = (uintptr_t)bufmgr_gem->exec_objects;
+    execbuf.buffer_count = bufmgr_gem->exec_count;
+    execbuf.batch_start_offset = 0;
+    execbuf.batch_len = used;
+    execbuf.cliprects_ptr = (uintptr_t)cliprects;
+    execbuf.num_cliprects = num_cliprects;
+    execbuf.DR1 = 0;
+    execbuf.DR4 = DR4;
+
+    do {
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_EXECBUFFER, &execbuf);
+    } while (ret == -EAGAIN);
 
     intel_update_buffer_offsets (bufmgr_gem);
 
@@ -772,10 +776,12 @@ dri_gem_post_submit(dri_bo *batch_buf)
 	bufmgr_gem->exec_bos[i] = NULL;
     }
     bufmgr_gem->exec_count = 0;
+
+    return 0;
 }
 
 static int
-dri_gem_pin(dri_bo *bo, uint32_t alignment)
+dri_gem_bo_pin(dri_bo *bo, uint32_t alignment)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
@@ -794,7 +800,7 @@ dri_gem_pin(dri_bo *bo, uint32_t alignment)
 }
 
 static int
-dri_gem_unpin(dri_bo *bo)
+dri_gem_bo_unpin(dri_bo *bo)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
@@ -811,7 +817,7 @@ dri_gem_unpin(dri_bo *bo)
 }
 
 static int
-dri_gem_set_tiling(dri_bo *bo, uint32_t *tiling_mode)
+dri_gem_bo_set_tiling(dri_bo *bo, uint32_t *tiling_mode)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
@@ -832,7 +838,7 @@ dri_gem_set_tiling(dri_bo *bo, uint32_t *tiling_mode)
 }
 
 static int
-dri_gem_flink(dri_bo *bo, uint32_t *name)
+dri_gem_bo_flink(dri_bo *bo, uint32_t *name)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
     dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
@@ -910,84 +916,19 @@ intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.bo_subdata = dri_gem_bo_subdata;
     bufmgr_gem->bufmgr.bo_get_subdata = dri_gem_bo_get_subdata;
     bufmgr_gem->bufmgr.bo_wait_rendering = dri_gem_bo_wait_rendering;
+    bufmgr_gem->bufmgr.bo_emit_reloc = dri_gem_bo_emit_reloc;
+    bufmgr_gem->bufmgr.bo_pin = dri_gem_bo_pin;
+    bufmgr_gem->bufmgr.bo_unpin = dri_gem_bo_unpin;
+    bufmgr_gem->bufmgr.bo_set_tiling = dri_gem_bo_set_tiling;
+    bufmgr_gem->bufmgr.bo_flink = dri_gem_bo_flink;
+    bufmgr_gem->bufmgr.bo_exec = dri_gem_bo_exec;
     bufmgr_gem->bufmgr.destroy = dri_bufmgr_gem_destroy;
-    bufmgr_gem->bufmgr.process_relocs = dri_gem_process_reloc;
-    bufmgr_gem->bufmgr.post_submit = dri_gem_post_submit;
     bufmgr_gem->bufmgr.debug = 0;
     bufmgr_gem->bufmgr.check_aperture_space = dri_gem_check_aperture_space;
-    bufmgr_gem->intel_bufmgr.emit_reloc = dri_gem_emit_reloc;
-    bufmgr_gem->intel_bufmgr.pin = dri_gem_pin;
-    bufmgr_gem->intel_bufmgr.unpin = dri_gem_unpin;
-    bufmgr_gem->intel_bufmgr.set_tiling = dri_gem_set_tiling;
-    bufmgr_gem->intel_bufmgr.flink = dri_gem_flink;
     /* Initialize the linked lists for BO reuse cache. */
     for (i = 0; i < INTEL_GEM_BO_BUCKETS; i++)
 	bufmgr_gem->cache_bucket[i].tail = &bufmgr_gem->cache_bucket[i].head;
 
     return &bufmgr_gem->bufmgr;
-}
-
-int
-intel_bo_emit_reloc(dri_bo *reloc_buf,
-		    uint32_t read_domains, uint32_t write_domain,
-		    uint32_t delta, uint32_t offset, dri_bo *target_buf)
-{
-    struct intel_bufmgr *intel_bufmgr;
-
-    intel_bufmgr = (struct intel_bufmgr *)(reloc_buf->bufmgr + 1);
-
-    return intel_bufmgr->emit_reloc(reloc_buf, read_domains, write_domain,
-				    delta, offset, target_buf);
-}
-
-int
-intel_bo_pin(dri_bo *bo, uint32_t alignment)
-{
-    struct intel_bufmgr *intel_bufmgr;
-
-    intel_bufmgr = (struct intel_bufmgr *)(bo->bufmgr + 1);
-
-    if (intel_bufmgr->pin)
-	return intel_bufmgr->pin(bo, alignment);
-
-    return 0;
-}
-
-int
-intel_bo_unpin(dri_bo *bo)
-{
-    struct intel_bufmgr *intel_bufmgr;
-
-    intel_bufmgr = (struct intel_bufmgr *)(bo->bufmgr + 1);
-
-    if (intel_bufmgr->unpin)
-	return intel_bufmgr->unpin(bo);
-
-    return 0;
-}
-
-int intel_bo_set_tiling(dri_bo *bo, uint32_t *tiling_mode)
-{
-    struct intel_bufmgr *intel_bufmgr;
-
-    intel_bufmgr = (struct intel_bufmgr *)(bo->bufmgr + 1);
-
-    if (intel_bufmgr->set_tiling)
-	return intel_bufmgr->set_tiling (bo, tiling_mode);
-
-    *tiling_mode = I915_TILING_NONE;
-    return 0;
-}
-
-int intel_bo_flink(dri_bo *bo, uint32_t *name)
-{
-    struct intel_bufmgr *intel_bufmgr;
-
-    intel_bufmgr = (struct intel_bufmgr *)(bo->bufmgr + 1);
-
-    if (intel_bufmgr->flink)
-	return intel_bufmgr->flink (bo, name);
-
-    return -ENODEV;
 }
 

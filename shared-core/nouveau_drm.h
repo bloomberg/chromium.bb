@@ -178,5 +178,7 @@ struct drm_nouveau_sarea {
 #define DRM_NOUVEAU_MEM_ALLOC          0x08
 #define DRM_NOUVEAU_MEM_FREE           0x09
 #define DRM_NOUVEAU_MEM_TILE           0x0a
+#define DRM_NOUVEAU_SUSPEND            0x0b
+#define DRM_NOUVEAU_RESUME             0x0c
 
 #endif /* __NOUVEAU_DRM_H__ */

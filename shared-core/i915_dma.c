@@ -63,7 +63,7 @@ int i915_wait_ring(struct drm_device * dev, int n, const char *caller)
 
 		last_head = ring->head;
 		last_acthd = acthd;
-		msleep_interruptible (10);
+		DRM_UDELAY(10 * 1000);
 	}
 
 	return -EBUSY;
@@ -81,14 +81,16 @@ void i915_ring_validate(struct drm_device *dev, const char *func, int line)
 {
 	struct drm_i915_private *dev_priv = dev->dev_private;
 	drm_i915_ring_buffer_t *ring = &(dev_priv->ring);
-	u32	tail = I915_READ(LP_RING+RING_TAIL) & HEAD_ADDR;
-	u32	head = I915_READ(LP_RING+RING_HEAD) & HEAD_ADDR;
+	u32	tail = I915_READ(PRB0_TAIL) & HEAD_ADDR;
+	u32	head = I915_READ(PRB0_HEAD) & HEAD_ADDR;
 
 	if (tail != ring->tail) {
 		DRM_ERROR("%s:%d head sw %x, hw %x. tail sw %x hw %x\n",
 			  func, line,
 			  ring->head, head, ring->tail, tail);
+#ifdef __linux__
 		BUG_ON(1);
+#endif
 	}
 }
 #endif
@@ -1000,7 +1002,6 @@ static int i915_set_status_page(struct drm_device *dev, void *data,
 	memset(dev_priv->hw_status_page, 0, PAGE_SIZE);
 	I915_WRITE(HWS_PGA, dev_priv->status_gfx_addr);
 	DRM_DEBUG("load hws at %p\n", dev_priv->hw_status_page);
-
 	return 0;
 }
 
@@ -1023,6 +1024,7 @@ struct drm_ioctl_desc i915_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_I915_VBLANK_SWAP, i915_vblank_swap, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_MMIO, i915_mmio, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_HWS_ADDR, i915_set_status_page, DRM_AUTH),
+#ifdef I915_HAVE_GEM
 	DRM_IOCTL_DEF(DRM_I915_GEM_INIT, i915_gem_init_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_GEM_EXECBUFFER, i915_gem_execbuffer, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_I915_GEM_PIN, i915_gem_pin_ioctl, DRM_AUTH|DRM_ROOT_ONLY),
@@ -1039,6 +1041,7 @@ struct drm_ioctl_desc i915_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_I915_GEM_SW_FINISH, i915_gem_sw_finish_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_I915_GEM_SET_TILING, i915_gem_set_tiling, 0),
 	DRM_IOCTL_DEF(DRM_I915_GEM_GET_TILING, i915_gem_get_tiling, 0),
+#endif
 };
 
 int i915_max_ioctl = DRM_ARRAY_SIZE(i915_ioctls);

@@ -34,11 +34,17 @@
  * the bugs in the old texture manager.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include "dri_bufmgr.h"
+#include <errno.h>
+#include <xf86drm.h>
 #include "intel_bufmgr.h"
+#include "intel_bufmgr_priv.h"
 #include "drm.h"
 #include "i915_drm.h"
 #include "mm.h"
@@ -105,7 +111,6 @@ struct block {
 
 typedef struct _bufmgr_fake {
    dri_bufmgr bufmgr;
-   struct intel_bufmgr intel_bufmgr;
 
    unsigned long low_offset;
    unsigned long size;
@@ -138,14 +143,32 @@ typedef struct _bufmgr_fake {
    /**
     * Driver callback to emit a fence, returning the cookie.
     *
+    * This allows the driver to hook in a replacement for the DRM usage in
+    * bufmgr_fake.
+    *
     * Currently, this also requires that a write flush be emitted before
     * emitting the fence, but this should change.
     */
    unsigned int (*fence_emit)(void *private);
    /** Driver callback to wait for a fence cookie to have passed. */
-   int (*fence_wait)(void *private, unsigned int fence_cookie);
+   void (*fence_wait)(unsigned int fence, void *private);
+   void *fence_priv;
+
+   /**
+    * Driver callback to execute a buffer.
+    *
+    * This allows the driver to hook in a replacement for the DRM usage in
+    * bufmgr_fake.
+    */
+   int (*exec)(dri_bo *bo, unsigned int used, void *priv);
+   void *exec_priv;
+
    /** Driver-supplied argument to driver callbacks */
    void *driver_priv;
+   /* Pointer to kernel-updated sarea data for the last completed user irq */
+   volatile int *last_dispatch;
+
+   int fd;
 
    int debug;
 
@@ -211,24 +234,161 @@ static int FENCE_LTE( unsigned a, unsigned b )
    return 0;
 }
 
+void intel_bufmgr_fake_set_fence_callback(dri_bufmgr *bufmgr,
+					  unsigned int (*emit)(void *priv),
+					  void (*wait)(unsigned int fence,
+						       void *priv),
+					  void *priv)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
+
+   bufmgr_fake->fence_emit = emit;
+   bufmgr_fake->fence_wait = wait;
+   bufmgr_fake->fence_priv = priv;
+}
+
 static unsigned int
 _fence_emit_internal(dri_bufmgr_fake *bufmgr_fake)
 {
-   bufmgr_fake->last_fence = bufmgr_fake->fence_emit(bufmgr_fake->driver_priv);
+   struct drm_i915_irq_emit ie;
+   int ret, seq = 1;
+
+   if (bufmgr_fake->fence_emit != NULL)
+      return bufmgr_fake->fence_emit(bufmgr_fake->fence_priv);
+
+   ie.irq_seq = &seq;
+   ret = drmCommandWriteRead(bufmgr_fake->fd, DRM_I915_IRQ_EMIT,
+			     &ie, sizeof(ie));
+   if (ret) {
+      drmMsg("%s: drm_i915_irq_emit: %d\n", __FUNCTION__, ret);
+      abort();
+   }
+
+   DBG("emit 0x%08x\n", seq);
+   bufmgr_fake->last_fence = seq;
    return bufmgr_fake->last_fence;
 }
 
 static void
-_fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, unsigned int cookie)
+_fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, int seq)
 {
+   struct drm_i915_irq_wait iw;
+   int hw_seq, busy_count = 0;
    int ret;
+   int kernel_lied;
 
-   ret = bufmgr_fake->fence_wait(bufmgr_fake->driver_priv, cookie);
+   if (bufmgr_fake->fence_wait != NULL) {
+      bufmgr_fake->fence_wait(seq, bufmgr_fake->fence_priv);
+      return;
+   }
+
+   DBG("wait 0x%08x\n", iw.irq_seq);
+
+   iw.irq_seq = seq;
+
+   /* The kernel IRQ_WAIT implementation is all sorts of broken.
+    * 1) It returns 1 to 0x7fffffff instead of using the full 32-bit unsigned
+    *    range.
+    * 2) It returns 0 if hw_seq >= seq, not seq - hw_seq < 0 on the 32-bit
+    *    signed range.
+    * 3) It waits if seq < hw_seq, not seq - hw_seq > 0 on the 32-bit
+    *    signed range.
+    * 4) It returns -EBUSY in 3 seconds even if the hardware is still
+    *    successfully chewing through buffers.
+    *
+    * Assume that in userland we treat sequence numbers as ints, which makes
+    * some of the comparisons convenient, since the sequence numbers are
+    * all postive signed integers.
+    *
+    * From this we get several cases we need to handle.  Here's a timeline.
+    * 0x2   0x7                                         0x7ffffff8   0x7ffffffd
+    *   |    |                                                   |    |
+    * -------------------------------------------------------------------
+    *
+    * A) Normal wait for hw to catch up
+    * hw_seq seq
+    *   |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 5.  If we call IRQ_WAIT, it will wait for hw to catch up.
+    *
+    * B) Normal wait for a sequence number that's already passed.
+    * seq    hw_seq
+    *   |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = -5.  If we call IRQ_WAIT, it returns 0 quickly.
+    *
+    * C) Hardware has already wrapped around ahead of us
+    * hw_seq                                                         seq
+    *   |                                                             |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 0x80000000 - 5.  If we called IRQ_WAIT, it would wait
+    * for hw_seq >= seq, which may never occur.  Thus, we want to catch this
+    * in userland and return 0.
+    *
+    * D) We've wrapped around ahead of the hardware.
+    * seq                                                           hw_seq
+    *   |                                                             |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = -(0x80000000 - 5).  If we called IRQ_WAIT, it would return
+    * 0 quickly because hw_seq >= seq, even though the hardware isn't caught up.
+    * Thus, we need to catch this early return in userland and bother the
+    * kernel until the hardware really does catch up.
+    *
+    * E) Hardware might wrap after we test in userland.
+    *                                                         hw_seq  seq
+    *                                                            |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 5.  If we call IRQ_WAIT, it will likely see seq >= hw_seq
+    * and wait.  However, suppose hw_seq wraps before we make it into the
+    * kernel.  The kernel sees hw_seq >= seq and waits for 3 seconds then
+    * returns -EBUSY.  This is case C).  We should catch this and then return
+    * successfully.
+    *
+    * F) Hardware might take a long time on a buffer.
+    * hw_seq seq
+    *   |    |
+    * -------------------------------------------------------------------
+    * seq - hw_seq = 5.  If we call IRQ_WAIT, if sequence 2 through 5 take too
+    * long, it will return -EBUSY.  Batchbuffers in the gltestperf demo were
+    * seen to take up to 7 seconds.  We should catch early -EBUSY return
+    * and keep trying.
+    */
+
+   do {
+      /* Keep a copy of last_dispatch so that if the wait -EBUSYs because the
+       * hardware didn't catch up in 3 seconds, we can see if it at least made
+       * progress and retry.
+       */
+      hw_seq = *bufmgr_fake->last_dispatch;
+
+      /* Catch case C */
+      if (seq - hw_seq > 0x40000000)
+	 return;
+
+      ret = drmCommandWrite(bufmgr_fake->fd, DRM_I915_IRQ_WAIT,
+			    &iw, sizeof(iw));
+      /* Catch case D */
+      kernel_lied = (ret == 0) && (seq - *bufmgr_fake->last_dispatch <
+				   -0x40000000);
+
+      /* Catch case E */
+      if (ret == -EBUSY && (seq - *bufmgr_fake->last_dispatch > 0x40000000))
+	 ret = 0;
+
+      /* Catch case F: Allow up to 15 seconds chewing on one buffer. */
+      if ((ret == -EBUSY) && (hw_seq != *bufmgr_fake->last_dispatch))
+	 busy_count = 0;
+      else
+	 busy_count++;
+   } while (kernel_lied || ret == -EAGAIN || ret == -EINTR ||
+	    (ret == -EBUSY && busy_count < 5));
+
    if (ret != 0) {
-      drmMsg("%s:%d: Error %d waiting for fence.\n", __FILE__, __LINE__);
+      drmMsg("%s:%d: Error waiting for fence: %s.\n", __FILE__, __LINE__,
+	     strerror(-ret));
       abort();
    }
-   clear_fenced(bufmgr_fake, cookie);
+   clear_fenced(bufmgr_fake, seq);
 }
 
 static int
@@ -540,7 +700,7 @@ dri_bufmgr_fake_wait_idle(dri_bufmgr_fake *bufmgr_fake)
 {
    unsigned int cookie;
 
-   cookie = bufmgr_fake->fence_emit(bufmgr_fake->driver_priv);
+   cookie = _fence_emit_internal(bufmgr_fake);
    _fence_wait_internal(bufmgr_fake, cookie);
 }
 
@@ -1052,38 +1212,6 @@ dri_fake_reloc_and_validate_buffer(dri_bo *bo)
    return dri_fake_bo_validate(bo);
 }
 
-static void *
-dri_fake_process_relocs(dri_bo *batch_buf)
-{
-   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)batch_buf->bufmgr;
-   dri_bo_fake *batch_fake = (dri_bo_fake *)batch_buf;
-   int ret;
-   int retry_count = 0;
-
-   bufmgr_fake->performed_rendering = 0;
-
-   dri_fake_calculate_domains(batch_buf);
-
-   batch_fake->read_domains = I915_GEM_DOMAIN_COMMAND;
-
-   /* we've ran out of RAM so blow the whole lot away and retry */
- restart:
-   ret = dri_fake_reloc_and_validate_buffer(batch_buf);
-   if (bufmgr_fake->fail == 1) {
-      if (retry_count == 0) {
-         retry_count++;
-         dri_fake_kick_all(bufmgr_fake);
-         bufmgr_fake->fail = 0;
-         goto restart;
-      } else /* dump out the memory here */
-         mmDumpMemInfo(bufmgr_fake->heap);
-   }
-
-   assert(ret == 0);
-
-   return NULL;
-}
-
 static void
 dri_bo_fake_post_submit(dri_bo *bo)
 {
@@ -1110,12 +1238,74 @@ dri_bo_fake_post_submit(dri_bo *bo)
 }
 
 
-static void
-dri_fake_post_submit(dri_bo *batch_buf)
+void intel_bufmgr_fake_set_exec_callback(dri_bufmgr *bufmgr,
+					 int (*exec)(dri_bo *bo,
+						     unsigned int used,
+						     void *priv),
+					 void *priv)
 {
-   dri_fake_fence_validated(batch_buf->bufmgr);
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
 
-   dri_bo_fake_post_submit(batch_buf);
+   bufmgr_fake->exec = exec;
+   bufmgr_fake->exec_priv = priv;
+}
+
+static int
+dri_fake_bo_exec(dri_bo *bo, int used,
+		 drm_clip_rect_t *cliprects, int num_cliprects,
+		 int DR4)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
+   dri_bo_fake *batch_fake = (dri_bo_fake *)bo;
+   struct drm_i915_batchbuffer batch;
+   int ret;
+   int retry_count = 0;
+
+   bufmgr_fake->performed_rendering = 0;
+
+   dri_fake_calculate_domains(bo);
+
+   batch_fake->read_domains = I915_GEM_DOMAIN_COMMAND;
+
+   /* we've ran out of RAM so blow the whole lot away and retry */
+ restart:
+   ret = dri_fake_reloc_and_validate_buffer(bo);
+   if (bufmgr_fake->fail == 1) {
+      if (retry_count == 0) {
+         retry_count++;
+         dri_fake_kick_all(bufmgr_fake);
+         bufmgr_fake->fail = 0;
+         goto restart;
+      } else /* dump out the memory here */
+         mmDumpMemInfo(bufmgr_fake->heap);
+   }
+
+   assert(ret == 0);
+
+   if (bufmgr_fake->exec != NULL) {
+      int ret = bufmgr_fake->exec(bo, used, bufmgr_fake->exec_priv);
+      if (ret != 0)
+	 return ret;
+   } else {
+      batch.start = bo->offset;
+      batch.used = used;
+      batch.cliprects = cliprects;
+      batch.num_cliprects = num_cliprects;
+      batch.DR1 = 0;
+      batch.DR4 = DR4;
+
+      if (drmCommandWrite(bufmgr_fake->fd, DRM_I915_BATCHBUFFER, &batch,
+			  sizeof(batch))) {
+	 drmMsg("DRM_I915_BATCHBUFFER: %d\n", -errno);
+	 return -errno;
+      }
+   }
+
+   dri_fake_fence_validated(bo->bufmgr);
+
+   dri_bo_fake_post_submit(bo);
+
+   return 0;
 }
 
 /**
@@ -1187,13 +1377,19 @@ intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr)
       free_block(bufmgr_fake, block);
    }
 }
+void intel_bufmgr_fake_set_last_dispatch(dri_bufmgr *bufmgr,
+					 volatile unsigned int *last_dispatch)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bufmgr;
+
+   bufmgr_fake->last_dispatch = (volatile int *)last_dispatch;
+}
 
 dri_bufmgr *
-intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
+intel_bufmgr_fake_init(int fd,
+		       unsigned long low_offset, void *low_virtual,
 		       unsigned long size,
-		       unsigned int (*fence_emit)(void *private),
-		       int (*fence_wait)(void *private, unsigned int cookie),
-		       void *driver_priv)
+		       volatile unsigned int *last_dispatch)
 {
    dri_bufmgr_fake *bufmgr_fake;
 
@@ -1216,16 +1412,14 @@ intel_bufmgr_fake_init(unsigned long low_offset, void *low_virtual,
    bufmgr_fake->bufmgr.bo_map = dri_fake_bo_map;
    bufmgr_fake->bufmgr.bo_unmap = dri_fake_bo_unmap;
    bufmgr_fake->bufmgr.bo_wait_rendering = dri_fake_bo_wait_rendering;
+   bufmgr_fake->bufmgr.bo_emit_reloc = dri_fake_emit_reloc;
    bufmgr_fake->bufmgr.destroy = dri_fake_destroy;
-   bufmgr_fake->bufmgr.process_relocs = dri_fake_process_relocs;
-   bufmgr_fake->bufmgr.post_submit = dri_fake_post_submit;
+   bufmgr_fake->bufmgr.bo_exec = dri_fake_bo_exec;
    bufmgr_fake->bufmgr.check_aperture_space = dri_fake_check_aperture_space;
    bufmgr_fake->bufmgr.debug = 0;
-   bufmgr_fake->intel_bufmgr.emit_reloc = dri_fake_emit_reloc;
 
-   bufmgr_fake->fence_emit = fence_emit;
-   bufmgr_fake->fence_wait = fence_wait;
-   bufmgr_fake->driver_priv = driver_priv;
+   bufmgr_fake->fd = fd;
+   bufmgr_fake->last_dispatch = (volatile int *)last_dispatch;
 
    return &bufmgr_fake->bufmgr;
 }

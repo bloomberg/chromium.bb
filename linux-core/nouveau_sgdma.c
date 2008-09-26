@@ -48,7 +48,11 @@ nouveau_sgdma_populate(struct drm_ttm_backend *be, unsigned long num_pages,
 							 page, o,
 							 NV_CTXDMA_PAGE_SIZE,
 							 PCI_DMA_BIDIRECTIONAL);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+			if (pci_dma_mapping_error(nvbe->dev->pdev, nvbe->pagelist[d])) {
+#else
 			if (pci_dma_mapping_error(nvbe->pagelist[d])) {
+#endif
 				be->func->clear(be);
 				DRM_ERROR("pci_map_page failed\n");
 				return -EINVAL;
@@ -223,7 +227,11 @@ nouveau_sgdma_init(struct drm_device *dev)
 
 	dev_priv->gart_info.sg_dummy_page =
 		alloc_page(GFP_KERNEL|__GFP_DMA32);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+	set_page_locked(dev_priv->gart_info.sg_dummy_page);
+#else
 	SetPageLocked(dev_priv->gart_info.sg_dummy_page);
+#endif
 	dev_priv->gart_info.sg_dummy_bus =
 		pci_map_page(dev->pdev, dev_priv->gart_info.sg_dummy_page, 0,
 			     PAGE_SIZE, PCI_DMA_BIDIRECTIONAL);

@@ -178,7 +178,7 @@ static char *drmStrdup(const char *s)
  * Call ioctl, restarting if it is interupted
  */
 static int
-drmIoctl(int fd, int request, void *arg)
+drmIoctl(int fd, unsigned long request, void *arg)
 {
     int	ret;
 
@@ -300,6 +300,7 @@ static int drmOpenDevice(long dev, int minor, int type)
 	group = (serv_group >= 0) ? serv_group : DRM_DEV_GID;
     }
 
+#if !defined(UDEV)
     if (stat(DRM_DIR_NAME, &st)) {
 	if (!isroot)
 	    return DRM_ERR_NOT_ROOT;
@@ -320,6 +321,30 @@ static int drmOpenDevice(long dev, int minor, int type)
 	chown(buf, user, group);
 	chmod(buf, devmode);
     }
+#else
+    /* if we modprobed then wait for udev */
+    {
+	int udev_count = 0;
+wait_for_udev:
+        if (stat(DRM_DIR_NAME, &st)) {
+		usleep(20);
+		udev_count++;
+
+		if (udev_count == 50)
+			return -1;
+		goto wait_for_udev;
+	}
+
+    	if (stat(buf, &st)) {
+		usleep(20);
+		udev_count++;
+
+		if (udev_count == 50)
+			return -1;
+		goto wait_for_udev;
+    	}
+    }
+#endif
 
     fd = open(buf, O_RDWR, 0);
     drmMsg("drmOpenDevice: open result is %d, (%s)\n",
