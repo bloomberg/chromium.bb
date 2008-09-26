@@ -456,6 +456,7 @@ typedef struct drm_radeon_kcmd_buffer {
 
 extern int radeon_no_wb;
 extern int radeon_dynclks;
+extern int radeon_r4xx_atom;
 extern struct drm_ioctl_desc radeon_ioctls[];
 extern int radeon_max_ioctl;
 

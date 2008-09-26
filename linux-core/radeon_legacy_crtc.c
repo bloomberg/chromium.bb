@@ -172,7 +172,7 @@ void radeon_crtc_dpms(struct drm_crtc *crtc, int mode)
 }
 
 /* properly set crtc bpp when using atombios */
-static void radeon_legacy_atom_set_surface(struct drm_crtc *crtc)
+void radeon_legacy_atom_set_surface(struct drm_crtc *crtc)
 {
 	struct drm_device *dev = crtc->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
@@ -311,9 +311,6 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 	disp_merge_cntl = RADEON_READ(RADEON_DISP_MERGE_CNTL);
 	disp_merge_cntl &= ~RADEON_DISP_RGB_OFFSET_EN;
 	RADEON_WRITE(RADEON_DISP_MERGE_CNTL, disp_merge_cntl);
-
-	if (dev_priv->is_atom_bios)
-		radeon_legacy_atom_set_surface(crtc);
 
 	return true;
 }
@@ -735,9 +732,6 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 	disp2_merge_cntl = RADEON_READ(RADEON_DISP2_MERGE_CNTL);
 	disp2_merge_cntl &= ~RADEON_DISP2_RGB_OFFSET_EN;
 	RADEON_WRITE(RADEON_DISP2_MERGE_CNTL,      disp2_merge_cntl);
-
-	if (dev_priv->is_atom_bios)
-		radeon_legacy_atom_set_surface(crtc);
 
 	return true;
 }

@@ -277,8 +277,10 @@ bool radeon_get_atom_connector_info_from_bios_connector_table(struct drm_device 
 	union atom_supported_devices *supported_devices;
 	int i,j;
 
-	if (radeon_get_atom_connector_info_from_bios_object_table(dev))
-		return true;
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R600)
+		// FIXME this should return false for pre-r6xx chips
+		if (radeon_get_atom_connector_info_from_bios_object_table(dev))
+			return true;
 
 	atom_parse_data_header(ctx, index, &size, &frev, &crev, &data_offset);
 

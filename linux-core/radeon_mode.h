@@ -287,6 +287,7 @@ extern void atombios_crtc_mode_set(struct drm_crtc *crtc,
 extern void atombios_crtc_dpms(struct drm_crtc *crtc, int mode);
 
 extern void radeon_crtc_set_base(struct drm_crtc *crtc, int x, int y);
+extern void radeon_legacy_atom_set_surface(struct drm_crtc *crtc);
 
 extern int radeon_crtc_cursor_set(struct drm_crtc *crtc,
 				  struct drm_file *file_priv,
