@@ -768,8 +768,8 @@ static void atombios_tmds2_setup(struct drm_encoder *encoder,
 }
 
 
-static void atombios_ext_tmds_setup(struct drm_encoder *encoder,
-				    struct drm_display_mode *mode)
+void atombios_ext_tmds_setup(struct drm_encoder *encoder,
+			     struct drm_display_mode *mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;

@@ -277,6 +277,8 @@ struct drm_encoder *radeon_encoder_legacy_primary_dac_add(struct drm_device *dev
 struct drm_encoder *radeon_encoder_legacy_tv_dac_add(struct drm_device *dev, int bios_index, int with_tv);
 struct drm_encoder *radeon_encoder_legacy_tmds_int_add(struct drm_device *dev, int bios_index);
 struct drm_encoder *radeon_encoder_legacy_tmds_ext_add(struct drm_device *dev, int bios_index);
+extern void atombios_ext_tmds_setup(struct drm_encoder *encoder,
+				    struct drm_display_mode *mode);
 
 extern void radeon_crtc_load_lut(struct drm_crtc *crtc);
 extern void atombios_crtc_set_base(struct drm_crtc *crtc, int x, int y);

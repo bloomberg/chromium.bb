@@ -923,33 +923,40 @@ static void radeon_legacy_tmds_ext_mode_set(struct drm_encoder *encoder,
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_crtc *radeon_crtc = to_radeon_crtc(encoder->crtc);
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-	uint32_t fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);
+	uint32_t fp2_gen_cntl;
 
 	DRM_DEBUG("\n");
 
 	if (radeon_crtc->crtc_id == 0)
 		radeon_legacy_rmx_mode_set(encoder, mode, adjusted_mode);
 
-	if (1) // FIXME rgbBits == 8
-		fp2_gen_cntl |= RADEON_FP2_PANEL_FORMAT; /* 24 bit format, */
-	else
-		fp2_gen_cntl &= ~RADEON_FP2_PANEL_FORMAT;/* 18 bit format, */
+	if (dev_priv->is_atom_bios) {
+		atombios_ext_tmds_setup(encoder, adjusted_mode);
+		fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);
+	} else {
+		fp2_gen_cntl = RADEON_READ(RADEON_FP2_GEN_CNTL);
 
-	fp2_gen_cntl &= ~(RADEON_FP2_ON |
-			  RADEON_FP2_DVO_EN |
-			  RADEON_FP2_DVO_RATE_SEL_SDR);
-
-	/* XXX: these are oem specific */
-	if (radeon_is_r300(dev_priv)) {
-		if ((dev->pdev->device == 0x4850) &&
-		    (dev->pdev->subsystem_vendor == 0x1028) &&
-		    (dev->pdev->subsystem_device == 0x2001)) /* Dell Inspiron 8600 */
-			fp2_gen_cntl |= R300_FP2_DVO_CLOCK_MODE_SINGLE;
+		if (1) // FIXME rgbBits == 8
+			fp2_gen_cntl |= RADEON_FP2_PANEL_FORMAT; /* 24 bit format, */
 		else
-			fp2_gen_cntl |= RADEON_FP2_PAD_FLOP_EN | R300_FP2_DVO_CLOCK_MODE_SINGLE;
+			fp2_gen_cntl &= ~RADEON_FP2_PANEL_FORMAT;/* 18 bit format, */
 
-		/*if (mode->clock > 165000)
-			fp2_gen_cntl |= R300_FP2_DVO_DUAL_CHANNEL_EN;*/
+		fp2_gen_cntl &= ~(RADEON_FP2_ON |
+				  RADEON_FP2_DVO_EN |
+				  RADEON_FP2_DVO_RATE_SEL_SDR);
+
+		/* XXX: these are oem specific */
+		if (radeon_is_r300(dev_priv)) {
+			if ((dev->pdev->device == 0x4850) &&
+			    (dev->pdev->subsystem_vendor == 0x1028) &&
+			    (dev->pdev->subsystem_device == 0x2001)) /* Dell Inspiron 8600 */
+				fp2_gen_cntl |= R300_FP2_DVO_CLOCK_MODE_SINGLE;
+			else
+				fp2_gen_cntl |= RADEON_FP2_PAD_FLOP_EN | R300_FP2_DVO_CLOCK_MODE_SINGLE;
+
+			/*if (mode->clock > 165000)
+			  fp2_gen_cntl |= R300_FP2_DVO_DUAL_CHANNEL_EN;*/
+		}
 	}
 
 	if (radeon_crtc->crtc_id == 0) {
