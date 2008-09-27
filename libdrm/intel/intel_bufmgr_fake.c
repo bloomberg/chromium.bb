@@ -448,9 +448,9 @@ static void free_block(dri_bufmgr_fake *bufmgr_fake, struct block *block)
       return;
 
    bo_fake = (dri_bo_fake *)block->bo;
-   if (!(bo_fake->flags & BM_NO_BACKING_STORE) && (bo_fake->card_dirty == 1)) {
+   if (!(bo_fake->flags & (BM_PINNED | BM_NO_BACKING_STORE)) && (bo_fake->card_dirty == 1)) {
      memcpy(bo_fake->backing_store, block->virtual, block->bo->size);
-     bo_fake->card_dirty = 1;
+     bo_fake->card_dirty = 0;
      bo_fake->dirty = 1;
    }
 
@@ -943,6 +943,11 @@ dri_fake_bo_map(dri_bo *bo, int write_enable)
 
 	 if (bo_fake->backing_store == 0)
 	    alloc_backing_store(bo);
+
+         if ((bo_fake->card_dirty == 1) && bo_fake->block) {
+             memcpy(bo_fake->backing_store, bo_fake->block->virtual, bo_fake->block->bo->size);
+             bo_fake->card_dirty = 0;
+         }
 
 	 bo->virtual = bo_fake->backing_store;
       }
