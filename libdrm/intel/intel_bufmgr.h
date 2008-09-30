@@ -59,6 +59,10 @@ struct _dri_bo {
 
     /** Buffer manager context associated with this buffer object */
     dri_bufmgr *bufmgr;
+    /**
+     * MM-specific handle for accessing object
+     */
+    int handle;
 };
 
 dri_bo *dri_bo_alloc(dri_bufmgr *bufmgr, const char *name, unsigned long size,
