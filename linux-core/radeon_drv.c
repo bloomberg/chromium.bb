@@ -38,6 +38,7 @@
 
 int radeon_no_wb;
 int radeon_dynclks = 1;
+int radeon_r4xx_atom = 0;
 
 MODULE_PARM_DESC(no_wb, "Disable AGP writeback for scratch registers\n");
 module_param_named(no_wb, radeon_no_wb, int, 0444);
@@ -47,6 +48,9 @@ module_param_named(modeset, radeon_modeset, int, 0400);
 
 MODULE_PARM_DESC(dynclks, "Disable/Enable dynamic clocks");
 module_param_named(dynclks, radeon_dynclks, int, 0444);
+
+MODULE_PARM_DESC(r4xx_atom, "Enable ATOMBIOS modesetting for R4xx");
+module_param_named(r4xx_atom, radeon_r4xx_atom, int, 0444);
 
 static int dri_library_name(struct drm_device * dev, char * buf)
 {

@@ -419,6 +419,7 @@ void atombios_crtc_mode_set(struct drm_crtc *crtc,
 			atombios_set_crtc_dtd_timing(crtc, &crtc_dtd_timing);
 		}
 		radeon_crtc_set_base(crtc, x, y);
+		radeon_legacy_atom_set_surface(crtc);
 	}
 
 }
