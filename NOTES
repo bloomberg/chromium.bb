@@ -1,0 +1,53 @@
+
+KEYWORDS:
+
+Wayland is a nano display server, relying on drm modesetting, gem
+batchbuffer submission and hw initialization generally in the
+kernel.  Wayland is compositing manager and display server in one
+process.  window management is largely pushed to the clients, they
+draw their own decorations and move and resize themselves,
+typically implemented in a library.  more of the core desktop could
+be pushed into wayland, for example, stock desktop components such
+as the panel or the desktop background.
+
+It is still designed with a windowed type of desktop in mind, as
+opposed to fullscreen-all-the-time type of interface.
+
+Current trends goes towards less and less rendering in X server,
+more hardware setup and management in kernel and shared libraries
+allow code sharing without putting it all in a server.
+
+Client allocates DRM buffers, draws decorations, and full window
+contents and posts entire thing to server along with dimensions.
+
+Everything is direct rendered and composited.  No cliprects, no
+drawing api/protocl between server and client.  No
+pixmaps/windows/drawables, only surfaces (essentially pixmaps).  No
+gcs/fonts, no nested windows.  OpenGL is already direct rendered,
+pixman may be direct rendered which adds the cairo API, or cairo
+may gain a GL backend.
+
+ISSUES:
+
+Include panel and desktop background in wayland?
+
+How does clients move their surfaces? set a full tri-mesh every time?
+
+How does the server apply transformations to a surface behind the
+clients back? (wobbly, minimize, zoom)  Maybe wobble is client side?
+
+How do apps share the glyph cache?
+
+Input handling - keyboard focus, multiple input devices, multiple
+pointers, multi touch.
+
+Drawing cursors, moving them, cursor themes, attaching surfaces to
+cursors.  How do you change cursors when you mouse over a text
+field if you don't have subwindows?
+
+synaptics, 3-button emulation, xkb, scim
+
+RMI
+
+the get_interface method is called on an object to get an object
+handle that implements the specified interface.
