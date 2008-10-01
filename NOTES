@@ -13,9 +13,11 @@ as the panel or the desktop background.
 It is still designed with a windowed type of desktop in mind, as
 opposed to fullscreen-all-the-time type of interface.
 
-Current trends goes towards less and less rendering in X server,
-more hardware setup and management in kernel and shared libraries
-allow code sharing without putting it all in a server.
+Current trends goes towards less and less rendering in X server, more
+hardware setup and management in kernel and shared libraries allow
+code sharing without putting it all in a server.  freetype,
+fontconfig, cairo all point in this direction, as does direct
+rendering mesa.
 
 Client allocates DRM buffers, draws decorations, and full window
 contents and posts entire thing to server along with dimensions.
@@ -26,6 +28,11 @@ pixmaps/windows/drawables, only surfaces (essentially pixmaps).  No
 gcs/fonts, no nested windows.  OpenGL is already direct rendered,
 pixman may be direct rendered which adds the cairo API, or cairo
 may gain a GL backend.
+
+Could be a "shell" for launching gdm X server, user session servers,
+safe mode xservers, graphics text console.  From gdm, we could also
+launch a rdp session, solid ice sessions.  
+
 
 ISSUES:
 
@@ -46,6 +53,8 @@ cursors.  How do you change cursors when you mouse over a text
 field if you don't have subwindows?
 
 synaptics, 3-button emulation, xkb, scim
+
+changing screen resolution, adding monitors.
 
 RMI
 
