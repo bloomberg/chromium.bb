@@ -1233,7 +1233,8 @@ do {								\
 
 #define IGP_WRITE_MCIND( addr, val )				\
 do {									\
-        if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)       \
+    if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||	\
+	((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS740))		\
 	        RS690_WRITE_MCIND( addr, val );                         \
 	else                                                            \
 	        RS480_WRITE_MCIND( addr, val );                         \
