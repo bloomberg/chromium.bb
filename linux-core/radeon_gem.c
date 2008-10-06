@@ -347,8 +347,9 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 			flags |= DRM_BO_FLAG_MEM_TT;
 		else if (args->pin_domain == RADEON_GEM_DOMAIN_VRAM)
 			flags |= DRM_BO_FLAG_MEM_VRAM;
-		else
-			return -EINVAL;
+		else /* hand back the offset we currently have if no args supplied
+		      - this is to allow old mesa to work - its a hack */
+			flags = 0;
 	}
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
@@ -359,11 +360,11 @@ int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
 
 	/* validate into a pin with no fence */
 	DRM_DEBUG("got here %p %p %d\n", obj, obj_priv->bo, atomic_read(&obj_priv->bo->usage));
-	if (!(obj_priv->bo->type != drm_bo_type_kernel && !DRM_SUSER(DRM_CURPROC))) {
+	if (flags && !(obj_priv->bo->type != drm_bo_type_kernel && !DRM_SUSER(DRM_CURPROC))) {
 		ret = drm_bo_do_validate(obj_priv->bo, flags, mask,
 					 DRM_BO_HINT_DONT_FENCE, 0);
 	} else
-	  ret = 0;
+		ret = 0;
 
 	args->offset = obj_priv->bo->offset;
 	DRM_DEBUG("got here %p %p %x\n", obj, obj_priv->bo, obj_priv->bo->offset);
