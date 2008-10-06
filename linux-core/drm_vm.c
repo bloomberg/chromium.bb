@@ -794,6 +794,7 @@ static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 
 	/* clear the clean flags */
 	bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
+	bo->mem.proposed_flags &= ~DRM_BO_FLAG_CLEAN;
 
 	drm_vm_open_locked(vma);
 	atomic_inc(&bo->usage);

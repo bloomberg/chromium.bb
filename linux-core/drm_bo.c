@@ -1174,6 +1174,7 @@ out_unlock:
 	}
 	/* clear the clean flags */
 	bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
+	bo->mem.proposed_flags &= ~DRM_BO_FLAG_CLEAN;
 
 	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&bm->evict_mutex);

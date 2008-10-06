@@ -635,6 +635,7 @@ int drm_bo_kmap(struct drm_buffer_object *bo, unsigned long start_page,
 
 	/* clear the clean flags */
 	bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
+	bo->mem.proposed_flags &= ~DRM_BO_FLAG_CLEAN;
 
 	if (bus_size == 0) {
 		return drm_bo_kmap_ttm(bo, start_page, num_pages, map);

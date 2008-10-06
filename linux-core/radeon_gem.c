@@ -1244,6 +1244,8 @@ static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_pri
 	radeon_gem_set_domain(obj, read_domains, write_domain, &flags, false);
 
 	obj_priv->bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
+	obj_priv->bo->mem.proposed_flags &= ~DRM_BO_FLAG_CLEAN;
+
 	if (flags == DRM_BO_FLAG_MEM_VRAM)
 		*offset = obj_priv->bo->offset + dev_priv->fb_location;
 	else if (flags == DRM_BO_FLAG_MEM_TT)
