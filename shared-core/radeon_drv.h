@@ -446,7 +446,7 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 
 #define RADEON_MSI_REARM_EN		0x0160
 /* rv370, rv380, rv410, r423, r430, r480, r5xx */
-#	define RADEON_MSI_REARM_EN		(1 << 0)
+#	define RV370_MSI_REARM_EN		(1 << 0)
 
 #define RADEON_CLOCK_CNTL_DATA		0x000c
 #	define RADEON_PLL_WR_EN			(1 << 7)
