@@ -658,16 +658,12 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 		/* rs400, rs690/rs740 */
 		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RS400_BUS_MASTER_DIS;
 		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
-	} else if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV380) ||
-		   ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R423)) {
-		/* rv370/rv380, rv410, r423/r430/r480, r5xx */
-		tmp = RADEON_READ(RV370_BUS_CNTL) & ~RV370_PMI_BM_DIS;
-		RADEON_WRITE(RV370_BUS_CNTL, tmp);
-	} else {
+	} else if (!(((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV380) ||
+		    ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R423))) {
 		/* r1xx, r2xx, r300, r(v)350, r420/r481, rs480 */
 		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RADEON_BUS_MASTER_DIS;
 		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
-	}
+	} /* PCIE cards appears to not need this */
 
 	dev_priv->sarea_priv->last_frame = dev_priv->scratch[0] = 0;
 	RADEON_WRITE(RADEON_LAST_FRAME_REG, dev_priv->sarea_priv->last_frame);
