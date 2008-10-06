@@ -80,10 +80,11 @@ struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size,
 	struct drm_radeon_gem_object *obj_priv;
 	int ret;
 	uint32_t flags;
+	uint32_t page_align;
 
 	obj = drm_gem_object_alloc(dev, size);
 	if (!obj)
-		return NULL;;
+		return NULL;
 
 	obj_priv = obj->driver_private;
 	flags = DRM_BO_FLAG_MAPPABLE;
@@ -95,10 +96,15 @@ struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size,
 		flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 
 	flags |= DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_EXE;
+
+	if (alignment == 0)
+		alignment = PAGE_SIZE;
+
+	page_align = alignment >> PAGE_SHIFT;
 	/* create a TTM BO */
 	ret = drm_buffer_object_create(dev,
 				       size, drm_bo_type_device,
-				       flags, 0, alignment,
+				       flags, 0, page_align,
 				       0, &obj_priv->bo);
 	if (ret)
 		goto fail;
@@ -188,10 +194,14 @@ int radeon_gem_set_domain(struct drm_gem_object *obj, uint32_t read_domains, uin
 			flags = DRM_BO_FLAG_MEM_TT;
 		else if ((obj_priv->bo->mem.mem_type == DRM_BO_MEM_LOCAL) && (read_domains & RADEON_GEM_DOMAIN_GTT))
 			flags = DRM_BO_FLAG_MEM_TT;
-		else if (read_domains & RADEON_GEM_DOMAIN_VRAM)
-			flags = DRM_BO_FLAG_MEM_VRAM;
-		else if (read_domains & RADEON_GEM_DOMAIN_GTT)
-			flags = DRM_BO_FLAG_MEM_TT;
+
+		/* no idea here just set whatever we are input */
+		if (flags == 0) {
+			if (read_domains & RADEON_GEM_DOMAIN_VRAM)
+				flags |= DRM_BO_FLAG_MEM_VRAM;
+			if (read_domains & RADEON_GEM_DOMAIN_GTT)
+				flags |= DRM_BO_FLAG_MEM_TT;
+		}
 	}
 
 	/* if this BO is pinned then we ain't moving it anywhere */
