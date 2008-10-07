@@ -18,21 +18,66 @@ struct lame_compositor {
 	int gem_fd;
 };
 
+struct surface_data {
+	uint32_t handle;
+	int32_t width, height, stride;
+};
+
 void notify_surface_create(struct wl_compositor *compositor,
 			   struct wl_surface *surface)
 {
+	struct surface_data *sd;
+
+	sd = malloc(sizeof *sd);
+	if (sd == NULL)
+		return;
+
+	sd->handle = 0;
+	wl_surface_set_data(surface, sd);
 }
 				   
+void notify_surface_destroy(struct wl_compositor *compositor,
+			    struct wl_surface *surface)
+{
+	struct lame_compositor *lc = (struct lame_compositor *) compositor;
+	struct surface_data *sd;
+	struct drm_gem_close close_arg;
+	int ret;
+
+	sd = wl_surface_get_data(surface);
+	if (sd == NULL || sd->handle == 0)
+		return;
+	
+	close_arg.handle = sd->handle;
+	ret = ioctl(lc->gem_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
+	if (ret != 0) {
+		fprintf(stderr, "failed to gem_close handle %d: %m\n", sd->handle);
+	}
+
+	free(sd);
+}
+
 void notify_surface_attach(struct wl_compositor *compositor,
 			   struct wl_surface *surface, uint32_t name, 
 			   uint32_t width, uint32_t height, uint32_t stride)
 {
 	struct lame_compositor *lc = (struct lame_compositor *) compositor;
-	struct drm_i915_gem_pread pread;
+	struct surface_data *sd;
 	struct drm_gem_open open_arg;
 	struct drm_gem_close close_arg;
-	char *data, *dst;
-	int i, ret, x = 600, y = 200;
+	int ret;
+
+	sd = wl_surface_get_data(surface);
+	if (sd == NULL)
+		return;
+
+	if (sd->handle != 0) {
+		close_arg.handle = sd->handle;
+		ret = ioctl(lc->gem_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
+		if (ret != 0) {
+			fprintf(stderr, "failed to gem_close name %d: %m\n", name);
+		}
+	}
 
 	open_arg.name = name;
 	ret = ioctl(lc->gem_fd, DRM_IOCTL_GEM_OPEN, &open_arg);
@@ -41,17 +86,41 @@ void notify_surface_attach(struct wl_compositor *compositor,
 		return;
 	}
 
-	data = malloc(open_arg.size);
+	sd->handle = open_arg.handle;
+	sd->width = width;
+	sd->height = height;
+	sd->stride = stride;
+}
+
+void notify_surface_map(struct wl_compositor *compositor,
+			struct wl_surface *surface, struct wl_map *map)
+{
+	struct lame_compositor *lc = (struct lame_compositor *) compositor;
+	struct surface_data *sd;
+	struct drm_i915_gem_pread pread;
+	char *data, *dst;
+	uint32_t size;
+	int i;
+
+	/* This part is where we actually copy the buffer to screen.
+	 * Needs to be part of the repaint loop, not in the notify_map
+	 * handler. */
+
+	sd = wl_surface_get_data(surface);
+	if (sd == NULL)
+		return;
+
+	size = sd->height * sd->stride;
+	data = malloc(size);
 	if (data == NULL) {
 		fprintf(stderr, "swap buffers malloc failed\n");
 		return;
 	}
 
-	pread.size = open_arg.size;
-	pread.handle = open_arg.handle;
+	pread.handle = sd->handle;
 	pread.pad = 0;
 	pread.offset = 0;
-	pread.size = stride * height;
+	pread.size = size;
 	pread.data_ptr = (long) data;
 
 	if (ioctl(lc->gem_fd, DRM_IOCTL_I915_GEM_PREAD, &pread)) {
@@ -59,22 +128,18 @@ void notify_surface_attach(struct wl_compositor *compositor,
 		return;
 	}
 
-	dst = lc->fb + lc->stride * y + x * 4;
-	for (i = 0; i < height; i++)
-		memcpy(dst + lc->stride * i, data + stride * i, width * 4);
-
-	close_arg.handle = open_arg.handle;
-	ret = ioctl(lc->gem_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
-	if (ret != 0) {
-		fprintf(stderr, "failed to gem_close name %d: %m\n", name);
-	}
+	dst = lc->fb + lc->stride * map->y + map->x * 4;
+	for (i = 0; i < sd->height; i++)
+		memcpy(dst + lc->stride * i, data + sd->stride * i, sd->width * 4);
 
 	free(data);
 }
 
 struct wl_compositor_interface interface = {
 	notify_surface_create,
-	notify_surface_attach
+	notify_surface_destroy,
+	notify_surface_attach,
+	notify_surface_map
 };
 
 static const char fb_device[] = "/dev/fb";

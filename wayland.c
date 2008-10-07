@@ -43,15 +43,26 @@ struct wl_surface {
 	int buffer;
 	int stride;
 	
-	/* these are used by the wayland server, not set from client */
-	void (*screen_to_surface)(int sx, int sy, int *wx, int *wy);
-	void (*surface_to_screen)(int sx, int sy, int *wx, int *wy);
+	struct wl_map map;
 
 	/* how to convert buffer contents to pixels in screen format;
 	 * yuv->rgb, indexed->rgb, svg->rgb, but mostly just rgb->rgb. */
 
 	/* how to transform/render rectangular contents to polygons. */
+
+	void *compositor_data;
 };
+
+				   
+static void
+wl_surface_destroy(struct wl_client *client,
+		   struct wl_surface *surface)
+{
+	struct wl_compositor_interface *interface;
+
+	interface = client->display->compositor->interface;
+	interface->notify_surface_destroy(client->display->compositor, surface);
+}
 
 static void
 wl_surface_attach(struct wl_client *client,
@@ -73,21 +84,38 @@ static const struct wl_argument attach_arguments[] = {
 };
 
 void
-wl_surface_update(struct wl_surface *surface,
-		  uint32_t source_name, struct wl_region *region)
+wl_surface_map(struct wl_client *client, struct wl_surface *surface,
+	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	/* FIXME: how to demarshal region? */
-	/* copy region from buffer into current window contents. */
+	struct wl_compositor_interface *interface;
+
+	/* FIXME: This needs to take a tri-mesh argument... - count
+	 * and a list of tris. 0 tris means unmap. */
+
+	surface->map.x = x;
+	surface->map.y = y;
+	surface->map.width = width;
+	surface->map.height = height;
+
+	interface = client->display->compositor->interface;
+	interface->notify_surface_map(client->display->compositor,
+				      surface, &surface->map);
 }
 
-static const struct wl_argument update_arguments[] = {
+static const struct wl_argument map_arguments[] = {
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
 	{ WL_ARGUMENT_UINT32 },
 	{ WL_ARGUMENT_UINT32 },
 };
 
 static const struct wl_method surface_methods[] = {
+	{ "destroy", wl_surface_destroy,
+	  0, NULL },
 	{ "attach", wl_surface_attach,
-	  ARRAY_LENGTH(attach_arguments), attach_arguments }
+	  ARRAY_LENGTH(attach_arguments), attach_arguments },
+	{ "map", wl_surface_map,
+	  ARRAY_LENGTH(map_arguments), map_arguments }
 };
 
 static const struct wl_interface surface_interface = {
@@ -113,6 +141,18 @@ wl_surface_create(struct wl_display *display, uint32_t id)
 	interface->notify_surface_create(display->compositor, surface);
 
 	return surface;
+}
+
+void
+wl_surface_set_data(struct wl_surface *surface, void *data)
+{
+	surface->compositor_data = data;
+}
+
+void *
+wl_surface_get_data(struct wl_surface *surface)
+{
+	return surface->compositor_data;
 }
 
 static void

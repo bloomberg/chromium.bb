@@ -192,7 +192,23 @@ wl_display_create_surface(struct wl_display *display)
 	return surface;
 }
 
-#define WL_SURFACE_ATTACH 0
+#define WL_SURFACE_DESTROY	0
+#define WL_SURFACE_ATTACH	1
+#define WL_SURFACE_MAP		2
+
+void wl_surface_destroy(struct wl_surface *surface)
+{
+	uint32_t request[2];
+	struct wl_connection *connection;
+
+	request[0] = surface->proxy.id;
+	request[1] = WL_SURFACE_DESTROY | ((sizeof request) << 16);
+
+	connection = surface->proxy.connection;
+	memcpy(connection->out.data + connection->out.head,
+	       request, sizeof request);
+	connection->out.head += sizeof request;
+}
 
 void wl_surface_attach(struct wl_surface *surface,
 		       uint32_t name, int width, int height, int stride)
@@ -206,6 +222,26 @@ void wl_surface_attach(struct wl_surface *surface,
 	request[3] = width;
 	request[4] = height;
 	request[5] = stride;
+
+	connection = surface->proxy.connection;
+	memcpy(connection->out.data + connection->out.head,
+	       request, sizeof request);
+	connection->out.head += sizeof request;
+}
+
+
+void wl_surface_map(struct wl_surface *surface,
+		    int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	uint32_t request[6];
+	struct wl_connection *connection;
+
+	request[0] = surface->proxy.id;
+	request[1] = WL_SURFACE_MAP | ((sizeof request) << 16);
+	request[2] = x;
+	request[3] = y;
+	request[4] = width;
+	request[5] = height;
 
 	connection = surface->proxy.connection;
 	memcpy(connection->out.data + connection->out.head,

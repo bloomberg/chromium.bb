@@ -97,7 +97,8 @@ int main(int argc, char *argv[])
 	struct wl_connection *connection;
 	struct wl_display *display;
 	struct wl_surface *surface;
-	int width = 300, height = 300, fd;
+	const int x = 400, y = 200, width = 300, height = 300;
+	int fd;
 	uint32_t name;
 	cairo_surface_t *s;
 
@@ -123,13 +124,13 @@ int main(int argc, char *argv[])
 	wl_surface_attach(surface, name, width, height,
 			  cairo_image_surface_get_stride(s));
 
+	wl_surface_map(surface, x, y, width, height);
 	if (wl_connection_flush(connection) < 0) {
 		fprintf(stderr, "flush error: %m\n");
 		return -1;
 	}
 
-	while (1)
-		wl_connection_iterate(connection);
+	wl_connection_iterate(connection);
 
 	return 0;
 }
