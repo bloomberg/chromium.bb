@@ -116,6 +116,8 @@ struct radeon_i2c_bus_rec {
 	uint32_t get_data_mask;
 	uint32_t a_clk_mask;
 	uint32_t a_data_mask;
+	int hw_line;
+	bool hw_capable;
 };
 
 struct radeon_bios_connector {
@@ -226,6 +228,10 @@ struct radeon_encoder {
 	uint32_t panel_fb_divider;
 	bool use_bios_dividers;
 	uint32_t lvds_gen_cntl;
+
+	/* atom lvds */
+	int lvds_misc;
+	int lvds_ss_id;
 
 	/* legacy primary dac */
 	uint32_t ps2_pdac_adj;

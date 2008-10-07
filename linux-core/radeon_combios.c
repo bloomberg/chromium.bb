@@ -385,6 +385,8 @@ struct radeon_i2c_bus_rec combios_setup_i2c_bus(int ddc_line)
 {
 	struct radeon_i2c_bus_rec i2c;
 
+	i2c.hw_line = 0;
+	i2c.hw_capable = false; // actually depends on chip
 	i2c.mask_clk_mask = RADEON_GPIO_EN_1;
 	i2c.mask_data_mask = RADEON_GPIO_EN_0;
 	i2c.a_clk_mask = RADEON_GPIO_A_1;

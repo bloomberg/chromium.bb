@@ -72,10 +72,65 @@ static inline struct radeon_i2c_bus_rec radeon_lookup_gpio(struct drm_device *de
 	i2c.get_data_mask = (1 <<  gpio.ucDataY_Shift);
 	i2c.a_clk_mask = (1 << gpio.ucClkA_Shift);
 	i2c.a_data_mask = (1 <<  gpio.ucDataA_Shift);
+	i2c.hw_line = gpio.sucI2cId.sbfAccess.bfI2C_LineMux;
+	i2c.hw_capable = gpio.sucI2cId.sbfAccess.bfHW_Capable;
 	i2c.valid = true;
 
 	return i2c;
 }
+
+#if 0
+// TODO fix atom FB/scratch space access
+struct edid *radeon_atom_get_edid(struct drm_connector *connector)
+{
+	struct radeon_connector *radeon_connector = to_radeon_connector(connector);
+	struct drm_radeon_private *dev_priv = radeon_connector->base.dev->dev_private;
+	struct radeon_mode_info *mode_info = &dev_priv->mode_info;
+	READ_EDID_FROM_HW_I2C_DATA_PS_ALLOCATION edid_param;
+	int i2c_clock = 50;
+	int prescale;
+	unsigned char *raw_edid;
+	struct edid *edid = NULL;
+	int index = GetIndexIntoMasterTable(COMMAND, ReadEDIDFromHWAssistedI2C);
+
+	if (!radeon_connector->ddc_bus)
+		return edid;
+
+	if (!radeon_connector->ddc_bus->rec.hw_capable)
+		return edid;
+
+	if (info->atomBIOS->fbBase)
+		raw_edid = (unsigned char *)info->FB + info->atomBIOS->fbBase;
+	else if (info->atomBIOS->scratchBase)
+		raw_edid = (unsigned char *)info->atomBIOS->scratchBase;
+	else
+		return edid;
+
+	memset(raw_edid, 0, ATOM_EDID_RAW_DATASIZE);
+
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_R520)
+		prescale = (127 << 8) + (mode_info->sclk * 10) / (4 * 127 * i2c_clock);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) < CHIP_R600)
+		prescale = (((mode_info->sclk * 10)/(4 * 128 * 100) + 1) << 8) + 128;
+	else
+		prescale = (mode_info->spll.reference_freq * 10) / i2c_clock;
+
+	edid_param.usPrescale = prescale;
+	edid_param.usVRAMAddress = 0;
+	edid_param.ucSlaveAddr = 0xa0;
+	edid_param.ucLineNumber = radeon_connector->ddc_bus->rec.hw_line;
+
+	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&edid_param);
+
+	if (raw_edid[1] == 0xff) {
+		edid = kmalloc(size_of(struct edid), GFP_KERNEL);
+		*edid = raw_edid;
+	}
+
+	return edid;
+
+}
+#endif
 
 static struct radeon_i2c_bus_rec radeon_parse_i2c_record(struct drm_device *dev, ATOM_I2C_RECORD *record)
 {
@@ -591,6 +646,8 @@ void radeon_atombios_get_lvds_info(struct radeon_encoder *encoder)
 		encoder->voverplus = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncOffset);
 		encoder->vsync_width = le16_to_cpu(lvds_info->info.sLCDTiming.usVSyncWidth);
 		encoder->panel_pwr_delay = le16_to_cpu(lvds_info->info.usOffDelayInMs);
+		encoder->lvds_misc = lvds_info->info.ucLVDS_Misc;
+		encoder->lvds_ss_id = lvds_info->info.ucSS_Id;
 	}
 }
 

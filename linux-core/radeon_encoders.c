@@ -228,58 +228,105 @@ void atombios_set_crtc_source(struct drm_encoder *encoder, int source)
 
 }
 
-static void radeon_dfp_disable_dither(struct drm_encoder *encoder, int device)
+static void atombios_output_digital_mode_set(struct drm_encoder *encoder,
+					     int device,
+					     struct drm_display_mode *mode)
 {
-	struct drm_device *dev = encoder->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-
-	if (!radeon_is_avivo(dev_priv))
-		return;
+	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
+	struct drm_radeon_private *dev_priv = encoder->dev->dev_private;
+	uint8_t frev, crev;
+	int index;
+	LVDS_ENCODER_CONTROL_PS_ALLOCATION args;
+	LVDS_ENCODER_CONTROL_PS_ALLOCATION_V2 args2;
+	uint32_t *param = NULL;
 
 	switch (device) {
 	case ATOM_DEVICE_DFP1_INDEX:
-		RADEON_WRITE(AVIVO_TMDSA_BIT_DEPTH_CONTROL, 0); /* TMDSA */
+		index = GetIndexIntoMasterTable(COMMAND, TMDS1EncoderControl);
 		break;
-	case ATOM_DEVICE_DFP2_INDEX:
-		if ((dev_priv->chip_family == CHIP_RS600) ||
-		    (dev_priv->chip_family == CHIP_RS690) ||
-		    (dev_priv->chip_family == CHIP_RS740))
-			RADEON_WRITE(AVIVO_DDIA_BIT_DEPTH_CONTROL, 0); /* DDIA */
-		else
-			RADEON_WRITE(AVIVO_DVOA_BIT_DEPTH_CONTROL, 0); /* DVO */
+	case ATOM_DEVICE_LCD1_INDEX:
+		index = GetIndexIntoMasterTable(COMMAND, LVDSEncoderControl);
 		break;
-		/*case ATOM_DEVICE_LCD1_INDEX:*/ /* LVDS panels need dither enabled */
 	case ATOM_DEVICE_DFP3_INDEX:
-		RADEON_WRITE(AVIVO_LVTMA_BIT_DEPTH_CONTROL, 0); /* LVTMA */
+		index = GetIndexIntoMasterTable(COMMAND, TMDS2EncoderControl);
 		break;
 	default:
+		return;
+	}
+
+	atom_parse_cmd_header(dev_priv->mode_info.atom_context, index, &frev, &crev);
+
+	switch (frev) {
+	case 0:
+	case 1:
+		switch (crev) {
+		case 0:
+		case 1:
+			memset(&args, 0, sizeof(args));
+			args.ucAction = PANEL_ENCODER_ACTION_ENABLE;
+			// TODO HDMI
+			//if (radeon_encoder->type == OUTPUT_HDMI)
+				//disp_data.ucMisc |= PANEL_ENCODER_MISC_HDMI_TYPE;
+			args.usPixelClock = cpu_to_le16(mode->clock / 10);
+			if (device == ATOM_DEVICE_LCD1_INDEX) {
+				if (radeon_encoder->lvds_misc & (1 << 0))
+					args.ucMisc |= PANEL_ENCODER_MISC_DUAL;
+				if (radeon_encoder->lvds_misc & (1 << 1))
+					args.ucMisc |= (1 << 1);
+			} else {
+				if (mode->clock > 165000)
+					args.ucMisc |= PANEL_ENCODER_MISC_DUAL;
+				// TODO 6-bit DAC
+				args.ucMisc |= (1 << 1);
+			}
+			param = (uint32_t *)&args;
+			break;
+		case 2:
+		case 3:
+			memset(&args2, 0, sizeof(args2));
+			args2.ucAction = PANEL_ENCODER_ACTION_ENABLE;
+			if (crev == 3) {
+				// TODO coherent mode
+				//if (encoder->coherent_mode)
+					//args2.ucMisc |= PANEL_ENCODER_MISC_COHERENT;
+			}
+			// TODO HDMI
+			//if (radeon_encoder->type == OUTPUT_HDMI)
+				//args2.ucMisc |= PANEL_ENCODER_MISC_HDMI_TYPE;
+			if (device == ATOM_DEVICE_LCD1_INDEX) {
+				if (radeon_encoder->lvds_misc & (1 << 0))
+					args2.ucMisc |= PANEL_ENCODER_MISC_DUAL;
+				if (radeon_encoder->lvds_misc & (1 << 5)) {
+					args2.ucSpatial = PANEL_ENCODER_SPATIAL_DITHER_EN;
+					if (radeon_encoder->lvds_misc & (1 << 1))
+						args2.ucSpatial |= PANEL_ENCODER_SPATIAL_DITHER_DEPTH;
+				}
+				if (radeon_encoder->lvds_misc & (1 << 6)) {
+					args2.ucTemporal = PANEL_ENCODER_TEMPORAL_DITHER_EN;
+					if (radeon_encoder->lvds_misc & (1 << 1))
+						args2.ucTemporal |= PANEL_ENCODER_TEMPORAL_DITHER_DEPTH;
+				}
+			} else {
+				if (mode->clock > 165000)
+					args2.ucMisc |= PANEL_ENCODER_MISC_DUAL;
+			}
+			param = (uint32_t *)&args2;
+			break;
+		}
 		break;
 	}
-}
 
+	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)param);
+}
 
 static void radeon_lvtma_mode_set(struct drm_encoder *encoder,
 				  struct drm_display_mode *mode,
 				  struct drm_display_mode *adjusted_mode)
 {
-	struct drm_device *dev = encoder->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	LVDS_ENCODER_CONTROL_PS_ALLOCATION args;
-	int index = GetIndexIntoMasterTable(COMMAND, LVDSEncoderControl);
 
-	memset(&args, 0, sizeof(args));
 	atombios_scaler_setup(encoder, mode);
 	atombios_set_crtc_source(encoder, ATOM_DEVICE_LCD1_INDEX);
-
-	args.ucAction = 1;
-	if (adjusted_mode->clock > 165000)
-		args.ucMisc = 1;
-	else
-		args.ucMisc = 0;
-	args.usPixelClock = cpu_to_le16(adjusted_mode->clock / 10);
-
-	printk("executing set LVDS encoder\n");
-	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
+	atombios_output_digital_mode_set(encoder, ATOM_DEVICE_LCD1_INDEX, adjusted_mode);
 }
 
 
@@ -287,7 +334,6 @@ static void radeon_lvtma_dpms(struct drm_encoder *encoder, int mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_crtc *radeon_crtc;
 	int index = GetIndexIntoMasterTable(COMMAND, LCD1OutputControl);
 	uint32_t bios_2_scratch, bios_3_scratch;
 	int crtc_id = 0;
@@ -593,7 +639,6 @@ static int atombios_tv1_setup(struct drm_encoder *encoder,
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	TV_ENCODER_CONTROL_PS_ALLOCATION args;
 	int index = GetIndexIntoMasterTable(COMMAND, TVEncoderControl);
 
@@ -617,7 +662,6 @@ static void radeon_atom_dac_mode_set(struct drm_encoder *encoder,
 				     struct drm_display_mode *adjusted_mode)
 {
 	struct drm_device *dev = encoder->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	int atom_type = -1;
 
@@ -724,69 +768,22 @@ static const struct drm_encoder_funcs radeon_atom_dac_enc_funcs = {
 	. destroy = radeon_enc_destroy,
 };
 
-
-static void atombios_tmds1_setup(struct drm_encoder *encoder,
-				 struct drm_display_mode *mode)
-{
-	struct drm_device *dev = encoder->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-	TMDS1_ENCODER_CONTROL_PS_ALLOCATION args;
-	int index = GetIndexIntoMasterTable(COMMAND, TMDS1EncoderControl);
-
-	memset(&args, 0, sizeof(args));
-	args.ucAction = 1;
-	if (mode->clock > 165000)
-		args.ucMisc = 1;
-	else
-		args.ucMisc = 0;
-
-	args.usPixelClock = cpu_to_le16(mode->clock / 10);
-
-	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
-}
-
-static void atombios_tmds2_setup(struct drm_encoder *encoder,
-				 struct drm_display_mode *mode)
-{
-	struct drm_device *dev = encoder->dev;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
-	TMDS2_ENCODER_CONTROL_PS_ALLOCATION args;
-	int index = GetIndexIntoMasterTable(COMMAND, TMDS2EncoderControl);
-
-	memset(&args, 0, sizeof(args));
-	args.ucAction = 1;
-	if (mode->clock > 165000)
-		args.ucMisc = 1;
-	else
-		args.ucMisc = 0;
-
-	args.usPixelClock = cpu_to_le16(mode->clock / 10);
-
-	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
-}
-
-
 void atombios_ext_tmds_setup(struct drm_encoder *encoder,
 			     struct drm_display_mode *mode)
 {
 	struct drm_device *dev = encoder->dev;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
-	struct radeon_encoder *radeon_encoder = to_radeon_encoder(encoder);
 	ENABLE_EXTERNAL_TMDS_ENCODER_PS_ALLOCATION args;
 	int index = GetIndexIntoMasterTable(COMMAND, DVOEncoderControl);
 
 	memset(&args, 0, sizeof(args));
-	args.sXTmdsEncoder.ucEnable = 1;
+	args.sXTmdsEncoder.ucEnable = PANEL_ENCODER_ACTION_ENABLE;
 
 	if (mode->clock > 165000)
-		args.sXTmdsEncoder.ucMisc = 1;
-	else
-		args.sXTmdsEncoder.ucMisc = 0;
+		args.sXTmdsEncoder.ucMisc = PANEL_ENCODER_MISC_DUAL;
 
 	// TODO 6-bit DAC
-//	args.usPixelClock = cpu_to_le16(mode->clock / 10);
+	args.sXTmdsEncoder.ucMisc |= (1 << 1);
 
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
 }
@@ -799,7 +796,8 @@ static void atombios_dig1_setup(struct drm_encoder *encoder,
 	DIG_ENCODER_CONTROL_PS_ALLOCATION args;
 	int index = GetIndexIntoMasterTable(COMMAND, DIG1EncoderControl);
 
-	args.ucAction = 1;
+	memset(&args, 0, sizeof(args));
+	args.ucAction = ATOM_ENABLE;
 	args.usPixelClock = mode->clock / 10;
 	args.ucConfig = ATOM_ENCODER_CONFIG_TRANSMITTER1;
 
@@ -827,13 +825,12 @@ static void atombios_ddia_setup(struct drm_encoder *encoder,
 	DVO_ENCODER_CONTROL_PS_ALLOCATION args;
 	int index = GetIndexIntoMasterTable(COMMAND, DVOEncoderControl);
 
-	args.sDVOEncoder.ucAction = ATOM_ENABLE;
-	args.sDVOEncoder.usPixelClock = mode->clock / 10;
+	memset(&args, 0, sizeof(args));
+	args.sDVOEncoder.ucAction = PANEL_ENCODER_ACTION_ENABLE;
+	args.sDVOEncoder.usPixelClock = cpu_to_le16(mode->clock / 10);
 
 	if (mode->clock > 165000)
 		args.sDVOEncoder.usDevAttr.sDigAttrib.ucAttribute = PANEL_ENCODER_MISC_DUAL;
-	else
-		args.sDVOEncoder.usDevAttr.sDigAttrib.ucAttribute = 0;
 
 	atom_execute_table(dev_priv->mode_info.atom_context, index, (uint32_t *)&args);
 }
@@ -846,8 +843,10 @@ struct drm_encoder *radeon_encoder_atom_dac_add(struct drm_device *dev, int bios
 	struct drm_encoder *encoder;
 	int type = with_tv ? DRM_MODE_ENCODER_TVDAC : DRM_MODE_ENCODER_DAC;
 	int found = 0;
-	int digital_enc_mask = ~(ATOM_DEVICE_DFP1_SUPPORT | ATOM_DEVICE_DFP2_SUPPORT | ATOM_DEVICE_DFP3_SUPPORT |
-				ATOM_DEVICE_LCD1_SUPPORT);
+	int digital_enc_mask = ~(ATOM_DEVICE_DFP1_SUPPORT |
+				 ATOM_DEVICE_DFP2_SUPPORT |
+				 ATOM_DEVICE_DFP3_SUPPORT |
+				 ATOM_DEVICE_LCD1_SUPPORT);
 	/* we may already have added this encoder */
 	list_for_each_entry(encoder, &dev->mode_config.encoder_list, head) {
 		if (encoder->encoder_type != DRM_MODE_ENCODER_DAC ||
@@ -1036,7 +1035,7 @@ static void radeon_atom_tmds_mode_set(struct drm_encoder *encoder,
 	atombios_set_crtc_source(encoder, atom_type);
 
 	if (atom_type == ATOM_DEVICE_DFP1_INDEX)
-		atombios_tmds1_setup(encoder, adjusted_mode);
+		atombios_output_digital_mode_set(encoder, ATOM_DEVICE_DFP1_INDEX, adjusted_mode);
 	if (atom_type == ATOM_DEVICE_DFP2_INDEX) {
 		if ((dev_priv->chip_family == CHIP_RS600) ||
 		    (dev_priv->chip_family == CHIP_RS690) ||
@@ -1046,10 +1045,7 @@ static void radeon_atom_tmds_mode_set(struct drm_encoder *encoder,
 			atombios_ext_tmds_setup(encoder, adjusted_mode);
 	}
 	if (atom_type == ATOM_DEVICE_DFP3_INDEX)
-		atombios_tmds2_setup(encoder, adjusted_mode);
-	radeon_dfp_disable_dither(encoder, atom_type);
-
-
+		atombios_output_digital_mode_set(encoder, ATOM_DEVICE_DFP3_INDEX, adjusted_mode);
 }
 
 static void radeon_atom_tmds_prepare(struct drm_encoder *encoder)
@@ -1085,7 +1081,7 @@ struct drm_encoder *radeon_encoder_atom_tmds_add(struct drm_device *dev, int bio
 	struct drm_encoder *encoder;
 	int analog_enc_mask = ~(ATOM_DEVICE_CRT1_SUPPORT | ATOM_DEVICE_CRT2_SUPPORT);
 
-		radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
+	radeon_encoder = kzalloc(sizeof(struct radeon_encoder), GFP_KERNEL);
 	if (!radeon_encoder) {
 		return NULL;
 	}
