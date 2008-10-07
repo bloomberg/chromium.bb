@@ -18,6 +18,10 @@ struct wl_event_source *wl_event_loop_add_fd(struct wl_event_loop *loop,
 					     int fd, uint32_t mask,
 					     wl_event_loop_func_t func,
 					     void *data);
+int wl_event_loop_update_source(struct wl_event_loop *loop,
+				struct wl_event_source *source,
+				uint32_t mask);
+
 int wl_event_loop_remove_source(struct wl_event_loop *loop,
 				struct wl_event_source *source);
 int wl_event_loop_wait(struct wl_event_loop *loop);
@@ -52,16 +56,44 @@ struct wl_method {
 	const struct wl_argument *arguments;
 };
 
+struct wl_event {
+	const char *name;
+};
+
 struct wl_interface {
 	const char *name;
 	int version;
 	int method_count;
 	const struct wl_method *methods;
+	int event_count;
+	const struct wl_event *events;
 };
 
 struct wl_object {
 	const struct wl_interface *interface;
 	uint32_t id;
 };
+
+struct wl_surface;
+struct wl_display;
+
+struct wl_compositor {
+	struct wl_compositor_interface *interface;
+};
+
+struct wl_compositor_interface {
+	void (*notify_surface_create)(struct wl_compositor *compositor,
+				      struct wl_surface *surface);
+				   
+	void (*notify_surface_attach)(struct wl_compositor *compositor,
+				      struct wl_surface *surface, uint32_t name, 
+				      uint32_t width, uint32_t height, uint32_t stride);
+};
+
+struct wl_compositor *wl_compositor_create(void);
+
+void wl_display_set_compositor(struct wl_display *display,
+			       struct wl_compositor *compositor);
+
 
 #endif

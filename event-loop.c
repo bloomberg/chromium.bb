@@ -60,6 +60,24 @@ wl_event_loop_remove_source(struct wl_event_loop *loop,
 	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, fd, NULL);
 }
 
+int
+wl_event_loop_update_source(struct wl_event_loop *loop,
+			    struct wl_event_source *source,
+			    uint32_t mask)
+{
+	struct epoll_event ep;
+
+	ep.events = 0;
+	if (mask & WL_EVENT_READABLE)
+		ep.events |= EPOLLIN;
+	if (mask & WL_EVENT_WRITEABLE)
+		ep.events |= EPOLLOUT;
+	ep.data.ptr = source;
+
+	return epoll_ctl(loop->epoll_fd,
+			 EPOLL_CTL_MOD, source->fd, &ep);
+}
+
 struct wl_event_loop *
 wl_event_loop_create(void)
 {
@@ -93,6 +111,7 @@ wl_event_loop_wait(struct wl_event_loop *loop)
 	struct epoll_event ep[32];
 	struct wl_event_source *source;
 	int i, count;
+	uint32_t mask;
 
 	count = epoll_wait(loop->epoll_fd, ep, ARRAY_LENGTH(ep), -1);
 	if (count < 0)
@@ -100,7 +119,13 @@ wl_event_loop_wait(struct wl_event_loop *loop)
 
 	for (i = 0; i < count; i++) {
 		source = ep[i].data.ptr;
-		source->func(source->fd, ep[i].events, source->data);
+		mask = 0;
+		if (ep[i].events & EPOLLIN)
+			mask |= WL_EVENT_READABLE;
+		if (ep[i].events & EPOLLOUT)
+			mask |= WL_EVENT_WRITEABLE;
+
+		source->func(source->fd, mask, source->data);
 	}
 
 	return 0;

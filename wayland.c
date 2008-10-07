@@ -15,8 +15,13 @@
 struct wl_region {
 };
 
+struct wl_buffer {
+	char data[4096];
+	int head, tail;
+};
+
 struct wl_client {
-	char protocol_buffer[4096];
+	struct wl_buffer input, output;
 	struct wl_event_source *source;
 	struct wl_display *display;
 };
@@ -25,6 +30,9 @@ struct wl_display {
 	struct wl_object base;
 	struct wl_event_loop *loop;
 	struct wl_hash objects;
+
+	struct wl_compositor *compositor;
+	struct wl_compositor_interface *compositor_interface;
 };
 
 struct wl_surface {
@@ -46,29 +54,18 @@ struct wl_surface {
 };
 
 static void
-wl_surface_get_interface(struct wl_client *client,
-			 struct wl_surface *surface,
-			 const char *interface, uint32_t id)
+wl_surface_attach(struct wl_client *client,
+		  struct wl_surface *surface, uint32_t name, 
+		  uint32_t width, uint32_t height, uint32_t stride)
 {
-	/* client sends a new object id, and an interface identifier
-	 * to name the object that implements the interface */
-	printf("surface::get_interface\n");
+	struct wl_compositor_interface *interface;
+
+	interface = client->display->compositor->interface;
+	interface->notify_surface_attach(client->display->compositor,
+					 surface, name, width, height, stride);
 }
 
-static const struct wl_argument get_interface_arguments[] = {
-	{ WL_ARGUMENT_STRING },
-	{ WL_ARGUMENT_NEW_ID }
-};
-
-static void
-wl_surface_post(struct wl_client *client,
-		struct wl_surface *surface, uint32_t name, 
-		uint32_t width, uint32_t height, uint32_t stride)
-{
-	printf("surface::post\n");
-}
-
-static const struct wl_argument post_arguments[] = {
+static const struct wl_argument attach_arguments[] = {
 	{ WL_ARGUMENT_UINT32 },
 	{ WL_ARGUMENT_UINT32 },
 	{ WL_ARGUMENT_UINT32 },
@@ -89,10 +86,8 @@ static const struct wl_argument update_arguments[] = {
 };
 
 static const struct wl_method surface_methods[] = {
-	{ "get_interface", wl_surface_get_interface,
-	  ARRAY_LENGTH(get_interface_arguments), get_interface_arguments },
-	{ "post", wl_surface_post,
-	  ARRAY_LENGTH(post_arguments), post_arguments }
+	{ "attach", wl_surface_attach,
+	  ARRAY_LENGTH(attach_arguments), attach_arguments }
 };
 
 static const struct wl_interface surface_interface = {
@@ -105,6 +100,7 @@ struct wl_surface *
 wl_surface_create(struct wl_display *display, uint32_t id)
 {
 	struct wl_surface *surface;
+	struct wl_compositor_interface *interface;
 
 	surface = malloc(sizeof *surface);
 	if (surface == NULL)
@@ -112,18 +108,37 @@ wl_surface_create(struct wl_display *display, uint32_t id)
 
 	surface->base.id = id;
 	surface->base.interface = &surface_interface;
-	/* doesn't create any pixel buffers, just the wl_surface
-	 * object.  the client allocates and attaches pixel buffers
-	 * itself and renders to them, then posts them using
-	 * wl_window_post. */
 
-	/* add to display list */
+	interface = display->compositor->interface;
+	interface->notify_surface_create(display->compositor, surface);
 
 	return surface;
 }
 
 static void
 wl_client_data(int fd, uint32_t mask, void *data);
+
+static int
+advertise_object(struct wl_client *client, struct wl_object *object)
+{
+	const struct wl_interface *interface;
+	uint32_t length, *p;
+
+	interface = object->interface;
+	p = (uint32_t *) (client->output.data + client->output.head);
+	length = strlen(interface->name);
+	*p++ = object->id;
+	*p++ = length;
+	memcpy(p, interface->name, length);
+	memset((char *) p + length, 0, -length & 3);
+	client->output.head += 8 + ((length + 3) & ~3);
+
+	wl_event_loop_update_source(client->display->loop, client->source,
+				    WL_EVENT_READABLE | WL_EVENT_WRITEABLE);
+
+
+	return 0;
+}
 
 struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
@@ -134,22 +149,13 @@ wl_client_create(struct wl_display *display, int fd)
 	if (client == NULL)
 		return NULL;
 
+	memset(client, 0, sizeof *client);
 	client->display = display;
-
 	client->source = wl_event_loop_add_fd(display->loop, fd,
-					      WL_EVENT_READABLE |
 					      WL_EVENT_READABLE,
 					      wl_client_data, client);
 
-	printf("new client: %p\n", client);
-
-	/* Send global objects to client in hand shake response, eg:
-	 *
-	 *   display: 0,
-	 *   glyph_cache: 1
-	 *   some other extension global object: 2
-	 *
-	 * etc */
+	advertise_object(client, &display->base);
 
 	return client;
 }
@@ -164,7 +170,7 @@ wl_client_destroy(struct wl_client *client)
 
 static void
 demarshal(struct wl_client *client, struct wl_object *target,
-	  const struct wl_method *method, uint32_t *data, int len)
+	  const struct wl_method *method, uint32_t *data)
 {
 	ffi_type *types[10];
 	ffi_cif cif;
@@ -198,11 +204,9 @@ demarshal(struct wl_client *client, struct wl_object *target,
 		case WL_ARGUMENT_UINT32:
 			types[i + 2] = &ffi_type_uint32;
 			values[i + 2].uint32 = *p;
-			printf("got uint32 (%d)\n", *p);
 			p++;
 			break;
 		case WL_ARGUMENT_STRING:
-			printf("got string\n");
 			types[i + 2] = &ffi_type_pointer;
 			/* FIXME */
 			values[i + 2].uint32 = *p++;
@@ -215,7 +219,6 @@ demarshal(struct wl_client *client, struct wl_object *target,
 			if (object->interface != method->arguments[i].data)
 				printf("wrong object type\n");
 			values[i + 2].object = object;
-			printf("got object (%d)\n", *p);
 			p++;
 			break;
 		case WL_ARGUMENT_NEW_ID:
@@ -224,7 +227,6 @@ demarshal(struct wl_client *client, struct wl_object *target,
 			object = wl_hash_lookup(&client->display->objects, *p);
 			if (object != NULL)
 				printf("object already exists (%d)\n", *p);
-			printf("got new_id (%d)\n", *p);
 			p++;
 			break;
 		default:
@@ -240,60 +242,93 @@ demarshal(struct wl_client *client, struct wl_object *target,
 }
 
 static void
-wl_client_data(int fd, uint32_t mask, void *data)
+wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t event)
 {
-	struct wl_client *client = data;
-	struct wl_object *object;
-	const struct wl_method *method;
-	char buffer[256];
+	const struct wl_interface *interface;
 	uint32_t *p;
-	int len;
 
-	if (mask & WL_EVENT_READABLE) {
-		len = read(fd, buffer, sizeof buffer);
-		if (len == 0) {
-			wl_client_destroy(client);
-		} else {
-			printf("got %d bytes from client %p\n",
-			       len, client);
-			if (len < 2 * sizeof *p)
-				/* read more... */
-				return;
+	interface = object->interface;
 
-			p = (uint32_t *) buffer;
-			object = wl_hash_lookup(&client->display->objects,
-						p[0]);
-			if (object == NULL) {
-				/* send error */
-				printf("invalid object\n");
-				return;
-			}
+	p = (void *) client->output.data + client->output.head;
+	p[0] = object->id;
+	p[1] = event | (8 << 16);
+	client->output.head += 8;
+	wl_event_loop_update_source(client->display->loop, client->source,
+				    WL_EVENT_READABLE | WL_EVENT_WRITEABLE);
+}
 
-			if (p[1] >= object->interface->method_count) {
-				/* send error */
-				printf("invalid method\n");
-				return;
-			}
+#define WL_DISPLAY_INVALID_OBJECT 0
+#define WL_DISPLAY_INVALID_METHOD 1
 
-			method = &object->interface->methods[p[1]];
-			printf("calling method %s on interface %s\n",
-			       method->name, object->interface->name);
-			demarshal(client, object, method, p + 2, len - 8);
+static void
+wl_client_process_input(struct wl_client *client)
+{
+	const struct wl_method *method;
+	struct wl_object *object;
+	uint32_t *p, opcode, size;
+
+	while (1) {
+		if (client->input.head - client->input.tail < 2 * sizeof *p)
+			break;
+
+		p = (uint32_t *) (client->input.data + client->input.tail);
+		opcode = p[1] & 0xffff;
+		size = p[1] >> 16;
+		if (client->input.head - client->input.tail < size)
+			break;
+
+		object = wl_hash_lookup(&client->display->objects,
+					p[0]);
+		if (object == NULL) {
+			wl_client_event(client, &client->display->base,
+					WL_DISPLAY_INVALID_OBJECT);
+			client->input.tail += size;
+			continue;
 		}
-	}
-
-	if (mask & WL_EVENT_WRITEABLE) {
+				
+		if (opcode >= object->interface->method_count) {
+			wl_client_event(client, &client->display->base,
+					WL_DISPLAY_INVALID_METHOD);
+			client->input.tail += size;
+			continue;
+		}
+				
+		method = &object->interface->methods[opcode];
+		demarshal(client, object, method, p + 2);
+		client->input.tail += size;
 	}
 }
 
 static void
-wl_display_get_interface(struct wl_client *client,
-			 struct wl_display *display,
-			 const char *interface, uint32_t id)
+wl_client_data(int fd, uint32_t mask, void *data)
 {
-	/* client sends a new object id, and an interface identifier
-	 * to name the object that implements the interface */
-	printf("display::get_interface\n");
+	struct wl_client *client = data;
+	int len;
+
+	if (mask & WL_EVENT_READABLE) {
+		len = read(fd, client->input.data, sizeof client->input.data);
+		if (len > 0) {
+			client->input.head += len;
+			wl_client_process_input(client);
+		} else if (len == 0 && errno == ECONNRESET) {
+			fprintf(stderr,
+				"read from client %p: %m (%d)\n",
+				client, errno);
+		} else {
+				wl_client_destroy(client);
+		}
+	}
+
+	if (mask & WL_EVENT_WRITEABLE) {
+		len = write(fd, client->output.data + client->output.tail,
+			    client->output.head - client->output.tail);
+		client->output.tail += len;
+
+		if (client->output.tail == client->output.head)
+			wl_event_loop_update_source(client->display->loop,
+						    client->source,
+						    WL_EVENT_READABLE);
+	}
 }
 
 static int
@@ -302,11 +337,10 @@ wl_display_create_surface(struct wl_client *client,
 {
 	struct wl_surface *surface;
 
-	printf("display::create_surface, client %p, display %p, new_id=%d\n",
-	       client, display, id);
-
 	surface = wl_surface_create(display, id);
 	wl_hash_insert(&display->objects, &surface->base);
+
+	/* FIXME: garbage collect client resources when client exits. */
 
 	return 0;
 }
@@ -316,14 +350,19 @@ static const struct wl_argument create_surface_arguments[] = {
 };
 
 static const struct wl_method display_methods[] = {
-	{ "get_interface", wl_display_get_interface,
-	  ARRAY_LENGTH(get_interface_arguments), get_interface_arguments },
 	{ "create_surface", wl_display_create_surface,
 	  ARRAY_LENGTH(create_surface_arguments), create_surface_arguments },
 };
 
+static const struct wl_event display_events[] = {
+	{ "invalid_object" },
+	{ "invalid_method" },
+};
+
 static const struct wl_interface display_interface = {
-	"display", 1, ARRAY_LENGTH(display_methods), display_methods,
+	"display", 1,
+	ARRAY_LENGTH(display_methods), display_methods,
+	ARRAY_LENGTH(display_events), display_events,
 };
 
 struct wl_display *
@@ -346,6 +385,13 @@ wl_display_create(void)
 	wl_hash_insert(&display->objects, &display->base);
 
 	return display;		
+}
+
+void
+wl_display_set_compositor(struct wl_display *display,
+			  struct wl_compositor *compositor)
+{
+	display->compositor = compositor;
 }
 
 void
@@ -397,7 +443,8 @@ wl_display_add_socket(struct wl_display *display)
 	if (listen(sock, 1) < 0)
 		return -1;
 
-	wl_event_loop_add_fd(display->loop, sock, WL_EVENT_READABLE,
+	wl_event_loop_add_fd(display->loop, sock,
+			     WL_EVENT_READABLE,
 			     socket_data, display);
 
 	return 0;
@@ -407,6 +454,7 @@ wl_display_add_socket(struct wl_display *display)
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
+	struct wl_compositor *compositor;
 
 	display = wl_display_create();
 
@@ -414,6 +462,9 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}
+
+	compositor = wl_compositor_create();
+	wl_display_set_compositor(display, compositor);
 
 	printf("wayland online, display is %p\n", display);
 

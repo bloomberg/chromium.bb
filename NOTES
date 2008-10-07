@@ -33,6 +33,10 @@ Could be a "shell" for launching gdm X server, user session servers,
 safe mode xservers, graphics text console.  From gdm, we could also
 launch a rdp session, solid ice sessions.  
 
+All surface commands (copy, attach, map=set quads) are buffered until
+the client sends a commit command, which executes everything
+atomically...
+
 
 ISSUES:
 
@@ -56,7 +60,21 @@ synaptics, 3-button emulation, xkb, scim
 
 changing screen resolution, adding monitors.
 
+
 RMI
+
+The wayland protocol is a async object oriented protocol.  All
+requests are method invocations on some object.  The request include
+an object id that uniquely identifies an object on the server.  Each
+object implements an interface and the requests include an opcode that
+identifies which method in the interface to invoke.
+
+The server sends back events to the client, each event is emitted from
+an object.  Events can be error conditions.  The event includes the
+object id and the event opcode, from which the client can determine
+the type of event.  Events are generated both in repsonse to a request
+(in which case the requet and the event constitutes a round trip) or
+spontanously when the server state changes.
 
 the get_interface method is called on an object to get an object
 handle that implements the specified interface.
