@@ -1,23 +1,17 @@
 #ifndef _WAYLAND_CLIENT_H
 #define _WAYLAND_CLIENT_H
 
-struct wl_connection;
+#include "connection.h"
+
 struct wl_display;
 struct wl_surface;
 
-struct wl_connection *
-wl_connection_create(const char *address);
-void
-wl_connection_destroy(struct wl_connection *connection);
-int
-wl_connection_get_fd(struct wl_connection *connection);
-void
-wl_connection_iterate(struct wl_connection *connection);
-int
-wl_connection_flush(struct wl_connection *connection);
+struct wl_display *wl_display_create(const char *address,
+				     wl_connection_update_func_t update, void *data);
+void wl_display_destroy(struct wl_display *display);
+int wl_display_get_fd(struct wl_display *display);
+void wl_display_iterate(struct wl_display *display, uint32_t mask);
 
-struct wl_display *
-wl_connection_get_display(struct wl_connection *connection);
 struct wl_surface *
 wl_display_create_surface(struct wl_display *display);
 

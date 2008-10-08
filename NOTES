@@ -60,6 +60,10 @@ synaptics, 3-button emulation, xkb, scim
 
 changing screen resolution, adding monitors.
 
+What to do when protocol out buffer fills up?  Just block on write
+would work I guess.  Clients are supposed to throttle using the bread
+crumb events, so we shouldn't get into this situation.
+
 
 RMI
 

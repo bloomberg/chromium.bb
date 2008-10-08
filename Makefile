@@ -8,7 +8,7 @@ wayland_objs = wayland.o event-loop.o connection.o hash.o compositor.o
 wayland : $(wayland_objs)
 	gcc -o $@ $(wayland_objs) $(LDLIBS)
 
-libwayland_objs = wayland-client.o
+libwayland_objs = wayland-client.o connection.o
 
 libwayland.so : $(libwayland_objs)
 	gcc -o $@ $(libwayland_objs) -shared

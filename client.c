@@ -4,6 +4,7 @@
 #include <string.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -92,15 +93,30 @@ draw_stuff(int width, int height)
 	return surface;
 }
 
+static int
+connection_update(struct wl_connection *connection,
+		  uint32_t mask, void *data)
+{
+	struct pollfd *p = data;
+
+	p->events = 0;
+	if (mask & WL_CONNECTION_READABLE)
+		p->events |= POLLIN;
+	if (mask & WL_CONNECTION_WRITABLE)
+		p->events |= POLLOUT;
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
-	struct wl_connection *connection;
 	struct wl_display *display;
 	struct wl_surface *surface;
 	const int x = 400, y = 200, width = 300, height = 300;
-	int fd;
-	uint32_t name;
+	int fd, i, ret;
+	uint32_t name, mask;
 	cairo_surface_t *s;
+	struct pollfd p[1];
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -108,13 +124,13 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	connection = wl_connection_create(socket_name);
-	if (connection == NULL) {
-		fprintf(stderr, "failed to create connection: %m\n");
+	display = wl_display_create(socket_name,
+				    connection_update, &p[0]);
+	if (display == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-
-	display = wl_connection_get_display(connection);
+	p[0].fd = wl_display_get_fd(display);
 
 	surface = wl_display_create_surface(display);
 
@@ -124,13 +140,22 @@ int main(int argc, char *argv[])
 	wl_surface_attach(surface, name, width, height,
 			  cairo_image_surface_get_stride(s));
 
-	wl_surface_map(surface, x, y, width, height);
-	if (wl_connection_flush(connection) < 0) {
-		fprintf(stderr, "flush error: %m\n");
-		return -1;
-	}
+	i = 0;
+	while (ret = poll(p, 1, 40), ret >= 0) {
+		if (ret == 0) {
+			wl_surface_map(surface, x + i, y + i, width, height);
+			i++;
+			continue;
+		}
 
-	wl_connection_iterate(connection);
+		mask = 0;
+		if (p[0].revents & POLLIN)
+			mask |= WL_CONNECTION_READABLE;
+		if (p[0].revents & POLLOUT)
+			mask |= WL_CONNECTION_WRITABLE;
+		if (mask)
+			wl_display_iterate(display, mask);
+	}
 
 	return 0;
 }

@@ -10,6 +10,9 @@
 #include <ctype.h>
 #include <sys/poll.h>
 
+#include "connection.h"
+#include "wayland-client.h"
+
 static const char socket_name[] = "\0wayland";
 
 struct wl_buffer {
@@ -17,45 +20,41 @@ struct wl_buffer {
 	int head, tail;
 };
 
-struct wl_connection {
-	int fd;
-	struct wl_buffer in, out;
-	struct wl_display *display;
-	uint32_t id;
-};
-
 struct wl_proxy {
-	struct wl_connection *connection;
+	struct wl_display *display;
 	uint32_t id;
 };
 
 struct wl_display {
 	struct wl_proxy proxy;
+	struct wl_connection *connection;
+	int fd;
+	uint32_t id;
 };
 
 struct wl_surface {
 	struct wl_proxy proxy;
 };
 
-struct wl_connection *
-wl_connection_create(const char *address)
+struct wl_display *
+wl_display_create(const char *address,
+		  wl_connection_update_func_t update, void *data)
 {
-	struct wl_connection *connection;
 	struct wl_display *display;
 	struct sockaddr_un name;
 	socklen_t size;
 	char buffer[256];
 	uint32_t id, length;
 
-	connection = malloc(sizeof *connection);
-	if (connection == NULL)
+	display = malloc(sizeof *display);
+	if (display == NULL)
 		return NULL;
 
-	memset(connection, 0, sizeof *connection);
-	connection->id = 256; /* Need to get our id-range. */
-	connection->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
-	if (connection->fd < 0) {
-		free(connection);
+	memset(display, 0, sizeof *display);
+	display->id = 256; /* Need to get our id-range. */
+	display->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
+	if (display->fd < 0) {
+		free(display);
 		return NULL;
 	}
 
@@ -64,76 +63,71 @@ wl_connection_create(const char *address)
 
 	size = offsetof (struct sockaddr_un, sun_path) + sizeof socket_name;
 
-	if (connect (connection->fd, (struct sockaddr *) &name, size) < 0) {
-		close(connection->fd);
-		free(connection);
+	if (connect(display->fd, (struct sockaddr *) &name, size) < 0) {
+		close(display->fd);
+		free(display);
 		return NULL;
 	}
 
 	/* FIXME: actually discover advertised objects here. */
-	read(connection->fd, &id, sizeof id);
-	read(connection->fd, &length, sizeof length);
-	read(connection->fd, buffer, (length + 3) & ~3);
+	read(display->fd, &id, sizeof id);
+	read(display->fd, &length, sizeof length);
+	read(display->fd, buffer, (length + 3) & ~3);
 
-	display = malloc(sizeof *display);
-	display->proxy.connection = connection;
+	display->proxy.display = display;
 	display->proxy.id = id;
-	connection->display = display;
 
-	return connection;
+	display->connection = wl_connection_create(display->fd,
+						   update, data);
+
+	return display;
 }
 
 void
-wl_connection_destroy(struct wl_connection *connection)
+wl_display_destroy(struct wl_display *display)
 {
-	close(connection->fd);
-	free(connection->display);
-	free(connection);
+	wl_connection_destroy(display->connection);
+	close(display->fd);
+	free(display);
 }
 
 int
-wl_connection_get_fd(struct wl_connection *connection)
+wl_display_get_fd(struct wl_display *display)
 {
-	return connection->fd;
+	return display->fd;
 }
 
 static void
 handle_event(struct wl_connection *connection)
 {
-	struct wl_buffer *b;
-	uint32_t *p, opcode, size;
+	uint32_t p[2], opcode, size;
 
-	b = &connection->in;
-	p = (uint32_t *) (b->data + b->tail);
+	wl_connection_copy(connection, p, sizeof p);
 	opcode = p[1] & 0xffff;
 	size = p[1] >> 16;
 	printf("signal from object %d, opcode %d, size %d\n",
 	       p[0], opcode, size);
-	b->tail += size;
+	wl_connection_consume(connection, sizeof p);
 }
 
 void
-wl_connection_iterate(struct wl_connection *connection)
+wl_display_iterate(struct wl_display *display, uint32_t mask)
 {
-	struct wl_buffer *b;
-	uint32_t *p, opcode, size;
+	uint32_t p[2], opcode, size;
 	int len;
 
-	b = &connection->in;
-	len = read(connection->fd, b->data + b->head, sizeof b->data);
-	b->head += len;
+	len = wl_connection_data(display->connection, mask);
 	while (len > 0) {
-
-		if (b->head - b->tail < 8)
+		if (len < sizeof p)
 			break;
 		
-		p = (uint32_t *) (b->data + b->tail);
+		wl_connection_copy(display->connection, p, sizeof p);
 		opcode = p[1] & 0xffff;
 		size = p[1] >> 16;
-		if (b->head - b->tail < size)
+		if (len < size)
 			break;
 
-		handle_event(connection);
+		handle_event(display->connection);
 	}
 
 	if (len < 0) {
@@ -142,52 +136,25 @@ wl_connection_iterate(struct wl_connection *connection)
 	}
 }
 
-int
-wl_connection_flush(struct wl_connection *connection)
-{
-	struct wl_buffer *b;
-	int len;
-
-	b = &connection->out;
-	if (b->head == b->tail)
-		return 0;
-
-	len = write(connection->fd, b->data + b->tail, b->head - b->tail);
-	b->tail += len;
-
-	return len;
-};
-
-struct wl_display *
-wl_connection_get_display(struct wl_connection *connection)
-{
-	return connection->display;
-}
-
 #define WL_DISPLAY_CREATE_SURFACE 0
 
 struct wl_surface *
 wl_display_create_surface(struct wl_display *display)
 {
 	struct wl_surface *surface;
-	struct wl_connection *connection;
 	uint32_t request[3];
 
 	surface = malloc(sizeof *surface);
 	if (surface == NULL)
 		return NULL;
 
-	connection = display->proxy.connection;
-	surface->proxy.id = connection->id++;
-	surface->proxy.connection = connection;
+	surface->proxy.id = display->id++;
+	surface->proxy.display = display;
 
 	request[0] = display->proxy.id;
 	request[1] = WL_DISPLAY_CREATE_SURFACE | ((sizeof request) << 16);
 	request[2] = surface->proxy.id;
-
-	memcpy(connection->out.data + connection->out.head,
-	       request, sizeof request);
-	connection->out.head += sizeof request;
+	wl_connection_write(display->connection, request, sizeof request);
 
 	return surface;
 }
@@ -199,22 +166,18 @@ wl_display_create_surface(struct wl_display *display)
 void wl_surface_destroy(struct wl_surface *surface)
 {
 	uint32_t request[2];
-	struct wl_connection *connection;
 
 	request[0] = surface->proxy.id;
 	request[1] = WL_SURFACE_DESTROY | ((sizeof request) << 16);
 
-	connection = surface->proxy.connection;
-	memcpy(connection->out.data + connection->out.head,
-	       request, sizeof request);
-	connection->out.head += sizeof request;
+	wl_connection_write(surface->proxy.display->connection,
+			    request, sizeof request);
 }
 
 void wl_surface_attach(struct wl_surface *surface,
 		       uint32_t name, int width, int height, int stride)
 {
 	uint32_t request[6];
-	struct wl_connection *connection;
 
 	request[0] = surface->proxy.id;
 	request[1] = WL_SURFACE_ATTACH | ((sizeof request) << 16);
@@ -223,10 +186,8 @@ void wl_surface_attach(struct wl_surface *surface,
 	request[4] = height;
 	request[5] = stride;
 
-	connection = surface->proxy.connection;
-	memcpy(connection->out.data + connection->out.head,
-	       request, sizeof request);
-	connection->out.head += sizeof request;
+	wl_connection_write(surface->proxy.display->connection,
+			    request, sizeof request);
 }
 
 
@@ -234,7 +195,6 @@ void wl_surface_map(struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	uint32_t request[6];
-	struct wl_connection *connection;
 
 	request[0] = surface->proxy.id;
 	request[1] = WL_SURFACE_MAP | ((sizeof request) << 16);
@@ -243,8 +203,6 @@ void wl_surface_map(struct wl_surface *surface,
 	request[4] = width;
 	request[5] = height;
 
-	connection = surface->proxy.connection;
-	memcpy(connection->out.data + connection->out.head,
-	       request, sizeof request);
-	connection->out.head += sizeof request;
+	wl_connection_write(surface->proxy.display->connection,
+			    request, sizeof request);
 }
