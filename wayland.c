@@ -7,22 +7,18 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/uio.h>
 #include <ffi.h>
+
 #include "wayland.h"
+#include "connection.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 struct wl_region {
 };
 
-struct wl_buffer {
-	char data[4096];
-	int head, tail;
-};
-
 struct wl_client {
-	struct wl_buffer in, out;
+	struct wl_connection *connection;
 	struct wl_event_source *source;
 	struct wl_display *display;
 };
@@ -156,83 +152,8 @@ wl_surface_get_data(struct wl_surface *surface)
 	return surface->compositor_data;
 }
 
-static void
-wl_client_data(int fd, uint32_t mask, void *data);
-static void
-wl_client_write(struct wl_client *client, const void *data, size_t count);
-
-static void
-advertise_object(struct wl_client *client, struct wl_object *object)
-{
-	const struct wl_interface *interface;
-	static const char pad[4];
-	uint32_t length, p[2];
-
-	interface = object->interface;
-	length = strlen(interface->name);
-	p[0] = object->id;
-	p[1] = length;
-	wl_client_write(client, p, sizeof p);
-	wl_client_write(client, interface->name, length);
-	wl_client_write(client, pad, -length & 3);
-}
-
-struct wl_client *
-wl_client_create(struct wl_display *display, int fd)
-{
-	struct wl_client *client;
-
-	client = malloc(sizeof *client);
-	if (client == NULL)
-		return NULL;
-
-	memset(client, 0, sizeof *client);
-	client->display = display;
-	client->source = wl_event_loop_add_fd(display->loop, fd,
-					      WL_EVENT_READABLE,
-					      wl_client_data, client);
-
-	advertise_object(client, &display->base);
-
-	return client;
-}
-
 void
-wl_client_destroy(struct wl_client *client)
-{
-	printf("disconnect from client %p\n", client);
-	wl_event_loop_remove_source(client->display->loop, client->source);
-	free(client);
-}
-
-static void
-wl_client_copy(struct wl_client *client, void *data, size_t size)
-{
-	int tail, rest;
-
-	tail = client->in.tail;
-	if (tail + size <= ARRAY_LENGTH(client->in.data)) {
-		memcpy(data, client->in.data + tail, size);
-	} else { 
-		rest = ARRAY_LENGTH(client->in.data) - tail;
-		memcpy(data, client->in.data + tail, rest);
-		memcpy(data + rest, client->in.data, size - rest);
-	}
-}
-
-static void
-wl_client_consume(struct wl_client *client, size_t size)
-{
-	int tail, rest;
-
-	tail = client->in.tail;
-	if (tail + size <= ARRAY_LENGTH(client->in.data)) {
-		client->in.tail += size;
-	} else { 
-		rest = ARRAY_LENGTH(client->in.data) - tail;
-		client->in.tail = size - rest;
-	}
-}
+wl_client_destroy(struct wl_client *client);
 
 static void
 wl_client_demarshal(struct wl_client *client, struct wl_object *target,
@@ -270,7 +191,7 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 	values[1].object = target;
 	args[1] =  &values[1];
 
-	wl_client_copy(client, data, size);
+	wl_connection_copy(client->connection, data, size);
 	p = &data[2];
 	for (i = 0; i < method->argument_count; i++) {
 		switch (method->arguments[i].type) {
@@ -315,31 +236,6 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 }
 
 static void
-wl_client_write(struct wl_client *client, const void *data, size_t count)
-{
-	size_t size;
-	int head;
-
-	head = client->out.head;
-	if (head + count <= ARRAY_LENGTH(client->out.data)) {
-		memcpy(client->out.data + head, data, count);
-		client->out.head += count;
-	} else {
-		size = ARRAY_LENGTH(client->out.data) - head;
-		memcpy(client->out.data + head, data, size);
-		memcpy(client->out.data, data + size, count - size);
-		client->out.head = count - size;
-	}
-
-	if (client->out.tail == head)
-		wl_event_loop_update_source(client->display->loop,
-					    client->source,
-					    WL_EVENT_READABLE |
-					    WL_EVENT_WRITEABLE);
-}
-
-
-static void
 wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t event)
 {
 	const struct wl_interface *interface;
@@ -349,31 +245,39 @@ wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t eve
 
 	p[0] = object->id;
 	p[1] = event | (8 << 16);
-	wl_client_write(client, p, sizeof p);
+	wl_connection_write(client->connection, p, sizeof p);
 }
 
 #define WL_DISPLAY_INVALID_OBJECT 0
 #define WL_DISPLAY_INVALID_METHOD 1
 
 static void
-wl_client_process_input(struct wl_client *client)
+wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
+	struct wl_client *client = data;
+	struct wl_connection *connection = client->connection;
 	const struct wl_method *method;
 	struct wl_object *object;
-	uint32_t p[2], opcode, size, available;
+	uint32_t p[2], opcode, size;
+	uint32_t cmask = 0;
+	int len;
 
-	/* We know we have data in the buffer at this point, so if
-	 * head equals tail, it means the buffer is full. */
+	if (mask & WL_EVENT_READABLE)
+		cmask |= WL_CONNECTION_READABLE;
+	if (mask & WL_EVENT_WRITEABLE)
+		cmask |= WL_CONNECTION_WRITABLE;
 
-	available = client->in.head - client->in.tail;
-	if (available <= 0)
-		available = sizeof client->in.data;
+	len = wl_connection_data(connection, cmask);
+	if (len < 0) {
+		wl_client_destroy(client);
+		return;
+	}
 
-	while (available > sizeof p) {
-		wl_client_copy(client, p, sizeof p);
+	while (len > sizeof p) {
+		wl_connection_copy(connection, p, sizeof p);
 		opcode = p[1] & 0xffff;
 		size = p[1] >> 16;
-		if (available < size)
+		if (len < size)
 			break;
 
 		object = wl_hash_lookup(&client->display->objects,
@@ -381,99 +285,88 @@ wl_client_process_input(struct wl_client *client)
 		if (object == NULL) {
 			wl_client_event(client, &client->display->base,
 					WL_DISPLAY_INVALID_OBJECT);
-			wl_client_consume(client, size);
-			available -= size;
+			wl_connection_consume(connection, size);
+			len -= size;
 			continue;
 		}
 				
 		if (opcode >= object->interface->method_count) {
 			wl_client_event(client, &client->display->base,
 					WL_DISPLAY_INVALID_METHOD);
-			wl_client_consume(client, size);
-			available -= size;
+			wl_connection_consume(connection, size);
+			len -= size;
 			continue;
 		}
 				
 		method = &object->interface->methods[opcode];
 		wl_client_demarshal(client, object, method, size);
-		wl_client_consume(client, size);
-		available -= size;
+		wl_connection_consume(connection, size);
+		len -= size;
 	}
 }
 
-static void
-wl_client_data(int fd, uint32_t mask, void *data)
+static int
+wl_client_connection_update(struct wl_connection *connection,
+			    uint32_t mask, void *data)
 {
 	struct wl_client *client = data;
-	struct iovec iov[2];
-	int len, head, tail, count, size;
+	uint32_t emask = 0;
 
-	if (mask & WL_EVENT_READABLE) {
-		head = client->in.head;
-		if (head < client->in.tail) {
-			iov[0].iov_base = client->in.data + head;
-			iov[0].iov_len = client->in.tail - head;
-			count = 1;
-		} else {
-			size = ARRAY_LENGTH(client->out.data) - head;
-			iov[0].iov_base = client->in.data + head;
-			iov[0].iov_len = size;
-			iov[1].iov_base = client->in.data;
-			iov[1].iov_len = client->in.tail;
-			count = 2;
-		}
-		len = readv(fd, iov, count);
-		if (len < 0) {
-			fprintf(stderr,
-				"read error from client %p: %m (%d)\n",
-				client, errno);
-			wl_client_destroy(client);
-		} else if (len == 0) {
-			wl_client_destroy(client);
-		} else if (head + len <= ARRAY_LENGTH(client->in.data)) {
-			client->in.head += len;
-		} else {
-			client->in.head =
-				head + len - ARRAY_LENGTH(client->in.data);
-		}
+	if (mask & WL_CONNECTION_READABLE)
+		emask |= WL_EVENT_READABLE;
+	if (mask & WL_CONNECTION_WRITABLE)
+		emask |= WL_EVENT_WRITEABLE;
 
-		if (client->in.head != client->in.tail)
-			wl_client_process_input(client);
-	}
+	return wl_event_loop_update_source(client->display->loop,
+					   client->source, mask);
+}
 
-	if (mask & WL_EVENT_WRITEABLE) {
-		tail = client->out.tail;
-		if (tail < client->out.head) {
-			iov[0].iov_base = client->out.data + tail;
-			iov[0].iov_len = client->out.head - tail;
-			count = 1;
-		} else {
-			size = ARRAY_LENGTH(client->out.data) - tail;
-			iov[0].iov_base = client->out.data + tail;
-			iov[0].iov_len = size;
-			iov[1].iov_base = client->out.data;
-			iov[1].iov_len = client->out.head;
-			count = 2;
-		}
-		len = writev(fd, iov, count);
-		if (len < 0) {
-			fprintf(stderr, "write error for client %p: %m\n", client);
-			wl_client_destroy(client);
-		} else if (tail + len <= ARRAY_LENGTH(client->out.data)) {
-			client->out.tail += len;
-		} else {
-			client->out.tail =
-				tail + len - ARRAY_LENGTH(client->out.data);
-		}
+static void
+advertise_object(struct wl_client *client, struct wl_object *object)
+{
+	const struct wl_interface *interface;
+	static const char pad[4];
+	uint32_t length, p[2];
 
-		/* We just took data out of the buffer, so at this
-		 * point if head equals tail, the buffer is empty. */
+	interface = object->interface;
+	length = strlen(interface->name);
+	p[0] = object->id;
+	p[1] = length;
+	wl_connection_write(client->connection, p, sizeof p);
+	wl_connection_write(client->connection, interface->name, length);
+	wl_connection_write(client->connection, pad, -length & 3);
+}
 
-		if (client->out.tail == client->out.head)
-			wl_event_loop_update_source(client->display->loop,
-						    client->source,
-						    WL_EVENT_READABLE);
-	}
+struct wl_client *
+wl_client_create(struct wl_display *display, int fd)
+{
+	struct wl_client *client;
+
+	client = malloc(sizeof *client);
+	if (client == NULL)
+		return NULL;
+
+	memset(client, 0, sizeof *client);
+	client->display = display;
+	client->source = wl_event_loop_add_fd(display->loop, fd,
+					      WL_EVENT_READABLE,
+					      wl_client_connection_data, client);
+	client->connection = wl_connection_create(fd,
+						  wl_client_connection_update, 
+						  client);
+
+	advertise_object(client, &display->base);
+
+	return client;
+}
+
+void
+wl_client_destroy(struct wl_client *client)
+{
+	printf("disconnect from client %p\n", client);
+	wl_event_loop_remove_source(client->display->loop, client->source);
+	wl_connection_destroy(client->connection);
+	free(client);
 }
 
 static int
