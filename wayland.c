@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <sys/uio.h>
 #include <ffi.h>
 #include "wayland.h"
 
@@ -21,7 +22,7 @@ struct wl_buffer {
 };
 
 struct wl_client {
-	struct wl_buffer input, output;
+	struct wl_buffer in, out;
 	struct wl_event_source *source;
 	struct wl_display *display;
 };
@@ -157,27 +158,23 @@ wl_surface_get_data(struct wl_surface *surface)
 
 static void
 wl_client_data(int fd, uint32_t mask, void *data);
+static void
+wl_client_write(struct wl_client *client, const void *data, size_t count);
 
-static int
+static void
 advertise_object(struct wl_client *client, struct wl_object *object)
 {
 	const struct wl_interface *interface;
-	uint32_t length, *p;
+	static const char pad[4];
+	uint32_t length, p[2];
 
 	interface = object->interface;
-	p = (uint32_t *) (client->output.data + client->output.head);
 	length = strlen(interface->name);
-	*p++ = object->id;
-	*p++ = length;
-	memcpy(p, interface->name, length);
-	memset((char *) p + length, 0, -length & 3);
-	client->output.head += 8 + ((length + 3) & ~3);
-
-	wl_event_loop_update_source(client->display->loop, client->source,
-				    WL_EVENT_READABLE | WL_EVENT_WRITEABLE);
-
-
-	return 0;
+	p[0] = object->id;
+	p[1] = length;
+	wl_client_write(client, p, sizeof p);
+	wl_client_write(client, interface->name, length);
+	wl_client_write(client, pad, -length & 3);
 }
 
 struct wl_client *
@@ -209,8 +206,37 @@ wl_client_destroy(struct wl_client *client)
 }
 
 static void
-demarshal(struct wl_client *client, struct wl_object *target,
-	  const struct wl_method *method, uint32_t *data)
+wl_client_copy(struct wl_client *client, void *data, size_t size)
+{
+	int tail, rest;
+
+	tail = client->in.tail;
+	if (tail + size <= ARRAY_LENGTH(client->in.data)) {
+		memcpy(data, client->in.data + tail, size);
+	} else { 
+		rest = ARRAY_LENGTH(client->in.data) - tail;
+		memcpy(data, client->in.data + tail, rest);
+		memcpy(data + rest, client->in.data, size - rest);
+	}
+}
+
+static void
+wl_client_consume(struct wl_client *client, size_t size)
+{
+	int tail, rest;
+
+	tail = client->in.tail;
+	if (tail + size <= ARRAY_LENGTH(client->in.data)) {
+		client->in.tail += size;
+	} else { 
+		rest = ARRAY_LENGTH(client->in.data) - tail;
+		client->in.tail = size - rest;
+	}
+}
+
+static void
+wl_client_demarshal(struct wl_client *client, struct wl_object *target,
+		    const struct wl_method *method, size_t size)
 {
 	ffi_type *types[10];
 	ffi_cif cif;
@@ -224,9 +250,15 @@ demarshal(struct wl_client *client, struct wl_object *target,
 	} values[10];
 	void *args[10];
 	struct wl_object *object;
+	uint32_t data[64];
 
 	if (method->argument_count > ARRAY_LENGTH(types)) {
 		printf("too many args (%d)\n", method->argument_count);
+		return;
+	}
+
+	if (sizeof data < size) {
+		printf("request too big, should malloc tmp buffer here\n");
 		return;
 	}
 
@@ -238,7 +270,8 @@ demarshal(struct wl_client *client, struct wl_object *target,
 	values[1].object = target;
 	args[1] =  &values[1];
 
-	p = data;
+	wl_client_copy(client, data, size);
+	p = &data[2];
 	for (i = 0; i < method->argument_count; i++) {
 		switch (method->arguments[i].type) {
 		case WL_ARGUMENT_UINT32:
@@ -282,19 +315,41 @@ demarshal(struct wl_client *client, struct wl_object *target,
 }
 
 static void
+wl_client_write(struct wl_client *client, const void *data, size_t count)
+{
+	size_t size;
+	int head;
+
+	head = client->out.head;
+	if (head + count <= ARRAY_LENGTH(client->out.data)) {
+		memcpy(client->out.data + head, data, count);
+		client->out.head += count;
+	} else {
+		size = ARRAY_LENGTH(client->out.data) - head;
+		memcpy(client->out.data + head, data, size);
+		memcpy(client->out.data, data + size, count - size);
+		client->out.head = count - size;
+	}
+
+	if (client->out.tail == head)
+		wl_event_loop_update_source(client->display->loop,
+					    client->source,
+					    WL_EVENT_READABLE |
+					    WL_EVENT_WRITEABLE);
+}
+
+
+static void
 wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t event)
 {
 	const struct wl_interface *interface;
-	uint32_t *p;
+	uint32_t p[2];
 
 	interface = object->interface;
 
-	p = (void *) client->output.data + client->output.head;
 	p[0] = object->id;
 	p[1] = event | (8 << 16);
-	client->output.head += 8;
-	wl_event_loop_update_source(client->display->loop, client->source,
-				    WL_EVENT_READABLE | WL_EVENT_WRITEABLE);
+	wl_client_write(client, p, sizeof p);
 }
 
 #define WL_DISPLAY_INVALID_OBJECT 0
@@ -305,16 +360,20 @@ wl_client_process_input(struct wl_client *client)
 {
 	const struct wl_method *method;
 	struct wl_object *object;
-	uint32_t *p, opcode, size;
+	uint32_t p[2], opcode, size, available;
 
-	while (1) {
-		if (client->input.head - client->input.tail < 2 * sizeof *p)
-			break;
+	/* We know we have data in the buffer at this point, so if
+	 * head equals tail, it means the buffer is full. */
 
-		p = (uint32_t *) (client->input.data + client->input.tail);
+	available = client->in.head - client->in.tail;
+	if (available <= 0)
+		available = sizeof client->in.data;
+
+	while (available > sizeof p) {
+		wl_client_copy(client, p, sizeof p);
 		opcode = p[1] & 0xffff;
 		size = p[1] >> 16;
-		if (client->input.head - client->input.tail < size)
+		if (available < size)
 			break;
 
 		object = wl_hash_lookup(&client->display->objects,
@@ -322,20 +381,23 @@ wl_client_process_input(struct wl_client *client)
 		if (object == NULL) {
 			wl_client_event(client, &client->display->base,
 					WL_DISPLAY_INVALID_OBJECT);
-			client->input.tail += size;
+			wl_client_consume(client, size);
+			available -= size;
 			continue;
 		}
 				
 		if (opcode >= object->interface->method_count) {
 			wl_client_event(client, &client->display->base,
 					WL_DISPLAY_INVALID_METHOD);
-			client->input.tail += size;
+			wl_client_consume(client, size);
+			available -= size;
 			continue;
 		}
 				
 		method = &object->interface->methods[opcode];
-		demarshal(client, object, method, p + 2);
-		client->input.tail += size;
+		wl_client_demarshal(client, object, method, size);
+		wl_client_consume(client, size);
+		available -= size;
 	}
 }
 
@@ -343,28 +405,71 @@ static void
 wl_client_data(int fd, uint32_t mask, void *data)
 {
 	struct wl_client *client = data;
-	int len;
+	struct iovec iov[2];
+	int len, head, tail, count, size;
 
 	if (mask & WL_EVENT_READABLE) {
-		len = read(fd, client->input.data, sizeof client->input.data);
-		if (len > 0) {
-			client->input.head += len;
-			wl_client_process_input(client);
-		} else if (len == 0 && errno == ECONNRESET) {
-			fprintf(stderr,
-				"read from client %p: %m (%d)\n",
-				client, errno);
+		head = client->in.head;
+		if (head < client->in.tail) {
+			iov[0].iov_base = client->in.data + head;
+			iov[0].iov_len = client->in.tail - head;
+			count = 1;
 		} else {
-				wl_client_destroy(client);
+			size = ARRAY_LENGTH(client->out.data) - head;
+			iov[0].iov_base = client->in.data + head;
+			iov[0].iov_len = size;
+			iov[1].iov_base = client->in.data;
+			iov[1].iov_len = client->in.tail;
+			count = 2;
 		}
+		len = readv(fd, iov, count);
+		if (len < 0) {
+			fprintf(stderr,
+				"read error from client %p: %m (%d)\n",
+				client, errno);
+			wl_client_destroy(client);
+		} else if (len == 0) {
+			wl_client_destroy(client);
+		} else if (head + len <= ARRAY_LENGTH(client->in.data)) {
+			client->in.head += len;
+		} else {
+			client->in.head =
+				head + len - ARRAY_LENGTH(client->in.data);
+		}
+
+		if (client->in.head != client->in.tail)
+			wl_client_process_input(client);
 	}
 
 	if (mask & WL_EVENT_WRITEABLE) {
-		len = write(fd, client->output.data + client->output.tail,
-			    client->output.head - client->output.tail);
-		client->output.tail += len;
+		tail = client->out.tail;
+		if (tail < client->out.head) {
+			iov[0].iov_base = client->out.data + tail;
+			iov[0].iov_len = client->out.head - tail;
+			count = 1;
+		} else {
+			size = ARRAY_LENGTH(client->out.data) - tail;
+			iov[0].iov_base = client->out.data + tail;
+			iov[0].iov_len = size;
+			iov[1].iov_base = client->out.data;
+			iov[1].iov_len = client->out.head;
+			count = 2;
+		}
+		len = writev(fd, iov, count);
+		if (len < 0) {
+			fprintf(stderr, "write error for client %p: %m\n", client);
+			wl_client_destroy(client);
+		} else if (tail + len <= ARRAY_LENGTH(client->out.data)) {
+			client->out.tail += len;
+		} else {
+			client->out.tail =
+				tail + len - ARRAY_LENGTH(client->out.data);
+		}
 
-		if (client->output.tail == client->output.head)
+		/* We just took data out of the buffer, so at this
+		 * point if head equals tail, the buffer is empty. */
+
+		if (client->out.tail == client->out.head)
 			wl_event_loop_update_source(client->display->loop,
 						    client->source,
 						    WL_EVENT_READABLE);
