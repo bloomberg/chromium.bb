@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct wl_surface *surface;
-	const int x = 400, y = 200, width = 300, height = 300;
+	const int x = 200, y = 100, width = 300, height = 300;
 	int fd, i, ret;
 	uint32_t name, mask;
 	cairo_surface_t *s;
@@ -141,9 +141,12 @@ int main(int argc, char *argv[])
 			  cairo_image_surface_get_stride(s));
 
 	i = 0;
-	while (ret = poll(p, 1, 40), ret >= 0) {
+	while (ret = poll(p, 1, 20), ret >= 0) {
 		if (ret == 0) {
-			wl_surface_map(surface, x + i, y + i, width, height);
+			wl_surface_map(surface, 
+				       x + cos(i / 10.0) * 50,
+				       y + sin(i / 10.0) * 50,
+				       width, height);
 			i++;
 			continue;
 		}
