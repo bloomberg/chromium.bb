@@ -256,8 +256,10 @@ _fence_emit_internal(dri_bufmgr_fake *bufmgr_fake)
    struct drm_i915_irq_emit ie;
    int ret, seq = 1;
 
-   if (bufmgr_fake->fence_emit != NULL)
-      return bufmgr_fake->fence_emit(bufmgr_fake->fence_priv);
+   if (bufmgr_fake->fence_emit != NULL) {
+      seq = bufmgr_fake->fence_emit(bufmgr_fake->fence_priv);
+      return seq;
+   }
 
    ie.irq_seq = &seq;
    ret = drmCommandWriteRead(bufmgr_fake->fd, DRM_I915_IRQ_EMIT,
@@ -268,8 +270,7 @@ _fence_emit_internal(dri_bufmgr_fake *bufmgr_fake)
    }
 
    DBG("emit 0x%08x\n", seq);
-   bufmgr_fake->last_fence = seq;
-   return bufmgr_fake->last_fence;
+   return seq;
 }
 
 static void
@@ -282,6 +283,7 @@ _fence_wait_internal(dri_bufmgr_fake *bufmgr_fake, int seq)
 
    if (bufmgr_fake->fence_wait != NULL) {
       bufmgr_fake->fence_wait(seq, bufmgr_fake->fence_priv);
+      clear_fenced(bufmgr_fake, seq);
       return;
    }
 
@@ -571,6 +573,7 @@ static int clear_fenced(dri_bufmgr_fake *bufmgr_fake,
    struct block *block, *tmp;
    int ret = 0;
 
+   bufmgr_fake->last_fence = fence_cookie;
    DRMLISTFOREACHSAFE(block, tmp, &bufmgr_fake->fenced) {
       assert(block->fenced);
 
