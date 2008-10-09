@@ -900,8 +900,13 @@ dri_fake_bo_map(dri_bo *bo, int write_enable)
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
 
    /* Static buffers are always mapped. */
-   if (bo_fake->is_static)
+   if (bo_fake->is_static) {
+      if (bo_fake->card_dirty) {
+         dri_bufmgr_fake_wait_idle(bufmgr_fake);
+         bo_fake->card_dirty = 0;
+      }
       return 0;
+   }
 
    /* Allow recursive mapping.  Mesa may recursively map buffers with
     * nested display loops, and it is used internally in bufmgr_fake
@@ -945,8 +950,11 @@ dri_fake_bo_map(dri_bo *bo, int write_enable)
 	    alloc_backing_store(bo);
 
          if ((bo_fake->card_dirty == 1) && bo_fake->block) {
-             memcpy(bo_fake->backing_store, bo_fake->block->virtual, bo_fake->block->bo->size);
-             bo_fake->card_dirty = 0;
+            if (bo_fake->block->fenced)
+               dri_fake_bo_wait_rendering(bo);
+
+            memcpy(bo_fake->backing_store, bo_fake->block->virtual, bo_fake->block->bo->size);
+            bo_fake->card_dirty = 0;
          }
 
 	 bo->virtual = bo_fake->backing_store;
@@ -1158,8 +1166,7 @@ dri_fake_calculate_domains(dri_bo *bo)
       dri_fake_calculate_domains(r->target_buf);
 
       target_fake->read_domains |= r->read_domains;
-      if (target_fake->write_domain != 0)
-	 target_fake->write_domain = r->write_domain;
+      target_fake->write_domain |= r->write_domain;
    }
 }
 
@@ -1208,9 +1215,8 @@ dri_fake_reloc_and_validate_buffer(dri_bo *bo)
       if (!(bo_fake->flags & (BM_NO_BACKING_STORE|BM_PINNED))) {
          if (bo_fake->backing_store == 0)
             alloc_backing_store(bo);
-
-         bo_fake->card_dirty = 1;
       }
+      bo_fake->card_dirty = 1;
       bufmgr_fake->performed_rendering = 1;
    }
 
