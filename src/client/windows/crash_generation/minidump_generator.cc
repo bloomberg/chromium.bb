@@ -81,7 +81,7 @@ bool MinidumpGenerator::WriteMinidump(HANDLE process_handle,
   // If the client requests a full memory dump, we will write a normal mini
   // dump and a full memory dump. Both dump files use the same uuid as file
   // name prefix.
-  bool full_memory_dump = dump_type & MiniDumpWithFullMemory;
+  bool full_memory_dump = (dump_type & MiniDumpWithFullMemory) != 0;
   wstring full_dump_file_path;
   if (full_memory_dump) {
     full_dump_file_path.assign(dump_file_path);
