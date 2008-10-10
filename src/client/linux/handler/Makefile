@@ -29,7 +29,7 @@ THREAD_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(THREAD_TEST_SRC))\
 MINIDUMP_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(MINIDUMP_TEST_SRC))\
 		  $(THREAD_OBJ) $(SHARE_OBJ) $(SHARE_C_OBJ)
 EXCEPTION_TEST_OBJ=$(patsubst %.cc,$(OBJ_DIR)/%.o, $(EXCEPTION_TEST_SRC))\
-		   $(THREAD_OBJ) $(SHARE_OBJ) $(SHARE_C_OBJ) $(HANDLER_SRC)
+		   $(THREAD_OBJ) $(SHARE_OBJ) $(SHARE_C_OBJ) $(HANDLER_OBJ)
 
 BIN=$(BIN_DIR)/minidump_test\
     $(BIN_DIR)/linux_thread_test\
