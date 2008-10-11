@@ -10,13 +10,14 @@ enum {
 
 struct wl_event_loop;
 struct wl_event_source;
-typedef void (*wl_event_loop_func_t)(int fd, uint32_t mask, void *data);
+typedef void (*wl_event_loop_fd_func_t)(int fd, uint32_t mask, void *data);
+typedef void (*wl_event_loop_idle_func_t)(void *data);
 
 struct wl_event_loop *wl_event_loop_create(void);
 void wl_event_loop_destroy(struct wl_event_loop *loop);
 struct wl_event_source *wl_event_loop_add_fd(struct wl_event_loop *loop,
 					     int fd, uint32_t mask,
-					     wl_event_loop_func_t func,
+					     wl_event_loop_fd_func_t func,
 					     void *data);
 int wl_event_loop_update_source(struct wl_event_loop *loop,
 				struct wl_event_source *source,
@@ -25,6 +26,9 @@ int wl_event_loop_update_source(struct wl_event_loop *loop,
 int wl_event_loop_remove_source(struct wl_event_loop *loop,
 				struct wl_event_source *source);
 int wl_event_loop_wait(struct wl_event_loop *loop);
+struct wl_event_source *wl_event_loop_add_idle(struct wl_event_loop *loop,
+					       wl_event_loop_idle_func_t func,
+					       void *data);
 
 struct wl_hash {
 	struct wl_object **objects;
@@ -80,6 +84,8 @@ struct wl_display;
 struct wl_map {
 	int32_t x, y, width, height;
 };
+
+struct wl_event_loop *wl_display_get_event_loop(struct wl_display *display);
 
 void wl_surface_set_data(struct wl_surface *surface, void *data);
 void *wl_surface_get_data(struct wl_surface *surface);

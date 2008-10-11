@@ -141,11 +141,11 @@ int main(int argc, char *argv[])
 			  cairo_image_surface_get_stride(s));
 
 	i = 0;
-	while (ret = poll(p, 1, 200), ret >= 0) {
+	while (ret = poll(p, 1, 20), ret >= 0) {
 		if (ret == 0) {
 			wl_surface_map(surface, 
-				       x + cos(i / 10.0) * 150,
-				       y + sin(i / 10.0) * 150,
+				       x + cos(i / 10.0) * 200,
+				       y + sin(i / 11.0) * 200,
 				       width, height);
 			i++;
 			continue;

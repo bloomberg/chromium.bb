@@ -137,8 +137,9 @@ void notify_surface_attach(struct wl_compositor *compositor,
 }
 
 static void
-repaint(struct egl_compositor *ec)
+repaint(void *data)
 {
+	struct egl_compositor *ec = data;
 	struct wl_surface_iterator *iterator;
 	struct wl_surface *surface;
 	struct surface_data *sd;
@@ -197,13 +198,16 @@ void notify_surface_map(struct wl_compositor *compositor,
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
+	struct wl_event_loop *loop;
 
 	sd = wl_surface_get_data(surface);
 	if (sd == NULL)
 		return;
 
 	sd->map = *map;
-	repaint(ec);
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	wl_event_loop_add_idle(loop, repaint, ec);
 }
 
 struct wl_compositor_interface interface = {

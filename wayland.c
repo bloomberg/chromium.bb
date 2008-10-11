@@ -469,6 +469,12 @@ wl_display_set_compositor(struct wl_display *display,
 	display->compositor = compositor;
 }
 
+struct wl_event_loop *
+wl_display_get_event_loop(struct wl_display *display)
+{
+	return display->loop;
+}
+
 void
 wl_display_run(struct wl_display *display)
 {
