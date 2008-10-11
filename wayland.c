@@ -14,8 +14,32 @@
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
-struct wl_region {
+struct wl_list {
+	struct wl_list *prev;
+	struct wl_list *next;
 };
+
+void wl_list_init(struct wl_list *list)
+{
+	list->prev = list;
+	list->next = list;
+}
+
+void
+wl_list_insert(struct wl_list *list, struct wl_list *elm)
+{
+	elm->prev = list;
+	elm->next = list->next;
+	list->next = elm;
+	elm->next->prev = elm;
+}
+
+void
+wl_list_remove(struct wl_list *elm)
+{
+	elm->prev->next = elm->next;
+	elm->next->prev = elm->prev;
+}
 
 struct wl_client {
 	struct wl_connection *connection;
@@ -30,6 +54,9 @@ struct wl_display {
 
 	struct wl_compositor *compositor;
 	struct wl_compositor_interface *compositor_interface;
+
+	struct wl_list surface_list;
+	uint32_t client_id_range;
 };
 
 struct wl_surface {
@@ -41,6 +68,7 @@ struct wl_surface {
 	int stride;
 	
 	struct wl_map map;
+	struct wl_list link;
 
 	/* how to convert buffer contents to pixels in screen format;
 	 * yuv->rgb, indexed->rgb, svg->rgb, but mostly just rgb->rgb. */
@@ -58,7 +86,9 @@ wl_surface_destroy(struct wl_client *client,
 	struct wl_compositor_interface *interface;
 
 	interface = client->display->compositor->interface;
-	interface->notify_surface_destroy(client->display->compositor, surface);
+	interface->notify_surface_destroy(client->display->compositor,
+					  surface);
+	wl_list_remove(&surface->link);
 }
 
 static void
@@ -133,6 +163,8 @@ wl_surface_create(struct wl_display *display, uint32_t id)
 
 	surface->base.id = id;
 	surface->base.interface = &surface_interface;
+
+	wl_list_insert(display->surface_list.prev, &surface->link);
 
 	interface = display->compositor->interface;
 	interface->notify_surface_create(display->compositor, surface);
@@ -238,10 +270,7 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 static void
 wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t event)
 {
-	const struct wl_interface *interface;
 	uint32_t p[2];
-
-	interface = object->interface;
 
 	p[0] = object->id;
 	p[1] = event | (8 << 16);
@@ -355,6 +384,11 @@ wl_client_create(struct wl_display *display, int fd)
 						  wl_client_connection_update, 
 						  client);
 
+	wl_connection_write(client->connection,
+			    &display->client_id_range,
+			    sizeof display->client_id_range);
+	display->client_id_range += 256;
+
 	advertise_object(client, &display->base);
 
 	return client;
@@ -421,6 +455,9 @@ wl_display_create(void)
 	display->base.id = 0;
 	display->base.interface = &display_interface;
 	wl_hash_insert(&display->objects, &display->base);
+	wl_list_init(&display->surface_list);
+
+	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	return display;		
 }
@@ -489,6 +526,53 @@ wl_display_add_socket(struct wl_display *display)
 }
 
 
+#define container_of(ptr, type, member) ({			\
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+	(type *)( (char *)__mptr - offsetof(type,member) );})
+
+struct wl_surface_iterator {
+	struct wl_list *head;
+	struct wl_surface *surface;
+	uint32_t mask;
+};
+
+struct wl_surface_iterator *
+wl_surface_iterator_create(struct wl_display *display, uint32_t mask)
+{
+	struct wl_surface_iterator *iterator;
+
+	iterator = malloc(sizeof *iterator);
+	if (iterator == NULL)
+		return NULL;
+
+	iterator->head = &display->surface_list;
+	iterator->surface = container_of(display->surface_list.next,
+					 struct wl_surface, link);
+	iterator->mask = mask;
+
+	return iterator;
+}
+
+int
+wl_surface_iterator_next(struct wl_surface_iterator *iterator,
+			 struct wl_surface **surface)
+{
+	if (&iterator->surface->link == iterator->head)
+		return 0;
+
+	*surface = iterator->surface;
+	iterator->surface = container_of(iterator->surface->link.next,
+					 struct wl_surface, link);
+
+	return 1;
+}
+
+void
+wl_surface_iterator_destroy(struct wl_surface_iterator *iterator)
+{
+	free(iterator);
+}
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
@@ -501,7 +585,7 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	compositor = wl_compositor_create();
+	compositor = wl_compositor_create(display);
 	wl_display_set_compositor(display, compositor);
 
 	printf("wayland online, display is %p\n", display);

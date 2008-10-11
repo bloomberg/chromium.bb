@@ -21,6 +21,7 @@ struct egl_compositor {
 	EGLDisplay display;
 	EGLSurface surface;
 	EGLContext context;
+	struct wl_display *wl_display;
 	int gem_fd;
 };
 
@@ -28,6 +29,7 @@ struct surface_data {
 	uint32_t handle;
 	int32_t width, height, stride;
 	GLuint texture;
+	struct wl_map map;
 };
 
 void notify_surface_create(struct wl_compositor *compositor,
@@ -134,48 +136,74 @@ void notify_surface_attach(struct wl_compositor *compositor,
 	free(data);
 }
 
+static void
+repaint(struct egl_compositor *ec)
+{
+	struct wl_surface_iterator *iterator;
+	struct wl_surface *surface;
+	struct surface_data *sd;
+	GLint vertices[12];
+	GLint tex_coords[8] = { 1, 0,  1, 1,  0, 1,  0, 0 };
+	GLuint indices[4] = { 0, 1, 2, 3 };
+	       
+	/* This part is where we actually copy the buffer to screen.
+	 * Needs to be part of the repaint loop, not called from the
+	 * notify_map handler. */
+
+	glClear(GL_COLOR_BUFFER_BIT); 
+
+	iterator = wl_surface_iterator_create(ec->wl_display, 0);
+	while (wl_surface_iterator_next(iterator, &surface)) {
+		sd = wl_surface_get_data(surface);
+		if (sd == NULL)
+			continue;
+
+		vertices[0] = sd->map.x;
+		vertices[1] = sd->map.y;
+		vertices[2] = 0;
+
+		vertices[3] = sd->map.x;
+		vertices[4] = sd->map.y + sd->map.height;
+		vertices[5] = 0;
+
+		vertices[6] = sd->map.x + sd->map.width;
+		vertices[7] = sd->map.y + sd->map.height;
+		vertices[8] = 0;
+
+		vertices[9] = sd->map.x + sd->map.width;
+		vertices[10] = sd->map.y;
+		vertices[11] = 0;
+
+		glBindTexture(GL_TEXTURE_2D, sd->texture);
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(3, GL_INT, 0, vertices);
+		glTexCoordPointer(2, GL_INT, 0, tex_coords);
+		glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, indices);
+	}
+	wl_surface_iterator_destroy(iterator);
+
+	glFlush();
+
+	eglSwapBuffers(ec->display, ec->surface);
+}
+
 void notify_surface_map(struct wl_compositor *compositor,
 			struct wl_surface *surface, struct wl_map *map)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
-	GLint vertices[12] = {
-		map->x, map->y, 0.0,
-		map->x, map->y + map->height, 0.0,
-		map->x + map->width, map->y + map->height, 0.0,
-		map->x + map->width, map->y, 0.0
-	};
-	GLint tex_coords[8] = {
-		1, 0,
-		1, 1,
-		0, 1,
-		0, 0
-	};
-	GLuint indices[4] = { 0, 1, 2, 3 };
-
-	/* This part is where we actually copy the buffer to screen.
-	 * Needs to be part of the repaint loop, not in the notify_map
-	 * handler. */
 
 	sd = wl_surface_get_data(surface);
 	if (sd == NULL)
 		return;
 
-	glClear(GL_COLOR_BUFFER_BIT); 
-	glBindTexture(GL_TEXTURE_2D, sd->texture);
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glVertexPointer(3, GL_INT, 0, vertices);
-	glTexCoordPointer(2, GL_INT, 0, tex_coords);
-	glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, indices);
-
-	glFlush();
-
-	eglSwapBuffers(ec->display, ec->surface);
+	sd->map = *map;
+	repaint(ec);
 }
 
 struct wl_compositor_interface interface = {
@@ -188,7 +216,7 @@ struct wl_compositor_interface interface = {
 static const char gem_device[] = "/dev/dri/card0";
 
 struct wl_compositor *
-wl_compositor_create(void)
+wl_compositor_create(struct wl_display *display)
 {
 	EGLConfig configs[64];
 	EGLint major, minor, count;
@@ -200,6 +228,7 @@ wl_compositor_create(void)
 		return NULL;
 
 	ec->base.interface = &interface;
+	ec->wl_display = display;
 
 	ec->display = eglCreateDisplay(gem_device, "i965");
 	if (ec->display == NULL) {

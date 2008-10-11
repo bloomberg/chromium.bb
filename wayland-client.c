@@ -51,7 +51,6 @@ wl_display_create(const char *address,
 		return NULL;
 
 	memset(display, 0, sizeof *display);
-	display->id = 256; /* Need to get our id-range. */
 	display->fd = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (display->fd < 0) {
 		free(display);
@@ -68,6 +67,10 @@ wl_display_create(const char *address,
 		free(display);
 		return NULL;
 	}
+
+	/* FIXME: We'll need a protocol for getting a new range, I
+	 * guess... */
+	read(display->fd, &display->id, sizeof display->id);
 
 	/* FIXME: actually discover advertised objects here. */
 	read(display->fd, &id, sizeof id);

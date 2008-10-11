@@ -84,6 +84,13 @@ struct wl_map {
 void wl_surface_set_data(struct wl_surface *surface, void *data);
 void *wl_surface_get_data(struct wl_surface *surface);
 
+struct wl_surface_iterator;
+struct wl_surface_iterator *
+wl_surface_iterator_create(struct wl_display *display, uint32_t mask);
+int wl_surface_iterator_next(struct wl_surface_iterator *iterator,
+			     struct wl_surface **surface);
+void wl_surface_iterator_destroy(struct wl_surface_iterator *iterator);
+
 struct wl_compositor {
 	struct wl_compositor_interface *interface;
 };
@@ -100,7 +107,7 @@ struct wl_compositor_interface {
 				   struct wl_surface *surface, struct wl_map *map);
 };
 
-struct wl_compositor *wl_compositor_create(void);
+struct wl_compositor *wl_compositor_create(struct wl_display *display);
 
 void wl_display_set_compositor(struct wl_display *display,
 			       struct wl_compositor *compositor);
