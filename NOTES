@@ -64,6 +64,50 @@ What to do when protocol out buffer fills up?  Just block on write
 would work I guess.  Clients are supposed to throttle using the bread
 crumb events, so we shouldn't get into this situation.
 
+Throttling/scheduling - there is currently no mechanism for scheduling
+clients to prevent greedy clients from spamming the server and
+starving other clients.  On the other hand, now that recompositing is
+done in the idle handler (and eventually at vertical retrace time),
+there's nothing a client can do to hog the server.  Unless we include
+a copyregion type request, to let a client update it's surface
+contents by asking the server to atomically copy a region from some
+other buffer to the surface buffer.
+
+Atomicity - we have the map and the attach requests which sometimes
+will have to be executed atomically.  Moving the window is done using
+the map request and will not involve an attach requet.  Updating the
+window contents will use an attach request but no map.  Resizing,
+however, will use both and in that case must be executed atomically.
+One way to do this is to have the server always batch up requests and
+then introduce a kind of "commit" request, which will push the batched
+changes into effect.  This is easier than it sounds, since we only
+have to remember the most recent map and most recent attach.  The
+commit request will generate an corresponding commit event once the
+committed changes become visible on screen.  The client can provide a
+bread-crumb id in the commit request, which will be sent back in the
+commit event.
+
+ - is batching+commit per client or per surface?  Much more convenient
+   if per-client, since a client can batch up a bunch of stuff and get
+   atomic updates to multiple windows.  Also nice to only get one
+   commit event for changes to a bunch of windows.  Is a little more
+   tricky server-side, since we now have to keep a list of windows
+   with pending changes in the wl_client struct.
+
+ - batching+commit also lets a client reuse parts of the surface
+   buffer without allocating a new full-size back buffer.  For
+   scrolling, for example, the client can render just the newly
+   exposed part of the page to a smaller temporary buffer, then issue
+   a copy request to copy the preserved part of the page up, and the
+   new part of the page into the exposed area.
+
+ - This does let a client batch up an unctrolled amount of copy
+   requests that the server has to execute when it gets the commit
+   request.  This could potentially lock up the server for a while,
+   leading to lost frames.  Should never cause tearing though, we're
+   changing the surface contents, not the server back buffer which is
+   what is scheduled for blitting at vsync time.
+
 
 RMI
 
