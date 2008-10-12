@@ -282,7 +282,7 @@ wl_compositor_create(struct wl_display *display)
 	glLoadIdentity();
 	glOrtho(0, width, height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
-	glClearColor(0.0, 0.1, 0.3, 0.0);
+	glClearColor(0.0, 0.05, 0.2, 0.0);
 
 	ec->gem_fd = open(gem_device, O_RDWR);
 	if (ec->gem_fd < 0) {

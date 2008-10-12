@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
+#include <time.h>
 #include <cairo.h>
 
 #include "wayland-client.h"
@@ -65,27 +66,61 @@ static uint32_t name_cairo_surface(int fd, cairo_surface_t *surface)
 	return flink.name;
 }
 
+static void
+set_random_color(cairo_t *cr)
+{
+	cairo_set_source_rgba(cr,
+			      (random() % 100) / 99.0,
+			      (random() % 100) / 99.0,
+			      (random() % 100) / 99.0,
+			      (random() % 100) / 99.0);
+}
+
+
 static void *
 draw_stuff(int width, int height)
 {
+	const int petal_count = 3 + random() % 5;
+	const double r1 = 60 + random() % 35;
+	const double r2 = 20 + random() % 40;
+	const double u = (10 + random() % 90) / 100.0;
+	const double v = (random() % 90) / 100.0;
+
 	cairo_surface_t *surface;
 	cairo_t *cr;
+	int i;
+	double t, dt = 2 * M_PI / (petal_count * 2);
+	double x1, y1, x2, y2, x3, y3;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					     width, height);
 
 	cr = cairo_create(surface);
+	cairo_translate(cr, width / 2, height / 2);
+	cairo_move_to(cr, cos(t) * r1, sin(t) * r1);
+	for (t = 0, i = 0; i < petal_count; i++, t += dt * 2) {
+		x1 = cos(t) * r1;
+		y1 = sin(t) * r1;
+		x2 = cos(t + dt) * r2;
+		y2 = sin(t + dt) * r2;
+		x3 = cos(t + 2 * dt) * r1;
+		y3 = sin(t + 2 * dt) * r1;
 
-	cairo_arc(cr, width / 2, height / 2, width / 2 - 10, 0, 2 * M_PI);
-	cairo_set_source_rgb(cr, 1, 0, 0);
-	cairo_fill_preserve(cr);
-	cairo_set_source_rgb(cr, 1, 1, 0);
-	cairo_stroke(cr);
+		cairo_curve_to(cr,
+			       x1 - y1 * u, y1 + x1 * u,
+			       x2 + y2 * v, y2 - x2 * v,
+			       x2, y2);			       
 
-	cairo_arc(cr, width / 2, height / 2, width / 4 - 10, 0, 2 * M_PI);
-	cairo_set_source_rgb(cr, 0, 0, 1);
+		cairo_curve_to(cr,
+			       x2 - y2 * v, y2 + x2 * v,
+			       x3 + y3 * u, y3 - x3 * u,
+			       x3, y3);
+	}
+
+	cairo_close_path(cr);
+	set_random_color(cr);
 	cairo_fill_preserve(cr);
-	cairo_set_source_rgb(cr, 1, 1, 0);
+	set_random_color(cr);
 	cairo_stroke(cr);
 
 	cairo_destroy(cr);
@@ -118,6 +153,8 @@ int main(int argc, char *argv[])
 	cairo_surface_t *s;
 	struct pollfd p[1];
 
+	srandom(time(NULL));
+
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
 		fprintf(stderr, "drm open failed: %m\n");
@@ -144,8 +181,8 @@ int main(int argc, char *argv[])
 	while (ret = poll(p, 1, 20), ret >= 0) {
 		if (ret == 0) {
 			wl_surface_map(surface, 
-				       x + cos(i / 10.0) * 200,
-				       y + sin(i / 11.0) * 200,
+				       x + cos(i / 30.0) * 200,
+				       y + sin(i / 31.0) * 200,
 				       width, height);
 			i++;
 			continue;
