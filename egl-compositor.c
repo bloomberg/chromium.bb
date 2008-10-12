@@ -40,7 +40,7 @@ repaint(void *data)
 	struct wl_surface *surface;
 	struct surface_data *sd;
 	GLint vertices[12];
-	GLint tex_coords[8] = { 1, 0,  1, 1,  0, 1,  0, 0 };
+	GLint tex_coords[8] = { 1, 0,  1, 1,  0, 0,  0, 1 };
 	GLuint indices[4] = { 0, 1, 2, 3 };
 	       
 	/* This part is where we actually copy the buffer to screen.
@@ -64,11 +64,11 @@ repaint(void *data)
 		vertices[5] = 0;
 
 		vertices[6] = sd->map.x + sd->map.width;
-		vertices[7] = sd->map.y + sd->map.height;
+		vertices[7] = sd->map.y;
 		vertices[8] = 0;
 
 		vertices[9] = sd->map.x + sd->map.width;
-		vertices[10] = sd->map.y;
+		vertices[10] = sd->map.y + sd->map.height;
 		vertices[11] = 0;
 
 		glBindTexture(GL_TEXTURE_2D, sd->texture);
@@ -80,7 +80,7 @@ repaint(void *data)
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 		glVertexPointer(3, GL_INT, 0, vertices);
 		glTexCoordPointer(2, GL_INT, 0, tex_coords);
-		glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, indices);
+		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, indices);
 	}
 	wl_surface_iterator_destroy(iterator);
 
