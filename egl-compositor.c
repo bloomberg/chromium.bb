@@ -32,6 +32,71 @@ struct surface_data {
 	struct wl_map map;
 };
 
+static void
+repaint(void *data)
+{
+	struct egl_compositor *ec = data;
+	struct wl_surface_iterator *iterator;
+	struct wl_surface *surface;
+	struct surface_data *sd;
+	GLint vertices[12];
+	GLint tex_coords[8] = { 1, 0,  1, 1,  0, 1,  0, 0 };
+	GLuint indices[4] = { 0, 1, 2, 3 };
+	       
+	/* This part is where we actually copy the buffer to screen.
+	 * Needs to be part of the repaint loop, not called from the
+	 * notify_map handler. */
+
+	glClear(GL_COLOR_BUFFER_BIT); 
+
+	iterator = wl_surface_iterator_create(ec->wl_display, 0);
+	while (wl_surface_iterator_next(iterator, &surface)) {
+		sd = wl_surface_get_data(surface);
+		if (sd == NULL)
+			continue;
+
+		vertices[0] = sd->map.x;
+		vertices[1] = sd->map.y;
+		vertices[2] = 0;
+
+		vertices[3] = sd->map.x;
+		vertices[4] = sd->map.y + sd->map.height;
+		vertices[5] = 0;
+
+		vertices[6] = sd->map.x + sd->map.width;
+		vertices[7] = sd->map.y + sd->map.height;
+		vertices[8] = 0;
+
+		vertices[9] = sd->map.x + sd->map.width;
+		vertices[10] = sd->map.y;
+		vertices[11] = 0;
+
+		glBindTexture(GL_TEXTURE_2D, sd->texture);
+		glEnable(GL_TEXTURE_2D);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		glVertexPointer(3, GL_INT, 0, vertices);
+		glTexCoordPointer(2, GL_INT, 0, tex_coords);
+		glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, indices);
+	}
+	wl_surface_iterator_destroy(iterator);
+
+	glFlush();
+
+	eglSwapBuffers(ec->display, ec->surface);
+}
+
+static void schedule_repaint(struct egl_compositor *ec)
+{
+	struct wl_event_loop *loop;
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	wl_event_loop_add_idle(loop, repaint, ec);
+}
+
 void notify_surface_create(struct wl_compositor *compositor,
 			   struct wl_surface *surface)
 {
@@ -68,6 +133,8 @@ void notify_surface_destroy(struct wl_compositor *compositor,
 	glDeleteTextures(1, &sd->texture);
 
 	free(sd);
+
+	schedule_repaint(ec);
 }
 
 void notify_surface_attach(struct wl_compositor *compositor,
@@ -134,63 +201,8 @@ void notify_surface_attach(struct wl_compositor *compositor,
 		     GL_BGRA, GL_UNSIGNED_BYTE, data);
 
 	free(data);
-}
 
-static void
-repaint(void *data)
-{
-	struct egl_compositor *ec = data;
-	struct wl_surface_iterator *iterator;
-	struct wl_surface *surface;
-	struct surface_data *sd;
-	GLint vertices[12];
-	GLint tex_coords[8] = { 1, 0,  1, 1,  0, 1,  0, 0 };
-	GLuint indices[4] = { 0, 1, 2, 3 };
-	       
-	/* This part is where we actually copy the buffer to screen.
-	 * Needs to be part of the repaint loop, not called from the
-	 * notify_map handler. */
-
-	glClear(GL_COLOR_BUFFER_BIT); 
-
-	iterator = wl_surface_iterator_create(ec->wl_display, 0);
-	while (wl_surface_iterator_next(iterator, &surface)) {
-		sd = wl_surface_get_data(surface);
-		if (sd == NULL)
-			continue;
-
-		vertices[0] = sd->map.x;
-		vertices[1] = sd->map.y;
-		vertices[2] = 0;
-
-		vertices[3] = sd->map.x;
-		vertices[4] = sd->map.y + sd->map.height;
-		vertices[5] = 0;
-
-		vertices[6] = sd->map.x + sd->map.width;
-		vertices[7] = sd->map.y + sd->map.height;
-		vertices[8] = 0;
-
-		vertices[9] = sd->map.x + sd->map.width;
-		vertices[10] = sd->map.y;
-		vertices[11] = 0;
-
-		glBindTexture(GL_TEXTURE_2D, sd->texture);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glVertexPointer(3, GL_INT, 0, vertices);
-		glTexCoordPointer(2, GL_INT, 0, tex_coords);
-		glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, indices);
-	}
-	wl_surface_iterator_destroy(iterator);
-
-	glFlush();
-
-	eglSwapBuffers(ec->display, ec->surface);
+	schedule_repaint(ec);
 }
 
 void notify_surface_map(struct wl_compositor *compositor,
@@ -198,7 +210,6 @@ void notify_surface_map(struct wl_compositor *compositor,
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
-	struct wl_event_loop *loop;
 
 	sd = wl_surface_get_data(surface);
 	if (sd == NULL)
@@ -206,8 +217,7 @@ void notify_surface_map(struct wl_compositor *compositor,
 
 	sd->map = *map;
 
-	loop = wl_display_get_event_loop(ec->wl_display);
-	wl_event_loop_add_idle(loop, repaint, ec);
+	schedule_repaint(ec);
 }
 
 struct wl_compositor_interface interface = {
@@ -225,7 +235,7 @@ wl_compositor_create(struct wl_display *display)
 	EGLConfig configs[64];
 	EGLint major, minor, count;
 	struct egl_compositor *ec;
-	const int width = 800, height = 600;
+	int width, height;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
@@ -250,7 +260,7 @@ wl_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
-	ec->surface = eglCreateSurface(ec->display, configs[24], 0, 0, width, height);
+	ec->surface = eglGetFullscreenSurface(ec->display, configs[24], &width, &height);
 	if (ec->surface == NULL) {
 		fprintf(stderr, "failed to create surface\n");
 		return NULL;
@@ -279,6 +289,8 @@ wl_compositor_create(struct wl_display *display)
 		fprintf(stderr, "failed to open drm device\n");
 		return NULL;
 	}
+
+	schedule_repaint(ec);
 
 	return &ec->base;
 }
