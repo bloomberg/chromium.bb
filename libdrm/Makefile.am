@@ -27,7 +27,7 @@ libdrm_la_LDFLAGS = -version-number 2:3:0 -no-undefined
 AM_CFLAGS = -I$(top_srcdir)/shared-core
 libdrm_la_SOURCES = xf86drm.c xf86drmHash.c xf86drmRandom.c xf86drmSL.c \
 	xf86drmMode.c libdrm_lists.h
-libdrm_la_LIBADD = intel/libdrm_intel.la @PTHREADSTUBS_LIBS@
+libdrm_la_LIBADD = @PTHREADSTUBS_LIBS@
 
 libdrmincludedir = ${includedir}
 libdrminclude_HEADERS = xf86drm.h xf86drmMode.h
