@@ -14,6 +14,11 @@
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
+#define container_of(ptr, type, member) ({			\
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+	(type *)( (char *)__mptr - offsetof(type,member) );})
+
+
 struct wl_list {
 	struct wl_list *prev;
 	struct wl_list *next;
@@ -45,6 +50,7 @@ struct wl_client {
 	struct wl_connection *connection;
 	struct wl_event_source *source;
 	struct wl_display *display;
+	struct wl_list object_list;
 };
 
 struct wl_display {
@@ -78,6 +84,10 @@ struct wl_surface {
 	void *compositor_data;
 };
 
+struct wl_object_ref {
+	struct wl_object *object;
+	struct wl_list link;
+};
 				   
 static void
 wl_surface_destroy(struct wl_client *client,
@@ -279,6 +289,7 @@ wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t eve
 
 #define WL_DISPLAY_INVALID_OBJECT 0
 #define WL_DISPLAY_INVALID_METHOD 1
+#define WL_DISPLAY_NO_MEMORY 2
 
 static void
 wl_client_connection_data(int fd, uint32_t mask, void *data)
@@ -383,6 +394,7 @@ wl_client_create(struct wl_display *display, int fd)
 	client->connection = wl_connection_create(fd,
 						  wl_client_connection_update, 
 						  client);
+	wl_list_init(&client->object_list);
 
 	wl_connection_write(client->connection,
 			    &display->client_id_range,
@@ -397,7 +409,18 @@ wl_client_create(struct wl_display *display, int fd)
 void
 wl_client_destroy(struct wl_client *client)
 {
+	struct wl_object_ref *ref;
+
 	printf("disconnect from client %p\n", client);
+
+	while (client->object_list.next != &client->object_list) {
+		ref = container_of(client->object_list.next,
+				   struct wl_object_ref, link);
+		wl_list_remove(&ref->link);
+		wl_surface_destroy(client, (struct wl_surface *) ref->object);
+		free(ref);
+	}
+
 	wl_event_loop_remove_source(client->display->loop, client->source);
 	wl_connection_destroy(client->connection);
 	free(client);
@@ -408,11 +431,20 @@ wl_display_create_surface(struct wl_client *client,
 			  struct wl_display *display, uint32_t id)
 {
 	struct wl_surface *surface;
+	struct wl_object_ref *ref;
 
 	surface = wl_surface_create(display, id);
-	wl_hash_insert(&display->objects, &surface->base);
 
-	/* FIXME: garbage collect client resources when client exits. */
+	ref = malloc(sizeof *ref);
+	if (ref == NULL) {
+		wl_client_event(client, &display->base,
+				WL_DISPLAY_NO_MEMORY);
+		return -1;
+	}
+
+	ref->object = &surface->base;
+	wl_hash_insert(&display->objects, &surface->base);
+	wl_list_insert(client->object_list.prev, &ref->link);
 
 	return 0;
 }
@@ -531,10 +563,6 @@ wl_display_add_socket(struct wl_display *display)
 	return 0;
 }
 
-
-#define container_of(ptr, type, member) ({			\
-	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
 
 struct wl_surface_iterator {
 	struct wl_list *head;
