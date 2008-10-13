@@ -717,20 +717,25 @@ dri_bufmgr_fake_wait_idle(dri_bufmgr_fake *bufmgr_fake)
  * the necessary flushing.
  */
 static void
+dri_fake_bo_wait_rendering_locked(dri_bo *bo)
+{
+   dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
+   dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
+
+   if (bo_fake->block == NULL || !bo_fake->block->fenced)
+      return;
+
+   _fence_wait_internal(bufmgr_fake, bo_fake->block->fence);
+}
+
+static void
 dri_fake_bo_wait_rendering(dri_bo *bo)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
    dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
 
    pthread_mutex_lock(&bufmgr_fake->lock);
-
-   if (bo_fake->block == NULL || !bo_fake->block->fenced) {
-      pthread_mutex_unlock(&bufmgr_fake->lock);
-      return;
-   }
-
-   _fence_wait_internal(bufmgr_fake, bo_fake->block->fence);
-
+   dri_fake_bo_wait_rendering_locked(bo);
    pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
@@ -972,7 +977,7 @@ dri_fake_bo_map_locked(dri_bo *bo, int write_enable)
 
 	    if (!(bo_fake->flags & BM_NO_FENCE_SUBDATA) &&
 		bo_fake->block->fenced) {
-	       dri_fake_bo_wait_rendering(bo);
+	       dri_fake_bo_wait_rendering_locked(bo);
 	    }
 
 	    bo->virtual = bo_fake->block->virtual;
@@ -987,7 +992,7 @@ dri_fake_bo_map_locked(dri_bo *bo, int write_enable)
 
          if ((bo_fake->card_dirty == 1) && bo_fake->block) {
             if (bo_fake->block->fenced)
-               dri_fake_bo_wait_rendering(bo);
+               dri_fake_bo_wait_rendering_locked(bo);
 
             memcpy(bo_fake->backing_store, bo_fake->block->virtual, bo_fake->block->bo->size);
             bo_fake->card_dirty = 0;
