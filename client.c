@@ -70,10 +70,10 @@ static void
 set_random_color(cairo_t *cr)
 {
 	cairo_set_source_rgba(cr,
-			      (random() % 100) / 99.0,
-			      (random() % 100) / 99.0,
-			      (random() % 100) / 99.0,
-			      (random() % 100) / 99.0);
+			      0.5 + (random() % 50) / 49.0,
+			      0.5 + (random() % 50) / 49.0,
+			      0.5 + (random() % 50) / 49.0,
+			      0.5 + (random() % 100) / 99.0);
 }
 
 
