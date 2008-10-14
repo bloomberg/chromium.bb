@@ -732,7 +732,6 @@ static void
 dri_fake_bo_wait_rendering(dri_bo *bo)
 {
    dri_bufmgr_fake *bufmgr_fake = (dri_bufmgr_fake *)bo->bufmgr;
-   dri_bo_fake *bo_fake = (dri_bo_fake *)bo;
 
    pthread_mutex_lock(&bufmgr_fake->lock);
    dri_fake_bo_wait_rendering_locked(bo);
