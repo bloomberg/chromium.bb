@@ -57,6 +57,7 @@ static NSString *kAddressSymbolKey = @"symbol";
 static NSString *kAddressConvertedSymbolKey = @"converted_symbol";
 static NSString *kAddressSourceLineKey = @"line";
 static NSString *kFunctionSizeKey = @"size";
+static NSString *kFunctionFileKey = @"source_file";
 static NSString *kHeaderBaseAddressKey = @"baseAddr";
 static NSString *kHeaderSizeKey = @"size";
 static NSString *kHeaderOffsetKey = @"offset";  // Offset to the header
@@ -350,7 +351,6 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
         sources_ = [[NSMutableDictionary alloc] init];
       // Save the source associated with an address
       [sources_ setObject:src forKey:address];
-      NSLog(@"Setting source %@ for %@", src, address);
       result = YES;
     }
   } else if (list->n_type == N_FUN) {
@@ -465,6 +465,9 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
     NSString *sourceFile = [NSString stringWithUTF8String:(*iter).name.c_str()];
     if ((*iter).lowpc != ULLONG_MAX) {
       NSNumber *address = [NSNumber numberWithUnsignedLongLong:(*iter).lowpc];
+      if ([address unsignedLongLongValue] == 0) {
+        continue;
+      }
       [sources_ setObject:sourceFile forKey:address];
     }
   }
@@ -490,8 +493,8 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
       dict = [[NSMutableDictionary alloc] init];
       [addresses_ setObject:dict forKey:addressNum];
       [dict release];
-    } 
-	
+    }
+
     // set name of function if it isn't already set
     if (![dict objectForKey:kAddressSymbolKey]) {
       NSString *symbolName = [NSString stringWithUTF8String:iter->second->name.c_str()];
@@ -509,6 +512,11 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
 	    forKey:kFunctionSizeKey];
     }
 
+    // Set the file that the function is in
+    if (![dict objectForKey:kFunctionFileKey]) {
+      [dict setObject:[NSString stringWithUTF8String:iter->second->file.c_str()]
+               forKey:kFunctionFileKey];
+    }
   }
 }
 
@@ -529,6 +537,12 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
     if (![dict objectForKey:kAddressSourceLineKey]) {
       [dict setObject:[NSNumber numberWithUnsignedInt:iter->second.second]
 	    forKey:kAddressSourceLineKey];
+    }
+
+    // Set the file that the function's address is in
+    if (![dict objectForKey:kFunctionFileKey]) {
+      [dict setObject:[NSString stringWithUTF8String:iter->second.first.c_str()]
+               forKey:kFunctionFileKey];
     }
   }
 }
@@ -931,11 +945,15 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   // Sources ordered by address
   NSArray *sources = [[sources_ allKeys]
     sortedArrayUsingSelector:@selector(compare:)];
+  NSMutableDictionary *fileNameToFileIndex = [[NSMutableDictionary alloc] init];
   unsigned int sourceCount = [sources count];
   for (unsigned int i = 0; i < sourceCount; ++i) {
     NSString *file = [sources_ objectForKey:[sources objectAtIndex:i]];
     if (!WriteFormat(fd, "FILE %d %s\n", i + 1, [file UTF8String]))
       return NO;
+
+    [fileNameToFileIndex setObject:[NSNumber numberWithUnsignedInt:i+1]
+                            forKey:file];
   }
 
   // Symbols
@@ -948,6 +966,11 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
 
   for (unsigned int i = 0; i < addressCount; ++i) {
     NSNumber *address = [sortedAddresses objectAtIndex:i];
+    // skip sources that have a starting address of 0
+    if ([address unsignedLongValue] == 0) {
+      continue;
+    }
+
     uint64_t addressVal = [address unsignedLongLongValue] - baseAddress;
 
     // Get the next address to calculate the length
@@ -983,7 +1006,7 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
     if ([symbol hasPrefix:@"__static_initialization_and_destruction_0"])
       continue;
 
-    if ([symbol hasPrefix:@"_GLOBAL__I__"])
+    if ([symbol hasPrefix:@"_GLOBAL__I_"])
       continue;
 
     if ([symbol hasPrefix:@"__func__."])
@@ -1039,8 +1062,17 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
 
       // Source line
       uint64_t length = nextAddressVal - addressVal;
+
+      // if fileNameToFileIndex/dict has an entry for the
+      // file/kFunctionFileKey, we're processing DWARF and have stored
+      // files for each program counter.  If there is no entry, we're
+      // processing STABS and can use the old method of mapping
+      // addresses to files(which was basically iterating over a set
+      // of addresses until we reached one that was greater than the
+      // high PC of the current file, then moving on to the next file)
+      NSNumber *fileIndex = [fileNameToFileIndex objectForKey:[dict objectForKey:kFunctionFileKey]];
       if (!WriteFormat(fd, "%llx %llx %d %d\n", addressVal, length,
-                       [line unsignedIntValue], fileIdx))
+                       [line unsignedIntValue], fileIndex ? [fileIndex unsignedIntValue] : fileIdx))
         return NO;
     } else {
       // PUBLIC <address> <stack-size> <name>
