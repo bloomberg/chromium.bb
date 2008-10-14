@@ -188,7 +188,7 @@ void notify_surface_attach(struct wl_compositor *compositor,
 	pread.data_ptr = (long) data;
 
 	if (ioctl(ec->gem_fd, DRM_IOCTL_I915_GEM_PREAD, &pread)) {
-		fprintf(stderr, "gem pread failed");
+		fprintf(stderr, "gem pread failed\n");
 		return;
 	}
 
@@ -235,7 +235,7 @@ wl_compositor_create(struct wl_display *display)
 	EGLConfig configs[64];
 	EGLint major, minor, count;
 	struct egl_compositor *ec;
-	int width, height;
+	const int width = 1024, height = 768;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
@@ -244,7 +244,7 @@ wl_compositor_create(struct wl_display *display)
 	ec->base.interface = &interface;
 	ec->wl_display = display;
 
-	ec->display = eglCreateDisplay(gem_device, "i965");
+	ec->display = eglCreateDisplayNative(gem_device, "i965");
 	if (ec->display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return NULL;
@@ -260,7 +260,8 @@ wl_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
-	ec->surface = eglGetFullscreenSurface(ec->display, configs[24], &width, &height);
+	ec->surface = eglCreateSurfaceNative(ec->display, configs[24],
+					     0, 0, width, height);
 	if (ec->surface == NULL) {
 		fprintf(stderr, "failed to create surface\n");
 		return NULL;
