@@ -87,6 +87,8 @@ int dri_bo_emit_reloc(dri_bo *reloc_buf,
 int dri_bo_pin(dri_bo *buf, uint32_t alignment);
 int dri_bo_unpin(dri_bo *buf);
 int dri_bo_set_tiling(dri_bo *buf, uint32_t *tiling_mode);
+int dri_bo_get_tiling(dri_bo *buf, uint32_t *tiling_mode,
+		      uint32_t *swizzle_mode);
 int dri_bo_flink(dri_bo *buf, uint32_t *name);
 
 /* intel_bufmgr_gem.c */

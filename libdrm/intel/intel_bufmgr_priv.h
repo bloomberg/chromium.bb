@@ -150,6 +150,15 @@ struct _dri_bufmgr {
      */
     int (*bo_set_tiling) (dri_bo *bo, uint32_t *tiling_mode);
     /**
+     * Get the current tiling (and resulting swizzling) mode for the bo.
+     *
+     * \param buf Buffer to get tiling mode for
+     * \param tiling_mode returned tiling mode
+     * \param swizzle_mode returned swizzling mode
+     */
+    int (*bo_get_tiling) (dri_bo *bo, uint32_t *tiling_mode,
+			  uint32_t *swizzle_mode);
+    /**
      * Create a visible name for a buffer which can be used by other apps
      *
      * \param buf Buffer to create a name for

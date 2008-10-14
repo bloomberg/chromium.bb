@@ -873,6 +873,28 @@ dri_gem_bo_set_tiling(dri_bo *bo, uint32_t *tiling_mode)
 }
 
 static int
+dri_gem_bo_get_tiling(dri_bo *bo, uint32_t *tiling_mode, uint32_t *swizzle_mode)
+{
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
+    dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
+    struct drm_i915_gem_get_tiling get_tiling;
+    int ret;
+
+    get_tiling.handle = bo_gem->gem_handle;
+
+    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_GET_TILING, &get_tiling);
+    if (ret != 0) {
+	*tiling_mode = I915_TILING_NONE;
+	*swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
+	return -errno;
+    }
+
+    *tiling_mode = get_tiling.tiling_mode;
+    *swizzle_mode = get_tiling.swizzle_mode;
+    return 0;
+}
+
+static int
 dri_gem_bo_flink(dri_bo *bo, uint32_t *name)
 {
     dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo->bufmgr;
@@ -959,6 +981,7 @@ intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.bo_emit_reloc = dri_gem_bo_emit_reloc;
     bufmgr_gem->bufmgr.bo_pin = dri_gem_bo_pin;
     bufmgr_gem->bufmgr.bo_unpin = dri_gem_bo_unpin;
+    bufmgr_gem->bufmgr.bo_get_tiling = dri_gem_bo_get_tiling;
     bufmgr_gem->bufmgr.bo_set_tiling = dri_gem_bo_set_tiling;
     bufmgr_gem->bufmgr.bo_flink = dri_gem_bo_flink;
     bufmgr_gem->bufmgr.bo_exec = dri_gem_bo_exec;
