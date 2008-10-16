@@ -2126,7 +2126,7 @@ void drm_bo_evict_mm(struct drm_device *dev, int mem_type, int no_wait)
 		drm_bo_usage_deref_unlocked(&entry);
 
 		mutex_lock(&dev->struct_mutex);
-	} while(0);
+	} while(1);
 
 	mutex_unlock(&dev->struct_mutex);
 
