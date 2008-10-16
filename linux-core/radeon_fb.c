@@ -728,7 +728,7 @@ int radeonfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_heigh
 	size = mode_cmd.pitch * mode_cmd.height;
 	aligned_size = ALIGN(size, PAGE_SIZE);
 
-	fbo = radeon_gem_object_alloc(dev, aligned_size, 1, RADEON_GEM_DOMAIN_VRAM);
+	fbo = radeon_gem_object_alloc(dev, aligned_size, 1, RADEON_GEM_DOMAIN_VRAM, 0);
 	if (!fbo) {
 		printk(KERN_ERR "failed to allocate framebuffer\n");
 		ret = -ENOMEM;

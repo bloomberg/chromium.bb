@@ -74,7 +74,7 @@ int radeon_gem_info_ioctl(struct drm_device *dev, void *data,
 }
 
 struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size, int alignment,
-					       int initial_domain)
+					       int initial_domain, bool discardable)
 {
 	struct drm_gem_object *obj;
 	struct drm_radeon_gem_object *obj_priv;
@@ -96,6 +96,9 @@ struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size,
 		flags |= DRM_BO_FLAG_MEM_LOCAL | DRM_BO_FLAG_CACHED;
 
 	flags |= DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_EXE;
+
+	if (discardable)
+		flags |= DRM_BO_FLAG_DISCARDABLE;
 
 	if (alignment == 0)
 		alignment = PAGE_SIZE;
@@ -129,7 +132,7 @@ int radeon_gem_create_ioctl(struct drm_device *dev, void *data,
 	/* create a gem object to contain this object in */
 	args->size = roundup(args->size, PAGE_SIZE);
 
-	obj = radeon_gem_object_alloc(dev, args->size, args->alignment, args->initial_domain);
+	obj = radeon_gem_object_alloc(dev, args->size, args->alignment, args->initial_domain, args->no_backing_store);
 	if (!obj)
 		return -EINVAL;
 

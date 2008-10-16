@@ -1672,7 +1672,7 @@ int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
 int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
 struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size, int alignment,
-					       int initial_domain);
+					       int initial_domain, bool discardable);
 int radeon_modeset_init(struct drm_device *dev);
 void radeon_modeset_cleanup(struct drm_device *dev);
 extern u32 radeon_read_mc_reg(drm_radeon_private_t *dev_priv, int addr);
