@@ -63,15 +63,15 @@ int radeon_suspend(struct drm_device *dev, pm_message_t state)
 	if (!(dev_priv->flags & RADEON_IS_IGP))
 		drm_bo_evict_mm(dev, DRM_BO_MEM_VRAM, 0);
 
-	if (dev_priv->flags & RADEON_IS_PCIE) {
-		memcpy_fromio(dev_priv->mm.pcie_table_backup, dev_priv->mm.pcie_table.kmap.virtual, RADEON_PCIGART_TABLE_SIZE);
-	}
-
 	dev_priv->pmregs.crtc_ext_cntl = RADEON_READ(RADEON_CRTC_EXT_CNTL);
 	for (i = 0; i < 8; i++)
 		dev_priv->pmregs.bios_scratch[i] = RADEON_READ(RADEON_BIOS_0_SCRATCH + (i * 4));
 
 	radeon_modeset_cp_suspend(dev);
+
+	if (dev_priv->flags & RADEON_IS_PCIE) {
+		memcpy_fromio(dev_priv->mm.pcie_table_backup, dev_priv->mm.pcie_table.kmap.virtual, RADEON_PCIGART_TABLE_SIZE);
+	}
 
 	pci_save_state(dev->pdev);
 
