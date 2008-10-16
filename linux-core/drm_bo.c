@@ -2099,7 +2099,6 @@ void drm_bo_evict_mm(struct drm_device *dev, int mem_type, int no_wait)
 	int ret;
 	/* evict all buffers on the LRU - won't evict pinned buffers */
 	
-	drm_mm_dump(&man->manager);
 	mutex_lock(&dev->struct_mutex);
 	do {
 		lru = &man->lru;
