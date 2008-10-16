@@ -306,22 +306,32 @@ static int radeon_move_flip(struct drm_buffer_object * bo,
 	int ret;
 
 	tmp_mem = *new_mem;
-	tmp_mem.mm_node = NULL;
-	tmp_mem.proposed_flags = DRM_BO_FLAG_MEM_TT;
 
-	ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
-	if (ret)
-		return ret;
+	/* if we are flipping into LOCAL memory we have no TTM so create one */
+	if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		tmp_mem.mm_node = NULL;
+		tmp_mem.proposed_flags = DRM_BO_FLAG_MEM_TT;
 
-	ret = drm_ttm_bind(bo->ttm, &tmp_mem);
-	if (ret)
-		goto out_cleanup;
+		ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
+		if (ret)
+			return ret;
+
+		ret = drm_ttm_bind(bo->ttm, &tmp_mem);
+		if (ret)
+			goto out_cleanup;
+	}
 
 	ret = radeon_move_blit(bo, 1, no_wait, &tmp_mem, &bo->mem);
 	if (ret)
 		goto out_cleanup;
 
-	ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
+	if (new_mem->mem_type == DRM_BO_MEM_LOCAL) {
+		ret = drm_bo_move_ttm(bo, evict, no_wait, new_mem);
+	} else {
+		tmp_mem.mm_node = NULL;
+		new_mem->mm_node = NULL;
+	}
+
 out_cleanup:
 	if (tmp_mem.mm_node) {
 		mutex_lock(&dev->struct_mutex);
