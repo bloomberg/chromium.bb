@@ -97,12 +97,14 @@ int radeon_resume(struct drm_device *dev)
 	pci_restore_state(dev->pdev);
 	if (pci_enable_device(dev->pdev))
 		return -1;
-	pci_set_master(dev->pdev);
 
-	/* Turn on bus mastering */
-	tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RADEON_BUS_MASTER_DIS;
-	RADEON_WRITE(RADEON_BUS_CNTL, tmp);
+	/* Turn on bus mastering -todo fix properly */
+	if (dev_priv->chip_family < CHIP_RV380) {
+		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RADEON_BUS_MASTER_DIS;
+		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
+	}
 
+	DRM_ERROR("\n");
 	/* on atom cards re init the whole card 
 	   and set the modes again */
 
@@ -112,6 +114,8 @@ int radeon_resume(struct drm_device *dev)
 	} else {
 		radeon_combios_asic_init(dev);
 	}
+
+	pci_set_master(dev->pdev);
 
 	for (i = 0; i < 8; i++)
 		RADEON_WRITE(RADEON_BIOS_0_SCRATCH + (i * 4), dev_priv->pmregs.bios_scratch[i]);
@@ -160,7 +164,7 @@ int radeon_resume(struct drm_device *dev)
 			master_priv->sarea_priv->ctx_owner = 0;
 	}
 
-	/* unpin the front buffers */
+	/* pin the front buffers */
 	list_for_each_entry(fb, &dev->mode_config.fb_kernel_list, filp_head) {
 		
 		struct radeon_framebuffer *radeon_fb = to_radeon_framebuffer(fb);
