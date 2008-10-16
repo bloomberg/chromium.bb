@@ -1053,11 +1053,9 @@ dri_fake_bo_unmap(dri_bo *bo)
 }
 
 static void
-dri_fake_kick_all(dri_bufmgr_fake *bufmgr_fake)
+dri_fake_kick_all_locked(dri_bufmgr_fake *bufmgr_fake)
 {
    struct block *block, *tmp;
-
-   pthread_mutex_lock(&bufmgr_fake->lock);
 
    bufmgr_fake->performed_rendering = 0;
    /* okay for ever BO that is on the HW kick it off.
@@ -1073,7 +1071,6 @@ dri_fake_kick_all(dri_bufmgr_fake *bufmgr_fake)
          bo_fake->dirty = 1;
    }
 
-   pthread_mutex_unlock(&bufmgr_fake->lock);
 }
 
 static int
@@ -1358,7 +1355,7 @@ dri_fake_bo_exec(dri_bo *bo, int used,
    if (bufmgr_fake->fail == 1) {
       if (retry_count == 0) {
          retry_count++;
-         dri_fake_kick_all(bufmgr_fake);
+         dri_fake_kick_all_locked(bufmgr_fake);
          bufmgr_fake->fail = 0;
          goto restart;
       } else /* dump out the memory here */
@@ -1369,8 +1366,10 @@ dri_fake_bo_exec(dri_bo *bo, int used,
 
    if (bufmgr_fake->exec != NULL) {
       int ret = bufmgr_fake->exec(bo, used, bufmgr_fake->exec_priv);
-      if (ret != 0)
+      if (ret != 0) {
+	 pthread_mutex_unlock(&bufmgr_fake->lock);
 	 return ret;
+      }
    } else {
       batch.start = bo->offset;
       batch.used = used;
@@ -1382,6 +1381,7 @@ dri_fake_bo_exec(dri_bo *bo, int used,
       if (drmCommandWrite(bufmgr_fake->fd, DRM_I915_BATCHBUFFER, &batch,
 			  sizeof(batch))) {
 	 drmMsg("DRM_I915_BATCHBUFFER: %d\n", -errno);
+	 pthread_mutex_unlock(&bufmgr_fake->lock);
 	 return -errno;
       }
    }
