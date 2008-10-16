@@ -2098,22 +2098,29 @@ void drm_bo_evict_mm(struct drm_device *dev, int mem_type, int no_wait)
 	struct list_head *lru;
 	int ret;
 	/* evict all buffers on the LRU - won't evict pinned buffers */
-
+	
+	drm_mm_dump(&man->manager);
 	mutex_lock(&dev->struct_mutex);
 	do {
 		lru = &man->lru;
 
-		if (lru->next == lru) {
+redo:
+		if (lru->next == &man->lru) {
 			DRM_ERROR("lru empty\n");
 			break;
 		}
 
 		entry = list_entry(lru->next, struct drm_buffer_object, lru);
+
+		if (entry->mem.flags & DRM_BO_FLAG_DISCARDABLE) {
+			lru = lru->next;
+			goto redo;
+		}
+
 		atomic_inc(&entry->usage);
 		mutex_unlock(&dev->struct_mutex);
 		mutex_lock(&entry->mutex);
 
-		DRM_ERROR("Evicting %p %d\n", entry, entry->num_pages);
 		ret = drm_bo_evict(entry, mem_type, no_wait);
 		mutex_unlock(&entry->mutex);
 

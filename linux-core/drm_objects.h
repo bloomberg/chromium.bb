@@ -117,6 +117,12 @@ struct drm_fence_arg {
  */
 #define DRM_BO_FLAG_NO_MOVE     (1ULL << 8)
 
+/*
+ * Mask: if set the note the buffer contents are discardable
+ * Flags: if set the buffer contents are discardable on migration
+ */
+#define DRM_BO_FLAG_DISCARDABLE (1ULL << 9)
+
 /* Mask: Make sure the buffer is in cached memory when mapped.  In conjunction
  * with DRM_BO_FLAG_CACHED it also allows the buffer to be bound into the GART
  * with unsnooped PTEs instead of snooped, by using chipset-specific cache
