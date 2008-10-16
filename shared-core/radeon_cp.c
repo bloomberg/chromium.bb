@@ -2334,7 +2334,6 @@ int radeon_modeset_cp_suspend(struct drm_device *dev)
 int radeon_modeset_cp_resume(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	uint32_t tmp;
 
 	radeon_do_wait_for_idle(dev_priv);
 #if __OS_HAS_AGP
@@ -2357,6 +2356,95 @@ int radeon_modeset_cp_resume(struct drm_device *dev)
 	radeon_do_cp_start(dev_priv);
 	return 0;
 }
+
+#if __OS_HAS_AGP
+int radeon_modeset_agp_init(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_agp_mode mode;
+	struct drm_agp_info info;
+	int ret;
+	int default_mode;
+	uint32_t agp_status;
+	bool is_v3;
+
+	/* Acquire AGP. */
+	ret = drm_agp_acquire(dev);
+	if (ret) {
+		DRM_ERROR("Unable to acquire AGP: %d\n", ret);
+		return ret;
+	}
+
+	ret = drm_agp_info(dev, &info);
+	if (ret) {
+		DRM_ERROR("Unable to get AGP info: %d\n", ret);
+		return ret;
+ 	}
+
+	mode.mode = info.mode;
+
+	agp_status = (RADEON_READ(RADEON_AGP_STATUS) | RADEON_AGPv3_MODE) & mode.mode;
+	is_v3 = !!(agp_status & RADEON_AGPv3_MODE);
+
+	if (is_v3) {
+		default_mode = (agp_status & RADEON_AGPv3_8X_MODE) ? 8 : 4;
+	} else {
+		if (agp_status & RADEON_AGP_4X_MODE) default_mode = 4;
+		else if (agp_status & RADEON_AGP_2X_MODE) default_mode = 2;
+		else default_mode = 1;
+	}
+
+	if (radeon_agpmode > 0) {
+		if ((radeon_agpmode < (is_v3 ? 4 : 1)) ||
+		    (radeon_agpmode > (is_v3 ? 8 : 4)) ||
+		    (radeon_agpmode & (radeon_agpmode - 1))) {
+			DRM_ERROR("Illegal AGP Mode: %d (valid %s), leaving at %d\n",
+				  radeon_agpmode, is_v3 ? "4, 8" : "1, 2, 4",
+				  default_mode);
+			radeon_agpmode = default_mode;
+		}
+		else
+			DRM_INFO("AGP mode requested: %d\n", radeon_agpmode);
+	} else
+		radeon_agpmode = default_mode;
+
+	mode.mode &= ~RADEON_AGP_MODE_MASK;
+	if (is_v3) {
+		switch(radeon_agpmode) {
+		case 8:
+			mode.mode |= RADEON_AGPv3_8X_MODE;
+			break;
+		case 4:
+		default:
+			mode.mode |= RADEON_AGPv3_4X_MODE;
+			break;
+		}
+	} else {
+		switch(radeon_agpmode) {
+		case 4: mode.mode |= RADEON_AGP_4X_MODE;
+		case 2: mode.mode |= RADEON_AGP_2X_MODE;
+		case 1:
+		default:
+			mode.mode |= RADEON_AGP_1X_MODE;
+			break;
+		}
+	}
+
+	mode.mode &= ~RADEON_AGP_FW_MODE; /* disable fw */
+
+	ret = drm_agp_enable(dev, mode);
+	if (ret) {
+		DRM_ERROR("Unable to enable AGP (mode = 0x%lx)\n", mode);
+		return ret;
+	}
+
+	/* workaround some hw issues */
+	if (dev_priv->chip_family <= CHIP_R200) {
+		RADEON_WRITE(RADEON_AGP_CNTL, RADEON_READ(RADEON_AGP_CNTL) | 0x000e0000);
+	}
+	return 0;
+}
+#endif
 
 int radeon_modeset_cp_init(struct drm_device *dev)
 {
@@ -2389,6 +2477,11 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->new_memmap = true;
 
 	r300_init_reg_flags(dev);
+
+#if __OS_HAS_AGP
+	if (dev_priv->flags & RADEON_IS_AGP)
+		radeon_modeset_agp_init(dev);
+#endif
 	
 	return radeon_modeset_cp_resume(dev);
 }
@@ -2478,6 +2571,7 @@ int radeon_static_clocks_init(struct drm_device *dev)
 		}
 	}
 	radeon_force_some_clocks(dev);
+	return 0;
 }
 
 int radeon_driver_load(struct drm_device *dev, unsigned long flags)
@@ -2522,6 +2616,12 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & RADEON_IS_AGP) ? "AGP" : (((dev_priv->flags & RADEON_IS_PCIE) ? "PCIE" : "PCI"))));
+
+	if ((dev_priv->flags & RADEON_IS_AGP) && (radeon_agpmode == -1)) {
+		DRM_INFO("Forcing AGP to PCI mode\n");
+		dev_priv->flags &= ~RADEON_IS_AGP;
+	}
+
 
 	ret = drm_addmap(dev, drm_get_resource_start(dev, 2),
 			 drm_get_resource_len(dev, 2), _DRM_REGISTERS,

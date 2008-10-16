@@ -459,6 +459,7 @@ extern int radeon_dynclks;
 extern int radeon_r4xx_atom;
 extern struct drm_ioctl_desc radeon_ioctls[];
 extern int radeon_max_ioctl;
+extern int radeon_agpmode;
 
 /* Check whether the given hardware address is inside the framebuffer or the
  * GART area.
