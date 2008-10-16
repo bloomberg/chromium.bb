@@ -139,10 +139,15 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct 
 		offset >>= 10;
 		val |= offset;
 		break;
+	case RADEON_RB3D_COLOROFFSET:
 	case R300_RB3D_COLOROFFSET0:
 	case R300_ZB_DEPTHOFFSET:
 	case R300_TX_OFFSET_0:
 	case R300_TX_OFFSET_0+4:
+	case R200_PP_TXOFFSET_0:
+	case R200_PP_TXOFFSET_1:
+	case RADEON_PP_TXOFFSET_0:
+	case RADEON_PP_TXOFFSET_1:
 	        ret = dev_priv->cs.relocate(dev, file_priv, packets + offset_dw + 2, &offset);
 		if (ret)
 			return ret;
