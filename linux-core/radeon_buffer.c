@@ -411,9 +411,6 @@ int radeon_move(struct drm_buffer_object * bo,
 		return 0; 
 	}
 
-	/* disable these blit moves for now that appear to be failing */
-	goto fallback;
-
 	if (new_mem->mem_type == DRM_BO_MEM_VRAM) {
 		if (radeon_move_vram(bo, evict, no_wait, new_mem))
 			goto fallback;
