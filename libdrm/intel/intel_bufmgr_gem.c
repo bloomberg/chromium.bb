@@ -790,7 +790,7 @@ dri_gem_bo_exec(dri_bo *bo, int used,
 
     do {
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_EXECBUFFER, &execbuf);
-    } while (ret == -EAGAIN);
+    } while (ret != 0 && errno == EAGAIN);
 
     intel_update_buffer_offsets (bufmgr_gem);
 
