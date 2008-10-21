@@ -94,6 +94,8 @@ typedef struct _dri_bufmgr_gem {
 
     /** Array of lists of cached gem objects of power-of-two sizes */
     struct dri_gem_bo_bucket cache_bucket[INTEL_GEM_BO_BUCKETS];
+
+    uint64_t gtt_size;
 } dri_bufmgr_gem;
 
 struct _dri_bo_gem {
@@ -134,6 +136,27 @@ struct _dri_bo_gem {
 
     /** free list */
     dri_bo_gem *next;
+
+    /**
+     * Boolean of whether this BO and its children have been included in
+     * the current dri_bufmgr_check_aperture_space() total.
+     */
+    char included_in_check_aperture;
+
+    /**
+     * Boolean of whether this buffer has been used as a relocation
+     * target and had its size accounted for, and thus can't have any
+     * further relocations added to it.
+     */
+     char used_as_reloc_target;
+
+    /**
+     * Size in bytes of this buffer and its relocation descendents.
+     *
+     * Used to avoid costly tree walking in dri_bufmgr_check_aperture in
+     * the common case.
+     */
+    int reloc_tree_size;
 };
 
 static void dri_gem_bo_reference_locked(dri_bo *bo);
@@ -333,6 +356,8 @@ dri_gem_bo_alloc(dri_bufmgr *bufmgr, const char *name,
     bo_gem->name = name;
     bo_gem->refcount = 1;
     bo_gem->validate_index = -1;
+    bo_gem->reloc_tree_size = bo_gem->bo.size;
+    bo_gem->used_as_reloc_target = 0;
 
     DBG("bo_create: buf %d (%s) %ldb\n",
 	bo_gem->gem_handle, bo_gem->name, size);
@@ -699,6 +724,15 @@ dri_gem_bo_emit_reloc(dri_bo *bo, uint32_t read_domains, uint32_t write_domain,
     assert (offset <= bo->size - 4);
     assert ((write_domain & (write_domain-1)) == 0);
 
+    /* Make sure that we're not adding a reloc to something whose size has
+     * already been accounted for.
+     */
+    assert(!bo_gem->used_as_reloc_target);
+    bo_gem->reloc_tree_size += target_bo_gem->reloc_tree_size;
+
+    /* Flag the target to disallow further relocations in it. */
+    target_bo_gem->used_as_reloc_target = 1;
+
     bo_gem->relocs[bo_gem->reloc_count].offset = offset;
     bo_gem->relocs[bo_gem->reloc_count].delta = delta;
     bo_gem->relocs[bo_gem->reloc_count].target_handle =
@@ -933,13 +967,96 @@ intel_bufmgr_gem_enable_reuse(dri_bufmgr *bufmgr)
     }
 }
 
-/*
+/**
+ * Return the additional aperture space required by the tree of buffer objects
+ * rooted at bo.
+ */
+static int
+dri_gem_bo_get_aperture_space(dri_bo *bo)
+{
+    dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
+    int i;
+    int total = 0;
+
+    if (bo == NULL || bo_gem->included_in_check_aperture)
+	return 0;
+
+    total += bo->size;
+    bo_gem->included_in_check_aperture = 1;
+
+    for (i = 0; i < bo_gem->reloc_count; i++)
+	total += dri_gem_bo_get_aperture_space(bo_gem->reloc_target_bo[i]);
+
+    return total;
+}
+
+/**
+ * Clear the flag set by dri_gem_bo_get_aperture_space() so we're ready for
+ * the next dri_bufmgr_check_aperture_space() call.
+ */
+static void
+dri_gem_bo_clear_aperture_space_flag(dri_bo *bo)
+{
+    dri_bo_gem *bo_gem = (dri_bo_gem *)bo;
+    int i;
+
+    if (bo == NULL || !bo_gem->included_in_check_aperture)
+	return;
+
+    bo_gem->included_in_check_aperture = 0;
+
+    for (i = 0; i < bo_gem->reloc_count; i++)
+	dri_gem_bo_clear_aperture_space_flag(bo_gem->reloc_target_bo[i]);
+}
+
+/**
+ * Return -1 if the batchbuffer should be flushed before attempting to
+ * emit rendering referencing the buffers pointed to by bo_array.
  *
+ * This is required because if we try to emit a batchbuffer with relocations
+ * to a tree of buffers that won't simultaneously fit in the aperture,
+ * the rendering will return an error at a point where the software is not
+ * prepared to recover from it.
+ *
+ * However, we also want to emit the batchbuffer significantly before we reach
+ * the limit, as a series of batchbuffers each of which references buffers
+ * covering almost all of the aperture means that at each emit we end up
+ * waiting to evict a buffer from the last rendering, and we get synchronous
+ * performance.  By emitting smaller batchbuffers, we eat some CPU overhead to
+ * get better parallelism.
  */
 static int
 dri_gem_check_aperture_space(dri_bo **bo_array, int count)
 {
-    return 0;
+    dri_bufmgr_gem *bufmgr_gem = (dri_bufmgr_gem *)bo_array[0]->bufmgr;
+    unsigned int total = 0;
+    unsigned int threshold = bufmgr_gem->gtt_size * 3 / 4;
+    int i;
+
+    for (i = 0; i < count; i++) {
+	dri_bo_gem *bo_gem = (dri_bo_gem *)bo_array[i];
+	if (bo_gem != NULL)
+		total += bo_gem->reloc_tree_size;
+    }
+
+    if (total > threshold) {
+	total = 0;
+	for (i = 0; i < count; i++)
+	    total += dri_gem_bo_get_aperture_space(bo_array[i]);
+
+	for (i = 0; i < count; i++)
+	    dri_gem_bo_clear_aperture_space_flag(bo_array[i]);
+    }
+
+    if (total > bufmgr_gem->gtt_size * 3 / 4) {
+	DBG("check_space: overflowed available aperture, %dkb vs %dkb\n",
+	    total / 1024, (int)bufmgr_gem->gtt_size / 1024);
+	return -1;
+    } else {
+	DBG("drm_check_space: total %dkb vs bufgr %dkb\n", total / 1024 ,
+	    (int)bufmgr_gem->gtt_size / 1024);
+	return 0;
+    }
 }
 
 /**
@@ -952,7 +1069,8 @@ dri_bufmgr *
 intel_bufmgr_gem_init(int fd, int batch_size)
 {
     dri_bufmgr_gem *bufmgr_gem;
-    int i;
+    struct drm_i915_gem_get_aperture aperture;
+    int ret, i;
 
     bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
     bufmgr_gem->fd = fd;
@@ -961,6 +1079,19 @@ intel_bufmgr_gem_init(int fd, int batch_size)
       free(bufmgr_gem);
       return NULL;
    }
+
+    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_GET_APERTURE, &aperture);
+
+    if (ret == 0)
+	bufmgr_gem->gtt_size = aperture.aper_available_size;
+    else {
+	fprintf(stderr, "DRM_IOCTL_I915_GEM_APERTURE failed: %s\n",
+		strerror(errno));
+	bufmgr_gem->gtt_size = 128 * 1024 * 1024;
+	fprintf(stderr, "Assuming %dkB available aperture size.\n"
+		"May lead to reduced performance or incorrect rendering.\n",
+		(int)bufmgr_gem->gtt_size / 1024);
+    }
 
     /* Let's go with one relocation per every 2 dwords (but round down a bit
      * since a power of two will mean an extra page allocation for the reloc
