@@ -680,6 +680,26 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
     module->size_of_image = image->GetVMSize();
     module->module_name_rva = string_location.rva;
 
+    // We'll skip the executable module, because they don't have
+    // LC_ID_DYLIB load commands, and the crash processing server gets
+    // version information from the Plist file, anyway.
+    if (index != (uint32_t)FindExecutableModule()) {
+      module->version_info.signature = MD_VSFIXEDFILEINFO_SIGNATURE;
+      module->version_info.struct_version |= MD_VSFIXEDFILEINFO_VERSION;
+      // Convert MAC dylib version format, which is a 32 bit number, to the
+      // format used by minidump.  The mac format is <16 bits>.<8 bits>.<8 bits>
+      // so it fits nicely into the windows version with some massaging
+      // The mapping is:
+      //    1) upper 16 bits of MAC version go to lower 16 bits of product HI
+      //    2) Next most significant 8 bits go to upper 16 bits of product LO
+      //    3) Least significant 8 bits go to lower 16 bits of product LO
+      uint32_t modVersion = image->GetVersion();
+      module->version_info.file_version_hi = 0;
+      module->version_info.file_version_hi = modVersion >> 16;
+      module->version_info.file_version_lo |= (modVersion & 0xff00)  << 8;
+      module->version_info.file_version_lo |= (modVersion & 0xff);
+    }
+    
     if (!WriteCVRecord(module, cpu_type, name)) {
       return false;
     }

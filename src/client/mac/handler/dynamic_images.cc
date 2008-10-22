@@ -187,7 +187,7 @@ void* ReadTaskMemory(task_port_t target_task,
 
 //==============================================================================
 // Initializes vmaddr_, vmsize_, and slide_
-void DynamicImage::CalculateMemoryInfo() {
+void DynamicImage::CalculateMemoryAndVersionInfo() {
   breakpad_mach_header *header = GetMachHeader();
 
   // unless we can process the header, ensure that calls to
@@ -195,7 +195,11 @@ void DynamicImage::CalculateMemoryInfo() {
   vmaddr_ = 0;
   vmsize_ = 0;
   slide_ = 0;
+  version_ = 0;
 
+  bool foundTextSection = false;
+  bool foundDylibIDCommand = false;
+  
 #if __LP64__
   if(header->magic != MH_MAGIC_64) {
     return;
@@ -206,28 +210,46 @@ void DynamicImage::CalculateMemoryInfo() {
   }
 #endif
 
+#ifdef __LP64__
+  const uint32_t segmentLoadCommand = LC_SEGMENT_64;
+#else
+  const uint32_t segmentLoadCommand = LC_SEGMENT;
+#endif
+
   const struct load_command *cmd =
     reinterpret_cast<const struct load_command *>(header + 1);
 
   for (unsigned int i = 0; cmd && (i < header->ncmds); ++i) {
-#ifdef __LP64__
-    if (cmd->cmd == LC_SEGMENT_64) {
-#else
-    if (cmd->cmd == LC_SEGMENT) {
-#endif
-      const breakpad_mach_segment_command *seg =
-        reinterpret_cast<const breakpad_mach_segment_command *>(cmd);
+    if (!foundTextSection) {
+      if (cmd->cmd == segmentLoadCommand) {
+        const breakpad_mach_segment_command *seg =
+            reinterpret_cast<const breakpad_mach_segment_command *>(cmd);
 
-      if (!strcmp(seg->segname, "__TEXT")) {
-        vmaddr_ = seg->vmaddr;
-        vmsize_ = seg->vmsize;
-        slide_ = 0;
+        if (!strcmp(seg->segname, "__TEXT")) {
+          vmaddr_ = seg->vmaddr;
+          vmsize_ = seg->vmsize;
+          slide_ = 0;
 
-        if (seg->fileoff == 0  &&  seg->filesize != 0) {
-          slide_ = (uintptr_t)GetLoadAddress() - (uintptr_t)seg->vmaddr;
+          if (seg->fileoff == 0  &&  seg->filesize != 0) {
+            slide_ = (uintptr_t)GetLoadAddress() - (uintptr_t)seg->vmaddr;
+          }
+          foundTextSection = true;
         }
-        return;
       }
+    }
+
+    if (!foundDylibIDCommand) {
+      if (cmd->cmd == LC_ID_DYLIB) {
+        const struct dylib_command *dc =
+            reinterpret_cast<const struct dylib_command *>(cmd);
+
+        version_ = dc->dylib.current_version;
+        foundDylibIDCommand = true;
+      }
+    }
+
+    if (foundDylibIDCommand && foundTextSection) {
+      return;
     }
 
     cmd = reinterpret_cast<const struct load_command *>

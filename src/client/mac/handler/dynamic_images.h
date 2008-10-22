@@ -114,7 +114,7 @@ class DynamicImage {
       file_mod_date_(image_mod_date),
       task_(task) {
     InitializeFilePath(inFilePath);
-    CalculateMemoryInfo();
+    CalculateMemoryAndVersionInfo();
   }
 
   ~DynamicImage() {
@@ -150,6 +150,7 @@ class DynamicImage {
   // Task owning this loaded image
   mach_port_t GetTask() {return task_;}
 
+  uint32_t GetVersion() {return version_;}
   // For sorting
   bool operator<(const DynamicImage &inInfo) {
     return GetLoadAddress() < inInfo.GetLoadAddress();
@@ -176,29 +177,7 @@ class DynamicImage {
   }
 
   // Initializes vmaddr_, vmsize_, and slide_
-  void CalculateMemoryInfo();
-
-#if 0   // currently not needed
-  // Copy constructor: we don't want this to be invoked,
-  // but here's the code in case we need to make it public some day.
-  DynamicImage(DynamicImage &inInfo)
-    : load_address_(inInfo.load_address_),
-      vmaddr_(inInfo.vmaddr_),
-      vmsize_(inInfo.vmsize_),
-      slide_(inInfo.slide_),
-      file_mod_date_(inInfo.file_mod_date_),
-      task_(inInfo.task_) {
-    // copy file path string
-    InitializeFilePath(inInfo.GetFilePath());
-
-    // copy mach_header and load commands
-    void *headerBuffer = malloc(inInfo.header_size_);
-    header_ = reinterpret_cast<breakpad_mach_header*>(headerBuffer);
-
-    memcpy(header_, inInfo.header_, inInfo.header_size_);
-    header_size_ = inInfo.header_size_;
-  }
-#endif
+  void CalculateMemoryAndVersionInfo();
 
   breakpad_mach_header    *header_;        // our local copy of the header
   int                     header_size_;    // mach_header plus load commands
@@ -206,7 +185,7 @@ class DynamicImage {
   mach_vm_address_t       vmaddr_;
   mach_vm_size_t          vmsize_;
   ptrdiff_t               slide_;
-
+  uint32_t                version_;        // Dylib version
   char                    *file_path_;     // path dyld used to load the image
   uintptr_t               file_mod_date_;  // time_t of image file
 

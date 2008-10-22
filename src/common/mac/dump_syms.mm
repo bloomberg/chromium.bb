@@ -502,7 +502,7 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
     }
   
     // set line number for beginning of function
-    if (![dict objectForKey:kAddressSourceLineKey])
+    if (iter->second->line && ![dict objectForKey:kAddressSourceLineKey])
       [dict setObject:[NSNumber numberWithUnsignedInt:iter->second->line]
 	    forKey:kAddressSourceLineKey];
 
@@ -534,7 +534,7 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
       [dict release];
     } 
 	
-    if (![dict objectForKey:kAddressSourceLineKey]) {
+    if (iter->second.second && ![dict objectForKey:kAddressSourceLineKey]) {
       [dict setObject:[NSNumber numberWithUnsignedInt:iter->second.second]
 	    forKey:kAddressSourceLineKey];
     }
@@ -1022,6 +1022,12 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
       continue;
 
     if ([symbol hasPrefix:@"GCC_except_table"])
+      continue;
+
+    if ([symbol hasPrefix:@"__tcf"])
+      continue;
+
+    if ([symbol hasPrefix:@"non-virtual thunk"])
       continue;
 
     // Find the source file (if any) that contains this address
