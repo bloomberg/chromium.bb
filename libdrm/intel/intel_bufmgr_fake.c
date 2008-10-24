@@ -1193,9 +1193,10 @@ dri_fake_emit_reloc(dri_bo *reloc_buf,
 
    dri_fake_bo_reference_locked(target_buf);
 
-   if (!target_fake->is_static)
+   if (!target_fake->is_static) {
       reloc_fake->child_size += ALIGN(target_buf->size, target_fake->alignment);
-
+      reloc_fake->child_size += target_fake->child_size;
+   }
    r->target_buf = target_buf;
    r->offset = offset;
    r->last_target_offset = target_buf->offset;
