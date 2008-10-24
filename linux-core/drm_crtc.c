@@ -1448,9 +1448,9 @@ int drm_mode_cursor_ioctl(struct drm_device *dev,
 	}
 
 	mutex_lock(&dev->mode_config.mutex);
-	obj = drm_mode_object_find(dev, req->crtc, DRM_MODE_OBJECT_CRTC);
+	obj = drm_mode_object_find(dev, req->crtc_id, DRM_MODE_OBJECT_CRTC);
 	if (!obj) {
-		DRM_DEBUG("Unknown CRTC ID %d\n", req->crtc);
+		DRM_DEBUG("Unknown CRTC ID %d\n", req->crtc_id);
 		ret = -EINVAL;
 		goto out;
 	}

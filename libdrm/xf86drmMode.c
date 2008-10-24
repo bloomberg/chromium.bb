@@ -308,7 +308,7 @@ int drmModeSetCursor(int fd, uint32_t crtcId, uint32_t bo_handle, uint32_t width
 	struct drm_mode_cursor arg;
 
 	arg.flags = DRM_MODE_CURSOR_BO;
-	arg.crtc = crtcId;
+	arg.crtc_id = crtcId;
 	arg.width = width;
 	arg.height = height;
 	arg.handle = bo_handle;
@@ -321,7 +321,7 @@ int drmModeMoveCursor(int fd, uint32_t crtcId, int x, int y)
 	struct drm_mode_cursor arg;
 
 	arg.flags = DRM_MODE_CURSOR_MOVE;
-	arg.crtc = crtcId;
+	arg.crtc_id = crtcId;
 	arg.x = x;
 	arg.y = y;
 
