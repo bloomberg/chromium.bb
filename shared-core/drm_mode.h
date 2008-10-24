@@ -33,10 +33,10 @@
 #include <linux/kernel.h>
 #endif
 
-#define DRM_DISPLAY_INFO_LEN 32
-#define DRM_CONNECTOR_NAME_LEN 32
-#define DRM_DISPLAY_MODE_LEN 32
-#define DRM_PROP_NAME_LEN 32
+#define DRM_DISPLAY_INFO_LEN	32
+#define DRM_CONNECTOR_NAME_LEN	32
+#define DRM_DISPLAY_MODE_LEN	32
+#define DRM_PROP_NAME_LEN	32
 
 #define DRM_MODE_TYPE_BUILTIN	(1<<0)
 #define DRM_MODE_TYPE_CLOCK_C	((1<<1) | DRM_MODE_TYPE_BUILTIN)
@@ -65,20 +65,20 @@
 
 /* DPMS flags */
 /* bit compatible with the xorg definitions. */
-#define DRM_MODE_DPMS_ON 0
-#define DRM_MODE_DPMS_STANDBY 1
-#define DRM_MODE_DPMS_SUSPEND 2
-#define DRM_MODE_DPMS_OFF 3
+#define DRM_MODE_DPMS_ON	0
+#define DRM_MODE_DPMS_STANDBY	1
+#define DRM_MODE_DPMS_SUSPEND	2
+#define DRM_MODE_DPMS_OFF	3
 
 /* Scaling mode options */
-#define DRM_MODE_SCALE_NON_GPU 0
-#define DRM_MODE_SCALE_FULLSCREEN 1
-#define DRM_MODE_SCALE_NO_SCALE 2
-#define DRM_MODE_SCALE_ASPECT 3
+#define DRM_MODE_SCALE_NON_GPU		0
+#define DRM_MODE_SCALE_FULLSCREEN	1
+#define DRM_MODE_SCALE_NO_SCALE		2
+#define DRM_MODE_SCALE_ASPECT		3
 
 /* Dithering mode options */
-#define DRM_MODE_DITHERING_OFF 0
-#define DRM_MODE_DITHERING_ON 1
+#define DRM_MODE_DITHERING_OFF	0
+#define DRM_MODE_DITHERING_ON	1
 
 struct drm_mode_modeinfo {
 	unsigned int clock;
@@ -119,11 +119,11 @@ struct drm_mode_crtc {
 	struct drm_mode_modeinfo mode;
 };
 
-#define DRM_MODE_ENCODER_NONE 0
-#define DRM_MODE_ENCODER_DAC  1
-#define DRM_MODE_ENCODER_TMDS 2
-#define DRM_MODE_ENCODER_LVDS 3
-#define DRM_MODE_ENCODER_TVDAC 4
+#define DRM_MODE_ENCODER_NONE	0
+#define DRM_MODE_ENCODER_DAC	1
+#define DRM_MODE_ENCODER_TMDS	2
+#define DRM_MODE_ENCODER_LVDS	3
+#define DRM_MODE_ENCODER_TVDAC	4
 
 struct drm_mode_get_encoder {
 
@@ -138,27 +138,27 @@ struct drm_mode_get_encoder {
 
 /* This is for connectors with multiple signal types. */
 /* Try to match DRM_MODE_CONNECTOR_X as closely as possible. */
-#define DRM_MODE_SUBCONNECTOR_Automatic 0
-#define DRM_MODE_SUBCONNECTOR_Unknown 0
-#define DRM_MODE_SUBCONNECTOR_DVID 3
-#define DRM_MODE_SUBCONNECTOR_DVIA 4
-#define DRM_MODE_SUBCONNECTOR_Composite 5
-#define DRM_MODE_SUBCONNECTOR_SVIDEO 6
-#define DRM_MODE_SUBCONNECTOR_Component 8
+#define DRM_MODE_SUBCONNECTOR_Automatic	0
+#define DRM_MODE_SUBCONNECTOR_Unknown	0
+#define DRM_MODE_SUBCONNECTOR_DVID	3
+#define DRM_MODE_SUBCONNECTOR_DVIA	4
+#define DRM_MODE_SUBCONNECTOR_Composite	5
+#define DRM_MODE_SUBCONNECTOR_SVIDEO	6
+#define DRM_MODE_SUBCONNECTOR_Component	8
 
-#define DRM_MODE_CONNECTOR_Unknown 0
-#define DRM_MODE_CONNECTOR_VGA 1
-#define DRM_MODE_CONNECTOR_DVII 2
-#define DRM_MODE_CONNECTOR_DVID 3
-#define DRM_MODE_CONNECTOR_DVIA 4
-#define DRM_MODE_CONNECTOR_Composite 5
-#define DRM_MODE_CONNECTOR_SVIDEO 6
-#define DRM_MODE_CONNECTOR_LVDS 7
-#define DRM_MODE_CONNECTOR_Component 8
-#define DRM_MODE_CONNECTOR_9PinDIN 9
-#define DRM_MODE_CONNECTOR_DisplayPort 10
-#define DRM_MODE_CONNECTOR_HDMIA 11
-#define DRM_MODE_CONNECTOR_HDMIB 12
+#define DRM_MODE_CONNECTOR_Unknown	0
+#define DRM_MODE_CONNECTOR_VGA		1
+#define DRM_MODE_CONNECTOR_DVII		2
+#define DRM_MODE_CONNECTOR_DVID		3
+#define DRM_MODE_CONNECTOR_DVIA		4
+#define DRM_MODE_CONNECTOR_Composite	5
+#define DRM_MODE_CONNECTOR_SVIDEO	6
+#define DRM_MODE_CONNECTOR_LVDS		7
+#define DRM_MODE_CONNECTOR_Component	8
+#define DRM_MODE_CONNECTOR_9PinDIN	9
+#define DRM_MODE_CONNECTOR_DisplayPort	10
+#define DRM_MODE_CONNECTOR_HDMIA	11
+#define DRM_MODE_CONNECTOR_HDMIB	12
 
 struct drm_mode_get_connector {
 
@@ -181,11 +181,11 @@ struct drm_mode_get_connector {
 	unsigned int subpixel;
 };
 
-#define DRM_MODE_PROP_PENDING (1<<0)
-#define DRM_MODE_PROP_RANGE (1<<1)
-#define DRM_MODE_PROP_IMMUTABLE (1<<2)
-#define DRM_MODE_PROP_ENUM (1<<3) /* enumerated type with text strings */
-#define DRM_MODE_PROP_BLOB (1<<4)
+#define DRM_MODE_PROP_PENDING	(1<<0)
+#define DRM_MODE_PROP_RANGE	(1<<1)
+#define DRM_MODE_PROP_IMMUTABLE	(1<<2)
+#define DRM_MODE_PROP_ENUM	(1<<3) /* enumerated type with text strings */
+#define DRM_MODE_PROP_BLOB	(1<<4)
 
 struct drm_mode_property_enum {
 	uint64_t value;
@@ -230,8 +230,8 @@ struct drm_mode_mode_cmd {
 	struct drm_mode_modeinfo mode;
 };
 
-#define DRM_MODE_CURSOR_BO   0x01
-#define DRM_MODE_CURSOR_MOVE 0x02
+#define DRM_MODE_CURSOR_BO	(1<<0)
+#define DRM_MODE_CURSOR_MOVE	(1<<1)
 
 /*
  * depending on the value in flags diffrent members are used.
