@@ -709,6 +709,11 @@ static int nouveau_suspend(struct drm_device *dev)
 	struct nouveau_engine *engine = &dev_priv->Engine;
 	int i;
 
+	if (dev_priv->card_type >= NV_50) {
+		DRM_DEBUG("Suspend not supported for NV50+\n");
+		return -ENODEV;
+	}
+
 	drm_free(susres->ramin_copy, susres->ramin_size, DRM_MEM_DRIVER);
 	susres->ramin_size = 0;
 	list_for_each(p, dev_priv->ramin_heap)
