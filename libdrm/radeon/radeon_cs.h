@@ -47,7 +47,7 @@ struct radeon_cs_manager;
 
 struct radeon_cs {
     struct radeon_cs_manager    *csm;
-    struct radeon_cs_reloc      *relocs;
+    void                        *relocs;
     uint32_t                    *packets;
     unsigned                    crelocs;
     unsigned                    cdw;
