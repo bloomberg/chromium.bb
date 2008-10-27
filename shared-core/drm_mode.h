@@ -220,9 +220,9 @@ struct drm_mode_fb_cmd {
 	uint32_t width, height;
 	uint32_t pitch;
 	uint32_t bpp;
+	uint32_t handle;
 	uint32_t depth;
 
-	uint64_t handle;
 };
 
 struct drm_mode_mode_cmd {
@@ -255,7 +255,7 @@ struct drm_mode_cursor {
 	uint32_t width;
 	uint32_t height;
 	/* driver specific handle */
-	uint64_t handle;
+	uint32_t handle;
 };
 
 /*
