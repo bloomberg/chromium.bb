@@ -114,21 +114,6 @@ class ExceptionHandler {
   static bool WriteMinidump(const string &dump_path, MinidumpCallback callback,
                             void *callback_context);
 
-  // Temporarily stop this class from receiving exceptions
-  // Returns true if exception handling was successfully suspended
-  // It's an error to call this function if exception handling is
-  // not installed(we return false)
-  bool SuspendExceptionHandling();
-
-  // Resume this class from receiving exceptions
-  // Returns true if exception handling was successfully resumed
-  // It's an error to call this function if exception handling is
-  // already installed
-  bool ResumeExceptionHandling();
-
-  // Tell caller whether we're setup to handle exceptions or not
-  bool ExceptionHandlerIsSuspended();
-
  private:
   // Install the mach exception handler
   bool InstallHandler();

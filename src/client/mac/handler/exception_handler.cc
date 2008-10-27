@@ -206,6 +206,10 @@ kern_return_t breakpad_exception_raise(mach_port_t port, mach_port_t failed_thre
                                        exception_type_t exception,
                                        exception_data_t code,
                                        mach_msg_type_number_t code_count) {
+
+  if (task != mach_task_self()) {
+    return KERN_FAILURE;
+  }
   return ForwardException(task, failed_thread, exception, code, code_count);
 }
 
@@ -451,7 +455,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
       // Uninstall our handler so that we don't get in a loop if the process of
       // writing out a minidump causes an exception.  However, if the exception
       // was caused by a fork'd process, don't uninstall things
-      if (receive.task.name == mach_task_self())
+
       // If the actual exception code is zero, then we're calling this handler
       // in a way that indicates that we want to either exit this thread or
       // generate a minidump
@@ -491,7 +495,10 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         // if the child crashes, it will send the exception back to the parent
         // process.  The check for task == self_task() ensures that only
         // exceptions that occur in the parent process are caught and
-        // processed.
+        // processed.  If the exception was not caused by this task, we
+        // still need to call into the exception server and have it return
+        // KERN_FAILURE (see breakpad_exception_raise) in order for the kernel
+        // to move onto the host exception handler for the child task
         if (receive.task.name == mach_task_self()) {
           self->SuspendThreads();
 
@@ -510,21 +517,18 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
         if(gBreakpadAllocator)
           gBreakpadAllocator->Protect();
 #endif
-
-          // Pass along the exception to the server, which will setup the
-          // message and call catch_exception_raise() and put the KERN_SUCCESS
-          // into the reply.
-          ExceptionReplyMessage reply;
-          if (!exc_server(&receive.header, &reply.header))
-            exit(1);
-
-          // Send a reply and exit
-          result = mach_msg(&(reply.header), MACH_SEND_MSG,
-                            reply.header.msgh_size, 0, MACH_PORT_NULL,
-                            MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
-        } else {
-          // An exception occurred in a child process
         }
+        // Pass along the exception to the server, which will setup the
+        // message and call breakpad_exception_raise() and put the return
+        // code into the reply.
+        ExceptionReplyMessage reply;
+        if (!exc_server(&receive.header, &reply.header))
+          exit(1);
+
+        // Send a reply and exit
+        result = mach_msg(&(reply.header), MACH_SEND_MSG,
+                          reply.header.msgh_size, 0, MACH_PORT_NULL,
+                          MACH_MSG_TIMEOUT_NONE, MACH_PORT_NULL);
       }
     }
   }
@@ -598,36 +602,6 @@ bool ExceptionHandler::UninstallHandler(bool in_exception) {
   }
 
   return result == KERN_SUCCESS;
-}
-
-bool ExceptionHandler::SuspendExceptionHandling() {
-  if (!installed_exception_handler_) {
-    return false;
-  }
-
-  return UninstallHandler(false);
-}
-
-
-bool ExceptionHandler::ResumeExceptionHandling() {
-
-  if (installed_exception_handler_) {
-    return false;
-  }
-
-  // This conditional means that Setup() has never been
-  // called, but since it's called from the constructor
-  // we should never hit this.
-  assert(handler_port_);
-  if (handler_port_ == MACH_PORT_NULL) {
-    return false;
-  }
-
-  return InstallHandler();
-}
-
-bool ExceptionHandler::ExceptionHandlerIsSuspended() {
-  return handler_port_ != MACH_PORT_NULL && !installed_exception_handler_;
 }
 
 bool ExceptionHandler::Setup(bool install_handler) {
