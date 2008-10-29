@@ -126,10 +126,10 @@ struct drm_mode_crtc {
 #define DRM_MODE_ENCODER_TVDAC	4
 
 struct drm_mode_get_encoder {
+	unsigned int encoder_type;
 	unsigned int encoder_id;
-	unsigned int crtc_id; /**< Id of crtc */
 
-	uint32_t encoder_type;
+	unsigned int crtc_id; /**< Id of crtc */
 
 	uint32_t possible_crtcs;
 	uint32_t possible_clones;
