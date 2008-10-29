@@ -50,6 +50,7 @@ struct radeon_cs {
     void                        *relocs;
     uint32_t                    *packets;
     unsigned                    crelocs;
+    unsigned                    relocs_total_size;
     unsigned                    cdw;
     unsigned                    ndw;
     int                         section;
@@ -82,6 +83,7 @@ struct radeon_cs_funcs {
     int (*cs_emit)(struct radeon_cs *cs);
     int (*cs_destroy)(struct radeon_cs *cs);
     int (*cs_erase)(struct radeon_cs *cs);
+    int (*cs_need_flush)(struct radeon_cs *cs);
 };
 
 struct radeon_cs_manager {
@@ -139,6 +141,11 @@ static inline int radeon_cs_destroy(struct radeon_cs *cs)
 static inline int radeon_cs_erase(struct radeon_cs *cs)
 {
     return cs->csm->funcs->cs_erase(cs);
+}
+
+static inline int radeon_cs_need_flush(struct radeon_cs *cs)
+{
+    return cs->csm->funcs->cs_need_flush(cs);
 }
 
 #endif
