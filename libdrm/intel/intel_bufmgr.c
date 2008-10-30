@@ -39,26 +39,26 @@
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 
-/** @file dri_bufmgr.c
+/** @file intel_bufmgr.c
  *
  * Convenience functions for buffer management methods.
  */
 
-dri_bo *
-dri_bo_alloc(dri_bufmgr *bufmgr, const char *name, unsigned long size,
-	     unsigned int alignment)
+drm_intel_bo *
+drm_intel_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
+		   unsigned long size, unsigned int alignment)
 {
    return bufmgr->bo_alloc(bufmgr, name, size, alignment);
 }
 
 void
-dri_bo_reference(dri_bo *bo)
+drm_intel_bo_reference(drm_intel_bo *bo)
 {
    bo->bufmgr->bo_reference(bo);
 }
 
 void
-dri_bo_unreference(dri_bo *bo)
+drm_intel_bo_unreference(drm_intel_bo *bo)
 {
    if (bo == NULL)
       return;
@@ -67,38 +67,39 @@ dri_bo_unreference(dri_bo *bo)
 }
 
 int
-dri_bo_map(dri_bo *buf, int write_enable)
+drm_intel_bo_map(drm_intel_bo *buf, int write_enable)
 {
    return buf->bufmgr->bo_map(buf, write_enable);
 }
 
 int
-dri_bo_unmap(dri_bo *buf)
+drm_intel_bo_unmap(drm_intel_bo *buf)
 {
    return buf->bufmgr->bo_unmap(buf);
 }
 
 int
-dri_bo_subdata(dri_bo *bo, unsigned long offset,
-	       unsigned long size, const void *data)
+drm_intel_bo_subdata(drm_intel_bo *bo, unsigned long offset,
+		     unsigned long size, const void *data)
 {
    int ret;
+
    if (bo->bufmgr->bo_subdata)
       return bo->bufmgr->bo_subdata(bo, offset, size, data);
    if (size == 0 || data == NULL)
       return 0;
 
-   ret = dri_bo_map(bo, 1);
+   ret = drm_intel_bo_map(bo, 1);
    if (ret)
        return ret;
    memcpy((unsigned char *)bo->virtual + offset, data, size);
-   dri_bo_unmap(bo);
+   drm_intel_bo_unmap(bo);
    return 0;
 }
 
 int
-dri_bo_get_subdata(dri_bo *bo, unsigned long offset,
-		   unsigned long size, void *data)
+drm_intel_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
+			 unsigned long size, void *data)
 {
    int ret;
    if (bo->bufmgr->bo_subdata)
@@ -107,48 +108,48 @@ dri_bo_get_subdata(dri_bo *bo, unsigned long offset,
    if (size == 0 || data == NULL)
       return 0;
 
-   ret = dri_bo_map(bo, 0);
+   ret = drm_intel_bo_map(bo, 0);
    if (ret)
        return ret;
    memcpy(data, (unsigned char *)bo->virtual + offset, size);
-   dri_bo_unmap(bo);
+   drm_intel_bo_unmap(bo);
    return 0;
 }
 
 void
-dri_bo_wait_rendering(dri_bo *bo)
+drm_intel_bo_wait_rendering(drm_intel_bo *bo)
 {
    bo->bufmgr->bo_wait_rendering(bo);
 }
 
 void
-dri_bufmgr_destroy(dri_bufmgr *bufmgr)
+drm_intel_bufmgr_destroy(drm_intel_bufmgr *bufmgr)
 {
    bufmgr->destroy(bufmgr);
 }
 
 int
-dri_bo_exec(dri_bo *bo, int used,
-	    drm_clip_rect_t *cliprects, int num_cliprects,
-	    int DR4)
+drm_intel_bo_exec(drm_intel_bo *bo, int used,
+		  drm_clip_rect_t *cliprects, int num_cliprects,
+		  int DR4)
 {
    return bo->bufmgr->bo_exec(bo, used, cliprects, num_cliprects, DR4);
 }
 
 void
-dri_bufmgr_set_debug(dri_bufmgr *bufmgr, int enable_debug)
+drm_intel_bufmgr_set_debug(drm_intel_bufmgr *bufmgr, int enable_debug)
 {
    bufmgr->debug = enable_debug;
 }
 
 int
-dri_bufmgr_check_aperture_space(dri_bo **bo_array, int count)
+drm_intel_bufmgr_check_aperture_space(drm_intel_bo **bo_array, int count)
 {
 	return bo_array[0]->bufmgr->check_aperture_space(bo_array, count);
 }
 
 int
-dri_bo_flink(dri_bo *bo, uint32_t *name)
+drm_intel_bo_flink(drm_intel_bo *bo, uint32_t *name)
 {
     if (bo->bufmgr->bo_flink)
 	return bo->bufmgr->bo_flink(bo, name);
@@ -157,17 +158,17 @@ dri_bo_flink(dri_bo *bo, uint32_t *name)
 }
 
 int
-dri_bo_emit_reloc(dri_bo *reloc_buf,
-		  uint32_t read_domains, uint32_t write_domain,
-		  uint32_t delta, uint32_t offset, dri_bo *target_buf)
+drm_intel_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
+			drm_intel_bo *target_bo, uint32_t target_offset,
+			uint32_t read_domains, uint32_t write_domain)
 {
-    return reloc_buf->bufmgr->bo_emit_reloc(reloc_buf,
-					    read_domains, write_domain,
-					    delta, offset, target_buf);
+	return bo->bufmgr->bo_emit_reloc(bo, offset,
+					 target_bo, target_offset,
+					 read_domains, write_domain);
 }
 
 int
-dri_bo_pin(dri_bo *bo, uint32_t alignment)
+drm_intel_bo_pin(drm_intel_bo *bo, uint32_t alignment)
 {
     if (bo->bufmgr->bo_pin)
 	return bo->bufmgr->bo_pin(bo, alignment);
@@ -176,7 +177,7 @@ dri_bo_pin(dri_bo *bo, uint32_t alignment)
 }
 
 int
-dri_bo_unpin(dri_bo *bo)
+drm_intel_bo_unpin(drm_intel_bo *bo)
 {
     if (bo->bufmgr->bo_unpin)
 	return bo->bufmgr->bo_unpin(bo);
@@ -184,16 +185,18 @@ dri_bo_unpin(dri_bo *bo)
     return -ENODEV;
 }
 
-int dri_bo_set_tiling(dri_bo *bo, uint32_t *tiling_mode)
+int drm_intel_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
+			    uint32_t stride)
 {
     if (bo->bufmgr->bo_set_tiling)
-	return bo->bufmgr->bo_set_tiling(bo, tiling_mode);
+	return bo->bufmgr->bo_set_tiling(bo, tiling_mode, stride);
 
     *tiling_mode = I915_TILING_NONE;
     return 0;
 }
 
-int dri_bo_get_tiling(dri_bo *bo, uint32_t *tiling_mode, uint32_t *swizzle_mode)
+int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
+			    uint32_t *swizzle_mode)
 {
     if (bo->bufmgr->bo_get_tiling)
 	return bo->bufmgr->bo_get_tiling(bo, tiling_mode, swizzle_mode);

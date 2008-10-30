@@ -39,7 +39,7 @@
  *
  * Contains public methods followed by private storage for the buffer manager.
  */
-struct _dri_bufmgr {
+struct _drm_intel_bufmgr {
    /**
     * Allocate a buffer object.
     *
@@ -48,17 +48,17 @@ struct _dri_bufmgr {
     * bo_map() to be used by the CPU, and validated for use using bo_validate()
     * to be used from the graphics device.
     */
-   dri_bo *(*bo_alloc)(dri_bufmgr *bufmgr_ctx, const char *name,
-		       unsigned long size, unsigned int alignment);
+   drm_intel_bo *(*bo_alloc)(drm_intel_bufmgr *bufmgr, const char *name,
+			     unsigned long size, unsigned int alignment);
 
    /** Takes a reference on a buffer object */
-   void (*bo_reference)(dri_bo *bo);
+   void (*bo_reference)(drm_intel_bo *bo);
 
    /**
     * Releases a reference on a buffer object, freeing the data if
     * rerefences remain.
     */
-   void (*bo_unreference)(dri_bo *bo);
+   void (*bo_unreference)(drm_intel_bo *bo);
 
    /**
     * Maps the buffer into userspace.
@@ -67,28 +67,28 @@ struct _dri_bufmgr {
     * buffer to complete, first.  The resulting mapping is available at
     * buf->virtual.
     */
-   int (*bo_map)(dri_bo *buf, int write_enable);
+   int (*bo_map)(drm_intel_bo *bo, int write_enable);
 
    /** Reduces the refcount on the userspace mapping of the buffer object. */
-   int (*bo_unmap)(dri_bo *buf);
+   int (*bo_unmap)(drm_intel_bo *bo);
 
    /**
     * Write data into an object.
     *
     * This is an optional function, if missing,
-    * dri_bo will map/memcpy/unmap.
+    * drm_intel_bo will map/memcpy/unmap.
     */
-   int (*bo_subdata) (dri_bo *buf, unsigned long offset,
-		      unsigned long size, const void *data);
+   int (*bo_subdata)(drm_intel_bo *bo, unsigned long offset,
+		     unsigned long size, const void *data);
 
    /**
     * Read data from an object
     *
     * This is an optional function, if missing,
-    * dri_bo will map/memcpy/unmap.
+    * drm_intel_bo will map/memcpy/unmap.
     */
-   int (*bo_get_subdata) (dri_bo *bo, unsigned long offset,
-			  unsigned long size, void *data);
+   int (*bo_get_subdata)(drm_intel_bo *bo, unsigned long offset,
+			 unsigned long size, void *data);
 
    /**
     * Waits for rendering to an object by the GPU to have completed.
@@ -96,12 +96,12 @@ struct _dri_bufmgr {
     * This is not required for any access to the BO by bo_map, bo_subdata, etc.
     * It is merely a way for the driver to implement glFinish.
     */
-   void (*bo_wait_rendering) (dri_bo *bo);
+   void (*bo_wait_rendering)(drm_intel_bo *bo);
 
    /**
     * Tears down the buffer manager instance.
     */
-   void (*destroy)(dri_bufmgr *bufmgr);
+   void (*destroy)(drm_intel_bufmgr *bufmgr);
 
     /**
      * Add relocation entry in reloc_buf, which will be updated with the
@@ -109,23 +109,23 @@ struct _dri_bufmgr {
      *
      * Relocations remain in place for the lifetime of the buffer object.
      *
-     * \param reloc_buf Buffer to write the relocation into.
+     * \param bo Buffer to write the relocation into.
+     * \param offset Byte offset within reloc_bo of the pointer to target_bo.
+     * \param target_bo Buffer whose offset should be written into the
+     *                  relocation entry.
+     * \param target_offset Constant value to be added to target_bo's offset in
+     *	                    relocation entry.
      * \param read_domains GEM read domains which the buffer will be read into
      *	      by the command that this relocation is part of.
      * \param write_domains GEM read domains which the buffer will be dirtied
      *	      in by the command that this relocation is part of.
-     * \param delta Constant value to be added to the relocation target's
-     *	       offset.
-     * \param offset Byte offset within batch_buf of the relocated pointer.
-     * \param target Buffer whose offset should be written into the relocation
-     *	     entry.
      */
-    int (*bo_emit_reloc)(dri_bo *reloc_buf,
-			 uint32_t read_domains, uint32_t write_domain,
-			 uint32_t delta, uint32_t offset, dri_bo *target);
+    int (*bo_emit_reloc)(drm_intel_bo *bo, uint32_t offset,
+			 drm_intel_bo *target_bo, uint32_t target_offset,
+			 uint32_t read_domains, uint32_t write_domain);
 
     /** Executes the command buffer pointed to by bo. */
-    int (*bo_exec)(dri_bo *bo, int used,
+    int (*bo_exec)(drm_intel_bo *bo, int used,
 		   drm_clip_rect_t *cliprects, int num_cliprects,
 		   int DR4);
 
@@ -135,20 +135,21 @@ struct _dri_bufmgr {
      * \param buf Buffer to pin
      * \param alignment Required alignment for aperture, in bytes
      */
-    int (*bo_pin) (dri_bo *buf, uint32_t alignment);
+    int (*bo_pin)(drm_intel_bo *bo, uint32_t alignment);
     /**
      * Unpin a buffer from the aperture, allowing it to be removed
      *
      * \param buf Buffer to unpin
      */
-    int (*bo_unpin) (dri_bo *buf);
+    int (*bo_unpin)(drm_intel_bo *bo);
     /**
      * Ask that the buffer be placed in tiling mode
      *
      * \param buf Buffer to set tiling mode for
      * \param tiling_mode desired, and returned tiling mode
      */
-    int (*bo_set_tiling) (dri_bo *bo, uint32_t *tiling_mode);
+    int (*bo_set_tiling)(drm_intel_bo *bo, uint32_t *tiling_mode,
+			 uint32_t stride);
     /**
      * Get the current tiling (and resulting swizzling) mode for the bo.
      *
@@ -156,17 +157,17 @@ struct _dri_bufmgr {
      * \param tiling_mode returned tiling mode
      * \param swizzle_mode returned swizzling mode
      */
-    int (*bo_get_tiling) (dri_bo *bo, uint32_t *tiling_mode,
-			  uint32_t *swizzle_mode);
+    int (*bo_get_tiling)(drm_intel_bo *bo, uint32_t *tiling_mode,
+			 uint32_t *swizzle_mode);
     /**
      * Create a visible name for a buffer which can be used by other apps
      *
      * \param buf Buffer to create a name for
      * \param name Returned name
      */
-    int (*bo_flink) (dri_bo *buf, uint32_t *name);
+    int (*bo_flink)(drm_intel_bo *bo, uint32_t *name);
 
-    int (*check_aperture_space)(dri_bo **bo_array, int count);
+    int (*check_aperture_space)(drm_intel_bo **bo_array, int count);
     int debug; /**< Enables verbose debugging printouts */
 };
 
