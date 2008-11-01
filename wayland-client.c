@@ -15,11 +15,6 @@
 
 static const char socket_name[] = "\0wayland";
 
-struct wl_buffer {
-	char data[4096];
-	int head, tail;
-};
-
 struct wl_proxy {
 	struct wl_display *display;
 	uint32_t id;
