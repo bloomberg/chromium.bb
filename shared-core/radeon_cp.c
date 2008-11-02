@@ -825,7 +825,7 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 
 static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 {
-	u32 tmp;
+	u32 tmp, scratch1_store;
 	void *ring_read_ptr;
 
 	if (dev_priv->mm.ring_read.bo)
@@ -833,6 +833,7 @@ static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 	else
 		ring_read_ptr = dev_priv->ring_rptr->handle;
 
+	scratch1_store = RADEON_READ(RADEON_SCRATCH_REG1);
 	/* Writeback doesn't seem to work everywhere, test it here and possibly
 	 * enable it if it appears to work
 	 */
@@ -857,6 +858,9 @@ static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 		dev_priv->writeback_works = 0;
 		DRM_INFO("writeback forced off\n");
 	}
+
+	/* write back previous value */
+	RADEON_WRITE(RADEON_SCRATCH_REG1, scratch1_store);
 
 	if (!dev_priv->writeback_works) {
 		/* Disable writeback to avoid unnecessary bus master transfers */
@@ -2352,6 +2356,8 @@ int radeon_modeset_cp_resume(struct drm_device *dev)
 	radeon_cp_init_ring_buffer(dev, dev_priv);
 
 	radeon_do_engine_reset(dev);
+
+	radeon_test_writeback(dev_priv);
 
 	radeon_do_cp_start(dev_priv);
 	return 0;
