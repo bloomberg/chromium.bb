@@ -5,6 +5,8 @@
 #include <i915_drm.h>
 #include <sys/ioctl.h>
 #include <sys/poll.h>
+#include <sys/timerfd.h>
+#include <time.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -151,9 +153,10 @@ int main(int argc, char *argv[])
 	int fd, i, ret;
 	uint32_t name, mask;
 	cairo_surface_t *s;
-	struct pollfd p[1];
-
-	srandom(time(NULL));
+	struct pollfd p[2];
+	struct timespec ts;
+	struct itimerspec its;
+	uint64_t expires;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -171,6 +174,24 @@ int main(int argc, char *argv[])
 
 	surface = wl_display_create_surface(display);
 
+	p[1].fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	if (p[1].fd < 0) {
+		fprintf(stderr, "could not create timerfd\n: %m");
+		return -1;
+	}
+
+	p[1].events = POLLIN;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	its.it_value = ts;
+	its.it_interval.tv_sec = 0;
+	its.it_interval.tv_nsec = 20 * 1000000;
+	if (timerfd_settime(p[1].fd, TFD_TIMER_ABSTIME, &its, NULL) < 0) {
+		fprintf(stderr, "could not set timerfd\n: %m");
+		return -1;
+	}
+
+	srandom(ts.tv_nsec);
+
 	s = draw_stuff(width, height);
 	name = name_cairo_surface(fd, s);
 
@@ -178,8 +199,9 @@ int main(int argc, char *argv[])
 			  cairo_image_surface_get_stride(s));
 
 	i = 0;
-	while (ret = poll(p, 1, 20), ret >= 0) {
-		if (ret == 0) {
+	while (ret = poll(p, 2, -1), ret >= 0) {
+		if (p[1].revents & POLLIN) {
+			read(p[1].fd, &expires, sizeof expires);
 			wl_surface_map(surface, 
 				       x + cos(i / 30.0) * 200,
 				       y + sin(i / 31.0) * 200,

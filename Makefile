@@ -21,7 +21,7 @@ flower_objs = flower.o
 pointer_objs = pointer.o
 
 $(clients) : CFLAGS += $(shell pkg-config --cflags cairo)
-$(clients) : LDLIBS += $(shell pkg-config --libs cairo)
+$(clients) : LDLIBS += $(shell pkg-config --libs cairo) -lrt
 
 define client_template
 $(1): $$($(1)_objs) libwayland.so
