@@ -1502,7 +1502,7 @@ static int radeon_gem_dma_bufs_init(struct drm_device *dev)
 	if (ret < 0)
 		return ret;
 
-	ret = drm_buffer_object_create(dev, size, drm_bo_type_device,
+	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_NO_EVICT |
 				       DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MAPPABLE, 0,
 				       0, 0, &dev_priv->mm.dma_bufs.bo);
