@@ -84,10 +84,13 @@ static int radeon_interrupt_info(char *buf, char **start, off_t offset,
 	}
 	DRM_PROC_PRINT("Interrupts received: %d\n",
 		       atomic_read(&dev_priv->irq_received));
-	DRM_PROC_PRINT("Current sequence:    %d\n",
-		       READ_BREADCRUMB(dev_priv));
+	DRM_PROC_PRINT("Current sequence:    %d %d\n",
+		       READ_BREADCRUMB(dev_priv), RADEON_READ(RADEON_SCRATCH_REG3));
 	DRM_PROC_PRINT("Counter sequence:     %d\n",
 		       dev_priv->counter);
+	if (dev_priv->chip_family >= CHIP_R300) 
+		DRM_PROC_PRINT("CS:    %d\n",
+			       GET_SCRATCH(6));
 
 	
 	if (len > request + offset)
