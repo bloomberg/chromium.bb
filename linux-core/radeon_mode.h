@@ -255,6 +255,7 @@ struct radeon_connector {
 struct radeon_framebuffer {
 	struct drm_framebuffer base;
 	struct drm_bo_kmap_obj kmap_obj;
+	struct drm_gem_object *obj;
 };
 
 extern struct radeon_i2c_chan *radeon_i2c_create(struct drm_device *dev,
@@ -323,7 +324,7 @@ extern void radeon_crtc_fb_gamma_set(struct drm_crtc *crtc, u16 red, u16 green,
 				     u16 blue, int regno);
 struct drm_framebuffer *radeon_framebuffer_create(struct drm_device *dev,
 						  struct drm_mode_fb_cmd *mode_cmd,
-						  void *mm_private);
+						  struct drm_gem_object *obj);
 
 int radeonfb_probe(struct drm_device *dev);
 

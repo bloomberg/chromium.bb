@@ -240,7 +240,6 @@ struct drm_framebuffer {
 	void *fbdev;
 	u32 pseudo_palette[17];
 	struct list_head filp_head;
-	void *mm_private;
 };
 
 struct drm_property_blob {

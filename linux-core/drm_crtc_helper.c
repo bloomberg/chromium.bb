@@ -771,15 +771,13 @@ int drm_helper_hotplug_stage_two(struct drm_device *dev)
 EXPORT_SYMBOL(drm_helper_hotplug_stage_two);
 
 int drm_helper_mode_fill_fb_struct(struct drm_framebuffer *fb,
-				   struct drm_mode_fb_cmd *mode_cmd,
-				   void *mm_private)
+				   struct drm_mode_fb_cmd *mode_cmd)
 {
 	fb->width = mode_cmd->width;
 	fb->height = mode_cmd->height;
 	fb->pitch = mode_cmd->pitch;
 	fb->bits_per_pixel = mode_cmd->bpp;
 	fb->depth = mode_cmd->depth;
-	fb->mm_private = mm_private;
 	
 	return 0;
 }

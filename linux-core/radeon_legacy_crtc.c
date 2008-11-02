@@ -231,7 +231,7 @@ static bool radeon_set_crtc1_base(struct drm_crtc *crtc, int x, int y)
 
 	radeon_fb = to_radeon_framebuffer(crtc->fb);
 
-	obj = radeon_fb->base.mm_private;
+	obj = radeon_fb->obj;
 	obj_priv = obj->driver_private;
 
 	crtc_offset = obj_priv->bo->offset;
@@ -654,7 +654,7 @@ static bool radeon_set_crtc2_base(struct drm_crtc *crtc, int x, int y)
 
 	radeon_fb = to_radeon_framebuffer(crtc->fb);
 
-	obj = radeon_fb->base.mm_private;
+	obj = radeon_fb->obj;
 	obj_priv = obj->driver_private;
 
 	crtc2_offset = obj_priv->bo->offset;
