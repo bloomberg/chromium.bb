@@ -126,6 +126,10 @@ int main(int argc, char *argv[])
 
 	display = wl_display_create(socket_name,
 				    connection_update, &p[0]);
+	if (display == NULL) {
+		fprintf(stderr, "failed to create display: %m\n");
+		return -1;
+	}
 	p[0].fd = wl_display_get_fd(display);
 
 	surface = wl_display_create_surface(display);

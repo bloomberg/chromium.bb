@@ -4,6 +4,7 @@
 #include <string.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
+#include <sys/poll.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -130,6 +131,14 @@ static int
 connection_update(struct wl_connection *connection,
 		  uint32_t mask, void *data)
 {
+	struct pollfd *p = data;
+
+	p->events = 0;
+	if (mask & WL_CONNECTION_READABLE)
+		p->events |= POLLIN;
+	if (mask & WL_CONNECTION_WRITABLE)
+		p->events |= POLLOUT;
+
 	return 0;
 }
 
@@ -144,7 +153,8 @@ void event_handler(struct wl_display *display,
 {
 	struct pointer *pointer = data;
 
-	wl_surface_map(pointer->surface, arg1, arg2, pointer->width, pointer->height);
+	if (opcode == 0)
+		wl_surface_map(pointer->surface, arg1, arg2, pointer->width, pointer->height);
 }
 
 int main(int argc, char *argv[])
@@ -152,8 +162,9 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct pointer pointer;
 	int fd;
-	uint32_t name;
+	uint32_t name, mask;
 	cairo_surface_t *s;
+	struct pollfd p[1];
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -162,11 +173,12 @@ int main(int argc, char *argv[])
 	}
 
 	display = wl_display_create(socket_name,
-				    connection_update, NULL);
+				    connection_update, &p[0]);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
+	p[0].fd = wl_display_get_fd(display);
 
 	pointer.width = 16;
 	pointer.height = 16;
@@ -178,13 +190,19 @@ int main(int argc, char *argv[])
 	wl_surface_attach(pointer.surface, name,
 			  pointer.width, pointer.height,
 			  cairo_image_surface_get_stride(s));
+	wl_surface_map(pointer.surface, 512, 384, pointer.width, pointer.height);
 
 	wl_display_set_event_handler(display, event_handler, &pointer);
 
-	while (1)
-		wl_display_iterate(display,
-				   WL_CONNECTION_WRITABLE |
-				   WL_CONNECTION_READABLE);
+	while (1) {
+		poll(p, 1, -1);
+		mask = 0;
+		if (p[0].revents & POLLIN)
+			mask |= WL_CONNECTION_READABLE;
+		if (p[0].revents & POLLOUT)
+			mask |= WL_CONNECTION_WRITABLE;
+		wl_display_iterate(display, mask);
+	}
 
 	return 0;
 }
