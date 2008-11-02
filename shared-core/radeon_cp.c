@@ -2669,9 +2669,16 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & RADEON_IS_AGP) ? "AGP" : (((dev_priv->flags & RADEON_IS_PCIE) ? "PCIE" : "PCI"))));
 
-	if ((dev_priv->flags & RADEON_IS_AGP) && (radeon_agpmode == -1)) {
-		DRM_INFO("Forcing AGP to PCI mode\n");
-		dev_priv->flags &= ~RADEON_IS_AGP;
+	if (dev_priv->flags & RADEON_IS_AGP) {
+
+		/* disable AGP for any chips after RV280 if not specified */
+		if ((dev_priv->chip_family > CHIP_RV280) && (radeon_agpmode == 0))
+			radeon_agpmode = -1;
+
+		if (radeon_agpmode == -1) {
+			DRM_INFO("Forcing AGP to PCI mode\n");
+			dev_priv->flags &= ~RADEON_IS_AGP;
+		}
 	}
 
 
