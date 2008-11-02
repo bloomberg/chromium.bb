@@ -305,8 +305,11 @@ static struct connector_funcs {
 	{ CONNECTOR_LVDS, &radeon_lvds_connector_funcs, &radeon_lvds_connector_helper_funcs, DRM_MODE_CONNECTOR_LVDS, "LVDS" },
 	{ CONNECTOR_DVI_A, &radeon_vga_connector_funcs, &radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_DVIA, "DVI" },
 	{ CONNECTOR_DVI_I, &radeon_dvi_connector_funcs, &radeon_dvi_connector_helper_funcs, DRM_MODE_CONNECTOR_DVII, "DVI" },
-
+	{ CONNECTOR_DVI_D, &radeon_dvi_connector_funcs, &radeon_dvi_connector_helper_funcs, DRM_MODE_CONNECTOR_DVID, "DVI" },
+	{ CONNECTOR_HDMI_TYPE_A, &radeon_dvi_connector_funcs, &radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_HDMIA, "HDMI" },
+	{ CONNECTOR_HDMI_TYPE_B, &radeon_dvi_connector_funcs, &radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_HDMIB, "HDMI" },
 #if 0
+	{ CONNECTOR_HDMI_TYPE_A, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_DVI_D, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 
 	{ CONNECTOR_STV, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
@@ -314,7 +317,6 @@ static struct connector_funcs {
 	{ CONNECTOR_DIGITAL, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_SCART, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 
-	{ CONNECTOR_HDMI_TYPE_A, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_HDMI_TYPE_B, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_HDMI_TYPE_B, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_HDMI_TYPE_B, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
