@@ -65,6 +65,16 @@ struct radeon_bo_manager {
     struct radeon_bo_funcs  *funcs;
     int                     fd;
 };
+    
+static inline void _radeon_bo_debug(struct radeon_bo *bo,
+                                    int opcode,
+                                    const char *file,
+                                    const char *func,
+                                    int line)
+{
+    fprintf(stderr, "%02d %p 0x%08X 0x%08X [%s %s %d]\n",
+            opcode, bo, bo->size, bo->cref, file, func, line);
+}
 
 static inline struct radeon_bo *_radeon_bo_open(struct radeon_bo_manager *bom,
                                                 uint32_t handle,
@@ -79,8 +89,7 @@ static inline struct radeon_bo *_radeon_bo_open(struct radeon_bo_manager *bom,
     bo = bom->funcs->bo_open(bom, handle, size, alignment, flags);
 #ifdef RADEON_BO_TRACK_OPEN
     if (bo) {
-        fprintf(stderr, "+open (%p, %d, %d) at (%s, %s, %d)\n",
-                bo, bo->size, bo->cref, file, func, line);
+        _radeon_bo_debug(bo, 1, file, func, line);
     }
 #endif
     return bo;
@@ -93,8 +102,7 @@ static inline void _radeon_bo_ref(struct radeon_bo *bo,
 {
     bo->cref++;
 #ifdef RADEON_BO_TRACK_REF
-    fprintf(stderr, "+ref  (%p, %d, %d) at (%s, %s, %d)\n",
-            bo, bo->size, bo->cref, file, func, line);
+    _radeon_bo_debug(bo, 2, file, func, line);
 #endif
     bo->bom->funcs->bo_ref(bo);
 }
@@ -106,8 +114,7 @@ static inline void _radeon_bo_unref(struct radeon_bo *bo,
 {
     bo->cref--;
 #ifdef RADEON_BO_TRACK_REF
-    fprintf(stderr, "-unref(%p, %d, %d) at (%s, %s, %d)\n",
-            bo, bo->size, bo->cref, file, func, line);
+    _radeon_bo_debug(bo, 3, file, func, line);
 #endif
     bo->bom->funcs->bo_unref(bo);
 }
@@ -119,8 +126,7 @@ static inline int _radeon_bo_map(struct radeon_bo *bo,
                                  int line)
 {
 #ifdef RADEON_BO_TRACK_MAP
-    fprintf(stderr, "+map  (%p, %d, %d) at (%s, %s, %d)\n",
-            bo, bo->size, bo->cref, file, func, line);
+    _radeon_bo_debug(bo, 4, file, func, line);
 #endif
     return bo->bom->funcs->bo_map(bo, write);
 }
@@ -131,8 +137,7 @@ static inline int _radeon_bo_unmap(struct radeon_bo *bo,
                                    int line)
 {
 #ifdef RADEON_BO_TRACK_MAP
-    fprintf(stderr, "-unmap(%p, %d, %d) at (%s, %s, %d)\n",
-            bo, bo->size, bo->cref, file, func, line);
+    _radeon_bo_debug(bo, 5, file, func, line);
 #endif
     return bo->bom->funcs->bo_unmap(bo);
 }
@@ -147,5 +152,7 @@ static inline int _radeon_bo_unmap(struct radeon_bo *bo,
     _radeon_bo_map(bo, w, __FILE__, __FUNCTION__, __LINE__)
 #define radeon_bo_unmap(bo)\
     _radeon_bo_unmap(bo, __FILE__, __FUNCTION__, __LINE__)
+#define radeon_bo_debug(bo, opcode)\
+    _radeon_bo_debug(bo, opcode, __FILE__, __FUNCTION__, __LINE__)
 
 #endif
