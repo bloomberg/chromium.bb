@@ -1691,7 +1691,7 @@ extern int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *
 extern int radeon_cs_init(struct drm_device *dev);
 void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master);
 void radeon_init_memory_map(struct drm_device *dev);
-
+void radeon_enable_bm(struct drm_radeon_private *dev_priv);
 
 #define MARK_SAFE		1
 #define MARK_CHECK_OFFSET	2
