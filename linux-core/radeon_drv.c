@@ -37,7 +37,7 @@
 #include "drm_pciids.h"
 
 int radeon_no_wb;
-int radeon_dynclks = 1;
+int radeon_dynclks = -1;
 int radeon_r4xx_atom = 0;
 int radeon_agpmode = 0;
 
