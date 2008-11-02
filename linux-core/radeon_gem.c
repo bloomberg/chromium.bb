@@ -126,7 +126,6 @@ int radeon_gem_create_ioctl(struct drm_device *dev, void *data,
 	struct drm_radeon_gem_object *obj_priv;
 	struct drm_gem_object *obj;
 	int ret = 0;
-	uint32_t flags;
 	int handle;
 
 	/* create a gem object to contain this object in */
@@ -157,8 +156,6 @@ fail:
 
 int radeon_gem_set_domain(struct drm_gem_object *obj, uint32_t read_domains, uint32_t write_domain, uint32_t *flags_p, bool unfenced)
 {
-	struct drm_device *dev = obj->dev;
-	drm_radeon_private_t *dev_priv = dev->dev_private;
 	struct drm_radeon_gem_object *obj_priv;
 	uint32_t flags = 0;
 	int ret;
@@ -616,7 +613,7 @@ static int radeon_gart_init(struct drm_device *dev)
 		base = dev->agp->base;
 		if ((base + dev_priv->gart_size - 1) >= dev_priv->fb_location &&
 		    base < (dev_priv->fb_location + dev_priv->fb_size - 1)) {
-			DRM_INFO("Can't use agp base @0x%08xlx, won't fit\n",
+			DRM_INFO("Can't use agp base @0x%08lx, won't fit\n",
 				 dev->agp->base);
 			base = 0;
 		}
@@ -732,7 +729,7 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 		return -EINVAL;
 	}
 
-	DRM_DEBUG("Ring ptr %p mapped at %d %p, read ptr %p maped at %d %p\n",
+	DRM_DEBUG("Ring ptr %p mapped at %ld %p, read ptr %p maped at %ld %p\n",
 		  dev_priv->mm.ring.bo, dev_priv->mm.ring.bo->offset, dev_priv->mm.ring.kmap.virtual,
 		  dev_priv->mm.ring_read.bo, dev_priv->mm.ring_read.bo->offset, dev_priv->mm.ring_read.kmap.virtual);
 
@@ -829,7 +826,6 @@ static void radeon_wait_for_vsync(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	uint32_t       crtc_gen_cntl;
-	int ret;
 
 	crtc_gen_cntl = RADEON_READ(RADEON_CRTC_GEN_CNTL);
 	if ((crtc_gen_cntl & RADEON_CRTC_DISP_REQ_EN_B) ||
@@ -848,7 +844,6 @@ static void radeon_wait_for_vsync2(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	uint32_t       crtc2_gen_cntl;
-	struct timeval timeout;
 
 	crtc2_gen_cntl = RADEON_READ(RADEON_CRTC2_GEN_CNTL);
 	if ((crtc2_gen_cntl & RADEON_CRTC2_DISP_REQ_EN_B) ||
@@ -917,7 +912,6 @@ void radeon_init_memory_map(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	u32 mem_size, aper_size;
-	u32 tmp;
 
 	dev_priv->mc_fb_location = radeon_read_fb_location(dev_priv);
 	radeon_read_agp_location(dev_priv, &dev_priv->mc_agp_loc_lo, &dev_priv->mc_agp_loc_hi);
@@ -1581,7 +1575,7 @@ static int radeon_gem_dma_bufs_init(struct drm_device *dev)
 	DRM_DEBUG("\n");
 	radeon_gem_addbufs(dev);
 
-	DRM_DEBUG("%x %d\n", dev_priv->mm.dma_bufs.bo->map_list.hash.key, size);
+	DRM_DEBUG("%lx %d\n", dev_priv->mm.dma_bufs.bo->map_list.hash.key, size);
 	dev->agp_buffer_token = dev_priv->mm.dma_bufs.bo->map_list.hash.key << PAGE_SHIFT;
 	dev_priv->mm.fake_agp_map.handle = dev_priv->mm.dma_bufs.kmap.virtual;
 	dev_priv->mm.fake_agp_map.size = size;
