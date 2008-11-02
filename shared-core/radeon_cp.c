@@ -120,7 +120,7 @@ void radeon_read_agp_location(drm_radeon_private_t *dev_priv, u32 *agp_lo, u32 *
 		*agp_lo = RADEON_READ(R600_MC_VM_AGP_BOT);
 		*agp_hi = RADEON_READ(R600_MC_VM_AGP_TOP);
 	} else if (dev_priv->chip_family == CHIP_RV515) {
-		*agp_lo = radeon_read_mc_reg(dev_priv, RV515_MC_FB_LOCATION);
+		*agp_lo = radeon_read_mc_reg(dev_priv, RV515_MC_AGP_LOCATION);
 		*agp_hi = 0;
 	} else if (dev_priv->chip_family == CHIP_RS600) {
 		*agp_lo = 0;
@@ -133,7 +133,7 @@ void radeon_read_agp_location(drm_radeon_private_t *dev_priv, u32 *agp_lo, u32 *
 		*agp_lo = radeon_read_mc_reg(dev_priv, R520_MC_AGP_LOCATION);
 		*agp_hi = 0;
 	} else {
-		*agp_lo = RADEON_READ(RADEON_MC_FB_LOCATION);
+		*agp_lo = RADEON_READ(RADEON_MC_AGP_LOCATION);
 		*agp_hi = 0;
 	}
 }
