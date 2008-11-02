@@ -87,19 +87,23 @@ static int radeon_lvds_get_modes(struct drm_connector *connector)
 
 	if (radeon_connector->ddc_bus) {
 		radeon_i2c_do_lock(radeon_connector, 1);
-		edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
+		edid = drm_get_edid(connector, &radeon_connector->ddc_bus->adapter);
 		radeon_i2c_do_lock(radeon_connector, 0);
 		if (edid) {
 			drm_mode_connector_update_edid_property(&radeon_connector->base, edid);
 			ret = drm_add_edid_modes(&radeon_connector->base, edid);
 			kfree(edid);
+			if (ret == 0)
+				goto native;
 			return ret;
 		}
 	}
 
+native:
 	encoder = radeon_best_single_encoder(connector);
 	if (!encoder)
-		return connector_status_disconnected;
+		return 0;
+
 	/* we have no EDID modes */
 	mode = radeon_fp_native_mode(encoder);
 	if (mode) {
