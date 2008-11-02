@@ -308,6 +308,7 @@ struct drm_radeon_cs_parser {
 	struct drm_radeon_kernel_chunk *chunks;
 	int ib_index;
 	int reloc_index;
+	uint32_t card_offset;
 	void *ib;
 };
 
@@ -319,12 +320,12 @@ struct drm_radeon_cs_priv {
 	uint32_t id_last_scnt;
 
 	int (*parse)(struct drm_radeon_cs_parser *parser);
-	void (*id_emit)(struct drm_device *dev, uint32_t *id);
+	void (*id_emit)(struct drm_radeon_cs_parser *parser, uint32_t *id);
 	uint32_t (*id_last_get)(struct drm_device *dev);
 	/* this ib handling callback are for hidding memory manager drm
 	 * from memory manager less drm, free have to emit ib discard
 	 * sequence into the ring */
-	int (*ib_get)(struct drm_radeon_cs_parser *parser, uint32_t *card_offset);
+	int (*ib_get)(struct drm_radeon_cs_parser *parser);
 	uint32_t (*ib_get_ptr)(struct drm_device *dev, void *ib);
 	void (*ib_free)(struct drm_radeon_cs_parser *parser);
 	/* do a relocation either MM or non-MM */
@@ -459,6 +460,7 @@ typedef struct drm_radeon_private {
 	struct drm_radeon_cs_priv cs;
 
 	struct radeon_pm_regs pmregs;
+	int irq_emitted;
 	atomic_t irq_received;
 } drm_radeon_private_t;
 

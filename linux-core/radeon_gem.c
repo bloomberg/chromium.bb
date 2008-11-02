@@ -1086,7 +1086,7 @@ int radeon_gem_object_unpin(struct drm_gem_object *obj)
 
 #define RADEON_NUM_IB (RADEON_IB_MEMORY / RADEON_IB_SIZE)
 
-int radeon_gem_ib_get(struct drm_radeon_cs_parser *parser, uint32_t *card_offset)
+int radeon_gem_ib_get(struct drm_radeon_cs_parser *parser)
 {
 	int i, index = -1;
 	int ret;
@@ -1132,8 +1132,8 @@ int radeon_gem_ib_get(struct drm_radeon_cs_parser *parser, uint32_t *card_offset
 		return -EINVAL;
 	}
 		
-	*card_offset = dev_priv->gart_vm_start + dev_priv->ib_objs[index]->bo->offset;
 	parser->ib = dev_priv->ib_objs[index]->kmap.virtual;
+	parser->card_offset = dev_priv->gart_vm_start + dev_priv->ib_objs[index]->bo->offset;
 	dev_priv->ib_alloc_bitmap |= (1 << i);
 	return 0;
 }
@@ -1150,6 +1150,7 @@ static void radeon_gem_ib_free(struct drm_radeon_cs_parser *parser)
 		if (dev_priv->ib_objs[i]->kmap.virtual == parser->ib) {
 			/* emit a fence object */
 			ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
+			dev_priv->irq_emitted = 0;
 			if (ret) {
 				drm_putback_buffer_objects(dev);
 			}

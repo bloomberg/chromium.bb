@@ -38,10 +38,8 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	struct drm_radeon_cs_chunk __user **chunk_ptr = NULL;
 	uint64_t *chunk_array;
 	uint64_t *chunk_array_ptr;
-	uint32_t card_offset;
 	long size;
 	int r, i;
-	RING_LOCALS;
 
 	/* set command stream id to 0 which is fake id */
 	cs_id = 0;
@@ -144,7 +142,7 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	}
 
 	/* get ib */
-	r = dev_priv->cs.ib_get(&parser, &card_offset);
+	r = dev_priv->cs.ib_get(&parser);
 	if (r) {
 		DRM_ERROR("ib_get failed\n");
 		goto out;
@@ -156,16 +154,8 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 		goto out;
 	}
 
-	BEGIN_RING(4);
-	OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
-	OUT_RING(card_offset);
-	OUT_RING(parser.chunks[parser.ib_index].length_dw);
-	OUT_RING(CP_PACKET2());
-	ADVANCE_RING();
-
 	/* emit cs id sequence */
-	dev_priv->cs.id_emit(dev, &cs_id);
-	COMMIT_RING();
+	dev_priv->cs.id_emit(&parser, &cs_id);
 
 	cs->cs_id = cs_id;
 		
@@ -194,7 +184,6 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	long size;
 	int r;
 	struct drm_radeon_kernel_chunk chunk_fake[1];
-	RING_LOCALS;
 
 	/* set command stream id to 0 which is fake id */
 	cs_id = 0;
@@ -237,7 +226,7 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	parser.reloc_index = -1;
 
 	/* get ib */
-	r = dev_priv->cs.ib_get(&parser, &card_offset);
+	r = dev_priv->cs.ib_get(&parser);
 	if (r) {
 		goto out;
 	}
@@ -248,15 +237,8 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 		goto out;
 	}
 
-	BEGIN_RING(4);
-	OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
-	OUT_RING(card_offset);
-	OUT_RING(cs->dwords);
-	OUT_RING(CP_PACKET2());
-	ADVANCE_RING();
-
 	/* emit cs id sequence */
-	dev_priv->cs.id_emit(dev, &cs_id);
+	dev_priv->cs.id_emit(&parser, &cs_id);
 	COMMIT_RING();
 
 	cs->cs_id = cs_id;
@@ -518,37 +500,75 @@ uint32_t radeon_cs_id_get(struct drm_radeon_private *radeon)
 	return (radeon->cs.id_scnt | radeon->cs.id_wcnt);
 }
 
-void r100_cs_id_emit(struct drm_device *dev, uint32_t *id)
+void r100_cs_id_emit(struct drm_radeon_cs_parser *parser, uint32_t *id)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
+	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
 	RING_LOCALS;
 
+	dev_priv->irq_emitted = radeon_update_breadcrumb(parser->dev);
 	/* ISYNC_CNTL should have CPSCRACTH bit set */
 	*id = radeon_cs_id_get(dev_priv);
 	/* emit id in SCRATCH4 (not used yet in old drm) */
-	BEGIN_RING(2);
+	BEGIN_RING(10);
+	OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
+	OUT_RING(parser->card_offset);
+	OUT_RING(parser->chunks[parser->ib_index].length_dw);
+	OUT_RING(CP_PACKET2());
 	OUT_RING(CP_PACKET0(RADEON_SCRATCH_REG4, 0));
 	OUT_RING(*id);
+	OUT_RING_REG(RADEON_LAST_SWI_REG, dev_priv->irq_emitted);
+	OUT_RING_REG(RADEON_GEN_INT_STATUS, RADEON_SW_INT_FIRE);
 	ADVANCE_RING();	
+	COMMIT_RING();
+
 }
 
-void r300_cs_id_emit(struct drm_device *dev, uint32_t *id)
+void r300_cs_id_emit(struct drm_radeon_cs_parser *parser, uint32_t *id)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
+	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
+	int i;
 	RING_LOCALS;
+
+	dev_priv->irq_emitted = radeon_update_breadcrumb(parser->dev);
 
 	/* ISYNC_CNTL should not have CPSCRACTH bit set */
 	*id = radeon_cs_id_get(dev_priv);
+
 	/* emit id in SCRATCH6 */
-	BEGIN_RING(8);
-	OUT_RING(CP_PACKET0(R300_CP_RESYNC_ADDR, 0));
-	OUT_RING(6);
-	OUT_RING(CP_PACKET0(R300_CP_RESYNC_DATA, 0));
-	OUT_RING(*id);
+	BEGIN_RING(16);
+	OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
+	OUT_RING(parser->card_offset);
+	OUT_RING(parser->chunks[parser->ib_index].length_dw);
 	OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));
-	OUT_RING(R300_RB3D_DC_FINISH);
+	OUT_RING(0);
+	for (i = 0; i < 11; i++) /* emit fillers like fglrx */
+		OUT_RING(CP_PACKET2());
+	ADVANCE_RING();
+	COMMIT_RING();
+
+	BEGIN_RING(16);
+	OUT_RING_REG(R300_RB3D_DSTCACHE_CTLSTAT, R300_RB3D_DC_FLUSH);
+	OUT_RING(CP_PACKET0(R300_CP_RESYNC_ADDR, 1));
+	OUT_RING(6);
+	OUT_RING(*id);
+	OUT_RING_REG(R300_RB3D_DSTCACHE_CTLSTAT, R300_RB3D_DC_FINISH|R300_RB3D_DC_FLUSH);
+	/* emit inline breadcrumb for TTM fencing */
+#if 1
 	RADEON_WAIT_UNTIL_3D_IDLE();
+	OUT_RING_REG(RADEON_LAST_SWI_REG, dev_priv->irq_emitted);
+#else
+	OUT_RING(CP_PACKET0(R300_CP_RESYNC_ADDR, 1));
+	OUT_RING(3); /* breadcrumb register */
+	OUT_RING(dev_priv->irq_emitted);
+	OUT_RING(CP_PACKET2());
+#endif
+	OUT_RING_REG(RADEON_GEN_INT_STATUS, RADEON_SW_INT_FIRE);
+	OUT_RING(CP_PACKET2());
+	OUT_RING(CP_PACKET2());
+	OUT_RING(CP_PACKET2());
 	ADVANCE_RING();	
+	COMMIT_RING();
+
 }
 
 uint32_t r100_cs_id_last_get(struct drm_device *dev)

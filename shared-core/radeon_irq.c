@@ -223,15 +223,19 @@ int radeon_emit_irq(struct drm_device * dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	unsigned int ret;
+	int i;
 	RING_LOCALS;
 
-	ret = radeon_update_breadcrumb(dev);
+	if (!dev_priv->irq_emitted) {
+		ret = radeon_update_breadcrumb(dev);
 
-	BEGIN_RING(4);
-	OUT_RING_REG(RADEON_LAST_SWI_REG, ret);
-	OUT_RING_REG(RADEON_GEN_INT_STATUS, RADEON_SW_INT_FIRE);
-	ADVANCE_RING();
-	COMMIT_RING();
+		BEGIN_RING(4);
+		OUT_RING_REG(RADEON_LAST_SWI_REG, ret);
+		OUT_RING_REG(RADEON_GEN_INT_STATUS, RADEON_SW_INT_FIRE);
+		ADVANCE_RING();
+		COMMIT_RING();
+	} else
+		ret = dev_priv->irq_emitted;
 
 	return ret;
 }

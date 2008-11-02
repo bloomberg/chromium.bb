@@ -39,7 +39,6 @@ int radeon_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 			       uint32_t *native_type)
 {
 	struct drm_radeon_private *dev_priv = (struct drm_radeon_private *) dev->dev_private;
-	RING_LOCALS;
 
 	if (!dev_priv)
 		return -EINVAL;
