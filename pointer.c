@@ -145,7 +145,6 @@ void event_handler(struct wl_display *display,
 	struct pointer *pointer = data;
 
 	wl_surface_map(pointer->surface, arg1, arg2, pointer->width, pointer->height);
-	
 }
 
 int main(int argc, char *argv[])
@@ -155,8 +154,6 @@ int main(int argc, char *argv[])
 	int fd;
 	uint32_t name;
 	cairo_surface_t *s;
-
-	srandom(time(NULL));
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {

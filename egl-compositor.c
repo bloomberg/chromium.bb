@@ -42,12 +42,6 @@ repaint(void *data)
 	GLint vertices[12];
 	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
 	GLuint indices[4] = { 0, 1, 2, 3 };
-	       
-	/* This part is where we actually copy the buffer to screen.
-	 * Needs to be part of the repaint loop, not called from the
-	 * notify_map handler. */
-
-	glClear(GL_COLOR_BUFFER_BIT); 
 
 	iterator = wl_surface_iterator_create(ec->wl_display, 0);
 	while (wl_surface_iterator_next(iterator, &surface)) {
