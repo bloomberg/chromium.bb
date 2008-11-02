@@ -2476,6 +2476,12 @@ int radeon_modeset_agp_init(struct drm_device *dev)
 	}
 	return 0;
 }
+
+void radeon_modeset_agp_destroy(struct drm_device *dev)
+{
+	if (dev->agp->acquired)
+		drm_agp_release(dev);
+}
 #endif
 
 int radeon_modeset_cp_init(struct drm_device *dev)
@@ -2790,6 +2796,10 @@ int radeon_driver_unload(struct drm_device *dev)
 		drm_irq_uninstall(dev);
 		radeon_modeset_cleanup(dev);
 		radeon_gem_mm_fini(dev);
+#if __OS_HAS_AGP
+		if (dev_priv->flags & RADEON_IS_AGP)
+			radeon_modeset_agp_destroy(dev);
+#endif
 	}
 
 	drm_bo_driver_finish(dev);
