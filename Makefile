@@ -3,7 +3,7 @@ LDLIBS += $(shell pkg-config --libs libffi libdrm)
 
 all : wayland client
 
-wayland_objs = wayland.o event-loop.o connection.o hash.o egl-compositor.o
+wayland_objs = wayland.o event-loop.o connection.o hash.o input.o egl-compositor.o
 wayland : CFLAGS += -I../eagle
 wayland : LDLIBS += -L../eagle -leagle -ldl
 

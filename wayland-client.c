@@ -96,16 +96,14 @@ wl_display_get_fd(struct wl_display *display)
 }
 
 static void
-handle_event(struct wl_connection *connection)
+handle_event(struct wl_connection *connection, uint32_t opcode, uint32_t size)
 {
-	uint32_t p[2], opcode, size;
+	uint32_t p[4];
 
-	wl_connection_copy(connection, p, sizeof p);
-	opcode = p[1] & 0xffff;
-	size = p[1] >> 16;
-	printf("signal from object %d, opcode %d, size %d\n",
-	       p[0], opcode, size);
-	wl_connection_consume(connection, sizeof p);
+	wl_connection_copy(connection, p, size);
+	printf("signal from object %d, opcode %d, size %d, args: %d, %d\n",
+	       p[0], opcode, size, p[2], p[3]);
+	wl_connection_consume(connection, size);
 }
 
 void
@@ -125,7 +123,8 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 		if (len < size)
 			break;
 
-		handle_event(display->connection);
+		handle_event(display->connection, opcode, size);
+		len -= size;
 	}
 
 	if (len < 0) {

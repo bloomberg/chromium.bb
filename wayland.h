@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
 enum {
 	WL_EVENT_READABLE = 0x01,
 	WL_EVENT_WRITEABLE = 0x02
@@ -96,6 +98,19 @@ wl_surface_iterator_create(struct wl_display *display, uint32_t mask);
 int wl_surface_iterator_next(struct wl_surface_iterator *iterator,
 			     struct wl_surface **surface);
 void wl_surface_iterator_destroy(struct wl_surface_iterator *iterator);
+
+struct wl_object *
+wl_input_device_create(struct wl_display *display,
+		       const char *path, uint32_t id);
+void
+wl_display_post_relative_event(struct wl_display *display,
+			       struct wl_object *source, int dx, int dy);
+void
+wl_display_post_absolute_event(struct wl_display *display,
+			       struct wl_object *source, int x, int y);
+void
+wl_display_post_button_event(struct wl_display *display,
+			     struct wl_object *source, int button, int state);
 
 struct wl_compositor {
 	struct wl_compositor_interface *interface;

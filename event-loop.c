@@ -31,6 +31,9 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 	struct epoll_event ep;
 
 	source = malloc(sizeof *source);
+	if (source == NULL)
+		return NULL;
+
 	source->fd = fd;
 	source->func = func;
 	source->data = data;

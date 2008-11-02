@@ -12,8 +12,6 @@
 #include "wayland.h"
 #include "connection.h"
 
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
 #define container_of(ptr, type, member) ({			\
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
@@ -51,6 +49,7 @@ struct wl_client {
 	struct wl_event_source *source;
 	struct wl_display *display;
 	struct wl_list object_list;
+	struct wl_list link;
 };
 
 struct wl_display {
@@ -58,11 +57,17 @@ struct wl_display {
 	struct wl_event_loop *loop;
 	struct wl_hash objects;
 
+	struct wl_object *pointer;
+
 	struct wl_compositor *compositor;
 	struct wl_compositor_interface *compositor_interface;
 
 	struct wl_list surface_list;
+	struct wl_list client_list;
 	uint32_t client_id_range;
+
+	int32_t pointer_x;
+	int32_t pointer_y;
 };
 
 struct wl_surface {
@@ -403,6 +408,8 @@ wl_client_create(struct wl_display *display, int fd)
 
 	advertise_object(client, &display->base);
 
+	wl_list_insert(display->client_list.prev, &client->link);
+
 	return client;
 }
 
@@ -412,6 +419,8 @@ wl_client_destroy(struct wl_client *client)
 	struct wl_object_ref *ref;
 
 	printf("disconnect from client %p\n", client);
+
+	wl_list_remove(&client->link);
 
 	while (client->object_list.next != &client->object_list) {
 		ref = container_of(client->object_list.next,
@@ -469,6 +478,21 @@ static const struct wl_interface display_interface = {
 	ARRAY_LENGTH(display_events), display_events,
 };
 
+static const char input_device_file[] = 
+	"/dev/input/by-id/usb-Apple__Inc._Apple_Internal_Keyboard_._Trackpad-event-mouse";
+
+static void
+wl_display_create_input_devices(struct wl_display *display)
+{
+	display->pointer = wl_input_device_create(display, input_device_file, 1);
+
+	if (display->pointer != NULL)
+		wl_hash_insert(&display->objects, display->pointer);
+
+	display->pointer_x = 100;
+	display->pointer_y = 100;
+}
+
 struct wl_display *
 wl_display_create(void)
 {
@@ -488,10 +512,79 @@ wl_display_create(void)
 	display->base.interface = &display_interface;
 	wl_hash_insert(&display->objects, &display->base);
 	wl_list_init(&display->surface_list);
+	wl_list_init(&display->client_list);
+
+	wl_display_create_input_devices(display);
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	return display;		
+}
+
+void
+wl_display_send_event(struct wl_display *display, uint32_t *data, size_t size)
+{
+	struct wl_client *client;
+
+	client = container_of(display->client_list.next,
+			      struct wl_client, link);
+	while (&client->link != &display->client_list) {
+		wl_connection_write(client->connection, data, size);
+
+		client = container_of(client->link.next,
+				   struct wl_client, link);
+	}
+}
+
+#define WL_POINTER_MOTION 0
+#define WL_POINTER_BUTTON 1
+
+void
+wl_display_post_relative_event(struct wl_display *display,
+			       struct wl_object *source, int dx, int dy)
+{
+	uint32_t p[4];
+
+	display->pointer_x += dx;
+	display->pointer_y += dy;
+
+	p[0] = source->id;
+	p[1] = (sizeof p << 16) | WL_POINTER_MOTION;
+	p[2] = display->pointer_x;
+	p[3] = display->pointer_y;
+
+	wl_display_send_event(display, p, sizeof p);
+}
+
+void
+wl_display_post_absolute_event(struct wl_display *display,
+			       struct wl_object *source, int x, int y)
+{
+	uint32_t p[4];
+
+	display->pointer_x = x;
+	display->pointer_y = y;
+
+	p[0] = source->id;
+	p[1] = (sizeof p << 16) | WL_POINTER_MOTION;
+	p[2] = display->pointer_x;
+	p[3] = display->pointer_y;
+
+	wl_display_send_event(display, p, sizeof p);
+}
+
+void
+wl_display_post_button_event(struct wl_display *display,
+			     struct wl_object *source, int button, int state)
+{
+	uint32_t p[4];
+
+	p[0] = source->id;
+	p[1] = (sizeof p << 16) | WL_POINTER_BUTTON;
+	p[2] = button;
+	p[3] = state;
+
+	wl_display_send_event(display, p, sizeof p);
 }
 
 void
