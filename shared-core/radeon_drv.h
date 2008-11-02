@@ -1644,6 +1644,7 @@ static inline int radeon_update_breadcrumb(struct drm_device *dev)
 				  (dev_priv->chip_family == CHIP_R350)  || \
 				  (dev_priv->chip_family == CHIP_RV380) || \
 				  (dev_priv->chip_family == CHIP_R420)  || \
+				  (dev_priv->chip_family == CHIP_R423)  || \
 				  (dev_priv->chip_family == CHIP_RV410) || \
 				  (dev_priv->chip_family == CHIP_RS400) || \
 				  (dev_priv->chip_family == CHIP_RS480))

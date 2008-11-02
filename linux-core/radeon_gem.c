@@ -525,6 +525,7 @@ static uint32_t radeon_get_accessible_vram(struct drm_device *dev)
 	    dev_priv->chip_family == CHIP_RV350 ||
 	    dev_priv->chip_family == CHIP_RV380 ||
 	    dev_priv->chip_family == CHIP_R420 ||
+	    dev_priv->chip_family == CHIP_R423 ||
 	    dev_priv->chip_family == CHIP_RV410 ||
 	    radeon_is_avivo(dev_priv)) {
 		uint32_t temp = RADEON_READ(RADEON_HOST_PATH_CNTL);
@@ -963,6 +964,7 @@ void radeon_init_memory_map(struct drm_device *dev)
 			    dev_priv->chip_family == CHIP_RV350 ||
 			    dev_priv->chip_family == CHIP_RV380 ||
 			    dev_priv->chip_family == CHIP_R420 ||
+			    dev_priv->chip_family == CHIP_R423 ||
 			    dev_priv->chip_family == CHIP_RV410)
 				aper0_base &= ~(mem_size - 1);
 
