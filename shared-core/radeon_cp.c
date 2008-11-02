@@ -791,8 +791,8 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 				     dev_priv->ring_rptr->handle +
 				     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
 
-	if (dev_priv->chip_family > CHIP_R300)
-		RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x3f); 
+	if (dev_priv->chip_family >= CHIP_R300)
+		RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x7f); 
 	else
 		RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x1f); 
 
