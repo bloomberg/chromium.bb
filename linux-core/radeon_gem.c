@@ -1242,21 +1242,58 @@ static int radeon_gem_ib_destroy(struct drm_device *dev)
 	return 0;
 }
 
+static int radeon_gem_find_reloc(struct drm_radeon_cs_parser *parser,
+				 uint32_t offset, uint32_t *handle,
+				 uint32_t *read_domains, uint32_t *write_domain)
+{
+	struct drm_device *dev = parser->dev;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_radeon_kernel_chunk *reloc_chunk = &parser->chunks[parser->reloc_index];
+
+	if (!reloc_chunk->kdata)
+		return -EINVAL;
+
+	if (offset > reloc_chunk->length_dw){
+		DRM_ERROR("Offset larger than chunk %d %d\n", offset, reloc_chunk->length_dw);
+		return -EINVAL;
+	}
+
+	*handle = reloc_chunk->kdata[offset];
+	*read_domains = reloc_chunk->kdata[offset + 1];
+	*write_domain = reloc_chunk->kdata[offset + 2];
+	return 0;
+}
+
 static int radeon_gem_relocate(struct drm_radeon_cs_parser *parser,
 			       uint32_t *reloc, uint32_t *offset)
 {
 	struct drm_device *dev = parser->dev;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	/* relocate the handle */
-	uint32_t read_domains = reloc[2];
-	uint32_t write_domain = reloc[3];
+	uint32_t read_domains, write_domain;
 	struct drm_gem_object *obj;
 	int flags = 0;
+	int ret;
 	struct drm_radeon_gem_object *obj_priv;
 
-	obj = drm_gem_object_lookup(dev, parser->file_priv, reloc[1]);
-	if (!obj)
-		return -EINVAL;
+	if (parser->reloc_index == -1) {
+		obj = drm_gem_object_lookup(dev, parser->file_priv, reloc[1]);
+		if (!obj)
+			return -EINVAL;
+		read_domains = reloc[2];
+		write_domain = reloc[3];
+	} else {
+		uint32_t handle;
+
+		/* have to lookup handle in other chunk */
+		ret = radeon_gem_find_reloc(parser, reloc[1], &handle, &read_domains, &write_domain);
+		if (ret < 0)
+			return ret;
+
+		obj = drm_gem_object_lookup(dev, parser->file_priv, handle);
+		if (!obj)
+			return -EINVAL;
+	}
 
 	obj_priv = obj->driver_private;
 	radeon_gem_set_domain(obj, read_domains, write_domain, &flags, false);

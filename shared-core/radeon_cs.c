@@ -68,6 +68,8 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 		goto out;
 	}
 
+	parser.dev = dev;
+	parser.file_priv = fpriv;
 	parser.reloc_index = -1;
 	parser.ib_index = -1;
 	parser.num_chunks = cs->num_chunks;
@@ -103,24 +105,29 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 		parser.chunks[i].chunk_data = (uint32_t *)(unsigned long)user_chunk.chunk_data;
 
 		parser.chunks[i].kdata = NULL;
+		size = parser.chunks[i].length_dw * sizeof(uint32_t);
 
 		switch(parser.chunks[i].chunk_id) {
-		case RADEON_CHUNK_ID_RELOCS:
 		case RADEON_CHUNK_ID_IB:
-		case RADEON_CHUNK_ID_OLD: {
-			/* copy from user the relocs chunk */
-			int size = parser.chunks[i].length_dw * sizeof(uint32_t);
-			parser.chunks[i].kdata = drm_alloc(size, DRM_MEM_DRIVER);
-			if (!parser.chunks[i].kdata) { 
-				r = -ENOMEM;
+		case RADEON_CHUNK_ID_OLD:
+			if (size == 0) {
+				r = -EINVAL;
 				goto out;
 			}
-			
-			if (DRM_COPY_FROM_USER(parser.chunks[i].kdata, parser.chunks[i].chunk_data, size)) {
-				r = -EFAULT;
-				goto out;
-			}
-		}
+		case RADEON_CHUNK_ID_RELOCS:
+			if (size) {
+				parser.chunks[i].kdata = drm_alloc(size, DRM_MEM_DRIVER);
+				if (!parser.chunks[i].kdata) { 
+					r = -ENOMEM;
+					goto out;
+				}
+				
+				if (DRM_COPY_FROM_USER(parser.chunks[i].kdata, parser.chunks[i].chunk_data, size)) {
+					r = -EFAULT;
+					goto out;
+				}
+			} else
+				parser.chunks[i].kdata = NULL;
 			break;
 		default:
 			break;
@@ -266,6 +273,7 @@ static int radeon_nomm_relocate(struct drm_radeon_cs_parser *parser, uint32_t *r
 	return 0;
 }
 #define RELOC_SIZE 2
+#define RELOC_SIZE_NEW 0
 #define RADEON_2D_OFFSET_MASK 0x3fffff
 
 static __inline__ int radeon_cs_relocate_packet0(struct drm_radeon_cs_parser *parser, uint32_t offset_dw)
@@ -288,9 +296,17 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_radeon_cs_parser *pa
 
 	/* this is too strict we may want to expand the length in the future and have
 	 old kernels ignore it. */ 
-	if (packet3_hdr != (RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16))) {
-		DRM_ERROR("Packet 3 was %x should have been %x: reg is %x\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16), reg);
-		return -EINVAL;
+	if (parser->reloc_index == -1) {
+		if (packet3_hdr != (RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16))) {
+			DRM_ERROR("Packet 3 was %x should have been %x: reg is %x\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16), reg);
+			return -EINVAL;
+		}
+	} else {
+		if (packet3_hdr != (RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE_NEW << 16))) {
+			DRM_ERROR("Packet 3 was %x should have been %x: reg is %x\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE_NEW << 16), reg);
+			return -EINVAL;
+
+		}
 	}
 	
 	switch(reg) {
@@ -371,9 +387,7 @@ static int radeon_cs_relocate_packet3(struct drm_radeon_cs_parser *parser,
 
 int radeon_cs_packet0(struct drm_radeon_cs_parser *parser, uint32_t offset_dw)
 {
-	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
 	uint32_t hdr, num_dw, reg;
-	int need_reloc = 0;
 	int count_dw = 1;
 	int ret;
 
@@ -422,8 +436,6 @@ int radeon_cs_packet0(struct drm_radeon_cs_parser *parser, uint32_t offset_dw)
 
 int radeon_cs_parse(struct drm_radeon_cs_parser *parser)
 {
-	struct drm_device *dev = parser->dev;
-	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
 	volatile int rb;
 	struct drm_radeon_kernel_chunk *ib_chunk;
 	/* scan the packet for various things */
