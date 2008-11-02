@@ -791,7 +791,10 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 				     dev_priv->ring_rptr->handle +
 				     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
 
-	RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x7);
+	if (dev_priv->chip_family > CHIP_R300)
+		RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x3f); 
+	else
+		RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x1f); 
 
 	/* Turn on bus mastering */
 	tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RADEON_BUS_MASTER_DIS;
@@ -805,6 +808,15 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 
 	dev_priv->scratch[2] = 0;
 	RADEON_WRITE(RADEON_LAST_CLEAR_REG, 0);
+
+	dev_priv->scratch[3] = 0;
+	RADEON_WRITE(RADEON_LAST_SWI_REG, 0);
+
+	dev_priv->scratch[4] = 0;
+	RADEON_WRITE(RADEON_SCRATCH_REG4, 0);
+
+	dev_priv->scratch[6] = 0;
+	RADEON_WRITE(RADEON_SCRATCH_REG6, 0);
 
 	radeon_do_wait_for_idle(dev_priv);
 

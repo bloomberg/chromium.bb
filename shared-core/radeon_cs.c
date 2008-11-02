@@ -365,14 +365,14 @@ uint32_t r100_cs_id_last_get(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
-	return RADEON_READ(RADEON_SCRATCH_REG4);
+	return GET_SCRATCH(4);
 }
 
 uint32_t r300_cs_id_last_get(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
-	return RADEON_READ(RADEON_SCRATCH_REG6);
+	return GET_SCRATCH(6);
 }
 
 int radeon_cs_init(struct drm_device *dev)

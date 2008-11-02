@@ -733,11 +733,11 @@ int radeon_resume(struct drm_device *dev);
 
 #define RADEON_SCRATCHOFF( x )		(RADEON_SCRATCH_REG_OFFSET + 4*(x))
 
-#define GET_SCRATCH( x )	(dev_priv->writeback_works ?			\
-				 (dev_priv->mm.ring_read.bo ? \
-				  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(x)) : \
-				  DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(x))) : \
-				 RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x)))
+#define GET_SCRATCH( x ) (dev_priv->writeback_works ?			\
+			 (dev_priv->mm.ring_read.bo ? \
+			  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(x)) : \
+			  DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(x))) : \
+			 RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x)))
 
 #define RADEON_CRTC_CRNT_FRAME 0x0214
 #define RADEON_CRTC2_CRNT_FRAME 0x0314
@@ -1607,7 +1607,7 @@ extern uint64_t radeon_evict_flags(struct drm_buffer_object *bo);
 #define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
 
 /* Breadcrumb - swi irq */
-#define READ_BREADCRUMB(dev_priv) RADEON_READ(RADEON_LAST_SWI_REG)
+#define READ_BREADCRUMB(dev_priv) GET_SCRATCH(3)
 
 static inline int radeon_update_breadcrumb(struct drm_device *dev)
 {
