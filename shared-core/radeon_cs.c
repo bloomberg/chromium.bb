@@ -45,7 +45,7 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 
 	/* set command stream id to 0 which is fake id */
 	cs_id = 0;
-	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
+	cs->cs_id = cs_id;
 
 	if (dev_priv == NULL) {
 		DRM_ERROR("called with no initialization\n");
@@ -160,7 +160,8 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	dev_priv->cs.id_emit(dev, &cs_id);
 	COMMIT_RING();
 
-	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
+	cs->cs_id = cs_id;
+		
 out:
 	dev_priv->cs.ib_free(&parser);
 
@@ -190,7 +191,7 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 
 	/* set command stream id to 0 which is fake id */
 	cs_id = 0;
-	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
+	cs->cs_id = cs_id;
 
 	if (dev_priv == NULL) {
 		DRM_ERROR("called with no initialization\n");
@@ -251,7 +252,7 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	dev_priv->cs.id_emit(dev, &cs_id);
 	COMMIT_RING();
 
-	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
+	cs->cs_id = cs_id;
 out:
 	dev_priv->cs.ib_free(&parser);
 	drm_free(packets, size, DRM_MEM_DRIVER);
