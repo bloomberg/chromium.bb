@@ -263,7 +263,9 @@ bool radeon_setup_enc_conn(struct drm_device *dev)
 
 		/* TMDS on DVI */
 		if ((mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_I) ||
-		    (mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_D)) {
+		    (mode_info->bios_connector[i].connector_type == CONNECTOR_DVI_D) ||
+		    (mode_info->bios_connector[i].connector_type == CONNECTOR_HDMI_TYPE_A) ||
+		    (mode_info->bios_connector[i].connector_type == CONNECTOR_HDMI_TYPE_B)) {
 			if (radeon_is_avivo(dev_priv) || radeon_r4xx_atom)
 				encoder = radeon_encoder_atom_tmds_add(dev, i, mode_info->bios_connector[i].tmds_type);
 			else {
