@@ -2562,6 +2562,10 @@ int radeon_static_clocks_init(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
+	if (dev_priv->chip_family == CHIP_RS400 ||
+	    dev_priv->chip_family == CHIP_RS480)
+		radeon_dynclks = 0;
+
 	if ((dev_priv->flags & RADEON_IS_MOBILITY) && !radeon_is_avivo(dev_priv)) {
 		radeon_set_dynamic_clock(dev, radeon_dynclks);
 	} else if (radeon_is_avivo(dev_priv)) {
