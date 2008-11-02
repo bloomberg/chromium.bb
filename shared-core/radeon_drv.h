@@ -462,6 +462,9 @@ typedef struct drm_radeon_private {
 	struct radeon_pm_regs pmregs;
 	int irq_emitted;
 	atomic_t irq_received;
+
+	uint32_t aper_size;
+	int vram_mtrr;
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {

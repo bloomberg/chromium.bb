@@ -947,6 +947,10 @@ void radeon_init_memory_map(struct drm_device *dev)
 			- dev_priv->fb_location;
 	}
 
+	/* add an MTRR for the VRAM */
+	dev_priv->aper_size = aper_size;
+	dev_priv->vram_mtrr = mtrr_add(dev_priv->fb_aper_offset, dev_priv->aper_size, MTRR_TYPE_WRCOMB, 1);
+
 }
 
 /* init memory manager - start with all of VRAM and a 32MB GART aperture for now */
@@ -1037,6 +1041,8 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 		DRM_DEBUG("delaying takedown of VRAM memory\n");
 	}
 
+	if (dev_priv->vram_mtrr)
+		mtrr_del(dev_priv->vram_mtrr, dev_priv->fb_aper_offset, dev_priv->aper_size);
 	mutex_unlock(&dev->struct_mutex);
 
 	drm_bo_driver_finish(dev);
