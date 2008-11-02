@@ -2434,7 +2434,7 @@ int radeon_modeset_agp_init(struct drm_device *dev)
 
 	ret = drm_agp_enable(dev, mode);
 	if (ret) {
-		DRM_ERROR("Unable to enable AGP (mode = 0x%lx)\n", mode);
+		DRM_ERROR("Unable to enable AGP (mode = 0x%lx)\n", mode.mode);
 		return ret;
 	}
 
@@ -2457,7 +2457,7 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->writeback_works = 0;
 
 	if (dev_priv->chip_family > CHIP_R600)
-		return;
+		return 0;
 
 	dev_priv->usec_timeout = RADEON_DEFAULT_CP_TIMEOUT;
 	dev_priv->ring.size = RADEON_DEFAULT_RING_SIZE;
@@ -2713,7 +2713,6 @@ int radeon_master_create(struct drm_device *dev, struct drm_master *master)
 void radeon_master_destroy(struct drm_device *dev, struct drm_master *master)
 {
 	struct drm_radeon_master_private *master_priv = master->driver_priv;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
 
 	if (!master_priv)
 		return;
@@ -2735,8 +2734,6 @@ void radeon_master_destroy(struct drm_device *dev, struct drm_master *master)
  */
 int radeon_driver_firstopen(struct drm_device *dev)
 {
-	int ret;
-	drm_local_map_t *map;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
 	dev_priv->gart_info.table_size = RADEON_PCIGART_TABLE_SIZE;

@@ -1544,7 +1544,6 @@ int drm_mapbufs(struct drm_device *dev, void *data,
 				goto done;
 			}
 			down_write(&current->mm->mmap_sem);
-			DRM_DEBUG("%x %d\n", token, map->size);
 			virtual = do_mmap(file_priv->filp, 0, map->size,
 					  PROT_READ | PROT_WRITE,
 					  MAP_SHARED,

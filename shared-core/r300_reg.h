@@ -1353,7 +1353,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R300_RB3D_COLORPITCH2               0x4E40 /* GUESS */
 #define R300_RB3D_COLORPITCH3               0x4E44 /* GUESS */
 
-#define R300_RB3D_AARESOLVE_CTL             0x4E88
+//#define R300_RB3D_AARESOLVE_CTL             0x4E88
 /* gap */
 
 /* Guess by Vladimir.

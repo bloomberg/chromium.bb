@@ -350,7 +350,6 @@ static int radeon_move_vram(struct drm_buffer_object * bo,
 	struct drm_bo_mem_reg tmp_mem;
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int ret; 
-	bool was_local = false;
  
 	/* old - LOCAL memory node bo->mem
 	   tmp - TT type memory node
@@ -398,7 +397,6 @@ int radeon_move(struct drm_buffer_object * bo,
 		int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_device *dev = bo->dev;
-	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
     	if (!dev_priv->cp_running)
