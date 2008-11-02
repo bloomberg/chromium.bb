@@ -392,4 +392,17 @@ extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 #endif
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
+#define set_page_locked SetPageLocked
+#elif (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+/*
+ * The kernel provides __set_page_locked, which uses the non-atomic
+ * __set_bit function. Let's use the atomic set_bit just in case.
+ */
+static inline void set_page_locked(struct page *page)
+{
+	set_bit(PG_locked, &page->flags);
+}
+#endif
+
 #endif
