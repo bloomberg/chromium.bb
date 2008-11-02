@@ -1149,6 +1149,7 @@ int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 		drm_bo_kunmap(&radeon_fb->kmap_obj);
 		mutex_lock(&dev->struct_mutex);
 		drm_gem_object_unreference(radeon_fb->obj);
+		radeon_fb->obj = NULL;
 		mutex_unlock(&dev->struct_mutex);
 		framebuffer_release(info);
 	}
