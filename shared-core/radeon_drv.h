@@ -459,6 +459,7 @@ typedef struct drm_radeon_private {
 	struct drm_radeon_cs_priv cs;
 
 	struct radeon_pm_regs pmregs;
+	atomic_t irq_received;
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
@@ -1718,6 +1719,8 @@ void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master
 void radeon_init_memory_map(struct drm_device *dev);
 void radeon_enable_bm(struct drm_radeon_private *dev_priv);
 
+extern int radeon_gem_proc_init(struct drm_minor *minor);
+extern void radeon_gem_proc_cleanup(struct drm_minor *minor);
 #define MARK_SAFE		1
 #define MARK_CHECK_OFFSET	2
 #define MARK_CHECK_SCISSOR	3

@@ -195,6 +195,7 @@ irqreturn_t radeon_driver_irq_handler(DRM_IRQ_ARGS)
 	if (!stat)
 		return IRQ_NONE;
 
+	atomic_inc(&dev_priv->irq_received);
 	stat &= dev_priv->irq_enable_reg;
 
 	/* SW interrupt */
