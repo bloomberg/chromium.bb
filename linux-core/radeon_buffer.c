@@ -254,7 +254,8 @@ void radeon_emit_solid_fill(struct drm_device * dev,
 			 RADEON_GMC_DST_CLIPPING |
 			 RADEON_GMC_BRUSH_SOLID_COLOR |
 			 (format << 8) |
-			 RADEON_ROP3_S |
+			 RADEON_ROP3_P |
+			 RADEON_CLR_CMP_SRC_SOURCE |
 			 RADEON_GMC_CLR_CMP_CNTL_DIS | RADEON_GMC_WR_MSK_DIS);
 		OUT_RING((pitch << 22) | (dst_offset >> 10)); // PITCH
 		OUT_RING(0);   // SC_TOP_LEFT // DST CLIPPING
