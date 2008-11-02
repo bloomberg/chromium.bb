@@ -1884,9 +1884,10 @@ static int radeon_cp_dispatch_texture(struct drm_device * dev,
 		OUT_RING((image->width << 16) | height);
 		RADEON_WAIT_UNTIL_2D_IDLE();
 		ADVANCE_RING();
-		COMMIT_RING();
 
 		radeon_cp_discard_buffer(dev, file_priv->master, buf);
+
+		COMMIT_RING();
 
 		/* Update the input parameters for next time */
 		image->y += height;
