@@ -591,7 +591,11 @@ int radeon_resume(struct drm_device *dev);
 #	define RADEON_SCISSOR_2_ENABLE		(1 << 30)
 
 #define RADEON_BUS_CNTL			0x0030
+/* r1xx, r2xx, r300, r(v)350, r420/r481, rs400/rs480 */
 #	define RADEON_BUS_MASTER_DIS		(1 << 6)
+/* rs600/rs690/rs740 */
+#	define RS600_BUS_MASTER_DIS		(1 << 14)
+#	define RS600_MSI_REARM		        (1 << 20)
 
 #define RADEON_CLOCK_CNTL_DATA		0x000c
 #	define RADEON_PLL_WR_EN			(1 << 7)
@@ -1053,6 +1057,7 @@ int radeon_resume(struct drm_device *dev);
 
 #define RADEON_AIC_CNTL			0x01d0
 #	define RADEON_PCIGART_TRANSLATE_EN	(1 << 0)
+#	define RS400_MSI_REARM	                (1 << 3)
 #define RADEON_AIC_STAT			0x01d4
 #define RADEON_AIC_PT_BASE		0x01d8
 #define RADEON_AIC_LO_ADDR		0x01dc
