@@ -122,7 +122,7 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct 
 	/* this is too strict we may want to expand the length in the future and have
 	 old kernels ignore it. */ 
 	if (packet3_hdr != (RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16))) {
-		DRM_ERROR("Packet 3 was %x should have been %x\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16));
+		DRM_ERROR("Packet 3 was %x should have been %x: reg is %x\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16), reg);
 		return -EINVAL;
 	}
 	
@@ -192,30 +192,6 @@ static int radeon_cs_relocate_packet3(struct drm_device *dev, struct drm_file *f
 	default:
 		return -EINVAL;
 	}
-	return 0;
-}
-
-static __inline__ int radeon_cs_check_offset(struct drm_device *dev,
-					     uint32_t reg, uint32_t val)
-{
-	uint32_t offset;
-
-	switch(reg) {
-	case RADEON_DST_PITCH_OFFSET:
-	case RADEON_SRC_PITCH_OFFSET:
-		offset = val & ((1 << 22) - 1);
-		offset <<= 10;
-		break;
-	case R300_RB3D_COLOROFFSET0:
-	case R300_ZB_DEPTHOFFSET:
-		offset = val;
-		break;
-	case R300_TX_OFFSET_0:
-	case R300_TX_OFFSET_0+4:
-		offset = val & 0xffffffe0;
-		break;
-	}
-	
 	return 0;
 }
 
@@ -308,6 +284,7 @@ int radeon_cs_parse(struct drm_device *dev, struct drm_file *file_priv,
 				DRM_ERROR("need relocate packet 3 for %x\n", reg);
 				break;
 
+			case RADEON_3D_DRAW_IMMD:	/* triggers drawing using in-packet vertex data */
 			case RADEON_CP_3D_DRAW_IMMD_2:	/* triggers drawing using in-packet vertex data */
 			case RADEON_CP_3D_DRAW_VBUF_2:	/* triggers drawing of vertex buffers setup elsewhere */
 			case RADEON_CP_3D_DRAW_INDX_2:	/* triggers drawing using indices to vertex buffer */
