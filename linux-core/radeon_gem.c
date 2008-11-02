@@ -585,6 +585,9 @@ void radeon_vram_setup(struct drm_device *dev)
 	if (accessible > bar_size)
 		accessible = bar_size;
 
+	if (accessible > vram)
+		accessible = vram;
+
 	DRM_INFO("Detected VRAM RAM=%dK, accessible=%uK, BAR=%uK\n",
 		 vram, accessible, bar_size);
 
