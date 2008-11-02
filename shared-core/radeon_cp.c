@@ -2793,15 +2793,6 @@ int radeon_driver_firstopen(struct drm_device *dev)
 
 	dev_priv->gart_info.table_size = RADEON_PCIGART_TABLE_SIZE;
 
-	if (!drm_core_check_feature(dev, DRIVER_MODESET))
-		radeon_gem_mm_init(dev);
-
-	ret = drm_addmap(dev, dev_priv->fb_aper_offset,
-			 drm_get_resource_len(dev, 0), _DRM_FRAME_BUFFER,
-			 _DRM_WRITE_COMBINING, &map);
-	if (ret != 0)
-		return ret;
-
 	return 0;
 }
 

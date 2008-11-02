@@ -313,7 +313,7 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_radeon_cs_parser *pa
 	case R200_PP_TXOFFSET_1:
 	case RADEON_PP_TXOFFSET_0:
 	case RADEON_PP_TXOFFSET_1:
-	        ret = dev_priv->cs.relocate(parser. ib_chunk->kdata + offset_dw + 2, &offset);
+	        ret = dev_priv->cs.relocate(parser, ib_chunk->kdata + offset_dw + 2, &offset);
 		if (ret)
 			return ret;
 

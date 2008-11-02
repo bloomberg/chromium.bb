@@ -44,7 +44,7 @@ int radeon_agpmode = 0;
 MODULE_PARM_DESC(no_wb, "Disable AGP writeback for scratch registers\n");
 module_param_named(no_wb, radeon_no_wb, int, 0444);
 
-unsigned int radeon_modeset = 0;
+int radeon_modeset = 0;
 module_param_named(modeset, radeon_modeset, int, 0400);
 
 MODULE_PARM_DESC(dynclks, "Disable/Enable dynamic clocks");
