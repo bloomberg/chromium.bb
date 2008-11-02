@@ -29,16 +29,163 @@
 #include "radeon_drv.h"
 #include "r300_reg.h"
 
+int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
+{
+	struct drm_radeon_cs_parser parser;
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct drm_radeon_cs2 *cs = data;
+	uint32_t cs_id;
+	struct drm_radeon_cs_chunk __user **chunk_ptr = NULL;
+	uint64_t *chunk_array;
+	uint64_t *chunk_array_ptr;
+	uint32_t card_offset;
+	long size;
+	int r, i;
+	RING_LOCALS;
+
+	/* set command stream id to 0 which is fake id */
+	cs_id = 0;
+	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
+
+	if (dev_priv == NULL) {
+		DRM_ERROR("called with no initialization\n");
+		return -EINVAL;
+	}
+	if (!cs->num_chunks) {
+		return 0;
+	}
+
+
+	chunk_array = drm_calloc(cs->num_chunks, sizeof(uint64_t), DRM_MEM_DRIVER);
+	if (!chunk_array) {
+		return -ENOMEM;
+	}
+
+	chunk_array_ptr = (uint64_t *)(unsigned long)(cs->chunks);
+
+	if (DRM_COPY_FROM_USER(chunk_array, chunk_array_ptr, sizeof(uint64_t)*cs->num_chunks)) {
+		r = -EFAULT;
+		goto out;
+	}
+
+	parser.reloc_index = -1;
+	parser.ib_index = -1;
+	parser.num_chunks = cs->num_chunks;
+	/* copy out the chunk headers */
+	parser.chunks = drm_calloc(parser.num_chunks, sizeof(struct drm_radeon_kernel_chunk), DRM_MEM_DRIVER);
+	if (!parser.chunks) {
+		return -ENOMEM;
+	}
+
+	for (i = 0; i < parser.num_chunks; i++) {
+		struct drm_radeon_cs_chunk user_chunk;
+
+		chunk_ptr = (void __user *)(unsigned long)chunk_array[i];
+
+		if (DRM_COPY_FROM_USER(&user_chunk, chunk_ptr, sizeof(struct drm_radeon_cs_chunk))){
+			r = -EFAULT;
+			goto out;
+		}
+		parser.chunks[i].chunk_id = user_chunk.chunk_id;
+
+		if (parser.chunks[i].chunk_id == RADEON_CHUNK_ID_RELOCS)
+			parser.reloc_index = i;
+
+		if (parser.chunks[i].chunk_id == RADEON_CHUNK_ID_IB)
+			parser.ib_index = i;
+
+		if (parser.chunks[i].chunk_id == RADEON_CHUNK_ID_OLD) {
+			parser.ib_index = i;
+			parser.reloc_index = -1;
+		}
+
+		parser.chunks[i].length_dw = user_chunk.length_dw;
+		parser.chunks[i].chunk_data = (uint32_t *)(unsigned long)user_chunk.chunk_data;
+
+		parser.chunks[i].kdata = NULL;
+
+		switch(parser.chunks[i].chunk_id) {
+		case RADEON_CHUNK_ID_RELOCS:
+		case RADEON_CHUNK_ID_IB:
+		case RADEON_CHUNK_ID_OLD: {
+			/* copy from user the relocs chunk */
+			int size = parser.chunks[i].length_dw * sizeof(uint32_t);
+			parser.chunks[i].kdata = drm_alloc(size, DRM_MEM_DRIVER);
+			if (!parser.chunks[i].kdata) { 
+				r = -ENOMEM;
+				goto out;
+			}
+			
+			if (DRM_COPY_FROM_USER(parser.chunks[i].kdata, parser.chunks[i].chunk_data, size)) {
+				r = -EFAULT;
+				goto out;
+			}
+		}
+			break;
+		default:
+			break;
+		}
+		DRM_DEBUG("chunk %d %d %d %p\n", i, parser.chunks[i].chunk_id, parser.chunks[i].length_dw,
+			  parser.chunks[i].chunk_data);
+	}
+
+
+	if (parser.chunks[parser.ib_index].length_dw > (16 * 1024)) {
+		DRM_ERROR("cs->dwords too big: %d\n", parser.chunks[parser.ib_index].length_dw);
+		r = -EINVAL;
+		goto out;
+	}
+
+	/* get ib */
+	r = dev_priv->cs.ib_get(&parser, &card_offset);
+	if (r) {
+		DRM_ERROR("ib_get failed\n");
+		goto out;
+	}
+
+	/* now parse command stream */
+	r = dev_priv->cs.parse(&parser);
+	if (r) {
+		goto out;
+	}
+
+	BEGIN_RING(4);
+	OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
+	OUT_RING(card_offset);
+	OUT_RING(parser.chunks[parser.ib_index].length_dw);
+	OUT_RING(CP_PACKET2());
+	ADVANCE_RING();
+
+	/* emit cs id sequence */
+	dev_priv->cs.id_emit(dev, &cs_id);
+	COMMIT_RING();
+
+	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
+out:
+	dev_priv->cs.ib_free(&parser);
+
+	for (i = 0; i < parser.num_chunks; i++) {
+		if (parser.chunks[i].kdata)
+			drm_free(parser.chunks[i].kdata, parser.chunks[i].length_dw * sizeof(uint32_t), DRM_MEM_DRIVER);
+	}
+
+	drm_free(parser.chunks, sizeof(struct drm_radeon_kernel_chunk)*parser.num_chunks, DRM_MEM_DRIVER);
+	drm_free(chunk_array, sizeof(uint64_t)*parser.num_chunks, DRM_MEM_DRIVER);
+
+	return r;
+}
+
 int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 {
+	struct drm_radeon_cs_parser parser;
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct drm_radeon_cs *cs = data;
 	uint32_t *packets = NULL;
 	uint32_t cs_id;
 	uint32_t card_offset;
-	void *ib = NULL;
 	long size;
 	int r;
+	struct drm_radeon_kernel_chunk chunk_fake[1];
 	RING_LOCALS;
 
 	/* set command stream id to 0 which is fake id */
@@ -69,14 +216,26 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 		r = -EFAULT;
 		goto out;
 	}
+
+	chunk_fake[0].chunk_id = RADEON_CHUNK_ID_OLD;
+	chunk_fake[0].length_dw = cs->dwords;
+	chunk_fake[0].kdata = packets;
+
+	parser.dev = dev;
+	parser.file_priv = fpriv;
+	parser.num_chunks = 1;
+	parser.chunks = chunk_fake;
+	parser.ib_index = 0;
+	parser.reloc_index = -1;
+
 	/* get ib */
-	r = dev_priv->cs.ib_get(dev, &ib, cs->dwords, &card_offset);
+	r = dev_priv->cs.ib_get(&parser, &card_offset);
 	if (r) {
 		goto out;
 	}
 
 	/* now parse command stream */
-	r = dev_priv->cs.parse(dev, fpriv, ib, packets, cs->dwords);
+	r = dev_priv->cs.parse(&parser);
 	if (r) {
 		goto out;
 	}
@@ -94,13 +253,13 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 
 	DRM_COPY_TO_USER(&cs->cs_id, &cs_id, sizeof(uint32_t));
 out:
-	dev_priv->cs.ib_free(dev, ib, cs->dwords);
+	dev_priv->cs.ib_free(&parser);
 	drm_free(packets, size, DRM_MEM_DRIVER);
 	return r;
 }
 
 /* for non-mm */
-static int radeon_nomm_relocate(struct drm_device *dev, struct drm_file *file_priv, uint32_t *reloc, uint32_t *offset)
+static int radeon_nomm_relocate(struct drm_radeon_cs_parser *parser, uint32_t *reloc, uint32_t *offset)
 {
 	*offset = reloc[1];
 	return 0;
@@ -108,16 +267,23 @@ static int radeon_nomm_relocate(struct drm_device *dev, struct drm_file *file_pr
 #define RELOC_SIZE 2
 #define RADEON_2D_OFFSET_MASK 0x3fffff
 
-static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct drm_file *file_priv,
-						 uint32_t *packets, uint32_t offset_dw)
+static __inline__ int radeon_cs_relocate_packet0(struct drm_radeon_cs_parser *parser, uint32_t offset_dw)
 {
+	struct drm_device *dev = parser->dev;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	uint32_t hdr = packets[offset_dw];
-	uint32_t reg = (hdr & R300_CP_PACKET0_REG_MASK) << 2;
-	uint32_t val = packets[offset_dw + 1];
-	uint32_t packet3_hdr = packets[offset_dw+2];
+	uint32_t hdr, reg, val, packet3_hdr;
 	uint32_t tmp, offset;
+	struct drm_radeon_kernel_chunk *ib_chunk;
 	int ret;
+
+	ib_chunk = &parser->chunks[parser->ib_index];
+//	if (parser->reloc_index == -1)
+//		is_old = 1;
+
+	hdr = ib_chunk->kdata[offset_dw];
+	reg = (hdr & R300_CP_PACKET0_REG_MASK) << 2;
+	val = ib_chunk->kdata[offset_dw + 1];
+	packet3_hdr = ib_chunk->kdata[offset_dw + 2];
 
 	/* this is too strict we may want to expand the length in the future and have
 	 old kernels ignore it. */ 
@@ -130,7 +296,7 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct 
 	case RADEON_DST_PITCH_OFFSET:
 	case RADEON_SRC_PITCH_OFFSET:
 		/* pass in the start of the reloc */
-		ret = dev_priv->cs.relocate(dev, file_priv, packets + offset_dw + 2, &offset);
+		ret = dev_priv->cs.relocate(parser, ib_chunk->kdata + offset_dw + 2, &offset);
 		if (ret)
 			return ret;
 		tmp = (val & RADEON_2D_OFFSET_MASK) << 10;
@@ -148,7 +314,7 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct 
 	case R200_PP_TXOFFSET_1:
 	case RADEON_PP_TXOFFSET_0:
 	case RADEON_PP_TXOFFSET_1:
-	        ret = dev_priv->cs.relocate(dev, file_priv, packets + offset_dw + 2, &offset);
+	        ret = dev_priv->cs.relocate(parser. ib_chunk->kdata + offset_dw + 2, &offset);
 		if (ret)
 			return ret;
 
@@ -159,25 +325,32 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_device *dev, struct 
 		break;
 	}
 
-	packets[offset_dw + 1] = val;
+	ib_chunk->kdata[offset_dw + 1] = val;
 	return 0;
 }
 
-static int radeon_cs_relocate_packet3(struct drm_device *dev, struct drm_file *file_priv,
-				      uint32_t *packets, uint32_t offset_dw)
+static int radeon_cs_relocate_packet3(struct drm_radeon_cs_parser *parser,
+				      uint32_t offset_dw)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-	uint32_t hdr = packets[offset_dw];
-	int num_dw = (hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16;
-	uint32_t reg = hdr & 0xff00;
+	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
+	uint32_t hdr, num_dw, reg;
 	uint32_t offset, val, tmp;
 	int ret;
+	struct drm_radeon_kernel_chunk *ib_chunk;
+
+	ib_chunk = &parser->chunks[parser->ib_index];
+//	if (parser->reloc_index == -1)
+//		is_old = 1;
+
+	hdr = ib_chunk->kdata[offset_dw];
+	num_dw = (hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16;
+	reg = hdr & 0xff00;
 
 	switch(reg) {
 	case RADEON_CNTL_HOSTDATA_BLT:
 	{
-		val = packets[offset_dw + 2];
-		ret = dev_priv->cs.relocate(dev, file_priv, packets + offset_dw + num_dw + 2, &offset);
+		val = ib_chunk->kdata[offset_dw + 2];
+		ret = dev_priv->cs.relocate(parser, ib_chunk->kdata + offset_dw + num_dw + 2, &offset);
 		if (ret)
 			return ret;
 
@@ -187,7 +360,7 @@ static int radeon_cs_relocate_packet3(struct drm_device *dev, struct drm_file *f
 		offset >>= 10;
 		val |= offset;
 
-		packets[offset_dw + 2] = val;
+		ib_chunk->kdata[offset_dw + 2] = val;
 	}
 	default:
 		return -EINVAL;
@@ -195,16 +368,17 @@ static int radeon_cs_relocate_packet3(struct drm_device *dev, struct drm_file *f
 	return 0;
 }
 
-int radeon_cs_packet0(struct drm_device *dev, struct drm_file *file_priv,
-		      uint32_t *packets, uint32_t offset_dw)
+int radeon_cs_packet0(struct drm_radeon_cs_parser *parser, uint32_t offset_dw)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-	uint32_t hdr = packets[offset_dw];
-	int num_dw = ((hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16) + 2;
+	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
+	uint32_t hdr, num_dw, reg;
 	int need_reloc = 0;
-	int reg = (hdr & R300_CP_PACKET0_REG_MASK) << 2;
 	int count_dw = 1;
 	int ret;
+
+	hdr = parser->chunks[parser->ib_index].kdata[offset_dw];
+	num_dw = ((hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16) + 2;
+	reg = (hdr & R300_CP_PACKET0_REG_MASK) << 2;
 
 	while (count_dw < num_dw) {
 		/* need to have something like the r300 validation here - 
@@ -226,7 +400,7 @@ int radeon_cs_packet0(struct drm_device *dev, struct drm_file *file_priv,
 					return -EINVAL;
 				}
 
-				ret = radeon_cs_relocate_packet0(dev, file_priv, packets, offset_dw);
+				ret = radeon_cs_relocate_packet0(parser, offset_dw);
 				if (ret)
 					return ret;
 				DRM_DEBUG("need to relocate %x %d\n", reg, flags);
@@ -245,24 +419,27 @@ int radeon_cs_packet0(struct drm_device *dev, struct drm_file *file_priv,
 	return 0;
 }
 
-int radeon_cs_parse(struct drm_device *dev, struct drm_file *file_priv,
-		    void *ib, uint32_t *packets, uint32_t dwords)
+int radeon_cs_parse(struct drm_radeon_cs_parser *parser)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_device *dev = parser->dev;
+	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
 	volatile int rb;
-	int size_dw = dwords;
+	struct drm_radeon_kernel_chunk *ib_chunk;
 	/* scan the packet for various things */
-	int count_dw = 0;
+	int count_dw = 0, size_dw;
 	int ret = 0;
 
+	ib_chunk = &parser->chunks[parser->ib_index];
+	size_dw = ib_chunk->length_dw;
+
 	while (count_dw < size_dw && ret == 0) {
-		int hdr = packets[count_dw];
+		int hdr = ib_chunk->kdata[count_dw];
 		int num_dw = (hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16;
 		int reg;
 
 		switch (hdr & RADEON_CP_PACKET_MASK) {
 		case RADEON_CP_PACKET0:
-			ret = radeon_cs_packet0(dev, file_priv, packets, count_dw);
+			ret = radeon_cs_packet0(parser, count_dw);
 			break;
 		case RADEON_CP_PACKET1:
 		case RADEON_CP_PACKET2:
@@ -275,7 +452,7 @@ int radeon_cs_parse(struct drm_device *dev, struct drm_file *file_priv,
 			
 			switch(reg) {
 			case RADEON_CNTL_HOSTDATA_BLT:
-				radeon_cs_relocate_packet3(dev, file_priv, packets, count_dw);
+				radeon_cs_relocate_packet3(parser, count_dw);
 				break;
 
 			case RADEON_CNTL_BITBLT_MULTI:
@@ -306,10 +483,10 @@ int radeon_cs_parse(struct drm_device *dev, struct drm_file *file_priv,
 	     
 
 	/* copy the packet into the IB */
-	memcpy(ib, packets, dwords * sizeof(uint32_t));
+	memcpy(parser->ib, ib_chunk->kdata, ib_chunk->length_dw * sizeof(uint32_t));
 
 	/* read back last byte to flush WC buffers */
-	rb = readl((ib + (dwords-1) * sizeof(uint32_t)));
+	rb = readl((parser->ib + (ib_chunk->length_dw-1) * sizeof(uint32_t)));
 
 	return 0;
 }

@@ -294,6 +294,23 @@ struct drm_radeon_master_private {
 #define RADEON_FLUSH_EMITED	(1 < 0)
 #define RADEON_PURGE_EMITED	(1 < 1)
 
+struct drm_radeon_kernel_chunk {
+	uint32_t chunk_id;
+	uint32_t length_dw;
+	uint32_t __user *chunk_data;
+	uint32_t *kdata;
+};
+
+struct drm_radeon_cs_parser {
+	struct drm_device *dev;
+	struct drm_file *file_priv;
+	uint32_t num_chunks;
+	struct drm_radeon_kernel_chunk *chunks;
+	int ib_index;
+	int reloc_index;
+	void *ib;
+};
+
 /* command submission struct */
 struct drm_radeon_cs_priv {
 	uint32_t id_wcnt;
@@ -301,20 +318,21 @@ struct drm_radeon_cs_priv {
 	uint32_t id_last_wcnt;
 	uint32_t id_last_scnt;
 
-	int (*parse)(struct drm_device *dev, struct drm_file *file_priv,
-		     void *ib, uint32_t *packets, uint32_t dwords);
+	int (*parse)(struct drm_radeon_cs_parser *parser);
 	void (*id_emit)(struct drm_device *dev, uint32_t *id);
 	uint32_t (*id_last_get)(struct drm_device *dev);
 	/* this ib handling callback are for hidding memory manager drm
 	 * from memory manager less drm, free have to emit ib discard
 	 * sequence into the ring */
-	int (*ib_get)(struct drm_device *dev, void **ib, uint32_t dwords, uint32_t *card_offset);
+	int (*ib_get)(struct drm_radeon_cs_parser *parser, uint32_t *card_offset);
 	uint32_t (*ib_get_ptr)(struct drm_device *dev, void *ib);
-	void (*ib_free)(struct drm_device *dev, void *ib, uint32_t dwords);
+	void (*ib_free)(struct drm_radeon_cs_parser *parser);
 	/* do a relocation either MM or non-MM */
-	int (*relocate)(struct drm_device *dev, struct drm_file *file_priv,
-			 uint32_t *reloc, uint32_t *offset);
+	int (*relocate)(struct drm_radeon_cs_parser *parser,
+			uint32_t *reloc, uint32_t *offset);
 };
+
+
 
 struct radeon_pm_regs {
 	uint32_t crtc_ext_cntl;
@@ -1689,6 +1707,7 @@ extern int radeon_master_create(struct drm_device *dev, struct drm_master *maste
 extern void radeon_master_destroy(struct drm_device *dev, struct drm_master *master);
 extern void radeon_cp_dispatch_flip(struct drm_device * dev, struct drm_master *master);
 extern int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
+extern int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
 extern int radeon_cs_init(struct drm_device *dev);
 void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master);
 void radeon_init_memory_map(struct drm_device *dev);

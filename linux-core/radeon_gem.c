@@ -1148,11 +1148,11 @@ int radeon_gem_object_unpin(struct drm_gem_object *obj)
 
 #define RADEON_NUM_IB (RADEON_IB_MEMORY / RADEON_IB_SIZE)
 
-int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32_t *card_offset)
+int radeon_gem_ib_get(struct drm_radeon_cs_parser *parser, uint32_t *card_offset)
 {
 	int i, index = -1;
 	int ret;
-	drm_radeon_private_t *dev_priv = dev->dev_private;
+	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
 
 	for (i = 0; i < RADEON_NUM_IB; i++) {
 		if (!(dev_priv->ib_alloc_bitmap & (1 << i))){
@@ -1178,12 +1178,12 @@ int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32
 	}
 
 	if (index == -1) {
-		DRM_ERROR("Major case fail to allocate IB from freelist %x\n", dev_priv->ib_alloc_bitmap);
+		DRM_ERROR("Major case fail to allocate IB from freelist %llx\n", dev_priv->ib_alloc_bitmap);
 		return -EINVAL;
 	}
 		
 
-	if (dwords > RADEON_IB_SIZE / sizeof(uint32_t))
+	if (parser->chunks[parser->ib_index].length_dw > RADEON_IB_SIZE / sizeof(uint32_t))
 		return -EINVAL;
 
 	ret = drm_bo_do_validate(dev_priv->ib_objs[index]->bo, 0,
@@ -1195,25 +1195,24 @@ int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32
 	}
 		
 	*card_offset = dev_priv->gart_vm_start + dev_priv->ib_objs[index]->bo->offset;
-	*ib = dev_priv->ib_objs[index]->kmap.virtual;
+	parser->ib = dev_priv->ib_objs[index]->kmap.virtual;
 	dev_priv->ib_alloc_bitmap |= (1 << i);
 	return 0;
 }
 
-static void radeon_gem_ib_free(struct drm_device *dev, void *ib, uint32_t dwords)
+static void radeon_gem_ib_free(struct drm_radeon_cs_parser *parser)
 {
+	struct drm_device *dev = parser->dev;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	struct drm_fence_object *fence;
 	int ret;
 	int i;
 
 	for (i = 0; i < RADEON_NUM_IB; i++) {
-
-		if (dev_priv->ib_objs[i]->kmap.virtual == ib) {
+		if (dev_priv->ib_objs[i]->kmap.virtual == parser->ib) {
 			/* emit a fence object */
 			ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
 			if (ret) {
-				
 				drm_putback_buffer_objects(dev);
 			}
 			/* dereference the fence object */
@@ -1243,19 +1242,19 @@ static int radeon_gem_ib_destroy(struct drm_device *dev)
 	return 0;
 }
 
-static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_priv,
-				uint32_t *reloc, uint32_t *offset)
+static int radeon_gem_relocate(struct drm_radeon_cs_parser *parser,
+			       uint32_t *reloc, uint32_t *offset)
 {
+	struct drm_device *dev = parser->dev;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	/* relocate the handle */
 	uint32_t read_domains = reloc[2];
 	uint32_t write_domain = reloc[3];
 	struct drm_gem_object *obj;
 	int flags = 0;
-	int ret;
 	struct drm_radeon_gem_object *obj_priv;
 
-	obj = drm_gem_object_lookup(dev, file_priv, reloc[1]);
+	obj = drm_gem_object_lookup(dev, parser->file_priv, reloc[1]);
 	if (!obj)
 		return -EINVAL;
 
