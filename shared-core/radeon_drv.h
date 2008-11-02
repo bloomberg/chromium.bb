@@ -1688,8 +1688,6 @@ extern int radeon_gem_unpin_ioctl(struct drm_device *dev, void *data,
 int radeon_gem_object_pin(struct drm_gem_object *obj,
 			  uint32_t alignment, uint32_t pin_domain);
 int radeon_gem_object_unpin(struct drm_gem_object *obj);
-int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
-			      struct drm_file *file_priv);
 int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
 struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size, int alignment,

@@ -3288,7 +3288,6 @@ struct drm_ioctl_desc radeon_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_RADEON_GEM_PREAD, radeon_gem_pread_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_RADEON_GEM_PWRITE, radeon_gem_pwrite_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_RADEON_GEM_SET_DOMAIN, radeon_gem_set_domain_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_RADEON_GEM_INDIRECT, radeon_gem_indirect_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_RADEON_CS, radeon_cs_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_RADEON_CS2, radeon_cs2_ioctl, DRM_AUTH),
 };
