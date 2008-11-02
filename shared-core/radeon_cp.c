@@ -2439,7 +2439,7 @@ int radeon_modeset_agp_init(struct drm_device *dev)
 	}
 
 	/* workaround some hw issues */
-	if (dev_priv->chip_family <= CHIP_R200) {
+	if (dev_priv->chip_family < CHIP_R200) {
 		RADEON_WRITE(RADEON_AGP_CNTL, RADEON_READ(RADEON_AGP_CNTL) | 0x000e0000);
 	}
 	return 0;
