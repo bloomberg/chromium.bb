@@ -591,10 +591,15 @@ static void radeon_do_cp_start(drm_radeon_private_t * dev_priv)
 	BEGIN_RING(8);
 	/* isync can only be written through cp on r5xx write it here */
 	OUT_RING(CP_PACKET0(RADEON_ISYNC_CNTL, 0));
+	if (dev_priv->chip_family > CHIP_RV280)
+		OUT_RING(RADEON_ISYNC_ANY2D_IDLE3D |
+			 RADEON_ISYNC_ANY3D_IDLE2D |
+			 RADEON_ISYNC_WAIT_IDLEGUI |
+		 dev_priv->mm_enabled ? 0 : RADEON_ISYNC_CPSCRATCH_IDLEGUI);
+	else
 	OUT_RING(RADEON_ISYNC_ANY2D_IDLE3D |
 		 RADEON_ISYNC_ANY3D_IDLE2D |
-		 RADEON_ISYNC_WAIT_IDLEGUI |
-		 RADEON_ISYNC_CPSCRATCH_IDLEGUI);
+		 RADEON_ISYNC_WAIT_IDLEGUI);
 	RADEON_PURGE_CACHE();
 	RADEON_PURGE_ZCACHE();
 	RADEON_WAIT_UNTIL_IDLE();
