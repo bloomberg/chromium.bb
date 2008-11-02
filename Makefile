@@ -1,7 +1,7 @@
 CFLAGS +=  -Wall -g $(shell pkg-config --cflags libffi libdrm)
 LDLIBS += $(shell pkg-config --libs libffi libdrm)
 
-clients = flower
+clients = flower pointer
 
 all : wayland $(clients)
 
@@ -18,6 +18,7 @@ libwayland.so : $(libwayland_objs)
 	gcc -o $@ $(libwayland_objs) -shared
 
 flower_objs = flower.o
+pointer_objs = pointer.o
 
 $(clients) : CFLAGS += $(shell pkg-config --cflags cairo)
 $(clients) : LDLIBS += $(shell pkg-config --libs cairo)

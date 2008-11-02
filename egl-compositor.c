@@ -40,7 +40,7 @@ repaint(void *data)
 	struct wl_surface *surface;
 	struct surface_data *sd;
 	GLint vertices[12];
-	GLint tex_coords[8] = { 1, 0,  1, 1,  0, 0,  0, 1 };
+	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
 	GLuint indices[4] = { 0, 1, 2, 3 };
 	       
 	/* This part is where we actually copy the buffer to screen.

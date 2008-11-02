@@ -25,6 +25,9 @@ struct wl_display {
 	struct wl_connection *connection;
 	int fd;
 	uint32_t id;
+
+	wl_display_event_func_t event_handler;
+	void *event_handler_data;
 };
 
 struct wl_surface {
@@ -96,14 +99,15 @@ wl_display_get_fd(struct wl_display *display)
 }
 
 static void
-handle_event(struct wl_connection *connection, uint32_t opcode, uint32_t size)
+handle_event(struct wl_display *display, uint32_t opcode, uint32_t size)
 {
 	uint32_t p[4];
 
-	wl_connection_copy(connection, p, size);
-	printf("signal from object %d, opcode %d, size %d, args: %d, %d\n",
-	       p[0], opcode, size, p[2], p[3]);
-	wl_connection_consume(connection, size);
+	wl_connection_copy(display->connection, p, size);
+	if (display->event_handler != NULL)
+		display->event_handler(display, opcode, p[2], p[3],
+				       display->event_handler_data);
+	wl_connection_consume(display->connection, size);
 }
 
 void
@@ -123,7 +127,7 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 		if (len < size)
 			break;
 
-		handle_event(display->connection, opcode, size);
+		handle_event(display, opcode, size);
 		len -= size;
 	}
 
@@ -131,6 +135,16 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 		fprintf(stderr, "read error: %m\n");
 		exit(EXIT_FAILURE);
 	}
+}
+
+void
+wl_display_set_event_handler(struct wl_display *display,
+			     wl_display_event_func_t handler,
+			     void *data)
+{
+	/* FIXME: This needs something more generic... */
+	display->event_handler = handler;
+	display->event_handler_data = data;
 }
 
 #define WL_DISPLAY_CREATE_SURFACE 0
