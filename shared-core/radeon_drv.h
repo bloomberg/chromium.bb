@@ -1695,6 +1695,8 @@ int radeon_gem_object_pin(struct drm_gem_object *obj,
 int radeon_gem_object_unpin(struct drm_gem_object *obj);
 int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
+int radeon_gem_wait_rendering(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
 struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size, int alignment,
 					       int initial_domain, bool discardable);
 int radeon_modeset_init(struct drm_device *dev);

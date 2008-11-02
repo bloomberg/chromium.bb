@@ -416,13 +416,32 @@ int radeon_gem_busy(struct drm_device *dev, void *data,
 	return 0;
 }
 
-int radeon_gem_execbuffer(struct drm_device *dev, void *data,
-			  struct drm_file *file_priv)
+int radeon_gem_wait_rendering(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv)
 {
-	return -ENOSYS;
+	struct drm_radeon_gem_wait_rendering *args = data;
+	struct drm_gem_object *obj;
+	struct drm_radeon_gem_object *obj_priv;
+	int ret;
 
 
+	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
+	if (obj == NULL)
+		return -EINVAL;
+
+	obj_priv = obj->driver_private;
+
+	mutex_lock(&obj_priv->bo->mutex);
+	ret = drm_bo_wait(obj_priv->bo, 0, 1, 1, 0);
+	mutex_unlock(&obj_priv->bo->mutex);
+	
+	mutex_lock(&dev->struct_mutex);
+	drm_gem_object_unreference(obj);
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
 }
+
+
 
 /*
  * Depending on card genertation, chipset bugs, etc... the amount of vram
