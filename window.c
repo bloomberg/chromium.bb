@@ -74,6 +74,7 @@ struct window {
 	int state;
 	uint32_t name;
 	int fd;
+	int need_redraw;
 };
 
 static void *
@@ -185,7 +186,7 @@ void event_handler(struct wl_display *display,
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + arg1;
 			window->height = window->drag_y + arg2;
-			draw_window(window);
+			window->need_redraw = 1;
 			break;
 		}
 	}
@@ -268,6 +269,10 @@ int main(int argc, char *argv[])
 			mask |= WL_CONNECTION_WRITABLE;
 		if (mask)
 			wl_display_iterate(display, mask);
+		if (window.need_redraw) {
+			draw_window(&window);
+			window.need_redraw = 0;
+		}
 	}
 
 	return 0;
