@@ -16,34 +16,6 @@
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
 
-static void
-unpremultiply_data(uint8_t *data, int width, int height, int stride)
-{
-	unsigned int i, j;
-	uint8_t *row;
-
-	for (j = 0; j < height; j++) {
-		row = data + j * stride;
-
-		for (i = 0; i < width; i++) {
-			uint8_t *b = &row[i * 4];
-			uint32_t pixel;
-			uint8_t  alpha;
-
-			memcpy (&pixel, b, sizeof (uint32_t));
-			alpha = (pixel & 0xff000000) >> 24;
-			if (alpha == 0) {
-				b[0] = b[1] = b[2] = b[3] = 0;
-			} else {
-				b[0] = (((pixel & 0xff0000) >> 16) * 255 + alpha / 2) / alpha;
-				b[1] = (((pixel & 0x00ff00) >>  8) * 255 + alpha / 2) / alpha;
-				b[2] = (((pixel & 0x0000ff) >>  0) * 255 + alpha / 2) / alpha;
-				b[3] = alpha;
-			}
-		}
-	}
-}
-
 static uint32_t name_cairo_surface(int fd, cairo_surface_t *surface)
 {
 	struct drm_i915_gem_create create;
@@ -56,8 +28,6 @@ static uint32_t name_cairo_surface(int fd, cairo_surface_t *surface)
 	height = cairo_image_surface_get_height(surface);
 	stride = cairo_image_surface_get_stride(surface);
 	data = cairo_image_surface_get_data(surface);
-
-	unpremultiply_data(data, width, height, stride);
 
 	memset(&create, 0, sizeof(create));
 	create.size = height * stride;

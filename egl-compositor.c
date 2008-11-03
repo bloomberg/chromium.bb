@@ -68,7 +68,9 @@ repaint(void *data)
 		glBindTexture(GL_TEXTURE_2D, sd->texture);
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		/* Assume pre-multiplied alpha for now, this probably
+		 * needs to be a wayland visual type of thing. */
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
 		glEnableClientState(GL_VERTEX_ARRAY);
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
