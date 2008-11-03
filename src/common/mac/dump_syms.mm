@@ -963,7 +963,9 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
   NSNumber *nextAddress;
   uint64_t nextAddressVal;
   unsigned int addressCount = [sortedAddresses count];
-
+  
+  bool insideFunction = false;
+  
   for (unsigned int i = 0; i < addressCount; ++i) {
     NSNumber *address = [sortedAddresses objectAtIndex:i];
     // skip sources that have a starting address of 0
@@ -1048,8 +1050,10 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
 
     if (line) {
       if (symbol && functionLength) {
+
         uint64_t functionLengthVal = [functionLength unsignedLongLongValue];
-        
+
+        insideFunction = true;
         // sanity check to make sure the length we were told does not exceed
         // the space between this function and the next
         if (nextFunctionAddress != 0) {
@@ -1066,25 +1070,30 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
           return NO;
       }
 
-      // Source line
-      uint64_t length = nextAddressVal - addressVal;
+      // Throw out line number information that doesn't correspond to
+      // any function
+      if (insideFunction) {
+        // Source line
+        uint64_t length = nextAddressVal - addressVal;
 
-      // if fileNameToFileIndex/dict has an entry for the
-      // file/kFunctionFileKey, we're processing DWARF and have stored
-      // files for each program counter.  If there is no entry, we're
-      // processing STABS and can use the old method of mapping
-      // addresses to files(which was basically iterating over a set
-      // of addresses until we reached one that was greater than the
-      // high PC of the current file, then moving on to the next file)
-      NSNumber *fileIndex = [fileNameToFileIndex objectForKey:[dict objectForKey:kFunctionFileKey]];
-      if (!WriteFormat(fd, "%llx %llx %d %d\n", addressVal, length,
-                       [line unsignedIntValue], fileIndex ? [fileIndex unsignedIntValue] : fileIdx))
-        return NO;
+        // if fileNameToFileIndex/dict has an entry for the
+        // file/kFunctionFileKey, we're processing DWARF and have stored
+        // files for each program counter.  If there is no entry, we're
+        // processing STABS and can use the old method of mapping
+        // addresses to files(which was basically iterating over a set
+        // of addresses until we reached one that was greater than the
+        // high PC of the current file, then moving on to the next file)
+        NSNumber *fileIndex = [fileNameToFileIndex objectForKey:[dict objectForKey:kFunctionFileKey]];
+        if (!WriteFormat(fd, "%llx %llx %d %d\n", addressVal, length,
+                         [line unsignedIntValue], fileIndex ? [fileIndex unsignedIntValue] : fileIdx))
+          return NO;
+      } 
     } else {
       // PUBLIC <address> <stack-size> <name>
       if (!WriteFormat(fd, "PUBLIC %llx 0 %s\n", addressVal,
                        [symbol UTF8String]))
         return NO;
+      insideFunction = false;
     }
   }
 
