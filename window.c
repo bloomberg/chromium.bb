@@ -81,8 +81,10 @@ draw_window(struct window *window)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int border = 4;
-	int half = (border + 1) / 2;
+	int border = 2, radius = 5;
+	int margin = (border + 1) / 2;
+	cairo_text_extents_t extents;
+	const static char title[] = "Wayland First Post";
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					     window->width,
@@ -90,16 +92,28 @@ draw_window(struct window *window)
 
 	cr = cairo_create(surface);
 	cairo_set_line_width (cr, border);
-	cairo_move_to(cr, half, half);
-	cairo_line_to(cr, window->width - half, half);
-	cairo_line_to(cr, window->width - half,
-		      window->height - half);
-	cairo_line_to(cr, half, window->height - half);
+	cairo_move_to(cr, margin, margin + radius);
+	cairo_arc(cr, margin + radius, margin + radius, radius,
+		  M_PI, 3 * M_PI / 2);
+	cairo_line_to(cr, window->width - radius - margin, margin);
+	cairo_arc(cr, window->width - margin - radius, margin + radius, radius,
+		  3 * M_PI / 2, 2 * M_PI);
+	cairo_line_to(cr, window->width - margin,
+		      window->height - margin);
+	cairo_line_to(cr, margin, window->height - margin);
 	cairo_close_path(cr);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.85);
+	cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.9);
 	cairo_fill_preserve(cr);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
+	cairo_set_font_size(cr, 14);
+	cairo_text_extents(cr, title, &extents);
+	cairo_move_to(cr, margin, margin + radius + extents.height + 10);
+	cairo_line_to(cr, margin + window->width, margin + radius + extents.height + 10);
 	cairo_stroke(cr);
+
+	cairo_move_to(cr, (window->width - extents.width) / 2, 10 - extents.y_bearing);
+	cairo_show_text(cr, title);
+
 	cairo_destroy(cr);
 
 	window->stride = cairo_image_surface_get_stride(surface);
