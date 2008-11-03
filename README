@@ -1,0 +1,65 @@
+This file describes how to build and run wayland.  See NOTES for what
+wayland is or maybe will be some day.
+
+Wayland requires the eagle EGL stack available from
+
+  git://people.freedesktop.org/~krh/eagle
+
+and currently assumes that eagle is checked out in a sibling
+directory, for example:
+
+  ~krh/src/wayland and
+  ~krh/src/eagle
+
+Eagle should work with a recent DRI driver from mesa, but I have mesa
+repo with an eagle branch here:
+
+  git://people.freedesktop.org/~krh/mesa
+
+which provides and experimental DRI CopyBuffer extension, that lets
+wayland use the DRI driver and the hardware for implementing buffer
+swaps.  Eagle needs to be compiled against the dri_interface.h from
+this branch to be able to use the CopyBuffer extension.
+
+To run wayland you currently need intel hardware, a kernel with gem
+and kernel modesetting, and it is necessary to set a couple of
+environment variables.  First, set LD_LIBRARY_PATH:
+
+  export LD_LIBRARY_PATH=$PWD:$PWD/../eagle
+
+Yes, this sucks, but libtool sucks more.  Then to let eagle pick up
+the custom dri driver, set
+
+  export EAGLE_DRIVER_PATH=$PWD/../mesa/lib
+
+and finally set up the path to the evdev device to use as a pointer
+device:
+
+  export WAYLAND_POINTER=/dev/by-id/whatever-it's-called-event-mouse
+
+If you haven't already, load the i915 driver with modesetting:
+
+  modprobe i915 modeset=1
+
+You may need to unload it first, if it's loaded already.  Also, on
+Fedora, there may be a bogus /etc/modprobe.d/i915modeset preventing
+the modeset paramater from reaching the module.  Nuke it.
+
+At this point you should be able to launch wayland and a couple of
+clients.  Try something like:
+
+  ./wayland &
+  ./background <some png/jpg image smaller than 1024x768> &
+  ./flower &
+  ./flower &
+  ./flower &
+  ./window &
+  ./pointer &
+
+Maybe some day there'll be a script that does all this.  Some day...
+
+And after all this work it may still not work or even oops your
+kernel.  It's very much work in progress, so be prepared.
+
+cheers,
+Kristian

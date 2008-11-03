@@ -484,7 +484,13 @@ static const char input_device_file[] =
 static void
 wl_display_create_input_devices(struct wl_display *display)
 {
-	display->pointer = wl_input_device_create(display, input_device_file, 1);
+	const char *path;
+
+	path = getenv("WAYLAND_POINTER");
+	if (path == NULL)
+		path = input_device_file;
+
+	display->pointer = wl_input_device_create(display, path, 1);
 
 	if (display->pointer != NULL)
 		wl_hash_insert(&display->objects, display->pointer);
