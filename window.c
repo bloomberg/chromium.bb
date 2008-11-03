@@ -11,10 +11,20 @@
 #include <time.h>
 #include <cairo.h>
 
+#include <GL/gl.h>
+#include <eagle.h>
+
 #include "wayland-client.h"
+#include "gears.h"
 
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
+
+static void die(const char *msg)
+{
+	fprintf(stderr, "%s", msg);
+	exit(EXIT_FAILURE);
+}
 
 static uint32_t name_cairo_surface(int fd, cairo_surface_t *surface)
 {
@@ -75,6 +85,11 @@ struct window {
 	uint32_t name;
 	int fd;
 	int need_redraw;
+
+	EGLDisplay display;
+	EGLContext context;
+	EGLConfig config;
+	EGLSurface egl_surface;
 };
 
 static void *
@@ -82,7 +97,7 @@ draw_window(struct window *window)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int border = 2, radius = 5;
+	int border = 2, radius = 5, h;
 	int margin = (border + 1) / 2;
 	cairo_text_extents_t extents;
 	const static char title[] = "Wayland First Post";
@@ -108,8 +123,9 @@ draw_window(struct window *window)
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, title, &extents);
-	cairo_move_to(cr, margin, margin + radius + extents.height + 10);
-	cairo_line_to(cr, margin + window->width, margin + radius + extents.height + 10);
+	h = margin + radius + extents.height + 10;
+	cairo_move_to(cr, margin, h);
+	cairo_line_to(cr, margin + window->width, h);
 	cairo_stroke(cr);
 
 	cairo_move_to(cr, (window->width - extents.width) / 2, 10 - extents.y_bearing);
@@ -128,6 +144,24 @@ draw_window(struct window *window)
 	wl_surface_map(window->surface, 
 		       window->x, window->y,
 		       window->width, window->height);
+
+	if (window->egl_surface != EGL_NO_SURFACE)
+		eglDestroySurface(window->display, window->egl_surface);
+
+	/* FIXME: We need to get the stride right here in a chipset
+	 * independent way.  Maybe do it in name_cairo_surface(). */
+	window->egl_surface = eglCreatePixmapForName(window->display,
+						     window->config, window->name,
+						     window->width, window->height,
+						     window->stride, NULL);
+	if (surface == NULL)
+		die("failed to create surface\n");
+
+	if (!eglMakeCurrent(window->display,
+			    window->egl_surface, window->egl_surface, window->context))
+		die("failed to make context current\n");
+
+	glViewport(border, window->height - h - margin - 300, 300, 300);
 
 	return surface;
 }
@@ -226,6 +260,30 @@ void event_handler(struct wl_display *display,
 	}
 }
 
+static void
+init_egl(struct window *window)
+{
+	EGLint major, minor, count;
+	EGLConfig configs[64];
+
+	window->display = eglCreateDisplayNative("/dev/dri/card0", "i965");
+	if (window->display == NULL)
+		die("failed to create display\n");
+
+	if (!eglInitialize(window->display, &major, &minor))
+		die("failed to initialize display\n");
+
+	if (!eglGetConfigs(window->display, configs, 64, &count))
+		die("failed to get configs\n");
+
+	window->config = configs[24];
+	window->context = eglCreateContext(window->display, window->config, NULL, NULL);
+	if (window->context == NULL)
+		die("failed to create context\n");
+
+	window->egl_surface = EGL_NO_SURFACE;
+}
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
@@ -234,6 +292,8 @@ int main(int argc, char *argv[])
 	cairo_surface_t *s;
 	struct pollfd p[1];
 	struct window window;
+	struct gears *gears;
+	GLfloat angle = 0.0;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -252,17 +312,23 @@ int main(int argc, char *argv[])
 	window.surface = wl_display_create_surface(display);
 	window.x = 200;
 	window.y = 200;
-	window.width = 350;
-	window.height = 200;
+	window.width = 450;
+	window.height = 500;
 	window.state = WINDOW_STABLE;
 	window.fd = fd;
+
+	init_egl(&window);
 
 	s = draw_window(&window);
 
 	wl_display_set_event_handler(display, event_handler, &window);
 
-	while (ret = poll(p, 1, -1), ret >= 0) {
+	gears = gears_create();
+
+	while (ret = poll(p, 1, 20), ret >= 0) {
 		mask = 0;
+		gears_draw(gears, angle);
+		angle += 1;
 		if (p[0].revents & POLLIN)
 			mask |= WL_CONNECTION_READABLE;
 		if (p[0].revents & POLLOUT)
