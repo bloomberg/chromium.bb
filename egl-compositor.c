@@ -21,15 +21,15 @@ struct egl_compositor {
 	EGLDisplay display;
 	EGLSurface surface;
 	EGLContext context;
+	EGLConfig config;
 	struct wl_display *wl_display;
 	int gem_fd;
 };
 
 struct surface_data {
-	uint32_t handle;
-	int32_t width, height, stride;
 	GLuint texture;
 	struct wl_map map;
+	EGLSurface surface;
 };
 
 static void
@@ -102,7 +102,7 @@ void notify_surface_create(struct wl_compositor *compositor,
 	if (sd == NULL)
 		return;
 
-	sd->handle = 0;
+	sd->surface = EGL_NO_SURFACE;
 	wl_surface_set_data(surface, sd);
 
 	glGenTextures(1, &sd->texture);
@@ -113,18 +113,13 @@ void notify_surface_destroy(struct wl_compositor *compositor,
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
-	struct drm_gem_close close_arg;
-	int ret;
 
 	sd = wl_surface_get_data(surface);
-	if (sd == NULL || sd->handle == 0)
+	if (sd == NULL)
 		return;
-	
-	close_arg.handle = sd->handle;
-	ret = ioctl(ec->gem_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
-	if (ret != 0) {
-		fprintf(stderr, "failed to gem_close handle %d: %m\n", sd->handle);
-	}
+
+	if (sd->surface != EGL_NO_SURFACE)
+		eglDestroySurface(ec->display, sd->surface);
 
 	glDeleteTextures(1, &sd->texture);
 
@@ -139,64 +134,23 @@ void notify_surface_attach(struct wl_compositor *compositor,
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
-	struct drm_gem_open open_arg;
-	struct drm_gem_close close_arg;
-	struct drm_i915_gem_pread pread;
-	void *data;
-	uint32_t size;
-	int ret;
 
 	sd = wl_surface_get_data(surface);
 	if (sd == NULL)
 		return;
 
-	if (sd->handle != 0) {
-		close_arg.handle = sd->handle;
-		ret = ioctl(ec->gem_fd, DRM_IOCTL_GEM_CLOSE, &close_arg);
-		if (ret != 0) {
-			fprintf(stderr, "failed to gem_close name %d: %m\n", name);
-		}
-	}
+	if (sd->surface != EGL_NO_SURFACE)
+		eglDestroySurface(ec->display, sd->surface);
 
-	open_arg.name = name;
-	ret = ioctl(ec->gem_fd, DRM_IOCTL_GEM_OPEN, &open_arg);
-	if (ret != 0) {
-		fprintf(stderr, "failed to gem_open name %d, fd=%d: %m\n", name, ec->gem_fd);
-		return;
-	}
-
-	sd->handle = open_arg.handle;
-	sd->width = width;
-	sd->height = height;
-	sd->stride = stride;
-
-	size = sd->height * sd->stride;
-	data = malloc(size);
-	if (data == NULL) {
-		fprintf(stderr, "swap buffers malloc failed\n");
-		return;
-	}
-
-	pread.handle = sd->handle;
-	pread.pad = 0;
-	pread.offset = 0;
-	pread.size = size;
-	pread.data_ptr = (long) data;
-
-	if (ioctl(ec->gem_fd, DRM_IOCTL_I915_GEM_PREAD, &pread)) {
-		fprintf(stderr, "gem pread failed\n");
-		return;
-	}
+	sd->surface = eglCreatePixmapForName(ec->display, ec->config,
+					     name, width, height, stride, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, sd->texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-		     GL_BGRA, GL_UNSIGNED_BYTE, data);
-
-	free(data);
+	eglBindTexImage(ec->display, sd->surface, GL_TEXTURE_2D);
 
 	schedule_repaint(ec);
 }
@@ -256,14 +210,15 @@ wl_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
-	ec->surface = eglCreateSurfaceNative(ec->display, configs[24],
+	ec->config = configs[24];
+	ec->surface = eglCreateSurfaceNative(ec->display, ec->config,
 					     0, 0, width, height);
 	if (ec->surface == NULL) {
 		fprintf(stderr, "failed to create surface\n");
 		return NULL;
 	}
 
-	ec->context = eglCreateContext(ec->display, configs[24], NULL, NULL);
+	ec->context = eglCreateContext(ec->display, ec->config, NULL, NULL);
 	if (ec->context == NULL) {
 		fprintf(stderr, "failed to create context\n");
 		return NULL;
