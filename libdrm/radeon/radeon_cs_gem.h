@@ -1,5 +1,5 @@
 /* 
- * Copyright © 2008 Dave Airlie
+ * Copyright © 2008 Nicolai Haehnle
  * Copyright © 2008 Jérôme Glisse
  * All Rights Reserved.
  * 
@@ -25,15 +25,16 @@
  */
 /*
  * Authors:
- *      Dave Airlie
+ *      Aapo Tahkola <aet@rasterburn.org>
+ *      Nicolai Haehnle <prefect_@gmx.net>
  *      Jérôme Glisse <glisse@freedesktop.org>
  */
-#ifndef RADEON_BO_GEM_H
-#define RADEON_BO_GEM_H
+#ifndef RADEON_CS_GEM_H
+#define RADEON_CS_GEM_H
 
-#include "radeon_bo.h"
+#include "radeon_cs.h"
 
-struct radeon_bo_manager *radeon_bo_manager_gem(int fd);
-void radeon_bo_manager_gem_shutdown(struct radeon_bo_manager *bom);
+struct radeon_cs_manager *radeon_cs_manager_gem(int fd);
+void radeon_cs_manager_gem_shutdown(struct radeon_cs_manager *csm);
 
 #endif

@@ -42,14 +42,19 @@
 
 struct radeon_bo_gem {
     struct radeon_bo    base;
-    int                 ref_count;
+    uint32_t            name;
     int                 map_count;
+};
+
+struct bo_manager_gem {
+    struct radeon_bo_manager    base;
 };
 
 static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
                                  uint32_t handle,
                                  uint32_t size,
                                  uint32_t alignment,
+                                 uint32_t domains,
                                  uint32_t flags)
 {
     struct radeon_bo_gem *bo;
@@ -64,11 +69,10 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
     bo->base.handle = 0;
     bo->base.size = size;
     bo->base.alignment = alignment;
+    bo->base.domains = domains;
     bo->base.flags = flags;
     bo->base.ptr = NULL;
-    bo->ref_count = 0;
     bo->map_count = 0;
-
     if (handle) {
         struct drm_gem_open open_arg;
 
@@ -80,13 +84,15 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
             free(bo);
             return NULL;
         }
-        bo->base.handle = handle;
+        bo->base.handle = open_arg.handle;
+        bo->base.size = open_arg.size;
+        bo->name = handle;
     } else {
         struct drm_radeon_gem_create args;
 
         args.size = size;
         args.alignment = alignment;
-        args.initial_domain = RADEON_GEM_DOMAIN_CPU;
+        args.initial_domain = bo->base.domains;
         args.no_backing_store = 0;
         r = drmCommandWriteRead(bom->fd, DRM_RADEON_GEM_CREATE,
                                 &args, sizeof(args));
@@ -99,7 +105,11 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
     return (struct radeon_bo*)bo;
 }
 
-static void bo_close(struct radeon_bo *bo)
+static void bo_ref(struct radeon_bo *bo)
+{
+}
+
+static void bo_unref(struct radeon_bo *bo)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     struct drm_gem_close args;
@@ -107,10 +117,10 @@ static void bo_close(struct radeon_bo *bo)
     if (bo == NULL) {
         return;
     }
-    if (bo_gem->ref_count) {
+    if (bo->cref) {
         /* FIXME: what to do ? */
+        return;
     }
-
     if (bo_gem->map_count) {
         munmap(bo->ptr, bo->size);
     }
@@ -121,33 +131,20 @@ static void bo_close(struct radeon_bo *bo)
     free(bo_gem);
 }
 
-static void bo_pin(struct radeon_bo *bo)
-{
-    struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
-
-    bo_gem->ref_count++;
-}
-
-static void bo_unpin(struct radeon_bo *bo)
-{
-    struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
-
-    bo_gem->ref_count--;
-}
-
-static int bo_map(struct radeon_bo *bo, unsigned int flags)
+static int bo_map(struct radeon_bo *bo, int write)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     struct drm_radeon_gem_mmap args;
     int r;
+    uint8_t *tt;
 
     if (bo_gem->map_count++ != 0) {
         return 0;
     }
+    bo->ptr = NULL;
     args.handle = bo->handle;
     args.offset = 0;
-    args.size = bo->size;
-
+    args.size = (uint64_t)bo->size;
     r = drmCommandWriteRead(bo->bom->fd,
                             DRM_RADEON_GEM_MMAP,
                             &args,
@@ -155,6 +152,7 @@ static int bo_map(struct radeon_bo *bo, unsigned int flags)
     if (!r) {
         bo->ptr = (void *)(unsigned long)args.addr_ptr;
     }
+    tt = bo->ptr;
     return r;
 }
 
@@ -165,7 +163,6 @@ static int bo_unmap(struct radeon_bo *bo)
     if (--bo_gem->map_count > 0) {
         return 0;
     }
-
     munmap(bo->ptr, bo->size);
     bo->ptr = NULL;
     return 0;
@@ -173,14 +170,31 @@ static int bo_unmap(struct radeon_bo *bo)
 
 static struct radeon_bo_funcs bo_gem_funcs = {
     bo_open,
-    bo_close,
-    bo_pin,
-    bo_unpin,
+    bo_ref,
+    bo_unref,
     bo_map,
     bo_unmap
 };
 
-struct radeon_bo_funcs *radeon_bo_gem_initialize(int fd)
+struct radeon_bo_manager *radeon_bo_manager_gem(int fd)
 {
-    return &bo_gem_funcs; 
+    struct bo_manager_gem *bomg;
+
+    bomg = (struct bo_manager_gem*)calloc(1, sizeof(struct bo_manager_gem));
+    if (bomg == NULL) {
+        return NULL;
+    }
+    bomg->base.funcs = &bo_gem_funcs;
+    bomg->base.fd = fd;
+    return (struct radeon_bo_manager*)bomg;
+}
+
+void radeon_bo_manager_gem_shutdown(struct radeon_bo_manager *bom)
+{
+    struct bo_manager_gem *bomg = (struct bo_manager_gem*)bom;
+
+    if (bom == NULL) {
+        return;
+    }
+    free(bomg);
 }

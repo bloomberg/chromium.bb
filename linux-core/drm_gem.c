@@ -263,8 +263,9 @@ again:
 
 	spin_lock(&dev->object_name_lock);
 	if (obj->name) {
+		args->name = (uint64_t) obj->name;
 		spin_unlock(&dev->object_name_lock);
-		return -EEXIST;
+		return 0;
 	}
 	ret = idr_get_new_above(&dev->object_name_idr, obj, 1,
 				 &obj->name);

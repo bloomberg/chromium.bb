@@ -42,6 +42,7 @@ struct radeon_bo {
     uint32_t                    alignment;
     uint32_t                    handle;
     uint32_t                    size;
+    uint32_t                    domains;
     uint32_t                    flags;
     unsigned                    cref;
     void                        *ptr;
@@ -54,6 +55,7 @@ struct radeon_bo_funcs {
                                  uint32_t handle,
                                  uint32_t size,
                                  uint32_t alignment,
+                                 uint32_t domains,
                                  uint32_t flags);
     void (*bo_ref)(struct radeon_bo *bo);
     void (*bo_unref)(struct radeon_bo *bo);
@@ -80,13 +82,14 @@ static inline struct radeon_bo *_radeon_bo_open(struct radeon_bo_manager *bom,
                                                 uint32_t handle,
                                                 uint32_t size,
                                                 uint32_t alignment,
+                                                uint32_t domains,
                                                 uint32_t flags,
                                                 const char *file,
                                                 const char *func,
                                                 int line)
 {
     struct radeon_bo *bo;
-    bo = bom->funcs->bo_open(bom, handle, size, alignment, flags);
+    bo = bom->funcs->bo_open(bom, handle, size, alignment, domains, flags);
 #ifdef RADEON_BO_TRACK_OPEN
     if (bo) {
         _radeon_bo_debug(bo, 1, file, func, line);
@@ -142,8 +145,8 @@ static inline int _radeon_bo_unmap(struct radeon_bo *bo,
     return bo->bom->funcs->bo_unmap(bo);
 }
 
-#define radeon_bo_open(bom, h, s, a, f)\
-    _radeon_bo_open(bom, h, s, a, f, __FILE__, __FUNCTION__, __LINE__)
+#define radeon_bo_open(bom, h, s, a, d, f)\
+    _radeon_bo_open(bom, h, s, a, d, f, __FILE__, __FUNCTION__, __LINE__)
 #define radeon_bo_ref(bo)\
     _radeon_bo_ref(bo, __FILE__, __FUNCTION__, __LINE__)
 #define radeon_bo_unref(bo)\

@@ -35,9 +35,12 @@ libdrm_radeon_la_LDFLAGS = -version-number 1:0:0 -no-undefined
 libdrm_radeon_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
 
 libdrm_radeon_la_SOURCES = \
-	radeon_bo_gem.c
+	radeon_bo_gem.c \
+	radeon_cs_gem.c
 
-libdrm_radeonincludedir = ${includedir}
+libdrm_radeonincludedir = ${includedir}/drm
 libdrm_radeoninclude_HEADERS = \
 	radeon_bo.h \
-	radeon_cs.h
+	radeon_cs.h \
+	radeon_bo_gem.h \
+	radeon_cs_gem.h
