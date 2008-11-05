@@ -142,6 +142,9 @@ void notify_surface_attach(struct wl_compositor *compositor,
 	if (sd->surface != EGL_NO_SURFACE)
 		eglDestroySurface(ec->display, sd->surface);
 
+	/* FIXME: We need to use a single buffer config without depth
+	 * or stencil buffers here to keep egl from creating auxillary
+	 * buffers for the pixmap here. */
 	sd->surface = eglCreatePixmapForName(ec->display, ec->config,
 					     name, width, height, stride, NULL);
 
