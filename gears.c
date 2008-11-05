@@ -174,6 +174,8 @@ gears_draw(struct gears *gears, GLfloat angle)
 {
 	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 
+	glClear(GL_DEPTH_BUFFER_BIT);
+
 	glPushMatrix();
 
 	glTranslatef(0.0, 0.0, -50);

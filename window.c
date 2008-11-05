@@ -154,6 +154,7 @@ draw_window(struct window *window)
 						     window->config, window->name,
 						     window->width, window->height,
 						     window->stride, NULL);
+
 	if (surface == NULL)
 		die("failed to create surface\n");
 
