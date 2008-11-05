@@ -170,10 +170,12 @@ void radeon_emit_copy_blit(struct drm_device * dev,
 		ADVANCE_RING();
 	}
 
-	BEGIN_RING(4);
+	BEGIN_RING(6);
 	OUT_RING(CP_PACKET0(RADEON_RB2D_DSTCACHE_CTLSTAT, 0));
 	OUT_RING(RADEON_RB2D_DC_FLUSH_ALL);
 	RADEON_WAIT_UNTIL_2D_IDLE();
+	OUT_RING(CP_PACKET2());
+	OUT_RING(CP_PACKET2());
 	ADVANCE_RING();
 
 	COMMIT_RING();
@@ -252,7 +254,8 @@ void radeon_emit_solid_fill(struct drm_device * dev,
 			 RADEON_GMC_DST_CLIPPING |
 			 RADEON_GMC_BRUSH_SOLID_COLOR |
 			 (format << 8) |
-			 RADEON_ROP3_S |
+			 RADEON_ROP3_P |
+			 RADEON_CLR_CMP_SRC_SOURCE |
 			 RADEON_GMC_CLR_CMP_CNTL_DIS | RADEON_GMC_WR_MSK_DIS);
 		OUT_RING((pitch << 22) | (dst_offset >> 10)); // PITCH
 		OUT_RING(0);   // SC_TOP_LEFT // DST CLIPPING
@@ -265,10 +268,14 @@ void radeon_emit_solid_fill(struct drm_device * dev,
 		ADVANCE_RING();
 	}
 
-	BEGIN_RING(4);
+	BEGIN_RING(8);
 	OUT_RING(CP_PACKET0(RADEON_RB2D_DSTCACHE_CTLSTAT, 0));
 	OUT_RING(RADEON_RB2D_DC_FLUSH_ALL);
 	RADEON_WAIT_UNTIL_2D_IDLE();
+	OUT_RING(CP_PACKET2());
+	OUT_RING(CP_PACKET2());
+	OUT_RING(CP_PACKET2());
+	OUT_RING(CP_PACKET2());
 	ADVANCE_RING();
 
 	COMMIT_RING();
@@ -350,7 +357,6 @@ static int radeon_move_vram(struct drm_buffer_object * bo,
 	struct drm_bo_mem_reg tmp_mem;
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int ret; 
-	bool was_local = false;
  
 	/* old - LOCAL memory node bo->mem
 	   tmp - TT type memory node
@@ -398,7 +404,6 @@ int radeon_move(struct drm_buffer_object * bo,
 		int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_device *dev = bo->dev;
-	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
     	if (!dev_priv->cp_running)

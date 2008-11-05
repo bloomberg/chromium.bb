@@ -87,19 +87,23 @@ static int radeon_lvds_get_modes(struct drm_connector *connector)
 
 	if (radeon_connector->ddc_bus) {
 		radeon_i2c_do_lock(radeon_connector, 1);
-		edid = drm_get_edid(&radeon_connector->base, &radeon_connector->ddc_bus->adapter);
+		edid = drm_get_edid(connector, &radeon_connector->ddc_bus->adapter);
 		radeon_i2c_do_lock(radeon_connector, 0);
 		if (edid) {
 			drm_mode_connector_update_edid_property(&radeon_connector->base, edid);
 			ret = drm_add_edid_modes(&radeon_connector->base, edid);
 			kfree(edid);
+			if (ret == 0)
+				goto native;
 			return ret;
 		}
 	}
 
+native:
 	encoder = radeon_best_single_encoder(connector);
 	if (!encoder)
-		return connector_status_disconnected;
+		return 0;
+
 	/* we have no EDID modes */
 	mode = radeon_fp_native_mode(encoder);
 	if (mode) {
@@ -301,8 +305,11 @@ static struct connector_funcs {
 	{ CONNECTOR_LVDS, &radeon_lvds_connector_funcs, &radeon_lvds_connector_helper_funcs, DRM_MODE_CONNECTOR_LVDS, "LVDS" },
 	{ CONNECTOR_DVI_A, &radeon_vga_connector_funcs, &radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_DVIA, "DVI" },
 	{ CONNECTOR_DVI_I, &radeon_dvi_connector_funcs, &radeon_dvi_connector_helper_funcs, DRM_MODE_CONNECTOR_DVII, "DVI" },
-
+	{ CONNECTOR_DVI_D, &radeon_dvi_connector_funcs, &radeon_dvi_connector_helper_funcs, DRM_MODE_CONNECTOR_DVID, "DVI" },
+	{ CONNECTOR_HDMI_TYPE_A, &radeon_dvi_connector_funcs, &radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_HDMIA, "HDMI" },
+	{ CONNECTOR_HDMI_TYPE_B, &radeon_dvi_connector_funcs, &radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_HDMIB, "HDMI" },
 #if 0
+	{ CONNECTOR_HDMI_TYPE_A, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_DVI_D, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 
 	{ CONNECTOR_STV, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
@@ -310,7 +317,6 @@ static struct connector_funcs {
 	{ CONNECTOR_DIGITAL, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_SCART, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 
-	{ CONNECTOR_HDMI_TYPE_A, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_HDMI_TYPE_B, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_HDMI_TYPE_B, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },
 	{ CONNECTOR_HDMI_TYPE_B, radeon_vga_connector_funcs, radeon_vga_connector_helper_funcs, DRM_MODE_CONNECTOR_VGA },

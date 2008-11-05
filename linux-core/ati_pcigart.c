@@ -39,7 +39,7 @@
 #define ATI_PCIE_WRITE 0x4
 #define ATI_PCIE_READ 0x8
 
-static __inline__ void gart_insert_page_into_table(struct drm_ati_pcigart_info *gart_info, dma_addr_t addr, u32 *pci_gart)
+static __inline__ void gart_insert_page_into_table(struct drm_ati_pcigart_info *gart_info, dma_addr_t addr, volatile u32 *pci_gart)
 {
 	u32 page_base;
 
@@ -61,7 +61,7 @@ static __inline__ void gart_insert_page_into_table(struct drm_ati_pcigart_info *
 	*pci_gart = cpu_to_le32(page_base);
 }
 
-static __inline__ dma_addr_t gart_get_page_from_table(struct drm_ati_pcigart_info *gart_info, u32 *pci_gart)
+static __inline__ dma_addr_t gart_get_page_from_table(struct drm_ati_pcigart_info *gart_info, volatile u32 *pci_gart)
 {
 	dma_addr_t retval;
 	switch(gart_info->gart_reg_if) {
@@ -93,7 +93,7 @@ int drm_ati_alloc_pcigart_table(struct drm_device *dev,
 #ifdef CONFIG_X86
 	/* IGPs only exist on x86 in any case */
 	if (gart_info->gart_reg_if == DRM_ATI_GART_IGP)
-		set_memory_uc(gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
+		set_memory_uc((unsigned long)gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
 #endif
 
 	memset(gart_info->table_handle->vaddr, 0, gart_info->table_size);
@@ -107,7 +107,7 @@ static void drm_ati_free_pcigart_table(struct drm_device *dev,
 #ifdef CONFIG_X86
 	/* IGPs only exist on x86 in any case */
 	if (gart_info->gart_reg_if == DRM_ATI_GART_IGP)
-		set_memory_wb(gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
+		set_memory_wb((unsigned long)gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
 #endif
 	drm_pci_free(dev, gart_info->table_handle);
 	gart_info->table_handle = NULL;
@@ -260,7 +260,7 @@ static int ati_pcigart_bind_ttm(struct drm_ttm_backend *backend,
 
         j = offset;
         while (j < (offset + atipci_be->num_pages)) {
-		if (gart_get_page_from_table(info, pci_gart+j))
+		if (gart_get_page_from_table(info, pci_gart + j))
 			return -EBUSY;
                 j++;
         }

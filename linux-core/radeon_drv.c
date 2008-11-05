@@ -37,14 +37,14 @@
 #include "drm_pciids.h"
 
 int radeon_no_wb;
-int radeon_dynclks = 1;
+int radeon_dynclks = -1;
 int radeon_r4xx_atom = 0;
 int radeon_agpmode = 0;
 
 MODULE_PARM_DESC(no_wb, "Disable AGP writeback for scratch registers\n");
 module_param_named(no_wb, radeon_no_wb, int, 0444);
 
-unsigned int radeon_modeset = 0;
+int radeon_modeset = 0;
 module_param_named(modeset, radeon_modeset, int, 0400);
 
 MODULE_PARM_DESC(dynclks, "Disable/Enable dynamic clocks");
@@ -60,8 +60,12 @@ module_param_named(agpmode, radeon_agpmode, int, 0444);
 static int dri_library_name(struct drm_device * dev, char * buf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	int family = dev_priv->flags & RADEON_FAMILY_MASK;
+	int family;
 
+	if (!dev_priv)
+		return 0;
+
+	family = dev_priv->flags & RADEON_FAMILY_MASK;
 	return snprintf(buf, PAGE_SIZE, "%s\n",
 		(family < CHIP_R200) ? "radeon" :
 		((family < CHIP_R300) ? "r200" :
@@ -122,6 +126,8 @@ static struct drm_driver driver = {
 	.dma_ioctl = radeon_cp_buffers,
 	.master_create = radeon_master_create,
 	.master_destroy = radeon_master_destroy,
+	.proc_init = radeon_gem_proc_init,
+	.proc_cleanup = radeon_gem_proc_cleanup,
 	.fops = {
 		.owner = THIS_MODULE,
 		.open = drm_open,

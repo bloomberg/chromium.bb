@@ -276,7 +276,7 @@ void atombios_crtc_set_base(struct drm_crtc *crtc, int x, int y)
 
 	radeon_fb = to_radeon_framebuffer(crtc->fb);
 
-	obj = radeon_fb->base.mm_private;
+	obj = radeon_fb->obj;
 	obj_priv = obj->driver_private;
 
 	fb_location = obj_priv->bo->offset + dev_priv->fb_location;

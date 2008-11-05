@@ -1070,6 +1070,7 @@ static void radeon_legacy_tv_dac_dpms(struct drm_encoder *encoder, int mode)
 			crtc2_gen_cntl |= RADEON_CRTC2_CRT2_ON;
 			//tv_master_cntl |= RADEON_TV_ON;
 			if (dev_priv->chip_family == CHIP_R420 ||
+			    dev_priv->chip_family == CHIP_R423 ||
 			    dev_priv->chip_family == CHIP_RV410)
 				tv_dac_cntl &= ~(R420_TV_DAC_RDACPD |
 						 R420_TV_DAC_GDACPD |
@@ -1095,6 +1096,7 @@ static void radeon_legacy_tv_dac_dpms(struct drm_encoder *encoder, int mode)
                         crtc2_gen_cntl &= ~RADEON_CRTC2_CRT2_ON;
 			//tv_master_cntl &= ~RADEON_TV_ON;
 			if (dev_priv->chip_family == CHIP_R420 ||
+			    dev_priv->chip_family == CHIP_R423 ||
 			    dev_priv->chip_family == CHIP_RV410)
 				tv_dac_cntl |= (R420_TV_DAC_RDACPD |
 						R420_TV_DAC_GDACPD |
@@ -1158,6 +1160,7 @@ static void radeon_legacy_tv_dac_mode_set(struct drm_encoder *encoder,
 	if (dev_priv->chip_family != CHIP_R200) {
 		tv_dac_cntl = RADEON_READ(RADEON_TV_DAC_CNTL);
 		if (dev_priv->chip_family == CHIP_R420 ||
+		    dev_priv->chip_family == CHIP_R423 ||
 		    dev_priv->chip_family == CHIP_RV410) {
 			tv_dac_cntl &= ~(RADEON_TV_DAC_STD_MASK |
 					 RADEON_TV_DAC_BGADJ_MASK |

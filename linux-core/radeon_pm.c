@@ -54,10 +54,10 @@ int radeon_suspend(struct drm_device *dev, pm_message_t state)
 		if (!radeon_fb)
 			continue;
 
-		if (!radeon_fb->base.mm_private)
+		if (!radeon_fb->obj)
 			continue;
 		
-		radeon_gem_object_unpin(radeon_fb->base.mm_private);
+		radeon_gem_object_unpin(radeon_fb->obj);
 	}
 
 	if (!(dev_priv->flags & RADEON_IS_IGP))
@@ -93,7 +93,6 @@ int radeon_resume(struct drm_device *dev)
 	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct drm_framebuffer *fb;
 	int i;
-	u32 tmp;
 
 	if (!drm_core_check_feature(dev, DRIVER_MODESET))
 		return 0;
@@ -104,10 +103,7 @@ int radeon_resume(struct drm_device *dev)
 		return -1;
 
 	/* Turn on bus mastering -todo fix properly */
-	if (dev_priv->chip_family < CHIP_RV380) {
-		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RADEON_BUS_MASTER_DIS;
-		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
-	}
+	radeon_enable_bm(dev_priv);
 
 	DRM_ERROR("\n");
 	/* on atom cards re init the whole card 
@@ -179,10 +175,10 @@ int radeon_resume(struct drm_device *dev)
 		if (!radeon_fb)
 			continue;
 
-		if (!radeon_fb->base.mm_private)
+		if (!radeon_fb->obj)
 			continue;
 		
-		radeon_gem_object_pin(radeon_fb->base.mm_private,
+		radeon_gem_object_pin(radeon_fb->obj,
 				      PAGE_SIZE, RADEON_GEM_DOMAIN_VRAM);
 	}
 	/* blat the mode back in */

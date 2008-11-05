@@ -356,6 +356,9 @@ void r300_init_reg_flags(struct drm_device *dev)
 
 		} else {
 
+			ADD_RANGE(RADEON_SE_COORD_FMT, 1);
+			ADD_RANGE(RADEON_SE_CNTL_STATUS, 1);
+
 			ADD_RANGE(RADEON_PP_TXFILTER_0, 1);
 			ADD_RANGE(RADEON_PP_TXFORMAT_0, 1);
 			ADD_RANGE(RADEON_PP_TEX_SIZE_0, 1);

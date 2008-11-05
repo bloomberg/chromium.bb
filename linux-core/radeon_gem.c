@@ -126,7 +126,6 @@ int radeon_gem_create_ioctl(struct drm_device *dev, void *data,
 	struct drm_radeon_gem_object *obj_priv;
 	struct drm_gem_object *obj;
 	int ret = 0;
-	uint32_t flags;
 	int handle;
 
 	/* create a gem object to contain this object in */
@@ -157,8 +156,6 @@ fail:
 
 int radeon_gem_set_domain(struct drm_gem_object *obj, uint32_t read_domains, uint32_t write_domain, uint32_t *flags_p, bool unfenced)
 {
-	struct drm_device *dev = obj->dev;
-	drm_radeon_private_t *dev_priv = dev->dev_private;
 	struct drm_radeon_gem_object *obj_priv;
 	uint32_t flags = 0;
 	int ret;
@@ -419,24 +416,14 @@ int radeon_gem_busy(struct drm_device *dev, void *data,
 	return 0;
 }
 
-int radeon_gem_execbuffer(struct drm_device *dev, void *data,
-			  struct drm_file *file_priv)
-{
-	return -ENOSYS;
-
-
-}
-
-int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
+int radeon_gem_wait_rendering(struct drm_device *dev, void *data,
 			      struct drm_file *file_priv)
 {
-	struct drm_radeon_gem_indirect *args = data;
-	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct drm_radeon_gem_wait_rendering *args = data;
 	struct drm_gem_object *obj;
 	struct drm_radeon_gem_object *obj_priv;
-	uint32_t start, end;
 	int ret;
-	RING_LOCALS;
+
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
@@ -444,63 +431,17 @@ int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
 
 	obj_priv = obj->driver_private;
 
-	DRM_DEBUG("got here %p %d\n", obj, args->used);
-	//RING_SPACE_TEST_WITH_RETURN(dev_priv);
-	//VB_AGE_TEST_WITH_RETURN(dev_priv);
-
-	ret = drm_bo_do_validate(obj_priv->bo, 0, DRM_BO_FLAG_NO_EVICT,
-				 0 , 0);
-	if (ret)
-		return ret;
-
-	/* Wait for the 3D stream to idle before the indirect buffer
-	 * containing 2D acceleration commands is processed.
-	 */
-	BEGIN_RING(2);
-
-	RADEON_WAIT_UNTIL_3D_IDLE();
-
-	ADVANCE_RING();
+	mutex_lock(&obj_priv->bo->mutex);
+	ret = drm_bo_wait(obj_priv->bo, 0, 1, 1, 0);
+	mutex_unlock(&obj_priv->bo->mutex);
 	
-	start = 0;
-	end = args->used;
-
-	if (start != end) {
-		int offset = (dev_priv->gart_vm_start + 
-			      + obj_priv->bo->offset + start);
-		int dwords = (end - start + 3) / sizeof(u32);
-
-		/* Fire off the indirect buffer */
-		BEGIN_RING(3);
-
-		OUT_RING(CP_PACKET0(RADEON_CP_IB_BASE, 1));
-		OUT_RING(offset);
-		OUT_RING(dwords);
-
-		ADVANCE_RING();
-	}
-
-	COMMIT_RING();
-
-	/* we need to fence the buffer */
-	ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &obj_priv->fence);
-	if (ret) {
-	  
-		drm_putback_buffer_objects(dev);
-		ret = 0;
-		goto fail;
-	}
-
-	/* dereference he fence object */
-	drm_fence_usage_deref_unlocked(&obj_priv->fence);
-
 	mutex_lock(&dev->struct_mutex);
 	drm_gem_object_unreference(obj);
 	mutex_unlock(&dev->struct_mutex);
-	ret = 0;
- fail:
 	return ret;
 }
+
+
 
 /*
  * Depending on card genertation, chipset bugs, etc... the amount of vram
@@ -525,6 +466,7 @@ static uint32_t radeon_get_accessible_vram(struct drm_device *dev)
 	    dev_priv->chip_family == CHIP_RV350 ||
 	    dev_priv->chip_family == CHIP_RV380 ||
 	    dev_priv->chip_family == CHIP_R420 ||
+	    dev_priv->chip_family == CHIP_R423 ||
 	    dev_priv->chip_family == CHIP_RV410 ||
 	    radeon_is_avivo(dev_priv)) {
 		uint32_t temp = RADEON_READ(RADEON_HOST_PATH_CNTL);
@@ -585,6 +527,9 @@ void radeon_vram_setup(struct drm_device *dev)
 	if (accessible > bar_size)
 		accessible = bar_size;
 
+	if (accessible > vram)
+		accessible = vram;
+
 	DRM_INFO("Detected VRAM RAM=%dK, accessible=%uK, BAR=%uK\n",
 		 vram, accessible, bar_size);
 
@@ -612,7 +557,7 @@ static int radeon_gart_init(struct drm_device *dev)
 		base = dev->agp->base;
 		if ((base + dev_priv->gart_size - 1) >= dev_priv->fb_location &&
 		    base < (dev_priv->fb_location + dev_priv->fb_size - 1)) {
-			DRM_INFO("Can't use agp base @0x%08xlx, won't fit\n",
+			DRM_INFO("Can't use agp base @0x%08lx, won't fit\n",
 				 dev->agp->base);
 			base = 0;
 		}
@@ -728,7 +673,7 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 		return -EINVAL;
 	}
 
-	DRM_DEBUG("Ring ptr %p mapped at %d %p, read ptr %p maped at %d %p\n",
+	DRM_DEBUG("Ring ptr %p mapped at %ld %p, read ptr %p maped at %ld %p\n",
 		  dev_priv->mm.ring.bo, dev_priv->mm.ring.bo->offset, dev_priv->mm.ring.kmap.virtual,
 		  dev_priv->mm.ring_read.bo, dev_priv->mm.ring_read.bo->offset, dev_priv->mm.ring_read.kmap.virtual);
 
@@ -825,7 +770,6 @@ static void radeon_wait_for_vsync(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	uint32_t       crtc_gen_cntl;
-	int ret;
 
 	crtc_gen_cntl = RADEON_READ(RADEON_CRTC_GEN_CNTL);
 	if ((crtc_gen_cntl & RADEON_CRTC_DISP_REQ_EN_B) ||
@@ -844,7 +788,6 @@ static void radeon_wait_for_vsync2(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	uint32_t       crtc2_gen_cntl;
-	struct timeval timeout;
 
 	crtc2_gen_cntl = RADEON_READ(RADEON_CRTC2_GEN_CNTL);
 	if ((crtc2_gen_cntl & RADEON_CRTC2_DISP_REQ_EN_B) ||
@@ -913,7 +856,6 @@ void radeon_init_memory_map(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	u32 mem_size, aper_size;
-	u32 tmp;
 
 	dev_priv->mc_fb_location = radeon_read_fb_location(dev_priv);
 	radeon_read_agp_location(dev_priv, &dev_priv->mc_agp_loc_lo, &dev_priv->mc_agp_loc_hi);
@@ -960,6 +902,7 @@ void radeon_init_memory_map(struct drm_device *dev)
 			    dev_priv->chip_family == CHIP_RV350 ||
 			    dev_priv->chip_family == CHIP_RV380 ||
 			    dev_priv->chip_family == CHIP_R420 ||
+			    dev_priv->chip_family == CHIP_R423 ||
 			    dev_priv->chip_family == CHIP_RV410)
 				aper0_base &= ~(mem_size - 1);
 
@@ -1003,6 +946,10 @@ void radeon_init_memory_map(struct drm_device *dev)
 			((radeon_read_fb_location(dev_priv) & 0xffff0000u) + 0x10000)
 			- dev_priv->fb_location;
 	}
+
+	/* add an MTRR for the VRAM */
+	dev_priv->aper_size = aper_size;
+	dev_priv->vram_mtrr = mtrr_add(dev_priv->fb_aper_offset, dev_priv->aper_size, MTRR_TYPE_WRCOMB, 1);
 
 }
 
@@ -1094,6 +1041,8 @@ void radeon_gem_mm_fini(struct drm_device *dev)
 		DRM_DEBUG("delaying takedown of VRAM memory\n");
 	}
 
+	if (dev_priv->vram_mtrr)
+		mtrr_del(dev_priv->vram_mtrr, dev_priv->fb_aper_offset, dev_priv->aper_size);
 	mutex_unlock(&dev->struct_mutex);
 
 	drm_bo_driver_finish(dev);
@@ -1143,11 +1092,11 @@ int radeon_gem_object_unpin(struct drm_gem_object *obj)
 
 #define RADEON_NUM_IB (RADEON_IB_MEMORY / RADEON_IB_SIZE)
 
-int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32_t *card_offset)
+int radeon_gem_ib_get(struct drm_radeon_cs_parser *parser)
 {
 	int i, index = -1;
 	int ret;
-	drm_radeon_private_t *dev_priv = dev->dev_private;
+	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
 
 	for (i = 0; i < RADEON_NUM_IB; i++) {
 		if (!(dev_priv->ib_alloc_bitmap & (1 << i))){
@@ -1173,12 +1122,12 @@ int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32
 	}
 
 	if (index == -1) {
-		DRM_ERROR("Major case fail to allocate IB from freelist %x\n", dev_priv->ib_alloc_bitmap);
+		DRM_ERROR("Major case fail to allocate IB from freelist %llx\n", dev_priv->ib_alloc_bitmap);
 		return -EINVAL;
 	}
 		
 
-	if (dwords > RADEON_IB_SIZE / sizeof(uint32_t))
+	if (parser->chunks[parser->ib_index].length_dw > RADEON_IB_SIZE / sizeof(uint32_t))
 		return -EINVAL;
 
 	ret = drm_bo_do_validate(dev_priv->ib_objs[index]->bo, 0,
@@ -1189,26 +1138,26 @@ int radeon_gem_ib_get(struct drm_device *dev, void **ib, uint32_t dwords, uint32
 		return -EINVAL;
 	}
 		
-	*card_offset = dev_priv->gart_vm_start + dev_priv->ib_objs[index]->bo->offset;
-	*ib = dev_priv->ib_objs[index]->kmap.virtual;
+	parser->ib = dev_priv->ib_objs[index]->kmap.virtual;
+	parser->card_offset = dev_priv->gart_vm_start + dev_priv->ib_objs[index]->bo->offset;
 	dev_priv->ib_alloc_bitmap |= (1 << i);
 	return 0;
 }
 
-static void radeon_gem_ib_free(struct drm_device *dev, void *ib, uint32_t dwords)
+static void radeon_gem_ib_free(struct drm_radeon_cs_parser *parser)
 {
+	struct drm_device *dev = parser->dev;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	struct drm_fence_object *fence;
 	int ret;
 	int i;
 
 	for (i = 0; i < RADEON_NUM_IB; i++) {
-
-		if (dev_priv->ib_objs[i]->kmap.virtual == ib) {
+		if (dev_priv->ib_objs[i]->kmap.virtual == parser->ib) {
 			/* emit a fence object */
 			ret = drm_fence_buffer_objects(dev, NULL, 0, NULL, &fence);
+			dev_priv->irq_emitted = 0;
 			if (ret) {
-				
 				drm_putback_buffer_objects(dev);
 			}
 			/* dereference the fence object */
@@ -1238,21 +1187,58 @@ static int radeon_gem_ib_destroy(struct drm_device *dev)
 	return 0;
 }
 
-static int radeon_gem_relocate(struct drm_device *dev, struct drm_file *file_priv,
-				uint32_t *reloc, uint32_t *offset)
+static int radeon_gem_find_reloc(struct drm_radeon_cs_parser *parser,
+				 uint32_t offset, uint32_t *handle,
+				 uint32_t *read_domains, uint32_t *write_domain)
 {
+	struct drm_device *dev = parser->dev;
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_radeon_kernel_chunk *reloc_chunk = &parser->chunks[parser->reloc_index];
+
+	if (!reloc_chunk->kdata)
+		return -EINVAL;
+
+	if (offset > reloc_chunk->length_dw){
+		DRM_ERROR("Offset larger than chunk %d %d\n", offset, reloc_chunk->length_dw);
+		return -EINVAL;
+	}
+
+	*handle = reloc_chunk->kdata[offset];
+	*read_domains = reloc_chunk->kdata[offset + 1];
+	*write_domain = reloc_chunk->kdata[offset + 2];
+	return 0;
+}
+
+static int radeon_gem_relocate(struct drm_radeon_cs_parser *parser,
+			       uint32_t *reloc, uint32_t *offset)
+{
+	struct drm_device *dev = parser->dev;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	/* relocate the handle */
-	uint32_t read_domains = reloc[2];
-	uint32_t write_domain = reloc[3];
+	uint32_t read_domains, write_domain;
 	struct drm_gem_object *obj;
 	int flags = 0;
 	int ret;
 	struct drm_radeon_gem_object *obj_priv;
 
-	obj = drm_gem_object_lookup(dev, file_priv, reloc[1]);
-	if (!obj)
-		return -EINVAL;
+	if (parser->reloc_index == -1) {
+		obj = drm_gem_object_lookup(dev, parser->file_priv, reloc[1]);
+		if (!obj)
+			return -EINVAL;
+		read_domains = reloc[2];
+		write_domain = reloc[3];
+	} else {
+		uint32_t handle;
+
+		/* have to lookup handle in other chunk */
+		ret = radeon_gem_find_reloc(parser, reloc[1], &handle, &read_domains, &write_domain);
+		if (ret < 0)
+			return ret;
+
+		obj = drm_gem_object_lookup(dev, parser->file_priv, handle);
+		if (!obj)
+			return -EINVAL;
+	}
 
 	obj_priv = obj->driver_private;
 	radeon_gem_set_domain(obj, read_domains, write_domain, &flags, false);
@@ -1522,7 +1508,7 @@ static int radeon_gem_dma_bufs_init(struct drm_device *dev)
 	if (ret < 0)
 		return ret;
 
-	ret = drm_buffer_object_create(dev, size, drm_bo_type_device,
+	ret = drm_buffer_object_create(dev, size, drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE | DRM_BO_FLAG_NO_EVICT |
 				       DRM_BO_FLAG_MEM_TT | DRM_BO_FLAG_MAPPABLE, 0,
 				       0, 0, &dev_priv->mm.dma_bufs.bo);
@@ -1540,7 +1526,7 @@ static int radeon_gem_dma_bufs_init(struct drm_device *dev)
 	DRM_DEBUG("\n");
 	radeon_gem_addbufs(dev);
 
-	DRM_DEBUG("%x %d\n", dev_priv->mm.dma_bufs.bo->map_list.hash.key, size);
+	DRM_DEBUG("%lx %d\n", dev_priv->mm.dma_bufs.bo->map_list.hash.key, size);
 	dev->agp_buffer_token = dev_priv->mm.dma_bufs.bo->map_list.hash.key << PAGE_SHIFT;
 	dev_priv->mm.fake_agp_map.handle = dev_priv->mm.dma_bufs.kmap.virtual;
 	dev_priv->mm.fake_agp_map.size = size;

@@ -124,6 +124,7 @@ enum radeon_family {
 	CHIP_RV350,
 	CHIP_RV380,
 	CHIP_R420,
+	CHIP_R423,
 	CHIP_RV410,
 	CHIP_RS400,
 	CHIP_RS480,
@@ -294,6 +295,24 @@ struct drm_radeon_master_private {
 #define RADEON_FLUSH_EMITED	(1 < 0)
 #define RADEON_PURGE_EMITED	(1 < 1)
 
+struct drm_radeon_kernel_chunk {
+	uint32_t chunk_id;
+	uint32_t length_dw;
+	uint32_t __user *chunk_data;
+	uint32_t *kdata;
+};
+
+struct drm_radeon_cs_parser {
+	struct drm_device *dev;
+	struct drm_file *file_priv;
+	uint32_t num_chunks;
+	struct drm_radeon_kernel_chunk *chunks;
+	int ib_index;
+	int reloc_index;
+	uint32_t card_offset;
+	void *ib;
+};
+
 /* command submission struct */
 struct drm_radeon_cs_priv {
 	uint32_t id_wcnt;
@@ -301,20 +320,21 @@ struct drm_radeon_cs_priv {
 	uint32_t id_last_wcnt;
 	uint32_t id_last_scnt;
 
-	int (*parse)(struct drm_device *dev, struct drm_file *file_priv,
-		     void *ib, uint32_t *packets, uint32_t dwords);
-	void (*id_emit)(struct drm_device *dev, uint32_t *id);
+	int (*parse)(struct drm_radeon_cs_parser *parser);
+	void (*id_emit)(struct drm_radeon_cs_parser *parser, uint32_t *id);
 	uint32_t (*id_last_get)(struct drm_device *dev);
 	/* this ib handling callback are for hidding memory manager drm
 	 * from memory manager less drm, free have to emit ib discard
 	 * sequence into the ring */
-	int (*ib_get)(struct drm_device *dev, void **ib, uint32_t dwords, uint32_t *card_offset);
+	int (*ib_get)(struct drm_radeon_cs_parser *parser);
 	uint32_t (*ib_get_ptr)(struct drm_device *dev, void *ib);
-	void (*ib_free)(struct drm_device *dev, void *ib, uint32_t dwords);
+	void (*ib_free)(struct drm_radeon_cs_parser *parser);
 	/* do a relocation either MM or non-MM */
-	int (*relocate)(struct drm_device *dev, struct drm_file *file_priv,
-			 uint32_t *reloc, uint32_t *offset);
+	int (*relocate)(struct drm_radeon_cs_parser *parser,
+			uint32_t *reloc, uint32_t *offset);
 };
+
+
 
 struct radeon_pm_regs {
 	uint32_t crtc_ext_cntl;
@@ -441,6 +461,11 @@ typedef struct drm_radeon_private {
 	struct drm_radeon_cs_priv cs;
 
 	struct radeon_pm_regs pmregs;
+	int irq_emitted;
+	atomic_t irq_received;
+
+	uint32_t aper_size;
+	int vram_mtrr;
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
@@ -460,6 +485,7 @@ extern int radeon_r4xx_atom;
 extern struct drm_ioctl_desc radeon_ioctls[];
 extern int radeon_max_ioctl;
 extern int radeon_agpmode;
+extern int radeon_modeset;
 
 /* Check whether the given hardware address is inside the framebuffer or the
  * GART area.
@@ -572,7 +598,11 @@ int radeon_resume(struct drm_device *dev);
 #	define RADEON_SCISSOR_2_ENABLE		(1 << 30)
 
 #define RADEON_BUS_CNTL			0x0030
+/* r1xx, r2xx, r300, r(v)350, r420/r481, rs400/rs480 */
 #	define RADEON_BUS_MASTER_DIS		(1 << 6)
+/* rs600/rs690/rs740 */
+#	define RS600_BUS_MASTER_DIS		(1 << 14)
+#	define RS600_MSI_REARM		        (1 << 20)
 
 #define RADEON_CLOCK_CNTL_DATA		0x000c
 #	define RADEON_PLL_WR_EN			(1 << 7)
@@ -732,11 +762,11 @@ int radeon_resume(struct drm_device *dev);
 
 #define RADEON_SCRATCHOFF( x )		(RADEON_SCRATCH_REG_OFFSET + 4*(x))
 
-#define GET_SCRATCH( x )	(dev_priv->writeback_works ?			\
-				 (dev_priv->mm.ring_read.bo ? \
-				  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(x)) : \
-				  DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(x))) : \
-				 RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x)))
+#define GET_SCRATCH( x ) (dev_priv->writeback_works ?			\
+			 (dev_priv->mm.ring_read.bo ? \
+			  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(x)) : \
+			  DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(x))) : \
+			 RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x)))
 
 #define RADEON_CRTC_CRNT_FRAME 0x0214
 #define RADEON_CRTC2_CRNT_FRAME 0x0314
@@ -1034,6 +1064,7 @@ int radeon_resume(struct drm_device *dev);
 
 #define RADEON_AIC_CNTL			0x01d0
 #	define RADEON_PCIGART_TRANSLATE_EN	(1 << 0)
+#	define RS400_MSI_REARM	                (1 << 3)
 #define RADEON_AIC_STAT			0x01d4
 #define RADEON_AIC_PT_BASE		0x01d8
 #define RADEON_AIC_LO_ADDR		0x01dc
@@ -1606,7 +1637,7 @@ extern uint64_t radeon_evict_flags(struct drm_buffer_object *bo);
 #define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
 
 /* Breadcrumb - swi irq */
-#define READ_BREADCRUMB(dev_priv) RADEON_READ(RADEON_LAST_SWI_REG)
+#define READ_BREADCRUMB(dev_priv) GET_SCRATCH(3)
 
 static inline int radeon_update_breadcrumb(struct drm_device *dev)
 {
@@ -1643,6 +1674,7 @@ static inline int radeon_update_breadcrumb(struct drm_device *dev)
 				  (dev_priv->chip_family == CHIP_R350)  || \
 				  (dev_priv->chip_family == CHIP_RV380) || \
 				  (dev_priv->chip_family == CHIP_R420)  || \
+				  (dev_priv->chip_family == CHIP_R423)  || \
 				  (dev_priv->chip_family == CHIP_RV410) || \
 				  (dev_priv->chip_family == CHIP_RS400) || \
 				  (dev_priv->chip_family == CHIP_RS480))
@@ -1668,10 +1700,10 @@ extern int radeon_gem_unpin_ioctl(struct drm_device *dev, void *data,
 int radeon_gem_object_pin(struct drm_gem_object *obj,
 			  uint32_t alignment, uint32_t pin_domain);
 int radeon_gem_object_unpin(struct drm_gem_object *obj);
-int radeon_gem_indirect_ioctl(struct drm_device *dev, void *data,
-			      struct drm_file *file_priv);
 int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
+int radeon_gem_wait_rendering(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
 struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size, int alignment,
 					       int initial_domain, bool discardable);
 int radeon_modeset_init(struct drm_device *dev);
@@ -1687,11 +1719,14 @@ extern int radeon_master_create(struct drm_device *dev, struct drm_master *maste
 extern void radeon_master_destroy(struct drm_device *dev, struct drm_master *master);
 extern void radeon_cp_dispatch_flip(struct drm_device * dev, struct drm_master *master);
 extern int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
+extern int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
 extern int radeon_cs_init(struct drm_device *dev);
 void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master);
 void radeon_init_memory_map(struct drm_device *dev);
+void radeon_enable_bm(struct drm_radeon_private *dev_priv);
 
-
+extern int radeon_gem_proc_init(struct drm_minor *minor);
+extern void radeon_gem_proc_cleanup(struct drm_minor *minor);
 #define MARK_SAFE		1
 #define MARK_CHECK_OFFSET	2
 #define MARK_CHECK_SCISSOR	3
