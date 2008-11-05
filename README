@@ -1,5 +1,8 @@
 This file describes how to build and run wayland.  See NOTES for what
-wayland is or maybe will be some day.
+wayland is or maybe will be some day.  There's a google group for
+wayland/eagle discussion here:
+
+  http://groups.google.com/group/wayland-display-server
 
 Wayland requires the eagle EGL stack available from
 
