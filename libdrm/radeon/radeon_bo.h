@@ -72,8 +72,8 @@ static inline void _radeon_bo_debug(struct radeon_bo *bo,
                                     const char *func,
                                     int line)
 {
-    fprintf(stderr, "%02d %p 0x%08X 0x%08X [%s %s %d]\n",
-            opcode, bo, bo->size, bo->cref, file, func, line);
+    fprintf(stderr, "%02d %p 0x%08X 0x%08X 0x%08X [%s %s %d]\n",
+            opcode, bo, bo->handle, bo->size, bo->cref, file, func, line);
 }
 
 static inline struct radeon_bo *_radeon_bo_open(struct radeon_bo_manager *bom,
