@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
+#include <dlfcn.h>
 #include <ffi.h>
 
 #include "wayland.h"
@@ -98,7 +99,7 @@ static void
 wl_surface_destroy(struct wl_client *client,
 		   struct wl_surface *surface)
 {
-	struct wl_compositor_interface *interface;
+	const struct wl_compositor_interface *interface;
 
 	interface = client->display->compositor->interface;
 	interface->notify_surface_destroy(client->display->compositor,
@@ -111,7 +112,7 @@ wl_surface_attach(struct wl_client *client,
 		  struct wl_surface *surface, uint32_t name, 
 		  uint32_t width, uint32_t height, uint32_t stride)
 {
-	struct wl_compositor_interface *interface;
+	const struct wl_compositor_interface *interface;
 
 	interface = client->display->compositor->interface;
 	interface->notify_surface_attach(client->display->compositor,
@@ -129,7 +130,7 @@ void
 wl_surface_map(struct wl_client *client, struct wl_surface *surface,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct wl_compositor_interface *interface;
+	const struct wl_compositor_interface *interface;
 
 	/* FIXME: This needs to take a tri-mesh argument... - count
 	 * and a list of tris. 0 tris means unmap. */
@@ -170,7 +171,7 @@ struct wl_surface *
 wl_surface_create(struct wl_display *display, uint32_t id)
 {
 	struct wl_surface *surface;
-	struct wl_compositor_interface *interface;
+	const struct wl_compositor_interface *interface;
 
 	surface = malloc(sizeof *surface);
 	if (surface == NULL)
@@ -706,10 +707,41 @@ wl_surface_iterator_destroy(struct wl_surface_iterator *iterator)
 	free(iterator);
 }
 
+static int
+load_compositor(struct wl_display *display, const char *path)
+{
+	struct wl_compositor *(*create)(struct wl_display *display);
+	struct wl_compositor *compositor;
+	void *p;
+
+	p = dlopen(path, RTLD_LAZY | RTLD_GLOBAL);
+	if (p == NULL) {
+		fprintf(stderr, "failed to open compositor %s: %s\n",
+			path, dlerror());
+		return -1;
+	}
+
+	create = dlsym(p, "wl_compositor_create");
+	if (create == NULL) {
+		fprintf(stderr, "failed to look up compositor constructor\n");
+		return -1;
+	}
+		
+	compositor = create(display);
+	if (compositor == NULL) {
+		fprintf(stderr, "couldn't create compositor\n");
+		return -1;
+	}
+
+	wl_display_set_compositor(display, compositor);
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	struct wl_compositor *compositor;
+	const char *compositor = "egl-compositor.so";
 
 	display = wl_display_create();
 
@@ -718,10 +750,9 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	compositor = wl_compositor_create(display);
-	wl_display_set_compositor(display, compositor);
-
-	printf("wayland online, display is %p\n", display);
+	if (argc == 2)
+		compositor = argv[1];
+	load_compositor(display, compositor);
 
 	wl_display_run(display);
 

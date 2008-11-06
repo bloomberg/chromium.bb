@@ -113,7 +113,7 @@ wl_display_post_button_event(struct wl_display *display,
 			     struct wl_object *source, int button, int state);
 
 struct wl_compositor {
-	struct wl_compositor_interface *interface;
+	const struct wl_compositor_interface *interface;
 };
 
 struct wl_compositor_interface {
@@ -127,8 +127,6 @@ struct wl_compositor_interface {
 	void (*notify_surface_map)(struct wl_compositor *compositor,
 				   struct wl_surface *surface, struct wl_map *map);
 };
-
-struct wl_compositor *wl_compositor_create(struct wl_display *display);
 
 void wl_display_set_compositor(struct wl_display *display,
 			       struct wl_compositor *compositor);

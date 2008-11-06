@@ -85,7 +85,8 @@ repaint(void *data)
 	eglSwapBuffers(ec->display, ec->surface);
 }
 
-static void schedule_repaint(struct egl_compositor *ec)
+static void
+schedule_repaint(struct egl_compositor *ec)
 {
 	struct wl_event_loop *loop;
 
@@ -93,8 +94,9 @@ static void schedule_repaint(struct egl_compositor *ec)
 	wl_event_loop_add_idle(loop, repaint, ec);
 }
 
-void notify_surface_create(struct wl_compositor *compositor,
-			   struct wl_surface *surface)
+static void
+notify_surface_create(struct wl_compositor *compositor,
+		      struct wl_surface *surface)
 {
 	struct surface_data *sd;
 
@@ -108,8 +110,9 @@ void notify_surface_create(struct wl_compositor *compositor,
 	glGenTextures(1, &sd->texture);
 }
 				   
-void notify_surface_destroy(struct wl_compositor *compositor,
-			    struct wl_surface *surface)
+static void
+notify_surface_destroy(struct wl_compositor *compositor,
+		       struct wl_surface *surface)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
@@ -128,9 +131,10 @@ void notify_surface_destroy(struct wl_compositor *compositor,
 	schedule_repaint(ec);
 }
 
-void notify_surface_attach(struct wl_compositor *compositor,
-			   struct wl_surface *surface, uint32_t name, 
-			   uint32_t width, uint32_t height, uint32_t stride)
+static void
+notify_surface_attach(struct wl_compositor *compositor,
+		      struct wl_surface *surface, uint32_t name, 
+		      uint32_t width, uint32_t height, uint32_t stride)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
@@ -158,8 +162,9 @@ void notify_surface_attach(struct wl_compositor *compositor,
 	schedule_repaint(ec);
 }
 
-void notify_surface_map(struct wl_compositor *compositor,
-			struct wl_surface *surface, struct wl_map *map)
+static void
+notify_surface_map(struct wl_compositor *compositor,
+		   struct wl_surface *surface, struct wl_map *map)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct surface_data *sd;
@@ -173,7 +178,7 @@ void notify_surface_map(struct wl_compositor *compositor,
 	schedule_repaint(ec);
 }
 
-struct wl_compositor_interface interface = {
+static const struct wl_compositor_interface interface = {
 	notify_surface_create,
 	notify_surface_destroy,
 	notify_surface_attach,
