@@ -27,8 +27,13 @@ wl_display_create_surface(struct wl_display *display);
 
 void wl_surface_destroy(struct wl_surface *surface);
 void wl_surface_attach(struct wl_surface *surface,
-		       uint32_t name, int width, int height, int stride);
+		       uint32_t name, int32_t width, int32_t height, uint32_t stride);
 void wl_surface_map(struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height);
+void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
+		     uint32_t name, uint32_t stride,
+		     int32_t x, int32_t y, int32_t width, int32_t height);
+void wl_surface_damage(struct wl_surface *surface,
+		       int32_t x, int32_t y, int32_t width, int32_t height);
 
 #endif

@@ -122,10 +122,24 @@ struct wl_compositor_interface {
 	void (*notify_surface_destroy)(struct wl_compositor *compositor,
 				       struct wl_surface *surface);
 	void (*notify_surface_attach)(struct wl_compositor *compositor,
-				      struct wl_surface *surface, uint32_t name, 
-				      uint32_t width, uint32_t height, uint32_t stride);
+				      struct wl_surface *surface,
+				      uint32_t name, 
+				      uint32_t width, uint32_t height,
+				      uint32_t stride);
 	void (*notify_surface_map)(struct wl_compositor *compositor,
-				   struct wl_surface *surface, struct wl_map *map);
+				   struct wl_surface *surface,
+				   struct wl_map *map);
+	void (*notify_surface_copy)(struct wl_compositor *compositor,
+				    struct wl_surface *surface,
+				    int32_t dst_x, int32_t dst_y,
+				    uint32_t name, uint32_t stride,
+				    int32_t x, int32_t y,
+				    int32_t width, int32_t height);
+	void (*notify_surface_damage)(struct wl_compositor *compositor,
+				      struct wl_surface *surface,
+				      int32_t x, int32_t y,
+				      int32_t width, int32_t height);
+
 };
 
 void wl_display_set_compositor(struct wl_display *display,

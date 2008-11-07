@@ -152,13 +152,61 @@ static const struct wl_argument map_arguments[] = {
 	{ WL_ARGUMENT_UINT32 },
 };
 
+void
+wl_surface_copy(struct wl_client *client, struct wl_surface *surface,
+		int32_t dst_x, int32_t dst_y, uint32_t name, uint32_t stride,
+		int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	const struct wl_compositor_interface *interface;
+
+	interface = client->display->compositor->interface;
+	interface->notify_surface_copy(client->display->compositor,
+				       surface, dst_x, dst_y,
+				       name, stride, x, y, width, height);
+}
+
+static const struct wl_argument copy_arguments[] = {
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+};
+
+void
+wl_surface_damage(struct wl_client *client, struct wl_surface *surface,
+		  int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	const struct wl_compositor_interface *interface;
+
+	interface = client->display->compositor->interface;
+	interface->notify_surface_damage(client->display->compositor,
+					 surface, x, y, width, height);
+}
+
+static const struct wl_argument damage_arguments[] = {
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 },
+};
+
 static const struct wl_method surface_methods[] = {
 	{ "destroy", wl_surface_destroy,
 	  0, NULL },
 	{ "attach", wl_surface_attach,
 	  ARRAY_LENGTH(attach_arguments), attach_arguments },
 	{ "map", wl_surface_map,
-	  ARRAY_LENGTH(map_arguments), map_arguments }
+	  ARRAY_LENGTH(map_arguments), map_arguments },
+	{ "copy", wl_surface_copy,
+	  ARRAY_LENGTH(copy_arguments), copy_arguments },
+	{ "damage", wl_surface_damage,
+	  ARRAY_LENGTH(damage_arguments), damage_arguments }
 };
 
 static const struct wl_interface surface_interface = {
@@ -207,7 +255,7 @@ static void
 wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 		    const struct wl_method *method, size_t size)
 {
-	ffi_type *types[10];
+	ffi_type *types[20];
 	ffi_cif cif;
 	uint32_t *p, result;
 	int i;
@@ -216,8 +264,8 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 		const char *string;
 		void *object;
 		uint32_t new_id;
-	} values[10];
-	void *args[10];
+	} values[20];
+	void *args[20];
 	struct wl_object *object;
 	uint32_t data[64];
 
@@ -741,7 +789,7 @@ load_compositor(struct wl_display *display, const char *path)
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	const char *compositor = "egl-compositor.so";
+	const char *compositor = "./egl-compositor.so";
 
 	display = wl_display_create();
 

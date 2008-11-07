@@ -173,6 +173,8 @@ wl_display_create_surface(struct wl_display *display)
 #define WL_SURFACE_DESTROY	0
 #define WL_SURFACE_ATTACH	1
 #define WL_SURFACE_MAP		2
+#define WL_SURFACE_COPY		3
+#define WL_SURFACE_DAMAGE	4
 
 void wl_surface_destroy(struct wl_surface *surface)
 {
@@ -185,8 +187,8 @@ void wl_surface_destroy(struct wl_surface *surface)
 			    request, sizeof request);
 }
 
-void wl_surface_attach(struct wl_surface *surface,
-		       uint32_t name, int width, int height, int stride)
+void wl_surface_attach(struct wl_surface *surface, uint32_t name,
+		       int32_t width, int32_t height, uint32_t stride)
 {
 	uint32_t request[6];
 
@@ -200,7 +202,6 @@ void wl_surface_attach(struct wl_surface *surface,
 	wl_connection_write(surface->proxy.display->connection,
 			    request, sizeof request);
 }
-
 
 void wl_surface_map(struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
@@ -217,3 +218,41 @@ void wl_surface_map(struct wl_surface *surface,
 	wl_connection_write(surface->proxy.display->connection,
 			    request, sizeof request);
 }
+
+void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
+		     uint32_t name, uint32_t stride,
+		     int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	uint32_t request[10];
+
+	request[0] = surface->proxy.id;
+	request[1] = WL_SURFACE_COPY | ((sizeof request) << 16);
+	request[2] = dst_x;
+	request[3] = dst_y;
+	request[4] = name;
+	request[5] = stride;
+	request[6] = x;
+	request[7] = y;
+	request[8] = width;
+	request[9] = height;
+
+	wl_connection_write(surface->proxy.display->connection,
+			    request, sizeof request);
+}
+
+void wl_surface_damage(struct wl_surface *surface,
+		       int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	uint32_t request[6];
+
+	request[0] = surface->proxy.id;
+	request[1] = WL_SURFACE_DAMAGE | ((sizeof request) << 16);
+	request[2] = x;
+	request[3] = y;
+	request[4] = width;
+	request[5] = height;
+
+	wl_connection_write(surface->proxy.display->connection,
+			    request, sizeof request);
+}
+

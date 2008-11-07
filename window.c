@@ -329,6 +329,8 @@ int main(int argc, char *argv[])
 	while (ret = poll(p, 1, 20), ret >= 0) {
 		mask = 0;
 		gears_draw(gears, angle);
+		wl_surface_damage(window.surface, 0, 0,
+				  window.width, window.height);
 		angle += 1;
 		if (p[0].revents & POLLIN)
 			mask |= WL_CONNECTION_READABLE;

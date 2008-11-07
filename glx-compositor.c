@@ -207,11 +207,32 @@ notify_surface_map(struct wl_compositor *compositor,
 	schedule_repaint(gc);
 }
 
+static void
+notify_surface_copy(struct wl_compositor *compositor,
+		    struct wl_surface *surface,
+		    int32_t dst_x, int32_t dst_y,
+		    uint32_t name, uint32_t stride,
+		    int32_t x, int32_t y, int32_t width, int32_t height)
+{
+}
+
+static void
+notify_surface_damage(struct wl_compositor *compositor,
+		      struct wl_surface *surface,
+		      int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	struct glx_compositor *gc = (struct glx_compositor *) compositor;
+
+	schedule_repaint(gc);
+}
+
 static const struct wl_compositor_interface interface = {
 	notify_surface_create,
 	notify_surface_destroy,
 	notify_surface_attach,
-	notify_surface_map
+	notify_surface_map,
+	notify_surface_copy,
+	notify_surface_damage
 };
 
 static const char gem_device[] = "/dev/dri/card0";
