@@ -25,6 +25,10 @@ struct wl_display {
 	struct wl_connection *connection;
 	int fd;
 	uint32_t id;
+	uint32_t mask;
+
+	wl_display_update_func_t update;
+	void *update_data;
 
 	wl_display_event_func_t event_handler;
 	void *event_handler_data;
@@ -34,9 +38,22 @@ struct wl_surface {
 	struct wl_proxy proxy;
 };
 
+static int
+connection_update(struct wl_connection *connection,
+		  uint32_t mask, void *data)
+{
+	struct wl_display *display = data;
+
+	display->mask = mask;
+	if (display->update)
+		return display->update(display->mask,
+				       display->update_data);
+
+	return 0;
+}
+
 struct wl_display *
-wl_display_create(const char *address,
-		  wl_connection_update_func_t update, void *data)
+wl_display_create(const char *address)
 {
 	struct wl_display *display;
 	struct sockaddr_un name;
@@ -79,7 +96,8 @@ wl_display_create(const char *address,
 	display->proxy.id = id;
 
 	display->connection = wl_connection_create(display->fd,
-						   update, data);
+						   connection_update,
+						   display);
 
 	return display;
 }
@@ -93,8 +111,14 @@ wl_display_destroy(struct wl_display *display)
 }
 
 int
-wl_display_get_fd(struct wl_display *display)
+wl_display_get_fd(struct wl_display *display,
+		  wl_display_update_func_t update, void *data)
 {
+	display->update = update;
+	display->update_data = data;
+
+	display->update(display->mask, display->update_data);
+
 	return display->fd;
 }
 

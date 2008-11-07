@@ -42,7 +42,7 @@ glx-compositor.so : $(glx_compositor_objs)
 libwayland.so $(compositors) :
 	gcc -o $@ $^ $(LDLIBS) -shared 
 
-flower_objs = flower.o
+flower_objs = flower.o wayland-glib.o
 pointer_objs = pointer.o
 background_objs = background.o
 window_objs = window.o gears.o
@@ -52,6 +52,9 @@ $(clients) : LDLIBS += $(shell pkg-config --libs cairo) -lrt
 
 background : CFLAGS += $(shell pkg-config --cflags gdk-pixbuf-2.0)
 background : LDLIBS += $(shell pkg-config --libs gdk-pixbuf-2.0)
+
+flower : CFLAGS += $(shell pkg-config --cflags glib-2.0)
+flower : LDLIBS += $(shell pkg-config --libs glib-2.0)
 
 window : CFLAGS += $(EAGLE_CFLAGS)
 window : LDLIBS += $(EAGLE_LDLIBS)

@@ -168,15 +168,14 @@ draw_window(struct window *window)
 }
 
 static int
-connection_update(struct wl_connection *connection,
-		  uint32_t mask, void *data)
+connection_update(uint32_t mask, void *data)
 {
 	struct pollfd *p = data;
 
 	p->events = 0;
-	if (mask & WL_CONNECTION_READABLE)
+	if (mask & WL_DISPLAY_READABLE)
 		p->events |= POLLIN;
-	if (mask & WL_CONNECTION_WRITABLE)
+	if (mask & WL_DISPLAY_WRITABLE)
 		p->events |= POLLOUT;
 
 	return 0;
@@ -302,13 +301,13 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	display = wl_display_create(socket_name,
-				    connection_update, &p[0]);
+	display = wl_display_create(socket_name);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	p[0].fd = wl_display_get_fd(display);
+	p[0].fd = wl_display_get_fd(display,
+				    connection_update, &p[0]);
 
 	window.surface = wl_display_create_surface(display);
 	window.x = 200;
@@ -333,9 +332,9 @@ int main(int argc, char *argv[])
 				  window.width, window.height);
 		angle += 1;
 		if (p[0].revents & POLLIN)
-			mask |= WL_CONNECTION_READABLE;
+			mask |= WL_DISPLAY_READABLE;
 		if (p[0].revents & POLLOUT)
-			mask |= WL_CONNECTION_WRITABLE;
+			mask |= WL_DISPLAY_WRITABLE;
 		if (mask)
 			wl_display_iterate(display, mask);
 		if (window.need_redraw) {

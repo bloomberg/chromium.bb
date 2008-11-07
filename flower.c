@@ -12,8 +12,10 @@
 #include <math.h>
 #include <time.h>
 #include <cairo.h>
+#include <glib.h>
 
 #include "wayland-client.h"
+#include "wayland-glib.h"
 
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
@@ -131,33 +133,36 @@ draw_stuff(int width, int height)
 	return surface;
 }
 
-static int
-connection_update(struct wl_connection *connection,
-		  uint32_t mask, void *data)
+struct flower {
+	struct wl_surface *surface;
+	int i;
+	int x, y, width, height;
+};
+
+static gboolean
+move_flower(gpointer data)
 {
-	struct pollfd *p = data;
+	struct flower *flower = data;
 
-	p->events = 0;
-	if (mask & WL_CONNECTION_READABLE)
-		p->events |= POLLIN;
-	if (mask & WL_CONNECTION_WRITABLE)
-		p->events |= POLLOUT;
+	wl_surface_map(flower->surface, 
+		       flower->x + cos(flower->i / 31.0) * 400 - flower->width / 2,
+		       flower->y + sin(flower->i / 27.0) * 300 - flower->height / 2,
+		       flower->width, flower->height);
+	flower->i++;
 
-	return 0;
+	return TRUE;
 }
 
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	struct wl_surface *surface;
-	const int x = 512, y = 384, width = 200, height = 200;
-	int fd, i, ret;
-	uint32_t name, mask;
+	int fd;
+	uint32_t name;
 	cairo_surface_t *s;
-	struct pollfd p[2];
 	struct timespec ts;
-	struct itimerspec its;
-	uint64_t expires;
+	GMainLoop *loop;
+	GSource *source;
+	struct flower flower;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -165,60 +170,36 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	display = wl_display_create(socket_name,
-				    connection_update, &p[0]);
+	loop = g_main_loop_new(NULL, FALSE);
+
+	display = wl_display_create(socket_name);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	p[0].fd = wl_display_get_fd(display);
 
-	surface = wl_display_create_surface(display);
+	source = wayland_source_new(display);
+	g_source_attach(source, NULL);
 
-	p[1].fd = timerfd_create(CLOCK_MONOTONIC, 0);
-	if (p[1].fd < 0) {
-		fprintf(stderr, "could not create timerfd\n: %m");
-		return -1;
-	}
+	flower.x = 512;
+	flower.y = 384;
+	flower.width = 200;
+	flower.height = 200;
+	flower.surface = wl_display_create_surface(display);
 
-	p[1].events = POLLIN;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	its.it_value = ts;
-	its.it_interval.tv_sec = 0;
-	its.it_interval.tv_nsec = 20 * 1000000;
-	if (timerfd_settime(p[1].fd, TFD_TIMER_ABSTIME, &its, NULL) < 0) {
-		fprintf(stderr, "could not set timerfd\n: %m");
-		return -1;
-	}
-
 	srandom(ts.tv_nsec);
+	flower.i = ts.tv_nsec;
 
-	s = draw_stuff(width, height);
+	s = draw_stuff(flower.width, flower.height);
 	name = name_cairo_surface(fd, s);
 
-	wl_surface_attach(surface, name, width, height,
+	wl_surface_attach(flower.surface, name, flower.width, flower.height,
 			  cairo_image_surface_get_stride(s));
 
-	i = ts.tv_nsec;
-	while (ret = poll(p, 2, -1), ret >= 0) {
-		if (p[1].revents & POLLIN) {
-			read(p[1].fd, &expires, sizeof expires);
-			wl_surface_map(surface, 
-				       x + cos(i / 31.0) * 400 - width / 2,
-				       y + sin(i / 27.0) * 300 - height / 2,
-				       width, height);
-			i++;
-			continue;
-		}
+	g_timeout_add(20, move_flower, &flower);
 
-		mask = 0;
-		if (p[0].revents & POLLIN)
-			mask |= WL_CONNECTION_READABLE;
-		if (p[0].revents & POLLOUT)
-			mask |= WL_CONNECTION_WRITABLE;
-		if (mask)
-			wl_display_iterate(display, mask);
-	}
+	g_main_loop_run(loop);
 
 	return 0;
 }
