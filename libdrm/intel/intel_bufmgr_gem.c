@@ -658,7 +658,9 @@ drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
     set_domain.handle = bo_gem->gem_handle;
     set_domain.read_domains = I915_GEM_DOMAIN_GTT;
     set_domain.write_domain = 0;
-    ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
+    do {
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
+    } while (ret == -1 && errno == EINTR);
     if (ret != 0) {
 	fprintf (stderr, "%s:%d: Error setting memory domains %d (%08x %08x): %s .\n",
 		 __FILE__, __LINE__,
