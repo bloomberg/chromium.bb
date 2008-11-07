@@ -4,10 +4,11 @@
 #include <fcntl.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
-#include <sys/poll.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include <glib.h>
 
 #include "wayland-client.h"
+#include "wayland-glib.h"
 
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
@@ -93,20 +94,6 @@ static uint32_t name_pixbuf(int fd, GdkPixbuf *pixbuf)
 	return flink.name;
 }
 
-static int
-connection_update(uint32_t mask, void *data)
-{
-	struct pollfd *p = data;
-
-	p->events = 0;
-	if (mask & WL_DISPLAY_READABLE)
-		p->events |= POLLIN;
-	if (mask & WL_DISPLAY_WRITABLE)
-		p->events |= POLLOUT;
-
-	return 0;
-}
-
 int main(int argc, char *argv[])
 {
 	GdkPixbuf *image;
@@ -114,8 +101,9 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct wl_surface *surface;
 	int fd, width, height, stride;
-	uint32_t name, mask;
-	struct pollfd p[1];
+	uint32_t name;
+	GMainLoop *loop;
+	GSource *source;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -128,8 +116,10 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	p[0].fd = wl_display_get_fd(display,
-				    connection_update, &p[0]);
+
+	loop = g_main_loop_new(NULL, FALSE);
+	source = wayland_source_new(display);
+	g_source_attach(source, NULL);
 
 	surface = wl_display_create_surface(display);
 
@@ -142,21 +132,11 @@ int main(int argc, char *argv[])
 	height = gdk_pixbuf_get_height(image);
 	stride = gdk_pixbuf_get_rowstride(image);
 
-	printf("width %d, height %d\n", width, height);
-
 	wl_surface_attach(surface, name, width, height, width * 4);
 
 	wl_surface_map(surface, 0, 0, width, height);
 
-	while (1) {
-		poll(p, 1, -1);
-		mask = 0;
-		if (p[0].revents & POLLIN)
-			mask |= WL_DISPLAY_READABLE;
-		if (p[0].revents & POLLOUT)
-			mask |= WL_DISPLAY_WRITABLE;
-		wl_display_iterate(display, mask);
-	}
+	g_main_loop_run(loop);
 
 	return 0;
 }

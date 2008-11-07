@@ -4,8 +4,6 @@
 #include <string.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
-#include <sys/poll.h>
-#include <sys/timerfd.h>
 #include <time.h>
 #include <fcntl.h>
 #include <unistd.h>

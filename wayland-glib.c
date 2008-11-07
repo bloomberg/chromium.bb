@@ -44,7 +44,7 @@ wayland_source_dispatch(GSource *base,
 	WaylandSource *source = (WaylandSource *) base;
 
 	wl_display_iterate(source->display,
-			   WL_DISPLAY_READABLE | WL_DISPLAY_WRITABLE);
+			   WL_DISPLAY_READABLE);
 
 	return TRUE;
 }

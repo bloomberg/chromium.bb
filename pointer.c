@@ -4,14 +4,14 @@
 #include <string.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
-#include <sys/poll.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
-#include <time.h>
 #include <cairo.h>
+#include <glib.h>
 
 #include "wayland-client.h"
+#include "wayland-glib.h"
 
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
@@ -97,20 +97,6 @@ draw_pointer(int width, int height)
 	return surface;
 }
 
-static int
-connection_update(uint32_t mask, void *data)
-{
-	struct pollfd *p = data;
-
-	p->events = 0;
-	if (mask & WL_DISPLAY_READABLE)
-		p->events |= POLLIN;
-	if (mask & WL_DISPLAY_WRITABLE)
-		p->events |= POLLOUT;
-
-	return 0;
-}
-
 struct pointer {
 	int width, height;
 	struct wl_surface *surface;
@@ -131,9 +117,10 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct pointer pointer;
 	int fd;
-	uint32_t name, mask;
+	uint32_t name;
 	cairo_surface_t *s;
-	struct pollfd p[1];
+	GMainLoop *loop;
+	GSource *source;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -146,7 +133,10 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	p[0].fd = wl_display_get_fd(display, connection_update, &p[0]);
+
+	loop = g_main_loop_new(NULL, FALSE);
+	source = wayland_source_new(display);
+	g_source_attach(source, NULL);
 
 	pointer.width = 16;
 	pointer.height = 16;
@@ -162,15 +152,7 @@ int main(int argc, char *argv[])
 
 	wl_display_set_event_handler(display, event_handler, &pointer);
 
-	while (1) {
-		poll(p, 1, -1);
-		mask = 0;
-		if (p[0].revents & POLLIN)
-			mask |= WL_DISPLAY_READABLE;
-		if (p[0].revents & POLLOUT)
-			mask |= WL_DISPLAY_WRITABLE;
-		wl_display_iterate(display, mask);
-	}
+	g_main_loop_run(loop);
 
 	return 0;
 }

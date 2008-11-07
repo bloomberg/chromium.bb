@@ -43,18 +43,15 @@ libwayland.so $(compositors) :
 	gcc -o $@ $^ $(LDLIBS) -shared 
 
 flower_objs = flower.o wayland-glib.o
-pointer_objs = pointer.o
-background_objs = background.o
-window_objs = window.o gears.o
+pointer_objs = pointer.o wayland-glib.o
+background_objs = background.o wayland-glib.o
+window_objs = window.o gears.o wayland-glib.o
 
-$(clients) : CFLAGS += $(shell pkg-config --cflags cairo)
-$(clients) : LDLIBS += $(shell pkg-config --libs cairo) -lrt
+$(clients) : CFLAGS += $(shell pkg-config --cflags cairo glib-2.0)
+$(clients) : LDLIBS += $(shell pkg-config --libs cairo glib-2.0) -lrt
 
 background : CFLAGS += $(shell pkg-config --cflags gdk-pixbuf-2.0)
 background : LDLIBS += $(shell pkg-config --libs gdk-pixbuf-2.0)
-
-flower : CFLAGS += $(shell pkg-config --cflags glib-2.0)
-flower : LDLIBS += $(shell pkg-config --libs glib-2.0)
 
 window : CFLAGS += $(EAGLE_CFLAGS)
 window : LDLIBS += $(EAGLE_LDLIBS)

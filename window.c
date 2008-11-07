@@ -4,17 +4,18 @@
 #include <string.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
-#include <sys/poll.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
 #include <cairo.h>
+#include <glib.h>
 
 #include <GL/gl.h>
 #include <eagle.h>
 
 #include "wayland-client.h"
+#include "wayland-glib.h"
 #include "gears.h"
 
 static const char gem_device[] = "/dev/dri/card0";
@@ -84,17 +85,20 @@ struct window {
 	int state;
 	uint32_t name;
 	int fd;
-	int need_redraw;
+	int redraw_scheduled;
 
+	GLfloat gears_angle;
+	struct gears *gears;
 	EGLDisplay display;
 	EGLContext context;
 	EGLConfig config;
 	EGLSurface egl_surface;
 };
 
-static void *
-draw_window(struct window *window)
+static gboolean
+draw_window(void *data)
 {
+	struct window *window = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	int border = 2, radius = 5, h;
@@ -164,21 +168,12 @@ draw_window(struct window *window)
 
 	glViewport(border, window->height - h - margin - 300, 300, 300);
 
-	return surface;
-}
+	if (window->gears != NULL)
+		gears_draw(window->gears, window->gears_angle);
 
-static int
-connection_update(uint32_t mask, void *data)
-{
-	struct pollfd *p = data;
+	window->redraw_scheduled = 0;
 
-	p->events = 0;
-	if (mask & WL_DISPLAY_READABLE)
-		p->events |= POLLIN;
-	if (mask & WL_DISPLAY_WRITABLE)
-		p->events |= POLLOUT;
-
-	return 0;
+	return FALSE;
 }
 
 enum window_state {
@@ -220,7 +215,10 @@ void event_handler(struct wl_display *display,
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + arg1;
 			window->height = window->drag_y + arg2;
-			window->need_redraw = 1;
+			if (!window->redraw_scheduled) {
+				window->redraw_scheduled = 1;
+				g_idle_add(draw_window, window);
+			}
 			break;
 		}
 	}
@@ -260,11 +258,25 @@ void event_handler(struct wl_display *display,
 	}
 }
 
-static void
-init_egl(struct window *window)
+static struct window *
+window_create(struct wl_display *display, int fd)
 {
 	EGLint major, minor, count;
 	EGLConfig configs[64];
+	struct window *window;
+
+	window = malloc(sizeof *window);
+	if (window == NULL)
+		return NULL;
+
+	window->surface = wl_display_create_surface(display);
+	window->x = 200;
+	window->y = 200;
+	window->width = 450;
+	window->height = 500;
+	window->state = WINDOW_STABLE;
+	window->fd = fd;
+	window->gears = NULL;
 
 	window->display = eglCreateDisplayNative("/dev/dri/card0", "i965");
 	if (window->display == NULL)
@@ -282,18 +294,35 @@ init_egl(struct window *window)
 		die("failed to create context\n");
 
 	window->egl_surface = EGL_NO_SURFACE;
+
+	draw_window(window);
+
+	window->gears = gears_create();
+	window->gears_angle = 0.0;
+
+	return window;
+}
+
+static gboolean
+draw(gpointer data)
+{
+	struct window *window = data;
+
+	gears_draw(window->gears, window->gears_angle);
+	wl_surface_damage(window->surface, 0, 0,
+			  window->width, window->height);
+	window->gears_angle += 1;
+
+	return TRUE;
 }
 
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	int fd, ret;
-	uint32_t mask;
-	cairo_surface_t *s;
-	struct pollfd p[1];
-	struct window window;
-	struct gears *gears;
-	GLfloat angle = 0.0;
+	int fd;
+	struct window *window;
+	GMainLoop *loop;
+	GSource *source;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -306,42 +335,20 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
 	}
-	p[0].fd = wl_display_get_fd(display,
-				    connection_update, &p[0]);
 
-	window.surface = wl_display_create_surface(display);
-	window.x = 200;
-	window.y = 200;
-	window.width = 450;
-	window.height = 500;
-	window.state = WINDOW_STABLE;
-	window.fd = fd;
+	loop = g_main_loop_new(NULL, FALSE);
+	source = wayland_source_new(display);
+	g_source_attach(source, NULL);
 
-	init_egl(&window);
+	window = window_create(display, fd);
 
-	s = draw_window(&window);
+	draw_window(window);
 
-	wl_display_set_event_handler(display, event_handler, &window);
+	wl_display_set_event_handler(display, event_handler, window);
 
-	gears = gears_create();
+	g_timeout_add(20, draw, window);
 
-	while (ret = poll(p, 1, 20), ret >= 0) {
-		mask = 0;
-		gears_draw(gears, angle);
-		wl_surface_damage(window.surface, 0, 0,
-				  window.width, window.height);
-		angle += 1;
-		if (p[0].revents & POLLIN)
-			mask |= WL_DISPLAY_READABLE;
-		if (p[0].revents & POLLOUT)
-			mask |= WL_DISPLAY_WRITABLE;
-		if (mask)
-			wl_display_iterate(display, mask);
-		if (window.need_redraw) {
-			draw_window(&window);
-			window.need_redraw = 0;
-		}
-	}
+	g_main_loop_run(loop);
 
 	return 0;
 }
