@@ -1,7 +1,9 @@
 CFLAGS = -Wall -g
 
-EAGLE_CFLAGS = -I../eagle
-EAGLE_LDLIBS = -L../eagle -leagle
+PKG_CONFIG_PATH ?= $(HOME)/install/lib/pkgconfig
+
+EAGLE_CFLAGS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --cflags eagle)
+EAGLE_LDLIBS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs eagle)
 
 clients = flower pointer background window
 compositors = egl-compositor.so glx-compositor.so
