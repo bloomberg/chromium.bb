@@ -232,7 +232,7 @@ wl_compositor_create(struct wl_display *display)
 	EGLConfig configs[64];
 	EGLint major, minor, count;
 	struct egl_compositor *ec;
-	const int width = 1024, height = 768;
+	const int width = 1280, height = 800;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)

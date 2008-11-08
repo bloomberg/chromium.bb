@@ -145,45 +145,96 @@ struct window {
 	EGLSurface egl_surface;
 };
 
+static void
+rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
+{
+	cairo_move_to(cr, x0, y0 + radius);
+	cairo_arc(cr, x0 + radius, y0 + radius, radius, M_PI, 3 * M_PI / 2);
+	cairo_line_to(cr, x1 - radius, y0);
+	cairo_arc(cr, x1 - radius, y0 + radius, radius, 3 * M_PI / 2, 2 * M_PI);
+	cairo_line_to(cr, x1, y1 - radius);
+	cairo_arc(cr, x1 - radius, y1 - radius, radius, 0, M_PI / 2);
+	cairo_line_to(cr, x0 + radius, y1);
+	cairo_arc(cr, x0 + radius, y1 - radius, radius, M_PI / 2, M_PI);
+	cairo_close_path(cr);
+}
+
 static gboolean
 draw_window(void *data)
 {
 	struct window *window = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int border = 2, radius = 5, h;
-	int margin = (border + 1) / 2;
+	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
+	cairo_pattern_t *gradient, *outline, *bright, *dim;
 	struct buffer *buffer;
 	const static char title[] = "Wayland First Post";
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					     window->width, window->height);
 
+	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
+	bright = cairo_pattern_create_rgb(0.6, 0.6, 0.6);
+	dim = cairo_pattern_create_rgb(0.4, 0.4, 0.4);
+
 	cr = cairo_create(surface);
 	cairo_set_line_width (cr, border);
-	cairo_move_to(cr, margin, margin + radius);
-	cairo_arc(cr, margin + radius, margin + radius, radius,
-		  M_PI, 3 * M_PI / 2);
-	cairo_line_to(cr, window->width - radius - margin, margin);
-	cairo_arc(cr, window->width - margin - radius, margin + radius, radius,
-		  3 * M_PI / 2, 2 * M_PI);
-	cairo_line_to(cr, window->width - margin,
-		      window->height - margin);
-	cairo_line_to(cr, margin, window->height - margin);
-	cairo_close_path(cr);
-	cairo_set_source(cr, window->background);
-	cairo_fill_preserve(cr);
-	cairo_set_source_rgba(cr, 0, 0, 0, 1);
-	cairo_set_font_size(cr, 14);
-	cairo_text_extents(cr, title, &extents);
-	h = margin + radius + extents.height + 10;
-	cairo_move_to(cr, margin, h);
-	cairo_line_to(cr, margin + window->width, h);
+	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
+	cairo_set_source(cr, outline);
+	cairo_stroke(cr);
+	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius);
+	cairo_set_source(cr, bright);
+	cairo_stroke(cr);
+	rounded_rect(cr, 3, 3, window->width - 2, window->height - 2, radius);
+	cairo_set_source(cr, dim);
 	cairo_stroke(cr);
 
+	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius);
+	gradient = cairo_pattern_create_linear (0, 0, 0, window->height);
+	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.4, 0.4, 0.4);
+	cairo_pattern_add_color_stop_rgb(gradient, 0.2, 0.7, 0.7, 0.7);
+	cairo_set_source(cr, gradient);
+	cairo_fill(cr);
+	cairo_pattern_destroy(gradient);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_move_to(cr, 10, 50);
+	cairo_line_to(cr, window->width - 10, 50);
+	cairo_line_to(cr, window->width - 10, window->height - 10);
+	cairo_line_to(cr, 10, window->height - 10);
+	cairo_close_path(cr);
+	cairo_set_source(cr, dim);
+	cairo_stroke(cr);
+
+	cairo_move_to(cr, 11, 51);
+	cairo_line_to(cr, window->width - 10, 51);
+	cairo_line_to(cr, window->width - 10, window->height - 10);
+	cairo_line_to(cr, 11, window->height - 10);
+	cairo_close_path(cr);
+	cairo_set_source(cr, bright);
+	cairo_stroke(cr);
+
+	cairo_move_to(cr, 10, 50);
+	cairo_line_to(cr, window->width - 10, 50);
+	cairo_line_to(cr, window->width - 10, window->height - 10);
+	cairo_line_to(cr, 10, window->height - 10);
+	cairo_close_path(cr);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.9);
+	cairo_fill(cr);
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_font_size(cr, 14);
+	cairo_text_extents(cr, title, &extents);
 	cairo_move_to(cr, (window->width - extents.width) / 2, 10 - extents.y_bearing);
-	cairo_show_text(cr, title);
+	cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
+	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
+	cairo_set_line_width (cr, 4);
+	cairo_text_path(cr, title);
+	cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+	cairo_stroke_preserve(cr);
+	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_fill(cr);
 
 	cairo_destroy(cr);
 
@@ -205,7 +256,9 @@ draw_window(void *data)
 
 	buffer = window->egl_buffer;
 	gears_draw(window->gears, window->gears_angle);
-	wl_surface_copy(window->surface, 20, 50,
+	wl_surface_copy(window->surface,
+			(window->width - 300) / 2,
+			50 + (window->height - 50 - 300) / 2,
 			buffer->name, buffer->stride,
 			0, 0, buffer->width, buffer->height);
 
@@ -232,9 +285,9 @@ enum location {
 	LOCATION_OUTSIDE
 };
 
-void event_handler(struct wl_display *display,
-		   uint32_t opcode,
-		   uint32_t arg1, uint32_t arg2, void *data)
+static void
+event_handler(struct wl_display *display,
+	      uint32_t opcode, uint32_t arg1, uint32_t arg2, void *data)
 {
 	struct window *window = data;
 	int location, border = 4;
@@ -265,16 +318,16 @@ void event_handler(struct wl_display *display,
 		}
 	}
 
-	if (window->x + border <= window->last_x &&
-	    window->last_x < window->x + window->width - border &&
-	    window->y + border <= window->last_y &&
-	    window->last_y < window->y + window->height - border) {
-		location = LOCATION_INTERIOR;
-	} else if (window->x + window->width - grip_size <= window->last_x &&
+	if (window->x + window->width - grip_size <= window->last_x &&
 		   window->last_x < window->x + window->width &&
 		   window->y + window->height - grip_size <= window->last_y &&
 		   window->last_y < window->y + window->height) {
 		location = LOCATION_LOWER_RIGHT;
+	} else if (window->x + border <= window->last_x &&
+		   window->last_x < window->x + window->width - border &&
+		   window->y + border <= window->last_y &&
+		   window->last_y < window->y + window->height - border) {
+		location = LOCATION_INTERIOR;
 	} else {
 		location = LOCATION_OUTSIDE;
 	}
@@ -307,7 +360,7 @@ window_create(struct wl_display *display, int fd)
 	EGLConfig configs[64];
 	struct window *window;
 	struct buffer *buffer;
-	const GLfloat red = 0.3, green = 0.3, blue = 0.3, alpha = 0.9;
+	const GLfloat red = 0, green = 0, blue = 0, alpha = 0.9;
 
 	window = malloc(sizeof *window);
 	if (window == NULL)
@@ -370,12 +423,17 @@ draw(gpointer data)
 	struct window *window = data;
 	struct buffer *buffer;
 
-	gears_draw(window->gears, window->gears_angle);
+	
+	if (!window->redraw_scheduled) {
+		gears_draw(window->gears, window->gears_angle);
 
-	buffer = window->egl_buffer;
-	wl_surface_copy(window->surface, 20, 50,
-			buffer->name, buffer->stride,
-			0, 0, buffer->width, buffer->height);
+		buffer = window->egl_buffer;
+		wl_surface_copy(window->surface,
+				(window->width - 300) / 2,
+				50 + (window->height - 50 - 300) / 2,
+				buffer->name, buffer->stride,
+				0, 0, buffer->width, buffer->height);
+	}
 
 	window->gears_angle += 1;
 

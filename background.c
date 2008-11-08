@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 
 	wl_surface_attach(surface, name, width, height, width * 4);
 
-	wl_surface_map(surface, 0, 0, width, height);
+	wl_surface_map(surface, 0, 0, 1280, 800);
 
 	g_main_loop_run(loop);
 
