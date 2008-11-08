@@ -125,7 +125,8 @@ gear(GLfloat inner_radius, GLfloat outer_radius, GLfloat width,
 }
 
 struct gears *
-gears_create(void)
+gears_create(GLfloat clear_red, GLfloat clear_green,
+	     GLfloat clear_blue, GLfloat clear_alpha)
 {
 	static GLfloat red[4] = {0.8, 0.1, 0.0, 1.0};
 	static GLfloat green[4] = {0.0, 0.8, 0.2, 1.0};
@@ -166,6 +167,14 @@ gears_create(void)
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 
+	/* We're generating premultiplied alpha so multiply in the
+	 * alpha.  The gears are solid color and doesn't have
+	 * anti-aliased edges, they're ok. */
+	glClearColor(clear_red * clear_alpha,
+		     clear_green * clear_alpha,
+		     clear_blue * clear_alpha,
+		     clear_alpha);
+
 	return gears;
 }
 
@@ -174,7 +183,7 @@ gears_draw(struct gears *gears, GLfloat angle)
 {
 	GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 
-	glClear(GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
 

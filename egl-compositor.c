@@ -149,8 +149,8 @@ notify_surface_attach(struct wl_compositor *compositor,
 	/* FIXME: We need to use a single buffer config without depth
 	 * or stencil buffers here to keep egl from creating auxillary
 	 * buffers for the pixmap here. */
-	sd->surface = eglCreatePixmapForName(ec->display, ec->config,
-					     name, width, height, stride, NULL);
+	sd->surface = eglCreateSurfaceForName(ec->display, ec->config,
+					      name, width, height, stride, NULL);
 
 	glBindTexture(GL_TEXTURE_2D, sd->texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -185,15 +185,29 @@ notify_surface_copy(struct wl_compositor *compositor,
 		    uint32_t name, uint32_t stride,
 		    int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	/* FIXME: Eek, how do we do this... extend the DRI CopyBuffer
-	 * extension and expose it in eagle?  Make the surface the
-	 * draw buffer and the named buffer the read buffer and use
-	 * glCopyPixels? */
+	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	EGLSurface src;
+	struct surface_data *sd;
+
+	sd = wl_surface_get_data(surface);
+
+	/* FIXME: glCopyPixels should work, but then we'll have to
+	 * call eglMakeCurrent to set up the src and dest surfaces
+	 * first.  This seems cheaper, but maybe there's a better way
+	 * to accomplish this. */
+
+	src = eglCreateSurfaceForName(ec->display, ec->config,
+				      name, x + width, y + height, stride, NULL);
+
+	eglCopyNativeBuffers(ec->display, sd->surface, GL_FRONT_LEFT, dst_x, dst_y,
+			     src, GL_FRONT_LEFT, x, y, width, height);
+	schedule_repaint(ec);
 }
 
 static void
 notify_surface_damage(struct wl_compositor *compositor,
-		      struct wl_surface *surface)
+		      struct wl_surface *surface,
+		      int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 

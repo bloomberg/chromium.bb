@@ -139,7 +139,6 @@ struct wl_compositor_interface {
 				      struct wl_surface *surface,
 				      int32_t x, int32_t y,
 				      int32_t width, int32_t height);
-
 };
 
 void wl_display_set_compositor(struct wl_display *display,

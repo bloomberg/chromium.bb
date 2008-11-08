@@ -27,11 +27,83 @@ static void die(const char *msg)
 	exit(EXIT_FAILURE);
 }
 
-static uint32_t name_cairo_surface(int fd, cairo_surface_t *surface)
+struct buffer {
+	int width, height, stride;
+	uint32_t name, handle;
+};
+
+static struct buffer *
+buffer_create(int fd, int width, int height, int stride)
 {
+	struct buffer *buffer;
 	struct drm_i915_gem_create create;
 	struct drm_gem_flink flink;
+
+	buffer = malloc(sizeof *buffer);
+	buffer->width = width;
+	buffer->height = height;
+	buffer->stride = stride;
+
+	memset(&create, 0, sizeof(create));
+	create.size = height * stride;
+
+	if (ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create) != 0) {
+		fprintf(stderr, "gem create failed: %m\n");
+		free(buffer);
+		return NULL;
+	}
+
+	flink.handle = create.handle;
+	if (ioctl(fd, DRM_IOCTL_GEM_FLINK, &flink) != 0) {
+		fprintf(stderr, "gem flink failed: %m\n");
+		free(buffer);
+		return 0;
+	}
+
+	buffer->handle = flink.handle;
+	buffer->name = flink.name;
+
+	return buffer;
+}
+
+static int
+buffer_destroy(struct buffer *buffer, int fd)
+{
+	struct drm_gem_close close;
+
+	close.handle = buffer->handle;
+	if (ioctl(fd, DRM_IOCTL_GEM_CLOSE, &close) < 0) {
+		fprintf(stderr, "gem close failed: %m\n");
+		return -1;
+	}
+	
+	free(buffer);
+
+	return 0;
+}
+
+static int
+buffer_data(struct buffer *buffer, int fd, void *data)
+{
 	struct drm_i915_gem_pwrite pwrite;
+
+	pwrite.handle = buffer->handle;
+	pwrite.offset = 0;
+	pwrite.size = buffer->height * buffer->stride;
+	pwrite.data_ptr = (uint64_t) (uintptr_t) data;
+
+	if (ioctl(fd, DRM_IOCTL_I915_GEM_PWRITE, &pwrite) < 0) {
+		fprintf(stderr, "gem pwrite failed: %m\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static struct buffer *
+buffer_create_from_cairo_surface(int fd, cairo_surface_t *surface)
+{
+	struct buffer *buffer;
 	int32_t width, height, stride;
 	void *data;
 
@@ -40,52 +112,30 @@ static uint32_t name_cairo_surface(int fd, cairo_surface_t *surface)
 	stride = cairo_image_surface_get_stride(surface);
 	data = cairo_image_surface_get_data(surface);
 
-	memset(&create, 0, sizeof(create));
-	create.size = height * stride;
+	buffer = buffer_create(fd, width, height, stride);
+	if (buffer == NULL)
+		return NULL;
 
-	if (ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create) != 0) {
-		fprintf(stderr, "gem create failed: %m\n");
-		return 0;
-	}
+	if (buffer_data(buffer, fd, data) < 0) {
+		buffer_destroy(buffer, fd);
+		return NULL;
+	}			
 
-	pwrite.handle = create.handle;
-	pwrite.offset = 0;
-	pwrite.size = height * stride;
-	pwrite.data_ptr = (uint64_t) (uintptr_t) data;
-	if (ioctl(fd, DRM_IOCTL_I915_GEM_PWRITE, &pwrite) < 0) {
-		fprintf(stderr, "gem pwrite failed: %m\n");
-		return 0;
-	}
-
-	flink.handle = create.handle;
-	if (ioctl(fd, DRM_IOCTL_GEM_FLINK, &flink) != 0) {
-		fprintf(stderr, "gem flink failed: %m\n");
-		return 0;
-	}
-
-#if 0
-	/* We need to hold on to the handle until the server has received
-	 * the attach request... we probably need a confirmation event.
-	 * I guess the breadcrumb idea will suffice. */
-	struct drm_gem_close close;
-	close.handle = create.handle;
-	if (ioctl(fd, DRM_IOCTL_GEM_CLOSE, &close) < 0) {
-		fprintf(stderr, "gem close failed: %m\n");
-		return 0;
-	}
-#endif
-
-	return flink.name;
+	return buffer;
 }
 
 struct window {
 	struct wl_surface *surface;
-	int x, y, width, height, stride;
+	int x, y, width, height;
 	int drag_x, drag_y, last_x, last_y;
 	int state;
 	uint32_t name;
 	int fd;
 	int redraw_scheduled;
+	cairo_pattern_t *background;
+
+	struct buffer *buffer;
+	struct buffer *egl_buffer;
 
 	GLfloat gears_angle;
 	struct gears *gears;
@@ -104,11 +154,11 @@ draw_window(void *data)
 	int border = 2, radius = 5, h;
 	int margin = (border + 1) / 2;
 	cairo_text_extents_t extents;
+	struct buffer *buffer;
 	const static char title[] = "Wayland First Post";
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					     window->width,
-					     window->height);
+					     window->width, window->height);
 
 	cr = cairo_create(surface);
 	cairo_set_line_width (cr, border);
@@ -122,7 +172,7 @@ draw_window(void *data)
 		      window->height - margin);
 	cairo_line_to(cr, margin, window->height - margin);
 	cairo_close_path(cr);
-	cairo_set_source_rgba(cr, 0.2, 0.2, 0.2, 0.9);
+	cairo_set_source(cr, window->background);
 	cairo_fill_preserve(cr);
 	cairo_set_source_rgba(cr, 0, 0, 0, 1);
 	cairo_set_font_size(cr, 14);
@@ -137,39 +187,27 @@ draw_window(void *data)
 
 	cairo_destroy(cr);
 
-	window->stride = cairo_image_surface_get_stride(surface);
+	if (window->buffer != NULL)
+		buffer_destroy(window->buffer, window->fd);
+	buffer = buffer_create_from_cairo_surface(window->fd, surface);
+	window->buffer = buffer;
 
-	window->name = name_cairo_surface(window->fd, surface);
 	cairo_surface_destroy(surface);
 
-	wl_surface_attach(window->surface, window->name,
-			  window->width, window->height, window->stride);
+	wl_surface_attach(window->surface, buffer->name,
+			  buffer->width, buffer->height, buffer->stride);
 			  
+	/* FIXME: Free window->buffer when we receive the ack event. */
+
+	buffer = window->egl_buffer;
+	gears_draw(window->gears, window->gears_angle);
+	wl_surface_copy(window->surface, 20, 50,
+			buffer->name, buffer->stride,
+			0, 0, buffer->width, buffer->height);
+
 	wl_surface_map(window->surface, 
 		       window->x, window->y,
-		       window->width, window->height);
-
-	if (window->egl_surface != EGL_NO_SURFACE)
-		eglDestroySurface(window->display, window->egl_surface);
-
-	/* FIXME: We need to get the stride right here in a chipset
-	 * independent way.  Maybe do it in name_cairo_surface(). */
-	window->egl_surface = eglCreatePixmapForName(window->display,
-						     window->config, window->name,
-						     window->width, window->height,
-						     window->stride, NULL);
-
-	if (surface == NULL)
-		die("failed to create surface\n");
-
-	if (!eglMakeCurrent(window->display,
-			    window->egl_surface, window->egl_surface, window->context))
-		die("failed to make context current\n");
-
-	glViewport(border, window->height - h - margin - 300, 300, 300);
-
-	if (window->gears != NULL)
-		gears_draw(window->gears, window->gears_angle);
+		       buffer->width, buffer->height);
 
 	window->redraw_scheduled = 0;
 
@@ -215,6 +253,10 @@ void event_handler(struct wl_display *display,
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + arg1;
 			window->height = window->drag_y + arg2;
+			if (window->width < 400)
+				window->width = 400;
+			if (window->height < 400)
+				window->height = 400;
 			if (!window->redraw_scheduled) {
 				window->redraw_scheduled = 1;
 				g_idle_add(draw_window, window);
@@ -264,11 +306,14 @@ window_create(struct wl_display *display, int fd)
 	EGLint major, minor, count;
 	EGLConfig configs[64];
 	struct window *window;
+	struct buffer *buffer;
+	const GLfloat red = 0.3, green = 0.3, blue = 0.3, alpha = 0.9;
 
 	window = malloc(sizeof *window);
 	if (window == NULL)
 		return NULL;
 
+	memset(window, 0, sizeof *window);
 	window->surface = wl_display_create_surface(display);
 	window->x = 200;
 	window->y = 200;
@@ -276,7 +321,7 @@ window_create(struct wl_display *display, int fd)
 	window->height = 500;
 	window->state = WINDOW_STABLE;
 	window->fd = fd;
-	window->gears = NULL;
+	window->background = cairo_pattern_create_rgba (red, green, blue, alpha);
 
 	window->display = eglCreateDisplayNative("/dev/dri/card0", "i965");
 	if (window->display == NULL)
@@ -293,12 +338,28 @@ window_create(struct wl_display *display, int fd)
 	if (window->context == NULL)
 		die("failed to create context\n");
 
-	window->egl_surface = EGL_NO_SURFACE;
+	/* FIXME: We need to get the stride right here in a chipset
+	 * independent way.  Maybe do it in name_cairo_surface(). */
+	buffer = buffer_create(window->fd, 300, 300, (300 * 4 + 15) & ~15);
+	window->egl_buffer = buffer;
+	window->egl_surface = eglCreateSurfaceForName(window->display,
+						      window->config, buffer->name,
+						      buffer->width, buffer->height,
+						      buffer->stride, NULL);
+
+	if (window->egl_surface == NULL)
+		die("failed to create egl surface\n");
+
+	if (!eglMakeCurrent(window->display,
+			    window->egl_surface, window->egl_surface, window->context))
+		die("failed to make context current\n");
+
+	glViewport(0, 0, 300, 300);
+
+	window->gears = gears_create(red, green, blue, alpha);
+	window->gears_angle = 0.0;
 
 	draw_window(window);
-
-	window->gears = gears_create();
-	window->gears_angle = 0.0;
 
 	return window;
 }
@@ -307,10 +368,15 @@ static gboolean
 draw(gpointer data)
 {
 	struct window *window = data;
+	struct buffer *buffer;
 
 	gears_draw(window->gears, window->gears_angle);
-	wl_surface_damage(window->surface, 0, 0,
-			  window->width, window->height);
+
+	buffer = window->egl_buffer;
+	wl_surface_copy(window->surface, 20, 50,
+			buffer->name, buffer->stride,
+			0, 0, buffer->width, buffer->height);
+
 	window->gears_angle += 1;
 
 	return TRUE;
