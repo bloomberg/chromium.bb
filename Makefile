@@ -1,4 +1,4 @@
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden
 
 PKG_CONFIG_PATH ?= $(HOME)/install/lib/pkgconfig
 

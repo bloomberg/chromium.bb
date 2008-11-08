@@ -13,16 +13,6 @@
 #include "wayland.h"
 #include "connection.h"
 
-#define container_of(ptr, type, member) ({			\
-	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
-	(type *)( (char *)__mptr - offsetof(type,member) );})
-
-
-struct wl_list {
-	struct wl_list *prev;
-	struct wl_list *next;
-};
-
 void wl_list_init(struct wl_list *list)
 {
 	list->prev = list;
@@ -126,7 +116,7 @@ static const struct wl_argument attach_arguments[] = {
 	{ WL_ARGUMENT_UINT32 },
 };
 
-void
+static void
 wl_surface_map(struct wl_client *client, struct wl_surface *surface,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
@@ -152,7 +142,7 @@ static const struct wl_argument map_arguments[] = {
 	{ WL_ARGUMENT_UINT32 },
 };
 
-void
+static void
 wl_surface_copy(struct wl_client *client, struct wl_surface *surface,
 		int32_t dst_x, int32_t dst_y, uint32_t name, uint32_t stride,
 		int32_t x, int32_t y, int32_t width, int32_t height)
@@ -178,7 +168,7 @@ static const struct wl_argument copy_arguments[] = {
 	{ WL_ARGUMENT_UINT32 },
 };
 
-void
+static void
 wl_surface_damage(struct wl_client *client, struct wl_surface *surface,
 		  int32_t x, int32_t y, int32_t width, int32_t height)
 {
@@ -215,7 +205,7 @@ static const struct wl_interface surface_interface = {
 	surface_methods,
 };
 
-struct wl_surface *
+static struct wl_surface *
 wl_surface_create(struct wl_display *display, uint32_t id)
 {
 	struct wl_surface *surface;
@@ -236,13 +226,13 @@ wl_surface_create(struct wl_display *display, uint32_t id)
 	return surface;
 }
 
-void
+WL_EXPORT void
 wl_surface_set_data(struct wl_surface *surface, void *data)
 {
 	surface->compositor_data = data;
 }
 
-void *
+WL_EXPORT void *
 wl_surface_get_data(struct wl_surface *surface)
 {
 	return surface->compositor_data;
@@ -431,7 +421,7 @@ advertise_object(struct wl_client *client, struct wl_object *object)
 	wl_connection_write(client->connection, pad, -length & 3);
 }
 
-struct wl_client *
+static struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
@@ -548,7 +538,7 @@ wl_display_create_input_devices(struct wl_display *display)
 	display->pointer_y = 100;
 }
 
-struct wl_display *
+static struct wl_display *
 wl_display_create(void)
 {
 	struct wl_display *display;
@@ -576,7 +566,7 @@ wl_display_create(void)
 	return display;		
 }
 
-void
+static void
 wl_display_send_event(struct wl_display *display, uint32_t *data, size_t size)
 {
 	struct wl_client *client;
@@ -649,13 +639,13 @@ wl_display_set_compositor(struct wl_display *display,
 	display->compositor = compositor;
 }
 
-struct wl_event_loop *
+WL_EXPORT struct wl_event_loop *
 wl_display_get_event_loop(struct wl_display *display)
 {
 	return display->loop;
 }
 
-void
+static void
 wl_display_run(struct wl_display *display)
 {
 	while (1)
@@ -683,7 +673,7 @@ socket_data(int fd, uint32_t mask, void *data)
 	wl_client_create(display, client_fd);
 }
 
-int
+static int
 wl_display_add_socket(struct wl_display *display)
 {
 	struct sockaddr_un name;
@@ -718,7 +708,7 @@ struct wl_surface_iterator {
 	uint32_t mask;
 };
 
-struct wl_surface_iterator *
+WL_EXPORT struct wl_surface_iterator *
 wl_surface_iterator_create(struct wl_display *display, uint32_t mask)
 {
 	struct wl_surface_iterator *iterator;
@@ -735,7 +725,7 @@ wl_surface_iterator_create(struct wl_display *display, uint32_t mask)
 	return iterator;
 }
 
-int
+WL_EXPORT int
 wl_surface_iterator_next(struct wl_surface_iterator *iterator,
 			 struct wl_surface **surface)
 {
@@ -749,7 +739,7 @@ wl_surface_iterator_next(struct wl_surface_iterator *iterator,
 	return 1;
 }
 
-void
+WL_EXPORT void
 wl_surface_iterator_destroy(struct wl_surface_iterator *iterator)
 {
 	free(iterator);

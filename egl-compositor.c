@@ -226,7 +226,7 @@ static const struct wl_compositor_interface interface = {
 
 static const char gem_device[] = "/dev/dri/card0";
 
-struct wl_compositor *
+WL_EXPORT struct wl_compositor *
 wl_compositor_create(struct wl_display *display)
 {
 	EGLConfig configs[64];

@@ -3,7 +3,27 @@
 
 #include <stdint.h>
 
+/* GCC visibility */
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define WL_EXPORT __attribute__ ((visibility("default")))
+#else
+#define WL_EXPORT
+#endif
+
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
+#define container_of(ptr, type, member) ({			\
+	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
+	(type *)( (char *)__mptr - offsetof(type,member) );})
+
+struct wl_list {
+	struct wl_list *prev;
+	struct wl_list *next;
+};
+
+void wl_list_init(struct wl_list *list);
+void wl_list_insert(struct wl_list *list, struct wl_list *elm);
+void wl_list_remove(struct wl_list *elm);
 
 enum {
 	WL_EVENT_READABLE = 0x01,
@@ -144,5 +164,7 @@ struct wl_compositor_interface {
 void wl_display_set_compositor(struct wl_display *display,
 			       struct wl_compositor *compositor);
 
+struct wl_compositor *
+wl_compositor_create(struct wl_display *display);
 
 #endif

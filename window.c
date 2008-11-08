@@ -197,6 +197,10 @@ draw_window(void *data)
 	wl_surface_attach(window->surface, buffer->name,
 			  buffer->width, buffer->height, buffer->stride);
 			  
+	wl_surface_map(window->surface, 
+		       window->x, window->y,
+		       buffer->width, buffer->height);
+
 	/* FIXME: Free window->buffer when we receive the ack event. */
 
 	buffer = window->egl_buffer;
@@ -204,10 +208,6 @@ draw_window(void *data)
 	wl_surface_copy(window->surface, 20, 50,
 			buffer->name, buffer->stride,
 			0, 0, buffer->width, buffer->height);
-
-	wl_surface_map(window->surface, 
-		       window->x, window->y,
-		       buffer->width, buffer->height);
 
 	window->redraw_scheduled = 0;
 

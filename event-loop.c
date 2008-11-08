@@ -21,7 +21,7 @@ struct wl_event_source {
 	void *data;
 };
 
-struct wl_event_source *
+WL_EXPORT struct wl_event_source *
 wl_event_loop_add_fd(struct wl_event_loop *loop,
 		     int fd, uint32_t mask,
 		     wl_event_loop_fd_func_t func,
@@ -55,7 +55,7 @@ wl_event_loop_add_fd(struct wl_event_loop *loop,
 
 struct wl_event_source idle_source;
 
-int
+WL_EXPORT int
 wl_event_loop_remove_source(struct wl_event_loop *loop,
 			    struct wl_event_source *source)
 {
@@ -72,7 +72,7 @@ wl_event_loop_remove_source(struct wl_event_loop *loop,
 	};
 }
 
-int
+WL_EXPORT int
 wl_event_loop_update_source(struct wl_event_loop *loop,
 			    struct wl_event_source *source,
 			    uint32_t mask)
@@ -90,7 +90,7 @@ wl_event_loop_update_source(struct wl_event_loop *loop,
 			 EPOLL_CTL_MOD, source->fd, &ep);
 }
 
-struct wl_event_loop *
+WL_EXPORT struct wl_event_loop *
 wl_event_loop_create(void)
 {
 	struct wl_event_loop *loop;
@@ -108,14 +108,14 @@ wl_event_loop_create(void)
 	return loop;
 }
 
-void
+WL_EXPORT void
 wl_event_loop_destroy(struct wl_event_loop *loop)
 {
 	close(loop->epoll_fd);
 	free(loop);
 }
 
-struct wl_event_source *
+WL_EXPORT struct wl_event_source *
 wl_event_loop_add_idle(struct wl_event_loop *loop,
 		       wl_event_loop_idle_func_t func,
 		       void *data)
@@ -128,7 +128,7 @@ wl_event_loop_add_idle(struct wl_event_loop *loop,
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
-int
+WL_EXPORT int
 wl_event_loop_wait(struct wl_event_loop *loop)
 {
 	struct epoll_event ep[32];

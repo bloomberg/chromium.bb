@@ -249,7 +249,7 @@ display_data(int fd, uint32_t mask, void *data)
 	}
 }
 
-struct wl_compositor *
+WL_EXPORT struct wl_compositor *
 wl_compositor_create(struct wl_display *display)
 {
 	static int attribs[] = {

@@ -52,7 +52,7 @@ connection_update(struct wl_connection *connection,
 	return 0;
 }
 
-struct wl_display *
+WL_EXPORT struct wl_display *
 wl_display_create(const char *address)
 {
 	struct wl_display *display;
@@ -102,7 +102,7 @@ wl_display_create(const char *address)
 	return display;
 }
 
-void
+WL_EXPORT void
 wl_display_destroy(struct wl_display *display)
 {
 	wl_connection_destroy(display->connection);
@@ -110,7 +110,7 @@ wl_display_destroy(struct wl_display *display)
 	free(display);
 }
 
-int
+WL_EXPORT int
 wl_display_get_fd(struct wl_display *display,
 		  wl_display_update_func_t update, void *data)
 {
@@ -134,7 +134,7 @@ handle_event(struct wl_display *display, uint32_t opcode, uint32_t size)
 	wl_connection_consume(display->connection, size);
 }
 
-void
+WL_EXPORT void
 wl_display_iterate(struct wl_display *display, uint32_t mask)
 {
 	uint32_t p[2], opcode, size;
@@ -161,7 +161,7 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 	}
 }
 
-void
+WL_EXPORT void
 wl_display_set_event_handler(struct wl_display *display,
 			     wl_display_event_func_t handler,
 			     void *data)
@@ -173,7 +173,7 @@ wl_display_set_event_handler(struct wl_display *display,
 
 #define WL_DISPLAY_CREATE_SURFACE 0
 
-struct wl_surface *
+WL_EXPORT struct wl_surface *
 wl_display_create_surface(struct wl_display *display)
 {
 	struct wl_surface *surface;
@@ -200,7 +200,8 @@ wl_display_create_surface(struct wl_display *display)
 #define WL_SURFACE_COPY		3
 #define WL_SURFACE_DAMAGE	4
 
-void wl_surface_destroy(struct wl_surface *surface)
+WL_EXPORT void
+wl_surface_destroy(struct wl_surface *surface)
 {
 	uint32_t request[2];
 
@@ -211,8 +212,9 @@ void wl_surface_destroy(struct wl_surface *surface)
 			    request, sizeof request);
 }
 
-void wl_surface_attach(struct wl_surface *surface, uint32_t name,
-		       int32_t width, int32_t height, uint32_t stride)
+WL_EXPORT void
+wl_surface_attach(struct wl_surface *surface, uint32_t name,
+		  int32_t width, int32_t height, uint32_t stride)
 {
 	uint32_t request[6];
 
@@ -227,8 +229,9 @@ void wl_surface_attach(struct wl_surface *surface, uint32_t name,
 			    request, sizeof request);
 }
 
-void wl_surface_map(struct wl_surface *surface,
-		    int32_t x, int32_t y, int32_t width, int32_t height)
+WL_EXPORT void
+wl_surface_map(struct wl_surface *surface,
+	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	uint32_t request[6];
 
@@ -243,9 +246,10 @@ void wl_surface_map(struct wl_surface *surface,
 			    request, sizeof request);
 }
 
-void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
-		     uint32_t name, uint32_t stride,
-		     int32_t x, int32_t y, int32_t width, int32_t height)
+WL_EXPORT void
+wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
+		uint32_t name, uint32_t stride,
+		int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	uint32_t request[10];
 
@@ -264,8 +268,9 @@ void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
 			    request, sizeof request);
 }
 
-void wl_surface_damage(struct wl_surface *surface,
-		       int32_t x, int32_t y, int32_t width, int32_t height)
+WL_EXPORT void
+wl_surface_damage(struct wl_surface *surface,
+		  int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	uint32_t request[6];
 

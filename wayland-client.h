@@ -1,6 +1,13 @@
 #ifndef _WAYLAND_CLIENT_H
 #define _WAYLAND_CLIENT_H
 
+/* GCC visibility */
+#if defined(__GNUC__) && __GNUC__ >= 4
+#define WL_EXPORT __attribute__ ((visibility("default")))
+#else
+#define WL_EXPORT
+#endif
+
 struct wl_display;
 struct wl_surface;
 
