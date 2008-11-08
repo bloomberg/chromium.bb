@@ -70,7 +70,7 @@ static uint32_t name_cairo_surface(int fd, cairo_surface_t *surface)
 static void *
 draw_pointer(int width, int height)
 {
-	const int d = 2, end = 4, tx = 2, ty = 6, dx = 4, dy = 4;
+	const int d = 2, end = 6, tx = 2, ty = 7, dx = 3, dy = 5;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 
@@ -87,9 +87,9 @@ draw_pointer(int width, int height)
 	cairo_line_to(cr, d + dy, d + dx);
 	cairo_line_to(cr, d + ty, d + tx);
 	cairo_close_path(cr);
-	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_set_source_rgb(cr, 0, 0, 0);
 	cairo_stroke_preserve(cr);
-	cairo_set_source_rgb(cr, 1, 0, 0);
+	cairo_set_source_rgb(cr, 1, 1, 1);
 	cairo_fill(cr);
 
 	cairo_destroy(cr);
@@ -102,9 +102,10 @@ struct pointer {
 	struct wl_surface *surface;
 };
 
-void event_handler(struct wl_display *display,
-		   uint32_t opcode,
-		   uint32_t arg1, uint32_t arg2, void *data)
+static void
+event_handler(struct wl_display *display,
+	      uint32_t opcode,
+	      uint32_t arg1, uint32_t arg2, void *data)
 {
 	struct pointer *pointer = data;
 
