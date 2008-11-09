@@ -180,7 +180,6 @@ int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	struct drm_radeon_cs *cs = data;
 	uint32_t *packets = NULL;
 	uint32_t cs_id;
-	uint32_t card_offset;
 	long size;
 	int r;
 	struct drm_radeon_kernel_chunk chunk_fake[1];
@@ -280,12 +279,11 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_radeon_cs_parser *pa
 	 old kernels ignore it. */ 
 	if (parser->reloc_index == -1) {
 		if (packet3_hdr != (RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16))) {
-			DRM_ERROR("Packet 3 was %x should have been %x: reg is %x\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16), reg);
+			DRM_ERROR("Packet 3 was %x should have been %x: reg is %x at %d\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE << 16), reg, offset_dw);
 			return -EINVAL;
 		}
-	} else {
 		if (packet3_hdr != (RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE_NEW << 16))) {
-			DRM_ERROR("Packet 3 was %x should have been %x: reg is %x\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE_NEW << 16), reg);
+			DRM_ERROR("Packet 3 was %x should have been %x: reg is %x at %d\n", packet3_hdr, RADEON_CP_PACKET3 | RADEON_CP_NOP | (RELOC_SIZE_NEW << 16), reg, offset_dw);
 			return -EINVAL;
 
 		}
@@ -295,9 +293,11 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_radeon_cs_parser *pa
 	case RADEON_DST_PITCH_OFFSET:
 	case RADEON_SRC_PITCH_OFFSET:
 		/* pass in the start of the reloc */
-		ret = dev_priv->cs.relocate(parser, ib_chunk->kdata + offset_dw + 2, &offset);
-		if (ret)
+		ret = dev_priv->cs.relocate(parser,
+				ib_chunk->kdata + offset_dw + 2, &offset);
+		if (ret) {
 			return ret;
+		}
 		tmp = (val & RADEON_2D_OFFSET_MASK) << 10;
 		val &= ~RADEON_2D_OFFSET_MASK;
 		offset += tmp;
@@ -313,9 +313,12 @@ static __inline__ int radeon_cs_relocate_packet0(struct drm_radeon_cs_parser *pa
 	case R200_PP_TXOFFSET_1:
 	case RADEON_PP_TXOFFSET_0:
 	case RADEON_PP_TXOFFSET_1:
-	        ret = dev_priv->cs.relocate(parser, ib_chunk->kdata + offset_dw + 2, &offset);
-		if (ret)
+	        ret = dev_priv->cs.relocate(parser,
+				ib_chunk->kdata + offset_dw + 2, &offset);
+		if (ret) {
+			DRM_ERROR("Failed to relocate %d\n", offset_dw);
 			return ret;
+		}
 
 		offset &= 0xffffffe0;
 		val += offset;
@@ -332,8 +335,9 @@ static int radeon_cs_relocate_packet3(struct drm_radeon_cs_parser *parser,
 				      uint32_t offset_dw)
 {
 	drm_radeon_private_t *dev_priv = parser->dev->dev_private;
-	uint32_t hdr, num_dw, reg;
-	uint32_t offset, val, tmp;
+	uint32_t hdr, num_dw, reg, i;
+	uint32_t offset, val, tmp, nptr, cptr;
+	uint32_t *reloc;
 	int ret;
 	struct drm_radeon_kernel_chunk *ib_chunk;
 
@@ -347,11 +351,13 @@ static int radeon_cs_relocate_packet3(struct drm_radeon_cs_parser *parser,
 
 	switch(reg) {
 	case RADEON_CNTL_HOSTDATA_BLT:
-	{
 		val = ib_chunk->kdata[offset_dw + 2];
-		ret = dev_priv->cs.relocate(parser, ib_chunk->kdata + offset_dw + num_dw + 2, &offset);
-		if (ret)
+		ret = dev_priv->cs.relocate(parser,
+				ib_chunk->kdata + offset_dw + num_dw + 2,
+				&offset);
+		if (ret) {
 			return ret;
+		}
 
 		tmp = (val & RADEON_2D_OFFSET_MASK) << 10;
 		val &= ~RADEON_2D_OFFSET_MASK;
@@ -360,8 +366,48 @@ static int radeon_cs_relocate_packet3(struct drm_radeon_cs_parser *parser,
 		val |= offset;
 
 		ib_chunk->kdata[offset_dw + 2] = val;
-	}
+		break;
+	case RADEON_3D_LOAD_VBPNTR:
+		nptr = ib_chunk->kdata[offset_dw + 1];
+		cptr = offset_dw + 3;
+		for (i = 0; i < (nptr & ~1); i+= 2) {
+			reloc = ib_chunk->kdata + offset_dw + num_dw + 2;
+			reloc += ((i + 0) * 2);
+			ret = dev_priv->cs.relocate(parser, reloc, &offset);
+			if (ret) {
+				return ret;
+			}
+			ib_chunk->kdata[cptr] += offset;
+			cptr += 1;
+			reloc = ib_chunk->kdata + offset_dw + num_dw + 2;
+			reloc += ((i + 1) * 2);
+			ret = dev_priv->cs.relocate(parser, reloc, &offset);
+			if (ret) {
+				return ret;
+			}
+			ib_chunk->kdata[cptr] += offset;
+			cptr += 2;
+		}
+		if (nptr & 1) {
+			reloc = ib_chunk->kdata + offset_dw + num_dw + 2;
+			reloc += ((nptr - 1) * 2);
+			ret = dev_priv->cs.relocate(parser, reloc, &offset);
+			if (ret) {
+				return ret;
+			}
+			ib_chunk->kdata[cptr] += offset;
+		}
+		break;
+	case RADEON_CP_INDX_BUFFER:
+		reloc = ib_chunk->kdata + offset_dw + num_dw + 2;
+		ret = dev_priv->cs.relocate(parser, reloc, &offset);
+		if (ret) {
+			return ret;
+		}
+		ib_chunk->kdata[offset_dw + 2] += offset;
+		break;
 	default:
+		DRM_ERROR("Unknown packet3 0x%08X\n", hdr);
 		return -EINVAL;
 	}
 	return 0;
@@ -376,6 +422,12 @@ int radeon_cs_packet0(struct drm_radeon_cs_parser *parser, uint32_t offset_dw)
 	hdr = parser->chunks[parser->ib_index].kdata[offset_dw];
 	num_dw = ((hdr & RADEON_CP_PACKET_COUNT_MASK) >> 16) + 2;
 	reg = (hdr & R300_CP_PACKET0_REG_MASK) << 2;
+
+	if (hdr & (1 << 15)) {
+		if (reg == 0x2208) {
+			return 0;
+		}
+	}
 
 	while (count_dw < num_dw) {
 		/* need to have something like the r300 validation here - 
@@ -405,7 +457,8 @@ int radeon_cs_packet0(struct drm_radeon_cs_parser *parser, uint32_t offset_dw)
 			} else if (flags == MARK_CHECK_SCISSOR) {
 				DRM_DEBUG("need to validate scissor %x %d\n", reg, flags);
 			} else {
-				DRM_DEBUG("illegal register %x %d\n", reg, flags);
+				
+				DRM_ERROR("illegal register 0x%x %d at %d\n", reg, flags, offset_dw);
 				return -EINVAL;
 			}
 			break;
@@ -435,6 +488,8 @@ int radeon_cs_parse(struct drm_radeon_cs_parser *parser)
 		switch (hdr & RADEON_CP_PACKET_MASK) {
 		case RADEON_CP_PACKET0:
 			ret = radeon_cs_packet0(parser, count_dw);
+			if (ret)
+				return ret;
 			break;
 		case RADEON_CP_PACKET1:
 		case RADEON_CP_PACKET2:
@@ -446,14 +501,17 @@ int radeon_cs_parse(struct drm_radeon_cs_parser *parser)
 			reg = hdr & 0xff00;
 			
 			switch(reg) {
+			case RADEON_3D_LOAD_VBPNTR:
+			case RADEON_CP_INDX_BUFFER:
 			case RADEON_CNTL_HOSTDATA_BLT:
-				radeon_cs_relocate_packet3(parser, count_dw);
+				ret =radeon_cs_relocate_packet3(parser,
+						count_dw);
+				if (ret)
+					return ret;
 				break;
 
 			case RADEON_CNTL_BITBLT_MULTI:
-			case RADEON_3D_LOAD_VBPNTR:	/* load vertex array pointers */
-			case RADEON_CP_INDX_BUFFER:
-				DRM_ERROR("need relocate packet 3 for %x\n", reg);
+				DRM_ERROR("need relocate packet 3 for %x %d\n", reg, count_dw);
 				break;
 
 			case RADEON_3D_DRAW_IMMD:	/* triggers drawing using in-packet vertex data */
@@ -464,12 +522,11 @@ int radeon_cs_parse(struct drm_radeon_cs_parser *parser)
 			case RADEON_CP_NOP:
 				break;
 			default:
-				DRM_ERROR("unknown packet 3 %x\n", reg);
+				DRM_ERROR("unknown packet 3 %x at %d\n", reg, count_dw);
 				ret = -EINVAL;
 			}
 			break;
 		}
-
 		count_dw += num_dw+2;
 	}
 
