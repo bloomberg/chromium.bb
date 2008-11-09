@@ -101,13 +101,13 @@ buffer_create_from_cairo_surface(int fd, cairo_surface_t *surface)
 }
 
 void
-blur_surface(cairo_surface_t *surface)
+blur_surface(cairo_surface_t *surface, int margin)
 {
 	cairo_surface_t *tmp;
 	int32_t width, height, stride, x, y, z, w;
 	uint8_t *src, *dst;
 	uint32_t *s, *d, a, p;
-	int i, j, k, size = 23, half;
+	int i, j, k, size = 17, half;
 	uint8_t kernel[100];
 	double f;
 
@@ -131,6 +131,9 @@ blur_surface(cairo_surface_t *surface)
 		s = (uint32_t *) (src + i * stride);
 		d = (uint32_t *) (dst + i * stride);
 		for (j = 0; j < width; j++) {
+			if (margin < j && j < width - margin &&
+			    margin < i && i < height - margin)
+				continue;
 			x = 0;
 			y = 0;
 			z = 0;
@@ -153,6 +156,9 @@ blur_surface(cairo_surface_t *surface)
 		s = (uint32_t *) (dst + i * stride);
 		d = (uint32_t *) (src + i * stride);
 		for (j = 0; j < width; j++) {
+			if (margin <= j && j < width - margin &&
+			    margin <= i && i < height - margin)
+				continue;
 			x = 0;
 			y = 0;
 			z = 0;

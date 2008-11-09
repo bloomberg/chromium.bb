@@ -19,6 +19,6 @@ struct buffer *
 buffer_create_from_cairo_surface(int fd, cairo_surface_t *surface);
 
 void
-blur_surface(cairo_surface_t *surface);
+blur_surface(cairo_surface_t *surface, int margin);
 
 #endif

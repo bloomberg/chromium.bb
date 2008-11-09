@@ -48,7 +48,7 @@ draw_pointer(int width, int height)
 	cairo_set_source_rgb(cr, 0, 0, 0);
 	cairo_stroke_preserve(cr);
 	cairo_fill(cr);
-	blur_surface(surface);
+	blur_surface(surface, INT_MAX);
 
 	pointer_path(cr, hotspot_x, hotspot_y);
 	cairo_stroke_preserve(cr);

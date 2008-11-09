@@ -89,7 +89,7 @@ draw_window(void *data)
 	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
 	cairo_stroke_preserve(cr);
 	cairo_fill(cr);
-	blur_surface(surface);
+	blur_surface(surface, 16 + radius);
 
 	cairo_translate(cr, -5, -3);
 	cairo_set_line_width (cr, border);
@@ -148,7 +148,6 @@ draw_window(void *data)
 	cairo_stroke_preserve(cr);
 	cairo_set_source_rgb(cr, 1, 1, 1);
 	cairo_fill(cr);
-
 	cairo_destroy(cr);
 
 	if (window->buffer != NULL)
