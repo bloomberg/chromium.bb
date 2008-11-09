@@ -30,8 +30,8 @@ libwayland.so : $(libwayland_objs)
 $(compositors) $(clients) : CFLAGS += $(shell pkg-config --cflags libdrm)
 
 egl_compositor_objs = egl-compositor.o
-egl-compositor.so : CFLAGS += $(EAGLE_CFLAGS)
-egl-compositor.so : LDLIBS += $(EAGLE_LDLIBS) -rdynamic
+egl-compositor.so : CFLAGS += $(EAGLE_CFLAGS) $(shell pkg-config --cflags libpng)
+egl-compositor.so : LDLIBS += $(EAGLE_LDLIBS) $(shell pkg-config --libs libpng) -rdynamic
 
 egl-compositor.so : $(egl_compositor_objs)
 

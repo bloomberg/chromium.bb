@@ -2,12 +2,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdarg.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <linux/fb.h>
+#include <signal.h>
+#include <png.h>
 
 #include "wayland.h"
 
@@ -24,6 +26,7 @@ struct egl_compositor {
 	EGLConfig config;
 	struct wl_display *wl_display;
 	int gem_fd;
+	int width, height;
 };
 
 struct surface_data {
@@ -31,6 +34,142 @@ struct surface_data {
 	struct wl_map map;
 	EGLSurface surface;
 };
+
+static int do_screenshot;
+
+static void
+handle_sigusr1(int s)
+{
+	do_screenshot = 1;
+}
+
+static void
+die(const char *msg, ...)
+{
+	va_list ap;
+
+	va_start (ap, msg);
+	vfprintf(stderr, msg, ap);
+	va_end (ap);
+
+	exit(EXIT_FAILURE);
+}
+
+static void
+stdio_write_func (png_structp png, png_bytep data, png_size_t size)
+{
+	FILE *fp;
+	size_t ret;
+
+	fp = png_get_io_ptr (png);
+	while (size) {
+		ret = fwrite (data, 1, size, fp);
+		size -= ret;
+		data += ret;
+		if (size && ferror (fp))
+			die("write: %m\n");
+	}
+}
+
+static void
+png_simple_output_flush_fn (png_structp png_ptr)
+{
+}
+
+static void
+png_simple_error_callback (png_structp png,
+	                   png_const_charp error_msg)
+{
+	die("png error: %s\n", error_msg);
+}
+
+static void
+png_simple_warning_callback (png_structp png,
+	                     png_const_charp error_msg)
+{
+	fprintf(stderr, "png warning: %s\n", error_msg);
+}
+
+static void
+convert_pixels(png_structp png, png_row_infop row_info, png_bytep data)
+{
+	unsigned int i;
+
+	for (i = 0; i < row_info->rowbytes; i += 4) {
+		uint8_t *b = &data[i];
+		uint32_t pixel;
+
+		memcpy (&pixel, b, sizeof (uint32_t));
+		b[0] = (pixel & 0xff0000) >> 16;
+		b[1] = (pixel & 0x00ff00) >>  8;
+		b[2] = (pixel & 0x0000ff) >>  0;
+		b[3] = 0;
+	}
+}
+
+static void
+screenshot(struct egl_compositor *ec)
+{
+	png_struct *png;
+	png_info *info;
+	png_byte **volatile rows = NULL;
+	png_color_16 white;
+	int depth, i;
+	FILE *fp;
+	uint8_t *data;
+	GLuint stride;
+	static const char filename[]  = "wayland-screenshot.png";
+
+	data = eglReadBuffer(ec->display, ec->surface, GL_FRONT_LEFT, &stride);
+	if (data == NULL)
+		die("eglReadBuffer failed\n");
+	rows = malloc(ec->height * sizeof rows[0]);
+	if (rows == NULL)
+		die("malloc failed\n");
+
+	for (i = 0; i < ec->height; i++)
+		rows[i] = (png_byte *) data + i * stride;
+
+	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
+				      png_simple_error_callback,
+				      png_simple_warning_callback);
+	if (png == NULL)
+		die("png_create_write_struct failed\n");
+
+	info = png_create_info_struct(png);
+	if (info == NULL)
+		die("png_create_info_struct failed\n");
+
+	fp = fopen(filename, "w");
+	if (fp == NULL)
+		die("fopen failed: %m\n");
+
+	png_set_write_fn(png, fp, stdio_write_func, png_simple_output_flush_fn);
+
+	depth = 8;
+	png_set_IHDR(png, info,
+		     ec->width,
+		     ec->height, depth,
+		     PNG_COLOR_TYPE_RGB,
+		     PNG_INTERLACE_NONE,
+		     PNG_COMPRESSION_TYPE_DEFAULT,
+		     PNG_FILTER_TYPE_DEFAULT);
+
+	white.gray = (1 << depth) - 1;
+	white.red = white.blue = white.green = white.gray;
+	png_set_bKGD(png, info, &white);
+	png_write_info (png, info);
+	png_set_write_user_transform_fn(png, convert_pixels);
+
+	png_set_filler(png, 0, PNG_FILLER_AFTER);
+	png_write_image(png, rows);
+	png_write_end(png, info);
+
+	png_destroy_write_struct(&png, &info);
+	fclose(fp);
+	free(rows);
+	free(data);
+}
 
 static void
 repaint(void *data)
@@ -83,6 +222,17 @@ repaint(void *data)
 	glFlush();
 
 	eglSwapBuffers(ec->display, ec->surface);
+
+	if (do_screenshot) {
+		glFinish();
+		/* FIXME: There's a bug somewhere so that glFinish()
+		 * doesn't actually wait for all rendering to finish.
+		 * I *think* it's fixed in upstream drm, but for my
+		 * kernel I need this sleep now... */
+		sleep(1);
+		screenshot(ec);
+		do_screenshot = 0;
+	}
 }
 
 static void
@@ -232,11 +382,13 @@ wl_compositor_create(struct wl_display *display)
 	EGLConfig configs[64];
 	EGLint major, minor, count;
 	struct egl_compositor *ec;
-	const int width = 1280, height = 800;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
 		return NULL;
+
+	ec->width = 1280;
+	ec->height = 800;
 
 	ec->base.interface = &interface;
 	ec->wl_display = display;
@@ -259,7 +411,7 @@ wl_compositor_create(struct wl_display *display)
 
 	ec->config = configs[24];
 	ec->surface = eglCreateSurfaceNative(ec->display, ec->config,
-					     0, 0, width, height);
+					     0, 0, ec->width, ec->height);
 	if (ec->surface == NULL) {
 		fprintf(stderr, "failed to create surface\n");
 		return NULL;
@@ -276,10 +428,10 @@ wl_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, ec->width, ec->height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, width, height, 0, 0, 1000.0);
+	glOrtho(0, ec->width, ec->height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
 	glClearColor(0.0, 0.05, 0.2, 0.0);
 
@@ -288,6 +440,8 @@ wl_compositor_create(struct wl_display *display)
 		fprintf(stderr, "failed to open drm device\n");
 		return NULL;
 	}
+
+	signal(SIGUSR1, handle_sigusr1);
 
 	schedule_repaint(ec);
 
