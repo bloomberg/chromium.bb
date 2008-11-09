@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <i915_drm.h>
-#include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <math.h>
@@ -16,7 +14,9 @@
 
 #include "wayland-client.h"
 #include "wayland-glib.h"
+
 #include "gears.h"
+#include "cairo-util.h"
 
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
@@ -25,103 +25,6 @@ static void die(const char *msg)
 {
 	fprintf(stderr, "%s", msg);
 	exit(EXIT_FAILURE);
-}
-
-struct buffer {
-	int width, height, stride;
-	uint32_t name, handle;
-};
-
-static struct buffer *
-buffer_create(int fd, int width, int height, int stride)
-{
-	struct buffer *buffer;
-	struct drm_i915_gem_create create;
-	struct drm_gem_flink flink;
-
-	buffer = malloc(sizeof *buffer);
-	buffer->width = width;
-	buffer->height = height;
-	buffer->stride = stride;
-
-	memset(&create, 0, sizeof(create));
-	create.size = height * stride;
-
-	if (ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create) != 0) {
-		fprintf(stderr, "gem create failed: %m\n");
-		free(buffer);
-		return NULL;
-	}
-
-	flink.handle = create.handle;
-	if (ioctl(fd, DRM_IOCTL_GEM_FLINK, &flink) != 0) {
-		fprintf(stderr, "gem flink failed: %m\n");
-		free(buffer);
-		return 0;
-	}
-
-	buffer->handle = flink.handle;
-	buffer->name = flink.name;
-
-	return buffer;
-}
-
-static int
-buffer_destroy(struct buffer *buffer, int fd)
-{
-	struct drm_gem_close close;
-
-	close.handle = buffer->handle;
-	if (ioctl(fd, DRM_IOCTL_GEM_CLOSE, &close) < 0) {
-		fprintf(stderr, "gem close failed: %m\n");
-		return -1;
-	}
-	
-	free(buffer);
-
-	return 0;
-}
-
-static int
-buffer_data(struct buffer *buffer, int fd, void *data)
-{
-	struct drm_i915_gem_pwrite pwrite;
-
-	pwrite.handle = buffer->handle;
-	pwrite.offset = 0;
-	pwrite.size = buffer->height * buffer->stride;
-	pwrite.data_ptr = (uint64_t) (uintptr_t) data;
-
-	if (ioctl(fd, DRM_IOCTL_I915_GEM_PWRITE, &pwrite) < 0) {
-		fprintf(stderr, "gem pwrite failed: %m\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-static struct buffer *
-buffer_create_from_cairo_surface(int fd, cairo_surface_t *surface)
-{
-	struct buffer *buffer;
-	int32_t width, height, stride;
-	void *data;
-
-	width = cairo_image_surface_get_width(surface);
-	height = cairo_image_surface_get_height(surface);
-	stride = cairo_image_surface_get_stride(surface);
-	data = cairo_image_surface_get_data(surface);
-
-	buffer = buffer_create(fd, width, height, stride);
-	if (buffer == NULL)
-		return NULL;
-
-	if (buffer_data(buffer, fd, data) < 0) {
-		buffer_destroy(buffer, fd);
-		return NULL;
-	}			
-
-	return buffer;
 }
 
 struct window {
@@ -172,13 +75,23 @@ draw_window(void *data)
 	const static char title[] = "Wayland First Post";
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					     window->width, window->height);
+					     window->width + 32, window->height + 32);
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
 	bright = cairo_pattern_create_rgb(0.6, 0.6, 0.6);
 	dim = cairo_pattern_create_rgb(0.4, 0.4, 0.4);
 
 	cr = cairo_create(surface);
+
+	cairo_translate(cr, 16 + 5, 16 + 3);
+	cairo_set_line_width (cr, border);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
+	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
+	cairo_stroke_preserve(cr);
+	cairo_fill(cr);
+	blur_surface(surface);
+
+	cairo_translate(cr, -5, -3);
 	cairo_set_line_width (cr, border);
 	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
 	cairo_set_source(cr, outline);
@@ -301,7 +214,7 @@ event_handler(struct wl_display *display,
 			window->x = window->drag_x + arg1;
 			window->y = window->drag_y + arg2;
 			wl_surface_map(window->surface, window->x, window->y,
-				       window->width, window->height);
+				       window->buffer->width, window->buffer->height);
 			break;
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + arg1;

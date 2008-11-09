@@ -45,9 +45,9 @@ libwayland.so $(compositors) :
 	gcc -o $@ $^ $(LDLIBS) -shared 
 
 flower_objs = flower.o wayland-glib.o
-pointer_objs = pointer.o wayland-glib.o
+pointer_objs = pointer.o wayland-glib.o cairo-util.o
 background_objs = background.o wayland-glib.o
-window_objs = window.o gears.o wayland-glib.o
+window_objs = window.o gears.o wayland-glib.o cairo-util.o
 
 $(clients) : CFLAGS += $(shell pkg-config --cflags cairo glib-2.0)
 $(clients) : LDLIBS += $(shell pkg-config --libs cairo glib-2.0) -lrt
