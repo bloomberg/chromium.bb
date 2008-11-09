@@ -96,17 +96,17 @@ draw_window(void *data)
 	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
 	cairo_set_source(cr, outline);
 	cairo_stroke(cr);
-	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius);
+	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius - 1);
 	cairo_set_source(cr, bright);
 	cairo_stroke(cr);
-	rounded_rect(cr, 3, 3, window->width - 2, window->height - 2, radius);
+	rounded_rect(cr, 3, 3, window->width - 2, window->height - 2, radius - 1);
 	cairo_set_source(cr, dim);
 	cairo_stroke(cr);
 
-	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius);
-	gradient = cairo_pattern_create_linear (0, 0, 0, window->height);
+	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius - 1);
+	gradient = cairo_pattern_create_linear (0, 0, 0, 100);
 	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.4, 0.4, 0.4);
-	cairo_pattern_add_color_stop_rgb(gradient, 0.2, 0.7, 0.7, 0.7);
+	cairo_pattern_add_color_stop_rgb(gradient, 1, 0.7, 0.7, 0.7);
 	cairo_set_source(cr, gradient);
 	cairo_fill(cr);
 	cairo_pattern_destroy(gradient);
