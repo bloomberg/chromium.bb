@@ -683,6 +683,8 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 		if (set->crtc->fb != set->fb)
 			set->crtc->fb = set->fb;
 		crtc_funcs->mode_set_base(set->crtc, set->x, set->y);
+		set->crtc->x = set->x;
+		set->crtc->y = set->y;
 	}
 
 	kfree(save_encoders);
@@ -802,3 +804,30 @@ int drm_helper_resume_force_mode(struct drm_device *dev)
 	return 0;
 }
 EXPORT_SYMBOL(drm_helper_resume_force_mode);
+
+void drm_helper_set_connector_dpms(struct drm_connector *connector,
+				  int dpms_mode)
+{
+	int i = 0;
+	struct drm_encoder *encoder;
+	struct drm_encoder_helper_funcs *encoder_funcs;
+	struct drm_mode_object *obj;
+
+	for (i = 0; i < DRM_CONNECTOR_MAX_ENCODER; i++) {
+		if (connector->encoder_ids[i] == 0)
+			break;
+		
+		obj = drm_mode_object_find(connector->dev,
+					   connector->encoder_ids[i],
+					   DRM_MODE_OBJECT_ENCODER);
+		if (!obj)
+			continue;
+		
+		encoder = obj_to_encoder(obj);
+		encoder_funcs = encoder->helper_private;
+		if (encoder_funcs->dpms)
+			encoder_funcs->dpms(encoder, dpms_mode);
+			
+	}
+}
+EXPORT_SYMBOL(drm_helper_set_connector_dpms);

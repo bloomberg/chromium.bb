@@ -93,4 +93,6 @@ static inline void drm_connector_helper_add(struct drm_connector *connector, con
 }
 
 extern int drm_helper_resume_force_mode(struct drm_device *dev);
+extern void drm_helper_set_connector_dpms(struct drm_connector *connector,
+					  int dpms_mode);
 #endif

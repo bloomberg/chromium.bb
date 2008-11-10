@@ -661,6 +661,9 @@ struct drm_bo_lock {
 #define _DRM_FLAG_MEMTYPE_CMA       0x00000010	/* Can't map aperture */
 #define _DRM_FLAG_MEMTYPE_CSELECT   0x00000020	/* Select caching */
 
+#define _DRM_BM_ALLOCATOR_CACHED 0x0
+#define _DRM_BM_ALLOCATOR_UNCACHED 0x1
+
 struct drm_buffer_manager {
 	struct drm_bo_lock bm_lock;
 	struct mutex evict_mutex;
@@ -679,6 +682,7 @@ struct drm_buffer_manager {
 	unsigned long cur_pages;
 	atomic_t count;
 	struct page *dummy_read_page;
+	int allocator_type;
 };
 
 struct drm_bo_driver {
@@ -894,6 +898,15 @@ extern int drm_mem_reg_ioremap(struct drm_device *dev, struct drm_bo_mem_reg * m
 			       void **virtual);
 extern void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg * mem,
 				void *virtual);
+
+/*
+ * drm_uncached.c
+ */
+extern int drm_uncached_init(void);
+extern void drm_uncached_fini(void);
+extern struct page *drm_get_uncached_page(void);
+extern void drm_put_uncached_page(struct page *page);
+
 #ifdef CONFIG_DEBUG_MUTEXES
 #define DRM_ASSERT_LOCKED(_mutex)					\
 	BUG_ON(!mutex_is_locked(_mutex) ||				\

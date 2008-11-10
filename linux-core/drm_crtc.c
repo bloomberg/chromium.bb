@@ -1423,7 +1423,7 @@ int drm_mode_setcrtc(struct drm_device *dev,
 	set.mode = mode;
 	set.connectors = connector_set;
 	set.num_connectors = crtc_req->count_connectors;
-	set.fb =fb;
+	set.fb = fb;
 	ret = crtc->funcs->set_config(&set);
 
 out:

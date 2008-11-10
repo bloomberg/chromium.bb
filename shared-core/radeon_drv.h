@@ -219,7 +219,6 @@ typedef struct drm_radeon_ring_buffer {
 	int rptr_update; /* Double Words */
 	int rptr_update_l2qw; /* log2 Quad Words */
 
-	int fetch_size; /* Double Words */
 	int fetch_size_l2ow; /* log2 Oct Words */
 
 	u32 tail;
@@ -274,6 +273,8 @@ struct radeon_mm_info {
 	
 	uint64_t gart_start;
 	uint64_t gart_size;
+
+	uint64_t gart_useable;
 
 	void *pcie_table_backup;
 	
@@ -792,8 +793,10 @@ int radeon_resume(struct drm_device *dev);
 #       define R500_DISPLAY_INT_STATUS          (1 << 0)
 
 #define RADEON_HOST_PATH_CNTL               0x0130
-#       define RADEON_HDP_SOFT_RESET        (1 << 26)
 #       define RADEON_HDP_APER_CNTL         (1 << 23)
+#       define RADEON_HP_LIN_RD_CACHE_DIS   (1 << 24)
+#       define RADEON_HDP_SOFT_RESET        (1 << 26)
+#       define RADEON_HDP_READ_BUFFER_INVALIDATED (1 << 27)
 
 #define RADEON_NB_TOM                       0x15c
 
@@ -1515,15 +1518,16 @@ do {									\
 
 #define RADEON_VERBOSE	0
 
-#define RING_LOCALS	int write, _nr; unsigned int mask; u32 *ring;
+#define RING_LOCALS	int write, _nr, _align_nr; unsigned int mask; u32 *ring;
 
 #define BEGIN_RING( n ) do {						\
 	if ( RADEON_VERBOSE ) {						\
 		DRM_INFO( "BEGIN_RING( %d )\n", (n));			\
 	}								\
-	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {		\
+	_align_nr = (n + 0xf) & ~0xf;					\
+	if (dev_priv->ring.space <= (_align_nr * sizeof(u32))) {	\
 		COMMIT_RING();						\
-		radeon_wait_ring( dev_priv, (n) * sizeof(u32) );	\
+		radeon_wait_ring(dev_priv, _align_nr * sizeof(u32));	\
 	}								\
 	_nr = n; dev_priv->ring.space -= (n) * sizeof(u32);		\
 	ring = dev_priv->ring.start;					\
@@ -1540,19 +1544,14 @@ do {									\
 		DRM_ERROR(						\
 			"ADVANCE_RING(): mismatch: nr: %x write: %x line: %d\n",	\
 			((dev_priv->ring.tail + _nr) & mask),		\
-			write, __LINE__);						\
+			write, __LINE__);				\
 	} else								\
 		dev_priv->ring.tail = write;				\
 } while (0)
 
 #define COMMIT_RING() do {						\
-	/* Flush writes to ring */					\
-	DRM_MEMORYBARRIER();						\
-	GET_RING_HEAD( dev_priv );					\
-	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );		\
-	/* read from PCI bus to ensure correct posting */		\
-	RADEON_READ( RADEON_CP_RB_RPTR );				\
-} while (0)
+		radeon_commit_ring(dev_priv);				\
+	} while(0)
 
 #define OUT_RING( x ) do {						\
 	if ( RADEON_VERBOSE ) {						\
@@ -1730,6 +1729,8 @@ extern void radeon_gem_proc_cleanup(struct drm_minor *minor);
 #define MARK_SAFE		1
 #define MARK_CHECK_OFFSET	2
 #define MARK_CHECK_SCISSOR	3
+
+extern void radeon_commit_ring(drm_radeon_private_t *dev_priv);
 
 extern int r300_check_range(unsigned reg, int count);
 extern int r300_get_reg_flags(unsigned reg);

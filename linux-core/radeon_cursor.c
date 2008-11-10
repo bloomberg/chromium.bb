@@ -204,6 +204,10 @@ int radeon_crtc_cursor_move(struct drm_crtc *crtc,
 
 	radeon_lock_cursor(crtc, true);
 	if (radeon_is_avivo(dev_priv)) {
+		/* avivo cursor are offset into the total surface */
+		x += crtc->x;
+		y += crtc->y;
+		DRM_DEBUG("x %d y %d c->x %d c->y %d\n", x, y, crtc->x, crtc->y);
 		RADEON_WRITE(AVIVO_D1CUR_POSITION + radeon_crtc->crtc_offset,
 			     ((xorigin ? 0: x) << 16) |
 			     (yorigin ? 0 : y));

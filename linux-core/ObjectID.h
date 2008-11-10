@@ -78,6 +78,10 @@
 #define ENCODER_OBJECT_ID_DP_DP501                0x1D
 #define ENCODER_OBJECT_ID_INTERNAL_UNIPHY         0x1E
 #define ENCODER_OBJECT_ID_INTERNAL_KLDSCP_LVTMA   0x1F
+#define ENCODER_OBJECT_ID_INTERNAL_UNIPHY1        0x20
+#define ENCODER_OBJECT_ID_INTERNAL_UNIPHY2        0x21
+
+#define ENCODER_OBJECT_ID_GENERAL_EXTERNAL_DVO    0xFF
 
 /****************************************************/
 /* Connector Object ID Definition                   */
@@ -118,6 +122,8 @@
 #define GRAPH_OBJECT_ENUM_ID2                     0x02
 #define GRAPH_OBJECT_ENUM_ID3                     0x03
 #define GRAPH_OBJECT_ENUM_ID4                     0x04
+#define GRAPH_OBJECT_ENUM_ID5                     0x05
+#define GRAPH_OBJECT_ENUM_ID6                     0x06
 
 /****************************************************/
 /* Graphics Object ID Bit definition                */
@@ -173,7 +179,7 @@
 #define ENCODER_SI178_ENUM_ID1                   0x2117 
 #define ENCODER_MVPU_FPGA_ENUM_ID1               0x2118
 #define ENCODER_INTERNAL_DDI_ENUM_ID1            0x2119
-#define ENCODER_VT1625_ENUM_ID1               0x211A
+#define ENCODER_VT1625_ENUM_ID1                  0x211A
 #define ENCODER_HDMI_SI1932_ENUM_ID1             0x211B
 #define ENCODER_ENCODER_DP_AN9801_ENUM_ID1       0x211C
 #define ENCODER_DP_DP501_ENUM_ID1                0x211D
@@ -323,6 +329,26 @@
                                                  GRAPH_OBJECT_ENUM_ID1 << ENUM_ID_SHIFT |\
                                                  ENCODER_OBJECT_ID_INTERNAL_KLDSCP_LVTMA << OBJECT_ID_SHIFT)  
 
+#define ENCODER_INTERNAL_UNIPHY1_ENUM_ID1         ( GRAPH_OBJECT_TYPE_ENCODER << OBJECT_TYPE_SHIFT |\
+                                                 GRAPH_OBJECT_ENUM_ID1 << ENUM_ID_SHIFT |\
+                                                 ENCODER_OBJECT_ID_INTERNAL_UNIPHY1 << OBJECT_ID_SHIFT)
+
+#define ENCODER_INTERNAL_UNIPHY1_ENUM_ID2         ( GRAPH_OBJECT_TYPE_ENCODER << OBJECT_TYPE_SHIFT |\
+                                                 GRAPH_OBJECT_ENUM_ID2 << ENUM_ID_SHIFT |\
+                                                 ENCODER_OBJECT_ID_INTERNAL_UNIPHY1 << OBJECT_ID_SHIFT)
+
+#define ENCODER_INTERNAL_UNIPHY2_ENUM_ID1         ( GRAPH_OBJECT_TYPE_ENCODER << OBJECT_TYPE_SHIFT |\
+                                                 GRAPH_OBJECT_ENUM_ID1 << ENUM_ID_SHIFT |\
+                                                 ENCODER_OBJECT_ID_INTERNAL_UNIPHY2 << OBJECT_ID_SHIFT)
+
+#define ENCODER_INTERNAL_UNIPHY2_ENUM_ID2         ( GRAPH_OBJECT_TYPE_ENCODER << OBJECT_TYPE_SHIFT |\
+                                                 GRAPH_OBJECT_ENUM_ID2 << ENUM_ID_SHIFT |\
+                                                 ENCODER_OBJECT_ID_INTERNAL_UNIPHY2 << OBJECT_ID_SHIFT)
+
+#define ENCODER_GENERAL_EXTERNAL_DVO_ENUM_ID1    ( GRAPH_OBJECT_TYPE_ENCODER << OBJECT_TYPE_SHIFT |\
+                                                  GRAPH_OBJECT_ENUM_ID1 << ENUM_ID_SHIFT |\
+                                                  ENCODER_OBJECT_ID_GENERAL_EXTERNAL_DVO << OBJECT_ID_SHIFT)
+
 /****************************************************/
 /* Connector Object ID definition - Shared with BIOS */
 /****************************************************/
@@ -451,6 +477,14 @@
 
 #define CONNECTOR_DISPLAYPORT_ENUM_ID2         ( GRAPH_OBJECT_TYPE_CONNECTOR << OBJECT_TYPE_SHIFT |\
                                                  GRAPH_OBJECT_ENUM_ID2 << ENUM_ID_SHIFT |\
+                                                 CONNECTOR_OBJECT_ID_DISPLAYPORT << OBJECT_ID_SHIFT)
+
+#define CONNECTOR_DISPLAYPORT_ENUM_ID3         ( GRAPH_OBJECT_TYPE_CONNECTOR << OBJECT_TYPE_SHIFT |\
+                                                 GRAPH_OBJECT_ENUM_ID3 << ENUM_ID_SHIFT |\
+                                                 CONNECTOR_OBJECT_ID_DISPLAYPORT << OBJECT_ID_SHIFT)
+
+#define CONNECTOR_DISPLAYPORT_ENUM_ID4         ( GRAPH_OBJECT_TYPE_CONNECTOR << OBJECT_TYPE_SHIFT |\
+                                                 GRAPH_OBJECT_ENUM_ID4 << ENUM_ID_SHIFT |\
                                                  CONNECTOR_OBJECT_ID_DISPLAYPORT << OBJECT_ID_SHIFT)
 
 /****************************************************/

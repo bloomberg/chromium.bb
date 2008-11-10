@@ -57,14 +57,15 @@ static void radeon_fence_poll(struct drm_device *dev, uint32_t fence_class,
 {
 	struct drm_radeon_private *dev_priv = (struct drm_radeon_private *) dev->dev_private;
 	uint32_t sequence;
-        if (waiting_types & DRM_FENCE_TYPE_EXE) {
 
-                sequence = READ_BREADCRUMB(dev_priv);
+	sequence = RADEON_READ(RADEON_SCRATCH_REG3);
+	/* this used to be READ_BREADCRUMB(dev_priv); but it caused
+	 * a race somewhere in the fencing irq
+	 */
 
-		DRM_DEBUG("polling %d\n", sequence);
-                drm_fence_handler(dev, 0, sequence,
-                                  DRM_FENCE_TYPE_EXE, 0);
-        }
+	DRM_DEBUG("polling %d\n", sequence);
+	drm_fence_handler(dev, 0, sequence,
+       			  DRM_FENCE_TYPE_EXE, 0);
 }
 
 void radeon_fence_handler(struct drm_device * dev)

@@ -77,6 +77,22 @@ static struct drm_display_mode *radeon_fp_native_mode(struct drm_encoder *encode
 	return mode;
 }
 
+int radeon_connector_set_property(struct drm_connector *connector, struct drm_property *property,
+				  uint64_t val)
+{
+	struct drm_device *dev = connector->dev;
+		
+	if (property == dev->mode_config.dpms_property) {
+		if (val > 3)
+			return -EINVAL;
+		
+		drm_helper_set_connector_dpms(connector, val);
+
+	}
+	return 0;
+}
+
+
 static int radeon_lvds_get_modes(struct drm_connector *connector)
 {
 	struct radeon_connector *radeon_connector = to_radeon_connector(connector);
@@ -146,6 +162,7 @@ struct drm_connector_funcs radeon_lvds_connector_funcs = {
 	.detect = radeon_lvds_detect,
 	.fill_modes = drm_helper_probe_single_connector_modes,
 	.destroy = radeon_connector_destroy,
+	.set_property = radeon_connector_set_property,
 };
 
 static int radeon_vga_get_modes(struct drm_connector *connector)
@@ -197,6 +214,7 @@ struct drm_connector_funcs radeon_vga_connector_funcs = {
 	.detect = radeon_vga_detect,
 	.fill_modes = drm_helper_probe_single_connector_modes,
 	.destroy = radeon_connector_destroy,
+	.set_property = radeon_connector_set_property,
 };
 
 
@@ -289,6 +307,7 @@ struct drm_connector_helper_funcs radeon_dvi_connector_helper_funcs = {
 struct drm_connector_funcs radeon_dvi_connector_funcs = {
 	.detect = radeon_dvi_detect,
 	.fill_modes = drm_helper_probe_single_connector_modes,
+	.set_property = radeon_connector_set_property,
 	.destroy = radeon_connector_destroy,
 };
 
