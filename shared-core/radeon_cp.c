@@ -1313,9 +1313,7 @@ static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
 	dev_priv->ring.rptr_update = /* init->rptr_update */ 4096;
 	dev_priv->ring.rptr_update_l2qw = drm_order( /* init->rptr_update */ 4096 / 8);
 
-	dev_priv->ring.fetch_size = /* init->fetch_size */ 32;
-	dev_priv->ring.fetch_size_l2ow = drm_order( /* init->fetch_size */ 32 / 16);
-
+	dev_priv->ring.fetch_size_l2ow = 2;
 	dev_priv->ring.tail_mask = (dev_priv->ring.size / sizeof(u32)) - 1;
 
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
@@ -2513,8 +2511,7 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 	dev_priv->ring.size_l2qw = drm_order(dev_priv->ring.size / 8);
 	dev_priv->ring.rptr_update = 4096;
 	dev_priv->ring.rptr_update_l2qw = drm_order(4096 / 8);
-	dev_priv->ring.fetch_size = 32;
-	dev_priv->ring.fetch_size_l2ow = drm_order(32 / 16);
+	dev_priv->ring.fetch_size_l2ow = 2; /* do what tcore does */
 	dev_priv->ring.tail_mask = (dev_priv->ring.size / sizeof(u32)) - 1;
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
 
@@ -2840,4 +2837,34 @@ void radeon_gart_flush(struct drm_device *dev)
 
 	}
 	
+}
+
+void radeon_commit_ring(drm_radeon_private_t *dev_priv)
+{
+	int i;
+	u32 *ring;
+	int tail_aligned;
+
+	/* check if the ring is padded out to 16-dword alignment */
+	
+	tail_aligned = dev_priv->ring.tail & 0xf;
+	if (tail_aligned) {
+		int num_p2 = 16 - tail_aligned;
+
+		ring = dev_priv->ring.start;
+		/* pad with some CP_PACKET2 */
+		for (i = 0; i < num_p2; i++)
+			ring[dev_priv->ring.tail + i] = CP_PACKET2();
+	
+		dev_priv->ring.tail += i;
+
+		dev_priv->ring.space -= num_p2 * sizeof(u32);
+	}
+		
+	DRM_MEMORYBARRIER();
+	GET_RING_HEAD( dev_priv );
+
+	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );
+	/* read from PCI bus to ensure correct posting */
+	RADEON_READ( RADEON_CP_RB_RPTR );
 }
