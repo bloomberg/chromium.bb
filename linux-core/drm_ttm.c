@@ -120,14 +120,18 @@ static void drm_ttm_free_page_directory(struct drm_ttm *ttm)
 	ttm->pages = NULL;
 }
 
-static struct page *drm_ttm_alloc_page(void)
+static struct page *drm_ttm_alloc_page(struct drm_ttm *ttm)
 {
 	struct page *page;
 
 	if (drm_alloc_memctl(PAGE_SIZE))
 		return NULL;
 
-	page = alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
+	if (ttm->dev->bm.allocator_type == _DRM_BM_ALLOCATOR_UNCACHED)
+		page = drm_get_uncached_page();
+	else
+		page = alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
+
 	if (!page) {
 		drm_free_memctl(PAGE_SIZE);
 		return NULL;
@@ -148,6 +152,9 @@ static int drm_ttm_set_caching(struct drm_ttm *ttm, int noncached)
 	int i;
 	struct page **cur_page;
 	int do_tlbflush = 0;
+
+	if (ttm->dev->bm.allocator_type == _DRM_BM_ALLOCATOR_UNCACHED)
+		return 0;
 
 	if ((ttm->page_flags & DRM_TTM_PAGE_UNCACHED) == noncached)
 		return 0;
@@ -215,14 +222,18 @@ static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
 	for (i = 0; i < ttm->num_pages; ++i) {
 		cur_page = ttm->pages + i;
 		if (*cur_page) {
+			if (ttm->dev->bm.allocator_type == _DRM_BM_ALLOCATOR_UNCACHED)
+				drm_put_uncached_page(*cur_page);
+			else {
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-			ClearPageReserved(*cur_page);
+				ClearPageReserved(*cur_page);
 #endif
-			if (page_count(*cur_page) != 1)
-				DRM_ERROR("Erroneous page count. Leaking pages.\n");
-			if (page_mapped(*cur_page))
-				DRM_ERROR("Erroneous map count. Leaking page mappings.\n");
-			__free_page(*cur_page);
+				if (page_count(*cur_page) != 1)
+					DRM_ERROR("Erroneous page count. Leaking pages.\n");
+				if (page_mapped(*cur_page))
+					DRM_ERROR("Erroneous map count. Leaking page mappings.\n");
+				__free_page(*cur_page);
+			}
 			drm_free_memctl(PAGE_SIZE);
 			--bm->cur_pages;
 		}
@@ -268,7 +279,7 @@ struct page *drm_ttm_get_page(struct drm_ttm *ttm, int index)
 	struct drm_buffer_manager *bm = &ttm->dev->bm;
 
 	while(NULL == (p = ttm->pages[index])) {
-		p = drm_ttm_alloc_page();
+		p = drm_ttm_alloc_page(ttm);
 		if (!p)
 			return NULL;
 

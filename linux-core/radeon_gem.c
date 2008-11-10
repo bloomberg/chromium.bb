@@ -966,6 +966,9 @@ int radeon_gem_mm_init(struct drm_device *dev)
 	/* init TTM underneath */
 	drm_bo_driver_init(dev);
 
+	/* use the uncached allocator */
+	dev->bm.allocator_type = _DRM_BM_ALLOCATOR_UNCACHED;
+
 	/* size the mappable VRAM memory for now */
 	radeon_vram_setup(dev);
 	

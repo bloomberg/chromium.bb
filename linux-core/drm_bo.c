@@ -1850,6 +1850,7 @@ int drm_bo_driver_finish(struct drm_device *dev)
 		__free_page(bm->dummy_read_page);
 	}
 
+	drm_uncached_fini();
 out:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
@@ -1868,6 +1869,8 @@ int drm_bo_driver_init(struct drm_device *dev)
 	struct drm_bo_driver *driver = dev->driver->bo_driver;
 	struct drm_buffer_manager *bm = &dev->bm;
 	int ret = -EINVAL;
+
+	drm_uncached_init();
 
 	bm->dummy_read_page = NULL;
 	mutex_lock(&dev->struct_mutex);
