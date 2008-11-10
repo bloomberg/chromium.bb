@@ -707,6 +707,7 @@ int radeonfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_heigh
 		   uint32_t surface_width, uint32_t surface_height,
 		   struct radeon_framebuffer **radeon_fb_p)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct fb_info *info;
 	struct radeonfb_par *par;
 	struct drm_framebuffer *fb;
@@ -742,6 +743,8 @@ int radeonfb_create(struct drm_device *dev, uint32_t fb_width, uint32_t fb_heigh
 		mutex_lock(&dev->struct_mutex);
 		goto out_unref;
 	}
+
+	dev_priv->mm.vram_visible -= aligned_size;
 
 	mutex_lock(&dev->struct_mutex);
 	fb = radeon_framebuffer_create(dev, &mode_cmd, fbo);
@@ -1136,6 +1139,7 @@ EXPORT_SYMBOL(radeonfb_probe);
 
 int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 {
+	struct drm_radeon_private *dev_priv = dev->dev_private;
 	struct fb_info *info;
 	struct radeon_framebuffer *radeon_fb = to_radeon_framebuffer(fb);
 
@@ -1147,6 +1151,7 @@ int radeonfb_remove(struct drm_device *dev, struct drm_framebuffer *fb)
 	if (info) {
 		unregister_framebuffer(info);
 		drm_bo_kunmap(&radeon_fb->kmap_obj);
+		dev_priv->mm.vram_visible += radeon_fb->obj->size;
 		mutex_lock(&dev->struct_mutex);
 		drm_gem_object_unreference(radeon_fb->obj);
 		radeon_fb->obj = NULL;

@@ -586,6 +586,9 @@ static int radeon_gart_init(struct drm_device *dev)
 		if (ret)
 			return -EINVAL;
 
+		/* subtract from VRAM value reporting to userspace */
+		dev_priv->mm.vram_visible -= RADEON_PCIGART_TABLE_SIZE;
+
 		dev_priv->mm.pcie_table_backup = kzalloc(RADEON_PCIGART_TABLE_SIZE, GFP_KERNEL);
 		if (!dev_priv->mm.pcie_table_backup)
 			return -EINVAL;
