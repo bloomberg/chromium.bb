@@ -68,7 +68,7 @@ int radeon_gem_info_ioctl(struct drm_device *dev, void *data,
 	args->vram_visible = dev_priv->mm.vram_visible;
 
 	args->gart_start = dev_priv->mm.gart_start;
-	args->gart_size = dev_priv->mm.gart_size;
+	args->gart_size = dev_priv->mm.gart_useable;
 
 	return 0;
 }
@@ -680,6 +680,8 @@ int radeon_alloc_gart_objects(struct drm_device *dev)
 		  dev_priv->mm.ring.bo, dev_priv->mm.ring.bo->offset, dev_priv->mm.ring.kmap.virtual,
 		  dev_priv->mm.ring_read.bo, dev_priv->mm.ring_read.bo->offset, dev_priv->mm.ring_read.kmap.virtual);
 
+	dev_priv->mm.gart_useable -= RADEON_DEFAULT_RING_SIZE + PAGE_SIZE;
+
 	/* init the indirect buffers */
 	radeon_gem_ib_init(dev);
 	radeon_gem_dma_bufs_init(dev);
@@ -989,6 +991,7 @@ int radeon_gem_mm_init(struct drm_device *dev)
 
 	dev_priv->mm.gart_size = (32 * 1024 * 1024);
 	dev_priv->mm.gart_start = 0;
+	dev_priv->mm.gart_useable = dev_priv->mm.gart_size;
 	ret = radeon_gart_init(dev);
 	if (ret)
 		return -EINVAL;
@@ -1293,6 +1296,7 @@ static int radeon_gem_ib_init(struct drm_device *dev)
 			goto free_all;
 	}
 
+	dev_priv->mm.gart_useable -= RADEON_IB_SIZE * RADEON_NUM_IB;
 	dev_priv->ib_alloc_bitmap = 0;
 
 	dev_priv->cs.ib_get = radeon_gem_ib_get;
@@ -1529,6 +1533,7 @@ static int radeon_gem_dma_bufs_init(struct drm_device *dev)
 		DRM_ERROR("Failed to mmap DMA buffers\n");
 		return -ENOMEM;
 	}
+	dev_priv->mm.gart_useable -= size;
 	DRM_DEBUG("\n");
 	radeon_gem_addbufs(dev);
 

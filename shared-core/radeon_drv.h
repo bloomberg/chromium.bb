@@ -274,6 +274,8 @@ struct radeon_mm_info {
 	uint64_t gart_start;
 	uint64_t gart_size;
 
+	uint64_t gart_useable;
+
 	void *pcie_table_backup;
 	
 	struct radeon_mm_obj pcie_table;
