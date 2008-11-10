@@ -2519,6 +2519,9 @@ int radeon_modeset_cp_init(struct drm_device *dev)
 
 	r300_init_reg_flags(dev);
 
+	/* turn off HDP read cache for now */
+	RADEON_WRITE(RADEON_HOST_PATH_CNTL, RADEON_READ(RADEON_HOST_PATH_CNTL) | RADEON_HP_LIN_RD_CACHE_DIS);
+	      
 #if __OS_HAS_AGP
 	if (dev_priv->flags & RADEON_IS_AGP)
 		radeon_modeset_agp_init(dev);

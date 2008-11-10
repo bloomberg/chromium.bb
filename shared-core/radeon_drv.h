@@ -791,8 +791,10 @@ int radeon_resume(struct drm_device *dev);
 #       define R500_DISPLAY_INT_STATUS          (1 << 0)
 
 #define RADEON_HOST_PATH_CNTL               0x0130
-#       define RADEON_HDP_SOFT_RESET        (1 << 26)
 #       define RADEON_HDP_APER_CNTL         (1 << 23)
+#       define RADEON_HP_LIN_RD_CACHE_DIS   (1 << 24)
+#       define RADEON_HDP_SOFT_RESET        (1 << 26)
+#       define RADEON_HDP_READ_BUFFER_INVALIDATED (1 << 27)
 
 #define RADEON_NB_TOM                       0x15c
 
