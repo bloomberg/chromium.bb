@@ -99,11 +99,15 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
                                 &args, sizeof(args));
         bo->base.handle = args.handle;
         if (r) {
+            fprintf(stderr, "Failed to allocate :\n");
+            fprintf(stderr, "   size      : %d bytes\n", size);
+            fprintf(stderr, "   alignment : %d bytes\n", alignment);
+            fprintf(stderr, "   domains   : %d\n", bo->base.domains);
             free(bo);
             return NULL;
         }
     }
-    radeon_bo_ref(bo);
+    radeon_bo_ref((struct radeon_bo*)bo);
     return (struct radeon_bo*)bo;
 }
 
@@ -137,7 +141,6 @@ static int bo_map(struct radeon_bo *bo, int write)
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     struct drm_radeon_gem_mmap args;
     int r;
-    uint8_t *tt;
 
     if (bo_gem->map_count++ != 0) {
         return 0;
@@ -152,8 +155,10 @@ static int bo_map(struct radeon_bo *bo, int write)
                             sizeof(args));
     if (!r) {
         bo->ptr = (void *)(unsigned long)args.addr_ptr;
+    } else {
+        fprintf(stderr, "error mapping %p 0x%08X (error = %d)\n",
+                bo, bo->handle, r);
     }
-    tt = bo->ptr;
     return r;
 }
 

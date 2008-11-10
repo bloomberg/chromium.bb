@@ -58,8 +58,8 @@ struct cs_gem {
     struct radeon_bo            **relocs_bo;
 };
 
-static struct radeon_cs *cs_create(struct radeon_cs_manager *csm,
-                                   uint32_t ndw)
+static struct radeon_cs *cs_gem_create(struct radeon_cs_manager *csm,
+                                       uint32_t ndw)
 {
     struct cs_gem *csg;
 
@@ -104,7 +104,7 @@ static struct radeon_cs *cs_create(struct radeon_cs_manager *csm,
     return (struct radeon_cs*)csg;
 }
 
-static int cs_write_dword(struct radeon_cs *cs, uint32_t dword)
+static int cs_gem_write_dword(struct radeon_cs *cs, uint32_t dword)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     if (cs->cdw >= cs->ndw) {
@@ -123,11 +123,11 @@ static int cs_write_dword(struct radeon_cs *cs, uint32_t dword)
     return 0;
 }
 
-static int cs_write_reloc(struct radeon_cs *cs,
-                          struct radeon_bo *bo,
-                          uint32_t soffset,
-                          uint32_t eoffset,
-                          uint32_t domains)
+static int cs_gem_write_reloc(struct radeon_cs *cs,
+                              struct radeon_bo *bo,
+                              uint32_t soffset,
+                              uint32_t eoffset,
+                              uint32_t domains)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     struct cs_reloc_gem *reloc;
@@ -162,8 +162,8 @@ static int cs_write_reloc(struct radeon_cs *cs,
                 break;
             }
             reloc->cnt++;
-            cs_write_dword(cs, 0xc0001000);
-            cs_write_dword(cs, idx);
+            cs_gem_write_dword(cs, 0xc0001000);
+            cs_gem_write_dword(cs, idx);
             return 0;
         }
     }
@@ -208,31 +208,31 @@ static int cs_write_reloc(struct radeon_cs *cs,
     csg->chunks[1].length_dw += 4;
     radeon_bo_ref(bo);
     cs->relocs_total_size += bo->size;
-    cs_write_dword(cs, 0xc0001000);
-    cs_write_dword(cs, idx);
+    cs_gem_write_dword(cs, 0xc0001000);
+    cs_gem_write_dword(cs, idx);
     return 0;
 }
 
-static int cs_begin(struct radeon_cs *cs,
-                    uint32_t ndw,
-                    const char *file,
-                    const char *func,
-                    int line)
+static int cs_gem_begin(struct radeon_cs *cs,
+                        uint32_t ndw,
+                        const char *file,
+                        const char *func,
+                        int line)
 {
     return 0;
 }
 
-static int cs_end(struct radeon_cs *cs,
-                  const char *file,
-                  const char *func,
-                  int line)
+static int cs_gem_end(struct radeon_cs *cs,
+                      const char *file,
+                      const char *func,
+                      int line)
 
 {
     cs->section = 0;
     return 0;
 }
 
-static int cs_emit(struct radeon_cs *cs)
+static int cs_gem_emit(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     uint64_t chunk_array[2];
@@ -249,13 +249,10 @@ static int cs_emit(struct radeon_cs *cs)
     if (r) {
         return r;
     }
-    for(i = 0; i < cs->crelocs; i++) {
-        radeon_bo_unref(csg->relocs_bo[i]);    
-    }
     return 0;
 }
 
-static int cs_destroy(struct radeon_cs *cs)
+static int cs_gem_destroy(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
 
@@ -266,7 +263,7 @@ static int cs_destroy(struct radeon_cs *cs)
     return 0;
 }
 
-static int cs_erase(struct radeon_cs *cs)
+static int cs_gem_erase(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
 
@@ -279,21 +276,21 @@ static int cs_erase(struct radeon_cs *cs)
     return 0;
 }
 
-static int cs_need_flush(struct radeon_cs *cs)
+static int cs_gem_need_flush(struct radeon_cs *cs)
 {
     return (cs->relocs_total_size > (16*1024*1024));
 }
 
-struct radeon_cs_funcs  radeon_cs_funcs = {
-    cs_create,
-    cs_write_dword,
-    cs_write_reloc,
-    cs_begin,
-    cs_end,
-    cs_emit,
-    cs_destroy,
-    cs_erase,
-    cs_need_flush
+static struct radeon_cs_funcs radeon_cs_gem_funcs = {
+    cs_gem_create,
+    cs_gem_write_dword,
+    cs_gem_write_reloc,
+    cs_gem_begin,
+    cs_gem_end,
+    cs_gem_emit,
+    cs_gem_destroy,
+    cs_gem_erase,
+    cs_gem_need_flush
 };
 
 struct radeon_cs_manager *radeon_cs_manager_gem(int fd)
@@ -305,7 +302,7 @@ struct radeon_cs_manager *radeon_cs_manager_gem(int fd)
     if (csm == NULL) {
         return NULL;
     }
-    csm->funcs = &radeon_cs_funcs;
+    csm->funcs = &radeon_cs_gem_funcs;
     csm->fd = fd;
     return csm;
 }
