@@ -683,6 +683,8 @@ int drm_crtc_helper_set_config(struct drm_mode_set *set)
 		if (set->crtc->fb != set->fb)
 			set->crtc->fb = set->fb;
 		crtc_funcs->mode_set_base(set->crtc, set->x, set->y);
+		set->crtc->x = set->x;
+		set->crtc->y = set->y;
 	}
 
 	kfree(save_encoders);
