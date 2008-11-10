@@ -83,11 +83,10 @@ draw_window(void *data)
 
 	cr = cairo_create(surface);
 
-	cairo_translate(cr, 16 + 5, 16 + 3);
+	cairo_translate(cr, 16 + 7, 16 + 5);
 	cairo_set_line_width (cr, border);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
-	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
-	cairo_stroke_preserve(cr);
+	rounded_rect(cr, 0, 0, window->width, window->height, radius);
 	cairo_fill(cr);
 	blur_surface(surface, 16 + radius);
 
