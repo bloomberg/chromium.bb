@@ -2863,6 +2863,8 @@ void radeon_commit_ring(drm_radeon_private_t *dev_priv)
 
 		dev_priv->ring.space -= num_p2 * sizeof(u32);
 	}
+
+	dev_priv->ring.tail &= dev_priv->ring.tail_mask;
 		
 	DRM_MEMORYBARRIER();
 	GET_RING_HEAD( dev_priv );
