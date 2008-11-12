@@ -109,8 +109,8 @@ struct drm_mode_crtc {
 	uint64_t set_connectors_ptr;
 	uint32_t count_connectors;
 
-	unsigned int crtc_id; /**< Id */
-	unsigned int fb_id; /**< Id of framebuffer */
+	uint32_t crtc_id; /**< Id */
+	uint32_t fb_id; /**< Id of framebuffer */
 
 	uint32_t x, y; /**< Position on the frameuffer */
 
@@ -126,10 +126,10 @@ struct drm_mode_crtc {
 #define DRM_MODE_ENCODER_TVDAC	4
 
 struct drm_mode_get_encoder {
-	unsigned int encoder_type;
-	unsigned int encoder_id;
+	uint32_t encoder_type;
+	uint32_t encoder_id;
 
-	unsigned int crtc_id; /**< Id of crtc */
+	uint32_t crtc_id; /**< Id of crtc */
 
 	uint32_t possible_crtcs;
 	uint32_t possible_clones;
@@ -170,10 +170,10 @@ struct drm_mode_get_connector {
 	uint32_t count_props;
 	uint32_t count_encoders;
 
-	unsigned int encoder_id; /**< Current Encoder */
-	unsigned int connector_id; /**< Id */
-	unsigned int connector_type;
-	unsigned int connector_type_id;
+	uint32_t encoder_id; /**< Current Encoder */
+	uint32_t connector_id; /**< Id */
+	uint32_t connector_type;
+	uint32_t connector_type_id;
 
 	uint32_t connection;
 	uint32_t mm_width, mm_height; /**< HxW in millimeters */
@@ -188,16 +188,16 @@ struct drm_mode_get_connector {
 
 struct drm_mode_property_enum {
 	uint64_t value;
-	unsigned char name[DRM_PROP_NAME_LEN];
+	char name[DRM_PROP_NAME_LEN];
 };
 
 struct drm_mode_get_property {
 	uint64_t values_ptr; /* values and blob lengths */
 	uint64_t enum_blob_ptr; /* enum and blob id ptrs */
 
-	unsigned int prop_id;
+	uint32_t prop_id;
 	uint32_t flags;
-	unsigned char name[DRM_PROP_NAME_LEN];
+	char name[DRM_PROP_NAME_LEN];
 
 	uint32_t count_values;
 	uint32_t count_enum_blobs;
@@ -205,8 +205,8 @@ struct drm_mode_get_property {
 
 struct drm_mode_connector_set_property {
 	uint64_t value;
-	unsigned int prop_id;
-	unsigned int connector_id;
+	uint32_t prop_id;
+	uint32_t connector_id;
 };
 
 struct drm_mode_get_blob {
@@ -216,7 +216,7 @@ struct drm_mode_get_blob {
 };
 
 struct drm_mode_fb_cmd {
-	unsigned int buffer_id;
+	uint32_t buffer_id;
 	uint32_t width, height;
 	uint32_t pitch;
 	uint32_t bpp;
@@ -226,7 +226,7 @@ struct drm_mode_fb_cmd {
 };
 
 struct drm_mode_mode_cmd {
-	unsigned int connector_id;
+	uint32_t connector_id;
 	struct drm_mode_modeinfo mode;
 };
 
@@ -249,7 +249,7 @@ struct drm_mode_mode_cmd {
  */
 struct drm_mode_cursor {
 	uint32_t flags;
-	unsigned int crtc_id;
+	uint32_t crtc_id;
 	int32_t x;
 	int32_t y;
 	uint32_t width;
@@ -266,7 +266,7 @@ struct drm_mode_hotplug {
 };
 
 struct drm_mode_crtc_lut {
-	unsigned int crtc_id;
+	uint32_t crtc_id;
 	uint32_t gamma_size;
 
 	/* pointers to arrays */
