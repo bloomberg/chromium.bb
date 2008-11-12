@@ -200,7 +200,7 @@ int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
 	if ((ret = ioctl(fd, DRM_IOCTL_MODE_ADDFB, &f)))
 		return ret;
 
-	*buf_id = f.buffer_id;
+	*buf_id = f.fb_id;
 	return 0;
 }
 
@@ -216,7 +216,7 @@ drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 	struct drm_mode_fb_cmd info;
 	drmModeFBPtr r;
 
-	info.buffer_id = buf;
+	info.fb_id = buf;
 
 	if (ioctl(fd, DRM_IOCTL_MODE_GETFB, &info))
 		return NULL;
@@ -224,7 +224,7 @@ drmModeFBPtr drmModeGetFB(int fd, uint32_t buf)
 	if (!(r = drmMalloc(sizeof(*r))))
 		return NULL;
 
-	r->buffer_id = info.buffer_id;
+	r->fb_id = info.fb_id;
 	r->width = info.width;
 	r->height = info.height;
 	r->pitch = info.pitch;
@@ -639,7 +639,7 @@ int drmModeReplaceFB(int fd, uint32_t buffer_id,
 	f.bpp = bpp;
 	f.depth = depth;
 	f.handle = bo_handle;
-	f.buffer_id = buffer_id;
+	f.fb_id = buffer_id;
 
 	if ((ret = ioctl(fd, DRM_IOCTL_MODE_REPLACEFB, &f)))
 		return ret;

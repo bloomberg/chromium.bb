@@ -126,8 +126,8 @@ struct drm_mode_crtc {
 #define DRM_MODE_ENCODER_TVDAC	4
 
 struct drm_mode_get_encoder {
-	uint32_t encoder_type;
 	uint32_t encoder_id;
+	uint32_t encoder_type;
 
 	uint32_t crtc_id; /**< Id of crtc */
 
@@ -216,13 +216,13 @@ struct drm_mode_get_blob {
 };
 
 struct drm_mode_fb_cmd {
-	uint32_t buffer_id;
+	uint32_t fb_id;
 	uint32_t width, height;
 	uint32_t pitch;
 	uint32_t bpp;
-	uint32_t handle;
 	uint32_t depth;
-
+	/* driver specific handle */
+	uint32_t handle;
 };
 
 struct drm_mode_mode_cmd {
