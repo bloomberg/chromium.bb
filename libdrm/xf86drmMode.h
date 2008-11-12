@@ -77,8 +77,8 @@ typedef struct _drmModePropertyBlob {
 } drmModePropertyBlobRes, *drmModePropertyBlobPtr;
 
 typedef struct _drmModeProperty {
-	unsigned int prop_id;
-	unsigned int flags;
+	uint32_t prop_id;
+	uint32_t flags;
 	char name[DRM_PROP_NAME_LEN];
 	int count_values;
 	uint64_t *values; // store the blob lengths
@@ -89,8 +89,8 @@ typedef struct _drmModeProperty {
 } drmModePropertyRes, *drmModePropertyPtr;
 
 typedef struct _drmModeCrtc {
-	unsigned int crtc_id;
-	unsigned int buffer_id; /**< FB id to connect to 0 = disconnect */
+	uint32_t crtc_id;
+	uint32_t buffer_id; /**< FB id to connect to 0 = disconnect */
 
 	uint32_t x, y; /**< Position on the framebuffer */
 	uint32_t width, height;
@@ -102,9 +102,9 @@ typedef struct _drmModeCrtc {
 } drmModeCrtc, *drmModeCrtcPtr;
 
 typedef struct _drmModeEncoder {
-	unsigned int encoder_id;
-	unsigned int encoder_type;
-	unsigned int crtc_id;
+	uint32_t encoder_id;
+	uint32_t encoder_type;
+	uint32_t crtc_id;
 	uint32_t possible_crtcs;
 	uint32_t possible_clones;
 } drmModeEncoder, *drmModeEncoderPtr;
@@ -125,10 +125,10 @@ typedef enum {
 } drmModeSubPixel;
 
 typedef struct _drmModeConnector {
-	unsigned int connector_id;
-	unsigned int encoder_id; /**< Encoder currently connected to */
-	unsigned int connector_type;
-	unsigned int connector_type_id;
+	uint32_t connector_id;
+	uint32_t encoder_id; /**< Encoder currently connected to */
+	uint32_t connector_type;
+	uint32_t connector_type_id;
 	drmModeConnection connection;
 	uint32_t mmWidth, mmHeight; /**< HxW in millimeters */
 	drmModeSubPixel subpixel;
