@@ -192,58 +192,6 @@ err:
 }
 EXPORT_SYMBOL(drm_vblank_init);
 
-int drm_wait_hotplug(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
-{
-	union drm_wait_hotplug *hotplugwait = data;
-	struct timeval now;
-	int ret = 0;
-	unsigned int flags;
-
-	if ((!dev->irq) || (!dev->irq_enabled))
-		return -EINVAL;
-
-	flags = hotplugwait->request.type;
-
-	if (flags & _DRM_HOTPLUG_SIGNAL) {
-		unsigned long irqflags;
-		struct list_head *hotplug_sigs = dev->hotplug_sigs;
-		struct drm_hotplug_sig *hotplug_sig;
-
-		hotplug_sig = drm_calloc(1, sizeof(struct drm_hotplug_sig),
-				     DRM_MEM_DRIVER);
-		if (!hotplug_sig)
-			return -ENOMEM;
-
-		atomic_inc(&dev->hotplug_signal_pending);
-
-		hotplug_sig->info.si_signo = hotplugwait->request.signal;
-		hotplug_sig->task = current;
-		hotplug_sig->counter = 
-			hotplugwait->reply.counter = 
-					dev->mode_config.hotplug_counter;
-
-		spin_lock_irqsave(&dev->hotplug_lock, irqflags);
-
-		list_add_tail(&hotplug_sig->head, hotplug_sigs);
-
-		spin_unlock_irqrestore(&dev->hotplug_lock, irqflags);
-	} else {
-		int cur_hotplug = dev->mode_config.hotplug_counter;
-
-		DRM_WAIT_ON(ret, dev->hotplug_queue, 3 * DRM_HZ,
-				dev->mode_config.hotplug_counter > cur_hotplug);
-
-		do_gettimeofday(&now);
-
-		hotplugwait->reply.tval_sec = now.tv_sec;
-		hotplugwait->reply.tval_usec = now.tv_usec;
-		hotplugwait->reply.counter = dev->mode_config.hotplug_counter;
-	}
-
-	return ret;
-}
-
 static void drm_hotplug_cleanup(struct drm_device *dev)
 {
 	if (dev->hotplug_sigs)

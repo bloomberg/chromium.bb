@@ -844,16 +844,6 @@ void drm_mode_config_cleanup(struct drm_device *dev)
 }
 EXPORT_SYMBOL(drm_mode_config_cleanup);
 
-int drm_mode_hotplug_ioctl(struct drm_device *dev,
-			   void *data, struct drm_file *file_priv)
-{
-	struct drm_mode_hotplug *arg = data;
-
-	arg->counter = dev->mode_config.hotplug_counter;
-
-	return 0;
-}
-
 /**
  * drm_crtc_convert_to_umode - convert a drm_display_mode into a modeinfo
  * @out: drm_mode_modeinfo struct to return to the user

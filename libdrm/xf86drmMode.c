@@ -183,15 +183,6 @@ err_allocs:
 	return r;
 }
 
-uint32_t drmModeGetHotplug(int fd)
-{
-	struct drm_mode_hotplug arg;
-	arg.counter = 0;
-
-	ioctl(fd, DRM_IOCTL_MODE_HOTPLUG, &arg);
-	return arg.counter;
-}
-
 int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
                  uint8_t bpp, uint32_t pitch, uint32_t bo_handle,
 		 uint32_t *buf_id)

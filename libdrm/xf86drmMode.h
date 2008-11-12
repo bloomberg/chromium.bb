@@ -158,11 +158,6 @@ extern void drmModeFreeEncoder( drmModeEncoderPtr ptr );
  */
 extern drmModeResPtr drmModeGetResources(int fd);
 
-/**
- * Retrives the hotplug counter
- */
-extern uint32_t drmModeGetHotplug(int fd);
-
 /*
  * FrameBuffer manipulation.
  */

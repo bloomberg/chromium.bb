@@ -258,13 +258,6 @@ struct drm_mode_cursor {
 	uint32_t handle;
 };
 
-/*
- * oh so ugly hotplug
- */
-struct drm_mode_hotplug {
-	uint32_t counter;
-};
-
 struct drm_mode_crtc_lut {
 	uint32_t crtc_id;
 	uint32_t gamma_size;
