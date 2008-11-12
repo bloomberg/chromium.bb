@@ -43,9 +43,11 @@
 #pragma pack(1)
 struct cs_reloc_gem {
     uint32_t    handle;
-    uint32_t    rdomain;
-    uint32_t    wdomain;
-    uint32_t    cnt;
+    uint32_t    start_offset;
+    uint32_t    end_offset;
+    uint32_t    read_domain;
+    uint32_t    write_domain;
+    uint32_t    flags;
 };
 #pragma pack()
 
@@ -125,50 +127,74 @@ static int cs_gem_write_dword(struct radeon_cs *cs, uint32_t dword)
 
 static int cs_gem_write_reloc(struct radeon_cs *cs,
                               struct radeon_bo *bo,
-                              uint32_t soffset,
-                              uint32_t eoffset,
-                              uint32_t domains)
+                              uint32_t start_offset,
+                              uint32_t end_offset,
+                              uint32_t read_domain,
+                              uint32_t write_domain,
+                              uint32_t flags)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     struct cs_reloc_gem *reloc;
     uint32_t idx;
     unsigned i;
 
-    /* check reloc window */
-    if (eoffset > bo->size) {
+    /* check domains */
+    if ((read_domain && write_domain) || (!read_domain && !write_domain)) {
+        /* in one CS a bo can only be in read or write domain but not
+         * in read & write domain at the same sime
+         */
         return -EINVAL;
     }
-    if (soffset > eoffset) {
+    if (read_domain == RADEON_GEM_DOMAIN_CPU) {
+        return -EINVAL;
+    }
+    if (write_domain == RADEON_GEM_DOMAIN_CPU) {
+        return -EINVAL;
+    }
+    /* check reloc window */
+    if (end_offset > bo->size) {
+        return -EINVAL;
+    }
+    if (start_offset > end_offset) {
         return -EINVAL;
     }
     /* check if bo is already referenced */
     for(i = 0; i < cs->crelocs; i++) {
-        idx = i * 4;
+        idx = i * 6;
         reloc = (struct cs_reloc_gem*)&csg->relocs[idx];
-
         if (reloc->handle == bo->handle) {
-            /* update start offset and size */
-            switch (bo->domains) {
-            case RADEON_GEM_DOMAIN_VRAM:
-                reloc->rdomain = 0;
-                reloc->wdomain = RADEON_GEM_DOMAIN_VRAM;
-                break;
-            case RADEON_GEM_DOMAIN_GTT:
-                reloc->rdomain = RADEON_GEM_DOMAIN_GTT;
-                reloc->wdomain = 0;
-                break;
-            default:
-                exit(0);
-                break;
+            /* Check domains must be in read or write. As we check already
+             * checked that in argument one of the read or write domain was
+             * set we only need to check that if previous reloc as the read
+             * domain set then the read_domain should also be set for this
+             * new relocation.
+             */
+            if (reloc->read_domain && !read_domain) {
+                return -EINVAL;
             }
-            reloc->cnt++;
+            if (reloc->write_domain && !write_domain) {
+                return -EINVAL;
+            }
+            reloc->read_domain |= read_domain;
+            reloc->write_domain |= write_domain;
+            /* update start and end offset */
+            if (start_offset < reloc->start_offset) {
+                reloc->start_offset = start_offset;
+            }
+            if (end_offset > reloc->end_offset) {
+                reloc->end_offset = end_offset;
+            }
+            /* update flags */
+            reloc->flags |= (flags & reloc->flags);
+            /* write relocation packet */
             cs_gem_write_dword(cs, 0xc0001000);
             cs_gem_write_dword(cs, idx);
             return 0;
         }
     }
-    /* add bo */
+    /* new relocation */
     if (csg->base.crelocs >= csg->nrelocs) {
+        /* allocate more memory (TODO: should use a slab allocatore maybe) */
         uint32_t *tmp, size;
         size = ((csg->nrelocs + 1) * sizeof(struct radeon_bo*));
         tmp = (uint32_t*)realloc(csg->relocs_bo, size);
@@ -176,7 +202,7 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
             return -ENOMEM;
         }
         csg->relocs_bo = (struct radeon_bo**)tmp;
-        size = ((csg->nrelocs + 1) * 4 * 4);
+        size = ((csg->nrelocs + 1) * 6 * 4);
         tmp = (uint32_t*)realloc(csg->relocs, size);
         if (tmp == NULL) {
             return -ENOMEM;
@@ -186,26 +212,15 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
         csg->chunks[1].chunk_data = (uint64_t)(intptr_t)csg->relocs;
     }
     csg->relocs_bo[csg->base.crelocs] = bo;
-    idx = (csg->base.crelocs++) * 4;
+    idx = (csg->base.crelocs++) * 6;
     reloc = (struct cs_reloc_gem*)&csg->relocs[idx];
     reloc->handle = bo->handle;
-    reloc->rdomain = bo->domains;
-    reloc->wdomain = bo->domains;
-    switch (bo->domains) {
-    case RADEON_GEM_DOMAIN_VRAM:
-        reloc->rdomain = 0;
-        reloc->wdomain = RADEON_GEM_DOMAIN_VRAM;
-        break;
-    case RADEON_GEM_DOMAIN_GTT:
-        reloc->rdomain = RADEON_GEM_DOMAIN_GTT;
-        reloc->wdomain = 0;
-        break;
-    default:
-        exit(0);
-        break;
-    }
-    reloc->cnt = 1;
-    csg->chunks[1].length_dw += 4;
+    reloc->start_offset = start_offset;
+    reloc->end_offset = end_offset;
+    reloc->read_domain = read_domain;
+    reloc->write_domain = write_domain;
+    reloc->flags = flags;
+    csg->chunks[1].length_dw += 6;
     radeon_bo_ref(bo);
     cs->relocs_total_size += bo->size;
     cs_gem_write_dword(cs, 0xc0001000);

@@ -1213,8 +1213,8 @@ static int radeon_gem_find_reloc(struct drm_radeon_cs_parser *parser,
 	}
 
 	*handle = reloc_chunk->kdata[offset];
-	*read_domains = reloc_chunk->kdata[offset + 1];
-	*write_domain = reloc_chunk->kdata[offset + 2];
+	*read_domains = reloc_chunk->kdata[offset + 3];
+	*write_domain = reloc_chunk->kdata[offset + 4];
 	return 0;
 }
 
