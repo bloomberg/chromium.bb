@@ -67,9 +67,9 @@ sis_attach(device_t nbdev)
 {
 	struct drm_device *dev = device_get_softc(nbdev);
 
-	bzero(dev, sizeof(struct drm_device));
+	dev->driver = malloc(sizeof(struct drm_driver_info), DRM_MEM_DRIVER,
+	    M_WAITOK | M_ZERO);
 
-	dev->driver = malloc(sizeof(struct drm_driver_info), M_DRM, M_NOWAIT | M_ZERO);
 	sis_configure(dev);
 
 	return drm_attach(nbdev, sis_pciidlist);
@@ -83,7 +83,7 @@ sis_detach(device_t nbdev)
 
 	ret = drm_detach(nbdev);
 
-	free(dev->driver, M_DRM);
+	free(dev->driver, DRM_MEM_DRIVER);
 
 	return ret;
 }

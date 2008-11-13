@@ -357,9 +357,24 @@ static inline int kobject_uevent_env(struct kobject *kobj,
 
 
 #if (defined(CONFIG_X86) && defined(CONFIG_X86_32) && defined(CONFIG_HIGHMEM))
+/*
+ * pgd_offset_k() is a macro that uses the symbol init_mm,
+ * check that it is available.
+ */
+#  if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)) || \
+	defined(CONFIG_UNUSED_SYMBOLS))
 #define DRM_KMAP_ATOMIC_PROT_PFN
 extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 				  pgprot_t protection);
+#  else
+#warning "init_mm is not available on this kernel!"
+static inline void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
+					 pgprot_t protection)
+{
+	/* stub */
+	return NULL;
+}
+#  endif /* no init_mm */
 #endif
 
 #if !defined(flush_agp_mappings)
@@ -407,6 +422,19 @@ extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 #else
 #define OS_HAS_GEM 0
 #endif
+#endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
+#define set_page_locked SetPageLocked
+#elif (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+/*
+ * The kernel provides __set_page_locked, which uses the non-atomic
+ * __set_bit function. Let's use the atomic set_bit just in case.
+ */
+static inline void set_page_locked(struct page *page)
+{
+	set_bit(PG_locked, &page->flags);
+}
 #endif
 
 #endif

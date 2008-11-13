@@ -36,10 +36,10 @@
 
 #include <stdint.h>
 
-typedef struct _dri_bufmgr dri_bufmgr;
-typedef struct _dri_bo dri_bo;
+typedef struct _drm_intel_bufmgr drm_intel_bufmgr;
+typedef struct _drm_intel_bo drm_intel_bo;
 
-struct _dri_bo {
+struct _drm_intel_bo {
     /**
      * Size in bytes of the buffer object.
      *
@@ -47,6 +47,13 @@ struct _dri_bo {
      * allocation, such as being aligned to page size.
      */
     unsigned long size;
+    /**
+     * Alignment requirement for object
+     *
+     * Used for GTT mapping & pinning the object.
+     */
+    unsigned long align;
+
     /**
      * Card virtual address (offset from the beginning of the aperture) for the
      * object.  Only valid while validated.
@@ -58,74 +65,123 @@ struct _dri_bo {
     void *virtual;
 
     /** Buffer manager context associated with this buffer object */
-    dri_bufmgr *bufmgr;
+    drm_intel_bufmgr *bufmgr;
+
     /**
      * MM-specific handle for accessing object
      */
     int handle;
 };
 
-dri_bo *dri_bo_alloc(dri_bufmgr *bufmgr, const char *name, unsigned long size,
-		     unsigned int alignment);
-void dri_bo_reference(dri_bo *bo);
-void dri_bo_unreference(dri_bo *bo);
-int dri_bo_map(dri_bo *buf, int write_enable);
-int dri_bo_unmap(dri_bo *buf);
+drm_intel_bo *drm_intel_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
+				 unsigned long size, unsigned int alignment);
+void drm_intel_bo_reference(drm_intel_bo *bo);
+void drm_intel_bo_unreference(drm_intel_bo *bo);
+int drm_intel_bo_map(drm_intel_bo *bo, int write_enable);
+int drm_intel_bo_unmap(drm_intel_bo *bo);
 
-int dri_bo_subdata(dri_bo *bo, unsigned long offset,
-		   unsigned long size, const void *data);
-int dri_bo_get_subdata(dri_bo *bo, unsigned long offset,
-		       unsigned long size, void *data);
-void dri_bo_wait_rendering(dri_bo *bo);
+int drm_intel_bo_subdata(drm_intel_bo *bo, unsigned long offset,
+		     unsigned long size, const void *data);
+int drm_intel_bo_get_subdata(drm_intel_bo *bo, unsigned long offset,
+			 unsigned long size, void *data);
+void drm_intel_bo_wait_rendering(drm_intel_bo *bo);
 
-void dri_bufmgr_set_debug(dri_bufmgr *bufmgr, int enable_debug);
-void dri_bufmgr_destroy(dri_bufmgr *bufmgr);
-int dri_bo_exec(dri_bo *bo, int used,
-		drm_clip_rect_t *cliprects, int num_cliprects,
-		int DR4);
-int dri_bufmgr_check_aperture_space(dri_bo **bo_array, int count);
+void drm_intel_bufmgr_set_debug(drm_intel_bufmgr *bufmgr, int enable_debug);
+void drm_intel_bufmgr_destroy(drm_intel_bufmgr *bufmgr);
+int drm_intel_bo_exec(drm_intel_bo *bo, int used,
+		      drm_clip_rect_t *cliprects, int num_cliprects,
+		      int DR4);
+int drm_intel_bufmgr_check_aperture_space(drm_intel_bo **bo_array, int count);
 
-int dri_bo_emit_reloc(dri_bo *reloc_buf,
-		      uint32_t read_domains, uint32_t write_domain,
-		      uint32_t delta, uint32_t offset, dri_bo *target_buf);
-int dri_bo_pin(dri_bo *buf, uint32_t alignment);
-int dri_bo_unpin(dri_bo *buf);
-int dri_bo_set_tiling(dri_bo *buf, uint32_t *tiling_mode);
-int dri_bo_flink(dri_bo *buf, uint32_t *name);
+int drm_intel_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
+			    drm_intel_bo *target_bo, uint32_t target_offset,
+			    uint32_t read_domains, uint32_t write_domain);
+int drm_intel_bo_pin(drm_intel_bo *bo, uint32_t alignment);
+int drm_intel_bo_unpin(drm_intel_bo *bo);
+int drm_intel_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
+			    uint32_t stride);
+int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
+			uint32_t *swizzle_mode);
+int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t *name);
 
-/* intel_bufmgr_gem.c */
-dri_bufmgr *intel_bufmgr_gem_init(int fd, int batch_size);
-dri_bo *intel_bo_gem_create_from_name(dri_bufmgr *bufmgr, const char *name,
-				      unsigned int handle);
-void intel_bufmgr_gem_enable_reuse(dri_bufmgr *bufmgr);
+/* drm_intel_bufmgr_gem.c */
+drm_intel_bufmgr *drm_intel_bufmgr_gem_init(int fd, int batch_size);
+drm_intel_bo *drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
+						const char *name,
+						unsigned int handle);
+void drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr);
+int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo);
 
-/* intel_bufmgr_fake.c */
-dri_bufmgr *intel_bufmgr_fake_init(int fd,
-				   unsigned long low_offset, void *low_virtual,
-				   unsigned long size,
-				   volatile unsigned int *last_dispatch);
-void intel_bufmgr_fake_set_last_dispatch(dri_bufmgr *bufmgr,
-					 volatile unsigned int *last_dispatch);
-void intel_bufmgr_fake_set_exec_callback(dri_bufmgr *bufmgr,
-					 int (*exec)(dri_bo *bo,
-						     unsigned int used,
-						     void *priv),
-					 void *priv);
-void intel_bufmgr_fake_set_fence_callback(dri_bufmgr *bufmgr,
-					  unsigned int (*emit)(void *priv),
-					  void (*wait)(unsigned int fence,
-						       void *priv),
-					  void *priv);
-dri_bo *intel_bo_fake_alloc_static(dri_bufmgr *bufmgr, const char *name,
-				   unsigned long offset, unsigned long size,
-				   void *virtual);
-void intel_bo_fake_disable_backing_store(dri_bo *bo,
-					 void (*invalidate_cb)(dri_bo *bo,
-							       void *ptr),
-					 void *ptr);
+/* drm_intel_bufmgr_fake.c */
+drm_intel_bufmgr *drm_intel_bufmgr_fake_init(int fd,
+					     unsigned long low_offset,
+					     void *low_virtual,
+					     unsigned long size,
+					     volatile unsigned int *last_dispatch);
+void drm_intel_bufmgr_fake_set_last_dispatch(drm_intel_bufmgr *bufmgr,
+					     volatile unsigned int *last_dispatch);
+void drm_intel_bufmgr_fake_set_exec_callback(drm_intel_bufmgr *bufmgr,
+					     int (*exec)(drm_intel_bo *bo,
+							 unsigned int used,
+							 void *priv),
+					     void *priv);
+void drm_intel_bufmgr_fake_set_fence_callback(drm_intel_bufmgr *bufmgr,
+					      unsigned int (*emit)(void *priv),
+					      void (*wait)(unsigned int fence,
+							   void *priv),
+					      void *priv);
+drm_intel_bo *drm_intel_bo_fake_alloc_static(drm_intel_bufmgr *bufmgr,
+					     const char *name,
+					     unsigned long offset, unsigned long size,
+					     void *virtual);
+void drm_intel_bo_fake_disable_backing_store(drm_intel_bo *bo,
+					     void (*invalidate_cb)(drm_intel_bo *bo,
+								   void *ptr),
+					     void *ptr);
 
-void intel_bufmgr_fake_contended_lock_take(dri_bufmgr *bufmgr);
-void intel_bufmgr_fake_evict_all(dri_bufmgr *bufmgr);
+void drm_intel_bufmgr_fake_contended_lock_take(drm_intel_bufmgr *bufmgr);
+void drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr);
+
+/** @{ Compatibility defines to keep old code building despite the symbol rename
+ * from dri_* to drm_intel_*
+ */
+#define dri_bo drm_intel_bo
+#define dri_bufmgr drm_intel_bufmgr
+#define dri_bo_alloc drm_intel_bo_alloc
+#define dri_bo_reference drm_intel_bo_reference
+#define dri_bo_unreference drm_intel_bo_unreference
+#define dri_bo_map drm_intel_bo_map
+#define dri_bo_unmap drm_intel_bo_unmap
+#define dri_bo_subdata drm_intel_bo_subdata
+#define dri_bo_get_subdata drm_intel_bo_get_subdata
+#define dri_bo_wait_rendering drm_intel_bo_wait_rendering
+#define dri_bufmgr_set_debug drm_intel_bufmgr_set_debug
+#define dri_bufmgr_destroy drm_intel_bufmgr_destroy
+#define dri_bo_exec drm_intel_bo_exec
+#define dri_bufmgr_check_aperture_space drm_intel_bufmgr_check_aperture_space
+#define dri_bo_emit_reloc(reloc_bo, read, write, target_offset,		\
+			  reloc_offset, target_bo)			\
+	drm_intel_bo_emit_reloc(reloc_bo, reloc_offset,			\
+			    target_bo, target_offset,			\
+			    read, write);
+#define dri_bo_pin drm_intel_bo_pin
+#define dri_bo_unpin drm_intel_bo_unpin
+#define dri_bo_get_tiling drm_intel_bo_get_tiling
+#define dri_bo_set_tiling(bo, mode) drm_intel_bo_set_tiling(bo, mode, 0)
+#define dri_bo_flink drm_intel_bo_flink
+#define intel_bufmgr_gem_init drm_intel_bufmgr_gem_init
+#define intel_bo_gem_create_from_name drm_intel_bo_gem_create_from_name
+#define intel_bufmgr_gem_enable_reuse drm_intel_bufmgr_gem_enable_reuse
+#define intel_bufmgr_fake_init drm_intel_bufmgr_fake_init
+#define intel_bufmgr_fake_set_last_dispatch drm_intel_bufmgr_fake_set_last_dispatch
+#define intel_bufmgr_fake_set_exec_callback drm_intel_bufmgr_fake_set_exec_callback
+#define intel_bufmgr_fake_set_fence_callback drm_intel_bufmgr_fake_set_fence_callback
+#define intel_bo_fake_alloc_static drm_intel_bo_fake_alloc_static
+#define intel_bo_fake_disable_backing_store drm_intel_bo_fake_disable_backing_store
+#define intel_bufmgr_fake_contended_lock_take drm_intel_bufmgr_fake_contended_lock_take
+#define intel_bufmgr_fake_evict_all drm_intel_bufmgr_fake_evict_all
+
+/** @{ */
 
 #endif /* INTEL_BUFMGR_H */
 
