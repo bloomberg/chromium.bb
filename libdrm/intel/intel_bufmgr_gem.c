@@ -39,6 +39,7 @@
 #endif
 
 #include <xf86drm.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +48,8 @@
 #include <pthread.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "errno.h"
 #include "intel_bufmgr.h"
@@ -562,6 +565,84 @@ drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 		     __FILE__, __LINE__, bo_gem->gem_handle, strerror (errno));
 	}
 	bo_gem->swrast = 1;
+    }
+
+    pthread_mutex_unlock(&bufmgr_gem->lock);
+
+    return 0;
+}
+
+int
+drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
+{
+    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
+    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+    struct drm_i915_gem_set_domain set_domain;
+    int ret;
+
+    pthread_mutex_lock(&bufmgr_gem->lock);
+
+    /* Allow recursive mapping. Mesa may recursively map buffers with
+     * nested display loops.
+     */
+    if (!bo_gem->mapped) {
+
+	assert(bo->virtual == NULL);
+
+	DBG("bo_map_gtt: %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
+
+	if (bo_gem->virtual == NULL) {
+		struct drm_i915_gem_mmap_gtt mmap_arg;
+
+		memset(&mmap_arg, 0, sizeof(mmap_arg));
+		mmap_arg.handle = bo_gem->gem_handle;
+
+		/* Get the fake offset back... */
+		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP_GTT,
+			    &mmap_arg);
+		if (ret != 0) {
+			fprintf(stderr,
+				"%s:%d: Error preparing buffer map %d (%s): %s .\n",
+				__FILE__, __LINE__,
+				bo_gem->gem_handle, bo_gem->name,
+				strerror(errno));
+			pthread_mutex_unlock(&bufmgr_gem->lock);
+			return ret;
+		}
+
+		/* and mmap it */
+		bo_gem->virtual = mmap(0, bo->size, PROT_READ | PROT_WRITE,
+				       MAP_SHARED, bufmgr_gem->fd,
+				       mmap_arg.offset);
+		if (bo_gem->virtual == MAP_FAILED) {
+			fprintf(stderr,
+				"%s:%d: Error mapping buffer %d (%s): %s .\n",
+				__FILE__, __LINE__,
+				bo_gem->gem_handle, bo_gem->name,
+				strerror(errno));
+			pthread_mutex_unlock(&bufmgr_gem->lock);
+			return errno;
+		}
+	}
+
+	bo->virtual = bo_gem->virtual;
+	bo_gem->mapped = 1;
+	DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
+	    bo_gem->virtual);
+    }
+
+    /* Now move it to the GTT domain so that the CPU caches are flushed */
+    set_domain.handle = bo_gem->gem_handle;
+    set_domain.read_domains = I915_GEM_DOMAIN_GTT;
+    set_domain.write_domain = I915_GEM_DOMAIN_GTT;
+    do {
+	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN,
+			&set_domain);
+    } while (ret == -1 && errno == EINTR);
+
+    if (ret != 0) {
+	    fprintf (stderr, "%s:%d: Error setting swrast %d: %s\n",
+		     __FILE__, __LINE__, bo_gem->gem_handle, strerror (errno));
     }
 
     pthread_mutex_unlock(&bufmgr_gem->lock);
