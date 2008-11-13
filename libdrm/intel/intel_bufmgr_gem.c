@@ -729,8 +729,22 @@ drm_intel_gem_bo_get_subdata (drm_intel_bo *bo, unsigned long offset,
     return 0;
 }
 
+/** Waits for all GPU rendering to the object to have completed. */
 static void
 drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
+{
+    return drm_intel_gem_bo_start_gtt_access(bo, 0);
+}
+
+/**
+ * Sets the object to the GTT read and possibly write domain, used by the X
+ * 2D driver in the absence of kernel support to do drm_intel_gem_bo_map_gtt().
+ *
+ * In combination with drm_intel_gem_bo_pin() and manual fence management, we
+ * can do tiled pixmaps this way.
+ */
+void
+drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable)
 {
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
@@ -739,7 +753,7 @@ drm_intel_gem_bo_wait_rendering(drm_intel_bo *bo)
 
     set_domain.handle = bo_gem->gem_handle;
     set_domain.read_domains = I915_GEM_DOMAIN_GTT;
-    set_domain.write_domain = 0;
+    set_domain.write_domain = write_enable ? I915_GEM_DOMAIN_GTT : 0;
     do {
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_DOMAIN, &set_domain);
     } while (ret == -1 && errno == EINTR);
