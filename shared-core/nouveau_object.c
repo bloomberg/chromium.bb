@@ -141,13 +141,8 @@ nouveau_ramht_insert(struct drm_device *dev, struct nouveau_gpuobj_ref *ref)
 			  ref->channel, co, INSTANCE_RD(ramht, co/4));
 
 		co += 8;
-		if (co >= dev_priv->ramht_size) {
-			DRM_INFO("no space left after collision\n");
+		if (co >= dev_priv->ramht_size)
 			co = 0;
-			/* exit as it seems to cause crash with nouveau_demo and
-			 * 0xdead0001 object */
-			break;
-		}
 	} while (co != ho);
 
 	DRM_ERROR("RAMHT space exhausted. ch=%d\n", ref->channel);

@@ -41,7 +41,8 @@ nv04_instmem_configure_fixed_tables(struct drm_device *dev)
 	 */
 	dev_priv->ramht_offset = 0x10000;
 	dev_priv->ramht_bits   = 9;
-	dev_priv->ramht_size   = (1 << dev_priv->ramht_bits);
+	dev_priv->ramht_size   = (1 << dev_priv->ramht_bits); /* nr entries */
+	dev_priv->ramht_size  *= 8; /* 2 32-bit values per entry in RAMHT */
 	DRM_DEBUG("RAMHT offset=0x%x, size=%d\n", dev_priv->ramht_offset,
 						  dev_priv->ramht_size);
 
