@@ -251,7 +251,7 @@ static int cs_gem_emit(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     uint64_t chunk_array[2];
-    int r;
+    int r, i;
 
     chunk_array[0] = (uint64_t)(intptr_t)&csg->chunks[0];
     chunk_array[1] = (uint64_t)(intptr_t)&csg->chunks[1];
@@ -261,10 +261,11 @@ static int cs_gem_emit(struct radeon_cs *cs)
 
     r = drmCommandWriteRead(cs->csm->fd, DRM_RADEON_CS2,
                             &csg->cs, sizeof(struct drm_radeon_cs2));
-    if (r) {
-        return r;
+    for (i = 0; i < csg->base.crelocs; i++) {
+        radeon_bo_unref(csg->relocs_bo[i]);
+        csg->relocs_bo[i] = NULL;
     }
-    return 0;
+    return r;
 }
 
 static int cs_gem_destroy(struct radeon_cs *cs)
@@ -281,7 +282,16 @@ static int cs_gem_destroy(struct radeon_cs *cs)
 static int cs_gem_erase(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
+    int i;
 
+    if (csg->relocs_bo) {
+        for (i = 0; i < csg->base.crelocs; i++) {
+            if (csg->relocs_bo[i]) {
+                radeon_bo_unref(csg->relocs_bo[i]);
+                csg->relocs_bo[i] = NULL;
+            }
+        }
+    }
     cs->relocs_total_size = 0;
     cs->cdw = 0;
     cs->section = 0;
