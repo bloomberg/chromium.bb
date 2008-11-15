@@ -251,7 +251,8 @@ static int cs_gem_emit(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     uint64_t chunk_array[2];
-    int r, i;
+    unsigned i;
+    int r;
 
     chunk_array[0] = (uint64_t)(intptr_t)&csg->chunks[0];
     chunk_array[1] = (uint64_t)(intptr_t)&csg->chunks[1];
@@ -282,7 +283,7 @@ static int cs_gem_destroy(struct radeon_cs *cs)
 static int cs_gem_erase(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
-    int i;
+    unsigned i;
 
     if (csg->relocs_bo) {
         for (i = 0; i < csg->base.crelocs; i++) {
@@ -318,7 +319,7 @@ static struct radeon_cs_funcs radeon_cs_gem_funcs = {
     cs_gem_need_flush
 };
 
-struct radeon_cs_manager *radeon_cs_manager_gem(int fd)
+struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd)
 {
     struct radeon_cs_manager *csm;
 
@@ -332,7 +333,7 @@ struct radeon_cs_manager *radeon_cs_manager_gem(int fd)
     return csm;
 }
 
-void radeon_cs_manager_gem_shutdown(struct radeon_cs_manager *csm)
+void radeon_cs_manager_gem_dtor(struct radeon_cs_manager *csm)
 {
     free(csm);
 }

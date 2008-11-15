@@ -63,7 +63,7 @@ struct radeon_bo_funcs {
                                  uint32_t domains,
                                  uint32_t flags);
     void (*bo_ref)(struct radeon_bo *bo);
-    void (*bo_unref)(struct radeon_bo *bo);
+    struct radeon_bo *(*bo_unref)(struct radeon_bo *bo);
     int (*bo_map)(struct radeon_bo *bo, int write);
     int (*bo_unmap)(struct radeon_bo *bo);
 };
@@ -118,10 +118,10 @@ static inline void _radeon_bo_ref(struct radeon_bo *bo,
     bo->bom->funcs->bo_ref(bo);
 }
 
-static inline void _radeon_bo_unref(struct radeon_bo *bo,
-                                    const char *file,
-                                    const char *func,
-                                    int line)
+static inline struct radeon_bo *_radeon_bo_unref(struct radeon_bo *bo,
+                                                 const char *file,
+                                                 const char *func,
+                                                 int line)
 {
     bo->cref--;
 #ifdef RADEON_BO_TRACK
@@ -131,7 +131,7 @@ static inline void _radeon_bo_unref(struct radeon_bo *bo,
         bo->track = NULL;
     }
 #endif
-    bo->bom->funcs->bo_unref(bo);
+    return bo->bom->funcs->bo_unref(bo);
 }
 
 static inline int _radeon_bo_map(struct radeon_bo *bo,

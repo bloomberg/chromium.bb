@@ -115,16 +115,16 @@ static void bo_ref(struct radeon_bo *bo)
 {
 }
 
-static void bo_unref(struct radeon_bo *bo)
+static struct radeon_bo *bo_unref(struct radeon_bo *bo)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     struct drm_gem_close args;
 
     if (bo == NULL) {
-        return;
+        return NULL;
     }
     if (bo->cref) {
-        return;
+        return bo;
     }
     if (bo_gem->map_count) {
         munmap(bo->ptr, bo->size);
@@ -134,6 +134,7 @@ static void bo_unref(struct radeon_bo *bo)
     args.handle = bo->handle;
     ioctl(bo->bom->fd, DRM_IOCTL_GEM_CLOSE, &args);
     free(bo_gem);
+    return NULL;
 }
 
 static int bo_map(struct radeon_bo *bo, int write)
@@ -182,7 +183,7 @@ static struct radeon_bo_funcs bo_gem_funcs = {
     bo_unmap
 };
 
-struct radeon_bo_manager *radeon_bo_manager_gem(int fd)
+struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)
 {
     struct bo_manager_gem *bomg;
 
@@ -195,7 +196,7 @@ struct radeon_bo_manager *radeon_bo_manager_gem(int fd)
     return (struct radeon_bo_manager*)bomg;
 }
 
-void radeon_bo_manager_gem_shutdown(struct radeon_bo_manager *bom)
+void radeon_bo_manager_gem_dtor(struct radeon_bo_manager *bom)
 {
     struct bo_manager_gem *bomg = (struct bo_manager_gem*)bom;
 

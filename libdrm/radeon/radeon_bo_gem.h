@@ -34,7 +34,7 @@
 
 #include "radeon_bo.h"
 
-struct radeon_bo_manager *radeon_bo_manager_gem(int fd);
-void radeon_bo_manager_gem_shutdown(struct radeon_bo_manager *bom);
+struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd);
+void radeon_bo_manager_gem_dtor(struct radeon_bo_manager *bom);
 
 #endif

@@ -35,7 +35,7 @@
 
 #include "radeon_cs.h"
 
-struct radeon_cs_manager *radeon_cs_manager_gem(int fd);
-void radeon_cs_manager_gem_shutdown(struct radeon_cs_manager *csm);
+struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd);
+void radeon_cs_manager_gem_dtor(struct radeon_cs_manager *csm);
 
 #endif
