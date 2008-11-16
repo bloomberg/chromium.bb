@@ -81,7 +81,6 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
         open_arg.name = handle;
         r = ioctl(bom->fd, DRM_IOCTL_GEM_OPEN, &open_arg);
         if (r != 0) {
-            fprintf(stderr, "GEM open failed: %d (%s)\n",r,strerror(r));
             free(bo);
             return NULL;
         }
@@ -95,6 +94,7 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
         args.alignment = alignment;
         args.initial_domain = bo->base.domains;
         args.no_backing_store = 0;
+        args.handle = 0;
         r = drmCommandWriteRead(bom->fd, DRM_RADEON_GEM_CREATE,
                                 &args, sizeof(args));
         bo->base.handle = args.handle;
@@ -133,6 +133,7 @@ static struct radeon_bo *bo_unref(struct radeon_bo *bo)
     /* close object */
     args.handle = bo->handle;
     ioctl(bo->bom->fd, DRM_IOCTL_GEM_CLOSE, &args);
+    memset(bo_gem, 0, sizeof(struct radeon_bo_gem));
     free(bo_gem);
     return NULL;
 }

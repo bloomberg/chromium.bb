@@ -94,6 +94,7 @@ void radeon_tracker_remove_track(struct radeon_tracker *tracker,
     if (track->next) {
         track->next->prev = track->prev;
     }
+    track->next = track->prev = NULL;
     event = track->events;
     while (event) {
         tmp = event;
