@@ -175,11 +175,12 @@ drm_gem_handle_create(struct drm_file *file_priv,
 	 * Get the user-visible handle using idr.
 	 */
 again:
-	/* do the allocation under our spinlock */
-	spin_lock(&file_priv->table_lock);
 	/* ensure there is space available to allocate a handle */
 	if (idr_pre_get(&file_priv->object_idr, GFP_KERNEL) == 0)
 		return -ENOMEM;
+
+	/* do the allocation under our spinlock */
+	spin_lock(&file_priv->table_lock);
 	ret = idr_get_new_above(&file_priv->object_idr, obj, 1, handlep);
 	spin_unlock(&file_priv->table_lock);
 	if (ret == -EAGAIN)
@@ -257,9 +258,10 @@ drm_gem_flink_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 
 again:
-	spin_lock(&dev->object_name_lock);
 	if (idr_pre_get(&dev->object_name_idr, GFP_KERNEL) == 0)
 		return -ENOMEM;
+
+	spin_lock(&dev->object_name_lock);
 	if (obj->name) {
 		args->name = (uint64_t) obj->name;
 		spin_unlock(&dev->object_name_lock);
