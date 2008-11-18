@@ -219,8 +219,6 @@ repaint(void *data)
 	}
 	wl_surface_iterator_destroy(iterator);
 
-	glFlush();
-
 	eglSwapBuffers(ec->display, ec->surface);
 
 	if (do_screenshot) {
