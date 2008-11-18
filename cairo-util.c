@@ -100,6 +100,8 @@ buffer_create_from_cairo_surface(int fd, cairo_surface_t *surface)
 	return buffer;
 }
 
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
 void
 blur_surface(cairo_surface_t *surface, int margin)
 {
@@ -107,10 +109,11 @@ blur_surface(cairo_surface_t *surface, int margin)
 	int32_t width, height, stride, x, y, z, w;
 	uint8_t *src, *dst;
 	uint32_t *s, *d, a, p;
-	int i, j, k, size = 17, half;
-	uint8_t kernel[100];
+	int i, j, k, size, half;
+	uint8_t kernel[10];
 	double f;
 
+	size = ARRAY_LENGTH(kernel);
 	width = cairo_image_surface_get_width(surface);
 	height = cairo_image_surface_get_height(surface);
 	stride = cairo_image_surface_get_stride(surface);
@@ -131,9 +134,11 @@ blur_surface(cairo_surface_t *surface, int margin)
 		s = (uint32_t *) (src + i * stride);
 		d = (uint32_t *) (dst + i * stride);
 		for (j = 0; j < width; j++) {
-			if (margin < j && j < width - margin &&
-			    margin < i && i < height - margin)
+			if (margin < j && j < width - margin) {
+				d[j] = s[j];
 				continue;
+			}
+
 			x = 0;
 			y = 0;
 			z = 0;
@@ -156,9 +161,11 @@ blur_surface(cairo_surface_t *surface, int margin)
 		s = (uint32_t *) (dst + i * stride);
 		d = (uint32_t *) (src + i * stride);
 		for (j = 0; j < width; j++) {
-			if (margin <= j && j < width - margin &&
-			    margin <= i && i < height - margin)
+			if (margin <= i && i < height - margin) {
+				d[j] = s[j];
 				continue;
+			}
+
 			x = 0;
 			y = 0;
 			z = 0;

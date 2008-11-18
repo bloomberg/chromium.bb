@@ -88,7 +88,7 @@ draw_window(void *data)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
 	rounded_rect(cr, 0, 0, window->width, window->height, radius);
 	cairo_fill(cr);
-	blur_surface(surface, 16 + radius);
+	blur_surface(surface, 24 + radius);
 
 	cairo_translate(cr, -5, -3);
 	cairo_set_line_width (cr, border);
@@ -148,7 +148,6 @@ draw_window(void *data)
 	cairo_set_source_rgb(cr, 1, 1, 1);
 	cairo_fill(cr);
 	cairo_destroy(cr);
-
 	if (window->buffer != NULL)
 		buffer_destroy(window->buffer, window->fd);
 	buffer = buffer_create_from_cairo_surface(window->fd, surface);
@@ -381,7 +380,7 @@ int main(int argc, char *argv[])
 
 	wl_display_set_event_handler(display, event_handler, window);
 
-	g_timeout_add(20, draw, window);
+	g_timeout_add(50, draw, window);
 
 	g_main_loop_run(loop);
 
