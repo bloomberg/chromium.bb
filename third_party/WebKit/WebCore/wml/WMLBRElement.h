@@ -4,6 +4,7 @@
  *
  * Copyright (C) 1999 Lars Knoll (knoll@kde.org)
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
+ *           (C) 2000 Simon Hausmann <hausmann@kde.org>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,25 +23,22 @@
  *
  */
 
-#ifndef WMLPElement_h
-#define WMLPElement_h
+#ifndef WMLBRElement_h
+#define WMLBRElement_h
 
 #if ENABLE(WML)
 #include "WMLElement.h"
 
 namespace WebCore {
 
-class WMLPElement : public WMLElement {
+class WMLBRElement : public WMLElement {
 public:
-    WMLPElement(const QualifiedName& tagName, Document*);
+    WMLBRElement(const QualifiedName& tagName, Document*);
 
     virtual bool mapToEntry(const QualifiedName&, MappedAttributeEntry&) const;
     virtual void parseMappedAttribute(MappedAttribute*);
 
-    virtual void insertedIntoDocument();
-
-private:
-    String m_mode;
+    virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
 };
 
 }
