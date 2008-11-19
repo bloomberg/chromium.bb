@@ -809,8 +809,6 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
 
     pthread_mutex_lock(&bufmgr_gem->lock);
 
-    pthread_mutex_lock(&bufmgr_gem->lock);
-
     /* Create a new relocation list if needed */
     if (bo_gem->relocs == NULL)
 	drm_intel_setup_reloc_list(bo);
