@@ -251,7 +251,10 @@ static int cs_gem_emit(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
     uint64_t chunk_array[2];
+    unsigned i;
     int r;
+
+    csg->chunks[0].length_dw = cs->cdw;
 
     chunk_array[0] = (uint64_t)(intptr_t)&csg->chunks[0];
     chunk_array[1] = (uint64_t)(intptr_t)&csg->chunks[1];
@@ -261,10 +264,11 @@ static int cs_gem_emit(struct radeon_cs *cs)
 
     r = drmCommandWriteRead(cs->csm->fd, DRM_RADEON_CS2,
                             &csg->cs, sizeof(struct drm_radeon_cs2));
-    if (r) {
-        return r;
+    for (i = 0; i < csg->base.crelocs; i++) {
+        radeon_bo_unref(csg->relocs_bo[i]);
+        csg->relocs_bo[i] = NULL;
     }
-    return 0;
+    return r;
 }
 
 static int cs_gem_destroy(struct radeon_cs *cs)
@@ -281,7 +285,16 @@ static int cs_gem_destroy(struct radeon_cs *cs)
 static int cs_gem_erase(struct radeon_cs *cs)
 {
     struct cs_gem *csg = (struct cs_gem*)cs;
+    unsigned i;
 
+    if (csg->relocs_bo) {
+        for (i = 0; i < csg->base.crelocs; i++) {
+            if (csg->relocs_bo[i]) {
+                radeon_bo_unref(csg->relocs_bo[i]);
+                csg->relocs_bo[i] = NULL;
+            }
+        }
+    }
     cs->relocs_total_size = 0;
     cs->cdw = 0;
     cs->section = 0;
@@ -293,7 +306,103 @@ static int cs_gem_erase(struct radeon_cs *cs)
 
 static int cs_gem_need_flush(struct radeon_cs *cs)
 {
-    return (cs->relocs_total_size > (16*1024*1024));
+    return (cs->relocs_total_size > (32*1024*1024));
+}
+
+#define PACKET_TYPE0 0
+#define PACKET_TYPE1 1
+#define PACKET_TYPE2 2
+#define PACKET_TYPE3 3
+  
+#define PACKET3_NOP 0x10
+#define PACKET3_SET_SCISSORS 0x1E
+#define PACKET3_3D_DRAW_VBUF 0x28
+#define PACKET3_3D_DRAW_IMMD 0x29
+#define PACKET3_3D_DRAW_INDX 0x2A
+#define PACKET3_3D_LOAD_VBPNTR 0x2F
+#define PACKET3_INDX_BUFFER 0x33
+#define PACKET3_3D_DRAW_VBUF_2 0x34
+#define PACKET3_3D_DRAW_IMMD_2 0x35
+#define PACKET3_3D_DRAW_INDX_2 0x36
+ 
+#define CP_PACKET_GET_TYPE(h) (((h) >> 30) & 3)
+#define CP_PACKET_GET_COUNT(h) (((h) >> 16) & 0x3FFF)
+#define CP_PACKET0_GET_REG(h) (((h) & 0x1FFF) << 2)
+#define CP_PACKET0_GET_ONE_REG_WR(h) (((h) >> 15) & 1)
+#define CP_PACKET3_GET_OPCODE(h) (((h) >> 8) & 0xFF)
+
+static void cs_gem_print(struct radeon_cs *cs, FILE *file)
+{
+    unsigned opcode;
+    unsigned reg;
+    unsigned cnt;
+    int i, j;
+
+    for (i = 0; i < cs->cdw;) {
+        cnt = CP_PACKET_GET_COUNT(cs->packets[i]);
+        switch (CP_PACKET_GET_TYPE(cs->packets[i])) {
+        case PACKET_TYPE0:
+            fprintf(file, "Pkt0 at %d (%d dwords):\n", i, cnt + 1);
+            reg = CP_PACKET0_GET_REG(cs->packets[i]);
+            if (CP_PACKET0_GET_ONE_REG_WR(cs->packets[i++])) {
+                for (j = 0; j <= cnt; j++) {
+                    fprintf(file, "    0x%08X -> 0x%04X\n",
+                            cs->packets[i++], reg);
+                }
+            } else {
+                for (j = 0; j <= cnt; j++) {
+                    fprintf(file, "    0x%08X -> 0x%04X\n",
+                            cs->packets[i++], reg);
+                    reg += 4;
+                }
+            }
+            break;
+        case PACKET_TYPE3:
+            fprintf(file, "Pkt3 at %d :\n", i);
+            opcode = CP_PACKET3_GET_OPCODE(cs->packets[i++]);
+            switch (opcode) {
+            case PACKET3_NOP:
+                fprintf(file, "    PACKET3_NOP:\n");
+                break;
+            case PACKET3_3D_DRAW_VBUF:
+                fprintf(file, "    PACKET3_3D_DRAW_VBUF:\n");
+                break;
+            case PACKET3_3D_DRAW_IMMD:
+                fprintf(file, "    PACKET3_3D_DRAW_IMMD:\n");
+                break;
+            case PACKET3_3D_DRAW_INDX:
+                fprintf(file, "    PACKET3_3D_DRAW_INDX:\n");
+                break;
+            case PACKET3_3D_LOAD_VBPNTR:
+                fprintf(file, "    PACKET3_3D_LOAD_VBPNTR:\n");
+                break;
+            case PACKET3_INDX_BUFFER:
+                fprintf(file, "    PACKET3_INDX_BUFFER:\n");
+                break;
+            case PACKET3_3D_DRAW_VBUF_2:
+                fprintf(file, "    PACKET3_3D_DRAW_VBUF_2:\n");
+                break;
+            case PACKET3_3D_DRAW_IMMD_2:
+                fprintf(file, "    PACKET3_3D_DRAW_IMMD_2:\n");
+                break;
+            case PACKET3_3D_DRAW_INDX_2:
+                fprintf(file, "    PACKET3_3D_DRAW_INDX_2:\n");
+                break;
+            default:
+                fprintf(file, "Unknow opcode 0x%02X at %d\n", opcode, i);
+                return;
+            }
+            for (j = 0; j <= cnt; j++) {
+                fprintf(file, "        0x%08X\n", cs->packets[i++]);
+            }
+            break;
+        case PACKET_TYPE1:
+        case PACKET_TYPE2:
+        default:
+            fprintf(file, "Unknow packet 0x%08X at %d\n", cs->packets[i], i);
+            return;
+        }
+    }
 }
 
 static struct radeon_cs_funcs radeon_cs_gem_funcs = {
@@ -305,10 +414,11 @@ static struct radeon_cs_funcs radeon_cs_gem_funcs = {
     cs_gem_emit,
     cs_gem_destroy,
     cs_gem_erase,
-    cs_gem_need_flush
+    cs_gem_need_flush,
+    cs_gem_print
 };
 
-struct radeon_cs_manager *radeon_cs_manager_gem(int fd)
+struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd)
 {
     struct radeon_cs_manager *csm;
 
@@ -322,7 +432,7 @@ struct radeon_cs_manager *radeon_cs_manager_gem(int fd)
     return csm;
 }
 
-void radeon_cs_manager_gem_shutdown(struct radeon_cs_manager *csm)
+void radeon_cs_manager_gem_dtor(struct radeon_cs_manager *csm)
 {
     free(csm);
 }

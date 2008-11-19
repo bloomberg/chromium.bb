@@ -785,8 +785,8 @@ out:
 	}
 	drm_bo_add_to_lru(bo);
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNLOCKED);
-out_unlock:
 	mutex_unlock(&dev->struct_mutex);
+out_unlock:
 
 	return ret;
 }

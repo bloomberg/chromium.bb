@@ -1,5 +1,4 @@
 /* 
- * Copyright © 2008 Nicolai Haehnle
  * Copyright © 2008 Jérôme Glisse
  * All Rights Reserved.
  * 
@@ -26,16 +25,40 @@
  */
 /*
  * Authors:
- *      Aapo Tahkola <aet@rasterburn.org>
- *      Nicolai Haehnle <prefect_@gmx.net>
  *      Jérôme Glisse <glisse@freedesktop.org>
  */
-#ifndef RADEON_CS_GEM_H
-#define RADEON_CS_GEM_H
+#ifndef RADEON_TRACK_H
+#define RADEON_TRACK_H
 
-#include "radeon_cs.h"
+struct radeon_track_event {
+    struct radeon_track_event   *next;
+    char                        *file;
+    char                        *func;
+    char                        *op;
+    unsigned                    line;
+};
 
-struct radeon_cs_manager *radeon_cs_manager_gem_ctor(int fd);
-void radeon_cs_manager_gem_dtor(struct radeon_cs_manager *csm);
+struct radeon_track {
+    struct radeon_track         *next;
+    struct radeon_track         *prev;
+    unsigned                    key;
+    struct radeon_track_event   *events;
+};
+
+struct radeon_tracker {
+    struct radeon_track         tracks; 
+};
+
+void radeon_track_add_event(struct radeon_track *track,
+                            const char *file,
+                            const char *func,
+                            const char *op,
+                            unsigned line);
+struct radeon_track *radeon_tracker_add_track(struct radeon_tracker *tracker,
+                                              unsigned key);
+void radeon_tracker_remove_track(struct radeon_tracker *tracker,
+                                 struct radeon_track *track);
+void radeon_tracker_print(struct radeon_tracker *tracker,
+                          FILE *file);
 
 #endif

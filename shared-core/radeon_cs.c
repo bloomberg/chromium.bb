@@ -41,21 +41,25 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 	long size;
 	int r, i;
 
+	mutex_lock(&dev_priv->cs.cs_mutex);
 	/* set command stream id to 0 which is fake id */
 	cs_id = 0;
 	cs->cs_id = cs_id;
 
 	if (dev_priv == NULL) {
 		DRM_ERROR("called with no initialization\n");
+		mutex_unlock(&dev_priv->cs.cs_mutex);
 		return -EINVAL;
 	}
 	if (!cs->num_chunks) {
+		mutex_unlock(&dev_priv->cs.cs_mutex);
 		return 0;
 	}
 
 
 	chunk_array = drm_calloc(cs->num_chunks, sizeof(uint64_t), DRM_MEM_DRIVER);
 	if (!chunk_array) {
+		mutex_unlock(&dev_priv->cs.cs_mutex);
 		return -ENOMEM;
 	}
 
@@ -161,6 +165,7 @@ int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv)
 		
 out:
 	dev_priv->cs.ib_free(&parser);
+	mutex_unlock(&dev_priv->cs.cs_mutex);
 
 	for (i = 0; i < parser.num_chunks; i++) {
 		if (parser.chunks[i].kdata)
@@ -646,6 +651,7 @@ int radeon_cs_init(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
+	mutex_init(&dev_priv->cs.cs_mutex);
 	if (dev_priv->chip_family < CHIP_RV280) {
 		dev_priv->cs.id_emit = r100_cs_id_emit;
 		dev_priv->cs.id_last_get = r100_cs_id_last_get;

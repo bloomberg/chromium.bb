@@ -87,6 +87,7 @@ struct radeon_cs_funcs {
     int (*cs_destroy)(struct radeon_cs *cs);
     int (*cs_erase)(struct radeon_cs *cs);
     int (*cs_need_flush)(struct radeon_cs *cs);
+    void (*cs_print)(struct radeon_cs *cs, FILE *file);
 };
 
 struct radeon_cs_manager {
@@ -157,6 +158,11 @@ static inline int radeon_cs_erase(struct radeon_cs *cs)
 static inline int radeon_cs_need_flush(struct radeon_cs *cs)
 {
     return cs->csm->funcs->cs_need_flush(cs);
+}
+
+static inline void radeon_cs_print(struct radeon_cs *cs, FILE *file)
+{
+    cs->csm->funcs->cs_print(cs, file);
 }
 
 #endif

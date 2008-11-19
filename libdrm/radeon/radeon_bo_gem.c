@@ -81,7 +81,6 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
         open_arg.name = handle;
         r = ioctl(bom->fd, DRM_IOCTL_GEM_OPEN, &open_arg);
         if (r != 0) {
-            fprintf(stderr, "GEM open failed: %d (%s)\n",r,strerror(r));
             free(bo);
             return NULL;
         }
@@ -95,6 +94,7 @@ static struct radeon_bo *bo_open(struct radeon_bo_manager *bom,
         args.alignment = alignment;
         args.initial_domain = bo->base.domains;
         args.no_backing_store = 0;
+        args.handle = 0;
         r = drmCommandWriteRead(bom->fd, DRM_RADEON_GEM_CREATE,
                                 &args, sizeof(args));
         bo->base.handle = args.handle;
@@ -115,16 +115,16 @@ static void bo_ref(struct radeon_bo *bo)
 {
 }
 
-static void bo_unref(struct radeon_bo *bo)
+static struct radeon_bo *bo_unref(struct radeon_bo *bo)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
     struct drm_gem_close args;
 
     if (bo == NULL) {
-        return;
+        return NULL;
     }
     if (bo->cref) {
-        return;
+        return bo;
     }
     if (bo_gem->map_count) {
         munmap(bo->ptr, bo->size);
@@ -133,7 +133,9 @@ static void bo_unref(struct radeon_bo *bo)
     /* close object */
     args.handle = bo->handle;
     ioctl(bo->bom->fd, DRM_IOCTL_GEM_CLOSE, &args);
+    memset(bo_gem, 0, sizeof(struct radeon_bo_gem));
     free(bo_gem);
+    return NULL;
 }
 
 static int bo_map(struct radeon_bo *bo, int write)
@@ -182,7 +184,7 @@ static struct radeon_bo_funcs bo_gem_funcs = {
     bo_unmap
 };
 
-struct radeon_bo_manager *radeon_bo_manager_gem(int fd)
+struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)
 {
     struct bo_manager_gem *bomg;
 
@@ -195,7 +197,7 @@ struct radeon_bo_manager *radeon_bo_manager_gem(int fd)
     return (struct radeon_bo_manager*)bomg;
 }
 
-void radeon_bo_manager_gem_shutdown(struct radeon_bo_manager *bom)
+void radeon_bo_manager_gem_dtor(struct radeon_bo_manager *bom)
 {
     struct bo_manager_gem *bomg = (struct bo_manager_gem*)bom;
 
