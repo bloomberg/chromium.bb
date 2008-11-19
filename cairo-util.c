@@ -110,7 +110,7 @@ blur_surface(cairo_surface_t *surface, int margin)
 	uint8_t *src, *dst;
 	uint32_t *s, *d, a, p;
 	int i, j, k, size, half;
-	uint8_t kernel[10];
+	uint8_t kernel[17];
 	double f;
 
 	size = ARRAY_LENGTH(kernel);

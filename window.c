@@ -68,29 +68,31 @@ draw_window(void *data)
 	struct window *window = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int border = 2, radius = 5;
+	int border = 2, radius = 5, shadow = 16;
 	cairo_text_extents_t extents;
 	cairo_pattern_t *gradient, *outline, *bright, *dim;
 	struct buffer *buffer;
 	const static char title[] = "Wayland First Post";
+	int width, height;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					     window->width + 32, window->height + 32);
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
-	bright = cairo_pattern_create_rgb(0.6, 0.6, 0.6);
+	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
 	dim = cairo_pattern_create_rgb(0.4, 0.4, 0.4);
 
 	cr = cairo_create(surface);
 
-	cairo_translate(cr, 16 + 7, 16 + 5);
+	cairo_translate(cr, shadow + 7, shadow + 5);
 	cairo_set_line_width (cr, border);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.5);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
 	rounded_rect(cr, 0, 0, window->width, window->height, radius);
 	cairo_fill(cr);
 	blur_surface(surface, 24 + radius);
 
-	cairo_translate(cr, -5, -3);
+#if 1
+	cairo_translate(cr, -7, -5);
 	cairo_set_line_width (cr, border);
 	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
 	cairo_set_source(cr, outline);
@@ -104,8 +106,8 @@ draw_window(void *data)
 
 	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius - 1);
 	gradient = cairo_pattern_create_linear (0, 0, 0, 100);
-	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.4, 0.4, 0.4);
-	cairo_pattern_add_color_stop_rgb(gradient, 1, 0.7, 0.7, 0.7);
+	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.6, 0.6, 0.4);
+	cairo_pattern_add_color_stop_rgb(gradient, 1, 0.8, 0.8, 0.7);
 	cairo_set_source(cr, gradient);
 	cairo_fill(cr);
 	cairo_pattern_destroy(gradient);
@@ -127,14 +129,6 @@ draw_window(void *data)
 	cairo_set_source(cr, bright);
 	cairo_stroke(cr);
 
-	cairo_move_to(cr, 10, 50);
-	cairo_line_to(cr, window->width - 10, 50);
-	cairo_line_to(cr, window->width - 10, window->height - 10);
-	cairo_line_to(cr, 10, window->height - 10);
-	cairo_close_path(cr);
-	cairo_set_source_rgba(cr, 0, 0, 0, 0.9);
-	cairo_fill(cr);
-
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, title, &extents);
@@ -147,6 +141,7 @@ draw_window(void *data)
 	cairo_stroke_preserve(cr);
 	cairo_set_source_rgb(cr, 1, 1, 1);
 	cairo_fill(cr);
+#endif
 	cairo_destroy(cr);
 	if (window->buffer != NULL)
 		buffer_destroy(window->buffer, window->fd);
@@ -164,11 +159,25 @@ draw_window(void *data)
 
 	/* FIXME: Free window->buffer when we receive the ack event. */
 
-	buffer = window->egl_buffer;
+	width = window->width - 20;		
+	height = window->height - 60;
+	buffer = buffer_create(window->fd, width, height, (width * 4 + 15) & ~15);
+	window->egl_buffer = buffer;
+	window->egl_surface = eglCreateSurfaceForName(window->display,
+						      window->config, buffer->name,
+						      buffer->width, buffer->height,
+						      buffer->stride, NULL);
+	if (!eglMakeCurrent(window->display,
+			    window->egl_surface, window->egl_surface, window->context))
+		die("failed to make context current\n");
+
+	glViewport(0, 0, width, height);
+
+	if (window->gears == NULL)
+		window->gears = gears_create(0, 0, 0, 0.92);
+
 	gears_draw(window->gears, window->gears_angle);
-	wl_surface_copy(window->surface,
-			(window->width - 300) / 2,
-			50 + (window->height - 50 - 300) / 2,
+	wl_surface_copy(window->surface, 10 + shadow, 50 + shadow,
 			buffer->name, buffer->stride,
 			0, 0, buffer->width, buffer->height);
 
@@ -269,8 +278,7 @@ window_create(struct wl_display *display, int fd)
 	EGLint major, minor, count;
 	EGLConfig configs[64];
 	struct window *window;
-	struct buffer *buffer;
-	const GLfloat red = 0, green = 0, blue = 0, alpha = 0.9;
+	const GLfloat red = 0, green = 0, blue = 0, alpha = 0.92;
 
 	window = malloc(sizeof *window);
 	if (window == NULL)
@@ -301,27 +309,6 @@ window_create(struct wl_display *display, int fd)
 	if (window->context == NULL)
 		die("failed to create context\n");
 
-	/* FIXME: We need to get the stride right here in a chipset
-	 * independent way.  Maybe do it in name_cairo_surface(). */
-	buffer = buffer_create(window->fd, 300, 300, (300 * 4 + 15) & ~15);
-	window->egl_buffer = buffer;
-	window->egl_surface = eglCreateSurfaceForName(window->display,
-						      window->config, buffer->name,
-						      buffer->width, buffer->height,
-						      buffer->stride, NULL);
-
-	if (window->egl_surface == NULL)
-		die("failed to create egl surface\n");
-
-	if (!eglMakeCurrent(window->display,
-			    window->egl_surface, window->egl_surface, window->context))
-		die("failed to make context current\n");
-
-	glViewport(0, 0, 300, 300);
-
-	window->gears = gears_create(red, green, blue, alpha);
-	window->gears_angle = 0.0;
-
 	draw_window(window);
 
 	return window;
@@ -332,15 +319,14 @@ draw(gpointer data)
 {
 	struct window *window = data;
 	struct buffer *buffer;
-
+	int shadow = 16;
 	
 	if (!window->redraw_scheduled) {
 		gears_draw(window->gears, window->gears_angle);
 
 		buffer = window->egl_buffer;
 		wl_surface_copy(window->surface,
-				(window->width - 300) / 2,
-				50 + (window->height - 50 - 300) / 2,
+				10 + shadow, 50 + shadow,
 				buffer->name, buffer->stride,
 				0, 0, buffer->width, buffer->height);
 	}
