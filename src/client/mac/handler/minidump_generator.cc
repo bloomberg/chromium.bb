@@ -223,11 +223,22 @@ size_t MinidumpGenerator::CalculateStackSize(mach_vm_address_t start_addr) {
   vm_region_recurse_info_t region_info;
   region_info = reinterpret_cast<vm_region_recurse_info_t>(&submap_info);
 
+  if (start_addr == 0) {
+    return 0;
+  }
+
   kern_return_t result =
     mach_vm_region_recurse(crashing_task_, &stack_region_base,
                            &stack_region_size, &nesting_level,
                            region_info,
                            &info_count);
+
+  if (start_addr < stack_region_base) {
+    // probably stack corruption, since mach_vm_region had to go
+    // higher in the process address space to find a valid region.
+    return 0;
+  }
+
 
   if ((stack_region_base + stack_region_size) == TOP_OF_THREAD0_STACK) {
     // The stack for thread 0 needs to extend all the way to
@@ -254,34 +265,48 @@ bool MinidumpGenerator::WriteStackFromStartAddress(
     mach_vm_address_t start_addr,
     MDMemoryDescriptor *stack_location) {
   UntypedMDRVA memory(&writer_);
+
+  bool result = false;
   size_t size = CalculateStackSize(start_addr);
 
-  // If there's an error in the calculation, return at least the current
-  // stack information
-  if (size == 0)
-    size = 16;
+  if (size == 0) {
+      // In some situations the stack address for the thread can come back 0.
+      // In these cases we skip over the threads in question and stuff the
+      // stack with a clearly borked value.
+      start_addr = 0xDEADBEEF;
+      size = 16;
+      if (!memory.Allocate(size))
+        return false;
 
-  if (!memory.Allocate(size))
-    return false;
+      unsigned long long dummy_stack[2];  // Fill dummy stack with 16 bytes of
+                                          // junk.
+      dummy_stack[0] = 0xDEADBEEF;
+      dummy_stack[1] = 0xDEADBEEF;
 
-  bool result;
-  if (dynamic_images_) {
-
-    kern_return_t kr;
-
-    void *stack_memory = ReadTaskMemory(crashing_task_,
-                                        (void*)start_addr,
-                                        size,
-                                        &kr);
-
-    if (stack_memory == NULL) {
-      return false;
-    }
-
-    result = memory.Copy(stack_memory, size);
-    free(stack_memory);
+      result = memory.Copy(dummy_stack, size);
   } else {
-    result = memory.Copy(reinterpret_cast<const void *>(start_addr), size);
+
+    if (!memory.Allocate(size))
+      return false;
+
+    if (dynamic_images_) {
+
+      kern_return_t kr;
+
+      void *stack_memory = ReadTaskMemory(crashing_task_,
+                                          (void*)start_addr,
+                                          size,
+                                          &kr);
+
+      if (stack_memory == NULL) {
+        return false;
+      }
+
+      result = memory.Copy(stack_memory, size);
+      free(stack_memory);
+    } else {
+      result = memory.Copy(reinterpret_cast<const void *>(start_addr), size);
+    }
   }
 
   stack_location->start_of_memory_range = start_addr;
@@ -335,7 +360,7 @@ bool MinidumpGenerator::WriteContext(breakpad_thread_state_data_t state,
 #define AddReg(a) context_ptr->a = machine_state->a
 #define AddGPR(a) context_ptr->gpr[a] = machine_state->r ## a
 #endif
-  
+ 
   AddReg(srr0);
   AddReg(cr);
   AddReg(xer);
@@ -699,7 +724,7 @@ bool MinidumpGenerator::WriteModuleStream(unsigned int index,
       module->version_info.file_version_lo |= (modVersion & 0xff00)  << 8;
       module->version_info.file_version_lo |= (modVersion & 0xff);
     }
-    
+
     if (!WriteCVRecord(module, cpu_type, name)) {
       return false;
     }
