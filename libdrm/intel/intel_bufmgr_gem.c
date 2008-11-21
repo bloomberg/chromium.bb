@@ -163,6 +163,12 @@ struct _drm_intel_bo_gem {
 
 static void drm_intel_gem_bo_reference_locked(drm_intel_bo *bo);
 
+static unsigned int
+drm_intel_gem_estimate_batch_space(drm_intel_bo **bo_array, int count);
+
+static unsigned int
+drm_intel_gem_compute_batch_space(drm_intel_bo **bo_array, int count);
+
 static int
 logbase2(int n)
 {
@@ -915,6 +921,14 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_EXECBUFFER, &execbuf);
     } while (ret != 0 && errno == EAGAIN);
 
+    if (ret != 0 && errno == ENOMEM) {
+	fprintf(stderr, "Execbuffer fails to pin. Estimate: %u. Actual: %u. Available: %u\n",
+		drm_intel_gem_estimate_batch_space(bufmgr_gem->exec_bos,
+						   bufmgr_gem->exec_count),
+		drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
+						  bufmgr_gem->exec_count),
+		bufmgr_gem->gtt_size);
+    }
     drm_intel_update_buffer_offsets (bufmgr_gem);
 
     if (bufmgr_gem->bufmgr.debug)
@@ -1102,6 +1116,43 @@ drm_intel_gem_bo_clear_aperture_space_flag(drm_intel_bo *bo)
 }
 
 /**
+ * Return a conservative estimate for the amount of aperture required
+ * for a collection of buffers. This may double-count some buffers.
+ */
+static unsigned int
+drm_intel_gem_estimate_batch_space(drm_intel_bo **bo_array, int count)
+{
+    int i;
+    unsigned int total = 0;
+
+    for (i = 0; i < count; i++) {
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo_array[i];
+	if (bo_gem != NULL)
+		total += bo_gem->reloc_tree_size;
+    }
+    return total;
+}
+
+/**
+ * Return the amount of aperture needed for a collection of buffers.
+ * This avoids double counting any buffers, at the cost of looking
+ * at every buffer in the set.
+ */
+static unsigned int
+drm_intel_gem_compute_batch_space(drm_intel_bo **bo_array, int count)
+{
+    int i;
+    unsigned int total = 0;
+
+    for (i = 0; i < count; i++)
+	total += drm_intel_gem_bo_get_aperture_space(bo_array[i]);
+
+    for (i = 0; i < count; i++)
+	drm_intel_gem_bo_clear_aperture_space_flag(bo_array[i]);
+    return total;
+}
+
+/**
  * Return -1 if the batchbuffer should be flushed before attempting to
  * emit rendering referencing the buffers pointed to by bo_array.
  *
@@ -1123,24 +1174,13 @@ drm_intel_gem_check_aperture_space(drm_intel_bo **bo_array, int count)
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo_array[0]->bufmgr;
     unsigned int total = 0;
     unsigned int threshold = bufmgr_gem->gtt_size * 3 / 4;
-    int i;
 
-    for (i = 0; i < count; i++) {
-	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo_array[i];
-	if (bo_gem != NULL)
-		total += bo_gem->reloc_tree_size;
-    }
+    total = drm_intel_gem_estimate_batch_space(bo_array, count);
+    
+    if (total > threshold)
+	total = drm_intel_gem_compute_batch_space(bo_array, count);
 
     if (total > threshold) {
-	total = 0;
-	for (i = 0; i < count; i++)
-	    total += drm_intel_gem_bo_get_aperture_space(bo_array[i]);
-
-	for (i = 0; i < count; i++)
-	    drm_intel_gem_bo_clear_aperture_space_flag(bo_array[i]);
-    }
-
-    if (total > bufmgr_gem->gtt_size * 3 / 4) {
 	DBG("check_space: overflowed available aperture, %dkb vs %dkb\n",
 	    total / 1024, (int)bufmgr_gem->gtt_size / 1024);
 	return -1;
