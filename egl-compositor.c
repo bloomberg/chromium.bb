@@ -10,6 +10,8 @@
 #include <unistd.h>
 #include <signal.h>
 #include <cairo.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <glib.h>
 #include <png.h>
 
 #include "wayland.h"
@@ -20,11 +22,6 @@
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
-struct pointer {
-	struct wl_map map;
-	GLuint texture;
-};
-
 struct egl_compositor {
 	struct wl_compositor base;
 	EGLDisplay display;
@@ -34,10 +31,11 @@ struct egl_compositor {
 	struct wl_display *wl_display;
 	int gem_fd;
 	int width, height;
-	struct pointer *pointer;
+	struct egl_surface *pointer;
+	struct egl_surface *background;
 };
 
-struct surface_data {
+struct egl_surface {
 	GLuint texture;
 	struct wl_map map;
 	EGLSurface surface;
@@ -195,11 +193,11 @@ pointer_path(cairo_t *cr, int x, int y)
 	cairo_close_path(cr);
 }
 
-static struct pointer *
+static struct egl_surface *
 pointer_create(int x, int y, int width, int height)
 {
 	const int hotspot_x = 16, hotspot_y = 16;
-	struct pointer *pointer;
+	struct egl_surface *pointer;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	int stride;
@@ -244,41 +242,87 @@ pointer_create(int x, int y, int width, int height)
 	pointer->map.y = y;
 	pointer->map.width = width;
 	pointer->map.height = height;
+	pointer->surface = EGL_NO_SURFACE;
 
 	return pointer;
 }
 
 static void
-pointer_destroy(struct pointer *pointer)
+egl_surface_destroy(struct egl_surface *es, struct egl_compositor *ec)
 {
-	glDeleteTextures(1, &pointer->texture);
-	free(pointer);
+	glDeleteTextures(1, &es->texture);
+	if (es->surface != EGL_NO_SURFACE)
+		eglDestroySurface(ec->display, es->surface);
+	free(es);
+}
+
+static struct egl_surface *
+background_create(const char *filename, int width, int height)
+{
+	struct egl_surface *background;
+	GdkPixbuf *pixbuf;
+	GError *error = NULL;
+	int pixbuf_width, pixbuf_height;
+	void *data;
+
+	background = malloc(sizeof *background);
+	if (background == NULL)
+		return NULL;
+	
+	g_type_init();
+
+	pixbuf = gdk_pixbuf_new_from_file(filename, &error);
+	if (error != NULL) {
+		free(background);
+		return NULL;
+	}
+
+	pixbuf_width = gdk_pixbuf_get_width(pixbuf);
+	pixbuf_height = gdk_pixbuf_get_height(pixbuf);
+	data = gdk_pixbuf_get_pixels(pixbuf);
+
+	glGenTextures(1, &background->texture);
+	glBindTexture(GL_TEXTURE_2D, background->texture);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pixbuf_width, pixbuf_height, 0,
+		     GL_BGR, GL_UNSIGNED_BYTE, data);
+
+	background->map.x = 0;
+	background->map.y = 0;
+	background->map.width = width;
+	background->map.height = height;
+	background->surface = EGL_NO_SURFACE;
+
+	return background;
 }
 
 static void
-draw_surface(struct wl_map *map, GLuint texture)
+draw_surface(struct egl_surface *es)
 {
 	GLint vertices[12];
 	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
 	GLuint indices[4] = { 0, 1, 2, 3 };
 
-	vertices[0] = map->x;
-	vertices[1] = map->y;
+	vertices[0] = es->map.x;
+	vertices[1] = es->map.y;
 	vertices[2] = 0;
 
-	vertices[3] = map->x;
-	vertices[4] = map->y + map->height;
+	vertices[3] = es->map.x;
+	vertices[4] = es->map.y + es->map.height;
 	vertices[5] = 0;
 
-	vertices[6] = map->x + map->width;
-	vertices[7] = map->y;
+	vertices[6] = es->map.x + es->map.width;
+	vertices[7] = es->map.y;
 	vertices[8] = 0;
 
-	vertices[9] = map->x + map->width;
-	vertices[10] = map->y + map->height;
+	vertices[9] = es->map.x + es->map.width;
+	vertices[10] = es->map.y + es->map.height;
 	vertices[11] = 0;
 
-	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_BLEND);
 	/* Assume pre-multiplied alpha for now, this probably
@@ -298,19 +342,21 @@ repaint(void *data)
 	struct egl_compositor *ec = data;
 	struct wl_surface_iterator *iterator;
 	struct wl_surface *surface;
-	struct surface_data *sd;
+	struct egl_surface *es;
+
+	draw_surface(ec->background);
 
 	iterator = wl_surface_iterator_create(ec->wl_display, 0);
 	while (wl_surface_iterator_next(iterator, &surface)) {
-		sd = wl_surface_get_data(surface);
-		if (sd == NULL)
+		es = wl_surface_get_data(surface);
+		if (es == NULL)
 			continue;
 
-		draw_surface(&sd->map, sd->texture);
+		draw_surface(es);
 	}
 	wl_surface_iterator_destroy(iterator);
 
-	draw_surface(&ec->pointer->map, ec->pointer->texture);
+	draw_surface(ec->pointer);
 
 	eglSwapBuffers(ec->display, ec->surface);
 
@@ -339,16 +385,16 @@ static void
 notify_surface_create(struct wl_compositor *compositor,
 		      struct wl_surface *surface)
 {
-	struct surface_data *sd;
+	struct egl_surface *es;
 
-	sd = malloc(sizeof *sd);
-	if (sd == NULL)
+	es = malloc(sizeof *es);
+	if (es == NULL)
 		return;
 
-	sd->surface = EGL_NO_SURFACE;
-	wl_surface_set_data(surface, sd);
+	es->surface = EGL_NO_SURFACE;
+	wl_surface_set_data(surface, es);
 
-	glGenTextures(1, &sd->texture);
+	glGenTextures(1, &es->texture);
 }
 				   
 static void
@@ -356,18 +402,13 @@ notify_surface_destroy(struct wl_compositor *compositor,
 		       struct wl_surface *surface)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	struct surface_data *sd;
+	struct egl_surface *es;
 
-	sd = wl_surface_get_data(surface);
-	if (sd == NULL)
+	es = wl_surface_get_data(surface);
+	if (es == NULL)
 		return;
 
-	if (sd->surface != EGL_NO_SURFACE)
-		eglDestroySurface(ec->display, sd->surface);
-
-	glDeleteTextures(1, &sd->texture);
-
-	free(sd);
+	egl_surface_destroy(es, ec);
 
 	schedule_repaint(ec);
 }
@@ -378,27 +419,27 @@ notify_surface_attach(struct wl_compositor *compositor,
 		      uint32_t width, uint32_t height, uint32_t stride)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	struct surface_data *sd;
+	struct egl_surface *es;
 
-	sd = wl_surface_get_data(surface);
-	if (sd == NULL)
+	es = wl_surface_get_data(surface);
+	if (es == NULL)
 		return;
 
-	if (sd->surface != EGL_NO_SURFACE)
-		eglDestroySurface(ec->display, sd->surface);
+	if (es->surface != EGL_NO_SURFACE)
+		eglDestroySurface(ec->display, es->surface);
 
 	/* FIXME: We need to use a single buffer config without depth
 	 * or stencil buffers here to keep egl from creating auxillary
 	 * buffers for the pixmap here. */
-	sd->surface = eglCreateSurfaceForName(ec->display, ec->config,
+	es->surface = eglCreateSurfaceForName(ec->display, ec->config,
 					      name, width, height, stride, NULL);
 
-	glBindTexture(GL_TEXTURE_2D, sd->texture);
+	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	eglBindTexImage(ec->display, sd->surface, GL_TEXTURE_2D);
+	eglBindTexImage(ec->display, es->surface, GL_TEXTURE_2D);
 
 	schedule_repaint(ec);
 }
@@ -408,13 +449,13 @@ notify_surface_map(struct wl_compositor *compositor,
 		   struct wl_surface *surface, struct wl_map *map)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	struct surface_data *sd;
+	struct egl_surface *es;
 
-	sd = wl_surface_get_data(surface);
-	if (sd == NULL)
+	es = wl_surface_get_data(surface);
+	if (es == NULL)
 		return;
 
-	sd->map = *map;
+	es->map = *map;
 
 	schedule_repaint(ec);
 }
@@ -428,9 +469,9 @@ notify_surface_copy(struct wl_compositor *compositor,
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	EGLSurface src;
-	struct surface_data *sd;
+	struct egl_surface *es;
 
-	sd = wl_surface_get_data(surface);
+	es = wl_surface_get_data(surface);
 
 	/* FIXME: glCopyPixels should work, but then we'll have to
 	 * call eglMakeCurrent to set up the src and dest surfaces
@@ -440,7 +481,7 @@ notify_surface_copy(struct wl_compositor *compositor,
 	src = eglCreateSurfaceForName(ec->display, ec->config,
 				      name, x + width, y + height, stride, NULL);
 
-	eglCopyNativeBuffers(ec->display, sd->surface, GL_FRONT_LEFT, dst_x, dst_y,
+	eglCopyNativeBuffers(ec->display, es->surface, GL_FRONT_LEFT, dst_x, dst_y,
 			     src, GL_FRONT_LEFT, x, y, width, height);
 	schedule_repaint(ec);
 }
@@ -485,6 +526,7 @@ wl_compositor_create(struct wl_display *display)
 	EGLConfig configs[64];
 	EGLint major, minor, count;
 	struct egl_compositor *ec;
+	const char *filename;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
@@ -538,6 +580,10 @@ wl_compositor_create(struct wl_display *display)
 	glMatrixMode(GL_MODELVIEW);
 	glClearColor(0.0, 0.05, 0.2, 0.0);
 
+	filename = getenv("WAYLAND_BACKGROUND");
+	if (filename == NULL)
+		filename = "background.jpg";
+	ec->background = background_create(filename, 1280, 800);
 	ec->pointer = pointer_create(100, 100, 64, 64);
 
 	ec->gem_fd = open(gem_device, O_RDWR);
