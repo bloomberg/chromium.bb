@@ -588,10 +588,15 @@ void
 wl_display_post_relative_event(struct wl_display *display,
 			       struct wl_object *source, int dx, int dy)
 {
+	const struct wl_compositor_interface *interface;
 	uint32_t p[4];
 
 	display->pointer_x += dx;
 	display->pointer_y += dy;
+
+	interface = display->compositor->interface;
+	interface->notify_pointer_motion(display->compositor, source,
+					 display->pointer_x, display->pointer_y);
 
 	p[0] = source->id;
 	p[1] = (sizeof p << 16) | WL_POINTER_MOTION;
@@ -605,10 +610,15 @@ void
 wl_display_post_absolute_event(struct wl_display *display,
 			       struct wl_object *source, int x, int y)
 {
+	const struct wl_compositor_interface *interface;
 	uint32_t p[4];
 
 	display->pointer_x = x;
 	display->pointer_y = y;
+
+	interface = display->compositor->interface;
+	interface->notify_pointer_motion(display->compositor, source,
+					 display->pointer_x, display->pointer_y);
 
 	p[0] = source->id;
 	p[1] = (sizeof p << 16) | WL_POINTER_MOTION;

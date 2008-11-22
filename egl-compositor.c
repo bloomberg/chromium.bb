@@ -9,14 +9,21 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
+#include <cairo.h>
 #include <png.h>
 
 #include "wayland.h"
+#include "cairo-util.h"
 
 #include <GL/gl.h>
 #include <eagle.h>
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
+struct pointer {
+	struct wl_map map;
+	GLuint texture;
+};
 
 struct egl_compositor {
 	struct wl_compositor base;
@@ -27,6 +34,7 @@ struct egl_compositor {
 	struct wl_display *wl_display;
 	int gem_fd;
 	int width, height;
+	struct pointer *pointer;
 };
 
 struct surface_data {
@@ -172,15 +180,125 @@ screenshot(struct egl_compositor *ec)
 }
 
 static void
+pointer_path(cairo_t *cr, int x, int y)
+{
+	const int end = 3, tx = 4, ty = 12, dx = 5, dy = 10;
+	const int width = 16, height = 16;
+
+	cairo_move_to(cr, x, y);
+	cairo_line_to(cr, x + tx, y + ty);
+	cairo_line_to(cr, x + dx, y + dy);
+	cairo_line_to(cr, x + width - end, y + height);
+	cairo_line_to(cr, x + width, y + height - end);
+	cairo_line_to(cr, x + dy, y + dx);
+	cairo_line_to(cr, x + ty, y + tx);
+	cairo_close_path(cr);
+}
+
+static struct pointer *
+pointer_create(int x, int y, int width, int height)
+{
+	const int hotspot_x = 16, hotspot_y = 16;
+	struct pointer *pointer;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+	int stride;
+	void *data;
+
+	pointer = malloc(sizeof *pointer);
+	if (pointer == NULL)
+		return NULL;
+
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					     width, height);
+
+	cr = cairo_create(surface);
+	pointer_path(cr, hotspot_x + 5, hotspot_y + 4);
+	cairo_set_line_width (cr, 2);
+	cairo_set_source_rgb(cr, 0, 0, 0);
+	cairo_stroke_preserve(cr);
+	cairo_fill(cr);
+	blur_surface(surface, width);
+
+	pointer_path(cr, hotspot_x, hotspot_y);
+	cairo_stroke_preserve(cr);
+	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_fill(cr);
+	cairo_destroy(cr);
+
+	stride = cairo_image_surface_get_stride(surface);
+	data = cairo_image_surface_get_data(surface);
+
+	glGenTextures(1, &pointer->texture);
+	glBindTexture(GL_TEXTURE_2D, pointer->texture);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+		     GL_BGRA, GL_UNSIGNED_BYTE, data);
+
+	cairo_surface_destroy(surface);
+
+	pointer->map.x = x;
+	pointer->map.y = y;
+	pointer->map.width = width;
+	pointer->map.height = height;
+
+	return pointer;
+}
+
+static void
+pointer_destroy(struct pointer *pointer)
+{
+	glDeleteTextures(1, &pointer->texture);
+	free(pointer);
+}
+
+static void
+draw_surface(struct wl_map *map, GLuint texture)
+{
+	GLint vertices[12];
+	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
+	GLuint indices[4] = { 0, 1, 2, 3 };
+
+	vertices[0] = map->x;
+	vertices[1] = map->y;
+	vertices[2] = 0;
+
+	vertices[3] = map->x;
+	vertices[4] = map->y + map->height;
+	vertices[5] = 0;
+
+	vertices[6] = map->x + map->width;
+	vertices[7] = map->y;
+	vertices[8] = 0;
+
+	vertices[9] = map->x + map->width;
+	vertices[10] = map->y + map->height;
+	vertices[11] = 0;
+
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	/* Assume pre-multiplied alpha for now, this probably
+	 * needs to be a wayland visual type of thing. */
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glVertexPointer(3, GL_INT, 0, vertices);
+	glTexCoordPointer(2, GL_INT, 0, tex_coords);
+	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, indices);
+}
+
+static void
 repaint(void *data)
 {
 	struct egl_compositor *ec = data;
 	struct wl_surface_iterator *iterator;
 	struct wl_surface *surface;
 	struct surface_data *sd;
-	GLint vertices[12];
-	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
-	GLuint indices[4] = { 0, 1, 2, 3 };
 
 	iterator = wl_surface_iterator_create(ec->wl_display, 0);
 	while (wl_surface_iterator_next(iterator, &surface)) {
@@ -188,36 +306,11 @@ repaint(void *data)
 		if (sd == NULL)
 			continue;
 
-		vertices[0] = sd->map.x;
-		vertices[1] = sd->map.y;
-		vertices[2] = 0;
-
-		vertices[3] = sd->map.x;
-		vertices[4] = sd->map.y + sd->map.height;
-		vertices[5] = 0;
-
-		vertices[6] = sd->map.x + sd->map.width;
-		vertices[7] = sd->map.y;
-		vertices[8] = 0;
-
-		vertices[9] = sd->map.x + sd->map.width;
-		vertices[10] = sd->map.y + sd->map.height;
-		vertices[11] = 0;
-
-		glBindTexture(GL_TEXTURE_2D, sd->texture);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_BLEND);
-		/* Assume pre-multiplied alpha for now, this probably
-		 * needs to be a wayland visual type of thing. */
-		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-		glEnableClientState(GL_VERTEX_ARRAY);
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glVertexPointer(3, GL_INT, 0, vertices);
-		glTexCoordPointer(2, GL_INT, 0, tex_coords);
-		glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, indices);
+		draw_surface(&sd->map, sd->texture);
 	}
 	wl_surface_iterator_destroy(iterator);
+
+	draw_surface(&ec->pointer->map, ec->pointer->texture);
 
 	eglSwapBuffers(ec->display, ec->surface);
 
@@ -363,13 +456,25 @@ notify_surface_damage(struct wl_compositor *compositor,
 	schedule_repaint(ec);
 }
 
+static void
+notify_pointer_motion(struct wl_compositor *compositor,
+		      struct wl_object *source, int x, int y)
+{
+	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+
+	ec->pointer->map.x = x;
+	ec->pointer->map.y = y;
+	schedule_repaint(ec);
+}
+
 static const struct wl_compositor_interface interface = {
 	notify_surface_create,
 	notify_surface_destroy,
 	notify_surface_attach,
 	notify_surface_map,
 	notify_surface_copy,
-	notify_surface_damage
+	notify_surface_damage,
+	notify_pointer_motion
 };
 
 static const char gem_device[] = "/dev/dri/card0";
@@ -432,6 +537,8 @@ wl_compositor_create(struct wl_display *display)
 	glOrtho(0, ec->width, ec->height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
 	glClearColor(0.0, 0.05, 0.2, 0.0);
+
+	ec->pointer = pointer_create(100, 100, 64, 64);
 
 	ec->gem_fd = open(gem_device, O_RDWR);
 	if (ec->gem_fd < 0) {

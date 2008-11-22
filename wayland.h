@@ -159,6 +159,10 @@ struct wl_compositor_interface {
 				      struct wl_surface *surface,
 				      int32_t x, int32_t y,
 				      int32_t width, int32_t height);
+	void (*notify_pointer_motion)(struct wl_compositor *compositor,
+				      struct wl_object *source,
+				      int32_t x, int32_t y);
+
 };
 
 void wl_display_set_compositor(struct wl_display *display,
