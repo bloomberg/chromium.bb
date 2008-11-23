@@ -13,6 +13,7 @@
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
 #include <png.h>
+#include <math.h>
 
 #include "wayland.h"
 #include "cairo-util.h"
@@ -33,6 +34,7 @@ struct egl_compositor {
 	int width, height;
 	struct egl_surface *pointer;
 	struct egl_surface *background;
+	struct egl_surface *overlay;
 };
 
 struct egl_surface {
@@ -177,6 +179,48 @@ screenshot(struct egl_compositor *ec)
 	free(data);
 }
 
+static struct egl_surface *
+egl_surface_create_from_cairo_surface(cairo_surface_t *surface,
+				      int x, int y, int width, int height)
+{
+	struct egl_surface *es;
+	int stride;
+	void *data;
+
+	stride = cairo_image_surface_get_stride(surface);
+	data = cairo_image_surface_get_data(surface);
+
+	es = malloc(sizeof *es);
+	if (es == NULL)
+		return NULL;
+
+	glGenTextures(1, &es->texture);
+	glBindTexture(GL_TEXTURE_2D, es->texture);
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+		     GL_BGRA, GL_UNSIGNED_BYTE, data);
+
+	es->map.x = x;
+	es->map.y = y;
+	es->map.width = width;
+	es->map.height = height;
+	es->surface = EGL_NO_SURFACE;
+
+	return es;
+}
+
+static void
+egl_surface_destroy(struct egl_surface *es, struct egl_compositor *ec)
+{
+	glDeleteTextures(1, &es->texture);
+	if (es->surface != EGL_NO_SURFACE)
+		eglDestroySurface(ec->display, es->surface);
+	free(es);
+}
+
 static void
 pointer_path(cairo_t *cr, int x, int y)
 {
@@ -196,16 +240,10 @@ pointer_path(cairo_t *cr, int x, int y)
 static struct egl_surface *
 pointer_create(int x, int y, int width, int height)
 {
+	struct egl_surface *es;
 	const int hotspot_x = 16, hotspot_y = 16;
-	struct egl_surface *pointer;
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int stride;
-	void *data;
-
-	pointer = malloc(sizeof *pointer);
-	if (pointer == NULL)
-		return NULL;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
 					     width, height);
@@ -224,36 +262,11 @@ pointer_create(int x, int y, int width, int height)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	stride = cairo_image_surface_get_stride(surface);
-	data = cairo_image_surface_get_data(surface);
-
-	glGenTextures(1, &pointer->texture);
-	glBindTexture(GL_TEXTURE_2D, pointer->texture);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
-		     GL_BGRA, GL_UNSIGNED_BYTE, data);
-
+	es = egl_surface_create_from_cairo_surface(surface, x, y, width, height);
+	
 	cairo_surface_destroy(surface);
 
-	pointer->map.x = x;
-	pointer->map.y = y;
-	pointer->map.width = width;
-	pointer->map.height = height;
-	pointer->surface = EGL_NO_SURFACE;
-
-	return pointer;
-}
-
-static void
-egl_surface_destroy(struct egl_surface *es, struct egl_compositor *ec)
-{
-	glDeleteTextures(1, &es->texture);
-	if (es->surface != EGL_NO_SURFACE)
-		eglDestroySurface(ec->display, es->surface);
-	free(es);
+	return es;
 }
 
 static struct egl_surface *
@@ -297,6 +310,101 @@ background_create(const char *filename, int width, int height)
 	background->surface = EGL_NO_SURFACE;
 
 	return background;
+}
+
+static void
+rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
+{
+	cairo_move_to(cr, x0, y0 + radius);
+	cairo_arc(cr, x0 + radius, y0 + radius, radius, M_PI, 3 * M_PI / 2);
+	cairo_line_to(cr, x1 - radius, y0);
+	cairo_arc(cr, x1 - radius, y0 + radius, radius, 3 * M_PI / 2, 2 * M_PI);
+	cairo_line_to(cr, x1, y1 - radius);
+	cairo_arc(cr, x1 - radius, y1 - radius, radius, 0, M_PI / 2);
+	cairo_line_to(cr, x0 + radius, y1);
+	cairo_arc(cr, x0 + radius, y1 - radius, radius, M_PI / 2, M_PI);
+	cairo_close_path(cr);
+}
+
+static void
+draw_button(cairo_t *cr, int x, int y, int width, int height, const char *text)
+{
+	cairo_pattern_t *gradient;
+	cairo_text_extents_t extents;
+	double bright = 0.15, dim = 0.02;
+	int radius = 10;
+
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_line_width (cr, 2);
+	rounded_rect(cr, x, y, x + width, y + height, radius);
+	cairo_set_source_rgb(cr, dim, dim, dim);
+	cairo_stroke(cr);
+	rounded_rect(cr, x + 2, y + 2, x + width, y + height, radius);
+	cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
+	cairo_stroke(cr);
+
+	rounded_rect(cr, x + 1, y + 1, x + width - 1, y + height - 1, radius - 1);
+	cairo_set_source_rgb(cr, bright, bright, bright);
+	cairo_stroke(cr);
+	rounded_rect(cr, x + 3, y + 3, x + width - 1, y + height - 1, radius - 1);
+	cairo_set_source_rgb(cr, dim, dim, dim);
+	cairo_stroke(cr);
+
+	rounded_rect(cr, x + 1, y + 1, x + width - 1, y + height - 1, radius - 1);
+	gradient = cairo_pattern_create_linear (0, y, 0, y + height);
+	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.15, 0.15, 0.15);
+	cairo_pattern_add_color_stop_rgb(gradient, 0.5, 0.08, 0.08, 0.08);
+	cairo_pattern_add_color_stop_rgb(gradient, 0.5, 0.07, 0.07, 0.07);
+	cairo_pattern_add_color_stop_rgb(gradient, 1, 0.1, 0.1, 0.1);
+	cairo_set_source(cr, gradient);
+	cairo_fill(cr);
+
+	cairo_set_font_size(cr, 16);
+	cairo_text_extents(cr, text, &extents);
+	cairo_move_to(cr, x + (width - extents.width) / 2, y + (height - extents.height) / 2 - extents.y_bearing);
+	cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
+	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
+	cairo_set_line_width (cr, 4);
+	cairo_text_path(cr, text);
+	cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
+	cairo_stroke_preserve(cr);
+	cairo_set_source_rgb(cr, 1, 1, 1);
+	cairo_fill(cr);
+}
+
+static struct egl_surface *
+overlay_create(int x, int y, int width, int height)
+{
+	struct egl_surface *es;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+	int total_width, button_x, button_y;
+	const int button_width = 150;
+	const int button_height = 40;
+	const int spacing = 50;
+
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					     width, height);
+
+	cr = cairo_create(surface);
+	cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 0.7);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_paint(cr);
+
+	total_width = button_width * 2 + spacing;
+	button_x = (width - total_width) / 2;
+	button_y = height - button_height - 20;
+	draw_button(cr, button_x, button_y, button_width, button_height, "Previous");
+	button_x += button_width + spacing;
+	draw_button(cr, button_x, button_y, button_width, button_height, "Next");
+
+	cairo_destroy(cr);
+
+	es = egl_surface_create_from_cairo_surface(surface, x, y, width, height);
+
+	cairo_surface_destroy(surface);
+
+	return es;	
 }
 
 static void
@@ -355,6 +463,8 @@ repaint(void *data)
 		draw_surface(es);
 	}
 	wl_surface_iterator_destroy(iterator);
+
+	draw_surface(ec->overlay);
 
 	draw_surface(ec->pointer);
 
@@ -585,6 +695,7 @@ wl_compositor_create(struct wl_display *display)
 		filename = "background.jpg";
 	ec->background = background_create(filename, 1280, 800);
 	ec->pointer = pointer_create(100, 100, 64, 64);
+	ec->overlay = overlay_create(0, ec->height - 200, ec->width, 200);
 
 	ec->gem_fd = open(gem_device, O_RDWR);
 	if (ec->gem_fd < 0) {
