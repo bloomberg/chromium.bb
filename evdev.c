@@ -59,6 +59,7 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 				dy += value;
 				break;
 			}
+			break;
 
 		case EV_ABS:
 		        absolute_event = 1;
@@ -70,6 +71,7 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 				device->y = value;
 				break;
 			}
+			break;
 
 		case EV_KEY:
 			if (value == 2)
