@@ -36,6 +36,7 @@ struct egl_compositor {
 	struct egl_surface *pointer;
 	struct egl_surface *background;
 	struct egl_surface *overlay;
+	int32_t overlay_target, overlay_previous;
 };
 
 struct egl_surface {
@@ -469,12 +470,17 @@ draw_surface(struct egl_surface *es)
 }
 
 static void
+schedule_repaint(struct egl_compositor *ec);
+
+static void
 repaint(void *data)
 {
 	struct egl_compositor *ec = data;
 	struct wl_surface_iterator *iterator;
 	struct wl_surface *surface;
 	struct egl_surface *es;
+	double force;
+	int32_t y;
 
 	draw_surface(ec->background);
 
@@ -493,6 +499,26 @@ repaint(void *data)
 	draw_surface(ec->pointer);
 
 	eglSwapBuffers(ec->display, ec->surface);
+
+	y = ec->overlay->map.y;
+	force = (ec->overlay_target - ec->overlay->map.y) / 25.0 + 
+		(ec->overlay_previous - y) / 25.0;
+	
+	ec->overlay->map.y = y + (y - ec->overlay_previous) + force;
+	ec->overlay_previous = y;
+
+	if (ec->overlay->map.y >= 800) {
+		ec->overlay->map.y = 800;
+		ec->overlay_previous = 800;
+	}
+
+	if (ec->overlay->map.y <= 600) {
+		ec->overlay->map.y = 600;
+		ec->overlay_previous = 600;
+	}
+
+	if (ec->overlay->map.y != y)
+		schedule_repaint(ec);
 }
 
 static void
@@ -637,8 +663,13 @@ notify_key(struct wl_compositor *compositor,
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 
-	if (key == KEY_ESC)
+	if (key == KEY_ESC && state == 1) {
+		if (ec->overlay_target == ec->height)
+			ec->overlay_target -= 200;
+		else
+			ec->overlay_target += 200;
 		schedule_repaint(ec);
+	}
 }
 
 static const struct wl_compositor_interface interface = {
@@ -749,7 +780,9 @@ wl_compositor_create(struct wl_display *display)
 		filename = "background.jpg";
 	ec->background = background_create(filename, 1280, 800);
 	ec->pointer = pointer_create(100, 100, 64, 64);
-	ec->overlay = overlay_create(0, ec->height - 200, ec->width, 200);
+	ec->overlay = overlay_create(0, ec->height, ec->width, 200);
+	ec->overlay_target = ec->height;
+	ec->overlay_previous = ec->height;
 
 	ec->gem_fd = open(gem_device, O_RDWR);
 	if (ec->gem_fd < 0) {

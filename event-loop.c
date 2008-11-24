@@ -133,6 +133,7 @@ wl_event_loop_wait(struct wl_event_loop *loop)
 {
 	struct epoll_event ep[32];
 	struct wl_event_source *source;
+	wl_event_loop_idle_func_t idle_func;
 	int i, count, timeout;
 	uint32_t mask;
 
@@ -157,8 +158,9 @@ wl_event_loop_wait(struct wl_event_loop *loop)
 	}
 
 	if (count == 0 && loop->idle_func != NULL) {
-		loop->idle_func(loop->idle_data);
+		idle_func = loop->idle_func;
 		loop->idle_func = NULL;
+		idle_func(loop->idle_data);
 	}
 	
 	return 0;
