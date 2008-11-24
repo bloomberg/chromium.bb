@@ -104,6 +104,11 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 				wl_display_post_button_event(device->display,
 							     &device->base, 1, value);
 				break;
+
+			default:
+				wl_display_post_key_event(device->display,
+							  &device->base, e->code, value);
+				break;
 			}
 		}
 	}
@@ -117,9 +122,8 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 					       device->x, device->y);
 }
 
-struct wl_object *
-wl_input_device_create(struct wl_display *display,
-		       const char *path, uint32_t id)
+WL_EXPORT struct wl_object *
+wl_input_device_create(struct wl_display *display, const char *path)
 {
 	struct wl_input_device *device;
 	struct wl_event_loop *loop;

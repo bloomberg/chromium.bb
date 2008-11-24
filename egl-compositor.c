@@ -14,6 +14,7 @@
 #include <glib.h>
 #include <png.h>
 #include <math.h>
+#include <linux/input.h>
 
 #include "wayland.h"
 #include "cairo-util.h"
@@ -630,6 +631,16 @@ notify_pointer_motion(struct wl_compositor *compositor,
 	schedule_repaint(ec);
 }
 
+static void
+notify_key(struct wl_compositor *compositor,
+	   struct wl_object *source, uint32_t key, uint32_t state)
+{
+	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+
+	if (key == KEY_ESC)
+		schedule_repaint(ec);
+}
+
 static const struct wl_compositor_interface interface = {
 	notify_surface_create,
 	notify_surface_destroy,
@@ -637,8 +648,37 @@ static const struct wl_compositor_interface interface = {
 	notify_surface_map,
 	notify_surface_copy,
 	notify_surface_damage,
-	notify_pointer_motion
+	notify_pointer_motion,
+	notify_key
 };
+
+static const char pointer_device_file[] = 
+	"/dev/input/by-id/usb-Apple__Inc._Apple_Internal_Keyboard_._Trackpad-event-mouse";
+static const char keyboard_device_file[] = 
+	"/dev/input/by-id/usb-Apple__Inc._Apple_Internal_Keyboard_._Trackpad-event-kbd";
+
+static void
+create_input_devices(struct wl_display *display)
+{
+	struct wl_object *obj;
+	const char *path;
+
+	path = getenv("WAYLAND_POINTER");
+	if (path == NULL)
+		path = pointer_device_file;
+
+	obj = wl_input_device_create(display, path);
+	if (obj != NULL)
+		wl_display_add_object(display, obj);
+
+	path = getenv("WAYLAND_KEYBOARD");
+	if (path == NULL)
+		path = keyboard_device_file;
+
+	obj = wl_input_device_create(display, path);
+	if (obj != NULL)
+		wl_display_add_object(display, obj);
+}
 
 static const char gem_device[] = "/dev/dri/card0";
 
@@ -701,7 +741,8 @@ wl_compositor_create(struct wl_display *display)
 	glLoadIdentity();
 	glOrtho(0, ec->width, ec->height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
-	glClearColor(0.0, 0.05, 0.2, 0.0);
+
+	create_input_devices(display);
 
 	filename = getenv("WAYLAND_BACKGROUND");
 	if (filename == NULL)

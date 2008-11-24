@@ -511,27 +511,6 @@ static const struct wl_interface display_interface = {
 	ARRAY_LENGTH(display_events), display_events,
 };
 
-static const char input_device_file[] = 
-	"/dev/input/by-id/usb-Apple__Inc._Apple_Internal_Keyboard_._Trackpad-event-mouse";
-
-static void
-wl_display_create_input_devices(struct wl_display *display)
-{
-	const char *path;
-
-	path = getenv("WAYLAND_POINTER");
-	if (path == NULL)
-		path = input_device_file;
-
-	display->pointer = wl_input_device_create(display, path, 1);
-
-	if (display->pointer != NULL)
-		wl_display_add_object(display, display->pointer);
-
-	display->pointer_x = 100;
-	display->pointer_y = 100;
-}
-
 static struct wl_display *
 wl_display_create(void)
 {
@@ -551,7 +530,8 @@ wl_display_create(void)
 	wl_list_init(&display->client_list);
 	wl_list_init(&display->global_list);
 
-	wl_display_create_input_devices(display);
+	display->pointer_x = 100;
+	display->pointer_y = 100;
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
@@ -604,10 +584,11 @@ wl_display_send_event(struct wl_display *display, uint32_t *data, size_t size)
 	}
 }
 
-#define WL_POINTER_MOTION 0
-#define WL_POINTER_BUTTON 1
+#define WL_INPUT_MOTION 0
+#define WL_INPUT_BUTTON 1
+#define WL_INPUT_KEY 2
 
-void
+WL_EXPORT void
 wl_display_post_relative_event(struct wl_display *display,
 			       struct wl_object *source, int dx, int dy)
 {
@@ -622,14 +603,14 @@ wl_display_post_relative_event(struct wl_display *display,
 					 display->pointer_x, display->pointer_y);
 
 	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_POINTER_MOTION;
+	p[1] = (sizeof p << 16) | WL_INPUT_MOTION;
 	p[2] = display->pointer_x;
 	p[3] = display->pointer_y;
 
 	wl_display_send_event(display, p, sizeof p);
 }
 
-void
+WL_EXPORT void
 wl_display_post_absolute_event(struct wl_display *display,
 			       struct wl_object *source, int x, int y)
 {
@@ -644,22 +625,40 @@ wl_display_post_absolute_event(struct wl_display *display,
 					 display->pointer_x, display->pointer_y);
 
 	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_POINTER_MOTION;
+	p[1] = (sizeof p << 16) | WL_INPUT_MOTION;
 	p[2] = display->pointer_x;
 	p[3] = display->pointer_y;
 
 	wl_display_send_event(display, p, sizeof p);
 }
 
-void
+WL_EXPORT void
 wl_display_post_button_event(struct wl_display *display,
 			     struct wl_object *source, int button, int state)
 {
 	uint32_t p[4];
 
 	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_POINTER_BUTTON;
+	p[1] = (sizeof p << 16) | WL_INPUT_BUTTON;
 	p[2] = button;
+	p[3] = state;
+
+	wl_display_send_event(display, p, sizeof p);
+}
+
+WL_EXPORT void
+wl_display_post_key_event(struct wl_display *display,
+			  struct wl_object *source, int key, int state)
+{
+	const struct wl_compositor_interface *interface;
+	uint32_t p[4];
+
+	interface = display->compositor->interface;
+	interface->notify_key(display->compositor, source, key, state);
+
+	p[0] = source->id;
+	p[1] = (sizeof p << 16) | WL_INPUT_KEY;
+	p[2] = key;
 	p[3] = state;
 
 	wl_display_send_event(display, p, sizeof p);

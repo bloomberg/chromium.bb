@@ -14,7 +14,6 @@ wayland_objs =					\
 	wayland.o				\
 	event-loop.o				\
 	connection.o				\
-	evdev.o					\
 	wayland-util.o
 
 wayland : CFLAGS += $(shell pkg-config --cflags libffi)
@@ -29,7 +28,7 @@ libwayland.so : $(libwayland_objs)
 
 $(compositors) $(clients) : CFLAGS += $(shell pkg-config --cflags libdrm)
 
-egl_compositor_objs = egl-compositor.o cairo-util.o
+egl_compositor_objs = egl-compositor.o evdev.o cairo-util.o
 egl-compositor.so : CFLAGS += $(EAGLE_CFLAGS) $(shell pkg-config --cflags libpng cairo gdk-pixbuf-2.0)
 egl-compositor.so : LDLIBS += $(EAGLE_LDLIBS) $(shell pkg-config --libs libpng cairo gdk-pixbuf-2.0) -rdynamic
 
