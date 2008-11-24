@@ -43,14 +43,6 @@ struct egl_surface {
 	EGLSurface surface;
 };
 
-static int do_screenshot;
-
-static void
-handle_sigusr1(int s)
-{
-	do_screenshot = 1;
-}
-
 static void
 die(const char *msg, ...)
 {
@@ -115,9 +107,15 @@ convert_pixels(png_structp png, png_row_infop row_info, png_bytep data)
 	}
 }
 
+struct screenshooter {
+	struct wl_object base;
+	struct egl_compositor *ec;
+};
+
 static void
-screenshot(struct egl_compositor *ec)
+screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 {
+	struct egl_compositor *ec = shooter->ec;
 	png_struct *png;
 	png_info *info;
 	png_byte **volatile rows = NULL;
@@ -178,6 +176,31 @@ screenshot(struct egl_compositor *ec)
 	free(rows);
 	free(data);
 }
+
+static const struct wl_method screenshooter_methods[] = {
+	{ "shoot", screenshooter_shoot, 0, NULL }
+};
+
+static const struct wl_interface screenshooter_interface = {
+	"screenshooter", 1,
+	ARRAY_LENGTH(screenshooter_methods),
+	screenshooter_methods,
+};
+
+static struct screenshooter *
+screenshooter_create(struct egl_compositor *ec)
+{
+	struct screenshooter *shooter;
+
+	shooter = malloc(sizeof *shooter);
+	if (shooter == NULL)
+		return NULL;
+
+	shooter->base.interface = &screenshooter_interface;
+	shooter->ec = ec;
+
+	return shooter;
+};
 
 static struct egl_surface *
 egl_surface_create_from_cairo_surface(cairo_surface_t *surface,
@@ -387,7 +410,7 @@ overlay_create(int x, int y, int width, int height)
 					     width, height);
 
 	cr = cairo_create(surface);
-	cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 0.7);
+	cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 0.8);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_paint(cr);
 
@@ -469,17 +492,6 @@ repaint(void *data)
 	draw_surface(ec->pointer);
 
 	eglSwapBuffers(ec->display, ec->surface);
-
-	if (do_screenshot) {
-		glFinish();
-		/* FIXME: There's a bug somewhere so that glFinish()
-		 * doesn't actually wait for all rendering to finish.
-		 * I *think* it's fixed in upstream drm, but for my
-		 * kernel I need this sleep now... */
-		sleep(1);
-		screenshot(ec);
-		do_screenshot = 0;
-	}
 }
 
 static void
@@ -637,6 +649,7 @@ wl_compositor_create(struct wl_display *display)
 	EGLint major, minor, count;
 	struct egl_compositor *ec;
 	const char *filename;
+	struct screenshooter *shooter;
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
@@ -703,7 +716,9 @@ wl_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
-	signal(SIGUSR1, handle_sigusr1);
+	shooter = screenshooter_create(ec);
+	wl_display_add_object(display, &shooter->base);
+	wl_display_add_global(display, &shooter->base);
 
 	schedule_repaint(ec);
 

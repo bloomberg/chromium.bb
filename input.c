@@ -126,7 +126,6 @@ wl_input_device_create(struct wl_display *display,
 	if (device == NULL)
 		return NULL;
 
-	device->base.id = id;
 	device->base.interface = &input_device_interface;
 	device->display = display;
 	device->tool = 1;

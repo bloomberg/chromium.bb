@@ -13,28 +13,6 @@
 #include "wayland.h"
 #include "connection.h"
 
-void wl_list_init(struct wl_list *list)
-{
-	list->prev = list;
-	list->next = list;
-}
-
-void
-wl_list_insert(struct wl_list *list, struct wl_list *elm)
-{
-	elm->prev = list;
-	elm->next = list->next;
-	list->next = elm;
-	elm->next->prev = elm;
-}
-
-void
-wl_list_remove(struct wl_list *elm)
-{
-	elm->prev->next = elm->next;
-	elm->next->prev = elm->prev;
-}
-
 struct wl_client {
 	struct wl_connection *connection;
 	struct wl_event_source *source;
@@ -56,6 +34,7 @@ struct wl_display {
 	struct wl_list surface_list;
 	struct wl_list client_list;
 	uint32_t client_id_range;
+	uint32_t id;
 
 	struct wl_list global_list;
 
@@ -359,7 +338,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		return;
 	}
 
-	while (len > sizeof p) {
+	while (len >= sizeof p) {
 		wl_connection_copy(connection, p, sizeof p);
 		opcode = p[1] & 0xffff;
 		size = p[1] >> 16;
@@ -428,6 +407,7 @@ wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
 	struct wl_object_ref *ref;
+	uint32_t count;
 
 	client = malloc(sizeof *client);
 	if (client == NULL)
@@ -448,6 +428,10 @@ wl_client_create(struct wl_display *display, int fd)
 			    sizeof display->client_id_range);
 	display->client_id_range += 256;
 
+	/* Write list of global objects to client. */
+	count = wl_list_length(&display->global_list);
+	wl_connection_write(client->connection, &count, sizeof count);
+	
 	ref = container_of(display->global_list.next,
 			   struct wl_object_ref, link);
 	while (&ref->link != &display->global_list) {
@@ -542,7 +526,7 @@ wl_display_create_input_devices(struct wl_display *display)
 	display->pointer = wl_input_device_create(display, path, 1);
 
 	if (display->pointer != NULL)
-		wl_hash_insert(&display->objects, display->pointer);
+		wl_display_add_object(display, display->pointer);
 
 	display->pointer_x = 100;
 	display->pointer_y = 100;
@@ -563,9 +547,6 @@ wl_display_create(void)
 		return NULL;
 	}
 
-	display->base.id = 0;
-	display->base.interface = &display_interface;
-	wl_hash_insert(&display->objects, &display->base);
 	wl_list_init(&display->surface_list);
 	wl_list_init(&display->client_list);
 	wl_list_init(&display->global_list);
@@ -574,6 +555,9 @@ wl_display_create(void)
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
+	display->id = 1;
+	display->base.interface = &display_interface;
+	wl_display_add_object(display, &display->base);
 	if (wl_display_add_global(display, &display->base)) {
 		wl_event_loop_destroy(display->loop);
 		free(display);
@@ -581,6 +565,13 @@ wl_display_create(void)
 	}		
 
 	return display;		
+}
+
+WL_EXPORT void
+wl_display_add_object(struct wl_display *display, struct wl_object *object)
+{
+	object->id = display->id++;
+	wl_hash_insert(&display->objects, object);
 }
 
 WL_EXPORT int

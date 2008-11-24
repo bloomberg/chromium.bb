@@ -5,7 +5,7 @@ PKG_CONFIG_PATH ?= $(HOME)/install/lib/pkgconfig
 EAGLE_CFLAGS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --cflags eagle)
 EAGLE_LDLIBS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs eagle)
 
-clients = flower pointer background window
+clients = flower pointer background window screenshot
 compositors = egl-compositor.so glx-compositor.so
 
 all : wayland libwayland.so $(compositors) $(clients)
@@ -14,8 +14,8 @@ wayland_objs =					\
 	wayland.o				\
 	event-loop.o				\
 	connection.o				\
-	hash.o					\
-	input.o
+	input.o					\
+	wayland-util.o
 
 wayland : CFLAGS += $(shell pkg-config --cflags libffi)
 wayland : LDLIBS += $(shell pkg-config --libs libffi) -ldl -rdynamic
@@ -23,7 +23,7 @@ wayland : LDLIBS += $(shell pkg-config --libs libffi) -ldl -rdynamic
 wayland : $(wayland_objs)
 	gcc -o $@ $(LDLIBS) $(wayland_objs)
 
-libwayland_objs = wayland-client.o connection.o
+libwayland_objs = wayland-client.o connection.o wayland-util.o
 
 libwayland.so : $(libwayland_objs)
 
@@ -48,6 +48,7 @@ flower_objs = flower.o wayland-glib.o
 pointer_objs = pointer.o wayland-glib.o cairo-util.o
 background_objs = background.o wayland-glib.o
 window_objs = window.o gears.o wayland-glib.o cairo-util.o
+screenshot_objs = screenshot.o wayland-glib.o
 
 $(clients) : CFLAGS += $(shell pkg-config --cflags cairo glib-2.0)
 $(clients) : LDLIBS += $(shell pkg-config --libs cairo glib-2.0) -lrt

@@ -32,7 +32,6 @@ void wl_display_set_event_handler(struct wl_display *display,
 				  wl_display_event_func_t handler,
 				  void *data);
 
-
 struct wl_surface *
 wl_display_create_surface(struct wl_display *display);
 
@@ -46,5 +45,16 @@ void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,
 		     int32_t x, int32_t y, int32_t width, int32_t height);
 void wl_surface_damage(struct wl_surface *surface,
 		       int32_t x, int32_t y, int32_t width, int32_t height);
+
+
+/* These entry points are for client side implementation of custom
+ * objects. */
+
+uint32_t wl_display_get_object_id(struct wl_display *display,
+				  const char *interface);
+uint32_t wl_display_allocate_id(struct wl_display *display);
+void wl_display_write(struct wl_display *display,
+		      const void *data,
+		      size_t count);
 
 #endif

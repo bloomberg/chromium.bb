@@ -11,9 +11,16 @@
 #include <sys/poll.h>
 
 #include "connection.h"
+#include "wayland-util.h"
 #include "wayland-client.h"
 
 static const char socket_name[] = "\0wayland";
+
+struct wl_global {
+	uint32_t id;
+	char *interface;
+	struct wl_list link;
+};
 
 struct wl_proxy {
 	struct wl_display *display;
@@ -26,6 +33,7 @@ struct wl_display {
 	int fd;
 	uint32_t id;
 	uint32_t mask;
+	struct wl_list global_list;
 
 	wl_display_update_func_t update;
 	void *update_data;
@@ -56,10 +64,11 @@ WL_EXPORT struct wl_display *
 wl_display_create(const char *address)
 {
 	struct wl_display *display;
+	struct wl_global *global;
 	struct sockaddr_un name;
 	socklen_t size;
 	char buffer[256];
-	uint32_t id, length;
+	uint32_t id, length, count, i;
 
 	display = malloc(sizeof *display);
 	if (display == NULL)
@@ -87,13 +96,28 @@ wl_display_create(const char *address)
 	 * guess... */
 	read(display->fd, &display->id, sizeof display->id);
 
-	/* FIXME: actually discover advertised objects here. */
-	read(display->fd, &id, sizeof id);
-	read(display->fd, &length, sizeof length);
-	read(display->fd, buffer, (length + 3) & ~3);
+	read(display->fd, &count, sizeof count);
+
+	wl_list_init(&display->global_list);
+	for (i = 0; i < count; i++) {
+		/* FIXME: actually discover advertised objects here. */
+		read(display->fd, &id, sizeof id);
+		read(display->fd, &length, sizeof length);
+		read(display->fd, buffer, (length + 3) & ~3);
+
+		global = malloc(sizeof *global);
+		if (global == NULL)
+			return NULL;
+
+		global->id = id;
+		global->interface = malloc(length + 1);
+		memcpy(global->interface, buffer, length);
+		global->interface[length] = '\0';
+		wl_list_insert(display->global_list.prev, &global->link);
+	}
 
 	display->proxy.display = display;
-	display->proxy.id = id;
+	display->proxy.id = wl_display_get_object_id(display, "display");
 
 	display->connection = wl_connection_create(display->fd,
 						   connection_update,
@@ -108,6 +132,24 @@ wl_display_destroy(struct wl_display *display)
 	wl_connection_destroy(display->connection);
 	close(display->fd);
 	free(display);
+}
+
+WL_EXPORT uint32_t
+wl_display_get_object_id(struct wl_display *display, const char *interface)
+{
+	struct wl_global *global;
+
+	global = container_of(display->global_list.next,
+			      struct wl_global, link);
+	while (&global->link != &display->global_list) {
+		if (strcmp(global->interface, interface) == 0)
+			return global->id;
+
+		global = container_of(global->link.next,
+				      struct wl_global, link);
+	}
+
+	return 0;
 }
 
 WL_EXPORT int
@@ -171,6 +213,18 @@ wl_display_set_event_handler(struct wl_display *display,
 	display->event_handler_data = data;
 }
 
+WL_EXPORT uint32_t
+wl_display_allocate_id(struct wl_display *display)
+{
+	return display->id++;
+}
+
+WL_EXPORT void
+wl_display_write(struct wl_display *display, const void *data, size_t count)
+{
+	wl_connection_write(display->connection, data, count);
+}
+
 #define WL_DISPLAY_CREATE_SURFACE 0
 
 WL_EXPORT struct wl_surface *
@@ -183,7 +237,7 @@ wl_display_create_surface(struct wl_display *display)
 	if (surface == NULL)
 		return NULL;
 
-	surface->proxy.id = display->id++;
+	surface->proxy.id = wl_display_allocate_id(display);
 	surface->proxy.display = display;
 
 	request[0] = display->proxy.id;
@@ -284,4 +338,3 @@ wl_surface_damage(struct wl_surface *surface,
 	wl_connection_write(surface->proxy.display->connection,
 			    request, sizeof request);
 }
-

@@ -43,3 +43,41 @@ wl_hash_delete(struct wl_hash *hash, struct wl_object *object)
 {
 	/* writeme */
 }
+
+
+void wl_list_init(struct wl_list *list)
+{
+	list->prev = list;
+	list->next = list;
+}
+
+void
+wl_list_insert(struct wl_list *list, struct wl_list *elm)
+{
+	elm->prev = list;
+	elm->next = list->next;
+	list->next = elm;
+	elm->next->prev = elm;
+}
+
+void
+wl_list_remove(struct wl_list *elm)
+{
+	elm->prev->next = elm->next;
+	elm->next->prev = elm->prev;
+}
+
+int
+wl_list_length(struct wl_list *list)
+{
+	struct wl_list *e;
+	int count;
+
+	e = list->next;
+	while (e != list) {
+		e = e->next;
+		count++;
+	}
+
+	return count;
+}
