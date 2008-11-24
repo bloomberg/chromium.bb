@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 		exit(-1);
 
 	screenshooter_shoot(s);
-
+	g_idle_add((GSourceFunc) g_main_loop_quit, loop);
 	g_main_loop_run(loop);
 
 	return 0;
