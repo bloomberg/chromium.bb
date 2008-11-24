@@ -57,6 +57,8 @@ struct wl_display {
 	struct wl_list client_list;
 	uint32_t client_id_range;
 
+	struct wl_list global_list;
+
 	int32_t pointer_x;
 	int32_t pointer_y;
 };
@@ -425,6 +427,7 @@ static struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
+	struct wl_object_ref *ref;
 
 	client = malloc(sizeof *client);
 	if (client == NULL)
@@ -445,7 +448,14 @@ wl_client_create(struct wl_display *display, int fd)
 			    sizeof display->client_id_range);
 	display->client_id_range += 256;
 
-	advertise_object(client, &display->base);
+	ref = container_of(display->global_list.next,
+			   struct wl_object_ref, link);
+	while (&ref->link != &display->global_list) {
+		advertise_object(client, ref->object);
+
+		ref = container_of(ref->link.next,
+				   struct wl_object_ref, link);
+	}
 
 	wl_list_insert(display->client_list.prev, &client->link);
 
@@ -558,12 +568,34 @@ wl_display_create(void)
 	wl_hash_insert(&display->objects, &display->base);
 	wl_list_init(&display->surface_list);
 	wl_list_init(&display->client_list);
+	wl_list_init(&display->global_list);
 
 	wl_display_create_input_devices(display);
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
+	if (wl_display_add_global(display, &display->base)) {
+		wl_event_loop_destroy(display->loop);
+		free(display);
+		return NULL;
+	}		
+
 	return display;		
+}
+
+WL_EXPORT int
+wl_display_add_global(struct wl_display *display, struct wl_object *object)
+{
+	struct wl_object_ref *ref;
+
+	ref = malloc(sizeof *ref);
+	if (ref == NULL)
+		return -1;
+
+	ref->object = object;
+	wl_list_insert(display->global_list.prev, &ref->link);
+
+	return 0;	
 }
 
 static void

@@ -122,6 +122,8 @@ void wl_surface_iterator_destroy(struct wl_surface_iterator *iterator);
 struct wl_object *
 wl_input_device_create(struct wl_display *display,
 		       const char *path, uint32_t id);
+int
+wl_display_add_global(struct wl_display *display, struct wl_object *object);
 void
 wl_display_post_relative_event(struct wl_display *display,
 			       struct wl_object *source, int dx, int dy);
