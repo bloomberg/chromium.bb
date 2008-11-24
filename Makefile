@@ -14,7 +14,7 @@ wayland_objs =					\
 	wayland.o				\
 	event-loop.o				\
 	connection.o				\
-	input.o					\
+	evdev.o					\
 	wayland-util.o
 
 wayland : CFLAGS += $(shell pkg-config --cflags libffi)
