@@ -328,12 +328,14 @@ static bool CompareAddress(T1 *a, T2 *b) {
 // Sort the array into increasing ordered array based on the virtual address.
 // Return vector of pointers to the elements in the incoming array. So caller
 // should make sure the returned vector lives longer than the incoming vector.
-template<class T>
-static std::vector<T *> SortByAddress(std::list<T> *array) {
-  typedef typename std::list<T>::iterator It;
+template<class Container>
+static std::vector<typename Container::value_type *> SortByAddress(
+    Container *container) {
+  typedef typename Container::iterator It;
+  typedef typename Container::value_type T;
   std::vector<T *> sorted_array_ptr;
-  sorted_array_ptr.reserve(array->size());
-  for (It it = array -> begin(); it != array -> end(); it++)
+  sorted_array_ptr.reserve(container->size());
+  for (It it = container->begin(); it != container->end(); it++)
     sorted_array_ptr.push_back(&(*it));
   std::sort(sorted_array_ptr.begin(),
             sorted_array_ptr.end(),
@@ -379,7 +381,8 @@ static ElfW(Addr) NextAddress(
 
 static int FindFileByNameIdx(uint32_t name_index,
                              SourceFileInfoList &files) {
-  for (SourceFileInfoList::iterator it = files.begin(); it != files.end(); it++) {
+  for (SourceFileInfoList::iterator it = files.begin();
+       it != files.end(); it++) {
     if (it->name_index == name_index)
       return it->source_id;
   }
@@ -391,7 +394,8 @@ static int FindFileByNameIdx(uint32_t name_index,
 // Also fix the source id for the line info.
 static void AddIncludedFiles(struct SymbolInfo *symbols,
                              const ElfW(Shdr) *stabstr_section) {
-  for (SourceFileInfoList::iterator source_file_it = symbols->source_file_info.begin(); 
+  for (SourceFileInfoList::iterator source_file_it =
+	 symbols->source_file_info.begin();
        source_file_it != symbols->source_file_info.end();
        ++source_file_it) {
     struct SourceFileInfo &source_file = *source_file_it;
@@ -624,7 +628,8 @@ static bool WriteModuleInfo(int fd,
 }
 
 static bool WriteSourceFileInfo(int fd, const struct SymbolInfo &symbols) {
-  for (SourceFileInfoList::const_iterator it = symbols.source_file_info.begin(); 
+  for (SourceFileInfoList::const_iterator it =
+	 symbols.source_file_info.begin();
        it != symbols.source_file_info.end(); it++) {
     if (it->source_id != -1) {
       const char *name = it->name;
@@ -668,7 +673,8 @@ static bool WriteOneFunction(int fd,
 }
 
 static bool WriteFunctionInfo(int fd, const struct SymbolInfo &symbols) {
-  for (SourceFileInfoList::const_iterator it = symbols.source_file_info.begin(); 
+  for (SourceFileInfoList::const_iterator it =
+	 symbols.source_file_info.begin();
        it != symbols.source_file_info.end(); it++) {
     const struct SourceFileInfo &file_info = *it;
     for (FuncInfoList::const_iterator fiIt = file_info.func_info.begin(); 
