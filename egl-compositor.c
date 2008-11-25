@@ -578,9 +578,6 @@ notify_surface_attach(struct wl_compositor *compositor,
 	if (es->surface != EGL_NO_SURFACE)
 		eglDestroySurface(ec->display, es->surface);
 
-	/* FIXME: We need to use a single buffer config without depth
-	 * or stencil buffers here to keep egl from creating auxillary
-	 * buffers for the pixmap here. */
 	es->surface = eglCreateSurfaceForName(ec->display, ec->config,
 					      name, width, height, stride, NULL);
 
@@ -803,14 +800,65 @@ create_frontbuffer(int fd, int *width, int *height, int *stride)
 	return flink.name;
 }
 
+static int
+pick_config(struct egl_compositor *ec)
+{
+	EGLConfig configs[100];
+	EGLint value, count;
+	int i;
+
+	if (!eglGetConfigs(ec->display, configs, ARRAY_LENGTH(configs), &count)) {
+		fprintf(stderr, "failed to get configs\n");
+		return -1;
+	}
+
+	ec->config = EGL_NO_CONFIG;
+	for (i = 0; i < count; i++) {
+		eglGetConfigAttrib(ec->display,
+				   configs[i],
+				   EGL_DEPTH_SIZE,
+				   &value);
+		if (value > 0) {
+			fprintf(stderr, "config %d has depth size %d\n", i, value);
+			continue;
+		}
+
+		eglGetConfigAttrib(ec->display,
+				   configs[i],
+				   EGL_STENCIL_SIZE,
+				   &value);
+		if (value > 0) {
+			fprintf(stderr, "config %d has stencil size %d\n", i, value);
+			continue;
+		}
+
+		eglGetConfigAttrib(ec->display,
+				   configs[i],
+				   EGL_CONFIG_CAVEAT,
+				   &value);
+		if (value != EGL_NONE) {
+			fprintf(stderr, "config %d has caveat %d\n", i, value);
+			continue;
+		}
+
+		ec->config = configs[i];
+		break;
+	}
+
+	if (ec->config == EGL_NO_CONFIG) {
+		fprintf(stderr, "found no config without depth or stencil buffers\n");
+		return -1;
+	}
+
+	return 0;
+}
 
 static const char gem_device[] = "/dev/dri/card0";
 
 WL_EXPORT struct wl_compositor *
 wl_compositor_create(struct wl_display *display)
 {
-	EGLConfig configs[64];
-	EGLint major, minor, count;
+	EGLint major, minor;
 	struct egl_compositor *ec;
 	const char *filename;
 	struct screenshooter *shooter;
@@ -837,12 +885,9 @@ wl_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
-	if (!eglGetConfigs(ec->display, configs, ARRAY_LENGTH(configs), &count)) {
-		fprintf(stderr, "failed to get configs\n");
+	if (pick_config(ec))
 		return NULL;
-	}
  
-	ec->config = configs[24];
 	fb_name = create_frontbuffer(eglGetDisplayFD(ec->display),
 				     &ec->width, &ec->height, &stride);
 	ec->surface = eglCreateSurfaceForName(ec->display, ec->config,
