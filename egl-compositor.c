@@ -478,10 +478,19 @@ animate_overlay(struct egl_compositor *ec)
 {
 	double force, y;
 	int32_t top, bottom;
+#if 1
+	double bounce = 0.0;
+	double friction = 1.0;
+	double spring = 0.2;
+#else
+	double bounce = 0.2;
+	double friction = 0.04;
+	double spring = 0.09;
+#endif
 
 	y = ec->overlay_y;
-	force = (ec->overlay_target - ec->overlay_y) / 5.0 +
-		(ec->overlay_previous - y);
+	force = (ec->overlay_target - ec->overlay_y) * spring +
+		(ec->overlay_previous - y) * friction;
 	
 	ec->overlay_y = y + (y - ec->overlay_previous) + force;
 	ec->overlay_previous = y;
@@ -494,12 +503,15 @@ animate_overlay(struct egl_compositor *ec)
 	}
 
 	if (ec->overlay_y <= top) {
-		ec->overlay_y = top;
-		ec->overlay_previous = top;
+		ec->overlay_y = top + bounce * (top - ec->overlay_y);
+		ec->overlay_previous =
+			top + bounce * (top - ec->overlay_previous);
 	}
 
 	ec->overlay->map.y = ec->overlay_y + 0.5;
-	if ((int) (y + 0.5) != ec->overlay_target)
+
+	if (fabs(y + 0.5 - ec->overlay_target) > 0.2 ||
+	    fabs(ec->overlay_y + 5 - ec->overlay_target) > 0.2)
 		schedule_repaint(ec);
 }
 
