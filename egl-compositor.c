@@ -15,6 +15,7 @@
 #include <png.h>
 #include <math.h>
 #include <linux/input.h>
+#include <xf86drmMode.h>
 
 #include "wayland.h"
 #include "cairo-util.h"
@@ -711,6 +712,98 @@ create_input_devices(struct wl_display *display)
 		wl_display_add_object(display, obj);
 }
 
+static uint32_t
+create_frontbuffer(int fd, int *width, int *height, int *stride)
+{
+	drmModeConnector *connector;
+	drmModeRes *resources;
+	drmModeEncoder *encoder;
+	struct drm_mode_modeinfo *mode;
+	struct drm_i915_gem_create create;
+	struct drm_i915_gem_pin pin;
+	struct drm_gem_flink flink;
+	unsigned int fb_id;
+	int i, ret;
+
+	resources = drmModeGetResources(fd);
+	if (!resources) {
+		fprintf(stderr, "drmModeGetResources failed\n");
+		return 0;
+	}
+
+	for (i = 0; i < resources->count_connectors; i++) {
+		connector = drmModeGetConnector(fd, resources->connectors[i]);
+		if (connector == NULL)
+			continue;
+
+		if (connector->connection == DRM_MODE_CONNECTED &&
+		    connector->count_modes > 0)
+			break;
+
+		drmModeFreeConnector(connector);
+	}
+
+	if (i == resources->count_connectors) {
+		fprintf(stderr, "No currently active connector found.\n");
+		return -1;
+	}
+
+	mode = &connector->modes[0];
+
+	for (i = 0; i < resources->count_encoders; i++) {
+		encoder = drmModeGetEncoder(fd, resources->encoders[i]);
+
+		if (encoder == NULL)
+			continue;
+
+		if (encoder->encoder_id == connector->encoder_id)
+			break;
+
+		drmModeFreeEncoder(encoder);
+	}
+
+	/* Mode size at 32 bpp */
+	create.size = mode->hdisplay * mode->vdisplay * 4;
+	if (ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create) != 0) {
+		fprintf(stderr, "gem create failed: %m\n");
+		return 0;
+	}
+
+	pin.handle = create.handle;
+	pin.alignment = 4096;
+	if (ioctl(fd, DRM_IOCTL_I915_GEM_PIN, &pin)) {
+		fprintf(stderr, "failed to pin buffer: %m\n");
+		return 0;
+	}
+
+	ret = drmModeAddFB(fd, mode->hdisplay, mode->vdisplay,
+			   32, 32, mode->hdisplay * 4, create.handle, &fb_id);
+	if (ret) {
+		fprintf(stderr, "failed to add fb: %m\n");
+		return 0;
+	}
+
+	ret = drmModeSetCrtc(fd, encoder->crtc_id, fb_id, 0, 0,
+			     &connector->connector_id, 1, mode);
+	if (ret) {
+		fprintf(stderr, "failed to set mode: %m\n");
+		return 0;
+	}
+
+	flink.handle = create.handle;
+	if (ioctl(fd, DRM_IOCTL_GEM_FLINK, &flink) != 0) {
+		fprintf(stderr, "gem flink failed: %m\n");
+		return 0;
+	}
+
+	*width = mode->hdisplay;
+	*height = mode->vdisplay;
+	*stride = mode->hdisplay * 4;
+
+	return flink.name;
+}
+
+
 static const char gem_device[] = "/dev/dri/card0";
 
 WL_EXPORT struct wl_compositor *
@@ -721,13 +814,14 @@ wl_compositor_create(struct wl_display *display)
 	struct egl_compositor *ec;
 	const char *filename;
 	struct screenshooter *shooter;
+	uint32_t fb_name;
+	int stride;
+	const static EGLint attribs[] =
+		{ EGL_RENDER_BUFFER, EGL_BACK_BUFFER, EGL_NONE };
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
 		return NULL;
-
-	ec->width = 1280;
-	ec->height = 800;
 
 	ec->base.interface = &interface;
 	ec->wl_display = display;
@@ -747,10 +841,12 @@ wl_compositor_create(struct wl_display *display)
 		fprintf(stderr, "failed to get configs\n");
 		return NULL;
 	}
-
+ 
 	ec->config = configs[24];
-	ec->surface = eglCreateSurfaceNative(ec->display, ec->config,
-					     0, 0, ec->width, ec->height);
+	fb_name = create_frontbuffer(eglGetDisplayFD(ec->display),
+				     &ec->width, &ec->height, &stride);
+	ec->surface = eglCreateSurfaceForName(ec->display, ec->config,
+					      fb_name, ec->width, ec->height, stride, attribs);
 	if (ec->surface == NULL) {
 		fprintf(stderr, "failed to create surface\n");
 		return NULL;
