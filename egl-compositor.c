@@ -37,7 +37,7 @@ struct egl_compositor {
 	struct egl_surface *pointer;
 	struct egl_surface *background;
 	struct egl_surface *overlay;
-	int32_t overlay_target, overlay_previous;
+	double overlay_y, overlay_target, overlay_previous;
 };
 
 struct egl_surface {
@@ -474,14 +474,42 @@ static void
 schedule_repaint(struct egl_compositor *ec);
 
 static void
+animate_overlay(struct egl_compositor *ec)
+{
+	double force, y;
+	int32_t top, bottom;
+
+	y = ec->overlay_y;
+	force = (ec->overlay_target - ec->overlay_y) / 5.0 +
+		(ec->overlay_previous - y);
+	
+	ec->overlay_y = y + (y - ec->overlay_previous) + force;
+	ec->overlay_previous = y;
+
+	top = ec->height - ec->overlay->map.height;
+	bottom = ec->height;
+	if (ec->overlay_y >= bottom) {
+		ec->overlay_y = bottom;
+		ec->overlay_previous = bottom;
+	}
+
+	if (ec->overlay_y <= top) {
+		ec->overlay_y = top;
+		ec->overlay_previous = top;
+	}
+
+	ec->overlay->map.y = ec->overlay_y + 0.5;
+	if ((int) (y + 0.5) != ec->overlay_target)
+		schedule_repaint(ec);
+}
+
+static void
 repaint(void *data)
 {
 	struct egl_compositor *ec = data;
 	struct wl_surface_iterator *iterator;
 	struct wl_surface *surface;
 	struct egl_surface *es;
-	double force;
-	int32_t y;
 
 	draw_surface(ec->background);
 
@@ -501,25 +529,7 @@ repaint(void *data)
 
 	eglSwapBuffers(ec->display, ec->surface);
 
-	y = ec->overlay->map.y;
-	force = (ec->overlay_target - ec->overlay->map.y) / 25.0 + 
-		(ec->overlay_previous - y) / 25.0;
-	
-	ec->overlay->map.y = y + (y - ec->overlay_previous) + force;
-	ec->overlay_previous = y;
-
-	if (ec->overlay->map.y >= 800) {
-		ec->overlay->map.y = 800;
-		ec->overlay_previous = 800;
-	}
-
-	if (ec->overlay->map.y <= 600) {
-		ec->overlay->map.y = 600;
-		ec->overlay_previous = 600;
-	}
-
-	if (ec->overlay->map.y != y)
-		schedule_repaint(ec);
+	animate_overlay(ec);
 }
 
 static void
