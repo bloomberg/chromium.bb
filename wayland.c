@@ -315,6 +315,7 @@ wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t eve
 #define WL_DISPLAY_INVALID_OBJECT 0
 #define WL_DISPLAY_INVALID_METHOD 1
 #define WL_DISPLAY_NO_MEMORY 2
+#define WL_DISPLAY_ACKNOWLEDGE 3
 
 static void
 wl_client_connection_data(int fd, uint32_t mask, void *data)
@@ -495,14 +496,36 @@ static const struct wl_argument create_surface_arguments[] = {
 	{ WL_ARGUMENT_NEW_ID }
 };
 
+static int
+wl_display_commit(struct wl_client *client,
+		  struct wl_display *display, uint32_t key)
+{
+	uint32_t event[3];
+
+	event[0] = display->base.id;
+	event[1] = WL_DISPLAY_ACKNOWLEDGE | ((sizeof event) << 16);
+	event[2] = key;
+	wl_connection_write(client->connection, event, sizeof event);
+
+	return 0;
+}
+
+static const struct wl_argument commit_arguments[] = {
+	{ WL_ARGUMENT_UINT32 }
+};
+
 static const struct wl_method display_methods[] = {
 	{ "create_surface", wl_display_create_surface,
 	  ARRAY_LENGTH(create_surface_arguments), create_surface_arguments },
+	{ "commit", wl_display_commit,
+	  ARRAY_LENGTH(commit_arguments), commit_arguments },
 };
 
 static const struct wl_event display_events[] = {
 	{ "invalid_object" },
 	{ "invalid_method" },
+	{ "no_memory" },
+	{ "acknowledge" },
 };
 
 static const struct wl_interface display_interface = {

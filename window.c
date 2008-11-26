@@ -28,13 +28,16 @@ static void die(const char *msg)
 }
 
 struct window {
+	struct wl_display *display;
 	struct wl_surface *surface;
 	int x, y, width, height;
+	int margin;
 	int drag_x, drag_y, last_x, last_y;
 	int state;
 	uint32_t name;
 	int fd;
 	int redraw_scheduled;
+	int resized;
 	cairo_pattern_t *background;
 
 	struct buffer *buffer;
@@ -42,7 +45,7 @@ struct window {
 
 	GLfloat gears_angle;
 	struct gears *gears;
-	EGLDisplay display;
+	EGLDisplay egl_display;
 	EGLContext context;
 	EGLConfig config;
 	EGLSurface egl_surface;
@@ -68,15 +71,16 @@ draw_window(void *data)
 	struct window *window = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
-	int border = 2, radius = 5, shadow = 16;
+	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
 	cairo_pattern_t *gradient, *outline, *bright, *dim;
-	struct buffer *buffer;
 	const static char title[] = "Wayland First Post";
+	struct buffer *buffer;
 	int width, height;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					     window->width + 32, window->height + 32);
+					     window->width + window->margin * 2,
+					     window->height + window->margin * 2);
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
 	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
@@ -84,14 +88,13 @@ draw_window(void *data)
 
 	cr = cairo_create(surface);
 
-	cairo_translate(cr, shadow + 7, shadow + 5);
+	cairo_translate(cr, window->margin + 7, window->margin + 5);
 	cairo_set_line_width (cr, border);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
 	rounded_rect(cr, 0, 0, window->width, window->height, radius);
 	cairo_fill(cr);
 	blur_surface(surface, 24 + radius);
 
-#if 1
 	cairo_translate(cr, -7, -5);
 	cairo_set_line_width (cr, border);
 	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
@@ -141,33 +144,32 @@ draw_window(void *data)
 	cairo_stroke_preserve(cr);
 	cairo_set_source_rgb(cr, 1, 1, 1);
 	cairo_fill(cr);
-#endif
 	cairo_destroy(cr);
-	if (window->buffer != NULL)
-		buffer_destroy(window->buffer, window->fd);
-	buffer = buffer_create_from_cairo_surface(window->fd, surface);
-	window->buffer = buffer;
 
+	window->buffer = buffer_create_from_cairo_surface(window->fd, surface);
 	cairo_surface_destroy(surface);
 
-	wl_surface_attach(window->surface, buffer->name,
-			  buffer->width, buffer->height, buffer->stride);
-			  
-	wl_surface_map(window->surface, 
-		       window->x, window->y,
-		       buffer->width, buffer->height);
+	wl_surface_attach(window->surface,
+			  window->buffer->name,
+			  window->buffer->width,
+			  window->buffer->height,
+			  window->buffer->stride);
 
-	/* FIXME: Free window->buffer when we receive the ack event. */
+	wl_surface_map(window->surface, 
+		       window->x - window->margin,
+		       window->y - window->margin,
+		       window->buffer->width,
+		       window->buffer->height);
 
 	width = window->width - 20;		
 	height = window->height - 60;
 	buffer = buffer_create(window->fd, width, height, (width * 4 + 15) & ~15);
 	window->egl_buffer = buffer;
-	window->egl_surface = eglCreateSurfaceForName(window->display,
+	window->egl_surface = eglCreateSurfaceForName(window->egl_display,
 						      window->config, buffer->name,
 						      buffer->width, buffer->height,
 						      buffer->stride, NULL);
-	if (!eglMakeCurrent(window->display,
+	if (!eglMakeCurrent(window->egl_display,
 			    window->egl_surface, window->egl_surface, window->context))
 		die("failed to make context current\n");
 
@@ -177,9 +179,12 @@ draw_window(void *data)
 		window->gears = gears_create(0, 0, 0, 0.92);
 
 	gears_draw(window->gears, window->gears_angle);
-	wl_surface_copy(window->surface, 10 + shadow, 50 + shadow,
+	wl_surface_copy(window->surface,
+			10 + window->margin, 50 + window->margin,
 			buffer->name, buffer->stride,
 			0, 0, buffer->width, buffer->height);
+
+	wl_display_commit(window->display, 0);
 
 	window->redraw_scheduled = 0;
 
@@ -206,69 +211,107 @@ enum location {
 
 static void
 event_handler(struct wl_display *display,
-	      uint32_t opcode, uint32_t arg1, uint32_t arg2, void *data)
+	      uint32_t object, uint32_t opcode,
+	      uint32_t size, uint32_t *p, void *data)
 {
 	struct window *window = data;
-	int location, border = 4;
+	int location;
 	int grip_size = 16;
 
-	if (opcode == 0) {
-		window->last_x = arg1;
-		window->last_y = arg2;
+	/* FIXME: Object ID 1 is the display, for anything else we
+	 * assume it's an input device. */
+	if (object == 1 && opcode == 3) {
+		int key = p[0];
+
+		/* The acknowledge event means that the server
+		 * processed our last comit request and we can now
+		 * safely free the buffer.  key == 0 means it's an
+		 * acknowledge event for the drawing in draw_buffer,
+		 * key == 1 is from animating the gears, which we
+		 * ignore.  If the window was resized in the meantime,
+		 * schedule another redraw. */
+		if (key == 0) {
+			if (window->resized)
+				g_idle_add(draw_window, window);
+			buffer_destroy(window->buffer, window->fd);
+			window->buffer = NULL;
+			window->resized = 0;
+		}
+	} else if (opcode == 0) {
+		int x = p[0], y = p[1];
+
+		window->last_x = x;
+		window->last_y = y;
 		switch (window->state) {
 		case WINDOW_MOVING:
-			window->x = window->drag_x + arg1;
-			window->y = window->drag_y + arg2;
-			wl_surface_map(window->surface, window->x, window->y,
-				       window->buffer->width, window->buffer->height);
+			window->x = window->drag_x + x;
+			window->y = window->drag_y + y;
+			wl_surface_map(window->surface,
+				       window->x - window->margin,
+				       window->y - window->margin,
+				       window->width + 2 * window->margin,
+				       window->height + 2 * window->margin);
 			break;
 		case WINDOW_RESIZING_LOWER_RIGHT:
-			window->width = window->drag_x + arg1;
-			window->height = window->drag_y + arg2;
+			window->width = window->drag_x + x;
+			window->height = window->drag_y + y;
 			if (window->width < 400)
 				window->width = 400;
 			if (window->height < 400)
 				window->height = 400;
 			if (!window->redraw_scheduled) {
+				/* If window->buffer is NULL, it means
+				 * we got the ack for the previous
+				 * resize, so we can just schedule a
+				 * redraw from idle.  Otherwise, we're
+				 * still expecting an ack and we'll
+				 * notice that the size changed in the
+				 * ack handler and schedule a redraw
+				 * there. */
+				if (window->buffer == NULL)
+					g_idle_add(draw_window, window);
+				else
+					window->resized = 1;
 				window->redraw_scheduled = 1;
-				g_idle_add(draw_window, window);
 			}
 			break;
 		}
-	}
+	} else if (opcode == 1) {
+		int button = p[0], state = p[1];
 
-	if (window->x + window->width - grip_size <= window->last_x &&
-		   window->last_x < window->x + window->width &&
-		   window->y + window->height - grip_size <= window->last_y &&
-		   window->last_y < window->y + window->height) {
-		location = LOCATION_LOWER_RIGHT;
-	} else if (window->x + border <= window->last_x &&
-		   window->last_x < window->x + window->width - border &&
-		   window->y + border <= window->last_y &&
-		   window->last_y < window->y + window->height - border) {
-		location = LOCATION_INTERIOR;
-	} else {
-		location = LOCATION_OUTSIDE;
-	}
-
-	if (opcode == 1 && arg1 == 0 && arg2 == 1) {
-		switch (location) {
-		case LOCATION_INTERIOR:
-			window->drag_x = window->x - window->last_x;
-			window->drag_y = window->y - window->last_y;
-			window->state = WINDOW_MOVING;
-			break;
-		case LOCATION_LOWER_RIGHT:
-			window->drag_x = window->width - window->last_x;
-			window->drag_y = window->height - window->last_y;
-			window->state = WINDOW_RESIZING_LOWER_RIGHT;
-			break;
-		default:
-			window->state = WINDOW_STABLE;
-			break;
+		if (window->x + window->width - grip_size <= window->last_x &&
+		    window->last_x < window->x + window->width &&
+		    window->y + window->height - grip_size <= window->last_y &&
+		    window->last_y < window->y + window->height) {
+			location = LOCATION_LOWER_RIGHT;
+		} else if (window->x <= window->last_x &&
+			   window->last_x < window->x + window->width &&
+			   window->y <= window->last_y &&
+			   window->last_y < window->y + window->height) {
+			location = LOCATION_INTERIOR;
+		} else {
+			location = LOCATION_OUTSIDE;
 		}
-	} else if (opcode == 1 && arg1 == 0 && arg2 == 0) {
-		window->state = WINDOW_STABLE;
+
+		if (button == 0 && state == 1) {
+			switch (location) {
+			case LOCATION_INTERIOR:
+				window->drag_x = window->x - window->last_x;
+				window->drag_y = window->y - window->last_y;
+				window->state = WINDOW_MOVING;
+				break;
+			case LOCATION_LOWER_RIGHT:
+				window->drag_x = window->width - window->last_x;
+				window->drag_y = window->height - window->last_y;
+				window->state = WINDOW_RESIZING_LOWER_RIGHT;
+				break;
+			default:
+				window->state = WINDOW_STABLE;
+				break;
+			}
+		} else if (button == 0 && state == 0) {
+			window->state = WINDOW_STABLE;
+		}
 	}
 }
 
@@ -285,27 +328,29 @@ window_create(struct wl_display *display, int fd)
 		return NULL;
 
 	memset(window, 0, sizeof *window);
+	window->display = display;
 	window->surface = wl_display_create_surface(display);
 	window->x = 200;
 	window->y = 200;
 	window->width = 450;
 	window->height = 500;
+	window->margin = 16;
 	window->state = WINDOW_STABLE;
 	window->fd = fd;
 	window->background = cairo_pattern_create_rgba (red, green, blue, alpha);
 
-	window->display = eglCreateDisplayNative("/dev/dri/card0", "i965");
-	if (window->display == NULL)
-		die("failed to create display\n");
+	window->egl_display = eglCreateDisplayNative("/dev/dri/card0", "i965");
+	if (window->egl_display == NULL)
+		die("failed to create egl display\n");
 
-	if (!eglInitialize(window->display, &major, &minor))
+	if (!eglInitialize(window->egl_display, &major, &minor))
 		die("failed to initialize display\n");
 
-	if (!eglGetConfigs(window->display, configs, 64, &count))
+	if (!eglGetConfigs(window->egl_display, configs, 64, &count))
 		die("failed to get configs\n");
 
 	window->config = configs[24];
-	window->context = eglCreateContext(window->display, window->config, NULL, NULL);
+	window->context = eglCreateContext(window->egl_display, window->config, NULL, NULL);
 	if (window->context == NULL)
 		die("failed to create context\n");
 
@@ -319,16 +364,16 @@ draw(gpointer data)
 {
 	struct window *window = data;
 	struct buffer *buffer;
-	int shadow = 16;
 	
 	if (!window->redraw_scheduled) {
 		gears_draw(window->gears, window->gears_angle);
 
 		buffer = window->egl_buffer;
 		wl_surface_copy(window->surface,
-				10 + shadow, 50 + shadow,
+				10 + window->margin, 50 + window->margin,
 				buffer->name, buffer->stride,
 				0, 0, buffer->width, buffer->height);
+		wl_display_commit(window->display, 1);
 	}
 
 	window->gears_angle += 1;
@@ -361,8 +406,6 @@ int main(int argc, char *argv[])
 	g_source_attach(source, NULL);
 
 	window = window_create(display, fd);
-
-	draw_window(window);
 
 	wl_display_set_event_handler(display, event_handler, window);
 

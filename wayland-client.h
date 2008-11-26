@@ -24,8 +24,10 @@ int wl_display_get_fd(struct wl_display *display,
 void wl_display_iterate(struct wl_display *display, uint32_t mask);
 
 typedef void (*wl_display_event_func_t)(struct wl_display *display,
+					uint32_t object,
 					uint32_t opcode,
-					uint32_t arg1, uint32_t arg2,
+					uint32_t size,
+					uint32_t *p,
 					void *data);
 
 void wl_display_set_event_handler(struct wl_display *display,
@@ -34,6 +36,8 @@ void wl_display_set_event_handler(struct wl_display *display,
 
 struct wl_surface *
 wl_display_create_surface(struct wl_display *display);
+void
+wl_display_commit(struct wl_display *display, uint32_t key);
 
 void wl_surface_destroy(struct wl_surface *surface);
 void wl_surface_attach(struct wl_surface *surface,

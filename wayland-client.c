@@ -165,13 +165,14 @@ wl_display_get_fd(struct wl_display *display,
 }
 
 static void
-handle_event(struct wl_display *display, uint32_t opcode, uint32_t size)
+handle_event(struct wl_display *display,
+	     uint32_t object, uint32_t opcode, uint32_t size)
 {
-	uint32_t p[4];
+	uint32_t p[10];
 
 	wl_connection_copy(display->connection, p, size);
 	if (display->event_handler != NULL)
-		display->event_handler(display, opcode, p[2], p[3],
+		display->event_handler(display, object, opcode, size, p + 2,
 				       display->event_handler_data);
 	wl_connection_consume(display->connection, size);
 }
@@ -179,7 +180,7 @@ handle_event(struct wl_display *display, uint32_t opcode, uint32_t size)
 WL_EXPORT void
 wl_display_iterate(struct wl_display *display, uint32_t mask)
 {
-	uint32_t p[2], opcode, size;
+	uint32_t p[2], object, opcode, size;
 	int len;
 
 	len = wl_connection_data(display->connection, mask);
@@ -188,12 +189,13 @@ wl_display_iterate(struct wl_display *display, uint32_t mask)
 			break;
 		
 		wl_connection_copy(display->connection, p, sizeof p);
+		object = p[0];
 		opcode = p[1] & 0xffff;
 		size = p[1] >> 16;
 		if (len < size)
 			break;
 
-		handle_event(display, opcode, size);
+		handle_event(display, object, opcode, size);
 		len -= size;
 	}
 
@@ -225,7 +227,8 @@ wl_display_write(struct wl_display *display, const void *data, size_t count)
 	wl_connection_write(display->connection, data, count);
 }
 
-#define WL_DISPLAY_CREATE_SURFACE 0
+#define WL_DISPLAY_CREATE_SURFACE	0
+#define WL_DISPLAY_COMMIT		1
 
 WL_EXPORT struct wl_surface *
 wl_display_create_surface(struct wl_display *display)
@@ -246,6 +249,17 @@ wl_display_create_surface(struct wl_display *display)
 	wl_connection_write(display->connection, request, sizeof request);
 
 	return surface;
+}
+
+WL_EXPORT void
+wl_display_commit(struct wl_display *display, uint32_t key)
+{
+	uint32_t request[3];
+
+	request[0] = display->proxy.id;
+	request[1] = WL_DISPLAY_COMMIT | ((sizeof request) << 16);
+	request[2] = key;
+	wl_connection_write(display->connection, request, sizeof request);
 }
 
 #define WL_SURFACE_DESTROY	0
