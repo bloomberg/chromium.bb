@@ -1,0 +1,10 @@
+*.o
+*.so
+wayland
+window
+flower
+background
+pointer
+screenshot
+background.jpg
+*~
