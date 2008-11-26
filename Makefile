@@ -43,7 +43,7 @@ glx-compositor.so : $(glx_compositor_objs)
 libwayland.so $(compositors) :
 	gcc -o $@ $^ $(LDLIBS) -shared 
 
-flower_objs = flower.o wayland-glib.o
+flower_objs = flower.o wayland-glib.o cairo-util.o
 pointer_objs = pointer.o wayland-glib.o cairo-util.o
 background_objs = background.o wayland-glib.o
 window_objs = window.o gears.o wayland-glib.o cairo-util.o
