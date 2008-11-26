@@ -13,8 +13,8 @@ struct wl_input_device {
 	struct wl_event_source *source;
 	struct wl_display *display;
 	int fd;
-	int tool;
-	int32_t x, y;
+	int tool, new_x, new_y;
+	int32_t x, y, base_x, base_y;
 };
 
 static const struct wl_method input_device_methods[] = {
@@ -65,10 +65,18 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 		        absolute_event = 1;
 			switch (e->code) {
 			case ABS_X:
-				device->x = value;
+				if (device->new_x) {
+					device->base_x = device->x - value;
+					device->new_x = 0;
+				}
+				device->x = device->base_x + value;
 				break;
 			case ABS_Y:
-				device->y = value;
+				if (device->new_y) {
+					device->base_y = device->y - value;
+					device->new_y = 0;
+				}
+				device->y = device->base_y + value;
 				break;
 			}
 			break;
@@ -87,6 +95,10 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 			case BTN_TOOL_FINGER:
 			case BTN_TOOL_MOUSE:
 			case BTN_TOOL_LENS:
+				if (device->tool == 0 && value) {
+					device->new_x = 1;
+					device->new_y = 1;
+				}
 				device->tool = value ? e->code : 0;
 				break;
 
@@ -135,6 +147,10 @@ wl_input_device_create(struct wl_display *display, const char *path)
 	device->base.interface = &input_device_interface;
 	device->display = display;
 	device->tool = 1;
+	device->x = 100;
+	device->y = 100;
+	device->new_x = 1;
+	device->new_y = 1;
 
 	device->fd = open(path, O_RDONLY);
 	if (device->fd < 0) {
