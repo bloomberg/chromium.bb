@@ -510,8 +510,8 @@ animate_overlay(struct egl_compositor *ec)
 
 	ec->overlay->map.y = ec->overlay_y + 0.5;
 
-	if (fabs(y + 0.5 - ec->overlay_target) > 0.2 ||
-	    fabs(ec->overlay_y + 5 - ec->overlay_target) > 0.2)
+	if (fabs(y - ec->overlay_target) > 0.2 ||
+	    fabs(ec->overlay_y - ec->overlay_target) > 0.2)
 		schedule_repaint(ec);
 }
 
