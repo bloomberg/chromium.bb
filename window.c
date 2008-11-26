@@ -36,7 +36,6 @@ struct window {
 	int state;
 	uint32_t name;
 	int fd;
-	int redraw_scheduled;
 	int resized;
 	cairo_pattern_t *background;
 
@@ -155,12 +154,6 @@ draw_window(void *data)
 			  window->buffer->height,
 			  window->buffer->stride);
 
-	wl_surface_map(window->surface, 
-		       window->x - window->margin,
-		       window->y - window->margin,
-		       window->buffer->width,
-		       window->buffer->height);
-
 	width = window->width - 20;		
 	height = window->height - 60;
 	buffer = buffer_create(window->fd, width, height, (width * 4 + 15) & ~15);
@@ -178,15 +171,54 @@ draw_window(void *data)
 	if (window->gears == NULL)
 		window->gears = gears_create(0, 0, 0, 0.92);
 
+	window->resized = 0;
+
+	return FALSE;
+}
+
+
+static gboolean
+animate_gears(gpointer data)
+{
+	struct window *window = data;
+	struct buffer *buffer;
+	static uint32_t key;
+
+	/* Right now, resizing the window from the animation is fine,
+	 * since the window drawing code is so slow, but once we
+	 * implement faster resizing, this will show lag between
+	 * pointer motion and window size even if resizing is fast.
+	 * We need to keep processing motion events and posting new
+	 * frames as fast as possible so when the server composites
+	 * the next frame it will have the most recent size possible.
+	 * In that case, we need the two ack protocol, where the first
+	 * ack signals that the server got the request so we can free
+	 * the buffer, to prevent us from allocating a ton of buffer
+	 * that will never be displayed. */
+	if (window->resized)
+		draw_window(window);
+
 	gears_draw(window->gears, window->gears_angle);
+
+	buffer = window->egl_buffer;
 	wl_surface_copy(window->surface,
 			10 + window->margin, 50 + window->margin,
 			buffer->name, buffer->stride,
 			0, 0, buffer->width, buffer->height);
 
-	wl_display_commit(window->display, 0);
+	/* Shouldn't need to do this here, but without proper commit
+	 * support in the server, doing this before rendering the
+	 * gears show the window briefly before it's fully
+	 * rendered. */
 
-	window->redraw_scheduled = 0;
+	wl_surface_map(window->surface,
+		       window->x - window->margin,
+		       window->y - window->margin,
+		       window->width + 2 * window->margin,
+		       window->height + 2 * window->margin);
+
+	wl_display_commit(window->display, key++);
+	window->gears_angle += 1;
 
 	return FALSE;
 }
@@ -221,22 +253,20 @@ event_handler(struct wl_display *display,
 	/* FIXME: Object ID 1 is the display, for anything else we
 	 * assume it's an input device. */
 	if (object == 1 && opcode == 3) {
-		int key = p[0];
-
 		/* The acknowledge event means that the server
-		 * processed our last comit request and we can now
-		 * safely free the buffer.  key == 0 means it's an
-		 * acknowledge event for the drawing in draw_buffer,
-		 * key == 1 is from animating the gears, which we
-		 * ignore.  If the window was resized in the meantime,
-		 * schedule another redraw. */
-		if (key == 0) {
-			if (window->resized)
-				g_idle_add(draw_window, window);
+		 * processed our last commit request and we can now
+		 * safely free the buffer. */
+		if (window->buffer != NULL) {
 			buffer_destroy(window->buffer, window->fd);
 			window->buffer = NULL;
-			window->resized = 0;
 		}
+
+		g_idle_add(animate_gears, window);
+
+	} else if (object == 1) {
+		fprintf(stderr, "unexpected event from display: %d\n",
+			opcode);
+		exit(-1);
 	} else if (opcode == 0) {
 		int x = p[0], y = p[1];
 
@@ -251,6 +281,16 @@ event_handler(struct wl_display *display,
 				       window->y - window->margin,
 				       window->width + 2 * window->margin,
 				       window->height + 2 * window->margin);
+			/* FIXME: We should do this here:
+			 *
+			 *   wl_display_commit(window->display, 1);
+			 *
+			 * to make sure the server processes the move,
+			 * but that'll mess with the other commit from
+			 * animate_gears with the current server
+			 * implementation.  Since the current server
+			 * doesn't rely on commit anyway yet, we can
+			 * just forget about it for now. */
 			break;
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + x;
@@ -259,21 +299,7 @@ event_handler(struct wl_display *display,
 				window->width = 400;
 			if (window->height < 400)
 				window->height = 400;
-			if (!window->redraw_scheduled) {
-				/* If window->buffer is NULL, it means
-				 * we got the ack for the previous
-				 * resize, so we can just schedule a
-				 * redraw from idle.  Otherwise, we're
-				 * still expecting an ack and we'll
-				 * notice that the size changed in the
-				 * ack handler and schedule a redraw
-				 * there. */
-				if (window->buffer == NULL)
-					g_idle_add(draw_window, window);
-				else
-					window->resized = 1;
-				window->redraw_scheduled = 1;
-			}
+			window->resized = 1;
 			break;
 		}
 	} else if (opcode == 1) {
@@ -338,6 +364,7 @@ window_create(struct wl_display *display, int fd)
 	window->state = WINDOW_STABLE;
 	window->fd = fd;
 	window->background = cairo_pattern_create_rgba (red, green, blue, alpha);
+	window->resized = 1;
 
 	window->egl_display = eglCreateDisplayNative("/dev/dri/card0", "i965");
 	if (window->egl_display == NULL)
@@ -354,31 +381,9 @@ window_create(struct wl_display *display, int fd)
 	if (window->context == NULL)
 		die("failed to create context\n");
 
-	draw_window(window);
+	animate_gears(window);
 
 	return window;
-}
-
-static gboolean
-draw(gpointer data)
-{
-	struct window *window = data;
-	struct buffer *buffer;
-	
-	if (!window->redraw_scheduled) {
-		gears_draw(window->gears, window->gears_angle);
-
-		buffer = window->egl_buffer;
-		wl_surface_copy(window->surface,
-				10 + window->margin, 50 + window->margin,
-				buffer->name, buffer->stride,
-				0, 0, buffer->width, buffer->height);
-		wl_display_commit(window->display, 1);
-	}
-
-	window->gears_angle += 1;
-
-	return TRUE;
 }
 
 int main(int argc, char *argv[])
@@ -408,8 +413,6 @@ int main(int argc, char *argv[])
 	window = window_create(display, fd);
 
 	wl_display_set_event_handler(display, event_handler, window);
-
-	g_timeout_add(50, draw, window);
 
 	g_main_loop_run(loop);
 

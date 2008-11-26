@@ -19,6 +19,8 @@ struct wl_client {
 	struct wl_display *display;
 	struct wl_list object_list;
 	struct wl_list link;
+	uint32_t pending_acknowledge;
+	uint32_t acknowledge_key;
 };
 
 struct wl_display {
@@ -500,12 +502,8 @@ static int
 wl_display_commit(struct wl_client *client,
 		  struct wl_display *display, uint32_t key)
 {
-	uint32_t event[3];
-
-	event[0] = display->base.id;
-	event[1] = WL_DISPLAY_ACKNOWLEDGE | ((sizeof event) << 16);
-	event[2] = key;
-	wl_connection_write(client->connection, event, sizeof event);
+	client->pending_acknowledge = 1;
+	client->acknowledge_key = key;
 
 	return 0;
 }
@@ -685,6 +683,30 @@ wl_display_post_key_event(struct wl_display *display,
 	p[3] = state;
 
 	wl_display_send_event(display, p, sizeof p);
+}
+
+WL_EXPORT void
+wl_display_post_acknowledge(struct wl_display *display)
+{
+	struct wl_client *client;
+	uint32_t event[3];
+
+	event[0] = display->base.id;
+	event[1] = WL_DISPLAY_ACKNOWLEDGE | ((sizeof event) << 16);
+
+	client = container_of(display->client_list.next,
+			      struct wl_client, link);
+
+	while (&client->link != &display->client_list) {
+		if (client->pending_acknowledge) {
+			event[2] = client->acknowledge_key;
+			wl_connection_write(client->connection,
+					    event, sizeof event);
+			client->pending_acknowledge = 0;
+		}
+		client = container_of(client->link.next,
+				      struct wl_client, link);
+	}
 }
 
 void

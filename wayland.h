@@ -109,6 +109,8 @@ wl_display_post_button_event(struct wl_display *display,
 void
 wl_display_post_key_event(struct wl_display *display,
 			  struct wl_object *source, int key, int state);
+void
+wl_display_post_acknowledge(struct wl_display *display);
 
 struct wl_compositor {
 	const struct wl_compositor_interface *interface;

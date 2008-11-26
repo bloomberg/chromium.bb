@@ -541,6 +541,8 @@ repaint(void *data)
 
 	eglSwapBuffers(ec->display, ec->surface);
 
+	wl_display_post_acknowledge(ec->wl_display);
+
 	animate_overlay(ec);
 }
 

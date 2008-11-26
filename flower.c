@@ -82,23 +82,30 @@ draw_stuff(int width, int height)
 }
 
 struct flower {
+	struct wl_display *display;
 	struct wl_surface *surface;
 	int i;
 	int x, y, width, height;
 };
 
-static gboolean
-move_flower(gpointer data)
+static void
+move_flower(struct flower *flower)
 {
-	struct flower *flower = data;
-
 	wl_surface_map(flower->surface, 
 		       flower->x + cos(flower->i / 31.0) * 400 - flower->width / 2,
 		       flower->y + sin(flower->i / 27.0) * 300 - flower->height / 2,
 		       flower->width, flower->height);
 	flower->i++;
+	wl_display_commit(flower->display, 0);
+}
 
-	return TRUE;
+static void
+event_handler(struct wl_display *display,
+	      uint32_t object, uint32_t opcode,
+	      uint32_t size, uint32_t *p, void *data)
+{
+	if (object == 1)
+		move_flower(data);
 }
 
 int main(int argc, char *argv[])
@@ -129,6 +136,7 @@ int main(int argc, char *argv[])
 	source = wayland_source_new(display);
 	g_source_attach(source, NULL);
 
+	flower.display = display;
 	flower.x = 512;
 	flower.y = 384;
 	flower.width = 200;
@@ -144,8 +152,8 @@ int main(int argc, char *argv[])
 
 	wl_surface_attach(flower.surface, buffer->name, flower.width, flower.height,
 			  buffer->stride);
-
-	g_timeout_add(20, move_flower, &flower);
+	wl_display_set_event_handler(display, event_handler, &flower);
+	move_flower(&flower);
 
 	g_main_loop_run(loop);
 
