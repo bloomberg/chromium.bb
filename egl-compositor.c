@@ -671,9 +671,10 @@ notify_pointer_motion(struct wl_compositor *compositor,
 		      struct wl_object *source, int x, int y)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	const int hotspot_x = 16, hotspot_y = 16;
 
-	ec->pointer->map.x = x;
-	ec->pointer->map.y = y;
+	ec->pointer->map.x = x - hotspot_x;
+	ec->pointer->map.y = y - hotspot_y;
 	schedule_repaint(ec);
 }
 
