@@ -19,8 +19,7 @@ struct wl_client {
 	struct wl_display *display;
 	struct wl_list object_list;
 	struct wl_list link;
-	uint32_t pending_acknowledge;
-	uint32_t acknowledge_key;
+	uint32_t pending_frame;
 };
 
 struct wl_display {
@@ -318,6 +317,7 @@ wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t eve
 #define WL_DISPLAY_INVALID_METHOD 1
 #define WL_DISPLAY_NO_MEMORY 2
 #define WL_DISPLAY_ACKNOWLEDGE 3
+#define WL_DISPLAY_FRAME 4
 
 static void
 wl_client_connection_data(int fd, uint32_t mask, void *data)
@@ -502,8 +502,20 @@ static int
 wl_display_commit(struct wl_client *client,
 		  struct wl_display *display, uint32_t key)
 {
-	client->pending_acknowledge = 1;
-	client->acknowledge_key = key;
+	const struct wl_compositor_interface *interface;
+	uint32_t frame, event[4];
+
+	client->pending_frame = 1;
+
+	interface = display->compositor->interface;
+	frame = interface->notify_commit(display->compositor);
+
+	event[0] = display->base.id;
+	event[1] = WL_DISPLAY_ACKNOWLEDGE | ((sizeof event) << 16);
+	event[2] = key;
+	event[3] = frame;
+
+	wl_connection_write(client->connection, event, sizeof event);
 
 	return 0;
 }
@@ -686,23 +698,25 @@ wl_display_post_key_event(struct wl_display *display,
 }
 
 WL_EXPORT void
-wl_display_post_acknowledge(struct wl_display *display)
+wl_display_post_frame(struct wl_display *display,
+		      uint32_t frame, uint32_t msecs)
 {
 	struct wl_client *client;
-	uint32_t event[3];
+	uint32_t event[4];
 
 	event[0] = display->base.id;
-	event[1] = WL_DISPLAY_ACKNOWLEDGE | ((sizeof event) << 16);
+	event[1] = WL_DISPLAY_FRAME | ((sizeof event) << 16);
+	event[2] = frame;
+	event[3] = msecs;
 
 	client = container_of(display->client_list.next,
 			      struct wl_client, link);
 
 	while (&client->link != &display->client_list) {
-		if (client->pending_acknowledge) {
-			event[2] = client->acknowledge_key;
+		if (client->pending_frame) {
 			wl_connection_write(client->connection,
 					    event, sizeof event);
-			client->pending_acknowledge = 0;
+			client->pending_frame = 0;
 		}
 		client = container_of(client->link.next,
 				      struct wl_client, link);

@@ -12,10 +12,13 @@
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <glib.h>
+#include <sys/poll.h>
 #include <png.h>
 #include <math.h>
 #include <linux/input.h>
 #include <xf86drmMode.h>
+#include <sys/timerfd.h>
+#include <time.h>
 
 #include "wayland.h"
 #include "cairo-util.h"
@@ -38,6 +41,14 @@ struct egl_compositor {
 	struct egl_surface *background;
 	struct egl_surface *overlay;
 	double overlay_y, overlay_target, overlay_previous;
+
+	/* Repaint state. */
+	struct wl_event_source *timer_source;
+	int repaint_needed;
+	int repaint_on_timeout;
+	int timer_fd;
+	struct timespec previous_swap;
+	uint32_t current_frame;
 };
 
 struct egl_surface {
@@ -516,12 +527,24 @@ animate_overlay(struct egl_compositor *ec)
 }
 
 static void
-repaint(void *data)
+repaint(int fd, uint32_t mask, void *data)
 {
 	struct egl_compositor *ec = data;
+	struct itimerspec its;
 	struct wl_surface_iterator *iterator;
 	struct wl_surface *surface;
 	struct egl_surface *es;
+	struct timespec ts;
+	uint64_t expires;
+	uint32_t msecs;
+
+	if (ec->repaint_on_timeout)
+		read(fd, &expires, sizeof expires);
+
+	if (!ec->repaint_needed) {
+		ec->repaint_on_timeout = 0;
+		return;
+	}
 
 	draw_surface(ec->background);
 
@@ -540,10 +563,30 @@ repaint(void *data)
 	draw_surface(ec->pointer);
 
 	eglSwapBuffers(ec->display, ec->surface);
+	ec->repaint_needed = 0;
 
-	wl_display_post_acknowledge(ec->wl_display);
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	msecs = ts.tv_sec * 1000 + ts.tv_nsec / (1000 * 1000);
+	wl_display_post_frame(ec->wl_display, ec->current_frame, msecs);
+	ec->current_frame++;
+
+	its.it_interval.tv_sec = 0;
+	its.it_interval.tv_nsec = 0;
+	its.it_value.tv_sec = 0;
+	its.it_value.tv_nsec = 10 * 1000 * 1000;
+	if (timerfd_settime(ec->timer_fd, 0, &its, NULL) < 0) {
+		fprintf(stderr, "could not set timerfd\n: %m");
+		return;
+	}
+	ec->repaint_on_timeout = 1;
 
 	animate_overlay(ec);
+}
+
+static void
+idle_repaint(void *data)
+{
+	repaint(0, 0, data);
 }
 
 static void
@@ -551,8 +594,11 @@ schedule_repaint(struct egl_compositor *ec)
 {
 	struct wl_event_loop *loop;
 
-	loop = wl_display_get_event_loop(ec->wl_display);
-	wl_event_loop_add_idle(loop, repaint, ec);
+	ec->repaint_needed = 1;
+	if (!ec->repaint_on_timeout) {
+		loop = wl_display_get_event_loop(ec->wl_display);
+		wl_event_loop_add_idle(loop, idle_repaint, ec);
+	}
 }
 
 static void
@@ -611,15 +657,12 @@ notify_surface_attach(struct wl_compositor *compositor,
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	eglBindTexImage(ec->display, es->surface, GL_TEXTURE_2D);
-
-	schedule_repaint(ec);
 }
 
 static void
 notify_surface_map(struct wl_compositor *compositor,
 		   struct wl_surface *surface, struct wl_map *map)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct egl_surface *es;
 
 	es = wl_surface_get_data(surface);
@@ -627,8 +670,6 @@ notify_surface_map(struct wl_compositor *compositor,
 		return;
 
 	es->map = *map;
-
-	schedule_repaint(ec);
 }
 
 static void
@@ -654,7 +695,7 @@ notify_surface_copy(struct wl_compositor *compositor,
 
 	eglCopyNativeBuffers(ec->display, es->surface, GL_FRONT_LEFT, dst_x, dst_y,
 			     src, GL_FRONT_LEFT, x, y, width, height);
-	schedule_repaint(ec);
+	eglDestroySurface(ec->display, src);
 }
 
 static void
@@ -662,10 +703,17 @@ notify_surface_damage(struct wl_compositor *compositor,
 		      struct wl_surface *surface,
 		      int32_t x, int32_t y, int32_t width, int32_t height)
 {
+	/* FIXME: This need to take a damage region, of course. */
+}
+
+static uint32_t
+notify_commit(struct wl_compositor *compositor)
+{
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 
-	/* FIXME: This need to take a damage region, of course. */
 	schedule_repaint(ec);
+
+	return ec->current_frame;
 }
 
 static void
@@ -702,6 +750,7 @@ static const struct wl_compositor_interface interface = {
 	notify_surface_map,
 	notify_surface_copy,
 	notify_surface_damage,
+	notify_commit,
 	notify_pointer_motion,
 	notify_key
 };
@@ -889,6 +938,7 @@ wl_compositor_create(struct wl_display *display)
 	struct screenshooter *shooter;
 	uint32_t fb_name;
 	int stride;
+	struct wl_event_loop *loop;
 	const static EGLint attribs[] =
 		{ EGL_RENDER_BUFFER, EGL_BACK_BUFFER, EGL_NONE };
 
@@ -959,6 +1009,19 @@ wl_compositor_create(struct wl_display *display)
 	shooter = screenshooter_create(ec);
 	wl_display_add_object(display, &shooter->base);
 	wl_display_add_global(display, &shooter->base);
+
+	ec->timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	if (ec->timer_fd < 0) {
+		fprintf(stderr, "could not create timerfd\n: %m");
+		return NULL;
+	}
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	ec->timer_source = wl_event_loop_add_fd(loop, ec->timer_fd,
+						WL_EVENT_READABLE,
+						repaint, ec);
+	ec->repaint_needed = 0;
+	ec->repaint_on_timeout = 0;
 
 	schedule_repaint(ec);
 

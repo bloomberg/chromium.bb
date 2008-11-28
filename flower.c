@@ -104,7 +104,7 @@ event_handler(struct wl_display *display,
 	      uint32_t object, uint32_t opcode,
 	      uint32_t size, uint32_t *p, void *data)
 {
-	if (object == 1)
+	if (object == 1 && opcode == 4)
 		move_flower(data);
 }
 

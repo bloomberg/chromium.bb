@@ -154,6 +154,12 @@ draw_window(void *data)
 			  window->buffer->height,
 			  window->buffer->stride);
 
+	wl_surface_map(window->surface,
+		       window->x - window->margin,
+		       window->y - window->margin,
+		       window->width + 2 * window->margin,
+		       window->height + 2 * window->margin);
+
 	width = window->width - 20;		
 	height = window->height - 60;
 	buffer = buffer_create(window->fd, width, height, (width * 4 + 15) & ~15);
@@ -167,58 +173,7 @@ draw_window(void *data)
 		die("failed to make context current\n");
 
 	glViewport(0, 0, width, height);
-
-	if (window->gears == NULL)
-		window->gears = gears_create(0, 0, 0, 0.92);
-
 	window->resized = 0;
-
-	return FALSE;
-}
-
-
-static gboolean
-animate_gears(gpointer data)
-{
-	struct window *window = data;
-	struct buffer *buffer;
-	static uint32_t key;
-
-	/* Right now, resizing the window from the animation is fine,
-	 * since the window drawing code is so slow, but once we
-	 * implement faster resizing, this will show lag between
-	 * pointer motion and window size even if resizing is fast.
-	 * We need to keep processing motion events and posting new
-	 * frames as fast as possible so when the server composites
-	 * the next frame it will have the most recent size possible.
-	 * In that case, we need the two ack protocol, where the first
-	 * ack signals that the server got the request so we can free
-	 * the buffer, to prevent us from allocating a ton of buffer
-	 * that will never be displayed. */
-	if (window->resized)
-		draw_window(window);
-
-	gears_draw(window->gears, window->gears_angle);
-
-	buffer = window->egl_buffer;
-	wl_surface_copy(window->surface,
-			10 + window->margin, 50 + window->margin,
-			buffer->name, buffer->stride,
-			0, 0, buffer->width, buffer->height);
-
-	/* Shouldn't need to do this here, but without proper commit
-	 * support in the server, doing this before rendering the
-	 * gears show the window briefly before it's fully
-	 * rendered. */
-
-	wl_surface_map(window->surface,
-		       window->x - window->margin,
-		       window->y - window->margin,
-		       window->width + 2 * window->margin,
-		       window->height + 2 * window->margin);
-
-	wl_display_commit(window->display, key++);
-	window->gears_angle += 1;
 
 	return FALSE;
 }
@@ -241,27 +196,59 @@ enum location {
 	LOCATION_OUTSIDE
 };
 
+static int
+update_gears(void *data)
+{
+	struct window *window = data;
+
+	if (window->resized)
+		draw_window(window);
+	gears_draw(window->gears, window->gears_angle);
+
+	return FALSE;
+}
+
 static void
 event_handler(struct wl_display *display,
 	      uint32_t object, uint32_t opcode,
 	      uint32_t size, uint32_t *p, void *data)
 {
 	struct window *window = data;
+	struct buffer *buffer;
 	int location;
 	int grip_size = 16;
 
 	/* FIXME: Object ID 1 is the display, for anything else we
 	 * assume it's an input device. */
 	if (object == 1 && opcode == 3) {
+		uint32_t key = p[0];
+
+		/* Ignore acknowledge events for window move requests. */
+		if (key != 0)
+			return;
+
 		/* The acknowledge event means that the server
 		 * processed our last commit request and we can now
-		 * safely free the buffer. */
+		 * safely free the old window buffer if we resized and
+		 * render the next frame into our back buffer.. */
+
 		if (window->buffer != NULL) {
 			buffer_destroy(window->buffer, window->fd);
 			window->buffer = NULL;
 		}
-
-		g_idle_add(animate_gears, window);
+		g_idle_add(update_gears, window);
+	} else if (object == 1 && opcode == 4) {
+		/* The frame event means that the previous frame was
+		 * composited, and we can now send the request to copy
+		 * the frame we've rendered in the mean time into the
+		 * servers surface buffer. */
+		buffer = window->egl_buffer;
+		wl_surface_copy(window->surface,
+				10 + window->margin, 50 + window->margin,
+				buffer->name, buffer->stride,
+				0, 0, buffer->width, buffer->height);
+		wl_display_commit(window->display, 0);
+	window->gears_angle += 1;
 
 	} else if (object == 1) {
 		fprintf(stderr, "unexpected event from display: %d\n",
@@ -281,16 +268,7 @@ event_handler(struct wl_display *display,
 				       window->y - window->margin,
 				       window->width + 2 * window->margin,
 				       window->height + 2 * window->margin);
-			/* FIXME: We should do this here:
-			 *
-			 *   wl_display_commit(window->display, 1);
-			 *
-			 * to make sure the server processes the move,
-			 * but that'll mess with the other commit from
-			 * animate_gears with the current server
-			 * implementation.  Since the current server
-			 * doesn't rely on commit anyway yet, we can
-			 * just forget about it for now. */
+			wl_display_commit(window->display, 1);
 			break;
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + x;
@@ -299,6 +277,21 @@ event_handler(struct wl_display *display,
 				window->width = 400;
 			if (window->height < 400)
 				window->height = 400;
+
+			/* Right now, resizing the window from the
+			 * per-frame callback is fine, since the
+			 * window drawing code is so slow that we
+			 * can't draw more than one window per frame
+			 * anyway.  However, once we implement faster
+			 * resizing, this will show lag between
+			 * pointer motion and window size even if
+			 * resizing is fast.  We need to keep
+			 * processing motion events and posting new
+			 * frames as fast as possible so when the
+			 * server composites the next frame it will
+			 * have the most recent size possible, like
+			 * what we do for window moves. */
+
 			window->resized = 1;
 			break;
 		}
@@ -364,7 +357,6 @@ window_create(struct wl_display *display, int fd)
 	window->state = WINDOW_STABLE;
 	window->fd = fd;
 	window->background = cairo_pattern_create_rgba (red, green, blue, alpha);
-	window->resized = 1;
 
 	window->egl_display = eglCreateDisplayNative("/dev/dri/card0", "i965");
 	if (window->egl_display == NULL)
@@ -381,7 +373,11 @@ window_create(struct wl_display *display, int fd)
 	if (window->context == NULL)
 		die("failed to create context\n");
 
-	animate_gears(window);
+	draw_window(window);
+	window->gears = gears_create(0, 0, 0, 0.92);
+	gears_draw(window->gears, window->gears_angle);
+	window->gears_angle += 1;
+	wl_display_commit(window->display, 0);
 
 	return window;
 }

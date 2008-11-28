@@ -30,7 +30,7 @@ $(compositors) $(clients) : CFLAGS += $(shell pkg-config --cflags libdrm)
 
 egl_compositor_objs = egl-compositor.o evdev.o cairo-util.o
 egl-compositor.so : CFLAGS += $(EAGLE_CFLAGS) $(shell pkg-config --cflags libpng cairo gdk-pixbuf-2.0)
-egl-compositor.so : LDLIBS += $(EAGLE_LDLIBS) $(shell pkg-config --libs libpng cairo gdk-pixbuf-2.0) -rdynamic
+egl-compositor.so : LDLIBS += $(EAGLE_LDLIBS) $(shell pkg-config --libs libpng cairo gdk-pixbuf-2.0) -rdynamic -lrt
 
 egl-compositor.so : $(egl_compositor_objs)
 

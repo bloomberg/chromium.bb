@@ -110,7 +110,8 @@ void
 wl_display_post_key_event(struct wl_display *display,
 			  struct wl_object *source, int key, int state);
 void
-wl_display_post_acknowledge(struct wl_display *display);
+wl_display_post_frame(struct wl_display *display,
+		      uint32_t frame, uint32_t msecs);
 
 struct wl_compositor {
 	const struct wl_compositor_interface *interface;
@@ -139,6 +140,7 @@ struct wl_compositor_interface {
 				      struct wl_surface *surface,
 				      int32_t x, int32_t y,
 				      int32_t width, int32_t height);
+	uint32_t (*notify_commit)(struct wl_compositor *compositor);
 	void (*notify_pointer_motion)(struct wl_compositor *compositor,
 				      struct wl_object *source,
 				      int32_t x, int32_t y);
