@@ -12,6 +12,7 @@ enum {
 struct wl_event_loop;
 struct wl_event_source;
 typedef void (*wl_event_loop_fd_func_t)(int fd, uint32_t mask, void *data);
+typedef void (*wl_event_loop_timer_func_t)(void *data);
 typedef void (*wl_event_loop_idle_func_t)(void *data);
 
 struct wl_event_loop *wl_event_loop_create(void);
@@ -20,12 +21,15 @@ struct wl_event_source *wl_event_loop_add_fd(struct wl_event_loop *loop,
 					     int fd, uint32_t mask,
 					     wl_event_loop_fd_func_t func,
 					     void *data);
-int wl_event_loop_update_source(struct wl_event_loop *loop,
-				struct wl_event_source *source,
-				uint32_t mask);
+int wl_event_source_fd_update(struct wl_event_source *source, uint32_t mask);
+struct wl_event_source *wl_event_loop_add_timer(struct wl_event_loop *loop,
+						wl_event_loop_timer_func_t func,
+						void *data);
+int wl_event_source_timer_update(struct wl_event_source *source,
+				 int ms_delay);
+int wl_event_source_remove(struct wl_event_source *source);
 
-int wl_event_loop_remove_source(struct wl_event_loop *loop,
-				struct wl_event_source *source);
+
 int wl_event_loop_wait(struct wl_event_loop *loop);
 struct wl_event_source *wl_event_loop_add_idle(struct wl_event_loop *loop,
 					       wl_event_loop_idle_func_t func,

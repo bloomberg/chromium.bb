@@ -385,8 +385,7 @@ wl_client_connection_update(struct wl_connection *connection,
 	if (mask & WL_CONNECTION_WRITABLE)
 		emask |= WL_EVENT_WRITEABLE;
 
-	return wl_event_loop_update_source(client->display->loop,
-					   client->source, mask);
+	return wl_event_source_fd_update(client->source, mask);
 }
 
 static void
@@ -466,7 +465,7 @@ wl_client_destroy(struct wl_client *client)
 		free(ref);
 	}
 
-	wl_event_loop_remove_source(client->display->loop, client->source);
+	wl_event_source_remove(client->source);
 	wl_connection_destroy(client->connection);
 	free(client);
 }

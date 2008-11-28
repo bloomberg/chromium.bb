@@ -17,7 +17,6 @@
 #include <math.h>
 #include <linux/input.h>
 #include <xf86drmMode.h>
-#include <sys/timerfd.h>
 #include <time.h>
 
 #include "wayland.h"
@@ -46,7 +45,6 @@ struct egl_compositor {
 	struct wl_event_source *timer_source;
 	int repaint_needed;
 	int repaint_on_timeout;
-	int timer_fd;
 	struct timespec previous_swap;
 	uint32_t current_frame;
 };
@@ -527,19 +525,14 @@ animate_overlay(struct egl_compositor *ec)
 }
 
 static void
-repaint(int fd, uint32_t mask, void *data)
+repaint(void *data)
 {
 	struct egl_compositor *ec = data;
-	struct itimerspec its;
 	struct wl_surface_iterator *iterator;
 	struct wl_surface *surface;
 	struct egl_surface *es;
 	struct timespec ts;
-	uint64_t expires;
 	uint32_t msecs;
-
-	if (ec->repaint_on_timeout)
-		read(fd, &expires, sizeof expires);
 
 	if (!ec->repaint_needed) {
 		ec->repaint_on_timeout = 0;
@@ -570,23 +563,10 @@ repaint(int fd, uint32_t mask, void *data)
 	wl_display_post_frame(ec->wl_display, ec->current_frame, msecs);
 	ec->current_frame++;
 
-	its.it_interval.tv_sec = 0;
-	its.it_interval.tv_nsec = 0;
-	its.it_value.tv_sec = 0;
-	its.it_value.tv_nsec = 10 * 1000 * 1000;
-	if (timerfd_settime(ec->timer_fd, 0, &its, NULL) < 0) {
-		fprintf(stderr, "could not set timerfd\n: %m");
-		return;
-	}
+	wl_event_source_timer_update(ec->timer_source, 10);
 	ec->repaint_on_timeout = 1;
 
 	animate_overlay(ec);
-}
-
-static void
-idle_repaint(void *data)
-{
-	repaint(0, 0, data);
 }
 
 static void
@@ -597,7 +577,7 @@ schedule_repaint(struct egl_compositor *ec)
 	ec->repaint_needed = 1;
 	if (!ec->repaint_on_timeout) {
 		loop = wl_display_get_event_loop(ec->wl_display);
-		wl_event_loop_add_idle(loop, idle_repaint, ec);
+		wl_event_loop_add_idle(loop, repaint, ec);
 	}
 }
 
@@ -1010,16 +990,8 @@ wl_compositor_create(struct wl_display *display)
 	wl_display_add_object(display, &shooter->base);
 	wl_display_add_global(display, &shooter->base);
 
-	ec->timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
-	if (ec->timer_fd < 0) {
-		fprintf(stderr, "could not create timerfd\n: %m");
-		return NULL;
-	}
-
 	loop = wl_display_get_event_loop(ec->wl_display);
-	ec->timer_source = wl_event_loop_add_fd(loop, ec->timer_fd,
-						WL_EVENT_READABLE,
-						repaint, ec);
+	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	ec->repaint_needed = 0;
 	ec->repaint_on_timeout = 0;
 

@@ -81,3 +81,9 @@ wl_list_length(struct wl_list *list)
 
 	return count;
 }
+
+int
+wl_list_empty(struct wl_list *list)
+{
+	return list->next == list;
+}
