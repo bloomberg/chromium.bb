@@ -2,12 +2,14 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <dlfcn.h>
+#include <assert.h>
 #include <ffi.h>
 
 #include "wayland.h"
@@ -224,6 +226,50 @@ void
 wl_client_destroy(struct wl_client *client);
 
 static void
+wl_client_marshal(struct wl_client *client, struct wl_object *sender,
+		  uint32_t opcode, ...)
+{
+	const struct wl_event *event;
+	struct wl_object *object;
+	uint32_t args[10], size, *p;
+	va_list ap;
+	int i;
+
+	event = &sender->interface->events[opcode];
+	size = 0;
+	va_start(ap, opcode);
+	p = &args[2];
+	for (i = 0; i < event->argument_count; i++) {
+		switch (event->arguments[i].type) {
+		case WL_ARGUMENT_UINT32:
+			p[i] = va_arg(ap, uint32_t);
+			size += sizeof p[i];
+			break;
+		case WL_ARGUMENT_STRING:
+			/* FIXME */
+			p[i] = 0;
+			size += sizeof p[i];
+			break;
+		case WL_ARGUMENT_OBJECT:
+			object = va_arg(ap, struct wl_object *);
+			p[i] = object->id;
+			size += sizeof p[i];
+			break;
+		case WL_ARGUMENT_NEW_ID:
+		default:
+			assert(0);
+			break;
+		}
+	}
+	va_end(ap);
+
+	size += 2 * sizeof args[0];
+	args[0] = sender->id;
+	args[1] = opcode | (size << 16);
+	wl_connection_write(client->connection, args, size);
+}
+
+static void
 wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 		    const struct wl_method *method, size_t size)
 {
@@ -303,16 +349,6 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 	ffi_call(&cif, FFI_FN(method->func), &result, args);
 }
 
-static void
-wl_client_event(struct wl_client *client, struct wl_object *object, uint32_t event)
-{
-	uint32_t p[2];
-
-	p[0] = object->id;
-	p[1] = event | (8 << 16);
-	wl_connection_write(client->connection, p, sizeof p);
-}
-
 #define WL_DISPLAY_INVALID_OBJECT 0
 #define WL_DISPLAY_INVALID_METHOD 1
 #define WL_DISPLAY_NO_MEMORY 2
@@ -348,19 +384,18 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (len < size)
 			break;
 
-		object = wl_hash_lookup(&client->display->objects,
-					p[0]);
+		object = wl_hash_lookup(&client->display->objects, p[0]);
 		if (object == NULL) {
-			wl_client_event(client, &client->display->base,
-					WL_DISPLAY_INVALID_OBJECT);
+			wl_client_marshal(client, &client->display->base,
+					  WL_DISPLAY_INVALID_OBJECT, p[0]);
 			wl_connection_consume(connection, size);
 			len -= size;
 			continue;
 		}
 				
 		if (opcode >= object->interface->method_count) {
-			wl_client_event(client, &client->display->base,
-					WL_DISPLAY_INVALID_METHOD);
+			wl_client_marshal(client, &client->display->base,
+					  WL_DISPLAY_INVALID_METHOD, p[0], opcode);
 			wl_connection_consume(connection, size);
 			len -= size;
 			continue;
@@ -481,8 +516,8 @@ wl_display_create_surface(struct wl_client *client,
 
 	ref = malloc(sizeof *ref);
 	if (ref == NULL) {
-		wl_client_event(client, &display->base,
-				WL_DISPLAY_NO_MEMORY);
+		wl_client_marshal(client, &display->base,
+				  WL_DISPLAY_NO_MEMORY);
 		return -1;
 	}
 
@@ -502,19 +537,14 @@ wl_display_commit(struct wl_client *client,
 		  struct wl_display *display, uint32_t key)
 {
 	const struct wl_compositor_interface *interface;
-	uint32_t frame, event[4];
+	uint32_t frame;
 
 	client->pending_frame = 1;
 
 	interface = display->compositor->interface;
 	frame = interface->notify_commit(display->compositor);
-
-	event[0] = display->base.id;
-	event[1] = WL_DISPLAY_ACKNOWLEDGE | ((sizeof event) << 16);
-	event[2] = key;
-	event[3] = frame;
-
-	wl_connection_write(client->connection, event, sizeof event);
+	wl_client_marshal(client, &display->base,
+			  WL_DISPLAY_ACKNOWLEDGE, key, frame);
 
 	return 0;
 }
@@ -530,11 +560,36 @@ static const struct wl_method display_methods[] = {
 	  ARRAY_LENGTH(commit_arguments), commit_arguments },
 };
 
+static const struct wl_argument invalid_object_arguments[] = {
+	{ WL_ARGUMENT_UINT32 }
+};
+
+static const struct wl_argument invalid_method_arguments[] = {
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 }
+};
+
+static const struct wl_argument acknowledge_arguments[] = {
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 }
+};
+
+static const struct wl_argument frame_arguments[] = {
+	{ WL_ARGUMENT_UINT32 },
+	{ WL_ARGUMENT_UINT32 }
+};
+
 static const struct wl_event display_events[] = {
-	{ "invalid_object" },
-	{ "invalid_method" },
-	{ "no_memory" },
-	{ "acknowledge" },
+	{ "invalid_object",
+	  ARRAY_LENGTH(invalid_object_arguments), invalid_object_arguments },
+	{ "invalid_method",
+	  ARRAY_LENGTH(invalid_method_arguments), invalid_method_arguments },
+	{ "no_memory",
+	  0, NULL },
+	{ "acknowledge",
+	  ARRAY_LENGTH(acknowledge_arguments), acknowledge_arguments },
+	{ "frame",
+	  ARRAY_LENGTH(frame_arguments), frame_arguments },
 };
 
 static const struct wl_interface display_interface = {
@@ -701,20 +756,14 @@ wl_display_post_frame(struct wl_display *display,
 		      uint32_t frame, uint32_t msecs)
 {
 	struct wl_client *client;
-	uint32_t event[4];
-
-	event[0] = display->base.id;
-	event[1] = WL_DISPLAY_FRAME | ((sizeof event) << 16);
-	event[2] = frame;
-	event[3] = msecs;
 
 	client = container_of(display->client_list.next,
 			      struct wl_client, link);
 
 	while (&client->link != &display->client_list) {
 		if (client->pending_frame) {
-			wl_connection_write(client->connection,
-					    event, sizeof event);
+			wl_client_marshal(client, &display->base,
+					  WL_DISPLAY_FRAME, frame, msecs);
 			client->pending_frame = 0;
 		}
 		client = container_of(client->link.next,

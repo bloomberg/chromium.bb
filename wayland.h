@@ -58,6 +58,8 @@ struct wl_method {
 
 struct wl_event {
 	const char *name;
+	int argument_count;
+	const struct wl_argument *arguments;
 };
 
 struct wl_interface {
