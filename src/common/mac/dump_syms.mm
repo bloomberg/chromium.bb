@@ -1128,18 +1128,17 @@ static BOOL WriteFormat(int fd, const char *fmt, ...) {
 
       // e.g. suppose sourcepath_ is /tmp/foo/test.dSYM
 
-      NSString *dwarfBinName = [[sourcePath_ lastPathComponent] stringByDeletingPathExtension];
+      NSString *dwarfBinName = [sourcePath_ lastPathComponent];
       NSString *dwarfBinPath;
 
-      // now, dwarfBinName is "test"
-
-      while (![[dwarfBinName stringByDeletingPathExtension] isEqualToString:dwarfBinName]) {
+      // We use a do/while loop so we can handle files without an extension
+      do {
+        dwarfBinName = [dwarfBinName stringByDeletingPathExtension];
+        // now, dwarfBinName is "test"
         dwarfBinPath = [dsymBundle pathForResource:dwarfBinName ofType:nil inDirectory:@"DWARF"];
         if (dwarfBinPath != nil)
           break;
-
-        dwarfBinName = [dwarfBinName stringByDeletingPathExtension];
-      }
+      } while (![[dwarfBinName stringByDeletingPathExtension] isEqualToString:dwarfBinName]);
 
       if (dwarfBinPath == nil) {
         NSLog(@"The bundle passed on the command line does not appear to be a DWARF dSYM bundle");
