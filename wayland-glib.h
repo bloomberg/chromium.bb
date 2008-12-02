@@ -25,8 +25,7 @@
 
 #include <glib/gmain.h>
 
-typedef struct _WaylandSource WaylandSource;
+GSource *wl_glib_source_new(struct wl_display *display);
 
-GSource *wayland_source_new(struct wl_display *display);
 
 #endif

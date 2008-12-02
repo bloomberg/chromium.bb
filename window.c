@@ -425,7 +425,7 @@ int main(int argc, char *argv[])
 	}
 
 	loop = g_main_loop_new(NULL, FALSE);
-	source = wayland_source_new(display);
+	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
 	window = window_create(display, fd);

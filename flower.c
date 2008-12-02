@@ -155,7 +155,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	source = wayland_source_new(display);
+	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
 	flower.display = display;

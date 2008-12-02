@@ -25,17 +25,17 @@
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
-struct _WaylandSource {
+typedef struct _WlSource {
 	GSource source;
 	GPollFD pfd;
 	uint32_t mask;
 	struct wl_display *display;
-};
+} WlSource;
 
 static gboolean
-wayland_source_prepare(GSource *base, gint *timeout)
+wl_glib_source_prepare(GSource *base, gint *timeout)
 {
-	WaylandSource *source = (WaylandSource *) base;
+	WlSource *source = (WlSource *) base;
 
 	*timeout = -1;
 
@@ -51,19 +51,19 @@ wayland_source_prepare(GSource *base, gint *timeout)
 }
 
 static gboolean
-wayland_source_check(GSource *base)
+wl_glib_source_check(GSource *base)
 {
-	WaylandSource *source = (WaylandSource *) base;
+	WlSource *source = (WlSource *) base;
 
 	return source->pfd.revents;
 }
 
 static gboolean
-wayland_source_dispatch(GSource *base,
+wl_glib_source_dispatch(GSource *base,
 			GSourceFunc callback,
 			gpointer data)
 {
-	WaylandSource *source = (WaylandSource *) base;
+	WlSource *source = (WlSource *) base;
 
 	wl_display_iterate(source->display,
 			   WL_DISPLAY_READABLE);
@@ -71,17 +71,17 @@ wayland_source_dispatch(GSource *base,
 	return TRUE;
 }
 
-static GSourceFuncs wayland_source_funcs = {
-	wayland_source_prepare,
-	wayland_source_check,
-	wayland_source_dispatch,
+static GSourceFuncs wl_glib_source_funcs = {
+	wl_glib_source_prepare,
+	wl_glib_source_check,
+	wl_glib_source_dispatch,
 	NULL
 };
 
 static int
-wayland_source_update(uint32_t mask, void *data)
+wl_glib_source_update(uint32_t mask, void *data)
 {
-	WaylandSource *source = data;
+	WlSource *source = data;
 
 	source->mask = mask;
 
@@ -89,15 +89,15 @@ wayland_source_update(uint32_t mask, void *data)
 }
 
 GSource *
-wayland_source_new(struct wl_display *display)
+wl_glib_source_new(struct wl_display *display)
 {
-	WaylandSource *source;
+	WlSource *source;
 
-	source = (WaylandSource *) g_source_new(&wayland_source_funcs,
-						sizeof (WaylandSource));
+	source = (WlSource *) g_source_new(&wl_glib_source_funcs,
+					   sizeof (WlSource));
 	source->display = display;
 	source->pfd.fd = wl_display_get_fd(display,
-					   wayland_source_update, source);
+					   wl_glib_source_update, source);
 	source->pfd.events = G_IO_IN | G_IO_ERR;
 	g_source_add_poll(&source->source, &source->pfd);
 
