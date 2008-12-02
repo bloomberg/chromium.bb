@@ -3,8 +3,7 @@
 wayland
 window
 flower
-background
-pointer
 screenshot
-background.jpg
+*.jpg
+*.png
 *~
