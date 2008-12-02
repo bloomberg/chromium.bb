@@ -951,7 +951,8 @@ int main(int argc, char *argv[])
 
 	if (argc == 2)
 		compositor = argv[1];
-	load_compositor(display, compositor);
+	if (load_compositor(display, compositor))
+		return -1;
 
 	wl_display_run(display);
 
