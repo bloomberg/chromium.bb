@@ -253,7 +253,7 @@ within the pattern directly.  Applications must not free this value.
 @TYPE4+++++@ 	FcBool * 			@ARG4+++++@ 	b 
 
 @PROTOTYPE++++++@
-@RET++++++@	FcBool
+@RET++++++@	FcResult
 @FUNC++++++@	FcPatternGetFTFace
 @TYPE1++++++@ 	FcPattern * 			@ARG1++++++@ 	p
 @TYPE2++++++@	const char *			@ARG2++++++@	object
@@ -261,7 +261,7 @@ within the pattern directly.  Applications must not free this value.
 @TYPE3++++++@	FT_Face *			@ARG3++++++@	f
 
 @PROTOTYPE+++++++@
-@RET+++++++@	FcBool
+@RET+++++++@	FcResult
 @FUNC+++++++@	FcPatternGetLangSet
 @TYPE1+++++++@ 	FcPattern * 			@ARG1+++++++@ 	p
 @TYPE2+++++++@	const char *			@ARG2+++++++@	object
