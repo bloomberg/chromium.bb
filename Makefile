@@ -5,7 +5,7 @@ PKG_CONFIG_PATH ?= $(HOME)/install/lib/pkgconfig
 EAGLE_CFLAGS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --cflags eagle)
 EAGLE_LDLIBS = $(shell PKG_CONFIG_PATH=$(PKG_CONFIG_PATH) pkg-config --libs eagle)
 
-clients = flower pointer background window screenshot
+clients = flower window screenshot
 compositors = egl-compositor.so glx-compositor.so
 
 all : wayland libwayland.so $(compositors) $(clients)
@@ -44,16 +44,11 @@ libwayland.so $(compositors) :
 	gcc -o $@ $^ $(LDLIBS) -shared 
 
 flower_objs = flower.o wayland-glib.o cairo-util.o
-pointer_objs = pointer.o wayland-glib.o cairo-util.o
-background_objs = background.o wayland-glib.o
 window_objs = window.o gears.o wayland-glib.o cairo-util.o
 screenshot_objs = screenshot.o wayland-glib.o
 
 $(clients) : CFLAGS += $(shell pkg-config --cflags cairo glib-2.0)
 $(clients) : LDLIBS += $(shell pkg-config --libs cairo glib-2.0) -lrt
-
-background : CFLAGS += $(shell pkg-config --cflags gdk-pixbuf-2.0)
-background : LDLIBS += $(shell pkg-config --libs gdk-pixbuf-2.0)
 
 window : CFLAGS += $(EAGLE_CFLAGS)
 window : LDLIBS += $(EAGLE_LDLIBS)
