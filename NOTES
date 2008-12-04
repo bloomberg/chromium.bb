@@ -141,3 +141,23 @@ spontanously when the server state changes.
 
 the get_interface method is called on an object to get an object
 handle that implements the specified interface.
+
+
+EMBEDDING OTHER WINDOWS
+
+X11 lets clients embed windows from other clients other copy pixmap
+contents rendered by another client into their window.  This is often
+used for applets in a panel, browser plugins and similar.  Wayland
+doesn't directly allow this, but clients can communicate GEM buffer
+names out-of-band, for example, using d-bus or as command line
+arguments when the panel launches the applet.  Another option is to
+use a nested wayland instance.  For this, the wayland server will have
+to be a library that the host application links to.  The host
+application will then pass the wayland server socket name to the
+embedded application, and will need to implement the wayland
+compositor interface.  The host application composites the client
+surfaces as part of it's window, that is, in the web page or in the
+panel.  The benefit of nesting the wayland server is that it provides
+the requests the embedded client needs to inform the host about buffer
+updates and a mechanism for forwarding input events from the host
+application.
