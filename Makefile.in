@@ -1,0 +1,65 @@
+CFLAGS = @GCC_CFLAGS@
+
+clients = flower window screenshot
+compositors = egl-compositor.so glx-compositor.so
+
+all : wayland libwayland.so $(compositors) $(clients)
+
+wayland_objs =					\
+	wayland.o				\
+	event-loop.o				\
+	connection.o				\
+	wayland-util.o
+
+wayland : CFLAGS += @FFI_CFLAGS@
+wayland : LDLIBS += @FFI_LIBS@ -ldl -rdynamic
+
+wayland : $(wayland_objs)
+	gcc -o $@ $(LDLIBS) $(wayland_objs)
+
+libwayland_objs =				\
+	wayland-client.o			\
+	connection.o				\
+	wayland-util.o
+
+libwayland.so : $(libwayland_objs)
+
+$(compositors) $(clients) : CFLAGS += @LIBDRM_CFLAGS@
+
+egl_compositor_objs = egl-compositor.o evdev.o cairo-util.o
+egl-compositor.so : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
+egl-compositor.so : LDLIBS += @EGL_COMPOSITOR_LIBS@ -rdynamic -lrt
+
+egl-compositor.so : $(egl_compositor_objs)
+
+glx_compositor_objs = glx-compositor.o
+glx-compositor.so : CFLAGS += @GL_COMPOSITOR_CFLAGS@
+glx-compositor.so : LDLIBS += @GL_COMPOSITOR_LIBS@
+
+glx-compositor.so : $(glx_compositor_objs)
+
+
+libwayland.so $(compositors) :
+	gcc -o $@ $^ $(LDLIBS) -shared 
+
+flower_objs = flower.o wayland-glib.o cairo-util.o
+window_objs = window.o gears.o wayland-glib.o cairo-util.o
+screenshot_objs = screenshot.o wayland-glib.o
+
+$(clients) : CFLAGS += @CLIENT_CFLAGS@
+$(clients) : LDLIBS += @CLIENT_LIBS@ -lrt
+
+define client_template
+$(1): $$($(1)_objs) libwayland.so
+endef
+
+$(foreach c,$(clients),$(eval $(call client_template,$(c))))
+
+$(clients) :
+	gcc -o $@ -L. -lwayland $(LDLIBS) $^
+
+clean :
+	rm -f $(clients) wayland *.o *.so
+
+Makefile : Makefile.in
+	./config.status
