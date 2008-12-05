@@ -362,6 +362,10 @@ int main(int argc, char *argv[])
 	display = wl_display_create();
 
 	gc = glx_compositor_create(display);
+	if (gc == NULL) {
+		fprintf(stderr, "failed to create compositor\n");
+		exit(EXIT_FAILURE);
+	}
 
 	wl_display_set_compositor(display, &gc->base);
 

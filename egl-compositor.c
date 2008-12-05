@@ -1035,7 +1035,11 @@ int main(int argc, char *argv[])
 	display = wl_display_create();
 
 	ec = egl_compositor_create(display);
-
+	if (ec == NULL) {
+		fprintf(stderr, "failed to create compositor\n");
+		exit(EXIT_FAILURE);
+	}
+		
 	wl_display_set_compositor(display, &ec->base);
 
 	if (wl_display_add_socket(display, socket_name)) {
