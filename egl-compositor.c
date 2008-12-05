@@ -931,8 +931,8 @@ pick_config(struct egl_compositor *ec)
 
 static const char gem_device[] = "/dev/dri/card0";
 
-WL_EXPORT struct wl_compositor *
-wl_compositor_create(struct wl_display *display)
+static struct egl_compositor *
+egl_compositor_create(struct wl_display *display)
 {
 	EGLint major, minor;
 	struct egl_compositor *ec;
@@ -1019,5 +1019,31 @@ wl_compositor_create(struct wl_display *display)
 
 	schedule_repaint(ec);
 
-	return &ec->base;
+	return ec;
+}
+
+/* The plan here is to generate a random anonymous socket name and
+ * advertise that through a service on the session dbus.
+ */
+static const char socket_name[] = "\0wayland";
+
+int main(int argc, char *argv[])
+{
+	struct wl_display *display;
+	struct egl_compositor *ec;
+
+	display = wl_display_create();
+
+	ec = egl_compositor_create(display);
+
+	wl_display_set_compositor(display, &ec->base);
+
+	if (wl_display_add_socket(display, socket_name)) {
+		fprintf(stderr, "failed to add socket: %m\n");
+		exit(EXIT_FAILURE);
+	}
+
+	wl_display_run(display);
+
+	return 0;
 }

@@ -1,65 +1,51 @@
 CFLAGS = @GCC_CFLAGS@
 
+libs = libwayland-server.so libwayland.so
 clients = flower window screenshot
-compositors = egl-compositor.so glx-compositor.so
+compositors = egl-compositor glx-compositor
 
-all : wayland libwayland.so $(compositors) $(clients)
+all : $(libs) $(compositors) $(clients)
 
-wayland_objs =					\
+libwayland-server.so :				\
 	wayland.o				\
 	event-loop.o				\
 	connection.o				\
 	wayland-util.o
 
-wayland : CFLAGS += @FFI_CFLAGS@
-wayland : LDLIBS += @FFI_LIBS@ -ldl -rdynamic
+libwayland-server.so : CFLAGS += @FFI_CFLAGS@
+libwayland-server.so : LDLIBS += @FFI_LIBS@ -ldl -rdynamic
 
-wayland : $(wayland_objs)
-	gcc -o $@ $(LDLIBS) $(wayland_objs)
-
-libwayland_objs =				\
+libwayland.so :					\
 	wayland-client.o			\
 	connection.o				\
 	wayland-util.o
 
-libwayland.so : $(libwayland_objs)
+$(libs) :
+	gcc -shared $^ $(LDLIBS)  -o $@
 
 $(compositors) $(clients) : CFLAGS += @LIBDRM_CFLAGS@
 
-egl_compositor_objs = egl-compositor.o evdev.o cairo-util.o
-egl-compositor.so : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
-egl-compositor.so : LDLIBS += @EGL_COMPOSITOR_LIBS@ -rdynamic -lrt
+egl-compositor :				\
+	egl-compositor.o			\
+	evdev.o					\
+	cairo-util.o
 
-egl-compositor.so : $(egl_compositor_objs)
+egl-compositor : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
+egl-compositor : LDLIBS += @EGL_COMPOSITOR_LIBS@ -L. -lwayland-server -rdynamic -lrt
 
-glx_compositor_objs = glx-compositor.o
-glx-compositor.so : CFLAGS += @GL_COMPOSITOR_CFLAGS@
-glx-compositor.so : LDLIBS += @GL_COMPOSITOR_LIBS@
+glx-compositor : glx-compositor.o
+glx-compositor : CFLAGS += @GL_COMPOSITOR_CFLAGS@
+glx-compositor : LDLIBS += @GL_COMPOSITOR_LIBS@ -L. -lwayland-server
 
-glx-compositor.so : $(glx_compositor_objs)
-
-
-libwayland.so $(compositors) :
-	gcc -o $@ $^ $(LDLIBS) -shared 
-
-flower_objs = flower.o wayland-glib.o cairo-util.o
-window_objs = window.o gears.o wayland-glib.o cairo-util.o
-screenshot_objs = screenshot.o wayland-glib.o
+flower : flower.o wayland-glib.o cairo-util.o
+window : window.o gears.o wayland-glib.o cairo-util.o
+screenshot : screenshot.o wayland-glib.o
 
 $(clients) : CFLAGS += @CLIENT_CFLAGS@
-$(clients) : LDLIBS += @CLIENT_LIBS@ -lrt
-
-define client_template
-$(1): $$($(1)_objs) libwayland.so
-endef
-
-$(foreach c,$(clients),$(eval $(call client_template,$(c))))
-
-$(clients) :
-	gcc -o $@ -L. -lwayland $(LDLIBS) $^
+$(clients) : LDLIBS += @CLIENT_LIBS@ -L. -lwayland -lrt
 
 clean :
-	rm -f $(clients) wayland *.o *.so
+	rm -f $(clients) $(compositors) *.o *.so
 
 Makefile : Makefile.in
 	./config.status

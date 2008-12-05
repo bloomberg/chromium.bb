@@ -552,7 +552,7 @@ static const struct wl_interface display_interface = {
 	ARRAY_LENGTH(display_events), display_events,
 };
 
-static struct wl_display *
+WL_EXPORT struct wl_display *
 wl_display_create(void)
 {
 	struct wl_display *display;
@@ -725,7 +725,7 @@ wl_display_post_frame(struct wl_display *display,
 	}
 }
 
-void
+WL_EXPORT void
 wl_display_set_compositor(struct wl_display *display,
 			  struct wl_compositor *compositor)
 {
@@ -738,17 +738,12 @@ wl_display_get_event_loop(struct wl_display *display)
 	return display->loop;
 }
 
-static void
+WL_EXPORT void
 wl_display_run(struct wl_display *display)
 {
 	while (1)
 		wl_event_loop_wait(display->loop);
 }
-
-/* The plan here is to generate a random anonymous socket name and
- * advertise that through a service on the session dbus.
- */
-static const char socket_name[] = "\0wayland";
 
 static void
 socket_data(int fd, uint32_t mask, void *data)
@@ -766,8 +761,8 @@ socket_data(int fd, uint32_t mask, void *data)
 	wl_client_create(display, client_fd);
 }
 
-static int
-wl_display_add_socket(struct wl_display *display)
+WL_EXPORT int
+wl_display_add_socket(struct wl_display *display, const char *socket_name)
 {
 	struct sockaddr_un name;
 	int sock;
@@ -836,57 +831,4 @@ WL_EXPORT void
 wl_surface_iterator_destroy(struct wl_surface_iterator *iterator)
 {
 	free(iterator);
-}
-
-static int
-load_compositor(struct wl_display *display, const char *path)
-{
-	struct wl_compositor *(*create)(struct wl_display *display);
-	struct wl_compositor *compositor;
-	void *p;
-
-	p = dlopen(path, RTLD_LAZY | RTLD_GLOBAL);
-	if (p == NULL) {
-		fprintf(stderr, "failed to open compositor %s: %s\n",
-			path, dlerror());
-		return -1;
-	}
-
-	create = dlsym(p, "wl_compositor_create");
-	if (create == NULL) {
-		fprintf(stderr, "failed to look up compositor constructor\n");
-		return -1;
-	}
-		
-	compositor = create(display);
-	if (compositor == NULL) {
-		fprintf(stderr, "couldn't create compositor\n");
-		return -1;
-	}
-
-	wl_display_set_compositor(display, compositor);
-
-	return 0;
-}
-
-int main(int argc, char *argv[])
-{
-	struct wl_display *display;
-	const char *compositor = "./egl-compositor.so";
-
-	display = wl_display_create();
-
-	if (wl_display_add_socket(display)) {
-		fprintf(stderr, "failed to add socket: %m\n");
-		exit(EXIT_FAILURE);
-	}
-
-	if (argc == 2)
-		compositor = argv[1];
-	if (load_compositor(display, compositor))
-		return -1;
-
-	wl_display_run(display);
-
-	return 0;
 }

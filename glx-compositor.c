@@ -271,8 +271,8 @@ display_data(int fd, uint32_t mask, void *data)
 	}
 }
 
-WL_EXPORT struct wl_compositor *
-wl_compositor_create(struct wl_display *display)
+static struct glx_compositor *
+glx_compositor_create(struct wl_display *display)
 {
 	static int attribs[] = {
 		GLX_RGBA,
@@ -346,5 +346,31 @@ wl_compositor_create(struct wl_display *display)
 
 	schedule_repaint(gc);
 
-	return &gc->base;
+	return gc;
+}
+
+/* The plan here is to generate a random anonymous socket name and
+ * advertise that through a service on the session dbus.
+ */
+static const char socket_name[] = "\0wayland";
+
+int main(int argc, char *argv[])
+{
+	struct wl_display *display;
+	struct glx_compositor *gc;
+
+	display = wl_display_create();
+
+	gc = glx_compositor_create(display);
+
+	wl_display_set_compositor(display, &gc->base);
+
+	if (wl_display_add_socket(display, socket_name)) {
+		fprintf(stderr, "failed to add socket: %m\n");
+		exit(EXIT_FAILURE);
+	}
+
+	wl_display_run(display);
+
+	return 0;
 }
