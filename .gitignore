@@ -1,6 +1,7 @@
 *.o
 *.so
-wayland
+glx-compositor
+egl-compositor
 window
 flower
 screenshot
@@ -12,3 +13,4 @@ autom4te.cache/
 config.log
 config.status
 configure
+Makefile
