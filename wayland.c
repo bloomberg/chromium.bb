@@ -115,13 +115,6 @@ wl_surface_attach(struct wl_client *client,
 					 surface, name, width, height, stride);
 }
 
-static const struct wl_argument attach_arguments[] = {
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-};
-
 static void
 wl_surface_map(struct wl_client *client, struct wl_surface *surface,
 	       int32_t x, int32_t y, int32_t width, int32_t height)
@@ -141,13 +134,6 @@ wl_surface_map(struct wl_client *client, struct wl_surface *surface,
 				      surface, &surface->map);
 }
 
-static const struct wl_argument map_arguments[] = {
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-};
-
 static void
 wl_surface_copy(struct wl_client *client, struct wl_surface *surface,
 		int32_t dst_x, int32_t dst_y, uint32_t name, uint32_t stride,
@@ -161,19 +147,6 @@ wl_surface_copy(struct wl_client *client, struct wl_surface *surface,
 				       name, stride, x, y, width, height);
 }
 
-static const struct wl_argument copy_arguments[] = {
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-};
-
 static void
 wl_surface_damage(struct wl_client *client, struct wl_surface *surface,
 		  int32_t x, int32_t y, int32_t width, int32_t height)
@@ -185,24 +158,12 @@ wl_surface_damage(struct wl_client *client, struct wl_surface *surface,
 					 surface, x, y, width, height);
 }
 
-static const struct wl_argument damage_arguments[] = {
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 },
-};
-
 static const struct wl_method surface_methods[] = {
-	{ "destroy", wl_surface_destroy,
-	  0, NULL },
-	{ "attach", wl_surface_attach,
-	  ARRAY_LENGTH(attach_arguments), attach_arguments },
-	{ "map", wl_surface_map,
-	  ARRAY_LENGTH(map_arguments), map_arguments },
-	{ "copy", wl_surface_copy,
-	  ARRAY_LENGTH(copy_arguments), copy_arguments },
-	{ "damage", wl_surface_damage,
-	  ARRAY_LENGTH(damage_arguments), damage_arguments }
+	{ "destroy", wl_surface_destroy, "" },
+	{ "attach", wl_surface_attach, "uuuu" },
+	{ "map", wl_surface_map, "iiii" },
+	{ "copy", wl_surface_copy, "iiuuiiii" },
+	{ "damage", wl_surface_damage, "iiii" }
 };
 
 static const struct wl_interface surface_interface = {
@@ -253,31 +214,33 @@ wl_client_marshal(struct wl_client *client, struct wl_object *sender,
 {
 	const struct wl_event *event;
 	struct wl_object *object;
-	uint32_t args[10], size, *p;
+	uint32_t args[10], size;
 	va_list ap;
-	int i;
+	int i, count;
 
 	event = &sender->interface->events[opcode];
+	count = strlen(event->signature) + 2;
+	assert(count <= ARRAY_LENGTH(args));
+
 	size = 0;
 	va_start(ap, opcode);
-	p = &args[2];
-	for (i = 0; i < event->argument_count; i++) {
-		switch (event->arguments[i].type) {
-		case WL_ARGUMENT_UINT32:
-			p[i] = va_arg(ap, uint32_t);
-			size += sizeof p[i];
+	for (i = 2; i < count; i++) {
+		switch (event->signature[i - 2]) {
+		case 'u':
+		case 'i':
+			args[i] = va_arg(ap, uint32_t);
+			size += sizeof args[i];
 			break;
-		case WL_ARGUMENT_STRING:
+		case 's':
 			/* FIXME */
-			p[i] = 0;
-			size += sizeof p[i];
+			args[i] = 0;
+			size += sizeof args[i];
 			break;
-		case WL_ARGUMENT_OBJECT:
+		case 'o':
 			object = va_arg(ap, struct wl_object *);
-			p[i] = object->id;
-			size += sizeof p[i];
+			args[i] = object->id;
+			size += sizeof args[i];
 			break;
-		case WL_ARGUMENT_NEW_ID:
 		default:
 			assert(0);
 			break;
@@ -298,7 +261,7 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 	ffi_type *types[20];
 	ffi_cif cif;
 	uint32_t *p, result;
-	int i;
+	int i, j, count;
 	union {
 		uint32_t uint32;
 		const char *string;
@@ -309,8 +272,9 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 	struct wl_object *object;
 	uint32_t data[64];
 
-	if (method->argument_count > ARRAY_LENGTH(types)) {
-		printf("too many args (%d)\n", method->argument_count);
+	count = strlen(method->signature) + 2;
+	if (count > ARRAY_LENGTH(types)) {
+		printf("too many args (%d)\n", count);
 		return;
 	}
 
@@ -329,31 +293,34 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 
 	wl_connection_copy(client->connection, data, size);
 	p = &data[2];
-	for (i = 0; i < method->argument_count; i++) {
-		switch (method->arguments[i].type) {
-		case WL_ARGUMENT_UINT32:
-			types[i + 2] = &ffi_type_uint32;
-			values[i + 2].uint32 = *p;
+	j = 0;
+	for (i = 2; i < count; i++) {
+		switch (method->signature[i - 2]) {
+		case 'u':
+		case 'i':
+			types[i] = &ffi_type_uint32;
+			values[i].uint32 = *p;
 			p++;
 			break;
-		case WL_ARGUMENT_STRING:
-			types[i + 2] = &ffi_type_pointer;
+		case 's':
+			types[i] = &ffi_type_pointer;
 			/* FIXME */
-			values[i + 2].uint32 = *p++;
+			values[i].uint32 = *p++;
 			break;
-		case WL_ARGUMENT_OBJECT:
-			types[i + 2] = &ffi_type_pointer;
+		case 'o':
+			types[i] = &ffi_type_pointer;
 			object = wl_hash_lookup(&client->display->objects, *p);
 			if (object == NULL)
 				printf("unknown object (%d)\n", *p);
-			if (object->interface != method->arguments[i].data)
+			if (object->interface != method->types[j])
 				printf("wrong object type\n");
-			values[i + 2].object = object;
+			values[i].object = object;
 			p++;
+			j++;
 			break;
-		case WL_ARGUMENT_NEW_ID:
-			types[i + 2] = &ffi_type_uint32;
-			values[i + 2].new_id = *p;
+		case 'n':
+			types[i] = &ffi_type_uint32;
+			values[i].new_id = *p;
 			object = wl_hash_lookup(&client->display->objects, *p);
 			if (object != NULL)
 				printf("object already exists (%d)\n", *p);
@@ -363,11 +330,10 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 			printf("unknown type\n");
 			break;
 		}
-		args[i + 2] = &values[i + 2];
+		args[i] = &values[i];
 	}
 
-	ffi_prep_cif(&cif, FFI_DEFAULT_ABI, method->argument_count + 2,
-		     &ffi_type_uint32, types);
+	ffi_prep_cif(&cif, FFI_DEFAULT_ABI, count, &ffi_type_uint32, types);
 	ffi_call(&cif, FFI_FN(method->func), &result, args);
 }
 
@@ -550,10 +516,6 @@ wl_display_create_surface(struct wl_client *client,
 	return 0;
 }
 
-static const struct wl_argument create_surface_arguments[] = {
-	{ WL_ARGUMENT_NEW_ID }
-};
-
 static int
 wl_display_commit(struct wl_client *client,
 		  struct wl_display *display, uint32_t key)
@@ -571,47 +533,17 @@ wl_display_commit(struct wl_client *client,
 	return 0;
 }
 
-static const struct wl_argument commit_arguments[] = {
-	{ WL_ARGUMENT_UINT32 }
-};
-
 static const struct wl_method display_methods[] = {
-	{ "create_surface", wl_display_create_surface,
-	  ARRAY_LENGTH(create_surface_arguments), create_surface_arguments },
-	{ "commit", wl_display_commit,
-	  ARRAY_LENGTH(commit_arguments), commit_arguments },
-};
-
-static const struct wl_argument invalid_object_arguments[] = {
-	{ WL_ARGUMENT_UINT32 }
-};
-
-static const struct wl_argument invalid_method_arguments[] = {
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 }
-};
-
-static const struct wl_argument acknowledge_arguments[] = {
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 }
-};
-
-static const struct wl_argument frame_arguments[] = {
-	{ WL_ARGUMENT_UINT32 },
-	{ WL_ARGUMENT_UINT32 }
+	{ "create_surface", wl_display_create_surface, "n" },
+	{ "commit", wl_display_commit, "u" }
 };
 
 static const struct wl_event display_events[] = {
-	{ "invalid_object",
-	  ARRAY_LENGTH(invalid_object_arguments), invalid_object_arguments },
-	{ "invalid_method",
-	  ARRAY_LENGTH(invalid_method_arguments), invalid_method_arguments },
-	{ "no_memory",
-	  0, NULL },
-	{ "acknowledge",
-	  ARRAY_LENGTH(acknowledge_arguments), acknowledge_arguments },
-	{ "frame",
-	  ARRAY_LENGTH(frame_arguments), frame_arguments },
+	{ "invalid_object", "u" },
+	{ "invalid_method", "uu" },
+	{ "no_memory", "" },
+	{ "acknowledge", "uu" },
+	{ "frame", "uu" }
 };
 
 static const struct wl_interface display_interface = {

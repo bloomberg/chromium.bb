@@ -74,14 +74,13 @@ struct wl_argument {
 struct wl_method {
 	const char *name;
 	void *func;
-	int argument_count;
-	const struct wl_argument *arguments;
+	const char *signature;
+	const void **types;
 };
 
 struct wl_event {
 	const char *name;
-	int argument_count;
-	const struct wl_argument *arguments;
+	const char *signature;
 };
 
 struct wl_interface {
