@@ -84,7 +84,7 @@ int main(int argc, char *argv[])
 	GSource *source;
 	struct screenshooter *s;
 
-	display = wl_display_create(socket_name);
+	display = wl_display_create(socket_name, sizeof socket_name);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

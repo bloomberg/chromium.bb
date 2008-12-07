@@ -83,11 +83,11 @@ connection_update(struct wl_connection *connection,
 }
 
 WL_EXPORT struct wl_display *
-wl_display_create(const char *address)
+wl_display_create(const char *name, size_t name_size)
 {
 	struct wl_display *display;
 	struct wl_global *global;
-	struct sockaddr_un name;
+	struct sockaddr_un addr;
 	socklen_t size;
 	char buffer[256];
 	uint32_t id, length, count, i;
@@ -103,12 +103,12 @@ wl_display_create(const char *address)
 		return NULL;
 	}
 
-	name.sun_family = AF_LOCAL;
-	memcpy(name.sun_path, address, strlen(address + 1) + 2);
+	addr.sun_family = AF_LOCAL;
+	memcpy(addr.sun_path, name, name_size);
 
-	size = offsetof (struct sockaddr_un, sun_path) + sizeof socket_name;
+	size = offsetof (struct sockaddr_un, sun_path) + name_size;
 
-	if (connect(display->fd, (struct sockaddr *) &name, size) < 0) {
+	if (connect(display->fd, (struct sockaddr *) &addr, size) < 0) {
 		close(display->fd);
 		free(display);
 		return NULL;

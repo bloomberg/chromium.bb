@@ -1042,7 +1042,7 @@ int main(int argc, char *argv[])
 		
 	wl_display_set_compositor(display, &ec->base);
 
-	if (wl_display_add_socket(display, socket_name)) {
+	if (wl_display_add_socket(display, socket_name, sizeof socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);
 	}

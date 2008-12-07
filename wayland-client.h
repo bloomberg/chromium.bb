@@ -38,7 +38,7 @@ struct wl_surface;
 
 typedef int (*wl_display_update_func_t)(uint32_t mask, void *data);
 
-struct wl_display *wl_display_create(const char *address);
+struct wl_display *wl_display_create(const char *name, size_t name_size);
 void wl_display_destroy(struct wl_display *display);
 int wl_display_get_fd(struct wl_display *display,
 		      wl_display_update_func_t update, void *data);

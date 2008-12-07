@@ -270,7 +270,7 @@ event_handler(struct wl_display *display,
 				buffer->name, buffer->stride,
 				0, 0, buffer->width, buffer->height);
 		wl_display_commit(window->display, 0);
-	window->gears_angle += 1;
+		window->gears_angle += 1;
 
 	} else if (object == 1) {
 		fprintf(stderr, "unexpected event from display: %d\n",
@@ -418,7 +418,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	display = wl_display_create(socket_name);
+	display = wl_display_create(socket_name, sizeof socket_name);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;

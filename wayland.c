@@ -90,7 +90,7 @@ struct wl_object_ref {
 	struct wl_object *object;
 	struct wl_list link;
 };
-				   
+
 static void
 wl_surface_destroy(struct wl_client *client,
 		   struct wl_surface *surface)
@@ -762,9 +762,10 @@ socket_data(int fd, uint32_t mask, void *data)
 }
 
 WL_EXPORT int
-wl_display_add_socket(struct wl_display *display, const char *socket_name)
+wl_display_add_socket(struct wl_display *display,
+		      const char *name, size_t name_size)
 {
-	struct sockaddr_un name;
+	struct sockaddr_un addr;
 	int sock;
 	socklen_t size;
 
@@ -772,11 +773,11 @@ wl_display_add_socket(struct wl_display *display, const char *socket_name)
 	if (sock < 0)
 		return -1;
 
-	name.sun_family = AF_LOCAL;
-	memcpy(name.sun_path, socket_name, sizeof socket_name);
+	addr.sun_family = AF_LOCAL;
+	memcpy(addr.sun_path, name, name_size);
 
-	size = offsetof (struct sockaddr_un, sun_path) + sizeof socket_name;
-	if (bind(sock, (struct sockaddr *) &name, size) < 0)
+	size = offsetof (struct sockaddr_un, sun_path) + name_size;
+	if (bind(sock, (struct sockaddr *) &addr, size) < 0)
 		return -1;
 
 	if (listen(sock, 1) < 0)

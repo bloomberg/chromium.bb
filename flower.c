@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 
 	loop = g_main_loop_new(NULL, FALSE);
 
-	display = wl_display_create(socket_name);
+	display = wl_display_create(socket_name, sizeof socket_name);
 	if (display == NULL) {
 		fprintf(stderr, "failed to create display: %m\n");
 		return -1;
