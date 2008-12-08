@@ -212,7 +212,7 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 }
 
 static const struct wl_method screenshooter_methods[] = {
-	{ "shoot", screenshooter_shoot, 0, NULL }
+	{ "shoot", screenshooter_shoot, "", NULL }
 };
 
 static const struct wl_interface screenshooter_interface = {
