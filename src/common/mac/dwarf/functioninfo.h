@@ -47,6 +47,8 @@ namespace dwarf2reader {
 struct FunctionInfo {
   // Name of the function
   string name;
+  // Mangled name of the function
+  string mangled_name;
   // File containing this function
   string file;
   // Line number for start of function.

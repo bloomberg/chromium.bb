@@ -152,8 +152,12 @@ void CUFunctionInfoHandler::ProcessAttributeString(uint64 offset,
                                                    enum DwarfAttribute attr,
                                                    enum DwarfForm form,
                                                    const string &data) {
-  if (attr == DW_AT_name && current_function_info_)
-    current_function_info_->name = data;
+  if (current_function_info_) {
+    if (attr == DW_AT_name)
+      current_function_info_->name = data;
+    else if(attr == DW_AT_MIPS_linkage_name)
+      current_function_info_->mangled_name = data;
+  }
 }
 
 void CUFunctionInfoHandler::ProcessAttributeUnsigned(uint64 offset,

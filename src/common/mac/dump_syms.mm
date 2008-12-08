@@ -63,7 +63,6 @@ static NSString *kHeaderSizeKey = @"size";
 static NSString *kHeaderOffsetKey = @"offset";  // Offset to the header
 static NSString *kHeaderIs64BitKey = @"is64";
 static NSString *kHeaderCPUTypeKey = @"cpuType";
-static NSString *kUnknownSymbol = @"???";
 
 // The section for __TEXT, __text seems to be always 1.  This is useful
 // for pruning out extraneous non-function symbols.
@@ -432,6 +431,15 @@ void DumpFunctionMap(const dwarf2reader::FunctionMap function_map) {
     if (![dict objectForKey:kAddressSymbolKey]) {
       NSString *symbolName = [NSString stringWithUTF8String:iter->second->name.c_str()];
       [dict setObject:symbolName forKey:kAddressSymbolKey];
+    }
+
+    // try demangling function name if we have a mangled name
+    if (![dict objectForKey:kAddressConvertedSymbolKey] &&
+        !iter->second->mangled_name.empty()) {
+      NSString *mangled = [NSString stringWithUTF8String:iter->second->mangled_name.c_str()];
+      NSString *demangled = [self convertCPlusPlusSymbol:mangled];
+      if (demangled != nil)
+        [dict setObject:demangled forKey:kAddressConvertedSymbolKey];
     }
   
     // set line number for beginning of function
