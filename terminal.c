@@ -96,9 +96,6 @@ terminal_draw_contents(struct terminal *terminal)
 	}
 	cairo_destroy(cr);
 
-	if (terminal->buffer != NULL)
-		buffer_destroy(terminal->buffer, terminal->fd);
-
 	terminal->buffer = buffer_create_from_cairo_surface(terminal->fd, surface);
 	cairo_surface_destroy(surface);
 
@@ -193,6 +190,7 @@ acknowledge_handler(struct window *window, uint32_t key, void *data)
 	struct terminal *terminal = data;
 
 	terminal->resize_scheduled = 0;
+	buffer_destroy(terminal->buffer, terminal->fd);
 }
 
 struct key {
