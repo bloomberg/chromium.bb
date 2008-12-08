@@ -196,7 +196,7 @@ acknowledge_handler(struct window *window, uint32_t key, void *data)
 }
 
 struct key {
-	int code[2];
+	int code[4];
 } evdev_keymap[] = {
 	{ { 0, 0 } },		/* 0 */
 	{ { 0x1b, 0x1b } },
@@ -216,29 +216,29 @@ struct key {
 	{ { '\t', '\t' } },
 
 	{ { 'q', 'Q' } },		/* 16 */
-	{ { 'w', 'W' } },
-	{ { 'e', 'E' } },
-	{ { 'r', 'R' } },
+	{ { 'w', 'W', 0x17 } },
+	{ { 'e', 'E', 0x05 } },
+	{ { 'r', 'R', 0x12 } },
 	{ { 't', 'T' } },
 	{ { 'y', 'Y' } },
-	{ { 'u', 'U' } },
+	{ { 'u', 'U', 0x15 } },
 	{ { 'i', 'I' } },
 	{ { 'o', 'O' } },
-	{ { 'p', 'P' } },
+	{ { 'p', 'P', 0x10 } },
 	{ { '[', '{' } },
 	{ { ']', '}' } },
 	{ { '\n', '\n' } },
 	{ { 0, 0 } },
-	{ { 'a', 'A' } },
-	{ { 's', 'S' } },
+	{ { 'a', 'A', 0x01} },
+	{ { 's', 'S', 0x13 } },
 
-	{ { 'd', 'D' } },		/* 32 */
-	{ { 'f', 'F' } },
+	{ { 'd', 'D', 0x04 } },		/* 32 */
+	{ { 'f', 'F', 0x06 } },
 	{ { 'g', 'G' } },
 	{ { 'h', 'H' } },
-	{ { 'j', 'J' } },
-	{ { 'k', 'K' } },
-	{ { 'l', 'L' } },
+	{ { 'j', 'J', 0x0a } },
+	{ { 'k', 'K', 0x0b } },
+	{ { 'l', 'L', 0x0c } },
 	{ { ';', ':' } },
 	{ { '\'', '"' } },
 	{ { '`', '~' } },
@@ -249,9 +249,9 @@ struct key {
 	{ { 'c', 'C' } },
 	{ { 'v', 'V' } },
 
-	{ { 'b', 'B' } },		/* 48 */
-	{ { 'n', 'N' } },
-	{ { 'm', 'M' } },
+	{ { 'b', 'B', 0x02 } },		/* 48 */
+	{ { 'n', 'N', 0x0e } },
+	{ { 'm', 'M', 0x0d } },
 	{ { ',', '<' } },
 	{ { '.', '>' } },
 	{ { '/', '?' } },
@@ -288,7 +288,9 @@ key_handler(struct window *window, uint32_t key, uint32_t state, void *data)
 		break;
 	default:
 		if (key < ARRAY_LENGTH(evdev_keymap)) {
-			if (terminal->modifiers & MOD_SHIFT)
+			if (terminal->modifiers & MOD_CTRL)
+				c = evdev_keymap[key].code[2];
+			else if (terminal->modifiers & MOD_SHIFT)
 				c = evdev_keymap[key].code[1];
 			else
 				c = evdev_keymap[key].code[0];
