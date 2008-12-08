@@ -31,6 +31,7 @@
 #include <pty.h>
 #include <cairo.h>
 #include <glib.h>
+#include <linux/input.h>
 
 #include <GL/gl.h>
 #include <eagle.h>
@@ -44,15 +45,20 @@
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
 
+#define MOD_SHIFT	0x01
+#define MOD_ALT		0x02
+#define MOD_CTRL	0x04
+
 struct terminal {
 	struct window *window;
 	struct wl_display *display;
 	int resize_scheduled;
 	char *data;
 	int width, height, tail, row, column;
-	int fd;
+	int fd, master;
 	struct buffer *buffer;
 	GIOChannel *channel;
+	uint32_t modifiers;
 };
 
 static void
@@ -118,25 +124,6 @@ idle_redraw(void *data)
 }
 
 static void
-resize_handler(struct window *window, int32_t width, int32_t height, void *data)
-{
-	struct terminal *terminal = data;
-
-	if (!terminal->resize_scheduled) {
-		g_idle_add(idle_redraw, terminal);
-		terminal->resize_scheduled = 1;
-	}
-}
-
-static void
-acknowledge_handler(struct window *window, uint32_t key, void *data)
-{
-	struct terminal *terminal = data;
-
-	terminal->resize_scheduled = 0;
-}
-
-static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
 	int i;
@@ -166,6 +153,134 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 	}
 }
 
+static void
+resize_handler(struct window *window, int32_t width, int32_t height, void *data)
+{
+	struct terminal *terminal = data;
+
+	if (!terminal->resize_scheduled) {
+		g_idle_add(idle_redraw, terminal);
+		terminal->resize_scheduled = 1;
+	}
+}
+
+static void
+acknowledge_handler(struct window *window, uint32_t key, void *data)
+{
+	struct terminal *terminal = data;
+
+	terminal->resize_scheduled = 0;
+}
+
+struct key {
+	int code[2];
+} evdev_keymap[] = {
+	{ { 0, 0 } },		/* 0 */
+	{ { 0x1b, 0x1b } },
+	{ { '1', '!' } },
+	{ { '2', '@' } },
+	{ { '3', '#' } },
+	{ { '4', '$' } },
+	{ { '5', '%' } },
+	{ { '6', '^' } },
+	{ { '7', '&' } },
+	{ { '8', '*' } },
+	{ { '9', '(' } },
+	{ { '0', ')' } },
+	{ { '-', '_' } },
+	{ { '=', '+' } },
+	{ { '\b', '\b' } },
+	{ { '\t', '\t' } },
+
+	{ { 'q', 'Q' } },		/* 16 */
+	{ { 'w', 'W' } },
+	{ { 'e', 'E' } },
+	{ { 'r', 'R' } },
+	{ { 't', 'T' } },
+	{ { 'y', 'Y' } },
+	{ { 'u', 'U' } },
+	{ { 'i', 'I' } },
+	{ { 'o', 'O' } },
+	{ { 'p', 'P' } },
+	{ { '[', '{' } },
+	{ { ']', '}' } },
+	{ { '\n', '\n' } },
+	{ { 0, 0 } },
+	{ { 'a', 'A' } },
+	{ { 's', 'S' } },
+
+	{ { 'd', 'D' } },		/* 32 */
+	{ { 'f', 'F' } },
+	{ { 'g', 'G' } },
+	{ { 'h', 'H' } },
+	{ { 'j', 'J' } },
+	{ { 'k', 'K' } },
+	{ { 'l', 'L' } },
+	{ { ';', ':' } },
+	{ { '\'', '"' } },
+	{ { '`', '~' } },
+	{ { 0, 0 } },
+	{ { '\\', '|' } },
+	{ { 'z', 'Z' } },
+	{ { 'x', 'X' } },
+	{ { 'c', 'C' } },
+	{ { 'v', 'V' } },
+
+	{ { 'b', 'B' } },		/* 48 */
+	{ { 'n', 'N' } },
+	{ { 'm', 'M' } },
+	{ { ',', '<' } },
+	{ { '.', '>' } },
+	{ { '/', '?' } },
+	{ { 0, 0 } },
+	{ { '*', '*' } },
+	{ { 0, 0 } },
+	{ { ' ', ' ' } },
+	{ { 0, 0 } }
+
+	/* 59 */
+};
+
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
+static void
+key_handler(struct window *window, uint32_t key, uint32_t state, void *data)
+{
+	struct terminal *terminal = data;
+	uint32_t mod = 0;
+	char c;
+
+	switch (key) {
+	case KEY_LEFTSHIFT:
+	case KEY_RIGHTSHIFT:
+		mod = MOD_SHIFT;
+		break;
+	case KEY_LEFTCTRL:
+	case KEY_RIGHTCTRL:
+		mod = MOD_CTRL;
+		break;
+	case KEY_LEFTALT:
+	case KEY_RIGHTALT:
+		mod = MOD_ALT;
+		break;
+	default:
+		if (key < ARRAY_LENGTH(evdev_keymap)) {
+			if (terminal->modifiers & MOD_SHIFT)
+				c = evdev_keymap[key].code[1];
+			else
+				c = evdev_keymap[key].code[0];
+			if (state && c)
+				write(terminal->master, &c, 1);
+		}
+		break;
+	}
+
+	if (state)
+		terminal->modifiers |= mod;
+	else
+		terminal->modifiers &= ~mod;
+}
+
 static struct terminal *
 terminal_create(struct wl_display *display, int fd)
 {
@@ -190,6 +305,7 @@ terminal_create(struct wl_display *display, int fd)
 
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
 	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
+	window_set_key_handler(terminal->window, key_handler, terminal);
 
 	return terminal;
 }
@@ -206,7 +322,6 @@ io_handler(GIOChannel   *source,
 
 	g_io_channel_read_chars(source, buffer, sizeof buffer,
 				&bytes_read, &error);
-	printf("got data: %.*s\n", bytes_read, buffer);
 
 	terminal_data(terminal, buffer, bytes_read);
 
@@ -234,6 +349,7 @@ terminal_run(struct terminal *terminal, const char *path)
 	}
 
 	close(slave);
+	terminal->master = master;
 	terminal->channel = g_io_channel_unix_new(master);
 	fcntl(master, F_SETFL, O_NONBLOCK);
 	g_io_add_watch(terminal->channel, G_IO_IN,

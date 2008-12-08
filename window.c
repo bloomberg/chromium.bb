@@ -55,6 +55,7 @@ struct window {
 	window_resize_handler_t resize_handler;
 	window_frame_handler_t frame_handler;
 	window_acknowledge_handler_t acknowledge_handler;
+	window_key_handler_t key_handler;
 	void *user_data;
 };
 
@@ -293,6 +294,10 @@ event_handler(struct wl_display *display,
 		} else if (button == 0 && state == 0) {
 			window->state = WINDOW_STABLE;
 		}
+	} else if (opcode == 2) {
+		if (window->key_handler)
+			(*window->key_handler)(window, p[0], p[1],
+					       window->user_data);
 	}
 }
 
@@ -339,6 +344,14 @@ window_set_acknowledge_handler(struct window *window,
 			       window_acknowledge_handler_t handler, void *data)
 {
 	window->acknowledge_handler = handler;
+	window->user_data = data;
+}
+
+void
+window_set_key_handler(struct window *window,
+		       window_key_handler_t handler, void *data)
+{
+	window->key_handler = handler;
 	window->user_data = data;
 }
 
