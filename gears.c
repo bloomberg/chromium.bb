@@ -369,7 +369,6 @@ gears_create(struct wl_display *display, int fd)
 	glClearColor(0, 0, 0, 0.92);
 
 	draw_gears(gears);
-	gears->angle += 1;
 
 	frame_handler(gears->window, 0, 0, gears);
 
