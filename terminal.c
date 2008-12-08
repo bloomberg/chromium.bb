@@ -63,6 +63,7 @@ struct terminal {
 	char escape[64];
 	int escape_length;
 	int state;
+	int margin;
 };
 
 static void
@@ -93,7 +94,8 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_font_extents(cr, &extents);
 	for (i = 0; i < terminal->total_rows; i++) {
 		row = (terminal->tail + i) % terminal->height;
-		cairo_move_to(cr, 0, extents.ascent + extents.height * i);
+		cairo_move_to(cr, terminal->margin,
+			      terminal->margin + extents.ascent + extents.height * i);
 		cairo_show_text(cr, &terminal->data[row * (terminal->width + 1)]);
 	}
 	cairo_destroy(cr);
@@ -232,9 +234,29 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 }
 
 static void
-resize_handler(struct window *window, int32_t width, int32_t height, void *data)
+resize_handler(struct window *window, struct rectangle *rectangle, void *data)
 {
 	struct terminal *terminal = data;
+	cairo_surface_t *surface;
+	cairo_font_extents_t extents;
+	cairo_t *cr;
+
+	/* Adjust the size to an integer number of character cells.
+	 * Maybe this is better done in the redraw path, as we're
+	 * creating the cr and setting the font there anyway. */
+
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
+	cr = cairo_create(surface);
+	cairo_select_font_face (cr, "mono",
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_set_font_size(cr, 14);
+	cairo_font_extents(cr, &extents);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+
+	rectangle->width -= (rectangle->width - 2 * terminal->margin) % (int32_t) extents.max_x_advance;
+	rectangle->height -= (rectangle->height - 2 * terminal->margin) % (int32_t) extents.height;
 
 	terminal_schedule_redraw(terminal);
 }
@@ -383,6 +405,7 @@ terminal_create(struct wl_display *display, int fd)
 	terminal->width = 80;
 	terminal->height = 25;
 	terminal->total_rows = 1;
+	terminal->margin = 5;
 	size = (terminal->width + 1) * terminal->height;
 	terminal->data = malloc(size);
 	memset(terminal->data, 0, size);

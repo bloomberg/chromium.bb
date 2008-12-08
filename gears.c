@@ -269,7 +269,7 @@ resize_window(struct gears *gears)
 }
 
 static void
-resize_handler(struct window *window, int32_t width, int32_t height, void *data)
+resize_handler(struct window *window, struct rectangle *rectangle, void *data)
 {
 	struct gears *gears = data;
 

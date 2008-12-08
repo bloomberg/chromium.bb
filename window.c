@@ -190,6 +190,7 @@ event_handler(struct wl_display *display,
 	      uint32_t size, uint32_t *p, void *data)
 {
 	struct window *window = data;
+	struct rectangle rectangle;
 	int location;
 	int grip_size = 16;
 
@@ -251,11 +252,15 @@ event_handler(struct wl_display *display,
 			if (window->height < window->minimum_height)
 				window->height = window->minimum_height;
 
+			window_get_child_rectangle(window, &rectangle);
 			if (window->resize_handler)
 				(*window->resize_handler)(window,
-							  window->width,
-							  window->height,
+							  &rectangle,
 							  window->user_data);
+
+			window->width = rectangle.width + 20;
+			window->height = rectangle.height + 60;
+
 			break;
 		}
 	} else if (opcode == 1) {
