@@ -29,6 +29,7 @@
 #include <math.h>
 #include <time.h>
 #include <pty.h>
+#include <ctype.h>
 #include <cairo.h>
 #include <glib.h>
 #include <linux/input.h>
@@ -59,6 +60,7 @@ struct terminal {
 	struct buffer *buffer;
 	GIOChannel *channel;
 	uint32_t modifiers;
+	int state;
 };
 
 static void
@@ -123,6 +125,9 @@ idle_redraw(void *data)
 	return FALSE;
 }
 
+#define STATE_NORMAL 0
+#define STATE_SKIP_TO_ALPHA 1
+
 static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
@@ -131,6 +136,13 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 
 	for (i = 0; i < length; i++) {
 		row = &terminal->data[terminal->row * (terminal->width + 1)];
+
+		if (terminal->state == STATE_SKIP_TO_ALPHA) {
+			if (isalpha(data[i]))
+				terminal->state = STATE_NORMAL;
+			continue;
+		}
+
 		switch (data[i]) {
 		case '\r':
 			terminal->column = 0;
@@ -144,6 +156,9 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 		case '\t':
 			memset(&row[terminal->column], ' ', -terminal->column & 7);
 			terminal->column = (terminal->column + 7) & ~7;
+			break;
+		case '\e':
+			terminal->state = STATE_SKIP_TO_ALPHA;
 			break;
 		default:
 			if (terminal->column < terminal->width)
