@@ -47,15 +47,68 @@ struct terminal {
 	struct window *window;
 	struct wl_display *display;
 	int resize_scheduled;
+	char *data;
+	int width, height;
+	int fd;
+	struct buffer *buffer;
 };
 
+static void
+terminal_draw_contents(struct terminal *terminal)
+{
+	struct rectangle rectangle;
+	cairo_surface_t *surface;
+	cairo_t *cr;
+	cairo_font_extents_t extents;
+	int i;
+
+	window_get_child_rectangle(terminal->window, &rectangle);
+
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					     rectangle.width, rectangle.height);
+	cr = cairo_create(surface);
+	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+	cairo_set_source_rgba(cr, 0, 0, 0, 0.9);
+	cairo_paint(cr);
+	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+	cairo_set_source_rgba(cr, 0, 0.5, 0, 1);
+
+	cairo_select_font_face (cr, "mono",
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+
+	cairo_font_extents(cr, &extents);
+	for (i = 0; i < terminal->height; i++) {
+		cairo_move_to(cr, 0, extents.ascent + extents.height * i);
+		cairo_show_text(cr, &terminal->data[i * (terminal->width + 1)]);
+	}
+	cairo_destroy(cr);
+
+	if (terminal->buffer != NULL)
+		buffer_destroy(terminal->buffer, terminal->fd);
+
+	terminal->buffer = buffer_create_from_cairo_surface(terminal->fd, surface);
+	cairo_surface_destroy(surface);
+
+	window_copy(terminal->window,
+		    &rectangle,
+		    terminal->buffer->name, terminal->buffer->stride);
+}
+
+static void
+terminal_draw(struct terminal *terminal)
+{
+	window_draw(terminal->window);
+	terminal_draw_contents(terminal);
+	wl_display_commit(terminal->display, 0);
+}
+
 static gboolean
-resize_window(void *data)
+idle_redraw(void *data)
 {
 	struct terminal *terminal = data;
 
-	window_draw(terminal->window);
-	wl_display_commit(terminal->display, 0);
+	terminal_draw(terminal);
 
 	return FALSE;
 }
@@ -66,7 +119,7 @@ resize_handler(struct window *window, int32_t width, int32_t height, void *data)
 	struct terminal *terminal = data;
 
 	if (!terminal->resize_scheduled) {
-		g_idle_add(resize_window, terminal);
+		g_idle_add(idle_redraw, terminal);
 		terminal->resize_scheduled = 1;
 	}
 }
@@ -83,15 +136,27 @@ static struct terminal *
 terminal_create(struct wl_display *display, int fd)
 {
 	struct terminal *terminal;
+	int size, i;
 
 	terminal = malloc(sizeof *terminal);
 	if (terminal == NULL)
 		return terminal;
 
+	terminal->fd = fd;
 	terminal->window = window_create(display, fd, "Wayland Terminal",
-					 500, 100, 300, 200);
+					 500, 100, 500, 400);
 	terminal->display = display;
 	terminal->resize_scheduled = 1;
+	terminal->width = 80;
+	terminal->height = 25;
+	size = (terminal->width + 1) * terminal->height;
+	terminal->data = malloc(size);
+	memset(terminal->data, 0, size);
+
+	for (i = 0; i < terminal->height; i++) {
+		snprintf(&terminal->data[i * (terminal->width + 1)], terminal->width,
+			 "hello world, line %d", i);
+	}
 
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
 	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
@@ -124,8 +189,7 @@ int main(int argc, char *argv[])
 	g_source_attach(source, NULL);
 
 	terminal = terminal_create(display, fd);
-	window_draw(terminal->window);
-	wl_display_commit(display, 0);
+	terminal_draw(terminal);
 
 	g_main_loop_run(loop);
 
