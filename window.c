@@ -247,19 +247,11 @@ event_handler(struct wl_display *display,
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + x;
 			window->height = window->drag_y + y;
-			if (window->width < window->minimum_width)
-				window->width = window->minimum_width;
-			if (window->height < window->minimum_height)
-				window->height = window->minimum_height;
 
 			window_get_child_rectangle(window, &rectangle);
 			if (window->resize_handler)
 				(*window->resize_handler)(window,
-							  &rectangle,
 							  window->user_data);
-
-			window->width = rectangle.width + 20;
-			window->height = rectangle.height + 60;
 
 			break;
 		}
@@ -314,6 +306,14 @@ window_get_child_rectangle(struct window *window,
 	rectangle->y = 50;
 	rectangle->width = window->width - 20;
 	rectangle->height = window->height - 60;
+}
+
+void
+window_set_child_size(struct window *window,
+		      struct rectangle *rectangle)
+{
+	window->width = rectangle->width + 20;
+	window->height = rectangle->height + 60;
 }
 
 void

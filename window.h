@@ -32,7 +32,7 @@ struct rectangle {
 	int32_t height;
 };
 
-typedef void (*window_resize_handler_t)(struct window *window, struct rectangle *rectangle, void *data);
+typedef void (*window_resize_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
 typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key, void *data);
 typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t state, void *data);
@@ -51,6 +51,9 @@ window_draw(struct window *window);
 void
 window_get_child_rectangle(struct window *window,
 			   struct rectangle *rectangle);
+void
+window_set_child_size(struct window *window,
+		      struct rectangle *rectangle);
 void
 window_copy(struct window *window,
 	    struct rectangle *rectangle,

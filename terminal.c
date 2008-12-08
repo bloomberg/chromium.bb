@@ -67,6 +67,55 @@ struct terminal {
 };
 
 static void
+terminal_resize(struct terminal *terminal, int width, int height)
+{
+	size_t size;
+	char *data;
+	int i, l, total_rows, row, tail;
+
+	if (terminal->width == width && terminal->height == height)
+		return;
+
+	size = (width + 1) * height;
+	data = malloc(size);
+	memset(data, 0, size);
+	if (terminal->data) {
+		if (width > terminal->width)
+			l = terminal->width;
+		else
+			l = width;
+
+		if (terminal->total_rows > height) {
+			total_rows = height;
+			tail = terminal->tail + terminal->total_rows - height;
+		} else {
+			total_rows = terminal->total_rows;
+			tail = terminal->tail;
+		}
+
+		for (i = 0; i < total_rows; i++) {
+			row = (tail + i) % terminal->height;
+			memcpy(data + (width + 1) * i,
+			       &terminal->data[row * (terminal->width + 1)], l);
+		}
+
+		free(terminal->data);
+	} else {
+		total_rows = 1;
+	}
+
+	terminal->width = width;
+	terminal->height = height;
+	terminal->data = data;
+
+	terminal->total_rows = total_rows;
+	terminal->row = total_rows - 1;
+	if (terminal->column >= terminal->width)
+		terminal->column = terminal->width - 1;
+	terminal->tail = 0;
+}
+
+static void
 terminal_draw_contents(struct terminal *terminal)
 {
 	struct rectangle rectangle;
@@ -111,6 +160,33 @@ terminal_draw_contents(struct terminal *terminal)
 static void
 terminal_draw(struct terminal *terminal)
 {
+	struct rectangle rectangle;
+	cairo_surface_t *surface;
+	cairo_font_extents_t extents;
+	cairo_t *cr;
+	int width, height;
+
+	window_get_child_rectangle(terminal->window, &rectangle);
+
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
+	cr = cairo_create(surface);
+	cairo_select_font_face (cr, "mono",
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_set_font_size(cr, 14);
+	cairo_font_extents(cr, &extents);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+
+	width = (rectangle.width - 2 * terminal->margin) / (int32_t) extents.max_x_advance;
+	height = (rectangle.height - 2 * terminal->margin) / (int32_t) extents.height;
+	terminal_resize(terminal, width, height);
+
+	rectangle.width = terminal->width * extents.max_x_advance + 2 * terminal->margin;
+	rectangle.height = terminal->height * extents.height + 2 * terminal->margin;
+
+	window_set_child_size(terminal->window, &rectangle);
+
 	window_draw(terminal->window);
 	terminal_draw_contents(terminal);
 	wl_display_commit(terminal->display, 0);
@@ -234,29 +310,9 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 }
 
 static void
-resize_handler(struct window *window, struct rectangle *rectangle, void *data)
+resize_handler(struct window *window, void *data)
 {
 	struct terminal *terminal = data;
-	cairo_surface_t *surface;
-	cairo_font_extents_t extents;
-	cairo_t *cr;
-
-	/* Adjust the size to an integer number of character cells.
-	 * Maybe this is better done in the redraw path, as we're
-	 * creating the cr and setting the font there anyway. */
-
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 0, 0);
-	cr = cairo_create(surface);
-	cairo_select_font_face (cr, "mono",
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
-	cairo_set_font_size(cr, 14);
-	cairo_font_extents(cr, &extents);
-	cairo_destroy(cr);
-	cairo_surface_destroy(surface);
-
-	rectangle->width -= (rectangle->width - 2 * terminal->margin) % (int32_t) extents.max_x_advance;
-	rectangle->height -= (rectangle->height - 2 * terminal->margin) % (int32_t) extents.height;
 
 	terminal_schedule_redraw(terminal);
 }
@@ -390,7 +446,6 @@ static struct terminal *
 terminal_create(struct wl_display *display, int fd)
 {
 	struct terminal *terminal;
-	int size;
 
 	terminal = malloc(sizeof *terminal);
 	if (terminal == NULL)
@@ -402,17 +457,13 @@ terminal_create(struct wl_display *display, int fd)
 					 500, 100, 500, 400);
 	terminal->display = display;
 	terminal->redraw_scheduled = 1;
-	terminal->width = 80;
-	terminal->height = 25;
-	terminal->total_rows = 1;
 	terminal->margin = 5;
-	size = (terminal->width + 1) * terminal->height;
-	terminal->data = malloc(size);
-	memset(terminal->data, 0, size);
 
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
 	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
 	window_set_key_handler(terminal->window, key_handler, terminal);
+
+	terminal_draw(terminal);
 
 	return terminal;
 }
@@ -486,7 +537,6 @@ int main(int argc, char *argv[])
 
 	terminal = terminal_create(display, fd);
 	terminal_run(terminal, "/bin/bash");
-	terminal_draw(terminal);
 
 	g_main_loop_run(loop);
 

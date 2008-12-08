@@ -243,8 +243,19 @@ draw_gears(struct gears *gears)
 static void
 resize_window(struct gears *gears)
 {
-	window_draw(gears->window);
+	/* Constrain child size to be square and at least 300x300 */
 	window_get_child_rectangle(gears->window, &gears->rectangle);
+	if (gears->rectangle.width > gears->rectangle.height)
+		gears->rectangle.height = gears->rectangle.width;
+	else
+		gears->rectangle.width = gears->rectangle.height;
+	if (gears->rectangle.width < 300) {
+		gears->rectangle.width = 300;
+		gears->rectangle.height = 300;
+	}
+	window_set_child_size(gears->window, &gears->rectangle);
+
+	window_draw(gears->window);
 
 	if (gears->buffer != NULL)
 		buffer_destroy(gears->buffer, gears->fd);
@@ -269,7 +280,7 @@ resize_window(struct gears *gears)
 }
 
 static void
-resize_handler(struct window *window, struct rectangle *rectangle, void *data)
+resize_handler(struct window *window, void *data)
 {
 	struct gears *gears = data;
 
