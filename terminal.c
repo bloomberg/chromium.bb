@@ -53,7 +53,7 @@ static const char socket_name[] = "\0wayland";
 struct terminal {
 	struct window *window;
 	struct wl_display *display;
-	int resize_scheduled;
+	int redraw_scheduled, redraw_pending;
 	char *data;
 	int width, height, tail, row, column, total_rows;
 	int fd, master;
@@ -126,6 +126,17 @@ idle_redraw(void *data)
 #define STATE_SKIP_TO_ALPHA 1
 
 static void
+terminal_schedule_redraw(struct terminal *terminal)
+{
+	if (!terminal->redraw_scheduled) {
+		g_idle_add(idle_redraw, terminal);
+		terminal->redraw_scheduled = 1;
+	} else {
+		terminal->redraw_pending = 1;
+	}
+}
+
+static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
 	int i;
@@ -171,6 +182,8 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 			break;
 		}
 	}
+
+	terminal_schedule_redraw(terminal);
 }
 
 static void
@@ -178,10 +191,7 @@ resize_handler(struct window *window, int32_t width, int32_t height, void *data)
 {
 	struct terminal *terminal = data;
 
-	if (!terminal->resize_scheduled) {
-		g_idle_add(idle_redraw, terminal);
-		terminal->resize_scheduled = 1;
-	}
+	terminal_schedule_redraw(terminal);
 }
 
 static void
@@ -189,8 +199,13 @@ acknowledge_handler(struct window *window, uint32_t key, void *data)
 {
 	struct terminal *terminal = data;
 
-	terminal->resize_scheduled = 0;
+	terminal->redraw_scheduled = 0;
 	buffer_destroy(terminal->buffer, terminal->fd);
+
+	if (terminal->redraw_pending) {
+		terminal->redraw_pending = 0;
+		terminal_schedule_redraw(terminal);
+	}
 }
 
 struct key {
@@ -319,7 +334,7 @@ terminal_create(struct wl_display *display, int fd)
 	terminal->window = window_create(display, fd, "Wayland Terminal",
 					 500, 100, 500, 400);
 	terminal->display = display;
-	terminal->resize_scheduled = 1;
+	terminal->redraw_scheduled = 1;
 	terminal->width = 80;
 	terminal->height = 25;
 	size = (terminal->width + 1) * terminal->height;
@@ -347,11 +362,6 @@ io_handler(GIOChannel   *source,
 				&bytes_read, &error);
 
 	terminal_data(terminal, buffer, bytes_read);
-
-	if (!terminal->resize_scheduled) {
-		g_idle_add(idle_redraw, terminal);
-		terminal->resize_scheduled = 1;
-	}
 
 	return TRUE;
 }
