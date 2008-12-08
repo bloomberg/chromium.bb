@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
+#include <pty.h>
 #include <cairo.h>
 #include <glib.h>
 
@@ -48,9 +49,10 @@ struct terminal {
 	struct wl_display *display;
 	int resize_scheduled;
 	char *data;
-	int width, height;
+	int width, height, tail, row, column;
 	int fd;
 	struct buffer *buffer;
+	GIOChannel *channel;
 };
 
 static void
@@ -60,7 +62,7 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	cairo_font_extents_t extents;
-	int i;
+	int i, line;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
@@ -76,11 +78,13 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_select_font_face (cr, "mono",
 				CAIRO_FONT_SLANT_NORMAL,
 				CAIRO_FONT_WEIGHT_NORMAL);
+	cairo_set_font_size(cr, 14);
 
 	cairo_font_extents(cr, &extents);
 	for (i = 0; i < terminal->height; i++) {
+		line = (terminal->tail + i) % terminal->height;
 		cairo_move_to(cr, 0, extents.ascent + extents.height * i);
-		cairo_show_text(cr, &terminal->data[i * (terminal->width + 1)]);
+		cairo_show_text(cr, &terminal->data[line * (terminal->width + 1)]);
 	}
 	cairo_destroy(cr);
 
@@ -132,16 +136,47 @@ acknowledge_handler(struct window *window, uint32_t key, void *data)
 	terminal->resize_scheduled = 0;
 }
 
+static void
+terminal_data(struct terminal *terminal, const char *data, size_t length)
+{
+	int i;
+	char *row;
+
+	for (i = 0; i < length; i++) {
+		row = &terminal->data[terminal->row * (terminal->width + 1)];
+		switch (data[i]) {
+		case '\r':
+			terminal->column = 0;
+			break;
+		case '\n':
+			terminal->row++;
+			terminal->column = 0;
+			if (terminal->row == terminal->height)
+				terminal->row = 0;
+			break;
+		case '\t':
+			memset(&row[terminal->column], ' ', -terminal->column & 7);
+			terminal->column = (terminal->column + 7) & ~7;
+			break;
+		default:
+			if (terminal->column < terminal->width)
+				row[terminal->column++] = data[i];
+			break;
+		}
+	}
+}
+
 static struct terminal *
 terminal_create(struct wl_display *display, int fd)
 {
 	struct terminal *terminal;
-	int size, i;
+	int size;
 
 	terminal = malloc(sizeof *terminal);
 	if (terminal == NULL)
 		return terminal;
 
+	memset(terminal, 0, sizeof *terminal);
 	terminal->fd = fd;
 	terminal->window = window_create(display, fd, "Wayland Terminal",
 					 500, 100, 500, 400);
@@ -153,15 +188,58 @@ terminal_create(struct wl_display *display, int fd)
 	terminal->data = malloc(size);
 	memset(terminal->data, 0, size);
 
-	for (i = 0; i < terminal->height; i++) {
-		snprintf(&terminal->data[i * (terminal->width + 1)], terminal->width,
-			 "hello world, line %d", i);
-	}
-
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
 	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
 
 	return terminal;
+}
+
+static gboolean
+io_handler(GIOChannel   *source,
+	   GIOCondition  condition,
+	   gpointer      data)
+{
+	struct terminal *terminal = data;
+	gchar buffer[256];
+	gsize bytes_read;
+	GError *error = NULL;
+
+	g_io_channel_read_chars(source, buffer, sizeof buffer,
+				&bytes_read, &error);
+	printf("got data: %.*s\n", bytes_read, buffer);
+
+	terminal_data(terminal, buffer, bytes_read);
+
+	if (!terminal->resize_scheduled) {
+		g_idle_add(idle_redraw, terminal);
+		terminal->resize_scheduled = 1;
+	}
+
+	return TRUE;
+}
+
+static int
+terminal_run(struct terminal *terminal, const char *path)
+{
+	int master, slave;
+	pid_t pid;
+
+	pid = forkpty(&master, NULL, NULL, NULL);
+	if (pid == 0) {
+		close(master);
+		if (execl(path, path, NULL)) {
+			printf("exec failed: %m\n");
+			exit(EXIT_FAILURE);
+		}
+	}
+
+	close(slave);
+	terminal->channel = g_io_channel_unix_new(master);
+	fcntl(master, F_SETFL, O_NONBLOCK);
+	g_io_add_watch(terminal->channel, G_IO_IN,
+		       io_handler, terminal);
+
+	return 0;
 }
 
 int main(int argc, char *argv[])
@@ -189,6 +267,7 @@ int main(int argc, char *argv[])
 	g_source_attach(source, NULL);
 
 	terminal = terminal_create(display, fd);
+	terminal_run(terminal, "/bin/bash");
 	terminal_draw(terminal);
 
 	g_main_loop_run(loop);

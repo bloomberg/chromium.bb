@@ -42,6 +42,8 @@ gears : gears.o window.o wayland-glib.o cairo-util.o
 screenshot : screenshot.o wayland-glib.o
 terminal : terminal.o window.o wayland-glib.o cairo-util.o
 
+terminal : LDLIBS += -lutil
+
 $(clients) : CFLAGS += @CLIENT_CFLAGS@
 $(clients) : LDLIBS += @CLIENT_LIBS@ -L. -lwayland -lrt
 
