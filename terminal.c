@@ -133,7 +133,7 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.9);
 	cairo_paint(cr);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_source_rgba(cr, 0, 0.5, 0, 1);
+	cairo_set_source_rgba(cr, 0, 0.7, 0, 1);
 
 	cairo_select_font_face (cr, "mono",
 				CAIRO_FONT_SLANT_NORMAL,
