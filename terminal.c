@@ -60,6 +60,8 @@ struct terminal {
 	struct buffer *buffer;
 	GIOChannel *channel;
 	uint32_t modifiers;
+	char escape[64];
+	int escape_length;
 	int state;
 };
 
@@ -70,7 +72,7 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	cairo_font_extents_t extents;
-	int i, line;
+	int i, row;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
@@ -89,10 +91,10 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_set_font_size(cr, 14);
 
 	cairo_font_extents(cr, &extents);
-	for (i = 0; i < terminal->height; i++) {
-		line = (terminal->tail + i) % terminal->height;
+	for (i = 0; i < terminal->total_rows; i++) {
+		row = (terminal->tail + i) % terminal->height;
 		cairo_move_to(cr, 0, extents.ascent + extents.height * i);
-		cairo_show_text(cr, &terminal->data[line * (terminal->width + 1)]);
+		cairo_show_text(cr, &terminal->data[row * (terminal->width + 1)]);
 	}
 	cairo_destroy(cr);
 
@@ -123,7 +125,10 @@ idle_redraw(void *data)
 }
 
 #define STATE_NORMAL 0
-#define STATE_SKIP_TO_ALPHA 1
+#define STATE_ESCAPE 1
+
+static void
+terminal_data(struct terminal *terminal, const char *data, size_t length);
 
 static void
 terminal_schedule_redraw(struct terminal *terminal)
@@ -137,6 +142,32 @@ terminal_schedule_redraw(struct terminal *terminal)
 }
 
 static void
+handle_escape(struct terminal *terminal)
+{
+	char *row;
+	int i, j;
+
+	terminal->escape[terminal->escape_length++] = '\0';
+	if (strcmp(terminal->escape, "\e[J") == 0) {
+		row = &terminal->data[terminal->row * (terminal->width + 1)];
+		memset(&row[terminal->column], 0, terminal->width - terminal->column);
+		for (i = terminal->total_rows; i < terminal->height; i++) {
+
+			j = terminal->row + i;
+			if (j >= terminal->height)
+				j -= terminal->height;
+			
+			row = &terminal->data[j * (terminal->width + 1)];
+			memset(row, 0, terminal->width);
+		}
+	} else if (strcmp(terminal->escape, "\e[H") == 0) {
+		terminal->row = terminal->tail;
+		terminal->total_rows = 1;
+		terminal->column = 0;
+	}
+}
+
+static void
 terminal_data(struct terminal *terminal, const char *data, size_t length)
 {
 	int i;
@@ -145,27 +176,39 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 	for (i = 0; i < length; i++) {
 		row = &terminal->data[terminal->row * (terminal->width + 1)];
 
-		if (terminal->state == STATE_SKIP_TO_ALPHA) {
-			if (isalpha(data[i]))
+		if (terminal->state == STATE_ESCAPE) {
+			terminal->escape[terminal->escape_length++] = data[i];
+			if (terminal->escape_length == 2 && data[i] != '[') {
+				/* Bad escape sequence. */
 				terminal->state = STATE_NORMAL;
+				goto cancel_escape;
+			}
+
+			if (isalpha(data[i])) {
+				terminal->state = STATE_NORMAL;
+				handle_escape(terminal);
+			} 
 			continue;
 		}
 
+	cancel_escape:
 		switch (data[i]) {
 		case '\r':
 			terminal->column = 0;
 			break;
 		case '\n':
-			terminal->row++;
-			terminal->total_rows++;
 			terminal->column = 0;
+			terminal->row++;
 			if (terminal->row == terminal->height)
 				terminal->row = 0;
-			if (terminal->row == terminal->tail && terminal->total_rows > 0) {
+			if (terminal->total_rows == terminal->height) {
 				memset(&terminal->data[terminal->row * (terminal->width + 1)],
 				       0, terminal->width);
 				terminal->tail++;
+			} else {
+				terminal->total_rows++;
 			}
+
 			if (terminal->tail == terminal->height)
 				terminal->tail = 0;
 			break;
@@ -174,7 +217,9 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 			terminal->column = (terminal->column + 7) & ~7;
 			break;
 		case '\e':
-			terminal->state = STATE_SKIP_TO_ALPHA;
+			terminal->state = STATE_ESCAPE;
+			terminal->escape[0] = '\e';
+			terminal->escape_length = 1;
 			break;
 		default:
 			if (terminal->column < terminal->width)
@@ -337,6 +382,7 @@ terminal_create(struct wl_display *display, int fd)
 	terminal->redraw_scheduled = 1;
 	terminal->width = 80;
 	terminal->height = 25;
+	terminal->total_rows = 1;
 	size = (terminal->width + 1) * terminal->height;
 	terminal->data = malloc(size);
 	memset(terminal->data, 0, size);
