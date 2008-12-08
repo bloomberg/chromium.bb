@@ -55,7 +55,7 @@ struct terminal {
 	struct wl_display *display;
 	int resize_scheduled;
 	char *data;
-	int width, height, tail, row, column;
+	int width, height, tail, row, column, total_rows;
 	int fd, master;
 	struct buffer *buffer;
 	GIOChannel *channel;
@@ -149,9 +149,17 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 			break;
 		case '\n':
 			terminal->row++;
+			terminal->total_rows++;
 			terminal->column = 0;
 			if (terminal->row == terminal->height)
 				terminal->row = 0;
+			if (terminal->row == terminal->tail && terminal->total_rows > 0) {
+				memset(&terminal->data[terminal->row * (terminal->width + 1)],
+				       0, terminal->width);
+				terminal->tail++;
+			}
+			if (terminal->tail == terminal->height)
+				terminal->tail = 0;
 			break;
 		case '\t':
 			memset(&row[terminal->column], ' ', -terminal->column & 7);
