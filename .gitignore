@@ -2,7 +2,8 @@
 *.so
 glx-compositor
 egl-compositor
-window
+gears
+terminal
 flower
 screenshot
 *.jpg

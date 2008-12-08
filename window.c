@@ -31,45 +31,31 @@
 #include <cairo.h>
 #include <glib.h>
 
-#include <GL/gl.h>
-#include <eagle.h>
-
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
-#include "gears.h"
 #include "cairo-util.h"
 
-static const char gem_device[] = "/dev/dri/card0";
-static const char socket_name[] = "\0wayland";
-
-static void die(const char *msg)
-{
-	fprintf(stderr, "%s", msg);
-	exit(EXIT_FAILURE);
-}
+#include "window.h"
 
 struct window {
 	struct wl_display *display;
 	struct wl_surface *surface;
+	const char *title;
 	int x, y, width, height;
+	int minimum_width, minimum_height;
 	int margin;
 	int drag_x, drag_y, last_x, last_y;
 	int state;
 	uint32_t name;
 	int fd;
-	int resized;
-	cairo_pattern_t *background;
 
 	struct buffer *buffer;
-	struct buffer *egl_buffer;
 
-	GLfloat gears_angle;
-	struct gears *gears;
-	EGLDisplay egl_display;
-	EGLContext context;
-	EGLConfig config;
-	EGLSurface egl_surface;
+	window_resize_handler_t resize_handler;
+	window_frame_handler_t frame_handler;
+	window_acknowledge_handler_t acknowledge_handler;
+	void *user_data;
 };
 
 static void
@@ -86,18 +72,14 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 	cairo_close_path(cr);
 }
 
-static gboolean
-draw_window(void *data)
+void
+window_draw(struct window *window)
 {
-	struct window *window = data;
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
 	cairo_pattern_t *gradient, *outline, *bright, *dim;
-	const static char title[] = "Wayland First Post";
-	struct buffer *buffer;
-	int width, height;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					     window->width + window->margin * 2,
@@ -155,12 +137,12 @@ draw_window(void *data)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_font_size(cr, 14);
-	cairo_text_extents(cr, title, &extents);
+	cairo_text_extents(cr, window->title, &extents);
 	cairo_move_to(cr, (window->width - extents.width) / 2, 10 - extents.y_bearing);
 	cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
 	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 	cairo_set_line_width (cr, 4);
-	cairo_text_path(cr, title);
+	cairo_text_path(cr, window->title);
 	cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
 	cairo_stroke_preserve(cr);
 	cairo_set_source_rgb(cr, 1, 1, 1);
@@ -181,23 +163,6 @@ draw_window(void *data)
 		       window->y - window->margin,
 		       window->width + 2 * window->margin,
 		       window->height + 2 * window->margin);
-
-	width = window->width - 20;		
-	height = window->height - 60;
-	buffer = buffer_create(window->fd, width, height, (width * 4 + 15) & ~15);
-	window->egl_buffer = buffer;
-	window->egl_surface = eglCreateSurfaceForName(window->egl_display,
-						      window->config, buffer->name,
-						      buffer->width, buffer->height,
-						      buffer->stride, NULL);
-	if (!eglMakeCurrent(window->egl_display,
-			    window->egl_surface, window->egl_surface, window->context))
-		die("failed to make context current\n");
-
-	glViewport(0, 0, width, height);
-	window->resized = 0;
-
-	return FALSE;
 }
 
 enum window_state {
@@ -218,25 +183,12 @@ enum location {
 	LOCATION_OUTSIDE
 };
 
-static int
-update_gears(void *data)
-{
-	struct window *window = data;
-
-	if (window->resized)
-		draw_window(window);
-	gears_draw(window->gears, window->gears_angle);
-
-	return FALSE;
-}
-
 static void
 event_handler(struct wl_display *display,
 	      uint32_t object, uint32_t opcode,
 	      uint32_t size, uint32_t *p, void *data)
 {
 	struct window *window = data;
-	struct buffer *buffer;
 	int location;
 	int grip_size = 16;
 
@@ -258,20 +210,18 @@ event_handler(struct wl_display *display,
 			buffer_destroy(window->buffer, window->fd);
 			window->buffer = NULL;
 		}
-		g_idle_add(update_gears, window);
+		if (window->acknowledge_handler)
+			(*window->acknowledge_handler)(window, key,
+						       window->user_data);
+
 	} else if (object == 1 && opcode == 4) {
 		/* The frame event means that the previous frame was
 		 * composited, and we can now send the request to copy
 		 * the frame we've rendered in the mean time into the
 		 * servers surface buffer. */
-		buffer = window->egl_buffer;
-		wl_surface_copy(window->surface,
-				10 + window->margin, 50 + window->margin,
-				buffer->name, buffer->stride,
-				0, 0, buffer->width, buffer->height);
-		wl_display_commit(window->display, 0);
-		window->gears_angle += 1;
-
+		if (window->frame_handler)
+			(*window->frame_handler)(window, p[0], p[1],
+						 window->user_data);
 	} else if (object == 1) {
 		fprintf(stderr, "unexpected event from display: %d\n",
 			opcode);
@@ -295,26 +245,16 @@ event_handler(struct wl_display *display,
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			window->width = window->drag_x + x;
 			window->height = window->drag_y + y;
-			if (window->width < 400)
-				window->width = 400;
-			if (window->height < 400)
-				window->height = 400;
+			if (window->width < window->minimum_width)
+				window->width = window->minimum_width;
+			if (window->height < window->minimum_height)
+				window->height = window->minimum_height;
 
-			/* Right now, resizing the window from the
-			 * per-frame callback is fine, since the
-			 * window drawing code is so slow that we
-			 * can't draw more than one window per frame
-			 * anyway.  However, once we implement faster
-			 * resizing, this will show lag between
-			 * pointer motion and window size even if
-			 * resizing is fast.  We need to keep
-			 * processing motion events and posting new
-			 * frames as fast as possible so when the
-			 * server composites the next frame it will
-			 * have the most recent size possible, like
-			 * what we do for window moves. */
-
-			window->resized = 1;
+			if (window->resize_handler)
+				(*window->resize_handler)(window,
+							  window->width,
+							  window->height,
+							  window->user_data);
 			break;
 		}
 	} else if (opcode == 1) {
@@ -356,13 +296,65 @@ event_handler(struct wl_display *display,
 	}
 }
 
-static struct window *
-window_create(struct wl_display *display, int fd)
+void
+window_get_child_rectangle(struct window *window,
+			   struct rectangle *rectangle)
 {
-	EGLint major, minor, count;
-	EGLConfig configs[64];
+	rectangle->x = 10;
+	rectangle->y = 50;
+	rectangle->width = window->width - 20;
+	rectangle->height = window->height - 60;
+}
+
+void
+window_copy(struct window *window,
+	    struct rectangle *rectangle,
+	    uint32_t name, uint32_t stride)
+{
+	wl_surface_copy(window->surface,
+			window->margin + rectangle->x,
+			window->margin + rectangle->y,
+			name, stride,
+			0, 0, rectangle->width, rectangle->height);
+}
+
+void
+window_set_resize_handler(struct window *window,
+			  window_resize_handler_t handler, void *data)
+{
+	window->resize_handler = handler;
+	window->user_data = data;
+}
+
+void
+window_set_frame_handler(struct window *window,
+			 window_frame_handler_t handler, void *data)
+{
+	window->frame_handler = handler;
+	window->user_data = data;
+}
+
+void
+window_set_acknowledge_handler(struct window *window,
+			       window_acknowledge_handler_t handler, void *data)
+{
+	window->acknowledge_handler = handler;
+	window->user_data = data;
+}
+
+void
+window_set_minimum_size(struct window *window, uint32_t width, int32_t height)
+{
+	window->minimum_width = width;
+	window->minimum_height = height;
+}
+
+struct window *
+window_create(struct wl_display *display, int fd,
+	      const char *title,
+	      int32_t x, int32_t y, int32_t width, int32_t height)
+{
 	struct window *window;
-	const GLfloat red = 0, green = 0, blue = 0, alpha = 0.92;
 
 	window = malloc(sizeof *window);
 	if (window == NULL)
@@ -370,69 +362,19 @@ window_create(struct wl_display *display, int fd)
 
 	memset(window, 0, sizeof *window);
 	window->display = display;
+	window->title = strdup(title);
 	window->surface = wl_display_create_surface(display);
-	window->x = 200;
-	window->y = 200;
-	window->width = 450;
-	window->height = 500;
+	window->x = x;
+	window->y = y;
+	window->minimum_width = 100;
+	window->minimum_height = 100;
+	window->width = width;
+	window->height = height;
 	window->margin = 16;
 	window->state = WINDOW_STABLE;
 	window->fd = fd;
-	window->background = cairo_pattern_create_rgba (red, green, blue, alpha);
-
-	window->egl_display = eglCreateDisplayNative("/dev/dri/card0", "i965");
-	if (window->egl_display == NULL)
-		die("failed to create egl display\n");
-
-	if (!eglInitialize(window->egl_display, &major, &minor))
-		die("failed to initialize display\n");
-
-	if (!eglGetConfigs(window->egl_display, configs, 64, &count))
-		die("failed to get configs\n");
-
-	window->config = configs[24];
-	window->context = eglCreateContext(window->egl_display, window->config, NULL, NULL);
-	if (window->context == NULL)
-		die("failed to create context\n");
-
-	draw_window(window);
-	window->gears = gears_create(0, 0, 0, 0.92);
-	gears_draw(window->gears, window->gears_angle);
-	window->gears_angle += 1;
-	wl_display_commit(window->display, 0);
-
-	return window;
-}
-
-int main(int argc, char *argv[])
-{
-	struct wl_display *display;
-	int fd;
-	struct window *window;
-	GMainLoop *loop;
-	GSource *source;
-
-	fd = open(gem_device, O_RDWR);
-	if (fd < 0) {
-		fprintf(stderr, "drm open failed: %m\n");
-		return -1;
-	}
-
-	display = wl_display_create(socket_name, sizeof socket_name);
-	if (display == NULL) {
-		fprintf(stderr, "failed to create display: %m\n");
-		return -1;
-	}
-
-	loop = g_main_loop_new(NULL, FALSE);
-	source = wl_glib_source_new(display);
-	g_source_attach(source, NULL);
-
-	window = window_create(display, fd);
 
 	wl_display_set_event_handler(display, event_handler, window);
 
-	g_main_loop_run(loop);
-
-	return 0;
+	return window;
 }

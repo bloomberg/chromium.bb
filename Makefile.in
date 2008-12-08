@@ -1,7 +1,7 @@
 CFLAGS = @GCC_CFLAGS@
 
 libs = libwayland-server.so libwayland.so
-clients = flower window screenshot
+clients = flower gears screenshot terminal
 compositors = egl-compositor glx-compositor
 
 all : $(libs) $(compositors) $(clients)
@@ -38,8 +38,9 @@ glx-compositor : CFLAGS += @GL_COMPOSITOR_CFLAGS@
 glx-compositor : LDLIBS += @GL_COMPOSITOR_LIBS@ -L. -lwayland-server
 
 flower : flower.o wayland-glib.o cairo-util.o
-window : window.o gears.o wayland-glib.o cairo-util.o
+gears : gears.o window.o wayland-glib.o cairo-util.o
 screenshot : screenshot.o wayland-glib.o
+terminal : terminal.o window.o wayland-glib.o cairo-util.o
 
 $(clients) : CFLAGS += @CLIENT_CFLAGS@
 $(clients) : LDLIBS += @CLIENT_LIBS@ -L. -lwayland -lrt
