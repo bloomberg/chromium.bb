@@ -999,6 +999,7 @@ egl_compositor_create(struct wl_display *display)
 	ec->background = background_create(filename, 1280, 800);
 	ec->pointer = pointer_create(100, 100, 64, 64);
 	ec->overlay = overlay_create(0, ec->height, ec->width, 200);
+	ec->overlay_y = ec->height;
 	ec->overlay_target = ec->height;
 	ec->overlay_previous = ec->height;
 
