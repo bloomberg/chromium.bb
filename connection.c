@@ -123,7 +123,9 @@ int wl_connection_data(struct wl_connection *connection, uint32_t mask)
 			iov[1].iov_len = b->tail;
 			count = 2;
 		}
-		len = readv(connection->fd, iov, count);
+		do {
+			len = readv(connection->fd, iov, count);
+		} while (len < 0 && errno == EINTR);
 		if (len < 0) {
 			fprintf(stderr,
 				"read error from connection %p: %m (%d)\n",
@@ -166,7 +168,9 @@ int wl_connection_data(struct wl_connection *connection, uint32_t mask)
 			iov[1].iov_len = b->head;
 			count = 2;
 		}
-		len = writev(connection->fd, iov, count);
+		do {
+			len = writev(connection->fd, iov, count);
+		} while (len < 0 && errno == EINTR);
 		if (len < 0) {
 			fprintf(stderr, "write error for connection %p: %m\n", connection);
 			return -1;
