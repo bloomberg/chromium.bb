@@ -55,7 +55,7 @@ struct terminal {
 	struct wl_display *display;
 	int redraw_scheduled, redraw_pending;
 	char *data;
-	int width, height, tail, row, column, total_rows;
+	int width, height, start, row, column;
 	int fd, master;
 	struct buffer *buffer;
 	GIOChannel *channel;
@@ -66,12 +66,22 @@ struct terminal {
 	int margin;
 };
 
+static char *
+terminal_get_row(struct terminal *terminal, int row)
+{
+	int index;
+
+	index = (row + terminal->start) % terminal->height;
+
+	return &terminal->data[index * (terminal->width + 1)];
+}
+
 static void
 terminal_resize(struct terminal *terminal, int width, int height)
 {
 	size_t size;
 	char *data;
-	int i, l, total_rows, row, tail;
+	int i, l, total_rows, start;
 
 	if (terminal->width == width && terminal->height == height)
 		return;
@@ -85,34 +95,30 @@ terminal_resize(struct terminal *terminal, int width, int height)
 		else
 			l = width;
 
-		if (terminal->total_rows > height) {
+		if (terminal->height > height) {
 			total_rows = height;
-			tail = terminal->tail + terminal->total_rows - height;
+			start = terminal->height - height;
 		} else {
-			total_rows = terminal->total_rows;
-			tail = terminal->tail;
+			total_rows = terminal->height;
+			start = 0;
 		}
 
-		for (i = 0; i < total_rows; i++) {
-			row = (tail + i) % terminal->height;
+		for (i = 0; i < total_rows; i++)
 			memcpy(data + (width + 1) * i,
-			       &terminal->data[row * (terminal->width + 1)], l);
-		}
+			       terminal_get_row(terminal, i), l);
 
 		free(terminal->data);
-	} else {
-		total_rows = 1;
 	}
 
 	terminal->width = width;
 	terminal->height = height;
 	terminal->data = data;
 
-	terminal->total_rows = total_rows;
-	terminal->row = total_rows - 1;
+	if (terminal->row >= terminal->height)
+		terminal->row = terminal->height - 1;
 	if (terminal->column >= terminal->width)
 		terminal->column = terminal->width - 1;
-	terminal->tail = 0;
+	terminal->start = 0;
 }
 
 static void
@@ -122,7 +128,7 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	cairo_font_extents_t extents;
-	int i, row;
+	int i;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
@@ -141,11 +147,10 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_set_font_size(cr, 14);
 
 	cairo_font_extents(cr, &extents);
-	for (i = 0; i < terminal->total_rows; i++) {
-		row = (terminal->tail + i) % terminal->height;
+	for (i = 0; i < terminal->height; i++) {
 		cairo_move_to(cr, terminal->margin,
 			      terminal->margin + extents.ascent + extents.height * i);
-		cairo_show_text(cr, &terminal->data[row * (terminal->width + 1)]);
+		cairo_show_text(cr, terminal_get_row(terminal, i));
 	}
 	cairo_destroy(cr);
 
@@ -220,29 +225,92 @@ terminal_schedule_redraw(struct terminal *terminal)
 }
 
 static void
+terminal_data(struct terminal *terminal, const char *data, size_t length);
+
+static void
 handle_escape(struct terminal *terminal)
 {
-	char *row;
-	int i, j;
+	char *row, *p;
+	int i, count;
+	int args[10], set[10] = { 0, };
 
 	terminal->escape[terminal->escape_length++] = '\0';
-	if (strcmp(terminal->escape, "\e[J") == 0) {
-		row = &terminal->data[terminal->row * (terminal->width + 1)];
-		memset(&row[terminal->column], 0, terminal->width - terminal->column);
-		for (i = terminal->total_rows; i < terminal->height; i++) {
-
-			j = terminal->row + i;
-			if (j >= terminal->height)
-				j -= terminal->height;
-			
-			row = &terminal->data[j * (terminal->width + 1)];
-			memset(row, 0, terminal->width);
+	i = 0;
+	p = &terminal->escape[2];
+	while ((isdigit(*p) || *p == ';') && i < 10) {
+		if (*p == ';') {
+			p++;
+			i++;
+		} else {
+			args[i] = strtol(p, &p, 10);
+			set[i] = 1;
 		}
-	} else if (strcmp(terminal->escape, "\e[H") == 0) {
-		terminal->row = terminal->tail;
-		terminal->total_rows = 1;
-		terminal->column = 0;
 	}
+	
+	switch (*p) {
+	case 'A':
+		count = set[0] ? args[0] : 1;
+		if (terminal->row - count >= 0)
+			terminal->row -= count;
+		else
+			terminal->row = 0;
+		break;
+	case 'B':
+		count = set[0] ? args[0] : 1;
+		if (terminal->row + count < terminal->height)
+			terminal->row += count;
+		else
+			terminal->row = terminal->height;
+		break;
+	case 'C':
+		count = set[0] ? args[0] : 1;
+		if (terminal->column + count < terminal->width)
+			terminal->column += count;
+		else
+			terminal->column = terminal->width;
+		break;
+	case 'D':
+		count = set[0] ? args[0] : 1;
+		if (terminal->column - count >= 0)
+			terminal->column -= count;
+		else
+			terminal->column = 0;
+		break;
+	case 'J':
+		row = terminal_get_row(terminal, terminal->row);
+		memset(&row[terminal->column], 0, terminal->width - terminal->column);
+		for (i = terminal->row + 1; i < terminal->height; i++)
+			memset(terminal_get_row(terminal, i), 0, terminal->width);
+		break;
+	case 'G':
+		if (set[0])
+			terminal->column = args[0] - 1;
+		break;
+	case 'H':
+	case 'f':
+		terminal->row = set[0] ? args[0] - 1 : 0;
+		terminal->column = set[1] ? args[1] - 1 : 0;
+		break;
+	case 'K':
+		row = terminal_get_row(terminal, terminal->row);
+		memset(&row[terminal->column], 0, terminal->width - terminal->column);
+		break;
+	case 'm':
+		/* color, blink, bold etc*/
+		break;
+	case '?':
+		if (strcmp(p, "?25l") == 0) {
+			/* hide cursor */
+		} else if (strcmp(p, "?25h") == 0) {
+			/* show cursor */
+		}
+		break;
+	default:
+		terminal_data(terminal,
+			      terminal->escape + 1,
+			      terminal->escape_length - 2);
+		break;
+	}	
 }
 
 static void
@@ -252,7 +320,7 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 	char *row;
 
 	for (i = 0; i < length; i++) {
-		row = &terminal->data[terminal->row * (terminal->width + 1)];
+		row = terminal_get_row(terminal, terminal->row);
 
 		if (terminal->state == STATE_ESCAPE) {
 			terminal->escape[terminal->escape_length++] = data[i];
@@ -276,19 +344,16 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 			break;
 		case '\n':
 			terminal->column = 0;
-			terminal->row++;
-			if (terminal->row == terminal->height)
-				terminal->row = 0;
-			if (terminal->total_rows == terminal->height) {
-				memset(&terminal->data[terminal->row * (terminal->width + 1)],
-				       0, terminal->width);
-				terminal->tail++;
+			if (terminal->row + 1 < terminal->height) {
+				terminal->row++;
 			} else {
-				terminal->total_rows++;
+				terminal->start++;
+				if (terminal->start == terminal->height)
+					terminal->start = 0;
+				memset(terminal_get_row(terminal, terminal->row),
+							0, terminal->width);
 			}
 
-			if (terminal->tail == terminal->height)
-				terminal->tail = 0;
 			break;
 		case '\t':
 			memset(&row[terminal->column], ' ', -terminal->column & 7);
@@ -299,9 +364,16 @@ terminal_data(struct terminal *terminal, const char *data, size_t length)
 			terminal->escape[0] = '\e';
 			terminal->escape_length = 1;
 			break;
+		case '\b':
+			if (terminal->column > 0)
+				terminal->column--;
+			break;
+		case '\a':
+			/* Bell */
+			break;
 		default:
 			if (terminal->column < terminal->width)
-				row[terminal->column++] = data[i];
+				row[terminal->column++] = data[i] < 32 ? data[i] + 64 : data[i];
 			break;
 		}
 	}
