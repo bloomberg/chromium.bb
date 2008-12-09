@@ -45,8 +45,9 @@
  */
 static void mark_block(struct drm_device * dev, struct mem_block *p, int in_use)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
+	struct drm_i915_sarea *sarea_priv = master_priv->sarea_priv;
 	struct drm_tex_region *list;
 	unsigned shift, nr;
 	unsigned start;
@@ -256,7 +257,7 @@ void i915_mem_takedown(struct mem_block **heap)
 	*heap = NULL;
 }
 
-static struct mem_block **get_heap(drm_i915_private_t * dev_priv, int region)
+static struct mem_block **get_heap(struct drm_i915_private * dev_priv, int region)
 {
 	switch (region) {
 	case I915_MEM_REGION_AGP:
@@ -271,8 +272,8 @@ static struct mem_block **get_heap(drm_i915_private_t * dev_priv, int region)
 int i915_mem_alloc(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	drm_i915_mem_alloc_t *alloc = data;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_mem_alloc *alloc = data;
 	struct mem_block *block, **heap;
 
 	if (!dev_priv) {
@@ -309,8 +310,8 @@ int i915_mem_alloc(struct drm_device *dev, void *data,
 int i915_mem_free(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	drm_i915_mem_free_t *memfree = data;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_mem_free *memfree = data;
 	struct mem_block *block, **heap;
 
 	if (!dev_priv) {
@@ -337,8 +338,8 @@ int i915_mem_free(struct drm_device *dev, void *data,
 int i915_mem_init_heap(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	drm_i915_mem_init_heap_t *initheap = data;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_mem_init_heap *initheap = data;
 	struct mem_block **heap;
 
 	if (!dev_priv) {
@@ -361,8 +362,8 @@ int i915_mem_init_heap(struct drm_device *dev, void *data,
 int i915_mem_destroy_heap( struct drm_device *dev, void *data,
 			   struct drm_file *file_priv )
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
-	drm_i915_mem_destroy_heap_t *destroyheap = data;
+	struct drm_i915_private *dev_priv = dev->dev_private;
+	struct drm_i915_mem_destroy_heap *destroyheap = data;
 	struct mem_block **heap;
 
 	if ( !dev_priv ) {

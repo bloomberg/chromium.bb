@@ -33,6 +33,8 @@
 /* General customization:
  */
 
+#include "intel_bios.h"
+
 #define DRIVER_AUTHOR		"Tungsten Graphics, Inc."
 
 #define DRIVER_NAME		"i915"
@@ -40,7 +42,6 @@
 #define DRIVER_DATE		"20080730"
 
 #if defined(__linux__)
-#define I915_HAVE_FENCE
 #define I915_HAVE_BUFFER
 #define I915_HAVE_GEM
 #endif
@@ -61,7 +62,7 @@
  * 1.12: TTM relocation optimization
  */
 #define DRIVER_MAJOR		1
-#if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
+#if defined(I915_HAVE_BUFFER)
 #define DRIVER_MINOR		13
 #else
 #define DRIVER_MINOR		6
@@ -86,7 +87,7 @@ struct drm_i915_validate_buffer;
 #define WATCH_INACTIVE	0
 #define WATCH_PWRITE	0
 
-typedef struct _drm_i915_ring_buffer {
+struct drm_i915_ring_buffer {
 	int tail_mask;
 	unsigned long Size;
 	u8 *virtual_start;
@@ -95,7 +96,7 @@ typedef struct _drm_i915_ring_buffer {
 	int space;
 	drm_local_map_t map;
 	struct drm_gem_object *ring_obj;
-} drm_i915_ring_buffer_t;
+};
 
 struct mem_block {
 	struct mem_block *next;
@@ -105,13 +106,15 @@ struct mem_block {
 	struct drm_file *file_priv; /* NULL: free, -1: heap, other: real files */
 };
 
-typedef struct _drm_i915_vbl_swap {
+struct drm_i915_vbl_swap {
 	struct list_head head;
 	drm_drawable_t drw_id;
 	unsigned int plane;
 	unsigned int sequence;
 	int flip;
-} drm_i915_vbl_swap_t;
+	struct drm_minor *minor;
+};
+
 
 #ifdef __linux__
 struct opregion_header;
@@ -129,20 +132,26 @@ struct intel_opregion {
 };
 #endif
 
-typedef struct drm_i915_private {
-	struct drm_device *dev;
-
+struct drm_i915_master_private {
 	drm_local_map_t *sarea;
+	struct drm_i915_sarea *sarea_priv;
+};
+	
+struct drm_i915_private {
+        struct drm_device *dev;
+
 	drm_local_map_t *mmio_map;
 
-	drm_i915_sarea_t *sarea_priv;
-	drm_i915_ring_buffer_t ring;
+	unsigned long mmiobase;
+	unsigned long mmiolen;
 
-	drm_dma_handle_t *status_page_dmah;
+	struct drm_i915_ring_buffer ring;
+
+	struct drm_dma_handle *status_page_dmah;
 	void *hw_status_page;
 	dma_addr_t dma_status_page;
 	uint32_t counter;
-	unsigned int status_gfx_addr;
+	uint32_t status_gfx_addr;
 	drm_local_map_t hws_map;
 	struct drm_gem_object *hws_obj;
 
@@ -161,28 +170,43 @@ typedef struct drm_i915_private {
 	int fence_irq_on;
 	uint32_t irq_mask_reg;
 	int irq_enabled;
+	struct workqueue_struct *wq;
 
-#ifdef I915_HAVE_FENCE
-	uint32_t flush_sequence;
-	uint32_t flush_flags;
-	uint32_t flush_pending;
-	uint32_t saved_flush_status;
-#endif
+	bool cursor_needs_physical;
+
+	struct drm_mm vram;
+
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
 	unsigned int max_validate_buffers;
 	struct mutex cmdbuf_mutex;
+	u32 stolen_base;
 	struct drm_i915_validate_buffer *val_bufs;
 #endif
 
 	DRM_SPINTYPE swaps_lock;
-	drm_i915_vbl_swap_t vbl_swaps;
+	struct drm_i915_vbl_swap vbl_swaps;
 	unsigned int swaps_pending;
-#if defined(I915_HAVE_BUFFER)
+
+	/* LVDS info */
+	int backlight_duty_cycle;  /* restore backlight to this value */
+	bool panel_wants_dither;
+	struct drm_display_mode *panel_fixed_mode;
+	struct drm_display_mode *vbt_mode; /* if any */
+
+#if defined(I915_HAVE_BUFFER) && defined(DRI2)
 	/* DRI2 sarea */
-	struct drm_buffer_object *sarea_bo;
-	struct drm_bo_kmap_obj sarea_kmap;
+	struct drm_gem_object *sarea_object;
+        struct drm_bo_kmap_obj sarea_kmap;
 #endif
+
+	/* Feature bits from the VBIOS */
+	int int_tv_support:1;
+	int lvds_dither:1;
+	int lvds_vbt:1;
+	int int_crt_support:1;
+
+	struct work_struct user_interrupt_task;
 
 #ifdef __linux__
 	struct intel_opregion opregion;
@@ -359,7 +383,7 @@ typedef struct drm_i915_private {
 		/** Bit 6 swizzling required for Y tiling */
 		uint32_t bit_6_swizzle_y;
 	} mm;
-} drm_i915_private_t;
+};
 
 struct drm_i915_file_private {
 	struct {
@@ -455,10 +479,12 @@ struct drm_i915_gem_request {
 extern struct drm_ioctl_desc i915_ioctls[];
 extern int i915_max_ioctl;
 
+extern int i915_master_create(struct drm_device *dev, struct drm_master *master);
+extern void i915_master_destroy(struct drm_device *dev, struct drm_master *master);
 				/* i915_dma.c */
 extern void i915_kernel_lost_context(struct drm_device * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);
-extern int i915_driver_unload(struct drm_device *);
+extern int i915_driver_unload(struct drm_device *dev);
 extern void i915_driver_lastclose(struct drm_device * dev);
 extern int i915_driver_open(struct drm_device *dev, struct drm_file *file_priv);
 extern void i915_driver_preclose(struct drm_device *dev,
@@ -472,10 +498,11 @@ extern void i915_emit_breadcrumb(struct drm_device *dev);
 extern void i915_dispatch_flip(struct drm_device * dev, int pipes, int sync);
 extern int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush);
 extern int i915_driver_firstopen(struct drm_device *dev);
+extern int i915_do_cleanup_pageflip(struct drm_device *dev);
+extern int i915_dma_cleanup(struct drm_device *dev);
 extern int i915_dispatch_batchbuffer(struct drm_device * dev,
 				     drm_i915_batchbuffer_t * batch);
 extern int i915_quiescent(struct drm_device *dev);
-extern int i915_init_hardware_status(struct drm_device *dev);
 extern void i915_free_hardware_status(struct drm_device *dev);
 
 int i915_emit_box(struct drm_device * dev,
@@ -497,14 +524,15 @@ extern int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 extern int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
 extern int i915_emit_irq(struct drm_device * dev);
+extern void i915_enable_interrupt (struct drm_device *dev);
 extern int i915_wait_irq(struct drm_device * dev, int irq_nr);
 extern int i915_enable_vblank(struct drm_device *dev, int crtc);
 extern void i915_disable_vblank(struct drm_device *dev, int crtc);
 extern u32 i915_get_vblank_counter(struct drm_device *dev, int crtc);
 extern int i915_vblank_swap(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
-extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
-extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
+extern void i915_user_irq_on(struct drm_device *dev);
+extern void i915_user_irq_off(struct drm_device *dev);
 
 /* i915_mem.c */
 extern int i915_mem_alloc(struct drm_device *dev, void *data,
@@ -524,28 +552,7 @@ extern void i915_mem_release(struct drm_device * dev,
 extern int i915_save_state(struct drm_device *dev);
 extern int i915_restore_state(struct drm_device *dev);
 
-#ifdef I915_HAVE_FENCE
-/* i915_fence.c */
-extern void i915_fence_handler(struct drm_device *dev);
-extern void i915_invalidate_reported_sequence(struct drm_device *dev);
-
-#endif
-
 #ifdef I915_HAVE_BUFFER
-/* i915_buffer.c */
-extern struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev);
-extern int i915_fence_type(struct drm_buffer_object *bo, uint32_t *fclass,
-			   uint32_t *type);
-extern int i915_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
-extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
-			       struct drm_mem_type_manager *man);
-extern uint64_t i915_evict_flags(struct drm_buffer_object *bo);
-extern int i915_move(struct drm_buffer_object *bo, int evict,
-		int no_wait, struct drm_bo_mem_reg *new_mem);
-void i915_flush_ttm(struct drm_ttm *ttm);
-/* i915_execbuf.c */
-int i915_execbuffer(struct drm_device *dev, void *data,
-				   struct drm_file *file_priv);
 /* i915_gem.c */
 int i915_gem_init_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
@@ -589,9 +596,18 @@ void i915_gem_object_unpin(struct drm_gem_object *obj);
 void i915_gem_lastclose(struct drm_device *dev);
 uint32_t i915_get_gem_seqno(struct drm_device *dev);
 void i915_gem_retire_requests(struct drm_device *dev);
+int i915_gem_init_ringbuffer(struct drm_device *dev);
+void i915_gem_cleanup_ringbuffer(struct drm_device *dev);
+int i915_gem_do_init(struct drm_device *dev, unsigned long start,
+		     unsigned long end);
+int i915_gem_object_set_domain(struct drm_gem_object *obj,
+			       uint32_t read_domains,
+			       uint32_t write_domain);
 void i915_gem_retire_work_handler(struct work_struct *work);
 void i915_gem_clflush_object(struct drm_gem_object *obj);
 #endif
+
+extern unsigned int i915_fbpercrtc;
 
 /* i915_gem_tiling.c */
 void i915_gem_detect_bit_6_swizzle(struct drm_device *dev);
@@ -622,6 +638,12 @@ extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
 #endif
 #endif
 
+
+/* modesetting */
+extern void intel_modeset_init(struct drm_device *dev);
+extern void intel_modeset_cleanup(struct drm_device *dev);
+
+
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
 #define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
 #define I915_READ16(reg)	DRM_READ16(dev_priv->mmio_map, (reg))
@@ -635,6 +657,8 @@ typedef boolean_t bool;
 
 #define I915_VERBOSE 0
 #define I915_RING_VALIDATE 0
+
+#define PRIMARY_RINGBUFFER_SIZE         (128*1024)
 
 #define PRIMARY_RINGBUFFER_SIZE         (128*1024)
 
@@ -824,6 +848,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  */
 #define GFX_INSTR(opcode, flags) ((0x3 << 29) | ((opcode) << 24) | (flags))
 
+#define GFX_OP_USER_INTERRUPT  ((0<<29)|(2<<23))
 #define GFX_OP_RASTER_RULES    ((0x3<<29)|(0x7<<24))
 #define GFX_OP_SCISSOR         ((0x3<<29)|(0x1c<<24)|(0x10<<19))
 #define   SC_UPDATE_SCISSOR       (0x1<<1)
@@ -1021,6 +1046,12 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define   DPLLB_LVDS_P2_CLOCK_DIV_7	(1 << 24) /* i915 */
 #define   DPLL_P2_CLOCK_DIV_MASK	0x03000000 /* i915 */
 #define   DPLL_FPA01_P1_POST_DIV_MASK	0x00ff0000 /* i915 */
+/*
+ * Pixel within the current frame is counted in the PIPEAFRAMEPIXEL register
+ * and is 24 bits wide.
+ */
+#define PIPE_PIXEL_MASK         0x00ffffff
+#define PIPE_PIXEL_SHIFT        0
 
 #define I915_FIFO_UNDERRUN_STATUS		(1UL<<31)
 #define I915_CRC_ERROR_ENABLE			(1UL<<29)

@@ -294,7 +294,7 @@ int radeon_mem_init_heap(struct drm_device *dev, void *data, struct drm_file *fi
 		return -EFAULT;
 
 	if (*heap) {
-		DRM_ERROR("heap already initialized?");
+		DRM_DEBUG("heap already initialized?");
 		return -EFAULT;
 	}
 

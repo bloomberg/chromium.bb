@@ -31,6 +31,7 @@
 #ifndef __RADEON_DRV_H__
 #define __RADEON_DRV_H__
 
+#include "atom.h"
 /* General customization:
  */
 
@@ -96,13 +97,13 @@
  * 1.25- Add support for r200 vertex programs (R200_EMIT_VAP_PVS_CNTL,
  *       new packet type)
  * 1.26- Add support for variable size PCI(E) gart aperture
- * 1.27- Add support for IGP GART
+ * 1.27- Add support for IGPGART
  * 1.28- Add support for VBL on CRTC2
  * 1.29- R500 3D cmd buffer support
  */
 
 #define DRIVER_MAJOR		1
-#define DRIVER_MINOR		29
+#define DRIVER_MINOR		30
 #define DRIVER_PATCHLEVEL	0
 
 /*
@@ -127,6 +128,7 @@ enum radeon_family {
 	CHIP_RV410,
 	CHIP_RS400,
 	CHIP_RS480,
+	CHIP_RS600,
 	CHIP_RS690,
 	CHIP_RS740,
 	CHIP_RV515,
@@ -135,6 +137,15 @@ enum radeon_family {
 	CHIP_RV560,
 	CHIP_RV570,
 	CHIP_R580,
+	CHIP_R600,
+	CHIP_R630,
+	CHIP_RV610,
+	CHIP_RV630,
+	CHIP_RV670,
+	CHIP_RV620,
+	CHIP_RV635,
+	CHIP_RS780,
+	CHIP_RV770,
 	CHIP_LAST,
 };
 
@@ -155,9 +166,42 @@ enum radeon_chip_flags {
 	RADEON_IS_IGPGART = 0x01000000UL,
 };
 
+/*
+ * Errata workarounds
+ */
+enum radeon_pll_errata {
+	CHIP_ERRATA_R300_CG             = 0x00000001,
+	CHIP_ERRATA_PLL_DUMMYREADS      = 0x00000002,
+	CHIP_ERRATA_PLL_DELAY           = 0x00000004
+};
+
+enum radeon_ext_tmds_chip {
+	RADEON_DVOCHIP_NONE,
+	RADEON_SIL_164,
+	RADEON_SIL_1178
+};
+
+#if defined(__powerpc__)
+enum radeon_mac_model {
+	RADEON_MAC_NONE,
+	RADEON_MAC_IBOOK,
+	RADEON_MAC_POWERBOOK_EXTERNAL,
+	RADEON_MAC_POWERBOOK_INTERNAL,
+	RADEON_MAC_POWERBOOK_VGA,
+	RADEON_MAC_MINI_EXTERNAL,
+	RADEON_MAC_MINI_INTERNAL,
+	RADEON_MAC_IMAC_G5_ISIGHT
+};
+#endif
+
+
 #define GET_RING_HEAD(dev_priv)	(dev_priv->writeback_works ? \
-        DRM_READ32(  (dev_priv)->ring_rptr, 0 ) : RADEON_READ(RADEON_CP_RB_RPTR))
-#define SET_RING_HEAD(dev_priv,val)	DRM_WRITE32( (dev_priv)->ring_rptr, 0, (val) )
+				 (dev_priv->mm.ring_read.bo ? readl(dev_priv->mm.ring_read.kmap.virtual + 0) : DRM_READ32((dev_priv)->ring_rptr, 0 )) : \
+				 RADEON_READ(RADEON_CP_RB_RPTR))
+
+#define SET_RING_HEAD(dev_priv,val) (dev_priv->mm.ring_read.bo ? \
+				     writel((val), dev_priv->mm.ring_read.kmap.virtual) : \
+				     DRM_WRITE32((dev_priv)->ring_rptr, 0, (val)))
 
 typedef struct drm_radeon_freelist {
 	unsigned int age;
@@ -175,7 +219,6 @@ typedef struct drm_radeon_ring_buffer {
 	int rptr_update; /* Double Words */
 	int rptr_update_l2qw; /* log2 Quad Words */
 
-	int fetch_size; /* Double Words */
 	int fetch_size_l2ow; /* log2 Oct Words */
 
 	u32 tail;
@@ -218,17 +261,95 @@ struct radeon_virt_surface {
 	struct drm_file *file_priv;
 };
 
+struct radeon_mm_obj {
+	struct drm_buffer_object *bo;
+	struct drm_bo_kmap_obj kmap;
+};
+
+struct radeon_mm_info {
+	uint64_t vram_offset; // Offset into GPU space
+	uint64_t vram_size;
+	uint64_t vram_visible;
+	
+	uint64_t gart_start;
+	uint64_t gart_size;
+
+	uint64_t gart_useable;
+
+	void *pcie_table_backup;
+	
+	struct radeon_mm_obj pcie_table;
+	struct radeon_mm_obj ring;
+	struct radeon_mm_obj ring_read;
+
+	struct radeon_mm_obj dma_bufs;
+	struct drm_map fake_agp_map;
+};
+
+#include "radeon_mode.h"
+
+struct drm_radeon_master_private {
+	drm_local_map_t *sarea;
+	drm_radeon_sarea_t *sarea_priv;
+};
+
 #define RADEON_FLUSH_EMITED	(1 < 0)
 #define RADEON_PURGE_EMITED	(1 < 1)
+
+struct drm_radeon_kernel_chunk {
+	uint32_t chunk_id;
+	uint32_t length_dw;
+	uint32_t __user *chunk_data;
+	uint32_t *kdata;
+};
+
+struct drm_radeon_cs_parser {
+	struct drm_device *dev;
+	struct drm_file *file_priv;
+	uint32_t num_chunks;
+	struct drm_radeon_kernel_chunk *chunks;
+	int ib_index;
+	int reloc_index;
+	uint32_t card_offset;
+	void *ib;
+};
+
+/* command submission struct */
+struct drm_radeon_cs_priv {
+	struct mutex cs_mutex;
+	uint32_t id_wcnt;
+	uint32_t id_scnt;
+	uint32_t id_last_wcnt;
+	uint32_t id_last_scnt;
+
+	int (*parse)(struct drm_radeon_cs_parser *parser);
+	void (*id_emit)(struct drm_radeon_cs_parser *parser, uint32_t *id);
+	uint32_t (*id_last_get)(struct drm_device *dev);
+	/* this ib handling callback are for hidding memory manager drm
+	 * from memory manager less drm, free have to emit ib discard
+	 * sequence into the ring */
+	int (*ib_get)(struct drm_radeon_cs_parser *parser);
+	uint32_t (*ib_get_ptr)(struct drm_device *dev, void *ib);
+	void (*ib_free)(struct drm_radeon_cs_parser *parser);
+	/* do a relocation either MM or non-MM */
+	int (*relocate)(struct drm_radeon_cs_parser *parser,
+			uint32_t *reloc, uint32_t *offset);
+};
+
+
+
+struct radeon_pm_regs {
+	uint32_t crtc_ext_cntl;
+	uint32_t bios_scratch[8];
+};
 
 typedef struct drm_radeon_private {
 
 	drm_radeon_ring_buffer_t ring;
-	drm_radeon_sarea_t *sarea_priv;
 
-	u32 fb_location;
-	u32 fb_size;
-	int new_memmap;
+	bool new_memmap;
+
+	bool user_mm_enable;
 
 	int gart_size;
 	u32 gart_vm_start;
@@ -280,8 +401,6 @@ typedef struct drm_radeon_private {
 	unsigned long buffers_offset;
 	unsigned long gart_textures_offset;
 
-	drm_local_map_t *sarea;
-	drm_local_map_t *mmio;
 	drm_local_map_t *cp_ring;
 	drm_local_map_t *ring_rptr;
 	drm_local_map_t *gart_textures;
@@ -290,8 +409,8 @@ typedef struct drm_radeon_private {
 	struct mem_block *fb_heap;
 
 	/* SW interrupt */
+	int counter;
 	wait_queue_head_t swi_queue;
-	atomic_t swi_emitted;
 	int vblank_crtc;
 	uint32_t irq_enable_reg;
 	int irq_enabled;
@@ -299,10 +418,6 @@ typedef struct drm_radeon_private {
 
 	struct radeon_surface surfaces[RADEON_MAX_SURFACES];
 	struct radeon_virt_surface virt_surfaces[2 * RADEON_MAX_SURFACES];
-
-	unsigned long pcigart_offset;
-	unsigned int pcigart_offset_set;
-	struct drm_ati_pcigart_info gart_info;
 
 	u32 scratch_ages[5];
 
@@ -313,9 +428,46 @@ typedef struct drm_radeon_private {
 	uint32_t flags;		/* see radeon_chip_flags */
 	unsigned long fb_aper_offset;
 
+	bool mm_enabled;
+	struct radeon_mm_info mm;
+	drm_local_map_t *mmio;
+
+
+	unsigned long pcigart_offset;
+	unsigned int pcigart_offset_set;
+	struct drm_ati_pcigart_info gart_info;
+
+	struct radeon_mode_info mode_info;
+
+	uint8_t *bios; /* copy of the BIOS image */
+	bool is_atom_bios;
+	uint16_t bios_header_start;
+	u32 fb_location;
+	u32 fb_size;
+	bool is_ddr;
+	u32 ram_width;
+
+	uint32_t mc_fb_location;
+	uint32_t mc_agp_loc_lo;
+	uint32_t mc_agp_loc_hi;
+
+	enum radeon_pll_errata pll_errata;
+	
 	int num_gb_pipes;
 	int track_flush;
 	uint32_t chip_family; /* extract from flags */
+
+	struct radeon_mm_obj **ib_objs;
+	/* ib bitmap */
+	uint64_t ib_alloc_bitmap; // TO DO replace with a real bitmap
+	struct drm_radeon_cs_priv cs;
+
+	struct radeon_pm_regs pmregs;
+	int irq_emitted;
+	atomic_t irq_received;
+
+	uint32_t aper_size;
+	int vram_mtrr;
 } drm_radeon_private_t;
 
 typedef struct drm_radeon_buf_priv {
@@ -330,8 +482,12 @@ typedef struct drm_radeon_kcmd_buffer {
 } drm_radeon_kcmd_buffer_t;
 
 extern int radeon_no_wb;
+extern int radeon_dynclks;
+extern int radeon_r4xx_atom;
 extern struct drm_ioctl_desc radeon_ioctls[];
 extern int radeon_max_ioctl;
+extern int radeon_agpmode;
+extern int radeon_modeset;
 
 /* Check whether the given hardware address is inside the framebuffer or the
  * GART area.
@@ -365,6 +521,7 @@ extern struct drm_buf *radeon_freelist_get(struct drm_device * dev);
 
 extern int radeon_wait_ring(drm_radeon_private_t * dev_priv, int n);
 
+extern int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv);
 extern int radeon_do_cp_idle(drm_radeon_private_t * dev_priv);
 
 extern int radeon_mem_alloc(struct drm_device *dev, void *data, struct drm_file *file_priv);
@@ -410,6 +567,11 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 			     struct drm_file *file_priv,
 			     drm_radeon_kcmd_buffer_t *cmdbuf);
 
+extern int radeon_modeset_cp_suspend(struct drm_device *dev);
+extern int radeon_modeset_cp_resume(struct drm_device *dev);
+/* radeon_pm.c */
+int radeon_suspend(struct drm_device *dev, pm_message_t state);
+int radeon_resume(struct drm_device *dev);
 /* Flags for stats.boxes
  */
 #define RADEON_BOX_DMA_IDLE      0x1
@@ -418,9 +580,14 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_BOX_WAIT_IDLE     0x8
 #define RADEON_BOX_TEXTURE_LOAD  0x10
 
+#define R600_CONFIG_MEMSIZE                                     0x5428
+#define R600_CONFIG_APER_SIZE                                   0x5430
 /* Register definitions, register access macros and drmAddMap constants
  * for Radeon kernel driver.
  */
+
+#include "radeon_reg.h"
+
 #define RADEON_AGP_COMMAND		0x0f60
 #define RADEON_AGP_COMMAND_PCI_CONFIG	0x0060	/* offset in PCI config */
 #       define RADEON_AGP_ENABLE            (1<<8)
@@ -546,16 +713,6 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define R520_MC_IND_WR_EN (1 << 24)
 #define R520_MC_IND_DATA  0x74
 
-#define RV515_MC_FB_LOCATION 0x01
-#define RV515_MC_AGP_LOCATION 0x02
-#define RV515_MC_AGP_BASE     0x03
-#define RV515_MC_AGP_BASE_2   0x04
-
-#define R520_MC_FB_LOCATION 0x04
-#define R520_MC_AGP_LOCATION 0x05
-#define R520_MC_AGP_BASE     0x06
-#define R520_MC_AGP_BASE_2   0x07
-
 #define RADEON_MPP_TB_CONFIG		0x01c0
 #define RADEON_MEM_CNTL			0x0140
 #define RADEON_MEM_SDRAM_MODE_REG	0x0158
@@ -620,14 +777,17 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_SCRATCH_REG3		0x15ec
 #define RADEON_SCRATCH_REG4		0x15f0
 #define RADEON_SCRATCH_REG5		0x15f4
+#define RADEON_SCRATCH_REG6		0x15f8
 #define RADEON_SCRATCH_UMSK		0x0770
 #define RADEON_SCRATCH_ADDR		0x0774
 
 #define RADEON_SCRATCHOFF( x )		(RADEON_SCRATCH_REG_OFFSET + 4*(x))
 
-#define GET_SCRATCH( x )	(dev_priv->writeback_works			\
-				? DRM_READ32( dev_priv->ring_rptr, RADEON_SCRATCHOFF(x) ) \
-				: RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x) ) )
+#define GET_SCRATCH( x ) (dev_priv->writeback_works ?			\
+			 (dev_priv->mm.ring_read.bo ? \
+			  readl(dev_priv->mm.ring_read.kmap.virtual + RADEON_SCRATCHOFF(x)) : \
+			  DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(x))) : \
+			 RADEON_READ( RADEON_SCRATCH_REG0 + 4*(x)))
 
 #define RADEON_CRTC_CRNT_FRAME 0x0214
 #define RADEON_CRTC2_CRNT_FRAME 0x0314
@@ -652,11 +812,13 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #	define RADEON_SW_INT_FIRE		(1 << 26)
 #       define R500_DISPLAY_INT_STATUS          (1 << 0)
 
+#define RADEON_HOST_PATH_CNTL               0x0130
+#       define RADEON_HDP_APER_CNTL         (1 << 23)
+#       define RADEON_HP_LIN_RD_CACHE_DIS   (1 << 24)
+#       define RADEON_HDP_SOFT_RESET        (1 << 26)
+#       define RADEON_HDP_READ_BUFFER_INVALIDATED (1 << 27)
 
-#define RADEON_HOST_PATH_CNTL		0x0130
-#	define RADEON_HDP_SOFT_RESET		(1 << 26)
-#	define RADEON_HDP_WC_TIMEOUT_MASK	(7 << 28)
-#	define RADEON_HDP_WC_TIMEOUT_28BCLK	(7 << 28)
+#define RADEON_NB_TOM                       0x15c
 
 #define RADEON_ISYNC_CNTL		0x1724
 #	define RADEON_ISYNC_ANY2D_IDLE3D	(1 << 0)
@@ -695,12 +857,6 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_PP_TXFILTER_1		0x1c6c
 #define RADEON_PP_TXFILTER_2		0x1c84
 
-#define R300_RB2D_DSTCACHE_CTLSTAT	0x342c /* use R300_DSTCACHE_CTLSTAT */
-#define R300_DSTCACHE_CTLSTAT		0x1714
-#	define R300_RB2D_DC_FLUSH		(3 << 0)
-#	define R300_RB2D_DC_FREE		(3 << 2)
-#	define R300_RB2D_DC_FLUSH_ALL		0xf
-#	define R300_RB2D_DC_BUSY		(1 << 31)
 #define RADEON_RB3D_CNTL		0x1c3c
 #	define RADEON_ALPHA_BLEND_ENABLE	(1 << 0)
 #	define RADEON_PLANE_MASK_ENABLE		(1 << 1)
@@ -727,11 +883,6 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #	define R300_ZC_FLUSH		        (1 << 0)
 #	define R300_ZC_FREE		        (1 << 1)
 #	define R300_ZC_BUSY		        (1 << 31)
-#define RADEON_RB3D_DSTCACHE_CTLSTAT            0x325c
-#	define RADEON_RB3D_DC_FLUSH		(3 << 0)
-#	define RADEON_RB3D_DC_FREE		(3 << 2)
-#	define RADEON_RB3D_DC_FLUSH_ALL		0xf
-#	define RADEON_RB3D_DC_BUSY		(1 << 31)
 #define R300_RB3D_DSTCACHE_CTLSTAT              0x4e4c
 #	define R300_RB3D_DC_FLUSH		(2 << 0)
 #	define R300_RB3D_DC_FREE		(2 << 2)
@@ -1008,27 +1159,6 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_NUM_VERTICES_SHIFT		16
 
 #define RADEON_COLOR_FORMAT_CI8		2
-#define RADEON_COLOR_FORMAT_ARGB1555	3
-#define RADEON_COLOR_FORMAT_RGB565	4
-#define RADEON_COLOR_FORMAT_ARGB8888	6
-#define RADEON_COLOR_FORMAT_RGB332	7
-#define RADEON_COLOR_FORMAT_RGB8	9
-#define RADEON_COLOR_FORMAT_ARGB4444	15
-
-#define RADEON_TXFORMAT_I8		0
-#define RADEON_TXFORMAT_AI88		1
-#define RADEON_TXFORMAT_RGB332		2
-#define RADEON_TXFORMAT_ARGB1555	3
-#define RADEON_TXFORMAT_RGB565		4
-#define RADEON_TXFORMAT_ARGB4444	5
-#define RADEON_TXFORMAT_ARGB8888	6
-#define RADEON_TXFORMAT_RGBA8888	7
-#define RADEON_TXFORMAT_Y8		8
-#define RADEON_TXFORMAT_VYUY422         10
-#define RADEON_TXFORMAT_YVYU422         11
-#define RADEON_TXFORMAT_DXT1            12
-#define RADEON_TXFORMAT_DXT23           14
-#define RADEON_TXFORMAT_DXT45           15
 
 #define R200_PP_TXCBLEND_0                0x2f00
 #define R200_PP_TXCBLEND_1                0x2f10
@@ -1214,49 +1344,66 @@ extern int r300_do_cp_cmdbuf(struct drm_device *dev,
 #define RADEON_RING_HIGH_MARK		128
 
 #define RADEON_PCIGART_TABLE_SIZE      (32*1024)
+#define RADEON_DEFAULT_RING_SIZE       (1024*1024)
+#define RADEON_DEFAULT_CP_TIMEOUT     100000  /* usecs */
 
 #define RADEON_READ(reg)    DRM_READ32(  dev_priv->mmio, (reg) )
 #define RADEON_WRITE(reg,val)  DRM_WRITE32( dev_priv->mmio, (reg), (val) )
 #define RADEON_READ8(reg)	DRM_READ8(  dev_priv->mmio, (reg) )
 #define RADEON_WRITE8(reg,val)	DRM_WRITE8( dev_priv->mmio, (reg), (val) )
 
-#define RADEON_WRITE_PLL( addr, val )					\
-do {									\
-	RADEON_WRITE8( RADEON_CLOCK_CNTL_INDEX,				\
-		       ((addr) & 0x1f) | RADEON_PLL_WR_EN );		\
-	RADEON_WRITE( RADEON_CLOCK_CNTL_DATA, (val) );			\
+extern u32 RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr);
+extern void RADEON_WRITE_PLL(struct drm_radeon_private *dev_priv, int addr, uint32_t data);
+extern u32 RADEON_READ_PCIE(drm_radeon_private_t *dev_priv, int addr);
+
+#define RADEON_WRITE_P(reg, val, mask)		\
+do {						\
+	uint32_t tmp = RADEON_READ(reg);	\
+	tmp &= (mask);				\
+	tmp |= ((val) & ~(mask));		\
+	RADEON_WRITE(reg, tmp);			\
+} while(0)
+
+#define RADEON_WRITE_PLL_P(dev_priv, addr, val, mask)		\
+do {								\
+	uint32_t tmp_ = RADEON_READ_PLL(dev_priv, addr);	\
+	tmp_ &= (mask);						\
+	tmp_ |= ((val) & ~(mask));				\
+	RADEON_WRITE_PLL(dev_priv, addr, tmp_);			\
 } while (0)
 
-#define RADEON_WRITE_PCIE( addr, val )					\
+
+
+#define RADEON_WRITE_PCIE(addr, val)					\
 do {									\
-	RADEON_WRITE8( RADEON_PCIE_INDEX,				\
+	RADEON_WRITE8(RADEON_PCIE_INDEX,				\
 			((addr) & 0xff));				\
-	RADEON_WRITE( RADEON_PCIE_DATA, (val) );			\
+	RADEON_WRITE(RADEON_PCIE_DATA, (val));			\
 } while (0)
 
-#define R500_WRITE_MCIND( addr, val )					\
+#define R500_WRITE_MCIND(addr, val)					\
 do {								\
 	RADEON_WRITE(R520_MC_IND_INDEX, 0xff0000 | ((addr) & 0xff));	\
 	RADEON_WRITE(R520_MC_IND_DATA, (val));			\
 	RADEON_WRITE(R520_MC_IND_INDEX, 0);	\
 } while (0)
 
-#define RS480_WRITE_MCIND( addr, val )				\
+#define RS480_WRITE_MCIND(addr, val)				\
 do {									\
-	RADEON_WRITE( RS480_NB_MC_INDEX,				\
+	RADEON_WRITE(RS480_NB_MC_INDEX,				\
 			((addr) & 0xff) | RS480_NB_MC_IND_WR_EN);	\
-	RADEON_WRITE( RS480_NB_MC_DATA, (val) );			\
-	RADEON_WRITE( RS480_NB_MC_INDEX, 0xff );			\
+	RADEON_WRITE(RS480_NB_MC_DATA, (val));			\
+	RADEON_WRITE(RS480_NB_MC_INDEX, 0xff);			\
 } while (0)
 
-#define RS690_WRITE_MCIND( addr, val )					\
+#define RS690_WRITE_MCIND(addr, val)					\
 do {								\
 	RADEON_WRITE(RS690_MC_INDEX, RS690_MC_INDEX_WR_EN | ((addr) & RS690_MC_INDEX_MASK));	\
 	RADEON_WRITE(RS690_MC_DATA, val);			\
 	RADEON_WRITE(RS690_MC_INDEX, RS690_MC_INDEX_WR_ACK);	\
 } while (0)
 
-#define IGP_WRITE_MCIND( addr, val )				\
+#define IGP_WRITE_MCIND(addr, val)				\
 do {									\
     if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||	\
 	((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS740))		\
@@ -1306,42 +1453,42 @@ do {									\
 
 #define RADEON_FLUSH_CACHE() do {					\
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV280) {	\
-	        OUT_RING(CP_PACKET0(RADEON_RB3D_DSTCACHE_CTLSTAT, 0));	\
-	        OUT_RING(RADEON_RB3D_DC_FLUSH);				\
+		OUT_RING(CP_PACKET0(RADEON_RB3D_DSTCACHE_CTLSTAT, 0));	\
+		OUT_RING(RADEON_RB3D_DC_FLUSH);				\
 	} else {                                                        \
-	        OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));	\
-	        OUT_RING(R300_RB3D_DC_FLUSH);				\
-        }                                                               \
+		OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));	\
+		OUT_RING(RADEON_RB3D_DC_FLUSH);				\
+	}                                                               \
 } while (0)
 
 #define RADEON_PURGE_CACHE() do {					\
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV280) {	\
-	        OUT_RING(CP_PACKET0( RADEON_RB3D_DSTCACHE_CTLSTAT, 0));	\
-	        OUT_RING(RADEON_RB3D_DC_FLUSH | RADEON_RB3D_DC_FREE);	\
+		OUT_RING(CP_PACKET0(RADEON_RB3D_DSTCACHE_CTLSTAT, 0));	\
+		OUT_RING(RADEON_RB3D_DC_FLUSH | RADEON_RB3D_DC_FREE);	\
 	} else {                                                        \
-	        OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));	\
-	        OUT_RING(R300_RB3D_DC_FLUSH | R300_RB3D_DC_FREE );	\
-        }                                                               \
+		OUT_RING(CP_PACKET0(R300_RB3D_DSTCACHE_CTLSTAT, 0));	\
+		OUT_RING(R300_RB3D_DC_FLUSH | R300_RB3D_DC_FREE );	\
+	}                                                               \
 } while (0)
 
 #define RADEON_FLUSH_ZCACHE() do {					\
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV280) {	\
-	        OUT_RING( CP_PACKET0( RADEON_RB3D_ZCACHE_CTLSTAT, 0 ) ); \
-	        OUT_RING( RADEON_RB3D_ZC_FLUSH );			\
+		OUT_RING(CP_PACKET0(RADEON_RB3D_ZCACHE_CTLSTAT, 0));	\
+		OUT_RING(RADEON_RB3D_ZC_FLUSH);				\
 	} else {                                                        \
-	        OUT_RING( CP_PACKET0( R300_ZB_ZCACHE_CTLSTAT, 0 ) );	\
-	        OUT_RING( R300_ZC_FLUSH );				\
-        }                                                               \
+		OUT_RING(CP_PACKET0(R300_ZB_ZCACHE_CTLSTAT, 0));	\
+		OUT_RING(R300_ZC_FLUSH);				\
+	}                                                               \
 } while (0)
 
 #define RADEON_PURGE_ZCACHE() do {					\
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV280) {	\
-	        OUT_RING(CP_PACKET0(RADEON_RB3D_ZCACHE_CTLSTAT, 0));	\
-	        OUT_RING(RADEON_RB3D_ZC_FLUSH | RADEON_RB3D_ZC_FREE);	\
+		OUT_RING(CP_PACKET0(RADEON_RB3D_ZCACHE_CTLSTAT, 0));	\
+		OUT_RING(RADEON_RB3D_ZC_FLUSH | RADEON_RB3D_ZC_FREE);	\
 	} else {                                                        \
-	        OUT_RING(CP_PACKET0(R300_ZB_ZCACHE_CTLSTAT, 0));	\
-	        OUT_RING(R300_ZC_FLUSH | R300_ZC_FREE);			\
-        }                                                               \
+		OUT_RING(CP_PACKET0(R300_ZB_ZCACHE_CTLSTAT, 0));	\
+		OUT_RING(R300_ZC_FLUSH | R300_ZC_FREE);			\
+	}                                                               \
 } while (0)
 
 /* ================================================================
@@ -1361,7 +1508,8 @@ do {									\
 
 #define VB_AGE_TEST_WITH_RETURN( dev_priv )				\
 do {									\
-	drm_radeon_sarea_t *sarea_priv = dev_priv->sarea_priv;		\
+	struct drm_radeon_master_private *master_priv = file_priv->master->driver_priv;		\
+	drm_radeon_sarea_t *sarea_priv = master_priv->sarea_priv;	\
 	if ( sarea_priv->last_dispatch >= RADEON_MAX_VB_AGE ) {		\
 		int __ret = radeon_do_cp_idle( dev_priv );		\
 		if ( __ret ) return __ret;				\
@@ -1391,15 +1539,16 @@ do {									\
 
 #define RADEON_VERBOSE	0
 
-#define RING_LOCALS	int write, _nr; unsigned int mask; u32 *ring;
+#define RING_LOCALS	int write, _nr, _align_nr; unsigned int mask; u32 *ring;
 
 #define BEGIN_RING( n ) do {						\
 	if ( RADEON_VERBOSE ) {						\
 		DRM_INFO( "BEGIN_RING( %d )\n", (n));			\
 	}								\
-	if ( dev_priv->ring.space <= (n) * sizeof(u32) ) {		\
+	_align_nr = (n + 0xf) & ~0xf;					\
+	if (dev_priv->ring.space <= (_align_nr * sizeof(u32))) {	\
 		COMMIT_RING();						\
-		radeon_wait_ring( dev_priv, (n) * sizeof(u32) );	\
+		radeon_wait_ring(dev_priv, _align_nr * sizeof(u32));	\
 	}								\
 	_nr = n; dev_priv->ring.space -= (n) * sizeof(u32);		\
 	ring = dev_priv->ring.start;					\
@@ -1416,19 +1565,14 @@ do {									\
 		DRM_ERROR(						\
 			"ADVANCE_RING(): mismatch: nr: %x write: %x line: %d\n",	\
 			((dev_priv->ring.tail + _nr) & mask),		\
-			write, __LINE__);						\
+			write, __LINE__);				\
 	} else								\
 		dev_priv->ring.tail = write;				\
 } while (0)
 
 #define COMMIT_RING() do {						\
-	/* Flush writes to ring */					\
-	DRM_MEMORYBARRIER();						\
-	GET_RING_HEAD( dev_priv );					\
-	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );		\
-	/* read from PCI bus to ensure correct posting */		\
-	RADEON_READ( RADEON_CP_RB_RPTR );				\
-} while (0)
+		radeon_commit_ring(dev_priv);				\
+	} while(0)
 
 #define OUT_RING( x ) do {						\
 	if ( RADEON_VERBOSE ) {						\
@@ -1467,4 +1611,148 @@ do {									\
 	write &= mask;						\
 } while (0)
 
+/* radeon GEM->TTM munger */
+struct drm_radeon_gem_object {
+	/* wrap a TTM bo */
+	struct drm_buffer_object *bo;
+	struct drm_fence_object *fence;
+	struct drm_gem_object *obj;
+	
+};
+
+extern int radeon_gem_info_ioctl(struct drm_device *dev, void *data,
+				 struct drm_file *file_priv);
+
+extern int radeon_gem_create_ioctl(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv);
+
+extern int radeon_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv);
+
+extern int radeon_gem_mmap_ioctl(struct drm_device *dev, void *data,
+				 struct drm_file *file_priv);
+extern int radeon_gem_pread_ioctl(struct drm_device *dev, void *data,
+				   struct drm_file *file_priv);
+
+extern void radeon_fence_handler(struct drm_device *dev);
+extern int radeon_fence_emit_sequence(struct drm_device *dev, uint32_t class,
+				      uint32_t flags, uint32_t *sequence, 
+				    uint32_t *native_type);
+extern void radeon_poke_flush(struct drm_device *dev, uint32_t class);
+extern int radeon_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags);
+
+/* radeon_buffer.c */
+extern struct drm_ttm_backend *radeon_create_ttm_backend_entry(struct drm_device *dev);
+extern int radeon_fence_types(struct drm_buffer_object *bo, uint32_t *class, uint32_t *type);
+extern int radeon_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
+extern int radeon_init_mem_type(struct drm_device * dev, uint32_t type,
+				struct drm_mem_type_manager * man);
+extern int radeon_move(struct drm_buffer_object * bo,
+		       int evict, int no_wait, struct drm_bo_mem_reg * new_mem);
+
+extern void radeon_gart_flush(struct drm_device *dev);
+extern uint64_t radeon_evict_flags(struct drm_buffer_object *bo);
+
+#define BREADCRUMB_BITS 31
+#define BREADCRUMB_MASK ((1U << BREADCRUMB_BITS) - 1)
+
+/* Breadcrumb - swi irq */
+#define READ_BREADCRUMB(dev_priv) GET_SCRATCH(3)
+
+static inline int radeon_update_breadcrumb(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	struct drm_radeon_master_private *master_priv;
+
+	++dev_priv->counter;
+	if (dev_priv->counter > BREADCRUMB_MASK)
+		dev_priv->counter = 1;
+
+	if (dev->primary->master) {
+		master_priv = dev->primary->master->driver_priv;
+		       
+		if (master_priv->sarea_priv)
+			master_priv->sarea_priv->last_fence = dev_priv->counter;
+	}
+	return dev_priv->counter;
+}
+
+#define radeon_is_avivo(dev_priv) ((dev_priv->chip_family >= CHIP_RS600))
+
+#define radeon_is_dce3(dev_priv) ((dev_priv->chip_family >= CHIP_RV620))
+
+#define radeon_is_rv100(dev_priv) ((dev_priv->chip_family == CHIP_RV100) || \
+				   (dev_priv->chip_family == CHIP_RV200) || \
+				   (dev_priv->chip_family == CHIP_RS100) || \
+				   (dev_priv->chip_family == CHIP_RS200) || \
+				   (dev_priv->chip_family == CHIP_RV250) || \
+				   (dev_priv->chip_family == CHIP_RV280) || \
+				   (dev_priv->chip_family == CHIP_RS300))
+
+#define radeon_is_r300(dev_priv) ((dev_priv->chip_family == CHIP_R300)  || \
+				  (dev_priv->chip_family == CHIP_RV350) || \
+				  (dev_priv->chip_family == CHIP_R350)  || \
+				  (dev_priv->chip_family == CHIP_RV380) || \
+				  (dev_priv->chip_family == CHIP_R420)  || \
+				  (dev_priv->chip_family == CHIP_R423)  || \
+				  (dev_priv->chip_family == CHIP_RV410) || \
+				  (dev_priv->chip_family == CHIP_RS400) || \
+				  (dev_priv->chip_family == CHIP_RS480))
+
+#define radeon_bios8(dev_priv, v) (dev_priv->bios[v])
+#define radeon_bios16(dev_priv, v) (dev_priv->bios[v] | (dev_priv->bios[(v) + 1] << 8))
+#define radeon_bios32(dev_priv, v) ((dev_priv->bios[v]) | \
+				    (dev_priv->bios[(v) + 1] << 8) | \
+				    (dev_priv->bios[(v) + 2] << 16) | \
+				    (dev_priv->bios[(v) + 3] << 24))
+
+extern void radeon_pll_errata_after_index(struct drm_radeon_private *dev_priv);
+extern int radeon_emit_irq(struct drm_device * dev);
+
+extern void radeon_gem_free_object(struct drm_gem_object *obj);
+extern int radeon_gem_init_object(struct drm_gem_object *obj);
+extern int radeon_gem_mm_init(struct drm_device *dev);
+extern void radeon_gem_mm_fini(struct drm_device *dev);
+extern int radeon_gem_pin_ioctl(struct drm_device *dev, void *data,
+				struct drm_file *file_priv);
+extern int radeon_gem_unpin_ioctl(struct drm_device *dev, void *data,
+				  struct drm_file *file_priv);
+int radeon_gem_object_pin(struct drm_gem_object *obj,
+			  uint32_t alignment, uint32_t pin_domain);
+int radeon_gem_object_unpin(struct drm_gem_object *obj);
+int radeon_gem_set_domain_ioctl(struct drm_device *dev, void *data,
+				struct drm_file *file_priv);
+int radeon_gem_wait_rendering(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
+struct drm_gem_object *radeon_gem_object_alloc(struct drm_device *dev, int size, int alignment,
+					       int initial_domain, bool discardable);
+int radeon_modeset_init(struct drm_device *dev);
+void radeon_modeset_cleanup(struct drm_device *dev);
+extern u32 radeon_read_mc_reg(drm_radeon_private_t *dev_priv, int addr);
+extern void radeon_write_mc_reg(drm_radeon_private_t *dev_priv, u32 addr, u32 val);
+void radeon_read_agp_location(drm_radeon_private_t *dev_priv, u32 *agp_lo, u32 *agp_hi);
+void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc);
+extern void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on);
+#define RADEONFB_CONN_LIMIT 4
+
+extern int radeon_master_create(struct drm_device *dev, struct drm_master *master);
+extern void radeon_master_destroy(struct drm_device *dev, struct drm_master *master);
+extern void radeon_cp_dispatch_flip(struct drm_device * dev, struct drm_master *master);
+extern int radeon_cs_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
+extern int radeon_cs2_ioctl(struct drm_device *dev, void *data, struct drm_file *fpriv);
+extern int radeon_cs_init(struct drm_device *dev);
+void radeon_gem_update_offsets(struct drm_device *dev, struct drm_master *master);
+void radeon_init_memory_map(struct drm_device *dev);
+void radeon_enable_bm(struct drm_radeon_private *dev_priv);
+
+extern int radeon_gem_proc_init(struct drm_minor *minor);
+extern void radeon_gem_proc_cleanup(struct drm_minor *minor);
+#define MARK_SAFE		1
+#define MARK_CHECK_OFFSET	2
+#define MARK_CHECK_SCISSOR	3
+
+extern void radeon_commit_ring(drm_radeon_private_t *dev_priv);
+
+extern int r300_check_range(unsigned reg, int count);
+extern int r300_get_reg_flags(unsigned reg);
 #endif				/* __RADEON_DRV_H__ */

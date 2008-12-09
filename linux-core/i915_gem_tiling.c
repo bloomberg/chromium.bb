@@ -86,7 +86,7 @@
 void
 i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 {
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct pci_dev *bridge;
 	uint32_t swizzle_x = I915_BIT_6_SWIZZLE_UNKNOWN;
 	uint32_t swizzle_y = I915_BIT_6_SWIZZLE_UNKNOWN;
@@ -115,7 +115,8 @@ i915_gem_detect_bit_6_swizzle(struct drm_device *dev)
 	 * since the bridge would only ever use standard BARs 0-1 (though it
 	 * doesn't anyway)
 	 */
-	ret = pci_read_base(bridge, mchbar_offset, &bridge->resource[2]);
+	ret = pci_read_base(bridge, pci_bar_mem64, &bridge->resource[2],
+			    mchbar_offset);
 	if (ret != 0) {
 		DRM_ERROR("pci_read_base failed: %d\n", ret);
 		return;
@@ -233,7 +234,7 @@ i915_gem_set_tiling(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
 {
 	struct drm_i915_gem_set_tiling *args = data;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
 
@@ -275,7 +276,7 @@ i915_gem_get_tiling(struct drm_device *dev, void *data,
 		   struct drm_file *file_priv)
 {
 	struct drm_i915_gem_get_tiling *args = data;
-	drm_i915_private_t *dev_priv = dev->dev_private;
+	struct drm_i915_private *dev_priv = dev->dev_private;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
 

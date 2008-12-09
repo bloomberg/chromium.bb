@@ -30,6 +30,7 @@
 #include "drmP.h"
 #include "drm.h"
 #include "i915_drm.h"
+#include "intel_drv.h"
 #include "i915_drv.h"
 
 #include "drm_pciids.h"
@@ -38,30 +39,14 @@ static struct pci_device_id pciidlist[] = {
 	i915_PCI_IDS
 };
 
-#ifdef I915_HAVE_FENCE
-extern struct drm_fence_driver i915_fence_driver;
-#endif
+unsigned int i915_modeset = 0;
+module_param_named(modeset, i915_modeset, int, 0400);
 
-#ifdef I915_HAVE_BUFFER
+unsigned int i915_fbpercrtc = 0;
+module_param_named(fbpercrtc, i915_fbpercrtc, int, 0400);
 
-static uint32_t i915_mem_prios[] = {DRM_BO_MEM_PRIV0, DRM_BO_MEM_TT, DRM_BO_MEM_LOCAL};
-static uint32_t i915_busy_prios[] = {DRM_BO_MEM_TT, DRM_BO_MEM_PRIV0, DRM_BO_MEM_LOCAL};
-
-static struct drm_bo_driver i915_bo_driver = {
-	.mem_type_prio = i915_mem_prios,
-	.mem_busy_prio = i915_busy_prios,
-	.num_mem_type_prio = sizeof(i915_mem_prios)/sizeof(uint32_t),
-	.num_mem_busy_prio = sizeof(i915_busy_prios)/sizeof(uint32_t),
-	.create_ttm_backend_entry = i915_create_ttm_backend_entry,
-	.fence_type = i915_fence_type,
-	.invalidate_caches = i915_invalidate_caches,
-	.init_mem_type = i915_init_mem_type,
-	.evict_flags = i915_evict_flags,
-	.move = i915_move,
-	.ttm_cache_flush = i915_flush_ttm,
-	.command_stream_barrier = NULL,
-};
-#endif
+unsigned int i915_rightof = 1;
+module_param_named(i915_rightof, i915_rightof, int, 0400);
 
 static int i915_suspend(struct drm_device *dev, pm_message_t state)
 {
@@ -140,6 +125,8 @@ static struct drm_driver driver = {
 	.reclaim_buffers = drm_core_reclaim_buffers,
 	.get_map_ofs = drm_core_get_map_ofs,
 	.get_reg_ofs = drm_core_get_reg_ofs,
+	.master_create = i915_master_create,
+	.master_destroy = i915_master_destroy,
 	.proc_init = i915_gem_proc_init,
 	.proc_cleanup = i915_gem_proc_cleanup,
 	.ioctls = i915_ioctls,
@@ -163,12 +150,6 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = remove,
 		},
-#ifdef I915_HAVE_FENCE
-	.fence_driver = &i915_fence_driver,
-#endif
-#ifdef I915_HAVE_BUFFER
-	.bo_driver = &i915_bo_driver,
-#endif
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
 	.date = DRIVER_DATE,
@@ -198,14 +179,17 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 }
 static void remove(struct pci_dev *pdev)
 {
+	drm_cleanup_pci(pdev);
 	if (pdev->msi_enabled)
 		pci_disable_msi(pdev);
-	drm_cleanup_pci(pdev);
 }
 
 static int __init i915_init(void)
 {
 	driver.num_ioctls = i915_max_ioctl;
+	if (i915_modeset == 1)
+		driver.driver_features |= DRIVER_MODESET;
+
 	return drm_init(&driver, pciidlist);
 }
 

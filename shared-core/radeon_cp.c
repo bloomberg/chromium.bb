@@ -31,6 +31,7 @@
 
 #include "drmP.h"
 #include "drm.h"
+#include "drm_sarea.h"
 #include "radeon_drm.h"
 #include "radeon_drv.h"
 #include "r300_reg.h"
@@ -77,6 +78,23 @@ static u32 IGP_READ_MCIND(drm_radeon_private_t *dev_priv, int addr)
 	    return RS480_READ_MCIND(dev_priv, addr);
 }
 
+u32 radeon_read_mc_reg(drm_radeon_private_t *dev_priv, int addr)
+{
+        if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)
+		return IGP_READ_MCIND(dev_priv, addr);
+	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515)
+		return R500_READ_MCIND(dev_priv, addr);
+	return 0;
+}
+
+void radeon_write_mc_reg(drm_radeon_private_t *dev_priv, u32 addr, u32 val)
+{
+        if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690)
+		IGP_WRITE_MCIND(addr, val);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515)
+		R500_WRITE_MCIND(addr, val);
+}
+
 u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
 {
 
@@ -85,33 +103,71 @@ u32 radeon_read_fb_location(drm_radeon_private_t *dev_priv)
 	else if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||
 		 ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS740))
 		return RS690_READ_MCIND(dev_priv, RS690_MC_FB_LOCATION);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV770)
+		return RADEON_READ(R700_MC_VM_FB_LOCATION);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R600)
+		return RADEON_READ(R600_MC_VM_FB_LOCATION);
 	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
 		return R500_READ_MCIND(dev_priv, R520_MC_FB_LOCATION);
 	else
 		return RADEON_READ(RADEON_MC_FB_LOCATION);
 }
 
-static void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
+void radeon_read_agp_location(drm_radeon_private_t *dev_priv, u32 *agp_lo, u32 *agp_hi)
+{
+	if (dev_priv->chip_family == CHIP_RV770) {
+		*agp_lo = RADEON_READ(R600_MC_VM_AGP_BOT);
+		*agp_hi = RADEON_READ(R600_MC_VM_AGP_TOP);
+	} else if (dev_priv->chip_family == CHIP_R600) {
+		*agp_lo = RADEON_READ(R600_MC_VM_AGP_BOT);
+		*agp_hi = RADEON_READ(R600_MC_VM_AGP_TOP);
+	} else if (dev_priv->chip_family == CHIP_RV515) {
+		*agp_lo = radeon_read_mc_reg(dev_priv, RV515_MC_AGP_LOCATION);
+		*agp_hi = 0;
+	} else if (dev_priv->chip_family == CHIP_RS600) {
+		*agp_lo = 0;
+		*agp_hi = 0;
+	} else if (dev_priv->chip_family == CHIP_RS690 ||
+		   dev_priv->chip_family == CHIP_RS740) {
+		*agp_lo = radeon_read_mc_reg(dev_priv, RS690_MC_AGP_LOCATION);
+		*agp_hi = 0;
+	} else if (dev_priv->chip_family >= CHIP_R520) {
+		*agp_lo = radeon_read_mc_reg(dev_priv, R520_MC_AGP_LOCATION);
+		*agp_hi = 0;
+	} else {
+		*agp_lo = RADEON_READ(RADEON_MC_AGP_LOCATION);
+		*agp_hi = 0;
+	}
+}
+
+void radeon_write_fb_location(drm_radeon_private_t *dev_priv, u32 fb_loc)
 {
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
 		R500_WRITE_MCIND(RV515_MC_FB_LOCATION, fb_loc);
 	else if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||
 		 ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS740))
 		RS690_WRITE_MCIND(RS690_MC_FB_LOCATION, fb_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV770)
+		RADEON_WRITE(R700_MC_VM_FB_LOCATION, fb_loc);
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R600)
+		RADEON_WRITE(R600_MC_VM_FB_LOCATION, fb_loc);
 	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
 		R500_WRITE_MCIND(R520_MC_FB_LOCATION, fb_loc);
 	else
 		RADEON_WRITE(RADEON_MC_FB_LOCATION, fb_loc);
 }
 
-static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_loc)
+static void radeon_write_agp_location(drm_radeon_private_t *dev_priv, u32 agp_loc, u32 agp_loc_hi)
 {
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RV515)
 		R500_WRITE_MCIND(RV515_MC_AGP_LOCATION, agp_loc);
 	else if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||
 		 ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS740))
 		RS690_WRITE_MCIND(RS690_MC_AGP_LOCATION, agp_loc);
-	else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
+	else if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_R600) {
+		RADEON_WRITE(R600_MC_VM_AGP_BOT, agp_loc);
+		RADEON_WRITE(R600_MC_VM_AGP_TOP, agp_loc_hi);
+	} else if ((dev_priv->flags & RADEON_FAMILY_MASK) > CHIP_RV515)
 		R500_WRITE_MCIND(R520_MC_AGP_LOCATION, agp_loc);
 	else
 		RADEON_WRITE(RADEON_MC_AGP_LOCATION, agp_loc);
@@ -143,18 +199,114 @@ static void radeon_write_agp_base(drm_radeon_private_t *dev_priv, u64 agp_base)
 	}
 }
 
-static int RADEON_READ_PLL(struct drm_device * dev, int addr)
+void radeon_enable_bm(struct drm_radeon_private *dev_priv)
 {
-	drm_radeon_private_t *dev_priv = dev->dev_private;
-
-	RADEON_WRITE8(RADEON_CLOCK_CNTL_INDEX, addr & 0x1f);
-	return RADEON_READ(RADEON_CLOCK_CNTL_DATA);
+	u32 tmp;
+	/* Turn on bus mastering */
+	if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||
+	    ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS740)) {
+		/* rs600/rs690/rs740 */
+		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RS600_BUS_MASTER_DIS;
+		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
+	} else if (((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV350) ||
+		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_R420) ||
+		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS400) ||
+		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS480)) {
+		/* r1xx, r2xx, r300, r(v)350, r420/r481, rs400/rs480 */
+		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RADEON_BUS_MASTER_DIS;
+		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
+	} /* PCIE cards appears to not need this */
 }
 
-static u32 RADEON_READ_PCIE(drm_radeon_private_t *dev_priv, int addr)
+void radeon_pll_errata_after_index(struct drm_radeon_private *dev_priv)
+{
+	if (!(dev_priv->pll_errata & CHIP_ERRATA_PLL_DUMMYREADS))
+		return;
+
+	(void)RADEON_READ(RADEON_CLOCK_CNTL_DATA);
+	(void)RADEON_READ(RADEON_CRTC_GEN_CNTL);
+}
+
+void radeon_pll_errata_after_data(struct drm_radeon_private *dev_priv)
+{
+	/* This workarounds is necessary on RV100, RS100 and RS200 chips
+	 * or the chip could hang on a subsequent access
+	 */
+	if (dev_priv->pll_errata & CHIP_ERRATA_PLL_DELAY)
+		udelay(5000);
+
+	/* This function is required to workaround a hardware bug in some (all?)
+	 * revisions of the R300.  This workaround should be called after every
+	 * CLOCK_CNTL_INDEX register access.  If not, register reads afterward
+	 * may not be correct.
+	 */
+	if (dev_priv->pll_errata & CHIP_ERRATA_R300_CG) {
+		uint32_t save, tmp;
+
+		save = RADEON_READ(RADEON_CLOCK_CNTL_INDEX);
+		tmp = save & ~(0x3f | RADEON_PLL_WR_EN);
+		RADEON_WRITE(RADEON_CLOCK_CNTL_INDEX, tmp);
+		tmp = RADEON_READ(RADEON_CLOCK_CNTL_DATA);
+		RADEON_WRITE(RADEON_CLOCK_CNTL_INDEX, save);
+	}
+}
+
+u32 RADEON_READ_PLL(struct drm_radeon_private *dev_priv, int addr)
+{
+	uint32_t data;
+
+	RADEON_WRITE8(RADEON_CLOCK_CNTL_INDEX, addr & 0x3f);
+	radeon_pll_errata_after_index(dev_priv);
+	data = RADEON_READ(RADEON_CLOCK_CNTL_DATA);
+	radeon_pll_errata_after_data(dev_priv);
+	return data;
+}
+
+void RADEON_WRITE_PLL(struct drm_radeon_private *dev_priv, int addr, uint32_t data)
+{
+	RADEON_WRITE8(RADEON_CLOCK_CNTL_INDEX, ((addr & 0x3f) | RADEON_PLL_WR_EN));
+	radeon_pll_errata_after_index(dev_priv);
+	RADEON_WRITE(RADEON_CLOCK_CNTL_DATA, data);
+	radeon_pll_errata_after_data(dev_priv);
+}
+
+u32 RADEON_READ_PCIE(drm_radeon_private_t *dev_priv, int addr)
 {
 	RADEON_WRITE8(RADEON_PCIE_INDEX, addr & 0xff);
 	return RADEON_READ(RADEON_PCIE_DATA);
+}
+
+/* ATOM accessor methods */
+static uint32_t cail_mc_read(struct card_info *info, uint32_t reg)
+{
+	uint32_t ret = radeon_read_mc_reg(info->dev->dev_private, reg);
+
+	//	DRM_DEBUG("(%x) = %x\n", reg, ret);
+	return ret;
+}
+
+static void cail_mc_write(struct card_info *info, uint32_t reg, uint32_t val)
+{
+  //	DRM_DEBUG("(%x,  %x)\n", reg, val);
+	radeon_write_mc_reg(info->dev->dev_private, reg, val);
+}
+
+static void cail_reg_write(struct card_info *info, uint32_t reg, uint32_t val)
+{
+	drm_radeon_private_t *dev_priv = info->dev->dev_private;
+	
+	//	DRM_DEBUG("(%x,  %x)\n", reg*4, val);
+	RADEON_WRITE(reg*4, val);
+}
+
+static uint32_t cail_reg_read(struct card_info *info, uint32_t reg)
+{
+	uint32_t ret;
+	drm_radeon_private_t *dev_priv = info->dev->dev_private;
+
+	ret = RADEON_READ(reg*4);
+	//	DRM_DEBUG("(%x) = %x\n", reg*4, ret);
+	return ret;
 }
 
 #if RADEON_FIFO_DEBUG
@@ -239,7 +391,7 @@ static int radeon_do_wait_for_fifo(drm_radeon_private_t * dev_priv, int entries)
 	return -EBUSY;
 }
 
-static int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv)
+int radeon_do_wait_for_idle(drm_radeon_private_t * dev_priv)
 {
 	int i, ret;
 
@@ -299,7 +451,7 @@ static void radeon_init_pipes(drm_radeon_private_t * dev_priv)
 	}
 
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515) {
-		RADEON_WRITE_PLL(R500_DYN_SCLK_PWMEM_PIPE, (1 | ((gb_pipe_sel >> 8) & 0xf) << 4));
+		RADEON_WRITE_PLL(dev_priv, R500_DYN_SCLK_PWMEM_PIPE, (1 | ((gb_pipe_sel >> 8) & 0xf) << 4));
 		RADEON_WRITE(R500_SU_REG_DEST, ((1 << dev_priv->num_gb_pipes) - 1));
 	}
 	RADEON_WRITE(R300_GB_TILE_CONFIG, gb_tile_config);
@@ -406,7 +558,6 @@ static void radeon_do_cp_flush(drm_radeon_private_t * dev_priv)
 	DRM_DEBUG("\n");
 #if 0
 	u32 tmp;
-
 	tmp = RADEON_READ(RADEON_CP_RB_WPTR) | (1 << 31);
 	RADEON_WRITE(RADEON_CP_RB_WPTR, tmp);
 #endif
@@ -447,10 +598,15 @@ static void radeon_do_cp_start(drm_radeon_private_t * dev_priv)
 	BEGIN_RING(8);
 	/* isync can only be written through cp on r5xx write it here */
 	OUT_RING(CP_PACKET0(RADEON_ISYNC_CNTL, 0));
+	if (dev_priv->chip_family > CHIP_RV280)
+		OUT_RING(RADEON_ISYNC_ANY2D_IDLE3D |
+			 RADEON_ISYNC_ANY3D_IDLE2D |
+			 RADEON_ISYNC_WAIT_IDLEGUI |
+		 dev_priv->mm_enabled ? 0 : RADEON_ISYNC_CPSCRATCH_IDLEGUI);
+	else
 	OUT_RING(RADEON_ISYNC_ANY2D_IDLE3D |
 		 RADEON_ISYNC_ANY3D_IDLE2D |
-		 RADEON_ISYNC_WAIT_IDLEGUI |
-		 RADEON_ISYNC_CPSCRATCH_IDLEGUI);
+		 RADEON_ISYNC_WAIT_IDLEGUI);
 	RADEON_PURGE_CACHE();
 	RADEON_PURGE_ZCACHE();
 	RADEON_WAIT_UNTIL_IDLE();
@@ -501,15 +657,15 @@ static int radeon_do_engine_reset(struct drm_device * dev)
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV410) {
 	        /* may need something similar for newer chips */
 		clock_cntl_index = RADEON_READ(RADEON_CLOCK_CNTL_INDEX);
-		mclk_cntl = RADEON_READ_PLL(dev, RADEON_MCLK_CNTL);
+		mclk_cntl = RADEON_READ_PLL(dev_priv, RADEON_MCLK_CNTL);
 
-		RADEON_WRITE_PLL(RADEON_MCLK_CNTL, (mclk_cntl |
-						    RADEON_FORCEON_MCLKA |
-						    RADEON_FORCEON_MCLKB |
-						    RADEON_FORCEON_YCLKA |
-						    RADEON_FORCEON_YCLKB |
-						    RADEON_FORCEON_MC |
-						    RADEON_FORCEON_AIC));
+		RADEON_WRITE_PLL(dev_priv, RADEON_MCLK_CNTL, (mclk_cntl |
+							      RADEON_FORCEON_MCLKA |
+							      RADEON_FORCEON_MCLKB |
+							      RADEON_FORCEON_YCLKA |
+							      RADEON_FORCEON_YCLKB |
+							      RADEON_FORCEON_MC |
+							      RADEON_FORCEON_AIC));
 	}
 
 	rbbm_soft_reset = RADEON_READ(RADEON_RBBM_SOFT_RESET);
@@ -534,7 +690,7 @@ static int radeon_do_engine_reset(struct drm_device * dev)
 	RADEON_READ(RADEON_RBBM_SOFT_RESET);
 
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV410) {
-		RADEON_WRITE_PLL(RADEON_MCLK_CNTL, mclk_cntl);
+		RADEON_WRITE_PLL(dev_priv, RADEON_MCLK_CNTL, mclk_cntl);
 		RADEON_WRITE(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
 		RADEON_WRITE(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
 	}
@@ -550,7 +706,8 @@ static int radeon_do_engine_reset(struct drm_device * dev)
 	dev_priv->cp_running = 0;
 
 	/* Reset any pending vertex, indirect buffers */
-	radeon_freelist_reset(dev);
+	if (dev->dma)
+		radeon_freelist_reset(dev);
 
 	return 0;
 }
@@ -559,7 +716,6 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 				       drm_radeon_private_t * dev_priv)
 {
 	u32 ring_start, cur_read_ptr;
-	u32 tmp;
 
 	/* Initialize the memory controller. With new memory map, the fb location
 	 * is not changed, it should have been properly initialized already. Part
@@ -568,9 +724,13 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	 */
 	if (!dev_priv->new_memmap)
 		radeon_write_fb_location(dev_priv,
-			     ((dev_priv->gart_vm_start - 1) & 0xffff0000)
-			     | (dev_priv->fb_location >> 16));
-
+					 ((dev_priv->gart_vm_start - 1) & 0xffff0000)
+					 | (dev_priv->fb_location >> 16));
+	
+	if (dev_priv->mm.ring.bo) {
+		ring_start = dev_priv->mm.ring.bo->offset +
+			dev_priv->gart_vm_start;
+	} else
 #if __OS_HAS_AGP
 	if (dev_priv->flags & RADEON_IS_AGP) {
 		radeon_write_agp_base(dev_priv, dev->agp->base);
@@ -578,7 +738,7 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 		radeon_write_agp_location(dev_priv,
 			     (((dev_priv->gart_vm_start - 1 +
 				dev_priv->gart_size) & 0xffff0000) |
-			      (dev_priv->gart_vm_start >> 16)));
+			      (dev_priv->gart_vm_start >> 16)), 0);
 
 		ring_start = (dev_priv->cp_ring->offset
 			      - dev->agp->base
@@ -600,6 +760,12 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	SET_RING_HEAD(dev_priv, cur_read_ptr);
 	dev_priv->ring.tail = cur_read_ptr;
 
+
+	if (dev_priv->mm.ring_read.bo) {
+		RADEON_WRITE(RADEON_CP_RB_RPTR_ADDR,
+			     dev_priv->mm.ring_read.bo->offset +
+			     dev_priv->gart_vm_start);
+	} else
 #if __OS_HAS_AGP
 	if (dev_priv->flags & RADEON_IS_AGP) {
 		RADEON_WRITE(RADEON_CP_RB_RPTR_ADDR,
@@ -645,60 +811,76 @@ static void radeon_cp_init_ring_buffer(struct drm_device * dev,
 	RADEON_WRITE(RADEON_SCRATCH_ADDR, RADEON_READ(RADEON_CP_RB_RPTR_ADDR)
 		     + RADEON_SCRATCH_REG_OFFSET);
 
-	dev_priv->scratch = ((__volatile__ u32 *)
-			     dev_priv->ring_rptr->handle +
-			     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
+	if (dev_priv->mm.ring_read.bo)
+		dev_priv->scratch = ((__volatile__ u32 *)
+				     dev_priv->mm.ring_read.kmap.virtual +
+				     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
+	else
+		dev_priv->scratch = ((__volatile__ u32 *)
+				     dev_priv->ring_rptr->handle +
+				     (RADEON_SCRATCH_REG_OFFSET / sizeof(u32)));
 
-	RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x7);
+	if (dev_priv->chip_family >= CHIP_R300)
+		RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x7f); 
+	else
+		RADEON_WRITE(RADEON_SCRATCH_UMSK, 0x1f); 
 
-	/* Turn on bus mastering */
-	if (((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS690) ||
-	    ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS740)) {
-		/* rs600/rs690/rs740 */
-		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RS600_BUS_MASTER_DIS;
-		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
-	} else if (((dev_priv->flags & RADEON_FAMILY_MASK) <= CHIP_RV350) ||
-		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_R420) ||
-		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS400) ||
-		   ((dev_priv->flags & RADEON_FAMILY_MASK) == CHIP_RS480)) {
-		/* r1xx, r2xx, r300, r(v)350, r420/r481, rs400/rs480 */
-		tmp = RADEON_READ(RADEON_BUS_CNTL) & ~RADEON_BUS_MASTER_DIS;
-		RADEON_WRITE(RADEON_BUS_CNTL, tmp);
-	} /* PCIE cards appears to not need this */
+ 	radeon_enable_bm(dev_priv);
 
-	dev_priv->sarea_priv->last_frame = dev_priv->scratch[0] = 0;
-	RADEON_WRITE(RADEON_LAST_FRAME_REG, dev_priv->sarea_priv->last_frame);
+	dev_priv->scratch[0] = 0;
+	RADEON_WRITE(RADEON_LAST_FRAME_REG, 0);
 
-	dev_priv->sarea_priv->last_dispatch = dev_priv->scratch[1] = 0;
-	RADEON_WRITE(RADEON_LAST_DISPATCH_REG,
-		     dev_priv->sarea_priv->last_dispatch);
+	dev_priv->scratch[1] = 0;
+	RADEON_WRITE(RADEON_LAST_DISPATCH_REG, 0);
 
-	dev_priv->sarea_priv->last_clear = dev_priv->scratch[2] = 0;
-	RADEON_WRITE(RADEON_LAST_CLEAR_REG, dev_priv->sarea_priv->last_clear);
+	dev_priv->scratch[2] = 0;
+	RADEON_WRITE(RADEON_LAST_CLEAR_REG, 0);
+
+	dev_priv->scratch[3] = 0;
+	RADEON_WRITE(RADEON_LAST_SWI_REG, 0);
+
+	dev_priv->scratch[4] = 0;
+	RADEON_WRITE(RADEON_SCRATCH_REG4, 0);
+
+	dev_priv->scratch[6] = 0;
+	RADEON_WRITE(RADEON_SCRATCH_REG6, 0);
 
 	radeon_do_wait_for_idle(dev_priv);
 
 	/* Sync everything up */
+	if (dev_priv->chip_family > CHIP_RV280) {
 	RADEON_WRITE(RADEON_ISYNC_CNTL,
 		     (RADEON_ISYNC_ANY2D_IDLE3D |
 		      RADEON_ISYNC_ANY3D_IDLE2D |
 		      RADEON_ISYNC_WAIT_IDLEGUI |
 		      RADEON_ISYNC_CPSCRATCH_IDLEGUI));
-
+	} else {
+	RADEON_WRITE(RADEON_ISYNC_CNTL,
+		     (RADEON_ISYNC_ANY2D_IDLE3D |
+		      RADEON_ISYNC_ANY3D_IDLE2D |
+		      RADEON_ISYNC_WAIT_IDLEGUI));
+	}
 }
 
 static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 {
-	u32 tmp;
+	u32 tmp, scratch1_store;
+	void *ring_read_ptr;
 
+	if (dev_priv->mm.ring_read.bo)
+		ring_read_ptr = dev_priv->mm.ring_read.kmap.virtual;
+	else
+		ring_read_ptr = dev_priv->ring_rptr->handle;
+
+	scratch1_store = RADEON_READ(RADEON_SCRATCH_REG1);
 	/* Writeback doesn't seem to work everywhere, test it here and possibly
 	 * enable it if it appears to work
 	 */
-	DRM_WRITE32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(1), 0);
+	writel(0, ring_read_ptr + RADEON_SCRATCHOFF(1));
 	RADEON_WRITE(RADEON_SCRATCH_REG1, 0xdeadbeef);
 
 	for (tmp = 0; tmp < dev_priv->usec_timeout; tmp++) {
-		if (DRM_READ32(dev_priv->ring_rptr, RADEON_SCRATCHOFF(1)) ==
+		if (readl(ring_read_ptr + RADEON_SCRATCHOFF(1)) ==
 		    0xdeadbeef)
 			break;
 		DRM_UDELAY(1);
@@ -715,6 +897,9 @@ static void radeon_test_writeback(drm_radeon_private_t * dev_priv)
 		dev_priv->writeback_works = 0;
 		DRM_INFO("writeback forced off\n");
 	}
+
+	/* write back previous value */
+	RADEON_WRITE(RADEON_SCRATCH_REG1, scratch1_store);
 
 	if (!dev_priv->writeback_works) {
 		/* Disable writeback to avoid unnecessary bus master transfers */
@@ -766,7 +951,7 @@ static void radeon_set_igpgart(drm_radeon_private_t * dev_priv, int on)
 		temp = (((dev_priv->gart_vm_start - 1 + dev_priv->gart_size) & 
 			0xffff0000) | (dev_priv->gart_vm_start >> 16));
 
-		radeon_write_agp_location(dev_priv, temp);
+		radeon_write_agp_location(dev_priv, temp, 0);
 
 		temp = IGP_READ_MCIND(dev_priv, RS480_AGP_ADDRESS_SPACE_SIZE);
 		IGP_WRITE_MCIND(RS480_AGP_ADDRESS_SPACE_SIZE, (RS480_GART_EN |
@@ -814,7 +999,7 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 				  dev_priv->gart_vm_start +
 				  dev_priv->gart_size - 1);
 
-		radeon_write_agp_location(dev_priv, 0xffffffc0); /* ?? */
+		radeon_write_agp_location(dev_priv, 0xffffffc0, 0); /* ?? */
 
 		RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL,
 				  RADEON_PCIE_TX_GART_EN);
@@ -825,7 +1010,7 @@ static void radeon_set_pciegart(drm_radeon_private_t * dev_priv, int on)
 }
 
 /* Enable or disable PCI GART on the chip */
-static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
+void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 {
 	u32 tmp;
 
@@ -859,7 +1044,7 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 
 		/* Turn off AGP aperture -- is this required for PCI GART?
 		 */
-		radeon_write_agp_location(dev_priv, 0xffffffc0);
+		radeon_write_agp_location(dev_priv, 0xffffffc0, 0);
 		RADEON_WRITE(RADEON_AGP_COMMAND, 0);	/* clear AGP_COMMAND */
 	} else {
 		RADEON_WRITE(RADEON_AIC_CNTL,
@@ -867,9 +1052,11 @@ static void radeon_set_pcigart(drm_radeon_private_t * dev_priv, int on)
 	}
 }
 
-static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
+static int radeon_do_init_cp(struct drm_device *dev, drm_radeon_init_t *init,
+			     struct drm_file *file_priv)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_radeon_master_private *master_priv = file_priv->master->driver_priv;
 
 	DRM_DEBUG("\n");
 
@@ -985,8 +1172,8 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 	dev_priv->buffers_offset = init->buffers_offset;
 	dev_priv->gart_textures_offset = init->gart_textures_offset;
 
-	dev_priv->sarea = drm_getsarea(dev);
-	if (!dev_priv->sarea) {
+	master_priv->sarea = drm_getsarea(dev);
+	if (!master_priv->sarea) {
 		DRM_ERROR("could not find sarea!\n");
 		radeon_do_cleanup_cp(dev);
 		return -EINVAL;
@@ -1021,10 +1208,6 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 			return -EINVAL;
 		}
 	}
-
-	dev_priv->sarea_priv =
-	    (drm_radeon_sarea_t *) ((u8 *) dev_priv->sarea->handle +
-				    init->sarea_priv_offset);
 
 #if __OS_HAS_AGP
 	if (dev_priv->flags & RADEON_IS_AGP) {
@@ -1139,9 +1322,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 	dev_priv->ring.rptr_update = /* init->rptr_update */ 4096;
 	dev_priv->ring.rptr_update_l2qw = drm_order( /* init->rptr_update */ 4096 / 8);
 
-	dev_priv->ring.fetch_size = /* init->fetch_size */ 32;
-	dev_priv->ring.fetch_size_l2ow = drm_order( /* init->fetch_size */ 32 / 16);
-
+	dev_priv->ring.fetch_size_l2ow = 2;
 	dev_priv->ring.tail_mask = (dev_priv->ring.size / sizeof(u32)) - 1;
 
 	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
@@ -1156,28 +1337,40 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 		dev_priv->gart_info.table_mask = DMA_BIT_MASK(32);
 		/* if we have an offset set from userspace */
 		if (dev_priv->pcigart_offset_set) {
-			dev_priv->gart_info.bus_addr =
-			    dev_priv->pcigart_offset + dev_priv->fb_location;
-			dev_priv->gart_info.mapping.offset =
-			    dev_priv->pcigart_offset + dev_priv->fb_aper_offset;
-			dev_priv->gart_info.mapping.size =
-			    dev_priv->gart_info.table_size;
-
-			drm_core_ioremap_wc(&dev_priv->gart_info.mapping, dev);
-			dev_priv->gart_info.addr =
-			    dev_priv->gart_info.mapping.handle;
-
-			if (dev_priv->flags & RADEON_IS_PCIE)
-				dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCIE;
-			else
-				dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
-			dev_priv->gart_info.gart_table_location =
-			    DRM_ATI_GART_FB;
-
-			DRM_DEBUG("Setting phys_pci_gart to %p %08lX\n",
-				  dev_priv->gart_info.addr,
-				  dev_priv->pcigart_offset);
+			/* if it came from userspace - remap it */
+			if (dev_priv->pcigart_offset_set == 1) {
+				dev_priv->gart_info.bus_addr =
+					dev_priv->pcigart_offset + dev_priv->fb_location;
+				dev_priv->gart_info.mapping.offset =
+					dev_priv->pcigart_offset + dev_priv->fb_aper_offset;
+				dev_priv->gart_info.mapping.size =
+					dev_priv->gart_info.table_size;
+				
+				/* this is done by the mm now */
+				drm_core_ioremap(&dev_priv->gart_info.mapping, dev);
+				dev_priv->gart_info.addr =
+					dev_priv->gart_info.mapping.handle;
+				
+				memset(dev_priv->gart_info.addr, 0, dev_priv->gart_info.table_size);
+				if (dev_priv->flags & RADEON_IS_PCIE)
+					dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCIE;
+				else
+					dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_PCI;
+				dev_priv->gart_info.gart_table_location =
+					DRM_ATI_GART_FB;
+				
+				DRM_DEBUG("Setting phys_pci_gart to %p %08lX\n",
+					  dev_priv->gart_info.addr,
+					  dev_priv->pcigart_offset);
+			}
 		} else {
+
+			if (dev_priv->flags & RADEON_IS_PCIE) {
+				DRM_ERROR
+				    ("Cannot use PCI Express without GART in FB memory\n");
+				radeon_do_cleanup_cp(dev);
+				return -EINVAL;
+			}
 			if (dev_priv->flags & RADEON_IS_IGPGART)
 				dev_priv->gart_info.gart_reg_if = DRM_ATI_GART_IGP;
 			else
@@ -1186,12 +1379,7 @@ static int radeon_do_init_cp(struct drm_device * dev, drm_radeon_init_t * init)
 			    DRM_ATI_GART_MAIN;
 			dev_priv->gart_info.addr = NULL;
 			dev_priv->gart_info.bus_addr = 0;
-			if (dev_priv->flags & RADEON_IS_PCIE) {
-				DRM_ERROR
-				    ("Cannot use PCI Express without GART in FB memory\n");
-				radeon_do_cleanup_cp(dev);
-				return -EINVAL;
-			}
+
 		}
 
 		if (!drm_ati_pcigart_init(dev, &dev_priv->gart_info)) {
@@ -1251,14 +1439,16 @@ static int radeon_do_cleanup_cp(struct drm_device * dev)
 		if (dev_priv->gart_info.bus_addr) {
 			/* Turn off PCI GART */
 			radeon_set_pcigart(dev_priv, 0);
-			if (!drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info))
-				DRM_ERROR("failed to cleanup PCI GART!\n");
+			drm_ati_pcigart_cleanup(dev, &dev_priv->gart_info);
 		}
 
 		if (dev_priv->gart_info.gart_table_location == DRM_ATI_GART_FB)
 		{
-			drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
-			dev_priv->gart_info.addr = 0;
+			if (dev_priv->pcigart_offset_set == 1) {
+				drm_core_ioremapfree(&dev_priv->gart_info.mapping, dev);
+				dev_priv->gart_info.addr = NULL;
+				dev_priv->pcigart_offset_set = 0;
+			}
 		}
 	}
 	/* only clear to the start of flags */
@@ -1310,6 +1500,10 @@ static int radeon_do_resume_cp(struct drm_device * dev)
 int radeon_cp_init(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	drm_radeon_init_t *init = data;
+	
+	/* on a modesetting driver ignore this stuff */
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -1320,7 +1514,7 @@ int radeon_cp_init(struct drm_device *dev, void *data, struct drm_file *file_pri
 	case RADEON_INIT_CP:
 	case RADEON_INIT_R200_CP:
 	case RADEON_INIT_R300_CP:
-		return radeon_do_init_cp(dev, init);
+		return radeon_do_init_cp(dev, init, file_priv);
 	case RADEON_CLEANUP_CP:
 		return radeon_do_cleanup_cp(dev);
 	}
@@ -1332,6 +1526,9 @@ int radeon_cp_start(struct drm_device *dev, void *data, struct drm_file *file_pr
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG("\n");
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -1359,6 +1556,9 @@ int radeon_cp_stop(struct drm_device *dev, void *data, struct drm_file *file_pri
 	drm_radeon_cp_stop_t *stop = data;
 	int ret;
 	DRM_DEBUG("\n");
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		return 0;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -1398,6 +1598,9 @@ void radeon_do_release(struct drm_device * dev)
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	int i, ret;
 
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) 
+		return;
+		
 	if (dev_priv) {
 		if (dev_priv->cp_running) {
 			/* Stop the cp */
@@ -1436,6 +1639,11 @@ void radeon_do_release(struct drm_device * dev)
 		radeon_mem_takedown(&(dev_priv->gart_heap));
 		radeon_mem_takedown(&(dev_priv->fb_heap));
 
+		if (dev_priv->user_mm_enable) {
+			radeon_gem_mm_fini(dev);
+			dev_priv->user_mm_enable = false;
+		}
+
 		/* deallocate kernel resources */
 		radeon_do_cleanup_cp(dev);
 	}
@@ -1447,6 +1655,9 @@ int radeon_cp_reset(struct drm_device *dev, void *data, struct drm_file *file_pr
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG("\n");
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) 
+		return 0;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -1468,7 +1679,9 @@ int radeon_cp_idle(struct drm_device *dev, void *data, struct drm_file *file_pri
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 	DRM_DEBUG("\n");
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
+	
+	if (!drm_core_check_feature(dev, DRIVER_MODESET))
+		LOCK_TEST_WITH_RETURN(dev, file_priv);
 
 	return radeon_do_cp_idle(dev_priv);
 }
@@ -1478,12 +1691,18 @@ int radeon_cp_idle(struct drm_device *dev, void *data, struct drm_file *file_pri
 int radeon_cp_resume(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) 
+		return 0;
+
 	return radeon_do_resume_cp(dev);
 }
 
 int radeon_engine_reset(struct drm_device *dev, void *data, struct drm_file *file_priv)
 {
 	DRM_DEBUG("\n");
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) 
+		return 0;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
 
@@ -1707,6 +1926,715 @@ int radeon_cp_buffers(struct drm_device *dev, void *data, struct drm_file *file_
 	return ret;
 }
 
+static void radeon_get_vram_type(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t tmp;
+
+	if (dev_priv->flags & RADEON_IS_IGP || (dev_priv->chip_family >= CHIP_R300))
+		dev_priv->is_ddr = true;
+	else if (RADEON_READ(RADEON_MEM_SDRAM_MODE_REG) & RADEON_MEM_CFG_TYPE_DDR)
+		dev_priv->is_ddr = true;
+	else
+		dev_priv->is_ddr = false;
+
+	if ((dev_priv->chip_family >= CHIP_R600) &&
+	    (dev_priv->chip_family <= CHIP_RV635)) {
+		int chansize;
+		
+		tmp = RADEON_READ(R600_RAMCFG);
+		if (tmp & R600_CHANSIZE_OVERRIDE)
+			chansize = 16;
+		else if (tmp & R600_CHANSIZE)
+			chansize = 64;
+		else
+			chansize = 32;
+
+		if (dev_priv->chip_family == CHIP_R600)
+			dev_priv->ram_width = 8 * chansize;
+		else if (dev_priv->chip_family == CHIP_RV670)
+			dev_priv->ram_width = 4 * chansize;
+		else if ((dev_priv->chip_family == CHIP_RV610) ||
+			 (dev_priv->chip_family == CHIP_RV620))
+			dev_priv->ram_width = chansize;
+		else if ((dev_priv->chip_family == CHIP_RV630) ||
+			 (dev_priv->chip_family == CHIP_RV635))
+			dev_priv->ram_width = 2 * chansize;
+	} else if (dev_priv->chip_family == CHIP_RV515) {
+		tmp = radeon_read_mc_reg(dev_priv, RV515_MC_CNTL);
+		tmp &= RV515_MEM_NUM_CHANNELS_MASK;
+		switch (tmp) {
+		case 0: dev_priv->ram_width = 64; break;
+		case 1: dev_priv->ram_width = 128; break;
+		default: dev_priv->ram_width = 128; break;
+		}
+	} else if ((dev_priv->chip_family >= CHIP_R520) &&
+		   (dev_priv->chip_family <= CHIP_RV570)) {
+		tmp = radeon_read_mc_reg(dev_priv, R520_MC_CNTL0);
+		switch ((tmp & R520_MEM_NUM_CHANNELS_MASK) >> R520_MEM_NUM_CHANNELS_SHIFT) {
+		case 0: dev_priv->ram_width = 32; break;
+		case 1: dev_priv->ram_width = 64; break;
+		case 2: dev_priv->ram_width = 128; break;
+		case 3: dev_priv->ram_width = 256; break;
+		default: dev_priv->ram_width = 128; break;
+		}
+	} else if ((dev_priv->chip_family == CHIP_RV100) ||
+		   (dev_priv->chip_family == CHIP_RS100) ||
+		   (dev_priv->chip_family == CHIP_RS200)) {
+		tmp = RADEON_READ(RADEON_MEM_CNTL);
+		if (tmp & RV100_HALF_MODE)
+			dev_priv->ram_width = 32;
+		else
+			dev_priv->ram_width = 64;
+
+		if (dev_priv->flags & RADEON_SINGLE_CRTC) {
+			dev_priv->ram_width /= 4;
+			dev_priv->is_ddr = true;
+		}
+	} else if (dev_priv->chip_family <= CHIP_RV280) {
+		tmp = RADEON_READ(RADEON_MEM_CNTL);
+		if (tmp & RADEON_MEM_NUM_CHANNELS_MASK)
+			dev_priv->ram_width = 128;
+		else
+			dev_priv->ram_width = 64;
+	} else {
+		/* newer IGPs */
+		dev_priv->ram_width = 128;
+	}
+	DRM_DEBUG("RAM width %d bits %cDR\n", dev_priv->ram_width, dev_priv->is_ddr ? 'D' : 'S');
+}   
+
+static void radeon_force_some_clocks(struct drm_device *dev)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t tmp;
+
+	tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+	tmp |= RADEON_SCLK_FORCE_CP | RADEON_SCLK_FORCE_VIP;
+	RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+}
+
+static void radeon_set_dynamic_clock(struct drm_device *dev, int mode)
+{
+	struct drm_radeon_private *dev_priv = dev->dev_private;
+	uint32_t tmp;
+
+	switch(mode) {
+	case 0:
+		if (dev_priv->flags & RADEON_SINGLE_CRTC) {
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+			tmp |= (RADEON_SCLK_FORCE_CP   | RADEON_SCLK_FORCE_HDP |
+				RADEON_SCLK_FORCE_DISP1 | RADEON_SCLK_FORCE_TOP |
+				RADEON_SCLK_FORCE_E2   | RADEON_SCLK_FORCE_SE  |
+				RADEON_SCLK_FORCE_IDCT | RADEON_SCLK_FORCE_VIP |
+				RADEON_SCLK_FORCE_RE   | RADEON_SCLK_FORCE_PB  |
+				RADEON_SCLK_FORCE_TAM  | RADEON_SCLK_FORCE_TDM |
+				RADEON_SCLK_FORCE_RB);
+			RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+		} else if (dev_priv->chip_family == CHIP_RV350) {
+			/* for RV350/M10, no delays are required. */
+			tmp = RADEON_READ_PLL(dev_priv, R300_SCLK_CNTL2);
+			tmp |= (R300_SCLK_FORCE_TCL |
+				R300_SCLK_FORCE_GA |
+				R300_SCLK_FORCE_CBA);
+			RADEON_WRITE_PLL(dev_priv, R300_SCLK_CNTL2, tmp);
+
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+			tmp &= ~(RADEON_SCLK_FORCE_DISP2 | RADEON_SCLK_FORCE_CP      |
+				 RADEON_SCLK_FORCE_HDP   | RADEON_SCLK_FORCE_DISP1   |
+				 RADEON_SCLK_FORCE_TOP   | RADEON_SCLK_FORCE_E2      |
+				 R300_SCLK_FORCE_VAP     | RADEON_SCLK_FORCE_IDCT    |
+				 RADEON_SCLK_FORCE_VIP   | R300_SCLK_FORCE_SR        |
+				 R300_SCLK_FORCE_PX      | R300_SCLK_FORCE_TX        |
+				 R300_SCLK_FORCE_US      | RADEON_SCLK_FORCE_TV_SCLK |
+				 R300_SCLK_FORCE_SU      | RADEON_SCLK_FORCE_OV0);
+			tmp |=  RADEON_DYN_STOP_LAT_MASK;
+			RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_MORE_CNTL);
+			tmp &= ~RADEON_SCLK_MORE_FORCEON;
+			tmp |= RADEON_SCLK_MORE_MAX_DYN_STOP_LAT;
+			RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_MORE_CNTL, tmp);
+
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_VCLK_ECP_CNTL);
+			tmp |= (RADEON_PIXCLK_ALWAYS_ONb |
+				RADEON_PIXCLK_DAC_ALWAYS_ONb);
+			RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, tmp);
+
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL);
+			tmp |= (RADEON_PIX2CLK_ALWAYS_ONb         |
+				RADEON_PIX2CLK_DAC_ALWAYS_ONb     |
+				RADEON_DISP_TVOUT_PIXCLK_TV_ALWAYS_ONb |
+				R300_DVOCLK_ALWAYS_ONb            |   
+				RADEON_PIXCLK_BLEND_ALWAYS_ONb    |
+				RADEON_PIXCLK_GV_ALWAYS_ONb       |
+				R300_PIXCLK_DVO_ALWAYS_ONb        | 
+				RADEON_PIXCLK_LVDS_ALWAYS_ONb     |
+				RADEON_PIXCLK_TMDS_ALWAYS_ONb     |
+				R300_PIXCLK_TRANS_ALWAYS_ONb      |
+				R300_PIXCLK_TVO_ALWAYS_ONb        |
+				R300_P2G2CLK_ALWAYS_ONb           |
+				R300_P2G2CLK_ALWAYS_ONb);
+			RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, tmp);
+		} else {
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+			tmp |= (RADEON_SCLK_FORCE_CP | RADEON_SCLK_FORCE_E2);
+			tmp |= RADEON_SCLK_FORCE_SE;
+
+			if ( dev_priv->flags & RADEON_SINGLE_CRTC ) {
+				tmp |= ( RADEON_SCLK_FORCE_RB    |
+					 RADEON_SCLK_FORCE_TDM   |
+					 RADEON_SCLK_FORCE_TAM   |
+					 RADEON_SCLK_FORCE_PB    |
+					 RADEON_SCLK_FORCE_RE    |
+					 RADEON_SCLK_FORCE_VIP   |
+					 RADEON_SCLK_FORCE_IDCT  |
+					 RADEON_SCLK_FORCE_TOP   |
+					 RADEON_SCLK_FORCE_DISP1 |
+					 RADEON_SCLK_FORCE_DISP2 |
+					 RADEON_SCLK_FORCE_HDP    );
+			} else if ((dev_priv->chip_family == CHIP_R300) ||
+				   (dev_priv->chip_family == CHIP_R350)) {
+				tmp |= ( RADEON_SCLK_FORCE_HDP   |
+					 RADEON_SCLK_FORCE_DISP1 |
+					 RADEON_SCLK_FORCE_DISP2 |
+					 RADEON_SCLK_FORCE_TOP   |
+					 RADEON_SCLK_FORCE_IDCT  |
+					 RADEON_SCLK_FORCE_VIP);
+			}
+
+			RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+
+			udelay(16000);
+			
+			if ((dev_priv->chip_family == CHIP_R300) ||
+			    (dev_priv->chip_family == CHIP_R350)) {
+				tmp = RADEON_READ_PLL(dev_priv, R300_SCLK_CNTL2);
+				tmp |= ( R300_SCLK_FORCE_TCL |
+					 R300_SCLK_FORCE_GA  |
+					 R300_SCLK_FORCE_CBA);
+				RADEON_WRITE_PLL(dev_priv, R300_SCLK_CNTL2, tmp);
+				udelay(16000);
+			}
+			
+			if (dev_priv->flags & RADEON_IS_IGP) {
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_MCLK_CNTL);
+				tmp &= ~(RADEON_FORCEON_MCLKA |
+					 RADEON_FORCEON_YCLKA);
+				RADEON_WRITE_PLL(dev_priv, RADEON_MCLK_CNTL, tmp);
+				udelay(16000);
+			}
+			
+			if ((dev_priv->chip_family == CHIP_RV200) ||
+			    (dev_priv->chip_family == CHIP_RV250) ||
+			    (dev_priv->chip_family == CHIP_RV280)) {
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_MORE_CNTL);
+				tmp |= RADEON_SCLK_MORE_FORCEON;
+				RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_MORE_CNTL, tmp);
+				udelay(16000);
+			}
+			
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL);
+			tmp &= ~(RADEON_PIX2CLK_ALWAYS_ONb         |
+				 RADEON_PIX2CLK_DAC_ALWAYS_ONb     |
+				 RADEON_PIXCLK_BLEND_ALWAYS_ONb    |
+				 RADEON_PIXCLK_GV_ALWAYS_ONb       |
+				 RADEON_PIXCLK_DIG_TMDS_ALWAYS_ONb |
+				 RADEON_PIXCLK_LVDS_ALWAYS_ONb     |
+				 RADEON_PIXCLK_TMDS_ALWAYS_ONb);
+			
+			RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, tmp);
+			udelay(16000);
+			
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_VCLK_ECP_CNTL);
+			tmp &= ~(RADEON_PIXCLK_ALWAYS_ONb  |
+				 RADEON_PIXCLK_DAC_ALWAYS_ONb); 
+			RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, tmp);
+		}
+		DRM_DEBUG("Dynamic Clock Scaling Disabled\n");
+		break;
+        case 1:
+		if (dev_priv->flags & RADEON_SINGLE_CRTC) {
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+			if ((RADEON_READ(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK) >
+			    RADEON_CFG_ATI_REV_A13) { 
+				tmp &= ~(RADEON_SCLK_FORCE_CP | RADEON_SCLK_FORCE_RB);
+			}
+			tmp &= ~(RADEON_SCLK_FORCE_HDP  | RADEON_SCLK_FORCE_DISP1 |
+				 RADEON_SCLK_FORCE_TOP  | RADEON_SCLK_FORCE_SE   |
+				 RADEON_SCLK_FORCE_IDCT | RADEON_SCLK_FORCE_RE   |
+				 RADEON_SCLK_FORCE_PB   | RADEON_SCLK_FORCE_TAM  |
+				 RADEON_SCLK_FORCE_TDM);
+			RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+		} else if ((dev_priv->chip_family == CHIP_R300) ||
+			   (dev_priv->chip_family == CHIP_R350) ||
+			   (dev_priv->chip_family == CHIP_RV350)) {
+			if (dev_priv->chip_family == CHIP_RV350) {
+				tmp = RADEON_READ_PLL(dev_priv, R300_SCLK_CNTL2);
+				tmp &= ~(R300_SCLK_FORCE_TCL |
+					 R300_SCLK_FORCE_GA  |
+					 R300_SCLK_FORCE_CBA);
+				tmp |=  (R300_SCLK_TCL_MAX_DYN_STOP_LAT |
+					 R300_SCLK_GA_MAX_DYN_STOP_LAT  |
+					 R300_SCLK_CBA_MAX_DYN_STOP_LAT);
+				RADEON_WRITE_PLL(dev_priv, R300_SCLK_CNTL2, tmp);
+				
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+				tmp &= ~(RADEON_SCLK_FORCE_DISP2 | RADEON_SCLK_FORCE_CP      |
+					 RADEON_SCLK_FORCE_HDP   | RADEON_SCLK_FORCE_DISP1   |
+					 RADEON_SCLK_FORCE_TOP   | RADEON_SCLK_FORCE_E2      |
+					 R300_SCLK_FORCE_VAP     | RADEON_SCLK_FORCE_IDCT    |
+					 RADEON_SCLK_FORCE_VIP   | R300_SCLK_FORCE_SR        |
+					 R300_SCLK_FORCE_PX      | R300_SCLK_FORCE_TX        |
+					 R300_SCLK_FORCE_US      | RADEON_SCLK_FORCE_TV_SCLK |
+					 R300_SCLK_FORCE_SU      | RADEON_SCLK_FORCE_OV0);
+				tmp |=  RADEON_DYN_STOP_LAT_MASK;
+				RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_MORE_CNTL);
+				tmp &= ~RADEON_SCLK_MORE_FORCEON;
+				tmp |=  RADEON_SCLK_MORE_MAX_DYN_STOP_LAT;
+				RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_MORE_CNTL, tmp);
+				
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_VCLK_ECP_CNTL);
+				tmp |= (RADEON_PIXCLK_ALWAYS_ONb |
+					RADEON_PIXCLK_DAC_ALWAYS_ONb);   
+				RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, tmp);
+
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL);
+				tmp |= (RADEON_PIX2CLK_ALWAYS_ONb         |
+					RADEON_PIX2CLK_DAC_ALWAYS_ONb     |
+					RADEON_DISP_TVOUT_PIXCLK_TV_ALWAYS_ONb |
+					R300_DVOCLK_ALWAYS_ONb            |   
+					RADEON_PIXCLK_BLEND_ALWAYS_ONb    |
+					RADEON_PIXCLK_GV_ALWAYS_ONb       |
+					R300_PIXCLK_DVO_ALWAYS_ONb        | 
+					RADEON_PIXCLK_LVDS_ALWAYS_ONb     |
+					RADEON_PIXCLK_TMDS_ALWAYS_ONb     |
+					R300_PIXCLK_TRANS_ALWAYS_ONb      |
+					R300_PIXCLK_TVO_ALWAYS_ONb        |
+					R300_P2G2CLK_ALWAYS_ONb           |
+					R300_P2G2CLK_ALWAYS_ONb);
+				RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, tmp);
+
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_MCLK_MISC);
+				tmp |= (RADEON_MC_MCLK_DYN_ENABLE |
+					RADEON_IO_MCLK_DYN_ENABLE);
+				RADEON_WRITE_PLL(dev_priv, RADEON_MCLK_MISC, tmp);
+
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_MCLK_CNTL);
+				tmp |= (RADEON_FORCEON_MCLKA |
+					RADEON_FORCEON_MCLKB);
+
+				tmp &= ~(RADEON_FORCEON_YCLKA  |
+					 RADEON_FORCEON_YCLKB  |
+					 RADEON_FORCEON_MC);
+
+				/* Some releases of vbios have set DISABLE_MC_MCLKA
+				   and DISABLE_MC_MCLKB bits in the vbios table.  Setting these
+				   bits will cause H/W hang when reading video memory with dynamic clocking
+				   enabled. */
+				if ((tmp & R300_DISABLE_MC_MCLKA) &&
+				    (tmp & R300_DISABLE_MC_MCLKB)) {
+					/* If both bits are set, then check the active channels */
+					tmp = RADEON_READ_PLL(dev_priv, RADEON_MCLK_CNTL);
+					if (dev_priv->ram_width == 64) {
+						if (RADEON_READ(RADEON_MEM_CNTL) & R300_MEM_USE_CD_CH_ONLY)
+							tmp &= ~R300_DISABLE_MC_MCLKB;
+						else
+							tmp &= ~R300_DISABLE_MC_MCLKA;
+					} else {
+						tmp &= ~(R300_DISABLE_MC_MCLKA |
+							 R300_DISABLE_MC_MCLKB);
+					}
+				}
+				
+				RADEON_WRITE_PLL(dev_priv, RADEON_MCLK_CNTL, tmp);
+			} else {
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+				tmp &= ~(R300_SCLK_FORCE_VAP);
+				tmp |= RADEON_SCLK_FORCE_CP;
+				RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+				udelay(15000);
+				
+				tmp = RADEON_READ_PLL(dev_priv, R300_SCLK_CNTL2);
+				tmp &= ~(R300_SCLK_FORCE_TCL |
+					 R300_SCLK_FORCE_GA  |
+					 R300_SCLK_FORCE_CBA);
+				RADEON_WRITE_PLL(dev_priv, R300_SCLK_CNTL2, tmp);
+			}
+		} else {
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_CLK_PWRMGT_CNTL);
+			tmp &= ~(RADEON_ACTIVE_HILO_LAT_MASK     | 
+				 RADEON_DISP_DYN_STOP_LAT_MASK   | 
+				 RADEON_DYN_STOP_MODE_MASK); 
+			
+			tmp |= (RADEON_ENGIN_DYNCLK_MODE |
+				(0x01 << RADEON_ACTIVE_HILO_LAT_SHIFT));
+			RADEON_WRITE_PLL(dev_priv, RADEON_CLK_PWRMGT_CNTL, tmp);
+			udelay(15000);
+
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_CLK_PIN_CNTL);
+			tmp |= RADEON_SCLK_DYN_START_CNTL; 
+			RADEON_WRITE_PLL(dev_priv, RADEON_CLK_PIN_CNTL, tmp);
+			udelay(15000);
+
+			/* When DRI is enabled, setting DYN_STOP_LAT to zero can cause some R200 
+			   to lockup randomly, leave them as set by BIOS.
+			*/
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_CNTL);
+			/*tmp &= RADEON_SCLK_SRC_SEL_MASK;*/
+			tmp &= ~RADEON_SCLK_FORCEON_MASK;
+
+			/*RAGE_6::A11 A12 A12N1 A13, RV250::A11 A12, R300*/
+			if (((dev_priv->chip_family == CHIP_RV250) &&
+			     ((RADEON_READ(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK) <
+			      RADEON_CFG_ATI_REV_A13)) || 
+			    ((dev_priv->chip_family == CHIP_RV100) &&
+			     ((RADEON_READ(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK) <=
+			      RADEON_CFG_ATI_REV_A13))){
+				tmp |= RADEON_SCLK_FORCE_CP;
+				tmp |= RADEON_SCLK_FORCE_VIP;
+			}
+			
+			RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_CNTL, tmp);
+
+			if ((dev_priv->chip_family == CHIP_RV200) ||
+			    (dev_priv->chip_family == CHIP_RV250) ||
+			    (dev_priv->chip_family == CHIP_RV280)) {
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_SCLK_MORE_CNTL);
+				tmp &= ~RADEON_SCLK_MORE_FORCEON;
+
+				/* RV200::A11 A12 RV250::A11 A12 */
+				if (((dev_priv->chip_family == CHIP_RV200) ||
+				     (dev_priv->chip_family == CHIP_RV250)) &&
+				    ((RADEON_READ(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK) <
+				     RADEON_CFG_ATI_REV_A13)) {
+					tmp |= RADEON_SCLK_MORE_FORCEON;
+				}
+				RADEON_WRITE_PLL(dev_priv, RADEON_SCLK_MORE_CNTL, tmp);
+				udelay(15000);
+			}
+			
+			/* RV200::A11 A12, RV250::A11 A12 */
+			if (((dev_priv->chip_family == CHIP_RV200) ||
+			     (dev_priv->chip_family == CHIP_RV250)) &&
+			    ((RADEON_READ(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK) <
+			     RADEON_CFG_ATI_REV_A13)) {
+				tmp = RADEON_READ_PLL(dev_priv, RADEON_PLL_PWRMGT_CNTL);
+				tmp |= RADEON_TCL_BYPASS_DISABLE;
+				RADEON_WRITE_PLL(dev_priv, RADEON_PLL_PWRMGT_CNTL, tmp);
+			}
+			udelay(15000);
+			
+			/*enable dynamic mode for display clocks (PIXCLK and PIX2CLK)*/
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_PIXCLKS_CNTL);
+			tmp |=  (RADEON_PIX2CLK_ALWAYS_ONb         |
+				 RADEON_PIX2CLK_DAC_ALWAYS_ONb     |
+				 RADEON_PIXCLK_BLEND_ALWAYS_ONb    |
+				 RADEON_PIXCLK_GV_ALWAYS_ONb       |
+				 RADEON_PIXCLK_DIG_TMDS_ALWAYS_ONb |
+				 RADEON_PIXCLK_LVDS_ALWAYS_ONb     |
+				 RADEON_PIXCLK_TMDS_ALWAYS_ONb);
+			
+			RADEON_WRITE_PLL(dev_priv, RADEON_PIXCLKS_CNTL, tmp);
+			udelay(15000);
+			
+			tmp = RADEON_READ_PLL(dev_priv, RADEON_VCLK_ECP_CNTL);
+			tmp |= (RADEON_PIXCLK_ALWAYS_ONb  |
+				RADEON_PIXCLK_DAC_ALWAYS_ONb); 
+			
+			RADEON_WRITE_PLL(dev_priv, RADEON_VCLK_ECP_CNTL, tmp);
+			udelay(15000);
+		}    
+		DRM_DEBUG("Dynamic Clock Scaling Enabled\n");
+		break;
+        default:
+		break;
+	}
+	
+}
+
+int radeon_modeset_cp_suspend(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	int ret;
+
+	ret = radeon_do_cp_idle(dev_priv);
+	if (ret)
+		DRM_ERROR("failed to idle CP on suspend\n");
+
+	radeon_do_cp_stop(dev_priv);
+	radeon_do_engine_reset(dev);
+	if (dev_priv->flags & RADEON_IS_AGP) {
+	} else {
+		radeon_set_pcigart(dev_priv, 0);
+	}
+	
+	return 0;
+}
+
+int radeon_modeset_cp_resume(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	radeon_do_wait_for_idle(dev_priv);
+#if __OS_HAS_AGP
+	if (dev_priv->flags & RADEON_IS_AGP) {
+		/* Turn off PCI GART */
+		radeon_set_pcigart(dev_priv, 0);
+	} else
+#endif
+	{
+		/* Turn on PCI GART */
+		radeon_set_pcigart(dev_priv, 1);
+	}
+	radeon_gart_flush(dev);
+
+	radeon_cp_load_microcode(dev_priv);
+	radeon_cp_init_ring_buffer(dev, dev_priv);
+
+	radeon_do_engine_reset(dev);
+
+	radeon_test_writeback(dev_priv);
+
+	radeon_do_cp_start(dev_priv);
+	return 0;
+}
+
+#if __OS_HAS_AGP
+int radeon_modeset_agp_init(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	struct drm_agp_mode mode;
+	struct drm_agp_info info;
+	int ret;
+	int default_mode;
+	uint32_t agp_status;
+	bool is_v3;
+
+	/* Acquire AGP. */
+	ret = drm_agp_acquire(dev);
+	if (ret) {
+		DRM_ERROR("Unable to acquire AGP: %d\n", ret);
+		return ret;
+	}
+
+	ret = drm_agp_info(dev, &info);
+	if (ret) {
+		DRM_ERROR("Unable to get AGP info: %d\n", ret);
+		return ret;
+ 	}
+
+	mode.mode = info.mode;
+
+	agp_status = (RADEON_READ(RADEON_AGP_STATUS) | RADEON_AGPv3_MODE) & mode.mode;
+	is_v3 = !!(agp_status & RADEON_AGPv3_MODE);
+
+	if (is_v3) {
+		default_mode = (agp_status & RADEON_AGPv3_8X_MODE) ? 8 : 4;
+	} else {
+		if (agp_status & RADEON_AGP_4X_MODE) default_mode = 4;
+		else if (agp_status & RADEON_AGP_2X_MODE) default_mode = 2;
+		else default_mode = 1;
+	}
+
+	if (radeon_agpmode > 0) {
+		if ((radeon_agpmode < (is_v3 ? 4 : 1)) ||
+		    (radeon_agpmode > (is_v3 ? 8 : 4)) ||
+		    (radeon_agpmode & (radeon_agpmode - 1))) {
+			DRM_ERROR("Illegal AGP Mode: %d (valid %s), leaving at %d\n",
+				  radeon_agpmode, is_v3 ? "4, 8" : "1, 2, 4",
+				  default_mode);
+			radeon_agpmode = default_mode;
+		}
+		else
+			DRM_INFO("AGP mode requested: %d\n", radeon_agpmode);
+	} else
+		radeon_agpmode = default_mode;
+
+	mode.mode &= ~RADEON_AGP_MODE_MASK;
+	if (is_v3) {
+		switch(radeon_agpmode) {
+		case 8:
+			mode.mode |= RADEON_AGPv3_8X_MODE;
+			break;
+		case 4:
+		default:
+			mode.mode |= RADEON_AGPv3_4X_MODE;
+			break;
+		}
+	} else {
+		switch(radeon_agpmode) {
+		case 4: mode.mode |= RADEON_AGP_4X_MODE;
+		case 2: mode.mode |= RADEON_AGP_2X_MODE;
+		case 1:
+		default:
+			mode.mode |= RADEON_AGP_1X_MODE;
+			break;
+		}
+	}
+
+	mode.mode &= ~RADEON_AGP_FW_MODE; /* disable fw */
+
+	ret = drm_agp_enable(dev, mode);
+	if (ret) {
+		DRM_ERROR("Unable to enable AGP (mode = 0x%lx)\n", mode.mode);
+		return ret;
+	}
+
+	/* workaround some hw issues */
+	if (dev_priv->chip_family < CHIP_R200) {
+		RADEON_WRITE(RADEON_AGP_CNTL, RADEON_READ(RADEON_AGP_CNTL) | 0x000e0000);
+	}
+	return 0;
+}
+
+void radeon_modeset_agp_destroy(struct drm_device *dev)
+{
+	if (dev->agp->acquired)
+		drm_agp_release(dev);
+}
+#endif
+
+int radeon_modeset_cp_init(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	/* allocate a ring and ring rptr bits from GART space */
+	/* these are allocated in GEM files */
+	
+	/* Start with assuming that writeback doesn't work */
+	dev_priv->writeback_works = 0;
+
+	if (dev_priv->chip_family > CHIP_R600)
+		return 0;
+
+	dev_priv->usec_timeout = RADEON_DEFAULT_CP_TIMEOUT;
+	dev_priv->ring.size = RADEON_DEFAULT_RING_SIZE;
+	dev_priv->cp_mode = RADEON_CSQ_PRIBM_INDBM;
+
+	dev_priv->ring.start = (u32 *)(void *)(unsigned long)dev_priv->mm.ring.kmap.virtual;
+	dev_priv->ring.end = (u32 *)(void *)(unsigned long)dev_priv->mm.ring.kmap.virtual +
+		dev_priv->ring.size / sizeof(u32);
+	dev_priv->ring.size_l2qw = drm_order(dev_priv->ring.size / 8);
+	dev_priv->ring.rptr_update = 4096;
+	dev_priv->ring.rptr_update_l2qw = drm_order(4096 / 8);
+	dev_priv->ring.fetch_size_l2ow = 2; /* do what tcore does */
+	dev_priv->ring.tail_mask = (dev_priv->ring.size / sizeof(u32)) - 1;
+	dev_priv->ring.high_mark = RADEON_RING_HIGH_MARK;
+
+	dev_priv->new_memmap = true;
+
+	r300_init_reg_flags(dev);
+
+	/* turn off HDP read cache for now */
+	RADEON_WRITE(RADEON_HOST_PATH_CNTL, RADEON_READ(RADEON_HOST_PATH_CNTL) | RADEON_HP_LIN_RD_CACHE_DIS);
+	      
+#if __OS_HAS_AGP
+	if (dev_priv->flags & RADEON_IS_AGP)
+		radeon_modeset_agp_init(dev);
+#endif
+	
+	return radeon_modeset_cp_resume(dev);
+}
+
+static bool radeon_get_bios(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	u8 __iomem *bios;
+	size_t size;
+	uint16_t tmp;
+
+	bios = pci_map_rom(dev->pdev, &size);
+	if (!bios)
+		return -1;
+
+	dev_priv->bios = kmalloc(size, GFP_KERNEL);
+	if (!dev_priv->bios) {
+		pci_unmap_rom(dev->pdev, bios);
+		return -1;
+	}
+
+	memcpy(dev_priv->bios, bios, size);
+
+	pci_unmap_rom(dev->pdev, bios);
+
+	if (dev_priv->bios[0] != 0x55 || dev_priv->bios[1] != 0xaa)
+		goto free_bios;
+
+	dev_priv->bios_header_start = radeon_bios16(dev_priv, 0x48);
+
+	if (!dev_priv->bios_header_start)
+		goto free_bios;
+
+	tmp = dev_priv->bios_header_start + 4;
+
+	if (!memcmp(dev_priv->bios + tmp, "ATOM", 4) ||
+	    !memcmp(dev_priv->bios + tmp, "MOTA", 4))
+		dev_priv->is_atom_bios = true;
+	else
+		dev_priv->is_atom_bios = false;
+
+	DRM_DEBUG("%sBIOS detected\n", dev_priv->is_atom_bios ? "ATOM" : "COM");
+	return true;
+free_bios:
+	kfree(dev_priv->bios);
+	dev_priv->bios = NULL;
+	return false;
+}
+
+int radeon_modeset_preinit(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+	static struct card_info card;
+	int ret;
+
+	card.dev = dev;
+	card.reg_read = cail_reg_read;
+	card.reg_write = cail_reg_write;
+	card.mc_read = cail_mc_read;
+	card.mc_write = cail_mc_write;
+
+	ret = radeon_get_bios(dev);
+	if (!ret)
+		return -1;
+
+	if (dev_priv->is_atom_bios) {
+		dev_priv->mode_info.atom_context = atom_parse(&card, dev_priv->bios);
+		radeon_atom_initialize_bios_scratch_regs(dev);
+	} else
+		radeon_combios_initialize_bios_scratch_regs(dev);
+
+	radeon_get_clock_info(dev);
+
+	return 0;
+}
+
+int radeon_static_clocks_init(struct drm_device *dev)
+{
+	drm_radeon_private_t *dev_priv = dev->dev_private;
+
+	if (radeon_dynclks != -1) {
+
+		if (dev_priv->chip_family == CHIP_RS400 ||
+		    dev_priv->chip_family == CHIP_RS480)
+			radeon_dynclks = 0;
+
+		if ((dev_priv->flags & RADEON_IS_MOBILITY) && !radeon_is_avivo(dev_priv)) {
+			radeon_set_dynamic_clock(dev, radeon_dynclks);
+		} else if (radeon_is_avivo(dev_priv)) {
+			if (radeon_dynclks) {
+				radeon_atom_static_pwrmgt_setup(dev, 1);
+				radeon_atom_dyn_clk_setup(dev, 1);
+			}
+		}
+	}
+	if (radeon_is_r300(dev_priv) || radeon_is_rv100(dev_priv))
+		radeon_force_some_clocks(dev);
+	return 0;
+}
+
 int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 {
 	drm_radeon_private_t *dev_priv;
@@ -1750,32 +2678,130 @@ int radeon_driver_load(struct drm_device *dev, unsigned long flags)
 
 	DRM_DEBUG("%s card detected\n",
 		  ((dev_priv->flags & RADEON_IS_AGP) ? "AGP" : (((dev_priv->flags & RADEON_IS_PCIE) ? "PCIE" : "PCI"))));
+
+	if (dev_priv->flags & RADEON_IS_AGP) {
+
+		/* disable AGP for any chips after RV280 if not specified */
+		if ((dev_priv->chip_family > CHIP_RV280) && (radeon_agpmode == 0))
+			radeon_agpmode = -1;
+
+		if (radeon_agpmode == -1) {
+			DRM_INFO("Forcing AGP to PCI mode\n");
+			dev_priv->flags &= ~RADEON_IS_AGP;
+		}
+	}
+
+
+	ret = drm_addmap(dev, drm_get_resource_start(dev, 2),
+			 drm_get_resource_len(dev, 2), _DRM_REGISTERS,
+			 _DRM_DRIVER | _DRM_READ_ONLY, &dev_priv->mmio);
+	if (ret != 0)
+		return ret;
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		radeon_modeset_preinit(dev);
+
+	radeon_get_vram_type(dev);
+
+	dev_priv->pll_errata = 0;
+
+	if (dev_priv->chip_family == CHIP_R300 &&
+	    (RADEON_READ(RADEON_CONFIG_CNTL) & RADEON_CFG_ATI_REV_ID_MASK) == RADEON_CFG_ATI_REV_A11)
+		dev_priv->pll_errata |= CHIP_ERRATA_R300_CG;
+
+	if (dev_priv->chip_family == CHIP_RV200 ||
+	    dev_priv->chip_family == CHIP_RS200)
+		dev_priv->pll_errata |= CHIP_ERRATA_PLL_DUMMYREADS;
+
+
+	if (dev_priv->chip_family == CHIP_RV100 ||
+	    dev_priv->chip_family == CHIP_RS100 ||
+	    dev_priv->chip_family == CHIP_RS200)
+		dev_priv->pll_errata |= CHIP_ERRATA_PLL_DELAY;
+
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET))
+		radeon_static_clocks_init(dev);
+		
+	/* init memory manager - start with all of VRAM and a 32MB GART aperture for now */
+	dev_priv->fb_aper_offset = drm_get_resource_start(dev, 0);
+
+	drm_bo_driver_init(dev);
+
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+	
+		ret = radeon_gem_mm_init(dev);
+ 		if (ret)
+ 			goto modeset_fail;
+		radeon_modeset_init(dev);
+
+		radeon_modeset_cp_init(dev);
+		dev->devname = kstrdup(DRIVER_NAME, GFP_KERNEL);
+
+		drm_irq_install(dev);
+	}
+
+
+	return ret;
+modeset_fail:
+	dev->driver->driver_features &= ~DRIVER_MODESET;
+	drm_put_minor(&dev->control);
 	return ret;
 }
 
+
+int radeon_master_create(struct drm_device *dev, struct drm_master *master)
+{
+	struct drm_radeon_master_private *master_priv;
+	unsigned long sareapage;
+	int ret;
+
+	master_priv = drm_calloc(1, sizeof(*master_priv), DRM_MEM_DRIVER);
+	if (!master_priv)
+		return -ENOMEM;
+
+	/* prebuild the SAREA */
+	sareapage = max(SAREA_MAX, PAGE_SIZE);
+	ret = drm_addmap(dev, 0, sareapage, _DRM_SHM, _DRM_CONTAINS_LOCK|_DRM_DRIVER,
+			 &master_priv->sarea);
+	if (ret) {
+		DRM_ERROR("SAREA setup failed\n");
+		return ret;
+	}
+	master_priv->sarea_priv = master_priv->sarea->handle + sizeof(struct drm_sarea);
+	master_priv->sarea_priv->pfCurrentPage = 0;
+
+	master->driver_priv = master_priv;
+	return 0;
+}
+
+void radeon_master_destroy(struct drm_device *dev, struct drm_master *master)
+{
+	struct drm_radeon_master_private *master_priv = master->driver_priv;
+
+	if (!master_priv)
+		return;
+
+	if (master_priv->sarea_priv &&
+	    master_priv->sarea_priv->pfCurrentPage != 0)
+		radeon_cp_dispatch_flip(dev, master);
+
+	master_priv->sarea_priv = NULL;
+	if (master_priv->sarea)
+		drm_rmmap_locked(dev, master_priv->sarea);
+		
+	drm_free(master_priv, sizeof(*master_priv), DRM_MEM_DRIVER);
+
+	master->driver_priv = NULL;
+}
 /* Create mappings for registers and framebuffer so userland doesn't necessarily
  * have to find them.
  */
 int radeon_driver_firstopen(struct drm_device *dev)
 {
-	int ret;
-	drm_local_map_t *map;
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
 	dev_priv->gart_info.table_size = RADEON_PCIGART_TABLE_SIZE;
-
-	ret = drm_addmap(dev, drm_get_resource_start(dev, 2),
-			 drm_get_resource_len(dev, 2), _DRM_REGISTERS,
-			 _DRM_READ_ONLY, &dev_priv->mmio);
-	if (ret != 0)
-		return ret;
-
-	dev_priv->fb_aper_offset = drm_get_resource_start(dev, 0);
-	ret = drm_addmap(dev, dev_priv->fb_aper_offset,
-			 drm_get_resource_len(dev, 0), _DRM_FRAME_BUFFER,
-			 _DRM_WRITE_COMBINING, &map);
-	if (ret != 0)
-		return ret;
 
 	return 0;
 }
@@ -1784,9 +2810,76 @@ int radeon_driver_unload(struct drm_device *dev)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
 
+	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
+		drm_irq_uninstall(dev);
+		radeon_modeset_cleanup(dev);
+		radeon_gem_mm_fini(dev);
+#if __OS_HAS_AGP
+		if (dev_priv->flags & RADEON_IS_AGP)
+			radeon_modeset_agp_destroy(dev);
+#endif
+	}
+
+	drm_bo_driver_finish(dev);
+	drm_rmmap(dev, dev_priv->mmio);
+
 	DRM_DEBUG("\n");
 	drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 
 	dev->dev_private = NULL;
 	return 0;
+}
+
+void radeon_gart_flush(struct drm_device *dev)
+{
+        drm_radeon_private_t *dev_priv = dev->dev_private;
+        
+        if (dev_priv->flags & RADEON_IS_IGPGART) {
+                IGP_READ_MCIND(dev_priv, RS480_GART_CACHE_CNTRL);
+                IGP_WRITE_MCIND(RS480_GART_CACHE_CNTRL, RS480_GART_CACHE_INVALIDATE);
+                IGP_READ_MCIND(dev_priv, RS480_GART_CACHE_CNTRL);
+                IGP_WRITE_MCIND(RS480_GART_CACHE_CNTRL, 0);
+        } else if (dev_priv->flags & RADEON_IS_PCIE) {
+                u32 tmp = RADEON_READ_PCIE(dev_priv, RADEON_PCIE_TX_GART_CNTL);
+                tmp |= RADEON_PCIE_TX_GART_INVALIDATE_TLB;
+                RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, tmp);
+                tmp &= ~RADEON_PCIE_TX_GART_INVALIDATE_TLB;
+                RADEON_WRITE_PCIE(RADEON_PCIE_TX_GART_CNTL, tmp);
+        } else {
+
+
+	}
+	
+}
+
+void radeon_commit_ring(drm_radeon_private_t *dev_priv)
+{
+	int i;
+	u32 *ring;
+	int tail_aligned;
+
+	/* check if the ring is padded out to 16-dword alignment */
+	
+	tail_aligned = dev_priv->ring.tail & 0xf;
+	if (tail_aligned) {
+		int num_p2 = 16 - tail_aligned;
+
+		ring = dev_priv->ring.start;
+		/* pad with some CP_PACKET2 */
+		for (i = 0; i < num_p2; i++)
+			ring[dev_priv->ring.tail + i] = CP_PACKET2();
+	
+		dev_priv->ring.tail += i;
+
+		dev_priv->ring.space -= num_p2 * sizeof(u32);
+	}
+
+	dev_priv->ring.tail &= dev_priv->ring.tail_mask;
+		
+	DRM_MEMORYBARRIER();
+	GET_RING_HEAD( dev_priv );
+
+	RADEON_WRITE( RADEON_CP_RB_WPTR, dev_priv->ring.tail );
+	/* read from PCI bus to ensure correct posting */
+	RADEON_READ( RADEON_CP_RB_RPTR );
 }

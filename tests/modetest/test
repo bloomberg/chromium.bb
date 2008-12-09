@@ -1,0 +1,2 @@
+export LD_LIBRARY_PATH=../../libdrm/.libs:../../libdrm/intel/.libs
+LD_PRELOAD=../../libdrm/.libs/libdrm.so ./app $@

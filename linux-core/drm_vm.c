@@ -715,13 +715,9 @@ static int drm_bo_vm_fault(struct vm_area_struct *vma,
 	unsigned long ret = VM_FAULT_NOPAGE;
 
 	dev = bo->dev;
-	err = drm_bo_read_lock(&dev->bm.bm_lock, 1);
-	if (err)
-		return VM_FAULT_NOPAGE;
 
 	err = mutex_lock_interruptible(&bo->mutex);
 	if (err) {
-		drm_bo_read_unlock(&dev->bm.bm_lock);
 		return VM_FAULT_NOPAGE;
 	}
 
@@ -788,7 +784,6 @@ static int drm_bo_vm_fault(struct vm_area_struct *vma,
 out_unlock:
 	BUG_ON(bo->priv_flags & _DRM_BO_FLAG_UNLOCKED);
 	mutex_unlock(&bo->mutex);
-	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
 #endif
@@ -796,6 +791,10 @@ out_unlock:
 static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 {
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
+
+	/* clear the clean flags */
+	bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
+	bo->mem.proposed_flags &= ~DRM_BO_FLAG_CLEAN;
 
 	drm_vm_open_locked(vma);
 	atomic_inc(&bo->usage);

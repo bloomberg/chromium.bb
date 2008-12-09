@@ -60,6 +60,13 @@
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
 #undef DRM_IRQ_ARGS
 #define DRM_IRQ_ARGS		int irq, void *arg, struct pt_regs *regs
+
+typedef _Bool bool;
+enum {
+        false   = 0,
+        true    = 1
+};
+
 #endif
 
 #ifndef list_for_each_safe
@@ -152,7 +159,7 @@ static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
 #define vmalloc_user(_size) ({void * tmp = vmalloc(_size);   \
-      if (tmp) memset(tmp, 0, size);			     \
+      if (tmp) memset(tmp, 0, _size);			     \
       (tmp);})
 #endif
 
@@ -328,7 +335,24 @@ void *idr_replace(struct idr *idp, void *ptr, int id);
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-typedef _Bool                   bool;
+extern unsigned long round_jiffies_relative(unsigned long j);
+#endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+extern struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn);
+#endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
+static inline int kobject_uevent_env(struct kobject *kobj,
+                                     enum kobject_action action,
+                                     char *envp[])
+{
+    return 0;
+}
+#endif
+
+#ifndef PM_EVENT_PRETHAW 
+#define PM_EVENT_PRETHAW 3
 #endif
 
 
@@ -378,6 +402,14 @@ extern struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
 
 extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
 				     unsigned long address, int *type);
+#endif
+
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,26)
+#define drm_on_each_cpu(handler, data, wait) \
+	on_each_cpu(handler, data, wait)
+#else
+#define drm_on_each_cpu(handler, data, wait) \
+	on_each_cpu(handler, data, wait, 1)
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))

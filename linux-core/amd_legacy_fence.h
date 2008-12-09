@@ -1,0 +1,1 @@
+../shared-core/amd_legacy_fence.h

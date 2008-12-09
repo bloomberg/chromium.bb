@@ -66,6 +66,11 @@ struct _drm_intel_bo {
 
     /** Buffer manager context associated with this buffer object */
     drm_intel_bufmgr *bufmgr;
+
+    /**
+     * MM-specific handle for accessing object
+     */
+    int handle;
 };
 
 drm_intel_bo *drm_intel_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,

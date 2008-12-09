@@ -26,7 +26,9 @@ TESTS = auth \
 	gem_basic \
 	gem_flink \
 	gem_readwrite \
-	gem_mmap
+	gem_mmap \
+	radeon_gem_mmap \
+	radeon_gem_basic
 
 EXTRA_PROGRAMS = $(TESTS)
 CLEANFILES = $(EXTRA_PROGRAMS) $(EXTRA_LTLIBRARIES)
