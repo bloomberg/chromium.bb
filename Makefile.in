@@ -5,7 +5,7 @@ exec_prefix = @exec_prefix@
 
 libs = libwayland-server.so libwayland.so
 clients = flower gears screenshot terminal
-compositors = egl-compositor glx-compositor
+compositors = egl-compositor
 
 all : $(libs) $(compositors) $(clients)
 
@@ -36,10 +36,6 @@ egl-compositor :				\
 
 egl-compositor : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
 egl-compositor : LDLIBS += @EGL_COMPOSITOR_LIBS@ -L. -lwayland-server -rdynamic -lrt
-
-glx-compositor : glx-compositor.o
-glx-compositor : CFLAGS += @GL_COMPOSITOR_CFLAGS@
-glx-compositor : LDLIBS += @GL_COMPOSITOR_LIBS@ -L. -lwayland-server
 
 flower : flower.o wayland-glib.o cairo-util.o
 gears : gears.o window.o wayland-glib.o cairo-util.o
