@@ -798,6 +798,7 @@ notify_key(struct wl_compositor *compositor,
 	   struct wl_object *source, uint32_t key, uint32_t state)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	struct egl_surface *es;
 
 	if (key == KEY_ESC && state == 1) {
 		if (ec->overlay_target == ec->height)
@@ -805,6 +806,15 @@ notify_key(struct wl_compositor *compositor,
 		else
 			ec->overlay_target += 200;
 		schedule_repaint(ec);
+	} else if (!wl_list_empty(&ec->surface_list)) {
+		/* FIXME: The event source device should track which
+		 * surface has its key focus and send the event there.
+		 * For now, just send it to the top surface, which
+		 * effectively gives us click to focus behavior. */
+		es = container_of(ec->surface_list.prev,
+				  struct egl_surface, link);
+		wl_surface_post_event(es->wl_surface, source, 
+				      WL_INPUT_KEY, key, state);
 	}
 }
 

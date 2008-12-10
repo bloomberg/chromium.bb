@@ -621,21 +621,6 @@ wl_display_add_global(struct wl_display *display, struct wl_object *object)
 	return 0;	
 }
 
-static void
-wl_display_send_event(struct wl_display *display, uint32_t *data, size_t size)
-{
-	struct wl_client *client;
-
-	client = container_of(display->client_list.next,
-			      struct wl_client, link);
-	while (&client->link != &display->client_list) {
-		wl_connection_write(client->connection, data, size);
-
-		client = container_of(client->link.next,
-				   struct wl_client, link);
-	}
-}
-
 WL_EXPORT void
 wl_surface_post_event(struct wl_surface *surface,
 		      struct wl_object *sender,
@@ -692,17 +677,9 @@ wl_display_post_key_event(struct wl_display *display,
 			  struct wl_object *source, int key, int state)
 {
 	const struct wl_compositor_interface *interface;
-	uint32_t p[4];
 
 	interface = display->compositor->interface;
 	interface->notify_key(display->compositor, source, key, state);
-
-	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_INPUT_KEY;
-	p[2] = key;
-	p[3] = state;
-
-	wl_display_send_event(display, p, sizeof p);
 }
 
 WL_EXPORT void
