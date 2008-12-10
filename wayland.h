@@ -107,13 +107,6 @@ struct wl_map {
 void wl_surface_set_data(struct wl_surface *surface, void *data);
 void *wl_surface_get_data(struct wl_surface *surface);
 
-struct wl_surface_iterator;
-struct wl_surface_iterator *
-wl_surface_iterator_create(struct wl_display *display, uint32_t mask);
-int wl_surface_iterator_next(struct wl_surface_iterator *iterator,
-			     struct wl_surface **surface);
-void wl_surface_iterator_destroy(struct wl_surface_iterator *iterator);
-
 struct wl_object *
 wl_input_device_create(struct wl_display *display, const char *path);
 
@@ -142,8 +135,6 @@ wl_display_post_key_event(struct wl_display *display,
 void
 wl_display_post_frame(struct wl_display *display,
 		      uint32_t frame, uint32_t msecs);
-void
-wl_display_raise_surface(struct wl_display *display, struct wl_surface *surface);
 
 struct wl_compositor {
 	const struct wl_compositor_interface *interface;

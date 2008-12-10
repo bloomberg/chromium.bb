@@ -28,7 +28,8 @@ $(compositors) $(clients) : CFLAGS += @LIBDRM_CFLAGS@
 egl-compositor :				\
 	egl-compositor.o			\
 	evdev.o					\
-	cairo-util.o
+	cairo-util.o				\
+	wayland-util.o
 
 egl-compositor : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
 egl-compositor : LDLIBS += @EGL_COMPOSITOR_LIBS@ -L. -lwayland-server -rdynamic -lrt

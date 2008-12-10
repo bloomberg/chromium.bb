@@ -63,6 +63,8 @@ struct egl_compositor {
 	struct egl_surface *overlay;
 	double overlay_y, overlay_target, overlay_previous;
 
+	struct wl_list surface_list;
+
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
 	int repaint_needed;
@@ -75,6 +77,8 @@ struct egl_surface {
 	GLuint texture;
 	struct wl_map map;
 	EGLSurface surface;
+
+	struct wl_list link;
 };
 
 static void
@@ -550,8 +554,6 @@ static void
 repaint(void *data)
 {
 	struct egl_compositor *ec = data;
-	struct wl_surface_iterator *iterator;
-	struct wl_surface *surface;
 	struct egl_surface *es;
 	struct timespec ts;
 	uint32_t msecs;
@@ -563,15 +565,14 @@ repaint(void *data)
 
 	draw_surface(ec->background);
 
-	iterator = wl_surface_iterator_create(ec->wl_display, 0);
-	while (wl_surface_iterator_next(iterator, &surface)) {
-		es = wl_surface_get_data(surface);
-		if (es == NULL)
-			continue;
-
+	es = container_of(ec->surface_list.next,
+			  struct egl_surface, link);
+	while (&es->link != &ec->surface_list) {
 		draw_surface(es);
+
+		es = container_of(es->link.next,
+				   struct egl_surface, link);
 	}
-	wl_surface_iterator_destroy(iterator);
 
 	draw_surface(ec->overlay);
 
@@ -607,6 +608,7 @@ static void
 notify_surface_create(struct wl_compositor *compositor,
 		      struct wl_surface *surface)
 {
+	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct egl_surface *es;
 
 	es = malloc(sizeof *es);
@@ -615,6 +617,7 @@ notify_surface_create(struct wl_compositor *compositor,
 
 	es->surface = EGL_NO_SURFACE;
 	wl_surface_set_data(surface, es);
+	wl_list_insert(ec->surface_list.prev, &es->link);
 
 	glGenTextures(1, &es->texture);
 }
@@ -630,6 +633,7 @@ notify_surface_destroy(struct wl_compositor *compositor,
 	if (es == NULL)
 		return;
 
+	wl_list_remove(&es->link);
 	egl_surface_destroy(es, ec);
 
 	schedule_repaint(ec);
@@ -730,6 +734,25 @@ notify_pointer_motion(struct wl_compositor *compositor,
 	schedule_repaint(ec);
 }
 
+static struct egl_surface *
+pick_surface(struct egl_compositor *ec, int32_t x, int32_t y)
+{
+	struct egl_surface *es;
+
+	es = container_of(ec->surface_list.prev,
+			  struct egl_surface, link);
+	while (&es->link != &ec->surface_list) {
+		if (es->map.x <= x && x < es->map.x + es->map.width &&
+		    es->map.y <= y && y < es->map.y + es->map.height)
+			return es;
+
+		es = container_of(es->link.prev,
+				  struct egl_surface, link);
+	}
+
+	return NULL;
+}
+
 static void
 notify_pointer_button(struct wl_compositor *compositor,
 		      struct wl_object *source,
@@ -737,29 +760,19 @@ notify_pointer_button(struct wl_compositor *compositor,
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct egl_surface *es;
-	struct wl_surface_iterator *iterator;
-	struct wl_surface *surface, *target;
 	const int hotspot_x = 16, hotspot_y = 16;
 	int x, y;
 
 	x = ec->pointer->map.x + hotspot_x;
 	y = ec->pointer->map.y + hotspot_y;
 
-	target = NULL;
-	iterator = wl_surface_iterator_create(ec->wl_display, 0);
-	while (wl_surface_iterator_next(iterator, &surface)) {
-		es = wl_surface_get_data(surface);
-		if (es == NULL)
-			continue;
-
-		if (es->map.x <= x && x < es->map.x + es->map.width &&
-		    es->map.y <= y && y < es->map.y + es->map.height)
-			target = surface;
+	es = pick_surface(ec, x, y);
+	if (es) {
+		wl_list_remove(&es->link);
+		wl_list_insert(ec->surface_list.prev, &es->link);
 	}
-	wl_surface_iterator_destroy(iterator);
 
-	if (target)
-		wl_display_raise_surface(ec->wl_display, target);
+	schedule_repaint(ec);
 }
 
 static void
@@ -1026,6 +1039,7 @@ egl_compositor_create(struct wl_display *display)
 
 	create_input_devices(display);
 
+	wl_list_init(&ec->surface_list);
 	filename = getenv("WAYLAND_BACKGROUND");
 	if (filename == NULL)
 		filename = "background.jpg";
