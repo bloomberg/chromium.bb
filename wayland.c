@@ -70,6 +70,7 @@ struct wl_display {
 struct wl_surface {
 	struct wl_object base;
 
+	struct wl_client *client;
 	/* provided by client */
 	int width, height;
 	int buffer;
@@ -173,7 +174,8 @@ static const struct wl_interface surface_interface = {
 };
 
 static struct wl_surface *
-wl_surface_create(struct wl_display *display, uint32_t id)
+wl_surface_create(struct wl_display *display,
+		  struct wl_client *client, uint32_t id)
 {
 	struct wl_surface *surface;
 	const struct wl_compositor_interface *interface;
@@ -184,6 +186,7 @@ wl_surface_create(struct wl_display *display, uint32_t id)
 
 	surface->base.id = id;
 	surface->base.interface = &surface_interface;
+	surface->client = client;
 
 	wl_list_insert(display->surface_list.prev, &surface->link);
 
@@ -500,7 +503,7 @@ wl_display_create_surface(struct wl_client *client,
 	struct wl_surface *surface;
 	struct wl_object_ref *ref;
 
-	surface = wl_surface_create(display, id);
+	surface = wl_surface_create(display, client, id);
 
 	ref = malloc(sizeof *ref);
 	if (ref == NULL) {
@@ -630,11 +633,28 @@ wl_display_send_event(struct wl_display *display, uint32_t *data, size_t size)
 #define WL_INPUT_KEY 2
 
 WL_EXPORT void
+wl_display_post_surface_motion(struct wl_display *display,
+			       struct wl_surface *surface,
+			       struct wl_object *source,
+			       int32_t x, int32_t y, int32_t sx, int32_t sy)
+{
+	uint32_t p[6];
+
+	p[0] = source->id;
+	p[1] = (sizeof p << 16) | WL_INPUT_MOTION;
+	p[2] = x;
+	p[3] = y;
+	p[4] = sx;
+	p[5] = sy;
+
+	wl_connection_write(surface->client->connection, p, sizeof p);
+}
+
+WL_EXPORT void
 wl_display_post_relative_event(struct wl_display *display,
 			       struct wl_object *source, int dx, int dy)
 {
 	const struct wl_compositor_interface *interface;
-	uint32_t p[4];
 
 	display->pointer_x += dx;
 	display->pointer_y += dy;
@@ -642,13 +662,6 @@ wl_display_post_relative_event(struct wl_display *display,
 	interface = display->compositor->interface;
 	interface->notify_pointer_motion(display->compositor, source,
 					 display->pointer_x, display->pointer_y);
-
-	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_INPUT_MOTION;
-	p[2] = display->pointer_x;
-	p[3] = display->pointer_y;
-
-	wl_display_send_event(display, p, sizeof p);
 }
 
 WL_EXPORT void
@@ -656,7 +669,6 @@ wl_display_post_absolute_event(struct wl_display *display,
 			       struct wl_object *source, int x, int y)
 {
 	const struct wl_compositor_interface *interface;
-	uint32_t p[4];
 
 	display->pointer_x = x;
 	display->pointer_y = y;
@@ -664,13 +676,6 @@ wl_display_post_absolute_event(struct wl_display *display,
 	interface = display->compositor->interface;
 	interface->notify_pointer_motion(display->compositor, source,
 					 display->pointer_x, display->pointer_y);
-
-	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_INPUT_MOTION;
-	p[2] = display->pointer_x;
-	p[3] = display->pointer_y;
-
-	wl_display_send_event(display, p, sizeof p);
 }
 
 WL_EXPORT void

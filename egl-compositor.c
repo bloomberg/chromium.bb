@@ -77,7 +77,8 @@ struct egl_surface {
 	GLuint texture;
 	struct wl_map map;
 	EGLSurface surface;
-
+	struct wl_surface *wl_surface;
+	int width, height;
 	struct wl_list link;
 };
 
@@ -616,6 +617,7 @@ notify_surface_create(struct wl_compositor *compositor,
 		return;
 
 	es->surface = EGL_NO_SURFACE;
+	es->wl_surface = surface;
 	wl_surface_set_data(surface, es);
 	wl_list_insert(ec->surface_list.prev, &es->link);
 
@@ -654,6 +656,8 @@ notify_surface_attach(struct wl_compositor *compositor,
 	if (es->surface != EGL_NO_SURFACE)
 		eglDestroySurface(ec->display, es->surface);
 
+	es->width = width;
+	es->height = height;
 	es->surface = eglCreateSurfaceForName(ec->display, ec->config,
 					      name, width, height, stride, NULL);
 
@@ -722,18 +726,6 @@ notify_commit(struct wl_compositor *compositor)
 	return ec->current_frame;
 }
 
-static void
-notify_pointer_motion(struct wl_compositor *compositor,
-		      struct wl_object *source, int x, int y)
-{
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	const int hotspot_x = 16, hotspot_y = 16;
-
-	ec->pointer->map.x = x - hotspot_x;
-	ec->pointer->map.y = y - hotspot_y;
-	schedule_repaint(ec);
-}
-
 static struct egl_surface *
 pick_surface(struct egl_compositor *ec, int32_t x, int32_t y)
 {
@@ -751,6 +743,28 @@ pick_surface(struct egl_compositor *ec, int32_t x, int32_t y)
 	}
 
 	return NULL;
+}
+
+static void
+notify_pointer_motion(struct wl_compositor *compositor,
+		      struct wl_object *source, int x, int y)
+{
+	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	struct egl_surface *es;
+	const int hotspot_x = 16, hotspot_y = 16;
+	int32_t sx, sy;
+
+	es = pick_surface(ec, x, y);
+	if (es) {
+		sx = (x - es->map.x) * es->width / es->map.width;
+		sy = (y - es->map.y) * es->height / es->map.height;
+		wl_display_post_surface_motion(ec->wl_display, es->wl_surface, 
+					       source, x, y, sx, sy);
+	}
+
+	ec->pointer->map.x = x - hotspot_x;
+	ec->pointer->map.y = y - hotspot_y;
+	schedule_repaint(ec);
 }
 
 static void
