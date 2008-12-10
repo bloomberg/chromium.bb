@@ -352,7 +352,6 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
 
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_CREATE, &create);
 	bo_gem->gem_handle = create.handle;
-	bo_gem->bo.handle = bo_gem->gem_handle;
 	if (ret != 0) {
 	    free(bo_gem);
 	    return NULL;
@@ -424,14 +423,6 @@ drm_intel_gem_bo_reference(drm_intel_bo *bo)
     pthread_mutex_lock(&bufmgr_gem->lock);
     bo_gem->refcount++;
     pthread_mutex_unlock(&bufmgr_gem->lock);
-}
-
-static void
-dri_gem_bo_reference_locked(dri_bo *bo)
-{
-    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
-
-    bo_gem->refcount++;
 }
 
 static void

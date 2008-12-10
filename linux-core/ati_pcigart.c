@@ -39,7 +39,7 @@
 #define ATI_PCIE_WRITE 0x4
 #define ATI_PCIE_READ 0x8
 
-static __inline__ void gart_insert_page_into_table(struct drm_ati_pcigart_info *gart_info, dma_addr_t addr, volatile u32 *pci_gart)
+static __inline__ void gart_insert_page_into_table(struct drm_ati_pcigart_info *gart_info, dma_addr_t addr, u32 *pci_gart)
 {
 	u32 page_base;
 
@@ -61,28 +61,8 @@ static __inline__ void gart_insert_page_into_table(struct drm_ati_pcigart_info *
 	*pci_gart = cpu_to_le32(page_base);
 }
 
-static __inline__ dma_addr_t gart_get_page_from_table(struct drm_ati_pcigart_info *gart_info, volatile u32 *pci_gart)
-{
-	dma_addr_t retval;
-	switch(gart_info->gart_reg_if) {
-	case DRM_ATI_GART_IGP:
-		retval = (*pci_gart & ATI_PCIGART_PAGE_MASK);
-		retval += (((*pci_gart & 0xf0) >> 4) << 16) << 16;
-		break;
-	case DRM_ATI_GART_PCIE:
-		retval = (*pci_gart & ~0xc);
-		retval <<= 8;
-		break;
-	case DRM_ATI_GART_PCI:
-		retval = *pci_gart;
-		break;
-	}
-	
-	return retval;
-}
-
-int drm_ati_alloc_pcigart_table(struct drm_device *dev,
-				struct drm_ati_pcigart_info *gart_info)
+static int drm_ati_alloc_pcigart_table(struct drm_device *dev,
+				       struct drm_ati_pcigart_info *gart_info)
 {
 	gart_info->table_handle = drm_pci_alloc(dev, gart_info->table_size,
 						PAGE_SIZE,
@@ -90,25 +70,12 @@ int drm_ati_alloc_pcigart_table(struct drm_device *dev,
 	if (gart_info->table_handle == NULL)
 		return -ENOMEM;
 
-#ifdef CONFIG_X86
-	/* IGPs only exist on x86 in any case */
-	if (gart_info->gart_reg_if == DRM_ATI_GART_IGP)
-		set_memory_uc((unsigned long)gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
-#endif
-
-	memset(gart_info->table_handle->vaddr, 0, gart_info->table_size);
 	return 0;
 }
-EXPORT_SYMBOL(drm_ati_alloc_pcigart_table);
 
 static void drm_ati_free_pcigart_table(struct drm_device *dev,
 				       struct drm_ati_pcigart_info *gart_info)
 {
-#ifdef CONFIG_X86
-	/* IGPs only exist on x86 in any case */
-	if (gart_info->gart_reg_if == DRM_ATI_GART_IGP)
-		set_memory_wb((unsigned long)gart_info->table_handle->vaddr, gart_info->table_size >> PAGE_SHIFT);
-#endif
 	drm_pci_free(dev, gart_info->table_handle);
 	gart_info->table_handle = NULL;
 }
@@ -122,6 +89,7 @@ int drm_ati_pcigart_cleanup(struct drm_device *dev, struct drm_ati_pcigart_info 
 
 	/* we need to support large memory configurations */
 	if (!entry) {
+		DRM_ERROR("no scatter/gather memory!\n");
 		return 0;
 	}
 
@@ -164,8 +132,12 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 	int max_pages;
 	dma_addr_t entry_addr;
 
+	if (!entry) {
+		DRM_ERROR("no scatter/gather memory!\n");
+		goto done;
+	}
 
-	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN && gart_info->table_handle == NULL) {
+	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
 		DRM_DEBUG("PCI: no table in VRAM: using normal RAM\n");
 
 		ret = drm_ati_alloc_pcigart_table(dev, gart_info);
@@ -173,19 +145,14 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 			DRM_ERROR("cannot allocate PCI GART page!\n");
 			goto done;
 		}
-	}
 
-	if (gart_info->gart_table_location == DRM_ATI_GART_MAIN) {
 		address = gart_info->table_handle->vaddr;
 		bus_address = gart_info->table_handle->busaddr;
 	} else {
 		address = gart_info->addr;
 		bus_address = gart_info->bus_addr;
-	}
-
-	if (!entry) {
-		DRM_ERROR("no scatter/gather memory!\n");
-		goto done;
+		DRM_DEBUG("PCI: Gart Table: VRAM %08X mapped at %08lX\n",
+			  bus_address, (unsigned long)address);
 	}
 
 	pci_gart = (u32 *) address;
@@ -193,6 +160,8 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 	max_pages = (gart_info->table_size / sizeof(u32));
 	pages = (entry->pages <= max_pages)
 	    ? entry->pages : max_pages;
+
+	memset(pci_gart, 0, max_pages * sizeof(u32));
 
 	for (i = 0; i < pages; i++) {
 		/* we need to support large memory configurations */
@@ -216,7 +185,11 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 
 	ret = 1;
 
+#if defined(__i386__) || defined(__x86_64__)
+	wbinvd();
+#else
 	mb();
+#endif
 
       done:
 	gart_info->addr = address;
@@ -224,141 +197,3 @@ int drm_ati_pcigart_init(struct drm_device *dev, struct drm_ati_pcigart_info *ga
 	return ret;
 }
 EXPORT_SYMBOL(drm_ati_pcigart_init);
-
-static int ati_pcigart_needs_unbind_cache_adjust(struct drm_ttm_backend *backend)
-{
-	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
-}
-
-static int ati_pcigart_populate(struct drm_ttm_backend *backend,
-				unsigned long num_pages,
-				struct page **pages,
-				struct page *dummy_read_page)
-{
-	struct ati_pcigart_ttm_backend *atipci_be =
-		container_of(backend, struct ati_pcigart_ttm_backend, backend);
-
-	atipci_be->pages = pages;
-	atipci_be->num_pages = num_pages;
-	atipci_be->populated = 1;
-	return 0;
-}
-
-static int ati_pcigart_bind_ttm(struct drm_ttm_backend *backend,
-				struct drm_bo_mem_reg *bo_mem)
-{
-	struct ati_pcigart_ttm_backend *atipci_be =
-		container_of(backend, struct ati_pcigart_ttm_backend, backend);
-        off_t j;
-	int i;
-	struct drm_ati_pcigart_info *info = atipci_be->gart_info;
-	u32 *pci_gart;
-	dma_addr_t offset = bo_mem->mm_node->start;
-	dma_addr_t page_base;
-
-	pci_gart = info->addr;
-
-        j = offset;
-        while (j < (offset + atipci_be->num_pages)) {
-		if (gart_get_page_from_table(info, pci_gart + j))
-			return -EBUSY;
-                j++;
-        }
-
-        for (i = 0, j = offset; i < atipci_be->num_pages; i++, j++) {
-		struct page *cur_page = atipci_be->pages[i];
-                /* write value */
-		page_base = page_to_phys(cur_page);
-		gart_insert_page_into_table(info, page_base, pci_gart + j);
-        }
-
-	mb();
-
-	atipci_be->gart_flush_fn(atipci_be->dev);
-
-	atipci_be->bound = 1;
-	atipci_be->offset = offset;
-        /* need to traverse table and add entries */
-	DRM_DEBUG("\n");
-	return 0;
-}
-
-static int ati_pcigart_unbind_ttm(struct drm_ttm_backend *backend)
-{
-	struct ati_pcigart_ttm_backend *atipci_be =
-		container_of(backend, struct ati_pcigart_ttm_backend, backend);
-	struct drm_ati_pcigart_info *info = atipci_be->gart_info;	
-	unsigned long offset = atipci_be->offset;
-	int i;
-	off_t j;
-	u32 *pci_gart = info->addr;
-
-	if (atipci_be->bound != 1)
-		return -EINVAL;
-
-	for (i = 0, j = offset; i < atipci_be->num_pages; i++, j++) {
-		*(pci_gart + j) = 0;
-	}
-	atipci_be->gart_flush_fn(atipci_be->dev);
-	atipci_be->bound = 0;
-	atipci_be->offset = 0;
-	return 0;
-}
-
-static void ati_pcigart_clear_ttm(struct drm_ttm_backend *backend)
-{
-	struct ati_pcigart_ttm_backend *atipci_be =
-		container_of(backend, struct ati_pcigart_ttm_backend, backend);
-
-	DRM_DEBUG("\n");	
-	if (atipci_be->pages) {
-		backend->func->unbind(backend);
-		atipci_be->pages = NULL;
-
-	}
-	atipci_be->num_pages = 0;
-}
-
-static void ati_pcigart_destroy_ttm(struct drm_ttm_backend *backend)
-{
-	struct ati_pcigart_ttm_backend *atipci_be;
-	if (backend) {
-		DRM_DEBUG("\n");
-		atipci_be = container_of(backend, struct ati_pcigart_ttm_backend, backend);
-		if (atipci_be) {
-			if (atipci_be->pages) {
-				backend->func->clear(backend);
-			}
-			drm_ctl_free(atipci_be, sizeof(*atipci_be), DRM_MEM_TTM);
-		}
-	}
-}
-
-static struct drm_ttm_backend_func ati_pcigart_ttm_backend = 
-{
-	.needs_ub_cache_adjust = ati_pcigart_needs_unbind_cache_adjust,
-	.populate = ati_pcigart_populate,
-	.clear = ati_pcigart_clear_ttm,
-	.bind = ati_pcigart_bind_ttm,
-	.unbind = ati_pcigart_unbind_ttm,
-	.destroy =  ati_pcigart_destroy_ttm,
-};
-
-struct drm_ttm_backend *ati_pcigart_init_ttm(struct drm_device *dev, struct drm_ati_pcigart_info *info, void (*gart_flush_fn)(struct drm_device *dev))
-{
-	struct ati_pcigart_ttm_backend *atipci_be;
-
-	atipci_be = drm_ctl_calloc(1, sizeof (*atipci_be), DRM_MEM_TTM);
-	if (!atipci_be)
-		return NULL;
-	
-	atipci_be->populated = 0;
-	atipci_be->backend.func = &ati_pcigart_ttm_backend;
-//	atipci_be->backend.mem_type = DRM_BO_MEM_TT;
-	atipci_be->gart_info = info;
-	atipci_be->gart_flush_fn = gart_flush_fn;
-	atipci_be->dev = dev;
-
-	return &atipci_be->backend;
-}
-EXPORT_SYMBOL(ati_pcigart_init_ttm);

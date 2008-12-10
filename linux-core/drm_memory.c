@@ -188,7 +188,6 @@ void *drm_realloc(void *oldpt, size_t oldsize, size_t size, int area)
 	}
 	return pt;
 }
-EXPORT_SYMBOL(drm_realloc);
 
 /**
  * Allocate pages.

@@ -28,9 +28,6 @@
 
 #include "drm_pciids.h"
 
-unsigned int nouveau_modeset = 0; /* kms */
-module_param_named(modeset, nouveau_modeset, int, 0400);
-
 static struct pci_device_id pciidlist[] = {
 	{
 		PCI_DEVICE(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID),
@@ -107,10 +104,6 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 static int __init nouveau_init(void)
 {
 	driver.num_ioctls = nouveau_max_ioctl;
-
-	if (nouveau_modeset == 1)
-		driver.driver_features |= DRIVER_MODESET;
-
 	return drm_init(&driver, pciidlist);
 }
 

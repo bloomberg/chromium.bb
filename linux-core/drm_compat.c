@@ -217,7 +217,7 @@ static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
 
 	mutex_lock(&bo->mutex);
 
-	err = drm_bo_wait(bo, 0, 1, 0, 1);
+	err = drm_bo_wait(bo, 0, 1, 0);
 	if (err) {
 		data->type = (err == -EAGAIN) ?
 			VM_FAULT_MINOR : VM_FAULT_SIGBUS;
@@ -730,68 +730,20 @@ void *idr_replace(struct idr *idp, void *ptr, int id)
 EXPORT_SYMBOL(idr_replace);
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-static __inline__ unsigned long __round_jiffies(unsigned long j, int cpu)
-{
-	int rem;
-	unsigned long original = j;
-
-	j += cpu * 3;
-
-	rem = j % HZ;
-
-	if (rem < HZ/4) /* round down */
-		j = j - rem;
-	else /* round up */
-		j = j - rem + HZ;
-
-	/* now that we have rounded, subtract the extra skew again */
-	j -= cpu * 3;
-
-	if (j <= jiffies) /* rounding ate our timeout entirely; */
-		return original;
-	return j;
-}
-
-static __inline__ unsigned long __round_jiffies_relative(unsigned long j, int cpu)
-{
-	return  __round_jiffies(j + jiffies, cpu) - jiffies;
-}
-
-unsigned long round_jiffies_relative(unsigned long j)
-{
-	return __round_jiffies_relative(j, raw_smp_processor_id());
-}
-EXPORT_SYMBOL(round_jiffies_relative);
-#endif
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn)
-{
-    struct pci_dev *dev = NULL;
-
-    while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
-        if (pci_domain_nr(dev->bus) == 0 &&
-           (dev->bus->number == bus && dev->devfn == devfn))
-            return dev;
-   }
-   return NULL;
-}
-EXPORT_SYMBOL(pci_get_bus_and_slot);
-#endif
-
 #if defined(DRM_KMAP_ATOMIC_PROT_PFN)
+#define drm_kmap_get_fixmap_pte(vaddr)					\
+	pte_offset_kernel(pmd_offset(pud_offset(pgd_offset_k(vaddr), vaddr), (vaddr)), (vaddr))
+
 void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 			   pgprot_t protection)
 {
 	enum fixed_addresses idx;
 	unsigned long vaddr;
 	static pte_t *km_pte;
-	int level;
 	static int initialized = 0;
 
 	if (unlikely(!initialized)) {
-		km_pte = lookup_address(__fix_to_virt(FIX_KMAP_BEGIN), &level);
+		km_pte = drm_kmap_get_fixmap_pte(__fix_to_virt(FIX_KMAP_BEGIN));
 		initialized = 1;
 	}
 
@@ -804,6 +756,7 @@ void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
 }
 
 EXPORT_SYMBOL(kmap_atomic_prot_pfn);
+
 #endif
 
 #ifdef DRM_FULL_MM_COMPAT

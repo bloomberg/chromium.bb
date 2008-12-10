@@ -52,9 +52,9 @@ struct drm_map_list *drm_find_matching_map(struct drm_device *dev, drm_local_map
 {
 	struct drm_map_list *entry;
 	list_for_each_entry(entry, &dev->maplist, head) {
-		if (entry->map && (entry->master == dev->primary->master) && (map->type == entry->map->type) &&
-		    ((entry->map->offset == map->offset) || 
-		     ((map->type == _DRM_SHM) && (map->flags&_DRM_CONTAINS_LOCK)))) {
+		if (entry->map && map->type == entry->map->type &&
+		    ((entry->map->offset == map->offset) ||
+		     (map->type == _DRM_SHM && map->flags==_DRM_CONTAINS_LOCK))) {
 			return entry;
 		}
 	}
@@ -209,12 +209,12 @@ static int drm_addmap_core(struct drm_device *dev, unsigned int offset,
 		map->offset = (unsigned long)map->handle;
 		if (map->flags & _DRM_CONTAINS_LOCK) {
 			/* Prevent a 2nd X Server from creating a 2nd lock */
-			if (dev->primary->master->lock.hw_lock != NULL) {
+			if (dev->lock.hw_lock != NULL) {
 				vfree(map->handle);
 				drm_free(map, sizeof(*map), DRM_MEM_MAPS);
 				return -EBUSY;
 			}
-			dev->sigdata.lock = dev->primary->master->lock.hw_lock = map->handle;	/* Pointer to lock */
+			dev->sigdata.lock = dev->lock.hw_lock = map->handle;	/* Pointer to lock */
 		}
 		break;
 	case _DRM_AGP: {
@@ -318,7 +318,6 @@ static int drm_addmap_core(struct drm_device *dev, unsigned int offset,
 	list->user_token = list->hash.key << PAGE_SHIFT;
 	mutex_unlock(&dev->struct_mutex);
 
-	list->master = dev->primary->master;
 	*maplist = list;
 	return 0;
 }
@@ -345,7 +344,7 @@ int drm_addmap_ioctl(struct drm_device *dev, void *data,
 	struct drm_map_list *maplist;
 	int err;
 
-	if (!(capable(CAP_SYS_ADMIN) || map->type == _DRM_AGP || map->type == _DRM_SHM))
+	if (!(capable(CAP_SYS_ADMIN) || map->type == _DRM_AGP))
 		return -EPERM;
 
 	err = drm_addmap_core(dev, map->offset, map->size, map->type,
@@ -380,12 +379,10 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 	struct drm_map_list *r_list = NULL, *list_t;
 	drm_dma_handle_t dmah;
 	int found = 0;
-	struct drm_master *master;
 
 	/* Find the list entry for the map and remove it */
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
 		if (r_list->map == map) {
-			master = r_list->master;
 			list_del(&r_list->head);
 			drm_ht_remove_key(&dev->map_hash,
 					  r_list->user_token >> PAGE_SHIFT);
@@ -415,13 +412,6 @@ int drm_rmmap_locked(struct drm_device *dev, drm_local_map_t *map)
 		break;
 	case _DRM_SHM:
 		vfree(map->handle);
-		if (master) {
-			if (dev->sigdata.lock == master->lock.hw_lock)
-				dev->sigdata.lock = NULL;
-			master->lock.hw_lock = NULL;   /* SHM removed */
-			master->lock.file_priv = NULL;
-			wake_up_interruptible(&master->lock.lock_queue);
-		}
 		break;
 	case _DRM_AGP:
 	case _DRM_SCATTER_GATHER:
@@ -1528,7 +1518,6 @@ int drm_mapbufs(struct drm_device *dev, void *data,
 	dev->buf_use++;		/* Can't allocate more after this call */
 	spin_unlock(&dev->count_lock);
 
-	DRM_DEBUG("dma buf count %d, req count %d\n", request->count, dma->buf_count);
 	if (request->count >= dma->buf_count) {
 		if ((drm_core_has_AGP(dev) && (dma->flags & _DRM_DMA_USE_AGP))
 		    || (drm_core_check_feature(dev, DRIVER_SG)
@@ -1539,7 +1528,6 @@ int drm_mapbufs(struct drm_device *dev, void *data,
 			unsigned long token = dev->agp_buffer_token;
 
 			if (!map) {
-				DRM_DEBUG("No map\n");
 				retcode = -EINVAL;
 				goto done;
 			}
@@ -1557,7 +1545,6 @@ int drm_mapbufs(struct drm_device *dev, void *data,
 			up_write(&current->mm->mmap_sem);
 		}
 		if (virtual > -1024UL) {
-			DRM_DEBUG("mmap failed\n");
 			/* Real error */
 			retcode = (signed long)virtual;
 			goto done;

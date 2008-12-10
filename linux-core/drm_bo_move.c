@@ -146,7 +146,6 @@ void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg *mem,
 	if (virtual && (man->flags & _DRM_FLAG_NEEDS_IOREMAP))
 		iounmap(virtual);
 }
-EXPORT_SYMBOL(drm_mem_reg_iounmap);
 
 static int drm_copy_io_page(void *dst, void *src, unsigned long page)
 {
@@ -271,77 +270,6 @@ out:
 	return ret;
 }
 EXPORT_SYMBOL(drm_bo_move_memcpy);
-
-static int drm_memset_io_page(void *dst, unsigned long page)
-{
-	dst = (void *)((unsigned long)dst + (page << PAGE_SHIFT));
-	memset_io(dst, 0, PAGE_SIZE);
-	return 0;
-}
-
-static int drm_memset_ttm_page(struct drm_ttm *ttm, unsigned long page)
-{
-	struct page *d = drm_ttm_get_page(ttm, page);
-	void *dst;
-
-	dst = kmap(d);
-	if (!dst)
-		return -ENOMEM;
-
-	memset_io(dst, 0, PAGE_SIZE);
-	kunmap(d);
-	return 0;
-}
-
-int drm_bo_move_zero(struct drm_buffer_object *bo,
-		       int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
-{
-	struct drm_device *dev = bo->dev;
-	struct drm_mem_type_manager *man = &dev->bm.man[new_mem->mem_type];
-	struct drm_ttm *ttm = bo->ttm;
-	void *new_iomap;
-	int ret;
-	struct drm_bo_mem_reg *old_mem = &bo->mem;
-	uint64_t save_flags = old_mem->flags;
-	uint64_t save_proposed_flags = old_mem->proposed_flags;
-	unsigned long i;
-	unsigned long page;
-
-	ret = drm_mem_reg_ioremap(dev, new_mem, &new_iomap);
-	if (ret)
-		goto out;
-
-	if (new_iomap == NULL && ttm == NULL)
-		goto out2;
-
-	for (i = 0; i < new_mem->num_pages; ++i) {
-		if (new_iomap == NULL)
-			ret = drm_memset_ttm_page(ttm, i);
-		else
-			ret = drm_memset_io_page(new_iomap, i);
-		if (ret)
-			goto out1;
-	}
-	mb();
-out2:
-	drm_bo_free_old_node(bo);
-
-	*old_mem = *new_mem;
-	new_mem->mm_node = NULL;
-	old_mem->proposed_flags = save_proposed_flags;
-	DRM_FLAG_MASKED(save_flags, new_mem->flags, DRM_BO_MASK_MEMTYPE);
-
-	if ((man->flags & _DRM_FLAG_MEMTYPE_FIXED) && (ttm != NULL)) {
-		drm_ttm_unbind(ttm);
-		drm_ttm_destroy(ttm);
-		bo->ttm = NULL;
-	}
-out1:
-	drm_mem_reg_iounmap(dev, new_mem, new_iomap);
-out:
-	return ret;
-}
-EXPORT_SYMBOL(drm_bo_move_zero);
 
 /*
  * Transfer a buffer object's memory and LRU status to a newly
@@ -632,10 +560,6 @@ int drm_bo_kmap(struct drm_buffer_object *bo, unsigned long start_page,
 
 	if (ret)
 		return ret;
-
-	/* clear the clean flags */
-	bo->mem.flags &= ~DRM_BO_FLAG_CLEAN;
-	bo->mem.proposed_flags &= ~DRM_BO_FLAG_CLEAN;
 
 	if (bus_size == 0) {
 		return drm_bo_kmap_ttm(bo, start_page, num_pages, map);

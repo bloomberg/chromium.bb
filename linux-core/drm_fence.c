@@ -134,8 +134,8 @@ void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 
 		if (new_type) {
 			fence->signaled_types |= new_type;
-			DRM_DEBUG("Fence %p signaled 0x%08x\n",
-				  fence, fence->signaled_types);
+			DRM_DEBUG("Fence 0x%08lx signaled 0x%08x\n",
+				  fence->base.hash.key, fence->signaled_types);
 
 			if (driver->needed_flush)
 				fc->pending_flush |= driver->needed_flush(fence);
@@ -147,8 +147,8 @@ void drm_fence_handler(struct drm_device *dev, uint32_t fence_class,
 		fc->waiting_types |= fence->waiting_types & ~fence->signaled_types;
 
 		if (!(fence->type & ~fence->signaled_types)) {
-			DRM_DEBUG("Fence completely signaled %p\n",
-				  fence);
+			DRM_DEBUG("Fence completely signaled 0x%08lx\n",
+				  fence->base.hash.key);
 			list_del_init(&fence->ring);
 		}
 	}
@@ -196,9 +196,10 @@ void drm_fence_usage_deref_locked(struct drm_fence_object **fence)
 	*fence = NULL;
 	if (atomic_dec_and_test(&tmp_fence->usage)) {
 		drm_fence_unring(dev, &tmp_fence->ring);
-		DRM_DEBUG("Destroyed a fence object %p\n",
-			  tmp_fence);
+		DRM_DEBUG("Destroyed a fence object 0x%08lx\n",
+			  tmp_fence->base.hash.key);
 		atomic_dec(&fm->count);
+		BUG_ON(!list_empty(&tmp_fence->base.list));
 		drm_ctl_free(tmp_fence, sizeof(*tmp_fence), DRM_MEM_FENCE);
 	}
 }
@@ -216,6 +217,7 @@ void drm_fence_usage_deref_unlocked(struct drm_fence_object **fence)
 		if (atomic_read(&tmp_fence->usage) == 0) {
 			drm_fence_unring(dev, &tmp_fence->ring);
 			atomic_dec(&fm->count);
+			BUG_ON(!list_empty(&tmp_fence->base.list));
 			drm_ctl_free(tmp_fence, sizeof(*tmp_fence), DRM_MEM_FENCE);
 		}
 		mutex_unlock(&dev->struct_mutex);
@@ -241,6 +243,15 @@ void drm_fence_reference_unlocked(struct drm_fence_object **dst,
 	mutex_unlock(&src->dev->struct_mutex);
 }
 EXPORT_SYMBOL(drm_fence_reference_unlocked);
+
+static void drm_fence_object_destroy(struct drm_file *priv,
+				     struct drm_user_object *base)
+{
+	struct drm_fence_object *fence =
+	    drm_user_object_entry(base, struct drm_fence_object, base);
+
+	drm_fence_usage_deref_locked(&fence);
+}
 
 int drm_fence_object_signaled(struct drm_fence_object *fence, uint32_t mask)
 {
@@ -381,6 +392,7 @@ int drm_fence_object_wait(struct drm_fence_object *fence,
 	if (driver->wait)
 		return driver->wait(fence, lazy, !ignore_signals, mask);
 
+
 	drm_fence_object_flush(fence, mask);
 	if (driver->has_irq(dev, fence->fence_class, mask)) {
 		if (!ignore_signals)
@@ -407,6 +419,8 @@ int drm_fence_object_wait(struct drm_fence_object *fence,
 				      _end);
 }
 EXPORT_SYMBOL(drm_fence_object_wait);
+
+
 
 int drm_fence_object_emit(struct drm_fence_object *fence, uint32_t fence_flags,
 			  uint32_t fence_class, uint32_t type)
@@ -463,6 +477,7 @@ static int drm_fence_object_init(struct drm_device *dev, uint32_t fence_class,
 	 *  Avoid hitting BUG() for kernel-only fence objects.
 	 */
 
+	INIT_LIST_HEAD(&fence->base.list);
 	fence->fence_class = fence_class;
 	fence->type = type;
 	fence->signaled_types = 0;
@@ -477,6 +492,26 @@ static int drm_fence_object_init(struct drm_device *dev, uint32_t fence_class,
 	}
 	return ret;
 }
+
+int drm_fence_add_user_object(struct drm_file *priv,
+			      struct drm_fence_object *fence, int shareable)
+{
+	struct drm_device *dev = priv->minor->dev;
+	int ret;
+
+	mutex_lock(&dev->struct_mutex);
+	ret = drm_add_user_object(priv, &fence->base, shareable);
+	if (ret)
+		goto out;
+	atomic_inc(&fence->usage);
+	fence->base.type = drm_fence_type;
+	fence->base.remove = &drm_fence_object_destroy;
+	DRM_DEBUG("Fence 0x%08lx created\n", fence->base.hash.key);
+out:
+	mutex_unlock(&dev->struct_mutex);
+	return ret;
+}
+EXPORT_SYMBOL(drm_fence_add_user_object);
 
 int drm_fence_object_create(struct drm_device *dev, uint32_t fence_class,
 			    uint32_t type, unsigned flags,
@@ -534,7 +569,261 @@ void drm_fence_manager_init(struct drm_device *dev)
 	write_unlock_irqrestore(&fm->lock, flags);
 }
 
+void drm_fence_fill_arg(struct drm_fence_object *fence,
+			struct drm_fence_arg *arg)
+{
+	struct drm_device *dev = fence->dev;
+	struct drm_fence_manager *fm = &dev->fm;
+	unsigned long irq_flags;
+
+	read_lock_irqsave(&fm->lock, irq_flags);
+	arg->handle = fence->base.hash.key;
+	arg->fence_class = fence->fence_class;
+	arg->type = fence->type;
+	arg->signaled = fence->signaled_types;
+	arg->error = fence->error;
+	arg->sequence = fence->sequence;
+	read_unlock_irqrestore(&fm->lock, irq_flags);
+}
+EXPORT_SYMBOL(drm_fence_fill_arg);
+
 void drm_fence_manager_takedown(struct drm_device *dev)
 {
 }
 
+struct drm_fence_object *drm_lookup_fence_object(struct drm_file *priv,
+						 uint32_t handle)
+{
+	struct drm_device *dev = priv->minor->dev;
+	struct drm_user_object *uo;
+	struct drm_fence_object *fence;
+
+	mutex_lock(&dev->struct_mutex);
+	uo = drm_lookup_user_object(priv, handle);
+	if (!uo || (uo->type != drm_fence_type)) {
+		mutex_unlock(&dev->struct_mutex);
+		return NULL;
+	}
+	fence = drm_fence_reference_locked(drm_user_object_entry(uo, struct drm_fence_object, base));
+	mutex_unlock(&dev->struct_mutex);
+	return fence;
+}
+
+int drm_fence_create_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	struct drm_fence_object *fence;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	if (arg->flags & DRM_FENCE_FLAG_EMIT)
+		LOCK_TEST_WITH_RETURN(dev, file_priv);
+	ret = drm_fence_object_create(dev, arg->fence_class,
+				      arg->type, arg->flags, &fence);
+	if (ret)
+		return ret;
+	ret = drm_fence_add_user_object(file_priv, fence,
+					arg->flags &
+					DRM_FENCE_FLAG_SHAREABLE);
+	if (ret) {
+		drm_fence_usage_deref_unlocked(&fence);
+		return ret;
+	}
+
+	/*
+	 * usage > 0. No need to lock dev->struct_mutex;
+	 */
+
+	arg->handle = fence->base.hash.key;
+
+	drm_fence_fill_arg(fence, arg);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	return ret;
+}
+
+int drm_fence_reference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	struct drm_fence_object *fence;
+	struct drm_user_object *uo;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	ret = drm_user_object_ref(file_priv, arg->handle, drm_fence_type, &uo);
+	if (ret)
+		return ret;
+	fence = drm_lookup_fence_object(file_priv, arg->handle);
+	drm_fence_fill_arg(fence, arg);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	return ret;
+}
+
+
+int drm_fence_unreference_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	return drm_user_object_unref(file_priv, arg->handle, drm_fence_type);
+}
+
+int drm_fence_signaled_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	struct drm_fence_object *fence;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	fence = drm_lookup_fence_object(file_priv, arg->handle);
+	if (!fence)
+		return -EINVAL;
+
+	drm_fence_fill_arg(fence, arg);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	return ret;
+}
+
+int drm_fence_flush_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	struct drm_fence_object *fence;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	fence = drm_lookup_fence_object(file_priv, arg->handle);
+	if (!fence)
+		return -EINVAL;
+	ret = drm_fence_object_flush(fence, arg->type);
+
+	drm_fence_fill_arg(fence, arg);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	return ret;
+}
+
+
+int drm_fence_wait_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	struct drm_fence_object *fence;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	fence = drm_lookup_fence_object(file_priv, arg->handle);
+	if (!fence)
+		return -EINVAL;
+	ret = drm_fence_object_wait(fence,
+				    arg->flags & DRM_FENCE_FLAG_WAIT_LAZY,
+				    0, arg->type);
+
+	drm_fence_fill_arg(fence, arg);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	return ret;
+}
+
+
+int drm_fence_emit_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	struct drm_fence_object *fence;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
+	fence = drm_lookup_fence_object(file_priv, arg->handle);
+	if (!fence)
+		return -EINVAL;
+	ret = drm_fence_object_emit(fence, arg->flags, arg->fence_class,
+				    arg->type);
+
+	drm_fence_fill_arg(fence, arg);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	return ret;
+}
+
+int drm_fence_buffers_ioctl(struct drm_device *dev, void *data, struct drm_file *file_priv)
+{
+	int ret;
+	struct drm_fence_manager *fm = &dev->fm;
+	struct drm_fence_arg *arg = data;
+	struct drm_fence_object *fence;
+	ret = 0;
+
+	if (!fm->initialized) {
+		DRM_ERROR("The DRM driver does not support fencing.\n");
+		return -EINVAL;
+	}
+
+	if (!dev->bm.initialized) {
+		DRM_ERROR("Buffer object manager is not initialized\n");
+		return -EINVAL;
+	}
+	LOCK_TEST_WITH_RETURN(dev, file_priv);
+	ret = drm_fence_buffer_objects(dev, NULL, arg->flags,
+				       NULL, &fence);
+	if (ret)
+		return ret;
+
+	if (!(arg->flags & DRM_FENCE_FLAG_NO_USER)) {
+		ret = drm_fence_add_user_object(file_priv, fence,
+						arg->flags &
+						DRM_FENCE_FLAG_SHAREABLE);
+		if (ret)
+			return ret;
+	}
+
+	arg->handle = fence->base.hash.key;
+
+	drm_fence_fill_arg(fence, arg);
+	drm_fence_usage_deref_unlocked(&fence);
+
+	return ret;
+}

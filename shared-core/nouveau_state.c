@@ -28,8 +28,6 @@
 #include "drm_sarea.h"
 #include "nouveau_drv.h"
 #include "nouveau_drm.h"
-#include "nv50_kms_wrapper.h"
-#include "nv50_fbcon.h"
 
 static int nouveau_init_card_mappings(struct drm_device *dev)
 {
@@ -366,14 +364,6 @@ nouveau_card_init(struct drm_device *dev)
 	if (ret) return ret;
 
 	dev_priv->init_state = NOUVEAU_CARD_INIT_DONE;
-
-	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		if (dev_priv->card_type >= NV_50) {
-			nv50_kms_init(dev);
-			//nv50_kms_connector_detect_all(dev);
-			nv50_fbcon_init(dev);
-		}
-
 	return 0;
 }
 
@@ -422,7 +412,8 @@ void nouveau_preclose(struct drm_device *dev, struct drm_file *file_priv)
 	nouveau_mem_release(file_priv,dev_priv->pci_heap);
 }
 
-int nouveau_setup_mappings(struct drm_device *dev)
+/* first module load, setup the mmio/fb mapping */
+int nouveau_firstopen(struct drm_device *dev)
 {
 #if defined(__powerpc__)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
@@ -466,16 +457,6 @@ int nouveau_setup_mappings(struct drm_device *dev)
 		DRM_INFO("Unable to get the OF node\n");
 #endif
 	return 0;
-}
-
-/* first module load, setup the mmio/fb mapping */
-/* KMS: we need mmio at load time, not when the first drm client opens. */
-int nouveau_firstopen(struct drm_device *dev)
-{
-	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		return 0;
-
-	return nouveau_setup_mappings(dev);
 }
 
 #define NV40_CHIPSET_MASK 0x00000baf
@@ -561,10 +542,6 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 		return -EINVAL;
 	}
 
-	/* For those who think they want to be funny. */
-	if (dev_priv->card_type < NV_50)
-		dev->driver->driver_features &= ~DRIVER_MODESET;
-
 	/* Special flags */
 	if (dev->pci_device == 0x01a0) {
 		dev_priv->flags |= NV_NFORCE;
@@ -574,23 +551,10 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 
 	dev->dev_private = (void *)dev_priv;
 
-	/* init card now, otherwise bad things happen */
-	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
-		int rval = 0;
-
-		rval = nouveau_setup_mappings(dev);
-		if (rval != 0)
-			return rval;
-
-		rval = nouveau_card_init(dev);
-		if (rval != 0)
-			return rval;
-	}
-
 	return 0;
 }
 
-void nouveau_close(struct drm_device *dev)
+void nouveau_lastclose(struct drm_device *dev)
 {
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
@@ -606,23 +570,8 @@ void nouveau_close(struct drm_device *dev)
 	}
 }
 
-/* KMS: we need mmio at load time, not when the first drm client opens. */
-void nouveau_lastclose(struct drm_device *dev)
-{
-	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		return;
-
-	nouveau_close(dev);
-}
-
 int nouveau_unload(struct drm_device *dev)
 {
-	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
-		nv50_kms_destroy(dev);
-		nv50_fbcon_destroy(dev);
-		nouveau_close(dev);
-	}
-
 	drm_free(dev->dev_private, sizeof(*dev->dev_private), DRM_MEM_DRIVER);
 	dev->dev_private = NULL;
 	return 0;

@@ -30,8 +30,6 @@
 #include "drm.h"
 #include "i915_drm.h"
 #include "i915_drv.h"
-#include "intel_drv.h"
-#include "drm_crtc_helper.h"
 
 #define MAX_NOPID ((u32)~0)
 
@@ -43,7 +41,7 @@
 				    I915_DISPLAY_PIPE_B_EVENT_INTERRUPT)
 
 static inline void
-i915_enable_irq(struct drm_i915_private *dev_priv, uint32_t mask)
+i915_enable_irq(drm_i915_private_t *dev_priv, uint32_t mask)
 {
 	if ((dev_priv->irq_mask_reg & mask) != 0) {
 		dev_priv->irq_mask_reg &= ~mask;
@@ -53,7 +51,7 @@ i915_enable_irq(struct drm_i915_private *dev_priv, uint32_t mask)
 }
 
 static inline void
-i915_disable_irq(struct drm_i915_private *dev_priv, uint32_t mask)
+i915_disable_irq(drm_i915_private_t *dev_priv, uint32_t mask)
 {
 	if ((dev_priv->irq_mask_reg & mask) != mask) {
 		dev_priv->irq_mask_reg |= mask;
@@ -74,7 +72,7 @@ i915_disable_irq(struct drm_i915_private *dev_priv, uint32_t mask)
 static int
 i915_get_pipe(struct drm_device *dev, int plane)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u32 dspcntr;
 
 	dspcntr = plane ? I915_READ(DSPBCNTR) : I915_READ(DSPACNTR);
@@ -111,7 +109,7 @@ i915_get_plane(struct drm_device *dev, int pipe)
 static int
 i915_pipe_enabled(struct drm_device *dev, int pipe)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	unsigned long pipeconf = pipe ? PIPEBCONF : PIPEACONF;
 
 	if (I915_READ(pipeconf) & PIPEACONF_ENABLE)
@@ -129,8 +127,8 @@ static void
 i915_dispatch_vsync_flip(struct drm_device *dev, struct drm_drawable_info *drw,
 			 int plane)
 {
-	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
-	struct drm_i915_sarea *sarea_priv = master_priv->sarea_priv;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
+	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	u16 x1, y1, x2, y2;
 	int pf_planes = 1 << plane;
 
@@ -174,13 +172,12 @@ i915_dispatch_vsync_flip(struct drm_device *dev, struct drm_drawable_info *drw,
  */
 static void i915_vblank_tasklet(struct drm_device *dev)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	struct drm_i915_master_private *master_priv = dev->primary->master->driver_priv;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	struct list_head *list, *tmp, hits, *hit;
 	int nhits, nrects, slice[2], upper[2], lower[2], i, num_pages;
 	unsigned counter[2];
 	struct drm_drawable_info *drw;
-	struct drm_i915_sarea *sarea_priv = master_priv->sarea_priv;
+	drm_i915_sarea_t *sarea_priv = dev_priv->sarea_priv;
 	u32 cpp = dev_priv->cpp,  offsets[3];
 	u32 cmd = (cpp == 4) ? (XY_SRC_COPY_BLT_CMD |
 				XY_SRC_COPY_BLT_WRITE_ALPHA |
@@ -219,16 +216,13 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 
 	/* Find buffer swaps scheduled for this vertical blank */
 	list_for_each_safe(list, tmp, &dev_priv->vbl_swaps.head) {
-		struct drm_i915_vbl_swap *vbl_swap =
-			list_entry(list, struct drm_i915_vbl_swap, head);
+		drm_i915_vbl_swap_t *vbl_swap =
+			list_entry(list, drm_i915_vbl_swap_t, head);
 		int pipe = i915_get_pipe(dev, vbl_swap->plane);
 
 		if ((counter[pipe] - vbl_swap->sequence) > (1<<23))
 			continue;
 
-		master_priv = vbl_swap->minor->master->driver_priv;
-		sarea_priv = master_priv->sarea_priv;
-		
 		list_del(list);
 		dev_priv->swaps_pending--;
 		drm_vblank_put(dev, pipe);
@@ -246,8 +240,8 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 		}
 
 		list_for_each(hit, &hits) {
-			struct drm_i915_vbl_swap *swap_cmp =
-				list_entry(hit, struct drm_i915_vbl_swap, head);
+			drm_i915_vbl_swap_t *swap_cmp =
+				list_entry(hit, drm_i915_vbl_swap_t, head);
 			struct drm_drawable_info *drw_cmp =
 				drm_get_drawable_info(dev, swap_cmp->drw_id);
 
@@ -304,8 +298,8 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			lower[0] = lower[1] = sarea_priv->height;
 
 		list_for_each(hit, &hits) {
-			struct drm_i915_vbl_swap *swap_hit =
-				list_entry(hit, struct drm_i915_vbl_swap, head);
+			drm_i915_vbl_swap_t *swap_hit =
+				list_entry(hit, drm_i915_vbl_swap_t, head);
 			struct drm_clip_rect *rect;
 			int num_rects, plane, front, back;
 			unsigned short top, bottom;
@@ -356,7 +350,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 			top = upper[plane];
 			bottom = lower[plane];
 
-			front = (master_priv->sarea_priv->pf_current_page >>
+			front = (dev_priv->sarea_priv->pf_current_page >>
 				 (2 * plane)) & 0x3;
 			back = (front + 1) % num_pages;
 
@@ -386,8 +380,8 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 	DRM_SPINUNLOCK(&dev->drw_lock);
 
 	list_for_each_safe(hit, tmp, &hits) {
-		struct drm_i915_vbl_swap *swap_hit =
-			list_entry(hit, struct drm_i915_vbl_swap, head);
+		drm_i915_vbl_swap_t *swap_hit =
+			list_entry(hit, drm_i915_vbl_swap_t, head);
 
 		list_del(hit);
 
@@ -397,7 +391,7 @@ static void i915_vblank_tasklet(struct drm_device *dev)
 
 u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	unsigned long high_frame;
 	unsigned long low_frame;
 	u32 high1, high2, low, count;
@@ -431,72 +425,21 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int plane)
 	return count;
 }
 
-static struct drm_device *hotplug_dev;
-
-/**
- * Handler for user interrupts in process context (able to sleep, do VFS
- * operations, etc.
- *
- * If another IRQ comes in while we're in this handler, it will still get put
- * on the queue again to be rerun when we finish.
- */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
-static void i915_hotplug_work_func(void *work)
-#else
-static void i915_hotplug_work_func(struct work_struct *work)
-#endif
-{
-	struct drm_device *dev = hotplug_dev;
-
-	drm_helper_hotplug_stage_two(dev);
-	drm_handle_hotplug(dev);
-}
-
-static int i915_run_hotplug_tasklet(struct drm_device *dev, uint32_t stat)
-{
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
-	static DECLARE_WORK(hotplug, i915_hotplug_work_func, NULL);
-#else
-	static DECLARE_WORK(hotplug, i915_hotplug_work_func);
-#endif
-	struct drm_i915_private *dev_priv = dev->dev_private;
-
-	hotplug_dev = dev;
-
-	if (stat & TV_HOTPLUG_INT_STATUS) {
-		DRM_DEBUG("TV event\n");
-	}
-
-	if (stat & CRT_HOTPLUG_INT_STATUS) {
-		DRM_DEBUG("CRT event\n");
-	}
-
-	if (stat & SDVOB_HOTPLUG_INT_STATUS) {
-		DRM_DEBUG("sDVOB event\n");
-	}
-
-	if (stat & SDVOC_HOTPLUG_INT_STATUS) {
-		DRM_DEBUG("sDVOC event\n");
-	}
-	queue_work(dev_priv->wq, &hotplug);
-
-	return 0;
-}
-
 irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 {
 	struct drm_device *dev = (struct drm_device *) arg;
-	struct drm_i915_master_private *master_priv;
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u32 iir;
-	u32 pipea_stats = 0, pipeb_stats = 0, tvdac;
-	int hotplug = 0;
+	u32 pipea_stats = 0, pipeb_stats = 0;
 	int vblank = 0;
 #ifdef __linux__
 	if (dev->pdev->msi_enabled)
 		I915_WRITE(IMR, ~0);
 #endif
 	iir = I915_READ(IIR);
+#if 0
+	DRM_DEBUG("flag=%08x\n", iir);
+#endif
 	atomic_inc(&dev_priv->irq_received);
 	if (iir == 0) {
 #ifdef __linux__
@@ -514,6 +457,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 	 */
 	if (iir & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT) {
 		pipea_stats = I915_READ(PIPEASTAT);
+
 		/* The vblank interrupt gets enabled even if we didn't ask for
 		   it, so make sure it's shut down again */
 		if (!(dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_A))
@@ -528,10 +472,9 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 
 		I915_WRITE(PIPEASTAT, pipea_stats);
 	}
-
 	if (iir & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT) {
 		pipeb_stats = I915_READ(PIPEBSTAT);
-		I915_WRITE(PIPEBSTAT, pipeb_stats);
+
 		/* The vblank interrupt gets enabled even if we didn't ask for
 		   it, so make sure it's shut down again */
 		if (!(dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B))
@@ -543,64 +486,41 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			vblank++;
 			drm_handle_vblank(dev, i915_get_plane(dev, 1));
 		}
-	}
 
 #ifdef __linux__
-	if (dev->pdev->msi_enabled)
-		I915_WRITE(IMR, dev_priv->irq_mask_reg);
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
+		if (pipeb_stats & I915_LEGACY_BLC_EVENT_ENABLE)
+			opregion_asle_intr(dev);
 #endif
-
-	(void) I915_READ(IIR); /* Flush posted writes */
-
-	/* This is a global event, and not a pipe A event */
-	if (pipea_stats & PIPE_HOTPLUG_INTERRUPT_STATUS)
-		hotplug = 1;
-
-	if (pipea_stats & PIPE_HOTPLUG_TV_INTERRUPT_STATUS) {
-		hotplug = 1;
-		/* Toggle hotplug detection to clear hotplug status */
-		tvdac = I915_READ(TV_DAC);
-		I915_WRITE(TV_DAC, tvdac & ~TVDAC_STATE_CHG_EN);
-		I915_WRITE(TV_DAC, tvdac | TVDAC_STATE_CHG_EN);
-	}
-
-	if (dev->primary->master) {
-		master_priv = dev->primary->master->driver_priv;
-		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+#endif
+		I915_WRITE(PIPEBSTAT, pipeb_stats);
 	}
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
-	if ((iir & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT) &&
-	    (pipeb_stats & I915_LEGACY_BLC_EVENT_ENABLE))
-		opregion_asle_intr(dev);
 	if (iir & I915_ASLE_INTERRUPT)
 		opregion_asle_intr(dev);
 #endif
 #endif
+
+	if (dev_priv->sarea_priv)
+	    dev_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+
+	I915_WRITE(IIR, iir);
+#ifdef __linux__
+	if (dev->pdev->msi_enabled)
+		I915_WRITE(IMR, dev_priv->irq_mask_reg);
+#endif
+	(void) I915_READ(IIR); /* Flush posted writes */
 
 	if (iir & I915_USER_INTERRUPT) {
 #ifdef I915_HAVE_GEM
 		dev_priv->mm.irq_gem_seqno = i915_get_gem_seqno(dev);
 #endif
 		DRM_WAKEUP(&dev_priv->irq_queue);
-	}
-
-	if (pipea_stats & (PIPE_START_VBLANK_INTERRUPT_STATUS|
-			   PIPE_VBLANK_INTERRUPT_STATUS)) {
-		vblank++;
-		drm_handle_vblank(dev, i915_get_plane(dev, 0));
-	}
-
-	/* The vblank interrupt gets enabled even if we didn't ask for
-	   it, so make sure it's shut down again */
-	if (!(dev_priv->vblank_pipe & DRM_I915_VBLANK_PIPE_B))
-		pipeb_stats &= ~(I915_VBLANK_INTERRUPT_ENABLE);
-
-	if (pipeb_stats & (PIPE_START_VBLANK_INTERRUPT_STATUS|
-			   PIPE_VBLANK_INTERRUPT_STATUS)) {
-		vblank++;
-		drm_handle_vblank(dev, i915_get_plane(dev, 1));
+#ifdef I915_HAVE_FENCE
+		i915_fence_handler(dev);
+#endif
 	}
 
 	if (vblank) {
@@ -608,31 +528,12 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 			drm_locked_tasklet(dev, i915_vblank_tasklet);
 	}
 
-	if ((iir & I915_DISPLAY_PORT_INTERRUPT) || hotplug) {
-		u32 temp2 = 0;
-
-		DRM_INFO("Hotplug event received\n");
-
-		if (!IS_I9XX(dev) || IS_I915G(dev) || IS_I915GM(dev)) {
-			if (pipea_stats & PIPE_HOTPLUG_INTERRUPT_STATUS)
-				temp2 |= SDVOB_HOTPLUG_INT_STATUS |
-					SDVOC_HOTPLUG_INT_STATUS;
-			if (pipea_stats & PIPE_HOTPLUG_TV_INTERRUPT_STATUS)
-				temp2 |= TV_HOTPLUG_INT_STATUS;
-		} else {
-			temp2 = I915_READ(PORT_HOTPLUG_STAT);
-
-			I915_WRITE(PORT_HOTPLUG_STAT, temp2);
-		}
-		i915_run_hotplug_tasklet(dev, temp2);
-	}
-
 	return IRQ_HANDLED;
 }
 
 int i915_emit_irq(struct drm_device *dev)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	RING_LOCALS;
 
 	i915_kernel_lost_context(dev);
@@ -649,20 +550,16 @@ int i915_emit_irq(struct drm_device *dev)
 	return dev_priv->counter;
 }
 
-void i915_user_irq_on(struct drm_device *dev)
+void i915_user_irq_on(drm_i915_private_t *dev_priv)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 	if (dev_priv->irq_enabled && (++dev_priv->user_irq_refcount == 1))
 		i915_enable_irq(dev_priv, I915_USER_INTERRUPT);
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 }
-		
-void i915_user_irq_off(struct drm_device *dev)
-{
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
 
+void i915_user_irq_off(drm_i915_private_t *dev_priv)
+{
 	DRM_SPINLOCK(&dev_priv->user_irq_lock);
 #ifdef __linux__
 	BUG_ON(dev_priv->irq_enabled && dev_priv->user_irq_refcount <= 0);
@@ -675,8 +572,7 @@ void i915_user_irq_off(struct drm_device *dev)
 
 int i915_wait_irq(struct drm_device * dev, int irq_nr)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	struct drm_i915_master_private *master_priv;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int ret = 0;
 
 	if (!dev_priv) {
@@ -687,31 +583,26 @@ int i915_wait_irq(struct drm_device * dev, int irq_nr)
 	DRM_DEBUG("irq_nr=%d breadcrumb=%d\n", irq_nr,
 		  READ_BREADCRUMB(dev_priv));
 
-	master_priv = dev->primary->master->driver_priv;
-
-	if (!master_priv) {
-		DRM_ERROR("no master priv?\n");
-		return -EINVAL;
-	}
-
 	if (READ_BREADCRUMB(dev_priv) >= irq_nr) {
-		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
+		if (dev_priv->sarea_priv)
+			dev_priv->sarea_priv->last_dispatch =
+				READ_BREADCRUMB(dev_priv);
 		return 0;
 	}
 
-	i915_user_irq_on(dev);
+	i915_user_irq_on(dev_priv);
 	DRM_WAIT_ON(ret, dev_priv->irq_queue, 3 * DRM_HZ,
 		    READ_BREADCRUMB(dev_priv) >= irq_nr);
-	i915_user_irq_off(dev);
+	i915_user_irq_off(dev_priv);
 
 	if (ret == -EBUSY) {
 		DRM_ERROR("EBUSY -- rec: %d emitted: %d\n",
 			  READ_BREADCRUMB(dev_priv), (int)dev_priv->counter);
 	}
-	
-	if (READ_BREADCRUMB(dev_priv) >= irq_nr)
-		master_priv->sarea_priv->last_dispatch = READ_BREADCRUMB(dev_priv);
 
+	if (dev_priv->sarea_priv)
+		dev_priv->sarea_priv->last_dispatch =
+			READ_BREADCRUMB(dev_priv);
 	return ret;
 }
 
@@ -720,8 +611,8 @@ int i915_wait_irq(struct drm_device * dev, int irq_nr)
 int i915_irq_emit(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_i915_irq_emit *emit = data;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_irq_emit_t *emit = data;
 	int result;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
@@ -746,8 +637,8 @@ int i915_irq_emit(struct drm_device *dev, void *data,
 int i915_irq_wait(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_i915_irq_wait *irqwait = data;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_irq_wait_t *irqwait = data;
 
 	if (!dev_priv) {
 		DRM_ERROR("called with no initialization\n");
@@ -759,7 +650,7 @@ int i915_irq_wait(struct drm_device *dev, void *data,
 
 int i915_enable_vblank(struct drm_device *dev, int plane)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int pipe = i915_get_pipe(dev, plane);
 	u32	pipestat_reg = 0;
 	u32	mask_reg = 0;
@@ -807,7 +698,7 @@ int i915_enable_vblank(struct drm_device *dev, int plane)
 
 void i915_disable_vblank(struct drm_device *dev, int plane)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int pipe = i915_get_pipe(dev, plane);
 	u32	pipestat_reg = 0;
 	u32	mask_reg = 0;
@@ -832,7 +723,8 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 	i915_disable_irq(dev_priv, mask_reg);
 	DRM_SPINUNLOCK(&dev_priv->user_irq_lock);
 
-	if (pipestat_reg) {
+	if (pipestat_reg)
+	{
 		pipestat = I915_READ (pipestat_reg);
 		pipestat &= ~(PIPE_START_VBLANK_INTERRUPT_ENABLE |
 			      PIPE_VBLANK_INTERRUPT_ENABLE);
@@ -846,78 +738,21 @@ void i915_disable_vblank(struct drm_device *dev, int plane)
 	}
 }
 
-void i915_enable_interrupt (struct drm_device *dev)
+static void i915_enable_interrupt (struct drm_device *dev)
 {
-	struct drm_i915_private *dev_priv = (struct drm_i915_private *) dev->dev_private;
-	struct drm_connector *o;
-	
-	dev_priv->irq_mask_reg &= ~0;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
-	if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
-		if (dev->mode_config.num_connector)
-			dev_priv->irq_mask_reg &= ~I915_DISPLAY_PORT_INTERRUPT;
-	} else {
-		if (dev->mode_config.num_connector)
-			dev_priv->irq_mask_reg &= ~I915_DISPLAY_PIPE_A_EVENT_INTERRUPT;
-
-		/* Enable global interrupts for hotplug - not a pipeA event */
-		I915_WRITE(PIPEASTAT, I915_READ(PIPEASTAT) |
-			   PIPE_HOTPLUG_INTERRUPT_ENABLE |
-			   PIPE_HOTPLUG_TV_INTERRUPT_ENABLE |
-			   PIPE_HOTPLUG_TV_INTERRUPT_STATUS |
-			   PIPE_HOTPLUG_INTERRUPT_STATUS);
-	}
-
-	if (!(dev_priv->irq_mask_reg & I915_DISPLAY_PORT_INTERRUPT) ||
-	    !(dev_priv->irq_mask_reg & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT)) {
-		u32 temp = 0;
-
-		if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
-			temp = I915_READ(PORT_HOTPLUG_EN);
-
-			/* Activate the CRT */
-			temp |= CRT_HOTPLUG_INT_EN;
-		}
-
-		if (IS_I9XX(dev)) {
-			/* SDVOB */
-			o = intel_sdvo_find(dev, 1);
-			if (o && intel_sdvo_supports_hotplug(o)) {
-				intel_sdvo_set_hotplug(o, 1);
-				temp |= SDVOB_HOTPLUG_INT_EN;
-			}
-
-			/* SDVOC */
-			o = intel_sdvo_find(dev, 0);
-			if (o && intel_sdvo_supports_hotplug(o)) {
-				intel_sdvo_set_hotplug(o, 1);
-				temp |= SDVOC_HOTPLUG_INT_EN;
-			}
-
-			I915_WRITE(SDVOB, I915_READ(SDVOB) | SDVO_INTERRUPT_ENABLE);
-			I915_WRITE(SDVOC, I915_READ(SDVOC) | SDVO_INTERRUPT_ENABLE);
-
-			/* TV */
-			I915_WRITE(TV_DAC, I915_READ(TV_DAC) | TVDAC_STATE_CHG_EN);
-		} else {
-			/* DVO ???? */
-		}
-
-		if (IS_I9XX(dev) && !IS_I915G(dev) && !IS_I915GM(dev)) {
-			I915_WRITE(PORT_HOTPLUG_EN, temp);
-
-			DRM_DEBUG("HEN %08x\n",I915_READ(PORT_HOTPLUG_EN));
-			DRM_DEBUG("HST %08x\n",I915_READ(PORT_HOTPLUG_STAT));
-
-			I915_WRITE(PORT_HOTPLUG_STAT, I915_READ(PORT_HOTPLUG_STAT));
-		}
-	}
+	dev_priv->irq_mask_reg = ~0;
+	I915_WRITE(IMR, dev_priv->irq_mask_reg);
+	I915_WRITE(IER, I915_INTERRUPT_ENABLE_MASK);
+	(void) I915_READ (IER);
 
 #ifdef __linux__
 #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,25)
 	opregion_enable_asle(dev);
 #endif
 #endif
+
 	dev_priv->irq_enabled = 1;
 }
 
@@ -926,7 +761,7 @@ void i915_enable_interrupt (struct drm_device *dev)
 int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 
 	if (!dev_priv) {
 		DRM_ERROR("called with no initialization\n");
@@ -939,23 +774,15 @@ int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_i915_vblank_pipe *pipe = data;
-	u32 flag = 0;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_vblank_pipe_t *pipe = data;
 
 	if (!dev_priv) {
 		DRM_ERROR("called with no initialization\n");
 		return -EINVAL;
 	}
 
-	if (dev_priv->irq_enabled)
-	    flag = ~dev_priv->irq_mask_reg;
-
-	pipe->pipe = 0;
-	if (flag & I915_DISPLAY_PIPE_A_EVENT_INTERRUPT)
-		pipe->pipe |= DRM_I915_VBLANK_PIPE_A;
-	if (flag & I915_DISPLAY_PIPE_B_EVENT_INTERRUPT)
-		pipe->pipe |= DRM_I915_VBLANK_PIPE_B;
+	pipe->pipe = DRM_I915_VBLANK_PIPE_A | DRM_I915_VBLANK_PIPE_B;
 
 	return 0;
 }
@@ -966,10 +793,9 @@ int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 int i915_vblank_swap(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
-	struct drm_i915_master_private *master_priv;
-	struct drm_i915_vblank_swap *swap = data;
-	struct drm_i915_vbl_swap *vbl_swap;
+	drm_i915_private_t *dev_priv = dev->dev_private;
+	drm_i915_vblank_swap_t *swap = data;
+	drm_i915_vbl_swap_t *vbl_swap;
 	unsigned int pipe, seqtype, curseq, plane;
 	unsigned long irqflags;
 	struct list_head *list;
@@ -980,12 +806,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 		return -EINVAL;
 	}
 
-	if (!dev->primary->master)
-		return -EINVAL;
-
-	master_priv = dev->primary->master->driver_priv;
-
-	if (master_priv->sarea_priv->rotation) {
+	if (!dev_priv->sarea_priv || dev_priv->sarea_priv->rotation) {
 		DRM_DEBUG("Rotation not supported\n");
 		return -EINVAL;
 	}
@@ -1077,7 +898,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 	DRM_SPINLOCK_IRQSAVE(&dev_priv->swaps_lock, irqflags);
 
 	list_for_each(list, &dev_priv->vbl_swaps.head) {
-		vbl_swap = list_entry(list, struct drm_i915_vbl_swap, head);
+		vbl_swap = list_entry(list, drm_i915_vbl_swap_t, head);
 
 		if (vbl_swap->drw_id == swap->drawable &&
 		    vbl_swap->plane == plane &&
@@ -1111,7 +932,6 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 	vbl_swap->plane = plane;
 	vbl_swap->sequence = swap->sequence;
 	vbl_swap->flip = (swap->seqtype & _DRM_VBLANK_FLIP);
-	vbl_swap->minor = file_priv->minor;
 
 	if (vbl_swap->flip)
 		swap->sequence++;
@@ -1130,7 +950,7 @@ int i915_vblank_swap(struct drm_device *dev, void *data,
 */
 void i915_driver_irq_preinstall(struct drm_device * dev)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 
 	I915_WRITE(HWSTAM, 0xeffe);
 	I915_WRITE(IMR, 0xffffffff);
@@ -1139,7 +959,7 @@ void i915_driver_irq_preinstall(struct drm_device * dev)
 
 int i915_driver_irq_postinstall(struct drm_device * dev)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	int ret, num_pipes = 2;
 
 	INIT_LIST_HEAD(&dev_priv->vbl_swaps.head);
@@ -1168,7 +988,7 @@ int i915_driver_irq_postinstall(struct drm_device * dev)
 
 void i915_driver_irq_uninstall(struct drm_device * dev)
 {
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
 	u32 temp;
 
 	if (!dev_priv)

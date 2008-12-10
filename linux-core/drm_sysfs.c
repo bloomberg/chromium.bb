@@ -36,9 +36,8 @@ static int drm_sysfs_suspend(struct device *dev, pm_message_t state)
 
 	printk(KERN_ERR "%s\n", __FUNCTION__);
 
-	if (drm_minor->type == DRM_MINOR_CONTROL)
-		if (drm_dev->driver->suspend)
-			return drm_dev->driver->suspend(drm_dev, state);
+	if (drm_dev->driver->suspend)
+		return drm_dev->driver->suspend(drm_dev, state);
 
 	return 0;
 }
@@ -55,9 +54,8 @@ static int drm_sysfs_resume(struct device *dev)
 	struct drm_minor *drm_minor = to_drm_minor(dev);
 	struct drm_device *drm_dev = drm_minor->dev;
 
-	if (drm_minor->type == DRM_MINOR_CONTROL)
-		if (drm_dev->driver->resume)
-			return drm_dev->driver->resume(drm_dev);
+	if (drm_dev->driver->resume)
+		return drm_dev->driver->resume(drm_dev);
 
 	return 0;
 }
@@ -133,6 +131,10 @@ static ssize_t show_dri(struct device *device, struct device_attribute *attr,
 	return snprintf(buf, PAGE_SIZE, "%s\n", drm_dev->driver->pci_driver.name);
 }
 
+static struct device_attribute device_attrs[] = {
+	__ATTR(dri_library_name, S_IRUGO, show_dri, NULL),
+};
+
 /**
  * drm_sysfs_device_release - do nothing
  * @dev: Linux device
@@ -146,316 +148,6 @@ static void drm_sysfs_device_release(struct device *dev)
 	return;
 }
 
-/*
- * Connector properties
- */
-static ssize_t status_show(struct device *device,
-			   struct device_attribute *attr,
-			   char *buf)
-{
-	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
-	return snprintf(buf, PAGE_SIZE, "%s",
-			drm_get_connector_status_name(connector->funcs->detect(connector)));
-}
-
-static ssize_t dpms_show(struct device *device,
-			   struct device_attribute *attr,
-			   char *buf)
-{
-	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
-	struct drm_device *dev = connector->dev;
-	uint64_t dpms_status;
-	int ret;
-
-	ret = drm_connector_property_get_value(connector,
-					    dev->mode_config.dpms_property,
-					    &dpms_status);
-	if (ret)
-		return 0;
-	
-	return snprintf(buf, PAGE_SIZE, "%s", drm_get_dpms_name((int)dpms_status));
-}
-
-static ssize_t enabled_show(struct device *device,
-			   struct device_attribute *attr,
-			   char *buf)
-{
-	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
-
-	if (connector->encoder)
-		return snprintf(buf, PAGE_SIZE, "enabled");
-	else
-		return snprintf(buf, PAGE_SIZE, "disabled");
-}
-
-static ssize_t edid_show(struct kobject *kobj, struct bin_attribute *attr,
-			 char *buf, loff_t off, size_t count)
-{
-	struct device *connector_dev = container_of(kobj, struct device, kobj);
-	struct drm_connector *connector = container_of(connector_dev, struct drm_connector,
-						 kdev);
-	unsigned char *edid;
-	size_t size;
-
-	if (!connector->edid_blob_ptr)
-		return 0;
-
-	edid = connector->edid_blob_ptr->data;
-	size = connector->edid_blob_ptr->length;
-	if (!edid)
-		return 0;
-		
-	if (off >= size)
-		return 0;
-
-	if (off + count > size)
-		count = size - off;
-	memcpy(buf, edid + off, count);
-
-	return count;
-}
-
-static ssize_t modes_show(struct device *device,
-			   struct device_attribute *attr,
-			   char *buf)
-{
-	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
-	struct drm_display_mode *mode;
-	int written = 0;
-
-	list_for_each_entry(mode, &connector->modes, head) {
-		written += snprintf(buf + written, PAGE_SIZE - written, "%s\n",
-				    mode->name);
-	}
-
-	return written;
-}
-
-static ssize_t subconnector_show(struct device *device,
-			   struct device_attribute *attr,
-			   char *buf)
-{
-	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
-	struct drm_device *dev = connector->dev;
-	struct drm_property *prop = NULL;
-	uint64_t subconnector;
-	int ret;
-
-	switch (connector->connector_type) {
-		case DRM_MODE_CONNECTOR_DVII:
-			prop = dev->mode_config.dvi_i_subconnector_property;
-			break;
-		case DRM_MODE_CONNECTOR_Composite:
-		case DRM_MODE_CONNECTOR_SVIDEO:
-		case DRM_MODE_CONNECTOR_Component:
-			prop = dev->mode_config.tv_subconnector_property;
-			break;
-		default:
-			DRM_ERROR("Wrong connector type for this property\n");
-			return 0;
-	}
-
-	if (!prop) {
-		DRM_ERROR("Unable to find subconnector property\n");
-		return 0;
-	}
-
-	ret = drm_connector_property_get_value(connector, prop, &subconnector);
-	if (ret)
-		return 0;
-
-	return snprintf(buf, PAGE_SIZE, "%s", drm_get_subconnector_name((int)subconnector));
-}
-
-static ssize_t select_subconnector_show(struct device *device,
-			   struct device_attribute *attr,
-			   char *buf)
-{
-	struct drm_connector *connector = container_of(device, struct drm_connector, kdev);
-	struct drm_device *dev = connector->dev;
-	struct drm_property *prop = NULL;
-	uint64_t subconnector;
-	int ret;
-
-	switch (connector->connector_type) {
-		case DRM_MODE_CONNECTOR_DVII:
-			prop = dev->mode_config.dvi_i_select_subconnector_property;
-			break;
-		case DRM_MODE_CONNECTOR_Composite:
-		case DRM_MODE_CONNECTOR_SVIDEO:
-		case DRM_MODE_CONNECTOR_Component:
-			prop = dev->mode_config.tv_select_subconnector_property;
-			break;
-		default:
-			DRM_ERROR("Wrong connector type for this property\n");
-			return 0;
-	}
-
-	if (!prop) {
-		DRM_ERROR("Unable to find select subconnector property\n");
-		return 0;
-	}
-
-	ret = drm_connector_property_get_value(connector, prop, &subconnector);
-	if (ret)
-		return 0;
-
-	return snprintf(buf, PAGE_SIZE, "%s", drm_get_select_subconnector_name((int)subconnector));
-}
-
-static struct device_attribute connector_attrs[] = {
-	__ATTR_RO(status),
-	__ATTR_RO(enabled),
-	__ATTR_RO(dpms),
-	__ATTR_RO(modes),
-};
-
-/* These attributes are for both DVI-I connectors and all types of tv-out. */
-static struct device_attribute connector_attrs_opt1[] = {
-	__ATTR_RO(subconnector),
-	__ATTR_RO(select_subconnector),
-};
-
-static struct bin_attribute edid_attr = {
-	.attr.name = "edid",
-	.size = 128,
-	.read = edid_show,
-};
-
-/**
- * drm_sysfs_connector_add - add an connector to sysfs
- * @connector: connector to add
- *
- * Create an connector device in sysfs, along with its associated connector
- * properties (so far, connection status, dpms, mode list & edid) and
- * generate a hotplug event so userspace knows there's a new connector
- * available.
- *
- * Note:
- * This routine should only be called *once* for each DRM minor registered.
- * A second call for an already registered device will trigger the BUG_ON
- * below.
- */
-int drm_sysfs_connector_add(struct drm_connector *connector)
-{
-	struct drm_device *dev = connector->dev;
-	int ret = 0, i, j;
-
-	/* We shouldn't get called more than once for the same connector */
-	BUG_ON(device_is_registered(&connector->kdev));
-
-	connector->kdev.parent = &dev->primary->kdev;
-	connector->kdev.class = drm_class;
-	connector->kdev.release = drm_sysfs_device_release;
-
-	DRM_DEBUG("adding \"%s\" to sysfs\n",
-		  drm_get_connector_name(connector));
-
-	snprintf(connector->kdev.bus_id, BUS_ID_SIZE, "card%d-%s",
-		 dev->primary->index, drm_get_connector_name(connector));
-	ret = device_register(&connector->kdev);
-
-	if (ret) {
-		DRM_ERROR("failed to register connector device: %d\n", ret);
-		goto out;
-	}
-
-	/* Standard attributes */
-
-	for (i = 0; i < ARRAY_SIZE(connector_attrs); i++) {
-		ret = device_create_file(&connector->kdev, &connector_attrs[i]);
-		if (ret)
-			goto err_out_files;
-	}
-
-	/* Optional attributes */
-	/* On the long run it maybe a good idea to make one set of optionals per connector type. */
-
-	switch (connector->connector_type) {
-		case DRM_MODE_CONNECTOR_DVII:
-		case DRM_MODE_CONNECTOR_Composite:
-		case DRM_MODE_CONNECTOR_SVIDEO:
-		case DRM_MODE_CONNECTOR_Component:
-			for (i = 0; i < ARRAY_SIZE(connector_attrs_opt1); i++) {
-				ret = device_create_file(&connector->kdev, &connector_attrs_opt1[i]);
-				if (ret)
-					goto err_out_files;
-			}
-			break;
-		default:
-			break;
-	}
-
-	ret = sysfs_create_bin_file(&connector->kdev.kobj, &edid_attr);
-	if (ret)
-		goto err_out_files;
-
-	/* Let userspace know we have a new connector */
-	drm_sysfs_hotplug_event(dev);
-
-	return 0;
-
-err_out_files:
-	if (i > 0)
-		for (j = 0; j < i; j++)
-			device_remove_file(&connector->kdev, &connector_attrs[i]);
-	device_unregister(&connector->kdev);
-
-out:
-	return ret;
-}
-EXPORT_SYMBOL(drm_sysfs_connector_add);
-
-/**
- * drm_sysfs_connector_remove - remove an connector device from sysfs
- * @connector: connector to remove
- *
- * Remove @connector and its associated attributes from sysfs.  Note that
- * the device model core will take care of sending the "remove" uevent
- * at this time, so we don't need to do it.
- *
- * Note:
- * This routine should only be called if the connector was previously
- * successfully registered.  If @connector hasn't been registered yet,
- * you'll likely see a panic somewhere deep in sysfs code when called.
- */
-void drm_sysfs_connector_remove(struct drm_connector *connector)
-{
-	int i;
-
-	DRM_DEBUG("removing \"%s\" from sysfs\n",
-		  drm_get_connector_name(connector));
-
-	for (i = 0; i < ARRAY_SIZE(connector_attrs); i++)
-		device_remove_file(&connector->kdev, &connector_attrs[i]);
-	sysfs_remove_bin_file(&connector->kdev.kobj, &edid_attr);
-	device_unregister(&connector->kdev);
-}
-EXPORT_SYMBOL(drm_sysfs_connector_remove);
-
-/**
- * drm_sysfs_hotplug_event - generate a DRM uevent
- * @dev: DRM device
- *
- * Send a uevent for the DRM device specified by @dev.  Currently we only
- * set HOTPLUG=1 in the uevent environment, but this could be expanded to
- * deal with other types of events.
- */
-void drm_sysfs_hotplug_event(struct drm_device *dev)
-{
-	char *event_string = "HOTPLUG=1";
-	char *envp[] = { event_string, NULL };
-
-	DRM_DEBUG("generating hotplug event\n");
-
-	kobject_uevent_env(&dev->primary->kdev.kobj, KOBJ_CHANGE, envp);
-}
-EXPORT_SYMBOL(drm_sysfs_hotplug_event);
-
-static struct device_attribute dri_attrs[] = {
-	__ATTR(dri_library_name, S_IRUGO, show_dri, NULL),
-};
-
 /**
  * drm_sysfs_device_add - adds a class device to sysfs for a character driver
  * @dev: DRM device to be added
@@ -464,11 +156,6 @@ static struct device_attribute dri_attrs[] = {
  * Add a DRM device to the DRM's device model class.  We use @dev's PCI device
  * as the parent for the Linux device, and make sure it has a file containing
  * the driver we're using (for userspace compatibility).
- *
- * Note:
- * This routine should only be called *once* for each DRM minor registered.
- * A second call for an already registered device will trigger the BUG_ON
- * below.
  */
 int drm_sysfs_device_add(struct drm_minor *minor)
 {
@@ -480,19 +167,9 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 	minor->kdev.class = drm_class;
 	minor->kdev.release = drm_sysfs_device_release;
 	minor->kdev.devt = minor->device;
-	if (minor->type == DRM_MINOR_CONTROL)
-		minor_str = "controlD%d";
-	else if (minor->type == DRM_MINOR_RENDER)
-		minor_str = "renderD%d";
-	else
-		minor_str = "card%d";
+	minor_str = "card%d";
 	
 	snprintf(minor->kdev.bus_id, BUS_ID_SIZE, minor_str, minor->index);
-
-	/* Shouldn't register more than once */
-	BUG_ON(device_is_registered(&minor->kdev));
-
-	DRM_DEBUG("registering DRM device \"%s\"\n", minor->kdev.bus_id);
 
 	err = device_register(&minor->kdev);
 	if (err) {
@@ -500,8 +177,8 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 		goto err_out;
 	}
 
-	for (i = 0; i < ARRAY_SIZE(dri_attrs); i++) {
-		err = device_create_file(&minor->kdev, &dri_attrs[i]);
+	for (i = 0; i < ARRAY_SIZE(device_attrs); i++) {
+		err = device_create_file(&minor->kdev, &device_attrs[i]);
 		if (err)
 			goto err_out_files;
 	}
@@ -511,7 +188,7 @@ int drm_sysfs_device_add(struct drm_minor *minor)
 err_out_files:
 	if (i > 0)
 		for (j = 0; j < i; j++)
-			device_remove_file(&minor->kdev, &dri_attrs[j]);
+			device_remove_file(&minor->kdev, &device_attrs[j]);
 	device_unregister(&minor->kdev);
 err_out:
 
@@ -529,7 +206,7 @@ void drm_sysfs_device_remove(struct drm_minor *minor)
 {
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(dri_attrs); i++)
-		device_remove_file(&minor->kdev, &dri_attrs[i]);
+	for (i = 0; i < ARRAY_SIZE(device_attrs); i++)
+		device_remove_file(&minor->kdev, &device_attrs[i]);
 	device_unregister(&minor->kdev);
 }

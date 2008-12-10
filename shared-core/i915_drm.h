@@ -39,7 +39,7 @@
 				 * of chars for next/prev indices */
 #define I915_LOG_MIN_TEX_REGION_SIZE 14
 
-typedef struct drm_i915_init {
+typedef struct _drm_i915_init {
 	enum {
 		I915_INIT_DMA = 0x01,
 		I915_CLEANUP_DMA = 0x02,
@@ -259,7 +259,7 @@ typedef struct drm_i915_batchbuffer {
 /* As above, but pass a pointer to userspace buffer which can be
  * validated by the kernel prior to sending to hardware.
  */
-typedef struct drm_i915_cmdbuffer {
+typedef struct _drm_i915_cmdbuffer {
 	char __user *buf;	/* pointer to userspace command buffer */
 	int sz;			/* nr bytes in buf */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
@@ -363,10 +363,6 @@ typedef struct drm_i915_vblank_swap {
 #define MMIO_REGS_CL_INVOCATION_COUNT		6
 #define MMIO_REGS_PS_INVOCATION_COUNT		7
 #define MMIO_REGS_PS_DEPTH_COUNT		8
-#define MMIO_REGS_DOVSTA			9
-#define MMIO_REGS_GAMMA				10
-#define MMIO_REGS_FENCE				11
-#define MMIO_REGS_FENCE_NEW			12
 
 typedef struct drm_i915_mmio_entry {
 	unsigned int flag;
@@ -383,6 +379,58 @@ typedef struct drm_i915_mmio {
 typedef struct drm_i915_hws_addr {
 	uint64_t addr;
 } drm_i915_hws_addr_t;
+
+/*
+ * Relocation header is 4 uint32_ts
+ * 0 - 32 bit reloc count
+ * 1 - 32-bit relocation type
+ * 2-3 - 64-bit user buffer handle ptr for another list of relocs.
+ */
+#define I915_RELOC_HEADER 4
+
+/*
+ * type 0 relocation has 4-uint32_t stride
+ * 0 - offset into buffer
+ * 1 - delta to add in
+ * 2 - buffer handle
+ * 3 - reserved (for optimisations later).
+ */
+/*
+ * type 1 relocation has 4-uint32_t stride.
+ * Hangs off the first item in the op list.
+ * Performed after all valiations are done.
+ * Try to group relocs into the same relocatee together for
+ * performance reasons.
+ * 0 - offset into buffer
+ * 1 - delta to add in
+ * 2 - buffer index in op list.
+ * 3 - relocatee index in op list.
+ */
+#define I915_RELOC_TYPE_0 0
+#define I915_RELOC0_STRIDE 4
+#define I915_RELOC_TYPE_1 1
+#define I915_RELOC1_STRIDE 4
+
+
+struct drm_i915_op_arg {
+	uint64_t next;
+	uint64_t reloc_ptr;
+	int handled;
+	unsigned int pad64;
+	union {
+		struct drm_bo_op_req req;
+		struct drm_bo_arg_rep rep;
+	} d;
+
+};
+
+struct drm_i915_execbuffer {
+	uint64_t ops_list;
+	uint32_t num_buffers;
+	struct drm_i915_batchbuffer batch;
+	drm_context_t context; /* for lockless use in the future */
+	struct drm_fence_arg fence_arg;
+};
 
 struct drm_i915_gem_init {
 	/**

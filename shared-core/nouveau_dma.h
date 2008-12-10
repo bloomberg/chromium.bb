@@ -93,9 +93,4 @@ typedef enum {
 	}                                                                      \
 } while(0)
 
-/* This should allow easy switching to a real fifo in the future. */
-#define OUT_MODE(mthd, val) do {				\
-	nv50_display_command(dev_priv, mthd, val); 		\
-} while(0)
-
 #endif

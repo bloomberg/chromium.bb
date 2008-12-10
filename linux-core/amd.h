@@ -1,1 +1,0 @@
-../shared-core/amd.h

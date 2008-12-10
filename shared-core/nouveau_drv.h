@@ -41,9 +41,6 @@
 
 #include "nouveau_drm.h"
 #include "nouveau_reg.h"
-#include "nouveau_bios.h"
-
-#define MAX_NUM_DCB_ENTRIES 16
 
 struct mem_block {
 	struct mem_block *next;
@@ -314,27 +311,6 @@ struct drm_nouveau_private {
 
 	struct list_head gpuobj_list;
 
-	void *display_priv; /* internal modesetting */
-	void *kms_priv; /* related to public interface */
-
-	/* Hook these up to the "public interface" to accomodate a certain allocation style. */
-	/* This is to avoid polluting the internal interface. */
-	void *(*alloc_crtc) (struct drm_device *dev);
-	void *(*alloc_output) (struct drm_device *dev);
-	void *(*alloc_connector) (struct drm_device *dev);
-
-	void (*free_crtc) (void *crtc);
-	void (*free_output) (void *output);
-	void (*free_connector) (void *connector);
-
-	struct bios bios;
-
-	struct {
-		int entries;
-		struct dcb_entry entry[MAX_NUM_DCB_ENTRIES];
-		unsigned char i2c_read[MAX_NUM_DCB_ENTRIES];
-		unsigned char i2c_write[MAX_NUM_DCB_ENTRIES];
-	} dcb_table;
 	struct nouveau_suspend_resume {
 		uint32_t fifo_mode;
 		uint32_t graph_ctx_control;
@@ -389,7 +365,6 @@ extern struct mem_block *nouveau_mem_alloc_block(struct mem_block *,
 						 struct drm_file *, int tail);
 extern void nouveau_mem_takedown(struct mem_block **heap);
 extern void nouveau_mem_free_block(struct mem_block *);
-extern struct mem_block* find_block_by_handle(struct mem_block *heap, drm_handle_t handle);
 extern uint64_t nouveau_mem_fb_amount(struct drm_device *);
 extern void nouveau_mem_release(struct drm_file *, struct mem_block *heap);
 extern int  nouveau_ioctl_mem_alloc(struct drm_device *, void *data,

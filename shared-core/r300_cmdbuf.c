@@ -35,7 +35,6 @@
 #include "drm.h"
 #include "radeon_drm.h"
 #include "radeon_drv.h"
-#include "radeon_reg.h"
 #include "r300_reg.h"
 
 #define R300_SIMULTANEOUS_CLIPRECTS		4
@@ -167,6 +166,8 @@ void r300_init_reg_flags(struct drm_device *dev)
 		for(i=((reg)>>2);i<((reg)>>2)+(count);i++)\
 			r300_reg_flags[i]|=(mark);
 
+#define MARK_SAFE		1
+#define MARK_CHECK_OFFSET	2
 
 #define ADD_RANGE(reg, count)	ADD_RANGE_MARK(reg, count, MARK_SAFE)
 
@@ -246,11 +247,6 @@ void r300_init_reg_flags(struct drm_device *dev)
 	ADD_RANGE(R300_VAP_INPUT_ROUTE_0_0, 8);
 	ADD_RANGE(R300_VAP_INPUT_ROUTE_1_0, 8);
 
-	ADD_RANGE(R500_SU_REG_DEST, 1);
-	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV410) {
-		ADD_RANGE(R300_DST_PIPE_CONFIG, 1);
-	}
-
 	if ((dev_priv->flags & RADEON_FAMILY_MASK) >= CHIP_RV515) {
 		ADD_RANGE(R500_VAP_INDEX_OFFSET, 1);
 		ADD_RANGE(R500_US_CONFIG, 2);
@@ -261,7 +257,6 @@ void r300_init_reg_flags(struct drm_device *dev)
 		ADD_RANGE(R500_RB3D_COLOR_CLEAR_VALUE_AR, 2);
 		ADD_RANGE(R500_RB3D_CONSTANT_COLOR_AR, 2);
 		ADD_RANGE(R500_ZB_FIFO_SIZE, 2);
-		ADD_RANGE(R500_GA_US_VECTOR_INDEX, 2);
 	} else {
 		ADD_RANGE(R300_PFS_CNTL_0, 3);
 		ADD_RANGE(R300_PFS_NODE_0, 4);
@@ -274,112 +269,9 @@ void r300_init_reg_flags(struct drm_device *dev)
 		ADD_RANGE(R300_RS_ROUTE_0, 8);
 
 	}
-
-	/* add 2d blit engine registers for DDX */
-	ADD_RANGE(RADEON_SRC_Y_X, 3); /* 1434, 1438, 143c, 
-					 SRC_Y_X, DST_Y_X, DST_HEIGHT_WIDTH
-				       */
-	ADD_RANGE(RADEON_DP_GUI_MASTER_CNTL, 1); /* 146c */
-	ADD_RANGE(RADEON_DP_BRUSH_BKGD_CLR, 2); /* 1478, 147c */
-	ADD_RANGE(RADEON_DP_SRC_FRGD_CLR, 2); /* 15d8, 15dc */
-	ADD_RANGE(RADEON_DP_CNTL, 1); /* 16c0 */
-	ADD_RANGE(RADEON_DP_WRITE_MASK, 1); /* 16cc */
-	ADD_RANGE(RADEON_DEFAULT_SC_BOTTOM_RIGHT, 1); /* 16e8 */
-
-	ADD_RANGE(RADEON_DSTCACHE_CTLSTAT, 1);
-	ADD_RANGE(RADEON_WAIT_UNTIL, 1);
-
-	ADD_RANGE_MARK(RADEON_DST_OFFSET, 1, MARK_CHECK_OFFSET);
-	ADD_RANGE_MARK(RADEON_SRC_OFFSET, 1, MARK_CHECK_OFFSET);
-
-	ADD_RANGE_MARK(RADEON_DST_PITCH_OFFSET, 1, MARK_CHECK_OFFSET);
-	ADD_RANGE_MARK(RADEON_SRC_PITCH_OFFSET, 1, MARK_CHECK_OFFSET);
-
-	/* TODO SCISSOR */
-	ADD_RANGE_MARK(R300_SC_SCISSOR0, 2, MARK_CHECK_SCISSOR);
-
-	ADD_RANGE(R300_SC_CLIP_0_A, 2);
-	ADD_RANGE(R300_SC_CLIP_RULE, 1);
-	ADD_RANGE(R300_SC_SCREENDOOR, 1);
-
-	ADD_RANGE(R300_VAP_PVS_CODE_CNTL_0, 4);
-	ADD_RANGE(R300_VAP_PVS_VECTOR_INDX_REG, 2);
-
-	if (dev_priv->chip_family <= CHIP_RV280) {
-		ADD_RANGE(RADEON_RE_TOP_LEFT, 1);
-		ADD_RANGE(RADEON_RE_WIDTH_HEIGHT, 1);
-		ADD_RANGE(RADEON_AUX_SC_CNTL, 1);
-		ADD_RANGE(RADEON_RB3D_DSTCACHE_CTLSTAT, 1);
-		ADD_RANGE(RADEON_RB3D_PLANEMASK, 1);
-		ADD_RANGE(RADEON_SE_CNTL, 1);
-		ADD_RANGE(RADEON_PP_CNTL, 1);
-		ADD_RANGE(RADEON_RB3D_CNTL, 1);
-		ADD_RANGE_MARK(RADEON_RB3D_COLOROFFSET, 1, MARK_CHECK_OFFSET);
-		ADD_RANGE(RADEON_RB3D_COLORPITCH, 1);
-		ADD_RANGE(RADEON_RB3D_BLENDCNTL, 1);
-
-		if (dev_priv->chip_family >= CHIP_R200) {
-			ADD_RANGE(R200_PP_CNTL_X, 1);
-			ADD_RANGE(R200_PP_TXMULTI_CTL_0, 1);
-			ADD_RANGE(R200_SE_VTX_STATE_CNTL, 1);
-			ADD_RANGE(R200_RE_CNTL, 1);
-			ADD_RANGE(R200_SE_VTE_CNTL, 1);
-			ADD_RANGE(R200_SE_VAP_CNTL, 1);
-
-			ADD_RANGE(R200_PP_TXFILTER_0, 1);
-			ADD_RANGE(R200_PP_TXFORMAT_0, 1);
-			ADD_RANGE(R200_PP_TXFORMAT_X_0, 1);
-			ADD_RANGE(R200_PP_TXSIZE_0, 1);
-			ADD_RANGE(R200_PP_TXPITCH_0, 1);
-			ADD_RANGE(R200_PP_TFACTOR_0, 1);
-
-			ADD_RANGE(R200_PP_TXFILTER_1, 1);
-			ADD_RANGE(R200_PP_TXFORMAT_1, 1);
-			ADD_RANGE(R200_PP_TXFORMAT_X_1, 1);
-			ADD_RANGE(R200_PP_TXSIZE_1, 1);
-			ADD_RANGE(R200_PP_TXPITCH_1, 1);
-			ADD_RANGE(R200_PP_TFACTOR_1, 1);
-
-			ADD_RANGE_MARK(R200_PP_TXOFFSET_0, 1, MARK_CHECK_OFFSET);
-			ADD_RANGE_MARK(R200_PP_TXOFFSET_1, 1, MARK_CHECK_OFFSET);
-			ADD_RANGE_MARK(R200_PP_TXOFFSET_2, 1, MARK_CHECK_OFFSET);
-			ADD_RANGE_MARK(R200_PP_TXOFFSET_3, 1, MARK_CHECK_OFFSET);
-			ADD_RANGE_MARK(R200_PP_TXOFFSET_4, 1, MARK_CHECK_OFFSET);
-			ADD_RANGE_MARK(R200_PP_TXOFFSET_5, 1, MARK_CHECK_OFFSET);
-
-			ADD_RANGE(R200_SE_VTX_FMT_0, 1);
-			ADD_RANGE(R200_SE_VTX_FMT_1, 1);
-			ADD_RANGE(R200_PP_TXCBLEND_0, 1);
-			ADD_RANGE(R200_PP_TXCBLEND2_0, 1);
-			ADD_RANGE(R200_PP_TXABLEND_0, 1);
-			ADD_RANGE(R200_PP_TXABLEND2_0, 1);
-
-		} else {
-
-			ADD_RANGE(RADEON_SE_COORD_FMT, 1);
-			ADD_RANGE(RADEON_SE_CNTL_STATUS, 1);
-
-			ADD_RANGE(RADEON_PP_TXFILTER_0, 1);
-			ADD_RANGE(RADEON_PP_TXFORMAT_0, 1);
-			ADD_RANGE(RADEON_PP_TEX_SIZE_0, 1);
-			ADD_RANGE(RADEON_PP_TEX_PITCH_0, 1);
-
-			ADD_RANGE(RADEON_PP_TXFILTER_1, 1);
-			ADD_RANGE(RADEON_PP_TXFORMAT_1, 1);
-			ADD_RANGE(RADEON_PP_TEX_SIZE_1, 1);
-			ADD_RANGE(RADEON_PP_TEX_PITCH_1, 1);
-
-			ADD_RANGE(RADEON_PP_TXCBLEND_0, 1);
-			ADD_RANGE(RADEON_PP_TXABLEND_0, 1);
-			ADD_RANGE(RADEON_SE_VTX_FMT, 1);
-			ADD_RANGE_MARK(RADEON_PP_TXOFFSET_0, 1, MARK_CHECK_OFFSET);
-			ADD_RANGE_MARK(RADEON_PP_TXOFFSET_1, 1, MARK_CHECK_OFFSET);
-			ADD_RANGE_MARK(RADEON_PP_TXOFFSET_2, 1, MARK_CHECK_OFFSET);
-		}
-	}
 }
 
-int r300_check_range(unsigned reg, int count)
+static __inline__ int r300_check_range(unsigned reg, int count)
 {
 	int i;
 	if (reg & ~0xffff)
@@ -388,13 +280,6 @@ int r300_check_range(unsigned reg, int count)
 		if (r300_reg_flags[i] != MARK_SAFE)
 			return 1;
 	return 0;
-}
-
-int r300_get_reg_flags(unsigned reg)
-{
-	if (reg & ~0xffff)
-		return -1;
-	return r300_reg_flags[(reg >> 2)];
 }
 
 static __inline__ int r300_emit_carefully_checked_packet0(drm_radeon_private_t *
@@ -926,13 +811,13 @@ static __inline__ void r300_pacify(drm_radeon_private_t *dev_priv)
 	RING_LOCALS;
 
 	cache_z = R300_ZC_FLUSH;
-	cache_2d = R300_DC_FLUSH_2D;
-	cache_3d = R300_DC_FLUSH_3D;
+	cache_2d = R300_RB2D_DC_FLUSH;
+	cache_3d = R300_RB3D_DC_FLUSH;
 	if (!(dev_priv->track_flush & RADEON_PURGE_EMITED)) {
 		/* we can purge, primitive where draw since last purge */
 		cache_z |= R300_ZC_FREE;
-		cache_2d |= R300_DC_FREE_2D;
-		cache_3d |= R300_DC_FREE_3D;
+		cache_2d |= R300_RB2D_DC_FREE;
+		cache_3d |= R300_RB3D_DC_FREE;
 	}
 
 	/* flush & purge zbuffer */
@@ -976,12 +861,12 @@ static __inline__ void r300_pacify(drm_radeon_private_t *dev_priv)
  * The actual age emit is done by r300_do_cp_cmdbuf, which is why you must
  * be careful about how this function is called.
  */
-static void r300_discard_buffer(struct drm_device * dev, struct drm_master *master, struct drm_buf * buf)
+static void r300_discard_buffer(struct drm_device * dev, struct drm_buf * buf)
 {
+	drm_radeon_private_t *dev_priv = dev->dev_private;
 	drm_radeon_buf_priv_t *buf_priv = buf->dev_private;
-	struct drm_radeon_master_private *master_priv = master->driver_priv;
 
-	buf_priv->age = ++master_priv->sarea_priv->last_dispatch;
+	buf_priv->age = ++dev_priv->sarea_priv->last_dispatch;
 	buf->pending = 1;
 	buf->used = 0;
 }
@@ -1142,7 +1027,6 @@ int r300_do_cp_cmdbuf(struct drm_device *dev,
 		      drm_radeon_kcmd_buffer_t *cmdbuf)
 {
 	drm_radeon_private_t *dev_priv = dev->dev_private;
-	struct drm_radeon_master_private *master_priv = file_priv->master->driver_priv;
 	struct drm_device_dma *dma = dev->dma;
 	struct drm_buf *buf = NULL;
 	int emit_dispatch_age = 0;
@@ -1249,7 +1133,7 @@ int r300_do_cp_cmdbuf(struct drm_device *dev,
 			}
 
 			emit_dispatch_age = 1;
-			r300_discard_buffer(dev, file_priv->master, buf);
+			r300_discard_buffer(dev, buf);
 			break;
 
 		case R300_CMD_WAIT:
@@ -1304,7 +1188,7 @@ int r300_do_cp_cmdbuf(struct drm_device *dev,
 
 		/* Emit the vertex buffer age */
 		BEGIN_RING(2);
-		RADEON_DISPATCH_AGE(master_priv->sarea_priv->last_dispatch);
+		RADEON_DISPATCH_AGE(dev_priv->sarea_priv->last_dispatch);
 		ADVANCE_RING();
 	}
 

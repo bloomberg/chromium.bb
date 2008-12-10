@@ -105,6 +105,7 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
 		kfree(obj);
 		return NULL;
 	}
+
 	kref_init(&obj->refcount);
 	kref_init(&obj->handlecount);
 	obj->size = size;
@@ -263,9 +264,8 @@ again:
 
 	spin_lock(&dev->object_name_lock);
 	if (obj->name) {
-		args->name = (uint64_t) obj->name;
 		spin_unlock(&dev->object_name_lock);
-		return 0;
+		return -EEXIST;
 	}
 	ret = idr_get_new_above(&dev->object_name_idr, obj, 1,
 				 &obj->name);

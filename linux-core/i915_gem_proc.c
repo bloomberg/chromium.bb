@@ -37,7 +37,7 @@ static int i915_gem_active_info(char *buf, char **start, off_t offset,
 {
 	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv;
 	int len = 0;
 
@@ -76,7 +76,7 @@ static int i915_gem_flushing_info(char *buf, char **start, off_t offset,
 {
 	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv;
 	int len = 0;
 
@@ -114,7 +114,7 @@ static int i915_gem_inactive_info(char *buf, char **start, off_t offset,
 {
 	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_object *obj_priv;
 	int len = 0;
 
@@ -152,7 +152,7 @@ static int i915_gem_request_info(char *buf, char **start, off_t offset,
 {
 	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	struct drm_i915_gem_request *gem_request;
 	int len = 0;
 
@@ -183,7 +183,7 @@ static int i915_gem_seqno_info(char *buf, char **start, off_t offset,
 {
 	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	int len = 0;
 
 	if (offset > DRM_PROC_LIMIT) {
@@ -209,7 +209,7 @@ static int i915_interrupt_info(char *buf, char **start, off_t offset,
 {
 	struct drm_minor *minor = (struct drm_minor *) data;
 	struct drm_device *dev = minor->dev;
-	struct drm_i915_private *dev_priv = dev->dev_private;
+	drm_i915_private_t *dev_priv = dev->dev_private;
 	int len = 0;
 
 	if (offset > DRM_PROC_LIMIT) {

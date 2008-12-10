@@ -63,7 +63,7 @@ static void via_fence_poll(struct drm_device *dev, uint32_t class,
 
 
 		if (!dev_priv->have_idlelock) {
-			drm_idlelock_take(&dev->primary->master->lock);
+			drm_idlelock_take(&dev->lock);
 			dev_priv->have_idlelock = 1;
 		}
 
@@ -89,7 +89,7 @@ static void via_fence_poll(struct drm_device *dev, uint32_t class,
 		if (signaled_flush_types) {
 			waiting_types &= ~signaled_flush_types;
 			if (!waiting_types && dev_priv->have_idlelock) {
-				drm_idlelock_release(&dev->primary->master->lock);
+				drm_idlelock_release(&dev->lock);
 				dev_priv->have_idlelock = 0;
 			}
 			drm_fence_handler(dev, 0, dev_priv->emit_0_sequence,

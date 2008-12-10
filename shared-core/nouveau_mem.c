@@ -34,7 +34,6 @@
 #include "drm.h"
 #include "drm_sarea.h"
 #include "nouveau_drv.h"
-#include "nv50_kms_wrapper.h"
 
 static struct mem_block *
 split_block(struct mem_block *p, uint64_t start, uint64_t size,
@@ -116,17 +115,6 @@ static struct mem_block *find_block(struct mem_block *heap, uint64_t start)
 
 	list_for_each(p, heap)
 		if (p->start == start)
-			return p;
-
-	return NULL;
-}
-
-struct mem_block *find_block_by_handle(struct mem_block *heap, drm_handle_t handle)
-{
-	struct mem_block *p;
-
-	list_for_each(p, heap)
-		if (p->map_handle == handle)
 			return p;
 
 	return NULL;
@@ -745,30 +733,6 @@ void nouveau_mem_free(struct drm_device* dev, struct mem_block* block)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 
 	DRM_DEBUG("freeing 0x%llx type=0x%08x\n", block->start, block->flags);
-
-	/* Check if the deallocations cause problems for our modesetting system. */
-	if (drm_core_check_feature(dev, DRIVER_MODESET)) {
-		if (dev_priv->card_type >= NV_50) {
-			struct nv50_crtc *crtc = NULL;
-			struct nv50_display *display = nv50_get_display(dev);
-
-			list_for_each_entry(crtc, &display->crtcs, item) {
-				if (crtc->fb->block == block) {
-					crtc->fb->block = NULL;
-
-					if (!crtc->blanked)
-						crtc->blank(crtc, true);
-				}
-
-				if (crtc->cursor->block == block) {
-					crtc->cursor->block = NULL;
-
-					if (crtc->cursor->visible)
-						crtc->cursor->hide(crtc);
-				}
-			}
-		}
-	}
 
 	if (block->flags&NOUVEAU_MEM_MAPPED)
 		drm_rmmap(dev, block->map);

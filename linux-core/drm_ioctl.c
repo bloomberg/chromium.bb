@@ -53,13 +53,12 @@ int drm_getunique(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
 	struct drm_unique *u = data;
-	struct drm_master *master = file_priv->master;
 
-	if (u->unique_len >= master->unique_len) {
-		if (copy_to_user(u->unique, master->unique, master->unique_len))
+	if (u->unique_len >= dev->unique_len) {
+		if (copy_to_user(u->unique, dev->unique, dev->unique_len))
 			return -EFAULT;
 	}
-	u->unique_len = master->unique_len;
+	u->unique_len = dev->unique_len;
 
 	return 0;
 }
@@ -82,37 +81,36 @@ int drm_setunique(struct drm_device *dev, void *data,
 		  struct drm_file *file_priv)
 {
 	struct drm_unique *u = data;
-	struct drm_master *master = file_priv->master;
 	int domain, bus, slot, func, ret;
 
-	if (master->unique_len || master->unique)
+	if (dev->unique_len || dev->unique)
 		return -EBUSY;
 
 	if (!u->unique_len || u->unique_len > 1024)
 		return -EINVAL;
 
-	master->unique_len = u->unique_len;
-	master->unique = drm_alloc(u->unique_len + 1, DRM_MEM_DRIVER);
-	if (!master->unique)
+	dev->unique_len = u->unique_len;
+	dev->unique = drm_alloc(u->unique_len + 1, DRM_MEM_DRIVER);
+	if (!dev->unique)
 		return -ENOMEM;
-	if (copy_from_user(master->unique, u->unique, master->unique_len))
+	if (copy_from_user(dev->unique, u->unique, dev->unique_len))
 		return -EFAULT;
 
-	master->unique[master->unique_len] = '\0';
+	dev->unique[dev->unique_len] = '\0';
 
 	dev->devname =
 	    drm_alloc(strlen(dev->driver->pci_driver.name) +
-		      strlen(master->unique) + 2, DRM_MEM_DRIVER);
+		      strlen(dev->unique) + 2, DRM_MEM_DRIVER);
 	if (!dev->devname)
 		return -ENOMEM;
 
 	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name,
-		master->unique);
+		dev->unique);
 
 	/* Return error if the busid submitted doesn't match the device's actual
 	 * busid.
 	 */
-	ret = sscanf(master->unique, "PCI:%d:%d:%d", &bus, &slot, &func);
+	ret = sscanf(dev->unique, "PCI:%d:%d:%d", &bus, &slot, &func);
 	if (ret != 3)
 		return -EINVAL;
 	domain = bus >> 8;
@@ -127,35 +125,33 @@ int drm_setunique(struct drm_device *dev, void *data,
 	return 0;
 }
 
-static int drm_set_busid(struct drm_device *dev, struct drm_file *file_priv)
+static int drm_set_busid(struct drm_device * dev)
 {
-	struct drm_master *master = file_priv->master;
 	int len;
-
-	if (master->unique != NULL)
+	if (dev->unique != NULL)
 		return -EBUSY;
 
-	master->unique_len = 40;
-	master->unique = drm_alloc(master->unique_len + 1, DRM_MEM_DRIVER);
-	if (master->unique == NULL)
+	dev->unique_len = 40;
+	dev->unique = drm_alloc(dev->unique_len + 1, DRM_MEM_DRIVER);
+	if (dev->unique == NULL)
 		return -ENOMEM;
 
-	len = snprintf(master->unique, master->unique_len, "pci:%04x:%02x:%02x.%d",
+	len = snprintf(dev->unique, dev->unique_len, "pci:%04x:%02x:%02x.%d",
 		       drm_get_pci_domain(dev),
 		       dev->pdev->bus->number,
 		       PCI_SLOT(dev->pdev->devfn),
 		       PCI_FUNC(dev->pdev->devfn));
-	if (len > master->unique_len)
+	if (len > dev->unique_len)
 		DRM_ERROR("buffer overflow");
 
 	dev->devname =
-	    drm_alloc(strlen(dev->driver->pci_driver.name) + master->unique_len +
+	    drm_alloc(strlen(dev->driver->pci_driver.name) + dev->unique_len +
 		      2, DRM_MEM_DRIVER);
 	if (dev->devname == NULL)
 		return -ENOMEM;
 
 	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name,
-		master->unique);
+		dev->unique);
 
 	return 0;
 }
@@ -279,7 +275,7 @@ int drm_getstats(struct drm_device *dev, void *data,
 	for (i = 0; i < dev->counters; i++) {
 		if (dev->types[i] == _DRM_STAT_LOCK)
 			stats->data[i].value =
-			    (file_priv->master->lock.hw_lock ? file_priv->master->lock.hw_lock->lock : 0);
+			    (dev->lock.hw_lock ? dev->lock.hw_lock->lock : 0);
 		else
 			stats->data[i].value = atomic_read(&dev->counts[i]);
 		stats->data[i].type = dev->types[i];
@@ -321,7 +317,7 @@ int drm_setversion(struct drm_device *dev, void *data, struct drm_file *file_pri
 			/*
 			 * Version 1.1 includes tying of DRM to specific device
 			 */
-			drm_set_busid(dev, file_priv);
+			drm_set_busid(dev);
 		}
 	}
 

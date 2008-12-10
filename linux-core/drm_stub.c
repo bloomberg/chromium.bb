@@ -58,14 +58,6 @@ static int drm_minor_get_id(struct drm_device *dev, int type)
 	int ret;
 	int base = 0, limit = 63;
 
-	if (type == DRM_MINOR_CONTROL) {
-		base += 64;
-		limit = base + 127;
-	} else if (type == DRM_MINOR_RENDER) {
-		base += 128;
-		limit = base + 255;
-	}	
-
 again:
 	if (idr_pre_get(&drm_minors_idr, GFP_KERNEL) == 0) {
 		DRM_ERROR("Out of memory expanding drawable idr\n");
@@ -88,103 +80,6 @@ again:
 	return new_id;
 }
 
-struct drm_master *drm_master_create(struct drm_minor *minor)
-{
-	struct drm_master *master;
-
-	master = drm_calloc(1, sizeof(*master), DRM_MEM_DRIVER);
-	if (!master)
-		return NULL;
-
-	kref_init(&master->refcount);
-	spin_lock_init(&master->lock.spinlock);
-	init_waitqueue_head(&master->lock.lock_queue);
-	drm_ht_create(&master->magiclist, DRM_MAGIC_HASH_ORDER);
-	INIT_LIST_HEAD(&master->magicfree);
-	master->minor = minor;
-
-	list_add_tail(&master->head, &minor->master_list);
-
-	return master;
-}
-
-struct drm_master *drm_master_get(struct drm_master *master)
-{
-	kref_get(&master->refcount);
-	return master;
-}
-
-static void drm_master_destroy(struct kref *kref)
-{
-	struct drm_master *master = container_of(kref, struct drm_master, refcount);
-	struct drm_magic_entry *pt, *next;
-	struct drm_device *dev = master->minor->dev;
-
-	list_del(&master->head);
-
-	if (dev->driver->master_destroy)
-		dev->driver->master_destroy(dev, master);
-
-	if (master->unique) {
-		drm_free(master->unique, strlen(master->unique) + 1, DRM_MEM_DRIVER);
-		master->unique = NULL;
-		master->unique_len = 0;
-	}
-
-	list_for_each_entry_safe(pt, next, &master->magicfree, head) {
-		list_del(&pt->head);
-		drm_ht_remove_item(&master->magiclist, &pt->hash_item);
-		drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
-	}
-
-	drm_ht_remove(&master->magiclist);
-
-	if (master->lock.hw_lock) {
-		if (dev->sigdata.lock == master->lock.hw_lock)
-			dev->sigdata.lock = NULL;
-		master->lock.hw_lock = NULL;	/* SHM removed */
-		master->lock.file_priv = NULL;
-		wake_up_interruptible(&master->lock.lock_queue);
-	}
-
-	drm_free(master, sizeof(*master), DRM_MEM_DRIVER);
-}
-
-void drm_master_put(struct drm_master **master)
-{
-	kref_put(&(*master)->refcount, drm_master_destroy);
-	*master = NULL;
-}
-
-int drm_setmaster_ioctl(struct drm_device *dev, void *data,
-			struct drm_file *file_priv)
-{
-	if (file_priv->minor->master && file_priv->minor->master != file_priv->master)
-		return -EINVAL;
-
-	if (!file_priv->master)
-		return -EINVAL;
-
-	if (!file_priv->minor->master && file_priv->minor->master != file_priv->master) {
-		mutex_lock(&dev->struct_mutex);
-		file_priv->minor->master = drm_master_get(file_priv->master);
-		mutex_unlock(&dev->struct_mutex);
-	}
-
-	return 0;
-}
-
-int drm_dropmaster_ioctl(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv)
-{
-	if (!file_priv->master)
-		return -EINVAL;
-	mutex_lock(&dev->struct_mutex);
-	drm_master_put(&file_priv->minor->master);
-	mutex_unlock(&dev->struct_mutex);
-	return 0;
-}
-
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 			   const struct pci_device_id *ent,
 			   struct drm_driver *driver)
@@ -199,7 +94,7 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	spin_lock_init(&dev->count_lock);
 	spin_lock_init(&dev->drw_lock);
 	spin_lock_init(&dev->tasklet_lock);
-
+	spin_lock_init(&dev->lock.spinlock);
 	init_timer(&dev->timer);
 	mutex_init(&dev->struct_mutex);
 	mutex_init(&dev->ctxlist_mutex);
@@ -217,11 +112,18 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	dev->irq = pdev->irq;
 	dev->irq_enabled = 0;
 
-	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER))
+	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER)) {
 		return -ENOMEM;
+	}
 	if (drm_mm_init(&dev->offset_manager, DRM_FILE_PAGE_OFFSET_START,
 			DRM_FILE_PAGE_OFFSET_SIZE)) {
 		drm_ht_remove(&dev->map_hash);
+		return -ENOMEM;
+	}
+
+	if (drm_ht_create(&dev->object_hash, DRM_OBJECT_HASH_ORDER)) {
+		drm_ht_remove(&dev->map_hash);
+		drm_mm_takedown(&dev->offset_manager);
 		return -ENOMEM;
 	}
 
@@ -311,7 +213,6 @@ static int drm_get_minor(struct drm_device *dev, struct drm_minor **minor, int t
 	new_minor->device = MKDEV(DRM_MAJOR, minor_id);
 	new_minor->dev = dev;
 	new_minor->index = minor_id;
-	INIT_LIST_HEAD(&new_minor->master_list);
 
 	idr_replace(&drm_minors_idr, new_minor, minor_id);
 	
@@ -398,32 +299,20 @@ int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 	}
 
 	/* only add the control node on a modesetting platform */
-	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		if ((ret = drm_get_minor(dev, &dev->control, DRM_MINOR_CONTROL)))
-			goto err_g3;
-
 	if ((ret = drm_get_minor(dev, &dev->primary, DRM_MINOR_LEGACY)))
-		goto err_g4;
+		goto err_g3;
 
 	if (dev->driver->load)
 		if ((ret = dev->driver->load(dev, ent->driver_data)))
-			goto err_g5;
-
-	/* setup the grouping for the legacy output */
-	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		if (drm_mode_group_init_legacy_group(dev, &dev->primary->mode_group))
-		    goto err_g5;
+			goto err_g4;
 
 	DRM_INFO("Initialized %s %d.%d.%d %s on minor %d\n",
 		 driver->name, driver->major, driver->minor, driver->patchlevel,
 		 driver->date, dev->primary->index);
 
 	return 0;
-err_g5:
-	drm_put_minor(&dev->primary);
 err_g4:
-	if (drm_core_check_feature(dev, DRIVER_MODESET))
-		drm_put_minor(&dev->control);
+	drm_put_minor(dev);
 err_g3:
 	if (!drm_fb_loaded)
 		pci_disable_device(pdev);
@@ -455,6 +344,11 @@ int drm_put_dev(struct drm_device * dev)
 {
 	DRM_DEBUG("release primary %s\n", dev->driver->pci_driver.name);
 
+	if (dev->unique) {
+		drm_free(dev->unique, strlen(dev->unique) + 1, DRM_MEM_DRIVER);
+		dev->unique = NULL;
+		dev->unique_len = 0;
+	}
 	if (dev->devname) {
 		drm_free(dev->devname, strlen(dev->devname) + 1,
 			 DRM_MEM_DRIVER);
@@ -474,14 +368,15 @@ int drm_put_dev(struct drm_device * dev)
  * last minor released.
  *
  */
-int drm_put_minor(struct drm_minor **minor_p)
+int drm_put_minor(struct drm_device *dev)
 {
+	struct drm_minor **minor_p = &dev->primary;
 	struct drm_minor *minor = *minor_p;
 	DRM_DEBUG("release secondary minor %d\n", minor->index);
 
 	if (minor->type == DRM_MINOR_LEGACY) {
-		if (minor->dev->driver->proc_cleanup)
-			minor->dev->driver->proc_cleanup(minor);
+		if (dev->driver->proc_cleanup)
+			dev->driver->proc_cleanup(minor);
 		drm_proc_cleanup(minor, drm_proc_root);
 	}
 	drm_sysfs_device_remove(minor);
@@ -492,5 +387,3 @@ int drm_put_minor(struct drm_minor **minor_p)
 	*minor_p = NULL;
 	return 0;
 }
-
-EXPORT_SYMBOL(drm_put_minor);
