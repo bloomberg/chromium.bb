@@ -677,7 +677,12 @@ WL_EXPORT void
 wl_display_post_button_event(struct wl_display *display,
 			     struct wl_object *source, int button, int state)
 {
+	const struct wl_compositor_interface *interface;
 	uint32_t p[4];
+
+	interface = display->compositor->interface;
+	interface->notify_pointer_button(display->compositor, source,
+					 button, state);
 
 	p[0] = source->id;
 	p[1] = (sizeof p << 16) | WL_INPUT_BUTTON;
@@ -832,4 +837,11 @@ WL_EXPORT void
 wl_surface_iterator_destroy(struct wl_surface_iterator *iterator)
 {
 	free(iterator);
+}
+
+WL_EXPORT void
+wl_display_raise_surface(struct wl_display *display, struct wl_surface *surface)
+{
+	wl_list_remove(&surface->link);
+	wl_list_insert(display->surface_list.prev, &surface->link);
 }

@@ -731,6 +731,38 @@ notify_pointer_motion(struct wl_compositor *compositor,
 }
 
 static void
+notify_pointer_button(struct wl_compositor *compositor,
+		      struct wl_object *source,
+		      int32_t button, int32_t state)
+{
+	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	struct egl_surface *es;
+	struct wl_surface_iterator *iterator;
+	struct wl_surface *surface, *target;
+	const int hotspot_x = 16, hotspot_y = 16;
+	int x, y;
+
+	x = ec->pointer->map.x + hotspot_x;
+	y = ec->pointer->map.y + hotspot_y;
+
+	target = NULL;
+	iterator = wl_surface_iterator_create(ec->wl_display, 0);
+	while (wl_surface_iterator_next(iterator, &surface)) {
+		es = wl_surface_get_data(surface);
+		if (es == NULL)
+			continue;
+
+		if (es->map.x <= x && x < es->map.x + es->map.width &&
+		    es->map.y <= y && y < es->map.y + es->map.height)
+			target = surface;
+	}
+	wl_surface_iterator_destroy(iterator);
+
+	if (target)
+		wl_display_raise_surface(ec->wl_display, target);
+}
+
+static void
 notify_key(struct wl_compositor *compositor,
 	   struct wl_object *source, uint32_t key, uint32_t state)
 {
@@ -754,6 +786,7 @@ static const struct wl_compositor_interface interface = {
 	notify_surface_damage,
 	notify_commit,
 	notify_pointer_motion,
+	notify_pointer_button,
 	notify_key
 };
 
