@@ -135,11 +135,15 @@ wl_display_post_key_event(struct wl_display *display,
 void
 wl_display_post_frame(struct wl_display *display,
 		      uint32_t frame, uint32_t msecs);
+
+#define WL_INPUT_MOTION 0
+#define WL_INPUT_BUTTON 1
+#define WL_INPUT_KEY 2
+
 void
-wl_display_post_surface_motion(struct wl_display *display,
-			       struct wl_surface *surface,
-			       struct wl_object *source,
-			       int x, int y, int sx, int sy);
+wl_surface_post_event(struct wl_surface *surface,
+		      struct wl_object *sender,
+		      uint32_t event, ...);
 
 struct wl_compositor {
 	const struct wl_compositor_interface *interface;

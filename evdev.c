@@ -42,10 +42,18 @@ struct wl_input_device {
 static const struct wl_method input_device_methods[] = {
 };
 
+static const struct wl_event input_device_events[] = {
+	{ "motion", "ii" },
+	{ "button", "uu" },
+	{ "key", "uu" },
+};
+
 static const struct wl_interface input_device_interface = {
 	"input_device", 1,
 	ARRAY_LENGTH(input_device_methods),
 	input_device_methods,
+	ARRAY_LENGTH(input_device_events),
+	input_device_events,
 };
 
 static void wl_input_device_data(int fd, uint32_t mask, void *data)

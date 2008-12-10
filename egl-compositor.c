@@ -758,8 +758,8 @@ notify_pointer_motion(struct wl_compositor *compositor,
 	if (es) {
 		sx = (x - es->map.x) * es->width / es->map.width;
 		sy = (y - es->map.y) * es->height / es->map.height;
-		wl_display_post_surface_motion(ec->wl_display, es->wl_surface, 
-					       source, x, y, sx, sy);
+		wl_surface_post_event(es->wl_surface, source,
+				      WL_INPUT_MOTION, x, y, sx, sy);
 	}
 
 	ec->pointer->map.x = x - hotspot_x;
@@ -784,6 +784,10 @@ notify_pointer_button(struct wl_compositor *compositor,
 	if (es) {
 		wl_list_remove(&es->link);
 		wl_list_insert(ec->surface_list.prev, &es->link);
+
+		/* FIXME: Swallow click on raise? */
+		wl_surface_post_event(es->wl_surface, source, 
+				      WL_INPUT_BUTTON, button, state);
 	}
 
 	schedule_repaint(ec);

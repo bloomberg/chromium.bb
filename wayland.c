@@ -212,13 +212,12 @@ void
 wl_client_destroy(struct wl_client *client);
 
 static void
-wl_client_marshal(struct wl_client *client, struct wl_object *sender,
-		  uint32_t opcode, ...)
+wl_client_vmarshal(struct wl_client *client, struct wl_object *sender,
+		   uint32_t opcode, va_list ap)
 {
 	const struct wl_event *event;
 	struct wl_object *object;
 	uint32_t args[10], size;
-	va_list ap;
 	int i, count;
 
 	event = &sender->interface->events[opcode];
@@ -226,7 +225,6 @@ wl_client_marshal(struct wl_client *client, struct wl_object *sender,
 	assert(count <= ARRAY_LENGTH(args));
 
 	size = 0;
-	va_start(ap, opcode);
 	for (i = 2; i < count; i++) {
 		switch (event->signature[i - 2]) {
 		case 'u':
@@ -249,12 +247,22 @@ wl_client_marshal(struct wl_client *client, struct wl_object *sender,
 			break;
 		}
 	}
-	va_end(ap);
 
 	size += 2 * sizeof args[0];
 	args[0] = sender->id;
 	args[1] = opcode | (size << 16);
 	wl_connection_write(client->connection, args, size);
+}
+
+static void
+wl_client_marshal(struct wl_client *client, struct wl_object *sender,
+		  uint32_t opcode, ...)
+{
+	va_list ap;
+
+	va_start(ap, opcode);
+	wl_client_vmarshal(client, sender, opcode, ap);
+	va_end(ap);
 }
 
 static void
@@ -628,26 +636,16 @@ wl_display_send_event(struct wl_display *display, uint32_t *data, size_t size)
 	}
 }
 
-#define WL_INPUT_MOTION 0
-#define WL_INPUT_BUTTON 1
-#define WL_INPUT_KEY 2
-
 WL_EXPORT void
-wl_display_post_surface_motion(struct wl_display *display,
-			       struct wl_surface *surface,
-			       struct wl_object *source,
-			       int32_t x, int32_t y, int32_t sx, int32_t sy)
+wl_surface_post_event(struct wl_surface *surface,
+		      struct wl_object *sender,
+		      uint32_t event, ...)
 {
-	uint32_t p[6];
+	va_list ap;
 
-	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_INPUT_MOTION;
-	p[2] = x;
-	p[3] = y;
-	p[4] = sx;
-	p[5] = sy;
-
-	wl_connection_write(surface->client->connection, p, sizeof p);
+	va_start(ap, event);
+	wl_client_vmarshal(surface->client, sender, event, ap);
+	va_end(ap);
 }
 
 WL_EXPORT void
@@ -683,18 +681,10 @@ wl_display_post_button_event(struct wl_display *display,
 			     struct wl_object *source, int button, int state)
 {
 	const struct wl_compositor_interface *interface;
-	uint32_t p[4];
 
 	interface = display->compositor->interface;
 	interface->notify_pointer_button(display->compositor, source,
 					 button, state);
-
-	p[0] = source->id;
-	p[1] = (sizeof p << 16) | WL_INPUT_BUTTON;
-	p[2] = button;
-	p[3] = state;
-
-	wl_display_send_event(display, p, sizeof p);
 }
 
 WL_EXPORT void
