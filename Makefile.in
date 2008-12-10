@@ -1,5 +1,8 @@
 CFLAGS = @GCC_CFLAGS@
 
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
 libs = libwayland-server.so libwayland.so
 clients = flower gears screenshot terminal
 compositors = egl-compositor glx-compositor
@@ -47,6 +50,12 @@ terminal : LDLIBS += -lutil
 
 $(clients) : CFLAGS += @CLIENT_CFLAGS@
 $(clients) : LDLIBS += @CLIENT_LIBS@ -L. -lwayland -lrt
+
+install : $(libs)
+	install -d @libdir@ @libdir@/pkgconfig
+	install $(libs) @libdir@
+	install wayland-server.pc wayland.pc @libdir@/pkgconfig
+	install wayland-client.h @includedir@
 
 clean :
 	rm -f $(clients) $(compositors) *.o *.so

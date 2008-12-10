@@ -14,5 +14,5 @@ if test $CC = gcc; then
 fi
 AC_SUBST(GCC_CFLAGS)
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile wayland-server.pc wayland.pc])
 AC_OUTPUT

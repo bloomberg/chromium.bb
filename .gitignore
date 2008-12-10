@@ -1,5 +1,6 @@
 *.o
 *.so
+*.pc
 glx-compositor
 egl-compositor
 gears
