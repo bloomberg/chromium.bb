@@ -54,7 +54,10 @@ struct egl_input_device {
 	struct wl_object base;
 	int32_t x, y;
 	struct egl_compositor *ec;
-	struct egl_surface *surface;
+	struct egl_surface *pointer_surface;
+
+	int grab;
+	struct egl_surface *grab_surface;
 };
 
 struct egl_compositor {
@@ -589,7 +592,7 @@ repaint(void *data)
 
 	draw_surface(ec->overlay);
 
-	draw_surface(ec->input_device->surface);
+	draw_surface(ec->input_device->pointer_surface);
 
 	eglSwapBuffers(ec->display, ec->surface);
 	ec->repaint_needed = 0;
@@ -767,7 +770,11 @@ notify_motion(struct egl_input_device *device, int x, int y)
 	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy;
 
-	es = pick_surface(device);
+	if (device->grab > 0)
+		es = device->grab_surface;
+	else
+		es = pick_surface(device);
+
 	if (es) {
 		sx = (x - es->map.x) * es->width / es->map.width;
 		sy = (y - es->map.y) * es->height / es->map.height;
@@ -777,8 +784,8 @@ notify_motion(struct egl_input_device *device, int x, int y)
 
 	device->x = x;
 	device->y = y;
-	device->surface->map.x = x - hotspot_x;
-	device->surface->map.y = y - hotspot_y;
+	device->pointer_surface->map.x = x - hotspot_x;
+	device->pointer_surface->map.y = y - hotspot_y;
 
 	schedule_repaint(device->ec);
 }
@@ -793,6 +800,13 @@ notify_button(struct egl_input_device *device,
 	if (es) {
 		wl_list_remove(&es->link);
 		wl_list_insert(device->ec->surface_list.prev, &es->link);
+
+		if (state) {
+			device->grab++;
+			device->grab_surface = es;
+		} else {
+			device->grab--;
+		}
 
 		/* FIXME: Swallow click on raise? */
 		wl_surface_post_event(es->wl_surface, &device->base,
@@ -864,7 +878,7 @@ create_input_devices(struct egl_compositor *ec)
 	ec->input_device = device;
 	device->x = 100;
 	device->y = 100;
-	device->surface = pointer_create(device->x, device->y, 64, 64);
+	device->pointer_surface = pointer_create(device->x, device->y, 64, 64);
 	device->ec = ec;
 
 	path = getenv("WAYLAND_POINTER");
