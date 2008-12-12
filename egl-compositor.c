@@ -41,13 +41,21 @@
 #include <xf86drmMode.h>
 #include <time.h>
 
-#include "wayland.h"
-#include "cairo-util.h"
-
 #include <GL/gl.h>
 #include <eagle.h>
 
+#include "wayland.h"
+#include "cairo-util.h"
+#include "egl-compositor.h"
+
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
+struct egl_input_device {
+	struct wl_object base;
+	int32_t x, y;
+	struct egl_compositor *ec;
+	struct egl_surface *surface;
+};
 
 struct egl_compositor {
 	struct wl_compositor base;
@@ -58,10 +66,11 @@ struct egl_compositor {
 	struct wl_display *wl_display;
 	int gem_fd;
 	int width, height;
-	struct egl_surface *pointer;
 	struct egl_surface *background;
 	struct egl_surface *overlay;
 	double overlay_y, overlay_target, overlay_previous;
+
+	struct egl_input_device *input_device;
 
 	struct wl_list surface_list;
 
@@ -324,7 +333,10 @@ pointer_create(int x, int y, int width, int height)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	es = egl_surface_create_from_cairo_surface(surface, x, y, width, height);
+	es = egl_surface_create_from_cairo_surface(surface,
+						   x - hotspot_x,
+						   y - hotspot_y,
+						   width, height);
 	
 	cairo_surface_destroy(surface);
 
@@ -577,7 +589,7 @@ repaint(void *data)
 
 	draw_surface(ec->overlay);
 
-	draw_surface(ec->pointer);
+	draw_surface(ec->input_device->surface);
 
 	eglSwapBuffers(ec->display, ec->surface);
 	ec->repaint_needed = 0;
@@ -727,15 +739,18 @@ notify_commit(struct wl_compositor *compositor)
 }
 
 static struct egl_surface *
-pick_surface(struct egl_compositor *ec, int32_t x, int32_t y)
+pick_surface(struct egl_input_device *device)
 {
+	struct egl_compositor *ec = device->ec;
 	struct egl_surface *es;
 
 	es = container_of(ec->surface_list.prev,
 			  struct egl_surface, link);
 	while (&es->link != &ec->surface_list) {
-		if (es->map.x <= x && x < es->map.x + es->map.width &&
-		    es->map.y <= y && y < es->map.y + es->map.height)
+		if (es->map.x <= device->x &&
+		    device->x < es->map.x + es->map.width &&
+		    es->map.y <= device->y &&
+		    device->y < es->map.y + es->map.height)
 			return es;
 
 		es = container_of(es->link.prev,
@@ -745,59 +760,53 @@ pick_surface(struct egl_compositor *ec, int32_t x, int32_t y)
 	return NULL;
 }
 
-static void
-notify_pointer_motion(struct wl_compositor *compositor,
-		      struct wl_object *source, int x, int y)
+void
+notify_motion(struct egl_input_device *device, int x, int y)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct egl_surface *es;
 	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy;
 
-	es = pick_surface(ec, x, y);
+	es = pick_surface(device);
 	if (es) {
 		sx = (x - es->map.x) * es->width / es->map.width;
 		sy = (y - es->map.y) * es->height / es->map.height;
-		wl_surface_post_event(es->wl_surface, source,
+		wl_surface_post_event(es->wl_surface, &device->base,
 				      WL_INPUT_MOTION, x, y, sx, sy);
 	}
 
-	ec->pointer->map.x = x - hotspot_x;
-	ec->pointer->map.y = y - hotspot_y;
-	schedule_repaint(ec);
+	device->x = x;
+	device->y = y;
+	device->surface->map.x = x - hotspot_x;
+	device->surface->map.y = y - hotspot_y;
+
+	schedule_repaint(device->ec);
 }
 
-static void
-notify_pointer_button(struct wl_compositor *compositor,
-		      struct wl_object *source,
-		      int32_t button, int32_t state)
+void
+notify_button(struct egl_input_device *device,
+	      int32_t button, int32_t state)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 	struct egl_surface *es;
-	const int hotspot_x = 16, hotspot_y = 16;
-	int x, y;
 
-	x = ec->pointer->map.x + hotspot_x;
-	y = ec->pointer->map.y + hotspot_y;
-
-	es = pick_surface(ec, x, y);
+	es = pick_surface(device);
 	if (es) {
 		wl_list_remove(&es->link);
-		wl_list_insert(ec->surface_list.prev, &es->link);
+		wl_list_insert(device->ec->surface_list.prev, &es->link);
 
 		/* FIXME: Swallow click on raise? */
-		wl_surface_post_event(es->wl_surface, source, 
+		wl_surface_post_event(es->wl_surface, &device->base,
 				      WL_INPUT_BUTTON, button, state);
-	}
 
-	schedule_repaint(ec);
+		schedule_repaint(device->ec);
+	}
 }
 
-static void
-notify_key(struct wl_compositor *compositor,
-	   struct wl_object *source, uint32_t key, uint32_t state)
+void
+notify_key(struct egl_input_device *device,
+	   uint32_t key, uint32_t state)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	struct egl_compositor *ec = device->ec;
 	struct egl_surface *es;
 
 	if (key == KEY_ESC && state == 1) {
@@ -813,7 +822,7 @@ notify_key(struct wl_compositor *compositor,
 		 * effectively gives us click to focus behavior. */
 		es = container_of(ec->surface_list.prev,
 				  struct egl_surface, link);
-		wl_surface_post_event(es->wl_surface, source, 
+		wl_surface_post_event(es->wl_surface, &device->base, 
 				      WL_INPUT_KEY, key, state);
 	}
 }
@@ -826,9 +835,6 @@ static const struct wl_compositor_interface interface = {
 	notify_surface_copy,
 	notify_surface_damage,
 	notify_commit,
-	notify_pointer_motion,
-	notify_pointer_button,
-	notify_key
 };
 
 static const char pointer_device_file[] = 
@@ -836,27 +842,49 @@ static const char pointer_device_file[] =
 static const char keyboard_device_file[] = 
 	"/dev/input/by-id/usb-Apple__Inc._Apple_Internal_Keyboard_._Trackpad-event-kbd";
 
+struct evdev_input_device *
+evdev_input_device_create(struct egl_input_device *device,
+			  struct wl_display *display, const char *path);
+
+void
+egl_device_get_position(struct egl_input_device *device, int32_t *x, int32_t *y);
+
 static void
-create_input_devices(struct wl_display *display)
+create_input_devices(struct egl_compositor *ec)
 {
-	struct wl_object *obj;
+	struct egl_input_device *device;
 	const char *path;
+
+	device = malloc(sizeof *device);
+	if (device == NULL)
+		return;
+
+	device->base.interface = wl_input_device_get_interface();
+	wl_display_add_object(ec->wl_display, &device->base);
+	ec->input_device = device;
+	device->x = 100;
+	device->y = 100;
+	device->surface = pointer_create(device->x, device->y, 64, 64);
+	device->ec = ec;
 
 	path = getenv("WAYLAND_POINTER");
 	if (path == NULL)
 		path = pointer_device_file;
 
-	obj = wl_input_device_create(display, path);
-	if (obj != NULL)
-		wl_display_add_object(display, obj);
+	evdev_input_device_create(device, ec->wl_display, path);
 
 	path = getenv("WAYLAND_KEYBOARD");
 	if (path == NULL)
 		path = keyboard_device_file;
 
-	obj = wl_input_device_create(display, path);
-	if (obj != NULL)
-		wl_display_add_object(display, obj);
+	evdev_input_device_create(device, ec->wl_display, path);
+}
+
+void
+egl_device_get_position(struct egl_input_device *device, int32_t *x, int32_t *y)
+{
+	*x = device->x;
+	*y = device->y;
 }
 
 static uint32_t
@@ -1065,14 +1093,13 @@ egl_compositor_create(struct wl_display *display)
 	glOrtho(0, ec->width, ec->height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
 
-	create_input_devices(display);
+	create_input_devices(ec);
 
 	wl_list_init(&ec->surface_list);
 	filename = getenv("WAYLAND_BACKGROUND");
 	if (filename == NULL)
 		filename = "background.jpg";
 	ec->background = background_create(filename, 1280, 800);
-	ec->pointer = pointer_create(100, 100, 64, 64);
 	ec->overlay = overlay_create(0, ec->height, ec->width, 200);
 	ec->overlay_y = ec->height;
 	ec->overlay_target = ec->height;

@@ -62,9 +62,6 @@ struct wl_display {
 	uint32_t id;
 
 	struct wl_list global_list;
-
-	int32_t pointer_x;
-	int32_t pointer_y;
 };
 
 struct wl_surface {
@@ -582,9 +579,6 @@ wl_display_create(void)
 	wl_list_init(&display->client_list);
 	wl_list_init(&display->global_list);
 
-	display->pointer_x = 100;
-	display->pointer_y = 100;
-
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	display->id = 1;
@@ -633,53 +627,35 @@ wl_surface_post_event(struct wl_surface *surface,
 	va_end(ap);
 }
 
-WL_EXPORT void
-wl_display_post_relative_event(struct wl_display *display,
-			       struct wl_object *source, int dx, int dy)
+struct wl_input_device {
+	struct wl_object base;
+	struct wl_display *display;
+	uint32_t button_state[16];
+	uint32_t button_count;
+	int32_t x, y;
+};
+
+static const struct wl_method input_device_methods[] = {
+};
+
+static const struct wl_event input_device_events[] = {
+	{ "motion", "iiii" },
+	{ "button", "uu" },
+	{ "key", "uu" },
+};
+
+static const struct wl_interface input_device_interface = {
+	"input_device", 1,
+	ARRAY_LENGTH(input_device_methods),
+	input_device_methods,
+	ARRAY_LENGTH(input_device_events),
+	input_device_events,
+};
+
+WL_EXPORT const struct wl_interface *
+wl_input_device_get_interface(void)
 {
-	const struct wl_compositor_interface *interface;
-
-	display->pointer_x += dx;
-	display->pointer_y += dy;
-
-	interface = display->compositor->interface;
-	interface->notify_pointer_motion(display->compositor, source,
-					 display->pointer_x, display->pointer_y);
-}
-
-WL_EXPORT void
-wl_display_post_absolute_event(struct wl_display *display,
-			       struct wl_object *source, int x, int y)
-{
-	const struct wl_compositor_interface *interface;
-
-	display->pointer_x = x;
-	display->pointer_y = y;
-
-	interface = display->compositor->interface;
-	interface->notify_pointer_motion(display->compositor, source,
-					 display->pointer_x, display->pointer_y);
-}
-
-WL_EXPORT void
-wl_display_post_button_event(struct wl_display *display,
-			     struct wl_object *source, int button, int state)
-{
-	const struct wl_compositor_interface *interface;
-
-	interface = display->compositor->interface;
-	interface->notify_pointer_button(display->compositor, source,
-					 button, state);
-}
-
-WL_EXPORT void
-wl_display_post_key_event(struct wl_display *display,
-			  struct wl_object *source, int key, int state)
-{
-	const struct wl_compositor_interface *interface;
-
-	interface = display->compositor->interface;
-	interface->notify_key(display->compositor, source, key, state);
+	return &input_device_interface;
 }
 
 WL_EXPORT void

@@ -29,42 +29,28 @@
 #include <linux/input.h>
 
 #include "wayland.h"
+#include "egl-compositor.h"
 
-struct wl_input_device {
-	struct wl_object base;
+struct evdev_input_device {
+	struct egl_input_device *device;
 	struct wl_event_source *source;
-	struct wl_display *display;
-	int fd;
 	int tool, new_x, new_y;
-	int32_t x, y, base_x, base_y;
+	int base_x, base_y;
+	int fd;
 };
 
-static const struct wl_method input_device_methods[] = {
-};
-
-static const struct wl_event input_device_events[] = {
-	{ "motion", "iiii" },
-	{ "button", "uu" },
-	{ "key", "uu" },
-};
-
-static const struct wl_interface input_device_interface = {
-	"input_device", 1,
-	ARRAY_LENGTH(input_device_methods),
-	input_device_methods,
-	ARRAY_LENGTH(input_device_events),
-	input_device_events,
-};
-
-static void wl_input_device_data(int fd, uint32_t mask, void *data)
+static void evdev_input_device_data(int fd, uint32_t mask, void *data)
 {
-	struct wl_input_device *device = data;
+	struct evdev_input_device *device = data;
 	struct input_event ev[8], *e, *end;
 	int len, value, dx, dy, absolute_event;
+	int x, y;
 
 	dx = 0;
 	dy = 0;
 	absolute_event = 0;
+	egl_device_get_position(device->device, &x, &y);
+
 
 	len = read(fd, &ev, sizeof ev);
 	if (len < 0 || len % sizeof e[0] != 0) {
@@ -96,17 +82,17 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 			switch (e->code) {
 			case ABS_X:
 				if (device->new_x) {
-					device->base_x = device->x - value;
+					device->base_x = x - value;
 					device->new_x = 0;
 				}
-				device->x = device->base_x + value;
+				x = device->base_x + value;
 				break;
 			case ABS_Y:
 				if (device->new_y) {
-					device->base_y = device->y - value;
+					device->base_y = y - value;
 					device->new_y = 0;
 				}
-				device->y = device->base_y + value;
+				y = device->base_y + value;
 				break;
 			}
 			break;
@@ -133,54 +119,44 @@ static void wl_input_device_data(int fd, uint32_t mask, void *data)
 				break;
 
 			case BTN_LEFT:
-				wl_display_post_button_event(device->display,
-							     &device->base, 0, value);
-				break;
-
 			case BTN_RIGHT:
-				wl_display_post_button_event(device->display,
-							     &device->base, 2, value);
-				break;
-
 			case BTN_MIDDLE:
-				wl_display_post_button_event(device->display,
-							     &device->base, 1, value);
+			case BTN_SIDE:
+			case BTN_EXTRA:
+			case BTN_FORWARD:
+			case BTN_BACK:
+			case BTN_TASK:
+				notify_button(device->device, e->code, value);
 				break;
 
 			default:
-				wl_display_post_key_event(device->display,
-							  &device->base, e->code, value);
+				notify_key(device->device, e->code, value);
 				break;
 			}
 		}
 	}
 
 	if (dx != 0 || dy != 0)
-		wl_display_post_relative_event(device->display,
-					       &device->base, dx, dy);
+		notify_motion(device->device, x + dx, y + dy);
 	if (absolute_event && device->tool)
-		wl_display_post_absolute_event(device->display,
-					       &device->base,
-					       device->x, device->y);
+		notify_motion(device->device, x, y);
 }
 
-WL_EXPORT struct wl_object *
-wl_input_device_create(struct wl_display *display, const char *path)
+struct evdev_input_device *
+evdev_input_device_create(struct egl_input_device *master,
+			  struct wl_display *display, const char *path)
 {
-	struct wl_input_device *device;
+	struct evdev_input_device *device;
 	struct wl_event_loop *loop;
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
 		return NULL;
 
-	device->base.interface = &input_device_interface;
-	device->display = display;
 	device->tool = 1;
-	device->x = 100;
-	device->y = 100;
 	device->new_x = 1;
 	device->new_y = 1;
+	device->device = master;
 
 	device->fd = open(path, O_RDONLY);
 	if (device->fd < 0) {
@@ -192,12 +168,12 @@ wl_input_device_create(struct wl_display *display, const char *path)
 	loop = wl_display_get_event_loop(display);
 	device->source = wl_event_loop_add_fd(loop, device->fd,
 					      WL_EVENT_READABLE,
-					      wl_input_device_data, device);
+					      evdev_input_device_data, device);
 	if (device->source == NULL) {
 		close(device->fd);
 		free(device);
 		return NULL;
 	}
 
-	return &device->base;
+	return device;
 }

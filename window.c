@@ -31,6 +31,7 @@
 #include <cairo.h>
 #include <glib.h>
 
+#include <linux/input.h>
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
@@ -272,7 +273,7 @@ event_handler(struct wl_display *display,
 			location = LOCATION_OUTSIDE;
 		}
 
-		if (button == 0 && state == 1) {
+		if (button == BTN_LEFT && state == 1) {
 			switch (location) {
 			case LOCATION_INTERIOR:
 				window->drag_x = window->x - window->last_x;
@@ -288,7 +289,7 @@ event_handler(struct wl_display *display,
 				window->state = WINDOW_STABLE;
 				break;
 			}
-		} else if (button == 0 && state == 0) {
+		} else if (button == BTN_LEFT && state == 0) {
 			window->state = WINDOW_STABLE;
 		}
 	} else if (opcode == 2) {

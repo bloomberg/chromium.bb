@@ -35,7 +35,7 @@ egl-compositor :				\
 	wayland-util.o
 
 egl-compositor : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
-egl-compositor : LDLIBS += @EGL_COMPOSITOR_LIBS@ -L. -lwayland-server -rdynamic -lrt
+egl-compositor : LDLIBS += -L. -lwayland-server @EGL_COMPOSITOR_LIBS@ -rdynamic -lrt
 
 flower : flower.o wayland-glib.o cairo-util.o
 gears : gears.o window.o wayland-glib.o cairo-util.o
@@ -45,7 +45,7 @@ terminal : terminal.o window.o wayland-glib.o cairo-util.o
 terminal : LDLIBS += -lutil
 
 $(clients) : CFLAGS += @CLIENT_CFLAGS@
-$(clients) : LDLIBS += @CLIENT_LIBS@ -L. -lwayland -lrt
+$(clients) : LDLIBS += -L. -lwayland @CLIENT_LIBS@ -lrt
 
 install : $(libs)
 	install -d @libdir@ @libdir@/pkgconfig

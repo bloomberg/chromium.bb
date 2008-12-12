@@ -99,6 +99,7 @@ struct wl_object {
 
 struct wl_surface;
 struct wl_display;
+struct wl_input_device;
 
 struct wl_map {
 	int32_t x, y, width, height;
@@ -106,9 +107,6 @@ struct wl_map {
 
 void wl_surface_set_data(struct wl_surface *surface, void *data);
 void *wl_surface_get_data(struct wl_surface *surface);
-
-struct wl_object *
-wl_input_device_create(struct wl_display *display, const char *path);
 
 struct wl_display *wl_display_create(void);
 struct wl_event_loop *wl_display_get_event_loop(struct wl_display *display);
@@ -120,18 +118,9 @@ wl_display_add_object(struct wl_display *display, struct wl_object *object);
 int
 wl_display_add_global(struct wl_display *display, struct wl_object *object);
 
-void
-wl_display_post_relative_event(struct wl_display *display,
-			       struct wl_object *source, int dx, int dy);
-void
-wl_display_post_absolute_event(struct wl_display *display,
-			       struct wl_object *source, int x, int y);
-void
-wl_display_post_button_event(struct wl_display *display,
-			     struct wl_object *source, int button, int state);
-void
-wl_display_post_key_event(struct wl_display *display,
-			  struct wl_object *source, int key, int state);
+const struct wl_interface *
+wl_input_device_get_interface(void);
+
 void
 wl_display_post_frame(struct wl_display *display,
 		      uint32_t frame, uint32_t msecs);
@@ -173,15 +162,6 @@ struct wl_compositor_interface {
 				      int32_t x, int32_t y,
 				      int32_t width, int32_t height);
 	uint32_t (*notify_commit)(struct wl_compositor *compositor);
-	void (*notify_pointer_motion)(struct wl_compositor *compositor,
-				      struct wl_object *source,
-				      int32_t x, int32_t y);
-	void (*notify_pointer_button)(struct wl_compositor *compositor,
-				      struct wl_object *source,
-				      int32_t button, int32_t state);
-	void (*notify_key)(struct wl_compositor *compositor,
-			   struct wl_object *source,
-			   uint32_t key, uint32_t state);
 };
 
 void wl_display_set_compositor(struct wl_display *display,
