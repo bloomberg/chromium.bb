@@ -1113,7 +1113,7 @@ egl_compositor_create(struct wl_display *display)
 	filename = getenv("WAYLAND_BACKGROUND");
 	if (filename == NULL)
 		filename = "background.jpg";
-	ec->background = background_create(filename, 1280, 800);
+	ec->background = background_create(filename, ec->width, ec->height);
 	ec->overlay = overlay_create(0, ec->height, ec->width, 200);
 	ec->overlay_y = ec->height;
 	ec->overlay_target = ec->height;
