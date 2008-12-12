@@ -23,6 +23,7 @@ libwayland.so :					\
 	connection.o				\
 	wayland-util.o
 
+$(libs) : CFLAGS += -fPIC
 $(libs) :
 	gcc -shared $^ $(LDLIBS)  -o $@
 
