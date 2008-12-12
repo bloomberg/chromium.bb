@@ -1065,7 +1065,8 @@ pick_config(struct egl_compositor *ec)
 static const char gem_device[] = "/dev/dri/card0";
 
 static const char *macbook_air_default_input_device[] = {
-	"pci-0000:00:1d.0-usb-0:2:1*event*"
+	"pci-0000:00:1d.2-usb-0:2:1*event*",
+	NULL
 };
 
 static const char *option_background = "background.jpg";
