@@ -561,7 +561,7 @@ io_handler(GIOChannel   *source,
 static int
 terminal_run(struct terminal *terminal, const char *path)
 {
-	int master, slave;
+	int master;
 	pid_t pid;
 
 	pid = forkpty(&master, NULL, NULL, NULL);
@@ -571,9 +571,11 @@ terminal_run(struct terminal *terminal, const char *path)
 			printf("exec failed: %m\n");
 			exit(EXIT_FAILURE);
 		}
+	} else if (pid < 0) {
+		fprintf(stderr, "failed to fork and create pty (%m).\n");
+		return -1;
 	}
 
-	close(slave);
 	terminal->master = master;
 	terminal->channel = g_io_channel_unix_new(master);
 	fcntl(master, F_SETFL, O_NONBLOCK);
@@ -608,7 +610,8 @@ int main(int argc, char *argv[])
 	g_source_attach(source, NULL);
 
 	terminal = terminal_create(display, fd);
-	terminal_run(terminal, "/bin/bash");
+	if (terminal_run(terminal, "/bin/bash"))
+		exit(EXIT_FAILURE);
 
 	g_main_loop_run(loop);
 
