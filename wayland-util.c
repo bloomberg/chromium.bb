@@ -21,7 +21,33 @@
  */
 
 #include <stdlib.h>
+#include <string.h>
 #include "wayland.h"
+
+struct wl_hash {
+	struct wl_object **objects;
+	uint32_t count, alloc;
+};
+
+struct wl_hash *
+wl_hash_create(void)
+{
+	struct wl_hash *hash;
+
+	hash = malloc(sizeof *hash);
+	if (hash == NULL)
+		return hash;
+
+	memset(hash, 0, sizeof *hash);
+
+	return hash;
+}
+
+void
+wl_hash_destroy(struct wl_hash *hash)
+{
+	free(hash);
+}
 
 int wl_hash_insert(struct wl_hash *hash, struct wl_object *object)
 {

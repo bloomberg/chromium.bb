@@ -49,7 +49,7 @@ struct wl_client {
 struct wl_display {
 	struct wl_object base;
 	struct wl_event_loop *loop;
-	struct wl_hash objects;
+	struct wl_hash *objects;
 
 	struct wl_object *pointer;
 
@@ -317,7 +317,7 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 			break;
 		case 'o':
 			types[i] = &ffi_type_pointer;
-			object = wl_hash_lookup(&client->display->objects, *p);
+			object = wl_hash_lookup(client->display->objects, *p);
 			if (object == NULL)
 				printf("unknown object (%d)\n", *p);
 			if (object->interface != method->types[j])
@@ -329,7 +329,7 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 		case 'n':
 			types[i] = &ffi_type_uint32;
 			values[i].new_id = *p;
-			object = wl_hash_lookup(&client->display->objects, *p);
+			object = wl_hash_lookup(client->display->objects, *p);
 			if (object != NULL)
 				printf("object already exists (%d)\n", *p);
 			p++;
@@ -380,7 +380,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (len < size)
 			break;
 
-		object = wl_hash_lookup(&client->display->objects, p[0]);
+		object = wl_hash_lookup(client->display->objects, p[0]);
 		if (object == NULL) {
 			wl_client_marshal(client, &client->display->base,
 					  WL_DISPLAY_INVALID_OBJECT, p[0]);
@@ -518,7 +518,7 @@ wl_display_create_surface(struct wl_client *client,
 	}
 
 	ref->object = &surface->base;
-	wl_hash_insert(&display->objects, &surface->base);
+	wl_hash_insert(display->objects, &surface->base);
 	wl_list_insert(client->object_list.prev, &ref->link);
 
 	return 0;
@@ -575,6 +575,12 @@ wl_display_create(void)
 		return NULL;
 	}
 
+	display->objects = wl_hash_create();
+	if (display->objects == NULL) {
+		free(display);
+		return NULL;
+	}
+
 	wl_list_init(&display->surface_list);
 	wl_list_init(&display->client_list);
 	wl_list_init(&display->global_list);
@@ -597,7 +603,7 @@ WL_EXPORT void
 wl_display_add_object(struct wl_display *display, struct wl_object *object)
 {
 	object->id = display->id++;
-	wl_hash_insert(&display->objects, object);
+	wl_hash_insert(display->objects, object);
 }
 
 WL_EXPORT int

@@ -36,11 +36,10 @@
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-struct wl_hash {
-	struct wl_object **objects;
-	uint32_t count, alloc, id;
-};
-
+struct wl_object;
+struct wl_hash;
+struct wl_hash *wl_hash_create(void);
+void wl_hash_destroy(struct wl_hash *hash);
 int wl_hash_insert(struct wl_hash *hash, struct wl_object *object);
 struct wl_object *wl_hash_lookup(struct wl_hash *hash, uint32_t id);
 void wl_hash_delete(struct wl_hash *hash, struct wl_object *object);
