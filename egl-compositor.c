@@ -61,6 +61,7 @@ struct egl_input_device {
 
 	int grab;
 	struct egl_surface *grab_surface;
+	struct egl_surface *focus_surface;
 };
 
 struct egl_compositor {
@@ -813,8 +814,11 @@ notify_button(struct egl_input_device *device,
 		wl_list_insert(device->ec->surface_list.prev, &es->link);
 
 		if (state) {
+			/* FIXME: We need callbacks when the surfaces
+			 * we reference here go away. */
 			device->grab++;
 			device->grab_surface = es;
+			device->focus_surface = es;
 		} else {
 			device->grab--;
 		}
@@ -836,7 +840,6 @@ notify_key(struct egl_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct egl_compositor *ec = device->ec;
-	struct egl_surface *es;
 
 	if (key == KEY_ESC && state == 1) {
 		if (ec->overlay_target == ec->height)
@@ -845,14 +848,10 @@ notify_key(struct egl_input_device *device,
 			ec->overlay_target += 200;
 		schedule_repaint(ec);
 	} else if (!wl_list_empty(&ec->surface_list)) {
-		/* FIXME: The event source device should track which
-		 * surface has its key focus and send the event there.
-		 * For now, just send it to the top surface, which
-		 * effectively gives us click to focus behavior. */
-		es = container_of(ec->surface_list.prev,
-				  struct egl_surface, link);
-		wl_surface_post_event(es->wl_surface, &device->base, 
-				      WL_INPUT_KEY, key, state);
+		if (device->focus_surface != NULL)
+			wl_surface_post_event(device->focus_surface->wl_surface,
+					      &device->base, 
+					      WL_INPUT_KEY, key, state);
 	}
 }
 
