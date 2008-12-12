@@ -1047,12 +1047,18 @@ pick_config(struct egl_compositor *ec)
 
 static const char gem_device[] = "/dev/dri/card0";
 
+static const char *background_image = "background.jpg";
+
+static GOptionEntry option_entries[] = {
+	{ "background", 'b', 0, G_OPTION_ARG_STRING, &background_image, "Background image" },
+	{ NULL }
+};
+
 static struct egl_compositor *
 egl_compositor_create(struct wl_display *display)
 {
 	EGLint major, minor;
 	struct egl_compositor *ec;
-	const char *filename;
 	struct screenshooter *shooter;
 	uint32_t fb_name;
 	int stride;
@@ -1110,10 +1116,8 @@ egl_compositor_create(struct wl_display *display)
 	create_input_devices(ec);
 
 	wl_list_init(&ec->surface_list);
-	filename = getenv("WAYLAND_BACKGROUND");
-	if (filename == NULL)
-		filename = "background.jpg";
-	ec->background = background_create(filename, ec->width, ec->height);
+	ec->background = background_create(background_image,
+					   ec->width, ec->height);
 	ec->overlay = overlay_create(0, ec->height, ec->width, 200);
 	ec->overlay_y = ec->height;
 	ec->overlay_target = ec->height;
@@ -1148,6 +1152,15 @@ int main(int argc, char *argv[])
 {
 	struct wl_display *display;
 	struct egl_compositor *ec;
+	GError *error = NULL;
+	GOptionContext *context;
+
+	context = g_option_context_new(NULL);
+	g_option_context_add_main_entries(context, option_entries, "Wayland");
+	if (!g_option_context_parse(context, &argc, &argv, &error)) {
+		fprintf(stderr, "option parsing failed: %s\n", error->message);
+		exit(EXIT_FAILURE);
+	}
 
 	display = wl_display_create();
 
