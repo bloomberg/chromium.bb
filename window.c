@@ -46,8 +46,9 @@ struct window {
 	int x, y, width, height;
 	int minimum_width, minimum_height;
 	int margin;
-	int drag_x, drag_y, last_x, last_y;
+	int drag_x, drag_y;
 	int state;
+	uint32_t grab_device;
 	uint32_t name;
 	int fd;
 
@@ -232,10 +233,10 @@ event_handler(struct wl_display *display,
 	} else if (opcode == 0) {
 		int x = p[0], y = p[1];
 
-		window->last_x = x;
-		window->last_y = y;
 		switch (window->state) {
 		case WINDOW_MOVING:
+			if (window->grab_device != object)
+				break;
 			window->x = window->drag_x + x;
 			window->y = window->drag_y + y;
 			wl_surface_map(window->surface,
@@ -246,6 +247,8 @@ event_handler(struct wl_display *display,
 			wl_display_commit(window->display, 1);
 			break;
 		case WINDOW_RESIZING_LOWER_RIGHT:
+			if (window->grab_device != object)
+				break;
 			window->width = window->drag_x + x;
 			window->height = window->drag_y + y;
 
@@ -258,16 +261,15 @@ event_handler(struct wl_display *display,
 		}
 	} else if (opcode == 1) {
 		int button = p[0], state = p[1];
+		int32_t x = p[2], y = p[3];
 
-		if (window->x + window->width - grip_size <= window->last_x &&
-		    window->last_x < window->x + window->width &&
-		    window->y + window->height - grip_size <= window->last_y &&
-		    window->last_y < window->y + window->height) {
+		if (window->x + window->width - grip_size <= x &&
+		    x < window->x + window->width &&
+		    window->y + window->height - grip_size <= y &&
+		    y < window->y + window->height) {
 			location = LOCATION_LOWER_RIGHT;
-		} else if (window->x <= window->last_x &&
-			   window->last_x < window->x + window->width &&
-			   window->y <= window->last_y &&
-			   window->last_y < window->y + window->height) {
+		} else if (window->x <= x && x < window->x + window->width &&
+			   window->y <= y && y < window->y + window->height) {
 			location = LOCATION_INTERIOR;
 		} else {
 			location = LOCATION_OUTSIDE;
@@ -276,20 +278,23 @@ event_handler(struct wl_display *display,
 		if (button == BTN_LEFT && state == 1) {
 			switch (location) {
 			case LOCATION_INTERIOR:
-				window->drag_x = window->x - window->last_x;
-				window->drag_y = window->y - window->last_y;
+				window->drag_x = window->x - x;
+				window->drag_y = window->y - y;
 				window->state = WINDOW_MOVING;
+				window->grab_device = object;
 				break;
 			case LOCATION_LOWER_RIGHT:
-				window->drag_x = window->width - window->last_x;
-				window->drag_y = window->height - window->last_y;
+				window->drag_x = window->width - x;
+				window->drag_y = window->height - y;
 				window->state = WINDOW_RESIZING_LOWER_RIGHT;
+				window->grab_device = object;
 				break;
 			default:
 				window->state = WINDOW_STABLE;
 				break;
 			}
-		} else if (button == BTN_LEFT && state == 0) {
+		} else if (button == BTN_LEFT &&
+			   state == 0 && object == window->grab_device) {
 			window->state = WINDOW_STABLE;
 		}
 	} else if (opcode == 2) {

@@ -646,7 +646,7 @@ static const struct wl_method input_device_methods[] = {
 
 static const struct wl_event input_device_events[] = {
 	{ "motion", "iiii" },
-	{ "button", "uu" },
+	{ "button", "uuiiii" },
 	{ "key", "uu" },
 };
 

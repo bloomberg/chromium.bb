@@ -40,6 +40,8 @@
 #include <linux/input.h>
 #include <xf86drmMode.h>
 #include <time.h>
+#include <fnmatch.h>
+#include <dirent.h>
 
 #include <GL/gl.h>
 #include <eagle.h>
@@ -55,6 +57,7 @@ struct egl_input_device {
 	int32_t x, y;
 	struct egl_compositor *ec;
 	struct egl_surface *pointer_surface;
+	struct wl_list link;
 
 	int grab;
 	struct egl_surface *grab_surface;
@@ -73,8 +76,7 @@ struct egl_compositor {
 	struct egl_surface *overlay;
 	double overlay_y, overlay_target, overlay_previous;
 
-	struct egl_input_device *input_device;
-
+	struct wl_list input_device_list;
 	struct wl_list surface_list;
 
 	/* Repaint state. */
@@ -571,6 +573,7 @@ repaint(void *data)
 {
 	struct egl_compositor *ec = data;
 	struct egl_surface *es;
+	struct egl_input_device *eid;
 	struct timespec ts;
 	uint32_t msecs;
 
@@ -592,7 +595,14 @@ repaint(void *data)
 
 	draw_surface(ec->overlay);
 
-	draw_surface(ec->input_device->pointer_surface);
+	eid = container_of(ec->input_device_list.next,
+			   struct egl_input_device, link);
+	while (&eid->link != &ec->input_device_list) {
+		draw_surface(eid->pointer_surface);
+
+		eid = container_of(eid->link.next,
+				   struct egl_input_device, link);
+	}
 
 	eglSwapBuffers(ec->display, ec->surface);
 	ec->repaint_needed = 0;
@@ -747,6 +757,9 @@ pick_surface(struct egl_input_device *device)
 	struct egl_compositor *ec = device->ec;
 	struct egl_surface *es;
 
+	if (device->grab > 0)
+		return device->grab_surface;
+
 	es = container_of(ec->surface_list.prev,
 			  struct egl_surface, link);
 	while (&es->link != &ec->surface_list) {
@@ -770,10 +783,7 @@ notify_motion(struct egl_input_device *device, int x, int y)
 	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy;
 
-	if (device->grab > 0)
-		es = device->grab_surface;
-	else
-		es = pick_surface(device);
+	es = pick_surface(device);
 
 	if (es) {
 		sx = (x - es->map.x) * es->width / es->map.width;
@@ -795,6 +805,7 @@ notify_button(struct egl_input_device *device,
 	      int32_t button, int32_t state)
 {
 	struct egl_surface *es;
+	int32_t sx, sy;
 
 	es = pick_surface(device);
 	if (es) {
@@ -808,9 +819,13 @@ notify_button(struct egl_input_device *device,
 			device->grab--;
 		}
 
+		sx = (device->x - es->map.x) * es->width / es->map.width;
+		sy = (device->y - es->map.y) * es->height / es->map.height;
+
 		/* FIXME: Swallow click on raise? */
 		wl_surface_post_event(es->wl_surface, &device->base,
-				      WL_INPUT_BUTTON, button, state);
+				      WL_INPUT_BUTTON, button, state,
+				      device->x, device->y, sx, sy);
 
 		schedule_repaint(device->ec);
 	}
@@ -851,11 +866,6 @@ static const struct wl_compositor_interface interface = {
 	notify_commit,
 };
 
-static const char pointer_device_file[] = 
-	"/dev/input/by-id/usb-Apple__Inc._Apple_Internal_Keyboard_._Trackpad-event-mouse";
-static const char keyboard_device_file[] = 
-	"/dev/input/by-id/usb-Apple__Inc._Apple_Internal_Keyboard_._Trackpad-event-kbd";
-
 struct evdev_input_device *
 evdev_input_device_create(struct egl_input_device *device,
 			  struct wl_display *display, const char *path);
@@ -864,34 +874,42 @@ void
 egl_device_get_position(struct egl_input_device *device, int32_t *x, int32_t *y);
 
 static void
-create_input_devices(struct egl_compositor *ec)
+create_input_device(struct egl_compositor *ec, const char *glob)
 {
 	struct egl_input_device *device;
-	const char *path;
+	struct dirent *de;
+	char path[PATH_MAX];
+	const char *by_path_dir = "/dev/input/by-path";
+	DIR *dir;
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
 		return;
 
+	memset(device, 0, sizeof *device);
 	device->base.interface = wl_input_device_get_interface();
 	wl_display_add_object(ec->wl_display, &device->base);
-	ec->input_device = device;
 	device->x = 100;
 	device->y = 100;
 	device->pointer_surface = pointer_create(device->x, device->y, 64, 64);
 	device->ec = ec;
 
-	path = getenv("WAYLAND_POINTER");
-	if (path == NULL)
-		path = pointer_device_file;
+	dir = opendir(by_path_dir);
+	if (dir == NULL) {
+		fprintf(stderr, "couldn't read dir %s\n", by_path_dir);
+		return;
+	}
 
-	evdev_input_device_create(device, ec->wl_display, path);
+	while (de = readdir(dir), de != NULL) {
+		if (fnmatch(glob, de->d_name, 0))
+			continue;
 
-	path = getenv("WAYLAND_KEYBOARD");
-	if (path == NULL)
-		path = keyboard_device_file;
+		snprintf(path, sizeof path, "%s/%s", by_path_dir, de->d_name);
+		evdev_input_device_create(device, ec->wl_display, path);
+	}
+	closedir(dir);
 
-	evdev_input_device_create(device, ec->wl_display, path);
+	wl_list_insert(ec->input_device_list.prev, &device->link);
 }
 
 void
@@ -1047,10 +1065,18 @@ pick_config(struct egl_compositor *ec)
 
 static const char gem_device[] = "/dev/dri/card0";
 
-static const char *background_image = "background.jpg";
+static const char *macbook_air_default_input_device[] = {
+	"pci-0000:00:1d.0-usb-0:2:1*event*"
+};
 
-static GOptionEntry option_entries[] = {
-	{ "background", 'b', 0, G_OPTION_ARG_STRING, &background_image, "Background image" },
+static const char *option_background = "background.jpg";
+static const char **option_input_devices = macbook_air_default_input_device;
+
+static const GOptionEntry option_entries[] = {
+	{ "background", 'b', 0, G_OPTION_ARG_STRING,
+	  &option_background, "Background image" },
+	{ "input-device", 'i', 0, G_OPTION_ARG_STRING_ARRAY, 
+	  &option_input_devices, "Input device glob" },
 	{ NULL }
 };
 
@@ -1061,7 +1087,7 @@ egl_compositor_create(struct wl_display *display)
 	struct egl_compositor *ec;
 	struct screenshooter *shooter;
 	uint32_t fb_name;
-	int stride;
+	int i, stride;
 	struct wl_event_loop *loop;
 	const static EGLint attribs[] =
 		{ EGL_RENDER_BUFFER, EGL_BACK_BUFFER, EGL_NONE };
@@ -1113,10 +1139,12 @@ egl_compositor_create(struct wl_display *display)
 	glOrtho(0, ec->width, ec->height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
 
-	create_input_devices(ec);
+	wl_list_init(&ec->input_device_list);
+	for (i = 0; option_input_devices[i]; i++)
+		create_input_device(ec, option_input_devices[i]);
 
 	wl_list_init(&ec->surface_list);
-	ec->background = background_create(background_image,
+	ec->background = background_create(option_background,
 					   ec->width, ec->height);
 	ec->overlay = overlay_create(0, ec->height, ec->width, 200);
 	ec->overlay_y = ec->height;
