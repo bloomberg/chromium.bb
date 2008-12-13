@@ -544,6 +544,8 @@ drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	    fprintf(stderr, "%s:%d: Error mapping buffer %d (%s): %s .\n",
 		    __FILE__, __LINE__,
 		    bo_gem->gem_handle, bo_gem->name, strerror(errno));
+	    pthread_mutex_unlock(&bufmgr_gem->lock);
+	    return ret;
 	}
 	bo_gem->virtual = (void *)(uintptr_t)mmap_arg.addr_ptr;
 	bo_gem->swrast = 0;
@@ -566,6 +568,8 @@ drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	if (ret != 0) {
 	    fprintf (stderr, "%s:%d: Error setting swrast %d: %s\n",
 		     __FILE__, __LINE__, bo_gem->gem_handle, strerror (errno));
+	    pthread_mutex_unlock(&bufmgr_gem->lock);
+	    return ret;
 	}
 	bo_gem->swrast = 1;
     }
