@@ -478,12 +478,13 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
-	if (bucket != NULL &&
+	if (bo_gem->global_name == 0 &&
+	    bucket != NULL &&
 	    (bucket->max_entries == -1 ||
 	     (bucket->max_entries > 0 &&
 	      bucket->num_entries < bucket->max_entries)))
 	{
-	    bo_gem->name = 0;
+	    bo_gem->name = NULL;
 	    bo_gem->validate_index = -1;
 	    bo_gem->relocs = NULL;
 	    bo_gem->reloc_target_bo = NULL;
