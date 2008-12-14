@@ -97,70 +97,6 @@ struct egl_surface {
 	struct wl_list link;
 };
 
-static void
-die(const char *msg, ...)
-{
-	va_list ap;
-
-	va_start (ap, msg);
-	vfprintf(stderr, msg, ap);
-	va_end (ap);
-
-	exit(EXIT_FAILURE);
-}
-
-static void
-stdio_write_func (png_structp png, png_bytep data, png_size_t size)
-{
-	FILE *fp;
-	size_t ret;
-
-	fp = png_get_io_ptr (png);
-	while (size) {
-		ret = fwrite (data, 1, size, fp);
-		size -= ret;
-		data += ret;
-		if (size && ferror (fp))
-			die("write: %m\n");
-	}
-}
-
-static void
-png_simple_output_flush_fn (png_structp png_ptr)
-{
-}
-
-static void
-png_simple_error_callback (png_structp png,
-	                   png_const_charp error_msg)
-{
-	die("png error: %s\n", error_msg);
-}
-
-static void
-png_simple_warning_callback (png_structp png,
-	                     png_const_charp error_msg)
-{
-	fprintf(stderr, "png warning: %s\n", error_msg);
-}
-
-static void
-convert_pixels(png_structp png, png_row_infop row_info, png_bytep data)
-{
-	unsigned int i;
-
-	for (i = 0; i < row_info->rowbytes; i += 4) {
-		uint8_t *b = &data[i];
-		uint32_t pixel;
-
-		memcpy (&pixel, b, sizeof (uint32_t));
-		b[0] = (pixel & 0xff0000) >> 16;
-		b[1] = (pixel & 0x00ff00) >>  8;
-		b[2] = (pixel & 0x0000ff) >>  0;
-		b[3] = 0;
-	}
-}
-
 struct screenshooter {
 	struct wl_object base;
 	struct egl_compositor *ec;
@@ -170,65 +106,17 @@ static void
 screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 {
 	struct egl_compositor *ec = shooter->ec;
-	png_struct *png;
-	png_info *info;
-	png_byte **volatile rows = NULL;
-	png_color_16 white;
-	int depth, i;
-	FILE *fp;
-	uint8_t *data;
 	GLuint stride;
 	static const char filename[]  = "wayland-screenshot.png";
+	GdkPixbuf *pixbuf;
+	GError *error = NULL;
+	void *data;
 
 	data = eglReadBuffer(ec->display, ec->surface, GL_FRONT_LEFT, &stride);
-	if (data == NULL)
-		die("eglReadBuffer failed\n");
-	rows = malloc(ec->height * sizeof rows[0]);
-	if (rows == NULL)
-		die("malloc failed\n");
-
-	for (i = 0; i < ec->height; i++)
-		rows[i] = (png_byte *) data + i * stride;
-
-	png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL,
-				      png_simple_error_callback,
-				      png_simple_warning_callback);
-	if (png == NULL)
-		die("png_create_write_struct failed\n");
-
-	info = png_create_info_struct(png);
-	if (info == NULL)
-		die("png_create_info_struct failed\n");
-
-	fp = fopen(filename, "w");
-	if (fp == NULL)
-		die("fopen failed: %m\n");
-
-	png_set_write_fn(png, fp, stdio_write_func, png_simple_output_flush_fn);
-
-	depth = 8;
-	png_set_IHDR(png, info,
-		     ec->width,
-		     ec->height, depth,
-		     PNG_COLOR_TYPE_RGB,
-		     PNG_INTERLACE_NONE,
-		     PNG_COMPRESSION_TYPE_DEFAULT,
-		     PNG_FILTER_TYPE_DEFAULT);
-
-	white.gray = (1 << depth) - 1;
-	white.red = white.blue = white.green = white.gray;
-	png_set_bKGD(png, info, &white);
-	png_write_info (png, info);
-	png_set_write_user_transform_fn(png, convert_pixels);
-
-	png_set_filler(png, 0, PNG_FILLER_AFTER);
-	png_write_image(png, rows);
-	png_write_end(png, info);
-
-	png_destroy_write_struct(&png, &info);
-	fclose(fp);
-	free(rows);
-	free(data);
+	pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
+					  8, ec->width, ec->height, stride,
+					  NULL, NULL);
+	gdk_pixbuf_save(pixbuf, filename, "png", &error, NULL);
 }
 
 static const struct wl_method screenshooter_methods[] = {
