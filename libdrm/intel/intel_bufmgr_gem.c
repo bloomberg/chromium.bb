@@ -545,7 +545,7 @@ drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
 	bo_gem->virtual);
     bo->virtual = bo_gem->virtual;
 
-    if (!bo_gem->swrast) {
+    if (bo_gem->global_name != 0 || !bo_gem->swrast) {
 	set_domain.handle = bo_gem->gem_handle;
 	set_domain.read_domains = I915_GEM_DOMAIN_CPU;
 	if (write_enable)
