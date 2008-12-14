@@ -106,7 +106,6 @@ struct _drm_intel_bo_gem {
 
     int refcount;
     /** Boolean whether the mmap ioctl has been called for this buffer yet. */
-    int mapped;
     uint32_t gem_handle;
     const char *name;
 
@@ -134,7 +133,7 @@ struct _drm_intel_bo_gem {
     drm_intel_bo **reloc_target_bo;
     /** Number of entries in relocs */
     int reloc_count;
-    /** Mapped address for the buffer */
+    /** Mapped address for the buffer, saved across map/unmap cycles */
     void *virtual;
 
     /** free list */
@@ -441,7 +440,7 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
     struct drm_gem_close close;
     int ret;
 
-    if (bo_gem->mapped)
+    if (bo_gem->virtual)
 	munmap (bo_gem->virtual, bo_gem->bo.size);
 
     /* Close this object */
@@ -523,32 +522,27 @@ drm_intel_gem_bo_map(drm_intel_bo *bo, int write_enable)
     /* Allow recursive mapping. Mesa may recursively map buffers with
      * nested display loops.
      */
-    if (!bo_gem->mapped) {
-    
-	assert(bo->virtual == NULL);
-    
+    if (!bo_gem->virtual) {
+	struct drm_i915_gem_mmap mmap_arg;
+
 	DBG("bo_map: %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
-    
-	if (bo_gem->virtual == NULL) {
-	    struct drm_i915_gem_mmap mmap_arg;
-    
-	    memset(&mmap_arg, 0, sizeof(mmap_arg));
-	    mmap_arg.handle = bo_gem->gem_handle;
-	    mmap_arg.offset = 0;
-	    mmap_arg.size = bo->size;
-	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP, &mmap_arg);
-	    if (ret != 0) {
-		fprintf(stderr, "%s:%d: Error mapping buffer %d (%s): %s .\n",
-			__FILE__, __LINE__,
-			bo_gem->gem_handle, bo_gem->name, strerror(errno));
-	    }
-	    bo_gem->virtual = (void *)(uintptr_t)mmap_arg.addr_ptr;
+
+	memset(&mmap_arg, 0, sizeof(mmap_arg));
+	mmap_arg.handle = bo_gem->gem_handle;
+	mmap_arg.offset = 0;
+	mmap_arg.size = bo->size;
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP, &mmap_arg);
+	if (ret != 0) {
+	    fprintf(stderr, "%s:%d: Error mapping buffer %d (%s): %s .\n",
+		    __FILE__, __LINE__,
+		    bo_gem->gem_handle, bo_gem->name, strerror(errno));
 	}
-	bo->virtual = bo_gem->virtual;
+	bo_gem->virtual = (void *)(uintptr_t)mmap_arg.addr_ptr;
 	bo_gem->swrast = 0;
-	bo_gem->mapped = 1;
-	DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name, bo_gem->virtual);
     }
+    DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
+	bo_gem->virtual);
+    bo->virtual = bo_gem->virtual;
 
     if (!bo_gem->swrast) {
 	set_domain.handle = bo_gem->gem_handle;
@@ -583,54 +577,46 @@ drm_intel_gem_bo_map_gtt(drm_intel_bo *bo)
 
     pthread_mutex_lock(&bufmgr_gem->lock);
 
-    /* Allow recursive mapping. Mesa may recursively map buffers with
-     * nested display loops.
-     */
-    if (!bo_gem->mapped) {
-
-	assert(bo->virtual == NULL);
+    /* Get a mapping of the buffer if we haven't before. */
+    if (bo_gem->virtual == NULL) {
+	struct drm_i915_gem_mmap_gtt mmap_arg;
 
 	DBG("bo_map_gtt: %d (%s)\n", bo_gem->gem_handle, bo_gem->name);
 
-	if (bo_gem->virtual == NULL) {
-		struct drm_i915_gem_mmap_gtt mmap_arg;
+	memset(&mmap_arg, 0, sizeof(mmap_arg));
+	mmap_arg.handle = bo_gem->gem_handle;
 
-		memset(&mmap_arg, 0, sizeof(mmap_arg));
-		mmap_arg.handle = bo_gem->gem_handle;
-
-		/* Get the fake offset back... */
-		ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP_GTT,
-			    &mmap_arg);
-		if (ret != 0) {
-			fprintf(stderr,
-				"%s:%d: Error preparing buffer map %d (%s): %s .\n",
-				__FILE__, __LINE__,
-				bo_gem->gem_handle, bo_gem->name,
-				strerror(errno));
-			pthread_mutex_unlock(&bufmgr_gem->lock);
-			return ret;
-		}
-
-		/* and mmap it */
-		bo_gem->virtual = mmap(0, bo->size, PROT_READ | PROT_WRITE,
-				       MAP_SHARED, bufmgr_gem->fd,
-				       mmap_arg.offset);
-		if (bo_gem->virtual == MAP_FAILED) {
-			fprintf(stderr,
-				"%s:%d: Error mapping buffer %d (%s): %s .\n",
-				__FILE__, __LINE__,
-				bo_gem->gem_handle, bo_gem->name,
-				strerror(errno));
-			pthread_mutex_unlock(&bufmgr_gem->lock);
-			return errno;
-		}
+	/* Get the fake offset back... */
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_MMAP_GTT, &mmap_arg);
+	if (ret != 0) {
+	    fprintf(stderr,
+		    "%s:%d: Error preparing buffer map %d (%s): %s .\n",
+		    __FILE__, __LINE__,
+		    bo_gem->gem_handle, bo_gem->name,
+		    strerror(errno));
+	    pthread_mutex_unlock(&bufmgr_gem->lock);
+	    return ret;
 	}
 
-	bo->virtual = bo_gem->virtual;
-	bo_gem->mapped = 1;
-	DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
-	    bo_gem->virtual);
+	/* and mmap it */
+	bo_gem->virtual = mmap(0, bo->size, PROT_READ | PROT_WRITE,
+			       MAP_SHARED, bufmgr_gem->fd,
+			       mmap_arg.offset);
+	if (bo_gem->virtual == MAP_FAILED) {
+	    fprintf(stderr,
+		    "%s:%d: Error mapping buffer %d (%s): %s .\n",
+		    __FILE__, __LINE__,
+		    bo_gem->gem_handle, bo_gem->name,
+		    strerror(errno));
+	    pthread_mutex_unlock(&bufmgr_gem->lock);
+	    return errno;
+	}
     }
+
+    bo->virtual = bo_gem->virtual;
+
+    DBG("bo_map: %d (%s) -> %p\n", bo_gem->gem_handle, bo_gem->name,
+	bo_gem->virtual);
 
     /* Now move it to the GTT domain so that the CPU caches are flushed */
     set_domain.handle = bo_gem->gem_handle;
@@ -662,7 +648,7 @@ drm_intel_gem_bo_unmap(drm_intel_bo *bo)
     if (bo == NULL)
 	return 0;
 
-    assert(bo_gem->mapped);
+    assert(bo_gem->virtual != NULL);
 
     pthread_mutex_lock(&bufmgr_gem->lock);
     if (bo_gem->swrast) {
