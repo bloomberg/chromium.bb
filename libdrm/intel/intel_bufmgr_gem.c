@@ -127,6 +127,12 @@ struct _drm_intel_bo_gem {
      */
     int swrast;
 
+    /**
+     * Current tiling mode
+     */
+    uint32_t tiling_mode;
+    uint32_t swizzle_mode;
+
     /** Array passed to the DRM containing relocation information. */
     struct drm_i915_gem_relocation_entry *relocs;
     /** Array of bos corresponding to relocs[i].target_handle */
@@ -168,6 +174,17 @@ drm_intel_gem_estimate_batch_space(drm_intel_bo **bo_array, int count);
 
 static unsigned int
 drm_intel_gem_compute_batch_space(drm_intel_bo **bo_array, int count);
+
+static int
+drm_intel_gem_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
+			    uint32_t *swizzle_mode);
+
+static int
+drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
+			    uint32_t stride);
+
+static void
+drm_intel_gem_bo_unreference(drm_intel_bo *bo);
 
 static int
 logbase2(int n)
@@ -370,6 +387,8 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
     bo_gem->validate_index = -1;
     bo_gem->reloc_tree_size = bo_gem->bo.size;
     bo_gem->used_as_reloc_target = 0;
+    bo_gem->tiling_mode = I915_TILING_NONE;
+    bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
 
     DBG("bo_create: buf %d (%s) %ldb\n",
 	bo_gem->gem_handle, bo_gem->name, size);
@@ -391,6 +410,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr, const char *name,
     drm_intel_bo_gem *bo_gem;
     int ret;
     struct drm_gem_open open_arg;
+    struct drm_i915_gem_get_tiling get_tiling;
 
     bo_gem = calloc(1, sizeof(*bo_gem));
     if (!bo_gem)
@@ -414,6 +434,15 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr, const char *name,
     bo_gem->validate_index = -1;
     bo_gem->gem_handle = open_arg.handle;
     bo_gem->global_name = handle;
+
+    get_tiling.handle = bo_gem->gem_handle;
+    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_GET_TILING, &get_tiling);
+    if (ret != 0) {
+	drm_intel_gem_bo_unreference(&bo_gem->bo);
+	return NULL;
+    }
+    bo_gem->tiling_mode = get_tiling.tiling_mode;
+    bo_gem->swizzle_mode = get_tiling.swizzle_mode;
 
     DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
@@ -469,6 +498,7 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 
     if (--bo_gem->refcount == 0) {
 	struct drm_intel_gem_bo_bucket *bucket;
+	uint32_t tiling_mode;
 
 	if (bo_gem->relocs != NULL) {
 	    int i;
@@ -485,11 +515,13 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
+	tiling_mode = I915_TILING_NONE;
 	if (bo_gem->global_name == 0 &&
 	    bucket != NULL &&
 	    (bucket->max_entries == -1 ||
 	     (bucket->max_entries > 0 &&
-	      bucket->num_entries < bucket->max_entries)))
+	      bucket->num_entries < bucket->max_entries)) &&
+	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0)
 	{
 	    bo_gem->name = NULL;
 	    bo_gem->validate_index = -1;
@@ -1001,17 +1033,22 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
     struct drm_i915_gem_set_tiling set_tiling;
     int ret;
 
+    if (bo_gem->global_name == 0 && *tiling_mode == bo_gem->tiling_mode)
+	return 0;
+
     set_tiling.handle = bo_gem->gem_handle;
     set_tiling.tiling_mode = *tiling_mode;
     set_tiling.stride = stride;
 
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_SET_TILING, &set_tiling);
     if (ret != 0) {
-	*tiling_mode = I915_TILING_NONE;
+	*tiling_mode = bo_gem->tiling_mode;
 	return -errno;
     }
+    bo_gem->tiling_mode = set_tiling.tiling_mode;
+    bo_gem->swizzle_mode = set_tiling.swizzle_mode;
 
-    *tiling_mode = set_tiling.tiling_mode;
+    *tiling_mode = bo_gem->tiling_mode;
     return 0;
 }
 
@@ -1019,22 +1056,10 @@ static int
 drm_intel_gem_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
 			    uint32_t *swizzle_mode)
 {
-    drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
-    struct drm_i915_gem_get_tiling get_tiling;
-    int ret;
 
-    get_tiling.handle = bo_gem->gem_handle;
-
-    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_GET_TILING, &get_tiling);
-    if (ret != 0) {
-	*tiling_mode = I915_TILING_NONE;
-	*swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
-	return -errno;
-    }
-
-    *tiling_mode = get_tiling.tiling_mode;
-    *swizzle_mode = get_tiling.swizzle_mode;
+    *tiling_mode = bo_gem->tiling_mode;
+    *swizzle_mode = bo_gem->swizzle_mode;
     return 0;
 }
 
