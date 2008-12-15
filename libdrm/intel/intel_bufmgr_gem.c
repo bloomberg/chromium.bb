@@ -931,7 +931,7 @@ drm_intel_gem_bo_exec(drm_intel_bo *bo, int used,
 						   bufmgr_gem->exec_count),
 		drm_intel_gem_compute_batch_space(bufmgr_gem->exec_bos,
 						  bufmgr_gem->exec_count),
-		bufmgr_gem->gtt_size);
+		(unsigned int) bufmgr_gem->gtt_size);
     }
     drm_intel_update_buffer_offsets (bufmgr_gem);
 
