@@ -53,6 +53,7 @@ static const char socket_name[] = "\0wayland";
 struct terminal {
 	struct window *window;
 	struct wl_display *display;
+	struct wl_compositor *compositor;
 	int redraw_scheduled, redraw_pending;
 	char *data;
 	int width, height, start, row, column;
@@ -194,7 +195,7 @@ terminal_draw(struct terminal *terminal)
 
 	window_draw(terminal->window);
 	terminal_draw_contents(terminal);
-	wl_display_commit(terminal->display, 0);
+	wl_compositor_commit(terminal->compositor, 0);
 }
 
 static gboolean
@@ -531,6 +532,7 @@ terminal_create(struct wl_display *display, int fd)
 	terminal->redraw_scheduled = 1;
 	terminal->margin = 5;
 
+	terminal->compositor = wl_display_get_compositor(display);
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
 	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
 	window_set_key_handler(terminal->window, key_handler, terminal);

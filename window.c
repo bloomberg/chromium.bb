@@ -41,6 +41,7 @@
 
 struct window {
 	struct wl_display *display;
+	struct wl_compositor *compositor;
 	struct wl_surface *surface;
 	const char *title;
 	int x, y, width, height;
@@ -196,9 +197,9 @@ event_handler(struct wl_display *display,
 	int location;
 	int grip_size = 16;
 
-	/* FIXME: Object ID 1 is the display, for anything else we
+	/* FIXME: Object ID 2 is the compositor, for anything else we
 	 * assume it's an input device. */
-	if (object == 1 && opcode == 3) {
+	if (object == 2 && opcode == 0) {
 		uint32_t key = p[0];
 
 		/* Ignore acknowledge events for window move requests. */
@@ -218,7 +219,7 @@ event_handler(struct wl_display *display,
 			(*window->acknowledge_handler)(window, key,
 						       window->user_data);
 
-	} else if (object == 1 && opcode == 4) {
+	} else if (object == 2 && opcode == 1) {
 		/* The frame event means that the previous frame was
 		 * composited, and we can now send the request to copy
 		 * the frame we've rendered in the mean time into the
@@ -244,7 +245,7 @@ event_handler(struct wl_display *display,
 				       window->y - window->margin,
 				       window->width + 2 * window->margin,
 				       window->height + 2 * window->margin);
-			wl_display_commit(window->display, 1);
+			wl_compositor_commit(window->compositor, 1);
 			break;
 		case WINDOW_RESIZING_LOWER_RIGHT:
 			if (window->grab_device != object)
@@ -387,7 +388,8 @@ window_create(struct wl_display *display, int fd,
 	memset(window, 0, sizeof *window);
 	window->display = display;
 	window->title = strdup(title);
-	window->surface = wl_display_create_surface(display);
+	window->compositor = wl_display_get_compositor(display);
+	window->surface = wl_compositor_create_surface(window->compositor);
 	window->x = x;
 	window->y = y;
 	window->minimum_width = 100;

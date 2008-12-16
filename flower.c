@@ -104,7 +104,7 @@ draw_stuff(int width, int height)
 }
 
 struct flower {
-	struct wl_display *display;
+	struct wl_compositor *compositor;
 	struct wl_surface *surface;
 	int i;
 	int x, y, width, height;
@@ -118,7 +118,7 @@ move_flower(struct flower *flower)
 		       flower->y + sin(flower->i / 27.0) * 300 - flower->height / 2,
 		       flower->width, flower->height);
 	flower->i++;
-	wl_display_commit(flower->display, 0);
+	wl_compositor_commit(flower->compositor, 0);
 }
 
 static void
@@ -126,7 +126,7 @@ event_handler(struct wl_display *display,
 	      uint32_t object, uint32_t opcode,
 	      uint32_t size, uint32_t *p, void *data)
 {
-	if (object == 1 && opcode == 4)
+	if (object == 2 && opcode == 1)
 		move_flower(data);
 }
 
@@ -158,12 +158,12 @@ int main(int argc, char *argv[])
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	flower.display = display;
+	flower.compositor = wl_display_get_compositor(display);
 	flower.x = 512;
 	flower.y = 384;
 	flower.width = 200;
 	flower.height = 200;
-	flower.surface = wl_display_create_surface(display);
+	flower.surface = wl_compositor_create_surface(flower.compositor);
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	srandom(ts.tv_nsec);

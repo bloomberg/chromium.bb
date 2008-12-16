@@ -47,6 +47,7 @@ struct gears {
 	struct window *window;
 
 	struct wl_display *wl_display;
+	struct wl_compositor *compositor;
 	struct rectangle rectangle;
 
 	EGLDisplay display;
@@ -320,7 +321,7 @@ frame_handler(struct window *window, uint32_t frame, uint32_t timestamp, void *d
 		    &gears->rectangle,
 		    gears->buffer->name, gears->buffer->stride);
 
-	wl_display_commit(gears->wl_display, 0);
+	wl_compositor_commit(gears->compositor, 0);
 
 	gears->angle += 1;
 }
@@ -378,6 +379,8 @@ gears_create(struct wl_display *display, int fd)
 	glEnable(GL_LIGHT0);
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0, 0, 0, 0.92);
+
+	gears->compositor = wl_display_get_compositor(display);
 
 	draw_gears(gears);
 

@@ -43,7 +43,6 @@ struct wl_client {
 	struct wl_display *display;
 	struct wl_list object_list;
 	struct wl_list link;
-	uint32_t pending_frame;
 };
 
 struct wl_display {
@@ -51,159 +50,17 @@ struct wl_display {
 	struct wl_event_loop *loop;
 	struct wl_hash *objects;
 
-	struct wl_object *pointer;
-
-	struct wl_compositor *compositor;
-	struct wl_compositor_interface *compositor_interface;
-
-	struct wl_list surface_list;
-	struct wl_list client_list;
+	struct wl_list pending_frame_list;
 	uint32_t client_id_range;
 	uint32_t id;
 
 	struct wl_list global_list;
 };
 
-struct wl_surface {
-	struct wl_object base;
-
-	struct wl_client *client;
-	/* provided by client */
-	int width, height;
-	int buffer;
-	int stride;
-	
-	struct wl_map map;
-	struct wl_list link;
-
-	/* how to convert buffer contents to pixels in screen format;
-	 * yuv->rgb, indexed->rgb, svg->rgb, but mostly just rgb->rgb. */
-
-	/* how to transform/render rectangular contents to polygons. */
-
-	void *compositor_data;
-};
-
 struct wl_object_ref {
 	struct wl_object *object;
 	struct wl_list link;
 };
-
-static void
-wl_surface_destroy(struct wl_client *client,
-		   struct wl_surface *surface)
-{
-	const struct wl_compositor_interface *interface;
-
-	interface = client->display->compositor->interface;
-	interface->notify_surface_destroy(client->display->compositor,
-					  surface);
-	wl_list_remove(&surface->link);
-}
-
-static void
-wl_surface_attach(struct wl_client *client,
-		  struct wl_surface *surface, uint32_t name, 
-		  uint32_t width, uint32_t height, uint32_t stride)
-{
-	const struct wl_compositor_interface *interface;
-
-	interface = client->display->compositor->interface;
-	interface->notify_surface_attach(client->display->compositor,
-					 surface, name, width, height, stride);
-}
-
-static void
-wl_surface_map(struct wl_client *client, struct wl_surface *surface,
-	       int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	const struct wl_compositor_interface *interface;
-
-	/* FIXME: This needs to take a tri-mesh argument... - count
-	 * and a list of tris. 0 tris means unmap. */
-
-	surface->map.x = x;
-	surface->map.y = y;
-	surface->map.width = width;
-	surface->map.height = height;
-
-	interface = client->display->compositor->interface;
-	interface->notify_surface_map(client->display->compositor,
-				      surface, &surface->map);
-}
-
-static void
-wl_surface_copy(struct wl_client *client, struct wl_surface *surface,
-		int32_t dst_x, int32_t dst_y, uint32_t name, uint32_t stride,
-		int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	const struct wl_compositor_interface *interface;
-
-	interface = client->display->compositor->interface;
-	interface->notify_surface_copy(client->display->compositor,
-				       surface, dst_x, dst_y,
-				       name, stride, x, y, width, height);
-}
-
-static void
-wl_surface_damage(struct wl_client *client, struct wl_surface *surface,
-		  int32_t x, int32_t y, int32_t width, int32_t height)
-{
-	const struct wl_compositor_interface *interface;
-
-	interface = client->display->compositor->interface;
-	interface->notify_surface_damage(client->display->compositor,
-					 surface, x, y, width, height);
-}
-
-static const struct wl_method surface_methods[] = {
-	{ "destroy", wl_surface_destroy, "" },
-	{ "attach", wl_surface_attach, "uuuu" },
-	{ "map", wl_surface_map, "iiii" },
-	{ "copy", wl_surface_copy, "iiuuiiii" },
-	{ "damage", wl_surface_damage, "iiii" }
-};
-
-static const struct wl_interface surface_interface = {
-	"surface", 1,
-	ARRAY_LENGTH(surface_methods),
-	surface_methods,
-};
-
-static struct wl_surface *
-wl_surface_create(struct wl_display *display,
-		  struct wl_client *client, uint32_t id)
-{
-	struct wl_surface *surface;
-	const struct wl_compositor_interface *interface;
-
-	surface = malloc(sizeof *surface);
-	if (surface == NULL)
-		return NULL;
-
-	surface->base.id = id;
-	surface->base.interface = &surface_interface;
-	surface->client = client;
-
-	wl_list_insert(display->surface_list.prev, &surface->link);
-
-	interface = display->compositor->interface;
-	interface->notify_surface_create(display->compositor, surface);
-
-	return surface;
-}
-
-WL_EXPORT void
-wl_surface_set_data(struct wl_surface *surface, void *data)
-{
-	surface->compositor_data = data;
-}
-
-WL_EXPORT void *
-wl_surface_get_data(struct wl_surface *surface)
-{
-	return surface->compositor_data;
-}
 
 void
 wl_client_destroy(struct wl_client *client);
@@ -264,8 +121,9 @@ wl_client_marshal(struct wl_client *client, struct wl_object *sender,
 
 static void
 wl_client_demarshal(struct wl_client *client, struct wl_object *target,
-		    const struct wl_method *method, size_t size)
+		    uint32_t opcode, size_t size)
 {
+	const struct wl_method *method;
 	ffi_type *types[20];
 	ffi_cif cif;
 	uint32_t *p, result;
@@ -279,7 +137,9 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 	void *args[20];
 	struct wl_object *object;
 	uint32_t data[64];
+	void (*func)(void);
 
+	method = &target->interface->methods[opcode];
 	count = strlen(method->signature) + 2;
 	if (count > ARRAY_LENGTH(types)) {
 		printf("too many args (%d)\n", count);
@@ -341,22 +201,20 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 		args[i] = &values[i];
 	}
 
+	func = target->implementation[opcode];
 	ffi_prep_cif(&cif, FFI_DEFAULT_ABI, count, &ffi_type_uint32, types);
-	ffi_call(&cif, FFI_FN(method->func), &result, args);
+	ffi_call(&cif, func, &result, args);
 }
 
 #define WL_DISPLAY_INVALID_OBJECT 0
 #define WL_DISPLAY_INVALID_METHOD 1
 #define WL_DISPLAY_NO_MEMORY 2
-#define WL_DISPLAY_ACKNOWLEDGE 3
-#define WL_DISPLAY_FRAME 4
 
 static void
 wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
 	struct wl_client *client = data;
 	struct wl_connection *connection = client->connection;
-	const struct wl_method *method;
 	struct wl_object *object;
 	uint32_t p[2], opcode, size;
 	uint32_t cmask = 0;
@@ -397,8 +255,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 			continue;
 		}
 				
-		method = &object->interface->methods[opcode];
-		wl_client_demarshal(client, object, method, size);
+		wl_client_demarshal(client, object, opcode, size);
 		wl_connection_consume(connection, size);
 		len -= size;
 	}
@@ -455,6 +312,7 @@ wl_client_create(struct wl_display *display, int fd)
 						  wl_client_connection_update, 
 						  client);
 	wl_list_init(&client->object_list);
+	wl_list_init(&client->link);
 
 	wl_connection_write(client->connection,
 			    &display->client_id_range,
@@ -474,9 +332,17 @@ wl_client_create(struct wl_display *display, int fd)
 				   struct wl_object_ref, link);
 	}
 
-	wl_list_insert(display->client_list.prev, &client->link);
-
 	return client;
+}
+
+static void
+wl_object_destroy(struct wl_object *object)
+{
+	const struct wl_surface_interface *interface =
+		(const struct wl_surface_interface *) object->implementation;
+
+	/* FIXME: Need generic object destructor. */
+	interface->destroy(NULL, (struct wl_surface *) object);
 }
 
 void
@@ -492,7 +358,7 @@ wl_client_destroy(struct wl_client *client)
 		ref = container_of(client->object_list.next,
 				   struct wl_object_ref, link);
 		wl_list_remove(&ref->link);
-		wl_surface_destroy(client, (struct wl_surface *) ref->object);
+		wl_object_destroy(ref->object);
 		free(ref);
 	}
 
@@ -501,14 +367,33 @@ wl_client_destroy(struct wl_client *client)
 	free(client);
 }
 
-static int
-wl_display_create_surface(struct wl_client *client,
-			  struct wl_display *display, uint32_t id)
+static const struct wl_method surface_methods[] = {
+	{ "destroy", "" },
+	{ "attach", "uuuu" },
+	{ "map", "iiii" },
+	{ "copy", "iiuuiiii" },
+	{ "damage", "iiii" }
+};
+
+static const struct wl_interface surface_interface = {
+	"surface", 1,
+	ARRAY_LENGTH(surface_methods),
+	surface_methods,
+};
+
+WL_EXPORT int
+wl_client_add_surface(struct wl_client *client,
+		      struct wl_surface *surface,
+		      const struct wl_surface_interface *implementation, 
+		      uint32_t id)
 {
-	struct wl_surface *surface;
+	struct wl_display *display = client->display;
 	struct wl_object_ref *ref;
 
-	surface = wl_surface_create(display, client, id);
+	surface->base.id = id;
+	surface->base.interface = &surface_interface;
+	surface->base.implementation = (void (**)(void)) implementation;
+	surface->client = client;
 
 	ref = malloc(sizeof *ref);
 	if (ref == NULL) {
@@ -524,39 +409,61 @@ wl_display_create_surface(struct wl_client *client,
 	return 0;
 }
 
-static int
-wl_display_commit(struct wl_client *client,
-		  struct wl_display *display, uint32_t key)
+#define WL_COMPOSITOR_ACKNOWLEDGE 0
+#define WL_COMPOSITOR_FRAME 1
+
+WL_EXPORT void
+wl_client_send_acknowledge(struct wl_client *client,
+			   struct wl_compositor *compositor,
+			   uint32_t key, uint32_t frame)
 {
-	const struct wl_compositor_interface *interface;
-	uint32_t frame;
+	wl_list_remove(&client->link);
+	wl_list_insert(client->display->pending_frame_list.prev,
+		       &client->link);
+	wl_client_marshal(client, &compositor->base,
+			  WL_COMPOSITOR_ACKNOWLEDGE, key, frame);
+}
 
-	client->pending_frame = 1;
+static const struct wl_method compositor_methods[] = {
+	{ "create_surface", "n" },
+	{ "commit", "u" }
+};
 
-	interface = display->compositor->interface;
-	frame = interface->notify_commit(display->compositor);
-	wl_client_marshal(client, &display->base,
-			  WL_DISPLAY_ACKNOWLEDGE, key, frame);
+static const struct wl_event compositor_events[] = {
+	{ "acknowledge", "uu" },
+	{ "frame", "uu" }
+};
+
+static const struct wl_interface compositor_interface = {
+	"compositor", 1,
+	ARRAY_LENGTH(compositor_methods), compositor_methods,
+	ARRAY_LENGTH(compositor_events), compositor_events,
+};
+
+WL_EXPORT int
+wl_display_set_compositor(struct wl_display *display,
+			  struct wl_compositor *compositor,
+			  const struct wl_compositor_interface *implementation)
+{
+	compositor->base.interface = &compositor_interface;
+	compositor->base.implementation = (void (**)(void)) implementation;
+
+	wl_display_add_object(display, &compositor->base);
+	if (wl_display_add_global(display, &compositor->base))
+		return -1;
 
 	return 0;
 }
-
-static const struct wl_method display_methods[] = {
-	{ "create_surface", wl_display_create_surface, "n" },
-	{ "commit", wl_display_commit, "u" }
-};
 
 static const struct wl_event display_events[] = {
 	{ "invalid_object", "u" },
 	{ "invalid_method", "uu" },
 	{ "no_memory", "" },
-	{ "acknowledge", "uu" },
-	{ "frame", "uu" }
 };
 
 static const struct wl_interface display_interface = {
 	"display", 1,
-	ARRAY_LENGTH(display_methods), display_methods,
+	0, NULL,
 	ARRAY_LENGTH(display_events), display_events,
 };
 
@@ -581,14 +488,14 @@ wl_display_create(void)
 		return NULL;
 	}
 
-	wl_list_init(&display->surface_list);
-	wl_list_init(&display->client_list);
+	wl_list_init(&display->pending_frame_list);
 	wl_list_init(&display->global_list);
 
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	display->id = 1;
 	display->base.interface = &display_interface;
+	display->base.implementation = NULL;
 	wl_display_add_object(display, &display->base);
 	if (wl_display_add_global(display, &display->base)) {
 		wl_event_loop_destroy(display->loop);
@@ -636,9 +543,6 @@ wl_surface_post_event(struct wl_surface *surface,
 struct wl_input_device {
 	struct wl_object base;
 	struct wl_display *display;
-	uint32_t button_state[16];
-	uint32_t button_count;
-	int32_t x, y;
 };
 
 static const struct wl_method input_device_methods[] = {
@@ -666,29 +570,23 @@ wl_input_device_get_interface(void)
 
 WL_EXPORT void
 wl_display_post_frame(struct wl_display *display,
+		      struct wl_compositor *compositor,
 		      uint32_t frame, uint32_t msecs)
 {
 	struct wl_client *client;
 
-	client = container_of(display->client_list.next,
+	client = container_of(display->pending_frame_list.next,
 			      struct wl_client, link);
 
-	while (&client->link != &display->client_list) {
-		if (client->pending_frame) {
-			wl_client_marshal(client, &display->base,
-					  WL_DISPLAY_FRAME, frame, msecs);
-			client->pending_frame = 0;
-		}
+	while (&client->link != &display->pending_frame_list) {
+		wl_client_marshal(client, &compositor->base,
+				  WL_COMPOSITOR_FRAME, frame, msecs);
 		client = container_of(client->link.next,
 				      struct wl_client, link);
 	}
-}
 
-WL_EXPORT void
-wl_display_set_compositor(struct wl_display *display,
-			  struct wl_compositor *compositor)
-{
-	display->compositor = compositor;
+	wl_list_remove(&display->pending_frame_list);
+	wl_list_init(&display->pending_frame_list);
 }
 
 WL_EXPORT struct wl_event_loop *

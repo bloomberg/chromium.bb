@@ -73,7 +73,6 @@ struct wl_argument {
 
 struct wl_method {
 	const char *name;
-	void *func;
 	const char *signature;
 	const void **types;
 };
@@ -94,19 +93,16 @@ struct wl_interface {
 
 struct wl_object {
 	const struct wl_interface *interface;
+	void (**implementation)(void);
 	uint32_t id;
 };
 
-struct wl_surface;
 struct wl_display;
 struct wl_input_device;
 
 struct wl_map {
 	int32_t x, y, width, height;
 };
-
-void wl_surface_set_data(struct wl_surface *surface, void *data);
-void *wl_surface_get_data(struct wl_surface *surface);
 
 struct wl_display *wl_display_create(void);
 struct wl_event_loop *wl_display_get_event_loop(struct wl_display *display);
@@ -121,50 +117,66 @@ wl_display_add_global(struct wl_display *display, struct wl_object *object);
 const struct wl_interface *
 wl_input_device_get_interface(void);
 
-void
-wl_display_post_frame(struct wl_display *display,
-		      uint32_t frame, uint32_t msecs);
-
 #define WL_INPUT_MOTION 0
 #define WL_INPUT_BUTTON 1
 #define WL_INPUT_KEY 2
+
+struct wl_compositor {
+	struct wl_object base;
+};
+
+struct wl_surface {
+	struct wl_object base;
+	struct wl_client *client;
+};
+
+struct wl_compositor_interface {
+	void (*create_surface)(struct wl_client *client,
+			       struct wl_compositor *compositor, uint32_t id);
+	void (*commit)(struct wl_client *client,
+		       struct wl_compositor *compositor, uint32_t key);
+};
+
+struct wl_surface_interface {
+	void (*destroy)(struct wl_client *client,
+			struct wl_surface *surface);
+	void (*attach)(struct wl_client *client,
+		       struct wl_surface *surface, uint32_t name, 
+		       uint32_t width, uint32_t height, uint32_t stride);
+	void (*map)(struct wl_client *client,
+		    struct wl_surface *surface,
+		    int32_t x, int32_t y, int32_t width, int32_t height);
+	void (*copy)(struct wl_client *client, struct wl_surface *surface,
+		     int32_t dst_x, int32_t dst_y, uint32_t name, uint32_t stride,
+		     int32_t x, int32_t y, int32_t width, int32_t height);
+	void (*damage)(struct wl_client *client, struct wl_surface *surface,
+		       int32_t x, int32_t y, int32_t width, int32_t height);
+};
 
 void
 wl_surface_post_event(struct wl_surface *surface,
 		      struct wl_object *sender,
 		      uint32_t event, ...);
 
-struct wl_compositor {
-	const struct wl_compositor_interface *interface;
-};
+int
+wl_display_set_compositor(struct wl_display *display,
+			  struct wl_compositor *compositor,
+			  const struct wl_compositor_interface *implementation);
 
-struct wl_compositor_interface {
-	void (*notify_surface_create)(struct wl_compositor *compositor,
-				      struct wl_surface *surface);
-	void (*notify_surface_destroy)(struct wl_compositor *compositor,
-				       struct wl_surface *surface);
-	void (*notify_surface_attach)(struct wl_compositor *compositor,
-				      struct wl_surface *surface,
-				      uint32_t name, 
-				      uint32_t width, uint32_t height,
-				      uint32_t stride);
-	void (*notify_surface_map)(struct wl_compositor *compositor,
-				   struct wl_surface *surface,
-				   struct wl_map *map);
-	void (*notify_surface_copy)(struct wl_compositor *compositor,
-				    struct wl_surface *surface,
-				    int32_t dst_x, int32_t dst_y,
-				    uint32_t name, uint32_t stride,
-				    int32_t x, int32_t y,
-				    int32_t width, int32_t height);
-	void (*notify_surface_damage)(struct wl_compositor *compositor,
-				      struct wl_surface *surface,
-				      int32_t x, int32_t y,
-				      int32_t width, int32_t height);
-	uint32_t (*notify_commit)(struct wl_compositor *compositor);
-};
+int
+wl_client_add_surface(struct wl_client *client,
+		      struct wl_surface *surface,
+		      const struct wl_surface_interface *implementation, 
+		      uint32_t id);
 
-void wl_display_set_compositor(struct wl_display *display,
-			       struct wl_compositor *compositor);
+void
+wl_client_send_acknowledge(struct wl_client *client,
+			   struct wl_compositor *compositor,
+			   uint32_t key, uint32_t frame);
+
+void
+wl_display_post_frame(struct wl_display *display,
+		      struct wl_compositor *compositor,
+		      uint32_t frame, uint32_t msecs);
 
 #endif

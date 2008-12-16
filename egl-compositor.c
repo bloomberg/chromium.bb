@@ -89,10 +89,11 @@ struct egl_compositor {
 };
 
 struct egl_surface {
+	struct wl_surface base;
+	struct egl_compositor *compositor;
 	GLuint texture;
 	struct wl_map map;
 	EGLSurface surface;
-	struct wl_surface *wl_surface;
 	int width, height;
 	struct wl_list link;
 };
@@ -100,6 +101,10 @@ struct egl_surface {
 struct screenshooter {
 	struct wl_object base;
 	struct egl_compositor *ec;
+};
+
+struct screenshooter_interface {
+	void (*shoot)(struct wl_client *client, struct screenshooter *shooter);
 };
 
 static void
@@ -120,13 +125,17 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 }
 
 static const struct wl_method screenshooter_methods[] = {
-	{ "shoot", screenshooter_shoot, "", NULL }
+	{ "shoot", "", NULL }
 };
 
 static const struct wl_interface screenshooter_interface = {
 	"screenshooter", 1,
 	ARRAY_LENGTH(screenshooter_methods),
 	screenshooter_methods,
+};
+
+struct screenshooter_interface screenshooter_implementation = {
+	screenshooter_shoot
 };
 
 static struct screenshooter *
@@ -139,6 +148,7 @@ screenshooter_create(struct egl_compositor *ec)
 		return NULL;
 
 	shooter->base.interface = &screenshooter_interface;
+	shooter->base.implementation = (void(**)(void)) &screenshooter_implementation;
 	shooter->ec = ec;
 
 	return shooter;
@@ -498,7 +508,8 @@ repaint(void *data)
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	msecs = ts.tv_sec * 1000 + ts.tv_nsec / (1000 * 1000);
-	wl_display_post_frame(ec->wl_display, ec->current_frame, msecs);
+	wl_display_post_frame(ec->wl_display, &ec->base,
+			      ec->current_frame, msecs);
 	ec->current_frame++;
 
 	wl_event_source_timer_update(ec->timer_source, 10);
@@ -518,36 +529,13 @@ schedule_repaint(struct egl_compositor *ec)
 		wl_event_loop_add_idle(loop, repaint, ec);
 	}
 }
-
-static void
-notify_surface_create(struct wl_compositor *compositor,
-		      struct wl_surface *surface)
-{
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	struct egl_surface *es;
-
-	es = malloc(sizeof *es);
-	if (es == NULL)
-		return;
-
-	es->surface = EGL_NO_SURFACE;
-	es->wl_surface = surface;
-	wl_surface_set_data(surface, es);
-	wl_list_insert(ec->surface_list.prev, &es->link);
-
-	glGenTextures(1, &es->texture);
-}
 				   
 static void
-notify_surface_destroy(struct wl_compositor *compositor,
-		       struct wl_surface *surface)
+surface_destroy(struct wl_client *client,
+		struct wl_surface *surface)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	struct egl_surface *es;
-
-	es = wl_surface_get_data(surface);
-	if (es == NULL)
-		return;
+	struct egl_surface *es = (struct egl_surface *) surface;
+	struct egl_compositor *ec = es->compositor;
 
 	wl_list_remove(&es->link);
 	egl_surface_destroy(es, ec);
@@ -556,16 +544,12 @@ notify_surface_destroy(struct wl_compositor *compositor,
 }
 
 static void
-notify_surface_attach(struct wl_compositor *compositor,
-		      struct wl_surface *surface, uint32_t name, 
-		      uint32_t width, uint32_t height, uint32_t stride)
+surface_attach(struct wl_client *client,
+	       struct wl_surface *surface, uint32_t name, 
+	       uint32_t width, uint32_t height, uint32_t stride)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	struct egl_surface *es;
-
-	es = wl_surface_get_data(surface);
-	if (es == NULL)
-		return;
+	struct egl_surface *es = (struct egl_surface *) surface;
+	struct egl_compositor *ec = es->compositor;
 
 	if (es->surface != EGL_NO_SURFACE)
 		eglDestroySurface(ec->display, es->surface);
@@ -584,30 +568,28 @@ notify_surface_attach(struct wl_compositor *compositor,
 }
 
 static void
-notify_surface_map(struct wl_compositor *compositor,
-		   struct wl_surface *surface, struct wl_map *map)
+surface_map(struct wl_client *client,
+	    struct wl_surface *surface,
+	    int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct egl_surface *es;
+	struct egl_surface *es = (struct egl_surface *) surface;
 
-	es = wl_surface_get_data(surface);
-	if (es == NULL)
-		return;
-
-	es->map = *map;
+	es->map.x = x;
+	es->map.y = y;
+	es->map.width = width;
+	es->map.height = height;
 }
 
 static void
-notify_surface_copy(struct wl_compositor *compositor,
-		    struct wl_surface *surface,
-		    int32_t dst_x, int32_t dst_y,
-		    uint32_t name, uint32_t stride,
-		    int32_t x, int32_t y, int32_t width, int32_t height)
+surface_copy(struct wl_client *client,
+	     struct wl_surface *surface,
+	     int32_t dst_x, int32_t dst_y,
+	     uint32_t name, uint32_t stride,
+	     int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	struct egl_surface *es = (struct egl_surface *) surface;
+	struct egl_compositor *ec = es->compositor;
 	EGLSurface src;
-	struct egl_surface *es;
-
-	es = wl_surface_get_data(surface);
 
 	/* FIXME: glCopyPixels should work, but then we'll have to
 	 * call eglMakeCurrent to set up the src and dest surfaces
@@ -623,22 +605,55 @@ notify_surface_copy(struct wl_compositor *compositor,
 }
 
 static void
-notify_surface_damage(struct wl_compositor *compositor,
-		      struct wl_surface *surface,
-		      int32_t x, int32_t y, int32_t width, int32_t height)
+surface_damage(struct wl_client *client,
+	       struct wl_surface *surface,
+	       int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	/* FIXME: This need to take a damage region, of course. */
 }
 
-static uint32_t
-notify_commit(struct wl_compositor *compositor)
+const static struct wl_surface_interface surface_interface = {
+	surface_destroy,
+	surface_attach,
+	surface_map,
+	surface_copy,
+	surface_damage
+};
+
+static void
+compositor_create_surface(struct wl_client *client,
+			  struct wl_compositor *compositor, uint32_t id)
+{
+	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	struct egl_surface *es;
+
+	es = malloc(sizeof *es);
+	if (es == NULL)
+		/* FIXME: Send OOM event. */
+		return;
+
+	es->compositor = ec;
+	es->surface = EGL_NO_SURFACE;
+	wl_list_insert(ec->surface_list.prev, &es->link);
+	glGenTextures(1, &es->texture);
+	wl_client_add_surface(client, &es->base,
+			      &surface_interface, id);
+}
+
+static void
+compositor_commit(struct wl_client *client,
+		  struct wl_compositor *compositor, uint32_t key)
 {
 	struct egl_compositor *ec = (struct egl_compositor *) compositor;
 
 	schedule_repaint(ec);
-
-	return ec->current_frame;
+	wl_client_send_acknowledge(client, compositor, key, ec->current_frame);
 }
+
+const static struct wl_compositor_interface compositor_interface = {
+	compositor_create_surface,
+	compositor_commit
+};
 
 static struct egl_surface *
 pick_surface(struct egl_input_device *device)
@@ -677,7 +692,7 @@ notify_motion(struct egl_input_device *device, int x, int y)
 	if (es) {
 		sx = (x - es->map.x) * es->width / es->map.width;
 		sy = (y - es->map.y) * es->height / es->map.height;
-		wl_surface_post_event(es->wl_surface, &device->base,
+		wl_surface_post_event(&es->base, &device->base,
 				      WL_INPUT_MOTION, x, y, sx, sy);
 	}
 
@@ -715,7 +730,7 @@ notify_button(struct egl_input_device *device,
 		sy = (device->y - es->map.y) * es->height / es->map.height;
 
 		/* FIXME: Swallow click on raise? */
-		wl_surface_post_event(es->wl_surface, &device->base,
+		wl_surface_post_event(&es->base, &device->base,
 				      WL_INPUT_BUTTON, button, state,
 				      device->x, device->y, sx, sy);
 
@@ -737,28 +752,15 @@ notify_key(struct egl_input_device *device,
 		schedule_repaint(ec);
 	} else if (!wl_list_empty(&ec->surface_list)) {
 		if (device->focus_surface != NULL)
-			wl_surface_post_event(device->focus_surface->wl_surface,
+			wl_surface_post_event(&device->focus_surface->base,
 					      &device->base, 
 					      WL_INPUT_KEY, key, state);
 	}
 }
 
-static const struct wl_compositor_interface interface = {
-	notify_surface_create,
-	notify_surface_destroy,
-	notify_surface_attach,
-	notify_surface_map,
-	notify_surface_copy,
-	notify_surface_damage,
-	notify_commit,
-};
-
 struct evdev_input_device *
 evdev_input_device_create(struct egl_input_device *device,
 			  struct wl_display *display, const char *path);
-
-void
-egl_device_get_position(struct egl_input_device *device, int32_t *x, int32_t *y);
 
 static void
 create_input_device(struct egl_compositor *ec, const char *glob)
@@ -984,7 +986,6 @@ egl_compositor_create(struct wl_display *display)
 	if (ec == NULL)
 		return NULL;
 
-	ec->base.interface = &interface;
 	ec->wl_display = display;
 
 	ec->display = eglCreateDisplayNative(gem_device, "i965");
@@ -1026,6 +1027,8 @@ egl_compositor_create(struct wl_display *display)
 	glLoadIdentity();
 	glOrtho(0, ec->width, ec->height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
+
+	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
 
 	wl_list_init(&ec->input_device_list);
 	for (i = 0; option_input_devices[i]; i++)
@@ -1086,8 +1089,6 @@ int main(int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 		
-	wl_display_set_compositor(display, &ec->base);
-
 	if (wl_display_add_socket(display, socket_name, sizeof socket_name)) {
 		fprintf(stderr, "failed to add socket: %m\n");
 		exit(EXIT_FAILURE);

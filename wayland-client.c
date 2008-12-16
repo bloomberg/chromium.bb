@@ -64,6 +64,10 @@ struct wl_display {
 	void *event_handler_data;
 };
 
+struct wl_compositor {
+	struct wl_proxy proxy;
+};
+
 struct wl_surface {
 	struct wl_proxy proxy;
 };
@@ -249,11 +253,28 @@ wl_display_write(struct wl_display *display, const void *data, size_t count)
 	wl_connection_write(display->connection, data, count);
 }
 
-#define WL_DISPLAY_CREATE_SURFACE	0
-#define WL_DISPLAY_COMMIT		1
+WL_EXPORT struct wl_compositor *
+wl_display_get_compositor(struct wl_display *display)
+{
+	struct wl_compositor *compositor;
+	uint32_t id;
+
+	id = wl_display_get_object_id(display, "compositor");
+	if (id == 0)
+		return NULL;
+
+	compositor = malloc(sizeof *compositor);
+	compositor->proxy.display = display;
+	compositor->proxy.id = id;
+
+	return compositor;
+}
+
+#define WL_COMPOSITOR_CREATE_SURFACE	0
+#define WL_COMPOSITOR_COMMIT		1
 
 WL_EXPORT struct wl_surface *
-wl_display_create_surface(struct wl_display *display)
+wl_compositor_create_surface(struct wl_compositor *compositor)
 {
 	struct wl_surface *surface;
 	uint32_t request[3];
@@ -262,26 +283,28 @@ wl_display_create_surface(struct wl_display *display)
 	if (surface == NULL)
 		return NULL;
 
-	surface->proxy.id = wl_display_allocate_id(display);
-	surface->proxy.display = display;
+	surface->proxy.id = wl_display_allocate_id(compositor->proxy.display);
+	surface->proxy.display = compositor->proxy.display;
 
-	request[0] = display->proxy.id;
-	request[1] = WL_DISPLAY_CREATE_SURFACE | ((sizeof request) << 16);
+	request[0] = compositor->proxy.id;
+	request[1] = WL_COMPOSITOR_CREATE_SURFACE | ((sizeof request) << 16);
 	request[2] = surface->proxy.id;
-	wl_connection_write(display->connection, request, sizeof request);
+	wl_connection_write(compositor->proxy.display->connection,
+			    request, sizeof request);
 
 	return surface;
 }
 
 WL_EXPORT void
-wl_display_commit(struct wl_display *display, uint32_t key)
+wl_compositor_commit(struct wl_compositor *compositor, uint32_t key)
 {
 	uint32_t request[3];
 
-	request[0] = display->proxy.id;
-	request[1] = WL_DISPLAY_COMMIT | ((sizeof request) << 16);
+	request[0] = compositor->proxy.id;
+	request[1] = WL_COMPOSITOR_COMMIT | ((sizeof request) << 16);
 	request[2] = key;
-	wl_connection_write(display->connection, request, sizeof request);
+	wl_connection_write(compositor->proxy.display->connection,
+			    request, sizeof request);
 }
 
 #define WL_SURFACE_DESTROY	0

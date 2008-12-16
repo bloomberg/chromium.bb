@@ -56,10 +56,13 @@ void wl_display_set_event_handler(struct wl_display *display,
 				  wl_display_event_func_t handler,
 				  void *data);
 
+struct wl_compositor *
+wl_display_get_compositor(struct wl_display *display);
+
 struct wl_surface *
-wl_display_create_surface(struct wl_display *display);
+wl_compositor_create_surface(struct wl_compositor *compositor);
 void
-wl_display_commit(struct wl_display *display, uint32_t key);
+wl_compositor_commit(struct wl_compositor *compositor, uint32_t key);
 
 void wl_surface_destroy(struct wl_surface *surface);
 void wl_surface_attach(struct wl_surface *surface,
