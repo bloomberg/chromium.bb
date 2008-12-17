@@ -49,6 +49,7 @@
 
 #define DRM_DIR_NAME  "/dev/dri"
 #define DRM_DEV_NAME  "%s/card%d"
+#define DRM_CONTROL_DEV_NAME  "%s/controlD%d"
 #define DRM_PROC_NAME "/proc/dri/" /* For backward Linux compatibility */
 
 #define DRM_ERR_NO_DEVICE  (-1001)
@@ -74,6 +75,7 @@ typedef struct drmHashEntry {
     void     *tagTable;
 } drmHashEntry;
 
+extern int drmIoctl(int fd, unsigned long request, void *arg);
 extern void *drmGetHashTable(void);
 extern drmHashEntry *drmGetEntry(int fd);
 
@@ -508,6 +510,7 @@ do {	register unsigned int __old __asm("o0");		\
 /* General user-level programmer's API: unprivileged */
 extern int           drmAvailable(void);
 extern int           drmOpen(const char *name, const char *busid);
+extern int drmOpenControl(int minor);
 extern int           drmClose(int fd);
 extern drmVersionPtr drmGetVersion(int fd);
 extern drmVersionPtr drmGetLibVersion(int fd);
@@ -658,5 +661,8 @@ extern int  drmSLLookupNeighbors(void *l, unsigned long key,
 extern int drmOpenOnce(void *unused, const char *BusID, int *newlyopened);
 extern void drmCloseOnce(int fd);
 extern void drmMsg(const char *format, ...);
+
+extern int drmSetMaster(int fd);
+extern int drmDropMaster(int fd);
 
 #endif

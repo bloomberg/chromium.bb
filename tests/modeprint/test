@@ -1,0 +1,1 @@
+LD_PRELOAD=../../libdrm/.libs/libdrm.so ./app $@
