@@ -15,7 +15,7 @@ libdrmtest_la_LIBADD = \
 
 LDADD = libdrmtest.la
 
-noinst_SUBDIRS = \
+SUBDIRS = \
 	modeprint \
 	modetest
 

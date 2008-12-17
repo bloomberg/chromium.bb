@@ -65,4 +65,5 @@ tests/gem_readwrite
 tests/openclose
 tests/setversion
 tests/updatedraw
-tests/modetest
+tests/modeprint/modeprint
+tests/modetest/modetest

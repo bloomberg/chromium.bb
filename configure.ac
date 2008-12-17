@@ -119,4 +119,6 @@ AC_OUTPUT([
 	libdrm/intel/Makefile
 	shared-core/Makefile
 	tests/Makefile
+	tests/modeprint/Makefile
+	tests/modetest/Makefile
 	libdrm.pc])
