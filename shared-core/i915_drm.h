@@ -111,14 +111,25 @@ typedef struct drm_i915_sarea {
 	unsigned int rotated_tiled;
 	unsigned int rotated2_tiled;
 
-	int planeA_x;
-	int planeA_y;
-	int planeA_w;
-	int planeA_h;
-	int planeB_x;
-	int planeB_y;
-	int planeB_w;
-	int planeB_h;
+	/* compat defines for the period of time when pipeA_* got renamed
+	 * to planeA_*.  They mean pipe, really.
+	 */
+#define planeA_x pipeA_x
+#define planeA_y pipeA_y
+#define planeA_w pipeA_w
+#define planeA_h pipeA_h
+#define planeB_x pipeB_x
+#define planeB_y pipeB_y
+#define planeB_w pipeB_w
+#define planeB_h pipeB_h
+	int pipeA_x;
+	int pipeA_y;
+	int pipeA_w;
+	int pipeA_h;
+	int pipeB_x;
+	int pipeB_y;
+	int pipeB_w;
+	int pipeB_h;
 
 	/* Triple buffering */
 	drm_handle_t third_handle;
