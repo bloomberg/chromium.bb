@@ -469,8 +469,12 @@ struct drm_i915_gem_pread {
 	uint64_t offset;
 	/** Length of data to read */
 	uint64_t size;
-	/** Pointer to write the data into. */
-	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+	/**
+	 * Pointer to write the data into.
+	 *
+	 * This is a fixed-size type for 32/64 compatibility.
+	 */
+	uint64_t data_ptr;
 };
 
 struct drm_i915_gem_pwrite {
@@ -481,8 +485,12 @@ struct drm_i915_gem_pwrite {
 	uint64_t offset;
 	/** Length of data to write */
 	uint64_t size;
-	/** Pointer to read the data from. */
-	uint64_t data_ptr;	/* void *, but pointers are not 32/64 compatible */
+	/**
+	 * Pointer to read the data from.
+	 *
+	 * This is a fixed-size type for 32/64 compatibility.
+	 */
+	uint64_t data_ptr;
 };
 
 struct drm_i915_gem_mmap {
@@ -497,8 +505,12 @@ struct drm_i915_gem_mmap {
 	 * The value will be page-aligned.
 	 */
 	uint64_t size;
-	/** Returned pointer the data was mapped at */
-	uint64_t addr_ptr;	/* void *, but pointers are not 32/64 compatible */
+	/**
+	 * Returned pointer the data was mapped at.
+	 *
+	 * This is a fixed-size type for 32/64 compatibility.
+	 */
+	uint64_t addr_ptr;
 };
 
 struct drm_i915_gem_mmap_gtt {
@@ -643,7 +655,8 @@ struct drm_i915_gem_execbuffer {
 	uint32_t DR1;
 	uint32_t DR4;
 	uint32_t num_cliprects;
-	uint64_t cliprects_ptr;	/* struct drm_clip_rect *cliprects */
+	/** This is a struct drm_clip_rect *cliprects */
+	uint64_t cliprects_ptr;
 };
 
 struct drm_i915_gem_pin {
