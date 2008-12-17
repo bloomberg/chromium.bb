@@ -63,7 +63,7 @@ MODULE_LIST := drm.o tdfx.o r128.o radeon.o mga.o sis.o savage.o via.o \
 # Modules only for ix86 architectures
 ifneq (,$(findstring 86,$(MACHINE)))
 ARCHX86 := 1
-MODULE_LIST += i810.o i915.o
+MODULE_LIST += i810.o
 endif
 
 ifneq (,$(findstring sparc64,$(MACHINE)))
@@ -281,7 +281,6 @@ CONFIG_DRM_MGA := n
 CONFIG_DRM_I810 := n
 CONFIG_DRM_R128 := n
 CONFIG_DRM_RADEON := n
-CONFIG_DRM_I915 := n
 CONFIG_DRM_SIS := n
 CONFIG_DRM_FFB := n
 CONFIG_DRM_SAVAGE := n
@@ -335,11 +334,6 @@ endif
 ifneq (,$(findstring i810,$(DRM_MODULES)))
 CONFIG_DRM_I810 := m
 endif
-ifneq (,$(findstring i915,$(DRM_MODULES)))
-ifeq ($(OS_HAS_GEM), 1)
-CONFIG_DRM_I915 := m
-endif
-endif
 
 GIT_REVISION := $(shell cd "$(DRMSRCDIR)" && git describe --abbrev=17)
 ifneq ($(GIT_REVISION),)
@@ -354,7 +348,6 @@ $(tdfx-objs):	$(TDFXHEADERS)
 $(r128-objs):	$(R128HEADERS)
 $(mga-objs):	$(MGAHEADERS)
 $(i810-objs):	$(I810HEADERS)
-$(i915-objs):	$(I915HEADERS)
 $(radeon-objs):	$(RADEONHEADERS)
 $(sis-objs):	$(SISHEADERS)
 $(ffb-objs):	$(FFBHEADERS)
