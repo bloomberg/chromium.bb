@@ -481,7 +481,10 @@ repaint(void *data)
 		return;
 	}
 
-	draw_surface(ec->background);
+	if (ec->background)
+		draw_surface(ec->background);
+	else
+		glClear(GL_COLOR_BUFFER_BIT);
 
 	es = container_of(ec->surface_list.next,
 			  struct egl_surface, link);
@@ -1027,6 +1030,7 @@ egl_compositor_create(struct wl_display *display)
 	glLoadIdentity();
 	glOrtho(0, ec->width, ec->height, 0, 0, 1000.0);
 	glMatrixMode(GL_MODELVIEW);
+	glClearColor(0, 0, 0.2, 1);
 
 	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
 
