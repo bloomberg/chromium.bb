@@ -128,6 +128,22 @@ void dump_encoders(void)
 		       encoder->possible_clones);
 		drmModeFreeEncoder(encoder);
 	}
+	printf("\n");
+}
+
+void dump_mode(struct drm_mode_modeinfo *mode)
+{
+	printf("  %s %.02f %d %d %d %d %d %d %d %d\n",
+	       mode->name,
+	       (float)mode->vrefresh / 1000,
+	       mode->hdisplay,
+	       mode->hsync_start,
+	       mode->hsync_end,
+	       mode->htotal,
+	       mode->vdisplay,
+	       mode->vsync_start,
+	       mode->vsync_end,
+	       mode->vtotal);
 }
 
 void dump_connectors(void)
@@ -160,24 +176,12 @@ void dump_connectors(void)
 		printf("  modes:\n");
 		printf("  name refresh (Hz) hdisp hss hse htot vdisp "
 		       "vss vse vtot)\n");
-		for (j = 0; j < connector->count_modes; j++) {
-			struct drm_mode_modeinfo *mode;
+		for (j = 0; j < connector->count_modes; j++)
+			dump_mode(&connector->modes[j]);
 
-			mode = &connector->modes[j];
-			printf("  %s %.02f %d %d %d %d %d %d %d %d\n",
-			       mode->name,
-			       (float)mode->vrefresh / 1000,
-			       mode->hdisplay,
-			       mode->hsync_start,
-			       mode->hsync_end,
-			       mode->htotal,
-			       mode->vdisplay,
-			       mode->vsync_start,
-			       mode->vsync_end,
-			       mode->vtotal);
-		}
 		drmModeFreeConnector(connector);
 	}
+	printf("\n");
 }
 
 void dump_crtcs(void)
@@ -185,6 +189,8 @@ void dump_crtcs(void)
 	drmModeCrtc *crtc;
 	int i;
 
+	printf("CRTCs:\n");
+	printf("id\tfb\tpos\tsize\n");
 	for (i = 0; i < resources->count_crtcs; i++) {
 		crtc = drmModeGetCrtc(fd, resources->crtcs[i]);
 
@@ -193,8 +199,16 @@ void dump_crtcs(void)
 				resources->crtcs[i], strerror(errno));
 			continue;
 		}
+		printf("%d\t%d\t(%d,%d)\t(%dx%d)\n",
+		       crtc->crtc_id,
+		       crtc->buffer_id,
+		       crtc->x, crtc->y,
+		       crtc->width, crtc->height);
+		dump_mode(&crtc->mode);
+
 		drmModeFreeCrtc(crtc);
 	}
+	printf("\n");
 }
 
 void dump_framebuffers(void)
@@ -202,6 +216,8 @@ void dump_framebuffers(void)
 	drmModeFB *fb;
 	int i;
 
+	printf("Frame buffers:\n");
+	printf("id\tsize\tpitch\n");
 	for (i = 0; i < resources->count_fbs; i++) {
 		fb = drmModeGetFB(fd, resources->fbs[i]);
 
@@ -210,8 +226,13 @@ void dump_framebuffers(void)
 				resources->fbs[i], strerror(errno));
 			continue;
 		}
+		printf("%d\t(%dx%d)\t%d\n",
+		       fb->fb_id,
+		       fb->width, fb->height);
+
 		drmModeFreeFB(fb);
 	}
+	printf("\n");
 }
 
 /*
