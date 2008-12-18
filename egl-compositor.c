@@ -819,7 +819,6 @@ create_frontbuffer(int fd, int *width, int *height, int *stride)
 	drmModeEncoder *encoder;
 	struct drm_mode_modeinfo *mode;
 	struct drm_i915_gem_create create;
-	struct drm_i915_gem_pin pin;
 	struct drm_gem_flink flink;
 	unsigned int fb_id;
 	int i, ret;
@@ -865,13 +864,6 @@ create_frontbuffer(int fd, int *width, int *height, int *stride)
 	create.size = mode->hdisplay * mode->vdisplay * 4;
 	if (ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create) != 0) {
 		fprintf(stderr, "gem create failed: %m\n");
-		return 0;
-	}
-
-	pin.handle = create.handle;
-	pin.alignment = 4096;
-	if (ioctl(fd, DRM_IOCTL_I915_GEM_PIN, &pin)) {
-		fprintf(stderr, "failed to pin buffer: %m\n");
 		return 0;
 	}
 
