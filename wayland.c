@@ -127,7 +127,7 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 	ffi_type *types[20];
 	ffi_cif cif;
 	uint32_t *p, result;
-	int i, j, count;
+	int i, count;
 	union {
 		uint32_t uint32;
 		const char *string;
@@ -161,7 +161,6 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 
 	wl_connection_copy(client->connection, data, size);
 	p = &data[2];
-	j = 0;
 	for (i = 2; i < count; i++) {
 		switch (method->signature[i - 2]) {
 		case 'u':
@@ -180,11 +179,8 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 			object = wl_hash_lookup(client->display->objects, *p);
 			if (object == NULL)
 				printf("unknown object (%d)\n", *p);
-			if (object->interface != method->types[j])
-				printf("wrong object type\n");
 			values[i].object = object;
 			p++;
-			j++;
 			break;
 		case 'n':
 			types[i] = &ffi_type_uint32;
@@ -369,7 +365,7 @@ wl_client_destroy(struct wl_client *client)
 
 static const struct wl_method surface_methods[] = {
 	{ "destroy", "" },
-	{ "attach", "uuuu" },
+	{ "attach", "uuuuo" },
 	{ "map", "iiii" },
 	{ "copy", "iiuuiiii" },
 	{ "damage", "iiii" }

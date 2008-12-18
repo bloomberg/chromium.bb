@@ -84,6 +84,7 @@ window_draw(struct window *window)
 	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
 	cairo_pattern_t *gradient, *outline, *bright, *dim;
+	struct wl_visual *visual;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
 					     window->width + window->margin * 2,
@@ -156,11 +157,13 @@ window_draw(struct window *window)
 	window->buffer = buffer_create_from_cairo_surface(window->fd, surface);
 	cairo_surface_destroy(surface);
 
+	visual = wl_display_get_premultiplied_argb_visual(window->display);
 	wl_surface_attach(window->surface,
 			  window->buffer->name,
 			  window->buffer->width,
 			  window->buffer->height,
-			  window->buffer->stride);
+			  window->buffer->stride,
+			  visual);
 
 	wl_surface_map(window->surface,
 		       window->x - window->margin,

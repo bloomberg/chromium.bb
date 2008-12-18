@@ -142,7 +142,8 @@ struct wl_surface_interface {
 			struct wl_surface *surface);
 	void (*attach)(struct wl_client *client,
 		       struct wl_surface *surface, uint32_t name, 
-		       uint32_t width, uint32_t height, uint32_t stride);
+		       uint32_t width, uint32_t height, uint32_t stride,
+		       struct wl_object *visual);
 	void (*map)(struct wl_client *client,
 		    struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height);

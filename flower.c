@@ -133,6 +133,7 @@ event_handler(struct wl_display *display,
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
+	struct wl_visual *visual;
 	int fd;
 	cairo_surface_t *s;
 	struct timespec ts;
@@ -172,8 +173,10 @@ int main(int argc, char *argv[])
 	s = draw_stuff(flower.width, flower.height);
 	buffer = buffer_create_from_cairo_surface(fd, s);
 
-	wl_surface_attach(flower.surface, buffer->name, flower.width, flower.height,
-			  buffer->stride);
+	visual = wl_display_get_premultiplied_argb_visual(display);
+	wl_surface_attach(flower.surface,
+			  buffer->name, flower.width, flower.height,
+			  buffer->stride, visual);
 	wl_display_set_event_handler(display, event_handler, &flower);
 	move_flower(&flower);
 

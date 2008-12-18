@@ -56,6 +56,7 @@ struct wl_display {
 	uint32_t id;
 	uint32_t mask;
 	struct wl_list global_list;
+	struct wl_list visual_list;
 
 	wl_display_update_func_t update;
 	void *update_data;
@@ -72,6 +73,11 @@ struct wl_surface {
 	struct wl_proxy proxy;
 };
 
+struct wl_visual {
+	struct wl_proxy proxy;
+	struct wl_list link;
+};
+
 static int
 connection_update(struct wl_connection *connection,
 		  uint32_t mask, void *data)
@@ -84,6 +90,45 @@ connection_update(struct wl_connection *connection,
 				       display->update_data);
 
 	return 0;
+}
+
+static void
+add_visual(struct wl_display *display, struct wl_global *global)
+{
+	struct wl_visual *visual;
+
+	visual = malloc(sizeof *visual);
+	if (visual == NULL)
+		return;
+
+	visual->proxy.display = display;
+	visual->proxy.id = global->id;
+	wl_list_insert(display->visual_list.prev, &visual->link);
+
+	printf("added visual, id %d\n", global->id);
+}
+
+WL_EXPORT struct wl_visual *
+wl_display_get_argb_visual(struct wl_display *display)
+{
+	return container_of(display->visual_list.next,
+			    struct wl_visual, link);
+}
+
+WL_EXPORT struct wl_visual *
+wl_display_get_premultiplied_argb_visual(struct wl_display *display)
+{
+	return container_of(display->visual_list.next->next,
+			    struct wl_visual, link);
+}
+
+WL_EXPORT struct wl_visual *
+wl_display_get_rgb_visual(struct wl_display *display)
+{
+	/* FIXME: Where's cddar when you need it... */
+
+	return container_of(display->visual_list.next->next->next,
+			    struct wl_visual, link);
 }
 
 WL_EXPORT struct wl_display *
@@ -125,6 +170,7 @@ wl_display_create(const char *name, size_t name_size)
 	read(display->fd, &count, sizeof count);
 
 	wl_list_init(&display->global_list);
+	wl_list_init(&display->visual_list);
 	for (i = 0; i < count; i++) {
 		/* FIXME: actually discover advertised objects here. */
 		read(display->fd, &id, sizeof id);
@@ -140,6 +186,9 @@ wl_display_create(const char *name, size_t name_size)
 		memcpy(global->interface, buffer, length);
 		global->interface[length] = '\0';
 		wl_list_insert(display->global_list.prev, &global->link);
+
+		if (strcmp(global->interface, "visual") == 0)
+			add_visual(display, global);
 	}
 
 	display->proxy.display = display;
@@ -327,9 +376,10 @@ wl_surface_destroy(struct wl_surface *surface)
 
 WL_EXPORT void
 wl_surface_attach(struct wl_surface *surface, uint32_t name,
-		  int32_t width, int32_t height, uint32_t stride)
+		  int32_t width, int32_t height, uint32_t stride,
+		  struct wl_visual *visual)
 {
-	uint32_t request[6];
+	uint32_t request[7];
 
 	request[0] = surface->proxy.id;
 	request[1] = WL_SURFACE_ATTACH | ((sizeof request) << 16);
@@ -337,6 +387,9 @@ wl_surface_attach(struct wl_surface *surface, uint32_t name,
 	request[3] = width;
 	request[4] = height;
 	request[5] = stride;
+	request[6] = visual->proxy.id;
+
+	printf("attach, visual id is %d\n", visual->proxy.id);
 
 	wl_connection_write(surface->proxy.display->connection,
 			    request, sizeof request);

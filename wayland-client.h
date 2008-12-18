@@ -32,6 +32,7 @@
 
 struct wl_display;
 struct wl_surface;
+struct wl_visual;
 
 #define WL_DISPLAY_READABLE 0x01
 #define WL_DISPLAY_WRITABLE 0x02
@@ -58,6 +59,12 @@ void wl_display_set_event_handler(struct wl_display *display,
 
 struct wl_compositor *
 wl_display_get_compositor(struct wl_display *display);
+struct wl_visual *
+wl_display_get_argb_visual(struct wl_display *display);
+struct wl_visual *
+wl_display_get_premultiplied_argb_visual(struct wl_display *display);
+struct wl_visual *
+wl_display_get_rgb_visual(struct wl_display *display);
 
 struct wl_surface *
 wl_compositor_create_surface(struct wl_compositor *compositor);
@@ -65,8 +72,9 @@ void
 wl_compositor_commit(struct wl_compositor *compositor, uint32_t key);
 
 void wl_surface_destroy(struct wl_surface *surface);
-void wl_surface_attach(struct wl_surface *surface,
-		       uint32_t name, int32_t width, int32_t height, uint32_t stride);
+void wl_surface_attach(struct wl_surface *surface, uint32_t name,
+		       int32_t width, int32_t height, uint32_t stride,
+		       struct wl_visual *visual);
 void wl_surface_map(struct wl_surface *surface,
 		    int32_t x, int32_t y, int32_t width, int32_t height);
 void wl_surface_copy(struct wl_surface *surface, int32_t dst_x, int32_t dst_y,

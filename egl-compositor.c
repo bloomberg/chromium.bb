@@ -52,6 +52,10 @@
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
+struct wl_visual {
+	struct wl_object base;
+};
+
 struct egl_input_device {
 	struct wl_object base;
 	int32_t x, y;
@@ -66,6 +70,8 @@ struct egl_input_device {
 
 struct egl_compositor {
 	struct wl_compositor base;
+	struct wl_visual argb_visual, premultiplied_argb_visual, rgb_visual;
+
 	EGLDisplay display;
 	EGLSurface surface;
 	EGLContext context;
@@ -91,6 +97,7 @@ struct egl_compositor {
 struct egl_surface {
 	struct wl_surface base;
 	struct egl_compositor *compositor;
+	struct wl_visual *visual;
 	GLuint texture;
 	struct wl_map map;
 	EGLSurface surface;
@@ -155,7 +162,8 @@ screenshooter_create(struct egl_compositor *ec)
 };
 
 static struct egl_surface *
-egl_surface_create_from_cairo_surface(cairo_surface_t *surface,
+egl_surface_create_from_cairo_surface(struct egl_compositor *ec,
+				      cairo_surface_t *surface,
 				      int x, int y, int width, int height)
 {
 	struct egl_surface *es;
@@ -178,11 +186,13 @@ egl_surface_create_from_cairo_surface(cairo_surface_t *surface,
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
 		     GL_BGRA, GL_UNSIGNED_BYTE, data);
 
+	es->compositor = ec;
 	es->map.x = x;
 	es->map.y = y;
 	es->map.width = width;
 	es->map.height = height;
 	es->surface = EGL_NO_SURFACE;
+	es->visual = &ec->premultiplied_argb_visual;
 
 	return es;
 }
@@ -213,7 +223,7 @@ pointer_path(cairo_t *cr, int x, int y)
 }
 
 static struct egl_surface *
-pointer_create(int x, int y, int width, int height)
+pointer_create(struct egl_compositor *ec, int x, int y, int width, int height)
 {
 	struct egl_surface *es;
 	const int hotspot_x = 16, hotspot_y = 16;
@@ -237,7 +247,8 @@ pointer_create(int x, int y, int width, int height)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	es = egl_surface_create_from_cairo_surface(surface,
+	es = egl_surface_create_from_cairo_surface(ec,
+						   surface,
 						   x - hotspot_x,
 						   y - hotspot_y,
 						   width, height);
@@ -248,7 +259,8 @@ pointer_create(int x, int y, int width, int height)
 }
 
 static struct egl_surface *
-background_create(const char *filename, int width, int height)
+background_create(struct egl_compositor *ec,
+		  const char *filename, int width, int height)
 {
 	struct egl_surface *background;
 	GdkPixbuf *pixbuf;
@@ -281,11 +293,13 @@ background_create(const char *filename, int width, int height)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pixbuf_width, pixbuf_height, 0,
 		     GL_BGR, GL_UNSIGNED_BYTE, data);
 
+	background->compositor = ec;
 	background->map.x = 0;
 	background->map.y = 0;
 	background->map.width = width;
 	background->map.height = height;
 	background->surface = EGL_NO_SURFACE;
+	background->visual = &ec->rgb_visual;
 
 	return background;
 }
@@ -351,7 +365,7 @@ draw_button(cairo_t *cr, int x, int y, int width, int height, const char *text)
 }
 
 static struct egl_surface *
-overlay_create(int x, int y, int width, int height)
+overlay_create(struct egl_compositor *ec, int x, int y, int width, int height)
 {
 	struct egl_surface *es;
 	cairo_surface_t *surface;
@@ -378,7 +392,8 @@ overlay_create(int x, int y, int width, int height)
 
 	cairo_destroy(cr);
 
-	es = egl_surface_create_from_cairo_surface(surface, x, y, width, height);
+	es = egl_surface_create_from_cairo_surface(ec, surface,
+						   x, y, width, height);
 
 	cairo_surface_destroy(surface);
 
@@ -388,6 +403,7 @@ overlay_create(int x, int y, int width, int height)
 static void
 draw_surface(struct egl_surface *es)
 {
+	struct egl_compositor *ec = es->compositor;
 	GLint vertices[12];
 	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
 	GLuint indices[4] = { 0, 1, 2, 3 };
@@ -408,13 +424,18 @@ draw_surface(struct egl_surface *es)
 	vertices[10] = es->map.y + es->map.height;
 	vertices[11] = 0;
 
+	if (es->visual == &ec->argb_visual) {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	} else if (es->visual == &ec->premultiplied_argb_visual) {
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+	} else {
+		glDisable(GL_BLEND);
+	}
+
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	/* Assume pre-multiplied alpha for now, this probably
-	 * needs to be a wayland visual type of thing. */
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(3, GL_INT, 0, vertices);
@@ -549,7 +570,8 @@ surface_destroy(struct wl_client *client,
 static void
 surface_attach(struct wl_client *client,
 	       struct wl_surface *surface, uint32_t name, 
-	       uint32_t width, uint32_t height, uint32_t stride)
+	       uint32_t width, uint32_t height, uint32_t stride,
+	       struct wl_object *visual)
 {
 	struct egl_surface *es = (struct egl_surface *) surface;
 	struct egl_compositor *ec = es->compositor;
@@ -561,6 +583,12 @@ surface_attach(struct wl_client *client,
 	es->height = height;
 	es->surface = eglCreateSurfaceForName(ec->display, ec->config,
 					      name, width, height, stride, NULL);
+	if (visual == &ec->argb_visual.base)
+		es->visual = &ec->argb_visual;
+	else if (visual == &ec->premultiplied_argb_visual.base)
+		es->visual = &ec->premultiplied_argb_visual;
+	else
+		/* FIXME: Smack client with an exception event */;
 
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -783,7 +811,8 @@ create_input_device(struct egl_compositor *ec, const char *glob)
 	wl_display_add_object(ec->wl_display, &device->base);
 	device->x = 100;
 	device->y = 100;
-	device->pointer_surface = pointer_create(device->x, device->y, 64, 64);
+	device->pointer_surface = pointer_create(ec,
+						 device->x, device->y, 64, 64);
 	device->ec = ec;
 
 	dir = opendir(by_path_dir);
@@ -947,6 +976,31 @@ pick_config(struct egl_compositor *ec)
 	return 0;
 }
 
+static const struct wl_interface visual_interface = {
+	"visual", 1,
+};
+
+static void
+add_visuals(struct egl_compositor *ec)
+{
+	ec->argb_visual.base.interface = &visual_interface;
+	ec->argb_visual.base.implementation = NULL;
+	wl_display_add_object(ec->wl_display, &ec->argb_visual.base);
+	wl_display_add_global(ec->wl_display, &ec->argb_visual.base);
+
+	ec->premultiplied_argb_visual.base.interface = &visual_interface;
+	ec->premultiplied_argb_visual.base.implementation = NULL;
+	wl_display_add_object(ec->wl_display,
+			      &ec->premultiplied_argb_visual.base);
+	wl_display_add_global(ec->wl_display,
+			      &ec->premultiplied_argb_visual.base);
+
+	ec->rgb_visual.base.interface = &visual_interface;
+	ec->rgb_visual.base.implementation = NULL;
+	wl_display_add_object(ec->wl_display, &ec->rgb_visual.base);
+	wl_display_add_global(ec->wl_display, &ec->rgb_visual.base);
+}
+
 static const char gem_device[] = "/dev/dri/card0";
 
 static const char *macbook_air_default_input_device[] = {
@@ -1025,15 +1079,16 @@ egl_compositor_create(struct wl_display *display)
 	glClearColor(0, 0, 0.2, 1);
 
 	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
+	add_visuals(ec);
 
 	wl_list_init(&ec->input_device_list);
 	for (i = 0; option_input_devices[i]; i++)
 		create_input_device(ec, option_input_devices[i]);
 
 	wl_list_init(&ec->surface_list);
-	ec->background = background_create(option_background,
+	ec->background = background_create(ec, option_background,
 					   ec->width, ec->height);
-	ec->overlay = overlay_create(0, ec->height, ec->width, 200);
+	ec->overlay = overlay_create(ec, 0, ec->height, ec->width, 200);
 	ec->overlay_y = ec->height;
 	ec->overlay_target = ec->height;
 	ec->overlay_previous = ec->height;
