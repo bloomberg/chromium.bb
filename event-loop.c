@@ -23,11 +23,13 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <sys/epoll.h>
+#include <sys/signalfd.h>
 #include <sys/timerfd.h>
 #include <unistd.h>
 #include <assert.h>
@@ -236,6 +238,87 @@ wl_event_source_timer_update(struct wl_event_source *source, int ms_delay)
 	}
 
 	return 0;
+}
+
+struct wl_event_source_signal {
+	struct wl_event_source base;
+	int fd;
+	int signal_number;
+	wl_event_loop_signal_func_t func;
+	void *data;
+};
+
+static void
+wl_event_source_signal_dispatch(struct wl_event_source *source,
+			       struct epoll_event *ep)
+{
+	struct wl_event_source_signal *signal_source =
+		(struct wl_event_source_signal *) source;
+	struct signalfd_siginfo signal_info;
+
+	read(signal_source->fd, &signal_info, sizeof signal_info);
+
+	signal_source->func(signal_source->signal_number, signal_source->data);
+}
+
+static int
+wl_event_source_signal_remove(struct wl_event_source *source)
+{
+	struct wl_event_source_signal *signal_source =
+		(struct wl_event_source_signal *) source;
+	struct wl_event_loop *loop = source->loop;
+	int fd;
+
+	fd = signal_source->fd;
+	free(source);
+
+	return epoll_ctl(loop->epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+}
+
+struct wl_event_source_interface signal_source_interface = {
+	wl_event_source_signal_dispatch,
+	wl_event_source_signal_remove
+};
+
+WL_EXPORT struct wl_event_source *
+wl_event_loop_add_signal(struct wl_event_loop *loop,
+			int signal_number,
+			wl_event_loop_signal_func_t func,
+			void *data)
+{
+	struct wl_event_source_signal *source;
+	struct epoll_event ep;
+	sigset_t mask;
+
+	source = malloc(sizeof *source);
+	if (source == NULL)
+		return NULL;
+
+	source->base.interface = &signal_source_interface;
+	source->base.loop = loop;
+
+	sigemptyset(&mask);
+	sigaddset(&mask, signal_number);
+	source->fd = signalfd(-1, &mask, 0);
+	if (source->fd < 0) {
+		fprintf(stderr, "could not create fd to watch signal\n: %m");
+		free(source);
+		return NULL;
+	}
+	sigprocmask(SIG_BLOCK, &mask, NULL);
+
+	source->func = func;
+	source->data = data;
+
+	ep.events = EPOLLIN;
+	ep.data.ptr = source;
+
+	if (epoll_ctl(loop->epoll_fd, EPOLL_CTL_ADD, source->fd, &ep) < 0) {
+		free(source);
+		return NULL;
+	}
+
+	return &source->base;
 }
 
 struct wl_event_source_idle {
