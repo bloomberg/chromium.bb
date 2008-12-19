@@ -1054,6 +1054,8 @@ static void on_enter_vt(int signal_number, void *data)
 	int i, ret;
 	int fd;
 
+	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
+
 	fd = ec->gem_fd;
 	resources = drmModeGetResources(fd);
 	if (!resources) {
@@ -1110,7 +1112,6 @@ static void on_leave_vt(int signal_number, void *data)
 
 static void watch_for_vt_changes(struct egl_compositor *ec, struct wl_event_loop *loop)
 {
-	int fd;
 	struct vt_mode mode = { 0 };
 
 	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
@@ -1118,7 +1119,7 @@ static void watch_for_vt_changes(struct egl_compositor *ec, struct wl_event_loop
 	mode.relsig = SIGUSR1;
 	mode.acqsig = SIGUSR2;
 
-	if (!ioctl (fd, VT_SETMODE, &mode) < 0) {
+	if (!ioctl (ec->tty_fd, VT_SETMODE, &mode) < 0) {
 		fprintf(stderr, "failed to take control of vt handling\n");
 	}
 
