@@ -955,59 +955,6 @@ create_frontbuffer(struct egl_compositor *ec)
 	return flink.name;
 }
 
-static int
-pick_config(struct egl_compositor *ec)
-{
-	EGLConfig configs[100];
-	EGLint value, count;
-	int i;
-
-	if (!eglGetConfigs(ec->display, configs, ARRAY_LENGTH(configs), &count)) {
-		fprintf(stderr, "failed to get configs\n");
-		return -1;
-	}
-
-	ec->config = EGL_NO_CONFIG;
-	for (i = 0; i < count; i++) {
-		eglGetConfigAttrib(ec->display,
-				   configs[i],
-				   EGL_DEPTH_SIZE,
-				   &value);
-		if (value > 0) {
-			fprintf(stderr, "config %d has depth size %d\n", i, value);
-			continue;
-		}
-
-		eglGetConfigAttrib(ec->display,
-				   configs[i],
-				   EGL_STENCIL_SIZE,
-				   &value);
-		if (value > 0) {
-			fprintf(stderr, "config %d has stencil size %d\n", i, value);
-			continue;
-		}
-
-		eglGetConfigAttrib(ec->display,
-				   configs[i],
-				   EGL_CONFIG_CAVEAT,
-				   &value);
-		if (value != EGL_NONE) {
-			fprintf(stderr, "config %d has caveat %d\n", i, value);
-			continue;
-		}
-
-		ec->config = configs[i];
-		break;
-	}
-
-	if (ec->config == EGL_NO_CONFIG) {
-		fprintf(stderr, "found no config without depth or stencil buffers\n");
-		return -1;
-	}
-
-	return 0;
-}
-
 static const struct wl_interface visual_interface = {
 	"visual", 1,
 };
@@ -1098,14 +1045,24 @@ static void watch_for_vt_changes(struct egl_compositor *ec, struct wl_event_loop
 static struct egl_compositor *
 egl_compositor_create(struct wl_display *display)
 {
+	static const EGLint config_attribs[] = {
+		EGL_DEPTH_SIZE, 0,
+		EGL_STENCIL_SIZE, 0,
+		EGL_CONFIG_CAVEAT, EGL_NONE,
+		EGL_NONE		
+	};
+
+	const static EGLint attribs[] = {
+		EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
+		EGL_NONE
+	};
+
 	EGLint major, minor;
 	struct egl_compositor *ec;
 	struct screenshooter *shooter;
 	uint32_t fb_name;
 	int i;
 	struct wl_event_loop *loop;
-	const static EGLint attribs[] =
-		{ EGL_RENDER_BUFFER, EGL_BACK_BUFFER, EGL_NONE };
 
 	ec = malloc(sizeof *ec);
 	if (ec == NULL)
@@ -1124,7 +1081,7 @@ egl_compositor_create(struct wl_display *display)
 		return NULL;
 	}
 
-	if (pick_config(ec))
+	if (!eglChooseConfig(ec->display, config_attribs, &ec->config, 1, NULL))
 		return NULL;
  
 	fb_name = create_frontbuffer(ec);
