@@ -587,6 +587,8 @@ surface_attach(struct wl_client *client,
 		es->visual = &ec->argb_visual;
 	else if (visual == &ec->premultiplied_argb_visual.base)
 		es->visual = &ec->premultiplied_argb_visual;
+	else if (visual == &ec->rgb_visual.base)
+		es->visual = &ec->rgb_visual;
 	else
 		/* FIXME: Smack client with an exception event */;
 
