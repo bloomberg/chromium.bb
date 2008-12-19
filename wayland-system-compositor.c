@@ -1,23 +1,19 @@
 /*
  * Copyright © 2008 Kristian Høgsberg
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that copyright
- * notice and this permission notice appear in supporting documentation, and
- * that the name of the copyright holders not be used in advertising or
- * publicity pertaining to distribution of the software without specific,
- * written prior permission.  The copyright holders make no representations
- * about the suitability of this software for any purpose.  It is provided "as
- * is" without express or implied warranty.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * THE COPYRIGHT HOLDERS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL THE COPYRIGHT HOLDERS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
- * OF THIS SOFTWARE.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
 #include <stdio.h>
@@ -49,7 +45,7 @@
 
 #include "wayland.h"
 #include "cairo-util.h"
-#include "egl-compositor.h"
+#include "wayland-system-compositor.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
@@ -57,7 +53,7 @@ struct wl_visual {
 	struct wl_object base;
 };
 
-struct egl_input_device {
+struct wlsc_input_device {
 	struct wl_object base;
 	int32_t x, y;
 	struct egl_compositor *ec;
@@ -510,7 +506,7 @@ repaint(void *data)
 {
 	struct egl_compositor *ec = data;
 	struct egl_surface *es;
-	struct egl_input_device *eid;
+	struct wlsc_input_device *eid;
 	struct timespec ts;
 	uint32_t msecs;
 
@@ -536,12 +532,12 @@ repaint(void *data)
 	draw_surface(ec->overlay);
 
 	eid = container_of(ec->input_device_list.next,
-			   struct egl_input_device, link);
+			   struct wlsc_input_device, link);
 	while (&eid->link != &ec->input_device_list) {
 		draw_surface(eid->pointer_surface);
 
 		eid = container_of(eid->link.next,
-				   struct egl_input_device, link);
+				   struct wlsc_input_device, link);
 	}
 
 	eglSwapBuffers(ec->display, ec->surface);
@@ -706,7 +702,7 @@ const static struct wl_compositor_interface compositor_interface = {
 };
 
 static struct egl_surface *
-pick_surface(struct egl_input_device *device)
+pick_surface(struct wlsc_input_device *device)
 {
 	struct egl_compositor *ec = device->ec;
 	struct egl_surface *es;
@@ -731,7 +727,7 @@ pick_surface(struct egl_input_device *device)
 }
 
 void
-notify_motion(struct egl_input_device *device, int x, int y)
+notify_motion(struct wlsc_input_device *device, int x, int y)
 {
 	struct egl_surface *es;
 	struct egl_compositor *ec = device->ec;
@@ -765,7 +761,7 @@ notify_motion(struct egl_input_device *device, int x, int y)
 }
 
 void
-notify_button(struct egl_input_device *device,
+notify_button(struct wlsc_input_device *device,
 	      int32_t button, int32_t state)
 {
 	struct egl_surface *es;
@@ -799,7 +795,7 @@ notify_button(struct egl_input_device *device,
 }
 
 void
-notify_key(struct egl_input_device *device,
+notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct egl_compositor *ec = device->ec;
@@ -819,13 +815,13 @@ notify_key(struct egl_input_device *device,
 }
 
 struct evdev_input_device *
-evdev_input_device_create(struct egl_input_device *device,
+evdev_input_device_create(struct wlsc_input_device *device,
 			  struct wl_display *display, const char *path);
 
 static void
 create_input_device(struct egl_compositor *ec, const char *glob)
 {
-	struct egl_input_device *device;
+	struct wlsc_input_device *device;
 	struct dirent *de;
 	char path[PATH_MAX];
 	const char *by_path_dir = "/dev/input/by-path";
@@ -863,7 +859,7 @@ create_input_device(struct egl_compositor *ec, const char *glob)
 }
 
 void
-egl_device_get_position(struct egl_input_device *device, int32_t *x, int32_t *y)
+wlsc_device_get_position(struct wlsc_input_device *device, int32_t *x, int32_t *y)
 {
 	*x = device->x;
 	*y = device->y;
