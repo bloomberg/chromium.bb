@@ -18,9 +18,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdarg.h>
+#include <termios.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -74,13 +76,19 @@ struct egl_compositor {
 	EGLContext context;
 	EGLConfig config;
 	struct wl_display *wl_display;
-	int tty_fd;
 	int width, height, stride;
 	struct egl_surface *background;
 
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
 
+	struct wl_event_source *term_signal_source;
+
+        /* tty handling state */
+	int tty_fd;
+
+	struct termios terminal_attributes;
+	struct wl_event_source *tty_input_source;
 	struct wl_event_source *enter_vt_source;
 	struct wl_event_source *leave_vt_source;
 
@@ -863,11 +871,72 @@ static void on_leave_vt(int signal_number, void *data)
 	ioctl (ec->tty_fd, VT_RELDISP, 1);
 }
 
+static bool open_active_tty(struct egl_compositor *ec)
+{
+	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
+
+	if (ec->tty_fd <= 0) {
+		fprintf(stderr, "failed to open active tty: %m\n");
+		return FALSE;
+	}
+	return TRUE;
+}
+
+static void
+on_tty_input(int fd, uint32_t mask, void *data)
+{
+	struct egl_compositor *ec = data;
+
+	/* Ignore input to tty.  We get keyboard events from evdev
+	 */
+	tcflush(ec->tty_fd, TCIFLUSH);
+}
+
+static void on_term_signal(int signal_number, void *data)
+{
+	struct egl_compositor *ec = data;
+
+	if (tcsetattr(ec->tty_fd, TCSANOW, &ec->terminal_attributes) < 0)
+		fprintf(stderr, "could not restore terminal to canonical mode\n");
+
+	exit(0);
+}
+
+static void ignore_tty_input(struct egl_compositor *ec, struct wl_event_loop *loop)
+{
+	struct termios raw_attributes;
+
+	if (tcgetattr(ec->tty_fd, &ec->terminal_attributes) < 0) {
+		fprintf(stderr, "could not get terminal attributes: %m\n");
+		return;
+	}
+
+	/* Ignore control characters and disable echo
+	 */
+	raw_attributes = ec->terminal_attributes;
+	cfmakeraw (&raw_attributes);
+
+	/* Fix up line endings to be normal
+	 * (cfmakeraw hoses them)
+	 */
+	raw_attributes.c_oflag |= OPOST | OCRNL;
+
+	if (tcsetattr(ec->tty_fd, TCSANOW, &raw_attributes) < 0)
+		fprintf(stderr, "could not put terminal into raw mode: %m\n");
+
+	ec->term_signal_source = wl_event_loop_add_signal(loop, SIGTERM,
+							on_term_signal,
+							ec);
+
+	ec->tty_input_source = wl_event_loop_add_fd(loop, ec->tty_fd,
+						  WL_EVENT_READABLE,
+						  on_tty_input, ec);
+}
+
 static void watch_for_vt_changes(struct egl_compositor *ec, struct wl_event_loop *loop)
 {
 	struct vt_mode mode = { 0 };
 
-	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
 	mode.mode = VT_PROCESS;
 	mode.relsig = SIGUSR1;
 	mode.acqsig = SIGUSR2;
@@ -968,7 +1037,10 @@ egl_compositor_create(struct wl_display *display)
 	wl_display_add_global(display, &shooter->base);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
-	watch_for_vt_changes (ec, loop);
+	if (open_active_tty (ec)) {
+		ignore_tty_input (ec, loop);
+		watch_for_vt_changes (ec, loop);
+	}
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	ec->repaint_needed = 0;
 	ec->repaint_on_timeout = 0;
