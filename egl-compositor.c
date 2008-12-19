@@ -38,6 +38,7 @@
 #include <png.h>
 #include <math.h>
 #include <linux/input.h>
+#include <linux/vt.h>
 #include <xf86drmMode.h>
 #include <time.h>
 #include <fnmatch.h>
@@ -76,8 +77,10 @@ struct egl_compositor {
 	EGLSurface surface;
 	EGLContext context;
 	EGLConfig config;
+	uint32_t fb_id;
 	struct wl_display *wl_display;
 	int gem_fd;
+	int tty_fd;
 	int width, height;
 	struct egl_surface *background;
 	struct egl_surface *overlay;
@@ -85,6 +88,9 @@ struct egl_compositor {
 
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
+
+	struct wl_event_source *enter_vt_source;
+	struct wl_event_source *leave_vt_source;
 
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
@@ -860,7 +866,7 @@ egl_device_get_position(struct egl_input_device *device, int32_t *x, int32_t *y)
 }
 
 static uint32_t
-create_frontbuffer(int fd, int *width, int *height, int *stride)
+create_frontbuffer(int fd, int *width, int *height, int *stride, uint32_t *fb_id)
 {
 	drmModeConnector *connector;
 	drmModeRes *resources;
@@ -868,7 +874,6 @@ create_frontbuffer(int fd, int *width, int *height, int *stride)
 	struct drm_mode_modeinfo *mode;
 	struct drm_i915_gem_create create;
 	struct drm_gem_flink flink;
-	unsigned int fb_id;
 	int i, ret;
 
 	resources = drmModeGetResources(fd);
@@ -916,13 +921,13 @@ create_frontbuffer(int fd, int *width, int *height, int *stride)
 	}
 
 	ret = drmModeAddFB(fd, mode->hdisplay, mode->vdisplay,
-			   32, 32, mode->hdisplay * 4, create.handle, &fb_id);
+			   32, 32, mode->hdisplay * 4, create.handle, fb_id);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %m\n");
 		return 0;
 	}
 
-	ret = drmModeSetCrtc(fd, encoder->crtc_id, fb_id, 0, 0,
+	ret = drmModeSetCrtc(fd, encoder->crtc_id, *fb_id, 0, 0,
 			     &connector->connector_id, 1, mode);
 	if (ret) {
 		fprintf(stderr, "failed to set mode: %m\n");
@@ -1038,6 +1043,93 @@ static const GOptionEntry option_entries[] = {
 	{ NULL }
 };
 
+static void on_enter_vt(int signal_number, void *data)
+{
+	struct egl_compositor *ec = data;
+
+	drmModeConnector *connector;
+	drmModeRes *resources;
+	drmModeEncoder *encoder;
+	struct drm_mode_modeinfo *mode;
+	int i, ret;
+	int fd;
+
+	fd = ec->gem_fd;
+	resources = drmModeGetResources(fd);
+	if (!resources) {
+		fprintf(stderr, "drmModeGetResources failed\n");
+		return;
+	}
+
+	for (i = 0; i < resources->count_connectors; i++) {
+		connector = drmModeGetConnector(fd, resources->connectors[i]);
+		if (connector == NULL)
+			continue;
+
+		if (connector->connection == DRM_MODE_CONNECTED &&
+		    connector->count_modes > 0)
+			break;
+
+		drmModeFreeConnector(connector);
+	}
+
+	if (i == resources->count_connectors) {
+		fprintf(stderr, "No currently active connector found.\n");
+		return;
+	}
+
+	mode = &connector->modes[0];
+
+	for (i = 0; i < resources->count_encoders; i++) {
+		encoder = drmModeGetEncoder(fd, resources->encoders[i]);
+
+		if (encoder == NULL)
+			continue;
+
+		if (encoder->encoder_id == connector->encoder_id)
+			break;
+
+		drmModeFreeEncoder(encoder);
+	}
+
+	ret = drmModeSetCrtc(fd, encoder->crtc_id, ec->fb_id, 0, 0,
+			     &connector->connector_id, 1, mode);
+	if (ret) {
+		fprintf(stderr, "failed to set mode: %m\n");
+		return;
+	}
+
+}
+
+static void on_leave_vt(int signal_number, void *data)
+{
+	struct egl_compositor *ec = data;
+
+	ioctl (ec->tty_fd, VT_RELDISP, 1);
+}
+
+static void watch_for_vt_changes(struct egl_compositor *ec, struct wl_event_loop *loop)
+{
+	int fd;
+	struct vt_mode mode = { 0 };
+
+	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
+	mode.mode = VT_PROCESS;
+	mode.relsig = SIGUSR1;
+	mode.acqsig = SIGUSR2;
+
+	if (!ioctl (fd, VT_SETMODE, &mode) < 0) {
+		fprintf(stderr, "failed to take control of vt handling\n");
+	}
+
+	ec->leave_vt_source = wl_event_loop_add_signal (loop, SIGUSR1,
+				on_leave_vt,
+				ec);
+	ec->enter_vt_source = wl_event_loop_add_signal (loop, SIGUSR2,
+				on_enter_vt,
+				ec);
+}
+
 static struct egl_compositor *
 egl_compositor_create(struct wl_display *display)
 {
@@ -1071,7 +1163,7 @@ egl_compositor_create(struct wl_display *display)
 		return NULL;
  
 	fb_name = create_frontbuffer(eglGetDisplayFD(ec->display),
-				     &ec->width, &ec->height, &stride);
+				     &ec->width, &ec->height, &stride, &ec->fb_id);
 	ec->surface = eglCreateSurfaceForName(ec->display, ec->config,
 					      fb_name, ec->width, ec->height, stride, attribs);
 	if (ec->surface == NULL) {
@@ -1123,6 +1215,7 @@ egl_compositor_create(struct wl_display *display)
 	wl_display_add_global(display, &shooter->base);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
+	watch_for_vt_changes (ec, loop);
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	ec->repaint_needed = 0;
 	ec->repaint_on_timeout = 0;
