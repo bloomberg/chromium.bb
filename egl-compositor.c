@@ -265,7 +265,6 @@ background_create(struct egl_compositor *ec,
 	struct egl_surface *background;
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
-	int pixbuf_width, pixbuf_height;
 	void *data;
 	GLenum format;
 
@@ -275,14 +274,14 @@ background_create(struct egl_compositor *ec,
 	
 	g_type_init();
 
-	pixbuf = gdk_pixbuf_new_from_file(filename, &error);
+	pixbuf = gdk_pixbuf_new_from_file_at_scale (filename,
+						    width, height,
+						    FALSE, &error);
 	if (error != NULL) {
 		free(background);
 		return NULL;
 	}
 
-	pixbuf_width = gdk_pixbuf_get_width(pixbuf);
-	pixbuf_height = gdk_pixbuf_get_height(pixbuf);
 	data = gdk_pixbuf_get_pixels(pixbuf);
 
 	glGenTextures(1, &background->texture);
@@ -298,7 +297,7 @@ background_create(struct egl_compositor *ec,
 		format = GL_RGB;
 	}
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pixbuf_width, pixbuf_height, 0,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
 		     format, GL_UNSIGNED_BYTE, data);
 
 	background->compositor = ec;
