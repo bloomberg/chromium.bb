@@ -267,6 +267,7 @@ background_create(struct egl_compositor *ec,
 	GError *error = NULL;
 	int pixbuf_width, pixbuf_height;
 	void *data;
+	GLenum format;
 
 	background = malloc(sizeof *background);
 	if (background == NULL)
@@ -290,8 +291,15 @@ background_create(struct egl_compositor *ec,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        if (gdk_pixbuf_get_has_alpha (pixbuf)) {
+		format = GL_RGBA;
+	} else {
+		format = GL_RGB;
+	}
+
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, pixbuf_width, pixbuf_height, 0,
-		     GL_BGR, GL_UNSIGNED_BYTE, data);
+		     format, GL_UNSIGNED_BYTE, data);
 
 	background->compositor = ec;
 	background->map.x = 0;
