@@ -724,8 +724,18 @@ void
 notify_motion(struct egl_input_device *device, int x, int y)
 {
 	struct egl_surface *es;
+	struct egl_compositor *ec = device->ec;
 	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy;
+
+	if (x < 0)
+		x = 0;
+	if (y < 0)
+		y = 0;
+	if (x >= ec->width)
+		x = ec->width - 1;
+	if (y >= ec->height)
+		y = ec->height - 1;
 
 	es = pick_surface(device);
 
