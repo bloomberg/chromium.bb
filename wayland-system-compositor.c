@@ -77,8 +77,6 @@ struct egl_compositor {
 	int tty_fd;
 	int width, height, stride;
 	struct egl_surface *background;
-	struct egl_surface *overlay;
-	double overlay_y, overlay_target, overlay_previous;
 
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
@@ -318,102 +316,6 @@ background_create(struct egl_compositor *ec,
 }
 
 static void
-rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
-{
-	cairo_move_to(cr, x0, y0 + radius);
-	cairo_arc(cr, x0 + radius, y0 + radius, radius, M_PI, 3 * M_PI / 2);
-	cairo_line_to(cr, x1 - radius, y0);
-	cairo_arc(cr, x1 - radius, y0 + radius, radius, 3 * M_PI / 2, 2 * M_PI);
-	cairo_line_to(cr, x1, y1 - radius);
-	cairo_arc(cr, x1 - radius, y1 - radius, radius, 0, M_PI / 2);
-	cairo_line_to(cr, x0 + radius, y1);
-	cairo_arc(cr, x0 + radius, y1 - radius, radius, M_PI / 2, M_PI);
-	cairo_close_path(cr);
-}
-
-static void
-draw_button(cairo_t *cr, int x, int y, int width, int height, const char *text)
-{
-	cairo_pattern_t *gradient;
-	cairo_text_extents_t extents;
-	double bright = 0.15, dim = 0.02;
-	int radius = 10;
-
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	cairo_set_line_width (cr, 2);
-	rounded_rect(cr, x, y, x + width, y + height, radius);
-	cairo_set_source_rgb(cr, dim, dim, dim);
-	cairo_stroke(cr);
-	rounded_rect(cr, x + 2, y + 2, x + width, y + height, radius);
-	cairo_set_source_rgb(cr, 0.1, 0.1, 0.1);
-	cairo_stroke(cr);
-
-	rounded_rect(cr, x + 1, y + 1, x + width - 1, y + height - 1, radius - 1);
-	cairo_set_source_rgb(cr, bright, bright, bright);
-	cairo_stroke(cr);
-	rounded_rect(cr, x + 3, y + 3, x + width - 1, y + height - 1, radius - 1);
-	cairo_set_source_rgb(cr, dim, dim, dim);
-	cairo_stroke(cr);
-
-	rounded_rect(cr, x + 1, y + 1, x + width - 1, y + height - 1, radius - 1);
-	gradient = cairo_pattern_create_linear (0, y, 0, y + height);
-	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.15, 0.15, 0.15);
-	cairo_pattern_add_color_stop_rgb(gradient, 0.5, 0.08, 0.08, 0.08);
-	cairo_pattern_add_color_stop_rgb(gradient, 0.5, 0.07, 0.07, 0.07);
-	cairo_pattern_add_color_stop_rgb(gradient, 1, 0.1, 0.1, 0.1);
-	cairo_set_source(cr, gradient);
-	cairo_fill(cr);
-
-	cairo_set_font_size(cr, 16);
-	cairo_text_extents(cr, text, &extents);
-	cairo_move_to(cr, x + (width - extents.width) / 2, y + (height - extents.height) / 2 - extents.y_bearing);
-	cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
-	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-	cairo_set_line_width (cr, 4);
-	cairo_text_path(cr, text);
-	cairo_set_source_rgb(cr, 0.0, 0.0, 0.0);
-	cairo_stroke_preserve(cr);
-	cairo_set_source_rgb(cr, 1, 1, 1);
-	cairo_fill(cr);
-}
-
-static struct egl_surface *
-overlay_create(struct egl_compositor *ec, int x, int y, int width, int height)
-{
-	struct egl_surface *es;
-	cairo_surface_t *surface;
-	cairo_t *cr;
-	int total_width, button_x, button_y;
-	const int button_width = 150;
-	const int button_height = 40;
-	const int spacing = 50;
-
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-					     width, height);
-
-	cr = cairo_create(surface);
-	cairo_set_source_rgba(cr, 0.1, 0.1, 0.1, 0.8);
-	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_paint(cr);
-
-	total_width = button_width * 2 + spacing;
-	button_x = (width - total_width) / 2;
-	button_y = height - button_height - 20;
-	draw_button(cr, button_x, button_y, button_width, button_height, "Previous");
-	button_x += button_width + spacing;
-	draw_button(cr, button_x, button_y, button_width, button_height, "Next");
-
-	cairo_destroy(cr);
-
-	es = egl_surface_create_from_cairo_surface(ec, surface,
-						   x, y, width, height);
-
-	cairo_surface_destroy(surface);
-
-	return es;	
-}
-
-static void
 draw_surface(struct egl_surface *es)
 {
 	struct egl_compositor *ec = es->compositor;
@@ -460,48 +362,6 @@ static void
 schedule_repaint(struct egl_compositor *ec);
 
 static void
-animate_overlay(struct egl_compositor *ec)
-{
-	double force, y;
-	int32_t top, bottom;
-#if 1
-	double bounce = 0.0;
-	double friction = 1.0;
-	double spring = 0.2;
-#else
-	double bounce = 0.2;
-	double friction = 0.04;
-	double spring = 0.09;
-#endif
-
-	y = ec->overlay_y;
-	force = (ec->overlay_target - ec->overlay_y) * spring +
-		(ec->overlay_previous - y) * friction;
-	
-	ec->overlay_y = y + (y - ec->overlay_previous) + force;
-	ec->overlay_previous = y;
-
-	top = ec->height - ec->overlay->map.height;
-	bottom = ec->height;
-	if (ec->overlay_y >= bottom) {
-		ec->overlay_y = bottom;
-		ec->overlay_previous = bottom;
-	}
-
-	if (ec->overlay_y <= top) {
-		ec->overlay_y = top + bounce * (top - ec->overlay_y);
-		ec->overlay_previous =
-			top + bounce * (top - ec->overlay_previous);
-	}
-
-	ec->overlay->map.y = ec->overlay_y + 0.5;
-
-	if (fabs(y - ec->overlay_target) > 0.2 ||
-	    fabs(ec->overlay_y - ec->overlay_target) > 0.2)
-		schedule_repaint(ec);
-}
-
-static void
 repaint(void *data)
 {
 	struct egl_compositor *ec = data;
@@ -529,8 +389,6 @@ repaint(void *data)
 				   struct egl_surface, link);
 	}
 
-	draw_surface(ec->overlay);
-
 	eid = container_of(ec->input_device_list.next,
 			   struct wlsc_input_device, link);
 	while (&eid->link != &ec->input_device_list) {
@@ -551,8 +409,6 @@ repaint(void *data)
 
 	wl_event_source_timer_update(ec->timer_source, 10);
 	ec->repaint_on_timeout = 1;
-
-	animate_overlay(ec);
 }
 
 static void
@@ -798,20 +654,10 @@ void
 notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
-	struct egl_compositor *ec = device->ec;
-
-	if (key == KEY_ESC && state == 1) {
-		if (ec->overlay_target == ec->height)
-			ec->overlay_target -= 200;
-		else
-			ec->overlay_target += 200;
-		schedule_repaint(ec);
-	} else if (!wl_list_empty(&ec->surface_list)) {
-		if (device->focus_surface != NULL)
-			wl_surface_post_event(&device->focus_surface->base,
-					      &device->base, 
-					      WL_INPUT_KEY, key, state);
-	}
+	if (device->focus_surface != NULL)
+		wl_surface_post_event(&device->focus_surface->base,
+				      &device->base, 
+				      WL_INPUT_KEY, key, state);
 }
 
 struct evdev_input_device *
@@ -1116,10 +962,6 @@ egl_compositor_create(struct wl_display *display)
 	wl_list_init(&ec->surface_list);
 	ec->background = background_create(ec, option_background,
 					   ec->width, ec->height);
-	ec->overlay = overlay_create(ec, 0, ec->height, ec->width, 200);
-	ec->overlay_y = ec->height;
-	ec->overlay_target = ec->height;
-	ec->overlay_previous = ec->height;
 
 	shooter = screenshooter_create(ec);
 	wl_display_add_object(display, &shooter->base);
