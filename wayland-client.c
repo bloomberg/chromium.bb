@@ -104,8 +104,6 @@ add_visual(struct wl_display *display, struct wl_global *global)
 	visual->proxy.display = display;
 	visual->proxy.id = global->id;
 	wl_list_insert(display->visual_list.prev, &visual->link);
-
-	printf("added visual, id %d\n", global->id);
 }
 
 WL_EXPORT struct wl_visual *
@@ -388,8 +386,6 @@ wl_surface_attach(struct wl_surface *surface, uint32_t name,
 	request[4] = height;
 	request[5] = stride;
 	request[6] = visual->proxy.id;
-
-	printf("attach, visual id is %d\n", visual->proxy.id);
 
 	wl_connection_write(surface->proxy.display->connection,
 			    request, sizeof request);
