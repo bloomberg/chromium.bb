@@ -86,6 +86,7 @@ struct egl_compositor {
 
         /* tty handling state */
 	int tty_fd;
+	uint32_t vt_active : 1;
 
 	struct termios terminal_attributes;
 	struct wl_event_source *tty_input_source;
@@ -598,6 +599,9 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy;
 
+	if (!ec->vt_active)
+		return;
+
 	if (x < 0)
 		x = 0;
 	if (y < 0)
@@ -629,7 +633,11 @@ notify_button(struct wlsc_input_device *device,
 	      int32_t button, int32_t state)
 {
 	struct egl_surface *es;
+	struct egl_compositor *ec = device->ec;
 	int32_t sx, sy;
+
+	if (!ec->vt_active)
+		return;
 
 	es = pick_surface(device);
 	if (es) {
@@ -662,6 +670,11 @@ void
 notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
+	struct egl_compositor *ec = device->ec;
+
+	if (!ec->vt_active)
+		return;
+
 	if (device->focus_surface != NULL)
 		wl_surface_post_event(&device->focus_surface->base,
 				      &device->base, 
@@ -854,6 +867,7 @@ static void on_enter_vt(int signal_number, void *data)
 	int ret, fd;
 
 	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
+	ec->vt_active = TRUE;
 
 	fd = eglGetDisplayFD(ec->display);
 	ret = drmModeSetCrtc(fd, ec->crtc_id, ec->fb_id, 0, 0,
@@ -869,6 +883,7 @@ static void on_leave_vt(int signal_number, void *data)
 	struct egl_compositor *ec = data;
 
 	ioctl (ec->tty_fd, VT_RELDISP, 1);
+	ec->vt_active = FALSE;
 }
 
 static bool open_active_tty(struct egl_compositor *ec)
@@ -1037,6 +1052,8 @@ egl_compositor_create(struct wl_display *display)
 	wl_display_add_global(display, &shooter->base);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
+
+	ec->vt_active = TRUE;
 	if (open_active_tty (ec)) {
 		ignore_tty_input (ec, loop);
 		watch_for_vt_changes (ec, loop);
