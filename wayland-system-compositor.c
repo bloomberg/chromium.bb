@@ -567,7 +567,7 @@ const static struct wl_compositor_interface compositor_interface = {
 };
 
 static struct egl_surface *
-pick_surface(struct wlsc_input_device *device)
+pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 {
 	struct egl_compositor *ec = device->ec;
 	struct egl_surface *es;
@@ -586,6 +586,10 @@ pick_surface(struct wlsc_input_device *device)
 
 		es = container_of(es->link.prev,
 				  struct egl_surface, link);
+
+		/* Transform to surface coordinates. */
+		*sx = (x - es->map.x) * es->width / es->map.width;
+		*sy = (y - es->map.y) * es->height / es->map.height;
 	}
 
 	return NULL;
@@ -611,14 +615,10 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 	if (y >= ec->height)
 		y = ec->height - 1;
 
-	es = pick_surface(device);
-
-	if (es) {
-		sx = (x - es->map.x) * es->width / es->map.width;
-		sy = (y - es->map.y) * es->height / es->map.height;
+	es = pick_surface(device, &sx, &sy);
+	if (es)
 		wl_surface_post_event(&es->base, &device->base,
 				      WL_INPUT_MOTION, x, y, sx, sy);
-	}
 
 	device->x = x;
 	device->y = y;
@@ -639,7 +639,7 @@ notify_button(struct wlsc_input_device *device,
 	if (!ec->vt_active)
 		return;
 
-	es = pick_surface(device);
+	es = pick_surface(device, &sx, &sy);
 	if (es) {
 		wl_list_remove(&es->link);
 		wl_list_insert(device->ec->surface_list.prev, &es->link);
@@ -653,9 +653,6 @@ notify_button(struct wlsc_input_device *device,
 		} else {
 			device->grab--;
 		}
-
-		sx = (device->x - es->map.x) * es->width / es->map.width;
-		sy = (device->y - es->map.y) * es->height / es->map.height;
 
 		/* FIXME: Swallow click on raise? */
 		wl_surface_post_event(&es->base, &device->base,
