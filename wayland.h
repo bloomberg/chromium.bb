@@ -66,38 +66,6 @@ struct wl_event_source *wl_event_loop_add_idle(struct wl_event_loop *loop,
 
 struct wl_client;
 
-enum {
-	WL_ARGUMENT_UINT32,
-	WL_ARGUMENT_STRING,
-	WL_ARGUMENT_OBJECT,
-	WL_ARGUMENT_NEW_ID
-};
-
-struct wl_argument {
-	uint32_t type;
-	void *data;
-};
-
-struct wl_method {
-	const char *name;
-	const char *signature;
-	const void **types;
-};
-
-struct wl_event {
-	const char *name;
-	const char *signature;
-};
-
-struct wl_interface {
-	const char *name;
-	int version;
-	int method_count;
-	const struct wl_method *methods;
-	int event_count;
-	const struct wl_event *events;
-};
-
 struct wl_object {
 	const struct wl_interface *interface;
 	void (**implementation)(void);
@@ -116,17 +84,8 @@ struct wl_event_loop *wl_display_get_event_loop(struct wl_display *display);
 int wl_display_add_socket(struct wl_display *display, const char *name, size_t name_size);
 void wl_display_run(struct wl_display *display);
 
-void
-wl_display_add_object(struct wl_display *display, struct wl_object *object);
-int
-wl_display_add_global(struct wl_display *display, struct wl_object *object);
-
-const struct wl_interface *
-wl_input_device_get_interface(void);
-
-#define WL_INPUT_MOTION 0
-#define WL_INPUT_BUTTON 1
-#define WL_INPUT_KEY 2
+void wl_display_add_object(struct wl_display *display, struct wl_object *object);
+int wl_display_add_global(struct wl_display *display, struct wl_object *object);
 
 struct wl_compositor {
 	struct wl_object base;

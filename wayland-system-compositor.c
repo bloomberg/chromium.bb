@@ -46,6 +46,7 @@
 #include <eagle.h>
 
 #include "wayland.h"
+#include "wayland-protocol.h"
 #include "cairo-util.h"
 #include "wayland-system-compositor.h"
 
@@ -695,12 +696,12 @@ create_input_device(struct egl_compositor *ec, const char *glob)
 		return;
 
 	memset(device, 0, sizeof *device);
-	device->base.interface = wl_input_device_get_interface();
+	device->base.interface = &wl_input_device_interface;
 	wl_display_add_object(ec->wl_display, &device->base);
 	device->x = 100;
 	device->y = 100;
-	device->pointer_surface = pointer_create(ec,
-						 device->x, device->y, 64, 64);
+	device->pointer_surface =
+		pointer_create(ec, device->x, device->y, 64, 64);
 	device->ec = ec;
 
 	dir = opendir(by_path_dir);
@@ -947,6 +948,8 @@ static int setup_tty(struct egl_compositor *ec, struct wl_event_loop *loop)
 		wl_event_loop_add_signal(loop, SIGUSR1, on_leave_vt, ec);
 	ec->enter_vt_source =
 		wl_event_loop_add_signal(loop, SIGUSR2, on_enter_vt, ec);
+
+	return 0;
 }
 
 static struct egl_compositor *

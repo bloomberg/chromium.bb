@@ -13,7 +13,8 @@ libwayland-server.so :				\
 	wayland.o				\
 	event-loop.o				\
 	connection.o				\
-	wayland-util.o
+	wayland-util.o				\
+	wayland-protocol.o
 
 libwayland-server.so : CFLAGS += @FFI_CFLAGS@
 libwayland-server.so : LDLIBS += @FFI_LIBS@ -ldl -rdynamic
@@ -21,7 +22,8 @@ libwayland-server.so : LDLIBS += @FFI_LIBS@ -ldl -rdynamic
 libwayland.so :					\
 	wayland-client.o			\
 	connection.o				\
-	wayland-util.o
+	wayland-util.o				\
+	wayland-protocol.o
 
 $(libs) : CFLAGS += -fPIC
 $(libs) :

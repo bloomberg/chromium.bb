@@ -20,28 +20,66 @@
  * OF THIS SOFTWARE.
  */
 
-#ifndef _CONNECTION_H_
-#define _CONNECTION_H_
+#ifndef WAYLAND_PROTOCOL_H
+#define WAYLAND_PROTOCOL_H
 
-#include <stdarg.h>
+#include <stdint.h>
 
-struct wl_connection;
+struct wl_argument {
+	uint32_t type;
+	void *data;
+};
 
-#define WL_CONNECTION_READABLE 0x01
-#define WL_CONNECTION_WRITABLE 0x02
+struct wl_method {
+	const char *name;
+	const char *signature;
+	const void **types;
+};
 
-typedef int (*wl_connection_update_func_t)(struct wl_connection *connection,
-					   uint32_t mask, void *data);
+struct wl_event {
+	const char *name;
+	const char *signature;
+};
 
-struct wl_connection *wl_connection_create(int fd,
-					   wl_connection_update_func_t update,
-					   void *data);
-void wl_connection_destroy(struct wl_connection *connection);
-void wl_connection_copy(struct wl_connection *connection, void *data, size_t size);
-void wl_connection_consume(struct wl_connection *connection, size_t size);
-int wl_connection_data(struct wl_connection *connection, uint32_t mask);
-void wl_connection_write(struct wl_connection *connection, const void *data, size_t count);
-void wl_connection_vmarshal(struct wl_connection *connection, uint32_t id,
-			    uint32_t opcode, const char *signature, va_list ap);
+struct wl_interface {
+	const char *name;
+	int version;
+	int method_count;
+	const struct wl_method *methods;
+	int event_count;
+	const struct wl_event *events;
+};
+
+#define WL_DISPLAY_INVALID_OBJECT	0
+#define WL_DISPLAY_INVALID_METHOD	1
+#define WL_DISPLAY_NO_MEMORY		2
+#define WL_DISPLAY_GLOBAL		3
+
+extern const struct wl_interface wl_display_interface;
+
+
+#define WL_COMPOSITOR_CREATE_SURFACE	0
+#define WL_COMPOSITOR_COMMIT		1
+
+#define WL_COMPOSITOR_ACKNOWLEDGE	0
+#define WL_COMPOSITOR_FRAME		1
+
+extern const struct wl_interface wl_compositor_interface;
+
+
+#define WL_SURFACE_DESTROY	0
+#define WL_SURFACE_ATTACH	1
+#define WL_SURFACE_MAP		2
+#define WL_SURFACE_COPY		3
+#define WL_SURFACE_DAMAGE	4
+
+extern const struct wl_interface wl_surface_interface;
+
+
+#define WL_INPUT_MOTION	0
+#define WL_INPUT_BUTTON	1
+#define WL_INPUT_KEY	2
+
+extern const struct wl_interface wl_input_device_interface;
 
 #endif

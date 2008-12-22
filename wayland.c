@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <ffi.h>
 
+#include "wayland-protocol.h"
 #include "wayland.h"
 #include "connection.h"
 
@@ -203,11 +204,6 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 	ffi_call(&cif, func, &result, args);
 }
 
-#define WL_DISPLAY_INVALID_OBJECT 0
-#define WL_DISPLAY_INVALID_METHOD 1
-#define WL_DISPLAY_NO_MEMORY 2
-#define WL_DISPLAY_GLOBAL 3
-
 static void
 wl_client_connection_data(int fd, uint32_t mask, void *data)
 {
@@ -348,20 +344,6 @@ wl_client_destroy(struct wl_client *client)
 	free(client);
 }
 
-static const struct wl_method surface_methods[] = {
-	{ "destroy", "" },
-	{ "attach", "uuuuo" },
-	{ "map", "iiii" },
-	{ "copy", "iiuuiiii" },
-	{ "damage", "iiii" }
-};
-
-static const struct wl_interface surface_interface = {
-	"surface", 1,
-	ARRAY_LENGTH(surface_methods),
-	surface_methods,
-};
-
 WL_EXPORT int
 wl_client_add_surface(struct wl_client *client,
 		      struct wl_surface *surface,
@@ -372,7 +354,7 @@ wl_client_add_surface(struct wl_client *client,
 	struct wl_object_ref *ref;
 
 	surface->base.id = id;
-	surface->base.interface = &surface_interface;
+	surface->base.interface = &wl_surface_interface;
 	surface->base.implementation = (void (**)(void)) implementation;
 	surface->client = client;
 
@@ -390,9 +372,6 @@ wl_client_add_surface(struct wl_client *client,
 	return 0;
 }
 
-#define WL_COMPOSITOR_ACKNOWLEDGE 0
-#define WL_COMPOSITOR_FRAME 1
-
 WL_EXPORT void
 wl_client_send_acknowledge(struct wl_client *client,
 			   struct wl_compositor *compositor,
@@ -405,28 +384,12 @@ wl_client_send_acknowledge(struct wl_client *client,
 			  WL_COMPOSITOR_ACKNOWLEDGE, key, frame);
 }
 
-static const struct wl_method compositor_methods[] = {
-	{ "create_surface", "n" },
-	{ "commit", "u" }
-};
-
-static const struct wl_event compositor_events[] = {
-	{ "acknowledge", "uu" },
-	{ "frame", "uu" }
-};
-
-static const struct wl_interface compositor_interface = {
-	"compositor", 1,
-	ARRAY_LENGTH(compositor_methods), compositor_methods,
-	ARRAY_LENGTH(compositor_events), compositor_events,
-};
-
 WL_EXPORT int
 wl_display_set_compositor(struct wl_display *display,
 			  struct wl_compositor *compositor,
 			  const struct wl_compositor_interface *implementation)
 {
-	compositor->base.interface = &compositor_interface;
+	compositor->base.interface = &wl_compositor_interface;
 	compositor->base.implementation = (void (**)(void)) implementation;
 
 	wl_display_add_object(display, &compositor->base);
@@ -435,19 +398,6 @@ wl_display_set_compositor(struct wl_display *display,
 
 	return 0;
 }
-
-static const struct wl_event display_events[] = {
-	{ "invalid_object", "u" },
-	{ "invalid_method", "uu" },
-	{ "no_memory", "" },
-	{ "global", "osu" },
-};
-
-static const struct wl_interface display_interface = {
-	"display", 1,
-	0, NULL,
-	ARRAY_LENGTH(display_events), display_events,
-};
 
 WL_EXPORT struct wl_display *
 wl_display_create(void)
@@ -476,7 +426,7 @@ wl_display_create(void)
 	display->client_id_range = 256; /* Gah, arbitrary... */
 
 	display->id = 1;
-	display->base.interface = &display_interface;
+	display->base.interface = &wl_display_interface;
 	display->base.implementation = NULL;
 	wl_display_add_object(display, &display->base);
 	if (wl_display_add_global(display, &display->base)) {
@@ -520,34 +470,6 @@ wl_surface_post_event(struct wl_surface *surface,
 	va_start(ap, event);
 	wl_client_vmarshal(surface->client, sender, event, ap);
 	va_end(ap);
-}
-
-struct wl_input_device {
-	struct wl_object base;
-	struct wl_display *display;
-};
-
-static const struct wl_method input_device_methods[] = {
-};
-
-static const struct wl_event input_device_events[] = {
-	{ "motion", "iiii" },
-	{ "button", "uuiiii" },
-	{ "key", "uu" },
-};
-
-static const struct wl_interface input_device_interface = {
-	"input_device", 1,
-	ARRAY_LENGTH(input_device_methods),
-	input_device_methods,
-	ARRAY_LENGTH(input_device_events),
-	input_device_events,
-};
-
-WL_EXPORT const struct wl_interface *
-wl_input_device_get_interface(void)
-{
-	return &input_device_interface;
 }
 
 WL_EXPORT void

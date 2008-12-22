@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <sys/uio.h>
 
+#include "wayland-util.h"
 #include "connection.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
