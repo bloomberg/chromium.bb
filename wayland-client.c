@@ -68,8 +68,7 @@ struct wl_display {
 	wl_display_event_func_t event_handler;
 	void *event_handler_data;
 
-	uint32_t output_id;
-	int32_t width, height;
+	struct wl_output *output;
 };
 
 struct wl_compositor {
@@ -83,6 +82,11 @@ struct wl_surface {
 struct wl_visual {
 	struct wl_proxy proxy;
 	struct wl_list link;
+};
+
+struct wl_output {
+	struct wl_proxy proxy;
+	int32_t width, height;
 };
 
 static int
@@ -102,8 +106,8 @@ connection_update(struct wl_connection *connection,
 WL_EXPORT void
 wl_display_get_geometry(struct wl_display *display, int32_t *width, int32_t *height)
 {
-	*width = display->width;
-	*height = display->height;
+	*width = display->output->width;
+	*height = display->output->height;
 }
 
 static void
@@ -115,8 +119,9 @@ add_visual(struct wl_display *display, struct wl_global *global)
 	if (visual == NULL)
 		return;
 
-	visual->proxy.display = display;
+	visual->proxy.interface = &wl_visual_interface;
 	visual->proxy.id = global->id;
+	visual->proxy.display = display;
 	wl_list_insert(display->visual_list.prev, &visual->link);
 }
 
@@ -230,6 +235,21 @@ wl_display_get_fd(struct wl_display *display,
 }
 
 static void
+add_output(struct wl_display *display, struct wl_global *global)
+{
+	struct wl_output *output;
+
+	output = malloc(sizeof *output);
+	if (output == NULL)
+		return;
+
+	output->proxy.interface = &wl_output_interface;
+	output->proxy.id = global->id;
+	output->proxy.display = display;
+	display->output = output;
+}
+
+static void
 handle_display_event(struct wl_display *display,
 		     uint32_t opcode, uint32_t *p, uint32_t size)
 {
@@ -265,12 +285,10 @@ handle_display_event(struct wl_display *display,
 		global->interface[length] = '\0';
 		global->version = p[2 + DIV_ROUNDUP(length, sizeof *p)];
 		wl_list_insert(display->global_list.prev, &global->link);
-
 		if (strcmp(global->interface, "visual") == 0)
 			add_visual(display, global);
-		else if (strcmp(global->interface, "output") == 0) {
-			display->output_id = p[0];
-		}
+		else if (strcmp(global->interface, "output") == 0)
+			add_output(display, global);
 		break;
 
 	case WL_DISPLAY_RANGE:
@@ -284,9 +302,9 @@ handle_output_event(struct wl_display *display,
 		    uint32_t opcode, uint32_t *p, uint32_t size)
 {
 	switch (opcode) {
-	case WL_OUTPUT_PRESENCE:
-		display->width = p[0];
-		display->height = p[1];
+	case WL_OUTPUT_GEOMETRY:
+		display->output->width = p[0];
+		display->output->height = p[1];
 		break;
 	}
 }
@@ -300,7 +318,7 @@ handle_event(struct wl_display *display,
 	wl_connection_copy(display->connection, p, size);
 	if (object == 1) {
 		handle_display_event(display, opcode, p + 2, size);
-	} if (object == display->output_id) {
+	} else if (object == display->output->proxy.id) {
 		handle_output_event(display, opcode, p + 2, size);
 	} else if (display->event_handler != NULL)
 		display->event_handler(display, object, opcode, size, p + 2,

@@ -846,13 +846,13 @@ add_visuals(struct egl_compositor *ec)
 }
 
 static void
-post_output_presence(struct wl_client *client, struct wl_object *global)
+post_output_geometry(struct wl_client *client, struct wl_object *global)
 {
 	struct egl_compositor *ec =
 		container_of(global, struct egl_compositor, output.base);
 
 	wl_client_post_event(client, global,
-			     WL_OUTPUT_PRESENCE, ec->width, ec->height);
+			     WL_OUTPUT_GEOMETRY, ec->width, ec->height);
 }
 
 static const char gem_device[] = "/dev/dri/card0";
@@ -1040,7 +1040,7 @@ egl_compositor_create(struct wl_display *display)
 	/* FIXME: This needs to be much more expressive... something like randr 1.2. */
 	ec->output.base.interface = &wl_output_interface;
 	wl_display_add_object(display, &ec->output.base);
-	wl_display_add_global(display, &ec->output.base, post_output_presence);
+	wl_display_add_global(display, &ec->output.base, post_output_geometry);
 
 	add_visuals(ec);
 

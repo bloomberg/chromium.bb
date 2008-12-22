@@ -79,8 +79,11 @@ extern const struct wl_interface wl_surface_interface;
 extern const struct wl_interface wl_input_device_interface;
 
 
-#define WL_OUTPUT_PRESENCE	0
+#define WL_OUTPUT_GEOMETRY	0
 
 extern const struct wl_interface wl_output_interface;
+
+
+extern const struct wl_interface wl_visual_interface;
 
 #endif

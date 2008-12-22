@@ -86,11 +86,17 @@ WL_EXPORT const struct wl_interface wl_input_device_interface = {
 
 
 static const struct wl_message output_events[] = {
-	{ "presence", "uu" },
+	{ "geometry", "uu" },
 };
 
 WL_EXPORT const struct wl_interface wl_output_interface = {
 	"output", 1,
 	0, NULL,
 	ARRAY_LENGTH(output_events), output_events,
+};
+
+WL_EXPORT const struct wl_interface wl_visual_interface = {
+	"visual", 1,
+	0, NULL,
+	0, NULL,
 };
