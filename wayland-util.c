@@ -21,8 +21,9 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
-#include "wayland.h"
+#include "wayland-util.h"
 
 struct wl_hash {
 	struct wl_object **objects;

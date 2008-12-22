@@ -38,7 +38,32 @@
 	const typeof( ((type *)0)->member ) *__mptr = (ptr);	\
 	(type *)( (char *)__mptr - offsetof(type,member) );})
 
-struct wl_object;
+struct wl_argument {
+	uint32_t type;
+	void *data;
+};
+
+struct wl_message {
+	const char *name;
+	const char *signature;
+	const void **types;
+};
+
+struct wl_interface {
+	const char *name;
+	int version;
+	int method_count;
+	const struct wl_message *methods;
+	int event_count;
+	const struct wl_message *events;
+};
+
+struct wl_object {
+	const struct wl_interface *interface;
+	void (**implementation)(void);
+	uint32_t id;
+};
+
 struct wl_hash;
 struct wl_hash *wl_hash_create(void);
 void wl_hash_destroy(struct wl_hash *hash);

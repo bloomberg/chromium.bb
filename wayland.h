@@ -66,12 +66,6 @@ struct wl_event_source *wl_event_loop_add_idle(struct wl_event_loop *loop,
 
 struct wl_client;
 
-struct wl_object {
-	const struct wl_interface *interface;
-	void (**implementation)(void);
-	uint32_t id;
-};
-
 struct wl_display;
 struct wl_input_device;
 

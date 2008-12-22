@@ -25,26 +25,6 @@
 
 #include <stdint.h>
 
-struct wl_argument {
-	uint32_t type;
-	void *data;
-};
-
-struct wl_message {
-	const char *name;
-	const char *signature;
-	const void **types;
-};
-
-struct wl_interface {
-	const char *name;
-	int version;
-	int method_count;
-	const struct wl_message *methods;
-	int event_count;
-	const struct wl_message *events;
-};
-
 #define WL_DISPLAY_INVALID_OBJECT	0
 #define WL_DISPLAY_INVALID_METHOD	1
 #define WL_DISPLAY_NO_MEMORY		2

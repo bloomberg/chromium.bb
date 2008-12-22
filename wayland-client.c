@@ -48,8 +48,7 @@ struct wl_global {
 };
 
 struct wl_proxy {
-	const struct wl_interface *interface;
-	uint32_t id;
+	struct wl_object base;
 	struct wl_display *display;
 };
 
@@ -59,6 +58,7 @@ struct wl_display {
 	int fd;
 	uint32_t id, id_count, next_range;
 	uint32_t mask;
+	struct wl_hash *objects;
 	struct wl_list global_list;
 	struct wl_list visual_list;
 
@@ -119,10 +119,12 @@ add_visual(struct wl_display *display, struct wl_global *global)
 	if (visual == NULL)
 		return;
 
-	visual->proxy.interface = &wl_visual_interface;
-	visual->proxy.id = global->id;
+	visual->proxy.base.interface = &wl_visual_interface;
+	visual->proxy.base.id = global->id;
+	visual->proxy.base.implementation = NULL;
 	visual->proxy.display = display;
 	wl_list_insert(display->visual_list.prev, &visual->link);
+	wl_hash_insert(display->objects, &visual->proxy.base);
 }
 
 WL_EXPORT struct wl_visual *
@@ -177,12 +179,15 @@ wl_display_create(const char *name, size_t name_size)
 		return NULL;
 	}
 
+	display->objects = wl_hash_create();
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->visual_list);
 
-	display->proxy.interface = &wl_display_interface;
-	display->proxy.id = wl_display_get_object_id(display, "display", 1);
+	display->proxy.base.interface = &wl_display_interface;
+	display->proxy.base.implementation = NULL;
+	display->proxy.base.id = 1;
 	display->proxy.display = display;
+	wl_hash_insert(display->objects, &display->proxy.base);
 
 	display->connection = wl_connection_create(display->fd,
 						   connection_update,
@@ -234,6 +239,24 @@ wl_display_get_fd(struct wl_display *display,
 	return display->fd;
 }
 
+struct wl_output_listener {
+	void (*geometry)(struct wl_display *display,
+			 struct wl_output *output,
+			 int32_t width, int32_t height);
+};
+
+static void
+handle_geometry(struct wl_display *display,
+		struct wl_output *output, int32_t width, int32_t height)
+{
+	output->width = width;
+	output->height = height;
+}
+
+static const struct wl_output_listener output_listener = {
+	handle_geometry
+};
+
 static void
 add_output(struct wl_display *display, struct wl_global *global)
 {
@@ -243,10 +266,12 @@ add_output(struct wl_display *display, struct wl_global *global)
 	if (output == NULL)
 		return;
 
-	output->proxy.interface = &wl_output_interface;
-	output->proxy.id = global->id;
+	output->proxy.base.interface = &wl_output_interface;
+	output->proxy.base.implementation = (void(**)(void)) &output_listener;
+	output->proxy.base.id = global->id;
 	output->proxy.display = display;
 	display->output = output;
+	wl_hash_insert(display->objects, &output->proxy.base);
 }
 
 static void
@@ -303,25 +328,27 @@ handle_output_event(struct wl_display *display,
 {
 	switch (opcode) {
 	case WL_OUTPUT_GEOMETRY:
-		display->output->width = p[0];
-		display->output->height = p[1];
+		handle_geometry(display, display->output, p[0], p[1]);
 		break;
 	}
 }
 
 static void
 handle_event(struct wl_display *display,
-	     uint32_t object, uint32_t opcode, uint32_t size)
+	     uint32_t id, uint32_t opcode, uint32_t size)
 {
 	uint32_t p[32];
+	struct wl_object *object;
 
 	wl_connection_copy(display->connection, p, size);
-	if (object == 1) {
+	object = wl_hash_lookup(display->objects, id);
+
+	if (object == &display->proxy.base)
 		handle_display_event(display, opcode, p + 2, size);
-	} else if (object == display->output->proxy.id) {
+	else if (object == &display->output->proxy.base && opcode == 0)
 		handle_output_event(display, opcode, p + 2, size);
-	} else if (display->event_handler != NULL)
-		display->event_handler(display, object, opcode, size, p + 2,
+	else if (display->event_handler != NULL)
+		display->event_handler(display, id, opcode, size, p + 2,
 				       display->event_handler_data);
 	wl_connection_consume(display->connection, size);
 }
@@ -394,8 +421,8 @@ wl_display_get_compositor(struct wl_display *display)
 		return NULL;
 
 	compositor = malloc(sizeof *compositor);
-	compositor->proxy.interface = &wl_compositor_interface;
-	compositor->proxy.id = id;
+	compositor->proxy.base.interface = &wl_compositor_interface;
+	compositor->proxy.base.id = id;
 	compositor->proxy.display = display;
 
 	return compositor;
@@ -404,12 +431,12 @@ wl_display_get_compositor(struct wl_display *display)
 static void
 wl_proxy_vmarshal(struct wl_proxy *target, uint32_t opcode, va_list ap)
 {
-	struct wl_proxy *proxy;
+	struct wl_object *object;
 	uint32_t args[32], length, *p, size;
 	const char *s, *signature;
 	int i, count;
 
-	signature = target->interface->methods[opcode].signature;
+	signature = target->base.interface->methods[opcode].signature;
 	count = strlen(signature);
 	/* FIXME: Make sure we don't overwrite args array. */
 
@@ -429,8 +456,8 @@ wl_proxy_vmarshal(struct wl_proxy *target, uint32_t opcode, va_list ap)
 			break;
 		case 'n':
 		case 'o':
-			proxy = va_arg(ap, struct wl_proxy *);
-			*p++ = proxy->id;
+			object = va_arg(ap, struct wl_object *);
+			*p++ = object->id;
 			break;
 		default:
 			assert(0);
@@ -439,7 +466,7 @@ wl_proxy_vmarshal(struct wl_proxy *target, uint32_t opcode, va_list ap)
 	}
 
 	size = (p - args) * sizeof *p;
-	args[0] = target->id;
+	args[0] = target->base.id;
 	args[1] = opcode | (size << 16);
 	wl_connection_write(target->display->connection, args, size);
 }
@@ -463,8 +490,8 @@ wl_compositor_create_surface(struct wl_compositor *compositor)
 	if (surface == NULL)
 		return NULL;
 
-	surface->proxy.interface = &wl_surface_interface;
-	surface->proxy.id = wl_display_allocate_id(compositor->proxy.display);
+	surface->proxy.base.interface = &wl_surface_interface;
+	surface->proxy.base.id = wl_display_allocate_id(compositor->proxy.display);
 	surface->proxy.display = compositor->proxy.display;
 	wl_proxy_marshal(&compositor->proxy,
 			  WL_COMPOSITOR_CREATE_SURFACE, surface);
