@@ -248,7 +248,7 @@ pointer_create(struct egl_compositor *ec, int x, int y, int width, int height)
 
 	cr = cairo_create(surface);
 	pointer_path(cr, hotspot_x + 5, hotspot_y + 4);
-	cairo_set_line_width (cr, 2);
+	cairo_set_line_width(cr, 2);
 	cairo_set_source_rgb(cr, 0, 0, 0);
 	cairo_stroke_preserve(cr);
 	cairo_fill(cr);
@@ -287,9 +287,9 @@ background_create(struct egl_compositor *ec,
 	
 	g_type_init();
 
-	pixbuf = gdk_pixbuf_new_from_file_at_scale (filename,
-						    width, height,
-						    FALSE, &error);
+	pixbuf = gdk_pixbuf_new_from_file_at_scale(filename,
+						   width, height,
+						   FALSE, &error);
 	if (error != NULL) {
 		free(background);
 		return NULL;
@@ -304,11 +304,10 @@ background_create(struct egl_compositor *ec,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        if (gdk_pixbuf_get_has_alpha (pixbuf)) {
+        if (gdk_pixbuf_get_has_alpha(pixbuf))
 		format = GL_RGBA;
-	} else {
+	else
 		format = GL_RGB;
-	}
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0,
 		     format, GL_UNSIGNED_BYTE, data);
@@ -883,17 +882,6 @@ static void on_leave_vt(int signal_number, void *data)
 	ec->vt_active = FALSE;
 }
 
-static bool open_active_tty(struct egl_compositor *ec)
-{
-	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
-
-	if (ec->tty_fd <= 0) {
-		fprintf(stderr, "failed to open active tty: %m\n");
-		return FALSE;
-	}
-	return TRUE;
-}
-
 static void
 on_tty_input(int fd, uint32_t mask, void *data)
 {
@@ -914,55 +902,51 @@ static void on_term_signal(int signal_number, void *data)
 	exit(0);
 }
 
-static void ignore_tty_input(struct egl_compositor *ec, struct wl_event_loop *loop)
+static int setup_tty(struct egl_compositor *ec, struct wl_event_loop *loop)
 {
 	struct termios raw_attributes;
+	struct vt_mode mode = { 0 };
+
+	ec->tty_fd = open("/dev/tty0", O_RDWR | O_NOCTTY);
+	if (ec->tty_fd <= 0) {
+		fprintf(stderr, "failed to open active tty: %m\n");
+		return -1;
+	}
 
 	if (tcgetattr(ec->tty_fd, &ec->terminal_attributes) < 0) {
 		fprintf(stderr, "could not get terminal attributes: %m\n");
-		return;
+		return -1;
 	}
 
-	/* Ignore control characters and disable echo
-	 */
+	/* Ignore control characters and disable echo */
 	raw_attributes = ec->terminal_attributes;
-	cfmakeraw (&raw_attributes);
+	cfmakeraw(&raw_attributes);
 
-	/* Fix up line endings to be normal
-	 * (cfmakeraw hoses them)
-	 */
+	/* Fix up line endings to be normal (cfmakeraw hoses them) */
 	raw_attributes.c_oflag |= OPOST | OCRNL;
 
 	if (tcsetattr(ec->tty_fd, TCSANOW, &raw_attributes) < 0)
 		fprintf(stderr, "could not put terminal into raw mode: %m\n");
 
-	ec->term_signal_source = wl_event_loop_add_signal(loop, SIGTERM,
-							on_term_signal,
-							ec);
+	ec->term_signal_source =
+		wl_event_loop_add_signal(loop, SIGTERM, on_term_signal, ec);
 
-	ec->tty_input_source = wl_event_loop_add_fd(loop, ec->tty_fd,
-						  WL_EVENT_READABLE,
-						  on_tty_input, ec);
-}
+	ec->tty_input_source =
+		wl_event_loop_add_fd(loop, ec->tty_fd,
+				     WL_EVENT_READABLE, on_tty_input, ec);
 
-static void watch_for_vt_changes(struct egl_compositor *ec, struct wl_event_loop *loop)
-{
-	struct vt_mode mode = { 0 };
-
+	ec->vt_active = TRUE;
 	mode.mode = VT_PROCESS;
 	mode.relsig = SIGUSR1;
 	mode.acqsig = SIGUSR2;
-
-	if (!ioctl (ec->tty_fd, VT_SETMODE, &mode) < 0) {
+	if (!ioctl(ec->tty_fd, VT_SETMODE, &mode) < 0) {
 		fprintf(stderr, "failed to take control of vt handling\n");
 	}
 
-	ec->leave_vt_source = wl_event_loop_add_signal (loop, SIGUSR1,
-				on_leave_vt,
-				ec);
-	ec->enter_vt_source = wl_event_loop_add_signal (loop, SIGUSR2,
-				on_enter_vt,
-				ec);
+	ec->leave_vt_source =
+		wl_event_loop_add_signal(loop, SIGUSR1, on_leave_vt, ec);
+	ec->enter_vt_source =
+		wl_event_loop_add_signal(loop, SIGUSR2, on_enter_vt, ec);
 }
 
 static struct egl_compositor *
@@ -1050,11 +1034,8 @@ egl_compositor_create(struct wl_display *display)
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 
-	ec->vt_active = TRUE;
-	if (open_active_tty (ec)) {
-		ignore_tty_input (ec, loop);
-		watch_for_vt_changes (ec, loop);
-	}
+	setup_tty(ec, loop);
+
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	ec->repaint_needed = 0;
 	ec->repaint_on_timeout = 0;
