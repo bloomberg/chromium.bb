@@ -49,6 +49,7 @@ struct wl_interface {
 #define WL_DISPLAY_INVALID_METHOD	1
 #define WL_DISPLAY_NO_MEMORY		2
 #define WL_DISPLAY_GLOBAL		3
+#define WL_DISPLAY_RANGE		4
 
 extern const struct wl_interface wl_display_interface;
 

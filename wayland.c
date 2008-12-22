@@ -44,6 +44,7 @@ struct wl_client {
 	struct wl_display *display;
 	struct wl_list object_list;
 	struct wl_list link;
+	uint32_t id_count;
 };
 
 struct wl_display {
@@ -270,6 +271,15 @@ wl_client_connection_update(struct wl_connection *connection,
 	return wl_event_source_fd_update(client->source, mask);
 }
 
+static void
+wl_display_post_range(struct wl_display *display, struct wl_client *client)
+{
+	wl_client_marshal(client, &client->display->base,
+			  WL_DISPLAY_RANGE, display->client_id_range);
+	display->client_id_range += 256;
+	client->id_count += 256;
+}
+
 static struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
@@ -285,16 +295,13 @@ wl_client_create(struct wl_display *display, int fd)
 	client->source = wl_event_loop_add_fd(display->loop, fd,
 					      WL_EVENT_READABLE,
 					      wl_client_connection_data, client);
-	client->connection = wl_connection_create(fd,
-						  wl_client_connection_update, 
-						  client);
+	client->connection =
+		wl_connection_create(fd, wl_client_connection_update, client);
+
 	wl_list_init(&client->object_list);
 	wl_list_init(&client->link);
 
-	wl_connection_write(client->connection,
-			    &display->client_id_range,
-			    sizeof display->client_id_range);
-	display->client_id_range += 256;
+	wl_display_post_range(display, client);
 
 	ref = container_of(display->global_list.next,
 			   struct wl_object_ref, link);
@@ -352,6 +359,9 @@ wl_client_add_surface(struct wl_client *client,
 {
 	struct wl_display *display = client->display;
 	struct wl_object_ref *ref;
+
+	if (client->id_count-- < 64)
+		wl_display_post_range(display, client);
 
 	surface->base.id = id;
 	surface->base.interface = &wl_surface_interface;

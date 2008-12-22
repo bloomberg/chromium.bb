@@ -30,6 +30,7 @@ static const struct wl_message display_events[] = {
 	{ "invalid_method", "uu" },
 	{ "no_memory", "" },
 	{ "global", "osu" },
+	{ "range", "u" },
 };
 
 WL_EXPORT const struct wl_interface wl_display_interface = {
