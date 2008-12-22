@@ -64,6 +64,12 @@ struct wl_object_ref {
 	struct wl_list link;
 };
 
+struct wl_global {
+	struct wl_object *object;
+	wl_client_connect_func_t func;	
+	struct wl_list link;
+};
+
 void
 wl_client_destroy(struct wl_client *client);
 
@@ -114,6 +120,17 @@ wl_client_vmarshal(struct wl_client *client, struct wl_object *sender,
 static void
 wl_client_marshal(struct wl_client *client, struct wl_object *sender,
 		  uint32_t opcode, ...)
+{
+	va_list ap;
+
+	va_start(ap, opcode);
+	wl_client_vmarshal(client, sender, opcode, ap);
+	va_end(ap);
+}
+
+WL_EXPORT void
+wl_client_post_event(struct wl_client *client, struct wl_object *sender,
+		     uint32_t opcode, ...)
 {
 	va_list ap;
 
@@ -284,7 +301,7 @@ static struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
-	struct wl_object_ref *ref;
+	struct wl_global *global;
 
 	client = malloc(sizeof *client);
 	if (client == NULL)
@@ -303,17 +320,25 @@ wl_client_create(struct wl_display *display, int fd)
 
 	wl_display_post_range(display, client);
 
-	ref = container_of(display->global_list.next,
-			   struct wl_object_ref, link);
-	while (&ref->link != &display->global_list) {
+	global = container_of(display->global_list.next,
+			      struct wl_global, link);
+	while (&global->link != &display->global_list) {
 		wl_client_marshal(client, &client->display->base,
 				  WL_DISPLAY_GLOBAL,
-				  ref->object,
-				  ref->object->interface->name,
-				  ref->object->interface->version);
+				  global->object,
+				  global->object->interface->name,
+				  global->object->interface->version);
+		global = container_of(global->link.next,
+				      struct wl_global, link);
+	}
 
-		ref = container_of(ref->link.next,
-				   struct wl_object_ref, link);
+	global = container_of(display->global_list.next,
+			      struct wl_global, link);
+	while (&global->link != &display->global_list) {
+		if (global->func)
+			global->func(client, global->object);
+		global = container_of(global->link.next,
+				      struct wl_global, link);
 	}
 
 	return client;
@@ -403,7 +428,7 @@ wl_display_set_compositor(struct wl_display *display,
 	compositor->base.implementation = (void (**)(void)) implementation;
 
 	wl_display_add_object(display, &compositor->base);
-	if (wl_display_add_global(display, &compositor->base))
+	if (wl_display_add_global(display, &compositor->base, NULL))
 		return -1;
 
 	return 0;
@@ -439,7 +464,7 @@ wl_display_create(void)
 	display->base.interface = &wl_display_interface;
 	display->base.implementation = NULL;
 	wl_display_add_object(display, &display->base);
-	if (wl_display_add_global(display, &display->base)) {
+	if (wl_display_add_global(display, &display->base, NULL)) {
 		wl_event_loop_destroy(display->loop);
 		free(display);
 		return NULL;
@@ -456,16 +481,18 @@ wl_display_add_object(struct wl_display *display, struct wl_object *object)
 }
 
 WL_EXPORT int
-wl_display_add_global(struct wl_display *display, struct wl_object *object)
+wl_display_add_global(struct wl_display *display,
+		      struct wl_object *object, wl_client_connect_func_t func)
 {
-	struct wl_object_ref *ref;
+	struct wl_global *global;
 
-	ref = malloc(sizeof *ref);
-	if (ref == NULL)
+	global = malloc(sizeof *global);
+	if (global == NULL)
 		return -1;
 
-	ref->object = object;
-	wl_list_insert(display->global_list.prev, &ref->link);
+	global->object = object;
+	global->func = func;
+	wl_list_insert(display->global_list.prev, &global->link);
 
 	return 0;	
 }

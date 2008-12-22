@@ -85,7 +85,10 @@ int wl_display_add_socket(struct wl_display *display, const char *name, size_t n
 void wl_display_run(struct wl_display *display);
 
 void wl_display_add_object(struct wl_display *display, struct wl_object *object);
-int wl_display_add_global(struct wl_display *display, struct wl_object *object);
+
+typedef void (*wl_client_connect_func_t)(struct wl_client *client, struct wl_object *global);
+
+int wl_display_add_global(struct wl_display *display, struct wl_object *object, wl_client_connect_func_t func);
 
 struct wl_compositor {
 	struct wl_object base;
@@ -119,6 +122,11 @@ struct wl_surface_interface {
 	void (*damage)(struct wl_client *client, struct wl_surface *surface,
 		       int32_t x, int32_t y, int32_t width, int32_t height);
 };
+
+void
+wl_client_post_event(struct wl_client *client,
+		      struct wl_object *sender,
+		      uint32_t event, ...);
 
 void
 wl_surface_post_event(struct wl_surface *surface,

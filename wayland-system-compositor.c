@@ -56,6 +56,10 @@ struct wl_visual {
 	struct wl_object base;
 };
 
+struct wl_output {
+	struct wl_object base;
+};
+
 struct wlsc_input_device {
 	struct wl_object base;
 	int32_t x, y;
@@ -70,6 +74,7 @@ struct wlsc_input_device {
 
 struct egl_compositor {
 	struct wl_compositor base;
+	struct wl_output output;
 	struct wl_visual argb_visual, premultiplied_argb_visual, rgb_visual;
 
 	EGLDisplay display;
@@ -825,19 +830,29 @@ add_visuals(struct egl_compositor *ec)
 	ec->argb_visual.base.interface = &visual_interface;
 	ec->argb_visual.base.implementation = NULL;
 	wl_display_add_object(ec->wl_display, &ec->argb_visual.base);
-	wl_display_add_global(ec->wl_display, &ec->argb_visual.base);
+	wl_display_add_global(ec->wl_display, &ec->argb_visual.base, NULL);
 
 	ec->premultiplied_argb_visual.base.interface = &visual_interface;
 	ec->premultiplied_argb_visual.base.implementation = NULL;
 	wl_display_add_object(ec->wl_display,
 			      &ec->premultiplied_argb_visual.base);
 	wl_display_add_global(ec->wl_display,
-			      &ec->premultiplied_argb_visual.base);
+			      &ec->premultiplied_argb_visual.base, NULL);
 
 	ec->rgb_visual.base.interface = &visual_interface;
 	ec->rgb_visual.base.implementation = NULL;
 	wl_display_add_object(ec->wl_display, &ec->rgb_visual.base);
-	wl_display_add_global(ec->wl_display, &ec->rgb_visual.base);
+	wl_display_add_global(ec->wl_display, &ec->rgb_visual.base, NULL);
+}
+
+static void
+post_output_presence(struct wl_client *client, struct wl_object *global)
+{
+	struct egl_compositor *ec =
+		container_of(global, struct egl_compositor, output.base);
+
+	wl_client_post_event(client, global,
+			     WL_OUTPUT_PRESENCE, ec->width, ec->height);
 }
 
 static const char gem_device[] = "/dev/dri/card0";
@@ -1021,6 +1036,12 @@ egl_compositor_create(struct wl_display *display)
 	glClearColor(0, 0, 0.2, 1);
 
 	wl_display_set_compositor(display, &ec->base, &compositor_interface); 
+
+	/* FIXME: This needs to be much more expressive... something like randr 1.2. */
+	ec->output.base.interface = &wl_output_interface;
+	wl_display_add_object(display, &ec->output.base);
+	wl_display_add_global(display, &ec->output.base, post_output_presence);
+
 	add_visuals(ec);
 
 	wl_list_init(&ec->input_device_list);
@@ -1033,7 +1054,7 @@ egl_compositor_create(struct wl_display *display)
 
 	shooter = screenshooter_create(ec);
 	wl_display_add_object(display, &shooter->base);
-	wl_display_add_global(display, &shooter->base);
+	wl_display_add_global(display, &shooter->base, NULL);
 
 	loop = wl_display_get_event_loop(ec->wl_display);
 

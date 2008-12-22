@@ -57,6 +57,9 @@ void wl_display_set_event_handler(struct wl_display *display,
 				  wl_display_event_func_t handler,
 				  void *data);
 
+void
+wl_display_get_geometry(struct wl_display *display,
+			int32_t *width, int32_t *height);
 struct wl_compositor *
 wl_display_get_compositor(struct wl_display *display);
 struct wl_visual *

@@ -67,6 +67,9 @@ struct wl_display {
 
 	wl_display_event_func_t event_handler;
 	void *event_handler_data;
+
+	uint32_t output_id;
+	int32_t width, height;
 };
 
 struct wl_compositor {
@@ -94,6 +97,13 @@ connection_update(struct wl_connection *connection,
 				       display->update_data);
 
 	return 0;
+}
+
+WL_EXPORT void
+wl_display_get_geometry(struct wl_display *display, int32_t *width, int32_t *height)
+{
+	*width = display->width;
+	*height = display->height;
 }
 
 static void
@@ -258,10 +268,25 @@ handle_display_event(struct wl_display *display,
 
 		if (strcmp(global->interface, "visual") == 0)
 			add_visual(display, global);
+		else if (strcmp(global->interface, "output") == 0) {
+			display->output_id = p[0];
+		}
 		break;
 
 	case WL_DISPLAY_RANGE:
 		display->next_range = p[0];
+		break;
+	}
+}
+
+static void
+handle_output_event(struct wl_display *display,
+		    uint32_t opcode, uint32_t *p, uint32_t size)
+{
+	switch (opcode) {
+	case WL_OUTPUT_PRESENCE:
+		display->width = p[0];
+		display->height = p[1];
 		break;
 	}
 }
@@ -275,6 +300,8 @@ handle_event(struct wl_display *display,
 	wl_connection_copy(display->connection, p, size);
 	if (object == 1) {
 		handle_display_event(display, opcode, p + 2, size);
+	} if (object == display->output_id) {
+		handle_output_event(display, opcode, p + 2, size);
 	} else if (display->event_handler != NULL)
 		display->event_handler(display, object, opcode, size, p + 2,
 				       display->event_handler_data);
