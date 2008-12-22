@@ -88,7 +88,7 @@ void wl_surface_damage(struct wl_surface *surface,
  * objects. */
 
 uint32_t wl_display_get_object_id(struct wl_display *display,
-				  const char *interface);
+				  const char *interface, uint32_t version);
 uint32_t wl_display_allocate_id(struct wl_display *display);
 void wl_display_write(struct wl_display *display,
 		      const void *data,

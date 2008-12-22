@@ -47,7 +47,7 @@ screenshooter_create(struct wl_display *display)
 	struct screenshooter *screenshooter;
 	uint32_t id;
 
-	id = wl_display_get_object_id(display, "screenshooter");
+	id = wl_display_get_object_id(display, "screenshooter", 1);
 	if (id == 0) {
 		fprintf(stderr, "server doesn't support screenshooter interface\n");
 		return NULL;

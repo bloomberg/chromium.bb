@@ -166,7 +166,7 @@ wl_display_create(const char *name, size_t name_size)
 	wl_list_init(&display->visual_list);
 
 	display->proxy.interface = &wl_display_interface;
-	display->proxy.id = wl_display_get_object_id(display, "display");
+	display->proxy.id = wl_display_get_object_id(display, "display", 1);
 	display->proxy.display = display;
 
 	display->connection = wl_connection_create(display->fd,
@@ -188,14 +188,16 @@ wl_display_destroy(struct wl_display *display)
 }
 
 WL_EXPORT uint32_t
-wl_display_get_object_id(struct wl_display *display, const char *interface)
+wl_display_get_object_id(struct wl_display *display,
+			 const char *interface, uint32_t version)
 {
 	struct wl_global *global;
 
 	global = container_of(display->global_list.next,
 			      struct wl_global, link);
 	while (&global->link != &display->global_list) {
-		if (strcmp(global->interface, interface) == 0)
+		if (strcmp(global->interface, interface) == 0 &&
+		    global->version >= version)
 			return global->id;
 
 		global = container_of(global->link.next,
@@ -342,7 +344,7 @@ wl_display_get_compositor(struct wl_display *display)
 	struct wl_compositor *compositor;
 	uint32_t id;
 
-	id = wl_display_get_object_id(display, "compositor");
+	id = wl_display_get_object_id(display, "compositor", 1);
 	if (id == 0)
 		return NULL;
 
