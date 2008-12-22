@@ -588,8 +588,8 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 				  struct egl_surface, link);
 
 		/* Transform to surface coordinates. */
-		*sx = (x - es->map.x) * es->width / es->map.width;
-		*sy = (y - es->map.y) * es->height / es->map.height;
+		*sx = (device->x - es->map.x) * es->width / es->map.width;
+		*sy = (device->y - es->map.y) * es->height / es->map.height;
 	}
 
 	return NULL;
@@ -615,13 +615,13 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 	if (y >= ec->height)
 		y = ec->height - 1;
 
+	device->x = x;
+	device->y = y;
 	es = pick_surface(device, &sx, &sy);
 	if (es)
 		wl_surface_post_event(&es->base, &device->base,
 				      WL_INPUT_MOTION, x, y, sx, sy);
 
-	device->x = x;
-	device->y = y;
 	device->pointer_surface->map.x = x - hotspot_x;
 	device->pointer_surface->map.y = y - hotspot_y;
 
