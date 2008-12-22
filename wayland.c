@@ -70,7 +70,7 @@ static void
 wl_client_vmarshal(struct wl_client *client, struct wl_object *sender,
 		   uint32_t opcode, va_list ap)
 {
-	const struct wl_event *event;
+	const struct wl_message *event;
 	struct wl_object *object;
 	uint32_t args[32], length, *p, size;
 	const char *s;
@@ -125,7 +125,7 @@ static void
 wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 		    uint32_t opcode, size_t size)
 {
-	const struct wl_method *method;
+	const struct wl_message *method;
 	ffi_type *types[20];
 	ffi_cif cif;
 	uint32_t *p, result;

@@ -145,7 +145,7 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 	gdk_pixbuf_save(pixbuf, filename, "png", &error, NULL);
 }
 
-static const struct wl_method screenshooter_methods[] = {
+static const struct wl_message screenshooter_methods[] = {
 	{ "shoot", "", NULL }
 };
 

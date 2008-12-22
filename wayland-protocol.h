@@ -30,24 +30,19 @@ struct wl_argument {
 	void *data;
 };
 
-struct wl_method {
+struct wl_message {
 	const char *name;
 	const char *signature;
 	const void **types;
-};
-
-struct wl_event {
-	const char *name;
-	const char *signature;
 };
 
 struct wl_interface {
 	const char *name;
 	int version;
 	int method_count;
-	const struct wl_method *methods;
+	const struct wl_message *methods;
 	int event_count;
-	const struct wl_event *events;
+	const struct wl_message *events;
 };
 
 #define WL_DISPLAY_INVALID_OBJECT	0

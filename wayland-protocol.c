@@ -25,7 +25,7 @@
 #include "wayland-util.h"
 #include "wayland-protocol.h"
 
-static const struct wl_event display_events[] = {
+static const struct wl_message display_events[] = {
 	{ "invalid_object", "u" },
 	{ "invalid_method", "uu" },
 	{ "no_memory", "" },
@@ -39,12 +39,12 @@ WL_EXPORT const struct wl_interface wl_display_interface = {
 };
 
 
-static const struct wl_method compositor_methods[] = {
+static const struct wl_message compositor_methods[] = {
 	{ "create_surface", "n" },
 	{ "commit", "u" }
 };
 
-static const struct wl_event compositor_events[] = {
+static const struct wl_message compositor_events[] = {
 	{ "acknowledge", "uu" },
 	{ "frame", "uu" }
 };
@@ -56,7 +56,7 @@ WL_EXPORT const struct wl_interface wl_compositor_interface = {
 };
 
 
-static const struct wl_method surface_methods[] = {
+static const struct wl_message surface_methods[] = {
 	{ "destroy", "" },
 	{ "attach", "uuuuo" },
 	{ "map", "iiii" },
@@ -71,7 +71,7 @@ WL_EXPORT const struct wl_interface wl_surface_interface = {
 };
 
 
-static const struct wl_event input_device_events[] = {
+static const struct wl_message input_device_events[] = {
 	{ "motion", "iiii" },
 	{ "button", "uuiiii" },
 	{ "key", "uu" },
