@@ -43,6 +43,7 @@
 #include "cairo-util.h"
 #include "window.h"
 
+static int option_fullscreen;
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
 
@@ -65,6 +66,7 @@ struct terminal {
 	int escape_length;
 	int state;
 	int margin;
+	int fullscreen;
 };
 
 static char *
@@ -129,7 +131,7 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_surface_t *surface;
 	cairo_t *cr;
 	cairo_font_extents_t extents;
-	int i;
+	int i, top_margin, side_margin;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
@@ -148,9 +150,12 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_set_font_size(cr, 14);
 
 	cairo_font_extents(cr, &extents);
+	side_margin = (rectangle.width - terminal->width * extents.max_x_advance) / 2;
+	top_margin = (rectangle.height - terminal->height * extents.height) / 2;
+
 	for (i = 0; i < terminal->height; i++) {
-		cairo_move_to(cr, terminal->margin,
-			      terminal->margin + extents.ascent + extents.height * i);
+		cairo_move_to(cr, side_margin,
+			      top_margin + extents.ascent + extents.height * i);
 		cairo_show_text(cr, terminal_get_row(terminal, i));
 	}
 	cairo_destroy(cr);
@@ -170,7 +175,7 @@ terminal_draw(struct terminal *terminal)
 	cairo_surface_t *surface;
 	cairo_font_extents_t extents;
 	cairo_t *cr;
-	int width, height;
+	int32_t width, height;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
@@ -188,10 +193,11 @@ terminal_draw(struct terminal *terminal)
 	height = (rectangle.height - 2 * terminal->margin) / (int32_t) extents.height;
 	terminal_resize(terminal, width, height);
 
-	rectangle.width = terminal->width * extents.max_x_advance + 2 * terminal->margin;
-	rectangle.height = terminal->height * extents.height + 2 * terminal->margin;
-
-	window_set_child_size(terminal->window, &rectangle);
+	if (!terminal->fullscreen) {
+		rectangle.width = terminal->width * extents.max_x_advance + 2 * terminal->margin;
+		rectangle.height = terminal->height * extents.height + 2 * terminal->margin;
+		window_set_child_size(terminal->window, &rectangle);
+	}
 
 	window_draw(terminal->window);
 	terminal_draw_contents(terminal);
@@ -495,6 +501,13 @@ key_handler(struct window *window, uint32_t key, uint32_t state, void *data)
 	case KEY_RIGHTALT:
 		mod = MOD_ALT;
 		break;
+	case KEY_F11:
+		if (!state)
+			break;
+		terminal->fullscreen ^= 1;
+		window_set_fullscreen(window, terminal->fullscreen);
+		terminal_schedule_redraw(terminal);
+		break;
 	default:
 		if (key < ARRAY_LENGTH(evdev_keymap)) {
 			if (terminal->modifiers & MOD_CTRL)
@@ -516,7 +529,7 @@ key_handler(struct window *window, uint32_t key, uint32_t state, void *data)
 }
 
 static struct terminal *
-terminal_create(struct wl_display *display, int fd)
+terminal_create(struct wl_display *display, int fd, int fullscreen)
 {
 	struct terminal *terminal;
 
@@ -526,6 +539,7 @@ terminal_create(struct wl_display *display, int fd)
 
 	memset(terminal, 0, sizeof *terminal);
 	terminal->fd = fd;
+	terminal->fullscreen = fullscreen;
 	terminal->window = window_create(display, fd, "Wayland Terminal",
 					 500, 100, 500, 400);
 	terminal->display = display;
@@ -533,6 +547,7 @@ terminal_create(struct wl_display *display, int fd)
 	terminal->margin = 5;
 
 	terminal->compositor = wl_display_get_compositor(display);
+	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
 	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
 	window_set_key_handler(terminal->window, key_handler, terminal);
@@ -588,6 +603,12 @@ terminal_run(struct terminal *terminal, const char *path)
 	return 0;
 }
 
+static const GOptionEntry option_entries[] = {
+	{ "fullscreen", 'f', 0, G_OPTION_ARG_NONE,
+	  &option_fullscreen, "Run in fullscreen mode" },
+	{ NULL }
+};
+
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
@@ -595,6 +616,15 @@ int main(int argc, char *argv[])
 	GMainLoop *loop;
 	GSource *source;
 	struct terminal *terminal;
+	GOptionContext *context;
+	GError *error;
+
+	context = g_option_context_new(NULL);
+	g_option_context_add_main_entries(context, option_entries, "Wayland Terminal");
+	if (!g_option_context_parse(context, &argc, &argv, &error)) {
+		fprintf(stderr, "option parsing failed: %s\n", error->message);
+		exit(EXIT_FAILURE);
+	}
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -612,7 +642,7 @@ int main(int argc, char *argv[])
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	terminal = terminal_create(display, fd);
+	terminal = terminal_create(display, fd, option_fullscreen);
 	if (terminal_run(terminal, "/bin/bash"))
 		exit(EXIT_FAILURE);
 

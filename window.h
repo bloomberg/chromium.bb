@@ -44,9 +44,6 @@ window_create(struct wl_display *display, int fd,
 	      int32_t x, int32_t y, int32_t width, int32_t height);
 
 void
-window_set_minimum_size(struct window *window, uint32_t width, int32_t height);
-
-void
 window_draw(struct window *window);
 void
 window_get_child_rectangle(struct window *window,
@@ -58,6 +55,9 @@ void
 window_copy(struct window *window,
 	    struct rectangle *rectangle,
 	    uint32_t name, uint32_t stride);
+
+void
+window_set_fullscreen(struct window *window, int fullscreen);
 
 void
 window_set_resize_handler(struct window *window,

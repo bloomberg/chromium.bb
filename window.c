@@ -44,11 +44,12 @@ struct window {
 	struct wl_compositor *compositor;
 	struct wl_surface *surface;
 	const char *title;
-	int x, y, width, height;
+	struct rectangle allocation, saved_allocation;
 	int minimum_width, minimum_height;
 	int margin;
 	int drag_x, drag_y;
 	int state;
+	int fullscreen;
 	uint32_t grab_device;
 	uint32_t name;
 	int fd;
@@ -76,8 +77,8 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 	cairo_close_path(cr);
 }
 
-void
-window_draw(struct window *window)
+static void
+window_draw_decorations(struct window *window)
 {
 	cairo_surface_t *surface;
 	cairo_t *cr;
@@ -85,10 +86,11 @@ window_draw(struct window *window)
 	cairo_text_extents_t extents;
 	cairo_pattern_t *gradient, *outline, *bright, *dim;
 	struct wl_visual *visual;
+	int width, height;
 
 	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					     window->width + window->margin * 2,
-					     window->height + window->margin * 2);
+					     window->allocation.width,
+					     window->allocation.height);
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
 	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
@@ -96,26 +98,29 @@ window_draw(struct window *window)
 
 	cr = cairo_create(surface);
 
+	width = window->allocation.width - window->margin * 2;
+	height = window->allocation.height - window->margin * 2;
+
 	cairo_translate(cr, window->margin + 7, window->margin + 5);
 	cairo_set_line_width (cr, border);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
-	rounded_rect(cr, 0, 0, window->width, window->height, radius);
+	rounded_rect(cr, 0, 0, width, height, radius);
 	cairo_fill(cr);
 	blur_surface(surface, 24 + radius);
 
 	cairo_translate(cr, -7, -5);
 	cairo_set_line_width (cr, border);
-	rounded_rect(cr, 1, 1, window->width - 1, window->height - 1, radius);
+	rounded_rect(cr, 1, 1, width - 1, height - 1, radius);
 	cairo_set_source(cr, outline);
 	cairo_stroke(cr);
-	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius - 1);
+	rounded_rect(cr, 2, 2, width - 2, height - 2, radius - 1);
 	cairo_set_source(cr, bright);
 	cairo_stroke(cr);
-	rounded_rect(cr, 3, 3, window->width - 2, window->height - 2, radius - 1);
+	rounded_rect(cr, 3, 3, width - 2, height - 2, radius - 1);
 	cairo_set_source(cr, dim);
 	cairo_stroke(cr);
 
-	rounded_rect(cr, 2, 2, window->width - 2, window->height - 2, radius - 1);
+	rounded_rect(cr, 2, 2, width - 2, height - 2, radius - 1);
 	gradient = cairo_pattern_create_linear (0, 0, 0, 100);
 	cairo_pattern_add_color_stop_rgb(gradient, 0, 0.6, 0.6, 0.4);
 	cairo_pattern_add_color_stop_rgb(gradient, 1, 0.8, 0.8, 0.7);
@@ -125,17 +130,17 @@ window_draw(struct window *window)
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_move_to(cr, 10, 50);
-	cairo_line_to(cr, window->width - 10, 50);
-	cairo_line_to(cr, window->width - 10, window->height - 10);
-	cairo_line_to(cr, 10, window->height - 10);
+	cairo_line_to(cr, width - 10, 50);
+	cairo_line_to(cr, width - 10, height - 10);
+	cairo_line_to(cr, 10, height - 10);
 	cairo_close_path(cr);
 	cairo_set_source(cr, dim);
 	cairo_stroke(cr);
 
 	cairo_move_to(cr, 11, 51);
-	cairo_line_to(cr, window->width - 10, 51);
-	cairo_line_to(cr, window->width - 10, window->height - 10);
-	cairo_line_to(cr, 11, window->height - 10);
+	cairo_line_to(cr, width - 10, 51);
+	cairo_line_to(cr, width - 10, height - 10);
+	cairo_line_to(cr, 11, height - 10);
 	cairo_close_path(cr);
 	cairo_set_source(cr, bright);
 	cairo_stroke(cr);
@@ -143,7 +148,7 @@ window_draw(struct window *window)
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
 	cairo_set_font_size(cr, 14);
 	cairo_text_extents(cr, window->title, &extents);
-	cairo_move_to(cr, (window->width - extents.width) / 2, 10 - extents.y_bearing);
+	cairo_move_to(cr, (width - extents.width) / 2, 10 - extents.y_bearing);
 	cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
 	cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 	cairo_set_line_width (cr, 4);
@@ -166,10 +171,45 @@ window_draw(struct window *window)
 			  visual);
 
 	wl_surface_map(window->surface,
-		       window->x - window->margin,
-		       window->y - window->margin,
-		       window->width + 2 * window->margin,
-		       window->height + 2 * window->margin);
+		       window->allocation.x - window->margin,
+		       window->allocation.y - window->margin,
+		       window->allocation.width,
+		       window->allocation.height);
+}
+
+static void
+window_draw_fullscreen(struct window *window)
+{
+	struct wl_visual *visual;
+	int stride = window->allocation.width * 4;
+
+	window->buffer = buffer_create(window->fd,
+				       window->allocation.width,
+				       window->allocation.height,
+				       stride);
+
+	visual = wl_display_get_premultiplied_argb_visual(window->display);
+	wl_surface_attach(window->surface,
+			  window->buffer->name,
+			  window->buffer->width,
+			  window->buffer->height,
+			  window->buffer->stride,
+			  visual);
+
+	wl_surface_map(window->surface,
+		       window->allocation.x,
+		       window->allocation.y,
+		       window->allocation.width,
+		       window->allocation.height);
+}
+
+void
+window_draw(struct window *window)
+{
+	if (window->fullscreen)
+		window_draw_fullscreen(window);
+	else
+		window_draw_decorations(window);
 }
 
 enum window_state {
@@ -196,7 +236,6 @@ event_handler(struct wl_display *display,
 	      uint32_t size, uint32_t *p, void *data)
 {
 	struct window *window = data;
-	struct rectangle rectangle;
 	int location;
 	int grip_size = 16;
 
@@ -239,24 +278,27 @@ event_handler(struct wl_display *display,
 
 		switch (window->state) {
 		case WINDOW_MOVING:
+			if (window->fullscreen)
+				break;
 			if (window->grab_device != object)
 				break;
-			window->x = window->drag_x + x;
-			window->y = window->drag_y + y;
+			window->allocation.x = window->drag_x + x;
+			window->allocation.y = window->drag_y + y;
 			wl_surface_map(window->surface,
-				       window->x - window->margin,
-				       window->y - window->margin,
-				       window->width + 2 * window->margin,
-				       window->height + 2 * window->margin);
+				       window->allocation.x - window->margin,
+				       window->allocation.y - window->margin,
+				       window->allocation.width,
+				       window->allocation.height);
 			wl_compositor_commit(window->compositor, 1);
 			break;
 		case WINDOW_RESIZING_LOWER_RIGHT:
+			if (window->fullscreen)
+				break;
 			if (window->grab_device != object)
 				break;
-			window->width = window->drag_x + x;
-			window->height = window->drag_y + y;
+			window->allocation.width = window->drag_x + x;
+			window->allocation.height = window->drag_y + y;
 
-			window_get_child_rectangle(window, &rectangle);
 			if (window->resize_handler)
 				(*window->resize_handler)(window,
 							  window->user_data);
@@ -266,14 +308,17 @@ event_handler(struct wl_display *display,
 	} else if (opcode == 1) {
 		int button = p[0], state = p[1];
 		int32_t x = p[2], y = p[3];
+		int32_t left = window->allocation.x;
+		int32_t right = window->allocation.x +
+			window->allocation.width - window->margin * 2;
+		int32_t top = window->allocation.y;
+		int32_t bottom = window->allocation.y +
+			window->allocation.height - window->margin * 2;
 
-		if (window->x + window->width - grip_size <= x &&
-		    x < window->x + window->width &&
-		    window->y + window->height - grip_size <= y &&
-		    y < window->y + window->height) {
+		if (right - grip_size <= x && x < right &&
+		    bottom - grip_size <= y && y < bottom) {
 			location = LOCATION_LOWER_RIGHT;
-		} else if (window->x <= x && x < window->x + window->width &&
-			   window->y <= y && y < window->y + window->height) {
+		} else if (left <= x && x < right && top <= y && y < bottom) {
 			location = LOCATION_INTERIOR;
 		} else {
 			location = LOCATION_OUTSIDE;
@@ -282,14 +327,14 @@ event_handler(struct wl_display *display,
 		if (button == BTN_LEFT && state == 1) {
 			switch (location) {
 			case LOCATION_INTERIOR:
-				window->drag_x = window->x - x;
-				window->drag_y = window->y - y;
+				window->drag_x = window->allocation.x - x;
+				window->drag_y = window->allocation.y - y;
 				window->state = WINDOW_MOVING;
 				window->grab_device = object;
 				break;
 			case LOCATION_LOWER_RIGHT:
-				window->drag_x = window->width - x;
-				window->drag_y = window->height - y;
+				window->drag_x = window->allocation.width - x;
+				window->drag_y = window->allocation.height - y;
 				window->state = WINDOW_RESIZING_LOWER_RIGHT;
 				window->grab_device = object;
 				break;
@@ -312,18 +357,24 @@ void
 window_get_child_rectangle(struct window *window,
 			   struct rectangle *rectangle)
 {
-	rectangle->x = 10;
-	rectangle->y = 50;
-	rectangle->width = window->width - 20;
-	rectangle->height = window->height - 60;
+	if (window->fullscreen) {
+		*rectangle = window->allocation;
+	} else {
+		rectangle->x = window->margin + 10;
+		rectangle->y = window->margin + 50;
+		rectangle->width = window->allocation.width - 20 - window->margin * 2;
+		rectangle->height = window->allocation.height - 60 - window->margin * 2;
+	}
 }
 
 void
 window_set_child_size(struct window *window,
 		      struct rectangle *rectangle)
 {
-	window->width = rectangle->width + 20;
-	window->height = rectangle->height + 60;
+	if (!window->fullscreen) {
+		window->allocation.width = rectangle->width + 20 + window->margin * 2;
+		window->allocation.height = rectangle->height + 60 + window->margin * 2;
+	}
 }
 
 void
@@ -332,10 +383,28 @@ window_copy(struct window *window,
 	    uint32_t name, uint32_t stride)
 {
 	wl_surface_copy(window->surface,
-			window->margin + rectangle->x,
-			window->margin + rectangle->y,
+			rectangle->x,
+			rectangle->y,
 			name, stride,
-			0, 0, rectangle->width, rectangle->height);
+			0, 0,
+			rectangle->width,
+			rectangle->height);
+}
+
+void
+window_set_fullscreen(struct window *window, int fullscreen)
+{
+	window->fullscreen = fullscreen;
+	if (window->fullscreen) {
+		window->saved_allocation = window->allocation;
+		window->allocation.x = 0;
+		window->allocation.y = 0;
+		wl_display_get_geometry(window->display,
+					&window->allocation.width,
+					&window->allocation.height);
+	} else {
+		window->allocation = window->saved_allocation;
+	}
 }
 
 void
@@ -370,13 +439,6 @@ window_set_key_handler(struct window *window,
 	window->user_data = data;
 }
 
-void
-window_set_minimum_size(struct window *window, uint32_t width, int32_t height)
-{
-	window->minimum_width = width;
-	window->minimum_height = height;
-}
-
 struct window *
 window_create(struct wl_display *display, int fd,
 	      const char *title,
@@ -393,12 +455,11 @@ window_create(struct wl_display *display, int fd,
 	window->title = strdup(title);
 	window->compositor = wl_display_get_compositor(display);
 	window->surface = wl_compositor_create_surface(window->compositor);
-	window->x = x;
-	window->y = y;
-	window->minimum_width = 100;
-	window->minimum_height = 100;
-	window->width = width;
-	window->height = height;
+	window->allocation.x = x;
+	window->allocation.y = y;
+	window->allocation.width = width;
+	window->allocation.height = height;
+	window->saved_allocation = window->allocation;
 	window->margin = 16;
 	window->state = WINDOW_STABLE;
 	window->fd = fd;
