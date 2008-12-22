@@ -71,30 +71,31 @@ wl_client_vmarshal(struct wl_client *client, struct wl_object *sender,
 {
 	const struct wl_event *event;
 	struct wl_object *object;
-	uint32_t args[10], size;
+	uint32_t args[32], length, *p, size;
+	const char *s;
 	int i, count;
 
 	event = &sender->interface->events[opcode];
-	count = strlen(event->signature) + 2;
+	count = strlen(event->signature);
 	assert(count <= ARRAY_LENGTH(args));
 
-	size = 0;
-	for (i = 2; i < count; i++) {
-		switch (event->signature[i - 2]) {
+	p = &args[2];
+	for (i = 0; i < count; i++) {
+		switch (event->signature[i]) {
 		case 'u':
 		case 'i':
-			args[i] = va_arg(ap, uint32_t);
-			size += sizeof args[i];
+			*p++ = va_arg(ap, uint32_t);
 			break;
 		case 's':
-			/* FIXME */
-			args[i] = 0;
-			size += sizeof args[i];
+			s = va_arg(ap, const char *);
+			length = strlen(s);
+			*p++ = length;
+			memcpy(p, s, length);
+			p += DIV_ROUNDUP(length, sizeof(*p));
 			break;
 		case 'o':
 			object = va_arg(ap, struct wl_object *);
-			args[i] = object->id;
-			size += sizeof args[i];
+			*p++ = object->id;
 			break;
 		default:
 			assert(0);
@@ -102,7 +103,7 @@ wl_client_vmarshal(struct wl_client *client, struct wl_object *sender,
 		}
 	}
 
-	size += 2 * sizeof args[0];
+	size = (p - args) * sizeof *p;
 	args[0] = sender->id;
 	args[1] = opcode | (size << 16);
 	wl_connection_write(client->connection, args, size);
@@ -205,6 +206,7 @@ wl_client_demarshal(struct wl_client *client, struct wl_object *target,
 #define WL_DISPLAY_INVALID_OBJECT 0
 #define WL_DISPLAY_INVALID_METHOD 1
 #define WL_DISPLAY_NO_MEMORY 2
+#define WL_DISPLAY_GLOBAL 3
 
 static void
 wl_client_connection_data(int fd, uint32_t mask, void *data)
@@ -272,28 +274,11 @@ wl_client_connection_update(struct wl_connection *connection,
 	return wl_event_source_fd_update(client->source, mask);
 }
 
-static void
-advertise_object(struct wl_client *client, struct wl_object *object)
-{
-	const struct wl_interface *interface;
-	static const char pad[4];
-	uint32_t length, p[2];
-
-	interface = object->interface;
-	length = strlen(interface->name);
-	p[0] = object->id;
-	p[1] = length;
-	wl_connection_write(client->connection, p, sizeof p);
-	wl_connection_write(client->connection, interface->name, length);
-	wl_connection_write(client->connection, pad, -length & 3);
-}
-
 static struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
 	struct wl_client *client;
 	struct wl_object_ref *ref;
-	uint32_t count;
 
 	client = malloc(sizeof *client);
 	if (client == NULL)
@@ -315,14 +300,14 @@ wl_client_create(struct wl_display *display, int fd)
 			    sizeof display->client_id_range);
 	display->client_id_range += 256;
 
-	/* Write list of global objects to client. */
-	count = wl_list_length(&display->global_list);
-	wl_connection_write(client->connection, &count, sizeof count);
-	
 	ref = container_of(display->global_list.next,
 			   struct wl_object_ref, link);
 	while (&ref->link != &display->global_list) {
-		advertise_object(client, ref->object);
+		wl_client_marshal(client, &client->display->base,
+				  WL_DISPLAY_GLOBAL,
+				  ref->object,
+				  ref->object->interface->name,
+				  ref->object->interface->version);
 
 		ref = container_of(ref->link.next,
 				   struct wl_object_ref, link);
@@ -455,6 +440,7 @@ static const struct wl_event display_events[] = {
 	{ "invalid_object", "u" },
 	{ "invalid_method", "uu" },
 	{ "no_memory", "" },
+	{ "global", "osu" },
 };
 
 static const struct wl_interface display_interface = {

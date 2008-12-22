@@ -41,6 +41,7 @@ static const char socket_name[] = "\0wayland";
 struct wl_global {
 	uint32_t id;
 	char *interface;
+	uint32_t version;
 	struct wl_list link;
 };
 
@@ -133,11 +134,8 @@ WL_EXPORT struct wl_display *
 wl_display_create(const char *name, size_t name_size)
 {
 	struct wl_display *display;
-	struct wl_global *global;
 	struct sockaddr_un addr;
 	socklen_t size;
-	char buffer[256];
-	uint32_t id, length, count, i;
 
 	display = malloc(sizeof *display);
 	if (display == NULL)
@@ -165,29 +163,8 @@ wl_display_create(const char *name, size_t name_size)
 	 * guess... */
 	read(display->fd, &display->id, sizeof display->id);
 
-	read(display->fd, &count, sizeof count);
-
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->visual_list);
-	for (i = 0; i < count; i++) {
-		/* FIXME: actually discover advertised objects here. */
-		read(display->fd, &id, sizeof id);
-		read(display->fd, &length, sizeof length);
-		read(display->fd, buffer, (length + 3) & ~3);
-
-		global = malloc(sizeof *global);
-		if (global == NULL)
-			return NULL;
-
-		global->id = id;
-		global->interface = malloc(length + 1);
-		memcpy(global->interface, buffer, length);
-		global->interface[length] = '\0';
-		wl_list_insert(display->global_list.prev, &global->link);
-
-		if (strcmp(global->interface, "visual") == 0)
-			add_visual(display, global);
-	}
 
 	display->proxy.display = display;
 	display->proxy.id = wl_display_get_object_id(display, "display");
@@ -195,6 +172,9 @@ wl_display_create(const char *name, size_t name_size)
 	display->connection = wl_connection_create(display->fd,
 						   connection_update,
 						   display);
+
+	/* Process connection events. */
+	wl_display_iterate(display, WL_CONNECTION_READABLE);
 
 	return display;
 }
@@ -237,14 +217,47 @@ wl_display_get_fd(struct wl_display *display,
 	return display->fd;
 }
 
+#define WL_DISPLAY_INVALID_OBJECT 0
+#define WL_DISPLAY_INVALID_METHOD 1
+#define WL_DISPLAY_NO_MEMORY 2
+#define WL_DISPLAY_GLOBAL 3
+
+static void
+handle_global(struct wl_display *display, uint32_t *p, uint32_t size)
+{
+	struct wl_global *global;
+	uint32_t length;
+
+	global = malloc(sizeof *global);
+	if (global == NULL)
+		return;
+
+	global->id = p[0];
+	length = p[1];
+	global->interface = malloc(length + 1);
+	if (global->interface == NULL) {
+		free(global);
+		return;
+	}
+	memcpy(global->interface, &p[2], length);
+	global->interface[length] = '\0';
+	global->version = p[2 + DIV_ROUNDUP(length, sizeof *p)];
+	wl_list_insert(display->global_list.prev, &global->link);
+
+	if (strcmp(global->interface, "visual") == 0)
+		add_visual(display, global);
+}
+
 static void
 handle_event(struct wl_display *display,
 	     uint32_t object, uint32_t opcode, uint32_t size)
 {
-	uint32_t p[10];
+	uint32_t p[32];
 
 	wl_connection_copy(display->connection, p, size);
-	if (display->event_handler != NULL)
+	if (object == 1 && opcode == WL_DISPLAY_GLOBAL) {
+		handle_global(display, p + 2, size);
+	} else if (display->event_handler != NULL)
 		display->event_handler(display, object, opcode, size, p + 2,
 				       display->event_handler_data);
 	wl_connection_consume(display->connection, size);
