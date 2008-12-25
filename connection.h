@@ -24,6 +24,7 @@
 #define _CONNECTION_H_
 
 #include <stdarg.h>
+#include "wayland-util.h"
 
 struct wl_connection;
 
@@ -41,7 +42,17 @@ void wl_connection_copy(struct wl_connection *connection, void *data, size_t siz
 void wl_connection_consume(struct wl_connection *connection, size_t size);
 int wl_connection_data(struct wl_connection *connection, uint32_t mask);
 void wl_connection_write(struct wl_connection *connection, const void *data, size_t count);
-void wl_connection_vmarshal(struct wl_connection *connection, uint32_t id,
-			    uint32_t opcode, const char *signature, va_list ap);
+
+void wl_connection_vmarshal(struct wl_connection *connection,
+			    struct wl_object *sender,
+			    uint32_t opcode, va_list ap,
+			    const struct wl_message *message);
+
+void wl_connection_demarshal(struct wl_connection *connection,
+			     uint32_t size,
+			     struct wl_hash *objects,
+			     void (*func)(void),
+			     void *data, struct wl_object *target,
+			     const struct wl_message *message);
 
 #endif

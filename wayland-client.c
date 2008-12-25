@@ -103,6 +103,41 @@ connection_update(struct wl_connection *connection,
 	return 0;
 }
 
+static void
+output_handle_geometry(struct wl_display *display,
+		       struct wl_output *output, int32_t width, int32_t height)
+{
+	output->width = width;
+	output->height = height;
+}
+
+struct wl_output_listener {
+	void (*geometry)(struct wl_display *display,
+			 struct wl_output *output,
+			 int32_t width, int32_t height);
+};
+
+static const struct wl_output_listener output_listener = {
+	output_handle_geometry
+};
+
+static void
+add_output(struct wl_display *display, struct wl_global *global)
+{
+	struct wl_output *output;
+
+	output = malloc(sizeof *output);
+	if (output == NULL)
+		return;
+
+	output->proxy.base.interface = &wl_output_interface;
+	output->proxy.base.implementation = (void(**)(void)) &output_listener;
+	output->proxy.base.id = global->id;
+	output->proxy.display = display;
+	display->output = output;
+	wl_hash_insert(display->objects, &output->proxy.base);
+}
+
 WL_EXPORT void
 wl_display_get_geometry(struct wl_display *display, int32_t *width, int32_t *height)
 {
@@ -150,6 +185,79 @@ wl_display_get_rgb_visual(struct wl_display *display)
 			    struct wl_visual, link);
 }
 
+static void
+display_handle_invalid_object(struct wl_display *display,
+			      struct wl_object *object, uint32_t id)
+{
+	fprintf(stderr, "sent request to invalid object\n");
+}
+			      
+static void
+display_handle_invalid_method(struct wl_display *display,
+			      struct wl_object *object,
+			      uint32_t id, uint32_t opcode)
+{
+	fprintf(stderr, "sent invalid request opcode\n");
+}
+
+static void
+display_handle_no_memory(struct wl_display *display,
+			 struct wl_object *object)
+{
+	fprintf(stderr, "server out of memory\n");
+}
+
+static void
+display_handle_global(struct wl_display *display,
+		      struct wl_object *object,
+		      uint32_t id, const char *interface, uint32_t version)
+{
+	struct wl_global *global;
+
+	global = malloc(sizeof *global);
+	if (global == NULL)
+		return;
+
+	global->id = id;
+	global->interface = strdup(interface);
+	global->version = version;
+	wl_list_insert(display->global_list.prev, &global->link);
+	if (strcmp(global->interface, "display") == 0)
+		wl_hash_insert(display->objects, &display->proxy.base);
+	if (strcmp(global->interface, "visual") == 0)
+		add_visual(display, global);
+	else if (strcmp(global->interface, "output") == 0)
+		add_output(display, global);
+}
+
+static void
+display_handle_range(struct wl_display *display,
+		     struct wl_object *object, uint32_t range)
+{
+	display->next_range = range;
+}
+
+struct wl_display_listener {
+	void (*invalid_object)(struct wl_display *display,
+			       struct wl_object *object, uint32_t id);
+	void (*invalid_method)(struct wl_display *display,
+			       struct wl_object *object,
+			       uint32_t id, uint32_t opcode);
+	void (*no_memory)(struct wl_display *display, struct wl_object *object);
+	void (*global)(struct wl_display *display, struct wl_object *object,
+		       uint32_t id, const char *interface, uint32_t version);
+	void (*range)(struct wl_display *display,
+		      struct wl_object *object, uint32_t range);
+};
+
+static const struct wl_display_listener display_listener = {
+	display_handle_invalid_object,
+	display_handle_invalid_method,
+	display_handle_no_memory,
+	display_handle_global,
+	display_handle_range
+};
+
 WL_EXPORT struct wl_display *
 wl_display_create(const char *name, size_t name_size)
 {
@@ -184,10 +292,9 @@ wl_display_create(const char *name, size_t name_size)
 	wl_list_init(&display->visual_list);
 
 	display->proxy.base.interface = &wl_display_interface;
-	display->proxy.base.implementation = NULL;
+	display->proxy.base.implementation = (void(**)(void)) &display_listener;
 	display->proxy.base.id = 1;
 	display->proxy.display = display;
-	wl_hash_insert(display->objects, &display->proxy.base);
 
 	display->connection = wl_connection_create(display->fd,
 						   connection_update,
@@ -239,100 +346,6 @@ wl_display_get_fd(struct wl_display *display,
 	return display->fd;
 }
 
-struct wl_output_listener {
-	void (*geometry)(struct wl_display *display,
-			 struct wl_output *output,
-			 int32_t width, int32_t height);
-};
-
-static void
-handle_geometry(struct wl_display *display,
-		struct wl_output *output, int32_t width, int32_t height)
-{
-	output->width = width;
-	output->height = height;
-}
-
-static const struct wl_output_listener output_listener = {
-	handle_geometry
-};
-
-static void
-add_output(struct wl_display *display, struct wl_global *global)
-{
-	struct wl_output *output;
-
-	output = malloc(sizeof *output);
-	if (output == NULL)
-		return;
-
-	output->proxy.base.interface = &wl_output_interface;
-	output->proxy.base.implementation = (void(**)(void)) &output_listener;
-	output->proxy.base.id = global->id;
-	output->proxy.display = display;
-	display->output = output;
-	wl_hash_insert(display->objects, &output->proxy.base);
-}
-
-static void
-handle_display_event(struct wl_display *display,
-		     uint32_t opcode, uint32_t *p, uint32_t size)
-{
-	struct wl_global *global;
-	uint32_t length;
-
-	switch (opcode) {
-	case WL_DISPLAY_INVALID_OBJECT:
-		fprintf(stderr, "sent request to invalid object\n");
-		break;
-
-	case WL_DISPLAY_INVALID_METHOD:
-		fprintf(stderr, "sent invalid request opcode\n");
-		break;
-
-	case WL_DISPLAY_NO_MEMORY:
-		fprintf(stderr, "server out of memory\n");
-		break;
-
-	case WL_DISPLAY_GLOBAL:
-		global = malloc(sizeof *global);
-		if (global == NULL)
-			return;
-
-		global->id = p[0];
-		length = p[1];
-		global->interface = malloc(length + 1);
-		if (global->interface == NULL) {
-			free(global);
-			return;
-		}
-		memcpy(global->interface, &p[2], length);
-		global->interface[length] = '\0';
-		global->version = p[2 + DIV_ROUNDUP(length, sizeof *p)];
-		wl_list_insert(display->global_list.prev, &global->link);
-		if (strcmp(global->interface, "visual") == 0)
-			add_visual(display, global);
-		else if (strcmp(global->interface, "output") == 0)
-			add_output(display, global);
-		break;
-
-	case WL_DISPLAY_RANGE:
-		display->next_range = p[0];
-		break;
-	}
-}
-
-static void
-handle_output_event(struct wl_display *display,
-		    uint32_t opcode, uint32_t *p, uint32_t size)
-{
-	switch (opcode) {
-	case WL_OUTPUT_GEOMETRY:
-		handle_geometry(display, display->output, p[0], p[1]);
-		break;
-	}
-}
-
 static void
 handle_event(struct wl_display *display,
 	     uint32_t id, uint32_t opcode, uint32_t size)
@@ -341,15 +354,24 @@ handle_event(struct wl_display *display,
 	struct wl_object *object;
 
 	wl_connection_copy(display->connection, p, size);
-	object = wl_hash_lookup(display->objects, id);
+	if (id == 1)
+		object = &display->proxy.base;
+	else
+		object = wl_hash_lookup(display->objects, id);
 
-	if (object == &display->proxy.base)
-		handle_display_event(display, opcode, p + 2, size);
-	else if (object == &display->output->proxy.base && opcode == 0)
-		handle_output_event(display, opcode, p + 2, size);
+	if (object != NULL)
+		wl_connection_demarshal(display->connection,
+					size,
+					display->objects,
+					object->implementation[opcode],
+					display,
+					object, 
+					&object->interface->events[opcode]);
 	else if (display->event_handler != NULL)
-		display->event_handler(display, id, opcode, size, p + 2,
+		display->event_handler(display, id,
+				       opcode, size, p + 2,
 				       display->event_handler_data);
+
 	wl_connection_consume(display->connection, size);
 }
 
@@ -429,56 +451,16 @@ wl_display_get_compositor(struct wl_display *display)
 }
 
 static void
-wl_proxy_vmarshal(struct wl_proxy *target, uint32_t opcode, va_list ap)
-{
-	struct wl_object *object;
-	uint32_t args[32], length, *p, size;
-	const char *s, *signature;
-	int i, count;
-
-	signature = target->base.interface->methods[opcode].signature;
-	count = strlen(signature);
-	/* FIXME: Make sure we don't overwrite args array. */
-
-	p = &args[2];
-	for (i = 0; i < count; i++) {
-		switch (signature[i]) {
-		case 'u':
-		case 'i':
-			*p++ = va_arg(ap, uint32_t);
-			break;
-		case 's':
-			s = va_arg(ap, const char *);
-			length = strlen(s);
-			*p++ = length;
-			memcpy(p, s, length);
-			p += DIV_ROUNDUP(length, sizeof(*p));
-			break;
-		case 'n':
-		case 'o':
-			object = va_arg(ap, struct wl_object *);
-			*p++ = object->id;
-			break;
-		default:
-			assert(0);
-			break;
-		}
-	}
-
-	size = (p - args) * sizeof *p;
-	args[0] = target->base.id;
-	args[1] = opcode | (size << 16);
-	wl_connection_write(target->display->connection, args, size);
-}
-
-static void
 wl_proxy_marshal(struct wl_proxy *proxy, uint32_t opcode, ...)
 {
 	va_list ap;
 
 	va_start(ap, opcode);
-	wl_proxy_vmarshal(proxy, opcode, ap);
+	wl_connection_vmarshal(proxy->display->connection,
+			       &proxy->base, opcode, ap,
+			       &proxy->base.interface->methods[opcode]);
 	va_end(ap);
+
 }
 
 WL_EXPORT struct wl_surface *

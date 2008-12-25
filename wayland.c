@@ -73,61 +73,6 @@ struct wl_global {
 void
 wl_client_destroy(struct wl_client *client);
 
-static void
-wl_client_vmarshal(struct wl_client *client, struct wl_object *sender,
-		   uint32_t opcode, va_list ap)
-{
-	const struct wl_message *event;
-	struct wl_object *object;
-	uint32_t args[32], length, *p, size;
-	const char *s;
-	int i, count;
-
-	event = &sender->interface->events[opcode];
-	count = strlen(event->signature);
-	assert(count <= ARRAY_LENGTH(args));
-
-	p = &args[2];
-	for (i = 0; i < count; i++) {
-		switch (event->signature[i]) {
-		case 'u':
-		case 'i':
-			*p++ = va_arg(ap, uint32_t);
-			break;
-		case 's':
-			s = va_arg(ap, const char *);
-			length = strlen(s);
-			*p++ = length;
-			memcpy(p, s, length);
-			p += DIV_ROUNDUP(length, sizeof(*p));
-			break;
-		case 'o':
-			object = va_arg(ap, struct wl_object *);
-			*p++ = object->id;
-			break;
-		default:
-			assert(0);
-			break;
-		}
-	}
-
-	size = (p - args) * sizeof *p;
-	args[0] = sender->id;
-	args[1] = opcode | (size << 16);
-	wl_connection_write(client->connection, args, size);
-}
-
-static void
-wl_client_marshal(struct wl_client *client, struct wl_object *sender,
-		  uint32_t opcode, ...)
-{
-	va_list ap;
-
-	va_start(ap, opcode);
-	wl_client_vmarshal(client, sender, opcode, ap);
-	va_end(ap);
-}
-
 WL_EXPORT void
 wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 		     uint32_t opcode, ...)
@@ -135,91 +80,10 @@ wl_client_post_event(struct wl_client *client, struct wl_object *sender,
 	va_list ap;
 
 	va_start(ap, opcode);
-	wl_client_vmarshal(client, sender, opcode, ap);
+	wl_connection_vmarshal(client->connection,
+			       sender, opcode, ap,
+			       &sender->interface->events[opcode]);
 	va_end(ap);
-}
-
-static void
-wl_client_demarshal(struct wl_client *client, struct wl_object *target,
-		    uint32_t opcode, size_t size)
-{
-	const struct wl_message *method;
-	ffi_type *types[20];
-	ffi_cif cif;
-	uint32_t *p, result;
-	int i, count;
-	union {
-		uint32_t uint32;
-		const char *string;
-		void *object;
-		uint32_t new_id;
-	} values[20];
-	void *args[20];
-	struct wl_object *object;
-	uint32_t data[64];
-	void (*func)(void);
-
-	method = &target->interface->methods[opcode];
-	count = strlen(method->signature) + 2;
-	if (count > ARRAY_LENGTH(types)) {
-		printf("too many args (%d)\n", count);
-		return;
-	}
-
-	if (sizeof data < size) {
-		printf("request too big, should malloc tmp buffer here\n");
-		return;
-	}
-
-	types[0] = &ffi_type_pointer;
-	values[0].object = client;
-	args[0] =  &values[0];
-
-	types[1] = &ffi_type_pointer;
-	values[1].object = target;
-	args[1] =  &values[1];
-
-	wl_connection_copy(client->connection, data, size);
-	p = &data[2];
-	for (i = 2; i < count; i++) {
-		switch (method->signature[i - 2]) {
-		case 'u':
-		case 'i':
-			types[i] = &ffi_type_uint32;
-			values[i].uint32 = *p;
-			p++;
-			break;
-		case 's':
-			types[i] = &ffi_type_pointer;
-			/* FIXME */
-			values[i].uint32 = *p++;
-			break;
-		case 'o':
-			types[i] = &ffi_type_pointer;
-			object = wl_hash_lookup(client->display->objects, *p);
-			if (object == NULL)
-				printf("unknown object (%d)\n", *p);
-			values[i].object = object;
-			p++;
-			break;
-		case 'n':
-			types[i] = &ffi_type_uint32;
-			values[i].new_id = *p;
-			object = wl_hash_lookup(client->display->objects, *p);
-			if (object != NULL)
-				printf("object already exists (%d)\n", *p);
-			p++;
-			break;
-		default:
-			printf("unknown type\n");
-			break;
-		}
-		args[i] = &values[i];
-	}
-
-	func = target->implementation[opcode];
-	ffi_prep_cif(&cif, FFI_DEFAULT_ABI, count, &ffi_type_uint32, types);
-	ffi_call(&cif, func, &result, args);
 }
 
 static void
@@ -252,22 +116,29 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		object = wl_hash_lookup(client->display->objects, p[0]);
 		if (object == NULL) {
-			wl_client_marshal(client, &client->display->base,
-					  WL_DISPLAY_INVALID_OBJECT, p[0]);
+			wl_client_post_event(client, &client->display->base,
+					     WL_DISPLAY_INVALID_OBJECT, p[0]);
 			wl_connection_consume(connection, size);
 			len -= size;
 			continue;
 		}
 				
 		if (opcode >= object->interface->method_count) {
-			wl_client_marshal(client, &client->display->base,
-					  WL_DISPLAY_INVALID_METHOD, p[0], opcode);
+			wl_client_post_event(client, &client->display->base,
+					     WL_DISPLAY_INVALID_METHOD, p[0], opcode);
 			wl_connection_consume(connection, size);
 			len -= size;
 			continue;
 		}
 				
-		wl_client_demarshal(client, object, opcode, size);
+		wl_connection_demarshal(client->connection,
+					size,
+					client->display->objects,
+					object->implementation[opcode],
+					client,
+					object, 
+					&object->interface->methods[opcode]);
+
 		wl_connection_consume(connection, size);
 		len -= size;
 	}
@@ -291,8 +162,8 @@ wl_client_connection_update(struct wl_connection *connection,
 static void
 wl_display_post_range(struct wl_display *display, struct wl_client *client)
 {
-	wl_client_marshal(client, &client->display->base,
-			  WL_DISPLAY_RANGE, display->client_id_range);
+	wl_client_post_event(client, &client->display->base,
+			     WL_DISPLAY_RANGE, display->client_id_range);
 	display->client_id_range += 256;
 	client->id_count += 256;
 }
@@ -323,11 +194,11 @@ wl_client_create(struct wl_display *display, int fd)
 	global = container_of(display->global_list.next,
 			      struct wl_global, link);
 	while (&global->link != &display->global_list) {
-		wl_client_marshal(client, &client->display->base,
-				  WL_DISPLAY_GLOBAL,
-				  global->object,
-				  global->object->interface->name,
-				  global->object->interface->version);
+		wl_client_post_event(client, &client->display->base,
+				     WL_DISPLAY_GLOBAL,
+				     global->object,
+				     global->object->interface->name,
+				     global->object->interface->version);
 		global = container_of(global->link.next,
 				      struct wl_global, link);
 	}
@@ -395,8 +266,8 @@ wl_client_add_surface(struct wl_client *client,
 
 	ref = malloc(sizeof *ref);
 	if (ref == NULL) {
-		wl_client_marshal(client, &display->base,
-				  WL_DISPLAY_NO_MEMORY);
+		wl_client_post_event(client, &display->base,
+				     WL_DISPLAY_NO_MEMORY);
 		return -1;
 	}
 
@@ -415,8 +286,8 @@ wl_client_send_acknowledge(struct wl_client *client,
 	wl_list_remove(&client->link);
 	wl_list_insert(client->display->pending_frame_list.prev,
 		       &client->link);
-	wl_client_marshal(client, &compositor->base,
-			  WL_COMPOSITOR_ACKNOWLEDGE, key, frame);
+	wl_client_post_event(client, &compositor->base,
+			     WL_COMPOSITOR_ACKNOWLEDGE, key, frame);
 }
 
 WL_EXPORT int
@@ -505,7 +376,9 @@ wl_surface_post_event(struct wl_surface *surface,
 	va_list ap;
 
 	va_start(ap, event);
-	wl_client_vmarshal(surface->client, sender, event, ap);
+	wl_connection_vmarshal(surface->client->connection,
+			       sender, event, ap,
+			       &sender->interface->events[event]);
 	va_end(ap);
 }
 
@@ -520,8 +393,8 @@ wl_display_post_frame(struct wl_display *display,
 			      struct wl_client, link);
 
 	while (&client->link != &display->pending_frame_list) {
-		wl_client_marshal(client, &compositor->base,
-				  WL_COMPOSITOR_FRAME, frame, msecs);
+		wl_client_post_event(client, &compositor->base,
+				     WL_COMPOSITOR_FRAME, frame, msecs);
 		client = container_of(client->link.next,
 				      struct wl_client, link);
 	}

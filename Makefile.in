@@ -16,16 +16,14 @@ libwayland-server.so :				\
 	wayland-util.o				\
 	wayland-protocol.o
 
-libwayland-server.so : CFLAGS += @FFI_CFLAGS@
-libwayland-server.so : LDLIBS += @FFI_LIBS@ -ldl -rdynamic
-
 libwayland.so :					\
 	wayland-client.o			\
 	connection.o				\
 	wayland-util.o				\
 	wayland-protocol.o
 
-$(libs) : CFLAGS += -fPIC
+$(libs) : CFLAGS += -fPIC @FFI_CFLAGS@
+$(libs) : LDLIBS += @FFI_LIBS@
 $(libs) :
 	gcc -shared $^ $(LDLIBS)  -o $@
 

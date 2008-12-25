@@ -29,7 +29,7 @@ static const struct wl_message display_events[] = {
 	{ "invalid_object", "u" },
 	{ "invalid_method", "uu" },
 	{ "no_memory", "" },
-	{ "global", "osu" },
+	{ "global", "nsu" },
 	{ "range", "u" },
 };
 

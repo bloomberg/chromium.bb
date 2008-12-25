@@ -702,7 +702,9 @@ create_input_device(struct egl_compositor *ec, const char *glob)
 
 	memset(device, 0, sizeof *device);
 	device->base.interface = &wl_input_device_interface;
+	device->base.implementation = NULL;
 	wl_display_add_object(ec->wl_display, &device->base);
+	wl_display_add_global(ec->wl_display, &device->base, NULL);
 	device->x = 100;
 	device->y = 100;
 	device->pointer_surface =

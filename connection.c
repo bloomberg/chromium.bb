@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sys/uio.h>
+#include <ffi.h>
+#include <assert.h>
 
 #include "wayland-util.h"
 #include "connection.h"
@@ -217,4 +219,146 @@ wl_connection_write(struct wl_connection *connection, const void *data, size_t c
 				   WL_CONNECTION_READABLE |
 				   WL_CONNECTION_WRITABLE,
 				   connection->data);
+}
+
+void
+wl_connection_vmarshal(struct wl_connection *connection,
+		       struct wl_object *sender,
+		       uint32_t opcode, va_list ap,
+		       const struct wl_message *message)
+{
+	struct wl_object *object;
+	uint32_t args[32], length, *p, size;
+	const char *s;
+	int i, count;
+
+	count = strlen(message->signature);
+	assert(count <= ARRAY_LENGTH(args));
+
+	p = &args[2];
+	for (i = 0; i < count; i++) {
+		switch (message->signature[i]) {
+		case 'u':
+		case 'i':
+			*p++ = va_arg(ap, uint32_t);
+			break;
+		case 's':
+			s = va_arg(ap, const char *);
+			length = strlen(s);
+			*p++ = length;
+			memcpy(p, s, length);
+			p += DIV_ROUNDUP(length, sizeof(*p));
+			break;
+		case 'o':
+		case 'n':
+			object = va_arg(ap, struct wl_object *);
+			*p++ = object->id;
+			break;
+		default:
+			assert(0);
+			break;
+		}
+	}
+
+	size = (p - args) * sizeof *p;
+	args[0] = sender->id;
+	args[1] = opcode | (size << 16);
+	wl_connection_write(connection, args, size);
+}
+
+void
+wl_connection_demarshal(struct wl_connection *connection,
+			uint32_t size,
+			struct wl_hash *objects,
+			void (*func)(void),
+			void *data, struct wl_object *target,
+			const struct wl_message *message)
+{
+	ffi_type *types[20];
+	ffi_cif cif;
+	uint32_t *p, result, length;
+	int i, count;
+	union {
+		uint32_t uint32;
+		char *string;
+		void *object;
+		uint32_t new_id;
+	} values[20];
+	void *args[20];
+	struct wl_object *object;
+	uint32_t buffer[64];
+
+	count = strlen(message->signature) + 2;
+	if (count > ARRAY_LENGTH(types)) {
+		printf("too many args (%d)\n", count);
+		return;
+	}
+
+	if (sizeof buffer < size) {
+		printf("request too big, should malloc tmp buffer here\n");
+		return;
+	}
+
+	types[0] = &ffi_type_pointer;
+	values[0].object = data;
+	args[0] =  &values[0];
+
+	types[1] = &ffi_type_pointer;
+	values[1].object = target;
+	args[1] =  &values[1];
+
+	wl_connection_copy(connection, buffer, size);
+	p = &buffer[2];
+	for (i = 2; i < count; i++) {
+		switch (message->signature[i - 2]) {
+		case 'u':
+		case 'i':
+			types[i] = &ffi_type_uint32;
+			values[i].uint32 = *p++;
+			break;
+		case 's':
+			types[i] = &ffi_type_pointer;
+			length = *p++;
+			values[i].string = malloc(length + 1);
+			if (values[i].string == NULL) {
+				/* FIXME: Send NO_MEMORY */
+				return;
+			}
+			memcpy(values[i].string, p, length);
+			values[i].string[length] = '\0';
+			p += DIV_ROUNDUP(length, sizeof *p);
+			break;
+		case 'o':
+			types[i] = &ffi_type_pointer;
+			object = wl_hash_lookup(objects, *p);
+			if (object == NULL)
+				printf("unknown object (%d)\n", *p);
+			values[i].object = object;
+			p++;
+			break;
+		case 'n':
+			types[i] = &ffi_type_uint32;
+			values[i].new_id = *p;
+			object = wl_hash_lookup(objects, *p);
+			if (object != NULL)
+				printf("object already exists (%d)\n", *p);
+			p++;
+			break;
+		default:
+			printf("unknown type\n");
+			break;
+		}
+		args[i] = &values[i];
+	}
+
+	ffi_prep_cif(&cif, FFI_DEFAULT_ABI, count, &ffi_type_uint32, types);
+	ffi_call(&cif, func, &result, args);
+
+	for (i = 2; i < count; i++) {
+		switch (message->signature[i - 2]) {
+		case 's':
+			free(values[i].string);
+			break;
+		}
+	}
 }
