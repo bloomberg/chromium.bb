@@ -546,10 +546,14 @@ FcCharSetHasChar (const FcCharSet *fcs, FcChar32 ucs4)
 static FcChar32
 FcCharSetPopCount (FcChar32 c1)
 {
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+    return __builtin_popcount (c1);
+#else
     /* hackmem 169 */
     FcChar32	c2 = (c1 >> 1) & 033333333333;
     c2 = c1 - c2 - ((c2 >> 1) & 033333333333);
     return (((c2 + (c2 >> 3)) & 030707070707) % 077);
+#endif
 }
 
 FcChar32
