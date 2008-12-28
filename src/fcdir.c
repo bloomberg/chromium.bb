@@ -30,7 +30,7 @@ FcFileIsDir (const FcChar8 *file)
 {
     struct stat	    statb;
 
-    if (stat ((const char *) file, &statb) != 0)
+    if (FcStat ((const char *) file, &statb) != 0)
 	return FcFalse;
     return S_ISDIR(statb.st_mode);
 }
@@ -175,7 +175,7 @@ FcDirCacheScan (const FcChar8 *dir, FcConfig *config)
 	    ret = FcFalse;
 	goto bail_1;
     }
-    if (stat ((char *) dir, &dir_stat) < 0)
+    if (FcStat ((char *) dir, &dir_stat) < 0)
     {
 	ret = FcFalse;
 	goto bail_1;

@@ -85,7 +85,7 @@ typedef __int64 INT64;
  * just use the UTC timestamps from NTFS, converted to the Unix epoch.
  */
 
-static int
+int
 FcStat (const char *file, struct stat *statb)
 {
     WIN32_FILE_ATTRIBUTE_DATA wfad;
@@ -131,11 +131,6 @@ FcStat (const char *file, struct stat *statb)
     
     return 0;
 }
-
-#else
-
-#define FcStat stat
-
 #endif
 
 static const char bin2hex[] = { '0', '1', '2', '3',

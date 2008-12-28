@@ -524,6 +524,13 @@ FcCacheFini (void);
 FcPrivate void
 FcDirCacheReference (FcCache *cache, int nref);
 
+#ifdef _WIN32
+FcPrivate int
+FcStat (const char *file, struct stat *statb)
+#else
+#define FcStat stat
+#endif
+
 /* fccfg.c */
 
 FcPrivate FcBool

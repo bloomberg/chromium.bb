@@ -142,7 +142,7 @@ FcAtomicLock (FcAtomic *atomic)
 	 * machines sharing the same filesystem will have clocks
 	 * reasonably close to each other.
 	 */
-	if (stat ((char *) atomic->lck, &lck_stat) >= 0)
+	if (FcStat ((char *) atomic->lck, &lck_stat) >= 0)
 	{
 	    time_t  now = time (0);
 	    if ((long int) (now - lck_stat.st_mtime) > 10 * 60)
