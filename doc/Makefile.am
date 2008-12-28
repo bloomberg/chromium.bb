@@ -146,7 +146,7 @@ clean-local:
 
 $(HTML_DIR): local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) -r $(HTML_DIR)
-	$(DOC2HTML) -o $(HTML_DIR) local-fontconfig-devel.sgml
+	$(DOC2HTML) -V '%use-id-as-filename%' -o $(HTML_DIR) local-fontconfig-devel.sgml
 
 fontconfig-devel.txt: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sgml
 	$(RM) $@
