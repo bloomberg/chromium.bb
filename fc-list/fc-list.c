@@ -49,6 +49,7 @@
 const struct option longopts[] = {
     {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
+    {"quiet", 0, 0, 'q'},
     {"help", 0, 0, 'h'},
     {NULL,0,0,0},
 };
@@ -64,20 +65,22 @@ usage (char *program, int error)
 {
     FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (file, "usage: %s [-vVh] [--verbose] [--version] [--help] [pattern] {element ...} \n",
+    fprintf (file, "usage: %s [-vqVh] [--verbose] [--quiet] [--version] [--help] [pattern] {element ...} \n",
 	     program);
 #else
-    fprintf (file, "usage: %s [-vVh] [pattern] {element ...} \n",
+    fprintf (file, "usage: %s [-vqVh] [pattern] {element ...} \n",
 	     program);
 #endif
     fprintf (file, "List fonts matching [pattern]\n");
     fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
     fprintf (file, "  -v, --verbose        display entire font pattern\n");
+    fprintf (file, "  -q, --quiet          suppress all normal output, exit 1 if no fonts matched\n");
     fprintf (file, "  -V, --version        display font config version and exit\n");
     fprintf (file, "  -h, --help           display this help and exit\n");
 #else
     fprintf (file, "  -v         (verbose) display entire font pattern\n");
+    fprintf (file, "  -q,        (quiet)   suppress all normal output, exit 1 if no fonts matched\n");
     fprintf (file, "  -V         (version) display font config version and exit\n");
     fprintf (file, "  -h         (help)    display this help and exit\n");
 #endif
@@ -88,6 +91,8 @@ int
 main (int argc, char **argv)
 {
     int		verbose = 0;
+    int		quiet = 0;
+    int		nfont = 0;
     int		i;
     FcObjectSet *os = 0;
     FcFontSet	*fs;
@@ -96,9 +101,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "Vvh", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "Vqvh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "Vvh")) != -1)
+    while ((c = getopt (argc, argv, "Vqvh")) != -1)
 #endif
     {
 	switch (c) {
@@ -108,6 +113,9 @@ main (int argc, char **argv)
 	    exit (0);
 	case 'v':
 	    verbose = 1;
+	    break;
+	case 'q':
+	    quiet = 1;
 	    break;
 	case 'h':
 	    usage (argv[0], 0);
@@ -138,7 +146,8 @@ main (int argc, char **argv)
     }
     else
 	pat = FcPatternCreate ();
-    
+    if (quiet && !os)
+	os = FcObjectSetCreate ();
     if (!verbose && !os)
 	os = FcObjectSetBuild (FC_FAMILY, FC_STYLE, (char *) 0);
     fs = FcFontList (0, pat, os);
@@ -147,7 +156,7 @@ main (int argc, char **argv)
     if (pat)
 	FcPatternDestroy (pat);
 
-    if (fs)
+    if (!quiet && fs)
     {
 	int	j;
 
@@ -167,10 +176,14 @@ main (int argc, char **argv)
 		free (font);
 	    }
 	}
+    }
+
+    if (fs) {
+	nfont = fs->nfont;
 	FcFontSetDestroy (fs);
     }
 
     FcFini ();
 
-    return 0;
+    return quiet ? (nfont == 0 ? 1 : 0) : 0;
 }
