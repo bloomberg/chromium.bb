@@ -87,3 +87,10 @@ install-data-local:
 		echo rm -f $$i";" ln -s ../conf.avail/$$i .; \
 		ln -s ../conf.avail/$$i .; \
 	 done)
+uninstall-local:
+	@(echo cd ${DESTDIR}${confddir}; \
+	 cd ${DESTDIR}${confddir}; \
+	 for i in ${CONF_LINKS}; do \
+		echo rm -f $$i; \
+		rm -f $$i; \
+	 done)
