@@ -23,18 +23,17 @@
 #
 # Sinhala (Sinhalese) (SI)
 #
-# Taken from the Unicode coverage of this language
+# Taken from the Unicode coverage of Sinhala
+# http://unicode.org/charts/PDF/U0D80.PDF
 #
-# Independent vowels
+0d82-0d83
 0d85-0d96
-# Consonants
 0d9a-0db1
 0db3-0dbb
 0dbd
 0dc0-0dc6
-# Dependent vowel signs
+0dca
 0dcf-0dd4
 0dd6
 0dd8-0ddf
-# Additional dependent vowel signs
 0df2-0df4
