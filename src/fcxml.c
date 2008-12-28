@@ -450,7 +450,7 @@ typedef struct _FcVStack {
 	int		integer;
 	double		_double;
 	FcMatrix	*matrix;
-	FcBool		bool;
+	FcBool		bool_;
 
 	FcTest		*test;
 	FcQual		qual;
@@ -821,12 +821,12 @@ FcVStackPushMatrix (FcConfigParse *parse, FcMatrix *matrix)
 }
 
 static FcBool
-FcVStackPushBool (FcConfigParse *parse, FcBool bool)
+FcVStackPushBool (FcConfigParse *parse, FcBool bool_)
 {
     FcVStack    *vstack = FcVStackCreate ();
     if (!vstack)
 	return FcFalse;
-    vstack->u.bool = bool;
+    vstack->u.bool_ = bool_;
     vstack->tag = FcVStackBool;
     FcVStackPush (parse, vstack);
     return FcTrue;
@@ -1266,13 +1266,13 @@ FcParseMatrix (FcConfigParse *parse)
 }
 
 static FcBool
-FcConfigLexBool (FcConfigParse *parse, const FcChar8 *bool)
+FcConfigLexBool (FcConfigParse *parse, const FcChar8 *bool_)
 {
     FcBool  result = FcFalse;
 
-    if (!FcNameBool (bool, &result))
+    if (!FcNameBool (bool_, &result))
 	FcConfigMessage (parse, FcSevereWarning, "\"%s\" is not known boolean",
-			 bool);
+			 bool_);
     return result;
 }
 
@@ -1540,7 +1540,7 @@ FcPopExpr (FcConfigParse *parse)
 	expr = FcExprCreateMatrix (vstack->u.matrix);
 	break;
     case FcVStackBool:
-	expr = FcExprCreateBool (vstack->u.bool);
+	expr = FcExprCreateBool (vstack->u.bool_);
 	break;
     case FcVStackTest:
 	break;
@@ -1955,7 +1955,7 @@ FcPopValue (FcConfigParse *parse)
 	    value.type = FcTypeMatrix;
 	break;
     case FcVStackBool:
-	value.u.b = vstack->u.bool;
+	value.u.b = vstack->u.bool_;
 	value.type = FcTypeBool;
 	break;
     default:
