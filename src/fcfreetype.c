@@ -1119,7 +1119,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
 #if 0
     FcChar8	    *family = 0;
 #endif
-    FcChar8	    *complex;
+    FcChar8	    *complex_;
     const FcChar8   *foundry = 0;
     int		    spacing;
     TT_OS2	    *os2;
@@ -1478,14 +1478,14 @@ FcFreeTypeQueryFace (const FT_Face  face,
 	    printf ("\tos2 width class %d maps to width %d\n",
 		    os2->usWidthClass, width);
     }
-    if (os2 && (complex = FcFontCapabilities(face)))
+    if (os2 && (complex_ = FcFontCapabilities(face)))
     {
-	if (!FcPatternAddString (pat, FC_CAPABILITY, complex))
+	if (!FcPatternAddString (pat, FC_CAPABILITY, complex_))
 	{
-	    free (complex);
+	    free (complex_);
 	    goto bail1;
 	}
-	free (complex);
+	free (complex_);
     }
 
     /*
@@ -2822,7 +2822,7 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 #define FcIsValidScript(x)  (FcIsLower(x) || FcIsUpper (x) || FcIsSpace(x))
 			     
 static void
-addtag(FcChar8 *complex, FT_ULong tag)
+addtag(FcChar8 *complex_, FT_ULong tag)
 {
     FcChar8 tagstring[OTLAYOUT_ID_LEN + 1];
 
@@ -2841,10 +2841,10 @@ addtag(FcChar8 *complex, FT_ULong tag)
 	!FcIsValidScript(tagstring[3]))
 	return;
 
-    if (*complex != '\0')
-	strcat ((char *) complex, " ");
-    strcat ((char *) complex, "otlayout:");
-    strcat ((char *) complex, (char *) tagstring);
+    if (*complex_ != '\0')
+	strcat ((char *) complex_, " ");
+    strcat ((char *) complex_, "otlayout:");
+    strcat ((char *) complex_, (char *) tagstring);
 }
 
 static int
@@ -2952,7 +2952,7 @@ FcFontCapabilities(FT_Face face)
     FT_UShort gsub_count=0, gpos_count=0;
     FT_ULong maxsize;
     FT_Memory  memory = face->stream->memory;
-    FcChar8 *complex = NULL;
+    FcChar8 *complex_ = NULL;
     int indx1 = 0, indx2 = 0;
 
     err = FT_Load_Sfnt_Table(face, TTAG_SILF, 0, 0, &len);
@@ -2968,36 +2968,36 @@ FcFontCapabilities(FT_Face face)
 
     maxsize = (((FT_ULong) gpos_count + (FT_ULong) gsub_count) * OTLAYOUT_LEN + 
 	       (issilgraphitefont ? 13 : 0));
-    complex = malloc (sizeof (FcChar8) * maxsize);
-    if (!complex)
+    complex_ = malloc (sizeof (FcChar8) * maxsize);
+    if (!complex_)
 	goto bail;
 
-    complex[0] = '\0';
+    complex_[0] = '\0';
     if (issilgraphitefont)
-        strcpy((char *) complex, "ttable:Silf ");
+        strcpy((char *) complex_, "ttable:Silf ");
 
     while ((indx1 < gsub_count) || (indx2 < gpos_count)) {
 	if (indx1 == gsub_count) {
-	    addtag(complex, gpostags[indx2]);
+	    addtag(complex_, gpostags[indx2]);
 	    indx2++;
 	} else if ((indx2 == gpos_count) || (gsubtags[indx1] < gpostags[indx2])) {
-	    addtag(complex, gsubtags[indx1]);
+	    addtag(complex_, gsubtags[indx1]);
 	    indx1++;
 	} else if (gsubtags[indx1] == gpostags[indx2]) {
-	    addtag(complex, gsubtags[indx1]);
+	    addtag(complex_, gsubtags[indx1]);
 	    indx1++;
 	    indx2++;
 	} else {
-	    addtag(complex, gpostags[indx2]);
+	    addtag(complex_, gpostags[indx2]);
 	    indx2++;
 	}
     }
     if (FcDebug () & FC_DBG_SCANV)
-	printf("complex features in this font: %s\n", complex);
+	printf("complex_ features in this font: %s\n", complex_);
 bail:
     ftglue_free(memory, gsubtags);
     ftglue_free(memory, gpostags);
-    return complex;
+    return complex_;
 }
 
 #define __fcfreetype__
