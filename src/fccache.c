@@ -520,7 +520,7 @@ FcCacheTimeValid (FcCache *cache, struct stat *dir_stat)
 
     if (!dir_stat)
     {
-	if (stat ((const char *) FcCacheDir (cache), &dir_static) < 0)
+	if (FcStat ((const char *) FcCacheDir (cache), &dir_static) < 0)
 	    return FcFalse;
 	dir_stat = &dir_static;
     }
