@@ -1,10 +1,14 @@
 tags
+TAGS
 *.tar.gz
 .libs
 .deps
 *.o
 *.lo
 *.la
+*~
+*.orig
+*.rej
 ChangeLog
 ChangeLog-*
 Makefile
