@@ -2551,11 +2551,13 @@ FcFreeTypeCharSetAndSpacingForSize (FT_Face face, FcBlanks *blanks, int *spacing
     if (!fcs)
 	goto bail0;
     
+#if HAVE_FT_SELECT_SIZE
     if (strike_index >= 0) {
 	if (FT_Select_Size (face, strike_index) != FT_Err_Ok)
 	    goto bail1;
 	using_strike = FcTrue;
     }
+#endif
 
 #ifdef CHECK
     printf ("Family %s style %s\n", face->family_name, face->style_name);
