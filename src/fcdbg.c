@@ -146,26 +146,7 @@ FcPatternPrint (const FcPattern *p)
     {
 	e = &FcPatternElts(p)[i];
 	printf ("\t%s:", FcObjectName(e->object));
-	/* so that fc-match properly displays file: foo... */
-	if (e->object == FC_FILE_OBJECT)
-	{
-	    FcChar8 * s;
-	    FcPatternObjectGetString (p, FC_FILE_OBJECT, 0, &s);
-	    printf (" \"%s\"", s);
-	    switch (FcPatternEltValues(e)->binding) {
-	    case FcValueBindingWeak:
-	        printf ("(w)");
-	        break;
-	    case FcValueBindingStrong:
-	        printf ("(s)");
-	        break;
-	    case FcValueBindingSame:
-	        printf ("(=)");
-	        break;
-	    }
-	}
-	else
-	    FcValueListPrint (FcPatternEltValues(e));
+	FcValueListPrint (FcPatternEltValues(e));
 	printf ("\n");
     }
     printf ("\n");
