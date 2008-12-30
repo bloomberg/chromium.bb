@@ -859,13 +859,13 @@ post_output_geometry(struct wl_client *client, struct wl_object *global)
 
 static const char gem_device[] = "/dev/dri/card0";
 
-static const char *macbook_air_default_input_device[] = {
-	"pci-0000:00:1d.2-usb-0:2:1*event*",
+static const char *default_input_device[] = {
+	"*event*",
 	NULL
 };
 
 static const char *option_background = "background.jpg";
-static const char **option_input_devices = macbook_air_default_input_device;
+static const char **option_input_devices = default_input_device;
 
 static const GOptionEntry option_entries[] = {
 	{ "background", 'b', 0, G_OPTION_ARG_STRING,
