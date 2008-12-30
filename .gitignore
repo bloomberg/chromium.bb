@@ -33,6 +33,7 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+manpage.log
 doc/*.3
 doc/confdir.sgml
 doc/edit-sgml
@@ -66,6 +67,7 @@ doc/func.refs
 doc/local-fontconfig-devel.sgml
 doc/local-fontconfig-user.sgml
 doc/version.sgml
+doc/devel-man
 fc-arch/fc-arch
 fc-arch/fcarch.h
 fc-cache/fc-cache
