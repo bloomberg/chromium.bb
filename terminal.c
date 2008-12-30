@@ -397,18 +397,33 @@ resize_handler(struct window *window, void *data)
 }
 
 static void
-acknowledge_handler(struct window *window, uint32_t key, void *data)
+handle_acknowledge(void *data,
+		   struct wl_compositor *compositor,
+		   uint32_t key, uint32_t frame)
 {
 	struct terminal *terminal = data;
 
 	terminal->redraw_scheduled = 0;
-	buffer_destroy(terminal->buffer, terminal->fd);
+	if (key == 0)
+		buffer_destroy(terminal->buffer, terminal->fd);
 
 	if (terminal->redraw_pending) {
 		terminal->redraw_pending = 0;
 		terminal_schedule_redraw(terminal);
 	}
 }
+
+static void
+handle_frame(void *data,
+	     struct wl_compositor *compositor,
+	     uint32_t frame, uint32_t timestamp)
+{
+}
+
+static const struct wl_compositor_listener compositor_listener = {
+	handle_acknowledge,
+	handle_frame,
+};
 
 struct key {
 	int code[4];
@@ -549,7 +564,10 @@ terminal_create(struct wl_display *display, int fd, int fullscreen)
 	terminal->compositor = wl_display_get_compositor(display);
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
-	window_set_acknowledge_handler(terminal->window, acknowledge_handler, terminal);
+
+	wl_compositor_add_listener(terminal->compositor,
+				   &compositor_listener, terminal);
+
 	window_set_key_handler(terminal->window, key_handler, terminal);
 
 	terminal_draw(terminal);

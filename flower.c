@@ -111,24 +111,30 @@ struct flower {
 };
 
 static void
-move_flower(struct flower *flower)
+handle_acknowledge(void *data,
+			  struct wl_compositor *compositor,
+			  uint32_t key, uint32_t frame)
 {
-	wl_surface_map(flower->surface, 
-		       flower->x + cos(flower->i / 31.0) * 400 - flower->width / 2,
-		       flower->y + sin(flower->i / 27.0) * 300 - flower->height / 2,
-		       flower->width, flower->height);
-	flower->i++;
-	wl_compositor_commit(flower->compositor, 0);
 }
 
 static void
-event_handler(struct wl_display *display,
-	      uint32_t object, uint32_t opcode,
-	      uint32_t size, uint32_t *p, void *data)
+handle_frame(void *data,
+		    struct wl_compositor *compositor,
+		    uint32_t frame, uint32_t timestamp)
 {
-	if (object == 2 && opcode == 1)
-		move_flower(data);
+	struct flower *flower = data;
+
+	wl_surface_map(flower->surface, 
+		       flower->x + cos(timestamp / 400.0) * 400 - flower->width / 2,
+		       flower->y + sin(timestamp / 320.0) * 300 - flower->height / 2,
+		       flower->width, flower->height);
+	wl_compositor_commit(flower->compositor, 0);
 }
+
+static const struct wl_compositor_listener compositor_listener = {
+	handle_acknowledge,
+	handle_frame,
+};
 
 int main(int argc, char *argv[])
 {
@@ -177,8 +183,11 @@ int main(int argc, char *argv[])
 	wl_surface_attach(flower.surface,
 			  buffer->name, flower.width, flower.height,
 			  buffer->stride, visual);
-	wl_display_set_event_handler(display, event_handler, &flower);
-	move_flower(&flower);
+
+	wl_compositor_add_listener(flower.compositor,
+				   &compositor_listener, &flower);
+
+	wl_compositor_commit(flower.compositor, 0);
 
 	g_main_loop_run(loop);
 

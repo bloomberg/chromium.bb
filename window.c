@@ -44,21 +44,19 @@ struct window {
 	struct wl_compositor *compositor;
 	struct wl_surface *surface;
 	const char *title;
-	struct rectangle allocation, saved_allocation;
+	struct rectangle allocation, saved_allocation, screen_allocation;
 	int minimum_width, minimum_height;
 	int margin;
 	int drag_x, drag_y;
 	int state;
 	int fullscreen;
-	uint32_t grab_device;
+	struct wl_input_device *grab_device;
 	uint32_t name;
 	int fd;
 
 	struct buffer *buffer;
 
 	window_resize_handler_t resize_handler;
-	window_frame_handler_t frame_handler;
-	window_acknowledge_handler_t acknowledge_handler;
 	window_key_handler_t key_handler;
 	void *user_data;
 };
@@ -212,6 +210,36 @@ window_draw(struct window *window)
 		window_draw_decorations(window);
 }
 
+static void
+window_handle_acknowledge(void *data,
+			  struct wl_compositor *compositor,
+			  uint32_t key, uint32_t frame)
+{
+	struct window *window = data;
+
+	/* The acknowledge event means that the server
+	 * processed our last commit request and we can now
+	 * safely free the old window buffer if we resized and
+	 * render the next frame into our back buffer.. */
+
+	if (key == 0 && window->buffer != NULL) {
+		buffer_destroy(window->buffer, window->fd);
+		window->buffer = NULL;
+	}
+}
+
+static void
+window_handle_frame(void *data,
+		    struct wl_compositor *compositor,
+		    uint32_t frame, uint32_t timestamp)
+{
+}
+
+static const struct wl_compositor_listener compositor_listener = {
+	window_handle_acknowledge,
+	window_handle_frame,
+};
+
 enum window_state {
 	WINDOW_STABLE,
 	WINDOW_MOVING,
@@ -231,127 +259,104 @@ enum location {
 };
 
 static void
-event_handler(struct wl_display *display,
-	      uint32_t object, uint32_t opcode,
-	      uint32_t size, uint32_t *p, void *data)
+window_handle_motion(void *data, struct wl_input_device *input_device,
+		     int32_t x, int32_t y, int32_t sx, int32_t sy)
 {
 	struct window *window = data;
-	int location;
-	int grip_size = 16;
 
-	/* FIXME: Object ID 2 is the compositor, for anything else we
-	 * assume it's an input device. */
-	if (object == 2 && opcode == 0) {
-		uint32_t key = p[0];
-
-		/* Ignore acknowledge events for window move requests. */
-		if (key != 0)
-			return;
-
-		/* The acknowledge event means that the server
-		 * processed our last commit request and we can now
-		 * safely free the old window buffer if we resized and
-		 * render the next frame into our back buffer.. */
-
-		if (window->buffer != NULL) {
-			buffer_destroy(window->buffer, window->fd);
-			window->buffer = NULL;
-		}
-		if (window->acknowledge_handler)
-			(*window->acknowledge_handler)(window, key,
-						       window->user_data);
-
-	} else if (object == 2 && opcode == 1) {
-		/* The frame event means that the previous frame was
-		 * composited, and we can now send the request to copy
-		 * the frame we've rendered in the mean time into the
-		 * servers surface buffer. */
-		if (window->frame_handler)
-			(*window->frame_handler)(window, p[0], p[1],
-						 window->user_data);
-	} else if (object == 1) {
-		fprintf(stderr, "unexpected event from display: %d\n",
-			opcode);
-		exit(-1);
-	} else if (opcode == 0) {
-		int x = p[0], y = p[1];
-
-		switch (window->state) {
-		case WINDOW_MOVING:
-			if (window->fullscreen)
-				break;
-			if (window->grab_device != object)
-				break;
-			window->allocation.x = window->drag_x + x;
-			window->allocation.y = window->drag_y + y;
-			wl_surface_map(window->surface,
-				       window->allocation.x - window->margin,
-				       window->allocation.y - window->margin,
-				       window->allocation.width,
-				       window->allocation.height);
-			wl_compositor_commit(window->compositor, 1);
+	switch (window->state) {
+	case WINDOW_MOVING:
+		if (window->fullscreen)
 			break;
-		case WINDOW_RESIZING_LOWER_RIGHT:
-			if (window->fullscreen)
-				break;
-			if (window->grab_device != object)
-				break;
-			window->allocation.width = window->drag_x + x;
-			window->allocation.height = window->drag_y + y;
-
-			if (window->resize_handler)
-				(*window->resize_handler)(window,
-							  window->user_data);
-
+		if (window->grab_device != input_device)
 			break;
-		}
-	} else if (opcode == 1) {
-		int button = p[0], state = p[1];
-		int32_t x = p[2], y = p[3];
-		int32_t left = window->allocation.x;
-		int32_t right = window->allocation.x +
-			window->allocation.width - window->margin * 2;
-		int32_t top = window->allocation.y;
-		int32_t bottom = window->allocation.y +
-			window->allocation.height - window->margin * 2;
+		window->allocation.x = window->drag_x + x;
+		window->allocation.y = window->drag_y + y;
+		wl_surface_map(window->surface,
+			       window->allocation.x - window->margin,
+			       window->allocation.y - window->margin,
+			       window->allocation.width,
+			       window->allocation.height);
+		wl_compositor_commit(window->compositor, 1);
+		break;
+	case WINDOW_RESIZING_LOWER_RIGHT:
+		if (window->fullscreen)
+			break;
+		if (window->grab_device != input_device)
+			break;
+		window->allocation.width = window->drag_x + x;
+		window->allocation.height = window->drag_y + y;
 
-		if (right - grip_size <= x && x < right &&
-		    bottom - grip_size <= y && y < bottom) {
-			location = LOCATION_LOWER_RIGHT;
-		} else if (left <= x && x < right && top <= y && y < bottom) {
-			location = LOCATION_INTERIOR;
-		} else {
-			location = LOCATION_OUTSIDE;
-		}
+		if (window->resize_handler)
+			(*window->resize_handler)(window,
+						  window->user_data);
 
-		if (button == BTN_LEFT && state == 1) {
-			switch (location) {
-			case LOCATION_INTERIOR:
-				window->drag_x = window->allocation.x - x;
-				window->drag_y = window->allocation.y - y;
-				window->state = WINDOW_MOVING;
-				window->grab_device = object;
-				break;
-			case LOCATION_LOWER_RIGHT:
-				window->drag_x = window->allocation.width - x;
-				window->drag_y = window->allocation.height - y;
-				window->state = WINDOW_RESIZING_LOWER_RIGHT;
-				window->grab_device = object;
-				break;
-			default:
-				window->state = WINDOW_STABLE;
-				break;
-			}
-		} else if (button == BTN_LEFT &&
-			   state == 0 && object == window->grab_device) {
-			window->state = WINDOW_STABLE;
-		}
-	} else if (opcode == 2) {
-		if (window->key_handler)
-			(*window->key_handler)(window, p[0], p[1],
-					       window->user_data);
+		break;
 	}
 }
+
+static void window_handle_button(void *data, struct wl_input_device *input_device,
+				 uint32_t button, uint32_t state,
+				 int32_t x, int32_t y, int32_t sx, int32_t sy)
+{
+	struct window *window = data;
+	int32_t left = window->allocation.x;
+	int32_t right = window->allocation.x +
+		window->allocation.width - window->margin * 2;
+	int32_t top = window->allocation.y;
+	int32_t bottom = window->allocation.y +
+		window->allocation.height - window->margin * 2;
+	int grip_size = 16, location;
+	
+	if (right - grip_size <= x && x < right &&
+	    bottom - grip_size <= y && y < bottom) {
+		location = LOCATION_LOWER_RIGHT;
+	} else if (left <= x && x < right && top <= y && y < bottom) {
+		location = LOCATION_INTERIOR;
+	} else {
+		location = LOCATION_OUTSIDE;
+	}
+
+	if (button == BTN_LEFT && state == 1) {
+		switch (location) {
+		case LOCATION_INTERIOR:
+			window->drag_x = window->allocation.x - x;
+			window->drag_y = window->allocation.y - y;
+			window->state = WINDOW_MOVING;
+			window->grab_device = input_device;
+			break;
+		case LOCATION_LOWER_RIGHT:
+			window->drag_x = window->allocation.width - x;
+			window->drag_y = window->allocation.height - y;
+			window->state = WINDOW_RESIZING_LOWER_RIGHT;
+			window->grab_device = input_device;
+			break;
+		default:
+			window->state = WINDOW_STABLE;
+			break;
+		}
+	} else if (button == BTN_LEFT &&
+		   state == 0 && window->grab_device == input_device) {
+		window->state = WINDOW_STABLE;
+	}
+}
+
+static void
+window_handle_key(void *data, struct wl_input_device *input_device,
+		  uint32_t button, uint32_t state)
+{
+	struct window *window = data;
+
+	if (window->key_handler)
+		(*window->key_handler)(window, button, state,
+				       window->user_data);
+}
+
+static const struct wl_input_device_listener input_device_listener = {
+	window_handle_motion,
+	window_handle_button,
+	window_handle_key,
+};
 
 void
 window_get_child_rectangle(struct window *window,
@@ -397,11 +402,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 	window->fullscreen = fullscreen;
 	if (window->fullscreen) {
 		window->saved_allocation = window->allocation;
-		window->allocation.x = 0;
-		window->allocation.y = 0;
-		wl_display_get_geometry(window->display,
-					&window->allocation.width,
-					&window->allocation.height);
+		window->allocation = window->screen_allocation;
 	} else {
 		window->allocation = window->saved_allocation;
 	}
@@ -416,27 +417,52 @@ window_set_resize_handler(struct window *window,
 }
 
 void
-window_set_frame_handler(struct window *window,
-			 window_frame_handler_t handler, void *data)
-{
-	window->frame_handler = handler;
-	window->user_data = data;
-}
-
-void
-window_set_acknowledge_handler(struct window *window,
-			       window_acknowledge_handler_t handler, void *data)
-{
-	window->acknowledge_handler = handler;
-	window->user_data = data;
-}
-
-void
 window_set_key_handler(struct window *window,
 		       window_key_handler_t handler, void *data)
 {
 	window->key_handler = handler;
 	window->user_data = data;
+}
+
+static void
+window_handle_geometry(void *data,
+		       struct wl_output *output,
+		       int32_t width, int32_t height)
+{
+	struct window *window = data;
+
+	window->screen_allocation.x = 0;
+	window->screen_allocation.y = 0;
+	window->screen_allocation.width = width;
+	window->screen_allocation.height = height;
+}
+
+static const struct wl_output_listener output_listener = {
+	window_handle_geometry,
+};
+
+static void
+window_handle_global(struct wl_display *display,
+		     struct wl_object *object, void *data)
+{
+	struct window *window = data;
+
+	if (wl_object_implements(object, "compositor", 1)) { 
+		window->compositor = (struct wl_compositor *) object;
+		wl_compositor_add_listener(window->compositor,
+					   &compositor_listener, window);
+	} else if (wl_object_implements(object, "output", 1)) {
+		struct wl_output *output = (struct wl_output *) object;
+
+		wl_output_add_listener(output,
+				       &output_listener, window);
+	} else if (wl_object_implements(object, "input_device", 1)) {
+		struct wl_input_device *input_device =
+			(struct wl_input_device *) object;
+
+		wl_input_device_add_listener(input_device,
+					     &input_device_listener, window);
+	}
 }
 
 struct window *
@@ -464,7 +490,8 @@ window_create(struct wl_display *display, int fd,
 	window->state = WINDOW_STABLE;
 	window->fd = fd;
 
-	wl_display_set_event_handler(display, event_handler, window);
+	wl_display_add_global_listener(display,
+				       window_handle_global, window);
 
 	return window;
 }

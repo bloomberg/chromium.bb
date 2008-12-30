@@ -299,7 +299,9 @@ resize_handler(struct window *window, void *data)
 }
 
 static void
-acknowledge_handler(struct window *window, uint32_t key, void *data)
+handle_acknowledge(void *data,
+		   struct wl_compositor *compositor,
+		   uint32_t key, uint32_t frame)
 {
 	struct gears *gears = data;
 
@@ -313,7 +315,9 @@ acknowledge_handler(struct window *window, uint32_t key, void *data)
 }
 
 static void
-frame_handler(struct window *window, uint32_t frame, uint32_t timestamp, void *data)
+handle_frame(void *data,
+	     struct wl_compositor *compositor,
+	     uint32_t frame, uint32_t timestamp)
 {
 	struct gears *gears = data;
 
@@ -323,8 +327,13 @@ frame_handler(struct window *window, uint32_t frame, uint32_t timestamp, void *d
 
 	wl_compositor_commit(gears->compositor, 0);
 
-	gears->angle += 1;
+	gears->angle = timestamp / 20.0;
 }
+
+static const struct wl_compositor_listener compositor_listener = {
+	handle_acknowledge,
+	handle_frame,
+};
 
 static struct gears *
 gears_create(struct wl_display *display, int fd)
@@ -384,11 +393,12 @@ gears_create(struct wl_display *display, int fd)
 
 	draw_gears(gears);
 
-	frame_handler(gears->window, 0, 0, gears);
+	handle_frame(gears, gears->compositor, 0, 0);
 
 	window_set_resize_handler(gears->window, resize_handler, gears);
-	window_set_frame_handler(gears->window, frame_handler, gears);
-	window_set_acknowledge_handler(gears->window, acknowledge_handler, gears);
+
+	wl_compositor_add_listener(gears->compositor,
+				   &compositor_listener, gears);
 
 	return gears;
 }
