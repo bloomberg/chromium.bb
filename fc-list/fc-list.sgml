@@ -65,6 +65,10 @@ manpage.1: manpage.sgml
 
       <arg><option>-vVh</option></arg>
       <arg><option>--verbose</option></arg>
+      <group>
+        <arg><option>-f</option> <option><replaceable>format</replaceable></option></arg>
+        <arg><option>--format</option> <option><replaceable>format</replaceable></option></arg>
+      </group>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
       <sbr>
@@ -100,11 +104,13 @@ manpage.1: manpage.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option>-h</option>
-          <option>--help</option>
+        <term><option>-f</option>
+          <option>--format</option>
+	  <option><replaceable>format</replaceable></option>
         </term>
         <listitem>
-          <para>Show summary of options.</para>
+          <para>Format output according to the format specifier
+	  <replaceable>format</replaceable>.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -113,6 +119,14 @@ manpage.1: manpage.sgml
         </term>
         <listitem>
           <para>Show version of the program and exit.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option>
+          <option>--help</option>
+        </term>
+        <listitem>
+          <para>Show summary of options.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -164,6 +178,8 @@ manpage.1: manpage.sgml
       <command>fc-cache</command>(1)
       <command>fc-match</command>(1)
       <command>fc-query</command>(1)
+      <function>FcFontList</function>(3)
+      <function>FcPatternFormat</function>(3)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:

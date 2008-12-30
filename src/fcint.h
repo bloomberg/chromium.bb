@@ -645,6 +645,11 @@ FcNameUnparseCharSet (FcStrBuf *buf, const FcCharSet *c);
 FcPrivate FcCharSet *
 FcNameParseCharSet (FcChar8 *string);
 
+FcPrivate FcBool
+FcNameUnparseValueList (FcStrBuf	*buf,
+			FcValueListPtr	v,
+			FcChar8		*escape);
+
 FcPrivate FcCharLeaf *
 FcCharSetFindLeafCreate (FcCharSet *fcs, FcChar32 ucs4);
 

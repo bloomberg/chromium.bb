@@ -94,6 +94,7 @@ libfontconfig_la_SOURCES = \
 	fcdbg.c \
 	fcdefault.c \
 	fcdir.c \
+	fcformat.c \
 	fcfreetype.c \
 	fcfs.c \
 	fcinit.c \

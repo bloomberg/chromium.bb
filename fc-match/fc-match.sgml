@@ -67,6 +67,10 @@ manpage.1: manpage.sgml
       <arg><option>--all</option></arg>
       <arg><option>--sort</option></arg>
       <arg><option>--verbose</option></arg>
+      <group>
+        <arg><option>-f</option> <option><replaceable>format</replaceable></option></arg>
+        <arg><option>--format</option> <option><replaceable>format</replaceable></option></arg>
+      </group>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
       <arg><option><replaceable>font-pattern</replaceable></option></arg>
@@ -95,30 +99,6 @@ are printed.  The <option>--all</option> option works like
 
     <variablelist>
       <varlistentry>
-        <term><option>-v</option>
-          <option>--verbose</option>
-        </term>
-        <listitem>
-          <para>Print whole font pattern for each match.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-h</option>
-          <option>--help</option>
-        </term>
-        <listitem>
-          <para>Show summary of options.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
-        <term><option>-V</option>
-          <option>--version</option>
-        </term>
-        <listitem>
-          <para>Show version of the program and exit.</para>
-        </listitem>
-      </varlistentry>
-      <varlistentry>
         <term><option>-a</option>
           <option>--all</option>
         </term>
@@ -133,6 +113,40 @@ are printed.  The <option>--all</option> option works like
         </term>
         <listitem>
           <para>Displays sorted list of best matching fonts.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-v</option>
+          <option>--verbose</option>
+        </term>
+        <listitem>
+          <para>Print whole font pattern for each match.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-f</option>
+          <option>--format</option>
+	  <option><replaceable>format</replaceable></option>
+        </term>
+        <listitem>
+          <para>Format output according to the format specifier
+	  <replaceable>format</replaceable>.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-V</option>
+          <option>--version</option>
+        </term>
+        <listitem>
+          <para>Show version of the program and exit.</para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term><option>-h</option>
+          <option>--help</option>
+        </term>
+        <listitem>
+          <para>Show summary of options.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -154,6 +168,9 @@ are printed.  The <option>--all</option> option works like
       <command>fc-cache</command>(1)
       <command>fc-list</command>(1)
       <command>fc-query</command>(1)
+      <function>FcFontMatch</function>(3)
+      <function>FcFontSort</function>(3)
+      <function>FcPatternFormat</function>(3)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:

@@ -53,6 +53,7 @@
 #include <getopt.h>
 static const struct option longopts[] = {
     {"index", 1, 0, 'i'},
+    {"format", 1, 0, 'f'},
     {"version", 0, 0, 'V'},
     {"help", 0, 0, 'h'},
     {NULL,0,0,0},
@@ -69,20 +70,22 @@ usage (char *program, int error)
 {
     FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (file, "usage: %s [-Vh] [-i index] [--index index] [--version] [--help] font-file...\n",
+    fprintf (file, "usage: %s [-Vh] [-i index] [-f FORMAT] [--index index] [--format FORMAT] [--version] [--help] font-file...\n",
 	     program);
 #else
-    fprintf (file, "usage: %s [-Vh] [-i index] font-file...\n",
+    fprintf (file, "usage: %s [-Vh] [-i index] [-f FORMAT] font-file...\n",
 	     program);
 #endif
     fprintf (file, "Query font files and print resulting pattern(s)\n");
     fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
     fprintf (file, "  -i, --index INDEX    display the INDEX face of each font file only\n");
+    fprintf (file, "  -f, --format=FORMAT  use the given output format\n");
     fprintf (file, "  -V, --version        display font config version and exit\n");
     fprintf (file, "  -h, --help           display this help and exit\n");
 #else
     fprintf (file, "  -i INDEX   (index)   display the INDEX face of each font file only\n");
+    fprintf (file, "  -f FORMAT  (format)  use the given output format\n");
     fprintf (file, "  -a         (all)     display unpruned sorted list of matches\n");
     fprintf (file, "  -V         (version) display font config version and exit\n");
     fprintf (file, "  -h         (help)    display this help and exit\n");
@@ -95,6 +98,7 @@ main (int argc, char **argv)
 {
     int		index_set = 0;
     int		set_index = 0;
+    FcChar8     *format = NULL;
     int		err = 0;
     int		i;
     FcBlanks    *blanks;
@@ -111,6 +115,9 @@ main (int argc, char **argv)
 	case 'i':
 	    index_set = 1;
 	    set_index = atoi (optarg);
+	    break;
+	case 'f':
+	    format = (FcChar8 *) strdup (optarg);
 	    break;
 	case 'V':
 	    fprintf (stderr, "fontconfig version %d.%d.%d\n",
@@ -151,7 +158,19 @@ main (int argc, char **argv)
 	    pat = FcFreeTypeQuery ((FcChar8 *) argv[i], index, blanks, &count);
 	    if (pat)
 	    {
-		FcPatternPrint (pat);
+		if (format)
+		{
+		    FcChar8 *s;
+
+		    s = FcPatternFormat (pat, format);
+		    printf ("%s", s);
+		    free (s);
+		}
+		else
+		{
+		    FcPatternPrint (pat);
+		}
+
 		FcPatternDestroy (pat);
 	    }
 	    else

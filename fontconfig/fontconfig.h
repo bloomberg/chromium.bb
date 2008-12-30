@@ -830,6 +830,9 @@ FcPatternVaBuild (FcPattern *p, va_list va);
 FcPublic FcPattern *
 FcPatternBuild (FcPattern *p, ...) FC_ATTRIBUTE_SENTINEL(0);
 
+FcPublic FcChar8 *
+FcPatternFormat (FcPattern *pat, const FcChar8 *format);
+
 /* fcstr.c */
 
 FcPublic FcChar8 *

@@ -818,7 +818,7 @@ FcNameUnparseValue (FcStrBuf	*buf,
     return FcFalse;
 }
 
-static FcBool
+FcBool
 FcNameUnparseValueList (FcStrBuf	*buf,
 			FcValueListPtr	v,
 			FcChar8		*escape)

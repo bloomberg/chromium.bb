@@ -51,8 +51,9 @@
 static const struct option longopts[] = {
     {"sort", 0, 0, 's'},
     {"all", 0, 0, 'a'},
-    {"version", 0, 0, 'V'},
     {"verbose", 0, 0, 'v'},
+    {"format", 1, 0, 'f'},
+    {"version", 0, 0, 'V'},
     {"help", 0, 0, 'h'},
     {NULL,0,0,0},
 };
@@ -68,10 +69,10 @@ usage (char *program, int error)
 {
     FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (file, "usage: %s [-savVh] [--sort] [--all] [--verbose] [--version] [--help] [pattern]\n",
+    fprintf (file, "usage: %s [-savVh] [-f FORMAT] [--sort] [--all] [--verbose] [--format=FORMAT] [--version] [--help] [pattern]\n",
 	     program);
 #else
-    fprintf (file, "usage: %s [-savVh] [pattern]\n",
+    fprintf (file, "usage: %s [-savVh] [-f FORMAT] [pattern]\n",
 	     program);
 #endif
     fprintf (file, "List fonts matching [pattern]\n");
@@ -80,12 +81,14 @@ usage (char *program, int error)
     fprintf (file, "  -s, --sort           display sorted list of matches\n");
     fprintf (file, "  -a, --all            display unpruned sorted list of matches\n");
     fprintf (file, "  -v, --verbose        display entire font pattern\n");
+    fprintf (file, "  -f, --format=FORMAT  use the given output format\n");
     fprintf (file, "  -V, --version        display font config version and exit\n");
     fprintf (file, "  -h, --help           display this help and exit\n");
 #else
     fprintf (file, "  -s,        (sort)    display sorted list of matches\n");
     fprintf (file, "  -a         (all)     display unpruned sorted list of matches\n");
     fprintf (file, "  -v         (verbose) display entire font pattern\n");
+    fprintf (file, "  -f FORMAT  (format)  use the given output format\n");
     fprintf (file, "  -V         (version) display font config version and exit\n");
     fprintf (file, "  -h         (help)    display this help and exit\n");
 #endif
@@ -97,6 +100,7 @@ main (int argc, char **argv)
 {
     int		verbose = 0;
     int		sort = 0, all = 0;
+    FcChar8     *format = NULL;
     int		i;
     FcFontSet	*fs;
     FcPattern   *pat;
@@ -105,9 +109,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "asVvh", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "asvf:Vh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "asVvh")) != -1)
+    while ((c = getopt (argc, argv, "asvf:Vh")) != -1)
 #endif
     {
 	switch (c) {
@@ -117,13 +121,16 @@ main (int argc, char **argv)
 	case 's':
 	    sort = 1;
 	    break;
+	case 'v':
+	    verbose = 1;
+	    break;
+	case 'f':
+	    format = (FcChar8 *) strdup (optarg);
+	    break;
 	case 'V':
 	    fprintf (stderr, "fontconfig version %d.%d.%d\n", 
 		     FC_MAJOR, FC_MINOR, FC_REVISION);
 	    exit (0);
-	case 'v':
-	    verbose = 1;
-	    break;
 	case 'h':
 	    usage (argv[0], 0);
 	default:
@@ -188,6 +195,14 @@ main (int argc, char **argv)
 	    if (verbose)
 	    {
 		FcPatternPrint (fs->fonts[j]);
+	    }
+	    else if (format)
+	    {
+	        FcChar8 *s;
+
+		s = FcPatternFormat (fs->fonts[j], format);
+		printf ("%s", s);
+		free (s);
 	    }
 	    else
 	    {
