@@ -5,7 +5,7 @@ PKG_PROG_PKG_CONFIG()
 PKG_CHECK_MODULES(FFI, [libffi])
 PKG_CHECK_MODULES(LIBDRM, [libdrm])
 
-PKG_CHECK_MODULES(EGL_COMPOSITOR, [eagle libpng cairo gdk-pixbuf-2.0])
+PKG_CHECK_MODULES(EGL_COMPOSITOR, [eagle libpng cairo gdk-pixbuf-2.0 libudev])
 PKG_CHECK_MODULES(GL_COMPOSITOR, [gl x11])
 PKG_CHECK_MODULES(CLIENT, [eagle cairo glib-2.0])
 

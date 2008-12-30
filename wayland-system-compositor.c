@@ -42,6 +42,9 @@
 #include <fnmatch.h>
 #include <dirent.h>
 
+#define LIBUDEV_I_KNOW_THE_API_IS_SUBJECT_TO_CHANGE
+#include <libudev.h>
+
 #include <GL/gl.h>
 #include <eagle.h>
 
@@ -104,6 +107,8 @@ struct egl_compositor {
 	uint32_t fb_id;
 	uint32_t crtc_id;
 	uint32_t connector_id;
+
+	struct udev *udev;
 
 	/* Repaint state. */
 	struct wl_event_source *timer_source;
@@ -687,18 +692,14 @@ struct evdev_input_device *
 evdev_input_device_create(struct wlsc_input_device *device,
 			  struct wl_display *display, const char *path);
 
-static void
-create_input_device(struct egl_compositor *ec, const char *glob)
+static struct wlsc_input_device *
+create_input_device(struct egl_compositor *ec)
 {
 	struct wlsc_input_device *device;
-	struct dirent *de;
-	char path[PATH_MAX];
-	const char *by_path_dir = "/dev/input/by-path";
-	DIR *dir;
 
 	device = malloc(sizeof *device);
 	if (device == NULL)
-		return;
+		return NULL;
 
 	memset(device, 0, sizeof *device);
 	device->base.interface = &wl_input_device_interface;
@@ -711,22 +712,9 @@ create_input_device(struct egl_compositor *ec, const char *glob)
 		pointer_create(ec, device->x, device->y, 64, 64);
 	device->ec = ec;
 
-	dir = opendir(by_path_dir);
-	if (dir == NULL) {
-		fprintf(stderr, "couldn't read dir %s\n", by_path_dir);
-		return;
-	}
-
-	while (de = readdir(dir), de != NULL) {
-		if (fnmatch(glob, de->d_name, 0))
-			continue;
-
-		snprintf(path, sizeof path, "%s/%s", by_path_dir, de->d_name);
-		evdev_input_device_create(device, ec->wl_display, path);
-	}
-	closedir(dir);
-
 	wl_list_insert(ec->input_device_list.prev, &device->link);
+
+	return device;
 }
 
 void
@@ -859,19 +847,11 @@ post_output_geometry(struct wl_client *client, struct wl_object *global)
 
 static const char gem_device[] = "/dev/dri/card0";
 
-static const char *default_input_device[] = {
-	"*event*",
-	NULL
-};
-
 static const char *option_background = "background.jpg";
-static const char **option_input_devices = default_input_device;
 
 static const GOptionEntry option_entries[] = {
 	{ "background", 'b', 0, G_OPTION_ARG_STRING,
 	  &option_background, "Background image" },
-	{ "input-device", 'i', 0, G_OPTION_ARG_STRING_ARRAY, 
-	  &option_input_devices, "Input device glob" },
 	{ NULL }
 };
 
@@ -969,6 +949,64 @@ static int setup_tty(struct egl_compositor *ec, struct wl_event_loop *loop)
 	return 0;
 }
 
+static const char *
+get_udev_property(struct udev_device *device, const char *name)
+{
+        struct udev_list_entry *entry;
+
+	udev_list_entry_foreach(entry, udev_device_get_properties_list_entry(device))
+		if (strcmp(udev_list_entry_get_name(entry), name) == 0)
+			return udev_list_entry_get_value(entry);
+
+	return NULL;
+}
+
+static void
+init_libudev(struct egl_compositor *ec)
+{
+	struct udev_enumerate *e;
+        struct udev_list_entry *entry;
+	struct udev_device *device;
+	const char *path, *seat;
+	struct wlsc_input_device *input_device;
+
+	/* FIXME: Newer (version 135+) udev has two new features that
+	 * make all this much easier: 1) we can enumerate by a
+	 * specific property.  This lets us directly iterate through
+	 * the devices we care about. 2) We can attach properties to
+	 * sysfs nodes without a device file, which lets us configure
+	 * which connectors belong to a seat instead of tagging the
+	 * overall drm node.  I don't want to update my system udev,
+	 * so I'm going to stick with this until the new version is in
+	 * rawhide. */
+
+	ec->udev = udev_new();
+	if (ec->udev == NULL) {
+		fprintf(stderr, "failed to initialize udev context\n");
+		return;
+	}
+
+	input_device = create_input_device(ec);
+
+	e = udev_enumerate_new(ec->udev);
+        udev_enumerate_scan_devices(e);
+        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+		path = udev_list_entry_get_name(entry);
+		device = udev_device_new_from_syspath(ec->udev, path);
+
+		/* FIXME: Should the property namespace be CK for console kit? */
+		seat = get_udev_property(device, "WAYLAND_SEAT");
+		if (!seat || strcmp(seat, "1") != 0)
+			continue;
+		if (strcmp(udev_device_get_subsystem(device), "input") == 0) {
+			evdev_input_device_create(input_device, ec->wl_display,
+						  udev_device_get_devnode(device));
+			continue;
+		}
+	}
+        udev_enumerate_unref(e);
+}
+
 static struct egl_compositor *
 egl_compositor_create(struct wl_display *display)
 {
@@ -988,7 +1026,6 @@ egl_compositor_create(struct wl_display *display)
 	struct egl_compositor *ec;
 	struct screenshooter *shooter;
 	uint32_t fb_name;
-	int i;
 	struct wl_event_loop *loop;
 
 	ec = malloc(sizeof *ec);
@@ -1047,8 +1084,7 @@ egl_compositor_create(struct wl_display *display)
 	add_visuals(ec);
 
 	wl_list_init(&ec->input_device_list);
-	for (i = 0; option_input_devices[i]; i++)
-		create_input_device(ec, option_input_devices[i]);
+	init_libudev(ec);
 
 	wl_list_init(&ec->surface_list);
 	ec->background = background_create(ec, option_background,
