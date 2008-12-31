@@ -53,6 +53,7 @@ install : $(libs)
 	install $(libs) @libdir@
 	install wayland-server.pc wayland.pc @libdir@/pkgconfig
 	install wayland-client.h @includedir@
+	install 70-wayland.rules ${sysconfdir}/udev/rules.d
 
 clean :
 	rm -f $(clients) $(compositors) *.o *.so
