@@ -529,6 +529,7 @@ FcFontSetMatch (FcConfig    *config,
 	printf ("Best score");
 	for (i = 0; i < NUM_MATCH_VALUES; i++)
 	    printf (" %g", bestscore[i]);
+	printf ("\n");
 	FcPatternPrint (best);
     }
     if (!best)
