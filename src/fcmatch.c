@@ -328,7 +328,7 @@ FcCompareValueList (FcObject	 object,
 		*result = FcResultTypeMismatch;
 		return FcFalse;
 	    }
-	    v = v * 100 + j;
+	    v = v * 1000 + j;
 	    if (v < best)
 	    {
 		if (bestValue)
@@ -768,7 +768,7 @@ FcFontSetSort (FcConfig	    *config,
 	    }
 	}
 	if (!satisfies)
-	    nodeps[f]->score[MATCH_LANG_INDEX] = 1000.0;
+	    nodeps[f]->score[MATCH_LANG_INDEX] = 10000.0;
     }
 
     /*
