@@ -171,7 +171,7 @@ If <parameter>config</parameter> is NULL, the current configuration is used.
 @DESC@
 Returns one of the two sets of fonts from the configuration as specified
 by <parameter>set</parameter>. This font set is owned by the library and must
-not be freed.
+not be modified or freed.
 If <parameter>config</parameter> is NULL, the current configuration is used.
 @@
 
