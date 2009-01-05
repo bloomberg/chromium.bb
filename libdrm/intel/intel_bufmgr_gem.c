@@ -999,7 +999,10 @@ drm_intel_gem_bo_pin(drm_intel_bo *bo, uint32_t alignment)
     pin.handle = bo_gem->gem_handle;
     pin.alignment = alignment;
 
-    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PIN, &pin);
+    do {
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_PIN, &pin);
+    } while (ret == -1 && errno == EINTR);
+
     if (ret != 0)
 	return -errno;
 
