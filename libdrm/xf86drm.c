@@ -1910,13 +1910,16 @@ int drmWaitVBlank(int fd, drmVBlankPtr vbl)
     do {
        ret = ioctl(fd, DRM_IOCTL_WAIT_VBLANK, vbl);
        vbl->request.type &= ~DRM_VBLANK_RELATIVE;
-       clock_gettime(CLOCK_MONOTONIC, &cur);
-       /* Timeout after 1s */
-       if (cur.tv_sec > timeout.tv_sec + 1 ||
-	   cur.tv_sec == timeout.tv_sec && cur.tv_nsec >= timeout.tv_nsec) {
-	   errno = EBUSY;
-	   ret = -1;
-	   break;
+       if (ret && errno == EINTR) {
+	       clock_gettime(CLOCK_MONOTONIC, &cur);
+	       /* Timeout after 1s */
+	       if (cur.tv_sec > timeout.tv_sec + 1 ||
+		   (cur.tv_sec == timeout.tv_sec && cur.tv_nsec >=
+		    timeout.tv_nsec)) {
+		       errno = EBUSY;
+		       ret = -1;
+		       break;
+	       }
        }
     } while (ret && errno == EINTR);
 
