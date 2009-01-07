@@ -42,6 +42,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <signal.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #define stat_t struct stat
@@ -1896,13 +1897,30 @@ int drmScatterGatherFree(int fd, drm_handle_t handle)
  */
 int drmWaitVBlank(int fd, drmVBlankPtr vbl)
 {
+    struct timespec timeout, cur;
     int ret;
 
+    ret = clock_gettime(CLOCK_MONOTONIC, &timeout);
+    if (ret < 0) {
+	fprintf(stderr, "clock_gettime failed: %s\n", strerror(ret));
+	goto out;
+    }
+    timeout.tv_sec++;
+
     do {
-       ret = drmIoctl(fd, DRM_IOCTL_WAIT_VBLANK, vbl);
+       ret = ioctl(fd, DRM_IOCTL_WAIT_VBLANK, vbl);
        vbl->request.type &= ~DRM_VBLANK_RELATIVE;
+       clock_gettime(CLOCK_MONOTONIC, &cur);
+       /* Timeout after 1s */
+       if (cur.tv_sec > timeout.tv_sec + 1 ||
+	   cur.tv_sec == timeout.tv_sec && cur.tv_nsec >= timeout.tv_nsec) {
+	   errno = EBUSY;
+	   ret = -1;
+	   break;
+       }
     } while (ret && errno == EINTR);
 
+out:
     return ret;
 }
 
