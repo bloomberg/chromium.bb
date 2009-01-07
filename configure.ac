@@ -62,6 +62,13 @@ AC_DEFUN([LIBDRM_CC_TRY_FLAG], [
   AC_MSG_RESULT([$libdrm_cc_flag])
 ])
 
+dnl We use clock_gettime to check for timeouts in drmWaitVBlank
+
+AC_CHECK_FUNCS([clock_gettime], [CLOCK_LIB=],
+               [AC_CHECK_LIB([rt], [clock_gettime], [CLOCK_LIB=-lrt],
+                             [AC_MSG_ERROR([Couldn't find clock_gettime])])])
+AC_SUBST([CLOCK_LIB])
+
 dnl Use lots of warning flags with with gcc and compatible compilers
 
 dnl Note: if you change the following variable, the cache is automatically
