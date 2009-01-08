@@ -104,7 +104,7 @@ Returns a set including only those chars found in <parameter>a</parameter> but n
 @TYPE2@		const FcCharSet *	@ARG2@		b
 @PURPOSE@	Merge charsets
 @DESC@
-If <parameter>a</parameter> is NULL, returns a copy of <parameter>b</parameter>.
+If <parameter>a</parameter> is NULL, returns a newly-created copy of <parameter>b</parameter>.
 If <parameter>a</parameter> is an FcCharSet object owned by fontconfig that
 cannot be modified, it returns the union of <parameter>a</parameter> and
 <parameter>b</parameter> in a newly-created FcCharSet object.

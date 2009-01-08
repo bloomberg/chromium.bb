@@ -459,13 +459,14 @@ FcCharSetMerge (FcCharSet *a, const FcCharSet *b)
     FcCharSetIter    ai, bi;
 
     if (a == NULL) {
-	return FcCharSetCopy ((FcCharSet *) b);
+	fcs = a = FcCharSetCreate ();
     } else if (a->ref == FC_REF_CONSTANT) {
 	fcs = FcCharSetCreate ();
-	if (fcs == NULL)
-	    return NULL;
     } else
 	fcs = a;
+
+    if (fcs == NULL)
+	return NULL;
 
     FcCharSetIterStart (a, &ai);
     FcCharSetIterStart (b, &bi);
