@@ -180,13 +180,6 @@ extern int drmModeAddFB(int fd, uint32_t width, uint32_t height, uint8_t depth,
  */
 extern int drmModeRmFB(int fd, uint32_t bufferId);
 
-/**
- * Replace a framebuffer object with a new one - for resizing the screen.
- */
-extern int drmModeReplaceFB(int fd, uint32_t buffer_id,
-			    uint32_t width, uint32_t height, uint8_t depth,
-			    uint8_t bpp, uint32_t pitch, uint32_t bo_handle);
-
 /*
  * Crtc functions
  */

@@ -628,27 +628,6 @@ int drmCheckModesettingSupported(const char *busid)
 
 }
 
-int drmModeReplaceFB(int fd, uint32_t buffer_id,
-		     uint32_t width, uint32_t height, uint8_t depth,
-		     uint8_t bpp, uint32_t pitch, uint32_t bo_handle)
-{
-	struct drm_mode_fb_cmd f;
-	int ret;
-
-	f.width = width;
-	f.height = height;
-	f.pitch = pitch;
-	f.bpp = bpp;
-	f.depth = depth;
-	f.handle = bo_handle;
-	f.fb_id = buffer_id;
-
-	if ((ret = drmIoctl(fd, DRM_IOCTL_MODE_REPLACEFB, &f)))
-		return ret;
-
-	return 0;
-}
-
 int drmModeCrtcGetGamma(int fd, uint32_t crtc_id, uint32_t size,
 			uint16_t *red, uint16_t *green, uint16_t *blue)
 {
