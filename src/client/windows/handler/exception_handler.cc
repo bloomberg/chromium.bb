@@ -181,12 +181,12 @@ void ExceptionHandler::Initialize(const wstring& dump_path,
   }
 
   // There is a race condition here. If the first instance has not yet
-  // initialized the critical section, the second (and later) instances will
-  // try to use uninitialized critical section object. The featuer of multiple
-  // instnaces in one module is not used much, so leave it as is for now.
+  // initialized the critical section, the second (and later) instances may
+  // try to use uninitialized critical section object. The feature of multiple
+  // instances in one module is not used much, so leave it as is for now.
   // One way to solve this in the current design (that is, keeping the static
   // handler stack) is to use spin locks with volatile bools to synchronize
-  // the handler stack. This works only if the compiler guarntees to generate
+  // the handler stack. This works only if the compiler guarantees to generate
   // cache coherent code for volatile.
   // TODO(munjal): Fix this in a better way by changing the design if possible.
 
