@@ -39,7 +39,7 @@ wayland-system-compositor :			\
 wayland-system-compositor : CFLAGS += @EGL_COMPOSITOR_CFLAGS@
 wayland-system-compositor : LDLIBS += -L. -lwayland-server @EGL_COMPOSITOR_LIBS@ -rdynamic -lrt
 
-flower : flower.o wayland-glib.o cairo-util.o
+flower : flower.o wayland-glib.o
 gears : gears.o window.o wayland-glib.o cairo-util.o
 screenshot : screenshot.o wayland-glib.o
 terminal : terminal.o window.o wayland-glib.o cairo-util.o

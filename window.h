@@ -56,6 +56,15 @@ window_copy(struct window *window,
 	    struct rectangle *rectangle,
 	    uint32_t name, uint32_t stride);
 
+cairo_surface_t *
+window_create_surface(struct window *window,
+		      struct rectangle *rectangle);
+
+void
+window_copy_surface(struct window *window,
+		    struct rectangle *rectangle,
+		    cairo_surface_t *surface);
+
 void
 window_set_fullscreen(struct window *window, int fullscreen);
 

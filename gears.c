@@ -30,6 +30,7 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
+#include <cairo-drm.h>
 
 #include <GL/gl.h>
 #include <eagle.h>
@@ -37,7 +38,6 @@
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
-#include "cairo-util.h"
 #include "window.h"
 
 static const char gem_device[] = "/dev/dri/card0";
@@ -55,9 +55,8 @@ struct gears {
 	EGLSurface surface;
 	EGLContext context;
 	int resized;
-	int fd;
 	GLfloat angle;
-	struct buffer *buffer;
+	cairo_surface_t *cairo_surface;
 
 	GLint gear_list[3];
 };
@@ -244,6 +243,8 @@ draw_gears(struct gears *gears)
 static void
 resize_window(struct gears *gears)
 {
+	uint32_t name, stride;
+
 	/* Constrain child size to be square and at least 300x300 */
 	window_get_child_rectangle(gears->window, &gears->rectangle);
 	if (gears->rectangle.width > gears->rectangle.height)
@@ -258,20 +259,20 @@ resize_window(struct gears *gears)
 
 	window_draw(gears->window);
 
-	if (gears->buffer != NULL)
-		buffer_destroy(gears->buffer, gears->fd);
+	if (gears->cairo_surface != NULL)
+		cairo_surface_destroy(gears->cairo_surface);
 
-	gears->buffer = buffer_create(gears->fd,
-				      gears->rectangle.width,
-				      gears->rectangle.height,
-				      (gears->rectangle.width * 4 + 15) & ~15);
+	gears->cairo_surface = window_create_surface(gears->window,
+						     &gears->rectangle);
 
+	name = cairo_drm_surface_get_name(gears->cairo_surface);
+	stride = cairo_drm_surface_get_stride(gears->cairo_surface),
 	gears->surface = eglCreateSurfaceForName(gears->display,
 						 gears->config,
-						 gears->buffer->name,
-						 gears->buffer->width,
-						 gears->buffer->height,
-						 gears->buffer->stride, NULL);
+						 name,
+						 gears->rectangle.width,
+						 gears->rectangle.height,
+						 stride, NULL);
 
 	eglMakeCurrent(gears->display,
 		       gears->surface, gears->surface, gears->context);
@@ -321,9 +322,9 @@ handle_frame(void *data,
 {
 	struct gears *gears = data;
 
-	window_copy(gears->window,
-		    &gears->rectangle,
-		    gears->buffer->name, gears->buffer->stride);
+	window_copy_surface(gears->window,
+			    &gears->rectangle,
+			    gears->cairo_surface);
 
 	wl_compositor_commit(gears->compositor, 0);
 
@@ -352,7 +353,6 @@ gears_create(struct wl_display *display, int fd)
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
 	gears->wl_display = display;
-	gears->fd = fd;
 	gears->window = window_create(display, fd, "Wayland Gears",
 				      x, y, width, height);
 

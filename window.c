@@ -30,12 +30,11 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
+#include <cairo-drm.h>
 
 #include <linux/input.h>
 #include "wayland-client.h"
 #include "wayland-glib.h"
-
-#include "cairo-util.h"
 
 #include "window.h"
 
@@ -52,9 +51,9 @@ struct window {
 	int fullscreen;
 	struct wl_input_device *grab_device;
 	uint32_t name;
-	int fd;
+	cairo_drm_context_t *ctx;
 
-	struct buffer *buffer;
+	cairo_surface_t *cairo_surface;
 
 	window_resize_handler_t resize_handler;
 	window_key_handler_t key_handler;
@@ -78,7 +77,6 @@ rounded_rect(cairo_t *cr, int x0, int y0, int x1, int y1, int radius)
 static void
 window_draw_decorations(struct window *window)
 {
-	cairo_surface_t *surface;
 	cairo_t *cr;
 	int border = 2, radius = 5;
 	cairo_text_extents_t extents;
@@ -86,15 +84,17 @@ window_draw_decorations(struct window *window)
 	struct wl_visual *visual;
 	int width, height;
 
-	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					     window->allocation.width,
-					     window->allocation.height);
+	window->cairo_surface =
+		cairo_drm_surface_create(window->ctx,
+					 CAIRO_CONTENT_COLOR_ALPHA,
+					 window->allocation.width,
+					 window->allocation.height);
 
 	outline = cairo_pattern_create_rgb(0.1, 0.1, 0.1);
 	bright = cairo_pattern_create_rgb(0.8, 0.8, 0.8);
 	dim = cairo_pattern_create_rgb(0.4, 0.4, 0.4);
 
-	cr = cairo_create(surface);
+	cr = cairo_create(window->cairo_surface);
 
 	width = window->allocation.width - window->margin * 2;
 	height = window->allocation.height - window->margin * 2;
@@ -104,7 +104,20 @@ window_draw_decorations(struct window *window)
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
 	rounded_rect(cr, 0, 0, width, height, radius);
 	cairo_fill(cr);
-	blur_surface(surface, 24 + radius);
+
+#ifdef SLOW_BUT_PWETTY
+	/* FIXME: Aw, pretty drop shadows now have to fallback to sw.
+	 * Ideally we should have convolution filters in cairo, but we
+	 * can also fallback to compositing the shadow image a bunch
+	 * of times according to the blur kernel. */
+	{
+		cairo_surface_t *map;
+
+		map = cairo_drm_surface_map(window->cairo_surface);
+		blur_surface(map);
+		cairo_drm_surface_unmap(window->cairo_surface, map);
+	}
+#endif
 
 	cairo_translate(cr, -7, -5);
 	cairo_set_line_width (cr, border);
@@ -157,15 +170,12 @@ window_draw_decorations(struct window *window)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	window->buffer = buffer_create_from_cairo_surface(window->fd, surface);
-	cairo_surface_destroy(surface);
-
 	visual = wl_display_get_premultiplied_argb_visual(window->display);
 	wl_surface_attach(window->surface,
-			  window->buffer->name,
-			  window->buffer->width,
-			  window->buffer->height,
-			  window->buffer->stride,
+			  cairo_drm_surface_get_name(window->cairo_surface),
+			  window->allocation.width,
+			  window->allocation.height,
+			  cairo_drm_surface_get_stride(window->cairo_surface),
 			  visual);
 
 	wl_surface_map(window->surface,
@@ -179,19 +189,19 @@ static void
 window_draw_fullscreen(struct window *window)
 {
 	struct wl_visual *visual;
-	int stride = window->allocation.width * 4;
 
-	window->buffer = buffer_create(window->fd,
-				       window->allocation.width,
-				       window->allocation.height,
-				       stride);
+	window->cairo_surface =
+		cairo_drm_surface_create(window->ctx,
+					 CAIRO_CONTENT_COLOR_ALPHA,
+					 window->allocation.width,
+					 window->allocation.height);
 
 	visual = wl_display_get_premultiplied_argb_visual(window->display);
 	wl_surface_attach(window->surface,
-			  window->buffer->name,
-			  window->buffer->width,
-			  window->buffer->height,
-			  window->buffer->stride,
+			  cairo_drm_surface_get_name(window->cairo_surface),
+			  window->allocation.width,
+			  window->allocation.height,
+			  cairo_drm_surface_get_stride(window->cairo_surface),
 			  visual);
 
 	wl_surface_map(window->surface,
@@ -222,9 +232,9 @@ window_handle_acknowledge(void *data,
 	 * safely free the old window buffer if we resized and
 	 * render the next frame into our back buffer.. */
 
-	if (key == 0 && window->buffer != NULL) {
-		buffer_destroy(window->buffer, window->fd);
-		window->buffer = NULL;
+	if (key == 0 && window->cairo_surface != NULL) {
+		cairo_surface_destroy(window->cairo_surface);
+		window->cairo_surface = NULL;
 	}
 }
 
@@ -382,6 +392,16 @@ window_set_child_size(struct window *window,
 	}
 }
 
+cairo_surface_t *
+window_create_surface(struct window *window,
+		      struct rectangle *rectangle)
+{
+	return cairo_drm_surface_create(window->ctx,
+					CAIRO_CONTENT_COLOR_ALPHA,
+					rectangle->width,
+					rectangle->height);
+}
+
 void
 window_copy(struct window *window,
 	    struct rectangle *rectangle,
@@ -391,6 +411,21 @@ window_copy(struct window *window,
 			rectangle->x,
 			rectangle->y,
 			name, stride,
+			0, 0,
+			rectangle->width,
+			rectangle->height);
+}
+
+void
+window_copy_surface(struct window *window,
+		    struct rectangle *rectangle,
+		    cairo_surface_t *surface)
+{
+	wl_surface_copy(window->surface,
+			rectangle->x,
+			rectangle->y,
+			cairo_drm_surface_get_name(surface),
+			cairo_drm_surface_get_stride(surface),
 			0, 0,
 			rectangle->width,
 			rectangle->height);
@@ -488,7 +523,11 @@ window_create(struct wl_display *display, int fd,
 	window->saved_allocation = window->allocation;
 	window->margin = 16;
 	window->state = WINDOW_STABLE;
-	window->fd = fd;
+	window->ctx = cairo_drm_context_get_for_fd(fd);
+	if (window->ctx == NULL) {
+		fprintf(stderr, "failed to get cairo drm context\n");
+		return NULL;
+	}
 
 	wl_display_add_global_listener(display,
 				       window_handle_global, window);

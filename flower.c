@@ -33,10 +33,10 @@
 #include <time.h>
 #include <cairo.h>
 #include <glib.h>
+#include <cairo-drm.h>
 
 #include "wayland-client.h"
 #include "wayland-glib.h"
-#include "cairo-util.h"
 
 static const char gem_device[] = "/dev/dri/card0";
 static const char socket_name[] = "\0wayland";
@@ -52,8 +52,8 @@ set_random_color(cairo_t *cr)
 }
 
 
-static void *
-draw_stuff(int width, int height)
+static void
+draw_stuff(cairo_surface_t *surface, int width, int height)
 {
 	const int petal_count = 3 + random() % 5;
 	const double r1 = 60 + random() % 35;
@@ -61,18 +61,14 @@ draw_stuff(int width, int height)
 	const double u = (10 + random() % 90) / 100.0;
 	const double v = (random() % 90) / 100.0;
 
-	cairo_surface_t *surface;
 	cairo_t *cr;
 	int i;
 	double t, dt = 2 * M_PI / (petal_count * 2);
 	double x1, y1, x2, y2, x3, y3;
 
-	surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					     width, height);
-
 	cr = cairo_create(surface);
 	cairo_translate(cr, width / 2, height / 2);
-	cairo_move_to(cr, cos(t) * r1, sin(t) * r1);
+	cairo_move_to(cr, cos(0) * r1, sin(0) * r1);
 	for (t = 0, i = 0; i < petal_count; i++, t += dt * 2) {
 		x1 = cos(t) * r1;
 		y1 = sin(t) * r1;
@@ -99,8 +95,6 @@ draw_stuff(int width, int height)
 	cairo_stroke(cr);
 
 	cairo_destroy(cr);
-
-	return surface;
 }
 
 struct flower {
@@ -141,12 +135,12 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct wl_visual *visual;
 	int fd;
+	cairo_drm_context_t *ctx;
 	cairo_surface_t *s;
 	struct timespec ts;
 	GMainLoop *loop;
 	GSource *source;
 	struct flower flower;
-	struct buffer *buffer;
 
 	fd = open(gem_device, O_RDWR);
 	if (fd < 0) {
@@ -176,13 +170,17 @@ int main(int argc, char *argv[])
 	srandom(ts.tv_nsec);
 	flower.offset = random();
 
-	s = draw_stuff(flower.width, flower.height);
-	buffer = buffer_create_from_cairo_surface(fd, s);
+	ctx = cairo_drm_context_get_for_fd(fd);
+	s = cairo_drm_surface_create(ctx, CAIRO_CONTENT_COLOR_ALPHA,
+				     flower.width, flower.height);
+	draw_stuff(s, flower.width, flower.height);
 
 	visual = wl_display_get_premultiplied_argb_visual(display);
 	wl_surface_attach(flower.surface,
-			  buffer->name, flower.width, flower.height,
-			  buffer->stride, visual);
+			  cairo_drm_surface_get_name(s),
+			  flower.width, flower.height,
+			  cairo_drm_surface_get_stride(s),
+			  visual);
 
 	wl_compositor_add_listener(flower.compositor,
 				   &compositor_listener, &flower);

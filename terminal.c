@@ -33,6 +33,7 @@
 #include <cairo.h>
 #include <glib.h>
 #include <linux/input.h>
+#include <cairo-drm.h>
 
 #include <GL/gl.h>
 #include <eagle.h>
@@ -40,7 +41,6 @@
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
-#include "cairo-util.h"
 #include "window.h"
 
 static int option_fullscreen;
@@ -59,7 +59,7 @@ struct terminal {
 	char *data;
 	int width, height, start, row, column;
 	int fd, master;
-	struct buffer *buffer;
+	cairo_surface_t *surface;
 	GIOChannel *channel;
 	uint32_t modifiers;
 	char escape[64];
@@ -128,16 +128,15 @@ static void
 terminal_draw_contents(struct terminal *terminal)
 {
 	struct rectangle rectangle;
-	cairo_surface_t *surface;
 	cairo_t *cr;
 	cairo_font_extents_t extents;
 	int i, top_margin, side_margin;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
-	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-					     rectangle.width, rectangle.height);
-	cr = cairo_create(surface);
+	terminal->surface =
+		window_create_surface(terminal->window, &rectangle);
+	cr = cairo_create(terminal->surface);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0.9);
 	cairo_paint(cr);
@@ -160,12 +159,9 @@ terminal_draw_contents(struct terminal *terminal)
 	}
 	cairo_destroy(cr);
 
-	terminal->buffer = buffer_create_from_cairo_surface(terminal->fd, surface);
-	cairo_surface_destroy(surface);
-
-	window_copy(terminal->window,
-		    &rectangle,
-		    terminal->buffer->name, terminal->buffer->stride);
+	window_copy_surface(terminal->window,
+			    &rectangle,
+			    terminal->surface);
 }
 
 static void
@@ -405,7 +401,7 @@ handle_acknowledge(void *data,
 
 	terminal->redraw_scheduled = 0;
 	if (key == 0)
-		buffer_destroy(terminal->buffer, terminal->fd);
+		cairo_surface_destroy(terminal->surface);
 
 	if (terminal->redraw_pending) {
 		terminal->redraw_pending = 0;
@@ -553,7 +549,6 @@ terminal_create(struct wl_display *display, int fd, int fullscreen)
 		return terminal;
 
 	memset(terminal, 0, sizeof *terminal);
-	terminal->fd = fd;
 	terminal->fullscreen = fullscreen;
 	terminal->window = window_create(display, fd, "Wayland Terminal",
 					 500, 100, 500, 400);
