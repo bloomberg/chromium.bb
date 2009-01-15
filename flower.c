@@ -106,8 +106,8 @@ draw_stuff(int width, int height)
 struct flower {
 	struct wl_compositor *compositor;
 	struct wl_surface *surface;
-	int i;
 	int x, y, width, height;
+	int offset;
 };
 
 static void
@@ -125,8 +125,8 @@ handle_frame(void *data,
 	struct flower *flower = data;
 
 	wl_surface_map(flower->surface, 
-		       flower->x + cos(timestamp / 400.0) * 400 - flower->width / 2,
-		       flower->y + sin(timestamp / 320.0) * 300 - flower->height / 2,
+		       flower->x + cos((flower->offset + timestamp) / 400.0) * 400 - flower->width / 2,
+		       flower->y + sin((flower->offset + timestamp) / 320.0) * 300 - flower->height / 2,
 		       flower->width, flower->height);
 	wl_compositor_commit(flower->compositor, 0);
 }
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 
 	clock_gettime(CLOCK_MONOTONIC, &ts);
 	srandom(ts.tv_nsec);
-	flower.i = ts.tv_nsec;
+	flower.offset = random();
 
 	s = draw_stuff(flower.width, flower.height);
 	buffer = buffer_create_from_cairo_surface(fd, s);
