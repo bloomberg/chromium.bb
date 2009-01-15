@@ -164,13 +164,14 @@ are printed.  The <option>--all</option> option works like
     <title>SEE ALSO</title>
 
     <para>
-      <command>fc-cat</command>(1)
-      <command>fc-cache</command>(1)
       <command>fc-list</command>(1)
-      <command>fc-query</command>(1)
       <function>FcFontMatch</function>(3)
       <function>FcFontSort</function>(3)
       <function>FcPatternFormat</function>(3)
+      <command>fc-cat</command>(1)
+      <command>fc-cache</command>(1)
+      <command>fc-query</command>(1)
+      <command>fc-scal</command>(1)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:

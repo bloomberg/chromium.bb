@@ -20,14 +20,14 @@ manpage.1: manpage.sgml
   <!ENTITY dhfirstname "<firstname>Behdad</firstname>">
   <!ENTITY dhsurname   "<surname>Esfahbod</surname>">
   <!-- Please adjust the date whenever revising the manpage. -->
-  <!ENTITY dhdate      "<date>Aug 13, 2008</date>">
+  <!ENTITY dhdate      "<date>Jan 15, 2009</date>">
   <!-- SECTION should be 1-8, maybe w/ subsection other parameters are
        allowed: see man(7), man(1). -->
   <!ENTITY dhsection   "<manvolnum>1</manvolnum>">
   <!ENTITY dhemail     "<email>behdad@behdad.org</email>">
   <!ENTITY dhusername  "Behdad Esfahbod">
-  <!ENTITY dhucpackage "<refentrytitle>fc-query</refentrytitle>">
-  <!ENTITY dhpackage   "fc-query">
+  <!ENTITY dhucpackage "<refentrytitle>fc-scan</refentrytitle>">
+  <!ENTITY dhpackage   "fc-scan">
 
   <!ENTITY gnu         "<acronym>GNU</acronym>">
   <!ENTITY gpl         "&gnu; <acronym>GPL</acronym>">
@@ -56,7 +56,7 @@ manpage.1: manpage.sgml
   <refnamediv>
     <refname>&dhpackage;</refname>
 
-    <refpurpose>query font files</refpurpose>
+    <refpurpose>scan font files or directories</refpurpose>
   </refnamediv>
   <refsynopsisdiv>
     <cmdsynopsis>
@@ -65,27 +65,21 @@ manpage.1: manpage.sgml
       <arg><option>-Vh</option></arg>
       <sbr>
       <group>
-        <arg><option>-i</option> <option><replaceable>index</replaceable></option></arg>
-        <arg><option>--index</option> <option><replaceable>index</replaceable></option></arg>
-      </group>
-      <group>
         <arg><option>-f</option> <option><replaceable>format</replaceable></option></arg>
         <arg><option>--format</option> <option><replaceable>format</replaceable></option></arg>
       </group>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
-      <arg choice="req" rep="repeat"><option><replaceable>font-file</replaceable></option></arg>
+      <arg choice="req" rep="repeat"><option><replaceable>file</replaceable></option></arg>
 
      </cmdsynopsis>
   </refsynopsisdiv>
   <refsect1>
     <title>DESCRIPTION</title>
 
-    <para><command>&dhpackage;</command> queries
-    <replaceable>font-file</replaceable>(s) using the normal fontconfig
-    rules and prints out font pattern for each face found.
-    If <option>--index</option> is given, only one face of each file is
-    queried, otherwise all faces are queried.</para>
+    <para><command>&dhpackage;</command> scans
+    <replaceable>file</replaceable>(s) recursively
+    and prints out font pattern for each face found.
 
   </refsect1>
   <refsect1>
@@ -96,16 +90,6 @@ manpage.1: manpage.sgml
       options is included below.</para>
 
     <variablelist>
-      <varlistentry>
-        <term><option>-i</option>
-          <option>--index</option>
-	  <option><replaceable>index</replaceable></option>
-        </term>
-        <listitem>
-          <para>Only query face indexed <replaceable>index</replaceable> of
-	  each file.</para>
-        </listitem>
-      </varlistentry>
       <varlistentry>
         <term><option>-f</option>
           <option>--format</option>
@@ -133,10 +117,10 @@ manpage.1: manpage.sgml
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option><replaceable>font-file</replaceable></option>
+        <term><option><replaceable>file</replaceable></option>
         </term>
         <listitem>
-          <para>Query <replaceable>font-file</replaceable> for font faces.</para>
+          <para>Scan <replaceable>file</replaceable> recursively for font faces.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -144,16 +128,17 @@ manpage.1: manpage.sgml
 
   <refsect1>
     <title>RETURN CODES</title>
-    <para><command>fc-query</command> returns error code 0 for successful parsing,
-    or 1 if any errors occured or if at least one font face could not be opened.</para>
+    <para><command>fc-scan</command> returns error code 0 if at least one font
+    was found or 1 otherwise.</para>
   </refsect1>
 
   <refsect1>
     <title>SEE ALSO</title>
 
     <para>
-      <command>fc-scan</command>(1)
-      <function>FcFreeTypeQuery</function>(3)
+      <command>fc-query</command>(1)
+      <function>FcFileScan</function>(3)
+      <function>FcDirScan</function>(3)
       <function>FcPatternFormat</function>(3)
       <command>fc-cat</command>(1)
       <command>fc-cache</command>(1)

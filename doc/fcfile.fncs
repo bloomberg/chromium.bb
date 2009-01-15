@@ -29,7 +29,7 @@
 @TYPE3@		FcFileCache *			@ARG3@		cache	
 @TYPE4@		FcBlanks *			@ARG4@		blanks	
 @TYPE5@		const FcChar8 *			@ARG5@		file	
-@TYPE6@		FcBool% 				@ARG6@		force	
+@TYPE6@		FcBool% 			@ARG6@		force
 @PURPOSE@	scan a font file
 @DESC@
 Scans a single file and adds all fonts found to <parameter>set</parameter>.
@@ -61,15 +61,15 @@ returns FcFalse.
 @TYPE3@		FcFileCache *			@ARG3@		cache	
 @TYPE4@		FcBlanks *			@ARG4@		blanks	
 @TYPE5@		const FcChar8 *			@ARG5@		dir	
-@TYPE6@		FcBool% 				@ARG6@		force	
-@PURPOSE@	DEPRECATED: formerly used to scan a font directory
+@TYPE6@		FcBool% 			@ARG6@		force
+@PURPOSE@	scan a font directory without caching it
 @DESC@
-This function does nothing aside from returning FcFalse. It used to scan an
-entire directory and add all fonts found to
-<parameter>set</parameter>.  If <parameter>force</parameter> was FcTrue, then
-the directory and all files within it were scanned even if information was
-present in the per-directory cache file or <parameter>cache</parameter>. Any
-subdirectories found were added to <parameter>dirs</parameter>.
+If <parameter>cache</parameter> is not zero or if <parameter>force</parameter>
+is FcFalse, this function currently returns FcFalse.  Otherwise, it scans an
+entire directory and adds all fonts found to <parameter>set</parameter>.
+Any subdirectories found are added to <parameter>dirs</parameter>.  Calling
+this function does not create any cache files.  Use FcDirCacheRead() if
+caching is desired.
 @@
 
 @RET@		FcBool 	

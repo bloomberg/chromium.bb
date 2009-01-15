@@ -135,6 +135,7 @@ manpage.1: manpage.sgml
       <command>fc-list</command>(1)
       <command>fc-match</command>(1)
       <command>fc-query</command>(1)
+      <command>fc-scan</command>(1)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:

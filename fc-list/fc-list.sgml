@@ -174,12 +174,13 @@ manpage.1: manpage.sgml
     <title>SEE ALSO</title>
 
     <para>
-      <command>fc-cat</command>(1)
-      <command>fc-cache</command>(1)
       <command>fc-match</command>(1)
-      <command>fc-query</command>(1)
       <function>FcFontList</function>(3)
       <function>FcPatternFormat</function>(3)
+      <command>fc-cat</command>(1)
+      <command>fc-cache</command>(1)
+      <command>fc-query</command>(1)
+      <command>fc-scan</command>(1)
     </para>
 
     <para>The fontconfig user's guide, in HTML format:

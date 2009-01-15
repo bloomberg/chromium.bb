@@ -565,6 +565,7 @@ fc-cat/Makefile
 fc-list/Makefile
 fc-match/Makefile
 fc-query/Makefile
+fc-scan/Makefile
 doc/Makefile
 doc/version.sgml
 test/Makefile

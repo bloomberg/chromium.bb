@@ -86,6 +86,8 @@ fc-match/fc-match
 fc-match/fc-match.1
 fc-query/fc-query
 fc-query/fc-query.1
+fc-scan/fc-scan
+fc-scan/fc-scan.1
 src/fontconfig.def
 fcalias.h
 fcaliastail.h
