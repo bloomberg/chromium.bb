@@ -86,7 +86,6 @@ usage (char *program, int error)
 #else
     fprintf (file, "  -i INDEX   (index)   display the INDEX face of each font file only\n");
     fprintf (file, "  -f FORMAT  (format)  use the given output format\n");
-    fprintf (file, "  -a         (all)     display unpruned sorted list of matches\n");
     fprintf (file, "  -V         (version) display font config version and exit\n");
     fprintf (file, "  -h         (help)    display this help and exit\n");
 #endif
@@ -106,9 +105,9 @@ main (int argc, char **argv)
     int		c;
 
 #if HAVE_GETOPT_LONG
-    while ((c = getopt_long (argc, argv, "i:sVvh", longopts, NULL)) != -1)
+    while ((c = getopt_long (argc, argv, "i:f:Vh", longopts, NULL)) != -1)
 #else
-    while ((c = getopt (argc, argv, "i:asVvh")) != -1)
+    while ((c = getopt (argc, argv, "i:f:Vh")) != -1)
 #endif
     {
 	switch (c) {
