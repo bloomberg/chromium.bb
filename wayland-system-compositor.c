@@ -922,6 +922,8 @@ create_output(struct egl_compositor *ec, struct udev_device *device)
 	output->crtc_id = encoder->crtc_id;
 	output->connector_id = connector->connector_id;
 	output->mode = mode;
+	output->x = 0;
+	output->y = 0;
 	output->width = mode->hdisplay;
 	output->height = mode->vdisplay;
 	output->stride = mode->hdisplay * 4;
