@@ -793,44 +793,6 @@ get_udev_property(struct udev_device *device, const char *name)
 	return NULL;
 }
 
-struct dri_driver_entry {
-	uint32_t vendor_id;
-	uint32_t chip_id;
-	const char *driver;
-};
-
-static const struct dri_driver_entry driver_map[] = {
-	/* FIXME: We need to extract this table from the dri drivers
-	 * and store it on disk.  For now, map my i965 to i965,
-	 * anything else intel to i915 and that's that. */
-
-	{ 0x8086, 0x2a02, "i965" },
-	{ 0x8086, ~0, "i915" },
-	{ 0, }
-};
-
-static const char *
-get_driver_for_device(struct udev_device *device)
-{
-	struct udev_device *parent;
-	const char *pci_id;
-	uint32_t vendor_id, chip_id;
-	int i;
-
-	parent = udev_device_get_parent(device);
-	pci_id = get_udev_property(parent, "PCI_ID");
-	if (sscanf(pci_id, "%x:%x", &vendor_id, &chip_id) != 2)
-		return NULL;
-
-	for (i = 0; i < ARRAY_LENGTH(driver_map); i++) {
-		if (driver_map[i].vendor_id == vendor_id &&
-		    (driver_map[i].chip_id == ~0 || driver_map[i].chip_id == chip_id)) 
-			return driver_map[i].driver;
-	}
-
-	return NULL;
-}
-
 static int
 init_egl(struct egl_compositor *ec, struct udev_device *device)
 {
@@ -841,18 +803,9 @@ init_egl(struct egl_compositor *ec, struct udev_device *device)
 		EGL_NONE		
 	};
 
-	const char *path, *driver;
 	EGLint major, minor;
 
-	path = udev_device_get_devnode(device);
-	driver = get_driver_for_device(device);
-	if (driver == NULL) {
-		fprintf(stderr, "didn't find driver for %s\n",
-			udev_device_get_devpath(device));
-		return -1;
-	}
-
-	ec->display = eglCreateDisplayNative(path, driver);
+	ec->display = eglCreateDisplayNative(device);
 	if (ec->display == NULL) {
 		fprintf(stderr, "failed to create display\n");
 		return -1;

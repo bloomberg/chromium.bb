@@ -341,8 +341,13 @@ gears_create(struct wl_display *display, int fd)
 	const int x = 200, y = 200, width = 450, height = 500;
 	EGLint major, minor, count;
 	EGLConfig configs[64];
+	struct udev *udev;
+	struct udev_device *device;
 	struct gears *gears;
 	int i;
+
+	udev = udev_new();
+	device = udev_device_new_from_syspath(udev, "/sys/class/drm/card0");
 
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
@@ -351,7 +356,7 @@ gears_create(struct wl_display *display, int fd)
 	gears->window = window_create(display, fd, "Wayland Gears",
 				      x, y, width, height);
 
-	gears->display = eglCreateDisplayNative("/dev/dri/card0", "i965");
+	gears->display = eglCreateDisplayNative(device);
 	if (gears->display == NULL)
 		die("failed to create egl display\n");
 
