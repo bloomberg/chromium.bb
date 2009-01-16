@@ -24,8 +24,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <i915_drm.h>
-#include <sys/ioctl.h>
 #include <time.h>
 #include <fcntl.h>
 #include <unistd.h>

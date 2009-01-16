@@ -28,8 +28,6 @@ $(libs) : LDLIBS += @FFI_LIBS@
 $(libs) :
 	gcc -shared $^ $(LDLIBS)  -o $@
 
-$(compositors) $(clients) : CFLAGS += @LIBDRM_CFLAGS@
-
 wayland-system-compositor :			\
 	wayland-system-compositor.o		\
 	evdev.o					\
