@@ -73,7 +73,8 @@ manpage.1: manpage.sgml
       </group>
       <arg><option>--version</option></arg>
       <arg><option>--help</option></arg>
-      <arg><option><replaceable>font-pattern</replaceable></option></arg>
+      <sbr>
+      <arg><option><replaceable>pattern</replaceable></option> <arg rep="repeat"><option><replaceable>element</replaceable></option></arg> </arg>
       
      </cmdsynopsis>
   </refsynopsisdiv>
@@ -81,14 +82,15 @@ manpage.1: manpage.sgml
     <title>DESCRIPTION</title>
 
     <para><command>&dhpackage;</command> matches
-    <replaceable>font-pattern</replaceable> (empty
+    <replaceable>pattern</replaceable> (empty
 pattern by default) using the normal fontconfig matching rules to find
 the best font available.  If <option>--sort</option> is given, the sorted list of best
-matching fonts is displayed.  With <option>--verbose</option>, the whole font pattern
-for each match is printed, otherwise only the file, family and style
-are printed.  The <option>--all</option> option works like
+matching fonts is displayed.
+The <option>--all</option> option works like
 <option>--sort</option> except that no pruning is done on the list of fonts.</para>
-
+If any elements are specified, only those are printed.
+Otherwise short file name, family, and style are printed, unless verbose
+output is requested.</para>
   </refsect1>
   <refsect1>
     <title>OPTIONS</title>
@@ -120,7 +122,9 @@ are printed.  The <option>--all</option> option works like
           <option>--verbose</option>
         </term>
         <listitem>
-          <para>Print whole font pattern for each match.</para>
+          <para>Print verbose output of the whole font pattern for each match,
+	        or <replaceable>element</replaceable>s if any is
+		provided.</para>
         </listitem>
       </varlistentry>
       <varlistentry>
@@ -150,13 +154,20 @@ are printed.  The <option>--all</option> option works like
         </listitem>
       </varlistentry>
       <varlistentry>
-        <term><option><replaceable>font-pattern</replaceable></option>
+        <term><option><replaceable>pattern</replaceable></option>
         </term>
         <listitem>
           <para>Displays fonts matching
-                <replaceable>font-pattern</replaceable> (uses empty pattern by default).</para>
+                <replaceable>pattern</replaceable> (uses empty pattern by default).</para>
         </listitem>
       </varlistentry>
+      <varlistentry>
+        <term><option><replaceable>element</replaceable></option>
+        </term>
+        <listitem>
+          <para>If set, the <replaceable>element</replaceable> property
+                is displayed for matching fonts.</para>
+        </listitem>
     </variablelist>
   </refsect1>
 

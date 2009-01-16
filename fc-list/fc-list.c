@@ -76,13 +76,13 @@ usage (char *program, int error)
     fprintf (file, "List fonts matching [pattern]\n");
     fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
-    fprintf (file, "  -v, --verbose        display entire font pattern\n");
+    fprintf (file, "  -v, --verbose        display entire font pattern verbosely\n");
     fprintf (file, "  -f, --format=FORMAT  use the given output format\n");
     fprintf (file, "  -q, --quiet          suppress all normal output, exit 1 if no fonts matched\n");
     fprintf (file, "  -V, --version        display font config version and exit\n");
     fprintf (file, "  -h, --help           display this help and exit\n");
 #else
-    fprintf (file, "  -v         (verbose) display entire font pattern\n");
+    fprintf (file, "  -v         (verbose) display entire font pattern verbosely\n");
     fprintf (file, "  -f FORMAT  (format)  use the given output format\n");
     fprintf (file, "  -q,        (quiet)   suppress all normal output, exit 1 if no fonts matched\n");
     fprintf (file, "  -V         (version) display font config version and exit\n");
@@ -144,13 +144,12 @@ main (int argc, char **argv)
     if (argv[i])
     {
 	pat = FcNameParse ((FcChar8 *) argv[i]);
-	if (!verbose)
-	    while (argv[++i])
-	    {
-		if (!os)
-		    os = FcObjectSetCreate ();
-		FcObjectSetAdd (os, argv[i]);
-	    }
+	while (argv[++i])
+	{
+	    if (!os)
+		os = FcObjectSetCreate ();
+	    FcObjectSetAdd (os, argv[i]);
+	}
     }
     else
 	pat = FcPatternCreate ();
@@ -170,9 +169,6 @@ main (int argc, char **argv)
 
 	for (j = 0; j < fs->nfont; j++)
 	{
-	    FcChar8 *font;
-	    FcChar8 *file;
-
 	    if (verbose)
 	    {
 		FcPatternPrint (fs->fonts[j]);
@@ -187,11 +183,14 @@ main (int argc, char **argv)
 	    }
 	    else
 	    {
-		font = FcNameUnparse (fs->fonts[j]);
+		FcChar8 *str;
+		FcChar8 *file;
+
+		str = FcNameUnparse (fs->fonts[j]);
 		if (FcPatternGetString (fs->fonts[j], FC_FILE, 0, &file) == FcResultMatch)
 		    printf ("%s: ", file);
-		printf ("%s\n", font);
-		free (font);
+		printf ("%s\n", str);
+		free (str);
 	    }
 	}
     }

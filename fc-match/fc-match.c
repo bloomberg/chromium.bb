@@ -69,25 +69,25 @@ usage (char *program, int error)
 {
     FILE *file = error ? stderr : stdout;
 #if HAVE_GETOPT_LONG
-    fprintf (file, "usage: %s [-savVh] [-f FORMAT] [--sort] [--all] [--verbose] [--format=FORMAT] [--version] [--help] [pattern]\n",
+    fprintf (file, "usage: %s [-savVh] [-f FORMAT] [--sort] [--all] [--verbose] [--format=FORMAT] [--version] [--help] [pattern] {element...}\n",
 	     program);
 #else
-    fprintf (file, "usage: %s [-savVh] [-f FORMAT] [pattern]\n",
+    fprintf (file, "usage: %s [-savVh] [-f FORMAT] [pattern] {element...}\n",
 	     program);
 #endif
-    fprintf (file, "List fonts matching [pattern]\n");
+    fprintf (file, "List best font matching [pattern]\n");
     fprintf (file, "\n");
 #if HAVE_GETOPT_LONG
     fprintf (file, "  -s, --sort           display sorted list of matches\n");
     fprintf (file, "  -a, --all            display unpruned sorted list of matches\n");
-    fprintf (file, "  -v, --verbose        display entire font pattern\n");
+    fprintf (file, "  -v, --verbose        display entire font pattern verbosely\n");
     fprintf (file, "  -f, --format=FORMAT  use the given output format\n");
     fprintf (file, "  -V, --version        display font config version and exit\n");
     fprintf (file, "  -h, --help           display this help and exit\n");
 #else
     fprintf (file, "  -s,        (sort)    display sorted list of matches\n");
     fprintf (file, "  -a         (all)     display unpruned sorted list of matches\n");
-    fprintf (file, "  -v         (verbose) display entire font pattern\n");
+    fprintf (file, "  -v         (verbose) display entire font pattern verbosely\n");
     fprintf (file, "  -f FORMAT  (format)  use the given output format\n");
     fprintf (file, "  -V         (version) display font config version and exit\n");
     fprintf (file, "  -h         (help)    display this help and exit\n");
@@ -102,6 +102,7 @@ main (int argc, char **argv)
     int		sort = 0, all = 0;
     FcChar8     *format = NULL;
     int		i;
+    FcObjectSet *os = 0;
     FcFontSet	*fs;
     FcPattern   *pat;
     FcResult	result;
@@ -148,7 +149,15 @@ main (int argc, char **argv)
 	return 1;
     }
     if (argv[i])
+    {
 	pat = FcNameParse ((FcChar8 *) argv[i]);
+	while (argv[++i])
+	{
+	    if (!os)
+		os = FcObjectSetCreate ();
+	    FcObjectSetAdd (os, argv[i]);
+	}
+    }
     else
 	pat = FcPatternCreate ();
 
@@ -192,17 +201,27 @@ main (int argc, char **argv)
 
 	for (j = 0; j < fs->nfont; j++)
 	{
+	    FcPattern *font;
+
+	    font = FcPatternFilter (fs->fonts[j], os);
+
 	    if (verbose)
 	    {
-		FcPatternPrint (fs->fonts[j]);
+		FcPatternPrint (font);
 	    }
 	    else if (format)
 	    {
 	        FcChar8 *s;
 
-		s = FcPatternFormat (fs->fonts[j], format);
-		printf ("%s", s);
+		s = FcPatternFormat (font, format);
 		free (s);
+	    }
+	    else if (os)
+	    {
+		FcChar8 *str;
+		str = FcNameUnparse (font);
+		printf ("%s\n", str);
+		free (str);
 	    }
 	    else
 	    {
@@ -210,7 +229,7 @@ main (int argc, char **argv)
 		FcChar8	*style;
 		FcChar8	*file;
 
-		if (FcPatternGetString (fs->fonts[j], FC_FILE, 0, &file) != FcResultMatch)
+		if (FcPatternGetString (font, FC_FILE, 0, &file) != FcResultMatch)
 		    file = (FcChar8 *) "<unknown filename>";
 		else
 		{
@@ -218,16 +237,23 @@ main (int argc, char **argv)
 		    if (slash)
 			file = slash+1;
 		}
-		if (FcPatternGetString (fs->fonts[j], FC_FAMILY, 0, &family) != FcResultMatch)
+		if (FcPatternGetString (font, FC_FAMILY, 0, &family) != FcResultMatch)
 		    family = (FcChar8 *) "<unknown family>";
-		if (FcPatternGetString (fs->fonts[j], FC_STYLE, 0, &style) != FcResultMatch)
+		if (FcPatternGetString (font, FC_STYLE, 0, &style) != FcResultMatch)
 		    style = (FcChar8 *) "<unknown style>";
 
 		printf ("%s: \"%s\" \"%s\"\n", file, family, style);
 	    }
+
+	    FcPatternDestroy (font);
 	}
 	FcFontSetDestroy (fs);
     }
+
+    if (os)
+	FcObjectSetDestroy (os);
+
     FcFini ();
+
     return 0;
 }
