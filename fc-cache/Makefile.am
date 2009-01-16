@@ -55,7 +55,7 @@ if USEDOCBOOK
 ${man_MANS}: ${SGML}	
 	$(RM) $@
 	$(DOC2MAN) ${SGML}
-	$(RM) manpage.refs manpage.links
+	$(RM) manpage.*
 
 all-local: $(man_MANS)
 

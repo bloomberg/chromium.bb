@@ -121,8 +121,7 @@ func.refs: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sg
 	$(DOC2MAN) -o devel-man local-fontconfig-devel.sgml && \
 	mv devel-man/manpage.refs func.refs && \
 	mv devel-man/*.3 . && \
-	$(RM) devel-man/manpage.links && \
-	rm -f devel-man/manpage.log
+	$(RM) devel-man/manpage.* && \
 	rmdir devel-man
 
 local-fontconfig-devel.sgml: fontconfig-devel.sgml
@@ -133,7 +132,7 @@ $(DOC_FUNCS_SGML): edit-sgml$(EXEEXT) $(FNCS_TMPL)
 fonts-conf.5: local-fontconfig-user.sgml version.sgml confdir.sgml
 	$(RM) $@
 	$(DOC2MAN) local-fontconfig-user.sgml && \
-	$(RM) manpage.refs manpage.links
+	$(RM) manpage.*
 	
 local-fontconfig-user.sgml: fontconfig-user.sgml
 	$(LN_S) $< $@
