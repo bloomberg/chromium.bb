@@ -1027,7 +1027,7 @@ FcPatternFilter (FcPattern *p, const FcObjectSet *os)
 	    }
 	}
     }
-    return p;
+    return ret;
 
 bail0:
     FcPatternDestroy (ret);
