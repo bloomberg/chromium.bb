@@ -93,9 +93,7 @@ FFBHEADERS = 	ffb_drv.h $(DRMHEADERS)
 NOUVEAUHEADERS = nouveau_drv.h nouveau_drm.h nouveau_reg.h $(DRMHEADERS)
 XGIHEADERS = xgi_cmdlist.h xgi_drv.h xgi_misc.h xgi_regs.h $(DRMHEADERS)
 
-PROGS = dristat drmstat
-
-CLEANFILES = *.o *.ko $(PROGS) .depend .*.flags .*.d .*.cmd *.mod.c drm_pciids.h .tmp_versions
+CLEANFILES = *.o *.ko .depend .*.flags .*.d .*.cmd *.mod.c drm_pciids.h .tmp_versions
 
 # VERSION is not defined from the initial invocation.  It is defined when
 # this Makefile is invoked from the kernel's root Makefile.
@@ -220,23 +218,6 @@ clean cleandir:
 
 $(MODULE_LIST)::
 	make DRM_MODULES=$@ modules
-
-# Build test utilities
-
-PRGCFLAGS = $(CFLAGS) -g -ansi -pedantic -DPOSIX_C_SOURCE=199309L \
-	    -D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BSD_SOURCE -D_SVID_SOURCE \
-	    -I. -I../../..
-
-DRMSTATLIBS = -L../../.. -L.. -ldrm -lxf86_os \
-	      -L../../../../dummylib -ldummy -lm
-
-programs: $(PROGS)
-
-dristat: dristat.c
-	$(CC) $(PRGCFLAGS) $< -o $@
-
-drmstat: drmstat.c
-	$(CC) $(PRGCFLAGS) $< -o $@ $(DRMSTATLIBS)
 
 install:
 	make -C $(LINUXDIR) $(GETCONFIG) SUBDIRS=`/bin/pwd` DRMSRCDIR=`/bin/pwd` modules_install
