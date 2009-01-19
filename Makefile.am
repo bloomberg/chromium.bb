@@ -32,6 +32,7 @@ EXTRA_DIST = \
         fontconfig.spec.in \
         fontconfig.spec \
 	fontconfig-zip.in
+CLEANFILES = fonts.conf
 DISTCLEANFILES = config.cache ChangeLog doltcompile
 MAINTAINERCLEANFILES = \
 	$(srcdir)/aclocal.m4 \
@@ -81,7 +82,17 @@ ChangeLog:
 
 .PHONY: ChangeLog
 
-install-data-local:
+fonts.conf: fonts.conf.in Makefile
+	sed \
+		-e 's,@FC_CACHEDIR\@,$(FC_CACHEDIR),g' \
+		-e 's,@FC_DEFAULT_FONTS\@,$(FC_DEFAULT_FONTS),g' \
+		-e 's,@FC_FONTPATH\@,$(FC_FONTPATH),g' \
+		-e 's,@PACKAGE\@,$(PACKAGE),g' \
+		-e 's,@VERSION\@,$(VERSION),g' \
+		$< > $@.tmp && \
+	mv $@.tmp $@
+
+install-data-local: fonts.conf
 	$(mkinstalldirs) $(DESTDIR)$(configdir) $(DESTDIR)$(fc_cachedir)
 	if [ -f $(DESTDIR)$(configdir)/fonts.conf ]; then \
 	  echo "backing up existing $(DESTDIR)$(configdir)/fonts.conf"; \

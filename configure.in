@@ -455,7 +455,7 @@ no|yes)
 	if test "$os_win32" = "yes"; then
 		fc_cachedir="WINDOWSTEMPDIR_FONTCONFIG_CACHE"
 	else
-		fc_cachedir=`eval echo "${localstatedir}/cache/"${PACKAGE}`
+		fc_cachedir='${localstatedir}/cache/${PACKAGE}'
 	fi
 	;;
 *)
@@ -571,6 +571,5 @@ doc/version.sgml
 test/Makefile
 fontconfig.spec
 fontconfig.pc
-fonts.conf
 fontconfig-zip
 ])
