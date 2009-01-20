@@ -272,13 +272,20 @@ ExceptionHandler::~ExceptionHandler() {
   // Some of the objects were only initialized if out of process
   // registration was not done.
   if (!IsOutOfProcess()) {
+#ifdef BREAKPAD_NO_TERMINATE_THREAD
     // Clean up the handler thread and synchronization primitives. The handler
     // thread is either waiting on the semaphore to handle a crash or it is
     // handling a crash. Coming out of the wait is fast but wait more in the
-    // eventuality a crash is handled.
+    // eventuality a crash is handled.  This compilation option results in a
+    // deadlock if the exception handler is destroyed while executing code
+    // inside DllMain.
     is_shutdown_ = true;
     ReleaseSemaphore(handler_start_semaphore_, 1, NULL);
     WaitForSingleObject(handler_thread_, kWaitForHandlerThreadMs);
+#else
+    TerminateThread(handler_thread_, 1);
+#endif  // BREAKPAD_NO_TERMINATE_THREAD
+
     DeleteCriticalSection(&handler_critical_section_);
     CloseHandle(handler_start_semaphore_);
     CloseHandle(handler_finish_semaphore_);
@@ -321,6 +328,8 @@ DWORD ExceptionHandler::ExceptionHandlerThreadMain(void* lpParameter) {
     }
   }
 
+  // This statement is not reached when the thread is unconditionally
+  // terminated by the ExceptionHandler destructor.
   return 0;
 }
 
