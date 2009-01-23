@@ -550,7 +550,10 @@ FcFontSetMatch (FcConfig    *config,
 	    return 0;
     }
     best = FcFontSetMatchInternal (config, sets, nsets, p, result);
-    return FcFontRenderPrepare (config, p, best);
+    if (best)
+	return FcFontRenderPrepare (config, p, best);
+    else
+	return NULL;
 }
 
 FcPattern *
@@ -575,7 +578,10 @@ FcFontMatch (FcConfig	*config,
 	sets[nsets++] = config->fonts[FcSetApplication];
 
     best = FcFontSetMatchInternal (config, sets, nsets, p, result);
-    return FcFontRenderPrepare (config, p, best);
+    if (best)
+	return FcFontRenderPrepare (config, p, best);
+    else
+	return NULL;
 }
 
 typedef struct _FcSortNode {
