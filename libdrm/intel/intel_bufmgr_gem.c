@@ -99,6 +99,7 @@ typedef struct _drm_intel_bufmgr_gem {
     struct drm_intel_gem_bo_bucket cache_bucket[DRM_INTEL_GEM_BO_BUCKETS];
 
     uint64_t gtt_size;
+    int available_fences;
 } drm_intel_bufmgr_gem;
 
 struct _drm_intel_bo_gem {
@@ -1129,6 +1130,34 @@ drm_intel_gem_bo_get_aperture_space(drm_intel_bo *bo)
 }
 
 /**
+ * Count the number of buffers in this list that need a fence reg
+ *
+ * If the count is greater than the number of available regs, we'll have
+ * to ask the caller to resubmit a batch with fewer tiled buffers.
+ *
+ * This function under-counts buffers referenced from other buffers
+ * (such as the targets of the batchbuffer), and over-counts if the same
+ * buffer appears twice in the array.
+ */
+static unsigned int
+drm_intel_gem_total_fences(drm_intel_bo **bo_array, int count)
+{
+    int i;
+    unsigned int total = 0;
+
+    for (i = 0; i < count; i++) {
+	drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo_array[i];
+
+	if (bo_gem == NULL)
+	    continue;
+
+	if (bo_gem->tiling_mode != I915_TILING_NONE)
+	    total++;
+    }
+    return total;
+}
+
+/**
  * Clear the flag set by drm_intel_gem_bo_get_aperture_space() so we're ready
  * for the next drm_intel_bufmgr_check_aperture_space() call.
  */
@@ -1206,9 +1235,17 @@ drm_intel_gem_check_aperture_space(drm_intel_bo **bo_array, int count)
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo_array[0]->bufmgr;
     unsigned int total = 0;
     unsigned int threshold = bufmgr_gem->gtt_size * 3 / 4;
+    int total_fences;
+
+    /* Check for fence reg constraints if necessary */
+    if (bufmgr_gem->available_fences) {
+	total_fences = drm_intel_gem_total_fences(bo_array, count);
+	if (total_fences > bufmgr_gem->available_fences)
+	    return -1;
+    }
 
     total = drm_intel_gem_estimate_batch_space(bo_array, count);
-    
+
     if (total > threshold)
 	total = drm_intel_gem_compute_batch_space(bo_array, count);
 
@@ -1234,6 +1271,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 {
     drm_intel_bufmgr_gem *bufmgr_gem;
     struct drm_i915_gem_get_aperture aperture;
+    drm_i915_getparam_t gp;
     int ret, i;
 
     bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
@@ -1255,6 +1293,15 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	fprintf(stderr, "Assuming %dkB available aperture size.\n"
 		"May lead to reduced performance or incorrect rendering.\n",
 		(int)bufmgr_gem->gtt_size / 1024);
+    }
+
+    gp.param = I915_PARAM_NUM_FENCES_AVAIL;
+    gp.value = &bufmgr_gem->available_fences;
+    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+    if (ret) {
+	fprintf(stderr, "get fences failed: %d\n", ret);
+	fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
+	bufmgr_gem->available_fences = 0;
     }
 
     /* Let's go with one relocation per every 2 dwords (but round down a bit
