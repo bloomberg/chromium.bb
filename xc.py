@@ -1,410 +1,533 @@
 #!/usr/bin/python
 
 import hashlib
-import inspect
 import string
 import sys
 
- 
-def EscapeComment(comment):
-  # This isn't quite right.  At the very least, a "*/" in the comment string
-  # gets turned into "(*)/".
-  return "/* " + comment + " */"
+
+def StringContainsOnly(s, chars):
+  for c in s:
+    if chars.find(c) == -1:
+      return False
+  return True
 
 
-def EscapeString(s):
-  # Need to quote internal quotation marks and backslashes.
-  return '"' + s + '"'
+class XCObject(object):
+  _schema = {}
+  _encode_transforms = []
+  i = 0
+  while i < ord(" "):
+    _encode_transforms.append("\\U%04x" % i)
+    i = i + 1
+  _encode_transforms[7] = "\\a"
+  _encode_transforms[8] = "\\b"
+  _encode_transforms[9] = "\\t"
+  _encode_transforms[10] = "\\n"
+  _encode_transforms[11] = "\\v"
+  _encode_transforms[12] = "\\f"
+  _encode_transforms[13] = "\\n"
 
+  def __init__(self, id=None, properties=None):
+    self.id = id
+    self.parent = None
+    self._properties = {}
+    self._SetDefaultsFromSchema()
+    self.UpdateProperties(properties)
 
-def EscapeValue(value):
-  # These heuristics are too simplistic.  Other names that should be quoted are
-  # "<group>" and "com.apple.product-type.library.static" (but check that this
-  # is right for all contexts), and note that a single dot isn't enough to make
-  # something be quoted, so it must be the dash?
-  if value == "" or string.find(value, " ") != -1 or string.find(value, "<") != -1:
-    return EscapeString(value)
-  return value
+  def Name(self):
+    # Note: not all objects need to be nameable, and not all that do have a
+    # "name" property.  Override as needed.
+    if "name" in self._properties:
+      return self._properties["name"]
+    return None
 
+  def Comment(self):
+    raise NotImplementedError, \
+          self.__class__.__name__ + " must implement Comment"
 
-def XCPrint(file, tabs, line):
-  print >> file, "\t" * tabs + line
+  def ShouldPrintOnOneLine(self):
+    return False
 
+  def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
+    def HashUpdate(hash, data):
+      # TODO(mark): Improve.
+      hash.update(str(len(data)))
+      hash.update(data)
 
-def XCObjPrintBegin(file, tabs, object):
-  line = object.id.id + " "
-  if object.Comment():
-    line += EscapeComment(object.Comment()) + " "
-  line += "= {"
-  XCPrint(file, tabs, line)
-  XCKVPrint(file, tabs + 1, "isa", object.__class__)
+    HashUpdate(hash, self.__class__.__name__)
+    name = self.Name()
+    if name != None:
+      HashUpdate(hash, name)
 
+    if recursive:
+      for child in self.Children():
+        child.ComputeIDs(recursive, overwrite, hash.copy())
 
-def XCObjPrintEnd(file, tabs, object):
-  XCPrint(file, tabs, "};")
+    if overwrite or self.id == None:
+      self.id = hash.hexdigest()[0:24].upper()
 
+  def Children(self):
+    children = []
+    for property, attributes in self._schema.iteritems():
+      (is_list, property_type, is_strong) = attributes[0:3]
+      if is_strong and property in self._properties:
+        if not is_list:
+          children.append(self._properties[property])
+        else:
+          children.extend(self._properties[property])
+    return children
 
-def XCKVPrint(file, tabs, key, value, comment=None):
-  if value is None:
-    return
+  def Descendants(self):
+    children = self.Children()
+    descendants = [self]
+    for child in children:
+      descendants.extend(child.Descendants())
+    return descendants
 
-  line = key + " = "
-  if inspect.isclass(value):
-    line += value.__name__
-  elif isinstance(value, XCObject):
-    line += value.id.id
-  elif isinstance(value, str):
-    line += EscapeValue(value)
-  else:
-    line += str(value)
-  if isinstance(value, XCObject) and value.Comment():
-    line += " " + EscapeComment(value.Comment())
-  line += ";"
-  XCPrint(file, tabs, line)
+  def _EncodeComment(self, comment):
+    # Mimic Xcode behavior.  Wrap the comment in "/*" and "*/", but if the
+    # string already contains a "*/", turn it into "(*)/".  This keeps the file
+    # writer from outputting something that would be treated as the end of a
+    # comment in the middle of something intended to be entirely a comment.
+    return "/* " + comment.replace("*/", "(*)/") + " */"
 
+  def _EncodeString(self, value):
+    # Use quotation marks when any character outside of the range A-Z, a-z, 0-9,
+    # $ (dollar sign), . (period), and _ (underscore) is present.  Also use
+    # quotation marks to represent empty strings.
+    # Escape " (double-quote) and \ (backslash) by preceding them with a
+    # backslash.
+    # Some characters below the printable ASCII range are encoded specially:
+    #     7 ^G BEL is encoded as "\a"
+    #     8 ^H BS  is encoded as "\b"
+    #    11 ^K VT  is encoded as "\v"
+    #    12 ^L NP  is encoded as "\f"
+    #   127 ^? DEL is passed through as-is without escaping
+    #  - In PBXBuildFile objects:
+    #     9 ^I HT  is passed through as-is without escaping
+    #    10 ^J NL  is passed through as-is without escaping
+    #    13 ^M CR  is passed through as-is without escaping
+    #  - In other objects:
+    #     9 ^I HT  is encoded as "\t"
+    #    10 ^J NL  is encoded as "\n"
+    #    13 ^M CR  is encoded as "\n rendering it indistinguishable from
+    #              10 ^J NL
+    # All other nonprintable characters within the ASCII range (0 through 127
+    # inclusive) are encoded as "\U001f" referring to the Unicode code point in
+    # hexadecimal.  For example, character 14 (^N SO) is encoded as "\U000e".
+    # Characters above the ASCII range are passed through to the output encoded
+    # as UTF-8 without any escaping.
 
-def XCLPrint(file, tabs, key, list):
-  if list is None:
-    return
+    if value != "" and StringContainsOnly(value,
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$._"):
+      return value
 
-  XCPrint(file, tabs, key + " = (")
-  for item in list:
-    XCPrint(file, tabs + 1, item.id.id + " " +
-            EscapeComment(item.Comment()) + ",")
-  XCPrint(file, tabs, ");")
+    encoded = value.replace('\\', '\\\\')
+    encoded = encoded.replace('"', '\\"')
+    i = 0
+    while i < len(self._encode_transforms):
+      encoded = encoded.replace(chr(i), self._encode_transforms[i])
+      i = i + 1
 
+    return '"' + encoded + '"'
 
-def XCDPrint(file, tabs, key, dict):
-  if dict is None:
-    return
+  def _XCPrint(self, file, tabs, line):
+    # print >> file, "\t" * tabs + line,
+    file.write("\t" * tabs + line)
 
-  XCPrint(file, tabs, key + " = {")
-  for element_key, element_value in dict.iteritems():
-    # PRINT SOMETHING / does element_key need escaping if it has weird chars?
-    XCPrint(file, tabs + 1, element_key + " = " +
-                            EscapeValue(element_value) + ";")
-  XCPrint(file, tabs, "};")
+  def _XCPrintableValue(self, tabs, value):
+    printable = ""
+    comment = None
 
+    should_print_on_one_line = self.ShouldPrintOnOneLine()
+    if should_print_on_one_line:
+      sep = " "
+      element_tabs = ""
+      end_tabs = ""
+    else:
+      sep = "\n"
+      element_tabs = "\t" * (tabs + 1)
+      end_tabs = "\t" * tabs
 
-class XCID(object):
-  def __init__(self, id=None):
-    self.id = id 
+    if isinstance(value, XCObject):
+      printable += value.id
+      comment = value.Comment()
+    elif isinstance(value, str):
+      printable += self._EncodeString(value)
+    elif isinstance(value, int):
+      printable += str(value)
+    elif isinstance(value, list):
+      printable = "(" + sep
+      for item in value:
+        printable += element_tabs + \
+                     self._XCPrintableValue(tabs, item) + "," + sep
+      printable += end_tabs + ")"
+    elif isinstance(value, dict):
+      printable = "{" + sep
+      for item_key, item_value in sorted(value.iteritems()):
+        printable += element_tabs + \
+                     self._XCPrintableValue(tabs, item_key) + " = " + \
+                     self._XCPrintableValue(tabs, item_value) + ";" + sep
+      printable += end_tabs + "}"
+    else:
+      raise TypeError, "Can't make " + value.__class__.__name__ + " printable"
 
+    if comment != None:
+      printable += " " + self._EncodeComment(comment)
 
-class XCProject(object):
-  def __init__(self,
-               archive_version=1,
-               classes={},
-               object_version=45,
-               root_object=None):
-    self.archive_version=archive_version
-    self.classes=classes
-    self.object_version=object_version
-    self.root_object=root_object
+    return printable
+
+  def _XCKVPrint(self, file, tabs, key, value):
+    printable = ""
+
+    should_print_on_one_line = self.ShouldPrintOnOneLine()
+    if not should_print_on_one_line:
+      printable = "\t" * tabs
+
+    printable += self._XCPrintableValue(tabs, key) + " = " + \
+                 self._XCPrintableValue(tabs, value) + ";"
+    if should_print_on_one_line:
+      printable += " "
+    else:
+      printable += "\n"
+
+    self._XCPrint(file, 0, printable)
 
   def Print(self, file=sys.stdout):
-    XCPrint(file, 0, "// !$*UTF8*$!")
-    XCPrint(file, 0, "{")
-    XCKVPrint(file, 1, "archiveVersion", self.archive_version)
-    XCDPrint(file, 1, "classes", self.classes)
-    XCKVPrint(file, 1, "objectVersion", self.object_version)
-    XCPrint(file, 1, "objects = {")
+    self.VerifyHasRequiredProperties()
+
+    should_print_on_one_line = self.ShouldPrintOnOneLine()
+    if should_print_on_one_line:
+      sep = " "
+      end_tabs = 0
+    else:
+      sep = "\n"
+      end_tabs = 2
+
+    self._XCPrint(file, 2, self._XCPrintableValue(2, self) + " = {" + sep)
+
+    self._XCKVPrint(file, 3, "isa", self.__class__.__name__)
+
+    for property, value in sorted(self._properties.iteritems()):
+      self._XCKVPrint(file, 3, property, value)
+
+    self._XCPrint(file, end_tabs, "};\n")
+
+  def UpdateProperties(self, properties):
+    if properties == None:
+      return
+
+    for property, value in properties.iteritems():
+      if not property in self._schema:
+        raise KeyError, property + " not in " + self.__class__.__name__
+
+      (is_list, property_type, is_strong) = self._schema[property][0:3]
+
+      if is_list:
+        if value.__class__ != list:
+          raise TypeError, \
+                property + " of " + self.__class__.__name__ + " must be list"
+        for item in value:
+          if item.__class__ != property_type:
+            raise TypeError, \
+                  "item of " + property + " of " + self.__class__.__name__ + \
+                  " must be " + property_type.__name__
+      elif value.__class__ != property_type:
+        raise TypeError, \
+              property + " of " + self.__class__.__name__ + " must be " + \
+              property_type.__name__
+
+      self._properties[property] = value
+
+      if is_strong:
+        if not is_list:
+          value.parent = self
+        else:
+          for item in value:
+            item.parent = self
+
+  def VerifyHasRequiredProperties(self):
+    for property, attributes in self._schema.iteritems():
+      (is_list, property_type, is_strong, is_required) = attributes[0:4]
+      if is_required and not property in self._properties:
+        raise KeyError, self.__class__.__name__ + " requires " + property
+
+  def _SetDefaultsFromSchema(self):
+    defaults = {}
+    for property, attributes in self._schema.iteritems():
+      (is_list, property_type, is_strong, is_required) = attributes[0:4]
+      if is_required and len(attributes) >= 5:
+        default = attributes[4]
+        defaults[property] = default
+
+    if len(defaults) > 0:
+      self.UpdateProperties(defaults)
+
+
+class XCHierarchicalElement(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "comments":       [0, str, 0, 0],
+    "fileEncoding":   [0, str, 0, 0],
+    "includeInIndex": [0, int, 0, 0],
+    "indentWidth":    [0, int, 0, 0],
+    "lineEnding":     [0, int, 0, 0],
+    "sourceTree":     [0, str, 0, 1],
+    "tabWidth":       [0, int, 0, 0],
+    "usesTabs":       [0, int, 0, 0],
+    "wrapsLines":     [0, int, 0, 0],
+  })
+
+
+class PBXGroup(XCHierarchicalElement):
+  _schema = XCHierarchicalElement._schema.copy()
+  _schema.update({
+    "children": [1, XCHierarchicalElement, 1, 1, []],
+    "name":     [0, str,                   0, 0],
+    "path":     [0, str,                   0, 0],
+  })
+
+  def Comment(self):
+    if ("name" in self._properties):
+      return self._properties["name"]
+    return None
+
+
+class PBXFileReference(XCHierarchicalElement):
+  _schema = XCHierarchicalElement._schema.copy()
+  _schema.update({
+    "explicitFileType":  [0, str, 0, 0],
+    "lastKnownFileType": [0, str, 0, 0],
+    "name":              [0, str, 0, 0],
+    "path":              [0, str, 0, 1],
+  })
+
+
+class XCBuildConfiguration(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "baseConfigurationReference": [0, PBXFileReference, 0, 0],
+    "buildSettings":              [0, dict, 0, 1, {}],
+    "name":                       [0, str,  0, 1],
+  })
+
+  def Comment(self):
+    return self._properties["name"]
+
+
+class XCConfigurationList(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "buildConfigurations":           [1, XCBuildConfiguration, 1, 1, []],
+    "defaultConfigurationIsVisible": [0, int,                  0, 1, 1],
+    "defaultConfigurationName":      [0, str,                  0, 1],
+  })
+
+  def Comment(self):
+    return "Build configuration list for " + \
+           self.parent.__class__.__name__ + ' "' + self.parent.Name() + '"'
+
+
+class PBXBuildFile(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "fileRef": [0, PBXFileReference, 0, 1],
+  })
+
+
+class XCBuildPhase(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "buildActionMask":                    [0, int,          0, 1, 0x7fffffff],
+    "files":                              [1, PBXBuildFile, 1, 1, []],
+    "runOnlyForDeploymentPostprocessing": [0, int,          0, 1, 0],
+  })
+
+
+class PBXSourcesBuildPhase(XCBuildPhase):
+  _schema = XCBuildPhase._schema.copy()
+  _schema.update({
+  })
+
+  def Comment(self):
+    return "Sources"
+
+
+class PBXFrameworksBuildPhase(XCBuildPhase):
+  _schema = XCBuildPhase._schema.copy()
+  _schema.update({
+  })
+
+  def Comment(self):
+    return "Frameworks"
+
+
+class PBXShellScriptBuildPhase(XCBuildPhase):
+  _schema = XCBuildPhase._schema.copy()
+  _schema.update({
+    "inputPaths":       [1, str, 0, 1, []],
+    "name":             [0, str, 0, 0],
+    "outputPaths":      [1, str, 0, 1, []],
+    "shellPath":        [0, str, 0, 1, "/bin/sh"],
+    "shellScript":      [0, str, 0, 1],
+    "showEnvVarsInLog": [0, int, 0, 0],
+  })
+
+  def Comment(self):
+    if "name" in self._properties:
+      return self._properties["name"]
+
+    return "ShellScript"
+
+
+# Provide forward declarations for PBXProject and XCTarget.  The problem here
+# is that XCTarget depends on PBXTargetDependency, which depends on
+# PBXContainerItemProxy, which in turn depends on XCTarget again.  The circle
+# can't be broken, so advise Python of the existence of XCTarget before using
+# it in PBXContainerItemProxy, in advance of defining XCTarget.  The same
+# problem occurs with PBXProject, which depends on XCTarget and is itself
+# depended on by PBXContainerItemProxy.
+class PBXProject(XCObject):
+  pass
+class XCTarget(XCObject):
+  pass
+
+class PBXContainerItemProxy(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "containerPortal":      [0, PBXProject, 0, 1],
+    "proxyType":            [0, int,        0, 1],  # TODO(mark): Default value?
+    "remoteGlobalIDString": [0, XCTarget,   0, 1],  # TODO(mark): Just a str?
+    "remoteInfo":           [0, str,        0, 1],
+  })
+
+
+class PBXTargetDependency(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "target":      [0, XCTarget,              0, 1],
+    "targetProxy": [1, PBXContainerItemProxy, 1, 1],
+  })
+
+
+class PBXBuildRule(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "compilerSpec": [0, str, 0, 1],
+    "filePatterns": [0, str, 0, 0],
+    "fileType":     [0, str, 0, 1],
+    "isEditable":   [0, int, 0, 1, 1],
+    "outputFiles":  [1, str, 0, 1, []],
+    "script":       [0, str, 0, 0],
+  })
+
+
+class XCTarget(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "buildConfigurationList": [0, XCConfigurationList, 1, 1],
+    "buildPhases":            [1, XCBuildPhase,        1, 1, []],
+    "dependencies":           [1, PBXTargetDependency, 1, 1, []],
+    "name":                   [0, str,                 0, 1],
+    "productName":            [0, str,                 0, 1],
+  })
+
+
+class PBXNativeTarget(XCTarget):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "buildRules":       [1, PBXBuildRule, 1, 1, []],
+    "productReference": [0, PBXBuildFile, 0, 1],
+    "productType":      [0, str,          0, 1],
+  })
+
+
+class PBXProject(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "buildConfigurationList": [0, XCConfigurationList, 1, 1],
+    "compatibilityVersion":   [0, str,                 0, 1, "Xcode 3.1"],
+    "hasScannedForEncodings": [0, int,                 0, 1, 1],
+    "mainGroup":              [0, PBXGroup,            1, 1],
+    "projectDirPath":         [0, str,                 0, 1, ""],
+    "projectRoot":            [0, str,                 0, 1, ""],
+    "targets":                [1, XCTarget,            1, 1, []],
+  })
+
+  def Comment(self):
+    return "Project object"
+
+  def Name(self):
+    return "FakeNameFixMe"
+
+
+class XCProjectFile(XCObject):
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "archiveVersion": [0, int,        0, 1, 1],
+    "classes":        [0, dict,       0, 1, {}],
+    "objectVersion":  [0, int,        0, 1, 45],
+    "rootObject":     [0, PBXProject, 1, 1],
+  })
+
+  def Print(self, file=sys.stdout):
+    self.VerifyHasRequiredProperties()
+
+    # Add the special "objects" property, which will be caught and handled
+    # separately during printing.  This structure allows a fairly standard
+    # loop do the normal printing.
+    self._properties["objects"] = {}
+    self._XCPrint(file, 0, "// !$*UTF8*$!\n")
+    if self.ShouldPrintOnOneLine():
+      self._XCPrint(file, 0, "{ ")
+    else:
+      self._XCPrint(file, 0, "{\n")
+    for property, value in sorted(self._properties.iteritems(),
+                                  cmp=lambda x, y: cmp(x, y)):
+      if property == "objects":
+        self._PrintObjects(file)
+      else:
+        self._XCKVPrint(file, 1, property, value)
+    self._XCPrint(file, 0, "}\n")
+    del self._properties["objects"]
+
+  def _PrintObjects(self, file):
+    should_print_on_one_line = self.ShouldPrintOnOneLine()
+    if should_print_on_one_line:
+      self._XCPrint(file, 0, "objects = {")
+    else:
+      self._XCPrint(file, 1, "objects = {\n")
 
     objects_by_class = {}
-    for object in self.root_object.Descendants():
+    for object in self.Descendants():
+      if object == self:
+        continue
       class_name = object.__class__.__name__
       if not class_name in objects_by_class:
         objects_by_class[class_name] = []
       objects_by_class[class_name].append(object)
 
     for class_name in sorted(objects_by_class):
-      XCPrint(file, 0, "")
-      XCPrint(file, 0, "/* Begin " + class_name + " section */")
-      for object in sorted(objects_by_class[class_name],
-                           cmp=lambda x,y: cmp(x.id.id, y.id.id)):
-        object.Print()
-      XCPrint(file, 0, "/* End " + class_name + " section */")
+      self._XCPrint(file, 0, "\n")
+      self._XCPrint(file, 0, "/* Begin " + class_name + " section */\n")
+      for object in sorted(objects_by_class[class_name]):
+        object.Print(file)
+      self._XCPrint(file, 0, "/* End " + class_name + " section */\n")
 
-    XCPrint(file, 1, "};")
-    XCKVPrint(file, 1, "rootObject", self.root_object)
-    XCPrint(file, 0, "}")
-
-
-class XCObject(object):
-  """Base Xcode project file object.
-
-  XCObject is a bare class intended to serve as a base for other types of
-  Xcode objects.
-
-  Attributes:
-    Note: Although unset in XCObject, each object of a derived class should
-          set id and parent appropriately.  As an exception, the root
-          PBXProject object need not have a parent set.
-    id: An object's unique identifying value represented as a 24-character
-        hexadecimal string.
-    parent: A reference to the object's owner.
-  """
-
-  def __init__(self, id=None):
-    self.id = id
-    self.name = None
-
-  def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
-    hash.update(self.__class__.__name__)
-    if self.name != None:
-      hash.update(self.name)
-
-    if recursive:
-      for child in self.Children():
-        child.ComputeIDs(recursive, overwrite, hash.copy())
-
-    if overwrite or not self.id:
-      self.id = XCID(hash.hexdigest()[0:24].upper())
-
-  def Children(self):
-    return []
-
-  def Descendants(self):
-    """Returns a list containing a reference to an object and all of its
-    descendants.
-
-    Derived classes that can serve as parents should override this method.
-    Every element in the returned list must be of an XCObject subclass.
-    """
-    children = self.Children()
-    descendants = [self]
-    for child in children:
-      descendants += child.Descendants()
-    return descendants
-
-  def Comment(self):
-    """Returns a comment describing an object, formatted /* like this. */
-
-    Derived classes should override this method.
-    """
-    raise "Can't comment on a raw XCObject"
-
-  def Print(self, file=sys.stdout):
-    """Prints an object in Xcode project file format to file.
-
-    Derived classes should override this method.
-    """
-    raise "Can't print a raw XCObject"
+    if should_print_on_one_line:
+      self._XCPrint(file, 0, "}; ")
+    else:
+      self._XCPrint(file, 1, "};\n")
 
 
-class PBXProject(XCObject):
-  """The root object in an Xcode project file.
+# TEST TEST TEST
 
-  A project file has one PBXProject object, which is accessed by the
-  rootObject property in the proejct file's root dictionary.
+c = XCBuildConfiguration(properties={"name":"Release"})
+cd = XCBuildConfiguration(properties={"name":"Debug"})
+l = XCConfigurationList(properties={"defaultConfigurationName":"Release","buildConfigurations":[cd,c]})
+g = PBXGroup(properties={"sourceTree":"<group>"})
+o = PBXProject(properties={"mainGroup":g, "buildConfigurationList":l})
+f = XCProjectFile(properties={"rootObject":o})
 
-  Attributes:
-    name: This is a pseudo-attribute; it is not actually represented directly
-      as a "name" property in the project file itself, but is set based on
-      the project file bundle's name.  The name attribute of
-      "MyProject.xcodeproj" would be "MyProject".
-
-    Children:
-      build_configuration_list: An XCConfigurationList corresponding to the
-        project's build configurations.
-      main_group: A PBXGroup corresponding to the project's top-level group.
-      targets: A list of PBXNativeTarget objects corresponding to the project's
-        targets.
-  """
-
-  compatibility_version = "Xcode 3.1"
-  has_scanned_for_encodings = 1
-  project_dir_path = ""
-  project_root = ""
-
-  def _GetBuildConfigurationList(self):
-    return self._build_configuration_list
-
-  def _SetBuildConfigurationList(self, build_configuration_list):
-    self._build_configuration_list = build_configuration_list
-    build_configuration_list.parent = self
-
-  def _GetMainGroup(self):
-    return self._main_group
-
-  def _SetMainGroup(self, main_group):
-    self._main_group = main_group
-    main_group.parent = self
-
-  def _GetTargets(self):
-    return self._targets
-
-  def _SetTargets(self, targets):
-    self._targets = targets
-    for target in targets:
-      target.parent = self
-
-  build_configuration_list = property(_GetBuildConfigurationList,
-                                      _SetBuildConfigurationList)
-  main_group = property(_GetMainGroup, _SetMainGroup)
-  targets = property(_GetTargets, _SetTargets)
-
-  def __init__(self,
-               id=None,
-               name=None,
-               build_configuration_list=None,
-               main_group=None,
-               targets=[]):
-    XCObject.__init__(self, id)
-    self.name = name
-    self.build_configuration_list = build_configuration_list
-    self.main_group = main_group
-    self.targets = targets
-
-  def Children(self):
-    return [self.build_configuration_list, self.main_group] + self.targets
-
-  def Comment(self):
-    return "Project object"
-
-  def Print(self, file=sys.stdout):
-    XCObjPrintBegin(file, 2, self)
-    XCKVPrint(file, 3, "buildConfigurationList", self.build_configuration_list)
-    XCKVPrint(file, 3, "compatibilityVersion", self.compatibility_version)
-    XCKVPrint(file, 3, "hasScannedForEncodings", self.has_scanned_for_encodings)
-    XCKVPrint(file, 3, "mainGroup", self.main_group)
-    XCKVPrint(file, 3, "projectDirPath", self.project_dir_path)
-    XCKVPrint(file, 3, "projectRoot", self.project_root)
-    XCLPrint(file, 3, "targets", self.targets)
-    XCObjPrintEnd(file, 2, self)
-
-
-class XCBuildConfiguration(XCObject):
-  def __init__(self,
-               id=None,
-               build_settings={},
-               name=None):
-    XCObject.__init__(self, id)
-    self.build_settings = build_settings
-    self.name = name
-
-  def Comment(self):
-    return self.name
-
-  def Print(self, file=sys.stdout):
-    XCObjPrintBegin(file, 2, self)
-    XCDPrint(file, 3, "buildSettings", self.build_settings)
-    XCKVPrint(file, 3, "name", self.name)
-    XCObjPrintEnd(file, 2, self)
-
-
-class XCConfigurationList(XCObject):
-  def _GetBuildConfigurations(self):
-    return self._build_configurations
-
-  def _SetBuildConfigurations(self, build_configurations):
-    self._build_configurations = build_configurations
-    for build_configuration in build_configurations:
-      build_configuration.parent = self
-
-  build_configurations = property(_GetBuildConfigurations,
-                                  _SetBuildConfigurations)
-
-  def __init__(self,
-               id=None,
-               build_configurations=[],
-               default_configuration_is_visible=0,
-               default_configuration_name=None):
-    XCObject.__init__(self, id)
-    self.build_configurations = build_configurations
-    self.default_configuration_is_visible = default_configuration_is_visible
-    self.default_configuration_name = default_configuration_name
-
-  def Children(self):
-    return self.build_configurations
-
-  def Comment(self):
-    return "Build configuration list for " + \
-           self.parent.__class__.__name__ + " " + EscapeString(self.parent.name)
-
-  def Print(self, file=sys.stdout):
-    XCObjPrintBegin(file, 2, self)
-    XCLPrint(file, 3, "buildConfigurations", self.build_configurations)
-    XCKVPrint(file, 3, "defaultConfigurationIsVisible",
-                       self.default_configuration_is_visible)
-    XCKVPrint(file, 3, "defaultConfigurationName",
-                       self.default_configuration_name)
-    XCObjPrintEnd(file, 2, self)
-
-
-class PBXGroup(XCObject):
-  # FLESH OUT THIS OBJECT
-  children = []
-  name = None
-  source_tree = "<group>"
-
-  def Comment(self):
-    return self.name
-
-  def Print(self, file=sys.stdout):
-    XCObjPrintBegin(file, 2, self)
-    XCLPrint(file, 3, "children", self.children)
-    XCKVPrint(file, 3, "name", self.name)
-    XCKVPrint(file, 3, "sourceTree", self.source_tree)
-    XCObjPrintEnd(file, 2, self)
-
-
-class PBXNativeTarget(XCObject):
-  def __init__(self,
-               id=None,
-               build_configuration_list=None,
-               build_phases=[],
-               build_rules=[],
-               dependencies=[],
-               name=None,
-               product_name=None,
-               product_reference=None,
-               product_type=None):
-    XCObject.__init__(self, id)
-    self.build_configuration_list = build_configuration_list
-    self.build_phases = build_phases
-    self.build_rules = build_rules  # NOT YET SUPPORTED
-    self.dependencies = dependencies  # NOT YET SUPPORTED
-    self.name = name
-    self.product_name = product_name
-    self.product_reference = product_reference  # WEAK
-    self.product_type = product_type
-
-  def Comment(self):
-    return self.name
-
-  def Print(self, file=sys.stdout):
-    XCObjPrintBegin(file, 2, self)
-    XCKVPrint(file, 3, "buildConfigurationList", self.build_configuration_list)
-    XCLPrint(file, 3, "buildPhases", self.build_phases)
-    XCLPrint(file, 3, "buildRules", self.build_rules)
-    XCLPrint(file, 3, "dependencies", self.dependencies)
-    XCKVPrint(file, 3, "name", self.name)
-    XCKVPrint(file, 3, "productName", self.product_name)
-    XCKVPrint(file, 3, "productReference", self.product_reference)
-    XCKVPrint(file, 3, "productType", self.product_type)
-    XCObjPrintEnd(file, 2, self)
-
-
-cf_debug = XCBuildConfiguration(name="Debug")
-
-cf_release = XCBuildConfiguration(name="Release")
-
-list = XCConfigurationList(build_configurations=[cf_debug, cf_release],
-                           default_configuration_name="Release")
-
-group = PBXGroup()
-#group.name = "ssl"
-
-target = PBXNativeTarget(name="ssl")
-
-project = PBXProject(name="ssl",
-                     build_configuration_list=list,
-                     main_group=group,
-                     targets=[target])
-
-project.ComputeIDs()
-
-xcproject = XCProject(root_object=project)
-
-xcproject.Print()
+f.ComputeIDs()
+f.Print()
