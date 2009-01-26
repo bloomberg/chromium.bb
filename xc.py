@@ -14,6 +14,7 @@ def StringContainsOnly(s, chars):
 
 class XCObject(object):
   _schema = {}
+  _should_print_single_line = False
   _encode_transforms = []
   i = 0
   while i < ord(" "):
@@ -44,9 +45,6 @@ class XCObject(object):
   def Comment(self):
     raise NotImplementedError, \
           self.__class__.__name__ + " must implement Comment"
-
-  def ShouldPrintOnOneLine(self):
-    return False
 
   def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
     def HashUpdate(hash, data):
@@ -139,8 +137,7 @@ class XCObject(object):
     printable = ""
     comment = None
 
-    should_print_on_one_line = self.ShouldPrintOnOneLine()
-    if should_print_on_one_line:
+    if self._should_print_single_line:
       sep = " "
       element_tabs = ""
       end_tabs = ""
@@ -180,13 +177,12 @@ class XCObject(object):
   def _XCKVPrint(self, file, tabs, key, value):
     printable = ""
 
-    should_print_on_one_line = self.ShouldPrintOnOneLine()
-    if not should_print_on_one_line:
+    if not self._should_print_single_line:
       printable = "\t" * tabs
 
     printable += self._XCPrintableValue(tabs, key) + " = " + \
                  self._XCPrintableValue(tabs, value) + ";"
-    if should_print_on_one_line:
+    if self._should_print_single_line:
       printable += " "
     else:
       printable += "\n"
@@ -196,9 +192,16 @@ class XCObject(object):
   def Print(self, file=sys.stdout):
     self.VerifyHasRequiredProperties()
 
-    should_print_on_one_line = self.ShouldPrintOnOneLine()
-    if should_print_on_one_line:
-      sep = " "
+    if self._should_print_single_line:
+      # When printing an object in a single line, Xcode doesn't put any space
+      # between the beginning of a dictionary (or presumably a list) and the
+      # first contained item, so you wind up with snippets like
+      #   ...CDEF = {isa = PBXFileReference; fileRef = 0123...
+      # If it were me, I would have put a space in there after the opening
+      # curly, but I guess this is just another one of those inconsistencies
+      # between how Xcode prints PBXFileReference objects and other objects.
+      # Mimic its behavior here by using an empty string for sep.
+      sep = ""
       end_tabs = 0
     else:
       sep = "\n"
@@ -228,11 +231,11 @@ class XCObject(object):
           raise TypeError, \
                 property + " of " + self.__class__.__name__ + " must be list"
         for item in value:
-          if item.__class__ != property_type:
+          if not isinstance(item, property_type):
             raise TypeError, \
                   "item of " + property + " of " + self.__class__.__name__ + \
                   " must be " + property_type.__name__
-      elif value.__class__ != property_type:
+      elif not isinstance(value, property_type):
         raise TypeError, \
               property + " of " + self.__class__.__name__ + " must be " + \
               property_type.__name__
@@ -288,8 +291,9 @@ class PBXGroup(XCHierarchicalElement):
   })
 
   def Comment(self):
-    if ("name" in self._properties):
+    if "name" in self._properties:
       return self._properties["name"]
+    # TODO(mark): Use path if no name?  Share with PBXBuildFile?
     return None
 
 
@@ -301,6 +305,14 @@ class PBXFileReference(XCHierarchicalElement):
     "name":              [0, str, 0, 0],
     "path":              [0, str, 0, 1],
   })
+  _should_print_single_line = True
+
+  def Comment(self):
+    if "name" in self._properties:
+      return self._properties["name"]
+    if "path" in self._properties:
+      return self._properties["path"]  # TODO(mark): Just the basename?
+    return None
 
 
 class XCBuildConfiguration(XCObject):
@@ -432,13 +444,16 @@ class XCTarget(XCObject):
     "productName":            [0, str,                 0, 1],
   })
 
+  def Comment(self):
+    return self._properties["name"]
+
 
 class PBXNativeTarget(XCTarget):
-  _schema = XCObject._schema.copy()
+  _schema = XCTarget._schema.copy()
   _schema.update({
-    "buildRules":       [1, PBXBuildRule, 1, 1, []],
-    "productReference": [0, PBXBuildFile, 0, 1],
-    "productType":      [0, str,          0, 1],
+    "buildRules":       [1, PBXBuildRule,     1, 1, []],
+    "productReference": [0, PBXFileReference, 0, 1],
+    "productType":      [0, str,              0, 1],
   })
 
 
@@ -478,7 +493,7 @@ class XCProjectFile(XCObject):
     # loop do the normal printing.
     self._properties["objects"] = {}
     self._XCPrint(file, 0, "// !$*UTF8*$!\n")
-    if self.ShouldPrintOnOneLine():
+    if self._should_print_single_line:
       self._XCPrint(file, 0, "{ ")
     else:
       self._XCPrint(file, 0, "{\n")
@@ -492,8 +507,7 @@ class XCProjectFile(XCObject):
     del self._properties["objects"]
 
   def _PrintObjects(self, file):
-    should_print_on_one_line = self.ShouldPrintOnOneLine()
-    if should_print_on_one_line:
+    if self._should_print_single_line:
       self._XCPrint(file, 0, "objects = {")
     else:
       self._XCPrint(file, 1, "objects = {\n")
@@ -510,11 +524,12 @@ class XCProjectFile(XCObject):
     for class_name in sorted(objects_by_class):
       self._XCPrint(file, 0, "\n")
       self._XCPrint(file, 0, "/* Begin " + class_name + " section */\n")
-      for object in sorted(objects_by_class[class_name]):
+      for object in sorted(objects_by_class[class_name],
+                           cmp=lambda x, y: cmp(x.id, y.id)):
         object.Print(file)
       self._XCPrint(file, 0, "/* End " + class_name + " section */\n")
 
-    if should_print_on_one_line:
+    if self._should_print_single_line:
       self._XCPrint(file, 0, "}; ")
     else:
       self._XCPrint(file, 1, "};\n")
@@ -522,11 +537,19 @@ class XCProjectFile(XCObject):
 
 # TEST TEST TEST
 
+tcr = XCBuildConfiguration(properties={"name":"Release","buildSettings":{"PRODUCT_NAME":"targetty"}})
+tcd = XCBuildConfiguration(properties={"name":"Debug","buildSettings":{"PRODUCT_NAME":"targetty"}})
+tl = XCConfigurationList(properties={"defaultConfigurationName":"Release","buildConfigurations":[tcd,tcr]})
+ts = PBXSourcesBuildPhase()
+pr = PBXFileReference(properties={"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
+t = PBXNativeTarget(properties={"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
+
 c = XCBuildConfiguration(properties={"name":"Release"})
 cd = XCBuildConfiguration(properties={"name":"Debug"})
 l = XCConfigurationList(properties={"defaultConfigurationName":"Release","buildConfigurations":[cd,c]})
-g = PBXGroup(properties={"sourceTree":"<group>"})
-o = PBXProject(properties={"mainGroup":g, "buildConfigurationList":l})
+g = PBXGroup(properties={"sourceTree":"<group>","children":[pr]})
+
+o = PBXProject(properties={"mainGroup":g, "buildConfigurationList":l, "targets":[t]})
 f = XCProjectFile(properties={"rootObject":o})
 
 f.ComputeIDs()
