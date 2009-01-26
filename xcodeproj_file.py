@@ -495,14 +495,14 @@ class XCObject(object):
       printable = "(" + sep
       for item in value:
         printable += element_tabs + \
-                     self._XCPrintableValue(tabs, item) + "," + sep
+                     self._XCPrintableValue(tabs + 1, item) + "," + sep
       printable += end_tabs + ")"
     elif isinstance(value, dict):
       printable = "{" + sep
       for item_key, item_value in sorted(value.iteritems()):
         printable += element_tabs + \
-                     self._XCPrintableValue(tabs, item_key) + " = " + \
-                     self._XCPrintableValue(tabs, item_value) + ";" + sep
+                     self._XCPrintableValue(tabs + 1, item_key) + " = " + \
+                     self._XCPrintableValue(tabs + 1, item_value) + ";" + sep
       printable += end_tabs + "}"
     else:
       raise TypeError, "Can't make " + value.__class__.__name__ + " printable"
@@ -784,9 +784,26 @@ class PBXGroup(XCHierarchicalElement):
 
     return None
 
+  def GetChildByPath(self, path):
+    # TODO(mark): This should raise an error if more than one child is present
+    # with the same path.  Also, it should probably resolve paths and handle
+    # different sourceTree values.
+    if not "children" in self._properties:
+      return None
 
-class PBXFileReference(XCHierarchicalElement):
-  _schema = XCHierarchicalElement._schema.copy()
+    for child in self._properties["children"]:
+      if "path" in child._properties and child._properties["path"] == path:
+        return child
+
+    return None
+
+
+class XCFileLikeElement(XCHierarchicalElement):
+  pass
+
+
+class PBXFileReference(XCFileLikeElement):
+  _schema = XCFileLikeElement._schema.copy()
   _schema.update({
     "explicitFileType":  [0, str, 0, 0],
     "lastKnownFileType": [0, str, 0, 0],
@@ -796,7 +813,12 @@ class PBXFileReference(XCHierarchicalElement):
 
   # Weird output rules for PBXFileReference.
   _should_print_single_line = True
-  _encode_transforms = XCHierarchicalElement._alternate_encode_transforms
+  # super
+  _encode_transforms = XCFileLikeElement._alternate_encode_transforms
+
+
+# PBXReferenceProxy is also an XCFileLikeElement subclass.  It is defined below
+# because it uses PBXContainerItemProxy, defined below.
 
 
 class XCBuildConfiguration(XCObject):
@@ -921,7 +943,7 @@ class XCConfigurationList(XCObject):
 class PBXBuildFile(XCObject):
   _schema = XCObject._schema.copy()
   _schema.update({
-    "fileRef": [0, PBXFileReference, 0, 1],
+    "fileRef": [0, XCFileLikeElement, 0, 1],
   })
 
   # Weird output rules for PBXBuildFile.
@@ -1046,15 +1068,27 @@ class PBXTargetDependency(XCObject):
   # Python doesn't deal well with this circular relationship, and doesn't have
   # a real way to do forward declarations.  To work around, the type of
   # the "target" property is reset below, after XCTarget is defined.
+  #
+  # At least one of "name" and "target" is required.
   _schema = XCObject._schema.copy()
   _schema.update({
-    "target":      [0, None.__class__,        0, 1],
+    "name":        [0, str,                   0, 0],
+    "target":      [0, None.__class__,        0, 0],
     "targetProxy": [0, PBXContainerItemProxy, 1, 1],
   })
 
   def Name(self):
     # Admittedly not the best name, but it's what Xcode uses.
     return self.__class__.__name__
+
+
+class PBXReferenceProxy(XCFileLikeElement):
+  _schema = XCFileLikeElement._schema.copy()
+  _schema.update({
+    "fileType":  [0, str,                   0, 1],
+    "path":      [0, str,                   0, 1],
+    "remoteRef": [0, PBXContainerItemProxy, 1, 1],
+  })
 
 
 class XCTarget(XCObject):
@@ -1091,15 +1125,73 @@ class XCTarget(XCObject):
                                   self._properties["productName"])
 
   def AddDependency(self, other):
-    # TODO(mark): This is only correct for dependencies in the same project.
     pbxproject = self.PBXProjectAncestor()
-    container = PBXContainerItemProxy({"containerPortal":      pbxproject,
-                                       "proxyType":            1,
-                                       "remoteGlobalIDString": other,
-                                       "remoteInfo":           other.Name()})
-    dependency = PBXTargetDependency({"target": other,
-                                      "targetProxy": container})
-    self.AppendProperty("dependencies", dependency)
+    other_pbxproject = other.PBXProjectAncestor()
+    if pbxproject == other_pbxproject:
+      # The easy case.  Add a dependency to another target in the same
+      # project file.
+      container = PBXContainerItemProxy({"containerPortal":      pbxproject,
+                                         "proxyType":            1,
+                                         "remoteGlobalIDString": other,
+                                         "remoteInfo":           other.Name()})
+      dependency = PBXTargetDependency({"target": other,
+                                        "targetProxy": container})
+      self.AppendProperty("dependencies", dependency)
+    else:
+      # The hard case.  Add a dependency to a target in a different project
+      # file.
+      projects_group = pbxproject.ProjectsGroup()
+      other_pbxproject_path = other_pbxproject.Path()
+      # Instead of looking up by path, we should probably ask the root
+      # PBXProject if it has a file ref for the xcodeproj we care about.
+      pbxproj_fileref = projects_group.GetChildByPath(other_pbxproject_path)
+      if pbxproj_fileref == None:
+        pbxproj_fileref = PBXFileReference({
+              "lastKnownFileType": "wrapper.pb-project",
+              "path":              other_pbxproject_path,
+              "sourceTree":        "SOURCE_ROOT",
+            })
+        projects_group.AppendProperty("children", pbxproj_fileref)
+
+        # Add a reference for each product in the other pbxproj.
+        product_group = PBXGroup({"name": "Products"})
+        for target in other_pbxproject._properties["targets"]:
+          if not isinstance(target, PBXNativeTarget):
+            continue
+          other_product = target._properties["productReference"]
+          container_proxy = PBXContainerItemProxy({
+                "containerPortal":      pbxproj_fileref,
+                "proxyType":            2,
+                "remoteGlobalIDString": other_product,
+                "remoteInfo":           target.Name(),
+              })
+          reference_proxy = PBXReferenceProxy({
+                # TODO(mark): Be more resilient about the file type.  Take
+                # lastKnownFileType if it's present and explicitFileType is
+                # not.
+                "fileType":   other_product._properties["explicitFileType"],
+                "path":       other_product._properties["path"],
+                "remoteRef":  container_proxy,
+                "sourceTree": other_product._properties["sourceTree"],
+              })
+          product_group.AppendProperty("children", reference_proxy)
+
+        if not "projectReferences" in pbxproject._properties:
+          pbxproject._properties["projectReferences"] = []
+        pbxproject._properties["projectReferences"].append({
+              "ProductGroup": product_group,  # NEEDS TO BE MADE STRONG!
+              "ProjectRef":   pbxproj_fileref,
+            })
+
+      container = PBXContainerItemProxy({
+            "containerPortal":      pbxproj_fileref,
+            "proxyType":            1,
+            "remoteGlobalIDString": other,
+            "remoteInfo":           other.Name(),
+          })
+      dependency = PBXTargetDependency({"name":        other.Name(),
+                                        "targetProxy": container})
+      self.AppendProperty("dependencies", dependency)
 
 
 # Redefine the type of the "target" property.  See PBXTargetDependency._schema
@@ -1191,13 +1283,29 @@ class PBXNativeTarget(XCTarget):
   def AddDependency(self, other):
     # super
     XCTarget.AddDependency(self, other)
+
     static_library_type = "com.apple.product-type.library.static"
     if isinstance(other, PBXNativeTarget) and \
        "productType" in self._properties and \
        self._properties["productType"] != static_library_type and \
        "productType" in other._properties and \
        other._properties["productType"] == static_library_type:
-      file_ref = other.GetProperty("productReference")
+      pbxproject = self.PBXProjectAncestor()
+      other_pbxproject = other.PBXProjectAncestor()
+      file_ref = None
+      if pbxproject == other_pbxproject:
+        file_ref = other.GetProperty("productReference")
+      else:
+        product_group = None
+        for reference in pbxproject._properties["projectReferences"]:
+          # TODO(mark): Fix this.  The root PBXProject object really needs its
+          # own methods to maintain this stuff.
+          if reference["ProjectRef"].Name() == other_pbxproject.Path():
+            product_group = reference["ProductGroup"]
+        for child in product_group._properties["children"]:
+          if other._properties["productReference"] == \
+             child._properties["remoteRef"]._properties["remoteGlobalIDString"]:
+            file_ref = child
       self.FrameworksPhase().AppendProperty("files",
                                             PBXBuildFile({"fileRef": file_ref}))
 
@@ -1210,6 +1318,7 @@ class PBXProject(XCObject):
           without the .xcodeproj extension.  For example, the name attribute of
           "sample.xcodeproj" should be set to "sample".  name is a required
           attribute.
+    path: "sample.xcodeproj".  TODO(mark) Document me!
   """
 
   _schema = XCObject._schema.copy()
@@ -1220,20 +1329,43 @@ class PBXProject(XCObject):
     "hasScannedForEncodings": [0, int,                 0, 1, 1],
     "mainGroup":              [0, PBXGroup,            1, 1, PBXGroup()],
     "projectDirPath":         [0, str,                 0, 1, ""],
+    "projectReferences":      [1, dict,                0, 0],
     "projectRoot":            [0, str,                 0, 1, ""],
     "targets":                [1, XCTarget,            1, 1, []],
   })
 
-  def __init__(self, properties=None, id=None, parent=None, name=None):
+  def __init__(self, properties=None, id=None, parent=None,
+               name=None, path=None):
     self.name = name
+    self.path = path
+    if self.path == None:
+      self.path = name + ".xcodeproj"
     # super
     return XCObject.__init__(self, properties, id, parent)
 
   def Name(self):
     return self.name
 
+  def Path(self):
+    return self.path
+
   def Comment(self):
     return "Project object"
+
+  def Children(self):
+    # super
+    children = XCObject.Children(self)
+
+    # Add children that the schema doesn't know about.  Maybe there's a more
+    # elegant way around this, but this is the only case where we need to own
+    # objects in a dictionary (that is itself in a list), and three lines for
+    # a one-off isn't that big a deal.
+    if "projectReferences" in self._properties:
+      for reference in self._properties["projectReferences"]:
+        children.append(reference["ProductGroup"])
+
+    return children
+
 
   def PBXProjectAncestor(self):
     return self
@@ -1255,6 +1387,9 @@ class PBXProject(XCObject):
 
   def ProductsGroup(self):
     return self._GroupByName("Products")
+
+  def ProjectsGroup(self):
+    return self._GroupByName("Projects")
 
 
 class XCProjectFile(XCObject):
@@ -1321,42 +1456,3 @@ class XCProjectFile(XCObject):
       self._XCPrint(file, 0, "}; ")
     else:
       self._XCPrint(file, 1, "};\n")
-
-
-# TEST TEST TEST
-
-def main():
-  sf = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source.cc", "sourceTree": "SOURCE_ROOT"})
-  sbf = PBXBuildFile({"fileRef":sf})
-
-  tl = XCConfigurationList()
-  tl.SetBuildSetting("PRODUCT_NAME", "targetty")
-  ts = PBXSourcesBuildPhase({"files":[sbf]})
-  pr = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
-  t = PBXNativeTarget({"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
-
-  sf2 = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source2.cc", "sourceTree": "SOURCE_ROOT"})
-  sbf2 = PBXBuildFile({"fileRef":sf2})
-
-  tl2 = XCConfigurationList()
-  tl2.SetBuildSetting("PRODUCT_NAME", "dependent")
-  ts2 = PBXSourcesBuildPhase({"files":[sbf2]})
-  pr2 = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libdependent.a","sourceTree":"BUILT_PRODUCTS_DIR"})
-
-  depcip2to1 = PBXContainerItemProxy({"proxyType": 1, "remoteGlobalIDString": t, "remoteInfo": "targetty"})
-  dep2to1 = PBXTargetDependency({"target": t, "targetProxy": depcip2to1})
-
-  t2 = PBXNativeTarget({"buildConfigurationList":tl2,"buildPhases":[ts2],"dependencies":[dep2to1],"name":"dependent","productName":"dependent","productReference":pr2,"productType":"com.apple.product-type.library.static"})
-
-  l = XCConfigurationList()
-  g = PBXGroup({"children":[sf, pr, sf2, pr2]})
-
-  o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t, t2]}, name="ssl")
-  depcip2to1.UpdateProperties({"containerPortal":o})
-  f = XCProjectFile({"rootObject":o})
-
-  f.ComputeIDs()
-  f.Print()
-
-if __name__ == "__main__":
-  main()
