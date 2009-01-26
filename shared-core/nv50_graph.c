@@ -106,6 +106,7 @@ nv50_graph_init_ctxctl(struct drm_device *dev)
 		voodoo = nv92_ctxprog;
 		break;
 	case 0x94:
+	case 0x96:
 		voodoo = nv94_ctxprog;
 		break;
 	case 0xaa:
@@ -198,6 +199,7 @@ nv50_graph_create_context(struct nouveau_channel *chan)
 		ctxvals = nv92_ctxvals;
 		break;
 	case 0x94:
+	case 0x96:
 		ctxvals = nv94_ctxvals;
 		break;
 	case 0xaa:
