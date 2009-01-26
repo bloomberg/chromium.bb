@@ -528,16 +528,18 @@ class XCObject(object):
       if is_list:
         if value.__class__ != list:
           raise TypeError, \
-                property + " of " + self.__class__.__name__ + " must be list"
+                property + " of " + self.__class__.__name__ + \
+                " must be list, not " + value.__class__.__name__
         for item in value:
           if not isinstance(item, property_type):
             raise TypeError, \
                   "item of " + property + " of " + self.__class__.__name__ + \
-                  " must be " + property_type.__name__
+                  " must be " + property_type.__name__ + ", not " + \
+                  item.__class__.__name__
       elif not isinstance(value, property_type):
         raise TypeError, \
               property + " of " + self.__class__.__name__ + " must be " + \
-              property_type.__name__
+              property_type.__name__ + ", not " + value.__class__.__name__
 
       # Checks passed, perform the assignment.
       self._properties[property] = value
@@ -811,36 +813,6 @@ class PBXShellScriptBuildPhase(XCBuildPhase):
     return "ShellScript"
 
 
-# Provide forward declarations for PBXProject and XCTarget.  The problem here
-# is that XCTarget depends on PBXTargetDependency, which depends on
-# PBXContainerItemProxy, which in turn depends on XCTarget again.  The circle
-# can't be broken, so advise Python of the existence of XCTarget before using
-# it in PBXContainerItemProxy, in advance of defining XCTarget.  The same
-# problem occurs with PBXProject, which depends on XCTarget and is itself
-# depended on by PBXContainerItemProxy.
-class PBXProject(XCObject):
-  pass
-class XCTarget(XCObject):
-  pass
-
-class PBXContainerItemProxy(XCObject):
-  _schema = XCObject._schema.copy()
-  _schema.update({
-    "containerPortal":      [0, PBXProject, 0, 1],
-    "proxyType":            [0, int,        0, 1],  # TODO(mark): Default value?
-    "remoteGlobalIDString": [0, XCTarget,   0, 1],  # TODO(mark): Just a str?
-    "remoteInfo":           [0, str,        0, 1],
-  })
-
-
-class PBXTargetDependency(XCObject):
-  _schema = XCObject._schema.copy()
-  _schema.update({
-    "target":      [0, XCTarget,              0, 1],
-    "targetProxy": [1, PBXContainerItemProxy, 1, 1],
-  })
-
-
 class PBXBuildRule(XCObject):
   _schema = XCObject._schema.copy()
   _schema.update({
@@ -851,6 +823,63 @@ class PBXBuildRule(XCObject):
     "outputFiles":  [1, str, 0, 1, []],
     "script":       [0, str, 0, 0],
   })
+
+
+class PBXContainerItemProxy(XCObject):
+  # When referencing an item in this project file, containerPortal is the
+  # PBXProject root object of this project file.  When referencing an item in
+  # another project file, containerPortal is a PBXFileReference identifying
+  # the other project file.
+  #
+  # When serving as a proxy to an XCTarget (in this project file or another),
+  # proxyType is 1.  When serving as a proxy to a PBXFileReference (in another
+  # project file), proxyType is 2.  Type 2 is used for references to the
+  # producs of the other project file's targets.
+  #
+  # Xcode is weird about remoteGlobalIDString.  Usually, it's printed without
+  # a comment, indicating that it's tracked internally simply as a string, but
+  # sometimes it's printed with a comment (usually when the object is initially
+  # created), indicating that it's tracked as a project file object at least
+  # sometimes.  This module always tracks it as an object, meaning that it
+  # will always print a comment, which Xcode will very often remove.
+  # TODO(mark): Fix to make canonical by not printing the comment.
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "containerPortal":      [0, XCObject, 0, 1],
+    "proxyType":            [0, int,      0, 1],
+    "remoteGlobalIDString": [0, XCObject, 0, 1],
+    "remoteInfo":           [0, str,      0, 1],
+  })
+
+  def Comment(self):
+    # Admittedly not the best name, but it's what Xcode uses.
+    return self.__class__.__name__
+
+
+class PBXTargetDependency(XCObject):
+  # The "target" property accepts an XCTarget object, and obviously not
+  # NoneType.  But XCTarget is defined below, so it can't be put into the
+  # schema yet.  The definition of PBXTargetDependency can't be moved below
+  # XCTarget because XCTarget's own schema references PBXTargetDependency.
+  # Python doesn't deal well with this circular relationship, and doesn't have
+  # a real way to do forward declarations.  To work around, this class'
+  # __init__ method will fix the schema each time an object is created.
+  # XCTarget can be used in __init__ because it won't execute until after
+  # XCTarget has been defined.
+  _schema = XCObject._schema.copy()
+  _schema.update({
+    "target":      [0, None.__class__,        0, 1],
+    "targetProxy": [0, PBXContainerItemProxy, 1, 1],
+  })
+
+  def __init__(self, properties=None, id=None):
+    # Redefine the type of the "target" property.  See _schema above.
+    self._schema["target"][1] = XCTarget
+    super(self.__class__, self).__init__(properties, id)
+
+  def Comment(self):
+    # Admittedly not the best name, but it's what Xcode uses.
+    return self.__class__.__name__
 
 
 class XCTarget(XCObject):
@@ -972,10 +1001,24 @@ ts = PBXSourcesBuildPhase({"files":[sbf]})
 pr = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
 t = PBXNativeTarget({"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
 
-l = XCConfigurationList()
-g = PBXGroup({"children":[sf, pr]})
+sf2 = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source2.cc", "sourceTree": "SOURCE_ROOT"})
+sbf2 = PBXBuildFile({"fileRef":sf2})
 
-o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t]})
+tl2 = XCConfigurationList()
+tl2.SetBuildSetting("PRODUCT_NAME", "dependent")
+ts2 = PBXSourcesBuildPhase({"files":[sbf2]})
+pr2 = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libdependent.a","sourceTree":"BUILT_PRODUCTS_DIR"})
+
+depcip2to1 = PBXContainerItemProxy({"proxyType": 1, "remoteGlobalIDString": t, "remoteInfo": "targetty"})
+dep2to1 = PBXTargetDependency({"target": t, "targetProxy": depcip2to1})
+
+t2 = PBXNativeTarget({"buildConfigurationList":tl2,"buildPhases":[ts2],"dependencies":[dep2to1],"name":"dependent","productName":"dependent","productReference":pr2,"productType":"com.apple.product-type.library.static"})
+
+l = XCConfigurationList()
+g = PBXGroup({"children":[sf, pr, sf2, pr2]})
+
+o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t, t2]})
+depcip2to1.UpdateProperties({"containerPortal":o})
 f = XCProjectFile({"rootObject":o})
 
 f.ComputeIDs()
