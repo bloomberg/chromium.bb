@@ -53,9 +53,9 @@ class XCObject(object):
       hash.update(data)
 
     HashUpdate(hash, self.__class__.__name__)
-    name = self.Name()
-    if name != None:
-      HashUpdate(hash, name)
+    comment = self.Comment()
+    if comment != None:
+      HashUpdate(hash, comment)
 
     if recursive:
       for child in self.Children():
@@ -101,7 +101,7 @@ class XCObject(object):
     #    11 ^K VT  is encoded as "\v"
     #    12 ^L NP  is encoded as "\f"
     #   127 ^? DEL is passed through as-is without escaping
-    #  - In PBXBuildFile objects:
+    #  - In PBXFileReference and PBXBuildFile objects:
     #     9 ^I HT  is passed through as-is without escaping
     #    10 ^J NL  is passed through as-is without escaping
     #    13 ^M CR  is passed through as-is without escaping
@@ -199,8 +199,9 @@ class XCObject(object):
       #   ...CDEF = {isa = PBXFileReference; fileRef = 0123...
       # If it were me, I would have put a space in there after the opening
       # curly, but I guess this is just another one of those inconsistencies
-      # between how Xcode prints PBXFileReference objects and other objects.
-      # Mimic its behavior here by using an empty string for sep.
+      # between how Xcode prints PBXFileReference and PBXBuildFile objects as
+      # compared to other objects.  Mimic Xcode's behavior here by using an
+      # empty string for sep.
       sep = ""
       end_tabs = 0
     else:
@@ -291,10 +292,8 @@ class PBXGroup(XCHierarchicalElement):
   })
 
   def Comment(self):
-    if "name" in self._properties:
-      return self._properties["name"]
-    # TODO(mark): Use path if no name?  Share with PBXBuildFile?
-    return None
+    # TODO(mark): Use path if no name?  Share with PBXFileReference?
+    return self.Name()
 
 
 class PBXFileReference(XCHierarchicalElement):
@@ -308,11 +307,9 @@ class PBXFileReference(XCHierarchicalElement):
   _should_print_single_line = True
 
   def Comment(self):
-    if "name" in self._properties:
-      return self._properties["name"]
     if "path" in self._properties:
-      return self._properties["path"]  # TODO(mark): Just the basename?
-    return None
+      return self._properties["path"]
+    return self.Name()
 
 
 class XCBuildConfiguration(XCObject):
@@ -324,7 +321,7 @@ class XCBuildConfiguration(XCObject):
   })
 
   def Comment(self):
-    return self._properties["name"]
+    return self.Name()
 
 
 class XCConfigurationList(XCObject):
@@ -345,6 +342,12 @@ class PBXBuildFile(XCObject):
   _schema.update({
     "fileRef": [0, PBXFileReference, 0, 1],
   })
+  _should_print_single_line = True
+
+  def Comment(self):
+    # Example: "main.cc in Sources"
+    return self._properties["fileRef"].Comment() + " in " + \
+           self.parent.Comment()
 
 
 class XCBuildPhase(XCObject):
@@ -386,8 +389,9 @@ class PBXShellScriptBuildPhase(XCBuildPhase):
   })
 
   def Comment(self):
-    if "name" in self._properties:
-      return self._properties["name"]
+    name = self.Name()
+    if name != None:
+      return name
 
     return "ShellScript"
 
@@ -445,7 +449,7 @@ class XCTarget(XCObject):
   })
 
   def Comment(self):
-    return self._properties["name"]
+    return self.Name()
 
 
 class PBXNativeTarget(XCTarget):
@@ -484,6 +488,13 @@ class XCProjectFile(XCObject):
     "objectVersion":  [0, int,        0, 1, 45],
     "rootObject":     [0, PBXProject, 1, 1],
   })
+
+  def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
+    # Although XCProjectFile is implemented here as an XCObject, it's not a
+    # proper object in the Xcode sense, and it certainly doesn't have its own
+    # ID.  Pass through an attempt to update IDs to the real root object.
+    if recursive:
+      self._properties["rootObject"].ComputeIDs(recursive, overwrite, hash)
 
   def Print(self, file=sys.stdout):
     self.VerifyHasRequiredProperties()
@@ -537,17 +548,20 @@ class XCProjectFile(XCObject):
 
 # TEST TEST TEST
 
+sf = PBXFileReference(properties={"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source.cc", "sourceTree": "SOURCE_ROOT"})
+sbf = PBXBuildFile(properties={"fileRef":sf})
+
 tcr = XCBuildConfiguration(properties={"name":"Release","buildSettings":{"PRODUCT_NAME":"targetty"}})
 tcd = XCBuildConfiguration(properties={"name":"Debug","buildSettings":{"PRODUCT_NAME":"targetty"}})
 tl = XCConfigurationList(properties={"defaultConfigurationName":"Release","buildConfigurations":[tcd,tcr]})
-ts = PBXSourcesBuildPhase()
+ts = PBXSourcesBuildPhase(properties={"files":[sbf]})
 pr = PBXFileReference(properties={"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
 t = PBXNativeTarget(properties={"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
 
 c = XCBuildConfiguration(properties={"name":"Release"})
 cd = XCBuildConfiguration(properties={"name":"Debug"})
 l = XCConfigurationList(properties={"defaultConfigurationName":"Release","buildConfigurations":[cd,c]})
-g = PBXGroup(properties={"sourceTree":"<group>","children":[pr]})
+g = PBXGroup(properties={"sourceTree":"<group>", "children":[sf, pr]})
 
 o = PBXProject(properties={"mainGroup":g, "buildConfigurationList":l, "targets":[t]})
 f = XCProjectFile(properties={"rootObject":o})
