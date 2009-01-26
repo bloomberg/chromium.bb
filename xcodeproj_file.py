@@ -227,9 +227,9 @@ class XCObject(object):
   _alternate_encode_transforms[10] = chr(10)
   _alternate_encode_transforms[11] = chr(11)
 
-  def __init__(self, properties=None, id=None):
+  def __init__(self, properties=None, id=None, parent=None):
     self.id = id
-    self.parent = None
+    self.parent = parent
     self._properties = {}
     self._SetDefaultsFromSchema()
     self.UpdateProperties(properties)
@@ -244,8 +244,7 @@ class XCObject(object):
     object without making a copy.
     """
 
-    that = self.__class__(id=self.id)
-    that.parent = self.parent
+    that = self.__class__(id=self.id, parent=self.parent)
     for key, value in self._properties.iteritems():
       is_strong = self._schema[key][2]
 
@@ -289,7 +288,12 @@ class XCObject(object):
     a "name" property.  Override as needed.
     """
 
-    if "name" in self._properties:
+    # If the schema indicates that "name" is required, try to access the
+    # property even if it doesn't exist.  This will result in a KeyError
+    # being raised for the property that should be present, which seems more
+    # appropriate than NotImplementedError in this case.
+    if "name" in self._properties or \
+        ("name" in self._schema and self._schema["name"][3]):
       return self._properties["name"]
 
     raise NotImplementedError, \
@@ -383,6 +387,12 @@ class XCObject(object):
     for child in children:
       descendants.extend(child.Descendants())
     return descendants
+
+  def PBXProjectAncestor(self):
+    # The base case for recursion is defined at PBXProject.PBXProjectAncestor.
+    if self.parent:
+      return self.parent.PBXProjectAncestor()
+    return None
 
   def _EncodeComment(self, comment):
     """Encodes a comment to be placed in the project file output, mimicing
@@ -653,6 +663,47 @@ class XCObject(object):
           for item in self._properties[property]:
             item.parent = self
 
+  def HasProperty(self, key):
+    return key in self._properties
+
+  def GetProperty(self, key):
+    return self._properties[key]
+
+  def SetProperty(self, key, value):
+    self.UpdateProperties({key: value})
+
+  def DelProperty(self, key):
+    if key in self._properties:
+      del self._properties[key]
+
+  def AppendProperty(self, key, value):
+    # TODO(mark): Support ExtendProperty too (and make this call that)?
+
+    # Schema validation.
+    if not key in self._schema:
+      raise KeyError, key + " not in " + self.__class__.__name__
+
+    (is_list, property_type, is_strong) = self._schema[key][0:3]
+    if not is_list:
+      raise TypeError, key + " of " + self.__class__.__name__ + " must be list"
+    if not isinstance(value, property_type):
+      raise TypeError, "item of " + key + " of " + self.__class__.__name__ + \
+                       " must be " + property_type.__name__ + ", not " + \
+                       value.__class__.__name__
+
+    # If the property doesn't exist yet, create a new empty list to receive the
+    # item.
+    if not key in self._properties:
+      self._properties[key] = []
+
+    # Set up the ownership link.
+    if is_strong:
+      value.parent = self
+
+    # Store the item.
+    self._properties[key].append(value)
+
+
   def VerifyHasRequiredProperties(self):
     """Ensure that all properties identified as required by the schema are
     set.
@@ -721,6 +772,18 @@ class PBXGroup(XCHierarchicalElement):
     "path":     [0, str,                   0, 0],
   })
 
+  def GetChildByName(self, name):
+    # TODO(mark): This should raise an error if more than one child is present
+    # with the same name.
+    if not "children" in self._properties:
+      return None
+
+    for child in self._properties["children"]:
+      if child.Name() == name:
+        return child
+
+    return None
+
 
 class PBXFileReference(XCHierarchicalElement):
   _schema = XCHierarchicalElement._schema.copy()
@@ -743,6 +806,9 @@ class XCBuildConfiguration(XCObject):
     "buildSettings":              [0, dict, 0, 1, {}],
     "name":                       [0, str,  0, 1],
   })
+
+  def HasBuildSetting(self, key):
+    return key in self._properties["buildSettings"]
 
   def GetBuildSetting(self, key):
     return self._properties["buildSettings"][key]
@@ -782,6 +848,40 @@ class XCConfigurationList(XCObject):
   def DefaultConfiguration(self):
     """Convenience accessor to obtain the default XCBuildConfiguration."""
     return self.ConfigurationNamed(self._properties["defaultConfigurationName"])
+
+  def HasBuildSetting(self, key):
+    """Determines the state of a build setting in all XCBuildConfiguration
+    child objects.
+
+    If all child objects have key in their build settings, and the value is the
+    same in all child objects, returns 1.
+
+    If no child objects have the key in their build settings, returns 0.
+
+    If some, but not all, child objects have the key in their build settings,
+    or if any children have different values for the key, returns -1.
+    """
+
+    has = None
+    value = None
+    for configuration in self._properties["buildConfigurations"]:
+      configuration_has = configuration.HasBuildSetting(key)
+      if has == None:
+        has = configuration_has
+      elif has != configuration_has:
+        return -1
+
+      if configuration_has:
+        configuration_value = configuration.GetBuildSetting(key)
+        if value == None:
+          value = configuration_value
+        elif value != configuration_value:
+          return -1
+
+    if not has:
+      return 0
+
+    return 1
 
   def GetBuildSetting(self, key):
     """Gets the build setting for key.
@@ -843,6 +943,17 @@ class XCBuildPhase(XCObject):
     "files":                              [1, PBXBuildFile, 1, 1, []],
     "runOnlyForDeploymentPostprocessing": [0, int,          0, 1, 0],
   })
+
+  def AddFile(self, path):
+    # TODO(mark): This is a quick hack.
+    source_group = self.PBXProjectAncestor().SourceGroup()
+    ref_props = {
+      "lastKnownFileType": "sourcecode.cpp.cpp",
+      "path":              path,
+    }
+    file_ref = PBXFileReference(ref_props)
+    source_group.AppendProperty("children", file_ref)
+    self.AppendProperty("files", PBXBuildFile({"fileRef": file_ref}))
 
 
 class PBXHeadersBuildPhase(XCBuildPhase):
@@ -947,14 +1058,48 @@ class PBXTargetDependency(XCObject):
 
 
 class XCTarget(XCObject):
+  # Setting a "name" property at instantiation may also affect "productName",
+  # which may in turn affect the "PRODUCT_NAME" build setting in children of
+  # "buildConfigurationList".  See __init__ below.
   _schema = XCObject._schema.copy()
   _schema.update({
-    "buildConfigurationList": [0, XCConfigurationList, 1, 1],
+    "buildConfigurationList": [0, XCConfigurationList, 1, 1,
+                               XCConfigurationList()],
     "buildPhases":            [1, XCBuildPhase,        1, 1, []],
     "dependencies":           [1, PBXTargetDependency, 1, 1, []],
     "name":                   [0, str,                 0, 1],
     "productName":            [0, str,                 0, 1],
   })
+
+  def __init__(self, properties=None, id=None, parent=None):
+    # super
+    XCObject.__init__(self, properties, id, parent)
+
+    # Set up additional defaults not expressed in the schema.  If a "name"
+    # property was supplied, set "productName" if it is not present.  Also set
+    # the "PRODUCT_NAME" build setting in each configuration, but only if
+    # the setting is not present in any build configuration.
+    if "name" in self._properties:
+      if not "productName" in self._properties:
+        self.SetProperty("productName", self._properties["name"])
+
+    if "productName" in self._properties:
+      if "buildConfigurationList" in self._properties:
+        configs = self._properties["buildConfigurationList"]
+        if configs.HasBuildSetting("PRODUCT_NAME") == 0:
+          configs.SetBuildSetting("PRODUCT_NAME",
+                                  self._properties["productName"])
+
+  def AddDependency(self, other):
+    # TODO(mark): This is only correct for dependencies in the same project.
+    pbxproject = self.PBXProjectAncestor()
+    container = PBXContainerItemProxy({"containerPortal":      pbxproject,
+                                       "proxyType":            1,
+                                       "remoteGlobalIDString": other,
+                                       "remoteInfo":           other.Name()})
+    dependency = PBXTargetDependency({"target": other,
+                                      "targetProxy": container})
+    self.AppendProperty("dependencies", dependency)
 
 
 # Redefine the type of the "target" property.  See PBXTargetDependency._schema
@@ -963,12 +1108,98 @@ PBXTargetDependency._schema["target"][1] = XCTarget
 
 
 class PBXNativeTarget(XCTarget):
+  # buildPhases is overridden in the schema to be able to set defaults.
+  #
+  # NOTE: Contrary to most objects, it is advisable to set parent when
+  # constructing PBXNativeTarget.  A parent of an XCTarget must be a PBXProject
+  # object.  A parent reference is required for a PBXNativeTarget during
+  # construction to be able to set up the target defaults for productReference,
+  # because a PBXBuildFile object must be created for the target and it must
+  # be added to the PBXProject's mainGroup hierarchy.
   _schema = XCTarget._schema.copy()
   _schema.update({
+    "buildPhases":      [1, XCBuildPhase,     1, 1,
+                         [PBXSourcesBuildPhase(), PBXFrameworksBuildPhase()]],
     "buildRules":       [1, PBXBuildRule,     1, 1, []],
     "productReference": [0, PBXFileReference, 0, 1],
     "productType":      [0, str,              0, 1],
   })
+
+  _product_filetypes = {
+    "com.apple.product-type.library.static": ["archive.ar", "lib", ".a"],
+    "com.apple.product-type.tool":           ["compiled.mach-o.executable",
+                                              "", ""],
+  }
+
+  def __init__(self, properties=None, id=None, parent=None):
+    # super
+    XCTarget.__init__(self, properties, id, parent)
+
+    if "productName" in self._properties and \
+       "productType" in self._properties and \
+       not "productReference" in self._properties and \
+       self._properties["productType"] in self._product_filetypes:
+      products_group = None
+      pbxproject = self.PBXProjectAncestor()
+      if pbxproject != None:
+        products_group = pbxproject.ProductsGroup()
+
+      if products_group != None:
+        (filetype, prefix, suffix) = \
+            self._product_filetypes[self._properties["productType"]]
+
+        ref_props = {
+          "explicitFileType": filetype,
+          "includeInIndex":   0,
+          "path":             prefix + self._properties["productName"] + suffix,
+          "sourceTree":       "BUILT_PRODUCTS_DIR",
+        }
+        file_ref = PBXFileReference(ref_props)
+        products_group.AppendProperty("children", file_ref)
+        self.SetProperty("productReference", file_ref)
+
+  def GetBuildPhaseByType(self, type):
+    # TODO(mark): Sanity-check that no more than one phase of type is present.
+    # Some phases may be present in multiples in a well-formed project file,
+    # but phases like PBXSourcesBuildPhase may only be present singly, and
+    # this function is intended as an aid to GetBuildPhaseByType.
+    if not "buildPhases" in self._properties:
+      return None
+
+    for phase in self._properties["buildPhases"]:
+      if isinstance(phase, type):
+        return phase
+
+    return None
+
+  def SourcesPhase(self):
+    sources_phase = self.GetBuildPhaseByType(PBXSourcesBuildPhase)
+    if sources_phase == None:
+      sources_phase = PBXSourcesBuildPhase()
+      self.AppendProperty("buildPhases", sources_phase)
+
+    return sources_phase
+
+  def FrameworksPhase(self):
+    frameworks_phase = self.GetBuildPhaseByType(PBXFrameworksBuildPhase)
+    if frameworks_phase == None:
+      frameworks_phase = PBXFrameworksBuildPhase()
+      self.AppendProperty("buildPhases", frameworks_phase)
+
+    return frameworks_phase
+
+  def AddDependency(self, other):
+    # super
+    XCTarget.AddDependency(self, other)
+    static_library_type = "com.apple.product-type.library.static"
+    if isinstance(other, PBXNativeTarget) and \
+       "productType" in self._properties and \
+       self._properties["productType"] != static_library_type and \
+       "productType" in other._properties and \
+       other._properties["productType"] == static_library_type:
+      file_ref = other.GetProperty("productReference")
+      self.FrameworksPhase().AppendProperty("files",
+                                            PBXBuildFile({"fileRef": file_ref}))
 
 
 class PBXProject(XCObject):
@@ -993,15 +1224,37 @@ class PBXProject(XCObject):
     "targets":                [1, XCTarget,            1, 1, []],
   })
 
-  def __init__(self, properties=None, id=None, name=None):
+  def __init__(self, properties=None, id=None, parent=None, name=None):
     self.name = name
-    return super(self.__class__, self).__init__(properties, id)
+    # super
+    return XCObject.__init__(self, properties, id, parent)
 
   def Name(self):
     return self.name
 
   def Comment(self):
     return "Project object"
+
+  def PBXProjectAncestor(self):
+    return self
+
+  def _GroupByName(self, name):
+    if not "mainGroup" in self._properties:
+      self.SetProperty("mainGroup", PBXGroup())
+
+    main_group = self._properties["mainGroup"]
+    group = main_group.GetChildByName(name)
+    if group == None:
+      group = PBXGroup({"name": name})
+      main_group.AppendProperty("children", group)
+
+    return group
+
+  def SourceGroup(self):
+    return self._GroupByName("Source")
+
+  def ProductsGroup(self):
+    return self._GroupByName("Products")
 
 
 class XCProjectFile(XCObject):

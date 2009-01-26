@@ -9,13 +9,12 @@ class XcodeProject(object):
     self.project = xf.PBXProject(name=name)
     self.project_file = xf.XCProjectFile({"rootObject": self.project})
 
-  def AddTarget(self, name):
-    target = xf.PBXNativeTarget(
-        {
-          "name":        name,
-          "productType": "com.apple.product-type.library.static",
-        },
-        parent=self.project)
+  def AddTarget(self, name, type):
+    _types = { "static_library": "com.apple.product-type.library.static",
+               "executable":     "com.apple.product-type.tool",
+             }
+    target = xf.PBXNativeTarget({"name": name, "productType": _types[type]},
+                                parent=self.project)
     self.project.AppendProperty("targets", target)
     return target
 
@@ -28,9 +27,9 @@ class XcodeProject(object):
 
 def main():
   p = XcodeProject("testproj")
-  t1 = p.AddTarget("testtarg")
+  t1 = p.AddTarget("testtarg", "static_library")
   t1.SourcesPhase().AddFile("source1.cc")
-  t2 = p.AddTarget("dependent")
+  t2 = p.AddTarget("dependent", "executable")
   t2.SourcesPhase().AddFile("source2.cc")
   t2.AddDependency(t1)
   p.Dump()
