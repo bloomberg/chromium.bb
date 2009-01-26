@@ -48,13 +48,22 @@ class XCObject(object):
 
   def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
     def HashUpdate(hash, data):
-      # TODO(mark): Improve.
-      hash.update(str(len(data)))
+      data_length = len(data)
+      byte = (data_length & 0xff000000) >> 24
+      hash.update(chr(byte))
+      byte = (data_length & 0x00ff0000) >> 16
+      hash.update(chr(byte))
+      byte = (data_length & 0x0000ff00) >> 8
+      hash.update(chr(byte))
+      byte = data_length & 0x000000ff
+      hash.update(chr(byte))
       hash.update(data)
+      
 
     HashUpdate(hash, self.__class__.__name__)
     comment = self.Comment()
     if comment != None:
+      # TODO(mark): Improve?  Or maybe this is enough...
       HashUpdate(hash, comment)
 
     if recursive:
@@ -62,6 +71,12 @@ class XCObject(object):
         child.ComputeIDs(recursive, overwrite, hash.copy())
 
     if overwrite or self.id == None:
+      # TODO(mark): Xcode IDs are only 96 bits (24 hex characters), but a SHA-1
+      # digest is 160 bits.  Instead of throwing out 64 bits of the digest, xor
+      # them into the portion that gets used.  As-is, this should be fine,
+      # because hashes are awesome and we're only after uniqueness here, not
+      # security, but I hate computing perfectly good bits just to throw them
+      # out.
       self.id = hash.hexdigest()[0:24].upper()
 
   def Children(self):
