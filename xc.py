@@ -111,11 +111,7 @@ expresses what properties objects of the class may contain.
 Given this structure, it's possible to build a minimal project file by creating
 objects of the appropriate types and making the proper connections:
 
-  config_release = XCBuildConfiguration({"name": "Release"})
-  config_debug = XCBuildConfiguration({"name": "Debug"})
-  config_list = XCConfigurationList({"defaultConfigurationName": "Release",
-                                     "buildConfigurations": [config_debug,
-                                                             config_release]})
+  config_list = XCConfigurationList()
   group = PBXGroup()
   project = PBXProject({"buildConfigurationList": config_list,
                         "mainGroup": group})
@@ -576,6 +572,19 @@ class XCObject(object):
       if is_required and len(attributes) >= 5 and \
           not property in self._properties:
         default = attributes[4]
+
+        # If the default is a list or dictionary, perform a shallow copy to
+        # keep all default-users from getting the same lists and dicts.  Since
+        # the copy isn't deep, and XCObject copying isn't currently supported,
+        # there's no way to have XCObject subclasses in the schema defaults.
+        # Practically, this means that defaults must currently be only of types
+        # str or int, or dicts or lists that only contain these types (or,
+        # more likely, are empty).
+        if isinstance(default, list):
+          default = default[:]
+        elif isinstance(default, dict):
+          default = default.copy()
+
         defaults[property] = default
 
     if len(defaults) > 0:
@@ -643,11 +652,23 @@ class XCBuildConfiguration(XCObject):
   def Comment(self):
     return self.Name()
 
+  def GetBuildSetting(self, key):
+    return self._properties["buildSettings"][key]
+
+  def SetBuildSetting(self, key, value):
+    self._properties["buildSettings"][key] = value
+
+  def DelBuildSetting(self, key):
+    if key in self._properties["buildSettings"]:
+      del self._properties["buildSettings"][key]
+
 
 class XCConfigurationList(XCObject):
+  # Note: buildConfigurations and defaultConfigurationName do have default
+  # values.  See this class' override of _SetDefaultsFromSchema.
   _schema = XCObject._schema.copy()
   _schema.update({
-    "buildConfigurations":           [1, XCBuildConfiguration, 1, 1, []],
+    "buildConfigurations":           [1, XCBuildConfiguration, 1, 1],
     "defaultConfigurationIsVisible": [0, int,                  0, 1, 1],
     "defaultConfigurationName":      [0, str,                  0, 1],
   })
@@ -655,6 +676,71 @@ class XCConfigurationList(XCObject):
   def Comment(self):
     return "Build configuration list for " + \
            self.parent.__class__.__name__ + ' "' + self.parent.Name() + '"'
+
+  def _SetDefaultsFromSchema(self):
+    super(self.__class__, self)._SetDefaultsFromSchema()
+
+    # The schema can't express a default contains objects unless it's extended
+    # to make copies of the objects.  Otherwise, everyone accepting the
+    # defaults would wind up with references to the same exact object.
+    # Modifying the base _SetDefaultsFromSchema to copy objects is a
+    # possibility, but since this case isn't encountered very often, an
+    # override in this class will suffice.
+    if not "buildConfigurations" in self._properties and \
+       not "defaultConfigurationName" in self._properties:
+      self.UpdateProperties(
+          {
+            "buildConfigurations": [ XCBuildConfiguration({"name": "Debug"}),
+                                     XCBuildConfiguration({"name": "Release"}),
+                                   ],
+            "defaultConfigurationName": "Release",
+          })
+
+  def ConfigurationNamed(self, name):
+    """Convenience accessor to obtain an XCBuildConfiguration by name."""
+    for configuration in self._properties["buildConfigurations"]:
+      if configuration._properties["name"] == name:
+        return configuration
+
+    raise KeyError, name
+
+  def DefaultConfiguration(self):
+    """Convenience accessor to obtain the default XCBuildConfiguration."""
+    return self.ConfigurationNamed(self._properties["defaultConfigurationName"])
+
+  def GetBuildSetting(self, key):
+    """Gets the build setting for key.
+
+    All child XCConfiguration objects must have the same value set for the
+    setting, or a ValueError will be raised.
+    """
+
+    value = None
+    for configuration in self._properties["buildConfigurations"]:
+      configuration_value = configuration.GetBuildSettings(key)
+      if value == None:
+        value = configuration_value
+      else:
+        if value != configuration_value:
+          raise ValueError, "Variant values for " + key
+
+    return value
+
+  def SetBuildSetting(self, key, value):
+    """Sets the build setting for key to value in all child
+    XCBuildConfiguration objects.
+    """
+
+    for configuration in self._properties["buildConfigurations"]:
+      configuration.SetBuildSetting(key, value)
+
+  def DelBuildSetting(self, key):
+    """Deletes the build setting key from all child XCBuildConfiguration
+    objects.
+    """
+
+    for configuration in self._properties["buildConfigurations"]:
+      configuration.DelBuildSetting(key)
 
 
 class PBXBuildFile(XCObject):
@@ -880,16 +966,13 @@ class XCProjectFile(XCObject):
 sf = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source.cc", "sourceTree": "SOURCE_ROOT"})
 sbf = PBXBuildFile({"fileRef":sf})
 
-tcr = XCBuildConfiguration({"name":"Release","buildSettings":{"PRODUCT_NAME":"targetty"}})
-tcd = XCBuildConfiguration({"name":"Debug","buildSettings":{"PRODUCT_NAME":"targetty"}})
-tl = XCConfigurationList({"defaultConfigurationName":"Release","buildConfigurations":[tcd,tcr]})
+tl = XCConfigurationList()
+tl.SetBuildSetting("PRODUCT_NAME", "targetty")
 ts = PBXSourcesBuildPhase({"files":[sbf]})
 pr = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
 t = PBXNativeTarget({"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
 
-c = XCBuildConfiguration({"name":"Release"})
-cd = XCBuildConfiguration({"name":"Debug"})
-l = XCConfigurationList({"defaultConfigurationName":"Release","buildConfigurations":[cd,c]})
+l = XCConfigurationList()
 g = PBXGroup({"children":[sf, pr]})
 
 o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t]})
