@@ -862,20 +862,13 @@ class PBXTargetDependency(XCObject):
   # schema yet.  The definition of PBXTargetDependency can't be moved below
   # XCTarget because XCTarget's own schema references PBXTargetDependency.
   # Python doesn't deal well with this circular relationship, and doesn't have
-  # a real way to do forward declarations.  To work around, this class'
-  # __init__ method will fix the schema each time an object is created.
-  # XCTarget can be used in __init__ because it won't execute until after
-  # XCTarget has been defined.
+  # a real way to do forward declarations.  To work around, the type of
+  # the "target" property is reset below, after XCTarget is defined.
   _schema = XCObject._schema.copy()
   _schema.update({
     "target":      [0, None.__class__,        0, 1],
     "targetProxy": [0, PBXContainerItemProxy, 1, 1],
   })
-
-  def __init__(self, properties=None, id=None):
-    # Redefine the type of the "target" property.  See _schema above.
-    self._schema["target"][1] = XCTarget
-    super(self.__class__, self).__init__(properties, id)
 
   def Comment(self):
     # Admittedly not the best name, but it's what Xcode uses.
@@ -894,6 +887,10 @@ class XCTarget(XCObject):
 
   def Comment(self):
     return self.Name()
+
+# Redefine the type of the "target" property.  See PBXTargetDependency._schema
+# above.
+PBXTargetDependency._schema["target"][1] = XCTarget
 
 
 class PBXNativeTarget(XCTarget):
@@ -992,34 +989,38 @@ class XCProjectFile(XCObject):
 
 # TEST TEST TEST
 
-sf = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source.cc", "sourceTree": "SOURCE_ROOT"})
-sbf = PBXBuildFile({"fileRef":sf})
+def main():
+  sf = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source.cc", "sourceTree": "SOURCE_ROOT"})
+  sbf = PBXBuildFile({"fileRef":sf})
 
-tl = XCConfigurationList()
-tl.SetBuildSetting("PRODUCT_NAME", "targetty")
-ts = PBXSourcesBuildPhase({"files":[sbf]})
-pr = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
-t = PBXNativeTarget({"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
+  tl = XCConfigurationList()
+  tl.SetBuildSetting("PRODUCT_NAME", "targetty")
+  ts = PBXSourcesBuildPhase({"files":[sbf]})
+  pr = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
+  t = PBXNativeTarget({"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
 
-sf2 = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source2.cc", "sourceTree": "SOURCE_ROOT"})
-sbf2 = PBXBuildFile({"fileRef":sf2})
+  sf2 = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source2.cc", "sourceTree": "SOURCE_ROOT"})
+  sbf2 = PBXBuildFile({"fileRef":sf2})
 
-tl2 = XCConfigurationList()
-tl2.SetBuildSetting("PRODUCT_NAME", "dependent")
-ts2 = PBXSourcesBuildPhase({"files":[sbf2]})
-pr2 = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libdependent.a","sourceTree":"BUILT_PRODUCTS_DIR"})
+  tl2 = XCConfigurationList()
+  tl2.SetBuildSetting("PRODUCT_NAME", "dependent")
+  ts2 = PBXSourcesBuildPhase({"files":[sbf2]})
+  pr2 = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libdependent.a","sourceTree":"BUILT_PRODUCTS_DIR"})
 
-depcip2to1 = PBXContainerItemProxy({"proxyType": 1, "remoteGlobalIDString": t, "remoteInfo": "targetty"})
-dep2to1 = PBXTargetDependency({"target": t, "targetProxy": depcip2to1})
+  depcip2to1 = PBXContainerItemProxy({"proxyType": 1, "remoteGlobalIDString": t, "remoteInfo": "targetty"})
+  dep2to1 = PBXTargetDependency({"target": t, "targetProxy": depcip2to1})
 
-t2 = PBXNativeTarget({"buildConfigurationList":tl2,"buildPhases":[ts2],"dependencies":[dep2to1],"name":"dependent","productName":"dependent","productReference":pr2,"productType":"com.apple.product-type.library.static"})
+  t2 = PBXNativeTarget({"buildConfigurationList":tl2,"buildPhases":[ts2],"dependencies":[dep2to1],"name":"dependent","productName":"dependent","productReference":pr2,"productType":"com.apple.product-type.library.static"})
 
-l = XCConfigurationList()
-g = PBXGroup({"children":[sf, pr, sf2, pr2]})
+  l = XCConfigurationList()
+  g = PBXGroup({"children":[sf, pr, sf2, pr2]})
 
-o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t, t2]})
-depcip2to1.UpdateProperties({"containerPortal":o})
-f = XCProjectFile({"rootObject":o})
+  o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t, t2]})
+  depcip2to1.UpdateProperties({"containerPortal":o})
+  f = XCProjectFile({"rootObject":o})
 
-f.ComputeIDs()
-f.Print()
+  f.ComputeIDs()
+  f.Print()
+
+if __name__ == "__main__":
+  main()
