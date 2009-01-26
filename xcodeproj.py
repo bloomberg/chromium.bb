@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+import errno
+import os
 import xcodeproj_file as xf
 
 
@@ -18,22 +20,16 @@ class XcodeProject(object):
     self.project.AppendProperty("targets", target)
     return target
 
-  def Dump(self):
+  def Write(self):
     self.project_file.ComputeIDs()
-    self.project_file.Print()
+    xcodeproj_path = self.name + ".xcodeproj"
+    pbxproj_path = xcodeproj_path + "/project.pbxproj"
 
+    try:
+      os.mkdir(xcodeproj_path)
+    except OSError, e:
+      if e.errno != errno.EEXIST:
+        raise
 
-# TEST TEST TEST
-
-def main():
-  p = XcodeProject("testproj")
-  t1 = p.AddTarget("testtarg", "static_library")
-  t1.SourcesPhase().AddFile("source1.cc")
-  t2 = p.AddTarget("dependent", "executable")
-  t2.SourcesPhase().AddFile("source2.cc")
-  t2.AddDependency(t1)
-  p.Dump()
-
-
-if __name__ == "__main__":
-  main()
+    output_file = open(pbxproj_path, "w")
+    self.project_file.Print(output_file)
