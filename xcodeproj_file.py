@@ -234,6 +234,54 @@ class XCObject(object):
     self._SetDefaultsFromSchema()
     self.UpdateProperties(properties)
 
+  def Copy(self):
+    """Make a copy of this object.
+
+    The new object will have its own copy of lists and dicts.  Any XCObject
+    objects owned by this object (marked "strong") will be copied in the
+    new object, even those found in lists.  If this object has any weak
+    references to other XCObjects, the same references are added to the new
+    object without making a copy.
+    """
+
+    that = self.__class__(id=self.id)
+    that.parent = self.parent
+    for key, value in self._properties.iteritems():
+      is_strong = self._schema[key][2]
+
+      if isinstance(value, XCObject):
+        if is_strong:
+          new_value = value.Copy()
+          new_value.parent = that
+          that._properties[key] = new_value
+        else:
+          that._properties[key] = value
+      elif isinstance(value, str) or isinstance(value, int):
+        that._properties[key] = value
+      elif isinstance(value, list):
+        if is_strong:
+          # If is_strong is True, each element is an XCObject, so it's safe to
+          # call Copy.
+          that._properties[key] = []
+          for item in value:
+            new_item = item.Copy()
+            new_item.parent = that
+            that._properties[key].append(new_item)
+        else:
+          that._properties[key] = value[:]
+      elif isinstance(value, dict):
+        # dicts are never strong.
+        if is_strong:
+          raise TypeError, "Strong dict for key " + key + " in " + \
+                           self.__class__.__name__
+        else:
+          that._properties[key] = value.copy()
+      else:
+        raise TypeError, "Unexpected type " + value.__class__.__name__ + \
+                         " for key " + key + " in " + self.__class__.__name__
+
+    return that
+
   def Name(self):
     """Return the name corresponding to an object.
 
@@ -243,12 +291,21 @@ class XCObject(object):
 
     if "name" in self._properties:
       return self._properties["name"]
-    return None
+
+    raise NotImplementedError, \
+          self.__class__.__name__ + " must implement Name"
 
   def Comment(self):
-    # TODO(mark): Merge Name and Comment, we really just need Name.
-    raise NotImplementedError, \
-          self.__class__.__name__ + " must implement Comment"
+    """Return a comment string for the object.
+
+    Most objects just use their name as the comment, but PBXProject uses
+    different values.
+
+    The returned comment is not escaped and does not have any comment marker
+    strings applied to it.
+    """
+
+    return self.Name()
 
   def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
     """Set "id" properties deterministically.
@@ -286,9 +343,9 @@ class XCObject(object):
       hash.update(data)
 
     _HashUpdate(hash, self.__class__.__name__)
-    comment = self.Comment()
-    if comment != None:
-      _HashUpdate(hash, comment)
+    name = self.Name()
+    if name != None:
+      _HashUpdate(hash, name)
 
     if recursive:
       for child in self.Children():
@@ -459,8 +516,23 @@ class XCObject(object):
     if not self._should_print_single_line:
       printable = "\t" * tabs
 
+    # Xcode usually prints remoteGlobalIDString values in PBXContainerItemProxy
+    # objects without comments.  Sometimes it prints them with comments, but
+    # the majority of the time, it doesn't.  To avoid unnecessary changes to
+    # the project file after Xcode opens it, don't write comments for
+    # remoteGlobalIDString.  This is a sucky hack and it would certainly be
+    # cleaner to extend the schema to indicate whether or not a comment should
+    # be printed, but since this is the only case where the problem occurs and
+    # Xcode itself can't seem to make up its mind, the hack will suffice.
+    #
+    # Also see PBXContainerItemProxy._schema["remoteGlobalIDString"].
+    if key == "remoteGlobalIDString" and isinstance(value, XCObject):
+      value_to_print = value.id
+    else:
+      value_to_print = value
+
     printable += self._XCPrintableValue(tabs, key) + " = " + \
-                 self._XCPrintableValue(tabs, value) + ";"
+                 self._XCPrintableValue(tabs, value_to_print) + ";"
     if self._should_print_single_line:
       printable += " "
     else:
@@ -506,13 +578,17 @@ class XCObject(object):
     # End the object.
     self._XCPrint(file, end_tabs, "};\n")
 
-  def UpdateProperties(self, properties):
+  def UpdateProperties(self, properties, do_copy=False):
     """Merge the supplied properties into the _properties dictionary.
 
     The input properties must adhere to the class schema or a KeyError or
     TypeError exception will be raised.  If adding an object of an XCObject
     subclass and the schema indicates a strong relationship, the object's
     parent will be set to this object.
+
+    If do_copy is True, then lists, dicts, strong-owned XCObjects, and
+    strong-owned XCObjects in lists will be copied instead of having their
+    references added.
     """
 
     if properties == None:
@@ -542,14 +618,39 @@ class XCObject(object):
               property_type.__name__ + ", not " + value.__class__.__name__
 
       # Checks passed, perform the assignment.
-      self._properties[property] = value
+      if do_copy:
+        if isinstance(value, XCObject):
+          if is_strong:
+            self._properties[property] = value.Copy()
+          else:
+            self._properties[property] = value
+        elif isinstance(value, str) or isinstance(value, int):
+          self._properties[property] = value
+        elif isinstance(value, list):
+          if is_strong:
+            # If is_strong is True, each element is an XCObject, so it's safe
+            # to call Copy.
+            self._properties[property] = []
+            for item in value:
+              self._properties[property].append(item.Copy())
+          else:
+            self._properties[property] = value[:]
+        elif isinstance(value, dict):
+          self._properties[property] = value.copy()
+        else:
+          raise TypeError, "Don't know how to copy a " + \
+                           value.__class__.__name__ + " object for " + \
+                           property + " in " + self.__class__.__name__
+      else:
+        self._properties[property] = value
 
-      # Set up the child's back-reference to this object.
+      # Set up the child's back-reference to this object.  Don't use |value|
+      # any more because it may not be right if do_copy is true.
       if is_strong:
         if not is_list:
-          value.parent = self
+          self._properties[property].parent = self
         else:
-          for item in value:
+          for item in self._properties[property]:
             item.parent = self
 
   def VerifyHasRequiredProperties(self):
@@ -575,22 +676,12 @@ class XCObject(object):
           not property in self._properties:
         default = attributes[4]
 
-        # If the default is a list or dictionary, perform a shallow copy to
-        # keep all default-users from getting the same lists and dicts.  Since
-        # the copy isn't deep, and XCObject copying isn't currently supported,
-        # there's no way to have XCObject subclasses in the schema defaults.
-        # Practically, this means that defaults must currently be only of types
-        # str or int, or dicts or lists that only contain these types (or,
-        # more likely, are empty).
-        if isinstance(default, list):
-          default = default[:]
-        elif isinstance(default, dict):
-          default = default.copy()
-
         defaults[property] = default
 
     if len(defaults) > 0:
-      self.UpdateProperties(defaults)
+      # Use do_copy=True so that each new object gets its own copy of strong
+      # objects, lists, and dicts.
+      self.UpdateProperties(defaults, do_copy=True)
 
 
 class XCHierarchicalElement(XCObject):
@@ -610,6 +701,17 @@ class XCHierarchicalElement(XCObject):
     "wrapsLines":     [0, int, 0, 0],
   })
 
+  def Name(self):
+    if "name" in self._properties:
+      return self._properties["name"]
+    elif "path" in self._properties:
+      # TODO(mark): Verify that this is right.  Xcode might actually just take
+      # the basename.
+      return self._properties["path"]
+    else:
+      # This happens in the case of the root PBXGroup.
+      return None
+
 
 class PBXGroup(XCHierarchicalElement):
   _schema = XCHierarchicalElement._schema.copy()
@@ -618,10 +720,6 @@ class PBXGroup(XCHierarchicalElement):
     "name":     [0, str,                   0, 0],
     "path":     [0, str,                   0, 0],
   })
-
-  def Comment(self):
-    # TODO(mark): Use path if no name?  Share with PBXFileReference?
-    return self.Name()
 
 
 class PBXFileReference(XCHierarchicalElement):
@@ -637,11 +735,6 @@ class PBXFileReference(XCHierarchicalElement):
   _should_print_single_line = True
   _encode_transforms = XCHierarchicalElement._alternate_encode_transforms
 
-  def Comment(self):
-    if "path" in self._properties:
-      return self._properties["path"]
-    return self.Name()
-
 
 class XCBuildConfiguration(XCObject):
   _schema = XCObject._schema.copy()
@@ -650,9 +743,6 @@ class XCBuildConfiguration(XCObject):
     "buildSettings":              [0, dict, 0, 1, {}],
     "name":                       [0, str,  0, 1],
   })
-
-  def Comment(self):
-    return self.Name()
 
   def GetBuildSetting(self, key):
     return self._properties["buildSettings"][key]
@@ -666,37 +756,20 @@ class XCBuildConfiguration(XCObject):
 
 
 class XCConfigurationList(XCObject):
-  # Note: buildConfigurations and defaultConfigurationName do have default
-  # values.  See this class' override of _SetDefaultsFromSchema.
+  # _configs is the default list of configurations.
+  _configs = [ XCBuildConfiguration({"name": "Debug"}),
+               XCBuildConfiguration({"name": "Release"}) ]
+
   _schema = XCObject._schema.copy()
   _schema.update({
-    "buildConfigurations":           [1, XCBuildConfiguration, 1, 1],
+    "buildConfigurations":           [1, XCBuildConfiguration, 1, 1, _configs],
     "defaultConfigurationIsVisible": [0, int,                  0, 1, 1],
-    "defaultConfigurationName":      [0, str,                  0, 1],
+    "defaultConfigurationName":      [0, str,                  0, 1, "Release"],
   })
 
-  def Comment(self):
+  def Name(self):
     return "Build configuration list for " + \
            self.parent.__class__.__name__ + ' "' + self.parent.Name() + '"'
-
-  def _SetDefaultsFromSchema(self):
-    super(self.__class__, self)._SetDefaultsFromSchema()
-
-    # The schema can't express a default contains objects unless it's extended
-    # to make copies of the objects.  Otherwise, everyone accepting the
-    # defaults would wind up with references to the same exact object.
-    # Modifying the base _SetDefaultsFromSchema to copy objects is a
-    # possibility, but since this case isn't encountered very often, an
-    # override in this class will suffice.
-    if not "buildConfigurations" in self._properties and \
-       not "defaultConfigurationName" in self._properties:
-      self.UpdateProperties(
-          {
-            "buildConfigurations": [ XCBuildConfiguration({"name": "Debug"}),
-                                     XCBuildConfiguration({"name": "Release"}),
-                                   ],
-            "defaultConfigurationName": "Release",
-          })
 
   def ConfigurationNamed(self, name):
     """Convenience accessor to obtain an XCBuildConfiguration by name."""
@@ -755,10 +828,9 @@ class PBXBuildFile(XCObject):
   _should_print_single_line = True
   _encode_transforms = XCObject._alternate_encode_transforms
 
-  def Comment(self):
+  def Name(self):
     # Example: "main.cc in Sources"
-    return self._properties["fileRef"].Comment() + " in " + \
-           self.parent.Comment()
+    return self._properties["fileRef"].Name() + " in " + self.parent.Name()
 
 
 class XCBuildPhase(XCObject):
@@ -776,21 +848,21 @@ class XCBuildPhase(XCObject):
 class PBXHeadersBuildPhase(XCBuildPhase):
   # No additions to the schema relative to XCBuildPhase.
 
-  def Comment(self):
+  def Name(self):
     return "Headers"
 
 
 class PBXSourcesBuildPhase(XCBuildPhase):
   # No additions to the schema relative to XCBuildPhase.
 
-  def Comment(self):
+  def Name(self):
     return "Sources"
 
 
 class PBXFrameworksBuildPhase(XCBuildPhase):
   # No additions to the schema relative to XCBuildPhase.
 
-  def Comment(self):
+  def Name(self):
     return "Frameworks"
 
 
@@ -805,10 +877,9 @@ class PBXShellScriptBuildPhase(XCBuildPhase):
     "showEnvVarsInLog": [0, int, 0, 0],
   })
 
-  def Comment(self):
-    name = self.Name()
-    if name != None:
-      return name
+  def Name(self):
+    if "name" in self._properties:
+      return self._properties["name"]
 
     return "ShellScript"
 
@@ -840,9 +911,9 @@ class PBXContainerItemProxy(XCObject):
   # a comment, indicating that it's tracked internally simply as a string, but
   # sometimes it's printed with a comment (usually when the object is initially
   # created), indicating that it's tracked as a project file object at least
-  # sometimes.  This module always tracks it as an object, meaning that it
-  # will always print a comment, which Xcode will very often remove.
-  # TODO(mark): Fix to make canonical by not printing the comment.
+  # sometimes.  This module always tracks it as an object, but contains a hack
+  # to prevent it from printing the comment in the project file output.  See
+  # _XCKVPrint.
   _schema = XCObject._schema.copy()
   _schema.update({
     "containerPortal":      [0, XCObject, 0, 1],
@@ -851,7 +922,7 @@ class PBXContainerItemProxy(XCObject):
     "remoteInfo":           [0, str,      0, 1],
   })
 
-  def Comment(self):
+  def Name(self):
     # Admittedly not the best name, but it's what Xcode uses.
     return self.__class__.__name__
 
@@ -870,7 +941,7 @@ class PBXTargetDependency(XCObject):
     "targetProxy": [0, PBXContainerItemProxy, 1, 1],
   })
 
-  def Comment(self):
+  def Name(self):
     # Admittedly not the best name, but it's what Xcode uses.
     return self.__class__.__name__
 
@@ -885,8 +956,6 @@ class XCTarget(XCObject):
     "productName":            [0, str,                 0, 1],
   })
 
-  def Comment(self):
-    return self.Name()
 
 # Redefine the type of the "target" property.  See PBXTargetDependency._schema
 # above.
@@ -903,22 +972,36 @@ class PBXNativeTarget(XCTarget):
 
 
 class PBXProject(XCObject):
+  """
+
+  Attributes:
+    name: The project name.  This should be set to the name of the project file
+          without the .xcodeproj extension.  For example, the name attribute of
+          "sample.xcodeproj" should be set to "sample".  name is a required
+          attribute.
+  """
+
   _schema = XCObject._schema.copy()
   _schema.update({
-    "buildConfigurationList": [0, XCConfigurationList, 1, 1],
+    "buildConfigurationList": [0, XCConfigurationList, 1, 1,
+                               XCConfigurationList()],
     "compatibilityVersion":   [0, str,                 0, 1, "Xcode 3.1"],
     "hasScannedForEncodings": [0, int,                 0, 1, 1],
-    "mainGroup":              [0, PBXGroup,            1, 1],
+    "mainGroup":              [0, PBXGroup,            1, 1, PBXGroup()],
     "projectDirPath":         [0, str,                 0, 1, ""],
     "projectRoot":            [0, str,                 0, 1, ""],
     "targets":                [1, XCTarget,            1, 1, []],
   })
 
-  def Comment(self):
-    return "Project object"
+  def __init__(self, properties=None, id=None, name=None):
+    self.name = name
+    return super(self.__class__, self).__init__(properties, id)
 
   def Name(self):
-    return "FakeNameFixMe"
+    return self.name
+
+  def Comment(self):
+    return "Project object"
 
 
 class XCProjectFile(XCObject):
@@ -1015,7 +1098,7 @@ def main():
   l = XCConfigurationList()
   g = PBXGroup({"children":[sf, pr, sf2, pr2]})
 
-  o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t, t2]})
+  o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t, t2]}, name="ssl")
   depcip2to1.UpdateProperties({"containerPortal":o})
   f = XCProjectFile({"rootObject":o})
 
