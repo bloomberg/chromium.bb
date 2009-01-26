@@ -1,11 +1,146 @@
 #!/usr/bin/python
 
+"""Xcode project file generator.
+
+This module is both an Xcode project file generator and a documentation of the
+Xcode project file format.  Knowledge of the project file format was gained
+based on extensive experience with Xcode, and by making changes to projects in
+Xcode.app and observing the resultant changes in the associated project files.
+
+XCODE PROJECT FILES
+
+The generator targets the file format as written by Xcode 3.1 (specifically,
+3.1.2), but past experience has taught that the format has not changed
+significantly in the past several years, and future versions of Xcode are able
+to read older project files.
+
+Xcode project files are "bundled": the project "file" from an end-user's
+perspective is actually a directory with an ".xcodeproj" extension.  The
+project file from this module's perspective is actually a file inside this
+directory, always named "project.pbxproj".  This file contains a complete
+description of the project and is all that is needed to use the xcodeproj.
+Other files contained in the xcodeproj directory are simply used to store
+per-user settings, such as the state of various UI elements in the Xcode
+application.
+
+The project.pbxproj file is a property list, stored in a format almost
+identical to the NeXTstep property list format.  The file is able to carry
+Unicode data, and is encoded in UTF-8.  The root element in the property list
+is a dictionary that contains several properties of minimal interest, and two
+properties of immense interest.  The most important property is a dictionary
+named "objects".  The entire structure of the project is represented by the
+children of this property.  The objects dictionary is keyed by unique 96-bit
+values represented by 24 uppercase hexadecimal characters.  Each value in the
+objects dictionary is itself a dictionary, describing an individual object.
+
+Each object in the dictionary is a member of a class, which is identified by
+the "isa" property of each object.  A variety of classes are represented in a
+project file.  Objects can refer to other objects by ID, using the 24-character
+hexadecimal object key.  A project's objects form a tree, with a root object
+of class PBXProject at the root.  As an example, the PBXProject object serves
+as parent to an XCConfigurationList object defining the build configurations
+used in the project, a PBXGroup object serving as a container for all files
+referenced in the project, and a list of target objects, each of which defines
+a target in the project.  There are several different types of target object,
+such as PBXNativeTarget and PBXAggregateTarget.  In this module, this
+relationship is expressed by having each target type derive from an abstract
+base named XCTarget.
+
+The project.pbxproj file's root dictionary also contains a property, sibling to
+the "objects" dictionary, named "rootObject".  The value of rootObject is a
+24-character object key referring to the root PBXProject object in the
+objects dictionary.
+
+In Xcode, every file used as input to a target or produced as a final product
+of a target must appear somewhere in the hierarchy rooted at the PBXGroup
+object referenced by the PBXProject's mainGroup property.  A PBXGroup is
+generally represented as a folder in the Xcode application.  PBXGroups can
+contain other PBXGroups as well as PBXFileReferences, which are pointers to
+actual files.
+
+Each XCTarget contains a list of build phases, represented in this module by
+the abstract base XCBuildPhase.  Examples of concrete XCBuildPhase derivations
+are PBXSourcesBuildPhase and PBXFrameworksBuildPhase, which correspond to the
+"Compile Sources" and "Link Binary With Libraries" phases displayed in the
+Xcode application.  Files used as input to these phases (for example, source
+files in the former case and libraries and frameworks in the latter) are
+represented by PBXBuildFile objects, referenced by elements of "files" lists
+in XCTarget objects.  Each PBXBuildFile object refers to a PBXBuildFile
+object as a "weak" reference: it does not "own" the PBXBuildFile, which is
+owned by the root object's mainGroup or a descendant group.  In most cases, the
+layer of indirection between an XCBuildPhase and a PBXFileReference via a
+PBXBuildFile appears extraneous, but there's actually one reason for this:
+file-specific compiler flags are added to the PBXBuildFile object so as to
+allow a single file to be a member of multiple targets while having distinct
+compiler flags for each.  These flags can be modified in the Xcode applciation
+in the "Build" tab of a File Info window.
+
+When a project is open in the Xcode application, Xcode will rewrite it.  As
+such, this module is careful to adhere to the formatting used by Xcode, to
+avoid insignificant changes appearing in the file when it is used in the
+Xcode application.  This will keep version control repositories happy, and
+makes it possible to compare a project file used in Xcode to one generated by
+this module to determine if any significant changes were made in the
+application.
+
+Xcode has its own way of assigning 24-character identifiers to each object,
+which is not duplicated here.  Because the identifier only is only generated
+once, when an object is created, and is then left unchanged, there is no need
+to attempt to duplicate Xcode's behavior in this area.  The generator is free
+to select any identifier, even at random, to refer to the objects it creates,
+and Xcode will retain those identifiers and use them when subsequently
+rewriting the project file.  However, the generator would choose new random
+identifiers each time the project files are generated, leading to difficulties
+comparing "used" project files to "pristine" ones produced by this module,
+and causing the appearance of changes as every object identifier is changed
+when updated projects are checked in to a version control repository.  To
+mitigate this problem, this module chooses identifiers in a more deterministic
+way, by hashing a description of each object as well as its parent and ancestor
+objects.  This strategy should result in minimal "shift" in IDs as successive
+generations of project files are produced.
+
+THIS MODULE
+
+This module introduces several classes, all derived from the XCObject class.
+Nearly all of the "brains" are built into the XCObject class, which understands
+how to create and modify objects, maintain the proper tree structure, compute
+identifiers, and print objects.  For the most part, classes derived from
+XCObject need only provide a _schema class object, a dictionary that
+expresses what properties objects of the class may contain.
+
+Given this structure, it's possible to build a minimal project file by creating
+objects of the appropriate types and making the proper connections:
+
+  config_release = XCBuildConfiguration({"name": "Release"})
+  config_debug = XCBuildConfiguration({"name": "Debug"})
+  config_list = XCConfigurationList({"defaultConfigurationName": "Release",
+                                     "buildConfigurations": [config_debug,
+                                                             config_release]})
+  group = PBXGroup()
+  project = PBXProject({"buildConfigurationList": config_list,
+                        "mainGroup": group})
+
+With the project object set up, it can be added to an XCProjectFile object.
+XCProjectFile is a pseudo-class in the sense that it is a concrete XCObject
+subclass that does not actually correspond to a class type found in a project
+file.  Rather, it is used to represent the project file's root dictionary.
+Printing an XCProjectFile will print the entire project file, including the
+full "objects" dictionary.
+
+  project_file = XCProjectFile({"rootObject": project})
+  project_file.ComputeIDs()
+  project_file.Print()
+"""
+
 import hashlib
 import string
 import sys
 
 
 def StringContainsOnly(s, chars):
+  """Returns True if s does not contain any character other than those in
+  chars."""
+
   for c in s:
     if chars.find(c) == -1:
       return False
@@ -13,8 +148,71 @@ def StringContainsOnly(s, chars):
 
 
 class XCObject(object):
+  """The abstract base of all class types used in Xcode project files.
+
+  Class variables:
+    _schema: A dictionary defining the properties of this class.  The keys to
+             _schema are string property keys as used in project files.  Values
+             are a list of four or five elements:
+             [ is_list, property_type, is_strong, is_required, default ]
+             is_list: True if the property described is a list, as opposed
+                      to a single element.
+             property_type: The type to use as the value of the property,
+                            or if is_list is True, the type to use for each
+                            element of the value's list.  property_type must
+                            be an XCObject subclass, or one of the built-in
+                            types str, int, or dict.
+             is_strong: If property_type is an XCObject subclass, is_strong
+                        is True to assert that this class "owns," or serves
+                        as parent, to the property value (or, if is_list is
+                        True, values).  is_strong must be False if
+                        property_type is not an XCObject subclass.
+             is_required: True if the property is required for the class.
+                          Note that is_required being True does not preclude
+                          an empty string ("", in the case of property_type
+                          str) or list ([], in the case of is_list True) from
+                          being set for the property.
+             default: Optional.  If is_requried is True, default may be set
+                      to provide a default value for objects that do not supply
+                      their own value.  If is_required is True and default
+                      is not provided, users of the class must supply their own
+                      value for the property.
+             Note that although the values of the array are expressed in
+             boolean terms, subclasses provide values as integers to conserve
+             horizontal space.
+    _should_print_single_line: False in XCObject.  Subclasses whose objects
+                               should be written to the project file in the
+                               alternate single-line format, such as
+                               PBXFileReference and PBXBuildFile, should
+                               set this to True.
+    _encode_transforms: Used by _EncodeString to encode unprintable characters.
+                        The index into this list is the ordinal of the
+                        character to transform; each value is a string
+                        used to represent the character in the output.  XCObject
+                        provides an _encode_transforms list suitable for most
+                        XCObject subclasses.
+    _alternate_encode_transforms: Provided for subclasses that wish to use
+                                  the alternate encoding rules.  Xcode seems
+                                  to use these rules when printing objects in
+                                  single-line format.  Subclasses that desire
+                                  this behavior should set _encode_transforms
+                                  to _alternate_encode_transforms.
+  Attribues:
+    id: The object's identifier, a 24-character uppercase hexadecimal string.
+        Usually, objects being created should not set id until the entire
+        project file structure is built.  At that point, UpdateIDs() should
+        be called on the root object to assign deterministic values for id to
+        each object in the tree.
+    parent: The object's parent.  This is set by a parent XCObject when a child
+            object is added to it.
+    _properties: The object's property dictionary.  An object's properties are
+                 described by its class' _schema variable.
+  """
+
   _schema = {}
   _should_print_single_line = False
+
+  # See _EncodeString.
   _encode_transforms = []
   i = 0
   while i < ord(" "):
@@ -28,7 +226,12 @@ class XCObject(object):
   _encode_transforms[12] = "\\f"
   _encode_transforms[13] = "\\n"
 
-  def __init__(self, id=None, properties=None):
+  _alternate_encode_transforms = list(_encode_transforms)
+  _alternate_encode_transforms[9] = chr(9)
+  _alternate_encode_transforms[10] = chr(10)
+  _alternate_encode_transforms[11] = chr(11)
+
+  def __init__(self, properties=None, id=None):
     self.id = id
     self.parent = None
     self._properties = {}
@@ -36,18 +239,45 @@ class XCObject(object):
     self.UpdateProperties(properties)
 
   def Name(self):
-    # Note: not all objects need to be nameable, and not all that do have a
-    # "name" property.  Override as needed.
+    """Return the name corresponding to an object.
+
+    Not all objects necessarily need to be nameable, and not all that do have
+    a "name" property.  Override as needed.
+    """
+
     if "name" in self._properties:
       return self._properties["name"]
     return None
 
   def Comment(self):
+    # TODO(mark): Merge Name and Comment, we really just need Name.
     raise NotImplementedError, \
           self.__class__.__name__ + " must implement Comment"
 
   def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
-    def HashUpdate(hash, data):
+    """Set "id" properties deterministically.
+
+    An object's "id" property is set based on a hash of its class type and
+    name, as well as the class type and name of all ancestor objects.  As
+    such, it is only advisable to call ComputeIDs once an entire project file
+    tree is built.
+
+    If recursive is True, recurse into all descendant objects and update their
+    hashes.
+
+    If overwrite is True, any existing value set in the "id" property will be
+    replaced.
+    """
+
+    def _HashUpdate(hash, data):
+      """Update hash with data's length and contents.
+
+      If the hash were updated only with the value of data, it would be
+      possible for clowns to induce collisions by manipulating the names of
+      their objects.  By adding the length, it's exceedingly less likely that
+      ID collisions will be encountered, intentionally or not.
+      """
+
       data_length = len(data)
       byte = (data_length & 0xff000000) >> 24
       hash.update(chr(byte))
@@ -58,13 +288,11 @@ class XCObject(object):
       byte = data_length & 0x000000ff
       hash.update(chr(byte))
       hash.update(data)
-      
 
-    HashUpdate(hash, self.__class__.__name__)
+    _HashUpdate(hash, self.__class__.__name__)
     comment = self.Comment()
     if comment != None:
-      # TODO(mark): Improve?  Or maybe this is enough...
-      HashUpdate(hash, comment)
+      _HashUpdate(hash, comment)
 
     if recursive:
       for child in self.Children():
@@ -80,6 +308,8 @@ class XCObject(object):
       self.id = hash.hexdigest()[0:24].upper()
 
   def Children(self):
+    """Returns a list of all of this object's owned (strong) children."""
+
     children = []
     for property, attributes in self._schema.iteritems():
       (is_list, property_type, is_strong) = attributes[0:3]
@@ -91,6 +321,10 @@ class XCObject(object):
     return children
 
   def Descendants(self):
+    """Returns a list of all of this object's descendants, including this
+    object.
+    """
+
     children = self.Children()
     descendants = [self]
     for child in children:
@@ -98,18 +332,30 @@ class XCObject(object):
     return descendants
 
   def _EncodeComment(self, comment):
-    # Mimic Xcode behavior.  Wrap the comment in "/*" and "*/", but if the
-    # string already contains a "*/", turn it into "(*)/".  This keeps the file
-    # writer from outputting something that would be treated as the end of a
-    # comment in the middle of something intended to be entirely a comment.
+    """Encodes a comment to be placed in the project file output, mimicing
+    Xcode behavior.
+    """
+
+    # This mimics Xcode behavior by wrapping the comment in "/*" and "*/".  If
+    # the string already contains a "*/", it is turned into "(*)/".  This keeps
+    # the file writer from outputting something that would be treated as the
+    # end of a comment in the middle of something intended to be entirely a
+    # comment.
+
     return "/* " + comment.replace("*/", "(*)/") + " */"
 
   def _EncodeString(self, value):
+    """Encodes a string to be placed in the project file output, mimicing
+    Xcode behavior.
+    """
+
     # Use quotation marks when any character outside of the range A-Z, a-z, 0-9,
     # $ (dollar sign), . (period), and _ (underscore) is present.  Also use
     # quotation marks to represent empty strings.
+    #
     # Escape " (double-quote) and \ (backslash) by preceding them with a
     # backslash.
+    #
     # Some characters below the printable ASCII range are encoded specially:
     #     7 ^G BEL is encoded as "\a"
     #     8 ^H BS  is encoded as "\b"
@@ -129,14 +375,18 @@ class XCObject(object):
     # inclusive) are encoded as "\U001f" referring to the Unicode code point in
     # hexadecimal.  For example, character 14 (^N SO) is encoded as "\U000e".
     # Characters above the ASCII range are passed through to the output encoded
-    # as UTF-8 without any escaping.
+    # as UTF-8 without any escaping.  These mappings are contained in the
+    # class' _encode_transforms list.
 
     if value != "" and StringContainsOnly(value,
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$._"):
       return value
 
+    # Escape backslashes first, because subsequent replacements will introduce
+    # more backslashes.
     encoded = value.replace('\\', '\\\\')
     encoded = encoded.replace('"', '\\"')
+
     i = 0
     while i < len(self._encode_transforms):
       encoded = encoded.replace(chr(i), self._encode_transforms[i])
@@ -145,10 +395,20 @@ class XCObject(object):
     return '"' + encoded + '"'
 
   def _XCPrint(self, file, tabs, line):
-    # print >> file, "\t" * tabs + line,
     file.write("\t" * tabs + line)
 
   def _XCPrintableValue(self, tabs, value):
+    """Returns a representation of value that may be printed in a project file,
+    mimicing Xcode's behavior.
+
+    _XCPrintableValue can handle str and int values, XCObjects (which are
+    made printable by returning their id property), and list and dict objects
+    composed of any of the above types.  When printing a list or dict, and
+    _should_print_single_line is False, the tabs parameter is used to determine
+    how much to indent the lines corresponding to the items in the list or
+    dict.
+    """
+
     printable = ""
     comment = None
 
@@ -190,6 +450,14 @@ class XCObject(object):
     return printable
 
   def _XCKVPrint(self, file, tabs, key, value):
+    """Prints a key and value, members of an XCObject's _properties dictionary,
+    to file.
+
+    tabs is an int identifying the indentation level.  If the class'
+    _should_print_single_line variable is True, tabs is ignored and the
+    key-value pair will be followed by a space insead of a newline.
+    """
+
     printable = ""
 
     if not self._should_print_single_line:
@@ -205,6 +473,10 @@ class XCObject(object):
     self._XCPrint(file, 0, printable)
 
   def Print(self, file=sys.stdout):
+    """Prints a reprentation of this object to file, adhering to Xcode output
+    formatting.
+    """
+
     self.VerifyHasRequiredProperties()
 
     if self._should_print_single_line:
@@ -223,25 +495,40 @@ class XCObject(object):
       sep = "\n"
       end_tabs = 2
 
+    # Start the object.  For example, "\t\tPBXProject = {\n".
     self._XCPrint(file, 2, self._XCPrintableValue(2, self) + " = {" + sep)
 
+    # "isa" isn't in the _properties dictionary, it's an intrinsic property
+    # of the class which the object belongs to.  Xcode always outputs "isa"
+    # as the first element of an object dictionary.
     self._XCKVPrint(file, 3, "isa", self.__class__.__name__)
 
+    # The remaining elements of an object dictionary are sorted alphabetically.
     for property, value in sorted(self._properties.iteritems()):
       self._XCKVPrint(file, 3, property, value)
 
+    # End the object.
     self._XCPrint(file, end_tabs, "};\n")
 
   def UpdateProperties(self, properties):
+    """Merge the supplied properties into the _properties dictionary.
+
+    The input properties must adhere to the class schema or a KeyError or
+    TypeError exception will be raised.  If adding an object of an XCObject
+    subclass and the schema indicates a strong relationship, the object's
+    parent will be set to this object.
+    """
+
     if properties == None:
       return
 
     for property, value in properties.iteritems():
+      # Make sure the property is in the schema.
       if not property in self._schema:
         raise KeyError, property + " not in " + self.__class__.__name__
 
+      # Make sure the property conforms to the schema.
       (is_list, property_type, is_strong) = self._schema[property][0:3]
-
       if is_list:
         if value.__class__ != list:
           raise TypeError, \
@@ -256,8 +543,10 @@ class XCObject(object):
               property + " of " + self.__class__.__name__ + " must be " + \
               property_type.__name__
 
+      # Checks passed, perform the assignment.
       self._properties[property] = value
 
+      # Set up the child's back-reference to this object.
       if is_strong:
         if not is_list:
           value.parent = self
@@ -266,16 +555,26 @@ class XCObject(object):
             item.parent = self
 
   def VerifyHasRequiredProperties(self):
+    """Ensure that all properties identified as required by the schema are
+    set.
+    """
+
+    # TODO(mark): A stronger verification mechanism is needed.  Some
+    # subclasses need to perform validation beyond what the schema can enforce.
     for property, attributes in self._schema.iteritems():
       (is_list, property_type, is_strong, is_required) = attributes[0:4]
       if is_required and not property in self._properties:
         raise KeyError, self.__class__.__name__ + " requires " + property
 
   def _SetDefaultsFromSchema(self):
+    """Assign object default values according to the schema.  This will not
+    overwrite properties that have already been set."""
+
     defaults = {}
     for property, attributes in self._schema.iteritems():
       (is_list, property_type, is_strong, is_required) = attributes[0:4]
-      if is_required and len(attributes) >= 5:
+      if is_required and len(attributes) >= 5 and \
+          not property in self._properties:
         default = attributes[4]
         defaults[property] = default
 
@@ -284,6 +583,9 @@ class XCObject(object):
 
 
 class XCHierarchicalElement(XCObject):
+  """Abstract base for PBXGroup and PBXFileReference.  Not represented in a
+  project file."""
+
   _schema = XCObject._schema.copy()
   _schema.update({
     "comments":       [0, str, 0, 0],
@@ -291,7 +593,7 @@ class XCHierarchicalElement(XCObject):
     "includeInIndex": [0, int, 0, 0],
     "indentWidth":    [0, int, 0, 0],
     "lineEnding":     [0, int, 0, 0],
-    "sourceTree":     [0, str, 0, 1],
+    "sourceTree":     [0, str, 0, 1, "<group>"],
     "tabWidth":       [0, int, 0, 0],
     "usesTabs":       [0, int, 0, 0],
     "wrapsLines":     [0, int, 0, 0],
@@ -319,7 +621,10 @@ class PBXFileReference(XCHierarchicalElement):
     "name":              [0, str, 0, 0],
     "path":              [0, str, 0, 1],
   })
+
+  # Weird output rules for PBXFileReference.
   _should_print_single_line = True
+  _encode_transforms = XCHierarchicalElement._alternate_encode_transforms
 
   def Comment(self):
     if "path" in self._properties:
@@ -357,7 +662,10 @@ class PBXBuildFile(XCObject):
   _schema.update({
     "fileRef": [0, PBXFileReference, 0, 1],
   })
+
+  # Weird output rules for PBXBuildFile.
   _should_print_single_line = True
+  _encode_transforms = XCObject._alternate_encode_transforms
 
   def Comment(self):
     # Example: "main.cc in Sources"
@@ -366,6 +674,9 @@ class PBXBuildFile(XCObject):
 
 
 class XCBuildPhase(XCObject):
+  """Abstract base for build phase classes.  Not represented in a project
+  file."""
+
   _schema = XCObject._schema.copy()
   _schema.update({
     "buildActionMask":                    [0, int,          0, 1, 0x7fffffff],
@@ -374,19 +685,22 @@ class XCBuildPhase(XCObject):
   })
 
 
+class PBXHeadersBuildPhase(XCBuildPhase):
+  # No additions to the schema relative to XCBuildPhase.
+
+  def Comment(self):
+    return "Headers"
+
+
 class PBXSourcesBuildPhase(XCBuildPhase):
-  _schema = XCBuildPhase._schema.copy()
-  _schema.update({
-  })
+  # No additions to the schema relative to XCBuildPhase.
 
   def Comment(self):
     return "Sources"
 
 
 class PBXFrameworksBuildPhase(XCBuildPhase):
-  _schema = XCBuildPhase._schema.copy()
-  _schema.update({
-  })
+  # No additions to the schema relative to XCBuildPhase.
 
   def Comment(self):
     return "Frameworks"
@@ -563,23 +877,23 @@ class XCProjectFile(XCObject):
 
 # TEST TEST TEST
 
-sf = PBXFileReference(properties={"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source.cc", "sourceTree": "SOURCE_ROOT"})
-sbf = PBXBuildFile(properties={"fileRef":sf})
+sf = PBXFileReference({"lastKnownFileType":"sourcecode.cpp.cpp", "path": "source.cc", "sourceTree": "SOURCE_ROOT"})
+sbf = PBXBuildFile({"fileRef":sf})
 
-tcr = XCBuildConfiguration(properties={"name":"Release","buildSettings":{"PRODUCT_NAME":"targetty"}})
-tcd = XCBuildConfiguration(properties={"name":"Debug","buildSettings":{"PRODUCT_NAME":"targetty"}})
-tl = XCConfigurationList(properties={"defaultConfigurationName":"Release","buildConfigurations":[tcd,tcr]})
-ts = PBXSourcesBuildPhase(properties={"files":[sbf]})
-pr = PBXFileReference(properties={"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
-t = PBXNativeTarget(properties={"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
+tcr = XCBuildConfiguration({"name":"Release","buildSettings":{"PRODUCT_NAME":"targetty"}})
+tcd = XCBuildConfiguration({"name":"Debug","buildSettings":{"PRODUCT_NAME":"targetty"}})
+tl = XCConfigurationList({"defaultConfigurationName":"Release","buildConfigurations":[tcd,tcr]})
+ts = PBXSourcesBuildPhase({"files":[sbf]})
+pr = PBXFileReference({"explicitFileType":"archive.ar","includeInIndex":0,"path":"libtargetty.a","sourceTree":"BUILT_PRODUCTS_DIR"})
+t = PBXNativeTarget({"buildConfigurationList":tl,"buildPhases":[ts],"name":"targetty","productName":"targetty","productReference":pr,"productType":"com.apple.product-type.library.static"})
 
-c = XCBuildConfiguration(properties={"name":"Release"})
-cd = XCBuildConfiguration(properties={"name":"Debug"})
-l = XCConfigurationList(properties={"defaultConfigurationName":"Release","buildConfigurations":[cd,c]})
-g = PBXGroup(properties={"sourceTree":"<group>", "children":[sf, pr]})
+c = XCBuildConfiguration({"name":"Release"})
+cd = XCBuildConfiguration({"name":"Debug"})
+l = XCConfigurationList({"defaultConfigurationName":"Release","buildConfigurations":[cd,c]})
+g = PBXGroup({"children":[sf, pr]})
 
-o = PBXProject(properties={"mainGroup":g, "buildConfigurationList":l, "targets":[t]})
-f = XCProjectFile(properties={"rootObject":o})
+o = PBXProject({"mainGroup":g, "buildConfigurationList":l, "targets":[t]})
+f = XCProjectFile({"rootObject":o})
 
 f.ComputeIDs()
 f.Print()
