@@ -126,6 +126,13 @@ full "objects" dictionary.
   project_file = XCProjectFile({"rootObject": project})
   project_file.ComputeIDs()
   project_file.Print()
+
+Xcode project files are always encoded in UTF-8.  This module will accept
+strings of either the str class or the unicode class.  Strings of class str
+are assumed to already be encoded in UTF-8.  Obviously, if you're just using
+ASCII, you won't encounter difficulties because ASCII is a UTF-8 subset.
+Strings of class unicode are handled properly and encoded in UTF-8 when
+a project file is output.
 """
 
 import hashlib
@@ -255,7 +262,8 @@ class XCObject(object):
           that._properties[key] = new_value
         else:
           that._properties[key] = value
-      elif isinstance(value, str) or isinstance(value, int):
+      elif isinstance(value, str) or isinstance(value, unicode) or \
+           isinstance(value, int):
         that._properties[key] = value
       elif isinstance(value, list):
         if is_strong:
@@ -489,6 +497,8 @@ class XCObject(object):
       comment = value.Comment()
     elif isinstance(value, str):
       printable += self._EncodeString(value)
+    elif isinstance(value, unicode):
+      printable += self._EncodeString(value.encode("utf-8"))
     elif isinstance(value, int):
       printable += str(value)
     elif isinstance(value, list):
@@ -617,12 +627,18 @@ class XCObject(object):
                 property + " of " + self.__class__.__name__ + \
                 " must be list, not " + value.__class__.__name__
         for item in value:
-          if not isinstance(item, property_type):
+          if not isinstance(item, property_type) and \
+             not (item.__class__ == unicode and property_type == str):
+            # Accept unicode where str is specified.  str is treated as
+            # UTF-8-encoded.
             raise TypeError, \
                   "item of " + property + " of " + self.__class__.__name__ + \
                   " must be " + property_type.__name__ + ", not " + \
                   item.__class__.__name__
-      elif not isinstance(value, property_type):
+      elif not isinstance(value, property_type) and \
+           not (value.__class__ == unicode and property_type == str):
+        # Accept unicode where str is specified.  str is treated as
+        # UTF-8-encoded.
         raise TypeError, \
               property + " of " + self.__class__.__name__ + " must be " + \
               property_type.__name__ + ", not " + value.__class__.__name__
@@ -634,7 +650,8 @@ class XCObject(object):
             self._properties[property] = value.Copy()
           else:
             self._properties[property] = value
-        elif isinstance(value, str) or isinstance(value, int):
+        elif isinstance(value, str) or isinstance(value, unicode) or \
+             isinstance(value, int):
           self._properties[property] = value
         elif isinstance(value, list):
           if is_strong:
@@ -797,12 +814,44 @@ class PBXGroup(XCHierarchicalElement):
 
     return None
 
+  def GetChildByRemoteObject(self, remote_object):
+    # This method is a little bit esoteric.  Given a remote_object, which
+    # should be a PBXFileReference in another project file, this method will
+    # return this group's PBXReferenceProxy object serving as a local proxy
+    # for the remote PBXFileReference.
+    if not "children" in self._properties:
+      return None
+
+    for child in self._properties["children"]:
+      if not isinstance(child, PBXReferenceProxy):
+        continue
+
+      container_proxy = child._properties["remoteRef"]
+      if container_proxy._properties["remoteGlobalIDString"] == remote_object:
+        return child
+
+    return None
+
 
 class XCFileLikeElement(XCHierarchicalElement):
+  # Abstract base for objects that can be used as the fileRef property of
+  # PBXBuildFile.
   pass
 
 
-class PBXFileReference(XCFileLikeElement):
+class XCContainerPortal(XCObject):
+  # Abstract base for objects that can be used as the containerPortal property
+  # of PBXContainerItemProxy.
+  pass
+
+
+class XCRemoteObject(XCObject):
+  # Abstract base for objects that can be used as the remoteGlobalIDString
+  # property of PBXContainerItemProxy.
+  pass
+
+
+class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
   _schema = XCFileLikeElement._schema.copy()
   _schema.update({
     "explicitFileType":  [0, str, 0, 0],
@@ -1049,10 +1098,10 @@ class PBXContainerItemProxy(XCObject):
   # _XCKVPrint.
   _schema = XCObject._schema.copy()
   _schema.update({
-    "containerPortal":      [0, XCObject, 0, 1],
-    "proxyType":            [0, int,      0, 1],
-    "remoteGlobalIDString": [0, XCObject, 0, 1],
-    "remoteInfo":           [0, str,      0, 1],
+    "containerPortal":      [0, XCContainerPortal, 0, 1],
+    "proxyType":            [0, int,               0, 1],
+    "remoteGlobalIDString": [0, XCRemoteObject,    0, 1],
+    "remoteInfo":           [0, str,               0, 1],
   })
 
   def Name(self):
@@ -1091,11 +1140,15 @@ class PBXReferenceProxy(XCFileLikeElement):
   })
 
 
-class XCTarget(XCObject):
+class XCTarget(XCRemoteObject):
+  # An XCTarget is really just an XCObject, the XCRemoteObject thing is just
+  # to allow PBXProject to be used in the remoteGlobalIDString property of
+  # PBXContainerItemProxy.
+  #
   # Setting a "name" property at instantiation may also affect "productName",
   # which may in turn affect the "PRODUCT_NAME" build setting in children of
   # "buildConfigurationList".  See __init__ below.
-  _schema = XCObject._schema.copy()
+  _schema = XCRemoteObject._schema.copy()
   _schema.update({
     "buildConfigurationList": [0, XCConfigurationList, 1, 1,
                                XCConfigurationList()],
@@ -1107,7 +1160,7 @@ class XCTarget(XCObject):
 
   def __init__(self, properties=None, id=None, parent=None):
     # super
-    XCObject.__init__(self, properties, id, parent)
+    XCRemoteObject.__init__(self, properties, id, parent)
 
     # Set up additional defaults not expressed in the schema.  If a "name"
     # property was supplied, set "productName" if it is not present.  Also set
@@ -1134,57 +1187,16 @@ class XCTarget(XCObject):
                                          "proxyType":            1,
                                          "remoteGlobalIDString": other,
                                          "remoteInfo":           other.Name()})
-      dependency = PBXTargetDependency({"target": other,
+      dependency = PBXTargetDependency({"target":      other,
                                         "targetProxy": container})
       self.AppendProperty("dependencies", dependency)
     else:
       # The hard case.  Add a dependency to a target in a different project
-      # file.
-      projects_group = pbxproject.ProjectsGroup()
-      other_pbxproject_path = other_pbxproject.Path()
-      # Instead of looking up by path, we should probably ask the root
-      # PBXProject if it has a file ref for the xcodeproj we care about.
-      pbxproj_fileref = projects_group.GetChildByPath(other_pbxproject_path)
-      if pbxproj_fileref == None:
-        pbxproj_fileref = PBXFileReference({
-              "lastKnownFileType": "wrapper.pb-project",
-              "path":              other_pbxproject_path,
-              "sourceTree":        "SOURCE_ROOT",
-            })
-        projects_group.AppendProperty("children", pbxproj_fileref)
-
-        # Add a reference for each product in the other pbxproj.
-        product_group = PBXGroup({"name": "Products"})
-        for target in other_pbxproject._properties["targets"]:
-          if not isinstance(target, PBXNativeTarget):
-            continue
-          other_product = target._properties["productReference"]
-          container_proxy = PBXContainerItemProxy({
-                "containerPortal":      pbxproj_fileref,
-                "proxyType":            2,
-                "remoteGlobalIDString": other_product,
-                "remoteInfo":           target.Name(),
-              })
-          reference_proxy = PBXReferenceProxy({
-                # TODO(mark): Be more resilient about the file type.  Take
-                # lastKnownFileType if it's present and explicitFileType is
-                # not.
-                "fileType":   other_product._properties["explicitFileType"],
-                "path":       other_product._properties["path"],
-                "remoteRef":  container_proxy,
-                "sourceTree": other_product._properties["sourceTree"],
-              })
-          product_group.AppendProperty("children", reference_proxy)
-
-        if not "projectReferences" in pbxproject._properties:
-          pbxproject._properties["projectReferences"] = []
-        pbxproject._properties["projectReferences"].append({
-              "ProductGroup": product_group,  # NEEDS TO BE MADE STRONG!
-              "ProjectRef":   pbxproj_fileref,
-            })
-
+      # file.  Actually, this case isn't really so hard.
+      other_project_ref = \
+          pbxproject.AddOrGetProjectReference(other_pbxproject)[1]
       container = PBXContainerItemProxy({
-            "containerPortal":      pbxproj_fileref,
+            "containerPortal":      other_project_ref,
             "proxyType":            1,
             "remoteGlobalIDString": other,
             "remoteInfo":           other.Name(),
@@ -1290,27 +1302,24 @@ class PBXNativeTarget(XCTarget):
        self._properties["productType"] != static_library_type and \
        "productType" in other._properties and \
        other._properties["productType"] == static_library_type:
+
+      file_ref = other.GetProperty("productReference")
+
       pbxproject = self.PBXProjectAncestor()
       other_pbxproject = other.PBXProjectAncestor()
-      file_ref = None
-      if pbxproject == other_pbxproject:
-        file_ref = other.GetProperty("productReference")
-      else:
-        product_group = None
-        for reference in pbxproject._properties["projectReferences"]:
-          # TODO(mark): Fix this.  The root PBXProject object really needs its
-          # own methods to maintain this stuff.
-          if reference["ProjectRef"].Name() == other_pbxproject.Path():
-            product_group = reference["ProductGroup"]
-        for child in product_group._properties["children"]:
-          if other._properties["productReference"] == \
-             child._properties["remoteRef"]._properties["remoteGlobalIDString"]:
-            file_ref = child
+      if pbxproject != other_pbxproject:
+        other_project_product_group = \
+            pbxproject.AddOrGetProjectReference(other_pbxproject)[0]
+        file_ref = other_project_product_group.GetChildByRemoteObject(file_ref)
+
       self.FrameworksPhase().AppendProperty("files",
                                             PBXBuildFile({"fileRef": file_ref}))
 
 
-class PBXProject(XCObject):
+class PBXProject(XCContainerPortal):
+  # A PBXProject is really just an XCObject, the XCContainerPortal thing is
+  # just to allow PBXProject to be used in the containerPortal property of
+  # PBXContainerItemProxy.
   """
 
   Attributes:
@@ -1319,9 +1328,12 @@ class PBXProject(XCObject):
           "sample.xcodeproj" should be set to "sample".  name is a required
           attribute.
     path: "sample.xcodeproj".  TODO(mark) Document me!
+    _other_pbxprojects: A dictionary, keyed by other PBXProject objects.  Each
+                        The value is the index in the projectReferences list
+                        associated with the keyed PBXProject.
   """
 
-  _schema = XCObject._schema.copy()
+  _schema = XCContainerPortal._schema.copy()
   _schema.update({
     "buildConfigurationList": [0, XCConfigurationList, 1, 1,
                                XCConfigurationList()],
@@ -1340,8 +1352,9 @@ class PBXProject(XCObject):
     self.path = path
     if self.path == None:
       self.path = name + ".xcodeproj"
+    self._other_pbxprojects = {}
     # super
-    return XCObject.__init__(self, properties, id, parent)
+    return XCContainerPortal.__init__(self, properties, id, parent)
 
   def Name(self):
     return self.name
@@ -1354,7 +1367,7 @@ class PBXProject(XCObject):
 
   def Children(self):
     # super
-    children = XCObject.Children(self)
+    children = XCContainerPortal.Children(self)
 
     # Add children that the schema doesn't know about.  Maybe there's a more
     # elegant way around this, but this is the only case where we need to own
@@ -1365,7 +1378,6 @@ class PBXProject(XCObject):
         children.append(reference["ProductGroup"])
 
     return children
-
 
   def PBXProjectAncestor(self):
     return self
@@ -1390,6 +1402,93 @@ class PBXProject(XCObject):
 
   def ProjectsGroup(self):
     return self._GroupByName("Projects")
+
+  def AddOrGetProjectReference(self, other_pbxproject):
+    """Add a reference to another project file (via PBXProject object) to this
+    one.
+
+    Returns [ProductGroup, ProjectRef].  ProductGroup is a PBXGroup object in
+    this project file that contains a PBXReferenceProxy object for each
+    product of each PBXNativeTarget in the other project file.  ProjectRef is
+    a PBXFileReference to the other project file.
+
+    If this project file already references the other project file, the
+    existing ProductGroup and ProjectRef are returned.  The ProductGroup will
+    still be updated if necessary.
+    """
+
+    if not "projectReferences" in self._properties:
+      self._properties["projectReferences"] = []
+
+    product_group = None
+    project_ref = None
+
+    if not other_pbxproject in self._other_pbxprojects:
+      # This project file isn't yet linked to the other one.  Establish the
+      # link.
+      self._other_pbxprojects[other_pbxproject] = \
+          len(self._properties["projectReferences"])
+      product_group = PBXGroup({"name": "Products"})
+      # ProductGroup is strong.
+      # TODO(mark): Set something hashable on product_group so that it gets
+      # a different object ID than its sibling groups.  Use other_pbxproject's
+      # hashable data (name, user-set uuid).
+      product_group.parent = self
+      # ProjectRef is weak (it's owned by the mainGroup hierarchy).
+      project_ref = PBXFileReference({
+            "lastKnownFileType": "wrapper.pb-project",
+            "path":              other_pbxproject.Path(),
+            "sourceTree":        "SOURCE_ROOT",
+          })
+      self.ProjectsGroup().AppendProperty("children", project_ref)
+      self.AppendProperty("projectReferences", {"ProductGroup": product_group,
+                                                "ProjectRef":   project_ref})
+    else:
+      # The link already exists.  Pull out the relevnt data.
+      index = self._other_pbxprojects[other_pbxproject]
+      project_ref_dict = self._properties["projectReferences"][index]
+      product_group = project_ref_dict["ProductGroup"]
+      project_ref = project_ref_dict["ProjectRef"]
+
+    self._SetUpProductReferences(other_pbxproject, product_group, project_ref)
+
+    return [product_group, project_ref]
+
+  def _SetUpProductReferences(self, other_pbxproject, product_group,
+                              project_ref):
+    # TODO(mark): This only adds references to products in other_pbxproject
+    # when they don't exist in this pbxproject.  Perhaps it should also
+    # remove references from this pbxproject that are no longer present in
+    # other_pbxproject.  Perhaps it should update various properties if they
+    # change.
+    for target in other_pbxproject._properties["targets"]:
+      if not isinstance(target, PBXNativeTarget):
+        continue
+
+      other_fileref = target._properties["productReference"]
+      if product_group.GetChildByRemoteObject(other_fileref) == None:
+        # Xcode sets remoteInfo to the name of the target and not the name
+        # of its product, despite this proxy being a reference to the product.
+        container_item = PBXContainerItemProxy({
+              "containerPortal":      project_ref,
+              "proxyType":            2,
+              "remoteGlobalIDString": other_fileref,
+              "remoteInfo":           target.Name()
+            })
+        # TODO(mark): Does sourceTree get copied straight over from the other
+        # project?  Can the other project ever have lastKnownFileType here
+        # instead of explicitFileType?  (Use it if so?)  Can path ever be
+        # unset?  (I don't think so.)  Can other_fileref have name set, and
+        # does it impact the PBXReferenceProxy if so?  These are the questions
+        # that perhaps will be answered one day.
+        reference_proxy = PBXReferenceProxy({
+              "fileType":   other_fileref._properties["explicitFileType"],
+              "path":       other_fileref._properties["path"],
+              "sourceTree": other_fileref._properties["sourceTree"],
+              "remoteRef":  container_item,
+            })
+
+        product_group.AppendProperty("children", reference_proxy)
 
 
 class XCProjectFile(XCObject):
