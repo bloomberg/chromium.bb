@@ -62,8 +62,8 @@ struct wl_visual {
 struct wlsc_output {
 	struct wl_object base;
 	struct wl_list link;
-	struct egl_compositor *ec;
-	struct egl_surface *background;
+	struct wlsc_compositor *ec;
+	struct wlsc_surface *background;
 	EGLSurface surface;
 	int32_t x, y, width, height, stride;
 
@@ -76,16 +76,16 @@ struct wlsc_output {
 struct wlsc_input_device {
 	struct wl_object base;
 	int32_t x, y;
-	struct egl_compositor *ec;
-	struct egl_surface *pointer_surface;
+	struct wlsc_compositor *ec;
+	struct wlsc_surface *pointer_surface;
 	struct wl_list link;
 
 	int grab;
-	struct egl_surface *grab_surface;
-	struct egl_surface *focus_surface;
+	struct wlsc_surface *grab_surface;
+	struct wlsc_surface *focus_surface;
 };
 
-struct egl_compositor {
+struct wlsc_compositor {
 	struct wl_compositor base;
 	struct wl_visual argb_visual, premultiplied_argb_visual, rgb_visual;
 
@@ -119,9 +119,9 @@ struct egl_compositor {
 	uint32_t current_frame;
 };
 
-struct egl_surface {
+struct wlsc_surface {
 	struct wl_surface base;
-	struct egl_compositor *compositor;
+	struct wlsc_compositor *compositor;
 	struct wl_visual *visual;
 	GLuint texture;
 	struct wl_map map;
@@ -141,7 +141,7 @@ static const GOptionEntry option_entries[] = {
 
 struct screenshooter {
 	struct wl_object base;
-	struct egl_compositor *ec;
+	struct wlsc_compositor *ec;
 };
 
 struct screenshooter_interface {
@@ -151,7 +151,7 @@ struct screenshooter_interface {
 static void
 screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 {
-	struct egl_compositor *ec = shooter->ec;
+	struct wlsc_compositor *ec = shooter->ec;
 	struct wlsc_output *output;
 	char buffer[256];
 	GdkPixbuf *pixbuf, *normal;
@@ -203,7 +203,7 @@ struct screenshooter_interface screenshooter_implementation = {
 };
 
 static struct screenshooter *
-screenshooter_create(struct egl_compositor *ec)
+screenshooter_create(struct wlsc_compositor *ec)
 {
 	struct screenshooter *shooter;
 
@@ -218,12 +218,12 @@ screenshooter_create(struct egl_compositor *ec)
 	return shooter;
 };
 
-static struct egl_surface *
-egl_surface_create_from_cairo_surface(struct egl_compositor *ec,
+static struct wlsc_surface *
+wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
 				      cairo_surface_t *surface,
 				      int x, int y, int width, int height)
 {
-	struct egl_surface *es;
+	struct wlsc_surface *es;
 	int stride;
 	void *data;
 
@@ -255,7 +255,7 @@ egl_surface_create_from_cairo_surface(struct egl_compositor *ec,
 }
 
 static void
-egl_surface_destroy(struct egl_surface *es, struct egl_compositor *ec)
+wlsc_surface_destroy(struct wlsc_surface *es, struct wlsc_compositor *ec)
 {
 	glDeleteTextures(1, &es->texture);
 	if (es->surface != EGL_NO_SURFACE)
@@ -279,10 +279,10 @@ pointer_path(cairo_t *cr, int x, int y)
 	cairo_close_path(cr);
 }
 
-static struct egl_surface *
-pointer_create(struct egl_compositor *ec, int x, int y, int width, int height)
+static struct wlsc_surface *
+pointer_create(struct wlsc_compositor *ec, int x, int y, int width, int height)
 {
-	struct egl_surface *es;
+	struct wlsc_surface *es;
 	const int hotspot_x = 16, hotspot_y = 16;
 	cairo_surface_t *surface;
 	cairo_t *cr;
@@ -304,7 +304,7 @@ pointer_create(struct egl_compositor *ec, int x, int y, int width, int height)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	es = egl_surface_create_from_cairo_surface(ec,
+	es = wlsc_surface_create_from_cairo_surface(ec,
 						   surface,
 						   x - hotspot_x,
 						   y - hotspot_y,
@@ -315,10 +315,10 @@ pointer_create(struct egl_compositor *ec, int x, int y, int width, int height)
 	return es;
 }
 
-static struct egl_surface *
+static struct wlsc_surface *
 background_create(struct wlsc_output *output, const char *filename)
 {
-	struct egl_surface *background;
+	struct wlsc_surface *background;
 	GdkPixbuf *pixbuf;
 	GError *error = NULL;
 	void *data;
@@ -369,9 +369,9 @@ background_create(struct wlsc_output *output, const char *filename)
 }
 
 static void
-draw_surface(struct egl_surface *es)
+draw_surface(struct wlsc_surface *es)
 {
-	struct egl_compositor *ec = es->compositor;
+	struct wlsc_compositor *ec = es->compositor;
 	GLint vertices[12];
 	GLint tex_coords[12] = { 0, 0,  0, 1,  1, 0,  1, 1 };
 	GLuint indices[4] = { 0, 1, 2, 3 };
@@ -414,8 +414,8 @@ draw_surface(struct egl_surface *es)
 static void
 repaint_output(struct wlsc_output *output)
 {
-	struct egl_compositor *ec = output->ec;
-	struct egl_surface *es;
+	struct wlsc_compositor *ec = output->ec;
+	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
 
 	if (!eglMakeCurrent(ec->display, output->surface, output->surface, ec->context)) {
@@ -436,12 +436,12 @@ repaint_output(struct wlsc_output *output)
 		glClear(GL_COLOR_BUFFER_BIT);
 
 	es = container_of(ec->surface_list.next,
-			  struct egl_surface, link);
+			  struct wlsc_surface, link);
 	while (&es->link != &ec->surface_list) {
 		draw_surface(es);
 
 		es = container_of(es->link.next,
-				   struct egl_surface, link);
+				   struct wlsc_surface, link);
 	}
 
 	eid = container_of(ec->input_device_list.next,
@@ -459,7 +459,7 @@ repaint_output(struct wlsc_output *output)
 static void
 repaint(void *data)
 {
-	struct egl_compositor *ec = data;
+	struct wlsc_compositor *ec = data;
 	struct wlsc_output *output;
 	struct timespec ts;
 	uint32_t msecs;
@@ -489,7 +489,7 @@ repaint(void *data)
 }
 
 static void
-schedule_repaint(struct egl_compositor *ec)
+schedule_repaint(struct wlsc_compositor *ec)
 {
 	struct wl_event_loop *loop;
 
@@ -504,11 +504,11 @@ static void
 surface_destroy(struct wl_client *client,
 		struct wl_surface *surface)
 {
-	struct egl_surface *es = (struct egl_surface *) surface;
-	struct egl_compositor *ec = es->compositor;
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_compositor *ec = es->compositor;
 
 	wl_list_remove(&es->link);
-	egl_surface_destroy(es, ec);
+	wlsc_surface_destroy(es, ec);
 
 	schedule_repaint(ec);
 }
@@ -519,8 +519,8 @@ surface_attach(struct wl_client *client,
 	       uint32_t width, uint32_t height, uint32_t stride,
 	       struct wl_object *visual)
 {
-	struct egl_surface *es = (struct egl_surface *) surface;
-	struct egl_compositor *ec = es->compositor;
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_compositor *ec = es->compositor;
 
 	if (es->surface != EGL_NO_SURFACE)
 		eglDestroySurface(ec->display, es->surface);
@@ -551,7 +551,7 @@ surface_map(struct wl_client *client,
 	    struct wl_surface *surface,
 	    int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct egl_surface *es = (struct egl_surface *) surface;
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 
 	es->map.x = x;
 	es->map.y = y;
@@ -566,8 +566,8 @@ surface_copy(struct wl_client *client,
 	     uint32_t name, uint32_t stride,
 	     int32_t x, int32_t y, int32_t width, int32_t height)
 {
-	struct egl_surface *es = (struct egl_surface *) surface;
-	struct egl_compositor *ec = es->compositor;
+	struct wlsc_surface *es = (struct wlsc_surface *) surface;
+	struct wlsc_compositor *ec = es->compositor;
 	EGLSurface src;
 
 	/* FIXME: glCopyPixels should work, but then we'll have to
@@ -603,8 +603,8 @@ static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_compositor *compositor, uint32_t id)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
-	struct egl_surface *es;
+	struct wlsc_compositor *ec = (struct wlsc_compositor *) compositor;
+	struct wlsc_surface *es;
 
 	es = malloc(sizeof *es);
 	if (es == NULL)
@@ -623,7 +623,7 @@ static void
 compositor_commit(struct wl_client *client,
 		  struct wl_compositor *compositor, uint32_t key)
 {
-	struct egl_compositor *ec = (struct egl_compositor *) compositor;
+	struct wlsc_compositor *ec = (struct wlsc_compositor *) compositor;
 
 	schedule_repaint(ec);
 	wl_client_send_acknowledge(client, compositor, key, ec->current_frame);
@@ -634,17 +634,17 @@ const static struct wl_compositor_interface compositor_interface = {
 	compositor_commit
 };
 
-static struct egl_surface *
+static struct wlsc_surface *
 pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 {
-	struct egl_compositor *ec = device->ec;
-	struct egl_surface *es;
+	struct wlsc_compositor *ec = device->ec;
+	struct wlsc_surface *es;
 
 	if (device->grab > 0)
 		return device->grab_surface;
 
 	es = container_of(ec->surface_list.prev,
-			  struct egl_surface, link);
+			  struct wlsc_surface, link);
 	while (&es->link != &ec->surface_list) {
 		if (es->map.x <= device->x &&
 		    device->x < es->map.x + es->map.width &&
@@ -653,7 +653,7 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 			return es;
 
 		es = container_of(es->link.prev,
-				  struct egl_surface, link);
+				  struct wlsc_surface, link);
 
 		/* Transform to surface coordinates. */
 		*sx = (device->x - es->map.x) * es->width / es->map.width;
@@ -666,8 +666,8 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 void
 notify_motion(struct wlsc_input_device *device, int x, int y)
 {
-	struct egl_surface *es;
-	struct egl_compositor *ec = device->ec;
+	struct wlsc_surface *es;
+	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_output *output;
 	const int hotspot_x = 16, hotspot_y = 16;
 	int32_t sx, sy;
@@ -703,8 +703,8 @@ void
 notify_button(struct wlsc_input_device *device,
 	      int32_t button, int32_t state)
 {
-	struct egl_surface *es;
-	struct egl_compositor *ec = device->ec;
+	struct wlsc_surface *es;
+	struct wlsc_compositor *ec = device->ec;
 	int32_t sx, sy;
 
 	if (!ec->vt_active)
@@ -738,7 +738,7 @@ void
 notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
-	struct egl_compositor *ec = device->ec;
+	struct wlsc_compositor *ec = device->ec;
 
 	if (!ec->vt_active)
 		return;
@@ -754,7 +754,7 @@ evdev_input_device_create(struct wlsc_input_device *device,
 			  struct wl_display *display, const char *path);
 
 static struct wlsc_input_device *
-create_input_device(struct egl_compositor *ec)
+create_input_device(struct wlsc_compositor *ec)
 {
 	struct wlsc_input_device *device;
 
@@ -795,13 +795,13 @@ post_output_geometry(struct wl_client *client, struct wl_object *global)
 }
 
 static int
-init_egl(struct egl_compositor *ec, struct udev_device *device)
+init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 {
 	static const EGLint config_attribs[] = {
-		EGL_DEPTH_SIZE, 0,
-		EGL_STENCIL_SIZE, 0,
-		EGL_CONFIG_CAVEAT, EGL_NONE,
-		EGL_RED_SIZE, 8,
+		EGL_DEPTH_SIZE,		0,
+		EGL_STENCIL_SIZE,	0,
+		EGL_CONFIG_CAVEAT,	EGL_NONE,
+		EGL_RED_SIZE,		8,
 		EGL_NONE		
 	};
 
@@ -830,7 +830,7 @@ init_egl(struct egl_compositor *ec, struct udev_device *device)
 }
 
 static int
-create_output(struct egl_compositor *ec, struct udev_device *device)
+create_output(struct wlsc_compositor *ec, struct udev_device *device)
 {
 	const static EGLint surface_attribs[] = {
 		EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
@@ -960,7 +960,7 @@ static const struct wl_interface visual_interface = {
 };
 
 static void
-add_visuals(struct egl_compositor *ec)
+add_visuals(struct wlsc_compositor *ec)
 {
 	ec->argb_visual.base.interface = &visual_interface;
 	ec->argb_visual.base.implementation = NULL;
@@ -982,7 +982,7 @@ add_visuals(struct egl_compositor *ec)
 
 static void on_enter_vt(int signal_number, void *data)
 {
-	struct egl_compositor *ec = data;
+	struct wlsc_compositor *ec = data;
 	struct wlsc_output *output;
 	int ret, fd;
 
@@ -1005,7 +1005,7 @@ static void on_enter_vt(int signal_number, void *data)
 
 static void on_leave_vt(int signal_number, void *data)
 {
-	struct egl_compositor *ec = data;
+	struct wlsc_compositor *ec = data;
 
 	ioctl (ec->tty_fd, VT_RELDISP, 1);
 	ec->vt_active = FALSE;
@@ -1014,7 +1014,7 @@ static void on_leave_vt(int signal_number, void *data)
 static void
 on_tty_input(int fd, uint32_t mask, void *data)
 {
-	struct egl_compositor *ec = data;
+	struct wlsc_compositor *ec = data;
 
 	/* Ignore input to tty.  We get keyboard events from evdev
 	 */
@@ -1023,7 +1023,7 @@ on_tty_input(int fd, uint32_t mask, void *data)
 
 static void on_term_signal(int signal_number, void *data)
 {
-	struct egl_compositor *ec = data;
+	struct wlsc_compositor *ec = data;
 
 	if (tcsetattr(ec->tty_fd, TCSANOW, &ec->terminal_attributes) < 0)
 		fprintf(stderr, "could not restore terminal to canonical mode\n");
@@ -1031,7 +1031,7 @@ static void on_term_signal(int signal_number, void *data)
 	exit(0);
 }
 
-static int setup_tty(struct egl_compositor *ec, struct wl_event_loop *loop)
+static int setup_tty(struct wlsc_compositor *ec, struct wl_event_loop *loop)
 {
 	struct termios raw_attributes;
 	struct vt_mode mode = { 0 };
@@ -1081,7 +1081,7 @@ static int setup_tty(struct egl_compositor *ec, struct wl_event_loop *loop)
 }
 
 static int
-init_libudev(struct egl_compositor *ec)
+init_libudev(struct wlsc_compositor *ec)
 {
 	struct udev_enumerate *e;
         struct udev_list_entry *entry;
@@ -1130,10 +1130,10 @@ init_libudev(struct egl_compositor *ec)
 	return 0;
 }
 
-static struct egl_compositor *
-egl_compositor_create(struct wl_display *display)
+static struct wlsc_compositor *
+wlsc_compositor_create(struct wl_display *display)
 {
-	struct egl_compositor *ec;
+	struct wlsc_compositor *ec;
 	struct screenshooter *shooter;
 	struct wl_event_loop *loop;
 
@@ -1178,7 +1178,7 @@ static const char socket_name[] = "\0wayland";
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
-	struct egl_compositor *ec;
+	struct wlsc_compositor *ec;
 	GError *error = NULL;
 	GOptionContext *context;
 
@@ -1191,7 +1191,7 @@ int main(int argc, char *argv[])
 
 	display = wl_display_create();
 
-	ec = egl_compositor_create(display);
+	ec = wlsc_compositor_create(display);
 	if (ec == NULL) {
 		fprintf(stderr, "failed to create compositor\n");
 		exit(EXIT_FAILURE);
