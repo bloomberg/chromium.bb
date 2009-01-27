@@ -781,18 +781,6 @@ post_output_geometry(struct wl_client *client, struct wl_object *global)
 			     output->width, output->height);
 }
 
-static const char *
-get_udev_property(struct udev_device *device, const char *name)
-{
-        struct udev_list_entry *entry;
-
-	udev_list_entry_foreach(entry, udev_device_get_properties_list_entry(device))
-		if (strcmp(udev_list_entry_get_name(entry), name) == 0)
-			return udev_list_entry_get_value(entry);
-
-	return NULL;
-}
-
 static int
 init_egl(struct egl_compositor *ec, struct udev_device *device)
 {
@@ -1084,18 +1072,8 @@ init_libudev(struct egl_compositor *ec)
 	struct udev_enumerate *e;
         struct udev_list_entry *entry;
 	struct udev_device *device;
-	const char *path, *seat;
+	const char *path;
 	struct wlsc_input_device *input_device;
-
-	/* FIXME: Newer (version 135+) udev has two new features that
-	 * make all this much easier: 1) we can enumerate by a
-	 * specific property.  This lets us directly iterate through
-	 * the devices we care about. 2) We can attach properties to
-	 * sysfs nodes without a device file, which lets us configure
-	 * which connectors belong to a seat instead of tagging the
-	 * overall drm node.  I don't want to update my system udev,
-	 * so I'm going to stick with this until the new version is in
-	 * rawhide. */
 
 	ec->udev = udev_new();
 	if (ec->udev == NULL) {
@@ -1106,24 +1084,27 @@ init_libudev(struct egl_compositor *ec)
 	input_device = create_input_device(ec);
 
 	e = udev_enumerate_new(ec->udev);
+	udev_enumerate_add_match_subsystem(e, "input");
+	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
         udev_enumerate_scan_devices(e);
         udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
 		path = udev_list_entry_get_name(entry);
 		device = udev_device_new_from_syspath(ec->udev, path);
+		evdev_input_device_create(input_device, ec->wl_display,
+					  udev_device_get_devnode(device));
+	}
+        udev_enumerate_unref(e);
 
-		/* FIXME: Should the property namespace be CK for console kit? */
-		seat = get_udev_property(device, "WAYLAND_SEAT");
-		if (!seat || strcmp(seat, "1") != 0)
-			continue;
-
-		if (strcmp(udev_device_get_subsystem(device), "input") == 0) {
-			evdev_input_device_create(input_device, ec->wl_display,
-						  udev_device_get_devnode(device));
-		} else if (strcmp(udev_device_get_subsystem(device), "drm") == 0) {
-			if (create_output(ec, device) < 0) {
-				fprintf(stderr, "failed to create output for %s\n", path);
-				return -1;
-			}
+	e = udev_enumerate_new(ec->udev);
+	udev_enumerate_add_match_subsystem(e, "drm");
+	udev_enumerate_add_match_property(e, "WAYLAND_SEAT", "1");
+        udev_enumerate_scan_devices(e);
+        udev_list_entry_foreach(entry, udev_enumerate_get_list_entry(e)) {
+		path = udev_list_entry_get_name(entry);
+		device = udev_device_new_from_syspath(ec->udev, path);
+		if (create_output(ec, device) < 0) {
+			fprintf(stderr, "failed to create output for %s\n", path);
+			return -1;
 		}
 	}
         udev_enumerate_unref(e);

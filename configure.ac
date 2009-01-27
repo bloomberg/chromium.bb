@@ -5,7 +5,7 @@ PKG_PROG_PKG_CONFIG()
 PKG_CHECK_MODULES(FFI, [libffi])
 
 PKG_CHECK_MODULES(EGL_COMPOSITOR,
-		  [eagle libpng cairo gdk-pixbuf-2.0 libudev libdrm])
+		  [eagle libpng cairo gdk-pixbuf-2.0 libudev >= 136 libdrm])
 PKG_CHECK_MODULES(CLIENT, [eagle cairo glib-2.0 libudev])
 
 if test $CC = gcc; then
