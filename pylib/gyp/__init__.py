@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
+import gyp.generator.xcodeproj
+import optparse
 import os.path
 import sys
 import simplejson as json
-import xcodeproj
+
 
 def BuildFileAndTarget(build_file, target):
   # NOTE: If you just want to split up target into a build_file and target,
@@ -24,8 +26,10 @@ def BuildFileAndTarget(build_file, target):
 
   return [build_file, target, build_file + ":" + target]
 
+
 def QualifiedTarget(build_file, target):
   return BuildFileAndTarget(build_file, target)[2]
+
 
 def ExceptionAppend(e, msg):
   if not e.args:
@@ -35,6 +39,7 @@ def ExceptionAppend(e, msg):
       e.args = [e.args[0] + " " + msg]
     else:
       e.args = [e.args[0] + " " + msg, e.args[1:]]
+
 
 def ReadBuildFile(build_file_path, data={}):
   build_file = open(build_file_path)
@@ -58,30 +63,6 @@ def ReadBuildFile(build_file_path, data={}):
 
   return data
 
-def MakeXcodeProj(targets, data):
-  xcode_projects = {}
-  for build_file, build_file_dict in data.iteritems():
-    if build_file[-6:] != ".build":
-      # TODO(mark): Pick an exception class
-      raise "Build file name must end in .build"
-    build_file_stem = build_file[:-6]
-    xcode_projects[build_file] = xcodeproj.XcodeProject(build_file_stem)
-
-  xcode_targets = {}
-  for qualified_target in targets:
-    [build_file, target] = BuildFileAndTarget("", qualified_target)[0:2]
-    spec = data[build_file]["targets"][target]
-    xcode_targets[qualified_target] = \
-        xcode_projects[build_file].AddTarget(target, spec["type"])
-    for source in spec["sources"]:
-      xcode_targets[qualified_target].SourcesPhase().AddFile(source)
-    if "dependencies" in spec:
-      for dependency in spec["dependencies"]:
-        dependency = QualifiedTarget(build_file, dependency)
-        xcode_targets[qualified_target].AddDependency(xcode_targets[dependency])
-
-  for build_file, build_file_dict in data.iteritems():
-    xcode_projects[build_file].Write()
 
 class DependencyTreeNode(object):
   """
@@ -179,9 +160,27 @@ def BuildDependencyList(targets):
   return flat_list
 
 
-def main():
-  build_file = sys.argv[1]
-  data = ReadBuildFile(build_file)
+def main(args):
+  my_name = os.path.basename(sys.argv[0])
+
+  parser = optparse.OptionParser()
+  usage = "usage: %s -f format build_file [...]"
+  parser.set_usage(usage.replace("%s", "%prog"))
+  parser.add_option("-f", "--format", dest="format",
+                    help="Output format to generate (required)")
+  (options, build_files) = parser.parse_args(args)
+  if not options.format:
+    print >>sys.stderr, (usage + "\n\n%s: error: format is required") % \
+                        (my_name, my_name)
+    sys.exit(1)
+  if not build_files:
+    print >>sys.stderr, (usage + "\n\n%s: error: build_file is required") % \
+                        (my_name, my_name)
+    sys.exit(1)
+
+  data = {}
+  for build_file in build_files:
+    ReadBuildFile(build_file, data)
 
   targets = {}
   for build_file_name, build_file_data in data.iteritems():
@@ -191,7 +190,8 @@ def main():
 
   flat_list = BuildDependencyList(targets)
 
-  MakeXcodeProj(flat_list, data)
+  generator.xcodeproj.GenerateOutput(flat_list, data)
+
 
 if __name__ == "__main__":
-  main()
+  main(sys.argv[1:])
