@@ -5,28 +5,58 @@ import sys
 import simplejson as json
 import xcodeproj
 
-def ReadBuildFile(build_file_path, build_file_data={}):
+def BuildFileAndTarget(build_file, target):
+  # NOTE: If you just want to split up target into a build_file and target,
+  # and you know that target already has a build_file that's been produced by
+  # this function, pass "" for build_file.
+
+  target_split = target.split(":", 1)
+  if len(target_split) == 2:
+    [build_file_rel, target] = target_split
+
+    # If a relative path, build_file_rel is relative to the directory
+    # containing build_file.  If build_file is not in the current directory,
+    # build_file_rel is not a usable path as-is.  Resolve it by interpreting it
+    # as relative to build_file.  If build_file_rel is absolute, it is usable
+    # as a path regardless of the current directory, and os.path.join will
+    # return it as-is.
+    build_file = os.path.join(os.path.dirname(build_file), build_file_rel)
+
+  return [build_file, target, build_file + ":" + target]
+
+def QualifiedTarget(build_file, target):
+  return BuildFileAndTarget(build_file, target)[2]
+
+def ExceptionAppend(e, msg):
+  if not e.args:
+    e.args = [msg]
+  else:
+    if len(e.args) == 1:
+      e.args = [e.args[0] + " " + msg]
+    else:
+      e.args = [e.args[0] + " " + msg, e.args[1:]]
+
+def ReadBuildFile(build_file_path, data={}):
   build_file = open(build_file_path)
   try:
-    build_file_data[build_file_path] = json.load(build_file)
+    build_file_data = json.load(build_file)
+    data[build_file_path] = build_file_data
+  except Exception, e:
+    ExceptionAppend(e, "while reading " + build_file_path)
+    raise
   finally:
     build_file.close()
 
   # Look for references to other build files that may need to be read.
-  if "targets" in build_file_data[build_file_path]:
-    for target_name, target_dict in build_file_data[build_file_path]["targets"].iteritems():
+  if "targets" in build_file_data:
+    for target_name, target_dict in build_file_data["targets"].iteritems():
       if "dependencies" in target_dict:
-        # TODO(mark): Some of this stuff should be refactored into separate
-        # functions.
         for dependency in target_dict["dependencies"]:
-          dep_split = dependency.split(":", 1)
-          if len(dep_split) == 2:
-            other_build_file = \
-                os.path.join(os.path.dirname(build_file_path), dep_split[0])
-            if not other_build_file in build_file_data:
-              ReadBuildFile(other_build_file, build_file_data)
+          other_build_file = BuildFileAndTarget(build_file_path, dependency)[0]
+          if not other_build_file in data:
+            ReadBuildFile(other_build_file, data)
 
-  return build_file_data
+  return data
 
 def MakeXcodeProj(targets, data):
   xcode_projects = {}
@@ -38,18 +68,17 @@ def MakeXcodeProj(targets, data):
     xcode_projects[build_file] = xcodeproj.XcodeProject(build_file_stem)
 
   xcode_targets = {}
-  for bf_and_target in targets:
-    [build_file, target] = bf_and_target.split(":", 1)
+  for qualified_target in targets:
+    [build_file, target] = BuildFileAndTarget("", qualified_target)[0:2]
     spec = data[build_file]["targets"][target]
-    xcode_targets[bf_and_target] = xcode_projects[build_file].AddTarget(target, spec["type"])
+    xcode_targets[qualified_target] = \
+        xcode_projects[build_file].AddTarget(target, spec["type"])
     for source in spec["sources"]:
-      xcode_targets[bf_and_target].SourcesPhase().AddFile(source)
+      xcode_targets[qualified_target].SourcesPhase().AddFile(source)
     if "dependencies" in spec:
       for dependency in spec["dependencies"]:
-        dep_split = dependency.split(":", 1)
-        if len(dep_split) == 1:
-          dependency = build_file + ":" + dependency
-        xcode_targets[bf_and_target].AddDependency(xcode_targets[dependency])
+        dependency = QualifiedTarget(build_file, dependency)
+        xcode_targets[qualified_target].AddDependency(xcode_targets[dependency])
 
   for build_file, build_file_dict in data.iteritems():
     xcode_projects[build_file].Write()
@@ -130,10 +159,8 @@ def BuildDependencyList(targets):
       root_node.dependents.append(target_node)
     else:
       for dependency in spec["dependencies"]:
-        dep_split = dependency.split(":", 1)
-        if len(dep_split) == 1:
-          targ_split = target.split(":", 1)
-          dependency = targ_split[0] + ":" + dependency
+        target_build_file = BuildFileAndTarget("", target)[0]
+        dependency = QualifiedTarget(target_build_file, dependency)
         dependency_node = dependency_nodes[dependency]
         target_node.dependencies.append(dependency_node)
         dependency_node.dependents.append(target_node)
@@ -159,7 +186,8 @@ def main():
   targets = {}
   for build_file_name, build_file_data in data.iteritems():
     for target in build_file_data["targets"]:
-      targets[build_file_name + ":" + target] = build_file_data["targets"][target]
+      qualified_target = QualifiedTarget(build_file_name, target)
+      targets[qualified_target] = build_file_data["targets"][target]
 
   flat_list = BuildDependencyList(targets)
 
