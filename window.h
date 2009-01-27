@@ -32,6 +32,13 @@ struct rectangle {
 	int32_t height;
 };
 
+struct display;
+
+struct display *
+display_create(struct wl_display *display, int fd);
+struct wl_compositor *
+display_get_compositor(struct display *display);
+
 typedef void (*window_resize_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
 typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key, void *data);
@@ -39,8 +46,7 @@ typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32
 
 
 struct window *
-window_create(struct wl_display *display, int fd,
-	      const char *title,
+window_create(struct display *display, const char *title,
 	      int32_t x, int32_t y, int32_t width, int32_t height);
 
 void

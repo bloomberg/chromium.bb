@@ -38,12 +38,21 @@
 
 #include "window.h"
 
-struct window {
+struct display {
 	struct wl_display *display;
 	struct wl_compositor *compositor;
+	struct wl_output *output;
+	struct wl_input_device *input_device;
+	struct rectangle screen_allocation;
+	cairo_drm_context_t *ctx;
+	int fd;
+};
+
+struct window {
+	struct display *display;
 	struct wl_surface *surface;
 	const char *title;
-	struct rectangle allocation, saved_allocation, screen_allocation;
+	struct rectangle allocation, saved_allocation;
 	int minimum_width, minimum_height;
 	int margin;
 	int drag_x, drag_y;
@@ -51,7 +60,6 @@ struct window {
 	int fullscreen;
 	struct wl_input_device *grab_device;
 	uint32_t name;
-	cairo_drm_context_t *ctx;
 
 	cairo_surface_t *cairo_surface;
 
@@ -85,7 +93,7 @@ window_draw_decorations(struct window *window)
 	int width, height;
 
 	window->cairo_surface =
-		cairo_drm_surface_create(window->ctx,
+		cairo_drm_surface_create(window->display->ctx,
 					 CAIRO_CONTENT_COLOR_ALPHA,
 					 window->allocation.width,
 					 window->allocation.height);
@@ -170,7 +178,7 @@ window_draw_decorations(struct window *window)
 	cairo_fill(cr);
 	cairo_destroy(cr);
 
-	visual = wl_display_get_premultiplied_argb_visual(window->display);
+	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
 	wl_surface_attach(window->surface,
 			  cairo_drm_surface_get_name(window->cairo_surface),
 			  window->allocation.width,
@@ -191,12 +199,12 @@ window_draw_fullscreen(struct window *window)
 	struct wl_visual *visual;
 
 	window->cairo_surface =
-		cairo_drm_surface_create(window->ctx,
+		cairo_drm_surface_create(window->display->ctx,
 					 CAIRO_CONTENT_COLOR_ALPHA,
 					 window->allocation.width,
 					 window->allocation.height);
 
-	visual = wl_display_get_premultiplied_argb_visual(window->display);
+	visual = wl_display_get_premultiplied_argb_visual(window->display->display);
 	wl_surface_attach(window->surface,
 			  cairo_drm_surface_get_name(window->cairo_surface),
 			  window->allocation.width,
@@ -287,7 +295,7 @@ window_handle_motion(void *data, struct wl_input_device *input_device,
 			       window->allocation.y - window->margin,
 			       window->allocation.width,
 			       window->allocation.height);
-		wl_compositor_commit(window->compositor, 1);
+		wl_compositor_commit(window->display->compositor, 1);
 		break;
 	case WINDOW_RESIZING_LOWER_RIGHT:
 		if (window->fullscreen)
@@ -396,7 +404,7 @@ cairo_surface_t *
 window_create_surface(struct window *window,
 		      struct rectangle *rectangle)
 {
-	return cairo_drm_surface_create(window->ctx,
+	return cairo_drm_surface_create(window->display->ctx,
 					CAIRO_CONTENT_COLOR_ALPHA,
 					rectangle->width,
 					rectangle->height);
@@ -437,7 +445,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 	window->fullscreen = fullscreen;
 	if (window->fullscreen) {
 		window->saved_allocation = window->allocation;
-		window->allocation = window->screen_allocation;
+		window->allocation = window->display->screen_allocation;
 	} else {
 		window->allocation = window->saved_allocation;
 	}
@@ -459,50 +467,8 @@ window_set_key_handler(struct window *window,
 	window->user_data = data;
 }
 
-static void
-window_handle_geometry(void *data,
-		       struct wl_output *output,
-		       int32_t width, int32_t height)
-{
-	struct window *window = data;
-
-	window->screen_allocation.x = 0;
-	window->screen_allocation.y = 0;
-	window->screen_allocation.width = width;
-	window->screen_allocation.height = height;
-}
-
-static const struct wl_output_listener output_listener = {
-	window_handle_geometry,
-};
-
-static void
-window_handle_global(struct wl_display *display,
-		     struct wl_object *object, void *data)
-{
-	struct window *window = data;
-
-	if (wl_object_implements(object, "compositor", 1)) { 
-		window->compositor = (struct wl_compositor *) object;
-		wl_compositor_add_listener(window->compositor,
-					   &compositor_listener, window);
-	} else if (wl_object_implements(object, "output", 1)) {
-		struct wl_output *output = (struct wl_output *) object;
-
-		wl_output_add_listener(output,
-				       &output_listener, window);
-	} else if (wl_object_implements(object, "input_device", 1)) {
-		struct wl_input_device *input_device =
-			(struct wl_input_device *) object;
-
-		wl_input_device_add_listener(input_device,
-					     &input_device_listener, window);
-	}
-}
-
 struct window *
-window_create(struct wl_display *display, int fd,
-	      const char *title,
+window_create(struct display *display, const char *title,
 	      int32_t x, int32_t y, int32_t width, int32_t height)
 {
 	struct window *window;
@@ -514,8 +480,7 @@ window_create(struct wl_display *display, int fd,
 	memset(window, 0, sizeof *window);
 	window->display = display;
 	window->title = strdup(title);
-	window->compositor = wl_display_get_compositor(display);
-	window->surface = wl_compositor_create_surface(window->compositor);
+	window->surface = wl_compositor_create_surface(display->compositor);
 	window->allocation.x = x;
 	window->allocation.y = y;
 	window->allocation.width = width;
@@ -523,14 +488,77 @@ window_create(struct wl_display *display, int fd,
 	window->saved_allocation = window->allocation;
 	window->margin = 16;
 	window->state = WINDOW_STABLE;
-	window->ctx = cairo_drm_context_get_for_fd(fd);
-	if (window->ctx == NULL) {
+
+	wl_compositor_add_listener(display->compositor,
+				   &compositor_listener, window);
+
+	wl_input_device_add_listener(display->input_device,
+				     &input_device_listener, window);
+
+	return window;
+}
+
+static void
+display_handle_geometry(void *data,
+			struct wl_output *output,
+			int32_t width, int32_t height)
+{
+	struct display *display = data;
+
+	display->screen_allocation.x = 0;
+	display->screen_allocation.y = 0;
+	display->screen_allocation.width = width;
+	display->screen_allocation.height = height;
+}
+
+static const struct wl_output_listener output_listener = {
+	display_handle_geometry,
+};
+
+static void
+display_handle_global(struct wl_display *display,
+		     struct wl_object *object, void *data)
+{
+	struct display *d = data;
+
+	if (wl_object_implements(object, "compositor", 1)) { 
+		d->compositor = (struct wl_compositor *) object;
+	} else if (wl_object_implements(object, "output", 1)) {
+		d->output = (struct wl_output *) object;
+		wl_output_add_listener(d->output, &output_listener, d);
+	} else if (wl_object_implements(object, "input_device", 1)) {
+		d->input_device =(struct wl_input_device *) object;
+	}
+}
+
+struct display *
+display_create(struct wl_display *display, int fd)
+{
+	struct display *d;
+
+	d = malloc(sizeof *d);
+	if (d == NULL)
+		return NULL;
+
+	d->display = display;
+	d->ctx = cairo_drm_context_get_for_fd(fd);
+	if (d->ctx == NULL) {
 		fprintf(stderr, "failed to get cairo drm context\n");
 		return NULL;
 	}
 
+	/* Set up listener so we'll catch all events. */
 	wl_display_add_global_listener(display,
-				       window_handle_global, window);
+				       display_handle_global, d);
 
-	return window;
+	/* Process connection events. */
+	wl_display_iterate(display, WL_DISPLAY_READABLE);
+
+	return d;
+}
+
+struct wl_compositor *
+display_get_compositor(struct display *display)
+{
+	return display->compositor;
 }

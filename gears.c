@@ -46,7 +46,7 @@ static const char socket_name[] = "\0wayland";
 struct gears {
 	struct window *window;
 
-	struct wl_display *wl_display;
+	struct display *d;
 	struct wl_compositor *compositor;
 	struct rectangle rectangle;
 
@@ -337,7 +337,7 @@ static const struct wl_compositor_listener compositor_listener = {
 };
 
 static struct gears *
-gears_create(struct wl_display *display, int fd)
+gears_create(struct display *display)
 {
 	const int x = 200, y = 200, width = 450, height = 500;
 	EGLint major, minor, count;
@@ -352,8 +352,8 @@ gears_create(struct wl_display *display, int fd)
 
 	gears = malloc(sizeof *gears);
 	memset(gears, 0, sizeof *gears);
-	gears->wl_display = display;
-	gears->window = window_create(display, fd, "Wayland Gears",
+	gears->d = display;
+	gears->window = window_create(display, "Wayland Gears",
 				      x, y, width, height);
 
 	gears->display = eglCreateDisplayNative(device);
@@ -394,7 +394,7 @@ gears_create(struct wl_display *display, int fd)
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0, 0, 0, 0.92);
 
-	gears->compositor = wl_display_get_compositor(display);
+	gears->compositor = display_get_compositor(display);
 
 	draw_gears(gears);
 
@@ -411,6 +411,7 @@ gears_create(struct wl_display *display, int fd)
 int main(int argc, char *argv[])
 {
 	struct wl_display *display;
+	struct display *d;
 	int fd;
 	GMainLoop *loop;
 	GSource *source;
@@ -428,11 +429,13 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	d = display_create(display, fd);
+
 	loop = g_main_loop_new(NULL, FALSE);
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	gears = gears_create(display, fd);
+	gears = gears_create(d);
 
 	g_main_loop_run(loop);
 

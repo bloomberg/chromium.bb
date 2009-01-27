@@ -53,7 +53,7 @@ static const char socket_name[] = "\0wayland";
 
 struct terminal {
 	struct window *window;
-	struct wl_display *display;
+	struct display *display;
 	struct wl_compositor *compositor;
 	int redraw_scheduled, redraw_pending;
 	char *data;
@@ -540,7 +540,7 @@ key_handler(struct window *window, uint32_t key, uint32_t state, void *data)
 }
 
 static struct terminal *
-terminal_create(struct wl_display *display, int fd, int fullscreen)
+terminal_create(struct display *display, int fullscreen)
 {
 	struct terminal *terminal;
 
@@ -550,13 +550,13 @@ terminal_create(struct wl_display *display, int fd, int fullscreen)
 
 	memset(terminal, 0, sizeof *terminal);
 	terminal->fullscreen = fullscreen;
-	terminal->window = window_create(display, fd, "Wayland Terminal",
+	terminal->window = window_create(display, "Wayland Terminal",
 					 500, 100, 500, 400);
 	terminal->display = display;
 	terminal->redraw_scheduled = 1;
 	terminal->margin = 5;
 
-	terminal->compositor = wl_display_get_compositor(display);
+	terminal->compositor = display_get_compositor(display);
 	window_set_fullscreen(terminal->window, terminal->fullscreen);
 	window_set_resize_handler(terminal->window, resize_handler, terminal);
 
@@ -628,6 +628,7 @@ int main(int argc, char *argv[])
 	int fd;
 	GMainLoop *loop;
 	GSource *source;
+	struct display *d;
 	struct terminal *terminal;
 	GOptionContext *context;
 	GError *error;
@@ -651,11 +652,12 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	d = display_create(display, fd);
 	loop = g_main_loop_new(NULL, FALSE);
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
 
-	terminal = terminal_create(display, fd, option_fullscreen);
+	terminal = terminal_create(d, option_fullscreen);
 	if (terminal_run(terminal, "/bin/bash"))
 		exit(EXIT_FAILURE);
 

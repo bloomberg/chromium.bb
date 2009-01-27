@@ -409,9 +409,6 @@ wl_display_create(const char *name, size_t name_size)
 						   connection_update,
 						   display);
 
-	/* Process connection events. */
-	wl_display_iterate(display, WL_CONNECTION_READABLE);
-
 	return display;
 }
 
