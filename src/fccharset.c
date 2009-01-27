@@ -81,6 +81,39 @@ FcCharSetDestroy (FcCharSet *fcs)
 }
 
 /*
+ * Search for the leaf containing with the specified num.
+ * Return its index if it exists, otherwise return negative of
+ * the (position + 1) where it should be inserted
+ */
+
+
+static int
+FcCharSetFindLeafForward (const FcCharSet *fcs, int start, FcChar16 num)
+{
+    FcChar16		*numbers = FcCharSetNumbers(fcs);
+    FcChar16		page;
+    int			low = start;
+    int			high = fcs->num - 1;
+
+    if (!numbers)
+	return -1;
+    while (low <= high)
+    {
+	int mid = (low + high) >> 1;
+	page = numbers[mid];
+	if (page == num)
+	    return mid;
+	if (page < num)
+	    low = mid + 1;
+	else
+	    high = mid - 1;
+    }
+    if (high < 0 || (high < fcs->num && numbers[high] < num))
+	high++;
+    return -(high + 1);
+}
+
+/*
  * Locate the leaf containing the specified char, return
  * its index if it exists, otherwise return negative of
  * the (position + 1) where it should be inserted
@@ -89,28 +122,7 @@ FcCharSetDestroy (FcCharSet *fcs)
 static int
 FcCharSetFindLeafPos (const FcCharSet *fcs, FcChar32 ucs4)
 {
-    FcChar16		*numbers = FcCharSetNumbers(fcs);
-    FcChar16		page;
-    int			low = 0;
-    int			high = fcs->num - 1;
-
-    if (!numbers)
-	return -1;
-    ucs4 >>= 8;
-    while (low <= high)
-    {
-	int mid = (low + high) >> 1;
-	page = numbers[mid];
-	if (page == ucs4)
-	    return mid;
-	if (page < ucs4)
-	    low = mid + 1;
-	else
-	    high = mid - 1;
-    }
-    if (high < 0 || (high < fcs->num && numbers[high] < ucs4))
-	high++;
-    return -(high + 1);
+    return FcCharSetFindLeafForward (fcs, 0, ucs4 >> 8);
 }
 
 static FcCharLeaf *
@@ -452,67 +464,52 @@ FcCharSetUnion (const FcCharSet *a, const FcCharSet *b)
     return FcCharSetOperate (a, b, FcCharSetUnionLeaf, FcTrue, FcTrue);
 }
 
-FcCharSet *
-FcCharSetMerge (FcCharSet *a, const FcCharSet *b)
+FcBool
+FcCharSetMerge (FcCharSet *a, const FcCharSet *b, FcBool *changed)
 {
-    FcCharSet	    *fcs;
-    FcCharSetIter    ai, bi;
+    int		ai = 0, bi = 0;
+    FcChar16	an, bn;
 
-    if (a == NULL) {
-	fcs = a = FcCharSetCreate ();
-    } else if (a->ref == FC_REF_CONSTANT) {
-	fcs = FcCharSetCreate ();
-    } else
-	fcs = a;
+    if (a->ref == FC_REF_CONSTANT)
+	return FcFalse;
 
-    if (fcs == NULL)
-	return NULL;
+    if (changed) {
+	*changed = !FcCharSetIsSubset(b, a);
+	if (!*changed)
+	    return FcTrue;
+    }
 
-    FcCharSetIterStart (a, &ai);
-    FcCharSetIterStart (b, &bi);
-    while (ai.leaf || bi.leaf)
+    while (bi < b->num)
     {
-	if (ai.ucs4 < bi.ucs4)
-	{
-	    if (!FcCharSetAddLeaf (fcs, ai.ucs4, ai.leaf))
-		goto bail;
+	an = ai < a->num ? FcCharSetNumbers(a)[ai] : ~0;
+	bn = FcCharSetNumbers(b)[bi];
 
-	    FcCharSetIterNext (a, &ai);
-	}
-	else if (bi.ucs4 < ai.ucs4)
+	if (an < bn)
 	{
-	    if (!FcCharSetAddLeaf (fcs, bi.ucs4, bi.leaf))
-		goto bail;
-
-	    FcCharSetIterNext (b, &bi);
+	    ai = FcCharSetFindLeafForward (a, ai + 1, bn);
+	    if (ai < 0)
+		ai = -ai - 1;
 	}
 	else
 	{
-	    FcCharLeaf  leaf;
-
-	    if (FcCharSetUnionLeaf (&leaf, ai.leaf, bi.leaf))
+	    FcCharLeaf *bl = FcCharSetLeaf(b, bi);
+	    if (bn < an)
 	    {
-		if (!FcCharSetAddLeaf (fcs, ai.ucs4, &leaf))
-		    goto bail;
+		if (!FcCharSetAddLeaf (a, bn << 8, bl))
+		    return FcFalse;
+	    }
+	    else
+	    {
+		FcCharLeaf *al = FcCharSetLeaf(a, ai);
+		FcCharSetUnionLeaf (al, al, bl);
 	    }
 
-	    FcCharSetIterNext (a, &ai);
-	    FcCharSetIterNext (b, &bi);
+	    ai++;
+	    bi++;
 	}
     }
 
-    if (fcs != a)
-	FcCharSetDestroy (a);
-
-    return fcs;
-
-bail:
-    FcCharSetDestroy (fcs);
-
-    if (fcs != a)
-	FcCharSetDestroy (a);
-
-    return NULL;
+    return FcTrue;
 }
 
 static FcBool
@@ -687,29 +684,9 @@ FcCharSetIsSubset (const FcCharSet *a, const FcCharSet *b)
 	    return FcFalse;
 	else
 	{
-	    int	    low = bi + 1;
-	    int	    high = b->num - 1;
-
-	    /*
-	     * Search for page 'an' in 'b'
-	     */
-	    while (low <= high)
-	    {
-		int mid = (low + high) >> 1;
-		bn = FcCharSetNumbers(b)[mid];
-		if (bn == an)
-		{
-		    high = mid;
-		    break;
-		}
-		if (bn < an)
-		    low = mid + 1;
-		else
-		    high = mid - 1;
-	    }
-	    bi = high;
-	    while (bi < b->num && FcCharSetNumbers(b)[bi] < an)
-		bi++;
+	    bi = FcCharSetFindLeafForward (b, bi + 1, an);
+	    if (bi < 0)
+		bi = -bi - 1;
 	}
     }
     /*

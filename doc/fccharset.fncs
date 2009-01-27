@@ -98,17 +98,19 @@ Returns a set including only those chars found in either <parameter>a</parameter
 Returns a set including only those chars found in <parameter>a</parameter> but not <parameter>b</parameter>. 
 @@
 
-@RET@		FcCharSet *
+@RET@		FcBool
 @FUNC@		FcCharSetMerge
-@TYPE1@		const FcCharSet *	@ARG1@		a
+@TYPE1@		FcCharSet *		@ARG1@		a
 @TYPE2@		const FcCharSet *	@ARG2@		b
+@TYPE3@		FcBool *		@ARG3@		changed
 @PURPOSE@	Merge charsets
 @DESC@
-If <parameter>a</parameter> is NULL, returns a newly-created copy of <parameter>b</parameter>.
-If <parameter>a</parameter> is an FcCharSet object owned by fontconfig that
-cannot be modified, it returns the union of <parameter>a</parameter> and
-<parameter>b</parameter> in a newly-created FcCharSet object.
-Otherwise, adds all chars in <parameter>b</parameter> to <parameter>a</parameter> and returns <parameter>a</parameter>.  In other words, this is an in-place versionof FcCharSetUnion.
+Adds all chars in <parameter>b</parameter> to <parameter>a</parameter>.
+In other words, this is an in-place version of FcCharSetUnion.
+If <parameter>changed</parameter> is not NULL, then it returns whether any new
+chars from <parameter>b</parameter> were added to <parameter>a</parameter>.
+Returns FcFalse on failure, either when <parameter>a</parameter> is a constant
+set or from running out of memory.
 @@
 
 @RET@		FcBool 

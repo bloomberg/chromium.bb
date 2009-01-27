@@ -606,38 +606,45 @@ FcSortCompare (const void *aa, const void *ab)
 }
 
 static FcBool
-FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool trim, FcBool build_cs)
+FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **csp, FcBool trim)
 {
-    FcCharSet	*ncs;
-    FcSortNode	*node;
+    FcBool ret = FcFalse;
+    FcCharSet *cs;
+
+    cs = 0;
+    if (trim || csp)
+    {
+	cs = FcCharSetCreate ();
+	if (cs == NULL)
+	    goto bail;
+    }
 
     while (nnode--)
     {
-	node = *n++;
+	FcSortNode	*node = *n++;
+	FcBool		adds_chars = FcFalse;
 
 	/*
 	 * Only fetch node charset if we'd need it
 	 */
-	if (trim || build_cs)
+	if (cs)
 	{
+	    FcCharSet	*ncs;
+
 	    if (FcPatternGetCharSet (node->pattern, FC_CHARSET, 0, &ncs) !=
 		FcResultMatch)
 	        continue;
+
+	    if (!FcCharSetMerge (cs, ncs, &adds_chars))
+		goto bail;
 	}
 
 	/*
 	 * If this font isn't a subset of the previous fonts,
 	 * add it to the list
 	 */
-	if (!trim || !*cs || !FcCharSetIsSubset (ncs, *cs))
+	if (!trim || adds_chars)
 	{
-	    if (trim || build_cs)
-	    {
-		*cs = FcCharSetMerge (*cs, ncs);
-		if (*cs == NULL)
-		    return FcFalse;
-	    }
-
 	    FcPatternReference (node->pattern);
 	    if (FcDebug () & FC_DBG_MATCHV)
 	    {
@@ -647,11 +654,23 @@ FcSortWalk (FcSortNode **n, int nnode, FcFontSet *fs, FcCharSet **cs, FcBool tri
 	    if (!FcFontSetAdd (fs, node->pattern))
 	    {
 		FcPatternDestroy (node->pattern);
-		return FcFalse;
+		goto bail;
 	    }
 	}
     }
-    return FcTrue;
+    if (csp)
+    {
+	*csp = cs;
+	cs = 0;
+    }
+
+    ret = FcTrue;
+
+bail:
+    if (cs)
+	FcCharSetDestroy (cs);
+
+    return ret;
 }
 
 void
@@ -675,7 +694,6 @@ FcFontSetSort (FcConfig	    *config,
     FcSortNode	    **nodeps, **nodep;
     int		    nnodes;
     FcSortNode	    *new;
-    FcCharSet	    *cs;
     int		    set;
     int		    f;
     int		    i;
@@ -803,18 +821,8 @@ FcFontSetSort (FcConfig	    *config,
     if (!ret)
 	goto bail1;
 
-    cs = 0;
-
-    if (!FcSortWalk (nodeps, nnodes, ret, &cs, trim, (csp!=0)))
+    if (!FcSortWalk (nodeps, nnodes, ret, csp, trim))
 	goto bail2;
-
-    if (csp)
-	*csp = cs;
-    else
-    {
-        if (cs)
-            FcCharSetDestroy (cs);
-    }
 
     free (nodes);
 
@@ -826,8 +834,6 @@ FcFontSetSort (FcConfig	    *config,
     return ret;
 
 bail2:
-    if (cs)
-	FcCharSetDestroy (cs);
     FcFontSetDestroy (ret);
 bail1:
     free (nodes);

@@ -439,8 +439,8 @@ FcCharSetUnion (const FcCharSet *a, const FcCharSet *b);
 FcPublic FcCharSet*
 FcCharSetSubtract (const FcCharSet *a, const FcCharSet *b);
 
-FcPublic FcCharSet *
-FcCharSetMerge (FcCharSet *a, const FcCharSet *b);
+FcPublic FcBool
+FcCharSetMerge (FcCharSet *a, const FcCharSet *b, FcBool *changed);
 
 FcPublic FcBool
 FcCharSetHasChar (const FcCharSet *fcs, FcChar32 ucs4);
