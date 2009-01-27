@@ -153,9 +153,8 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 {
 	struct egl_compositor *ec = shooter->ec;
 	struct wlsc_output *output;
-	GLuint stride;
 	char buffer[256];
-	GdkPixbuf *pixbuf;
+	GdkPixbuf *pixbuf, *normal;
 	GError *error = NULL;
 	void *data;
 	int i;
@@ -164,11 +163,25 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
 	while (&output->link != &ec->output_list) {
 		snprintf(buffer, sizeof buffer, "wayland-screenshot-%d.png", i++);
-		data = eglReadBuffer(ec->display, output->surface, GL_FRONT_LEFT, &stride);
+		data = malloc(output->width * output->height * 4);
+		if (data == NULL) {
+			fprintf(stderr, "couldn't allocate image buffer\n");
+			continue;
+		}
+
+		glReadBuffer(GL_FRONT);
+		glPixelStorei(GL_PACK_ALIGNMENT, 1);
+		glReadPixels(0, 0, output->width, output->height,
+			     GL_RGBA, GL_UNSIGNED_BYTE, data);
+
 		pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
-						  8, output->width, output->height, stride,
+						  8, output->width, output->height, output->width * 4,
 						  NULL, NULL);
-		gdk_pixbuf_save(pixbuf, buffer, "png", &error, NULL);
+		normal = gdk_pixbuf_flip(pixbuf, FALSE);
+		gdk_pixbuf_save(normal, buffer, "png", &error, NULL);
+		gdk_pixbuf_unref(normal);
+		gdk_pixbuf_unref(pixbuf);
+		free(data);
 
 		output = container_of(output->link.next,
 				      struct wlsc_output, link);
@@ -788,6 +801,7 @@ init_egl(struct egl_compositor *ec, struct udev_device *device)
 		EGL_DEPTH_SIZE, 0,
 		EGL_STENCIL_SIZE, 0,
 		EGL_CONFIG_CAVEAT, EGL_NONE,
+		EGL_RED_SIZE, 8,
 		EGL_NONE		
 	};
 

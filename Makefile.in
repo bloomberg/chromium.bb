@@ -47,7 +47,7 @@ terminal : LDLIBS += -lutil
 $(clients) : CFLAGS += @CLIENT_CFLAGS@
 $(clients) : LDLIBS += -L. -lwayland @CLIENT_LIBS@ -lrt
 
-install : $(libs)
+install : $(libs) $(compositors)
 	install -d @libdir@ @libdir@/pkgconfig ${udev_rules_dir}
 	install $(libs) @libdir@
 	install wayland-server.pc wayland.pc @libdir@/pkgconfig
