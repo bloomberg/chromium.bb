@@ -56,6 +56,12 @@
 #define module_param(name, type, perm)
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
+#define current_euid() (current->euid)
+#else
+#include <linux/cred.h>
+#endif
+
 /* older kernels had different irq args */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
 #undef DRM_IRQ_ARGS
