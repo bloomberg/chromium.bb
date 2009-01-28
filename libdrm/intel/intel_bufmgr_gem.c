@@ -166,6 +166,11 @@ struct _drm_intel_bo_gem {
      * the common case.
      */
     int reloc_tree_size;
+    /**
+     * Number of potential fence registers required by this buffer and its
+     * relocations.
+     */
+    int reloc_tree_fences;
 };
 
 static void drm_intel_gem_bo_reference_locked(drm_intel_bo *bo);
@@ -387,6 +392,7 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
     bo_gem->refcount = 1;
     bo_gem->validate_index = -1;
     bo_gem->reloc_tree_size = bo_gem->bo.size;
+    bo_gem->reloc_tree_fences = 0;
     bo_gem->used_as_reloc_target = 0;
     bo_gem->tiling_mode = I915_TILING_NONE;
     bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
@@ -444,6 +450,10 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr, const char *name,
     }
     bo_gem->tiling_mode = get_tiling.tiling_mode;
     bo_gem->swizzle_mode = get_tiling.swizzle_mode;
+    if (bo_gem->tiling_mode == I915_TILING_NONE)
+	bo_gem->reloc_tree_fences = 0;
+    else
+	bo_gem->reloc_tree_fences = 1;
 
     DBG("bo_create_from_handle: %d (%s)\n", handle, bo_gem->name);
 
@@ -861,6 +871,7 @@ drm_intel_gem_bo_emit_reloc(drm_intel_bo *bo, uint32_t offset,
      */
     assert(!bo_gem->used_as_reloc_target);
     bo_gem->reloc_tree_size += target_bo_gem->reloc_tree_size;
+    bo_gem->reloc_tree_fences += target_bo_gem->reloc_tree_fences;
 
     /* Flag the target to disallow further relocations in it. */
     target_bo_gem->used_as_reloc_target = 1;
@@ -1040,6 +1051,10 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
     if (bo_gem->global_name == 0 && *tiling_mode == bo_gem->tiling_mode)
 	return 0;
 
+    /* If we're going from non-tiling to tiling, bump fence count */
+    if (bo_gem->tiling_mode == I915_TILING_NONE)
+	bo_gem->reloc_tree_fences++;
+
     set_tiling.handle = bo_gem->gem_handle;
     set_tiling.tiling_mode = *tiling_mode;
     set_tiling.stride = stride;
@@ -1051,6 +1066,10 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
     }
     bo_gem->tiling_mode = set_tiling.tiling_mode;
     bo_gem->swizzle_mode = set_tiling.swizzle_mode;
+
+    /* If we're going from tiling to non-tiling, drop fence count */
+    if (bo_gem->tiling_mode == I915_TILING_NONE)
+	bo_gem->reloc_tree_fences--;
 
     *tiling_mode = bo_gem->tiling_mode;
     return 0;
@@ -1135,9 +1154,7 @@ drm_intel_gem_bo_get_aperture_space(drm_intel_bo *bo)
  * If the count is greater than the number of available regs, we'll have
  * to ask the caller to resubmit a batch with fewer tiled buffers.
  *
- * This function under-counts buffers referenced from other buffers
- * (such as the targets of the batchbuffer), and over-counts if the same
- * buffer appears twice in the array.
+ * This function over-counts if the same buffer is used multiple times.
  */
 static unsigned int
 drm_intel_gem_total_fences(drm_intel_bo **bo_array, int count)
@@ -1151,8 +1168,7 @@ drm_intel_gem_total_fences(drm_intel_bo **bo_array, int count)
 	if (bo_gem == NULL)
 	    continue;
 
-	if (bo_gem->tiling_mode != I915_TILING_NONE)
-	    total++;
+	total += bo_gem->reloc_tree_fences;
     }
     return total;
 }
