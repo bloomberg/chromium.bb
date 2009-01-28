@@ -54,6 +54,7 @@
 #include "errno.h"
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
+#include "intel_chipset.h"
 #include "string.h"
 
 #include "i915_drm.h"
@@ -100,6 +101,7 @@ typedef struct _drm_intel_bufmgr_gem {
 
     uint64_t gtt_size;
     int available_fences;
+    int pci_device;
 } drm_intel_bufmgr_gem;
 
 struct _drm_intel_bo_gem {
@@ -1311,13 +1313,23 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 		(int)bufmgr_gem->gtt_size / 1024);
     }
 
-    gp.param = I915_PARAM_NUM_FENCES_AVAIL;
-    gp.value = &bufmgr_gem->available_fences;
+    gp.param = I915_PARAM_CHIPSET_ID;
+    gp.value = &bufmgr_gem->pci_device;
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
     if (ret) {
-	fprintf(stderr, "get fences failed: %d\n", ret);
+	fprintf(stderr, "get chip id failed: %d\n", ret);
 	fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
-	bufmgr_gem->available_fences = 0;
+    }
+
+    if (!IS_I965G(bufmgr_gem)) {
+	gp.param = I915_PARAM_NUM_FENCES_AVAIL;
+	gp.value = &bufmgr_gem->available_fences;
+	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GETPARAM, &gp);
+	if (ret) {
+	    fprintf(stderr, "get fences failed: %d\n", ret);
+	    fprintf(stderr, "param: %d, val: %d\n", gp.param, *gp.value);
+	    bufmgr_gem->available_fences = 0;
+	}
     }
 
     /* Let's go with one relocation per every 2 dwords (but round down a bit

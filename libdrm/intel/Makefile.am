@@ -39,6 +39,7 @@ libdrm_intel_la_SOURCES = \
 	intel_bufmgr_priv.h \
 	intel_bufmgr_fake.c \
 	intel_bufmgr_gem.c \
+	intel_chipset.h \
 	mm.c \
 	mm.h
 
