@@ -3,8 +3,9 @@
 import demjson
 import optparse
 import os.path
+import re
 import sys
-#import simplejson
+import simplejson
 
 
 def BuildFileAndTarget(build_file, target):
@@ -223,12 +224,12 @@ def main(args):
     if "settings" in build_file_data:
       file_settings = build_file_data["settings"]
       for target, target_dict in build_file_data["targets"].iteritems():
-        if "header_dirs" in file_settings:
-          if not "header_dirs" in target_dict:
-            target_dict["header_dirs"] = []
+        if "include_dirs" in file_settings:
+          if not "include_dirs" in target_dict:
+            target_dict["include_dirs"] = []
           # Usually want to prepend instead of append when adding file settings
           # to a target?
-          target_dict["header_dirs"].extend(file_settings["header_dirs"])
+          target_dict["include_dirs"].extend(file_settings["include_dirs"])
 
         if "defines" in file_settings:
           if not "defines" in target_dict:
@@ -236,6 +237,46 @@ def main(args):
           # Usually want to prepend instead of append when adding file settings
           # to a target?
           target_dict["defines"].extend(file_settings["defines"])
+
+        if "source_patterns" in file_settings:
+          if not "source_patterns" in target_dict:
+            target_dict["source_patterns"] = []
+          target_dict["source_patterns"].extend(file_settings["source_patterns"])
+
+  # Do conditions and source_patterns
+  for target in flat_list:
+    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
+    target_dict = data[build_file]["targets"][target_unq]
+
+    if "conditions" in target_dict:
+      for item in target_dict["conditions"]:
+        [condition, settings] = item
+        if condition == "OS==mac":
+          for key, value in settings.iteritems():
+            if key not in target_dict:
+              target_dict[key] = value
+            elif isinstance(value, list):
+              target_dict[key].extend(value)
+            elif isinstance(value, dict):
+              target_dict[key].update(value)
+            else:
+              # I guess this is right, JSON input can carry limited data
+              # types.
+              target_dict[key] = value
+    if "source_patterns" in target_dict:
+      for source_pattern in target_dict["source_patterns"]:
+        [action, pattern] = source_pattern
+        pattern_re = re.compile(pattern)
+        # Ugh, need to make a copy up front because we can't modify the list
+        # while iterating through it.  This may need some rethinking.  That
+        # makes it TODO(mark).
+        new_sources = target_dict["sources"][:]
+        for source in target_dict["sources"]:
+          if pattern_re.search(source):
+            if action == "exclude":
+              new_sources.remove(source)
+        target_dict["sources"] = new_sources
+
 
   # Now look for dependent_settings sections in dependencies, and merge
   # settings.
@@ -255,13 +296,14 @@ def main(args):
       # TODO(mark): Establish proper merge procedure and generalize this.  This
       # is OK to just bring up base and icu.
       dependent_settings = dependency_dict["dependent_settings"]
-      if "header_dirs" in dependent_settings:
-        if not "header_dirs" in target_dict:
-          target_dict["header_dirs"] = []
-        relative_path = os.path.join(os.path.dirname(build_file), os.path.dirname(dep_build_file))
-        for header_dir in dependent_settings["header_dirs"]:
-          header_dir = os.path.join(relative_path, header_dir)
-          target_dict["header_dirs"].append(header_dir)
+      if "include_dirs" in dependent_settings:
+        if not "include_dirs" in target_dict:
+          target_dict["include_dirs"] = []
+        relative_path = os.path.join(os.path.dirname(build_file),
+                                     os.path.dirname(dep_build_file))
+        for include_dir in dependent_settings["include_dirs"]:
+          include_dir = os.path.join(relative_path, include_dir)
+          target_dict["include_dirs"].append(include_dir)
 
       if "defines" in dependent_settings:
         if not "defines" in target_dict:
@@ -305,7 +347,6 @@ def main(args):
         for library in target_dict["libraries"]:
           if not library in target_dict["libraries"]:
             target_dict["libraries"].append(library)
-
 
   generator.GenerateOutput(flat_list, data)
 

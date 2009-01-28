@@ -59,10 +59,10 @@ def GenerateOutput(targets, data):
     if "computed_libraries" in spec:
       for library in spec["computed_libraries"]:
         xcode_targets[qualified_target].FrameworksPhase().AddFile(library)
-    if "header_dirs" in spec:
-      for header_dir in spec["header_dirs"]:
+    if "include_dirs" in spec:
+      for include_dir in spec["include_dirs"]:
         xcode_targets[qualified_target].AppendBuildSetting( \
-            "HEADER_SEARCH_PATHS", header_dir)
+            "HEADER_SEARCH_PATHS", include_dir)
     if "defines" in spec:
       for define in spec["defines"]:
         xcode_targets[qualified_target].AppendBuildSetting( \
