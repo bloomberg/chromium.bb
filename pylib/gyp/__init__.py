@@ -184,6 +184,85 @@ def BuildDependencyList(targets):
   return [dependency_nodes, root_node, flat_list]
 
 
+def MergeLists(to, fro, to_file, fro_file, is_paths=False):
+  # TODO(mark): Support a way for the "fro" list to declare how it wants to
+  # be merged into the "to" list.  Right now, "append" is always used, but
+  # other possible policies include "prepend" and "replace".  Perhaps the
+  # "fro" list can include a special first token, or perhaps the "fro" list
+  # can have a sibling or something identifying the desired treatment.  Also,
+  # "append" may not always be the most appropriate merge policy.  For
+  # example, when merging file-wide .gyp settings into targets, it seems more
+  # logical to prepend file-wide settings to target-specific ones, which are
+  # thought of as "inheriting" file-wide setings.
+  for item in fro:
+    if isinstance(item, str) or isinstance(item, int):
+      # The cheap and easy case.
+      # TODO(mark): Expand variables here?  I waffle a bit more on this below,
+      # in MergeDicts.
+      if is_paths and to_file != fro_file:
+        # If item is a relative path, it's relative to the build file dict that
+        # it's coming from.  Fix it up to make it relative to the build file
+        # dict that it's going into.
+        # TODO(mark): We might want to exclude some things here even if
+        # is_paths is true.
+        # TODO(mark): The next line may be wrong for more complex cases, we
+        # may need to do a better job of finding one build file's path relative
+        # to another.  Good candidate for abstraction!
+        to.append(os.path.join(os.path.dirname(to_file),
+                               os.path.dirname(fro_file),
+                               item))
+      else:
+        to.append(item)
+    elif isinstance(item, dict):
+      # Insert a copy of the dictionary.
+      to.append(item.copy())
+    elif isinstance(item, list):
+      # Insert a copy of the list.
+      to.append(item[:])
+    else:
+      raise TypeError, \
+          "Attempt to merge list item of unsupported type " + \
+          item.__class__.__name__
+
+
+def MergeDicts(to, fro, to_file, fro_file):
+  # I wanted to name the parameter "from" but it's a Python keyword...
+  for k, v in fro.iteritems():
+    # It would be nice to do "if not k in to: to[k] = v" but that wouldn't give
+    # copy semantics.  Something else may want to merge from the |fro| dict
+    # later, and having the same dict ref pointed to twice in the tree isn't
+    # what anyone wants considering that the dicts may subsequently be
+    # modified.
+    if k in to and v.__class__ != to[k].__class__:
+      raise TypeError, \
+          "Attempt to merge dict value of type " + v.__class__.__name__ + \
+          " into incompatible type " + to[k].__class__.__name__ + \
+          " for key " + k
+    if isinstance(v, str) or isinstance(v, int):
+      # Overwrite the existing value, if any.  Cheap and easy.
+      # TODO(mark): Expand variables here?  We may want a way to make use
+      # of the existing string value, if any, and variable expansion might
+      # be the right solution.  On the other hand, it's possible that we
+      # might want to do all expansions in a separate step completely
+      # independent of merging.  These questions need answers.
+      to[k] = v
+    elif isinstance(v, dict):
+      # Recurse, guaranteeing copies will be made of objects that require it.
+      if not k in to:
+        to[k] = {}
+      MergeDicts(to[k], v, to_file, fro_file)
+    elif isinstance(v, list):
+      # Call MergeLists, which will make copies of objects that require it.
+      if not k in to:
+        to[k] = []
+      is_paths = k in ["include_dirs", "sources"]
+      MergeLists(to[k], v, to_file, fro_file, is_paths)
+    else:
+      raise TypeError, \
+          "Attempt to merge dict value of unsupported type " + \
+          v.__class__.__name__ + " for key " + k
+
+
 def main(args):
   my_name = os.path.basename(sys.argv[0])
 
@@ -217,52 +296,28 @@ def main(args):
 
   [dependency_nodes, root_node, flat_list] = BuildDependencyList(targets)
 
-  # TODO(mark): Make all of this stuff generic
+  # TODO(mark): Make all of this stuff generic.  WORK IN PROGRESS.
 
   # Look at each project's settings dict, and merge settings into targets.
   for build_file_name, build_file_data in data.iteritems():
     if "settings" in build_file_data:
       file_settings = build_file_data["settings"]
       for target, target_dict in build_file_data["targets"].iteritems():
-        if "include_dirs" in file_settings:
-          if not "include_dirs" in target_dict:
-            target_dict["include_dirs"] = []
-          # Usually want to prepend instead of append when adding file settings
-          # to a target?
-          target_dict["include_dirs"].extend(file_settings["include_dirs"])
+        MergeDicts(target_dict, file_settings, build_file_name, build_file_name)
 
-        if "defines" in file_settings:
-          if not "defines" in target_dict:
-            target_dict["defines"] = []
-          # Usually want to prepend instead of append when adding file settings
-          # to a target?
-          target_dict["defines"].extend(file_settings["defines"])
-
-        if "source_patterns" in file_settings:
-          if not "source_patterns" in target_dict:
-            target_dict["source_patterns"] = []
-          target_dict["source_patterns"].extend(file_settings["source_patterns"])
-
+  # TODO(mark): This needs to be refactored real soon now.
   # Do conditions and source_patterns
   for target in flat_list:
     [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
     target_dict = data[build_file]["targets"][target_unq]
 
     if "conditions" in target_dict:
+      # TODO(mark): Do we want to sever the conditions dict from target_dict?
       for item in target_dict["conditions"]:
         [condition, settings] = item
         if condition == "OS==mac":
-          for key, value in settings.iteritems():
-            if key not in target_dict:
-              target_dict[key] = value
-            elif isinstance(value, list):
-              target_dict[key].extend(value)
-            elif isinstance(value, dict):
-              target_dict[key].update(value)
-            else:
-              # I guess this is right, JSON input can carry limited data
-              # types.
-              target_dict[key] = value
+          MergeDicts(target_dict, settings, build_file, build_file)
+
     if "source_patterns" in target_dict:
       for source_pattern in target_dict["source_patterns"]:
         [action, pattern] = source_pattern
@@ -276,7 +331,6 @@ def main(args):
             if action == "exclude":
               new_sources.remove(source)
         target_dict["sources"] = new_sources
-
 
   # Now look for dependent_settings sections in dependencies, and merge
   # settings.
@@ -293,22 +347,8 @@ def main(args):
       if not "dependent_settings" in dependency_dict:
         continue
 
-      # TODO(mark): Establish proper merge procedure and generalize this.  This
-      # is OK to just bring up base and icu.
       dependent_settings = dependency_dict["dependent_settings"]
-      if "include_dirs" in dependent_settings:
-        if not "include_dirs" in target_dict:
-          target_dict["include_dirs"] = []
-        relative_path = os.path.join(os.path.dirname(build_file),
-                                     os.path.dirname(dep_build_file))
-        for include_dir in dependent_settings["include_dirs"]:
-          include_dir = os.path.join(relative_path, include_dir)
-          target_dict["include_dirs"].append(include_dir)
-
-      if "defines" in dependent_settings:
-        if not "defines" in target_dict:
-          target_dict["defines"] = []
-        target_dict["defines"].extend(dependent_settings["defines"])
+      MergeDicts(target_dict, dependent_settings, build_file, dep_build_file)
 
   # TODO(mark): This logic is rough, but it works for base_unittests.
   # Set up computed dependencies.  For each non-static library target, look
