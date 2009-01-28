@@ -7,9 +7,9 @@ import os
 
 
 class XcodeProject(object):
-  def __init__(self, name):
-    self.name = name
-    self.project = xf.PBXProject(name=name)
+  def __init__(self, path):
+    self.path = path
+    self.project = xf.PBXProject(path=path)
     self.project_file = xf.XCProjectFile({"rootObject": self.project})
 
   def AddTarget(self, name, type):
@@ -21,13 +21,14 @@ class XcodeProject(object):
     self.project.AppendProperty("targets", target)
     return target
 
-  def Write(self):
+  def Finalize(self):
     self.project_file.ComputeIDs()
-    xcodeproj_path = self.name + ".xcodeproj"
-    pbxproj_path = xcodeproj_path + "/project.pbxproj"
+
+  def Write(self):
+    pbxproj_path = self.path + "/project.pbxproj"
 
     try:
-      os.mkdir(xcodeproj_path)
+      os.mkdir(self.path)
     except OSError, e:
       if e.errno != errno.EEXIST:
         raise
@@ -39,11 +40,11 @@ class XcodeProject(object):
 def GenerateOutput(targets, data):
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():
-    if build_file[-6:] != ".build":
+    if build_file[-4:] != ".gyp":
       # TODO(mark): Pick an exception class
-      raise "Build file name must end in .build"
-    build_file_stem = build_file[:-6]
-    xcode_projects[build_file] = XcodeProject(build_file_stem)
+      raise "Build file name must end in .gyp"
+    build_file_stem = build_file[:-4]
+    xcode_projects[build_file] = XcodeProject(build_file_stem + ".xcodeproj")
 
   xcode_targets = {}
   for qualified_target in targets:
@@ -51,12 +52,28 @@ def GenerateOutput(targets, data):
     spec = data[build_file]["targets"][target]
     xcode_targets[qualified_target] = \
         xcode_projects[build_file].AddTarget(target, spec["type"])
+    # TODO(mark): This needs to go into a .build file.
+    xcode_targets[qualified_target].SetBuildSetting("USE_HEADERMAP", "NO")
     for source in spec["sources"]:
       xcode_targets[qualified_target].SourcesPhase().AddFile(source)
-    if "dependencies" in spec:
-      for dependency in spec["dependencies"]:
+    if "computed_libraries" in spec:
+      for library in spec["computed_libraries"]:
+        xcode_targets[qualified_target].FrameworksPhase().AddFile(library)
+    if "header_dirs" in spec:
+      for header_dir in spec["header_dirs"]:
+        xcode_targets[qualified_target].AppendBuildSetting( \
+            "HEADER_SEARCH_PATHS", header_dir)
+    if "defines" in spec:
+      for define in spec["defines"]:
+        xcode_targets[qualified_target].AppendBuildSetting( \
+            "GCC_PREPROCESSOR_DEFINITIONS", define)
+    if "computed_dependencies" in spec:
+      for dependency in spec["computed_dependencies"]:
         dependency = gyp.QualifiedTarget(build_file, dependency)
         xcode_targets[qualified_target].AddDependency(xcode_targets[dependency])
+
+  for build_file, build_file_dict in data.iteritems():
+    xcode_projects[build_file].Finalize()
 
   for build_file, build_file_dict in data.iteritems():
     xcode_projects[build_file].Write()

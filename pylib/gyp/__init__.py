@@ -1,10 +1,10 @@
 #!/usr/bin/python
 
-import gyp.generator.xcodeproj
+import demjson
 import optparse
 import os.path
 import sys
-import simplejson as json
+#import simplejson
 
 
 def BuildFileAndTarget(build_file, target):
@@ -44,7 +44,16 @@ def ExceptionAppend(e, msg):
 def ReadBuildFile(build_file_path, data={}):
   build_file = open(build_file_path)
   try:
-    build_file_data = json.load(build_file)
+    # simplejson
+    #build_file_data = simplejson.load(build_file)
+
+    # demjson
+    build_file_contents = build_file.read()
+    json = demjson.JSON()
+    json.prevent("trailing_comma_in_literal")
+    json.prevent("undefined_values")
+    build_file_data = json.decode(build_file_contents)
+
     data[build_file_path] = build_file_data
   except Exception, e:
     ExceptionAppend(e, "while reading " + build_file_path)
@@ -94,7 +103,16 @@ class DependencyTreeNode(object):
     self.dependents = []
     self._mark = self.MARK_NONE
 
-  def FlattenToList(self, flat_list=[]):
+  # YOU MUST CALL THIS with flat_list set to [].  Leave the optional parameters
+  # at their defaults.  TODO(mark): Provide a better public interface.
+  def FlattenToList(self, flat_list, reset=True, check_dependencies=False):
+    if reset:
+      self._mark = self.MARK_NONE
+      for dependent in self.dependents:
+        dependent.FlattenToList(None, reset)
+      if flat_list == None:
+        return
+
     if self._mark == self.MARK_PENDING:
       # Oops.  Found a cycle.
       raise self.CircularException, "Returned to " + str(self.ref) + \
@@ -107,17 +125,22 @@ class DependencyTreeNode(object):
     # Visit all nodes upon which this one depends, or ensure that they have
     # already been visited.
     self._mark = self.MARK_PENDING
-    for dependency in self.dependencies:
-      dependency.FlattenToList(flat_list)
+
+    # Don't check dependencies of the root object that the caller requested.
+    if check_dependencies:
+      for dependency in self.dependencies:
+        dependency.FlattenToList(flat_list, False, True)
 
     # All of this node's dependency references are in the list.  Append this
     # node's reference.
     self._mark = self.MARK_DONE
     flat_list.append(self.ref)
 
-    # Visit all nodes that depend on this one.
+    # Visit all nodes that depend on this one.  Don't try to visit a dependent
+    # marked PENDING, that's the dependent that called this object.
     for dependent in self.dependents:
-      dependent.FlattenToList(flat_list)
+      if dependent._mark != self.MARK_PENDING:
+        dependent.FlattenToList(flat_list, False, True)
 
     return flat_list
 
@@ -148,7 +171,7 @@ def BuildDependencyList(targets):
 
   # Take the root node out of the list because it doesn't correspond to a real
   # target.
-  flat_list = root_node.FlattenToList()[1:]
+  flat_list = root_node.FlattenToList([])[1:]
 
   # If there's anything left unvisited, there must be a self-contained circular
   # dependency.  If you need to figure out what's wrong, look for elements of
@@ -157,7 +180,7 @@ def BuildDependencyList(targets):
   if len(flat_list) != len(targets):
     raise DependencyTreeNode.CircularException, "some targets not reachable"
 
-  return flat_list
+  return [dependency_nodes, root_node, flat_list]
 
 
 def main(args):
@@ -178,6 +201,9 @@ def main(args):
                         (my_name, my_name)
     sys.exit(1)
 
+  generator_name = "gyp.generator." + options.format
+  generator = __import__(generator_name, fromlist=generator_name)
+
   data = {}
   for build_file in build_files:
     ReadBuildFile(build_file, data)
@@ -188,9 +214,100 @@ def main(args):
       qualified_target = QualifiedTarget(build_file_name, target)
       targets[qualified_target] = build_file_data["targets"][target]
 
-  flat_list = BuildDependencyList(targets)
+  [dependency_nodes, root_node, flat_list] = BuildDependencyList(targets)
 
-  generator.xcodeproj.GenerateOutput(flat_list, data)
+  # TODO(mark): Make all of this stuff generic
+
+  # Look at each project's settings dict, and merge settings into targets.
+  for build_file_name, build_file_data in data.iteritems():
+    if "settings" in build_file_data:
+      file_settings = build_file_data["settings"]
+      for target, target_dict in build_file_data["targets"].iteritems():
+        if "header_dirs" in file_settings:
+          if not "header_dirs" in target_dict:
+            target_dict["header_dirs"] = []
+          # Usually want to prepend instead of append when adding file settings
+          # to a target?
+          target_dict["header_dirs"].extend(file_settings["header_dirs"])
+
+        if "defines" in file_settings:
+          if not "defines" in target_dict:
+            target_dict["defines"] = []
+          # Usually want to prepend instead of append when adding file settings
+          # to a target?
+          target_dict["defines"].extend(file_settings["defines"])
+
+  # Now look for dependent_settings sections in dependencies, and merge
+  # settings.
+  for target in flat_list:
+    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
+    target_dict = data[build_file]["targets"][target_unq]
+    if not "dependencies" in target_dict:
+      continue
+
+    for dependency in target_dict["dependencies"]:
+      [dep_build_file, dep_target_unq] = \
+          BuildFileAndTarget(build_file, dependency)[0:2]
+      dependency_dict = data[dep_build_file]["targets"][dep_target_unq]
+      if not "dependent_settings" in dependency_dict:
+        continue
+
+      # TODO(mark): Establish proper merge procedure and generalize this.  This
+      # is OK to just bring up base and icu.
+      dependent_settings = dependency_dict["dependent_settings"]
+      if "header_dirs" in dependent_settings:
+        if not "header_dirs" in target_dict:
+          target_dict["header_dirs"] = []
+        relative_path = os.path.join(os.path.dirname(build_file), os.path.dirname(dep_build_file))
+        for header_dir in dependent_settings["header_dirs"]:
+          header_dir = os.path.join(relative_path, header_dir)
+          target_dict["header_dirs"].append(header_dir)
+
+      if "defines" in dependent_settings:
+        if not "defines" in target_dict:
+          target_dict["defines"] = []
+        target_dict["defines"].extend(dependent_settings["defines"])
+
+  # TODO(mark): This logic is rough, but it works for base_unittests.
+  # Set up computed dependencies.  For each non-static library target, look
+  # at the entire dependency hierarchy and add any static libraries as computed
+  # dependencies.  Static library targets have no computed dependencies.
+  for target in flat_list:
+    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
+    target_dict = data[build_file]["targets"][target_unq]
+    if target_dict["type"] == "static_library":
+      dependents = dependency_nodes[target].FlattenToList([])[1:]
+      for dependent in dependents:
+        [dependent_bf, dependent_unq] = BuildFileAndTarget("", dependent)[0:2]
+        dependent_dict = data[dependent_bf]["targets"][dependent_unq]
+        if dependent_dict["type"] != "static_library":
+          if not "computed_dependencies" in dependent_dict:
+            dependent_dict["computed_dependencies"] = []
+          dependent_dict["computed_dependencies"].append(target)
+          if "libraries" in target_dict:
+            if not "computed_libraries" in dependent_dict:
+              dependent_dict["computed_libraries"] = []
+            dependent_dict["computed_libraries"].extend(target_dict["libraries"])
+  for target in flat_list:
+    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
+    target_dict = data[build_file]["targets"][target_unq]
+    if target_dict["type"] != "static_library":
+      if "dependencies" in target_dict:
+        if not "computed_dependencies" in target_dict:
+          target_dict["computed_dependencies"] = []
+        for dependency in target_dict["dependencies"]:
+          dependency_qual = BuildFileAndTarget(build_file, dependency)[2]
+          if not dependency_qual in target_dict["computed_dependencies"]:
+            target_dict["computed_dependencies"].append(dependency_qual)
+      if "libraries" in target_dict:
+        if not "libraries" in target_dict:
+          target_dict["libraries"] = []
+        for library in target_dict["libraries"]:
+          if not library in target_dict["libraries"]:
+            target_dict["libraries"].append(library)
+
+
+  generator.GenerateOutput(flat_list, data)
 
 
 if __name__ == "__main__":
