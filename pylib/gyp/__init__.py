@@ -9,9 +9,9 @@ import sys
 def BuildFileAndTarget(build_file, target):
   # NOTE: If you just want to split up target into a build_file and target,
   # and you know that target already has a build_file that's been produced by
-  # this function, pass "" for build_file.
+  # this function, pass '' for build_file.
 
-  target_split = target.split(":", 1)
+  target_split = target.split(':', 1)
   if len(target_split) == 2:
     [build_file_rel, target] = target_split
 
@@ -23,7 +23,7 @@ def BuildFileAndTarget(build_file, target):
     # return it as-is.
     build_file = os.path.join(os.path.dirname(build_file), build_file_rel)
 
-  return [build_file, target, build_file + ":" + target]
+  return [build_file, target, build_file + ':' + target]
 
 
 def QualifiedTarget(build_file, target):
@@ -36,9 +36,9 @@ def ExceptionAppend(e, msg):
   if not e.args:
     e.args = [msg]
   elif len(e.args) == 1:
-    e.args = [str(e.args[0]) + " " + msg]
+    e.args = [str(e.args[0]) + ' ' + msg]
   else:
-    e.args = [str(e.args[0]) + " " + msg, e.args[1:]]
+    e.args = [str(e.args[0]) + ' ' + msg, e.args[1:]]
 
 
 def LoadOneBuildFile(build_file_path):
@@ -53,7 +53,7 @@ def LoadOneBuildFile(build_file_path):
     e.filename = build_file_path
     raise
   except Exception, e:
-    ExceptionAppend(e, "while reading " + build_file_path)
+    ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
   # TODO(mark): Apply EARLY conditional and variable expansion here.
@@ -62,17 +62,17 @@ def LoadOneBuildFile(build_file_path):
   try:
     LoadBuildFileIncludes(build_file_data, build_file_path)
   except Exception, e:
-    ExceptionAppend(e, "while reading includes of " + build_file_path)
+    ExceptionAppend(e, 'while reading includes of ' + build_file_path)
     raise
 
   return build_file_data
 
 
 def LoadBuildFileIncludes(subdict, subdict_path):
-  if "includes" in subdict:
+  if 'includes' in subdict:
     # Unhook the includes dict, it's no longer needed.
-    includes_dict = subdict["includes"]
-    del subdict["includes"]
+    includes_dict = subdict['includes']
+    del subdict['includes']
 
     # Replace it by merging in the included files.
     for include in includes_dict:
@@ -103,11 +103,11 @@ def LoadTargetBuildFile(build_file_path, data={}):
   # in other words, you can't put a "dependencies" section inside a "post"
   # conditional within a target.
 
-  if "targets" in build_file_data:
-    for target_name, target_dict in build_file_data["targets"].iteritems():
-      if "dependencies" not in target_dict:
+  if 'targets' in build_file_data:
+    for target_name, target_dict in build_file_data['targets'].iteritems():
+      if 'dependencies' not in target_dict:
         continue
-      for dependency in target_dict["dependencies"]:
+      for dependency in target_dict['dependencies']:
         other_build_file = BuildFileAndTarget(build_file_path, dependency)[0]
         LoadTargetBuildFile(other_build_file, data)
 
@@ -156,8 +156,8 @@ class DependencyTreeNode(object):
 
     if self._mark == self.MARK_PENDING:
       # Oops.  Found a cycle.
-      raise self.CircularException, "Returned to " + str(self.ref) + \
-                                    " while it was already being visited"
+      raise self.CircularException, 'Returned to ' + str(self.ref) + \
+                                    ' while it was already being visited'
 
     if self._mark == self.MARK_DONE:
       # Already visisted.
@@ -199,12 +199,12 @@ def BuildDependencyList(targets):
   root_node = DependencyTreeNode(None)
   for target, spec in targets.iteritems():
     target_node = dependency_nodes[target]
-    if not "dependencies" in spec or len(spec["dependencies"]) == 0:
+    if not 'dependencies' in spec or len(spec['dependencies']) == 0:
       target_node.dependencies = [root_node]
       root_node.dependents.append(target_node)
     else:
-      for dependency in spec["dependencies"]:
-        target_build_file = BuildFileAndTarget("", target)[0]
+      for dependency in spec['dependencies']:
+        target_build_file = BuildFileAndTarget('', target)[0]
         dependency = QualifiedTarget(target_build_file, dependency)
         dependency_node = dependency_nodes[dependency]
         target_node.dependencies.append(dependency_node)
@@ -219,7 +219,7 @@ def BuildDependencyList(targets):
   # targets that are not in flat_list.  FlattenToList doesn't catch these
   # self-contained cycles because they're not reachable from root_node.
   if len(flat_list) != len(targets):
-    raise DependencyTreeNode.CircularException, "some targets not reachable"
+    raise DependencyTreeNode.CircularException, 'some targets not reachable'
 
   return [dependency_nodes, root_node, flat_list]
 
@@ -261,7 +261,7 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False):
       to.append(item[:])
     else:
       raise TypeError, \
-          "Attempt to merge list item of unsupported type " + \
+          'Attempt to merge list item of unsupported type ' + \
           item.__class__.__name__
 
 
@@ -275,9 +275,9 @@ def MergeDicts(to, fro, to_file, fro_file):
     # modified.
     if k in to and v.__class__ != to[k].__class__:
       raise TypeError, \
-          "Attempt to merge dict value of type " + v.__class__.__name__ + \
-          " into incompatible type " + to[k].__class__.__name__ + \
-          " for key " + k
+          'Attempt to merge dict value of type ' + v.__class__.__name__ + \
+          ' into incompatible type ' + to[k].__class__.__name__ + \
+          ' for key ' + k
     if isinstance(v, str) or isinstance(v, int):
       # Overwrite the existing value, if any.  Cheap and easy.
       # TODO(mark): Expand variables here?  We may want a way to make use
@@ -295,16 +295,16 @@ def MergeDicts(to, fro, to_file, fro_file):
       # Call MergeLists, which will make copies of objects that require it.
       if not k in to:
         to[k] = []
-      is_paths = k in ["include_dirs", "sources"]
+      is_paths = k in ['include_dirs', 'sources']
       MergeLists(to[k], v, to_file, fro_file, is_paths)
     else:
       raise TypeError, \
-          "Attempt to merge dict value of unsupported type " + \
-          v.__class__.__name__ + " for key " + k
+          'Attempt to merge dict value of unsupported type ' + \
+          v.__class__.__name__ + ' for key ' + k
 
 
 def FindBuildFiles():
-  extension = ".gyp"
+  extension = '.gyp'
   files = os.listdir(os.getcwd())
   build_files = []
   for file in files:
@@ -317,21 +317,21 @@ def main(args):
   my_name = os.path.basename(sys.argv[0])
 
   parser = optparse.OptionParser()
-  usage = "usage: %s [-f format] [build_file ...]"
-  parser.set_usage(usage.replace("%s", "%prog"))
-  parser.add_option("-f", "--format", dest="format",
-                    help="Output format to generate (required)")
+  usage = 'usage: %s [-f format] [build_file ...]'
+  parser.set_usage(usage.replace('%s', '%prog'))
+  parser.add_option('-f', '--format', dest='format',
+                    help='Output format to generate')
   (options, build_files) = parser.parse_args(args)
   if not options.format:
     options.format = {'darwin': 'xcodeproj'}[sys.platform]
   if not build_files:
     build_files = FindBuildFiles()
   if not build_files:
-    print >>sys.stderr, (usage + "\n\n%s: error: no build_file") % \
+    print >>sys.stderr, (usage + '\n\n%s: error: no build_file') % \
                         (my_name, my_name)
     return 1
 
-  generator_name = "gyp.generator." + options.format
+  generator_name = 'gyp.generator.' + options.format
   generator = __import__(generator_name, fromlist=generator_name)
 
   # Load build files.  This loads every target-containing build file into
@@ -345,9 +345,9 @@ def main(args):
   # Figure out the entire dependency graph for all known targets.
   targets = {}
   for build_file_name, build_file_data in data.iteritems():
-    for target in build_file_data["targets"]:
+    for target in build_file_data['targets']:
       qualified_target = QualifiedTarget(build_file_name, target)
-      targets[qualified_target] = build_file_data["targets"][target]
+      targets[qualified_target] = build_file_data['targets'][target]
 
   [dependency_nodes, root_node, flat_list] = BuildDependencyList(targets)
 
@@ -355,54 +355,54 @@ def main(args):
 
   # Look at each project's settings dict, and merge settings into targets.
   for build_file_name, build_file_data in data.iteritems():
-    if "settings" in build_file_data:
-      file_settings = build_file_data["settings"]
-      for target, target_dict in build_file_data["targets"].iteritems():
+    if 'settings' in build_file_data:
+      file_settings = build_file_data['settings']
+      for target, target_dict in build_file_data['targets'].iteritems():
         MergeDicts(target_dict, file_settings, build_file_name, build_file_name)
 
   # TODO(mark): This needs to be refactored real soon now.
   # Do conditions and source_patterns
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
-    target_dict = data[build_file]["targets"][target_unq]
+    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
+    target_dict = data[build_file]['targets'][target_unq]
 
-    if "conditions" in target_dict:
+    if 'conditions' in target_dict:
       # TODO(mark): Do we want to sever the conditions dict from target_dict?
-      for item in target_dict["conditions"]:
+      for item in target_dict['conditions']:
         [condition, settings] = item
-        if condition == "OS==mac":
+        if condition == 'OS==mac':
           MergeDicts(target_dict, settings, build_file, build_file)
 
-    if "source_patterns" in target_dict:
-      for source_pattern in target_dict["source_patterns"]:
+    if 'source_patterns' in target_dict:
+      for source_pattern in target_dict['source_patterns']:
         [action, pattern] = source_pattern
         pattern_re = re.compile(pattern)
         # Ugh, need to make a copy up front because we can't modify the list
         # while iterating through it.  This may need some rethinking.  That
         # makes it TODO(mark).
-        new_sources = target_dict["sources"][:]
-        for source in target_dict["sources"]:
+        new_sources = target_dict['sources'][:]
+        for source in target_dict['sources']:
           if pattern_re.search(source):
-            if action == "exclude":
+            if action == 'exclude':
               new_sources.remove(source)
-        target_dict["sources"] = new_sources
+        target_dict['sources'] = new_sources
 
   # Now look for dependent_settings sections in dependencies, and merge
   # settings.
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
-    target_dict = data[build_file]["targets"][target_unq]
-    if not "dependencies" in target_dict:
+    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
+    target_dict = data[build_file]['targets'][target_unq]
+    if not 'dependencies' in target_dict:
       continue
 
-    for dependency in target_dict["dependencies"]:
+    for dependency in target_dict['dependencies']:
       [dep_build_file, dep_target_unq] = \
           BuildFileAndTarget(build_file, dependency)[0:2]
-      dependency_dict = data[dep_build_file]["targets"][dep_target_unq]
-      if not "dependent_settings" in dependency_dict:
+      dependency_dict = data[dep_build_file]['targets'][dep_target_unq]
+      if not 'dependent_settings' in dependency_dict:
         continue
 
-      dependent_settings = dependency_dict["dependent_settings"]
+      dependent_settings = dependency_dict['dependent_settings']
       MergeDicts(target_dict, dependent_settings, build_file, dep_build_file)
 
   # TODO(mark): This logic is rough, but it works for base_unittests.
@@ -410,42 +410,42 @@ def main(args):
   # at the entire dependency hierarchy and add any static libraries as computed
   # dependencies.  Static library targets have no computed dependencies.
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
-    target_dict = data[build_file]["targets"][target_unq]
-    if target_dict["type"] == "static_library":
+    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
+    target_dict = data[build_file]['targets'][target_unq]
+    if target_dict['type'] == 'static_library':
       dependents = dependency_nodes[target].FlattenToList([])[1:]
       for dependent in dependents:
-        [dependent_bf, dependent_unq] = BuildFileAndTarget("", dependent)[0:2]
-        dependent_dict = data[dependent_bf]["targets"][dependent_unq]
-        if dependent_dict["type"] != "static_library":
-          if not "computed_dependencies" in dependent_dict:
-            dependent_dict["computed_dependencies"] = []
-          dependent_dict["computed_dependencies"].append(target)
-          if "libraries" in target_dict:
-            if not "computed_libraries" in dependent_dict:
-              dependent_dict["computed_libraries"] = []
-            dependent_dict["computed_libraries"].extend(target_dict["libraries"])
+        [dependent_bf, dependent_unq] = BuildFileAndTarget('', dependent)[0:2]
+        dependent_dict = data[dependent_bf]['targets'][dependent_unq]
+        if dependent_dict['type'] != 'static_library':
+          if not 'computed_dependencies' in dependent_dict:
+            dependent_dict['computed_dependencies'] = []
+          dependent_dict['computed_dependencies'].append(target)
+          if 'libraries' in target_dict:
+            if not 'computed_libraries' in dependent_dict:
+              dependent_dict['computed_libraries'] = []
+            dependent_dict['computed_libraries'].extend(target_dict['libraries'])
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget("", target)[0:2]
-    target_dict = data[build_file]["targets"][target_unq]
-    if target_dict["type"] != "static_library":
-      if "dependencies" in target_dict:
-        if not "computed_dependencies" in target_dict:
-          target_dict["computed_dependencies"] = []
-        for dependency in target_dict["dependencies"]:
+    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
+    target_dict = data[build_file]['targets'][target_unq]
+    if target_dict['type'] != 'static_library':
+      if 'dependencies' in target_dict:
+        if not 'computed_dependencies' in target_dict:
+          target_dict['computed_dependencies'] = []
+        for dependency in target_dict['dependencies']:
           dependency_qual = BuildFileAndTarget(build_file, dependency)[2]
-          if not dependency_qual in target_dict["computed_dependencies"]:
-            target_dict["computed_dependencies"].append(dependency_qual)
-      if "libraries" in target_dict:
-        if not "libraries" in target_dict:
-          target_dict["libraries"] = []
-        for library in target_dict["libraries"]:
-          if not library in target_dict["libraries"]:
-            target_dict["libraries"].append(library)
+          if not dependency_qual in target_dict['computed_dependencies']:
+            target_dict['computed_dependencies'].append(dependency_qual)
+      if 'libraries' in target_dict:
+        if not 'libraries' in target_dict:
+          target_dict['libraries'] = []
+        for library in target_dict['libraries']:
+          if not library in target_dict['libraries']:
+            target_dict['libraries'].append(library)
 
   generator.GenerateOutput(flat_list, data)
   return 0
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
