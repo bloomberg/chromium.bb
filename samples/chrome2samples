@@ -1,0 +1,12 @@
+#!/usr/bin/bash
+
+# Quicky script to copy from a chrome tree to here.
+
+cp $1/base/base.gyp .
+cp $1/testing/gtest.gyp .
+cp $1/third_party/icu38/icu38.gyp .
+cp $1/third_party/libevent/libevent.gyp .
+cp $1/third_party/libjpeg/libjpeg.gyp .
+cp $1/third_party/libpng/libpng.gyp .
+cp $1/third_party/zlib/zlib.gyp .
+

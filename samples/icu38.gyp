@@ -8,7 +8,8 @@
       'public/i18n',
       'source/common',
       'source/i18n',
-    ]
+    ],
+    'vs_props': [ '../../build/external_code.vsprops' ],
   },
   'targets': [
     {
