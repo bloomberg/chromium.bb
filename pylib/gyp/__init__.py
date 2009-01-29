@@ -21,7 +21,8 @@ def BuildFileAndTarget(build_file, target):
     # as relative to build_file.  If build_file_rel is absolute, it is usable
     # as a path regardless of the current directory, and os.path.join will
     # return it as-is.
-    build_file = os.path.join(os.path.dirname(build_file), build_file_rel)
+    build_file = os.path.normpath(os.path.join(os.path.dirname(build_file),
+                                               build_file_rel))
 
   return [build_file, target, build_file + ':' + target]
 
@@ -56,11 +57,14 @@ def LoadOneBuildFile(build_file_path):
     ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
-  # TODO(mark): Apply EARLY conditional and variable expansion here.
+  # TODO(mark): Apply "pre"/"early" variable expansion here.
+
+  # Apply "pre"/"early" conditionals.
+  ProcessConditionalsInDict(build_file_data)
 
   # Scan for includes and merge them in.
   try:
-    LoadBuildFileIncludes(build_file_data, build_file_path)
+    LoadBuildFileIncludesIntoDict(build_file_data, build_file_path)
   except Exception, e:
     ExceptionAppend(e, 'while reading includes of ' + build_file_path)
     raise
@@ -68,20 +72,37 @@ def LoadOneBuildFile(build_file_path):
   return build_file_data
 
 
-def LoadBuildFileIncludes(subdict, subdict_path):
+def LoadBuildFileIncludesIntoDict(subdict, subdict_path):
   if 'includes' in subdict:
-    # Unhook the includes dict, it's no longer needed.
-    includes_dict = subdict['includes']
+    # Unhook the includes list, it's no longer needed.
+    includes_list = subdict['includes']
     del subdict['includes']
 
     # Replace it by merging in the included files.
-    for include in includes_dict:
+    for include in includes_list:
       MergeDicts(subdict, LoadOneBuildFile(include), subdict_path, include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
     if v.__class__ == dict:
-      LoadBuildFileIncludes(v, subdict_path)
+      LoadBuildFileIncludesIntoDict(v, subdict_path)
+    elif v.__class__ == list:
+      LoadBuildFileIncludesIntoList(v, subdict_path)
+
+
+# This presently only recurses into lists so that it can look for dicts.
+# Should it allow includes within lists inline?  TODO(mark): Decide.
+#   sources: [
+#     "source1.cc",
+#     { "includes": [ "some_included_file" ] },
+#     "source2.cc"
+#   ]
+def LoadBuildFileIncludesIntoList(sublist, sublist_path):
+  for item in sublist:
+    if item.__class__ == dict:
+      LoadBuildFileIncludesIntoDict(item, sublist_path)
+    elif item.__class__ == list:
+      LoadBuildFileIncludesIntoList(item, sublist_path)
 
 
 # TODO(mark): I don't love this name.  It just means that it's going to load
@@ -112,6 +133,46 @@ def LoadTargetBuildFile(build_file_path, data={}):
         LoadTargetBuildFile(other_build_file, data)
 
   return data
+
+
+# TODO(mark): This needs a way to choose which conditions dict to look at.
+# Right now, it's called "conditions" but that's just so that I don't need
+# to edit the names in the input files.  The existing conditions are all
+# "early" or "pre" conditions.  Support for "late"/"post"/"target" conditions
+# needs to be added as well.
+def ProcessConditionalsInDict(subdict):
+  if 'conditions' in subdict:
+    # Unhook the conditions list, it's no longer needed.
+    conditions_dict = subdict['conditions']
+    del subdict['conditions']
+
+    # Evaluate conditions and merge in the dictionaries for the ones that pass.
+    for condition in conditions_dict:
+      [expression, settings_dict] = condition
+      # TODO(mark): The expression is hard-coded.  That obviously has to
+      # change.
+      if expression == 'OS==mac':
+        # OK to pass '', '' for the build files because everything comes from
+        # the same build file and everything is already relative to the same
+        # place.
+        MergeDicts(subdict, settings_dict, '', '')
+
+  # Recurse into subdictionaries.
+  for k, v in subdict.iteritems():
+    if v.__class__ == dict:
+      ProcessConditionalsInDict(v)
+    elif v.__class__ == list:
+      ProcessConditionalsInList(v)
+
+
+# TODO(mark): The same comment about list recursion and whether to allow
+# inlines in lists at LoadBuildFileIncludesIntoList applies to this function.
+def ProcessConditionalsInList(sublist):
+  for item in sublist:
+    if item.__class__ == dict:
+      ProcessConditionalsInDict(item)
+    elif item.__class__ == list:
+      ProcessConditionalsInList(item)
 
 
 class DependencyTreeNode(object):
@@ -248,9 +309,9 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False):
         # TODO(mark): The next line may be wrong for more complex cases, we
         # may need to do a better job of finding one build file's path relative
         # to another.  Good candidate for abstraction!
-        to.append(os.path.join(os.path.dirname(to_file),
-                               os.path.dirname(fro_file),
-                               item))
+        to.append(os.path.normpath(os.path.join(os.path.dirname(to_file),
+                                                os.path.dirname(fro_file),
+                                                item)))
       else:
         to.append(item)
     elif isinstance(item, dict):
@@ -352,43 +413,22 @@ def main(args):
 
   [dependency_nodes, root_node, flat_list] = BuildDependencyList(targets)
 
-  # TODO(mark): Make all of this stuff generic.  WORK IN PROGRESS.
+  # TODO(mark): Make all of this stuff generic.  WORK IN PROGRESS.  It's a
+  # lot cleaner than it used to be, but there's still progress to be made.
+  # The whole file above this point is in pretty good shape, everything
+  # below this line is kind of a wasteland.
 
   # Look at each project's settings dict, and merge settings into targets.
   # TODO(mark): Figure out when we should do this step.  Seems like it should
-  # happen earlier.
+  # happen earlier.  Also, the policy here should be for dict keys in the base
+  # settings dict to NOT overwrite keys in the target, and for list items in
+  # the base settings dict to be PREPENDED to target lists instead of
+  # appended.
   for build_file_name, build_file_data in data.iteritems():
     if 'settings' in build_file_data:
       file_settings = build_file_data['settings']
       for target_dict in build_file_data['targets']:
         MergeDicts(target_dict, file_settings, build_file_name, build_file_name)
-
-  # TODO(mark): This needs to be refactored real soon now.
-  # Do conditions and source_patterns
-  for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
-    target_dict = targets[target]
-
-    if 'conditions' in target_dict:
-      # TODO(mark): Do we want to sever the conditions dict from target_dict?
-      for item in target_dict['conditions']:
-        [condition, settings] = item
-        if condition == 'OS==mac':
-          MergeDicts(target_dict, settings, build_file, build_file)
-
-    if 'source_patterns' in target_dict:
-      for source_pattern in target_dict['source_patterns']:
-        [action, pattern] = source_pattern
-        pattern_re = re.compile(pattern)
-        # Ugh, need to make a copy up front because we can't modify the list
-        # while iterating through it.  This may need some rethinking.  That
-        # makes it TODO(mark).
-        new_sources = target_dict['sources'][:]
-        for source in target_dict['sources']:
-          if pattern_re.search(source):
-            if action == 'exclude':
-              new_sources.remove(source)
-        target_dict['sources'] = new_sources
 
   # Now look for dependent_settings sections in dependencies, and merge
   # settings.
@@ -397,6 +437,7 @@ def main(args):
     if not 'dependencies' in target_dict:
       continue
 
+    build_file = BuildFileAndTarget("", target)[0]
     for dependency in target_dict['dependencies']:
       [dep_build_file, dep_target_unq, dep_target_q] = \
           BuildFileAndTarget(build_file, dependency)
@@ -426,7 +467,8 @@ def main(args):
           if 'libraries' in target_dict:
             if not 'computed_libraries' in dependent_dict:
               dependent_dict['computed_libraries'] = []
-            dependent_dict['computed_libraries'].extend(target_dict['libraries'])
+            dependent_dict['computed_libraries'].extend(
+                target_dict['libraries'])
   for target in flat_list:
     target_dict = targets[target]
     if target_dict['type'] != 'static_library':
@@ -444,7 +486,40 @@ def main(args):
           if not library in target_dict['libraries']:
             target_dict['libraries'].append(library)
 
-  # TODO(mark): Pass data for now because the generator needs a list of
+  # Do source_patterns.
+  # TODO(mark): This needs to be refactored real soon now.
+  # I'm positive I wrote this comment before, but now it's gone.  Here's the
+  # deal: this should be made more general, so that we can have arbitrary
+  # *_patterns sections.  That probably means that it should be called
+  # sources_patterns instead of source_patterns.  While we're thinking about
+  # renaming it, maybe _patterns isn't the best name anyway.  Apparently I
+  # called it source_rules in a meeting yesterday.  Also, the only action
+  # supported here is "exclude" which seems to imply that there should be an
+  # "include" but I'm having a hard time coming up with a good case for
+  # that.  Someone suggested looking at the filesystem (which implies a glob
+  # for include patterns rather than a RE).  I suppose we could do that, but
+  # I don't really love it.
+  # Also, I think we want to allow for a simpler _exclude list that does strict
+  # string matching without the RE business.
+  for target in flat_list:
+    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
+    target_dict = targets[target]
+
+    if 'source_patterns' in target_dict:
+      for source_pattern in target_dict['source_patterns']:
+        [action, pattern] = source_pattern
+        pattern_re = re.compile(pattern)
+        # Ugh, need to make a copy up front because we can't modify the list
+        # while iterating through it.  This may need some rethinking.  That
+        # makes it TODO(mark).
+        new_sources = target_dict['sources'][:]
+        for source in target_dict['sources']:
+          if pattern_re.search(source):
+            if action == 'exclude':
+              new_sources.remove(source)
+        target_dict['sources'] = new_sources
+
+  # TODO(mark): Pass |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept
   # a list, and not the whole data dict.
   # NOTE: flat_list is the flattened dependency graph specifying the order
