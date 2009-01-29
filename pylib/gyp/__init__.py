@@ -36,19 +36,19 @@ def ExceptionAppend(e, msg):
   if not e.args:
     e.args = [msg]
   elif len(e.args) == 1:
-    e.args = [e.args[0] + " " + msg]
+    e.args = [str(e.args[0]) + " " + msg]
   else:
-    e.args = [e.args[0] + " " + msg, e.args[1:]]
+    e.args = [str(e.args[0]) + " " + msg, e.args[1:]]
 
 
-def ReadBuildFile(build_file_path, data={}):
+def LoadOneBuildFile(build_file_path):
   build_file = open(build_file_path)
   build_file_contents = build_file.read()
   build_file.close()
+
   build_file_data = None
   try:
     build_file_data = eval(build_file_contents)
-    data[build_file_path] = build_file_data
   except SyntaxError, e:
     e.filename = build_file_path
     raise
@@ -56,16 +56,60 @@ def ReadBuildFile(build_file_path, data={}):
     ExceptionAppend(e, "while reading " + build_file_path)
     raise
 
-  # Look for references to other build files that may need to be read.
+  # TODO(mark): Apply EARLY conditional and variable expansion here.
+
+  # Scan for includes and merge them in.
+  try:
+    LoadBuildFileIncludes(build_file_data, build_file_path)
+  except Exception, e:
+    ExceptionAppend(e, "while reading includes of " + build_file_path)
+    raise
+
+  return build_file_data
+
+
+def LoadBuildFileIncludes(subdict, subdict_path):
+  if "includes" in subdict:
+    # Unhook the includes dict, it's no longer needed.
+    includes_dict = subdict["includes"]
+    del subdict["includes"]
+
+    # Replace it by merging in the included files.
+    for include in includes_dict:
+      MergeDicts(subdict, LoadOneBuildFile(include), subdict_path, include)
+
+  # Recurse into subdictionaries.
+  for k, v in subdict.iteritems():
+    if v.__class__ == dict:
+      LoadBuildFileIncludes(v, subdict_path)
+
+
+# TODO(mark): I don't love this name.  It just means that it's going to load
+# a build file that contains targets and is expected to provide a targets dict
+# that contains the targets...
+def LoadTargetBuildFile(build_file_path, data={}):
+  if build_file_path in data:
+    # Already loaded.
+    return
+
+  build_file_data = LoadOneBuildFile(build_file_path)
+  data[build_file_path] = build_file_data
+
+  # ...it's loaded and it should have EARLY references and conditionals
+  # all resolved and includes merged in...at least it will eventually...
+
+  # Look for dependencies.  This means that dependency resolution occurs
+  # after "pre" conditionals and variable expansion, but before "post" -
+  # in other words, you can't put a "dependencies" section inside a "post"
+  # conditional within a target.
+
   if "targets" in build_file_data:
     for target_name, target_dict in build_file_data["targets"].iteritems():
-      # TODO(mark): skip target_name that corresponds to conditional section
-      # (or include section, but those should get severed above).
-      if "dependencies" in target_dict:
-        for dependency in target_dict["dependencies"]:
-          other_build_file = BuildFileAndTarget(build_file_path, dependency)[0]
-          if not other_build_file in data:
-            ReadBuildFile(other_build_file, data)
+      if "dependencies" not in target_dict:
+        continue
+      for dependency in target_dict["dependencies"]:
+        other_build_file = BuildFileAndTarget(build_file_path, dependency)[0]
+        LoadTargetBuildFile(other_build_file, data)
 
   return data
 
@@ -290,10 +334,15 @@ def main(args):
   generator_name = "gyp.generator." + options.format
   generator = __import__(generator_name, fromlist=generator_name)
 
+  # Load build files.  This loads every target-containing build file into
+  # the |data| dictionary such that the keys to |data| are build file names,
+  # and the values are the entire build file contents after "early" or "pre"
+  # processing has been done and includes have been resolved.
   data = {}
   for build_file in build_files:
-    ReadBuildFile(build_file, data)
+    LoadTargetBuildFile(build_file, data)
 
+  # Figure out the entire dependency graph for all known targets.
   targets = {}
   for build_file_name, build_file_data in data.iteritems():
     for target in build_file_data["targets"]:
