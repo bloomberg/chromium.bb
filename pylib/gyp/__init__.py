@@ -367,7 +367,7 @@ def MergeDicts(to, fro, to_file, fro_file):
       # Call MergeLists, which will make copies of objects that require it.
       if not k in to:
         to[k] = []
-      is_paths = k in ['include_dirs', 'sources']
+      is_paths = k in ['include_dirs', 'sources', 'xcode_framework_dirs']
       MergeLists(to[k], v, to_file, fro_file, is_paths)
     else:
       raise TypeError, \
@@ -459,10 +459,11 @@ def main(args):
     if not 'dependencies' in target_dict:
       continue
 
-    build_file = BuildFileAndTarget("", target)[0]
+    build_file = BuildFileAndTarget('', target)[0]
     for dependency in target_dict['dependencies']:
+      # The name is already relative, so use ''.
       [dep_build_file, dep_target_unq, dep_target_q] = \
-          BuildFileAndTarget(build_file, dependency)
+          BuildFileAndTarget('', dependency)
       dependency_dict = targets[dep_target_q]
       if not 'dependent_settings' in dependency_dict:
         continue

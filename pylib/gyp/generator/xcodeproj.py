@@ -69,6 +69,10 @@ def GenerateOutput(target_list, target_dicts, data):
     if 'libraries' in spec:
       for library in spec['libraries']:
         xcode_targets[qualified_target].FrameworksPhase().AddFile(library)
+    if 'xcode_framework_dirs' in spec:
+      for include_dir in spec['xcode_framework_dirs']:
+        xcode_targets[qualified_target].AppendBuildSetting( \
+            'FRAMEWORK_SEARCH_PATHS', include_dir)
     if 'include_dirs' in spec:
       for include_dir in spec['include_dirs']:
         xcode_targets[qualified_target].AppendBuildSetting( \
