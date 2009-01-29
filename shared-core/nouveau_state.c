@@ -707,6 +707,7 @@ static int nouveau_suspend(struct drm_device *dev)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
 	struct nouveau_suspend_resume *susres = &dev_priv->susres;
 	struct nouveau_engine *engine = &dev_priv->Engine;
+	struct nouveau_channel *current_fifo;
 	int i;
 
 	if (dev_priv->card_type >= NV_50) {
@@ -758,8 +759,12 @@ static int nouveau_suspend(struct drm_device *dev)
 		susres->graph_ctx_control = NV_READ(NV04_PGRAPH_CTX_CONTROL);
 	}
 
-	engine->fifo.save_context(dev_priv->fifos[engine->fifo.channel_id(dev)]);
-	engine->graph.save_context(dev_priv->fifos[engine->fifo.channel_id(dev)]);
+	current_fifo = dev_priv->fifos[engine->fifo.channel_id(dev)];
+	/* channel may have been deleted but no replacement yet loaded */
+	if (current_fifo) {
+		engine->fifo.save_context(current_fifo);
+		engine->graph.save_context(current_fifo);
+	}
 	nouveau_wait_for_idle(dev);
 
 	for (i = 0; i < susres->ramin_size / 4; i++)
