@@ -1,11 +1,9 @@
 #!/usr/bin/python
 
-import demjson
 import optparse
 import os.path
 import re
 import sys
-import simplejson
 
 
 def BuildFileAndTarget(build_file, target):
@@ -29,42 +27,40 @@ def BuildFileAndTarget(build_file, target):
 
 
 def QualifiedTarget(build_file, target):
+  # "Qualified" means the file that a target was defined in and the target
+  # name, separated by a colon.
   return BuildFileAndTarget(build_file, target)[2]
 
 
 def ExceptionAppend(e, msg):
   if not e.args:
     e.args = [msg]
+  elif len(e.args) == 1:
+    e.args = [e.args[0] + " " + msg]
   else:
-    if len(e.args) == 1:
-      e.args = [e.args[0] + " " + msg]
-    else:
-      e.args = [e.args[0] + " " + msg, e.args[1:]]
+    e.args = [e.args[0] + " " + msg, e.args[1:]]
 
 
 def ReadBuildFile(build_file_path, data={}):
   build_file = open(build_file_path)
+  build_file_contents = build_file.read()
+  build_file.close()
+  build_file_data = None
   try:
-    # simplejson
-    #build_file_data = simplejson.load(build_file)
-
-    # demjson
-    build_file_contents = build_file.read()
-    json = demjson.JSON()
-    json.prevent("trailing_comma_in_literal")
-    json.prevent("undefined_values")
-    build_file_data = json.decode(build_file_contents)
-
+    build_file_data = eval(build_file_contents)
     data[build_file_path] = build_file_data
+  except SyntaxError, e:
+    e.filename = build_file_path
+    raise
   except Exception, e:
     ExceptionAppend(e, "while reading " + build_file_path)
     raise
-  finally:
-    build_file.close()
 
   # Look for references to other build files that may need to be read.
   if "targets" in build_file_data:
     for target_name, target_dict in build_file_data["targets"].iteritems():
+      # TODO(mark): skip target_name that corresponds to conditional section
+      # (or include section, but those should get severed above).
       if "dependencies" in target_dict:
         for dependency in target_dict["dependencies"]:
           other_build_file = BuildFileAndTarget(build_file_path, dependency)[0]
@@ -263,23 +259,33 @@ def MergeDicts(to, fro, to_file, fro_file):
           v.__class__.__name__ + " for key " + k
 
 
+def FindBuildFiles():
+  extension = ".gyp"
+  files = os.listdir(os.getcwd())
+  build_files = []
+  for file in files:
+    if file[-len(extension):] == extension:
+      build_files.append(file)
+  return build_files
+
+
 def main(args):
   my_name = os.path.basename(sys.argv[0])
 
   parser = optparse.OptionParser()
-  usage = "usage: %s -f format build_file [...]"
+  usage = "usage: %s [-f format] [build_file ...]"
   parser.set_usage(usage.replace("%s", "%prog"))
   parser.add_option("-f", "--format", dest="format",
                     help="Output format to generate (required)")
   (options, build_files) = parser.parse_args(args)
   if not options.format:
-    print >>sys.stderr, (usage + "\n\n%s: error: format is required") % \
-                        (my_name, my_name)
-    sys.exit(1)
+    options.format = {'darwin': 'xcodeproj'}[sys.platform]
   if not build_files:
-    print >>sys.stderr, (usage + "\n\n%s: error: build_file is required") % \
+    build_files = FindBuildFiles()
+  if not build_files:
+    print >>sys.stderr, (usage + "\n\n%s: error: no build_file") % \
                         (my_name, my_name)
-    sys.exit(1)
+    return 1
 
   generator_name = "gyp.generator." + options.format
   generator = __import__(generator_name, fromlist=generator_name)
@@ -389,7 +395,8 @@ def main(args):
             target_dict["libraries"].append(library)
 
   generator.GenerateOutput(flat_list, data)
+  return 0
 
 
 if __name__ == "__main__":
-  main(sys.argv[1:])
+  sys.exit(main(sys.argv[1:]))
