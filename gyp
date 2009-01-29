@@ -11,4 +11,4 @@ except ImportError, e:
   import gyp
 
 if __name__ == '__main__':
-  gyp.main(sys.argv[1:])
+  sys.exit(gyp.main(sys.argv[1:]))
