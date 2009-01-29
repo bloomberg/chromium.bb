@@ -37,7 +37,7 @@ class XcodeProject(object):
     self.project_file.Print(output_file)
 
 
-def GenerateOutput(targets, data):
+def GenerateOutput(target_list, target_dicts, data):
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():
     if build_file[-4:] != '.gyp':
@@ -47,9 +47,9 @@ def GenerateOutput(targets, data):
     xcode_projects[build_file] = XcodeProject(build_file_stem + '.xcodeproj')
 
   xcode_targets = {}
-  for qualified_target in targets:
+  for qualified_target in target_list:
     [build_file, target] = gyp.BuildFileAndTarget('', qualified_target)[0:2]
-    spec = data[build_file]['targets'][target]
+    spec = target_dicts[qualified_target]
     xcode_targets[qualified_target] = \
         xcode_projects[build_file].AddTarget(target, spec['type'])
     # TODO(mark): This needs to go into a .build file.

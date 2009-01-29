@@ -104,7 +104,7 @@ def LoadTargetBuildFile(build_file_path, data={}):
   # conditional within a target.
 
   if 'targets' in build_file_data:
-    for target_name, target_dict in build_file_data['targets'].iteritems():
+    for target_dict in build_file_data['targets']:
       if 'dependencies' not in target_dict:
         continue
       for dependency in target_dict['dependencies']:
@@ -342,29 +342,32 @@ def main(args):
   for build_file in build_files:
     LoadTargetBuildFile(build_file, data)
 
-  # Figure out the entire dependency graph for all known targets.
+  # Build a dict to access each target's subdict by qualified name.
   targets = {}
-  for build_file_name, build_file_data in data.iteritems():
-    for target in build_file_data['targets']:
-      qualified_target = QualifiedTarget(build_file_name, target)
-      targets[qualified_target] = build_file_data['targets'][target]
+  for build_file in data:
+    if 'targets' in data[build_file]:
+      for target in data[build_file]['targets']:
+        target_name = QualifiedTarget(build_file, target['name'])
+        targets[target_name] = target
 
   [dependency_nodes, root_node, flat_list] = BuildDependencyList(targets)
 
   # TODO(mark): Make all of this stuff generic.  WORK IN PROGRESS.
 
   # Look at each project's settings dict, and merge settings into targets.
+  # TODO(mark): Figure out when we should do this step.  Seems like it should
+  # happen earlier.
   for build_file_name, build_file_data in data.iteritems():
     if 'settings' in build_file_data:
       file_settings = build_file_data['settings']
-      for target, target_dict in build_file_data['targets'].iteritems():
+      for target_dict in build_file_data['targets']:
         MergeDicts(target_dict, file_settings, build_file_name, build_file_name)
 
   # TODO(mark): This needs to be refactored real soon now.
   # Do conditions and source_patterns
   for target in flat_list:
     [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
-    target_dict = data[build_file]['targets'][target_unq]
+    target_dict = targets[target]
 
     if 'conditions' in target_dict:
       # TODO(mark): Do we want to sever the conditions dict from target_dict?
@@ -390,15 +393,14 @@ def main(args):
   # Now look for dependent_settings sections in dependencies, and merge
   # settings.
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
-    target_dict = data[build_file]['targets'][target_unq]
+    target_dict = targets[target]
     if not 'dependencies' in target_dict:
       continue
 
     for dependency in target_dict['dependencies']:
-      [dep_build_file, dep_target_unq] = \
-          BuildFileAndTarget(build_file, dependency)[0:2]
-      dependency_dict = data[dep_build_file]['targets'][dep_target_unq]
+      [dep_build_file, dep_target_unq, dep_target_q] = \
+          BuildFileAndTarget(build_file, dependency)
+      dependency_dict = targets[dep_target_q]
       if not 'dependent_settings' in dependency_dict:
         continue
 
@@ -410,13 +412,13 @@ def main(args):
   # at the entire dependency hierarchy and add any static libraries as computed
   # dependencies.  Static library targets have no computed dependencies.
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
-    target_dict = data[build_file]['targets'][target_unq]
+    target_dict = targets[target]
     if target_dict['type'] == 'static_library':
       dependents = dependency_nodes[target].FlattenToList([])[1:]
       for dependent in dependents:
-        [dependent_bf, dependent_unq] = BuildFileAndTarget('', dependent)[0:2]
-        dependent_dict = data[dependent_bf]['targets'][dependent_unq]
+        [dependent_bf, dependent_unq, dependent_q] = \
+            BuildFileAndTarget('', dependent)
+        dependent_dict = targets[dependent_q]
         if dependent_dict['type'] != 'static_library':
           if not 'computed_dependencies' in dependent_dict:
             dependent_dict['computed_dependencies'] = []
@@ -426,8 +428,7 @@ def main(args):
               dependent_dict['computed_libraries'] = []
             dependent_dict['computed_libraries'].extend(target_dict['libraries'])
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
-    target_dict = data[build_file]['targets'][target_unq]
+    target_dict = targets[target]
     if target_dict['type'] != 'static_library':
       if 'dependencies' in target_dict:
         if not 'computed_dependencies' in target_dict:
@@ -443,7 +444,14 @@ def main(args):
           if not library in target_dict['libraries']:
             target_dict['libraries'].append(library)
 
-  generator.GenerateOutput(flat_list, data)
+  # TODO(mark): Pass data for now because the generator needs a list of
+  # build files that came in.  In the future, maybe it should just accept
+  # a list, and not the whole data dict.
+  # NOTE: flat_list is the flattened dependency graph specifying the order
+  # that targets may be built.  Build systems that operate serially or that
+  # need to have dependencies defined before dependents reference them should
+  # generate targets in the order specified in flat_list.
+  generator.GenerateOutput(flat_list, targets, data)
   return 0
 
 
