@@ -264,9 +264,13 @@ def BuildDependencyList(targets):
       target_node.dependencies = [root_node]
       root_node.dependents.append(target_node)
     else:
-      for dependency in spec['dependencies']:
+      for index in range(0, len(spec['dependencies'])):
+        dependency = spec['dependencies'][index]
         target_build_file = BuildFileAndTarget('', target)[0]
         dependency = QualifiedTarget(target_build_file, dependency)
+        # Store the qualified name of the target even if it wasn't originally
+        # qualified in the dict.  Others will find this useful as well.
+        spec['dependencies'][index] = dependency
         dependency_node = dependency_nodes[dependency]
         target_node.dependencies.append(dependency_node)
         dependency_node.dependents.append(target_node)
@@ -411,6 +415,14 @@ def main(args):
         target_name = QualifiedTarget(build_file, target['name'])
         targets[target_name] = target
 
+  # BuildDependencyList will also fix up all dependency lists to contain only
+  # qualified names.  That makes it much easier to see if a target is already
+  # in a dependency list, because the name it will be listed by is known.
+  # This is used below when the dependency lists are adjusted for static
+  # libraries.  The only thing I don't like about this is that it seems like
+  # BuildDependencyList shouldn't modify "targets".  I thought we looped over
+  # "targets" too many times, though, and that seemed like a good place to do
+  # this fix-up.  We may want to revisit where this is done.
   [dependency_nodes, root_node, flat_list] = BuildDependencyList(targets)
 
   # TODO(mark): Make all of this stuff generic.  WORK IN PROGRESS.  It's a
@@ -454,37 +466,40 @@ def main(args):
   # dependencies.  Static library targets have no computed dependencies.
   for target in flat_list:
     target_dict = targets[target]
+
+    # If we've got a static library here...
     if target_dict['type'] == 'static_library':
       dependents = dependency_nodes[target].FlattenToList([])[1:]
+
+      # Look at every target that depends on it, even indirectly...
       for dependent in dependents:
         [dependent_bf, dependent_unq, dependent_q] = \
             BuildFileAndTarget('', dependent)
         dependent_dict = targets[dependent_q]
+
+        # If the dependent isn't a static library...
         if dependent_dict['type'] != 'static_library':
-          if not 'computed_dependencies' in dependent_dict:
-            dependent_dict['computed_dependencies'] = []
-          dependent_dict['computed_dependencies'].append(target)
+
+          # Make it depend on the static library if it doesn't already...
+          if not 'dependencies' in dependent_dict:
+            dependent_dict['dependencies'] = []
+          if not target in dependent_dict['dependencies']:
+            dependent_dict['dependencies'].append(target)
+
+          # ...and make it link against the libraries that the static library
+          # wants, if it doesn't already...
           if 'libraries' in target_dict:
-            if not 'computed_libraries' in dependent_dict:
-              dependent_dict['computed_libraries'] = []
-            dependent_dict['computed_libraries'].extend(
-                target_dict['libraries'])
-  for target in flat_list:
-    target_dict = targets[target]
-    if target_dict['type'] != 'static_library':
+            if not 'libraries' in dependent_dict:
+              dependent_dict['libraries'] = []
+            for library in target_dict['libraries']:
+              if not library in dependent_dict['libraries']:
+                dependent_dict['libraries'].append(library)
+
+      # The static library doesn't need its dependencies or libraries any more.
       if 'dependencies' in target_dict:
-        if not 'computed_dependencies' in target_dict:
-          target_dict['computed_dependencies'] = []
-        for dependency in target_dict['dependencies']:
-          dependency_qual = BuildFileAndTarget(build_file, dependency)[2]
-          if not dependency_qual in target_dict['computed_dependencies']:
-            target_dict['computed_dependencies'].append(dependency_qual)
+        del target_dict['dependencies']
       if 'libraries' in target_dict:
-        if not 'libraries' in target_dict:
-          target_dict['libraries'] = []
-        for library in target_dict['libraries']:
-          if not library in target_dict['libraries']:
-            target_dict['libraries'].append(library)
+        del target_dict['libraries']
 
   # Do source_patterns.
   # TODO(mark): This needs to be refactored real soon now.
