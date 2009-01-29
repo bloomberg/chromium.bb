@@ -396,8 +396,8 @@ def main(args):
   (options, build_files) = parser.parse_args(args)
   if not options.format:
     options.format = {'darwin': 'xcodeproj',
-                      'win32':  'msvc',
-                      'cygwin': 'msvc'}[sys.platform]
+                      'win32':  'msvs',
+                      'cygwin': 'msvs'}[sys.platform]
   if not build_files:
     build_files = FindBuildFiles()
   if not build_files:
