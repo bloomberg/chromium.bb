@@ -6,6 +6,13 @@ import re
 import sys
 
 
+# TODO(mark): variables_hack is a temporary hack to work with conditional
+# sections since real expression parsing is not currently available.
+# Additional variables are added to this list when a generator is imported
+# in main.
+variables_hack = []
+
+
 def BuildFileAndTarget(build_file, target):
   # NOTE: If you just want to split up target into a build_file and target,
   # and you know that target already has a build_file that's been produced by
@@ -149,9 +156,9 @@ def ProcessConditionalsInDict(subdict):
     # Evaluate conditions and merge in the dictionaries for the ones that pass.
     for condition in conditions_dict:
       [expression, settings_dict] = condition
-      # TODO(mark): The expression is hard-coded.  That obviously has to
-      # change.
-      if expression == 'OS==mac':
+      # TODO(mark): This is ever-so-slightly better than it was initially when
+      # 'OS==mac' was hard-coded, but expression evaluation is needed.
+      if expression in variables_hack:
         # OK to pass '', '' for the build files because everything comes from
         # the same build file and everything is already relative to the same
         # place.
@@ -388,7 +395,9 @@ def main(args):
                     help='Output format to generate')
   (options, build_files) = parser.parse_args(args)
   if not options.format:
-    options.format = {'darwin': 'xcodeproj'}[sys.platform]
+    options.format = {'darwin': 'xcodeproj',
+                      'win32':  'msvc',
+                      'cygwin': 'msvc'}[sys.platform]
   if not build_files:
     build_files = FindBuildFiles()
   if not build_files:
@@ -398,6 +407,7 @@ def main(args):
 
   generator_name = 'gyp.generator.' + options.format
   generator = __import__(generator_name, fromlist=generator_name)
+  variables_hack.extend(generator.variables_hack)
 
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,

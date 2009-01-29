@@ -6,6 +6,14 @@ import errno
 import os
 
 
+# TODO(mark): Obvious hack, see __init__.py.
+variables_hack = [
+  'OS==mac',
+  'OS!=win',
+  'OS!=linux',
+]
+
+
 class XcodeProject(object):
   def __init__(self, path):
     self.path = path
