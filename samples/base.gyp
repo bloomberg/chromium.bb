@@ -29,10 +29,13 @@
         'clipboard.cc',
         'clipboard_linux.cc',
         'clipboard_mac.mm',
+        'clipboard_util.cc',
         'clipboard_win.cc',
         'command_line.cc',
         'condition_variable_posix.cc',
         'condition_variable_win.cc',
+        'cpu.cc',
+        'debug_on_start.cc',
         'debug_util.cc',
         'debug_util_posix.cc',
         'debug_util_win.cc',
@@ -45,6 +48,7 @@
         'file_util_mac.mm',
         'file_util_posix.cc',
         'file_util_win.cc',
+        'file_version_info.cc',
         'file_version_info_linux.cc',
         'file_version_info_mac.mm',
         'histogram.cc',
@@ -83,6 +87,7 @@
         'rand_util_posix.cc',
         'rand_util_win.cc',
         'ref_counted.cc',
+        'registry.cc',
         'revocable_store.cc',
         'scoped_bstr_win.cc',
         'scoped_clipboard_writer.cc',
@@ -128,37 +133,28 @@
         'waitable_event_watcher_win.cc',
         'waitable_event_win.cc',
         'watchdog.cc',
+        'win_util.cc',
         'word_iterator.cc',
+        'worker_pool.cc',
         'worker_pool_mac.mm',
       ],
       'conditions': [
         [ 'OS==win', {
-            'source_patterns': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
-                                 ['exclude', '\\.mm?$' ],
-                               ],
-            'source_excludes': [
+            'sources/': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
+                          ['exclude', '\\.mm?$' ] ],
+            'sources!': [
               'string16.cc',
-            ],
-            'sources': [
-              'cpu.cc',
-              'clipboard_util.cc',
-              'debug_on_start.cc',
-              'file_version_info.cc',
-              'registry.cc',
-              'win_util.cc',
-              'worker_pool.cc',
             ],
           },
         ],
         [ 'OS==linux', {
-            'source_patterns': [ ['exclude', '_(mac|win)\\.cc$'],
-                                 ['exclude', '\\.mm?$' ],
-                               ],
+            'sources/': [ ['exclude', '_(mac|win)\\.cc$'],
+                          ['exclude', '\\.mm?$' ] ],
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
           },
         ],
         [ 'OS==mac', {
-            'source_patterns': [ ['exclude', '_(linux|win)\\.cc$'] ],
+            'sources/': [ ['exclude', '_(linux|win)\\.cc$'] ],
             'libraries': [
               '/System/Library/Frameworks/AppKit.framework',
               '/System/Library/Frameworks/Carbon.framework',
@@ -169,8 +165,20 @@
           },
         ],
         [ 'OS!=mac', {
-            'source_excludes': [
+            'sources!': [
               'message_pump_libevent.cc',
+            ],
+          },
+        ],
+        [ 'OS!=win', {
+            'sources!': [
+              'cpu.cc',
+              'clipboard_util.cc',
+              'debug_on_start.cc',
+              'file_version_info.cc',
+              'registry.cc',
+              'win_util.cc',
+              'worker_pool.cc',
             ],
           },
         ],
@@ -269,7 +277,7 @@
       ],
       'conditions': [
         [ 'OS!=mac', {
-            'source_excludes': [
+            'sources!': [
               'mac_util_unittest.cc',
             ],
           },

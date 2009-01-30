@@ -217,9 +217,8 @@ class DependencyTreeNode(object):
       # can be appended to flat_list.  Take these nodes out of in_degree_zeros
       # as work progresses, so that the next node to process from the list can
       # always be accessed at a consistent position.
-      node = in_degree_zeros[0]
+      node = in_degree_zeros.pop(0)
       flat_list.append(node.ref)
-      del in_degree_zeros[0]
 
       # Look at dependents of the node just added to flat_list.  Some of them
       # may now belong in in_degree_zeros.
@@ -417,6 +416,196 @@ def MergeDicts(to, fro, to_file, fro_file):
           v.__class__.__name__ + ' for key ' + k
 
 
+def ProcessRules(name, the_dict):
+  """Process regular expression and exclusion-based rules on lists.
+
+  An exclusion list is in a dict key named with a trailing "!", like
+  "sources!".  Every item in such a list is removed from the associated
+  main list, which in this example, would be "sources".  Removed items are
+  placed into a "sources_excluded" list in the dict.
+
+  Regular expression (regex) rules are contained in dict keys named with a
+  trailing "/", such as "sources/" to operate on the "sources" list.  Regex
+  rules in a dict take the form:
+    'sources/': [ ['exclude', '_(linux|mac|win)\\.cc$'] ],
+                  ['include', '_mac\\.cc$'] ],
+  The first rule says to exclude all files ending in _linux.cc, _mac.cc, and
+  _win.cc.  The second rule then includes all files ending in _mac.cc that
+  are now or were once in the "sources" list.  Items matching an "exclude"
+  rule are subject to the same processing as would occur if they were listed
+  by name in an exclusion list (ending in "!").  Items matching an "include"
+  rule are brought back into the main list if previously excluded by an
+  exclusion list or exclusion regex rule, and are protected from future removal
+  by such exclusion lists and rules.
+  """
+
+  # Look through the dictionary for any lists whose keys end in '!' or '/'.
+  # These are lists that will be treated as exclude lists and regular
+  # expression-based exclude/include lists.  Collect the lists that are
+  # needed first, looking for the lists that they operate on, and assemble
+  # then into |lists|.  This is done in a separate loop up front, because
+  # the _included and _excluded keys need to be added to the_dict, and that
+  # can't be done while iterating through it.
+
+  lists = []
+  del_lists = []
+  for key, value in the_dict.iteritems():
+    operation = key[-1]
+    if operation != '!' and operation != '/':
+      continue
+
+    if not isinstance(value, list):
+      raise ValueError, name + ' key ' + key + ' must be list, not ' + \
+                        value.__class__.__name__
+
+    list_key = key[:-1]
+    if list_key not in the_dict:
+      # This happens when there's a list like "sources!" but no corresponding
+      # "sources" list.  Since there's nothing for it to operate on, queue up
+      # the "sources!" list for deletion now.
+      del_lists.append(key)
+      continue
+
+    if not isinstance(the_dict[list_key], list):
+      raise ValueError, name + ' key ' + list_key + \
+                        ' must be list, not ' + \
+                        value.__class__.__name__ + ' when applying ' + \
+                        {'!': 'exclusion', '/': 'regex'}[operation]
+
+    if not list_key in lists:
+      lists.append(list_key)
+
+  # Delete the lists that are known to be unneeded at this point.
+  for del_list in del_lists:
+    del the_dict[del_list]
+
+  for list_key in lists:
+    # Initialize the _excluded and _included lists now, so that the code that
+    # needs to use them can perform list operations without needing to do its
+    # own lazy initialization.  Lists that are unneeded will be deleted at
+    # the end.
+    excluded_key = list_key + '_excluded'
+    included_key = list_key + '_included'
+    for k in [excluded_key, included_key]:
+      if k in the_dict:
+        raise KeyError, name + ' key ' + k + ' must not be present prior ' + \
+                        ' to applying exclusion/regex rules for ' + list_key
+      the_dict[k] = []
+
+    # Note that exclude_key ("sources!") is different from excluded_key
+    # ("sources_excluded").  Since exclude_key is just a very temporary
+    # variable used on the next few lines, this isn't a huge problem, but
+    # be careful!
+    exclude_key = list_key + '!'
+    if exclude_key in the_dict:
+      for exclude_item in the_dict[exclude_key]:
+        if exclude_item in the_dict[included_key]:
+          # The exclude_item was already preserved and is "golden", don't touch
+          # it.
+          continue
+
+        # The exclude_item may appear in the list more than once, so loop to
+        # remove it.  That's "while exclude_item in", not "for exclude_item
+        # in."  Crucial difference.
+        removed = False
+        while exclude_item in the_dict[list_key]:
+          removed = True
+          the_dict[list_key].remove(exclude_item)
+
+        # If anything was removed, add it to the _excluded list.
+        if removed:
+          if not exclude_item in the_dict[excluded_key]:
+            the_dict[excluded_key].append(exclude_item)
+
+      # The "whatever!" list is no longer needed, dump it.
+      del the_dict[exclude_key]
+
+    regex_key = list_key + '/'
+    if regex_key in the_dict:
+      for regex_item in the_dict[regex_key]:
+        [action, pattern] = regex_item
+        pattern_re = re.compile(pattern)
+
+        # Instead of writing "for list_item in the_dict[list_key]", write a
+        # while loop.  Iteration with a for loop won't work, because code that
+        # follows manipulates the_dict[list_key].  Be careful with that "index"
+        # variable.
+        index = 0
+        while index < len(the_dict[list_key]):
+          list_item = the_dict[list_key][index]
+          if pattern_re.search(list_item):
+            # Regular expression match.
+
+            if action == 'exclude':
+              if list_item in the_dict[included_key]:
+                # regex_item says to remove list_item from the list, but
+                # something else already said to include it, so leave it
+                # alone and proceed to the next item in the list.
+                index = index + 1
+                continue
+
+              del the_dict[list_key][index]
+
+              # Add it to the excluded list if it's not already there.
+              if not list_item in the_dict[excluded_key]:
+                the_dict[excluded_key].append(list_item)
+
+              # continue without incrementing |index|.  The next object to
+              # look at, if any, moved into the index of the object that was
+              # just removed.
+              continue
+
+            elif action == 'include':
+              # Here's a list_item that's in list and needs to stay there.
+              # Add it to the golden list of happy items to keep, and nothing
+              # will be able to exclude it in the future.
+              if not list_item in the_dict[included_key]:
+                the_dict[included_key].append(list_item)
+
+            else:
+              # This is an action that doesn't make any sense.
+              raise ValueError, 'Unrecognized action ' + action + ' in ' + \
+                                name + ' key ' + key
+
+          # Advance to the next list item.
+          index = index + 1
+
+        if action == 'include':
+          # Items matching an include pattern may have already been excluded.
+          # Resurrect any that are found.  The while loop is needed again
+          # because the excluded list will be manipulated.
+          index = 0
+          while index < len(the_dict[excluded_key]):
+            excluded_item = the_dict[excluded_key][index]
+            if pattern_re.search(excluded_item):
+              # Yup, this is one.  Take it out of the excluded list and put
+              # it back into the main list AND the golden included list, so
+              # that nothing else can touch it.  Unfortunately, the best that
+              # can be done at this point is an append, since there's no way
+              # to know where in the list it came from.  TODO(mark): There
+              # are possible solutions to this problem, like tracking
+              # include/exclude status in a parallel list and only doing the
+              # deletions after processing all of the rules.
+              del the_dict[excluded_key][index]
+              the_dict[list_key].append(excluded_item)
+              if not excluded_item in the_dict[included_key]:
+                the_dict[included_key].append(excluded_item)
+            else:
+              # Only move to the next index if there was no match.  If there
+              # was a match, the item was deleted, and the next item to look
+              # at is at the same index as the item just examined.
+              index = index + 1
+
+      # The "whatever/" list is no longer needed, dump it.
+      del the_dict[regex_key]
+
+    # Dump the "included" list, which is never needed since evertyhing in it
+    # is already in the main list.  Dump the "excluded" list if it's empty.
+    del the_dict[included_key]
+    if len(the_dict[excluded_key]) == 0:
+      del the_dict[excluded_key]
+
+
 def FindBuildFiles():
   extension = '.gyp'
   files = os.listdir(os.getcwd())
@@ -558,42 +747,10 @@ def main(args):
       if 'libraries' in target_dict:
         del target_dict['libraries']
 
-  # Do source_patterns.
-  # TODO(mark): This needs to be refactored real soon now.
-  # I'm positive I wrote this comment before, but now it's gone.  Here's the
-  # deal: this should be made more general, so that we can have arbitrary
-  # *_patterns sections.  That probably means that it should be called
-  # sources_patterns instead of source_patterns.  While we're thinking about
-  # renaming it, maybe _patterns isn't the best name anyway.  Apparently I
-  # called it source_rules in a meeting yesterday.  Also, the only action
-  # supported here is "exclude" which seems to imply that there should be an
-  # "include" but I'm having a hard time coming up with a good case for
-  # that.  Someone suggested looking at the filesystem (which implies a glob
-  # for include patterns rather than a RE).  I suppose we could do that, but
-  # I don't really love it.
   for target in flat_list:
     [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
     target_dict = targets[target]
-
-    # Key names are subject to change!
-    if 'source_excludes' in target_dict:
-      for source_exclude in target_dict['source_excludes']:
-        if source_exclude in target_dict['sources']:
-          target_dict['sources'].remove(source_exclude)
-
-    if 'source_patterns' in target_dict:
-      for source_pattern in target_dict['source_patterns']:
-        [action, pattern] = source_pattern
-        pattern_re = re.compile(pattern)
-        # Ugh, need to make a copy up front because we can't modify the list
-        # while iterating through it.  This may need some rethinking.  That
-        # makes it TODO(mark).
-        new_sources = target_dict['sources'][:]
-        for source in target_dict['sources']:
-          if pattern_re.search(source):
-            if action == 'exclude':
-              new_sources.remove(source)
-        target_dict['sources'] = new_sources
+    ProcessRules(target, target_dict)
 
   # TODO(mark): Pass |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept

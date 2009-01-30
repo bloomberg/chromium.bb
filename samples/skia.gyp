@@ -656,15 +656,11 @@
       ],
       'conditions': [
         [ 'OS!=mac', {
-          'source_patterns': [
-            ['exclude', '_mac\\.(cc|cpp)$'],
-          ],
+          'sources/': [ ['exclude', '_mac\\.(cc|cpp)$'] ],
         }],
         [ 'OS!=linux', {
-          'source_patterns': [
-            ['exclude', '_linux\\.(cc|cpp)$'],
-          ],
-          'source_excludes': [
+          'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
+          'sources!': [
             'ext/GdkSkia.cc',
             'ports/SkFontHost_FreeType.cpp',
             'ports/SkFontHost_TryeType_Tables.cpp',
@@ -674,10 +670,8 @@
           ],
         }],
         [ 'OS!=win', {
-          'source_patterns': [
-            ['exclude', '_win\\.(cc|cpp)$'],
-          ],
-          'source_excludes': [
+          'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
+          'sources!': [
             'ext/vector_canvas.cc',
             'ext/vector_device.cc',
           ],
@@ -688,7 +682,7 @@
           ],
         }],
         [ 'OS==win', {
-          'source_excludes': [
+          'sources!': [
             'images/SkMMapStream.cpp',
             'ports/SkFontHost_TrueType_Tables.cpp',
             'ports/SkThread_pthread.cpp',

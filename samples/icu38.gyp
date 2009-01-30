@@ -16,14 +16,19 @@
       'name': 'icudata',
       'type': 'static_library',
       'sources': [
+        'icudt38.dll',
         'icudt38l_dat.s',  # Hand-generated, but it'll do for now.
       ],
       'conditions': [
         [ 'OS==win', {
             'type': 'none',
-            'source_excludes': ['icudt38l_dat.s'],
+            'sources!': ['icudt38l_dat.s'],
             'sources': [ 'icudt38.dll' ],
             'vs_postbuild': 'echo hello',
+          },
+        ],
+        [ 'OS!=win', {
+            'sources!': [ 'icudt38.dll' ],
           },
         ],
       ],
