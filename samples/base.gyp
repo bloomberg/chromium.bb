@@ -178,6 +178,7 @@
         'gfx/rect.cc',
         'gfx/size.cc',
       ],
+      'vs_props': ['build/base_gfx.vsprops'],
       'xcode_framework_dirs': [
         '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],

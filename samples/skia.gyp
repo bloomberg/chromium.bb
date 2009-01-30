@@ -647,6 +647,7 @@
         'picture',
         'sgl',
       ],
+      'vs_props': ['skia.vsprops'],
       'xcode_framework_dirs': [
         '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
@@ -689,7 +690,8 @@
         [ 'OS==win', {
           'source_excludes': [
             'images/SkMMapStream.cpp',
-            'ports/SkThread_pthread.cc',
+            'ports/SkFontHost_TrueType_Tables.cpp',
+            'ports/SkThread_pthread.cpp',
             'ports/SkTime_Unix.cc',
           ],
         }],
