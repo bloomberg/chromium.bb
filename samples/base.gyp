@@ -62,6 +62,7 @@
         'mac_util.mm',
         'md5.cc',
         'memory_debug.cc',
+        'message_pump_libevent.cc',
         'message_loop.cc',
         'message_pump_default.cc',
         'message_pump_mac.mm',
@@ -91,6 +92,7 @@
         'shared_memory_win.cc',
         'simple_thread.cc',
         'stats_table.cc',
+        'string16.cc',
         'string_escape.cc',
         'string_piece.cc',
         'string_util.cc',
@@ -134,6 +136,9 @@
             'source_patterns': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
                                  ['exclude', '\\.mm?$' ],
                                ],
+            'source_excludes': [
+              'string16.cc',
+            ],
           },
         ],
         [ 'OS==linux', {
@@ -152,8 +157,10 @@
               '/System/Library/Frameworks/Foundation.framework',
             ],
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
-            'sources': [
-              'string16.cc',
+          },
+        ],
+        [ 'OS!=mac', {
+            'source_excludes': [
               'message_pump_libevent.cc',
             ],
           },
@@ -204,6 +211,7 @@
         'json_writer_unittest.cc',
         'lazy_instance_unittest.cc',
         'linked_ptr_unittest.cc',
+        'mac_util_unittest.cc',
         'message_loop_unittest.cc',
         'observer_list_unittest.cc',
         'path_service_unittest.cc',
@@ -250,8 +258,8 @@
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
-        [ 'OS==mac', {
-            'sources': [
+        [ 'OS!=mac', {
+            'source_excludes': [
               'mac_util_unittest.cc',
             ],
           },
