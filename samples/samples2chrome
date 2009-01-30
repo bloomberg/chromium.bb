@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Quicky script to copy from a chrome tree to here.
 
@@ -9,4 +9,3 @@ cp libevent.gyp $1/third_party/libevent
 cp libjpeg.gyp $1/third_party/libjpeg
 cp libpng.gyp $1/third_party/libpng
 cp zlib.gyp $1/third_party/zlib
-
