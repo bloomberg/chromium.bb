@@ -3,6 +3,7 @@
     'include_dirs': [
       '..',
     ],
+    'vs_props': ['build/base.vsprops'],
   },
   'targets': [
     {
@@ -12,7 +13,6 @@
         '../third_party/icu38/icu38.gyp:icudata',
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
-        '../third_party/libevent/libevent.gyp:libevent',
       ],
       'sources': [
         'third_party/dmg_fp/dtoa.cc',
@@ -64,7 +64,6 @@
         'memory_debug.cc',
         'message_loop.cc',
         'message_pump_default.cc',
-        'message_pump_libevent.cc',
         'message_pump_mac.mm',
         'message_pump_win.cc',
         'non_thread_safe.cc',
@@ -92,7 +91,6 @@
         'shared_memory_win.cc',
         'simple_thread.cc',
         'stats_table.cc',
-        'string16.cc',
         'string_escape.cc',
         'string_piece.cc',
         'string_util.cc',
@@ -136,12 +134,17 @@
             'source_patterns': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
                                  ['exclude', '\\.mm?$' ],
                                ],
+            'dependencies': [
+              '../third_party/libjpeg/libjpeg.gyp:libjpeg',
+              '../third_party/libpng/libpng.gyp:libpng',
+            ],
           },
         ],
         [ 'OS==linux', {
             'source_patterns': [ ['exclude', '_(mac|win)\\.cc$'],
                                  ['exclude', '\\.mm?$' ],
                                ],
+            'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
           },
         ],
         [ 'OS==mac', {
@@ -151,6 +154,11 @@
               '/System/Library/Frameworks/Carbon.framework',
               '/System/Library/Frameworks/CoreFoundation.framework',
               '/System/Library/Frameworks/Foundation.framework',
+            ],
+            'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
+            'sources': [
+              'string16.cc',
+              'message_pump_libevent.cc',
             ],
           },
         ],
@@ -175,6 +183,8 @@
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
+        # This is really from libpng, but transitive stuff seems broken.
+        '../third_party/zlib/zlib.gyp:zlib',
       ],
     },
     {
@@ -200,7 +210,6 @@
         'json_writer_unittest.cc',
         'lazy_instance_unittest.cc',
         'linked_ptr_unittest.cc',
-        'mac_util_unittest.cc',
         'message_loop_unittest.cc',
         'observer_list_unittest.cc',
         'path_service_unittest.cc',
@@ -245,6 +254,14 @@
         'base',
         'base_gfx',
         '../testing/gtest.gyp:gtest',
+      ],
+      'conditions': [
+        [ 'OS==mac', {
+            'sources': [
+              'mac_util_unittest.cc',
+            ],
+          },
+        ],
       ],
     },
   ],

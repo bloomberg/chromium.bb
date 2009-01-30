@@ -33,9 +33,6 @@
         'CHROME_PNG_WRITE_SUPPORT',
         'PNG_USER_CONFIG',
       ],
-      'depends': [
-        '../zlib/zlib.gyp:zlib',
-      ],
       'dependent_settings': {
         'include_dirs': [
           '.',
