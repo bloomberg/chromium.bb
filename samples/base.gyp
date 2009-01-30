@@ -157,9 +157,33 @@
       ],
     },
     {
+      'name': 'base_gfx',
+      'type': 'static_library',
+      'sources': [
+        'gfx/jpeg_codec.cc',
+        'gfx/png_decoder.cc',
+        'gfx/png_encoder.cc',
+        'gfx/point.cc',
+        'gfx/rect.cc',
+        'gfx/size.cc',
+      ],
+      'xcode_framework_dirs': [
+        '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
+      ],
+      'dependencies': [
+        'base',
+        '../skia/skia.gyp:skia',
+        '../third_party/libjpeg/libjpeg.gyp:libjpeg',
+        '../third_party/libpng/libpng.gyp:libpng',
+      ],
+    },
+    {
       'name': 'base_unittests',
       'type': 'executable',
       'sources': [
+        'gfx/jpeg_codec_unittest.cc',
+        'gfx/png_codec_unittest.cc',
+        'gfx/rect_unittest.cc',
         'at_exit_unittest.cc',
         'atomicops_unittest.cc',
         'clipboard_unittest.cc',
@@ -219,6 +243,7 @@
       ],
       'dependencies': [
         'base',
+        'base_gfx',
         '../testing/gtest.gyp:gtest',
       ],
     },

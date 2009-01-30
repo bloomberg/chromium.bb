@@ -29,20 +29,22 @@
         'pngwutil.c',
       ],
       'vs_props': [ '../../build/external_code.vsprops' ],
-      'include_dirs': [
-        '..',
-      ],
       'defines': [
-        'PNG_USER_CONFIG',
         'CHROME_PNG_WRITE_SUPPORT',
+        'PNG_USER_CONFIG',
+      ],
+      'depends': [
+        '../zlib/zlib.gyp:zlib',
       ],
       'dependent_settings': {
-        'include_dirs': ['..'],
+        'include_dirs': [
+          '.',
+        ],
         'defines': [
-          'PNG_USER_CONFIG',
           'CHROME_PNG_WRITE_SUPPORT',
+          'PNG_USER_CONFIG',
         ],
       },
-    }
-  ]
+    },
+  ],
 }

@@ -296,6 +296,49 @@ def BuildDependencyList(targets):
   return [dependency_nodes, root_node, flat_list]
 
 
+def RelativePath(path, relative_to):
+  # Assuming both |path| and |relative_to| are relative to the current
+  # directory, returns a relative path that identifies path relative to
+  # relative_to.
+
+  if os.path.isabs(path) != os.path.isabs(relative_to):
+    # If one of the paths is absolute, both need to be absolute.
+    path = os.path.abspath(path)
+    relative_to = os.path.abspath(relative_to)
+  else:
+    # If both paths are relative, make sure they're normalized.
+    path = os.path.normpath(path)
+    relative_to = os.path.normpath(relative_to)
+
+  # Split the paths into components.  As a special case, if either path is
+  # the current directory, use an empty list as a split-up path.  This must be
+  # done because the code that follows is unprepared to deal with "." meaning
+  # "current directory" and it will instead assume that it's a subdirectory,
+  # which is wrong.  It's possible to wind up with "." when it's passed to this
+  # function, for example, by taking the dirname of a relative path in the
+  # current directory.
+  if path == os.path.curdir:
+    path_split = []
+  else:
+    path_split = path.split(os.path.sep)
+
+  if relative_to == os.path.curdir:
+    relative_to_split = []
+  else:
+    relative_to_split = relative_to.split(os.path.sep)
+
+  # Determine how much of the prefix the two paths share.
+  prefix_len = len(os.path.commonprefix([path_split, relative_to_split]))
+
+  # Put enough ".." components to back up out of relative_to to the common
+  # prefix, and then append the part of path_split after the common prefix.
+  relative_split = [os.path.pardir] * (len(relative_to_split) - prefix_len) + \
+                   path_split[prefix_len:]
+
+  # Turn it back into a string and we're done.
+  return os.path.join(*relative_split)
+
+
 def MergeLists(to, fro, to_file, fro_file, is_paths=False):
   # TODO(mark): Support a way for the "fro" list to declare how it wants to
   # be merged into the "to" list.  Right now, "append" is always used, but
@@ -317,12 +360,10 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False):
         # dict that it's going into.
         # TODO(mark): We might want to exclude some things here even if
         # is_paths is true.
-        # TODO(mark): The next line may be wrong for more complex cases, we
-        # may need to do a better job of finding one build file's path relative
-        # to another.  Good candidate for abstraction!
-        to.append(os.path.normpath(os.path.join(os.path.dirname(to_file),
-                                                os.path.dirname(fro_file),
-                                                item)))
+        path = os.path.normpath(os.path.join(
+            RelativePath(os.path.dirname(fro_file), os.path.dirname(to_file)),
+            item))
+        to.append(path)
       else:
         to.append(item)
     elif isinstance(item, dict):
@@ -527,11 +568,15 @@ def main(args):
   # that.  Someone suggested looking at the filesystem (which implies a glob
   # for include patterns rather than a RE).  I suppose we could do that, but
   # I don't really love it.
-  # Also, I think we want to allow for a simpler _exclude list that does strict
-  # string matching without the RE business.
   for target in flat_list:
     [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
     target_dict = targets[target]
+
+    # Key names are subject to change!
+    if 'source_excludes' in target_dict:
+      for source_exclude in target_dict['source_excludes']:
+        if source_exclude in target_dict['sources']:
+          target_dict['sources'].remove(source_exclude)
 
     if 'source_patterns' in target_dict:
       for source_pattern in target_dict['source_patterns']:

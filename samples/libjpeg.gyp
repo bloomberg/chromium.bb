@@ -59,13 +59,12 @@
         'jutils.c',
         'jversion.h',
       ],
-      'include_dirs': [
-        '..',
-      ],
       'vs_props': [ '../../build/external_code.vsprops' ],
       'dependent_settings': {
-        'include_dirs': ['..'],
+        'include_dirs': [
+          '.',
+        ],
       },
-    }
-  ]
+    },
+  ],
 }

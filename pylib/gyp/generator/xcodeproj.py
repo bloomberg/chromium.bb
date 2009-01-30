@@ -65,7 +65,15 @@ def GenerateOutput(target_list, target_dicts, data):
     # somewhere, or it should be a part of an xcconfig.
     xcode_targets[qualified_target].SetBuildSetting('USE_HEADERMAP', 'NO')
     for source in spec['sources']:
-      xcode_targets[qualified_target].SourcesPhase().AddFile(source)
+      # TODO(mark): Only add files with known extensions to the sources phase.
+      # This will be made fancier.
+      source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's']
+      basename = os.path.basename(source)
+      dot = basename.rfind('.')
+      if dot != -1:
+        extension = basename[dot + 1:]
+        if extension in source_extensions:
+          xcode_targets[qualified_target].SourcesPhase().AddFile(source)
     if 'libraries' in spec:
       for library in spec['libraries']:
         xcode_targets[qualified_target].FrameworksPhase().AddFile(library)

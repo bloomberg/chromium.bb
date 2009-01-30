@@ -2,10 +2,14 @@
 
 # Quicky script to copy from a chrome tree to here.
 
-cp $1/base/base.gyp .
-cp $1/testing/gtest.gyp .
-cp $1/third_party/icu38/icu38.gyp .
-cp $1/third_party/libevent/libevent.gyp .
-cp $1/third_party/libjpeg/libjpeg.gyp .
-cp $1/third_party/libpng/libpng.gyp .
-cp $1/third_party/zlib/zlib.gyp .
+if [ $# -ne 1 ] ; then
+  echo usage: ${0} /path/to/chrome/src >& 2
+  exit 1
+fi
+
+HERE="$(dirname ${0})"
+. "${HERE}/samples.sh"
+
+for GYP in ${GYPS} ; do
+  cp "${1}/${GYP}" "${HERE}"
+done
