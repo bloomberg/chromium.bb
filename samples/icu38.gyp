@@ -18,6 +18,15 @@
       'sources': [
         'icudt38l_dat.s',  # Hand-generated, but it'll do for now.
       ],
+      'conditions': [
+        [ 'OS==win', {
+            'type': 'none',
+            'source_excludes': ['icudt38l_dat.s'],
+            'sources': [ 'icudt38.dll' ],
+            'vs_postbuild': 'echo hello',
+          },
+        ],
+      ],
     },
     {
       'name': 'icui18n',
@@ -292,6 +301,14 @@
           'public/common',
         ],
       },
+      'conditions': [
+        [ 'OS==win', {
+            'sources': [
+              'source/stubdata/stubdata.c',
+            ],
+          },
+        ],
+      ],
     },
   ],
 }

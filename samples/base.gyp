@@ -139,6 +139,15 @@
             'source_excludes': [
               'string16.cc',
             ],
+            'sources': [
+              'cpu.cc',
+              'clipboard_util.cc',
+              'debug_on_start.cc',
+              'file_version_info.cc',
+              'registry.cc',
+              'win_util.cc',
+              'worker_pool.cc',
+            ],
           },
         ],
         [ 'OS==linux', {

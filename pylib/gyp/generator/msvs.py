@@ -84,6 +84,7 @@ def GenerateProject(filename, spec):
 
   # Pick configuration type.
   config_type = {
+      'none': '10',
       'executable': '1',
       'static_library': '4',
   }[spec['type']]
