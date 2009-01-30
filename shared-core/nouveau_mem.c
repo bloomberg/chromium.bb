@@ -587,17 +587,20 @@ nouveau_mem_alloc(struct drm_device *dev, int alignment, uint64_t size,
 	 * Make things easier on ourselves: all allocations are page-aligned.
 	 * We need that to map allocated regions into the user space
 	 */
-	if (alignment < PAGE_SHIFT)
-		alignment = PAGE_SHIFT;
+	if (alignment < PAGE_SIZE)
+		alignment = PAGE_SIZE;
 
 	/* Align allocation sizes to 64KiB blocks on G8x.  We use a 64KiB
 	 * page size in the GPU VM.
 	 */
 	if (flags & NOUVEAU_MEM_FB && dev_priv->card_type >= NV_50) {
 		size = (size + 65535) & ~65535;
-		if (alignment < 16)
-			alignment = 16;
+		if (alignment < 65536)
+			alignment = 65536;
 	}
+
+	/* Further down wants alignment in pages, not bytes */
+	alignment >>= PAGE_SHIFT;
 
 	/*
 	 * Warn about 0 sized allocations, but let it go through. It'll return 1 page

@@ -630,6 +630,15 @@ int nouveau_ioctl_getparam(struct drm_device *dev, void *data, struct drm_file *
 	case NOUVEAU_GETPARAM_AGP_SIZE:
 		getparam->value=dev_priv->gart_info.aper_size;
 		break;
+	case NOUVEAU_GETPARAM_MM_ENABLED:
+		getparam->value = 0;
+		break;
+	case NOUVEAU_GETPARAM_VM_VRAM_BASE:
+		if (dev_priv->card_type >= NV_50)
+			getparam->value = 0x20000000;
+		else
+			getparam->value = 0;
+		break;
 	default:
 		DRM_ERROR("unknown parameter %lld\n", getparam->param);
 		return -EINVAL;
