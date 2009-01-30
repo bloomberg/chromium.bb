@@ -39,12 +39,12 @@ def GenerateProject(filename, spec):
   # Figure out which vsprops to use.
   vsprops_dirs = spec.get('vs_props', [])
   # Make them relative to the gyp file.
-  vsprops_dirs = [os.path.abspath(os.path.join(gyp_dir, i))
-                  for i in vsprops_dirs]
+  vsprops_dirs = [os.path.join(gyp_dir, i) for i in vsprops_dirs]
   vsprops_dirs = [FixPath(i) for i in vsprops_dirs]
 
   # Prepare compiler tool.
   include_dirs = spec.get('include_dirs',[])
+  include_dirs = [os.path.join(gyp_dir, i) for i in include_dirs]
   include_dirs = [FixPath(i) for i in include_dirs]
   defines = ['OS_WIN'] + spec.get('defines',[])
   compiler_tool = MSVSProject.Tool(
