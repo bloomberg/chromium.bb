@@ -43,6 +43,7 @@ class XcodeProject(object):
 
     output_file = open(pbxproj_path, 'w')
     self.project_file.Print(output_file)
+    output_file.close()
 
 
 def GenerateOutput(target_list, target_dicts, data):

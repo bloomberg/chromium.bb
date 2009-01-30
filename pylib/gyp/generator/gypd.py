@@ -58,3 +58,4 @@ def GenerateOutput(target_list, target_dicts, data):
   for output_file, output_dict in output_files.iteritems():
     output = open(output_file, 'w')
     pprint.pprint(output_dict, output)
+    output.close()
