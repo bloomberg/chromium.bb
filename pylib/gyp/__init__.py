@@ -406,7 +406,9 @@ def main(args):
     return 1
 
   generator_name = 'gyp.generator.' + options.format
-  generator = __import__(generator_name, fromlist=generator_name)
+  # These parameters are passed in order (as opposed to by key)
+  # because ActivePython cannot handle key parameters to __import__.
+  generator = __import__(generator_name, globals(), locals(), generator_name)
   variables_hack.extend(generator.variables_hack)
 
   # Load build files.  This loads every target-containing build file into

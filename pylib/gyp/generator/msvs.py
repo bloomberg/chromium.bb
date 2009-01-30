@@ -1,9 +1,12 @@
 #!/usr/bin/python
 
+
 import gyp
 import gyp.MSVSNew as MSVSNew
 import gyp.MSVSProject as MSVSProject
-import os
+import os.path
+import subprocess
+import sys
 
 
 # TODO(mark): Obvious hack, see __init__.py.
@@ -14,6 +17,16 @@ variables_hack = [
 ]
 
 
+def FixPath(path):
+  if sys.platform == 'cygwin':
+    win_path = subprocess.Popen(['cygpath', '-w', path],
+                                stdout=subprocess.PIPE).communicate()[0]
+    win_path = win_path.replace('\n', '')
+    return win_path
+  else:
+    return path.replace('/', '\\')
+
+
 def GenerateProject(filename, spec):
   print 'Generating %s' % filename
 
@@ -22,14 +35,16 @@ def GenerateProject(filename, spec):
 
   # Get directory gyp file is in.
   gyp_dir = os.path.split(filename)[0]
-
   # Figure out which vsprops to use.
   vsprops_dirs = spec.get('vs_props', [])
   # Make them relative to the gyp file.
-  vsprops_dirs = [os.path.join(gyp_dir, i) for i in vsprops_dirs]
+  vsprops_dirs = [os.path.abspath(os.path.join(gyp_dir, i))
+                  for i in vsprops_dirs]
+  vsprops_dirs = [FixPath(i) for i in vsprops_dirs]
 
   # Prepare compiler tool.
   include_dirs = spec.get('include_dirs',[])
+  include_dirs = [FixPath(i) for i in include_dirs]
   defines = ['OS_WIN'] + spec.get('defines',[])
   compiler_tool = MSVSProject.Tool(
       'VCCLCompilerTool', {
@@ -110,7 +125,7 @@ def PopulateProjectObjects(projects, target_list, target_dicts,
   deps = [projects[d]['obj'] for d in deps]
   # Create object for this project.
   projects[qualified_target]['obj'] = MSVSNew.MSVSProject(
-      projects[qualified_target]['vcproj_path'],
+      FixPath(projects[qualified_target]['vcproj_path']),
       name=spec['name'],
       guid=projects[qualified_target]['guid'],
       dependencies=deps)
@@ -124,15 +139,15 @@ def GenerateOutput(target_list, target_dicts, data):
       raise 'Build file name must end in .gyp'
     build_file_stem = build_file[:-4]
     solutions[build_file] = {
-        'sln_path': build_file_stem + '_gyp.sln',
+        'sln_path': os.path.abspath(build_file_stem + '_gyp.sln'),
     }
 
   projects = {}
   for qualified_target in target_list:
     [build_file, target] = gyp.BuildFileAndTarget('', qualified_target)[0:2]
     spec = target_dicts[qualified_target]
-    vcproj_path = os.path.join(os.path.split(build_file)[0],
-                               spec['name'] + '_gyp.vcproj')
+    vcproj_path = os.path.abspath(os.path.join(os.path.split(build_file)[0],
+                                               spec['name'] + '_gyp.vcproj'))
     projects[qualified_target] = {
         'vcproj_path': vcproj_path,
         'guid': GenerateProject(vcproj_path, spec),
@@ -149,7 +164,7 @@ def GenerateOutput(target_list, target_dicts, data):
                     gyp.BuildFileAndTarget('', p)[0] == s]
     entries = [projects[e]['obj'] for e in sln_projects]
 #    entries.append(MSVSNew.MSVSFolder('dependencies', entries=deps))
-    sln = MSVSNew.MSVSSolution(sln_path,
+    sln = MSVSNew.MSVSSolution(FixPath(sln_path),
                                entries=entries,
                                variants=[
                                  'Debug|Win32',
