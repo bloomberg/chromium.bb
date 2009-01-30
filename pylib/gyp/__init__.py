@@ -185,23 +185,11 @@ def ProcessConditionalsInList(sublist):
 class DependencyTreeNode(object):
   """
 
-  Class variables:
-     MARK_NONE: An object that has not yet been visited during flattening.
-     MARK_PENDING: An object that has been visited, but whose dependencies
-                   have not yet been visisted.
-     MARK_DONE: An object that has been visited and whose dependencies have
-                also been visited.
   Attributes:
      ref: A reference to an object that this DependencyTreeNode represents.
      dependencies: List of DependencyTreeNodes on which this one depends.
      dependents: List of DependencyTreeNodes that depend on this one.
-     _mark: That's me.  Also, this is set to a MARK_* constant to the mark
-            state of the object during flattening.
   """
-
-  MARK_NONE = 0
-  MARK_PENDING = 1
-  MARK_DONE = 2
 
   class CircularException(Exception):
     pass
@@ -210,48 +198,61 @@ class DependencyTreeNode(object):
     self.ref = ref
     self.dependencies = []
     self.dependents = []
-    self._mark = self.MARK_NONE
 
-  # YOU MUST CALL THIS with flat_list set to [].  Leave the optional parameters
-  # at their defaults.  TODO(mark): Provide a better public interface.
-  def FlattenToList(self, flat_list, reset=True, check_dependencies=False):
-    if reset:
-      self._mark = self.MARK_NONE
-      for dependent in self.dependents:
-        dependent.FlattenToList(None, reset)
-      if flat_list == None:
-        return
+  def FlattenToList(self):
+    # flat_list is the sorted list of dependencies - actually, the list items
+    # are the "ref" attributes of DependencyTreeNodes.  Every target will
+    # appear in flat_list after all of its dependencies, and before all of its
+    # dependents.
+    flat_list = []
 
-    if self._mark == self.MARK_PENDING:
-      # Oops.  Found a cycle.
-      raise self.CircularException, 'Returned to ' + str(self.ref) + \
-                                    ' while it was already being visited'
+    # in_degree_zeros is the list of DependencyTreeNodes that have no
+    # dependencies not in flat_list.  Initially, it is a copy of the children
+    # of this node, because when the graph was built, nodes with no
+    # dependencies were made implicit dependents of the root node.
+    in_degree_zeros = self.dependents[:]
 
-    if self._mark == self.MARK_DONE:
-      # Already visisted.
-      return
+    while in_degree_zeros:
+      # Nodes in in_degree_zeros have no dependencies not in flat_list, so they
+      # can be appended to flat_list.  Take these nodes out of in_degree_zeros
+      # as work progresses, so that the next node to process from the list can
+      # always be accessed at a consistent position.
+      node = in_degree_zeros[0]
+      flat_list.append(node.ref)
+      del in_degree_zeros[0]
 
-    # Visit all nodes upon which this one depends, or ensure that they have
-    # already been visited.
-    self._mark = self.MARK_PENDING
+      # Look at dependents of the node just added to flat_list.  Some of them
+      # may now belong in in_degree_zeros.
+      for node_dependent in node.dependents:
+        is_in_degree_zero = True
+        for node_dependent_dependency in node_dependent.dependencies:
+          if not node_dependent_dependency.ref in flat_list:
+            # The dependent one or more dependencies not in flat_list.  There
+            # will be more chances to add it to flat_list when examining
+            # it again as a dependent of those other dependencies, provided
+            # that there are no cycles.
+            is_in_degree_zero = False
+            break
 
-    # Don't check dependencies of the root object that the caller requested.
-    if check_dependencies:
-      for dependency in self.dependencies:
-        dependency.FlattenToList(flat_list, False, True)
-
-    # All of this node's dependency references are in the list.  Append this
-    # node's reference.
-    self._mark = self.MARK_DONE
-    flat_list.append(self.ref)
-
-    # Visit all nodes that depend on this one.  Don't try to visit a dependent
-    # marked PENDING, that's the dependent that called this object.
-    for dependent in self.dependents:
-      if dependent._mark != self.MARK_PENDING:
-        dependent.FlattenToList(flat_list, False, True)
+        if is_in_degree_zero:
+          # All of the dependent's dependencies are already in flat_list.  Add
+          # it to in_degree_zeros where it will be processed in a future
+          # iteration of the outer loop.
+          in_degree_zeros.append(node_dependent)
 
     return flat_list
+
+  def DeepDependents(self, dependents=None):
+    if dependents == None:
+      dependents = []
+
+    for dependent in self.dependents:
+      if dependent.ref not in dependents:
+        # Put each dependent as well as its dependents into the list.
+        dependents.append(dependent.ref)
+        dependent.DeepDependents(dependents)
+
+    return dependents
 
 
 def BuildDependencyList(targets):
@@ -284,16 +285,16 @@ def BuildDependencyList(targets):
 
   # Take the root node out of the list because it doesn't correspond to a real
   # target.
-  flat_list = root_node.FlattenToList([])[1:]
+  flat_list = root_node.FlattenToList()
 
-  # If there's anything left unvisited, there must be a self-contained circular
-  # dependency.  If you need to figure out what's wrong, look for elements of
-  # targets that are not in flat_list.  FlattenToList doesn't catch these
-  # self-contained cycles because they're not reachable from root_node.
+  # If there's anything left unvisited, there must be a circular dependency
+  # (cycle).  If you need to figure out what's wrong, look for elements of
+  # targets that are not in flat_list.
   if len(flat_list) != len(targets):
-    raise DependencyTreeNode.CircularException, 'some targets not reachable'
+    raise DependencyTreeNode.CircularException, \
+        'Some targets not reachable, cycle in dependency graph detected'
 
-  return [dependency_nodes, root_node, flat_list]
+  return [dependency_nodes, flat_list]
 
 
 def RelativePath(path, relative_to):
@@ -476,7 +477,7 @@ def main(args):
   # BuildDependencyList shouldn't modify "targets".  I thought we looped over
   # "targets" too many times, though, and that seemed like a good place to do
   # this fix-up.  We may want to revisit where this is done.
-  [dependency_nodes, root_node, flat_list] = BuildDependencyList(targets)
+  [dependency_nodes, flat_list] = BuildDependencyList(targets)
 
   # TODO(mark): Make all of this stuff generic.  WORK IN PROGRESS.  It's a
   # lot cleaner than it used to be, but there's still progress to be made.
@@ -523,7 +524,9 @@ def main(args):
 
     # If we've got a static library here...
     if target_dict['type'] == 'static_library':
-      dependents = dependency_nodes[target].FlattenToList([])[1:]
+      dependents = dependency_nodes[target].DeepDependents()
+      # TODO(mark): Probably want dependents to be sorted in the order that
+      # they appear in flat_list.
 
       # Look at every target that depends on it, even indirectly...
       for dependent in dependents:
