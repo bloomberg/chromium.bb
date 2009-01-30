@@ -6,6 +6,7 @@ import gyp.MSVSNew as MSVSNew
 import gyp.MSVSProject as MSVSProject
 import os.path
 import subprocess
+import re
 import sys
 
 
@@ -19,10 +20,10 @@ variables_hack = [
 
 def FixPath(path):
   if sys.platform == 'cygwin':
-    win_path = subprocess.Popen(['cygpath', '-w', path],
-                                stdout=subprocess.PIPE).communicate()[0]
-    win_path = win_path.replace('\n', '')
-    return win_path
+    path = subprocess.Popen(['cygpath', '-w', path],
+                            stdout=subprocess.PIPE).communicate()[0]
+    path = path.replace('\n', '')
+    return path
   else:
     return path.replace('/', '\\')
 
@@ -131,6 +132,20 @@ def PopulateProjectObjects(projects, target_list, target_dicts,
       dependencies=deps)
 
 
+def DependentProjects(target_dicts, roots):
+  dependents = set()
+  for r in roots:
+    spec = target_dicts[r]
+    r_deps = spec.get('dependencies', [])
+    for d in r_deps:
+      if d not in roots:
+        dependents.add(d)
+    for d in DependentProjects(target_dicts, r_deps):
+      if d not in roots:
+        dependents.add(d)
+  return list(dependents)
+
+
 def GenerateOutput(target_list, target_dicts, data):
   solutions = {}
   for build_file, build_file_dict in data.iteritems():
@@ -160,10 +175,15 @@ def GenerateOutput(target_list, target_dicts, data):
   for s, s_dict in solutions.iteritems():
     sln_path = s_dict['sln_path']
     print 'Generating %s' % sln_path
+    # Get projects in the solution, and their dependents in a separate bucket.
     sln_projects = [p for p in target_list if
                     gyp.BuildFileAndTarget('', p)[0] == s]
+    dep_projects = DependentProjects(target_dicts, sln_projects)
+    # Convert to entries.
     entries = [projects[e]['obj'] for e in sln_projects]
-#    entries.append(MSVSNew.MSVSFolder('dependencies', entries=deps))
+    dep_entries = [projects[e]['obj'] for e in dep_projects]
+    entries.append(MSVSNew.MSVSFolder('dependencies', entries=dep_entries))
+    # Create solution.
     sln = MSVSNew.MSVSSolution(FixPath(sln_path),
                                entries=entries,
                                variants=[
