@@ -134,10 +134,6 @@
             'source_patterns': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
                                  ['exclude', '\\.mm?$' ],
                                ],
-            'dependencies': [
-              '../third_party/libjpeg/libjpeg.gyp:libjpeg',
-              '../third_party/libpng/libpng.gyp:libpng',
-            ],
           },
         ],
         [ 'OS==linux', {
@@ -183,8 +179,6 @@
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
-        # This is really from libpng, but transitive stuff seems broken.
-        '../third_party/zlib/zlib.gyp:zlib',
       ],
     },
     {
