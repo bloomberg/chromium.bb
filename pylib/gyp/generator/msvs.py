@@ -28,6 +28,25 @@ def FixPath(path):
     return path.replace('/', '\\')
 
 
+def SourceInFolders(sources, prefix=[]):
+  result = []
+  folders = dict()
+  for s in sources:
+    if len(s) == 1:
+      filename = '\\'.join(prefix + s)
+      result.append(filename)
+    else:
+      if not folders.get(s[0]):
+        folders[s[0]] = []
+      folders[s[0]].append(s[1:])
+  for f in folders:
+    contents = SourceInFolders(folders[f], prefix + [f])
+    contents = MSVSProject.Filter(f, contents=contents)
+    result.append(contents)
+
+  return result
+
+
 def GenerateProject(filename, spec):
   print 'Generating %s' % filename
 
@@ -105,7 +124,10 @@ def GenerateProject(filename, spec):
              'ConfigurationType': config_type},
       tools=tools)
   # Add in file list.
-  p.AddFiles([i.replace('/', '\\') for i in spec['sources']])
+  sources = [i.replace('/', '\\') for i in spec['sources']]
+  sources = [i.split('\\') for i in sources]
+  sources = SourceInFolders(sources)
+  p.AddFiles(sources)
   # Write it out.
   p.Write()
 
