@@ -282,6 +282,13 @@
             ],
           },
         ],
+        # This is needed to trigger the dll copy step on windows.
+        [ 'OS==win', {
+            'dependencies': [
+              '../third_party/icu38/icu38.gyp:icudata',
+            ],
+          },
+        ],
       ],
     },
   ],

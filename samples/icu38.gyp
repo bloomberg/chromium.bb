@@ -24,7 +24,8 @@
             'type': 'none',
             'sources!': ['icudt38l_dat.s'],
             'sources': [ 'icudt38.dll' ],
-            'vs_postbuild': 'echo hello',
+            'vs_postbuild':
+              'xcopy /R /C /Y icudt38.dll $(OutDir)',
           },
         ],
         [ 'OS!=win', {
