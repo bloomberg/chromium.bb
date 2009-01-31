@@ -56,7 +56,7 @@ def LoadOneBuildFile(build_file_path):
 
   build_file_data = None
   try:
-    build_file_data = eval(build_file_contents)
+    build_file_data = eval(build_file_contents, {'__builtins__': None}, None)
   except SyntaxError, e:
     e.filename = build_file_path
     raise
@@ -64,7 +64,8 @@ def LoadOneBuildFile(build_file_path):
     ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
-  # TODO(mark): Apply "pre"/"early" variable expansion here.
+  # Apply "pre"/"early" variable expansions.
+  ProcessVariableExpansionsInDict(build_file_data, False)
 
   # Apply "pre"/"early" conditionals.
   ProcessConditionalsInDict(build_file_data)
@@ -140,6 +141,87 @@ def LoadTargetBuildFile(build_file_path, data={}):
         LoadTargetBuildFile(other_build_file, data)
 
   return data
+
+
+early_variable_re = re.compile('(<\((.*?)\))')
+late_variable_re = re.compile('(>\((.*?)\))')
+
+def ExpandVariables(input, is_late, variables):
+  # Look for the pattern that gets expanded into variables
+  if not is_late:
+    variable_re = early_variable_re
+  else:
+    variable_re = late_variable_re
+  matches = variable_re.findall(input)
+
+  output = input
+  if matches != None:
+    # Reverse the list of matches so that replacements are done right-to-left.
+    # That ensures that earlier re.sub calls won't mess up the string in a
+    # way that causes later calls to find the earlier substituted text instead
+    # of what's intended for replacement.
+    matches.reverse()
+    for match in matches:
+      # match[0] is the substring to look for and match[1] is the name of
+      # the variable.
+      if not match[1] in variables:
+        raise KeyError, 'Undefined variable ' + match[1] + ' in ' + input
+      output = re.sub(re.escape(match[0]), variables[match[1]], output)
+  return output
+
+
+def ProcessVariableExpansionsInDict(subdict, is_late, variables=None):
+  if variables == None:
+    variables = {}
+
+  # Any keys with plain string values in the current scope become automatic
+  # variables.  The variable name is the key name with a "_" character
+  # prepended.
+  for k, v in subdict.iteritems():
+    if isinstance(v, str) or isinstance(v, int):
+      variables['_' + k] = v
+
+  # Handle the associated variables subdict first.  Pass it the real variables
+  # dict that will be used in this scope, not a copy.
+  if 'variables' in subdict:
+    ProcessVariableExpansionsInDict(subdict['variables'], is_late, variables)
+    variables.update(subdict['variables'])
+
+  for k, v in subdict.iteritems():
+    if k == 'variables':
+      # This was already done above.
+      continue
+    if isinstance(v, dict):
+      # Make a copy of the dict so that subdicts can't influence parents.
+      ProcessVariableExpansionsInDict(v, is_late, variables.copy())
+    elif isinstance(v, list):
+      # The list itself can't influence the variables dict, and it'll make
+      # copies if it needs to pass the dict to something that can influence
+      # it.
+      ProcessVariableExpansionsInList(v, is_late, variables)
+    elif isinstance(v, str):
+      subdict[k] = ExpandVariables(v, is_late, variables)
+    elif not isinstance(v, int):
+      raise TypeError, 'Unknown type ' + v.__class__.__name__ + ' for ' + k
+
+
+def ProcessVariableExpansionsInList(sublist, is_late, variables=None):
+  index = 0
+  while index < len(sublist):
+    item = sublist[index]
+    if isinstance(item, dict):
+      # Make a copy of the variables dict so that it won't influence anything
+      # outside of its own scope.
+      ProcessVariableExpansionsInDict(item, is_late, variables.copy())
+    elif isinstance(item, list):
+      ProcessVariableExpansionsInList(item, is_late, variables)
+    elif isinstance(item, str):
+      sublist[index] = ExpandVariables(item, is_late, variables)
+    elif not isinstance(item, int):
+      raise TypeError, 'Unknown type ' + item.__class__.__name__ + \
+                       ' at index ' + str(index)
+      pass
+    index = index + 1
 
 
 # TODO(mark): This needs a way to choose which conditions dict to look at.
@@ -747,6 +829,15 @@ def main(args):
       if 'libraries' in target_dict:
         del target_dict['libraries']
 
+  # Apply "post"/"late"/"target" variable expansions.
+  for target in flat_list:
+    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
+    target_dict = targets[target]
+    ProcessVariableExpansionsInDict(target_dict, True)
+
+  # TODO(mark): Apply "post"/"late"/"target" conditionals.
+
+  # Apply exclude (!) and regex (/) rules.
   for target in flat_list:
     [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
     target_dict = targets[target]
