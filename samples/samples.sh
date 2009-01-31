@@ -5,8 +5,11 @@
 
 GYPS="
     base/base.gyp
+    googleurl/build/googleurl.gyp
+    net/net.gyp
     skia/skia.gyp
     testing/gtest.gyp
+    third_party/bzip2/bzip2.gyp
     third_party/icu38/icu38.gyp
     third_party/libevent/libevent.gyp
     third_party/libpng/libpng.gyp
