@@ -421,43 +421,43 @@ def RelativePath(path, relative_to):
   return os.path.join(*relative_split)
 
 
-def MergeLists(to, fro, to_file, fro_file, is_paths=False):
-  # TODO(mark): Support a way for the "fro" list to declare how it wants to
-  # be merged into the "to" list.  Right now, "append" is always used, but
-  # other possible policies include "prepend" and "replace".  Perhaps the
-  # "fro" list can include a special first token, or perhaps the "fro" list
-  # can have a sibling or something identifying the desired treatment.  Also,
-  # "append" may not always be the most appropriate merge policy.  For
-  # example, when merging file-wide .gyp settings into targets, it seems more
-  # logical to prepend file-wide settings to target-specific ones, which are
-  # thought of as "inheriting" file-wide setings.
+def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
+  prepend_index = 0
+
   for item in fro:
     if isinstance(item, str) or isinstance(item, int):
       # The cheap and easy case.
-      # TODO(mark): Expand variables here?  I waffle a bit more on this below,
-      # in MergeDicts.
       if is_paths and to_file != fro_file:
         # If item is a relative path, it's relative to the build file dict that
         # it's coming from.  Fix it up to make it relative to the build file
         # dict that it's going into.
         # TODO(mark): We might want to exclude some things here even if
-        # is_paths is true.
-        path = os.path.normpath(os.path.join(
+        # is_paths is true, like things that begin with < or > (variables
+        # for us) or $ (variables for the build environment).
+        to_item = os.path.normpath(os.path.join(
             RelativePath(os.path.dirname(fro_file), os.path.dirname(to_file)),
             item))
-        to.append(path)
       else:
-        to.append(item)
+        to_item = item
     elif isinstance(item, dict):
       # Insert a copy of the dictionary.
-      to.append(item.copy())
+      to_item = item.copy()
     elif isinstance(item, list):
       # Insert a copy of the list.
-      to.append(item[:])
+      to_item = item[:]
     else:
       raise TypeError, \
           'Attempt to merge list item of unsupported type ' + \
           item.__class__.__name__
+
+    if append:
+      to.append(to_item)
+    else:
+      # Don't just insert everything at index 0.  That would prepend the new
+      # items to the list in reverse order, which would be an unwelcome
+      # surprise.
+      to.insert(prepend_index, to_item)
+      prepend_index = prepend_index + 1
 
 
 def MergeDicts(to, fro, to_file, fro_file):
@@ -475,11 +475,6 @@ def MergeDicts(to, fro, to_file, fro_file):
           ' for key ' + k
     if isinstance(v, str) or isinstance(v, int):
       # Overwrite the existing value, if any.  Cheap and easy.
-      # TODO(mark): Expand variables here?  We may want a way to make use
-      # of the existing string value, if any, and variable expansion might
-      # be the right solution.  On the other hand, it's possible that we
-      # might want to do all expansions in a separate step completely
-      # independent of merging.  These questions need answers.
       to[k] = v
     elif isinstance(v, dict):
       # Recurse, guaranteeing copies will be made of objects that require it.
@@ -487,11 +482,62 @@ def MergeDicts(to, fro, to_file, fro_file):
         to[k] = {}
       MergeDicts(to[k], v, to_file, fro_file)
     elif isinstance(v, list):
+      # Lists in dicts can be merged with different policies, depending on
+      # how the key in the "from" dict (k, the from-key) is written.
+      #
+      # If the from-key has          ...the to-list will have this action
+      # this character appended:...     applied when receiving the from-list:
+      #                           =  replace
+      #                           +  prepend
+      #                           ?  set, only if to-list does not yet exist
+      #                      (none)  append
+      #
+      # This logic is list-specific, but since it relies on the associated
+      # dict key, it's checked in this dict-oriented function.
+      ext = k[-1]
+      append = True
+      if ext == '=':
+        list_base = k[:-1]
+        lists_incompatible = [list_base, list_base + '?']
+        to[list_base] = []
+      elif ext == '+':
+        list_base = k[:-1]
+        lists_incompatible = [list_base + '=', list_base + '?']
+        append = False
+      elif ext == '?':
+        list_base = k[:-1]
+        lists_incompatible = [list_base, list_base + '=', list_base + '+']
+      else:
+        list_base = k
+        lists_incompatible = [list_base + '=', list_base + '?']
+
+      # Some combinations of merge policies appearing together are meaningless.
+      # It's stupid to replace and append simultaneously, for example.  Append
+      # and prepend are the only policies that can coexist.
+      for list_incompatible in lists_incompatible:
+        if list_incompatible in fro:
+          raise KeyError, 'Incompatible list policies ' + k + ' and ' + \
+                          list_incompatible
+
+      if list_base in to:
+        if ext == '?':
+          # If the key ends in "?", the list will only be merged if it doesn't
+          # already exist.
+          continue
+        if not isinstance(to[list_base], list):
+          # This may not have been checked above if merging in a list with an
+          # extension character.
+          raise TypeError, \
+              'Attempt to merge dict value of type ' + v.__class__.__name__ + \
+              ' into incompatible type ' + to[list_base].__class__.__name__ + \
+              ' for key ' + list_base + '(' + k + ')'
+      else:
+        to[list_base] = []
+
       # Call MergeLists, which will make copies of objects that require it.
-      if not k in to:
-        to[k] = []
-      is_paths = k in ['include_dirs', 'sources', 'xcode_framework_dirs']
-      MergeLists(to[k], v, to_file, fro_file, is_paths)
+      is_paths = list_base in ['include_dirs', 'sources',
+                               'xcode_framework_dirs']
+      MergeLists(to[list_base], v, to_file, fro_file, is_paths, append)
     else:
       raise TypeError, \
           'Attempt to merge dict value of unsupported type ' + \
