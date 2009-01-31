@@ -179,6 +179,7 @@
               'clipboard_util.cc',
               'debug_on_start.cc',
               'file_version_info.cc',
+              'object_watcher.cc',
               'registry.cc',
               'win_util.cc',
               'worker_pool.cc',
