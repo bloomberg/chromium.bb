@@ -6,13 +6,6 @@ import re
 import sys
 
 
-# TODO(mark): variables_hack is a temporary hack to work with conditional
-# sections since real expression parsing is not currently available.
-# Additional variables are added to this list when a generator is imported
-# in main.
-variables_hack = []
-
-
 def BuildFileAndTarget(build_file, target):
   # NOTE: If you just want to split up target into a build_file and target,
   # and you know that target already has a build_file that's been produced by
@@ -49,7 +42,7 @@ def ExceptionAppend(e, msg):
     e.args = [str(e.args[0]) + ' ' + msg, e.args[1:]]
 
 
-def LoadOneBuildFile(build_file_path):
+def LoadOneBuildFile(build_file_path, variables):
   build_file = open(build_file_path)
   build_file_contents = build_file.read()
   build_file.close()
@@ -68,11 +61,11 @@ def LoadOneBuildFile(build_file_path):
   # Then, do the "pre"/"early" variable expansions and condition evaluations.
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
-  ProcessVariablesAndConditionsInDict(build_file_data, False)
+  ProcessVariablesAndConditionsInDict(build_file_data, False, variables)
 
   # Scan for includes and merge them in.
   try:
-    LoadBuildFileIncludesIntoDict(build_file_data, build_file_path)
+    LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, variables)
   except Exception, e:
     ExceptionAppend(e, 'while reading includes of ' + build_file_path)
     raise
@@ -80,7 +73,7 @@ def LoadOneBuildFile(build_file_path):
   return build_file_data
 
 
-def LoadBuildFileIncludesIntoDict(subdict, subdict_path):
+def LoadBuildFileIncludesIntoDict(subdict, subdict_path, variables):
   if 'includes' in subdict:
     # Unhook the includes list, it's no longer needed.
     includes_list = subdict['includes']
@@ -88,34 +81,35 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path):
 
     # Replace it by merging in the included files.
     for include in includes_list:
-      MergeDicts(subdict, LoadOneBuildFile(include), subdict_path, include)
+      MergeDicts(subdict, LoadOneBuildFile(include, variables), subdict_path,
+                 include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
     if v.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(v, subdict_path)
+      LoadBuildFileIncludesIntoDict(v, subdict_path, variables)
     elif v.__class__ == list:
-      LoadBuildFileIncludesIntoList(v, subdict_path)
+      LoadBuildFileIncludesIntoList(v, subdict_path, variables)
 
 
 # This recurses into lists so that it can look for dicts.
-def LoadBuildFileIncludesIntoList(sublist, sublist_path):
+def LoadBuildFileIncludesIntoList(sublist, sublist_path, variables):
   for item in sublist:
     if item.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(item, sublist_path)
+      LoadBuildFileIncludesIntoDict(item, sublist_path, variables)
     elif item.__class__ == list:
-      LoadBuildFileIncludesIntoList(item, sublist_path)
+      LoadBuildFileIncludesIntoList(item, sublist_path, variables)
 
 
 # TODO(mark): I don't love this name.  It just means that it's going to load
 # a build file that contains targets and is expected to provide a targets dict
 # that contains the targets...
-def LoadTargetBuildFile(build_file_path, data={}):
+def LoadTargetBuildFile(build_file_path, data, variables):
   if build_file_path in data:
     # Already loaded.
     return
 
-  build_file_data = LoadOneBuildFile(build_file_path)
+  build_file_data = LoadOneBuildFile(build_file_path, variables)
   data[build_file_path] = build_file_data
 
   # ...it's loaded and it should have EARLY references and conditionals
@@ -132,7 +126,7 @@ def LoadTargetBuildFile(build_file_path, data={}):
         continue
       for dependency in target_dict['dependencies']:
         other_build_file = BuildFileAndTarget(build_file_path, dependency)[0]
-        LoadTargetBuildFile(other_build_file, data)
+        LoadTargetBuildFile(other_build_file, data, variables)
 
   return data
 
@@ -164,7 +158,7 @@ def ExpandVariables(input, is_late, variables):
   return output
 
 
-def ProcessConditionsInDict(the_dict, is_late=False):
+def ProcessConditionsInDict(the_dict, is_late, variables):
   # If the_dict has a "conditions" key (is_late == False) or a
   # "target_conditons" key (is_late == True), its value is treated as a list.
   # Each item in the list consists of cond_expr, a string expression evaluated
@@ -201,16 +195,17 @@ def ProcessConditionsInDict(the_dict, is_late=False):
     if len(condition) == 3:
       false_dict = condition[2]
 
-    # TODO(mark): This is ever-so-slightly better than it was initially when
-    # 'OS==mac' was hard-coded, but expression evaluation is needed.
-    if cond_expr in variables_hack:
+    # TODO(mark): Catch exceptions here to re-raise after providing a little
+    # more error context.  The name of the file being processed and the
+    # condition in quesiton might be nice.
+    if eval(cond_expr, {'__builtins__': None}, variables):
       merge_dict = true_dict
     else:
       merge_dict = false_dict
 
     if merge_dict != None:
       # Recurse to pick up nested conditions.
-      ProcessConditionsInDict(merge_dict, is_late)
+      ProcessConditionsInDict(merge_dict, is_late, variables)
 
       # For now, it's OK to pass '', '' for the build files because everything
       # comes from the same build file and everything is already relative to
@@ -235,10 +230,12 @@ def LoadVariablesFromVariablesDict(variables, the_dict):
     variables.update(the_dict['variables'])
 
 
-def ProcessVariablesAndConditionsInDict(the_dict, is_late=False,
-                                        variables=None):
-  if variables == None:
-    variables = {}
+def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
+  """Handle all variable expansion and conditional evaluation.
+
+  This function is the public entry point for all variable expansions and
+  conditional evaluations.
+  """
 
   # Save a copy of the variables dict before loading automatics or the
   # variables dict.  After performing steps that may result in either of
@@ -295,7 +292,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late=False,
   #    'my_subdict': {'defines': ['<(define)']}},
   # will append "IS_MAC" to both "defines" lists.
 
-  ProcessConditionsInDict(the_dict, is_late)
+  ProcessConditionsInDict(the_dict, is_late, variables)
 
   # Conditional processing may have resulted in changes to automatics or the
   # variables dict.  Reload.
@@ -306,6 +303,12 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late=False,
   LoadAutomaticVariablesFromDict(variables, the_dict)
   LoadVariablesFromVariablesDict(variables, the_dict)
 
+  # Unhook the variables dict, it's no longer needed.
+  if 'variables' in the_dict:
+    del the_dict['variables']
+
+  # Recurse into child dicts, or process child lists which may result in
+  # further recursion into descendant dicts.
   for key, value in the_dict.iteritems():
     # Skip "variables" and string values, which were already processed if
     # present.
@@ -648,7 +651,7 @@ def ProcessRules(name, the_dict):
   by such exclusion lists and rules.
   """
 
-  # Look through the dictionary for any lists whose keys end in '!' or '/'.
+  # Look through the dictionary for any lists whose keys end in "!" or "/".
   # These are lists that will be treated as exclude lists and regular
   # expression-based exclude/include lists.  Collect the lists that are
   # needed first, looking for the lists that they operate on, and assemble
@@ -829,10 +832,12 @@ def main(args):
   my_name = os.path.basename(sys.argv[0])
 
   parser = optparse.OptionParser()
-  usage = 'usage: %s [-f format] [build_file ...]'
+  usage = 'usage: %s [-D var=val ...] [-f format] [build_file ...]'
   parser.set_usage(usage.replace('%s', '%prog'))
+  parser.add_option('-D', dest='defines', action='append', metavar='VAR=VAL',
+                    help='sets variable VAR to value VAL')
   parser.add_option('-f', '--format', dest='format',
-                    help='Output format to generate')
+                    help='output format to generate')
   (options, build_files) = parser.parse_args(args)
   if not options.format:
     options.format = {'darwin': 'xcodeproj',
@@ -845,11 +850,31 @@ def main(args):
                         (my_name, my_name)
     return 1
 
+  default_variables = {}
+
+  # -D on the command line sets variable defaults - D isn't just for define,
+  # it's for default.  Perhaps there should be a way to force (-F?) a
+  # variable's value so that it can't be overridden by anything else.
+  if options.defines:
+    for define in options.defines:
+      tokens = define.split('=', 1)
+      if len(tokens) == 2:
+        # Set the variable to the supplied value.
+        default_variables[tokens[0]] = tokens[1]
+      else:
+        # No value supplied, treat it as a boolean and set it.
+        default_variables[tokens[0]] = True
+
+  # Default variables provided by this program and its modules should be
+  # named WITH_CAPITAL_LETTERS to provide a distinct "best practice" namespace,
+  # avoiding collisions with user and automatic variables.
+  default_variables['GENERATOR'] = options.format
+
   generator_name = 'gyp.generator.' + options.format
   # These parameters are passed in order (as opposed to by key)
   # because ActivePython cannot handle key parameters to __import__.
   generator = __import__(generator_name, globals(), locals(), generator_name)
-  variables_hack.extend(generator.variables_hack)
+  default_variables.update(generator.generator_default_variables)
 
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
@@ -857,7 +882,7 @@ def main(args):
   # processing has been done and includes have been resolved.
   data = {}
   for build_file in build_files:
-    LoadTargetBuildFile(build_file, data)
+    LoadTargetBuildFile(build_file, data, default_variables)
 
   # Build a dict to access each target's subdict by qualified name.
   targets = {}
@@ -877,17 +902,15 @@ def main(args):
   # this fix-up.  We may want to revisit where this is done.
   [dependency_nodes, flat_list] = BuildDependencyList(targets)
 
-  # TODO(mark): Make all of this stuff generic.  WORK IN PROGRESS.  It's a
-  # lot cleaner than it used to be, but there's still progress to be made.
-  # The whole file above this point is in pretty good shape, everything
-  # below this line is kind of a wasteland.
-
   # Look at each project's settings dict, and merge settings into targets.
-  # TODO(mark): Figure out when we should do this step.  Seems like it should
-  # happen earlier.  Also, the policy here should be for dict keys in the base
-  # settings dict to NOT overwrite keys in the target, and for list items in
-  # the base settings dict to be PREPENDED to target lists instead of
-  # appended.
+  # TODO(mark): Move this step into LoadOneBuildFile or something similar.
+  # This step should happen immediately before or after (it doesn't really
+  # matter which) includes are added.  The policy should be for target
+  # dicts to inherit from the root settings dict, which means that for the
+  # MergeDicts procedure, the target dict should actually be trated as the
+  # "fro" dict to be merged into a deep copy of the settings dict, which
+  # should be the "to" dict which, after merging, replaces the original target
+  # dict.
   for build_file_name, build_file_data in data.iteritems():
     if 'settings' in build_file_data:
       file_settings = build_file_data['settings']
@@ -896,6 +919,15 @@ def main(args):
 
   # Now look for dependent_settings sections in dependencies, and merge
   # settings.
+  # TODO(mark): dependent_settings should become direct_dependent_settings.
+  # all_dependent_settings should be added which provides a dict to be merged
+  # into a target's list of DeepDependents.  link_settings should be added
+  # which provides a dict to merge into dependents that have link phases
+  # performed.  If link_settings is found in a linkable target (not static
+  # libraries), link_settings should be merged into its enclosing target's
+  # dict.  Otherwise, something should follow the dependent chain, stopping
+  # at linkables and merging link_settings into their dicts.  Dependents of
+  # linkables should NOT have link_settings merged in.
   for target in flat_list:
     target_dict = targets[target]
     if not 'dependencies' in target_dict:
@@ -916,7 +948,9 @@ def main(args):
   # TODO(mark): This logic is rough, but it works for base_unittests.
   # Set up computed dependencies.  For each non-static library target, look
   # at the entire dependency hierarchy and add any static libraries as computed
-  # dependencies.  Static library targets have no computed dependencies.
+  # dependencies.  Static library targets have no computed dependencies.  See
+  # notes above regarding linkables, this section should be refactored at the
+  # same time as the above one.
   for target in flat_list:
     target_dict = targets[target]
 
@@ -943,6 +977,11 @@ def main(args):
 
           # ...and make it link against the libraries that the static library
           # wants, if it doesn't already...
+          # TODO(mark): Eliminate the special-casing of the "libraries"
+          # section in favor of allowing "libraries" sections to be enclosed
+          # within "link_settings" sections in input files.  The recommended
+          # best practice should be for "libraries" to only appear within
+          # "link_settings" sections.
           if 'libraries' in target_dict:
             if not 'libraries' in dependent_dict:
               dependent_dict['libraries'] = []
@@ -959,7 +998,7 @@ def main(args):
   # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:
     target_dict = targets[target]
-    ProcessVariablesAndConditionsInDict(target_dict, True)
+    ProcessVariablesAndConditionsInDict(target_dict, True, default_variables)
 
   # Apply exclude (!) and regex (/) rules.
   for target in flat_list:

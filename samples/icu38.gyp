@@ -20,15 +20,14 @@
         'icudt38l_dat.s',  # Hand-generated, but it'll do for now.
       ],
       'conditions': [
-        [ 'OS==win', {
+        [ 'OS == "win"', {
             'type': 'none',
             'sources!': ['icudt38l_dat.s'],
             'sources': [ 'icudt38.dll' ],
             'vs_postbuild':
               'xcopy /R /C /Y icudt38.dll $(OutDir)',
           },
-        ],
-        [ 'OS!=win', {
+          {  # else: OS != "win"
             'sources!': [ 'icudt38.dll' ],
           },
         ],
@@ -308,7 +307,7 @@
         ],
       },
       'conditions': [
-        [ 'OS==win', {
+        [ 'OS == "win"', {
             'sources': [
               'source/stubdata/stubdata.c',
             ],

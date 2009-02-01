@@ -31,13 +31,10 @@ import os
 import pprint
 
 
-# TODO(mark): Obvious hack, see __init__.py.  gypd probably shouldn't predefine
-# anything OS-specific.
-variables_hack = [
-  'OS==mac',
-  'OS!=win',
-  'OS!=linux',
-]
+# gypd doesn't define a default value for OS like many other generator
+# modules.  Specify "-D OS=whatever" on the command line to provide a value.
+generator_default_variables = {
+}
 
 
 def GenerateOutput(target_list, target_dicts, data):

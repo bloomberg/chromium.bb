@@ -10,12 +10,9 @@ import re
 import sys
 
 
-# TODO(mark): Obvious hack, see __init__.py.
-variables_hack = [
-  'OS==win',
-  'OS!=mac',
-  'OS!=linux',
-]
+generator_default_variables = {
+  'OS': 'win',
+}
 
 
 def FixPath(path):

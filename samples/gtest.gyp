@@ -17,7 +17,7 @@
         'gtest/include',
       ],
       'conditions': [
-        [ 'OS==mac', { 'sources': [ 'platform_test_mac.mm' ] } ],
+        [ 'OS == "mac"', { 'sources': [ 'platform_test_mac.mm' ] } ],
       ],
       'dependent_settings': {
         'defines': [

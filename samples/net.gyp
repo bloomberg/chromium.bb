@@ -244,7 +244,7 @@
         'ftp/ftp_transaction_factory.h',
       ],
       'conditions': [
-        [ 'OS!=win', {
+        [ 'OS != "win"', {
             'sources!': [
               'base/file_stream_win.cc',
               'base/net_util_win.cc',
@@ -274,7 +274,7 @@
             ],
           },
         ],
-        [ 'OS==linux', {
+        [ 'OS == "linux"', {
             'sources': [
               'base/nss_memio.c',
               # TODO(tc): gnome-vfs? xdgmime? /etc/mime.types?
@@ -284,7 +284,7 @@
             ],
           },
         ],
-        [ 'OS==mac', {
+        [ 'OS == "mac"', {
             'sources': [
               'base/platform_mime_util_mac.cc',
               'base/ssl_client_socket_mac.cc',
@@ -375,20 +375,20 @@
         'proxy/proxy_service_unittest.cc',
       ],
       'conditions': [
-        [ 'OS!=win', {
+        [ 'OS != "win"', {
             'sources!': [
               'base/wininet_util_unittest.cc',
             ],
           },
         ],
-        [ 'OS==linux', {
+        [ 'OS == "linux"', {
             'sources!': [
               'base/sdch_filter_unittest.cc',
               'base/ssl_config_service_unittest.cc',
             ],
           },
         ],
-        [ 'OS==mac', {
+        [ 'OS == "mac"', {
             'sources!': [
               'base/x509_certificate_unittest.cc',
               'base/sdch_filter_unittest.cc',
@@ -401,7 +401,7 @@
           },
         ],
         # This is needed to trigger the dll copy step on windows.
-        [ 'OS==win', {
+        [ 'OS == "win"', {
             'dependencies': [
               '../third_party/icu38/icu38.gyp:icudata',
             ],

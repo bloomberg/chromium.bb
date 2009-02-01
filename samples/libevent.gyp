@@ -27,14 +27,13 @@
                # instead of #include "..."
       ],
       'conditions': [
-        # Platform-specific implementation files.
-        [ 'OS==linux', { 'sources': [ 'epoll.c', 'epoll_sub.c' ] } ],
-        [ 'OS==mac',   { 'sources': [ 'kqueue.c' ] } ],
-
-        # Pre-generated config.h files are platform-specific and live in
-        # platform-specific directories.
-        [ 'OS==linux', { 'include_dirs': [ 'linux' ] } ],
-        [ 'OS==mac',   { 'include_dirs': [ 'mac' ] } ],
+        # libevent has platform-specific implementation files.  Since its
+        # native build uses autoconf, platform-specific config.h files are
+        # provided and live in platform-specific directories.
+        [ 'OS == "linux"', { 'sources': [ 'epoll.c', 'epoll_sub.c' ],
+                             'include_dirs': [ 'linux' ] } ],
+        [ 'OS == "mac"',   { 'sources': [ 'kqueue.c' ],
+                             'include_dirs': [ 'mac' ] } ],
       ],
     },
   ],

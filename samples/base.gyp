@@ -142,21 +142,13 @@
         'worker_pool_mac.mm',
       ],
       'conditions': [
-        [ 'OS==win', {
-            'sources/': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
-                          ['exclude', '\\.mm?$' ] ],
-            'sources!': [
-              'string16.cc',
-            ],
-          },
-        ],
-        [ 'OS==linux', {
+        [ 'OS == "linux"', {
             'sources/': [ ['exclude', '_(mac|win)\\.cc$'],
                           ['exclude', '\\.mm?$' ] ],
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
           },
         ],
-        [ 'OS==mac', {
+        [ 'OS == "mac"', {
             'sources/': [ ['exclude', '_(linux|win)\\.cc$'] ],
             'libraries': [
               '/System/Library/Frameworks/AppKit.framework',
@@ -166,14 +158,20 @@
             ],
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
           },
-        ],
-        [ 'OS!=mac', {
+          {  # else: OS != "mac"
             'sources!': [
               'message_pump_libevent.cc',
             ],
           },
         ],
-        [ 'OS!=win', {
+        [ 'OS == "win"', {
+            'sources/': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
+                          ['exclude', '\\.mm?$' ] ],
+            'sources!': [
+              'string16.cc',
+            ],
+          },
+          {  # else: OS != "win"
             'sources!': [
               'cpu.cc',
               'clipboard_util.cc',
@@ -280,14 +278,14 @@
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [
-        [ 'OS!=mac', {
+        [ 'OS != "mac"', {
             'sources!': [
               'mac_util_unittest.cc',
             ],
           },
         ],
         # This is needed to trigger the dll copy step on windows.
-        [ 'OS==win', {
+        [ 'OS == "win"', {
             'dependencies': [
               '../third_party/icu38/icu38.gyp:icudata',
             ],

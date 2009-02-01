@@ -655,10 +655,10 @@
         'SK_BUILD_NO_IMAGE_ENCODE',
       ],
       'conditions': [
-        [ 'OS!=mac', {
+        [ 'OS != "mac"', {
           'sources/': [ ['exclude', '_mac\\.(cc|cpp)$'] ],
         }],
-        [ 'OS!=linux', {
+        [ 'OS != "linux"', {
           'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
           'sources!': [
             'ext/GdkSkia.cc',
@@ -669,19 +669,19 @@
             'sgl/SkTypeface.cpp',
           ],
         }],
-        [ 'OS!=win', {
+        [ 'OS != "win"', {
           'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
           'sources!': [
             'ext/vector_canvas.cc',
             'ext/vector_device.cc',
           ],
         }],
-        [ 'OS==mac', {
+        [ 'OS == "mac"', {
           'defines': [
             'SK_BUILD_FOR_MAC',
           ],
         }],
-        [ 'OS==win', {
+        [ 'OS == "win"', {
           'sources!': [
             'images/SkMMapStream.cpp',
             'ports/SkFontHost_TrueType_Tables.cpp',

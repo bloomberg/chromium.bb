@@ -6,12 +6,9 @@ import errno
 import os
 
 
-# TODO(mark): Obvious hack, see __init__.py.
-variables_hack = [
-  'OS==mac',
-  'OS!=win',
-  'OS!=linux',
-]
+generator_default_variables = {
+  'OS': 'mac',
+}
 
 
 class XcodeProject(object):
