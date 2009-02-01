@@ -64,11 +64,11 @@ def LoadOneBuildFile(build_file_path):
     ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
-  # Apply "pre"/"early" variable expansions.
-  ProcessVariableExpansionsInDict(build_file_data, False)
+  # TODO(mark): First, do includes.  Then, merge in target_defaults sections.
+  # Then, do the "pre"/"early" variable expansions and condition evaluations.
 
-  # Apply "pre"/"early" conditionals.
-  ProcessConditionalsInDict(build_file_data)
+  # Apply "pre"/"early" variable expansions and condition evaluations.
+  ProcessVariablesAndConditionsInDict(build_file_data, False)
 
   # Scan for includes and merge them in.
   try:
@@ -98,13 +98,7 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path):
       LoadBuildFileIncludesIntoList(v, subdict_path)
 
 
-# This presently only recurses into lists so that it can look for dicts.
-# Should it allow includes within lists inline?  TODO(mark): Decide.
-#   sources: [
-#     "source1.cc",
-#     { "includes": [ "some_included_file" ] },
-#     "source2.cc"
-#   ]
+# This recurses into lists so that it can look for dicts.
 def LoadBuildFileIncludesIntoList(sublist, sublist_path):
   for item in sublist:
     if item.__class__ == dict:
@@ -170,98 +164,185 @@ def ExpandVariables(input, is_late, variables):
   return output
 
 
-def ProcessVariableExpansionsInDict(subdict, is_late, variables=None):
+def ProcessConditionsInDict(the_dict, is_late=False):
+  # If the_dict has a "conditions" key (is_late == False) or a
+  # "target_conditons" key (is_late == True), its value is treated as a list.
+  # Each item in the list consists of cond_expr, a string expression evaluated
+  # as the condition, and true_dict, a dict that will be merged into the_dict
+  # if cond_expr evaluates to true.  Optionally, a third item, false_dict, may
+  # be present.  false_dict is merged into the_dict if cond_expr evaluates to
+  # false.  This function will recurse into true_dict or false_dict as
+  # appropriate before merging it into the_dict, allowing for nested
+  # conditions.
+
+  if not is_late:
+    conditions_key = 'conditions'
+  else:
+    conditions_key = 'target_conditions'
+
+  if not conditions_key in the_dict:
+    return
+
+  conditions_list = the_dict[conditions_key]
+  # Unhook the conditions list, it's no longer needed.
+  del the_dict[conditions_key]
+
+  for condition in conditions_list:
+    if not isinstance(condition, list):
+      raise TypeError, conditions_key + ' must be a list'
+    if len(condition) != 2 and len(condition) != 3:
+      # It's possible that condition[0] won't work in which case this won't
+      # attempt will raise its own IndexError.  That's probably fine.
+      raise IndexError, conditions_key + ' ' + condition[0] + \
+                        ' must be length 2 or 3, not ' + len(condition)
+
+    [cond_expr, true_dict] = condition[0:2]
+    false_dict = None
+    if len(condition) == 3:
+      false_dict = condition[2]
+
+    # TODO(mark): This is ever-so-slightly better than it was initially when
+    # 'OS==mac' was hard-coded, but expression evaluation is needed.
+    if cond_expr in variables_hack:
+      merge_dict = true_dict
+    else:
+      merge_dict = false_dict
+
+    if merge_dict != None:
+      # Recurse to pick up nested conditions.
+      ProcessConditionsInDict(merge_dict, is_late)
+
+      # For now, it's OK to pass '', '' for the build files because everything
+      # comes from the same build file and everything is already relative to
+      # the same place.  If the path to the build file being processed were to
+      # be available, which might be nice for error reporting, it should be
+      # passed in these two arguments.
+      MergeDicts(the_dict, merge_dict, '', '')
+
+
+def LoadAutomaticVariablesFromDict(variables, the_dict):
+  # Any keys with plain string values in the_dict become automatic variables.
+  # The variable name is the key name with a "_" character prepended.
+  for key, value in the_dict.iteritems():
+    if isinstance(value, str) or isinstance(value, int):
+      variables['_' + key] = value
+
+
+def LoadVariablesFromVariablesDict(variables, the_dict):
+  # Any keys in the_dict's "variables" dict, if it has one, becomes a
+  # variable.  The variable name is the key name in the "variables" dict.
+  if 'variables' in the_dict:
+    variables.update(the_dict['variables'])
+
+
+def ProcessVariablesAndConditionsInDict(the_dict, is_late=False,
+                                        variables=None):
   if variables == None:
     variables = {}
 
-  # Any keys with plain string values in the current scope become automatic
-  # variables.  The variable name is the key name with a "_" character
-  # prepended.
-  for k, v in subdict.iteritems():
-    if isinstance(v, str) or isinstance(v, int):
-      variables['_' + k] = v
+  # Save a copy of the variables dict before loading automatics or the
+  # variables dict.  After performing steps that may result in either of
+  # these changing, the variables can be reloaded from the copy.
+  variables_copy = variables.copy()
+  LoadAutomaticVariablesFromDict(variables, the_dict)
 
-  # Handle the associated variables subdict first.  Pass it the real variables
-  # dict that will be used in this scope, not a copy.
-  if 'variables' in subdict:
-    ProcessVariableExpansionsInDict(subdict['variables'], is_late, variables)
-    variables.update(subdict['variables'])
+  if 'variables' in the_dict:
+    # Handle the associated variables dict first, so that any variable
+    # references within can be resolved prior to using them as variables.
+    # Pass a copy of the variables dict to avoid having it be tainted.
+    # Otherwise, it would have extra automatics added for everything that
+    # should just be an ordinary variable in this scope.
+    ProcessVariablesAndConditionsInDict(the_dict['variables'], is_late,
+                                        variables.copy())
 
-  for k, v in subdict.iteritems():
-    if k == 'variables':
-      # This was already done above.
+  LoadVariablesFromVariablesDict(variables, the_dict)
+
+  for key, value in the_dict.iteritems():
+    # Skip "variables", which was already processed if present.
+    if key != 'variables' and isinstance(value, str):
+      the_dict[key] = ExpandVariables(value, is_late, variables)
+
+  # Variable expansion may have resulted in changes to automatics.  Reload.
+  # TODO(mark): Optimization: only reload if no changes were made.
+  variables = variables.copy()
+  LoadAutomaticVariablesFromDict(variables, the_dict)
+  LoadVariablesFromVariablesDict(variables, the_dict)
+
+  # Process conditions in this dict.  This is done after variable expansion
+  # so that conditions may take advantage of expanded variables.  For example,
+  # if the_dict contains:
+  #   {'type':       '<(library_type)',
+  #    'conditions': [['_type=="static_library"', { ... }]]}, 
+  # _type, as used in the condition, will only be set to the value of
+  # library_type if variable expansion is performed before condition
+  # processing.  However, condition processing should occur prior to recursion
+  # so that variables (both automatic and "variables" dict type) may be
+  # adjusted by conditions sections, merged into the_dict, and have the
+  # intended impact on contained dicts.
+  #
+  # This arrangement means that a "conditions" section containing a "variables"
+  # section will only have those variables effective in subdicts, not in
+  # the_dict.  The workaround is to put a "conditions" section within a
+  # "variables" section.  For example:
+  #   {'conditions': [['os=="mac"', {'variables': {'define': 'IS_MAC'}}]],
+  #    'defines':    ['<(define)'],
+  #    'my_subdict': {'defines': ['<(define)']}},
+  # will not result in "IS_MAC" being appended to the "defines" list in the
+  # current scope but would result in it being appended to the "defines" list
+  # within "my_subdict".  By comparison:
+  #   {'variables': {'conditions': [['os=="mac"', {'define': 'IS_MAC'}]]},
+  #    'defines':    ['<(define)'],
+  #    'my_subdict': {'defines': ['<(define)']}},
+  # will append "IS_MAC" to both "defines" lists.
+
+  ProcessConditionsInDict(the_dict, is_late)
+
+  # Conditional processing may have resulted in changes to automatics or the
+  # variables dict.  Reload.
+  # TODO(mark): Optimization: only reload if no changes were made.
+  # ProcessConditonsInDict could return a value indicating whether changes
+  # were made.
+  variables = variables.copy()
+  LoadAutomaticVariablesFromDict(variables, the_dict)
+  LoadVariablesFromVariablesDict(variables, the_dict)
+
+  for key, value in the_dict.iteritems():
+    # Skip "variables" and string values, which were already processed if
+    # present.
+    if key == 'variables' or isinstance(value, str):
       continue
-    if isinstance(v, dict):
-      # Make a copy of the dict so that subdicts can't influence parents.
-      ProcessVariableExpansionsInDict(v, is_late, variables.copy())
-    elif isinstance(v, list):
-      # The list itself can't influence the variables dict, and it'll make
-      # copies if it needs to pass the dict to something that can influence
-      # it.
-      ProcessVariableExpansionsInList(v, is_late, variables)
-    elif isinstance(v, str):
-      subdict[k] = ExpandVariables(v, is_late, variables)
-    elif not isinstance(v, int):
-      raise TypeError, 'Unknown type ' + v.__class__.__name__ + ' for ' + k
+    if isinstance(value, dict):
+      # Pass a copy of the variables dict so that subdicts can't influence
+      # parents.
+      ProcessVariablesAndConditionsInDict(value, is_late, variables.copy())
+    elif isinstance(value, list):
+      # The list itself can't influence the variables dict, and
+      # ProcessVariablesAndConditionsInList will make copies of the variables
+      # dict if it needs to pass it to something that can influence it.  No
+      # copy is necessary here.
+      ProcessVariablesAndConditionsInList(value, is_late, variables)
+    elif not isinstance(value, int):
+      raise TypeError, 'Unknown type ' + value.__class__.__name__ + \
+                       ' for ' + key
 
 
-def ProcessVariableExpansionsInList(sublist, is_late, variables=None):
+def ProcessVariablesAndConditionsInList(the_list, is_late, variables):
+  # Iterate using an index so that new values can be assigned into the_list.
   index = 0
-  while index < len(sublist):
-    item = sublist[index]
+  while index < len(the_list):
+    item = the_list[index]
     if isinstance(item, dict):
       # Make a copy of the variables dict so that it won't influence anything
       # outside of its own scope.
-      ProcessVariableExpansionsInDict(item, is_late, variables.copy())
+      ProcessVariablesAndConditionsInDict(item, is_late, variables.copy())
     elif isinstance(item, list):
-      ProcessVariableExpansionsInList(item, is_late, variables)
+      ProcessVariablesAndConditionsInList(item, is_late, variables)
     elif isinstance(item, str):
-      sublist[index] = ExpandVariables(item, is_late, variables)
+      the_list[index] = ExpandVariables(item, is_late, variables)
     elif not isinstance(item, int):
       raise TypeError, 'Unknown type ' + item.__class__.__name__ + \
-                       ' at index ' + str(index)
-      pass
+                       ' at index ' + index
     index = index + 1
-
-
-# TODO(mark): This needs a way to choose which conditions dict to look at.
-# Right now, it's called "conditions" but that's just so that I don't need
-# to edit the names in the input files.  The existing conditions are all
-# "early" or "pre" conditions.  Support for "late"/"post"/"target" conditions
-# needs to be added as well.
-def ProcessConditionalsInDict(subdict):
-  if 'conditions' in subdict:
-    # Unhook the conditions list, it's no longer needed.
-    conditions_dict = subdict['conditions']
-    del subdict['conditions']
-
-    # Evaluate conditions and merge in the dictionaries for the ones that pass.
-    for condition in conditions_dict:
-      [expression, settings_dict] = condition
-      # TODO(mark): This is ever-so-slightly better than it was initially when
-      # 'OS==mac' was hard-coded, but expression evaluation is needed.
-      if expression in variables_hack:
-        # OK to pass '', '' for the build files because everything comes from
-        # the same build file and everything is already relative to the same
-        # place.
-        MergeDicts(subdict, settings_dict, '', '')
-
-  # Recurse into subdictionaries.
-  for k, v in subdict.iteritems():
-    if v.__class__ == dict:
-      ProcessConditionalsInDict(v)
-    elif v.__class__ == list:
-      ProcessConditionalsInList(v)
-
-
-# TODO(mark): The same comment about list recursion and whether to allow
-# inlines in lists at LoadBuildFileIncludesIntoList applies to this function.
-def ProcessConditionalsInList(sublist):
-  for item in sublist:
-    if item.__class__ == dict:
-      ProcessConditionalsInDict(item)
-    elif item.__class__ == list:
-      ProcessConditionalsInList(item)
 
 
 class DependencyTreeNode(object):
@@ -875,17 +956,13 @@ def main(args):
       if 'libraries' in target_dict:
         del target_dict['libraries']
 
-  # Apply "post"/"late"/"target" variable expansions.
+  # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
     target_dict = targets[target]
-    ProcessVariableExpansionsInDict(target_dict, True)
-
-  # TODO(mark): Apply "post"/"late"/"target" conditionals.
+    ProcessVariablesAndConditionsInDict(target_dict, True)
 
   # Apply exclude (!) and regex (/) rules.
   for target in flat_list:
-    [build_file, target_unq] = BuildFileAndTarget('', target)[0:2]
     target_dict = targets[target]
     ProcessRules(target, target_dict)
 
