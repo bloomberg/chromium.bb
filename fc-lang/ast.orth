@@ -21,16 +21,12 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Orthography from http://www.everytype.com/alphabets/asturian.pdf
+# Orthography from http://www.evertype.com/alphabets/asturian.pdf
 #
-# Asturian (AST)
+# Asturian/Bable/Leonese/Asturleonese (ast)
 #
-0040-005a
-0060-007a
-00a1
-00ab
-00bb
-00bf
+0041-005a
+0061-007a
 00c1
 00c9
 00cd
