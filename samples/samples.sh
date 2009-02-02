@@ -5,6 +5,7 @@
 
 GYPS="
     base/base.gyp
+    chrome/test/security_tests/security_tests.gyp
     googleurl/build/googleurl.gyp
     net/net.gyp
     sdch/sdch.gyp
