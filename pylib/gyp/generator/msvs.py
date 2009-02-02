@@ -44,14 +44,14 @@ def SourceInFolders(sources, prefix=[]):
   return result
 
 
-def GenerateProject(filename, spec):
-  print 'Generating %s' % filename
+def GenerateProject(vcproj_filename, build_file, spec):
+  print 'Generating %s' % vcproj_filename
 
-  p = MSVSProject.Writer(filename)
+  p = MSVSProject.Writer(vcproj_filename)
   p.Create(spec['name'])
 
-  # Get directory gyp file is in.
-  gyp_dir = os.path.split(filename)[0]
+  # Get directory project file is in.
+  gyp_dir = os.path.split(vcproj_filename)[0]
   # Figure out which vsprops to use.
   vsprops_dirs = spec.get('vs_props', [])
   # Make them relative to the gyp file.
@@ -122,10 +122,15 @@ def GenerateProject(filename, spec):
                       vsprops_dirs),
              'ConfigurationType': config_type},
       tools=tools)
-  # Add in file list.
-  sources = [i.replace('/', '\\') for i in spec['sources']]
+  # Prepare list of sources.
+  sources = spec['sources']
+  # Add in the gyp file.
+  sources.append(os.path.split(build_file)[1])
+  # Convert to folders and the right slashes.
+  sources = [i.replace('/', '\\') for i in sources]
   sources = [i.split('\\') for i in sources]
   sources = SourceInFolders(sources)
+  # Add in files.
   p.AddFiles(sources)
   # Write it out.
   p.Write()
@@ -187,7 +192,7 @@ def GenerateOutput(target_list, target_dicts, data):
                                                spec['name'] + '_gyp.vcproj'))
     projects[qualified_target] = {
         'vcproj_path': vcproj_path,
-        'guid': GenerateProject(vcproj_path, spec),
+        'guid': GenerateProject(vcproj_path, build_file, spec),
     }
 
   for qualified_target in target_list:
