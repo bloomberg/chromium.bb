@@ -303,10 +303,6 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
   LoadAutomaticVariablesFromDict(variables, the_dict)
   LoadVariablesFromVariablesDict(variables, the_dict)
 
-  # Unhook the variables dict, it's no longer needed.
-  if 'variables' in the_dict:
-    del the_dict['variables']
-
   # Recurse into child dicts, or process child lists which may result in
   # further recursion into descendant dicts.
   for key, value in the_dict.iteritems():
@@ -348,13 +344,13 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables):
     index = index + 1
 
 
-class DependencyTreeNode(object):
+class DependencyGraphNode(object):
   """
 
   Attributes:
-     ref: A reference to an object that this DependencyTreeNode represents.
-     dependencies: List of DependencyTreeNodes on which this one depends.
-     dependents: List of DependencyTreeNodes that depend on this one.
+     ref: A reference to an object that this DependencyGraphNode represents.
+     dependencies: List of DependencyGraphNodes on which this one depends.
+     dependents: List of DependencyGraphNodes that depend on this one.
   """
 
   class CircularException(Exception):
@@ -367,12 +363,12 @@ class DependencyTreeNode(object):
 
   def FlattenToList(self):
     # flat_list is the sorted list of dependencies - actually, the list items
-    # are the "ref" attributes of DependencyTreeNodes.  Every target will
+    # are the "ref" attributes of DependencyGraphNodes.  Every target will
     # appear in flat_list after all of its dependencies, and before all of its
     # dependents.
     flat_list = []
 
-    # in_degree_zeros is the list of DependencyTreeNodes that have no
+    # in_degree_zeros is the list of DependencyGraphNodes that have no
     # dependencies not in flat_list.  Initially, it is a copy of the children
     # of this node, because when the graph was built, nodes with no
     # dependencies were made implicit dependents of the root node.
@@ -421,16 +417,16 @@ class DependencyTreeNode(object):
 
 
 def BuildDependencyList(targets):
-  # Create a DependencyTreeNode for each target.  Put it into a dict for easy
+  # Create a DependencyGraphNode for each target.  Put it into a dict for easy
   # access.
   dependency_nodes = {}
   for target, spec in targets.iteritems():
     if not target in dependency_nodes:
-      dependency_nodes[target] = DependencyTreeNode(target)
+      dependency_nodes[target] = DependencyGraphNode(target)
 
   # Set up the dependency links.  Targets that have no dependencies are treated
   # as dependent on root_node.
-  root_node = DependencyTreeNode(None)
+  root_node = DependencyGraphNode(None)
   for target, spec in targets.iteritems():
     target_node = dependency_nodes[target]
     if not 'dependencies' in spec or len(spec['dependencies']) == 0:
@@ -456,7 +452,7 @@ def BuildDependencyList(targets):
   # (cycle).  If you need to figure out what's wrong, look for elements of
   # targets that are not in flat_list.
   if len(flat_list) != len(targets):
-    raise DependencyTreeNode.CircularException, \
+    raise DependencyGraphNode.CircularException, \
         'Some targets not reachable, cycle in dependency graph detected'
 
   return [dependency_nodes, flat_list]
@@ -692,17 +688,19 @@ def ProcessRules(name, the_dict):
     del the_dict[del_list]
 
   for list_key in lists:
-    # Initialize the _excluded and _included lists now, so that the code that
-    # needs to use them can perform list operations without needing to do its
-    # own lazy initialization.  Lists that are unneeded will be deleted at
-    # the end.
+    # Initialize the _excluded list now, so that the code that needs to use
+    # it can perform list operations without needing to do its own lazy
+    # initialization.  If the list is unneeded, it will be deleted at the end.
     excluded_key = list_key + '_excluded'
-    included_key = list_key + '_included'
-    for k in [excluded_key, included_key]:
-      if k in the_dict:
-        raise KeyError, name + ' key ' + k + ' must not be present prior ' + \
-                        ' to applying exclusion/regex rules for ' + list_key
-      the_dict[k] = []
+    if excluded_key in the_dict:
+      raise KeyError, \
+          name + ' key ' + excluded_key + ' must not be present prior ' + \
+          ' to applying exclusion/regex rules for ' + list_key
+    the_dict[excluded_key] = []
+
+    # Also initialize the included_list, which doesn't need to be part of
+    # the_dict.
+    included_list = []
 
     # Note that exclude_key ("sources!") is different from excluded_key
     # ("sources_excluded").  Since exclude_key is just a very temporary
@@ -711,7 +709,7 @@ def ProcessRules(name, the_dict):
     exclude_key = list_key + '!'
     if exclude_key in the_dict:
       for exclude_item in the_dict[exclude_key]:
-        if exclude_item in the_dict[included_key]:
+        if exclude_item in included_list:
           # The exclude_item was already preserved and is "golden", don't touch
           # it.
           continue
@@ -749,7 +747,7 @@ def ProcessRules(name, the_dict):
             # Regular expression match.
 
             if action == 'exclude':
-              if list_item in the_dict[included_key]:
+              if list_item in included_list:
                 # regex_item says to remove list_item from the list, but
                 # something else already said to include it, so leave it
                 # alone and proceed to the next item in the list.
@@ -771,8 +769,8 @@ def ProcessRules(name, the_dict):
               # Here's a list_item that's in list and needs to stay there.
               # Add it to the golden list of happy items to keep, and nothing
               # will be able to exclude it in the future.
-              if not list_item in the_dict[included_key]:
-                the_dict[included_key].append(list_item)
+              if not list_item in included_list:
+                included_list.append(list_item)
 
             else:
               # This is an action that doesn't make any sense.
@@ -800,8 +798,8 @@ def ProcessRules(name, the_dict):
               # deletions after processing all of the rules.
               del the_dict[excluded_key][index]
               the_dict[list_key].append(excluded_item)
-              if not excluded_item in the_dict[included_key]:
-                the_dict[included_key].append(excluded_item)
+              if not excluded_item in included_list:
+                included_list.append(excluded_item)
             else:
               # Only move to the next index if there was no match.  If there
               # was a match, the item was deleted, and the next item to look
@@ -811,9 +809,7 @@ def ProcessRules(name, the_dict):
       # The "whatever/" list is no longer needed, dump it.
       del the_dict[regex_key]
 
-    # Dump the "included" list, which is never needed since evertyhing in it
-    # is already in the main list.  Dump the "excluded" list if it's empty.
-    del the_dict[included_key]
+    # Dump the "excluded" list if it's empty.
     if len(the_dict[excluded_key]) == 0:
       del the_dict[excluded_key]
 
