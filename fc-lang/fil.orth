@@ -1,5 +1,5 @@
 #
-# fontconfig/fc-lang/tl.orth
+# fontconfig/fc-lang/fil.orth
 #
 # Copyright © 2009 Roozbeh Pournader
 #
@@ -21,7 +21,25 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Tagalog (tl)
+# Filipino (fil)
 #
-# Since Filipino is standardized Tagalog, we just include that
-include fil.orth
+# Sources:
+# * Paul Morrow, "A Brief Guide to Filipino Pronunciation",
+# http://www.mts.net/~pmorrow/filpro.htm
+# * Komisyon sa Wikang Filipino, "Ang Ortograpiya ng Wikang Pambansa",
+# http://wika.pbwiki.com/f/ORTOPDF.pdf (in Filipino)
+# * CLDR exemplar set for Filipino:
+# http://unicode.org/cldr/data/common/main/fil.xml
+#
+0041-005A
+0061-007A
+00C0-00C2
+00C8-00CA
+00CC-00CE
+00D1-00D4
+00D9-00DB
+00E0-00E2
+00E8-00EA
+00EC-00EE
+00F1-00F4
+00F9-00FB
