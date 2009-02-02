@@ -327,12 +327,6 @@ void set_mode(int connector_id, char *mode_str)
 		return;
 	}
 
-	ret = drm_intel_bo_pin(bo, 4096);
-	if (ret) {
-		fprintf(stderr, "failed to pin buffer: %s\n", strerror(errno));
-		return;
-	}
-
 	ret = drm_intel_gem_bo_map_gtt(bo);
 	if (ret) {
 		fprintf(stderr, "failed to GTT map buffer: %s\n",
