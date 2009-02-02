@@ -347,11 +347,16 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables):
 class DependencyGraphNode(object):
   """
 
+  Class variables:
+    linkable_types: A list of types that are treated as linkable.
+
   Attributes:
-     ref: A reference to an object that this DependencyGraphNode represents.
-     dependencies: List of DependencyGraphNodes on which this one depends.
-     dependents: List of DependencyGraphNodes that depend on this one.
+    ref: A reference to an object that this DependencyGraphNode represents.
+    dependencies: List of DependencyGraphNodes on which this one depends.
+    dependents: List of DependencyGraphNodes that depend on this one.
   """
+
+  linkable_types = ['executable', 'shared_library']
 
   class CircularException(Exception):
     pass
@@ -444,11 +449,11 @@ class DependencyGraphNode(object):
     if dependents == None:
       dependents = []
 
-    # It's kind of sucky that targets has to be passed into this function,
+    # It's kind of sucky that |targets| has to be passed into this function,
     # but that's presently the easiest way to access the target dicts so that
     # this function can find target types.
     target_type = targets[self.ref]['type']
-    if target_type in ['executable', 'shared_library']:
+    if target_type in self.linkable_types:
       if self.ref not in dependents:
         dependents.append(self.ref)
     else:
@@ -456,6 +461,90 @@ class DependencyGraphNode(object):
         dependent.LinkDependents(targets, dependents)
 
     return dependents
+
+  def DirectDependencies(self, dependencies=None):
+    """Returns a list of just direct dependencies."""
+    if dependencies == None:
+      dependencies = []
+
+    for dependency in self.dependencies:
+      # Check for None, corresponding to the root node.
+      if dependency.ref != None and dependency.ref not in dependencies:
+        dependencies.append(dependency.ref)
+
+    return dependencies
+
+  def DeepDependencies(self, dependencies=None):
+    """Returns a list of all of a target's dependencies, recursively."""
+    if dependencies == None:
+      dependencies = []
+
+    for dependency in self.dependencies:
+      # Check for None, corresponding to the root node.
+      if dependency.ref != None and dependency.ref not in dependencies:
+        dependencies.append(dependency.ref)
+        dependency.DeepDependencies(dependencies)
+
+    return dependencies
+
+  def LinkDependencies(self, targets, dependencies=None, initial=True):
+    """Returns a list of dependency targets that are linked into this target.
+
+    This function has a split personality, depending on the setting of
+    |initial|.  Outside calers should always leave |initial| at its default
+    setting.
+
+    When |initial| is True, if |self| is a linkable target, it will be added
+    to the list of dependencies, and if |self| is not a linkable target, an
+    empty list of dependencies will be returned, because |self| cannot be a
+    linkable dependency of itself as a non-linkable type.
+
+    When |initial| is False, the opposite occurs.  If |self| is not linkable,
+    it will be added to the list of dependencies, because it will be linked
+    when built into the target for which the dependencies list is being built.
+    If |self| is linkable, it is not added to the list of dependencies, because
+    it is itself linkable, and it will not be linked into the target for which
+    the list is being built.
+
+    When adding a target to the list of dependencies, this function will
+    recurse into itself with |initial| set to False, to collect depenedencies
+    that are linked into the linkable target for which the list is being built.
+    """
+    if dependencies == None:
+      dependencies = []
+
+    # Check for None, corresponding to the root node.
+    if self.ref == None:
+      return dependencies
+
+    # It's kind of sucky that |targets| has to be passed into this function,
+    # but that's presently the easiest way to access the target dicts so that
+    # this function can find target types.
+
+    is_linkable = targets[self.ref]['type'] in self.linkable_types
+
+    if (initial and not is_linkable) or (not initial and is_linkable):
+      # If this is the first target being examined and it's not linkable,
+      # return an empty list of link dependencies, because the link
+      # dependencies are intended to apply to the target itself (initial is
+      # True) and this target won't be linked.
+      # If this is a subsequent target and it's linkable, bail out leaving
+      # |dependencies| untouched.  The subsequent target is itself a linkable,
+      # it does not get linked into the target for which the dependencies list
+      # is being built (although that target links against the subsequent
+      # target).
+      return dependencies
+
+    # Either (not initial and not is_linkable) or (initial and is_linkable)
+    # is true here.  Either way, the target itself will be linked into the
+    # target for which the dependencies list is being built.  Add it to the
+    # list of dependencies and then recurse.
+    if self.ref not in dependencies:
+      dependencies.append(self.ref)
+      for dependency in self.dependencies:
+        dependency.LinkDependencies(targets, dependencies, False)
+
+    return dependencies
 
 
 def BuildDependencyList(targets):
@@ -503,39 +592,28 @@ def BuildDependencyList(targets):
 def DoDependentSettings(key, flat_list, targets, dependency_nodes):
   # key should be one of all_dependent_settings, direct_dependent_settings,
   # or link_settings.
-  #
-  # DoDependentSettings loops on dependency targets and then examines their
-  # dependents.  This means that settings not are merged into dependents in the
-  # order that dependents declare dependencies.  It would seem that, since
-  # "dependencies" is a list, this should respect the ordering of that list.
-  # To fix this, DoDependentSettings would need to loop on dependent targets
-  # and examine their dependencies.  That means that DeepDependents,
-  # DirectDependents, and LinkDependents would need to be replaced with
-  # functions that look at dependencies instead.  Analyzing dependencies
-  # instead of dependents is slightly harder.
 
   for target in flat_list:
     target_dict = targets[target]
-    if not key in target_dict:
-      continue
-
     build_file = BuildFileAndTarget('', target)[0]
 
     if key == 'all_dependent_settings':
-      dependents = dependency_nodes[target].DeepDependents()
+      dependencies = dependency_nodes[target].DeepDependencies()
     elif key == 'direct_dependent_settings':
-      dependents = dependency_nodes[target].DirectDependents()
+      dependencies = dependency_nodes[target].DirectDependencies()
     elif key == 'link_settings':
-      dependents = dependency_nodes[target].LinkDependents(targets)
+      dependencies = dependency_nodes[target].LinkDependencies(targets)
     else:
       raise KeyError, "DoDependentSettings doesn't know how to determine " + \
-                      'dependents for ' + key
+                      'dependencies for ' + key
 
-    for dependent in dependents:
-      dependent_build_file = BuildFileAndTarget('', dependent)[0]
-      dependent_dict = targets[dependent]
-      MergeDicts(dependent_dict, target_dict[key],
-                 dependent_build_file, build_file)
+    for dependency in dependencies:
+      dependency_dict = targets[dependency]
+      if not key in dependency_dict:
+        continue
+      dependency_build_file = BuildFileAndTarget('', dependency)[0]
+      MergeDicts(target_dict, dependency_dict[key],
+                 build_file, dependency_build_file)
 
 
 def RelativePath(path, relative_to):
