@@ -6,6 +6,10 @@ import re
 import sys
 
 
+# A list of types that are treated as linkable.
+linkable_types = ['executable', 'shared_library']
+
+
 def BuildFileAndTarget(build_file, target):
   # NOTE: If you just want to split up target into a build_file and target,
   # and you know that target already has a build_file that's been produced by
@@ -347,16 +351,11 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables):
 class DependencyGraphNode(object):
   """
 
-  Class variables:
-    linkable_types: A list of types that are treated as linkable.
-
   Attributes:
     ref: A reference to an object that this DependencyGraphNode represents.
     dependencies: List of DependencyGraphNodes on which this one depends.
     dependents: List of DependencyGraphNodes that depend on this one.
   """
-
-  linkable_types = ['executable', 'shared_library']
 
   class CircularException(Exception):
     pass
@@ -407,60 +406,6 @@ class DependencyGraphNode(object):
           in_degree_zeros.append(node_dependent)
 
     return flat_list
-
-  def DirectDependents(self):
-    """Returns a list of just direct dependents."""
-    dependents = []
-    for dependent in self.dependents:
-      if dependent.ref not in dependents:
-        dependents.append(dependent.ref)
-
-    return dependents
-
-  def DeepDependents(self, dependents=None):
-    """Returns a list of all of a target's dependents, recursively."""
-    if dependents == None:
-      dependents = []
-
-    for dependent in self.dependents:
-      if dependent.ref not in dependents:
-        # Put each dependent as well as its dependents into the list.
-        dependents.append(dependent.ref)
-        dependent.DeepDependents(dependents)
-
-    return dependents
-
-  def LinkDependents(self, targets, dependents=None):
-    """Returns a list of dependent targets, or self, that are linked.
-
-    Not all target types are linked, where "link" means output by ld or
-    link.exe, which link against other libraries and perform undefined symbol
-    resolution.  Static library targets are an example of a non-linked target
-    type.  This function returns the list of targets in which this target will
-    itself be linked.
-
-    If this target is itself a linkable type, the returned list will only
-    contain one entry, for this target.
-
-    If this target is not a linkable type, LinkDependents will recurse into
-    dependents to determine the nearest linkable dependent targets, and return
-    them.
-    """
-    if dependents == None:
-      dependents = []
-
-    # It's kind of sucky that |targets| has to be passed into this function,
-    # but that's presently the easiest way to access the target dicts so that
-    # this function can find target types.
-    target_type = targets[self.ref]['type']
-    if target_type in self.linkable_types:
-      if self.ref not in dependents:
-        dependents.append(self.ref)
-    else:
-      for dependent in self.dependents:
-        dependent.LinkDependents(targets, dependents)
-
-    return dependents
 
   def DirectDependencies(self, dependencies=None):
     """Returns a list of just direct dependencies."""
@@ -521,7 +466,8 @@ class DependencyGraphNode(object):
     # but that's presently the easiest way to access the target dicts so that
     # this function can find target types.
 
-    is_linkable = targets[self.ref]['type'] in self.linkable_types
+    target_type = targets[self.ref]['type']
+    is_linkable = target_type in linkable_types
 
     if (initial and not is_linkable) or (not initial and is_linkable):
       # If this is the first target being examined and it's not linkable,
@@ -540,7 +486,11 @@ class DependencyGraphNode(object):
     # target for which the dependencies list is being built.  Add it to the
     # list of dependencies and then recurse.
     if self.ref not in dependencies:
-      dependencies.append(self.ref)
+      if target_type != 'none':
+        # Special case: "none" type targets don't produce any linkable products
+        # and shouldn't be exposed as link dependencies, although dependencies
+        # of "none" type targets may still be link dependencies.
+        dependencies.append(self.ref)
       for dependency in self.dependencies:
         dependency.LinkDependencies(targets, dependencies, False)
 
@@ -614,6 +564,52 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
       dependency_build_file = BuildFileAndTarget('', dependency)[0]
       MergeDicts(target_dict, dependency_dict[key],
                  build_file, dependency_build_file)
+
+
+def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
+  # Recompute target "dependencies" properties.  For each static library
+  # target, remove "dependencies" entries referring to other static libraries.
+  # For each linkable target, add a "dependencies" entry referring to all of
+  # the target's computed list of link dependencies (including static
+  # libraries) if no such entry is already present.
+  for target in flat_list:
+    target_dict = targets[target]
+    target_type = target_dict['type']
+
+    if target_type == 'static_library':
+      if not 'dependencies' in target_dict:
+        continue
+
+      index = 0
+      while index < len(target_dict['dependencies']):
+        dependency = target_dict['dependencies'][index]
+        dependency_dict = targets[dependency]
+        if dependency_dict['type'] == 'static_library':
+          # A static library should not depend on another static library.  Take
+          # the dependency out of the list, and don't increment index because
+          # the next dependency to analyze will shift into the index formerly
+          # occupied by the one being removed.
+          del target_dict['dependencies'][index]
+        else:
+          index = index + 1
+
+      # If the dependencies list is empty, it's not needed, so unhook it.
+      if len(target_dict['dependencies']) == 0:
+        del target_dict['dependencies']
+
+    elif target_type in linkable_types:
+      # Get a list of dependency targets that should be linked into this
+      # target.  Add them to the dependencies list if they're not already
+      # present.
+
+      link_dependencies = dependency_nodes[target].LinkDependencies(targets)
+      for dependency in link_dependencies:
+        if dependency == target:
+          continue
+        if not 'dependencies' in target_dict:
+          target_dict['dependencies'] = []
+        if not dependency in target_dict['dependencies']:
+          target_dict['dependencies'].append(dependency)
 
 
 def RelativePath(path, relative_to):
@@ -1077,55 +1073,10 @@ def main(args):
                         'link_settings']:
     DoDependentSettings(settings_type, flat_list, targets, dependency_nodes)
 
-  # TODO(mark): This logic is rough, but it works for base_unittests.
-  # Set up computed dependencies.  For each non-static library target, look
-  # at the entire dependency hierarchy and add any static libraries as computed
-  # dependencies.  Static library targets have no computed dependencies.  See
-  # notes above regarding linkables, this section should be refactored at the
-  # same time as the above one.
-  for target in flat_list:
-    target_dict = targets[target]
-
-    # If we've got a static library here...
-    if target_dict['type'] == 'static_library':
-      dependents = dependency_nodes[target].DeepDependents()
-      # TODO(mark): Probably want dependents to be sorted in the order that
-      # they appear in flat_list.
-
-      # Look at every target that depends on it, even indirectly...
-      for dependent in dependents:
-        [dependent_bf, dependent_unq, dependent_q] = \
-            BuildFileAndTarget('', dependent)
-        dependent_dict = targets[dependent_q]
-
-        # If the dependent isn't a static library...
-        if dependent_dict['type'] != 'static_library':
-
-          # Make it depend on the static library if it doesn't already...
-          if not 'dependencies' in dependent_dict:
-            dependent_dict['dependencies'] = []
-          if not target in dependent_dict['dependencies']:
-            dependent_dict['dependencies'].append(target)
-
-          # ...and make it link against the libraries that the static library
-          # wants, if it doesn't already...
-          # TODO(mark): Eliminate the special-casing of the "libraries"
-          # section in favor of allowing "libraries" sections to be enclosed
-          # within "link_settings" sections in input files.  The recommended
-          # best practice should be for "libraries" to only appear within
-          # "link_settings" sections.
-          if 'libraries' in target_dict:
-            if not 'libraries' in dependent_dict:
-              dependent_dict['libraries'] = []
-            for library in target_dict['libraries']:
-              if not library in dependent_dict['libraries']:
-                dependent_dict['libraries'].append(library)
-
-      # The static library doesn't need its dependencies or libraries any more.
-      if 'dependencies' in target_dict:
-        del target_dict['dependencies']
-      if 'libraries' in target_dict:
-        del target_dict['libraries']
+  # Make sure static libraries don't declare dependencies on other static
+  # libraries, but that linkables depend on all unlinked static libraries
+  # that they need so that their link steps will be correct.
+  AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes)
 
   # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:

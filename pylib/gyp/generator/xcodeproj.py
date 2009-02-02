@@ -72,9 +72,6 @@ def GenerateOutput(target_list, target_dicts, data):
         extension = basename[dot + 1:]
         if extension in source_extensions:
           xcode_targets[qualified_target].SourcesPhase().AddFile(source)
-    if 'libraries' in spec:
-      for library in spec['libraries']:
-        xcode_targets[qualified_target].FrameworksPhase().AddFile(library)
     if 'xcode_framework_dirs' in spec:
       for include_dir in spec['xcode_framework_dirs']:
         xcode_targets[qualified_target].AppendBuildSetting( \
@@ -87,10 +84,26 @@ def GenerateOutput(target_list, target_dicts, data):
       for define in spec['defines']:
         xcode_targets[qualified_target].AppendBuildSetting( \
             'GCC_PREPROCESSOR_DEFINITIONS', define)
+
+    # Add dependencies before libraries, because adding a dependency may imply
+    # adding a library.  It's preferable to keep dependencies listed first
+    # during a link phase so that they can override symbols that would
+    # otherwise be provided by libraries, which will usually include system
+    # libraries.  On some systems, ld is finicky and even requires the
+    # libraries to be ordered in such a way that unresolved symbols in
+    # earlier-listed libraries may only be resolved by later-listed libraries.
+    # The Mac linker doesn't work that way, but other platforms do, and so
+    # their linker invocations need to be constructed in this way.  There's
+    # no compelling reason for Xcode's linker invocations to differ.
+
     if 'dependencies' in spec:
       for dependency in spec['dependencies']:
         dependency = gyp.QualifiedTarget(build_file, dependency)
         xcode_targets[qualified_target].AddDependency(xcode_targets[dependency])
+
+    if 'libraries' in spec:
+      for library in spec['libraries']:
+        xcode_targets[qualified_target].FrameworksPhase().AddFile(library)
 
   for build_file, build_file_dict in data.iteritems():
     xcode_projects[build_file].Finalize()
