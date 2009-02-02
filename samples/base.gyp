@@ -154,12 +154,14 @@
         ],
         [ 'OS == "mac"', {
             'sources/': [ ['exclude', '_(linux|win)\\.cc$'] ],
-            'libraries': [
-              '/System/Library/Frameworks/AppKit.framework',
-              '/System/Library/Frameworks/Carbon.framework',
-              '/System/Library/Frameworks/CoreFoundation.framework',
-              '/System/Library/Frameworks/Foundation.framework',
-            ],
+            'link_settings': {
+              'libraries': [
+                '/System/Library/Frameworks/AppKit.framework',
+                '/System/Library/Frameworks/Carbon.framework',
+                '/System/Library/Frameworks/CoreFoundation.framework',
+                '/System/Library/Frameworks/Foundation.framework',
+              ],
+            },
             'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
           },
           {  # else: OS != "mac"

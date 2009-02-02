@@ -29,7 +29,7 @@
         'zutil.h',
       ],
       'vs_props': [ '../../build/external_code.vsprops' ],
-      'dependent_settings': {
+      'direct_dependent_settings': {
         'include_dirs': [
           '.',
         ],

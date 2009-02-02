@@ -403,7 +403,17 @@ class DependencyGraphNode(object):
 
     return flat_list
 
+  def DirectDependents(self):
+    """Returns a list of just direct dependents."""
+    dependents = []
+    for dependent in self.dependents:
+      if dependent.ref not in dependents:
+        dependents.append(dependent.ref)
+
+    return dependents
+
   def DeepDependents(self, dependents=None):
+    """Returns a list of all of a target's dependents, recursively."""
     if dependents == None:
       dependents = []
 
@@ -412,6 +422,38 @@ class DependencyGraphNode(object):
         # Put each dependent as well as its dependents into the list.
         dependents.append(dependent.ref)
         dependent.DeepDependents(dependents)
+
+    return dependents
+
+  def LinkDependents(self, targets, dependents=None):
+    """Returns a list of dependent targets, or self, that are linked.
+
+    Not all target types are linked, where "link" means output by ld or
+    link.exe, which link against other libraries and perform undefined symbol
+    resolution.  Static library targets are an example of a non-linked target
+    type.  This function returns the list of targets in which this target will
+    itself be linked.
+
+    If this target is itself a linkable type, the returned list will only
+    contain one entry, for this target.
+
+    If this target is not a linkable type, LinkDependents will recurse into
+    dependents to determine the nearest linkable dependent targets, and return
+    them.
+    """
+    if dependents == None:
+      dependents = []
+
+    # It's kind of sucky that targets has to be passed into this function,
+    # but that's presently the easiest way to access the target dicts so that
+    # this function can find target types.
+    target_type = targets[self.ref]['type']
+    if target_type in ['executable', 'shared_library']:
+      if self.ref not in dependents:
+        dependents.append(self.ref)
+    else:
+      for dependent in self.dependents:
+        dependent.LinkDependents(targets, dependents)
 
     return dependents
 
@@ -456,6 +498,44 @@ def BuildDependencyList(targets):
         'Some targets not reachable, cycle in dependency graph detected'
 
   return [dependency_nodes, flat_list]
+
+
+def DoDependentSettings(key, flat_list, targets, dependency_nodes):
+  # key should be one of all_dependent_settings, direct_dependent_settings,
+  # or link_settings.
+  #
+  # DoDependentSettings loops on dependency targets and then examines their
+  # dependents.  This means that settings not are merged into dependents in the
+  # order that dependents declare dependencies.  It would seem that, since
+  # "dependencies" is a list, this should respect the ordering of that list.
+  # To fix this, DoDependentSettings would need to loop on dependent targets
+  # and examine their dependencies.  That means that DeepDependents,
+  # DirectDependents, and LinkDependents would need to be replaced with
+  # functions that look at dependencies instead.  Analyzing dependencies
+  # instead of dependents is slightly harder.
+
+  for target in flat_list:
+    target_dict = targets[target]
+    if not key in target_dict:
+      continue
+
+    build_file = BuildFileAndTarget('', target)[0]
+
+    if key == 'all_dependent_settings':
+      dependents = dependency_nodes[target].DeepDependents()
+    elif key == 'direct_dependent_settings':
+      dependents = dependency_nodes[target].DirectDependents()
+    elif key == 'link_settings':
+      dependents = dependency_nodes[target].LinkDependents(targets)
+    else:
+      raise KeyError, "DoDependentSettings doesn't know how to determine " + \
+                      'dependents for ' + key
+
+    for dependent in dependents:
+      dependent_build_file = BuildFileAndTarget('', dependent)[0]
+      dependent_dict = targets[dependent]
+      MergeDicts(dependent_dict, target_dict[key],
+                 dependent_build_file, build_file)
 
 
 def RelativePath(path, relative_to):
@@ -913,33 +993,11 @@ def main(args):
       for target_dict in build_file_data['targets']:
         MergeDicts(target_dict, file_settings, build_file_name, build_file_name)
 
-  # Now look for dependent_settings sections in dependencies, and merge
-  # settings.
-  # TODO(mark): dependent_settings should become direct_dependent_settings.
-  # all_dependent_settings should be added which provides a dict to be merged
-  # into a target's list of DeepDependents.  link_settings should be added
-  # which provides a dict to merge into dependents that have link phases
-  # performed.  If link_settings is found in a linkable target (not static
-  # libraries), link_settings should be merged into its enclosing target's
-  # dict.  Otherwise, something should follow the dependent chain, stopping
-  # at linkables and merging link_settings into their dicts.  Dependents of
-  # linkables should NOT have link_settings merged in.
-  for target in flat_list:
-    target_dict = targets[target]
-    if not 'dependencies' in target_dict:
-      continue
-
-    build_file = BuildFileAndTarget('', target)[0]
-    for dependency in target_dict['dependencies']:
-      # The name is already relative, so use ''.
-      [dep_build_file, dep_target_unq, dep_target_q] = \
-          BuildFileAndTarget('', dependency)
-      dependency_dict = targets[dep_target_q]
-      if not 'dependent_settings' in dependency_dict:
-        continue
-
-      dependent_settings = dependency_dict['dependent_settings']
-      MergeDicts(target_dict, dependent_settings, build_file, dep_build_file)
+  # Handle dependent settings of various types.
+  for settings_type in ['all_dependent_settings',
+                        'direct_dependent_settings',
+                        'link_settings']:
+    DoDependentSettings(settings_type, flat_list, targets, dependency_nodes)
 
   # TODO(mark): This logic is rough, but it works for base_unittests.
   # Set up computed dependencies.  For each non-static library target, look

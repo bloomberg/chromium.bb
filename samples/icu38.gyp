@@ -157,7 +157,7 @@
       'defines': [
         'U_I18N_IMPLEMENTATION',
       ],
-      'dependent_settings': {
+      'direct_dependent_settings': {
         'include_dirs': [
           'public/i18n',
         ],
@@ -301,7 +301,7 @@
       'defines': [
         'U_COMMON_IMPLEMENTATION',
       ],
-      'dependent_settings': {
+      'direct_dependent_settings': {
         'include_dirs': [
           'public/common',
         ],

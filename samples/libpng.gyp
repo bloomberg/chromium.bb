@@ -33,7 +33,7 @@
         'CHROME_PNG_WRITE_SUPPORT',
         'PNG_USER_CONFIG',
       ],
-      'dependent_settings': {
+      'direct_dependent_settings': {
         'include_dirs': [
           '.',
         ],

@@ -19,7 +19,7 @@
       'conditions': [
         [ 'OS == "mac"', { 'sources': [ 'platform_test_mac.mm' ] } ],
       ],
-      'dependent_settings': {
+      'direct_dependent_settings': {
         'defines': [
           'UNIT_TEST',
         ],

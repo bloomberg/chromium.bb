@@ -38,7 +38,7 @@
         '../src/url_util.h',
       ],
       'include_dirs': ['../..'],
-      'dependent_settings': {
+      'direct_dependent_settings': {
         'include_dirs': [
           '.',
         ],
