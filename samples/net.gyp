@@ -12,8 +12,10 @@
       'dependencies': [
         'net_resources',
         '../googleurl/build/googleurl.gyp:googleurl',
+        '../sdch/sdch.gyp:sdch',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/modp_b64/modp_b64.gyp:modp_b64',
+        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'sources': [
         'base/address_list.cc',

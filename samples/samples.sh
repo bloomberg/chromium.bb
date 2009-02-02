@@ -7,6 +7,7 @@ GYPS="
     base/base.gyp
     googleurl/build/googleurl.gyp
     net/net.gyp
+    sdch/sdch.gyp
     skia/skia.gyp
     testing/gtest.gyp
     third_party/bzip2/bzip2.gyp
