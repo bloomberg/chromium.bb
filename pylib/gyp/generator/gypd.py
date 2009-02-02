@@ -25,7 +25,7 @@ to change.
 """
 
 
-import gyp
+import gyp.common
 import errno
 import os
 import pprint
@@ -40,7 +40,8 @@ generator_default_variables = {
 def GenerateOutput(target_list, target_dicts, data):
   output_files = {}
   for qualified_target in target_list:
-    [build_file, target] = gyp.BuildFileAndTarget('', qualified_target)[0:2]
+    [build_file, target] = \
+        gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
 
     if build_file[-4:] != '.gyp':
       # TODO(mark): Pick an exception class

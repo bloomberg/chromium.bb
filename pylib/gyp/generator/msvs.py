@@ -4,7 +4,7 @@
 import os.path
 import subprocess
 import sys
-import gyp
+import gyp.common
 import gyp.MSVSNew as MSVSNew
 import gyp.MSVSProject as MSVSProject
 
@@ -223,7 +223,7 @@ def GenerateOutput(target_list, target_dicts, data):
 
   projects = {}
   for qualified_target in target_list:
-    build_file = gyp.BuildFileAndTarget('', qualified_target)[0]
+    build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
     spec = target_dicts[qualified_target]
     vcproj_path = os.path.abspath(os.path.join(os.path.split(build_file)[0],
                                                spec['name'] + '_gyp.vcproj'))
@@ -241,7 +241,7 @@ def GenerateOutput(target_list, target_dicts, data):
     print 'Generating %s' % sln_path
     # Get projects in the solution, and their dependents in a separate bucket.
     sln_projects = [p for p in target_list if
-                    gyp.BuildFileAndTarget('', p)[0] == s]
+                    gyp.common.BuildFileAndTarget('', p)[0] == s]
     dep_projects = _DependentProjects(target_dicts, sln_projects)
     # Convert to entries.
     entries = [projects[e]['obj'] for e in sln_projects]

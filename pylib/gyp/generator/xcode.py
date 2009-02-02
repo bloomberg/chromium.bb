@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-import gyp
-import gyp.xcodeproj_file as xf
+import gyp.common
+import gyp.xcodeproj_file
 import errno
 import os
 
@@ -14,14 +14,16 @@ generator_default_variables = {
 class XcodeProject(object):
   def __init__(self, path):
     self.path = path
-    self.project = xf.PBXProject(path=path)
-    self.project_file = xf.XCProjectFile({'rootObject': self.project})
+    self.project = gyp.xcodeproj_file.PBXProject(path=path)
+    self.project_file = \
+        gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
 
   def AddTarget(self, name, type):
     _types = { 'static_library': 'com.apple.product-type.library.static',
                'executable':     'com.apple.product-type.tool',
              }
-    target = xf.PBXNativeTarget({'name': name, 'productType': _types[type]},
+    target = gyp.xcodeproj_file.PBXNativeTarget({'name':        name,
+                                                 'productType': _types[type]},
                                 parent=self.project)
     self.project.AppendProperty('targets', target)
     return target
@@ -54,7 +56,8 @@ def GenerateOutput(target_list, target_dicts, data):
 
   xcode_targets = {}
   for qualified_target in target_list:
-    [build_file, target] = gyp.BuildFileAndTarget('', qualified_target)[0:2]
+    [build_file, target] = \
+        gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
     spec = target_dicts[qualified_target]
     xcode_targets[qualified_target] = \
         xcode_projects[build_file].AddTarget(target, spec['type'])
@@ -98,7 +101,7 @@ def GenerateOutput(target_list, target_dicts, data):
 
     if 'dependencies' in spec:
       for dependency in spec['dependencies']:
-        dependency = gyp.QualifiedTarget(build_file, dependency)
+        dependency = gyp.common.QualifiedTarget(build_file, dependency)
         xcode_targets[qualified_target].AddDependency(xcode_targets[dependency])
 
     if 'libraries' in spec:
