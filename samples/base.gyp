@@ -141,6 +141,10 @@
         'worker_pool.cc',
         'worker_pool_mac.mm',
       ],
+      # These warnings are needed for the files in third_party\dmg_fp.
+      'vs_disabled_warnings': [
+        4244, 4554, 4018, 4102,
+      ],
       'conditions': [
         [ 'OS == "linux"', {
             'sources/': [ ['exclude', '_(mac|win)\\.cc$'],

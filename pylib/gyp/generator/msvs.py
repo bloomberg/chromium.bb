@@ -63,10 +63,12 @@ def GenerateProject(filename, spec):
   include_dirs = [os.path.join(gyp_dir, i) for i in include_dirs]
   include_dirs = [FixPath(i) for i in include_dirs]
   defines = ['OS_WIN'] + spec.get('defines',[])
+  disabled_warnings = [str(i) for i in spec.get('vs_disabled_warnings',[])]
   compiler_tool = MSVSProject.Tool(
       'VCCLCompilerTool', {
         'AdditionalIncludeDirectories': ';'.join(include_dirs),
         'PreprocessorDefinitions': ';'.join(defines),
+        'DisableSpecificWarnings': ';'.join(disabled_warnings),
         })
 
   # Pre-build and Post-build.
