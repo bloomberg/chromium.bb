@@ -11,7 +11,7 @@ import gyp.MSVSProject as MSVSProject
 
 generator_default_variables = {
     'OS': 'win',
-}
+    }
 
 
 def _FixPath(path):
@@ -126,14 +126,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       'VCBscMakeTool',
       'VCFxCopTool',
       postbuild,
-  ]
+      ]
 
   # Pick configuration type.
   config_type = {
       'none': '10',
       'executable': '1',
       'static_library': '4',
-  }[spec['type']]
+      }[spec['type']]
 
   # Add Debug/Release.
   p.AddConfig(
