@@ -52,7 +52,10 @@ def GenerateOutput(target_list, target_dicts, data):
       # TODO(mark): Pick an exception class
       raise 'Build file name must end in .gyp'
     build_file_stem = build_file[:-4]
-    xcode_projects[build_file] = XcodeProject(build_file_stem + '.xcodeproj')
+    # TODO(mark): To keep gyp-generated xcodeproj bundles from colliding with
+    # checked-in versions, temporarily put _gyp into the ones created here.
+    xcode_projects[build_file] = XcodeProject(build_file_stem +
+                                              '_gyp.xcodeproj')
 
   xcode_targets = {}
   for qualified_target in target_list:
