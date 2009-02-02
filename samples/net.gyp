@@ -11,8 +11,9 @@
       'type': 'static_library',
       'dependencies': [
         'net_resources',
-        '../third_party/bzip2/bzip2.gyp:bzip2',
         '../googleurl/build/googleurl.gyp:googleurl',
+        '../third_party/bzip2/bzip2.gyp:bzip2',
+        '../third_party/modp_b64/modp_b64.gyp:modp_b64',
       ],
       'sources': [
         'base/address_list.cc',

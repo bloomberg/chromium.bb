@@ -13,5 +13,6 @@ GYPS="
     third_party/icu38/icu38.gyp
     third_party/libevent/libevent.gyp
     third_party/libpng/libpng.gyp
+    third_party/modp_b64/modp_b64.gyp
     third_party/zlib/zlib.gyp
     "
