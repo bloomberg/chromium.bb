@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import copy
 import gyp.common
 import optparse
 import os.path
@@ -19,7 +20,7 @@ def ExceptionAppend(e, msg):
     e.args = [str(e.args[0]) + ' ' + msg, e.args[1:]]
 
 
-def LoadOneBuildFile(build_file_path, variables):
+def LoadOneBuildFile(build_file_path, variables, is_target):
   build_file = open(build_file_path)
   build_file_contents = build_file.read()
   build_file.close()
@@ -34,18 +35,35 @@ def LoadOneBuildFile(build_file_path, variables):
     ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
-  # TODO(mark): First, do includes.  Then, merge in target_defaults sections.
-  # Then, do the "pre"/"early" variable expansions and condition evaluations.
-
-  # Apply "pre"/"early" variable expansions and condition evaluations.
-  ProcessVariablesAndConditionsInDict(build_file_data, False, variables)
-
   # Scan for includes and merge them in.
   try:
     LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, variables)
   except Exception, e:
     ExceptionAppend(e, 'while reading includes of ' + build_file_path)
     raise
+
+  # Look at each project's target_defaults dict, and merge settings into
+  # targets.
+  if is_target:
+    if 'target_defaults' in build_file_data:
+      index = 0
+      while index < len(build_file_data['targets']):
+        # This procedure needs to give the impression that target_defaults is
+        # used as defaults, and the individual targets inherit from that.
+        # The individual targets need to be merged into the defaults.  Make
+        # a deep copy of the defaults for each target, merge the target dict
+        # as found in the input file into that copy, and then hook up the
+        # copy with the target-specific data merged into it as the replacement
+        # target dict.
+        old_target_dict = build_file_data['targets'][index]
+        new_target_dict = copy.deepcopy(build_file_data['target_defaults'])
+        MergeDicts(new_target_dict, old_target_dict,
+                   build_file_path, build_file_path)
+        build_file_data['targets'][index] = new_target_dict
+        index = index + 1
+
+  # Apply "pre"/"early" variable expansions and condition evaluations.
+  ProcessVariablesAndConditionsInDict(build_file_data, False, variables)
 
   return build_file_data
 
@@ -58,8 +76,8 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, variables):
 
     # Replace it by merging in the included files.
     for include in includes_list:
-      MergeDicts(subdict, LoadOneBuildFile(include, variables), subdict_path,
-                 include)
+      MergeDicts(subdict, LoadOneBuildFile(include, variables, False),
+                 subdict_path, include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
@@ -86,7 +104,7 @@ def LoadTargetBuildFile(build_file_path, data, variables):
     # Already loaded.
     return
 
-  build_file_data = LoadOneBuildFile(build_file_path, variables)
+  build_file_data = LoadOneBuildFile(build_file_path, variables, True)
   data[build_file_path] = build_file_data
 
   # ...it's loaded and it should have EARLY references and conditionals
@@ -910,21 +928,6 @@ def Load(build_files, variables):
   # "targets" too many times, though, and that seemed like a good place to do
   # this fix-up.  We may want to revisit where this is done.
   [dependency_nodes, flat_list] = BuildDependencyList(targets)
-
-  # Look at each project's settings dict, and merge settings into targets.
-  # TODO(mark): Move this step into LoadOneBuildFile or something similar.
-  # This step should happen immediately before or after (it doesn't really
-  # matter which) includes are added.  The policy should be for target
-  # dicts to inherit from the root settings dict, which means that for the
-  # MergeDicts procedure, the target dict should actually be trated as the
-  # "fro" dict to be merged into a deep copy of the settings dict, which
-  # should be the "to" dict which, after merging, replaces the original target
-  # dict.
-  for build_file_name, build_file_data in data.iteritems():
-    if 'settings' in build_file_data:
-      file_settings = build_file_data['settings']
-      for target_dict in build_file_data['targets']:
-        MergeDicts(target_dict, file_settings, build_file_name, build_file_name)
 
   # Handle dependent settings of various types.
   for settings_type in ['all_dependent_settings',

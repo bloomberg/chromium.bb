@@ -1,5 +1,5 @@
 {
-  'settings': {
+  'target_defaults': {
     'include_dirs': [
       '..',
     ],

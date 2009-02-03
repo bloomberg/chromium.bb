@@ -1,5 +1,5 @@
 {
-  'settings': {
+  'target_defaults': {
     'defines': [
       'U_STATIC_IMPLEMENTATION',
     ],
