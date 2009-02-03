@@ -119,6 +119,13 @@ if test "x$UDEV" = xyes; then
 	AC_DEFINE(UDEV, 1, [Have UDEV support])
 fi
 
+PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
+if test "x$HAVE_CAIRO" = xyes; then
+	AC_DEFINE(HAVE_CAIRO, 1, [Have cairo support])
+fi
+AM_CONDITIONAL(HAVE_CAIRO, [test "x$HAVE_CAIRO" = xyes])
+
+
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([
 	Makefile
