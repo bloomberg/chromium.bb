@@ -486,10 +486,8 @@ int main(int argc, char **argv)
 
 	if (count > 0) {
 		set_mode(con_args, count);
-		sleep(3);
+		getchar();
 	}
-
-	sleep(3);
 
 	drmModeFreeResources(resources);
 
