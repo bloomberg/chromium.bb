@@ -30,7 +30,8 @@ def main(args):
   if not options.format:
     options.format = {'darwin': 'xcode',
                       'win32':  'msvs',
-                      'cygwin': 'msvs'}[sys.platform]
+                      'cygwin': 'msvs',
+                      'linux2': 'scons',}[sys.platform]
   if not build_files:
     build_files = FindBuildFiles()
   if not build_files:
