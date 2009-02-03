@@ -242,18 +242,21 @@ void dump_framebuffers(void)
  * Then you need to find the encoder attached to that connector so you
  * can bind it with a free crtc.
  */
-void set_mode(int connector_id, char *mode_str)
+struct connector {
+	int id;
+	char mode_str[64];
+	struct drm_mode_modeinfo *mode;
+	drmModeEncoder *encoder;
+};	
+
+static void
+connector_find_mode(struct connector *c)
 {
 	drmModeConnector *connector;
-	drmModeEncoder *encoder = NULL;
-	struct drm_mode_modeinfo *mode = NULL;
-	drm_intel_bufmgr *bufmgr;
-	drm_intel_bo *bo;
-	unsigned int fb_id, *fb_ptr;
 	int i, j, size, ret, width, height;
-	div_t d;
 
 	/* First, find the connector & mode */
+	c->mode = NULL;
 	for (i = 0; i < resources->count_connectors; i++) {
 		connector = drmModeGetConnector(fd, resources->connectors[i]);
 
@@ -269,47 +272,68 @@ void set_mode(int connector_id, char *mode_str)
 			continue;
 		}
 
-		if (connector->connector_id != connector_id) {
+		if (connector->connector_id != c->id) {
 			drmModeFreeConnector(connector);
 			continue;
 		}
 
 		for (j = 0; j < connector->count_modes; j++) {
-			mode = &connector->modes[j];
-			if (!strcmp(mode->name, mode_str))
+			c->mode = &connector->modes[j];
+			if (!strcmp(c->mode->name, c->mode_str))
 				break;
 		}
 
 		/* Found it, break out */
-		if (mode)
+		if (c->mode)
 			break;
 
 		drmModeFreeConnector(connector);
 	}
 
-	if (!mode) {
-		fprintf(stderr, "failed to find mode \"%s\"\n", mode_str);
+	if (!c->mode) {
+		fprintf(stderr, "failed to find mode \"%s\"\n", c->mode_str);
 		return;
 	}
 
-	width = mode->hdisplay;
-	height = mode->vdisplay;
-
 	/* Now get the encoder */
 	for (i = 0; i < resources->count_encoders; i++) {
-		encoder = drmModeGetEncoder(fd, resources->encoders[i]);
+		c->encoder = drmModeGetEncoder(fd, resources->encoders[i]);
 
-		if (!encoder) {
+		if (!c->encoder) {
 			fprintf(stderr, "could not get encoder %i: %s\n",
 				resources->encoders[i], strerror(errno));
-			drmModeFreeEncoder(encoder);
+			drmModeFreeEncoder(c->encoder);
 			continue;
 		}
 
-		if (encoder->encoder_id  == connector->encoder_id)
+		if (c->encoder->encoder_id  == connector->encoder_id)
 			break;
 
-		drmModeFreeEncoder(encoder);
+		drmModeFreeEncoder(c->encoder);
+	}
+}
+
+static void
+set_mode(struct connector *c, int count)
+{
+	drmModeConnector *connector;
+	drmModeEncoder *encoder = NULL;
+	struct drm_mode_modeinfo *mode = NULL;
+	drm_intel_bufmgr *bufmgr;
+	drm_intel_bo *bo;
+	unsigned int fb_id, *fb_ptr;
+	int i, j, size, ret, width, height, x;
+	div_t d;
+
+	width = 0;
+	height = 0;
+	for (i = 0; i < count; i++) {
+		connector_find_mode(&c[i]);
+		if (c[i].mode == NULL)
+			continue;
+		width += c[i].mode->hdisplay;
+		if (height < c[i].mode->vdisplay)
+			height = c[i].mode->vdisplay;
 	}
 
 	bufmgr = drm_intel_bufmgr_gem_init(fd, 2<<20);
@@ -350,11 +374,18 @@ void set_mode(int connector_id, char *mode_str)
 		return;
 	}
 
-	ret = drmModeSetCrtc(fd, encoder->crtc_id, fb_id, 0, 0,
-			     &connector->connector_id, 1, mode);
-	if (ret) {
-		fprintf(stderr, "failed to set mode: %s\n", strerror(errno));
-		return;
+	x = 0;
+	for (i = 0; i < count; i++) {
+		if (c[i].mode == NULL)
+			continue;
+		ret = drmModeSetCrtc(fd, c[i].encoder->crtc_id, fb_id, x, 0,
+				     &c[i].id, 1, c[i].mode);
+		x += c[i].mode->hdisplay;
+
+		if (ret) {
+			fprintf(stderr, "failed to set mode: %s\n", strerror(errno));
+			return;
+		}
 	}
 }
 
@@ -383,8 +414,9 @@ int main(int argc, char **argv)
 	int encoders = 0, connectors = 0, crtcs = 0, framebuffers = 0;
 	char *modules[] = { "i915", "radeon" };
 	char *modeset = NULL, *mode, *connector;
-	int i, connector_id;
-
+	int i, connector_id, count = 0;
+	struct connector con_args[2];
+	
 	opterr = 0;
 	while ((c = getopt(argc, argv, optstr)) != -1) {
 		switch (c) {
@@ -405,6 +437,14 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			modeset = strdup(optarg);
+			if (sscanf(optarg, "%d:%64s",
+				   &con_args[count].id,
+				   &con_args[count].mode_str) != 2)
+				usage(argv[0]);
+			printf("setting mode %s on connector %d\n",
+			       con_args[count].mode_str,
+			       con_args[count].id);
+			count++;				      
 			break;
 		default:
 			usage(argv[0]);
@@ -444,18 +484,8 @@ int main(int argc, char **argv)
 	dump_resource(crtcs);
 	dump_resource(framebuffers);
 
-	if (modeset) {
-		connector = strtok(modeset, ":");
-		if (!connector)
-			usage(argv[0]);
-		connector_id = atoi(connector);
-
-		mode = strtok(NULL, ":");
-		if (!mode)
-			usage(argv[0]);
-		printf("setting connector %d to mode %s\n", connector_id,
-		       mode);
-		set_mode(connector_id, mode);
+	if (count > 0) {
+		set_mode(con_args, count);
 		sleep(3);
 	}
 
