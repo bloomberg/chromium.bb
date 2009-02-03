@@ -19,9 +19,11 @@ class XcodeProject(object):
         gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
 
   def AddTarget(self, name, type):
-    _types = { 'static_library': 'com.apple.product-type.library.static',
-               'executable':     'com.apple.product-type.tool',
-             }
+    _types = {
+      'shared_library': 'com.apple.product-type.library.dynamic',
+      'static_library': 'com.apple.product-type.library.static',
+      'executable':     'com.apple.product-type.tool',
+    }
     target = gyp.xcodeproj_file.PBXNativeTarget({'name':        name,
                                                  'productType': _types[type]},
                                 parent=self.project)
@@ -104,7 +106,6 @@ def GenerateOutput(target_list, target_dicts, data):
 
     if 'dependencies' in spec:
       for dependency in spec['dependencies']:
-        dependency = gyp.common.QualifiedTarget(build_file, dependency)
         xcode_targets[qualified_target].AddDependency(xcode_targets[dependency])
 
     if 'libraries' in spec:

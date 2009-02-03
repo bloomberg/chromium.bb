@@ -1377,9 +1377,11 @@ class PBXNativeTarget(XCTarget):
   })
 
   _product_filetypes = {
-    'com.apple.product-type.library.static': ['archive.ar', 'lib', '.a'],
-    'com.apple.product-type.tool':           ['compiled.mach-o.executable',
-                                              '', ''],
+    'com.apple.product-type.library.dynamic': ['compiled.mach-o.dylib',
+                                               'lib', '.dylib'],
+    'com.apple.product-type.library.static':  ['archive.ar', 'lib', '.a'],
+    'com.apple.product-type.tool':            ['compiled.mach-o.executable',
+                                               '', ''],
   }
 
   def __init__(self, properties=None, id=None, parent=None):
@@ -1444,11 +1446,13 @@ class PBXNativeTarget(XCTarget):
     XCTarget.AddDependency(self, other)
 
     static_library_type = 'com.apple.product-type.library.static'
+    shared_library_type = 'com.apple.product-type.library.dynamic'
     if isinstance(other, PBXNativeTarget) and \
        'productType' in self._properties and \
        self._properties['productType'] != static_library_type and \
        'productType' in other._properties and \
-       other._properties['productType'] == static_library_type:
+       (other._properties['productType'] == static_library_type or \
+        other._properties['productType'] == shared_library_type):
 
       file_ref = other.GetProperty('productReference')
 

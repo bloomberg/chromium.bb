@@ -413,18 +413,6 @@ class DependencyGraphNode(object):
     |initial|.  Outside calers should always leave |initial| at its default
     setting.
 
-    When |initial| is True, if |self| is a linkable target, it will be added
-    to the list of dependencies, and if |self| is not a linkable target, an
-    empty list of dependencies will be returned, because |self| cannot be a
-    linkable dependency of itself as a non-linkable type.
-
-    When |initial| is False, the opposite occurs.  If |self| is not linkable,
-    it will be added to the list of dependencies, because it will be linked
-    when built into the target for which the dependencies list is being built.
-    If |self| is linkable, it is not added to the list of dependencies, because
-    it is itself linkable, and it will not be linked into the target for which
-    the list is being built.
-
     When adding a target to the list of dependencies, this function will
     recurse into itself with |initial| set to False, to collect depenedencies
     that are linked into the linkable target for which the list is being built.
@@ -443,30 +431,27 @@ class DependencyGraphNode(object):
     target_type = targets[self.ref]['type']
     is_linkable = target_type in linkable_types
 
-    if (initial and not is_linkable) or (not initial and is_linkable):
+    if initial and not is_linkable:
       # If this is the first target being examined and it's not linkable,
       # return an empty list of link dependencies, because the link
       # dependencies are intended to apply to the target itself (initial is
       # True) and this target won't be linked.
-      # If this is a subsequent target and it's linkable, bail out leaving
-      # |dependencies| untouched.  The subsequent target is itself a linkable,
-      # it does not get linked into the target for which the dependencies list
-      # is being built (although that target links against the subsequent
-      # target).
       return dependencies
 
-    # Either (not initial and not is_linkable) or (initial and is_linkable)
-    # is true here.  Either way, the target itself will be linked into the
-    # target for which the dependencies list is being built.  Add it to the
-    # list of dependencies and then recurse.
+    # The target is linkable, add it to the list of link dependencies.
     if self.ref not in dependencies:
       if target_type != 'none':
         # Special case: "none" type targets don't produce any linkable products
         # and shouldn't be exposed as link dependencies, although dependencies
         # of "none" type targets may still be link dependencies.
         dependencies.append(self.ref)
-      for dependency in self.dependencies:
-        dependency.LinkDependencies(targets, dependencies, False)
+      if initial or not is_linkable:
+        # If this is a subsequent target and it's linkable, don't look any
+        # further for linkable dependencies, as they'll already be linked into
+        # this target linkable.  Always look at dependencies of the initial
+        # target, and always look at dependencies of non-linkables.
+        for dependency in self.dependencies:
+          dependency.LinkDependencies(targets, dependencies, False)
 
     return dependencies
 
