@@ -251,6 +251,7 @@ void set_mode(int connector_id, char *mode_str)
 	drm_intel_bo *bo;
 	unsigned int fb_id, *fb_ptr;
 	int i, j, size, ret, width, height;
+	div_t d;
 
 	/* First, find the connector & mode */
 	for (i = 0; i < resources->count_connectors; i++) {
@@ -336,9 +337,11 @@ void set_mode(int connector_id, char *mode_str)
 
 	fb_ptr = bo->virtual;
 
-	/* paint the buffer blue */
-	for (i = 0; i < width * height; i++)
-		fb_ptr[i] = 0xff;
+	/* paint the buffer with colored tiles */
+	for (i = 0; i < width * height; i++) {
+		d = div(i, width);
+		fb_ptr[i] = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
+	}
 
 	ret = drmModeAddFB(fd, width, height, 32, 32, width * 4, bo->handle,
 			   &fb_id);
