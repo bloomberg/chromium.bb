@@ -20,12 +20,16 @@ def main(args):
   my_name = os.path.basename(sys.argv[0])
 
   parser = optparse.OptionParser()
-  usage = 'usage: %s [-D var=val ...] [-f format] [build_file ...]'
+  usage = 'usage: %s [-D VAR=VAL ...] [-f FORMAT] [-I INCLUDE ...] ' + \
+          '[build_file ...]'
   parser.set_usage(usage.replace('%s', '%prog'))
   parser.add_option('-D', dest='defines', action='append', metavar='VAR=VAL',
                     help='sets variable VAR to value VAL')
   parser.add_option('-f', '--format', dest='format',
                     help='output format to generate')
+  parser.add_option('-I', '--include', dest='includes', action='append',
+                    metavar='INCLUDE',
+                    help='files to include in all loaded .gyp files')
   (options, build_files) = parser.parse_args(args)
   if not options.format:
     options.format = {'darwin': 'xcode',
@@ -65,7 +69,8 @@ def main(args):
   generator = __import__(generator_name, globals(), locals(), generator_name)
   default_variables.update(generator.generator_default_variables)
 
-  [flat_list, targets, data] = gyp.input.Load(build_files, default_variables)
+  [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
+                                              options.includes)
 
   # TODO(mark): Pass |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept

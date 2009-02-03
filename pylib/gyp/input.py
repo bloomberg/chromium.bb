@@ -20,7 +20,7 @@ def ExceptionAppend(e, msg):
     e.args = [str(e.args[0]) + ' ' + msg, e.args[1:]]
 
 
-def LoadOneBuildFile(build_file_path, variables, is_target):
+def LoadOneBuildFile(build_file_path, variables, includes, is_target):
   build_file = open(build_file_path)
   build_file_contents = build_file.read()
   build_file.close()
@@ -37,7 +37,12 @@ def LoadOneBuildFile(build_file_path, variables, is_target):
 
   # Scan for includes and merge them in.
   try:
-    LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, variables)
+    if is_target:
+      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path,
+                                    variables, includes)
+    else:
+      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path,
+                                    variables)
   except Exception, e:
     ExceptionAppend(e, 'while reading includes of ' + build_file_path)
     raise
@@ -68,21 +73,25 @@ def LoadOneBuildFile(build_file_path, variables, is_target):
   return build_file_data
 
 
-def LoadBuildFileIncludesIntoDict(subdict, subdict_path, variables):
+def LoadBuildFileIncludesIntoDict(subdict, subdict_path,
+                                  variables, includes=None):
+  includes_list = []
+  if includes != None:
+    includes_list.extend(includes)
   if 'includes' in subdict:
+    includes_list.extend(subdict['includes'])
     # Unhook the includes list, it's no longer needed.
-    includes_list = subdict['includes']
     del subdict['includes']
 
-    # Replace it by merging in the included files.
-    for include in includes_list:
-      MergeDicts(subdict, LoadOneBuildFile(include, variables, False),
-                 subdict_path, include)
+  # Merge in the included files.
+  for include in includes_list:
+    MergeDicts(subdict, LoadOneBuildFile(include, variables, None, False),
+               subdict_path, include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
     if v.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(v, subdict_path, variables)
+      LoadBuildFileIncludesIntoDict(v, subdict_path, variables, None)
     elif v.__class__ == list:
       LoadBuildFileIncludesIntoList(v, subdict_path, variables)
 
@@ -91,7 +100,7 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, variables):
 def LoadBuildFileIncludesIntoList(sublist, sublist_path, variables):
   for item in sublist:
     if item.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(item, sublist_path, variables)
+      LoadBuildFileIncludesIntoDict(item, sublist_path, variables, None)
     elif item.__class__ == list:
       LoadBuildFileIncludesIntoList(item, sublist_path, variables)
 
@@ -99,12 +108,12 @@ def LoadBuildFileIncludesIntoList(sublist, sublist_path, variables):
 # TODO(mark): I don't love this name.  It just means that it's going to load
 # a build file that contains targets and is expected to provide a targets dict
 # that contains the targets...
-def LoadTargetBuildFile(build_file_path, data, variables):
+def LoadTargetBuildFile(build_file_path, data, variables, includes):
   if build_file_path in data:
     # Already loaded.
     return
 
-  build_file_data = LoadOneBuildFile(build_file_path, variables, True)
+  build_file_data = LoadOneBuildFile(build_file_path, variables, includes, True)
   data[build_file_path] = build_file_data
 
   # ...it's loaded and it should have EARLY references and conditionals
@@ -122,7 +131,7 @@ def LoadTargetBuildFile(build_file_path, data, variables):
       for dependency in target_dict['dependencies']:
         other_build_file = \
             gyp.common.BuildFileAndTarget(build_file_path, dependency)[0]
-        LoadTargetBuildFile(other_build_file, data, variables)
+        LoadTargetBuildFile(other_build_file, data, variables, includes)
 
   return data
 
@@ -902,14 +911,14 @@ def ProcessRules(name, the_dict):
     if len(the_dict[excluded_key]) == 0:
       del the_dict[excluded_key]
 
-def Load(build_files, variables):
+def Load(build_files, variables, includes):
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
   # and the values are the entire build file contents after "early" or "pre"
   # processing has been done and includes have been resolved.
   data = {}
   for build_file in build_files:
-    LoadTargetBuildFile(build_file, data, variables)
+    LoadTargetBuildFile(build_file, data, variables, includes)
 
   # Build a dict to access each target's subdict by qualified name.
   targets = {}
