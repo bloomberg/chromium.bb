@@ -168,7 +168,6 @@
               # so use idle_timer_none.cc instead.
               'idle_timer.cc',
             ],
-            'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
             'cflags': ['-Wno-write-strings'],
           },
           { # else: OS != "linux"
@@ -186,7 +185,6 @@
         [ 'OS == "mac"', {
             'sources/': [ ['exclude', '_(linux|win)\\.cc$'] ],
             'sources!': [
-              'message_pump_libevent.cc',
               'worker_pool.cc',
             ],
             'link_settings': {
@@ -197,17 +195,18 @@
                 '/System/Library/Frameworks/Foundation.framework',
               ],
             },
-            'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
           },
         ],
         [ 'OS == "win"', {
             'sources/': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
                           ['exclude', '\\.mm?$' ] ],
             'sources!': [
+              'message_pump_libevent.cc',
               'string16.cc',
             ],
           },
           {  # else: OS != "win"
+            'dependencies': ['../third_party/libevent/libevent.gyp:libevent'],
             'sources!': [
               'cpu.cc',
               'clipboard_util.cc',
