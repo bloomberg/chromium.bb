@@ -311,6 +311,14 @@
         'include_dirs': [
           'public/common',
         ],
+        'conditions': [
+          [ 'OS == "linux"', {
+              'defines': [
+                'U_STATIC_IMPLEMENTATION',
+              ],
+            },
+          ],
+        ],
       },
       'conditions': [
         [ 'OS == "win"', {
