@@ -242,8 +242,6 @@ def GenerateOutput(target_list, target_dicts, data):
     # Create solution.
     sln = MSVSNew.MSVSSolution(sln_path,
                                entries=entries,
-                               variants=[
-                                   'Debug|Win32',
-                                   'Release|Win32',
-                               ])
+                               variants=['Debug|Win32', 'Release|Win32'],
+                               websiteProperties=False)
     sln.Write()
