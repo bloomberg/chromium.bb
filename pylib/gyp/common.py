@@ -8,7 +8,8 @@ def BuildFileAndTarget(build_file, target):
   # and you know that target already has a build_file that's been produced by
   # this function, pass '' for build_file.
 
-  target_split = target.split(':', 1)
+  # NOTE: rsplit is used to disambiguate the Windows drive letter separator.
+  target_split = target.rsplit(':', 1)
   if len(target_split) == 2:
     [build_file_rel, target] = target_split
 
