@@ -538,7 +538,13 @@ FcDirCacheMapFd (int fd, struct stat *fd_stat, struct stat *dir_stat)
 	return NULL;
     cache = FcCacheFindByStat (fd_stat);
     if (cache)
-	return cache;
+    {
+	if (FcCacheTimeValid (cache, dir_stat))
+	    return cache;
+	FcDirCacheUnload (cache);
+	cache = NULL;
+    }
+
     /*
      * Lage cache files are mmap'ed, smaller cache files are read. This
      * balances the system cost of mmap against per-process memory usage.
