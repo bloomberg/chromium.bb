@@ -943,7 +943,13 @@ FcConvertDosPath (char *str)
   char *dest = str;
   char *end = str + len;
   char last = 0;
-  
+
+  if (*p == '\\')
+    {
+      *p = '/';
+      p++;
+      dest++;
+    }
   while (p < end)
     {
       if (*p == '\\')
