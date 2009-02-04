@@ -9,6 +9,8 @@
 
 
 import gyp
+import gyp.common
+# TODO(sgk):  create a separate "project module" for SCons?
 #import gyp.SCons as SCons
 import os.path
 import subprocess
@@ -37,7 +39,7 @@ def WriteList(fp, list, prefix='',
   fp.write(postamble or '')
 
 
-def GenerateSConscript(output_filename, build_file, spec):
+def GenerateSConscript(output_filename, build_file, spec, config):
   print 'Generating %s' % output_filename
 
   fp = open(output_filename, 'w')
@@ -45,15 +47,22 @@ def GenerateSConscript(output_filename, build_file, spec):
   fp.write(header)
 
   #
-  fp.write('\n' + 'env = env.Clone(\n')
+  fp.write('\n' + 'env = env.Clone()\n')
+  fp.write('\n' + 'env.Append(\n')
 
-  defines = spec.get('defines')
+  cflags = config.get('cflags')
+  if cflags:
+    WriteList(fp, map(repr, cflags), prefix='    ',
+                                     preamble='    CCFLAGS = [\n    ',
+                                     postamble='\n    ],\n')
+
+  defines = config.get('defines')
   if defines:
     WriteList(fp, map(repr, defines), prefix='    ',
                                       preamble='    CPPDEFINES = [\n    ',
                                       postamble='\n    ],\n')
 
-  include_dirs = spec.get('include_dirs')
+  include_dirs = config.get('include_dirs')
   if include_dirs:
     WriteList(fp, map(repr, include_dirs), prefix='    ',
                                            preamble='    CPPPATH = [\n    ',
@@ -91,15 +100,34 @@ def GenerateOutput(target_list, target_dicts, data):
       # TODO(mark): Pick an exception class
       raise 'Build file name must end in .gyp'
 
-  infix = ''
-  # Uncomment to generate files next to the existing .scons files.
-  #infix = '_gyp'
+  infix = '_gyp'
+  # Uncomment to overwrite existing .scons files.
+  #infix = ''
 
   for qualified_target in target_list:
-    [build_file, target] = gyp.BuildFileAndTarget('', qualified_target)[0:2]
+    build_file, target = gyp.common.BuildFileAndTarget('',
+                                                       qualified_target)[0:2]
     if target_list > 1:
       output_file = os.path.join(os.path.split(build_file)[0],
                                  target + infix + '.scons')
     else:
       output_file = os.path.abspath(build_file[:-4] + infix + '.scons')
-    GenerateSConscript(output_file, build_file, target_dicts[qualified_target])
+    spec =  target_dicts[qualified_target]
+
+    if not spec.has_key('libraries'):
+      spec['libraries'] = []
+
+    # Add dependent static library targets to the 'libraries' value.
+    deps = spec.get('dependencies', [])
+    for d in deps:
+      td = target_dicts[d]
+      if td['type'] == 'static_library':
+        spec['libraries'].append(td['target_name'])
+
+    # Simplest thing that works:  just use the first (Debug)
+    # configuration right now, until we get the underlying
+    # ../build/SConscript.main infrastructure ready for
+    # .gyp-generated parallel configurations.
+    config = spec['configurations'][0]
+
+    GenerateSConscript(output_file, build_file, spec, config)
