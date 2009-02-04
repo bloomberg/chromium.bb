@@ -55,6 +55,8 @@
 
 
 import gyp
+import gyp.common
+# TODO:  create a separate "project module" for makefiles?
 #import gyp.makefile as makefile
 import os.path
 import subprocess
@@ -135,7 +137,8 @@ def GenerateOutput(target_list, target_dicts, data):
       raise 'Build file name must end in .gyp'
 
   for qualified_target in target_list:
-    [build_file, target] = gyp.BuildFileAndTarget('', qualified_target)[0:2]
+    build_file, target = gyp.common.BuildFileAndTarget('',
+                                                       qualified_target)[0:2]
     if target_list > 1:
       output_file = os.path.join(os.path.split(build_file)[0],
                                  target + '_gyp.mk')
