@@ -99,15 +99,18 @@ def _GenerateProject(vcproj_filename, build_file, spec):
           'DisableSpecificWarnings': ';'.join(disabled_warnings),
       })
 
-  # Pre-build and Post-build.
-  prebuild = MSVSProject.Tool(
-      'VCPreBuildEventTool', {
-          'CommandLine': spec.get('vs_prebuild', ''),
-      })
-  postbuild = MSVSProject.Tool(
-      'VCPostBuildEventTool', {
-          'CommandLine': spec.get('vs_postbuild', ''),
-      })
+  # Pre-build.
+  if spec.get('vs_prebuild'):
+    prebuild_dict = { 'CommandLine': spec.get('vs_prebuild', '') }
+  else:
+    prebuild_dict = {}
+  prebuild = MSVSProject.Tool('VCPreBuildEventTool', prebuild_dict)
+  # Post-build.
+  if spec.get('vs_postbuild'):
+    postbuild_dict = { 'CommandLine': spec.get('vs_postbuild', '') }
+  else:
+    postbuild_dict = {}
+  postbuild = MSVSProject.Tool('VCPostBuildEventTool', postbuild_dict)
 
   # Prepare tools.
   tools = [
