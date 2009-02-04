@@ -254,6 +254,7 @@ struct connector {
 	char mode_str[64];
 	struct drm_mode_modeinfo *mode;
 	drmModeEncoder *encoder;
+	int crtc;
 };	
 
 static void
@@ -318,6 +319,9 @@ connector_find_mode(struct connector *c)
 
 		drmModeFreeEncoder(c->encoder);
 	}
+
+	if (c->crtc == -1)
+		c->crtc = c->encoder->crtc_id;
 }
 
 #ifdef HAVE_CAIRO
@@ -477,9 +481,14 @@ set_mode(struct connector *c, int count)
 
 	x = 0;
 	for (i = 0; i < count; i++) {
+		int crtc_id;
 		if (c[i].mode == NULL)
 			continue;
-		ret = drmModeSetCrtc(fd, c[i].encoder->crtc_id, fb_id, x, 0,
+
+		printf("setting mode %s on connector %d, crtc %d\n",
+		       c[i].mode_str, c[i].id, c[i].crtc);
+
+		ret = drmModeSetCrtc(fd, c[i].crtc, fb_id, x, 0,
 				     &c[i].id, 1, c[i].mode);
 		x += c[i].mode->hdisplay;
 
@@ -503,6 +512,7 @@ void usage(char *name)
 	fprintf(stderr, "\t-m\tlist modes\n");
 	fprintf(stderr, "\t-f\tlist framebuffers\n");
 	fprintf(stderr, "\t-s <connector_id>:<mode>\tset a mode\n");
+	fprintf(stderr, "\t-s <connector_id>@<crtc_id>:<mode>\tset a mode\n");
 	fprintf(stderr, "\n\tDefault is to dump all info.\n");
 	exit(0);
 }
@@ -538,13 +548,15 @@ int main(int argc, char **argv)
 			break;
 		case 's':
 			modeset = strdup(optarg);
+			con_args[count].crtc = -1;
 			if (sscanf(optarg, "%d:%64s",
 				   &con_args[count].id,
-				   &con_args[count].mode_str) != 2)
+				   &con_args[count].mode_str) != 2 &&
+			    sscanf(optarg, "%d@%d:%64s",
+				   &con_args[count].id,
+				   &con_args[count].crtc,
+				   &con_args[count].mode_str) != 3)
 				usage(argv[0]);
-			printf("setting mode %s on connector %d\n",
-			       con_args[count].mode_str,
-			       con_args[count].id);
 			count++;				      
 			break;
 		default:
