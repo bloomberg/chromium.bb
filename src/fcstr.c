@@ -968,10 +968,8 @@ FcStrCanonFilename (const FcChar8 *s)
 {
 #ifdef _WIN32
     FcChar8 full[FC_MAX_FILE_LEN + 2];
-    FcChar8 basename[FC_MAX_FILE_LEN + 2];
     int size = GetFullPathName (s, sizeof (full) -1,
-				full,
-				basename);
+				full, NULL);
 
     if (size == 0)
 	perror ("GetFullPathName");
