@@ -116,8 +116,8 @@ def GenerateMakefile(output_filename, build_file, spec):
   t = spec.get('type')
   if not t in (None, 'none'):
     target = {
-                  'executable' : spec['name'],
-                  'static_library' : 'lib%s.a' % spec['name'],
+                  'executable' : spec['target_name'],
+                  'static_library' : 'lib%s.a' % spec['target_name'],
               }[t]
     fp.write('\n')
     fp.write('%s: $(OBJS)\n' % target)

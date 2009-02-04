@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'bzip2',
+      'target_name': 'bzip2',
       'type': 'static_library',
       'defines': ['BZ_NO_STDIO'],
       'sources': [

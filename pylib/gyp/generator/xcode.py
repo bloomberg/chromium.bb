@@ -18,19 +18,56 @@ class XcodeProject(object):
     self.project_file = \
         gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
 
-  def AddTarget(self, name, type):
+  def AddTarget(self, name, type, configurations):
     _types = {
       'shared_library': 'com.apple.product-type.library.dynamic',
       'static_library': 'com.apple.product-type.library.static',
       'executable':     'com.apple.product-type.tool',
     }
-    target = gyp.xcodeproj_file.PBXNativeTarget({'name':        name,
-                                                 'productType': _types[type]},
-                                parent=self.project)
+
+    # Set up the configurations for the target according to the list of names
+    # supplied.
+    xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+    for configuration in configurations:
+      xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
+      xccl.AppendProperty('buildConfigurations', xcbc)
+    xccl.SetProperty('defaultConfigurationName', configurations[0])
+
+    target = gyp.xcodeproj_file.PBXNativeTarget(
+        {
+          'buildConfigurationList': xccl,
+          'name':                   name,
+          'productType':            _types[type]
+        },
+        parent=self.project)
     self.project.AppendProperty('targets', target)
     return target
 
   def Finalize(self):
+    # Collect a list of all of the build configuration names used by the
+    # various targets in the file.  It is very heavily advised to keep each
+    # target in an entire project (even across multiple project files) using
+    # the same set of configuration names.
+    configurations = []
+    for xct in self.project.GetProperty('targets'):
+      xccl = xct.GetProperty('buildConfigurationList')
+      xcbcs = xccl.GetProperty('buildConfigurations')
+      for xcbc in xcbcs:
+        name = xcbc.GetProperty('name')
+        if name not in configurations:
+          configurations.append(name)
+
+    # Replace the XCConfigurationList attached to the PBXProject object with
+    # a new one specifying all of the configuration names used by the various
+    # targets.
+    xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+    for configuration in configurations:
+      xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
+      xccl.AppendProperty('buildConfigurations', xcbc)
+    xccl.SetProperty('defaultConfigurationName', configurations[0])
+    self.project.SetProperty('buildConfigurationList', xccl)
+
+    # Give everything an ID.
     self.project_file.ComputeIDs()
 
   def Write(self):
@@ -64,12 +101,17 @@ def GenerateOutput(target_list, target_dicts, data):
     [build_file, target] = \
         gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
     spec = target_dicts[qualified_target]
-    xcode_targets[qualified_target] = \
-        xcode_projects[build_file].AddTarget(target, spec['type'])
+    configuration_names = []
+    for configuration in spec['configurations']:
+      configuration_names.append(configuration['configuration_name'])
+    xct = xcode_projects[build_file].AddTarget(target, spec['type'],
+                                               configuration_names)
+    xcode_targets[qualified_target] = xct
+
     # TODO(mark): I hate the header map.  Even so, this must not be hard-coded
     # here.  It should be pushed into the configuration from some input file
     # somewhere, or it should be a part of an xcconfig.
-    xcode_targets[qualified_target].SetBuildSetting('USE_HEADERMAP', 'NO')
+    xct.SetBuildSetting('USE_HEADERMAP', 'NO')
     for source in spec['sources']:
       # TODO(mark): Only add files with known extensions to the sources phase.
       # This will be made fancier.
@@ -79,19 +121,7 @@ def GenerateOutput(target_list, target_dicts, data):
       if dot != -1:
         extension = basename[dot + 1:]
         if extension in source_extensions:
-          xcode_targets[qualified_target].SourcesPhase().AddFile(source)
-    if 'xcode_framework_dirs' in spec:
-      for include_dir in spec['xcode_framework_dirs']:
-        xcode_targets[qualified_target].AppendBuildSetting( \
-            'FRAMEWORK_SEARCH_PATHS', include_dir)
-    if 'include_dirs' in spec:
-      for include_dir in spec['include_dirs']:
-        xcode_targets[qualified_target].AppendBuildSetting( \
-            'HEADER_SEARCH_PATHS', include_dir)
-    if 'defines' in spec:
-      for define in spec['defines']:
-        xcode_targets[qualified_target].AppendBuildSetting( \
-            'GCC_PREPROCESSOR_DEFINITIONS', define)
+          xct.SourcesPhase().AddFile(source)
 
     # Add dependencies before libraries, because adding a dependency may imply
     # adding a library.  It's preferable to keep dependencies listed first
@@ -106,11 +136,24 @@ def GenerateOutput(target_list, target_dicts, data):
 
     if 'dependencies' in spec:
       for dependency in spec['dependencies']:
-        xcode_targets[qualified_target].AddDependency(xcode_targets[dependency])
+        xct.AddDependency(xcode_targets[dependency])
 
     if 'libraries' in spec:
       for library in spec['libraries']:
-        xcode_targets[qualified_target].FrameworksPhase().AddFile(library)
+        xct.FrameworksPhase().AddFile(library)
+
+    for configuration in spec['configurations']:
+      configuration_name = configuration['configuration_name']
+      xcbc = xct.ConfigurationNamed(configuration_name)
+      if 'xcode_framework_dirs' in configuration:
+        for include_dir in configuration['xcode_framework_dirs']:
+          xcbc.AppendBuildSetting('FRAMEWORK_SEARCH_PATHS', include_dir)
+      if 'include_dirs' in configuration:
+        for include_dir in configuration['include_dirs']:
+          xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
+      if 'defines' in configuration:
+        for define in configuration['defines']:
+          xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', define)
 
   for build_file, build_file_dict in data.iteritems():
     xcode_projects[build_file].Finalize()

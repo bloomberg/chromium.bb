@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'skia',
+      'target_name': 'skia',
       'type': 'static_library',
       'sources': [
         #'animator/SkAnimate.h',

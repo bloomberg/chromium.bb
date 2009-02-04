@@ -1,4 +1,7 @@
 {
+  'includes': [
+    '../build/common.gypi',
+  ],
   'target_defaults': {
     'include_dirs': [
       '..',
@@ -7,7 +10,7 @@
   },
   'targets': [
     {
-      'name': 'base',
+      'target_name': 'base',
       'type': 'static_library',
       'dependencies': [
         '../third_party/icu38/icu38.gyp:icudata',
@@ -193,7 +196,7 @@
       ],
     },
     {
-      'name': 'base_gfx',
+      'target_name': 'base_gfx',
       'type': 'static_library',
       'sources': [
         'gfx/jpeg_codec.cc',
@@ -215,7 +218,7 @@
       ],
     },
     {
-      'name': 'base_unittests',
+      'target_name': 'base_unittests',
       'type': 'executable',
       'sources': [
         'gfx/jpeg_codec_unittest.cc',

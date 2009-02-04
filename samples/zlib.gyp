@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'zlib',
+      'target_name': 'zlib',
       'type': 'static_library',
       'sources': [
         'adler32.c',

@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'security_tests',
+      'target_name': 'security_tests',
       'type': 'shared_library',
       'sources': [
         '../../../sandbox/tests/validation_tests/commands.cc',

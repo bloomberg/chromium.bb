@@ -8,6 +8,7 @@ import sys
 
 gyps = [
     'base/base.gyp',
+    'build/common.gypi',
     'chrome/test/security_tests/security_tests.gyp',
     'googleurl/build/googleurl.gyp',
     'net/net.gyp',

@@ -80,7 +80,7 @@ def GenerateSConscript(output_filename, build_file, spec):
               }[t]
     fmt = 'env.%s(\'%s\', input_files)\n'
     fp.write('\n')
-    fp.write(fmt % (builder, spec['name']))
+    fp.write(fmt % (builder, spec['target_name']))
 
   fp.close()
 

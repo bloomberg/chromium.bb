@@ -79,7 +79,13 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path,
   if includes != None:
     includes_list.extend(includes)
   if 'includes' in subdict:
-    includes_list.extend(subdict['includes'])
+    for include in subdict['includes']:
+      # "include" is specified relative to subdict_path, so compute the real
+      # path to include by appending the provided "include" to the directory
+      # in which subdict_path resides.
+      relative_include = \
+          os.path.normpath(os.path.join(os.path.dirname(subdict_path), include))
+      includes_list.append(relative_include)
     # Unhook the includes list, it's no longer needed.
     del subdict['includes']
 
@@ -722,6 +728,78 @@ def MergeDicts(to, fro, to_file, fro_file):
           v.__class__.__name__ + ' for key ' + k
 
 
+def SetUpConfigurations(target, target_dict):
+  # non_configuraiton_keys is a list of key names that belong in the target
+  # itself and should not be propagated into its configurations.
+  non_configuration_keys = [
+    'configurations',
+    'dependencies',
+    'libraries',
+    'target_name',
+    'sources',
+    'type',
+  ]
+  # key_suffixes is a list of key suffixes that might appear on key names.
+  # These suffixes are handled in conditional evaluations (for =, +, and ?)
+  # and rules/exclude processing (for ! and /).  Keys with these suffixes
+  # should be treated the same as keys without.
+  key_suffixes = ['=', '+', '?', '!', '/']
+
+  build_file = gyp.common.BuildFileAndTarget('', target)[0]
+
+  # Provide a single configuration by default if none exists.
+  if not 'configurations' in target_dict:
+    target_dict['configurations'] = [{'configuration_name': 'Default'}]
+
+  index = 0
+  while index < len(target_dict['configurations']):
+    # Configurations inherit (most) settings from the enclosing target scope.
+    # Get the inheritance relationship right by making a copy of the target
+    # dict.
+    old_configuration_dict = target_dict['configurations'][index]
+    new_configuration_dict = copy.deepcopy(target_dict)
+
+    # Take out the bits that don't belong in a "configurations" section.
+    # Since configuration setup is done before conditional, exclude, and rules
+    # processing, be careful with handling of the suffix characters used in
+    # those phases.
+    delete_keys = []
+    for key in new_configuration_dict:
+      key_ext = key[-1:]
+      if key_ext in key_suffixes:
+        key_base = key[:-1]
+      else:
+        key_base = key
+      if key_base in non_configuration_keys:
+        delete_keys.append(key)
+
+    for key in delete_keys:
+      del new_configuration_dict[key]
+
+    # Merge the supplied configuration dict into the new dict based on the
+    # target dict, and put it back into the target dict as a configuration
+    # dict.
+    MergeDicts(new_configuration_dict, old_configuration_dict,
+               build_file, build_file)
+    target_dict['configurations'][index] = new_configuration_dict
+    index = index + 1
+
+  # Now that all of the target's configurations have been built, go through
+  # the target dict's keys and remove everything that's been moved into a
+  # "configurations" section.
+  delete_keys = []
+  for key in target_dict:
+    key_ext = key[-1:]
+    if key_ext in key_suffixes:
+      key_base = key[:-1]
+    else:
+      key_base = key
+    if not key_base in non_configuration_keys:
+      delete_keys.append(key)
+  for key in delete_keys:
+    del target_dict[key]
+
+
 def ProcessRules(name, the_dict):
   """Process regular expression and exclusion-based rules on lists.
 
@@ -925,7 +1003,8 @@ def Load(build_files, variables, includes):
   for build_file in data:
     if 'targets' in data[build_file]:
       for target in data[build_file]['targets']:
-        target_name = gyp.common.QualifiedTarget(build_file, target['name'])
+        target_name = gyp.common.QualifiedTarget(build_file,
+                                                 target['target_name'])
         targets[target_name] = target
 
   # BuildDependencyList will also fix up all dependency lists to contain only
@@ -944,10 +1023,21 @@ def Load(build_files, variables, includes):
                         'link_settings']:
     DoDependentSettings(settings_type, flat_list, targets, dependency_nodes)
 
+    # Take out the dependent settings now that they've been published to all
+    # of the targets that require them.
+    for target in flat_list:
+      if settings_type in targets[target]:
+        del targets[target][settings_type]
+
   # Make sure static libraries don't declare dependencies on other static
   # libraries, but that linkables depend on all unlinked static libraries
   # that they need so that their link steps will be correct.
   AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes)
+
+  # Move everything that can go into a "configurations" section into one.
+  for target in flat_list:
+    target_dict = targets[target]
+    SetUpConfigurations(target, target_dict)
 
   # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:
@@ -958,6 +1048,12 @@ def Load(build_files, variables, includes):
   for target in flat_list:
     target_dict = targets[target]
     ProcessRules(target, target_dict)
+    for configuration_dict in target_dict['configurations']:
+      # The first argument to ProcessRules is just a name used for diagnostic
+      # purposes.
+      configuration_name = target + ' configuration ' + \
+                           configuration_dict['configuration_name']
+      ProcessRules(configuration_name, configuration_dict)
 
   # TODO(mark): Return |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept

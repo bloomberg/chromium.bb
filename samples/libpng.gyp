@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'libpng',
+      'target_name': 'libpng',
       'type': 'static_library',
       'dependencies': [
         '../zlib/zlib.gyp:zlib',

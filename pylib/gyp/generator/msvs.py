@@ -70,7 +70,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   print 'Generating %s' % vcproj_filename
 
   p = MSVSProject.Writer(vcproj_filename)
-  p.Create(spec['name'])
+  p.Create(spec['target_name'])
 
   # Get directory project file is in.
   gyp_dir = os.path.split(vcproj_filename)[0]
@@ -178,7 +178,7 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
   # Create object for this project.
   obj = MSVSNew.MSVSProject(
       vcproj_rel_path,
-      name=spec['name'],
+      name=spec['target_name'],
       guid=projects[qualified_target]['guid'],
       dependencies=deps)
   # Store it to the list of objects.
@@ -214,7 +214,7 @@ def GenerateOutput(target_list, target_dicts, data):
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
     spec = target_dicts[qualified_target]
     vcproj_path = os.path.join(os.path.split(build_file)[0],
-                               spec['name'] + '_gyp.vcproj')
+                               spec['target_name'] + '_gyp.vcproj')
     projects[qualified_target] = {
         'vcproj_path': vcproj_path,
         'guid': _GenerateProject(vcproj_path, build_file, spec),

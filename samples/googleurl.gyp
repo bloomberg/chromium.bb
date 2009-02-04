@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'googleurl',
+      'target_name': 'googleurl',
       'type': 'static_library',
       'dependencies': [
         '../../third_party/icu38/icu38.gyp:icudata',

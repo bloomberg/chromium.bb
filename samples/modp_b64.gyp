@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'modp_b64',
+      'target_name': 'modp_b64',
       'type': 'static_library',
       'sources': [
         'modp_b64.cc',

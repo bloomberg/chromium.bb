@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'sdch',
+      'target_name': 'sdch',
       'type': 'static_library',
       'sources': [
         'open-vcdiff/src/addrcache.cc',

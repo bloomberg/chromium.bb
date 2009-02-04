@@ -1,4 +1,7 @@
 {
+  'includes': [
+    '../build/common.gypi',
+  ],
   'target_defaults': {
     'include_dirs': [
       '..',
@@ -7,7 +10,7 @@
   },
   'targets': [
     {
-      'name': 'net',
+      'target_name': 'net',
       'type': 'static_library',
       'dependencies': [
         'net_resources',
@@ -299,7 +302,7 @@
       ],
     },
     {
-      'name': 'net_resources',
+      'target_name': 'net_resources',
       'type': 'none',
       'sources': [
         'net_resources.grd',
@@ -312,7 +315,7 @@
         '$(OutDir)\\grit_derived_sources',
     },
     {
-      'name': 'net_unittests',
+      'target_name': 'net_unittests',
       'type': 'executable',
       'dependencies': [
         'net',

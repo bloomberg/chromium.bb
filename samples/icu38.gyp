@@ -1,4 +1,7 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'target_defaults': {
     'defines': [
       'U_STATIC_IMPLEMENTATION',
@@ -13,7 +16,7 @@
   },
   'targets': [
     {
-      'name': 'icudata',
+      'target_name': 'icudata',
       'type': 'static_library',
       'sources': [
         'icudt38.dll',
@@ -34,7 +37,7 @@
       ],
     },
     {
-      'name': 'icui18n',
+      'target_name': 'icui18n',
       'type': 'static_library',
       'sources': [
         'source/i18n/anytrans.cpp',
@@ -164,7 +167,7 @@
       },
     },
     {
-      'name': 'icuuc',
+      'target_name': 'icuuc',
       'type': 'static_library',
       'sources': [
         'source/common/bmpset.cpp',

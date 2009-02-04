@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'libjpeg',
+      'target_name': 'libjpeg',
       'type': 'static_library',
       'sources': [
         'jcapimin.c',

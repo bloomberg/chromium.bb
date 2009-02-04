@@ -1,8 +1,11 @@
 {
+  'includes': [
+    '../../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'libevent',  # Maybe this should be called "event" so that it
-                           # outputs libevent.a.
+      'target_name': 'libevent',  # Maybe this should be called "event" so that
+                                  # it outputs libevent.a.
       'type': 'static_library',
       'sources': [
         'buffer.c',

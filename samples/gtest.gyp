@@ -1,7 +1,10 @@
 {
+  'includes': [
+    '../build/common.gypi',
+  ],
   'targets': [
     {
-      'name': 'gtest',
+      'target_name': 'gtest',
       'type': 'static_library',
       'sources': [
         'gtest/src/gtest-test-part.cc',
