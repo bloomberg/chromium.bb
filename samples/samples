@@ -1,0 +1,50 @@
+#!/usr/bin/python
+
+
+import os.path
+import shutil
+import sys
+
+
+gyps = [
+    'base/base.gyp',
+    'chrome/test/security_tests/security_tests.gyp',
+    'googleurl/build/googleurl.gyp',
+    'net/net.gyp',
+    'sdch/sdch.gyp',
+    'skia/skia.gyp',
+    'testing/gtest.gyp',
+    'third_party/bzip2/bzip2.gyp',
+    'third_party/icu38/icu38.gyp',
+    'third_party/libevent/libevent.gyp',
+    'third_party/libjpeg/libjpeg.gyp',
+    'third_party/libpng/libpng.gyp',
+    'third_party/modp_b64/modp_b64.gyp',
+    'third_party/zlib/zlib.gyp',
+]
+
+
+def Main(argv):
+  if len(argv) != 3 or argv[1] not in ['push', 'pull']:
+    print 'Usage: %s push/pull PATH_TO_CHROME' % argv[0]
+    return 1
+
+  path_to_chrome = argv[2]
+
+  for g in gyps:
+    chrome_file = os.path.join(path_to_chrome, g)
+    local_file = os.path.split(g)[1]
+    if argv[1] == 'push':
+      print 'Copying %s to %s' % (local_file, chrome_file)
+      shutil.copyfile(local_file, chrome_file)
+    elif argv[1] == 'pull':
+      print 'Copying %s to %s' % (chrome_file, local_file)
+      shutil.copyfile(chrome_file, local_file)
+    else:
+      assert False
+
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(Main(sys.argv))
