@@ -28,7 +28,7 @@
 
 #define NOTIFIER(__v)                                                          \
 	struct nouveau_notifier_priv *nvnotify = nouveau_notifier(notifier);   \
-	volatile uint32_t *__v = (void*)nvnotify->map + (id * 32)
+	volatile uint32_t *__v = (uint32_t *)((char *)nvnotify->map + (id * 32))
 
 int
 nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
@@ -57,7 +57,7 @@ nouveau_notifier_alloc(struct nouveau_channel *chan, uint32_t handle,
 		return ret;
 	}
 
-	nvnotify->map = (void *)nouveau_channel(chan)->notifier_block +
+	nvnotify->map = (char *)nouveau_channel(chan)->notifier_block +
 				nvnotify->drm.offset;
 	*notifier = &nvnotify->base;
 	return 0;
@@ -125,7 +125,7 @@ gettime(void)
 
 int
 nouveau_notifier_wait_status(struct nouveau_notifier *notifier, int id,
-			     int status, double timeout)
+			     uint32_t status, double timeout)
 {
 	NOTIFIER(n);
 	double time = 0, t_start = gettime();

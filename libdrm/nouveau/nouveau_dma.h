@@ -40,7 +40,7 @@
 #define NOUVEAU_TIME_MSEC() 0
 #define RING_SKIPS 8
 
-extern int  nouveau_dma_wait(struct nouveau_channel *chan, int size);
+extern int  nouveau_dma_wait(struct nouveau_channel *chan, unsigned size);
 extern void nouveau_dma_subc_bind(struct nouveau_grobj *);
 extern void nouveau_dma_channel_init(struct nouveau_channel *);
 extern void nouveau_dma_kickoff(struct nouveau_channel *);

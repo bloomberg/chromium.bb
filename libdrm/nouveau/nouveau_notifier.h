@@ -57,7 +57,7 @@ uint32_t
 nouveau_notifier_return_val(struct nouveau_notifier *, int id);
 
 int
-nouveau_notifier_wait_status(struct nouveau_notifier *, int id, int status,
+nouveau_notifier_wait_status(struct nouveau_notifier *, int id, uint32_t status,
 			     double timeout);
 
 #endif

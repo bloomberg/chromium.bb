@@ -42,7 +42,7 @@ nouveau_resource_init(struct nouveau_resource **heap,
 }
 
 int
-nouveau_resource_alloc(struct nouveau_resource *heap, int size, void *priv,
+nouveau_resource_alloc(struct nouveau_resource *heap, unsigned size, void *priv,
 		       struct nouveau_resource **res)
 {
 	struct nouveau_resource *r;

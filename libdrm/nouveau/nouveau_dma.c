@@ -87,7 +87,7 @@ nouveau_dma_channel_init(struct nouveau_channel *chan)
 } while(0)
 
 int
-nouveau_dma_wait(struct nouveau_channel *chan, int size)
+nouveau_dma_wait(struct nouveau_channel *chan, unsigned size)
 {
 	struct nouveau_channel_priv *nvchan = nouveau_channel(chan);
 	struct nouveau_dma_priv *dma = nvchan->dma;
