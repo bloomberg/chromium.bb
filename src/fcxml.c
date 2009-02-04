@@ -2081,6 +2081,27 @@ FcEndElement(void *userData, const XML_Char *name)
 		if (p) *p = '\0';
 		strcat (data, "\\fonts");
 	}
+	else if (strcmp (data, "APPSHAREFONTDIR") == 0)
+	{
+		char *p;
+		FcStrFree (data);
+		data = malloc (1000);
+		if (!data)
+		{
+			FcConfigMessage (parse, FcSevereError, "out of memory");
+			break;
+		}
+		FcMemAlloc (FC_MEM_STRING, 1000);
+		if(!GetModuleFileName(NULL, data, 1000))
+		{
+			FcConfigMessage (parse, FcSevereError, "GetModuleFileName failed");
+			FcStrFree (data);
+			break;
+		}
+		p = strrchr (data, '\\');
+		if (p) *p = '\0';
+		strcat (data, "\\..\\share\\fonts");
+	}
 	else if (strcmp (data, "WINDOWSFONTDIR") == 0)
 	{
 	    int rc;
