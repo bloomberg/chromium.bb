@@ -47,6 +47,8 @@
           'MACOSX_DEPLOYMENT_TARGET': '10.5',
           'PREBINDING': 'NO',
           'SDKROOT': '$(DEVELOPER_SDK_DIR)/MacOSX10.5.sdk',
+          # xcodebuild_gyp is a temporary name to avoid colliding with the
+          # xcodebuild directory used by the non-gyp Xcode build system.
           'SYMROOT': '<(depth)/xcodebuild_gyp',
           'USE_HEADERMAP': 'NO',
           'WARNING_CFLAGS': '$(WARNING_CFLAGS) -Wall -Wendif-labels',
