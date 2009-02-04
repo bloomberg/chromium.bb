@@ -108,10 +108,6 @@ def GenerateOutput(target_list, target_dicts, data):
                                                configuration_names)
     xcode_targets[qualified_target] = xct
 
-    # TODO(mark): I hate the header map.  Even so, this must not be hard-coded
-    # here.  It should be pushed into the configuration from some input file
-    # somewhere, or it should be a part of an xcconfig.
-    xct.SetBuildSetting('USE_HEADERMAP', 'NO')
     for source in spec['sources']:
       # TODO(mark): Only add files with known extensions to the sources phase.
       # This will be made fancier.
@@ -154,6 +150,9 @@ def GenerateOutput(target_list, target_dicts, data):
       if 'defines' in configuration:
         for define in configuration['defines']:
           xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', define)
+      if 'xcode_settings' in configuration:
+        for xck, xcv in configuration['xcode_settings'].iteritems():
+          xcbc.SetBuildSetting(xck, xcv)
 
   for build_file, build_file_dict in data.iteritems():
     xcode_projects[build_file].Finalize()

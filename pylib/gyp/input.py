@@ -47,29 +47,6 @@ def LoadOneBuildFile(build_file_path, variables, includes, is_target):
     ExceptionAppend(e, 'while reading includes of ' + build_file_path)
     raise
 
-  # Look at each project's target_defaults dict, and merge settings into
-  # targets.
-  if is_target:
-    if 'target_defaults' in build_file_data:
-      index = 0
-      while index < len(build_file_data['targets']):
-        # This procedure needs to give the impression that target_defaults is
-        # used as defaults, and the individual targets inherit from that.
-        # The individual targets need to be merged into the defaults.  Make
-        # a deep copy of the defaults for each target, merge the target dict
-        # as found in the input file into that copy, and then hook up the
-        # copy with the target-specific data merged into it as the replacement
-        # target dict.
-        old_target_dict = build_file_data['targets'][index]
-        new_target_dict = copy.deepcopy(build_file_data['target_defaults'])
-        MergeDicts(new_target_dict, old_target_dict,
-                   build_file_path, build_file_path)
-        build_file_data['targets'][index] = new_target_dict
-        index = index + 1
-
-  # Apply "pre"/"early" variable expansions and condition evaluations.
-  ProcessVariablesAndConditionsInDict(build_file_data, False, variables)
-
   return build_file_data
 
 
@@ -122,8 +99,27 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes):
   build_file_data = LoadOneBuildFile(build_file_path, variables, includes, True)
   data[build_file_path] = build_file_data
 
-  # ...it's loaded and it should have EARLY references and conditionals
-  # all resolved and includes merged in...at least it will eventually...
+  # Apply "pre"/"early" variable expansions and condition evaluations.
+  ProcessVariablesAndConditionsInDict(build_file_data, False, variables)
+
+  # Look at each project's target_defaults dict, and merge settings into
+  # targets.
+  if 'target_defaults' in build_file_data:
+    index = 0
+    while index < len(build_file_data['targets']):
+      # This procedure needs to give the impression that target_defaults is
+      # used as defaults, and the individual targets inherit from that.
+      # The individual targets need to be merged into the defaults.  Make
+      # a deep copy of the defaults for each target, merge the target dict
+      # as found in the input file into that copy, and then hook up the
+      # copy with the target-specific data merged into it as the replacement
+      # target dict.
+      old_target_dict = build_file_data['targets'][index]
+      new_target_dict = copy.deepcopy(build_file_data['target_defaults'])
+      MergeDicts(new_target_dict, old_target_dict,
+                 build_file_path, build_file_path)
+      build_file_data['targets'][index] = new_target_dict
+      index = index + 1
 
   # Look for dependencies.  This means that dependency resolution occurs
   # after "pre" conditionals and variable expansion, but before "post" -

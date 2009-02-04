@@ -1,4 +1,7 @@
 {
+  'variables': {
+    'depth': '..',
+  },
   'includes': [
     '../build/common.gypi',
   ],
