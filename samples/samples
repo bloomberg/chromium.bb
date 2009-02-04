@@ -33,7 +33,7 @@ def Main(argv):
 
   for g in gyps:
     chrome_file = os.path.join(path_to_chrome, g)
-    local_file = os.path.split(g)[1]
+    local_file = os.path.join(os.path.dirname(argv[0]), os.path.split(g)[1])
     if argv[1] == 'push':
       print 'Copying %s to %s' % (local_file, chrome_file)
       shutil.copyfile(local_file, chrome_file)
