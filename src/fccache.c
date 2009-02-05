@@ -844,6 +844,8 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
     FcStrList	    *list;
     FcChar8	    *cache_dir = NULL;
     FcChar8	    *test_dir;
+    FcCacheSkip     *skip;
+    struct stat     cache_stat;
     int		    magic;
     int		    written;
 
@@ -929,6 +931,20 @@ FcDirCacheWrite (FcCache *cache, FcConfig *config)
     close(fd);
     if (!FcAtomicReplaceOrig(atomic))
         goto bail4;
+
+    /* If the file is small, update the cache chain entry such that the
+     * new cache file is not read again.  If it's large, we don't do that
+     * such that we reload it, using mmap, which is shared across processes.
+     */
+    if (cache->size < FC_CACHE_MIN_MMAP &&
+	(skip = FcCacheFindByAddr (cache)) &&
+	FcStat (cache_hashed, &cache_stat))
+    {
+	skip->cache_dev = cache_stat.st_dev;
+	skip->cache_ino = cache_stat.st_ino;
+	skip->cache_mtime = cache_stat.st_mtime;
+    }
+
     FcStrFree (cache_hashed);
     FcAtomicUnlock (atomic);
     FcAtomicDestroy (atomic);
