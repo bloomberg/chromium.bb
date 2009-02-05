@@ -148,9 +148,7 @@ import sys
 # transformed to be properly encoded.  Note that this expression matches the
 # characters listed with "+", for 1 or more occurrences: if a string is empty,
 # it must not match this pattern, because it needs to be encoded as "".
-unquoted = re.compile('^[' + re.escape('ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
-                                       'abcdefghijklmnopqrstuvwxyz' +
-                                       '0123456789$./_') + ']+$')
+unquoted = re.compile('^[A-Za-z0-9$./_]+$')
 
 
 class XCObject(object):
