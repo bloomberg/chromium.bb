@@ -9,7 +9,6 @@
     'include_dirs': [
       '..',
     ],
-    'msvs_props': ['build/net.vsprops'],
   },
   'targets': [
     {

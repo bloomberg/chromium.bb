@@ -104,23 +104,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
 
     # Prepare the list of tools as a dictionary.
-    tools = {
-        'VCPreBuildEventTool': {},
-        'VCCustomBuildTool': {},
-        'VCXMLDataGeneratorTool': {},
-        'VCWebServiceProxyGeneratorTool': {},
-        'VCMIDLTool': {},
-        'VCCLCompilerTool': {},
-        'VCManagedResourceCompilerTool': {},
-        'VCResourceCompilerTool': {},
-        'VCPreLinkEventTool': {},
-        'VCLibrarianTool': {},
-        'VCALinkTool': {},
-        'VCXDCMakeTool': {},
-        'VCBscMakeTool': {},
-        'VCFxCopTool': {},
-        'VCPostBuildEventTool': {},
-        }
+    tools = dict()
 
     # Add in msvs_settings.
     for tool in c.get('msvs_settings', {}):
