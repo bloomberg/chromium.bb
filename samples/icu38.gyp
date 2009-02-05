@@ -15,7 +15,7 @@
       'source/common',
       'source/i18n',
     ],
-    'vs_props': [ '../../build/external_code.vsprops' ],
+    'msvs_props': [ '../../build/external_code.vsprops' ],
   },
   'targets': [
     {
@@ -30,7 +30,7 @@
             'type': 'none',
             'sources!': ['icudt38l_dat.s'],
             'sources': [ 'icudt38.dll' ],
-            'vs_postbuild':
+            'msvs_postbuild':
               'xcopy /R /C /Y icudt38.dll $(OutDir)',
           },
           {  # else: OS != "win"

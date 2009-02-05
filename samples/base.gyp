@@ -9,7 +9,7 @@
     'include_dirs': [
       '..',
     ],
-    'vs_props': ['build/base.vsprops'],
+    'msvs_props': ['build/base.vsprops'],
   },
   'targets': [
     {
@@ -256,7 +256,7 @@
         'worker_pool_mac.mm',
       ],
       # These warnings are needed for the files in third_party\dmg_fp.
-      'vs_disabled_warnings': [
+      'msvs_disabled_warnings': [
         4244, 4554, 4018, 4102,
       ],
       'conditions': [
@@ -332,7 +332,7 @@
         'gfx/rect.cc',
         'gfx/size.cc',
       ],
-      'vs_props': ['build/base_gfx.vsprops'],
+      'msvs_props': ['build/base_gfx.vsprops'],
       'xcode_framework_dirs': [
         '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],

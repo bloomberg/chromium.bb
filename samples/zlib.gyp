@@ -34,7 +34,7 @@
         'zutil.c',
         'zutil.h',
       ],
-      'vs_props': [ '../../build/external_code.vsprops' ],
+      'msvs_props': [ '../../build/external_code.vsprops' ],
       'direct_dependent_settings': {
         'include_dirs': [
           '.',

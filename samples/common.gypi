@@ -10,6 +10,9 @@
               'GCC_OPTIMIZATION_LEVEL': '0',
             }
           }],
+          [ 'OS=="win"', {
+            'configuration_platform': 'Win32',
+          }],
         ],
       },
       {
@@ -22,6 +25,9 @@
             'xcode_settings': {
               'DEAD_CODE_STRIPPING': 'YES',
             }
+          }],
+          [ 'OS=="win"', {
+            'configuration_platform': 'Win32',
           }],
         ],
       },

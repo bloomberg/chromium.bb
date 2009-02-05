@@ -9,7 +9,7 @@
     'include_dirs': [
       '..',
     ],
-    'vs_props': ['build/net.vsprops'],
+    'msvs_props': ['build/net.vsprops'],
   },
   'targets': [
     {
@@ -311,7 +311,7 @@
         'net_resources.grd',
         'net_resources.h',
       ],
-      'vs_postbuild':
+      'msvs_postbuild':
         '$(ProjectDir)..\\tools\\grit\\build\\grit_resource_file.bat '
         '$(ProjectDir)base\\net_resources.grd '
         '$(ProjectDir) '

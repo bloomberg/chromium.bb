@@ -653,7 +653,7 @@
         'picture',
         'sgl',
       ],
-      'vs_props': ['skia.vsprops'],
+      'msvs_props': ['skia.vsprops'],
       'xcode_framework_dirs': [
         '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],

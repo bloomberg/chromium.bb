@@ -75,14 +75,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   # Get directory project file is in.
   gyp_dir = os.path.split(vcproj_filename)[0]
   # Figure out which vsprops to use.
-  vsprops_dirs = spec.get('vs_props', [])
+  vsprops_dirs = spec.get('msvs_props', [])
   vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
 
   # Prepare compiler tool.
   include_dirs = spec.get('include_dirs', [])
   include_dirs = [_FixPath(i) for i in include_dirs]
   defines = ['OS_WIN'] + spec.get('defines', [])
-  disabled_warnings = [str(i) for i in spec.get('vs_disabled_warnings', [])]
+  disabled_warnings = [str(i) for i in spec.get('msvs_disabled_warnings', [])]
   compiler_tool = MSVSProject.Tool(
       'VCCLCompilerTool', {
           'AdditionalIncludeDirectories': ';'.join(include_dirs),
@@ -91,14 +91,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       })
 
   # Pre-build.
-  if spec.get('vs_prebuild'):
-    prebuild_dict = { 'CommandLine': spec.get('vs_prebuild', '') }
+  if spec.get('msvs_prebuild'):
+    prebuild_dict = { 'CommandLine': spec.get('msvs_prebuild', '') }
   else:
     prebuild_dict = {}
   prebuild = MSVSProject.Tool('VCPreBuildEventTool', prebuild_dict)
   # Post-build.
-  if spec.get('vs_postbuild'):
-    postbuild_dict = { 'CommandLine': spec.get('vs_postbuild', '') }
+  if spec.get('msvs_postbuild'):
+    postbuild_dict = { 'CommandLine': spec.get('msvs_postbuild', '') }
   else:
     postbuild_dict = {}
   postbuild = MSVSProject.Tool('VCPostBuildEventTool', postbuild_dict)

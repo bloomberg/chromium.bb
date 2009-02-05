@@ -21,7 +21,7 @@
         'huffman.c',
         'randtable.c',
       ],
-      'vs_props': [ '../../build/external_code.vsprops' ],
+      'msvs_props': [ '../../build/external_code.vsprops' ],
       'direct_dependent_settings': {
         'include_dirs': [
           '.',

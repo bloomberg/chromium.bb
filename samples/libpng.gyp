@@ -34,7 +34,7 @@
         'pngwtran.c',
         'pngwutil.c',
       ],
-      'vs_props': [ '../../build/external_code.vsprops' ],
+      'msvs_props': [ '../../build/external_code.vsprops' ],
       'defines': [
         'CHROME_PNG_WRITE_SUPPORT',
         'PNG_USER_CONFIG',

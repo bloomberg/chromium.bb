@@ -44,7 +44,7 @@
         'open-vcdiff/vsprojects/stdint.h',
       ],
       'include_dirs': ['open-vcdiff/src'],
-      'vs_props': [ 'using_sdch.vsprops' ],
+      'msvs_props': [ 'using_sdch.vsprops' ],
       'conditions': [
         [ 'OS == "win"', {
             'include_dirs': ['open-vcdiff/vsprojects'],
