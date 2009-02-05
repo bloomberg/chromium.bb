@@ -9,7 +9,6 @@
     'include_dirs': [
       '..',
     ],
-    'msvs_props': ['build/base.vsprops'],
   },
   'targets': [
     {
@@ -331,7 +330,6 @@
         'gfx/rect.cc',
         'gfx/size.cc',
       ],
-      'msvs_props': ['build/base_gfx.vsprops'],
       'xcode_framework_dirs': [
         '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],

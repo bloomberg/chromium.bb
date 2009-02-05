@@ -63,5 +63,10 @@
         },
       },
     }],
+    [ 'OS=="win"', {
+      'target_defaults': {
+        'defines': ['OS_WIN'],
+      },
+    }],
   ],
 }

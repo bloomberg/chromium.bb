@@ -15,7 +15,9 @@
       'public/i18n',
       'source/common',
       'source/i18n',
+      'source/tools/toolutil',
     ],
+    'msvs_disabled_warnings': [4005],
   },
   'targets': [
     {
@@ -29,12 +31,12 @@
         [ 'OS == "win"', {
             'type': 'none',
             'sources!': ['icudt38l_dat.s'],
-            'sources': [ 'icudt38.dll' ],
+            'sources': ['icudt38.dll'],
             'msvs_postbuild':
               'xcopy /R /C /Y icudt38.dll $(OutDir)',
           },
           {  # else: OS != "win"
-            'sources!': [ 'icudt38.dll' ],
+            'sources!': ['icudt38.dll'],
           },
         ],
       ],
