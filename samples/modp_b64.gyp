@@ -15,6 +15,9 @@
         'modp_b64.h',
         'modp_b64_data.h',
       ],
+      'include_dirs': [
+        '../..',
+      ],
     },
   ],
 }

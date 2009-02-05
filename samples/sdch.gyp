@@ -43,12 +43,17 @@
         'open-vcdiff/vsprojects/config.h',
         'open-vcdiff/vsprojects/stdint.h',
       ],
-      'include_dirs': ['open-vcdiff/src'],
-      'conditions': [
-        [ 'OS == "win"', {
-            'include_dirs': ['open-vcdiff/vsprojects'],
-          },
+      'include_dirs': [
+        'open-vcdiff/src',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'open-vcdiff/src',
         ],
+      },
+      'conditions': [
+        [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
+        [ 'OS == "win"', { 'include_dirs': [ 'open-vcdiff/vsprojects' ] } ],
       ],
     },
   ],
