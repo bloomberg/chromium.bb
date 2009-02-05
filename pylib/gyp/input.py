@@ -10,6 +10,14 @@ import re
 # A list of types that are treated as linkable.
 linkable_types = ['executable', 'shared_library']
 
+# A list of sections that contain pathnames.
+path_sections = [
+  'include_dirs',
+  'sources',
+  'msvs_props',
+  'xcode_framework_dirs',
+]
+
 
 def ExceptionAppend(e, msg):
   if not e.args:
@@ -600,31 +608,87 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
           target_dict['dependencies'].append(dependency)
 
 
+def MakePathRelative(to_file, fro_file, item):
+  # If item is a relative path, it's relative to the build file dict that it's
+  # coming from.  Fix it up to make it relative to the build file dict that
+  # it's going into.
+  # TODO(mark): We might want to exclude some things here even if is_paths is
+  # true, like things that begin with < or > (variables for us) or $ (variables
+  # for the build environment).
+  if to_file == fro_file:
+    return item
+  else:
+    return os.path.normpath(os.path.join(
+        gyp.common.RelativePath(os.path.dirname(fro_file),
+                                os.path.dirname(to_file)),
+                                item))
+
+
+def FixedPathDict(the_dict, to_file, fro_file):
+  new_dict = {}
+
+  for k, v in the_dict.iteritems():
+    is_paths = k in path_sections
+    if isinstance(v, str):
+      if is_paths:
+        new_v = MakePathRelative(to_file, fro_file, v)
+      else:
+        new_v = v
+    elif isinstance(v, dict):
+      new_v = FixedPathDict(v, to_file, fro_file)
+    elif isinstance(v, list):
+      new_v = FixedPathList(v, to_file, fro_file, is_paths)
+    else:
+      raise TypeError, \
+          'Attempt fix paths in dict value of unsupported type ' + \
+          v.__class__.__name__ + ' for key ' + k
+
+    new_dict[k] = new_v
+
+  return new_dict
+
+
+# TODO(mark): FixedPathList and FixedPathDict should share the meat.
+def FixedPathList(the_list, to_file, fro_file, is_paths=False):
+  new_list = []
+  for item in the_list:
+    if isinstance(item, str):
+      if is_paths:
+        new_item = MakePathRelative(to_file, fro_file, item)
+      else:
+        new_item = item
+    elif isinstance(item, dict):
+      new_item = FixedPathDict(item, to_file, fro_file)
+    elif isinstance(item, list):
+      # TODO(mark): Drop is_paths when recursing into a sublist of a list that
+      # was is_paths.  Is this right?
+      new_item = FixedPathList(item, to_file, fro_file)
+    else:
+      raise TypeError, \
+          'Attempt fix paths in list value of unsupported type ' + \
+          item.__class__.__name__
+
+    new_list.append(new_item)
+
+  return new_list
+
+
 def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
   prepend_index = 0
 
   for item in fro:
     if isinstance(item, str) or isinstance(item, int):
       # The cheap and easy case.
-      if is_paths and to_file != fro_file:
-        # If item is a relative path, it's relative to the build file dict that
-        # it's coming from.  Fix it up to make it relative to the build file
-        # dict that it's going into.
-        # TODO(mark): We might want to exclude some things here even if
-        # is_paths is true, like things that begin with < or > (variables
-        # for us) or $ (variables for the build environment).
-        to_item = os.path.normpath(os.path.join(
-            gyp.common.RelativePath(os.path.dirname(fro_file),
-                                    os.path.dirname(to_file)),
-                                    item))
+      if is_paths:
+        to_item = MakePathRelative(to_file, fro_file, item)
       else:
         to_item = item
     elif isinstance(item, dict):
       # Insert a copy of the dictionary.
-      to_item = item.copy()
+      to_item = FixedPathDict(item, to_file, fro_file)
     elif isinstance(item, list):
       # Insert a copy of the list.
-      to_item = item[:]
+      to_item = FixedPathList(item, to_file, fro_file)
     else:
       raise TypeError, \
           'Attempt to merge list item of unsupported type ' + \
@@ -715,9 +779,7 @@ def MergeDicts(to, fro, to_file, fro_file):
         to[list_base] = []
 
       # Call MergeLists, which will make copies of objects that require it.
-      is_paths = list_base in ['include_dirs', 'sources',
-                               'xcode_framework_dirs',
-                               'msvs_props']
+      is_paths = list_base in path_sections
       MergeLists(to[list_base], v, to_file, fro_file, is_paths, append)
     else:
       raise TypeError, \
