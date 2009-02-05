@@ -148,7 +148,11 @@ import sys
 # transformed to be properly encoded.  Note that this expression matches the
 # characters listed with "+", for 1 or more occurrences: if a string is empty,
 # it must not match this pattern, because it needs to be encoded as "".
-unquoted = re.compile('^[A-Za-z0-9$./_]+$')
+_unquoted = re.compile('^[A-Za-z0-9$./_]+$')
+
+# This pattern should match any character that needs to be escaped by
+# XCObject._EncodeString.  See that function.
+_escaped = re.compile('[\\"]|[^ -~]')
 
 
 class XCObject(object):
@@ -437,6 +441,21 @@ class XCObject(object):
 
     return '/* ' + comment.replace('*/', '(*)/') + ' */'
 
+  def _EncodeTransform(self, match):
+    # This function works closely with _EncodeString.  It will only be called
+    # by re.sub with match.group(0) containing a character matched by the
+    # the _escaped expression.
+    char = match.group(0)
+
+    # Backslashes (\) and quotation marks (") are always replaced with a
+    # backslash-escaped version of the same.  Everything else gets its
+    # replacement from the class' _encode_transforms array.
+    if char == '\\':
+      return '\\\\'
+    if char == '"':
+      return '\\"'
+    return self._encode_transforms[ord(char)]
+
   def _EncodeString(self, value):
     """Encodes a string to be placed in the project file output, mimicing
     Xcode behavior.
@@ -471,20 +490,10 @@ class XCObject(object):
     # as UTF-8 without any escaping.  These mappings are contained in the
     # class' _encode_transforms list.
 
-    if unquoted.match(value):
+    if _unquoted.match(value):
       return value
 
-    # Escape backslashes first, because subsequent replacements will introduce
-    # more backslashes.
-    encoded = value.replace('\\', '\\\\')
-    encoded = encoded.replace('"', '\\"')
-
-    i = 0
-    while i < len(self._encode_transforms):
-      encoded = encoded.replace(chr(i), self._encode_transforms[i])
-      i = i + 1
-
-    return '"' + encoded + '"'
+    return '"' + _escaped.sub(self._EncodeTransform, value) + '"'
 
   def _XCPrint(self, file, tabs, line):
     file.write('\t' * tabs + line)
@@ -795,7 +804,7 @@ class XCObject(object):
  
 # path_leading_variable is used by XCHierarchicalElement.__init__ to determine
 # whether a pathname begins with an Xcode variable, such as "$(SDKROOT)/blah".
-path_leading_variable = re.compile('^\$\((.*?)\)/(.*)$')
+_path_leading_variable = re.compile('^\$\((.*?)\)/(.*)$')
 
 
 class XCHierarchicalElement(XCObject):
@@ -835,7 +844,8 @@ class XCHierarchicalElement(XCObject):
       # If the pathname begins with an Xcode variable like "$(SDKROOT)/", take
       # the variable out and make the path be relative to that variable by
       # assigning the variable name as the sourceTree.
-      source_group_match = path_leading_variable.match(self._properties['path'])
+      source_group_match = \
+          _path_leading_variable.match(self._properties['path'])
       if source_group_match:
         self._properties['sourceTree'] = source_group_match.group(1)
         self._properties['path'] = source_group_match.group(2)
