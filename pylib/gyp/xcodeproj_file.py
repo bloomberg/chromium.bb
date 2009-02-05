@@ -823,6 +823,18 @@ class XCHierarchicalElement(XCObject):
       if path != name:
         self.SetProperty('name', name)
 
+    if 'path' in self._properties and \
+        (not 'sourceTree' in self._properties or \
+         self._properties['sourceTree'] == '<group>'):
+      # If the pathname begins with an Xcode variable like "$(SDKROOT)/", take
+      # the variable out and make the path be relative to that variable by
+      # assigning the variable name as the sourceTree.
+      source_group_match = re.match("\$\((.*?)\)/(.*)",
+                                    self._properties['path'])
+      if source_group_match:
+        self._properties['sourceTree'] = source_group_match.group(1)
+        self._properties['path'] = source_group_match.group(2)
+
   def Name(self):
     if 'name' in self._properties:
       return self._properties['name']
@@ -846,6 +858,18 @@ class XCHierarchicalElement(XCObject):
       hashables.append(self._properties['sourceTree'])
 
     return hashables
+
+  def Compare(self, other):
+    # TODO(mark): assert that self and other __class__ attributes are either
+    # PBXGroup or PBXFileReference.
+    if self.__class__ == other.__class__:
+      # If the two objects are of the same class, compare their names.
+      return cmp(self.Name(), other.Name())
+    else:
+      # Otherwise, sort PBXGroups before PBXFileReferences.
+      if self.__class__ == PBXGroup:
+        return -1
+      return 1
 
 
 class PBXGroup(XCHierarchicalElement):
@@ -899,6 +923,61 @@ class PBXGroup(XCHierarchicalElement):
 
     return None
 
+  def AddOrGetFileByPath(self, path, hierarchical):
+    path = os.path.normpath(path)
+    path_split = path.split(os.path.sep)
+    if len(path_split) == 1 or not hierarchical:
+      file_ref = self.GetChildByPath(path)
+      # TODO(mark): assert that it's a PBXFileReference
+      if file_ref == None:
+        file_ref = PBXFileReference({'path': path})
+        self.AppendProperty('children', file_ref)
+      return file_ref
+    else:
+      next_dir = path_split[0]
+      group_ref = self.GetChildByPath(next_dir)
+      if group_ref == None:
+        group_ref = PBXGroup({'path': next_dir})
+        self.AppendProperty('children', group_ref)
+      return group_ref.AddOrGetFileByPath(os.path.sep.join(path_split[1:]),
+                                          hierarchical)
+
+  def CompareRootGroup(self, other):
+    # This function should be used only to compare direct children of the
+    # containing PBXProject's mainGroup.  These groups should appear in the
+    # listed order.
+    order = ['Source', 'Projects', 'Frameworks', 'Products']
+
+    # If the groups aren't in the listed order, do a name comparison.
+    # Otherwise, groups in the listed order should come before those that
+    # aren't.
+    self_name = self.Name()
+    other_name = other.Name()
+    if not self_name in order and not other_name in order:
+      return cmp(self_name, other_name)
+    if self in order:
+      return -1
+    if other in order:
+      return 1
+
+    # If both groups are in the listed order, go by the defined order.
+    self_index = order.index(self_name)
+    other_index = order.index(other_name)
+    if self_index < other_index:
+      return -1
+    if self_index > other_index:
+      return 1
+    return 0
+
+  def SortGroup(self):
+    self._properties['children'] = \
+        sorted(self._properties['children'], cmp=lambda x,y: x.Compare(y))
+
+    # Recurse.
+    for child in self._properties['children']:
+      if isinstance(child, PBXGroup):
+        child.SortGroup()
+
 
 class XCFileLikeElement(XCHierarchicalElement):
   # Abstract base for objects that can be used as the fileRef property of
@@ -931,6 +1010,36 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
   _should_print_single_line = True
   # super
   _encode_transforms = XCFileLikeElement._alternate_encode_transforms
+
+  def __init__(self, properties=None, id=None, parent=None):
+    # super
+    XCFileLikeElement.__init__(self, properties, id, parent)
+    if 'path' in self._properties and \
+        not 'lastKnownFileType' in self._properties and \
+        not 'explicitFileType' in self._properties:
+      # TODO(mark): This is the replacement for a replacement for a quick hack.
+      # It is no longer incredibly sucky, but this list needs to be extended.
+      extension_map = {
+        'c':         'sourcecode.c.c',
+        'cc':        'sourcecode.cpp.cpp',
+        'cpp':       'sourcecode.cpp.cpp',
+        'framework': 'wrapper.framework',
+        'h':         'sourcecode.c.h',
+        'm':         'sourcecode.c.objc',
+        'mm':        'sourcecode.cpp.objcpp',
+        's':         'sourcecode.asm',
+      }
+
+      basename = os.path.basename(self._properties['path'])
+      dot = basename.rfind('.')
+      file_type = 'text'  # TODO(mark): Bad default!  Hack!  Fix!
+      extension = None
+      if dot != -1:
+        extension = basename[dot + 1:]
+        if extension in extension_map:
+          file_type = extension_map[extension]
+
+      self._properties['lastKnownFileType'] = file_type
 
 
 # PBXReferenceProxy is also an XCFileLikeElement subclass.  It is defined below
@@ -1099,51 +1208,18 @@ class XCBuildPhase(XCObject):
     'runOnlyForDeploymentPostprocessing': [0, int,          0, 1, 0],
   })
 
+  def FileGroup(self):
+    # Subclasses must override this by returning a two-element list.  The
+    # first item in the list should be the PBXGroup to which files added to
+    # the phase should be added.  The second item should be a boolean variable
+    # indicating whether files should be added into hierarchical groups or
+    # one single flat group.
+    raise NotImplementedError, \
+          self.__class__.__name__ + ' must implement FileGroup'
+
   def AddFile(self, path):
-    # TODO(mark): This is the replacement for a quick hack but it still sucks.
-    extension_map = {
-      'c':         'sourcecode.c.c',
-      'cc':        'sourcecode.cpp.cpp',
-      'cpp':       'sourcecode.cpp.cpp',
-      'framework': 'wrapper.framework',
-      'h':         'sourcecode.c.h',
-      'm':         'sourcecode.c.objc',
-      'mm':        'sourcecode.cpp.objcpp',
-      's':         'sourcecode.asm',
-    }
-
-    basename = os.path.basename(path)
-    dot = basename.rfind('.')
-    file_type = 'text'  # TODO(mark): Bad default!  Hack!  Fix!
-    extension = None
-    if dot != -1:
-      extension = basename[dot + 1:]
-      if extension in extension_map:
-        file_type = extension_map[extension]
-
-    # If the filename begins with an Xcode variable like "$(SDKROOT)/", take
-    # the variable out and make the path be relative to that variable by
-    # assigning the variable name as the sourceTree.
-    source_group_match = re.match("\$\((.*?)\)/(.*)", path)
-    if source_group_match:
-      source_tree = source_group_match.group(1)
-      path = source_group_match.group(2)
-    else:
-      source_tree = '<group>'
-
-    # TODO(mark): This is a quick hack.
-    if extension and extension == 'framework':
-      group = self.PBXProjectAncestor().FrameworksGroup()
-    else:
-      group = self.PBXProjectAncestor().SourceGroup()
-
-    ref_props = {
-      'lastKnownFileType': file_type,
-      'path':              path,
-      'sourceTree':        source_tree,
-    }
-    file_ref = PBXFileReference(ref_props)
-    group.AppendProperty('children', file_ref)
+    [file_group, hierarchical] = self.FileGroup()
+    file_ref = file_group.AddOrGetFileByPath(path, hierarchical)
     self.AppendProperty('files', PBXBuildFile({'fileRef': file_ref}))
 
 
@@ -1153,6 +1229,9 @@ class PBXHeadersBuildPhase(XCBuildPhase):
   def Name(self):
     return 'Headers'
 
+  def FileGroup(self):
+    return [self.PBXProjectAncestor().SourceGroup(), True]
+
 
 class PBXSourcesBuildPhase(XCBuildPhase):
   # No additions to the schema relative to XCBuildPhase.
@@ -1160,12 +1239,18 @@ class PBXSourcesBuildPhase(XCBuildPhase):
   def Name(self):
     return 'Sources'
 
+  def FileGroup(self):
+    return [self.PBXProjectAncestor().SourceGroup(), True]
+
 
 class PBXFrameworksBuildPhase(XCBuildPhase):
   # No additions to the schema relative to XCBuildPhase.
 
   def Name(self):
     return 'Frameworks'
+
+  def FileGroup(self):
+    return [self.PBXProjectAncestor().FrameworksGroup(), False]
 
 
 class PBXShellScriptBuildPhase(XCBuildPhase):
@@ -1571,6 +1656,19 @@ class PBXProject(XCContainerPortal):
 
   def ProjectsGroup(self):
     return self._GroupByName('Projects')
+
+  def SortGroups(self):
+    # Sort the children of the mainGroup (like "Source" and "Products")
+    # according to their defined order.
+    self._properties['mainGroup']._properties['children'] = \
+        sorted(self._properties['mainGroup']._properties['children'],
+               cmp=lambda x,y: x.CompareRootGroup(y))
+
+    # Sort everything else by putting group before files, and going
+    # alphabetically by name within sections of groups and files.  SortGroup
+    # is recursive.
+    for group in self._properties['mainGroup']._properties['children']:
+      group.SortGroup()
 
   def AddOrGetProjectReference(self, other_pbxproject):
     """Add a reference to another project file (via PBXProject object) to this

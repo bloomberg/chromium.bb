@@ -67,6 +67,11 @@ class XcodeProject(object):
     xccl.SetProperty('defaultConfigurationName', configurations[0])
     self.project.SetProperty('buildConfigurationList', xccl)
 
+    # Sort the groups nicely.
+    self.project.SortGroups()
+
+    # TODO(mark): Sort the targets based on how they appeared in the input.
+
     # Give everything an ID.
     self.project_file.ComputeIDs()
 
@@ -104,20 +109,31 @@ def GenerateOutput(target_list, target_dicts, data):
     configuration_names = []
     for configuration in spec['configurations']:
       configuration_names.append(configuration['configuration_name'])
+    pbxp = xcode_projects[build_file].project
     xct = xcode_projects[build_file].AddTarget(target, spec['type'],
                                                configuration_names)
     xcode_targets[qualified_target] = xct
 
     for source in spec['sources']:
-      # TODO(mark): Only add files with known extensions to the sources phase.
-      # This will be made fancier.
+      # TODO(mark): Perhaps this can be made a little bit fancier.
       source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's']
       basename = os.path.basename(source)
       dot = basename.rfind('.')
+      added = False
       if dot != -1:
         extension = basename[dot + 1:]
         if extension in source_extensions:
           xct.SourcesPhase().AddFile(source)
+          added = True
+      if not added:
+        # Files that aren't added to a sources build phase can still go into
+        # the project's source group.
+        pbxp.SourceGroup().AddOrGetFileByPath(source, True)
+
+    # Excluded files can also go into the project's source group.
+    if 'sources_excluded' in spec:
+      for source in spec['sources_excluded']:
+        pbxp.SourceGroup().AddOrGetFileByPath(source, True)
 
     # Add dependencies before libraries, because adding a dependency may imply
     # adding a library.  It's preferable to keep dependencies listed first
