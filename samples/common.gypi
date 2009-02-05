@@ -12,7 +12,20 @@
           }],
           [ 'OS=="win"', {
             'configuration_platform': 'Win32',
-            'msvs_props': ['debug.vsprops'],
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'Optimization': '0',
+                'PreprocessorDefinitions': ['_DEBUG'],
+                'BasicRuntimeChecks': '3',
+                'RuntimeLibrary': '1',
+              },
+              'VCLinkerTool': {
+                'LinkIncremental': '2',
+              },
+              'VCResourceCompilerTool': {
+                'PreprocessorDefinitions': ['_DEBUG'],
+              },
+            },
           }],
         ],
       },
@@ -65,7 +78,65 @@
     }],
     [ 'OS=="win"', {
       'target_defaults': {
-        'defines': ['OS_WIN'],
+        'defines': [
+          'OS_WIN',  # Not in props, seems to need it.
+
+          '_WIN32_WINNT=0x600',
+          'WINVER=0x600',
+          'WIN32',
+          '_WINDOWS',
+          '_HAS_EXCEPTIONS=0',
+          'NOMINMAX',
+          '_CRT_RAND_S',
+          'CERT_CHAIN_PARA_HAS_EXTRA_FIELDS',
+          'WIN32_LEAN_AND_MEAN',
+          '_SECURE_ATL',
+          '_HAS_TR1=0',
+        ],
+        'include_dirs': ['..'],
+        'msvs_disable_warnings': [4503, 4819],
+        'msvs_settings': {
+          'VCCLCompilerTool': {
+            'MinimalRebuild': 'false',
+            'ExceptionHandling': '0',
+            'BufferSecurityCheck': 'true',
+            'EnableFunctionLevelLinking': 'true',
+            'RuntimeTypeInfo': 'false',
+            'WarningLevel': '3',
+            'WarnAsError': 'true',
+            'DebugInformationFormat': '3',
+          },
+          'VCLibrarianTool': {
+            'AdditionalOptions': '/ignore:4221',
+            'OutputFile': '$(OutDir)\\lib\\$(ProjectName).lib',
+            'AdditionalLibararyDirectories': '$(SDKLibs)',
+          },
+          'VCLinkerTool': {
+            'AdditionalOptions':
+              '/safeseh /dynamicbase /ignore:4199 /ignore:4221 /nxcompat',
+            'AdditionalDependencies': 'wininet.lib version.lib msimg32.lib ws2_32.lib usp10.lib hpsapi.lib',
+            'AdditionalLibaryDependencies': '$(SDKLibs)',
+            'DelayLoadDLLs': 'dwmapi.dll,uxtheme.dll',
+            'GenerateDebugInformation': 'true',
+            'MapFileName': '$(OutDir)\\$(TargetName).map',
+            'ImportLibary': '$(OutDir)\\lib\\$(TargetName).lib',
+            'TargetMachine': '1',
+            'FixedBaseAddress': '1',
+          },
+          'VCMIDLTool': {
+            'GenerateStublessProxies': 'true',
+            'TypeLibraryName': '$(InputName).tlb',
+            'OutputDirectory': '$(IntDir)',
+            'HeaderFileName': '$(InputName).h',
+            'DLLDataFileName': 'dlldata.c',
+            'InterfaceIdentifiedFileName': '$(InputName)_i.c',
+            'ProxyFileName': '$(InputName)_p.c',
+          },
+          'VCResourceCompilerTool': {
+            'Culture' : '1033',
+            'AdditionalIncludeDirectories': '$(SolutionDir)..',
+          },
+       },
       },
     }],
   ],

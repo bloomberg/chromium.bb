@@ -61,6 +61,8 @@ def _SourceInFolders(sources, prefix=None):
 
 def _ToolAppend(tools, tool_name, option, value):
   if not value: return
+  if not tools.get(tool_name):
+    tools[tool_name] = dict()
   tool = tools[tool_name]
   if tool.get(option):
     if type(tool[option]) == list:
@@ -119,6 +121,12 @@ def _GenerateProject(vcproj_filename, build_file, spec):
         'VCFxCopTool': {},
         'VCPostBuildEventTool': {},
         }
+
+    # Add in msvs_settings.
+    for tool in c.get('msvs_settings', {}):
+      options = c['msvs_settings'][tool]
+      for option in options:
+        _ToolAppend(tools, tool, option, options[option])
 
     # Add in includes.
     include_dirs = c.get('include_dirs', [])

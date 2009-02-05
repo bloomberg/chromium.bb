@@ -15,9 +15,6 @@
       'public/i18n',
       'source/common',
       'source/i18n',
-      # TODO(mark): I don't think we need the toolutil include since we don't
-      # build icutu.  Find out if we can kill this.
-      'source/tools/toolutil',
     ],
     'msvs_disabled_warnings': [4005],
   },
