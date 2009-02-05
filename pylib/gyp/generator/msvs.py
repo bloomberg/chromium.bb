@@ -101,13 +101,13 @@ def _GenerateProject(vcproj_filename, build_file, spec):
         })
 
     # Pre-build.
-    if spec.get('msvs_prebuild'):
+    if c.get('msvs_prebuild'):
       prebuild_dict = { 'CommandLine': c.get('msvs_prebuild', '') }
     else:
       prebuild_dict = {}
     prebuild = MSVSProject.Tool('VCPreBuildEventTool', prebuild_dict)
     # Post-build.
-    if spec.get('msvs_postbuild'):
+    if c.get('msvs_postbuild'):
       postbuild_dict = { 'CommandLine': c.get('msvs_postbuild', '') }
     else:
       postbuild_dict = {}
@@ -149,6 +149,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   sources = _SourceInFolders(sources)
   # Add in files.
   p.AddFiles(sources)
+
   # Write it out.
   p.Write()
 

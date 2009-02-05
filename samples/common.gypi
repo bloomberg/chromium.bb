@@ -15,8 +15,6 @@
             'msvs_props': ['debug.vsprops'],
           }],
         ],
-        # This seems to do the wrong thing?!
-        #'include_dirs': ['joe'],
       },
       {
         'configuration_name': 'Release',
