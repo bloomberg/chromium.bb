@@ -163,6 +163,9 @@
       'defines': [
         'U_I18N_IMPLEMENTATION',
       ],
+      'dependencies': [
+        'icuuc',
+      ],
       'direct_dependent_settings': {
         'include_dirs': [
           'public/i18n',
@@ -306,6 +309,9 @@
       ],
       'defines': [
         'U_COMMON_IMPLEMENTATION',
+      ],
+      'dependencies': [
+        'icudata',
       ],
       'direct_dependent_settings': {
         'include_dirs': [

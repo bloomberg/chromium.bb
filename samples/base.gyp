@@ -16,7 +16,6 @@
       'target_name': 'base',
       'type': 'static_library',
       'dependencies': [
-        '../third_party/icu38/icu38.gyp:icudata',
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
       ],
@@ -452,6 +451,7 @@
           },
         ],
         # This is needed to trigger the dll copy step on windows.
+        # TODO(mark): This should not be necessary.
         [ 'OS == "win"', {
             'dependencies': [
               '../third_party/icu38/icu38.gyp:icudata',
