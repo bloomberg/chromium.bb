@@ -624,55 +624,6 @@ def MakePathRelative(to_file, fro_file, item):
                                 item))
 
 
-def FixedPathDict(the_dict, to_file, fro_file):
-  new_dict = {}
-
-  for k, v in the_dict.iteritems():
-    is_paths = k in path_sections
-    if isinstance(v, str):
-      if is_paths:
-        new_v = MakePathRelative(to_file, fro_file, v)
-      else:
-        new_v = v
-    elif isinstance(v, dict):
-      new_v = FixedPathDict(v, to_file, fro_file)
-    elif isinstance(v, list):
-      new_v = FixedPathList(v, to_file, fro_file, is_paths)
-    else:
-      raise TypeError, \
-          'Attempt fix paths in dict value of unsupported type ' + \
-          v.__class__.__name__ + ' for key ' + k
-
-    new_dict[k] = new_v
-
-  return new_dict
-
-
-# TODO(mark): FixedPathList and FixedPathDict should share the meat.
-def FixedPathList(the_list, to_file, fro_file, is_paths=False):
-  new_list = []
-  for item in the_list:
-    if isinstance(item, str):
-      if is_paths:
-        new_item = MakePathRelative(to_file, fro_file, item)
-      else:
-        new_item = item
-    elif isinstance(item, dict):
-      new_item = FixedPathDict(item, to_file, fro_file)
-    elif isinstance(item, list):
-      # TODO(mark): Drop is_paths when recursing into a sublist of a list that
-      # was is_paths.  Is this right?
-      new_item = FixedPathList(item, to_file, fro_file)
-    else:
-      raise TypeError, \
-          'Attempt fix paths in list value of unsupported type ' + \
-          item.__class__.__name__
-
-    new_list.append(new_item)
-
-  return new_list
-
-
 def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
   prepend_index = 0
 
@@ -684,11 +635,19 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
       else:
         to_item = item
     elif isinstance(item, dict):
-      # Insert a copy of the dictionary.
-      to_item = FixedPathDict(item, to_file, fro_file)
+      # Make a copy of the dictionary, continuing to look for paths to fix.
+      # The other intelligent aspects of merge processing won't apply because
+      # item is being merged into an empty dict.
+      to_item = {}
+      MergeDicts(to_item, item, to_file, fro_file)
     elif isinstance(item, list):
-      # Insert a copy of the list.
-      to_item = FixedPathList(item, to_file, fro_file)
+      # Recurse, making a copy of the list.  If the list contains any
+      # descendant dicts, path fixing will occur.  Note that here, custom
+      # values for is_paths and append are dropped; those are only to be
+      # applied to |to| and |fro|, not sublists of |fro|.  append shouldn't
+      # matter anyway because the new |to_item| list is empty.
+      to_item = []
+      MergeLists(to_item, item, to_file, fro_file)
     else:
       raise TypeError, \
           'Attempt to merge list item of unsupported type ' + \
@@ -719,7 +678,11 @@ def MergeDicts(to, fro, to_file, fro_file):
           ' for key ' + k
     if isinstance(v, str) or isinstance(v, int):
       # Overwrite the existing value, if any.  Cheap and easy.
-      to[k] = v
+      is_path = k in path_sections
+      if is_path:
+        to[k] = MakePathRelative(to_file, fro_file, v)
+      else:
+        to[k] = v
     elif isinstance(v, dict):
       # Recurse, guaranteeing copies will be made of objects that require it.
       if not k in to:
@@ -779,6 +742,10 @@ def MergeDicts(to, fro, to_file, fro_file):
         to[list_base] = []
 
       # Call MergeLists, which will make copies of objects that require it.
+      # MergeLists can recurse back into MergeDicts, although this will be
+      # to make copies of dicts (with paths fixed), there will be no
+      # subsequent dict "merging" once entering a list because lists are
+      # always replaced, appended to, or prepended to.
       is_paths = list_base in path_sections
       MergeLists(to[list_base], v, to_file, fro_file, is_paths, append)
     else:
