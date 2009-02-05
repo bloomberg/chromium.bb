@@ -4,6 +4,7 @@
   },
   'includes': [
     '../../build/common.gypi',
+    '../../build/external_code.gypi',
   ],
   'target_defaults': {
     'defines': [
@@ -15,7 +16,6 @@
       'source/common',
       'source/i18n',
     ],
-    'msvs_props': [ '../../build/external_code.vsprops' ],
   },
   'targets': [
     {

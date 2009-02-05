@@ -59,6 +59,19 @@ def _SourceInFolders(sources, prefix=None):
   return result
 
 
+def _ToolAppend(tools, tool_name, option, value):
+  if not value: return
+  tool = tools[tool_name]
+  if tool.get(option):
+    if type(tool[option]) == list:
+      tool[option] += value
+    else:
+      # TODO(bradnelson): Pick an exception class.
+      raise 'Append to non-list option is invalid'
+  else:
+    tool[option] = value
+
+
 def _GenerateProject(vcproj_filename, build_file, spec):
   """Generates a vcproj file.
 
@@ -88,56 +101,68 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     vsprops_dirs = c.get('msvs_props', [])
     vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
 
-    # Prepare compiler tool.
+    # Prepare the list of tools as a dictionary.
+    tools = {
+        'VCPreBuildEventTool': {},
+        'VCCustomBuildTool': {},
+        'VCXMLDataGeneratorTool': {},
+        'VCWebServiceProxyGeneratorTool': {},
+        'VCMIDLTool': {},
+        'VCCLCompilerTool': {},
+        'VCManagedResourceCompilerTool': {},
+        'VCResourceCompilerTool': {},
+        'VCPreLinkEventTool': {},
+        'VCLibrarianTool': {},
+        'VCALinkTool': {},
+        'VCXDCMakeTool': {},
+        'VCBscMakeTool': {},
+        'VCFxCopTool': {},
+        'VCPostBuildEventTool': {},
+        }
+
+    # Add in includes.
     include_dirs = c.get('include_dirs', [])
     include_dirs = [_FixPath(i) for i in include_dirs]
-    defines = ['OS_WIN'] + c.get('defines', [])
+    _ToolAppend(tools, 'VCCLCompilerTool',
+                'AdditionalIncludeDirectories', include_dirs)
+
+    # Add defines.
+    defines = c.get('defines', [])
+    _ToolAppend(tools, 'VCCLCompilerTool',
+                'PreprocessorDefinitions', defines)
+
+    # Add disabled warnings.
     disabled_warnings = [str(i) for i in c.get('msvs_disabled_warnings', [])]
-    compiler_tool = MSVSProject.Tool(
-        'VCCLCompilerTool', {
-            'AdditionalIncludeDirectories': ';'.join(include_dirs),
-            'PreprocessorDefinitions': ';'.join(defines),
-            'DisableSpecificWarnings': ';'.join(disabled_warnings),
-        })
+    _ToolAppend(tools, 'VCCLCompilerTool',
+                'DisableSpecificWarnings', disabled_warnings)
 
-    # Pre-build.
-    if c.get('msvs_prebuild'):
-      prebuild_dict = { 'CommandLine': c.get('msvs_prebuild', '') }
-    else:
-      prebuild_dict = {}
-    prebuild = MSVSProject.Tool('VCPreBuildEventTool', prebuild_dict)
-    # Post-build.
-    if c.get('msvs_postbuild'):
-      postbuild_dict = { 'CommandLine': c.get('msvs_postbuild', '') }
-    else:
-      postbuild_dict = {}
-    postbuild = MSVSProject.Tool('VCPostBuildEventTool', postbuild_dict)
+    # Add Pre-build.
+    prebuild = c.get('msvs_prebuild')
+    _ToolAppend(tools, 'VCPreBuildEvenTool', 'CommandLine', prebuild)
 
-    # Prepare tools.
-    tools = [
-        prebuild,
-        'VCCustomBuildTool',
-        'VCXMLDataGeneratorTool',
-        'VCWebServiceProxyGeneratorTool',
-        'VCMIDLTool',
-        compiler_tool,
-        'VCManagedResourceCompilerTool',
-        'VCResourceCompilerTool',
-        'VCPreLinkEventTool',
-        'VCLibrarianTool',
-        'VCALinkTool',
-        'VCXDCMakeTool',
-        'VCBscMakeTool',
-        'VCFxCopTool',
-        postbuild,
-        ]
+    # Add Post-build.
+    postbuild = c.get('msvs_postbuild')
+    _ToolAppend(tools, 'VCPostBuildEvenTool', 'CommandLine', prebuild)
+
+    # Convert tools to expected form.
+    tool_list = []
+    for tool, options in tools.iteritems():
+      # Collapse options with lists.
+      options_fixed = {}
+      for option, value in options.iteritems():
+        if type(value) == list:
+          options_fixed[option] = ';'.join(value)
+        else:
+          options_fixed[option] = value
+      # Add in this tool.
+      tool_list.append(MSVSProject.Tool(tool, options_fixed))
 
     # Add in this configuration.
     p.AddConfig('|'.join([c['configuration_name'],
                           c.get('configuration_platform', 'Win32')]),
                 attrs={'InheritedPropertySheets': ';'.join(vsprops_dirs),
                        'ConfigurationType': config_type},
-                tools=tools)
+                tools=tool_list)
 
   # Prepare list of sources.
   sources = spec['sources']

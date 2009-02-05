@@ -4,6 +4,7 @@
   },
   'includes': [
     '../../build/common.gypi',
+    '../../build/external_code.gypi',
   ],
   'targets': [
     {
@@ -65,7 +66,6 @@
         'jutils.c',
         'jversion.h',
       ],
-      'msvs_props': [ '../../build/external_code.vsprops' ],
       'direct_dependent_settings': {
         'include_dirs': [
           '.',

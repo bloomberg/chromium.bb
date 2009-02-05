@@ -4,6 +4,7 @@
   },
   'includes': [
     '../../build/common.gypi',
+    '../../build/external_code.gypi',
   ],
   'targets': [
     {
@@ -34,7 +35,6 @@
         'pngwtran.c',
         'pngwutil.c',
       ],
-      'msvs_props': [ '../../build/external_code.vsprops' ],
       'defines': [
         'CHROME_PNG_WRITE_SUPPORT',
         'PNG_USER_CONFIG',

@@ -4,6 +4,7 @@
   },
   'includes': [
     '../../build/common.gypi',
+    '../../build/external_code.gypi',
   ],
   'targets': [
     {
@@ -14,7 +15,6 @@
         'modp_b64.h',
         'modp_b64_data.h',
       ],
-      'vs_props': [ '../../build/external_code.vsprops' ],
     },
   ],
 }
