@@ -150,6 +150,17 @@ nouveau_channel_free(struct nouveau_channel **chan)
 	
 	FIRE_RING(&nvchan->base);
 
+	if (!nvdev->mm_enabled) {
+		struct nouveau_fence *fence = NULL;
+
+		/* Make sure all buffer objects on delayed delete queue
+		 * actually get freed.
+		 */
+		nouveau_fence_new(&nvchan->base, &fence);
+		nouveau_fence_emit(fence);
+		nouveau_fence_wait(&fence);
+	}
+
 	if (nvchan->notifier_block)
 		drmUnmap(nvchan->notifier_block, nvchan->drm.notifier_size);
 

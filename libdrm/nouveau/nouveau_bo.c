@@ -435,10 +435,18 @@ nouveau_bo_del(struct nouveau_bo **bo)
 	}
 
 	nouveau_bo_ufree(nvbo);
-	if (!nouveau_device(nvbo->base.device)->mm_enabled && nvbo->fence)
-		nouveau_fence_signal_cb(nvbo->fence, nouveau_bo_del_cb, nvbo);
-	else
+
+	if (!nouveau_device(nvbo->base.device)->mm_enabled && nvbo->fence) {
+		nouveau_fence_flush(nvbo->fence->channel);
+		if (nouveau_fence(nvbo->fence)->signalled) {
+			nouveau_bo_del_cb(nvbo);
+		} else {
+			nouveau_fence_signal_cb(nvbo->fence,
+					        nouveau_bo_del_cb, nvbo);
+		}
+	} else {
 		nouveau_bo_del_cb(nvbo);
+	}
 }
 
 int
@@ -786,7 +794,6 @@ nouveau_bo_busy(struct nouveau_bo *bo, uint32_t access)
 	return 1;
 }
 
-#include <stdio.h>
 struct drm_nouveau_gem_pushbuf_bo *
 nouveau_bo_emit_buffer(struct nouveau_channel *chan, struct nouveau_bo *bo)
 {
