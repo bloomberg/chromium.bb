@@ -142,14 +142,15 @@ import string
 import sys
 
 
-def StringContainsOnly(s, chars):
-  """Returns True if s does not contain any character other than those in
-  chars."""
-
-  for c in s:
-    if chars.find(c) == -1:
-      return False
-  return True
+# See XCObject._EncodeString.  This pattern is used to determine when a string
+# can be printed unquoted.  Strings that match this pattern may be printed
+# unquoted.  Strings that do not match must be quoted and may be further
+# transformed to be properly encoded.  Note that this expression matches the
+# characters listed with "+", for 1 or more occurrences: if a string is empty,
+# it must not match this pattern, because it needs to be encoded as "".
+unquoted = re.compile('^[' + re.escape('ABCDEFGHIJKLMNOPQRSTUVWXYZ' +
+                                       'abcdefghijklmnopqrstuvwxyz' +
+                                       '0123456789$./_') + ']+$')
 
 
 class XCObject(object):
@@ -339,7 +340,7 @@ class XCObject(object):
 
     return hashables
 
-  def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
+  def ComputeIDs(self, recursive=True, overwrite=True, hash=None):
     """Set "id" properties deterministically.
 
     An object's "id" property is set based on a hash of its class type and
@@ -373,6 +374,9 @@ class XCObject(object):
       byte = data_length & 0x000000ff
       hash.update(chr(byte))
       hash.update(data)
+
+    if hash == None:
+      hash = hashlib.sha1()
 
     hashables = self.Hashables()
     # TODO(mark): Assert hashables is not empty.
@@ -469,8 +473,7 @@ class XCObject(object):
     # as UTF-8 without any escaping.  These mappings are contained in the
     # class' _encode_transforms list.
 
-    if value != '' and StringContainsOnly(value,
-        'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$./_'):
+    if unquoted.match(value):
       return value
 
     # Escape backslashes first, because subsequent replacements will introduce
@@ -791,6 +794,11 @@ class XCObject(object):
       # objects, lists, and dicts.
       self.UpdateProperties(defaults, do_copy=True)
 
+ 
+# path_leading_variable is used by XCHierarchicalElement.__init__ to determine
+# whether a pathname begins with an Xcode variable, such as "$(SDKROOT)/blah".
+path_leading_variable = re.compile('^\$\((.*?)\)/(.*)$')
+
 
 class XCHierarchicalElement(XCObject):
   """Abstract base for PBXGroup and PBXFileReference.  Not represented in a
@@ -829,8 +837,7 @@ class XCHierarchicalElement(XCObject):
       # If the pathname begins with an Xcode variable like "$(SDKROOT)/", take
       # the variable out and make the path be relative to that variable by
       # assigning the variable name as the sourceTree.
-      source_group_match = re.match("\$\((.*?)\)/(.*)",
-                                    self._properties['path'])
+      source_group_match = path_leading_variable.match(self._properties['path'])
       if source_group_match:
         self._properties['sourceTree'] = source_group_match.group(1)
         self._properties['path'] = source_group_match.group(2)
@@ -865,11 +872,11 @@ class XCHierarchicalElement(XCObject):
     if self.__class__ == other.__class__:
       # If the two objects are of the same class, compare their names.
       return cmp(self.Name(), other.Name())
-    else:
-      # Otherwise, sort PBXGroups before PBXFileReferences.
-      if self.__class__ == PBXGroup:
-        return -1
-      return 1
+
+    # Otherwise, sort PBXGroups before PBXFileReferences.
+    if self.__class__ == PBXGroup:
+      return -1
+    return 1
 
 
 class PBXGroup(XCHierarchicalElement):
@@ -1776,7 +1783,7 @@ class XCProjectFile(XCObject):
     'rootObject':     [0, PBXProject, 1, 1],
   })
 
-  def ComputeIDs(self, recursive=True, overwrite=True, hash=hashlib.sha1()):
+  def ComputeIDs(self, recursive=True, overwrite=True, hash=None):
     # Although XCProjectFile is implemented here as an XCObject, it's not a
     # proper object in the Xcode sense, and it certainly doesn't have its own
     # ID.  Pass through an attempt to update IDs to the real root object.
