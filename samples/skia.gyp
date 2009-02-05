@@ -695,9 +695,17 @@
             'ports/SkThread_pthread.cpp',
             'ports/SkTime_Unix.cc',
           ],
+          # From skia/precompiled.vsprops
+#          'msvs_settings': {
+#            'VCCLCompilerTool': {
+#              'UsePrecompiledHeader': '2',
+#              'PrecompiledHeaderThrough': 'SkTypes.h',
+#              'ForcedIncludeFiles': 'SkTypes.h',
+#            },
+#          },
         }],
       ],
-      'direct_dependent_settings': {
+      'all_dependent_settings': {
         'include_dirs': [
           'include',
           'include/corecg',

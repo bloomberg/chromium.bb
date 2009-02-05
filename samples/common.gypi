@@ -1,5 +1,8 @@
 {
   'target_defaults': {
+    # TODO(bradnelson): This should really be able to be either:
+    #   CHROMIUM_BUILD or GOOGLE_CHROME_BUILD
+    'defines': ['CHROMIUM_BUILD'],
     'configurations': [
       {
         'configuration_name': 'Debug',
@@ -12,6 +15,12 @@
           }],
           [ 'OS=="win"', {
             'configuration_platform': 'Win32',
+            'msvs_configuration_attributes': {
+              'OutputDirectory': '$(SolutionDir)$(ConfigurationName)',
+              'IntermediateDirectory':
+                '$(SolutionDir)$(ConfigurationName)\\obj\\$(ProjectName)',
+              'CharacterSet': '1',
+            },
             'msvs_settings': {
               'VCCLCompilerTool': {
                 'Optimization': '0',
@@ -77,6 +86,7 @@
     [ 'OS=="win"', {
       'target_defaults': {
         'defines': [
+          # TODO(bradnelson): figure out why this is needed.
           'OS_WIN',  # Not in props, seems to need it.
 
           '_WIN32_WINNT=0x600',
@@ -112,7 +122,7 @@
           'VCLinkerTool': {
             'AdditionalOptions':
               '/safeseh /dynamicbase /ignore:4199 /ignore:4221 /nxcompat',
-            'AdditionalDependencies': 'wininet.lib version.lib msimg32.lib ws2_32.lib usp10.lib hpsapi.lib',
+            'AdditionalDependencies': 'wininet.lib version.lib msimg32.lib ws2_32.lib usp10.lib psapi.lib',
             'AdditionalLibaryDependencies': '$(SDKLibs)',
             'DelayLoadDLLs': 'dwmapi.dll,uxtheme.dll',
             'GenerateDebugInformation': 'true',

@@ -319,12 +319,11 @@
           'public/common',
         ],
         'conditions': [
-          [ 'OS == "linux"', {
-              'defines': [
-                'U_STATIC_IMPLEMENTATION',
-              ],
-            },
-          ],
+          [ 'OS != "mac"', {
+            'defines': [
+              'U_STATIC_IMPLEMENTATION',
+            ],
+          },],
         ],
       },
       'conditions': [
@@ -332,8 +331,7 @@
             'sources': [
               'source/stubdata/stubdata.c',
             ],
-          },
-        ],
+        },],
       ],
     },
   ],

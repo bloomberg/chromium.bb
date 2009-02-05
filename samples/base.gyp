@@ -297,6 +297,12 @@
           },
         ],
         [ 'OS == "win"', {
+            'sources': [
+              'pe_image.cc',
+              'pe_image.h',
+              'wmi_util.cc',
+              'wmi_util.h',
+            ],
             'sources/': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
                           ['exclude', '\\.mm?$' ] ],
             'sources!': [
@@ -327,6 +333,7 @@
         'gfx/gdi_util.h',
         'gfx/jpeg_codec.cc',
         'gfx/jpeg_codec.h',
+        'gfx/native_theme.cc',
         'gfx/native_theme.h',
         'gfx/native_widget_types.h',
         'gfx/platform_canvas.h',
@@ -353,6 +360,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
+        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'conditions': [
         [ 'OS != "win"', { 'sources!': [ 'gfx/gdi_util.cc' ] } ],

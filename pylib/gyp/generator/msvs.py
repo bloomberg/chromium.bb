@@ -138,6 +138,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     defines = c.get('defines', [])
     _ToolAppend(tools, 'VCCLCompilerTool',
                 'PreprocessorDefinitions', defines)
+    _ToolAppend(tools, 'VCResourceCompilerTool',
+                'PreprocessorDefinitions', defines)
 
     # Add disabled warnings.
     disabled_warnings = [str(i) for i in c.get('msvs_disabled_warnings', [])]
@@ -165,15 +167,23 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       # Add in this tool.
       tool_list.append(MSVSProject.Tool(tool, options_fixed))
 
+    # Prepare configuration attributes.
+    prepared_attrs = {}
+    source_attrs = c.get('msvs_configuration_attributes', {})
+    for a in source_attrs:
+      prepared_attrs[a] = source_attrs[a]
+    # Add props files.
+    prepared_attrs['InheritedPropertySheets'] = ';'.join(vsprops_dirs)
+    # Set configuration type.
+    prepared_attrs['ConfigurationType'] = config_type
+
     # Add in this configuration.
     p.AddConfig('|'.join([c['configuration_name'],
                           c.get('configuration_platform', 'Win32')]),
-                attrs={'InheritedPropertySheets': ';'.join(vsprops_dirs),
-                       'ConfigurationType': config_type},
-                tools=tool_list)
+                attrs=prepared_attrs, tools=tool_list)
 
   # Prepare list of sources.
-  sources = spec['sources']
+  sources = spec['sources'] + spec.get('sources_excluded', [])
   # Add in the gyp file.
   sources.append(os.path.split(build_file)[1])
   # Convert to folders and the right slashes.
@@ -182,6 +192,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   sources = _SourceInFolders(sources)
   # Add in files.
   p.AddFiles(sources)
+
+  # Exclude excluded ones.
+  excluded_sources = spec.get('sources_excluded', [])
+  excluded_sources = [_FixPath(i) for i in excluded_sources]
+  for f in excluded_sources:
+    for c in spec['configurations']:
+      p.AddFileConfig(f, c['configuration_name'],
+                      {'ExcludedFromBuild': 'true'})
 
   # Write it out.
   p.Write()
