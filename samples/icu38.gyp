@@ -319,6 +319,8 @@
           'public/common',
         ],
         'conditions': [
+          # TODO(mark): Do we need this as a dependent setting on any platform?
+          # If we actually do need it, it's probably Windows-only...
           [ 'OS != "mac"', {
             'defines': [
               'U_STATIC_IMPLEMENTATION',

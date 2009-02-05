@@ -133,6 +133,8 @@
         'observer_list_threadsafe.h',
         'path_service.cc',
         'path_service.h',
+        'pe_image.cc',
+        'pe_image.h',
         'pickle.cc',
         'pickle.h',
         'platform_file.h',
@@ -248,6 +250,8 @@
         'win_util.cc',
         'win_util.h',
         'windows_message_list.h',
+        'wmi_util.cc',
+        'wmi_util.h',
         'word_iterator.cc',
         'word_iterator.h',
         'worker_pool.cc',
@@ -269,7 +273,7 @@
             ],
             'cflags': ['-Wno-write-strings'],
           },
-          { # else: OS != "linux"
+          {  # else: OS != "linux"
             'sources!': [
               'atomicops_internals_x86_gcc.cc',
               'data_pack.cc',
@@ -297,12 +301,6 @@
           },
         ],
         [ 'OS == "win"', {
-            'sources': [
-              'pe_image.cc',
-              'pe_image.h',
-              'wmi_util.cc',
-              'wmi_util.h',
-            ],
             'sources/': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
                           ['exclude', '\\.mm?$' ] ],
             'sources!': [
@@ -318,8 +316,10 @@
               'debug_on_start.cc',
               'file_version_info.cc',
               'object_watcher.cc',
+              'pe_image.cc',
               'registry.cc',
               'win_util.cc',
+              'wmi_util.cc',
             ],
           },
         ],
@@ -360,10 +360,12 @@
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
-        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'conditions': [
-        [ 'OS != "win"', { 'sources!': [ 'gfx/gdi_util.cc' ] } ],
+        [ 'OS != "win"', { 'sources!': [
+          'gfx/gdi_util.cc',
+          'gfx/native_theme.cc' ]
+        }],
       ],
     },
     {
