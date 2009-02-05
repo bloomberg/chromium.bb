@@ -43,7 +43,7 @@
         'basictypes.h',
         'bzip2_error_handler.cc',
         'clipboard.cc',
-        'clipboard.h'
+        'clipboard.h',
         'clipboard_linux.cc',
         'clipboard_mac.mm',
         'clipboard_util.cc',
