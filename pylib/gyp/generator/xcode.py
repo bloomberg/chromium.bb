@@ -33,13 +33,21 @@ class XcodeProject(object):
       xccl.AppendProperty('buildConfigurations', xcbc)
     xccl.SetProperty('defaultConfigurationName', configurations[0])
 
-    target = gyp.xcodeproj_file.PBXNativeTarget(
-        {
-          'buildConfigurationList': xccl,
-          'name':                   name,
-          'productType':            _types[type]
-        },
-        parent=self.project)
+    if type != 'none':
+      target = gyp.xcodeproj_file.PBXNativeTarget(
+          {
+            'buildConfigurationList': xccl,
+            'name':                   name,
+            'productType':            _types[type]
+          },
+          parent=self.project)
+    else:
+      target = gyp.xcodeproj_file.PBXAggregateTarget(
+          {
+            'buildConfigurationList': xccl,
+            'name':                   name,
+          },
+          parent=self.project)
     self.project.AppendProperty('targets', target)
     return target
 
@@ -71,6 +79,36 @@ class XcodeProject(object):
     self.project.SortGroups()
 
     # TODO(mark): Sort the targets based on how they appeared in the input.
+
+    if len(self.project._properties['targets']) > 1:
+      xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+      for configuration in configurations:
+        xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
+        xccl.AppendProperty('buildConfigurations', xcbc)
+      xccl.SetProperty('defaultConfigurationName', configurations[0])
+
+      all_target = gyp.xcodeproj_file.PBXAggregateTarget(
+          {
+            'buildConfigurationList': xccl,
+            'name':                   'All',
+          },
+          parent=self.project)
+
+      for target in self.project._properties['targets']:
+        all_target.AddDependency(target)
+
+      # TODO(mark): This is evil because it relies on internal knowledge of
+      # PBXProject._properties.  It's important to get the "All" target first,
+      # though.
+      self.project._properties['targets'].insert(0, all_target)
+
+    # Update all references to other projects, to make sure that the lists of
+    # remote products are complete.  Otherwise, Xcode will fill them in when
+    # it opens the project file, which will result in unnecessary diffs.
+    # TODO(mark): This is evil because it relies on internal knowledge of
+    # PBXProject._other_pbxprojects.
+    for other_pbxproject in self.project._other_pbxprojects.keys():
+      self.project.AddOrGetProjectReference(other_pbxproject)
 
     # Give everything an ID.
     self.project_file.ComputeIDs()

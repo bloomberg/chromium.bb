@@ -1582,6 +1582,10 @@ class PBXNativeTarget(XCTarget):
                                             PBXBuildFile({'fileRef': file_ref}))
 
 
+class PBXAggregateTarget(XCTarget):
+  pass
+
+
 class PBXProject(XCContainerPortal):
   # A PBXProject is really just an XCObject, the XCContainerPortal thing is
   # just to allow PBXProject to be used in the containerPortal property of
