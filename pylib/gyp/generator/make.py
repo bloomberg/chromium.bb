@@ -133,8 +133,7 @@ def GenerateMakefile(output_filename, build_file, spec):
 def GenerateOutput(target_list, target_dicts, data):
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
-      # TODO(mark): Pick an exception class
-      raise 'Build file name must end in .gyp'
+      continue
 
   for qualified_target in target_list:
     build_file, target = gyp.common.BuildFileAndTarget('',

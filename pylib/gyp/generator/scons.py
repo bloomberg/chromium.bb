@@ -97,8 +97,7 @@ def GenerateSConscript(output_filename, build_file, spec, config):
 def GenerateOutput(target_list, target_dicts, data):
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
-      # TODO(mark): Pick an exception class
-      raise 'Build file name must end in .gyp'
+      continue
 
   infix = '_gyp'
   # Uncomment to overwrite existing .scons files.

@@ -254,8 +254,7 @@ def GenerateOutput(target_list, target_dicts, data):
   for build_file in data.keys():
     # Validate build_file extension
     if build_file[-4:] != '.gyp':
-      # TODO(mark): Pick an exception class.
-      raise 'Build file name must end in .gyp'
+      continue
     sln_path = build_file[:-4] + '_gyp.sln'
     print 'Generating %s' % sln_path
     # Get projects in the solution, and their dependents in a separate bucket.

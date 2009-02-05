@@ -28,7 +28,10 @@ def ExceptionAppend(e, msg):
     e.args = [str(e.args[0]) + ' ' + msg, e.args[1:]]
 
 
-def LoadOneBuildFile(build_file_path, variables, includes, is_target):
+def LoadOneBuildFile(build_file_path, data, variables, includes, is_target):
+  if build_file_path in data:
+    return data[build_file_path]
+
   build_file = open(build_file_path)
   build_file_contents = build_file.read()
   build_file.close()
@@ -43,13 +46,15 @@ def LoadOneBuildFile(build_file_path, variables, includes, is_target):
     ExceptionAppend(e, 'while reading ' + build_file_path)
     raise
 
+  data[build_file_path] = build_file_data
+
   # Scan for includes and merge them in.
   try:
     if is_target:
-      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path,
+      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
                                     variables, includes)
     else:
-      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path,
+      LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
                                     variables)
   except Exception, e:
     ExceptionAppend(e, 'while reading includes of ' + build_file_path)
@@ -58,7 +63,7 @@ def LoadOneBuildFile(build_file_path, variables, includes, is_target):
   return build_file_data
 
 
-def LoadBuildFileIncludesIntoDict(subdict, subdict_path,
+def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data,
                                   variables, includes=None):
   includes_list = []
   if includes != None:
@@ -76,24 +81,24 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path,
 
   # Merge in the included files.
   for include in includes_list:
-    MergeDicts(subdict, LoadOneBuildFile(include, variables, None, False),
+    MergeDicts(subdict, LoadOneBuildFile(include, data, variables, None, False),
                subdict_path, include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
     if v.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(v, subdict_path, variables, None)
+      LoadBuildFileIncludesIntoDict(v, subdict_path, data, variables, None)
     elif v.__class__ == list:
-      LoadBuildFileIncludesIntoList(v, subdict_path, variables)
+      LoadBuildFileIncludesIntoList(v, subdict_path, data, variables)
 
 
 # This recurses into lists so that it can look for dicts.
-def LoadBuildFileIncludesIntoList(sublist, sublist_path, variables):
+def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, variables):
   for item in sublist:
     if item.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(item, sublist_path, variables, None)
+      LoadBuildFileIncludesIntoDict(item, sublist_path, data, variables, None)
     elif item.__class__ == list:
-      LoadBuildFileIncludesIntoList(item, sublist_path, variables)
+      LoadBuildFileIncludesIntoList(item, sublist_path, data, variables)
 
 
 # TODO(mark): I don't love this name.  It just means that it's going to load
@@ -104,8 +109,8 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes):
     # Already loaded.
     return
 
-  build_file_data = LoadOneBuildFile(build_file_path, variables, includes, True)
-  data[build_file_path] = build_file_data
+  build_file_data = LoadOneBuildFile(build_file_path, data, variables,
+                                     includes, True)
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
   ProcessVariablesAndConditionsInDict(build_file_data, False, variables)

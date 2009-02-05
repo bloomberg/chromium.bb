@@ -44,8 +44,7 @@ def GenerateOutput(target_list, target_dicts, data):
         gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
 
     if build_file[-4:] != '.gyp':
-      # TODO(mark): Pick an exception class
-      raise 'Build file name must end in .gyp'
+      continue
     build_file_stem = build_file[:-4]
     output_file = build_file_stem + '.gypd'
 
