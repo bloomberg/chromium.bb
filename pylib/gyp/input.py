@@ -5,6 +5,7 @@ import gyp.common
 import optparse
 import os.path
 import re
+import subprocess
 
 
 # A list of types that are treated as linkable.
@@ -151,8 +152,8 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes):
   return data
 
 
-early_variable_re = re.compile('(<\((.*?)\))')
-late_variable_re = re.compile('(>\((.*?)\))')
+early_variable_re = re.compile('((<)\((.*?)\))')
+late_variable_re = re.compile('(([>!])\((.*?)\))')
 
 def ExpandVariables(input, is_late, variables):
   # Look for the pattern that gets expanded into variables
@@ -170,11 +171,29 @@ def ExpandVariables(input, is_late, variables):
     # of what's intended for replacement.
     matches.reverse()
     for match in matches:
-      # match[0] is the substring to look for and match[1] is the name of
-      # the variable.
-      if not match[1] in variables:
-        raise KeyError, 'Undefined variable ' + match[1] + ' in ' + input
-      output = re.sub(re.escape(match[0]), variables[match[1]], output)
+      # match[0] is the substring to look for, match[1] is the character code
+      # for the replacement type (< > !), and match[2] is the name of the
+      # variable (< >) or command to run (!).
+      if match[1] == '!':
+        p = subprocess.Popen(match[2], shell=True,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        (p_stdout, p_stderr) = p.communicate()
+
+        if p.wait() != 0:
+          # Simulate check_call behavior by reusing its exception.
+          raise subprocess.CalledProcessError(p.returncode, match[2])
+        if p_stderr:
+          raise Exception, match[2] + ' produced stderr:\n' + p_stderr
+
+        # TODO(mark): Provide a way to expand things into lists?
+        # TODO(mark): strip seems right, right?
+        replacement = p_stdout.strip()
+      else:
+        if not match[2] in variables:
+          raise KeyError, 'Undefined variable ' + match[2] + ' in ' + input
+        replacement = variables[match[2]]
+      output = re.sub(re.escape(match[0]), replacement, output)
+
   return output
 
 
