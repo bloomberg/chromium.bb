@@ -323,12 +323,27 @@
       'target_name': 'base_gfx',
       'type': 'static_library',
       'sources': [
+        'gfx/gdi_util.cc',
+        'gfx/gdi_util.h',
         'gfx/jpeg_codec.cc',
+        'gfx/jpeg_codec.h',
+        'gfx/native_theme.h',
+        'gfx/native_widget_types.h',
+        'gfx/platform_canvas.h',
+        'gfx/platform_canvas_linux.h',
+        'gfx/platform_canvas_mac.h',
+        'gfx/platform_device_linux.h',
+        'gfx/platform_device_mac.h',
         'gfx/png_decoder.cc',
+        'gfx/png_decoder.h',
         'gfx/png_encoder.cc',
+        'gfx/png_encoder.h',
         'gfx/point.cc',
+        'gfx/point.h',
         'gfx/rect.cc',
+        'gfx/rect.h',
         'gfx/size.cc',
+        'gfx/size.h',
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
@@ -338,6 +353,9 @@
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
+      ],
+      'conditions': [
+        [ 'OS != "win"', { 'sources!': [ 'gfx/gdi_util.cc' ] } ],
       ],
     },
     {
@@ -455,7 +473,7 @@
               '../third_party/icu38/icu38.gyp:icudata',
             ],
           },
-          { # OS != "win", {
+          {  # OS != "win", {
             'sources!': [
               'gfx/native_theme_unittest.cc',
               'directory_watcher_unittest.cc',
