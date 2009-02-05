@@ -17,5 +17,13 @@
         },
       },
     }],
+    [ 'OS=="mac"', {
+      'target_defaults': {
+        'xcode_settings': {
+          'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',
+          'WARNING_CFLAGS!': ['-Wall'],
+        },
+      },
+    }],
   ],
 }

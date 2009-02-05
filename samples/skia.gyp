@@ -4,6 +4,7 @@
   },
   'includes': [
     '../build/common.gypi',
+    '../build/external_code.gypi',
   ],
   'targets': [
     {

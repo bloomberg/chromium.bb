@@ -60,9 +60,7 @@
           'GCC_INLINES_ARE_PRIVATE_EXTERN': 'YES',
           'GCC_PRECOMPILE_PREFIX_HEADER': 'YES',
           'GCC_SYMBOLS_PRIVATE_EXTERN': 'YES',
-          # GCC_TREAT_WARNINGS_AS_ERRORS (-Wall) is temporarily disabled
-          # during the bring-up.
-          # 'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',
+          'GCC_TREAT_WARNINGS_AS_ERRORS': 'YES',
           'GCC_VERSION': '4.2',
           'GCC_WARN_ABOUT_MISSING_NEWLINE': 'YES',
           'MACOSX_DEPLOYMENT_TARGET': '10.5',

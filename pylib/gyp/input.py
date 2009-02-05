@@ -831,7 +831,7 @@ def SetUpConfigurations(target, target_dict):
     del target_dict[key]
 
 
-def ProcessRules(name, the_dict):
+def ProcessRulesInDict(name, the_dict):
   """Process regular expression and exclusion-based rules on lists.
 
   An exclusion list is in a dict key named with a trailing "!", like
@@ -1020,6 +1020,22 @@ def ProcessRules(name, the_dict):
     if len(the_dict[excluded_key]) == 0:
       del the_dict[excluded_key]
 
+  # Now recurse into subdicts and lists that may contain dicts.
+  for key, value in the_dict.iteritems():
+    if isinstance(value, dict):
+      ProcessRulesInDict(key, value)
+    elif isinstance(value, list):
+      ProcessRulesInList(key, value)
+
+
+def ProcessRulesInList(name, the_list):
+  for item in the_list:
+    if isinstance(item, dict):
+      ProcessRulesInDict(name, item)
+    elif isinstance(item, list):
+      ProcessRulesInList(name, item)
+
+
 def Load(build_files, variables, includes):
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
@@ -1078,13 +1094,7 @@ def Load(build_files, variables, includes):
   # Apply exclude (!) and regex (/) rules.
   for target in flat_list:
     target_dict = targets[target]
-    ProcessRules(target, target_dict)
-    for configuration_dict in target_dict['configurations']:
-      # The first argument to ProcessRules is just a name used for diagnostic
-      # purposes.
-      configuration_name = target + ' configuration ' + \
-                           configuration_dict['configuration_name']
-      ProcessRules(configuration_name, configuration_dict)
+    ProcessRulesInDict(target, target_dict)
 
   # TODO(mark): Return |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept
