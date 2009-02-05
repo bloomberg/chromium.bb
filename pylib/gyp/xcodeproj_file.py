@@ -137,6 +137,7 @@ a project file is output.
 
 import hashlib
 import os.path
+import re
 import string
 import sys
 
@@ -841,6 +842,9 @@ class XCHierarchicalElement(XCObject):
     if 'path' in self._properties:
       hashables.append(self._properties['path'])
 
+    if 'sourceTree' in self._properties:
+      hashables.append(self._properties['sourceTree'])
+
     return hashables
 
 
@@ -1117,6 +1121,16 @@ class XCBuildPhase(XCObject):
       if extension in extension_map:
         file_type = extension_map[extension]
 
+    # If the filename begins with an Xcode variable like "$(SDKROOT)/", take
+    # the variable out and make the path be relative to that variable by
+    # assigning the variable name as the sourceTree.
+    source_group_match = re.match("\$\((.*?)\)/(.*)", path)
+    if source_group_match:
+      source_tree = source_group_match.group(1)
+      path = source_group_match.group(2)
+    else:
+      source_tree = '<group>'
+
     # TODO(mark): This is a quick hack.
     if extension and extension == 'framework':
       group = self.PBXProjectAncestor().FrameworksGroup()
@@ -1126,6 +1140,7 @@ class XCBuildPhase(XCObject):
     ref_props = {
       'lastKnownFileType': file_type,
       'path':              path,
+      'sourceTree':        source_tree,
     }
     file_ref = PBXFileReference(ref_props)
     group.AppendProperty('children', file_ref)

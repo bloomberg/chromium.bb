@@ -1,6 +1,4 @@
 {
-  'target_defaults': {
-  },
   'conditions': [
     [ 'OS=="win"', {
       'target_defaults': {

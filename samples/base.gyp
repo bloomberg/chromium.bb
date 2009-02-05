@@ -288,10 +288,10 @@
             ],
             'link_settings': {
               'libraries': [
-                '/System/Library/Frameworks/AppKit.framework',
-                '/System/Library/Frameworks/Carbon.framework',
-                '/System/Library/Frameworks/CoreFoundation.framework',
-                '/System/Library/Frameworks/Foundation.framework',
+                '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',
+                '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+                '$(SDKROOT)/System/Library/Frameworks/CoreFoundation.framework',
+                '$(SDKROOT)/System/Library/Frameworks/Foundation.framework',
               ],
             },
           },
@@ -331,7 +331,7 @@
         'gfx/size.cc',
       ],
       'xcode_framework_dirs': [
-        '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
+        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'dependencies': [
         'base',

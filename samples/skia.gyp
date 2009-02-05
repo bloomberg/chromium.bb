@@ -655,7 +655,7 @@
       ],
       'msvs_disabled_warnings': [4244, 4267,4345, 4390, 4554, 4800],
       'xcode_framework_dirs': [
-        '/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
+        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'defines': [
         'SK_BUILD_NO_IMAGE_ENCODE',
