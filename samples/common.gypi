@@ -57,7 +57,7 @@
           # xcodebuild directory used by the non-gyp Xcode build system.
           'SYMROOT': '<(depth)/xcodebuild_gyp',
           'USE_HEADERMAP': 'NO',
-          'WARNING_CFLAGS': '$(WARNING_CFLAGS) -Wall -Wendif-labels',
+          'WARNING_CFLAGS': ['$(WARNING_CFLAGS)', '-Wall', '-Wendif-labels'],
         },
       },
     }],
