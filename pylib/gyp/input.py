@@ -716,7 +716,8 @@ def MergeDicts(to, fro, to_file, fro_file):
 
       # Call MergeLists, which will make copies of objects that require it.
       is_paths = list_base in ['include_dirs', 'sources',
-                               'xcode_framework_dirs']
+                               'xcode_framework_dirs',
+                               'msvs_props']
       MergeLists(to[list_base], v, to_file, fro_file, is_paths, append)
     else:
       raise TypeError, \

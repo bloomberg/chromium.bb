@@ -74,55 +74,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
 
   # Get directory project file is in.
   gyp_dir = os.path.split(vcproj_filename)[0]
-  # Figure out which vsprops to use.
-  vsprops_dirs = spec.get('msvs_props', [])
-  vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
 
-  # Prepare compiler tool.
-  include_dirs = spec.get('include_dirs', [])
-  include_dirs = [_FixPath(i) for i in include_dirs]
-  defines = ['OS_WIN'] + spec.get('defines', [])
-  disabled_warnings = [str(i) for i in spec.get('msvs_disabled_warnings', [])]
-  compiler_tool = MSVSProject.Tool(
-      'VCCLCompilerTool', {
-          'AdditionalIncludeDirectories': ';'.join(include_dirs),
-          'PreprocessorDefinitions': ';'.join(defines),
-          'DisableSpecificWarnings': ';'.join(disabled_warnings),
-      })
-
-  # Pre-build.
-  if spec.get('msvs_prebuild'):
-    prebuild_dict = { 'CommandLine': spec.get('msvs_prebuild', '') }
-  else:
-    prebuild_dict = {}
-  prebuild = MSVSProject.Tool('VCPreBuildEventTool', prebuild_dict)
-  # Post-build.
-  if spec.get('msvs_postbuild'):
-    postbuild_dict = { 'CommandLine': spec.get('msvs_postbuild', '') }
-  else:
-    postbuild_dict = {}
-  postbuild = MSVSProject.Tool('VCPostBuildEventTool', postbuild_dict)
-
-  # Prepare tools.
-  tools = [
-      prebuild,
-      'VCCustomBuildTool',
-      'VCXMLDataGeneratorTool',
-      'VCWebServiceProxyGeneratorTool',
-      'VCMIDLTool',
-      compiler_tool,
-      'VCManagedResourceCompilerTool',
-      'VCResourceCompilerTool',
-      'VCPreLinkEventTool',
-      'VCLibrarianTool',
-      'VCALinkTool',
-      'VCXDCMakeTool',
-      'VCBscMakeTool',
-      'VCFxCopTool',
-      postbuild,
-      ]
-
-  # Pick configuration type.
+  # Pick target configuration type.
   config_type = {
       'executable': '1',
       'shared_library': '2',
@@ -130,21 +83,62 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       'none': '10',
       }[spec['type']]
 
-  # Add Debug/Release.
-  p.AddConfig(
-      'Debug|Win32',
-      attrs={'InheritedPropertySheets':
-             ';'.join(['$(SolutionDir)\\..\\build\\debug.vsprops'] +
-                      vsprops_dirs),
-             'ConfigurationType': config_type},
-      tools=tools)
-  p.AddConfig(
-      'Release|Win32',
-      attrs={'InheritedPropertySheets':
-             ';'.join(['$(SolutionDir)\\..\\build\\release.vsprops'] +
-                      vsprops_dirs),
-             'ConfigurationType': config_type},
-      tools=tools)
+  for c in spec['configurations']:
+    # Process each configuration.
+    vsprops_dirs = c.get('msvs_props', [])
+    vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
+
+    # Prepare compiler tool.
+    include_dirs = c.get('include_dirs', [])
+    include_dirs = [_FixPath(i) for i in include_dirs]
+    defines = ['OS_WIN'] + c.get('defines', [])
+    disabled_warnings = [str(i) for i in c.get('msvs_disabled_warnings', [])]
+    compiler_tool = MSVSProject.Tool(
+        'VCCLCompilerTool', {
+            'AdditionalIncludeDirectories': ';'.join(include_dirs),
+            'PreprocessorDefinitions': ';'.join(defines),
+            'DisableSpecificWarnings': ';'.join(disabled_warnings),
+        })
+
+    # Pre-build.
+    if spec.get('msvs_prebuild'):
+      prebuild_dict = { 'CommandLine': c.get('msvs_prebuild', '') }
+    else:
+      prebuild_dict = {}
+    prebuild = MSVSProject.Tool('VCPreBuildEventTool', prebuild_dict)
+    # Post-build.
+    if spec.get('msvs_postbuild'):
+      postbuild_dict = { 'CommandLine': c.get('msvs_postbuild', '') }
+    else:
+      postbuild_dict = {}
+    postbuild = MSVSProject.Tool('VCPostBuildEventTool', postbuild_dict)
+
+    # Prepare tools.
+    tools = [
+        prebuild,
+        'VCCustomBuildTool',
+        'VCXMLDataGeneratorTool',
+        'VCWebServiceProxyGeneratorTool',
+        'VCMIDLTool',
+        compiler_tool,
+        'VCManagedResourceCompilerTool',
+        'VCResourceCompilerTool',
+        'VCPreLinkEventTool',
+        'VCLibrarianTool',
+        'VCALinkTool',
+        'VCXDCMakeTool',
+        'VCBscMakeTool',
+        'VCFxCopTool',
+        postbuild,
+        ]
+
+    # Add in this configuration.
+    p.AddConfig('|'.join([c['configuration_name'],
+                          c.get('configuration_platform', 'Win32')]),
+                attrs={'InheritedPropertySheets': ';'.join(vsprops_dirs),
+                       'ConfigurationType': config_type},
+                tools=tools)
+
   # Prepare list of sources.
   sources = spec['sources']
   # Add in the gyp file.
@@ -209,6 +203,16 @@ def GenerateOutput(target_list, target_dicts, data):
     target_dicts: Dict of target properties keyed on target pair.
     data: Dictionary containing per .gyp data.
   """
+  configs = set()
+  for qualified_target in target_list:
+    build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
+    spec = target_dicts[qualified_target]
+    for c in spec['configurations']:
+      configs.add('|'.join([c['configuration_name'],
+                            c.get('configuration_platform', 'Win32')]))
+  configs = list(configs)
+
+
   projects = {}
   for qualified_target in target_list:
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
@@ -242,6 +246,6 @@ def GenerateOutput(target_list, target_dicts, data):
     # Create solution.
     sln = MSVSNew.MSVSSolution(sln_path,
                                entries=entries,
-                               variants=['Debug|Win32', 'Release|Win32'],
+                               variants=configs,
                                websiteProperties=False)
     sln.Write()

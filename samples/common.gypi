@@ -12,8 +12,11 @@
           }],
           [ 'OS=="win"', {
             'configuration_platform': 'Win32',
+            'msvs_props': ['debug.vsprops'],
           }],
         ],
+        # This seems to do the wrong thing?!
+        #'include_dirs': ['joe'],
       },
       {
         'configuration_name': 'Release',
@@ -28,6 +31,7 @@
           }],
           [ 'OS=="win"', {
             'configuration_platform': 'Win32',
+            'msvs_props': ['release.vsprops'],
           }],
         ],
       },
