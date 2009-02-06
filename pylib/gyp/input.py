@@ -5,6 +5,7 @@ import gyp.common
 import optparse
 import os.path
 import re
+import shlex
 import subprocess
 
 
@@ -152,8 +153,8 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes):
   return data
 
 
-early_variable_re = re.compile('((<)\((.*?)\))')
-late_variable_re = re.compile('(([>!])\((.*?)\))')
+early_variable_re = re.compile('((<@?)\((.*?)\))')
+late_variable_re = re.compile('(([>!]@?)\((.*?)\))')
 
 def ExpandVariables(input, is_late, variables):
   # Look for the pattern that gets expanded into variables
@@ -172,9 +173,9 @@ def ExpandVariables(input, is_late, variables):
     matches.reverse()
     for match in matches:
       # match[0] is the substring to look for, match[1] is the character code
-      # for the replacement type (< > !), and match[2] is the name of the
-      # variable (< >) or command to run (!).
-      if match[1] == '!':
+      # for the replacement type (< > ! <@ >@ !@), and match[2] is the name of
+      # the variable (< >) or command to run (!).
+      if match[1][0] == '!':
         p = subprocess.Popen(match[2], shell=True,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (p_stdout, p_stderr) = p.communicate()
@@ -192,7 +193,17 @@ def ExpandVariables(input, is_late, variables):
         if not match[2] in variables:
           raise KeyError, 'Undefined variable ' + match[2] + ' in ' + input
         replacement = variables[match[2]]
-      output = re.sub(re.escape(match[0]), replacement, output)
+
+      # If the expansion came in <@(var), >@(var), or !@(cmd) form, it's
+      # supposed to be split into a list.  Split on whitespace.  Note that
+      # this can only work if the replacement is the only thing in the string,
+      # hence the output == match[0] check.  Also note that the caller needs
+      # to be expecting a list in return, and not all callers do because
+      # not all are working in list context.
+      if len(match[1]) == 2 and output == match[0]:
+        output = shlex.split(replacement)
+      else:
+        output = re.sub(re.escape(match[0]), replacement, output)
 
   return output
 
@@ -296,7 +307,12 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
   for key, value in the_dict.iteritems():
     # Skip "variables", which was already processed if present.
     if key != 'variables' and isinstance(value, str):
-      the_dict[key] = ExpandVariables(value, is_late, variables)
+      expanded = ExpandVariables(value, is_late, variables)
+      if not isinstance(expanded, str):
+        raise ValueError, \
+              'Variable expansion in this context permits strings only, ' + \
+              'found ' + expanded.__class__.__name__ + ' for ' + key
+      the_dict[key] = expanded
 
   # Variable expansion may have resulted in changes to automatics.  Reload.
   # TODO(mark): Optimization: only reload if no changes were made.
@@ -376,7 +392,19 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables):
     elif isinstance(item, list):
       ProcessVariablesAndConditionsInList(item, is_late, variables)
     elif isinstance(item, str):
-      the_list[index] = ExpandVariables(item, is_late, variables)
+      expanded = ExpandVariables(item, is_late, variables)
+      if isinstance(expanded, str):
+        the_list[index] = expanded
+      elif isinstance(expanded, list):
+        del the_list[index]
+        for expanded_item in expanded:
+          the_list.insert(index, expanded_item)
+          index = index + 1
+      else:
+        raise ValueError, \
+              'Variable expansion in this context permits strings and ' + \
+              'lists only, found ' + expanded.__class__.__name__ + ' at ' + \
+              index
     elif not isinstance(item, int):
       raise TypeError, 'Unknown type ' + item.__class__.__name__ + \
                        ' at index ' + index
