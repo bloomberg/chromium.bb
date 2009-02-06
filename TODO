@@ -1,0 +1,141 @@
+ - sync-to-vblank
+
+ - switch scanout when top surface is full screen
+
+    - what about cursors then?  maybe use hw cursors if the cursor
+      satisfies hw limitations (64x64, only one cursor), switch to
+      composited cursors if not.
+
+ - multihead, screen geometry and crtc layout protocol, hotplug
+
+ - input device discovery, hotplug
+
+    - Advertise axes as part of the discovery, use something like
+      "org.wayland.input.x" to identify the axes.
+
+ - wayland-system-compositor
+
+    - device kit/libudev/console kit integration to discover seats,
+      that is, groups of input devices and outputs that provide a
+      means for one user to interact with the system.  That is,
+      typically a mouse, keyboard and a screen.  The input devices
+      will just be evdev devices, the outputs will be a drm device
+      filename and the specific outputs accessible throught that drm
+      device.
+
+ - send drm device in connection info, probably just udev path.
+
+ - cairo-drm; wayland needs cairo-drm one way or another:
+
+    - chris wilson (ickle) is doing cairo-drm for i915 now, basically
+      the pixman-drm idean, but inside cairo instead.
+
+    - pixman-drm; move the ddx driver batchbuffer logic into libdrm
+      and write native, direct rendering acceleration code in
+      pixman-drm.  is a clean approach in that we avoid the mess of
+      the global GL context leaking through to applications, and we
+      can bootstrap this project by pulling in the EXA hooks from the
+      DDX drivers.
+
+    - use open gl behind the scenes a la glitz.
+
+    - should be possible to provide a realistic api and then stub out
+      the implementation with pwrite and pread so gtk+ port can proceed.
+
+ - XKB like client side library for translating keyboard events to
+   more useful keycodes and modifiers etc.  Will probably be shared
+   between toolkits as a low-level library.
+
+ - port gtk+
+
+    - eek, so much X legacy stuff there...
+
+    - draw window decorations in gtkwindow.c
+
+    - start from alexl's client-side-windows branch
+
+    - Details about pointer grabs. wayland doesn't have active grabs,
+      menus will behave subtly different.  Under X, clicking a menu
+      open grabs the pointer and clicking outside the window pops down
+      the menu and swallows the click.  without active grabs we can't
+      swallow the click.  I'm sure there much more...
+
+ - Port Qt?  There's already talk about this on the list.
+
+ - X on Wayland
+
+    - move most of the code from xf86-video-intel into a Xorg wayland
+      module.
+
+    - don't ask KMS for available output and modes, use the info from
+      the wayland server.  then stop mooching off of drmmode.c.
+
+    - map multiple wayland input devices to MPX in Xorg.
+
+    - rootless; avoid allocating and setting the front buffer, draw
+      window decorations in the X server (!), how to map input?
+
+ - gnome-shell as a wayland session compositor
+
+    - runs as a client of the wayland session compositor, uses
+      clutter+egl on wayland
+
+    - talks to an Xorg server as the compositing and window manager
+      for that server and renders the output to a wayland surface.
+      the Xorg server should be modified to take input from the system
+      compositor through gnome-shell, but not allocate a front buffer.
+
+    - make gnome-shell itself a nested wayland server and allow native
+      wayland clients to connect and can native wayland windows with
+      the windows from the X server.
+
+ - qemu as a wayland client; session surface as X case
+
+    - qemu has too simple acceleration, so a Wayland backend like the
+      SDL/VNC ones it has now is trivial.
+
+    - paravirt: forward wayland screen info as mmio, expose gem ioctls as mmio
+
+    - mapping vmem is tricky, should try to only use ioctl (pwrite+pread)
+
+    - not useful for Windows without a windows paravirt driver.
+
+    - two approaches: 1) do a toplevel qemu window, or 2) expose a
+      wayland server in the guest that forwards to the host wayland
+      server, ie a "remote" compositor, but with the gem buffers
+      shared.  could do a wl_connection directly on mmio memory, with
+      head and tail pointers.  use an alloc_head register to indicate
+      desired data to write, if it overwrites tail, block guest.  just
+      a socket would be easier.
+
+ - make libwayland-client less ghetto
+
+ - sparse based idl compiler
+
+ - actually make batch/commit batch up commands
+
+ - protocol for setting the cursor image
+
+    - should we have a mechanism to attach surface to cursor for
+      guaranteed non-laggy drag?
+
+ - auth; We need to generate a random socket name and advertise that
+   on dbus along with a connection cookie.  Something like a method
+   that returns the socket name and a connection cookie.  The
+   connection cookie is just another random string that the client
+   must pass to the wayland server to become authenticated.  The
+   Wayland server generates the cookie on demand when the dbus method
+   is called and expires it after 5s or so.
+
+ - enter/leave events from the input devices
+
+ - gain, lose keyboard focus events; this event carries information
+   about which keys are currently held down as a surface gains focus
+   so the client can deduce modifier state.
+
+ - Range protocol may not be sufficient... if a server cycles through
+   2^32 object IDs we don't have a way to handle wrapping.  And since
+   we hand out a range of 256 IDs to each new clients, we're just
+   talking about 2^24 clients.  That's 31 years with a new client
+   every minute...  Maybe just use bigger ranges, then it's feasible
+   to track and garbage collect them when a client dies.

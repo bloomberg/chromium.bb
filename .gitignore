@@ -1,8 +1,7 @@
 *.o
 *.so
 *.pc
-glx-compositor
-egl-compositor
+wayland-system-compositor
 gears
 terminal
 flower
