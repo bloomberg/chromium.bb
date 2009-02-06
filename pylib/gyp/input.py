@@ -664,10 +664,17 @@ def MakePathRelative(to_file, fro_file, item):
   # If item is a relative path, it's relative to the build file dict that it's
   # coming from.  Fix it up to make it relative to the build file dict that
   # it's going into.
-  # TODO(mark): We might want to exclude some things here even if is_paths is
-  # true, like things that begin with < or > (variables for us) or $ (variables
-  # for the build environment).
-  if to_file == fro_file:
+  # Exception: any |item| that begins with these special characters is
+  # returned without modification.
+  #   /  Used when a path is already absolute (shortcut optimization;
+  #      such paths would be returned as absolute anyway)
+  #   $  Used for build environment variables
+  #   -  Used for some build environment flags (such as -lapr-1 in a
+  #      "libraries" section)
+  #   <  Used for our own variables (see ExpandVariables)
+  #   >  Used for our own variables (see ExpandVariables)
+  #   !  Used for command evaluation (see ExpandVariables)
+  if to_file == fro_file or item.startswith(('/', '$', '-', '<', '>', '!')):
     return item
   else:
     return os.path.normpath(os.path.join(
