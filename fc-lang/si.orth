@@ -51,12 +51,15 @@
 # Semi Consonants
 0d82-0d83
 # Independent Vowels
-0d85-0d8e
+0d85-0d8d
+# 0d8e IRUUYANNA (Level 1, but not in modern use)
 # 0d8f ILUYANNA (Level 3)
 # 0d90 ILUUYANNA (Level 3)
 0d91-0d96
 # Consonants
-0d9a-0db1
+0d9a-0da5
+#0da6 SANYAKA JAYANNA (Level 1, but not in modern use)
+0da7-0db1
 0db3-0dbb
 0dbd
 0dc0-0dc6
