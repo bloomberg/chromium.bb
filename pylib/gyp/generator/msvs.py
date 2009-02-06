@@ -25,7 +25,7 @@ def _FixPath(path):
   return path.replace('/', '\\')
 
 
-def _SourceInFolders(sources, prefix=None):
+def _SourceInFolders(sources, prefix=None, excluded=None):
   """Converts a list split source file paths into a vcproj folder hierarchy.
 
   Arguments:
@@ -42,17 +42,29 @@ def _SourceInFolders(sources, prefix=None):
   """
   if not prefix: prefix = []
   result = []
+  excluded_result = []
   folders = dict()
+  # Gather files into the final result, excluded, or folders.
   for s in sources:
     if len(s) == 1:
       filename = '\\'.join(prefix + s)
-      result.append(filename)
+      if filename in excluded:
+        excluded_result.append(filename)
+      else:
+        result.append(filename)
     else:
       if not folders.get(s[0]):
         folders[s[0]] = []
       folders[s[0]].append(s[1:])
+  # Add a folder for excluded files.
+  if excluded_result:
+    excluded_folder = MSVSProject.Filter('_excluded_files',
+                                         contents=excluded_result)
+    result.append(excluded_folder)
+  # Populate all the folders.
   for f in folders:
-    contents = _SourceInFolders(folders[f], prefix + [f])
+    contents = _SourceInFolders(folders[f], prefix=prefix + [f],
+                                excluded=excluded)
     contents = MSVSProject.Filter(f, contents=contents)
     result.append(contents)
 
@@ -136,7 +148,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
 
     # Add Post-build.
     postbuild = c.get('msvs_postbuild')
-    _ToolAppend(tools, 'VCPostBuildEvenTool', 'CommandLine', prebuild)
+    _ToolAppend(tools, 'VCPostBuildEvenTool', 'CommandLine', postbuild)
 
     # Convert tools to expected form.
     tool_list = []
@@ -167,19 +179,23 @@ def _GenerateProject(vcproj_filename, build_file, spec):
                 attrs=prepared_attrs, tools=tool_list)
 
   # Prepare list of sources.
-  sources = spec['sources'] + spec.get('sources_excluded', [])
+  sources = spec['sources']
+  sources = [_FixPath(i) for i in sources]
   # Add in the gyp file.
   sources.append(os.path.split(build_file)[1])
-  # Convert to folders and the right slashes.
-  sources = [_FixPath(i) for i in sources]
-  sources = [i.split('\\') for i in sources]
-  sources = _SourceInFolders(sources)
-  # Add in files.
-  p.AddFiles(sources)
 
   # Exclude excluded ones.
   excluded_sources = spec.get('sources_excluded', [])
   excluded_sources = [_FixPath(i) for i in excluded_sources]
+  # Add excluded into sources
+  sources += excluded_sources
+
+  # Convert to folders and the right slashes.
+  sources = [i.split('\\') for i in sources]
+  sources = _SourceInFolders(sources, excluded=excluded_sources)
+  # Add in files.
+  p.AddFiles(sources)
+
   for f in excluded_sources:
     for c in spec['configurations']:
       p.AddFileConfig(f, c['configuration_name'],

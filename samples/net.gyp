@@ -403,19 +403,28 @@
   ],
   'conditions': [
     ['OS=="win"', {
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '$(OutDir)/grit_derived_sources',
+        ],
+      },
       'targets': [
         {
           'target_name': 'net_resources',
           'type': 'none',
           'sources': [
             'net_resources.grd',
-            'net_resources.h',
           ],
-          'msvs_postbuild': [
-            '$(ProjectDir)..\\tools\\grit\\build\\grit_resource_file.bat '
-            '$(ProjectDir)base\\net_resources.grd '
-            '$(ProjectDir) '
-            '$(OutDir)\\grit_derived_sources',
+          'postbuild': [
+          {
+            'inputs': 'base/net_resources.grd',
+            'outputs': '$(OutDir)/grit_derived_sources/net_resources.h',
+            'action':
+              '$(ProjectDir)..\\tools\\grit\\build\\grit_resource_file.bat '
+              '$(ProjectDir)base\\net_resources.grd '
+              '$(ProjectDir) '
+              '$(OutDir)\\grit_derived_sources',
+          },
           ],
         },
       ],

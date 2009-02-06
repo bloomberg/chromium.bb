@@ -30,9 +30,13 @@
         [ 'OS == "win"', {
             'type': 'none',
             'sources!': ['icudt38l_dat.s'],
-            'sources': ['icudt38.dll'],
-            'msvs_postbuild':
-              'xcopy /R /C /Y icudt38.dll $(OutDir)',
+            'postbuild': [
+            {
+              'inputs': ['icudt38.dll'],
+              'outputs': ['$(OutDir)/icudt38.dll'],
+              'action': 'xcopy /R /C /Y icudt38.dll $(OutDir)',
+            },
+            ],
           },
           {  # else: OS != "win"
             'sources!': ['icudt38.dll'],
