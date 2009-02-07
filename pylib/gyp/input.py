@@ -186,20 +186,18 @@ def ExpandVariables(input, is_late, variables):
         if p_stderr:
           raise Exception, match[2] + ' produced stderr:\n' + p_stderr
 
-        # TODO(mark): Provide a way to expand things into lists?
-        # TODO(mark): strip seems right, right?
-        replacement = p_stdout.strip()
+        replacement = p_stdout.rstrip()
       else:
         if not match[2] in variables:
           raise KeyError, 'Undefined variable ' + match[2] + ' in ' + input
         replacement = variables[match[2]]
 
       # If the expansion came in <@(var), >@(var), or !@(cmd) form, it's
-      # supposed to be split into a list.  Split on whitespace.  Note that
-      # this can only work if the replacement is the only thing in the string,
-      # hence the output == match[0] check.  Also note that the caller needs
-      # to be expecting a list in return, and not all callers do because
-      # not all are working in list context.
+      # supposed to be split into a list.  Split it in the same way sh would
+      # split arguments.  Note that this can only work if the replacement is
+      # the only thing in the string, hence the output == match[0] check.
+      # Also note that the caller to be expecting a list in return, and not
+      # all callers do because not all are working in list context.
       if len(match[1]) == 2 and output == match[0]:
         output = shlex.split(replacement)
       else:
@@ -281,7 +279,7 @@ def LoadVariablesFromVariablesDict(variables, the_dict):
 
 
 def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
-  """Handle all variable expansion and conditional evaluation.
+  """Handle all variable and command expansion and conditional evaluation.
 
   This function is the public entry point for all variable expansions and
   conditional evaluations.
