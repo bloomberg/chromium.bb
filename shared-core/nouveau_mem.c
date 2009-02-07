@@ -809,11 +809,11 @@ nouveau_ioctl_mem_free(struct drm_device *dev, void *data,
 		memfree->offset -= 512*1024*1024;
 
 	block=NULL;
-	if (memfree->flags & NOUVEAU_MEM_FB)
+	if (dev_priv->fb_heap && memfree->flags & NOUVEAU_MEM_FB)
 		block = find_block(dev_priv->fb_heap, memfree->offset);
-	else if (memfree->flags & NOUVEAU_MEM_AGP)
+	else if (dev_priv->agp_heap && memfree->flags & NOUVEAU_MEM_AGP)
 		block = find_block(dev_priv->agp_heap, memfree->offset);
-	else if (memfree->flags & NOUVEAU_MEM_PCI)
+	else if (dev_priv->pci_heap && memfree->flags & NOUVEAU_MEM_PCI)
 		block = find_block(dev_priv->pci_heap, memfree->offset);
 	if (!block)
 		return -EFAULT;
