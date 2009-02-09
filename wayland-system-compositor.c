@@ -55,6 +55,10 @@
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
+struct wlsc_matrix {
+	GLdouble d[16];
+};
+
 struct wl_visual {
 	struct wl_object base;
 };
@@ -117,7 +121,13 @@ struct wlsc_compositor {
 	int repaint_on_timeout;
 	struct timespec previous_swap;
 	uint32_t current_frame;
+
+	uint32_t meta_state;
+	GLdouble grab_x_angle, grab_y_angle;
+	int32_t grab_x, grab_y;
 };
+
+#define META_DOWN 256
 
 struct wlsc_surface {
 	struct wl_surface base;
@@ -128,6 +138,8 @@ struct wlsc_surface {
 	EGLSurface surface;
 	int width, height;
 	struct wl_list link;
+	GLdouble scale, x_angle, y_angle;
+	struct wlsc_matrix matrix;
 };
 
 static const char *option_background = "background.jpg";
@@ -217,6 +229,87 @@ screenshooter_create(struct wlsc_compositor *ec)
 
 	return shooter;
 };
+				   
+static void
+wlsc_matrix_init(struct wlsc_matrix *matrix)
+{
+	static const struct wlsc_matrix identity = {
+		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1 }
+	};
+
+	memcpy(matrix, &identity, sizeof identity);
+}
+
+static void
+wlsc_matrix_multiply(struct wlsc_matrix *m, const struct wlsc_matrix *n)
+{
+	struct wlsc_matrix tmp;
+	const GLdouble *row, *column;
+	div_t d;
+	int i, j;
+
+	for (i = 0; i < 16; i++) {
+		tmp.d[i] = 0;
+		d = div(i, 4);
+		row = m->d + d.quot * 4;
+		column = n->d + d.rem;
+		for (j = 0; j < 4; j++)
+			tmp.d[i] += row[j] * column[j * 4];
+	}
+	memcpy(m, &tmp, sizeof tmp);
+}
+
+static void
+wlsc_matrix_translate(struct wlsc_matrix *matrix, GLdouble x, GLdouble y, GLdouble z)
+{
+	struct wlsc_matrix translate = {
+		{ 1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  x, y, z, 1 }
+	};
+
+	wlsc_matrix_multiply(matrix, &translate);
+}
+
+static void
+wlsc_matrix_scale(struct wlsc_matrix *matrix, GLdouble x, GLdouble y, GLdouble z)
+{
+	struct wlsc_matrix scale = {
+		{ x, 0, 0, 0,  0, y, 0, 0,  0, 0, z, 0,  0, 0, 0, 1 }
+	};
+
+	wlsc_matrix_multiply(matrix, &scale);
+}
+
+static void
+wlsc_matrix_rotate(struct wlsc_matrix *matrix,
+		   GLdouble angle, GLdouble x, GLdouble y, GLdouble z)
+{
+	GLdouble c = cos(angle);
+	GLdouble s = sin(angle);
+	struct wlsc_matrix rotate = {
+		{ x * x * (1 - c) + c,     y * x * (1 - c) + z * s, x * z * (1 - c) - y * s, 0,
+		  x * y * (1 - c) - z * s, y * y * (1 - c) + c,     y * z * (1 - c) - x * s, 0, 
+		  x * z * (1 - c) + y * x, y * z * (1 - c) - x * s, z * z * (1 - c) + c,     0,
+		  0, 0, 0, 1 }
+	};
+
+	wlsc_matrix_multiply(matrix, &rotate);
+}
+
+static void
+wlsc_surface_update_matrix(struct wlsc_surface *es)
+{
+	GLdouble tx, ty;
+
+	tx = es->map.x + es->map.width / 2;
+	ty = es->map.y + es->map.height / 2;
+
+	wlsc_matrix_init(&es->matrix);
+	wlsc_matrix_translate(&es->matrix, -tx, -ty, 0);
+	wlsc_matrix_scale(&es->matrix, es->scale, es->scale, 1);
+	wlsc_matrix_rotate(&es->matrix, es->x_angle, 0, 1, 0);
+	wlsc_matrix_rotate(&es->matrix, es->y_angle, 1, 0, 0);
+	wlsc_matrix_translate(&es->matrix, tx, ty, 0);
+}
 
 static struct wlsc_surface *
 wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
@@ -250,6 +343,11 @@ wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
 	es->map.height = height;
 	es->surface = EGL_NO_SURFACE;
 	es->visual = &ec->premultiplied_argb_visual;
+	es->scale = 1;
+	es->x_angle = 0;
+	es->y_angle = 0;
+
+	wlsc_surface_update_matrix(es);
 
 	return es;
 }
@@ -364,12 +462,16 @@ background_create(struct wlsc_output *output, const char *filename)
 	background->map.height = output->height;
 	background->surface = EGL_NO_SURFACE;
 	background->visual = &output->ec->rgb_visual;
+	background->scale = 1;
+	background->x_angle = 0;
+	background->y_angle = 0;
+	wlsc_surface_update_matrix(background);
 
 	return background;
 }
 
 static void
-draw_surface(struct wlsc_surface *es)
+wlsc_surface_draw(struct wlsc_surface *es)
 {
 	struct wlsc_compositor *ec = es->compositor;
 	GLint vertices[12];
@@ -402,6 +504,8 @@ draw_surface(struct wlsc_surface *es)
 		glDisable(GL_BLEND);
 	}
 
+	glPushMatrix();
+	glMultMatrixd(es->matrix.d);
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glEnable(GL_TEXTURE_2D);
 	glEnableClientState(GL_VERTEX_ARRAY);
@@ -409,6 +513,7 @@ draw_surface(struct wlsc_surface *es)
 	glVertexPointer(3, GL_INT, 0, vertices);
 	glTexCoordPointer(2, GL_INT, 0, tex_coords);
 	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, indices);
+	glPopMatrix();
 }
 
 static void
@@ -427,23 +532,23 @@ repaint_output(struct wlsc_output *output)
 	glViewport(0, 0, output->width, output->height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glFrustum(-output->width / s, output->width / s, output->height / s, -output->height / s, 1, s);
+	glFrustum(-output->width / s, output->width / s,
+		  output->height / s, -output->height / s, 1, 2 * s);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glClearColor(0, 0, 0.2, 1);
 
-	glTranslatef(-output->width / 2, -output->height/ 2, -s / 2);
+	glTranslatef(-output->width / 2, -output->height / 2, -s / 2);
 
 	if (output->background)
-		draw_surface(output->background);
+		wlsc_surface_draw(output->background);
 	else
 		glClear(GL_COLOR_BUFFER_BIT);
 
 	es = container_of(ec->surface_list.next,
 			  struct wlsc_surface, link);
 	while (&es->link != &ec->surface_list) {
-		draw_surface(es);
-
+		wlsc_surface_draw(es);
 		es = container_of(es->link.next,
 				   struct wlsc_surface, link);
 	}
@@ -451,7 +556,7 @@ repaint_output(struct wlsc_output *output)
 	eid = container_of(ec->input_device_list.next,
 			   struct wlsc_input_device, link);
 	while (&eid->link != &ec->input_device_list) {
-		draw_surface(eid->pointer_surface);
+		wlsc_surface_draw(eid->pointer_surface);
 
 		eid = container_of(eid->link.next,
 				   struct wlsc_input_device, link);
@@ -503,7 +608,7 @@ schedule_repaint(struct wlsc_compositor *ec)
 		wl_event_loop_add_idle(loop, repaint, ec);
 	}
 }
-				   
+
 static void
 surface_destroy(struct wl_client *client,
 		struct wl_surface *surface)
@@ -561,6 +666,7 @@ surface_map(struct wl_client *client,
 	es->map.y = y;
 	es->map.width = width;
 	es->map.height = height;
+	wlsc_surface_update_matrix(es);
 }
 
 static void
@@ -617,6 +723,10 @@ compositor_create_surface(struct wl_client *client,
 
 	es->compositor = ec;
 	es->surface = EGL_NO_SURFACE;
+	es->scale = 1;
+	es->x_angle = 0;
+	es->y_angle = 0;
+
 	wl_list_insert(ec->surface_list.prev, &es->link);
 	glGenTextures(1, &es->texture);
 	wl_client_add_surface(client, &es->base,
@@ -678,6 +788,13 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 
 	if (!ec->vt_active)
 		return;
+
+	if (ec->meta_state && device->focus_surface) {
+		es = device->focus_surface;
+		es->x_angle = ec->grab_x_angle + (x - ec->grab_x) / 50.0;
+		es->y_angle = ec->grab_y_angle + (y - ec->grab_y) / 50.0;
+		wlsc_surface_update_matrix(es);
+	}
 
 	/* FIXME: We need some multi head love here. */
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
@@ -745,9 +862,39 @@ notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct wlsc_compositor *ec = device->ec;
+	struct wlsc_surface *es;
 
-	if (key == KEY_EJECTCD)
+	switch (key | ec->meta_state) {
+	case KEY_EJECTCD | META_DOWN:
 		on_term_signal(SIGTERM, ec);
+		return;
+
+	case KEY_ESC | META_DOWN:
+		if (state == 0 || device->focus_surface == NULL)
+			break;
+
+		es = device->focus_surface;
+		if (es->scale < 1.5)
+			es->scale = 2;
+		else
+			es->scale = 1;
+		wlsc_surface_update_matrix(es);
+		schedule_repaint(device->ec);
+		return;
+
+	case KEY_LEFTMETA:
+	case KEY_RIGHTMETA:
+		if (device->focus_surface) {
+			ec->grab_x_angle = device->focus_surface->x_angle;
+			ec->grab_y_angle = device->focus_surface->y_angle;
+			ec->grab_x = device->x;
+			ec->grab_y = device->y;
+		}
+	case KEY_LEFTMETA | META_DOWN:
+	case KEY_RIGHTMETA | META_DOWN:
+		ec->meta_state = state ? META_DOWN : 0;
+		return;
+	}
 
 	if (!ec->vt_active)
 		return;
