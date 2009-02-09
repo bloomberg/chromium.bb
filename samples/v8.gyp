@@ -5,6 +5,12 @@
   'includes': [
     '../build/common.gypi',
   ],
+  'target_defaults': {
+    'xcode_settings': {
+      'GCC_ENABLE_CPP_EXCEPTIONS': 'NO',
+      'GCC_ENABLE_CPP_RTTI': 'NO',
+    },
+  },
   'targets': [
     {
       'target_name': 'v8',
@@ -13,6 +19,7 @@
         # TODO(mark): choose between libraries-empty.cc and libraries.cc
         # depending on snapshot.
         '<(INTERMEDIATE_DIR)/libraries.cc',
+        '<(INTERMEDIATE_DIR)/libraries-empty.cc',
         'src/third_party/dtoa/dtoa.c',
         'src/third_party/jscre/ASCIICType.h',
         'src/third_party/jscre/config.h',
@@ -235,6 +242,8 @@
         'src/zone.h',
       ],
       'sources!': [
+        '<(INTERMEDIATE_DIR)/libraries-empty.cc',
+
         # These files are #included by others and are not meant to be compiled
         # directly.
         'src/third_party/dtoa/dtoa.c',
@@ -280,7 +289,56 @@
             '<(INTERMEDIATE_DIR)/libraries.cc',
             '<(INTERMEDIATE_DIR)/libraries-empty.cc',
           ],
-          'action': 'tools/js2c.py "<(INTERMEDIATE_DIR_SCRIPT)/libraries.cc" "<(INTERMEDIATE_DIR_SCRIPT)/libraries-empty.cc" CORE src/v8natives.js src/array.js src/string.js src/uri.js src/math.js src/messages.js src/apinatives.js src/debug-delay.js src/mirror-delay.js src/date-delay.js src/regexp-delay.js src/macros.py'
+          'action': 'tools/js2c.py "<(INTERMEDIATE_DIR_SCRIPT)/libraries.cc" "<(INTERMEDIATE_DIR_SCRIPT)/libraries-empty.cc" CORE src/runtime.js src/v8natives.js src/array.js src/string.js src/uri.js src/math.js src/messages.js src/apinatives.js src/debug-delay.js src/mirror-delay.js src/date-delay.js src/regexp-delay.js src/macros.py'
+        },
+      ],
+    },
+    {
+      'target_name': 'd8',
+      'type': 'executable',
+      'dependencies': [
+        'v8',
+      ],
+      'sources': [
+        '<(INTERMEDIATE_DIR)/d8-js.cc',
+        '<(INTERMEDIATE_DIR)/d8-js-empty.cc',
+        'src/d8-debug.cc',
+        'src/d8-readline.cc',
+        'src/d8.cc',
+        'src/d8.js',
+      ],
+      'sources!': [
+        '<(INTERMEDIATE_DIR)/d8-js-empty.cc',
+      ],
+      'conditions': [
+        [ 'OS=="linux"', {
+          'link_settings': { 'libraries': [ '-lreadline' ] },
+        }],
+        [ 'OS=="mac"', {
+          'link_settings': { 'libraries': [
+            '$(SDKROOT)/usr/lib/libreadline.dylib'
+          ]},
+        }],
+        [ 'OS=="win"', {
+          'sources!': [ 'src/d8-readline.cc' ],
+        }],
+      ],
+      'include_dirs': [
+        'src',
+      ],
+      'actions': [
+        {
+          'action_name': 'js2c',
+          'inputs': [
+            'src/d8.js',
+            'src/macros.py',
+            'tools/js2c.py',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/d8-js.cc',
+            '<(INTERMEDIATE_DIR)/d8-js-empty.cc',
+          ],
+          'action': 'tools/js2c.py "<(INTERMEDIATE_DIR_SCRIPT)/d8-js.cc" "<(INTERMEDIATE_DIR_SCRIPT)/d8-js-empty.cc" D8 src/d8.js src/macros.py'
         },
       ],
     },

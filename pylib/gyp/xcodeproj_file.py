@@ -924,7 +924,18 @@ class PBXGroup(XCHierarchicalElement):
       return None
 
     for child in self._properties['children']:
-      if 'path' in child._properties and child._properties['path'] == path:
+      if 'sourceTree' in child._properties and \
+         child._properties['sourceTree'] == '<group>' and \
+         'path' in child._properties and child._properties['path'] == path:
+        # Normal case, the child is relative to this object and it has the
+        # right path.
+        return child
+      if 'sourceTree' in child._properties and \
+         child._properties['sourceTree'] != '<group>' and \
+         'path' not in child._properties and \
+         path == '$(' + child._properties['sourceTree'] + ')':
+        # The child is not relative to this object, it references a distinct
+        # sourceTree that happens to match the path being sought.
         return child
 
     return None
@@ -1047,6 +1058,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'c':         'sourcecode.c.c',
         'cc':        'sourcecode.cpp.cpp',
         'cpp':       'sourcecode.cpp.cpp',
+        'dylib':     'compiled.mach-o.dylib',
         'framework': 'wrapper.framework',
         'h':         'sourcecode.c.h',
         'm':         'sourcecode.c.objc',
