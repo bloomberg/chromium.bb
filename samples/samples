@@ -23,6 +23,7 @@ gyps = [
     'third_party/libpng/libpng.gyp',
     'third_party/modp_b64/modp_b64.gyp',
     'third_party/zlib/zlib.gyp',
+    'v8/v8.gyp',
 ]
 
 

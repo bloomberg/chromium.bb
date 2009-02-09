@@ -815,6 +815,7 @@ def SetUpConfigurations(target, target_dict):
   # non_configuraiton_keys is a list of key names that belong in the target
   # itself and should not be propagated into its configurations.
   non_configuration_keys = [
+    'actions',
     'configurations',
     'dependencies',
     'libraries',

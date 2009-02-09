@@ -803,8 +803,9 @@ class XCObject(object):
 
  
 # path_leading_variable is used by XCHierarchicalElement.__init__ to determine
-# whether a pathname begins with an Xcode variable, such as "$(SDKROOT)/blah".
-_path_leading_variable = re.compile('^\$\((.*?)\)/(.*)$')
+# whether a pathname begins with an Xcode variable, such as "$(SDKROOT)/blah",
+# or just "$(SDKROOT)".
+_path_leading_variable = re.compile('^\$\((.*?)\)(/(.*))?$')
 
 
 class XCHierarchicalElement(XCObject):
@@ -848,7 +849,15 @@ class XCHierarchicalElement(XCObject):
           _path_leading_variable.match(self._properties['path'])
       if source_group_match:
         self._properties['sourceTree'] = source_group_match.group(1)
-        self._properties['path'] = source_group_match.group(2)
+        if source_group_match.group(3) != None:
+          self._properties['path'] = source_group_match.group(3)
+        else:
+          # The path was of the form "$(SDKROOT)" with no path following it.
+          # This object is now relative to that variable, so it has no path
+          # attribute of its own.  It does, however, keep a name.
+          del self._properties['path']
+          if not 'name' in self._properties:
+            self._properties['name'] = source_group_match.group(1)
 
   def Name(self):
     if 'name' in self._properties:

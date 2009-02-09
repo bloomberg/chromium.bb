@@ -7,6 +7,17 @@ import os
 
 
 generator_default_variables = {
+  # INTERMEDIATE_DIR is a place for targets to build up intermediate products.
+  # It is specific to each build environment.  It is only guaranteed to exist
+  # and be constant within the context of a single target.  Some build
+  # environments may allow their intermediate directory or equivalent to be
+  # shared between all targets in a project or even on a wider scale, but this
+  # is not guaranteed.
+  #
+  # Use INTERMEDIATE_DIR_SCRIPT to feed to scripts, which may accept a
+  # different syntax.
+  'INTERMEDIATE_DIR': '$(DERIVED_FILE_DIR)',
+  'INTERMEDIATE_DIR_SCRIPT': '${DERIVED_FILE_DIR}',
   'OS': 'mac',
 }
 
@@ -150,6 +161,23 @@ def GenerateOutput(target_list, target_dicts, data):
     xct = xcode_projects[build_file].AddTarget(target, spec['type'],
                                                configuration_names)
     xcode_targets[qualified_target] = xct
+
+    if 'actions' in spec:
+      for action in spec['actions']:
+        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+              'inputPaths': action['inputs'],
+              'name': 'action ' + action['action_name'],
+              'outputPaths': action['outputs'],
+              'shellScript': action['action'],
+              'showEnvVarsInLog': 0,
+            })
+
+      # TODO(mark): This shouldn't insert at 0 always, we should keep the
+      # order of "actions" sections from the input.
+      # TODO(mark): this assumes too much knowledge of the internals of
+      # xcodeproj_file; some of these smarts should move into xcodeproj_file
+      # itself.
+      xct._properties['buildPhases'].insert(0, ssbp)
 
     for source in spec['sources']:
       # TODO(mark): Perhaps this can be made a little bit fancier.

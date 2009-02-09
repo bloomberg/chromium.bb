@@ -81,6 +81,11 @@
           'USE_HEADERMAP': 'NO',
           'WARNING_CFLAGS': ['-Wall', '-Wendif-labels'],
         },
+        'target_conditions': [
+          ['_type=="shared_library"', {
+            'xcode_settings': {'GCC_DYNAMIC_NO_PIC': 'NO'},
+          }],
+        ],
       },
     }],
     [ 'OS=="win"', {
