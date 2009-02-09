@@ -362,7 +362,8 @@ nouveau_fifo_alloc(struct drm_device *dev, struct nouveau_channel **chan_ret,
 	/* If this is the first channel, setup PFIFO ourselves.  For any
 	 * other case, the GPU will handle this when it switches contexts.
 	 */
-	if (dev_priv->fifo_alloc_count == 1) {
+	if (dev_priv->card_type < NV_50 &&
+	    dev_priv->fifo_alloc_count == 1) {
 		ret = engine->fifo.load_context(chan);
 		if (ret) {
 			nouveau_fifo_free(chan);
