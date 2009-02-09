@@ -7,6 +7,8 @@ import os
 
 
 generator_default_variables = {
+  'EXECUTABLE_PREFIX': '',
+  'EXECUTABLE_SUFFIX': '',
   # INTERMEDIATE_DIR is a place for targets to build up intermediate products.
   # It is specific to each build environment.  It is only guaranteed to exist
   # and be constant within the context of a single target.  Some build
@@ -19,6 +21,8 @@ generator_default_variables = {
   'INTERMEDIATE_DIR': '$(DERIVED_FILE_DIR)',
   'INTERMEDIATE_DIR_SCRIPT': '${DERIVED_FILE_DIR}',
   'OS': 'mac',
+  'PRODUCT_DIR': '$(BUILT_PRODUCTS_DIR)',
+  'PRODUCT_DIR_SCRIPT': '${BUILT_PRODUCTS_DIR}',
 }
 
 
