@@ -672,7 +672,8 @@ def MakePathRelative(to_file, fro_file, item):
   #   <  Used for our own variables (see ExpandVariables)
   #   >  Used for our own variables (see ExpandVariables)
   #   !  Used for command evaluation (see ExpandVariables)
-  if to_file == fro_file or item.startswith(('/', '$', '-', '<', '>', '!')):
+  # Not using startswith here, because its not present before py2.5.
+  if to_file == fro_file or item[0] in ('/', '$', '-', '<', '>', '!'):
     return item
   else:
     return os.path.normpath(os.path.join(
