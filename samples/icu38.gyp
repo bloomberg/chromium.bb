@@ -28,21 +28,13 @@
       ],
       'conditions': [
         [ 'OS == "win"', {
-            'type': 'none',
-            'sources!': ['icudt38l_dat.s'],
-            'postbuild': [
-            {
-              'inputs': ['icudt38.dll'],
-              'outputs': ['$(OutDir)/icudt38.dll'],
-              'action': 'xcopy /R /C /Y icudt38.dll $(OutDir)',
-            },
-            ],
-          },
-          {  # else: OS != "win"
-            'sources!': ['icudt38.dll'],
-          },
+          'type': 'none',
+          'sources!': ['icudt38l_dat.s'],
+          'msvs_tool_files': ['../../build/output_dll_copy.rules'],
+        }, {  # else: OS != "win"
+          'sources!': ['icudt38.dll'],
+        }, ],
         ],
-      ],
     },
     {
       'target_name': 'icui18n',

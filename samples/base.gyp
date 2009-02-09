@@ -323,6 +323,7 @@
             'sources/': [ ['exclude', '_(linux|mac|posix)\\.cc$'],
                           ['exclude', '\\.mm?$' ] ],
             'sources!': [
+              'event_recorder_stubs.cc',
               'message_pump_libevent.cc',
               'string16.cc',
             ],

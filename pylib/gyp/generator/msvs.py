@@ -196,10 +196,19 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   # Add in files.
   p.AddFiles(sources)
 
+  # Exclude excluded sources from being built.
   for f in excluded_sources:
     for c in spec['configurations']:
       p.AddFileConfig(f, c['configuration_name'],
                       {'ExcludedFromBuild': 'true'})
+
+  # Add in tool files (rules).
+  tool_files = set()
+  for c in spec['configurations']:
+    for f in c.get('msvs_tool_files', []):
+      tool_files.add(f)
+  for f in tool_files:
+    p.AddToolFile(f)
 
   # Write it out.
   p.Write()

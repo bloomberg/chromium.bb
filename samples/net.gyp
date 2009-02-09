@@ -268,6 +268,7 @@
             'dependencies': [
               'net_resources',
             ],
+            'msvs_tool_files': ['build/convert_tld_data.rules'],
           },
           {  # else: OS != "win"
             'sources!': [
@@ -409,24 +410,14 @@
         ],
       },
       'targets': [
-        {
-          'target_name': 'net_resources',
-          'type': 'none',
-          'sources': [
-            'net_resources.grd',
-          ],
-          'postbuild': [
-          {
-            'inputs': 'base/net_resources.grd',
-            'outputs': '$(OutDir)/grit_derived_sources/net_resources.h',
-            'action':
-              '$(ProjectDir)..\\tools\\grit\\build\\grit_resource_file.bat '
-              '$(ProjectDir)base\\net_resources.grd '
-              '$(ProjectDir) '
-              '$(OutDir)\\grit_derived_sources',
-          },
-          ],
-        },
+      {
+        'target_name': 'net_resources',
+        'type': 'none',
+        'sources': [
+          'base/net_resources.grd',
+        ],
+        'msvs_tool_files': ['../tools/grit/build/grit_resources.rules'],
+      },
       ],
     }],
   ],
