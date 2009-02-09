@@ -331,7 +331,40 @@
         'v8_base',
         'mksnapshot',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include',
+        ],
+      },
       'actions': [
+        {
+          # TODO(mark): This is duplicated from the v8_nosnapshot target.  The
+          # duplication is ugly, but it's necessary to guarantee that
+          # libraries-empty.cc is generated, since INTERMEDIATE_DIR might not
+          # be the same for this target as v8_nosnapshot.
+          'action_name': 'js2c',
+          'inputs': [
+            'src/runtime.js',
+            'src/v8natives.js',
+            'src/array.js',
+            'src/string.js',
+            'src/uri.js',
+            'src/math.js',
+            'src/messages.js',
+            'src/apinatives.js',
+            'src/debug-delay.js',
+            'src/mirror-delay.js',
+            'src/date-delay.js',
+            'src/regexp-delay.js',
+            'src/macros.py',
+            'tools/js2c.py',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/libraries.cc',
+            '<(INTERMEDIATE_DIR)/libraries-empty.cc',
+          ],
+          'action': 'tools/js2c.py "<(INTERMEDIATE_DIR_SCRIPT)/libraries.cc" "<(INTERMEDIATE_DIR_SCRIPT)/libraries-empty.cc" CORE src/runtime.js src/v8natives.js src/array.js src/string.js src/uri.js src/math.js src/messages.js src/apinatives.js src/debug-delay.js src/mirror-delay.js src/date-delay.js src/regexp-delay.js src/macros.py'
+        },
         {
           'action_name': 'mksnapshot',
           'inputs': [
@@ -345,11 +378,18 @@
       ],
     },
     {
-      'target_name': 'd8',
+      'target_name': 'v8_shell',
       'type': 'executable',
+      'sources': [
+        'samples/shell.cc',
+      ],
       'dependencies': [
         'v8',
       ],
+    },
+    {
+      'target_name': 'd8',
+      'type': 'executable',
       'sources': [
         '<(INTERMEDIATE_DIR)/d8-js.cc',
         '<(INTERMEDIATE_DIR)/d8-js-empty.cc',
@@ -376,6 +416,9 @@
       ],
       'include_dirs': [
         'src',
+      ],
+      'dependencies': [
+        'v8',
       ],
       'actions': [
         {
