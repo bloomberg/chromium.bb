@@ -11,15 +11,21 @@ generator_default_variables = {
   'EXECUTABLE_SUFFIX': '',
   # INTERMEDIATE_DIR is a place for targets to build up intermediate products.
   # It is specific to each build environment.  It is only guaranteed to exist
-  # and be constant within the context of a single target.  Some build
-  # environments may allow their intermediate directory or equivalent to be
-  # shared between all targets in a project or even on a wider scale, but this
-  # is not guaranteed.
+  # and be constant within the context of a project, generated from a single
+  # .gyp file as input.  Some build environments may allow their intermediate
+  # directory or equivalent to be shared on a wider scale, but this is not
+  # guaranteed.
   #
   # Use INTERMEDIATE_DIR_SCRIPT to feed to scripts, which may accept a
   # different syntax.
-  'INTERMEDIATE_DIR': '$(DERIVED_FILE_DIR)',
-  'INTERMEDIATE_DIR_SCRIPT': '${DERIVED_FILE_DIR}',
+  #
+  # There are two nice things about DERIVED_FILE_DIR that we lose when
+  # switching to PROJECT_DERIVED_FILE_DIR.  The first is that DERIVED_FILE_DIR
+  # is by build configuration, where PROJECT_DERIVED_FILE_DIR is not.  The
+  # second is that DERIVED_FILE_DIR gets removed during a "clean" operation,
+  # and PROJECT_DERIVED_FILE_DIR does not.
+  'INTERMEDIATE_DIR': '$(PROJECT_DERIVED_FILE_DIR)',
+  'INTERMEDIATE_DIR_SCRIPT': '${PROJECT_DERIVED_FILE_DIR}',
   'OS': 'mac',
   'PRODUCT_DIR': '$(BUILT_PRODUCTS_DIR)',
   'PRODUCT_DIR_SCRIPT': '${BUILT_PRODUCTS_DIR}',

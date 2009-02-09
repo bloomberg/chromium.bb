@@ -525,6 +525,12 @@ class DependencyGraphNode(object):
       # True) and this target won't be linked.
       return dependencies
 
+    # Executables are already fully and finally linked.  Nothing else can be
+    # a link dependency of an executable, there can only be dependencies in
+    # the sense that a dependent target might run an executable.
+    if not initial and target_type == 'executable':
+      return dependencies
+
     # The target is linkable, add it to the list of link dependencies.
     if self.ref not in dependencies:
       if target_type != 'none':
