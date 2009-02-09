@@ -33,6 +33,9 @@
         'base/bzip2_filter.h',
         'base/cert_status_flags.cc',
         'base/cert_status_flags.h',
+        'base/cert_verifier.cc',
+        'base/cert_verifier.h',
+        'base/cert_verify_result.h',
         'base/client_socket.h',
         'base/client_socket_factory.cc',
         'base/client_socket_factory.h',
@@ -267,6 +270,7 @@
             ],
             'dependencies': [
               'net_resources',
+              'tools/tld_cleanup/tld_cleanup.gyp:tld_cleanup',
             ],
             'msvs_tool_files': ['build/convert_tld_data.rules'],
           },
@@ -404,11 +408,6 @@
   ],
   'conditions': [
     ['OS=="win"', {
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '$(OutDir)/grit_derived_sources',
-        ],
-      },
       'targets': [
       {
         'target_name': 'net_resources',
@@ -417,6 +416,11 @@
           'base/net_resources.grd',
         ],
         'msvs_tool_files': ['../tools/grit/build/grit_resources.rules'],
+        'direct_dependent_settings': {
+          'include_dirs': [
+            '$(OutDir)/grit_derived_sources',
+          ],
+        },
       },
       ],
     }],

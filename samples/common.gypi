@@ -126,13 +126,13 @@
           'VCLibrarianTool': {
             'AdditionalOptions': '/ignore:4221',
             'OutputFile': '$(OutDir)\\lib\\$(ProjectName).lib',
-            'AdditionalLibraryDirectories': '$(SDKLibs)',
+            'AdditionalLibraryDirectories': '<(SDKLibs)',
           },
           'VCLinkerTool': {
             'AdditionalOptions':
               '/safeseh /dynamicbase /ignore:4199 /ignore:4221 /nxcompat',
             'AdditionalDependencies': 'wininet.lib version.lib msimg32.lib ws2_32.lib usp10.lib psapi.lib',
-            'AdditionalLibraryDirectories': '$(SDKLibs)',
+            'AdditionalLibraryDirectories': '<(SDKLibs)',
             'DelayLoadDLLs': 'dwmapi.dll,uxtheme.dll',
             'GenerateDebugInformation': 'true',
             'MapFileName': '$(OutDir)\\$(TargetName).map',
