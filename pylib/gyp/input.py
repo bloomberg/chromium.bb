@@ -15,8 +15,10 @@ linkable_types = ['executable', 'shared_library']
 # A list of sections that contain pathnames.
 path_sections = [
   'include_dirs',
+  'inputs',
   'sources',
   'msvs_props',
+  'outputs',
   'xcode_framework_dirs',
 ]
 
@@ -824,6 +826,7 @@ def SetUpConfigurations(target, target_dict):
   non_configuration_keys = [
     'actions',
     'configurations',
+    'default_configuration',
     'dependencies',
     'libraries',
     'target_name',
@@ -839,15 +842,20 @@ def SetUpConfigurations(target, target_dict):
   build_file = gyp.common.BuildFileAndTarget('', target)[0]
 
   # Provide a single configuration by default if none exists.
+  # TODO(mark): Signal an error if default_configurations exists but
+  # configurations does not.
   if not 'configurations' in target_dict:
     target_dict['configurations'] = [{'configuration_name': 'Default'}]
+  if not 'default_configuration' in target_dict:
+    target_dict['default_configuration'] = \
+        sorted(target_dict['configurations'].keys())[0]
 
   index = 0
-  while index < len(target_dict['configurations']):
+  for configuration in target_dict['configurations'].keys():
     # Configurations inherit (most) settings from the enclosing target scope.
     # Get the inheritance relationship right by making a copy of the target
     # dict.
-    old_configuration_dict = target_dict['configurations'][index]
+    old_configuration_dict = target_dict['configurations'][configuration]
     new_configuration_dict = copy.deepcopy(target_dict)
 
     # Take out the bits that don't belong in a "configurations" section.
@@ -872,8 +880,7 @@ def SetUpConfigurations(target, target_dict):
     # dict.
     MergeDicts(new_configuration_dict, old_configuration_dict,
                build_file, build_file)
-    target_dict['configurations'][index] = new_configuration_dict
-    index = index + 1
+    target_dict['configurations'][configuration] = new_configuration_dict
 
   # Now that all of the target's configurations have been built, go through
   # the target dict's keys and remove everything that's been moved into a

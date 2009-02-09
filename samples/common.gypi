@@ -3,9 +3,9 @@
     # TODO(bradnelson): This should really be able to be either:
     #   CHROMIUM_BUILD or GOOGLE_CHROME_BUILD
     'defines': ['CHROMIUM_BUILD'],
-    'configurations': [
-      {
-        'configuration_name': 'Debug',
+    'default_configuration': 'Debug',
+    'configurations': {
+      'Debug': {
         'conditions': [
           [ 'OS=="mac"', {
             'xcode_settings': {
@@ -38,8 +38,7 @@
           }],
         ],
       },
-      {
-        'configuration_name': 'Release',
+      'Release': {
         'defines': [
           'NDEBUG',
         ],
@@ -55,7 +54,7 @@
           }],
         ],
       },
-    ],
+    },
   },
   'conditions': [
     [ 'OS=="mac"', {

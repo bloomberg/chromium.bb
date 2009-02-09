@@ -164,9 +164,10 @@ def GenerateOutput(target_list, target_dicts, data):
     [build_file, target] = \
         gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
     spec = target_dicts[qualified_target]
-    configuration_names = []
-    for configuration in spec['configurations']:
-      configuration_names.append(configuration['configuration_name'])
+    configuration_names = [spec['default_configuration']]
+    for configuration_name in sorted(spec['configurations'].keys()):
+      if configuration_name not in configuration_names:
+        configuration_names.append(configuration_name)
     pbxp = xcode_projects[build_file].project
     xct = xcode_projects[build_file].AddTarget(target, spec['type'],
                                                configuration_names)
@@ -229,8 +230,8 @@ def GenerateOutput(target_list, target_dicts, data):
       for library in spec['libraries']:
         xct.FrameworksPhase().AddFile(library)
 
-    for configuration in spec['configurations']:
-      configuration_name = configuration['configuration_name']
+    for configuration_name in configuration_names:
+      configuration = spec['configurations'][configuration_name]
       xcbc = xct.ConfigurationNamed(configuration_name)
       if 'xcode_framework_dirs' in configuration:
         for include_dir in configuration['xcode_framework_dirs']:

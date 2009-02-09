@@ -6,6 +6,15 @@
     '../build/common.gypi',
   ],
   'target_defaults': {
+    'configurations': {
+      'Debug': {
+        'defines': [
+          'DEBUG',
+          'ENABLE_DISASSEMBLER',
+          'ENABLE_LOGGING_AND_PROFILING',
+        ],
+      },
+    },
     'xcode_settings': {
       'GCC_ENABLE_CPP_EXCEPTIONS': 'NO',
       'GCC_ENABLE_CPP_RTTI': 'NO',
