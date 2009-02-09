@@ -405,11 +405,13 @@ which should be freed by the caller using free().
 
 Converts the given pattern into text format described by the format specifier.
 The format specifier is similar to a C style printf string, which the
-printf(2) man page provides a good introduction to. However, as RPM already
-knows the type of data that is being printed, you must omit the type
+printf(2) man page provides a good introduction to. However, as fontconfig
+already knows the type of data that is being printed, you must omit the type
 specifier. In its place put the element name you wish to print enclosed in
 curly braces ({}). For example, to print the family name and style the
 pattern, use the format "%{family} %{style}\n".
+There can be an option width specifier after the percent sign and before
+the opening brace.  The width modifier acts similar to those in printf.
 The return value refers to newly allocated memory which should be freed by the
 caller using free().
 @@

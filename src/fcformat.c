@@ -49,6 +49,13 @@ interpret_percent (FcPattern *pat,
 		   FcStrBuf *buf,
 		   const FcChar8 *format)
 {
+    int width, before;
+
+    /* parse an optional width specifier */
+    width = strtol (format, (char **) &format, 10);
+
+    before = buf->len;
+
     switch (*format) {
     case '{':
     {
@@ -61,7 +68,7 @@ interpret_percent (FcPattern *pat,
 	if (!p)
 	{
 	    message ("Pattern format missing closing brace");
-	    return format;
+	    break;
 	}
 	/* extract the element name */
 	memcpy (scratch1, format, p - format);
@@ -76,13 +83,46 @@ interpret_percent (FcPattern *pat,
 	}
 
 	p++; /* skip over '}' */
-	return p;
+	format = p;
+	break;
     }
     default:
 	message ("Pattern format has invalid character after '%%' at %d",
 		 format - format_orig);
-	return format;
+	break;
     }
+
+    /* align to width */
+    if (!buf->failed)
+    {
+	int after, len;
+
+	after = buf->len;
+
+	len = after - before;
+
+	if (len < -width)
+	{
+	    /* left align */
+	    while (len++ < -width)
+		FcStrBufChar (buf, ' ');
+	}
+	else if (len < width)
+	{
+	    /* right align */
+	    while (len++ < width)
+		FcStrBufChar (buf, ' ');
+	    len = after - before;
+	    memmove (buf->buf + buf->len - len,
+		     buf->buf + buf->len - width,
+		     len);
+	    memset (buf->buf + buf->len - width,
+		    ' ',
+		    width - len);
+	}
+    }
+
+    return format;
 }
 
 static char escaped_char(const char ch)
