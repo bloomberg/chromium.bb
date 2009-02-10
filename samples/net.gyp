@@ -270,7 +270,7 @@
             ],
             'dependencies': [
               'net_resources',
-              'tools/tld_cleanup/tld_cleanup.gyp:tld_cleanup',
+              'tld_cleanup',
             ],
             'msvs_tool_files': ['build/convert_tld_data.rules'],
           },
@@ -316,10 +316,6 @@
         'net',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
-
-        # Not really needed to build (but we want it in the sln).
-        'tools/crash_cache/crash_cache.gyp:crash_cache',
-        'tools/dump_cache/dump_cache.gyp:dump_cache',
       ],
       'sources': [
         'base/base64_unittest.cc',
@@ -445,6 +441,53 @@
       'sources': [
         'disk_cache/disk_cache_test_util.cc',
         'disk_cache/stress_cache.cc',
+      ],
+    },
+    {
+      'target_name': 'tld_cleanup',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../googleurl/build/googleurl.gyp:googleurl',
+      ],
+      'sources': [
+        'tools/tld_cleanup/tld_cleanup.cc',
+      ],
+    },
+    {
+      'target_name': 'tld_cleanup',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../googleurl/build/googleurl.gyp:googleurl',
+      ],
+      'sources': [
+        'tools/tld_cleanup/tld_cleanup.cc',
+      ],
+    },
+    {
+      'target_name': 'dump_cache',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'net',
+      ],
+      'sources': [
+        'tools/dump_cache/dump_cache.cc',
+        'tools/dump_cache/dump_files.cc',
+        'tools/dump_cache/upgrade.cc',
+      ],
+    },
+    {
+      'target_name': 'crash_cache',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        'net',
+      ],
+      'sources': [
+        'tools/crash_cache/crash_cache.cc',
+        'disk_cache/disk_cache_test_util.cc',
       ],
     },
   ],
