@@ -150,22 +150,11 @@ def _GenerateProject(vcproj_filename, build_file, spec):
 
     # Add Pre-build.
     prebuild = c.get('msvs_prebuild')
-    _ToolAppend(tools, 'VCPreBuildEvenTool', 'CommandLine', prebuild)
+    _ToolAppend(tools, 'VCPreBuildEventTool', 'CommandLine', prebuild)
 
     # Add Post-build.
     postbuild = c.get('msvs_postbuild')
-    _ToolAppend(tools, 'VCPostBuildEvenTool', 'CommandLine', postbuild)
-
-    # Add actions.
-    actions = c.get('actions', [])
-    assert len(actions) <= 1
-    for a in actions:
-      _ToolAppend(tools, 'VCCustomBuildTool', 'Description', a['action_name'])
-      _ToolAppend(tools, 'VCCustomBuildTool', 'AdditionalDependencies',
-                  a.get('inputs', []))
-      _ToolAppend(tools, 'VCCustomBuildTool', 'Outputs',
-                  a.get('outputs', []))
-      _ToolAppend(tools, 'VCCustomBuildTool', 'CommandLine', a['action'])
+    _ToolAppend(tools, 'VCPostBuildEventTool', 'CommandLine', postbuild)
 
     # Convert tools to expected form.
     tool_list = []
@@ -197,12 +186,20 @@ def _GenerateProject(vcproj_filename, build_file, spec):
 
   # Prepare list of sources.
   sources = spec['sources']
-  sources = [_FixPath(i) for i in sources]
   # Add in the gyp file.
   sources.append(os.path.split(build_file)[1])
+  # Add in 'action' inputs.
+  actions = spec.get('actions', [])
+  for a in actions:
+    for i in a.get('inputs', []):
+      if i not in sources:
+        sources.append(i)
+  # Convert to proper windows form.
+  sources = [_FixPath(i) for i in sources]
 
   # Exclude excluded ones.
   excluded_sources = spec.get('sources_excluded', [])
+  # Convert to proper windows form.
   excluded_sources = [_FixPath(i) for i in excluded_sources]
   # Add excluded into sources
   sources += excluded_sources
@@ -225,6 +222,21 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       tool_files.add(f)
   for f in tool_files:
     p.AddToolFile(f)
+
+  # Add actions.
+  actions = spec.get('actions', [])
+  for a in actions:
+    inputs = [_FixPath(i) for i in a.get('inputs', [])]
+    outputs = [_FixPath(i) for i in a.get('outputs', [])]
+    tool = MSVSProject.Tool(
+        'VCCustomBuildTool', {
+          'Description': a['action_name'],
+          'AdditionalDependencies': ';'.join(inputs),
+          'Outputs': ';'.join(outputs),
+          'CommandLine': a['action'].replace('/', '\\'),
+          })
+    for config_name in spec['configurations']:
+      p.AddFileConfig(inputs[0], config_name, tools=[tool])
 
   # Write it out.
   p.Write()

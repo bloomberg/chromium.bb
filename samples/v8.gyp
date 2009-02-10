@@ -261,7 +261,12 @@
         # excludes are processed.
         ['OS=="linux"', {'sources/+': [['include', '^src/platform-linux\\.cc$']]}],
         ['OS=="mac"', {'sources/+': [['include', '^src/platform-macos\\.cc$']]}],
-        ['OS=="win"', {'sources/+': [['include', '^src/platform-win32\\.cc$']]}],
+        ['OS=="win"', {
+          'sources/+': [['include', '^src/platform-win32\\.cc$']],
+          # 4018, 4244 were a per file config on dtoa-config.c
+          # 4355, 4800 came from common.vsprops
+          'msvs_disabled_warnings': [4355, 4800, 4018, 4244],
+        }],
       ],
       'include_dirs': [
         'src',
@@ -385,6 +390,12 @@
       ],
       'dependencies': [
         'v8',
+      ],
+      'conditions': [
+        [ 'OS=="win"', {
+          # This could be gotten from external_code, if we decide it's ok.
+          'defines': ['_CRT_SECURE_NO_WARNINGS'],
+        }],
       ],
     },
     {
