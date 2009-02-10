@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+	wl_display_iterate(display, WL_DISPLAY_READABLE);
 	loop = g_main_loop_new(NULL, FALSE);
 	source = wl_glib_source_new(display);
 	g_source_attach(source, NULL);
