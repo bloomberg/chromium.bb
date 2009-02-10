@@ -861,15 +861,17 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 		if (es->map.x <= device->x &&
 		    device->x < es->map.x + es->map.width &&
 		    es->map.y <= device->y &&
-		    device->y < es->map.y + es->map.height)
+		    device->y < es->map.y + es->map.height) {
+			/* Transform to surface coordinates. */
+			*sx = (device->x - es->map.x) * es->width / es->map.width;
+			*sy = (device->y - es->map.y) * es->height / es->map.height;
+
 			return es;
+		}
 
 		es = container_of(es->link.prev,
 				  struct wlsc_surface, link);
 
-		/* Transform to surface coordinates. */
-		*sx = (device->x - es->map.x) * es->width / es->map.width;
-		*sy = (device->y - es->map.y) * es->height / es->map.height;
 	}
 
 	return NULL;
