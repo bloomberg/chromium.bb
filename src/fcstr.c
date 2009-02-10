@@ -733,7 +733,10 @@ FcStrBufDone (FcStrBuf *buf)
 {
     FcChar8 *ret;
 
-    ret = malloc (buf->len + 1);
+    if (buf->failed)
+	ret = NULL;
+    else
+	ret = malloc (buf->len + 1);
     if (ret)
     {
 	FcMemAlloc (FC_MEM_STRING, buf->len + 1);
@@ -751,6 +754,9 @@ FcStrBufChar (FcStrBuf *buf, FcChar8 c)
     {
 	FcChar8	    *new;
 	int	    size;
+
+	if (buf->failed)
+	    return FcFalse;
 
 	if (buf->allocated)
 	{
