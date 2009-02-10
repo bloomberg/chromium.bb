@@ -124,6 +124,20 @@ FcCharIsPunct (const FcChar8 c)
     return FcFalse;
 }
 
+static char escaped_char(const char ch)
+{
+    switch (ch) {
+    case 'a':   return '\a';
+    case 'b':   return '\b';
+    case 'f':   return '\f';
+    case 'n':   return '\n';
+    case 'r':   return '\r';
+    case 't':   return '\t';
+    case 'v':   return '\v';
+    default:    return ch;
+    }
+}
+
 static FcBool
 read_word (FcFormatContext *c)
 {
@@ -137,7 +151,7 @@ read_word (FcFormatContext *c)
 	{
 	    c->format++;
 	    if (*c->format)
-		c->format++;
+	      *p++ = escaped_char (*c->format++);
 	    continue;
 	}
 	else if (FcCharIsPunct (*c->format))
@@ -150,6 +164,38 @@ read_word (FcFormatContext *c)
     if (p == c->word)
     {
 	message ("expected element name at %d",
+		 c->format - c->format_orig + 1);
+	return FcFalse;
+    }
+
+    return FcTrue;
+}
+
+static FcBool
+read_chars (FcFormatContext *c,
+	    FcChar8          term)
+{
+    FcChar8 *p;
+
+    p = c->word;
+
+    while (*c->format && *c->format != '}' && *c->format != term)
+    {
+	if (*c->format == '\\')
+	{
+	    c->format++;
+	    if (*c->format)
+	      *p++ = escaped_char (*c->format++);
+	    continue;
+	}
+
+	*p++ = *c->format++;
+    }
+    *p = '\0';
+
+    if (p == c->word)
+    {
+	message ("expected character data at %d",
 		 c->format - c->format_orig + 1);
 	return FcFalse;
     }
@@ -403,7 +449,7 @@ interpret_count (FcFormatContext *c,
 	    count++;
     }
 
-    snprintf (buf_static, sizeof (buf_static), "%d", count);
+    snprintf ((char *) buf_static, sizeof (buf_static), "%d", count);
     FcStrBufString (buf, buf_static);
 
     return FcTrue;
@@ -452,7 +498,7 @@ static FcChar8 *
 cescape (const FcChar8 *str)
 {
     FcStrBuf buf;
-    FcChar8         buf_static[8192];
+    FcChar8  buf_static[8192];
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     while(*str)
@@ -473,7 +519,7 @@ static FcChar8 *
 shescape (const FcChar8 *str)
 {
     FcStrBuf buf;
-    FcChar8         buf_static[8192];
+    FcChar8  buf_static[8192];
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     FcStrBufChar (&buf, '\'');
@@ -493,7 +539,7 @@ static FcChar8 *
 xmlescape (const FcChar8 *str)
 {
     FcStrBuf buf;
-    FcChar8         buf_static[8192];
+    FcChar8  buf_static[8192];
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     while(*str)
@@ -511,6 +557,137 @@ xmlescape (const FcChar8 *str)
 }
 
 static FcChar8 *
+delete_chars (FcFormatContext *c,
+	      const FcChar8   *str)
+{
+    FcStrBuf buf;
+    FcChar8  buf_static[8192];
+
+    /* XXX not UTF-8 aware */
+
+    if (!expect_char (c, '(') ||
+	!read_chars (c, ')') ||
+	!expect_char (c, ')'))
+	return NULL;
+
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
+    while(*str)
+    {
+	FcChar8 *p;
+
+	p = (FcChar8 *) strpbrk ((const char *) str, (const char *) c->word);
+	if (p)
+	{
+	    FcStrBufData (&buf, str, p - str);
+	    str = p + 1;
+	}
+	else
+	{
+	    FcStrBufString (&buf, str);
+	    break;
+	}
+
+    }
+    return FcStrBufDone (&buf);
+}
+
+static FcChar8 *
+escape_chars (FcFormatContext *c,
+	      const FcChar8   *str)
+{
+    FcStrBuf buf;
+    FcChar8  buf_static[8192];
+
+    /* XXX not UTF-8 aware */
+
+    if (!expect_char (c, '(') ||
+	!read_chars (c, ')') ||
+	!expect_char (c, ')'))
+	return NULL;
+
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
+    while(*str)
+    {
+	FcChar8 *p;
+
+	p = (FcChar8 *) strpbrk ((const char *) str, (const char *) c->word);
+	if (p)
+	{
+	    FcStrBufData (&buf, str, p - str);
+	    FcStrBufChar (&buf, c->word[0]);
+	    FcStrBufChar (&buf, *p);
+	    str = p + 1;
+	}
+	else
+	{
+	    FcStrBufString (&buf, str);
+	    break;
+	}
+
+    }
+    return FcStrBufDone (&buf);
+}
+
+static FcChar8 *
+translate_chars (FcFormatContext *c,
+		 const FcChar8   *str)
+{
+    FcStrBuf buf;
+    FcChar8  buf_static[8192];
+    char *from, *to, repeat;
+    int from_len, to_len;
+
+    /* XXX not UTF-8 aware */
+
+    if (!expect_char (c, '(') ||
+	!read_chars (c, ',') ||
+	!expect_char (c, ','))
+	return NULL;
+
+    from = (char *) c->word;
+    from_len = strlen (from);
+    to = from + from_len + 1;
+
+    /* hack: we temporarily diverge c->word */
+    c->word = (FcChar8 *) to;
+    if (!read_chars (c, ')'))
+    {
+      c->word = (FcChar8 *) from;
+      return FcFalse;
+    }
+    c->word = (FcChar8 *) from;
+
+    to_len = strlen (to);
+    repeat = to[to_len - 1];
+
+    if (!expect_char (c, ')'))
+	return FcFalse;
+
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
+    while(*str)
+    {
+	FcChar8 *p;
+
+	p = (FcChar8 *) strpbrk ((const char *) str, (const char *) from);
+	if (p)
+	{
+	    int i;
+	    FcStrBufData (&buf, str, p - str);
+	    i = strchr (from, *p) - from;
+	    FcStrBufChar (&buf, i < to_len ? to[i] : repeat);
+	    str = p + 1;
+	}
+	else
+	{
+	    FcStrBufString (&buf, str);
+	    break;
+	}
+
+    }
+    return FcStrBufDone (&buf);
+}
+
+static FcChar8 *
 convert (FcFormatContext *c,
 	 const FcChar8   *str)
 {
@@ -519,12 +696,18 @@ convert (FcFormatContext *c,
 #define CONVERTER(name, func) \
     else if (0 == strcmp ((const char *) c->word, name))\
 	return func (str)
-    CONVERTER ("downcase",  FcStrDowncase);
-    CONVERTER ("basename",  FcStrBasename);
-    CONVERTER ("dirname",   FcStrDirname);
-    CONVERTER ("cescape",   cescape);
-    CONVERTER ("shescape",  shescape);
-    CONVERTER ("xmlescape", xmlescape);
+#define CONVERTER2(name, func) \
+    else if (0 == strcmp ((const char *) c->word, name))\
+	return func (c, str)
+    CONVERTER  ("downcase",  FcStrDowncase);
+    CONVERTER  ("basename",  FcStrBasename);
+    CONVERTER  ("dirname",   FcStrDirname);
+    CONVERTER  ("cescape",   cescape);
+    CONVERTER  ("shescape",  shescape);
+    CONVERTER  ("xmlescape", xmlescape);
+    CONVERTER2 ("delete",    delete_chars);
+    CONVERTER2 ("escape",    escape_chars);
+    CONVERTER2 ("translate", translate_chars);
 
     message ("unknown converter \"%s\"",
 	     c->word);
@@ -634,20 +817,6 @@ interpret_percent (FcFormatContext *c,
 	   maybe_interpret_converts (c, buf, start) &&
 	   align_to_width (buf, start, width) &&
 	   expect_char (c, '}');
-}
-
-static char escaped_char(const char ch)
-{
-    switch (ch) {
-    case 'a':   return '\a';
-    case 'b':   return '\b';
-    case 'f':   return '\f';
-    case 'n':   return '\n';
-    case 'r':   return '\r';
-    case 't':   return '\t';
-    case 'v':   return '\v';
-    default:    return ch;
-    }
 }
 
 static FcBool
