@@ -177,7 +177,22 @@ def ExpandVariables(input, is_late, variables):
       # match[0] is the substring to look for, match[1] is the character code
       # for the replacement type (< > ! <@ >@ !@), and match[2] is the name of
       # the variable (< >) or command to run (!).
-      if match[1][0] == '!':
+
+      # expand_char is the first character of the replacement type: < > !
+      expand_char = match[1][0]
+
+      # expand_to_list is true if an @ variant was being used.  In that case,
+      # the expansion should result in a list.  This can only happen if the
+      # only expansion present is the list expansion, hence the input ==
+      # match[0] check.
+      # Also note that the caller to be expecting a list in return, and not
+      # all callers do because not all are working in list context.
+      if len(match[1]) == 2 and input == match[0]:
+        expand_to_list = True
+      else:
+        expand_to_list = False
+
+      if expand_char == '!':
         p = subprocess.Popen(match[2], shell=True,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (p_stdout, p_stderr) = p.communicate()
@@ -194,16 +209,48 @@ def ExpandVariables(input, is_late, variables):
           raise KeyError, 'Undefined variable ' + match[2] + ' in ' + input
         replacement = variables[match[2]]
 
-      # If the expansion came in <@(var), >@(var), or !@(cmd) form, it's
-      # supposed to be split into a list.  Split it in the same way sh would
-      # split arguments.  Note that this can only work if the replacement is
-      # the only thing in the string, hence the output == match[0] check.
-      # Also note that the caller to be expecting a list in return, and not
-      # all callers do because not all are working in list context.
-      if len(match[1]) == 2 and output == match[0]:
-        output = shlex.split(replacement)
+      if isinstance(replacement, list):
+        for item in replacement:
+          if not isinstance(item, str) and not isinstance(item, int):
+            raise TypeError, 'Variable ' + match[2] + ' must expand to a ' + \
+                             ' string or list of strings; list contains a ' + \
+                             item.__class__.__name__
+        # Run through the list and handle variable expansions in it.  Since
+        # the list is guaranteed not to contain dicts, this won't do anything
+        # with conditions sections.
+        #
+        # TODO(mark): I think this should be made more general: any time an
+        # expansion is done, if there are more expandable tokens left in the
+        # output, additional expansion phases should be done.  It should not
+        # be effective solely for lists.
+        ProcessVariablesAndConditionsInList(replacement, is_late, variables)
+      elif not isinstance(replacement, str) and \
+           not isinstance(replacement, int):
+            raise TypeError, 'Variable ' + match[2] + ' must expand to a ' + \
+                             ' string or list of strings; found a ' + \
+                             replacement.__class__.__name__
+
+      if expand_to_list:
+        # Expanding in list context.  It's guaranteed that there's only one
+        # replacement to do in |input| and that it's this replacement.  See
+        # above.
+        if isinstance(replacement, list):
+          # If it's already a list, make a copy.
+          output = replacement[:]
+        else:
+          # Split it the same way sh would split arguments.
+          output = shlex.split(replacement)
       else:
-        output = re.sub(re.escape(match[0]), replacement, output)
+        # Expanding in string context.
+        if isinstance(replacement, list):
+          # When expanding a list into string context, turn the list items
+          # into a string in a way that will work with a subprocess call.
+          output = re.sub(re.escape(match[0]),
+                                    subprocess.list2cmdline(replacement),
+                                    output)
+        else:
+          # Expanding a string into string context is easy, just replace it.
+          output = re.sub(re.escape(match[0]), replacement, output)
 
   return output
 
@@ -269,7 +316,8 @@ def LoadAutomaticVariablesFromDict(variables, the_dict):
   # Any keys with plain string values in the_dict become automatic variables.
   # The variable name is the key name with a "_" character prepended.
   for key, value in the_dict.iteritems():
-    if isinstance(value, str) or isinstance(value, int):
+    if isinstance(value, str) or isinstance(value, int) or \
+       isinstance(value, list):
       variables['_' + key] = value
 
 

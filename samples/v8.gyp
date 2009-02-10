@@ -1,6 +1,21 @@
 {
   'variables': {
     'depth': '..',
+    'core_library_files': [
+      'src/runtime.js',
+      'src/v8natives.js',
+      'src/array.js',
+      'src/string.js',
+      'src/uri.js',
+      'src/math.js',
+      'src/messages.js',
+      'src/apinatives.js',
+      'src/debug-delay.js',
+      'src/mirror-delay.js',
+      'src/date-delay.js',
+      'src/regexp-delay.js',
+      'src/macros.py',
+    ],
   },
   'includes': [
     '../build/common.gypi',
@@ -263,8 +278,11 @@
         ['OS=="mac"', {'sources/+': [['include', '^src/platform-macos\\.cc$']]}],
         ['OS=="win"', {
           'sources/+': [['include', '^src/platform-win32\\.cc$']],
-          # 4018, 4244 were a per file config on dtoa-config.c
           # 4355, 4800 came from common.vsprops
+          # 4018, 4244 were a per file config on dtoa-config.c
+          # TODO: It's probably possible and desirable to stop disabling the
+          # dtoa-specific warnings by modifying dtoa as was done in Chromium
+          # r9255.  Refer to that revision for details.
           'msvs_disabled_warnings': [4355, 4800, 4018, 4244],
         }],
       ],
@@ -287,28 +305,20 @@
       ],
       'actions': [
         {
+          # This action is duplicated in the v8 target.  The duplication is
+          # is ugly, but it's necessary to guarantee that libraries.cc is
+          # is generated, since INTERMEDIATE_DIR might not be the same for
+          # this target as that one.
           'action_name': 'js2c',
           'inputs': [
-            'src/runtime.js',
-            'src/v8natives.js',
-            'src/array.js',
-            'src/string.js',
-            'src/uri.js',
-            'src/math.js',
-            'src/messages.js',
-            'src/apinatives.js',
-            'src/debug-delay.js',
-            'src/mirror-delay.js',
-            'src/date-delay.js',
-            'src/regexp-delay.js',
-            'src/macros.py',
             'tools/js2c.py',
+            '<@(core_library_files)',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/libraries.cc',
             '<(INTERMEDIATE_DIR)/libraries-empty.cc',
           ],
-          'action': 'tools/js2c.py "<(INTERMEDIATE_DIR_SCRIPT)/libraries.cc" "<(INTERMEDIATE_DIR_SCRIPT)/libraries-empty.cc" CORE src/runtime.js src/v8natives.js src/array.js src/string.js src/uri.js src/math.js src/messages.js src/apinatives.js src/debug-delay.js src/mirror-delay.js src/date-delay.js src/regexp-delay.js src/macros.py'
+          'action': 'python tools/js2c.py <(_outputs) CORE <(core_library_files)'
         },
       ],
     },
@@ -343,32 +353,20 @@
       },
       'actions': [
         {
-          # TODO(mark): This is duplicated from the v8_nosnapshot target.  The
+          # This action is duplicated in the v8_nosnapshot target.  The
           # duplication is ugly, but it's necessary to guarantee that
           # libraries-empty.cc is generated, since INTERMEDIATE_DIR might not
-          # be the same for this target as v8_nosnapshot.
+          # be the same for this target as that one.
           'action_name': 'js2c',
           'inputs': [
-            'src/runtime.js',
-            'src/v8natives.js',
-            'src/array.js',
-            'src/string.js',
-            'src/uri.js',
-            'src/math.js',
-            'src/messages.js',
-            'src/apinatives.js',
-            'src/debug-delay.js',
-            'src/mirror-delay.js',
-            'src/date-delay.js',
-            'src/regexp-delay.js',
-            'src/macros.py',
             'tools/js2c.py',
+            '<@(core_library_files)',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/libraries.cc',
             '<(INTERMEDIATE_DIR)/libraries-empty.cc',
           ],
-          'action': 'tools/js2c.py "<(INTERMEDIATE_DIR_SCRIPT)/libraries.cc" "<(INTERMEDIATE_DIR_SCRIPT)/libraries-empty.cc" CORE src/runtime.js src/v8natives.js src/array.js src/string.js src/uri.js src/math.js src/messages.js src/apinatives.js src/debug-delay.js src/mirror-delay.js src/date-delay.js src/regexp-delay.js src/macros.py'
+          'action': 'python tools/js2c.py <(_outputs) CORE <(core_library_files)'
         },
         {
           'action_name': 'mksnapshot',
@@ -378,7 +376,7 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/snapshot.cc',
           ],
-          'action': '"<(PRODUCT_DIR_SCRIPT)/<(EXECUTABLE_PREFIX)mksnapshot<(EXECUTABLE_SUFFIX)" "<(INTERMEDIATE_DIR_SCRIPT)/snapshot.cc"',
+          'action': '"<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)mksnapshot<(EXECUTABLE_SUFFIX)" "<(_outputs)"',
         },
       ],
     },
@@ -433,17 +431,24 @@
       ],
       'actions': [
         {
+          'variables': {
+            'd8_library_files': [
+              'src/d8.js',
+              'src/macros.py',
+            ],
+          },
           'action_name': 'js2c',
           'inputs': [
-            'src/d8.js',
-            'src/macros.py',
             'tools/js2c.py',
+            '<@(d8_library_files)',
+          ],
+          'extra_inputs': [
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/d8-js.cc',
             '<(INTERMEDIATE_DIR)/d8-js-empty.cc',
           ],
-          'action': 'tools/js2c.py "<(INTERMEDIATE_DIR_SCRIPT)/d8-js.cc" "<(INTERMEDIATE_DIR_SCRIPT)/d8-js-empty.cc" D8 src/d8.js src/macros.py'
+          'action': 'python tools/js2c.py <(_outputs) D8 <(d8_library_files)'
         },
       ],
     },

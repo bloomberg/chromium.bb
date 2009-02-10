@@ -4,6 +4,7 @@ import gyp.common
 import gyp.xcodeproj_file
 import errno
 import os
+import re
 
 
 generator_default_variables = {
@@ -14,14 +15,9 @@ generator_default_variables = {
   # and be constant within the context of a target.  Some build environments
   # may allow their intermediate directory or equivalent to be shared on a
   # wider scale, but this is not guaranteed.
-  #
-  # Use INTERMEDIATE_DIR_SCRIPT to feed to scripts, which may accept a
-  # different syntax.
   'INTERMEDIATE_DIR': '$(DERIVED_FILE_DIR)',
-  'INTERMEDIATE_DIR_SCRIPT': '${DERIVED_FILE_DIR}',
   'OS': 'mac',
   'PRODUCT_DIR': '$(BUILT_PRODUCTS_DIR)',
-  'PRODUCT_DIR_SCRIPT': '${BUILT_PRODUCTS_DIR}',
 }
 
 
@@ -169,11 +165,16 @@ def GenerateOutput(target_list, target_dicts, data):
     prebuild_index = 0
     if 'actions' in spec:
       for action in spec['actions']:
+        # Convert Xcode-type variable references to sh-compatible environment
+        # variable references.  Be sure the script runs in exec, and that if
+        # exec fails, the script exits signalling an error.
+        script = "exec " + re.sub('\$\((.*?)\)', '${\\1}', action['action']) + \
+                 "\nexit 1\n"
         ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
               'inputPaths': action['inputs'],
               'name': 'action ' + action['action_name'],
               'outputPaths': action['outputs'],
-              'shellScript': action['action'],
+              'shellScript': script,
               'showEnvVarsInLog': 0,
             })
 
