@@ -86,9 +86,6 @@ class XcodeProject(object):
     xccl.SetProperty('defaultConfigurationName', configurations[0])
     self.project.SetProperty('buildConfigurationList', xccl)
 
-    # Sort the groups nicely.
-    self.project.SortGroups()
-
     # Sort the targets based on how they appeared in the input.
     # TODO(mark): Like a lot of other things here, this assumes internal
     # knowledge of PBXProject - in this case, of its "targets" property.
@@ -107,6 +104,10 @@ class XcodeProject(object):
     assert len(self.project._properties['targets']) == len(targets)
 
     self.project._properties['targets'] = targets
+
+    # Sort the groups nicely.  Do this after sorting the targets, because the
+    # Products group is sorted based on the order of the targets.
+    self.project.SortGroups()
 
     # Create an "All" target if there's more than one target in this project
     # file.  Put the "All" target it first so that people opening up the

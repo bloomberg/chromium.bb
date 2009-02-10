@@ -1708,7 +1708,26 @@ class PBXProject(XCContainerPortal):
     # alphabetically by name within sections of groups and files.  SortGroup
     # is recursive.
     for group in self._properties['mainGroup']._properties['children']:
-      group.SortGroup()
+      if group.Name() == 'Products':
+        # The Products group is a special case.  Instead of sorting
+        # alphabetically, sort things in the order of the targets that
+        # produce the products.  To do this, just build up a new list of
+        # products based on the targets.
+        products = []
+        for target in self._properties['targets']:
+          if not isinstance(target, PBXNativeTarget):
+            continue
+          product = target._properties['productReference']
+          # Make sure that the product is already in the products group.
+          assert product in group._properties['children']
+          products.append(product)
+
+        # Make sure that this process doesn't miss anything that was already
+        # in the products group.
+        assert len(products) == len(group._properties['children'])
+        group._properties['children'] = products
+      else:
+        group.SortGroup()
 
   def AddOrGetProjectReference(self, other_pbxproject):
     """Add a reference to another project file (via PBXProject object) to this
@@ -1822,11 +1841,7 @@ class PBXProject(XCContainerPortal):
 
       # Use the order of each remote PBXFileReference in remote_products to
       # determine the sort order.
-      if x_index < y_index:
-        return -1
-      if x_index > y_index:
-        return 1
-      return 0
+      return cmp(x_index, y_index)
 
     for other_pbxproject, ref_dict in self._other_pbxprojects.iteritems():
       # Build up a list of products in the remote project file, ordered the
