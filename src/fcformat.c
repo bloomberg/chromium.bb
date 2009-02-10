@@ -40,57 +40,95 @@ message (const char *fmt, ...)
 }
 
 
-static FcChar8 *scratch1;
-static FcChar8 *scratch2;
-static const FcChar8 *format_orig;
+typedef struct _FcFormatContext
+{
+    const FcChar8 *format_orig;
+    const FcChar8 *format;
+    int            format_len;
+    FcChar8       *scratch;
+} FcFormatContext;
 
-static const FcChar8 *
-interpret_percent (FcPattern *pat,
-		   FcStrBuf *buf,
-		   const FcChar8 *format)
+static void
+FcFormatContextInit (FcFormatContext *c,
+		     const FcChar8   *format)
+{
+    c->format_orig = c->format = format;
+    c->format_len = strlen ((const char *) format);
+    c->scratch = malloc (c->format_len + 1);
+}
+
+static void
+FcFormatContextDone (FcFormatContext *c)
+{
+    if (c)
+    {
+	free (c->scratch);
+    }
+}
+
+static FcBool
+consume_char (FcFormatContext *c,
+	      FcChar8          term)
+{
+    if (*c->format != term)
+    {
+	message ("Pattern format error: expected '%c' at %d",
+		 term, c->format - c->format_orig + 1);
+	return FcFalse;
+    }
+
+    c->format++;
+    return FcTrue;
+}
+
+static void
+interpret_percent (FcFormatContext *c,
+		   FcPattern       *pat,
+		   FcStrBuf        *buf)
 {
     int width, before;
+    FcChar8 *p;
+    FcPatternElt *e;
+
+    if (!consume_char (c, '%'))
+	return;
+
+    if (*c->format == '%') /* "%%" */
+    {
+	FcStrBufChar (buf, *c->format++);
+	return;
+    }
 
     /* parse an optional width specifier */
-    width = strtol (format, (char **) &format, 10);
+    width = strtol ((const char *) c->format, (char **) &c->format, 10);
 
     before = buf->len;
 
-    switch (*format) {
-    case '{':
+    if (!consume_char (c, '{'))
+	return;
+
+    p = (FcChar8 *) strpbrk ((const char *) c->format, "}" /* "=?:}" */);
+    if (!p)
     {
-	FcChar8 *p;
-	FcPatternElt *e;
-
-	format++; /* skip over '{' */
-
-	p = (FcChar8 *) strpbrk ((const char *) format, "}");
-	if (!p)
-	{
-	    message ("Pattern format missing closing brace");
-	    break;
-	}
-	/* extract the element name */
-	memcpy (scratch1, format, p - format);
-	scratch1[p - format] = '\0';
-
-	e = FcPatternObjectFindElt (pat, FcObjectFromName ((const char *) scratch1));
-	if (e)
-	{
-	    FcValueListPtr l;
-	    l = FcPatternEltValues(e);
-	    FcNameUnparseValueList (buf, l, '\0');
-	}
-
-	p++; /* skip over '}' */
-	format = p;
-	break;
+	message ("Pattern format missing closing brace for opening brace at %d",
+		 c->format-1 - c->format_orig + 1);
+	return;
     }
-    default:
-	message ("Pattern format has invalid character after '%%' at %d",
-		 format - format_orig);
-	break;
+    /* extract the element name */
+    memcpy (c->scratch, c->format, p - c->format);
+    c->scratch[p - c->format] = '\0';
+    c->format = p;
+
+    e = FcPatternObjectFindElt (pat, FcObjectFromName ((const char *) c->scratch));
+    if (e)
+    {
+	FcValueListPtr l;
+	l = FcPatternEltValues(e);
+	FcNameUnparseValueList (buf, l, '\0');
     }
+
+    /* handle filters, if any */
+    /* XXX */
 
     /* align to width */
     if (!buf->failed)
@@ -122,7 +160,7 @@ interpret_percent (FcPattern *pat,
 	}
     }
 
-    return format;
+    consume_char (c, '}');
 }
 
 static char escaped_char(const char ch)
@@ -139,54 +177,43 @@ static char escaped_char(const char ch)
     }
 }
 
-static const FcChar8 *
-interpret (FcPattern *pat,
-	   FcStrBuf *buf,
-	   const FcChar8 *format,
-	   FcChar8 term)
+static void
+interpret (FcFormatContext *c,
+	   FcPattern       *pat,
+	   FcStrBuf        *buf,
+	   FcChar8          term)
 {
-    const FcChar8 *end;
-
-    for (end = format; *end && *end != term;)
+    for (; *c->format && *c->format != term;)
     {
-	switch (*end)
+	switch (*c->format)
 	{
 	case '\\':
-	    end++; /* skip over '\\' */
-	    FcStrBufChar (buf, escaped_char (*end++));
+	    c->format++; /* skip over '\\' */
+	    if (*c->format)
+		FcStrBufChar (buf, escaped_char (*c->format++));
 	    continue;
 	case '%':
-	    end++; /* skip over '%' */
-	    if (*end == '%')
-		break;
-	    end = interpret_percent (pat, buf, end);
+	    interpret_percent (c, pat, buf);
 	    continue;
 	}
-	FcStrBufChar (buf, *end);
-	end++;
+	FcStrBufChar (buf, *c->format++);
     }
-    if (*end != term)
+    if (*c->format != term)
 	message ("Pattern format ended while looking for '%c'", term);
-
-    return end;
 }
 
 FcChar8 *
 FcPatternFormat (FcPattern *pat, const FcChar8 *format)
 {
-    int len;
     FcStrBuf buf;
+    FcFormatContext c;
 
     FcStrBufInit (&buf, 0, 0);
-    len = strlen ((const char *) format);
-    scratch1 = malloc (len);
-    scratch2 = malloc (len);
-    format_orig = format;
+    FcFormatContextInit (&c, format);
 
-    interpret (pat, &buf, format, '\0');
+    interpret (&c, pat, &buf, '\0');
 
-    free (scratch1);
-    free (scratch2);
+    FcFormatContextDone (&c);
     return FcStrBufDone (&buf);
 }
 
