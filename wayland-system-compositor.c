@@ -66,7 +66,7 @@ struct wl_visual {
 struct wlsc_output {
 	struct wl_object base;
 	struct wl_list link;
-	struct wlsc_compositor *ec;
+	struct wlsc_compositor *compositor;
 	struct wlsc_surface *background;
 	EGLSurface surface;
 	int32_t x, y, width, height, stride;
@@ -123,11 +123,22 @@ struct wlsc_compositor {
 	uint32_t current_frame;
 
 	uint32_t meta_state;
-	GLdouble grab_x_angle, grab_y_angle;
-	int32_t grab_x, grab_y;
+	struct wl_list animate_list;
+	struct wlsc_surface *primary;
 };
 
 #define META_DOWN 256
+
+struct wlsc_animate {
+	struct wl_list link;
+	void (*animate)(struct wlsc_animate *animate, 
+			struct wlsc_compositor *compositor,
+			uint32_t frame, uint32_t msecs);
+};
+
+struct wlsc_vector {
+	GLdouble x, y, z;
+};
 
 struct wlsc_surface {
 	struct wl_surface base;
@@ -138,8 +149,11 @@ struct wlsc_surface {
 	EGLSurface surface;
 	int width, height;
 	struct wl_list link;
-	GLdouble scale, x_angle, y_angle;
 	struct wlsc_matrix matrix;
+
+	struct wlsc_vector target, current, previous;
+	GLdouble target_angle, current_angle, previous_angle;
+	struct wlsc_animate animate;
 };
 
 static const char *option_background = "background.jpg";
@@ -168,8 +182,8 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 	char buffer[256];
 	GdkPixbuf *pixbuf, *normal;
 	GError *error = NULL;
-	void *data;
-	int i;
+	unsigned char *data;
+	int i, j;
 
 	i = 0;
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
@@ -185,6 +199,10 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 		glPixelStorei(GL_PACK_ALIGNMENT, 1);
 		glReadPixels(0, 0, output->width, output->height,
 			     GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+		/* FIXME: We should just use a RGB visual for the frontbuffer. */
+		for (j = 3; j < output->width * output->height * 4; j += 4)
+			data[j] = 0xff;
 
 		pixbuf = gdk_pixbuf_new_from_data(data, GDK_COLORSPACE_RGB, TRUE,
 						  8, output->width, output->height, output->width * 4,
@@ -305,10 +323,35 @@ wlsc_surface_update_matrix(struct wlsc_surface *es)
 
 	wlsc_matrix_init(&es->matrix);
 	wlsc_matrix_translate(&es->matrix, -tx, -ty, 0);
-	wlsc_matrix_scale(&es->matrix, es->scale, es->scale, 1);
-	wlsc_matrix_rotate(&es->matrix, es->x_angle, 0, 1, 0);
-	wlsc_matrix_rotate(&es->matrix, es->y_angle, 1, 0, 0);
-	wlsc_matrix_translate(&es->matrix, tx, ty, 0);
+	wlsc_matrix_rotate(&es->matrix, es->current_angle, 0, 1, 0);
+	wlsc_matrix_translate(&es->matrix, tx + es->current.x,
+			      ty + es->current.y, es->current.z);
+}
+
+static void
+wlsc_surface_init(struct wlsc_surface *surface,
+		  struct wlsc_compositor *compositor, struct wl_visual *visual,
+		  int32_t x, int32_t y, int32_t width, int32_t height)
+{
+	glGenTextures(1, &surface->texture);
+	surface->compositor = compositor;
+	surface->map.x = x;
+	surface->map.y = y;
+	surface->map.width = width;
+	surface->map.height = height;
+	surface->surface = EGL_NO_SURFACE;
+	surface->visual = visual;
+	surface->current.x = 0;
+	surface->current.y = 0;
+	surface->current.z = 0;
+	surface->current_angle = 0;
+	surface->target.x = 0;
+	surface->target.y = 0;
+	surface->target.z = 0;
+	surface->target_angle = 0;
+	surface->previous_angle = 0;
+
+	wlsc_surface_update_matrix(surface);
 }
 
 static struct wlsc_surface *
@@ -327,7 +370,8 @@ wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
 	if (es == NULL)
 		return NULL;
 
-	glGenTextures(1, &es->texture);
+	wlsc_surface_init(es, ec, &ec->premultiplied_argb_visual,
+			  x, y, width, height);
 	glBindTexture(GL_TEXTURE_2D, es->texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
@@ -335,19 +379,6 @@ wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
 		     GL_BGRA, GL_UNSIGNED_BYTE, data);
-
-	es->compositor = ec;
-	es->map.x = x;
-	es->map.y = y;
-	es->map.width = width;
-	es->map.height = height;
-	es->surface = EGL_NO_SURFACE;
-	es->visual = &ec->premultiplied_argb_visual;
-	es->scale = 1;
-	es->x_angle = 0;
-	es->y_angle = 0;
-
-	wlsc_surface_update_matrix(es);
 
 	return es;
 }
@@ -439,7 +470,10 @@ background_create(struct wlsc_output *output, const char *filename)
 
 	data = gdk_pixbuf_get_pixels(pixbuf);
 
-	glGenTextures(1, &background->texture);
+	wlsc_surface_init(background, output->compositor,
+			  &output->compositor->rgb_visual,
+			  output->x, output->y, output->width, output->height);
+
 	glBindTexture(GL_TEXTURE_2D, background->texture);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
@@ -454,18 +488,6 @@ background_create(struct wlsc_output *output, const char *filename)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
 		     output->width, output->height, 0,
 		     format, GL_UNSIGNED_BYTE, data);
-
-	background->compositor = output->ec;
-	background->map.x = output->x;
-	background->map.y = output->y;
-	background->map.width = output->width;
-	background->map.height = output->height;
-	background->surface = EGL_NO_SURFACE;
-	background->visual = &output->ec->rgb_visual;
-	background->scale = 1;
-	background->x_angle = 0;
-	background->y_angle = 0;
-	wlsc_surface_update_matrix(background);
 
 	return background;
 }
@@ -517,9 +539,33 @@ wlsc_surface_draw(struct wlsc_surface *es)
 }
 
 static void
+wlsc_vector_add(struct wlsc_vector *v1, struct wlsc_vector *v2)
+{
+	v1->x += v2->x;
+	v1->y += v2->y;
+	v1->z += v2->z;
+}
+
+static void
+wlsc_vector_subtract(struct wlsc_vector *v1, struct wlsc_vector *v2)
+{
+	v1->x -= v2->x;
+	v1->y -= v2->y;
+	v1->z -= v2->z;
+}
+
+static void
+wlsc_vector_scalar(struct wlsc_vector *v1, GLdouble s)
+{
+	v1->x *= s;
+	v1->y *= s;
+	v1->z *= s;
+}
+
+static void
 repaint_output(struct wlsc_output *output)
 {
-	struct wlsc_compositor *ec = output->ec;
+	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
 	double s = 3000;
@@ -570,6 +616,7 @@ repaint(void *data)
 {
 	struct wlsc_compositor *ec = data;
 	struct wlsc_output *output;
+	struct wlsc_animate *animate, *next;
 	struct timespec ts;
 	uint32_t msecs;
 
@@ -591,10 +638,19 @@ repaint(void *data)
 	msecs = ts.tv_sec * 1000 + ts.tv_nsec / (1000 * 1000);
 	wl_display_post_frame(ec->wl_display, &ec->base,
 			      ec->current_frame, msecs);
-	ec->current_frame++;
 
 	wl_event_source_timer_update(ec->timer_source, 10);
 	ec->repaint_on_timeout = 1;
+
+	animate = container_of(ec->animate_list.next, struct wlsc_animate, link);
+	while (&animate->link != &ec->animate_list) {
+		next = container_of(animate->link.next,
+				    struct wlsc_animate, link);
+		animate->animate(animate, ec, ec->current_frame, msecs);
+		animate = next;
+	}
+
+	ec->current_frame++;
 }
 
 static void
@@ -710,6 +766,51 @@ const static struct wl_surface_interface surface_interface = {
 };
 
 static void
+animate_surface(struct wlsc_animate *animate, 
+		struct wlsc_compositor *compositor,
+		uint32_t frame, uint32_t msecs)
+{
+	struct wlsc_surface *s;
+	double angle_force, angle;
+	struct wlsc_vector force, tmp;
+	double step = 0.3;
+	double friction = 1;
+	double spring = 0.2;
+
+	s = container_of(animate, struct wlsc_surface, animate);
+
+	angle = s->current_angle;
+	angle_force = (s->target_angle - angle) * spring +
+		(s->previous_angle - angle) * friction;
+
+	s->current_angle = angle + (angle - s->previous_angle) + angle_force * step;
+	s->previous_angle = angle;
+
+	force = s->target;
+	wlsc_vector_subtract(&force, &s->current);
+	wlsc_vector_scalar(&force, spring);
+	tmp = s->previous;
+	wlsc_vector_subtract(&tmp, &s->current);
+	wlsc_vector_scalar(&tmp, friction);
+	wlsc_vector_add(&force, &tmp);
+
+	wlsc_vector_scalar(&force, step);
+	wlsc_vector_add(&force, &s->current);
+	wlsc_vector_subtract(&force, &s->previous);
+	s->previous = s->current;
+	wlsc_vector_add(&s->current, &force);
+
+	wlsc_surface_update_matrix(s);
+	
+	tmp = s->current;
+	wlsc_vector_subtract(&tmp, &s->target);
+	if (tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z > 0.001)
+		schedule_repaint(compositor);
+	else
+		wl_list_remove(&s->animate.link);
+}
+
+static void
 compositor_create_surface(struct wl_client *client,
 			  struct wl_compositor *compositor, uint32_t id)
 {
@@ -721,14 +822,11 @@ compositor_create_surface(struct wl_client *client,
 		/* FIXME: Send OOM event. */
 		return;
 
-	es->compositor = ec;
-	es->surface = EGL_NO_SURFACE;
-	es->scale = 1;
-	es->x_angle = 0;
-	es->y_angle = 0;
+	wlsc_surface_init(es, ec, NULL, 0, 0, 0, 0);
+	es->animate.animate = animate_surface;
+	wl_list_init(&es->animate.link);
 
 	wl_list_insert(ec->surface_list.prev, &es->link);
-	glGenTextures(1, &es->texture);
 	wl_client_add_surface(client, &es->base,
 			      &surface_interface, id);
 }
@@ -788,13 +886,6 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 
 	if (!ec->vt_active)
 		return;
-
-	if (ec->meta_state && device->focus_surface) {
-		es = device->focus_surface;
-		es->x_angle = ec->grab_x_angle + (x - ec->grab_x) / 50.0;
-		es->y_angle = ec->grab_y_angle + (y - ec->grab_y) / 50.0;
-		wlsc_surface_update_matrix(es);
-	}
 
 	/* FIXME: We need some multi head love here. */
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
@@ -857,42 +948,77 @@ notify_button(struct wlsc_input_device *device,
 
 static void on_term_signal(int signal_number, void *data);
 
+static void
+update_surface_targets(struct wlsc_compositor *compositor, int primary)
+{
+	struct wlsc_surface *s;
+	int i;
+
+	i = 0;
+	s = container_of(compositor->surface_list.next,
+			 struct wlsc_surface, link);
+	while (&s->link != &compositor->surface_list) {
+		if (i < primary) {
+			s->target.x = -400 + 500 * (i - primary);
+			s->target.y = 0;
+			s->target.z = -1500;
+			s->target_angle = M_PI / 4;
+		} else if (i == primary) {
+			s->target.x = 0;
+			s->target.y = 0;
+			s->target.z = -1000;
+			s->target_angle = 0;
+			compositor->primary = s;
+		} else {
+			s->target.x = 400 + 500 * (i - primary);
+			s->target.y = 0;
+			s->target.z = -1500;
+			s->target_angle = -M_PI / 4;
+		}
+		wl_list_remove(&s->animate.link);
+		wl_list_insert(compositor->animate_list.prev, &s->animate.link);
+		s = container_of(s->link.next,
+				 struct wlsc_surface, link);
+		i++;
+	}
+
+	schedule_repaint(compositor);
+}
+
 void
 notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct wlsc_compositor *ec = device->ec;
-	struct wlsc_surface *es;
+	struct wlsc_surface *s;
 
 	switch (key | ec->meta_state) {
 	case KEY_EJECTCD | META_DOWN:
 		on_term_signal(SIGTERM, ec);
 		return;
 
-	case KEY_ESC | META_DOWN:
-		if (state == 0 || device->focus_surface == NULL)
-			break;
-
-		es = device->focus_surface;
-		if (es->scale < 1.5)
-			es->scale = 2;
-		else
-			es->scale = 1;
-		wlsc_surface_update_matrix(es);
-		schedule_repaint(device->ec);
+ 	case KEY_1 | META_DOWN:
+ 	case KEY_2 | META_DOWN:
+ 	case KEY_3 | META_DOWN:
+ 	case KEY_4 | META_DOWN:
+ 	case KEY_5 | META_DOWN:
+		update_surface_targets(ec, key - KEY_1);
+		if (device->grab == 0 && s != NULL)
+			device->focus_surface = ec->primary;
 		return;
 
 	case KEY_LEFTMETA:
 	case KEY_RIGHTMETA:
-		if (device->focus_surface) {
-			ec->grab_x_angle = device->focus_surface->x_angle;
-			ec->grab_y_angle = device->focus_surface->y_angle;
-			ec->grab_x = device->x;
-			ec->grab_y = device->y;
-		}
 	case KEY_LEFTMETA | META_DOWN:
 	case KEY_RIGHTMETA | META_DOWN:
 		ec->meta_state = state ? META_DOWN : 0;
+		if (state == 0) {
+			ec->primary->target.z = 0;
+			wl_list_remove(&ec->primary->animate.link);
+			wl_list_insert(&ec->animate_list,
+				       &ec->primary->animate.link);
+			schedule_repaint(ec);
+		}
 		return;
 	}
 
@@ -1076,7 +1202,7 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 		return -1;
 	}
 
-	output->ec = ec;
+	output->compositor = ec;
 	output->crtc_id = encoder->crtc_id;
 	output->connector_id = connector->connector_id;
 	output->mode = mode;
@@ -1322,6 +1448,8 @@ wlsc_compositor_create(struct wl_display *display)
 
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	schedule_repaint(ec);
+
+	wl_list_init(&ec->animate_list);
 
 	return ec;
 }
