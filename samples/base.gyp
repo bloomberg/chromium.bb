@@ -529,12 +529,18 @@
         ],
       ],
     },
-    {
-      'target_name': 'debug_message',
-      'type': 'executable',
-      'sources': [
-        'debug_message.cc',
+  ],
+  'conditions': [
+    [ 'OS == "win"', {
+      'targets': [
+        {
+          'target_name': 'debug_message',
+          'type': 'executable',
+          'sources': [
+            'debug_message.cc',
+          ],
+        },
       ],
-    },
+    }],
   ],
 }
