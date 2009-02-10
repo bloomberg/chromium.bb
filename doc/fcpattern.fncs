@@ -413,5 +413,5 @@ pattern, use the format "%{family} %{style}\n".
 There can be an option width specifier after the percent sign and before
 the opening brace.  The width modifier acts similar to those in printf.
 The return value refers to newly allocated memory which should be freed by the
-caller using free().
+caller using free(), or NULL if <parameter>format</parameter> is invalid.
 @@

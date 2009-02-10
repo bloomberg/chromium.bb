@@ -214,7 +214,11 @@ main (int argc, char **argv)
 	        FcChar8 *s;
 
 		s = FcPatternFormat (font, format);
-		free (s);
+		if (s)
+		{
+		    printf ("%s", s);
+		    free (s);
+		}
 	    }
 	    else if (os)
 	    {

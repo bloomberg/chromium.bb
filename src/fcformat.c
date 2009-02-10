@@ -33,7 +33,7 @@ message (const char *fmt, ...)
 {
     va_list	args;
     va_start (args, fmt);
-    fprintf (stderr, "Fontconfig: Pattern format error:");
+    fprintf (stderr, "Fontconfig: Pattern format error: ");
     vfprintf (stderr, fmt, args);
     fprintf (stderr, ".\n");
     va_end (args);
@@ -48,13 +48,15 @@ typedef struct _FcFormatContext
     FcChar8       *scratch;
 } FcFormatContext;
 
-static void
+static FcBool
 FcFormatContextInit (FcFormatContext *c,
 		     const FcChar8   *format)
 {
     c->format_orig = c->format = format;
     c->format_len = strlen ((const char *) format);
     c->scratch = malloc (c->format_len + 1);
+
+    return c->scratch != NULL;
 }
 
 static void
@@ -147,60 +149,36 @@ read_elt_name_to_scratch (FcFormatContext *c)
     return FcTrue;
 }
 
-static void
+static FcBool
 interpret (FcFormatContext *c,
 	   FcPattern       *pat,
 	   FcStrBuf        *buf,
 	   FcChar8          term);
 
-static void
-interpret_percent (FcFormatContext *c,
+static FcBool
+interpret_subexpr (FcFormatContext *c,
 		   FcPattern       *pat,
 		   FcStrBuf        *buf)
 {
-    int           width, before;
-    FcChar8      *p;
-    FcPatternElt *e;
+    return expect_char (c, '{') &&
+	   interpret (c, pat, buf, '}') &&
+	   expect_char (c, '}');
+}
 
-    FcPattern    *subpat = pat;
+static FcBool
+interpret_simple_tag (FcFormatContext *c,
+		      FcPattern       *pat,
+		      FcStrBuf        *buf)
+{
+    FcPatternElt *e;
     FcBool        add_colon = FcFalse;
     FcBool        add_elt_name = FcFalse;
 
-    if (!expect_char (c, '%'))
-	return;
-
-    if (consume_char (c, '%')) /* "%%" */
-    {
-	FcStrBufChar (buf, '%');
-	return;
-    }
-
-    /* parse an optional width specifier */
-    width = strtol ((const char *) c->format, (char **) &c->format, 10);
-
-    before = buf->len;
-
-    if (!expect_char (c, '{'))
-	goto bail;
-
-    if (consume_char (c, '{'))
-    {
-	/* it's just a subexpression.  no tag involved */
-	interpret (c, pat, buf, '}');
-	expect_char (c, '}');
-	goto filter;
-    }
-
-    switch (*c->format) {
-    case ':':
+    if (consume_char (c, ':'))
 	add_colon = FcTrue;
-	consume_char (c, ':');
-	break;
-    }
 
-parse_tag:
     if (!read_elt_name_to_scratch (c))
-        goto bail;
+	return FcFalse;
 
     if (consume_char (c, '='))
 	add_elt_name = FcTrue;
@@ -223,7 +201,131 @@ parse_tag:
 	FcNameUnparseValueList (buf, l, '\0');
     }
 
-filter:
+    return FcTrue;
+}
+
+static FcBool
+interpret_filter (FcFormatContext *c,
+		  FcPattern       *pat,
+		  FcStrBuf        *buf)
+{
+    FcObjectSet  *os;
+    FcPattern    *subpat;
+
+    if (!expect_char (c, '+'))
+	return FcFalse;
+
+    os = FcObjectSetCreate ();
+    if (!os)
+	return FcFalse;
+
+    do
+    {
+	if (!read_elt_name_to_scratch (c) ||
+	    !FcObjectSetAdd (os, (const char *) c->scratch))
+	{
+	    FcObjectSetDestroy (os);
+	    return FcFalse;
+	}
+    }
+    while (consume_char (c, ','));
+
+    subpat = FcPatternFilter (pat, os);
+    FcObjectSetDestroy (os);
+
+    if (!subpat ||
+	!interpret_subexpr (c, subpat, buf))
+	return FcFalse;
+
+    FcPatternDestroy (subpat);
+    return FcTrue;
+}
+
+static FcBool
+interpret_delete (FcFormatContext *c,
+		  FcPattern       *pat,
+		  FcStrBuf        *buf)
+{
+    FcPattern    *subpat;
+
+    if (!expect_char (c, '-'))
+	return FcFalse;
+
+    subpat = FcPatternDuplicate (pat);
+    if (!subpat)
+	return FcFalse;
+
+    do
+    {
+	if (!read_elt_name_to_scratch (c))
+	{
+	    FcPatternDestroy (subpat);
+	    return FcFalse;
+	}
+
+	FcPatternDel (subpat, (const char *) c->scratch);
+    }
+    while (consume_char (c, ','));
+
+    if (!interpret_subexpr (c, subpat, buf))
+	return FcFalse;
+
+    FcPatternDestroy (subpat);
+    return FcTrue;
+}
+
+static FcBool
+interpret_percent (FcFormatContext *c,
+		   FcPattern       *pat,
+		   FcStrBuf        *buf)
+{
+    int           width, before;
+
+    if (!expect_char (c, '%'))
+	return FcFalse;
+
+    if (consume_char (c, '%')) /* "%%" */
+    {
+	FcStrBufChar (buf, '%');
+	return FcTrue;
+    }
+
+    /* parse an optional width specifier */
+    width = strtol ((const char *) c->format, (char **) &c->format, 10);
+
+    before = buf->len;
+
+    if (!expect_char (c, '{'))
+	return FcFalse;
+
+    switch (*c->format) {
+
+    case '{':
+	/* subexpression */
+	if (!interpret_subexpr (c, pat, buf))
+	    return FcFalse;
+	break;
+
+    case '+':
+	/* filtering pattern elements */
+	if (!interpret_filter (c, pat, buf))
+	    return FcFalse;
+	break;
+
+    case '-':
+	/* deleting pattern elements */
+	if (!interpret_delete (c, pat, buf))
+	    return FcFalse;
+	break;
+
+    default:
+	/* simple tag */
+	if (!interpret_simple_tag (c, pat, buf))
+	    return FcFalse;
+	break;
+
+    }
+
     /* handle filters, if any */
     /* XXX */
 
@@ -257,11 +359,7 @@ filter:
 	}
     }
 
-    expect_char (c, '}');
-
-bail:
-    if (subpat != pat)
-	FcPatternDestroy (subpat);
+    return expect_char (c, '}');
 }
 
 static char escaped_char(const char ch)
@@ -278,7 +376,7 @@ static char escaped_char(const char ch)
     }
 }
 
-static void
+static FcBool
 interpret (FcFormatContext *c,
 	   FcPattern       *pat,
 	   FcStrBuf        *buf,
@@ -294,11 +392,13 @@ interpret (FcFormatContext *c,
 		FcStrBufChar (buf, escaped_char (*c->format++));
 	    continue;
 	case '%':
-	    interpret_percent (c, pat, buf);
+	    if (!interpret_percent (c, pat, buf))
+		return FcFalse;
 	    continue;
 	}
 	FcStrBufChar (buf, *c->format++);
     }
+    return FcTrue;
 }
 
 FcChar8 *
@@ -306,14 +406,24 @@ FcPatternFormat (FcPattern *pat, const FcChar8 *format)
 {
     FcStrBuf buf;
     FcFormatContext c;
+    FcBool ret;
 
     FcStrBufInit (&buf, 0, 0);
-    FcFormatContextInit (&c, format);
+    if (!FcFormatContextInit (&c, format))
+	return NULL;
 
-    interpret (&c, pat, &buf, '\0');
+    ret = interpret (&c, pat, &buf, '\0');
+    if (buf.failed)
+	ret = FcFalse;
 
     FcFormatContextDone (&c);
-    return FcStrBufDone (&buf);
+    if (ret)
+	return FcStrBufDone (&buf);
+    else
+    {
+	FcStrBufDestroy (&buf);
+	return NULL;
+    }
 }
 
 #define __fcformat__

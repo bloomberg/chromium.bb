@@ -178,8 +178,11 @@ main (int argc, char **argv)
 	        FcChar8 *s;
 
 		s = FcPatternFormat (fs->fonts[j], format);
-		printf ("%s", s);
-		free (s);
+		if (s)
+		{
+		    printf ("%s", s);
+		    free (s);
+		}
 	    }
 	    else
 	    {
