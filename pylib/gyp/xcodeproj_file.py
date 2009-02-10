@@ -918,33 +918,24 @@ class PBXGroup(XCHierarchicalElement):
 
   def GetChildByPath(self, path):
     # TODO(mark): This should raise an error if more than one child is present
-    # with the same path.  Also, it should probably resolve paths and handle
-    # different sourceTree values.
-    if not 'children' in self._properties:
+    # with the same path.
+    if not 'children' in self._properties or not path:
       return None
 
     for child in self._properties['children']:
-      # TODO(mark): This logic is convoluted.  Improve it.
-      if 'sourceTree' in child._properties and \
-         child._properties['sourceTree'] == '<group>' and \
-         'path' in child._properties and child._properties['path'] == path:
-        # Normal case, the child is relative to this object and it has the
-        # right path.
-        return child
-      if 'sourceTree' in child._properties and \
-         child._properties['sourceTree'] != '<group>' and \
-         'path' not in child._properties and \
-         path == '$(' + child._properties['sourceTree'] + ')':
-        # The child is not relative to this object, it references a distinct
-        # sourceTree that happens to match the path being sought.
-        return child
-      if 'sourceTree' in child._properties and \
-         path.startswith('$(' + child._properties['sourceTree'] + ')/') and \
-         'path' in child._properties and \
-         path == '$(' + child._properties['sourceTree'] + ')/' + \
-                 child._properties['path']:
-        # The child references a path in a distinct sourceTree that matches the
-        # sourceTree and path being sought.
+      # Turn the child's sourceTree and path properties into a single flat
+      # string of a form comparable to the path parameter.  If there's a
+      # sourceTree property other than "<group>", wrap it in $(...) for the
+      # comparison.
+      child_components = []
+      if child._properties['sourceTree'] != '<group>':
+        child_components.append('$(' + child._properties['sourceTree'] + ')')
+      if 'path' in child._properties:
+        child_components.append(child._properties['path'])
+
+      child_path = os.path.join(*child_components)
+
+      if path == child_path:
         return child
 
     return None
