@@ -1014,7 +1014,7 @@ notify_key(struct wlsc_input_device *device,
 	case KEY_LEFTMETA | META_DOWN:
 	case KEY_RIGHTMETA | META_DOWN:
 		ec->meta_state = state ? META_DOWN : 0;
-		if (state == 0) {
+		if (state == 0 && ec->primary != NULL) {
 			ec->primary->target.z = 0;
 			wl_list_remove(&ec->primary->animate.link);
 			wl_list_insert(&ec->animate_list,
