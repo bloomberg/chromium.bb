@@ -455,17 +455,6 @@
       ],
     },
     {
-      'target_name': 'tld_cleanup',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../googleurl/build/googleurl.gyp:googleurl',
-      ],
-      'sources': [
-        'tools/tld_cleanup/tld_cleanup.cc',
-      ],
-    },
-    {
       'target_name': 'crash_cache',
       'type': 'executable',
       'dependencies': [

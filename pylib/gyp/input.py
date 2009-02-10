@@ -1171,6 +1171,8 @@ def Load(build_files, variables, includes):
       for target in data[build_file]['targets']:
         target_name = gyp.common.QualifiedTarget(build_file,
                                                  target['target_name'])
+        if target_name in targets:
+          raise KeyError, 'Duplicate target definitions for ' + target_name
         targets[target_name] = target
 
   # BuildDependencyList will also fix up all dependency lists to contain only

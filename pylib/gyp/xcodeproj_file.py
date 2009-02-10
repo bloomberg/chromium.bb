@@ -1806,6 +1806,44 @@ class PBXProject(XCContainerPortal):
 
         product_group.AppendProperty('children', reference_proxy)
 
+  def SortRemoteProductReferences(self):
+    # For each remote project file, sort the associated ProductGroup in the
+    # same order that the targets are sorted in the remote project file.  This
+    # is the sort order used by Xcode.
+
+    def CompareProducts(x, y, remote_products):
+      # x and y are PBXReferenceProxy objects.  Go through their associated
+      # PBXContainerItem to get the remote PBXFileReference, which will be
+      # present in the remote_products list.
+      x_remote = x._properties['remoteRef']._properties['remoteGlobalIDString']
+      y_remote = y._properties['remoteRef']._properties['remoteGlobalIDString']
+      x_index = remote_products.index(x_remote)
+      y_index = remote_products.index(y_remote)
+
+      # Use the order of each remote PBXFileReference in remote_products to
+      # determine the sort order.
+      if x_index < y_index:
+        return -1
+      if x_index > y_index:
+        return 1
+      return 0
+
+    for other_pbxproject, ref_dict in self._other_pbxprojects.iteritems():
+      # Build up a list of products in the remote project file, ordered the
+      # same as the targets that produce them.
+      remote_products = []
+      for target in other_pbxproject._properties['targets']:
+        if not isinstance(target, PBXNativeTarget):
+          continue
+        remote_products.append(target._properties['productReference'])
+
+      # Sort the PBXReferenceProxy children according to the list of remote
+      # products.
+      product_group = ref_dict['ProductGroup']
+      product_group._properties['children'] = sorted(
+          product_group._properties['children'],
+          cmp=lambda x, y: CompareProducts(x, y, remote_products))
+
 
 class XCProjectFile(XCObject):
   _schema = XCObject._schema.copy()

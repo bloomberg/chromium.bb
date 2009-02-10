@@ -22,7 +22,8 @@ generator_default_variables = {
 
 
 class XcodeProject(object):
-  def __init__(self, path):
+  def __init__(self, gyp_path, path):
+    self.gyp_path = gyp_path
     self.path = path
     self.project = gyp.xcodeproj_file.PBXProject(path=path)
     self.project_file = \
@@ -61,7 +62,7 @@ class XcodeProject(object):
     self.project.AppendProperty('targets', target)
     return target
 
-  def Finalize(self):
+  def Finalize1(self, xcode_targets, build_file_dict):
     # Collect a list of all of the build configuration names used by the
     # various targets in the file.  It is very heavily advised to keep each
     # target in an entire project (even across multiple project files) using
@@ -88,8 +89,28 @@ class XcodeProject(object):
     # Sort the groups nicely.
     self.project.SortGroups()
 
-    # TODO(mark): Sort the targets based on how they appeared in the input.
+    # Sort the targets based on how they appeared in the input.
+    # TODO(mark): Like a lot of other things here, this assumes internal
+    # knowledge of PBXProject - in this case, of its "targets" property.
+    targets = []
+    for target in build_file_dict['targets']:
+      target_name = target['target_name']
+      qualified_target = gyp.common.QualifiedTarget(self.gyp_path, target_name)
+      xcode_target = xcode_targets[qualified_target]
+      # Make sure that the target being added to the sorted list is already in
+      # the unsorted list.
+      assert xcode_target in self.project._properties['targets']
+      targets.append(xcode_targets[qualified_target])
 
+    # Make sure that the list of targets being replaced is the same length as
+    # the one replacing it.
+    assert len(self.project._properties['targets']) == len(targets)
+
+    self.project._properties['targets'] = targets
+
+    # Create an "All" target if there's more than one target in this project
+    # file.  Put the "All" target it first so that people opening up the
+    # project for the first time will build everything by default.
     if len(self.project._properties['targets']) > 1:
       xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
       for configuration in configurations:
@@ -112,6 +133,13 @@ class XcodeProject(object):
       # though.
       self.project._properties['targets'].insert(0, all_target)
 
+  def Finalize2(self):
+    # Finalize2 needs to happen in a separate step because the process of
+    # updating references to other projects depends on the ordering of targets
+    # within remote project files.  Finalize1 is responsible for sorting duty,
+    # and once all project files are sorted, Finalize2 can come in and update
+    # these references.
+
     # Update all references to other projects, to make sure that the lists of
     # remote products are complete.  Otherwise, Xcode will fill them in when
     # it opens the project file, which will result in unnecessary diffs.
@@ -119,6 +147,8 @@ class XcodeProject(object):
     # PBXProject._other_pbxprojects.
     for other_pbxproject in self.project._other_pbxprojects.keys():
       self.project.AddOrGetProjectReference(other_pbxproject)
+
+    self.project.SortRemoteProductReferences()
 
     # Give everything an ID.
     self.project_file.ComputeIDs()
@@ -145,8 +175,8 @@ def GenerateOutput(target_list, target_dicts, data):
     build_file_stem = build_file[:-4]
     # TODO(mark): To keep gyp-generated xcodeproj bundles from colliding with
     # checked-in versions, temporarily put _gyp into the ones created here.
-    xcode_projects[build_file] = XcodeProject(build_file_stem +
-                                              '_gyp.xcodeproj')
+    xcode_projects[build_file] = \
+        XcodeProject(build_file, build_file_stem + '_gyp.xcodeproj')
 
   xcode_targets = {}
   for qualified_target in target_list:
@@ -240,10 +270,16 @@ def GenerateOutput(target_list, target_dicts, data):
         for xck, xcv in configuration['xcode_settings'].iteritems():
           xcbc.SetBuildSetting(xck, xcv)
 
+  build_files = []
   for build_file, build_file_dict in data.iteritems():
     if build_file.endswith('.gyp'):
-      xcode_projects[build_file].Finalize()
+      build_files.append(build_file)
 
-  for build_file, build_file_dict in data.iteritems():
-    if build_file.endswith('.gyp'):
-      xcode_projects[build_file].Write()
+  for build_file in build_files:
+    xcode_projects[build_file].Finalize1(xcode_targets, data[build_file])
+
+  for build_file in build_files:
+    xcode_projects[build_file].Finalize2()
+
+  for build_file in build_files:
+    xcode_projects[build_file].Write()
