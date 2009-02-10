@@ -33,7 +33,7 @@
  *
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - allow indexing simple tags using '%{elt[idx]}'
- * - conditional/filtering/deletion on binding (using '(w)'/'(s)' notation)
+ * - conditional/filtering/deletion on binding (using '(w)'/'(s)'/'(=)' notation)
  */
 
 static void
@@ -201,6 +201,30 @@ read_chars (FcFormatContext *c,
     }
 
     return FcTrue;
+}
+
+static FcBool
+interpret_builtin (FcFormatContext *c,
+		   FcPattern       *pat,
+		   FcStrBuf        *buf)
+{
+    if (!expect_char (c, '='))
+	return FcFalse;
+
+    if (!read_word (c))
+	return FcFalse;
+#define BUILTIN(name, func) \
+    else if (0 == strcmp ((const char *) c->word, name))\
+	return func (c, pat, buf)
+    BUILTIN  ("unparse",  FcNameUnparse);
+    BUILTIN  ("verbose",  FcPatternPrint);
+    BUILTIN2 ("fcmatch",  FcStrDirname);
+    BUILTIN2 ("fclist",   FcStrDirname);
+    BUILTIN2 ("pkgkit",   FcStrDirname);
+
+    message ("unknown builtin \"%s\"",
+	     c->word);
+    return FcFalse;
 }
 
 static FcBool
@@ -805,6 +829,7 @@ interpret_percent (FcFormatContext *c,
     start = buf->len;
 
     switch (*c->format) {
+    case '=': ret = interpret_builtin (c, pat, buf); break;
     case '{': ret = interpret_subexpr (c, pat, buf); break;
     case '+': ret = interpret_filter  (c, pat, buf); break;
     case '-': ret = interpret_delete  (c, pat, buf); break;
