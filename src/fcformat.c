@@ -28,6 +28,14 @@
 #include <stdarg.h>
 
 
+/*
+ * Some ideas for future syntax extensions:
+ *
+ * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
+ * - allow indexing simple tags using '%{elt[idx]}'
+ * - conditional/filtering/deletion on binding (using '(w)'/'(s)' notation)
+ */
+
 static void
 message (const char *fmt, ...)
 {
@@ -45,7 +53,7 @@ typedef struct _FcFormatContext
     const FcChar8 *format_orig;
     const FcChar8 *format;
     int            format_len;
-    FcChar8       *scratch;
+    FcChar8       *word;
 } FcFormatContext;
 
 static FcBool
@@ -54,9 +62,9 @@ FcFormatContextInit (FcFormatContext *c,
 {
     c->format_orig = c->format = format;
     c->format_len = strlen ((const char *) format);
-    c->scratch = malloc (c->format_len + 1);
+    c->word = malloc (c->format_len + 1);
 
-    return c->scratch != NULL;
+    return c->word != NULL;
 }
 
 static void
@@ -64,7 +72,7 @@ FcFormatContextDone (FcFormatContext *c)
 {
     if (c)
     {
-	free (c->scratch);
+	free (c->word);
     }
 }
 
@@ -117,11 +125,11 @@ FcCharIsPunct (const FcChar8 c)
 }
 
 static FcBool
-read_elt_name_to_scratch (FcFormatContext *c)
+read_word (FcFormatContext *c)
 {
     FcChar8 *p;
 
-    p = c->scratch;
+    p = c->word;
 
     while (*c->format)
     {
@@ -139,7 +147,7 @@ read_elt_name_to_scratch (FcFormatContext *c)
     }
     *p = '\0';
 
-    if (p == c->scratch)
+    if (p == c->word)
     {
 	message ("expected element name at %d",
 		 c->format - c->format_orig + 1);
@@ -181,11 +189,13 @@ skip_subexpr (FcFormatContext *c);
 static FcBool
 skip_percent (FcFormatContext *c)
 {
+    int width;
+
     if (!expect_char (c, '%'))
 	return FcFalse;
 
     /* skip an optional width specifier */
-    strtol ((const char *) c->format, (char **) &c->format, 10);
+    width = strtol ((const char *) c->format, (char **) &c->format, 10);
 
     if (!expect_char (c, '{'))
 	return FcFalse;
@@ -250,9 +260,9 @@ maybe_skip_subexpr (FcFormatContext *c)
 }
 
 static FcBool
-interpret_simple_tag (FcFormatContext *c,
-		      FcPattern       *pat,
-		      FcStrBuf        *buf)
+interpret_simple (FcFormatContext *c,
+		  FcPattern       *pat,
+		  FcStrBuf        *buf)
 {
     FcPatternElt *e;
     FcBool        add_colon = FcFalse;
@@ -261,14 +271,14 @@ interpret_simple_tag (FcFormatContext *c,
     if (consume_char (c, ':'))
 	add_colon = FcTrue;
 
-    if (!read_elt_name_to_scratch (c))
+    if (!read_word (c))
 	return FcFalse;
 
     if (consume_char (c, '='))
 	add_elt_name = FcTrue;
 
     e = FcPatternObjectFindElt (pat,
-				FcObjectFromName ((const char *) c->scratch));
+				FcObjectFromName ((const char *) c->word));
     if (e)
     {
 	FcValueListPtr l;
@@ -277,7 +287,7 @@ interpret_simple_tag (FcFormatContext *c,
 	    FcStrBufChar (buf, ':');
 	if (add_elt_name)
 	{
-	    FcStrBufString (buf, c->scratch);
+	    FcStrBufString (buf, c->word);
 	    FcStrBufChar (buf, '=');
 	}
 
@@ -305,8 +315,8 @@ interpret_filter (FcFormatContext *c,
 
     do
     {
-	if (!read_elt_name_to_scratch (c) ||
-	    !FcObjectSetAdd (os, (const char *) c->scratch))
+	if (!read_word (c) ||
+	    !FcObjectSetAdd (os, (const char *) c->word))
 	{
 	    FcObjectSetDestroy (os);
 	    return FcFalse;
@@ -341,13 +351,13 @@ interpret_delete (FcFormatContext *c,
 
     do
     {
-	if (!read_elt_name_to_scratch (c))
+	if (!read_word (c))
 	{
 	    FcPatternDestroy (subpat);
 	    return FcFalse;
 	}
 
-	FcPatternDel (subpat, (const char *) c->scratch);
+	FcPatternDel (subpat, (const char *) c->word);
     }
     while (consume_char (c, ','));
 
@@ -359,9 +369,9 @@ interpret_delete (FcFormatContext *c,
 }
 
 static FcBool
-interpret_conditional (FcFormatContext *c,
-		       FcPattern       *pat,
-		       FcStrBuf        *buf)
+interpret_cond (FcFormatContext *c,
+		FcPattern       *pat,
+		FcStrBuf        *buf)
 {
     FcBool pass;
 
@@ -377,14 +387,14 @@ interpret_conditional (FcFormatContext *c,
 
 	negate = consume_char (c, '!');
 
-	if (!read_elt_name_to_scratch (c))
+	if (!read_word (c))
 	    return FcFalse;
 
 	pass = pass &&
 	       (negate ^
-		FcResultMatch == FcPatternGet (pat,
-					       (const char *) c->scratch,
-					       0, &v));
+		(FcResultMatch == FcPatternGet (pat,
+						(const char *) c->word,
+						0, &v)));
     }
     while (consume_char (c, ','));
 
@@ -404,12 +414,96 @@ interpret_conditional (FcFormatContext *c,
     return FcTrue;
 }
 
+static FcChar8 *
+convert (FcFormatContext *c,
+	 const FcChar8   *str)
+{
+    if (!read_word (c))
+	return NULL;
+    else if (0 == strcmp ((const char *) c->word, "downcase"))
+	return FcStrDowncase (str);
+    else if (0 == strcmp ((const char *) c->word, "basename"))
+	return FcStrBasename (str);
+    else if (0 == strcmp ((const char *) c->word, "dirname"))
+	return FcStrDirname (str);
+
+    message ("unknown converter \"%s\"",
+	     c->word);
+    return NULL;
+}
+
+static FcBool
+maybe_interpret_converts (FcFormatContext *c,
+			   FcStrBuf        *buf,
+			   int              start)
+{
+    while (consume_char (c, '|'))
+    {
+	const FcChar8 *str;
+	FcChar8       *new_str;
+
+	/* nul-terminate the buffer */
+	FcStrBufChar (buf, '\0');
+	if (buf->failed)
+	    return FcFalse;
+	str = buf->buf + start;
+
+	if (!(new_str = convert (c, str)))
+	    return FcFalse;
+
+	/* replace in the buffer */
+	buf->len = start;
+	FcStrBufString (buf, new_str);
+	free (new_str);
+    }
+
+    return FcTrue;
+}
+
+static FcBool
+align_to_width (FcStrBuf *buf,
+		int       start,
+		int       width)
+{
+    int len;
+
+    if (buf->failed)
+	return FcFalse;
+
+    len = buf->len - start;
+    if (len < -width)
+    {
+	/* left align */
+	while (len++ < -width)
+	    FcStrBufChar (buf, ' ');
+    }
+    else if (len < width)
+    {
+	int old_len;
+	old_len = len;
+	/* right align */
+	while (len++ < width)
+	    FcStrBufChar (buf, ' ');
+	if (buf->failed)
+	    return FcFalse;
+	len = old_len;
+	memmove (buf->buf + buf->len - len,
+		 buf->buf + buf->len - width,
+		 len);
+	memset (buf->buf + buf->len - width,
+		' ',
+		width - len);
+    }
+
+    return !buf->failed;
+}
 static FcBool
 interpret_percent (FcFormatContext *c,
 		   FcPattern       *pat,
 		   FcStrBuf        *buf)
 {
-    int           width, before;
+    int width, start;
+    FcBool ret;
 
     if (!expect_char (c, '%'))
 	return FcFalse;
@@ -423,79 +517,23 @@ interpret_percent (FcFormatContext *c,
     /* parse an optional width specifier */
     width = strtol ((const char *) c->format, (char **) &c->format, 10);
 
-    before = buf->len;
-
     if (!expect_char (c, '{'))
 	return FcFalse;
 
+    start = buf->len;
+
     switch (*c->format) {
-
-    case '{':
-	/* subexpression */
-	if (!interpret_subexpr (c, pat, buf))
-	    return FcFalse;
-	break;
-
-    case '+':
-	/* filtering pattern elements */
-	if (!interpret_filter (c, pat, buf))
-	    return FcFalse;
-	break;
-
-    case '-':
-	/* deleting pattern elements */
-	if (!interpret_delete (c, pat, buf))
-	    return FcFalse;
-	break;
-
-    case '?':
-	/* conditional on pattern elements */
-	if (!interpret_conditional (c, pat, buf))
-	    return FcFalse;
-	break;
-
-    default:
-	/* simple tag */
-	if (!interpret_simple_tag (c, pat, buf))
-	    return FcFalse;
-	break;
-
+    case '{': ret = interpret_subexpr (c, pat, buf); break;
+    case '+': ret = interpret_filter  (c, pat, buf); break;
+    case '-': ret = interpret_delete  (c, pat, buf); break;
+    case '?': ret = interpret_cond    (c, pat, buf); break;
+    default:  ret = interpret_simple  (c, pat, buf); break;
     }
 
-    /* handle filters, if any */
-    /* XXX */
-
-    /* align to width */
-    if (!buf->failed)
-    {
-	int after, len;
-
-	after = buf->len;
-
-	len = after - before;
-
-	if (len < -width)
-	{
-	    /* left align */
-	    while (len++ < -width)
-		FcStrBufChar (buf, ' ');
-	}
-	else if (len < width)
-	{
-	    /* right align */
-	    while (len++ < width)
-		FcStrBufChar (buf, ' ');
-	    len = after - before;
-	    memmove (buf->buf + buf->len - len,
-		     buf->buf + buf->len - width,
-		     len);
-	    memset (buf->buf + buf->len - width,
-		    ' ',
-		    width - len);
-	}
-    }
-
-    return expect_char (c, '}');
+    return ret &&
+	   maybe_interpret_converts (c, buf, start) &&
+	   align_to_width (buf, start, width) &&
+	   expect_char (c, '}');
 }
 
 static char escaped_char(const char ch)
