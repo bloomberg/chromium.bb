@@ -448,6 +448,10 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables):
         for expanded_item in expanded:
           the_list.insert(index, expanded_item)
           index = index + 1
+
+        # index now identifies the next item to examine.  Continue right now
+        # without falling into the index increment below.
+        continue
       else:
         raise ValueError, \
               'Variable expansion in this context permits strings and ' + \
