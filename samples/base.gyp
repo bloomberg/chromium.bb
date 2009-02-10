@@ -386,6 +386,7 @@
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
+        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'conditions': [
         [ 'OS != "win"', { 'sources!': [
@@ -474,6 +475,7 @@
       'dependencies': [
         'base',
         'base_gfx',
+        '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
       ],
       'conditions': [

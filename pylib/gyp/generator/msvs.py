@@ -11,7 +11,13 @@ import gyp.MSVSProject as MSVSProject
 
 generator_default_variables = {
     'OS': 'win',
-    }
+    'INTERMEDIATE_DIR': '$(IntDir)',
+    'INTERMEDIATE_DIR_SCRIPT': '$(IntDir)',
+    'PRODUCT_DIR': '$(OutDir)',
+    'PRODUCT_DIR_SCRIPT': '$(OutDir)',
+    'EXECUTABLE_PREFIX': '',
+    'EXECUTABLE_SUFFIX': '.exe',
+}
 
 
 def _FixPath(path):
