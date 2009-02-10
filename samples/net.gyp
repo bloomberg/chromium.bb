@@ -316,6 +316,10 @@
         'net',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
+
+        # Not really needed to build (but we want it in the sln).
+        'tools/crash_cache/crash_cache.gyp:crash_cache',
+        'tools/dump_cache/dump_cache.gyp:dump_cache',
       ],
       'sources': [
         'base/base64_unittest.cc',
@@ -403,6 +407,44 @@
             ],
           },
         ],
+      ],
+    },
+    {
+      'target_name': 'net_perftests',
+      'type': 'executable',
+      'dependencies': [
+        'net',
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        '../base/perftimer.cc',
+        '../base/run_all_perftests.cc',
+        'base/cookie_monster_perftest.cc',
+        'disk_cache/disk_cache_perftest.cc',
+        'disk_cache/disk_cache_test_util.cc',
+      ],
+      'conditions': [
+        # This is needed to trigger the dll copy step on windows.
+        # TODO(mark): Specifying this here shouldn't be necessary.
+        [ 'OS == "win"', {
+            'dependencies': [
+              '../third_party/icu38/icu38.gyp:icudata',
+            ],
+          },
+        ],
+      ],
+    },
+    {
+      'target_name': 'stress_cache',
+      'type': 'executable',
+      'dependencies': [
+        'net',
+        '../base/base.gyp:base',
+      ],
+      'sources': [
+        'disk_cache/disk_cache_test_util.cc',
+        'disk_cache/stress_cache.cc',
       ],
     },
   ],
