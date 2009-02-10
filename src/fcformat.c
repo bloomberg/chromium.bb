@@ -31,6 +31,7 @@
 /*
  * Some ideas for future syntax extensions:
  *
+ * - number of values for element using '%{#elt}'
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - allow indexing simple tags using '%{elt[idx]}'
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)' notation)
@@ -415,17 +416,82 @@ interpret_cond (FcFormatContext *c,
 }
 
 static FcChar8 *
+cescape (const FcChar8 *str)
+{
+    FcStrBuf buf;
+    FcChar8         buf_static[8192];
+
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
+    while(*str)
+    {
+	switch (*str)
+	{
+	case '\\':
+	case '"':
+	    FcStrBufChar (&buf, '\\');
+	    break;
+	}
+	FcStrBufChar (&buf, *str++);
+    }
+    return FcStrBufDone (&buf);
+}
+
+static FcChar8 *
+shescape (const FcChar8 *str)
+{
+    FcStrBuf buf;
+    FcChar8         buf_static[8192];
+
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
+    FcStrBufChar (&buf, '\'');
+    while(*str)
+    {
+	if (*str == '\'')
+	    FcStrBufString (&buf, (const FcChar8 *) "'\\''");
+	else
+	    FcStrBufChar (&buf, *str);
+	str++;
+    }
+    FcStrBufChar (&buf, '\'');
+    return FcStrBufDone (&buf);
+}
+
+static FcChar8 *
+xmlescape (const FcChar8 *str)
+{
+    FcStrBuf buf;
+    FcChar8         buf_static[8192];
+
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
+    while(*str)
+    {
+	switch (*str)
+	{
+	case '&': FcStrBufString (&buf, (const FcChar8 *) "&amp;"); break;
+	case '<': FcStrBufString (&buf, (const FcChar8 *) "&lt;");  break;
+	case '>': FcStrBufString (&buf, (const FcChar8 *) "&gt;");  break;
+	default:  FcStrBufChar   (&buf, *str);                      break;
+	}
+	str++;
+    }
+    return FcStrBufDone (&buf);
+}
+
+static FcChar8 *
 convert (FcFormatContext *c,
 	 const FcChar8   *str)
 {
     if (!read_word (c))
 	return NULL;
-    else if (0 == strcmp ((const char *) c->word, "downcase"))
-	return FcStrDowncase (str);
-    else if (0 == strcmp ((const char *) c->word, "basename"))
-	return FcStrBasename (str);
-    else if (0 == strcmp ((const char *) c->word, "dirname"))
-	return FcStrDirname (str);
+#define CONVERTER(name, func) \
+    else if (0 == strcmp ((const char *) c->word, name))\
+	return func (str)
+    CONVERTER ("downcase",  FcStrDowncase);
+    CONVERTER ("basename",  FcStrBasename);
+    CONVERTER ("dirname",   FcStrDirname);
+    CONVERTER ("cescape",   cescape);
+    CONVERTER ("shescape",  shescape);
+    CONVERTER ("xmlescape", xmlescape);
 
     message ("unknown converter \"%s\"",
 	     c->word);
@@ -578,17 +644,16 @@ interpret_expr (FcFormatContext *c,
 FcChar8 *
 FcPatternFormat (FcPattern *pat, const FcChar8 *format)
 {
-    FcStrBuf buf;
+    FcStrBuf        buf;
+    FcChar8         buf_static[8192];
     FcFormatContext c;
-    FcBool ret;
+    FcBool          ret;
 
-    FcStrBufInit (&buf, 0, 0);
+    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     if (!FcFormatContextInit (&c, format))
 	return NULL;
 
     ret = interpret_expr (&c, pat, &buf, '\0');
-    if (buf.failed)
-	ret = FcFalse;
 
     FcFormatContextDone (&c);
     if (ret)
