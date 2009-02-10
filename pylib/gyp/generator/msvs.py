@@ -116,7 +116,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       'none': '10',
       }[spec['type']]
 
-  for c in spec['configurations']:
+  for config_name, c in spec['configurations'].iteritems():
     # Process each configuration.
     vsprops_dirs = c.get('msvs_props', [])
     vsprops_dirs = [_FixPath(i) for i in vsprops_dirs]
@@ -156,6 +156,17 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     postbuild = c.get('msvs_postbuild')
     _ToolAppend(tools, 'VCPostBuildEvenTool', 'CommandLine', postbuild)
 
+    # Add actions.
+    actions = c.get('actions', [])
+    assert len(actions) <= 1
+    for a in actions:
+      _ToolAppend(tools, 'VCCustomBuildTool', 'Description', a['action_name'])
+      _ToolAppend(tools, 'VCCustomBuildTool', 'AdditionalDependencies',
+                  a.get('inputs', []))
+      _ToolAppend(tools, 'VCCustomBuildTool', 'Outputs',
+                  a.get('outputs', []))
+      _ToolAppend(tools, 'VCCustomBuildTool', 'CommandLine', a['action'])
+
     # Convert tools to expected form.
     tool_list = []
     for tool, options in tools.iteritems():
@@ -180,7 +191,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     prepared_attrs['ConfigurationType'] = config_type
 
     # Add in this configuration.
-    p.AddConfig('|'.join([c['configuration_name'],
+    p.AddConfig('|'.join([config_name,
                           c.get('configuration_platform', 'Win32')]),
                 attrs=prepared_attrs, tools=tool_list)
 
@@ -204,13 +215,12 @@ def _GenerateProject(vcproj_filename, build_file, spec):
 
   # Exclude excluded sources from being built.
   for f in excluded_sources:
-    for c in spec['configurations']:
-      p.AddFileConfig(f, c['configuration_name'],
-                      {'ExcludedFromBuild': 'true'})
+    for config_name in spec['configurations']:
+      p.AddFileConfig(f, config_name, {'ExcludedFromBuild': 'true'})
 
   # Add in tool files (rules).
   tool_files = set()
-  for c in spec['configurations']:
+  for config_name, c in spec['configurations'].iteritems():
     for f in c.get('msvs_tool_files', []):
       tool_files.add(f)
   for f in tool_files:
@@ -274,8 +284,8 @@ def GenerateOutput(target_list, target_dicts, data):
   for qualified_target in target_list:
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
     spec = target_dicts[qualified_target]
-    for c in spec['configurations']:
-      configs.add('|'.join([c['configuration_name'],
+    for config_name, c in spec['configurations'].iteritems():
+      configs.add('|'.join([config_name,
                             c.get('configuration_platform', 'Win32')]))
   configs = list(configs)
 
