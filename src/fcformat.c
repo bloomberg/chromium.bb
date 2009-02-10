@@ -150,10 +150,10 @@ read_elt_name_to_scratch (FcFormatContext *c)
 }
 
 static FcBool
-interpret (FcFormatContext *c,
-	   FcPattern       *pat,
-	   FcStrBuf        *buf,
-	   FcChar8          term);
+interpret_expr (FcFormatContext *c,
+		FcPattern       *pat,
+		FcStrBuf        *buf,
+		FcChar8          term);
 
 static FcBool
 interpret_subexpr (FcFormatContext *c,
@@ -161,8 +161,92 @@ interpret_subexpr (FcFormatContext *c,
 		   FcStrBuf        *buf)
 {
     return expect_char (c, '{') &&
-	   interpret (c, pat, buf, '}') &&
+	   interpret_expr (c, pat, buf, '}') &&
 	   expect_char (c, '}');
+}
+
+static FcBool
+maybe_interpret_subexpr (FcFormatContext *c,
+			 FcPattern       *pat,
+			 FcStrBuf        *buf)
+{
+    return (*c->format == '{') ?
+	   interpret_subexpr (c, pat, buf) :
+	   FcTrue;
+}
+
+static FcBool
+skip_subexpr (FcFormatContext *c);
+
+static FcBool
+skip_percent (FcFormatContext *c)
+{
+    if (!expect_char (c, '%'))
+	return FcFalse;
+
+    /* skip an optional width specifier */
+    strtol ((const char *) c->format, (char **) &c->format, 10);
+
+    if (!expect_char (c, '{'))
+	return FcFalse;
+
+    while(*c->format && *c->format != '}')
+    {
+	switch (*c->format)
+	{
+	case '\\':
+	    c->format++; /* skip over '\\' */
+	    if (*c->format)
+		c->format++;
+	    continue;
+	case '{':
+	    if (!skip_subexpr (c))
+		return FcFalse;
+	    continue;
+	}
+	c->format++;
+    }
+
+    return expect_char (c, '}');
+}
+
+static FcBool
+skip_expr (FcFormatContext *c)
+{
+    while(*c->format && *c->format != '}')
+    {
+	switch (*c->format)
+	{
+	case '\\':
+	    c->format++; /* skip over '\\' */
+	    if (*c->format)
+		c->format++;
+	    continue;
+	case '%':
+	    if (!skip_percent (c))
+		return FcFalse;
+	    continue;
+	}
+	c->format++;
+    }
+
+    return FcTrue;
+}
+
+static FcBool
+skip_subexpr (FcFormatContext *c)
+{
+    return expect_char (c, '{') &&
+	   skip_expr (c) &&
+	   expect_char (c, '}');
+}
+
+static FcBool
+maybe_skip_subexpr (FcFormatContext *c)
+{
+    return (*c->format == '{') ?
+	   skip_subexpr (c) :
+	   FcTrue;
 }
 
 static FcBool
@@ -275,6 +359,52 @@ interpret_delete (FcFormatContext *c,
 }
 
 static FcBool
+interpret_conditional (FcFormatContext *c,
+		       FcPattern       *pat,
+		       FcStrBuf        *buf)
+{
+    FcBool pass;
+
+    if (!expect_char (c, '?'))
+	return FcFalse;
+
+    pass = FcTrue;
+
+    do
+    {
+	FcBool negate;
+	FcValue v;
+
+	negate = consume_char (c, '!');
+
+	if (!read_elt_name_to_scratch (c))
+	    return FcFalse;
+
+	pass = pass &&
+	       (negate ^
+		FcResultMatch == FcPatternGet (pat,
+					       (const char *) c->scratch,
+					       0, &v));
+    }
+    while (consume_char (c, ','));
+
+    if (pass)
+    {
+	if (!interpret_subexpr  (c, pat, buf) ||
+	    !maybe_skip_subexpr (c))
+	    return FcFalse;
+    }
+    else
+    {
+	if (!skip_subexpr (c) ||
+	    !maybe_interpret_subexpr  (c, pat, buf))
+	    return FcFalse;
+    }
+
+    return FcTrue;
+}
+
+static FcBool
 interpret_percent (FcFormatContext *c,
 		   FcPattern       *pat,
 		   FcStrBuf        *buf)
@@ -315,6 +445,12 @@ interpret_percent (FcFormatContext *c,
     case '-':
 	/* deleting pattern elements */
 	if (!interpret_delete (c, pat, buf))
+	    return FcFalse;
+	break;
+
+    case '?':
+	/* conditional on pattern elements */
+	if (!interpret_conditional (c, pat, buf))
 	    return FcFalse;
 	break;
 
@@ -377,12 +513,12 @@ static char escaped_char(const char ch)
 }
 
 static FcBool
-interpret (FcFormatContext *c,
-	   FcPattern       *pat,
-	   FcStrBuf        *buf,
-	   FcChar8          term)
+interpret_expr (FcFormatContext *c,
+		FcPattern       *pat,
+		FcStrBuf        *buf,
+		FcChar8          term)
 {
-    for (; *c->format && *c->format != term;)
+    while (*c->format && *c->format != term)
     {
 	switch (*c->format)
 	{
@@ -412,7 +548,7 @@ FcPatternFormat (FcPattern *pat, const FcChar8 *format)
     if (!FcFormatContextInit (&c, format))
 	return NULL;
 
-    ret = interpret (&c, pat, &buf, '\0');
+    ret = interpret_expr (&c, pat, &buf, '\0');
     if (buf.failed)
 	ret = FcFalse;
 
