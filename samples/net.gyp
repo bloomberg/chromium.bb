@@ -466,19 +466,6 @@
       ],
     },
     {
-      'target_name': 'dump_cache',
-      'type': 'executable',
-      'dependencies': [
-        '../base/base.gyp:base',
-        'net',
-      ],
-      'sources': [
-        'tools/dump_cache/dump_cache.cc',
-        'tools/dump_cache/dump_files.cc',
-        'tools/dump_cache/upgrade.cc',
-      ],
-    },
-    {
       'target_name': 'crash_cache',
       'type': 'executable',
       'dependencies': [
@@ -494,19 +481,33 @@
   'conditions': [
     ['OS=="win"', {
       'targets': [
-      {
-        'target_name': 'net_resources',
-        'type': 'none',
-        'sources': [
-          'base/net_resources.grd',
-        ],
-        'msvs_tool_files': ['../tools/grit/build/grit_resources.rules'],
-        'direct_dependent_settings': {
-          'include_dirs': [
-            '$(OutDir)/grit_derived_sources',
+        {
+          'target_name': 'net_resources',
+          'type': 'none',
+          'sources': [
+            'base/net_resources.grd',
+          ],
+          'msvs_tool_files': ['../tools/grit/build/grit_resources.rules'],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '$(OutDir)/grit_derived_sources',
+            ],
+          },
+        },
+        {
+          # TODO(port): dump_cache is still Windows-specific.
+          'target_name': 'dump_cache',
+          'type': 'executable',
+          'dependencies': [
+            '../base/base.gyp:base',
+            'net',
+          ],
+          'sources': [
+            'tools/dump_cache/dump_cache.cc',
+            'tools/dump_cache/dump_files.cc',
+            'tools/dump_cache/upgrade.cc',
           ],
         },
-      },
       ],
     }],
   ],

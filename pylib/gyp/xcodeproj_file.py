@@ -924,6 +924,7 @@ class PBXGroup(XCHierarchicalElement):
       return None
 
     for child in self._properties['children']:
+      # TODO(mark): This logic is convoluted.  Improve it.
       if 'sourceTree' in child._properties and \
          child._properties['sourceTree'] == '<group>' and \
          'path' in child._properties and child._properties['path'] == path:
@@ -936,6 +937,14 @@ class PBXGroup(XCHierarchicalElement):
          path == '$(' + child._properties['sourceTree'] + ')':
         # The child is not relative to this object, it references a distinct
         # sourceTree that happens to match the path being sought.
+        return child
+      if 'sourceTree' in child._properties and \
+         path.startswith('$(' + child._properties['sourceTree'] + ')/') and \
+         'path' in child._properties and \
+         path == '$(' + child._properties['sourceTree'] + ')/' + \
+                 child._properties['path']:
+        # The child references a path in a distinct sourceTree that matches the
+        # sourceTree and path being sought.
         return child
 
     return None
