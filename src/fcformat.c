@@ -1,5 +1,5 @@
 /*
- * Copyright © 2008 Red Hat, Inc.
+ * Copyright © 2008,2009 Red Hat, Inc.
  *
  * Red Hat Author(s): Behdad Esfahbod
  *
@@ -31,7 +31,6 @@
 /*
  * Some ideas for future syntax extensions:
  *
- * - number of values for element using '%{#elt}'
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - allow indexing simple tags using '%{elt[idx]}'
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)' notation)
@@ -261,45 +260,6 @@ maybe_skip_subexpr (FcFormatContext *c)
 }
 
 static FcBool
-interpret_simple (FcFormatContext *c,
-		  FcPattern       *pat,
-		  FcStrBuf        *buf)
-{
-    FcPatternElt *e;
-    FcBool        add_colon = FcFalse;
-    FcBool        add_elt_name = FcFalse;
-
-    if (consume_char (c, ':'))
-	add_colon = FcTrue;
-
-    if (!read_word (c))
-	return FcFalse;
-
-    if (consume_char (c, '='))
-	add_elt_name = FcTrue;
-
-    e = FcPatternObjectFindElt (pat,
-				FcObjectFromName ((const char *) c->word));
-    if (e)
-    {
-	FcValueListPtr l;
-
-	if (add_colon)
-	    FcStrBufChar (buf, ':');
-	if (add_elt_name)
-	{
-	    FcStrBufString (buf, c->word);
-	    FcStrBufChar (buf, '=');
-	}
-
-	l = FcPatternEltValues(e);
-	FcNameUnparseValueList (buf, l, '\0');
-    }
-
-    return FcTrue;
-}
-
-static FcBool
 interpret_filter (FcFormatContext *c,
 		  FcPattern       *pat,
 		  FcStrBuf        *buf)
@@ -410,6 +370,79 @@ interpret_cond (FcFormatContext *c,
 	if (!skip_subexpr (c) ||
 	    !maybe_interpret_subexpr  (c, pat, buf))
 	    return FcFalse;
+    }
+
+    return FcTrue;
+}
+
+static FcBool
+interpret_count (FcFormatContext *c,
+		 FcPattern       *pat,
+		 FcStrBuf        *buf)
+{
+    int count;
+    FcPatternElt *e;
+    FcChar8 buf_static[64];
+
+    if (!expect_char (c, '#'))
+	return FcFalse;
+
+    if (!read_word (c))
+	return FcFalse;
+
+    count = 0;
+    e = FcPatternObjectFindElt (pat,
+				FcObjectFromName ((const char *) c->word));
+    if (e)
+    {
+	FcValueListPtr l;
+	count++;
+	for (l = FcPatternEltValues(e);
+	     l->next;
+	     l = l->next)
+	    count++;
+    }
+
+    snprintf (buf_static, sizeof (buf_static), "%d", count);
+    FcStrBufString (buf, buf_static);
+
+    return FcTrue;
+}
+
+static FcBool
+interpret_simple (FcFormatContext *c,
+		  FcPattern       *pat,
+		  FcStrBuf        *buf)
+{
+    FcPatternElt *e;
+    FcBool        add_colon = FcFalse;
+    FcBool        add_elt_name = FcFalse;
+
+    if (consume_char (c, ':'))
+	add_colon = FcTrue;
+
+    if (!read_word (c))
+	return FcFalse;
+
+    if (consume_char (c, '='))
+	add_elt_name = FcTrue;
+
+    e = FcPatternObjectFindElt (pat,
+				FcObjectFromName ((const char *) c->word));
+    if (e)
+    {
+	FcValueListPtr l;
+
+	if (add_colon)
+	    FcStrBufChar (buf, ':');
+	if (add_elt_name)
+	{
+	    FcStrBufString (buf, c->word);
+	    FcStrBufChar (buf, '=');
+	}
+
+	l = FcPatternEltValues(e);
+	FcNameUnparseValueList (buf, l, '\0');
     }
 
     return FcTrue;
@@ -593,6 +626,7 @@ interpret_percent (FcFormatContext *c,
     case '+': ret = interpret_filter  (c, pat, buf); break;
     case '-': ret = interpret_delete  (c, pat, buf); break;
     case '?': ret = interpret_cond    (c, pat, buf); break;
+    case '#': ret = interpret_count   (c, pat, buf); break;
     default:  ret = interpret_simple  (c, pat, buf); break;
     }
 
