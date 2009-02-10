@@ -54,15 +54,28 @@ typedef struct _FcFormatContext
     const FcChar8 *format;
     int            format_len;
     FcChar8       *word;
+    FcBool         word_allocated;
 } FcFormatContext;
 
 static FcBool
 FcFormatContextInit (FcFormatContext *c,
-		     const FcChar8   *format)
+		     const FcChar8   *format,
+		     FcChar8         *scratch,
+		     int              scratch_len)
 {
     c->format_orig = c->format = format;
     c->format_len = strlen ((const char *) format);
-    c->word = malloc (c->format_len + 1);
+
+    if (c->format_len < scratch_len)
+    {
+	c->word = scratch;
+	c->word_allocated = FcFalse;
+    }
+    else
+    {
+	c->word = malloc (c->format_len + 1);
+	c->word_allocated = FcTrue;
+    }
 
     return c->word != NULL;
 }
@@ -70,7 +83,7 @@ FcFormatContextInit (FcFormatContext *c,
 static void
 FcFormatContextDone (FcFormatContext *c)
 {
-    if (c)
+    if (c && c->word_allocated)
     {
 	free (c->word);
     }
@@ -163,7 +176,7 @@ read_word (FcFormatContext *c)
 
     if (p == c->word)
     {
-	message ("expected element name at %d",
+	message ("expected identifier at %d",
 		 c->format - c->format_orig + 1);
 	return FcFalse;
     }
@@ -216,11 +229,13 @@ interpret_builtin (FcFormatContext *c,
 #define BUILTIN(name, func) \
     else if (0 == strcmp ((const char *) c->word, name))\
 	return func (c, pat, buf)
+#if 0
     BUILTIN  ("unparse",  FcNameUnparse);
     BUILTIN  ("verbose",  FcPatternPrint);
     BUILTIN2 ("fcmatch",  FcStrDirname);
     BUILTIN2 ("fclist",   FcStrDirname);
     BUILTIN2 ("pkgkit",   FcStrDirname);
+#endif
 
     message ("unknown builtin \"%s\"",
 	     c->word);
@@ -518,83 +533,74 @@ interpret_simple (FcFormatContext *c,
     return FcTrue;
 }
 
-static FcChar8 *
-cescape (const FcChar8 *str)
+static FcBool
+cescape (FcFormatContext *c,
+	 FcStrBuf        *buf,
+	 const FcChar8   *str)
 {
-    FcStrBuf buf;
-    FcChar8  buf_static[8192];
-
-    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     while(*str)
     {
 	switch (*str)
 	{
 	case '\\':
 	case '"':
-	    FcStrBufChar (&buf, '\\');
+	    FcStrBufChar (buf, '\\');
 	    break;
 	}
-	FcStrBufChar (&buf, *str++);
+	FcStrBufChar (buf, *str++);
     }
-    return FcStrBufDone (&buf);
+    return FcTrue;
 }
 
-static FcChar8 *
-shescape (const FcChar8 *str)
+static FcBool
+shescape (FcFormatContext *c,
+	  FcStrBuf        *buf,
+	  const FcChar8   *str)
 {
-    FcStrBuf buf;
-    FcChar8  buf_static[8192];
-
-    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
-    FcStrBufChar (&buf, '\'');
+    FcStrBufChar (buf, '\'');
     while(*str)
     {
 	if (*str == '\'')
-	    FcStrBufString (&buf, (const FcChar8 *) "'\\''");
+	    FcStrBufString (buf, (const FcChar8 *) "'\\''");
 	else
-	    FcStrBufChar (&buf, *str);
+	    FcStrBufChar (buf, *str);
 	str++;
     }
-    FcStrBufChar (&buf, '\'');
-    return FcStrBufDone (&buf);
+    FcStrBufChar (buf, '\'');
+    return FcTrue;
 }
 
-static FcChar8 *
-xmlescape (const FcChar8 *str)
+static FcBool
+xmlescape (FcFormatContext *c,
+	   FcStrBuf        *buf,
+	   const FcChar8   *str)
 {
-    FcStrBuf buf;
-    FcChar8  buf_static[8192];
-
-    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     while(*str)
     {
 	switch (*str)
 	{
-	case '&': FcStrBufString (&buf, (const FcChar8 *) "&amp;"); break;
-	case '<': FcStrBufString (&buf, (const FcChar8 *) "&lt;");  break;
-	case '>': FcStrBufString (&buf, (const FcChar8 *) "&gt;");  break;
-	default:  FcStrBufChar   (&buf, *str);                      break;
+	case '&': FcStrBufString (buf, (const FcChar8 *) "&amp;"); break;
+	case '<': FcStrBufString (buf, (const FcChar8 *) "&lt;");  break;
+	case '>': FcStrBufString (buf, (const FcChar8 *) "&gt;");  break;
+	default:  FcStrBufChar   (buf, *str);                      break;
 	}
 	str++;
     }
-    return FcStrBufDone (&buf);
+    return FcTrue;
 }
 
-static FcChar8 *
+static FcBool
 delete_chars (FcFormatContext *c,
+	      FcStrBuf        *buf,
 	      const FcChar8   *str)
 {
-    FcStrBuf buf;
-    FcChar8  buf_static[8192];
-
     /* XXX not UTF-8 aware */
 
     if (!expect_char (c, '(') ||
 	!read_chars (c, ')') ||
 	!expect_char (c, ')'))
-	return NULL;
+	return FcFalse;
 
-    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     while(*str)
     {
 	FcChar8 *p;
@@ -602,34 +608,32 @@ delete_chars (FcFormatContext *c,
 	p = (FcChar8 *) strpbrk ((const char *) str, (const char *) c->word);
 	if (p)
 	{
-	    FcStrBufData (&buf, str, p - str);
+	    FcStrBufData (buf, str, p - str);
 	    str = p + 1;
 	}
 	else
 	{
-	    FcStrBufString (&buf, str);
+	    FcStrBufString (buf, str);
 	    break;
 	}
 
     }
-    return FcStrBufDone (&buf);
+
+    return FcTrue;
 }
 
-static FcChar8 *
+static FcBool
 escape_chars (FcFormatContext *c,
+	      FcStrBuf        *buf,
 	      const FcChar8   *str)
 {
-    FcStrBuf buf;
-    FcChar8  buf_static[8192];
-
     /* XXX not UTF-8 aware */
 
     if (!expect_char (c, '(') ||
 	!read_chars (c, ')') ||
 	!expect_char (c, ')'))
-	return NULL;
+	return FcFalse;
 
-    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     while(*str)
     {
 	FcChar8 *p;
@@ -637,27 +641,27 @@ escape_chars (FcFormatContext *c,
 	p = (FcChar8 *) strpbrk ((const char *) str, (const char *) c->word);
 	if (p)
 	{
-	    FcStrBufData (&buf, str, p - str);
-	    FcStrBufChar (&buf, c->word[0]);
-	    FcStrBufChar (&buf, *p);
+	    FcStrBufData (buf, str, p - str);
+	    FcStrBufChar (buf, c->word[0]);
+	    FcStrBufChar (buf, *p);
 	    str = p + 1;
 	}
 	else
 	{
-	    FcStrBufString (&buf, str);
+	    FcStrBufString (buf, str);
 	    break;
 	}
 
     }
-    return FcStrBufDone (&buf);
+
+    return FcTrue;
 }
 
-static FcChar8 *
+static FcBool
 translate_chars (FcFormatContext *c,
+		 FcStrBuf        *buf,
 		 const FcChar8   *str)
 {
-    FcStrBuf buf;
-    FcChar8  buf_static[8192];
     char *from, *to, repeat;
     int from_len, to_len;
 
@@ -666,7 +670,7 @@ translate_chars (FcFormatContext *c,
     if (!expect_char (c, '(') ||
 	!read_chars (c, ',') ||
 	!expect_char (c, ','))
-	return NULL;
+	return FcFalse;
 
     from = (char *) c->word;
     from_len = strlen (from);
@@ -687,7 +691,6 @@ translate_chars (FcFormatContext *c,
     if (!expect_char (c, ')'))
 	return FcFalse;
 
-    FcStrBufInit (&buf, buf_static, sizeof (buf_static));
     while(*str)
     {
 	FcChar8 *p;
@@ -696,46 +699,100 @@ translate_chars (FcFormatContext *c,
 	if (p)
 	{
 	    int i;
-	    FcStrBufData (&buf, str, p - str);
+	    FcStrBufData (buf, str, p - str);
 	    i = strchr (from, *p) - from;
-	    FcStrBufChar (&buf, i < to_len ? to[i] : repeat);
+	    FcStrBufChar (buf, i < to_len ? to[i] : repeat);
 	    str = p + 1;
 	}
 	else
 	{
-	    FcStrBufString (&buf, str);
+	    FcStrBufString (buf, str);
 	    break;
 	}
 
     }
-    return FcStrBufDone (&buf);
+
+    return FcTrue;
 }
 
-static FcChar8 *
-convert (FcFormatContext *c,
-	 const FcChar8   *str)
+static FcBool
+interpret_convert (FcFormatContext *c,
+		   FcStrBuf        *buf,
+		   int              start)
 {
+    const FcChar8 *str;
+    FcChar8       *new_str;
+    FcStrBuf       new_buf;
+    FcChar8        buf_static[8192];
+    FcBool         ret;
+
+    if (!expect_char (c, '|'))
+	return FcFalse;
+
+    /* nul-terminate the buffer */
+    FcStrBufChar (buf, '\0');
+    if (buf->failed)
+	return FcFalse;
+    str = buf->buf + start;
+    buf->len = start;
+
     if (!read_word (c))
-	return NULL;
+	return FcFalse;
+
+    /* try simple converters first */
+    if (0) { }
 #define CONVERTER(name, func) \
     else if (0 == strcmp ((const char *) c->word, name))\
-	return func (str)
-#define CONVERTER2(name, func) \
-    else if (0 == strcmp ((const char *) c->word, name))\
-	return func (c, str)
+	do { new_str = func (str); ret = FcTrue; } while (0)
     CONVERTER  ("downcase",  FcStrDowncase);
     CONVERTER  ("basename",  FcStrBasename);
     CONVERTER  ("dirname",   FcStrDirname);
-    CONVERTER  ("cescape",   cescape);
-    CONVERTER  ("shescape",  shescape);
-    CONVERTER  ("xmlescape", xmlescape);
-    CONVERTER2 ("delete",    delete_chars);
-    CONVERTER2 ("escape",    escape_chars);
-    CONVERTER2 ("translate", translate_chars);
+#undef CONVERTER
+    else
+	ret = FcFalse;
 
-    message ("unknown converter \"%s\"",
-	     c->word);
-    return NULL;
+    if (ret)
+    {
+	if (new_str)
+	{
+	    /* replace in the buffer */
+	    FcStrBufString (buf, new_str);
+	    free (new_str);
+	    return FcTrue;
+	}
+	else
+	    return FcFalse;
+    }
+
+    FcStrBufInit (&new_buf, buf_static, sizeof (buf_static));
+
+    /* now try our custom converters */
+    if (0) { }
+#define CONVERTER(name, func) \
+    else if (0 == strcmp ((const char *) c->word, name))\
+	ret = func (c, &new_buf, str)
+    CONVERTER ("cescape",   cescape);
+    CONVERTER ("shescape",  shescape);
+    CONVERTER ("xmlescape", xmlescape);
+    CONVERTER ("delete",    delete_chars);
+    CONVERTER ("escape",    escape_chars);
+    CONVERTER ("translate", translate_chars);
+#undef CONVERTER
+    else
+	ret = FcFalse;
+
+    if (ret)
+    {
+	FcStrBufChar (&new_buf, '\0');
+	FcStrBufString (buf, new_buf.buf);
+    }
+    else
+	message ("unknown converter \"%s\"",
+		 c->word);
+
+    FcStrBufDestroy (&new_buf);
+
+    return ret;
 }
 
 static FcBool
@@ -743,25 +800,9 @@ maybe_interpret_converts (FcFormatContext *c,
 			   FcStrBuf        *buf,
 			   int              start)
 {
-    while (consume_char (c, '|'))
-    {
-	const FcChar8 *str;
-	FcChar8       *new_str;
-
-	/* nul-terminate the buffer */
-	FcStrBufChar (buf, '\0');
-	if (buf->failed)
+    while (*c->format == '|')
+	if (!interpret_convert (c, buf, start))
 	    return FcFalse;
-	str = buf->buf + start;
-
-	if (!(new_str = convert (c, str)))
-	    return FcFalse;
-
-	/* replace in the buffer */
-	buf->len = start;
-	FcStrBufString (buf, new_str);
-	free (new_str);
-    }
 
     return FcTrue;
 }
@@ -873,12 +914,13 @@ FcChar8 *
 FcPatternFormat (FcPattern *pat, const FcChar8 *format)
 {
     FcStrBuf        buf;
-    FcChar8         buf_static[8192];
+    FcChar8         word_static[1024];
+    FcChar8         buf_static[8192 - 1024];
     FcFormatContext c;
     FcBool          ret;
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
-    if (!FcFormatContextInit (&c, format))
+    if (!FcFormatContextInit (&c, format, word_static, sizeof (word_static)))
 	return NULL;
 
     ret = interpret_expr (&c, pat, &buf, '\0');
