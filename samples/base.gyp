@@ -529,5 +529,12 @@
         ],
       ],
     },
+    {
+      'target_name': 'debug_message',
+      'type': 'executable',
+      'sources': [
+        'debug_message.cc',
+      ],
+    },
   ],
 }
