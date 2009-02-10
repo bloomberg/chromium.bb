@@ -10,7 +10,9 @@
       'target_name': 'activex_shim',
       'type': 'static_library',
       'dependencies': [
+        '../../base/base.gyp:base',
         '../../third_party/npapi/npapi.gyp:npapi',
+        '../../googleurl/build/googleurl.gyp:googleurl',
       ],
       'sources': [
         'activex_plugin.cc',
@@ -33,12 +35,8 @@
         'web_activex_site.cc',
         'web_activex_site.h',
       ],
-      'conditions': [
-        [ 'OS == "win"', {
-          'libraries': [
-            'urlmon.lib',
-          ],
-        },],
+      'libraries': [
+        'urlmon.lib',
       ],
     },
   ],

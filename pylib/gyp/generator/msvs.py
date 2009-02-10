@@ -134,6 +134,11 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     _ToolAppend(tools, 'VCCLCompilerTool',
                 'AdditionalIncludeDirectories', include_dirs)
 
+    # Add in libraries (really system libraries at this point).
+    libraries = spec.get('libraries', [])
+    _ToolAppend(tools, 'VCLibrarianTool',
+                'AdditionalDependencies', libraries)
+
     # Add defines.
     defines = c.get('defines', [])
     _ToolAppend(tools, 'VCCLCompilerTool',

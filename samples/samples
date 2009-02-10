@@ -26,6 +26,7 @@ gyps = [
     'third_party/zlib/zlib.gyp',
     'v8/v8.gyp',
     'webkit/activex_shim/activex_shim.gyp',
+    'webkit/activex_shim_dll/activex_shim_dll.gyp',
 ]
 
 
