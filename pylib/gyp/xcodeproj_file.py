@@ -1109,6 +1109,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'mm':        'sourcecode.cpp.objcpp',
         'py':        'text.script.python',
         's':         'sourcecode.asm',
+        'y':         'sourcecode.yacc',
       }
 
       basename = os.path.basename(self._properties['path'])
@@ -1362,6 +1363,20 @@ class PBXBuildRule(XCObject):
     'outputFiles':  [1, str, 0, 1, []],
     'script':       [0, str, 0, 0],
   })
+
+  def Name(self):
+    # Not very inspired, but it's what Xcode uses.
+    return self.__class__.__name__
+
+  def Hashables(self):
+    # super
+    hashables = XCObject.Hashables(self)
+
+    # Use the hashables of the weak objects that this object refers to.
+    hashables.append(self._properties['fileType'])
+    if 'filePatterns' in self._properties:
+      hashables.append(self._properties['filePatterns'])
+    return hashables
 
 
 class PBXContainerItemProxy(XCObject):

@@ -891,8 +891,9 @@ def SetUpConfigurations(target, target_dict):
     'default_configuration',
     'dependencies',
     'libraries',
-    'target_name',
+    'rules',
     'sources',
+    'target_name',
     'type',
   ]
   # key_suffixes is a list of key suffixes that might appear on key names.

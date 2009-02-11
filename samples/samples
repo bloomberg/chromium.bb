@@ -27,6 +27,7 @@ gyps = [
     'v8/v8.gyp',
     'webkit/activex_shim/activex_shim.gyp',
     'webkit/activex_shim_dll/activex_shim_dll.gyp',
+    'webkit/rule_bison.py',
     'webkit/webkit.gyp',
 ]
 

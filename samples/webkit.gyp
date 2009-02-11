@@ -170,6 +170,29 @@
       ],
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },
+    {
+      'target_name': 'v8bindings',
+      'type': 'static_library',
+      'dependencies': [
+        'wtf',
+      ],
+      'rules': [
+        {
+          'rule_name': 'bison',
+          'extension': 'y',
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/*.cpp',
+            '<(INTERMEDIATE_DIR)/*.h'
+          ],
+          'action': 'python rule_bison.py * <(INTERMEDIATE_DIR)',
+          'process_outputs_as_sources': 'yes',
+        }
+      ],
+      'sources': [
+        '../third_party/WebKit/WebCore/css/CSSGrammar.y',
+        '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
+      ],
+    },
   ],
   'conditions': [
     ['OS=="win"', {
