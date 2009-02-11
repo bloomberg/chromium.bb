@@ -343,7 +343,11 @@ def GenerateOutput(target_list, target_dicts, data):
           xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
       if 'defines' in configuration:
         for define in configuration['defines']:
-          xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', define)
+          if isinstance(define, str):
+            xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', define)
+          elif isinstance(define, list):
+            xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS',
+                                    define[0] + '=' + str(define[1]))
       if 'xcode_settings' in configuration:
         for xck, xcv in configuration['xcode_settings'].iteritems():
           xcbc.SetBuildSetting(xck, xcv)
