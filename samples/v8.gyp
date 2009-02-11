@@ -371,7 +371,7 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/snapshot.cc',
           ],
-          'action': '"<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)mksnapshot<(EXECUTABLE_SUFFIX)" "<(_outputs)"',
+          'action': '<(_inputs) <(_outputs)',
         },
       ],
     },
