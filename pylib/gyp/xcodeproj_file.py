@@ -564,10 +564,12 @@ class XCObject(object):
     key-value pair will be followed by a space insead of a newline.
     """
 
-    printable = ''
-
-    if not self._should_print_single_line:
+    if self._should_print_single_line:
+      printable = ''
+      after_kv = ' '
+    else:
       printable = '\t' * tabs
+      after_kv = '\n'
 
     # Xcode usually prints remoteGlobalIDString values in PBXContainerItemProxy
     # objects without comments.  Sometimes it prints them with comments, but
@@ -594,11 +596,7 @@ class XCObject(object):
 
     printable += self._XCPrintableValue(tabs, key, flatten_list) + ' = ' + \
                  self._XCPrintableValue(tabs, value_to_print, flatten_list) + \
-                 ';'
-    if self._should_print_single_line:
-      printable += ' '
-    else:
-      printable += '\n'
+                 ';' + after_kv
 
     self._XCPrint(file, 0, printable)
 
