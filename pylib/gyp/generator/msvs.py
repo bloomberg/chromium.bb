@@ -159,6 +159,16 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     postbuild = c.get('msvs_postbuild')
     _ToolAppend(tools, 'VCPostBuildEventTool', 'CommandLine', postbuild)
 
+    # Turn on precompiled headers if appropriate.
+    precompiled_headers_enabled = c.get('msvs_precompiled_headers_enabled', 0)
+    if precompiled_headers_enabled:
+      header = os.path.split(c['msvs_precompiled_header'])[1]
+      _ToolAppend(tools, 'VCCLCompilerTool', 'UsePrecompiledHeader', '2')
+      _ToolAppend(tools, 'VCCLCompilerTool',
+                  'PrecompiledHeaderThrough', header)
+      _ToolAppend(tools, 'VCCLCompilerTool',
+                  'ForcedIncludeFiles', header)
+
     # Convert tools to expected form.
     tool_list = []
     for tool, options in tools.iteritems():
@@ -225,6 +235,21 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       tool_files.add(f)
   for f in tool_files:
     p.AddToolFile(f)
+
+  # Handle pre-compiled headers source stubs specially.
+  for config_name, c in spec['configurations'].iteritems():
+    source = c.get('msvs_precompiled_source')
+    if source:
+      source = _FixPath(source)
+      precompiled_headers_enabled = c.get('msvs_precompiled_headers_enabled', 0)
+      if precompiled_headers_enabled:
+        # UsePrecompiledHeader=1 for if using precompiled headers.
+        tool = MSVSProject.Tool('VCCLCompilerTool',
+                                {'UsePrecompiledHeader': '1'})
+        p.AddFileConfig(source, config_name, {}, tools=[tool])
+      else:
+        # Exclude from build if not.
+        p.AddFileConfig(source, config_name, {'ExcludedFromBuild': 'true'})
 
   # Add actions.
   actions = spec.get('actions', [])

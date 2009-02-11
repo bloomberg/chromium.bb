@@ -14,7 +14,7 @@
 #
 # * Decide on a model for use of the .mk files.  The code below
 #   generates a separate .mk file for each target.
-#   
+#
 #   This may be too fine-grained and might be better implemented as a
 #   .mk file per .gyp file, with multiple targets therein.  If so, then
 #   the variables in the generated Makefile need to be differentiated so

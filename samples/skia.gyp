@@ -11,6 +11,7 @@
       'target_name': 'skia',
       'type': 'static_library',
       'sources': [
+        'precompiled.cc',
         #'animator/SkAnimate.h',
         #'animator/SkAnimateActive.cpp',
         #'animator/SkAnimateActive.h',
@@ -695,15 +696,21 @@
             'ports/SkThread_pthread.cpp',
             'ports/SkTime_Unix.cc',
           ],
-          # From skia/precompiled.vsprops
-#          'msvs_settings': {
-#            'VCCLCompilerTool': {
-#              'UsePrecompiledHeader': '2',
-#              'PrecompiledHeaderThrough': 'SkTypes.h',
-#              'ForcedIncludeFiles': 'SkTypes.h',
-#            },
-#          },
-        }],
+          'msvs_precompiled_header': 'include/corecg/SkTypes.h',
+          'msvs_precompiled_source': 'precompiled.cc',
+          'configurations': {
+            'Debug': {
+              'msvs_precompiled_headers_enabled': 1,
+            },
+            'Release': {
+              'msvs_precompiled_headers_enabled': 0,
+            },
+          },
+        }, {
+          'sources!': [
+            'precompiled.cc',
+          ],
+        },],
       ],
       'direct_dependent_settings': {
         'include_dirs': [

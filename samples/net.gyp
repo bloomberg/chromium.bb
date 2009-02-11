@@ -273,6 +273,16 @@
               'tld_cleanup',
             ],
             'msvs_tool_files': ['build/convert_tld_data.rules'],
+            'msvs_precompiled_header': 'build/precompiled_net.h',
+            'msvs_precompiled_source': 'build/precompiled_net.cc',
+            'configurations': {
+              'Debug': {
+                'msvs_precompiled_headers_enabled': 1,
+              },
+              'Release': {
+                'msvs_precompiled_headers_enabled': 0,
+              },
+            },
           },
           {  # else: OS != "win"
             'sources!': [
