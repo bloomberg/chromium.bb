@@ -1014,44 +1014,27 @@ def ProcessRulesInDict(name, the_dict):
     del the_dict[del_list]
 
   for list_key in lists:
-    # Initialize the _excluded list now, so that the code that needs to use
-    # it can perform list operations without needing to do its own lazy
-    # initialization.  If the list is unneeded, it will be deleted at the end.
-    excluded_key = list_key + '_excluded'
-    if excluded_key in the_dict:
-      raise KeyError, \
-          name + ' key ' + excluded_key + ' must not be present prior ' + \
-          ' to applying exclusion/regex rules for ' + list_key
-    the_dict[excluded_key] = []
+    the_list = the_dict[list_key]
 
-    # Also initialize the included_list, which doesn't need to be part of
-    # the_dict.
-    included_list = []
+    # Initialize the list_actions list, which is parallel to the_list.  Each
+    # item in list_actions identifies whether the corresponding item in
+    # the_list should be excluded, unconditionally preserved (included), or
+    # whether no exclusion or inclusion has been applied.  Items for which
+    # no exclusion or inclusion has been applied (yet) have value -1, items
+    # excluded have value 0, and items included have value 1.  An include can
+    # overwrite a previous exclude, and no subsequent excludes can exclude
+    # an include.  All items in list_actions are initialized to -1 because
+    # no excludes or includes have been processed yet.
+    list_actions = list((-1,) * len(the_list))
 
-    # Note that exclude_key ("sources!") is different from excluded_key
-    # ("sources_excluded").  Since exclude_key is just a very temporary
-    # variable used on the next few lines, this isn't a huge problem, but
-    # be careful!
     exclude_key = list_key + '!'
     if exclude_key in the_dict:
       for exclude_item in the_dict[exclude_key]:
-        if exclude_item in included_list:
-          # The exclude_item was already preserved and is "golden", don't touch
-          # it.
-          continue
-
-        # The exclude_item may appear in the list more than once, so loop to
-        # remove it.  That's "while exclude_item in", not "for exclude_item
-        # in."  Crucial difference.
-        removed = False
-        while exclude_item in the_dict[list_key]:
-          removed = True
-          the_dict[list_key].remove(exclude_item)
-
-        # If anything was removed, add it to the _excluded list.
-        if removed:
-          if not exclude_item in the_dict[excluded_key]:
-            the_dict[excluded_key].append(exclude_item)
+        for index in xrange(0, len(the_list)):
+          if exclude_item == the_list[index] and list_actions[index] != 1:
+            # This item matches the exclude_item, and it was not previously
+            # preserved by an "include", so set its action to 0 (exclude).
+            list_actions[index] = 0
 
       # The "whatever!" list is no longer needed, dump it.
       del the_dict[exclude_key]
@@ -1062,82 +1045,55 @@ def ProcessRulesInDict(name, the_dict):
         [action, pattern] = regex_item
         pattern_re = re.compile(pattern)
 
-        # Instead of writing "for list_item in the_dict[list_key]", write a
-        # while loop.  Iteration with a for loop won't work, because code that
-        # follows manipulates the_dict[list_key].  Be careful with that "index"
-        # variable.
-        index = 0
-        while index < len(the_dict[list_key]):
-          list_item = the_dict[list_key][index]
+        for index in xrange(0, len(the_list)):
+          list_item = the_list[index]
           if pattern_re.search(list_item):
             # Regular expression match.
 
             if action == 'exclude':
-              if list_item in included_list:
-                # regex_item says to remove list_item from the list, but
-                # something else already said to include it, so leave it
-                # alone and proceed to the next item in the list.
-                index = index + 1
-                continue
-
-              del the_dict[list_key][index]
-
-              # Add it to the excluded list if it's not already there.
-              if not list_item in the_dict[excluded_key]:
-                the_dict[excluded_key].append(list_item)
-
-              # continue without incrementing |index|.  The next object to
-              # look at, if any, moved into the index of the object that was
-              # just removed.
-              continue
-
+              if list_actions[index] != 1:
+                # This item matches an exclude regex, and it was not previously
+                # preserved by an "include", so set its value to 0 (exclude).
+                list_actions[index] = 0
             elif action == 'include':
-              # Here's a list_item that's in list and needs to stay there.
-              # Add it to the golden list of happy items to keep, and nothing
-              # will be able to exclude it in the future.
-              if not list_item in included_list:
-                included_list.append(list_item)
-
+              # This item matches an include regex, so set its value to 1
+              # (include) unconditionally.  Includes are intended to override
+              # excludes whether they're processed before or after the exclude.
+              list_actions[index] = 1
             else:
               # This is an action that doesn't make any sense.
               raise ValueError, 'Unrecognized action ' + action + ' in ' + \
                                 name + ' key ' + key
 
-          # Advance to the next list item.
-          index = index + 1
+    # Add excluded items to the excluded list.
+    #
+    # Note that exclude_key ("sources!") is different from excluded_key
+    # ("sources_excluded").  The exclude_key list is input and it was already
+    # processed and deleted; the excluded_key list is output and it's about
+    # to be created.
+    excluded_key = list_key + '_excluded'
+    if excluded_key in the_dict:
+      raise KeyError, \
+          name + ' key ' + excluded_key + ' must not be present prior ' + \
+          ' to applying exclusion/regex rules for ' + list_key
 
-        if action == 'include':
-          # Items matching an include pattern may have already been excluded.
-          # Resurrect any that are found.  The while loop is needed again
-          # because the excluded list will be manipulated.
-          index = 0
-          while index < len(the_dict[excluded_key]):
-            excluded_item = the_dict[excluded_key][index]
-            if pattern_re.search(excluded_item):
-              # Yup, this is one.  Take it out of the excluded list and put
-              # it back into the main list AND the golden included list, so
-              # that nothing else can touch it.  Unfortunately, the best that
-              # can be done at this point is an append, since there's no way
-              # to know where in the list it came from.  TODO(mark): There
-              # are possible solutions to this problem, like tracking
-              # include/exclude status in a parallel list and only doing the
-              # deletions after processing all of the rules.
-              del the_dict[excluded_key][index]
-              the_dict[list_key].append(excluded_item)
-              if not excluded_item in included_list:
-                included_list.append(excluded_item)
-            else:
-              # Only move to the next index if there was no match.  If there
-              # was a match, the item was deleted, and the next item to look
-              # at is at the same index as the item just examined.
-              index = index + 1
+    excluded_list = []
 
-      # The "whatever/" list is no longer needed, dump it.
-      del the_dict[regex_key]
+    # Go backwards through the list_actions list so that as items are deleted,
+    # the indices of items that haven't been seen yet don't shift.  That means
+    # that things need to be prepended to excluded_list to maintain them in the
+    # same order that they existed in the_list.
+    for index in xrange(len(list_actions) - 1, -1, -1):
+      if list_actions[index] == 0:
+        # Dump anything with action 0 (exclude).  Keep anything with action 1
+        # (include) or -1 (no include or exclude seen for the item).
+        excluded_list.insert(0, the_list[index])
+        del the_list[index]
 
-    # Dump the "excluded" list if it's empty.
-    if len(the_dict[excluded_key]) == 0:
-      del the_dict[excluded_key]
+    # If anything was excluded, put the excluded list into the_dict at
+    # excluded_key.
+    if len(excluded_list) > 0:
+      the_dict[excluded_key] = excluded_list
 
   # Now recurse into subdicts and lists that may contain dicts.
   for key, value in the_dict.iteritems():

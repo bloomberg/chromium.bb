@@ -265,14 +265,10 @@
         ['exclude', '^src/platform-.*\\.cc$' ],
       ],
       'conditions': [
-        # TODO(mark): These only need to be 'sources/', the extra '+' is
-        # for prepend, which is only temporary until the rules scanner is
-        # rewritten to not pull things out of the list until all includes and
-        # excludes are processed.
-        ['OS=="linux"', {'sources/+': [['include', '^src/platform-linux\\.cc$']]}],
-        ['OS=="mac"', {'sources/+': [['include', '^src/platform-macos\\.cc$']]}],
+        ['OS=="linux"', {'sources/': [['include', '^src/platform-linux\\.cc$']]}],
+        ['OS=="mac"', {'sources/': [['include', '^src/platform-macos\\.cc$']]}],
         ['OS=="win"', {
-          'sources/+': [['include', '^src/platform-win32\\.cc$']],
+          'sources/': [['include', '^src/platform-win32\\.cc$']],
           # 4355, 4800 came from common.vsprops
           # 4018, 4244 were a per file config on dtoa-config.c
           # TODO: It's probably possible and desirable to stop disabling the
@@ -461,14 +457,10 @@
         ['exclude', '^src/platform-.*\\.cc$' ],
       ],
       'conditions': [
-        # TODO(mark): These only need to be 'sources/', the extra '+' is
-        # for prepend, which is only temporary until the rules scanner is
-        # rewritten to not pull things out of the list until all includes and
-        # excludes are processed.
-        ['OS=="linux"', {'sources/+': [['include', '^src/platform-linux\\.cc$']]}],
-        ['OS=="mac"', {'sources/+': [['include', '^src/platform-macos\\.cc$']]}],
+        ['OS=="linux"', {'sources/': [['include', '^src/platform-linux\\.cc$']]}],
+        ['OS=="mac"', {'sources/': [['include', '^src/platform-macos\\.cc$']]}],
         ['OS=="win"', {
-          'sources/+': [['include', '^src/platform-win32\\.cc$']],
+          'sources/': [['include', '^src/platform-win32\\.cc$']],
           # 4355, 4800 came from common.vsprops
           # 4018, 4244 were a per file config on dtoa-config.c
           # TODO: It's probably possible and desirable to stop disabling the
