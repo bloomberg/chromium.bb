@@ -382,13 +382,16 @@ class XCObject(object):
         child.ComputeIDs(recursive, overwrite, hash.copy())
 
     if overwrite or self.id == None:
-      # TODO(mark): Xcode IDs are only 96 bits (24 hex characters), but a SHA-1
-      # digest is 160 bits.  Instead of throwing out 64 bits of the digest, xor
-      # them into the portion that gets used.  As-is, this should be fine,
-      # because hashes are awesome and we're only after uniqueness here, not
-      # security, but I hate computing perfectly good bits just to throw them
-      # out.
-      self.id = hash.hexdigest()[0:24].upper()
+      # Xcode IDs are only 96 bits (24 hex characters), but a SHA-1 digest is
+      # is 160 bits.  Instead of throwing out 64 bits of the digest, xor them
+      # into the portion that gets used.
+      assert hash.digest_size % 4 == 0
+      digest_int_count = hash.digest_size / 4
+      digest_ints = struct.unpack('>' + 'I' * digest_int_count, hash.digest())
+      id_ints = [0, 0, 0]
+      for index in xrange(0, digest_int_count):
+        id_ints[index % 3] ^= digest_ints[index]
+      self.id = '%08X%08X%08X' % tuple(id_ints)
 
   def Children(self):
     """Returns a list of all of this object's owned (strong) children."""
