@@ -236,6 +236,20 @@ def GenerateOutput(target_list, target_dicts, data):
       for source in spec['sources_excluded']:
         pbxp.SourceGroup().AddOrGetFileByPath(source, True)
 
+    # So can "inputs" and "outputs" sections of "actions" groups.
+    if 'actions' in spec:
+      for action in spec['actions']:
+        groups = ['inputs', 'inputs_excluded', 'outputs', 'outputs_excluded']
+        for group in groups:
+          if not group in action:
+            continue
+          for item in action[group]:
+            if item.startswith('$(BUILT_PRODUCTS_DIR)/'):
+              # Exclude anything in BUILT_PRODUCTS_DIR.  They're products, not
+              # sources.
+              continue
+            pbxp.SourceGroup().AddOrGetFileByPath(item, True)
+
     # Add dependencies before libraries, because adding a dependency may imply
     # adding a library.  It's preferable to keep dependencies listed first
     # during a link phase so that they can override symbols that would
