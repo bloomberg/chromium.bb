@@ -42,6 +42,10 @@ AC_ARG_ENABLE(udev,	AS_HELP_STRING([--enable-udev],
 				[Enable support for using udev instead of mknod (default: disabled)]),
 				[UDEV=$enableval], [UDEV=no])
 
+AC_ARG_ENABLE(nouveau-experimental-api,
+	      AS_HELP_STRING([--enable-nouveau-experimental-api],
+	      [Enable support for nouveau's experimental API (default: disabled)]),
+	      [NOUVEAU=$enableval], [NOUVEAU=no])
 
 dnl ===========================================================================
 dnl check compiler flags
@@ -117,6 +121,11 @@ WARN_CFLAGS="$libdrm_cv_warn_cflags"
 
 if test "x$UDEV" = xyes; then
 	AC_DEFINE(UDEV, 1, [Have UDEV support])
+fi
+
+if test "x$NOUVEAU" = xyes; then
+NOUVEAU_SUBDIR="nouveau"
+AC_SUBST(NOUVEAU_SUBDIR)
 fi
 
 PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
