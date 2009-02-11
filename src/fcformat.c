@@ -31,10 +31,19 @@
 /*
  * Some ideas for future syntax extensions:
  *
- * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
+ * - array enumeration using '%{[]family,familylang{expr}|decorator}'
+ * - langset enumeration using same syntax as array enumeration
  * - allow indexing simple tags using '%{elt[idx]}'
+ * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)'/'(=)' notation)
  */
+
+
+/* fc-match needs '<unknown filename>', etc handling, as well as printing
+ * printing first value only. */
+#define FCMATCH_FORMAT	"%{file|basename}: \"%{family}\" \"%{style}\""
+#define FCLIST_FORMAT	"%{?file{%{file}: }}%{=unparse}"
+
 
 static void
 message (const char *fmt, ...)
@@ -217,29 +226,61 @@ read_chars (FcFormatContext *c,
 }
 
 static FcBool
+FcPatternFormatToBuf (FcPattern     *pat,
+		      const FcChar8 *format,
+		      FcStrBuf      *buf);
+
+static FcBool
 interpret_builtin (FcFormatContext *c,
 		   FcPattern       *pat,
 		   FcStrBuf        *buf)
 {
-    if (!expect_char (c, '='))
+    FcChar8       *new_str;
+    FcBool         ret;
+
+    if (!expect_char (c, '=') ||
+	!read_word (c))
 	return FcFalse;
 
-    if (!read_word (c))
-	return FcFalse;
+    /* try simple builtins first */
+    if (0) { }
 #define BUILTIN(name, func) \
     else if (0 == strcmp ((const char *) c->word, name))\
-	return func (c, pat, buf)
-#if 0
-    BUILTIN  ("unparse",  FcNameUnparse);
-    BUILTIN  ("verbose",  FcPatternPrint);
-    BUILTIN2 ("fcmatch",  FcStrDirname);
-    BUILTIN2 ("fclist",   FcStrDirname);
-    BUILTIN2 ("pkgkit",   FcStrDirname);
-#endif
+	do { new_str = func (pat); ret = FcTrue; } while (0)
+    BUILTIN ("unparse",  FcNameUnparse);
+ /* BUILTIN ("verbose",  FcPatternPrint); */
+#undef BUILTIN
+    else
+	ret = FcFalse;
 
-    message ("unknown builtin \"%s\"",
-	     c->word);
-    return FcFalse;
+    if (ret)
+    {
+	if (new_str)
+	{
+	    FcStrBufString (buf, new_str);
+	    free (new_str);
+	    return FcTrue;
+	}
+	else
+	    return FcFalse;
+    }
+
+    /* now try our custom formats */
+    if (0) { }
+#define BUILTIN(name, format) \
+    else if (0 == strcmp ((const char *) c->word, name))\
+	ret = FcPatternFormatToBuf (pat, (const FcChar8 *) format, buf)
+    BUILTIN ("fcmatch",  FCMATCH_FORMAT);
+    BUILTIN ("fclist",   FCLIST_FORMAT);
+#undef BUILTIN
+    else
+	ret = FcFalse;
+
+    if (!ret)
+	message ("unknown builtin \"%s\"",
+		 c->word);
+
+    return ret;
 }
 
 static FcBool
@@ -535,8 +576,8 @@ interpret_simple (FcFormatContext *c,
 
 static FcBool
 cescape (FcFormatContext *c,
-	 FcStrBuf        *buf,
-	 const FcChar8   *str)
+	 const FcChar8   *str,
+	 FcStrBuf        *buf)
 {
     while(*str)
     {
@@ -554,8 +595,8 @@ cescape (FcFormatContext *c,
 
 static FcBool
 shescape (FcFormatContext *c,
-	  FcStrBuf        *buf,
-	  const FcChar8   *str)
+	  const FcChar8   *str,
+	  FcStrBuf        *buf)
 {
     FcStrBufChar (buf, '\'');
     while(*str)
@@ -572,8 +613,8 @@ shescape (FcFormatContext *c,
 
 static FcBool
 xmlescape (FcFormatContext *c,
-	   FcStrBuf        *buf,
-	   const FcChar8   *str)
+	   const FcChar8   *str,
+	   FcStrBuf        *buf)
 {
     while(*str)
     {
@@ -591,8 +632,8 @@ xmlescape (FcFormatContext *c,
 
 static FcBool
 delete_chars (FcFormatContext *c,
-	      FcStrBuf        *buf,
-	      const FcChar8   *str)
+	      const FcChar8   *str,
+	      FcStrBuf        *buf)
 {
     /* XXX not UTF-8 aware */
 
@@ -624,8 +665,8 @@ delete_chars (FcFormatContext *c,
 
 static FcBool
 escape_chars (FcFormatContext *c,
-	      FcStrBuf        *buf,
-	      const FcChar8   *str)
+	      const FcChar8   *str,
+	      FcStrBuf        *buf)
 {
     /* XXX not UTF-8 aware */
 
@@ -659,8 +700,8 @@ escape_chars (FcFormatContext *c,
 
 static FcBool
 translate_chars (FcFormatContext *c,
-		 FcStrBuf        *buf,
-		 const FcChar8   *str)
+		 const FcChar8   *str,
+		 FcStrBuf        *buf)
 {
     char *from, *to, repeat;
     int from_len, to_len;
@@ -726,18 +767,16 @@ interpret_convert (FcFormatContext *c,
     FcChar8        buf_static[8192];
     FcBool         ret;
 
-    if (!expect_char (c, '|'))
+    if (!expect_char (c, '|') ||
+	!read_word (c))
 	return FcFalse;
 
-    /* nul-terminate the buffer */
+    /* prepare the buffer */
     FcStrBufChar (buf, '\0');
     if (buf->failed)
 	return FcFalse;
     str = buf->buf + start;
     buf->len = start;
-
-    if (!read_word (c))
-	return FcFalse;
 
     /* try simple converters first */
     if (0) { }
@@ -755,7 +794,6 @@ interpret_convert (FcFormatContext *c,
     {
 	if (new_str)
 	{
-	    /* replace in the buffer */
 	    FcStrBufString (buf, new_str);
 	    free (new_str);
 	    return FcTrue;
@@ -770,7 +808,7 @@ interpret_convert (FcFormatContext *c,
     if (0) { }
 #define CONVERTER(name, func) \
     else if (0 == strcmp ((const char *) c->word, name))\
-	ret = func (c, &new_buf, str)
+	ret = func (c, str, &new_buf)
     CONVERTER ("cescape",   cescape);
     CONVERTER ("shescape",  shescape);
     CONVERTER ("xmlescape", xmlescape);
@@ -910,22 +948,37 @@ interpret_expr (FcFormatContext *c,
     return FcTrue;
 }
 
+static FcBool
+FcPatternFormatToBuf (FcPattern     *pat,
+		      const FcChar8 *format,
+		      FcStrBuf      *buf)
+{
+    FcFormatContext c;
+    FcChar8         word_static[1024];
+    FcBool          ret;
+
+    if (!FcFormatContextInit (&c, format, word_static, sizeof (word_static)))
+	return FcFalse;
+
+    ret = interpret_expr (&c, pat, buf, '\0');
+
+    FcFormatContextDone (&c);
+
+    return ret;
+}
+
 FcChar8 *
-FcPatternFormat (FcPattern *pat, const FcChar8 *format)
+FcPatternFormat (FcPattern *pat,
+		 const FcChar8 *format)
 {
     FcStrBuf        buf;
-    FcChar8         word_static[1024];
     FcChar8         buf_static[8192 - 1024];
-    FcFormatContext c;
     FcBool          ret;
 
     FcStrBufInit (&buf, buf_static, sizeof (buf_static));
-    if (!FcFormatContextInit (&c, format, word_static, sizeof (word_static)))
-	return NULL;
 
-    ret = interpret_expr (&c, pat, &buf, '\0');
+    ret = FcPatternFormatToBuf (pat, format, &buf);
 
-    FcFormatContextDone (&c);
     if (ret)
 	return FcStrBufDone (&buf);
     else
