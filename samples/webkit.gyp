@@ -185,10 +185,39 @@
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },
     {
+      'target_name': 'v8config',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'config.h',
+          'inputs': [
+            'config.h.in',
+            '../third_party/WebKit/WebCore/bridge/npapi.h',
+            '../third_party/WebKit/WebCore/bridge/npruntime.h',
+            'port/bindings/v8/npruntime_priv.h',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/v8/config.h',
+            '<(INTERMEDIATE_DIR)/v8/javascript/npapi.h',
+            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime.h',
+            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime_priv.h',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'inputs': ['../third_party/WebKit/JavaScriptCore/os-win32/stdint.h'],
+              'outputs': ['<(INTERMEDIATE_DIR)/v8/javascript/stdint.h'],
+            }],
+          ],
+          'action': 'python action_jsconfig.py v8 <(INTERMEDIATE_DIR)/v8 <(_inputs)',
+        },
+      ],
+    },
+    {
       'target_name': 'v8bindings',
       'type': 'static_library',
       'dependencies': [
         'wtf',
+        'v8config',
       ],
       'rules': [
         {
