@@ -151,8 +151,7 @@
         '../third_party/WebKit/JavaScriptCore/wtf/UnusedParam.h',
         '../third_party/WebKit/JavaScriptCore/wtf/Vector.h',
         '../third_party/WebKit/JavaScriptCore/wtf/VectorTraits.h',
-        # Need to get the precompiled headers working here.
-        #'build/precompiled_webkit.cc',
+        'build/precompiled_webkit.cc',
         'build/precompiled_webkit.h',
       ],
       'conditions': [
@@ -166,7 +165,22 @@
             'build/JavaScriptCore',
             '../third_party/WebKit/JavaScriptCore/os-win32',
           ],
-        }],
+          'msvs_precompiled_header': 'build/precompiled_webkit.h',
+          'msvs_precompiled_source': 'build/precompiled_webkit.cc',
+          'configurations': {
+            'Debug': {
+              'msvs_precompiled_headers_enabled': 1,
+            },
+            'Release': {
+              'msvs_precompiled_headers_enabled': 0,
+            },
+          },
+        }, {
+            'sources!': [
+              'build/precompiled_webkit.h',
+              'build/precompiled_webkit.cc',
+            ],
+        },],
       ],
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },

@@ -140,7 +140,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
                 'AdditionalDependencies', libraries)
 
     # Add defines.
-    defines = c.get('defines', [])
+    defines = []
+    for d in c.get('defines', []):
+      if type(d)==list:
+        fd = '='.join([str(dpart) for dpart in d])
+      else:
+        fd = str(d)
+      defines.append(fd)
+
     _ToolAppend(tools, 'VCCLCompilerTool',
                 'PreprocessorDefinitions', defines)
     _ToolAppend(tools, 'VCResourceCompilerTool',
