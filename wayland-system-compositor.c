@@ -673,6 +673,7 @@ surface_destroy(struct wl_client *client,
 	struct wlsc_compositor *ec = es->compositor;
 
 	wl_list_remove(&es->link);
+	wl_list_remove(&es->animate.link);
 	wlsc_surface_destroy(es, ec);
 
 	schedule_repaint(ec);
@@ -804,10 +805,12 @@ animate_surface(struct wlsc_animate *animate,
 	
 	tmp = s->current;
 	wlsc_vector_subtract(&tmp, &s->target);
-	if (tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z > 0.001)
+	if (tmp.x * tmp.x + tmp.y * tmp.y + tmp.z * tmp.z > 0.001) {
 		schedule_repaint(compositor);
-	else
+	} else {
 		wl_list_remove(&s->animate.link);
+		wl_list_init(&s->animate.link);
+	}
 }
 
 static void
