@@ -895,8 +895,30 @@ class XCHierarchicalElement(XCObject):
       return -1
     return 1
 
+  def SourceTreeAndPath(self):
+    # Turn the object's sourceTree and path properties into a single flat
+    # string of a form comparable to the path parameter.  If there's a
+    # sourceTree property other than "<group>", wrap it in $(...) for the
+    # comparison.
+    components = []
+    if self._properties['sourceTree'] != '<group>':
+      components.append('$(' + self._properties['sourceTree'] + ')')
+    if 'path' in self._properties:
+      components.append(self._properties['path'])
+
+    if len(components) > 0:
+      return os.path.join(*components)
+
+    return None
+
 
 class PBXGroup(XCHierarchicalElement):
+  """
+  Attributes:
+    _children_by_path: Maps pathnames of children of this PBXGroup to the
+                       actual child XCHierarchicalElement objects.
+  """
+
   _schema = XCHierarchicalElement._schema.copy()
   _schema.update({
     'children': [1, XCHierarchicalElement, 1, 1, []],
@@ -904,9 +926,44 @@ class PBXGroup(XCHierarchicalElement):
     'path':     [0, str,                   0, 0],
   })
 
+  def __init__(self, properties=None, id=None, parent=None):
+    # super
+    XCHierarchicalElement.__init__(self, properties, id, parent)
+    self._SetUpChildrenByPathDict()
+
+  def _SetUpChildrenByPathDict(self):
+    # Sets up this PBXGroup object's _children_by_path dict.  This function
+    # is not recursive.
+    self._children_by_path = {}
+    if not 'children' in self._properties:
+      return
+    for child in self._properties['children']:
+      child_path = child.SourceTreeAndPath()
+      if child_path:
+        if child_path in self._children_by_path:
+          raise ValueError, 'Found multiple children with path ' + child_path
+        self._children_by_path[child_path] = child
+
+  def AppendChild(self, child):
+    # Callers should use this instead of calling
+    # AppendProperty('children', child) directly because this function
+    # maintains the _children_by_path dict.
+    self.AppendProperty('children', child)
+    child_path = child.SourceTreeAndPath()
+    if child_path:
+      if child_path in self._children_by_path:
+        raise ValueError, 'Adding duplicate child with path ' + child_path
+      self._children_by_path[child_path] = child
+
   def GetChildByName(self, name):
-    # TODO(mark): This should raise an error if more than one child is present
-    # with the same name.
+    # This is not currently optimized with a dict as GetChildByPath is because
+    # it has few callers.  Most callers probably want GetChildByPath.  This
+    # function is only useful to get children that have names but no paths,
+    # which is rare.  The children of the main group ("Source", "Products",
+    # etc.) is pretty much the only case where this likely to come up.
+    #
+    # TODO(mark): Maybe this should raise an error if more than one child is
+    # present with the same name.
     if not 'children' in self._properties:
       return None
 
@@ -917,26 +974,11 @@ class PBXGroup(XCHierarchicalElement):
     return None
 
   def GetChildByPath(self, path):
-    # TODO(mark): This should raise an error if more than one child is present
-    # with the same path.
-    if not 'children' in self._properties or not path:
+    if not path:
       return None
 
-    for child in self._properties['children']:
-      # Turn the child's sourceTree and path properties into a single flat
-      # string of a form comparable to the path parameter.  If there's a
-      # sourceTree property other than "<group>", wrap it in $(...) for the
-      # comparison.
-      child_components = []
-      if child._properties['sourceTree'] != '<group>':
-        child_components.append('$(' + child._properties['sourceTree'] + ')')
-      if 'path' in child._properties:
-        child_components.append(child._properties['path'])
-
-      child_path = os.path.join(*child_components)
-
-      if path == child_path:
-        return child
+    if path in self._children_by_path:
+      return self._children_by_path[path]
 
     return None
 
@@ -945,6 +987,10 @@ class PBXGroup(XCHierarchicalElement):
     # should be a PBXFileReference in another project file, this method will
     # return this group's PBXReferenceProxy object serving as a local proxy
     # for the remote PBXFileReference.
+    #
+    # This function might benefit from a dict optimization as GetChildByPath
+    # for some workloads, but profiling shows that it's not currently a
+    # problem.
     if not 'children' in self._properties:
       return None
 
@@ -966,14 +1012,14 @@ class PBXGroup(XCHierarchicalElement):
       # TODO(mark): assert that it's a PBXFileReference
       if file_ref == None:
         file_ref = PBXFileReference({'path': path})
-        self.AppendProperty('children', file_ref)
+        self.AppendChild(file_ref)
       return file_ref
     else:
       next_dir = path_split[0]
       group_ref = self.GetChildByPath(next_dir)
       if group_ref == None:
         group_ref = PBXGroup({'path': next_dir})
-        self.AppendProperty('children', group_ref)
+        self.AppendChild(group_ref)
       return group_ref.AddOrGetFileByPath(os.path.sep.join(path_split[1:]),
                                           hierarchical)
 
@@ -1546,7 +1592,7 @@ class PBXNativeTarget(XCTarget):
           'sourceTree':       'BUILT_PRODUCTS_DIR',
         }
         file_ref = PBXFileReference(ref_props)
-        products_group.AppendProperty('children', file_ref)
+        products_group.AppendChild(file_ref)
         self.SetProperty('productReference', file_ref)
 
   def GetBuildPhaseByType(self, type):
@@ -1679,7 +1725,7 @@ class PBXProject(XCContainerPortal):
     group = main_group.GetChildByName(name)
     if group == None:
       group = PBXGroup({'name': name})
-      main_group.AppendProperty('children', group)
+      main_group.AppendChild(group)
 
     return group
 
@@ -1771,7 +1817,7 @@ class PBXProject(XCContainerPortal):
             'path':              other_pbxproject.Path(),
             'sourceTree':        'SOURCE_ROOT',
           })
-      self.ProjectsGroup().AppendProperty('children', project_ref)
+      self.ProjectsGroup().AppendChild(project_ref)
 
       ref_dict = {'ProductGroup': product_group, 'ProjectRef': project_ref}
       self._other_pbxprojects[other_pbxproject] = ref_dict
@@ -1825,7 +1871,7 @@ class PBXProject(XCContainerPortal):
               'remoteRef':  container_item,
             })
 
-        product_group.AppendProperty('children', reference_proxy)
+        product_group.AppendChild(reference_proxy)
 
   def SortRemoteProductReferences(self):
     # For each remote project file, sort the associated ProductGroup in the
