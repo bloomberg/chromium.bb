@@ -138,7 +138,7 @@ a project file is output.
 import hashlib
 import os.path
 import re
-import string
+import struct
 import sys
 
 
@@ -366,22 +366,14 @@ class XCObject(object):
       ID collisions will be encountered, intentionally or not.
       """
 
-      data_length = len(data)
-      byte = (data_length & 0xff000000) >> 24
-      hash.update(chr(byte))
-      byte = (data_length & 0x00ff0000) >> 16
-      hash.update(chr(byte))
-      byte = (data_length & 0x0000ff00) >> 8
-      hash.update(chr(byte))
-      byte = data_length & 0x000000ff
-      hash.update(chr(byte))
+      hash.update(struct.pack('>i', len(data)))
       hash.update(data)
 
     if hash == None:
       hash = hashlib.sha1()
 
     hashables = self.Hashables()
-    # TODO(mark): Assert hashables is not empty.
+    assert len(hashables) > 0
     for hashable in hashables:
       _HashUpdate(hash, hashable)
 
@@ -884,8 +876,9 @@ class XCHierarchicalElement(XCObject):
     return hashables
 
   def Compare(self, other):
-    # TODO(mark): assert that self and other __class__ attributes are either
-    # PBXGroup or PBXFileReference.
+    assert self.__class__ == PBXGroup or self.__class__ == PBXFileReference
+    assert other.__class__ == PBXGroup or other.__class__ == PBXFileReference
+
     if self.__class__ == other.__class__:
       # If the two objects are of the same class, compare their names.
       return cmp(self.Name(), other.Name())
@@ -1009,15 +1002,18 @@ class PBXGroup(XCHierarchicalElement):
     path_split = path.split(os.path.sep)
     if len(path_split) == 1 or not hierarchical:
       file_ref = self.GetChildByPath(path)
-      # TODO(mark): assert that it's a PBXFileReference
-      if file_ref == None:
+      if file_ref != None:
+        assert file_ref.__class__ == PBXFileReference
+      else:
         file_ref = PBXFileReference({'path': path})
         self.AppendChild(file_ref)
       return file_ref
     else:
       next_dir = path_split[0]
       group_ref = self.GetChildByPath(next_dir)
-      if group_ref == None:
+      if group_ref != None:
+        assert group_ref.__class__ == PBXGroup
+      else:
         group_ref = PBXGroup({'path': next_dir})
         self.AppendChild(group_ref)
       return group_ref.AddOrGetFileByPath(os.path.sep.join(path_split[1:]),
@@ -1596,18 +1592,21 @@ class PBXNativeTarget(XCTarget):
         self.SetProperty('productReference', file_ref)
 
   def GetBuildPhaseByType(self, type):
-    # TODO(mark): Sanity-check that no more than one phase of type is present.
-    # Some phases may be present in multiples in a well-formed project file,
-    # but phases like PBXSourcesBuildPhase may only be present singly, and
-    # this function is intended as an aid to GetBuildPhaseByType.
     if not 'buildPhases' in self._properties:
       return None
 
+    the_phase = None
     for phase in self._properties['buildPhases']:
       if isinstance(phase, type):
-        return phase
+        # Some phases may be present in multiples in a well-formed project file,
+        # but phases like PBXSourcesBuildPhase may only be present singly, and
+        # this function is intended as an aid to GetBuildPhaseByType.  Loop
+        # over the entire list of phases and assert if more than one of the
+        # desired type is found.
+        assert the_phase == None
+        the_phase = phase
 
-    return None
+    return the_phase
 
   def SourcesPhase(self):
     sources_phase = self.GetBuildPhaseByType(PBXSourcesBuildPhase)
