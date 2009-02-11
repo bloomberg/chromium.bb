@@ -266,7 +266,7 @@ def GenerateOutput(target_list, target_dicts, data):
                  "\nexit 1\n"
         ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
               'inputPaths': action['inputs'],
-              'name': 'action ' + action['action_name'],
+              'name': 'Action "' + action['action_name'] + '"',
               'outputPaths': action['outputs'],
               'shellScript': script,
               'showEnvVarsInLog': 0,

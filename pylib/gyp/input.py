@@ -245,6 +245,16 @@ def ExpandVariables(input, is_late, variables):
         if isinstance(replacement, list):
           # When expanding a list into string context, turn the list items
           # into a string in a way that will work with a subprocess call.
+          #
+          # TODO(mark): list2cmdline isn't completely correct.  This should
+          # call a generator-provided function that observes the proper
+          # list-to-argument quoting rules on a specific platform.  Even
+          # working solely in a POSIX environment, list2cmdline is not ideal.
+          # It doesn't, but should, escape the | character.  It doesn't quote
+          # list items, so if a list item contains a variable expansion, the
+          # shell will expand the variable to multiple arguments, where
+          # code that comes through here will most likely be expecting a
+          # single argument.
           output = re.sub(re.escape(match[0]),
                                     subprocess.list2cmdline(replacement),
                                     output)
