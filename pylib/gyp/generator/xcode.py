@@ -1,10 +1,12 @@
 #!/usr/bin/python
 
+import filecmp
 import gyp.common
 import gyp.xcodeproj_file
 import errno
 import os
 import re
+import tempfile
 
 
 generator_default_variables = {
@@ -155,17 +157,78 @@ class XcodeProject(object):
     self.project_file.ComputeIDs()
 
   def Write(self):
-    pbxproj_path = self.path + '/project.pbxproj'
-
+    created_dir = False
     try:
       os.mkdir(self.path)
+      created_dir = True
     except OSError, e:
       if e.errno != errno.EEXIST:
         raise
 
-    output_file = open(pbxproj_path, 'w')
-    self.project_file.Print(output_file)
-    output_file.close()
+    # Write the project file to a temporary location first.  Xcode watches for
+    # changes to the project file and presents a UI sheet offering to reload
+    # the project when it does change.  However, in some cases, especially when
+    # multiple projects are open or when Xcode is busy, things don't work so
+    # seamlessly.  Sometimes, Xcode is able to detect that a project file has
+    # changed but can't unload it because something else is referencing it.
+    # To mitigate this problem, and to avoid even having Xcode present the UI
+    # sheet when an open project is rewritten for inconsequential changes, the
+    # project file is written to a temporary file in the xcodeproj directory
+    # first.  The new temporary file is then compared to the existing project
+    # file, if any.  If they differ, the new file replaces the old; otherwise,
+    # the new project file is simply deleted.  Xcode properly detects a file
+    # being renamed over an open project file as a change and so it remains
+    # able to present the "project file changed" sheet under this system.
+    # Writing to a temporary file first also avoids the possible problem of
+    # Xcode rereading an incomplete project file.
+    (output_fd, new_pbxproj_path) = \
+        tempfile.mkstemp(suffix='.tmp', prefix='project.pbxproj.gyp.',
+                         dir=self.path)
+
+    try:
+      output_file = os.fdopen(output_fd, 'w')
+
+      self.project_file.Print(output_file)
+      output_file.close()
+
+      pbxproj_path = os.path.join(self.path, 'project.pbxproj')
+
+      same = False
+      try:
+        same = filecmp.cmp(pbxproj_path, new_pbxproj_path, False)
+      except OSError, e:
+        if e.errno != errno.ENOENT:
+          raise
+
+      if same:
+        # The new file is identical to the old one, just get rid of the new
+        # one.
+        os.unlink(new_pbxproj_path)
+      else:
+        # The new file is different from the old one, or there is no old one.
+        # Rename the new file to the permanent name.
+        #
+        # tempfile.mkstemp uses an overly restrictive mode, resulting in a
+        # file that can only be read by the owner, regardless of the umask.
+        # There's no reason to not respect the umask here, which means that
+        # an extra hoop is required to fetch it and reset the new file's mode.
+        #
+        # No way to get the umask without setting a new one?  Set a safe one
+        # and then set it back to the old value.
+        umask = os.umask(077)
+        os.umask(umask)
+
+        os.chmod(new_pbxproj_path, 0666 & ~umask)
+
+        os.rename(new_pbxproj_path, pbxproj_path)
+
+    except Exception:
+      # Don't leave turds behind.  In fact, if this code was responsible for
+      # creating the xcodeproj directory, get rid of that too.
+      os.unlink(new_pbxproj_path)
+      if created_dir:
+        os.rmdir(self.path)
+      raise
 
 
 def GenerateOutput(target_list, target_dicts, data):
