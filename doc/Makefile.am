@@ -122,6 +122,7 @@ func.refs: local-fontconfig-devel.sgml $(DOC_FUNCS_SGML) version.sgml confdir.sg
 	mv devel-man/manpage.refs func.refs && \
 	mv devel-man/*.3 . && \
 	$(RM) devel-man/manpage.links && \
+	rm -f devel-man/manpage.log
 	rmdir devel-man
 
 local-fontconfig-devel.sgml: fontconfig-devel.sgml
