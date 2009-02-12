@@ -86,7 +86,24 @@ def PrettyPrintNode(node, indent=0):
   for sub_node in node.childNodes:
     PrettyPrintNode(sub_node, indent=indent+2)
   print '%s</%s>' % (' '*indent, node.nodeName)
-  
+
+def FlattenFilter(node):
+  """Returns a list of all the node and sub nodes."""
+  node_list = []
+
+  if (node.attributes and
+      node.getAttribute('Name') == '_excluded_files'):
+      # We don't add the "_excluded_files" filter.
+    return []
+
+  for current in node.childNodes:
+    if current.nodeName == 'Filter':
+      node_list.extend(FlattenFilter(current))
+    else:
+      node_list.append(current)
+
+  return node_list
+
 def CleanupVcproj(node):
   # For each sub node, we call recursively this function.
   for sub_node in node.childNodes:
@@ -99,10 +116,14 @@ def CleanupVcproj(node):
         sub_node.data = sub_node.data.replace("\n", "")
         sub_node.data = sub_node.data.rstrip()
         
-  # Fix all the semicolon separated attributes to be sorted.
+  # Fix all the semicolon separated attributes to be sorted, and we also
+  # remove the dups.
   if node.attributes:
     for (name, value) in node.attributes.items():
-      node.setAttribute(name, ';'.join(sorted(value.split(';'))))
+      sorted_list = sorted(value.split(';'))
+      unique_list = [] 
+      [unique_list.append(i) for i in sorted_list if not unique_list.count(i)]
+      node.setAttribute(name, ';'.join(unique_list))
       if not value:
         node.removeAttribute(name)
 
@@ -112,8 +133,17 @@ def CleanupVcproj(node):
   # For each node, take a copy, and remove it from the list.
   node_array = []
   while node.childNodes and node.childNodes[0]:
-    node_array.append(node.childNodes[0])
-    node.removeChild(node.childNodes[0])
+    # Take a copy of the node and remove it from the list.
+    current = node.childNodes[0]
+    node.removeChild(current)
+
+    # If the child is a filter, we want to append all its children
+    # to this same list.
+    if current.nodeName == 'Filter':
+      node_array.extend(FlattenFilter(current))
+    else:
+      node_array.append(current)
+
     
   # Sort the list.
   node_array.sort(CmpNode())
@@ -124,11 +154,6 @@ def CleanupVcproj(node):
     if new_node.nodeName == 'Tool':
       if new_node.attributes and new_node.attributes.length == 1:
         # This one was empty.
-        continue
-    # We also don't add the "_excluded_files" filter.
-    if new_node.nodeName == 'Filter':
-      if (new_node.attributes and
-          new_node.getAttribute('Name') == '_excluded_files'):
         continue
     node.appendChild(new_node)
 
@@ -144,18 +169,11 @@ def GetConfiguationNodes(vcproj):
   return nodes
 
 def FixFilenames(filenames, current_directory):
-  replacements = REPLACEMENTS
-  #{
-  #                 '$(SolutionDir)': 'z:\\dev\\src-chrome\\src\\chrome\\',
-  #                 '$(CHROMIUM_BUILD)' :'',
-  #                 '$(CHROME_BUILD_TYPE)' :'',
-  #               }
-
   new_list = []
   for filename in filenames:
     if filename:
-      for key in replacements:
-        filename = filename.replace(key, replacements[key])
+      for key in REPLACEMENTS:
+        filename = filename.replace(key, REPLACEMENTS[key])
       os.chdir(current_directory)
       new_list.append(os.path.abspath(filename))
   return new_list
@@ -232,7 +250,6 @@ def main():
 
   # Parse the keys
   for i in range(2, len(sys.argv)):
-    print sys.argv[i].split('=')
     (key, value) = sys.argv[i].split('=')
     REPLACEMENTS[key] = value
 
