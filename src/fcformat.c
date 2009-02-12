@@ -33,14 +33,12 @@
  *
  * - array enumeration using '%{[]family,familylang{expr}|decorator}'
  * - langset enumeration using same syntax as array enumeration
- * - allow indexing simple tags using '%{elt[idx]}'
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)'/'(=)' notation)
  */
 
 
-/* fc-match needs '<unknown filename>', etc handling. */
-#define FCMATCH_FORMAT	"%{file|basename}: \"%{family[0]}\" \"%{style[0]}\""
+#define FCMATCH_FORMAT	"%{file:-<unknown filename>|basename}: \"%{family[0]:-<unknown family>}\" \"%{style[0]:-<unknown style>}\""
 #define FCLIST_FORMAT	"%{?file{%{file}: }}%{=unparse}"
 
 
@@ -247,7 +245,7 @@ interpret_builtin (FcFormatContext *c,
     else if (0 == strcmp ((const char *) c->word, name))\
 	do { new_str = func (pat); ret = FcTrue; } while (0)
     BUILTIN ("unparse",  FcNameUnparse);
- /* BUILTIN ("verbose",  FcPatternPrint); */
+ /* BUILTIN ("verbose",  FcPatternPrint); XXX */
 #undef BUILTIN
     else
 	ret = FcFalse;
@@ -543,6 +541,7 @@ interpret_simple (FcFormatContext *c,
     FcBool        add_colon = FcFalse;
     FcBool        add_elt_name = FcFalse;
     int           idx;
+    FcChar8      *else_string;
 
     if (consume_char (c, ':'))
 	add_colon = FcTrue;
@@ -565,6 +564,25 @@ interpret_simple (FcFormatContext *c,
 
     if (consume_char (c, '='))
 	add_elt_name = FcTrue;
+
+    /* modifiers */
+    else_string = NULL;
+    if (consume_char (c, ':'))
+    {
+	FcChar8 *orig;
+	/* divert the c->word for now */
+	orig = c->word;
+	c->word = c->word + strlen ((const char *) c->word) + 1;
+	/* for now we just support 'default value' */
+	if (!expect_char (c, '-') ||
+	    !read_chars (c, '\0'))
+	{
+	    c->word = orig;
+	    return FcFalse;
+	}
+	else_string = c->word;
+	c->word = orig;
+    }
 
     e = FcPatternObjectFindElt (pat,
 				FcObjectFromName ((const char *) c->word));
@@ -604,6 +622,8 @@ interpret_simple (FcFormatContext *c,
     else
 notfound:
     {
+	if (else_string)
+	    printf ("%s", else_string);
     }
 
     return FcTrue;
@@ -752,7 +772,7 @@ translate_chars (FcFormatContext *c,
     from_len = strlen (from);
     to = from + from_len + 1;
 
-    /* hack: we temporarily diverge c->word */
+    /* hack: we temporarily divert c->word */
     c->word = (FcChar8 *) to;
     if (!read_chars (c, ')'))
     {
