@@ -163,6 +163,10 @@
           '../third_party/icu38/public/i18n',
         ],
       },
+      'sources!': [
+        'build/precompiled_webkit.h',
+        'build/precompiled_webkit.cc',
+      ],
       'conditions': [
         ['OS=="win"', {
           'defines': [
@@ -174,20 +178,14 @@
             'build/JavaScriptCore',
             '../third_party/WebKit/JavaScriptCore/os-win32',
           ],
-          'msvs_precompiled_header': 'build/precompiled_webkit.h',
-          'msvs_precompiled_source': 'build/precompiled_webkit.cc',
           'configurations': {
             'Debug': {
-              'msvs_precompiled_headers_enabled': 1,
-            },
-            'Release': {
-              'msvs_precompiled_headers_enabled': 0,
+              'msvs_precompiled_header': 'build/precompiled_webkit.h',
+              'msvs_precompiled_source': 'build/precompiled_webkit.cc',
             },
           },
         }, {  # else: OS != "win"
             'sources!': [
-              'build/precompiled_webkit.h',
-              'build/precompiled_webkit.cc',
             ],
         },],
       ],

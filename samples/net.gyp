@@ -262,6 +262,10 @@
         'url_request/url_request_view_cache_job.cc',
         'url_request/url_request_view_cache_job.h',
       ],
+      'sources!': [
+        'build/precompiled_net.h',
+        'build/precompiled_net.cc',
+      ],
       'conditions': [
         [ 'OS == "win"', {
             'sources/': [ ['exclude', '_(mac|linux|posix)\\.cc$'] ],
@@ -273,14 +277,10 @@
               'tld_cleanup',
             ],
             'msvs_tool_files': ['build/convert_tld_data.rules'],
-            'msvs_precompiled_header': 'build/precompiled_net.h',
-            'msvs_precompiled_source': 'build/precompiled_net.cc',
             'configurations': {
               'Debug': {
-                'msvs_precompiled_headers_enabled': 1,
-              },
-              'Release': {
-                'msvs_precompiled_headers_enabled': 0,
+                'msvs_precompiled_header': 'build/precompiled_net.h',
+                'msvs_precompiled_source': 'build/precompiled_net.cc',
               },
             },
           },
@@ -289,7 +289,6 @@
               'base/ssl_config_service.cc',
               'base/wininet_util.cc',
               'base/winsock_init.cc',
-              'build/precompiled_net.cc',
               'proxy/proxy_resolver_winhttp.cc',
               'url_request/url_request_ftp_job.cc',
               'url_request/url_request_inet_job.cc',

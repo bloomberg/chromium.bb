@@ -167,9 +167,9 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     _ToolAppend(tools, 'VCPostBuildEventTool', 'CommandLine', postbuild)
 
     # Turn on precompiled headers if appropriate.
-    precompiled_headers_enabled = c.get('msvs_precompiled_headers_enabled', 0)
-    if precompiled_headers_enabled:
-      header = os.path.split(c['msvs_precompiled_header'])[1]
+    header = c.get('msvs_precompiled_header')
+    if header:
+      header = os.path.split(header)[1]
       _ToolAppend(tools, 'VCCLCompilerTool', 'UsePrecompiledHeader', '2')
       _ToolAppend(tools, 'VCCLCompilerTool',
                   'PrecompiledHeaderThrough', header)
@@ -205,7 +205,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
                 attrs=prepared_attrs, tools=tool_list)
 
   # Prepare list of sources.
-  sources = spec['sources']
+  sources = spec.get('sources', [])
   # Add in the gyp file.
   sources.append(os.path.split(build_file)[1])
   # Add in 'action' inputs.
@@ -224,16 +224,36 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   # Add excluded into sources
   sources += excluded_sources
 
+  # List of precompiled header related keys.
+  precomp_keys = [
+      'msvs_precompiled_header',
+      'msvs_precompiled_source',
+  ]
+
+  # Gather a list of precompiled header related sources.
+  precompiled_related = []
+  for config_name, c in spec['configurations'].iteritems():
+    for k in precomp_keys:
+      f = c.get(k)
+      if f:
+        precompiled_related.append(_FixPath(f))
+
+  # Find the excluded ones, minus the precompiled header related ones.
+  fully_excluded = [i for i in excluded_sources if i not in precompiled_related]
+
   # Convert to folders and the right slashes.
   sources = [i.split('\\') for i in sources]
-  sources = _SourceInFolders(sources, excluded=excluded_sources)
+  sources = _SourceInFolders(sources, excluded=fully_excluded)
   # Add in files.
   p.AddFiles(sources)
 
   # Exclude excluded sources from being built.
   for f in excluded_sources:
-    for config_name in spec['configurations']:
-      p.AddFileConfig(f, config_name, {'ExcludedFromBuild': 'true'})
+    for config_name, c in spec['configurations'].iteritems():
+      precomped = [_FixPath(c.get(i, '')) for i in precomp_keys]
+      # Don't do this for ones that are precompiled header related.
+      if f not in precomped:
+        p.AddFileConfig(f, config_name, {'ExcludedFromBuild': 'true'})
 
   # Add in tool files (rules).
   tool_files = set()
@@ -248,15 +268,10 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     source = c.get('msvs_precompiled_source')
     if source:
       source = _FixPath(source)
-      precompiled_headers_enabled = c.get('msvs_precompiled_headers_enabled', 0)
-      if precompiled_headers_enabled:
-        # UsePrecompiledHeader=1 for if using precompiled headers.
-        tool = MSVSProject.Tool('VCCLCompilerTool',
-                                {'UsePrecompiledHeader': '1'})
-        p.AddFileConfig(source, config_name, {}, tools=[tool])
-      else:
-        # Exclude from build if not.
-        p.AddFileConfig(source, config_name, {'ExcludedFromBuild': 'true'})
+      # UsePrecompiledHeader=1 for if using precompiled headers.
+      tool = MSVSProject.Tool('VCCLCompilerTool',
+                              {'UsePrecompiledHeader': '1'})
+      p.AddFileConfig(source, config_name, {}, tools=[tool])
 
   # Add actions.
   actions = spec.get('actions', [])

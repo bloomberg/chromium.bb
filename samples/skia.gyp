@@ -662,6 +662,10 @@
       'defines': [
         'SK_BUILD_NO_IMAGE_ENCODE',
       ],
+      'sources!': [
+        'include/corecg/SkTypes.h',
+        'precompiled.cc',
+      ],
       'conditions': [
         [ 'OS != "mac"', {
           'sources/': [ ['exclude', '_mac\\.(cc|cpp)$'] ],
@@ -696,20 +700,12 @@
             'ports/SkThread_pthread.cpp',
             'ports/SkTime_Unix.cc',
           ],
-          'msvs_precompiled_header': 'include/corecg/SkTypes.h',
-          'msvs_precompiled_source': 'precompiled.cc',
           'configurations': {
             'Debug': {
-              'msvs_precompiled_headers_enabled': 1,
-            },
-            'Release': {
-              'msvs_precompiled_headers_enabled': 0,
+              'msvs_precompiled_header': 'include/corecg/SkTypes.h',
+              'msvs_precompiled_source': 'precompiled.cc',
             },
           },
-        }, {
-          'sources!': [
-            'precompiled.cc',
-          ],
         },],
       ],
       'direct_dependent_settings': {
