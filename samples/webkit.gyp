@@ -154,6 +154,15 @@
         'build/precompiled_webkit.cc',
         'build/precompiled_webkit.h',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '../third_party/WebKit/JavaScriptCore',
+          # TODO(mark): Provide a way to reexport inherited dependent settings
+          # from selected dependencies as direct_dependent_settings.
+          '../third_party/icu38/public/common',
+          '../third_party/icu38/public/i18n',
+        ],
+      },
       'conditions': [
         ['OS=="win"', {
           'defines': [
@@ -175,7 +184,7 @@
               'msvs_precompiled_headers_enabled': 0,
             },
           },
-        }, {
+        }, {  # else: OS != "win"
             'sources!': [
               'build/precompiled_webkit.h',
               'build/precompiled_webkit.cc',
@@ -211,6 +220,11 @@
           'action': 'python action_jsconfig.py v8 <(INTERMEDIATE_DIR)/v8 <(_inputs)',
         },
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(INTERMEDIATE_DIR)/v8',
+        ],
+      },
     },
     {
       'target_name': 'v8bindings',
@@ -232,8 +246,53 @@
         }
       ],
       'sources': [
+        '<(INTERMEDIATE_DIR)/HTMLNames.cpp',
         '../third_party/WebKit/WebCore/css/CSSGrammar.y',
         '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
+      ],
+      'include_dirs': [
+        '../third_party/WebKit/WebCore/css',
+        '../third_party/WebKit/WebCore/dom',
+        '../third_party/WebKit/WebCore/html',
+        '../third_party/WebKit/WebCore/loader',
+        '../third_party/WebKit/WebCore/page',
+        '../third_party/WebKit/WebCore/platform',
+        '../third_party/WebKit/WebCore/platform/graphics',
+        '../third_party/WebKit/WebCore/platform/network',
+        '../third_party/WebKit/WebCore/platform/text',
+        '../third_party/WebKit/WebCore/xml',
+      ],
+      'actions': [
+        {
+          # This doesn't seem to belong in jsbindings.
+          'action_name': 'CSSPropertyNames.h',
+          'inputs': [
+            '../third_party/WebKit/WebCore/css/makeprop.pl',
+            '../third_party/WebKit/WebCore/css/CSSPropertyNames.in',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/CSSPropertyNames.h',
+            # This action also outputs CSSPropertyNames.{cpp|gperf}, but
+            # we don't use those files.
+          ],
+          'action': 'python action_csspropertynames.py <(_inputs) <(_outputs)',
+        },
+        {
+          # This doesn't seem to belong in jsbindings.
+          'action_name': 'HTMLNames.cpp',
+          'inputs': [
+            '../third_party/WebKit/WebCore/dom/make_names.pl',
+            '../third_party/WebKit/WebCore/html/HTMLTagNames.in',
+            '../third_party/WebKit/WebCore/html/HTMLAttributeNames.in',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/HTMLNames.cpp',
+            '<(INTERMEDIATE_DIR)/HTMLNames.h',
+            # This action also outputs JSHTMLElementWrapperFactory.{cpp,h},
+            # but we don't use those files.
+          ],
+          'action': 'python action_htmlnames.py <(_inputs) <(_outputs) ENABLE_VIDEO=1',
+        },
       ],
     },
   ],

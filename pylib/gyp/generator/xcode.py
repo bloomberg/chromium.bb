@@ -17,7 +17,7 @@ generator_default_variables = {
   # and be constant within the context of a target.  Some build environments
   # may allow their intermediate directory or equivalent to be shared on a
   # wider scale, but this is not guaranteed.
-  'INTERMEDIATE_DIR': '$(DERIVED_FILE_DIR)',
+  'INTERMEDIATE_DIR': '$(PROJECT_DERIVED_FILE_DIR)',
   'OS': 'mac',
   'PRODUCT_DIR': '$(BUILT_PRODUCTS_DIR)',
 }
@@ -297,6 +297,7 @@ def GenerateOutput(target_list, target_dicts, data):
           if extension in rules_by_ext:
             if not extension in rules_in_target:
               rule = rules_by_ext[extension]
+              rules_in_target[extension] = rule
               outputs = []
               for output in rule['outputs']:
                 outputs.append(output.replace('*', '$(INPUT_FILE_BASE)'))
