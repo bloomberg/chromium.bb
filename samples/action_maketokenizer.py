@@ -1,16 +1,13 @@
 #!/usr/bin/python
 
-# usage: action_useragentstylesheets.py OUTPUTS -- INPUTS
+# usage: action_maketokenizer.py OUTPUTS -- INPUTS
 #
-# Multiple OUTPUTS and INPUTS may be listed.  The sections are separated by
-# -- arguments.
+# Multiple INPUTS may be listed.  The sections are separated by -- arguments.
 #
-# OUTPUTS must contain two items, in order: a path to UserAgentStyleSheets.h
-# and a path to UserAgentStyleSheetsData.cpp.
+# OUTPUTS must contain a single item: a path to tokenizer.cpp.
 #
-# INPUTS must contain at least two items.  The first item must be the path to
-# make-css-file-arrays.pl.  The remaining items are paths to style sheets to
-# be fed to that script.
+# INPUTS must contain exactly two items.  The first item must be the path to
+# maketokenizer.  The second item must be the path to tokenizer.flex.
 
 
 import os
@@ -47,23 +44,24 @@ def main(args):
   assert len(sections) == 2
   (outputs, inputs) = sections
 
-  assert len(outputs) == 2
-  output_h = outputs[0]
-  output_cpp = outputs[1]
+  assert len(outputs) == 1
+  output = outputs[0]
 
-  make_css_file_arrays = inputs[0]
-  style_sheets = inputs[1:]
+  assert len(inputs) == 2
+  maketokenizer = inputs[0]
+  flex_input = inputs[1]
 
   # Build up the command.
-  command = ['perl', make_css_file_arrays, output_h, output_cpp]
-  command.extend(style_sheets)
+  command = 'flex -t %s | perl %s > %s' % (flex_input, maketokenizer, output)
 
   # Say what's going to be done.
-  print subprocess.list2cmdline(command)
+  print command
 
   # Do it.  check_call is new in 2.5, so simulate its behavior with call and
   # assert.
-  return_code = subprocess.call(command)
+  # TODO(mark): Don't use shell=True, build up the pipeline directly.
+  p = subprocess.Popen(command, shell=True)
+  return_code = p.wait()
   assert return_code == 0
 
   return return_code

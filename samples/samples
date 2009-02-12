@@ -31,6 +31,7 @@ gyps = [
     'webkit/action_cssvaluekeywords.py',
     'webkit/action_jsconfig.py',
     'webkit/action_makenames.py',
+    'webkit/action_maketokenizer.py',
     'webkit/action_useragentstylesheets.py',
     'webkit/rule_bison.py',
     'webkit/rule_gperf.py',

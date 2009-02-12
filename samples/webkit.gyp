@@ -405,6 +405,17 @@
           'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
           'process_outputs_as_sources': 1,
         },
+        {
+          'action_name': 'tokenizer',
+          'inputs': [
+            '../third_party/WebKit/WebCore/css/maketokenizer',
+            '../third_party/WebKit/WebCore/css/tokenizer.flex',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/tokenizer.cpp',
+          ],
+          'action': 'python action_maketokenizer.py <(_outputs) -- <(_inputs)',
+        },
       ],
     },
   ],
