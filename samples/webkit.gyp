@@ -232,6 +232,7 @@
         'v8config',
       ],
       'rules': [
+        # Some of these rules don't seem to belong in jsbindings.
         {
           'rule_name': 'bison',
           'extension': 'y',
@@ -241,11 +242,32 @@
           ],
           'action': 'python rule_bison.py * <(INTERMEDIATE_DIR)',
           'process_outputs_as_sources': 1,
-        }
+        },
+        {
+          'rule_name': 'gperf',
+          'extension': 'gperf',
+          # gperf output is only ever #included by other source files.  As
+          # such, process_outputs_as_sources is off.  Some gperf output is
+          # #included as *.c and some as *.cpp.  Since there's no way to tell
+          # which one will be needed in a rule definition, declare both as
+          # outputs.  The harness script will generate one file and copy it to
+          # the other.
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/*.c',
+            '<(INTERMEDIATE_DIR)/*.cpp',
+          ],
+          'action': 'python rule_gperf.py * <(INTERMEDIATE_DIR)',
+          'process_outputs_as_sources': 0,
+        },
       ],
       'sources': [
+        # bison rule
         '../third_party/WebKit/WebCore/css/CSSGrammar.y',
         '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
+        # gperf rule
+        '../third_party/WebKit/WebCore/html/DocTypeStrings.gperf',
+        '../third_party/WebKit/WebCore/html/HTMLEntityNames.gperf',
+        '../third_party/WebKit/WebCore/platform/ColorData.gperf',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',

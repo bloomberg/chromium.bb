@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # usage: rule_bison.py INPUT_FILE OUTPUT_DIR
-# INPUT_FILE is a path to either CSSGrammar.y or XPathGrammar.y
+# INPUT_FILE is a path to either CSSGrammar.y or XPathGrammar.y.
 # OUTPUT_DIR is where the bison-generated .cpp and .h files should be placed.
 
 import errno

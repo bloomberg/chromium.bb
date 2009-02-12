@@ -282,16 +282,51 @@ def GenerateOutput(target_list, target_dicts, data):
     rules_by_ext = {}
     for rule in spec.get('rules', []):
       rules_by_ext[rule['extension']] = rule
-      outputs = []
+
+      real_outputs = []
       for output in rule['outputs']:
-        outputs.append(output.replace('*', '$(INPUT_FILE_BASE)'))
+        real_outputs.append(output.replace('*', '$(INPUT_FILE_BASE)'))
+
+      if rule.get('process_outputs_as_sources', False):
+        # Xcode handles rule outputs as additional source inputs by default,
+        # if it knows how to build the output.
+        # Be sure the script runs in exec, and that if exec fails, the script
+        # exits signalling an error.
+        outputs = real_outputs
+        action = 'exec ' + rule['action'] + '\nexit 1\n'
+      else:
+        # There's no checkbox to toggle Xcode's "treat rule outputs as sources"
+        # behavior.  Lie to Xcode by feeding it a dummy output.  When the rule
+        # runs and completes successfully, if all of the real outputs were
+        # produced, the dummy output file will be touched.  Otherwise, the
+        # dummy output file, if present, will be removed.  Since Xcode doesn't
+        # know how to process files with extension .dummy, it won't attempt
+        # any further processing.
+        dummy_name = \
+            'gyp.rule.' + rule['rule_name'] + '.$(INPUT_FILE_BASE).dummy'
+        dummy_path = os.path.join('$(PROJECT_DERIVED_FILE_DIR)', dummy_name)
+        outputs = [dummy_path]
+        action = \
+            'DUMMY=' + dummy_path + '\n' + \
+            'OUTPUTS="' + ' '.join(real_outputs) + '"\n' + \
+            'if ! ' + rule['action'] + ' ; then\n' + \
+            '  EXIT_STATUS=$?\n' + \
+            '  rm -f ${DUMMY}\n' + \
+            '  exit ${EXIT_STATUS}\n' + \
+            'fi\n' + \
+            'for OUTPUT in ${OUTPUTS} ; do\n' + \
+            '  if [ ! -e ${OUTPUT} ] ; then\n' + \
+            '    rm -f ${DUMMY}\n' + \
+            '    exit 0\n' + \
+            '  fi\n' + \
+            'done\n' + \
+            'touch ${DUMMY}\n' + \
+            'exit 0\n'
+
       # Convert Xcode-type variable references to sh-compatible environment
-      # variable references.  Be sure the script runs in exec, and that if
-      # exec fails, the script exits signalling an error.
-      action = 'exec ' + \
-               re.sub('\$\((.*?)\)', '${\\1}', rule['action']). \
-               replace('*', '${SCRIPT_INPUT_FILE}') + \
-               '\nexit 1\n'
+      # variable references.
+      action = re.sub('\$\((.*?)\)', '${\\1}', action). \
+               replace('*', '${SCRIPT_INPUT_FILE}')
       pbxbr = gyp.xcodeproj_file.PBXBuildRule({
             'compilerSpec': 'com.apple.compilers.proxy.script',
             'filePatterns': '*.' + rule['extension'],

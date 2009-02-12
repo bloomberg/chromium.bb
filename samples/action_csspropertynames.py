@@ -11,7 +11,6 @@ import shutil
 import subprocess
 import sys
 
-print sys.argv
 assert len(sys.argv) == 6
 makeprop_path = sys.argv[1]
 in_path = sys.argv[2]
