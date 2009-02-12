@@ -11,11 +11,12 @@ import shutil
 import subprocess
 import sys
 
-assert len(sys.argv) == 4
+print sys.argv
+assert len(sys.argv) == 6
 makeprop_path = sys.argv[1]
 in_path = sys.argv[2]
 assert os.path.basename(in_path) == 'CSSPropertyNames.in'
-out_path = sys.argv[3]
+out_path = sys.argv[5]
 assert os.path.basename(out_path) == 'CSSPropertyNames.h'
 out_dir = os.path.dirname(out_path)
 

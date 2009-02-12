@@ -1,6 +1,23 @@
 {
   'variables': {
     'depth': '..',
+    'feature_defines': [
+      'ENABLE_DATABASE=1',
+      'ENABLE_DASHBOARD_SUPPORT=0',
+      'ENABLE_JAVASCRIPT_DEBUGGER=0',
+      'ENABLE_JSC_MULTIPLE_THREADS=0',
+      'ENABLE_ICONDATABASE=0',
+      'ENABLE_XSLT=1',
+      'ENABLE_XPATH=1',
+      'ENABLE_SVG=1',
+      'ENABLE_SVG_ANIMATION=1',
+      'ENABLE_SVG_AS_IMAGE=1',
+      'ENABLE_SVG_USE=1',
+      'ENABLE_SVG_FOREIGN_OBJECT=1',
+      'ENABLE_SVG_FONTS=1',
+      'ENABLE_VIDEO=1',
+      'ENABLE_WORKERS=0',
+    ],
   },
   'includes': [
     '../build/common.gypi',
@@ -11,24 +28,10 @@
       '..',
     ],
     'defines': [
-      ['BUILDING_CHROMIUM__', 1],
-      ['ENABLE_DATABASE', 1],
-      ['ENABLE_DASHBOARD_SUPPORT', 0],
-      ['ENABLE_JAVASCRIPT_DEBUGGER', 0],
-      ['ENABLE_JSC_MULTIPLE_THREADS', 0],
-      ['ENABLE_ICONDATABASE', 0],
-      ['ENABLE_XSLT', 1],
-      ['ENABLE_XPATH', 1],
-      ['ENABLE_SVG', 1],
-      ['ENABLE_SVG_ANIMATION', 1],
-      ['ENABLE_SVG_AS_IMAGE', 1],
-      ['ENABLE_SVG_USE', 1],
-      ['ENABLE_SVG_FOREIGN_OBJECT', 1],
-      ['ENABLE_SVG_FONTS', 1],
-      ['ENABLE_VIDEO', 1],
-      ['ENABLE_WORKERS', 0],
-      ['USE_GOOGLE_URL_LIBRARY', 1],
-      ['USE_SYSTEM_MALLOC', 1],
+      '<@(feature_defines)',
+      'BUILDING_CHROMIUM__=1',
+      'USE_GOOGLE_URL_LIBRARY=1',
+      'USE_SYSTEM_MALLOC=1',
     ],
     'conditions': [
       ['OS=="mac"', {
@@ -237,15 +240,15 @@
             '<(INTERMEDIATE_DIR)/*.h'
           ],
           'action': 'python rule_bison.py * <(INTERMEDIATE_DIR)',
-          'process_outputs_as_sources': 'yes',
+          'process_outputs_as_sources': 1,
         }
       ],
       'sources': [
-        '<(INTERMEDIATE_DIR)/HTMLNames.cpp',
         '../third_party/WebKit/WebCore/css/CSSGrammar.y',
         '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
       ],
       'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
         '../third_party/WebKit/WebCore/css',
         '../third_party/WebKit/WebCore/dom',
         '../third_party/WebKit/WebCore/html',
@@ -253,27 +256,36 @@
         '../third_party/WebKit/WebCore/page',
         '../third_party/WebKit/WebCore/platform',
         '../third_party/WebKit/WebCore/platform/graphics',
+        '../third_party/WebKit/WebCore/platform/graphics/transforms',
         '../third_party/WebKit/WebCore/platform/network',
+        '../third_party/WebKit/WebCore/platform/network/chromium',
         '../third_party/WebKit/WebCore/platform/text',
+        '../third_party/WebKit/WebCore/svg',
+        '../third_party/WebKit/WebCore/svg/animation',
+        '../third_party/WebKit/WebCore/svg/graphics',
         '../third_party/WebKit/WebCore/xml',
       ],
+      'xcode_framework_dirs': [
+        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
+      ],
       'actions': [
+        # Many of these actions don't seem to belong in jsbindings, but
+        # jsbindings depends on them and doesn't have any other dependencies
+        # that require them.
         {
-          # This doesn't seem to belong in jsbindings.
           'action_name': 'CSSPropertyNames.h',
           'inputs': [
             '../third_party/WebKit/WebCore/css/makeprop.pl',
             '../third_party/WebKit/WebCore/css/CSSPropertyNames.in',
           ],
           'outputs': [
+            '<(INTERMEDIATE_DIR)/CSSPropertyNames.cpp',
+            '<(INTERMEDIATE_DIR)/CSSPropertyNames.gperf',
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.h',
-            # This action also outputs CSSPropertyNames.{cpp|gperf}, but
-            # we don't use those files.
           ],
           'action': 'python action_csspropertynames.py <(_inputs) <(_outputs)',
         },
         {
-          # This doesn't seem to belong in jsbindings.
           'action_name': 'HTMLNames.cpp',
           'inputs': [
             '../third_party/WebKit/WebCore/dom/make_names.pl',
@@ -283,10 +295,57 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/HTMLNames.cpp',
             '<(INTERMEDIATE_DIR)/HTMLNames.h',
-            # This action also outputs JSHTMLElementWrapperFactory.{cpp,h},
-            # but we don't use those files.
+            # Pass --wrapperFactory to make_names to get these (JSC build?)
+            #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.cpp',
+            #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.h',
           ],
-          'action': 'python action_htmlnames.py <(_inputs) <(_outputs) ENABLE_VIDEO=1',
+          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'process_outputs_as_sources': 1,
+        },
+        {
+          'action_name': 'SVGNames.cpp',
+          'inputs': [
+            '../third_party/WebKit/WebCore/dom/make_names.pl',
+            '../third_party/WebKit/WebCore/svg/svgtags.in',
+            '../third_party/WebKit/WebCore/svg/svgattrs.in',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/SVGNames.cpp',
+            '<(INTERMEDIATE_DIR)/SVGNames.h',
+            '<(INTERMEDIATE_DIR)/SVGElementFactory.cpp',
+            '<(INTERMEDIATE_DIR)/SVGElementFactory.h',
+            # Pass --wrapperFactory to make_names to get these (JSC build?)
+            #'<(INTERMEDIATE_DIR)/JSSVGElementWrapperFactory.cpp',
+            #'<(INTERMEDIATE_DIR)/JSSVGElementWrapperFactory.h',
+          ],
+          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --factory --extraDefines "<(feature_defines)"',
+          'process_outputs_as_sources': 1,
+        },
+        {
+          'action_name': 'XLinkNames.cpp',
+          'inputs': [
+            '../third_party/WebKit/WebCore/dom/make_names.pl',
+            '../third_party/WebKit/WebCore/svg/xlinkattrs.in',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/XLinkNames.cpp',
+            '<(INTERMEDIATE_DIR)/XLinkNames.h',
+          ],
+          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'process_outputs_as_sources': 1,
+        },
+        {
+          'action_name': 'XMLNames.cpp',
+          'inputs': [
+            '../third_party/WebKit/WebCore/dom/make_names.pl',
+            '../third_party/WebKit/WebCore/xml/xmlattrs.in',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/XMLNames.cpp',
+            '<(INTERMEDIATE_DIR)/XMLNames.h',
+          ],
+          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'process_outputs_as_sources': 1,
         },
       ],
     },

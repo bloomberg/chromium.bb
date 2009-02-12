@@ -230,6 +230,29 @@ class XcodeProject(object):
         os.rmdir(self.path)
       raise
 
+def AddSourceToTarget(source, pbxp, xct, rules_by_ext):
+  # TODO(mark): Perhaps this can be made a little bit fancier.
+  source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's', 'y']
+  basename = os.path.basename(source)
+  dot = basename.rfind('.')
+  added = False
+  if dot != -1:
+    extension = basename[dot + 1:]
+    if extension in rules_by_ext:
+      rule = rules_by_ext[extension]
+      outputs = []
+      for output in rule['outputs']:
+        # Make sure all concrete rule outputs are added to the source group of
+        # the project file.
+        output_path = output.replace('*', basename[:dot])
+        pbxp.SourceGroup().AddOrGetFileByPath(output_path, True)
+    if extension in rules_by_ext or extension in source_extensions:
+      xct.SourcesPhase().AddFile(source)
+      added = True
+  if not added:
+    # Files that aren't added to a sources build phase can still go into
+    # the project's source group.
+    pbxp.SourceGroup().AddOrGetFileByPath(source, True)
 
 def GenerateOutput(target_list, target_dicts, data):
   xcode_projects = {}
@@ -256,80 +279,55 @@ def GenerateOutput(target_list, target_dicts, data):
                                                configuration_names)
     xcode_targets[qualified_target] = xct
 
-    prebuild_index = 0
-    if 'actions' in spec:
-      for action in spec['actions']:
-        # Convert Xcode-type variable references to sh-compatible environment
-        # variable references.  Be sure the script runs in exec, and that if
-        # exec fails, the script exits signalling an error.
-        script = "exec " + re.sub('\$\((.*?)\)', '${\\1}', action['action']) + \
-                 "\nexit 1\n"
-        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
-              'inputPaths': action['inputs'],
-              'name': 'Action "' + action['action_name'] + '"',
-              'outputPaths': action['outputs'],
-              'shellScript': script,
-              'showEnvVarsInLog': 0,
-            })
-
-        # TODO(mark): this assumes too much knowledge of the internals of
-        # xcodeproj_file; some of these smarts should move into xcodeproj_file
-        # itself.
-        xct._properties['buildPhases'].insert(prebuild_index, ssbp)
-        prebuild_index = prebuild_index + 1
-
     rules_by_ext = {}
-    if 'rules' in spec:
-      for rule in spec['rules']:
-        rules_by_ext[rule['extension']] = rule
+    for rule in spec.get('rules', []):
+      rules_by_ext[rule['extension']] = rule
+      outputs = []
+      for output in rule['outputs']:
+        outputs.append(output.replace('*', '$(INPUT_FILE_BASE)'))
+      # Convert Xcode-type variable references to sh-compatible environment
+      # variable references.  Be sure the script runs in exec, and that if
+      # exec fails, the script exits signalling an error.
+      action = 'exec ' + \
+               re.sub('\$\((.*?)\)', '${\\1}', rule['action']). \
+               replace('*', '${SCRIPT_INPUT_FILE}') + \
+               '\nexit 1\n'
+      pbxbr = gyp.xcodeproj_file.PBXBuildRule({
+            'compilerSpec': 'com.apple.compilers.proxy.script',
+            'filePatterns': '*.' + rule['extension'],
+            'fileType':     'pattern.proxy',
+            'outputFiles':  outputs,
+            'script':       action,
+          })
+      xct.AppendProperty('buildRules', pbxbr)
 
-    rules_in_target = {}
+    prebuild_index = 0
+    for action in spec.get('actions', []):
+      # Convert Xcode-type variable references to sh-compatible environment
+      # variable references.  Be sure the script runs in exec, and that if
+      # exec fails, the script exits signalling an error.
+      script = "exec " + re.sub('\$\((.*?)\)', '${\\1}', action['action']) + \
+               "\nexit 1\n"
+      ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+            'inputPaths': action['inputs'],
+            'name': 'Action "' + action['action_name'] + '"',
+            'outputPaths': action['outputs'],
+            'shellScript': script,
+            'showEnvVarsInLog': 0,
+          })
 
-    if 'sources' in spec:
-      for source in spec['sources']:
-        # TODO(mark): Perhaps this can be made a little bit fancier.
-        source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's', 'y']
-        basename = os.path.basename(source)
-        dot = basename.rfind('.')
-        added = False
-        if dot != -1:
-          extension = basename[dot + 1:]
-          if extension in rules_by_ext:
-            if not extension in rules_in_target:
-              rule = rules_by_ext[extension]
-              rules_in_target[extension] = rule
-              outputs = []
-              for output in rule['outputs']:
-                outputs.append(output.replace('*', '$(INPUT_FILE_BASE)'))
-              # Convert Xcode-type variable references to sh-compatible
-              # environment variable references.  Be sure the script runs in
-              # exec, and that if exec fails, the script exits signalling an
-              # error.
-              action = 'exec ' + \
-                  re.sub('\$\((.*?)\)', '${\\1}', rule['action']). \
-                  replace('*', '${SCRIPT_INPUT_FILE}') + \
-                  '\nexit 1\n'
-              pbxbr = gyp.xcodeproj_file.PBXBuildRule({
-                    'compilerSpec': 'com.apple.compilers.proxy.script',
-                    'filePatterns': '*.' + rule['extension'],
-                    'fileType':     'pattern.proxy',
-                    'outputFiles':  outputs,
-                    'script':       action,
-                  })
-              xct.AppendProperty('buildRules', pbxbr)
-            outputs = []
-            for output in rule['outputs']:
-              # Make sure all concrete rule outputs are added to the source
-              # group of the project file.
-              output_path = output.replace('*', basename[:dot])
-              pbxp.SourceGroup().AddOrGetFileByPath(output_path, True)
-          if extension in rules_by_ext or extension in source_extensions:
-            xct.SourcesPhase().AddFile(source)
-            added = True
-        if not added:
-          # Files that aren't added to a sources build phase can still go into
-          # the project's source group.
-          pbxp.SourceGroup().AddOrGetFileByPath(source, True)
+      # TODO(mark): this assumes too much knowledge of the internals of
+      # xcodeproj_file; some of these smarts should move into xcodeproj_file
+      # itself.
+      xct._properties['buildPhases'].insert(prebuild_index, ssbp)
+      prebuild_index = prebuild_index + 1
+
+      if action.get('process_outputs_as_sources', False):
+        for output in action['outputs']:
+          AddSourceToTarget(output, pbxp, xct, rules_by_ext)
+
+    for source in spec.get('sources', []):
+      AddSourceToTarget(source, pbxp, xct, rules_by_ext)
 
     # Excluded files can also go into the project's source group.
     if 'sources_excluded' in spec:
