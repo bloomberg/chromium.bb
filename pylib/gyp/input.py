@@ -676,20 +676,35 @@ def BuildDependencyList(targets):
   root_node = DependencyGraphNode(None)
   for target, spec in targets.iteritems():
     target_node = dependency_nodes[target]
+    target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
     if not 'dependencies' in spec or len(spec['dependencies']) == 0:
       target_node.dependencies = [root_node]
       root_node.dependents.append(target_node)
+      # If there are no dependencies, there can't be anything in
+      # export_dependent_settings.
+      assert not 'export_dependent_settings' in spec or \
+             len(spec['export_dependent_settings']) == 0
     else:
-      for index in range(0, len(spec['dependencies'])):
-        dependency = spec['dependencies'][index]
-        target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
+      dependencies = spec['dependencies']
+      for index in xrange(0, len(dependencies)):
+        dependency = dependencies[index]
         dependency = gyp.common.QualifiedTarget(target_build_file, dependency)
         # Store the qualified name of the target even if it wasn't originally
         # qualified in the dict.  Others will find this useful as well.
-        spec['dependencies'][index] = dependency
+        dependencies[index] = dependency
         dependency_node = dependency_nodes[dependency]
         target_node.dependencies.append(dependency_node)
         dependency_node.dependents.append(target_node)
+
+      # Rewrite export_dependent_settings using qualified names everywhere,
+      # too.  Make sure that anything showing up in export_dependent_settings
+      # is actually a dependency.
+      export_dependent_settings = spec.get('export_dependent_settings', [])
+      for index in xrange(0, len(export_dependent_settings)):
+        dependency = export_dependent_settings[index]
+        dependency = gyp.common.QualifiedTarget(target_build_file, dependency)
+        assert dependency in dependencies
+        export_dependent_settings[index] = dependency
 
   # Take the root node out of the list because it doesn't correspond to a real
   # target.
