@@ -295,7 +295,7 @@
         # jsbindings depends on them and doesn't have any other dependencies
         # that require them.
         {
-          'action_name': 'CSSPropertyNames.h',
+          'action_name': 'CSSPropertyNames',
           'inputs': [
             '../third_party/WebKit/WebCore/css/makeprop.pl',
             '../third_party/WebKit/WebCore/css/CSSPropertyNames.in',
@@ -310,7 +310,7 @@
           'action': 'python action_csspropertynames.py <(_inputs) <(_outputs)',
         },
         {
-          'action_name': 'CSSValueKeywords.h',
+          'action_name': 'CSSValueKeywords',
           'inputs': [
             '../third_party/WebKit/WebCore/css/makevalues.pl',
             '../third_party/WebKit/WebCore/css/CSSValueKeywords.in',
@@ -325,7 +325,7 @@
           'action': 'python action_cssvaluekeywords.py <(_inputs) <(_outputs)',
         },
         {
-          'action_name': 'HTMLNames.cpp',
+          'action_name': 'HTMLNames',
           'inputs': [
             '../third_party/WebKit/WebCore/dom/make_names.pl',
             '../third_party/WebKit/WebCore/html/HTMLTagNames.in',
@@ -342,7 +342,7 @@
           'process_outputs_as_sources': 1,
         },
         {
-          'action_name': 'SVGNames.cpp',
+          'action_name': 'SVGNames',
           'inputs': [
             '../third_party/WebKit/WebCore/dom/make_names.pl',
             '../third_party/WebKit/WebCore/svg/svgtags.in',
@@ -361,7 +361,26 @@
           'process_outputs_as_sources': 1,
         },
         {
-          'action_name': 'XLinkNames.cpp',
+          'action_name': 'UserAgentStyleSheets',
+          'inputs': [
+            '../third_party/WebKit/WebCore/css/make-css-file-arrays.pl',
+            '../third_party/WebKit/WebCore/css/html4.css',
+            '../third_party/WebKit/WebCore/css/quirks.css',
+            '../third_party/WebKit/WebCore/css/view-source.css',
+            '../third_party/WebKit/WebCore/css/themeWin.css',
+            '../third_party/WebKit/WebCore/css/themeWinQuirks.css',
+            '../third_party/WebKit/WebCore/css/svg.css',
+            '../third_party/WebKit/WebCore/css/mediaControls.css',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/UserAgentStyleSheets.h',
+            '<(INTERMEDIATE_DIR)/UserAgentStyleSheetsData.cpp',
+          ],
+          'action': 'python action_useragentstylesheets.py <(_outputs) -- <(_inputs)',
+          'process_outputs_as_sources': 1,
+        },
+        {
+          'action_name': 'XLinkNames',
           'inputs': [
             '../third_party/WebKit/WebCore/dom/make_names.pl',
             '../third_party/WebKit/WebCore/svg/xlinkattrs.in',
@@ -374,7 +393,7 @@
           'process_outputs_as_sources': 1,
         },
         {
-          'action_name': 'XMLNames.cpp',
+          'action_name': 'XMLNames',
           'inputs': [
             '../third_party/WebKit/WebCore/dom/make_names.pl',
             '../third_party/WebKit/WebCore/xml/xmlattrs.in',

@@ -1101,6 +1101,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'c':         'sourcecode.c.c',
         'cc':        'sourcecode.cpp.cpp',
         'cpp':       'sourcecode.cpp.cpp',
+        'css':       'text.css',
         'dylib':     'compiled.mach-o.dylib',
         'framework': 'wrapper.framework',
         'h':         'sourcecode.c.h',
