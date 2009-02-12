@@ -1107,6 +1107,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'js':        'sourcecode.javascript',
         'm':         'sourcecode.c.objc',
         'mm':        'sourcecode.cpp.objcpp',
+        'pl':        'text.script.perl',
         'py':        'text.script.python',
         's':         'sourcecode.asm',
         'y':         'sourcecode.yacc',
