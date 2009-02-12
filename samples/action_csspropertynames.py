@@ -1,45 +1,52 @@
 #!/usr/bin/python
 
 # usage:
-# action_csspropertynames.py makeprop.pl CSSPropertyNames.in CSSPropertyNames.h
-# All arguments are pathnames; the first two are inputs and the last is an
-# output.
+# action_csspropertynames.py makeprop.pl \
+#    CSSPropertyNames.in SVGCSSPropertyNames.in \
+#    CSSPropertyNames.cpp CSSPropertyNames.gperf CSSPropertyNames.h \
+#    CSSPropertyNames.in
+# All arguments are pathnames; the first three are inputs and the rest are
+# outputs.
 
 import os
 import os.path
-import shutil
 import subprocess
 import sys
 
-assert len(sys.argv) == 6
+assert len(sys.argv) == 8
 makeprop_path = sys.argv[1]
 in_path = sys.argv[2]
 assert os.path.basename(in_path) == 'CSSPropertyNames.in'
-out_path = sys.argv[5]
+svg_in_path = sys.argv[3]
+assert os.path.basename(svg_in_path) == 'SVGCSSPropertyNames.in'
+out_path = sys.argv[6]
 assert os.path.basename(out_path) == 'CSSPropertyNames.h'
+merged_path = sys.argv[7]
+assert os.path.basename(merged_path) == 'CSSPropertyNames.in'
 out_dir = os.path.dirname(out_path)
+assert os.path.dirname(merged_path) == out_dir
+
+# Merge in_path and svg_in_path into a single file, CSSPropertyNames.in in
+# the working directory that makeprop.pl will run in.
+out_file = open(merged_path, 'w')
 
 # Make sure there aren't any duplicate lines in CSSPropertyNames.in.
 line_dict = {}
-in_file = open(in_path)
-line_number = 0
-for line in in_file:
-  line_number = line_number + 1
-  line = line.rstrip()
-  if line.startswith('#'):
-    line = ''
-  if line == '':
-    continue
-  if line in line_dict:
-    raise KeyError, 'Duplicate value in %s at lines %d and %d' % \
-                    (in_path, line_dict[line], line_number)
-  line_dict[line] = line_number
-in_file.close()
+for path in [in_path, svg_in_path]:
+  in_file = open(path)
+  for line in in_file:
+    line = line.rstrip()
+    if line.startswith('#'):
+      line = ''
+    if line == '':
+      continue
+    if line in line_dict:
+      raise KeyError, 'Duplicate value %s' % line
+    line_dict[line] = True
+    print >>out_file, line
+  in_file.close()
 
-# makeprop.pl works in the current directory, so copy the input to the
-# directory where the output needs to be produced, and then change there.
-# Make the makeprop path absolute first so that it can still be referenced.
-shutil.copyfile(in_path, os.path.join(out_dir, 'CSSPropertyNames.in'))
+out_file.close()
 
 makeprop_path = os.path.abspath(makeprop_path)
 
@@ -47,6 +54,3 @@ os.chdir(out_dir)
 
 return_code = subprocess.call(['perl', makeprop_path])
 assert return_code == 0
-
-# Remove the copy of the input file.
-os.unlink('CSSPropertyNames.in')

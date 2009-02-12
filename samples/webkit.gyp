@@ -299,13 +299,30 @@
           'inputs': [
             '../third_party/WebKit/WebCore/css/makeprop.pl',
             '../third_party/WebKit/WebCore/css/CSSPropertyNames.in',
+            '../third_party/WebKit/WebCore/css/SVGCSSPropertyNames.in',
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.cpp',
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.gperf',
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.h',
+            '<(INTERMEDIATE_DIR)/CSSPropertyNames.in',
           ],
           'action': 'python action_csspropertynames.py <(_inputs) <(_outputs)',
+        },
+        {
+          'action_name': 'CSSValueKeywords.h',
+          'inputs': [
+            '../third_party/WebKit/WebCore/css/makevalues.pl',
+            '../third_party/WebKit/WebCore/css/CSSValueKeywords.in',
+            '../third_party/WebKit/WebCore/css/SVGCSSValueKeywords.in',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.c',
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.gperf',
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.h',
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.in',
+          ],
+          'action': 'python action_cssvaluekeywords.py <(_inputs) <(_outputs)',
         },
         {
           'action_name': 'HTMLNames.cpp',
