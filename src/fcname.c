@@ -783,7 +783,7 @@ FcNameUnparseString (FcStrBuf	    *buf,
     return FcTrue;
 }
 
-static FcBool
+FcBool
 FcNameUnparseValue (FcStrBuf	*buf,
 		    FcValue	*v0,
 		    FcChar8	*escape)

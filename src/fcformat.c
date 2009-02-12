@@ -39,9 +39,8 @@
  */
 
 
-/* fc-match needs '<unknown filename>', etc handling, as well as printing
- * printing first value only. */
-#define FCMATCH_FORMAT	"%{file|basename}: \"%{family}\" \"%{style}\""
+/* fc-match needs '<unknown filename>', etc handling. */
+#define FCMATCH_FORMAT	"%{file|basename}: \"%{family[0]}\" \"%{style[0]}\""
 #define FCLIST_FORMAT	"%{?file{%{file}: }}%{=unparse}"
 
 
@@ -543,12 +542,26 @@ interpret_simple (FcFormatContext *c,
     FcPatternElt *e;
     FcBool        add_colon = FcFalse;
     FcBool        add_elt_name = FcFalse;
+    int           idx;
 
     if (consume_char (c, ':'))
 	add_colon = FcTrue;
 
     if (!read_word (c))
 	return FcFalse;
+
+    idx = -1;
+    if (consume_char (c, '['))
+    {
+	idx = strtol ((const char *) c->format, (char **) &c->format, 10);
+	if (idx < 0)
+	{
+	    message ("expected non-negative number at %d",
+		     c->format-1 - c->format_orig + 1);
+	    return FcFalse;
+	}
+	expect_char (c, ']');
+    }
 
     if (consume_char (c, '='))
 	add_elt_name = FcTrue;
@@ -568,7 +581,29 @@ interpret_simple (FcFormatContext *c,
 	}
 
 	l = FcPatternEltValues(e);
-	FcNameUnparseValueList (buf, l, '\0');
+
+	if (idx != -1)
+	{
+	    while (l && idx > 0)
+	    {
+		l = FcValueListNext(l);
+		idx--;
+	    }
+	    if (l && idx == 0)
+	    {
+		if (!FcNameUnparseValue (buf, &l->value, '\0'))
+		    return FcFalse;
+	    }
+	    else goto notfound;
+        }
+	else
+	{
+	    FcNameUnparseValueList (buf, l, '\0');
+	}
+    }
+    else
+notfound:
+    {
     }
 
     return FcTrue;

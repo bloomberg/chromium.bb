@@ -646,6 +646,11 @@ FcPrivate FcCharSet *
 FcNameParseCharSet (FcChar8 *string);
 
 FcPrivate FcBool
+FcNameUnparseValue (FcStrBuf    *buf,
+                    FcValue     *v0,
+		    FcChar8     *escape);
+
+FcPrivate FcBool
 FcNameUnparseValueList (FcStrBuf	*buf,
 			FcValueListPtr	v,
 			FcChar8		*escape);
