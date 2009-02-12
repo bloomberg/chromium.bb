@@ -55,10 +55,6 @@
     {
       'target_name': 'wtf',
       'type': 'static_library',
-      'dependencies': [
-        '../third_party/icu38/icu38.gyp:icui18n',
-        '../third_party/icu38/icu38.gyp:icuuc',
-      ],
       'include_dirs': [
         '../third_party/WebKit/JavaScriptCore',
         '../third_party/WebKit/JavaScriptCore/wtf',
@@ -90,8 +86,6 @@
         '../third_party/WebKit/JavaScriptCore/wtf/CurrentTime.cpp',
         '../third_party/WebKit/JavaScriptCore/wtf/CurrentTime.h',
         '../third_party/WebKit/JavaScriptCore/wtf/Deque.h',
-        '../third_party/WebKit/JavaScriptCore/wtf/dtoa.cpp',
-        '../third_party/WebKit/JavaScriptCore/wtf/dtoa.h',
         '../third_party/WebKit/JavaScriptCore/wtf/FastMalloc.cpp',
         '../third_party/WebKit/JavaScriptCore/wtf/FastMalloc.h',
         '../third_party/WebKit/JavaScriptCore/wtf/Forward.h',
@@ -151,21 +145,27 @@
         '../third_party/WebKit/JavaScriptCore/wtf/UnusedParam.h',
         '../third_party/WebKit/JavaScriptCore/wtf/Vector.h',
         '../third_party/WebKit/JavaScriptCore/wtf/VectorTraits.h',
+        '../third_party/WebKit/JavaScriptCore/wtf/dtoa.cpp',
+        '../third_party/WebKit/JavaScriptCore/wtf/dtoa.h',
         'build/precompiled_webkit.cc',
         'build/precompiled_webkit.h',
+      ],
+      'sources!': [
+        'build/precompiled_webkit.cc',
+        'build/precompiled_webkit.h',
+      ],
+      'dependencies': [
+        '../third_party/icu38/icu38.gyp:icui18n',
+        '../third_party/icu38/icu38.gyp:icuuc',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
           '../third_party/WebKit/JavaScriptCore',
-          # TODO(mark): Provide a way to reexport inherited dependent settings
-          # from selected dependencies as direct_dependent_settings.
-          '../third_party/icu38/public/common',
-          '../third_party/icu38/public/i18n',
         ],
       },
-      'sources!': [
-        'build/precompiled_webkit.h',
-        'build/precompiled_webkit.cc',
+      'export_dependent_settings': [
+        '../third_party/icu38/icu38.gyp:icui18n',
+        '../third_party/icu38/icu38.gyp:icuuc',
       ],
       'conditions': [
         ['OS=="win"', {
@@ -184,10 +184,7 @@
               'msvs_precompiled_source': 'build/precompiled_webkit.cc',
             },
           },
-        }, {  # else: OS != "win"
-            'sources!': [
-            ],
-        },],
+        }],
       ],
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },

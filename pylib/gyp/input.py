@@ -544,6 +544,56 @@ class DependencyGraphNode(object):
 
     return dependencies
 
+  def _AddImportedDependencies(self, targets, dependencies=None):
+    """Given a list of direct dependencies, adds indirect dependencies that
+    other dependencies have declared to export their settings.
+
+    This method does not operate on self.  Rather, it operates on the list
+    of dependencies in the |dependencies| argument.  For each dependency in
+    that list, if any declares that it exports the settings of one of its
+    own dependencies, those dependencies whose settings are "passed through"
+    are added to the list.  As new items are added to the list, they too will
+    be processed, so it is possible to import settings through multiple levels
+    of dependencies.
+
+    This method is not terribly useful on its own, it depends on being
+    "primed" with a list of direct dependencies such as one provided by
+    DirectDependencies.  DirectAndImportedDependencies is intended to be the
+    public entry point.
+    """
+
+    if dependencies == None:
+      dependencies = []
+
+    index = 0
+    while index < len(dependencies):
+      dependency = dependencies[index]
+      dependency_dict = targets[dependency]
+      for imported_dependency in \
+          dependency_dict.get('export_dependent_settings', []):
+        # Add any dependencies whose settings should be imported to the list
+        # if not already present.  Newly-added items will be checked for
+        # their own imports when the list iteration reaches them.
+        # Rather than simply appending new items, insert them after the
+        # dependency that exported them.  This is done to more closely match
+        # the depth-first method used by DeepDependencies.
+        add_index = 1
+        if imported_dependency not in dependencies:
+          dependencies.insert(index + add_index, imported_dependency)
+          add_index = add_index + 1
+      index = index + 1
+
+    return dependencies
+
+  def DirectAndImportedDependencies(self, targets, dependencies=None):
+    """Returns a list of a target's direct dependencies and all indirect
+    dependencies that a dependency has advertised settings should be exported
+    through the dependency for.
+    """
+
+    dependencies = self.DirectDependencies(dependencies)
+    return self._AddImportedDependencies(targets, dependencies)
+
   def DeepDependencies(self, dependencies=None):
     """Returns a list of all of a target's dependencies, recursively."""
     if dependencies == None:
@@ -666,7 +716,8 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
     if key == 'all_dependent_settings':
       dependencies = dependency_nodes[target].DeepDependencies()
     elif key == 'direct_dependent_settings':
-      dependencies = dependency_nodes[target].DirectDependencies()
+      dependencies = \
+          dependency_nodes[target].DirectAndImportedDependencies(targets)
     elif key == 'link_settings':
       dependencies = dependency_nodes[target].LinkDependencies(targets)
     else:
