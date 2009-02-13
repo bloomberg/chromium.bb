@@ -31,7 +31,6 @@
 /*
  * Some ideas for future syntax extensions:
  *
- * - array enumeration using '%{[]family,familylang{expr}|decorator}'
  * - langset enumeration using same syntax as array enumeration
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)'/'(=)' notation)
@@ -476,9 +475,8 @@ interpret_cond (FcFormatContext *c,
 
 	pass = pass &&
 	       (negate ^
-		(FcResultMatch == FcPatternGet (pat,
-						(const char *) c->word,
-						0, &v)));
+		(FcResultMatch ==
+		 FcPatternGet (pat, (const char *) c->word, 0, &v)));
     }
     while (consume_char (c, ','));
 
@@ -533,6 +531,86 @@ interpret_count (FcFormatContext *c,
 }
 
 static FcBool
+interpret_array (FcFormatContext *c,
+		 FcPattern       *pat,
+		 FcStrBuf        *buf)
+{
+    FcObjectSet   *os;
+    FcPattern     *subpat;
+    const FcChar8 *format_save;
+    int            idx;
+    FcBool         ret, done;
+
+    if (!expect_char (c, '[') ||
+	!expect_char (c, ']'))
+	return FcFalse;
+
+    os = FcObjectSetCreate ();
+    if (!os)
+	return FcFalse;
+
+    ret = FcTrue;
+
+    do
+    {
+	if (!read_word (c) ||
+	    !FcObjectSetAdd (os, (const char *) c->word))
+	{
+	    FcObjectSetDestroy (os);
+	    return FcFalse;
+	}
+    }
+    while (consume_char (c, ','));
+
+    subpat = FcPatternDuplicate (pat);
+    if (!subpat)
+	goto bail0;
+
+    format_save = c->format;
+    idx = 0;
+    do
+    {
+	int i;
+
+	done = FcTrue;
+
+	for (i = 0; i < os->nobject; i++)
+	{
+	    FcValue v;
+
+	    /* XXX this can be optimized by accessing valuelist linked lists
+	     * directly and remembering where we were.  Most (all) value lists
+	     * in normal uses are pretty short though (language tags are
+	     * stored as a LangSet, not separate values.). */
+	    FcPatternDel (subpat, os->objects[i]);
+	    if (FcResultMatch ==
+		FcPatternGet (pat, os->objects[i], idx, &v))
+	    {
+		FcPatternAdd (subpat, os->objects[i], v, FcFalse);
+		done = FcFalse;
+	    }
+	}
+
+	if (!done)
+	{
+	    c->format = format_save;
+	    ret = interpret_subexpr (c, subpat, buf);
+	    if (!ret)
+		goto bail;
+	}
+
+	idx++;
+    } while (!done);
+
+bail:
+    FcPatternDestroy (subpat);
+bail0:
+    FcObjectSetDestroy (os);
+
+    return ret;
+}
+
+static FcBool
 interpret_simple (FcFormatContext *c,
 		  FcPattern       *pat,
 		  FcStrBuf        *buf)
@@ -559,7 +637,8 @@ interpret_simple (FcFormatContext *c,
 		     c->format-1 - c->format_orig + 1);
 	    return FcFalse;
 	}
-	expect_char (c, ']');
+	if (!expect_char (c, ']'))
+	    return FcFalse;
     }
 
     if (consume_char (c, '='))
@@ -969,6 +1048,7 @@ interpret_percent (FcFormatContext *c,
     case '-': ret = interpret_delete  (c, pat, buf); break;
     case '?': ret = interpret_cond    (c, pat, buf); break;
     case '#': ret = interpret_count   (c, pat, buf); break;
+    case '[': ret = interpret_array   (c, pat, buf); break;
     default:  ret = interpret_simple  (c, pat, buf); break;
     }
 
