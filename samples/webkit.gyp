@@ -240,7 +240,7 @@
             '<(INTERMEDIATE_DIR)/*.cpp',
             '<(INTERMEDIATE_DIR)/*.h'
           ],
-          'action': 'python rule_bison.py * <(INTERMEDIATE_DIR)',
+          'action': 'python build/rule_bison.py * <(INTERMEDIATE_DIR)',
           'process_outputs_as_sources': 1,
         },
         {
@@ -256,7 +256,7 @@
             '<(INTERMEDIATE_DIR)/*.c',
             '<(INTERMEDIATE_DIR)/*.cpp',
           ],
-          'action': 'python rule_gperf.py * <(INTERMEDIATE_DIR)',
+          'action': 'python build/rule_gperf.py * <(INTERMEDIATE_DIR)',
           'process_outputs_as_sources': 0,
         },
       ],
@@ -290,7 +290,7 @@
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.h',
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.in',
           ],
-          'action': 'python action_csspropertynames.py <(_inputs) <(_outputs)',
+          'action': 'python build/action_csspropertynames.py <(_inputs) <(_outputs)',
         },
         {
           'action_name': 'CSSValueKeywords',
@@ -305,7 +305,7 @@
             '<(INTERMEDIATE_DIR)/CSSValueKeywords.h',
             '<(INTERMEDIATE_DIR)/CSSValueKeywords.in',
           ],
-          'action': 'python action_cssvaluekeywords.py <(_inputs) <(_outputs)',
+          'action': 'python build/action_cssvaluekeywords.py <(_inputs) <(_outputs)',
         },
         {
           'action_name': 'HTMLNames',
@@ -321,7 +321,7 @@
             #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.cpp',
             #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.h',
           ],
-          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
           'process_outputs_as_sources': 1,
         },
         {
@@ -340,7 +340,7 @@
             #'<(INTERMEDIATE_DIR)/JSSVGElementWrapperFactory.cpp',
             #'<(INTERMEDIATE_DIR)/JSSVGElementWrapperFactory.h',
           ],
-          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --factory --extraDefines "<(feature_defines)"',
+          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --factory --extraDefines "<(feature_defines)"',
           'process_outputs_as_sources': 1,
         },
         {
@@ -359,7 +359,7 @@
             '<(INTERMEDIATE_DIR)/UserAgentStyleSheets.h',
             '<(INTERMEDIATE_DIR)/UserAgentStyleSheetsData.cpp',
           ],
-          'action': 'python action_useragentstylesheets.py <(_outputs) -- <(_inputs)',
+          'action': 'python build/action_useragentstylesheets.py <(_outputs) -- <(_inputs)',
           'process_outputs_as_sources': 1,
         },
         {
@@ -372,7 +372,7 @@
             '<(INTERMEDIATE_DIR)/XLinkNames.cpp',
             '<(INTERMEDIATE_DIR)/XLinkNames.h',
           ],
-          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
           'process_outputs_as_sources': 1,
         },
         {
@@ -385,7 +385,7 @@
             '<(INTERMEDIATE_DIR)/XMLNames.cpp',
             '<(INTERMEDIATE_DIR)/XMLNames.h',
           ],
-          'action': 'python action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
           'process_outputs_as_sources': 1,
         },
         {
@@ -397,7 +397,7 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/tokenizer.cpp',
           ],
-          'action': 'python action_maketokenizer.py <(_outputs) -- <(_inputs)',
+          'action': 'python build/action_maketokenizer.py <(_outputs) -- <(_inputs)',
         },
       ],
     },
@@ -427,7 +427,7 @@
               'outputs': ['<(INTERMEDIATE_DIR)/v8/javascript/stdint.h'],
             }],
           ],
-          'action': 'python action_jsconfig.py v8 <(INTERMEDIATE_DIR)/v8 <(_inputs)',
+          'action': 'python build/action_jsconfig.py v8 <(INTERMEDIATE_DIR)/v8 <(_inputs)',
         },
       ],
     },
@@ -475,7 +475,7 @@
               '--include', '../third_party/WebKit/WebCore/xml',
             ],
           },
-          'action': 'python rule_binding.py * <(INTERMEDIATE_DIR)/bindings -- <(_inputs) -- --defines "<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING" --generator V8 <(generator_include_dirs)',
+          'action': 'python build/rule_binding.py * <(INTERMEDIATE_DIR)/bindings -- <(_inputs) -- --defines "<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING" --generator V8 <(generator_include_dirs)',
           'process_outputs_as_sources': 1,
         },
       ],
