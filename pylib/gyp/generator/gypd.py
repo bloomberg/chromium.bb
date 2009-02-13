@@ -51,19 +51,18 @@ for v in _generator_identity_variables:
 def GenerateOutput(target_list, target_dicts, data):
   output_files = {}
   for qualified_target in target_list:
-    [build_file, target] = \
+    [input_file, target] = \
         gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
 
-    if build_file[-4:] != '.gyp':
+    if input_file[-4:] != '.gyp':
       continue
-    build_file_stem = build_file[:-4]
-    output_file = build_file_stem + '.gypd'
+    input_file_stem = input_file[:-4]
+    output_file = input_file_stem + '.gypd'
 
     if not output_file in output_files:
-      output_files[output_file] = { 'targets': [] }
-    output_files[output_file]['targets'].append(target_dicts[qualified_target])
+      output_files[output_file] = input_file
 
-  for output_file, output_dict in output_files.iteritems():
+  for output_file, input_file in output_files.iteritems():
     output = open(output_file, 'w')
-    pprint.pprint(output_dict, output)
+    pprint.pprint(data[input_file], output)
     output.close()

@@ -147,6 +147,9 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes):
       build_file_data['targets'][index] = new_target_dict
       index = index + 1
 
+    # No longer needed.
+    del build_file_data['target_defaults']
+
   # Look for dependencies.  This means that dependency resolution occurs
   # after "pre" conditionals and variable expansion, but before "post" -
   # in other words, you can't put a "dependencies" section inside a "post"

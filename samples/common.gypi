@@ -74,9 +74,6 @@
           'MACOSX_DEPLOYMENT_TARGET': '10.5',
           'PREBINDING': 'NO',
           'SDKROOT': 'macosx10.5',
-          # xcodebuild_gyp is a temporary name to avoid colliding with the
-          # xcodebuild directory used by the non-gyp Xcode build system.
-          'SYMROOT': '<(depth)/xcodebuild_gyp',
           'USE_HEADERMAP': 'NO',
           'WARNING_CFLAGS': ['-Wall', '-Wendif-labels'],
         },
@@ -156,4 +153,23 @@
       },
     }],
   ],
+  'xcode_settings': {
+    # The Xcode generator will look for an xcode_settings section at the root
+    # of each dict and use it to apply settings on a file-wide basis.  Most
+    # settings should not be here, they should be in target-specific
+    # xcode_settings sections, or better yet, should use non-Xcode-specific
+    # settings in target dicts.  SYMROOT is a special case, because many other
+    # Xcode variables depend on it, including variables such as
+    # PROJECT_DERIVED_FILE_DIR.  When a source group corresponding to something
+    # like PROJECT_DERIVED_FILE_DIR is added to a project, in order for the
+    # files to appear (when present) in the UI as actual files and not red
+    # red "missing file" proxies, the correct path to PROJECT_DERIVED_FILE_DIR,
+    # and therefore SYMROOT, needs to be set at the project level.
+    #
+    # xcodebuild_gyp is a temporary name to avoid colliding with the xcodebuild
+    # directory used by the non-gyp Xcode build system.  When the gyp-based
+    # Xcode build system replaces the older system, this should be changed to
+    # simply "xcodebuild" or some other suitable name.
+    'SYMROOT': '<(depth)/xcodebuild_gyp',
+  },
 }

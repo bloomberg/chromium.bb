@@ -24,12 +24,13 @@ generator_default_variables = {
 
 
 class XcodeProject(object):
-  def __init__(self, gyp_path, path):
+  def __init__(self, gyp_path, path, build_file_dict):
     self.gyp_path = gyp_path
     self.path = path
     self.project = gyp.xcodeproj_file.PBXProject(path=path)
     self.project_file = \
         gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
+    self.build_file_dict = build_file_dict
 
   def AddTarget(self, name, type, configurations):
     _types = {
@@ -87,6 +88,16 @@ class XcodeProject(object):
       xccl.AppendProperty('buildConfigurations', xcbc)
     xccl.SetProperty('defaultConfigurationName', configurations[0])
     self.project.SetProperty('buildConfigurationList', xccl)
+
+    # Set project-wide build settings.  This is intended to be used very
+    # sparingly.  Really, almost everything should go into target-specific
+    # build settings sections.  The project-wide settings are only intended
+    # to be used in cases where Xcode attempts to resolve variable references
+    # in a project context as opposed to a target context, such as when
+    # resolving sourceTree references while building up the tree view for
+    # UI display.
+    for xck, xcv in self.build_file_dict.get('xcode_settings', {}).iteritems():
+      xccl.SetBuildSetting(xck, xcv)
 
     # Sort the targets based on how they appeared in the input.
     # TODO(mark): Like a lot of other things here, this assumes internal
@@ -305,7 +316,8 @@ def GenerateOutput(target_list, target_dicts, data):
     # TODO(mark): To keep gyp-generated xcodeproj bundles from colliding with
     # checked-in versions, temporarily put _gyp into the ones created here.
     xcode_projects[build_file] = \
-        XcodeProject(build_file, build_file_stem + '_gyp.xcodeproj')
+        XcodeProject(build_file, build_file_stem + '_gyp.xcodeproj',
+                     build_file_dict)
 
   xcode_targets = {}
   for qualified_target in target_list:
