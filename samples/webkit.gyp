@@ -834,6 +834,7 @@
         'v8_config',
         'v8_derived',
         '../v8/v8.gyp:v8',
+        '../third_party/libxml/libxml.gyp:libxml',
       ],
       'hard_dependencies': [
         'webkit_derived',
