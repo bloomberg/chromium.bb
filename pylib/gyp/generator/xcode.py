@@ -9,6 +9,8 @@ import re
 import tempfile
 
 
+_intermediate_dir = 'INTERMEDIATE_DIR'
+
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
@@ -17,7 +19,7 @@ generator_default_variables = {
   # and be constant within the context of a target.  Some build environments
   # may allow their intermediate directory or equivalent to be shared on a
   # wider scale, but this is not guaranteed.
-  'INTERMEDIATE_DIR': '$(PROJECT_DERIVED_FILE_DIR)',
+  'INTERMEDIATE_DIR': '$(%s)' % _intermediate_dir,
   'OS': 'mac',
   'PRODUCT_DIR': '$(BUILT_PRODUCTS_DIR)',
 }
@@ -88,6 +90,11 @@ class XcodeProject(object):
       xccl.AppendProperty('buildConfigurations', xcbc)
     xccl.SetProperty('defaultConfigurationName', configurations[0])
     self.project.SetProperty('buildConfigurationList', xccl)
+
+    # PROJECT_DERIVED_FILE_DIR isn't configuration-specific.  That's kind of
+    # bad, so provide our own equivalent that is configuration-specific.
+    xccl.SetBuildSetting(_intermediate_dir,
+                         '$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)')
 
     # Set project-wide build settings.  This is intended to be used very
     # sparingly.  Really, almost everything should go into target-specific
@@ -364,7 +371,7 @@ def GenerateOutput(target_list, target_dicts, data):
         # filed as Apple radar bug 6584932.
         dummy_name = \
             'gyp.rule.' + rule['rule_name'] + '.$(INPUT_FILE_BASE).dummy'
-        dummy_path = os.path.join('$(PROJECT_DERIVED_FILE_DIR)', dummy_name)
+        dummy_path = os.path.join('$(%s)' % _intermediate_dir, dummy_name)
         outputs = [dummy_path]
         action = \
             'DUMMY=' + dummy_path + '\n' + \

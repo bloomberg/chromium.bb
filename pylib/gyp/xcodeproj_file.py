@@ -1911,9 +1911,13 @@ class PBXProject(XCContainerPortal):
 
     # TODO(mark): make this a class variable and bind to self on call?
     # Also, this list is nowhere near exhaustive.
+    # INTERMEDIATE_DIR is used by gyp.generator.xcode.  There should probably
+    # be some way for that module to push the name in, rather than having to
+    # hard-code it here.
     source_tree_groups = {
       'BUILT_PRODUCTS_DIR':       (self.ProductsGroup, False),
       'DERIVED_FILE_DIR':         (self.IntermediatesGroup, True),
+      'INTERMEDIATE_DIR':         (self.IntermediatesGroup, True),
       'PROJECT_DERIVED_FILE_DIR': (self.IntermediatesGroup, True),
     }
 
