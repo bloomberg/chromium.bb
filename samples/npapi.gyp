@@ -4,13 +4,12 @@
   },
   'includes': [
     '../../build/common.gypi',
+    '../../build/external_code.gypi',
   ],
   'targets': [
     {
       'target_name': 'npapi',
       'type': 'none',
-      'sources': [
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '.',
