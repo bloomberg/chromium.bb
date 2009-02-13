@@ -31,10 +31,21 @@ import os
 import pprint
 
 
+# These variables should just be spit back out as variable references.
+_generator_identity_variables = [
+  'EXECUTABLE_PREFIX',
+  'EXECUTABLE_SUFFIX',
+  'INTERMEDIATE_DIR',
+  'PRODUCT_DIR',
+]
+
 # gypd doesn't define a default value for OS like many other generator
 # modules.  Specify "-D OS=whatever" on the command line to provide a value.
 generator_default_variables = {
 }
+
+for v in _generator_identity_variables:
+  generator_default_variables[v] = '<(%s)' % v
 
 
 def GenerateOutput(target_list, target_dicts, data):

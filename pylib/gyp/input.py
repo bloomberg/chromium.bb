@@ -1160,6 +1160,9 @@ def ProcessRulesInDict(name, the_dict):
               raise ValueError, 'Unrecognized action ' + action + ' in ' + \
                                 name + ' key ' + key
 
+      # The "whatever/" list is no longer needed, dump it.
+      del the_dict[regex_key]
+
     # Add excluded items to the excluded list.
     #
     # Note that exclude_key ("sources!") is different from excluded_key
