@@ -155,6 +155,30 @@ _unquoted = re.compile('^[A-Za-z0-9$./_]+$')
 _escaped = re.compile('[\\"]|[^ -~]')
 
 
+# Used by SourceTreeAndPathFromPath
+_path_leading_variable = re.compile('^\$\((.*?)\)(/(.*))?$')
+
+def SourceTreeAndPathFromPath(input_path):
+  """Given input_path, returns a tuple with sourceTree and path values.
+
+  Examples:
+    input_path     (source_tree, output_path)
+    '$(VAR)/path'  ('VAR', 'path')
+    '$(VAR)'       ('VAR', None)
+    'path'         (None, 'path')
+  """
+
+  source_group_match = _path_leading_variable.match(input_path)
+  if source_group_match:
+    source_tree = source_group_match.group(1)
+    output_path = source_group_match.group(3)  # This may be None.
+  else:
+    source_tree = None
+    output_path = input_path
+
+  return (source_tree, output_path)
+
+
 class XCObject(object):
   """The abstract base of all class types used in Xcode project files.
 
@@ -795,12 +819,6 @@ class XCObject(object):
       self.UpdateProperties(defaults, do_copy=True)
 
  
-# path_leading_variable is used by XCHierarchicalElement.__init__ to determine
-# whether a pathname begins with an Xcode variable, such as "$(SDKROOT)/blah",
-# or just "$(SDKROOT)".
-_path_leading_variable = re.compile('^\$\((.*?)\)(/(.*))?$')
-
-
 class XCHierarchicalElement(XCObject):
   """Abstract base for PBXGroup and PBXFileReference.  Not represented in a
   project file."""
@@ -838,19 +856,18 @@ class XCHierarchicalElement(XCObject):
       # If the pathname begins with an Xcode variable like "$(SDKROOT)/", take
       # the variable out and make the path be relative to that variable by
       # assigning the variable name as the sourceTree.
-      source_group_match = \
-          _path_leading_variable.match(self._properties['path'])
-      if source_group_match:
-        self._properties['sourceTree'] = source_group_match.group(1)
-        if source_group_match.group(3) != None:
-          self._properties['path'] = source_group_match.group(3)
-        else:
-          # The path was of the form "$(SDKROOT)" with no path following it.
-          # This object is now relative to that variable, so it has no path
-          # attribute of its own.  It does, however, keep a name.
-          del self._properties['path']
-          if not 'name' in self._properties:
-            self._properties['name'] = source_group_match.group(1)
+      (source_tree, path) = SourceTreeAndPathFromPath(self._properties['path'])
+      if source_tree != None:
+        self._properties['sourceTree'] = source_tree
+      if path != None:
+        self._properties['path'] = path
+      if source_tree != None and path == None and \
+         not 'name' in self._properties:
+        # The path was of the form "$(SDKROOT)" with no path following it.
+        # This object is now relative to that variable, so it has no path
+        # attribute of its own.  It does, however, keep a name.
+        del self._properties['path']
+        self._properties['name'] = source_tree
 
   def Name(self):
     if 'name' in self._properties:
@@ -889,7 +906,7 @@ class XCHierarchicalElement(XCObject):
       return -1
     return 1
 
-  def SourceTreeAndPath(self):
+  def PathFromSourceTreeAndPath(self):
     # Turn the object's sourceTree and path properties into a single flat
     # string of a form comparable to the path parameter.  If there's a
     # sourceTree property other than "<group>", wrap it in $(...) for the
@@ -932,7 +949,7 @@ class PBXGroup(XCHierarchicalElement):
     if not 'children' in self._properties:
       return
     for child in self._properties['children']:
-      child_path = child.SourceTreeAndPath()
+      child_path = child.PathFromSourceTreeAndPath()
       if child_path:
         if child_path in self._children_by_path:
           raise ValueError, 'Found multiple children with path ' + child_path
@@ -943,7 +960,7 @@ class PBXGroup(XCHierarchicalElement):
     # AppendProperty('children', child) directly because this function
     # maintains the _children_by_path dict.
     self.AppendProperty('children', child)
-    child_path = child.SourceTreeAndPath()
+    child_path = child.PathFromSourceTreeAndPath()
     if child_path:
       if child_path in self._children_by_path:
         raise ValueError, 'Adding duplicate child with path ' + child_path
@@ -1024,18 +1041,20 @@ class PBXGroup(XCHierarchicalElement):
     # This function should be used only to compare direct children of the
     # containing PBXProject's mainGroup.  These groups should appear in the
     # listed order.
-    order = ['Source', 'Projects', 'Frameworks', 'Products']
+    order = ['Source', 'Intermediates', 'Projects', 'Frameworks', 'Products']
 
     # If the groups aren't in the listed order, do a name comparison.
     # Otherwise, groups in the listed order should come before those that
     # aren't.
     self_name = self.Name()
     other_name = other.Name()
-    if not self_name in order and not other_name in order:
+    self_in = self_name in order
+    other_in = other_name in order
+    if not self_in and not other_in:
       return cmp(self_name, other_name)
-    if self in order:
+    if self_name in order and not other_name in order:
       return -1
-    if other in order:
+    if other_name in order and not self_name in order:
       return 1
 
     # If both groups are in the listed order, go by the defined order.
@@ -1292,17 +1311,17 @@ class XCBuildPhase(XCObject):
     'runOnlyForDeploymentPostprocessing': [0, int,          0, 1, 0],
   })
 
-  def FileGroup(self):
-    # Subclasses must override this by returning a two-element list.  The
-    # first item in the list should be the PBXGroup to which files added to
-    # the phase should be added.  The second item should be a boolean variable
-    # indicating whether files should be added into hierarchical groups or
-    # one single flat group.
+  def FileGroup(self, path):
+    # Subclasses must override this by returning a two-element tuple.  The
+    # first item in the tuple should be the PBXGroup to which "path" should be
+    # added, either as a child or deeper descendant.  The second item should
+    # be a boolean indicating whether files should be added into hierarchical
+    # groups or one single flat group.
     raise NotImplementedError, \
           self.__class__.__name__ + ' must implement FileGroup'
 
   def AddFile(self, path):
-    [file_group, hierarchical] = self.FileGroup()
+    (file_group, hierarchical) = self.FileGroup(path)
     file_ref = file_group.AddOrGetFileByPath(path, hierarchical)
     self.AppendProperty('files', PBXBuildFile({'fileRef': file_ref}))
 
@@ -1313,8 +1332,8 @@ class PBXHeadersBuildPhase(XCBuildPhase):
   def Name(self):
     return 'Headers'
 
-  def FileGroup(self):
-    return [self.PBXProjectAncestor().SourceGroup(), True]
+  def FileGroup(self, path):
+    return self.PBXProjectAncestor().RootGroupForPath(path)
 
 
 class PBXSourcesBuildPhase(XCBuildPhase):
@@ -1323,8 +1342,8 @@ class PBXSourcesBuildPhase(XCBuildPhase):
   def Name(self):
     return 'Sources'
 
-  def FileGroup(self):
-    return [self.PBXProjectAncestor().SourceGroup(), True]
+  def FileGroup(self, path):
+    return self.PBXProjectAncestor().RootGroupForPath(path)
 
 
 class PBXFrameworksBuildPhase(XCBuildPhase):
@@ -1333,8 +1352,8 @@ class PBXFrameworksBuildPhase(XCBuildPhase):
   def Name(self):
     return 'Frameworks'
 
-  def FileGroup(self):
-    return [self.PBXProjectAncestor().FrameworksGroup(), False]
+  def FileGroup(self, path):
+    return (self.PBXProjectAncestor().FrameworksGroup(), False)
 
 
 class PBXShellScriptBuildPhase(XCBuildPhase):
@@ -1754,6 +1773,12 @@ class PBXProject(XCContainerPortal):
   def ProductsGroup(self):
     return self._GroupByName('Products')
 
+  # IntermediatesGroup is used to collect source-like files that are generated
+  # by rules or script phases and are placed in intermediate directories such
+  # as DerivedSources.
+  def IntermediatesGroup(self):
+    return self._GroupByName('Intermediates')
+
   # FrameworksGroup and ProjectsGroup are top-level groups used to collect
   # frameworks and projects.
   def FrameworksGroup(self):
@@ -1761,6 +1786,50 @@ class PBXProject(XCContainerPortal):
 
   def ProjectsGroup(self):
     return self._GroupByName('Projects')
+
+  def RootGroupForPath(self, path):
+    """Returns a PBXGroup child of this object to which path should be added.
+
+    This method is intended to choose between SourceGroup and
+    IntermediatesGroup on the basis of whether path is present in a source
+    directory or an intermediates directory.  For the purposes of this
+    determination, any path located within a derived file directory such as
+    PROJECT_DERIVED_FILE_DIR is treated as being in an intermediates
+    directory.
+
+    The returned value is a two-element tuple.  The first element is the
+    PBXGroup, and the second element specifies whether that group should be
+    organized hierarchically (True) or as a single flat list (False).
+    """
+
+    # TODO(mark): make this a class variable and bind to self on call?
+    # Also, this list is nowhere near exhaustive.
+    source_tree_groups = {
+      'BUILT_PRODUCTS_DIR':       (self.ProductsGroup, False),
+      'DERIVED_FILE_DIR':         (self.IntermediatesGroup, True),
+      'PROJECT_DERIVED_FILE_DIR': (self.IntermediatesGroup, True),
+    }
+
+    (source_tree, path) = SourceTreeAndPathFromPath(path)
+    if source_tree != None and source_tree in source_tree_groups:
+      (group_func, hierarchical) = source_tree_groups[source_tree]
+      group = group_func()
+      return (group, hierarchical)
+
+    # TODO(mark): make additional choices based on file extension.
+
+    return (self.SourceGroup(), True)
+
+  def AddOrGetFileInRootGroup(self, path):
+    """Returns a PBXFileReference corresponding to path in the correct group
+    according to RootGroupForPath's heuristics.
+
+    If an existing PBXFileReference for path exists, it will be returned.
+    Otherwise, one will be created and returned.
+    """
+
+    (group, hierarchical) = self.RootGroupForPath(path)
+    return group.AddOrGetFileByPath(path, hierarchical)
 
   def SortGroups(self):
     # Sort the children of the mainGroup (like "Source" and "Products")

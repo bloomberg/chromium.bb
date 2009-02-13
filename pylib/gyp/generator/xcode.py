@@ -254,17 +254,16 @@ def AddSourceToTarget(source, pbxp, xct, rules_by_ext):
       rule = rules_by_ext[extension]
       outputs = []
       for output in rule['outputs']:
-        # Make sure all concrete rule outputs are added to the source group of
-        # the project file.
+        # Make sure all concrete rule outputs are added to the project file.
         output_path = output.replace('*', basename[:dot])
-        pbxp.SourceGroup().AddOrGetFileByPath(output_path, True)
+        pbxp.AddOrGetFileInRootGroup(output_path)
     if extension in rules_by_ext or extension in source_extensions:
       xct.SourcesPhase().AddFile(source)
       added = True
   if not added:
     # Files that aren't added to a sources build phase can still go into
-    # the project's source group.
-    pbxp.SourceGroup().AddOrGetFileByPath(source, True)
+    # the project file, just not as part of a build phase.
+    pbxp.AddOrGetFileInRootGroup(source)
 
 
 _rule_dependency_script = \
@@ -465,10 +464,10 @@ def GenerateOutput(target_list, target_dicts, data):
     for source in spec.get('sources', []):
       AddSourceToTarget(source, pbxp, xct, rules_by_ext)
 
-    # Excluded files can also go into the project's source group.
+    # Excluded files can also go into the project file.
     if 'sources_excluded' in spec:
       for source in spec['sources_excluded']:
-        pbxp.SourceGroup().AddOrGetFileByPath(source, True)
+        pbxp.AddOrGetFileInRootGroup(source)
 
     # So can "inputs" and "outputs" sections of "actions" groups.
     if 'actions' in spec:
@@ -482,7 +481,7 @@ def GenerateOutput(target_list, target_dicts, data):
               # Exclude anything in BUILT_PRODUCTS_DIR.  They're products, not
               # sources.
               continue
-            pbxp.SourceGroup().AddOrGetFileByPath(item, True)
+            pbxp.AddOrGetFileInRootGroup(item)
 
     # Add dependencies before libraries, because adding a dependency may imply
     # adding a library.  It's preferable to keep dependencies listed first
