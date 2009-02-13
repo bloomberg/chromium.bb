@@ -827,7 +827,8 @@ def MakePathRelative(to_file, fro_file, item):
   #   >  Used for our own variables (see ExpandVariables)
   #   !  Used for command evaluation (see ExpandVariables)
   # Not using startswith here, because its not present before py2.5.
-  if to_file == fro_file or item[0] in ('/', '$', '-', '<', '>', '!'):
+  if to_file == fro_file or \
+     (len(item) > 0 and item[0] in ('/', '$', '-', '<', '>', '!')):
     return item
   else:
     return os.path.normpath(os.path.join(
@@ -1209,6 +1210,58 @@ def ProcessRulesInList(name, the_list):
       ProcessRulesInList(name, item)
 
 
+def ValidateRulesInTarget(target, target_dict):
+  """Ensures that the rules sections in target_dict are valid and consistent,
+  and determines which sources they apply to.
+
+  Arguments:
+    target: string, name of target.
+    target_dict: dict, target spec containing "rules" and "sources" lists.
+  """
+
+  # Dicts to map between values found in rules' 'rule_name' and 'extension'
+  # keys and the rule dicts themselves.
+  rule_names = {}
+  rule_extensions = {}
+
+  rules = target_dict.get('rules', [])
+  for rule in rules:
+    # Make sure that there's no conflict among rule names and extensions.
+    rule_name = rule['rule_name']
+    if rule_name in rule_names:
+      raise KeyError, 'rule %s exists in duplicate, target %s' % \
+                      (rule_name, target)
+    rule_names[rule_name] = rule
+
+    rule_extension = rule['extension']
+    if rule_extension in rule_extensions:
+      raise KeyError, ('extension %s associated with multiple rules, ' +
+                       'target %s rules %s and %s') % \
+                      (rule_extension, target,
+                       rule_extensions[rule_extension]['rule_name'],
+                       rule_name)
+    rule_extensions[rule_extension] = rule
+
+    # Make sure rule_sources isn't already there.  It's going to be
+    # created below if needed.
+    if 'rule_sources' in rule:
+      raise KeyError, \
+            'rule_sources must not exist in input, target %s rule %s' % \
+            (target, rule_name)
+    extension = rule['extension']
+
+    rule_sources = []
+    for source in target_dict.get('sources', []):
+      (source_root, source_extension) = os.path.splitext(source)
+      if source_extension.startswith('.'):
+        source_extension = source_extension[1:]
+      if source_extension == extension:
+        rule_sources.append(source)
+
+    if len(rule_sources) > 0:
+      rule['rule_sources'] = rule_sources
+
+
 def Load(build_files, variables, includes):
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
@@ -1267,9 +1320,18 @@ def Load(build_files, variables, includes):
     ProcessVariablesAndConditionsInDict(target_dict, True, variables)
 
   # Apply exclude (!) and regex (/) rules.
+  # TODO(mark): rename now that we have "rules" sections that mean something
+  # else.
   for target in flat_list:
     target_dict = targets[target]
     ProcessRulesInDict(target, target_dict)
+
+  # Make sure that the rules make sense, and build up rule_sources lists as
+  # needed.  Not all generators will need to use the rule_sources lists, but
+  # some may, and it seems best to build the list in a common spot.
+  for target in flat_list:
+    target_dict = targets[target]
+    ValidateRulesInTarget(target, target_dict)
 
   # TODO(mark): Return |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept

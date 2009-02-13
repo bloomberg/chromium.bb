@@ -230,6 +230,7 @@ class XcodeProject(object):
         os.rmdir(self.path)
       raise
 
+
 def AddSourceToTarget(source, pbxp, xct, rules_by_ext):
   # TODO(mark): Perhaps this can be made a little bit fancier.
   source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's', 'y']
@@ -253,6 +254,47 @@ def AddSourceToTarget(source, pbxp, xct, rules_by_ext):
     # Files that aren't added to a sources build phase can still go into
     # the project's source group.
     pbxp.SourceGroup().AddOrGetFileByPath(source, True)
+
+
+_rule_dependency_script = \
+"""# This script will run when any output declared to Xcode is missing or
+# outdated relative to any input.
+#
+# The outputs of this script aren't really outputs, they're actually inputs
+# to custom build rules.  Any of these that exist will be touched, causing
+# the rule's own declared output to appear to Xcode as out-of-date relative
+# to its input, which will cause the rule script to run.
+#
+# The declared inputs are files that the rule depends on.  Xcode has a
+# limitation rendering it unable to accept additional inputs to custom script
+# build rules for dependency-tracking purposes.  This script makes up for that
+# deficiency.
+
+import sys
+
+try:
+  import os
+  import stat
+
+  output_count = int(os.environ['SCRIPT_OUTPUT_FILE_COUNT'])
+
+  for output_index in xrange(0, output_count):
+    output_file = os.environ['SCRIPT_OUTPUT_FILE_' + str(output_index)]
+    try:
+      output_stat = os.stat(output_file)
+    except OSError:
+      continue
+
+    os.utime(output_file, None)
+
+finally:
+  # It is extremely important that this script not fail, or Xcode will delete
+  # the declared outputs.  Since the declared outputs aren't actually generated
+  # files but input files to a custom script build rule, deleting them would
+  # be pretty terrible.
+  sys.exit(0)
+"""
+
 
 def GenerateOutput(target_list, target_dicts, data):
   xcode_projects = {}
@@ -278,6 +320,7 @@ def GenerateOutput(target_list, target_dicts, data):
     xct = xcode_projects[build_file].AddTarget(target, spec['type'],
                                                configuration_names)
     xcode_targets[qualified_target] = xct
+    prebuild_index = 0
 
     rules_by_ext = {}
     for rule in spec.get('rules', []):
@@ -302,6 +345,9 @@ def GenerateOutput(target_list, target_dicts, data):
         # dummy output file, if present, will be removed.  Since Xcode doesn't
         # know how to process files with extension .dummy, it won't attempt
         # any further processing.
+        #
+        # Xcode's inability to exclude rule outputs from further processing is
+        # filed as Apple radar bug 6584932.
         dummy_name = \
             'gyp.rule.' + rule['rule_name'] + '.$(INPUT_FILE_BASE).dummy'
         dummy_path = os.path.join('$(PROJECT_DERIVED_FILE_DIR)', dummy_name)
@@ -336,7 +382,50 @@ def GenerateOutput(target_list, target_dicts, data):
           })
       xct.AppendProperty('buildRules', pbxbr)
 
-    prebuild_index = 0
+      # Now this is sort of hackish.  Custom Xcode rules of the
+      # "com.apple.compilers.proxy.script" variety don't have a way to specify
+      # additional inputs.  The idea here is that if some set of files other
+      # than the rule input (matching fileType/filePatterns) changes, the
+      # rule output should be considered outdated and the rule be reprocessed
+      # to cause the outputs to be rebuilt.  gyp rules do support this feature,
+      # and it's actually pretty important.  For example, when a script is used
+      # as a rule action, it may be listed as a rule input so that when the
+      # script is modified, it will run again.
+      #
+      # The workaround is to add a shell script phase before the
+      # compile-sources phase to manage the extra input dependencies.  The
+      # script phase inputs are listed as the rule's additional inputs, and
+      # the script phase outpus are listed as every source file that matches
+      # the rule.  The script phase will then be run any time an extra input
+      # is newer than a source input.  The script is responsible for touching
+      # all of the source inputs, causing them to appear newer than the rule
+      # outputs.  This is sufficient to get the rules to run when the
+      # compile-sources phase is reached.
+      #
+      # Because Xcode delete declared script phase outputs when a script phase
+      # fails, the script needs to be very careful not to fail.  Its declared
+      # outputs are not actually outputs but rule inputs.  If Xcode ever
+      # changes to remove script phase outputs during a "clean", this will
+      # become very bad.
+      #
+      # Xcode's inability to handle additional rule inputs directly is filed
+      # as Apple radar bug 6584839.
+      if 'inputs' in rule and 'rule_sources' in rule:
+        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+              'inputPaths': rule['inputs'],
+              'name': 'Rule "' + rule['rule_name'] + '" Dependency Check',
+              'outputPaths': rule['rule_sources'],
+              'shellPath': '/usr/bin/python',
+              'shellScript': _rule_dependency_script,
+              'showEnvVarsInLog': 0,
+            })
+
+        # TODO(mark): this assumes too much knowledge of the internals of
+        # xcodeproj_file; some of these smarts should move into xcodeproj_file
+        # itself.
+        xct._properties['buildPhases'].insert(prebuild_index, ssbp)
+        prebuild_index = prebuild_index + 1
+
     for action in spec.get('actions', []):
       # Convert Xcode-type variable references to sh-compatible environment
       # variable references.  Be sure the script runs in exec, and that if
