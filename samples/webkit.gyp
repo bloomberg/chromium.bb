@@ -226,11 +226,12 @@
     },
     {
       # WebKit derived sources.  These should be independent of the chosen
-      # JavaScript engine.
+      # JavaScript engine, although they may depend on the chosen engine.
       'target_name': 'webkit_derived',
       'type': 'static_library',
       'dependencies': [
         'wtf',
+        '../v8/v8.gyp:v8',
       ],
       'rules': [
         {
@@ -271,6 +272,7 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
+        'port/bindings/v8',
         '<@(webkit_include_dirs)',
       ],
       'xcode_framework_dirs': [
@@ -317,11 +319,12 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/HTMLNames.cpp',
             '<(INTERMEDIATE_DIR)/HTMLNames.h',
+            '<(INTERMEDIATE_DIR)/HTMLElementFactory.cpp',
             # Pass --wrapperFactory to make_names to get these (JSC build?)
             #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.cpp',
             #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.h',
           ],
-          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --factory --extraDefines "<(feature_defines)"',
           'process_outputs_as_sources': 1,
         },
         {
@@ -512,6 +515,8 @@
          '../third_party/WebKit/WebCore/dom/Attr.idl',
          '../third_party/WebKit/WebCore/dom/CDATASection.idl',
          '../third_party/WebKit/WebCore/dom/CharacterData.idl',
+         '../third_party/WebKit/WebCore/dom/ClientRect.idl',
+         '../third_party/WebKit/WebCore/dom/ClientRectList.idl',
          '../third_party/WebKit/WebCore/dom/Clipboard.idl',
          '../third_party/WebKit/WebCore/dom/Comment.idl',
          '../third_party/WebKit/WebCore/dom/DOMCoreException.idl',
@@ -867,6 +872,8 @@
         '<(INTERMEDIATE_DIR)/bindings/V8CanvasRenderingContext2D.cpp',
         '<(INTERMEDIATE_DIR)/bindings/V8CharacterData.cpp',
         '<(INTERMEDIATE_DIR)/bindings/V8Clipboard.cpp',
+        '<(INTERMEDIATE_DIR)/bindings/V8ClientRect.cpp',
+        '<(INTERMEDIATE_DIR)/bindings/V8ClientRectList.cpp',
         '<(INTERMEDIATE_DIR)/bindings/V8Comment.cpp',
         '<(INTERMEDIATE_DIR)/bindings/V8Console.cpp',
         '<(INTERMEDIATE_DIR)/bindings/V8Counter.cpp',
