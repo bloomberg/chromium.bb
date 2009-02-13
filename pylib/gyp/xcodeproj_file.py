@@ -880,15 +880,57 @@ class XCHierarchicalElement(XCObject):
       return None
 
   def Hashables(self):
-    # super
-    hashables = XCObject.Hashables(self)
-    hashables.append(self._properties['sourceTree'])
+    """Custom hashables for XCHierarchicalElements.
 
-    if 'path' in self._properties:
-      hashables.append(self._properties['path'])
+    XCHierarchicalElements are special.  Generally, their hashes shouldn't
+    change if the paths don't change.  The normal XCObject implementation of
+    Hashables adds a hashable for each object, which means that if
+    the hierarchical structure changes (possibly due to changes caused when
+    TakeOverOnlyChild runs and encounters slight changes in the hierarchy),
+    the hashes will change.  For example, if a project file initially contains
+    a/b/f1 and a/b becomes collapsed into a/b, f1 will have a single parent
+    a/b.  If someone later adds a/f2 to the project file, a/b can no longer be
+    collapsed, and f1 winds up with parent b and grandparent a.  That would
+    be sufficient to change f1's hash.
 
-    if 'sourceTree' in self._properties:
-      hashables.append(self._properties['sourceTree'])
+    To counteract this problem, hashables for all XCHierarchicalElements except
+    for the main group (which has neither a name nor a path) are taken to be
+    just the set of path components.  Because hashables are inherited from
+    parents, this provides assurance that a/b/f1 has the same set of hashables
+    whether its parent is b or a/b.
+
+    The main group is a special case.  As it is permitted to have no name or
+    path, it is permitted to use the standard XCObject hash mechanism.  This
+    is not considered a problem because there can be only one main group.
+    """
+
+    if self == self.PBXProjectAncestor()._properties['mainGroup']:
+      # super
+      return XCObject.Hashables(self)
+
+    hashables = []
+
+    # Put the name in first, ensuring that if TakeOverOnlyChild collapses
+    # children into a top-level group like "Source", the name always goes
+    # into the list of hashables without interfering with path components.
+    if 'name' in self._properties:
+      # Make it less likely for people to manipulate hashes by following the
+      # pattern of always pushing an object type value onto the list first.
+      hashables.append('XCHierarchicalElement.name')
+      hashables.append(self._properties['name'])
+
+    # NOTE: this still has the problem that if an absolute path is encountered,
+    # including paths with a sourceTree, they'll still inherit their parents'
+    # hashables, even though the paths aren't relative to their parents.  This
+    # is not expected to be much of a problem in practice.
+    path = self.PathFromSourceTreeAndPath()
+    if path != None:
+      components = path.split(os.sep)
+      for component in components:
+        hashables.append('XCHierarchicalElement.path')
+        hashables.append(component)
+
+    hashables.extend(self._hashables)
 
     return hashables
 
