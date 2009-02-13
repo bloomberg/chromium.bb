@@ -135,6 +135,7 @@ Strings of class unicode are handled properly and encoded in UTF-8 when
 a project file is output.
 """
 
+import gyp.common
 import hashlib
 import os.path
 import re
@@ -1897,10 +1898,17 @@ class PBXProject(XCContainerPortal):
       # remote PBXProject that it's related to.
       product_group._hashables.extend(other_pbxproject.Hashables())
 
+      # The other project reports its path as relative to the same directory
+      # that this project's path is relative to.  The other project's path
+      # is not necessarily already relative to this project.  Figure out the
+      # pathname that this project needs to use to refer to the other one.
+      other_path = gyp.common.RelativePath(other_pbxproject.Path(),
+                                           os.path.dirname(self.Path()))
+
       # ProjectRef is weak (it's owned by the mainGroup hierarchy).
       project_ref = PBXFileReference({
             'lastKnownFileType': 'wrapper.pb-project',
-            'path':              other_pbxproject.Path(),
+            'path':              other_path,
             'sourceTree':        'SOURCE_ROOT',
           })
       self.ProjectsGroup().AppendChild(project_ref)

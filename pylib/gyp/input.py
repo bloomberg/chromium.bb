@@ -1272,6 +1272,9 @@ def Load(build_files, variables, includes):
   # processing has been done and includes have been resolved.
   data = {}
   for build_file in build_files:
+    # Normalize paths everywhere.  This is important because paths will be
+    # used as keys to the data dict and for references between input files.
+    build_file = os.path.normpath(build_file)
     LoadTargetBuildFile(build_file, data, variables, includes)
 
   # Build a dict to access each target's subdict by qualified name.
