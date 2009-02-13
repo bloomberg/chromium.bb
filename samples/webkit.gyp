@@ -466,13 +466,13 @@
           ],
           'variables': {
             'generator_include_dirs': [
-              '--include', '../third_party/WebKit/WebCore/svg',
+              '--include', '../third_party/WebKit/WebCore/css',
               '--include', '../third_party/WebKit/WebCore/dom',
               '--include', '../third_party/WebKit/WebCore/html',
-              '--include', '../third_party/WebKit/WebCore/css',
               '--include', '../third_party/WebKit/WebCore/page',
-              '--include', '../third_party/WebKit/WebCore/xml',
               '--include', '../third_party/WebKit/WebCore/plugins',
+              '--include', '../third_party/WebKit/WebCore/svg',
+              '--include', '../third_party/WebKit/WebCore/xml',
             ],
           },
           'action': 'python rule_binding.py * <(INTERMEDIATE_DIR)/bindings -- <(_inputs) -- --defines "<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING" --generator V8 <(generator_include_dirs)',
