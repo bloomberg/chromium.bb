@@ -874,8 +874,6 @@ class XCHierarchicalElement(XCObject):
     if 'name' in self._properties:
       return self._properties['name']
     elif 'path' in self._properties:
-      # TODO(mark): Verify that this is right.  Xcode might actually just take
-      # the basename.
       return self._properties['path']
     else:
       # This happens in the case of the root PBXGroup.
@@ -1075,6 +1073,72 @@ class PBXGroup(XCHierarchicalElement):
     for child in self._properties['children']:
       if isinstance(child, PBXGroup):
         child.SortGroup()
+
+  def TakeOverOnlyChild(self, recurse=False):
+    """If this PBXGroup has only one child and it's also a PBXGroup, take
+    it over by making all of its children this object's children.
+
+    This function will continue to take over only children when those children
+    are groups.  If there are three PBXGroups representing a, b, and c, with
+    c inside b and b inside a, and a and b have no other children, this will
+    result in a taking over both b and c, forming a PBXGroup for a/b/c.
+
+    If recurse is True, this function will recurse into children and ask them
+    to collapse themselves by taking over only children as well.  Assuming
+    an example hierarchy with files at a/b/c/d1, a/b/c/d2, and a/b/c/d3/e/f
+    (d1, d2, and f are files, the rest are groups), recursion will result in
+    a group for a/b/c containing a group for d3/e.
+    """
+
+    while len(self._properties['children']) == 1 and \
+          isinstance(self._properties['children'][0], PBXGroup):
+      # Loop to take over the innermost only-child group possible.
+
+      child = self._properties['children'][0]
+
+      # Assume the child's properties, including its children.  Save a copy
+      # of this object's old properties, because they'll still be needed.
+      # This object retains its existing id and parent attributes.
+      old_properties = self._properties
+      self._properties = child._properties
+      self._children_by_path = child._children_by_path
+
+      if not 'sourceTree' in self._properties or \
+         self._properties['sourceTree'] == '<group>':
+        # The child was relative to its parent.  Fix up the path.  Note that
+        # children with a sourceTree other than "<group>" are not relative to
+        # their parents, so no path fix-up is needed in that case.
+        if 'path' in old_properties:
+          if 'path' in self._properties:
+            # Both the original parent and child have paths set.
+            self._properties['path'] = os.path.join(old_properties['path'],
+                                                    self._properties['path'])
+          else:
+            # Only the original parent has a path, use it.
+            self._properties['path'] = old_properties['path']
+        if 'sourceTree' in old_properties:
+          # The original parent had a sourceTree set, use it.
+          self._properties['sourceTree'] = old_properties['sourceTree']
+
+      # If the original parent had a name set, keep using it.  If the original
+      # parent didn't have a name but the child did, let the child's name
+      # live on.  If the name attribute seems unnecessary now, get rid of it.
+      if 'name' in old_properties and old_properties['name'] != None and \
+         old_properties['name'] != self.Name():
+        self._properties['name'] = old_properties['name']
+      if 'name' in self._properties and 'path' in self._properties and \
+         self._properties['name'] == self._properties['path']:
+        del self._properties['name']
+
+      # Notify all children of their new parent.
+      for child in self._properties['children']:
+        child.parent = self
+
+    # If asked to recurse, recurse.
+    if recurse:
+      for child in self._properties['children']:
+        if isinstance(child, PBXGroup):
+          child.TakeOverOnlyChild(recurse)
 
 
 class XCFileLikeElement(XCHierarchicalElement):
@@ -1831,6 +1895,12 @@ class PBXProject(XCContainerPortal):
 
     (group, hierarchical) = self.RootGroupForPath(path)
     return group.AddOrGetFileByPath(path, hierarchical)
+
+  def RootGroupsTakeOverOnlyChildren(self, recurse=False):
+    """Calls TakeOverOnlyChild for all groups in the main group."""
+
+    for group in self._properties['mainGroup']._properties['children']:
+      group.TakeOverOnlyChild(recurse)
 
   def SortGroups(self):
     # Sort the children of the mainGroup (like "Source" and "Products")

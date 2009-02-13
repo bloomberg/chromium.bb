@@ -118,6 +118,9 @@ class XcodeProject(object):
 
     self.project._properties['targets'] = targets
 
+    # Get rid of unnecessary levels of depth.
+    self.project.RootGroupsTakeOverOnlyChildren(True)
+
     # Sort the groups nicely.  Do this after sorting the targets, because the
     # Products group is sorted based on the order of the targets.
     self.project.SortGroups()
