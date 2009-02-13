@@ -12,7 +12,8 @@ import subprocess
 # A list of types that are treated as linkable.
 linkable_types = ['executable', 'shared_library']
 
-# A list of sections that contain pathnames.
+# A list of sections that contain pathnames.  You should probably call
+# IsPathSection instead, which has other checks.
 path_sections = [
   'include_dirs',
   'inputs',
@@ -21,6 +22,14 @@ path_sections = [
   'outputs',
   'xcode_framework_dirs',
 ]
+
+
+def IsPathSection(section):
+  if section in path_sections or \
+     section.endswith('_dir') or section.endswith('_dirs') or \
+     section.endswith('_path') or section.endswith('_paths'):
+    return True
+  return False
 
 
 def ExceptionAppend(e, msg):
@@ -664,6 +673,8 @@ class DependencyGraphNode(object):
 
 
 def BuildDependencyList(targets):
+  other_dependency_lists = ['export_dependent_settings', 'hard_dependencies']
+
   # Create a DependencyGraphNode for each target.  Put it into a dict for easy
   # access.
   dependency_nodes = {}
@@ -680,10 +691,10 @@ def BuildDependencyList(targets):
     if not 'dependencies' in spec or len(spec['dependencies']) == 0:
       target_node.dependencies = [root_node]
       root_node.dependents.append(target_node)
-      # If there are no dependencies, there can't be anything in
-      # export_dependent_settings.
-      assert not 'export_dependent_settings' in spec or \
-             len(spec['export_dependent_settings']) == 0
+      # If there are no dependencies, there can't be anything in the other
+      # lists that need to contain things that must already be in dependencies.
+      for other in other_dependency_lists:
+        assert len(spec.get(other, [])) == 0
     else:
       dependencies = spec['dependencies']
       for index in xrange(0, len(dependencies)):
@@ -696,15 +707,16 @@ def BuildDependencyList(targets):
         target_node.dependencies.append(dependency_node)
         dependency_node.dependents.append(target_node)
 
-      # Rewrite export_dependent_settings using qualified names everywhere,
-      # too.  Make sure that anything showing up in export_dependent_settings
+      # Rewrite other dependency lists using qualified names everywhere,
+      # too.  Make sure that anything showing up in one of these other lists
       # is actually a dependency.
-      export_dependent_settings = spec.get('export_dependent_settings', [])
-      for index in xrange(0, len(export_dependent_settings)):
-        dependency = export_dependent_settings[index]
-        dependency = gyp.common.QualifiedTarget(target_build_file, dependency)
-        assert dependency in dependencies
-        export_dependent_settings[index] = dependency
+      for other in other_dependency_lists:
+        other_dependencies = spec.get(other, [])
+        for index in xrange(0, len(other_dependencies)):
+          dependency = other_dependencies[index]
+          dependency = gyp.common.QualifiedTarget(target_build_file, dependency)
+          assert dependency in dependencies
+          other_dependencies[index] = dependency
 
   # Take the root node out of the list because it doesn't correspond to a real
   # target.
@@ -750,10 +762,11 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
 
 def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
   # Recompute target "dependencies" properties.  For each static library
-  # target, remove "dependencies" entries referring to other static libraries.
-  # For each linkable target, add a "dependencies" entry referring to all of
-  # the target's computed list of link dependencies (including static
-  # libraries) if no such entry is already present.
+  # target, remove "dependencies" entries referring to other static libraries,
+  # unless the relationship is also listed in "hard_dependencies".  For each
+  # linkable target, add a "dependencies" entry referring to all of the
+  # target's computed list of link dependencies (including static libraries
+  # if no such entry is already present.
   for target in flat_list:
     target_dict = targets[target]
     target_type = target_dict['type']
@@ -762,15 +775,20 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
       if not 'dependencies' in target_dict:
         continue
 
+      hard_dependencies = target_dict.get('hard_dependencies', [])
       index = 0
       while index < len(target_dict['dependencies']):
         dependency = target_dict['dependencies'][index]
         dependency_dict = targets[dependency]
-        if dependency_dict['type'] == 'static_library':
-          # A static library should not depend on another static library.  Take
-          # the dependency out of the list, and don't increment index because
-          # the next dependency to analyze will shift into the index formerly
-          # occupied by the one being removed.
+        if dependency_dict['type'] == 'static_library' and \
+           dependency not in hard_dependencies:
+          # A static library should not depend on another static library unless
+          # the dependency relationship is "hard," which should only be done
+          # when a dependent relies on some side effect other than just the
+          # build product, like a rule or action output.  Take the dependency
+          # out of the list, and don't increment index because the next
+          # dependency to analyze will shift into the index formerly occupied
+          # by the one being removed.
           del target_dict['dependencies'][index]
         else:
           index = index + 1
@@ -872,7 +890,7 @@ def MergeDicts(to, fro, to_file, fro_file):
           ' for key ' + k
     if isinstance(v, str) or isinstance(v, int):
       # Overwrite the existing value, if any.  Cheap and easy.
-      is_path = k in path_sections
+      is_path = IsPathSection(k)
       if is_path:
         to[k] = MakePathRelative(to_file, fro_file, v)
       else:
@@ -940,7 +958,7 @@ def MergeDicts(to, fro, to_file, fro_file):
       # to make copies of dicts (with paths fixed), there will be no
       # subsequent dict "merging" once entering a list because lists are
       # always replaced, appended to, or prepended to.
-      is_paths = list_base in path_sections
+      is_paths = IsPathSection(list_base)
       MergeLists(to[list_base], v, to_file, fro_file, is_paths, append)
     else:
       raise TypeError, \

@@ -18,6 +18,24 @@
       'ENABLE_VIDEO=1',
       'ENABLE_WORKERS=0',
     ],
+    'webkit_include_dirs': [
+      '../third_party/WebKit/WebCore/css',
+      '../third_party/WebKit/WebCore/dom',
+      '../third_party/WebKit/WebCore/html',
+      '../third_party/WebKit/WebCore/loader',
+      '../third_party/WebKit/WebCore/page',
+      '../third_party/WebKit/WebCore/platform',
+      '../third_party/WebKit/WebCore/platform/chromium',
+      '../third_party/WebKit/WebCore/platform/graphics',
+      '../third_party/WebKit/WebCore/platform/graphics/transforms',
+      '../third_party/WebKit/WebCore/platform/network',
+      '../third_party/WebKit/WebCore/platform/network/chromium',
+      '../third_party/WebKit/WebCore/platform/text',
+      '../third_party/WebKit/WebCore/svg',
+      '../third_party/WebKit/WebCore/svg/animation',
+      '../third_party/WebKit/WebCore/svg/graphics',
+      '../third_party/WebKit/WebCore/xml',
+    ],
   },
   'includes': [
     '../build/common.gypi',
@@ -164,6 +182,7 @@
       'direct_dependent_settings': {
         'include_dirs': [
           '../third_party/WebKit/JavaScriptCore',
+          '../third_party/WebKit/JavaScriptCore/wtf',
         ],
       },
       'export_dependent_settings': [
@@ -192,7 +211,9 @@
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },
     {
-      'target_name': 'v8config',
+      # This target creates config.h suitable for a WebKit-V8 build and
+      # copies a few other files around as needed.
+      'target_name': 'v8_config',
       'type': 'none',
       'actions': [
         {
@@ -225,14 +246,90 @@
       },
     },
     {
-      'target_name': 'v8bindings',
+      # This target builds the .cpp and .h bindings files from .idl source.
+      'target_name': 'v8_derived',
+      # This target should conceptually be 'type': 'none' because it doesn't
+      # build any code, but rules can't go into 'none' type targets, so it's
+      # a 'static_library' instead.  Any other target that needs to depend on
+      # this target's rules running should list it in both a 'dependencies'
+      # and 'hard_dependencies' section.  If some build environments are
+      # unable to cope with a static_library containing no code, then we can
+      # add a dummy file here.
+      'type': 'static_library',
+      'rules': [
+        {
+          'rule_name': 'binding',
+          'extension': 'idl',
+          'inputs': [
+            'port/bindings/scripts/generate-bindings.pl',
+            'port/bindings/scripts/CodeGenerator.pm',
+            'port/bindings/scripts/CodeGeneratorV8.pm',
+            'port/bindings/scripts/IDLParser.pm',
+            '../third_party/WebKit/WebCore/bindings/scripts/IDLStructure.pm',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/bindings/V8*.cpp',
+            '<(INTERMEDIATE_DIR)/bindings/V8*.h',
+          ],
+          'variables': {
+            'generator_include_dirs': [
+              '--include', '../third_party/WebKit/WebCore/svg',
+              '--include', '../third_party/WebKit/WebCore/dom',
+              '--include', '../third_party/WebKit/WebCore/html',
+              '--include', '../third_party/WebKit/WebCore/css',
+              '--include', '../third_party/WebKit/WebCore/page',
+              '--include', '../third_party/WebKit/WebCore/xml',
+              '--include', '../third_party/WebKit/WebCore/plugins',
+            ],
+          },
+          'action': 'python rule_binding.py * <(INTERMEDIATE_DIR)/bindings -- <(_inputs) -- --defines "<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING" --generator V8 <(generator_include_dirs)',
+          'process_outputs_as_sources': 0,
+        },
+      ],
+      'sources': [
+        '../third_party/WebKit/WebCore/dom/Attr.idl',
+        '../third_party/WebKit/WebCore/dom/Event.idl',
+        '../third_party/WebKit/WebCore/dom/Node.idl',
+      ],
+    },
+    {
+      # This target actually compiles the bindings prepared by the v8_derived
+      # target.  The two targets are separate in order to enforce correct
+      # ordering.  Otherwise, build environments might not be aware that
+      # all .cpp and .h files need to be generated from .idl source before
+      # compiling any of them.  Ordering is a problem because the generated
+      # .cpp and .h files depend upon each other.
+      'target_name': 'v8_bindings',
       'type': 'static_library',
       'dependencies': [
         'wtf',
-        'v8config',
+        'v8_config',
+        'v8_derived',
+        '../v8/v8.gyp:v8',
+      ],
+      'hard_dependencies': [
+        'v8_derived',
+      ],
+      'sources': [
+        '<(INTERMEDIATE_DIR)/bindings/V8Attr.cpp',
+        '<(INTERMEDIATE_DIR)/bindings/V8Event.cpp',
+        '<(INTERMEDIATE_DIR)/bindings/V8Node.cpp',
+      ],
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        'port/bindings/v8',
+        '<@(webkit_include_dirs)',
+      ],
+    },
+    {
+      # WebKit derived sources.  These should be independent of the chosen
+      # JavaScript engine.
+      'target_name': 'webkit_derived',
+      'type': 'static_library',
+      'dependencies': [
+        'wtf',
       ],
       'rules': [
-        # Some of these rules don't seem to belong in jsbindings.
         {
           'rule_name': 'bison',
           'extension': 'y',
@@ -271,29 +368,12 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '../third_party/WebKit/WebCore/css',
-        '../third_party/WebKit/WebCore/dom',
-        '../third_party/WebKit/WebCore/html',
-        '../third_party/WebKit/WebCore/loader',
-        '../third_party/WebKit/WebCore/page',
-        '../third_party/WebKit/WebCore/platform',
-        '../third_party/WebKit/WebCore/platform/graphics',
-        '../third_party/WebKit/WebCore/platform/graphics/transforms',
-        '../third_party/WebKit/WebCore/platform/network',
-        '../third_party/WebKit/WebCore/platform/network/chromium',
-        '../third_party/WebKit/WebCore/platform/text',
-        '../third_party/WebKit/WebCore/svg',
-        '../third_party/WebKit/WebCore/svg/animation',
-        '../third_party/WebKit/WebCore/svg/graphics',
-        '../third_party/WebKit/WebCore/xml',
+        '<@(webkit_include_dirs)',
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'actions': [
-        # Many of these actions don't seem to belong in jsbindings, but
-        # jsbindings depends on them and doesn't have any other dependencies
-        # that require them.
         {
           'action_name': 'CSSPropertyNames',
           'inputs': [
