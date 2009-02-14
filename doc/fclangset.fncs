@@ -124,6 +124,14 @@ has no matching language, this function returns FcLangDifferentLang.
 @@
 
 @RET@		FcStrSet *
+@FUNC@		FcLangSetGetLangs
+@TYPE1@		const FcLangSet *		@ARG1@		ls
+@PURPOSE@	get the list of languages in the langset
+@DESC@
+Returns a string set of all languages in <parameter>langset</parameter>.
+@@
+
+@RET@		FcStrSet *
 @FUNC@		FcGetLangs
 @TYPE1@		void
 @PURPOSE@	Get list of languages

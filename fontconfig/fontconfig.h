@@ -597,6 +597,9 @@ FcLangSetEqual (const FcLangSet *lsa, const FcLangSet *lsb);
 FcPublic FcChar32
 FcLangSetHash (const FcLangSet *ls);
 
+FcPublic FcStrSet *
+FcLangSetGetLangs (const FcLangSet *ls);
+
 /* fclist.c */
 FcPublic FcObjectSet *
 FcObjectSetCreate (void);

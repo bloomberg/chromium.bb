@@ -744,6 +744,38 @@ FcLangSetSerialize(FcSerialize *serialize, const FcLangSet *l)
     *l_serialize = *l;
     return l_serialize;
 }
+
+FcStrSet *
+FcLangSetGetLangs (const FcLangSet *ls)
+{
+    FcStrSet *langs;
+    int	      i;
+
+    langs = FcStrSetCreate();
+    if (!langs)
+	return 0;
+
+    for (i = 0; i < NUM_LANG_CHAR_SET; i++)
+	if (FcLangSetBitGet (ls, i))
+	    FcStrSetAdd (langs, fcLangCharSets[i].lang);
+
+    if (ls->extra)
+    {
+	FcStrList	*list = FcStrListCreate (ls->extra);
+	FcChar8		*extra;
+
+	if (list)
+	{
+	    while ((extra = FcStrListNext (list)))
+		FcStrSetAdd (langs, extra);
+
+	    FcStrListDone (list);
+	}
+    }
+
+    return langs;
+}
+
 #define __fclang__
 #include "fcaliastail.h"
 #include "fcftaliastail.h"
