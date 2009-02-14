@@ -1186,7 +1186,23 @@ class PBXGroup(XCHierarchicalElement):
 class XCFileLikeElement(XCHierarchicalElement):
   # Abstract base for objects that can be used as the fileRef property of
   # PBXBuildFile.
-  pass
+
+  def PathHashables(self):
+    # A PBXBuildFile that refers to this object will call this method to
+    # obtain additional hashables specific to this XCFileLikeElement.  Don't
+    # just use this object's hashables, they're not specific and unique enough
+    # on their own (without access to the parent hashables.)  Instead, provide
+    # hashables that identify this object by path by getting its hashables as
+    # well as the hashables of ancestor XCHierarchicalElement objects.
+
+    hashables = []
+    xche = self
+    while xche != None and isinstance(xche, XCHierarchicalElement):
+      xche_hashables = xche.Hashables()
+      for xche_hashable in xche_hashables:
+        hashables.insert(0, xche_hashable)
+      xche = xche.parent
+    return hashables
 
 
 class XCContainerPortal(XCObject):
@@ -1405,6 +1421,20 @@ class PBXBuildFile(XCObject):
   def Name(self):
     # Example: "main.cc in Sources"
     return self._properties['fileRef'].Name() + ' in ' + self.parent.Name()
+
+  def Hashables(self):
+    # super
+    hashables = XCObject.Hashables(self)
+
+    # It is not sufficient to just rely on Name() to get the
+    # XCFileLikeElement's name, because that is not a complete pathname.
+    # PathHashables returns hashables unique enough that no two
+    # PBXBuildFiles should wind up with the same set of hashables, unless
+    # someone adds the same file multiple times to the same target.  That
+    # would be considered invalid anyway.
+    hashables.extend(self._properties['fileRef'].PathHashables())
+
+    return hashables
 
 
 class XCBuildPhase(XCObject):
