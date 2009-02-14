@@ -31,7 +31,6 @@
 /*
  * Some ideas for future syntax extensions:
  *
- * - langset enumeration using same syntax as array enumeration
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)'/'(=)' notation)
  */
@@ -540,6 +539,7 @@ interpret_array (FcFormatContext *c,
     const FcChar8 *format_save;
     int            idx;
     FcBool         ret, done;
+    FcStrList      *lang_strs;
 
     if (!expect_char (c, '[') ||
 	!expect_char (c, ']'))
@@ -562,6 +562,22 @@ interpret_array (FcFormatContext *c,
     }
     while (consume_char (c, ','));
 
+    /* If we have one element and it's of type FcLangSet, we want
+     * to enumerate the languages in it. */
+    lang_strs = NULL;
+    if (os->nobject == 1)
+    {
+	FcLangSet *langset;
+	if (FcResultMatch ==
+	    FcPatternGetLangSet (pat, os->objects[0], idx, &langset))
+	{
+	    FcStrSet *ss;
+	    if (!(ss = FcLangSetGetLangs (langset)) ||
+		!(lang_strs = FcStrListCreate (ss)))
+		goto bail0;
+	}
+    }
+
     subpat = FcPatternDuplicate (pat);
     if (!subpat)
 	goto bail0;
@@ -574,20 +590,34 @@ interpret_array (FcFormatContext *c,
 
 	done = FcTrue;
 
-	for (i = 0; i < os->nobject; i++)
+	if (lang_strs)
 	{
-	    FcValue v;
+	    FcChar8 *lang;
 
-	    /* XXX this can be optimized by accessing valuelist linked lists
-	     * directly and remembering where we were.  Most (all) value lists
-	     * in normal uses are pretty short though (language tags are
-	     * stored as a LangSet, not separate values.). */
-	    FcPatternDel (subpat, os->objects[i]);
-	    if (FcResultMatch ==
-		FcPatternGet (pat, os->objects[i], idx, &v))
+	    FcPatternDel (subpat, os->objects[0]);
+	    if ((lang = FcStrListNext (lang_strs)))
 	    {
-		FcPatternAdd (subpat, os->objects[i], v, FcFalse);
+		FcPatternAddString (subpat, os->objects[0], lang);
 		done = FcFalse;
+	    }
+	}
+	else
+	{
+	    for (i = 0; i < os->nobject; i++)
+	    {
+		FcValue v;
+
+		/* XXX this can be optimized by accessing valuelist linked lists
+		 * directly and remembering where we were.  Most (all) value lists
+		 * in normal uses are pretty short though (language tags are
+		 * stored as a LangSet, not separate values.). */
+		FcPatternDel (subpat, os->objects[i]);
+		if (FcResultMatch ==
+		    FcPatternGet (pat, os->objects[i], idx, &v))
+		{
+		    FcPatternAdd (subpat, os->objects[i], v, FcFalse);
+		    done = FcFalse;
+		}
 	    }
 	}
 
@@ -602,9 +632,14 @@ interpret_array (FcFormatContext *c,
 	idx++;
     } while (!done);
 
+    if (c->format == format_save)
+	skip_subexpr (c);
+
 bail:
     FcPatternDestroy (subpat);
 bail0:
+    if (lang_strs)
+	FcStrListDone (lang_strs);
     FcObjectSetDestroy (os);
 
     return ret;
