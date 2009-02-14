@@ -338,27 +338,6 @@ typedef _Bool                   bool;
 #endif
 
 
-#if (defined(CONFIG_X86) && defined(CONFIG_X86_32) && defined(CONFIG_HIGHMEM))
-/*
- * pgd_offset_k() is a macro that uses the symbol init_mm,
- * check that it is available.
- */
-#  if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)) || \
-	defined(CONFIG_UNUSED_SYMBOLS))
-#define DRM_KMAP_ATOMIC_PROT_PFN
-extern void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
-				  pgprot_t protection);
-#  else
-#warning "init_mm is not available on this kernel!"
-static inline void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type,
-					 pgprot_t protection)
-{
-	/* stub */
-	return NULL;
-}
-#  endif /* no init_mm */
-#endif
-
 #if !defined(flush_agp_mappings)
 #define flush_agp_mappings() do {} while(0)
 #endif
