@@ -38,6 +38,7 @@
 
 #define FCMATCH_FORMAT	"%{file:-<unknown filename>|basename}: \"%{family[0]:-<unknown family>}\" \"%{style[0]:-<unknown style>}\""
 #define FCLIST_FORMAT	"%{?file{%{file}: }}%{=unparse}"
+#define PKGKIT_FORMAT	"%{[]family{font(%{family|downcase|delete( )})\n}}%{[]lang{font(:lang=%{lang|downcase|translate(_,-)})\n}}"
 
 
 static void
@@ -267,6 +268,7 @@ interpret_builtin (FcFormatContext *c,
 	ret = FcPatternFormatToBuf (pat, (const FcChar8 *) format, buf)
     BUILTIN ("fcmatch",  FCMATCH_FORMAT);
     BUILTIN ("fclist",   FCLIST_FORMAT);
+    BUILTIN ("pkgkit",   PKGKIT_FORMAT);
 #undef BUILTIN
     else
 	ret = FcFalse;
