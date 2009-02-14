@@ -28,6 +28,41 @@
 #include <stdarg.h>
 
 
+/* XXX Document the language.
+ *
+ * These are mostly the features implemented but not documented:
+ *
+ * width   %[[-]width]{tag}
+ * index   %{tag[ids]}
+ * name=   %{tag=|decorator}
+ * :name=  %{:tag=|decorator}
+ * subexpr %{{expr}|decorator1|decorator2}
+ * delete  %{-charset,lang{expr}|decorator}
+ * filter  %{+family,familylang{expr}|decorator}
+ * cond    %{?tag1,tag2,!tag3{}{}}
+ * decorat %{tag|decorator1|decorator2}
+ * default %{parameter:-word}
+ * array   %{[]family,familylang{expr}|decorator}
+ * langset enumeration using the same syntax as arrays
+ *
+ * filters:
+ * basename        FcStrBasename
+ * dirname         FcStrDirname
+ * downcase        FcStrDowncase
+ * shescape
+ * cescape
+ * xmlescape
+ * delete          delete chars
+ * escape          escape chars
+ * translate       translate chars
+ *
+ * builtins:
+ * unparse
+ * fcmatch
+ * fclist
+ * pkgkit
+ */
+
 /*
  * Some ideas for future syntax extensions:
  *
