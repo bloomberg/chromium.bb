@@ -177,6 +177,12 @@ class XcodeProject(object):
     # Give everything an ID.
     self.project_file.ComputeIDs()
 
+    # Make sure that no two objects in the project file have the same ID.  If
+    # multiple objects wind up with the same ID, upon loading the file, Xcode
+    # will only recognize one object (the last one in the file?) and the
+    # results are unpredictable.
+    self.project_file.EnsureNoIDCollisions()
+
   def Write(self):
     created_dir = False
     try:

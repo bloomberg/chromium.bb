@@ -418,6 +418,21 @@ class XCObject(object):
         id_ints[index % 3] ^= digest_ints[index]
       self.id = '%08X%08X%08X' % tuple(id_ints)
 
+  def EnsureNoIDCollisions(self):
+    """Verifies that no two objects have the same ID.  Checks all descendants.
+    """
+
+    ids = {}
+    descendants = self.Descendants()
+    for descendant in descendants:
+      if descendant.id in ids:
+        other = ids[descendant.id]
+        raise KeyError, \
+              'Duplicate ID %s, objects %s %s and %s %s' % \
+              (descendant.id, descendant.__class__.__name__, descendant.Name(),
+               other.__class__.__name__, other.Name())
+      ids[descendant.id] = descendant
+
   def Children(self):
     """Returns a list of all of this object's owned (strong) children."""
 
@@ -787,7 +802,6 @@ class XCObject(object):
 
     # Store the item.
     self._properties[key].append(value)
-
 
   def VerifyHasRequiredProperties(self):
     """Ensure that all properties identified as required by the schema are
@@ -1432,7 +1446,7 @@ class PBXBuildFile(XCObject):
     # PBXBuildFiles should wind up with the same set of hashables, unless
     # someone adds the same file multiple times to the same target.  That
     # would be considered invalid anyway.
-    hashables.extend(self._properties['fileRef'].PathHashables())
+#    hashables.extend(self._properties['fileRef'].PathHashables())
 
     return hashables
 
