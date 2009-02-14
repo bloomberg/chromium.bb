@@ -996,7 +996,7 @@ def SetUpConfigurations(target, target_dict):
   # TODO(mark): Signal an error if default_configurations exists but
   # configurations does not.
   if not 'configurations' in target_dict:
-    target_dict['configurations'] = [{'configuration_name': 'Default'}]
+    target_dict['configurations'] = {'Default': {}}
   if not 'default_configuration' in target_dict:
     target_dict['default_configuration'] = \
         sorted(target_dict['configurations'].keys())[0]
