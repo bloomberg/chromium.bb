@@ -849,14 +849,26 @@ const static struct wl_compositor_interface compositor_interface = {
 	compositor_commit
 };
 
+static void
+wlsc_surface_transform(struct wlsc_surface *surface,
+		       int32_t x, int32_t y, int32_t *sx, int32_t *sy)
+{
+	/* Transform to surface coordinates. */
+	*sx = (x - surface->map.x) * surface->width / surface->map.width;
+	*sy = (y - surface->map.y) * surface->height / surface->map.height;
+}
+
 static struct wlsc_surface *
 pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 {
 	struct wlsc_compositor *ec = device->ec;
 	struct wlsc_surface *es;
 
-	if (device->grab > 0)
+	if (device->grab > 0) {
+		wlsc_surface_transform(device->grab_surface,
+				       device->x, device->y, sx, sy);
 		return device->grab_surface;
+	}
 
 	es = container_of(ec->surface_list.prev,
 			  struct wlsc_surface, link);
@@ -865,10 +877,7 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 		    device->x < es->map.x + es->map.width &&
 		    es->map.y <= device->y &&
 		    device->y < es->map.y + es->map.height) {
-			/* Transform to surface coordinates. */
-			*sx = (device->x - es->map.x) * es->width / es->map.width;
-			*sy = (device->y - es->map.y) * es->height / es->map.height;
-
+			wlsc_surface_transform(es, device->x, device->y, sx, sy);
 			return es;
 		}
 
