@@ -1982,20 +1982,17 @@ nv40_graph_init(struct drm_device *dev)
 	default:
 		DRM_ERROR("Context program for 0x%02x unavailable\n",
 			  dev_priv->chipset);
-		ctx_prog = NULL;
-		break;
+		return -EINVAL;
 	}
 
 	/* Load the context program onto the card */
-	if (ctx_prog) {
-		DRM_DEBUG("Loading context program\n");
-		i = 0;
+	DRM_DEBUG("Loading context program\n");
 
-		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
-		while (ctx_prog[i] != ~0) {
-			NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, ctx_prog[i]);
-			i++;
-		}
+	i = 0;
+	NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_INDEX, 0);
+	while (ctx_prog[i] != ~0) {
+		NV_WRITE(NV40_PGRAPH_CTXCTL_UCODE_DATA, ctx_prog[i]);
+		i++;
 	}
 
 	/* No context present currently */
