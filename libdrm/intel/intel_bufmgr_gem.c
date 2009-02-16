@@ -355,6 +355,7 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
 	struct drm_i915_gem_busy busy;
 	
 	bo_gem = bucket->head;
+	memset(&busy, 0, sizeof(busy));
         busy.handle = bo_gem->gem_handle;
 
         ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
@@ -444,6 +445,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr, const char *name,
     bo_gem->gem_handle = open_arg.handle;
     bo_gem->global_name = handle;
 
+    memset(&get_tiling, 0, sizeof(get_tiling));
     get_tiling.handle = bo_gem->gem_handle;
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_GET_TILING, &get_tiling);
     if (ret != 0) {
@@ -493,6 +495,7 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
 	munmap (bo_gem->virtual, bo_gem->bo.size);
 
     /* Close this object */
+    memset(&close, 0, sizeof(close));
     close.handle = bo_gem->gem_handle;
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_CLOSE, &close);
     if (ret != 0) {
@@ -1010,6 +1013,7 @@ drm_intel_gem_bo_pin(drm_intel_bo *bo, uint32_t alignment)
     struct drm_i915_gem_pin pin;
     int ret;
 
+    memset(&pin, 0, sizeof(pin));
     pin.handle = bo_gem->gem_handle;
     pin.alignment = alignment;
 
@@ -1032,6 +1036,7 @@ drm_intel_gem_bo_unpin(drm_intel_bo *bo)
     struct drm_i915_gem_unpin unpin;
     int ret;
 
+    memset(&unpin, 0, sizeof(unpin));
     unpin.handle = bo_gem->gem_handle;
 
     ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_UNPIN, &unpin);
@@ -1057,6 +1062,7 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
     if (bo_gem->tiling_mode == I915_TILING_NONE)
 	bo_gem->reloc_tree_fences++;
 
+    memset(&set_tiling, 0, sizeof(set_tiling));
     set_tiling.handle = bo_gem->gem_handle;
     set_tiling.tiling_mode = *tiling_mode;
     set_tiling.stride = stride;
@@ -1097,6 +1103,7 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t *name)
     int ret;
 
     if (!bo_gem->global_name) {
+	memset(&flink, 0, sizeof(flink));
 	flink.handle = bo_gem->gem_handle;
     
 	ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_GEM_FLINK, &flink);
