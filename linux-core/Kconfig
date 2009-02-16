@@ -48,21 +48,6 @@ config DRM_I810
 	  selected, the module will be called i810.  AGP support is required
 	  for this driver to work.
 
-choice
-	prompt "Intel 830M, 845G, 852GM, 855GM, 865G"
-	depends on DRM && AGP && AGP_INTEL
-	optional
-
-config DRM_I915
-	tristate "i915 driver"
-	help
-	  Choose this option if you have a system that has Intel 830M, 845G,
-	  852GM, 855GM, 865G, 915G, 915GM, 945G, 945GM and 965G integrated 
-	  graphics.  If M is selected, the module will be called i915.  
-	  AGP support is required for this driver to work.
-	
-endchoice
-
 config DRM_MGA
 	tristate "Matrox g200/g400"
 	depends on DRM && (!X86_64 || BROKEN) && (!PPC || BROKEN)
