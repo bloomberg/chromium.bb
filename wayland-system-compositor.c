@@ -71,7 +71,7 @@ struct wlsc_output {
 	EGLSurface surface;
 	int32_t x, y, width, height, stride;
 
-	struct drm_mode_modeinfo *mode;
+	drmModeModeInfo *mode;
 	uint32_t fb_id;
 	uint32_t crtc_id;
 	uint32_t connector_id;
@@ -1136,7 +1136,7 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	drmModeConnector *connector;
 	drmModeRes *resources;
 	drmModeEncoder *encoder;
-	struct drm_mode_modeinfo *mode;
+	drmModeModeInfo *mode;
 	struct drm_i915_gem_create create;
 	struct drm_gem_flink flink;
 	struct wlsc_output *output;
