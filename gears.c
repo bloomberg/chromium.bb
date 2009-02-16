@@ -336,6 +336,13 @@ static const struct wl_compositor_listener compositor_listener = {
 	handle_frame,
 };
 
+static const EGLint config_attribs[] = {
+	EGL_DEPTH_SIZE, 24,
+	EGL_CONFIG_CAVEAT, EGL_NONE,
+	EGL_RED_SIZE, 8,
+	EGL_NONE		
+};
+
 static struct gears *
 gears_create(struct display *display)
 {
@@ -366,7 +373,9 @@ gears_create(struct display *display)
 	if (!eglGetConfigs(gears->display, configs, 64, &count))
 		die("failed to get configs\n");
 
-	gears->config = configs[24];
+	if (!eglChooseConfig(gears->display, config_attribs, &gears->config, 1, NULL))
+		die("failed to pick a config\n");
+
 	gears->context = eglCreateContext(gears->display, gears->config, NULL, NULL);
 	if (gears->context == NULL)
 		die("failed to create context\n");
