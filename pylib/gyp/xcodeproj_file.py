@@ -153,7 +153,7 @@ _unquoted = re.compile('^[A-Za-z0-9$./_]+$')
 
 # This pattern should match any character that needs to be escaped by
 # XCObject._EncodeString.  See that function.
-_escaped = re.compile('[\\"]|[^ -~]')
+_escaped = re.compile('[\\\\"]|[^ -~]')
 
 
 # Used by SourceTreeAndPathFromPath
