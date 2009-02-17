@@ -37,6 +37,10 @@ _generator_identity_variables = [
   'EXECUTABLE_SUFFIX',
   'INTERMEDIATE_DIR',
   'PRODUCT_DIR',
+  'RULE_INPUT_ROOT',
+  'RULE_INPUT_EXT',
+  'RULE_INPUT_NAME',
+  'RULE_INPUT_PATH',
 ]
 
 # gypd doesn't define a default value for OS like many other generator

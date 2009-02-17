@@ -7,6 +7,7 @@ import errno
 import os
 import pprint
 import re
+import shutil
 import tempfile
 
 
@@ -32,6 +33,10 @@ generator_default_variables = {
   'INTERMEDIATE_DIR': '$(%s)' % _intermediate_var,
   'OS': 'mac',
   'PRODUCT_DIR': '$(BUILT_PRODUCTS_DIR)',
+  'RULE_INPUT_ROOT': '$(INPUT_FILE_BASE)',
+  'RULE_INPUT_EXT': '$(INPUT_FILE_SUFFIX)',
+  'RULE_INPUT_NAME': '$(INPUT_FILE_NAME)',
+  'RULE_INPUT_PATH': '$(INPUT_FILE_PATH)',
 }
 
 
@@ -43,6 +48,16 @@ class XcodeProject(object):
     self.project_file = \
         gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
     self.build_file_dict = build_file_dict
+
+    # TODO(mark): add destructor that cleans up self.path if created_dir is
+    # True and things didn't complete successfully.
+    self.created_dir = False
+    try:
+      os.mkdir(self.path)
+      self.created_dir = True
+    except OSError, e:
+      if e.errno != errno.EEXIST:
+        raise
 
   def AddTarget(self, name, type, configurations):
     _types = {
@@ -204,14 +219,6 @@ class XcodeProject(object):
     self.project_file.EnsureNoIDCollisions()
 
   def Write(self):
-    created_dir = False
-    try:
-      os.mkdir(self.path)
-      created_dir = True
-    except OSError, e:
-      if e.errno != errno.EEXIST:
-        raise
-
     # Write the project file to a temporary location first.  Xcode watches for
     # changes to the project file and presents a UI sheet offering to reload
     # the project when it does change.  However, in some cases, especially when
@@ -273,27 +280,20 @@ class XcodeProject(object):
       # Don't leave turds behind.  In fact, if this code was responsible for
       # creating the xcodeproj directory, get rid of that too.
       os.unlink(new_pbxproj_path)
-      if created_dir:
-        os.rmdir(self.path)
+      if self.created_dir:
+        shutil.rmtree(self.path, True)
       raise
 
 
-def AddSourceToTarget(source, pbxp, xct, rules_by_ext):
+def AddSourceToTarget(source, pbxp, xct):
   # TODO(mark): Perhaps this can be made a little bit fancier.
-  source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's', 'y']
+  source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's']
   basename = os.path.basename(source)
   dot = basename.rfind('.')
   added = False
   if dot != -1:
     extension = basename[dot + 1:]
-    if extension in rules_by_ext:
-      rule = rules_by_ext[extension]
-      outputs = []
-      for output in rule['outputs']:
-        # Make sure all concrete rule outputs are added to the project file.
-        output_path = output.replace('*', basename[:dot])
-        pbxp.AddOrGetFileInRootGroup(output_path)
-    if extension in rules_by_ext or extension in source_extensions:
+    if extension in source_extensions:
       xct.SourcesPhase().AddFile(source)
       added = True
   if not added:
@@ -302,123 +302,31 @@ def AddSourceToTarget(source, pbxp, xct, rules_by_ext):
     pbxp.AddOrGetFileInRootGroup(source)
 
 
-# TODO(mark): Instead of touching rule inputs, remove rule outputs.  As a
-# bonus, mtime cache invalidation will no longer be necessary.
+_xcode_variable_re = re.compile('(\$\((.*?)\))')
+def ExpandXcodeVariables(string, expansions):
+  """Expands Xcode-style $(VARIABLES) in string per the expansions dict.
 
-_rule_dependency_script = \
-"""\"""Additional dependency checker for Xcode custom script rules
+  In some rare cases, it is appropriate to expand Xcode variables when a
+  project file is generated.  For any substring $(VAR) in string, if VAR is a
+  key in the expansions dict, $(VAR) will be replaced with expansions[VAR].
+  Any $(VAR) substring in string for which VAR is not a key in the expansions
+  dict will remain in the returned string.
+  """
 
-Xcode custom script rules don't permit additional inputs to be specified.
-This is a drawback, because some rules need to be processed when files other
-than the direct rule inputs change.  For example, a rule that calls a code
-generator script should run whenever the script changes, so the script should
-be specified as an additional input.  To work around this limitation, this
-script will run before Xcode processes any rules.  If any of a rule's declared
-additional inputs appear newer than a direct rule input, the rule input will
-be touched, causing the rule output to appear outdated relative to it.  This
-will cause Xcode to run the rule for the rule input in question.
-
-Xcode's inability to handle additional rule inputs directly is filed as Apple
-radar bug 6584839.
-\"""
-
-
-import os
-import os.path
-import re
-import stat
-import sys
-
-
-rule_extension = %s
-
-additional_inputs = \\
-%s
-
-rule_inputs = \\
-%s
-
-rule_outputs = \\
-%s
-
-
-variable_re = re.compile('(\$\((.*?)\))')
-
-def ExpandVariables(string, expansions):
-  matches = variable_re.findall(string)
+  matches = _xcode_variable_re.findall(string)
   if matches == None:
     return string
 
   matches.reverse()
   for match in matches:
     (to_replace, variable) = match
-    if variable in expansions:
-      replacement = expansions[variable]
-    else:
-      replacement = os.environ.get(variable)
+    if not variable in expansions:
+      continue
+
+    replacement = expansions[variable]
     string = re.sub(re.escape(to_replace), replacement, string)
 
   return string
-
-
-# Since this script has an inner loop that keeps calling stat on the same
-# set of files, _mtime_cache caches the results of stat to keep the number of
-# calls to a minimum: O(m + n) instead of O(m * n).
-_mtime_cache = {}
-
-def GetMTime(path):
-  \"""Returns the last-modified time of path, or None if stat fails.\"""
-
-  # Check the mtime cache first.
-  if path in _mtime_cache:
-    return _mtime_cache[path]
-
-  try:
-    path_stat = os.stat(path)
-  except OSError:
-    return None
-
-  # Store the result in the mtime cache and return it.
-  mtime = path_stat[stat.ST_MTIME]
-  _mtime_cache[path] = mtime
-  return mtime
-
-
-def main(args):
-  dotext = '.' + rule_extension
-
-  for additional_input in additional_inputs:
-    additional_input_mtime = GetMTime(additional_input)
-    if additional_input_mtime == None:
-      continue
-
-    for rule_input in rule_inputs:
-      rule_input_mtime = GetMTime(rule_input)
-      if rule_input_mtime == None:
-        continue
-
-      if additional_input_mtime > rule_input_mtime:
-        input_file = os.path.basename(rule_input)
-        if input_file.endswith(dotext):
-          input_file_base = input_file[:-len(dotext)]
-        else:
-          input_file_base = input_file
-        expansions = {
-          'INPUT_FILE_BASE': input_file_base,
-        }
-        for rule_output in rule_outputs:
-          expanded_output = ExpandVariables(rule_output, expansions)
-          try:
-            os.unlink(expanded_output)
-          except OSError:
-            continue
-
-  return 0
-
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv))
-"""
 
 
 def GenerateOutput(target_list, target_dicts, data):
@@ -448,116 +356,7 @@ def GenerateOutput(target_list, target_dicts, data):
     xcode_targets[qualified_target] = xct
     prebuild_index = 0
 
-    rules_by_ext = {}
-    for rule in spec.get('rules', []):
-      rules_by_ext[rule['extension']] = rule
-
-      real_outputs = []
-      for output in rule['outputs']:
-        real_outputs.append(output.replace('*', '$(INPUT_FILE_BASE)'))
-
-      if rule.get('process_outputs_as_sources', False):
-        # Xcode handles rule outputs as additional source inputs by default,
-        # if it knows how to build the output.
-        # Be sure the script runs in exec, and that if exec fails, the script
-        # exits signalling an error.
-        outputs = real_outputs
-        action = 'exec ' + rule['action'] + '\nexit 1\n'
-      else:
-        # There's no checkbox to toggle Xcode's "treat rule outputs as sources"
-        # behavior.  Lie to Xcode by feeding it a dummy output.  When the rule
-        # runs and completes successfully, if all of the real outputs were
-        # produced, the dummy output file will be touched.  Otherwise, the
-        # dummy output file, if present, will be removed.  Since Xcode doesn't
-        # know how to process files with extension .dummy, it won't attempt
-        # any further processing.
-        #
-        # Xcode's inability to exclude rule outputs from further processing is
-        # filed as Apple radar bug 6584932.
-        dummy_name = \
-            'gyp.rule.' + rule['rule_name'] + '.$(INPUT_FILE_BASE).dummy'
-        dummy_path = os.path.join('$(%s)' % _intermediate_var, dummy_name)
-        outputs = [dummy_path]
-        action = \
-            'DUMMY=' + dummy_path + '\n' + \
-            'OUTPUTS="' + ' '.join(real_outputs) + '"\n' + \
-            'if ! ' + rule['action'] + ' ; then\n' + \
-            '  EXIT_STATUS=$?\n' + \
-            '  rm -f ${DUMMY}\n' + \
-            '  exit ${EXIT_STATUS}\n' + \
-            'fi\n' + \
-            'for OUTPUT in ${OUTPUTS} ; do\n' + \
-            '  if [ ! -e ${OUTPUT} ] ; then\n' + \
-            '    rm -f ${DUMMY}\n' + \
-            '    exit 0\n' + \
-            '  fi\n' + \
-            'done\n' + \
-            'touch ${DUMMY}\n' + \
-            'exit 0\n'
-
-      # Convert Xcode-type variable references to sh-compatible environment
-      # variable references.
-      action = re.sub('\$\((.*?)\)', '${\\1}', action). \
-               replace('*', '${SCRIPT_INPUT_FILE}')
-      pbxbr = gyp.xcodeproj_file.PBXBuildRule({
-            'compilerSpec': 'com.apple.compilers.proxy.script',
-            'filePatterns': '*.' + rule['extension'],
-            'fileType':     'pattern.proxy',
-            'outputFiles':  outputs,
-            'script':       action,
-          })
-      xct.AppendProperty('buildRules', pbxbr)
-
-      # Now this is sort of hackish.  Custom Xcode rules of the
-      # "com.apple.compilers.proxy.script" variety don't have a way to specify
-      # additional inputs.  The idea here is that if some set of files other
-      # than the rule input (matching fileType/filePatterns) changes, the
-      # rule output should be considered outdated and the rule be reprocessed
-      # to cause the outputs to be rebuilt.  gyp rules do support this feature,
-      # and it's actually pretty important.  For example, when a script is used
-      # as a rule action, it may be listed as a rule input so that when the
-      # script is modified, it will run again.
-      #
-      # The workaround is to add a shell script phase before the
-      # compile-sources phase to manage the extra input dependencies.  The
-      # script phase has no inputs or outputs defined, so it will always run.
-      # See _rule_dependency_script for the script body and more information
-      # on its operation.
-      #
-      # An alternative implementation avoided the need for the script to run
-      # at every build by listing the additional rule inputs as script phase
-      # inputs and the direct rule inputs as script phase outputs, and all
-      # script phase outputs were touched when the script ran.  That was a
-      # bad idea because Xcode deletes declared script phase outputs when a
-      # script phase fails.  No matter how carefully the script phase was
-      # written, an interrupted script phase counts as a failure, so a window
-      # for data loss existed.  Since the script phase outputs were really
-      # not outputs at all but direct rule inputs, this data loss potential
-      # was not tolerable.  The current implementation requires that the
-      # script run during each build session, which is not ideal, but the
-      # script should execute quickly and only touches files when necessary,
-      # and most importantly, there is no potential for data loss.
-      #
-      # Xcode's inability to handle additional rule inputs directly is filed
-      # as Apple radar bug 6584839.
-      if 'inputs' in rule and 'rule_sources' in rule:
-        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
-              'name': 'Rule "' + rule['rule_name'] + '" Dependency Check',
-              'shellPath': '/usr/bin/python',
-              'shellScript': _rule_dependency_script % \
-                             (repr(rule['extension']),
-                              pprint.pformat(rule['inputs']),
-                              pprint.pformat(rule['rule_sources']),
-                              pprint.pformat(outputs)),
-              'showEnvVarsInLog': 0,
-            })
-
-        # TODO(mark): this assumes too much knowledge of the internals of
-        # xcodeproj_file; some of these smarts should move into xcodeproj_file
-        # itself.
-        xct._properties['buildPhases'].insert(prebuild_index, ssbp)
-        prebuild_index = prebuild_index + 1
-
+    # Add custom shell script phases for "actions" sections.
     for action in spec.get('actions', []):
       # Convert Xcode-type variable references to sh-compatible environment
       # variable references.  Be sure the script runs in exec, and that if
@@ -580,10 +379,177 @@ def GenerateOutput(target_list, target_dicts, data):
 
       if action.get('process_outputs_as_sources', False):
         for output in action['outputs']:
-          AddSourceToTarget(output, pbxp, xct, rules_by_ext)
+          AddSourceToTarget(output, pbxp, xct)
 
+    # Add custom shell script phases driving "make" for "rules" sections.
+    #
+    # Xcode's built-in rule support is almost powerful enough to use directly,
+    # but there are a few significant deficiencies that render them unusable.
+    # There are workarounds for some of its inadequacies, but in aggregate,
+    # the workarounds added complexity to the generator, and some workarounds
+    # actually require input files to be crafted more carefully than I'd like.
+    # Consequently, until Xcode rules are made more capable, "rules" input
+    # sections will be handled in Xcode output by shell script build phases
+    # performed prior to the compilation phase.
+    #
+    # The following problems with Xcode rules were found.  The numbers are
+    # Apple radar IDs.  I hope that these shortcomings are addressed, I really
+    # liked having the rules handled directly in Xcode during the period that
+    # I was prototyping this.
+    #
+    # 6588600 Xcode compiles custom script rule outputs too soon, compilation
+    #         fails.  This occurs when rule outputs from distinct inputs are
+    #         interdependent.  The only workaround is to put rules and their
+    #         inputs in a separate target from the one that compiles the rule
+    #         outputs.  This requires input file cooperation and it means that
+    #         process_outputs_as_sources is unusable.
+    # 6584932 Need to declare that custom rule outputs should be excluded from
+    #         compilation.  A possible workaround is to lie to Xcode about a
+    #         rule's output, giving it a dummy file it doesn't know how to
+    #         compile.  The rule action script would need to touch the dummy.
+    # 6584839 I need a way to declare additional inputs to a custom rule.
+    #         A possible workaround is a shell script phase prior to
+    #         compilation that touches a rule's primary input files if any
+    #         would-be additional inputs are newer than the output.  Modifying
+    #         the source tree - even just modification times - feels dirty.
+    # 6564240 Xcode "custom script" build rules always dump all environment
+    #         variables.  This is a low-prioroty problem and is not a
+    #         show-stopper.
+    rules_by_ext = {}
+    for rule in spec.get('rules', []):
+      rules_by_ext[rule['extension']] = rule
+      concrete_outputs_by_rule_source = []
+      concrete_outputs_all = []
+      actions = []
+      all_inputs = rule.get('inputs', [])
+
+      dotext = '.' + rule['extension']
+      for rule_source in rule.get('rule_sources', []):
+        all_inputs.append(rule_source)
+        rule_source_basename = os.path.basename(rule_source)
+        (rule_source_root, rule_source_ext) = \
+            os.path.splitext(rule_source_basename)
+
+        rule_input_dict = {
+          'INPUT_FILE_BASE':   rule_source_root,
+          'INPUT_FILE_SUFFIX': rule_source_ext,
+          'INPUT_FILE_NAME':   rule_source_basename,
+          'INPUT_FILE_PATH':   rule_source,
+        }
+
+        concrete_outputs_for_this_rule_source = []
+        for output in rule.get('outputs', []):
+          # TODO(mark): The bit that does variable substitution here and below
+          # should be made more flexible.
+          concrete_output = ExpandXcodeVariables(output, rule_input_dict)
+          concrete_outputs_for_this_rule_source.append(concrete_output)
+
+          # Add all concrete rule outputs to the project.
+          pbxp.AddOrGetFileInRootGroup(concrete_output)
+
+        concrete_outputs_by_rule_source.append( \
+            concrete_outputs_for_this_rule_source)
+        concrete_outputs_all.extend(concrete_outputs_for_this_rule_source)
+        if rule.get('process_outputs_as_sources', False):
+          for output in concrete_outputs_for_this_rule_source:
+            AddSourceToTarget(output, pbxp, xct)
+
+        action = ExpandXcodeVariables(rule['action'], rule_input_dict)
+        actions.append(action)
+
+      if len(concrete_outputs_all) > 0:
+        # TODO(mark): There's a possibilty for collision here.  Consider
+        # target "t" rule "A_r" and target "t_A" rule "r".
+        makefile_name = '%s_%s.make' % (spec['target_name'], rule['rule_name'])
+        makefile_path = os.path.join(xcode_projects[build_file].path,
+                                     makefile_name)
+        makefile = open(makefile_path, 'w')
+
+        makefile.write('all: \\\n')
+        for concrete_output_index in \
+            xrange(0, len(concrete_outputs_by_rule_source)):
+          # Only list the first (index [0]) concrete output of each input
+          # in the "all" target.  Otherwise, a parallel make (-j > 1) would
+          # attempt to process each input multiple times simultaneously.
+          # Otherwise, "all" could just contain the entire list of
+          # concrete_outputs_all.
+          concrete_output = \
+              concrete_outputs_by_rule_source[concrete_output_index][0]
+          if concrete_output_index == len(concrete_outputs_by_rule_source) - 1:
+            eol = ''
+          else:
+            eol = ' \\'
+          makefile.write('    %s%s\n' % (concrete_output, eol))
+        makefile.write('\n')
+
+        for (input, concrete_outputs, action) in \
+            zip(rule['rule_sources'], concrete_outputs_by_rule_source, actions):
+          for concrete_output_index in xrange(0, len(concrete_outputs)):
+            concrete_output = concrete_outputs[concrete_output_index]
+            if concrete_output_index == 0:
+              bol = ''
+            else:
+              bol = '    '
+            makefile.write('%s%s \\\n' % (bol, concrete_output))
+
+          makefile.write('    : \\\n')
+
+          rule_source_inputs = [input]
+          rule_source_inputs.extend(rule.get('inputs', []))
+          for all_input_index in xrange(0, len(rule_source_inputs)):
+            input = rule_source_inputs[all_input_index]
+            if all_input_index == len(rule_source_inputs) - 1:
+              eol = ''
+            else:
+              eol = ' \\'
+            makefile.write('    %s%s\n' % (input, eol))
+
+          makefile.write('\t%s\n' % action)
+
+          makefile.write('\n')
+
+        makefile.close()
+
+        # Don't declare any inputPaths or outputPaths.  If they're present,
+        # Xcode will provide a slight optimization by only running the script
+        # phase if any output is missing or outdated relative to any input.
+        # Unfortunately, it will also assume that all outputs are touched by
+        # the script, and if the outputs serve as files in a compilation
+        # phase, they will be unconditionally rebuilt.  Since make might not
+        # rebuild everything that could be declared here as an output, this
+        # extra compilation activity is unnecessary.  With inputPaths and
+        # outputPaths not supplied, make will always be called, but it knows
+        # enough to not do anything when everything is up-to-date.
+        script = \
+"""exec "${DEVELOPER_BIN_DIR}/make" -f "${PROJECT_FILE_PATH}/%s" -j "$(sysctl -n hw.ncpu)"
+exit 1
+""" % makefile_name
+        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+              'name': 'Rule "' + rule['rule_name'] + '"',
+              'shellScript': script,
+              'showEnvVarsInLog': 0,
+            })
+
+        # TODO(mark): this assumes too much knowledge of the internals of
+        # xcodeproj_file; some of these smarts should move into xcodeproj_file
+        # itself.
+        xct._properties['buildPhases'].insert(prebuild_index, ssbp)
+        prebuild_index = prebuild_index + 1
+
+      # Extra rule inputs also go into the project file.
+      for group in ['inputs', 'inputs_excluded']:
+        for item in rule.get(group, []):
+          pbxp.AddOrGetFileInRootGroup(item)
+
+    # Add "sources".
     for source in spec.get('sources', []):
-      AddSourceToTarget(source, pbxp, xct, rules_by_ext)
+      (source_root, source_extension) = os.path.splitext(source)
+      if source_extension not in rules_by_ext:
+        # AddSourceToTarget will add the file to a root group if it's not
+        # already there.
+        AddSourceToTarget(source, pbxp, xct)
+      else:
+        pbxp.AddOrGetFileInRootGroup(source)
 
     # Excluded files can also go into the project file.
     if 'sources_excluded' in spec:
