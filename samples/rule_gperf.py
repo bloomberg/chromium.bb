@@ -7,7 +7,7 @@
 # some users want a .c file instead of a .cpp file, the .cpp file is copied
 # to .c when done.
 
-import os.path
+import posixpath
 import shutil
 import subprocess
 import sys
@@ -19,23 +19,23 @@ output_dir = sys.argv[2]
 
 gperf_commands = {
   'DocTypeStrings.gperf': [
-    '-CEot', '-L', 'ANSI-C', '-k', '*', '-N', 'findDoctypeEntry',
+    '-CEot', '-L', 'ANSI-C', '-k*', '-N', 'findDoctypeEntry',
     '-F', ',PubIDInfo::eAlmostStandards,PubIDInfo::eAlmostStandards'
   ],
   'HTMLEntityNames.gperf': [
-    '-a', '-L', 'ANSI-C', '-C', '-G', '-c', '-o', '-t', '-k', '*',
+    '-a', '-L', 'ANSI-C', '-C', '-G', '-c', '-o', '-t', '-k*',
     '-N', 'findEntity', '-D', '-s', '2'
   ],
   'ColorData.gperf': [
-    '-CDEot', '-L', 'ANSI-C', '-k', '*', '-N', 'findColor', '-D', '-s', '2'
+    '-CDEot', '-L', 'ANSI-C', '-k*', '-N', 'findColor', '-D', '-s', '2'
   ],
 }
 
-input_name = os.path.basename(input_file)
+input_name = posixpath.basename(input_file)
 assert input_name in gperf_commands
 
-(input_root, input_ext) = os.path.splitext(input_name)
-output_cpp = os.path.join(output_dir, input_root + '.cpp')
+(input_root, input_ext) = posixpath.splitext(input_name)
+output_cpp = posixpath.join(output_dir, input_root + '.cpp')
 
 command = ['gperf', '--output-file', output_cpp]
 command.extend(gperf_commands[input_name])
@@ -49,5 +49,5 @@ print subprocess.list2cmdline(command)
 return_code = subprocess.call(command)
 assert return_code == 0
 
-output_c = os.path.join(output_dir, input_root + '.c')
+output_c = posixpath.join(output_dir, input_root + '.c')
 shutil.copyfile(output_cpp, output_c)
