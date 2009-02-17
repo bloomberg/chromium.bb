@@ -216,21 +216,6 @@
       'src/third_party/jscre/pcre_chartables.c',
       'src/third_party/jscre/ucptable.cpp',
     ],
-    'core_library_files': [
-      'src/runtime.js',
-      'src/v8natives.js',
-      'src/array.js',
-      'src/string.js',
-      'src/uri.js',
-      'src/math.js',
-      'src/messages.js',
-      'src/apinatives.js',
-      'src/debug-delay.js',
-      'src/mirror-delay.js',
-      'src/date-delay.js',
-      'src/regexp-delay.js',
-      'src/macros.py',
-    ],
   },
   'includes': [
     '../build/common.gypi',
@@ -251,6 +236,44 @@
     },
   },
   'targets': [
+    # Targets that apply to any architecture.
+    {
+      'target_name': 'js2c',
+      'variables': {
+        'library_files': [
+          'src/runtime.js',
+          'src/v8natives.js',
+          'src/array.js',
+          'src/string.js',
+          'src/uri.js',
+          'src/math.js',
+          'src/messages.js',
+          'src/apinatives.js',
+          'src/debug-delay.js',
+          'src/mirror-delay.js',
+          'src/date-delay.js',
+          'src/regexp-delay.js',
+          'src/macros.py',
+        ],
+      },
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'js2c',
+          'inputs': [
+            'tools/js2c.py',
+            '<@(library_files)',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/libraries.cc',
+            '<(INTERMEDIATE_DIR)/libraries-empty.cc',
+          ],
+          'action': 'python tools/js2c.py <(_outputs) CORE <(library_files)'
+        },
+      ],
+    },
+
+    # Targets to build v8 for the native architecture (ia32).
     {
       'target_name': 'v8_base',
       'type': 'static_library',
@@ -293,24 +316,7 @@
       ],
       'dependencies': [
         'v8_base',
-      ],
-      'actions': [
-        {
-          # This action is duplicated in the v8 target.  The duplication is
-          # is ugly, but it's necessary to guarantee that libraries.cc is
-          # is generated, since INTERMEDIATE_DIR might not be the same for
-          # this target as that one.
-          'action_name': 'js2c',
-          'inputs': [
-            'tools/js2c.py',
-            '<@(core_library_files)',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/libraries.cc',
-            '<(INTERMEDIATE_DIR)/libraries-empty.cc',
-          ],
-          'action': 'python tools/js2c.py <(_outputs) CORE <(core_library_files)'
-        },
+        'js2c',
       ],
     },
     {
@@ -335,6 +341,7 @@
       ],
       'dependencies': [
         'v8_base',
+        'js2c',
         'mksnapshot',
       ],
       'direct_dependent_settings': {
@@ -343,22 +350,6 @@
         ],
       },
       'actions': [
-        {
-          # This action is duplicated in the v8_nosnapshot target.  The
-          # duplication is ugly, but it's necessary to guarantee that
-          # libraries-empty.cc is generated, since INTERMEDIATE_DIR might not
-          # be the same for this target as that one.
-          'action_name': 'js2c',
-          'inputs': [
-            'tools/js2c.py',
-            '<@(core_library_files)',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/libraries.cc',
-            '<(INTERMEDIATE_DIR)/libraries-empty.cc',
-          ],
-          'action': 'python tools/js2c.py <(_outputs) CORE <(core_library_files)'
-        },
         {
           'action_name': 'mksnapshot',
           'inputs': [
@@ -475,25 +466,14 @@
       'defines': [
         'ARM',
       ],
+      'dependencies': [
+        'js2c',
+      ],
       'direct_dependent_settings': {
         'include_dirs': [
           'include',
         ],
       },
-      'actions': [
-        {
-          'action_name': 'js2c',
-          'inputs': [
-            'tools/js2c.py',
-            '<@(core_library_files)',
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/libraries.cc',
-            '<(INTERMEDIATE_DIR)/libraries-empty.cc',
-          ],
-          'action': 'python tools/js2c.py <(_outputs) CORE <(core_library_files)'
-        },
-      ],
     },
     {
       'target_name': 'v8_shell_arm',
