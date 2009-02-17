@@ -50,7 +50,8 @@ class XcodeProject(object):
     self.build_file_dict = build_file_dict
 
     # TODO(mark): add destructor that cleans up self.path if created_dir is
-    # True and things didn't complete successfully.
+    # True and things didn't complete successfully.  Or do something even
+    # better with "try"?
     self.created_dir = False
     try:
       os.mkdir(self.path)
@@ -418,18 +419,53 @@ def GenerateOutput(target_list, target_dicts, data):
     rules_by_ext = {}
     for rule in spec.get('rules', []):
       rules_by_ext[rule['extension']] = rule
-      concrete_outputs_by_rule_source = []
-      concrete_outputs_all = []
-      actions = []
-      all_inputs = rule.get('inputs', [])
 
-      dotext = '.' + rule['extension']
+      # First, some definitions:
+      #
+      # A "rule source" is a file that was listed in a target's "sources"
+      # list and will have a rule applied to it on the basis of matching the
+      # rule's "extensions" attribute.  Rule sources are direct inputs to
+      # rules.
+      #
+      # Rule definitions may specify additional inputs in their "inputs"
+      # attribute.  These additional inputs are used for dependency tracking
+      # purposes.
+      #
+      # A "concrete output" is a rule output with input-dependent variables
+      # resolved.  For example, given a rule with:
+      #   'extension': 'ext', 'outputs': ['$(INPUT_FILE_BASE).cc'],
+      # if the target's "sources" list contained "one.ext" and "two.ext",
+      # the "concrete output" for rule input "two.ext" would be "two.cc".  If
+      # a rule specifies multiple outputs, each input file that the rule is
+      # applied to will have the same number of concrete outputs.
+      #
+      # If any concrete outputs are outdated or missing relative to their
+      # corresponding rule_source or to any specified additional input, the
+      # rule action must be performed to generate the concrete outputs.
+
+      # concrete_outputs_by_rule_source will have an item at the same index
+      # as the rule['rule_sources'] that it corresponds to.  Each item is a
+      # list of all of the concrete outputs for the rule_source.
+      concrete_outputs_by_rule_source = []
+
+      # concrete_outputs_all is a flat list of all concrete outputs that this
+      # rule is able to produce, given the known set of input files
+      # (rule_sources) that apply to it.
+      concrete_outputs_all = []
+
+      # actions is keyed by the same indices as rule['rule_sources'] and
+      # concrete_outputs_by_rule_source.  It contains the action to perform
+      # after resolving input-dependent variables.
+      actions = []
+
       for rule_source in rule.get('rule_sources', []):
-        all_inputs.append(rule_source)
         rule_source_basename = os.path.basename(rule_source)
         (rule_source_root, rule_source_ext) = \
             os.path.splitext(rule_source_basename)
 
+        # These are the same variable names that Xcode uses for its own native
+        # rule support.  Because Xcode's rule engine is not being used, they
+        # need to be expanded as they are written to the makefile.
         rule_input_dict = {
           'INPUT_FILE_BASE':   rule_source_root,
           'INPUT_FILE_SUFFIX': rule_source_ext,
@@ -439,12 +475,15 @@ def GenerateOutput(target_list, target_dicts, data):
 
         concrete_outputs_for_this_rule_source = []
         for output in rule.get('outputs', []):
-          # TODO(mark): The bit that does variable substitution here and below
-          # should be made more flexible.
+          # Fortunately, Xcode and make both use $(VAR) format for their
+          # variables, so the expansion is the only transformation necessary.
+          # Any remaning $(VAR)-type variables in the string can be given
+          # directly to make, which will pick up the correct settings from
+          # what Xcode puts into the environment.
           concrete_output = ExpandXcodeVariables(output, rule_input_dict)
           concrete_outputs_for_this_rule_source.append(concrete_output)
 
-          # Add all concrete rule outputs to the project.
+          # Add all concrete outputs to the project.
           pbxp.AddOrGetFileInRootGroup(concrete_output)
 
         concrete_outputs_by_rule_source.append( \
@@ -463,8 +502,14 @@ def GenerateOutput(target_list, target_dicts, data):
         makefile_name = '%s_%s.make' % (spec['target_name'], rule['rule_name'])
         makefile_path = os.path.join(xcode_projects[build_file].path,
                                      makefile_name)
+        # TODO(mark): try/close?  Write to a temporary file and swap it only
+        # if it's got changes?
         makefile = open(makefile_path, 'w')
 
+        # make will build the first target in the makefile by default.  By
+        # convention, it's called "all".  List all (or at least one)
+        # concrete output for each rule source as a prerequisite of the "all"
+        # target.
         makefile.write('all: \\\n')
         for concrete_output_index in \
             xrange(0, len(concrete_outputs_by_rule_source)):
@@ -480,10 +525,13 @@ def GenerateOutput(target_list, target_dicts, data):
           else:
             eol = ' \\'
           makefile.write('    %s%s\n' % (concrete_output, eol))
-        makefile.write('\n')
 
-        for (input, concrete_outputs, action) in \
+        for (rule_source, concrete_outputs, action) in \
             zip(rule['rule_sources'], concrete_outputs_by_rule_source, actions):
+          makefile.write('\n')
+
+          # Add a rule that declares it can build each concrete output of a
+          # rule source.
           for concrete_output_index in xrange(0, len(concrete_outputs)):
             concrete_output = concrete_outputs[concrete_output_index]
             if concrete_output_index == 0:
@@ -494,19 +542,21 @@ def GenerateOutput(target_list, target_dicts, data):
 
           makefile.write('    : \\\n')
 
-          rule_source_inputs = [input]
-          rule_source_inputs.extend(rule.get('inputs', []))
-          for all_input_index in xrange(0, len(rule_source_inputs)):
-            input = rule_source_inputs[all_input_index]
-            if all_input_index == len(rule_source_inputs) - 1:
+          # The prerequisites for this rule are the rule source itself and
+          # the set of additional rule inputs, if any.
+          prerequisites = [rule_source]
+          prerequisites.extend(rule.get('inputs', []))
+          for prerequisite_index in xrange(0, len(prerequisites)):
+            prerequisite = prerequisites[prerequisite_index]
+            if prerequisite_index == len(prerequisites) - 1:
               eol = ''
             else:
               eol = ' \\'
-            makefile.write('    %s%s\n' % (input, eol))
+            makefile.write('    %s%s\n' % (prerequisite, eol))
 
+          # The rule action has already had the necessary variable
+          # substitutions performed.
           makefile.write('\t%s\n' % action)
-
-          makefile.write('\n')
 
         makefile.close()
 
@@ -536,7 +586,8 @@ exit 1
         xct._properties['buildPhases'].insert(prebuild_index, ssbp)
         prebuild_index = prebuild_index + 1
 
-      # Extra rule inputs also go into the project file.
+      # Extra rule inputs also go into the project file.  Concrete outputs were
+      # already added when they were computed.
       for group in ['inputs', 'inputs_excluded']:
         for item in rule.get(group, []):
           pbxp.AddOrGetFileInRootGroup(item)
