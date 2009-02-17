@@ -26,6 +26,7 @@
 
 
 import os
+import posixpath
 import subprocess
 import sys
 
@@ -76,17 +77,19 @@ def main(args):
   attr_input = None
   for input in inputs:
     # Make input pathnames absolute so they can be accessed after changing
-    # directory.
+    # directory. Convert \ to / for most but not all of them to work around
+    # the intermix of activepython + cygwin perl.
     input_abs = os.path.abspath(input)
+    input_abs_posix = input_abs.replace('\\', '/')
     if os.path.basename(input) == 'make_names.pl':
       assert make_names_input == None
       make_names_input = input_abs
     elif input.endswith('TagNames.in') or input.endswith('tags.in'):
       assert tag_input == None
-      tag_input = input_abs
+      tag_input = input_abs_posix
     elif input.endswith('AttributeNames.in') or input.endswith('attrs.in'):
       assert attr_input == None
-      attr_input = input_abs
+      attr_input = input_abs_posix
     else:
       assert False
 

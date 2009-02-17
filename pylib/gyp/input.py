@@ -19,6 +19,7 @@ path_sections = [
   'inputs',
   'sources',
   'msvs_props',
+  'msvs_cygwin_dirs',
   'outputs',
   'xcode_framework_dirs',
 ]

@@ -10,11 +10,15 @@ import gyp.MSVSProject as MSVSProject
 
 
 generator_default_variables = {
-    'OS': 'win',
-    'INTERMEDIATE_DIR': '$(IntDir)',
-    'PRODUCT_DIR': '$(OutDir)',
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '.exe',
+    'INTERMEDIATE_DIR': '$(IntDir)',
+    'OS': 'win',
+    'PRODUCT_DIR': '$(OutDir)',
+    'RULE_INPUT_ROOT': '$(InputName)',
+    'RULE_INPUT_EXT': '$(InputExt)',
+    'RULE_INPUT_NAME': '$(InputFileName)',
+    'RULE_INPUT_PATH': '$(InputPath)',
 }
 
 
@@ -278,12 +282,19 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   for a in actions:
     inputs = [_FixPath(i) for i in a.get('inputs', [])]
     outputs = [_FixPath(i) for i in a.get('outputs', [])]
+    cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
+    direct_cmd = a['action'].replace('\\', '/')
+    direct_cmd = direct_cmd.replace('$(IntDir)', '`cygpath -m \\"${INTDIR}\\"`')
+    cmd = ('$(ProjectDir)%s\\setup_mount.bat && '
+           '$(ProjectDir)%s\\setup_env.bat && '
+           'set INTDIR=$(IntDir) && '
+           'bash -c "%s"') % (cygwin_dir, cygwin_dir, direct_cmd)
     tool = MSVSProject.Tool(
         'VCCustomBuildTool', {
           'Description': a['action_name'],
           'AdditionalDependencies': ';'.join(inputs),
           'Outputs': ';'.join(outputs),
-          'CommandLine': a['action'].replace('/', '\\'),
+          'CommandLine': cmd,
           })
     for config_name in spec['configurations']:
       p.AddFileConfig(inputs[0], config_name, tools=[tool])
