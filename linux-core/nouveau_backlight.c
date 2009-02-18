@@ -37,6 +37,8 @@
 #include "nouveau_drm.h"
 #include "nouveau_reg.h"
 
+#ifdef CONFIG_BACKLIGHT_CLASS_DEVICE
+
 static int nv40_get_intensity(struct backlight_device *bd)
 {
 	struct drm_device *dev = bl_get_data(bd);
@@ -157,4 +159,17 @@ void nouveau_backlight_exit(struct drm_device *dev)
 
 	if (dev_priv->backlight)
 		backlight_device_unregister(dev_priv->backlight);
-}	
+}
+
+#else /* CONFIG_BACKLIGHT_CLASS_DEVICE not set */
+int nouveau_backlight_init(struct drm_device *dev)
+{
+	(void)dev;
+	return 0;
+}
+
+void nouveau_backlight_exit(struct drm_device *dev)
+{
+	(void)dev;
+}
+#endif /* CONFIG_BACKLIGHT_CLASS_DEVICE not set */
