@@ -1268,6 +1268,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'pm':        'text.script.perl',
         'py':        'text.script.python',
         's':         'sourcecode.asm',
+        'xcconfig':  'text.xcconfig',
         'y':         'sourcecode.yacc',
       }
 

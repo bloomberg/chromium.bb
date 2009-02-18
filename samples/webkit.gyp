@@ -300,6 +300,7 @@
         # bison rule
         '../third_party/WebKit/WebCore/css/CSSGrammar.y',
         '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
+
         # gperf rule
         '../third_party/WebKit/WebCore/html/DocTypeStrings.gperf',
         '../third_party/WebKit/WebCore/html/HTMLEntityNames.gperf',
@@ -3865,7 +3866,43 @@
     {
       'target_name': 'glue',
       'type': 'static_library',
+      'actions': [
+        {
+          'action_name': 'webkit_version',
+          'inputs': [
+            'build/webkit_version.py',
+            '../third_party/WebKit/WebCore/Configurations/Version.xcconfig',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/webkit_version.h',
+          ],
+          'action': 'python <@(_inputs) <(INTERMEDIATE_DIR)',
+        },
+      ],
+      'rules': [
+        {
+          'rule_name': 'grit',
+          'extension': 'grd',
+          'inputs': [
+            '../tools/grit/grit.py',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/grit/<(RULE_INPUT_ROOT).h',
+          ],
+          'ensure_dirs': [
+            '<(INTERMEDIATE_DIR)/grit',
+          ],
+          'action': 'python <@(_inputs) -i <(RULE_INPUT_PATH) build -o <(INTERMEDIATE_DIR)/grit',
+        },
+      ],
       'sources': [
+        # webkit_version rule
+        '../third_party/WebKit/WebCore/Configurations/Version.xcconfig',
+
+        # grit rule
+        'glue/webkit_resources.grd',
+        'glue/webkit_strings.grd',
+
         # This list contains all .h, .cc, and .mm files in glue except for
         # those in the test subdirectory and those with unittest in in their
         # names.
@@ -4048,6 +4085,7 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
+        '<(INTERMEDIATE_DIR)/grit',
         '<(INTERMEDIATE_DIR)/v8',
         'port/bindings/v8',
         '<@(webcore_include_dirs)',
@@ -4091,24 +4129,5 @@
         }],
       ],
     },
-  ],
-  'conditions': [
-    ['OS=="win"', {
-      'targets': [
-        {
-          'target_name': 'webkit_resources',
-          'type': 'none',
-          'sources': [
-            'glue/webkit_resources.grd',
-          ],
-          'msvs_tool_files': ['../tools/grit/build/grit_resources.rules'],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '$(OutDir)/grit_derived_sources',
-            ],
-          },
-        },
-      ],
-    }],
   ],
 }

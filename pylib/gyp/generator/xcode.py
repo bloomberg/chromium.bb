@@ -560,6 +560,21 @@ def GenerateOutput(target_list, target_dicts, data):
 
         makefile.close()
 
+        # If the rule declared that any directories need to exist, make sure
+        # that the rule script creates them before running the rule.  With
+        # genuine Xcode rules, Xcode automatically creates output directories,
+        # which is nice.
+        script = ''
+        if 'ensure_dirs' in rule:
+          script = script + 'mkdir -p'
+          for ensure_dir in rule['ensure_dirs']:
+            # Convert Xcode variable references to shell variable references.
+            # TODO(mark): quote properly?  We do want to permit variable
+            # references in here.
+            script = script + ' "' + \
+                     re.sub('\$\((.*?)\)', '${\\1}', ensure_dir) + '"'
+          script = script + '\n'
+
         # Don't declare any inputPaths or outputPaths.  If they're present,
         # Xcode will provide a slight optimization by only running the script
         # phase if any output is missing or outdated relative to any input.
@@ -570,7 +585,7 @@ def GenerateOutput(target_list, target_dicts, data):
         # extra compilation activity is unnecessary.  With inputPaths and
         # outputPaths not supplied, make will always be called, but it knows
         # enough to not do anything when everything is up-to-date.
-        script = \
+        script = script + \
 """exec "${DEVELOPER_BIN_DIR}/make" -f "${PROJECT_FILE_PATH}/%s" -j "$(sysctl -n hw.ncpu)"
 exit 1
 """ % makefile_name
