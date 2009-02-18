@@ -922,6 +922,19 @@
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
+      'conditions': [
+        ['OS=="win"', {
+          'defines': [
+            '__STD_C',
+            '_SCL_SECURE_NO_DEPRECATE',
+            '_CRT_SECURE_NO_DEPRECATE',
+          ],
+          'include_dirs': [
+            'build/JavaScriptCore',
+            '../third_party/WebKit/JavaScriptCore/os-win32',
+          ],
+        }],
+      ],
     },
     {
       # This target builds the portion of the v8 bindings that are not
@@ -1041,6 +1054,10 @@
         '<(INTERMEDIATE_DIR)/bindings',
         '<(INTERMEDIATE_DIR)/v8',
         'port/bindings/v8',
+      ],
+      # Needs to be prepended to avoid a name collision with a system header
+      # on windows.
+      'include_dirs+': [
         '<@(webcore_include_dirs)',
       ],
       'dependencies': [
@@ -1069,7 +1086,6 @@
             '_CRT_SECURE_NO_DEPRECATE',
           ],
           'include_dirs': [
-            'build/JavaScriptCore',
             'build/JavaScriptCore',
             '../third_party/WebKit/JavaScriptCore/os-win32',
           ],
@@ -3731,6 +3747,9 @@
         '../third_party/WebKit/WebCore/xml/XSLTUnicodeSort.cpp',
         '../third_party/WebKit/WebCore/xml/XSLTUnicodeSort.h',
       ],
+      'msvs_disabled_warnings': [
+        4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
+      ],
       'sources/': [
         # Fortunately, many things can be excluded by using broad patterns.
 
@@ -3801,6 +3820,10 @@
         '<(INTERMEDIATE_DIR)/bindings',
         '<(INTERMEDIATE_DIR)/v8',
         'port/bindings/v8',
+      ],
+      # Needs to be prepended to avoid a name collision with a system header
+      # on windows.
+      'include_dirs+': [
         '<@(webcore_include_dirs)',
       ],
       'dependencies': [
@@ -3814,6 +3837,8 @@
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../third_party/libxslt/libxslt.gyp:libxslt',
+        '../third_party/zlib/zlib.gyp:zlib',
       ],
       'hard_dependencies': [
         'webkit_derived',
@@ -3854,7 +3879,21 @@
             '../third_party/WebKit/WebCore/platform/graphics/skia/TransformationMatrixSkia.cpp',
           ]
         }],
-        ['OS=="win"', {'sources/': [['exclude', 'Posix\\.cpp$']]}],
+        ['OS=="win"', {
+          'sources/': [['exclude', 'Posix\\.cpp$']],
+          'defines': [
+            '__STD_C',
+            '_SCL_SECURE_NO_DEPRECATE',
+            '_CRT_SECURE_NO_DEPRECATE',
+
+            ['__PRETTY_FUNCTION__', '__FUNCTION__'],
+            'DISABLE_ACTIVEX_TYPE_CONVERSION_MPLAYER2',
+          ],
+          'include_dirs': [
+            'build/JavaScriptCore',
+            '../third_party/WebKit/JavaScriptCore/os-win32',
+          ],
+        },],
         ['OS!="linux"', {'sources/': [['exclude', '(Gtk|Linux)\\.cpp$']]}],
         ['OS!="mac"', {'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]}],
         ['OS!="win"', {'sources/': [

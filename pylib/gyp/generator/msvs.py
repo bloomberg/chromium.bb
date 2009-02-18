@@ -148,7 +148,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     defines = []
     for d in c.get('defines', []):
       if type(d)==list:
-        fd = '='.join([str(dpart) for dpart in d])
+        fd = '='.join([str(dpart).replace('"', '\\"') for dpart in d])
       else:
         fd = str(d)
       defines.append(fd)
@@ -157,6 +157,10 @@ def _GenerateProject(vcproj_filename, build_file, spec):
                 'PreprocessorDefinitions', defines)
     _ToolAppend(tools, 'VCResourceCompilerTool',
                 'PreprocessorDefinitions', defines)
+
+    # Change program database directory to prevent collisions.
+    _ToolAppend(tools, 'VCCLCompilerTool', 'ProgramDataBaseFileName',
+                '$(IntDir)\\$(ProjectName)\\vc80.pdb')
 
     # Add disabled warnings.
     disabled_warnings = [str(i) for i in c.get('msvs_disabled_warnings', [])]
@@ -207,6 +211,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     gyp_name = os.path.split(build_file)[1][:-4]
     prepared_attrs['IntermediateDirectory'] = (
         '$(OutDir)\\obj\\%s\\intermediate' % gyp_name)
+    # Change build log to different directory to avoid collision.
+    prepared_attrs['BuildLogFile'] = '$(IntDir)\\$(ProjectName)\\BuildLog.htm'
 
     # Add in this configuration.
     p.AddConfig('|'.join([config_name,
