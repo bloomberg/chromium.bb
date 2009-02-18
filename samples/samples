@@ -38,6 +38,7 @@ gyps = [
     'webkit/build/rule_binding.py',
     'webkit/build/rule_bison.py',
     'webkit/build/rule_gperf.py',
+    'webkit/tools/test_shell/test_shell.gyp',
     'webkit/webkit.gyp',
 ]
 
