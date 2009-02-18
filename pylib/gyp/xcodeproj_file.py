@@ -1265,6 +1265,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'm':         'sourcecode.c.objc',
         'mm':        'sourcecode.cpp.objcpp',
         'pl':        'text.script.perl',
+        'pm':        'text.script.perl',
         'py':        'text.script.python',
         's':         'sourcecode.asm',
         'y':         'sourcecode.yacc',
@@ -1446,7 +1447,7 @@ class PBXBuildFile(XCObject):
     # PBXBuildFiles should wind up with the same set of hashables, unless
     # someone adds the same file multiple times to the same target.  That
     # would be considered invalid anyway.
-#    hashables.extend(self._properties['fileRef'].PathHashables())
+    hashables.extend(self._properties['fileRef'].PathHashables())
 
     return hashables
 
