@@ -59,21 +59,25 @@
         'libxslt/xsltutils.c',
         'libxslt/xsltutils.h',
         'libxslt/xsltwin32config.h',
+        'linux/config.h',
+        'mac/config.h',
+        # TODO(port): Need a pregenerated win32/config.h?
       ],
       'defines': [
         'LIBXSLT_STATIC',
       ],
+      'include_dirs': [
+        '<(os_include)',
+      ],
       'dependencies': [
         '../libxml/libxml.gyp:libxml',
-        '../icu38/icu38.gyp:icuuc',
-        '../zlib/zlib.gyp:zlib',
       ],
       'direct_dependent_settings': {
-        'include_dirs': [
-          '.',
-        ],
         'defines': [
           'LIBXSLT_STATIC',
+        ],
+        'include_dirs': [
+          '.',
         ],
       },
     },

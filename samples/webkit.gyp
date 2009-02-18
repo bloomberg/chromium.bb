@@ -960,6 +960,9 @@
         'build/V8Bindings/precompiled_v8bindings.cpp',
         'build/V8Bindings/precompiled_v8bindings.h',
       ],
+      'sources!': [
+        'build/V8Bindings/precompiled_v8bindings.cpp',
+      ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
         '<(INTERMEDIATE_DIR)/bindings',
