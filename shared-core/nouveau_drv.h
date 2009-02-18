@@ -318,6 +318,7 @@ struct drm_nouveau_private {
 		uint32_t *ramin_copy;
 		uint64_t ramin_size;
 	} susres;
+	struct backlight_device *backlight;
 };
 
 #define NOUVEAU_CHECK_INITIALISED_WITH_RETURN do {         \
@@ -467,6 +468,10 @@ extern void nouveau_sgdma_nottm_hack_takedown(struct drm_device *);
 extern int  nouveau_dma_channel_init(struct drm_device *);
 extern void nouveau_dma_channel_takedown(struct drm_device *);
 extern int  nouveau_dma_wait(struct drm_device *, int size);
+
+/* nouveau_backlight.c */
+extern int nouveau_backlight_init(struct drm_device *);
+extern void nouveau_backlight_exit(struct drm_device *);
 
 /* nv04_fb.c */
 extern int  nv04_fb_init(struct drm_device *);

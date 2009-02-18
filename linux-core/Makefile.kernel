@@ -22,6 +22,7 @@ i810-objs   := i810_drv.o i810_dma.o
 nouveau-objs := nouveau_drv.o nouveau_state.o nouveau_fifo.o nouveau_mem.o \
 		nouveau_object.o nouveau_irq.o nouveau_notifier.o nouveau_swmthd.o \
 		nouveau_sgdma.o nouveau_dma.o nouveau_bo.o nouveau_fence.o \
+		nouveau_backlight.o \
 		nv04_timer.o \
 		nv04_mc.o nv40_mc.o nv50_mc.o \
 		nv04_fb.o nv10_fb.o nv40_fb.o \
