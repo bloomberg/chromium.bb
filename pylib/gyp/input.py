@@ -677,7 +677,7 @@ class DependencyGraphNode(object):
 
 
 def BuildDependencyList(targets):
-  other_dependency_lists = ['export_dependent_settings', 'hard_dependencies']
+  other_dependency_lists = ['export_dependent_settings']
 
   # Create a DependencyGraphNode for each target.  Put it into a dict for easy
   # access.
@@ -767,7 +767,7 @@ def DoDependentSettings(key, flat_list, targets, dependency_nodes):
 def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
   # Recompute target "dependencies" properties.  For each static library
   # target, remove "dependencies" entries referring to other static libraries,
-  # unless the relationship is also listed in "hard_dependencies".  For each
+  # unless the dependency has the "hard_dependency" attribute set.  For each
   # linkable target, add a "dependencies" entry referring to all of the
   # target's computed list of link dependencies (including static libraries
   # if no such entry is already present.
@@ -779,13 +779,13 @@ def AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes):
       if not 'dependencies' in target_dict:
         continue
 
-      hard_dependencies = target_dict.get('hard_dependencies', [])
       index = 0
       while index < len(target_dict['dependencies']):
         dependency = target_dict['dependencies'][index]
         dependency_dict = targets[dependency]
         if dependency_dict['type'] == 'static_library' and \
-           dependency not in hard_dependencies:
+           (not 'hard_dependency' in dependency_dict or \
+            not dependency_dict['hard_dependency']):
           # A static library should not depend on another static library unless
           # the dependency relationship is "hard," which should only be done
           # when a dependent relies on some side effect other than just the

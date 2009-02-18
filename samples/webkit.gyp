@@ -260,60 +260,15 @@
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },
     {
-      # WebKit derived sources.  These should be independent of the chosen
+      # WebCore derived sources.  These should be independent of the chosen
       # JavaScript engine, although they may depend on the chosen engine.
-      'target_name': 'webkit_derived',
+      'target_name': 'webcore_derived',
       'type': 'static_library',
       'dependencies': [
         'wtf',
         '../v8/v8.gyp:v8',
       ],
-      'rules': [
-        {
-          'rule_name': 'bison',
-          'extension': 'y',
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).h'
-          ],
-          'action': 'python build/rule_bison.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)',
-          'process_outputs_as_sources': 1,
-        },
-        {
-          'rule_name': 'gperf',
-          'extension': 'gperf',
-          # gperf output is only ever #included by other source files.  As
-          # such, process_outputs_as_sources is off.  Some gperf output is
-          # #included as *.c and some as *.cpp.  Since there's no way to tell
-          # which one will be needed in a rule definition, declare both as
-          # outputs.  The harness script will generate one file and copy it to
-          # the other.
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).c',
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
-          ],
-          'action': 'python build/rule_gperf.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)',
-          'process_outputs_as_sources': 0,
-        },
-      ],
-      'sources': [
-        # bison rule
-        '../third_party/WebKit/WebCore/css/CSSGrammar.y',
-        '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
-
-        # gperf rule
-        '../third_party/WebKit/WebCore/html/DocTypeStrings.gperf',
-        '../third_party/WebKit/WebCore/html/HTMLEntityNames.gperf',
-        '../third_party/WebKit/WebCore/platform/ColorData.gperf',
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        'port/bindings/v8',
-        '<@(webcore_include_dirs)',
-      ],
-      'xcode_framework_dirs': [
-        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
-      ],
+      'hard_dependency': 1,
       'actions': [
         {
           'action_name': 'CSSPropertyNames',
@@ -439,6 +394,52 @@
           'action': 'python build/action_maketokenizer.py <(_outputs) -- <(_inputs)',
         },
       ],
+      'rules': [
+        {
+          'rule_name': 'bison',
+          'extension': 'y',
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).h'
+          ],
+          'action': 'python build/rule_bison.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)',
+          'process_outputs_as_sources': 1,
+        },
+        {
+          'rule_name': 'gperf',
+          'extension': 'gperf',
+          # gperf output is only ever #included by other source files.  As
+          # such, process_outputs_as_sources is off.  Some gperf output is
+          # #included as *.c and some as *.cpp.  Since there's no way to tell
+          # which one will be needed in a rule definition, declare both as
+          # outputs.  The harness script will generate one file and copy it to
+          # the other.
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).c',
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
+          ],
+          'action': 'python build/rule_gperf.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)',
+          'process_outputs_as_sources': 0,
+        },
+      ],
+      'sources': [
+        # bison rule
+        '../third_party/WebKit/WebCore/css/CSSGrammar.y',
+        '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
+
+        # gperf rule
+        '../third_party/WebKit/WebCore/html/DocTypeStrings.gperf',
+        '../third_party/WebKit/WebCore/html/HTMLEntityNames.gperf',
+        '../third_party/WebKit/WebCore/platform/ColorData.gperf',
+      ],
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        'port/bindings/v8',
+        '<@(webcore_include_dirs)',
+      ],
+      'xcode_framework_dirs': [
+        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
+      ],
     },
     {
       # This target creates config.h suitable for a WebKit-V8 build and
@@ -448,7 +449,7 @@
       # but targets outside of this .gyp file can't depend on that.  There
       # should be a way to make a target (like this one) flagged in a way
       # that only other targets in this file can depend on it.  The same
-      # thing likely applies to webkit_derived and perhaps v8_derived.
+      # thing likely applies to webcore_derived and perhaps v8_derived.
       'target_name': 'v8_config',
       'type': 'none',
       'actions': [
@@ -483,14 +484,12 @@
       'type': 'static_library',
       'dependencies': [
         'wtf',
-        'webkit_derived',
+        'webcore_derived',
         'v8_config',
         '../third_party/libxml/libxml.gyp:libxml',
         '../v8/v8.gyp:v8',
       ],
-      'hard_dependencies': [
-        'webkit_derived',
-      ],
+      'hard_dependency': 1,
       'rules': [
         {
           'rule_name': 'binding',
@@ -1062,7 +1061,7 @@
       ],
       'dependencies': [
         'wtf',
-        'webkit_derived',
+        'webcore_derived',
         'v8_config',
         'v8_derived',
         '../v8/v8.gyp:v8',
@@ -1070,10 +1069,6 @@
         '../third_party/libxslt/libxslt.gyp:libxslt',
         '../third_party/npapi/npapi.gyp:npapi',
         '../skia/skia.gyp:skia',
-      ],
-      'hard_dependencies': [
-        'webkit_derived',
-        'v8_derived',
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
@@ -3828,7 +3823,7 @@
       ],
       'dependencies': [
         'wtf',
-        'webkit_derived',
+        'webcore_derived',
         'v8_config',
         'v8_derived',
         '../v8/v8.gyp:v8',
@@ -3840,10 +3835,22 @@
         '../third_party/libxslt/libxslt.gyp:libxslt',
         '../third_party/zlib/zlib.gyp:zlib',
       ],
-      'hard_dependencies': [
-        'webkit_derived',
-        'v8_derived',
+      # When webcore is a dependency, it needs to be a hard dependency.  Even
+      # though this target doesn't generate files directly, some of its
+      # dependencies do, and dependents may require those files.
+      'hard_dependency': 1,
+      'export_dependent_settings': [
+        'wtf',
+        '../skia/skia.gyp:skia',
+        '../third_party/npapi/npapi.gyp:npapi',
+        '../v8/v8.gyp:v8',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'port/bindings/v8',
+          '<@(webcore_include_dirs)',
+        ],
+      },
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
@@ -4126,18 +4133,19 @@
         '<(INTERMEDIATE_DIR)',
         '<(INTERMEDIATE_DIR)/grit',
         '<(INTERMEDIATE_DIR)/v8',
-        'port/bindings/v8',
-        '<@(webcore_include_dirs)',
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'dependencies': [
-        'wtf',
-        'v8_config',
-        '../v8/v8.gyp:v8',
-        '../skia/skia.gyp:skia',
-        '../third_party/npapi/npapi.gyp:npapi',
+        'webcore',
+      ],
+      # When glue is a dependency, it needs to be a hard dependency.  Even
+      # though this target doesn't generate files directly, some of its
+      # dependencies do, and dependents may require those files.
+      'hard_dependency': 1,
+      'export_dependent_settings': [
+        'webcore',
       ],
       'conditions': [
         ['OS!="linux"', {
