@@ -864,6 +864,7 @@
       'target_name': 'v8_bindings',
       'type': 'static_library',
       'sources': [
+        '../third_party/WebKit/WebCore/bindings/v8/custom/V8CanvasRenderingContext2DCustom.cpp',
         '../third_party/WebKit/WebCore/bindings/v8/custom/V8CustomBinding.h',
         '../third_party/WebKit/WebCore/bindings/v8/custom/V8CustomEventListener.h',
         #'../third_party/WebKit/WebCore/bindings/v8/custom/V8CustomSQLStatementCallback.cpp',
