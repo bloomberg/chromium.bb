@@ -1503,6 +1503,7 @@ drm_intel_bufmgr_fake_init(int fd,
 
    /* Hook in methods */
    bufmgr_fake->bufmgr.bo_alloc = drm_intel_fake_bo_alloc;
+   bufmgr_fake->bufmgr.bo_alloc_for_render = drm_intel_fake_bo_alloc;
    bufmgr_fake->bufmgr.bo_reference = drm_intel_fake_bo_reference;
    bufmgr_fake->bufmgr.bo_unreference = drm_intel_fake_bo_unreference;
    bufmgr_fake->bufmgr.bo_map = drm_intel_fake_bo_map;

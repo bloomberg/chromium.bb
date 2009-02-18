@@ -51,6 +51,16 @@ struct _drm_intel_bufmgr {
    drm_intel_bo *(*bo_alloc)(drm_intel_bufmgr *bufmgr, const char *name,
 			     unsigned long size, unsigned int alignment);
 
+   /**
+    * Allocate a buffer object, hinting that it will be used as a render target.
+    *
+    * This is otherwise the same as bo_alloc.
+    */
+   drm_intel_bo *(*bo_alloc_for_render)(drm_intel_bufmgr *bufmgr,
+					const char *name,
+					unsigned long size,
+					unsigned int alignment);
+
    /** Takes a reference on a buffer object */
    void (*bo_reference)(drm_intel_bo *bo);
 

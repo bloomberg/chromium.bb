@@ -52,6 +52,7 @@
 #include <sys/types.h>
 
 #include "errno.h"
+#include "libdrm_lists.h"
 #include "intel_bufmgr.h"
 #include "intel_bufmgr_priv.h"
 #include "intel_chipset.h"
@@ -67,7 +68,8 @@
 typedef struct _drm_intel_bo_gem drm_intel_bo_gem;
 
 struct drm_intel_gem_bo_bucket {
-   drm_intel_bo_gem *head, **tail;
+   drmMMListHead head;
+
    /**
     * Limit on the number of entries in this bucket.
     *
@@ -145,8 +147,8 @@ struct _drm_intel_bo_gem {
     /** Mapped address for the buffer, saved across map/unmap cycles */
     void *virtual;
 
-    /** free list */
-    drm_intel_bo_gem *next;
+    /** BO cache list */
+    drmMMListHead head;
 
     /**
      * Boolean of whether this BO and its children have been included in
@@ -323,8 +325,9 @@ drm_intel_setup_reloc_list(drm_intel_bo *bo)
 }
 
 static drm_intel_bo *
-drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
-		   unsigned long size, unsigned int alignment)
+drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
+				unsigned long size, unsigned int alignment,
+				int for_render)
 {
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bufmgr;
     drm_intel_bo_gem *bo_gem;
@@ -353,19 +356,35 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
     /* Get a buffer out of the cache if available */
     if (bucket != NULL && bucket->num_entries > 0) {
 	struct drm_i915_gem_busy busy;
-	
-	bo_gem = bucket->head;
-	memset(&busy, 0, sizeof(busy));
-        busy.handle = bo_gem->gem_handle;
 
-        ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
-        alloc_from_cache = (ret == 0 && busy.busy == 0);
-
-	if (alloc_from_cache) {
-	    bucket->head = bo_gem->next;
-	    if (bo_gem->next == NULL)
-		bucket->tail = &bucket->head;
+	if (for_render) {
+	    /* Allocate new render-target BOs from the tail (MRU)
+	     * of the list, as it will likely be hot in the GPU cache
+	     * and in the aperture for us.
+	     */
+	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.prev, head);
+	    DRMLISTDEL(&bo_gem->head);
 	    bucket->num_entries--;
+	    alloc_from_cache = 1;
+	} else {
+	    /* For non-render-target BOs (where we're probably going to map it
+	     * first thing in order to fill it with data), check if the
+	     * last BO in the cache is unbusy, and only reuse in that case.
+	     * Otherwise, allocating a new buffer is probably faster than
+	     * waiting for the GPU to finish.
+	     */
+	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.next, head);
+
+	    memset(&busy, 0, sizeof(busy));
+	    busy.handle = bo_gem->gem_handle;
+
+	    ret = ioctl(bufmgr_gem->fd, DRM_IOCTL_I915_GEM_BUSY, &busy);
+	    alloc_from_cache = (ret == 0 && busy.busy == 0);
+
+	    if (alloc_from_cache) {
+		DRMLISTDEL(&bo_gem->head);
+		bucket->num_entries--;
+	    }
 	}
     }
     pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -404,6 +423,20 @@ drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
 	bo_gem->gem_handle, bo_gem->name, size);
 
     return &bo_gem->bo;
+}
+
+static drm_intel_bo *
+drm_intel_gem_bo_alloc_for_render(drm_intel_bufmgr *bufmgr, const char *name,
+				  unsigned long size, unsigned int alignment)
+{
+    return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, alignment, 1);
+}
+
+static drm_intel_bo *
+drm_intel_gem_bo_alloc(drm_intel_bufmgr *bufmgr, const char *name,
+		       unsigned long size, unsigned int alignment)
+{
+    return drm_intel_gem_bo_alloc_internal(bufmgr, name, size, alignment, 0);
 }
 
 /**
@@ -545,9 +578,7 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 	    bo_gem->reloc_target_bo = NULL;
 	    bo_gem->reloc_count = 0;
 
-	    bo_gem->next = NULL;
-	    *bucket->tail = bo_gem;
-	    bucket->tail = &bo_gem->next;
+	    DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 	    bucket->num_entries++;
 	} else {
 	    drm_intel_gem_bo_free(bo);
@@ -827,10 +858,9 @@ drm_intel_bufmgr_gem_destroy(drm_intel_bufmgr *bufmgr)
 	struct drm_intel_gem_bo_bucket *bucket = &bufmgr_gem->cache_bucket[i];
 	drm_intel_bo_gem *bo_gem;
 
-	while ((bo_gem = bucket->head) != NULL) {
-	    bucket->head = bo_gem->next;
-	    if (bo_gem->next == NULL)
-		bucket->tail = &bucket->head;
+	while (!DRMLISTEMPTY(&bucket->head)) {
+	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.next, head);
+	    DRMLISTDEL(&bo_gem->head);
 	    bucket->num_entries--;
 
 	    drm_intel_gem_bo_free(&bo_gem->bo);
@@ -1348,6 +1378,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->max_relocs = batch_size / sizeof(uint32_t) / 2 - 2;
 
     bufmgr_gem->bufmgr.bo_alloc = drm_intel_gem_bo_alloc;
+    bufmgr_gem->bufmgr.bo_alloc_for_render = drm_intel_gem_bo_alloc_for_render;
     bufmgr_gem->bufmgr.bo_reference = drm_intel_gem_bo_reference;
     bufmgr_gem->bufmgr.bo_unreference = drm_intel_gem_bo_unreference;
     bufmgr_gem->bufmgr.bo_map = drm_intel_gem_bo_map;
@@ -1367,7 +1398,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.check_aperture_space = drm_intel_gem_check_aperture_space;
     /* Initialize the linked lists for BO reuse cache. */
     for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++)
-	bufmgr_gem->cache_bucket[i].tail = &bufmgr_gem->cache_bucket[i].head;
+	DRMINITLISTHEAD(&bufmgr_gem->cache_bucket[i].head);
 
     return &bufmgr_gem->bufmgr;
 }

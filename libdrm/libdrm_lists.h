@@ -29,6 +29,8 @@
  * list handling. No list looping yet.
  */
 
+#include <stddef.h>
+
 typedef struct _drmMMListHead
 {
     struct _drmMMListHead *prev;
