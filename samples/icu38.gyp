@@ -10,6 +10,8 @@
     'defines': [
       'U_STATIC_IMPLEMENTATION',
     ],
+    # TODO(mark): Looks like this is causing the "public" include directories
+    # to show up twice in some targets in this file.  Fix.
     'include_dirs': [
       'public/common',
       'public/i18n',
@@ -164,7 +166,13 @@
         'icuuc',
       ],
       'direct_dependent_settings': {
-        'include_dirs': [
+        # Use prepend (+) because the WebKit build needs to pick up these
+        # ICU headers instead of the ones in ../WebKit/JavaScriptCore/wtf,
+        # also in WebKit's include path.
+        # TODO(mark): The double + is a bug.  It should be a single +.  It
+        # seems that a + is being chopped off when the "target" section is
+        # merged into "target_defaults".
+        'include_dirs++': [
           'public/i18n',
         ],
       },
@@ -311,7 +319,13 @@
         'icudata',
       ],
       'direct_dependent_settings': {
-        'include_dirs': [
+        # Use prepend (+) because the WebKit build needs to pick up these
+        # ICU headers instead of the ones in ../WebKit/JavaScriptCore/wtf,
+        # also in WebKit's include path.
+        # TODO(mark): The double + is a bug.  It should be a single +.  It
+        # seems that a + is being chopped off when the "target" section is
+        # merged into "target_defaults".
+        'include_dirs++': [
           'public/common',
         ],
         'conditions': [

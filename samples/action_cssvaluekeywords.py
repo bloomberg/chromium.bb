@@ -41,10 +41,11 @@ for path in [in_path, svg_in_path]:
       line = ''
     if line == '':
       continue
-    if line.lower() in line_dict:
-      raise KeyError, 'Duplicate value %s' % line
-    line_dict[line.lower()] = True
-    print >>out_file, line
+    line_lower = line.lower()
+    if line_lower in line_dict:
+      raise KeyError, 'Duplicate value %s' % line_lower
+    line_dict[line_lower] = True
+    print >>out_file, line_lower
   in_file.close()
 
 out_file.close()
