@@ -1,5 +1,5 @@
 #
-# fontconfig/fc-lang/pa.orth
+# fontconfig/fc-lang/pa_in.orth
 #
 # Copyright © 2004 Red Hat, Inc.
 #
@@ -21,9 +21,9 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Punjabi (Gurumukhi script) (HI)
+# Panjabi/Punjabi in India (Gurmukhi script) (pa-IN)
 #
-# From Unicode coverage for Gurumukhi, with modifications based on
+# From Unicode coverage for Gurmukhi, with modifications based on
 # the 'Lohit Punjabi' font
 #
 # 0A01-0A03	# Various signs
