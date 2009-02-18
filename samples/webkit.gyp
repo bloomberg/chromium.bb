@@ -957,6 +957,8 @@
         'port/bindings/v8/v8_proxy.cpp',
         'port/bindings/v8/v8_proxy.h',
         'port/bindings/v8/v8_utility.h',
+        'build/V8Bindings/precompiled_v8bindings.cpp',
+        'build/V8Bindings/precompiled_v8bindings.h',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
@@ -972,6 +974,7 @@
         'v8_derived',
         '../v8/v8.gyp:v8',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/libxslt/libxslt.gyp:libxslt',
         '../third_party/npapi/npapi.gyp:npapi',
         '../skia/skia.gyp:skia',
       ],
@@ -994,6 +997,14 @@
             'build/JavaScriptCore',
             '../third_party/WebKit/JavaScriptCore/os-win32',
           ],
+          'configurations': {
+            'Debug': {
+              'msvs_precompiled_header':
+                'build/V8Bindings/precompiled_v8bindings.h',
+              'msvs_precompiled_source':
+                'build/V8Bindings/precompiled_v8bindings.cpp',
+            },
+          },
         }],
       ],
     },

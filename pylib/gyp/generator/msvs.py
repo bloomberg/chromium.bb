@@ -203,6 +203,10 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     prepared_attrs['InheritedPropertySheets'] = ';'.join(vsprops_dirs)
     # Set configuration type.
     prepared_attrs['ConfigurationType'] = config_type
+    # Set intermediate directory.
+    gyp_name = os.path.split(build_file)[1][:-4]
+    prepared_attrs['IntermediateDirectory'] = (
+        '$(OutDir)\\obj\\%s\\intermediate' % gyp_name)
 
     # Add in this configuration.
     p.AddConfig('|'.join([config_name,
@@ -302,7 +306,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
             'Outputs': ';'.join(outputs),
             'CommandLine': cmd,
             })
-      p.AddFileConfig(inputs[0], config_name, tools=[tool])
+      # Pick second input as the primary one, unless there's only one.
+      # TODO(bradnelson): this is a bit of a hack, find something more general.
+      if len(inputs) > 1:
+        primary_input = inputs[1]
+      else:
+        primary_input = inputs[0]
+      # Add to the properties of primary input.
+      p.AddFileConfig(primary_input, config_name, tools=[tool])
 
   # Add rules.
   rules = spec.get('rules', [])

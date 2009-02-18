@@ -17,8 +17,9 @@
             'configuration_platform': 'Win32',
             'msvs_configuration_attributes': {
               'OutputDirectory': '$(SolutionDir)$(ConfigurationName)',
-              'IntermediateDirectory':
-                '$(SolutionDir)$(ConfigurationName)\\obj\\$(ProjectName)',
+              # IntermediateDirectory had been set in the vsprops,
+              # but that no longer makes sense given that gyp files are
+              # assumed to share a single intermediate directory.
               'CharacterSet': '1',
             },
             'msvs_settings': {
