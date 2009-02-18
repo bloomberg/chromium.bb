@@ -19,7 +19,7 @@ generator_default_variables = {
     'RULE_INPUT_ROOT': '$(InputName)',
     'RULE_INPUT_EXT': '$(InputExt)',
     'RULE_INPUT_NAME': '$(InputFileName)',
-    'RULE_INPUT_PATH': '`cygpath -m \\"${INPUTPATH}\\"`',
+    'RULE_INPUT_PATH': '`cygpath -m "${INPUTPATH}"`',
 }
 
 
@@ -287,7 +287,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
       direct_cmd = a['action']
       direct_cmd = direct_cmd.replace('$(IntDir)',
-                                      '`cygpath -m \\"${INTDIR}\\"`')
+                                      '`cygpath -m "${INTDIR}"`')
+      direct_cmd = direct_cmd.replace('"', '\\"')
       cmd = (
 #          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
           '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
@@ -320,7 +321,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
       direct_cmd = r['action']
       direct_cmd = direct_cmd.replace('$(IntDir)',
-                                      '`cygpath -m \\"${INTDIR}\\"`')
+                                      '`cygpath -m "${INTDIR}"`')
+      direct_cmd = direct_cmd.replace('"', '\\"')
       cmd = (
 #          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
           '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '

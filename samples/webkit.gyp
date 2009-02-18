@@ -217,6 +217,7 @@
       'dependencies': [
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
+        '../skia/skia.gyp:skia',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -972,6 +973,7 @@
         '../v8/v8.gyp:v8',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../skia/skia.gyp:skia',
       ],
       'hard_dependencies': [
         'webkit_derived',
@@ -979,6 +981,20 @@
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
+      ],
+      'conditions': [
+        ['OS=="win"', {
+          'defines': [
+            '__STD_C',
+            '_SCL_SECURE_NO_DEPRECATE',
+            '_CRT_SECURE_NO_DEPRECATE',
+          ],
+          'include_dirs': [
+            'build/JavaScriptCore',
+            'build/JavaScriptCore',
+            '../third_party/WebKit/JavaScriptCore/os-win32',
+          ],
+        }],
       ],
     },
     {
