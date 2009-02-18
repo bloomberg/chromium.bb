@@ -857,8 +857,10 @@
         'port/bindings/v8/UndetectableHTMLCollection.idl',
       ],
       'sources/': [
-        # Don't build bindings for storage or SVG filters.
+        # Don't build bindings for storage/database.
         ['exclude', '/third_party/WebKit/WebCore/storage/[^/]*\\.idl$'],
+
+        # SVG_FILTERS only.
         ['exclude', '/third_party/WebKit/WebCore/svg/SVG(FE|Filter)[^/]*\\.idl$'],
       ],
       'sources!': [
@@ -3728,14 +3730,25 @@
         # Exclude things that don't apply to the Chromium platform on the basis
         # of their enclosing directories and tags at the ends of their
         # filenames.
-        ['exclude', '/(android|cairo|cf|cg|curl|gtk|linux|mac|opentype|qt|soup|symbian|win|wx)/'],
-        ['exclude', '(?<!Chromium)(AllInOne|Android|Cairo|CF|CG|Curl|Gtk|Linux|Mac|OpenType|Qt|Safari|Soup|Symbian|Win|Wx)\\.(cpp|mm?)$'],
+        ['exclude', '/(android|cairo|cf|cg|curl|gtk|linux|mac|opentype|posix|qt|soup|symbian|win|wx)/'],
+        ['exclude', '(?<!Chromium)(AllInOne|Android|Cairo|CF|CG|Curl|Gtk|Linux|Mac|OpenType|POSIX|Posix|Qt|Safari|Soup|Symbian|Win|Wx)\\.(cpp|mm?)$'],
 
         # JSC-only.
         ['exclude', '/third_party/WebKit/WebCore/inspector/JavaScript[^/]*\\.cpp$'],
 
+        # ENABLE_OFFLINE_WEB_APPLICATIONS only.
+        ['exclude', '/third_party/WebKit/WebCore/loader/appcache/'],
+
+        # SVG_FILTERS only.
+        ['exclude', '/third_party/WebKit/WebCore/(platform|svg)/graphics/filters/'],
+        ['exclude', '/third_party/WebKit/WebCore/svg/Filter[^/]*\\.cpp$'],
+        ['exclude', '/third_party/WebKit/WebCore/svg/SVG(FE|Filter)[^/]*\\.cpp$'],
+
         # Only use platform/image-decoders/skia.
         ['exclude', '/third_party/WebKit/WebCore/platform/image-decoders/(?!skia/)'],
+
+        # Exclude some, but not all, of storage.
+        ['exclude', '/third_party/WebKit/WebCore/storage/(Local|Session)Storage[^/]*\\.cpp$'],
       ],
       'sources!': [
         # A few things can't be excluded by patterns.  List them individually.
@@ -3746,8 +3759,14 @@
         # Use loader/icon/IconDatabaseNone.cpp instead.
         '../third_party/WebKit/WebCore/loader/icon/IconDatabase.cpp',
 
-        # Don't build these.
-        '../third_party/WebKit/WebCore/loader/UserStyleSheetLoader.cpp',
+        # Use platform/KURLGoogle.cpp instead.
+        '../third_party/WebKit/WebCore/platform/KURL.cpp',
+
+        # Use platform/MIMETypeRegistryChromium.cpp instead.
+        '../third_party/WebKit/WebCore/platform/MIMETypeRegistry.cpp',
+
+        # USE_NEW_THEME only.
+        '../third_party/WebKit/WebCore/platform/Theme.cpp',
 
         # Exclude some, but not all, of plugins.
         '../third_party/WebKit/WebCore/plugins/PluginDatabase.cpp',
@@ -3757,6 +3776,18 @@
         '../third_party/WebKit/WebCore/plugins/PluginStream.cpp',
         '../third_party/WebKit/WebCore/plugins/PluginView.cpp',
         '../third_party/WebKit/WebCore/plugins/npapi.cpp',
+
+        # Don't build these.
+        # TODO(mark): I don't know exactly why these are excluded.  It would
+        # be nice to provide more explicit comments.  Some of these do actually
+        # compile.
+        '../third_party/WebKit/WebCore/dom/StaticStringList.cpp',
+        '../third_party/WebKit/WebCore/loader/icon/IconFetcher.cpp',
+        '../third_party/WebKit/WebCore/loader/icon/IconRecord.cpp',
+        '../third_party/WebKit/WebCore/loader/UserStyleSheetLoader.cpp',
+        '../third_party/WebKit/WebCore/platform/graphics/GraphicsLayer.cpp',
+        '../third_party/WebKit/WebCore/platform/graphics/RenderLayerBacking.cpp',
+        '../third_party/WebKit/WebCore/platform/graphics/RenderLayerCompositor.cpp',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
