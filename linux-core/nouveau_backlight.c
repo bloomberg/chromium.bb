@@ -60,7 +60,9 @@ static int nv40_set_intensity(struct backlight_device *bd)
 }
 
 static struct backlight_ops nv40_bl_ops = {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 	.options = BL_CORE_SUSPENDRESUME,
+#endif
 	.get_brightness = nv40_get_intensity,
 	.update_status = nv40_set_intensity,
 };
@@ -85,7 +87,9 @@ static int nv50_set_intensity(struct backlight_device *bd)
 }
 
 static struct backlight_ops nv50_bl_ops = {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 	.options = BL_CORE_SUSPENDRESUME,
+#endif
 	.get_brightness = nv50_get_intensity,
 	.update_status = nv50_set_intensity,
 };
