@@ -151,6 +151,10 @@ import sys
 # it must not match this pattern, because it needs to be encoded as "".
 _unquoted = re.compile('^[A-Za-z0-9$./_]+$')
 
+# Strings that match this pattern are quoted regardless of what _unquoted says.
+# Oddly, Xcode will quote any string with a run of three or more underscores.
+_quoted = re.compile('___')
+
 # This pattern should match any character that needs to be escaped by
 # XCObject._EncodeString.  See that function.
 _escaped = re.compile('[\\\\"]|[^ -~]')
@@ -525,7 +529,7 @@ class XCObject(object):
     # as UTF-8 without any escaping.  These mappings are contained in the
     # class' _encode_transforms list.
 
-    if _unquoted.match(value):
+    if _unquoted.search(value) and not _quoted.search(value):
       return value
 
     return '"' + _escaped.sub(self._EncodeTransform, value) + '"'
@@ -862,7 +866,7 @@ class XCHierarchicalElement(XCObject):
     if 'path' in self._properties and not 'name' in self._properties:
       path = self._properties['path']
       name = os.path.basename(path)
-      if path != name:
+      if name != '' and path != name:
         self.SetProperty('name', name)
 
     if 'path' in self._properties and \
@@ -1071,10 +1075,20 @@ class PBXGroup(XCHierarchicalElement):
     return None
 
   def AddOrGetFileByPath(self, path, hierarchical):
-    path = os.path.normpath(path)
+    is_dir = False
+    if path.endswith('/'):
+      is_dir = True
+    normpath = os.path.normpath(path)
+    if is_dir:
+      normpath = path + '/'
+    else:
+      normpath = path
+
     path_split = path.split(os.path.sep)
-    if len(path_split) == 1 or not hierarchical:
-      file_ref = self.GetChildByPath(path)
+    if len(path_split) == 1 or \
+       (is_dir and len(path_split) == 2) or \
+       not hierarchical:
+      file_ref = self.GetChildByPath(normpath)
       if file_ref != None:
         assert file_ref.__class__ == PBXFileReference
       else:
@@ -1248,6 +1262,12 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
   def __init__(self, properties=None, id=None, parent=None):
     # super
     XCFileLikeElement.__init__(self, properties, id, parent)
+    if 'path' in self._properties and self._properties['path'].endswith('/'):
+      self._properties['path'] = self._properties['path'][:-1]
+      is_dir = True
+    else:
+      is_dir = False
+
     if 'path' in self._properties and \
         not 'lastKnownFileType' in self._properties and \
         not 'explicitFileType' in self._properties:
@@ -1263,25 +1283,33 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'dylib':     'compiled.mach-o.dylib',
         'framework': 'wrapper.framework',
         'h':         'sourcecode.c.h',
+        'icns':      'image.icns',
         'js':        'sourcecode.javascript',
         'm':         'sourcecode.c.objc',
         'mm':        'sourcecode.cpp.objcpp',
+        'nib':       'wrapper.nib',
         'pl':        'text.script.perl',
+        'plist':     'text.plist.xml',
         'pm':        'text.script.perl',
+        'png':       'image.png',
         'py':        'text.script.python',
         's':         'sourcecode.asm',
+        'strings':   'text.plist.strings',
         'xcconfig':  'text.xcconfig',
         'y':         'sourcecode.yacc',
       }
 
-      basename = os.path.basename(self._properties['path'])
-      dot = basename.rfind('.')
-      file_type = 'text'  # TODO(mark): Bad default!  Hack!  Fix!
-      extension = None
-      if dot != -1:
-        extension = basename[dot + 1:]
-        if extension in extension_map:
-          file_type = extension_map[extension]
+      if is_dir:
+        file_type = 'folder'
+      else:
+        basename = os.path.basename(self._properties['path'])
+        (root, ext) = os.path.splitext(basename)
+        if ext != '':
+          ext = ext[1:]
+
+        # TODO(mark): "file" is the default value, formerly "text", Xcode seems
+        # to choose based on content.
+        file_type = extension_map.get(ext, 'file')
 
       self._properties['lastKnownFileType'] = file_type
 
@@ -1486,6 +1514,16 @@ class PBXHeadersBuildPhase(XCBuildPhase):
 
   def Name(self):
     return 'Headers'
+
+  def FileGroup(self, path):
+    return self.PBXProjectAncestor().RootGroupForPath(path)
+
+
+class PBXResourcesBuildPhase(XCBuildPhase):
+  # No additions to the schema relative to XCBuildPhase.
+
+  def Name(self):
+    return 'Resources'
 
   def FileGroup(self, path):
     return self.PBXProjectAncestor().RootGroupForPath(path)
@@ -1801,6 +1839,26 @@ class PBXNativeTarget(XCTarget):
         the_phase = phase
 
     return the_phase
+
+  def ResourcesPhase(self):
+    resources_phase = self.GetBuildPhaseByType(PBXResourcesBuildPhase)
+    if resources_phase == None:
+      resources_phase = PBXResourcesBuildPhase()
+
+      # The resources phase should come before the sources and frameworks
+      # phases, if any.
+      insert_at = len(self._properties['buildPhases'])
+      for index in xrange(0, len(self._properties['buildPhases'])):
+        phase = self._properties['buildPhases'][index]
+        if isinstance(phase, PBXSourcesBuildPhase) or \
+           isinstance(phase, PBXFrameworksBuildPhase):
+          insert_at = index
+          break
+
+      self._properties['buildPhases'].insert(insert_at, resources_phase)
+      resources_phase.parent = self
+
+    return resources_phase
 
   def SourcesPhase(self):
     sources_phase = self.GetBuildPhaseByType(PBXSourcesBuildPhase)

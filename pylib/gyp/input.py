@@ -18,10 +18,11 @@ path_sections = [
   'include_dirs',
   'inputs',
   'libraries',
-  'sources',
-  'msvs_props',
   'msvs_cygwin_dirs',
+  'msvs_props',
   'outputs',
+  'resources',
+  'sources',
   'xcode_framework_dirs',
 ]
 
@@ -981,6 +982,7 @@ def SetUpConfigurations(target, target_dict):
     'default_configuration',
     'dependencies',
     'libraries',
+    'resources',
     'rules',
     'sources',
     'target_name',

@@ -298,17 +298,21 @@ def AddSourceToTarget(source, pbxp, xct):
   # TODO(mark): Perhaps this can be made a little bit fancier.
   source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's']
   basename = os.path.basename(source)
-  dot = basename.rfind('.')
-  added = False
-  if dot != -1:
-    extension = basename[dot + 1:]
-    if extension in source_extensions:
-      xct.SourcesPhase().AddFile(source)
-      added = True
-  if not added:
+  (root, ext) = os.path.splitext(basename)
+  if ext != '':
+    ext = ext[1:]
+
+  if ext in source_extensions:
+    xct.SourcesPhase().AddFile(source)
+  else:
     # Files that aren't added to a sources build phase can still go into
     # the project file, just not as part of a build phase.
     pbxp.AddOrGetFileInRootGroup(source)
+
+
+def AddResourceToTarget(resource, pbxp, xct):
+  # TODO(mark): Combine with AddSourceToTarget above?
+  xct.ResourcesPhase().AddFile(resource)
 
 
 _xcode_variable_re = re.compile('(\$\((.*?)\))')
@@ -629,23 +633,24 @@ exit 1
       else:
         pbxp.AddOrGetFileInRootGroup(source)
 
+    # Add "resources".
+    for resource in spec.get('resources', []):
+      AddResourceToTarget(resource, pbxp, xct)
+
     # Excluded files can also go into the project file.
-    if 'sources_excluded' in spec:
-      for source in spec['sources_excluded']:
-        pbxp.AddOrGetFileInRootGroup(source)
+    for key in ['sources', 'resources']:
+      excluded_key = key + '_excluded'
+      for item in spec.get(excluded_key, []):
+        pbxp.AddOrGetFileInRootGroup(item)
 
     # So can "inputs" and "outputs" sections of "actions" groups.
-    if 'actions' in spec:
-      for action in spec['actions']:
-        groups = ['inputs', 'inputs_excluded', 'outputs', 'outputs_excluded']
-        for group in groups:
-          if not group in action:
-            continue
-          for item in action[group]:
-            if item.startswith('$(BUILT_PRODUCTS_DIR)/'):
-              # Exclude anything in BUILT_PRODUCTS_DIR.  They're products, not
-              # sources.
-              continue
+    for action in spec.get('actions', []):
+      groups = ['inputs', 'inputs_excluded', 'outputs', 'outputs_excluded']
+      for group in groups:
+        for item in action.get(group, []):
+          # Exclude anything in BUILT_PRODUCTS_DIR.  They're products, not
+          # sources.
+          if not item.startswith('$(BUILT_PRODUCTS_DIR)/'):
             pbxp.AddOrGetFileInRootGroup(item)
 
     # Add dependencies before libraries, because adding a dependency may imply
