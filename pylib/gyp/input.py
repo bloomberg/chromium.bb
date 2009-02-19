@@ -1070,8 +1070,8 @@ def ProcessRulesInDict(name, the_dict):
   rule are subject to the same processing as would occur if they were listed
   by name in an exclusion list (ending in "!").  Items matching an "include"
   rule are brought back into the main list if previously excluded by an
-  exclusion list or exclusion regex rule, and are protected from future removal
-  by such exclusion lists and rules.
+  exclusion list or exclusion regex rule.  Subsequent matching "exclude"
+  patterns can still cause items to be excluded after matching an "include".
   """
 
   # Look through the dictionary for any lists whose keys end in "!" or "/".
@@ -1122,19 +1122,19 @@ def ProcessRulesInDict(name, the_dict):
     # the_list should be excluded, unconditionally preserved (included), or
     # whether no exclusion or inclusion has been applied.  Items for which
     # no exclusion or inclusion has been applied (yet) have value -1, items
-    # excluded have value 0, and items included have value 1.  An include can
-    # overwrite a previous exclude, and no subsequent excludes can exclude
-    # an include.  All items in list_actions are initialized to -1 because
-    # no excludes or includes have been processed yet.
+    # excluded have value 0, and items included have value 1.  Includes and
+    # excludes override previous actions.  All items in list_actions are
+    # initialized to -1 because no excludes or includes have been processed
+    # yet.
     list_actions = list((-1,) * len(the_list))
 
     exclude_key = list_key + '!'
     if exclude_key in the_dict:
       for exclude_item in the_dict[exclude_key]:
         for index in xrange(0, len(the_list)):
-          if exclude_item == the_list[index] and list_actions[index] != 1:
-            # This item matches the exclude_item, and it was not previously
-            # preserved by an "include", so set its action to 0 (exclude).
+          if exclude_item == the_list[index]:
+            # This item matches the exclude_item, so set its action to 0
+            # (exclude).
             list_actions[index] = 0
 
       # The "whatever!" list is no longer needed, dump it.
@@ -1152,14 +1152,12 @@ def ProcessRulesInDict(name, the_dict):
             # Regular expression match.
 
             if action == 'exclude':
-              if list_actions[index] != 1:
-                # This item matches an exclude regex, and it was not previously
-                # preserved by an "include", so set its value to 0 (exclude).
-                list_actions[index] = 0
+              # This item matches an exclude regex, so set its value to 0
+              # (exclude).
+              list_actions[index] = 0
             elif action == 'include':
               # This item matches an include regex, so set its value to 1
-              # (include) unconditionally.  Includes are intended to override
-              # excludes whether they're processed before or after the exclude.
+              # (include).
               list_actions[index] = 1
             else:
               # This is an action that doesn't make any sense.
