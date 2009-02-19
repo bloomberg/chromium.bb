@@ -260,6 +260,45 @@
       'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },
     {
+      'target_name': 'pcre',
+      'type': 'static_library',
+      'actions': [
+        {
+          'action_name': 'dftables',
+          'inputs': [
+            '../third_party/WebKit/JavaScriptCore/pcre/dftables',
+          ],
+          'outputs': [
+            '<(INTERMEDIATE_DIR)/chartables.c',
+          ],
+          'action': 'perl -w <(_inputs) <(_outputs)',
+        },
+      ],
+      'sources': [
+        '../third_party/WebKit/JavaScriptCore/pcre/pcre.h',
+        '../third_party/WebKit/JavaScriptCore/pcre/pcre_compile.cpp',
+        '../third_party/WebKit/JavaScriptCore/pcre/pcre_exec.cpp',
+        '../third_party/WebKit/JavaScriptCore/pcre/pcre_internal.h',
+        '../third_party/WebKit/JavaScriptCore/pcre/pcre_tables.cpp',
+        '../third_party/WebKit/JavaScriptCore/pcre/pcre_ucp_searchfuncs.cpp',
+        '../third_party/WebKit/JavaScriptCore/pcre/pcre_xclass.cpp',
+        '../third_party/WebKit/JavaScriptCore/pcre/ucpinternal.h',
+        '../third_party/WebKit/JavaScriptCore/pcre/ucptable.cpp',
+      ],
+      'sources!': [
+        # ucptable.cpp is #included by pcre_ucp_searchfunchs.cpp and is not
+        # intended to be compiled directly.
+        '../third_party/WebKit/JavaScriptCore/pcre/ucptable.cpp',
+      ],
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+      ],
+      'dependencies': [
+        'wtf',
+        'v8_config',
+      ],
+    },
+    {
       # WebCore derived sources.  These should be independent of the chosen
       # JavaScript engine, although they may depend on the chosen engine.
       'target_name': 'webcore_derived',
@@ -3850,6 +3889,7 @@
       ],
       'dependencies': [
         'wtf',
+        'pcre',
         'webcore_derived',
         'v8_config',
         'v8_derived',
