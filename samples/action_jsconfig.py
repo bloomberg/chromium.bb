@@ -2,7 +2,8 @@
 
 # usage: action_jsconfig.py JS_ENGINE OUTPUT_DIR CONFIG_H_IN FILES_TO_COPY
 # JS_ENGINE may be v8 at present.  jsc will be added in the future.
-# OUTPUT_DIR is the directory to put config.h and other files in.
+# CONFIG_H_DIR is the directory to put config.h in.
+# OUTPUT_DIR is the directory to put other files in.
 # CONFIG_H_IN is the path to config.h.in upon which config.h will be based.
 # FILES_TO_COPY is a list of additional headers to be copied.
 
@@ -12,14 +13,14 @@ import os.path
 import shutil
 import sys
 
-assert len(sys.argv) > 5
+assert len(sys.argv) > 6
 js_engine = sys.argv[1]
-output_dir = sys.argv[2]
-config_h_in_path = sys.argv[3]
-files_to_copy = sys.argv[4:]
+config_h_dir = sys.argv[2]
+output_dir = sys.argv[3]
+config_h_in_path = sys.argv[4]
+files_to_copy = sys.argv[5:]
 
-config_h_path = os.path.join(output_dir, 'config.h')
-js_headers_dir = os.path.join(output_dir, 'javascript')
+config_h_path = os.path.join(config_h_dir, 'config.h')
 
 assert js_engine == 'v8'
 
@@ -34,15 +35,9 @@ if js_engine == 'v8':
   print >>config_h_file, '#define WTF_USE_NPOBJECT 1'
 config_h_file.close()
 
-try:
-  os.makedirs(js_headers_dir)
-except OSError, e:
-  if e.errno != errno.EEXIST:
-    raise
-
 for file in files_to_copy:
   # This is not strictly right for jsc headers, which will want to be in one
   # more subdirectory named JavaScriptCore.
   basename = os.path.basename(file)
-  destination = os.path.join(js_headers_dir, basename)
+  destination = os.path.join(output_dir, basename)
   shutil.copy(file, destination)

@@ -1,11 +1,11 @@
 #!/usr/bin/python
 
-# usage: rule_binding.py INPUT OUTDIR -- INPUTS -- OPTIONS
+# usage: rule_binding.py INPUT CPPDIR HDIR -- INPUTS -- OPTIONS
 #
 # INPUT is an IDL file, such as Whatever.idl.
 #
-# OUTDIR is the directory into which V8Whatever.cpp and V8Whatever.h will be
-# placed.
+# CPPDIR is the directory into which V8Whatever.cpp will be placed.  HDIR is
+# the directory into which V8Whatever.h will be placed.
 #
 # The first item in INPUTS is the path to generate-bindings.pl.  Remaining
 # items in INPUTS are used to build the Perl module include path.
@@ -15,6 +15,7 @@
 
 import errno
 import os
+import shutil
 import subprocess
 import sys
 
@@ -48,9 +49,10 @@ def main(args):
   assert len(sections) == 3
   (base, inputs, options) = sections
 
-  assert len(base) == 2
+  assert len(base) == 3
   input = base[0]
-  outdir = base[1]
+  cppdir = base[1]
+  hdir = base[2]
 
   assert len(inputs) > 1
   generate_bindings = inputs[0]
@@ -62,20 +64,13 @@ def main(args):
     if not include_dir in include_dirs:
       include_dirs.append(include_dir)
 
-  # Make sure the output directory exists.
-  try:
-    os.makedirs(outdir)
-  except OSError, e:
-    if e.errno != errno.EEXIST:
-      raise
-
   # Build up the command.
   command = ['perl', '-w']
   for include_dir in include_dirs:
     command.extend(['-I', include_dir])
   command.append(generate_bindings)
   command.extend(options)
-  command.extend(['--outputdir', outdir, input])
+  command.extend(['--outputdir', cppdir, input])
 
   # Say what's going to be done.
   print subprocess.list2cmdline(command)
@@ -84,6 +79,18 @@ def main(args):
   # assert.
   return_code = subprocess.call(command)
   assert return_code == 0
+
+  # Both the .cpp and .h were generated in cppdir, but if hdir is different,
+  # the .h needs to move.  Copy it instead of using os.rename for maximum
+  # portability in all cases.
+  if cppdir != hdir:
+    input_basename = os.path.basename(input)
+    (root, ext) = os.path.splitext(input_basename)
+    hname = 'V8%s.h' % root
+    hsrc = os.path.join(cppdir, hname)
+    hdst = os.path.join(hdir, hname)
+    shutil.copyfile(hsrc, hdst)
+    os.unlink(hsrc)
 
   return return_code
 

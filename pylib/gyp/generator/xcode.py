@@ -22,6 +22,10 @@ import tempfile
 # $(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION).
 _intermediate_var = 'INTERMEDIATE_DIR'
 
+# SHARED_INTERMEDIATE_DIR is the same, except that it is shared among all
+# targets that share the same BUILT_PRODUCTS_DIR.
+_shared_intermediate_var = 'SHARED_INTERMEDIATE_DIR'
+
 generator_default_variables = {
   'EXECUTABLE_PREFIX': '',
   'EXECUTABLE_SUFFIX': '',
@@ -37,6 +41,7 @@ generator_default_variables = {
   'RULE_INPUT_EXT': '$(INPUT_FILE_SUFFIX)',
   'RULE_INPUT_NAME': '$(INPUT_FILE_NAME)',
   'RULE_INPUT_PATH': '$(INPUT_FILE_PATH)',
+  'SHARED_INTERMEDIATE_DIR': '$(%s)' % _shared_intermediate_var,
 }
 
 
@@ -131,6 +136,8 @@ class XcodeProject(object):
     # This is filed as Apple radar 6588391.
     xccl.SetBuildSetting(_intermediate_var,
                          '$(PROJECT_DERIVED_FILE_DIR)/$(CONFIGURATION)')
+    xccl.SetBuildSetting(_shared_intermediate_var,
+                         '$(SYMROOT)/DerivedSources/$(CONFIGURATION)')
 
     # Set user-specified project-wide build settings.  This is intended to be
     # used very sparingly.  Really, almost everything should go into
@@ -359,6 +366,10 @@ def GenerateOutput(target_list, target_dicts, data):
 
     # Add custom shell script phases for "actions" sections.
     for action in spec.get('actions', []):
+      # There's no need to handle any "ensure_dirs" list here, because
+      # Xcode will look at the declared outputs and automatically ensure that
+      # the directories all exist.
+
       # Convert Xcode-type variable references to sh-compatible environment
       # variable references.  Be sure the script runs in exec, and that if
       # exec fails, the script exits signalling an error.

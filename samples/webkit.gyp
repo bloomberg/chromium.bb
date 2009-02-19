@@ -444,12 +444,9 @@
     {
       # This target creates config.h suitable for a WebKit-V8 build and
       # copies a few other files around as needed.
-      # TODO(mark): It seems that this target should advertise
-      # an include_dir of <(INTERMEDIATE_DIR)/v8 in direct_dependent_settings,
-      # but targets outside of this .gyp file can't depend on that.  There
-      # should be a way to make a target (like this one) flagged in a way
-      # that only other targets in this file can depend on it.  The same
-      # thing likely applies to webcore_derived and perhaps v8_derived.
+      # TODO(mark): Provide a way to flag this target and some others in this
+      # file as "private" so that only other targets in this file can depend
+      # on it.
       'target_name': 'v8_config',
       'type': 'none',
       'actions': [
@@ -462,10 +459,14 @@
             'port/bindings/v8/npruntime_priv.h',
           ],
           'outputs': [
-            '<(INTERMEDIATE_DIR)/v8/config.h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8/config.h',
             '<(INTERMEDIATE_DIR)/v8/javascript/npapi.h',
             '<(INTERMEDIATE_DIR)/v8/javascript/npruntime.h',
             '<(INTERMEDIATE_DIR)/v8/javascript/npruntime_priv.h',
+          ],
+          'ensure_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
+            '<(INTERMEDIATE_DIR)/v8/javascript',
           ],
           'conditions': [
             ['OS=="win"', {
@@ -473,23 +474,34 @@
               'outputs': ['<(INTERMEDIATE_DIR)/v8/javascript/stdint.h'],
             }],
           ],
-          'action': 'python build/action_jsconfig.py v8 <(INTERMEDIATE_DIR)/v8 <(_inputs)',
+          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit/v8 <(INTERMEDIATE_DIR)/v8/javascript <(_inputs)',
         },
       ],
+      'direct_dependent_settings': {
+        # Always prepend this directory, which contains config.h.  This is
+        # important, because WebKit/JavaScriptCore has a config.h in it too
+        # that shouldn't be used, and that directory winds up in include_dirs
+        # when targets depend on wtf.
+        #
+        # The rightmost + is present because this direct_dependent_settings
+        # section gets merged into the (nonexistent) target_defaults one,
+        # eating the rightmost +.
+        #
+        # This target puts other headers in <(INTERMEDIATE_DIR)/v8, but does
+        # not expose then in direct_dependent_settings because they are
+        # private headers intended only for use by other targets in this file.
+        # Other targets in this file that require these headers should add
+        # this directory to their include_dirs manually.
+        'include_dirs++': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
+        ],
+      }
     },
     {
       # This target builds the .cpp and .h bindings files from .idl source and
       # compiles them.
       'target_name': 'v8_derived',
       'type': 'static_library',
-      'dependencies': [
-        'wtf',
-        'webcore_derived',
-        'v8_config',
-        '../third_party/libxml/libxml.gyp:libxml',
-        '../v8/v8.gyp:v8',
-      ],
-      'hard_dependency': 1,
       'rules': [
         {
           'rule_name': 'binding',
@@ -503,7 +515,11 @@
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/bindings/V8<(RULE_INPUT_ROOT).cpp',
-            '<(INTERMEDIATE_DIR)/bindings/V8<(RULE_INPUT_ROOT).h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8<(RULE_INPUT_ROOT).h',
+          ],
+          'ensure_dirs': [
+            '<(INTERMEDIATE_DIR)/bindings',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
           ],
           'variables': {
             'generator_include_dirs': [
@@ -516,7 +532,7 @@
               '--include', '../third_party/WebKit/WebCore/xml',
             ],
           },
-          'action': 'python build/rule_binding.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)/bindings -- <(_inputs) -- --defines "<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING" --generator V8 <(generator_include_dirs)',
+          'action': 'python build/rule_binding.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)/bindings <(SHARED_INTERMEDIATE_DIR)/webkit/bindings -- <(_inputs) -- --defines "<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING" --generator V8 <(generator_include_dirs)',
           'process_outputs_as_sources': 1,
         },
       ],
@@ -913,14 +929,27 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/bindings',
         '<(INTERMEDIATE_DIR)/v8',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         'port/bindings/v8',
         '<@(webcore_include_dirs)',
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
+      'dependencies': [
+        'wtf',
+        'webcore_derived',
+        'v8_config',
+        '../third_party/libxml/libxml.gyp:libxml',
+        '../v8/v8.gyp:v8',
+      ],
+      'hard_dependency': 1,
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+        ],
+      },
       'conditions': [
         ['OS=="win"', {
           'defines': [
@@ -1050,7 +1079,6 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/bindings',
         '<(INTERMEDIATE_DIR)/v8',
         'port/bindings/v8',
       ],
@@ -3812,7 +3840,6 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/bindings',
         '<(INTERMEDIATE_DIR)/v8',
         'port/bindings/v8',
       ],
@@ -3840,6 +3867,7 @@
       # dependencies do, and dependents may require those files.
       'hard_dependency': 1,
       'export_dependent_settings': [
+        'v8_config',
         'wtf',
         '../skia/skia.gyp:skia',
         '../third_party/npapi/npapi.gyp:npapi',
@@ -3933,12 +3961,12 @@
             '../tools/grit/grit.py',
           ],
           'outputs': [
-            '<(INTERMEDIATE_DIR)/grit/<(RULE_INPUT_ROOT).h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/<(RULE_INPUT_ROOT).h',
           ],
           'ensure_dirs': [
-            '<(INTERMEDIATE_DIR)/grit',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
           ],
-          'action': 'python <@(_inputs) -i <(RULE_INPUT_PATH) build -o <(INTERMEDIATE_DIR)/grit',
+          'action': 'python <@(_inputs) -i <(RULE_INPUT_PATH) build -o <(SHARED_INTERMEDIATE_DIR)/webkit/grit',
         },
       ],
       'sources': [
@@ -4131,8 +4159,8 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/grit',
         '<(INTERMEDIATE_DIR)/v8',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
@@ -4140,13 +4168,18 @@
       'dependencies': [
         'webcore',
       ],
-      # When glue is a dependency, it needs to be a hard dependency.  Even
-      # though this target doesn't generate files directly, some of its
-      # dependencies do, and dependents may require those files.
+      # When glue is a dependency, it needs to be a hard dependency.
+      # Dependents may rely on files generated by this target or one of its
+      # own hard dependencies.
       'hard_dependency': 1,
       'export_dependent_settings': [
         'webcore',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
+        ],
+      },
       'conditions': [
         ['OS!="linux"', {
           'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$']]
