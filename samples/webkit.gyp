@@ -114,6 +114,62 @@
   },
   'targets': [
     {
+      # This target creates config.h suitable for a WebKit-V8 build and
+      # copies a few other files around as needed.
+      # TODO(mark): Provide a way to flag this target and some others in this
+      # file as "private" so that only other targets in this file can depend
+      # on it.
+      'target_name': 'v8_config',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'config.h',
+          'inputs': [
+            'config.h.in',
+            '../third_party/WebKit/WebCore/bridge/npapi.h',
+            '../third_party/WebKit/WebCore/bridge/npruntime.h',
+            'port/bindings/v8/npruntime_priv.h',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8/config.h',
+            '<(INTERMEDIATE_DIR)/v8/javascript/npapi.h',
+            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime.h',
+            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime_priv.h',
+          ],
+          'ensure_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
+            '<(INTERMEDIATE_DIR)/v8/javascript',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'inputs': ['../third_party/WebKit/JavaScriptCore/os-win32/stdint.h'],
+              'outputs': ['<(INTERMEDIATE_DIR)/v8/javascript/stdint.h'],
+            }],
+          ],
+          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit/v8 <(INTERMEDIATE_DIR)/v8/javascript <(_inputs)',
+        },
+      ],
+      'direct_dependent_settings': {
+        # Always prepend this directory, which contains config.h.  This is
+        # important, because WebKit/JavaScriptCore has a config.h in it too
+        # that shouldn't be used, and that directory winds up in include_dirs
+        # when targets depend on wtf.
+        #
+        # The rightmost + is present because this direct_dependent_settings
+        # section gets merged into the (nonexistent) target_defaults one,
+        # eating the rightmost +.
+        #
+        # This target puts other headers in <(INTERMEDIATE_DIR)/v8, but does
+        # not expose then in direct_dependent_settings because they are
+        # private headers intended only for use by other targets in this file.
+        # Other targets in this file that require these headers should add
+        # this directory to their include_dirs manually.
+        'include_dirs++': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
+        ],
+      }
+    },
+    {
       'target_name': 'wtf',
       'type': 'static_library',
       'include_dirs': [
@@ -224,9 +280,10 @@
         ['exclude', '(Default|Gtk|Mac|None|Qt|Win|Wx)\\.(cpp|mm)$'],
       ],
       'dependencies': [
+        'v8_config',
+        '../skia/skia.gyp:skia',
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
-        '../skia/skia.gyp:skia',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -298,8 +355,8 @@
         '<(INTERMEDIATE_DIR)',
       ],
       'dependencies': [
-        'wtf',
         'v8_config',
+        'wtf',
       ],
     },
     {
@@ -480,65 +537,10 @@
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'dependencies': [
+        'v8_config',
         'wtf',
         '../v8/v8.gyp:v8',
       ],
-    },
-    {
-      # This target creates config.h suitable for a WebKit-V8 build and
-      # copies a few other files around as needed.
-      # TODO(mark): Provide a way to flag this target and some others in this
-      # file as "private" so that only other targets in this file can depend
-      # on it.
-      'target_name': 'v8_config',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'config.h',
-          'inputs': [
-            'config.h.in',
-            '../third_party/WebKit/WebCore/bridge/npapi.h',
-            '../third_party/WebKit/WebCore/bridge/npruntime.h',
-            'port/bindings/v8/npruntime_priv.h',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8/config.h',
-            '<(INTERMEDIATE_DIR)/v8/javascript/npapi.h',
-            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime.h',
-            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime_priv.h',
-          ],
-          'ensure_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
-            '<(INTERMEDIATE_DIR)/v8/javascript',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'inputs': ['../third_party/WebKit/JavaScriptCore/os-win32/stdint.h'],
-              'outputs': ['<(INTERMEDIATE_DIR)/v8/javascript/stdint.h'],
-            }],
-          ],
-          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit/v8 <(INTERMEDIATE_DIR)/v8/javascript <(_inputs)',
-        },
-      ],
-      'direct_dependent_settings': {
-        # Always prepend this directory, which contains config.h.  This is
-        # important, because WebKit/JavaScriptCore has a config.h in it too
-        # that shouldn't be used, and that directory winds up in include_dirs
-        # when targets depend on wtf.
-        #
-        # The rightmost + is present because this direct_dependent_settings
-        # section gets merged into the (nonexistent) target_defaults one,
-        # eating the rightmost +.
-        #
-        # This target puts other headers in <(INTERMEDIATE_DIR)/v8, but does
-        # not expose then in direct_dependent_settings because they are
-        # private headers intended only for use by other targets in this file.
-        # Other targets in this file that require these headers should add
-        # this directory to their include_dirs manually.
-        'include_dirs++': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
-        ],
-      }
     },
     {
       # This target builds the .cpp and .h bindings files from .idl source and
@@ -981,9 +983,9 @@
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'dependencies': [
-        'wtf',
-        'webcore_derived',
         'v8_config',
+        'webcore_derived',
+        'wtf',
         '../third_party/libxml/libxml.gyp:libxml',
         '../v8/v8.gyp:v8',
       ],
@@ -1131,15 +1133,15 @@
         '<@(webcore_include_dirs)',
       ],
       'dependencies': [
-        'wtf',
-        'webcore_derived',
         'v8_config',
         'v8_derived',
-        '../v8/v8.gyp:v8',
+        'webcore_derived',
+        'wtf',
+        '../skia/skia.gyp:skia',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/libxslt/libxslt.gyp:libxslt',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../skia/skia.gyp:skia',
+        '../v8/v8.gyp:v8',
       ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
@@ -3892,13 +3894,12 @@
         '<@(webcore_include_dirs)',
       ],
       'dependencies': [
-        'wtf',
         'pcre',
-        'webcore_derived',
         'v8_config',
         'v8_derived',
         'v8_bindings',
-        '../v8/v8.gyp:v8',
+        'webcore_derived',
+        'wtf',
         '../googleurl/build/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
@@ -3908,6 +3909,7 @@
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
+        '../v8/v8.gyp:v8',
       ],
       # When webcore is a dependency, it needs to be a hard dependency.  Even
       # though this target doesn't generate files directly, some of its
