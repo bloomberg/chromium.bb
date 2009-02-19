@@ -14,6 +14,7 @@ generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '.exe',
     'INTERMEDIATE_DIR': '$(IntDir)',
+    'SHARED_INTERMEDIATE_DIR': '$(OutDir)/obj/global_intermediate',
     'OS': 'win',
     'PRODUCT_DIR': '$(OutDir)',
     'RULE_INPUT_ROOT': '$(InputName)',
@@ -90,6 +91,7 @@ def _ToolAppend(tools, tool_name, option, value):
       tool[option] += value
     else:
       # TODO(bradnelson): Pick an exception class.
+      print '@@@', option, tool[option], value
       raise 'Append to non-list option is invalid'
   else:
     tool[option] = value
@@ -141,7 +143,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
 
     # Add in libraries (really system libraries at this point).
     libraries = spec.get('libraries', [])
-    _ToolAppend(tools, 'VCLibrarianTool',
+    _ToolAppend(tools, 'VCLinkerTool',
                 'AdditionalDependencies', libraries)
 
     # Add defines.
@@ -192,7 +194,10 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       options_fixed = {}
       for option, value in options.iteritems():
         if type(value) == list:
-          options_fixed[option] = ';'.join(value)
+          if tool == 'VCLinkerTool' and option == 'AdditionalDependencies':
+            options_fixed[option] = ' '.join(value)
+          else:
+            options_fixed[option] = ';'.join(value)
         else:
           options_fixed[option] = value
       # Add in this tool.
@@ -298,11 +303,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       direct_cmd = a['action']
       direct_cmd = direct_cmd.replace('$(IntDir)',
                                       '`cygpath -m "${INTDIR}"`')
+      direct_cmd = direct_cmd.replace('$(OutDir)',
+                                      '`cygpath -m "${OUTDIR}"`')
       direct_cmd = direct_cmd.replace('"', '\\"')
       cmd = (
 #          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
           '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
           'set INTDIR=$(IntDir) && '
+          'set OUTDIR=$(OutDir) && '
           'bash -c "%(cmd)s"') % {'cygwin_dir': cygwin_dir,
                                   'cmd': direct_cmd}
       tool = MSVSProject.Tool(
@@ -339,11 +347,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       direct_cmd = r['action']
       direct_cmd = direct_cmd.replace('$(IntDir)',
                                       '`cygpath -m "${INTDIR}"`')
+      direct_cmd = direct_cmd.replace('$(OutDir)',
+                                      '`cygpath -m "${OUTDIR}"`')
       direct_cmd = direct_cmd.replace('"', '\\"')
       cmd = (
 #          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
           '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
           'set INTDIR=$(IntDir) && '
+          'set OUTDIR=$(OutDir) && '
           'set INPUTPATH=$(InputPath) && '
           'bash -c "%(cmd)s"') % {'cygwin_dir': cygwin_dir,
                                   'cmd': direct_cmd}

@@ -4214,7 +4214,16 @@
             'pending/AccessibleDocument.cpp',
           ],
         }, {  # else: OS=="win"
-          'sources/': [['exclude', '_posix\\.cc$']]
+          'sources/': [['exclude', '_posix\\.cc$']],
+          'defines': [
+            '__STD_C',
+            '_SCL_SECURE_NO_DEPRECATE',
+            '_CRT_SECURE_NO_DEPRECATE',
+          ],
+          'include_dirs': [
+            'build/JavaScriptCore',
+            '../third_party/WebKit/JavaScriptCore/os-win32',
+          ],
         }],
       ],
     },

@@ -68,6 +68,8 @@
         '../../../base/base.gyp:base',
         '../../../base/base.gyp:base_gfx',
         '../../../testing/gtest.gyp:gtest',
+        '../../../skia/skia.gyp:skia',
+        '../../../third_party/npapi/npapi.gyp:npapi',
       ],
       'conditions': [
         ['OS!="linux"', {'sources/': [['exclude', '_gtk\\.cc$']]}],
