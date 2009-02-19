@@ -45,6 +45,7 @@ nouveau_device_open_existing(struct nouveau_device **dev, int close,
 	ver = drmGetVersion(fd);
 	if (!ver || ver->version_patchlevel != NOUVEAU_DRM_HEADER_PATCHLEVEL)
 		return -EINVAL;
+	drmFreeVersion(ver);
 
 	nvdev = calloc(1, sizeof(*nvdev));
 	if (!nvdev)
