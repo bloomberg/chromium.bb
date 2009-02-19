@@ -665,6 +665,17 @@ exit 1
     if 'libraries' in spec:
       for library in spec['libraries']:
         xct.FrameworksPhase().AddFile(library)
+        # Add the library's directory to LIBRARY_SEARCH_PATHS if necessary.
+        # I wish Xcode handled this automatically.
+        # TODO(mark): this logic isn't right.  There are certain directories
+        # that are always searched, we should check to see if the library is
+        # in one of those directories, and if not, we should do the
+        # AppendBuildSetting thing.
+        if not os.path.isabs(library) and not library.startswith('$'):
+          # TODO(mark): Need to check to see if library_dir is already in
+          # LIBRARY_SEARCH_PATHS.
+          library_dir = os.path.dirname(library)
+          xct.AppendBuildSetting('LIBRARY_SEARCH_PATHS', library_dir)
 
     for configuration_name in configuration_names:
       configuration = spec['configurations'][configuration_name]

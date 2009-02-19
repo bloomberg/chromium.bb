@@ -17,6 +17,7 @@ linkable_types = ['executable', 'shared_library']
 path_sections = [
   'include_dirs',
   'inputs',
+  'libraries',
   'sources',
   'msvs_props',
   'msvs_cygwin_dirs',

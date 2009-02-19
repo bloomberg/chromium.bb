@@ -1254,6 +1254,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
       # TODO(mark): This is the replacement for a replacement for a quick hack.
       # It is no longer incredibly sucky, but this list needs to be extended.
       extension_map = {
+        'a':         'archive.ar',
         'c':         'sourcecode.c.c',
         'cc':        'sourcecode.cpp.cpp',
         'cpp':       'sourcecode.cpp.cpp',
