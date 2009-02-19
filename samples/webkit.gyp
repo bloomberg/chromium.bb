@@ -4131,6 +4131,7 @@
         'glue/resource_fetcher.cc',
         'glue/resource_fetcher.h',
         'glue/resource_handle_impl.cc',
+        'glue/resource_loader_bridge.cc',
         'glue/resource_loader_bridge.h',
         'glue/resource_type.h',
         'glue/scoped_clipboard_writer_glue.h',
@@ -4179,6 +4180,7 @@
         'glue/webmediaplayer_impl.cc',
         'glue/webmediaplayer_impl.h',
         'glue/webplugin.h',
+        'glue/webplugin_delegate.cc',
         'glue/webplugin_delegate.h',
         'glue/webplugin_impl.cc',
         'glue/webplugin_impl.h',
@@ -4192,6 +4194,7 @@
         'glue/weburlrequest_impl.cc',
         'glue/weburlrequest_impl.h',
         'glue/webview.h',
+        'glue/webview_delegate.cc',
         'glue/webview_delegate.h',
         'glue/webview_impl.cc',
         'glue/webview_impl.h',
@@ -4239,10 +4242,11 @@
         ['OS!="win"', {
           'sources/': [['exclude', '_win\\.cc$']],
           'sources!': [
-            # Mac uses webplugin_delegate_impl.cc and this doesn't work on
-            # Linux yet.  Maybe it should be renamed
-            # webplugin_delegate_impl_win.cc?
-            'glue/webplugin_delegate_impl.cc',
+            # TODO(port): Mac uses webplugin_delegate_impl_mac.cc and GTK uses
+            # webplugin_delegate_impl_gtk.cc.  Seems like this should be
+            # renamed webplugin_delegate_impl_win.cc, then we could get rid
+            # of the explicit exclude.
+            'glue/plugins/webplugin_delegate_impl.cc',
 
             # These files are Windows-only now but may be ported to other
             # platforms.
