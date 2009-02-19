@@ -930,10 +930,10 @@ class XCHierarchicalElement(XCObject):
     if 'name' in self._properties:
       # Make it less likely for people to manipulate hashes by following the
       # pattern of always pushing an object type value onto the list first.
-      hashables.append('XCHierarchicalElement.name')
+      hashables.append(self.__class__.__name__ + '.name')
       hashables.append(self._properties['name'])
 
-    # NOTE: this still has the problem that if an absolute path is encountered,
+    # NOTE: This still has the problem that if an absolute path is encountered,
     # including paths with a sourceTree, they'll still inherit their parents'
     # hashables, even though the paths aren't relative to their parents.  This
     # is not expected to be much of a problem in practice.
@@ -941,7 +941,7 @@ class XCHierarchicalElement(XCObject):
     if path != None:
       components = path.split(os.sep)
       for component in components:
-        hashables.append('XCHierarchicalElement.path')
+        hashables.append(self.__class__.__name__ + '.path')
         hashables.append(component)
 
     hashables.extend(self._hashables)
@@ -1213,8 +1213,8 @@ class XCFileLikeElement(XCHierarchicalElement):
     xche = self
     while xche != None and isinstance(xche, XCHierarchicalElement):
       xche_hashables = xche.Hashables()
-      for xche_hashable in xche_hashables:
-        hashables.insert(0, xche_hashable)
+      for index in xrange(0, len(xche_hashables)):
+        hashables.insert(index, xche_hashables[index])
       xche = xche.parent
     return hashables
 
