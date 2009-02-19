@@ -101,13 +101,13 @@
     'conditions': [
       ['OS=="mac"', {
         'defines': [
-          ['WEBCORE_NAVIGATOR_PLATFORM_', '"FixMeAndRemoveTrailingUnderscore"'],
+          'WEBCORE_NAVIGATOR_PLATFORM_="FixMeAndRemoveTrailingUnderscore"',
         ],
       }],
       ['OS=="win"', {
         'defines': [
-          ['CRASH', '__debugbreak'],
-          ['WEBCORE_NAVIGATOR_PLATFORM', '"Win32"'],
+          'CRASH=__debugbreak',
+          'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
         ],
       }],
     ],
@@ -3922,9 +3922,22 @@
         '../third_party/npapi/npapi.gyp:npapi',
       ],
       'direct_dependent_settings': {
+        'defines': [
+          # Uh-oh, the glue target will pick up the same set of defines from
+          # the target_defaults and from what it inherits from WebCore.
+          # TODO(mark): Fix!  I am planning a restructuring of this .gyp file
+          # to address this problem, and others.
+          '<@(feature_defines)',
+          'BUILDING_CHROMIUM__=1',
+          'USE_GOOGLE_URL_LIBRARY=1',
+          'USE_SYSTEM_MALLOC=1',
+        ],
         'include_dirs': [
           'port/bindings/v8',
           '<@(webcore_include_dirs)',
+        ],
+        'xcode_framework_dirs': [
+          '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
       },
       'xcode_framework_dirs': [
@@ -4251,9 +4264,6 @@
         '<(INTERMEDIATE_DIR)',
         '<(INTERMEDIATE_DIR)/v8',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
-      ],
-      'xcode_framework_dirs': [
-        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'dependencies': [
         'webcore',

@@ -7,8 +7,8 @@
   ],
   'targets': [
     {
-      'target_name': 'test_shell',
-      'type': 'application',
+      'target_name': 'test_shell_common',
+      'type': 'static_library',
       'sources': [
         'mac/DumpRenderTreePasteboard.h',
         'mac/DumpRenderTreePasteboard.m',
@@ -37,7 +37,6 @@
         'test_shell.h',
         'test_shell_gtk.cc',
         'test_shell_mac.mm',
-        'test_shell_main.cc',
         'test_shell_platform_delegate.h',
         'test_shell_platform_delegate_gtk.cc',
         'test_shell_platform_delegate_mac.mm',
@@ -59,6 +58,42 @@
         'webwidget_host.h',
         'webwidget_host_gtk.cc',
         'webwidget_host_win.cc',
+      ],
+      'include_dirs': [
+        '../../..',
+      ],
+      'dependencies': [
+        '../../../base/base.gyp:base',
+        '../../../base/base.gyp:base_gfx',
+        '../../../testing/gtest.gyp:gtest',
+        '../../../skia/skia.gyp:skia',
+        '../../../third_party/npapi/npapi.gyp:npapi',
+        '../../webkit.gyp:glue',
+      ],
+      'conditions': [
+        ['OS!="linux"', {'sources/': [['exclude', '_gtk\\.cc$']]}],
+        ['OS!="mac"', {
+          'sources/': [
+            ['exclude', 'mac/[^/]*\\.(cc|mm?)$'],
+            ['exclude', '_mac\\.(cc|mm?)$'],
+          ]
+        }],
+        ['OS!="win"', {
+          'sources/': [
+            ['exclude', '_win\\.cc$']
+          ],
+          'sources!': [
+            'drag_delegate.cc',
+            'drop_delegate.cc',
+          ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'test_shell',
+      'type': 'application',
+      'sources': [
+        'test_shell_main.cc',
       ],
       'resources': [
         # TODO(mark): Too Mac-specific?  It should be named mac_resources if
@@ -110,31 +145,80 @@
         '../../..',
       ],
       'dependencies': [ 
-        '../../webkit.gyp:glue',
+        'test_shell_common',
         '../../../base/base.gyp:base',
-        '../../../base/base.gyp:base_gfx',
-        '../../../testing/gtest.gyp:gtest',
-        '../../../skia/skia.gyp:skia',
-        '../../../third_party/npapi/npapi.gyp:npapi',
+        '../../../net/net.gyp:net',
+        '../../webkit.gyp:glue',
       ],
       'xcode_settings': {
         'INFOPLIST_FILE': 'mac/Info.plist',
       },
+    },
+    {
+      'target_name': 'test_shell_tests',
+      'type': 'executable',
+      'sources': [
+        '../../../skia/ext/convolver_unittest.cc',
+        '../../../skia/ext/platform_canvas_unittest.cc',
+        '../../../skia/ext/vector_canvas_unittest.cc',
+        '../../glue/bookmarklet_unittest.cc',
+        '../../glue/context_menu_unittest.cc',
+        '../../glue/cpp_bound_class_unittest.cc',
+        '../../glue/cpp_variant_unittest.cc',
+        '../../glue/dom_operations_unittest.cc',
+        '../../glue/dom_serializer_unittest.cc',
+        '../../glue/glue_serialize_unittest.cc',
+        '../../glue/iframe_redirect_unittest.cc',
+        '../../glue/mimetype_unittest.cc',
+        '../../glue/multipart_response_delegate_unittest.cc',
+        '../../glue/password_autocomplete_listener_unittest.cc',
+        '../../glue/regular_expression_unittest.cc',
+        '../../glue/resource_fetcher_unittest.cc',
+        '../../glue/unittest_test_server.h',
+        '../../glue/webframe_unittest.cc',
+        '../../glue/webplugin_impl_unittest.cc',
+        '../webcore_unit_tests/BMPImageDecoder_unittest.cpp',
+        '../webcore_unit_tests/GKURL_unittest.cpp',
+        '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
+        '../webcore_unit_tests/UniscribeHelper_unittest.cpp',
+        '../webcore_unit_tests/XBMImageDecoder_unittest.cpp',
+        'image_decoder_unittest.cc',
+        'image_decoder_unittest.h',
+        'keyboard_unittest.cc',
+        'layout_test_controller_unittest.cc',
+        'node_leak_test.cc',
+        'plugin_tests.cc',
+        'run_all_tests.cc',
+        'test_shell_test.cc',
+        'test_shell_test.h',
+        'text_input_controller_unittest.cc',
+      ],
+      'sources!': [
+        # TODO(mark): These indirectly include HTMLNames.h and
+        # CSSPropertyNames.h.  These headers need to move to
+        # SHARED_INTERMEDIATE_DIR and then these excludes can go away.
+        '../../glue/dom_serializer_unittest.cc',
+        '../../glue/password_autocomplete_listener_unittest.cc',
+        '../../glue/resource_fetcher_unittest.cc',
+        '../../glue/webplugin_impl_unittest.cc',
+      ],
+      'include_dirs': [
+        '../../..',
+      ],
+      'dependencies': [
+        'test_shell_common',
+        '../../../base/base.gyp:base',
+        '../../../net/net.gyp:net',
+        '../../../skia/skia.gyp:skia',
+        '../../../testing/gtest.gyp:gtest',
+        '../../webkit.gyp:glue',
+      ],
       'conditions': [
-        ['OS!="linux"', {'sources/': [['exclude', '_gtk\\.cc$']]}],
-        ['OS!="mac"', {
-          'sources/': [
-            ['exclude', 'mac/[^/]*\\.(cc|mm?)$'],
-            ['exclude', '_mac\\.(cc|mm?)$'],
-          ]
-        }],
         ['OS!="win"', {
-          'sources/': [
-            ['exclude', '_win\\.cc$']
-          ],
           'sources!': [
-            'drag_delegate.cc',
-            'drop_delegate.cc',
+            '../../../skia/ext/vector_canvas_unittest.cc',
+            '../webcore_unit_tests/UniscribeHelper_unittest.cpp',
+            'plugin_tests.cc'
           ],
         }],
       ],

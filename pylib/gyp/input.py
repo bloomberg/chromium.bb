@@ -1341,6 +1341,24 @@ def Load(build_files, variables, includes):
     target_dict = targets[target]
     ValidateRulesInTarget(target, target_dict)
 
+  # TODO(mark): This is a temporary hack that's only present until webcore.gyp
+  # is restructured to avoid having two copies of the same defines in
+  # the glue target.  The problem is that glue currently picks up one set of
+  # defines from target_defaults, and another set from webcore's
+  # direct_dependent_settings.  This hack will rewrite any target's "defines"
+  # list to remove duplicates.
+  for target in flat_list:
+    target_dict = targets[target]
+    for configuration_dict in target_dict.get('configurations', {}).values():
+      if 'defines' in configuration_dict:
+        new_defines_list = []
+        new_defines_dict = {}
+        for define in configuration_dict['defines']:
+          if not define in new_defines_dict:
+            new_defines_dict[define] = True
+            new_defines_list.append(define)
+        configuration_dict['defines'] = new_defines_list
+
   # TODO(mark): Return |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept
   # a list, and not the whole data dict.
