@@ -21,7 +21,7 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Oriya (OR)
+# Oriya (or)
 #
 # Taken from the Unicode coverage of this language
 #
@@ -38,4 +38,5 @@
 0b56-0b57
 0b5c-0b5d
 0b5f-0b61
-0b66-0b70
+#0b66-0b6f # Digits
+#0b70 # Symbol

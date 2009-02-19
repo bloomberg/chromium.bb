@@ -21,7 +21,7 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Lao (LO)
+# Lao (lo)
 #
 # Taken from the Unicode coverage of this language
 #
@@ -41,5 +41,5 @@
 0ec0-0ec4
 0ec6
 0ec8-0ecd
-0ed0-0ed9
+#0ed0-0ed9 # Digits
 0edc-0edd

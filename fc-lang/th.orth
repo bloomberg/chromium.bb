@@ -21,6 +21,10 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Thai (TH)
+# Thai (th)
+#
 0e01-0e3a
-0e3f-0e5b
+0e3f-0e4e
+#0e4f # Punctuation
+#0e50-0e59 # Digits
+#0e5a-0e5b # Punctuation

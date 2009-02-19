@@ -21,7 +21,7 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Gujarati (GU)
+# Gujarati (gu)
 #
 # Taken from the Unicode coverage of this language
 #
@@ -38,4 +38,4 @@
 0acb-0acd
 0ad0
 0ae0
-0ae6-0aef
+#0ae6-0aef # Digits

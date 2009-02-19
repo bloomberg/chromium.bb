@@ -21,7 +21,7 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Telugu (GE)
+# Telugu (te)
 #
 # Taken from the Unicode coverage of this language
 #
@@ -36,4 +36,4 @@
 0c4a-0c4d
 0c55-0c56
 0c60-0c61
-0c66-0c6f
+#0c66-0c6f # Digits
