@@ -21,6 +21,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <assert.h>
 #include <errno.h>
 
