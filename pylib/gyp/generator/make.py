@@ -119,6 +119,7 @@ def GenerateMakefile(output_filename, build_file, spec):
   if not t in (None, 'none'):
     target = {
                   'executable' : spec['target_name'],
+                  'application' : spec['target_name'],
                   'static_library' : 'lib%s.a' % spec['target_name'],
               }[t]
     fp.write('\n')

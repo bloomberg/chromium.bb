@@ -1255,6 +1255,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
       # It is no longer incredibly sucky, but this list needs to be extended.
       extension_map = {
         'a':         'archive.ar',
+        'app':       'wrapper.application',
         'c':         'sourcecode.c.c',
         'cc':        'sourcecode.cpp.cpp',
         'cpp':       'sourcecode.cpp.cpp',
@@ -1748,6 +1749,8 @@ class PBXNativeTarget(XCTarget):
   })
 
   _product_filetypes = {
+    'com.apple.product-type.application':     ['wrapper.application',
+                                               '', '.app'],
     'com.apple.product-type.library.dynamic': ['compiled.mach-o.dylib',
                                                'lib', '.dylib'],
     'com.apple.product-type.library.static':  ['archive.ar', 'lib', '.a'],

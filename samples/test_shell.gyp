@@ -8,7 +8,7 @@
   'targets': [
     {
       'target_name': 'test_shell',
-      'type': 'executable',
+      'type': 'application',
       'sources': [
         'mac/DumpRenderTreePasteboard.h',
         'mac/DumpRenderTreePasteboard.m',
@@ -71,6 +71,9 @@
         '../../../skia/skia.gyp:skia',
         '../../../third_party/npapi/npapi.gyp:npapi',
       ],
+      'xcode_settings': {
+        'INFOPLIST_FILE': 'mac/Info.plist',
+      },
       'conditions': [
         ['OS!="linux"', {'sources/': [['exclude', '_gtk\\.cc$']]}],
         ['OS!="mac"', {

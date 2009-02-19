@@ -67,9 +67,10 @@ class XcodeProject(object):
 
   def AddTarget(self, name, type, configurations):
     _types = {
+      'application':    'com.apple.product-type.application',
+      'executable':     'com.apple.product-type.tool',
       'shared_library': 'com.apple.product-type.library.dynamic',
       'static_library': 'com.apple.product-type.library.static',
-      'executable':     'com.apple.product-type.tool',
     }
 
     # Set up the configurations for the target according to the list of names

@@ -10,7 +10,7 @@ import subprocess
 
 
 # A list of types that are treated as linkable.
-linkable_types = ['executable', 'shared_library']
+linkable_types = ['application', 'executable', 'shared_library']
 
 # A list of sections that contain pathnames.  You should probably call
 # IsPathSection instead, which has other checks.
@@ -656,7 +656,7 @@ class DependencyGraphNode(object):
     # Executables are already fully and finally linked.  Nothing else can be
     # a link dependency of an executable, there can only be dependencies in
     # the sense that a dependent target might run an executable.
-    if not initial and target_type == 'executable':
+    if not initial and target_type in ['application', 'executable']:
       return dependencies
 
     # The target is linkable, add it to the list of link dependencies.

@@ -121,6 +121,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   # Pick target configuration type.
   config_type = {
       'executable': '1',
+      'application': '1',
       'shared_library': '2',
       'static_library': '4',
       'none': '10',

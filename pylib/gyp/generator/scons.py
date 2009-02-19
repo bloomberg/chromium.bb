@@ -85,6 +85,7 @@ def GenerateSConscript(output_filename, build_file, spec, config):
   if not t in (None, 'none'):
     builder = {
                   'executable' : 'ChromeProgram',
+                  'application' : 'ChromeProgram',
                   'static_library' : 'ChromeStaticLibrary',
               }[t]
     fmt = 'env.%s(\'%s\', input_files)\n'
