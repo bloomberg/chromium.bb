@@ -97,6 +97,11 @@ def _ToolAppend(tools, tool_name, option, value):
     tool[option] = value
 
 
+def _ConfigFullName(config_name, config_data):
+  return '|'.join([config_name,
+                   config_data.get('configuration_platform', 'Win32')])
+
+
 def _GenerateProject(vcproj_filename, build_file, spec):
   """Generates a vcproj file.
 
@@ -273,7 +278,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       precomped = [_FixPath(c.get(i, '')) for i in precomp_keys]
       # Don't do this for ones that are precompiled header related.
       if f not in precomped:
-        p.AddFileConfig(f, config_name, {'ExcludedFromBuild': 'true'})
+        p.AddFileConfig(f, _ConfigFullName(config_name, c),
+                        {'ExcludedFromBuild': 'true'})
 
   # Add in tool files (rules).
   tool_files = set()
@@ -291,7 +297,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       # UsePrecompiledHeader=1 for if using precompiled headers.
       tool = MSVSProject.Tool('VCCLCompilerTool',
                               {'UsePrecompiledHeader': '1'})
-      p.AddFileConfig(source, config_name, {}, tools=[tool])
+      p.AddFileConfig(source, _ConfigFullName(config_name, c),
+                      {}, tools=[tool])
 
   # Add actions.
   actions = spec.get('actions', [])
@@ -327,7 +334,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       else:
         primary_input = inputs[0]
       # Add to the properties of primary input.
-      p.AddFileConfig(primary_input, config_name, tools=[tool])
+      p.AddFileConfig(primary_input,
+                      _ConfigFullName(config_name, c), tools=[tool])
 
   # Add rules.
   rules = spec.get('rules', [])
