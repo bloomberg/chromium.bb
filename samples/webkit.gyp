@@ -3860,8 +3860,9 @@
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/libxslt/libxslt.gyp:libxslt',
+        '../third_party/npapi/npapi.gyp:npapi',
+        '../third_party/sqlite/sqlite.gyp:sqlite',
         '../third_party/zlib/zlib.gyp:zlib',
       ],
       # When webcore is a dependency, it needs to be a hard dependency.  Even
@@ -3869,11 +3870,11 @@
       # dependencies do, and dependents may require those files.
       'hard_dependency': 1,
       'export_dependent_settings': [
-        'v8_config',
         'wtf',
+        'v8_config',
+        '../v8/v8.gyp:v8',
         '../skia/skia.gyp:skia',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../v8/v8.gyp:v8',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
