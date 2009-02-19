@@ -28,7 +28,6 @@
       '../third_party/WebKit/WebCore/loader',
       '../third_party/WebKit/WebCore/loader/appcache',
       '../third_party/WebKit/WebCore/loader/archive',
-      '../third_party/WebKit/WebCore/loader/archive/cf',
       '../third_party/WebKit/WebCore/loader/icon',
       '../third_party/WebKit/WebCore/page',
       '../third_party/WebKit/WebCore/page/animation',
@@ -58,19 +57,24 @@
     'conditions': [
       ['OS=="mac"', {
         'webcore_include_dirs+': [
-          # platform/graphics/mac needs to come before
+          # platform/graphics/cg and mac needs to come before
           # platform/graphics/chromium so that the Mac build picks up the
-          # version of FontPlatformData.h in the mac directory.  The +
-          # prepends this directory to the list.
-          # TODO(port): This shouldn't need to be prepended.  In fact, this
-          # directory shouldn't be needed at all.
+          # version of ImageBufferData.h in the cg directory and
+          # FontPlatformData.h in the mac directory.  The + prepends this
+          # directory to the list.
+          # TODO(port): This shouldn't need to be prepended.
+          # TODO(port): Eliminate dependency on platform/graphics/mac and
+          # related directories.
+          # platform/graphics/cg may need to stick around, though.
+          '../third_party/WebKit/WebCore/platform/graphics/cg',
           '../third_party/WebKit/WebCore/platform/graphics/mac',
         ],
         'webcore_include_dirs': [
-          '../third_party/WebKit/WebCore/platform/graphics/cg',
-          # TODO(port): Eliminate dependency on platform/mac.
-          # platform/graphics/cg should probably stick around, though.
+          # TODO(port): Eliminate dependency on platform/mac and related
+          # directories.
+          '../third_party/WebKit/WebCore/loader/archive/cf',
           '../third_party/WebKit/WebCore/platform/mac',
+          '../third_party/WebKit/WebCore/platform/text/mac',
         ],
       }],
       ['OS=="win"', {
@@ -2781,6 +2785,7 @@
         '../third_party/WebKit/WebCore/platform/text/chromium/TextBreakIteratorInternalICUChromium.cpp',
         '../third_party/WebKit/WebCore/platform/text/gtk/TextBreakIteratorInternalICUGtk.cpp',
         '../third_party/WebKit/WebCore/platform/text/mac/CharsetData.h',
+        '../third_party/WebKit/WebCore/platform/text/mac/ShapeArabic.c',
         '../third_party/WebKit/WebCore/platform/text/mac/ShapeArabic.h',
         '../third_party/WebKit/WebCore/platform/text/mac/StringImplMac.mm',
         '../third_party/WebKit/WebCore/platform/text/mac/StringMac.mm',
@@ -3933,12 +3938,40 @@
       'conditions': [
         ['OS=="mac"', {
           'sources/': [
-            ['include', '/third_party/WebKit/WebCore/platform/graphics/mac/FontCustomPlatformData\\.cpp$'],
+            # Additional files from the WebCore Mac build that are presently
+            # used in the WebCore Chromium Mac build too.
+
+            # The Mac build is PLATFORM_CF but does not use CFNetwork.
+            ['include', 'CF\\.cpp$'],
+            ['exclude', '/network/cf/'],
+
+            # The Mac build is PLATFORM_CG too.  platform/graphics/cg is the
+            # only place that CG files we want to build are located, and not
+            # all of them even have a CG suffix, so just add them by a
+            # regexp matching their directory.
+            ['include', '/platform/graphics/cg/[^/]*(?<!Win)?\\.(cpp|mm?)$'],
+
+            # Use native Mac font code from WebCore.
+            ['include', '/platform/graphics/mac/[^/]*Font[^/]*\\.(cpp|mm?)$'],
+
+            # Cherry-pick some files that can't be included by broader regexps.
+            # Some of these are used instead of Chromium platform files, see
+            # the specific exclusions in the "sources!" list below.
+            ['include', '/third_party/WebKit/WebCore/platform/mac/BlockExceptions\\.mm$'],
+            ['include', '/third_party/WebKit/WebCore/platform/mac/PurgeableBufferMac\\.cpp$'],
+            ['include', '/third_party/WebKit/WebCore/platform/mac/ScrollbarThemeMac\\.mm$'],
+            ['include', '/third_party/WebKit/WebCore/platform/mac/WebCoreSystemInterface\\.mm$'],
+            ['include', '/third_party/WebKit/WebCore/platform/text/mac/ShapeArabic\\.c$'],
+            ['include', '/third_party/WebKit/WebCore/platform/text/mac/String(Impl)?Mac\\.mm$'],
           ],
           'sources!': [
             # The Mac currently uses FontCustomPlatformData.cpp from
             # platform/graphics/mac, included by regex above, instead.
             '../third_party/WebKit/WebCore/platform/graphics/chromium/FontCustomPlatformData.cpp',
+
+            # The Mac currently uses ScrollbarThemeMac.mm, included by regex
+            # above, instead of ScrollbarThemeChromium.cpp.
+            '../third_party/WebKit/WebCore/platform/chromium/ScrollbarThemeChromium.cpp',
 
             # These Skia files aren't currently built on the Mac, which uses
             # CoreGraphics directly for this portion of graphics handling.
