@@ -281,7 +281,6 @@
       ],
       'dependencies': [
         'v8_config',
-        '../skia/skia.gyp:skia',
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
       ],
