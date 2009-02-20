@@ -19,6 +19,7 @@ from xml.dom.minidom import parse
 from xml.dom.minidom import Node
 
 REPLACEMENTS = dict()
+ARGUMENTS = None
 
 class CmpTuple:
   """Compare function between 2 tuple."""
@@ -104,9 +105,39 @@ def FlattenFilter(node):
 
   return node_list
 
+def FixFilenames(filenames, current_directory):
+  new_list = []
+  for filename in filenames:
+    if filename:
+      for key in REPLACEMENTS:
+        filename = filename.replace(key, REPLACEMENTS[key])
+      os.chdir(current_directory)
+      filename = filename.strip('"\' ')
+      if filename.startswith('$'):
+        new_list.append(filename)
+      else:
+        new_list.append(os.path.abspath(filename))
+  return new_list
+
+def AbsoluteNode(node):
+  # Make all the properties we know about in this node absolute.
+  if node.attributes:
+    for (name, value) in node.attributes.items():
+      if name in ['InheritedPropertySheets', 'RelativePath',
+                  'AdditionalIncludeDirectories',
+                  'IntermediateDirectory', 'OutputDirectory',
+                  'AdditionalLibraryDirectories']:
+        # We want to fix up these paths
+        path_list = value.split(';')
+        new_list = FixFilenames(path_list, os.path.dirname(ARGUMENTS[1]))
+        node.setAttribute(name, ';'.join(new_list))
+      if not value:
+        node.removeAttribute(name)
+
 def CleanupVcproj(node):
   # For each sub node, we call recursively this function.
   for sub_node in node.childNodes:
+    AbsoluteNode(sub_node)
     CleanupVcproj(sub_node)
 
   # Normalize the node, and remove all extranous whitespaces.
@@ -155,6 +186,8 @@ def CleanupVcproj(node):
       if new_node.attributes and new_node.attributes.length == 1:
         # This one was empty.
         continue
+    if new_node.nodeName == 'UserMacro':
+      continue
     node.appendChild(new_node)
 
 def GetConfiguationNodes(vcproj):
@@ -167,16 +200,6 @@ def GetConfiguationNodes(vcproj):
           nodes.append(sub_node)
 
   return nodes
-
-def FixFilenames(filenames, current_directory):
-  new_list = []
-  for filename in filenames:
-    if filename:
-      for key in REPLACEMENTS:
-        filename = filename.replace(key, REPLACEMENTS[key])
-      os.chdir(current_directory)
-      new_list.append(os.path.abspath(filename))
-  return new_list
 
 def GetChildrenVsprops(filename):
   dom = parse(filename)
@@ -239,22 +262,25 @@ def MergeProperties(node1, node2):
     else:
       node1.appendChild(child2.cloneNode(True))
 
-def main():
+def main(argv):
+  global REPLACEMENTS
+  global ARGUMENTS
+  ARGUMENTS = argv
   """Main function of this vcproj prettifier."""
 
   # check if we have exactly 1 parameter.
-  if len(sys.argv) < 2:
+  if len(argv) < 2:
     print ('Usage: %s "c:\\path\\to\\vcproj.vcproj" [key1=value1] '
-           '[key2=value2]' % sys.argv[0])
+           '[key2=value2]' % argv[0])
     return
 
   # Parse the keys
-  for i in range(2, len(sys.argv)):
-    (key, value) = sys.argv[i].split('=')
+  for i in range(2, len(argv)):
+    (key, value) = argv[i].split('=')
     REPLACEMENTS[key] = value
 
   # Open the vcproj and parse the xml.
-  dom = parse(sys.argv[1])
+  dom = parse(argv[1])
 
   # First thing we need to do is find the Configuration Node and merge them
   # with the vsprops they include.
@@ -264,7 +290,7 @@ def main():
 
     # Fix the filenames to be absolute.
     vsprops_list = FixFilenames(vsprops.strip().split(';'),
-                                os.path.dirname(sys.argv[1]))
+                                os.path.dirname(argv[1]))
 
     # Extend the list of vsprops with all vsprops contained in the current
     # vsprops.
@@ -285,4 +311,4 @@ def main():
   PrettyPrintNode(dom.documentElement)
   
 if __name__ == '__main__':
-  main()
+  main(sys.argv)

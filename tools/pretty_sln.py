@@ -12,8 +12,10 @@
 
 __author__ = 'nsylvain (Nicolas Sylvain)'
 
+import os
 import re
 import sys
+import pretty_vcproj
 
 def BuildProject(project, built, projects, deps):
   # if all dependencies are done, we can build it, otherwise we try to build the
@@ -50,10 +52,14 @@ def ParseSolution(solution_file):
   for line in solution:
     results = begin_project.search(line)
     if results:
+      # Hack to remove icu because the diff is too different.
+      if results.group(1).find('icu') != -1:
+        continue
       # We remove "_gyp" from the names because it helps to diff them.
       current_project = results.group(1).replace('_gyp', '')
       projects[current_project] = [results.group(2).replace('_gyp', ''),
-                                   results.group(3)]
+                                   results.group(3),
+                                   results.group(2)]
       dependencies[current_project] = []
       continue
 
@@ -73,7 +79,7 @@ def ParseSolution(solution_file):
       continue
 
     results = dep_line.search(line)
-    if results and in_deps:
+    if results and in_deps and current_project:
       dependencies[current_project].append(results.group(1))
       continue
 
@@ -118,16 +124,41 @@ def PrintBuildOrder(projects, deps):
       BuildProject(project, built, projects, deps)
 
   print "--                                   --"
-      
+
+def PrintVCProj(projects):
+
+  for project in projects:
+    print "-------------------------------------"
+    print "-------------------------------------"
+    print project
+    print project
+    print project
+    print "-------------------------------------"
+    print "-------------------------------------"
+
+    project_path = os.path.abspath(os.path.join(os.path.dirname(sys.argv[1]),
+                                                projects[project][2]))
+
+    pretty = pretty_vcproj  
+    argv = [ '',
+             project_path,
+             '$(SolutionDir)=%s\\' % os.path.dirname(sys.argv[1]),
+           ]
+    argv.extend(sys.argv[3:])
+    pretty.main(argv)
+
 def main():
   # check if we have exactly 1 parameter.
-  if len(sys.argv) != 2:
+  if len(sys.argv) < 2:
     print 'Usage: %s "c:\\path\\to\\project.sln"' % sys.argv[0]
     return
 
   (projects, deps) = ParseSolution(sys.argv[1])
   PrintDependencies(projects, deps)
   PrintBuildOrder(projects, deps)
+  
+  if '--recursive' in sys.argv:
+    PrintVCProj(projects)
 
 if __name__ == '__main__':
   main()
