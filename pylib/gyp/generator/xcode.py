@@ -696,11 +696,10 @@ exit 1
           xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
       if 'defines' in configuration:
         for define in configuration['defines']:
-          if isinstance(define, str):
-            xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', define)
-          elif isinstance(define, list):
-            xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS',
-                                    define[0] + '=' + str(define[1]))
+          # If the define is of the form A="B", escape the quotes yielding
+          # A=\"B\".
+          set_define = re.sub('^([^=]*=)"([^"]*)"$', '\\1\\"\\2\\"', define)
+          xcbc.AppendBuildSetting('GCC_PREPROCESSOR_DEFINITIONS', set_define)
       if 'xcode_settings' in configuration:
         for xck, xcv in configuration['xcode_settings'].iteritems():
           xcbc.SetBuildSetting(xck, xcv)

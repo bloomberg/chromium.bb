@@ -17,6 +17,11 @@
       'ENABLE_SVG_FONTS=1',
       'ENABLE_WORKERS=0',
     ],
+    'non_feature_defines': [
+      'BUILDING_CHROMIUM__=1',
+      'USE_GOOGLE_URL_LIBRARY=1',
+      'USE_SYSTEM_MALLOC=1',
+    ],
     'webcore_include_dirs': [
       '../third_party/WebKit/WebCore/bindings/v8',
       '../third_party/WebKit/WebCore/css',
@@ -55,7 +60,20 @@
       '../third_party/WebKit/WebCore/xml',
     ],
     'conditions': [
+      ['OS=="linux"', {
+        'non_feature_defines': [
+          # Mozilla on Linux effectively uses uname -sm, but when running
+          # 32-bit x86 code on an x86_64 processor, it uses
+          # "Linux i686 (x86_64)".  Matching that would require making a
+          # run-time determination.
+          'WEBCORE_NAVIGATOR_PLATFORM="Linux i686"',
+        ],
+      }],
       ['OS=="mac"', {
+        'non_feature_defines': [
+          # Match Safari and Mozilla on Mac x86.
+          'WEBCORE_NAVIGATOR_PLATFORM="MacIntel"',
+        ],
         'webcore_include_dirs+': [
           # platform/graphics/cg and mac needs to come before
           # platform/graphics/chromium so that the Mac build picks up the
@@ -78,9 +96,18 @@
         ],
       }],
       ['OS=="win"', {
-        'feature_defines': ['ENABLE_VIDEO=1'],
+        'feature_defines': [
+          'ENABLE_VIDEO=1'
+        ],
+        'non_feature_defines': [
+          'CRASH=__debugbreak',
+          # Match Safari and Mozilla on Windows.
+          'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
+        ],
       }, {  # else: OS!="win"
-        'feature_defines': ['ENABLE_VIDEO=0'],
+        'feature_defines': [
+          'ENABLE_VIDEO=0'
+        ],
       }],
     ],
   },
@@ -88,35 +115,11 @@
     '../build/common.gypi',
     '../build/external_code.gypi',
   ],
-  'target_defaults': {
-    'defines': [
-      '<@(feature_defines)',
-      'BUILDING_CHROMIUM__=1',
-      'USE_GOOGLE_URL_LIBRARY=1',
-      'USE_SYSTEM_MALLOC=1',
-    ],
-    'conditions': [
-      ['OS=="mac"', {
-        'defines': [
-          'WEBCORE_NAVIGATOR_PLATFORM_="FixMeAndRemoveTrailingUnderscore"',
-        ],
-      }],
-      ['OS=="win"', {
-        'defines': [
-          'CRASH=__debugbreak',
-          'WEBCORE_NAVIGATOR_PLATFORM="Win32"',
-        ],
-      }],
-    ],
-  },
   'targets': [
     {
       # This target creates config.h suitable for a WebKit-V8 build and
       # copies a few other files around as needed.
-      # TODO(mark): Provide a way to flag this target and some others in this
-      # file as "private" so that only other targets in this file can depend
-      # on it.
-      'target_name': 'v8_config',
+      'target_name': 'config',
       'type': 'none',
       'actions': [
         {
@@ -127,38 +130,60 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/config.h',
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'inputs': ['../third_party/WebKit/JavaScriptCore/os-win32/stdint.h'],
-              'outputs': ['<(INTERMEDIATE_DIR)/stdint.h'],
-            }],
-          ],
+          # TODO(mark): INTERMEDIATE_DIR won't be right when that goes back
+          # to being target-specific, but right now, it's unused as no other
+          # headers are copied.  Additional copied headers (other than
+          # config.h) probably shouldn't be available too widely, so they
+          # probably shouldn't go into <(SHARED_INTERMEDIATE_DIR)/webkit or
+          # anything else in direct_dependent_settings.
           'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit <(INTERMEDIATE_DIR) <(_inputs)',
         },
       ],
       'direct_dependent_settings': {
-        # Always prepend this directory, which contains config.h.  This is
-        # important, because WebKit/JavaScriptCore has a config.h in it too
-        # that shouldn't be used, and that directory winds up in include_dirs
-        # when targets depend on wtf.
+        'defines': [
+          '<@(feature_defines)',
+          '<@(non_feature_defines)',
+        ],
+        # Always prepend the directory containing config.h.  This is important,
+        # because WebKit/JavaScriptCore has a config.h in it too.  The JSC
+        # config.h shouldn't be used, and its directory winds up in
+        # include_dirs in wtf and its dependents.  If the directory containing
+        # the real config.h weren't prepended, other targets might wind up
+        # picking up the wrong config.h, which can result in build failures or
+        # even random runtime problems due to different components being built
+        # with different configurations.
         #
         # The rightmost + is present because this direct_dependent_settings
         # section gets merged into the (nonexistent) target_defaults one,
         # eating the rightmost +.
-        #
-        # This target puts other headers in <(INTERMEDIATE_DIR), but does
-        # not expose then in direct_dependent_settings because they are
-        # private headers intended only for use by other targets in this file.
-        # Other targets in this file that require these headers should add
-        # this directory to their include_dirs manually.
         'include_dirs++': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit',
         ],
-      }
+      },
+      'conditions': [
+        ['OS=="win"', {
+          'direct_dependent_settings': {
+            'defines': [
+              '__STD_C',
+              '_CRT_SECURE_NO_DEPRECATE',
+              '_SCL_SECURE_NO_DEPRECATE',
+            ],
+            'include_dirs': [
+              '../third_party/WebKit/JavaScriptCore/os-win32',
+              'build/JavaScriptCore',
+            ],
+          },
+        }],
+      ],
     },
     {
       'target_name': 'wtf',
       'type': 'static_library',
+      'dependencies': [
+        'config',
+        '../third_party/icu38/icu38.gyp:icui18n',
+        '../third_party/icu38/icu38.gyp:icuuc',
+      ],
       'include_dirs': [
         '../third_party/WebKit/JavaScriptCore',
         '../third_party/WebKit/JavaScriptCore/wtf',
@@ -266,11 +291,6 @@
       'sources/': [
         ['exclude', '(Default|Gtk|Mac|None|Qt|Win|Wx)\\.(cpp|mm)$'],
       ],
-      'dependencies': [
-        'v8_config',
-        '../third_party/icu38/icu38.gyp:icui18n',
-        '../third_party/icu38/icu38.gyp:icuuc',
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '../third_party/WebKit/JavaScriptCore',
@@ -278,38 +298,33 @@
         ],
       },
       'export_dependent_settings': [
+        'config',
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
       ],
+      'configurations': {
+        'Debug': {
+          'msvs_precompiled_header': 'build/precompiled_webkit.h',
+          'msvs_precompiled_source': 'build/precompiled_webkit.cc',
+        },
+      },
+      'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
       'conditions': [
         ['OS=="win"', {
           'sources/': [
             ['exclude', 'ThreadingPthreads\\.cpp$'],
             ['include', 'Thread(ing|Specific)Win\\.cpp$']
           ],
-          'defines': [
-            '__STD_C',
-            '_SCL_SECURE_NO_DEPRECATE',
-            '_CRT_SECURE_NO_DEPRECATE',
-            'CRASH=__debugbreak',
-          ],
-          'include_dirs': [
-            'build/JavaScriptCore',
-            '../third_party/WebKit/JavaScriptCore/os-win32',
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header': 'build/precompiled_webkit.h',
-              'msvs_precompiled_source': 'build/precompiled_webkit.cc',
-            },
-          },
         }],
       ],
-      'msvs_disabled_warnings': [4127, 4355, 4510, 4512, 4610, 4706],
     },
     {
       'target_name': 'pcre',
       'type': 'static_library',
+      'dependencies': [
+        'config',
+        'wtf',
+      ],
       'actions': [
         {
           'action_name': 'dftables',
@@ -321,6 +336,9 @@
           ],
           'action': 'perl -w <(_inputs) <(_outputs)',
         },
+      ],
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
       ],
       'sources': [
         '../third_party/WebKit/JavaScriptCore/pcre/pcre.h',
@@ -338,21 +356,29 @@
         # intended to be compiled directly.
         '../third_party/WebKit/JavaScriptCore/pcre/ucptable.cpp',
       ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-      ],
-      'dependencies': [
-        'v8_config',
+      'export_dependent_settings': [
         'wtf',
       ],
     },
     {
-      # WebCore derived sources.  These should be independent of the chosen
-      # JavaScript engine, although they may depend on the chosen engine.
-      'target_name': 'webcore_derived',
+      'target_name': 'webcore',
       'type': 'static_library',
-      'hard_dependency': 1,
+      'dependencies': [
+        'config',
+        'pcre',
+        'wtf',
+        '../googleurl/build/googleurl.gyp:googleurl',
+        '../skia/skia.gyp:skia',
+        '../third_party/libjpeg/libjpeg.gyp:libjpeg',
+        '../third_party/libpng/libpng.gyp:libpng',
+        '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/libxslt/libxslt.gyp:libxslt',
+        '../third_party/npapi/npapi.gyp:npapi',
+        '../third_party/sqlite/sqlite.gyp:sqlite',
+        '../v8/v8.gyp:v8',
+      ],
       'actions': [
+        # Actions to build derived sources.
         {
           'action_name': 'CSSPropertyNames',
           'inputs': [
@@ -476,6 +502,7 @@
         },
       ],
       'rules': [
+        # Rules to build derived sources.
         {
           'rule_name': 'bison',
           'extension': 'y',
@@ -502,38 +529,7 @@
           'action': 'python build/rule_gperf.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)',
           'process_outputs_as_sources': 0,
         },
-      ],
-      'sources': [
-        # bison rule
-        '../third_party/WebKit/WebCore/css/CSSGrammar.y',
-        '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
-
-        # gperf rule
-        '../third_party/WebKit/WebCore/html/DocTypeStrings.gperf',
-        '../third_party/WebKit/WebCore/html/HTMLEntityNames.gperf',
-        '../third_party/WebKit/WebCore/platform/ColorData.gperf',
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        'port/bindings/v8',
-        '<@(webcore_include_dirs)',
-      ],
-      'xcode_framework_dirs': [
-        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
-      ],
-      'dependencies': [
-        'v8_config',
-        'wtf',
-        '../googleurl/build/googleurl.gyp:googleurl',
-        '../v8/v8.gyp:v8',
-      ],
-    },
-    {
-      # This target builds the .cpp and .h bindings files from .idl source and
-      # compiles them.
-      'target_name': 'v8_derived',
-      'type': 'static_library',
-      'rules': [
+        # Rule to build generated JavaScript (V8) bindings from .idl source.
         {
           'rule_name': 'binding',
           'extension': 'idl',
@@ -563,7 +559,23 @@
           'process_outputs_as_sources': 1,
         },
       ],
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+        'port/bindings/v8',
+        '<@(webcore_include_dirs)',
+      ],
       'sources': [
+        # bison rule
+        '../third_party/WebKit/WebCore/css/CSSGrammar.y',
+        '../third_party/WebKit/WebCore/xml/XPathGrammar.y',
+
+        # gperf rule
+        '../third_party/WebKit/WebCore/html/DocTypeStrings.gperf',
+        '../third_party/WebKit/WebCore/html/HTMLEntityNames.gperf',
+        '../third_party/WebKit/WebCore/platform/ColorData.gperf',
+
+        # binding rule
         # I've put every .idl in the WebCore tree into this list.  There are
         # exclude patterns and lists that follow to pluck out the few to not
         # build.
@@ -904,99 +916,8 @@
         '../third_party/WebKit/WebCore/xml/XPathResult.idl',
         '../third_party/WebKit/WebCore/xml/XSLTProcessor.idl',
         'port/bindings/v8/UndetectableHTMLCollection.idl',
-      ],
-      'sources/': [
-        # Don't build bindings for storage/database.
-        ['exclude', '/third_party/WebKit/WebCore/storage/[^/]*\\.idl$'],
 
-        # SVG_FILTERS only.
-        ['exclude', '/third_party/WebKit/WebCore/svg/SVG(FE|Filter)[^/]*\\.idl$'],
-      ],
-      'sources!': [
-        # Custom bindings in bindings/v8/custom exist for these.
-        '../third_party/WebKit/WebCore/dom/EventListener.idl',
-        '../third_party/WebKit/WebCore/dom/EventTarget.idl',
-        '../third_party/WebKit/WebCore/html/VoidCallback.idl',
-
-        # JSC-only.
-        '../third_party/WebKit/WebCore/inspector/JavaScriptCallFrame.idl',
-
-        # ENABLE_OFFLINE_WEB_APPLICATIONS only.
-        '../third_party/WebKit/WebCore/loader/appcache/DOMApplicationCache.idl',
-
-        # ENABLE_GEOLOCATION only.
-        '../third_party/WebKit/WebCore/page/Geolocation.idl',
-        '../third_party/WebKit/WebCore/page/Geoposition.idl',
-        '../third_party/WebKit/WebCore/page/PositionCallback.idl',
-        '../third_party/WebKit/WebCore/page/PositionError.idl',
-        '../third_party/WebKit/WebCore/page/PositionErrorCallback.idl',
-
-        # Bindings with custom Objective-C implementations.
-        '../third_party/WebKit/WebCore/page/AbstractView.idl',
-
-        # TODO(mark): I don't know why all of these are excluded.
-        # Extra SVG bindings to exclude.
-        '../third_party/WebKit/WebCore/svg/ElementTimeControl.idl',
-        '../third_party/WebKit/WebCore/svg/SVGAnimatedPathData.idl',
-        '../third_party/WebKit/WebCore/svg/SVGComponentTransferFunctionElement.idl',
-        '../third_party/WebKit/WebCore/svg/SVGExternalResourcesRequired.idl',
-        '../third_party/WebKit/WebCore/svg/SVGFitToViewBox.idl',
-        '../third_party/WebKit/WebCore/svg/SVGHKernElement.idl',
-        '../third_party/WebKit/WebCore/svg/SVGLangSpace.idl',
-        '../third_party/WebKit/WebCore/svg/SVGLocatable.idl',
-        '../third_party/WebKit/WebCore/svg/SVGStylable.idl',
-        '../third_party/WebKit/WebCore/svg/SVGTests.idl',
-        '../third_party/WebKit/WebCore/svg/SVGTransformable.idl',
-        '../third_party/WebKit/WebCore/svg/SVGViewSpec.idl',
-        '../third_party/WebKit/WebCore/svg/SVGZoomAndPan.idl',
-
-        # TODO(mark): I don't know why these are excluded, either.
-        # Someone (me?) should figure it out and add appropriate comments.
-        '../third_party/WebKit/WebCore/css/CSSUnknownRule.idl',
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
-        'port/bindings/v8',
-        '<@(webcore_include_dirs)',
-      ],
-      'xcode_framework_dirs': [
-        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
-      ],
-      'dependencies': [
-        'v8_config',
-        'webcore_derived',
-        'wtf',
-        '../googleurl/build/googleurl.gyp:googleurl',
-        '../third_party/libxml/libxml.gyp:libxml',
-        '../v8/v8.gyp:v8',
-      ],
-      'hard_dependency': 1,
-      'direct_dependent_settings': {
-        'include_dirs': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
-        ],
-      },
-      'conditions': [
-        ['OS=="win"', {
-          'defines': [
-            '__STD_C',
-            '_SCL_SECURE_NO_DEPRECATE',
-            '_CRT_SECURE_NO_DEPRECATE',
-          ],
-          'include_dirs': [
-            'build/JavaScriptCore',
-            '../third_party/WebKit/JavaScriptCore/os-win32',
-          ],
-        }],
-      ],
-    },
-    {
-      # This target builds the portion of the v8 bindings that are not
-      # expressed in code generated from .idl files.
-      'target_name': 'v8_bindings',
-      'type': 'static_library',
-      'sources': [
+        # V8 bindings not generated from .idl source.
         '../third_party/WebKit/WebCore/bindings/v8/custom/V8CanvasRenderingContext2DCustom.cpp',
         '../third_party/WebKit/WebCore/bindings/v8/custom/V8CustomBinding.h',
         '../third_party/WebKit/WebCore/bindings/v8/custom/V8CustomEventListener.h',
@@ -1091,69 +1012,7 @@
         'port/bindings/v8/v8_proxy.cpp',
         'port/bindings/v8/v8_proxy.h',
         'port/bindings/v8/v8_utility.h',
-        'build/V8Bindings/precompiled_v8bindings.cpp',
-        'build/V8Bindings/precompiled_v8bindings.h',
-      ],
-      'sources/': [
-        # Don't build custom bindings for storage.
-        ['exclude', 'third_party/WebKit/WebCore/bindings/v8/custom/V8((Custom)?SQL|Database)[^/]*\\.cpp$'],
-      ],
-      'sources!': [
-        'build/V8Bindings/precompiled_v8bindings.cpp',
 
-        # Don't build custom bindings for VoidCallback.
-        '../third_party/WebKit/WebCore/bindings/v8/custom/V8CustomVoidCallback.cpp',
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        'port/bindings/v8',
-      ],
-      # Needs to be prepended to avoid a name collision with a system header
-      # on windows.
-      'include_dirs+': [
-        '<@(webcore_include_dirs)',
-      ],
-      'dependencies': [
-        'v8_config',
-        'v8_derived',
-        'webcore_derived',
-        'wtf',
-        '../googleurl/build/googleurl.gyp:googleurl',
-        '../skia/skia.gyp:skia',
-        '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/libxslt/libxslt.gyp:libxslt',
-        '../third_party/npapi/npapi.gyp:npapi',
-        '../v8/v8.gyp:v8',
-      ],
-      'xcode_framework_dirs': [
-        '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
-      ],
-      'conditions': [
-        ['OS=="win"', {
-          'defines': [
-            '__STD_C',
-            '_SCL_SECURE_NO_DEPRECATE',
-            '_CRT_SECURE_NO_DEPRECATE',
-          ],
-          'include_dirs': [
-            'build/JavaScriptCore',
-            '../third_party/WebKit/JavaScriptCore/os-win32',
-          ],
-          'configurations': {
-            'Debug': {
-              'msvs_precompiled_header':
-                'build/V8Bindings/precompiled_v8bindings.h',
-              'msvs_precompiled_source':
-                'build/V8Bindings/precompiled_v8bindings.cpp',
-            },
-          },
-        }],
-      ],
-    },
-    {
-      'target_name': 'webcore',
-      'type': 'static_library',
-      'sources': [
         # This list contains every .cpp, .h, .m, and .mm file in the
         # subdirectories of ../third_party/WebKit/WebCore, excluding the
         # ForwardingHeaders, bindings, bridge, icu, and wml subdirectories.
@@ -3796,11 +3655,20 @@
         '../third_party/WebKit/WebCore/xml/XSLTProcessor.h',
         '../third_party/WebKit/WebCore/xml/XSLTUnicodeSort.cpp',
         '../third_party/WebKit/WebCore/xml/XSLTUnicodeSort.h',
-      ],
-      'msvs_disabled_warnings': [
-        4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
+
+        # For WebCoreSystemInterface, Mac-only.
+        '../third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.m',
       ],
       'sources/': [
+        # Don't build bindings for storage/database.
+        ['exclude', '/third_party/WebKit/WebCore/storage/[^/]*\\.idl$'],
+
+        # SVG_FILTERS only.
+        ['exclude', '/third_party/WebKit/WebCore/svg/SVG(FE|Filter)[^/]*\\.idl$'],
+
+        # Don't build custom bindings for storage.
+        ['exclude', '/third_party/WebKit/WebCore/bindings/v8/custom/V8((Custom)?SQL|Database)[^/]*\\.cpp$'],
+
         # Fortunately, many things can be excluded by using broad patterns.
 
         # Exclude things that don't apply to the Chromium platform on the basis
@@ -3827,6 +3695,50 @@
         ['exclude', '/third_party/WebKit/WebCore/storage/(Local|Session)Storage[^/]*\\.cpp$'],
       ],
       'sources!': [
+        # Custom bindings in bindings/v8/custom exist for these.
+        '../third_party/WebKit/WebCore/dom/EventListener.idl',
+        '../third_party/WebKit/WebCore/dom/EventTarget.idl',
+        '../third_party/WebKit/WebCore/html/VoidCallback.idl',
+
+        # JSC-only.
+        '../third_party/WebKit/WebCore/inspector/JavaScriptCallFrame.idl',
+
+        # ENABLE_OFFLINE_WEB_APPLICATIONS only.
+        '../third_party/WebKit/WebCore/loader/appcache/DOMApplicationCache.idl',
+
+        # ENABLE_GEOLOCATION only.
+        '../third_party/WebKit/WebCore/page/Geolocation.idl',
+        '../third_party/WebKit/WebCore/page/Geoposition.idl',
+        '../third_party/WebKit/WebCore/page/PositionCallback.idl',
+        '../third_party/WebKit/WebCore/page/PositionError.idl',
+        '../third_party/WebKit/WebCore/page/PositionErrorCallback.idl',
+
+        # Bindings with custom Objective-C implementations.
+        '../third_party/WebKit/WebCore/page/AbstractView.idl',
+
+        # TODO(mark): I don't know why all of these are excluded.
+        # Extra SVG bindings to exclude.
+        '../third_party/WebKit/WebCore/svg/ElementTimeControl.idl',
+        '../third_party/WebKit/WebCore/svg/SVGAnimatedPathData.idl',
+        '../third_party/WebKit/WebCore/svg/SVGComponentTransferFunctionElement.idl',
+        '../third_party/WebKit/WebCore/svg/SVGExternalResourcesRequired.idl',
+        '../third_party/WebKit/WebCore/svg/SVGFitToViewBox.idl',
+        '../third_party/WebKit/WebCore/svg/SVGHKernElement.idl',
+        '../third_party/WebKit/WebCore/svg/SVGLangSpace.idl',
+        '../third_party/WebKit/WebCore/svg/SVGLocatable.idl',
+        '../third_party/WebKit/WebCore/svg/SVGStylable.idl',
+        '../third_party/WebKit/WebCore/svg/SVGTests.idl',
+        '../third_party/WebKit/WebCore/svg/SVGTransformable.idl',
+        '../third_party/WebKit/WebCore/svg/SVGViewSpec.idl',
+        '../third_party/WebKit/WebCore/svg/SVGZoomAndPan.idl',
+
+        # TODO(mark): I don't know why these are excluded, either.
+        # Someone (me?) should figure it out and add appropriate comments.
+        '../third_party/WebKit/WebCore/css/CSSUnknownRule.idl',
+
+        # Don't build custom bindings for VoidCallback.
+        '../third_party/WebKit/WebCore/bindings/v8/custom/V8CustomVoidCallback.cpp',
+
         # A few things can't be excluded by patterns.  List them individually.
 
         # Use history/BackForwardListChromium.cpp instead.
@@ -3865,57 +3777,9 @@
         '../third_party/WebKit/WebCore/platform/graphics/RenderLayerBacking.cpp',
         '../third_party/WebKit/WebCore/platform/graphics/RenderLayerCompositor.cpp',
       ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        'port/bindings/v8',
-      ],
-      # Needs to be prepended to avoid a name collision with a system header
-      # on windows.
-      'include_dirs+': [
-        '<@(webcore_include_dirs)',
-      ],
-      'dependencies': [
-        'pcre',
-        'v8_config',
-        'v8_derived',
-        'v8_bindings',
-        'webcore_derived',
-        'wtf',
-        '../googleurl/build/googleurl.gyp:googleurl',
-        '../skia/skia.gyp:skia',
-        '../third_party/libjpeg/libjpeg.gyp:libjpeg',
-        '../third_party/libpng/libpng.gyp:libpng',
-        '../third_party/libxml/libxml.gyp:libxml',
-        '../third_party/libxslt/libxslt.gyp:libxslt',
-        '../third_party/npapi/npapi.gyp:npapi',
-        '../third_party/sqlite/sqlite.gyp:sqlite',
-        '../third_party/zlib/zlib.gyp:zlib',
-        '../v8/v8.gyp:v8',
-      ],
-      # When webcore is a dependency, it needs to be a hard dependency.  Even
-      # though this target doesn't generate files directly, some of its
-      # dependencies do, and dependents may require those files.
-      'hard_dependency': 1,
-      'export_dependent_settings': [
-        'wtf',
-        'v8_config',
-        '../googleurl/build/googleurl.gyp:googleurl',
-        '../skia/skia.gyp:skia',
-        '../third_party/npapi/npapi.gyp:npapi',
-        '../v8/v8.gyp:v8',
-      ],
       'direct_dependent_settings': {
-        'defines': [
-          # Uh-oh, the glue target will pick up the same set of defines from
-          # the target_defaults and from what it inherits from WebCore.
-          # TODO(mark): Fix!  I am planning a restructuring of this .gyp file
-          # to address this problem, and others.
-          '<@(feature_defines)',
-          'BUILDING_CHROMIUM__=1',
-          'USE_GOOGLE_URL_LIBRARY=1',
-          'USE_SYSTEM_MALLOC=1',
-        ],
         'include_dirs': [
+          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
           'port/bindings/v8',
           '<@(webcore_include_dirs)',
         ],
@@ -3923,6 +3787,17 @@
           '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
       },
+      'export_dependent_settings': [
+        'wtf',
+        '../googleurl/build/googleurl.gyp:googleurl',
+        '../skia/skia.gyp:skia',
+        '../third_party/npapi/npapi.gyp:npapi',
+        '../v8/v8.gyp:v8',
+      ],
+      'hard_dependency': 1,
+      'msvs_disabled_warnings': [
+        4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
+      ],
       'xcode_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
@@ -3934,6 +3809,23 @@
       },
       'conditions': [
         ['OS=="mac"', {
+          'actions': [
+            {
+              # Allow framework-style #include of
+              # <WebCore/WebCoreSystemInterface.h>.
+              'action_name': 'WebCoreSystemInterface.h',
+              'inputs': [
+                '../third_party/WebKit/WebCore/platform/mac/WebCoreSystemInterface.h',
+              ],
+              'outputs': [
+                '<(INTERMEDIATE_DIR)/WebCore/WebCoreSystemInterface.h',
+              ],
+              'action': 'cp <(_inputs) <(_outputs)'
+            },
+          ],
+          'include_dirs': [
+            '../third_party/WebKit/WebKitLibraries',
+          ],
           'sources/': [
             # Additional files from the WebCore Mac build that are presently
             # used in the WebCore Chromium Mac build too.
@@ -3965,6 +3857,8 @@
             ['include', '/third_party/WebKit/WebCore/platform/mac/WebCoreTextRenderer\\.mm$'],
             ['include', '/third_party/WebKit/WebCore/platform/text/mac/ShapeArabic\\.c$'],
             ['include', '/third_party/WebKit/WebCore/platform/text/mac/String(Impl)?Mac\\.mm$'],
+
+            ['include', '/third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface\\.m$'],
           ],
           'sources!': [
             # The Mac currently uses FontCustomPlatformData.cpp from
@@ -3990,28 +3884,25 @@
             '../third_party/WebKit/WebCore/platform/graphics/skia/PatternSkia.cpp',
             '../third_party/WebKit/WebCore/platform/graphics/skia/TransformationMatrixSkia.cpp',
           ],
-          'dependencies': [
-            'webcoresysteminterface',
-          ],
-          'export_dependent_settings': [
-            'webcoresysteminterface',
-          ],
+          'link_settings': {
+            'libraries': [
+              '../third_party/WebKit/WebKitLibraries/libWebKitSystemInterfaceLeopard.a',
+            ],
+          },
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '../third_party/WebKit/WebKitLibraries',
+              '../third_party/WebKit/WebKit/mac/WebCoreSupport',
+            ],
+          },
         }],
         ['OS=="win"', {
           'sources/': [['exclude', 'Posix\\.cpp$']],
           'defines': [
-            '__STD_C',
-            '_SCL_SECURE_NO_DEPRECATE',
-            '_CRT_SECURE_NO_DEPRECATE',
-
-            ['__PRETTY_FUNCTION__', '__FUNCTION__'],
+            '__PRETTY_FUNCTION__=__FUNCTION__',
             'DISABLE_ACTIVEX_TYPE_CONVERSION_MPLAYER2',
           ],
-          'include_dirs': [
-            'build/JavaScriptCore',
-            '../third_party/WebKit/JavaScriptCore/os-win32',
-          ],
-        },],
+        }],
         ['OS!="linux"', {'sources/': [['exclude', '(Gtk|Linux)\\.cpp$']]}],
         ['OS!="mac"', {'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]}],
         ['OS!="win"', {'sources/': [
@@ -4023,6 +3914,10 @@
     {
       'target_name': 'glue',
       'type': 'static_library',
+      'dependencies': [
+        'webcore',
+        '../net/net.gyp:net',
+      ],
       'actions': [
         {
           'action_name': 'webkit_version',
@@ -4048,6 +3943,10 @@
           ],
           'action': 'python <@(_inputs) -i <(RULE_INPUT_PATH) build -o <(SHARED_INTERMEDIATE_DIR)/webkit/grit',
         },
+      ],
+      'include_dirs': [
+        '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
       ],
       'sources': [
         # webkit_version rule
@@ -4240,26 +4139,18 @@
         'pending/AccessibleDocument.cpp',
         'pending/AccessibleDocument.h',
       ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
-      ],
-      'dependencies': [
-        'webcore',
-        '../net/net.gyp:net',
-      ],
       # When glue is a dependency, it needs to be a hard dependency.
       # Dependents may rely on files generated by this target or one of its
       # own hard dependencies.
       'hard_dependency': 1,
-      'export_dependent_settings': [
-        'webcore',
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
         ],
       },
+      'export_dependent_settings': [
+        'webcore',
+      ],
       'conditions': [
         ['OS!="linux"', {
           'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$']]
@@ -4287,62 +4178,8 @@
           ],
         }, {  # else: OS=="win"
           'sources/': [['exclude', '_posix\\.cc$']],
-          'defines': [
-            '__STD_C',
-            '_SCL_SECURE_NO_DEPRECATE',
-            '_CRT_SECURE_NO_DEPRECATE',
-          ],
-          'include_dirs': [
-            'build/JavaScriptCore',
-            '../third_party/WebKit/JavaScriptCore/os-win32',
-          ],
         }],
       ],
     },
-  ],
-  'conditions': [
-    ['OS=="mac"', {
-      'targets': [
-        {
-          'target_name': 'webcoresysteminterface',
-          'type': 'static_library',
-          'actions': [
-            {
-              # Allow framework-style #include of
-              # <WebCore/WebCoreSystemInterface.h>.
-              'action_name': 'WebCoreSystemInterface.h',
-              'inputs': [
-                '../third_party/WebKit/WebCore/platform/mac/WebCoreSystemInterface.h',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/WebCore/WebCoreSystemInterface.h',
-              ],
-              'action': 'cp <(_inputs) <(_outputs)'
-            },
-          ],
-          'sources': [
-            '../third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.m',
-          ],
-          'include_dirs': [
-            '<(INTERMEDIATE_DIR)',
-            '../third_party/WebKit/WebKitLibraries',
-          ],
-          'xcode_settings': {
-            # TODO(mark): make this a first-class setting.
-            'GCC_PREFIX_HEADER': '../third_party/WebKit/WebCore/WebCorePrefix.h',
-          },
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '../third_party/WebKit/WebKit/mac/WebCoreSupport',
-            ],
-          },
-          'link_settings': {
-            'libraries': [
-              '../third_party/WebKit/WebKitLibraries/libWebKitSystemInterfaceLeopard.a',
-            ],
-          },
-        },
-      ],
-    }],
   ],
 }

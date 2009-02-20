@@ -13,6 +13,10 @@
       'dependencies': [
         '../zlib/zlib.gyp:zlib',
       ],
+      'defines': [
+        'CHROME_PNG_WRITE_SUPPORT',
+        'PNG_USER_CONFIG',
+      ],
       'sources': [
         'png.c',
         'png.h',
@@ -35,10 +39,6 @@
         'pngwtran.c',
         'pngwutil.c',
       ],
-      'defines': [
-        'CHROME_PNG_WRITE_SUPPORT',
-        'PNG_USER_CONFIG',
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '.',
@@ -48,6 +48,9 @@
           'PNG_USER_CONFIG',
         ],
       },
+      'export_dependent_settings': [
+        '../zlib/zlib.gyp:zlib',
+      ],
     },
   ],
 }
