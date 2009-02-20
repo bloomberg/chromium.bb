@@ -9,11 +9,6 @@
     {
       'target_name': 'googleurl',
       'type': 'static_library',
-      'dependencies': [
-        '../../third_party/icu38/icu38.gyp:icudata',
-        '../../third_party/icu38/icu38.gyp:icui18n',
-        '../../third_party/icu38/icu38.gyp:icuuc',
-      ],
       'sources': [
         '../src/gurl.cc',
         '../src/gurl.h',
@@ -43,10 +38,15 @@
         '../src/url_util.cc',
         '../src/url_util.h',
       ],
-      'include_dirs': ['../..'],
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../third_party/icu38/icu38.gyp:icudata',
+        '../../third_party/icu38/icu38.gyp:icui18n',
+        '../../third_party/icu38/icu38.gyp:icuuc',
+      ],
       'direct_dependent_settings': {
         'include_dirs': [
-          '.',
+          '../..',
         ],
       },
     },

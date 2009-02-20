@@ -1307,9 +1307,10 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         if ext != '':
           ext = ext[1:]
 
-        # TODO(mark): "file" is the default value, formerly "text", Xcode seems
-        # to choose based on content.
-        file_type = extension_map.get(ext, 'file')
+        # TODO(mark): "text" is the default value, but "file" is appropriate
+        # for unrecognized files not containing text.  Xcode seems to choose
+        # based on content.
+        file_type = extension_map.get(ext, 'text')
 
       self._properties['lastKnownFileType'] = file_type
 

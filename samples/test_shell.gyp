@@ -59,9 +59,6 @@
         'webwidget_host_gtk.cc',
         'webwidget_host_win.cc',
       ],
-      'include_dirs': [
-        '../../..',
-      ],
       'dependencies': [
         '../../../base/base.gyp:base',
         '../../../base/base.gyp:base_gfx',
@@ -141,9 +138,6 @@
         # the file to a source group.
         'mac/Info.plist',
       ],
-      'include_dirs': [
-        '../../..',
-      ],
       'dependencies': [ 
         'test_shell_common',
         '../../../base/base.gyp:base',
@@ -192,18 +186,6 @@
         'test_shell_test.cc',
         'test_shell_test.h',
         'text_input_controller_unittest.cc',
-      ],
-      'sources!': [
-        # TODO(mark): These indirectly include HTMLNames.h and
-        # CSSPropertyNames.h.  These headers need to move to
-        # SHARED_INTERMEDIATE_DIR and then these excludes can go away.
-        '../../glue/dom_serializer_unittest.cc',
-        '../../glue/password_autocomplete_listener_unittest.cc',
-        '../../glue/resource_fetcher_unittest.cc',
-        '../../glue/webplugin_impl_unittest.cc',
-      ],
-      'include_dirs': [
-        '../../..',
       ],
       'dependencies': [
         'test_shell_common',

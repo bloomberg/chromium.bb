@@ -8,11 +8,9 @@
 # Multiple OUTPUTS, INPUTS, and OPTIONS may be listed.  The sections are
 # separated by -- arguments.
 #
-# Within OUTPUTS, only the directory name is significant.  It is taken as the
-# directory to place output in.  make_names.pl itself is actually responsible
-# for choosing the output filename(s), so the basenames of each item listed in
-# OUTPUTS is ignored.  This script verifies that if multiple outputs are
-# listed, they reside in the same directory.
+# The directory name of the first output is chosen as the directory in which
+# make_names will run.  If the directory name for any subsequent output is
+# different, those files will be moved to the desired directory.
 #
 # Multiple INPUTS may be listed.  An input with a basename matching
 # "make_names.pl" is taken as the path to that script.  Inputs with names
@@ -27,6 +25,7 @@
 
 import os
 import posixpath
+import shutil
 import subprocess
 import sys
 
@@ -64,9 +63,12 @@ def main(args):
   else:
     options = []
 
+  # Make all output pathnames absolute so that they can be accessed after
+  # changing directory.
+  for index in xrange(0, len(outputs)):
+    outputs[index] = os.path.abspath(outputs[index])
+
   output_dir = os.path.dirname(outputs[0])
-  for output in outputs:
-    assert os.path.dirname(output) == output_dir
 
   # Look at the inputs and figure out which ones are make_names.pl, tags, and
   # attributes.  There can be at most one of each, and those are the only
@@ -77,17 +79,20 @@ def main(args):
   attr_input = None
   for input in inputs:
     # Make input pathnames absolute so they can be accessed after changing
-    # directory. Convert \ to / for most but not all of them to work around
-    # the intermix of activepython + cygwin perl.
+    # directory.  On Windows, convert \ to / for inputs to the perl script to
+    # work around the intermix of activepython + cygwin perl.
     input_abs = os.path.abspath(input)
-    input_abs_posix = input_abs.replace('\\', '/')
-    if os.path.basename(input) == 'make_names.pl':
+    input_abs_posix = input_abs.replace(os.path.sep, posixpath.sep)
+    input_basename = os.path.basename(input)
+    if input_basename == 'make_names.pl':
       assert make_names_input == None
       make_names_input = input_abs
-    elif input.endswith('TagNames.in') or input.endswith('tags.in'):
+    elif input_basename.endswith('TagNames.in') or \
+         input_basename.endswith('tags.in'):
       assert tag_input == None
       tag_input = input_abs_posix
-    elif input.endswith('AttributeNames.in') or input.endswith('attrs.in'):
+    elif input_basename.endswith('AttributeNames.in') or \
+         input_basename.endswith('attrs.in'):
       assert attr_input == None
       attr_input = input_abs_posix
     else:
@@ -104,8 +109,7 @@ def main(args):
 
   # Change to the output directory because make_names.pl puts output in its
   # working directory.
-  if output_dir != '':
-    os.chdir(output_dir)
+  os.chdir(output_dir)
 
   # Build up the command.
   command = ['perl', '-I', scripts_path, make_names_input]
@@ -122,6 +126,18 @@ def main(args):
   # assert.
   return_code = subprocess.call(command)
   assert return_code == 0
+
+  # Go through the outputs.  Any output that belongs in a different directory
+  # is moved.  Do a copy and delete instead of rename for maximum portability.
+  # Note that all paths used in this section are still absolute.
+  for output in outputs:
+    this_output_dir = os.path.dirname(output)
+    if this_output_dir != output_dir:
+      output_basename = os.path.basename(output)
+      src = os.path.join(output_dir, output_basename)
+      dst = os.path.join(this_output_dir, output_basename)
+      shutil.copyfile(src, dst)
+      os.unlink(src)
 
   return return_code
 

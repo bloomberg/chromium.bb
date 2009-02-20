@@ -371,9 +371,9 @@ def GenerateOutput(target_list, target_dicts, data):
 
     # Add custom shell script phases for "actions" sections.
     for action in spec.get('actions', []):
-      # There's no need to handle any "ensure_dirs" list here, because
-      # Xcode will look at the declared outputs and automatically ensure that
-      # the directories all exist.
+      # There's no need to write anything into the script to ensure that the
+      # output directories already exist, because Xcode will look at the
+      # declared outputs and automatically ensure that they exist for us.
 
       # Convert Xcode-type variable references to sh-compatible environment
       # variable references.  Be sure the script runs in exec, and that if
@@ -547,7 +547,9 @@ def GenerateOutput(target_list, target_dicts, data):
           makefile.write('\n')
 
           # Add a rule that declares it can build each concrete output of a
-          # rule source.
+          # rule source.  Collect the names of the directories that are
+          # required.
+          concrete_output_dirs = []
           for concrete_output_index in xrange(0, len(concrete_outputs)):
             concrete_output = concrete_outputs[concrete_output_index]
             if concrete_output_index == 0:
@@ -555,6 +557,10 @@ def GenerateOutput(target_list, target_dicts, data):
             else:
               bol = '    '
             makefile.write('%s%s \\\n' % (bol, concrete_output))
+
+            concrete_output_dir = os.path.dirname(concrete_output)
+            if not concrete_output_dir in concrete_output_dirs:
+              concrete_output_dirs.append(concrete_output_dir)
 
           makefile.write('    : \\\n')
 
@@ -570,26 +576,22 @@ def GenerateOutput(target_list, target_dicts, data):
               eol = ' \\'
             makefile.write('    %s%s\n' % (prerequisite, eol))
 
+          # Make sure that output directories exist before executing the rule
+          # action.
+          # TODO(mark): quote the list of concrete_output_dirs.
+          if len(concrete_output_dirs) > 0:
+            makefile.write('\tmkdir -p %s\n' % ' '.join(concrete_output_dirs))
+
           # The rule action has already had the necessary variable
           # substitutions performed.
           makefile.write('\t%s\n' % action)
 
         makefile.close()
 
-        # If the rule declared that any directories need to exist, make sure
-        # that the rule script creates them before running the rule.  With
-        # genuine Xcode rules, Xcode automatically creates output directories,
-        # which is nice.
-        script = ''
-        if 'ensure_dirs' in rule:
-          script = script + 'mkdir -p'
-          for ensure_dir in rule['ensure_dirs']:
-            # Convert Xcode variable references to shell variable references.
-            # TODO(mark): quote properly?  We do want to permit variable
-            # references in here.
-            script = script + ' "' + \
-                     re.sub('\$\((.*?)\)', '${\\1}', ensure_dir) + '"'
-          script = script + '\n'
+        # It might be nice to ensure that needed output directories exist
+        # here rather than in each target in the Makefile, but that wouldn't
+        # work if there ever was a concrete output that had an input-dependent
+        # variable anywhere other than in the leaf position.
 
         # Don't declare any inputPaths or outputPaths.  If they're present,
         # Xcode will provide a slight optimization by only running the script
@@ -601,7 +603,7 @@ def GenerateOutput(target_list, target_dicts, data):
         # extra compilation activity is unnecessary.  With inputPaths and
         # outputPaths not supplied, make will always be called, but it knows
         # enough to not do anything when everything is up-to-date.
-        script = script + \
+        script = \
 """exec "${DEVELOPER_BIN_DIR}/make" -f "${PROJECT_FILE_PATH}/%s" -j "$(sysctl -n hw.ncpu)"
 exit 1
 """ % makefile_name

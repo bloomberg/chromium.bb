@@ -5,11 +5,6 @@
   'includes': [
     '../build/common.gypi',
   ],
-  'target_defaults': {
-    'include_dirs': [
-      '..',
-    ],
-  },
   'targets': [
     {
       'target_name': 'base',
@@ -288,6 +283,14 @@
         'worker_pool.h',
         'worker_pool_mac.mm',
       ],
+      'include_dirs': [
+        '..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
       # These warnings are needed for the files in third_party\dmg_fp.
       'msvs_disabled_warnings': [
         4244, 4554, 4018, 4102,
@@ -400,6 +403,9 @@
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
         '../third_party/zlib/zlib.gyp:zlib',
+      ],
+      'export_dependent_settings': [
+        'base',
       ],
       'conditions': [
         [ 'OS != "win"', { 'sources!': [

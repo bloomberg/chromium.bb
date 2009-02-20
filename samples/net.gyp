@@ -5,16 +5,12 @@
   'includes': [
     '../build/common.gypi',
   ],
-  'target_defaults': {
-    'include_dirs': [
-      '..',
-    ],
-  },
   'targets': [
     {
       'target_name': 'net',
       'type': 'static_library',
       'dependencies': [
+        '../base/base.gyp:base',
         '../googleurl/build/googleurl.gyp:googleurl',
         '../sdch/sdch.gyp:sdch',
         '../third_party/bzip2/bzip2.gyp:bzip2',
@@ -273,6 +269,9 @@
         'build/precompiled_net.h',
         'build/precompiled_net.cc',
       ],
+      'export_dependent_settings': [
+        '../base/base.gyp:base',
+      ],
       'conditions': [
         [ 'OS == "win"', {
             'sources/': [ ['exclude', '_(mac|linux|posix)\\.cc$'] ],
@@ -473,8 +472,8 @@
       'target_name': 'crash_cache',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:base',
         'net',
+        '../base/base.gyp:base',
       ],
       'sources': [
         'tools/crash_cache/crash_cache.cc',
@@ -503,8 +502,8 @@
           'target_name': 'dump_cache',
           'type': 'executable',
           'dependencies': [
-            '../base/base.gyp:base',
             'net',
+            '../base/base.gyp:base',
           ],
           'sources': [
             'tools/dump_cache/dump_cache.cc',

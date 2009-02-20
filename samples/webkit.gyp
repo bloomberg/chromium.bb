@@ -89,9 +89,6 @@
     '../build/external_code.gypi',
   ],
   'target_defaults': {
-    'include_dirs': [
-      '..',
-    ],
     'defines': [
       '<@(feature_defines)',
       'BUILDING_CHROMIUM__=1',
@@ -131,22 +128,18 @@
             'port/bindings/v8/npruntime_priv.h',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8/config.h',
-            '<(INTERMEDIATE_DIR)/v8/javascript/npapi.h',
-            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime.h',
-            '<(INTERMEDIATE_DIR)/v8/javascript/npruntime_priv.h',
-          ],
-          'ensure_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
-            '<(INTERMEDIATE_DIR)/v8/javascript',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/config.h',
+            '<(INTERMEDIATE_DIR)/javascript/npapi.h',
+            '<(INTERMEDIATE_DIR)/javascript/npruntime.h',
+            '<(INTERMEDIATE_DIR)/javascript/npruntime_priv.h',
           ],
           'conditions': [
             ['OS=="win"', {
               'inputs': ['../third_party/WebKit/JavaScriptCore/os-win32/stdint.h'],
-              'outputs': ['<(INTERMEDIATE_DIR)/v8/javascript/stdint.h'],
+              'outputs': ['<(INTERMEDIATE_DIR)/javascript/stdint.h'],
             }],
           ],
-          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit/v8 <(INTERMEDIATE_DIR)/v8/javascript <(_inputs)',
+          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit <(INTERMEDIATE_DIR)/javascript <(_inputs)',
         },
       ],
       'direct_dependent_settings': {
@@ -159,13 +152,13 @@
         # section gets merged into the (nonexistent) target_defaults one,
         # eating the rightmost +.
         #
-        # This target puts other headers in <(INTERMEDIATE_DIR)/v8, but does
+        # This target puts other headers in <(INTERMEDIATE_DIR), but does
         # not expose then in direct_dependent_settings because they are
         # private headers intended only for use by other targets in this file.
         # Other targets in this file that require these headers should add
         # this directory to their include_dirs manually.
         'include_dirs++': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/v8',
+          '<(SHARED_INTERMEDIATE_DIR)/webkit',
         ],
       }
     },
@@ -374,11 +367,9 @@
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.cpp',
-            '<(INTERMEDIATE_DIR)/CSSPropertyNames.gperf',
-            '<(INTERMEDIATE_DIR)/CSSPropertyNames.h',
-            '<(INTERMEDIATE_DIR)/CSSPropertyNames.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.h',
           ],
-          'action': 'python build/action_csspropertynames.py <(_inputs) <(_outputs)',
+          'action': 'python build/action_csspropertynames.py <(_outputs) -- <(_inputs)',
         },
         {
           'action_name': 'CSSValueKeywords',
@@ -404,7 +395,7 @@
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/HTMLNames.cpp',
-            '<(INTERMEDIATE_DIR)/HTMLNames.h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.h',
             '<(INTERMEDIATE_DIR)/HTMLElementFactory.cpp',
             # Pass --wrapperFactory to make_names to get these (JSC build?)
             #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.cpp',
@@ -538,6 +529,7 @@
       'dependencies': [
         'v8_config',
         'wtf',
+        '../googleurl/build/googleurl.gyp:googleurl',
         '../v8/v8.gyp:v8',
       ],
     },
@@ -560,10 +552,6 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/bindings/V8<(RULE_INPUT_ROOT).cpp',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8<(RULE_INPUT_ROOT).h',
-          ],
-          'ensure_dirs': [
-            '<(INTERMEDIATE_DIR)/bindings',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
           ],
           'variables': {
             'generator_include_dirs': [
@@ -973,7 +961,6 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/v8',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         'port/bindings/v8',
         '<@(webcore_include_dirs)',
@@ -985,6 +972,7 @@
         'v8_config',
         'webcore_derived',
         'wtf',
+        '../googleurl/build/googleurl.gyp:googleurl',
         '../third_party/libxml/libxml.gyp:libxml',
         '../v8/v8.gyp:v8',
       ],
@@ -1123,7 +1111,6 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/v8',
         'port/bindings/v8',
       ],
       # Needs to be prepended to avoid a name collision with a system header
@@ -1136,6 +1123,7 @@
         'v8_derived',
         'webcore_derived',
         'wtf',
+        '../googleurl/build/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/libxslt/libxslt.gyp:libxslt',
@@ -3884,7 +3872,6 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/v8',
         'port/bindings/v8',
       ],
       # Needs to be prepended to avoid a name collision with a system header
@@ -3917,9 +3904,10 @@
       'export_dependent_settings': [
         'wtf',
         'v8_config',
-        '../v8/v8.gyp:v8',
+        '../googleurl/build/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../v8/v8.gyp:v8',
       ],
       'direct_dependent_settings': {
         'defines': [
@@ -4062,9 +4050,6 @@
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/<(RULE_INPUT_ROOT).h',
-          ],
-          'ensure_dirs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
           ],
           'action': 'python <@(_inputs) -i <(RULE_INPUT_PATH) build -o <(SHARED_INTERMEDIATE_DIR)/webkit/grit',
         },
@@ -4262,7 +4247,6 @@
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(INTERMEDIATE_DIR)/v8',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
       ],
       'dependencies': [
@@ -4336,7 +4320,7 @@
                 '../third_party/WebKit/WebCore/platform/mac/WebCoreSystemInterface.h',
               ],
               'outputs': [
-                '<(INTERMEDIATE_DIR)/webcoresysteminterface/WebCore/WebCoreSystemInterface.h',
+                '<(INTERMEDIATE_DIR)/WebCore/WebCoreSystemInterface.h',
               ],
               'action': 'cp <(_inputs) <(_outputs)'
             },
@@ -4345,7 +4329,7 @@
             '../third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.m',
           ],
           'include_dirs': [
-            '<(INTERMEDIATE_DIR)/webcoresysteminterface',
+            '<(INTERMEDIATE_DIR)',
             '../third_party/WebKit/WebKitLibraries',
           ],
           'xcode_settings': {
