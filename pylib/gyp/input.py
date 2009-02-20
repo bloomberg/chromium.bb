@@ -1347,16 +1347,19 @@ def Load(build_files, variables, includes):
   # defines from target_defaults, and another set from webcore's
   # direct_dependent_settings.  This hack will rewrite any target's "defines"
   # list to remove duplicates.
+  # Care is taken to convert defines containing lists to tuples (so they are
+  # hashable) and then back again after duplicates are removed.
   for target in flat_list:
     target_dict = targets[target]
     for configuration_dict in target_dict.get('configurations', {}).values():
       if 'defines' in configuration_dict:
         new_defines_list = []
         new_defines_dict = {}
-        for define in configuration_dict['defines']:
+        for define_raw in configuration_dict['defines']:
+          define = tuple(define_raw)
           if not define in new_defines_dict:
             new_defines_dict[define] = True
-            new_defines_list.append(define)
+            new_defines_list.append(define_raw)
         configuration_dict['defines'] = new_defines_list
 
   # TODO(mark): Return |data| for now because the generator needs a list of

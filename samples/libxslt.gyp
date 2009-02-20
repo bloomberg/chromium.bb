@@ -68,6 +68,7 @@
       ],
       'include_dirs': [
         '<(os_include)',
+        '.',
       ],
       'dependencies': [
         '../libxml/libxml.gyp:libxml',

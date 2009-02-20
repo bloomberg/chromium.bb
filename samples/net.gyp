@@ -282,7 +282,6 @@
               'net_resources',
               'tld_cleanup',
             ],
-            'msvs_tool_files': ['build/convert_tld_data.rules'],
             'configurations': {
               'Debug': {
                 'msvs_precompiled_header': 'build/precompiled_net.h',
@@ -322,6 +321,21 @@
             },
           },
         ],
+        [ 'OS == "win"', {
+          # This used to live in build_convert_tld_data.rules
+          #'msvs_tool_files': ['build/convert_tld_data.rules'],
+          'rules': [
+             {
+               'rule_name': 'tld_convert',
+               'extension': 'dat',
+               'inputs': [ '<(RULE_INPUT_PATH)' ],
+               'outputs':
+                 ['<(INTERMEDIATE_DIR)/../<(RULE_INPUT_ROOT)_clean.dat'],
+               'action':
+                 '<(PRODUCT_DIR)/tld_cleanup <(_inputs) <(_outputs)',
+              },
+            ],
+        },],
       ],
     },
     {
@@ -490,7 +504,23 @@
           'sources': [
             'base/net_resources.grd',
           ],
-          'msvs_tool_files': ['../tools/grit/build/grit_resources.rules'],
+          #'msvs_tool_files': ['../tools/grit/build/grit_resources.rules'],
+          # This was orignally in grit_resources.rules
+          # NOTE: this version doesn't mimic the Properties specified there.
+          'rules': [
+            {
+              'rule_name': 'grit',
+              'extension': 'grd',
+              'inputs': [
+                '<(depth)/tools/grit/grit.py',
+              ],
+              'outputs': [
+                '$(OutDir)/grit_derived_sources/$(InputName).h',
+              ],
+              'action':
+                'python <(depth)/tools/grit/grit.py -i <(RULE_INPUT_PATH) build -o $(OutDir)/grit_derived_sources',
+            },
+          ],
           'direct_dependent_settings': {
             'include_dirs': [
               '$(OutDir)/grit_derived_sources',

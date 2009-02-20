@@ -20,7 +20,7 @@ generator_default_variables = {
     'RULE_INPUT_ROOT': '$(InputName)',
     'RULE_INPUT_EXT': '$(InputExt)',
     'RULE_INPUT_NAME': '$(InputFileName)',
-    'RULE_INPUT_PATH': '`cygpath -m "${INPUTPATH}"`',
+    'RULE_INPUT_PATH': '$(InputPath)',
 }
 
 
@@ -358,6 +358,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
                                       '`cygpath -m "${INTDIR}"`')
       direct_cmd = direct_cmd.replace('$(OutDir)',
                                       '`cygpath -m "${OUTDIR}"`')
+      direct_cmd = direct_cmd.replace('$(InputPath)',
+                                      '`cygpath -m "${INPUTPATH}"`')
       direct_cmd = direct_cmd.replace('"', '\\"')
       cmd = (
 #          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
