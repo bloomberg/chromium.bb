@@ -41,6 +41,7 @@ _generator_identity_variables = [
   'RULE_INPUT_EXT',
   'RULE_INPUT_NAME',
   'RULE_INPUT_PATH',
+  'SHARED_INTERMEDIATE_DIR',
 ]
 
 # gypd doesn't define a default value for OS like many other generator
