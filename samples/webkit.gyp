@@ -123,23 +123,17 @@
           'action_name': 'config.h',
           'inputs': [
             'config.h.in',
-            '../third_party/WebKit/WebCore/bridge/npapi.h',
-            '../third_party/WebKit/WebCore/bridge/npruntime.h',
-            'port/bindings/v8/npruntime_priv.h',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/config.h',
-            '<(INTERMEDIATE_DIR)/javascript/npapi.h',
-            '<(INTERMEDIATE_DIR)/javascript/npruntime.h',
-            '<(INTERMEDIATE_DIR)/javascript/npruntime_priv.h',
           ],
           'conditions': [
             ['OS=="win"', {
               'inputs': ['../third_party/WebKit/JavaScriptCore/os-win32/stdint.h'],
-              'outputs': ['<(INTERMEDIATE_DIR)/javascript/stdint.h'],
+              'outputs': ['<(INTERMEDIATE_DIR)/stdint.h'],
             }],
           ],
-          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit <(INTERMEDIATE_DIR)/javascript <(_inputs)',
+          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit <(INTERMEDIATE_DIR) <(_inputs)',
         },
       ],
       'direct_dependent_settings': {

@@ -5,7 +5,7 @@
 # CONFIG_H_DIR is the directory to put config.h in.
 # OUTPUT_DIR is the directory to put other files in.
 # CONFIG_H_IN is the path to config.h.in upon which config.h will be based.
-# FILES_TO_COPY is a list of additional headers to be copied.
+# FILES_TO_COPY is a list of additional headers to be copied.  It may be empty.
 
 import errno
 import os
@@ -13,7 +13,7 @@ import os.path
 import shutil
 import sys
 
-assert len(sys.argv) > 6
+assert len(sys.argv) >= 5
 js_engine = sys.argv[1]
 config_h_dir = sys.argv[2]
 output_dir = sys.argv[3]
