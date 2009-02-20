@@ -1,7 +1,7 @@
 {
   'variables': {
     'depth': '..',
-    'base_sources': [
+    'base_source_files': [
       'src/third_party/dtoa/dtoa.c',
       'src/third_party/jscre/ASCIICType.h',
       'src/third_party/jscre/config.h',
@@ -209,12 +209,17 @@
       'src/zone.cc',
       'src/zone.h',
     ],
-    'base_sources!': [
+    'not_base_source_files': [
       # These files are #included by others and are not meant to be compiled
       # directly.
       'src/third_party/dtoa/dtoa.c',
       'src/third_party/jscre/pcre_chartables.c',
       'src/third_party/jscre/ucptable.cpp',
+    ],
+    'd8_source_files': [
+      'src/d8-debug.cc',
+      'src/d8-readline.cc',
+      'src/d8.cc',
     ],
   },
   'includes': [
@@ -239,6 +244,7 @@
     # Targets that apply to any architecture.
     {
       'target_name': 'js2c',
+      'type': 'none',
       'variables': {
         'library_files': [
           'src/runtime.js',
@@ -256,7 +262,6 @@
           'src/macros.py',
         ],
       },
-      'type': 'none',
       'actions': [
         {
           'action_name': 'js2c',
@@ -265,10 +270,36 @@
             '<@(library_files)',
           ],
           'outputs': [
-            '<(INTERMEDIATE_DIR)/libraries.cc',
-            '<(INTERMEDIATE_DIR)/libraries-empty.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/v8/libraries.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/v8/libraries-empty.cc',
           ],
           'action': 'python tools/js2c.py <(_outputs) CORE <(library_files)'
+        },
+      ],
+    },
+    {
+      'target_name': 'd8_js2c',
+      'type': 'none',
+      'variables': {
+        'library_files': [
+          'src/d8.js',
+          'src/macros.py',
+        ],
+      },
+      'actions': [
+        {
+          'action_name': 'js2c',
+          'inputs': [
+            'tools/js2c.py',
+            '<@(library_files)',
+          ],
+          'extra_inputs': [
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/v8/d8-js.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/v8/d8-js-empty.cc',
+          ],
+          'action': 'python tools/js2c.py <(_outputs) D8 <(library_files)'
         },
       ],
     },
@@ -277,11 +308,14 @@
     {
       'target_name': 'v8_base',
       'type': 'static_library',
+      'include_dirs': [
+        'src',
+      ],
       'sources': [
-        '<@(base_sources)',
+        '<@(base_source_files)',
       ],
       'sources!': [
-        '<@(base_sources!)',
+        '<@(not_base_source_files)',
       ],
       'sources/': [
         ['exclude', '-arm\\.cc$'],
@@ -303,55 +337,40 @@
           },
         },],
       ],
-      'include_dirs': [
-        'src',
-      ],
     },
     {
       'target_name': 'v8_nosnapshot',
       'type': 'static_library',
-      'sources': [
-        '<(INTERMEDIATE_DIR)/libraries.cc',
-        'src/snapshot-empty.cc',
+      'dependencies': [
+        'js2c',
+        'v8_base',
       ],
       'include_dirs': [
         'src',
       ],
-      'dependencies': [
-        'v8_base',
-        'js2c',
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/v8/libraries.cc',
+        'src/snapshot-empty.cc',
       ],
     },
     {
       'target_name': 'mksnapshot',
       'type': 'executable',
-      'sources': [
-        'src/mksnapshot.cc',
-      ],
       'dependencies': [
         'v8_nosnapshot',
+      ],
+      'sources': [
+        'src/mksnapshot.cc',
       ],
     },
     {
       'target_name': 'v8',
       'type': 'static_library',
-      'sources': [
-        '<(INTERMEDIATE_DIR)/libraries-empty.cc',
-        '<(INTERMEDIATE_DIR)/snapshot.cc',
-      ],
-      'include_dirs': [
-        'src',
-      ],
       'dependencies': [
-        'v8_base',
         'js2c',
         'mksnapshot',
+        'v8_base',
       ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          'include',
-        ],
-      },
       'actions': [
         {
           'action_name': 'mksnapshot',
@@ -364,15 +383,27 @@
           'action': '<(_inputs) <(_outputs)',
         },
       ],
+      'include_dirs': [
+        'src',
+      ],
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/v8/libraries-empty.cc',
+        '<(INTERMEDIATE_DIR)/snapshot.cc',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include',
+        ],
+      },
     },
     {
       'target_name': 'v8_shell',
       'type': 'executable',
-      'sources': [
-        'samples/shell.cc',
-      ],
       'dependencies': [
         'v8',
+      ],
+      'sources': [
+        'samples/shell.cc',
       ],
       'conditions': [
         [ 'OS=="win"', {
@@ -384,11 +415,16 @@
     {
       'target_name': 'd8',
       'type': 'executable',
+      'dependencies': [
+        'd8_js2c',
+        'v8',
+      ],
+      'include_dirs': [
+        'src',
+      ],
       'sources': [
-        '<(INTERMEDIATE_DIR)/d8-js.cc',
-        'src/d8-debug.cc',
-        'src/d8-readline.cc',
-        'src/d8.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/v8/d8-js.cc',
+        '<@(d8_source_files)',
       ],
       'conditions': [
         [ 'OS=="linux"', {
@@ -403,34 +439,6 @@
           'sources!': [ 'src/d8-readline.cc' ],
         }],
       ],
-      'include_dirs': [
-        'src',
-      ],
-      'dependencies': [
-        'v8',
-      ],
-      'actions': [
-        {
-          'variables': {
-            'd8_library_files': [
-              'src/d8.js',
-              'src/macros.py',
-            ],
-          },
-          'action_name': 'js2c',
-          'inputs': [
-            'tools/js2c.py',
-            '<@(d8_library_files)',
-          ],
-          'extra_inputs': [
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/d8-js.cc',
-            '<(INTERMEDIATE_DIR)/d8-js-empty.cc',
-          ],
-          'action': 'python tools/js2c.py <(_outputs) D8 <(d8_library_files)'
-        },
-      ],
     },
 
     # ARM targets, to test ARM code generation.  These use an ARM simulator
@@ -438,18 +446,32 @@
     {
       'target_name': 'v8_arm',
       'type': 'static_library',
+      'dependencies': [
+        'js2c',
+      ],
+      'defines': [
+        'ARM',
+      ],
+      'include_dirs': [
+        'src',
+      ],
       'sources': [
-        '<@(base_sources)',
-        '<(INTERMEDIATE_DIR)/libraries.cc',
+        '<@(base_source_files)',
+        '<(SHARED_INTERMEDIATE_DIR)/v8/libraries.cc',
         'src/snapshot-empty.cc',
       ],
       'sources!': [
-        '<@(base_sources!)',
+        '<@(not_base_source_files)',
       ],
       'sources/': [
         ['exclude', '-ia32\\.cc$'],
         ['exclude', '^src/platform-.*\\.cc$' ],
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'include',
+        ],
+      },
       'conditions': [
         ['OS=="linux"', {'sources/': [['include', '^src/platform-linux\\.cc$']]}],
         ['OS=="mac"', {'sources/': [['include', '^src/platform-macos\\.cc$']]}],
@@ -463,29 +485,18 @@
           'msvs_disabled_warnings': [4355, 4800, 4018, 4244],
         }],
       ],
-      'include_dirs': [
-        'src',
-      ],
-      'defines': [
-        'ARM',
-      ],
-      'dependencies': [
-        'js2c',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          'include',
-        ],
-      },
     },
     {
       'target_name': 'v8_shell_arm',
       'type': 'executable',
-      'sources': [
-        'samples/shell.cc',
-      ],
       'dependencies': [
         'v8_arm',
+      ],
+      'defines': [
+        'ARM',
+      ],
+      'sources': [
+        'samples/shell.cc',
       ],
       'conditions': [
         [ 'OS=="win"', {
@@ -493,18 +504,23 @@
           'defines': ['_CRT_SECURE_NO_WARNINGS'],
         }],
       ],
-      'defines': [
-        'ARM',
-      ],
     },
     {
       'target_name': 'd8_arm',
       'type': 'executable',
+      'dependencies': [
+        'd8_js2c',
+        'v8_arm',
+      ],
+      'defines': [
+        'ARM',
+      ],
+      'include_dirs': [
+        'src',
+      ],
       'sources': [
-        '<(INTERMEDIATE_DIR)/d8-js.cc',
-        'src/d8-debug.cc',
-        'src/d8-readline.cc',
-        'src/d8.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/v8/d8-js.cc',
+        '<@(d8_source_files)',
       ],
       'conditions': [
         [ 'OS=="linux"', {
@@ -518,37 +534,6 @@
         [ 'OS=="win"', {
           'sources!': [ 'src/d8-readline.cc' ],
         }],
-      ],
-      'include_dirs': [
-        'src',
-      ],
-      'defines': [
-        'ARM',
-      ],
-      'dependencies': [
-        'v8_arm',
-      ],
-      'actions': [
-        {
-          'variables': {
-            'd8_library_files': [
-              'src/d8.js',
-              'src/macros.py',
-            ],
-          },
-          'action_name': 'js2c',
-          'inputs': [
-            'tools/js2c.py',
-            '<@(d8_library_files)',
-          ],
-          'extra_inputs': [
-          ],
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/d8-js.cc',
-            '<(INTERMEDIATE_DIR)/d8-js-empty.cc',
-          ],
-          'action': 'python tools/js2c.py <(_outputs) D8 <(d8_library_files)'
-        },
       ],
     },
   ],
