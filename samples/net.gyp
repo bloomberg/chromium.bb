@@ -205,6 +205,7 @@
         'http/http_network_session.h',
         'http/http_network_transaction.cc',
         'http/http_network_transaction.h',
+        'http/http_response_info.cc',
         'http/http_request_info.h',
         'http/http_response_headers.cc',
         'http/http_response_headers.h',

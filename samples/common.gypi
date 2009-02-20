@@ -30,7 +30,7 @@
                 'RuntimeLibrary': '1',
               },
               'VCLinkerTool': {
-                'LinkIncremental': '2',
+                'LinkIncremental': '1',
               },
               'VCResourceCompilerTool': {
                 'PreprocessorDefinitions': ['_DEBUG'],

@@ -11,6 +11,12 @@
       'target_name': 'zlib',
       'type': 'static_library',
       'sources': [
+        'contrib/minizip/ioapi.c',
+        'contrib/minizip/ioapi.h',
+        'contrib/minizip/iowin32.c'
+        'contrib/minizip/iowin32.h',
+        'contrib/minizip/unzip.c',
+        'contrib/minizip/unzip.h',
         'adler32.c',
         'compress.c',
         'crc32.c',
@@ -35,11 +41,20 @@
         'zutil.c',
         'zutil.h',
       ],
+      'include_dirs': [
+        '.',
+      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '.',
         ],
       },
+      'conditions': [
+        [ 'OS!="win"', {
+            'sources/': [['exclude', '^contrib/minizip/']]
+          }
+        ],
+      ],
     },
   ],
 }
