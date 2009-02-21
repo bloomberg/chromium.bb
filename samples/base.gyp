@@ -394,7 +394,7 @@
         'gfx/size.cc',
         'gfx/size.h',
       ],
-      'xcode_framework_dirs': [
+      'mac_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'dependencies': [

@@ -656,7 +656,7 @@
         'sgl',
       ],
       'msvs_disabled_warnings': [4244, 4267,4345, 4390, 4554, 4800],
-      'xcode_framework_dirs': [
+      'mac_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'defines': [

@@ -311,7 +311,8 @@ def AddSourceToTarget(source, pbxp, xct):
 
 
 def AddResourceToTarget(resource, pbxp, xct):
-  # TODO(mark): Combine with AddSourceToTarget above?
+  # TODO(mark): Combine with AddSourceToTarget above?  Or just inline this call
+  # where it's used.
   xct.ResourcesPhase().AddFile(resource)
 
 
@@ -635,12 +636,16 @@ exit 1
       else:
         pbxp.AddOrGetFileInRootGroup(source)
 
-    # Add "resources".
-    for resource in spec.get('resources', []):
+    # Add "mac_resources".
+    for resource in spec.get('mac_resources', []):
       AddResourceToTarget(resource, pbxp, xct)
 
+    # Add "mac_localized_resources".
+    for localized_resource in spec.get('mac_localized_resources', []):
+      xct.ResourcesPhase().AddVariantGroup(localized_resource)
+
     # Excluded files can also go into the project file.
-    for key in ['sources', 'resources']:
+    for key in ['sources', 'mac_resources']:
       excluded_key = key + '_excluded'
       for item in spec.get(excluded_key, []):
         pbxp.AddOrGetFileInRootGroup(item)
@@ -688,12 +693,10 @@ exit 1
     for configuration_name in configuration_names:
       configuration = spec['configurations'][configuration_name]
       xcbc = xct.ConfigurationNamed(configuration_name)
-      if 'xcode_framework_dirs' in configuration:
-        for include_dir in configuration['xcode_framework_dirs']:
-          xcbc.AppendBuildSetting('FRAMEWORK_SEARCH_PATHS', include_dir)
-      if 'include_dirs' in configuration:
-        for include_dir in configuration['include_dirs']:
-          xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
+      for include_dir in configuration.get('mac_framework_dirs', []):
+        xcbc.AppendBuildSetting('FRAMEWORK_SEARCH_PATHS', include_dir)
+      for include_dir in configuration.get('include_dirs', []):
+        xcbc.AppendBuildSetting('HEADER_SEARCH_PATHS', include_dir)
       if 'defines' in configuration:
         for define in configuration['defines']:
           # If the define is of the form A="B", escape the quotes yielding

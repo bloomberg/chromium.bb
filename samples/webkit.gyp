@@ -3783,7 +3783,7 @@
           'port/bindings/v8',
           '<@(webcore_include_dirs)',
         ],
-        'xcode_framework_dirs': [
+        'mac_framework_dirs': [
           '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
       },
@@ -3798,7 +3798,7 @@
       'msvs_disabled_warnings': [
         4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
       ],
-      'xcode_framework_dirs': [
+      'mac_framework_dirs': [
         '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
       ],
       'xcode_settings': {

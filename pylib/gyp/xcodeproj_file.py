@@ -953,15 +953,22 @@ class XCHierarchicalElement(XCObject):
     return hashables
 
   def Compare(self, other):
-    assert self.__class__ == PBXGroup or self.__class__ == PBXFileReference
-    assert other.__class__ == PBXGroup or other.__class__ == PBXFileReference
+    # Allow comparison of these types.  PBXGroup has the highest sort rank;
+    # PBXVariantGroup is treated as equal to PBXFileReference.
+    valid_class_types = {
+      PBXFileReference: 'file',
+      PBXGroup:         'group',
+      PBXVariantGroup:  'file',
+    }
+    self_type = valid_class_types[self.__class__]
+    other_type = valid_class_types[other.__class__]
 
-    if self.__class__ == other.__class__:
-      # If the two objects are of the same class, compare their names.
+    if self_type == other_type:
+      # If the two objects are of the same sort rank, compare their names.
       return cmp(self.Name(), other.Name())
 
-    # Otherwise, sort PBXGroups before PBXFileReferences.
-    if self.__class__ == PBXGroup:
+    # Otherwise, sort groups before everything else.
+    if self_type == 'group':
       return -1
     return 1
 
@@ -1105,6 +1112,102 @@ class PBXGroup(XCHierarchicalElement):
         self.AppendChild(group_ref)
       return group_ref.AddOrGetFileByPath(os.path.sep.join(path_split[1:]),
                                           hierarchical)
+
+  def AddVariantGroup(self, variant_spec, hierarchical,
+                      base_path=None, basename=None):
+    """Adds a PBXVariantGroup to this PBXGroup or a descendant PBXGroup.
+
+    The new PBXVariantGroup is returned.  This method can only create new
+    PBXVariantGroups and add them to this PBXGroup or a descendant.  It
+    cannot access existing PBXVariantGroup objects in the hierarchy, unlike
+    the similar function used to add PBXFileReferences, AddOrGetFileByPath.
+
+    variant_spec is a dict.  The keys to this dict are variant names,
+    corresponding to localization names in the Xcode UI.  Examples are
+    "English" and "en" (preferred).  The values in this dict are paths to
+    the files containing the corresponding localization.
+
+    Each path value in variant_spec is expected to conform to the pattern
+    [base/path/portion/]variant/file.  base/path/portion/ must be identical
+    for each path in variant_spec.  The leaf filename must also be identical
+    for each path.
+
+    If hierarchical is True, the variant will be placed in an appropriate
+    subgroups, creating subgroups as needed.  In the example above, a PBXGroup
+    hierarchy corresponding to base/path/portion would be created if it did
+    not already exist, and the PBXVariantGroup would be placed within.
+
+    base_path and basename are for the internal use of this method when
+    recursing for hierarchial purposes, and should not be set by outside
+    callers.  Internally, base_path is used to provide the path to the
+    variant (base/path/portion in the above example) relative to the current
+    PBXGroup (so, after one recursive call, it would be set to path/portion).
+    basename is set to the basename to be used as the PBXVariantGroup's name.
+    """
+
+    if base_path == None or basename == None:
+      # Figure out the common prefix path for the variant group.  The new
+      # PBXVariantGroup is thought of as being similar to a file within the
+      # PBXGroup identified by that common prefix path, and it's thought of
+      # as having a name matching the basenames of the actual files within the
+      # variant group.  Accordingly, the basename of each file in the group
+      # must be the same.  To simplify matters, assume that each file in the
+      # group is in a variant-specific directory, and that the parent
+      # directory structure of the variant-specific directory is identical for
+      # all variants in the group.  These assumptions will be tested.
+      for path in variant_spec.itervalues():
+        path = os.path.normpath(path)
+        this_base_path = os.path.dirname(os.path.dirname(path))
+        this_basename = os.path.basename(path)
+
+        if base_path != None and base_path != this_base_path:
+          raise ValueError, \
+              'All items in a variant group must be in the same directory ' + \
+              'except for the final directory, which specifies the ' + \
+              'variant; found ' + base_path + ' and ' + this_base_path
+        else:
+          base_path = this_base_path
+ 
+        if basename != None and basename != this_basename:
+          raise ValueError, \
+              'All items in a variant group must have the same name; ' + \
+              'found ' + basename + ' and ' + this_basename
+        else:
+          basename = this_basename
+
+    if base_path == '' or not hierarchical:
+      # Create the PBXVariantGroup.
+      variant_group_properties = {'name': basename}
+      if not hierarchical:
+        variant_group_properties['path'] = base_path
+      group_ref = PBXVariantGroup(variant_group_properties)
+
+      # Add each variant to the group.
+      for variant_name, variant_path in variant_spec.iteritems():
+        # Since the assumption, verified above, is that each variant is only
+        # unique as to its variant-specific directory, set each variant's path
+        # to be the variant-specific directory name and the basename, the last
+        # two components of the path.
+        variant_path_split = variant_path.split(os.path.sep)
+        variant_path = os.path.sep.join(variant_path_split[-2:])
+        file_ref = PBXFileReference({'name': variant_name,
+                                     'path': variant_path})
+        group_ref.AppendChild(file_ref)
+      self.AppendChild(group_ref)
+      return group_ref
+    else:
+      # Recurse into a child PBXGroup, which may not yet exist.
+      base_path_split = base_path.split(os.path.sep)
+      next_dir = base_path_split[0]
+      group_ref = self.GetChildByPath(next_dir)
+      if group_ref != None:
+        assert group_ref.__class__ == PBXGroup
+      else:
+        group_ref = PBXGroup({'path': next_dir})
+        self.AppendChild(group_ref)
+      return group_ref.AddVariantGroup(variant_spec, hierarchical,
+                                       os.path.sep.join(base_path_split[1:]),
+                                       basename)
 
   def CompareRootGroup(self, other):
     # This function should be used only to compare direct children of the
@@ -1315,6 +1418,12 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
       self._properties['lastKnownFileType'] = file_type
 
 
+class PBXVariantGroup(PBXGroup, XCFileLikeElement):
+  """PBXVariantGroup is used by Xcode to represent localizations."""
+  # No additions to the schema relative to PBXGroup.
+  pass
+
+
 # PBXReferenceProxy is also an XCFileLikeElement subclass.  It is defined below
 # because it uses PBXContainerItemProxy, defined below.
 
@@ -1508,6 +1617,19 @@ class XCBuildPhase(XCObject):
     (file_group, hierarchical) = self.FileGroup(path)
     file_ref = file_group.AddOrGetFileByPath(path, hierarchical)
     self.AppendProperty('files', PBXBuildFile({'fileRef': file_ref}))
+
+  def AddVariantGroup(self, variant_spec):
+    # Pluck the path of any variant from the group to use as the FileGroup
+    # argument.
+    # TODO(mark): Maybe this should check that the head and tail of each path
+    # in the group is the same.  This is presently skipped because this calls
+    # straight through to PBXVariantGroup.AddVariantGroup, which will do that
+    # exact type of checking, and will therefore catch any bad input and
+    # fail regardless of which variant this function chooses for sample_path.
+    sample_path = variant_spec.itervalues().next()
+    (file_group, hierarchical) = self.FileGroup(sample_path)
+    variant_ref = file_group.AddVariantGroup(variant_spec, hierarchical)
+    self.AppendProperty('files', PBXBuildFile({'fileRef': variant_ref}))
 
 
 class PBXHeadersBuildPhase(XCBuildPhase):

@@ -18,12 +18,14 @@ path_sections = [
   'include_dirs',
   'inputs',
   'libraries',
+  'mac_framework_dirs',
+  # TODO(mark): This is a list of dicts, verify proper operation of path fixers
+  'mac_localized_resources',
+  'mac_resources',
   'msvs_cygwin_dirs',
   'msvs_props',
   'outputs',
-  'resources',
   'sources',
-  'xcode_framework_dirs',
 ]
 
 
@@ -982,7 +984,8 @@ def SetUpConfigurations(target, target_dict):
     'default_configuration',
     'dependencies',
     'libraries',
-    'resources',
+    'mac_localized_resources',
+    'mac_resources',
     'rules',
     'sources',
     'target_name',

@@ -92,9 +92,7 @@
       'sources': [
         'test_shell_main.cc',
       ],
-      'resources': [
-        # TODO(mark): Too Mac-specific?  It should be named mac_resources if
-        # so.
+      'mac_resources': [
         # TODO(mark): WebCore should probably advertise these resources in its
         # link_dependent_settings section.
         '../../../third_party/WebKit/WebCore/Resources/aliasCursor.png',
@@ -126,17 +124,19 @@
         '../../../third_party/WebKit/WebCore/Resources/zoomInCursor.png',
         '../../../third_party/WebKit/WebCore/Resources/zoomOutCursor.png',
         '../../data/test_shell/',
-        'mac/English.lproj/InfoPlist.strings',
-        'mac/English.lproj/MainMenu.nib',
         'mac/Info.plist',
         'mac/test_shell.icns',
         'resources/AHEM____.TTF',
       ],
-      'resources!': [
+      'mac_resources!': [
         # TODO(mark): Come up with a fancier way to do this (mac_info_plist?)
         # that automatically sets the correct INFOPLIST_FILE setting and adds
         # the file to a source group.
         'mac/Info.plist',
+      ],
+      'mac_localized_resources': [
+        {'English': 'mac/English.lproj/InfoPlist.strings'},
+        {'English': 'mac/English.lproj/MainMenu.nib'},
       ],
       'dependencies': [ 
         'test_shell_common',
