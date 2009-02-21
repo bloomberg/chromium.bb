@@ -3794,7 +3794,7 @@
           'port/bindings/v8',
           '<@(webcore_include_dirs)',
         ],
-  'mac_framework_dirs': [
+        'mac_framework_dirs': [
           '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
       },

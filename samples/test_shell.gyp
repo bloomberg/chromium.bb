@@ -94,6 +94,8 @@
       ],
       'mac_bundle_resources': [
         '../../data/test_shell/',
+        'mac/English.lproj/InfoPlist.strings',
+        'mac/English.lproj/MainMenu.nib',
         'mac/Info.plist',
         'mac/test_shell.icns',
         'resources/AHEM____.TTF',
@@ -103,10 +105,6 @@
         # that automatically sets the correct INFOPLIST_FILE setting and adds
         # the file to a source group.
         'mac/Info.plist',
-      ],
-      'mac_localized_bundle_resources': [
-        {'English': 'mac/English.lproj/InfoPlist.strings'},
-        {'English': 'mac/English.lproj/MainMenu.nib'},
       ],
       'dependencies': [
         'test_shell_common',

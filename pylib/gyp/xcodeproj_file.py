@@ -988,12 +988,34 @@ class XCHierarchicalElement(XCObject):
 
     return None
 
+  def FullPath(self):
+    # Returns a full path to self relative to the project file, or relative
+    # to some other source tree.  Start with self, and walk up the chain of
+    # parents prepending their paths, if any, until no more parents are
+    # available (project-relative path) or until a path relative to some
+    # source tree is found.
+    xche = self
+    path = None
+    while isinstance(xche, XCHierarchicalElement) and \
+          (path == None or \
+           (not path.startswith('/') and not path.startswith('$'))):
+      this_path = xche.PathFromSourceTreeAndPath()
+      if this_path != None and path != None:
+        path = os.path.join(this_path, path)
+      elif this_path != None:
+        path = this_path
+      xche = xche.parent
+
+    return path
+
 
 class PBXGroup(XCHierarchicalElement):
   """
   Attributes:
     _children_by_path: Maps pathnames of children of this PBXGroup to the
-                       actual child XCHierarchicalElement objects.
+      actual child XCHierarchicalElement objects.
+    _variant_children_by_name_and_path: Maps (name, path) tuples of
+      PBXVariantGroup children to the actual child PBXVariantGroup objects.
   """
 
   _schema = XCHierarchicalElement._schema.copy()
@@ -1006,31 +1028,34 @@ class PBXGroup(XCHierarchicalElement):
   def __init__(self, properties=None, id=None, parent=None):
     # super
     XCHierarchicalElement.__init__(self, properties, id, parent)
-    self._SetUpChildrenByPathDict()
-
-  def _SetUpChildrenByPathDict(self):
-    # Sets up this PBXGroup object's _children_by_path dict.  This function
-    # is not recursive.
     self._children_by_path = {}
-    if not 'children' in self._properties:
-      return
-    for child in self._properties['children']:
-      child_path = child.PathFromSourceTreeAndPath()
-      if child_path:
-        if child_path in self._children_by_path:
-          raise ValueError, 'Found multiple children with path ' + child_path
-        self._children_by_path[child_path] = child
+    self._variant_children_by_name_and_path = {}
+    for child in self._properties.get('children', []):
+      self._AddChildToDicts(child)
+
+  def _AddChildToDicts(self, child):
+    # Sets up this PBXGroup object's dicts to reference the child properly.
+    child_path = child.PathFromSourceTreeAndPath()
+    if child_path:
+      if child_path in self._children_by_path:
+        raise ValueError, 'Found multiple children with path ' + child_path
+      self._children_by_path[child_path] = child
+
+    if isinstance(child, PBXVariantGroup):
+      child_name = child._properties.get('name', None)
+      key = (child_name, child_path)
+      if key in self._variant_children_by_name_and_path:
+        raise ValueError, 'Found multiple PBXVariantGroup children with ' + \
+                          'name ' + str(child_name) + ' and path ' + \
+                          str(child_path)
+      self._variant_children_by_name_and_path[key] = child
 
   def AppendChild(self, child):
     # Callers should use this instead of calling
     # AppendProperty('children', child) directly because this function
-    # maintains the _children_by_path dict.
+    # maintains the group's dicts.
     self.AppendProperty('children', child)
-    child_path = child.PathFromSourceTreeAndPath()
-    if child_path:
-      if child_path in self._children_by_path:
-        raise ValueError, 'Adding duplicate child with path ' + child_path
-      self._children_by_path[child_path] = child
+    self._AddChildToDicts(child)
 
   def GetChildByName(self, name):
     # This is not currently optimized with a dict as GetChildByPath is because
@@ -1082,6 +1107,24 @@ class PBXGroup(XCHierarchicalElement):
     return None
 
   def AddOrGetFileByPath(self, path, hierarchical):
+    """Returns an existing or new file reference corresponding to path.
+
+    If hierarchical is True, this method will create or use the necessary
+    hierarchical group structure corresponding to path.  Otherwise, it will
+    look in and create an item in the current group only.
+
+    If an existing matching reference is found, it is returned, otherwise, a
+    new one will be created, added to the correct group, and returned.
+
+    If path identifies a directory by virtue of carrying a trailing slash,
+    this method returns a PBXFileReference of "folder" type.  If path
+    identifies a variant, by virtue of it identifying a file inside a directory
+    with an ".lproj" extension, this method returns a PBXVariantGroup
+    containing the variant named by path, and possibly other variants.  For
+    all other paths, a "normal" PBXFileReference will be returned.
+    """
+
+    # Adding or getting a directory?  Directories end with a trailing slash.
     is_dir = False
     if path.endswith('/'):
       is_dir = True
@@ -1091,18 +1134,63 @@ class PBXGroup(XCHierarchicalElement):
     else:
       normpath = path
 
+    # Adding or getting a variant?  Variants are files inside directories
+    # with an ".lproj" extension.  Xcode uses variants for localization.  For
+    # a variant path/to/Language.lproj/MainMenu.nib, put a variant group named
+    # MainMenu.nib inside path/to, and give it a variant named Language.  In
+    # this example, grandparent would be set to path/to and parent_root would
+    # be set to Language.
+    variant_name = None
+    parent = os.path.dirname(path)
+    grandparent = os.path.dirname(parent)
+    parent_basename = os.path.basename(parent)
+    (parent_root, parent_ext) = os.path.splitext(parent_basename)
+    if parent_ext == '.lproj':
+      variant_name = parent_root
+    if grandparent == '':
+      grandparent = None
+
+    # Putting a directory inside a variant group is not currently supported.
+    assert not is_dir or variant_name == None
+
     path_split = path.split(os.path.sep)
     if len(path_split) == 1 or \
-       (is_dir and len(path_split) == 2) or \
+       ((is_dir or variant_name != None) and len(path_split) == 2) or \
        not hierarchical:
-      file_ref = self.GetChildByPath(normpath)
-      if file_ref != None:
-        assert file_ref.__class__ == PBXFileReference
+      # The PBXFileReference or PBXVariantGroup will be added to or gotten from
+      # this PBXGroup, no recursion necessary.
+      if variant_name == None:
+        # Add or get a PBXFileReference.
+        file_ref = self.GetChildByPath(normpath)
+        if file_ref != None:
+          assert file_ref.__class__ == PBXFileReference
+        else:
+          file_ref = PBXFileReference({'path': path})
+          self.AppendChild(file_ref)
       else:
-        file_ref = PBXFileReference({'path': path})
-        self.AppendChild(file_ref)
+        # Add or get a PBXVariantGroup.  The variant group name is the same
+        # as the basename (MainMenu.nib in the example above).  grandparent
+        # specifies the path to the variant group itself, and path_split[-2:]
+        # is the path of the specific variant relative to its group.
+        variant_group_name = os.path.basename(path)
+        variant_group_ref = self.AddOrGetVariantGroupByNameAndPath(
+            variant_group_name, grandparent)
+        variant_path = os.path.sep.join(path_split[-2:])
+        variant_ref = variant_group_ref.GetChildByPath(variant_path)
+        if variant_ref != None:
+          assert variant_ref.__class__ == PBXFileReference
+        else:
+          variant_ref = PBXFileReference({'name': variant_name,
+                                          'path': variant_path})
+          variant_group_ref.AppendChild(variant_ref)
+        # The caller is interested in the variant group, not the specific
+        # variant file.
+        file_ref = variant_group_ref
       return file_ref
     else:
+      # Hieararchical recursion.  Add or get a PBXGroup corresponding to the
+      # outermost path component, and then recurse into it, chopping off that
+      # path component.
       next_dir = path_split[0]
       group_ref = self.GetChildByPath(next_dir)
       if group_ref != None:
@@ -1113,101 +1201,32 @@ class PBXGroup(XCHierarchicalElement):
       return group_ref.AddOrGetFileByPath(os.path.sep.join(path_split[1:]),
                                           hierarchical)
 
-  def AddVariantGroup(self, variant_spec, hierarchical,
-                      base_path=None, basename=None):
-    """Adds a PBXVariantGroup to this PBXGroup or a descendant PBXGroup.
+  def AddOrGetVariantGroupByNameAndPath(self, name, path):
+    """Returns an existing or new PBXVariantGroup for name and path.
 
-    The new PBXVariantGroup is returned.  This method can only create new
-    PBXVariantGroups and add them to this PBXGroup or a descendant.  It
-    cannot access existing PBXVariantGroup objects in the hierarchy, unlike
-    the similar function used to add PBXFileReferences, AddOrGetFileByPath.
+    If a PBXVariantGroup identified by the name and path arguments is already
+    present as a child of this object, it is returned.  Otherwise, a new
+    PBXVariantGroup with the correct properties is created, added as a child,
+    and returned.
 
-    variant_spec is a dict.  The keys to this dict are variant names,
-    corresponding to localization names in the Xcode UI.  Examples are
-    "English" and "en" (preferred).  The values in this dict are paths to
-    the files containing the corresponding localization.
-
-    Each path value in variant_spec is expected to conform to the pattern
-    [base/path/portion/]variant/file.  base/path/portion/ must be identical
-    for each path in variant_spec.  The leaf filename must also be identical
-    for each path.
-
-    If hierarchical is True, the variant will be placed in an appropriate
-    subgroups, creating subgroups as needed.  In the example above, a PBXGroup
-    hierarchy corresponding to base/path/portion would be created if it did
-    not already exist, and the PBXVariantGroup would be placed within.
-
-    base_path and basename are for the internal use of this method when
-    recursing for hierarchial purposes, and should not be set by outside
-    callers.  Internally, base_path is used to provide the path to the
-    variant (base/path/portion in the above example) relative to the current
-    PBXGroup (so, after one recursive call, it would be set to path/portion).
-    basename is set to the basename to be used as the PBXVariantGroup's name.
+    This method will generally be called by AddOrGetFileByPath, which knows
+    when to create a variant group based on the structure of the pathnames
+    passed to it.
     """
 
-    if base_path == None or basename == None:
-      # Figure out the common prefix path for the variant group.  The new
-      # PBXVariantGroup is thought of as being similar to a file within the
-      # PBXGroup identified by that common prefix path, and it's thought of
-      # as having a name matching the basenames of the actual files within the
-      # variant group.  Accordingly, the basename of each file in the group
-      # must be the same.  To simplify matters, assume that each file in the
-      # group is in a variant-specific directory, and that the parent
-      # directory structure of the variant-specific directory is identical for
-      # all variants in the group.  These assumptions will be tested.
-      for path in variant_spec.itervalues():
-        path = os.path.normpath(path)
-        this_base_path = os.path.dirname(os.path.dirname(path))
-        this_basename = os.path.basename(path)
+    key = (name, path)
+    if key in self._variant_children_by_name_and_path:
+      variant_group_ref = self._variant_children_by_name_and_path[key]
+      assert variant_group_ref.__class__ == PBXVariantGroup
+      return variant_group_ref
 
-        if base_path != None and base_path != this_base_path:
-          raise ValueError, \
-              'All items in a variant group must be in the same directory ' + \
-              'except for the final directory, which specifies the ' + \
-              'variant; found ' + base_path + ' and ' + this_base_path
-        else:
-          base_path = this_base_path
- 
-        if basename != None and basename != this_basename:
-          raise ValueError, \
-              'All items in a variant group must have the same name; ' + \
-              'found ' + basename + ' and ' + this_basename
-        else:
-          basename = this_basename
+    variant_group_properties = {'name': name}
+    if path != None:
+      variant_group_properties['path'] = path
+    variant_group_ref = PBXVariantGroup(variant_group_properties)
+    self.AppendChild(variant_group_ref)
 
-    if base_path == '' or not hierarchical:
-      # Create the PBXVariantGroup.
-      variant_group_properties = {'name': basename}
-      if not hierarchical:
-        variant_group_properties['path'] = base_path
-      group_ref = PBXVariantGroup(variant_group_properties)
-
-      # Add each variant to the group.
-      for variant_name, variant_path in variant_spec.iteritems():
-        # Since the assumption, verified above, is that each variant is only
-        # unique as to its variant-specific directory, set each variant's path
-        # to be the variant-specific directory name and the basename, the last
-        # two components of the path.
-        variant_path_split = variant_path.split(os.path.sep)
-        variant_path = os.path.sep.join(variant_path_split[-2:])
-        file_ref = PBXFileReference({'name': variant_name,
-                                     'path': variant_path})
-        group_ref.AppendChild(file_ref)
-      self.AppendChild(group_ref)
-      return group_ref
-    else:
-      # Recurse into a child PBXGroup, which may not yet exist.
-      base_path_split = base_path.split(os.path.sep)
-      next_dir = base_path_split[0]
-      group_ref = self.GetChildByPath(next_dir)
-      if group_ref != None:
-        assert group_ref.__class__ == PBXGroup
-      else:
-        group_ref = PBXGroup({'path': next_dir})
-        self.AppendChild(group_ref)
-      return group_ref.AddVariantGroup(variant_spec, hierarchical,
-                                       os.path.sep.join(base_path_split[1:]),
-                                       basename)
+    return variant_group_ref
 
   def CompareRootGroup(self, other):
     # This function should be used only to compare direct children of the
@@ -1595,7 +1614,22 @@ class PBXBuildFile(XCObject):
 
 class XCBuildPhase(XCObject):
   """Abstract base for build phase classes.  Not represented in a project
-  file."""
+  file.
+
+  Attributes:
+    _files_by_path: A dict mapping each path of a child in the files list by
+      path (keys) to the corresponding PBXBuildFile children (values).
+    _files_by_xcfilelikeelement: A dict mapping each XCFileLikeElement (keys)
+      to the corresponding PBXBuildFile children (values).
+  """
+
+  # TODO(mark): Some build phase types, like PBXShellScriptBuildPhase, don't
+  # actually have a "files" list.  XCBuildPhase should not have "files" but
+  # another abstract subclass of it should provide this, and concrete build
+  # phase types that do have "files" lists should be derived from that new
+  # abstract subclass.  XCBuildPhase should only provide buildActionMask and
+  # runOnlyForDeploymentPostprocessing, and not files or the various
+  # file-related methods and attributes.
 
   _schema = XCObject._schema.copy()
   _schema.update({
@@ -1603,6 +1637,15 @@ class XCBuildPhase(XCObject):
     'files':                              [1, PBXBuildFile, 1, 1, []],
     'runOnlyForDeploymentPostprocessing': [0, int,          0, 1, 0],
   })
+
+  def __init__(self, properties=None, id=None, parent=None):
+    # super
+    XCObject.__init__(self, properties, id, parent)
+
+    self._files_by_path = {}
+    self._files_by_xcfilelikeelement = {}
+    for pbxbuildfile in self._properties.get('files', []):
+      self._AddBuildFileToDicts(pbxbuildfile)
 
   def FileGroup(self, path):
     # Subclasses must override this by returning a two-element tuple.  The
@@ -1613,23 +1656,96 @@ class XCBuildPhase(XCObject):
     raise NotImplementedError, \
           self.__class__.__name__ + ' must implement FileGroup'
 
+  def _AddPathToDict(self, pbxbuildfile, path):
+    """Adds path to the dict tracking paths belonging to this build phase.
+
+    If the path is already a member of this build phase, raises an exception.
+    """
+
+    if path in self._files_by_path:
+      raise ValueError, 'Found multiple build files with path ' + path
+    self._files_by_path[path] = pbxbuildfile
+
+  def _AddBuildFileToDicts(self, pbxbuildfile, path=None):
+    """Maintains the _files_by_path and _files_by_xcfilelikeelement dicts.
+
+    If path is specified, then it is the path that is being added to the
+    phase, and pbxbuildfile must contain either a PBXFileReference directly
+    referencing that path, or it must contain a PBXVariantGroup that itself
+    contains a PBXFileReference referencing the path.
+
+    If path is not specified, either the PBXFileReference's path or the paths
+    of all children of the PBXVariantGroup are taken as being added to the
+    phase.
+
+    If the path is already present in the phase, raises an exception.
+
+    If the PBXFileReference or PBXVariantGroup referenced by pbxbuildfile
+    are already present in the phase, referenced by a different PBXBuildFile
+    object, raises an exception.  This does not raise an exception when
+    a PBXFileReference or PBXVariantGroup reappear and are referenced by the
+    same PBXBuildFile that has already introduced them, because in the case
+    of PBXVariantGroup objects, they may correspond to multiple paths that are
+    not all added simultaneously.  When this situation occurs, the path needs
+    to be added to _files_by_path, but nothing needs to change in
+    _files_by_xcfilelikeelement, and the caller should have avoided adding
+    the PBXBuildFile if it is already present in the list of children.
+    """
+
+    xcfilelikeelement = pbxbuildfile._properties['fileRef']
+
+    paths = []
+    if path != None:
+      # It's best when the caller provides the path.
+      if isinstance(xcfilelikeelement, PBXVariantGroup):
+        paths.append(path)
+    else:
+      # If the caller didn't provide a path, there can be either multiple
+      # paths (PBXVariantGroup) or one.
+      if isinstance(xcfilelikeelement, PBXVariantGroup):
+        for variant in xcfilelikeelement._properties['children']:
+          paths.append(variant.FullPath())
+      else:
+        paths.append(xcfilelikeelement.FullPath())
+
+    # Add the paths first, because if something's going to raise, the
+    # messages provided by _AddPathToDict are more useful owing to its
+    # having access to a real pathname and not just an object's Name().
+    for a_path in paths:
+      self._AddPathToDict(pbxbuildfile, a_path)
+
+    # If another PBXBuildFile references this XCFileLikeElement, there's a
+    # problem.
+    if xcfilelikeelement in self._files_by_xcfilelikeelement and \
+       self._files_by_xcfilelikeelement[xcfilelikeelement] != pbxbuildfile:
+      raise ValueError, 'Found multiple build files for ' + \
+                        xcfilelikeelement.Name()
+    self._files_by_xcfilelikeelement[xcfilelikeelement] = pbxbuildfile
+
+  def AppendBuildFile(self, pbxbuildfile, path=None):
+    # Callers should use this instead of calling
+    # AppendProperty('files', pbxbuildfile) directly because this function
+    # maintains the object's dicts.  Better yet, callers can just call AddFile
+    # with a pathname and not worry about building their own PBXBuildFile
+    # objects.
+    self.AppendProperty('files', pbxbuildfile)
+    self._AddBuildFileToDicts(pbxbuildfile, path)
+
   def AddFile(self, path):
     (file_group, hierarchical) = self.FileGroup(path)
     file_ref = file_group.AddOrGetFileByPath(path, hierarchical)
-    self.AppendProperty('files', PBXBuildFile({'fileRef': file_ref}))
 
-  def AddVariantGroup(self, variant_spec):
-    # Pluck the path of any variant from the group to use as the FileGroup
-    # argument.
-    # TODO(mark): Maybe this should check that the head and tail of each path
-    # in the group is the same.  This is presently skipped because this calls
-    # straight through to PBXVariantGroup.AddVariantGroup, which will do that
-    # exact type of checking, and will therefore catch any bad input and
-    # fail regardless of which variant this function chooses for sample_path.
-    sample_path = variant_spec.itervalues().next()
-    (file_group, hierarchical) = self.FileGroup(sample_path)
-    variant_ref = file_group.AddVariantGroup(variant_spec, hierarchical)
-    self.AppendProperty('files', PBXBuildFile({'fileRef': variant_ref}))
+    if file_ref in self._files_by_xcfilelikeelement and \
+       isinstance(file_ref, PBXVariantGroup):
+      # There's already a PBXBuildFile in this phase corresponding to the
+      # PBXVariantGroup.  path just provides a new variant that belongs to
+      # the group.  Add the path to the dict.
+      pbxbuildfile = self._files_by_xcfilelikeelement[file_ref]
+      self._AddBuildFileToDicts(pbxbuildfile, path)
+    else:
+      # Add a new PBXBuildFile to get file_ref into the phase.
+      pbxbuildfile = PBXBuildFile({'fileRef': file_ref})
+      self.AppendBuildFile(pbxbuildfile, path)
 
 
 class PBXHeadersBuildPhase(XCBuildPhase):

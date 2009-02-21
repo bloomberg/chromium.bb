@@ -643,10 +643,6 @@ exit 1
       for resource in spec.get('mac_bundle_resources', []):
         AddResourceToTarget(resource, pbxp, xct)
 
-      # Add "mac_localized_bundle_resources".
-      for localized_resource in spec.get('mac_localized_bundle_resources', []):
-        xct.ResourcesPhase().AddVariantGroup(localized_resource)
-
     # Excluded files can also go into the project file.
     for key in ['sources', 'mac_bundle_resources']:
       excluded_key = key + '_excluded'

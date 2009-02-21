@@ -20,8 +20,6 @@ path_sections = [
   'libraries',
   'mac_bundle_resources',
   'mac_framework_dirs',
-  # TODO(mark): This is a list of dicts, verify proper operation of path fixers
-  'mac_localized_bundle_resources',
   'msvs_cygwin_dirs',
   'msvs_props',
   'outputs',
@@ -985,7 +983,6 @@ def SetUpConfigurations(target, target_dict):
     'dependencies',
     'libraries',
     'mac_bundle_resources',
-    'mac_localized_bundle_resources',
     'rules',
     'sources',
     'target_name',
