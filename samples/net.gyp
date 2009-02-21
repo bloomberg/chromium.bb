@@ -302,12 +302,20 @@
         ],
         [ 'OS == "linux"', {
             'sources/': [ ['exclude', '_(mac|win)\\.cc$'] ],
+            'dependencies': [
+              'net_resources',
+            ],
           },
           {  # else: OS != "linux"
             'sources!': [
               'base/nss_memio.c',
               'base/ssl_client_socket_nss.cc',
               'base/x509_certificate_nss.cc',
+            ],
+            # Get U_STATIC_IMPLEMENTATION and -I directories on Linux.
+            'dependencies': [
+              '../third_party/icu38/icu38.gyp:icui18n',
+              '../third_party/icu38/icu38.gyp:icuuc',
             ],
           },
         ],
@@ -539,6 +547,41 @@
             'tools/dump_cache/dump_cache.cc',
             'tools/dump_cache/dump_files.cc',
             'tools/dump_cache/upgrade.cc',
+          ],
+        },
+      ],
+    }],
+    ['OS=="linux"', {
+      'targets': [
+        {
+          'target_name': 'net_resources',
+          'type': 'resource',
+          'sources': [
+            'base/net_resources.grd',
+            '../../grit_derived_sources/effective_tld_names_clean.dat',
+          ],
+          'direct_dependent_settings': {
+            'include_dirs': [
+              '../../grit_derived_sources'
+            ],
+          },
+          'actions': [
+            {
+              'action_name': 'net_resources_h',
+              'inputs': [
+                'tld_cleanup',
+                'base/effective_tld_names.dat',
+              ],
+              'outputs': [
+                '../../grit_derived_sources/effective_tld_names_clean.dat',
+              ],
+              # An 'action' like this would expand things at gyp time:
+              #'action': 'tld_cleanup <@(_inputs) <@(_outputs)',
+              # But that doesn't work well with the SCons variant dir
+              # stuff that builds everything underneath Hammer.  Just
+              # put a SCons string in the action, at least for now.
+              'action': '${SOURCES[0]} ${SOURCES[1]} $TARGET',
+            }
           ],
         },
       ],

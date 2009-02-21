@@ -26,17 +26,27 @@
       'type': 'static_library',
       'sources': [
         'icudt38.dll',
-        'icudt38l_dat.s',  # Hand-generated, but it'll do for now.
+         # These are hand-generated, but will do for now.  The linux
+         # version is an identical copy of the (mac) icudt38l_dat.s file,
+         # modulo removal of the .const pseudo-op and with no leading
+         # underscore on the icudt38_dat symbol.
+        'icudt38l_dat.s',
+        'icudt38l_dat_linux.s',
       ],
       'conditions': [
         [ 'OS == "win"', {
           'type': 'none',
-          'sources!': ['icudt38l_dat.s'],
           'msvs_tool_files': ['../../build/output_dll_copy.rules'],
         }, {  # else: OS != "win"
           'sources!': ['icudt38.dll'],
         }, ],
-        ],
+        [ 'OS != "linux"', {
+          'sources!': ['icudt38l_dat_linux.s'],
+        }],
+        [ 'OS != "mac"', {
+          'sources!': ['icudt38l_dat.s'],
+        }],
+      ],
     },
     {
       'target_name': 'icui18n',
