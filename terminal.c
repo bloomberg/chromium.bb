@@ -157,6 +157,15 @@ terminal_draw_contents(struct terminal *terminal)
 			      top_margin + extents.ascent + extents.height * i);
 		cairo_show_text(cr, terminal_get_row(terminal, i));
 	}
+
+	cairo_move_to(cr, side_margin + terminal->column * extents.max_x_advance,
+		      top_margin + terminal->row * extents.height);
+	cairo_rel_line_to(cr, extents.max_x_advance, 0);
+	cairo_rel_line_to(cr, 0, extents.height);
+	cairo_rel_line_to(cr, -extents.max_x_advance, 0);
+	cairo_close_path(cr);
+	cairo_fill(cr);
+
 	cairo_destroy(cr);
 
 	window_copy_surface(terminal->window,
@@ -226,9 +235,6 @@ terminal_schedule_redraw(struct terminal *terminal)
 		terminal->redraw_pending = 1;
 	}
 }
-
-static void
-terminal_data(struct terminal *terminal, const char *data, size_t length);
 
 static void
 handle_escape(struct terminal *terminal)
