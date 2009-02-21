@@ -60,6 +60,7 @@ struct window {
 	int fullscreen;
 	struct wl_input_device *grab_device;
 	uint32_t name;
+	uint32_t modifiers;
 
 	cairo_surface_t *cairo_surface;
 
@@ -359,15 +360,119 @@ static void window_handle_button(void *data, struct wl_input_device *input_devic
 	}
 }
 
+
+struct key {
+	uint32_t code[4];
+} evdev_keymap[] = {
+	{ { 0, 0 } },		/* 0 */
+	{ { 0x1b, 0x1b } },
+	{ { '1', '!' } },
+	{ { '2', '@' } },
+	{ { '3', '#' } },
+	{ { '4', '$' } },
+	{ { '5', '%' } },
+	{ { '6', '^' } },
+	{ { '7', '&' } },
+	{ { '8', '*' } },
+	{ { '9', '(' } },
+	{ { '0', ')' } },
+	{ { '-', '_' } },
+	{ { '=', '+' } },
+	{ { '\b', '\b' } },
+	{ { '\t', '\t' } },
+
+	{ { 'q', 'Q', 0x11 } },		/* 16 */
+	{ { 'w', 'W', 0x17 } },
+	{ { 'e', 'E', 0x05 } },
+	{ { 'r', 'R', 0x12 } },
+	{ { 't', 'T', 0x14 } },
+	{ { 'y', 'Y', 0x19 } },
+	{ { 'u', 'U', 0x15 } },
+	{ { 'i', 'I', 0x09 } },
+	{ { 'o', 'O', 0x0f } },
+	{ { 'p', 'P', 0x10 } },
+	{ { '[', '{', 0x1b } },
+	{ { ']', '}', 0x1d } },
+	{ { '\n', '\n' } },
+	{ { 0, 0 } },
+	{ { 'a', 'A', 0x01} },
+	{ { 's', 'S', 0x13 } },
+
+	{ { 'd', 'D', 0x04 } },		/* 32 */
+	{ { 'f', 'F', 0x06 } },
+	{ { 'g', 'G', 0x07 } },
+	{ { 'h', 'H', 0x08 } },
+	{ { 'j', 'J', 0x0a } },
+	{ { 'k', 'K', 0x0b } },
+	{ { 'l', 'L', 0x0c } },
+	{ { ';', ':' } },
+	{ { '\'', '"' } },
+	{ { '`', '~' } },
+	{ { 0, 0 } },
+	{ { '\\', '|', 0x1c } },
+	{ { 'z', 'Z', 0x1a } },
+	{ { 'x', 'X', 0x18 } },
+	{ { 'c', 'C', 0x03 } },
+	{ { 'v', 'V', 0x16 } },
+
+	{ { 'b', 'B', 0x02 } },		/* 48 */
+	{ { 'n', 'N', 0x0e } },
+	{ { 'm', 'M', 0x0d } },
+	{ { ',', '<' } },
+	{ { '.', '>' } },
+	{ { '/', '?' } },
+	{ { 0, 0 } },
+	{ { '*', '*' } },
+	{ { 0, 0 } },
+	{ { ' ', ' ' } },
+	{ { 0, 0 } }
+
+	/* 59 */
+};
+
+#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
+
 static void
 window_handle_key(void *data, struct wl_input_device *input_device,
-		  uint32_t button, uint32_t state)
+		  uint32_t key, uint32_t state)
 {
 	struct window *window = data;
+	uint32_t mod = 0;
+	uint32_t unicode = 0;
+
+	switch (key) {
+	case KEY_LEFTSHIFT:
+	case KEY_RIGHTSHIFT:
+		mod = WINDOW_MODIFIER_SHIFT;
+		break;
+	case KEY_LEFTCTRL:
+	case KEY_RIGHTCTRL:
+		mod = WINDOW_MODIFIER_CONTROL;
+		break;
+	case KEY_LEFTALT:
+	case KEY_RIGHTALT:
+		mod = WINDOW_MODIFIER_ALT;
+		break;
+	default:
+		if (key < ARRAY_LENGTH(evdev_keymap)) {
+			if (window->modifiers & WINDOW_MODIFIER_CONTROL)
+				unicode = evdev_keymap[key].code[2];
+			else if (window->modifiers & WINDOW_MODIFIER_SHIFT)
+				unicode = evdev_keymap[key].code[1];
+			else
+				unicode = evdev_keymap[key].code[0];
+		}
+		break;
+	}
+
+	if (state)
+		window->modifiers |= mod;
+	else
+		window->modifiers &= ~mod;
 
 	if (window->key_handler)
-		(*window->key_handler)(window, button, state,
-				       window->user_data);
+		(*window->key_handler)(window, key, unicode,
+				       state, window->modifiers, window->user_data);
 }
 
 static const struct wl_input_device_listener input_device_listener = {

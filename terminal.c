@@ -421,97 +421,14 @@ static const struct wl_compositor_listener compositor_listener = {
 	handle_frame,
 };
 
-struct key {
-	int code[4];
-} evdev_keymap[] = {
-	{ { 0, 0 } },		/* 0 */
-	{ { 0x1b, 0x1b } },
-	{ { '1', '!' } },
-	{ { '2', '@' } },
-	{ { '3', '#' } },
-	{ { '4', '$' } },
-	{ { '5', '%' } },
-	{ { '6', '^' } },
-	{ { '7', '&' } },
-	{ { '8', '*' } },
-	{ { '9', '(' } },
-	{ { '0', ')' } },
-	{ { '-', '_' } },
-	{ { '=', '+' } },
-	{ { '\b', '\b' } },
-	{ { '\t', '\t' } },
-
-	{ { 'q', 'Q', 0x11 } },		/* 16 */
-	{ { 'w', 'W', 0x17 } },
-	{ { 'e', 'E', 0x05 } },
-	{ { 'r', 'R', 0x12 } },
-	{ { 't', 'T', 0x14 } },
-	{ { 'y', 'Y', 0x19 } },
-	{ { 'u', 'U', 0x15 } },
-	{ { 'i', 'I', 0x09 } },
-	{ { 'o', 'O', 0x0f } },
-	{ { 'p', 'P', 0x10 } },
-	{ { '[', '{', 0x1b } },
-	{ { ']', '}', 0x1d } },
-	{ { '\n', '\n' } },
-	{ { 0, 0 } },
-	{ { 'a', 'A', 0x01} },
-	{ { 's', 'S', 0x13 } },
-
-	{ { 'd', 'D', 0x04 } },		/* 32 */
-	{ { 'f', 'F', 0x06 } },
-	{ { 'g', 'G', 0x07 } },
-	{ { 'h', 'H', 0x08 } },
-	{ { 'j', 'J', 0x0a } },
-	{ { 'k', 'K', 0x0b } },
-	{ { 'l', 'L', 0x0c } },
-	{ { ';', ':' } },
-	{ { '\'', '"' } },
-	{ { '`', '~' } },
-	{ { 0, 0 } },
-	{ { '\\', '|', 0x1c } },
-	{ { 'z', 'Z', 0x1a } },
-	{ { 'x', 'X', 0x18 } },
-	{ { 'c', 'C', 0x03 } },
-	{ { 'v', 'V', 0x16 } },
-
-	{ { 'b', 'B', 0x02 } },		/* 48 */
-	{ { 'n', 'N', 0x0e } },
-	{ { 'm', 'M', 0x0d } },
-	{ { ',', '<' } },
-	{ { '.', '>' } },
-	{ { '/', '?' } },
-	{ { 0, 0 } },
-	{ { '*', '*' } },
-	{ { 0, 0 } },
-	{ { ' ', ' ' } },
-	{ { 0, 0 } }
-
-	/* 59 */
-};
-
-#define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
-
 static void
-key_handler(struct window *window, uint32_t key, uint32_t state, void *data)
+key_handler(struct window *window, uint32_t key, uint32_t unicode,
+	    uint32_t state, uint32_t modifiers, void *data)
 {
 	struct terminal *terminal = data;
-	uint32_t mod = 0;
-	char c;
+	char ch = unicode;
 
 	switch (key) {
-	case KEY_LEFTSHIFT:
-	case KEY_RIGHTSHIFT:
-		mod = MOD_SHIFT;
-		break;
-	case KEY_LEFTCTRL:
-	case KEY_RIGHTCTRL:
-		mod = MOD_CTRL;
-		break;
-	case KEY_LEFTALT:
-	case KEY_RIGHTALT:
-		mod = MOD_ALT;
-		break;
 	case KEY_F11:
 		if (!state)
 			break;
@@ -520,23 +437,10 @@ key_handler(struct window *window, uint32_t key, uint32_t state, void *data)
 		terminal_schedule_redraw(terminal);
 		break;
 	default:
-		if (key < ARRAY_LENGTH(evdev_keymap)) {
-			if (terminal->modifiers & MOD_CTRL)
-				c = evdev_keymap[key].code[2];
-			else if (terminal->modifiers & MOD_SHIFT)
-				c = evdev_keymap[key].code[1];
-			else
-				c = evdev_keymap[key].code[0];
-			if (state && c)
-				write(terminal->master, &c, 1);
-		}
+		if (state && unicode)
+			write(terminal->master, &ch, 1);
 		break;
 	}
-
-	if (state)
-		terminal->modifiers |= mod;
-	else
-		terminal->modifiers &= ~mod;
 }
 
 static struct terminal *

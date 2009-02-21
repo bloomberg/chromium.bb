@@ -39,11 +39,17 @@ display_create(struct wl_display *display, int fd);
 struct wl_compositor *
 display_get_compositor(struct display *display);
 
+enum {
+	WINDOW_MODIFIER_SHIFT = 0x01,
+	WINDOW_MODIFIER_ALT = 0x02,
+	WINDOW_MODIFIER_CONTROL = 0x04,
+};
+
 typedef void (*window_resize_handler_t)(struct window *window, void *data);
 typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, uint32_t timestamp, void *data);
 typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key, void *data);
-typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t state, void *data);
-
+typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
+				     uint32_t state, uint32_t modifiers, void *data);
 
 struct window *
 window_create(struct display *display, const char *title,
