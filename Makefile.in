@@ -5,10 +5,11 @@ exec_prefix = @exec_prefix@
 udev_rules_dir = @sysconfdir@/udev/rules.d
 
 libs = libwayland-server.so libwayland.so
-clients = flower gears screenshot terminal
+egl_clients = gears
+cairo_clients = flower screenshot terminal image
 compositors = wayland-system-compositor
 
-all : $(libs) $(compositors) $(clients)
+all : $(libs) $(compositors) $(egl_clients) $(cairo_clients)
 
 libwayland-server.so :				\
 	wayland.o				\
@@ -41,11 +42,16 @@ flower : flower.o wayland-glib.o
 gears : gears.o window.o wayland-glib.o cairo-util.o
 screenshot : screenshot.o wayland-glib.o
 terminal : terminal.o window.o wayland-glib.o cairo-util.o
+image : image.o window.o wayland-glib.o cairo-util.o
 
 terminal : LDLIBS += -lutil
+image : CFLAGS += @GDK_PIXBUF_CFLAGS@
+image : LDLIBS += @GDK_PIXBUF_LIBS@
 
-$(clients) : CFLAGS += @CLIENT_CFLAGS@
-$(clients) : LDLIBS += -L. -lwayland @CLIENT_LIBS@ -lrt
+$(egl_clients) : CFLAGS += @EGL_CLIENT_CFLAGS@
+$(egl_clients) : LDLIBS += -L. -lwayland @EGL_CLIENT_LIBS@ -lrt
+$(cairo_clients) : CFLAGS += @CAIRO_CLIENT_CFLAGS@
+$(cairo_clients) : LDLIBS += -L. -lwayland @CAIRO_CLIENT_LIBS@ -lrt
 
 install : $(libs) $(compositors)
 	install -d @libdir@ @libdir@/pkgconfig ${udev_rules_dir}
