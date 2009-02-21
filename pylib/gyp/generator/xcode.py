@@ -636,16 +636,19 @@ exit 1
       else:
         pbxp.AddOrGetFileInRootGroup(source)
 
-    # Add "mac_resources".
-    for resource in spec.get('mac_resources', []):
-      AddResourceToTarget(resource, pbxp, xct)
+    # TODO(mark): Hard-coded to "application" now, but this should match any
+    # bundled type.
+    if spec['type'] == 'application':
+      # Add "mac_bundle_resources".
+      for resource in spec.get('mac_bundle_resources', []):
+        AddResourceToTarget(resource, pbxp, xct)
 
-    # Add "mac_localized_resources".
-    for localized_resource in spec.get('mac_localized_resources', []):
-      xct.ResourcesPhase().AddVariantGroup(localized_resource)
+      # Add "mac_localized_bundle_resources".
+      for localized_resource in spec.get('mac_localized_bundle_resources', []):
+        xct.ResourcesPhase().AddVariantGroup(localized_resource)
 
     # Excluded files can also go into the project file.
-    for key in ['sources', 'mac_resources']:
+    for key in ['sources', 'mac_bundle_resources']:
       excluded_key = key + '_excluded'
       for item in spec.get(excluded_key, []):
         pbxp.AddOrGetFileInRootGroup(item)

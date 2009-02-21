@@ -92,49 +92,19 @@
       'sources': [
         'test_shell_main.cc',
       ],
-      'mac_resources': [
-        # TODO(mark): WebCore should probably advertise these resources in its
-        # link_dependent_settings section.
-        '../../../third_party/WebKit/WebCore/Resources/aliasCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/cellCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/contextMenuCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/copyCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/crossHairCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/eastResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/eastWestResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/helpCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/linkCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/moveCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/noDropCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/noneCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/northEastResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/northEastSouthWestResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/northResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/northSouthResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/northWestResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/northWestSouthEastResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/notAllowedCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/progressCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/southEastResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/southResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/southWestResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/verticalTextCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/waitCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/westResizeCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/zoomInCursor.png',
-        '../../../third_party/WebKit/WebCore/Resources/zoomOutCursor.png',
+      'mac_bundle_resources': [
         '../../data/test_shell/',
         'mac/Info.plist',
         'mac/test_shell.icns',
         'resources/AHEM____.TTF',
       ],
-      'mac_resources!': [
+      'mac_bundle_resources!': [
         # TODO(mark): Come up with a fancier way to do this (mac_info_plist?)
         # that automatically sets the correct INFOPLIST_FILE setting and adds
         # the file to a source group.
         'mac/Info.plist',
       ],
-      'mac_localized_resources': [
+      'mac_localized_bundle_resources': [
         {'English': 'mac/English.lproj/InfoPlist.strings'},
         {'English': 'mac/English.lproj/MainMenu.nib'},
       ],
