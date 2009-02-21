@@ -23,6 +23,7 @@
       'USE_SYSTEM_MALLOC=1',
     ],
     'webcore_include_dirs': [
+      'pending',
       '../third_party/WebKit/WebCore/bindings/v8',
       '../third_party/WebKit/WebCore/css',
       '../third_party/WebKit/WebCore/dom',
@@ -315,6 +316,15 @@
           'sources/': [
             ['exclude', 'ThreadingPthreads\\.cpp$'],
             ['include', 'Thread(ing|Specific)Win\\.cpp$']
+          ],
+          'include_dirs': [
+            '../third_party/WebKit/JavaScriptCore/kjs',
+            '../third_party/WebKit/JavaScriptCore/API',
+            '../third_party/WebKit/JavaScriptCore/bindings',
+            '../third_party/WebKit/JavaScriptCore/bindings/c',
+            '../third_party/WebKit/JavaScriptCore/bindings/ini',
+            'pending',
+            'pending/wtf',
           ],
         }],
       ],
@@ -3937,10 +3947,9 @@
           ],
           # This is needed because Event.h in this directory is blocked
           # by a system header on windows.
+          'include_dirs++': ['../third_party/WebKit/WebCore/dom'],
           'direct_dependent_settings': {
-            'include_dirs+++': [
-              '../third_party/WebKit/WebCore/dom',
-            ],
+            'include_dirs+++': ['../third_party/WebKit/WebCore/dom'],
           },
         }],
         ['OS!="linux"', {'sources/': [['exclude', '(Gtk|Linux)\\.cpp$']]}],
