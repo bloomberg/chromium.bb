@@ -155,10 +155,10 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     # Add defines.
     defines = []
     for d in c.get('defines', []):
-      if type(d)==list:
+      if type(d) == list:
         fd = '='.join([str(dpart).replace('"', '\\"') for dpart in d])
       else:
-        fd = str(d)
+        fd = str(d).replace('"', '\\"')
       defines.append(fd)
 
     _ToolAppend(tools, 'VCCLCompilerTool',
@@ -218,12 +218,6 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     prepared_attrs['InheritedPropertySheets'] = ';'.join(vsprops_dirs)
     # Set configuration type.
     prepared_attrs['ConfigurationType'] = config_type
-    # Set intermediate directory.
-    gyp_name = os.path.split(build_file)[1][:-4]
-    prepared_attrs['IntermediateDirectory'] = (
-        '$(OutDir)\\obj\\%s\\intermediate' % gyp_name)
-    # Change build log to different directory to avoid collision.
-    prepared_attrs['BuildLogFile'] = '$(IntDir)\\$(ProjectName)\\BuildLog.htm'
 
     # Add in this configuration.
     p.AddConfig('|'.join([config_name,

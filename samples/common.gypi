@@ -17,9 +17,7 @@
             'configuration_platform': 'Win32',
             'msvs_configuration_attributes': {
               'OutputDirectory': '$(SolutionDir)$(ConfigurationName)',
-              # IntermediateDirectory had been set in the vsprops,
-              # but that no longer makes sense given that gyp files are
-              # assumed to share a single intermediate directory.
+              'IntermediateDirectory': '$(OutDir)\\obj\\$(ProjectName)',
               'CharacterSet': '1',
             },
             'msvs_settings': {
@@ -86,13 +84,6 @@
       },
     }],
     [ 'OS=="win"', {
-      'variables': {
-        'SDK': '$(SolutionDir)../third_party/platformsdk_win2008_6_1/files',
-        'SDKIncludes':
-          '$(SolutionDir)../third_party/platformsdk_win2008_6_1/files/Include;$(VSInstallDir)/VC/atlmfc/include',
-        'SDKLibs':
-          '$(SolutionDir)../third_party/platformsdk_win2008_6_1/files/Lib',
-      },
       'target_defaults': {
         'defines': [
           '_WIN32_WINNT=0x0600',
@@ -107,7 +98,11 @@
           '_SECURE_ATL',
           '_HAS_TR1=0',
         ],
-        'include_dirs': ['..', '<(SDKIncludes)'],
+        'include_dirs': [
+          '..',
+          '<(depth)/third_party/platformsdk_win2008_6_1/files/Include',
+          '$(VSInstallDir)/VC/atlmfc/include',
+        ],
         'msvs_cygwin_dirs': ['../third_party/cygwin'],
         'msvs_disabled_warnings': [4503, 4819],
         'msvs_settings': {
@@ -124,7 +119,8 @@
           'VCLibrarianTool': {
             'AdditionalOptions': '/ignore:4221',
             'OutputFile': '$(OutDir)\\lib\\$(ProjectName).lib',
-            'AdditionalLibraryDirectories': '<(SDKLibs)',
+            'AdditionalLibraryDirectories':
+              '<(depth)/third_party/platformsdk_win2008_6_1/files/Lib',
           },
           'VCLinkerTool': {
             'AdditionalOptions':
@@ -137,7 +133,8 @@
               'usp10.lib',
               'psapi.lib',
             ],
-            'AdditionalLibraryDirectories': '<(SDKLibs)',
+            'AdditionalLibraryDirectories':
+              '<(depth)/third_party/platformsdk_win2008_6_1/files/Lib',
             'DelayLoadDLLs': 'dwmapi.dll,uxtheme.dll',
             'GenerateDebugInformation': 'true',
             'MapFileName': '$(OutDir)\\$(TargetName).map',

@@ -42,6 +42,7 @@
       '../third_party/WebKit/WebCore/platform/chromium',
       '../third_party/WebKit/WebCore/platform/graphics',
       '../third_party/WebKit/WebCore/platform/graphics/chromium',
+      '../third_party/WebKit/WebCore/platform/graphics/opentype',
       '../third_party/WebKit/WebCore/platform/graphics/skia',
       '../third_party/WebKit/WebCore/platform/graphics/transforms',
       '../third_party/WebKit/WebCore/platform/image-decoders/skia',
@@ -3979,6 +3980,7 @@
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
       ],
       'sources': [
         # webkit_version rule

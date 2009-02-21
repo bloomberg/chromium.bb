@@ -108,7 +108,7 @@
         {'English': 'mac/English.lproj/InfoPlist.strings'},
         {'English': 'mac/English.lproj/MainMenu.nib'},
       ],
-      'dependencies': [ 
+      'dependencies': [
         'test_shell_common',
         '../../../base/base.gyp:base',
         '../../../net/net.gyp:net',

@@ -156,6 +156,11 @@
         '../icu38/icu38.gyp:icui18n',
         '../icu38/icu38.gyp:icuuc',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          'preprocessed',
+        ],
+      },
       'conditions': [
         ['OS=="win"', {
           'sources/': [['exclude', '_unix\\.cc?$']],
