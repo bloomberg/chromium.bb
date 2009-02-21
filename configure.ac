@@ -123,10 +123,7 @@ if test "x$UDEV" = xyes; then
 	AC_DEFINE(UDEV, 1, [Have UDEV support])
 fi
 
-if test "x$NOUVEAU" = xyes; then
-NOUVEAU_SUBDIR="nouveau"
-AC_SUBST(NOUVEAU_SUBDIR)
-fi
+AM_CONDITIONAL(HAVE_NOUVEAU, [text "x$NOUVEAU" = xyes])
 
 PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
 if test "x$HAVE_CAIRO" = xyes; then
