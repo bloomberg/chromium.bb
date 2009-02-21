@@ -153,7 +153,7 @@
           },
           'VCResourceCompilerTool': {
             'Culture' : '1033',
-            'AdditionalIncludeDirectories': '$(SolutionDir)..',
+            'AdditionalIncludeDirectories': '<(depth)',
           },
         },
       },

@@ -3784,7 +3784,7 @@
           'port/bindings/v8',
           '<@(webcore_include_dirs)',
         ],
-        'mac_framework_dirs': [
+  'mac_framework_dirs': [
           '$(SDKROOT)/System/Library/Frameworks/ApplicationServices.framework/Frameworks',
         ],
       },
@@ -3935,6 +3935,13 @@
             '__PRETTY_FUNCTION__=__FUNCTION__',
             'DISABLE_ACTIVEX_TYPE_CONVERSION_MPLAYER2',
           ],
+          # This is needed because Event.h in this directory is blocked
+          # by a system header on windows.
+          'direct_dependent_settings': {
+            'include_dirs+++': [
+              '../third_party/WebKit/WebCore/dom',
+            ],
+          },
         }],
         ['OS!="linux"', {'sources/': [['exclude', '(Gtk|Linux)\\.cpp$']]}],
         ['OS!="mac"', {'sources/': [['exclude', 'Mac\\.(cpp|mm?)$']]}],
