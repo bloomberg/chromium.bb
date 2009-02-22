@@ -71,6 +71,9 @@
           '.',
         ],
       },
+      'conditions': [
+        ['OS!="win"', {'product_name': 'jpeg'}],
+      ],
     },
   ],
 }

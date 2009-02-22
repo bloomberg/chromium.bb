@@ -50,10 +50,10 @@
         ],
       },
       'conditions': [
-        [ 'OS!="win"', {
-            'sources/': [['exclude', '^contrib/minizip/']]
-          }
-        ],
+        ['OS!="win"', {
+          'product_name': 'z',
+          'sources/': [['exclude', '^contrib/minizip/']],
+        }],
       ],
     },
   ],

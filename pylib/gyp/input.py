@@ -983,6 +983,7 @@ def SetUpConfigurations(target, target_dict):
     'dependencies',
     'libraries',
     'mac_bundle_resources',
+    'product_name',
     'rules',
     'sources',
     'target_name',

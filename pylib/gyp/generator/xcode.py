@@ -65,40 +65,6 @@ class XcodeProject(object):
       if e.errno != errno.EEXIST:
         raise
 
-  def AddTarget(self, name, type, configurations):
-    _types = {
-      'application':    'com.apple.product-type.application',
-      'executable':     'com.apple.product-type.tool',
-      'shared_library': 'com.apple.product-type.library.dynamic',
-      'static_library': 'com.apple.product-type.library.static',
-    }
-
-    # Set up the configurations for the target according to the list of names
-    # supplied.
-    xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
-    for configuration in configurations:
-      xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
-      xccl.AppendProperty('buildConfigurations', xcbc)
-    xccl.SetProperty('defaultConfigurationName', configurations[0])
-
-    if type != 'none':
-      target = gyp.xcodeproj_file.PBXNativeTarget(
-          {
-            'buildConfigurationList': xccl,
-            'name':                   name,
-            'productType':            _types[type]
-          },
-          parent=self.project)
-    else:
-      target = gyp.xcodeproj_file.PBXAggregateTarget(
-          {
-            'buildConfigurationList': xccl,
-            'name':                   name,
-          },
-          parent=self.project)
-    self.project.AppendProperty('targets', target)
-    return target
-
   def Finalize1(self, xcode_targets, build_file_dict):
     # Collect a list of all of the build configuration names used by the
     # various targets in the file.  It is very heavily advised to keep each
@@ -357,7 +323,7 @@ def GenerateOutput(target_list, target_dicts, data):
 
   xcode_targets = {}
   for qualified_target in target_list:
-    [build_file, target] = \
+    [build_file, target_name] = \
         gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
     spec = target_dicts[qualified_target]
     configuration_names = [spec['default_configuration']]
@@ -365,9 +331,43 @@ def GenerateOutput(target_list, target_dicts, data):
       if configuration_name not in configuration_names:
         configuration_names.append(configuration_name)
     pbxp = xcode_projects[build_file].project
-    xct = xcode_projects[build_file].AddTarget(target, spec['type'],
-                                               configuration_names)
+
+    # Set up the configurations for the target according to the list of names
+    # supplied.
+    xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+    for configuration_name in configuration_names:
+      xcbc = gyp.xcodeproj_file.XCBuildConfiguration({
+          'name': configuration_name})
+      xccl.AppendProperty('buildConfigurations', xcbc)
+    xccl.SetProperty('defaultConfigurationName', configuration_names[0])
+
+    # Create an XCTarget subclass object for the target.
+    _types = {
+      'application':    'com.apple.product-type.application',
+      'executable':     'com.apple.product-type.tool',
+      'shared_library': 'com.apple.product-type.library.dynamic',
+      'static_library': 'com.apple.product-type.library.static',
+    }
+
+    target_properties = {
+      'buildConfigurationList': xccl,
+      'name':                   target_name,
+    }
+
+    type = spec['type']
+    if type != 'none':
+      xctarget_type = gyp.xcodeproj_file.PBXNativeTarget
+      target_properties['productType'] = _types[type]
+    else:
+      xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
+
+    if 'product_name' in spec:
+      target_properties['productName'] = spec['product_name']
+
+    xct = xctarget_type(target_properties, parent=pbxp)
+    pbxp.AppendProperty('targets', xct)
     xcode_targets[qualified_target] = xct
+
     prebuild_index = 0
 
     # Add custom shell script phases for "actions" sections.
@@ -516,7 +516,7 @@ def GenerateOutput(target_list, target_dicts, data):
       if len(concrete_outputs_all) > 0:
         # TODO(mark): There's a possibilty for collision here.  Consider
         # target "t" rule "A_r" and target "t_A" rule "r".
-        makefile_name = '%s_%s.make' % (spec['target_name'], rule['rule_name'])
+        makefile_name = '%s_%s.make' % (target_name, rule['rule_name'])
         makefile_path = os.path.join(xcode_projects[build_file].path,
                                      makefile_name)
         # TODO(mark): try/close?  Write to a temporary file and swap it only

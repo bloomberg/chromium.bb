@@ -27,6 +27,13 @@
           '.',
         ],
       },
+      'conditions': [
+        ['OS=="win"', {
+          'product_name': 'libbzip2',
+        }, {  # else: OS!="win"
+          'product_name': 'bz2',
+        }],
+      ],
     },
   ],
 }

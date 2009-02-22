@@ -9,6 +9,7 @@
   'targets': [
     {
       'target_name': 'sqlite',
+      'product_name': 'sqlite3',
       'type': 'static_library',
       'sources': [
         # This list contains all .h, .c, and .cc files in the directories

@@ -51,6 +51,9 @@
       'export_dependent_settings': [
         '../zlib/zlib.gyp:zlib',
       ],
+      'conditions': [
+        ['OS!="win"', {'product_name': 'png'}],
+      ],
     },
   ],
 }

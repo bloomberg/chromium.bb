@@ -151,6 +151,11 @@
       },
       'conditions': [
         ['OS=="mac"', {'defines': ['_REENTRANT']}],
+        ['OS=="win"', {
+          'product_name': 'libxml2',
+        }, {  # else: OS!="win"
+          'product_name': 'xml2',
+        }],
       ],
     },
     {

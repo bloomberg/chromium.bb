@@ -7,8 +7,8 @@
   ],
   'targets': [
     {
-      'target_name': 'libevent',  # Maybe this should be called "event" so that
-                                  # it outputs libevent.a.
+      'target_name': 'libevent',
+      'product_name': 'event',
       'type': 'static_library',
       'sources': [
         'buffer.c',
