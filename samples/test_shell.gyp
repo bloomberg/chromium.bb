@@ -115,6 +115,9 @@
       'xcode_settings': {
         'INFOPLIST_FILE': 'mac/Info.plist',
       },
+      'conditions': [
+        ['OS=="mac"', {'product_name': 'TestShell'}],
+      ],
     },
     {
       'target_name': 'test_shell_tests',
