@@ -67,6 +67,7 @@ struct terminal {
 	int state;
 	int margin;
 	int fullscreen;
+	int focused;
 };
 
 static char *
@@ -131,6 +132,7 @@ terminal_draw_contents(struct terminal *terminal)
 	cairo_t *cr;
 	cairo_font_extents_t extents;
 	int i, top_margin, side_margin;
+	double d;
 
 	window_get_child_rectangle(terminal->window, &rectangle);
 
@@ -158,13 +160,20 @@ terminal_draw_contents(struct terminal *terminal)
 		cairo_show_text(cr, terminal_get_row(terminal, i));
 	}
 
-	cairo_move_to(cr, side_margin + terminal->column * extents.max_x_advance,
-		      top_margin + terminal->row * extents.height);
-	cairo_rel_line_to(cr, extents.max_x_advance, 0);
-	cairo_rel_line_to(cr, 0, extents.height);
-	cairo_rel_line_to(cr, -extents.max_x_advance, 0);
+	d = terminal->focused ? 0 : 0.5;
+
+	cairo_set_line_width(cr, 1);
+	cairo_move_to(cr, side_margin + terminal->column * extents.max_x_advance + d,
+		      top_margin + terminal->row * extents.height + d);
+	cairo_rel_line_to(cr, extents.max_x_advance - 2 * d, 0);
+	cairo_rel_line_to(cr, 0, extents.height - 2 * d);
+	cairo_rel_line_to(cr, -extents.max_x_advance + 2 * d, 0);
 	cairo_close_path(cr);
-	cairo_fill(cr);
+
+	if (terminal->focused)
+		cairo_fill(cr);
+	else
+		cairo_stroke(cr);
 
 	cairo_destroy(cr);
 
@@ -449,6 +458,16 @@ key_handler(struct window *window, uint32_t key, uint32_t unicode,
 	}
 }
 
+static void
+keyboard_focus_handler(struct window *window,
+		       struct wl_input_device *device, void *data)
+{
+	struct terminal *terminal = data;
+
+	terminal->focused = (device != NULL);
+	terminal_schedule_redraw(terminal);
+}
+
 static struct terminal *
 terminal_create(struct display *display, int fullscreen)
 {
@@ -474,6 +493,8 @@ terminal_create(struct display *display, int fullscreen)
 				   &compositor_listener, terminal);
 
 	window_set_key_handler(terminal->window, key_handler, terminal);
+	window_set_keyboard_focus_handler(terminal->window,
+					  keyboard_focus_handler, terminal);
 
 	terminal_draw(terminal);
 

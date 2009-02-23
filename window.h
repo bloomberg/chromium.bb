@@ -50,6 +50,8 @@ typedef void (*window_frame_handler_t)(struct window *window, uint32_t frame, ui
 typedef void (*window_acknowledge_handler_t)(struct window *window, uint32_t key, void *data);
 typedef void (*window_key_handler_t)(struct window *window, uint32_t key, uint32_t unicode,
 				     uint32_t state, uint32_t modifiers, void *data);
+typedef void (*window_keyboard_focus_handler_t)(struct window *window,
+						struct wl_input_device *device, void *data);
 
 struct window *
 window_create(struct display *display, const char *title,
@@ -93,4 +95,8 @@ void
 window_set_key_handler(struct window *window,
 		       window_key_handler_t handler, void *data);
 
+void
+window_set_keyboard_focus_handler(struct window *window,
+				  window_keyboard_focus_handler_t handler,
+				  void *data);
 #endif

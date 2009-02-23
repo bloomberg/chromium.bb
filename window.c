@@ -59,6 +59,7 @@ struct window {
 	int state;
 	int fullscreen;
 	struct wl_input_device *grab_device;
+	struct wl_input_device *keyboard_device;
 	uint32_t name;
 	uint32_t modifiers;
 
@@ -66,6 +67,7 @@ struct window {
 
 	window_resize_handler_t resize_handler;
 	window_key_handler_t key_handler;
+	window_keyboard_focus_handler_t keyboard_focus_handler;
 	void *user_data;
 };
 
@@ -440,6 +442,9 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 	uint32_t mod = 0;
 	uint32_t unicode = 0;
 
+	if (window->keyboard_device != input_device)
+		return;
+
 	switch (key) {
 	case KEY_LEFTSHIFT:
 	case KEY_RIGHTSHIFT:
@@ -487,6 +492,19 @@ window_handle_keyboard_focus(void *data,
 			     struct wl_input_device *input_device,
 			     struct wl_surface *surface)
 {
+	struct window *window = data;
+
+	if (window->keyboard_device == input_device && surface != window->surface)
+		window->keyboard_device = NULL;
+	else if (window->keyboard_device == NULL && surface == window->surface)
+		window->keyboard_device = input_device;
+	else
+		return;
+
+	if (window->keyboard_focus_handler)
+		(*window->keyboard_focus_handler)(window,
+						  window->keyboard_device,
+						  window->user_data);
 }
 
 static const struct wl_input_device_listener input_device_listener = {
@@ -585,6 +603,14 @@ window_set_key_handler(struct window *window,
 		       window_key_handler_t handler, void *data)
 {
 	window->key_handler = handler;
+	window->user_data = data;
+}
+
+void
+window_set_keyboard_focus_handler(struct window *window,
+				  window_keyboard_focus_handler_t handler, void *data)
+{
+	window->keyboard_focus_handler = handler;
 	window->user_data = data;
 }
 
