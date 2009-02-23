@@ -143,4 +143,5 @@ AC_OUTPUT([
 	tests/Makefile
 	tests/modeprint/Makefile
 	tests/modetest/Makefile
-	libdrm.pc])
+	libdrm.pc
+	libdrm_intel.pc])
