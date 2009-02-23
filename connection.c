@@ -252,7 +252,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		case 'o':
 		case 'n':
 			object = va_arg(ap, struct wl_object *);
-			*p++ = object->id;
+			*p++ = object ? object->id : 0;
 			break;
 		default:
 			assert(0);
@@ -331,7 +331,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 'o':
 			types[i] = &ffi_type_pointer;
 			object = wl_hash_lookup(objects, *p);
-			if (object == NULL)
+			if (object == NULL && *p != 0)
 				printf("unknown object (%d)\n", *p);
 			values[i].object = object;
 			p++;
