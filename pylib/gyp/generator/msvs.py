@@ -306,6 +306,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       outputs = [_FixPath(i) for i in a.get('outputs', [])]
       cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
       direct_cmd = a['action']
+      direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
       direct_cmd = direct_cmd.replace('$(IntDir)',
                                       '`cygpath -m "${INTDIR}"`')
       direct_cmd = direct_cmd.replace('$(OutDir)',
@@ -351,6 +352,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       outputs = [_FixPath(i) for i in r.get('outputs', [])]
       cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
       direct_cmd = r['action']
+      direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
       direct_cmd = direct_cmd.replace('$(IntDir)',
                                       '`cygpath -m "${INTDIR}"`')
       direct_cmd = direct_cmd.replace('$(OutDir)',
