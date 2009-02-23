@@ -81,7 +81,7 @@ struct wlsc_input_device {
 	struct wl_object base;
 	int32_t x, y;
 	struct wlsc_compositor *ec;
-	struct wlsc_surface *pointer_surface;
+	struct wlsc_surface *sprite;
 	struct wl_list link;
 
 	int grab;
@@ -602,7 +602,7 @@ repaint_output(struct wlsc_output *output)
 	eid = container_of(ec->input_device_list.next,
 			   struct wlsc_input_device, link);
 	while (&eid->link != &ec->input_device_list) {
-		wlsc_surface_draw(eid->pointer_surface);
+		wlsc_surface_draw(eid->sprite);
 
 		eid = container_of(eid->link.next,
 				   struct wlsc_input_device, link);
@@ -919,8 +919,8 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 		wl_surface_post_event(&es->base, &device->base,
 				      WL_INPUT_MOTION, x, y, sx, sy);
 
-	device->pointer_surface->map.x = x - hotspot_x;
-	device->pointer_surface->map.y = y - hotspot_y;
+	device->sprite->map.x = x - hotspot_x;
+	device->sprite->map.y = y - hotspot_y;
 
 	schedule_repaint(device->ec);
 }
@@ -1420,7 +1420,7 @@ init_libudev(struct wlsc_compositor *ec)
         udev_enumerate_unref(e);
 
 	/* Create the pointer surface now that we have a current EGL context. */
-	input_device->pointer_surface =
+	input_device->sprite =
 		pointer_create(ec, input_device->x, input_device->y, 64, 64);
 
 	return 0;
