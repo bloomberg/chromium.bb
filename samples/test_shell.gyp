@@ -67,10 +67,6 @@
         '../../../third_party/npapi/npapi.gyp:npapi',
         '../../webkit.gyp:glue',
       ],
-      # For breakpad.
-      'include_dirs': [
-        '../../../breakpad/src',
-      ],
       'conditions': [
         ['OS!="linux"', {'sources/': [['exclude', '_gtk\\.cc$']]}],
         ['OS!="mac"', {
@@ -80,6 +76,9 @@
           ]
         }],
         ['OS=="win"', {
+          'include_dirs': [
+            '../../../breakpad/src',
+          ],
           'msvs_disabled_warnings': [ 4800 ],
         }, {  # OS!=win
           'sources/': [

@@ -128,21 +128,21 @@
           'action_name': 'config.h',
           'inputs': [
             'config.h.in',
-            '../third_party/WebKit/WebCore/bridge/npapi.h',
-            '../third_party/WebKit/WebCore/bridge/npruntime.h',
-            'port/bindings/v8/npruntime_priv.h',
-            '../third_party/WebKit/JavaScriptCore/os-win32/stdint.h',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/config.h',
           ],
-          # TODO(bradnelson): maybe these headers shouldn't be in the
-          #     SHARED_INTERMEDIATE_DIR, its very global.
-          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit <(SHARED_INTERMEDIATE_DIR)/webkit <(_inputs)',
+          # TODO(bradnelson): npapi.h, npruntime.h, npruntime_priv.h, and
+          # stdint.h shouldn't be in the SHARED_INTERMEDIATE_DIR, it's very
+          # global.
+          'action': ['python', 'build/action_jsconfig.py', 'v8', '<(SHARED_INTERMEDIATE_DIR)/webkit', '<(SHARED_INTERMEDIATE_DIR)/webkit', '<@(_inputs)'],
 
           'conditions': [
             ['OS=="win"', {
               'inputs': [
+                '../third_party/WebKit/WebCore/bridge/npapi.h',
+                '../third_party/WebKit/WebCore/bridge/npruntime.h',
+                'port/bindings/v8/npruntime_priv.h',
                 '../third_party/WebKit/JavaScriptCore/os-win32/stdint.h',
               ],
             }],
@@ -358,7 +358,7 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/chartables.c',
           ],
-          'action': 'perl -w <(_inputs) <(_outputs)',
+          'action': ['perl', '-w', '<@(_inputs)', '<@(_outputs)'],
         },
       ],
       'include_dirs': [
@@ -414,7 +414,7 @@
             '<(INTERMEDIATE_DIR)/CSSPropertyNames.cpp',
             '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.h',
           ],
-          'action': 'python build/action_csspropertynames.py <(_outputs) -- <(_inputs)',
+          'action': ['python', 'build/action_csspropertynames.py', '<@(_outputs)', '--', '<@(_inputs)'],
         },
         {
           'action_name': 'CSSValueKeywords',
@@ -424,12 +424,12 @@
             '../third_party/WebKit/WebCore/css/SVGCSSValueKeywords.in',
           ],
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.c',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.gperf',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.in',
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.c',
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.gperf',
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.h',
+            '<(INTERMEDIATE_DIR)/CSSValueKeywords.in',
           ],
-          'action': 'python build/action_cssvaluekeywords.py <(_inputs) <(_outputs)',
+          'action': ['python', 'build/action_cssvaluekeywords.py', '<@(_inputs)', '<@(_outputs)'],
         },
         {
           'action_name': 'HTMLNames',
@@ -446,7 +446,7 @@
             #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.cpp',
             #'<(INTERMEDIATE_DIR)/JSHTMLElementWrapperFactory.h',
           ],
-          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --factory --extraDefines "<(feature_defines)"',
+          'action': ['python', 'build/action_makenames.py', '<@(_outputs)', '--', '<@(_inputs)', '--', '--factory', '--extraDefines', '<(feature_defines)'],
           'process_outputs_as_sources': 1,
         },
         {
@@ -465,7 +465,7 @@
             #'<(INTERMEDIATE_DIR)/JSSVGElementWrapperFactory.cpp',
             #'<(INTERMEDIATE_DIR)/JSSVGElementWrapperFactory.h',
           ],
-          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --factory --extraDefines "<(feature_defines)"',
+          'action': ['python', 'build/action_makenames.py', '<@(_outputs)', '--', '<@(_inputs)', '--', '--factory', '--extraDefines', '<(feature_defines)'],
           'process_outputs_as_sources': 1,
         },
         {
@@ -484,7 +484,7 @@
             '<(INTERMEDIATE_DIR)/UserAgentStyleSheets.h',
             '<(INTERMEDIATE_DIR)/UserAgentStyleSheetsData.cpp',
           ],
-          'action': 'python build/action_useragentstylesheets.py <(_outputs) -- <(_inputs)',
+          'action': ['python', 'build/action_useragentstylesheets.py', '<@(_outputs)', '--', '<@(_inputs)'],
           'process_outputs_as_sources': 1,
         },
         {
@@ -497,7 +497,7 @@
             '<(INTERMEDIATE_DIR)/XLinkNames.cpp',
             '<(INTERMEDIATE_DIR)/XLinkNames.h',
           ],
-          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'action': ['python', 'build/action_makenames.py', '<@(_outputs)', '--', '<@(_inputs)', '--', '--extraDefines', '<(feature_defines)'],
           'process_outputs_as_sources': 1,
         },
         {
@@ -510,7 +510,7 @@
             '<(INTERMEDIATE_DIR)/XMLNames.cpp',
             '<(INTERMEDIATE_DIR)/XMLNames.h',
           ],
-          'action': 'python build/action_makenames.py <(_outputs) -- <(_inputs) -- --extraDefines "<(feature_defines)"',
+          'action': ['python', 'build/action_makenames.py', '<@(_outputs)', '--', '<@(_inputs)', '--', '--extraDefines', '<(feature_defines)'],
           'process_outputs_as_sources': 1,
         },
         {
@@ -522,7 +522,7 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/tokenizer.cpp',
           ],
-          'action': 'python build/action_maketokenizer.py <(_outputs) -- <(_inputs)',
+          'action': ['python', 'build/action_maketokenizer.py', '<@(_outputs)', '--', '<@(_inputs)'],
         },
       ],
       'rules': [
@@ -534,7 +534,7 @@
             '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
             '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).h'
           ],
-          'action': 'python build/rule_bison.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)',
+          'action': ['python', 'build/rule_bison.py', '<(RULE_INPUT_PATH)', '<(INTERMEDIATE_DIR)'],
           'process_outputs_as_sources': 1,
         },
         {
@@ -547,10 +547,10 @@
           # outputs.  The harness script will generate one file and copy it to
           # the other.
           'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).c',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).c',
+            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
           ],
-          'action': 'python build/rule_gperf.py <(RULE_INPUT_PATH) <(SHARED_INTERMEDIATE_DIR)/webkit',
+          'action': ['python', 'build/rule_gperf.py', '<(RULE_INPUT_PATH)', '<(INTERMEDIATE_DIR)'],
           'process_outputs_as_sources': 0,
         },
         # Rule to build generated JavaScript (V8) bindings from .idl source.
@@ -579,7 +579,7 @@
               '--include', '../third_party/WebKit/WebCore/xml',
             ],
           },
-          'action': 'python build/rule_binding.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)/bindings <(SHARED_INTERMEDIATE_DIR)/webkit/bindings -- <(_inputs) -- --defines "<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING" --generator V8 <(generator_include_dirs)',
+          'action': ['python', 'build/rule_binding.py', '<(RULE_INPUT_PATH)', '<(INTERMEDIATE_DIR)/bindings', '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings', '--', '<@(_inputs)', '--', '--defines', '<(feature_defines) LANGUAGE_JAVASCRIPT V8_BINDING', '--generator', 'V8', '<@(generator_include_dirs)'],
           'process_outputs_as_sources': 1,
         },
       ],
@@ -3876,7 +3876,7 @@
               'outputs': [
                 '<(INTERMEDIATE_DIR)/WebCore/WebCoreSystemInterface.h',
               ],
-              'action': 'cp <(_inputs) <(_outputs)'
+              'action': ['cp', '<@(_inputs)', '<@(_outputs)'],
             },
           ],
           'include_dirs': [
@@ -3977,7 +3977,6 @@
       'target_name': 'glue',
       'type': 'static_library',
       'dependencies': [
-        'config',
         'webcore',
         '../net/net.gyp:net',
       ],
@@ -3991,7 +3990,7 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/webkit_version.h',
           ],
-          'action': 'python <@(_inputs) <(INTERMEDIATE_DIR)',
+          'action': ['python', '<@(_inputs)', '<(INTERMEDIATE_DIR)'],
         },
       ],
       'rules': [
@@ -4004,13 +4003,12 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/<(RULE_INPUT_ROOT).h',
           ],
-          'action': 'python <@(_inputs) -i <(RULE_INPUT_PATH) build -o <(SHARED_INTERMEDIATE_DIR)/webkit/grit',
+          'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)', 'build', '-o', '<(SHARED_INTERMEDIATE_DIR)/webkit/grit'],
         },
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
-#        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
       ],
       'sources': [
         # webkit_version rule

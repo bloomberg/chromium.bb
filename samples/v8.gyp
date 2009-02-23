@@ -273,7 +273,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/v8/libraries.cc',
             '<(SHARED_INTERMEDIATE_DIR)/v8/libraries-empty.cc',
           ],
-          'action': 'python tools/js2c.py <(_outputs) CORE <(library_files)'
+          'action': ['python', 'tools/js2c.py', '<@(_outputs)', 'CORE', '<@(library_files)'],
         },
       ],
     },
@@ -299,7 +299,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/v8/d8-js.cc',
             '<(SHARED_INTERMEDIATE_DIR)/v8/d8-js-empty.cc',
           ],
-          'action': 'python tools/js2c.py <(_outputs) D8 <(library_files)'
+          'action': ['python', 'tools/js2c.py', '<@(_outputs)', 'D8', '<@(library_files)'],
         },
       ],
     },
@@ -380,7 +380,7 @@
           'outputs': [
             '<(INTERMEDIATE_DIR)/snapshot.cc',
           ],
-          'action': '<(_inputs) <(_outputs)',
+          'action': ['<@(_inputs)', '<@(_outputs)'],
         },
       ],
       'include_dirs': [

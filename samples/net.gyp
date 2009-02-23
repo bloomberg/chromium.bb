@@ -340,7 +340,7 @@
                'outputs':
                  ['<(INTERMEDIATE_DIR)/../<(RULE_INPUT_ROOT)_clean.dat'],
                'action':
-                 '<(PRODUCT_DIR)/tld_cleanup <(_inputs) <(_outputs)',
+                 ['<(PRODUCT_DIR)/tld_cleanup', '<@(_inputs)', '<@(_outputs)'],
               },
             ],
         },],
@@ -526,7 +526,7 @@
                 '<(SHARED_INTERMEDIATE_DIR)/grit_derived_sources/<(RULE_INPUT_ROOT).h',
               ],
               'action':
-                'python <(depth)/tools/grit/grit.py -i <(RULE_INPUT_PATH) build -o <(SHARED_INTERMEDIATE_DIR)/grit_derived_sources',
+                ['python', '<(depth)/tools/grit/grit.py', '-i', '<(RULE_INPUT_PATH)', 'build', '-o', '<(SHARED_INTERMEDIATE_DIR)/grit_derived_sources'],
             },
           ],
           'direct_dependent_settings': {
@@ -580,7 +580,7 @@
               # But that doesn't work well with the SCons variant dir
               # stuff that builds everything underneath Hammer.  Just
               # put a SCons string in the action, at least for now.
-              'action': '${SOURCES[0]} ${SOURCES[1]} $TARGET',
+              'action': ['${SOURCES[0]}', '${SOURCES[1]}', '$TARGET'],
             }
           ],
         },

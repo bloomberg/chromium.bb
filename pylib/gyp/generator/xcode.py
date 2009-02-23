@@ -376,11 +376,16 @@ def GenerateOutput(target_list, target_dicts, data):
       # output directories already exist, because Xcode will look at the
       # declared outputs and automatically ensure that they exist for us.
 
+      # Turn the list into a string that can be passed to a shell.
+      action_string = gyp.common.EncodePOSIXShellList(action['action'])
+
       # Convert Xcode-type variable references to sh-compatible environment
-      # variable references.  Be sure the script runs in exec, and that if
-      # exec fails, the script exits signalling an error.
-      script = "exec " + re.sub('\$\((.*?)\)', '${\\1}', action['action']) + \
-               "\nexit 1\n"
+      # variable references.
+      action_string_sh = re.sub('\$\((.*?)\)', '${\\1}', action_string)
+
+      # Be sure the script runs in exec, and that if exec fails, the script
+      # exits signalling an error.
+      script = 'exec ' + action_string_sh + '\nexit 1\n'
       ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
             'inputPaths': action['inputs'],
             'name': 'Action "' + action['action_name'] + '"',
@@ -510,7 +515,10 @@ def GenerateOutput(target_list, target_dicts, data):
           for output in concrete_outputs_for_this_rule_source:
             AddSourceToTarget(output, pbxp, xct)
 
-        action = ExpandXcodeVariables(rule['action'], rule_input_dict)
+        # Turn the list into a string that can be passed to a shell.
+        action_string = gyp.common.EncodePOSIXShellList(rule['action'])
+
+        action = ExpandXcodeVariables(action_string, rule_input_dict)
         actions.append(action)
 
       if len(concrete_outputs_all) > 0:

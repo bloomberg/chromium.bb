@@ -56,7 +56,7 @@
           'include_dirs': [
              '../..',
           ],
-        }, {  # OS!=win
+        }, {  # OS!="win"
           'product_name': 'z',
           'sources/': [['exclude', '^contrib/minizip/']],
         }],

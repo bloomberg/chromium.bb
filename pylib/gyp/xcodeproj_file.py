@@ -1188,7 +1188,7 @@ class PBXGroup(XCHierarchicalElement):
         file_ref = variant_group_ref
       return file_ref
     else:
-      # Hieararchical recursion.  Add or get a PBXGroup corresponding to the
+      # Hierarchical recursion.  Add or get a PBXGroup corresponding to the
       # outermost path component, and then recurse into it, chopping off that
       # path component.
       next_dir = path_split[0]

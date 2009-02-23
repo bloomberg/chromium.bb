@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import os.path
+import re
 
 
 def BuildFileAndTarget(build_file, target):
@@ -72,3 +73,74 @@ def RelativePath(path, relative_to):
 
   # Turn it back into a string and we're done.
   return os.path.join(*relative_split)
+
+
+# re objects used by EncodePOSIXShellArgument
+
+# _quote is a pattern that should match any argument that needs to be quoted
+# with double-quotes by EncodePOSIXShellArgument.  It matches the following
+# characters appearing anywhere in an argument:
+#   (space)  so that arguments with spaces in them don't need to have the
+#            spaces backslashed
+#   $        so that variable expansions always expand within a single argument
+#   '        to prevent POSIX shells from interpreting this character for
+#            quoting
+# It also matches the empty string, because "" (or '') is the only way to
+# represent an empty string literal argument to a POSIX shell.
+_quote = re.compile('[ $\']|^$')
+
+# _escape is a pattern that should match any character that needs to be
+# escaped with a backslash, whether or not the argument matched the _quote
+# pattern.  It matches the following characters appearing anywhere in an
+# argument:
+#   "  to prevent POSIX shells from interpreting this character for quoting
+#   \  to prevent POSIX shells from interpreting this character for escaping
+#   `  to prevent POSIX shells from interpreting this character for command
+#      substitution
+# Missing from this list is $, because the desired behavior of
+# EncodePOSIXShellArgument is to permit parameter (variable) expansion.
+#
+# Also missing from this list is !, which bash will interpret as the history
+# expansion character when history is enabled.  bash does not enable history
+# by default in non-interactive shells, so this is not thought to be a problem.
+# ! was omitted from this list because bash interprets "\!" as a literal string
+# including the backslash character (avoiding history expansion but retaining
+# the backslash), which would not be correct for argument encoding.  Handling
+# this case properly would also be problematic because bash allows the history
+# character to be changed with the histchars shell variable.  Fortunately,
+# as history is not enabled in non-interactive shells and
+# EncodePOSIXShellArgument is only expected to encode for non-interactive
+# shells, there is no room for error here by ignoring !.
+_escape = re.compile('(["\\\\`])')
+
+def EncodePOSIXShellArgument(argument):
+  """Encodes |argument| suitably for consumption by POSIX shells.
+
+  argument may be quoted and escaped as necessary to ensure that POSIX shells
+  treat the returned value as a literal representing the argument passed to
+  this function.  Parameter (variable) expansions beginning with $ are allowed
+  to remain intact without escaping the $, to allow the argument to contain
+  references to variables to be expanded by the shell.
+  """
+
+  if _quote.search(argument):
+    quote = '"'
+  else:
+    quote = ''
+
+  encoded = quote + re.sub(_escape, '\\\\\\1', argument) + quote
+
+  return encoded
+
+
+def EncodePOSIXShellList(list):
+  """Encodes |list| suitably for consumption by POSIX shells.
+
+  Returns EncodePOSIXShellArgument for each item in list, and joins them
+  together using the space character as an argument separator.
+  """
+
+  encoded_arguments = []
+  for argument in list:
+    encoded_arguments.append(EncodePOSIXShellArgument(argument))
+  return ' '.join(encoded_arguments)
