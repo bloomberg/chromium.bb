@@ -1004,7 +1004,6 @@ notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct wlsc_compositor *ec = device->ec;
-	struct wlsc_surface *s;
 
 	switch (key | ec->meta_state) {
 	case KEY_EJECTCD | META_DOWN:
@@ -1017,8 +1016,8 @@ notify_key(struct wlsc_input_device *device,
  	case KEY_4 | META_DOWN:
  	case KEY_5 | META_DOWN:
 		update_surface_targets(ec, key - KEY_1);
-		if (device->grab == 0 && s != NULL)
-			device->focus_surface = ec->primary;
+		if (device->grab == 0)
+			device->keyboard_focus = ec->primary;
 		return;
 
 	case KEY_LEFTMETA:
