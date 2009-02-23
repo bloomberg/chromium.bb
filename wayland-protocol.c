@@ -76,6 +76,8 @@ static const struct wl_message input_device_events[] = {
 	{ "motion", "iiii" },
 	{ "button", "uuiiii" },
 	{ "key", "uu" },
+	{ "pointer_focus", "o" },
+	{ "keyboard_focus", "o" },
 };
 
 WL_EXPORT const struct wl_interface wl_input_device_interface = {

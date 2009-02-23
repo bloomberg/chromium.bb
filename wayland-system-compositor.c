@@ -86,7 +86,8 @@ struct wlsc_input_device {
 
 	int grab;
 	struct wlsc_surface *grab_surface;
-	struct wlsc_surface *focus_surface;
+	struct wlsc_surface *pointer_focus;
+	struct wlsc_surface *keyboard_focus;
 };
 
 struct wlsc_compositor {
@@ -858,6 +859,49 @@ wlsc_surface_transform(struct wlsc_surface *surface,
 	*sy = (y - surface->map.y) * surface->height / surface->map.height;
 }
 
+static void
+wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
+				     struct wlsc_surface *surface)
+{
+	if (device->keyboard_focus == surface)
+		return;
+
+	if (device->keyboard_focus &&
+	    (!surface || device->keyboard_focus->base.client != surface->base.client))
+		wl_surface_post_event(&device->keyboard_focus->base,
+				      &device->base,
+				      WL_INPUT_KEYBOARD_FOCUS, NULL);
+
+	/* FIXME: We need to send the currently held down keys in the
+	 * keyboard focus event. */
+	if (surface)
+		wl_surface_post_event(&surface->base,
+				      &device->base,
+				      WL_INPUT_KEYBOARD_FOCUS, &surface->base);
+
+	device->keyboard_focus = surface;
+}
+
+static void
+wlsc_input_device_set_pointer_focus(struct wlsc_input_device *device,
+				    struct wlsc_surface *surface)
+{
+	if (device->pointer_focus == surface)
+		return;
+
+	if (device->pointer_focus &&
+	    (!surface || device->pointer_focus->base.client != surface->base.client))
+		wl_surface_post_event(&device->pointer_focus->base,
+				      &device->base,
+				      WL_INPUT_POINTER_FOCUS, NULL);
+	if (surface)
+		wl_surface_post_event(&surface->base,
+				      &device->base,
+				      WL_INPUT_POINTER_FOCUS, &surface->base);
+
+	device->pointer_focus = surface;
+}
+
 static struct wlsc_surface *
 pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 {
@@ -915,6 +959,9 @@ notify_motion(struct wlsc_input_device *device, int x, int y)
 	device->x = x;
 	device->y = y;
 	es = pick_surface(device, &sx, &sy);
+
+	wlsc_input_device_set_pointer_focus(device, es);
+		
 	if (es)
 		wl_surface_post_event(&es->base, &device->base,
 				      WL_INPUT_MOTION, x, y, sx, sy);
@@ -946,7 +993,7 @@ notify_button(struct wlsc_input_device *device,
 			 * we reference here go away. */
 			device->grab++;
 			device->grab_surface = es;
-			device->focus_surface = es;
+			wlsc_input_device_set_keyboard_focus(device, es);
 		} else {
 			device->grab--;
 		}
@@ -1017,6 +1064,7 @@ notify_key(struct wlsc_input_device *device,
  	case KEY_5 | META_DOWN:
 		update_surface_targets(ec, key - KEY_1);
 		if (device->grab == 0)
+			wlsc_input_device_set_keyboard_focus(device, ec->primary);
 			device->keyboard_focus = ec->primary;
 		return;
 
@@ -1038,8 +1086,8 @@ notify_key(struct wlsc_input_device *device,
 	if (!ec->vt_active)
 		return;
 
-	if (device->focus_surface != NULL)
-		wl_surface_post_event(&device->focus_surface->base,
+	if (device->keyboard_focus != NULL)
+		wl_surface_post_event(&device->keyboard_focus->base,
 				      &device->base, 
 				      WL_INPUT_KEY, key, state);
 }

@@ -52,9 +52,11 @@ extern const struct wl_interface wl_compositor_interface;
 extern const struct wl_interface wl_surface_interface;
 
 
-#define WL_INPUT_MOTION	0
-#define WL_INPUT_BUTTON	1
-#define WL_INPUT_KEY	2
+#define WL_INPUT_MOTION		0
+#define WL_INPUT_BUTTON		1
+#define WL_INPUT_KEY		2
+#define WL_INPUT_POINTER_FOCUS	3
+#define WL_INPUT_KEYBOARD_FOCUS	4
 
 extern const struct wl_interface wl_input_device_interface;
 

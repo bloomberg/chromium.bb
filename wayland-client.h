@@ -119,6 +119,12 @@ struct wl_input_device_listener {
 	void (*key)(void *data,
 		    struct wl_input_device *input_device,
 		    uint32_t button, uint32_t state);
+	void (*pointer_focus)(void *data,
+			      struct wl_input_device *input_device,
+			      struct wl_surface *surface);
+	void (*keyboard_focus)(void *data,
+			       struct wl_input_device *input_device,
+			       struct wl_surface *surface);
 };
 
 int

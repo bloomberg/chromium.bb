@@ -475,10 +475,26 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 				       state, window->modifiers, window->user_data);
 }
 
+static void
+window_handle_pointer_focus(void *data,
+			    struct wl_input_device *input_device,
+			    struct wl_surface *surface)
+{
+}
+
+static void
+window_handle_keyboard_focus(void *data,
+			     struct wl_input_device *input_device,
+			     struct wl_surface *surface)
+{
+}
+
 static const struct wl_input_device_listener input_device_listener = {
 	window_handle_motion,
 	window_handle_button,
 	window_handle_key,
+	window_handle_pointer_focus,
+	window_handle_keyboard_focus,
 };
 
 void
