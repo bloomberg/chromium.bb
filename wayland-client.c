@@ -566,6 +566,7 @@ wl_compositor_create_surface(struct wl_compositor *compositor)
 	surface->proxy.base.interface = &wl_surface_interface;
 	surface->proxy.base.id = wl_display_allocate_id(compositor->proxy.display);
 	surface->proxy.display = compositor->proxy.display;
+	wl_hash_insert(compositor->proxy.display->objects, &surface->proxy.base);
 	wl_proxy_marshal(&compositor->proxy,
 			  WL_COMPOSITOR_CREATE_SURFACE, surface);
 
