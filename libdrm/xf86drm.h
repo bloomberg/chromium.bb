@@ -325,28 +325,28 @@ typedef struct _drmSetVersion {
 
 #elif defined(__alpha__)
 
-#define	DRM_CAS(lock, old, new, ret) 		\
- 	do {					\
- 		int old32;                      \
- 		int cur32;			\
- 		__asm__ __volatile__(		\
- 		"       mb\n"			\
- 		"       zap   %4, 0xF0, %0\n"   \
- 		"       ldl_l %1, %2\n"		\
- 		"       zap   %1, 0xF0, %1\n"   \
-                "       cmpeq %0, %1, %1\n"	\
-                "       beq   %1, 1f\n"		\
- 		"       bis   %5, %5, %1\n"	\
-                "       stl_c %1, %2\n"		\
-                "1:     xor   %1, 1, %1\n"	\
-                "       stl   %1, %3"		\
-                : "=r" (old32),                 \
-		  "=&r" (cur32),		\
-                   "=m" (__drm_dummy_lock(lock)),\
-                   "=m" (ret)			\
- 		: "r" (old),			\
- 		  "r" (new));			\
- 	} while(0)
+#define	DRM_CAS(lock, old, new, ret)		\
+	do {					\
+		int tmp, old32;			\
+		__asm__ __volatile__(		\
+		"	addl	$31, %5, %3\n"	\
+		"1:	ldl_l	%0, %2\n"	\
+		"	cmpeq	%0, %3, %1\n"	\
+		"	beq	%1, 2f\n"	\
+		"	mov	%4, %0\n"	\
+		"	stl_c	%0, %2\n"	\
+		"	beq	%0, 3f\n"	\
+		"	mb\n"			\
+		"2:	cmpeq	%1, 0, %1\n"	\
+		".subsection 2\n"		\
+		"3:	br	1b\n"		\
+		".previous"			\
+		: "=&r"(tmp), "=&r"(ret),	\
+		  "=m"(__drm_dummy_lock(lock)),	\
+		  "=&r"(old32)			\
+		: "r"(new), "r"(old)		\
+		: "memory");			\
+	} while (0)
 
 #elif defined(__sparc__)
 
@@ -429,7 +429,9 @@ do {	register unsigned int __old __asm("o0");		\
 #define DRM_CAS(lock,old,new,ret) do { ret=1; } while (0) /* FAST LOCK FAILS */
 #endif
 
-#if defined(__alpha__) || defined(__powerpc__)
+#if defined(__alpha__)
+#define DRM_CAS_RESULT(_result)		long _result
+#elif defined(__powerpc__)
 #define DRM_CAS_RESULT(_result)		int _result
 #else
 #define DRM_CAS_RESULT(_result)		char _result
