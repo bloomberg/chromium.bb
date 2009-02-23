@@ -506,7 +506,6 @@ terminal_run(struct terminal *terminal, const char *path)
 
 	pid = forkpty(&master, NULL, NULL, NULL);
 	if (pid == 0) {
-		close(master);
 		setenv("TERM", "vt100", 1);
 		if (execl(path, path, NULL)) {
 			printf("exec failed: %m\n");
