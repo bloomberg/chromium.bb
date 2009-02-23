@@ -20,7 +20,19 @@ import sys
 
 
 generator_default_variables = {
-  'OS': 'linux',
+    'EXECUTABLE_PREFIX': '',
+    'EXECUTABLE_SUFFIX': '',
+    'INTERMEDIATE_DIR': '$DESTINATION_ROOT/obj/intermediate',
+    'SHARED_INTERMEDIATE_DIR': '$DESTINATION_ROOT/obj/global_intermediate',
+    'OS': 'linux',
+    'PRODUCT_DIR': '$DESTINATION_ROOT',
+    # TODO:  Figure out what (if anything) to put in RUL_INPUT_* for SCons.
+    # Right now are just place-holders (copied from xcode.py)
+    # so gyp doesn't blow up.
+    'RULE_INPUT_ROOT': '$(INPUT_FILE_BASE)',
+    'RULE_INPUT_EXT': '$(INPUT_FILE_SUFFIX)',
+    'RULE_INPUT_NAME': '$(INPUT_FILE_NAME)',
+    'RULE_INPUT_PATH': '$(INPUT_FILE_PATH)',
 }
 
 
@@ -116,7 +128,7 @@ def GenerateSConscript(output_filename, build_file, spec, config):
 
   fp.write(')\n')
 
-  sources = spec['sources']
+  sources = spec.get('sources')
   if sources:
     pre = '\ninput_files = ChromeFileList([\n    '
     WriteList(fp, map(repr, sources), preamble=pre, postamble=',\n])\n')
@@ -129,7 +141,7 @@ def GenerateSConscript(output_filename, build_file, spec, config):
     fp.write('env.Command(\n')
     fp.write('  %s,\n' % pprint.pformat(action.get('outputs', [])))
     fp.write('  %s,\n' % pprint.pformat(action.get('inputs', [])))
-    fp.write('  \'%s\'\n' % action['action'])
+    fp.write('  [%s]\n' % action['action'])
     fp.write(')\n')
 
   fp.close()

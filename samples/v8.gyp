@@ -274,6 +274,10 @@
             '<(SHARED_INTERMEDIATE_DIR)/v8/libraries-empty.cc',
           ],
           'action': ['python', 'tools/js2c.py', '<@(_outputs)', 'CORE', '<@(library_files)'],
+          # TODO(sgk):  figure out how to get gyp and SCons to play nice here.
+          'conditions': [
+            ['OS=="linux"', {'action=': ['python', '${SOURCES[0]}', '${TARGETS}', 'CORE', '${SOURCES[1:]}'],}],
+          ],
         },
       ],
     },
@@ -300,6 +304,10 @@
             '<(SHARED_INTERMEDIATE_DIR)/v8/d8-js-empty.cc',
           ],
           'action': ['python', 'tools/js2c.py', '<@(_outputs)', 'D8', '<@(library_files)'],
+          # TODO(sgk):  figure out how to get gyp and SCons to play nice here.
+          'conditions': [
+            ['OS=="linux"', {'action=': ['python', '${SOURCES[0]}', '${TARGETS}', 'D8', '${SOURCES[1:]}'],}],
+          ],
         },
       ],
     },
