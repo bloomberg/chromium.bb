@@ -138,7 +138,7 @@ void dump_encoders(void)
 	printf("\n");
 }
 
-void dump_mode(struct drm_mode_modeinfo *mode)
+void dump_mode(drmModeModeInfo *mode)
 {
 	printf("  %s %.02f %d %d %d %d %d %d %d %d\n",
 	       mode->name,
@@ -151,6 +151,19 @@ void dump_mode(struct drm_mode_modeinfo *mode)
 	       mode->vsync_start,
 	       mode->vsync_end,
 	       mode->vtotal);
+}
+
+static void
+dump_props(drmModeConnector *connector)
+{
+	drmModePropertyPtr props;
+	int i;
+
+	for (i = 0; i < connector->count_props; i++) {
+		props = drmModeGetProperty(fd, connector->props[i]);
+		printf("\t%s, flags %d\n", props->name, props->flags);
+		drmModeFreeProperty(props);
+	}
 }
 
 void dump_connectors(void)
@@ -187,6 +200,9 @@ void dump_connectors(void)
 			dump_mode(&connector->modes[j]);
 
 		drmModeFreeConnector(connector);
+
+		printf("  props:\n");
+		dump_props(connector);
 	}
 	printf("\n");
 }
@@ -252,7 +268,7 @@ void dump_framebuffers(void)
 struct connector {
 	int id;
 	char mode_str[64];
-	struct drm_mode_modeinfo *mode;
+	drmModeModeInfo *mode;
 	drmModeEncoder *encoder;
 	int crtc;
 };	
