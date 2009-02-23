@@ -523,15 +523,15 @@
                 '<(depth)/tools/grit/grit.py',
               ],
               'outputs': [
-                '$(OutDir)/grit_derived_sources/$(InputName).h',
+                '<(SHARED_INTERMEDIATE_DIR)/grit_derived_sources/<(RULE_INPUT_ROOT).h',
               ],
               'action':
-                'python <(depth)/tools/grit/grit.py -i <(RULE_INPUT_PATH) build -o $(OutDir)/grit_derived_sources',
+                'python <(depth)/tools/grit/grit.py -i <(RULE_INPUT_PATH) build -o <(SHARED_INTERMEDIATE_DIR)/grit_derived_sources',
             },
           ],
           'direct_dependent_settings': {
             'include_dirs': [
-              '$(OutDir)/grit_derived_sources',
+              '<(SHARED_INTERMEDIATE_DIR)/grit_derived_sources',
             ],
           },
         },
