@@ -4010,7 +4010,7 @@
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
+#        '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
       ],
       'sources': [
         # webkit_version rule
