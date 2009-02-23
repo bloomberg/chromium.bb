@@ -99,7 +99,6 @@
           '_HAS_TR1=0',
         ],
         'include_dirs': [
-          '..',
           '<(depth)/third_party/platformsdk_win2008_6_1/files/Include',
           '$(VSInstallDir)/VC/atlmfc/include',
         ],

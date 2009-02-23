@@ -128,17 +128,25 @@
           'action_name': 'config.h',
           'inputs': [
             'config.h.in',
+            '../third_party/WebKit/WebCore/bridge/npapi.h',
+            '../third_party/WebKit/WebCore/bridge/npruntime.h',
+            'port/bindings/v8/npruntime_priv.h',
+            '../third_party/WebKit/JavaScriptCore/os-win32/stdint.h',
           ],
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/config.h',
           ],
-          # TODO(mark): INTERMEDIATE_DIR won't be right when that goes back
-          # to being target-specific, but right now, it's unused as no other
-          # headers are copied.  Additional copied headers (other than
-          # config.h) probably shouldn't be available too widely, so they
-          # probably shouldn't go into <(SHARED_INTERMEDIATE_DIR)/webkit or
-          # anything else in direct_dependent_settings.
-          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit <(INTERMEDIATE_DIR) <(_inputs)',
+          # TODO(bradnelson): maybe these headers shouldn't be in the
+          #     SHARED_INTERMEDIATE_DIR, its very global.
+          'action': 'python build/action_jsconfig.py v8 <(SHARED_INTERMEDIATE_DIR)/webkit <(SHARED_INTERMEDIATE_DIR)/webkit <(_inputs)',
+
+          'conditions': [
+            ['OS=="win"', {
+              'inputs': [
+                '../third_party/WebKit/JavaScriptCore/os-win32/stdint.h',
+              ],
+            }],
+          ],
         },
       ],
       'direct_dependent_settings': {
@@ -318,13 +326,18 @@
             ['include', 'Thread(ing|Specific)Win\\.cpp$']
           ],
           'include_dirs': [
+            'build',
             '../third_party/WebKit/JavaScriptCore/kjs',
             '../third_party/WebKit/JavaScriptCore/API',
+            # These 3 do not seem to exist.
             '../third_party/WebKit/JavaScriptCore/bindings',
             '../third_party/WebKit/JavaScriptCore/bindings/c',
-            '../third_party/WebKit/JavaScriptCore/bindings/ini',
+            '../third_party/WebKit/JavaScriptCore/bindings/jni',
             'pending',
             'pending/wtf',
+          ],
+          'include_dirs!': [
+            '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
         }],
       ],
@@ -411,10 +424,10 @@
             '../third_party/WebKit/WebCore/css/SVGCSSValueKeywords.in',
           ],
           'outputs': [
-            '<(INTERMEDIATE_DIR)/CSSValueKeywords.c',
-            '<(INTERMEDIATE_DIR)/CSSValueKeywords.gperf',
-            '<(INTERMEDIATE_DIR)/CSSValueKeywords.h',
-            '<(INTERMEDIATE_DIR)/CSSValueKeywords.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.c',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.gperf',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.h',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.in',
           ],
           'action': 'python build/action_cssvaluekeywords.py <(_inputs) <(_outputs)',
         },
@@ -534,10 +547,10 @@
           # outputs.  The harness script will generate one file and copy it to
           # the other.
           'outputs': [
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).c',
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).c',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
           ],
-          'action': 'python build/rule_gperf.py <(RULE_INPUT_PATH) <(INTERMEDIATE_DIR)',
+          'action': 'python build/rule_gperf.py <(RULE_INPUT_PATH) <(SHARED_INTERMEDIATE_DIR)/webkit',
           'process_outputs_as_sources': 0,
         },
         # Rule to build generated JavaScript (V8) bindings from .idl source.
@@ -3964,6 +3977,7 @@
       'target_name': 'glue',
       'type': 'static_library',
       'dependencies': [
+        'config',
         'webcore',
         '../net/net.gyp:net',
       ],

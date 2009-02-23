@@ -67,6 +67,10 @@
         '../../../third_party/npapi/npapi.gyp:npapi',
         '../../webkit.gyp:glue',
       ],
+      # For breakpad.
+      'include_dirs': [
+        '../../../breakpad/src',
+      ],
       'conditions': [
         ['OS!="linux"', {'sources/': [['exclude', '_gtk\\.cc$']]}],
         ['OS!="mac"', {
@@ -75,7 +79,9 @@
             ['exclude', '_mac\\.(cc|mm?)$'],
           ]
         }],
-        ['OS!="win"', {
+        ['OS=="win"', {
+          'msvs_disabled_warnings': [ 4800 ],
+        }, {  # OS!=win
           'sources/': [
             ['exclude', '_win\\.cc$']
           ],
@@ -167,7 +173,9 @@
         '../../webkit.gyp:glue',
       ],
       'conditions': [
-        ['OS!="win"', {
+        ['OS=="win"', {
+          'msvs_disabled_warnings': [ 4800 ],
+        }, {  # OS!=win
           'sources!': [
             '../../../skia/ext/vector_canvas_unittest.cc',
             '../webcore_unit_tests/UniscribeHelper_unittest.cpp',

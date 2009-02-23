@@ -50,7 +50,13 @@
         ],
       },
       'conditions': [
-        ['OS!="win"', {
+        ['OS=="win"', {
+          # This is needed for the stuff in contrib/minizip.
+          # They include: third_party/zlib/zlib.h
+          'include_dirs': [
+             '../..',
+          ],
+        }, {  # OS!=win
           'product_name': 'z',
           'sources/': [['exclude', '^contrib/minizip/']],
         }],

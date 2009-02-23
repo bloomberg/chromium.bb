@@ -147,8 +147,8 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     _ToolAppend(tools, 'VCCLCompilerTool',
                 'AdditionalIncludeDirectories', include_dirs)
 
-    # Add in libraries (really system libraries at this point).
-    libraries = spec.get('libraries', [])
+    # Add in libraries.
+    libraries = spec.get('libraries', []) + c.get('msvs_system_libraries', [])
     _ToolAppend(tools, 'VCLinkerTool',
                 'AdditionalDependencies', libraries)
 
@@ -228,10 +228,13 @@ def _GenerateProject(vcproj_filename, build_file, spec):
   sources = spec.get('sources', [])
   # Add in the gyp file.
   sources.append(os.path.split(build_file)[1])
-  # Add in 'action' inputs.
+  # Add in 'action' inputs and outputs.
   actions = spec.get('actions', [])
   for a in actions:
     for i in a.get('inputs', []):
+      if i not in sources:
+        sources.append(i)
+    for i in a.get('outputs', []):
       if i not in sources:
         sources.append(i)
   # Convert to proper windows form.
