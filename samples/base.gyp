@@ -70,6 +70,7 @@
         'debug_on_start.h',
         'debug_util.cc',
         'debug_util.h',
+        'debug_util_mac.cc',
         'debug_util_posix.cc',
         'debug_util_win.cc',
         'directory_watcher.h',
