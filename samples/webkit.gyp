@@ -2808,6 +2808,8 @@
         '../third_party/WebKit/WebCore/platform/Arena.cpp',
         '../third_party/WebKit/WebCore/platform/Arena.h',
         '../third_party/WebKit/WebCore/platform/AutodrainedPool.h',
+        '../third_party/WebKit/WebCore/platform/ContentType.cpp',
+        '../third_party/WebKit/WebCore/platform/ContentType.h',
         '../third_party/WebKit/WebCore/platform/ContextMenu.cpp',
         '../third_party/WebKit/WebCore/platform/ContextMenu.h',
         '../third_party/WebKit/WebCore/platform/ContextMenuItem.h',
