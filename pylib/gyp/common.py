@@ -71,6 +71,10 @@ def RelativePath(path, relative_to):
   relative_split = [os.path.pardir] * (len(relative_to_split) - prefix_len) + \
                    path_split[prefix_len:]
 
+  if len(relative_split) == 0:
+    # The paths were the same.
+    return ''
+
   # Turn it back into a string and we're done.
   return os.path.join(*relative_split)
 
