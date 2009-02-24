@@ -80,6 +80,9 @@
           ['_type=="shared_library"', {
             'xcode_settings': {'GCC_DYNAMIC_NO_PIC': 'NO'},
           }],
+          ['_type!="static_library"', {
+            'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-search_paths_first']},
+          }],
         ],
       },
     }],

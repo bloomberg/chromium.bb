@@ -12,6 +12,9 @@ import subprocess
 # A list of types that are treated as linkable.
 linkable_types = ['application', 'executable', 'shared_library']
 
+# A list of sections that contain links to other targets.
+dependency_sections = ['dependencies', 'export_dependent_settings']
+
 # A list of sections that contain pathnames.  You should probably call
 # IsPathSection instead, which has other checks.
 path_sections = [
@@ -520,7 +523,7 @@ def QualifyDependencies(targets):
 
   for target, target_dict in targets.iteritems():
     target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
-    for dependency_key in ('dependencies', 'export_dependent_settings'):
+    for dependency_key in dependency_sections:
       dependencies = target_dict.get(dependency_key, [])
       for index in xrange(0, len(dependencies)):
         dependency = gyp.common.QualifiedTarget(target_build_file,
@@ -533,6 +536,60 @@ def QualifyDependencies(targets):
            dependency not in target_dict['dependencies']:
           raise KeyError, 'Found ' + dependency + ' in ' + dependency_key + \
                           ' of ' + target + ', but not in dependencies'
+
+
+def ExpandWildcardDependencies(targets, data):
+  """Expands dependencies specified as build_file:*.
+
+  For each target in |targets|, examines sections containing links to other
+  targets.  If any such section contains a link of the form build_file:*, it
+  is taken as a wildcard link, and is expanded to list each target in
+  build_file.  The |data| dict provides access to build file dicts.
+
+  All dependency names, including the keys to |targets| and the values in each
+  dependency list, must be qualified when this function is called.
+  """
+
+  for target, target_dict in targets.iteritems():
+    target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    for dependency_key in dependency_sections:
+      dependencies = target_dict.get(dependency_key, [])
+
+      # Loop this way instead of "for dependency in" or "for index in xrange"
+      # because the dependencies list will be modified within the loop body.
+      index = 0
+      while index < len(dependencies):
+        (dependency_build_file, dependency_target) = \
+            gyp.common.BuildFileAndTarget('', dependencies[index])[0:2]
+        if dependency_target != '*':
+          # Not a wildcard.  Keep it moving.
+          index = index + 1
+          continue
+
+        if dependency_build_file == target_build_file:
+          # It's an error for a target to depend on all other targets in
+          # the same file, because a target cannot depend on itself.
+          raise KeyError, 'Found wildcard in ' + dependency_key + ' of ' + \
+                          target + ' referring to same build file'
+
+        # Take the wildcard out and adjust the index so that the next
+        # dependency in the list will be processed the next time through the
+        # loop.
+        del dependencies[index]
+        index = index - 1
+
+        # Loop through the targets in the other build file, adding them to
+        # this target's list of dependencies in place of the removed
+        # wildcard.
+        dependency_target_dicts = data[dependency_build_file]['targets']
+        for dependency_target_dict in dependency_target_dicts:
+          dependency_target_name = dependency_target_dict['target_name']
+          dependency = gyp.common.QualifiedTarget(dependency_build_file,
+                                                  dependency_target_name)
+          index = index + 1
+          dependencies.insert(index, dependency)
+
+        index = index + 1
 
 
 class DependencyGraphNode(object):
@@ -1311,6 +1368,9 @@ def Load(build_files, variables, includes):
 
   # Fully qualify all dependency links.
   QualifyDependencies(targets)
+
+  # Expand dependencies specified as build_file:*.
+  ExpandWildcardDependencies(targets, data)
 
   [dependency_nodes, flat_list] = BuildDependencyList(targets)
 
