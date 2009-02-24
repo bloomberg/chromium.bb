@@ -1,7 +1,4 @@
 {
-  'variables': {
-    'depth': '..',
-  },
   'includes': [
     '../build/common.gypi',
   ],
@@ -521,13 +518,13 @@
               'rule_name': 'grit',
               'extension': 'grd',
               'inputs': [
-                '<(depth)/tools/grit/grit.py',
+                '<(DEPTH)/tools/grit/grit.py',
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/grit_derived_sources/<(RULE_INPUT_ROOT).h',
               ],
               'action':
-                ['python', '<(depth)/tools/grit/grit.py', '-i', '<(RULE_INPUT_PATH)', 'build', '-o', '<(SHARED_INTERMEDIATE_DIR)/grit_derived_sources'],
+                ['python', '<(DEPTH)/tools/grit/grit.py', '-i', '<(RULE_INPUT_PATH)', 'build', '-o', '<(SHARED_INTERMEDIATE_DIR)/grit_derived_sources'],
             },
           ],
           'direct_dependent_settings': {

@@ -1,6 +1,5 @@
 {
   'variables': {
-    'depth': '..',
     'feature_defines': [
       'ENABLE_DATABASE=1',
       'ENABLE_DASHBOARD_SUPPORT=0',

@@ -20,8 +20,7 @@ def main(args):
   my_name = os.path.basename(sys.argv[0])
 
   parser = optparse.OptionParser()
-  usage = 'usage: %s [-D VAR=VAL ...] [-f FORMAT] [-I INCLUDE ...] ' + \
-          '[build_file ...]'
+  usage = 'usage: %s [options ...] [build_file ...]'
   parser.set_usage(usage.replace('%s', '%prog'))
   parser.add_option('-D', dest='defines', action='append', metavar='VAR=VAL',
                     help='sets variable VAR to value VAL')
@@ -30,18 +29,51 @@ def main(args):
   parser.add_option('-I', '--include', dest='includes', action='append',
                     metavar='INCLUDE',
                     help='files to include in all loaded .gyp files')
+  parser.add_option('--depth', dest='depth', metavar='PATH',
+                    help='set DEPTH gyp variable to a relative path to PATH')
+
   (options, build_files) = parser.parse_args(args)
+
   if not options.format:
     options.format = {'darwin': 'xcode',
                       'win32':  'msvs',
                       'cygwin': 'msvs',
                       'linux2': 'scons',}[sys.platform]
+
   if not build_files:
     build_files = FindBuildFiles()
   if not build_files:
     print >>sys.stderr, (usage + '\n\n%s: error: no build_file') % \
                         (my_name, my_name)
     return 1
+
+  # TODO(mark): Chromium-specific hack!
+  # For Chromium, the gyp "depth" variable should always be a relative path
+  # to Chromium's top-level "src" directory.  If no depth variable was set
+  # on the command line, try to find a "src" directory by looking at the
+  # absolute path to each build file's directory.  The first "src" component
+  # found will be treated as though it were the path used for --depth.
+  if not options.depth:
+    for build_file in build_files:
+      build_file_dir = os.path.abspath(os.path.dirname(build_file))
+      build_file_dir_components = build_file_dir.split(os.path.sep)
+      components_len = len(build_file_dir_components)
+      for index in xrange(components_len - 1, -1, -1):
+        if build_file_dir_components[index] == 'src':
+          options.depth = os.path.sep.join(build_file_dir_components)
+          break
+        del build_file_dir_components[index]
+
+      # If the inner loop found something, break without advancing to another
+      # build file.
+      if options.depth:
+        break
+
+    if not options.depth:
+      raise Exception, \
+            'Could not automatically locate src directory.  This is a ' + \
+            'temporary Chromium feature that will be removed.  Use ' + \
+            '--depth as a workaround.'
 
   default_variables = {}
 
@@ -70,7 +102,7 @@ def main(args):
   default_variables.update(generator.generator_default_variables)
 
   [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
-                                              options.includes)
+                                              options.includes, options.depth)
 
   # TODO(mark): Pass |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept

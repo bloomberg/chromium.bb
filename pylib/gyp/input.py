@@ -123,7 +123,13 @@ def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, variables):
 # TODO(mark): I don't love this name.  It just means that it's going to load
 # a build file that contains targets and is expected to provide a targets dict
 # that contains the targets...
-def LoadTargetBuildFile(build_file_path, data, variables, includes):
+def LoadTargetBuildFile(build_file_path, data, variables, includes, depth):
+  # If depth is set, predefine the DEPTH variable to be a relative path from
+  # this build file's directory to the directory identified by depth.
+  if depth:
+    variables['DEPTH'] = \
+        gyp.common.RelativePath(depth, os.path.dirname(build_file_path))
+
   if build_file_path in data:
     # Already loaded.
     return
@@ -168,7 +174,7 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes):
       for dependency in target_dict['dependencies']:
         other_build_file = \
             gyp.common.BuildFileAndTarget(build_file_path, dependency)[0]
-        LoadTargetBuildFile(other_build_file, data, variables, includes)
+        LoadTargetBuildFile(other_build_file, data, variables, includes, depth)
 
   return data
 
@@ -1351,7 +1357,7 @@ def ValidateRulesInTarget(target, target_dict):
       rule['rule_sources'] = rule_sources
 
 
-def Load(build_files, variables, includes):
+def Load(build_files, variables, includes, depth):
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
   # and the values are the entire build file contents after "early" or "pre"
@@ -1361,7 +1367,7 @@ def Load(build_files, variables, includes):
     # Normalize paths everywhere.  This is important because paths will be
     # used as keys to the data dict and for references between input files.
     build_file = os.path.normpath(build_file)
-    LoadTargetBuildFile(build_file, data, variables, includes)
+    LoadTargetBuildFile(build_file, data, variables, includes, depth)
 
   # Build a dict to access each target's subdict by qualified name.
   targets = BuildTargetsDict(data)

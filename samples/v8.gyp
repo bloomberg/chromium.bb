@@ -1,6 +1,5 @@
 {
   'variables': {
-    'depth': '..',
     'base_source_files': [
       'src/third_party/dtoa/dtoa.c',
       'src/third_party/jscre/ASCIICType.h',

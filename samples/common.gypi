@@ -102,7 +102,7 @@
           '_HAS_TR1=0',
         ],
         'include_dirs': [
-          '<(depth)/third_party/platformsdk_win2008_6_1/files/Include',
+          '<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Include',
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_dirs': ['../third_party/cygwin'],
@@ -122,7 +122,7 @@
             'AdditionalOptions': '/ignore:4221',
             'OutputFile': '$(OutDir)\\lib\\$(ProjectName).lib',
             'AdditionalLibraryDirectories':
-              '<(depth)/third_party/platformsdk_win2008_6_1/files/Lib',
+              '<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib',
           },
           'VCLinkerTool': {
             'AdditionalOptions':
@@ -136,7 +136,7 @@
               'psapi.lib',
             ],
             'AdditionalLibraryDirectories':
-              '<(depth)/third_party/platformsdk_win2008_6_1/files/Lib',
+              '<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib',
             'DelayLoadDLLs': 'dwmapi.dll,uxtheme.dll',
             'GenerateDebugInformation': 'true',
             'MapFileName': '$(OutDir)\\$(TargetName).map',
@@ -155,7 +155,7 @@
           },
           'VCResourceCompilerTool': {
             'Culture' : '1033',
-            'AdditionalIncludeDirectories': '<(depth)',
+            'AdditionalIncludeDirectories': '<(DEPTH)',
           },
         },
       },
@@ -178,6 +178,6 @@
     # directory used by the non-gyp Xcode build system.  When the gyp-based
     # Xcode build system replaces the older system, this should be changed to
     # simply "xcodebuild" or some other suitable name.
-    'SYMROOT': '<(depth)/xcodebuild_gyp',
+    'SYMROOT': '<(DEPTH)/xcodebuild_gyp',
   },
 }

@@ -1,6 +1,5 @@
 {
   'variables': {
-    'depth': '../..',
     'conditions': [
       ['OS=="linux"', {'os_include': 'linux'}],
       ['OS=="mac"', {'os_include': 'mac'}],
