@@ -976,7 +976,11 @@ class XCHierarchicalElement(XCObject):
     # This function should be used only to compare direct children of the
     # containing PBXProject's mainGroup.  These groups should appear in the
     # listed order.
-    order = ['Source', 'Intermediates', 'Projects', 'Frameworks', 'Products']
+    # TODO(mark): "Build" is used by gyp.generator.xcode, perhaps the
+    # generator should have a way of influencing this list rather than having
+    # to hardcode for the generator here.
+    order = ['Source', 'Intermediates', 'Projects', 'Frameworks', 'Products',
+             'Build']
 
     # If the groups aren't in the listed order, do a name comparison.
     # Otherwise, groups in the listed order should come before those that

@@ -323,8 +323,10 @@ def GenerateOutput(target_list, target_dicts, data):
     pbxp = xcp.project
 
     main_group = pbxp.GetProperty('mainGroup')
+    build_group = gyp.xcodeproj_file.PBXGroup({'name': 'Build'})
+    main_group.AppendChild(build_group)
     for included_file in build_file_dict['included_files']:
-      main_group.AddOrGetFileByPath(included_file, False)
+      build_group.AddOrGetFileByPath(included_file, False)
 
   xcode_targets = {}
   for qualified_target in target_list:
