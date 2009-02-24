@@ -75,24 +75,37 @@ def RelativePath(path, relative_to):
   return os.path.join(*relative_split)
 
 
-# re objects used by EncodePOSIXShellArgument
+# re objects used by EncodePOSIXShellArgument.  See IEEE 1003.1 XCU.2.2 at
+# http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_02
+# and the documentation for various shells.
 
 # _quote is a pattern that should match any argument that needs to be quoted
 # with double-quotes by EncodePOSIXShellArgument.  It matches the following
 # characters appearing anywhere in an argument:
-#   (space)  so that arguments with spaces in them don't need to have the
-#            spaces backslashed
-#   $        so that variable expansions always expand within a single argument
-#   '        to prevent POSIX shells from interpreting this character for
-#            quoting
+#   \t, \n, space  parameter separators
+#   #              comments
+#   $              expansions (quoted to always expand within one argument)
+#   &              job control
+#   '              quoting
+#   (, )           subshell execution
+#   *, ?           globbing
+#   ;              command delimiter
+#   <, >, |        redirection
+#   ~              tilde expansion
 # It also matches the empty string, because "" (or '') is the only way to
 # represent an empty string literal argument to a POSIX shell.
-_quote = re.compile('[ $\']|^$')
+#
+# This does not match the characters in _escape, because those need to be
+# backslash-escaped regardless of whether they appear in a double-quoted
+# string.
+_quote = re.compile('[\t\n #$&\'()*;<>?|~]|^$')
 
 # _escape is a pattern that should match any character that needs to be
 # escaped with a backslash, whether or not the argument matched the _quote
-# pattern.  It matches the following characters appearing anywhere in an
-# argument:
+# pattern.  _escape is used with re.sub to backslash anything in _escape's
+# first match group, hence the (parentheses) in the regular expression.
+#
+# _escape matches the following characters appearing anywhere in an argument:
 #   "  to prevent POSIX shells from interpreting this character for quoting
 #   \  to prevent POSIX shells from interpreting this character for escaping
 #   `  to prevent POSIX shells from interpreting this character for command
@@ -111,7 +124,7 @@ _quote = re.compile('[ $\']|^$')
 # as history is not enabled in non-interactive shells and
 # EncodePOSIXShellArgument is only expected to encode for non-interactive
 # shells, there is no room for error here by ignoring !.
-_escape = re.compile('(["\\\\`])')
+_escape = re.compile(r'(["\\`])')
 
 def EncodePOSIXShellArgument(argument):
   """Encodes |argument| suitably for consumption by POSIX shells.
@@ -128,7 +141,7 @@ def EncodePOSIXShellArgument(argument):
   else:
     quote = ''
 
-  encoded = quote + re.sub(_escape, '\\\\\\1', argument) + quote
+  encoded = quote + re.sub(_escape, r'\\\1', argument) + quote
 
   return encoded
 
