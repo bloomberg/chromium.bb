@@ -438,6 +438,9 @@
         'browser/download/download_item_model.h',
         'browser/download/download_manager.cc',
         'browser/download/download_manager.h',
+        'browser/download/download_request_dialog_delegate.h',
+        'browser/download/download_request_dialog_delegate_win.cc',
+        'browser/download/download_request_dialog_delegate_win.h',
         'browser/download/download_request_manager.cc',
         'browser/download/download_request_manager.h',
         'browser/download/download_util.cc',
@@ -1111,10 +1114,6 @@
       'conditions': [
         ['OS!="win"', {
           'sources/': [
-            # Exclude most of autocomplete.
-            ['exclude', '^browser/autocomplete/'],
-            ['include', '^browser/autocomplete/(history_contents|keyword)_provider\\.cc$'],
-
             # Exclude most of automation.
             ['exclude', '^browser/automation/'],
             ['include', '^browser/automation/automation_resource_tracker\\.cc$'],
@@ -1127,6 +1126,7 @@
             # Exclude most of download.
             ['exclude', '^browser/download/'],
             ['include', '^browser/download/download_(file|manager)\\.cc$'],
+            ['include', '^browser/download/download_request_manager\\.cc$'],
             ['include', '^browser/download/save_(file(_manager)?|item|package)\\.cc$'],
 
             # Exclude all of hang_monitor.
@@ -1147,6 +1147,10 @@
             ['exclude', '^browser/views/'],
           ],
           'sources!': [
+            'browser/autocomplete/autocomplete_accessibility.cc',
+            'browser/autocomplete/autocomplete_edit.cc',
+            'browser/autocomplete/autocomplete_popup.cc',
+            'browser/autocomplete/edit_drop_target.cc',
             'browser/bookmarks/bookmark_context_menu.cc',
             'browser/bookmarks/bookmark_drag_data.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
