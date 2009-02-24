@@ -317,9 +317,14 @@ def GenerateOutput(target_list, target_dicts, data):
     build_file_stem = build_file[:-4]
     # TODO(mark): To keep gyp-generated xcodeproj bundles from colliding with
     # checked-in versions, temporarily put _gyp into the ones created here.
-    xcode_projects[build_file] = \
-        XcodeProject(build_file, build_file_stem + '_gyp.xcodeproj',
-                     build_file_dict)
+    xcp = XcodeProject(build_file, build_file_stem + '_gyp.xcodeproj',
+                       build_file_dict)
+    xcode_projects[build_file] = xcp
+    pbxp = xcp.project
+
+    main_group = pbxp.GetProperty('mainGroup')
+    for included_file in build_file_dict['included_files']:
+      main_group.AddOrGetFileByPath(included_file, False)
 
   xcode_targets = {}
   for qualified_target in target_list:

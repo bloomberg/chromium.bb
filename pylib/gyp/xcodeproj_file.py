@@ -972,6 +972,35 @@ class XCHierarchicalElement(XCObject):
       return -1
     return 1
 
+  def CompareRootGroup(self, other):
+    # This function should be used only to compare direct children of the
+    # containing PBXProject's mainGroup.  These groups should appear in the
+    # listed order.
+    order = ['Source', 'Intermediates', 'Projects', 'Frameworks', 'Products']
+
+    # If the groups aren't in the listed order, do a name comparison.
+    # Otherwise, groups in the listed order should come before those that
+    # aren't.
+    self_name = self.Name()
+    other_name = other.Name()
+    self_in = isinstance(self, PBXGroup) and self_name in order
+    other_in = isinstance(self, PBXGroup) and other_name in order
+    if not self_in and not other_in:
+      return self.Compare(other)
+    if self_name in order and not other_name in order:
+      return -1
+    if other_name in order and not self_name in order:
+      return 1
+
+    # If both groups are in the listed order, go by the defined order.
+    self_index = order.index(self_name)
+    other_index = order.index(other_name)
+    if self_index < other_index:
+      return -1
+    if self_index > other_index:
+      return 1
+    return 0
+
   def PathFromSourceTreeAndPath(self):
     # Turn the object's sourceTree and path properties into a single flat
     # string of a form comparable to the path parameter.  If there's a
@@ -1228,44 +1257,6 @@ class PBXGroup(XCHierarchicalElement):
 
     return variant_group_ref
 
-  def CompareRootGroup(self, other):
-    # This function should be used only to compare direct children of the
-    # containing PBXProject's mainGroup.  These groups should appear in the
-    # listed order.
-    order = ['Source', 'Intermediates', 'Projects', 'Frameworks', 'Products']
-
-    # If the groups aren't in the listed order, do a name comparison.
-    # Otherwise, groups in the listed order should come before those that
-    # aren't.
-    self_name = self.Name()
-    other_name = other.Name()
-    self_in = self_name in order
-    other_in = other_name in order
-    if not self_in and not other_in:
-      return cmp(self_name, other_name)
-    if self_name in order and not other_name in order:
-      return -1
-    if other_name in order and not self_name in order:
-      return 1
-
-    # If both groups are in the listed order, go by the defined order.
-    self_index = order.index(self_name)
-    other_index = order.index(other_name)
-    if self_index < other_index:
-      return -1
-    if self_index > other_index:
-      return 1
-    return 0
-
-  def SortGroup(self):
-    self._properties['children'] = \
-        sorted(self._properties['children'], cmp=lambda x,y: x.Compare(y))
-
-    # Recurse.
-    for child in self._properties['children']:
-      if isinstance(child, PBXGroup):
-        child.SortGroup()
-
   def TakeOverOnlyChild(self, recurse=False):
     """If this PBXGroup has only one child and it's also a PBXGroup, take
     it over by making all of its children this object's children.
@@ -1331,6 +1322,15 @@ class PBXGroup(XCHierarchicalElement):
       for child in self._properties['children']:
         if isinstance(child, PBXGroup):
           child.TakeOverOnlyChild(recurse)
+
+  def SortGroup(self):
+    self._properties['children'] = \
+        sorted(self._properties['children'], cmp=lambda x,y: x.Compare(y))
+
+    # Recurse.
+    for child in self._properties['children']:
+      if isinstance(child, PBXGroup):
+        child.SortGroup()
 
 
 class XCFileLikeElement(XCHierarchicalElement):
@@ -2296,7 +2296,8 @@ class PBXProject(XCContainerPortal):
     """Calls TakeOverOnlyChild for all groups in the main group."""
 
     for group in self._properties['mainGroup']._properties['children']:
-      group.TakeOverOnlyChild(recurse)
+      if isinstance(group, PBXGroup):
+        group.TakeOverOnlyChild(recurse)
 
   def SortGroups(self):
     # Sort the children of the mainGroup (like "Source" and "Products")
@@ -2309,6 +2310,9 @@ class PBXProject(XCContainerPortal):
     # alphabetically by name within sections of groups and files.  SortGroup
     # is recursive.
     for group in self._properties['mainGroup']._properties['children']:
+      if not isinstance(group, PBXGroup):
+        continue
+
       if group.Name() == 'Products':
         # The Products group is a special case.  Instead of sorting
         # alphabetically, sort things in the order of the targets that
