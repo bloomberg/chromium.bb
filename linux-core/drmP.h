@@ -889,6 +889,7 @@ struct drm_device {
 	/*@{ */
 	int irq;			/**< Interrupt used by board */
 	int irq_enabled;		/**< True if irq handler is enabled */
+	int msi_enabled;		/**< True if irq is MSI */
 	__volatile__ long context_flag;	/**< Context swapping flag */
 	__volatile__ long interrupt_flag; /**< Interruption handler flag */
 	__volatile__ long dma_flag;	/**< DMA dispatch flag */
