@@ -1151,7 +1151,6 @@
             'browser/bookmarks/bookmark_context_menu.cc',
             'browser/bookmarks/bookmark_drag_data.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
-            'browser/bookmarks/bookmark_utils.cc',
             'browser/debugger/debugger_view.cc',
             'browser/debugger/debugger_window.cc',
             'browser/importer/firefox2_importer.cc',
