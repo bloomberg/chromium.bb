@@ -1149,7 +1149,6 @@
             'browser/autocomplete/autocomplete_popup.cc',
             'browser/autocomplete/edit_drop_target.cc',
             'browser/bookmarks/bookmark_context_menu.cc',
-            'browser/bookmarks/bookmark_drag_data.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
             'browser/debugger/debugger_view.cc',
             'browser/debugger/debugger_window.cc',
