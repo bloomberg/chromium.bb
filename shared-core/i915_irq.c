@@ -35,7 +35,7 @@
 
 /**
  * Interrupts that are always left unmasked.
- * 
+ *
  * Since pipe events are edge-triggered from the PIPESTAT register to IIR,
  * we leave them always unmasked in IMR and then control enabling them through
  * PIPESTAT alone.
@@ -108,7 +108,7 @@ i915_disable_pipestat(drm_i915_private_t *dev_priv, int pipe, u32 mask)
 		(void) I915_READ(reg);
 	}
 }
- 
+
 /**
  * i915_pipe_enabled - check if a pipe is enabled
  * @dev: DRM device
@@ -201,7 +201,7 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		new_iir = I915_READ(IIR);
 
 		DRM_DEBUG("iir = 0x%08x, pipestats a = 0x%08x, b = 0x%08x\n",
-	    	    iir, pipea_stats, pipeb_stats);
+		    iir, pipea_stats, pipeb_stats);
 
 		if (dev_priv->sarea_priv)
 			dev_priv->sarea_priv->last_dispatch =
@@ -215,15 +215,15 @@ irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS)
 		}
 
 		if (pipea_stats & (PIPE_START_VBLANK_INTERRUPT_STATUS |
-	    	    PIPE_VBLANK_INTERRUPT_STATUS))
+		    PIPE_VBLANK_INTERRUPT_STATUS))
 			drm_handle_vblank(dev, 0);
 
 		if (pipeb_stats & (PIPE_START_VBLANK_INTERRUPT_STATUS |
-	    	    PIPE_VBLANK_INTERRUPT_STATUS))
+		    PIPE_VBLANK_INTERRUPT_STATUS))
 			drm_handle_vblank(dev, 1);
 #ifdef __linux__
 		if ((pipeb_stats & I915_LEGACY_BLC_EVENT_STATUS) ||
-	    	    (iir & I915_ASLE_INTERRUPT))
+		    (iir & I915_ASLE_INTERRUPT))
 			opregion_asle_intr(dev);
 #endif
 	}
