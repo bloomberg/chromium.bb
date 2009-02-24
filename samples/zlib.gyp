@@ -43,6 +43,8 @@
       ],
       'include_dirs': [
         '.',
+        # For contrib/minizip
+        '../..',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -50,15 +52,11 @@
         ],
       },
       'conditions': [
-        ['OS=="win"', {
-          # This is needed for the stuff in contrib/minizip.
-          # They include: third_party/zlib/zlib.h
-          'include_dirs': [
-             '../..',
-          ],
-        }, {  # OS!="win"
+        ['OS!="win"', {
           'product_name': 'z',
-          'sources/': [['exclude', '^contrib/minizip/']],
+          'sources!': [
+            'contrib/minizip/iowin32.c'
+          ],
         }],
       ],
     },
