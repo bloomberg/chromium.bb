@@ -14,6 +14,7 @@ gyps = [
     'chrome/chrome.gyp',
     'chrome/empty.cc',
     'googleurl/build/googleurl.gyp',
+    'media/media.gyp',
     'net/net.gyp',
     'sdch/sdch.gyp',
     'skia/skia.gyp',
