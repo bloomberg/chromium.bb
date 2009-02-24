@@ -35,9 +35,6 @@
 #include <linux/input.h>
 #include <cairo-drm.h>
 
-#include <GL/gl.h>
-#include <eagle.h>
-
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
