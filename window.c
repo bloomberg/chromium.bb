@@ -436,15 +436,9 @@ struct key {
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
 static void
-window_handle_key(void *data, struct wl_input_device *input_device,
-		  uint32_t key, uint32_t state)
+window_update_modifiers(struct window *window, uint32_t key, uint32_t state)
 {
-	struct window *window = data;
 	uint32_t mod = 0;
-	uint32_t unicode = 0;
-
-	if (window->keyboard_device != input_device)
-		return;
 
 	switch (key) {
 	case KEY_LEFTSHIFT:
@@ -459,22 +453,34 @@ window_handle_key(void *data, struct wl_input_device *input_device,
 	case KEY_RIGHTALT:
 		mod = WINDOW_MODIFIER_ALT;
 		break;
-	default:
-		if (key < ARRAY_LENGTH(evdev_keymap)) {
-			if (window->modifiers & WINDOW_MODIFIER_CONTROL)
-				unicode = evdev_keymap[key].code[2];
-			else if (window->modifiers & WINDOW_MODIFIER_SHIFT)
-				unicode = evdev_keymap[key].code[1];
-			else
-				unicode = evdev_keymap[key].code[0];
-		}
-		break;
 	}
 
 	if (state)
 		window->modifiers |= mod;
 	else
 		window->modifiers &= ~mod;
+}
+
+static void
+window_handle_key(void *data, struct wl_input_device *input_device,
+		  uint32_t key, uint32_t state)
+{
+	struct window *window = data;
+	uint32_t unicode = 0;
+
+	if (window->keyboard_device != input_device)
+		return;
+
+	window_update_modifiers(window, key, state);
+
+	if (key < ARRAY_LENGTH(evdev_keymap)) {
+		if (window->modifiers & WINDOW_MODIFIER_CONTROL)
+			unicode = evdev_keymap[key].code[2];
+		else if (window->modifiers & WINDOW_MODIFIER_SHIFT)
+			unicode = evdev_keymap[key].code[1];
+		else
+			unicode = evdev_keymap[key].code[0];
+	}
 
 	if (window->key_handler)
 		(*window->key_handler)(window, key, unicode,
@@ -495,6 +501,7 @@ window_handle_keyboard_focus(void *data,
 			     struct wl_array *keys)
 {
 	struct window *window = data;
+	uint32_t *k, *end;
 
 	if (window->keyboard_device == input_device && surface != window->surface)
 		window->keyboard_device = NULL;
@@ -502,6 +509,14 @@ window_handle_keyboard_focus(void *data,
 		window->keyboard_device = input_device;
 	else
 		return;
+
+	if (window->keyboard_device) {
+		end = keys->data + keys->size;
+		for (k = keys->data; k < end; k++)
+			window_update_modifiers(window, *k, 1);
+	} else {
+		window->modifiers = 0;
+	}
 
 	if (window->keyboard_focus_handler)
 		(*window->keyboard_focus_handler)(window,
