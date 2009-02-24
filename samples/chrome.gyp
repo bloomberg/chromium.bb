@@ -60,6 +60,9 @@
         'browser/browser_resources.grd',
         'common/common_resources.grd',
         'renderer/renderer_resources.grd',
+
+        # Compile something so that a library can be generated.
+        'empty.cc',
       ],
       'hard_dependency': 1,
       'direct_dependent_settings': {
@@ -75,11 +78,14 @@
         'resources',
         '../base/base.gyp:base',
         '../base/base.gyp:base_gfx',
+        '../googleurl/build/googleurl.gyp:googleurl',
+        '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         '../third_party/npapi/npapi.gyp:npapi',
+        '../webkit/webkit.gyp:glue',
       ],
       'include_dirs': [
         '..',
@@ -272,6 +278,11 @@
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '..',
+        ],
+      },
       'conditions': [
         ['OS!="win"', {
           'sources!': [
@@ -1259,6 +1270,36 @@
             'renderer/webplugin_delegate_proxy.cc',
           ],
         }],
+      ],
+    },
+    {
+      'target_name': 'ipc_tests',
+      'type': 'executable',
+      'dependencies': [
+        'common',
+        '../base/base.gyp:base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'common/ipc_fuzzing_tests.cc',
+        'common/ipc_message_unittest.cc',
+        'common/ipc_send_fds_test.cc',
+        'common/ipc_sync_channel_unittest.cc',
+        'common/ipc_sync_message_unittest.cc',
+        'common/ipc_sync_message_unittest.h',
+        'common/ipc_tests.cc',
+        'common/ipc_tests.h',
+      ],
+    },
+    {
+      'target_name': 'image_diff',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:base_gfx',
+      ],
+      'sources': [
+        'tools/test/image_diff/image_diff.cc',
       ],
     },
   ],

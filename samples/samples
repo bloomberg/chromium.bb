@@ -12,6 +12,7 @@ gyps = [
     'build/external_code.gypi',
     'chrome/test/security_tests/security_tests.gyp',
     'chrome/chrome.gyp',
+    'chrome/empty.cc',
     'googleurl/build/googleurl.gyp',
     'net/net.gyp',
     'sdch/sdch.gyp',
