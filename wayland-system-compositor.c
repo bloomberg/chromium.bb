@@ -88,6 +88,7 @@ struct wlsc_input_device {
 	struct wlsc_surface *grab_surface;
 	struct wlsc_surface *pointer_focus;
 	struct wlsc_surface *keyboard_focus;
+	struct wl_array keys;
 };
 
 struct wlsc_compositor {
@@ -870,14 +871,13 @@ wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
 	    (!surface || device->keyboard_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->keyboard_focus->base,
 				      &device->base,
-				      WL_INPUT_KEYBOARD_FOCUS, NULL);
+				      WL_INPUT_KEYBOARD_FOCUS, NULL, NULL);
 
-	/* FIXME: We need to send the currently held down keys in the
-	 * keyboard focus event. */
 	if (surface)
 		wl_surface_post_event(&surface->base,
 				      &device->base,
-				      WL_INPUT_KEYBOARD_FOCUS, &surface->base);
+				      WL_INPUT_KEYBOARD_FOCUS,
+				      &surface->base, &device->keys);
 
 	device->keyboard_focus = surface;
 }
@@ -1051,6 +1051,10 @@ notify_key(struct wlsc_input_device *device,
 	   uint32_t key, uint32_t state)
 {
 	struct wlsc_compositor *ec = device->ec;
+	uint32_t *k, *end;
+
+	if (!ec->vt_active)
+		return;
 
 	switch (key | ec->meta_state) {
 	case KEY_EJECTCD | META_DOWN:
@@ -1083,8 +1087,16 @@ notify_key(struct wlsc_input_device *device,
 		return;
 	}
 
-	if (!ec->vt_active)
-		return;
+	end = device->keys.data + device->keys.size;
+	for (k = device->keys.data; k < end; k++) {
+		if (*k == key)
+			*k = *--end;
+	}
+	device->keys.size = (void *) end - device->keys.data;
+	if (state) {
+		k = wl_array_add(&device->keys, sizeof *k);
+		*k = key;
+	}
 
 	if (device->keyboard_focus != NULL)
 		wl_surface_post_event(&device->keyboard_focus->base,

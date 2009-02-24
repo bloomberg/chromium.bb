@@ -124,7 +124,8 @@ struct wl_input_device_listener {
 			      struct wl_surface *surface);
 	void (*keyboard_focus)(void *data,
 			       struct wl_input_device *input_device,
-			       struct wl_surface *surface);
+			       struct wl_surface *surface,
+			       struct wl_array *keys);
 };
 
 int

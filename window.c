@@ -33,6 +33,7 @@
 #include <cairo-drm.h>
 
 #include <linux/input.h>
+#include "wayland-util.h"
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
@@ -490,7 +491,8 @@ window_handle_pointer_focus(void *data,
 static void
 window_handle_keyboard_focus(void *data,
 			     struct wl_input_device *input_device,
-			     struct wl_surface *surface)
+			     struct wl_surface *surface,
+			     struct wl_array *keys)
 {
 	struct window *window = data;
 

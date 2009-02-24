@@ -229,6 +229,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 {
 	struct wl_object *object;
 	uint32_t args[32], length, *p, size;
+	struct wl_array *array;
 	const char *s;
 	int i, count;
 
@@ -253,6 +254,16 @@ wl_connection_vmarshal(struct wl_connection *connection,
 		case 'n':
 			object = va_arg(ap, struct wl_object *);
 			*p++ = object ? object->id : 0;
+			break;
+		case 'a':
+			array = va_arg(ap, struct wl_array *);
+			if (array == NULL || array->size == 0) {
+				*p++ = 0;
+				break;
+			}
+			*p++ = array->size;
+			memcpy(p, array->data, array->size);
+			p = (void *) p + array->size;
 			break;
 		default:
 			assert(0);
@@ -283,6 +294,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		char *string;
 		void *object;
 		uint32_t new_id;
+		struct wl_array *array;
 	} values[20];
 	void *args[20];
 	struct wl_object *object;
@@ -344,6 +356,20 @@ wl_connection_demarshal(struct wl_connection *connection,
 				printf("object already exists (%d)\n", *p);
 			p++;
 			break;
+		case 'a':
+			types[i] = &ffi_type_pointer;
+			length = *p++;
+			values[i].array = malloc(length + sizeof *values[i].array);
+			if (values[i].array == NULL) {
+				/* FIXME: Send NO_MEMORY */
+				return;
+			}
+			values[i].array->size = length;
+			values[i].array->alloc = 0;
+			values[i].array->data = values[i].array + 1;
+			memcpy(values[i].array->data, p, length);
+			p += DIV_ROUNDUP(length, sizeof *p);
+			break;
 		default:
 			printf("unknown type\n");
 			break;
@@ -358,6 +384,9 @@ wl_connection_demarshal(struct wl_connection *connection,
 		switch (message->signature[i - 2]) {
 		case 's':
 			free(values[i].string);
+			break;
+		case 'a':
+			free(values[i].array);
 			break;
 		}
 	}

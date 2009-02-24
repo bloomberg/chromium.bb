@@ -137,3 +137,47 @@ wl_list_empty(struct wl_list *list)
 {
 	return list->next == list;
 }
+
+void
+wl_array_init(struct wl_array *array)
+{
+	memset(array, 0, sizeof *array);
+}
+
+void
+wl_array_release(struct wl_array *array)
+{
+	free(array->data);
+}
+
+void *
+wl_array_add(struct wl_array *array, int size)
+{
+	int alloc;
+	void *data, *p;
+
+	if (array->alloc > 0)
+		alloc = array->alloc;
+	else
+		alloc = 16;
+
+	while (alloc < array->size + size)
+		alloc *= 2;
+
+	if (array->alloc < alloc) {
+		if (array->alloc > 0)
+			data = realloc(array->data, alloc);
+	        else
+			data = malloc(alloc);
+
+		if (data == NULL)
+			return 0;
+		array->data = data;
+		array->alloc = alloc;
+	}
+
+	p = array->data + array->size;
+	array->size += size;
+
+	return p;
+}
