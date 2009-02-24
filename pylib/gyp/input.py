@@ -482,6 +482,59 @@ def ProcessVariablesAndConditionsInList(the_list, is_late, variables):
     index = index + 1
 
 
+def BuildTargetsDict(data):
+  """Builds a dict mapping fully-qualified target names to their target dicts.
+
+  |data| is a dict mapping loaded build files by pathname relative to the
+  current directory.  Values in |data| are build file contents.  For each
+  |data| value with a "targets" key, the value of the "targets" key is taken
+  as a list containing target dicts.  Each target's fully-qualified name is
+  constructed from the pathname of the build file (|data| key) and its
+  "target_name" property.  These fully-qualified names are used as the keys
+  in the returned dict.  These keys provide access to the target dicts,
+  the dicts in the "targets" lists.
+  """
+
+  targets = {}
+  for build_file in data:
+    for target in data[build_file].get('targets', []):
+      target_name = gyp.common.QualifiedTarget(build_file,
+                                               target['target_name'])
+      if target_name in targets:
+        raise KeyError, 'Duplicate target definitions for ' + target_name
+      targets[target_name] = target
+
+  return targets
+
+
+def QualifyDependencies(targets):
+  """Make dependency links fully-qualified relative to the current directory.
+
+  |targets| is a dict mapping fully-qualified target names to their target
+  dicts.  For each target in this dict, keys known to contain dependency
+  links are examined, and any dependencies referenced will be rewritten
+  so that they are fully-qualified and relative to the current directory.
+  All rewritten dependencies are suitable for use as keys to |targets| or a
+  similar dict.
+  """
+
+  for target, target_dict in targets.iteritems():
+    target_build_file = gyp.common.BuildFileAndTarget('', target)[0]
+    for dependency_key in ('dependencies', 'export_dependent_settings'):
+      dependencies = target_dict.get(dependency_key, [])
+      for index in xrange(0, len(dependencies)):
+        dependency = gyp.common.QualifiedTarget(target_build_file,
+                                                dependencies[index])
+        dependencies[index] = dependency
+
+        # Make sure anything appearing in a list other than "dependencies" also
+        # appears in the "dependencies" list.
+        if dependency_key != 'dependencies' and \
+           dependency not in target_dict['dependencies']:
+          raise KeyError, 'Found ' + dependency + ' in ' + dependency_key + \
+                          ' of ' + target + ', but not in dependencies'
+
+
 class DependencyGraphNode(object):
   """
 
@@ -673,8 +726,6 @@ class DependencyGraphNode(object):
 
 
 def BuildDependencyList(targets):
-  other_dependency_lists = ['export_dependent_settings']
-
   # Create a DependencyGraphNode for each target.  Put it into a dict for easy
   # access.
   dependency_nodes = {}
@@ -691,32 +742,13 @@ def BuildDependencyList(targets):
     if not 'dependencies' in spec or len(spec['dependencies']) == 0:
       target_node.dependencies = [root_node]
       root_node.dependents.append(target_node)
-      # If there are no dependencies, there can't be anything in the other
-      # lists that need to contain things that must already be in dependencies.
-      for other in other_dependency_lists:
-        assert len(spec.get(other, [])) == 0
     else:
       dependencies = spec['dependencies']
       for index in xrange(0, len(dependencies)):
         dependency = dependencies[index]
-        dependency = gyp.common.QualifiedTarget(target_build_file, dependency)
-        # Store the qualified name of the target even if it wasn't originally
-        # qualified in the dict.  Others will find this useful as well.
-        dependencies[index] = dependency
         dependency_node = dependency_nodes[dependency]
         target_node.dependencies.append(dependency_node)
         dependency_node.dependents.append(target_node)
-
-      # Rewrite other dependency lists using qualified names everywhere,
-      # too.  Make sure that anything showing up in one of these other lists
-      # is actually a dependency.
-      for other in other_dependency_lists:
-        other_dependencies = spec.get(other, [])
-        for index in xrange(0, len(other_dependencies)):
-          dependency = other_dependencies[index]
-          dependency = gyp.common.QualifiedTarget(target_build_file, dependency)
-          assert dependency in dependencies
-          other_dependencies[index] = dependency
 
   # Take the root node out of the list because it doesn't correspond to a real
   # target.
@@ -1275,24 +1307,11 @@ def Load(build_files, variables, includes):
     LoadTargetBuildFile(build_file, data, variables, includes)
 
   # Build a dict to access each target's subdict by qualified name.
-  targets = {}
-  for build_file in data:
-    if 'targets' in data[build_file]:
-      for target in data[build_file]['targets']:
-        target_name = gyp.common.QualifiedTarget(build_file,
-                                                 target['target_name'])
-        if target_name in targets:
-          raise KeyError, 'Duplicate target definitions for ' + target_name
-        targets[target_name] = target
+  targets = BuildTargetsDict(data)
 
-  # BuildDependencyList will also fix up all dependency lists to contain only
-  # qualified names.  That makes it much easier to see if a target is already
-  # in a dependency list, because the name it will be listed by is known.
-  # This is used below when the dependency lists are adjusted for static
-  # libraries.  The only thing I don't like about this is that it seems like
-  # BuildDependencyList shouldn't modify "targets".  I thought we looped over
-  # "targets" too many times, though, and that seemed like a good place to do
-  # this fix-up.  We may want to revisit where this is done.
+  # Fully qualify all dependency links.
+  QualifyDependencies(targets)
+
   [dependency_nodes, flat_list] = BuildDependencyList(targets)
 
   # Handle dependent settings of various types.
