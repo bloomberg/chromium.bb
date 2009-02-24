@@ -1410,6 +1410,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'm':         'sourcecode.c.objc',
         'mm':        'sourcecode.cpp.objcpp',
         'nib':       'wrapper.nib',
+        'pdf':       'image.pdf',
         'pl':        'text.script.perl',
         'plist':     'text.plist.xml',
         'pm':        'text.script.perl',
@@ -1418,6 +1419,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         's':         'sourcecode.asm',
         'strings':   'text.plist.strings',
         'xcconfig':  'text.xcconfig',
+        'xib':       'file.xib',
         'y':         'sourcecode.yacc',
       }
 

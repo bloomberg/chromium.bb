@@ -50,7 +50,7 @@
         },
       ],
       'sources': [
-        # All .grd files under chrome
+        # All .grd files under chrome.
         'app/resources/locale_settings.grd',
         'app/theme/theme_resources.grd',
         'app/chromium_strings.grd',
@@ -61,6 +61,7 @@
         'common/common_resources.grd',
         'renderer/renderer_resources.grd',
 
+        # TODO(mark): HACK HACK HACK!
         # Compile something so that a library can be generated.
         'empty.cc',
       ],
@@ -305,10 +306,12 @@
       'dependencies': [
         'common',
         'resources',
+        '../media/media.gyp:media',
         '../skia/skia.gyp:skia',
         '../third_party/icu38/icu38.gyp:icui18n',
         '../third_party/icu38/icu38.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
+        '../third_party/npapi/npapi.gyp:npapi',
       ],
       'include_dirs': [
         '..',
@@ -1183,7 +1186,6 @@
             'browser/memory_details.cc',
             'browser/modal_html_dialog_delegate.cc',
             'browser/plugin_installer.cc',
-            'browser/plugin_service.cc',
             'browser/sandbox_policy.cc',
             'browser/shell_integration.cc',
             'browser/spellchecker.cc',
@@ -1210,7 +1212,7 @@
         '..',
       ],
       'sources': [
-        # All .cc, .h, and .m files under renderer except tests and mocks.
+        # All .cc, .h, and .mm files under renderer except tests and mocks.
         'renderer/automation/dom_automation_controller.cc',
         'renderer/automation/dom_automation_controller.h',
         'renderer/media/audio_renderer_impl.cc',
@@ -1262,6 +1264,11 @@
         'renderer/webplugin_delegate_proxy.cc',
         'renderer/webplugin_delegate_proxy.h',
       ],
+      'link_settings': {
+        'mac_bundle_resources': [
+          'renderer/renderer.sb',
+        ],
+      },
       'conditions': [
         ['OS!="win"', {
           'sources!': [
@@ -1269,6 +1276,68 @@
             'renderer/plugin_channel_host.cc',
             'renderer/webplugin_delegate_proxy.cc',
           ],
+        }],
+      ],
+    },
+    {
+      'target_name': 'app',
+      'type': 'application',
+      'dependencies': [
+        'common',
+        'browser',
+        'renderer',
+      ],
+      'sources': [
+        # All .cc, .h, and .mm files under app except for tests.
+        'app/breakpad.cc',
+        'app/breakpad.h',
+        'app/chrome_dll_main.cc',
+        'app/chrome_dll_resource.h',
+        'app/chrome_exe_main.cc',
+        'app/chrome_exe_main.mm',
+        'app/chrome_exe_main_gtk.cc',
+        'app/chrome_exe_resource.h',
+        'app/client_util.cc',
+        'app/client_util.h',
+        'app/google_update_client.cc',
+        'app/google_update_client.h',
+        'app/result_codes.h',
+        'app/scoped_ole_initializer.h',
+      ],
+      'mac_bundle_resources': [
+        'app/nibs/English.lproj/BrowserWindow.xib',
+        'app/nibs/English.lproj/MainMenu.xib',
+        'app/nibs/English.lproj/TabContents.xib',
+        'app/theme/chromium/chromium.icns',
+        'app/theme/back.pdf',
+        'app/theme/forward.pdf',
+        'app/theme/go.pdf',
+        'app/theme/grow_box.png',
+        'app/theme/newtab.pdf',
+        'app/theme/reload.pdf',
+        'app/theme/sadtab.png',
+        'app/theme/star.pdf',
+        'app/theme/starred.pdf',
+        'app/app-Info.plist',
+      ],
+      # TODO(mark): Come up with a fancier way to do this.  It should only
+      # be necessary to list app-Info.plist once, not the three times it is
+      # listed here.
+      'mac_bundle_resources!': [
+        'app/app-Info.plist',
+      ],
+      'xcode_settings': {
+        'INFOPLIST_FILE': 'app/app-Info.plist',
+      },
+      'conditions': [
+        ['OS=="mac"', {'product_name': 'Chromium'}],
+        ['OS!="win"', {
+          'sources!': [
+            'app/breakpad.cc',
+            'app/chrome_exe_main.cc',
+            'app/client_util.cc',
+            'app/google_update_client.cc',
+          ]
         }],
       ],
     },
