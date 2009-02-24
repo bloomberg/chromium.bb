@@ -27,8 +27,8 @@
          # version is an identical copy of the (mac) icudt38l_dat.s file,
          # modulo removal of the .const pseudo-op and with no leading
          # underscore on the icudt38_dat symbol.
-        'icudt38l_dat.s',
-        'icudt38l_dat_linux.s',
+        'linux/icudt38l_dat.s',
+        'mac/icudt38l_dat.s',
       ],
       'conditions': [
         [ 'OS == "win"', {
@@ -36,12 +36,12 @@
           'msvs_tool_files': ['../../build/output_dll_copy.rules'],
         }, {  # else: OS != "win"
           'sources!': ['icudt38.dll'],
-        }, ],
+        }],
         [ 'OS != "linux"', {
-          'sources!': ['icudt38l_dat_linux.s'],
+          'sources!': ['linux/icudt38l_dat.s'],
         }],
         [ 'OS != "mac"', {
-          'sources!': ['icudt38l_dat.s'],
+          'sources!': ['mac/icudt38l_dat.s'],
         }],
       ],
     },
