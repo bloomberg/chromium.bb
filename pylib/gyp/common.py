@@ -85,12 +85,15 @@ def RelativePath(path, relative_to):
 #   \t, \n, space  parameter separators
 #   #              comments
 #   $              expansions (quoted to always expand within one argument)
+#   %              called out by IEEE 1003.1 XCU.2.2
 #   &              job control
 #   '              quoting
 #   (, )           subshell execution
-#   *, ?           globbing
+#   *, ?, [        pathname expansion
 #   ;              command delimiter
 #   <, >, |        redirection
+#   =              assignment
+#   {, }           brace expansion (bash)
 #   ~              tilde expansion
 # It also matches the empty string, because "" (or '') is the only way to
 # represent an empty string literal argument to a POSIX shell.
@@ -98,7 +101,7 @@ def RelativePath(path, relative_to):
 # This does not match the characters in _escape, because those need to be
 # backslash-escaped regardless of whether they appear in a double-quoted
 # string.
-_quote = re.compile('[\t\n #$&\'()*;<>?|~]|^$')
+_quote = re.compile('[\t\n #$%&\'()*;<=>?[{|}~]|^$')
 
 # _escape is a pattern that should match any character that needs to be
 # escaped with a backslash, whether or not the argument matched the _quote
