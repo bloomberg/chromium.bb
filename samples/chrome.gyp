@@ -1184,7 +1184,6 @@
             'browser/login_prompt.cc',
             'browser/memory_details.cc',
             'browser/modal_html_dialog_delegate.cc',
-            'browser/plugin_installer.cc',
             'browser/sandbox_policy.cc',
             'browser/shell_integration.cc',
             'browser/spellchecker.cc',

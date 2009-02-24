@@ -220,6 +220,7 @@
         'string_util_icu.cc',
         'string_util_win.h',
         'sys_info.h',
+        'sys_info_mac.cc',
         'sys_info_posix.cc',
         'sys_info_win.cc',
         'sys_string_conversions.h',
