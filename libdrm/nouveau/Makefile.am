@@ -19,7 +19,8 @@ libdrm_nouveau_la_SOURCES = \
 			    nouveau_bo.c \
 			    nouveau_resource.c \
 			    nouveau_dma.c \
-			    nouveau_fence.c
+			    nouveau_fence.c \
+			    nouveau_private.h
 
 libdrm_nouveaucommonincludedir = ${includedir}/nouveau
 libdrm_nouveaucommoninclude_HEADERS = \
