@@ -401,7 +401,7 @@
         '../third_party/libxslt/libxslt.gyp:libxslt',
         '../third_party/npapi/npapi.gyp:npapi',
         '../third_party/sqlite/sqlite.gyp:sqlite',
-        '../v8/v8.gyp:v8',
+        '../build/temp_gyp/v8.gyp:v8',
       ],
       'actions': [
         # Actions to build derived sources.
@@ -3840,7 +3840,7 @@
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/npapi/npapi.gyp:npapi',
-        '../v8/v8.gyp:v8',
+        '../build/temp_gyp/v8.gyp:v8',
       ],
       'link_settings': {
         'mac_bundle_resources': [

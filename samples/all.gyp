@@ -16,7 +16,6 @@
       'dependencies': [
         '../base/base.gyp:*',
         '../chrome/chrome.gyp:*',
-        '../build/temp_gyp/googleurl.gyp:*',
         '../media/media.gyp:*',
         '../net/net.gyp:*',
         '../sdch/sdch.gyp:*',
@@ -35,7 +34,8 @@
         '../third_party/zlib/zlib.gyp:*',
         '../webkit/tools/test_shell/test_shell.gyp:*',
         '../webkit/webkit.gyp:*',
-        '../v8/v8.gyp:*',
+        'temp_gyp/googleurl.gyp:*',
+        'temp_gyp/v8.gyp:*',
       ],
     },
   ],

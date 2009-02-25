@@ -9,6 +9,7 @@ import sys
 gyps = [
     'base/base.gyp',
     'build/temp_gyp/googleurl.gyp',
+    'build/temp_gyp/v8.gyp',
     'build/all.gyp',
     'build/common.gypi',
     'build/external_code.gypi',
@@ -30,7 +31,6 @@ gyps = [
     'third_party/npapi/npapi.gyp',
     'third_party/sqlite/sqlite.gyp',
     'third_party/zlib/zlib.gyp',
-    'v8/v8.gyp',
     'webkit/activex_shim/activex_shim.gyp',
     'webkit/activex_shim_dll/activex_shim_dll.gyp',
     'webkit/build/action_csspropertynames.py',
