@@ -1,5 +1,9 @@
 #!/usr/bin/python
 
+# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 # usage: action_jsconfig.py JS_ENGINE OUTPUT_DIR CONFIG_H_IN FILES_TO_COPY
 # JS_ENGINE may be v8 at present.  jsc will be added in the future.
 # CONFIG_H_DIR is the directory to put config.h in.
