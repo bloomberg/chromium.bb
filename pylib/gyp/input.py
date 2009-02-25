@@ -890,8 +890,6 @@ def BuildDependencyList(targets):
         target_node.dependencies.append(dependency_node)
         dependency_node.dependents.append(target_node)
 
-  # Take the root node out of the list because it doesn't correspond to a real
-  # target.
   flat_list = root_node.FlattenToList()
 
   # If there's anything left unvisited, there must be a circular dependency
