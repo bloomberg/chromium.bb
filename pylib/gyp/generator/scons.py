@@ -12,11 +12,8 @@ import gyp
 import gyp.common
 # TODO(sgk):  create a separate "project module" for SCons?
 #import gyp.SCons as SCons
-import os.path
+import os
 import pprint
-import subprocess
-import re
-import sys
 
 
 generator_default_variables = {
@@ -26,13 +23,10 @@ generator_default_variables = {
     'SHARED_INTERMEDIATE_DIR': '$DESTINATION_ROOT/obj/global_intermediate',
     'OS': 'linux',
     'PRODUCT_DIR': '$DESTINATION_ROOT',
-    # TODO:  Figure out what (if anything) to put in RUL_INPUT_* for SCons.
-    # Right now are just place-holders (copied from xcode.py)
-    # so gyp doesn't blow up.
-    'RULE_INPUT_ROOT': '$(INPUT_FILE_BASE)',
-    'RULE_INPUT_EXT': '$(INPUT_FILE_SUFFIX)',
-    'RULE_INPUT_NAME': '$(INPUT_FILE_NAME)',
-    'RULE_INPUT_PATH': '$(INPUT_FILE_PATH)',
+    'RULE_INPUT_ROOT': '${SOURCE.filebase}',
+    'RULE_INPUT_EXT': '${SOURCE.suffix}',
+    'RULE_INPUT_NAME': '${SOURCE.file}',
+    'RULE_INPUT_PATH': '${SOURCE}',
 }
 
 
@@ -90,6 +84,26 @@ SConsTypeWriter = {
   'static_library' : _SCons_static_library_writer,
 }
 
+_command_template = """
+_outputs = env.Command(
+  %(outputs)s,
+  %(inputs)s,
+  [%(action)s],
+)
+"""
+
+_rule_template = """
+%(name)s_additional_inputs = %(inputs)s
+%(name)s_outputs = %(outputs)s
+def %(name)s_emitter(target, source, env):
+  return (%(name)s_outputs, source + %(name)s_additional_inputs)
+%(name)s_action = Action([%(action)s])
+env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
+%(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
+for %(name)s_file in %(name)s_files:
+  _outputs = env.%(name)s(%(name)s_file)
+"""
+
 
 def GenerateSConscript(output_filename, build_file, spec, config):
   print 'Generating %s' % output_filename
@@ -133,16 +147,30 @@ def GenerateSConscript(output_filename, build_file, spec, config):
     pre = '\ninput_files = ChromeFileList([\n    '
     WriteList(fp, map(repr, sources), preamble=pre, postamble=',\n])\n')
 
-  SConsTypeWriter[spec.get('type')](fp, spec)
-
   actions = spec.get('actions',[])
   for action in actions:
-    fp.write('\n')
-    fp.write('env.Command(\n')
-    fp.write('  %s,\n' % pprint.pformat(action.get('outputs', [])))
-    fp.write('  %s,\n' % pprint.pformat(action.get('inputs', [])))
-    fp.write('  [%s]\n' % action['action'])
-    fp.write(')\n')
+    fp.write(_command_template % {
+                 'inputs' : pprint.pformat(action.get('inputs', [])),
+                 'outputs' : pprint.pformat(action.get('outputs', [])),
+                 'action' : pprint.pformat(action['action']),
+             })
+    if action.get('process_outputs_as_sources'):
+      fp.write('input_files.extend(_outputs)\n')
+
+  rules = spec.get('rules', [])
+  for rule in rules:
+    name = rule['rule_name']
+    fp.write(_rule_template % {
+                 'inputs' : pprint.pformat(rule.get('inputs', [])),
+                 'outputs' : pprint.pformat(rule.get('outputs', [])),
+                 'action' : pprint.pformat(rule['action']),
+                 'extension' : rule['extension'],
+                 'name' : name,
+             })
+    if rule.get('process_outputs_as_sources'):
+      fp.write('  input_files.Replace(%s_file, _outputs)\n' % name)
+
+  SConsTypeWriter[spec.get('type')](fp, spec)
 
   fp.close()
 

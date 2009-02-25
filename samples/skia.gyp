@@ -708,6 +708,7 @@
         'include_dirs': [
           'include',
           'include/corecg',
+          'ext',
         ],
       },
     },

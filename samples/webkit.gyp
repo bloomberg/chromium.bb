@@ -67,7 +67,7 @@
           # 32-bit x86 code on an x86_64 processor, it uses
           # "Linux i686 (x86_64)".  Matching that would require making a
           # run-time determination.
-          'WEBCORE_NAVIGATOR_PLATFORM="Linux i686"',
+          'WEBCORE_NAVIGATOR_PLATFORM=\\"Linux i686\\"',
         ],
       }],
       ['OS=="mac"', {
@@ -3879,6 +3879,12 @@
         'GCC_PREFIX_HEADER': '../third_party/WebKit/WebCore/WebCorePrefix.h',
       },
       'conditions': [
+        ['OS=="linux"', {
+          'sources!': [
+            # Not yet ported to Linux.
+            '../third_party/WebKit/WebCore/platform/graphics/chromium/FontCustomPlatformData.cpp',
+          ],
+        }],
         ['OS=="mac"', {
           'actions': [
             {
@@ -4018,12 +4024,12 @@
           'outputs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit/grit/<(RULE_INPUT_ROOT).h',
           ],
-          'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)', 'build', '-o', '<(SHARED_INTERMEDIATE_DIR)/webkit/grit'],
+          'action': ['python', '<@(_inputs)', '-i', '<(RULE_INPUT_PATH)', 'build', '-o', '<(SHARED_INTERMEDIATE_DIR)/webkit'],
         },
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/grit',
+        '<(SHARED_INTERMEDIATE_DIR)/webkit',
       ],
       'sources': [
         # webkit_version rule
