@@ -53,6 +53,7 @@ class XcodeProject(object):
     self.project_file = \
         gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
     self.build_file_dict = build_file_dict
+    self.run_test_targets = []
 
     # TODO(mark): add destructor that cleans up self.path if created_dir is
     # True and things didn't complete successfully.  Or do something even
@@ -120,6 +121,8 @@ class XcodeProject(object):
     # TODO(mark): Like a lot of other things here, this assumes internal
     # knowledge of PBXProject - in this case, of its "targets" property.
     targets = []
+    non_runtest_targets = []
+    runtest_targets = []
     for target in build_file_dict['targets']:
       target_name = target['target_name']
       qualified_target = gyp.common.QualifiedTarget(self.gyp_path, target_name)
@@ -128,10 +131,65 @@ class XcodeProject(object):
       # the unsorted list.
       assert xcode_target in self.project._properties['targets']
       targets.append(xcode_targets[qualified_target])
+      non_runtest_targets.append(xcode_targets[qualified_target])
+
+      # If this is a test target, add its test runner target.
+      if target.get('test', 0):
+        # Make a target to run the test.  It should have one dependency, the
+        # test executable target.
+        run_target = gyp.xcodeproj_file.PBXAggregateTarget({
+              'name':        'Run "' + target_name + '"',
+              'productName': xcode_target.GetProperty('productName'),
+            },
+            parent=self.project)
+        run_target.AddDependency(xcode_target)
+
+        # The test runner target has a build phase that executes the test.
+        script = 'exec "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}"\nexit 1\n'
+        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+              'shellScript':      script,
+              'showEnvVarsInLog': 0,
+            })
+        run_target.AppendProperty('buildPhases', ssbp)
+
+        # Add the test runner target to the project file.
+        xcode_target.test_runner = run_target
+        targets.append(run_target)
+        runtest_targets.append(run_target)
+
+      # TODO(mark): Make more general?
+      # As a special case for Chromium, if this is the "All" target in all.gyp,
+      # add a "Run All Tests" target to depend on all test runners.
+      if target_name == 'All' and \
+         isinstance(xcode_target, gyp.xcodeproj_file.PBXAggregateTarget):
+        # Collect all the test runner targets.  Since the "All" target should
+        # be in the flat list after all of its dependencies, all of the test
+        # runners should be set up by the time this is reached.
+        all_test_runners = []
+        pbxtds = xcode_target.GetProperty('dependencies')
+        for pbxtd in pbxtds:
+          pbxcip = pbxtd.GetProperty('targetProxy')
+          dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
+          if dependency_xct.test_runner:
+            all_test_runners.append(dependency_xct.test_runner)
+
+        # Set up a target that depends on all of the other test runners.
+        if len(all_test_runners) > 0:
+          run_all_target = gyp.xcodeproj_file.PBXAggregateTarget({
+                'name':        'Run All Tests',
+                'productName': 'All',
+              },
+              parent=self.project)
+          for test_runner in all_test_runners:
+            run_all_target.AddDependency(test_runner)
+
+          # Add the test runner target to the project file.
+          targets.append(run_all_target)
+          runtest_targets.append(run_all_target)
 
     # Make sure that the list of targets being replaced is the same length as
-    # the one replacing it.
-    assert len(self.project._properties['targets']) == len(targets)
+    # the one replacing it, but allow for the added test runner targets.
+    assert len(self.project._properties['targets']) + len(non_runtest_targets)
 
     self.project._properties['targets'] = targets
 
@@ -145,7 +203,7 @@ class XcodeProject(object):
     # Create an "All" target if there's more than one target in this project
     # file.  Put the "All" target it first so that people opening up the
     # project for the first time will build everything by default.
-    if len(self.project._properties['targets']) > 1:
+    if len(non_runtest_targets) > 1:
       xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
       for configuration in configurations:
         xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
@@ -159,13 +217,35 @@ class XcodeProject(object):
           },
           parent=self.project)
 
-      for target in self.project._properties['targets']:
+      for target in non_runtest_targets:
         all_target.AddDependency(target)
 
       # TODO(mark): This is evil because it relies on internal knowledge of
       # PBXProject._properties.  It's important to get the "All" target first,
       # though.
       self.project._properties['targets'].insert(0, all_target)
+
+    # The same, but for runtest targets.
+    if len(runtest_targets) > 1:
+      xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
+      for configuration in configurations:
+        xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
+        xccl.AppendProperty('buildConfigurations', xcbc)
+      xccl.SetProperty('defaultConfigurationName', configurations[0])
+
+      run_all_tests_target = gyp.xcodeproj_file.PBXAggregateTarget(
+          {
+            'buildConfigurationList': xccl,
+            'name':                   'Run All Tests',
+          },
+          parent=self.project)
+
+      for target in runtest_targets:
+        run_all_tests_target.AddDependency(target)
+
+      # Insert after the "All" target, which must exist if there is more than
+      # one run_test_target.
+      self.project._properties['targets'].insert(1, run_all_tests_target)
 
   def Finalize2(self):
     # Finalize2 needs to happen in a separate step because the process of
@@ -337,7 +417,8 @@ def GenerateOutput(target_list, target_dicts, data):
     for configuration_name in sorted(spec['configurations'].keys()):
       if configuration_name not in configuration_names:
         configuration_names.append(configuration_name)
-    pbxp = xcode_projects[build_file].project
+    xcp = xcode_projects[build_file]
+    pbxp = xcp.project
 
     # Set up the configurations for the target according to the list of names
     # supplied.

@@ -1141,6 +1141,7 @@ def SetUpConfigurations(target, target_dict):
   # non_configuraiton_keys is a list of key names that belong in the target
   # itself and should not be propagated into its configurations.
   non_configuration_keys = [
+    # Sections that must exist inside targets and not configurations.
     'actions',
     'configurations',
     'default_configuration',
@@ -1151,7 +1152,12 @@ def SetUpConfigurations(target, target_dict):
     'rules',
     'sources',
     'target_name',
+    'test',
     'type',
+
+    # Sections that can be found inside targets or configurations, but that
+    # should not be propagated from targets into their configurations.
+    'variables',
   ]
   # key_suffixes is a list of key suffixes that might appear on key names.
   # These suffixes are handled in conditional evaluations (for =, +, and ?)
@@ -1473,15 +1479,16 @@ def Load(build_files, variables, includes, depth):
   # that they need so that their link steps will be correct.
   AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes)
 
+  for target in flat_list:
+    target_dict = targets[target]
+    ProcessVariablesAndConditionsInDict(target_dict, True, variables)
+
   # Move everything that can go into a "configurations" section into one.
   for target in flat_list:
     target_dict = targets[target]
     SetUpConfigurations(target, target_dict)
 
   # Apply "post"/"late"/"target" variable expansions and condition evaluations.
-  for target in flat_list:
-    target_dict = targets[target]
-    ProcessVariablesAndConditionsInDict(target_dict, True, variables)
 
   # Apply exclude (!) and regex (/) rules.
   # TODO(mark): rename now that we have "rules" sections that mean something

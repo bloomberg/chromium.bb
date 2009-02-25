@@ -54,6 +54,9 @@
           'gtest',
           'gtest/include',
         ],
+        'target_conditions': [
+          ['_type=="executable"', {'test': 1}],
+        ],
       },
     },
   ],
