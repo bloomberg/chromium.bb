@@ -33,9 +33,7 @@
       # of the static libraries currently have circular dependencies among
       # generated headers.
       'target_name': 'resources',
-      # TODO(mark): This is not really a static library, but "none" type
-      # targets cannot have rules because they cannot have "sources" sections.
-      'type': 'static_library',
+      'type': 'none',
       'rules': [
         {
           'rule_name': 'grit',
@@ -60,12 +58,7 @@
         'browser/browser_resources.grd',
         'common/common_resources.grd',
         'renderer/renderer_resources.grd',
-
-        # TODO(mark): HACK HACK HACK!
-        # Compile something so that a library can be generated.
-        'empty.cc',
       ],
-      'hard_dependency': 1,
       'direct_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)/chrome',
@@ -1363,7 +1356,7 @@
     {
       # This target contains mocks and test utilities that don't belong in
       # production libraries but are used by more than one test executable.
-      'target_name': 'chrome_test_support',
+      'target_name': 'test_support',
       'type': 'static_library',
       'dependencies': [
         'browser',
@@ -1400,8 +1393,8 @@
       'target_name': 'ipc_tests',
       'type': 'executable',
       'dependencies': [
-        'chrome_test_support',
         'common',
+        'test_support',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
       ],
@@ -1421,8 +1414,8 @@
       'type': 'executable',
       'dependencies': [
         'browser',
-        'chrome_test_support',
         'common',
+        'test_support',
         '../base/base.gyp:base',
         '../testing/gtest.gyp:gtest',
       ],
@@ -1456,10 +1449,10 @@
       'type': 'executable',
       'dependencies': [
         'browser',
-        'chrome_test_support',
         'common',
         'renderer',
         'resources',
+        'test_support',
         '../skia/skia.gyp:skia',
         '../testing/gtest.gyp:gtest',
         '../third_party/icu38/icu38.gyp:icui18n',
