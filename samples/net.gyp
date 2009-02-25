@@ -564,6 +564,8 @@
           'direct_dependent_settings': {
             'include_dirs': [
               '../../grit_derived_sources'
+              # FIXME: Should use one of the INTERMEDIATE dirs, e.g.:
+              # '$(obj)/gen'
             ],
           },
           'actions': [

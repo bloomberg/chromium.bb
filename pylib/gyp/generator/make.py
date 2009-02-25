@@ -26,7 +26,16 @@ import os.path
 import pprint
 
 generator_default_variables = {
+  'EXECUTABLE_PREFIX': '',
+  'EXECUTABLE_SUFFIX': '',
   'OS': 'linux',
+  'INTERMEDIATE_DIR': '$(obj)/geni',  # pick a wacky name because i don't understand it
+  'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
+  'PRODUCT_DIR': '$(obj)/bin',
+  'RULE_INPUT_ROOT': 'wot',
+  'RULE_INPUT_EXT': 'wot',
+  'RULE_INPUT_NAME': 'wot',
+  'RULE_INPUT_PATH': 'wot',
 }
 
 # Header of toplevel Makefile.
@@ -42,17 +51,21 @@ else
   quiet=quiet_
 endif
 
+# Leave these in here for now to simplify iteration on testing.
+CC := ccache distcc
+CXX := ccache distcc g++
+
 # C++ apps need to be linked with g++.  Not sure what's appropriate.
 LD := g++
 RANLIB ?= ranlib
 
 # This is a hack; we should put these settings in the .gyp files.
 PACKAGES := gtk+-2.0 nss
-CFLAGS := $(CFLAGS) `pkg-config --cflags $(PACKAGES)`
+CFLAGS := $(CFLAGS) -m32 `pkg-config --cflags $(PACKAGES)`
 LDFLAGS := $(CFLAGS) `pkg-config --libs $(PACKAGES)` -lrt
 
 # Build output directory.
-obj = obj
+obj = out
 
 # Command definitions:
 # - cmd_foo is the actual command to run;
@@ -70,8 +83,10 @@ cmd_ar = $(AR) rc $@ $^
 quiet_cmd_ranlib = RANLIB $@
 cmd_ranlib = $(RANLIB) $@
 
+# We wrap the special "figure out circular dependencies" flags around the
+# entire input list during linking.
 quiet_cmd_link = LINK $@
-cmd_link = $(LD) $(LDFLAGS) $(LIBS) -o $@ $^
+cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group
 
 # do_cmd: run a command via the above cmd_foo names.
 # This should also set up dependencies of the target on the command line
@@ -121,36 +136,61 @@ def Target(filename):
 
 def WriteList(fp, list, variable=None,
                         prefix=''):
+  fp.write(variable + " := ")
   if list:
-    fp.write(variable + " := \\\n")
-    fp.write(" \\\n".join(["\t" + prefix + l for l in list]))
-    fp.write("\n\n")
-  else:
-    fp.write(variable + " :=\n\n")
+    fp.write(" \\\n\t".join([prefix + l for l in list]))
+  fp.write("\n\n")
 
 
 # Map from qualified target to path to library.
 libpaths = {}
 
 
+def Absolutify(dir, path):
+  """Convert a subdirectory-relative path into a base-relative path.
+  Skips over paths that contain variables."""
+  if '$(' in path:
+    return path
+  return os.path.normpath(os.path.join(dir, path))
+
+
+def AbsolutifyL(dir, paths):
+  """Absolutify lifted to lists."""
+  return [Absolutify(dir, p) for p in paths]
+
+
+def Objectify(path):
+  """Convert a path to its output directory form."""
+  if '$(' in path:
+    return path
+  return '$(obj)/' + path
+
+
 def GenerateMakefile(output_filename, build_file, spec, config):
   print 'Generating %s' % output_filename
 
   fp = open(output_filename, 'w')
-
   fp.write(header)
 
+  # Paths in gyp files are relative to the .gyp file, but we need
+  # paths relative to the source root for the master makefile.  Grab
+  # the path of the .gyp file as the base to relativize against.
   dir = os.path.split(output_filename)[0]
 
   WriteList(fp, config.get('defines'), 'DEFS', prefix='-D')
   WriteList(fp, config.get('cflags'), 'local_CFLAGS')
-  WriteList(fp, config.get('include_dirs'), 'INCS', prefix='-I' + dir)
+  includes = config.get('include_dirs')
+  if includes:
+    includes = AbsolutifyL(dir, includes)
+    includes = sorted(list(set(includes)))  # Uniquify.
+  WriteList(fp, includes, 'INCS', prefix='-I')
   WriteList(fp, spec.get('libraries'), 'LIBS', prefix='-l')
 
-  sources = spec['sources']
-  if sources:
-    objs = map(Target, filter(Compilable, sources))
-    WriteList(fp, objs, 'OBJS', prefix=dir + "/")
+  objs = None
+  if 'sources' in spec:
+    sources = spec['sources']
+    objs = map(Objectify, AbsolutifyL(dir, map(Target, filter(Compilable, sources))))
+  WriteList(fp, objs, 'OBJS')
 
   output = None
   typ = spec.get('type')
@@ -166,17 +206,61 @@ def GenerateMakefile(output_filename, build_file, spec, config):
   deps = []
   if 'dependencies' in spec:
     deps = [libpaths[dep] for dep in spec['dependencies']]
-    WriteList(fp, deps, '%s: LIBS' % output)
+    libs = filter(lambda dep: dep.endswith('.a'), deps)
+    diff = set(libs) - set(deps)
+    if diff:
+      print "Warning: filtered out", diff, "from deps list."
+    deps = libs
 
   # Now write the actual build rule.
-  fp.write('%s: $(call objectify,$(OBJS)) %s\n' % (output, ' '.join(deps)))
   if typ in ('executable', 'application'):
+    fp.write('%s: $(OBJS) %s\n' % (output, ' '.join(deps)))
     fp.write('\t$(call do_cmd,link)\n')
+    binpath = '$(obj)/bin/' + target
+    fp.write('%s: %s\n' % (binpath, output))
+    fp.write('\tmkdir -p $(obj)/bin\n')
+    fp.write('\tln %s %s\n' % (output, binpath))
     fp.write('# Also provide a short alias for building this executable:\n')
-    fp.write('%s: %s\n' % (target, output))
+    fp.write('%s: %s\n' % (target, binpath))
   elif typ == 'static_library':
+    fp.write('%s: $(OBJS) %s\n' % (output, ' '.join(deps)))
     fp.write('\t$(call do_cmd,ar)\n')
     fp.write('\t$(call do_cmd,ranlib)\n')
+  elif typ == 'resource':
+    if target == 'net_resources':
+      # Hack around SCons-specific net.gyp file.
+      fp.write('.PHONY: %s\n' % output)
+      fp.write('$(obj)/gen/net_resources.h: tools/grit/grit.py\n')
+      fp.write('\tpython tools/grit/grit.py -i net/base/net_resources.grd build -o $(obj)/gen\n')
+      fp.write('net_resources: $(obj)/gen/net_resources.h\n')
+
+  if 'actions' in spec:
+    for action in spec['actions']:
+      name = target + '_' + action['action_name']
+      fp.write('\n# Rules for action %s:\n' % name)
+      inputs = AbsolutifyL(dir, action['inputs'])
+      outputs = AbsolutifyL(dir, action['outputs'])
+      if target == 'js2c':
+        # Hack around SCons-specific v8.gyp file.
+        action['action'] = ['python', inputs[0]] + outputs + ['CORE'] + inputs[1:]
+      # Make a phony target with the name of this target.
+      fp.write('.PHONY: %s\n' % name)
+      # Make the outputs depend on the phony target.
+      dirs = set()
+      for out in outputs:
+        if '../grit_derived' in out:
+          # Hack around SCons-specific gyp file.
+          out = out.replace('../grit_derived_sources', '$(out)/gen')
+        fp.write('%s: %s\n' % (out, name))
+        dirs.add(os.path.split(out)[0])
+      # Make the phony target depend on the inputs and generate the outputs.
+      fp.write('%s: %s\n' % (name, ' '.join(inputs)))
+      if len(dirs) > 0:
+        fp.write('\tmkdir -p %s\n' % ' '.join(dirs))
+      fp.write('\t%s\n' % ' '.join(action['action']))
+
+  if typ not in ('executable', 'application', 'resource', 'none', 'static_library'):
+    raise "unhandled typ", typ
 
   fp.write('\n')
   fp.write(footer)
