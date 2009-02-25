@@ -266,6 +266,8 @@
         'common/transport_dib_win.cc',
         'common/unzip.cc',
         'common/unzip.h',
+        'common/url_constants.cc',
+        'common/url_constants.h',
         'common/visitedlink_common.cc',
         'common/visitedlink_common.h',
         'common/win_safe_util.cc',
@@ -753,8 +755,6 @@
         'browser/tab_contents/tab_contents_type.h',
         'browser/tab_contents/tab_util.cc',
         'browser/tab_contents/tab_util.h',
-        'browser/tab_contents/view_source_contents.cc',
-        'browser/tab_contents/view_source_contents.h',
         'browser/tab_contents/web_contents.cc',
         'browser/tab_contents/web_contents.h',
         'browser/tab_contents/web_contents_view.cc',
@@ -1115,6 +1115,8 @@
           'sources/': [
             # Exclude most of automation.
             ['exclude', '^browser/automation/'],
+            ['include', '^browser/automation/automation_provider\\.cc$'],
+            ['include', '^browser/automation/automation_provider_list\\.cc$'],
             ['include', '^browser/automation/automation_resource_tracker\\.cc$'],
             ['include', '^browser/automation/url_request_[^/]*_job\\.cc$'],
 
@@ -1166,7 +1168,6 @@
             'browser/tab_contents/native_ui_contents.cc',
             'browser/tab_contents/render_view_context_menu.cc',
             'browser/tab_contents/render_view_context_menu_controller.cc',
-            'browser/tab_contents/view_source_contents.cc',
             'browser/tab_contents/web_drag_source.cc',
             'browser/tab_contents/web_drop_target.cc',
             'browser/app_modal_dialog_queue.cc',
