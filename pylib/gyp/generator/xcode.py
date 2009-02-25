@@ -157,36 +157,6 @@ class XcodeProject(object):
         targets.append(run_target)
         runtest_targets.append(run_target)
 
-      # TODO(mark): Make more general?
-      # As a special case for Chromium, if this is the "All" target in all.gyp,
-      # add a "Run All Tests" target to depend on all test runners.
-      if target_name == 'All' and \
-         isinstance(xcode_target, gyp.xcodeproj_file.PBXAggregateTarget):
-        # Collect all the test runner targets.  Since the "All" target should
-        # be in the flat list after all of its dependencies, all of the test
-        # runners should be set up by the time this is reached.
-        all_test_runners = []
-        pbxtds = xcode_target.GetProperty('dependencies')
-        for pbxtd in pbxtds:
-          pbxcip = pbxtd.GetProperty('targetProxy')
-          dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
-          if dependency_xct.test_runner:
-            all_test_runners.append(dependency_xct.test_runner)
-
-        # Set up a target that depends on all of the other test runners.
-        if len(all_test_runners) > 0:
-          run_all_target = gyp.xcodeproj_file.PBXAggregateTarget({
-                'name':        'Run All Tests',
-                'productName': 'All',
-              },
-              parent=self.project)
-          for test_runner in all_test_runners:
-            run_all_target.AddDependency(test_runner)
-
-          # Add the test runner target to the project file.
-          targets.append(run_all_target)
-          runtest_targets.append(run_all_target)
-
     # Make sure that the list of targets being replaced is the same length as
     # the one replacing it, but allow for the added test runner targets.
     assert len(self.project._properties['targets']) + len(non_runtest_targets)
@@ -247,12 +217,43 @@ class XcodeProject(object):
       # one run_test_target.
       self.project._properties['targets'].insert(1, run_all_tests_target)
 
-  def Finalize2(self):
+  def Finalize2(self, xcode_targets):
     # Finalize2 needs to happen in a separate step because the process of
     # updating references to other projects depends on the ordering of targets
     # within remote project files.  Finalize1 is responsible for sorting duty,
     # and once all project files are sorted, Finalize2 can come in and update
     # these references.
+
+    # TODO(mark): Make more general?
+    # As a special case for Chromium, add a "Run All Tests" target in
+    # all.gyp:All to depend on all test runners.
+    if os.path.basename(self.gyp_path) == 'all.gyp' and \
+       len(self.build_file_dict['targets']) == 1 and \
+       self.build_file_dict['targets'][0]['target_name'] == 'All':
+      qualified_target = gyp.common.QualifiedTarget(self.gyp_path, 'All')
+      xcode_target = xcode_targets[qualified_target]
+      if isinstance(xcode_target, gyp.xcodeproj_file.PBXAggregateTarget):
+        # Collect all the test runner targets, built in Finalize1.
+        all_test_runners = []
+        pbxtds = xcode_target.GetProperty('dependencies')
+        for pbxtd in pbxtds:
+          pbxcip = pbxtd.GetProperty('targetProxy')
+          dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
+          if dependency_xct.test_runner:
+            all_test_runners.append(dependency_xct.test_runner)
+
+        # Set up a target that depends on all of the other test runners.
+        if len(all_test_runners) > 0:
+          run_all_target = gyp.xcodeproj_file.PBXAggregateTarget({
+                'name':        'Run All Tests',
+                'productName': 'All',
+              },
+              parent=self.project)
+          for test_runner in all_test_runners:
+            run_all_target.AddDependency(test_runner)
+
+          # Add the test runner target to the project file.
+          self.project.AppendProperty('targets', run_all_target)
 
     # Update all references to other projects, to make sure that the lists of
     # remote products are complete.  Otherwise, Xcode will fill them in when
@@ -821,7 +822,7 @@ exit 1
     xcode_projects[build_file].Finalize1(xcode_targets, data[build_file])
 
   for build_file in build_files:
-    xcode_projects[build_file].Finalize2()
+    xcode_projects[build_file].Finalize2(xcode_targets)
 
   for build_file in build_files:
     xcode_projects[build_file].Write()
