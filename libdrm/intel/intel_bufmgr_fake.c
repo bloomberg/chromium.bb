@@ -444,7 +444,8 @@ alloc_block(drm_intel_bo *bo)
 
 /* Release the card storage associated with buf:
  */
-static void free_block(drm_intel_bufmgr_fake *bufmgr_fake, struct block *block)
+static void free_block(drm_intel_bufmgr_fake *bufmgr_fake, struct block *block,
+		       int skip_dirty_copy)
 {
    drm_intel_bo_fake *bo_fake;
    DBG("free block %p %08x %d %d\n", block, block->mem->ofs, block->on_hardware, block->fenced);
@@ -453,7 +454,11 @@ static void free_block(drm_intel_bufmgr_fake *bufmgr_fake, struct block *block)
       return;
 
    bo_fake = (drm_intel_bo_fake *)block->bo;
-   if (!(bo_fake->flags & (BM_PINNED | BM_NO_BACKING_STORE)) && (bo_fake->card_dirty == 1)) {
+
+   if (bo_fake->flags & (BM_PINNED | BM_NO_BACKING_STORE))
+      skip_dirty_copy = 1;
+
+   if (!skip_dirty_copy && (bo_fake->card_dirty == 1)) {
      memcpy(bo_fake->backing_store, block->virtual, block->bo->size);
      bo_fake->card_dirty = 0;
      bo_fake->dirty = 1;
@@ -534,7 +539,7 @@ evict_lru(drm_intel_bufmgr_fake *bufmgr_fake, unsigned int max_fence)
       set_dirty(&bo_fake->bo);
       bo_fake->block = NULL;
 
-      free_block(bufmgr_fake, block);
+      free_block(bufmgr_fake, block, 0);
       return 1;
    }
 
@@ -557,7 +562,7 @@ evict_mru(drm_intel_bufmgr_fake *bufmgr_fake)
       set_dirty(&bo_fake->bo);
       bo_fake->block = NULL;
 
-      free_block(bufmgr_fake, block);
+      free_block(bufmgr_fake, block, 0);
       return 1;
    }
 
@@ -872,7 +877,7 @@ drm_intel_fake_bo_unreference_locked(drm_intel_bo *bo)
       assert(bo_fake->map_count == 0);
       /* No remaining references, so free it */
       if (bo_fake->block)
-	 free_block(bufmgr_fake, bo_fake->block);
+	 free_block(bufmgr_fake, bo_fake->block, 1);
       free_backing_store(bo);
 
       for (i = 0; i < bo_fake->nr_relocs; i++)
@@ -1064,7 +1069,7 @@ drm_intel_fake_kick_all_locked(drm_intel_bufmgr_fake *bufmgr_fake)
       drm_intel_bo_fake *bo_fake = (drm_intel_bo_fake *)block->bo;
 
       block->on_hardware = 0;
-      free_block(bufmgr_fake, block);
+      free_block(bufmgr_fake, block, 0);
       bo_fake->block = NULL;
       bo_fake->validated = 0;
       if (!(bo_fake->flags & BM_NO_BACKING_STORE))
@@ -1463,7 +1468,7 @@ drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr)
 
    DRMLISTFOREACHSAFE(block, tmp, &bufmgr_fake->lru) {
       /* Releases the memory, and memcpys dirty contents out if necessary. */
-      free_block(bufmgr_fake, block);
+      free_block(bufmgr_fake, block, 0);
    }
 
    pthread_mutex_unlock(&bufmgr_fake->lock);
