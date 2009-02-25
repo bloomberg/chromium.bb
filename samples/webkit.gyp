@@ -3893,6 +3893,10 @@
             # Not yet ported to Linux.
             '../third_party/WebKit/WebCore/platform/graphics/chromium/FontCustomPlatformData.cpp',
           ],
+          'defines': ['WTF_USE_PTHREADS=1'],
+          # for:
+          #   .../WebCore/platform/image-decoders/bmp/BMPImageDecoder.cpp
+          'cflags': ['-Wno-multichar'],
         }],
         ['OS=="mac"', {
           'actions': [
