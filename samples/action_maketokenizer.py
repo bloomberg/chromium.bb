@@ -58,9 +58,6 @@ def main(args):
   # Build up the command.
   command = 'flex -t %s | perl %s > %s' % (flex_input, maketokenizer, output)
 
-  # Say what's going to be done.
-  print command
-
   # Do it.  check_call is new in 2.5, so simulate its behavior with call and
   # assert.
   # TODO(mark): Don't use shell=True, build up the pipeline directly.

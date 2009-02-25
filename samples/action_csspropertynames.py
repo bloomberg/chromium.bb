@@ -111,9 +111,6 @@ def main(args):
   # Build up the command.
   command = ['perl', makeprop_input]
 
-  # Say what's going to be done.
-  print subprocess.list2cmdline(command)
-
   # Do it.  check_call is new in 2.5, so simulate its behavior with call and
   # assert.
   return_code = subprocess.call(command)

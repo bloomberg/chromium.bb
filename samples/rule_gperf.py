@@ -45,9 +45,6 @@ command = ['gperf', '--output-file', output_cpp]
 command.extend(gperf_commands[input_name])
 command.append(input_file)
 
-# Say what's going to be done.
-print subprocess.list2cmdline(command)
-
 # Do it.  check_call is new in 2.5, so simulate its behavior with call and
 # assert.
 return_code = subprocess.call(command)
