@@ -755,6 +755,16 @@ exit 1
           if not item.startswith('$(BUILT_PRODUCTS_DIR)/'):
             pbxp.AddOrGetFileInRootGroup(item)
 
+    for postbuild in spec.get('postbuilds', []):
+      action_string_sh = gyp.common.EncodePOSIXShellList(postbuild['action'])
+      script = 'exec ' + action_string_sh + '\nexit 1\n'
+      ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+            'name': 'Postbuild "' + postbuild['postbuild_name'] + '"',
+            'shellScript': script,
+            'showEnvVarsInLog': 0,
+          })
+      xct.AppendProperty('buildPhases', ssbp)
+
     # Add dependencies before libraries, because adding a dependency may imply
     # adding a library.  It's preferable to keep dependencies listed first
     # during a link phase so that they can override symbols that would

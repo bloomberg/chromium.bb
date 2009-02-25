@@ -1148,6 +1148,7 @@ def SetUpConfigurations(target, target_dict):
     'dependencies',
     'libraries',
     'mac_bundle_resources',
+    'postbuilds',
     'product_name',
     'rules',
     'sources',
