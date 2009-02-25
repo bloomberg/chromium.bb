@@ -48,10 +48,41 @@ def ExceptionAppend(e, msg):
     e.args = [str(e.args[0]) + ' ' + msg, e.args[1:]]
 
 
-def LoadOneBuildFile(build_file_path, data, variables, includes, is_target,
-                     included):
+def GetIncludedBuildFiles(build_file_path, aux_data, included=None):
+  """Return a list of all build files included into build_file_path.
+
+  The returned list will contain build_file_path as well as all other files
+  that it included, either directly or indirectly.  Note that the list may
+  contain files that were included into a conditional section that evaluated
+  to false and was not merged into build_file_path's dict.
+
+  aux_data is a dict containing a key for each build file or included build
+  file.  Those keys provide access to dicts whose "included" keys contain
+  lists of all other files included by the build file.
+
+  included should be left at its default None value by external callers.  It
+  is used for recursion.
+
+  The returned list will not contain any duplicate entries.  Each build file
+  in the list will be relative to the current directory.
+  """
+
+  if included == None:
+    included = []
+
+  if build_file_path in included:
+    return included
+
   included.append(build_file_path)
 
+  for included_build_file in aux_data[build_file_path].get('included', []):
+    GetIncludedBuildFiles(included_build_file, aux_data, included)
+
+  return included
+
+
+def LoadOneBuildFile(build_file_path, data, aux_data, variables, includes,
+                     is_target):
   if build_file_path in data:
     return data[build_file_path]
 
@@ -70,15 +101,16 @@ def LoadOneBuildFile(build_file_path, data, variables, includes, is_target,
     raise
 
   data[build_file_path] = build_file_data
+  aux_data[build_file_path] = {}
 
   # Scan for includes and merge them in.
   try:
     if is_target:
       LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                    variables, includes, included)
+                                    aux_data, variables, includes)
     else:
       LoadBuildFileIncludesIntoDict(build_file_data, build_file_path, data,
-                                    variables, None, included)
+                                    aux_data, variables, None)
   except Exception, e:
     ExceptionAppend(e, 'while reading includes of ' + build_file_path)
     raise
@@ -86,8 +118,8 @@ def LoadOneBuildFile(build_file_path, data, variables, includes, is_target,
   return build_file_data
 
 
-def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data,
-                                  variables, includes, included):
+def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data, aux_data,
+                                  variables, includes):
   includes_list = []
   if includes != None:
     includes_list.extend(includes)
@@ -104,40 +136,40 @@ def LoadBuildFileIncludesIntoDict(subdict, subdict_path, data,
 
   # Merge in the included files.
   for include in includes_list:
+    if not 'included' in aux_data[subdict_path]:
+      aux_data[subdict_path]['included'] = []
+    aux_data[subdict_path]['included'].append(include)
     MergeDicts(subdict,
-               LoadOneBuildFile(include, data, variables, None, False,
-                                included),
+               LoadOneBuildFile(include, data, aux_data, variables, None,
+                                False),
                subdict_path, include)
 
   # Recurse into subdictionaries.
   for k, v in subdict.iteritems():
     if v.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(v, subdict_path, data, variables, None,
-                                    included)
+      LoadBuildFileIncludesIntoDict(v, subdict_path, data, aux_data, variables,
+                                    None)
     elif v.__class__ == list:
-      LoadBuildFileIncludesIntoList(v, subdict_path, data, variables, included)
+      LoadBuildFileIncludesIntoList(v, subdict_path, data, aux_data, variables)
 
 
 # This recurses into lists so that it can look for dicts.
-def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, variables,
-                                  included):
+def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, aux_data,
+                                  variables):
   for item in sublist:
     if item.__class__ == dict:
-      LoadBuildFileIncludesIntoDict(item, sublist_path, data, variables, None,
-                                    included)
+      LoadBuildFileIncludesIntoDict(item, sublist_path, data, aux_data,
+                                    variables, None)
     elif item.__class__ == list:
-      LoadBuildFileIncludesIntoList(item, sublist_path, data, variables,
-                                    included)
+      LoadBuildFileIncludesIntoList(item, sublist_path, data, aux_data,
+                                    variables)
 
 
 # TODO(mark): I don't love this name.  It just means that it's going to load
 # a build file that contains targets and is expected to provide a targets dict
 # that contains the targets...
-def LoadTargetBuildFile(build_file_path, data, variables, includes, depth,
-                        included=None):
-  if included == None:
-    included=[]
-
+def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
+                        depth):
   # If depth is set, predefine the DEPTH variable to be a relative path from
   # this build file's directory to the directory identified by depth.
   if depth:
@@ -148,31 +180,23 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes, depth,
     # Already loaded.
     return
 
-  build_file_data = LoadOneBuildFile(build_file_path, data, variables,
-                                     includes, True, included)
+  build_file_data = LoadOneBuildFile(build_file_path, data, aux_data, variables,
+                                     includes, True)
 
   # Set up the included_files key indicating which .gyp files contributed to
   # this target dict.
-  #
-  # TODO(mark): Included file tracking is broken in the following case: assume
-  # t1.gyp includes i1.gypi, which includes i2.gypi.  t2.gyp includes i1.gypi
-  # as well.  If t1.gyp is loaded first, its included files list will be set
-  # properly, indicating t1.gyp, i1.gypi, and i2.gypi.  When t2.gyp is
-  # subsequently loaded, its included files list will only contain t2.gyp and
-  # i1.gypi, even though i2.gypi was indirectly included.  This is because
-  # i2.gypi was already loaded and merged into i1.gypi and the include was
-  # then unhooked from i1.gypi, so t2.gyp never saw it.
   if 'included_files' in build_file_data:
     raise KeyError, build_file_path + ' must not contain included_files key'
-  if included:
-    build_file_data['included_files'] = []
-    for included_file in included:
-      # included_file is relative to the current directory, but it needs to
-      # be made relative to build_file_path's directory.
-      included_relative = \
-          gyp.common.RelativePath(included_file,
-                                  os.path.dirname(build_file_path))
-      build_file_data['included_files'].append(included_relative)
+
+  included = GetIncludedBuildFiles(build_file_path, aux_data)
+  build_file_data['included_files'] = []
+  for included_file in included:
+    # included_file is relative to the current directory, but it needs to
+    # be made relative to build_file_path's directory.
+    included_relative = \
+        gyp.common.RelativePath(included_file,
+                                os.path.dirname(build_file_path))
+    build_file_data['included_files'].append(included_relative)
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
   ProcessVariablesAndConditionsInDict(build_file_data, False, variables.copy())
@@ -211,7 +235,8 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes, depth,
       for dependency in target_dict['dependencies']:
         other_build_file = \
             gyp.common.BuildFileAndTarget(build_file_path, dependency)[0]
-        LoadTargetBuildFile(other_build_file, data, variables, includes, depth)
+        LoadTargetBuildFile(other_build_file, data, aux_data, variables,
+                            includes, depth)
 
   return data
 
@@ -1415,11 +1440,12 @@ def Load(build_files, variables, includes, depth):
   # and the values are the entire build file contents after "early" or "pre"
   # processing has been done and includes have been resolved.
   data = {}
+  aux_data = {}
   for build_file in build_files:
     # Normalize paths everywhere.  This is important because paths will be
     # used as keys to the data dict and for references between input files.
     build_file = os.path.normpath(build_file)
-    LoadTargetBuildFile(build_file, data, variables, includes, depth)
+    LoadTargetBuildFile(build_file, data, aux_data, variables, includes, depth)
 
   # Build a dict to access each target's subdict by qualified name.
   targets = BuildTargetsDict(data)
