@@ -12,20 +12,21 @@
   'target_defaults': {
     'sources/': [
       ['exclude', '/(cocoa|gtk)/'],
-      ['exclude', '_(cocoa|gtk|linux|mac|posix|skia|win|xcb)\\.(cc|mm?)$'],
-      ['exclude', '/win_[^/]*\\.cc$'],
+      ['exclude', '_(cocoa|gtk|linux|mac|posix|skia|win|x)\\.(cc|mm?)$'],
+      ['exclude', '/(win|x11)_[^/]*\\.cc$'],
     ],
     'conditions': [
       ['OS=="linux"', {'sources/': [
         ['include', '/gtk/'],
-        ['include', '_(gtk|linux|posix|skia)\\.cc$'],
+        ['include', '_(gtk|linux|posix|skia|x)\\.cc$'],
+        ['include', '/x11_[^/]*\\.cc$'],
       ]}],
       ['OS=="mac"', {'sources/': [
         ['include', '/cocoa/'],
         ['include', '_(cocoa|mac|posix)\\.(cc|mm?)$'],
       ]}],
       ['OS=="win"', {'sources/': [
-        ['include', '_(win|xcb)\\.cc$'],
+        ['include', '_(win)\\.cc$'],
         ['include', '/win_[^/]*\\.cc$'],
       ]}],
     ],
@@ -100,6 +101,7 @@
         'common/gfx/chrome_canvas_win.cc',
         'common/gfx/chrome_font.h',
         'common/gfx/chrome_font_gtk.cc',
+        'common/gfx/chrome_font_mac.mm',
         'common/gfx/chrome_font_skia.cc',
         'common/gfx/chrome_font_win.cc',
         'common/gfx/color_utils.cc',
@@ -276,6 +278,9 @@
         'common/win_util.h',
         'common/worker_thread_ticker.cc',
         'common/worker_thread_ticker.h',
+        'common/x11_util.cc',
+        'common/x11_util.h',
+        'common/x11_util_internal.h',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -624,7 +629,7 @@
         'browser/renderer_host/backing_store.h',
         'browser/renderer_host/backing_store_posix.cc',
         'browser/renderer_host/backing_store_win.cc',
-        'browser/renderer_host/backing_store_xcb.cc',
+        'browser/renderer_host/backing_store_x.cc',
         'browser/renderer_host/browser_render_process_host.cc',
         'browser/renderer_host/browser_render_process_host.h',
         'browser/renderer_host/buffered_resource_handler.cc',
