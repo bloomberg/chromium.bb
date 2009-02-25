@@ -397,6 +397,8 @@ static void drm_cleanup(struct drm_device * dev)
 		return;
 	}
 
+	drm_vblank_cleanup(dev);
+
 	drm_lastclose(dev);
 	drm_fence_manager_takedown(dev);
 

@@ -93,7 +93,7 @@ static void vblank_disable_fn(void *arg)
 	}
 }
 
-static void drm_vblank_cleanup(struct drm_device *dev)
+void drm_vblank_cleanup(struct drm_device *dev)
 {
 	unsigned long irqflags;
 
@@ -209,8 +209,6 @@ int drm_irq_uninstall(struct drm_device *dev)
 	DRM_UNLOCK();
 	bus_teardown_intr(dev->device, dev->irqr, dev->irqh);
 	DRM_LOCK();
-
-	drm_vblank_cleanup(dev);
 
 	return 0;
 }
