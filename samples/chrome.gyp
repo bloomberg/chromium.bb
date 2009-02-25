@@ -192,6 +192,8 @@
         'common/jstemplate_builder.h',
         'common/l10n_util.cc',
         'common/l10n_util.h',
+        'common/l10n_util_win.cc',
+        'common/l10n_util_win.h',
         'common/libxml_utils.cc',
         'common/libxml_utils.h',
         'common/logging_chrome.cc',
@@ -1122,6 +1124,10 @@
             # Exclude most of dom_ui.
             ['exclude', '^browser/dom_ui/'],
             ['include', '^browser/dom_ui/chrome_url_data_manager\\.cc$'],
+            ['include', '^browser/dom_ui/dom_ui\\.cc$'],
+            ['include', '^browser/dom_ui/dom_ui_contents\\.cc$'],
+            ['include', '^browser/dom_ui/dom_ui_host\\.cc$'],
+            ['include', '^browser/dom_ui/new_tab_ui\\.cc$'],
 
             # Exclude most of download.
             ['exclude', '^browser/download/'],
@@ -1250,6 +1256,8 @@
         'renderer/render_widget.cc',
         'renderer/render_widget.h',
         'renderer/renderer_glue.cc',
+        'renderer/renderer_histogram_snapshots.cc',
+        'renderer/renderer_histogram_snapshots.h',
         'renderer/renderer_main.cc',
         'renderer/renderer_main_platform_delegate.h',
         'renderer/renderer_main_platform_delegate_linux.cc',

@@ -50,6 +50,8 @@
         'base/pipeline_impl.h',
         'base/synchronizer.cc',
         'base/synchronizer.h',
+        'filters/audio_renderer_base.cc',
+        'filters/audio_renderer_base.h',
         'filters/audio_renderer_impl.cc',
         'filters/audio_renderer_impl.h',
         'filters/file_data_source.cc',
