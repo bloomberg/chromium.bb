@@ -3703,6 +3703,10 @@
         '../third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.m',
       ],
       'sources/': [
+        # dglazkov says these aren't ready to build yet.
+        # TODO(mark): Remove this when they are ready.
+        ['exclude', '/third_party/WebKit/WebCore/bindings/v8/Script[^/]*\\.cpp$'],
+
         # Don't build bindings for storage/database.
         ['exclude', '/third_party/WebKit/WebCore/storage/[^/]*\\.idl$'],
 
