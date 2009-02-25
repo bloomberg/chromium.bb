@@ -175,7 +175,7 @@ def LoadTargetBuildFile(build_file_path, data, variables, includes, depth,
       build_file_data['included_files'].append(included_relative)
 
   # Apply "pre"/"early" variable expansions and condition evaluations.
-  ProcessVariablesAndConditionsInDict(build_file_data, False, variables)
+  ProcessVariablesAndConditionsInDict(build_file_data, False, variables.copy())
 
   # Look at each project's target_defaults dict, and merge settings into
   # targets.
@@ -389,8 +389,23 @@ def LoadAutomaticVariablesFromDict(variables, the_dict):
 def LoadVariablesFromVariablesDict(variables, the_dict):
   # Any keys in the_dict's "variables" dict, if it has one, becomes a
   # variable.  The variable name is the key name in the "variables" dict.
-  if 'variables' in the_dict:
-    variables.update(the_dict['variables'])
+  # Variables that end with the % character are set only if they are unset in
+  # the variables dict.
+  for key, value in the_dict.get('variables', {}).iteritems():
+    if not isinstance(value, str) and not isinstance(value, int) and \
+       not isinstance(value, list):
+      continue
+
+    if key.endswith('%'):
+      variable_name = key[:-1]
+      if variable_name in variables or variable_name in the_dict:
+        # If the variable is already set, don't set it.  If the variable is
+        # also set without a % in the_dict, don't set it either.
+        continue
+    else:
+      variable_name = key
+
+    variables[variable_name] = value
 
 
 def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):

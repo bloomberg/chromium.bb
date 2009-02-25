@@ -1,5 +1,6 @@
 {
   'variables': {
+    'chromium_code': 1,
     'base_source_files': [
       'src/third_party/dtoa/dtoa.c',
       'src/third_party/jscre/ASCIICType.h',
@@ -414,7 +415,7 @@
       ],
       'conditions': [
         [ 'OS=="win"', {
-          # This could be gotten from external_code, if we decide it's ok.
+          # This could be gotten by not setting chromium_code, if that's OK.
           'defines': ['_CRT_SECURE_NO_WARNINGS'],
         }],
       ],
@@ -507,7 +508,7 @@
       ],
       'conditions': [
         [ 'OS=="win"', {
-          # This could be gotten from external_code, if we decide it's ok.
+          # This could be gotten by not setting chromium_code, if that's OK.
           'defines': ['_CRT_SECURE_NO_WARNINGS'],
         }],
       ],

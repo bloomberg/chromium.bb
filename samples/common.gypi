@@ -1,4 +1,7 @@
 {
+  'variables': {
+    'chromium_code%': 0,
+  },
   'target_defaults': {
     # TODO(bradnelson): This should really be able to be either:
     #   CHROMIUM_BUILD or GOOGLE_CHROME_BUILD
@@ -56,7 +59,7 @@
     },
   },
   'conditions': [
-    [ 'OS=="mac"', {
+    ['OS=="mac"', {
       'target_defaults': {
         'xcode_settings': {
           'ALWAYS_SEARCH_USER_PATHS': 'NO',
@@ -86,7 +89,7 @@
         ],
       },
     }],
-    [ 'OS=="win"', {
+    ['OS=="win"', {
       'target_defaults': {
         'defines': [
           '_WIN32_WINNT=0x0600',
@@ -159,6 +162,13 @@
           },
         },
       },
+    }],
+    ['chromium_code==0', {
+      # This section must follow the other conditon sections above because
+      # external_code.gypi expects to be merged into those settings.
+      'includes': [
+        'external_code.gypi',
+      ],
     }],
   ],
   'xcode_settings': {
