@@ -15,7 +15,7 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
-        '../googleurl/build/googleurl.gyp:googleurl',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../sdch/sdch.gyp:sdch',
         '../third_party/bzip2/bzip2.gyp:bzip2',
         '../third_party/icu38/icu38.gyp:icui18n',
@@ -489,7 +489,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
-        '../googleurl/build/googleurl.gyp:googleurl',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
       ],
       'sources': [
         'tools/tld_cleanup/tld_cleanup.cc',

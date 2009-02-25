@@ -76,7 +76,7 @@
         'resources',
         '../base/base.gyp:base',
         '../base/base.gyp:base_gfx',
-        '../googleurl/build/googleurl.gyp:googleurl',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../net/net.gyp:net',
         '../skia/skia.gyp:skia',
         '../third_party/icu38/icu38.gyp:icui18n',

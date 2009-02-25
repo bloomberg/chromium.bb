@@ -393,7 +393,7 @@
         'config',
         'pcre',
         'wtf',
-        '../googleurl/build/googleurl.gyp:googleurl',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/libjpeg/libjpeg.gyp:libjpeg',
         '../third_party/libpng/libpng.gyp:libpng',
@@ -3837,7 +3837,7 @@
       },
       'export_dependent_settings': [
         'wtf',
-        '../googleurl/build/googleurl.gyp:googleurl',
+        '../build/temp_gyp/googleurl.gyp:googleurl',
         '../skia/skia.gyp:skia',
         '../third_party/npapi/npapi.gyp:npapi',
         '../v8/v8.gyp:v8',

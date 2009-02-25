@@ -16,7 +16,7 @@
       'dependencies': [
         '../base/base.gyp:*',
         '../chrome/chrome.gyp:*',
-        '../googleurl/build/googleurl.gyp:*',
+        '../build/temp_gyp/googleurl.gyp:*',
         '../media/media.gyp:*',
         '../net/net.gyp:*',
         '../sdch/sdch.gyp:*',

@@ -8,12 +8,12 @@ import sys
 
 gyps = [
     'base/base.gyp',
+    'build/temp_gyp/googleurl.gyp',
     'build/all.gyp',
     'build/common.gypi',
     'build/external_code.gypi',
     'chrome/test/security_tests/security_tests.gyp',
     'chrome/chrome.gyp',
-    'googleurl/build/googleurl.gyp',
     'media/media.gyp',
     'net/net.gyp',
     'sdch/sdch.gyp',

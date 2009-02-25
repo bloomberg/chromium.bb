@@ -16,7 +16,7 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../third_party/npapi/npapi.gyp:npapi',
-        '../../googleurl/build/googleurl.gyp:googleurl',
+        '../../build/temp_gyp/googleurl.gyp:googleurl',
       ],
       'sources': [
         'activex_plugin.cc',
