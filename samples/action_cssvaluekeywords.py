@@ -4,59 +4,141 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# usage:
-# action_cssvaluekeywords.py makevalues.pl \
-#    CSSValueKeywords.in SVGCSSValueKeywords.in \
-#    CSSValueKeywords.c CSSValueKeywords.gperf CSSValueKeywords.h \
-#    CSSValueKeywords.in
-# All arguments are pathnames; the first three are inputs and the rest are
-# outputs.
+# action_cssvaluekeywords.py is a harness script to connect actions sections of
+# gyp-based builds to makevalues.pl.
+#
+# usage: action_cssvaluekeywords.py OUTPUTS -- INPUTS
+#
+# Exactly two outputs must be specified: a path to each of CSSValueKeywords.c
+# and CSSValueKeywords.h.
+#
+# Multiple inputs may be specified.  One input must have a basename of
+# makevalues.pl; this is taken as the path to makevalues.pl.  All other inputs
+# are paths to .in files that are used as input to makevalues.pl; at least
+# one, CSSValueKeywords.in, is required.
+
 
 import os
-import os.path
+import posixpath
+import shutil
 import subprocess
 import sys
 
-assert len(sys.argv) == 8
-makevalues_path = sys.argv[1]
-in_path = sys.argv[2]
-assert os.path.basename(in_path) == 'CSSValueKeywords.in'
-svg_in_path = sys.argv[3]
-assert os.path.basename(svg_in_path) == 'SVGCSSValueKeywords.in'
-out_path = sys.argv[6]
-assert os.path.basename(out_path) == 'CSSValueKeywords.h'
-merged_path = sys.argv[7]
-assert os.path.basename(merged_path) == 'CSSValueKeywords.in'
-out_dir = os.path.dirname(out_path)
-assert os.path.dirname(merged_path) == out_dir
 
-# Merge in_path and svg_in_path into a single file, CSSValueKeywords.in in
-# the working directory that makevalues.pl will run in.
-out_file = open(merged_path, 'wb')  # 'wb' to get \n only on windows.
+def SplitArgsIntoSections(args):
+  sections = []
+  while len(args) > 0:
+    if not '--' in args:
+      # If there is no '--' left, everything remaining is an entire section.
+      dashes = len(args)
+    else:
+      dashes = args.index('--')
 
-# Make sure there aren't any duplicate lines in CSSValueKeywords.in.  Lowercase
-# everything for the check because CSS values are case-insensitive.
-line_dict = {}
-for path in [in_path, svg_in_path]:
-  in_file = open(path)
-  for line in in_file:
-    line = line.rstrip()
-    if line.startswith('#'):
-      line = ''
-    if line == '':
-      continue
-    line_lower = line.lower()
-    if line_lower in line_dict:
-      raise KeyError, 'Duplicate value %s' % line_lower
-    line_dict[line_lower] = True
-    print >>out_file, line_lower
-  in_file.close()
+    sections.append(args[:dashes])
 
-out_file.close()
+    # Next time through the loop, look at everything after this '--'.
+    if dashes + 1 == len(args):
+      # If the '--' is at the end of the list, we won't come back through the
+      # loop again.  Add an empty section now corresponding to the nothingness
+      # following the final '--'.
+      args = []
+      sections.append(args)
+    else:
+      args = args[dashes + 1:]
 
-makevalues_path = os.path.abspath(makevalues_path)
+  return sections
 
-os.chdir(out_dir)
 
-return_code = subprocess.call(['perl', makevalues_path])
-assert return_code == 0
+def main(args):
+  (outputs, inputs) = SplitArgsIntoSections(args[1:])
+
+  # Make all output pathnames absolute so that they can be accessed after
+  # changing directory.
+  for index in xrange(0, len(outputs)):
+    outputs[index] = os.path.abspath(outputs[index])
+
+  output_dir = os.path.dirname(outputs[0])
+
+  # Look at the inputs and figure out which one is makevalues.pl and which are
+  # inputs to that script.
+  makevalues_input = None
+  in_files = []
+  for input in inputs:
+    # Make input pathnames absolute so they can be accessed after changing
+    # directory.  On Windows, convert \ to / for inputs to the perl script to
+    # work around the intermix of activepython + cygwin perl.
+    input_abs = os.path.abspath(input)
+    input_abs_posix = input_abs.replace(os.path.sep, posixpath.sep)
+    input_basename = os.path.basename(input)
+    if input_basename == 'makevalues.pl':
+      assert makevalues_input == None
+      makevalues_input = input_abs
+    elif input_basename.endswith('.in'):
+      in_files.append(input_abs_posix)
+    else:
+      assert False
+
+  assert makevalues_input != None
+  assert len(in_files) >= 1
+
+  # Change to the output directory because makevalues.pl puts output in its
+  # working directory.
+  os.chdir(output_dir)
+
+  # Merge all in_files into a single file whose name will be the same as the
+  # first listed in_file, but in the output directory.
+  merged_path = os.path.basename(in_files[0])
+  merged = open(merged_path, 'wb')  # 'wb' to get \n only on windows
+
+  # Make sure there aren't any duplicate lines in the in files.  Lowercase
+  # everything because CSS values are case-insensitive.
+  line_dict = {}
+  for in_file_path in in_files:
+    in_file = open(in_file_path)
+    for line in in_file:
+      line = line.rstrip()
+      if line.startswith('#'):
+        line = ''
+      if line == '':
+        continue
+      line = line.lower()
+      if line in line_dict:
+        raise KeyError, 'Duplicate value %s' % line
+      line_dict[line] = True
+      print >>merged, line
+    in_file.close()
+
+  merged.close()
+
+  # Build up the command.
+  command = ['perl', makevalues_input]
+
+  # Do it.  check_call is new in 2.5, so simulate its behavior with call and
+  # assert.
+  return_code = subprocess.call(command)
+  assert return_code == 0
+
+  # Don't leave behind the merged file or the .gperf file created by
+  # makevalues.
+  (root, ext) = os.path.splitext(merged_path)
+  gperf_path = root + '.gperf'
+  os.unlink(gperf_path)
+  os.unlink(merged_path)
+
+  # Go through the outputs.  Any output that belongs in a different directory
+  # is moved.  Do a copy and delete instead of rename for maximum portability.
+  # Note that all paths used in this section are still absolute.
+  for output in outputs:
+    this_output_dir = os.path.dirname(output)
+    if this_output_dir != output_dir:
+      output_basename = os.path.basename(output)
+      src = os.path.join(output_dir, output_basename)
+      dst = os.path.join(this_output_dir, output_basename)
+      shutil.copyfile(src, dst)
+      os.unlink(src)
+
+  return return_code
+
+
+if __name__ == '__main__':
+  sys.exit(main(sys.argv))

@@ -59,9 +59,9 @@ def main(args):
 
   output_dir = os.path.dirname(outputs[0])
 
-  # Look at the inputs and figure out which ones is makeprop.pl and which are
+  # Look at the inputs and figure out which one is makeprop.pl and which are
   # inputs to that script.
-  make_names_input = None
+  makeprop_input = None
   in_files = []
   for input in inputs:
     # Make input pathnames absolute so they can be accessed after changing
@@ -71,7 +71,7 @@ def main(args):
     input_abs_posix = input_abs.replace(os.path.sep, posixpath.sep)
     input_basename = os.path.basename(input)
     if input_basename == 'makeprop.pl':
-      assert make_names_input == None
+      assert makeprop_input == None
       makeprop_input = input_abs
     elif input_basename.endswith('.in'):
       in_files.append(input_abs_posix)

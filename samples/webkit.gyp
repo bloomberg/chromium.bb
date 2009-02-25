@@ -427,11 +427,9 @@
           ],
           'outputs': [
             '<(INTERMEDIATE_DIR)/CSSValueKeywords.c',
-            '<(INTERMEDIATE_DIR)/CSSValueKeywords.gperf',
-            '<(INTERMEDIATE_DIR)/CSSValueKeywords.h',
-            '<(INTERMEDIATE_DIR)/CSSValueKeywords.in',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.h',
           ],
-          'action': ['python', 'build/action_cssvaluekeywords.py', '<@(_inputs)', '<@(_outputs)'],
+          'action': ['python', 'build/action_cssvaluekeywords.py', '<@(_outputs)', '--', '<@(_inputs)'],
         },
         {
           'action_name': 'HTMLNames',
@@ -548,11 +546,14 @@
           # which one will be needed in a rule definition, declare both as
           # outputs.  The harness script will generate one file and copy it to
           # the other.
+          #
+          # This rule places outputs in SHARED_INTERMEDIATE_DIR because glue
+          # needs access to HTMLEntityNames.c.
           'outputs': [
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).c',
-            '<(INTERMEDIATE_DIR)/<(RULE_INPUT_ROOT).cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).c',
+            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
           ],
-          'action': ['python', 'build/rule_gperf.py', '<(RULE_INPUT_PATH)', '<(INTERMEDIATE_DIR)'],
+          'action': ['python', 'build/rule_gperf.py', '<(RULE_INPUT_PATH)', '<(SHARED_INTERMEDIATE_DIR)/webkit'],
           'process_outputs_as_sources': 0,
         },
         # Rule to build generated JavaScript (V8) bindings from .idl source.
