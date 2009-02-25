@@ -84,7 +84,7 @@ def main(args):
   # Merge all in_files into a single file whose name will be the same as the
   # first listed in_file, but in the output directory.
   merged_path = os.path.basename(in_files[0])
-  merged = open(merged_path, 'w')
+  merged = open(merged_path, 'wb')  # 'wb' to get \n only on windows
 
   # Make sure there aren't any duplicate lines in the in files.
   line_dict = {}

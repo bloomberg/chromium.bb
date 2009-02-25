@@ -234,9 +234,10 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     for i in a.get('inputs', []):
       if i not in sources:
         sources.append(i)
-    for i in a.get('outputs', []):
-      if i not in sources:
-        sources.append(i)
+    if a.get('process_outputs_as_sources', False):
+      for i in a.get('outputs', []):
+        if i not in sources:
+            sources.append(i)
   # Convert to proper windows form.
   sources = [_FixPath(i) for i in sources]
 
@@ -306,12 +307,14 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       outputs = [_FixPath(i) for i in a.get('outputs', [])]
       cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
       direct_cmd = a['action']
-      direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
-      direct_cmd = direct_cmd.replace('$(IntDir)',
-                                      '`cygpath -m "${INTDIR}"`')
-      direct_cmd = direct_cmd.replace('$(OutDir)',
-                                      '`cygpath -m "${OUTDIR}"`')
-      direct_cmd = direct_cmd.replace('"', '\\"')
+      direct_cmd = [i.replace('$(IntDir)',
+                              '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
+      direct_cmd = [i.replace('$(OutDir)',
+                              '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
+      direct_cmd = ['"%s"' % i for i in direct_cmd]
+      direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
+#      direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
+      direct_cmd = ' '.join(direct_cmd)
       cmd = (
 #          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
           '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
@@ -352,14 +355,17 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       outputs = [_FixPath(i) for i in r.get('outputs', [])]
       cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
       direct_cmd = r['action']
-      direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
-      direct_cmd = direct_cmd.replace('$(IntDir)',
-                                      '`cygpath -m "${INTDIR}"`')
-      direct_cmd = direct_cmd.replace('$(OutDir)',
-                                      '`cygpath -m "${OUTDIR}"`')
-      direct_cmd = direct_cmd.replace('$(InputPath)',
-                                      '`cygpath -m "${INPUTPATH}"`')
-      direct_cmd = direct_cmd.replace('"', '\\"')
+      direct_cmd = [i.replace('$(IntDir)',
+                              '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
+      direct_cmd = [i.replace('$(OutDir)',
+                              '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
+      direct_cmd = [i.replace('$(InputPath)',
+                              '`cygpath -m "${INPUTPATH}"`')
+                    for i in direct_cmd]
+      direct_cmd = ['"%s"' % i for i in direct_cmd]
+      direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
+      #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
+      direct_cmd = ' '.join(direct_cmd)
       cmd = (
 #          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
           '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '

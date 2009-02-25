@@ -28,7 +28,7 @@ assert os.path.dirname(merged_path) == out_dir
 
 # Merge in_path and svg_in_path into a single file, CSSValueKeywords.in in
 # the working directory that makevalues.pl will run in.
-out_file = open(merged_path, 'w')
+out_file = open(merged_path, 'wb')  # 'wb' to get \n only on windows.
 
 # Make sure there aren't any duplicate lines in CSSValueKeywords.in.  Lowercase
 # everything for the check because CSS values are case-insensitive.
