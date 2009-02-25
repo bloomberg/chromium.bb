@@ -14,6 +14,7 @@ import gyp.common
 #import gyp.SCons as SCons
 import os
 import pprint
+import re
 
 
 generator_default_variables = {
@@ -104,6 +105,9 @@ for %(name)s_file in %(name)s_files:
   _outputs = env.%(name)s(%(name)s_file)
 """
 
+escape_quotes_re = re.compile('^([^=]*=)"([^"]*)"$')
+def escape_quotes(s):
+    return escape_quotes_re.sub('\\1\\"\\2\\"', s)
 
 def GenerateSConscript(output_filename, build_file, spec, config):
   print 'Generating %s' % output_filename
@@ -124,6 +128,7 @@ def GenerateSConscript(output_filename, build_file, spec, config):
 
   defines = config.get('defines')
   if defines:
+    defines = [escape_quotes(d) for d in defines]
     WriteList(fp, map(repr, defines), prefix='    ',
                                       preamble='    CPPDEFINES = [\n    ',
                                       postamble='\n    ],\n')

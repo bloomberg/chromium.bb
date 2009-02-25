@@ -67,7 +67,7 @@
           # 32-bit x86 code on an x86_64 processor, it uses
           # "Linux i686 (x86_64)".  Matching that would require making a
           # run-time determination.
-          'WEBCORE_NAVIGATOR_PLATFORM=\\"Linux i686\\"',
+          'WEBCORE_NAVIGATOR_PLATFORM="Linux i686"',
         ],
       }],
       ['OS=="mac"', {
