@@ -1011,12 +1011,19 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
   prepend_index = 0
 
   for item in fro:
+    singleton = False
     if isinstance(item, str) or isinstance(item, int):
       # The cheap and easy case.
       if is_paths:
         to_item = MakePathRelative(to_file, fro_file, item)
       else:
         to_item = item
+
+      if not isinstance(item, str) or not item.startswith('-'):
+        # Any string that doesn't begin with a "-" is a singleton - it can
+        # only appear once in a list, to be enforced by the list merge append
+        # or prepend.
+        singleton = True
     elif isinstance(item, dict):
       # Make a copy of the dictionary, continuing to look for paths to fix.
       # The other intelligent aspects of merge processing won't apply because
@@ -1037,8 +1044,17 @@ def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
           item.__class__.__name__
 
     if append:
-      to.append(to_item)
+      # If appending a singleton that's already in the list, don't append.
+      # This ensures that the earliest occurrence of the item will stay put.
+      if not singleton or not to_item in to:
+        to.append(to_item)
     else:
+      # If prepending a singleton that's already in the list, remove the
+      # existing instance and proceed with the prepend.  This ensures that the
+      # item appears at the earliest possible position in the list.
+      while singleton and to_item in to:
+        to.remove(to_item)
+
       # Don't just insert everything at index 0.  That would prepend the new
       # items to the list in reverse order, which would be an unwelcome
       # surprise.
