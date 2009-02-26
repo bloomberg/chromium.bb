@@ -489,9 +489,14 @@ def GenerateOutput(target_list, target_dicts, data):
       xct._properties['buildPhases'].insert(prebuild_index, ssbp)
       prebuild_index = prebuild_index + 1
 
+      # TODO(mark): Should verify that at most one of these is specified.
       if action.get('process_outputs_as_sources', False):
         for output in action['outputs']:
           AddSourceToTarget(output, pbxp, xct)
+
+      if action.get('process_outputs_as_mac_bundle_resources', False):
+        for output in action['outputs']:
+          AddResourceToTarget(output, pbxp, xct)
 
     # Add custom shell script phases driving "make" for "rules" sections.
     #
@@ -600,9 +605,15 @@ def GenerateOutput(target_list, target_dicts, data):
         concrete_outputs_by_rule_source.append( \
             concrete_outputs_for_this_rule_source)
         concrete_outputs_all.extend(concrete_outputs_for_this_rule_source)
+
+        # TODO(mark): Should verify that at most one of these is specified.
         if rule.get('process_outputs_as_sources', False):
           for output in concrete_outputs_for_this_rule_source:
             AddSourceToTarget(output, pbxp, xct)
+
+        if rule.get('process_outputs_as_mac_bundle_resources', False):
+          for output in concrete_outputs_for_this_rule_source:
+            AddResourceToTarget(output, pbxp, xct)
 
         # Turn the list into a string that can be passed to a shell.
         action_string = gyp.common.EncodePOSIXShellList(rule['action'])
