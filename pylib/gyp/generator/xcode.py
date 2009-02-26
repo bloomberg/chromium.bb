@@ -343,7 +343,7 @@ class XcodeProject(object):
 
 def AddSourceToTarget(source, pbxp, xct):
   # TODO(mark): Perhaps this can be made a little bit fancier.
-  source_extensions = ['c', 'cc', 'cpp', 'm', 'mm', 's']
+  source_extensions = ['c', 'cc', 'cpp', 'cxx', 'm', 'mm', 's']
   basename = os.path.basename(source)
   (root, ext) = os.path.splitext(basename)
   if ext != '':
