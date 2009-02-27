@@ -1260,8 +1260,21 @@ drm_intel_gem_compute_batch_space(drm_intel_bo **bo_array, int count)
     int i;
     unsigned int total = 0;
 
-    for (i = 0; i < count; i++)
+    for (i = 0; i < count; i++) {
 	total += drm_intel_gem_bo_get_aperture_space(bo_array[i]);
+	/* For the first buffer object in the array, we get an accurate count
+	 * back for its reloc_tree size (since nothing had been flagged as
+	 * being counted yet).  We can save that value out as a more
+	 * conservative reloc_tree_size that avoids double-counting target
+	 * buffers.  Since the first buffer happens to usually be the batch
+	 * buffer in our callers, this can pull us back from doing the tree
+	 * walk on every new batch emit.
+	 */
+	if (i == 0) {
+	    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo_array[i];
+	    bo_gem->reloc_tree_size = total;
+	}
+    }
 
     for (i = 0; i < count; i++)
 	drm_intel_gem_bo_clear_aperture_space_flag(bo_array[i]);
