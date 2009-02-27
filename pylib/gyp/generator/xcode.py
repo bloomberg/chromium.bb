@@ -403,6 +403,8 @@ def GenerateOutput(target_list, target_dicts, data):
     xcode_projects[build_file] = xcp
     pbxp = xcp.project
 
+    pbxp.SetProperty('attributes', {'BuildIndependentTargetsInParallel': 'YES'})
+
     main_group = pbxp.GetProperty('mainGroup')
     build_group = gyp.xcodeproj_file.PBXGroup({'name': 'Build'})
     main_group.AppendChild(build_group)

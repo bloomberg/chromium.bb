@@ -2178,6 +2178,7 @@ class PBXProject(XCContainerPortal):
 
   _schema = XCContainerPortal._schema.copy()
   _schema.update({
+    'attributes':             [0, dict,                0, 0],
     'buildConfigurationList': [0, XCConfigurationList, 1, 1,
                                XCConfigurationList()],
     'compatibilityVersion':   [0, str,                 0, 1, 'Xcode 3.1'],
