@@ -164,3 +164,34 @@ def EncodePOSIXShellList(list):
   for argument in list:
     encoded_arguments.append(EncodePOSIXShellArgument(argument))
   return ' '.join(encoded_arguments)
+
+
+def DeepDependencyTargets(target_dicts, roots):
+  """Returns the recursive list of target dependencies.
+  """
+  dependencies = set()
+  for r in roots:
+    spec = target_dicts[r]
+    r_deps = spec.get('dependencies', [])
+    for d in r_deps:
+      if d not in roots:
+        dependencies.add(d)
+    for d in DeepDependencyTargets(target_dicts, r_deps):
+      if d not in roots:
+        dependencies.add(d)
+  return list(dependencies)
+
+
+def BuildFileTargets(target_list, build_file):
+  """From a target_list, returns the subset from the specified build_file.
+  """
+  return [p for p in target_list if
+          BuildFileAndTarget('', p)[0] == build_file]
+
+
+def AllTargets(target_list, target_dicts, build_file):
+  """Returns all targets (direct and dependencies) for the specified build_file.
+  """
+  bftargets = BuildFileTargets(target_list, build_file)
+  deptargets = DeepDependencyTargets(target_dicts, bftargets)
+  return bftargets + deptargets

@@ -1,13 +1,6 @@
 #!/usr/bin/python
 
 
-# Skeleton for generating SConscript files from .gyp files.
-#
-# THIS DOES NOT WORK RIGHT NOW (2 February 2009), but is being checked in
-# to capture current progress and provide a head start for next step(s)
-# for possibly finishing it off.
-
-
 import gyp
 import gyp.common
 # TODO(sgk):  create a separate "project module" for SCons?
@@ -109,7 +102,7 @@ escape_quotes_re = re.compile('^([^=]*=)"([^"]*)"$')
 def escape_quotes(s):
     return escape_quotes_re.sub('\\1\\"\\2\\"', s)
 
-def GenerateSConscript(output_filename, build_file, spec, config):
+def GenerateSConscript(output_filename, spec, config):
   print 'Generating %s' % output_filename
 
   fp = open(output_filename, 'w')
@@ -180,24 +173,57 @@ def GenerateSConscript(output_filename, build_file, spec, config):
   fp.close()
 
 
+_wrapper_template = """\
+
+__doc__ = '''
+Wrapper configuration for building this entire "solution,"
+including all the specific targets in various *.scons files.
+'''
+
+# Arrange for Hammer to add all programs to the '%(name)s' Alias.
+env.Append(
+    COMPONENT_PROGRAM_GROUPS = ['%(name)s'],
+    COMPONENT_TEST_PROGRAM_GROUPS = ['%(name)s'],
+)
+
+sconscript_files = %(sconscript_files)s
+
+env.SConscript(sconscript_files, exports=['env'])
+"""
+
+def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
+  print 'Generating %s' % output_filename
+  fp = open(output_filename, 'w')
+  fp.write(header)
+  fp.write(_wrapper_template % {
+               'name' : name,
+               'sconscript_files' : pprint.pformat(sconscript_files),
+           })
+  fp.close()
+
+
+
+infix = '_gyp'
+# Uncomment to overwrite existing .scons files.
+#infix = ''
+
+def TargetFilename(target):
+  """Returns the .scons file name for the specified target.
+  """
+  build_file, target = gyp.common.BuildFileAndTarget('', target)[:2]
+  output_file = os.path.join(os.path.split(build_file)[0],
+                             target + infix + '.scons')
+  return output_file
+
+
 def GenerateOutput(target_list, target_dicts, data):
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
       continue
 
-  infix = '_gyp'
-  # Uncomment to overwrite existing .scons files.
-  #infix = ''
-
   for qualified_target in target_list:
-    build_file, target = gyp.common.BuildFileAndTarget('',
-                                                       qualified_target)[0:2]
-    if target_list > 1:
-      output_file = os.path.join(os.path.split(build_file)[0],
-                                 target + infix + '.scons')
-    else:
-      output_file = os.path.abspath(build_file[:-4] + infix + '.scons')
-    spec =  target_dicts[qualified_target]
+    spec = target_dicts[qualified_target]
+    output_file = TargetFilename(qualified_target)
 
     if not spec.has_key('libraries'):
       spec['libraries'] = []
@@ -215,4 +241,20 @@ def GenerateOutput(target_list, target_dicts, data):
     # .gyp-generated parallel configurations.
     config = spec['configurations']['Debug']
 
-    GenerateSConscript(output_file, build_file, spec, config)
+    GenerateSConscript(output_file, spec, config)
+
+  for build_file in sorted(data.keys()):
+    path, ext = os.path.splitext(build_file)
+    if ext != '.gyp':
+      continue
+    output_dir, basename = os.path.split(path)
+    output_filename  = path + '_main' + infix + '.scons'
+
+    all_targets = gyp.common.AllTargets(target_list, target_dicts, build_file)
+    sconscript_files = []
+    for t in all_targets:
+      t = gyp.common.RelativePath(TargetFilename(t), output_dir)
+      sconscript_files.append(t)
+    sconscript_files.sort()
+
+    GenerateSConscriptWrapper(basename, output_filename, sconscript_files)

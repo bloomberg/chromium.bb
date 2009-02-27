@@ -414,20 +414,6 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
   return obj
 
 
-def _DependentProjects(target_dicts, roots):
-  dependents = set()
-  for r in roots:
-    spec = target_dicts[r]
-    r_deps = spec.get('dependencies', [])
-    for d in r_deps:
-      if d not in roots:
-        dependents.add(d)
-    for d in _DependentProjects(target_dicts, r_deps):
-      if d not in roots:
-        dependents.add(d)
-  return list(dependents)
-
-
 def GenerateOutput(target_list, target_dicts, data):
   """Generate .sln and .vcproj files.
 
@@ -466,9 +452,8 @@ def GenerateOutput(target_list, target_dicts, data):
     sln_path = build_file[:-4] + '_gyp.sln'
     print 'Generating %s' % sln_path
     # Get projects in the solution, and their dependents in a separate bucket.
-    sln_projects = [p for p in target_list if
-                    gyp.common.BuildFileAndTarget('', p)[0] == build_file]
-    dep_projects = _DependentProjects(target_dicts, sln_projects)
+    sln_projects = gyp.common.BuildFileTargets(target_list, build_file)
+    dep_projects = gyp.common.DeepDependencyTargets(target_dicts, sln_projects)
     # Convert to entries.
     project_objs = {}
     entries = [_ProjectObject(sln_path, p, project_objs, projects)
