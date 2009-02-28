@@ -102,6 +102,37 @@ def _ConfigFullName(config_name, config_data):
                    config_data.get('configuration_platform', 'Win32')])
 
 
+def _PrepareAction(c, r, has_input_path):
+  # Find path to cygwin.
+  cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
+
+  # Prepare command.
+  direct_cmd = r['action']
+  direct_cmd = [i.replace('$(IntDir)',
+                          '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
+  direct_cmd = [i.replace('$(OutDir)',
+                              '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
+  if has_input_path:
+    direct_cmd = [i.replace('$(InputPath)',
+                            '`cygpath -m "${INPUTPATH}"`')
+                  for i in direct_cmd]
+  direct_cmd = ['"%s"' % i for i in direct_cmd]
+  direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
+  #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
+  direct_cmd = ' '.join(direct_cmd)
+  cmd = (
+#  '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
+    '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
+    'set INTDIR=$(IntDir) && '
+    'set OUTDIR=$(OutDir) && ')
+  if has_input_path:
+    cmd += 'set INPUTPATH=$(InputPath) && '
+  cmd += (
+    'bash -c "%(cmd)s"')
+  cmd = cmd % {'cygwin_dir': cygwin_dir, 'cmd': direct_cmd}
+  return cmd
+
+
 def _GenerateProject(vcproj_filename, build_file, spec):
   """Generates a vcproj file.
 
@@ -238,9 +269,50 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       for i in a.get('outputs', []):
         if i not in sources:
             sources.append(i)
+
+  # Add rules.
+  rules = spec.get('rules', [])
+  for config_name, c in spec['configurations'].iteritems():
+    # Don't generate rules file if not needed.
+    if not rules: continue
+    # Create rules file.
+    rule_filename = '%s_%s_gyp.rules' % (spec['target_name'], config_name)
+    rules_file = MSVSToolFile.Writer(os.path.join(gyp_dir, rule_filename))
+    rules_file.Create(spec['target_name'])
+    # Add each rule.
+    for r in rules:
+      rule_name = r['rule_name']
+      rule_ext = r['extension']
+      outputs = [_FixPath(i) for i in r.get('outputs', [])]
+      cmd = _PrepareAction(c, r, has_input_path=True)
+      rules_file.AddCustomBuildRule(name=rule_name, extensions=[rule_ext],
+                                    outputs=outputs, cmd=cmd)
+    # Write out rules file.
+    rules_file.Write()
+
+    # Add rule file into project.
+    p.AddToolFile(rule_filename)
+
+    # Add sources for each applicable rule.
+    for r in rules:
+      # Done if not processing outputs as sources.
+      if not r.get('process_outputs_as_sources', False): continue
+      # Find sources to which this applies.
+      rule_sources = [s for s in sources if s.endswith('.' + rule_ext)]
+      for s in rule_sources:
+        for o in outputs:
+          nout = o
+          nout = nout.replace('$(InputName)',
+                              os.path.splitext(os.path.split(s)[1])[0])
+          nout = nout.replace('$(InputExt)',
+                              os.path.splitext(os.path.split(s)[1])[1])
+          nout = nout.replace('$(InputFileName)', os.path.split(s)[1])
+          nout = nout.replace('$(InputPath)', os.path.split(s)[0])
+          if nout not in sources:
+            sources.append(nout)
+
   # Convert to proper windows form.
   sources = [_FixPath(i) for i in sources]
-
   # Exclude excluded ones.
   excluded_sources = spec.get('sources_excluded', [])
   # Convert to proper windows form.
@@ -305,23 +377,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     for config_name, c in spec['configurations'].iteritems():
       inputs = [_FixPath(i) for i in a.get('inputs', [])]
       outputs = [_FixPath(i) for i in a.get('outputs', [])]
-      cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
-      direct_cmd = a['action']
-      direct_cmd = [i.replace('$(IntDir)',
-                              '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
-      direct_cmd = [i.replace('$(OutDir)',
-                              '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
-      direct_cmd = ['"%s"' % i for i in direct_cmd]
-      direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
-#      direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
-      direct_cmd = ' '.join(direct_cmd)
-      cmd = (
-#          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
-          '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
-          'set INTDIR=$(IntDir) && '
-          'set OUTDIR=$(OutDir) && '
-          'bash -c "%(cmd)s"') % {'cygwin_dir': cygwin_dir,
-                                  'cmd': direct_cmd}
+      cmd = _PrepareAction(c, a, has_input_path=False)
       tool = MSVSProject.Tool(
           'VCCustomBuildTool', {
             'Description': a['action_name'],
@@ -338,50 +394,6 @@ def _GenerateProject(vcproj_filename, build_file, spec):
       # Add to the properties of primary input.
       p.AddFileConfig(primary_input,
                       _ConfigFullName(config_name, c), tools=[tool])
-
-  # Add rules.
-  rules = spec.get('rules', [])
-  for config_name, c in spec['configurations'].iteritems():
-    # Don't generate rules file if not needed.
-    if not rules: continue
-    # Create rules file.
-    rule_filename = '%s_%s_gyp.rules' % (spec['target_name'], config_name)
-    rules_file = MSVSToolFile.Writer(os.path.join(gyp_dir, rule_filename))
-    rules_file.Create(spec['target_name'])
-    # Add each rule.
-    for r in rules:
-      rule_name = r['rule_name']
-      rule_ext = r['extension']
-      outputs = [_FixPath(i) for i in r.get('outputs', [])]
-      cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
-      direct_cmd = r['action']
-      direct_cmd = [i.replace('$(IntDir)',
-                              '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
-      direct_cmd = [i.replace('$(OutDir)',
-                              '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
-      direct_cmd = [i.replace('$(InputPath)',
-                              '`cygpath -m "${INPUTPATH}"`')
-                    for i in direct_cmd]
-      direct_cmd = ['"%s"' % i for i in direct_cmd]
-      direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
-      #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
-      direct_cmd = ' '.join(direct_cmd)
-      cmd = (
-#          '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
-          '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
-          'set INTDIR=$(IntDir) && '
-          'set OUTDIR=$(OutDir) && '
-          'set INPUTPATH=$(InputPath) && '
-          'bash -c "%(cmd)s"') % {'cygwin_dir': cygwin_dir,
-                                  'cmd': direct_cmd}
-      rules_file.AddCustomBuildRule(name=rule_name, extensions=[rule_ext],
-                                    outputs=outputs, cmd=cmd)
-    # Write out rules file.
-    rules_file.Write()
-
-
-    # Add rule file into project.
-    p.AddToolFile(rule_filename)
 
   # Write it out.
   p.Write()
