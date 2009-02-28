@@ -1240,6 +1240,7 @@ extern void drm_driver_irq_postinstall(struct drm_device *dev);
 extern void drm_driver_irq_uninstall(struct drm_device *dev);
 
 extern int drm_vblank_init(struct drm_device *dev, int num_crtcs);
+extern void drm_vblank_cleanup(struct drm_device *dev);
 extern int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *filp);
 extern int drm_vblank_wait(struct drm_device * dev, unsigned int *vbl_seq);
 extern void drm_locked_tasklet(struct drm_device *dev, void(*func)(struct drm_device*));
