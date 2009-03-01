@@ -1,0 +1,26 @@
+#!/usr/bin/python
+
+# TODO(mark): This script is temporary, and is only being used while Chromium
+# is transitioning to GYP-based builds.  It is intended to be used as the
+# action of a gclient hook.
+
+import os
+import sys
+
+# GYP is now the official Mac build system, so it must run on the Mac.
+# Elsewhere, GYP will only run from the hook if the USE_GYP environment
+# variable is set.  This will keep the noise down for the masses until the
+# GYP builds on other platforms are more mature, but allows GYP developers and
+# early adopters to run GYP from the same hook that the Mac uses.
+if sys.platform != 'darwin' and os.getenv('USE_GYP') == None:
+  sys.exit(0)
+
+try:
+  import gyp
+except ImportError, e:
+  import os.path
+  sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), 'pylib'))
+  import gyp
+
+if __name__ == '__main__':
+  sys.exit(gyp.main(sys.argv[1:]))
