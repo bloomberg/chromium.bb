@@ -870,8 +870,7 @@ static struct vm_operations_struct drm_bo_vm_ops = {
  * \param map The buffer object drm map.
  * \return zero on success or a negative number on failure.
  */
-
-int drm_bo_mmap_locked(struct vm_area_struct *vma,
+static int drm_bo_mmap_locked(struct vm_area_struct *vma,
 		       struct file *filp,
 		       drm_local_map_t *map)
 {
