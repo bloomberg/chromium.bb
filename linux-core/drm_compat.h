@@ -107,27 +107,6 @@
 #define IRQF_SHARED SA_SHIRQ
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,10)
-static inline int remap_pfn_range(struct vm_area_struct *vma, unsigned long from, unsigned long pfn, unsigned long size, pgprot_t pgprot)
-{
-  return remap_page_range(vma, from,
-			  pfn << PAGE_SHIFT,
-			  size,
-			  pgprot);
-}
-
-static __inline__ void *kcalloc(size_t nmemb, size_t size, int flags)
-{
-	void *addr;
-
-	addr = kmalloc(size * nmemb, flags);
-	if (addr != NULL)
-		memset((void *)addr, 0, size * nmemb);
-
-	return addr;
-}
-#endif
-
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,16)
 #define mutex_lock down
 #define mutex_unlock up
