@@ -393,12 +393,10 @@ def ExpandXcodeVariables(string, expansions):
 def GenerateOutput(target_list, target_dicts, data):
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():
-    if build_file[-4:] != '.gyp':
+    (build_file_root, build_file_ext) = os.path.splitext(build_file)
+    if build_file_ext != '.gyp':
       continue
-    build_file_stem = build_file[:-4]
-    # TODO(mark): To keep gyp-generated xcodeproj bundles from colliding with
-    # checked-in versions, temporarily put _gyp into the ones created here.
-    xcp = XcodeProject(build_file, build_file_stem + '_gyp.xcodeproj',
+    xcp = XcodeProject(build_file, build_file_root + '.xcodeproj',
                        build_file_dict)
     xcode_projects[build_file] = xcp
     pbxp = xcp.project
