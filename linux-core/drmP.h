@@ -56,9 +56,7 @@
 #include <linux/mm.h>
 #include <linux/kref.h>
 #include <linux/pagemap.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,16)
 #include <linux/mutex.h>
-#endif
 #if defined(__alpha__) || defined(__powerpc__)
 #include <asm/pgtable.h>	/* For pte_wrprotect */
 #endif

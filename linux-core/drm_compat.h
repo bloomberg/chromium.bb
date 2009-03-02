@@ -107,16 +107,6 @@
 #define IRQF_SHARED SA_SHIRQ
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,16)
-#define mutex_lock down
-#define mutex_unlock up
-
-#define mutex semaphore
-
-#define mutex_init(a) sema_init((a), 1)
-
-#endif
-
 #ifndef DEFINE_SPINLOCK
 #define DEFINE_SPINLOCK(x) spinlock_t x = SPIN_LOCK_UNLOCKED
 #endif
