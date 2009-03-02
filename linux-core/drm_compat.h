@@ -125,12 +125,6 @@
 }
 #endif
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
-#define vmalloc_user(_size) ({void * tmp = vmalloc(_size);   \
-      if (tmp) memset(tmp, 0, size);			     \
-      (tmp);})
-#endif
-
 #ifndef list_for_each_entry_safe_reverse
 #define list_for_each_entry_safe_reverse(pos, n, head, member)          \
         for (pos = list_entry((head)->prev, typeof(*pos), member),      \
@@ -273,11 +267,6 @@ extern unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 int idr_for_each(struct idr *idp,
 		 int (*fn)(int id, void *p, void *data), void *data);
 void idr_remove_all(struct idr *idp);
-#endif
-
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18))
-void *idr_replace(struct idr *idp, void *ptr, int id);
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))

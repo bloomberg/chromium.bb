@@ -583,51 +583,6 @@ EXPORT_SYMBOL(idr_remove_all);
 #endif /* DRM_IDR_COMPAT_FN */
 
 
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18))
-/**
- * idr_replace - replace pointer for given id
- * @idp: idr handle
- * @ptr: pointer you want associated with the id
- * @id: lookup key
- *
- * Replace the pointer registered with an id and return the old value.
- * A -ENOENT return indicates that @id was not found.
- * A -EINVAL return indicates that @id was not within valid constraints.
- *
- * The caller must serialize vs idr_find(), idr_get_new(), and idr_remove().
- */
-void *idr_replace(struct idr *idp, void *ptr, int id)
-{
-	int n;
-	struct idr_layer *p, *old_p;
-
-	n = idp->layers * IDR_BITS;
-	p = idp->top;
-
-	id &= MAX_ID_MASK;
-
-	if (id >= (1 << n))
-		return ERR_PTR(-EINVAL);
-
-	n -= IDR_BITS;
-	while ((n > 0) && p) {
-		p = p->ary[(id >> n) & IDR_MASK];
-		n -= IDR_BITS;
-	}
-
-	n = id & IDR_MASK;
-	if (unlikely(p == NULL || !test_bit(n, &p->bitmap)))
-		return ERR_PTR(-ENOENT);
-
-	old_p = p->ary[n];
-	p->ary[n] = ptr;
-
-	return (void *)old_p;
-}
-EXPORT_SYMBOL(idr_replace);
-#endif
-
 #ifdef DRM_FULL_MM_COMPAT
 #ifdef DRM_NO_FAULT
 unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
