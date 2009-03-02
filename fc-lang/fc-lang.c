@@ -138,18 +138,25 @@ scan (FILE *f, char *file, FcCharSetFreezer *freezer)
     {
 	if (!strncmp (line, "include", 7))
 	{
-	    file = strchr (line, ' ');
-            if (!file)
-                fatal (line, lineno, 
+	    FILE *included_f;
+	    char *included_file;
+	    included_file = strchr (line, ' ');
+            if (!included_file)
+                fatal (file, lineno,
                        "invalid syntax, expected: include filename");
-	    while (isspace(*file))
-		file++;
-	    f = scanopen (file);
-	    if (!f)
-		fatal (file, 0, "can't open");
-	    n = scan (f, file, freezer);
-	    fclose (f);
-	    return n;
+	    while (isspace(*included_file))
+		included_file++;
+	    included_f = scanopen (included_file);
+	    if (!included_f)
+		fatal (included_file, 0, "can't open");
+	    n = scan (included_f, included_file, freezer);
+	    fclose (included_f);
+	    if (!c)
+		c = FcCharSetCreate ();
+	    if (!FcCharSetMerge (c, n, NULL))
+		fatal (file, lineno, "out of memory");
+	    FcCharSetDestroy (n);
+	    continue;
 	}
 	if (strchr (line, '-'))
 	{
