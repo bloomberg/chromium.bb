@@ -399,7 +399,7 @@ class XCObject(object):
       hash.update(data)
 
     if hash == None:
-      hash = sha()
+      hash = sha.new()
 
     hashables = self.Hashables()
     assert len(hashables) > 0
