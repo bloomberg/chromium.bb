@@ -152,8 +152,7 @@
 #include <linux/mm.h>
 #include <asm/page.h>
 
-#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)) && \
-     (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
 #define DRM_ODD_MM_COMPAT
 #endif
 
@@ -183,27 +182,6 @@ extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
 #ifndef __GFP_DMA32
 #define __GFP_DMA32 GFP_KERNEL
 #endif
-
-#if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-
-/*
- * These are too slow in earlier kernels.
- */
-
-extern int drm_unmap_page_from_agp(struct page *page);
-extern int drm_map_page_into_agp(struct page *page);
-
-#define map_page_into_agp drm_map_page_into_agp
-#define unmap_page_from_agp drm_unmap_page_from_agp
-#endif
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-extern struct page *get_nopage_retry(void);
-extern void free_nopage_retry(void);
-
-#define NOPAGE_REFAULT get_nopage_retry()
-#endif
-
 
 #ifndef DRM_FULL_MM_COMPAT
 

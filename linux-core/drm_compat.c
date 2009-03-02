@@ -27,32 +27,6 @@
 
 #include "drmP.h"
 
-#if defined(CONFIG_X86) && (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-
-/*
- * These have bad performance in the AGP module for the indicated kernel versions.
- */
-
-int drm_map_page_into_agp(struct page *page)
-{
-        int i;
-        i = change_page_attr(page, 1, PAGE_KERNEL_NOCACHE);
-        /* Caller's responsibility to call global_flush_tlb() for
-         * performance reasons */
-        return i;
-}
-
-int drm_unmap_page_from_agp(struct page *page)
-{
-        int i;
-        i = change_page_attr(page, 1, PAGE_KERNEL);
-        /* Caller's responsibility to call global_flush_tlb() for
-         * performance reasons */
-        return i;
-}
-#endif
-
-
 #if  (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
 
 /*
@@ -76,84 +50,8 @@ pgprot_t vm_get_page_prot(unsigned long vm_flags)
 #endif
 
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-
-/*
- * vm code for kernels below 2.6.15 in which version a major vm write
- * occured. This implement a simple straightforward
- * version similar to what's going to be
- * in kernel 2.6.19+
- * Kernels below 2.6.15 use nopage whereas 2.6.19 and upwards use
- * nopfn.
- */
-
-static struct {
-	spinlock_t lock;
-	struct page *dummy_page;
-	atomic_t present;
-} drm_np_retry =
-{SPIN_LOCK_UNLOCKED, NOPAGE_OOM, ATOMIC_INIT(0)};
-
-
-static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
-				    struct fault_data *data);
-
-
-struct page * get_nopage_retry(void)
-{
-	if (atomic_read(&drm_np_retry.present) == 0) {
-		struct page *page = alloc_page(GFP_KERNEL);
-		if (!page)
-			return NOPAGE_OOM;
-		spin_lock(&drm_np_retry.lock);
-		drm_np_retry.dummy_page = page;
-		atomic_set(&drm_np_retry.present,1);
-		spin_unlock(&drm_np_retry.lock);
-	}
-	get_page(drm_np_retry.dummy_page);
-	return drm_np_retry.dummy_page;
-}
-
-void free_nopage_retry(void)
-{
-	if (atomic_read(&drm_np_retry.present) == 1) {
-		spin_lock(&drm_np_retry.lock);
-		__free_page(drm_np_retry.dummy_page);
-		drm_np_retry.dummy_page = NULL;
-		atomic_set(&drm_np_retry.present, 0);
-		spin_unlock(&drm_np_retry.lock);
-	}
-}
-
-struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
-			       unsigned long address,
-			       int *type)
-{
-	struct fault_data data;
-
-	if (type)
-		*type = VM_FAULT_MINOR;
-
-	data.address = address;
-	data.vma = vma;
-	drm_bo_vm_fault(vma, &data);
-	switch (data.type) {
-	case VM_FAULT_OOM:
-		return NOPAGE_OOM;
-	case VM_FAULT_SIGBUS:
-		return NOPAGE_SIGBUS;
-	default:
-		break;
-	}
-
-	return NOPAGE_REFAULT;
-}
-
-#endif
-
 #if !defined(DRM_FULL_MM_COMPAT) && \
-  ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15)) || \
-   (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)))
+  (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
 
 static int drm_pte_is_clear(struct vm_area_struct *vma,
 			    unsigned long addr)

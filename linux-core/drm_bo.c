@@ -2362,9 +2362,6 @@ int drm_bo_driver_finish(struct drm_device *dev)
 	if (list_empty(&bm->unfenced))
 		DRM_DEBUG("Unfenced list was clean\n");
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-	ClearPageReserved(bm->dummy_read_page);
-#endif
 	__free_page(bm->dummy_read_page);
 
 out:
@@ -2396,10 +2393,6 @@ int drm_bo_driver_init(struct drm_device *dev)
 		ret = -ENOMEM;
 		goto out_unlock;
 	}
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-	SetPageReserved(bm->dummy_read_page);
-#endif
 
 	/*
 	 * Initialize the system memory buffer type.

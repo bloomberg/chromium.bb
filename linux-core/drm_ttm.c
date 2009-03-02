@@ -132,9 +132,6 @@ static struct page *drm_ttm_alloc_page(void)
 		drm_free_memctl(PAGE_SIZE);
 		return NULL;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-	SetPageReserved(page);
-#endif
 	return page;
 }
 
@@ -215,9 +212,6 @@ static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
 	for (i = 0; i < ttm->num_pages; ++i) {
 		cur_page = ttm->pages + i;
 		if (*cur_page) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
-			ClearPageReserved(*cur_page);
-#endif
 			if (page_count(*cur_page) != 1)
 				DRM_ERROR("Erroneous page count. Leaking pages.\n");
 			if (page_mapped(*cur_page))
