@@ -94,21 +94,12 @@ int drm_agp_info_ioctl(struct drm_device *dev, void *data,
  */
 int drm_agp_acquire(struct drm_device * dev)
 {
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	int retcode;
-#endif
-
 	if (!dev->agp)
 		return -ENODEV;
 	if (dev->agp->acquired)
 		return -EBUSY;
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	if ((retcode = agp_backend_acquire()))
-		return retcode;
-#else
 	if (!(dev->agp->bridge = agp_backend_acquire(dev->pdev)))
 		return -ENODEV;
-#endif
 
 	dev->agp->acquired = 1;
 	return 0;
@@ -145,11 +136,7 @@ int drm_agp_release(struct drm_device *dev)
 {
 	if (!dev->agp || !dev->agp->acquired)
 		return -EINVAL;
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	agp_backend_release();
-#else
 	agp_backend_release(dev->agp->bridge);
-#endif
 	dev->agp->acquired = 0;
 	return 0;
 
@@ -178,11 +165,7 @@ int drm_agp_enable(struct drm_device *dev, struct drm_agp_mode mode)
 		return -EINVAL;
 
 	dev->agp->mode = mode.mode;
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	agp_enable(mode.mode);
-#else
 	agp_enable(dev->agp->bridge, mode.mode);
-#endif
 	dev->agp->enabled = 1;
 	return 0;
 }
@@ -418,9 +401,6 @@ struct drm_agp_head *drm_agp_init(struct drm_device *dev)
 		return NULL;
 	memset((void *)head, 0, sizeof(*head));
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	agp_copy_info(&head->agp_info);
-#else
 	head->bridge = agp_find_bridge(dev->pdev);
 	if (!head->bridge) {
 		if (!(head->bridge = agp_backend_acquire(dev->pdev))) {
@@ -432,7 +412,7 @@ struct drm_agp_head *drm_agp_init(struct drm_device *dev)
 	} else {
 		agp_copy_info(head->bridge, &head->agp_info);
 	}
-#endif
+
 	if (head->agp_info.chipset == NOT_SUPPORTED) {
 		drm_free(head, sizeof(*head), DRM_MEM_AGPLISTS);
 		return NULL;
@@ -445,18 +425,11 @@ struct drm_agp_head *drm_agp_init(struct drm_device *dev)
 }
 
 /** Calls agp_allocate_memory() */
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-DRM_AGP_MEM *drm_agp_allocate_memory(size_t pages, u32 type)
-{
-	return agp_allocate_memory(pages, type);
-}
-#else
 DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge,
 				     size_t pages, u32 type)
 {
 	return agp_allocate_memory(bridge, pages, type);
 }
-#endif
 
 /** Calls agp_free_memory() */
 int drm_agp_free_memory(DRM_AGP_MEM * handle)
@@ -501,12 +474,8 @@ drm_agp_bind_pages(struct drm_device *dev,
 	int ret, i;
 
 	DRM_DEBUG("drm_agp_populate_ttm\n");
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	mem = drm_agp_allocate_memory(num_pages, AGP_USER_MEMORY);
-#else
 	mem = drm_agp_allocate_memory(dev->agp->bridge, num_pages,
 				      AGP_USER_MEMORY);
-#endif
 	if (mem == NULL) {
 		DRM_ERROR("Failed to allocate memory for %ld pages\n",
 			  num_pages);
@@ -561,11 +530,7 @@ static int drm_agp_populate(struct drm_ttm_backend *backend,
 		return -1;
 
 	DRM_DEBUG("drm_agp_populate_ttm\n");
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	mem = drm_agp_allocate_memory(num_pages, AGP_USER_MEMORY);
-#else
 	mem = drm_agp_allocate_memory(agp_be->bridge, num_pages, AGP_USER_MEMORY);
-#endif
 	if (!mem) {
 		drm_free_memctl(num_pages * sizeof(void *));
 		return -1;

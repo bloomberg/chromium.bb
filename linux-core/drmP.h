@@ -517,9 +517,7 @@ struct drm_agp_head {
 	DRM_AGP_KERN agp_info;		/**< AGP device information */
 	struct list_head memory;
 	unsigned long mode;		/**< AGP mode */
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,11)
 	struct agp_bridge_data *bridge;
-#endif
 	int enabled;			/**< whether the AGP bus as been enabled */
 	int acquired;			/**< whether the AGP device has been acquired */
 	unsigned long base;
@@ -1279,11 +1277,7 @@ extern int drm_agp_unbind_ioctl(struct drm_device *dev, void *data,
 extern int drm_agp_bind(struct drm_device *dev, struct drm_agp_binding *request);
 extern int drm_agp_bind_ioctl(struct drm_device *dev, void *data,
 			struct drm_file *file_priv);
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-extern DRM_AGP_MEM *drm_agp_allocate_memory(size_t pages, u32 type);
-#else
 extern DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size_t pages, u32 type);
-#endif
 extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);

@@ -300,11 +300,7 @@ DRM_AGP_MEM *drm_alloc_agp(struct drm_device *dev, int pages, u32 type)
 		return NULL;
 	}
 
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-	if ((handle = drm_agp_allocate_memory(pages, type))) {
-#else
 	if ((handle = drm_agp_allocate_memory(dev->agp->bridge, pages, type))) {
-#endif
 		spin_lock(&drm_mem_lock);
 		++drm_mem_stats[DRM_MEM_TOTALAGP].succeed_count;
 		drm_mem_stats[DRM_MEM_TOTALAGP].bytes_allocated

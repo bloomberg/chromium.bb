@@ -293,17 +293,10 @@ static void *agp_remap(unsigned long offset, unsigned long size,
 }
 
 /** Wrapper around agp_allocate_memory() */
-#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
-DRM_AGP_MEM *drm_alloc_agp(struct drm_device *dev, int pages, u32 type)
-{
-	return drm_agp_allocate_memory(pages, type);
-}
-#else
 DRM_AGP_MEM *drm_alloc_agp(struct drm_device *dev, int pages, u32 type)
 {
 	return drm_agp_allocate_memory(dev->agp->bridge, pages, type);
 }
-#endif
 
 /** Wrapper around agp_free_memory() */
 int drm_free_agp(DRM_AGP_MEM * handle, int pages)
