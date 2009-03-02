@@ -62,12 +62,6 @@
 #include <linux/cred.h>
 #endif
 
-/* older kernels had different irq args */
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-#undef DRM_IRQ_ARGS
-#define DRM_IRQ_ARGS		int irq, void *arg, struct pt_regs *regs
-#endif
-
 #ifndef list_for_each_safe
 #define list_for_each_safe(pos, n, head)				\
 	for (pos = (head)->next, n = pos->next; pos != (head);		\
@@ -136,10 +130,6 @@
 #include <linux/mm.h>
 #include <asm/page.h>
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-#define DRM_ODD_MM_COMPAT
-#endif
-
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
 #define DRM_FULL_MM_COMPAT
 #endif
@@ -184,77 +174,9 @@ struct fault_data {
 	int type;
 };
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-extern struct page *drm_bo_vm_nopage(struct vm_area_struct *vma,
-				     unsigned long address,
-				     int *type);
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19)) && \
-  !defined(DRM_FULL_MM_COMPAT)
 extern unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 				     unsigned long address);
-#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)) */
 #endif /* ndef DRM_FULL_MM_COMPAT */
-
-#ifdef DRM_ODD_MM_COMPAT
-
-struct drm_buffer_object;
-
-
-/*
- * Add a vma to the ttm vma list, and the
- * process mm pointer to the ttm mm list. Needs the ttm mutex.
- */
-
-extern int drm_bo_add_vma(struct drm_buffer_object * bo,
-			   struct vm_area_struct *vma);
-/*
- * Delete a vma and the corresponding mm pointer from the
- * ttm lists. Needs the ttm mutex.
- */
-extern void drm_bo_delete_vma(struct drm_buffer_object * bo,
-			      struct vm_area_struct *vma);
-
-/*
- * Attempts to lock all relevant mmap_sems for a ttm, while
- * not releasing the ttm mutex. May return -EAGAIN to avoid
- * deadlocks. In that case the caller shall release the ttm mutex,
- * schedule() and try again.
- */
-
-extern int drm_bo_lock_kmm(struct drm_buffer_object * bo);
-
-/*
- * Unlock all relevant mmap_sems for a ttm.
- */
-extern void drm_bo_unlock_kmm(struct drm_buffer_object * bo);
-
-/*
- * If the ttm was bound to the aperture, this function shall be called
- * with all relevant mmap sems held. It deletes the flag VM_PFNMAP from all
- * vmas mapping this ttm. This is needed just after unmapping the ptes of
- * the vma, otherwise the do_nopage() function will bug :(. The function
- * releases the mmap_sems for this ttm.
- */
-
-extern void drm_bo_finish_unmap(struct drm_buffer_object *bo);
-
-/*
- * Remap all vmas of this ttm using io_remap_pfn_range. We cannot
- * fault these pfns in, because the first one will set the vma VM_PFNMAP
- * flag, which will make the next fault bug in do_nopage(). The function
- * releases the mmap_sems for this ttm.
- */
-
-extern int drm_bo_remap_bound(struct drm_buffer_object *bo);
-
-
-/*
- * Remap a vma for a bound ttm. Call with the ttm mutex held and
- * the relevant mmap_sem locked.
- */
-extern int drm_bo_map_bound(struct vm_area_struct *vma);
-
-#endif
 
 /* fixme when functions are upstreamed - upstreamed for 2.6.23 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
@@ -267,10 +189,6 @@ extern unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 int idr_for_each(struct idr *idp,
 		 int (*fn)(int id, void *p, void *data), void *data);
 void idr_remove_all(struct idr *idp);
-#endif
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19))
-typedef _Bool                   bool;
 #endif
 
 

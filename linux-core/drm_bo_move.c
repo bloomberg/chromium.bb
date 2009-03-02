@@ -297,10 +297,6 @@ int drm_buffer_object_transfer(struct drm_buffer_object *bo,
 	INIT_LIST_HEAD(&fbo->ddestroy);
 	INIT_LIST_HEAD(&fbo->lru);
 	INIT_LIST_HEAD(&fbo->pinned_lru);
-#ifdef DRM_ODD_MM_COMPAT
-	INIT_LIST_HEAD(&fbo->vma_list);
-	INIT_LIST_HEAD(&fbo->p_mm_list);
-#endif
 
 	fbo->fence = drm_fence_reference_locked(bo->fence);
 	fbo->pinned_node = NULL;
@@ -341,20 +337,8 @@ int drm_bo_move_accel_cleanup(struct drm_buffer_object *bo,
 	if (ret)
 		return ret;
 
-#ifdef DRM_ODD_MM_COMPAT
-	/*
-	 * In this mode, we don't allow pipelining a copy blit,
-	 * since the buffer will be accessible from user space
-	 * the moment we return and rebuild the page tables.
-	 *
-	 * With normal vm operation, page tables are rebuilt
-	 * on demand using fault(), which waits for buffer idle.
-	 */
-	if (1)
-#else
 	if (evict || ((bo->mem.mm_node == bo->pinned_node) &&
 		      bo->mem.mm_node != NULL))
-#endif
 	{
 		if (bo->fence) {
 			(void) drm_fence_object_wait(bo->fence, 0, 1,

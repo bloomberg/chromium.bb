@@ -91,42 +91,11 @@ void drm_bo_add_to_lru(struct drm_buffer_object *bo)
 
 static int drm_bo_vm_pre_move(struct drm_buffer_object *bo, int old_is_pci)
 {
-#ifdef DRM_ODD_MM_COMPAT
-	int ret;
-
-	if (!bo->map_list.map)
-		return 0;
-
-	ret = drm_bo_lock_kmm(bo);
-	if (ret)
-		return ret;
-	drm_bo_unmap_virtual(bo);
-	if (old_is_pci)
-		drm_bo_finish_unmap(bo);
-#else
 	if (!bo->map_list.map)
 		return 0;
 
 	drm_bo_unmap_virtual(bo);
-#endif
 	return 0;
-}
-
-static void drm_bo_vm_post_move(struct drm_buffer_object *bo)
-{
-#ifdef DRM_ODD_MM_COMPAT
-	int ret;
-
-	if (!bo->map_list.map)
-		return;
-
-	ret = drm_bo_remap_bound(bo);
-	if (ret) {
-		DRM_ERROR("Failed to remap a bound buffer object.\n"
-			  "\tThis might cause a sigbus later.\n");
-	}
-	drm_bo_unlock_kmm(bo);
-#endif
 }
 
 /*
@@ -237,9 +206,6 @@ static int drm_bo_handle_move_mem(struct drm_buffer_object *bo,
 		goto out_err;
 
 moved:
-	if (old_is_pci || new_is_pci)
-		drm_bo_vm_post_move(bo);
-
 	if (bo->priv_flags & _DRM_BO_FLAG_EVICTED) {
 		ret =
 		    dev->driver->bo_driver->invalidate_caches(dev,
@@ -260,9 +226,6 @@ moved:
 	return 0;
 
 out_err:
-	if (old_is_pci || new_is_pci)
-		drm_bo_vm_post_move(bo);
-
 	new_man = &bm->man[bo->mem.mem_type];
 	if ((new_man->flags & _DRM_FLAG_MEMTYPE_FIXED) && bo->ttm) {
 		drm_ttm_unbind(bo->ttm);
@@ -466,11 +429,6 @@ static void drm_bo_destroy_locked(struct drm_buffer_object *bo)
 			drm_bo_cleanup_refs(bo, 0);
 			return;
 		}
-
-#ifdef DRM_ODD_MM_COMPAT
-		BUG_ON(!list_empty(&bo->vma_list));
-		BUG_ON(!list_empty(&bo->p_mm_list));
-#endif
 
 		if (bo->ttm) {
 			drm_ttm_unbind(bo->ttm);
@@ -1784,10 +1742,6 @@ int drm_buffer_object_create(struct drm_device *dev,
 	INIT_LIST_HEAD(&bo->lru);
 	INIT_LIST_HEAD(&bo->pinned_lru);
 	INIT_LIST_HEAD(&bo->ddestroy);
-#ifdef DRM_ODD_MM_COMPAT
-	INIT_LIST_HEAD(&bo->p_mm_list);
-	INIT_LIST_HEAD(&bo->vma_list);
-#endif
 	bo->dev = dev;
 	bo->type = type;
 	bo->num_pages = num_pages;

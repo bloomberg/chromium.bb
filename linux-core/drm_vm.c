@@ -799,9 +799,6 @@ static void drm_bo_vm_open_locked(struct vm_area_struct *vma)
 
 	drm_vm_open_locked(vma);
 	atomic_inc(&bo->usage);
-#ifdef DRM_ODD_MM_COMPAT
-	drm_bo_add_vma(bo, vma);
-#endif
 }
 
 /**
@@ -834,9 +831,6 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 	drm_vm_close(vma);
 	if (bo) {
 		mutex_lock(&dev->struct_mutex);
-#ifdef DRM_ODD_MM_COMPAT
-		drm_bo_delete_vma(bo, vma);
-#endif
 		drm_bo_usage_deref_locked((struct drm_buffer_object **)
 					  &vma->vm_private_data);
 		mutex_unlock(&dev->struct_mutex);
@@ -852,11 +846,7 @@ static struct vm_operations_struct drm_bo_vm_ops = {
 	.fault = drm_bo_vm_fault,
 #endif
 #else
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
 	.nopfn = drm_bo_vm_nopfn,
-#else
-	.nopage = drm_bo_vm_nopage,
-#endif
 #endif
 	.open = drm_bo_vm_open,
 	.close = drm_bo_vm_close,
@@ -878,12 +868,7 @@ static int drm_bo_mmap_locked(struct vm_area_struct *vma,
 	vma->vm_private_data = map->handle;
 	vma->vm_file = filp;
 	vma->vm_flags |= VM_RESERVED | VM_IO;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,19))
 	vma->vm_flags |= VM_PFNMAP;
-#endif
 	drm_bo_vm_open_locked(vma);
-#ifdef DRM_ODD_MM_COMPAT
-	drm_bo_map_bound(vma);
-#endif
 	return 0;
 }

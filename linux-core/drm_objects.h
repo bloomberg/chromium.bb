@@ -510,13 +510,6 @@ struct drm_buffer_object {
 	unsigned long bus_offset;
 	uint32_t vm_flags;
 	void *iomap;
-
-#ifdef DRM_ODD_MM_COMPAT
-	/* dev->struct_mutex only protected. */
-	struct list_head vma_list;
-	struct list_head p_mm_list;
-#endif
-
 };
 
 #define _DRM_BO_FLAG_UNFENCED 0x00000001
