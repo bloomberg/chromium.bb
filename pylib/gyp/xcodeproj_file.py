@@ -136,9 +136,9 @@ a project file is output.
 """
 
 import gyp.common
-import hashlib
 import os.path
 import re
+import sha  # For Python 2.4 support.  hashlib is new in 2.5.
 import struct
 import sys
 
@@ -399,7 +399,7 @@ class XCObject(object):
       hash.update(data)
 
     if hash == None:
-      hash = hashlib.sha1()
+      hash = sha()
 
     hashables = self.Hashables()
     assert len(hashables) > 0
