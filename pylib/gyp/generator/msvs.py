@@ -297,6 +297,9 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     for r in rules:
       # Done if not processing outputs as sources.
       if not r.get('process_outputs_as_sources', False): continue
+      # Get some properties for this rule.
+      rule_ext = r['extension']
+      outputs = r.get('outputs', [])
       # Find sources to which this applies.
       rule_sources = [s for s in sources if s.endswith('.' + rule_ext)]
       for s in rule_sources:
