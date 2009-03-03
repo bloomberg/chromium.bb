@@ -500,17 +500,9 @@ via_dmablit_timer(unsigned long data)
 
 
 static void
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
-via_dmablit_workqueue(void *data)
-#else
 via_dmablit_workqueue(struct work_struct *work)
-#endif
 {
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
-	drm_via_blitq_t *blitq = (drm_via_blitq_t *) data;
-#else
 	drm_via_blitq_t *blitq = container_of(work, drm_via_blitq_t, wq);
-#endif
 	struct drm_device *dev = blitq->dev;
 	unsigned long irqsave;
 	drm_via_sg_info_t *cur_sg;
@@ -579,11 +571,7 @@ via_init_dmablit(struct drm_device *dev)
 			DRM_INIT_WAITQUEUE(blitq->blit_queue + j);
 		}
 		DRM_INIT_WAITQUEUE(&blitq->busy_queue);
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,20)
-		INIT_WORK(&blitq->wq, via_dmablit_workqueue, blitq);
-#else
 		INIT_WORK(&blitq->wq, via_dmablit_workqueue);
-#endif
 		init_timer(&blitq->poll_timer);
 		blitq->poll_timer.function = &via_dmablit_timer;
 		blitq->poll_timer.data = (unsigned long) blitq;
