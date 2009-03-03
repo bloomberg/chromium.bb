@@ -1402,6 +1402,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
       extension_map = {
         'a':         'archive.ar',
         'app':       'wrapper.application',
+        'bdic':      'file',
         'c':         'sourcecode.c.c',
         'cc':        'sourcecode.cpp.cpp',
         'cpp':       'sourcecode.cpp.cpp',
@@ -1424,6 +1425,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'py':        'text.script.python',
         's':         'sourcecode.asm',
         'strings':   'text.plist.strings',
+        'ttf':       'file',
         'xcconfig':  'text.xcconfig',
         'xib':       'file.xib',
         'y':         'sourcecode.yacc',
@@ -1434,8 +1436,12 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
       else:
         basename = os.path.basename(self._properties['path'])
         (root, ext) = os.path.splitext(basename)
+        # Check the map using a lowercase extension.
+        # TODO(mark): Maybe it should try with the original case first and fall
+        # back to lowercase, in case there are any instances where case
+        # matters.  There currently aren't.
         if ext != '':
-          ext = ext[1:]
+          ext = ext[1:].lower()
 
         # TODO(mark): "text" is the default value, but "file" is appropriate
         # for unrecognized files not containing text.  Xcode seems to choose
@@ -1812,6 +1818,75 @@ class PBXShellScriptBuildPhase(XCBuildPhase):
       return self._properties['name']
 
     return 'ShellScript'
+
+
+class PBXCopyFilesBuildPhase(XCBuildPhase):
+  _schema = XCBuildPhase._schema.copy()
+  _schema.update({
+    'dstPath':          [0, str, 0, 1],
+    'dstSubfolderSpec': [0, int, 0, 1],
+    'name':             [0, str, 0, 0],
+  })
+
+  # path_tree_re matches "$(DIR)/path" or just "$(DIR)".  Match group 1 is
+  # "DIR", match group 3 is "path" or None.
+  path_tree_re = re.compile('^\\$\\((.*)\\)(/(.*)|)$')
+
+  # path_tree_to_subfolder maps names of Xcode variables to the associated
+  # dstSubfolderSpec property value used in a PBXCopyFilesBuildPhase object.
+  path_tree_to_subfolder = {
+    'BUILT_PRODUCTS_DIR': 16,  # Products Directory
+    # Other types that can be chosen via the Xcode UI.
+    # TODO(mark): Map Xcode variable names to these.
+    # : 1,  # Wrapper
+    # : 6,  # Executables: 6
+    # : 7,  # Resources
+    # : 15,  # Java Resources
+    # : 10,  # Frameworks
+    # : 11,  # Shared Frameworks
+    # : 12,  # Shared Support
+    # : 13,  # PlugIns
+  }
+
+  def Name(self):
+    if 'name' in self._properties:
+      return self._properties['name']
+
+    return 'CopyFiles'
+
+  def FileGroup(self, path):
+    return self.PBXProjectAncestor().RootGroupForPath(path)
+
+  def SetDestination(self, path):
+    """Set the dstSubfolderSpec and dstPath properties from path.
+
+    path may be specified in the same notation used for XCHierarchicalElements,
+    specifically, "$(DIR)/path".
+    """
+
+    path_tree_match = self.path_tree_re.search(path)
+    if path_tree_match:
+      # Everything else needs to be relative to an Xcode variable.
+      path_tree = path_tree_match.group(1)
+      relative_path = path_tree_match.group(3)
+
+      if not path_tree in self.path_tree_to_subfolder:
+        raise KeyError, 'Can\'t use tree %s in a %s' % \
+                        (path_tree, self.__class__.__name__)
+      subfolder = self.path_tree_to_subfolder[path_tree]
+
+      if relative_path == None:
+        relative_path = ''
+    elif path.startswith('/'):
+      # Special case.  Absolute paths are in dstSubfolderSpec 0.
+      subfolder = 0
+      relative_path = path[1:]
+    else:
+      raise ValueError, 'Can\'t use path %s in a %s' % \
+                        (path, self.__class__.__name__)
+
+    self._properties['dstPath'] = relative_path
+    self._properties['dstSubfolderSpec'] = subfolder
 
 
 class PBXBuildRule(XCObject):

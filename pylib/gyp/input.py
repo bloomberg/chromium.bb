@@ -18,6 +18,8 @@ dependency_sections = ['dependencies', 'export_dependent_settings']
 # A list of sections that contain pathnames.  You should probably call
 # IsPathSection instead, which has other checks.
 path_sections = [
+  'destination',
+  'files',
   'include_dirs',
   'inputs',
   'libraries',
@@ -1160,6 +1162,7 @@ def SetUpConfigurations(target, target_dict):
     # Sections that must exist inside targets and not configurations.
     'actions',
     'configurations',
+    'copies',
     'default_configuration',
     'dependencies',
     'libraries',

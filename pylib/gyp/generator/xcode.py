@@ -751,6 +751,21 @@ exit 1
       for resource in spec.get('mac_bundle_resources', []):
         AddResourceToTarget(resource, pbxp, xct)
 
+    # Add "copies".
+    for copy_group in spec.get('copies', []):
+      pbxcp = gyp.xcodeproj_file.PBXCopyFilesBuildPhase({
+            'name': 'Copy to ' + copy_group['destination']
+          },
+          parent=xct)
+      pbxcp.SetDestination(copy_group['destination'])
+
+      # TODO(mark): The usual comment about this knowing too much about
+      # gyp.xcodeproj_file internals applies.
+      xct._properties['buildPhases'].insert(prebuild_index, pbxcp)
+
+      for file in copy_group['files']:
+        pbxcp.AddFile(file)
+
     # Excluded files can also go into the project file.
     for key in ['sources', 'mac_bundle_resources']:
       excluded_key = key + '_excluded'
