@@ -2,6 +2,7 @@
 
 
 import os.path
+import re
 import subprocess
 import sys
 import gyp.common
@@ -179,7 +180,11 @@ def _GenerateProject(vcproj_filename, build_file, spec):
                 'AdditionalIncludeDirectories', include_dirs)
 
     # Add in libraries.
-    libraries = spec.get('libraries', []) + c.get('msvs_system_libraries', [])
+    libraries = spec.get('libraries', [])
+    # Strip out -l, as it is not used on windows (but is needed so we can pass
+    # in libraries that are assumed to be in the default library path).
+    libraries = [re.sub('^(\-l)', '', lib) for lib in libraries]
+    # Add them.
     _ToolAppend(tools, 'VCLinkerTool',
                 'AdditionalDependencies', libraries)
 
