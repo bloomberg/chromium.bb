@@ -130,11 +130,6 @@
 #include <linux/mm.h>
 #include <asm/page.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,21))
-#define DRM_FULL_MM_COMPAT
-#endif
-
-
 /*
  * Flush relevant caches and clear a VMA structure so that page references
  * will cause a page fault. Don't flush tlbs.
@@ -156,27 +151,6 @@ extern pgprot_t vm_get_page_prot(unsigned long vm_flags);
 #ifndef __GFP_DMA32
 #define __GFP_DMA32 GFP_KERNEL
 #endif
-
-#ifndef DRM_FULL_MM_COMPAT
-
-/*
- * For now, just return a dummy page that we've allocated out of
- * static space. The page will be put by do_nopage() since we've already
- * filled out the pte.
- */
-
-struct fault_data {
-	struct vm_area_struct *vma;
-	unsigned long address;
-	pgoff_t pgoff;
-	unsigned int flags;
-
-	int type;
-};
-
-extern unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
-				     unsigned long address);
-#endif /* ndef DRM_FULL_MM_COMPAT */
 
 /* fixme when functions are upstreamed - upstreamed for 2.6.23 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))

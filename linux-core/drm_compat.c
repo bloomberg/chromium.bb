@@ -27,168 +27,6 @@
 
 #include "drmP.h"
 
-#if !defined(DRM_FULL_MM_COMPAT)
-
-static int drm_pte_is_clear(struct vm_area_struct *vma,
-			    unsigned long addr)
-{
-	struct mm_struct *mm = vma->vm_mm;
-	int ret = 1;
-	pte_t *pte;
-	pmd_t *pmd;
-	pud_t *pud;
-	pgd_t *pgd;
-
-	spin_lock(&mm->page_table_lock);
-	pgd = pgd_offset(mm, addr);
-	if (pgd_none(*pgd))
-		goto unlock;
-	pud = pud_offset(pgd, addr);
-        if (pud_none(*pud))
-		goto unlock;
-	pmd = pmd_offset(pud, addr);
-	if (pmd_none(*pmd))
-		goto unlock;
-	pte = pte_offset_map(pmd, addr);
-	if (!pte)
-		goto unlock;
-	ret = pte_none(*pte);
-	pte_unmap(pte);
- unlock:
-	spin_unlock(&mm->page_table_lock);
-	return ret;
-}
-
-static int vm_insert_pfn(struct vm_area_struct *vma, unsigned long addr,
-		  unsigned long pfn)
-{
-	int ret;
-	if (!drm_pte_is_clear(vma, addr))
-		return -EBUSY;
-
-	ret = io_remap_pfn_range(vma, addr, pfn, PAGE_SIZE, vma->vm_page_prot);
-	return ret;
-}
-
-
-static struct page *drm_bo_vm_fault(struct vm_area_struct *vma,
-				    struct fault_data *data)
-{
-	unsigned long address = data->address;
-	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
-	unsigned long page_offset;
-	struct page *page = NULL;
-	struct drm_ttm *ttm;
-	struct drm_device *dev;
-	unsigned long pfn;
-	int err;
-	unsigned long bus_base;
-	unsigned long bus_offset;
-	unsigned long bus_size;
-
-	dev = bo->dev;
-	drm_bo_read_lock(&dev->bm.bm_lock, 0);
-
-	mutex_lock(&bo->mutex);
-
-	err = drm_bo_wait(bo, 0, 1, 0);
-	if (err) {
-		data->type = (err == -EAGAIN) ?
-			VM_FAULT_MINOR : VM_FAULT_SIGBUS;
-		goto out_unlock;
-	}
-
-
-	/*
-	 * If buffer happens to be in a non-mappable location,
-	 * move it to a mappable.
-	 */
-
-	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
-		unsigned long _end = jiffies + 3*DRM_HZ;
-		uint32_t new_mask = bo->mem.proposed_flags |
-			DRM_BO_FLAG_MAPPABLE |
-			DRM_BO_FLAG_FORCE_MAPPABLE;
-
-		do {
-			err = drm_bo_move_buffer(bo, new_mask, 0, 0);
-		} while((err == -EAGAIN) && !time_after_eq(jiffies, _end));
-
-		if (err) {
-			DRM_ERROR("Timeout moving buffer to mappable location.\n");
-			data->type = VM_FAULT_SIGBUS;
-			goto out_unlock;
-		}
-	}
-
-	if (address > vma->vm_end) {
-		data->type = VM_FAULT_SIGBUS;
-		goto out_unlock;
-	}
-
-	dev = bo->dev;
-	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset,
-				&bus_size);
-
-	if (err) {
-		data->type = VM_FAULT_SIGBUS;
-		goto out_unlock;
-	}
-
-	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
-
-	if (bus_size) {
-		struct drm_mem_type_manager *man = &dev->bm.man[bo->mem.mem_type];
-
-		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
-		vma->vm_page_prot = drm_io_prot(man->drm_bus_maptype, vma);
-	} else {
-		ttm = bo->ttm;
-
-		drm_ttm_fixup_caching(ttm);
-		page = drm_ttm_get_page(ttm, page_offset);
-		if (!page) {
-			data->type = VM_FAULT_OOM;
-			goto out_unlock;
-		}
-		pfn = page_to_pfn(page);
-		vma->vm_page_prot = (bo->mem.flags & DRM_BO_FLAG_CACHED) ?
-			vm_get_page_prot(vma->vm_flags) :
-			drm_io_prot(_DRM_TTM, vma);
-	}
-
-	err = vm_insert_pfn(vma, address, pfn);
-
-	if (!err || err == -EBUSY)
-		data->type = VM_FAULT_MINOR;
-	else
-		data->type = VM_FAULT_OOM;
-out_unlock:
-	mutex_unlock(&bo->mutex);
-	drm_bo_read_unlock(&dev->bm.bm_lock);
-	return NULL;
-}
-
-unsigned long drm_bo_vm_nopfn(struct vm_area_struct * vma,
-			   unsigned long address)
-{
-	struct fault_data data;
-	data.address = address;
-
-	(void) drm_bo_vm_fault(vma, &data);
-	if (data.type == VM_FAULT_OOM)
-		return NOPFN_OOM;
-	else if (data.type == VM_FAULT_SIGBUS)
-		return NOPFN_SIGBUS;
-
-	/*
-	 * pfn already set.
-	 */
-
-	return 0;
-}
-#endif /* !defined(DRM_FULL_MM_COMPAT) */
-
 #ifdef DRM_IDR_COMPAT_FN
 /* only called when idp->lock is held */
 static void __free_layer(struct idr *idp, struct idr_layer *p)
@@ -315,7 +153,6 @@ EXPORT_SYMBOL(idr_remove_all);
 #endif /* DRM_IDR_COMPAT_FN */
 
 
-#ifdef DRM_FULL_MM_COMPAT
 #ifdef DRM_NO_FAULT
 unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 			      unsigned long address)
@@ -412,5 +249,4 @@ out_unlock:
 	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
-#endif
 #endif

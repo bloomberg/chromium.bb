@@ -698,7 +698,7 @@ EXPORT_SYMBOL(drm_mmap);
  * protected by the bo->mutex lock.
  */
 
-#if defined(DRM_FULL_MM_COMPAT) && !defined(DRM_NO_FAULT)
+#if !defined(DRM_NO_FAULT)
 static int drm_bo_vm_fault(struct vm_area_struct *vma,
 				     struct vm_fault *vmf)
 {
@@ -839,14 +839,10 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 }
 
 static struct vm_operations_struct drm_bo_vm_ops = {
-#ifdef DRM_FULL_MM_COMPAT
 #ifdef DRM_NO_FAULT
 	.nopfn = drm_bo_vm_nopfn,
 #else
 	.fault = drm_bo_vm_fault,
-#endif
-#else
-	.nopfn = drm_bo_vm_nopfn,
 #endif
 	.open = drm_bo_vm_open,
 	.close = drm_bo_vm_close,
