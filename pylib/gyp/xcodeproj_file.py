@@ -138,9 +138,19 @@ a project file is output.
 import gyp.common
 import os.path
 import re
-import sha  # For Python 2.4 support.  hashlib is new in 2.5.
 import struct
 import sys
+
+# hashlib is supplied as of Python 2.5 as the replacement interface for sha
+# and other secure hashes.  In 2.6, sha is deprecated.  Import hashlib if
+# available, avoiding a deprecation warning under 2.6.  Import sha otherwise,
+# preserving 2.4 compatibility.
+try:
+  import hashlib
+  _new_sha1 = hashlib.sha1
+except ImportError:
+  import sha
+  _new_sha1 = sha.new
 
 
 # See XCObject._EncodeString.  This pattern is used to determine when a string
@@ -399,7 +409,7 @@ class XCObject(object):
       hash.update(data)
 
     if hash == None:
-      hash = sha.new()
+      hash = _new_sha1()
 
     hashables = self.Hashables()
     assert len(hashables) > 0
