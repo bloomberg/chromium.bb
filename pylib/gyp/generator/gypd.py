@@ -5,7 +5,9 @@
 This module produces gyp input as its output.  Output files are given the
 .gypd extension to avoid overwriting the .gyp files that they are generated
 from.  Internal references to .gyp files (such as those found in
-"dependencies" sections) are not adjusted to point to .gypd files instead.
+"dependencies" sections) are not adjusted to point to .gypd files instead;
+unlike other paths, which are relative to the .gyp or .gypd file, such paths
+are relative to the directory from which gyp was run to create the .gypd file.
 
 This generator module is intended to be a sample and a debugging aid, hence
 the "d" for "debug" in .gypd.  It is useful to inspect the results of the
@@ -14,8 +16,10 @@ and to see a representation of what would be fed to a generator module.
 
 It's not advisable to rename .gypd files produced by this module to .gyp,
 because they will have all merges, expansions, and evaluations already
-performed and the relevant constructs not present in the output.  Output
-will also be stripped of comments.  This is not intended to be a
+performed and the relevant constructs not present in the output; paths to
+dependencies may be wrong; and various sections that do not belong in .gyp
+files such as such as "included_files" and "*_excluded" will be present.
+Output will also be stripped of comments.  This is not intended to be a
 general-purpose gyp pretty-printer; for that, you probably just want to
 run "pprint.pprint(eval(open('source.gyp').read()))", which will still strip
 comments but won't do all of the other things done to this module's output.
@@ -49,6 +53,10 @@ _generator_identity_variables = [
 generator_default_variables = {
 }
 
+# TODO(mark): This always uses <, which isn't right.  The input module should
+# notify the generator to tell it which phase it is operating in, and this
+# module should use < for the early phase and then switch to > for the late
+# phase.  Bonus points for carrying @ back into the output too.
 for v in _generator_identity_variables:
   generator_default_variables[v] = '<(%s)' % v
 
