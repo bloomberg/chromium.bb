@@ -631,6 +631,10 @@ def ExpandWildcardDependencies(targets, data):
   is taken as a wildcard link, and is expanded to list each target in
   build_file.  The |data| dict provides access to build file dicts.
 
+  Any target that does not wish to be included by wildcard can provide an
+  optional "suppress_wildcard" key in its target dict.  When present and
+  true, a wildcard dependency link will not include such targets.
+
   All dependency names, including the keys to |targets| and the values in each
   dependency list, must be qualified when this function is called.
   """
@@ -668,6 +672,8 @@ def ExpandWildcardDependencies(targets, data):
         # wildcard.
         dependency_target_dicts = data[dependency_build_file]['targets']
         for dependency_target_dict in dependency_target_dicts:
+          if dependency_target_dict.get('suppress_wildcard', False):
+            continue
           dependency_target_name = dependency_target_dict['target_name']
           dependency = gyp.common.QualifiedTarget(dependency_build_file,
                                                   dependency_target_name)
