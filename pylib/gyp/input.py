@@ -347,24 +347,13 @@ def ExpandVariables(input, is_late, variables):
   return output
 
 
-def ProcessConditionsInDict(the_dict, is_late, variables):
-  # If the_dict has a "conditions" key (is_late == False) or a
-  # "target_conditons" key (is_late == True), its value is treated as a list.
+def ProcessConditionsInDict(the_dict, conditions_key, variables):
+  # the_dict[conditions_key] must be a conditions or target_conditions list.
   # Each item in the list consists of cond_expr, a string expression evaluated
   # as the condition, and true_dict, a dict that will be merged into the_dict
   # if cond_expr evaluates to true.  Optionally, a third item, false_dict, may
   # be present.  false_dict is merged into the_dict if cond_expr evaluates to
-  # false.  This function will recurse into true_dict or false_dict as
-  # appropriate before merging it into the_dict, allowing for nested
-  # conditions.
-
-  if not is_late:
-    conditions_key = 'conditions'
-  else:
-    conditions_key = 'target_conditions'
-
-  if not conditions_key in the_dict:
-    return
+  # false.
 
   conditions_list = the_dict[conditions_key]
   # Unhook the conditions list, it's no longer needed.
@@ -393,9 +382,6 @@ def ProcessConditionsInDict(the_dict, is_late, variables):
       merge_dict = false_dict
 
     if merge_dict != None:
-      # Recurse to pick up nested conditions.
-      ProcessConditionsInDict(merge_dict, is_late, variables)
-
       # For now, it's OK to pass '', '' for the build files because everything
       # comes from the same build file and everything is already relative to
       # the same place.  If the path to the build file being processed were to
@@ -502,7 +488,21 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
   #    'my_subdict': {'defines': ['<(define)']}},
   # will append "IS_MAC" to both "defines" lists.
 
-  ProcessConditionsInDict(the_dict, is_late, variables)
+  # Recurse into conditions sections, allowing variable expansions within them
+  # as well as nested conditionals.
+  if not is_late:
+    conditions_key = 'conditions'
+  else:
+    conditions_key = 'target_conditions'
+
+  if conditions_key in the_dict:
+    # No need to make a copy of variables, this function will do it if needed.
+    ProcessVariablesAndConditionsInList(the_dict[conditions_key], is_late,
+                                        variables)
+
+    # Evaluate conditions and merge them into the_dict as needed.  This will
+    # remove conditions_key from the_dict if it is present.
+    ProcessConditionsInDict(the_dict, conditions_key, variables)
 
   # Conditional processing may have resulted in changes to automatics or the
   # variables dict.  Reload.
