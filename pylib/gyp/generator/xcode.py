@@ -120,9 +120,21 @@ class XcodeProject(object):
     # Sort the targets based on how they appeared in the input.
     # TODO(mark): Like a lot of other things here, this assumes internal
     # knowledge of PBXProject - in this case, of its "targets" property.
-    targets = []
+
+    # non_runtest_targets are ordinary targets that are already in the project
+    # file.  runtest_targets are synthesized in the loop below.  The depend on
+    # the associated test and contain a shell script phase to run it.
     non_runtest_targets = []
     runtest_targets = []
+
+    # targets is the union of non_runtest_targets and runtest_targets.
+    targets = []
+
+    # targets_for_all is the list of non_runtest_targets that should be listed
+    # in this project's "All" target.  It includes each non_runtest_target
+    # that does not have suppress_wildcard set.
+    targets_for_all = []
+
     for target in build_file_dict['targets']:
       target_name = target['target_name']
       qualified_target = gyp.common.QualifiedTarget(self.gyp_path, target_name)
@@ -130,8 +142,11 @@ class XcodeProject(object):
       # Make sure that the target being added to the sorted list is already in
       # the unsorted list.
       assert xcode_target in self.project._properties['targets']
-      targets.append(xcode_targets[qualified_target])
-      non_runtest_targets.append(xcode_targets[qualified_target])
+      targets.append(xcode_target)
+      non_runtest_targets.append(xcode_target)
+
+      if not target.get('suppress_wildcard', False):
+        targets_for_all.append(xcode_target)
 
       # If this is a test target, add its test runner target.
       if target.get('test', 0):
@@ -172,8 +187,10 @@ class XcodeProject(object):
 
     # Create an "All" target if there's more than one target in this project
     # file.  Put the "All" target it first so that people opening up the
-    # project for the first time will build everything by default.
-    if len(non_runtest_targets) > 1:
+    # project for the first time will build everything by default.  Note that
+    # the "All" target may have no dependencies if each target has
+    # suppress_wildcard set.
+    if len(targets) > 1:
       xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
       for configuration in configurations:
         xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
@@ -187,7 +204,7 @@ class XcodeProject(object):
           },
           parent=self.project)
 
-      for target in non_runtest_targets:
+      for target in targets_for_all:
         all_target.AddDependency(target)
 
       # TODO(mark): This is evil because it relies on internal knowledge of

@@ -1177,6 +1177,7 @@ def SetUpConfigurations(target, target_dict):
     'product_name',
     'rules',
     'sources',
+    'suppress_wildcard',
     'target_name',
     'test',
     'type',
