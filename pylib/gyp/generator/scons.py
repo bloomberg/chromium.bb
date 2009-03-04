@@ -121,6 +121,16 @@ def GenerateSConscript(output_filename, spec, config):
 
   fp.write(')\n')
 
+  # Allow removal of flags (e.g. -Werror) and other values from the
+  # default settings.
+  scons_remove = config.get('scons_remove')
+  if scons_remove:
+    fp.write('\n')
+    fp.write('env.FilterOut(\n')
+    for key, var in scons_remove.iteritems():
+      fp.write('    %s = %s\n' % (key, repr(var)))
+    fp.write(')\n')
+
   sources = spec.get('sources')
   if sources:
     pre = '\ninput_files = ChromeFileList([\n    '
