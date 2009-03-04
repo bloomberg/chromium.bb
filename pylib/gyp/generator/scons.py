@@ -51,30 +51,11 @@ def _SCons_static_library_writer(fp, spec):
   fmt = '\nenv.ChromeStaticLibrary(\'%s\', input_files)\n'
   fp.write(fmt % spec['target_name'])
 
-_resource_preamble = """
-import sys
-sys.path.append(env.Dir('$CHROME_SRC_DIR/tools/grit').abspath)
-env.Tool('scons', toolpath=[env.Dir('$CHROME_SRC_DIR/tools/grit/grit')])
-#  This dummy target is used to tell the emitter where to put the target files.
-env.GRIT('$TARGET_ROOT/grit_derived_sources/%s',
-         [
-"""
-
-def _SCons_resource_writer(fp, spec):
-  grd = spec['sources'][0]
-  dummy = os.path.splitext(os.path.split(grd)[1])[0] + '.dummy'
-  WriteList(fp, map(repr, spec['sources']),
-                prefix='           ',
-                separator=',\n',
-                preamble=_resource_preamble % dummy,
-                postamble=',\n         ])\n')
-
 SConsTypeWriter = {
   None : _SCons_null_writer,
   'none' : _SCons_null_writer,
   'application' : _SCons_program_writer,
   'executable' : _SCons_program_writer,
-  'resource' : _SCons_resource_writer,
   'static_library' : _SCons_static_library_writer,
 }
 
