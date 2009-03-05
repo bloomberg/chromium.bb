@@ -485,10 +485,7 @@ int nouveau_mem_init(struct drm_device *dev)
 	 */
 	if (dev_priv->card_type >= NV_50 && fb_size > (512 * 1024 * 1024))
 		fb_size = (512 * 1024 * 1024);
-	/* On at least NV40, RAMIN is actually at the end of vram.
-	 * We don't want to allocate this... */
-	if (dev_priv->card_type >= NV_40)
-		fb_size -= dev_priv->ramin_rsvd_vram;
+	fb_size -= dev_priv->ramin_rsvd_vram;
 	dev_priv->fb_available_size = fb_size;
 	DRM_DEBUG("Available VRAM: %dKiB\n", fb_size>>10);
 
