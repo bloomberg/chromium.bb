@@ -36,6 +36,7 @@
 #include "wayland-util.h"
 #include "wayland-client.h"
 #include "wayland-glib.h"
+#include "cairo-util.h"
 
 #include "window.h"
 
@@ -117,6 +118,7 @@ window_draw_decorations(struct window *window)
 	rounded_rect(cr, 0, 0, width, height, radius);
 	cairo_fill(cr);
 
+#define SLOW_BUT_PWETTY
 #ifdef SLOW_BUT_PWETTY
 	/* FIXME: Aw, pretty drop shadows now have to fallback to sw.
 	 * Ideally we should have convolution filters in cairo, but we
@@ -126,7 +128,7 @@ window_draw_decorations(struct window *window)
 		cairo_surface_t *map;
 
 		map = cairo_drm_surface_map(window->cairo_surface);
-		blur_surface(map);
+		blur_surface(map, 32);
 		cairo_drm_surface_unmap(window->cairo_surface, map);
 	}
 #endif
