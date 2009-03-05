@@ -142,7 +142,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     build_file: Filename of the .gyp file that the vcproj file comes from.
     spec: The target dictionary containing the properties of the target.
   """
-  print 'Generating %s' % vcproj_filename
+  #print 'Generating %s' % vcproj_filename
 
   p = MSVSProject.Writer(vcproj_filename)
   p.Create(spec['target_name'])
@@ -470,7 +470,7 @@ def GenerateOutput(target_list, target_dicts, data):
     if build_file[-4:] != '.gyp':
       continue
     sln_path = build_file[:-4] + '_gyp.sln'
-    print 'Generating %s' % sln_path
+    #print 'Generating %s' % sln_path
     # Get projects in the solution, and their dependents in a separate bucket.
     sln_projects = gyp.common.BuildFileTargets(target_list, build_file)
     dep_projects = gyp.common.DeepDependencyTargets(target_dicts, sln_projects)
