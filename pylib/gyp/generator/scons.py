@@ -45,13 +45,17 @@ def _SCons_null_writer(fp, spec):
 
 def _SCons_program_writer(fp, spec):
   name = spec.get('product_name') or spec['target_name']
-  fmt = '\nenv.ChromeProgram(\'%s\', input_files)\n'
+  fmt = '\ntarget_files = env.ChromeProgram(\'%s\', input_files)\n'
   fp.write(fmt % name)
+  if spec.get('actions'):
+    fp.write('\nenv.Requires(target_files, action_outputs)\n')
 
 def _SCons_static_library_writer(fp, spec):
   name = spec.get('product_name') or spec['target_name']
-  fmt = '\nenv.ChromeStaticLibrary(\'%s\', input_files)\n'
+  fmt = '\ntarget_files = env.ChromeStaticLibrary(\'%s\', input_files)\n'
   fp.write(fmt % name)
+  if spec.get('actions'):
+    fp.write('\nenv.Requires(target_files, action_outputs)\n')
 
 SConsTypeWriter = {
   None : _SCons_null_writer,
@@ -139,6 +143,8 @@ def GenerateSConscript(output_filename, spec, config):
     WriteList(fp, map(repr, sources), preamble=pre, postamble=',\n])\n')
 
   actions = spec.get('actions',[])
+  if actions:
+    fp.write('action_outputs = []\n')
   for action in actions:
     fp.write(_command_template % {
                  'inputs' : pprint.pformat(action.get('inputs', [])),
@@ -147,6 +153,7 @@ def GenerateSConscript(output_filename, spec, config):
              })
     if action.get('process_outputs_as_sources'):
       fp.write('input_files.extend(_outputs)\n')
+    fp.write('action_outputs.extend(_outputs)\n')
 
   rules = spec.get('rules', [])
   for rule in rules:
