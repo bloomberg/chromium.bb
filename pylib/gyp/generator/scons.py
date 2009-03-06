@@ -44,12 +44,14 @@ def _SCons_null_writer(fp, spec):
   pass
 
 def _SCons_program_writer(fp, spec):
+  name = spec.get('product_name') or spec['target_name']
   fmt = '\nenv.ChromeProgram(\'%s\', input_files)\n'
-  fp.write(fmt % spec['target_name'])
+  fp.write(fmt % name)
 
 def _SCons_static_library_writer(fp, spec):
+  name = spec.get('product_name') or spec['target_name']
   fmt = '\nenv.ChromeStaticLibrary(\'%s\', input_files)\n'
-  fp.write(fmt % spec['target_name'])
+  fp.write(fmt % name)
 
 SConsTypeWriter = {
   None : _SCons_null_writer,
@@ -224,7 +226,8 @@ def GenerateOutput(target_list, target_dicts, data):
     for d in deps:
       td = target_dicts[d]
       if td['type'] == 'static_library':
-        spec['libraries'].append(td['target_name'])
+        libname = td.get('product_name') or td['target_name']
+        spec['libraries'].append(libname)
 
     # Simplest thing that works:  just use the Debug
     # configuration right now, until we get the underlying
