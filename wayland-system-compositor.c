@@ -871,7 +871,7 @@ wlsc_input_device_set_keyboard_focus(struct wlsc_input_device *device,
 	    (!surface || device->keyboard_focus->base.client != surface->base.client))
 		wl_surface_post_event(&device->keyboard_focus->base,
 				      &device->base,
-				      WL_INPUT_KEYBOARD_FOCUS, NULL, NULL);
+				      WL_INPUT_KEYBOARD_FOCUS, NULL, &device->keys);
 
 	if (surface)
 		wl_surface_post_event(&surface->base,
