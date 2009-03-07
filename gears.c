@@ -35,6 +35,7 @@
 #include <GL/gl.h>
 #include <eagle.h>
 
+#include "wayland-util.h"
 #include "wayland-client.h"
 #include "wayland-glib.h"
 
@@ -243,8 +244,6 @@ draw_gears(struct gears *gears)
 static void
 resize_window(struct gears *gears)
 {
-	uint32_t name, stride;
-
 	/* Constrain child size to be square and at least 300x300 */
 	window_get_child_rectangle(gears->window, &gears->rectangle);
 	if (gears->rectangle.width > gears->rectangle.height)
@@ -259,20 +258,15 @@ resize_window(struct gears *gears)
 
 	window_draw(gears->window);
 
-	if (gears->cairo_surface != NULL)
-		cairo_surface_destroy(gears->cairo_surface);
+	if (gears->surface != NULL)
+		eglDestroySurface(gears->display, gears->surface);
 
-	gears->cairo_surface = window_create_surface(gears->window,
-						     &gears->rectangle);
-
-	name = cairo_drm_surface_get_name(gears->cairo_surface);
-	stride = cairo_drm_surface_get_stride(gears->cairo_surface),
 	gears->surface = eglCreateSurfaceForName(gears->display,
 						 gears->config,
-						 name,
+						 0,
 						 gears->rectangle.width,
 						 gears->rectangle.height,
-						 stride, NULL);
+						 0, NULL);
 
 	eglMakeCurrent(gears->display,
 		       gears->surface, gears->surface, gears->context);
@@ -321,10 +315,11 @@ handle_frame(void *data,
 	     uint32_t frame, uint32_t timestamp)
 {
 	struct gears *gears = data;
+	uint32_t name, stride;
 
-	window_copy_surface(gears->window,
-			    &gears->rectangle,
-			    gears->cairo_surface);
+	eglGetNativeBuffer(gears->surface, GL_FRONT_LEFT, &name, &stride);
+	
+	window_copy(gears->window, &gears->rectangle, name, stride);
 
 	wl_compositor_commit(gears->compositor, 0);
 
