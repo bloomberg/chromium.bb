@@ -134,7 +134,7 @@ def _PrepareAction(c, r, has_input_path):
   return cmd
 
 
-def _GenerateProject(vcproj_filename, build_file, spec):
+def _GenerateProject(vcproj_filename, build_file, spec, options):
   """Generates a vcproj file.
 
   Arguments:
@@ -142,7 +142,7 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     build_file: Filename of the .gyp file that the vcproj file comes from.
     spec: The target dictionary containing the properties of the target.
   """
-  #print 'Generating %s' % vcproj_filename
+  print 'Generating %s' % vcproj_filename
 
   p = MSVSProject.Writer(vcproj_filename)
   p.Create(spec['target_name'])
@@ -281,7 +281,9 @@ def _GenerateProject(vcproj_filename, build_file, spec):
     # Don't generate rules file if not needed.
     if not rules: continue
     # Create rules file.
-    rule_filename = '%s_%s_gyp.rules' % (spec['target_name'], config_name)
+    rule_filename = '%s_%s%s.rules' % (spec['target_name'],
+                                       config_name,
+                                       options.suffix)
     rules_file = MSVSToolFile.Writer(os.path.join(gyp_dir, rule_filename))
     rules_file.Create(spec['target_name'])
     # Add each rule.
@@ -434,7 +436,7 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
   return obj
 
 
-def GenerateOutput(target_list, target_dicts, data):
+def GenerateOutput(target_list, target_dicts, data, options):
   """Generate .sln and .vcproj files.
 
   This is the entry point for this generator.
@@ -443,6 +445,7 @@ def GenerateOutput(target_list, target_dicts, data):
     target_dicts: Dict of target properties keyed on target pair.
     data: Dictionary containing per .gyp data.
   """
+
   configs = set()
   for qualified_target in target_list:
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
@@ -458,10 +461,11 @@ def GenerateOutput(target_list, target_dicts, data):
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
     spec = target_dicts[qualified_target]
     vcproj_path = os.path.join(os.path.split(build_file)[0],
-                               spec['target_name'] + '_gyp.vcproj')
+                               spec['target_name'] + options.suffix +
+                               '.vcproj')
     projects[qualified_target] = {
         'vcproj_path': vcproj_path,
-        'guid': _GenerateProject(vcproj_path, build_file, spec),
+        'guid': _GenerateProject(vcproj_path, build_file, spec, options),
         'spec': spec,
     }
 
@@ -469,7 +473,7 @@ def GenerateOutput(target_list, target_dicts, data):
     # Validate build_file extension
     if build_file[-4:] != '.gyp':
       continue
-    sln_path = build_file[:-4] + '_gyp.sln'
+    sln_path = build_file[:-4] + options.suffix + '.sln'
     #print 'Generating %s' % sln_path
     # Get projects in the solution, and their dependents in a separate bucket.
     sln_projects = gyp.common.BuildFileTargets(target_list, build_file)

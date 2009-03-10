@@ -232,28 +232,23 @@ def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
   fp.close()
 
 
-
-infix = '_gyp'
-# Uncomment to overwrite existing .scons files.
-#infix = ''
-
-def TargetFilename(target):
+def TargetFilename(target, output_suffix):
   """Returns the .scons file name for the specified target.
   """
   build_file, target = gyp.common.BuildFileAndTarget('', target)[:2]
   output_file = os.path.join(os.path.split(build_file)[0],
-                             target + infix + '.scons')
+                             target + output_suffix + '.scons')
   return output_file
 
 
-def GenerateOutput(target_list, target_dicts, data):
+def GenerateOutput(target_list, target_dicts, data, options):
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
       continue
 
   for qualified_target in target_list:
     spec = target_dicts[qualified_target]
-    output_file = TargetFilename(qualified_target)
+    output_file = TargetFilename(qualified_target, options.suffix)
 
     if not spec.has_key('libraries'):
       spec['libraries'] = []
@@ -285,12 +280,13 @@ def GenerateOutput(target_list, target_dicts, data):
     if ext != '.gyp':
       continue
     output_dir, basename = os.path.split(path)
-    output_filename  = path + '_main' + infix + '.scons'
+    output_filename  = path + '_main' + options.suffix + '.scons'
 
     all_targets = gyp.common.AllTargets(target_list, target_dicts, build_file)
     sconscript_files = []
     for t in all_targets:
-      t = gyp.common.RelativePath(TargetFilename(t), output_dir)
+      t = gyp.common.RelativePath(TargetFilename(t, options.suffix),
+                                  output_dir)
       sconscript_files.append(t)
     sconscript_files.sort()
 

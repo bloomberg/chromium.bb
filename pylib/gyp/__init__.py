@@ -31,6 +31,8 @@ def main(args):
                     help='files to include in all loaded .gyp files')
   parser.add_option('--depth', dest='depth', metavar='PATH',
                     help='set DEPTH gyp variable to a relative path to PATH')
+  parser.add_option('-S', '--suffix', dest='suffix', default='',
+                    help='suffix to add to generated files')
 
   (options, build_files) = parser.parse_args(args)
 
@@ -111,7 +113,7 @@ def main(args):
   # that targets may be built.  Build systems that operate serially or that
   # need to have dependencies defined before dependents reference them should
   # generate targets in the order specified in flat_list.
-  generator.GenerateOutput(flat_list, targets, data)
+  generator.GenerateOutput(flat_list, targets, data, options)
   return 0
 
 
