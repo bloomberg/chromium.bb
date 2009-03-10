@@ -147,6 +147,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
   p = MSVSProject.Writer(vcproj_filename)
   default_config = spec['configurations'][spec['default_configuration']]
   guid = default_config.get('msvs_guid')
+  if guid: guid = '{%s}' % guid
   p.Create(spec['target_name'], guid=guid)
 
   # Get directory project file is in.
