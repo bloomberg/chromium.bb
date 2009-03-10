@@ -145,7 +145,9 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
   #print 'Generating %s' % vcproj_filename
 
   p = MSVSProject.Writer(vcproj_filename)
-  p.Create(spec['target_name'])
+  default_config = spec['configurations'][spec['default_configuration']]
+  guid = default_config.get('msvs_guid')
+  p.Create(spec['target_name'], guid=guid)
 
   # Get directory project file is in.
   gyp_dir = os.path.split(vcproj_filename)[0]
