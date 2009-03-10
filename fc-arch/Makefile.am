@@ -43,7 +43,8 @@ EXTRA_DIST=$(TMPL)
 
 $(TARG):fc-arch${EXEEXT} $(STMPL) ${top_srcdir}/src/fcint.h ../config.h
 	rm -f $(TARG)
-	./fc-arch${EXEEXT} $(ARCHITECTURE) < $(STMPL) > $(TARG)
+	./fc-arch${EXEEXT} $(ARCHITECTURE) < $(STMPL) > $(TARG).tmp && \
+	mv $(TARG).tmp $(TARG)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 

@@ -42,7 +42,8 @@ EXTRA_DIST=$(TMPL) $(ORTH)
 
 $(TARG):$(ORTH) fc-lang${EXEEXT} $(STMPL)
 	rm -f $(TARG)
-	./fc-lang${EXEEXT} -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG)
+	./fc-lang${EXEEXT} -d ${srcdir} $(ORTH) < $(STMPL) > $(TARG).tmp && \
+	mv $(TARG).tmp $(TARG)
 
 ALIAS_FILES = fcalias.h fcaliastail.h
 
