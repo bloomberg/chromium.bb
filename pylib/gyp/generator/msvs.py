@@ -82,20 +82,20 @@ def _SourceInFolders(sources, prefix=None, excluded=None):
   return result
 
 
-def _ToolAppend(tools, tool_name, option, value):
+def _ToolAppend(tools, tool_name, setting, value):
   if not value: return
   if not tools.get(tool_name):
     tools[tool_name] = dict()
   tool = tools[tool_name]
-  if tool.get(option):
-    if type(tool[option]) == list:
-      tool[option] += value
+  if tool.get(setting):
+    if type(tool[setting]) == list:
+      tool[setting] += value
     else:
       # TODO(bradnelson): Pick an exception class.
-      print '@@@', option, tool[option], value
-      raise 'Append to non-list option is invalid'
+      print '@@@', setting, tool[setting], value
+      raise 'Append to non-list setting is invalid'
   else:
-    tool[option] = value
+    tool[setting] = value
 
 
 def _ConfigFullName(config_name, config_data):
@@ -142,7 +142,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
     build_file: Filename of the .gyp file that the vcproj file comes from.
     spec: The target dictionary containing the properties of the target.
   """
-  print 'Generating %s' % vcproj_filename
+  #print 'Generating %s' % vcproj_filename
 
   p = MSVSProject.Writer(vcproj_filename)
   p.Create(spec['target_name'])
@@ -169,9 +169,9 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
 
     # Add in msvs_settings.
     for tool in c.get('msvs_settings', {}):
-      options = c['msvs_settings'][tool]
-      for option in options:
-        _ToolAppend(tools, tool, option, options[option])
+      settings = c['msvs_settings'][tool]
+      for setting in settings:
+        _ToolAppend(tools, tool, setting, settings[setting])
 
     # Add in includes.
     include_dirs = c.get('include_dirs', [])
@@ -231,19 +231,19 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
 
     # Convert tools to expected form.
     tool_list = []
-    for tool, options in tools.iteritems():
-      # Collapse options with lists.
-      options_fixed = {}
-      for option, value in options.iteritems():
+    for tool, settings in tools.iteritems():
+      # Collapse settings with lists.
+      settings_fixed = {}
+      for setting, value in settings.iteritems():
         if type(value) == list:
-          if tool == 'VCLinkerTool' and option == 'AdditionalDependencies':
-            options_fixed[option] = ' '.join(value)
+          if tool == 'VCLinkerTool' and setting == 'AdditionalDependencies':
+            settings_fixed[setting] = ' '.join(value)
           else:
-            options_fixed[option] = ';'.join(value)
+            settings_fixed[setting] = ';'.join(value)
         else:
-          options_fixed[option] = value
+          settings_fixed[setting] = value
       # Add in this tool.
-      tool_list.append(MSVSProject.Tool(tool, options_fixed))
+      tool_list.append(MSVSProject.Tool(tool, settings_fixed))
 
     # Prepare configuration attributes.
     prepared_attrs = {}
