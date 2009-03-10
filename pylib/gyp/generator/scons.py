@@ -40,22 +40,44 @@ def WriteList(fp, list, prefix='',
   fp.write(postamble or '')
 
 
+def full_product_name(spec, prefix='', suffix=''):
+  name = spec.get('product_name') or spec['target_name']
+  name = prefix + name + suffix
+  product_dir = spec.get('product_dir')
+  if product_dir:
+    name = os.path.join(product_dir, name)
+  return name
+
+
 def _SCons_null_writer(fp, spec):
   pass
 
-def _SCons_program_writer(fp, spec):
-  name = spec.get('product_name') or spec['target_name']
-  fmt = '\ntarget_files = env.ChromeProgram(\'%s\', input_files)\n'
+def _SCons_writer(fp, spec, fmt, name):
   fp.write(fmt % name)
-  if spec.get('actions'):
-    fp.write('\nenv.Requires(target_files, action_outputs)\n')
+  if spec.get('actions') or spec.get('scons_prerequisites'):
+    fp.write('\nenv.Requires(target_files, prerequisites)\n')
+
+def _SCons_program_writer(fp, spec):
+  name = full_product_name(spec)
+  fmt = '\ntarget_files = env.ChromeProgram(\'%s\', input_files)\n'
+  return _SCons_writer(fp, spec, fmt, name)
 
 def _SCons_static_library_writer(fp, spec):
-  name = spec.get('product_name') or spec['target_name']
+  name = full_product_name(spec)
   fmt = '\ntarget_files = env.ChromeStaticLibrary(\'%s\', input_files)\n'
-  fp.write(fmt % name)
-  if spec.get('actions'):
-    fp.write('\nenv.Requires(target_files, action_outputs)\n')
+  return _SCons_writer(fp, spec, fmt, name)
+
+def _SCons_shared_library_writer(fp, spec):
+  name = full_product_name(spec)
+  fmt = '\ntarget_files = env.ChromeSharedLibrary(\'%s\', input_files)\n'
+  return _SCons_writer(fp, spec, fmt, name)
+
+def _SCons_loadable_module_writer(fp, spec):
+  name = full_product_name(spec)
+  # Note:  LoadableModule() isn't part of the Hammer API, and there's no
+  # ChromeLoadableModule() wrapper for this, so use base SCons for now.
+  fmt = '\ntarget_files = env.LodableModule(\'%s\', input_files)\n'
+  return _SCons_writer(fp, spec, fmt, name)
 
 SConsTypeWriter = {
   None : _SCons_null_writer,
@@ -63,6 +85,8 @@ SConsTypeWriter = {
   'application' : _SCons_program_writer,
   'executable' : _SCons_program_writer,
   'static_library' : _SCons_static_library_writer,
+  'shared_library' : _SCons_shared_library_writer,
+  'loadable_module' : _SCons_loadable_module_writer,
 }
 
 _command_template = """
@@ -141,10 +165,16 @@ def GenerateSConscript(output_filename, spec, config):
   if sources:
     pre = '\ninput_files = ChromeFileList([\n    '
     WriteList(fp, map(repr, sources), preamble=pre, postamble=',\n])\n')
+  else:
+    fp.write('\ninput_files = []\n')
 
-  actions = spec.get('actions',[])
-  if actions:
-    fp.write('action_outputs = []\n')
+  prerequisites = spec.get('scons_prerequisites', [])
+  actions = spec.get('actions', [])
+  if actions or prerequisites:
+    # Note:  Only initialize this list with the prerequisites,
+    # because the prequisites coming from the actions will
+    # be added to the list as they're generated.
+    fp.write('\nprerequisites = %s\n' % pprint.pformat(prerequisites))
   for action in actions:
     fp.write(_command_template % {
                  'inputs' : pprint.pformat(action.get('inputs', [])),
@@ -153,7 +183,7 @@ def GenerateSConscript(output_filename, spec, config):
              })
     if action.get('process_outputs_as_sources'):
       fp.write('input_files.extend(_outputs)\n')
-    fp.write('action_outputs.extend(_outputs)\n')
+    fp.write('prerequisites.extend(_outputs)\n')
 
   rules = spec.get('rules', [])
   for rule in rules:
@@ -232,9 +262,15 @@ def GenerateOutput(target_list, target_dicts, data):
     deps = spec.get('dependencies', [])
     for d in deps:
       td = target_dicts[d]
-      if td['type'] == 'static_library':
+      if td['type'] in ('static_library', 'shared_library'):
         libname = td.get('product_name') or td['target_name']
         spec['libraries'].append(libname)
+      if td['type'] == 'loadable_module':
+        prereqs = spec.get('scons_prerequisites', [])
+        # TODO:  parameterize with <(SHARED_LIBRARY_*) variables?
+        name = full_product_name(td, '${SHLIBPREFIX}', '${SHLIBSUFFIX}')
+        prereqs.append(name)
+        spec['scons_prerequisites'] = prereqs
 
     # Simplest thing that works:  just use the Debug
     # configuration right now, until we get the underlying
