@@ -115,8 +115,11 @@ def escape_quotes(s):
 def GenerateSConscript(output_filename, spec, config):
   print 'Generating %s' % output_filename
 
-  fp = open(output_filename, 'w')
+  gyp_dir = os.path.split(output_filename)[0]
+  if not gyp_dir:
+      gyp_dir = '.'
 
+  fp = open(output_filename, 'w')
   fp.write(header)
 
   #
@@ -174,10 +177,11 @@ def GenerateSConscript(output_filename, spec, config):
 
   actions = spec.get('actions', [])
   for action in actions:
+    a = ['cd', gyp_dir, '&&'] + action['action']
     fp.write(_command_template % {
                  'inputs' : pprint.pformat(action.get('inputs', [])),
                  'outputs' : pprint.pformat(action.get('outputs', [])),
-                 'action' : pprint.pformat(action['action']),
+                 'action' : pprint.pformat(a),
              })
     if action.get('process_outputs_as_sources'):
       fp.write('input_files.extend(_outputs)\n')
@@ -186,10 +190,11 @@ def GenerateSConscript(output_filename, spec, config):
   rules = spec.get('rules', [])
   for rule in rules:
     name = rule['rule_name']
+    a = ['cd', gyp_dir, '&&'] + rule['action']
     fp.write(_rule_template % {
                  'inputs' : pprint.pformat(rule.get('inputs', [])),
                  'outputs' : pprint.pformat(rule.get('outputs', [])),
-                 'action' : pprint.pformat(rule['action']),
+                 'action' : pprint.pformat(a),
                  'extension' : rule['extension'],
                  'name' : name,
              })
