@@ -18,29 +18,21 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdarg.h>
 #include <termios.h>
 #include <i915_drm.h>
 #include <sys/ioctl.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <signal.h>
 #include <cairo.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <glib.h>
-#include <sys/poll.h>
-#include <png.h>
 #include <math.h>
 #include <linux/input.h>
 #include <linux/vt.h>
 #include <xf86drmMode.h>
 #include <time.h>
-#include <fnmatch.h>
-#include <dirent.h>
 
 #define LIBUDEV_I_KNOW_THE_API_IS_SUBJECT_TO_CHANGE
 #include <libudev.h>
