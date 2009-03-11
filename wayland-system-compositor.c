@@ -63,6 +63,14 @@ struct wl_visual {
 	struct wl_object base;
 };
 
+struct wlsc_surface;
+
+struct wlsc_listener {
+	struct wl_list link;
+	void (*func)(struct wlsc_listener *listener,
+		     struct wlsc_surface *surface);
+};
+
 struct wlsc_output {
 	struct wl_object base;
 	struct wl_list link;
@@ -89,6 +97,8 @@ struct wlsc_input_device {
 	struct wlsc_surface *pointer_focus;
 	struct wlsc_surface *keyboard_focus;
 	struct wl_array keys;
+
+	struct wlsc_listener listener;
 };
 
 struct wlsc_compositor {
@@ -103,6 +113,8 @@ struct wlsc_compositor {
 	struct wl_list output_list;
 	struct wl_list input_device_list;
 	struct wl_list surface_list;
+
+	struct wl_list surface_destroy_listener_list;
 
 	struct wl_event_source *term_signal_source;
 
@@ -386,12 +398,25 @@ wlsc_surface_create_from_cairo_surface(struct wlsc_compositor *ec,
 }
 
 static void
-wlsc_surface_destroy(struct wlsc_surface *es, struct wlsc_compositor *ec)
+wlsc_surface_destroy(struct wlsc_surface *surface,
+		     struct wlsc_compositor *compositor)
 {
-	glDeleteTextures(1, &es->texture);
-	if (es->surface != EGL_NO_SURFACE)
-		eglDestroySurface(ec->display, es->surface);
-	free(es);
+	struct wlsc_listener *l;
+
+	l = container_of(compositor->surface_destroy_listener_list.next,
+			 struct wlsc_listener, link);
+	while (&l->link != &compositor->surface_destroy_listener_list) {
+		l->func(l, surface);
+		l = container_of(l->link.next, struct wlsc_listener, link);
+	}
+
+	wl_list_remove(&surface->link);
+	wl_list_remove(&surface->animate.link);
+
+	glDeleteTextures(1, &surface->texture);
+	if (surface->surface != EGL_NO_SURFACE)
+		eglDestroySurface(compositor->display, surface->surface);
+	free(surface);
 }
 
 static void
@@ -674,8 +699,6 @@ surface_destroy(struct wl_client *client,
 	struct wlsc_surface *es = (struct wlsc_surface *) surface;
 	struct wlsc_compositor *ec = es->compositor;
 
-	wl_list_remove(&es->link);
-	wl_list_remove(&es->animate.link);
 	wlsc_surface_destroy(es, ec);
 
 	schedule_repaint(ec);
@@ -1108,6 +1131,23 @@ struct evdev_input_device *
 evdev_input_device_create(struct wlsc_input_device *device,
 			  struct wl_display *display, const char *path);
 
+static void
+handle_surface_destroy(struct wlsc_listener *listener,
+		       struct wlsc_surface *surface)
+{
+	struct wlsc_input_device *device =
+		container_of(listener, struct wlsc_input_device, listener);
+
+	if (device->grab_surface == surface) {
+		device->grab_surface = NULL;
+		device->grab = 0;
+	}
+	if (device->keyboard_focus == surface)
+		device->keyboard_focus = NULL;		
+	if (device->pointer_focus == surface)
+		device->pointer_focus = NULL;	
+}
+
 static struct wlsc_input_device *
 create_input_device(struct wlsc_compositor *ec)
 {
@@ -1126,6 +1166,9 @@ create_input_device(struct wlsc_compositor *ec)
 	device->y = 100;
 	device->ec = ec;
 
+	device->listener.func = handle_surface_destroy;
+	wl_list_insert(ec->surface_destroy_listener_list.prev,
+		       &device->listener.link);
 	wl_list_insert(ec->input_device_list.prev, &device->link);
 
 	return device;
@@ -1506,6 +1549,7 @@ wlsc_compositor_create(struct wl_display *display)
 	wl_list_init(&ec->surface_list);
 	wl_list_init(&ec->input_device_list);
 	wl_list_init(&ec->output_list);
+	wl_list_init(&ec->surface_destroy_listener_list);
 	if (init_libudev(ec) < 0) {
 		fprintf(stderr, "failed to initialize devices\n");
 		return NULL;
