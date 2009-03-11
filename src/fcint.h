@@ -313,6 +313,7 @@ typedef struct _FcStrBuf {
     FcBool  failed;
     int	    len;
     int	    size;
+    FcChar8 buf_static[16 * sizeof (void *)];
 } FcStrBuf;
 
 struct _FcCache {

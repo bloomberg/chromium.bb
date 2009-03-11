@@ -710,11 +710,18 @@ FcUtf16Len (const FcChar8   *string,
 void
 FcStrBufInit (FcStrBuf *buf, FcChar8 *init, int size)
 {
-    buf->buf = init;
+    if (init)
+    {
+	buf->buf = init;
+	buf->size = size;
+    } else
+    {
+	buf->buf = buf->static_buf;
+	buf->size = sizeof (buf->static_buf);
+    }
     buf->allocated = FcFalse;
     buf->failed = FcFalse;
     buf->len = 0;
-    buf->size = size;
 }
 
 void
