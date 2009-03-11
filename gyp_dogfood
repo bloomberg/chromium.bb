@@ -12,7 +12,11 @@ import sys
 # variable is set.  This will keep the noise down for the masses until the
 # GYP builds on other platforms are more mature, but allows GYP developers and
 # early adopters to run GYP from the same hook that the Mac uses.
-if sys.platform != 'darwin' and os.getenv('USE_GYP') == None:
+# It will temporarily be partially on for windows (only some projects).
+if not (sys.platform == 'darwin' or
+        (sys.platform in ['win32', 'cygwin'] and
+         os.getenv('CHROME_HEADLESS')) or
+        os.getenv('USE_GYP')):
   sys.exit(0)
 
 try:
