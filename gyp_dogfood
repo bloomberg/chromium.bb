@@ -19,6 +19,7 @@ if not (sys.platform == 'darwin' or
         os.getenv('USE_GYP')):
   sys.exit(0)
 
+print 'Updating projects from gyp files...'
 try:
   import gyp
 except ImportError, e:
