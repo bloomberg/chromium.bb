@@ -754,6 +754,19 @@ FcStrBufDone (FcStrBuf *buf)
     return ret;
 }
 
+FcChar8 *
+FcStrBufDoneStatic (FcStrBuf *buf)
+{
+    FcChar8 *ret;
+
+    FcStrBufChar (buf, '\0');
+
+    if (buf->failed)
+	return NULL;
+
+    return buf->buf;
+}
+
 FcBool
 FcStrBufChar (FcStrBuf *buf, FcChar8 c)
 {

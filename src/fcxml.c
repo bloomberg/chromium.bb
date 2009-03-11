@@ -1114,7 +1114,7 @@ FcParseInt (FcConfigParse *parse)
     
     if (!parse->pstack)
 	return;
-    s = FcStrBufDone (&parse->pstack->str);
+    s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1126,7 +1126,7 @@ FcParseInt (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereError, "\"%s\": not a valid integer", s);
     else
 	FcVStackPushInteger (parse, l);
-    FcStrFree (s);
+    FcStrBufDestroy (&parse->pstack->str);
 }
 
 /*
@@ -1195,7 +1195,7 @@ FcParseDouble (FcConfigParse *parse)
     
     if (!parse->pstack)
 	return;
-    s = FcStrBufDone (&parse->pstack->str);
+    s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1207,7 +1207,7 @@ FcParseDouble (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereError, "\"%s\": not a valid double", s);
     else
 	FcVStackPushDouble (parse, d);
-    FcStrFree (s);
+    FcStrBufDestroy (&parse->pstack->str);
 }
 
 static void
@@ -1283,14 +1283,14 @@ FcParseBool (FcConfigParse *parse)
 
     if (!parse->pstack)
 	return;
-    s = FcStrBufDone (&parse->pstack->str);
+    s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     FcVStackPushBool (parse, FcConfigLexBool (parse, s));
-    FcStrFree (s);
+    FcStrBufDestroy (&parse->pstack->str);
 }
 
 static FcBool
@@ -1370,14 +1370,14 @@ FcParseFamily (FcConfigParse *parse)
 
     if (!parse->pstack)
 	return;
-    s = FcStrBufDone (&parse->pstack->str);
+    s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
     expr = FcExprCreateString (s);
-    FcStrFree (s);
+    FcStrBufDestroy (&parse->pstack->str);
     if (expr)
 	FcVStackPushExpr (parse, FcVStackFamily, expr);
 }
@@ -1636,7 +1636,7 @@ FcParseInclude (FcConfigParse *parse)
     const FcChar8   *i;
     FcBool	    ignore_missing = FcFalse;
     
-    s = FcStrBufDone (&parse->pstack->str);
+    s = FcStrBufDoneStatic (&parse->pstack->str);
     if (!s)
     {
 	FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1647,7 +1647,7 @@ FcParseInclude (FcConfigParse *parse)
 	ignore_missing = FcTrue;
     if (!FcConfigParseAndLoad (parse->config, s, !ignore_missing))
 	parse->error = FcTrue;
-    FcStrFree (s);
+    FcStrBufDestroy (&parse->pstack->str);
 }
 
 typedef struct _FcOpMap {
@@ -2053,7 +2053,7 @@ FcEndElement(void *userData, const XML_Char *name)
     case FcElementFontconfig:
 	break;
     case FcElementDir:
-	data = FcStrBufDone (&parse->pstack->str);
+	data = FcStrBufDoneStatic (&parse->pstack->str);
 	if (!data)
 	{
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -2132,7 +2132,7 @@ FcEndElement(void *userData, const XML_Char *name)
 	    if (!FcConfigAddDir (parse->config, data))
 		FcConfigMessage (parse, FcSevereError, "out of memory; cannot add directory %s", data);
 	}
-	FcStrFree (data);
+	FcStrBufDestroy (&parse->pstack->str);
 	break;
     case FcElementCacheDir:
 	data = FcStrBufDone (&parse->pstack->str);
@@ -2174,14 +2174,14 @@ FcEndElement(void *userData, const XML_Char *name)
 	break;
 	
     case FcElementCache:
-	data = FcStrBufDone (&parse->pstack->str);
+	data = FcStrBufDoneStatic (&parse->pstack->str);
 	if (!data)
 	{
 	    FcConfigMessage (parse, FcSevereError, "out of memory");
 	    break;
 	}
 	/* discard this data; no longer used */
-	FcStrFree (data);
+	FcStrBufDestroy (&parse->pstack->str);
 	break;
     case FcElementInclude:
 	FcParseInclude (parse);

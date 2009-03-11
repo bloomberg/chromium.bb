@@ -1018,6 +1018,9 @@ FcStrBufDestroy (FcStrBuf *buf);
 FcPrivate FcChar8 *
 FcStrBufDone (FcStrBuf *buf);
 
+FcPrivate FcChar8 *
+FcStrBufDoneStatic (FcStrBuf *buf);
+
 FcPrivate FcBool
 FcStrBufChar (FcStrBuf *buf, FcChar8 c);
 
