@@ -315,9 +315,9 @@ handle_frame(void *data,
 	     uint32_t frame, uint32_t timestamp)
 {
 	struct gears *gears = data;
-	uint32_t name, stride;
+	uint32_t name, handle, stride;
 
-	eglGetNativeBuffer(gears->surface, GL_FRONT_LEFT, &name, &stride);
+	eglGetNativeBuffer(gears->surface, GL_FRONT_LEFT, &name, &handle, &stride);
 	
 	window_copy(gears->window, &gears->rectangle, name, stride);
 

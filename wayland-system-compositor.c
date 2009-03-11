@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <termios.h>
-#include <i915_drm.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -69,7 +68,7 @@ struct wlsc_output {
 	struct wlsc_compositor *compositor;
 	struct wlsc_surface *background;
 	EGLSurface surface;
-	int32_t x, y, width, height, stride;
+	int32_t x, y, width, height;
 
 	drmModeModeInfo *mode;
 	uint32_t fb_id;
@@ -169,7 +168,6 @@ static const GOptionEntry option_entries[] = {
 	  &option_background, "Background image" },
 	{ NULL }
 };
-
 
 struct screenshooter {
 	struct wl_object base;
@@ -1231,9 +1229,8 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	drmModeRes *resources;
 	drmModeEncoder *encoder;
 	drmModeModeInfo *mode;
-	struct drm_i915_gem_create create;
-	struct drm_gem_flink flink;
 	struct wlsc_output *output;
+	uint32_t name, handle, stride;
 	int i, ret, fd;
 
 	if (ec->display == NULL && init_egl(ec, device) < 0) {
@@ -1283,15 +1280,30 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 		drmModeFreeEncoder(encoder);
 	}
 
-	/* Mode size at 32 bpp */
-	create.size = mode->hdisplay * mode->vdisplay * 4;
-	if (ioctl(fd, DRM_IOCTL_I915_GEM_CREATE, &create) != 0) {
-		fprintf(stderr, "gem create failed: %m\n");
+	output->compositor = ec;
+	output->crtc_id = encoder->crtc_id;
+	output->connector_id = connector->connector_id;
+	output->mode = mode;
+	output->x = 0;
+	output->y = 0;
+	output->width = mode->hdisplay;
+	output->height = mode->vdisplay;
+
+	output->surface = eglCreateSurfaceForName(ec->display,
+						  ec->config,
+						  0,
+						  output->width,
+						  output->height,
+						  0, surface_attribs);
+	if (output->surface == NULL) {
+		fprintf(stderr, "failed to create surface\n");
 		return -1;
 	}
 
-	ret = drmModeAddFB(fd, mode->hdisplay, mode->vdisplay,
-			   32, 32, mode->hdisplay * 4, create.handle, &output->fb_id);
+	eglGetNativeBuffer(output->surface,
+			   GL_FRONT_LEFT, &name, &handle, &stride);
+	ret = drmModeAddFB(fd, output->width, output->height,
+			   32, 32, stride, handle, &output->fb_id);
 	if (ret) {
 		fprintf(stderr, "failed to add fb: %m\n");
 		return -1;
@@ -1301,32 +1313,6 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 			     &connector->connector_id, 1, mode);
 	if (ret) {
 		fprintf(stderr, "failed to set mode: %m\n");
-		return -1;
-	}
-
-	flink.handle = create.handle;
-	if (ioctl(fd, DRM_IOCTL_GEM_FLINK, &flink) != 0) {
-		fprintf(stderr, "gem flink failed: %m\n");
-		return -1;
-	}
-
-	output->compositor = ec;
-	output->crtc_id = encoder->crtc_id;
-	output->connector_id = connector->connector_id;
-	output->mode = mode;
-	output->x = 0;
-	output->y = 0;
-	output->width = mode->hdisplay;
-	output->height = mode->vdisplay;
-	output->stride = mode->hdisplay * 4;
-
-	output->surface = eglCreateSurfaceForName(ec->display, ec->config,
-						  flink.name,
-						  output->width, output->height,
-						  output->stride,
-						  surface_attribs);
-	if (output->surface == NULL) {
-		fprintf(stderr, "failed to create surface\n");
 		return -1;
 	}
 
