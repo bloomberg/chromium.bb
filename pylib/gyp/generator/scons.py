@@ -52,32 +52,31 @@ def full_product_name(spec, prefix='', suffix=''):
 def _SCons_null_writer(fp, spec):
   pass
 
-def _SCons_writer(fp, spec, fmt, name):
-  fp.write(fmt % name)
-  if spec.get('actions') or spec.get('scons_prerequisites'):
-    fp.write('\nenv.Requires(target_files, prerequisites)\n')
+def _SCons_writer(fp, spec, builder):
+  fp.write('\n_outputs = %s\n' % builder)
+  fp.write('target_files.extend(_outputs)\n')
 
 def _SCons_program_writer(fp, spec):
   name = full_product_name(spec)
-  fmt = '\ntarget_files = env.ChromeProgram(\'%s\', input_files)\n'
-  return _SCons_writer(fp, spec, fmt, name)
+  builder = 'env.ChromeProgram(\'%s\', input_files)' % name
+  return _SCons_writer(fp, spec, builder)
 
 def _SCons_static_library_writer(fp, spec):
   name = full_product_name(spec)
-  fmt = '\ntarget_files = env.ChromeStaticLibrary(\'%s\', input_files)\n'
-  return _SCons_writer(fp, spec, fmt, name)
+  builder = 'env.ChromeStaticLibrary(\'%s\', input_files)' % name
+  return _SCons_writer(fp, spec, builder)
 
 def _SCons_shared_library_writer(fp, spec):
   name = full_product_name(spec)
-  fmt = '\ntarget_files = env.ChromeSharedLibrary(\'%s\', input_files)\n'
-  return _SCons_writer(fp, spec, fmt, name)
+  builder = 'env.ChromeSharedLibrary(\'%s\', input_files)' % name
+  return _SCons_writer(fp, spec, builder)
 
 def _SCons_loadable_module_writer(fp, spec):
   name = full_product_name(spec)
   # Note:  LoadableModule() isn't part of the Hammer API, and there's no
   # ChromeLoadableModule() wrapper for this, so use base SCons for now.
-  fmt = '\ntarget_files = env.LodableModule(\'%s\', input_files)\n'
-  return _SCons_writer(fp, spec, fmt, name)
+  builder = 'env.LoadableModule(\'%s\', input_files)' % name
+  return _SCons_writer(fp, spec, builder)
 
 SConsTypeWriter = {
   None : _SCons_null_writer,
@@ -168,13 +167,12 @@ def GenerateSConscript(output_filename, spec, config):
   else:
     fp.write('\ninput_files = []\n')
 
+  fp.write('\ntarget_files = []\n')
+
   prerequisites = spec.get('scons_prerequisites', [])
+  fp.write('\nprerequisites = %s\n' % pprint.pformat(prerequisites))
+
   actions = spec.get('actions', [])
-  if actions or prerequisites:
-    # Note:  Only initialize this list with the prerequisites,
-    # because the prequisites coming from the actions will
-    # be added to the list as they're generated.
-    fp.write('\nprerequisites = %s\n' % pprint.pformat(prerequisites))
   for action in actions:
     fp.write(_command_template % {
                  'inputs' : pprint.pformat(action.get('inputs', [])),
@@ -197,8 +195,17 @@ def GenerateSConscript(output_filename, spec, config):
              })
     if rule.get('process_outputs_as_sources'):
       fp.write('  input_files.Replace(%s_file, _outputs)\n' % name)
+    fp.write('prerequisites.extend(_outputs)\n')
 
   SConsTypeWriter[spec.get('type')](fp, spec)
+
+  fmt = "\ngyp_target = env.Alias('gyp_target_%s', target_files)\n"
+  fp.write(fmt % spec['target_name'])
+  dependencies = spec.get('scons_dependencies', [])
+  if dependencies:
+    WriteList(fp, dependencies, preamble='env.Requires(gyp_target, [\n    ',
+                                postamble='\n])\n')
+  fp.write('env.Requires(gyp_target, prerequisites)\n')
 
   fp.close()
 
@@ -255,10 +262,13 @@ def GenerateOutput(target_list, target_dicts, data, options):
 
     # Add dependent static library targets to the 'libraries' value.
     deps = spec.get('dependencies', [])
+    spec['scons_dependencies'] = []
     for d in deps:
       td = target_dicts[d]
+      targetname = td['target_name']
+      spec['scons_dependencies'].append("Alias('gyp_target_%s')" % targetname)
       if td['type'] in ('static_library', 'shared_library'):
-        libname = td.get('product_name') or td['target_name']
+        libname = td.get('product_name') or targetname
         spec['libraries'].append(libname)
       if td['type'] == 'loadable_module':
         prereqs = spec.get('scons_prerequisites', [])
