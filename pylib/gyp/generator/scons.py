@@ -204,6 +204,14 @@ def GenerateSConscript(output_filename, spec, config):
 
   SConsTypeWriter[spec.get('type')](fp, spec)
 
+  copies = spec.get('copies', [])
+  for copy in copies:
+    destdir = copy['destination']
+    files = copy['files']
+    fmt = '\n_outputs = env.Install(%s,\n    %s\n)\n'
+    fp.write(fmt % (repr(destdir), pprint.pformat(files)))
+    fp.write('prerequisites.extend(_outputs)\n')
+
   fmt = "\ngyp_target = env.Alias('gyp_target_%s', target_files)\n"
   fp.write(fmt % spec['target_name'])
   dependencies = spec.get('scons_dependencies', [])
