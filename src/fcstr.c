@@ -716,8 +716,8 @@ FcStrBufInit (FcStrBuf *buf, FcChar8 *init, int size)
 	buf->size = size;
     } else
     {
-	buf->buf = buf->static_buf;
-	buf->size = sizeof (buf->static_buf);
+	buf->buf = buf->buf_static;
+	buf->size = sizeof (buf->buf_static);
     }
     buf->allocated = FcFalse;
     buf->failed = FcFalse;

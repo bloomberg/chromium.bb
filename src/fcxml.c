@@ -414,6 +414,7 @@ typedef struct _FcPStack {
     FcElement		element;
     FcChar8		**attr;
     FcStrBuf		str;
+    FcChar8            *attr_buf_static[16];
 } FcPStack;
     
 typedef enum _FcVStackTag {
@@ -920,7 +921,7 @@ FcVStackElements (FcConfigParse *parse)
 }
 
 static FcChar8 **
-FcConfigSaveAttr (const XML_Char **attr)
+FcConfigSaveAttr (const XML_Char **attr, FcChar8 **buf, int size_bytes)
 {
     int		slen;
     int		i;
@@ -934,13 +935,19 @@ FcConfigSaveAttr (const XML_Char **attr)
 	slen += strlen ((char *) attr[i]) + 1;
     if (i == 0)
 	return 0;
-    new = malloc ((i + 1) * sizeof (FcChar8 *) + slen);
-    if (!new)
+    slen += (i + 1) * sizeof (FcChar8 *);
+    if (slen <= size_bytes)
+	new = buf;
+    else
     {
-	FcConfigMessage (0, FcSevereError, "out of memory");
-	return 0;
+	new = malloc (slen);
+	if (!new)
+	{
+	    FcConfigMessage (0, FcSevereError, "out of memory");
+	    return 0;
+	}
+	FcMemAlloc (FC_MEM_ATTR, 1);    /* size is too expensive */
     }
-    FcMemAlloc (FC_MEM_ATTR, 1);    /* size is too expensive */
     s = (FcChar8 *) (new + (i + 1));
     for (i = 0; attr[i]; i++)
     {
@@ -969,7 +976,7 @@ FcPStackPush (FcConfigParse *parse, FcElement element, const XML_Char **attr)
 
     new->prev = parse->pstack;
     new->element = element;
-    new->attr = FcConfigSaveAttr (attr);
+    new->attr = FcConfigSaveAttr (attr, new->attr_buf_static, sizeof (new->attr_buf_static));
     FcStrBufInit (&new->str, 0, 0);
     parse->pstack = new;
     return FcTrue;
@@ -989,7 +996,7 @@ FcPStackPop (FcConfigParse *parse)
     old = parse->pstack;
     parse->pstack = old->prev;
     FcStrBufDestroy (&old->str);
-    if (old->attr)
+    if (old->attr && old->attr != old->attr_buf_static)
     {
 	FcMemFree (FC_MEM_ATTR, 1); /* size is to expensive */
 	free (old->attr);
