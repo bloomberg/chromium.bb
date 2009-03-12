@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if git-status -a > /dev/null; then
+if git status -a > /dev/null; then
 	echo 'Uncommited changes in repository' 1>&2
 	exit 1
 fi
@@ -92,7 +92,7 @@ if [ $version != $last ]; then
 	
 	echo $version_note
 	echo
-	git-log --pretty=short $last.. | git-shortlog | cat
+	git log --pretty=short $last.. | git shortlog | cat
 	
 	#
 	# previous changelogs
@@ -104,15 +104,15 @@ if [ $version != $last ]; then
 	mv README.tmp README
 fi
 
-$test git-commit -m"Bump version to $version" \
+$test git commit -m"Bump version to $version" \
 	configure.in \
 	fontconfig/fontconfig.h \
 	README
 
 # tag the tree
-$test git-tag -u 096c4dd3 -m "Version $version" $version
+$test git tag -u 096c4dd3 -m "Version $version" $version
 
 # Make distributed change log
 
-git-log --stat $last.. > ChangeLog-$version
+git log --stat $last.. > ChangeLog-$version
 
