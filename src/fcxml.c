@@ -939,9 +939,14 @@ FcConfigSaveAttr (const XML_Char **attr)
     slen = 0;
     for (i = 0; attr[i]; i++)
 	slen += strlen ((char *) attr[i]) + 1;
+    if (i == 0)
+	return 0;
     new = malloc ((i + 1) * sizeof (FcChar8 *) + slen);
     if (!new)
+    {
+	FcConfigMessage (0, FcSevereError, "out of memory");
 	return 0;
+    }
     FcMemAlloc (FC_MEM_ATTR, 1);    /* size is too expensive */
     s = (FcChar8 *) (new + (i + 1));
     for (i = 0; attr[i]; i++)
@@ -964,19 +969,7 @@ FcPStackPush (FcConfigParse *parse, FcElement element, const XML_Char **attr)
     FcMemAlloc (FC_MEM_PSTACK, sizeof (FcPStack));
     new->prev = parse->pstack;
     new->element = element;
-    if (attr)
-    {
-	new->attr = FcConfigSaveAttr (attr);
-	if (!new->attr)
-	{
-	    FcConfigMessage (parse, FcSevereError, "out of memory");
-	    FcMemFree (FC_MEM_PSTACK, sizeof (FcPStack));
-	    free (new);
-	    return FcFalse;
-	}
-    }
-    else
-	new->attr = 0;
+    new->attr = FcConfigSaveAttr (attr);
     FcStrBufInit (&new->str, 0, 0);
     parse->pstack = new;
     return FcTrue;
