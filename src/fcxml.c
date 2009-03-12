@@ -471,6 +471,8 @@ typedef struct _FcConfigParse {
     XML_Parser	    parser;
     int             pstack_static_used;
     FcPStack        pstack_static[8];
+    int             vstack_static_used;
+    FcVStack        vstack_static[64];
 } FcConfigParse;
 
 typedef enum _FcConfigSeverity {
@@ -699,186 +701,130 @@ FcEditCreate (FcConfigParse	*parse,
     return e;
 }
 
-static void
-FcVStackPush (FcConfigParse *parse, FcVStack *vstack)
-{
-    vstack->prev = parse->vstack;
-    vstack->pstack = parse->pstack ? parse->pstack->prev : 0;
-    parse->vstack = vstack;
-}
-
 static FcVStack *
-FcVStackCreate (void)
+FcVStackCreateAndPush (FcConfigParse *parse)
 {
     FcVStack    *new;
 
-    new = malloc (sizeof (FcVStack));
-    if (!new)
-	return 0;
-    FcMemAlloc (FC_MEM_VSTACK, sizeof (FcVStack));
+    if (parse->vstack_static_used < sizeof (parse->vstack_static) / sizeof (parse->vstack_static[0]))
+	new = &parse->vstack_static[parse->vstack_static_used++];
+    else
+    {
+	new = malloc (sizeof (FcVStack));
+	if (!new)
+	    return 0;
+	FcMemAlloc (FC_MEM_VSTACK, sizeof (FcVStack));
+    }
     new->tag = FcVStackNone;
     new->prev = 0;
+
+    new->prev = parse->vstack;
+    new->pstack = parse->pstack ? parse->pstack->prev : 0;
+    parse->vstack = new;
+
     return new;
-}
-
-static void
-FcVStackDestroy (FcVStack *vstack)
-{
-    FcVStack    *prev;
-
-    for (; vstack; vstack = prev)
-    {
-	prev = vstack->prev;
-	switch (vstack->tag) {
-	case FcVStackNone:
-	    break;
-	case FcVStackString:
-	case FcVStackFamily:
-	case FcVStackField:
-	case FcVStackConstant:
-	case FcVStackGlob:
-	    FcStrFree (vstack->u.string);
-	    break;
-	case FcVStackPattern:
-	    FcPatternDestroy (vstack->u.pattern);
-	    break;
-	case FcVStackInteger:
-	case FcVStackDouble:
-	    break;
-	case FcVStackMatrix:
-	    FcMatrixFree (vstack->u.matrix);
-	    break;
-	case FcVStackBool:
-	    break;
-	case FcVStackTest:
-	    FcTestDestroy (vstack->u.test);
-	    break;
-	case FcVStackExpr:
-	case FcVStackPrefer:
-	case FcVStackAccept:
-	case FcVStackDefault:
-	    FcExprDestroy (vstack->u.expr);
-	    break;
-	case FcVStackEdit:
-	    FcEditDestroy (vstack->u.edit);
-	    break;
-	}
-	FcMemFree (FC_MEM_VSTACK, sizeof (FcVStack));
-	free (vstack);
-    }
 }
 
 static FcBool
 FcVStackPushString (FcConfigParse *parse, FcVStackTag tag, FcChar8 *string)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u.string = string;
     vstack->tag = tag;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushInteger (FcConfigParse *parse, int integer)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u.integer = integer;
     vstack->tag = FcVStackInteger;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushDouble (FcConfigParse *parse, double _double)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u._double = _double;
     vstack->tag = FcVStackDouble;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushMatrix (FcConfigParse *parse, FcMatrix *matrix)
 {
-    FcVStack    *vstack = FcVStackCreate ();
-    if (!vstack)
-	return FcFalse;
+    FcVStack    *vstack;
     matrix = FcMatrixCopy (matrix);
     if (!matrix)
-    {
-	FcVStackDestroy (vstack);
 	return FcFalse;
-    }
+    vstack = FcVStackCreateAndPush (parse);
+    if (!vstack)
+	return FcFalse;
     vstack->u.matrix = matrix;
     vstack->tag = FcVStackMatrix;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushBool (FcConfigParse *parse, FcBool bool_)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u.bool_ = bool_;
     vstack->tag = FcVStackBool;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushTest (FcConfigParse *parse, FcTest *test)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u.test = test;
     vstack->tag = FcVStackTest;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushExpr (FcConfigParse *parse, FcVStackTag tag, FcExpr *expr)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u.expr = expr;
     vstack->tag = tag;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushEdit (FcConfigParse *parse, FcEdit *edit)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u.edit = edit;
     vstack->tag = FcVStackEdit;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
 static FcBool
 FcVStackPushPattern (FcConfigParse *parse, FcPattern *pattern)
 {
-    FcVStack    *vstack = FcVStackCreate ();
+    FcVStack    *vstack = FcVStackCreateAndPush (parse);
     if (!vstack)
 	return FcFalse;
     vstack->u.pattern = pattern;
     vstack->tag = FcVStackPattern;
-    FcVStackPush (parse, vstack);
     return FcTrue;
 }
 
@@ -891,28 +837,73 @@ FcVStackFetch (FcConfigParse *parse, int off)
     return vstack;
 }
 
-static void
-FcVStackClear (FcConfigParse *parse)
+static FcVStack *
+FcVStackPeek (FcConfigParse *parse)
 {
-    while (parse->vstack && parse->vstack->pstack == parse->pstack)
-    {
-	FcVStack    *vstack = parse->vstack;
-	parse->vstack = vstack->prev;
-	vstack->prev = 0;
-	FcVStackDestroy (vstack);
-    }
+    FcVStack	*vstack = parse->vstack;
+
+    return vstack && vstack->pstack == parse->pstack ? vstack : 0;
 }
 
-static FcVStack *
-FcVStackPop (FcConfigParse *parse)
+static void
+FcVStackPopAndDestroy (FcConfigParse *parse)
 {
     FcVStack	*vstack = parse->vstack;
     
     if (!vstack || vstack->pstack != parse->pstack)
-	return 0;
+	return;
+
     parse->vstack = vstack->prev;
-    vstack->prev = 0;
-    return vstack;
+
+    switch (vstack->tag) {
+    case FcVStackNone:
+	break;
+    case FcVStackString:
+    case FcVStackFamily:
+    case FcVStackField:
+    case FcVStackConstant:
+    case FcVStackGlob:
+	FcStrFree (vstack->u.string);
+	break;
+    case FcVStackPattern:
+	FcPatternDestroy (vstack->u.pattern);
+	break;
+    case FcVStackInteger:
+    case FcVStackDouble:
+	break;
+    case FcVStackMatrix:
+	FcMatrixFree (vstack->u.matrix);
+	break;
+    case FcVStackBool:
+	break;
+    case FcVStackTest:
+	FcTestDestroy (vstack->u.test);
+	break;
+    case FcVStackExpr:
+    case FcVStackPrefer:
+    case FcVStackAccept:
+    case FcVStackDefault:
+	FcExprDestroy (vstack->u.expr);
+	break;
+    case FcVStackEdit:
+	FcEditDestroy (vstack->u.edit);
+	break;
+    }
+
+    if (vstack == &parse->vstack_static[parse->vstack_static_used - 1])
+	parse->vstack_static_used--;
+    else
+    {
+	FcMemFree (FC_MEM_VSTACK, sizeof (FcVStack));
+	free (vstack);
+    }
+}
+
+static void
+FcVStackClear (FcConfigParse *parse)
+{
+    while (FcVStackPeek (parse))
+	FcVStackPopAndDestroy (parse);
 }
 
 static int
@@ -1020,6 +1011,7 @@ FcConfigInit (FcConfigParse *parse, const FcChar8 *name, FcConfig *config, XML_P
     parse->pstack = 0;
     parse->pstack_static_used = 0;
     parse->vstack = 0;
+    parse->vstack_static_used = 0;
     parse->error = FcFalse;
     parse->name = name;
     parse->config = config;
@@ -1243,7 +1235,7 @@ FcParseMatrix (FcConfigParse *parse)
     enum { m_done, m_xx, m_xy, m_yx, m_yy } matrix_state = m_yy;
     FcMatrix	m;
     
-    while ((vstack = FcVStackPop (parse)))
+    while ((vstack = FcVStackPeek (parse)))
     {
 	double	v;
 	switch (vstack->tag) {
@@ -1265,7 +1257,7 @@ FcParseMatrix (FcConfigParse *parse)
 	case m_yy: m.yy = v; break;
 	default: break;
 	}
-	FcVStackDestroy (vstack);
+	FcVStackPopAndDestroy (parse);
 	matrix_state--;
     }
     if (matrix_state != m_done)
@@ -1335,17 +1327,17 @@ FcParseFamilies (FcConfigParse *parse, FcVStackTag tag)
     FcVStack	*vstack;
     FcExpr	*left, *expr = 0, *new;
 
-    while ((vstack = FcVStackPop (parse)))
+    while ((vstack = FcVStackPeek (parse)))
     {
 	if (vstack->tag != FcVStackFamily)
 	{
 	    FcConfigMessage (parse, FcSevereWarning, "non-family");
-	    FcVStackDestroy (vstack);
+	    FcVStackPopAndDestroy (parse);
 	    continue;
 	}
 	left = vstack->u.expr;
 	vstack->tag = FcVStackNone;
-	FcVStackDestroy (vstack);
+	FcVStackPopAndDestroy (parse);
 	if (expr)
 	{
 	    new = FcExprCreateOp (left, FcOpComma, expr);
@@ -1402,7 +1394,7 @@ FcParseAlias (FcConfigParse *parse)
 
     if (!FcConfigLexBinding (parse, FcConfigGetAttribute (parse, "binding"), &binding))
 	return;
-    while ((vstack = FcVStackPop (parse))) 
+    while ((vstack = FcVStackPeek (parse)))
     {
 	switch (vstack->tag) {
 	case FcVStackFamily:
@@ -1444,7 +1436,7 @@ FcParseAlias (FcConfigParse *parse)
 	    FcConfigMessage (parse, FcSevereWarning, "bad alias");
 	    break;
 	}
-	FcVStackDestroy (vstack);
+	FcVStackPopAndDestroy (parse);
     }
     if (!family)
     {
@@ -1513,7 +1505,7 @@ FcParseAlias (FcConfigParse *parse)
 static FcExpr *
 FcPopExpr (FcConfigParse *parse)
 {
-    FcVStack	*vstack = FcVStackPop (parse);
+    FcVStack	*vstack = FcVStackPeek (parse);
     FcExpr	*expr = 0;
     if (!vstack)
 	return 0;
@@ -1562,7 +1554,7 @@ FcPopExpr (FcConfigParse *parse)
     default:
 	break;
     }
-    FcVStackDestroy (vstack);
+    FcVStackPopAndDestroy (parse);
     return expr;
 }
 
@@ -1865,7 +1857,7 @@ FcParseMatch (FcConfigParse *parse)
 	    return;
 	}
     }
-    while ((vstack = FcVStackPop (parse)))
+    while ((vstack = FcVStackPeek (parse)))
     {
 	switch (vstack->tag) {
 	case FcVStackTest:
@@ -1888,7 +1880,7 @@ FcParseMatch (FcConfigParse *parse)
 	    FcConfigMessage (parse, FcSevereWarning, "invalid match element");
 	    break;
 	}
-	FcVStackDestroy (vstack);
+	FcVStackPopAndDestroy (parse);
     }
     if (!FcConfigAddEdit (parse->config, test, edit, kind))
 	FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1899,7 +1891,7 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 {
     FcVStack	*vstack;
 
-    while ((vstack = FcVStackPop (parse)))
+    while ((vstack = FcVStackPeek (parse)))
     {
 	switch (vstack->tag) {
 	case FcVStackGlob:
@@ -1924,7 +1916,7 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 	    FcConfigMessage (parse, FcSevereWarning, "bad font selector");
 	    break;
 	}
-	FcVStackDestroy (vstack);
+	FcVStackPopAndDestroy (parse);
     }
 }
 
@@ -1932,7 +1924,7 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 static FcValue
 FcPopValue (FcConfigParse *parse)
 {
-    FcVStack	*vstack = FcVStackPop (parse);
+    FcVStack	*vstack = FcVStackPeek (parse);
     FcValue	value;
     
     value.type = FcTypeVoid;
@@ -1972,7 +1964,7 @@ FcPopValue (FcConfigParse *parse)
 			 vstack->tag);
 	break;
     }
-    FcVStackDestroy (vstack);
+    FcVStackPopAndDestroy (parse);
     
     return value;
 }
@@ -2027,7 +2019,7 @@ FcParsePattern (FcConfigParse *parse)
 	return;
     }
 	
-    while ((vstack = FcVStackPop (parse)))
+    while ((vstack = FcVStackPeek (parse)))
     {
 	switch (vstack->tag) {
 	case FcVStackPattern:
@@ -2042,7 +2034,7 @@ FcParsePattern (FcConfigParse *parse)
 	    FcConfigMessage (parse, FcSevereWarning, "unknown pattern element");
 	    break;
 	}
-	FcVStackDestroy (vstack);
+	FcVStackPopAndDestroy (parse);
     }
 
     FcVStackPushPattern (parse, pattern);
