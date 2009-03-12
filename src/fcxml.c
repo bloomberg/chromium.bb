@@ -469,6 +469,8 @@ typedef struct _FcConfigParse {
     const FcChar8   *name;
     FcConfig	    *config;
     XML_Parser	    parser;
+    int             pstack_static_used;
+    FcPStack        pstack_static[8];
 } FcConfigParse;
 
 typedef enum _FcConfigSeverity {
@@ -962,11 +964,18 @@ FcConfigSaveAttr (const XML_Char **attr)
 static FcBool
 FcPStackPush (FcConfigParse *parse, FcElement element, const XML_Char **attr)
 {
-    FcPStack   *new = malloc (sizeof (FcPStack));
+    FcPStack   *new;
 
-    if (!new)
-	return FcFalse;
-    FcMemAlloc (FC_MEM_PSTACK, sizeof (FcPStack));
+    if (parse->pstack_static_used < sizeof (parse->pstack_static) / sizeof (parse->pstack_static[0]))
+	new = &parse->pstack_static[parse->pstack_static_used++];
+    else
+    {
+	new = malloc (sizeof (FcPStack));
+	if (!new)
+	    return FcFalse;
+	FcMemAlloc (FC_MEM_PSTACK, sizeof (FcPStack));
+    }
+
     new->prev = parse->pstack;
     new->element = element;
     new->attr = FcConfigSaveAttr (attr);
@@ -994,8 +1003,14 @@ FcPStackPop (FcConfigParse *parse)
 	FcMemFree (FC_MEM_ATTR, 1); /* size is to expensive */
 	free (old->attr);
     }
-    FcMemFree (FC_MEM_PSTACK, sizeof (FcPStack));
-    free (old);
+
+    if (old == &parse->pstack_static[parse->pstack_static_used - 1])
+	parse->pstack_static_used--;
+    else
+    {
+	FcMemFree (FC_MEM_PSTACK, sizeof (FcPStack));
+	free (old);
+    }
     return FcTrue;
 }
 
@@ -1003,6 +1018,7 @@ static FcBool
 FcConfigInit (FcConfigParse *parse, const FcChar8 *name, FcConfig *config, XML_Parser parser)
 {
     parse->pstack = 0;
+    parse->pstack_static_used = 0;
     parse->vstack = 0;
     parse->error = FcFalse;
     parse->name = name;
