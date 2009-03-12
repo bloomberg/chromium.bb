@@ -103,8 +103,32 @@ def main(args):
   generator = __import__(generator_name, globals(), locals(), generator_name)
   default_variables.update(generator.generator_default_variables)
 
+  # Set up includes.
+  includes = []
+
+  # If ~/.gyp/include.gypi exists, it'll be forcibly included into every
+  # .gyp file that's loaded, before anything else is included.
+  home_vars = ['HOME']
+  if sys.platform in ('cygwin', 'win32'):
+    home_vars.append('USERPROFILE')
+
+  home = None
+  for home_var in home_vars:
+    home = os.getenv(home_var)
+    if home != None:
+      break
+
+  if home != None:
+    default_include = os.path.join(home, '.gyp', 'include.gypi')
+    if os.path.exists(default_include):
+      includes.append(default_include)
+
+  # Command-line --include files come after the default include.
+  if options.includes:
+    includes.extend(options.includes)
+
   [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
-                                              options.includes, options.depth)
+                                              includes, options.depth)
 
   # TODO(mark): Pass |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept
