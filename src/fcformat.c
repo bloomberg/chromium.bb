@@ -737,9 +737,9 @@ interpret_simple (FcFormatContext *c,
 
     e = FcPatternObjectFindElt (pat,
 				FcObjectFromName ((const char *) c->word));
-    if (e)
+    if (e || else_string)
     {
-	FcValueListPtr l;
+	FcValueListPtr l = NULL;
 
 	if (add_colon)
 	    FcStrBufChar (buf, ':');
@@ -749,7 +749,8 @@ interpret_simple (FcFormatContext *c,
 	    FcStrBufChar (buf, '=');
 	}
 
-	l = FcPatternEltValues(e);
+	if (e)
+	    l = FcPatternEltValues(e);
 
 	if (idx != -1)
 	{
@@ -765,16 +766,16 @@ interpret_simple (FcFormatContext *c,
 	    }
 	    else goto notfound;
         }
-	else
+	else if (l)
 	{
 	    FcNameUnparseValueList (buf, l, '\0');
 	}
-    }
-    else
-notfound:
-    {
-	if (else_string)
-	    printf ("%s", else_string);
+	else
+	{
+    notfound:
+	    if (else_string)
+		FcStrBufString (buf, else_string);
+	}
     }
 
     return FcTrue;
