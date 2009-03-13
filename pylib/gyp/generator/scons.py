@@ -219,6 +219,7 @@ def GenerateSConscript(output_filename, spec, config):
     WriteList(fp, dependencies, preamble='env.Requires(gyp_target, [\n    ',
                                 postamble='\n])\n')
   fp.write('env.Requires(gyp_target, prerequisites)\n')
+  fp.write('Return("gyp_target")\n')
 
   fp.close()
 
@@ -230,15 +231,15 @@ Wrapper configuration for building this entire "solution,"
 including all the specific targets in various *.scons files.
 '''
 
-# Arrange for Hammer to add all programs to the '%(name)s' Alias.
-env.Append(
-    COMPONENT_PROGRAM_GROUPS = ['%(name)s'],
-    COMPONENT_TEST_PROGRAM_GROUPS = ['%(name)s'],
-)
-
 sconscript_files = %(sconscript_files)s
 
-env.SConscript(sconscript_files, exports=['env'])
+target_alias_list= []
+for sconscript in sconscript_files:
+    target_alias = env.SConscript(sconscript, exports=['env'])
+    if target_alias:
+      target_alias_list.extend(target_alias)
+
+Default(Alias('%(name)s', target_alias_list))
 """
 
 def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
