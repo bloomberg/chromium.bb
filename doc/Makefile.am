@@ -49,6 +49,7 @@ DOC_FUNCS_FNCS=\
 	fcdircache.fncs \
 	fcfile.fncs \
 	fcfontset.fncs \
+	fcformat.fncs \
 	fcfreetype.fncs \
 	fcinit.fncs \
 	fclangset.fncs \
@@ -70,6 +71,7 @@ DOC_FUNCS_SGML=\
 	fcdircache.sgml \
 	fcfile.sgml \
 	fcfontset.sgml \
+	fcformat.sgml \
 	fcfreetype.sgml \
 	fcinit.sgml \
 	fclangset.sgml \

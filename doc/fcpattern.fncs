@@ -395,23 +395,3 @@ Converts the given pattern into the standard text format described above.
 The return value is not static, but instead refers to newly allocated memory
 which should be freed by the caller using free().
 @@
-
-@RET@		FcChar8 *
-@FUNC@		FcPatternFormat
-@TYPE1@		FcPattern *			@ARG1@		pat
-@TYPE2@		const FcChar8 *			@ARG2@		format
-@PURPOSE@	Format a pattern into a string according to a format specifier
-@DESC@
-
-Converts the given pattern into text format described by the format specifier.
-The format specifier is similar to a C style printf string, which the
-printf(2) man page provides a good introduction to. However, as fontconfig
-already knows the type of data that is being printed, you must omit the type
-specifier. In its place put the element name you wish to print enclosed in
-curly braces ({}). For example, to print the family name and style the
-pattern, use the format "%{family} %{style}\n".
-There can be an option width specifier after the percent sign and before
-the opening brace.  The width modifier acts similar to those in printf.
-The return value refers to newly allocated memory which should be freed by the
-caller using free(), or NULL if <parameter>format</parameter> is invalid.
-@@

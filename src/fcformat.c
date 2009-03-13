@@ -28,44 +28,46 @@
 #include <stdarg.h>
 
 
-/* XXX Document the language.
+/* The language is documented in doc/fcformat.fncs
+ * These are the features implemented:
  *
- * These are mostly the features implemented but not documented:
+ * simple	%{elt}
+ * width	%width{elt}
+ * index	%{elt[idx]}
+ * name=	%{elt=}
+ * :name=	%{:elt}
+ * default	%{elt:-word}
+ * count	%{#elt}
+ * subexpr	%{{expr}}
+ * filter-out	%{-elt1,elt2,elt3{expr}}
+ * filter-in	%{+elt1,elt2,elt3{expr}}
+ * conditional	%{?elt1,elt2,!elt3{}{}}
+ * enumerate	%{[]elt1,elt2{expr}}
+ * langset	langset enumeration using the same syntax
+ * builtin	%{=blt}
+ * convert	%{elt|conv1|conv2|conv3}
  *
- * width   %[[-]width]{tag}
- * index   %{tag[ids]}
- * name=   %{tag=|decorator}
- * :name=  %{:tag=|decorator}
- * subexpr %{{expr}|decorator1|decorator2}
- * delete  %{-charset,lang{expr}|decorator}
- * filter  %{+family,familylang{expr}|decorator}
- * cond    %{?tag1,tag2,!tag3{}{}}
- * decorat %{tag|decorator1|decorator2}
- * default %{parameter:-word}
- * array   %{[]family,familylang{expr}|decorator}
- * langset enumeration using the same syntax as arrays
- *
- * filters:
- * basename        FcStrBasename
- * dirname         FcStrDirname
- * downcase        FcStrDowncase
+ * converters:
+ * basename	FcStrBasename
+ * dirname	FcStrDirname
+ * downcase	FcStrDowncase
  * shescape
  * cescape
  * xmlescape
- * delete          delete chars
- * escape          escape chars
- * translate       translate chars
+ * delete	delete chars
+ * escape	escape chars
+ * translate	translate chars
  *
  * builtins:
- * unparse
- * fcmatch
- * fclist
- * pkgkit
- */
-
-/*
+ * unparse	FcNameUnparse
+ * fcmatch	fc-match default
+ * fclist	fc-list default
+ * pkgkit	PackageKit package tag format
+ *
+ *
  * Some ideas for future syntax extensions:
  *
+ * - verbose builtin that is like FcPatternPrint
  * - allow indexing subexprs using '%{[idx]elt1,elt2{subexpr}}'
  * - conditional/filtering/deletion on binding (using '(w)'/'(s)'/'(=)' notation)
  */
@@ -418,9 +420,9 @@ maybe_skip_subexpr (FcFormatContext *c)
 }
 
 static FcBool
-interpret_filter (FcFormatContext *c,
-		  FcPattern       *pat,
-		  FcStrBuf        *buf)
+interpret_filter_in (FcFormatContext *c,
+		     FcPattern       *pat,
+		     FcStrBuf        *buf)
 {
     FcObjectSet  *os;
     FcPattern    *subpat;
@@ -455,9 +457,9 @@ interpret_filter (FcFormatContext *c,
 }
 
 static FcBool
-interpret_delete (FcFormatContext *c,
-		  FcPattern       *pat,
-		  FcStrBuf        *buf)
+interpret_filter_out (FcFormatContext *c,
+		      FcPattern       *pat,
+		      FcStrBuf        *buf)
 {
     FcPattern    *subpat;
 
@@ -567,9 +569,9 @@ interpret_count (FcFormatContext *c,
 }
 
 static FcBool
-interpret_array (FcFormatContext *c,
-		 FcPattern       *pat,
-		 FcStrBuf        *buf)
+interpret_enumerate (FcFormatContext *c,
+		     FcPattern       *pat,
+		     FcStrBuf        *buf)
 {
     FcObjectSet   *os;
     FcPattern     *subpat;
@@ -1115,14 +1117,14 @@ interpret_percent (FcFormatContext *c,
     start = buf->len;
 
     switch (*c->format) {
-    case '=': ret = interpret_builtin (c, pat, buf); break;
-    case '{': ret = interpret_subexpr (c, pat, buf); break;
-    case '+': ret = interpret_filter  (c, pat, buf); break;
-    case '-': ret = interpret_delete  (c, pat, buf); break;
-    case '?': ret = interpret_cond    (c, pat, buf); break;
-    case '#': ret = interpret_count   (c, pat, buf); break;
-    case '[': ret = interpret_array   (c, pat, buf); break;
-    default:  ret = interpret_simple  (c, pat, buf); break;
+    case '=': ret = interpret_builtin    (c, pat, buf); break;
+    case '{': ret = interpret_subexpr    (c, pat, buf); break;
+    case '+': ret = interpret_filter_in  (c, pat, buf); break;
+    case '-': ret = interpret_filter_out (c, pat, buf); break;
+    case '?': ret = interpret_cond       (c, pat, buf); break;
+    case '#': ret = interpret_count      (c, pat, buf); break;
+    case '[': ret = interpret_enumerate  (c, pat, buf); break;
+    default:  ret = interpret_simple     (c, pat, buf); break;
     }
 
     return ret &&

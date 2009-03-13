@@ -8,6 +8,7 @@
 <!ENTITY fcdircache SYSTEM "fcdircache.sgml">
 <!ENTITY fcfile SYSTEM "fcfile.sgml">
 <!ENTITY fcfontset SYSTEM "fcfontset.sgml">
+<!ENTITY fcformat SYSTEM "fcformat.sgml">
 <!ENTITY fcfreetype SYSTEM "fcfreetype.sgml">
 <!ENTITY fcinit SYSTEM "fcinit.sgml">
 <!ENTITY fclangset SYSTEM "fclangset.sgml">
@@ -437,6 +438,7 @@ An FcPattern is an opaque type that holds both patterns to match against the
 available fonts, as well as the information about each font.
     </para>
     &fcpattern;
+    &fcformat;
   </sect2>
   <sect2><title>FcFontSet</title>
     <para>
