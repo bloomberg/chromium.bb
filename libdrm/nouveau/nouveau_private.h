@@ -173,7 +173,7 @@ struct nouveau_bo_priv {
 
 	/* Kernel object */
 	uint32_t global_handle;
-	unsigned handle;
+	drm_handle_t handle;
 	void *map;
 
 	/* Last known information from kernel on buffer status */
