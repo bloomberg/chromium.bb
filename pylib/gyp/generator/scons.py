@@ -92,7 +92,7 @@ _command_template = """
 _outputs = env.Command(
   %(outputs)s,
   %(inputs)s,
-  [%(action)s],
+  Action([%(action)s], %(message)s),
 )
 """
 
@@ -101,7 +101,7 @@ _rule_template = """
 %(name)s_outputs = %(outputs)s
 def %(name)s_emitter(target, source, env):
   return (%(name)s_outputs, source + %(name)s_additional_inputs)
-%(name)s_action = Action([%(action)s])
+%(name)s_action = Action([%(action)s], %(message)s)
 env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
 %(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
 for %(name)s_file in %(name)s_files:
@@ -178,10 +178,14 @@ def GenerateSConscript(output_filename, spec, config):
   actions = spec.get('actions', [])
   for action in actions:
     a = ['cd', gyp_dir, '&&'] + action['action']
+    message = action.get('message')
+    if message:
+        message = repr(message)
     fp.write(_command_template % {
                  'inputs' : pprint.pformat(action.get('inputs', [])),
                  'outputs' : pprint.pformat(action.get('outputs', [])),
                  'action' : pprint.pformat(a),
+                 'message' : message,
              })
     if action.get('process_outputs_as_sources'):
       fp.write('input_files.extend(_outputs)\n')
@@ -191,12 +195,16 @@ def GenerateSConscript(output_filename, spec, config):
   for rule in rules:
     name = rule['rule_name']
     a = ['cd', gyp_dir, '&&'] + rule['action']
+    message = rule.get('message')
+    if message:
+        message = repr(message)
     fp.write(_rule_template % {
                  'inputs' : pprint.pformat(rule.get('inputs', [])),
                  'outputs' : pprint.pformat(rule.get('outputs', [])),
                  'action' : pprint.pformat(a),
                  'extension' : rule['extension'],
                  'name' : name,
+                 'message' : message,
              })
     if rule.get('process_outputs_as_sources'):
       fp.write('  input_files.Replace(%s_file, _outputs)\n' % name)
