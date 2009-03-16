@@ -53,7 +53,6 @@ class XcodeProject(object):
     self.project_file = \
         gyp.xcodeproj_file.XCProjectFile({'rootObject': self.project})
     self.build_file_dict = build_file_dict
-    self.run_test_targets = []
 
     # TODO(mark): add destructor that cleans up self.path if created_dir is
     # True and things didn't complete successfully.  Or do something even
@@ -121,16 +120,16 @@ class XcodeProject(object):
     # TODO(mark): Like a lot of other things here, this assumes internal
     # knowledge of PBXProject - in this case, of its "targets" property.
 
-    # non_runtest_targets are ordinary targets that are already in the project
-    # file.  runtest_targets are synthesized in the loop below.  The depend on
-    # the associated test and contain a shell script phase to run it.
-    non_runtest_targets = []
-    runtest_targets = []
+    # ordinary_targets are ordinary targets that are already in the project
+    # file. test_targets are the targets that are unittests and should be used
+    # for the Run All Tests target.
+    ordinary_targets = []
+    test_targets = []
 
-    # targets is the union of non_runtest_targets and runtest_targets.
+    # targets is full list of targets in the project.
     targets = []
 
-    # targets_for_all is the list of non_runtest_targets that should be listed
+    # targets_for_all is the list of ordinary_targets that should be listed
     # in this project's "All" target.  It includes each non_runtest_target
     # that does not have suppress_wildcard set.
     targets_for_all = []
@@ -143,7 +142,7 @@ class XcodeProject(object):
       # the unsorted list.
       assert xcode_target in self.project._properties['targets']
       targets.append(xcode_target)
-      non_runtest_targets.append(xcode_target)
+      ordinary_targets.append(xcode_target)
 
       if not target.get('suppress_wildcard', False):
         targets_for_all.append(xcode_target)
@@ -170,11 +169,11 @@ class XcodeProject(object):
         # Add the test runner target to the project file.
         xcode_target.test_runner = run_target
         targets.append(run_target)
-        runtest_targets.append(run_target)
+        test_targets.append(xcode_target)
 
     # Make sure that the list of targets being replaced is the same length as
     # the one replacing it, but allow for the added test runner targets.
-    assert len(self.project._properties['targets']) + len(non_runtest_targets)
+    assert len(self.project._properties['targets']) == len(ordinary_targets)
 
     self.project._properties['targets'] = targets
 
@@ -212,23 +211,35 @@ class XcodeProject(object):
       # though.
       self.project._properties['targets'].insert(0, all_target)
 
-    # The same, but for runtest targets.
-    if len(runtest_targets) > 1:
+    # The same, but for test targets.  Because we enable parallel target
+    # builds and a bunch of the unittests reuse common things (test http
+    # server, files on disk), the tests would be flaky if this target simply
+    # depended on the "Run * Tests" targets we generated above.  Instead,
+    # this target directly depends on the tests and uses its own script phases
+    # to run each test.
+    if len(test_targets) > 1:
       xccl = gyp.xcodeproj_file.XCConfigurationList({'buildConfigurations': []})
       for configuration in configurations:
         xcbc = gyp.xcodeproj_file.XCBuildConfiguration({'name': configuration})
         xccl.AppendProperty('buildConfigurations', xcbc)
       xccl.SetProperty('defaultConfigurationName', configurations[0])
-
       run_all_tests_target = gyp.xcodeproj_file.PBXAggregateTarget(
           {
             'buildConfigurationList': xccl,
             'name':                   'Run All Tests',
           },
           parent=self.project)
-
-      for target in runtest_targets:
-        run_all_tests_target.AddDependency(target)
+      for test_target in test_targets:
+        run_all_tests_target.AddDependency(test_target)
+        ttpn = test_target.GetProperty('productName')
+        script = 'echo note: running ' + ttpn + '\n' \
+                 'exec "${BUILT_PRODUCTS_DIR}/' + ttpn + '"\nexit 1\n'
+        ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+              'name':             'Run "' + ttpn + '"',
+              'shellScript':      script,
+              'showEnvVarsInLog': 0,
+            })
+        run_all_tests_target.AppendProperty('buildPhases', ssbp)
 
       # Insert after the "All" target, which must exist if there is more than
       # one run_test_target.
@@ -243,31 +254,43 @@ class XcodeProject(object):
 
     # TODO(mark): Make more general?
     # As a special case for Chromium, add a "Run All Tests" target in
-    # all.gyp:All to depend on all test runners.
+    # all.gyp:All to depend on all tests and run them.
     if os.path.basename(self.gyp_path) == 'all.gyp' and \
        len(self.build_file_dict['targets']) == 1 and \
        self.build_file_dict['targets'][0]['target_name'] == 'All':
       qualified_target = gyp.common.QualifiedTarget(self.gyp_path, 'All')
       xcode_target = xcode_targets[qualified_target]
       if isinstance(xcode_target, gyp.xcodeproj_file.PBXAggregateTarget):
-        # Collect all the test runner targets, built in Finalize1.
-        all_test_runners = []
+        # Collect all the test targets.
+        all_tests = []
         pbxtds = xcode_target.GetProperty('dependencies')
         for pbxtd in pbxtds:
           pbxcip = pbxtd.GetProperty('targetProxy')
           dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
           if dependency_xct.test_runner:
-            all_test_runners.append(dependency_xct.test_runner)
+            all_tests.append(dependency_xct)
 
-        # Set up a target that depends on all of the other test runners.
-        if len(all_test_runners) > 0:
+        # We have to directly depend on all tests and then directly run
+        # them all ourselves.  If we used the runners, it would allow them
+        # to be run in parallel, and as noted on the runner creation, that
+        # could cause things to fail.
+        if len(all_tests) > 0:
           run_all_target = gyp.xcodeproj_file.PBXAggregateTarget({
                 'name':        'Run All Tests',
                 'productName': 'All',
               },
               parent=self.project)
-          for test_runner in all_test_runners:
-            run_all_target.AddDependency(test_runner)
+          for test_target in all_tests:
+            run_all_target.AddDependency(test_target)
+            ttpn = test_target.GetProperty('productName')
+            script = 'echo note: running ' + ttpn + '\n' \
+                     'exec "${BUILT_PRODUCTS_DIR}/' + ttpn + '"\nexit 1\n'
+            ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
+                  'name':             'Run "' + ttpn + '"',
+                  'shellScript':      script,
+                  'showEnvVarsInLog': 0,
+                })
+            run_all_target.AppendProperty('buildPhases', ssbp)
 
           # Add the test runner target to the project file.
           self.project.AppendProperty('targets', run_all_target)
