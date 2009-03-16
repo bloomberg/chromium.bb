@@ -1406,12 +1406,7 @@ void radeon_do_release(struct drm_device * dev)
 #ifdef __linux__
 				schedule();
 #else
-#if defined(__FreeBSD__) && __FreeBSD_version > 500000
-				mtx_sleep(&ret, &dev->dev_lock, PZERO, "rdnrel",
-				       1);
-#else
-				tsleep(&ret, PZERO, "rdnrel", 1);
-#endif
+				mtx_sleep(&ret, &dev->dev_lock, 0, "rdnrel", 1);
 #endif
 			}
 			radeon_do_cp_stop(dev_priv);
