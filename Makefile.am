@@ -33,7 +33,7 @@ EXTRA_DIST = \
         fontconfig.spec \
 	fontconfig-zip.in
 CLEANFILES = fonts.conf
-DISTCLEANFILES = config.cache ChangeLog doltcompile
+DISTCLEANFILES = config.cache doltcompile
 MAINTAINERCLEANFILES = \
 	$(srcdir)/aclocal.m4 \
 	$(srcdir)/autoscan.log \
