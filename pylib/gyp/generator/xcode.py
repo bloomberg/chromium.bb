@@ -508,16 +508,28 @@ def GenerateOutput(target_list, target_dicts, data, options):
       # output directories already exist, because Xcode will look at the
       # declared outputs and automatically ensure that they exist for us.
 
+      # Do we have a message to print when this action runs?
+      message = action.get('message')
+      if message:
+        message = 'echo note: ' + gyp.common.EncodePOSIXShellArgument(message)
+      else:
+        message = ''
+
       # Turn the list into a string that can be passed to a shell.
       action_string = gyp.common.EncodePOSIXShellList(action['action'])
 
       # Convert Xcode-type variable references to sh-compatible environment
       # variable references.
+      message_sh = re.sub('\$\((.*?)\)', '${\\1}', message)
       action_string_sh = re.sub('\$\((.*?)\)', '${\\1}', action_string)
 
+      script = ''
+      # Include the optional message
+      if message_sh:
+        script += message_sh + '\n'
       # Be sure the script runs in exec, and that if exec fails, the script
       # exits signalling an error.
-      script = 'exec ' + action_string_sh + '\nexit 1\n'
+      script += 'exec ' + action_string_sh + '\nexit 1\n'
       ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
             'inputPaths': action['inputs'],
             'name': 'Action "' + action['action_name'] + '"',
@@ -612,9 +624,11 @@ def GenerateOutput(target_list, target_dicts, data, options):
       # (rule_sources) that apply to it.
       concrete_outputs_all = []
 
-      # actions is keyed by the same indices as rule['rule_sources'] and
-      # concrete_outputs_by_rule_source.  It contains the action to perform
-      # after resolving input-dependent variables.
+      # messages & actions are keyed by the same indices as rule['rule_sources']
+      # and concrete_outputs_by_rule_source.  They contain the message and
+      # action to perform after resolving input-dependent variables.  The
+      # message is optional, in which case None is stored for each rule source.
+      messages = []
       actions = []
 
       for rule_source in rule.get('rule_sources', []):
@@ -658,6 +672,14 @@ def GenerateOutput(target_list, target_dicts, data, options):
           for output in concrete_outputs_for_this_rule_source:
             AddResourceToTarget(output, pbxp, xct)
 
+        # Do we have a message to print when this rule runs?
+        message = rule.get('message')
+        if message:
+          message = gyp.common.EncodePOSIXShellArgument(message)
+          message = '@echo note: ' + ExpandXcodeVariables(message,
+                                                          rule_input_dict)
+        messages.append(message)
+
         # Turn the list into a string that can be passed to a shell.
         action_string = gyp.common.EncodePOSIXShellList(rule['action'])
 
@@ -694,8 +716,9 @@ def GenerateOutput(target_list, target_dicts, data, options):
             eol = ' \\'
           makefile.write('    %s%s\n' % (concrete_output, eol))
 
-        for (rule_source, concrete_outputs, action) in \
-            zip(rule['rule_sources'], concrete_outputs_by_rule_source, actions):
+        for (rule_source, concrete_outputs, message, action) in \
+            zip(rule['rule_sources'], concrete_outputs_by_rule_source,
+                messages, actions):
           makefile.write('\n')
 
           # Add a rule that declares it can build each concrete output of a
@@ -734,8 +757,10 @@ def GenerateOutput(target_list, target_dicts, data, options):
           if len(concrete_output_dirs) > 0:
             makefile.write('\tmkdir -p %s\n' % ' '.join(concrete_output_dirs))
 
-          # The rule action has already had the necessary variable
+          # The rule message and action have already had the necessary variable
           # substitutions performed.
+          if message:
+            makefile.write('\t%s\n' % message)
           makefile.write('\t%s\n' % action)
 
         makefile.close()
