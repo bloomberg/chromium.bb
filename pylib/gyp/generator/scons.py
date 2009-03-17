@@ -270,7 +270,8 @@ def TargetFilename(target, output_suffix):
   return output_file
 
 
-def GenerateOutput(target_list, target_dicts, data, options):
+def GenerateOutput(target_list, target_dicts, data, params):
+  options = params['options']
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
       continue

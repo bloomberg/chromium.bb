@@ -61,7 +61,7 @@ for v in _generator_identity_variables:
   generator_default_variables[v] = '<(%s)' % v
 
 
-def GenerateOutput(target_list, target_dicts, data, options):
+def GenerateOutput(target_list, target_dicts, data, params):
   output_files = {}
   for qualified_target in target_list:
     [input_file, target] = \
@@ -70,7 +70,7 @@ def GenerateOutput(target_list, target_dicts, data, options):
     if input_file[-4:] != '.gyp':
       continue
     input_file_stem = input_file[:-4]
-    output_file = input_file_stem + options.suffix + '.gypd'
+    output_file = input_file_stem + params['options'].suffix + '.gypd'
 
     if not output_file in output_files:
       output_files[output_file] = input_file

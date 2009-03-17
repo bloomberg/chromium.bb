@@ -439,7 +439,7 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
   return obj
 
 
-def GenerateOutput(target_list, target_dicts, data, options):
+def GenerateOutput(target_list, target_dicts, data, params):
   """Generate .sln and .vcproj files.
 
   This is the entry point for this generator.
@@ -449,6 +449,7 @@ def GenerateOutput(target_list, target_dicts, data, options):
     data: Dictionary containing per .gyp data.
   """
 
+  options = params['options']
   configs = set()
   for qualified_target in target_list:
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]

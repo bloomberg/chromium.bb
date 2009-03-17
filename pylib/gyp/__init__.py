@@ -33,6 +33,9 @@ def main(args):
                     help='set DEPTH gyp variable to a relative path to PATH')
   parser.add_option('-S', '--suffix', dest='suffix', default='',
                     help='suffix to add to generated files')
+  parser.add_option('--generator-flags', dest='generator_flags', default='',
+                    help='comma separated list of flag names to pass to the '
+                         'generator')
 
   (options, build_files) = parser.parse_args(args)
 
@@ -130,6 +133,10 @@ def main(args):
   [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
                                               includes, options.depth)
 
+  params = {'options': options,
+            'build_files': build_files,
+            'generator_flags': options.generator_flags.split(',')}
+
   # TODO(mark): Pass |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept
   # a list, and not the whole data dict.
@@ -137,7 +144,7 @@ def main(args):
   # that targets may be built.  Build systems that operate serially or that
   # need to have dependencies defined before dependents reference them should
   # generate targets in the order specified in flat_list.
-  generator.GenerateOutput(flat_list, targets, data, options)
+  generator.GenerateOutput(flat_list, targets, data, params)
   return 0
 
 

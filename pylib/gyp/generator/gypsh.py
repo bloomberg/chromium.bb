@@ -37,7 +37,7 @@ for v in _generator_identity_variables:
   generator_default_variables[v] = '<(%s)' % v
 
 
-def GenerateOutput(target_list, target_dicts, data, options):
+def GenerateOutput(target_list, target_dicts, data, params):
   locals = {
         'target_list':  target_list,
         'target_dicts': target_dicts,

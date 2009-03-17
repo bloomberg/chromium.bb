@@ -269,7 +269,7 @@ def GenerateMakefile(output_filename, build_file, spec, config):
   fp.close()
   return output
 
-def GenerateOutput(target_list, target_dicts, data, options):
+def GenerateOutput(target_list, target_dicts, data, params):
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
       continue
@@ -282,7 +282,7 @@ def GenerateOutput(target_list, target_dicts, data, options):
                                                        qualified_target)[0:2]
 
     output_file = os.path.join(os.path.split(build_file)[0],
-                               target + options.suffix + '.mk')
+                               target + params['options'].suffix + '.mk')
 
     spec = target_dicts[qualified_target]
     config = spec['configurations']['Debug']
