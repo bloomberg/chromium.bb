@@ -266,8 +266,8 @@ class XcodeProject(object):
         for pbxtd in pbxtds:
           pbxcip = pbxtd.GetProperty('targetProxy')
           dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
-          spec_dict = xcode_target_to_target_dict[dependency_xct]
-          if spec_dict and spec_dict.get('test', 0):
+          target_dict = xcode_target_to_target_dict[dependency_xct]
+          if target_dict and target_dict.get('test', 0):
             all_tests.append(dependency_xct)
 
         # We have to directly depend on all tests and then directly run
@@ -283,10 +283,12 @@ class XcodeProject(object):
           for test_target in all_tests:
             run_all_target.AddDependency(test_target)
             ttpn = test_target.GetProperty('productName')
-            script = 'echo note: running ' + ttpn + '\n' \
+            proj_name = test_target.PBXProjectAncestor().Name()
+            nice_name = '"' + ttpn + '" from "' + proj_name + '"'
+            script = 'echo note: running ' + nice_name + '\n' + \
                      'exec "${BUILT_PRODUCTS_DIR}/' + ttpn + '"\nexit 1\n'
             ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
-                  'name':             'Run "' + ttpn + '"',
+                  'name':             'Run ' + nice_name,
                   'shellScript':      script,
                   'showEnvVarsInLog': 0,
                 })
