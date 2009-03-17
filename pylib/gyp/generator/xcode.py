@@ -65,7 +65,7 @@ class XcodeProject(object):
       if e.errno != errno.EEXIST:
         raise
 
-  def Finalize1(self, xcode_targets, build_file_dict):
+  def Finalize1(self, xcode_targets):
     # Collect a list of all of the build configuration names used by the
     # various targets in the file.  It is very heavily advised to keep each
     # target in an entire project (even across multiple project files) using
@@ -134,7 +134,7 @@ class XcodeProject(object):
     # that does not have suppress_wildcard set.
     targets_for_all = []
 
-    for target in build_file_dict['targets']:
+    for target in self.build_file_dict['targets']:
       target_name = target['target_name']
       qualified_target = gyp.common.QualifiedTarget(self.gyp_path, target_name)
       xcode_target = xcode_targets[qualified_target]
@@ -167,7 +167,6 @@ class XcodeProject(object):
         run_target.AppendProperty('buildPhases', ssbp)
 
         # Add the test runner target to the project file.
-        xcode_target.test_runner = run_target
         targets.append(run_target)
         test_targets.append(xcode_target)
 
@@ -245,7 +244,7 @@ class XcodeProject(object):
       # one run_test_target.
       self.project._properties['targets'].insert(1, run_all_tests_target)
 
-  def Finalize2(self, xcode_targets):
+  def Finalize2(self, xcode_targets, xcode_target_to_target_dict):
     # Finalize2 needs to happen in a separate step because the process of
     # updating references to other projects depends on the ordering of targets
     # within remote project files.  Finalize1 is responsible for sorting duty,
@@ -267,7 +266,8 @@ class XcodeProject(object):
         for pbxtd in pbxtds:
           pbxcip = pbxtd.GetProperty('targetProxy')
           dependency_xct = pbxcip.GetProperty('remoteGlobalIDString')
-          if dependency_xct.test_runner:
+          spec_dict = xcode_target_to_target_dict[dependency_xct]
+          if spec_dict and spec_dict.get('test', 0):
             all_tests.append(dependency_xct)
 
         # We have to directly depend on all tests and then directly run
@@ -451,6 +451,7 @@ def GenerateOutput(target_list, target_dicts, data, options):
       build_group.AddOrGetFileByPath(included_file, False)
 
   xcode_targets = {}
+  xcode_target_to_target_dict = {}
   for qualified_target in target_list:
     [build_file, target_name] = \
         gyp.common.BuildFileAndTarget('', qualified_target)[0:2]
@@ -497,6 +498,7 @@ def GenerateOutput(target_list, target_dicts, data, options):
     xct = xctarget_type(target_properties, parent=pbxp)
     pbxp.AppendProperty('targets', xct)
     xcode_targets[qualified_target] = xct
+    xcode_target_to_target_dict[xct] = spec
 
     prebuild_index = 0
 
@@ -886,10 +888,11 @@ exit 1
       build_files.append(build_file)
 
   for build_file in build_files:
-    xcode_projects[build_file].Finalize1(xcode_targets, data[build_file])
+    xcode_projects[build_file].Finalize1(xcode_targets)
 
   for build_file in build_files:
-    xcode_projects[build_file].Finalize2(xcode_targets)
+    xcode_projects[build_file].Finalize2(xcode_targets,
+                                         xcode_target_to_target_dict)
 
   for build_file in build_files:
     xcode_projects[build_file].Write()

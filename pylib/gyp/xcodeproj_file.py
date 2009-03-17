@@ -2009,13 +2009,6 @@ class XCTarget(XCRemoteObject):
   # to allow PBXProject to be used in the remoteGlobalIDString property of
   # PBXContainerItemProxy.
   #
-  # Attributes:
-  #   test_runner: if not None, a PBXAggregateTarget that runs the test
-  #     produced by this target.  Nothing in this module uses test_runner,
-  #     it is provided for the convenience of and use by
-  #     gyp.generator.xcodeproj.  TODO(mark): Refactor so that this isn't
-  #     needed.
-  #
   # Setting a "name" property at instantiation may also affect "productName",
   # which may in turn affect the "PRODUCT_NAME" build setting in children of
   # "buildConfigurationList".  See __init__ below.
@@ -2047,8 +2040,6 @@ class XCTarget(XCRemoteObject):
         if configs.HasBuildSetting('PRODUCT_NAME') == 0:
           configs.SetBuildSetting('PRODUCT_NAME',
                                   self._properties['productName'])
-
-    self.test_runner = None
 
   def AddDependency(self, other):
     pbxproject = self.PBXProjectAncestor()
