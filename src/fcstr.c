@@ -757,8 +757,6 @@ FcStrBufDone (FcStrBuf *buf)
 FcChar8 *
 FcStrBufDoneStatic (FcStrBuf *buf)
 {
-    FcChar8 *ret;
-
     FcStrBufChar (buf, '\0');
 
     if (buf->failed)
