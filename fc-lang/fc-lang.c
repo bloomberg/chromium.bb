@@ -488,7 +488,7 @@ main (int argc, char **argv)
 		for (d = c + 1; d < ncountry; d++)
 		{
 		    int j = country[d];
-		    if (j >= 0 && !strncmp (langs[j], langs[i], l))
+		    if (j >= 0 && !strncmp (langs[j], langs[i], lang + 1))
 		    {
 			BitSet(map, j);
 			country[d] = -1;
