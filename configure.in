@@ -488,13 +488,6 @@ AC_DEFINE_UNQUOTED(CONFDIR, "$CONFDIR",[Font configuration directory])
 AC_SUBST(CONFDIR)
 
 #
-# Find out what language orthographies are included
-#
-
-ORTH_FILES=`cd ${srcdir}/fc-lang && echo *.orth`
-AC_SUBST(ORTH_FILES)
-
-#
 # Let people not build/install docs if they don't have docbook
 #
 

@@ -42,8 +42,8 @@ struct _FcLangSet {
     FcStrSet	*extra;
 };
 
-#define FcLangSetBitSet(ls, id)	((ls)->map[(id)>>5] |= ((FcChar32) 1 << ((id) & 0x1f)))
-#define FcLangSetBitGet(ls, id) (((ls)->map[(id)>>5] >> ((id) & 0x1f)) & 1)
+#define FcLangSetBitSet(ls, id)	((ls)->map[(fcLangCharSetIndices[id])>>5] |= ((FcChar32) 1 << ((fcLangCharSetIndices[id]) & 0x1f)))
+#define FcLangSetBitGet(ls, id) (((ls)->map[(fcLangCharSetIndices[id])>>5] >> ((fcLangCharSetIndices[id]) & 0x1f)) & 1)
 
 FcLangSet *
 FcFreeTypeLangSet (const FcCharSet  *charset, 
