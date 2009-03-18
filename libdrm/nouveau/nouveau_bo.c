@@ -347,24 +347,25 @@ nouveau_bo_handle_get(struct nouveau_bo *bo, uint32_t *handle)
 	if (!bo || !handle)
 		return -EINVAL;
 
-	if (!nvdev->mm_enabled)
-		return -ENODEV;
-
 	if (!nvbo->global_handle) {
 		struct drm_gem_flink req;
  
 		ret = nouveau_bo_kalloc(nvbo, NULL);
 		if (ret)
 			return ret;
- 
-		req.handle = nvbo->handle;
-		ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_FLINK, &req);
-		if (ret) {
-			nouveau_bo_kfree(nvbo);
-			return ret;
+
+		if (nvdev->mm_enabled) {
+			req.handle = nvbo->handle;
+			ret = ioctl(nvdev->fd, DRM_IOCTL_GEM_FLINK, &req);
+			if (ret) {
+				nouveau_bo_kfree(nvbo);
+				return ret;
+			}
+	 
+			nvbo->global_handle = req.name;
+		} else {
+			nvbo->global_handle = nvbo->offset;
 		}
- 
-		nvbo->global_handle = req.name;
 	}
  
 	*handle = nvbo->global_handle;
