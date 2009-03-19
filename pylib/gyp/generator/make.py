@@ -213,7 +213,7 @@ def GenerateMakefile(output_filename, build_file, spec, config):
     deps = libs
 
   # Now write the actual build rule.
-  if typ in ('executable', 'application'):
+  if typ == 'executable':
     fp.write('%s: $(OBJS) %s\n' % (output, ' '.join(deps)))
     fp.write('\t$(call do_cmd,link)\n')
     binpath = '$(obj)/bin/' + target
@@ -259,7 +259,7 @@ def GenerateMakefile(output_filename, build_file, spec, config):
         fp.write('\tmkdir -p %s\n' % ' '.join(dirs))
       fp.write('\t%s\n' % ' '.join(action['action']))
 
-  if typ not in ('executable', 'application', 'resource', 'none', 'static_library'):
+  if typ not in ('executable', 'resource', 'none', 'static_library'):
     raise "unhandled typ", typ
 
   fp.write('\n')

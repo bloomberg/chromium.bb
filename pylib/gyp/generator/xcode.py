@@ -475,12 +475,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
       xccl.AppendProperty('buildConfigurations', xcbc)
     xccl.SetProperty('defaultConfigurationName', configuration_names[0])
 
-    # Create an XCTarget subclass object for the target.
+    # Create an XCTarget subclass object for the target.  We use the type
+    # with "+bundle" appended if the target has "mac_bundle" set.
     _types = {
-      'application':    'com.apple.product-type.application',
-      'executable':     'com.apple.product-type.tool',
-      'shared_library': 'com.apple.product-type.library.dynamic',
-      'static_library': 'com.apple.product-type.library.static',
+      'executable':        'com.apple.product-type.tool',
+      'shared_library':    'com.apple.product-type.library.dynamic',
+      'static_library':    'com.apple.product-type.library.static',
+      'executable+bundle': 'com.apple.product-type.application',
+      # TODO: add 'shared_library+bundle' -> Framework
     }
 
     target_properties = {
@@ -490,8 +492,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     type = spec['type']
     if type != 'none':
+      type_bundle_key = type
+      if spec.get('mac_bundle', 0):
+        type_bundle_key += '+bundle'
       xctarget_type = gyp.xcodeproj_file.PBXNativeTarget
-      target_properties['productType'] = _types[type]
+      target_properties['productType'] = _types[type_bundle_key]
     else:
       xctarget_type = gyp.xcodeproj_file.PBXAggregateTarget
 
@@ -815,10 +820,8 @@ exit 1
       else:
         pbxp.AddOrGetFileInRootGroup(source)
 
-    # TODO(mark): Hard-coded to "application" now, but this should match any
-    # bundled type.
-    if spec['type'] == 'application':
-      # Add "mac_bundle_resources".
+    # Add "mac_bundle_resources" if it's a bundle of any type.
+    if spec.get('mac_bundle', 0):
       for resource in spec.get('mac_bundle_resources', []):
         AddResourceToTarget(resource, pbxp, xct)
 

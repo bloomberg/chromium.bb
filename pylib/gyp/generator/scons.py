@@ -79,7 +79,6 @@ def _SCons_loadable_module_writer(fp, spec):
 SConsTypeWriter = {
   None : _SCons_null_writer,
   'none' : _SCons_null_writer,
-  'application' : _SCons_program_writer,
   'executable' : _SCons_program_writer,
   'static_library' : _SCons_static_library_writer,
   'shared_library' : _SCons_shared_library_writer,
