@@ -26,8 +26,6 @@ generator_default_variables = {
 
 header = """\
 # This file is generated; do not edit.
-
-Import('env')
 """
 
 
@@ -112,7 +110,98 @@ escape_quotes_re = re.compile('^([^=]*=)"([^"]*)"$')
 def escape_quotes(s):
     return escape_quotes_re.sub('\\1\\"\\2\\"', s)
 
-def GenerateSConscript(output_filename, spec, config):
+def GenerateConfig(fp, spec, config, indent=''):
+  """
+  Generates SCons dictionary items for a gyp configuration.
+
+  This provides the main translation between the (lower-case) gyp settings
+  keywords and the (upper-case) SCons construction variables.
+  """
+  var_mapping = {
+      'asflags' : 'ASFLAGS',
+      'cflags' : 'CCFLAGS',
+      'defines' : 'CPPDEFINES',
+      'include_dirs' : 'CPPPATH',
+      'linkflags' : 'LINKFLAGS',
+  }
+  postamble='\n%s],\n' % indent
+  for gyp_var, scons_var in var_mapping.iteritems():
+      value = config.get(gyp_var)
+      if value:
+        if gyp_var in ('defines',):
+          value = [escape_quotes(v) for v in value]
+        WriteList(fp,
+                  map(repr, value),
+                  prefix=indent,
+                  preamble='%s%s = [\n    ' % (indent, scons_var),
+                  postamble=postamble)
+
+  libraries = spec.get('libraries')
+  if libraries:
+    WriteList(fp,
+                map(repr, libraries),
+                prefix=indent,
+                preamble='%sLIBS = [\n    ' % indent,
+                postamble=postamble)
+
+
+def GenerateSConscript(output_filename, spec):
+  """
+  Generates a SConscript file for a specific target.
+
+  This generates a SConscript file suitable for building any or all of
+  the target's configurations.
+
+  A SConscript file may be called multiple times to generate targets for
+  multiple configurations.  Consequently, it needs to be ready to build
+  the target for any requested configuration, and therefore contains
+  information about the settings for all configurations (generated into
+  the SConscript file at gyp configuration time) as well as logic for
+  selecting (at SCons build time) the specific configuration being built.
+
+  The general outline of a generated SConscript file is:
+ 
+    --  Header
+
+    --  Import 'env'.  This contains a $CONFIG_NAME construction
+        variable that specifies what configuration to build
+        (e.g. Debug, Release).
+
+    --  Configurations.  This is a dictionary with settings for
+        the different configurations (Debug, Release) under which this
+        target can be built.  The values in the dictionary are themselves
+        dictionaries specifying what construction variables should added
+        to the local copy of the imported construction environment
+        (Append), should be removed (FilterOut), and should outright
+        replace the imported values (Replace).
+
+    --  Clone the imported construction environment and update
+        with the proper configuration settings.
+
+    --  Initialize the lists of the targets' input files and prerequisites.
+
+    --  Target-specific actions and rules.  These come after the
+        input file and prerequisite initializations because the
+        outputs of the actions and rules may affect the input file
+        list (process_outputs_as_sources) and get added to the list of
+        prerequisites (so that they're guaranteed to be executed before
+        building the target).
+
+    --  Call the Builder for the target itself.
+
+    --  Arrange for any copies to be made into installation directories.
+
+    --  Set up the gyp_target_{name} Alias (phony Node) for the target
+        as the primary handle for building all of the target's pieces.
+
+    --  Use env.Require() to make sure the prerequisites (explicitly
+        specified, but also including the actions and rules) are built
+        before the target itself.
+
+    --  Return the gyp_target_{name} Alias to the calling SConstruct
+        file so it can be added to the list of default targets.
+  """
+
   print 'Generating %s' % output_filename
 
   gyp_dir = os.path.split(output_filename)[0]
@@ -122,47 +211,43 @@ def GenerateSConscript(output_filename, spec, config):
   fp = open(output_filename, 'w')
   fp.write(header)
 
+  fp.write('\nImport("env")\n')
+
   #
-  fp.write('\n' + 'env = env.Clone()\n')
-  fp.write('\n' + 'env.Append(\n')
+  fp.write('\n')
+  fp.write('configurations = {\n')
+  for config_name, config in spec['configurations'].iteritems():
+    fp.write('    \'%s\' : {\n' % config_name)
 
-  cflags = config.get('cflags')
-  if cflags:
-    WriteList(fp, map(repr, cflags), prefix='    ',
-                                     preamble='    CCFLAGS = [\n    ',
-                                     postamble='\n    ],\n')
+    fp.write('        \'Append\' : dict(\n')
+    GenerateConfig(fp, spec, config, ' '*12)
+    fp.write('        ),\n')
 
-  defines = config.get('defines')
-  if defines:
-    defines = [escape_quotes(d) for d in defines]
-    WriteList(fp, map(repr, defines), prefix='    ',
-                                      preamble='    CPPDEFINES = [\n    ',
-                                      postamble='\n    ],\n')
+    fp.write('        \'FilterOut\' : dict(\n' )
+    for key, var in config.get('scons_remove', {}):
+      fp.write('             %s = %s,\n' % (key, repr(var)))
+    fp.write('        ),\n')
 
-  include_dirs = config.get('include_dirs')
-  if include_dirs:
-    WriteList(fp, map(repr, include_dirs), prefix='    ',
-                                           preamble='    CPPPATH = [\n    ',
-                                           postamble='\n    ],\n')
+    fp.write('        \'Replace\' : dict(\n' )
+    scons_settings = config.get('scons_settings', {})
+    for key in sorted(scons_settings.keys()):
+      val = pprint.pformat(scons_settings[key])
+      fp.write('             %s = %s,\n' % (key, val))
+    fp.write('        ),\n')
 
-  libraries = spec.get('libraries')
-  if libraries:
-    WriteList(fp, map(repr, libraries), prefix='    ',
-                                        preamble='    LIBS = [\n    ',
-                                        postamble='\n    ],\n')
+    fp.write('    },\n')
+  fp.write('}\n')
 
-  fp.write(')\n')
+  #
+  fp.write('\n')
+  fp.write('env = env.Clone()')
+  fp.write('\n')
+  fp.write('config = configurations[env[\'CONFIG_NAME\']]\n')
+  fp.write('env.Append(**config[\'Append\'])\n')
+  fp.write('env.FilterOut(**config[\'FilterOut\'])\n')
+  fp.write('env.Replace(**config[\'Replace\'])\n')
 
-  # Allow removal of flags (e.g. -Werror) and other values from the
-  # default settings.
-  scons_remove = config.get('scons_remove')
-  if scons_remove:
-    fp.write('\n')
-    fp.write('env.FilterOut(\n')
-    for key, var in scons_remove.iteritems():
-      fp.write('    %s = %s\n' % (key, repr(var)))
-    fp.write(')\n')
-
+  #
   sources = spec.get('sources')
   if sources:
     pre = '\ninput_files = ChromeFileList([\n    '
@@ -170,10 +255,10 @@ def GenerateSConscript(output_filename, spec, config):
   else:
     fp.write('\ninput_files = []\n')
 
-  fp.write('\ntarget_files = []\n')
-
+  fp.write('\n')
+  fp.write('target_files = []\n')
   prerequisites = spec.get('scons_prerequisites', [])
-  fp.write('\nprerequisites = %s\n' % pprint.pformat(prerequisites))
+  fp.write('prerequisites = %s\n' % pprint.pformat(prerequisites))
 
   actions = spec.get('actions', [])
   for action in actions:
@@ -234,16 +319,41 @@ def GenerateSConscript(output_filename, spec, config):
 
 _wrapper_template = """\
 
+import os
+
 __doc__ = '''
 Wrapper configuration for building this entire "solution,"
 including all the specific targets in various *.scons files.
 '''
 
+# TODO(sgk):  --configuration is a stupid name for an option,
+# but we can't change it to --mode until we convert completely
+# and get rid of the Hammer infrastructure.
+AddOption('--configuration', nargs=1, dest='conf_list', default=[],
+          action="append", help="Configuration to build.")
+conf_list = GetOption('conf_list')
+if not conf_list:
+    conf_list = ['Debug']
+
 sconscript_files = %(sconscript_files)s
+cwd = os.path.split(os.getcwd())[1]
 
 target_alias_list= []
-for sconscript in sconscript_files:
-    target_alias = env.SConscript(sconscript, exports=['env'])
+for conf in conf_list:
+  env = Environment(
+      tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
+      _GYP='_gyp',
+      CHROME_SRC_DIR='$MAIN_DIR/..',
+      CONFIG_NAME=conf,
+      DESTINATION_ROOT='$MAIN_DIR/$CONFIG_NAME',
+      TARGET_DIR='$MAIN_DIR/$CONFIG_NAME',
+      MAIN_DIR=Dir('#').abspath,
+      TARGET_PLATFORM='LINUX',
+  )
+  env.Dir('$TARGET_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
+  for sconscript in sconscript_files:
+    target_alias = env.SConscript('$TARGET_DIR/' + cwd + '/' + sconscript,
+                                  exports=['env'])
     if target_alias:
       target_alias_list.extend(target_alias)
 
@@ -251,6 +361,10 @@ Default(Alias('%(name)s', target_alias_list))
 """
 
 def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
+  """
+  Generates the "wrapper" SConscript file (analogous to the Visual Studio
+  solution) that calls all the individual target SConscript files.
+  """
   print 'Generating %s' % output_filename
   fp = open(output_filename, 'w')
   fp.write(header)
@@ -272,12 +386,16 @@ def TargetFilename(target, output_suffix):
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
+  """
+  Generates all the output files for the specified targets.
+  """
   for build_file, build_file_dict in data.iteritems():
     if not build_file.endswith('.gyp'):
       continue
 
   for qualified_target in target_list:
     spec = target_dicts[qualified_target]
+
     output_file = TargetFilename(qualified_target, options.suffix)
 
     if not spec.has_key('libraries'):
@@ -300,13 +418,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         prereqs.append(name)
         spec['scons_prerequisites'] = prereqs
 
-    # Simplest thing that works:  just use the Debug
-    # configuration right now, until we get the underlying
-    # ../build/SConscript.main infrastructure ready for
-    # .gyp-generated parallel configurations.
-    config = spec['configurations']['Debug']
-
-    GenerateSConscript(output_file, spec, config)
+    GenerateSConscript(output_file, spec)
 
   for build_file in sorted(data.keys()):
     path, ext = os.path.splitext(build_file)
