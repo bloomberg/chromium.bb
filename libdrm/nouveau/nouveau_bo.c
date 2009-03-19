@@ -413,6 +413,10 @@ nouveau_bo_del_cb(void *priv)
 {
 	struct nouveau_bo_priv *nvbo = priv;
 
+	if (nvbo->fence)
+		nouveau_fence_ref(NULL, &nvbo->fence);
+	if (nvbo->wr_fence)
+		nouveau_fence_ref(NULL, &nvbo->wr_fence);
 	nouveau_bo_kfree(nvbo);
 	free(nvbo);
 }
