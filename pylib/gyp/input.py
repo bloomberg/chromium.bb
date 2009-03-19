@@ -243,8 +243,8 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   return data
 
 
-early_variable_re = re.compile('((<@?)\((.*?)\))')
-late_variable_re = re.compile('(([>!]@?)\((.*?)\))')
+early_variable_re = re.compile('((<!?@?)\((.*?)\))')
+late_variable_re = re.compile('((>!?@?)\((.*?)\))')
 
 def ExpandVariables(input, is_late, variables):
   # Look for the pattern that gets expanded into variables
@@ -263,24 +263,19 @@ def ExpandVariables(input, is_late, variables):
     matches.reverse()
     for match in matches:
       # match[0] is the substring to look for, match[1] is the character code
-      # for the replacement type (< > ! <@ >@ !@), and match[2] is the name of
-      # the variable (< >) or command to run (!).
+      # for the replacement type (< > <! >! <@ >@ <!@ >!@), and match[2] is the
+      # name of the variable (< >) or command to run (<! >!).
 
-      # expand_char is the first character of the replacement type: < > !
-      expand_char = match[1][0]
+      # run_command is true if a ! variant is used.
+      run_command = '!' in match[1]
 
-      # expand_to_list is true if an @ variant was being used.  In that case,
-      # the expansion should result in a list.  This can only happen if the
-      # only expansion present is the list expansion, hence the input ==
-      # match[0] check.
+      # expand_to_list is true if an @ variant is used.  In that case,
+      # the expansion should result in a list.
       # Also note that the caller to be expecting a list in return, and not
       # all callers do because not all are working in list context.
-      if len(match[1]) == 2 and input == match[0]:
-        expand_to_list = True
-      else:
-        expand_to_list = False
+      expand_to_list = '@' in match[1] and input == match[0]
 
-      if expand_char == '!':
+      if run_command:
         p = subprocess.Popen(match[2], shell=True,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         (p_stdout, p_stderr) = p.communicate()
@@ -1001,12 +996,11 @@ def MakePathRelative(to_file, fro_file, item):
   #   $  Used for build environment variables
   #   -  Used for some build environment flags (such as -lapr-1 in a
   #      "libraries" section)
-  #   <  Used for our own variables (see ExpandVariables)
-  #   >  Used for our own variables (see ExpandVariables)
-  #   !  Used for command evaluation (see ExpandVariables)
+  #   <  Used for our own variable and command expansions (see ExpandVariables)
+  #   >  Used for our own variable and command expansions (see ExpandVariables)
   # Not using startswith here, because its not present before py2.5.
   if to_file == fro_file or \
-     (len(item) > 0 and item[0] in ('/', '$', '-', '<', '>', '!')):
+     (len(item) > 0 and item[0] in ('/', '$', '-', '<', '>')):
     return item
   else:
     return os.path.normpath(os.path.join(
