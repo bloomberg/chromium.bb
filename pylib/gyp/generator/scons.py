@@ -71,9 +71,7 @@ def _SCons_shared_library_writer(fp, spec):
 
 def _SCons_loadable_module_writer(fp, spec):
   name = full_product_name(spec)
-  # Note:  LoadableModule() isn't part of the Hammer API, and there's no
-  # ChromeLoadableModule() wrapper for this, so use base SCons for now.
-  builder = 'env.LoadableModule(\'%s\', input_files)' % name
+  builder = 'env.ChromeLoadableModule(\'%s\', input_files)' % name
   return _SCons_writer(fp, spec, builder)
 
 SConsTypeWriter = {
@@ -86,10 +84,14 @@ SConsTypeWriter = {
 }
 
 _command_template = """
+if GetOption('verbose'):
+  _message = None
+else:
+  _message = %(message)s
 _outputs = env.Command(
   %(outputs)s,
   %(inputs)s,
-  Action([%(action)s], %(message)s),
+  Action([%(action)s], _message)
 )
 """
 
@@ -98,7 +100,11 @@ _rule_template = """
 %(name)s_outputs = %(outputs)s
 def %(name)s_emitter(target, source, env):
   return (%(name)s_outputs, source + %(name)s_additional_inputs)
-%(name)s_action = Action([%(action)s], %(message)s)
+if GetOption('verbose'):
+  _message = None
+else:
+  _message = %(message)s
+%(name)s_action = Action([%(action)s], _message)
 env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
 %(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
 for %(name)s_file in %(name)s_files:
@@ -200,9 +206,6 @@ def GenerateSConscript(output_filename, spec):
     --  Return the gyp_target_{name} Alias to the calling SConstruct
         file so it can be added to the list of default targets.
   """
-
-  print 'Generating %s' % output_filename
-
   gyp_dir = os.path.split(output_filename)[0]
   if not gyp_dir:
       gyp_dir = '.'
@@ -223,7 +226,7 @@ def GenerateSConscript(output_filename, spec):
     fp.write('        ),\n')
 
     fp.write('        \'FilterOut\' : dict(\n' )
-    for key, var in config.get('scons_remove', {}):
+    for key, var in config.get('scons_remove', {}).iteritems():
       fp.write('             %s = %s,\n' % (key, repr(var)))
     fp.write('        ),\n')
 
@@ -329,15 +332,21 @@ including all the specific targets in various *.scons files.
 # but we can't change it to --mode until we convert completely
 # and get rid of the Hammer infrastructure.
 AddOption('--configuration', nargs=1, dest='conf_list', default=[],
-          action="append", help="Configuration to build.")
+          action='append', help='Configuration to build.')
+AddOption('--verbose', dest='verbose', default=False,
+          action='store_true', help='Verbose command-line output.')
+
+
+sconscript_files = %(sconscript_files)s
+
+cwd = os.path.split(os.getcwd())[1]
+
+target_alias_list= []
+
 conf_list = GetOption('conf_list')
 if not conf_list:
     conf_list = ['Debug']
 
-sconscript_files = %(sconscript_files)s
-cwd = os.path.split(os.getcwd())[1]
-
-target_alias_list= []
 for conf in conf_list:
   env = Environment(
       tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
@@ -349,6 +358,26 @@ for conf in conf_list:
       MAIN_DIR=Dir('#').abspath,
       TARGET_PLATFORM='LINUX',
   )
+  if not GetOption('verbose'):
+    env.SetDefault(
+        ARCOMSTR='Creating library $TARGET',
+        ASCOMSTR='Assembling $TARGET',
+        CCCOMSTR='Compiling $TARGET',
+        CONCATSOURCECOMSTR='ConcatSource $TARGET',
+        CXXCOMSTR='Compiling $TARGET',
+        LDMODULECOMSTR='Building loadable module $TARGET',
+        LINKCOMSTR='Linking $TARGET',
+        MANIFESTCOMSTR='Updating manifest for $TARGET',
+        MIDLCOMSTR='Compiling IDL $TARGET',
+        PCHCOMSTR='Precompiling $TARGET',
+        RANLIBCOMSTR='Indexing $TARGET',
+        RCCOMSTR='Compiling resource $TARGET',
+        SHCCCOMSTR='Compiling $TARGET',
+        SHCXXCOMSTR='Compiling $TARGET',
+        SHLINKCOMSTR='Linking $TARGET',
+        SHMANIFESTCOMSTR='Updating manifest for $TARGET',
+    )
+  SConsignFile(env.File('$DESTINATION_ROOT/.sconsign').abspath)
   env.Dir('$TARGET_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
   for sconscript in sconscript_files:
     target_alias = env.SConscript('$TARGET_DIR/' + cwd + '/' + sconscript,
@@ -364,7 +393,6 @@ def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
   Generates the "wrapper" SConscript file (analogous to the Visual Studio
   solution) that calls all the individual target SConscript files.
   """
-  print 'Generating %s' % output_filename
   fp = open(output_filename, 'w')
   fp.write(header)
   fp.write(_wrapper_template % {
