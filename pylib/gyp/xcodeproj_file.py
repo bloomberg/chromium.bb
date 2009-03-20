@@ -2121,6 +2121,8 @@ class PBXNativeTarget(XCTarget):
   _product_filetypes = {
     'com.apple.product-type.application':     ['wrapper.application',
                                                '', '.app'],
+    'com.apple.product-type.framework':       ['wrapper.framework',
+                                               '', '.framework'],
     'com.apple.product-type.library.dynamic': ['compiled.mach-o.dylib',
                                                'lib', '.dylib'],
     'com.apple.product-type.library.static':  ['archive.ar', 'lib', '.a'],

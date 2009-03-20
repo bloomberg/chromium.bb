@@ -478,11 +478,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # Create an XCTarget subclass object for the target.  We use the type
     # with "+bundle" appended if the target has "mac_bundle" set.
     _types = {
-      'executable':        'com.apple.product-type.tool',
-      'shared_library':    'com.apple.product-type.library.dynamic',
-      'static_library':    'com.apple.product-type.library.static',
-      'executable+bundle': 'com.apple.product-type.application',
-      # TODO: add 'shared_library+bundle' -> Framework
+      'executable':            'com.apple.product-type.tool',
+      'shared_library':        'com.apple.product-type.library.dynamic',
+      'static_library':        'com.apple.product-type.library.static',
+      'executable+bundle':     'com.apple.product-type.application',
+      'shared_library+bundle': 'com.apple.product-type.framework',
     }
 
     target_properties = {
