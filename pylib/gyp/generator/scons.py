@@ -103,7 +103,7 @@ def %(name)s_emitter(target, source, env):
 if GetOption('verbose'):
   %(name)s_action = Action([%(action)s])
 else:
-  %(name)s_action = Action([%(action)s], _message)
+  %(name)s_action = Action([%(action)s], %(message)s)
 env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
 %(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
 for %(name)s_file in %(name)s_files:
@@ -444,6 +444,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for qualified_target in target_list:
     spec = target_dicts[qualified_target]
 
+    if spec['type'] == 'settings':
+      continue
+
     output_file = TargetFilename(qualified_target, options.suffix)
 
     if not spec.has_key('libraries'):
@@ -478,9 +481,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
     all_targets = gyp.common.AllTargets(target_list, target_dicts, build_file)
     sconscript_files = []
     for t in all_targets:
+      if target_dicts[t]['type'] == 'settings':
+        continue
       t = gyp.common.RelativePath(TargetFilename(t, options.suffix),
                                   output_dir)
       sconscript_files.append(t)
     sconscript_files.sort()
 
-    GenerateSConscriptWrapper(basename, output_filename, sconscript_files)
+    if sconscript_files:
+      GenerateSConscriptWrapper(basename, output_filename, sconscript_files)
