@@ -96,22 +96,16 @@ nouveau_fence_new(struct nouveau_channel *chan, struct nouveau_fence **fence)
 int
 nouveau_fence_ref(struct nouveau_fence *ref, struct nouveau_fence **fence)
 {
-	struct nouveau_fence_priv *nvfence;
-
 	if (!fence)
 		return -EINVAL;
 
-	if (*fence) {
+	if (ref)
+		nouveau_fence(ref)->refcount++;
+
+	if (*fence)
 		nouveau_fence_del(fence);
-		*fence = NULL;
-	}
 
-	if (ref) {
-		nvfence = nouveau_fence(ref);
-		nvfence->refcount++;	
-		*fence = &nvfence->base;
-	}
-
+	*fence = ref;
 	return 0;
 }
 
