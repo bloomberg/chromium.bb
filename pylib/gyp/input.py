@@ -342,13 +342,27 @@ def ExpandVariables(input, is_late, variables):
   return output
 
 
-def ProcessConditionsInDict(the_dict, conditions_key, variables):
-  # the_dict[conditions_key] must be a conditions or target_conditions list.
-  # Each item in the list consists of cond_expr, a string expression evaluated
-  # as the condition, and true_dict, a dict that will be merged into the_dict
-  # if cond_expr evaluates to true.  Optionally, a third item, false_dict, may
-  # be present.  false_dict is merged into the_dict if cond_expr evaluates to
-  # false.
+def ProcessConditionsInDict(the_dict, is_late, variables):
+  # Process a 'conditions' or 'target_conditions' section in the_dict,
+  # depending on is_late.  If is_late is False, 'conditions' is used.
+  #
+  # Each item in a conditions list consists of cond_expr, a string expression
+  # evaluated as the condition, and true_dict, a dict that will be merged into
+  # the_dict if cond_expr evaluates to true.  Optionally, a third item,
+  # false_dict, may be present.  false_dict is merged into the_dict if
+  # cond_expr evaluates to false.
+  #
+  # Any dict merged into the_dict will be recursively processed for nested
+  # conditionals and other expansions, also according to is_late, immediately
+  # prior to being merged.
+
+  if not is_late:
+    conditions_key = 'conditions'
+  else:
+    conditions_key = 'target_conditions'
+
+  if not conditions_key in the_dict:
+    return
 
   conditions_list = the_dict[conditions_key]
   # Unhook the conditions list, it's no longer needed.
@@ -368,15 +382,29 @@ def ProcessConditionsInDict(the_dict, conditions_key, variables):
     if len(condition) == 3:
       false_dict = condition[2]
 
+    # Do expansions on the condition itself.  Since the conditon can naturally
+    # contain variable references without needing to resort to GYP expansion
+    # syntax, this is of dubious value for variables, but someone might want to
+    # use a command expansion directly inside a condition.
+    cond_expr_expanded = ExpandVariables(cond_expr, is_late, variables)
+    if not isinstance(cond_expr_expanded, str):
+      raise ValueError, \
+            'Variable expansion in this context permits strings only, ' + \
+            'found ' + expanded.__class__.__name__
+
     # TODO(mark): Catch exceptions here to re-raise after providing a little
     # more error context.  The name of the file being processed and the
     # condition in quesiton might be nice.
-    if eval(cond_expr, {'__builtins__': None}, variables):
+    if eval(cond_expr_expanded, {'__builtins__': None}, variables):
       merge_dict = true_dict
     else:
       merge_dict = false_dict
 
     if merge_dict != None:
+      # Expand variables and nested conditinals in the merge_dict before
+      # merging it.
+      ProcessVariablesAndConditionsInDict(merge_dict, is_late, variables.copy())
+
       # For now, it's OK to pass '', '' for the build files because everything
       # comes from the same build file and everything is already relative to
       # the same place.  If the path to the build file being processed were to
@@ -425,8 +453,9 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
 
   # Save a copy of the variables dict before loading automatics or the
   # variables dict.  After performing steps that may result in either of
-  # these changing, the variables can be reloaded from the copy.
-  variables_copy = variables.copy()
+  # these changing, the variables can be reloaded into a copy of the original
+  # state.
+  variables_orig = variables.copy()
   LoadAutomaticVariablesFromDict(variables, the_dict)
 
   if 'variables' in the_dict:
@@ -452,7 +481,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
 
   # Variable expansion may have resulted in changes to automatics.  Reload.
   # TODO(mark): Optimization: only reload if no changes were made.
-  variables = variables.copy()
+  variables = variables_orig.copy()
   LoadAutomaticVariablesFromDict(variables, the_dict)
   LoadVariablesFromVariablesDict(variables, the_dict)
 
@@ -483,28 +512,21 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables):
   #    'my_subdict': {'defines': ['<(define)']}},
   # will append "IS_MAC" to both "defines" lists.
 
-  # Recurse into conditions sections, allowing variable expansions within them
-  # as well as nested conditionals.
-  if not is_late:
-    conditions_key = 'conditions'
-  else:
-    conditions_key = 'target_conditions'
-
-  if conditions_key in the_dict:
-    # No need to make a copy of variables, this function will do it if needed.
-    ProcessVariablesAndConditionsInList(the_dict[conditions_key], is_late,
-                                        variables)
-
-    # Evaluate conditions and merge them into the_dict as needed.  This will
-    # remove conditions_key from the_dict if it is present.
-    ProcessConditionsInDict(the_dict, conditions_key, variables)
+  # Evaluate conditions sections, allowing variable expansions within them
+  # as well as nested conditionals.  This will process a 'conditions' or
+  # 'target_conditions' section, perform appropriate merging and recursive
+  # conditional and variable processing, and then remove the conditions section
+  # from the_dict if it is present.
+  ProcessConditionsInDict(the_dict, is_late, variables)
 
   # Conditional processing may have resulted in changes to automatics or the
   # variables dict.  Reload.
+  # This is the last thing that might use variables_orig, so don't bother
+  # copying it, just use it directly.
   # TODO(mark): Optimization: only reload if no changes were made.
   # ProcessConditonsInDict could return a value indicating whether changes
   # were made.
-  variables = variables.copy()
+  variables = variables_orig
   LoadAutomaticVariablesFromDict(variables, the_dict)
   LoadVariablesFromVariablesDict(variables, the_dict)
 
