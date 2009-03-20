@@ -796,15 +796,15 @@ class DependencyGraphNode(object):
     while index < len(dependencies):
       dependency = dependencies[index]
       dependency_dict = targets[dependency]
+      # Add any dependencies whose settings should be imported to the list
+      # if not already present.  Newly-added items will be checked for
+      # their own imports when the list iteration reaches them.
+      # Rather than simply appending new items, insert them after the
+      # dependency that exported them.  This is done to more closely match
+      # the depth-first method used by DeepDependencies.
+      add_index = 1
       for imported_dependency in \
           dependency_dict.get('export_dependent_settings', []):
-        # Add any dependencies whose settings should be imported to the list
-        # if not already present.  Newly-added items will be checked for
-        # their own imports when the list iteration reaches them.
-        # Rather than simply appending new items, insert them after the
-        # dependency that exported them.  This is done to more closely match
-        # the depth-first method used by DeepDependencies.
-        add_index = 1
         if imported_dependency not in dependencies:
           dependencies.insert(index + add_index, imported_dependency)
           add_index = add_index + 1
@@ -838,7 +838,7 @@ class DependencyGraphNode(object):
     """Returns a list of dependency targets that are linked into this target.
 
     This function has a split personality, depending on the setting of
-    |initial|.  Outside calers should always leave |initial| at its default
+    |initial|.  Outside callers should always leave |initial| at its default
     setting.
 
     When adding a target to the list of dependencies, this function will
@@ -1524,6 +1524,7 @@ def Load(build_files, variables, includes, depth):
   # that they need so that their link steps will be correct.
   AdjustStaticLibraryDependencies(flat_list, targets, dependency_nodes)
 
+  # Apply "post"/"late"/"target" variable expansions and condition evaluations.
   for target in flat_list:
     target_dict = targets[target]
     ProcessVariablesAndConditionsInDict(target_dict, True, variables)
@@ -1532,8 +1533,6 @@ def Load(build_files, variables, includes, depth):
   for target in flat_list:
     target_dict = targets[target]
     SetUpConfigurations(target, target_dict)
-
-  # Apply "post"/"late"/"target" variable expansions and condition evaluations.
 
   # Apply exclude (!) and regex (/) rules.
   # TODO(mark): rename now that we have "rules" sections that mean something
