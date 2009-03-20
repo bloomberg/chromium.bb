@@ -1269,26 +1269,26 @@ def SetUpConfigurations(target, target_dict):
     del target_dict[key]
 
 
-def ProcessRulesInDict(name, the_dict):
-  """Process regular expression and exclusion-based rules on lists.
+def ProcessListFiltersInDict(name, the_dict):
+  """Process regular expression and exclusion-based filters on lists.
 
   An exclusion list is in a dict key named with a trailing "!", like
   "sources!".  Every item in such a list is removed from the associated
   main list, which in this example, would be "sources".  Removed items are
   placed into a "sources_excluded" list in the dict.
 
-  Regular expression (regex) rules are contained in dict keys named with a
+  Regular expression (regex) filters are contained in dict keys named with a
   trailing "/", such as "sources/" to operate on the "sources" list.  Regex
-  rules in a dict take the form:
+  filters in a dict take the form:
     'sources/': [ ['exclude', '_(linux|mac|win)\\.cc$'] ],
                   ['include', '_mac\\.cc$'] ],
-  The first rule says to exclude all files ending in _linux.cc, _mac.cc, and
-  _win.cc.  The second rule then includes all files ending in _mac.cc that
+  The first filter says to exclude all files ending in _linux.cc, _mac.cc, and
+  _win.cc.  The second filter then includes all files ending in _mac.cc that
   are now or were once in the "sources" list.  Items matching an "exclude"
-  rule are subject to the same processing as would occur if they were listed
+  filter are subject to the same processing as would occur if they were listed
   by name in an exclusion list (ending in "!").  Items matching an "include"
-  rule are brought back into the main list if previously excluded by an
-  exclusion list or exclusion regex rule.  Subsequent matching "exclude"
+  filter are brought back into the main list if previously excluded by an
+  exclusion list or exclusion regex filter.  Subsequent matching "exclude"
   patterns can still cause items to be excluded after matching an "include".
   """
 
@@ -1395,7 +1395,7 @@ def ProcessRulesInDict(name, the_dict):
     if excluded_key in the_dict:
       raise KeyError, \
           name + ' key ' + excluded_key + ' must not be present prior ' + \
-          ' to applying exclusion/regex rules for ' + list_key
+          ' to applying exclusion/regex filters for ' + list_key
 
     excluded_list = []
 
@@ -1418,17 +1418,17 @@ def ProcessRulesInDict(name, the_dict):
   # Now recurse into subdicts and lists that may contain dicts.
   for key, value in the_dict.iteritems():
     if isinstance(value, dict):
-      ProcessRulesInDict(key, value)
+      ProcessListFiltersInDict(key, value)
     elif isinstance(value, list):
-      ProcessRulesInList(key, value)
+      ProcessListFiltersInList(key, value)
 
 
-def ProcessRulesInList(name, the_list):
+def ProcessListFiltersInList(name, the_list):
   for item in the_list:
     if isinstance(item, dict):
-      ProcessRulesInDict(name, item)
+      ProcessListFiltersInDict(name, item)
     elif isinstance(item, list):
-      ProcessRulesInList(name, item)
+      ProcessListFiltersInList(name, item)
 
 
 def ValidateRulesInTarget(target, target_dict):
@@ -1534,12 +1534,10 @@ def Load(build_files, variables, includes, depth):
     target_dict = targets[target]
     SetUpConfigurations(target, target_dict)
 
-  # Apply exclude (!) and regex (/) rules.
-  # TODO(mark): rename now that we have "rules" sections that mean something
-  # else.
+  # Apply exclude (!) and regex (/) list filters.
   for target in flat_list:
     target_dict = targets[target]
-    ProcessRulesInDict(target, target_dict)
+    ProcessListFiltersInDict(target, target_dict)
 
   # Make sure that the rules make sense, and build up rule_sources lists as
   # needed.  Not all generators will need to use the rule_sources lists, but
