@@ -2,6 +2,7 @@
 
 """Visual Studio project reader/writer."""
 
+import common
 import xml.dom
 import xml.dom.minidom
 import MSVSNew
@@ -224,10 +225,10 @@ class Writer(object):
     # Add the config to the file node
     self._AddConfigToNode(parent, 'FileConfiguration', config, attrs, tools)
 
-  def Write(self):
+  def Write(self, writer=common.WriteOnDiff):
     """Writes the project file."""
-    f = open(self.project_path, 'wt')
-    self.doc.writexml(f, encoding='Windows-1252', addindent='  ', newl='\n')
+    f = writer(self.project_path)
+    self.doc.writexml(f, encoding='Windows-1252', addindent='  ', newl='\r\n')
     f.close()
 
 #------------------------------------------------------------------------------

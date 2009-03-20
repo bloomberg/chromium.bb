@@ -2,6 +2,7 @@
 
 """New implementation of Visual Studio project generation for SCons."""
 
+import common
 import md5
 import os
 import random
@@ -74,9 +75,8 @@ class MSVSFolder:
 
   def get_guid(self):
     if self.guid is None:
-      # The GUID for the folder can be random, since it's used only inside
-      # solution files and doesn't need to be consistent across runs.
-      self.guid = MakeGuid(random.random())
+      # Use consistent guids for folders (so things don't regenerate).
+      self.guid = MakeGuid(self.path, seed='msvs_folder')
     return self.guid
 
 
@@ -167,7 +167,7 @@ class MSVSSolution:
     self.Write()
 
 
-  def Write(self):
+  def Write(self, writer = common.WriteOnDiff):
     """Writes the solution file to disk.
 
     Raises:
@@ -194,13 +194,13 @@ class MSVSSolution:
         entries_to_check += e.entries
 
     # Open file and print header
-    f = open(self.path, 'wt')
-    f.write('Microsoft Visual Studio Solution File, Format Version 9.00\n')
-    f.write('# Visual Studio 2005\n')
+    f = writer(self.path)
+    f.write('Microsoft Visual Studio Solution File, Format Version 9.00\r\n')
+    f.write('# Visual Studio 2005\r\n')
 
     # Project entries
     for e in all_entries:
-      f.write('Project("%s") = "%s", "%s", "%s"\n' % (
+      f.write('Project("%s") = "%s", "%s", "%s"\r\n' % (
           e.entry_type_guid,          # Entry type GUID
           e.name,                     # Folder name
           e.path.replace('/', '\\'),  # Folder name (again)
@@ -209,35 +209,35 @@ class MSVSSolution:
 
       # TODO(rspangler): Need a way to configure this stuff
       if self.websiteProperties:
-        f.write('\tProjectSection(WebsiteProperties) = preProject\n'
-                '\t\tDebug.AspNetCompiler.Debug = "True"\n'
-                '\t\tRelease.AspNetCompiler.Debug = "False"\n'
-                '\tEndProjectSection\n')
+        f.write('\tProjectSection(WebsiteProperties) = preProject\r\n'
+                '\t\tDebug.AspNetCompiler.Debug = "True"\r\n'
+                '\t\tRelease.AspNetCompiler.Debug = "False"\r\n'
+                '\tEndProjectSection\r\n')
 
       if isinstance(e, MSVSFolder):
         if e.items:
-          f.write('\tProjectSection(SolutionItems) = preProject\n')
+          f.write('\tProjectSection(SolutionItems) = preProject\r\n')
           for i in e.items:
-            f.write('\t\t%s = %s\n' % (i, i))
-          f.write('\tEndProjectSection\n')
+            f.write('\t\t%s = %s\r\n' % (i, i))
+          f.write('\tEndProjectSection\r\n')
 
       if isinstance(e, MSVSProject):
         if e.dependencies:
-          f.write('\tProjectSection(ProjectDependencies) = postProject\n')
+          f.write('\tProjectSection(ProjectDependencies) = postProject\r\n')
           for d in e.dependencies:
-            f.write('\t\t%s = %s\n' % (d.get_guid(), d.get_guid()))
-          f.write('\tEndProjectSection\n')
+            f.write('\t\t%s = %s\r\n' % (d.get_guid(), d.get_guid()))
+          f.write('\tEndProjectSection\r\n')
 
-      f.write('EndProject\n')
+      f.write('EndProject\r\n')
 
     # Global section
-    f.write('Global\n')
+    f.write('Global\r\n')
 
     # Configurations (variants)
-    f.write('\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\n')
+    f.write('\tGlobalSection(SolutionConfigurationPlatforms) = preSolution\r\n')
     for v in self.variants:
-      f.write('\t\t%s = %s\n' % (v, v))
-    f.write('\tEndGlobalSection\n')
+      f.write('\t\t%s = %s\r\n' % (v, v))
+    f.write('\tEndGlobalSection\r\n')
 
     # Sort config guids for easier diffing of solution changes.
     config_guids = []
@@ -246,39 +246,39 @@ class MSVSSolution:
         config_guids.append(e.get_guid())
     config_guids.sort()
 
-    f.write('\tGlobalSection(ProjectConfigurationPlatforms) = postSolution\n')
+    f.write('\tGlobalSection(ProjectConfigurationPlatforms) = postSolution\r\n')
     for g in config_guids:
       for v in self.variants:
-        f.write('\t\t%s.%s.ActiveCfg = %s\n' % (
+        f.write('\t\t%s.%s.ActiveCfg = %s\r\n' % (
             g,              # Project GUID
             v,              # Solution build configuration
             v,              # Project build config for that solution config
         ))
 
         # Enable project in this solution configuratation
-        f.write('\t\t%s.%s.Build.0 = %s\n' % (
+        f.write('\t\t%s.%s.Build.0 = %s\r\n' % (
             g,              # Project GUID
             v,              # Solution build configuration
             v,              # Project build config for that solution config
         ))
-    f.write('\tEndGlobalSection\n')
+    f.write('\tEndGlobalSection\r\n')
 
     # TODO(rspangler): Should be able to configure this stuff too (though I've
     # never seen this be any different)
-    f.write('\tGlobalSection(SolutionProperties) = preSolution\n')
-    f.write('\t\tHideSolutionNode = FALSE\n')
-    f.write('\tEndGlobalSection\n')
+    f.write('\tGlobalSection(SolutionProperties) = preSolution\r\n')
+    f.write('\t\tHideSolutionNode = FALSE\r\n')
+    f.write('\tEndGlobalSection\r\n')
 
     # Folder mappings
     # TODO(rspangler): Should omit this section if there are no folders
-    f.write('\tGlobalSection(NestedProjects) = preSolution\n')
+    f.write('\tGlobalSection(NestedProjects) = preSolution\r\n')
     for e in all_entries:
       if not isinstance(e, MSVSFolder):
         continue        # Does not apply to projects, only folders
       for subentry in e.entries:
-        f.write('\t\t%s = %s\n' % (subentry.get_guid(), e.get_guid()))
-    f.write('\tEndGlobalSection\n')
+        f.write('\t\t%s = %s\r\n' % (subentry.get_guid(), e.get_guid()))
+    f.write('\tEndGlobalSection\r\n')
 
-    f.write('EndGlobal\n')
+    f.write('EndGlobal\r\n')
 
     f.close()

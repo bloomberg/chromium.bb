@@ -2,6 +2,7 @@
 
 """Visual Studio project reader/writer."""
 
+import common
 import xml.dom
 import xml.dom.minidom
 
@@ -58,10 +59,10 @@ class Writer(object):
     n_rule.setAttribute('FileExtensions', ';'.join(extensions))
     self.n_rules.appendChild(n_rule)
 
-  def Write(self):
+  def Write(self, writer=common.WriteOnDiff):
     """Writes the tool file."""
-    f = open(self.tool_file_path, 'wt')
-    self.doc.writexml(f, encoding='Windows-1252', addindent='  ', newl='\n')
+    f = writer(self.tool_file_path)
+    self.doc.writexml(f, encoding='Windows-1252', addindent='  ', newl='\r\n')
     f.close()
 
 #------------------------------------------------------------------------------

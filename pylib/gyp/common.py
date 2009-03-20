@@ -1,7 +1,10 @@
 #!/usr/bin/python
 
+import errno
+import filecmp
 import os.path
 import re
+import tempfile
 
 
 def BuildFileAndTarget(build_file, target):
@@ -195,3 +198,71 @@ def AllTargets(target_list, target_dicts, build_file):
   bftargets = BuildFileTargets(target_list, build_file)
   deptargets = DeepDependencyTargets(target_dicts, bftargets)
   return bftargets + deptargets
+
+
+def WriteOnDiff(filename):
+  """Write to a file only if the new contents differ.
+
+  Arguments:
+    filename: name of the file to potentially write to.
+  Returns:
+    A file like object which will write to temporary file and only overwrite
+    the target if it differs (on close).
+  """
+
+  class Writer:
+    """Wrapper around file which only covers the target if it differs."""
+    def __init__(self):
+      # Pick temporary file.
+      tmp_fd, self.tmp_path = tempfile.mkstemp(
+          suffix='.tmp',
+          prefix=os.path.split(filename)[1] + '.gyp.',
+          dir=os.path.split(filename)[0])
+      try:
+        self.tmp_file = os.fdopen(tmp_fd, 'wb')
+      except Exception:
+        # Don't leave turds behind.
+        os.unlink(self.tmp_path)
+        raise
+
+    def __getattr__(self, attrname):
+      # Delegate everything else to self.tmp_file
+      return getattr(self.tmp_file, attrname)
+
+    def close(self):
+      try:
+        # Close tmp file.
+        self.tmp_file.close()
+        # Determine if different.
+        same = False
+        try:
+          same = filecmp.cmp(self.tmp_path, filename, False)
+        except OSError, e:
+          if e.errno != errno.ENOENT:
+            raise
+
+        if same:
+          # The new file is identical to the old one, just get rid of the new
+          # one.
+          os.unlink(self.tmp_path)
+        else:
+          # The new file is different from the old one, or there is no old one.
+          # Rename the new file to the permanent name.
+          #
+          # tempfile.mkstemp uses an overly restrictive mode, resulting in a
+          # file that can only be read by the owner, regardless of the umask.
+          # There's no reason to not respect the umask here, which means that
+          # an extra hoop is required to fetch it and reset the new file's mode.
+          #
+          # No way to get the umask without setting a new one?  Set a safe one
+          # and then set it back to the old value.
+          umask = os.umask(077)
+          os.umask(umask)
+          os.chmod(self.tmp_path, 0666 & ~umask)
+          os.rename(self.tmp_path, filename)
+      except Exception:
+        # Don't leave turds behind.
+        os.unlink(self.tmp_path)
+        raise
+
+  return Writer()
