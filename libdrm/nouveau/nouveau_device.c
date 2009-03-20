@@ -76,6 +76,22 @@ nouveau_device_open_existing(struct nouveau_device **dev, int close,
 	}
 	nvdev->base.vm_vram_base = value;
 
+	ret = nouveau_device_get_param(&nvdev->base,
+				       NOUVEAU_GETPARAM_FB_SIZE, &value);
+	if (ret) {
+		nouveau_device_close((void *)&nvdev);
+		return ret;
+	}
+	nvdev->vram_aper_size = value;
+
+	ret = nouveau_device_get_param(&nvdev->base,
+				       NOUVEAU_GETPARAM_AGP_SIZE, &value);
+	if (ret) {
+		nouveau_device_close((void *)&nvdev);
+		return ret;
+	}
+	nvdev->gart_aper_size = value;
+
 	ret = nouveau_bo_init(&nvdev->base);
 	if (ret) {
 		nouveau_device_close((void *)&nvdev);
