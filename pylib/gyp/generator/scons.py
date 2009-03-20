@@ -85,13 +85,13 @@ SConsTypeWriter = {
 
 _command_template = """
 if GetOption('verbose'):
-  _message = None
+  _action = Action([%(action)s])
 else:
-  _message = %(message)s
+  _action = Action([%(action)s], %(message)s)
 _outputs = env.Command(
   %(outputs)s,
   %(inputs)s,
-  Action([%(action)s], _message)
+  _action
 )
 """
 
@@ -101,10 +101,9 @@ _rule_template = """
 def %(name)s_emitter(target, source, env):
   return (%(name)s_outputs, source + %(name)s_additional_inputs)
 if GetOption('verbose'):
-  _message = None
+  %(name)s_action = Action([%(action)s])
 else:
-  _message = %(message)s
-%(name)s_action = Action([%(action)s], _message)
+  %(name)s_action = Action([%(action)s], _message)
 env['BUILDERS']['%(name)s'] = Builder(action=%(name)s_action, emitter=%(name)s_emitter)
 %(name)s_files = [f for f in input_files if str(f).endswith('.%(extension)s')]
 for %(name)s_file in %(name)s_files:
@@ -209,6 +208,7 @@ def GenerateSConscript(output_filename, spec):
   gyp_dir = os.path.split(output_filename)[0]
   if not gyp_dir:
       gyp_dir = '.'
+  gyp_dir = os.path.abspath(gyp_dir)
 
   fp = open(output_filename, 'w')
   fp.write(header)
@@ -321,8 +321,6 @@ def GenerateSConscript(output_filename, spec):
 
 _wrapper_template = """\
 
-import os
-
 __doc__ = '''
 Wrapper configuration for building this entire "solution,"
 including all the specific targets in various *.scons files.
@@ -339,13 +337,25 @@ AddOption('--verbose', dest='verbose', default=False,
 
 sconscript_files = %(sconscript_files)s
 
-cwd = os.path.split(os.getcwd())[1]
-
 target_alias_list= []
 
 conf_list = GetOption('conf_list')
 if not conf_list:
     conf_list = ['Debug']
+
+srcdir = GetOption('repository')
+if srcdir:
+  # Deep SCons magick to support --srcdir={chromium_component}:
+  # By specifying --srcdir=, a connection has already been set up
+  # between our current directory (the build directory) and the
+  # component source directory (base/, net/, webkit/, etc.).
+  # The Chromium build is really rooted at src/, so we need to
+  # repoint the repository connection to that directory.  To
+  # do so and have everything just work, we must wipe out the
+  # existing connection by hand, including its cached value.
+  target_dir = Dir('#')
+  target_dir.clear()
+  target_dir.repositories = [target_dir.dir]
 
 for conf in conf_list:
   env = Environment(
@@ -353,11 +363,19 @@ for conf in conf_list:
       _GYP='_gyp',
       CHROME_SRC_DIR='$MAIN_DIR/..',
       CONFIG_NAME=conf,
-      DESTINATION_ROOT='$MAIN_DIR/$CONFIG_NAME',
-      TARGET_DIR='$MAIN_DIR/$CONFIG_NAME',
       MAIN_DIR=Dir('#').abspath,
       TARGET_PLATFORM='LINUX',
   )
+  if srcdir:
+    env.Replace(
+        DESTINATION_ROOT='$MAIN_DIR',
+        TARGET_DIR='$MAIN_DIR',
+    )
+  else:
+    env.Replace(
+        DESTINATION_ROOT='$MAIN_DIR/$CONFIG_NAME',
+        TARGET_DIR='$MAIN_DIR/$CONFIG_NAME',
+    )
   if not GetOption('verbose'):
     env.SetDefault(
         ARCOMSTR='Creating library $TARGET',
@@ -378,9 +396,12 @@ for conf in conf_list:
         SHMANIFESTCOMSTR='Updating manifest for $TARGET',
     )
   SConsignFile(env.File('$DESTINATION_ROOT/.sconsign').abspath)
-  env.Dir('$TARGET_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
+
+  if not srcdir:
+    env.Dir('$TARGET_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
+
   for sconscript in sconscript_files:
-    target_alias = env.SConscript('$TARGET_DIR/' + cwd + '/' + sconscript,
+    target_alias = env.SConscript('$TARGET_DIR/%(name)s/' + sconscript,
                                   exports=['env'])
     if target_alias:
       target_alias_list.extend(target_alias)
