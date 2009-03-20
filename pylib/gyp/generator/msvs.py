@@ -157,6 +157,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
   config_type = {
       'executable': '1',
       'shared_library': '2',
+      'loadable_module': '2',
       'static_library': '4',
       'none': '10',
       }[spec['type']]

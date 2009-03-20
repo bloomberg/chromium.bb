@@ -478,11 +478,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
     # Create an XCTarget subclass object for the target.  We use the type
     # with "+bundle" appended if the target has "mac_bundle" set.
     _types = {
-      'executable':            'com.apple.product-type.tool',
-      'shared_library':        'com.apple.product-type.library.dynamic',
-      'static_library':        'com.apple.product-type.library.static',
-      'executable+bundle':     'com.apple.product-type.application',
-      'shared_library+bundle': 'com.apple.product-type.framework',
+      'executable':             'com.apple.product-type.tool',
+      'loadable_module':        'com.apple.product-type.library.dynamic',
+      'shared_library':         'com.apple.product-type.library.dynamic',
+      'static_library':         'com.apple.product-type.library.static',
+      'executable+bundle':      'com.apple.product-type.application',
+      'loadable_module+bundle': 'com.apple.product-type.bundle',
+      'shared_library+bundle':  'com.apple.product-type.framework',
     }
 
     target_properties = {
@@ -508,6 +510,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
     xcode_targets[qualified_target] = xct
     xcode_target_to_target_dict[xct] = spec
 
+    # Xcode does not have a distinct type for loadable_modules that are pure
+    # BSD targets (ie-unbundled). It uses the same setup as a shared_library
+    # but the mach-o type is explictly set in the settings.  So before we do
+    # anything else, for this one case, we stuff in that one setting.  This
+    # would allow the other data in the spec to change it if need be.
+    if type == 'loadable_module' and not spec.get('mac_bundle', 0):
+      xccl.SetBuildSetting('MACH_O_TYPE', 'mh_bundle')
+    
     prebuild_index = 0
 
     # Add custom shell script phases for "actions" sections.

@@ -10,7 +10,7 @@ import subprocess
 
 
 # A list of types that are treated as linkable.
-linkable_types = ['executable', 'shared_library']
+linkable_types = ['executable', 'shared_library', 'loadable_module']
 
 # A list of sections that contain links to other targets.
 dependency_sections = ['dependencies', 'export_dependent_settings']
@@ -866,10 +866,11 @@ class DependencyGraphNode(object):
       # True) and this target won't be linked.
       return dependencies
 
-    # Executables are already fully and finally linked.  Nothing else can be
-    # a link dependency of an executable, there can only be dependencies in
-    # the sense that a dependent target might run an executable.
-    if not initial and target_type  == 'executable':
+    # Executables and loadable modules are already fully and finally linked.
+    # Nothing else can be a link dependency of them, there can only be
+    # dependencies in the sense that a dependent target might run an
+    # executable or load the loadable_module.
+    if not initial and target_type in ('executable', 'loadable_module'):
       return dependencies
 
     # The target is linkable, add it to the list of link dependencies.
