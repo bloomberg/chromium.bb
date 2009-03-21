@@ -260,7 +260,7 @@ def WriteOnDiff(filename):
           umask = os.umask(077)
           os.umask(umask)
           os.chmod(self.tmp_path, 0666 & ~umask)
-          if sys.platform == 'win32':
+          if sys.platform == 'win32' and os.path.exists(filename):
             # NOTE: on windows (but not cygwin) rename will not replace an
             # existing file, so it must be preceded with a remove. Sadly there
             # is no way to make the switch atomic.
