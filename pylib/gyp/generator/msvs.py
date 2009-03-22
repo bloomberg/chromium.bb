@@ -408,6 +408,25 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
       p.AddFileConfig(primary_input,
                       _ConfigFullName(config_name, c), tools=[tool])
 
+  # Add copies.
+  for cpy in spec.get('copies', []):
+    for config_name, c in spec['configurations'].iteritems():
+      for f in cpy.get('files', []):
+        src = _FixPath(os.path.join('$(ProjectDir)', f))
+        dst = _FixPath(os.path.join(cpy['destination'],
+                                    os.path.basename(f)))
+        cmd = 'copy /Y "%s" "%s"' % (src, dst)
+        tool = MSVSProject.Tool(
+            'VCCustomBuildTool', {
+              'Description': 'Copying %s to %s' % (src, dst),
+              'AdditionalDependencies': src,
+              'Outputs': dst,
+              'CommandLine': cmd,
+              })
+        # Add to the properties of the file.
+        p.AddFileConfig(_FixPath(f),
+                        _ConfigFullName(config_name, c), tools=[tool])
+
   # Write it out.
   p.Write()
 
