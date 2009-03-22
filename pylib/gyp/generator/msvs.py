@@ -268,8 +268,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
   # Add in the gyp file.
   sources.append(os.path.split(build_file)[1])
   # Add in 'action' inputs and outputs.
-  actions = spec.get('actions', [])
-  for a in actions:
+  for a in spec.get('actions', []):
     for i in a.get('inputs', []):
       if i not in sources:
         sources.append(i)
@@ -277,6 +276,13 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
       for i in a.get('outputs', []):
         if i not in sources:
             sources.append(i)
+  # Add in 'copies' inputs and outputs.
+  for cpy in spec.get('copies', []):
+    for f in cpy.get('files', []):
+      if f not in sources:
+        sources.append(f)
+      if cpy.get('process_outputs_as_sources', False):
+        sources.append(os.path.join(cpy['destination'], os.path.basename(f)))
 
   # Add rules.
   rules = spec.get('rules', [])
