@@ -401,7 +401,7 @@ for conf in conf_list:
     env.Dir('$TARGET_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
 
   for sconscript in sconscript_files:
-    target_alias = env.SConscript('$TARGET_DIR/%(name)s/' + sconscript,
+    target_alias = env.SConscript('$TARGET_DIR/%(subdir)s/' + sconscript,
                                   exports=['env'])
     if target_alias:
       target_alias_list.extend(target_alias)
@@ -414,11 +414,13 @@ def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
   Generates the "wrapper" SConscript file (analogous to the Visual Studio
   solution) that calls all the individual target SConscript files.
   """
+  subdir = os.path.basename(os.path.split(output_filename)[0])
   fp = open(output_filename, 'w')
   fp.write(header)
   fp.write(_wrapper_template % {
                'name' : name,
                'sconscript_files' : pprint.pformat(sconscript_files),
+               'subdir' : subdir,
            })
   fp.close()
 
