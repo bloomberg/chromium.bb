@@ -178,6 +178,9 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
     variables['DEPTH'] = \
         gyp.common.RelativePath(depth, os.path.dirname(build_file_path))
 
+  if sys.platform == 'linux':
+    # TODO(mmentovai):  replace this block with the real fix.
+    build_file_path = os.path.abspath(build_file_path)
   if build_file_path in data:
     # Already loaded.
     return
