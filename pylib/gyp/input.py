@@ -7,6 +7,7 @@ import os.path
 import re
 import shlex
 import subprocess
+import sys
 
 
 # A list of types that are treated as linkable.
