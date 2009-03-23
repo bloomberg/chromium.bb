@@ -326,11 +326,46 @@ Wrapper configuration for building this entire "solution,"
 including all the specific targets in various *.scons files.
 '''
 
-# TODO(sgk):  --configuration is a stupid name for an option,
-# but we can't change it to --mode until we convert completely
-# and get rid of the Hammer infrastructure.
+import sys
+
+# Support PROGRESS= to show progress in different ways.
+if sys.platform == 'win32':
+  console = 'con'
+else:
+  console = '/dev/tty'
+p = ARGUMENTS.get('PROGRESS')
+if p == 'spinner':
+  Progress(['/\\r', '|\\r', '\\\\\\r', '-\\r'],
+           interval=5,
+           file=open(console, 'w'))
+elif p == 'name':
+  Progress('$TARGET\\r', overwrite=True, file=open(console, 'w'))
+
+# Set the default -j value based on the number of processors.
+if sys.platform in ('win32', 'cygwin'):
+  cpus = int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
+elif sys.platform in ('linux', 'linux2', 'posix'):
+  # TODO(evanm): this is Linux-specific, not posix.
+  # Parse /proc/cpuinfo for processor count.
+  cpus = len([l for l in open('/proc/cpuinfo')
+                      if l.startswith('processor\\t')])
+else:
+  cpus = 1
+SetOption('num_jobs', cpus + 1)
+
+# Since we set the -j value by default, suppress SCons warnings about being
+# unable to support parallel build on versions of Python with no threading.
+default_warnings = ['no-no-parallel-support']
+SetOption('warn', default_warnings + GetOption('warn'))
+
+# TODO(sgk):  We'd like to use --conf= to select the configuration to
+# build, but SCons already supports a --config option and by the time we
+# get here optparse has already decided that --conf is a synonym for
+# --config.  So spell out all of --configuration.
 AddOption('--configuration', nargs=1, dest='conf_list', default=[],
           action='append', help='Configuration to build.')
+
+#
 AddOption('--verbose', dest='verbose', default=False,
           action='store_true', help='Verbose command-line output.')
 
