@@ -144,7 +144,7 @@ nouveau_device_close(struct nouveau_device **dev)
 {
 	struct nouveau_device_priv *nvdev;
 
-	if (dev || !*dev)
+	if (!dev || !*dev)
 		return;
 	nvdev = nouveau_device(*dev);
 	*dev = NULL;
