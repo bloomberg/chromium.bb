@@ -13,8 +13,8 @@ import re
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '',
-    'INTERMEDIATE_DIR': '$DESTINATION_ROOT/obj/intermediate',
-    'SHARED_INTERMEDIATE_DIR': '$DESTINATION_ROOT/obj/global_intermediate',
+    'INTERMEDIATE_DIR': '$OBJ_DIR/intermediate',
+    'SHARED_INTERMEDIATE_DIR': '$OBJ_DIR/global_intermediate',
     'OS': 'linux',
     'PRODUCT_DIR': '$DESTINATION_ROOT',
     'RULE_INPUT_ROOT': '${SOURCE.filebase}',
@@ -393,24 +393,20 @@ if srcdir:
   target_dir.repositories = [target_dir.dir]
 
 for conf in conf_list:
+  if srcdir:
+    destination_root = '$MAIN_DIR'
+  else:
+    destination_root = '$MAIN_DIR/$CONFIG_NAME'
   env = Environment(
       tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
       _GYP='_gyp',
       CHROME_SRC_DIR='$MAIN_DIR/..',
       CONFIG_NAME=conf,
+      DESTINATION_ROOT=destination_root,
       MAIN_DIR=Dir('#').abspath,
+      OBJ_DIR='$DESTINATION_ROOT/obj',
       TARGET_PLATFORM='LINUX',
   )
-  if srcdir:
-    env.Replace(
-        DESTINATION_ROOT='$MAIN_DIR',
-        TARGET_DIR='$MAIN_DIR',
-    )
-  else:
-    env.Replace(
-        DESTINATION_ROOT='$MAIN_DIR/$CONFIG_NAME',
-        TARGET_DIR='$MAIN_DIR/$CONFIG_NAME',
-    )
   if not GetOption('verbose'):
     env.SetDefault(
         ARCOMSTR='Creating library $TARGET',
@@ -433,10 +429,10 @@ for conf in conf_list:
   SConsignFile(env.File('$DESTINATION_ROOT/.sconsign').abspath)
 
   if not srcdir:
-    env.Dir('$TARGET_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
+    env.Dir('$OBJ_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
 
   for sconscript in sconscript_files:
-    target_alias = env.SConscript('$TARGET_DIR/%(subdir)s/' + sconscript,
+    target_alias = env.SConscript('$OBJ_DIR/%(subdir)s/' + sconscript,
                                   exports=['env'])
     if target_alias:
       target_alias_list.extend(target_alias)
