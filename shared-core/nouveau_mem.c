@@ -300,9 +300,9 @@ uint64_t nouveau_mem_fb_amount(struct drm_device *dev)
 			} else {
 				uint64_t mem;
 
-				mem = (NV_READ(NV04_FIFO_DATA) &
-				       NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK) >>
-				      NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT;
+				mem = (NV_READ(NV10_PFB_CSTATUS) &
+				       NV10_PFB_CSTATUS_RAM_AMOUNT_MB_MASK) >>
+				      NV10_PFB_CSTATUS_RAM_AMOUNT_MB_SHIFT;
 				return mem*1024*1024;
 			}
 			break;

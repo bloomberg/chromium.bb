@@ -11,10 +11,6 @@
 #    define NV04_BOOT_0_RAM_AMOUNT_8MB                     0x00000002
 #    define NV04_BOOT_0_RAM_AMOUNT_16MB                    0x00000003
 
-#define NV04_FIFO_DATA                                     0x0010020c
-#    define NV10_FIFO_DATA_RAM_AMOUNT_MB_MASK              0xfff00000
-#    define NV10_FIFO_DATA_RAM_AMOUNT_MB_SHIFT             20
-
 #define NV_RAMIN                                           0x00700000
 
 #define NV_RAMHT_HANDLE_OFFSET                             0
@@ -131,7 +127,9 @@
 
 #define NV04_PFB_CFG0                                      0x00100200
 #define NV04_PFB_CFG1                                      0x00100204
-#define NV40_PFB_020C                                      0x0010020C
+#define NV10_PFB_CSTATUS                                   0x0010020C
+#    define NV10_PFB_CSTATUS_RAM_AMOUNT_MB_MASK            0xfff00000
+#    define NV10_PFB_CSTATUS_RAM_AMOUNT_MB_SHIFT           20
 #define NV10_PFB_TILE(i)                                   (0x00100240 + (i*16))
 #define NV10_PFB_TILE__SIZE                                8
 #define NV10_PFB_TLIMIT(i)                                 (0x00100244 + (i*16))
