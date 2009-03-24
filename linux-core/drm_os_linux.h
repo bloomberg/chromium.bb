@@ -125,3 +125,7 @@ do {								\
 #define DRM_SPINLOCK_IRQSAVE(l, _flags)	spin_lock_irqsave(l, _flags);
 #define DRM_SPINUNLOCK_IRQRESTORE(l, _flags) spin_unlock_irqrestore(l, _flags);
 #define DRM_SPINLOCK_ASSERT(l)		do {} while (0)
+
+#define DRM_PCI_DEV			struct pci_dev
+#define drm_pci_get_bsf(b, s, f)	pci_get_bus_and_slot(b, PCI_DEVFN(s, f))
+#define drm_pci_read_config_dword	pci_read_config_dword

@@ -231,34 +231,46 @@ void nouveau_mem_close(struct drm_device *dev)
 		nouveau_mem_takedown(&dev_priv->pci_heap);
 }
 
-/*XXX won't work on BSD because of pci_read_config_dword */
+/*XXX BSD needs compat functions for pci access
+ * #define DRM_PCI_DEV		struct device
+ * #define drm_pci_get_bsf	pci_get_bsf
+ * and a small inline to do	*val = pci_read_config(pdev->device, where, 4);
+ * might work
+ */
+static uint32_t nforce_pci_fn_read_config_dword(int devfn, int where, uint32_t *val)
+{
+#ifdef __linux__
+	DRM_PCI_DEV *pdev;
+
+	if (!(pdev = drm_pci_get_bsf(0, 0, devfn))) {
+		DRM_ERROR("nForce PCI device function 0x%02x not found\n",
+			  devfn);
+		return -ENODEV;
+	}
+
+	return drm_pci_read_config_dword(pdev, where, val);
+#else
+	DRM_ERROR("BSD compat for checking IGP memory amount needed\n");
+	return 0;
+#endif
+}
+
 static uint32_t
 nouveau_mem_fb_amount_igp(struct drm_device *dev)
 {
-#if defined(__linux__)
 	struct drm_nouveau_private *dev_priv = dev->dev_private;
-	struct pci_dev *bridge;
-	uint32_t mem;
+	uint32_t mem = 0;
 
-	bridge = pci_get_bus_and_slot(0, PCI_DEVFN(0,1));
-	if (!bridge) {
-		DRM_ERROR("no bridge device\n");
-		return 0;
-	}
-
-	if (dev_priv->flags&NV_NFORCE) {
-		pci_read_config_dword(bridge, 0x7C, &mem);
+	if (dev_priv->flags & NV_NFORCE) {
+		nforce_pci_fn_read_config_dword(1, 0x7C, &mem);
 		return (uint64_t)(((mem >> 6) & 31) + 1)*1024*1024;
-	} else
-	if(dev_priv->flags&NV_NFORCE2) {
-		pci_read_config_dword(bridge, 0x84, &mem);
+	}
+	if (dev_priv->flags & NV_NFORCE2) {
+		nforce_pci_fn_read_config_dword(1, 0x84, &mem);
 		return (uint64_t)(((mem >> 4) & 127) + 1)*1024*1024;
 	}
 
 	DRM_ERROR("impossible!\n");
-#else
-	DRM_ERROR("Linux kernel >= 2.6.19 required to check for igp memory amount\n");
-#endif
 
 	return 0;
 }
