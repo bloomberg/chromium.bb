@@ -13,7 +13,7 @@ import re
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '',
-    'INTERMEDIATE_DIR': '$OBJ_DIR/$COMPONENT_NAME/$TARGET_NAME/intermediate',
+    'INTERMEDIATE_DIR': '$OBJ_DIR/intermediate',
     'SHARED_INTERMEDIATE_DIR': '$OBJ_DIR/global_intermediate',
     'OS': 'linux',
     'PRODUCT_DIR': '$DESTINATION_ROOT',
@@ -149,7 +149,7 @@ def GenerateConfig(fp, spec, config, indent=''):
                 postamble=postamble)
 
 
-def GenerateSConscript(output_filename, spec, build_file):
+def GenerateSConscript(output_filename, spec):
   """
   Generates a SConscript file for a specific target.
 
@@ -209,8 +209,6 @@ def GenerateSConscript(output_filename, spec, build_file):
   if not gyp_dir:
       gyp_dir = '.'
   gyp_dir = os.path.abspath(gyp_dir)
-  component_name = os.path.splitext(os.path.basename(build_file))[0]
-  target_name = spec['target_name']
 
   fp = open(output_filename, 'w')
   fp.write(header)
@@ -244,8 +242,7 @@ def GenerateSConscript(output_filename, spec, build_file):
 
   #
   fp.write('\n')
-  fp.write('env = env.Clone(COMPONENT_NAME=%s,\n' % repr(component_name))
-  fp.write('                TARGET_NAME=%s)\n' % repr(target_name))
+  fp.write('env = env.Clone()')
   fp.write('\n')
   fp.write('config = configurations[env[\'CONFIG_NAME\']]\n')
   fp.write('env.Append(**config[\'Append\'])\n')
@@ -311,7 +308,7 @@ def GenerateSConscript(output_filename, spec, build_file):
     fp.write('prerequisites.extend(_outputs)\n')
 
   fmt = "\ngyp_target = env.Alias('gyp_target_%s', target_files)\n"
-  fp.write(fmt % target_name)
+  fp.write(fmt % spec['target_name'])
   dependencies = spec.get('scons_dependencies', [])
   if dependencies:
     WriteList(fp, dependencies, preamble='env.Requires(gyp_target, [\n    ',
@@ -381,9 +378,6 @@ conf_list = GetOption('conf_list')
 if not conf_list:
     conf_list = ['Debug']
 
-main_dir = Dir('#')
-print main_dir.abspath
-
 srcdir = GetOption('repository')
 if srcdir:
   # Deep SCons magick to support --srcdir={chromium_component}:
@@ -394,16 +388,9 @@ if srcdir:
   # repoint the repository connection to that directory.  To
   # do so and have everything just work, we must wipe out the
   # existing connection by hand, including its cached value.
-  src_dir = main_dir.repositories[0].dir
-  main_dir.clear()
-  main_dir.repositories = [src_dir]
-else:
-  src_dir = '$MAIN_DIR/..'
-
-print "main_dir.abspath =", main_dir.abspath
-print "main_dir.dir.abspath =", main_dir.dir.abspath
-print "main_dir.rdir().abspath =", main_dir.rdir().abspath
-print "main_dir.rdir().abspath =", main_dir.rdir().abspath
+  target_dir = Dir('#')
+  target_dir.clear()
+  target_dir.repositories = [target_dir.dir]
 
 for conf in conf_list:
   if srcdir:
@@ -413,10 +400,10 @@ for conf in conf_list:
   env = Environment(
       tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
       _GYP='_gyp',
-      CHROME_SRC_DIR=src_dir,
+      CHROME_SRC_DIR='$MAIN_DIR/..',
       CONFIG_NAME=conf,
       DESTINATION_ROOT=destination_root,
-      MAIN_DIR=main_dir.abspath,
+      MAIN_DIR=Dir('#').abspath,
       OBJ_DIR='$DESTINATION_ROOT/obj',
       TARGET_PLATFORM='LINUX',
   )
@@ -469,11 +456,10 @@ def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
   fp.close()
 
 
-def TargetFilename(target, build_file=None, output_suffix=''):
+def TargetFilename(target, output_suffix):
   """Returns the .scons file name for the specified target.
   """
-  if build_file is None:
-    build_file, target = gyp.common.BuildFileAndTarget('', target)[:2]
+  build_file, target = gyp.common.BuildFileAndTarget('', target)[:2]
   output_file = os.path.join(os.path.split(build_file)[0],
                              target + output_suffix + '.scons')
   return output_file
@@ -494,8 +480,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if spec['type'] == 'settings':
       continue
 
-    build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
-    output_file = TargetFilename(target, build_file, options.suffix)
+    output_file = TargetFilename(qualified_target, options.suffix)
 
     if not spec.has_key('libraries'):
       spec['libraries'] = []
@@ -505,10 +490,10 @@ def GenerateOutput(target_list, target_dicts, data, params):
     spec['scons_dependencies'] = []
     for d in deps:
       td = target_dicts[d]
-      target_name = td['target_name']
-      spec['scons_dependencies'].append("Alias('gyp_target_%s')" % target_name)
+      targetname = td['target_name']
+      spec['scons_dependencies'].append("Alias('gyp_target_%s')" % targetname)
       if td['type'] in ('static_library', 'shared_library'):
-        libname = td.get('product_name', target_name)
+        libname = td.get('product_name') or targetname
         spec['libraries'].append(libname)
       if td['type'] == 'loadable_module':
         prereqs = spec.get('scons_prerequisites', [])
@@ -517,7 +502,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
         prereqs.append(name)
         spec['scons_prerequisites'] = prereqs
 
-    GenerateSConscript(output_file, spec, build_file)
+    GenerateSConscript(output_file, spec)
 
   for build_file in sorted(data.keys()):
     path, ext = os.path.splitext(build_file)
@@ -531,8 +516,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     for t in all_targets:
       if target_dicts[t]['type'] == 'settings':
         continue
-      target_filename = TargetFilename(t, output_suffix=options.suffix)
-      t = gyp.common.RelativePath(target_filename, output_dir)
+      t = gyp.common.RelativePath(TargetFilename(t, options.suffix),
+                                  output_dir)
       sconscript_files.append(t)
     sconscript_files.sort()
 
