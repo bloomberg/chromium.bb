@@ -237,6 +237,8 @@ def GenerateSConscript(output_filename, spec, build_file):
     for key in sorted(scons_settings.keys()):
       val = pprint.pformat(scons_settings[key])
       fp.write('             %s = %s,\n' % (key, val))
+    if 'c++' in spec.get('link_languages', []):
+      fp.write('             %s = %s,\n' % ('LINK', repr('$CXX')))
     fp.write('        ),\n')
 
     fp.write('    },\n')

@@ -1206,6 +1206,7 @@ def SetUpConfigurations(target, target_dict):
     'copies',
     'default_configuration',
     'dependencies',
+    'link_languages',
     'libraries',
     'mac_bundle',
     'mac_bundle_resources',
