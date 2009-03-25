@@ -281,8 +281,6 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
     for f in cpy.get('files', []):
       if f not in sources:
         sources.append(f)
-      if cpy.get('process_outputs_as_sources', False):
-        sources.append(os.path.join(cpy['destination'], os.path.basename(f)))
 
   # Add rules.
   rules = spec.get('rules', [])
