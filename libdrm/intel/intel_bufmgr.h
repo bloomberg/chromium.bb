@@ -115,6 +115,7 @@ drm_intel_bo *drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
 						unsigned int handle);
 void drm_intel_bufmgr_gem_enable_reuse(drm_intel_bufmgr *bufmgr);
 int drm_intel_gem_bo_map_gtt(drm_intel_bo *bo);
+int drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo);
 void drm_intel_gem_bo_start_gtt_access(drm_intel_bo *bo, int write_enable);
 
 /* drm_intel_bufmgr_fake.c */
