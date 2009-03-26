@@ -215,6 +215,7 @@ def GenerateSConscript(output_filename, spec, build_file):
   fp = open(output_filename, 'w')
   fp.write(header)
 
+  fp.write('\nimport os\n')
   fp.write('\nImport("env")\n')
 
   #
@@ -233,13 +234,23 @@ def GenerateSConscript(output_filename, spec, build_file):
     fp.write('        ),\n')
 
     fp.write('        \'Replace\' : dict(\n' )
-    scons_settings = config.get('scons_settings', {})
+    scons_settings = config.get('scons_variable_settings', {})
     for key in sorted(scons_settings.keys()):
       val = pprint.pformat(scons_settings[key])
       fp.write('             %s = %s,\n' % (key, val))
     if 'c++' in spec.get('link_languages', []):
       fp.write('             %s = %s,\n' % ('LINK', repr('$CXX')))
     fp.write('        ),\n')
+
+    fp.write('        \'ImportExternal\' : [\n' )
+    for var in config.get('scons_import_variables', []):
+      fp.write('             %s\n' % repr(var))
+    fp.write('        ],\n')
+
+    fp.write('        \'PropagateExternal\' : [\n' )
+    for var in config.get('scons_propagate_variables', []):
+      fp.write('             %s\n' % repr(var))
+    fp.write('        ],\n')
 
     fp.write('    },\n')
   fp.write('}\n')
@@ -253,6 +264,16 @@ def GenerateSConscript(output_filename, spec, build_file):
   fp.write('env.Append(**config[\'Append\'])\n')
   fp.write('env.FilterOut(**config[\'FilterOut\'])\n')
   fp.write('env.Replace(**config[\'Replace\'])\n')
+  fp.write('for _var in config[\'ImportExternal\']:\n')
+  fp.write('  if _var in ARGUMENTS:\n')
+  fp.write('    env[_var] = ARGUMENTS[_var]\n')
+  fp.write('  elif _var in os.environ:\n')
+  fp.write('    env[_var] = os.environ[_var]\n')
+  fp.write('for _var in config[\'PropagateExternal\']:\n')
+  fp.write('  if _var in ARGUMENTS:\n')
+  fp.write('    env[_var] = ARGUMENTS[_var]\n')
+  fp.write('  elif _var in os.environ:\n')
+  fp.write('    env[\'ENV\'][_var] = os.environ[_var]\n')
 
   #
   sources = spec.get('sources')
@@ -405,11 +426,12 @@ for conf in conf_list:
   env = Environment(
       tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
       _GYP='_gyp',
-      CHROME_SRC_DIR=src_dir,
       CONFIG_NAME=conf,
       DESTINATION_ROOT='$MAIN_DIR/$CONFIG_NAME',
+      LIB_DIR='$DESTINATION_ROOT/lib',
       MAIN_DIR=main_dir.abspath,
       OBJ_DIR='$DESTINATION_ROOT/obj',
+      SRC_DIR=src_dir,
       TARGET_PLATFORM='LINUX',
   )
   if not GetOption('verbose'):
@@ -433,7 +455,7 @@ for conf in conf_list:
     )
   SConsignFile(env.File('$DESTINATION_ROOT/.sconsign').abspath)
 
-  env.Dir('$OBJ_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
+  env.Dir('$OBJ_DIR').addRepository(env.Dir('$SRC_DIR'))
 
   for sconscript in sconscript_files:
     target_alias = env.SConscript('$OBJ_DIR/%(subdir)s/' + sconscript,
