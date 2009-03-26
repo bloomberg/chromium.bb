@@ -383,8 +383,10 @@ conf_list = GetOption('conf_list')
 if not conf_list:
     conf_list = ['Debug']
 
-srcdir = GetOption('repository')
-if srcdir:
+main_dir = Dir('#')
+
+src_dir = GetOption('repository')
+if src_dir:
   # Deep SCons magick to support --srcdir={chromium_component}:
   # By specifying --srcdir=, a connection has already been set up
   # between our current directory (the build directory) and the
@@ -393,22 +395,20 @@ if srcdir:
   # repoint the repository connection to that directory.  To
   # do so and have everything just work, we must wipe out the
   # existing connection by hand, including its cached value.
-  target_dir = Dir('#')
-  target_dir.clear()
-  target_dir.repositories = [target_dir.dir]
+  src_dir = main_dir.repositories[0].dir
+  main_dir.clear()
+  main_dir.repositories = []
+else:
+  src_dir = '$MAIN_DIR/..'
 
 for conf in conf_list:
-  if srcdir:
-    destination_root = '$MAIN_DIR'
-  else:
-    destination_root = '$MAIN_DIR/$CONFIG_NAME'
   env = Environment(
       tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
       _GYP='_gyp',
-      CHROME_SRC_DIR='$MAIN_DIR/..',
+      CHROME_SRC_DIR=src_dir,
       CONFIG_NAME=conf,
-      DESTINATION_ROOT=destination_root,
-      MAIN_DIR=Dir('#').abspath,
+      DESTINATION_ROOT='$MAIN_DIR/$CONFIG_NAME',
+      MAIN_DIR=main_dir.abspath,
       OBJ_DIR='$DESTINATION_ROOT/obj',
       TARGET_PLATFORM='LINUX',
   )
@@ -433,8 +433,7 @@ for conf in conf_list:
     )
   SConsignFile(env.File('$DESTINATION_ROOT/.sconsign').abspath)
 
-  if not srcdir:
-    env.Dir('$OBJ_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
+  env.Dir('$OBJ_DIR').addRepository(env.Dir('$CHROME_SRC_DIR'))
 
   for sconscript in sconscript_files:
     target_alias = env.SConscript('$OBJ_DIR/%(subdir)s/' + sconscript,
