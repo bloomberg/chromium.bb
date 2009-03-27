@@ -16,7 +16,7 @@ generator_default_variables = {
     'INTERMEDIATE_DIR': '$OBJ_DIR/$COMPONENT_NAME/$TARGET_NAME/intermediate',
     'SHARED_INTERMEDIATE_DIR': '$OBJ_DIR/global_intermediate',
     'OS': 'linux',
-    'PRODUCT_DIR': '$DESTINATION_ROOT',
+    'PRODUCT_DIR': '$TOP_BUILDDIR',
     'RULE_INPUT_ROOT': '${SOURCE.filebase}',
     'RULE_INPUT_EXT': '${SOURCE.suffix}',
     'RULE_INPUT_NAME': '${SOURCE.file}',
@@ -404,7 +404,7 @@ conf_list = GetOption('conf_list')
 if not conf_list:
     conf_list = ['Debug']
 
-main_dir = Dir('#')
+sconsbuild_dir = Dir(%(sconsbuild_dir)s)
 
 src_dir = GetOption('repository')
 if src_dir:
@@ -416,23 +416,23 @@ if src_dir:
   # repoint the repository connection to that directory.  To
   # do so and have everything just work, we must wipe out the
   # existing connection by hand, including its cached value.
-  src_dir = main_dir.repositories[0].dir
-  main_dir.clear()
-  main_dir.repositories = []
+  src_dir = sconsbuild_dir.repositories[0].dir
+  sconsbuild_dir.clear()
+  sconsbuild_dir.repositories = []
 else:
-  src_dir = '$MAIN_DIR/..'
+  src_dir = '$SCONSBUILD_DIR/..'
 
 for conf in conf_list:
   env = Environment(
       tools = ['ar', 'as', 'gcc', 'g++', 'gnulink', 'chromium_builders'],
       _GYP='_gyp',
       CONFIG_NAME=conf,
-      DESTINATION_ROOT='$MAIN_DIR/$CONFIG_NAME',
-      LIB_DIR='$DESTINATION_ROOT/lib',
-      MAIN_DIR=main_dir.abspath,
-      OBJ_DIR='$DESTINATION_ROOT/obj',
+      LIB_DIR='$TOP_BUILDDIR/lib',
+      OBJ_DIR='$TOP_BUILDDIR/obj',
+      SCONSBUILD_DIR=sconsbuild_dir.abspath,
       SRC_DIR=src_dir,
       TARGET_PLATFORM='LINUX',
+      TOP_BUILDDIR='$SCONSBUILD_DIR/$CONFIG_NAME',
   )
   if not GetOption('verbose'):
     env.SetDefault(
@@ -453,7 +453,7 @@ for conf in conf_list:
         SHLINKCOMSTR='Linking $TARGET',
         SHMANIFESTCOMSTR='Updating manifest for $TARGET',
     )
-  SConsignFile(env.File('$DESTINATION_ROOT/.sconsign').abspath)
+  SConsignFile(env.File('$TOP_BUILDDIR/.sconsign').abspath)
 
   env.Dir('$OBJ_DIR').addRepository(env.Dir('$SRC_DIR'))
 
@@ -466,16 +466,20 @@ for conf in conf_list:
 Default(Alias('%(name)s', target_alias_list))
 """
 
-def GenerateSConscriptWrapper(name, output_filename, sconscript_files):
+def GenerateSConscriptWrapper(build_file_data, name,
+                              output_filename, sconscript_files):
   """
   Generates the "wrapper" SConscript file (analogous to the Visual Studio
   solution) that calls all the individual target SConscript files.
   """
   subdir = os.path.basename(os.path.split(output_filename)[0])
+  scons_settings = build_file_data.get('scons_settings', {})
+  sconsbuild_dir = scons_settings.get('sconsbuild_dir', '#')
   fp = open(output_filename, 'w')
   fp.write(header)
   fp.write(_wrapper_template % {
                'name' : name,
+               'sconsbuild_dir' : repr(sconsbuild_dir),
                'sconscript_files' : pprint.pformat(sconscript_files),
                'subdir' : subdir,
            })
@@ -550,4 +554,5 @@ def GenerateOutput(target_list, target_dicts, data, params):
     sconscript_files.sort()
 
     if sconscript_files:
-      GenerateSConscriptWrapper(basename, output_filename, sconscript_files)
+      GenerateSConscriptWrapper(data[build_file], basename,
+                                output_filename, sconscript_files)
