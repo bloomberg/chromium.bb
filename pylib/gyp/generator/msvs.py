@@ -181,6 +181,8 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
     include_dirs = [_FixPath(i) for i in include_dirs]
     _ToolAppend(tools, 'VCCLCompilerTool',
                 'AdditionalIncludeDirectories', include_dirs)
+    _ToolAppend(tools, 'VCResourceCompilerTool',
+                'AdditionalIncludeDirectories', include_dirs)
 
     # Add in libraries.
     libraries = spec.get('libraries', [])
