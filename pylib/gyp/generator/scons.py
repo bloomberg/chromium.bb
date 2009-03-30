@@ -110,9 +110,27 @@ for %(name)s_file in %(name)s_files:
   _outputs = env.%(name)s(%(name)s_file)
 """
 
+_spawn_hack = """
+import re
+import SCons.Platform.posix
+needs_shell = re.compile('["\\'><!^&]')
+def my_spawn(sh, escape, cmd, args, env):
+  def strip_scons_quotes(arg):
+    if arg[0] == '"' and arg[-1] == '#':
+      return arg[1:-1]
+    return arg
+  cmd_line = ' '.join(args)
+  if needs_shell.search(cmd_line):
+    return SCons.Platform.posix.exec_spawnvpe([sh, '-c', cmd_line], env)
+  else:
+    return SCons.Platform.posix.exec_spawnvpe(args, env)
+env['SPAWN'] = my_spawn
+"""
+
 escape_quotes_re = re.compile('^([^=]*=)"([^"]*)"$')
 def escape_quotes(s):
     return escape_quotes_re.sub('\\1\\"\\2\\"', s)
+
 
 def GenerateConfig(fp, spec, config, indent=''):
   """
@@ -217,6 +235,9 @@ def GenerateSConscript(output_filename, spec, build_file):
 
   fp.write('\nimport os\n')
   fp.write('\nImport("env")\n')
+
+  #
+  fp.write(_spawn_hack)
 
   #
   fp.write('\n')
