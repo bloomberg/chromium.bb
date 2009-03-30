@@ -237,7 +237,7 @@ void nouveau_mem_close(struct drm_device *dev)
  * and a small inline to do	*val = pci_read_config(pdev->device, where, 4);
  * might work
  */
-static uint32_t nforce_pci_fn_read_config_dword(int devfn, int where, uint32_t *val)
+static int nforce_pci_fn_read_config_dword(int devfn, int where, uint32_t *val)
 {
 #ifdef __linux__
 	DRM_PCI_DEV *pdev;
@@ -253,6 +253,29 @@ static uint32_t nforce_pci_fn_read_config_dword(int devfn, int where, uint32_t *
 	DRM_ERROR("BSD compat for checking IGP memory amount needed\n");
 	return 0;
 #endif
+}
+
+static void nouveau_mem_check_nforce_dimms(struct drm_device *dev)
+{
+	uint32_t mem_ctrlr_pciid;
+
+	nforce_pci_fn_read_config_dword(3, 0x00, &mem_ctrlr_pciid);
+	mem_ctrlr_pciid >>= 16;
+
+	if (mem_ctrlr_pciid == 0x01a9 || mem_ctrlr_pciid == 0x01ab ||
+	    mem_ctrlr_pciid == 0x01ed) {
+		uint32_t dimm[3];
+		int i;
+
+		for (i = 0; i < 3; i++) {
+			nforce_pci_fn_read_config_dword(2, 0x40 + i * 4, &dimm[i]);
+			dimm[i] = (dimm[i] >> 8) & 0x4f;
+		}
+
+		if (dimm[0] + dimm[1] != dimm[2])
+			DRM_INFO("Your nForce DIMMs are not arranged in "
+				 "optimal banks!\n");
+	}
 }
 
 static uint32_t
@@ -483,6 +506,9 @@ int nouveau_mem_init(struct drm_device *dev)
 	dev_priv->agp_heap = dev_priv->pci_heap = dev_priv->fb_heap = NULL;
 	dev_priv->fb_phys = 0;
 	dev_priv->gart_info.type = NOUVEAU_GART_NONE;
+
+	if (dev_priv->flags & (NV_NFORCE | NV_NFORCE2))
+		nouveau_mem_check_nforce_dimms(dev);
 
 	/* setup a mtrr over the FB */
 	dev_priv->fb_mtrr = drm_mtrr_add(drm_get_resource_start(dev, 1),
