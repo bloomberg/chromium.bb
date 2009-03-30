@@ -295,11 +295,10 @@ def ExpandVariables(input, is_late, variables, build_file):
                              cwd=build_file_dir)
         (p_stdout, p_stderr) = p.communicate()
 
-        if p.wait() != 0:
+        if p.wait() != 0 or p_stderr:
+          sys.stderr.write(p_stderr)
           # Simulate check_call behavior by reusing its exception.
           raise subprocess.CalledProcessError(p.returncode, match[2])
-        if p_stderr:
-          raise Exception, match[2] + ' produced stderr:\n' + p_stderr
 
         replacement = p_stdout.rstrip()
       else:
