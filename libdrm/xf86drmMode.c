@@ -357,20 +357,44 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 {
 	struct drm_mode_get_connector conn;
 	drmModeConnectorPtr r = NULL;
+	int pre_props = 8, pre_modes = 16, pre_encoders = 4;
 
 	conn.connector_id = connector_id;
 	conn.connector_type_id = 0;
 	conn.connector_type  = 0;
-	conn.count_modes  = 0;
-	conn.modes_ptr    = 0;
-	conn.count_props  = 0;
-	conn.props_ptr    = 0;
-	conn.prop_values_ptr = 0;
-	conn.count_encoders  = 0;
-	conn.encoders_ptr = 0;
+	conn.count_modes  = pre_modes;
+	conn.count_props  = pre_props;
+	conn.count_encoders  = pre_encoders;
+
+	/*
+	 * Pre-allocate space for some modes, properties, and encoders.  If
+	 * we're lucky we won't need to call into the kernel twice.
+	 */
+	conn.props_ptr = VOID2U64(drmMalloc(pre_props * sizeof(uint32_t)));
+	conn.prop_values_ptr = VOID2U64(drmMalloc(pre_props *
+						  sizeof(uint64_t)));
+	conn.modes_ptr = VOID2U64(drmMalloc(pre_modes *
+					    sizeof(struct drm_mode_modeinfo)));
+	conn.encoders_ptr = VOID2U64(drmMalloc(pre_encoders *
+					       sizeof(uint32_t)));
 
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn))
 		return 0;
+
+	if (conn.count_props <= pre_props &&
+	    conn.count_modes <= pre_modes &&
+	    conn.count_encoders <= pre_encoders)
+		goto done;
+
+	/* Oh well, free & reallocate everything and ask again... */
+	drmFree(U642VOID(conn.prop_values_ptr));
+	drmFree(U642VOID(conn.props_ptr));
+	drmFree(U642VOID(conn.modes_ptr));
+	drmFree(U642VOID(conn.encoders_ptr));
+	conn.prop_values_ptr = 0;
+	conn.props_ptr = 0;
+	conn.modes_ptr = 0;
+	conn.encoders_ptr = 0;
 
 	if (conn.count_props) {
 		conn.props_ptr = VOID2U64(drmMalloc(conn.count_props*sizeof(uint32_t)));
@@ -386,6 +410,7 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	if (drmIoctl(fd, DRM_IOCTL_MODE_GETCONNECTOR, &conn))
 		goto err_allocs;
 
+done:
 	if(!(r = drmMalloc(sizeof(*r)))) {
 		goto err_allocs;
 	}
