@@ -524,11 +524,11 @@ static void drm_unload(struct drm_device *dev)
 		DRM_DEBUG("mtrr_del = %d", retcode);
 	}
 
-	drm_vblank_cleanup(dev);
-
 	DRM_LOCK();
 	drm_lastclose(dev);
 	DRM_UNLOCK();
+
+	drm_vblank_cleanup(dev);
 
 	/* Clean up PCI resources allocated by drm_bufs.c.  We're not really
 	 * worried about resource consumption while the DRM is inactive (between
