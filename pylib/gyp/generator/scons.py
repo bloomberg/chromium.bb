@@ -50,14 +50,20 @@ def full_product_name(spec, prefix='', suffix=''):
 def _SCons_null_writer(fp, spec):
   pass
 
-def _SCons_writer(fp, spec, builder):
-  fp.write('\n_outputs = %s\n' % builder)
+def _SCons_writer(fp, spec, builder, pre=''):
+  fp.write('\n' + pre)
+  fp.write('_outputs = %s\n' % builder)
   fp.write('target_files.extend(_outputs)\n')
 
 def _SCons_program_writer(fp, spec):
+  # On Linux, an executable name like 'chrome' could be either the
+  # on-disk executable or the Alias that represents the 'chrome' target.
+  # Disambiguate that the program we're building is, in fact, the
+  # on-disk target, so other dependent targets can't get confused.
   name = full_product_name(spec)
-  builder = 'env.ChromeProgram(\'%s\', input_files)' % name
-  return _SCons_writer(fp, spec, builder)
+  pre = '_program = env.File(\'${PROGPREFIX}%s${PROGSUFFIX}\')\n' % name
+  builder = 'env.ChromeProgram(_program, input_files)'
+  return _SCons_writer(fp, spec, builder, pre)
 
 def _SCons_static_library_writer(fp, spec):
   name = full_product_name(spec)
@@ -213,15 +219,15 @@ def GenerateSConscript(output_filename, spec, build_file):
 
     --  Arrange for any copies to be made into installation directories.
 
-    --  Set up the gyp_target_{name} Alias (phony Node) for the target
-        as the primary handle for building all of the target's pieces.
+    --  Set up the {name} Alias (phony Node) for the target as the
+        primary handle for building all of the target's pieces.
 
     --  Use env.Require() to make sure the prerequisites (explicitly
         specified, but also including the actions and rules) are built
         before the target itself.
 
-    --  Return the gyp_target_{name} Alias to the calling SConstruct
-        file so it can be added to the list of default targets.
+    --  Return the {name} Alias to the calling SConstruct file
+        so it can be added to the list of default targets.
   """
   gyp_dir = os.path.split(output_filename)[0]
   if not gyp_dir:
@@ -354,7 +360,7 @@ def GenerateSConscript(output_filename, spec, build_file):
     fp.write(fmt % (repr(destdir), pprint.pformat(files)))
     fp.write('prerequisites.extend(_outputs)\n')
 
-  fmt = "\ngyp_target = env.Alias('gyp_target_%s', target_files)\n"
+  fmt = "\ngyp_target = env.Alias('%s', target_files)\n"
   fp.write(fmt % target_name)
   dependencies = spec.get('scons_dependencies', [])
   if dependencies:
@@ -484,7 +490,7 @@ for conf in conf_list:
     if target_alias:
       target_alias_list.extend(target_alias)
 
-Default(Alias('%(name)s', target_alias_list))
+Default(Alias('all', target_alias_list))
 """
 
 def GenerateSConscriptWrapper(build_file_data, name,
@@ -544,7 +550,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     for d in deps:
       td = target_dicts[d]
       target_name = td['target_name']
-      spec['scons_dependencies'].append("Alias('gyp_target_%s')" % target_name)
+      spec['scons_dependencies'].append("Alias('%s')" % target_name)
       if td['type'] in ('static_library', 'shared_library'):
         libname = td.get('product_name', target_name)
         spec['libraries'].append(libname)
