@@ -122,9 +122,10 @@ import SCons.Platform.posix
 needs_shell = re.compile('["\\'><!^&]')
 def my_spawn(sh, escape, cmd, args, env):
   def strip_scons_quotes(arg):
-    if arg[0] == '"' and arg[-1] == '#':
+    if arg[0] == '"' and arg[-1] == '"':
       return arg[1:-1]
     return arg
+  args = [strip_scons_quotes(a) for a in args]
   cmd_line = ' '.join(args)
   if needs_shell.search(cmd_line):
     return SCons.Platform.posix.exec_spawnvpe([sh, '-c', cmd_line], env)
