@@ -120,7 +120,7 @@ _spawn_hack = """
 import re
 import SCons.Platform.posix
 needs_shell = re.compile('["\\'><!^&]')
-def my_spawn(sh, escape, cmd, args, env):
+def gyp_spawn(sh, escape, cmd, args, env):
   def strip_scons_quotes(arg):
     if arg[0] == '"' and arg[-1] == '"':
       return arg[1:-1]
@@ -131,7 +131,6 @@ def my_spawn(sh, escape, cmd, args, env):
     return SCons.Platform.posix.exec_spawnvpe([sh, '-c', cmd_line], env)
   else:
     return SCons.Platform.posix.exec_spawnvpe(args, env)
-env['SPAWN'] = my_spawn
 """
 
 escape_quotes_re = re.compile('^([^=]*=)"([^"]*)"$')
@@ -244,7 +243,10 @@ def GenerateSConscript(output_filename, spec, build_file):
   fp.write('\nImport("env")\n')
 
   #
-  fp.write(_spawn_hack)
+  for config in spec['configurations'].itervalues():
+    if config.get('scons_line_length'):
+      fp.write(_spawn_hack)
+      break
 
   #
   fp.write('\n')
@@ -268,6 +270,8 @@ def GenerateSConscript(output_filename, spec, build_file):
       fp.write('             %s = %s,\n' % (key, val))
     if 'c++' in spec.get('link_languages', []):
       fp.write('             %s = %s,\n' % ('LINK', repr('$CXX')))
+    if config.get('scons_line_length'):
+      fp.write('             SPAWN = gyp_spawn,\n')
     fp.write('        ),\n')
 
     fp.write('        \'ImportExternal\' : [\n' )
