@@ -159,7 +159,9 @@ class XcodeProject(object):
         run_target.AddDependency(xcode_target)
 
         # The test runner target has a build phase that executes the test.
-        script = 'exec "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}"\nexit 1\n'
+        # TODO(tvl): chromium specific
+        script = 'exec "${BUILT_PRODUCTS_DIR}/${PRODUCT_NAME}" ' + \
+                 '--gtest_print_time\nexit 1\n'
         ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
               'shellScript':      script,
               'showEnvVarsInLog': 0,
@@ -281,12 +283,14 @@ class XcodeProject(object):
               },
               parent=self.project)
           for test_target in all_tests:
+            # TODO(tvl): chromium specific
             run_all_target.AddDependency(test_target)
             ttpn = test_target.GetProperty('productName')
             proj_name = test_target.PBXProjectAncestor().Name()
             nice_name = '"' + ttpn + '" from "' + proj_name + '"'
             script = 'echo note: running ' + nice_name + '\n' + \
-                     'exec "${BUILT_PRODUCTS_DIR}/' + ttpn + '"\nexit 1\n'
+                     'exec "${BUILT_PRODUCTS_DIR}/' + ttpn + \
+                     '" --gtest_print_time\nexit 1\n'
             ssbp = gyp.xcodeproj_file.PBXShellScriptBuildPhase({
                   'name':             'Run ' + nice_name,
                   'shellScript':      script,
