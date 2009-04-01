@@ -13,7 +13,7 @@ import sys
 # GYP builds on other platforms are more mature, but allows GYP developers and
 # early adopters to run GYP from the same hook that the Mac uses.
 # It will temporarily be partially on for windows (only some projects).
-if not (sys.platform in ['darwin', 'win32', 'cygwin'] or
+if not (sys.platform in ['darwin', 'linux2', 'win32', 'cygwin'] or
         os.environ.get('USE_GYP')):
   sys.exit(0)
 
