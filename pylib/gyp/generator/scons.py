@@ -360,9 +360,11 @@ def GenerateSConscript(output_filename, spec, build_file):
   for copy in copies:
     destdir = copy['destination']
     files = copy['files']
-    fmt = '\n_outputs = env.Install(%s,\n    %s\n)\n'
-    fp.write(fmt % (repr(destdir), pprint.pformat(files)))
-    fp.write('prerequisites.extend(_outputs)\n')
+    fmt = '\n_outputs = env.Command(%s,\n    %s\n,    \'cp $SOURCE $TARGET\')\n'
+    for f in copy['files']:
+      dest = os.path.join(destdir, os.path.split(f)[1])
+      fp.write(fmt % (repr(dest), repr(f)))
+      fp.write('prerequisites.extend(_outputs)\n')
 
   fmt = "\ngyp_target = env.Alias('%s', target_files)\n"
   fp.write(fmt % target_name)
