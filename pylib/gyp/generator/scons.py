@@ -417,11 +417,7 @@ SetOption('num_jobs', cpus + 1)
 default_warnings = ['no-no-parallel-support']
 SetOption('warn', default_warnings + GetOption('warn'))
 
-# TODO(sgk):  We'd like to use --conf= to select the configuration to
-# build, but SCons already supports a --config option and by the time we
-# get here optparse has already decided that --conf is a synonym for
-# --config.  So spell out all of --configuration.
-AddOption('--configuration', nargs=1, dest='conf_list', default=[],
+AddOption('--mode', nargs=1, dest='conf_list', default=[],
           action='append', help='Configuration to build.')
 
 #
@@ -516,6 +512,14 @@ def GenerateSConscriptWrapper(build_file_data, name,
                'sconscript_files' : pprint.pformat(sconscript_files),
                'subdir' : subdir,
            })
+  fp.close()
+
+  # Generate the SConstruct file that invokes the wrapper SConscript.
+  dir, fname = os.path.split(output_filename)
+  SConstruct = os.path.join(dir, 'SConstruct')
+  fp = open(SConstruct, 'w')
+  fp.write(header)
+  fp.write('SConscript(%s)\n' % repr(fname))
   fp.close()
 
 
