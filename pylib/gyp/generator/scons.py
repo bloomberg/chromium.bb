@@ -275,12 +275,12 @@ def GenerateSConscript(output_filename, spec, build_file):
 
     fp.write('        \'ImportExternal\' : [\n' )
     for var in config.get('scons_import_variables', []):
-      fp.write('             %s\n' % repr(var))
+      fp.write('             %s,\n' % repr(var))
     fp.write('        ],\n')
 
     fp.write('        \'PropagateExternal\' : [\n' )
     for var in config.get('scons_propagate_variables', []):
-      fp.write('             %s\n' % repr(var))
+      fp.write('             %s,\n' % repr(var))
     fp.write('        ],\n')
 
     fp.write('    },\n')
