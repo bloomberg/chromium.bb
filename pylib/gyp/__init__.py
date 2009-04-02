@@ -24,8 +24,8 @@ def main(args):
   parser.set_usage(usage.replace('%s', '%prog'))
   parser.add_option('-D', dest='defines', action='append', metavar='VAR=VAL',
                     help='sets variable VAR to value VAL')
-  parser.add_option('-f', '--format', dest='format',
-                    help='output format to generate')
+  parser.add_option('-f', '--format', dest='formats', action='append',
+                    help='output formats to generate')
   parser.add_option('-I', '--include', dest='includes', action='append',
                     metavar='INCLUDE',
                     help='files to include in all loaded .gyp files')
@@ -39,11 +39,11 @@ def main(args):
 
   (options, build_files) = parser.parse_args(args)
 
-  if not options.format:
-    options.format = {'darwin': 'xcode',
-                      'win32':  'msvs',
-                      'cygwin': 'msvs',
-                      'linux2': 'scons',}[sys.platform]
+  if not options.formats:
+    options.formats = [ {'darwin': 'xcode',
+                         'win32':  'msvs',
+                         'cygwin': 'msvs',
+                         'linux2': 'scons',}[sys.platform] ]
 
   if not build_files:
     build_files = FindBuildFiles()
@@ -80,31 +80,19 @@ def main(args):
             'temporary Chromium feature that will be removed.  Use ' + \
             '--depth as a workaround.'
 
-  default_variables = {}
-
   # -D on the command line sets variable defaults - D isn't just for define,
   # it's for default.  Perhaps there should be a way to force (-F?) a
   # variable's value so that it can't be overridden by anything else.
+  cmdline_default_variables = {}
   if options.defines:
     for define in options.defines:
       tokens = define.split('=', 1)
       if len(tokens) == 2:
         # Set the variable to the supplied value.
-        default_variables[tokens[0]] = tokens[1]
+        cmdline_default_variables[tokens[0]] = tokens[1]
       else:
         # No value supplied, treat it as a boolean and set it.
-        default_variables[tokens[0]] = True
-
-  # Default variables provided by this program and its modules should be
-  # named WITH_CAPITAL_LETTERS to provide a distinct "best practice" namespace,
-  # avoiding collisions with user and automatic variables.
-  default_variables['GENERATOR'] = options.format
-
-  generator_name = 'gyp.generator.' + options.format
-  # These parameters are passed in order (as opposed to by key)
-  # because ActivePython cannot handle key parameters to __import__.
-  generator = __import__(generator_name, globals(), locals(), generator_name)
-  default_variables.update(generator.generator_default_variables)
+        cmdline_default_variables[tokens[0]] = True
 
   # Set up includes.
   includes = []
@@ -129,22 +117,46 @@ def main(args):
   # Command-line --include files come after the default include.
   if options.includes:
     includes.extend(options.includes)
+  
+  # Generator flags should be prefixed with the target generator since they
+  # are global across all generator runs.
+  generator_flags = options.generator_flags.split(',')
 
-  [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
-                                              includes, options.depth)
+  # Generate all requested formats
+  for format in options.formats:
 
-  params = {'options': options,
-            'build_files': build_files,
-            'generator_flags': options.generator_flags.split(',')}
+    # Start with the default variables from the command line.
+    default_variables = cmdline_default_variables.copy()
+    
+    # Default variables provided by this program and its modules should be
+    # named WITH_CAPITAL_LETTERS to provide a distinct "best practice" namespace,
+    # avoiding collisions with user and automatic variables.
+    default_variables['GENERATOR'] = format
 
-  # TODO(mark): Pass |data| for now because the generator needs a list of
-  # build files that came in.  In the future, maybe it should just accept
-  # a list, and not the whole data dict.
-  # NOTE: flat_list is the flattened dependency graph specifying the order
-  # that targets may be built.  Build systems that operate serially or that
-  # need to have dependencies defined before dependents reference them should
-  # generate targets in the order specified in flat_list.
-  generator.GenerateOutput(flat_list, targets, data, params)
+    generator_name = 'gyp.generator.' + format
+    # These parameters are passed in order (as opposed to by key)
+    # because ActivePython cannot handle key parameters to __import__.
+    generator = __import__(generator_name, globals(), locals(), generator_name)
+    default_variables.update(generator.generator_default_variables)
+
+    # Process the input specific to this generator.
+    [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
+                                                includes[:], options.depth)
+
+    params = {'options': options,
+              'build_files': build_files,
+              'generator_flags': generator_flags}
+
+    # TODO(mark): Pass |data| for now because the generator needs a list of
+    # build files that came in.  In the future, maybe it should just accept
+    # a list, and not the whole data dict.
+    # NOTE: flat_list is the flattened dependency graph specifying the order
+    # that targets may be built.  Build systems that operate serially or that
+    # need to have dependencies defined before dependents reference them should
+    # generate targets in the order specified in flat_list.
+    generator.GenerateOutput(flat_list, targets, data, params)
+
+  # Done
   return 0
 
 
