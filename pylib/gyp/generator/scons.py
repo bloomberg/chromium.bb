@@ -149,7 +149,7 @@ def GenerateConfig(fp, spec, config, indent=''):
       'cflags' : 'CCFLAGS',
       'defines' : 'CPPDEFINES',
       'include_dirs' : 'CPPPATH',
-      'linkflags' : 'LINKFLAGS',
+      'ldflags' : 'LINKFLAGS',
   }
   postamble='\n%s],\n' % indent
   for gyp_var, scons_var in var_mapping.iteritems():
