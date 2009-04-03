@@ -428,12 +428,51 @@ SetOption('warn', default_warnings + GetOption('warn'))
 AddOption('--mode', nargs=1, dest='conf_list', default=[],
           action='append', help='Configuration to build.')
 
-#
 AddOption('--verbose', dest='verbose', default=False,
           action='store_true', help='Verbose command-line output.')
 
 
-sconscript_files = %(sconscript_files)s
+#
+sconscript_file_map = %(sconscript_files)s
+
+class LoadTarget:
+  '''
+  Class for deciding if a given target sconscript is to be included
+  based on a list of included target names, optionally prefixed with '-'
+  to exclude a target name.
+  '''
+  def __init__(self, load):
+    '''
+    Initialize a class with a list of names for possible loading.
+
+    Arguments:
+      load:  list of elements in the LOAD= specification
+    '''
+    self.included = set([c for c in load if not c.startswith('-')])
+    self.excluded = set([c[1:] for c in load if c.startswith('-')])
+
+    if not self.included:
+      self.included = set(['all'])
+
+  def __call__(self, target):
+    '''
+    Returns True if the specified target's sconscript file should be
+    loaded, based on the initialized included and excluded lists.
+    '''
+    return (target in self.included or
+            ('all' in self.included and not target in self.excluded))
+
+if 'LOAD' in ARGUMENTS:
+  load = ARGUMENTS['LOAD'].split(',')
+else:
+  load = []
+load_target = LoadTarget(load)
+
+sconscript_files = []
+for target, sconscript in sconscript_file_map.iteritems():
+  if load_target(target):
+    sconscript_files.append(sconscript)
+
 
 target_alias_list= []
 
@@ -501,7 +540,7 @@ for conf in conf_list:
       target_alias_list.extend(target_alias)
 
 Default(Alias('all', target_alias_list))
-"""
+"""     # END _wrapper_template
 
 def GenerateSConscriptWrapper(build_file_data, name,
                               output_filename, sconscript_files):
@@ -512,12 +551,19 @@ def GenerateSConscriptWrapper(build_file_data, name,
   subdir = os.path.basename(os.path.split(output_filename)[0])
   scons_settings = build_file_data.get('scons_settings', {})
   sconsbuild_dir = scons_settings.get('sconsbuild_dir', '#')
+
+  sconscript_file_lines = ['dict(']
+  for target in sorted(sconscript_files.keys()):
+    sconscript = sconscript_files[target]
+    sconscript_file_lines.append('    %s = %r,' % (target, sconscript))
+  sconscript_file_lines.append(')')
+
   fp = open(output_filename, 'w')
   fp.write(header)
   fp.write(_wrapper_template % {
                'name' : name,
                'sconsbuild_dir' : repr(sconsbuild_dir),
-               'sconscript_files' : pprint.pformat(sconscript_files),
+               'sconscript_files' : '\n'.join(sconscript_file_lines),
                'subdir' : subdir,
            })
   fp.close()
@@ -589,14 +635,14 @@ def GenerateOutput(target_list, target_dicts, data, params):
     output_filename  = path + '_main' + options.suffix + '.scons'
 
     all_targets = gyp.common.AllTargets(target_list, target_dicts, build_file)
-    sconscript_files = []
+    sconscript_files = {}
     for t in all_targets:
       if target_dicts[t]['type'] == 'settings':
         continue
-      target_filename = TargetFilename(t, output_suffix=options.suffix)
-      t = gyp.common.RelativePath(target_filename, output_dir)
-      sconscript_files.append(t)
-    sconscript_files.sort()
+      build_file, target = gyp.common.BuildFileAndTarget('', t)[:2]
+      target_filename = TargetFilename(target, build_file, options.suffix)
+      tpath = gyp.common.RelativePath(target_filename, output_dir)
+      sconscript_files[target] = tpath
 
     if sconscript_files:
       GenerateSConscriptWrapper(data[build_file], basename,
