@@ -163,14 +163,6 @@ def GenerateConfig(fp, spec, config, indent=''):
                   preamble='%s%s = [\n    ' % (indent, scons_var),
                   postamble=postamble)
 
-  libraries = spec.get('libraries')
-  if libraries:
-    WriteList(fp,
-                map(repr, libraries),
-                prefix=indent,
-                preamble='%sLIBS = [\n    ' % indent,
-                postamble=postamble)
-
 
 def GenerateSConscript(output_filename, spec, build_file):
   """
@@ -248,13 +240,21 @@ def GenerateSConscript(output_filename, spec, build_file):
       break
 
   #
+  indent = ' ' * 12
   fp.write('\n')
   fp.write('configurations = {\n')
   for config_name, config in spec['configurations'].iteritems():
     fp.write('    \'%s\' : {\n' % config_name)
 
     fp.write('        \'Append\' : dict(\n')
-    GenerateConfig(fp, spec, config, ' '*12)
+    GenerateConfig(fp, spec, config, indent)
+    libraries = spec.get('libraries')
+    if libraries:
+      WriteList(fp,
+                map(repr, libraries),
+                prefix=indent,
+                preamble='%sLIBS = [\n    ' % indent,
+                postamble='\n%s],\n' % indent)
     fp.write('        ),\n')
 
     fp.write('        \'FilterOut\' : dict(\n' )
@@ -283,6 +283,13 @@ def GenerateSConscript(output_filename, spec, build_file):
       fp.write('             %s,\n' % repr(var))
     fp.write('        ],\n')
 
+    fp.write('        \'Variants\' : {\n' )
+    for setting, c in config.get('variants', {}).iteritems():
+      fp.write('            %s: dict(\n' % repr(setting.upper()))
+      GenerateConfig(fp, spec, c, ' '*16)
+      fp.write('             ),\n')
+    fp.write('        },\n')
+
     fp.write('    },\n')
   fp.write('}\n')
 
@@ -290,21 +297,25 @@ def GenerateSConscript(output_filename, spec, build_file):
   fp.write('\n')
   fp.write('env = env.Clone(COMPONENT_NAME=%s,\n' % repr(component_name))
   fp.write('                TARGET_NAME=%s)\n' % repr(target_name))
-  fp.write('\n')
-  fp.write('config = configurations[env[\'CONFIG_NAME\']]\n')
-  fp.write('env.Append(**config[\'Append\'])\n')
-  fp.write('env.FilterOut(**config[\'FilterOut\'])\n')
-  fp.write('env.Replace(**config[\'Replace\'])\n')
-  fp.write('for _var in config[\'ImportExternal\']:\n')
-  fp.write('  if _var in ARGUMENTS:\n')
-  fp.write('    env[_var] = ARGUMENTS[_var]\n')
-  fp.write('  elif _var in os.environ:\n')
-  fp.write('    env[_var] = os.environ[_var]\n')
-  fp.write('for _var in config[\'PropagateExternal\']:\n')
-  fp.write('  if _var in ARGUMENTS:\n')
-  fp.write('    env[_var] = ARGUMENTS[_var]\n')
-  fp.write('  elif _var in os.environ:\n')
-  fp.write('    env[\'ENV\'][_var] = os.environ[_var]\n')
+
+  fp.write('\n'
+           'config = configurations[env[\'CONFIG_NAME\']]\n'
+           'env.Append(**config[\'Append\'])\n'
+           'env.FilterOut(**config[\'FilterOut\'])\n'
+           'env.Replace(**config[\'Replace\'])\n'
+           'for _var in config[\'ImportExternal\']:\n'
+           '  if _var in ARGUMENTS:\n'
+           '    env[_var] = ARGUMENTS[_var]\n'
+           '  elif _var in os.environ:\n'
+           '    env[_var] = os.environ[_var]\n'
+           'for _var in config[\'PropagateExternal\']:\n'
+           '  if _var in ARGUMENTS:\n'
+           '    env[_var] = ARGUMENTS[_var]\n'
+           '  elif _var in os.environ:\n'
+           '    env[\'ENV\'][_var] = os.environ[_var]\n'
+           'for setting, config in config[\'Variants\'].iteritems():\n'
+           '  if ARGUMENTS.get(setting) not in (None, \'0\'):\n'
+           '    env.Append(**config)\n')
 
   #
   sources = spec.get('sources')
