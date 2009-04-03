@@ -5,7 +5,7 @@ import gyp
 import gyp.common
 # TODO(sgk):  create a separate "project module" for SCons?
 #import gyp.SCons as SCons
-import os
+import os.path
 import pprint
 import re
 
@@ -399,28 +399,19 @@ including all the specific targets in various *.scons files.
 import sys
 
 # Support PROGRESS= to show progress in different ways.
-if sys.platform == 'win32':
-  console = 'con'
-else:
-  console = '/dev/tty'
 p = ARGUMENTS.get('PROGRESS')
 if p == 'spinner':
   Progress(['/\\r', '|\\r', '\\\\\\r', '-\\r'],
            interval=5,
-           file=open(console, 'w'))
+           file=open('/dev/tty', 'w'))
 elif p == 'name':
-  Progress('$TARGET\\r', overwrite=True, file=open(console, 'w'))
+  Progress('$TARGET\\r', overwrite=True, file=open('/dev/tty', 'w'))
 
 # Set the default -j value based on the number of processors.
-if sys.platform in ('win32', 'cygwin'):
-  cpus = int(os.environ.get('NUMBER_OF_PROCESSORS', 1))
-elif sys.platform in ('linux', 'linux2', 'posix'):
-  # TODO(evanm): this is Linux-specific, not posix.
-  # Parse /proc/cpuinfo for processor count.
-  cpus = len([l for l in open('/proc/cpuinfo')
-                      if l.startswith('processor\\t')])
-else:
-  cpus = 1
+# TODO(evanm): this is Linux-specific, not posix.
+# Parse /proc/cpuinfo for processor count.
+cpus = len([l for l in open('/proc/cpuinfo')
+                    if l.startswith('processor\\t')])
 SetOption('num_jobs', cpus + 1)
 
 # Since we set the -j value by default, suppress SCons warnings about being
