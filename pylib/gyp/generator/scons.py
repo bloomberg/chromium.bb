@@ -638,8 +638,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     for t in all_targets:
       if target_dicts[t]['type'] == 'settings':
         continue
-      build_file, target = gyp.common.BuildFileAndTarget('', t)[:2]
-      target_filename = TargetFilename(target, build_file, options.suffix)
+      bf, target = gyp.common.BuildFileAndTarget('', t)[:2]
+      target_filename = TargetFilename(target, bf, options.suffix)
       tpath = gyp.common.RelativePath(target_filename, output_dir)
       sconscript_files[target] = tpath
 
