@@ -137,7 +137,7 @@ def escape_quotes(s):
     return escape_quotes_re.sub('\\1\\"\\2\\"', s)
 
 
-def GenerateConfig(fp, spec, config, indent=''):
+def GenerateConfig(fp, config, indent=''):
   """
   Generates SCons dictionary items for a gyp configuration.
 
@@ -247,7 +247,7 @@ def GenerateSConscript(output_filename, spec, build_file):
     fp.write('    \'%s\' : {\n' % config_name)
 
     fp.write('        \'Append\' : dict(\n')
-    GenerateConfig(fp, spec, config, indent)
+    GenerateConfig(fp, config, indent)
     libraries = spec.get('libraries')
     if libraries:
       WriteList(fp,
@@ -283,13 +283,6 @@ def GenerateSConscript(output_filename, spec, build_file):
       fp.write('             %s,\n' % repr(var))
     fp.write('        ],\n')
 
-    fp.write('        \'Variants\' : {\n' )
-    for setting, c in config.get('variants', {}).iteritems():
-      fp.write('            %s: dict(\n' % repr(setting.upper()))
-      GenerateConfig(fp, spec, c, ' '*16)
-      fp.write('             ),\n')
-    fp.write('        },\n')
-
     fp.write('    },\n')
   fp.write('}\n')
 
@@ -312,10 +305,16 @@ def GenerateSConscript(output_filename, spec, build_file):
            '  if _var in ARGUMENTS:\n'
            '    env[_var] = ARGUMENTS[_var]\n'
            '  elif _var in os.environ:\n'
-           '    env[\'ENV\'][_var] = os.environ[_var]\n'
-           'for setting, config in config[\'Variants\'].iteritems():\n'
-           '  if ARGUMENTS.get(setting) not in (None, \'0\'):\n'
-           '    env.Append(**config)\n')
+           '    env[\'ENV\'][_var] = os.environ[_var]\n')
+
+  variants = spec.get('variants', {})
+  for setting in sorted(variants.keys()):
+    if_fmt = 'if ARGUMENTS.get(%s) not in (None, \'0\'):\n'
+    fp.write('\n')
+    fp.write(if_fmt % repr(setting.upper()))
+    fp.write('  env.Append(\n')
+    GenerateConfig(fp, variants[setting], ' '*6)
+    fp.write('  )\n')
 
   #
   sources = spec.get('sources')
