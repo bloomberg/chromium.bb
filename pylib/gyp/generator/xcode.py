@@ -5,6 +5,7 @@ import gyp.common
 import gyp.xcodeproj_file
 import errno
 import os
+import posixpath
 import pprint
 import re
 import shutil
@@ -342,7 +343,7 @@ class XcodeProject(object):
                          dir=self.path)
 
     try:
-      output_file = os.fdopen(output_fd, 'w')
+      output_file = os.fdopen(output_fd, 'wb')
 
       self.project_file.Print(output_file)
       output_file.close()
@@ -390,8 +391,8 @@ class XcodeProject(object):
 def AddSourceToTarget(source, pbxp, xct):
   # TODO(mark): Perhaps this can be made a little bit fancier.
   source_extensions = ['c', 'cc', 'cpp', 'cxx', 'm', 'mm', 's']
-  basename = os.path.basename(source)
-  (root, ext) = os.path.splitext(basename)
+  basename = posixpath.basename(source)
+  (root, ext) = posixpath.splitext(basename)
   if ext != '':
     ext = ext[1:]
 
@@ -654,9 +655,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
       actions = []
 
       for rule_source in rule.get('rule_sources', []):
-        rule_source_basename = os.path.basename(rule_source)
+        rule_source_basename = posixpath.basename(rule_source)
         (rule_source_root, rule_source_ext) = \
-            os.path.splitext(rule_source_basename)
+            posixpath.splitext(rule_source_basename)
 
         # These are the same variable names that Xcode uses for its own native
         # rule support.  Because Xcode's rule engine is not being used, they
@@ -716,7 +717,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                      makefile_name)
         # TODO(mark): try/close?  Write to a temporary file and swap it only
         # if it's got changes?
-        makefile = open(makefile_path, 'w')
+        makefile = open(makefile_path, 'wb')
 
         # make will build the first target in the makefile by default.  By
         # convention, it's called "all".  List all (or at least one)
@@ -755,7 +756,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
               bol = '    '
             makefile.write('%s%s \\\n' % (bol, concrete_output))
 
-            concrete_output_dir = os.path.dirname(concrete_output)
+            concrete_output_dir = posixpath.dirname(concrete_output)
             if not concrete_output_dir in concrete_output_dirs:
               concrete_output_dirs.append(concrete_output_dir)
 
@@ -826,7 +827,7 @@ exit 1
 
     # Add "sources".
     for source in spec.get('sources', []):
-      (source_root, source_extension) = os.path.splitext(source)
+      (source_root, source_extension) = posixpath.splitext(source)
       if source_extension not in rules_by_ext:
         # AddSourceToTarget will add the file to a root group if it's not
         # already there.
@@ -904,10 +905,10 @@ exit 1
         # that are always searched, we should check to see if the library is
         # in one of those directories, and if not, we should do the
         # AppendBuildSetting thing.
-        if not os.path.isabs(library) and not library.startswith('$'):
+        if not posixpath.isabs(library) and not library.startswith('$'):
           # TODO(mark): Need to check to see if library_dir is already in
           # LIBRARY_SEARCH_PATHS.
-          library_dir = os.path.dirname(library)
+          library_dir = posixpath.dirname(library)
           xct.AppendBuildSetting('LIBRARY_SEARCH_PATHS', library_dir)
 
     for configuration_name in configuration_names:

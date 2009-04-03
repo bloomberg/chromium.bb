@@ -136,7 +136,7 @@ a project file is output.
 """
 
 import gyp.common
-import os.path
+import posixpath
 import re
 import struct
 import sys
@@ -875,7 +875,7 @@ class XCHierarchicalElement(XCObject):
     XCObject.__init__(self, properties, id, parent)
     if 'path' in self._properties and not 'name' in self._properties:
       path = self._properties['path']
-      name = os.path.basename(path)
+      name = posixpath.basename(path)
       if name != '' and path != name:
         self.SetProperty('name', name)
 
@@ -953,7 +953,7 @@ class XCHierarchicalElement(XCObject):
     # is not expected to be much of a problem in practice.
     path = self.PathFromSourceTreeAndPath()
     if path != None:
-      components = path.split(os.sep)
+      components = path.split(posixpath.sep)
       for component in components:
         hashables.append(self.__class__.__name__ + '.path')
         hashables.append(component)
@@ -1027,7 +1027,7 @@ class XCHierarchicalElement(XCObject):
       components.append(self._properties['path'])
 
     if len(components) > 0:
-      return os.path.join(*components)
+      return posixpath.join(*components)
 
     return None
 
@@ -1044,7 +1044,7 @@ class XCHierarchicalElement(XCObject):
            (not path.startswith('/') and not path.startswith('$'))):
       this_path = xche.PathFromSourceTreeAndPath()
       if this_path != None and path != None:
-        path = os.path.join(this_path, path)
+        path = posixpath.join(this_path, path)
       elif this_path != None:
         path = this_path
       xche = xche.parent
@@ -1171,7 +1171,7 @@ class PBXGroup(XCHierarchicalElement):
     is_dir = False
     if path.endswith('/'):
       is_dir = True
-    normpath = os.path.normpath(path)
+    normpath = posixpath.normpath(path)
     if is_dir:
       normpath = path + '/'
     else:
@@ -1184,10 +1184,10 @@ class PBXGroup(XCHierarchicalElement):
     # this example, grandparent would be set to path/to and parent_root would
     # be set to Language.
     variant_name = None
-    parent = os.path.dirname(path)
-    grandparent = os.path.dirname(parent)
-    parent_basename = os.path.basename(parent)
-    (parent_root, parent_ext) = os.path.splitext(parent_basename)
+    parent = posixpath.dirname(path)
+    grandparent = posixpath.dirname(parent)
+    parent_basename = posixpath.basename(parent)
+    (parent_root, parent_ext) = posixpath.splitext(parent_basename)
     if parent_ext == '.lproj':
       variant_name = parent_root
     if grandparent == '':
@@ -1196,7 +1196,7 @@ class PBXGroup(XCHierarchicalElement):
     # Putting a directory inside a variant group is not currently supported.
     assert not is_dir or variant_name == None
 
-    path_split = path.split(os.path.sep)
+    path_split = path.split(posixpath.sep)
     if len(path_split) == 1 or \
        ((is_dir or variant_name != None) and len(path_split) == 2) or \
        not hierarchical:
@@ -1215,10 +1215,10 @@ class PBXGroup(XCHierarchicalElement):
         # as the basename (MainMenu.nib in the example above).  grandparent
         # specifies the path to the variant group itself, and path_split[-2:]
         # is the path of the specific variant relative to its group.
-        variant_group_name = os.path.basename(path)
+        variant_group_name = posixpath.basename(path)
         variant_group_ref = self.AddOrGetVariantGroupByNameAndPath(
             variant_group_name, grandparent)
-        variant_path = os.path.sep.join(path_split[-2:])
+        variant_path = posixpath.sep.join(path_split[-2:])
         variant_ref = variant_group_ref.GetChildByPath(variant_path)
         if variant_ref != None:
           assert variant_ref.__class__ == PBXFileReference
@@ -1241,7 +1241,7 @@ class PBXGroup(XCHierarchicalElement):
       else:
         group_ref = PBXGroup({'path': next_dir})
         self.AppendChild(group_ref)
-      return group_ref.AddOrGetFileByPath(os.path.sep.join(path_split[1:]),
+      return group_ref.AddOrGetFileByPath(posixpath.sep.join(path_split[1:]),
                                           hierarchical)
 
   def AddOrGetVariantGroupByNameAndPath(self, name, path):
@@ -1308,8 +1308,8 @@ class PBXGroup(XCHierarchicalElement):
         if 'path' in old_properties:
           if 'path' in self._properties:
             # Both the original parent and child have paths set.
-            self._properties['path'] = os.path.join(old_properties['path'],
-                                                    self._properties['path'])
+            self._properties['path'] = posixpath.join(old_properties['path'],
+                                                      self._properties['path'])
           else:
             # Only the original parent has a path, use it.
             self._properties['path'] = old_properties['path']
@@ -1444,8 +1444,8 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
       if is_dir:
         file_type = 'folder'
       else:
-        basename = os.path.basename(self._properties['path'])
-        (root, ext) = os.path.splitext(basename)
+        basename = posixpath.basename(self._properties['path'])
+        (root, ext) = posixpath.splitext(basename)
         # Check the map using a lowercase extension.
         # TODO(mark): Maybe it should try with the original case first and fall
         # back to lowercase, in case there are any instances where case
@@ -2280,7 +2280,7 @@ class PBXProject(XCContainerPortal):
     name = self.path
     if name[-10:] == '.xcodeproj':
       name = name[:-10]
-    return os.path.basename(name)
+    return posixpath.basename(name)
 
   def Path(self):
     return self.path
@@ -2469,7 +2469,7 @@ class PBXProject(XCContainerPortal):
       # is not necessarily already relative to this project.  Figure out the
       # pathname that this project needs to use to refer to the other one.
       other_path = gyp.common.RelativePath(other_pbxproject.Path(),
-                                           os.path.dirname(self.Path()))
+                                           posixpath.dirname(self.Path()))
 
       # ProjectRef is weak (it's owned by the mainGroup hierarchy).
       project_ref = PBXFileReference({
