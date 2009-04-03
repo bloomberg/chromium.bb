@@ -414,6 +414,12 @@ cpus = len([l for l in open('/proc/cpuinfo')
                     if l.startswith('processor\\t')])
 SetOption('num_jobs', cpus + 1)
 
+# Have SCons use its cached dependency information.
+SetOption('implicit_cache', 1)
+
+# Only re-calculate MD5 checksums if a timestamp has changed.
+Decider('MD5-timestamp')
+
 # Since we set the -j value by default, suppress SCons warnings about being
 # unable to support parallel build on versions of Python with no threading.
 default_warnings = ['no-no-parallel-support']
