@@ -1218,6 +1218,7 @@ def SetUpConfigurations(target, target_dict):
     'target_name',
     'test',
     'type',
+    'variants',
 
     # Sections that can be found inside targets or configurations, but that
     # should not be propagated from targets into their configurations.
