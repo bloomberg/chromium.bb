@@ -81,7 +81,11 @@ int main(int argc, char **argv)
 	int ret;
 	int handle;
 
-	fd = drm_open_any();
+	fd = drm_open_matching("8086:*", 0);
+	if (fd < 0) {
+		fprintf(stderr, "failed to open intel drm device, skipping\n");
+		return 0;
+	}
 
 	memset(&mmap, 0, sizeof(mmap));
 	mmap.handle = 0x10101010;

@@ -131,6 +131,13 @@ if test "x$HAVE_CAIRO" = xyes; then
 fi
 AM_CONDITIONAL(HAVE_CAIRO, [test "x$HAVE_CAIRO" = xyes])
 
+# For enumerating devices in test case
+PKG_CHECK_MODULES(LIBUDEV, libudev, [HAVE_LIBUDEV=yes], [HAVE_LIBUDEV=no])
+if test "x$HAVE_LIBUDEV" = xyes; then
+   	AC_DEFINE(HAVE_LIBUDEV, 1, [Have libudev support])
+fi
+AM_CONDITIONAL(HAVE_LIBUDEV, [test "x$HAVE_LIBUDEV" = xyes])
+
 
 AC_SUBST(WARN_CFLAGS)
 AC_OUTPUT([

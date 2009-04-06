@@ -88,7 +88,11 @@ int main(int argc, char **argv)
 {
 	int fd;
 
-	fd = drm_open_any();
+	fd = drm_open_matching("8086:*", 0);
+	if (fd < 0) {
+		fprintf(stderr, "failed to open intel drm device\n");
+		return 0;
+	}
 
 	test_bad_close(fd);
 	test_create_close(fd);

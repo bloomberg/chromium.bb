@@ -78,7 +78,11 @@ int main(int argc, char **argv)
 	int ret;
 	int handle;
 
-	fd = drm_open_any();
+	fd = drm_open_matching("8086:*", 0);
+	if (fd < 0) {
+		fprintf(stderr, "failed to open intel drm device, skipping\n");
+		return 0;
+	}
 
 	memset(&create, 0, sizeof(create));
 	create.size = OBJECT_SIZE;
