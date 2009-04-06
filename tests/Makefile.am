@@ -22,17 +22,20 @@ libdrmtest_la_LIBADD = \
 
 LDADD = libdrmtest.la
 
-TESTS = auth \
-	openclose \
-	getversion \
-	getclient \
-	getstats \
-	lock \
-	setversion \
-	updatedraw \
-	gem_basic \
-	gem_flink \
-	gem_readwrite \
+XFAIL_TESTS =					\
+	auth					\
+	lock
+
+TESTS =						\
+	openclose				\
+	getversion				\
+	getclient				\
+	getstats				\
+	setversion				\
+	updatedraw				\
+	gem_basic				\
+	gem_flink				\
+	gem_readwrite				\
 	gem_mmap
 
 EXTRA_PROGRAMS = $(TESTS)
