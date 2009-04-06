@@ -407,7 +407,9 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
                 [parameters objectForKey:@BREAKPAD_REQUEST_COMMENTS];
   NSString *vendor =
     [parameters objectForKey:@BREAKPAD_VENDOR];
-
+  NSString *dumpSubdirectory =
+    [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
+  
   // If these two are not already set(skipConfirm and sendAndExit can
   // come from user defaults and take priority)
   if (!skipConfirm) {
@@ -509,9 +511,14 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     return false;
   }
 
-  // The product and version are required values
+  if (!dumpSubdirectory) {
+    dumpSubdirectory = @"";
+  }
+
+  // The product and version are required values.
   if (![product length] || ![version length]) {
-    DEBUGLOG(stderr, "Missing required product and/or version keys\n");
+    DEBUGLOG(stderr,
+             "Missing required product or version subdirectory keys\n");
     return false;
   }
 
@@ -537,7 +544,9 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
                          [requestUserText UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_VENDOR,
                          [vendor UTF8String]);
-
+  dictionary.SetKeyValue(BREAKPAD_DUMP_DIRECTORY,
+                         [dumpSubdirectory UTF8String]);
+  
   if (logFilePaths) {
     char logFileKey[255];
     for(unsigned int i = 0; i < [logFilePaths count]; i++) {
@@ -550,12 +559,6 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     dictionary.SetKeyValue(BREAKPAD_EMAIL,
                            [reportEmail UTF8String]);
   }
-#if 0 // for testing
-  BreakpadSetKeyValue(this, @"UserKey1", @"User Value 1");
-  BreakpadSetKeyValue(this, @"UserKey2", @"User Value 2");
-  BreakpadSetKeyValue(this, @"UserKey3", @"User Value 3");
-  BreakpadSetKeyValue(this, @"UserKey4", @"User Value 4");
-#endif
 
   return true;
 }

@@ -50,6 +50,7 @@
 // called from multiple threads, so it must be thread-safe.
 
 #import <Foundation/Foundation.h>
+#import "GTMDefines.h"
 
 // Predeclaration of used protocols that are declared later in this file.
 @protocol GTMLogWriter, GTMLogFormatter, GTMLogFilter;
@@ -455,4 +456,3 @@ typedef enum {
 // way to enable debug-level logging in release builds (if you so desire).
 @interface GTMLogNoFilter : NSObject <GTMLogFilter>
 @end  // GTMLogNoFilter
-

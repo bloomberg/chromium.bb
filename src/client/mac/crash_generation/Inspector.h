@@ -122,18 +122,9 @@ class ConfigFile {
 //=============================================================================
 class MinidumpLocation {
  public:
-  MinidumpLocation() {
-    NSString *minidumpDirBase = NSHomeDirectory();
-    NSString *minidumpDir;
-
-    // Put root processes at root
-    if (geteuid() == 0)
-      minidumpDirBase = @"/";
-
-    minidumpDir =
-      [minidumpDirBase stringByAppendingPathComponent:@"Library/Logs/Google"];
-
+  MinidumpLocation(const NSString *minidumpDir) {
     // Ensure that the path exists.  Fallback to /tmp if unable to locate path.
+    assert(minidumpDir);
     if (!EnsureDirectoryPathExists(minidumpDir)) {
       DEBUGLOG(stderr, "Unable to create: %s\n", [minidumpDir UTF8String]);
       minidumpDir = @"/tmp";
@@ -196,5 +187,3 @@ class Inspector {
 
 
 } // namespace google_breakpad
-
-

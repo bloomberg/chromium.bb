@@ -325,7 +325,33 @@ bool Inspector::InspectTask() {
   // keep the task quiet while we're looking at it
   task_suspend(remote_task_);
 
-  MinidumpLocation  minidumpLocation;
+  NSString *minidumpDir;
+
+  const char *minidumpDirectory =
+    config_params_.GetValueForKey(BREAKPAD_DUMP_DIRECTORY);
+
+  // If the client app has not specified a minidump directory,
+  // use a default of Library/<kDefaultLibrarySubdirectory>/<Product Name>
+  if (0 == strlen(minidumpDirectory)) {
+    NSArray *libraryDirectories =
+      NSSearchPathForDirectoriesInDomains(NSLibraryDirectory,
+                                          NSUserDomainMask,
+                                          YES);
+
+    NSString *applicationSupportDirectory =
+      [libraryDirectories objectAtIndex:0];
+
+    minidumpDir =
+      [NSString stringWithFormat:@"%@/%s/%s",
+                applicationSupportDirectory,
+                kDefaultLibrarySubdirectory,
+                config_params_.GetValueForKey(GOOGLE_BREAKPAD_PRODUCT)];
+  } else {
+    minidumpDir = [[NSString stringWithUTF8String:minidumpDirectory]
+                    stringByExpandingTildeInPath];
+  }
+
+  MinidumpLocation minidumpLocation(minidumpDir);
 
   config_file_.WriteFile( &config_params_,
                           minidumpLocation.GetPath(),

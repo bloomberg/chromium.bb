@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 44;
+	objectVersion = 42;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -26,8 +26,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		4084699D0F5D9CF900FDCA37 /* ReporterIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* ReporterIcon.icns */; };
+		4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
+		F9267CB30F844BDD00A827EC /* Breakpad.nib in Resources */ = {isa = PBXBuildFile; fileRef = F9267CB10F844BDD00A827EC /* Breakpad.nib */; };
 		F9286B3A0F7EB25800A4DCC8 /* InspectorMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = F9286B390F7EB25800A4DCC8 /* InspectorMain.mm */; };
 		F92C53B80ECCE7B3009BE4BA /* Inspector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F92C53B70ECCE7B3009BE4BA /* Inspector.mm */; };
 		F92C554C0ECCF534009BE4BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
@@ -84,7 +85,6 @@
 		F93DE33F0F82C66B00608B94 /* string_utilities.cc in Sources */ = {isa = PBXBuildFile; fileRef = F92C53820ECCE635009BE4BA /* string_utilities.cc */; };
 		F93DE3410F82C68300608B94 /* exception_handler_test.cc in Sources */ = {isa = PBXBuildFile; fileRef = F93DE3400F82C68300608B94 /* exception_handler_test.cc */; };
 		F945849E0F280E3C009A47BF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F945849C0F280E3C009A47BF /* Localizable.strings */; };
-		F94586220F7842CF009A47BF /* Breakpad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 40F2AEEB0F4F2F55004510E8 /* Breakpad.xib */; };
 		F9C444530F7981E600991B96 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F9C444510F7981E600991B96 /* InfoPlist.strings */; };
 		F9C44DB20EF07288003AEBAA /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = F9C44DAC0EF07288003AEBAA /* Controller.m */; };
 		F9C44DB30EF07288003AEBAA /* crashduringload in Resources */ = {isa = PBXBuildFile; fileRef = F9C44DAD0EF07288003AEBAA /* crashduringload */; };
@@ -130,28 +130,28 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = F93803BD0F80820F004D428B /* generator_test */;
+			remoteGlobalIDString = F93803BD0F80820F004D428B;
 			remoteInfo = generator_test;
 		};
 		F93DE2FD0F82C3C900608B94 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = F93DE2D00F82A67300608B94 /* minidump_file_writer_unittest */;
+			remoteGlobalIDString = F93DE2D00F82A67300608B94;
 			remoteInfo = minidump_file_writer_unittest;
 		};
 		F93DE36F0F82CC1300608B94 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = F93DE32B0F82C55600608B94 /* handler_test */;
+			remoteGlobalIDString = F93DE32B0F82C55600608B94;
 			remoteInfo = handler_test;
 		};
 		F93DE3A60F830D1D00608B94 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 0867D690FE84028FC02AAC07 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = F9C77DD90F7DD5CF0045F7DB /* UnitTests */;
+			remoteGlobalIDString = F9C77DD90F7DD5CF0045F7DB;
 			remoteInfo = UnitTests;
 		};
 		F94585870F78232B009A47BF /* PBXContainerItemProxy */ = {
@@ -224,9 +224,9 @@
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		32DBCF5E0370ADEE00C91783 /* Breakpad_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Breakpad_Prefix.pch; path = Framework/Breakpad_Prefix.pch; sourceTree = "<group>"; };
-		4084699C0F5D9CF900FDCA37 /* ReporterIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = ReporterIcon.icns; path = sender/ReporterIcon.icns; sourceTree = "<group>"; };
-		40F2AEEC0F4F2F55004510E8 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = sender/English.lproj/Breakpad.xib; sourceTree = "<group>"; };
+		4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = crash_report_sender.icns; path = sender/crash_report_sender.icns; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* Breakpad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Breakpad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F9267CB20F844BDD00A827EC /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = sender/English.lproj/Breakpad.nib; sourceTree = "<group>"; };
 		F9286B380F7EB25800A4DCC8 /* Inspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Inspector.h; path = crash_generation/Inspector.h; sourceTree = "<group>"; };
 		F9286B390F7EB25800A4DCC8 /* InspectorMain.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = InspectorMain.mm; path = crash_generation/InspectorMain.mm; sourceTree = "<group>"; };
 		F92C53540ECCE349009BE4BA /* Inspector */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Inspector; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -405,7 +405,6 @@
 				F92C53600ECCE3D6009BE4BA /* common */,
 				0867D69AFE84028FC02AAC07 /* Frameworks */,
 				034768DFFF38A50411DB9C8B /* Products */,
-				F92C56A20ECE04A7009BE4BA /* crash_report_sender-Info.plist */,
 				F9C77DDB0F7DD5CF0045F7DB /* UnitTests-Info.plist */,
 			);
 			name = Breakpad;
@@ -533,9 +532,10 @@
 		F92C56A60ECE04B6009BE4BA /* sender */ = {
 			isa = PBXGroup;
 			children = (
-				4084699C0F5D9CF900FDCA37 /* ReporterIcon.icns */,
-				40F2AEEB0F4F2F55004510E8 /* Breakpad.xib */,
 				F945849C0F280E3C009A47BF /* Localizable.strings */,
+				4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */,
+				F92C56A20ECE04A7009BE4BA /* crash_report_sender-Info.plist */,
+				F9267CB10F844BDD00A827EC /* Breakpad.nib */,
 				F92C56A70ECE04C5009BE4BA /* crash_report_sender.h */,
 				F92C56A80ECE04C5009BE4BA /* crash_report_sender.m */,
 			);
@@ -768,7 +768,7 @@
 		0867D690FE84028FC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = 1DEB91B108733DA50010E9CD /* Build configuration list for PBXProject "Breakpad" */;
-			compatibilityVersion = "Xcode 3.0";
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 0867D691FE84028FC02AAC07 /* Breakpad */;
 			productRefGroup = 034768DFFF38A50411DB9C8B /* Products */;
@@ -805,9 +805,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F94586220F7842CF009A47BF /* Breakpad.xib in Resources */,
 				F945849E0F280E3C009A47BF /* Localizable.strings in Resources */,
-				4084699D0F5D9CF900FDCA37 /* ReporterIcon.icns in Resources */,
+				4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */,
+				F9267CB30F844BDD00A827EC /* Breakpad.nib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -844,7 +844,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "install_name_tool -id \"@executable_path/../Resources/breakpadUtilities.dylib\" ${BUILT_PRODUCTS_DIR}/breakpadUtilities.dylib\n";
+			shellScript = "install_name_tool -id \"@executable_path/../Resources/breakpadUtilities.dylib\" \"${BUILT_PRODUCTS_DIR}/breakpadUtilities.dylib\"\n";
 		};
 		F97A0E850ED4EC15008784D3 /* Change install name of breakpadUtilities */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -858,7 +858,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "#!/bin/bash\ninstall_name_tool -id \"@executable_path/../Frameworks/Breakpad.framework/Resources/breakpadUtilities.dylib\" ${BUILT_PRODUCTS_DIR}/breakpadUtilities.dylib\n";
+			shellScript = "#!/bin/bash\ninstall_name_tool -id \"@executable_path/../Frameworks/Breakpad.framework/Resources/breakpadUtilities.dylib\" \"${BUILT_PRODUCTS_DIR}/breakpadUtilities.dylib\"\n";
 		};
 		F9C77DD80F7DD5CF0045F7DB /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1070,12 +1070,12 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		40F2AEEB0F4F2F55004510E8 /* Breakpad.xib */ = {
+		F9267CB10F844BDD00A827EC /* Breakpad.nib */ = {
 			isa = PBXVariantGroup;
 			children = (
-				40F2AEEC0F4F2F55004510E8 /* English */,
+				F9267CB20F844BDD00A827EC /* English */,
 			);
-			name = Breakpad.xib;
+			name = Breakpad.nib;
 			sourceTree = "<group>";
 		};
 		F945849C0F280E3C009A47BF /* Localizable.strings */ = {
@@ -1149,7 +1149,6 @@
 				INFOPLIST_FILE = Framework/Info.plist;
 				INSTALL_PATH = "@executable_path/../Frameworks";
 				PRODUCT_NAME = Breakpad;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				WRAPPER_EXTENSION = framework;
 			};
 			name = Release;
@@ -1164,7 +1163,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH)";
 				PREBINDING = NO;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Debug;
 		};
@@ -1178,7 +1177,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
 				PREBINDING = NO;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = Release;
 		};
@@ -1191,7 +1190,6 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
@@ -1200,7 +1198,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Inspector;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 			};
 			name = Debug;
 		};
@@ -1212,7 +1209,6 @@
 				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
 				INSTALL_PATH = /usr/local/bin;
 				LD_GENERATE_MAP_FILE = YES;
@@ -1222,7 +1218,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Inspector;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1249,7 +1244,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = breakpadUtilities;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 			};
 			name = Debug;
 		};
@@ -1273,7 +1267,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = breakpadUtilities;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -1461,7 +1454,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH)";
 				PREBINDING = NO;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = "Debug With Code Coverage";
 		};
@@ -1496,7 +1489,6 @@
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				HEADER_SEARCH_PATHS = "../..//**";
 				INSTALL_PATH = /usr/local/bin;
 				OTHER_LDFLAGS = (
@@ -1505,7 +1497,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Inspector;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 			};
 			name = "Debug With Code Coverage";
 		};
@@ -1531,7 +1522,6 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = breakpadUtilities;
-				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 			};
 			name = "Debug With Code Coverage";
 		};
