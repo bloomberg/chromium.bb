@@ -2,6 +2,8 @@ AM_CFLAGS = \
 	-I $(top_srcdir)/shared-core \
 	-I $(top_srcdir)/libdrm
 
+AM_LDFLAGS = $(top_builddir)/libdrm/libdrm.la
+
 noinst_PROGRAMS = \
 	dristat \
 	drmstat
