@@ -345,7 +345,7 @@ bool Inspector::InspectTask() {
       [NSString stringWithFormat:@"%@/%s/%s",
                 applicationSupportDirectory,
                 kDefaultLibrarySubdirectory,
-                config_params_.GetValueForKey(GOOGLE_BREAKPAD_PRODUCT)];
+                config_params_.GetValueForKey(BREAKPAD_PRODUCT)];
   } else {
     minidumpDir = [[NSString stringWithUTF8String:minidumpDirectory]
                     stringByExpandingTildeInPath];
