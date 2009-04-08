@@ -145,14 +145,17 @@ def GenerateConfig(fp, config, indent=''):
   keywords and the (upper-case) SCons construction variables.
   """
   var_mapping = {
-      'asflags' : 'ASFLAGS',
-      'cflags' : 'CCFLAGS',
-      'defines' : 'CPPDEFINES',
-      'include_dirs' : 'CPPPATH',
-      'ldflags' : 'LINKFLAGS',
+      'ASFLAGS' : 'asflags',
+      'CCFLAGS' : 'cflags',
+      'CFLAGS' : 'cflags_c',
+      'CXXFLAGS' : 'cflags_cc',
+      'CPPDEFINES' : 'defines',
+      'CPPPATH' : 'include_dirs',
+      'LINKFLAGS' : 'ldflags',
   }
   postamble='\n%s],\n' % indent
-  for gyp_var, scons_var in var_mapping.iteritems():
+  for scons_var in sorted(var_mapping.keys()):
+      gyp_var = var_mapping[scons_var]
       value = config.get(gyp_var)
       if value:
         if gyp_var in ('defines',):
