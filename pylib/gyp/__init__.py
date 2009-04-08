@@ -3,6 +3,7 @@
 import gyp.input
 import optparse
 import os.path
+import shlex
 import sys
 
 
@@ -84,15 +85,19 @@ def main(args):
   # it's for default.  Perhaps there should be a way to force (-F?) a
   # variable's value so that it can't be overridden by anything else.
   cmdline_default_variables = {}
+  defines = os.environ.get('GYP_DEFINES', [])
+  if defines:
+    defines = shlex.split(defines)
   if options.defines:
-    for define in options.defines:
-      tokens = define.split('=', 1)
-      if len(tokens) == 2:
-        # Set the variable to the supplied value.
-        cmdline_default_variables[tokens[0]] = tokens[1]
-      else:
-        # No value supplied, treat it as a boolean and set it.
-        cmdline_default_variables[tokens[0]] = True
+    defines += options.defines
+  for define in defines:
+    tokens = define.split('=', 1)
+    if len(tokens) == 2:
+      # Set the variable to the supplied value.
+      cmdline_default_variables[tokens[0]] = tokens[1]
+    else:
+      # No value supplied, treat it as a boolean and set it.
+      cmdline_default_variables[tokens[0]] = True
 
   # Set up includes.
   includes = []
