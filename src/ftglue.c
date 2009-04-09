@@ -245,10 +245,17 @@ ftglue_face_goto_table( FT_Face    face,
    /* parse the directory table directly, without using
     * FreeType's built-in data structures
     */
-    FT_ULong  offset = 0;
+    FT_ULong  offset = 0, sig;
     FT_UInt   count, nn;
 
-    if ( face->num_faces > 1 )
+    if ( FILE_Seek( 0 ) || ACCESS_Frame( 4 ) )
+      goto Exit;
+
+    sig = GET_Tag4();
+
+    FORGET_Frame();
+
+    if ( sig == FT_MAKE_TAG( 't', 't', 'c', 'f' ) )
     {
       /* deal with TrueType collections */
 
