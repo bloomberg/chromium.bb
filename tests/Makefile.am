@@ -21,7 +21,7 @@ libdrmtest_la_SOURCES = \
 	drmtest.h
 
 libdrmtest_la_LIBADD = \
-	$(LDADD) \
+	$(top_builddir)/libdrm/libdrm.la \
 	$(LIBUDEV_LIBS)
 
 LDADD += libdrmtest.la
