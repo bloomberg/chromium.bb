@@ -1,8 +1,8 @@
-AM_CFLAGS = \
+AM_CPPFLAGS = \
 	-I $(top_srcdir)/shared-core \
 	-I $(top_srcdir)/libdrm
 
-AM_LDFLAGS = $(top_builddir)/libdrm/libdrm.la
+LDADD = $(top_builddir)/libdrm/libdrm.la
 
 noinst_PROGRAMS = \
 	dristat \
@@ -15,14 +15,16 @@ SUBDIRS = \
 if HAVE_LIBUDEV
 
 EXTRA_LTLIBRARIES = libdrmtest.la
+
 libdrmtest_la_SOURCES = \
 	drmtest.c \
 	drmtest.h
+
 libdrmtest_la_LIBADD = \
-	$(top_builddir)/libdrm/libdrm.la \
+	$(LDADD) \
 	$(LIBUDEV_LIBS)
 
-LDADD = libdrmtest.la
+LDADD += libdrmtest.la
 
 XFAIL_TESTS =					\
 	auth					\
