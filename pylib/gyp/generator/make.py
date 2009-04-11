@@ -322,7 +322,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
         (rule_source_root, rule_source_ext) = \
             os.path.splitext(rule_source_basename)
 
-        outputs = map(lambda out: out % { 'IR': rule_source_root }, rule['outputs'])
+        outputs = map(lambda out: out % { 'INPUT_ROOT': rule_source_root }, rule['outputs'])
         for out in outputs:
           dirs.add(os.path.split(out)[0])
           if rule.get('process_outputs_as_sources', False):
