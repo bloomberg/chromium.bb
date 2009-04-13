@@ -69,17 +69,12 @@ else
   quiet=quiet_
 endif
 
-# Leave these in here for now to simplify iteration on testing.
-CC := distcc gcc
-CXX := distcc g++
-
 # We build up a list of all targets so we can slurp in the generated
 # dependency rule Makefiles in one pass.
 all_targets :=
 
 # C++ apps need to be linked with g++.  Not sure what's appropriate.
-# -B flag is a temporary hack for using gold.
-LD := g++ -B/work/chrome/bin
+LD := $(CXX)
 RANLIB ?= ranlib
 
 # This is a hack; we should use the settings from the .gyp files.
@@ -156,17 +151,18 @@ $(obj)/%.o: %.s
 $(obj)/%.o: %.cpp
 	$(call do_cmd,cxx)
 	$(fixup_dep)
-
 $(obj)/%.o: %.cc
 	$(call do_cmd,cxx)
 	$(fixup_dep)
-
 $(obj)/%.o: %.cxx
 	$(call do_cmd,cxx)
 	$(fixup_dep)
 
 # Try building from generated source, too.
 $(obj)/%.o: $(obj)/%.cc
+	$(call do_cmd,cxx)
+	$(fixup_dep)
+$(obj)/%.o: $(obj)/%.cpp
 	$(call do_cmd,cxx)
 	$(fixup_dep)
 
@@ -435,8 +431,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
 %(output)s: $(OBJS) %(deps)s
 \t$(call do_cmd,link)
 %(binpath)s: %(output)s
-\tmkdir -p $(obj)/bin
-\tln -f %(output)s %(binpath)s
+\t$(call do_cmd,copy)
 
 # Also provide a short alias for building this executable; e.g., "make %(target)s".
 %(target)s: %(binpath)s""" % locals())
