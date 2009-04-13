@@ -130,6 +130,11 @@ cmd_copy = ln -f $< $@
 quiet_cmd_link = LINK $@
 cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
 
+# Shared-object link (for generating .so).
+# TODO: perhaps this can share with the LINK command above?
+quiet_cmd_solink = SOLINK $@
+cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
+
 # do_cmd: run a command via the above cmd_foo names.
 # TODO: This should also set up dependencies of the target on the
 # command line used to generate the target (so we rebuild on CFLAGS
@@ -391,6 +396,8 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
   typ = spec.get('type')
   if typ == 'static_library':
     target = 'lib%s.a' % target
+  elif typ == 'loadable_module':
+    target = 'lib%s.so' % target
   elif typ == 'none':
     target = '%s.stamp' % target
   elif typ == 'settings':
@@ -440,6 +447,10 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
 %(output)s: $(OBJS) %(deps)s
 \t$(call do_cmd,ar)
 \t$(call do_cmd,ranlib)""" % locals())
+  elif typ == 'loadable_module':
+    fp.write("""\
+%(output)s: $(OBJS) %(deps)s
+\t$(call do_cmd,solink)""" % locals())
   elif typ == 'none':
     # Write a stamp line.
     fp.write("%(output)s: $(OBJS) %(deps)s\n" % locals())
