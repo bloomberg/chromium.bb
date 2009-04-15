@@ -404,7 +404,8 @@ nouveau_bo_handle_ref(struct nouveau_device *dev, uint32_t handle,
 		nvbo->size = req.size;
 		nvbo->handle = req.handle;
 	}
- 
+
+	nvbo->base.handle = nvbo->handle;
 	return 0;
 } 
 
