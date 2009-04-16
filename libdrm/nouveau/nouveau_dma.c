@@ -41,6 +41,7 @@ WRITE_PUT(struct nouveau_channel_priv *nvchan, uint32_t val)
 	volatile int dum;
 
 	NOUVEAU_DMA_BARRIER;
+	dum = nvchan->pushbuf[0];
 	dum = READ_GET(nvchan);
 
 	*nvchan->put = put;
