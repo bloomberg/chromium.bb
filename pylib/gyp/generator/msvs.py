@@ -107,31 +107,40 @@ def _PrepareAction(c, r, has_input_path):
   # Find path to cygwin.
   cygwin_dir = _FixPath(c.get('msvs_cygwin_dirs', ['.'])[0])
 
-  # Prepare command.
-  direct_cmd = r['action']
-  direct_cmd = [i.replace('$(IntDir)',
-                          '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
-  direct_cmd = [i.replace('$(OutDir)',
-                              '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
-  if has_input_path:
-    direct_cmd = [i.replace('$(InputPath)',
-                            '`cygpath -m "${INPUTPATH}"`')
-                  for i in direct_cmd]
-  direct_cmd = ['"%s"' % i for i in direct_cmd]
-  direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
-  #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
-  direct_cmd = ' '.join(direct_cmd)
-  cmd = (
-#  '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
-    '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
-    'set INTDIR=$(IntDir) && '
-    'set OUTDIR=$(OutDir) && ')
-  if has_input_path:
-    cmd += 'set INPUTPATH=$(InputPath) && '
-  cmd += (
-    'bash -c "%(cmd)s"')
-  cmd = cmd % {'cygwin_dir': cygwin_dir, 'cmd': direct_cmd}
-  return cmd
+  # Currently this weird argument munging is used to duplicate the way a
+  # python script would need to be run as part of the chrome tree.
+  # Eventually we should add some sort of rule_default option to set this
+  # per project. For now the behavior chrome needs is the default.
+  if int(r.get('msvs_cygwin_shell', 1)):
+    # Prepare command.
+    direct_cmd = r['action']
+    direct_cmd = [i.replace('$(IntDir)',
+                            '`cygpath -m "${INTDIR}"`') for i in direct_cmd]
+    direct_cmd = [i.replace('$(OutDir)',
+                            '`cygpath -m "${OUTDIR}"`') for i in direct_cmd]
+    if has_input_path:
+      direct_cmd = [i.replace('$(InputPath)',
+                              '`cygpath -m "${INPUTPATH}"`')
+                    for i in direct_cmd]
+    direct_cmd = ['"%s"' % i for i in direct_cmd]
+    direct_cmd = [i.replace('"', '\\"') for i in direct_cmd]
+    #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
+    direct_cmd = ' '.join(direct_cmd)
+    cmd = (
+  #  '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
+      '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
+      'set INTDIR=$(IntDir) && '
+      'set OUTDIR=$(OutDir) && ')
+    if has_input_path:
+      cmd += 'set INPUTPATH=$(InputPath) && '
+    cmd += (
+      'bash -c "%(cmd)s"')
+    cmd = cmd % {'cygwin_dir': cygwin_dir, 'cmd': direct_cmd}
+    return cmd
+  else:
+    # Support a mode for using cmd directly.
+    direct_cmd = r['action']
+    return ' '.join(direct_command)
 
 
 def _GenerateProject(vcproj_filename, build_file, spec, options):
