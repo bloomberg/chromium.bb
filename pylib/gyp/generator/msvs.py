@@ -140,7 +140,7 @@ def _PrepareAction(c, r, has_input_path):
   else:
     # Support a mode for using cmd directly.
     direct_cmd = r['action']
-    return ' '.join(direct_command)
+    return ' '.join(direct_cmd)
 
 
 def _GenerateProject(vcproj_filename, build_file, spec, options):
