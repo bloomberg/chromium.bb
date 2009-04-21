@@ -152,6 +152,7 @@ def GenerateConfig(fp, config, indent=''):
       'CPPDEFINES' : 'defines',
       'CPPPATH' : 'include_dirs',
       'LINKFLAGS' : 'ldflags',
+      'SHLINKFLAGS' : 'ldflags',
   }
   postamble='\n%s],\n' % indent
   for scons_var in sorted(var_mapping.keys()):
