@@ -389,7 +389,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
     objs = map(Objectify, AbsolutifyL(dir, map(Target, sources)))
   WriteList(fp, objs, 'OBJS')
   # Make sure the actions and rules run first.
-  fp.write("targets += $(OBJS)\n")
+  fp.write("all_targets += $(OBJS)\n")
 
   output = None
   typ = spec.get('type')
