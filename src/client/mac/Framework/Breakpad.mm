@@ -398,6 +398,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   NSString *reporterPathString =
                 [parameters objectForKey:@BREAKPAD_REPORTER_EXE_LOCATION];
   NSString *skipConfirm = [parameters objectForKey:@BREAKPAD_SKIP_CONFIRM];
+  NSString *timeout = [parameters objectForKey:@BREAKPAD_CONFIRM_TIMEOUT];
   NSString *sendAndExit = [parameters objectForKey:@BREAKPAD_SEND_AND_EXIT];
   NSArray  *logFilePaths = [parameters objectForKey:@BREAKPAD_LOGFILES];
   NSString *logFileTailSize = [parameters objectForKey:@BREAKPAD_LOGFILE_UPLOAD_SIZE];
@@ -431,6 +432,9 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
 
   if (!interval)
     interval = @"3600";
+
+  if (!timeout)
+    timeout = @"300";
 
   if (!logFileTailSize)
     logFileTailSize = @"200000";
@@ -535,6 +539,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   dictionary.SetKeyValue(BREAKPAD_URL,             [urlStr UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_REPORT_INTERVAL, [interval UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_SKIP_CONFIRM,    [skipConfirm UTF8String]);
+  dictionary.SetKeyValue(BREAKPAD_CONFIRM_TIMEOUT, [timeout UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_INSPECTOR_LOCATION,
                            [inspectorPathString fileSystemRepresentation]);
   dictionary.SetKeyValue(BREAKPAD_REPORTER_EXE_LOCATION,

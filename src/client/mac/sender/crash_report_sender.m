@@ -369,7 +369,6 @@ NSString *const kDefaultServerType = @"google";
                                                              @""), display]];
   NSString *defaultButtonTitle = nil;
   NSString *otherButtonTitle = nil;
-  NSTimeInterval timeout = 60.0;  // timeout value for the user notification
 
   // Get the localized alert strings
   // If we're going to submit a report, prompt the user if this is okay.
@@ -386,19 +385,19 @@ NSString *const kDefaultServerType = @"google";
                                                             nil, bundle, @"");
     otherButtonTitle = NSLocalizedStringFromTableInBundle(@"cancelButton", nil,
                                                           bundle, @"");
-
-    // Nominally use the report interval
-    timeout = [[parameters_ objectForKey:@BREAKPAD_REPORT_INTERVAL]
-                floatValue];
   } else {
     [self setReportMessage:NSLocalizedStringFromTableInBundle(@"noSendMsg", nil,
                                                               bundle, @"")];
     defaultButtonTitle = NSLocalizedStringFromTableInBundle(@"noSendButton",
                                                             nil, bundle, @"");
-    timeout = 60.0;
   }
-  // show the notification for at least one minute
-  if (timeout < 60.0) {
+
+  // Get the timeout value for the notification.
+  NSTimeInterval timeout = [[parameters_ objectForKey:@BREAKPAD_CONFIRM_TIMEOUT]
+                              floatValue];
+  // Show the notification for at least one minute (but allow 0, since it means
+  // no timeout).
+  if (timeout > 0.001 && timeout < 60.0) {
     timeout = 60.0;
   }
 
@@ -452,9 +451,11 @@ NSString *const kDefaultServerType = @"google";
 
 - (int)runModalWindow:(NSWindow*)window withTimeout:(NSTimeInterval)timeout {
   // Queue a |stopModal| message to be performed in |timeout| seconds.
-  [NSApp performSelector:@selector(stopModal)
-              withObject:nil
-              afterDelay:timeout];
+  if (timeout > 0.001) {
+    [NSApp performSelector:@selector(stopModal)
+                withObject:nil
+                afterDelay:timeout];
+  }
 
   // Run the window modally and wait for either a |stopModal| message or a
   // button click.

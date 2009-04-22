@@ -68,6 +68,7 @@ extern "C" {
 #define BREAKPAD_URL                   "BreakpadURL"
 #define BREAKPAD_REPORT_INTERVAL       "BreakpadReportInterval"
 #define BREAKPAD_SKIP_CONFIRM          "BreakpadSkipConfirm"
+#define BREAKPAD_CONFIRM_TIMEOUT       "BreakpadConfirmTimeout"
 #define BREAKPAD_SEND_AND_EXIT         "BreakpadSendAndExit"
 #define BREAKPAD_DUMP_DIRECTORY        "BreakpadMinidumpLocation"
 #define BREAKPAD_INSPECTOR_LOCATION    "BreakpadInspectorLocation"
@@ -133,6 +134,12 @@ typedef bool (*BreakpadFilterCallback)(int exception_type,
 // BREAKPAD_SKIP_CONFIRM          If true, the reporter will send the report
 //                                without any user intervention.
 //                                Defaults to NO
+//
+// BREAKPAD_CONFIRM_TIMEOUT       Number of seconds before the upload
+//                                confirmation dialog will be automatically
+//                                dismissed (cancelling the upload).
+//                                Default: 300 seconds (min of 60).
+//                                Specify 0 to prevent timeout.
 //
 // BREAKPAD_SEND_AND_EXIT         If true, the handler will exit after sending.
 //                                This will prevent any other handler (e.g.,
