@@ -2360,7 +2360,6 @@ class PBXProject(XCContainerPortal):
     # gyp.generator.xcode.  There should probably be some way for that module
     # to push the names in, rather than having to hard-code them here.
     source_tree_groups = {
-      'BUILT_PRODUCTS_DIR':       (self.ProductsGroup, False),
       'DERIVED_FILE_DIR':         (self.IntermediatesGroup, True),
       'INTERMEDIATE_DIR':         (self.IntermediatesGroup, True),
       'PROJECT_DERIVED_FILE_DIR': (self.IntermediatesGroup, True),
