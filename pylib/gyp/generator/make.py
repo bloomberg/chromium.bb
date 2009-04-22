@@ -377,7 +377,6 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
   includes = config.get('include_dirs')
   if includes:
     includes = AbsolutifyL(dir, includes)
-    includes = sorted(list(set(includes)))  # Uniquify.
   WriteList(fp, includes, 'INCS', prefix='-I')
   WriteList(fp, spec.get('libraries'), 'LIBS')
 
