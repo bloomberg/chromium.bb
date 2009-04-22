@@ -44,6 +44,10 @@ const int kMinidumpFileLengthLimit = 800000;
 
 #define kApplePrefsSyncExcludeAllKey @"com.apple.PreferenceSync.ExcludeAllSyncKeys"
 
+NSString *const kGoogleServerType = @"google";
+NSString *const kSocorroServerType = @"socorro";
+NSString *const kDefaultServerType = @"google";
+
 @interface Reporter(PrivateMethods)
 + (uid_t)consoleUID;
 
@@ -59,12 +63,18 @@ const int kMinidumpFileLengthLimit = 800000;
 - (BOOL)askUserPermissionToSend:(BOOL)shouldSubmitReport;
 - (BOOL)shouldSubmitReport;
 
-// Run an alert window with the given timeout. Returns NSAlertButtonDefault if
-// the timeout is exceeded. A timeout of 0 queues the message immediately in the
-// modal run loop.
+// Run an alert window with the given timeout. Returns
+// NSAlertButtonDefault if the timeout is exceeded. A timeout of 0
+// queues the message immediately in the modal run loop.
 - (int)runModalWindow:(NSWindow*)window withTimeout:(NSTimeInterval)timeout;
 
+// Returns a unique client id (user-specific), creating a persistent
+// one in the user defaults, if necessary.
 - (NSString*)clientID;
+
+// Returns a dictionary that can be used to map Breakpad parameter names to
+// URL parameter names.
+- (NSDictionary *)dictionaryForServerType:(NSString *)serverType;
 @end
 
 @implementation Reporter
@@ -101,6 +111,8 @@ const int kMinidumpFileLengthLimit = 800000;
   if (![ud boolForKey:kApplePrefsSyncExcludeAllKey]) {
     [ud setBool:YES forKey:kApplePrefsSyncExcludeAllKey];
   }
+
+  [self createServerParameterDictionaries];
 
   return self;
 }
@@ -484,8 +496,9 @@ const int kMinidumpFileLengthLimit = 800000;
 
 // Text Field Delegate Methods
 //=============================================================================
-- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView
-                         doCommandBySelector:(SEL)commandSelector {
+- (BOOL)    control:(NSControl*)control
+           textView:(NSTextView*)textView
+doCommandBySelector:(SEL)commandSelector {
   BOOL result = NO;
   // If the user has entered text, don't end editing on "return"
   if (commandSelector == @selector(insertNewline:)
@@ -580,51 +593,84 @@ const int kMinidumpFileLengthLimit = 800000;
   return YES;
 }
 
+- (void)createServerParameterDictionaries {
+  serverDictionary_ = [[NSMutableDictionary alloc] init];
+  socorroDictionary_ = [[NSMutableDictionary alloc] init];
+  googleDictionary_ = [[NSMutableDictionary alloc] init];
+
+  [serverDictionary_ setObject:socorroDictionary_ forKey:kSocorroServerType];
+  [serverDictionary_ setObject:googleDictionary_ forKey:kGoogleServerType];
+
+  [googleDictionary_ setObject:@"ptime" forKey:@BREAKPAD_PROCESS_UP_TIME];
+  [googleDictionary_ setObject:@"email" forKey:@BREAKPAD_EMAIL];
+  [googleDictionary_ setObject:@"comments" forKey:@BREAKPAD_COMMENTS];
+  [googleDictionary_ setObject:@"prod" forKey:@BREAKPAD_PRODUCT];
+  [googleDictionary_ setObject:@"ver" forKey:@BREAKPAD_VERSION];
+  // TODO: just for testing, google's server doesn't support it
+  [googleDictionary_ setObject:@"buildid" forKey:@BREAKPAD_BUILD_ID];
+
+  [socorroDictionary_ setObject:@"Comments" forKey:@BREAKPAD_COMMENTS];
+  [socorroDictionary_ setObject:@"CrashTime"
+                         forKey:@BREAKPAD_PROCESS_CRASH_TIME];
+  [socorroDictionary_ setObject:@"StartupTime"
+                         forKey:@BREAKPAD_PROCESS_START_TIME];
+  [socorroDictionary_ setObject:@"Version"
+                         forKey:@BREAKPAD_VERSION];
+  [socorroDictionary_ setObject:@"ProductName"
+                         forKey:@BREAKPAD_PRODUCT];
+  [socorroDictionary_ setObject:@"ProductName"
+                         forKey:@BREAKPAD_PRODUCT];
+  [socorroDictionary_ setObject:@"BuildID"
+                         forKey:@BREAKPAD_BUILD_ID];
+}
+
+- (NSDictionary *)dictionaryForServerType:(NSString *)serverType {
+  if (serverType == nil) {
+    return [serverDictionary_ objectForKey:kDefaultServerType];
+  }
+  return [serverDictionary_ objectForKey:serverType];
+}
+
+// Helper method to set HTTP parameters based on server type
+- (BOOL)setPostParametersFromDictionary:(NSMutableDictionary *)crashParameters {
+  NSString *serverType = [parameters_ objectForKey:@BREAKPAD_SERVER_TYPE];
+  NSDictionary *urlParameterNames = [self dictionaryForServerType:serverType];
+
+  id key;
+  NSEnumerator *enumerator = [parameters_ keyEnumerator];
+
+  while ((key = [enumerator nextObject])) {
+    // The key from parameters_ corresponds to a key in
+    // urlParameterNames.  The value in parameters_ gets stored in
+    // crashParameters with a key that is the value in
+    // urlParameterNames.
+
+    // For instance, if parameters_ has [PRODUCT_NAME => "FOOBAR"] and
+    // urlParameterNames has [PRODUCT_NAME => "pname"] the final HTTP
+    // URL parameter becomes [pname => "FOOBAR"].
+    NSString *breakpadParameterName = (NSString *)key;
+    NSString *urlParameter = [urlParameterNames
+                                   objectForKey:breakpadParameterName];
+    if (urlParameter) {
+      [crashParameters setObject:[parameters_ objectForKey:key]
+                          forKey:urlParameter];
+    }
+  }
+  return YES;
+}
+
 //=============================================================================
 - (void)report {
   NSURL *url = [NSURL URLWithString:[parameters_ objectForKey:@BREAKPAD_URL]];
   HTTPMultipartUpload *upload = [[HTTPMultipartUpload alloc] initWithURL:url];
   NSMutableDictionary *uploadParameters = [NSMutableDictionary dictionary];
 
-  // Set the known parameters.  This should be kept up to date with the
-  // parameters defined in the Breakpad.h list of parameters.  The intent
-  // is so that if there's a parameter that's not in this list, we consider
-  // it to be a "user-defined" parameter and we'll upload it to the server.
-  NSSet *knownParameters =
-    [NSSet setWithObjects:@kReporterMinidumpDirectoryKey,
-           @kReporterMinidumpIDKey, @BREAKPAD_PRODUCT_DISPLAY,
-           @BREAKPAD_PRODUCT, @BREAKPAD_VERSION, @BREAKPAD_URL,
-           @BREAKPAD_REPORT_INTERVAL, @BREAKPAD_SKIP_CONFIRM,
-           @BREAKPAD_SEND_AND_EXIT, @BREAKPAD_REPORTER_EXE_LOCATION,
-           @BREAKPAD_INSPECTOR_LOCATION, @BREAKPAD_LOGFILES,
-           @BREAKPAD_LOGFILE_UPLOAD_SIZE, @BREAKPAD_EMAIL,
-           @BREAKPAD_REQUEST_COMMENTS, @BREAKPAD_COMMENTS,
-           @BREAKPAD_VENDOR, nil];
-
-  // Add parameters
-  [uploadParameters setObject:[parameters_ objectForKey:@BREAKPAD_PRODUCT]
-                    forKey:@"prod"];
-  [uploadParameters setObject:[parameters_ objectForKey:@BREAKPAD_VERSION]
-                    forKey:@"ver"];
-
-  if ([parameters_ objectForKey:@BREAKPAD_EMAIL]) {
-    [uploadParameters setObject:[parameters_ objectForKey:@BREAKPAD_EMAIL] forKey:@"email"];
+  if (![self setPostParametersFromDictionary:uploadParameters]) {
+    return;
   }
 
-  NSString* comments = [parameters_ objectForKey:@BREAKPAD_COMMENTS];
-  if (comments != nil) {
-    [uploadParameters setObject:comments forKey:@"comments"];
-  }
-  // Add any user parameters
-  NSArray *parameterKeys = [parameters_ allKeys];
-  int keyCount = [parameterKeys count];
-  for (int i = 0; i < keyCount; ++i) {
-    NSString *key = [parameterKeys objectAtIndex:i];
-    if (![knownParameters containsObject:key] &&
-        ![key hasPrefix:@BREAKPAD_LOGFILE_KEY_PREFIX])
-      [uploadParameters setObject:[parameters_ objectForKey:key] forKey:key];
-  }
   [upload setParameters:uploadParameters];
+
   // Add minidump file
   if (minidumpContents_) {
     [upload addFileContents:minidumpContents_ name:@"upload_file_minidump"];
@@ -691,8 +737,12 @@ const int kMinidumpFileLengthLimit = 800000;
   [parameters_ release];
   [minidumpContents_ release];
   [logFileData_ release];
+  [googleDictionary_ release];
+  [socorroDictionary_ release];
+  [serverDictionary_ release];
   [super dealloc];
 }
+
 @end
 
 //=============================================================================

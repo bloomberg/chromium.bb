@@ -25,7 +25,7 @@
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>BreakpadProductDisplay</key>
-	<string>Google Breakpad Tester</string>
+	<string>Breakpad Tester</string>
 	<key>BreakpadProduct</key>
 	<string>Breakpad_Tester</string>
 	<key>BreakpadVersion</key>
@@ -40,8 +40,6 @@
 	<string>YES</string>
 	<key>BreakpadVendor</key>
 	<string>Foo Bar Corp, Incorporated, LTD, LLC</string>
-	<key>BreakpadMinidumpLocation</key>
-	<string>Breakpad Test Application/Crash Dumps</string>
 	<key>LSUIElement</key>
 	<string>1</string>
 </dict>

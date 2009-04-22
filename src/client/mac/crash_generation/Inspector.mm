@@ -321,6 +321,30 @@ kern_return_t Inspector::ReadMessages() {
 }
 
 //=============================================================================
+// Sets keys in the parameters dictionary that are specific to process uptime.
+// The two we set are process up time, and process crash time.
+void Inspector::SetCrashTimeParameters() {
+  // Set process uptime parameter
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+
+  char processUptimeString[32], processCrashtimeString[32];
+  const char *processStartTimeString =
+    config_params_.GetValueForKey(BREAKPAD_PROCESS_START_TIME);
+
+  // Set up time if we've received the start time.
+  if (processStartTimeString) {
+    time_t processStartTime = strtol(processStartTimeString, NULL, 10);
+    time_t processUptime = tv.tv_sec - processStartTime;
+    sprintf(processUptimeString, "%d", processUptime);
+    config_params_.SetKeyValue(BREAKPAD_PROCESS_UP_TIME, processUptimeString);
+  }
+
+  sprintf(processCrashtimeString, "%d", tv.tv_sec);
+  config_params_.SetKeyValue(BREAKPAD_PROCESS_CRASH_TIME,
+                             processCrashtimeString);
+}
+
 bool Inspector::InspectTask() {
   // keep the task quiet while we're looking at it
   task_suspend(remote_task_);
@@ -330,6 +354,7 @@ bool Inspector::InspectTask() {
   const char *minidumpDirectory =
     config_params_.GetValueForKey(BREAKPAD_DUMP_DIRECTORY);
 
+  SetCrashTimeParameters();
   // If the client app has not specified a minidump directory,
   // use a default of Library/<kDefaultLibrarySubdirectory>/<Product Name>
   if (0 == strlen(minidumpDirectory)) {

@@ -369,7 +369,6 @@ bool Breakpad::Initialize(NSDictionary *parameters) {
     new (gBreakpadAllocator->Allocate(sizeof(google_breakpad::ExceptionHandler)))
       google_breakpad::ExceptionHandler(
         Breakpad::ExceptionHandlerDirectCallback, this, true);
-
   return true;
 }
 
@@ -409,6 +408,8 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     [parameters objectForKey:@BREAKPAD_VENDOR];
   NSString *dumpSubdirectory =
     [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
+  NSString *buildId =
+    [parameters objectForKey:@BREAKPAD_BUILD_ID];
   
   // If these two are not already set(skipConfirm and sendAndExit can
   // come from user defaults and take priority)
@@ -547,11 +548,22 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   dictionary.SetKeyValue(BREAKPAD_DUMP_DIRECTORY,
                          [dumpSubdirectory UTF8String]);
   
+  dictionary.SetKeyValue(BREAKPAD_BUILD_ID,
+                         [buildId UTF8String]);
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  char timeStartedString[32];
+  sprintf(timeStartedString, "%d", tv.tv_sec);
+  dictionary.SetKeyValue(BREAKPAD_PROCESS_START_TIME,
+                         timeStartedString);
+
   if (logFilePaths) {
     char logFileKey[255];
     for(unsigned int i = 0; i < [logFilePaths count]; i++) {
       sprintf(logFileKey,"%s%d", BREAKPAD_LOGFILE_KEY_PREFIX, i);
-      dictionary.SetKeyValue(logFileKey, [[logFilePaths objectAtIndex:i] fileSystemRepresentation]);
+      dictionary.SetKeyValue(logFileKey,
+                             [[logFilePaths objectAtIndex:i]
+                               fileSystemRepresentation]);
     }
   }
 

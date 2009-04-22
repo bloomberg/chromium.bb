@@ -38,22 +38,37 @@
 
 #define kClientIdPreferenceKey @"clientid"
 
+extern NSString *const kGoogleServerType;
+extern NSString *const kSocorroServerType;
+extern NSString *const kDefaultServerType;
 @interface Reporter : NSObject {
  @public
   IBOutlet NSWindow *alertWindow;       // The alert window
 
   // Values bound in the XIB
-  NSString *headerMessage_;           // Message notifying of the crash
-  NSString *reportMessage_;           // Message explaining the crash report
-  NSString *commentsValue_;           // Comments from the user
-  NSString *emailMessage_;            // Message requesting user email
-  NSString *emailValue_;              // Email from the user
+  NSString *headerMessage_;                // Message notifying of the
+                                           // crash
+  NSString *reportMessage_;                // Message explaining the
+                                           // crash report
+  NSString *commentsValue_;                // Comments from the user
+  NSString *emailMessage_;                 // Message requesting user
+                                           // email
+  NSString *emailValue_;                   // Email from the user
 
  @private
-  int configFile_;                    // File descriptor for config file
-  NSMutableDictionary *parameters_;   // Key value pairs of data (STRONG)
-  NSData *minidumpContents_;          // The data in the minidump (STRONG)
-  NSData *logFileData_;               // An NSdata for the tar, bz2'd log file
+  int configFile_;                         // File descriptor for config file
+  NSMutableDictionary *parameters_;        // Key value pairs of data (STRONG)
+  NSData *minidumpContents_;               // The data in the minidump (STRONG)
+  NSData *logFileData_;                    // An NSdata for the tar,
+                                           // bz2'd log file
+  NSMutableDictionary *serverDictionary_;  // The dictionary mapping a
+                                           // server type name to a
+                                           // dictionary of URL
+                                           // parameter names
+  NSMutableDictionary *socorroDictionary_; // The dictionary for
+                                           // Socorro
+  NSMutableDictionary *googleDictionary_;  // The dictionary for
+                                           // Google
 }
 
 // Stops the modal panel with an NSAlertDefaultReturn value. This is the action
@@ -62,14 +77,17 @@
 // Stops the modal panel with an NSAlertAlternateReturn value. This is the
 // action invoked by the "Cancel" button.
 - (IBAction)cancel:(id)sender;
-// Opens the Google Privacy Policy in the default web browser.
+// Opens the Privacy Policy url in the default web browser.
 - (IBAction)showPrivacyPolicy:(id)sender;
 
 // Delegate methods for the NSTextField for comments. We want to capture the
 // Return key and use it to send the message when no text has been entered.
 // Otherwise, we want Return to add a carriage return to the comments field.
-- (BOOL)control:(NSControl*)control textView:(NSTextView*)textView
-                         doCommandBySelector:(SEL)commandSelector;
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView
+                          doCommandBySelector:(SEL)commandSelector;
+
+// Helper method to set HTTP parameters based on server type
+- (BOOL)setPostParametersFromDictionary:(NSMutableDictionary *)crashParameters;
 
 // Accessors to make bindings work
 - (NSString *)headerMessage;
@@ -86,4 +104,8 @@
 
 - (NSString *)emailValue;
 - (void)setEmailValue:(NSString *)value;
+
+// Initialization helper to create dictionaries mapping Breakpad
+// parameters to URL parameters
+- (void)createServerParameterDictionaries;
 @end
