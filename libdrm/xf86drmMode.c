@@ -395,7 +395,8 @@ drmModeConnectorPtr drmModeGetConnector(int fd, uint32_t connector_id)
 	r->connection   = conn.connection;
 	r->mmWidth      = conn.mm_width;
 	r->mmHeight     = conn.mm_height;
-	r->subpixel     = conn.subpixel;
+	/* convert subpixel from kernel to userspace */
+	r->subpixel     = conn.subpixel + 1;
 	r->count_modes  = conn.count_modes;
 	/* TODO we should test if these alloc & cpy fails. */
 	r->count_props  = conn.count_props;
