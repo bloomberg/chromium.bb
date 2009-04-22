@@ -1467,8 +1467,10 @@ drm_intel_bufmgr_fake_evict_all(drm_intel_bufmgr *bufmgr)
    assert(DRMLISTEMPTY(&bufmgr_fake->on_hardware));
 
    DRMLISTFOREACHSAFE(block, tmp, &bufmgr_fake->lru) {
+      drm_intel_bo_fake *bo_fake = (drm_intel_bo_fake *)block->bo;
       /* Releases the memory, and memcpys dirty contents out if necessary. */
       free_block(bufmgr_fake, block, 0);
+      bo_fake->block = NULL;
    }
 
    pthread_mutex_unlock(&bufmgr_fake->lock);
