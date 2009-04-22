@@ -425,8 +425,10 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
     deps += special_outputs
 
   if deps:
-    fp.write('# Make sure our dependencies are built before any of us.\n')
-    fp.write('$(OBJS): ' + ' '.join(deps) + '\n')
+    fp.write('''\
+# Make sure our dependencies are built before any of us.
+$(OBJS): | %s
+''' % ' '.join(deps))
 
   # Now write the actual build rule.
   fp.write('\n# Rules for final target.\n')
