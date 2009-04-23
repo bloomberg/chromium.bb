@@ -39,6 +39,7 @@
 #import "crash_report_sender.h"
 #import "common/mac/GTMLogger.h"
 
+
 #define kLastSubmission @"LastSubmission"
 const int kMinidumpFileLengthLimit = 800000;
 
@@ -704,13 +705,13 @@ doCommandBySelector:(SEL)commandSelector {
     const char *dest = [destString fileSystemRepresentation];
 
     if (rename(src, dest) == 0) {
-      fprintf(stderr, "Breakpad Reporter: Renamed %s to %s after successful " \
-              "upload\n",src, dest);
+      GTMLoggerInfo(@"Breakpad Reporter: Renamed %s to %s after successful " \
+                    "upload",src, dest);
     }
     else {
       // can't rename - don't worry - it's not important for users
-      fprintf(stderr, "Breakpad Reporter: successful upload report ID = %s\n",
-              reportID );
+      GTMLoggerDebug(@"Breakpad Reporter: successful upload report ID = %s\n",
+                     reportID );
     }
     [result release];
   }
@@ -749,6 +750,11 @@ doCommandBySelector:(SEL)commandSelector {
 //=============================================================================
 int main(int argc, const char *argv[]) {
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+#if DEBUG
+  // Log to stderr in debug builds.
+  [GTMLogger setSharedLogger:[GTMLogger standardLoggerWithStderr]];
+#endif
+  GTMLoggerDebug(@"Reporter Launched, argc=%d", argc);
   // The expectation is that there will be one argument which is the path
   // to the configuration file
   if (argc != 2) {
@@ -758,11 +764,20 @@ int main(int argc, const char *argv[]) {
   // Open the file before (potentially) switching to console user
   int configFile = open(argv[1], O_RDONLY, 0600);
 
+  if (configFile == -1) {
+    GTMLoggerDebug(@"Couldn't open config file %s - %s",
+                   argv[1],
+                   strerror(errno));
+  }
+
   // we want to avoid a build-up of old config files even if they
   // have been incorrectly written by the framework
   unlink(argv[1]);
 
   if (configFile == -1) {
+    GTMLoggerDebug(@"Couldn't unlink config file %s - %s",
+                   argv[1],
+                   strerror(errno));
     exit(1);
   }
 
@@ -770,6 +785,7 @@ int main(int argc, const char *argv[]) {
 
   // Gather the configuration data
   if (![reporter readConfigurationData]) {
+    GTMLoggerDebug(@"reporter readConfigurationData failed");
     exit(1);
   }
 
@@ -793,23 +809,37 @@ int main(int argc, const char *argv[]) {
     struct passwd *pw = getpwnam("nobody");
 
     // If we can't get a non-root uid, don't send the report
-    if (!pw)
+    if (!pw) {
+      GTMLoggerDebug(@"!pw - %s", strerror(errno));
       exit(0);
+    }
 
-    if (setgid(pw->pw_gid) == -1)
+    if (setgid(pw->pw_gid) == -1) {
+      GTMLoggerDebug(@"setgid(pw->pw_gid) == -1 - %s", strerror(errno));
       exit(0);
+    }
 
-    if (setuid(pw->pw_uid) == -1)
+    if (setuid(pw->pw_uid) == -1) {
+      GTMLoggerDebug(@"setuid(pw->pw_uid) == -1 - %s", strerror(errno));
       exit(0);
+    }
+  }
+  else {
+     GTMLoggerDebug(@"getuid() !=0 || geteuid() != 0");
   }
 
   if (okayToSend && shouldSubmitReport) {
+    GTMLoggerDebug(@"Sending Report");
     [reporter report];
+    GTMLoggerDebug(@"Report Sent!");
+  } else {
+    GTMLoggerDebug(@"Not sending crash report okayToSend=%d, "\
+                     "shouldSubmitReport=%d", okayToSend, shouldSubmitReport);
   }
 
+  GTMLoggerDebug(@"Exiting with no errors");
   // Cleanup
   [reporter release];
   [pool release];
-
   return 0;
 }
