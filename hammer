@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# The first expression catches when we're actually in the /src directory.
+# The second expressions strips everything after the last /src occurrence.
+SRC_DIR=`pwd | sed -e '\;/src$;q' -e 's;\(.*/src\)/.*;\1;'`
+SCONS="${SRC_DIR}/third_party/scons/scons.py"
+SITE_SCONS="${SRC_DIR}/site_scons"
+
+exec python "${SCONS}" "--site-dir=${SITE_SCONS}" "$@"
