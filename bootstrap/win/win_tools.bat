@@ -24,7 +24,7 @@ goto :PYTHON_CHECK
 echo Installing subversion ...
 :: svn is not accessible; check it out and create 'proxy' files.
 if exist "%~dp0svn.7z" del "%~dp0svn.7z"
-call "%~dp0wget" -q %WIN_TOOLS_ROOT_URL%/third_party/svn_win_client.7z -O "%~dp0svn.7z"
+cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/svn_win_client.7z "%~dp0svn.7z"
 if errorlevel 1 goto :SVN_FAIL
 echo call "%~dp07za" x -y "%~dp0svn.7z" -o"%WIN_TOOLS_ROOT_DIR%" 1>nul
 call "%~dp07za" x -y "%~dp0svn.7z" -o"%WIN_TOOLS_ROOT_DIR%" 1>nul
