@@ -278,9 +278,15 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
 
       # Build up a list of outputs.
       # Collect the output dirs we'll need.
+      #
+      # HACK: to make file_version_info always rebuild, the gyp file
+      # uses a '.bogus' filename.  That could be improved but for now
+      # we work around it here.
       dirs = set()
-      for out in outputs:
+      for i, out in enumerate(outputs):
         dirs.add(os.path.split(out)[0])
+        if out.endswith('.bogus'):
+          outputs[i] = out[:-len('.bogus')] + '.h'
       if action.get('process_outputs_as_sources', False):
         extra_sources += outputs
 
@@ -334,6 +340,14 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
         fp.write("""\
 %(output)s: %(inputs)s
 \t$(call do_cmd,%(name)s)\n""" % locals())
+        if name == 'resources_grit':
+          # HACK: This is ugly.  Grit intentionally doesn't touch the
+          # timestamp of its output file when the file doesn't change,
+          # which is fine in hash-based dependency systems like scons
+          # and forge, but not kosher in the make world.  After some
+          # discussion, hacking around it here seems like the least
+          # amount of pain.
+          fp.write('\t@touch --no-create $@\n')
         if len(outputs) > 1:
           fp.write('%s: %s\n' % (' '.join(outputs[1:]), outputs[0]))
 
