@@ -14,8 +14,7 @@ then
   svn -q up "$base_dir/bootstrap"
 
   # Then defer the control to the bootstrapper.
-  "$base_dir/bootstrap/gclient.sh" "$@"
+  exec "$base_dir/bootstrap/gclient.sh" "$@"
 else
-  exec "$base_dir/gclient.py" "$@"
+  exec python "$base_dir/gclient.py" "$@"
 fi
-
