@@ -39,8 +39,8 @@ CODEREVIEW_SETTINGS_FILE = "codereview.settings"
 # Warning message when the change appears to be missing tests.
 MISSING_TEST_MSG = "Change contains new or modified methods, but no new tests!"
 
-# Global cache of files cached in GetInfoDir().
-FILES_CACHE = {}
+# Caches whether we read the codereview.settings file yet or not.
+read_gcl_info = False
 
 
 def IsSVNMoved(filename):
@@ -111,62 +111,44 @@ def GetInfoDir():
   return gcl_info_dir
 
 
-def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
-  """Retrieves a file from the repository and caches it in GetInfoDir() for
-  max_age seconds.
-
-  use_root: If False, look up the arborescence for the first match, otherwise go
-            directory to the root repository.
-  """
-  global FILES_CACHE
-  if filename not in FILES_CACHE:
-    # Don't try to look up twice.
-    FILES_CACHE[filename] = None
-    # First we check if we have a cached version.
-    cached_file = os.path.join(GetInfoDir(), filename)
-    if (not os.path.exists(cached_file) or
-        os.stat(cached_file).st_mtime > max_age):
-      dir_info = GetSVNFileInfo(".")
-      repo_root = dir_info["Repository Root"]
-      if use_root:
-        url_path = repo_root
-      else:
-        url_path = dir_info["URL"]
-      content = ""
-      while True:
-        # Look for the codereview.settings file at the current level.
-        svn_path = url_path + "/" + filename
-        content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
-        if not rc:
-          # Exit the loop if the file was found. Override content.
-          break
-        # Make sure to mark settings as empty if not found.
-        content = ""
-        if url_path == repo_root:
-          # Reached the root. Abandoning search.
-          break
-        # Go up one level to try again.
-        url_path = os.path.dirname(url_path)
-      # Write a cached version even if there isn't a file, so we don't try to
-      # fetch it each time.
-      WriteFile(cached_file, content)
-    else:
-      content = ReadFile(cached_settings_file)
-    FILES_CACHE[filename] = content
-  return FILES_CACHE[filename]
-
-
 def GetCodeReviewSetting(key):
   """Returns a value for the given key for this repository."""
-  # Use '__just_initialized' as a flag to determine if the settings were
-  # already initialized.
-  if '__just_initialized' not in CODEREVIEW_SETTINGS:
-    for line in GetCachedFile(CODEREVIEW_SETTINGS_FILE).splitlines():
+  global read_gcl_info
+  if not read_gcl_info:
+    read_gcl_info = True
+    # First we check if we have a cached version.
+    cached_settings_file = os.path.join(GetInfoDir(), CODEREVIEW_SETTINGS_FILE)
+    if (not os.path.exists(cached_settings_file) or
+        os.stat(cached_settings_file).st_mtime > 60*60*24*3):
+      dir_info = GetSVNFileInfo(".")
+      repo_root = dir_info["Repository Root"]
+      url_path = dir_info["URL"]
+      settings = ""
+      while True:
+        # Look for the codereview.settings file at the current level.
+        svn_path = url_path + "/" + CODEREVIEW_SETTINGS_FILE
+        settings, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
+        if not rc:
+          # Exit the loop if the file was found.
+          break
+        # Make sure to mark settings as empty if not found.
+        settings = ""
+        if url_path == repo_root:
+          # Reached the root. Abandoning search.
+          break;
+        # Go up one level to try again.
+        url_path = os.path.dirname(url_path)
+
+      # Write a cached version even if there isn't a file, so we don't try to
+      # fetch it each time.
+      WriteFile(cached_settings_file, settings)
+
+    output = ReadFile(cached_settings_file)
+    for line in output.splitlines():
       if not line or line.startswith("#"):
         continue
       k, v = line.split(": ", 1)
       CODEREVIEW_SETTINGS[k] = v
-    CODEREVIEW_SETTINGS.setdefault('__just_initialized', None)
   return CODEREVIEW_SETTINGS.get(key, "")
 
 
@@ -601,7 +583,7 @@ Basic commands:
                           [--send_mail] [--no_try] [--no_presubmit]
       Uploads the changelist to the server for review.
 
-   gcl commit change_name [--no_presubmit] [--force]
+   gcl commit change_name [--force]
       Commits the changelist to the repository.
 
    gcl lint change_name
@@ -1010,10 +992,7 @@ def DoPresubmitChecks(change_info, committing):
                                        committing,
                                        verbose=False,
                                        output_stream=sys.stdout,
-                                       input_stream=sys.stdin,
-                                       default_presubmit=
-                                          GetCachedFile('PRESUBMIT.py',
-                                                        use_root=True))
+                                       input_stream=sys.stdin)
   if not result:
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"
   return result

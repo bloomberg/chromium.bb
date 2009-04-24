@@ -601,8 +601,7 @@ def DoPresubmitChecks(change_info,
                       committing,
                       verbose,
                       output_stream,
-                      input_stream,
-                      default_presubmit):
+                      input_stream):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -618,7 +617,6 @@ def DoPresubmitChecks(change_info,
     verbose: Prints debug info.
     output_stream: A stream to write output from presubmit tests to.
     input_stream: A stream to read input from the user.
-    default_presubmit: A default presubmit script to execute in any case.
 
   Return:
     True if execution can continue, False if not.
@@ -628,10 +626,6 @@ def DoPresubmitChecks(change_info,
     print "Warning, no presubmit.py found."
   results = []
   executer = PresubmitExecuter(change_info, committing)
-  if default_presubmit:
-    if verbose:
-      print "Running default presubmit script"
-    results += executer.ExecPresubmitScript(default_presubmit, 'PRESUBMIT.py')
   for filename in presubmit_files:
     if verbose:
       print "Running %s" % filename
@@ -703,12 +697,11 @@ def Main(argv):
   files = ParseFiles(args, options.recursive)
   if options.verbose:
     print "Found %d files." % len(files)
-  return not DoPresubmitChecks(gcl.ChangeInfo(name='temp', files=files),
-                               options.commit,
-                               options.verbose,
-                               sys.stdout,
-                               sys.stdin,
-                               default_presubmit=None)
+  return DoPresubmitChecks(gcl.ChangeInfo(name='temp', files=files),
+                           options.commit,
+                           options.verbose,
+                           sys.stdout,
+                           sys.stdin)
 
 
 if __name__ == '__main__':
