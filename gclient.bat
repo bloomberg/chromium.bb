@@ -10,7 +10,7 @@
 :: Shall skip automatic update?
 IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :SKIP_UPDATE
 :: We can't sync if .\.svn\. doesn't exist.
-IF NOT EXIST "%~dp0.svn" GOTO :SKIP_UPDATE
+IF NOT EXIST "%~dp0.svn\." GOTO :SKIP_UPDATE
 
 :: Will download svn and python if not already installed on the system.
 call "%~dp0bootstrap\win\win_tools.bat"

@@ -8,10 +8,10 @@
 setlocal
 
 :: Shall skip automatic update?
-IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO gclient
+IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :gclient
 
 :: We can't sync if ..\.svn\. doesn't exist.
-IF NOT EXIST "%~dp0..\.svn" GOTO gclient
+IF NOT EXIST "%~dp0..\.svn\." GOTO :gclient
 
 :: Sync the .. directory to update the bootstrap at the same time.
 call svn -q up "%~dp0.."
