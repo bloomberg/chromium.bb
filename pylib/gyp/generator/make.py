@@ -334,7 +334,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
         fp.write("""\
 %(output)s: %(inputs)s
 \t$(call do_cmd,%(name)s)\n""" % locals())
-        if len(outputs) > 0:
+        if len(outputs) > 1:
           fp.write('%s: %s\n' % (' '.join(outputs[1:]), outputs[0]))
 
       fp.write('\n')
