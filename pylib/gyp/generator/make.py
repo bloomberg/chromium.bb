@@ -475,19 +475,17 @@ all: %(target)s
     # Write a stamp line.
     fp.write("%(output)s: $(OBJS) %(deps)s\n" % locals())
     fp.write("\t$(call do_cmd,touch)\n")
+  elif typ == 'settings':
+    # Only used for passing flags around.
+    output = None
   else:
-    #if typ not in ('executable', 'application', 'none', 'static_library'):
-    if typ != 'settings':
-      print "WARNING: no output for", typ, target
+    print "WARNING: no output for", typ, target
 
   fp.write('\n')
   fp.write(footer)
   fp.write('\n')
 
   fp.close()
-  if typ == 'settings':
-    # Settings have no output.
-    return None
   return output
 
 def GenerateOutput(target_list, target_dicts, data, params):
