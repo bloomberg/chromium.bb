@@ -128,12 +128,12 @@ cmd_copy = ln -f $< $@
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK $@
-cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
+cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o %.so,$^) -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
+cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o %.so,$^) -Wl,--end-group $(LIBS)
 
 # do_cmd: run a command via the above cmd_foo names.
 # TODO: This should also set up dependencies of the target on the
@@ -221,6 +221,30 @@ def WriteList(fp, list, variable=None,
 
 # Map from qualified target to path to output.
 target_outputs = {}
+# Map from qualified target to a list of all linker dependencies,
+# transitively expanded.
+# Used in building shared-library-based executables.
+target_link_deps = {}
+
+def ComputeLinkDeps(depnames, deps):
+  """Compute the full set of linker dependencies from a shallow list.
+
+  E.g. given that we depend on the 'webcore' target, expand that into
+  a list of every .so that we need to successfully link against webcore.
+  Expects inductively for target_link_deps to be filled in for depnames.
+
+  depnames: a list of qualified targets we depend on.
+  deps: a list of the dependencies gyp gives us.
+  """
+
+  all_deps = set()
+  # Anyone who uses us needs all our .so.
+  all_deps.update([dep for dep in deps if dep.endswith('.so')])
+  # Anyone who uses us also needs our dependencies' output.
+  for depname in depnames:
+    if depname in target_link_deps:
+      all_deps.update(target_link_deps[depname])
+  return list(all_deps)
 
 
 def Absolutify(dir, path):
@@ -409,7 +433,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
   typ = spec.get('type')
   if typ == 'static_library':
     target = 'lib%s.a' % target
-  elif typ == 'loadable_module':
+  elif typ in ('loadable_module', 'shared_library'):
     target = 'lib%s.so' % target
   elif typ == 'none':
     target = '%s.stamp' % target
@@ -431,12 +455,16 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
 %(output)s: LIBS := $(LIBS)
 """ % locals())
 
-  deps = []
+  deps = set()
+  link_deps = []
   if 'dependencies' in spec:
-    deps = [target_outputs[dep] for dep in spec['dependencies']
-            if target_outputs[dep]]
+    deps.update([target_outputs[dep] for dep in spec['dependencies']
+                 if target_outputs[dep]])
+    link_deps = ComputeLinkDeps(spec['dependencies'], deps)
+    deps.update(link_deps)
   if special_outputs:
-    deps += special_outputs
+    deps.update(special_outputs)
+  deps = list(deps)
 
   if deps:
     fp.write('''\
@@ -466,11 +494,13 @@ all: %(target)s
     fp.write("""\
 %(output)s: $(OBJS) %(deps)s
 \t$(call do_cmd,ar)
-\t$(call do_cmd,ranlib)""" % locals())
-  elif typ == 'loadable_module':
+\t$(call do_cmd,ranlib)
+""" % locals())
+  elif typ in ('loadable_module', 'shared_library'):
     fp.write("""\
 %(output)s: $(OBJS) %(deps)s
-\t$(call do_cmd,solink)""" % locals())
+\t$(call do_cmd,solink)
+""" % locals())
   elif typ == 'none':
     # Write a stamp line.
     fp.write("%(output)s: $(OBJS) %(deps)s\n" % locals())
@@ -486,7 +516,7 @@ all: %(target)s
   fp.write('\n')
 
   fp.close()
-  return output
+  return (output, link_deps)
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
@@ -505,9 +535,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
     elif 'Default' in configs:
       config = configs['Default']
 
-    output = GenerateMakefile(output_file, build_file, options.depth,
-                              spec, config)
+    (output, link_deps) = GenerateMakefile(output_file, build_file,
+                                           options.depth, spec, config)
     target_outputs[qualified_target] = output
+    if link_deps:
+      target_link_deps[qualified_target] = link_deps
     root_makefile.write('include ' + output_file + "\n")
 
   root_makefile.write(SHARED_FOOTER)
