@@ -455,8 +455,13 @@ $(OBJS): | %s
 %(binpath)s: %(output)s
 \t$(call do_cmd,copy)
 
-# Also provide a short alias for building this executable; e.g., "make %(target)s".
-%(target)s: %(binpath)s""" % locals())
+# Also provide a short alias for building this executable;
+# e.g., "make %(target)s".
+%(target)s: %(binpath)s
+
+# And make the "all" target depend on that.
+all: %(target)s
+""" % locals())
   elif typ == 'static_library':
     fp.write("""\
 %(output)s: $(OBJS) %(deps)s
