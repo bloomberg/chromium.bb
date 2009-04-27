@@ -91,9 +91,10 @@ def _ToolAppend(tools, tool_name, setting, value):
     if type(tool[setting]) == list:
       tool[setting] += value
     else:
-      # TODO(bradnelson): Pick an exception class.
-      print '@@@', setting, tool[setting], value
-      raise 'Append to non-list setting is invalid'
+      raise TypeError(
+          'Appending "%s" to a non-list setting "%s" for tool "%s" is '
+          'not allowed, previous value: %s' % (
+              value, setting, tool_name, str(tool[setting])))
   else:
     tool[setting] = value
 
@@ -242,6 +243,17 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
                   'PrecompiledHeaderThrough', header)
       _ToolAppend(tools, 'VCCLCompilerTool',
                   'ForcedIncludeFiles', header)
+
+    # Set the module definition file if any.
+    if spec['type'] in ['shared_library', 'loadable_module']:
+      def_files = [s for s in spec.get('sources', []) if s.endswith('.def')]
+      if len(def_files) == 1:
+        _ToolAppend(tools, 'VCLinkerTool', 'ModuleDefinitionFile',
+                    _FixPath(def_files[0]))
+      elif def_files:
+        raise ValueError('Multiple module definition files in one target, '
+                         'target %s lists multiple .def files: %s' % (
+            spec['target_name'], ' '.join(def_files)))
 
     # Convert tools to expected form.
     tool_list = []
