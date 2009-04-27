@@ -17,6 +17,10 @@ import tempfile
 import upload
 import urllib2
 
+
+__version__ = '1.0'
+
+
 CODEREVIEW_SETTINGS = {
   # Default values.
   "CODE_REVIEW_SERVER": "codereview.chromium.org",
@@ -199,9 +203,9 @@ def RunShell(command, print_output=False):
   return RunShellWithReturnCode(command, print_output)[0]
 
 
-def ReadFile(filename):
+def ReadFile(filename, flags='r'):
   """Returns the contents of a file."""
-  file = open(filename, 'r')
+  file = open(filename, flags)
   result = file.read()
   file.close()
   return result
@@ -572,6 +576,7 @@ def Help(argv=None):
 
   print (
 """GCL is a wrapper for Subversion that simplifies working with groups of files.
+version """ + __version__ + """
 
 Basic commands:
 -----------------------------------------

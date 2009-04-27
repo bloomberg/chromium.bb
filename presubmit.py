@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.0'
+__version__ = '1.0.1'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -629,7 +629,8 @@ def DoPresubmitChecks(change_info,
   for filename in presubmit_files:
     if verbose:
       print "Running %s" % filename
-    presubmit_script = gcl.ReadFile(filename)
+    # Accept CRLF presubmit script.
+    presubmit_script = gcl.ReadFile(filename, 'Ur')
     results += executer.ExecPresubmitScript(presubmit_script, filename)
 
   errors = []

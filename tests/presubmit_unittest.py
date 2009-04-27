@@ -53,7 +53,7 @@ class PresubmitTestsBase(unittest.TestCase):
     gcl.GetSVNFileProperty = MockGetSVNFileProperty
 
     self.original_ReadFile = gcl.ReadFile
-    def MockReadFile(path):
+    def MockReadFile(path, dummy='r'):
       if path.count('nosuchfile'):
         return None
       elif path.endswith('isdir'):
