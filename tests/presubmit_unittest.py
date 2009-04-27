@@ -60,18 +60,16 @@ class PresubmitTestsBase(unittest.TestCase):
         self.fail('Should not attempt to read file that is directory.')
       elif path.endswith('PRESUBMIT.py'):
         # used in testDoPresubmitChecks
-        return """
-def CheckChangeOnUpload(input_api, output_api):
-  if not input_api.change.NOSUCHKEY:
-    return [output_api.PresubmitError("!!")]
-  elif not input_api.change.REALLYNOSUCHKEY:
-    return [output_api.PresubmitPromptWarning("??")]
-  elif not input_api.change.REALLYABSOLUTELYNOSUCHKEY:
-    return [output_api.PresubmitPromptWarning("??"),
-            output_api.PresubmitError("XX!!XX")]
-  else:
-    return ()
-"""
+        return ('def CheckChangeOnUpload(input_api, output_api):\n'
+                '  if not input_api.change.NOSUCHKEY:\n'
+                '    return [output_api.PresubmitError("!!")]\n'
+                '  elif not input_api.change.REALLYNOSUCHKEY:\n'
+                '    return [output_api.PresubmitPromptWarning("??")]\n'
+                '  elif not input_api.change.REALLYABSOLUTELYNOSUCHKEY:\n'
+                '    return [output_api.PresubmitPromptWarning("??"),\n'
+                '            output_api.PresubmitError("XX!!XX")]\n'
+                '  else:\n'
+                '    return ()')
       else:
         return 'one:%s\r\ntwo:%s' % (path, path)
     gcl.ReadFile = MockReadFile
@@ -300,9 +298,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO('y\n')
 
-    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input,
-                                            None))
-    self.assertEqual(output.getvalue().count('!!'), 2)
+    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input))
+    self.failUnless(output.getvalue().count('!!'))
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
     description_lines = ('Hello there',
@@ -318,9 +315,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO('n\n')  # say no to the warning
 
-    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input,
-                                            None))
-    self.assertEqual(output.getvalue().count('??'), 2)
+    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input))
+    self.failUnless(output.getvalue().count('??'))
 
     output = StringIO.StringIO()
     input = StringIO.StringIO('y\n')  # say yes to the warning
@@ -329,8 +325,7 @@ class PresubmitUnittest(PresubmitTestsBase):
                                                 False,
                                                 False,
                                                 output,
-                                                input,
-                                                None))
+                                                input))
     self.failUnless(output.getvalue().count('??'))
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
@@ -348,38 +343,10 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO()  # should be unused
 
-    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input,
-                                            None))
-    self.assertEqual(output.getvalue().count('??'), 2)
-    self.assertEqual(output.getvalue().count('XX!!XX'), 2)
-    self.assertEqual(output.getvalue().count('(y/N)'), 0)
-
-  def testDoDefaultPresubmitChecks(self):
-    description_lines = ('Hello there',
-                         'this is a change',
-                         'STORY=http://tracker/123')
-    files = [
-      ['A', 'haspresubmit\\blat.cc'],
-    ]
-    ci = gcl.ChangeInfo(name='mychange',
-                        description='\n'.join(description_lines),
-                        files=files)
-
-    output = StringIO.StringIO()
-    input = StringIO.StringIO('y\n')
-    DEFAULT_SCRIPT = """
-def CheckChangeOnUpload(input_api, output_api):
-  return [output_api.PresubmitError("!!")]
-"""
-    def MockReadFile(dummy):
-      return ''
-    gcl.ReadFile = MockReadFile
-    def MockIsFile(dummy):
-      return False
-    os.path.isfile = MockIsFile
-    self.failUnless(presubmit.DoPresubmitChecks(ci, False, False, output, input,
-                                                DEFAULT_SCRIPT))
-    self.failIf(output.getvalue().count('!!') == 1)
+    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input))
+    self.failUnless(output.getvalue().count('??'))
+    self.failUnless(output.getvalue().count('XX!!XX'))
+    self.failIf(output.getvalue().count('(y/N)'))
 
   def testDirectoryHandling(self):
     files = [
