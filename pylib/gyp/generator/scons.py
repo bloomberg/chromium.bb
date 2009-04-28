@@ -394,6 +394,9 @@ def GenerateSConscript(output_filename, spec, build_file):
   fp.close()
 
 
+#############################################################################
+# TEMPLATE BEGIN
+
 _wrapper_template = """\
 
 __doc__ = '''
@@ -545,7 +548,59 @@ for conf in conf_list:
       target_alias_list.extend(target_alias)
 
 Default(Alias('all', target_alias_list))
-"""     # END _wrapper_template
+
+help_fmt = '''
+Usage: hammer [SCONS_OPTIONS] [VARIABLES] [TARGET] ...
+
+Supported command-line build variables:
+  LOAD=[module,...]         Comma-separated list of components to load in the
+                              dependency graph ('-' prefix excludes)
+  PROGRESS=type             Display a progress indicator:
+                              name:  print each evaluated target name
+                              spinner:  print a spinner every 5 targets
+
+The following TARGET names can also be used as LOAD= module names:
+
+%%s
+'''
+
+if GetOption('help'):
+  def columnar_text(items, width=78, indent=2, sep=2):
+    result = []
+    colwidth = max(map(len, items)) + sep
+    cols = (width - indent) / colwidth
+    if cols < 1:
+      cols = 1
+    rows = (len(items) + cols - 1) / cols
+    indent = '%%*s' %% (indent, '')
+    sep = indent
+    for row in xrange(0, rows):
+      result.append(sep)
+      for i in xrange(row, len(items), rows):
+        result.append('%%-*s' %% (colwidth, items[i]))
+      sep = '\\n' + indent
+    result.append('\\n')
+    return ''.join(result)
+
+  load_list = set(sconscript_file_map.keys())
+  target_aliases = set(map(str, target_alias_list))
+
+  common = load_list and target_aliases
+  load_only = load_list - common
+  target_only = target_aliases - common
+  help_text = [help_fmt %% columnar_text(sorted(list(common)))]
+  if target_only:
+    fmt = "The following are additional TARGET names:\\n\\n%%s\\n"
+    help_text.append(fmt %% columnar_text(sorted(list(target_only))))
+  if load_only:
+    fmt = "The following are additional LOAD= module names:\\n\\n%%s\\n"
+    help_text.append(fmt %% columnar_text(sorted(list(load_only))))
+  Help(''.join(help_text))
+"""
+
+# TEMPLATE END
+#############################################################################
+
 
 def GenerateSConscriptWrapper(build_file_data, name,
                               output_filename, sconscript_files):
