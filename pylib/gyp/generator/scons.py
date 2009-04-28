@@ -47,13 +47,15 @@ def full_product_name(spec, prefix='', suffix=''):
   return name
 
 
-def _SCons_null_writer(fp, spec):
-  pass
-
 def _SCons_writer(fp, spec, builder, pre=''):
   fp.write('\n' + pre)
   fp.write('_outputs = %s\n' % builder)
   fp.write('target_files.extend(_outputs)\n')
+
+def _SCons_null_writer(fp, spec):
+  name = full_product_name(spec)
+  builder = 'Alias(\'_null_%s\')' % name
+  return _SCons_writer(fp, spec, builder)
 
 def _SCons_program_writer(fp, spec):
   # On Linux, an executable name like 'chrome' could be either the
