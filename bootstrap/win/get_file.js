@@ -6,7 +6,6 @@ function Download(url, path, verbose) {
   if (verbose) {
     WScript.StdOut.Write(" *  GET " + url + "...");
   }
-  var response_body = null;
   try {
     xml_http = new ActiveXObject("MSXML2.ServerXMLHTTP");
   } catch (e) {
@@ -21,8 +20,10 @@ function Download(url, path, verbose) {
         ": invalid URL.");
     WScript.Quit(1);
   }
+
+  var response_body = null;
   var size_description = "?";
-  var file_size
+  var file_size;
   try {
     xml_http.send(null);
     if (xml_http.status != 200) {
@@ -60,7 +61,7 @@ function Download(url, path, verbose) {
     adodb_stream.Type = 1; // 1= Binary
     adodb_stream.Open(); // Open the stream
     adodb_stream.Write(response_body); // Write the data
-    adodb_stream.SaveTfile(path, 2); // Save to our destination
+    adodb_stream.SaveToFile(path, 2); // Save to our destination
     adodb_stream.Close();
   } catch(e) {
     WScript.StdOut.WriteLine("[-] ADODB.Stream " + new Number(
@@ -68,8 +69,8 @@ function Download(url, path, verbose) {
     WScript.Quit(1);
   }
   if (typeof(file_size) != undefined) {
-    file_system_object = WScript.CreateObject("Scripting.FileSystemObject")
-    file = file_system_object.GetFile(path)
+    var file_system_object = WScript.CreateObject("Scripting.FileSystemObject")
+    var file = file_system_object.GetFile(path)
     if (file.Size < file_size) {
       WScript.StdOut.WriteLine("[-] File only partially downloaded.");
       WScript.Quit(1);
@@ -80,6 +81,7 @@ function Download(url, path, verbose) {
   }
 }
 
+// Utilities
 Number.prototype.isInt = function NumberIsInt() {
   return this % 1 == 0; 
 };
