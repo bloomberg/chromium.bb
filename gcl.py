@@ -16,6 +16,7 @@ import sys
 import tempfile
 import upload
 import urllib2
+import xml.dom.minidom
 
 
 __version__ = '1.0'
@@ -47,6 +48,32 @@ MISSING_TEST_MSG = "Change contains new or modified methods, but no new tests!"
 read_gcl_info = False
 
 
+### Simplified XML processing functions.
+
+def ParseXML(output):
+  try:
+    return xml.dom.minidom.parseString(output)
+  except xml.parsers.expat.ExpatError:
+    return None
+
+def GetNamedNodeText(node, node_name):
+  child_nodes = node.getElementsByTagName(node_name)
+  if not child_nodes:
+    return None
+  assert len(child_nodes) == 1 and child_nodes[0].childNodes.length == 1
+  return child_nodes[0].firstChild.nodeValue
+
+
+def GetNodeNamedAttributeText(node, node_name, attribute_name):
+  child_nodes = node.getElementsByTagName(node_name)
+  if not child_nodes:
+    return None
+  assert len(child_nodes) == 1
+  return child_nodes[0].getAttribute(attribute_name)
+
+
+### SVN Functions
+
 def IsSVNMoved(filename):
   """Determine if a file has been added through svn mv"""
   info = GetSVNFileInfo(filename)
@@ -57,13 +84,21 @@ def IsSVNMoved(filename):
 
 def GetSVNFileInfo(file):
   """Returns a dictionary from the svn info output for the given file."""
-  output = RunShell(["svn", "info", file])
+  dom = ParseXML(RunShell(["svn", "info", "--xml", file]))
   result = {}
-  re_key_value_pair = re.compile('^(.*)\: (.*)$')
-  for line in output.splitlines():
-    key_value_pair = re_key_value_pair.match(line)
-    if key_value_pair:
-      result[key_value_pair.group(1)] = key_value_pair.group(2)
+  if dom:
+    # /info/entry/
+    #   url
+    #   reposityory/(root|uuid)
+    #   wc-info/(schedule|depth)
+    #   commit/(author|date)
+    result['Node Kind'] = GetNodeNamedAttributeText(dom, 'entry', 'kind')
+    result['Repository Root'] = GetNamedNodeText(dom, 'root')
+    result['Schedule'] = GetNamedNodeText(dom, 'schedule')
+    result['URL'] = GetNamedNodeText(dom, 'url')
+    result['Path'] = GetNodeNamedAttributeText(dom, 'entry', 'path')
+    result['Copied From URL'] = GetNamedNodeText(dom, 'copy-from-url')
+    result['Copied From Rev'] = GetNamedNodeText(dom, 'copy-from-rev')
   return result
 
 
@@ -85,6 +120,77 @@ def GetSVNFileProperty(file, property_name):
     return ""
   else:
     return output
+
+
+def GetSVNStatus(file):
+  """Returns the svn 1.5 svn status emulated output.
+  
+  @file can be a string (one file) or a list of files."""
+  command = ["svn", "status", "--xml"]
+  if file is None:
+    pass
+  elif isinstance(file, basestring):
+    command.append(file)
+  else:
+    command.extend(file)
+
+  status_letter = {
+    '': ' ',
+    'unversioned': '?',
+    'modified': 'M',
+    'added': 'A',
+    'conflicted': 'C',
+    'deleted': 'D',
+    'ignored': 'I',
+    'replaced': 'R',
+    # TODO(maruel): Find the corresponding strings for X, !, ~
+  }
+  dom = ParseXML(RunShell(command))
+  results = []
+  if dom:
+    # /status/target/entry/(wc-status|commit|author|date)
+    for target in dom.getElementsByTagName('target'):
+      base_path = target.getAttribute('path')
+      for entry in target.getElementsByTagName('entry'):
+        file = entry.getAttribute('path')
+        wc_status = entry.getElementsByTagName('wc-status')
+        assert len(wc_status) == 1
+        # Emulate svn 1.5 status ouput...
+        statuses = [' ' for i in range(7)]
+        # Col 0
+        xml_item_status = wc_status[0].getAttribute('item')
+        if xml_item_status in status_letter:
+          statuses[0] = status_letter[xml_item_status]
+        else:
+          raise Exception('Unknown item status "%s"; please implement me!' %
+                          xml_item_status)
+        # Col 1
+        xml_props_status = wc_status[0].getAttribute('props')
+        if xml_props_status == 'modified':
+          statuses[1] = 'M'
+        elif xml_props_status == 'conflicted':
+          statuses[1] = 'C'
+        elif (not xml_props_status or xml_props_status == 'none' or
+              xml_props_status == 'normal'):
+          pass
+        else:
+          raise Exception('Unknown props status "%s"; please implement me!' %
+                          xml_props_status)
+        # Col 3
+        if wc_status[0].getAttribute('copied') == 'true':
+          statuses[3] = '+'
+        item = (''.join(statuses), file)
+        results.append(item)
+  return results
+
+
+def UnknownFiles(extra_args):
+  """Runs svn status and prints unknown files.
+
+  Any args in |extra_args| are passed to the tool to support giving alternate
+  code locations.
+  """
+  return [item[1] for item in GetSVNStatus(extra_args) if item[0][0] == '?']
 
 
 def GetRepositoryRoot():
@@ -418,8 +524,9 @@ def LoadChangelistInfo(changename, fail_on_not_found=True,
   if update_status:
     for file in files:
       filename = os.path.join(GetRepositoryRoot(), file[1])
-      status = RunShell(["svn", "status", filename])[:7]
-      if not status:  # File has been reverted.
+      status_result = GetSVNStatus(filename)
+      if not status_result or not status_result[0][0]:
+        # File has been reverted.
         save = True
         files.remove(file)
       elif status != file[0]:
@@ -474,12 +581,12 @@ def GetModifiedFiles():
       files_in_cl[filename] = change_info.name
 
   # Get all the modified files.
-  status = RunShell(["svn", "status"])
-  for line in status.splitlines():
-    if not len(line) or line[0] == "?":
+  status_result = GetSVNStatus(None)
+  for line in status_result:
+    status = line[0]
+    filename = line[1]
+    if status[0] == "?":
       continue
-    status = line[:7]
-    filename = line[7:].strip()
     if dir_prefix:
       filename = os.path.join(dir_prefix, filename)
     change_list_name = ""
@@ -528,30 +635,6 @@ def SendToRietveld(request_path, payload=None,
 def GetIssueDescription(issue):
   """Returns the issue description from Rietveld."""
   return SendToRietveld("/" + issue + "/description")
-
-
-def UnknownFiles(extra_args):
-  """Runs svn status and prints unknown files.
-
-  Any args in |extra_args| are passed to the tool to support giving alternate
-  code locations.
-  """
-  args = ["svn", "status"]
-  args += extra_args
-  p = subprocess.Popen(args, stdout = subprocess.PIPE,
-                       stderr = subprocess.STDOUT, shell = use_shell)
-  while 1:
-    line = p.stdout.readline()
-    if not line:
-      break
-    if line[0] != '?':
-      continue  # Not an unknown file to svn.
-    # The lines look like this:
-    # "?      foo.txt"
-    # and we want just "foo.txt"
-    print line[7:].strip()
-  p.wait()
-  p.stdout.close()
 
 
 def Opened():
