@@ -53,9 +53,8 @@ def _SCons_writer(fp, spec, builder, pre=''):
   fp.write('target_files.extend(_outputs)\n')
 
 def _SCons_null_writer(fp, spec):
-  name = full_product_name(spec)
-  builder = 'Alias(\'_null_%s\')' % name
-  return _SCons_writer(fp, spec, builder)
+  fp.write('\n')
+  fp.write('target_files.extend(input_files)\n')
 
 def _SCons_program_writer(fp, spec):
   # On Linux, an executable name like 'chrome' could be either the
@@ -90,6 +89,19 @@ SConsTypeWriter = {
   'shared_library' : _SCons_shared_library_writer,
   'loadable_module' : _SCons_loadable_module_writer,
 }
+
+_alias_template = """
+if GetOption('verbose'):
+  _action = Action([%(action)s])
+else:
+  _action = Action([%(action)s], %(message)s)
+_outputs = env.Alias(
+  ['_%(target_name)s_action'],
+  %(inputs)s,
+  _action
+)
+env.AlwaysBuild(_outputs)
+"""
 
 _command_template = """
 if GetOption('verbose'):
@@ -340,12 +352,18 @@ def GenerateSConscript(output_filename, spec, build_file):
     a = ['cd', gyp_dir, '&&'] + action['action']
     message = action.get('message')
     if message:
-        message = repr(message)
-    fp.write(_command_template % {
+      message = repr(message)
+    outputs = action.get('outputs', [])
+    if outputs:
+      template = _command_template
+    else:
+      template = _alias_template
+    fp.write(template % {
                  'inputs' : pprint.pformat(action.get('inputs', [])),
-                 'outputs' : pprint.pformat(action.get('outputs', [])),
+                 'outputs' : pprint.pformat(outputs),
                  'action' : pprint.pformat(a),
                  'message' : message,
+                 'target_name': target_name,
              })
     if action.get('process_outputs_as_sources'):
       fp.write('input_files.extend(_outputs)\n')
