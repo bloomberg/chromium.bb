@@ -131,7 +131,8 @@ def _PrepareAction(c, r, has_input_path):
   #  '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
       '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
       'set INTDIR=$(IntDir) && '
-      'set OUTDIR=$(OutDir) && ')
+      'set OUTDIR=$(OutDir) && '
+      'set TMPDIR=%TEMP%&& ')
     if has_input_path:
       cmd += 'set INPUTPATH=$(InputPath) && '
     cmd += (
