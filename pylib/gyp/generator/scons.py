@@ -503,7 +503,10 @@ for target, sconscript in sconscript_file_map.iteritems():
 target_alias_list= []
 
 conf_list = GetOption('conf_list')
-if not conf_list:
+if conf_list:
+    # In case the same --mode= value was specified multiple times.
+    conf_list = list(set(conf_list))
+else:
     conf_list = ['Debug']
 
 sconsbuild_dir = Dir(%(sconsbuild_dir)s)
