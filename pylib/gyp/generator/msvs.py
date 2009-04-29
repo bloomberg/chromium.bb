@@ -128,18 +128,17 @@ def _PrepareAction(c, r, has_input_path):
     #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
     direct_cmd = ' '.join(direct_cmd)
     cmd = (
-  #  '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
+      '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
       '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
+      'set CYGWIN=nontsec && '
       'set INTDIR=$(IntDir) && '
-      'set OUTDIR=$(OutDir) && '
-      'set TMPDIR=%(tmp_dir)s&& ')
+      'set OUTDIR=$(OutDir) && ')
     if has_input_path:
       cmd += 'set INPUTPATH=$(InputPath) && '
     cmd += (
       'bash -c "%(cmd)s"')
     cmd = cmd % {'cygwin_dir': cygwin_dir,
-                 'cmd': direct_cmd,
-                 'tmp_dir': '%TEMP%'}
+                 'cmd': direct_cmd}
     return cmd
   else:
     # Support a mode for using cmd directly.
