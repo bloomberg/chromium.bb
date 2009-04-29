@@ -407,6 +407,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   NSString *reportEmail = [parameters objectForKey:@BREAKPAD_EMAIL];
   NSString *requestUserText =
                 [parameters objectForKey:@BREAKPAD_REQUEST_COMMENTS];
+  NSString *requestEmail = [parameters objectForKey:@BREAKPAD_REQUEST_EMAIL];
   NSString *vendor =
     [parameters objectForKey:@BREAKPAD_VENDOR];
   NSString *dumpSubdirectory =
@@ -549,8 +550,8 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
                          [logFileTailSize UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_REQUEST_COMMENTS,
                          [requestUserText UTF8String]);
-  dictionary.SetKeyValue(BREAKPAD_VENDOR,
-                         [vendor UTF8String]);
+  dictionary.SetKeyValue(BREAKPAD_REQUEST_EMAIL, [requestEmail UTF8String]);
+  dictionary.SetKeyValue(BREAKPAD_VENDOR, [vendor UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_DUMP_DIRECTORY,
                          [dumpSubdirectory UTF8String]);
   

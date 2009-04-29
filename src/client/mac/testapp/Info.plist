@@ -36,6 +36,8 @@
 	<string>NO</string>
 	<key>BreakpadSendAndExit</key>
 	<string>YES</string>
+	<key>BreakpadRequestEmail</key>
+	<string>YES</string>
 	<key>BreakpadRequestComments</key>
 	<string>YES</string>
 	<key>BreakpadVendor</key>

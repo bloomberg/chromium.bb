@@ -76,9 +76,10 @@ extern "C" {
   "BreakpadReporterExeLocation"
 #define BREAKPAD_LOGFILES              "BreakpadLogFiles"
 #define BREAKPAD_LOGFILE_UPLOAD_SIZE   "BreakpadLogFileTailSize"
-#define BREAKPAD_EMAIL                 "BreakpadEmail"
 #define BREAKPAD_REQUEST_COMMENTS      "BreakpadRequestComments"
 #define BREAKPAD_COMMENTS              "BreakpadComments"
+#define BREAKPAD_REQUEST_EMAIL         "BreakpadRequestEmail"
+#define BREAKPAD_EMAIL                 "BreakpadEmail"
 #define BREAKPAD_SERVER_TYPE           "BreakpadServerType"
 // TODO(nealsid) find a better way to support server-specific
 // parameters without having to rebuild Breakpad
@@ -163,8 +164,12 @@ typedef bool (*BreakpadFilterCallback)(int exception_type,
 //                                should be uploaded at crash time.
 //
 // BREAKPAD_REQUEST_COMMENTS      If true, the message dialog will have a
-//                                text box for the user to enter comments as
-//                                well as a name and email address.
+//                                text box for the user to enter comments.
+//                                Default: NO
+//
+// BREAKPAD_REQUEST_EMAIL         If true and BREAKPAD_REQUEST_COMMENTS is also
+//                                true, the message dialog will have a text
+//                                box for the user to enter their email address.
 //                                Default: NO
 //
 // BREAKPAD_SERVER_TYPE           A parameter that tells Breakpad how to

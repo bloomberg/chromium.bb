@@ -43,16 +43,25 @@ extern NSString *const kSocorroServerType;
 extern NSString *const kDefaultServerType;
 @interface Reporter : NSObject {
  @public
-  IBOutlet NSWindow *alertWindow;       // The alert window
+  IBOutlet NSWindow *alertWindow_;        // The alert window
 
-  // Values bound in the XIB
-  NSString *headerMessage_;                // Message notifying of the
-                                           // crash
-  NSString *reportMessage_;                // Message explaining the
-                                           // crash report
+  // Grouping boxes used for resizing.
+  IBOutlet NSBox *headerBox_;
+  IBOutlet NSBox *preEmailBox_;
+  IBOutlet NSBox *emailSectionBox_;
+  // Localized elements (or things that need to be moved during localization).
+  IBOutlet NSTextField *dialogTitle_;
+  IBOutlet NSTextField *commentMessage_;
+  IBOutlet NSTextField *emailMessage_;
+  IBOutlet NSTextField *emailLabel_;
+  IBOutlet NSTextField *privacyLinkLabel_;
+  IBOutlet NSButton    *sendButton_;
+  IBOutlet NSButton    *cancelButton_;
+  IBOutlet NSView      *emailEntryField_;
+  IBOutlet NSView      *privacyLinkArrow_;
+
+  // Text field bindings, for user input.
   NSString *commentsValue_;                // Comments from the user
-  NSString *emailMessage_;                 // Message requesting user
-                                           // email
   NSString *emailValue_;                   // Email from the user
 
  @private
@@ -90,17 +99,8 @@ extern NSString *const kDefaultServerType;
 - (BOOL)setPostParametersFromDictionary:(NSMutableDictionary *)crashParameters;
 
 // Accessors to make bindings work
-- (NSString *)headerMessage;
-- (void)setHeaderMessage:(NSString *)value;
-
-- (NSString *)reportMessage;
-- (void)setReportMessage:(NSString *)value;
-
 - (NSString *)commentsValue;
 - (void)setCommentsValue:(NSString *)value;
-
-- (NSString *)emailMessage;
-- (void)setEmailMessage:(NSString *)value;
 
 - (NSString *)emailValue;
 - (void)setEmailValue:(NSString *)value;

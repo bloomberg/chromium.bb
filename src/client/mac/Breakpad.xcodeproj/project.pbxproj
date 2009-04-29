@@ -26,10 +26,10 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		3329D4ED0FA16D820007BBC5 /* Breakpad.nib in Resources */ = {isa = PBXBuildFile; fileRef = 3329D4EC0FA16D820007BBC5 /* Breakpad.nib */; };
 		33880C800F9E097100817F82 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 33880C7E0F9E097100817F82 /* InfoPlist.strings */; };
 		4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */ = {isa = PBXBuildFile; fileRef = 4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */; };
 		8DC2EF570486A6940098B216 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */; };
-		F9267CB30F844BDD00A827EC /* Breakpad.nib in Resources */ = {isa = PBXBuildFile; fileRef = F9267CB10F844BDD00A827EC /* Breakpad.nib */; };
 		F9286B3A0F7EB25800A4DCC8 /* InspectorMain.mm in Sources */ = {isa = PBXBuildFile; fileRef = F9286B390F7EB25800A4DCC8 /* InspectorMain.mm */; };
 		F92C53B80ECCE7B3009BE4BA /* Inspector.mm in Sources */ = {isa = PBXBuildFile; fileRef = F92C53B70ECCE7B3009BE4BA /* Inspector.mm */; };
 		F92C554C0ECCF534009BE4BA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0867D69BFE84028FC02AAC07 /* Foundation.framework */; };
@@ -224,10 +224,10 @@
 		0867D6A5FE840307C02AAC07 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		1058C7B1FEA5585E11CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		32DBCF5E0370ADEE00C91783 /* Breakpad_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Breakpad_Prefix.pch; path = Framework/Breakpad_Prefix.pch; sourceTree = "<group>"; };
+		3329D4EC0FA16D820007BBC5 /* Breakpad.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Breakpad.nib; path = sender/Breakpad.nib; sourceTree = "<group>"; };
 		33880C7F0F9E097100817F82 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = sender/English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = crash_report_sender.icns; path = sender/crash_report_sender.icns; sourceTree = "<group>"; };
 		8DC2EF5B0486A6940098B216 /* Breakpad.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Breakpad.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F9267CB20F844BDD00A827EC /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = sender/English.lproj/Breakpad.nib; sourceTree = "<group>"; };
 		F9286B380F7EB25800A4DCC8 /* Inspector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Inspector.h; path = crash_generation/Inspector.h; sourceTree = "<group>"; };
 		F9286B390F7EB25800A4DCC8 /* InspectorMain.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = InspectorMain.mm; path = crash_generation/InspectorMain.mm; sourceTree = "<group>"; };
 		F92C53540ECCE349009BE4BA /* Inspector */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Inspector; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -531,13 +531,13 @@
 		F92C56A60ECE04B6009BE4BA /* sender */ = {
 			isa = PBXGroup;
 			children = (
-				F945849C0F280E3C009A47BF /* Localizable.strings */,
-				33880C7E0F9E097100817F82 /* InfoPlist.strings */,
-				4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */,
-				F92C56A20ECE04A7009BE4BA /* crash_report_sender-Info.plist */,
-				F9267CB10F844BDD00A827EC /* Breakpad.nib */,
 				F92C56A70ECE04C5009BE4BA /* crash_report_sender.h */,
 				F92C56A80ECE04C5009BE4BA /* crash_report_sender.m */,
+				F945849C0F280E3C009A47BF /* Localizable.strings */,
+				33880C7E0F9E097100817F82 /* InfoPlist.strings */,
+				3329D4EC0FA16D820007BBC5 /* Breakpad.nib */,
+				4084699C0F5D9CF900FDCA37 /* crash_report_sender.icns */,
+				F92C56A20ECE04A7009BE4BA /* crash_report_sender-Info.plist */,
 			);
 			name = sender;
 			sourceTree = "<group>";
@@ -806,8 +806,8 @@
 			files = (
 				F945849E0F280E3C009A47BF /* Localizable.strings in Resources */,
 				4084699D0F5D9CF900FDCA37 /* crash_report_sender.icns in Resources */,
-				F9267CB30F844BDD00A827EC /* Breakpad.nib in Resources */,
 				33880C800F9E097100817F82 /* InfoPlist.strings in Resources */,
+				3329D4ED0FA16D820007BBC5 /* Breakpad.nib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1076,14 +1076,6 @@
 				33880C7F0F9E097100817F82 /* English */,
 			);
 			name = InfoPlist.strings;
-			sourceTree = "<group>";
-		};
-		F9267CB10F844BDD00A827EC /* Breakpad.nib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				F9267CB20F844BDD00A827EC /* English */,
-			);
-			name = Breakpad.nib;
 			sourceTree = "<group>";
 		};
 		F945849C0F280E3C009A47BF /* Localizable.strings */ = {
