@@ -388,6 +388,10 @@ Breakpad::~Breakpad() {
 //=============================================================================
 bool Breakpad::ExtractParameters(NSDictionary *parameters) {
   NSUserDefaults *stdDefaults = [NSUserDefaults standardUserDefaults];
+  NSString *skipConfirm = [stdDefaults stringForKey:@BREAKPAD_SKIP_CONFIRM];
+  NSString *sendAndExit = [stdDefaults stringForKey:@BREAKPAD_SEND_AND_EXIT];
+
+  NSString *serverType = [parameters objectForKey:@BREAKPAD_SERVER_TYPE];
   NSString *display = [parameters objectForKey:@BREAKPAD_PRODUCT_DISPLAY];
   NSString *product = [parameters objectForKey:@BREAKPAD_PRODUCT];
   NSString *version = [parameters objectForKey:@BREAKPAD_VERSION];
@@ -397,9 +401,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
                 [parameters objectForKey:@BREAKPAD_INSPECTOR_LOCATION];
   NSString *reporterPathString =
                 [parameters objectForKey:@BREAKPAD_REPORTER_EXE_LOCATION];
-  NSString *skipConfirm = [parameters objectForKey:@BREAKPAD_SKIP_CONFIRM];
   NSString *timeout = [parameters objectForKey:@BREAKPAD_CONFIRM_TIMEOUT];
-  NSString *sendAndExit = [parameters objectForKey:@BREAKPAD_SEND_AND_EXIT];
   NSArray  *logFilePaths = [parameters objectForKey:@BREAKPAD_LOGFILES];
   NSString *logFileTailSize = [parameters objectForKey:@BREAKPAD_LOGFILE_UPLOAD_SIZE];
   NSString *reportEmail = [parameters objectForKey:@BREAKPAD_EMAIL];
@@ -411,14 +413,12 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
     [parameters objectForKey:@BREAKPAD_DUMP_DIRECTORY];
   NSString *buildId =
     [parameters objectForKey:@BREAKPAD_BUILD_ID];
-  
-  // If these two are not already set(skipConfirm and sendAndExit can
-  // come from user defaults and take priority)
+  // These may have been set above as user prefs, which take priority.
   if (!skipConfirm) {
-    skipConfirm = [stdDefaults stringForKey:@BREAKPAD_SKIP_CONFIRM];
+    skipConfirm = [parameters objectForKey:@BREAKPAD_SKIP_CONFIRM];
   }
   if (!sendAndExit) {
-    sendAndExit = [stdDefaults stringForKey:@BREAKPAD_SEND_AND_EXIT];
+    sendAndExit = [parameters objectForKey:@BREAKPAD_SEND_AND_EXIT];
   }
 
   if (!product)
@@ -533,6 +533,7 @@ bool Breakpad::ExtractParameters(NSDictionary *parameters) {
 
   SimpleStringDictionary &dictionary = *config_params_;
 
+  dictionary.SetKeyValue(BREAKPAD_SERVER_TYPE,     [serverType UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_PRODUCT_DISPLAY, [display UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_PRODUCT,         [product UTF8String]);
   dictionary.SetKeyValue(BREAKPAD_VERSION,         [version UTF8String]);

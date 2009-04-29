@@ -627,7 +627,7 @@ doCommandBySelector:(SEL)commandSelector {
 }
 
 - (NSDictionary *)dictionaryForServerType:(NSString *)serverType {
-  if (serverType == nil) {
+  if (serverType == nil || [serverType length] == 0) {
     return [serverDictionary_ objectForKey:kDefaultServerType];
   }
   return [serverDictionary_ objectForKey:serverType];
