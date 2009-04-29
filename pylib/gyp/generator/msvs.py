@@ -132,12 +132,14 @@ def _PrepareAction(c, r, has_input_path):
       '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
       'set INTDIR=$(IntDir) && '
       'set OUTDIR=$(OutDir) && '
-      'set TMPDIR=%TEMP%&& ')
+      'set TMPDIR=%(tmp_dir)s&& ')
     if has_input_path:
       cmd += 'set INPUTPATH=$(InputPath) && '
     cmd += (
       'bash -c "%(cmd)s"')
-    cmd = cmd % {'cygwin_dir': cygwin_dir, 'cmd': direct_cmd}
+    cmd = cmd % {'cygwin_dir': cygwin_dir,
+                 'cmd': direct_cmd,
+                 'tmp_dir': '%TEMP%'}
     return cmd
   else:
     # Support a mode for using cmd directly.
