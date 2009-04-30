@@ -29,11 +29,12 @@
 //
 // Utility that can inspect another process and write a crash dump
 
-#import <cstdio>
-#import <iostream>
-#import <stdio.h>
-#import <string.h>
-#import <string>
+#include <cstdio>
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <string>
+#include <sys/time.h>
 
 #import "client/mac/crash_generation/Inspector.h"
 
