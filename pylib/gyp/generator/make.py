@@ -77,11 +77,6 @@ all_targets :=
 LD := $(CXX)
 RANLIB ?= ranlib
 
-# This is a hack; we should use the settings from the .gyp files.
-PACKAGES := gtk+-2.0 nss
-CFLAGS := $(CFLAGS) -m32 `pkg-config --cflags $(PACKAGES)`
-LDFLAGS := $(CFLAGS) `pkg-config --libs $(PACKAGES)` -lrt
-
 # Flags to make gcc output dependency info.  Note that you need to be
 # careful here to use the flags that ccache and distcc can understand.
 # We write to a temporary dep file first and then rename at the end
@@ -411,7 +406,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
     fp.write('\n')
 
   WriteList(fp, config.get('defines'), 'DEFS', prefix='-D')
-  WriteList(fp, config.get('cflags'), 'local_CFLAGS')
+  WriteList(fp, config.get('cflags'), 'CFLAGS')
   includes = config.get('include_dirs')
   if includes:
     includes = AbsolutifyL(dir, includes)
@@ -450,8 +445,8 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
     fp.write("""\
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.
-%(output)s: CFLAGS := $(CFLAGS) $(local_CFLAGS) $(DEFS) $(INCS)
-%(output)s: CXXFLAGS := $(CFLAGS) $(local_CFLAGS) $(DEFS) $(INCS)
+%(output)s: CFLAGS := $(CFLAGS) $(DEFS) $(INCS)
+%(output)s: CXXFLAGS := $(CFLAGS) $(DEFS) $(INCS)
 %(output)s: LIBS := $(LIBS)
 """ % locals())
 
