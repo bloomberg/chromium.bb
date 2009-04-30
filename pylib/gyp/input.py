@@ -1198,6 +1198,8 @@ def MergeDicts(to, fro, to_file, fro_file):
 def SetUpConfigurations(target, target_dict):
   # non_configuraiton_keys is a list of key names that belong in the target
   # itself and should not be propagated into its configurations.
+  # TODO(mark/tvl): we need a way for this list to be extended by the
+  # generators.
   non_configuration_keys = [
     # Sections that must exist inside targets and not configurations.
     'actions',
@@ -1219,6 +1221,7 @@ def SetUpConfigurations(target, target_dict):
     'test',
     'type',
     'variants',
+    'xcode_create_dependents_test_runner',
 
     # Sections that can be found inside targets or configurations, but that
     # should not be propagated from targets into their configurations.
