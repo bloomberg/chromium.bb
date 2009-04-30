@@ -416,6 +416,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, configs):
     if includes:
       includes = AbsolutifyL(dir, includes)
     WriteList(fp, includes, 'INCS_%s' % configname, prefix='-I')
+    WriteList(fp, config.get('ldflags'), 'LDFLAGS_%s' % configname)
 
   WriteList(fp, spec.get('libraries'), 'LIBS')
 
@@ -453,6 +454,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, configs):
 # See "Target-specific Variable Values" in the GNU Make manual.
 %(output)s: CFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))
 %(output)s: CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))
+%(output)s: LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
 %(output)s: LIBS := $(LIBS)
 """ % locals())
 
