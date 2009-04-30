@@ -400,6 +400,7 @@ def GenerateMakefile(output_filename, build_file, root, spec, configs):
     outputs = []
     for copy in spec['copies']:
       for path in copy['files']:
+        path = Absolutify(dir, path)
         filename = os.path.split(path)[1]
         output = os.path.join(copy['destination'], filename)
         fp.write('%s: %s\n\t$(call do_cmd,copy)\n' % (output, path))
