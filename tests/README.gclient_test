@@ -1,0 +1,6 @@
+# Copyright 2008-2009, Google Inc.
+
+To run the gclient's unit tests, you need to checkout pymox and install it:
+svn co http://pymox.googlecode.com/svn/trunk pymox
+cd pymox
+python setup.py install

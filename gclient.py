@@ -78,18 +78,6 @@ import urlparse
 import xml.dom.minidom
 import urllib
 
-def getText(nodelist):
-  """
-  Return the concatenated text for the children of a list of DOM nodes.
-  """
-  rc = []
-  for node in nodelist:
-    if node.nodeType == node.TEXT_NODE:
-      rc.append(node.data)
-    else:
-      rc.append(getText(node.childNodes))
-  return ''.join(rc)
-
 
 SVN_COMMAND = "svn"
 
@@ -269,6 +257,26 @@ solutions = [
 
 
 ## Generic utils
+
+
+def getText(nodelist):
+  """
+  Return the concatenated text for the children of a list of DOM nodes.
+  """
+  rc = []
+  for node in nodelist:
+    if node.nodeType == node.TEXT_NODE:
+      rc.append(node.data)
+    else:
+      rc.append(getText(node.childNodes))
+  return ''.join(rc)
+
+
+def ParseXML(output):
+  try:
+    return xml.dom.minidom.parseString(output)
+  except xml.parsers.expat.ExpatError:
+    return None
 
 
 class Error(Exception):
@@ -584,20 +592,15 @@ def CaptureSVNHeadRevision(options, url):
 
 
 class FileStatus:
-  def __init__(self, path, text_status, props, locked, history, switched,
-               repo_locked, out_of_date):
-    self.path = path.strip()
+  def __init__(self, path, text_status, props, history):
+    self.path = path
     self.text_status = text_status
     self.props = props
-    self.locked = locked
     self.history = history
-    self.switched = switched
-    self.repo_locked = repo_locked
-    self.out_of_date = out_of_date
 
   def __str__(self):
-    return (self.text_status + self.props + self.locked + self.history +
-            self.switched + self.repo_locked + self.out_of_date +
+    # Emulate svn status 1.5 output.
+    return (self.text_status + self.props + ' ' + self.history + ' ' +
             self.path)
 
 
@@ -608,18 +611,53 @@ def CaptureSVNStatus(options, path):
     path: The directory to run svn status.
 
   Returns:
-    An array of FileStatus corresponding to the output of 'svn status'
-  """
-  info = CaptureSVN(options, ["status"], path)
-  result = []
-  if not info:
-    return result
-  for line in info.splitlines():
-    if line:
-      new_item = FileStatus(line[7:], line[0:1], line[1:2], line[2:3],
-                            line[3:4], line[4:5], line[5:6], line[6:7])
-      result.append(new_item)
-  return result
+    An array of FileStatus corresponding to the emulated output of 'svn status'
+    version 1.5."""
+  dom = ParseXML(CaptureSVN(options, ["status", "--xml"], path))
+  results = []
+  if dom:
+    # /status/target/entry/(wc-status|commit|author|date)
+    for target in dom.getElementsByTagName('target'):
+      base_path = target.getAttribute('path')
+      for entry in target.getElementsByTagName('entry'):
+        file = entry.getAttribute('path')
+        wc_status = entry.getElementsByTagName('wc-status')
+        assert len(wc_status) == 1
+        # Emulate svn 1.5 status ouput...
+        statuses = [' ' for i in range(7)]
+        # Col 0
+        xml_item_status = wc_status[0].getAttribute('item')
+        if xml_item_status == 'unversioned':
+          statuses[0] = '?'
+        elif xml_item_status == 'modified':
+          statuses[0] = 'M'
+        elif xml_item_status == 'added':
+          statuses[0] = 'A'
+        elif xml_item_status == 'conflicted':
+          statuses[0] = 'C'
+        elif not xml_item_status:
+          pass
+        else:
+          raise Exception('Unknown item status "%s"; please implement me!' %
+                          xml_item_status)
+        # Col 1
+        xml_props_status = wc_status[0].getAttribute('props')
+        if xml_props_status == 'modified':
+          statuses[1] = 'M'
+        elif xml_props_status == 'conflicted':
+          statuses[1] = 'C'
+        elif (not xml_props_status or xml_props_status == 'none' or
+              xml_props_status == 'normal'):
+          pass
+        else:
+          raise Exception('Unknown props status "%s"; please implement me!' %
+                          xml_props_status)
+        # Col 3
+        if wc_status[0].getAttribute('copied') == 'true':
+          statuses[3] = '+'
+        item = FileStatus(file, statuses[0], statuses[1], statuses[3])
+        results.append(item)
+  return results
 
 
 ### SCM abstraction layer
@@ -638,10 +676,10 @@ class SCMWrapper(object):
     self.url = url
     self._root_dir = root_dir
     if self._root_dir:
-      self._root_dir = self._root_dir.replace('/', os.sep).strip()
+      self._root_dir = self._root_dir.replace('/', os.sep)
     self.relpath = relpath
     if self.relpath:
-      self.relpath = self.relpath.replace('/', os.sep).strip()
+      self.relpath = self.relpath.replace('/', os.sep)
 
   def FullUrlForRelativeUrl(self, url):
     # Find the forth '/' and strip from there. A bit hackish.
