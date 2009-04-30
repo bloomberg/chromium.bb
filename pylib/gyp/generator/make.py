@@ -42,7 +42,7 @@ generator_default_variables = {
   'OS': 'linux',
   'INTERMEDIATE_DIR': '$(obj)/gen',
   'SHARED_INTERMEDIATE_DIR': '$(obj)/gen',
-  'PRODUCT_DIR': '$(obj)/bin',
+  'PRODUCT_DIR': '$(builddir)',
   'RULE_INPUT_ROOT': '%(INPUT_ROOT)s',  # This gets expanded by Python.
   'RULE_INPUT_PATH': '$<',
 
@@ -72,6 +72,14 @@ endif
 # Specify BUILDTYPE=Release on the command line for a release build.
 BUILDTYPE ?= Debug
 
+# Directory all our build output goes into.
+# Note that this must be two directories beneath src/ for unit tests to pass,
+# as they reach into the src/ directory for data with relative paths.
+builddir ?= out/$(BUILDTYPE)
+
+# Object output directory.
+obj := $(builddir)/obj
+
 # We build up a list of all targets so we can slurp in the generated
 # dependency rule Makefiles in one pass.
 all_targets :=
@@ -95,10 +103,6 @@ DEPFLAGS = -MMD -MF $(depfile).tmp
 #   path/to/foobar.o: DEP1 DEP2
 fixup_dep = @sed -e "s|^$(notdir $@)|$@|" $(depfile).tmp > $(depfile); \
              rm -f $(depfile).tmp
-
-# Build output directory.  TODO: make this configurable.  Maybe name it
-# builddir for consistency with other make files.
-obj := out/$(BUILDTYPE)
 
 # Command definitions:
 # - cmd_foo is the actual command to run;
@@ -480,7 +484,7 @@ $(OBJS): | %s
   fp.write('\n# Rules for final target.\n')
   deps = ' '.join(deps)
   if typ == 'executable':
-    binpath = '$(obj)/bin/' + target
+    binpath = '$(builddir)/' + target
     fp.write("""\
 %(output)s: $(OBJS) %(deps)s
 \t$(call do_cmd,link)
