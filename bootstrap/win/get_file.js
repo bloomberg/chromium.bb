@@ -112,7 +112,7 @@ Number.prototype.toHex = function NumberToHex(length) {
 };
 
 if (WScript.Arguments.length != 2) {
-  WScript.StdOut.Write("Incorrect arguments to download.js")
+  WScript.StdOut.Write("Incorrect arguments to get_file.js")
 } else {
   Download(WScript.Arguments(0), WScript.Arguments(1), false);
 }
