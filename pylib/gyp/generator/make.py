@@ -69,6 +69,9 @@ else
   quiet=quiet_
 endif
 
+# Specify BUILDTYPE=Release on the command line for a release build.
+BUILDTYPE ?= Debug
+
 # We build up a list of all targets so we can slurp in the generated
 # dependency rule Makefiles in one pass.
 all_targets :=
@@ -95,7 +98,7 @@ fixup_dep = @sed -e "s|^$(notdir $@)|$@|" $(depfile).tmp > $(depfile); \
 
 # Build output directory.  TODO: make this configurable.  Maybe name it
 # builddir for consistency with other make files.
-obj = out
+obj := out/$(BUILDTYPE)
 
 # Command definitions:
 # - cmd_foo is the actual command to run;
@@ -272,7 +275,7 @@ def Objectify(path):
   return '$(obj)/' + path
 
 
-def GenerateMakefile(output_filename, build_file, root, spec, config):
+def GenerateMakefile(output_filename, build_file, root, spec, configs):
   print 'Generating %s' % output_filename
 
   fp = open(output_filename, 'w')
@@ -405,12 +408,15 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
     special_outputs.append('$(%s)' % variable)
     fp.write('\n')
 
-  WriteList(fp, config.get('defines'), 'DEFS', prefix='-D')
-  WriteList(fp, config.get('cflags'), 'CFLAGS')
-  includes = config.get('include_dirs')
-  if includes:
-    includes = AbsolutifyL(dir, includes)
-  WriteList(fp, includes, 'INCS', prefix='-I')
+  for configname in sorted(configs.keys()):
+    config = configs[configname]
+    WriteList(fp, config.get('defines'), 'DEFS_%s' % configname, prefix='-D')
+    WriteList(fp, config.get('cflags'), 'CFLAGS_%s' % configname)
+    includes = config.get('include_dirs')
+    if includes:
+      includes = AbsolutifyL(dir, includes)
+    WriteList(fp, includes, 'INCS_%s' % configname, prefix='-I')
+
   WriteList(fp, spec.get('libraries'), 'LIBS')
 
   objs = None
@@ -445,8 +451,8 @@ def GenerateMakefile(output_filename, build_file, root, spec, config):
     fp.write("""\
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.
-%(output)s: CFLAGS := $(CFLAGS) $(DEFS) $(INCS)
-%(output)s: CXXFLAGS := $(CFLAGS) $(DEFS) $(INCS)
+%(output)s: CFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))
+%(output)s: CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))
 %(output)s: LIBS := $(LIBS)
 """ % locals())
 
@@ -524,14 +530,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
-    config = None
-    if 'Debug' in configs:
-      config = configs['Debug']
-    elif 'Default' in configs:
-      config = configs['Default']
-
     (output, link_deps) = GenerateMakefile(output_file, build_file,
-                                           options.depth, spec, config)
+                                           options.depth, spec, configs)
     target_outputs[qualified_target] = output
     if link_deps:
       target_link_deps[qualified_target] = link_deps
