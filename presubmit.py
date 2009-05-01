@@ -630,7 +630,7 @@ def DoPresubmitChecks(change_info,
     if verbose:
       print "Running %s" % filename
     # Accept CRLF presubmit script.
-    presubmit_script = gcl.ReadFile(filename, 'Ur')
+    presubmit_script = gcl.ReadFile(filename, 'rU')
     results += executer.ExecPresubmitScript(presubmit_script, filename)
 
   errors = []
