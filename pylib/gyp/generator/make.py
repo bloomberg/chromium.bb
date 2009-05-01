@@ -272,11 +272,12 @@ class MakefileWriter:
     if 'rules' in spec:
       self.WriteRules(spec['rules'], extra_sources, extra_outputs)
 
-    if 'sources' in spec or extra_sources:
-      self.WriteSources(configs, deps, spec.get('sources', []) + extra_sources)
-
     if 'copies' in spec:
       self.WriteCopies(spec['copies'], extra_outputs)
+
+    if 'sources' in spec or extra_sources:
+      self.WriteSources(configs, deps, spec.get('sources', []) + extra_sources,
+                        extra_outputs)
 
     self.WriteTarget(spec, configs, deps, extra_outputs)
 
@@ -401,7 +402,7 @@ class MakefileWriter:
     self.WriteLn()
 
 
-  def WriteSources(self, configs, deps, sources):
+  def WriteSources(self, configs, deps, sources, extra_outputs):
     # Write configuration-specific variables for CFLAGS, etc.
     for configname in sorted(configs.keys()):
       config = configs[configname]
@@ -421,10 +422,17 @@ class MakefileWriter:
     self.WriteLn('all_targets += $(OBJS)')
     self.WriteLn()
 
-    # Make sure the actions and rules run first.
+    # Make sure our dependencies are built first.
     if deps:
       self.WriteMakeRule(['$(OBJS)'], ['| %s' % (' '.join(deps))],
                          comment = 'Make sure our dependencies are built '
+                                   'before any of us.')
+      self.WriteLn()
+
+    # Make sure the actions and rules run first.
+    if deps:
+      self.WriteMakeRule(['$(OBJS)'], extra_outputs,
+                         comment = 'Make sure our actions/rules run '
                                    'before any of us.')
       self.WriteLn()
 
