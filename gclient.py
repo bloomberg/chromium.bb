@@ -592,15 +592,16 @@ def CaptureSVNHeadRevision(options, url):
 
 
 class FileStatus:
-  def __init__(self, path, text_status, props, history):
+  def __init__(self, path, text_status, props, lock, history):
     self.path = path
     self.text_status = text_status
     self.props = props
+    self.lock = lock
     self.history = history
 
   def __str__(self):
     # Emulate svn status 1.5 output.
-    return (self.text_status + self.props + ' ' + self.history + ' ' +
+    return (self.text_status + self.props + self.lock + self.history + ' ' +
             self.path)
 
 
@@ -635,6 +636,8 @@ def CaptureSVNStatus(options, path):
           statuses[0] = 'A'
         elif xml_item_status == 'conflicted':
           statuses[0] = 'C'
+        elif xml_item_status in ('incomplete', 'missing'):
+          statuses[0] = '!'
         elif not xml_item_status:
           pass
         else:
@@ -652,10 +655,14 @@ def CaptureSVNStatus(options, path):
         else:
           raise Exception('Unknown props status "%s"; please implement me!' %
                           xml_props_status)
+        # Col 2
+        if wc_status[0].getAttribute('wc-locked') == 'true':
+          statuses[2] = 'L'
         # Col 3
         if wc_status[0].getAttribute('copied') == 'true':
           statuses[3] = '+'
-        item = FileStatus(file, statuses[0], statuses[1], statuses[3])
+        item = FileStatus(file, statuses[0], statuses[1], statuses[2],
+                          statuses[3])
         results.append(item)
   return results
 
@@ -755,7 +762,10 @@ class SCMWrapper(object):
     if not options.path_exists(os.path.join(self._root_dir, self.relpath)):
       # We need to checkout.
       command = ['checkout', url, os.path.join(self._root_dir, self.relpath)]
+      if revision:
+        command.extend(['--revision', str(revision)])
       RunSVNAndGetFileList(options, command, self._root_dir, file_list)
+      return
 
     # Get the existing scm url and the revision number of the current checkout.
     from_info = CaptureSVNInfo(options,
@@ -810,12 +820,12 @@ class SCMWrapper(object):
     """
     path = os.path.join(self._root_dir, self.relpath)
     if not os.path.isdir(path):
-      # We can't revert path that doesn't exist.
-      # TODO(maruel):  Should we update instead?
-      if options.verbose:
-        print >>options.stdout, ("\n_____ %s is missing, can't revert" %
-                                 self.relpath)
-      return
+      # svn revert won't work if the directory doesn't exist. It needs to
+      # checkout instead.
+      print >>options.stdout, ("\n_____ %s is missing, synching instead" %
+                               self.relpath)
+      # Don't reuse the args.
+      return self.update(options, [], file_list)
 
     files = CaptureSVNStatus(options, path)
     # Batch the command.
@@ -859,10 +869,18 @@ class SCMWrapper(object):
 
   def status(self, options, args, file_list):
     """Display status information."""
+    path = os.path.join(self._root_dir, self.relpath)
     command = ['status']
     command.extend(args)
-    RunSVNAndGetFileList(options, command,
-                         os.path.join(self._root_dir, self.relpath), file_list)
+    if not os.path.isdir(path):
+      # svn status won't work if the directory doesn't exist.
+      print >> options.stdout, (
+          "\n________ couldn't run \'%s\' in \'%s\':\nThe directory "
+          "does not exist."
+          % (' '.join(command), path))
+      # There's no file list to retrieve.
+    else:
+      RunSVNAndGetFileList(options, command, path, file_list)
 
 
 ## GClient implementation.

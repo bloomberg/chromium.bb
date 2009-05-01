@@ -1121,16 +1121,22 @@ class SCMWrapperTestCase(BaseTestCase):
   def testRevertMissing(self):
     options = self.Options(verbose=True)
     gclient.os.path.isdir = self.mox.CreateMockAnything()
-    gclient.os.path.isdir(os.path.join(self.root_dir, self.relpath)
-        ).AndReturn(False)
-    print >>options.stdout, ("\n_____ %s is missing, can't revert" %
+    base_path = os.path.join(self.root_dir, self.relpath)
+    gclient.os.path.isdir(base_path).AndReturn(False)
+    # It'll to a checkout instead.
+    options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
+    print >>options.stdout, ("\n_____ %s is missing, synching instead" %
                              self.relpath)
+    # Checkout.
+    options.path_exists(base_path).AndReturn(False)
+    files_list = self.mox.CreateMockAnything()
+    gclient.RunSVNAndGetFileList(options, ['checkout', self.url, base_path],
+                                 self.root_dir, files_list)
 
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
                              relpath=self.relpath)
-    file_list = []
-    scm.revert(options, self.args, file_list)
+    scm.revert(options, self.args, files_list)
     self.mox.VerifyAll()
     gclient.os.path.isdir = os.path.isdir
 
@@ -1155,8 +1161,8 @@ class SCMWrapperTestCase(BaseTestCase):
     gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
     items = [
-      gclient.FileStatus('a', 'M', ' ', ' '), 
-      gclient.FileStatus('b', 'A', ' ', ' '),
+      gclient.FileStatus('a', 'M', ' ', ' ', ' '), 
+      gclient.FileStatus('b', 'A', ' ', ' ', ' '),
     ]
     gclient.CaptureSVNStatus(options, base_path).AndReturn(items)
 
@@ -1175,6 +1181,8 @@ class SCMWrapperTestCase(BaseTestCase):
   def testStatus(self):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
+    gclient.os.path.isdir = self.mox.CreateMockAnything()
+    gclient.os.path.isdir(base_path).AndReturn(True)
     gclient.RunSVNAndGetFileList(options, ['status'] + self.args, base_path,
                                  []).AndReturn(None)
 
@@ -1197,23 +1205,14 @@ class SCMWrapperTestCase(BaseTestCase):
     file_info.uuid = 'ABC'
     file_info.revision = 42
     options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
-    # Checkout or update.
+    # Checkout.
     options.path_exists(base_path).AndReturn(False)
-    print >>options.stdout, "\n_____ asf at 42"
-    #print >>options.stdout, "\n________ running 'svn checkout %s %s' in '%s'" % (
-    #    self.url, base_path, os.path.abspath(self.root_dir))
-
-    gclient.CaptureSVNInfo(options, os.path.join(base_path, "."), '.'
-        ).AndReturn(file_info)
-    # Cheat a bit here.
-    gclient.CaptureSVNInfo(options, file_info.url, '.').AndReturn(file_info)
     files_list = self.mox.CreateMockAnything()
     gclient.RunSVNAndGetFileList(options, ['checkout', self.url, base_path],
                                  self.root_dir, files_list)
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
                              relpath=self.relpath)
-    #file_list = []
     scm.update(options, (), files_list)
     self.mox.VerifyAll()
 
