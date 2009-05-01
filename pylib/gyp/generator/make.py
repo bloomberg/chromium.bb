@@ -130,12 +130,12 @@ cmd_copy = ln -f $< $@
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK $@
-cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o %.so,$^) -Wl,--end-group $(LIBS)
+cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o %.so,$^) -Wl,--end-group $(LIBS)
+cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
 
 # do_cmd: run a command via the above cmd_foo names.
 # TODO: This should also set up dependencies of the target on the
@@ -193,9 +193,6 @@ header = """\
 
 """
 
-footer = """\
-"""
-
 
 def Compilable(filename):
   """Return true if the file is compilable (should be in OBJS)."""
@@ -213,12 +210,11 @@ def QuoteIfNecessary(string):
   return string
 
 
-def WriteList(fp, list, variable=None,
-                        prefix=''):
-  fp.write(variable + " := ")
-  if list:
-    fp.write(" \\\n\t".join([QuoteIfNecessary(prefix + l) for l in list]))
-  fp.write("\n\n")
+def Objectify(path):
+  """Convert a path to its output directory form."""
+  if '$(' in path:
+    return path
+  return '$(obj)/' + path
 
 
 # Map from qualified target to path to output.
@@ -249,58 +245,52 @@ def ComputeLinkDeps(depnames, deps):
   return list(all_deps)
 
 
-def Absolutify(dir, path):
-  """Convert a subdirectory-relative path into a base-relative path.
-  Skips over paths that contain variables."""
-  if '$(' in path:
-    return path
-  return os.path.normpath(os.path.join(dir, path))
+class MakefileWriter:
+  def Write(self, output_filename, root, spec, configs):
+    print 'Generating %s' % output_filename
+    self.fp = open(output_filename, 'w')
+
+    self.fp.write(header)
+
+    # Paths in gyp files are relative to the .gyp file, but we need
+    # paths relative to the source root for the master makefile.  Grab
+    # the path of the .gyp file as the base to relativize against.
+    self.path = gyp.common.RelativePath(os.path.split(output_filename)[0], root)
+    self.target = spec['target_name']
+
+    deps = self.ComputeDeps(spec)
+    extra_outputs = []
+    extra_sources = []
+
+    self.output = self.ComputeOutput(spec)
+
+    # Actions must come first, since they can generate more OBJs for use below.
+    if 'actions' in spec:
+      self.WriteActions(spec['actions'], extra_sources, extra_outputs)
+
+    # Rules must be early like actions.
+    if 'rules' in spec:
+      self.WriteRules(spec['rules'], extra_sources, extra_outputs)
+
+    if 'sources' in spec or extra_sources:
+      self.WriteSources(configs, deps, spec.get('sources', []) + extra_sources)
+
+    if 'copies' in spec:
+      self.WriteCopies(spec['copies'], extra_outputs)
+
+    self.WriteTarget(spec, configs, deps, extra_outputs)
+
+    self.fp.close()
+
+    return self.output
 
 
-def AbsolutifyL(dir, paths):
-  """Absolutify lifted to lists."""
-  return [Absolutify(dir, p) for p in paths]
-
-
-def FixupArgPath(dir, arg):
-  if '/' in arg or '.h.' in arg:
-    return Absolutify(dir, arg)
-  return arg
-
-
-def FixupArgPathL(dir, args):
-  return [FixupArgPath(dir, arg) for arg in args]
-
-
-def Objectify(path):
-  """Convert a path to its output directory form."""
-  if '$(' in path:
-    return path
-  return '$(obj)/' + path
-
-
-def GenerateMakefile(output_filename, build_file, root, spec, configs):
-  print 'Generating %s' % output_filename
-
-  fp = open(output_filename, 'w')
-  fp.write(header)
-
-  # Paths in gyp files are relative to the .gyp file, but we need
-  # paths relative to the source root for the master makefile.  Grab
-  # the path of the .gyp file as the base to relativize against.
-  dir = gyp.common.RelativePath(os.path.split(output_filename)[0], root)
-  target = spec['target_name']
-
-  special_outputs = []
-  extra_sources = []
-
-  # Actions must come first, since they can generate more OBJs for use below.
-  if 'actions' in spec:
-    for action in spec['actions']:
-      name = target + '_' + action['action_name']
-      fp.write('# Rules for action "%s":\n' % action['action_name'])
-      inputs = AbsolutifyL(dir, action['inputs'])
-      outputs = AbsolutifyL(dir, action['outputs'])
+  def WriteActions(self, actions, extra_sources, extra_outputs):
+    for action in actions:
+      name = self.target + '_' + action['action_name']
+      self.WriteLn('### Rules for action "%s":' % action['action_name'])
+      inputs = map(self.Absolutify, action['inputs'])
+      outputs = map(self.Absolutify, action['outputs'])
 
       # Build up a list of outputs.
       # Collect the output dirs we'll need.
@@ -316,36 +306,32 @@ def GenerateMakefile(output_filename, build_file, root, spec, configs):
       if action.get('process_outputs_as_sources', False):
         extra_sources += outputs
 
-      # Stuff the outputs in a variable so we can refer to them later.
-      outputs_variable = 'action_%s_outputs' % name
-      fp.write('%s := %s\n' % (outputs_variable, ' '.join(outputs)))
-      special_outputs.append('$(%s)' % outputs_variable)
-
       # Write the actual command.
-      command = gyp.common.EncodePOSIXShellList(FixupArgPathL(dir, action['action']))
+      command = gyp.common.EncodePOSIXShellList(map(self.FixupArgPath, action['action']))
       if 'message' in action:
-        fp.write('quiet_cmd_%s = ACTION %s $@\n' % (name, action['message']))
+        self.WriteLn('quiet_cmd_%s = ACTION %s $@' % (name, action['message']))
       else:
-        fp.write('quiet_cmd_%s = ACTION %s $@\n' % (name, name))
+        self.WriteLn('quiet_cmd_%s = ACTION %s $@' % (name, name))
       if len(dirs) > 0:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
-      fp.write('cmd_%s = %s\n' % (name, command))
+      self.WriteLn('cmd_%s = %s' % (name, command))
+      self.WriteLn()
 
-      # We want to run the action once to generate all the files.
-      # We make the first output run the action, and the other outputs
-      # depend on the first.
-      fp.write('%s: %s\n' % (outputs[0], ' '.join(inputs)))
-      fp.write("\t$(call do_cmd,%s)\n" % name)
-      if len(outputs) > 1:
-        fp.write('%s: %s\n' % (' '.join(outputs[1:]), outputs[0]))
-      fp.write('\n')
-    fp.write('\n')
+      self.WriteMakeRule(outputs, inputs,
+                         actions=['$(call do_cmd,%s)' % name])
 
-  # Rules must be early like actions.
-  if 'rules' in spec:
-    for rule in spec['rules']:
-      name = target + '_' + rule['rule_name']
-      fp.write('# Generated for rule %s:\n' % name)
+      # Stuff the outputs in a variable so we can refer to them later.
+      outputs_variable = 'action_%s_outputs' % name
+      self.WriteLn('%s := %s' % (outputs_variable, ' '.join(outputs)))
+      extra_outputs.append('$(%s)' % outputs_variable)
+
+    self.WriteLn()
+
+
+  def WriteRules(self, rules, extra_sources, extra_outputs):
+    for rule in rules:
+      name = self.target + '_' + rule['rule_name']
+      self.WriteLn('### Generated for rule %s:' % name)
 
       all_outputs = []
 
@@ -355,17 +341,16 @@ def GenerateMakefile(output_filename, build_file, root, spec, configs):
         (rule_source_root, rule_source_ext) = \
             os.path.splitext(rule_source_basename)
 
-        outputs = map(lambda out: out % { 'INPUT_ROOT': rule_source_root }, rule['outputs'])
+        outputs = map(lambda out: out % { 'INPUT_ROOT': rule_source_root },
+                      rule['outputs'])
         for out in outputs:
           dirs.add(os.path.split(out)[0])
           if rule.get('process_outputs_as_sources', False):
             extra_sources.append(out)
         all_outputs += outputs
-        output = outputs[0]
-        inputs = ' '.join(AbsolutifyL(dir, [rule_source] + rule.get('inputs', [])))
-        fp.write("""\
-%(output)s: %(inputs)s
-\t$(call do_cmd,%(name)s)\n""" % locals())
+        inputs = map(self.Absolutify, [rule_source] + rule.get('inputs', []))
+        actions = ['$(call do_cmd,%s)' % name]
+
         if name == 'resources_grit':
           # HACK: This is ugly.  Grit intentionally doesn't touch the
           # timestamp of its output file when the file doesn't change,
@@ -373,158 +358,219 @@ def GenerateMakefile(output_filename, build_file, root, spec, configs):
           # and forge, but not kosher in the make world.  After some
           # discussion, hacking around it here seems like the least
           # amount of pain.
-          fp.write('\t@touch --no-create $@\n')
-        if len(outputs) > 1:
-          fp.write('%s: %s\n' % (' '.join(outputs[1:]), outputs[0]))
+          actions += ['@touch --no-create $@']
 
-      fp.write('\n')
+        self.WriteMakeRule(outputs, inputs, actions)
+
+      self.WriteLn()
 
       outputs_variable = 'rule_%s_outputs' % name
-      WriteList(fp, all_outputs, outputs_variable)
-      special_outputs.append('$(%s)' % outputs_variable)
+      self.WriteList(all_outputs, outputs_variable)
+      extra_outputs.append('$(%s)' % outputs_variable)
 
       mkdirs = ''
       if len(dirs) > 0:
         mkdirs = 'mkdir -p %s; ' % ' '.join(dirs)
-      fp.write("cmd_%(name)s = %(mkdirs)s%(action)s\n" % {
+      self.WriteLn("cmd_%(name)s = %(mkdirs)s%(action)s" % {
         'mkdirs': mkdirs,
         'name': name,
-        'action': gyp.common.EncodePOSIXShellList(FixupArgPathL(dir, rule['action']))
+        'action': gyp.common.EncodePOSIXShellList(map(self.FixupArgPath, rule['action']))
       })
-      fp.write('quiet_cmd_%(name)s = RULE %(name)s $@\n' % {
+      self.WriteLn('quiet_cmd_%(name)s = RULE %(name)s $@' % {
         'name': name,
       })
-      fp.write('\n')
-    fp.write('\n')
+      self.WriteLn()
+    self.WriteLn()
 
-  if 'copies' in spec:
-    fp.write('# Generated for copy rule.\n')
 
-    variable = target + '_copies'
+  def WriteCopies(self, copies, extra_outputs):
+    self.WriteLn('### Generated for copy rule.')
+
+    variable = self.target + '_copies'
     outputs = []
-    for copy in spec['copies']:
+    for copy in copies:
       for path in copy['files']:
-        path = Absolutify(dir, path)
+        path = self.Absolutify(path)
         filename = os.path.split(path)[1]
         output = os.path.join(copy['destination'], filename)
-        fp.write('%s: %s\n\t$(call do_cmd,copy)\n' % (output, path))
+        self.WriteMakeRule([output], [path],
+                           actions = ['$(call do_cmd,copy)'])
         outputs.append(output)
-    fp.write('%s = %s\n' % (variable, ' '.join(outputs)))
-    special_outputs.append('$(%s)' % variable)
-    fp.write('\n')
+    self.WriteLn('%s = %s' % (variable, ' '.join(outputs)))
+    extra_outputs.append('$(%s)' % variable)
+    self.WriteLn()
 
-  for configname in sorted(configs.keys()):
-    config = configs[configname]
-    WriteList(fp, config.get('defines'), 'DEFS_%s' % configname, prefix='-D')
-    WriteList(fp, config.get('cflags'), 'CFLAGS_%s' % configname)
-    includes = config.get('include_dirs')
-    if includes:
-      includes = AbsolutifyL(dir, includes)
-    WriteList(fp, includes, 'INCS_%s' % configname, prefix='-I')
-    WriteList(fp, config.get('ldflags'), 'LDFLAGS_%s' % configname)
 
-  WriteList(fp, spec.get('libraries'), 'LIBS')
+  def WriteSources(self, configs, deps, sources):
+    # Write configuration-specific variables for CFLAGS, etc.
+    for configname in sorted(configs.keys()):
+      config = configs[configname]
+      self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D')
+      self.WriteList(config.get('cflags'), 'CFLAGS_%s' % configname)
+      includes = config.get('include_dirs')
+      if includes:
+        includes = map(self.Absolutify, includes)
+      self.WriteList(includes, 'INCS_%s' % configname, prefix='-I')
 
-  objs = None
-  if 'sources' in spec:
-    sources = spec['sources']
-    if extra_sources:
-      sources += extra_sources
     sources = filter(Compilable, sources)
-    objs = map(Objectify, AbsolutifyL(dir, map(Target, sources)))
-  WriteList(fp, objs, 'OBJS')
-  # Make sure the actions and rules run first.
-  fp.write("all_targets += $(OBJS)\n")
+    objs = map(Objectify, map(self.Absolutify, map(Target, sources)))
+    self.WriteList(objs, 'OBJS')
 
-  output = None
-  typ = spec.get('type')
-  if typ == 'static_library':
-    target = 'lib%s.a' % target
-  elif typ in ('loadable_module', 'shared_library'):
-    target = 'lib%s.so' % target
-  elif typ == 'none':
-    target = '%s.stamp' % target
-  elif typ == 'settings':
-    pass  # We'll fix up at end.
-  elif typ == 'executable':
-    target = spec.get('product_name', target)
-  else:
-    print "ERROR: What output file should be generated?", "typ", typ, "target", target
-  fp.write('\n')
-  output = os.path.join('$(obj)', dir, target)
+    self.WriteLn('# Add to the list of files we specially track '
+                 'dependencies for.')
+    self.WriteLn('all_targets += $(OBJS)')
+    self.WriteLn()
 
-  if objs:
-    fp.write("""\
+    # Make sure the actions and rules run first.
+    if deps:
+      self.WriteMakeRule(['$(OBJS)'], ['| %s' % (' '.join(deps))],
+                         comment = 'Make sure our dependencies are built '
+                                   'before any of us.')
+      self.WriteLn()
+
+    if objs:
+      self.WriteLn("""\
 # CFLAGS et al overrides must be target-local.
-# See "Target-specific Variable Values" in the GNU Make manual.
-%(output)s: CFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))
-%(output)s: CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))
-%(output)s: LDFLAGS := $(LDFLAGS_$(BUILDTYPE))
-%(output)s: LIBS := $(LIBS)
-""" % locals())
+# See "Target-specific Variable Values" in the GNU Make manual.""")
+      self.WriteLn("%s: CFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) "
+                   "$(INCS_$(BUILDTYPE))" % self.output)
+      self.WriteLn("%s: CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) "
+                   "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))" % self.output)
+      self.WriteLn()
 
-  deps = set()
-  link_deps = []
-  if 'dependencies' in spec:
-    deps.update([target_outputs[dep] for dep in spec['dependencies']
-                 if target_outputs[dep]])
-    link_deps = ComputeLinkDeps(spec['dependencies'], deps)
-    deps.update(link_deps)
-  if special_outputs:
-    deps.update(special_outputs)
-  deps = list(deps)
 
-  if deps:
-    fp.write('''\
-# Make sure our dependencies are built before any of us.
-$(OBJS): | %s
-''' % ' '.join(deps))
-
-  # Now write the actual build rule.
-  fp.write('\n# Rules for final target.\n')
-  deps = ' '.join(deps)
-  if typ == 'executable':
-    binpath = '$(builddir)/' + target
-    fp.write("""\
-%(output)s: $(OBJS) %(deps)s
-\t$(call do_cmd,link)
-%(binpath)s: %(output)s
-\t$(call do_cmd,copy)
-
-# Also provide a short alias for building this executable;
-# e.g., "make %(target)s".
-%(target)s: %(binpath)s
-
-# And make the "all" target depend on that.
-all: %(target)s
-""" % locals())
-  elif typ == 'static_library':
-    fp.write("""\
-%(output)s: $(OBJS) %(deps)s
-\t$(call do_cmd,ar)
-\t$(call do_cmd,ranlib)
-""" % locals())
-  elif typ in ('loadable_module', 'shared_library'):
-    fp.write("""\
-%(output)s: $(OBJS) %(deps)s
-\t$(call do_cmd,solink)
-""" % locals())
-  elif typ == 'none':
-    # Write a stamp line.
-    fp.write("%(output)s: $(OBJS) %(deps)s\n" % locals())
-    fp.write("\t$(call do_cmd,touch)\n")
-  elif typ == 'settings':
-    # Only used for passing flags around.
+  def ComputeOutput(self, spec):
     output = None
-  else:
-    print "WARNING: no output for", typ, target
+    typ = spec['type']
+    target = spec['target_name']
+    if typ == 'static_library':
+      target = 'lib%s.a' % target
+    elif typ in ('loadable_module', 'shared_library'):
+      target = 'lib%s.so' % target
+    elif typ == 'none':
+      target = '%s.stamp' % target
+    elif typ == 'settings':
+      return None
+    elif typ == 'executable':
+      target = spec.get('product_name', target)
+    else:
+      print "ERROR: What output file should be generated?", "typ", typ, "target", target
+    output = os.path.join('$(obj)', self.path, target)
+    return output
 
-  fp.write('\n')
-  fp.write(footer)
-  fp.write('\n')
 
-  fp.close()
-  return (output, link_deps)
+  def ComputeDeps(self, spec):
+    deps = set()
+    # XXX link_deps, used in the shared link, is currently broken.
+    # link_deps = []
+    if 'dependencies' in spec:
+      deps.update([target_outputs[dep] for dep in spec['dependencies']
+                   if target_outputs[dep]])
+      # link_deps = ComputeLinkDeps(spec['dependencies'], deps)
+      # deps.update(link_deps)
+    deps = list(deps)
+
+    return deps
+
+
+  def WriteTarget(self, spec, configs, deps, extra_outputs):
+    self.WriteLn('### Rules for final target.')
+
+    typ = spec['type']
+
+    if extra_outputs:
+      self.WriteMakeRule([self.output], extra_outputs,
+                         comment = 'Build our special outputs first.')
+
+    if typ not in ('settings', 'none'):
+      for configname in sorted(configs.keys()):
+        config = configs[configname]
+        self.WriteList(config.get('ldflags'), 'LDFLAGS_%s' % configname)
+      self.WriteList(spec.get('libraries'), 'LIBS')
+      self.WriteLn('%s: LDFLAGS := $(LDFLAGS_$(BUILDTYPE)) '
+                   '$(LIBS)' % self.output)
+
+    if typ == 'executable':
+      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+                         actions = ['$(call do_cmd,link)'])
+      filename = os.path.split(self.output)[1]
+      binpath = '$(builddir)/' + filename
+      self.WriteMakeRule([binpath], [self.output],
+                         actions = ['$(call do_cmd,copy)'])
+
+      self.WriteMakeRule([filename], [binpath],
+                         comment = 'Short alias for building this executable.')
+      self.WriteMakeRule(['all'], [binpath],
+                         comment = 'Add executable to "all" target.')
+    elif typ == 'static_library':
+      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+                         actions = [
+                             '$(call do_cmd,ar)',
+                             '$(call do_cmd,ranlib)',
+                             ])
+    elif typ in ('loadable_module', 'shared_library'):
+      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+                         actions = ['$(call do_cmd,solink)'])
+    elif typ == 'none':
+      # Write a stamp line.
+      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+                         actions = ['$(call do_cmd,touch)'])
+    elif typ == 'settings':
+      # Only used for passing flags around.
+      output = None
+    else:
+      print "WARNING: no output for", typ, target
+
+  def WriteList(self, list, variable=None, prefix=''):
+    self.fp.write(variable + " := ")
+    if list:
+      list = [QuoteIfNecessary(prefix + l) for l in list]
+      self.fp.write(" \\\n\t".join(list))
+    self.fp.write("\n\n")
+
+
+  def WriteMakeRule(self, outputs, inputs, actions=None, comment=None):
+    if comment:
+      self.WriteLn('# ' + comment)
+    self.WriteLn('%s: %s' % (outputs[0], ' '.join(inputs)))
+    if actions:
+      for action in actions:
+        self.WriteLn('\t%s' % action)
+    if len(outputs) > 1:
+      # If we have more than one output, a rule like
+      #   foo bar: baz
+      # that for *each* output we must run the action, potentially
+      # in parallel.  That is not what we're trying to write -- what
+      # we want is that we run the action once and it generates all
+      # the files.
+      # http://www.gnu.org/software/hello/manual/automake/Multiple-Outputs.html
+      # discusses this problem and has this solution:
+      # 1) Write the naive rule that would produce parallel runs of
+      # the action.
+      # 2) Make the outputs seralized on each other, so we won't start
+      # a a parallel run until the first run finishes, at which point
+      # we'll have generated all the outputs and we're done.
+      self.WriteLn('%s: %s' % (' '.join(outputs[1:]), outputs[0]))
+    self.WriteLn()
+
+
+  def WriteLn(self, text=''):
+    self.fp.write(text + '\n')
+
+
+  def Absolutify(self, path):
+    """Convert a subdirectory-relative path into a base-relative path.
+    Skips over paths that contain variables."""
+    if '$(' in path:
+      return path
+    return os.path.normpath(os.path.join(self.path, path))
+
+
+  def FixupArgPath(self, arg):
+    if '/' in arg or '.h.' in arg:
+      return self.Absolutify(arg)
+    return arg
+
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
@@ -537,11 +583,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
 
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
-    (output, link_deps) = GenerateMakefile(output_file, build_file,
-                                           options.depth, spec, configs)
+
+    writer = MakefileWriter()
+    output = writer.Write(output_file, options.depth, spec, configs)
     target_outputs[qualified_target] = output
-    if link_deps:
-      target_link_deps[qualified_target] = link_deps
+    #if link_deps:
+    #  target_link_deps[qualified_target] = link_deps
     root_makefile.write('include ' + output_file + "\n")
 
   root_makefile.write(SHARED_FOOTER)
