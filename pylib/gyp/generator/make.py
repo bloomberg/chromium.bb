@@ -130,12 +130,12 @@ cmd_copy = ln -f $< $@
 # special "figure out circular dependencies" flags around the entire
 # input list during linking.
 quiet_cmd_link = LINK $@
-cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
+cmd_link = $(LD) $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 
 # Shared-object link (for generating .so).
 # TODO: perhaps this can share with the LINK command above?
 quiet_cmd_solink = SOLINK $@
-cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $(filter %.a %.o,$^) -Wl,--end-group $(LIBS)
+cmd_solink = $(LD) -shared $(LDFLAGS) -o $@ -Wl,--start-group $^ -Wl,--end-group $(LIBS)
 
 # do_cmd: run a command via the above cmd_foo names.
 # TODO: This should also set up dependencies of the target on the
@@ -224,29 +224,9 @@ target_outputs = {}
 # Used in building shared-library-based executables.
 target_link_deps = {}
 
-def ComputeLinkDeps(depnames, deps):
-  """Compute the full set of linker dependencies from a shallow list.
-
-  E.g. given that we depend on the 'webcore' target, expand that into
-  a list of every .so that we need to successfully link against webcore.
-  Expects inductively for target_link_deps to be filled in for depnames.
-
-  depnames: a list of qualified targets we depend on.
-  deps: a list of the dependencies gyp gives us.
-  """
-
-  all_deps = set()
-  # Anyone who uses us needs all our .so.
-  all_deps.update([dep for dep in deps if dep.endswith('.so')])
-  # Anyone who uses us also needs our dependencies' output.
-  for depname in depnames:
-    if depname in target_link_deps:
-      all_deps.update(target_link_deps[depname])
-  return list(all_deps)
-
 
 class MakefileWriter:
-  def Write(self, output_filename, root, spec, configs):
+  def Write(self, qualified_target, output_filename, root, spec, configs):
     print 'Generating %s' % output_filename
     self.fp = open(output_filename, 'w')
 
@@ -257,10 +237,16 @@ class MakefileWriter:
     # the path of the .gyp file as the base to relativize against.
     self.path = gyp.common.RelativePath(os.path.split(output_filename)[0], root)
     self.target = spec['target_name']
+    self.type = spec['type']
 
-    deps = self.ComputeDeps(spec)
+    deps, link_deps = self.ComputeDeps(spec)
+
+    # Some of the generation below can add extra output, sources, or
+    # link dependencies.  All of the out params of the functions that
+    # follow use names like extra_foo.
     extra_outputs = []
     extra_sources = []
+    extra_link_deps = []
 
     self.output = self.ComputeOutput(spec)
 
@@ -277,13 +263,23 @@ class MakefileWriter:
 
     if 'sources' in spec or extra_sources:
       self.WriteSources(configs, deps, spec.get('sources', []) + extra_sources,
-                        extra_outputs)
+                        extra_outputs, extra_link_deps)
 
-    self.WriteTarget(spec, configs, deps, extra_outputs)
+    self.WriteTarget(spec, configs, deps,
+                     extra_link_deps + link_deps, extra_outputs)
+
+    # Update global list of target outputs, used in dependency tracking.
+    target_outputs[qualified_target] = self.output
+
+    # Update global list of link dependencies.
+    if self.type == 'static_library':
+      target_link_deps[qualified_target] = [self.output]
+    elif self.type == 'shared_library':
+      # Anyone that uses us transitively depend on all of our link
+      # dependencies.
+      target_link_deps[qualified_target] = [self.output] + link_deps
 
     self.fp.close()
-
-    return self.output
 
 
   def WriteActions(self, actions, extra_sources, extra_outputs):
@@ -402,7 +398,8 @@ class MakefileWriter:
     self.WriteLn()
 
 
-  def WriteSources(self, configs, deps, sources, extra_outputs):
+  def WriteSources(self, configs, deps, sources,
+                   extra_outputs, extra_link_deps):
     # Write configuration-specific variables for CFLAGS, etc.
     for configname in sorted(configs.keys()):
       config = configs[configname]
@@ -424,73 +421,77 @@ class MakefileWriter:
 
     # Make sure our dependencies are built first.
     if deps:
-      self.WriteMakeRule(['$(OBJS)'], ['| %s' % (' '.join(deps))],
+      self.WriteMakeRule(['$(OBJS)'], deps,
                          comment = 'Make sure our dependencies are built '
-                                   'before any of us.')
-      self.WriteLn()
+                                   'before any of us.',
+                         order_only = True)
 
     # Make sure the actions and rules run first.
+    # If they generate any extra headers etc., the per-.o file dep tracking
+    # will catch the proper rebuilds, so order only is still ok here.
     if extra_outputs:
       self.WriteMakeRule(['$(OBJS)'], extra_outputs,
                          comment = 'Make sure our actions/rules run '
-                                   'before any of us.')
-      self.WriteLn()
+                                   'before any of us.',
+                         order_only = True)
 
     if objs:
+      extra_link_deps.append('$(OBJS)')
       self.WriteLn("""\
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.""")
-      self.WriteLn("%s: CFLAGS := $(CFLAGS_$(BUILDTYPE)) $(DEFS_$(BUILDTYPE)) "
-                   "$(INCS_$(BUILDTYPE))" % self.output)
-      self.WriteLn("%s: CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) "
-                   "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))" % self.output)
-      self.WriteLn()
+      self.WriteLn("$(OBJS): CFLAGS := $(CFLAGS_$(BUILDTYPE)) "
+                   "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
+      self.WriteLn("$(OBJS): CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) "
+                   "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
+
+    self.WriteLn()
 
 
   def ComputeOutput(self, spec):
     output = None
-    typ = spec['type']
     target = spec['target_name']
-    if typ == 'static_library':
+    if self.type == 'static_library':
       target = 'lib%s.a' % target
-    elif typ in ('loadable_module', 'shared_library'):
+    elif self.type in ('loadable_module', 'shared_library'):
       target = 'lib%s.so' % target
-    elif typ == 'none':
+    elif self.type == 'none':
       target = '%s.stamp' % target
-    elif typ == 'settings':
+    elif self.type == 'settings':
       return None
-    elif typ == 'executable':
+    elif self.type == 'executable':
       target = spec.get('product_name', target)
     else:
-      print "ERROR: What output file should be generated?", "typ", typ, "target", target
+      print "ERROR: What output file should be generated?", "typ", self.type, "target", target
     output = os.path.join('$(obj)', self.path, target)
     return output
 
 
   def ComputeDeps(self, spec):
     deps = set()
-    # XXX link_deps, used in the shared link, is currently broken.
-    # link_deps = []
+    link_deps = set()
     if 'dependencies' in spec:
       deps.update([target_outputs[dep] for dep in spec['dependencies']
                    if target_outputs[dep]])
-      # link_deps = ComputeLinkDeps(spec['dependencies'], deps)
-      # deps.update(link_deps)
-    deps = list(deps)
+      for dep in spec['dependencies']:
+        if dep in target_link_deps:
+          link_deps.update(target_link_deps[dep])
+      deps.update(link_deps)
+      # TODO: It seems we need to transitively link in libraries (e.g. -lfoo)?
+      # This hack makes it work:
+      # link_deps.extend(spec.get('libraries', []))
+    return (list(deps), list(link_deps))
 
-    return deps
 
-
-  def WriteTarget(self, spec, configs, deps, extra_outputs):
+  def WriteTarget(self, spec, configs, deps, link_deps, extra_outputs):
     self.WriteLn('### Rules for final target.')
-
-    typ = spec['type']
 
     if extra_outputs:
       self.WriteMakeRule([self.output], extra_outputs,
-                         comment = 'Build our special outputs first.')
+                         comment = 'Build our special outputs first.',
+                         order_only = True)
 
-    if typ not in ('settings', 'none'):
+    if self.type not in ('settings', 'none'):
       for configname in sorted(configs.keys()):
         config = configs[configname]
         self.WriteList(config.get('ldflags'), 'LDFLAGS_%s' % configname)
@@ -498,36 +499,38 @@ class MakefileWriter:
       self.WriteLn('%s: LDFLAGS := $(LDFLAGS_$(BUILDTYPE)) '
                    '$(LIBS)' % self.output)
 
-    if typ == 'executable':
-      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+    if self.type == 'executable':
+      self.WriteMakeRule([self.output], link_deps,
                          actions = ['$(call do_cmd,link)'])
       filename = os.path.split(self.output)[1]
       binpath = '$(builddir)/' + filename
       self.WriteMakeRule([binpath], [self.output],
-                         actions = ['$(call do_cmd,copy)'])
+                         actions = ['$(call do_cmd,copy)'],
+                         comment = 'Copy this to the binary output path.')
 
       self.WriteMakeRule([filename], [binpath],
                          comment = 'Short alias for building this executable.')
       self.WriteMakeRule(['all'], [binpath],
                          comment = 'Add executable to "all" target.')
-    elif typ == 'static_library':
-      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+    elif self.type == 'static_library':
+      self.WriteMakeRule([self.output], link_deps,
                          actions = [
                              '$(call do_cmd,ar)',
                              '$(call do_cmd,ranlib)',
                              ])
-    elif typ in ('loadable_module', 'shared_library'):
-      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+    elif self.type in ('loadable_module', 'shared_library'):
+      self.WriteMakeRule([self.output], link_deps,
                          actions = ['$(call do_cmd,solink)'])
-    elif typ == 'none':
+    elif self.type == 'none':
       # Write a stamp line.
-      self.WriteMakeRule([self.output], ['$(OBJS)'] + deps,
+      self.WriteMakeRule([self.output], deps,
                          actions = ['$(call do_cmd,touch)'])
-    elif typ == 'settings':
+    elif self.type == 'settings':
       # Only used for passing flags around.
-      output = None
+      pass
     else:
-      print "WARNING: no output for", typ, target
+      print "WARNING: no output for", self.type, target
+
 
   def WriteList(self, list, variable=None, prefix=''):
     self.fp.write(variable + " := ")
@@ -537,10 +540,12 @@ class MakefileWriter:
     self.fp.write("\n\n")
 
 
-  def WriteMakeRule(self, outputs, inputs, actions=None, comment=None):
+  def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
+                    order_only=False):
     if comment:
       self.WriteLn('# ' + comment)
-    self.WriteLn('%s: %s' % (outputs[0], ' '.join(inputs)))
+    order_insert = '| ' if order_only else ''
+    self.WriteLn('%s: %s%s' % (outputs[0], order_insert, ' '.join(inputs)))
     if actions:
       for action in actions:
         self.WriteLn('\t%s' % action)
@@ -593,10 +598,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
     configs = spec['configurations']
 
     writer = MakefileWriter()
-    output = writer.Write(output_file, options.depth, spec, configs)
-    target_outputs[qualified_target] = output
-    #if link_deps:
-    #  target_link_deps[qualified_target] = link_deps
+    writer.Write(qualified_target, output_file, options.depth, spec, configs)
     root_makefile.write('include ' + output_file + "\n")
 
   root_makefile.write(SHARED_FOOTER)
