@@ -505,6 +505,7 @@ drm_intel_gem_bo_reference(drm_intel_bo *bo)
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 
+    assert(bo_gem->refcount > 0);
     pthread_mutex_lock(&bufmgr_gem->lock);
     bo_gem->refcount++;
     pthread_mutex_unlock(&bufmgr_gem->lock);
@@ -515,6 +516,7 @@ drm_intel_gem_bo_reference_locked(drm_intel_bo *bo)
 {
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 
+    assert(bo_gem->refcount > 0);
     bo_gem->refcount++;
 }
 
@@ -549,6 +551,7 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
 
+    assert(bo_gem->refcount > 0);
     if (--bo_gem->refcount == 0) {
 	struct drm_intel_gem_bo_bucket *bucket;
 	uint32_t tiling_mode;
