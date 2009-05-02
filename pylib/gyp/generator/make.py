@@ -430,7 +430,7 @@ class MakefileWriter:
       self.WriteLn()
 
     # Make sure the actions and rules run first.
-    if deps:
+    if extra_outputs:
       self.WriteMakeRule(['$(OBJS)'], extra_outputs,
                          comment = 'Make sure our actions/rules run '
                                    'before any of us.')
