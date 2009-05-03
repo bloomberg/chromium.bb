@@ -136,14 +136,16 @@ def GetSVNStatus(file):
 
   status_letter = {
     '': ' ',
-    'unversioned': '?',
-    'modified': 'M',
     'added': 'A',
     'conflicted': 'C',
     'deleted': 'D',
     'ignored': 'I',
+    'missing': '!',
+    'modified': 'M',
+    'normal': ' ',
     'replaced': 'R',
-    # TODO(maruel): Find the corresponding strings for X, !, ~
+    'unversioned': '?',
+    # TODO(maruel): Find the corresponding strings for X, ~
   }
   dom = ParseXML(RunShell(command))
   results = []
