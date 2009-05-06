@@ -496,7 +496,7 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 	reg1 = readl(regs+NV03_PMC_BOOT_1);
 #if defined(__powerpc__)
 	if (reg1)
-		reg0=___swab32(reg0);
+		reg0=__swab32(reg0);
 #endif
 
 	/* We're dealing with >=NV10 */
