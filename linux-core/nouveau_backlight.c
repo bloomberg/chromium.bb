@@ -37,7 +37,7 @@
 #include "nouveau_drm.h"
 #include "nouveau_reg.h"
 
-#ifdef CONFIG_BACKLIGHT_CLASS_DEVICE
+#if defined(CONFIG_BACKLIGHT_CLASS_DEVICE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23))
 
 static int nv40_get_intensity(struct backlight_device *bd)
 {
