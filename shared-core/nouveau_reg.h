@@ -95,6 +95,9 @@
  * the card will hang early on in the X init process.
  */
 #    define NV_PMC_ENABLE_UNK13                               (1<<13)
+
+#define NV_PBUS_DEBUG_DUALHEAD_CTL			   0x000010F0
+
 #define NV40_PMC_BACKLIGHT				   0x000015f0
 #	define NV40_PMC_BACKLIGHT_MASK			   0x001f0000
 #define NV40_PMC_1700                                      0x00001700
@@ -404,6 +407,7 @@
 #define NV40_PGRAPH_TSIZE1(i)                              (0x00406908 + (i*16))
 #define NV40_PGRAPH_TSTATUS1(i)                            (0x0040690C + (i*16))
 
+#define NV_PCRTC_GPIO_EXT				   0x0060081C
 
 /* It's a guess that this works on NV03. Confirmed on NV04, though */
 #define NV04_PFIFO_DELAY_0                                 0x00002040
