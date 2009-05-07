@@ -216,7 +216,7 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
                                description=description, files=files_status)
   change_info.Save()
 
-  upload_args = ['-r', ",".join(reviewers)]
+  upload_args = ['--no_presubmit', '-r', ",".join(reviewers)]
   if send_email:
     upload_args.append('--send_mail')
   if commit:
@@ -225,7 +225,7 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
 
   retcode = 0
   if commit:
-    gcl.Commit(change_info, ['--force'])
+    gcl.Commit(change_info, ['--no_presubmit', '--force'])
     # TODO(maruel):  gclient sync (to leave the local checkout in an usable
     # state)
     retcode = gclient.Main(["gclient.py", "sync"])
