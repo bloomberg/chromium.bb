@@ -12,8 +12,11 @@ IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :SKIP_UPDATE
 :: We can't sync if .\.svn\. doesn't exist.
 IF NOT EXIST "%~dp0.svn\." GOTO :SKIP_UPDATE
 
-:: Will download svn and python if not already installed on the system.
-call "%~dp0bootstrap\win\win_tools.bat"
+:: Will download svn and python.
+:: If you don't want to install the depot_tools version of these tools, remove
+:: the 'force' option on the next command. The tools won't be installed only if
+:: not already in the PATH environment variable.
+call "%~dp0bootstrap\win\win_tools.bat" force
 if errorlevel 1 goto :EOF
 
 :: Sync the bootstrap directory *only after*.
