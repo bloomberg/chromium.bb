@@ -6,6 +6,13 @@
 # This script will try to sync the bootstrap directories and then defer control.
 
 base_dir=$(dirname "$0")
+ 
+# Use the batch file as an entry point if on cygwin.
+if [ "${OSTYPE}" = "cygwin" ]; then
+   ${base_dir}/gclient.bat $*
+   exit
+fi
+
 
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.svn" ]
 then
