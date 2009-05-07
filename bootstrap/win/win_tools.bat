@@ -19,8 +19,8 @@ if "%1" == "force" (
 
 :SVN_CHECK
 :: If the batch file exists, skip the svn check.
-if "%WIN_TOOLS_FORCE%" == "1" goto :SVN_INSTALL
 if exist "%WIN_TOOLS_ROOT_DIR%\svn.bat" goto :PYTHON_CHECK
+if "%WIN_TOOLS_FORCE%" == "1" goto :SVN_FORCE
 call svn --version 2>nul 1>nul
 if errorlevel 1 goto :SVN_INSTALL
 goto :PYTHON_CHECK
@@ -54,9 +54,9 @@ goto :END
 
 :PYTHON_CHECK
 :: If the batch file exists, skip the python check.
-if "%WIN_TOOLS_FORCE%" == "1" goto :PYTHON_INSTALL
 set ERRORLEVEL=0
 if exist "%WIN_TOOLS_ROOT_DIR%\python.bat" goto :END
+if "%WIN_TOOLS_FORCE%" == "1" goto :PYTHON_INSTALL
 call python --version 2>nul 1>nul
 if errorlevel 1 goto :PYTHON_INSTALL
 
