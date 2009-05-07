@@ -53,7 +53,7 @@ generator_default_variables = {
 
 # Header of toplevel Makefile.
 # This should go into the build tree, but it's easier to keep it here for now.
-SHARED_HEADER = """\
+SHARED_HEADER = ("""\
 # We borrow heavily from the kernel build setup, though we are simpler since
 # we don't have Kconfig tweaking settings on us.
 
@@ -95,15 +95,32 @@ RANLIB ?= ranlib
 depfile = $@.d
 DEPFLAGS = -MMD -MF $(depfile).tmp
 
-# We have to fixup the dep file output to mention the proper .o file.
+# We have to fixup the deps output in a few ways.
+# First, the file output should to mention the proper .o file.
 # ccache or distcc lose the path to the target, so we convert a rule of
 # the form:
 #   foobar.o: DEP1 DEP2
 # into
 #   path/to/foobar.o: DEP1 DEP2
-fixup_dep = @sed -e "s|^$(notdir $@)|$@|" $(depfile).tmp > $(depfile); \
-             rm -f $(depfile).tmp
-
+# Additionally, we want to make missing files not cause us to needlessly
+# rebuild.  We want to rewrite
+#   foobar.o: DEP1 DEP2 \
+#               DEP3
+# to
+#   DEP1 DEP2:
+#   DEP3:
+# so if the files are missing, they're just considered phony rules.
+# We have to do some pretty insane escaping to get those backslashes
+# and dollar signs past Python, make, the shell, and sed at the same time."""
+r"""
+define fixup_dep
+sed -i -e "s|^$(notdir $@)|$@|" $(depfile).tmp
+sed -e "s|^[^:]*: *||" -e "s| *\\\\$$||" -e 's|^ *||' \
+    -e "/./s|$$|:|" $(depfile).tmp >> $(depfile).tmp
+mv $(depfile).tmp $(depfile)
+endef
+"""
+"""
 # Command definitions:
 # - cmd_foo is the actual command to run;
 # - quiet_cmd_foo is the brief-output summary of the command.
@@ -150,30 +167,29 @@ $(cmd_$(1))
 # Suffix rules, putting all outputs into $(obj).
 $(obj)/%.o: %.c
 	$(call do_cmd,cc)
-	$(fixup_dep)
+	@$(fixup_dep)
 
 $(obj)/%.o: %.s
 	$(call do_cmd,cc)
 
 $(obj)/%.o: %.cpp
 	$(call do_cmd,cxx)
-	$(fixup_dep)
+	@$(fixup_dep)
 $(obj)/%.o: %.cc
 	$(call do_cmd,cxx)
-	$(fixup_dep)
+	@$(fixup_dep)
 $(obj)/%.o: %.cxx
 	$(call do_cmd,cxx)
-	$(fixup_dep)
+	@$(fixup_dep)
 
 # Try building from generated source, too.
 $(obj)/%.o: $(obj)/%.cc
 	$(call do_cmd,cxx)
-	$(fixup_dep)
+	@$(fixup_dep)
 $(obj)/%.o: $(obj)/%.cpp
 	$(call do_cmd,cxx)
-	$(fixup_dep)
-
-"""
+	@$(fixup_dep)
+""")
 
 SHARED_FOOTER = """\
 # Add in dependency-tracking rules.  $(all_targets) is all targets in
