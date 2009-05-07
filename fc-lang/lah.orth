@@ -1,5 +1,5 @@
 #
-# fontconfig/fc-lang/pa_pk.orth
+# fontconfig/fc-lang/lah.orth
 #
 # Copyright © 2009 Roozbeh Pournader
 #
@@ -21,9 +21,15 @@
 # TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 # PERFORMANCE OF THIS SOFTWARE.
 #
-# Panjabi/Punjabi in Pakistan (pa-PK)
+# Lahnda (lah)
 #
-# This file is kept for compatiblity for glibc: According to ISO 639-3, the
-# proper code for Pakistani Panjabi is 'lah'. See the file 'lah.orth' for
-# more information.
-include lah.orth
+# This is basically Western Panjabi/Punjabi, or Panjabi for Pakistan. It is
+# written in the Arabic script, also known as Shahmukhi. According to
+# ISO 639-3, the 'pa/pan' language code does not include Pakistani Panjabi,
+# but 'lah' does:
+#   http://www.sil.org/iso639-3/documentation.asp?id=lah
+#   http://www.sil.org/iso639-3/documentation.asp?id=pan
+#
+# The letter list appears to be identical to Urdu. More research may be
+# needed for rare letters.
+include ur.orth

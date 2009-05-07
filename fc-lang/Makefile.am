@@ -181,7 +181,7 @@ ORTH = \
 	om.orth \
 	or.orth \
 	os.orth \
-	pa_in.orth \
+	pa.orth \
 	pl.orth \
 	ps_af.orth \
 	ps_pk.orth \
@@ -295,5 +295,6 @@ ORTH = \
 	su.orth \
 	ty.orth \
 	wal.orth \
-	za.orth
+	za.orth \
+	lah.orth
 #	^-------------- Add new orth files here
