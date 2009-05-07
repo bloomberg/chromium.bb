@@ -573,6 +573,12 @@ Default(Alias('all', target_alias_list))
 help_fmt = '''
 Usage: hammer [SCONS_OPTIONS] [VARIABLES] [TARGET] ...
 
+Local command-line build options:
+  --mode=CONFIG             Configuration to build:
+                              --mode=Debug [default]
+                              --mode=Release
+  --verbose                 Print actual executed command lines.
+
 Supported command-line build variables:
   LOAD=[module,...]         Comma-separated list of components to load in the
                               dependency graph ('-' prefix excludes)
