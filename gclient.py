@@ -258,25 +258,27 @@ solutions = [
 
 ## Generic utils
 
-
-def getText(nodelist):
-  """
-  Return the concatenated text for the children of a list of DOM nodes.
-  """
-  rc = []
-  for node in nodelist:
-    if node.nodeType == node.TEXT_NODE:
-      rc.append(node.data)
-    else:
-      rc.append(getText(node.childNodes))
-  return ''.join(rc)
-
-
 def ParseXML(output):
   try:
     return xml.dom.minidom.parseString(output)
   except xml.parsers.expat.ExpatError:
     return None
+
+
+def GetNamedNodeText(node, node_name):
+  child_nodes = node.getElementsByTagName(node_name)
+  if not child_nodes:
+    return None
+  assert len(child_nodes) == 1 and child_nodes[0].childNodes.length == 1
+  return child_nodes[0].firstChild.nodeValue
+
+
+def GetNodeNamedAttributeText(node, node_name, attribute_name):
+  child_nodes = node.getElementsByTagName(node_name)
+  if not child_nodes:
+    return None
+  assert len(child_nodes) == 1
+  return child_nodes[0].getAttribute(attribute_name)
 
 
 class Error(Exception):
@@ -565,18 +567,22 @@ def CaptureSVNInfo(options, relpath, in_directory):
   Returns:
     An object with fields corresponding to the output of 'svn info'
   """
-  info = CaptureSVN(options, ["info", "--xml", relpath], in_directory)
-  dom = xml.dom.minidom.parseString(info)
-
-  # str() the getText() results because they may be returned as
-  # Unicode, which interferes with the higher layers matching up
-  # things in the deps dictionary.
+  dom = ParseXML(CaptureSVN(options, ["info", "--xml", relpath], in_directory))
   result = PrintableObject()
-  result.root = str(getText(dom.getElementsByTagName('root')))
-  result.url = str(getText(dom.getElementsByTagName('url')))
-  result.uuid = str(getText(dom.getElementsByTagName('uuid')))
-  result.revision = int(dom.getElementsByTagName('entry')[0].getAttribute(
-                            'revision'))
+  if dom:
+    # /info/entry/
+    #   url
+    #   reposityory/(root|uuid)
+    #   wc-info/(schedule|depth)
+    #   commit/(author|date)
+    # str() the results because they may be returned as Unicode, which
+    # interferes with the higher layers matching up things in the deps
+    # dictionary.
+    result = PrintableObject()
+    result.root = str(GetNamedNodeText(dom, 'root'))
+    result.url = str(GetNamedNodeText(dom, 'url'))
+    result.uuid = str(GetNamedNodeText(dom, 'uuid'))
+    result.revision = int(GetNodeNamedAttributeText(dom, 'entry', 'revision'))
   return result
 
 
