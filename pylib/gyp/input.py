@@ -1213,6 +1213,7 @@ def SetUpConfigurations(target, target_dict):
     'mac_bundle_resources',
     'postbuilds',
     'product_dir',
+    'product_extension',
     'product_name',
     'rules',
     'sources',

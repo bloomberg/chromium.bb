@@ -1413,6 +1413,7 @@ class PBXFileReference(XCFileLikeElement, XCContainerPortal, XCRemoteObject):
         'a':         'archive.ar',
         'app':       'wrapper.application',
         'bdic':      'file',
+        'bundle':    'wrapper.cfbundle',
         'c':         'sourcecode.c.c',
         'cc':        'sourcecode.cpp.cpp',
         'cpp':       'sourcecode.cpp.cpp',
@@ -2022,7 +2023,8 @@ class XCTarget(XCRemoteObject):
     'productName':            [0, str,                 0, 1],
   })
 
-  def __init__(self, properties=None, id=None, parent=None):
+  def __init__(self, properties=None, id=None, parent=None,
+               force_extension=None):
     # super
     XCRemoteObject.__init__(self, properties, id, parent)
 
@@ -2132,7 +2134,8 @@ class PBXNativeTarget(XCTarget):
                                                '', ''],
   }
 
-  def __init__(self, properties=None, id=None, parent=None):
+  def __init__(self, properties=None, id=None, parent=None,
+               force_extension=None):
     # super
     XCTarget.__init__(self, properties, id, parent)
 
@@ -2148,6 +2151,14 @@ class PBXNativeTarget(XCTarget):
       if products_group != None:
         (filetype, prefix, suffix) = \
             self._product_filetypes[self._properties['productType']]
+
+        if force_extension is not None:
+          # Extension override.
+          suffix = '.' + force_extension
+
+          # If it's a wrapper (bundle), set WRAPPER_EXTENSION.
+          if filetype.startswith('wrapper.'):
+            self.SetBuildSetting('WRAPPER_EXTENSION', force_extension)
 
         ref_props = {
           'explicitFileType': filetype,

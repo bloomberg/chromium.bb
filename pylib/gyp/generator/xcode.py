@@ -519,7 +519,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
     if 'product_name' in spec:
       target_properties['productName'] = spec['product_name']
 
-    xct = xctarget_type(target_properties, parent=pbxp)
+    xct = xctarget_type(target_properties, parent=pbxp,
+                        force_extension=spec.get('product_extension', None))
     pbxp.AppendProperty('targets', xct)
     xcode_targets[qualified_target] = xct
     xcode_target_to_target_dict[xct] = spec
