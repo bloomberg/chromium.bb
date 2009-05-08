@@ -441,7 +441,10 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
   for cpy in spec.get('copies', []):
     for config_name, c in spec['configurations'].iteritems():
       for f in cpy.get('files', []):
-        src = _FixPath(os.path.join('$(ProjectDir)', f))
+        if os.path.isabs(f) or f[:1] == '$':
+          src = _FixPath(f)
+        else:
+          src = _FixPath(os.path.join('$(ProjectDir)', f))
         dst = _FixPath(os.path.join(cpy['destination'],
                                     os.path.basename(f)))
         cmd = 'copy /Y "%s" "%s"' % (src, dst)
