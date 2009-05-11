@@ -27,6 +27,8 @@ def main(args):
                     help='sets variable VAR to value VAL')
   parser.add_option('-f', '--format', dest='formats', action='append',
                     help='output formats to generate')
+  parser.add_option('--msvs-version', dest='msvs_version',
+                    default='auto', help='visual studio sub-format to generate')
   parser.add_option('-I', '--include', dest='includes', action='append',
                     metavar='INCLUDE',
                     help='files to include in all loaded .gyp files')

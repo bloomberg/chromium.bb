@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 
-import os.path
+import os
 import re
 import subprocess
 import sys
@@ -9,6 +9,7 @@ import gyp.common
 import gyp.MSVSNew as MSVSNew
 import gyp.MSVSToolFile as MSVSToolFile
 import gyp.MSVSProject as MSVSProject
+import gyp.MSVSVersion as MSVSVersion
 
 
 generator_default_variables = {
@@ -145,7 +146,7 @@ def _PrepareAction(c, r, has_input_path):
     return ' '.join(direct_cmd)
 
 
-def _GenerateProject(vcproj_filename, build_file, spec, options):
+def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   """Generates a vcproj file.
 
   Arguments:
@@ -155,7 +156,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options):
   """
   #print 'Generating %s' % vcproj_filename
 
-  p = MSVSProject.Writer(vcproj_filename)
+  p = MSVSProject.Writer(vcproj_filename, version=version)
   default_config = spec['configurations'][spec['default_configuration']]
   guid = default_config.get('msvs_guid')
   if guid: guid = '{%s}' % guid
@@ -500,6 +501,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
   """
 
   options = params['options']
+
+  # Select project file format version.
+  msvs_version = MSVSVersion.SelectVisualStudioVersion(options.msvs_version)
+
+  # Prepare the set of configurations.
   configs = set()
   for qualified_target in target_list:
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
@@ -509,7 +515,7 @@ def GenerateOutput(target_list, target_dicts, data, params):
                             c.get('configuration_platform', 'Win32')]))
   configs = list(configs)
 
-
+  # Generate each project.
   projects = {}
   for qualified_target in target_list:
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
@@ -519,7 +525,8 @@ def GenerateOutput(target_list, target_dicts, data, params):
                                '.vcproj')
     projects[qualified_target] = {
         'vcproj_path': vcproj_path,
-        'guid': _GenerateProject(vcproj_path, build_file, spec, options),
+        'guid': _GenerateProject(vcproj_path, build_file,
+                                 spec, options, version=msvs_version),
         'spec': spec,
     }
 
@@ -543,5 +550,6 @@ def GenerateOutput(target_list, target_dicts, data, params):
     sln = MSVSNew.MSVSSolution(sln_path,
                                entries=entries,
                                variants=configs,
-                               websiteProperties=False)
+                               websiteProperties=False,
+                               version=msvs_version)
     sln.Write()

@@ -59,14 +59,16 @@ class Filter(object):
 class Writer(object):
   """Visual Studio XML project writer."""
 
-  def __init__(self, project_path):
+  def __init__(self, project_path, version):
     """Initializes the project.
 
     Args:
       project_path: Path to the project file.
+      version: Format version to emit.
     """
     self.project_path = project_path
     self.doc = None
+    self.version = version
 
   def Create(self, name, guid=None):
     """Creates the project document.
@@ -85,7 +87,7 @@ class Writer(object):
     # Add attributes to root element
     self.n_root = self.doc.documentElement
     self.n_root.setAttribute('ProjectType', 'Visual C++')
-    self.n_root.setAttribute('Version', '8.00')
+    self.n_root.setAttribute('Version', self.version.ProjectVersion())
     self.n_root.setAttribute('Name', self.name)
     self.n_root.setAttribute('ProjectGUID', self.guid)
     self.n_root.setAttribute('RootNamespace', self.name)

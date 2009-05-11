@@ -144,18 +144,23 @@ class MSVSProject:
 class MSVSSolution:
   """Visual Studio solution."""
 
-  def __init__(self, path, entries = None, variants = None, websiteProperties = True):
+  def __init__(self, path, version, entries=None, variants=None,
+               websiteProperties=True):
     """Initializes the solution.
 
     Args:
       path: Path to solution file.
+      version: Format version to emit.
       entries: List of entries in solution.  May contain Folder or Project
           objects.  May be None, if the folder is empty.
       variants: List of build variant strings.  If none, a default list will
           be used.
+      websiteProperties: Flag to decide if the website properties section
+          is generated.
     """
     self.path = path
     self.websiteProperties = websiteProperties
+    self.version = version
 
     # Copy passed lists (or set to empty lists)
     self.entries = list(entries or [])
@@ -177,7 +182,7 @@ class MSVSSolution:
     self.Write()
 
 
-  def Write(self, writer = common.WriteOnDiff):
+  def Write(self, writer=common.WriteOnDiff):
     """Writes the solution file to disk.
 
     Raises:
@@ -205,8 +210,9 @@ class MSVSSolution:
 
     # Open file and print header
     f = writer(self.path)
-    f.write('Microsoft Visual Studio Solution File, Format Version 9.00\r\n')
-    f.write('# Visual Studio 2005\r\n')
+    f.write('Microsoft Visual Studio Solution File, '
+            'Format Version %s\r\n' % self.version.SolutionVersion())
+    f.write('# %s\r\n' % self.version.Description())
 
     # Project entries
     for e in all_entries:
