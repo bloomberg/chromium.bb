@@ -128,7 +128,6 @@ def _PrepareAction(c, r, has_input_path):
     #direct_cmd = gyp.common.EncodePOSIXShellList(direct_cmd)
     direct_cmd = ' '.join(direct_cmd)
     cmd = (
-      '$(ProjectDir)%(cygwin_dir)s\\setup_mount.bat && '
       '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
       'set CYGWIN=nontsec && '
       'set INTDIR=$(IntDir)&& '
