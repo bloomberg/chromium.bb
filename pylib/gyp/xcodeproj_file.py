@@ -292,6 +292,13 @@ class XCObject(object):
     self._SetDefaultsFromSchema()
     self.UpdateProperties(properties)
 
+  def __repr__(self):
+    try:
+      name = self.Name()
+    except NotImplementedError:
+      return '<%s at 0x%x>' % (self.__class__.__name__, id(self))
+    return '<%s %r at 0x%x>' % (self.__class__.__name__, name, id(self))
+
   def Copy(self):
     """Make a copy of this object.
 
@@ -442,9 +449,8 @@ class XCObject(object):
       if descendant.id in ids:
         other = ids[descendant.id]
         raise KeyError, \
-              'Duplicate ID %s, objects %s %s and %s %s' % \
-              (descendant.id, descendant.__class__.__name__, descendant.Name(),
-               other.__class__.__name__, other.Name())
+              'Duplicate ID %s, objects %r and %r' % \
+              (descendant.id, descendant, other)
       ids[descendant.id] = descendant
 
   def Children(self):
@@ -1952,6 +1958,11 @@ class PBXContainerItemProxy(XCObject):
     'remoteInfo':           [0, str,               0, 1],
   })
 
+  def __repr__(self):
+    props = self._properties
+    name = '%s.gyp:%s' % (props['containerPortal'].Name(), props['remoteInfo'])
+    return '<%s %r at 0x%x>' % (self.__class__.__name__, name, id(self))
+
   def Name(self):
     # Admittedly not the best name, but it's what Xcode uses.
     return self.__class__.__name__
@@ -1982,6 +1993,10 @@ class PBXTargetDependency(XCObject):
     'target':      [0, None.__class__,        0, 0],
     'targetProxy': [0, PBXContainerItemProxy, 1, 1],
   })
+
+  def __repr__(self):
+    name = self._properties.get('name') or self._properties['target'].Name()
+    return '<%s %r at 0x%x>' % (self.__class__.__name__, name, id(self))
 
   def Name(self):
     # Admittedly not the best name, but it's what Xcode uses.
