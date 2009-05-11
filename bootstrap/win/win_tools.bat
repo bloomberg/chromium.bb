@@ -10,7 +10,11 @@
 :: returned.
 
 set WIN_TOOLS_ROOT_URL=http://src.chromium.org/svn/trunk/tools
-set WIN_TOOLS_ROOT_DIR=%~dp0..\..
+
+:: Get absolute root directory (.js scripts don't handle relative paths well).
+pushd %~dp0..\..
+set WIN_TOOLS_ROOT_DIR=%CD%
+popd
 
 if "%1" == "force" (
   set WIN_TOOLS_FORCE=1
