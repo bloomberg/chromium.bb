@@ -7,17 +7,13 @@
 import os
 import sys
 
-# GYP is now the official Mac build system, so it must run on the Mac.
-# Elsewhere, GYP will only run from the hook if the USE_GYP environment
-# variable is set.  This will keep the noise down for the masses until the
-# GYP builds on other platforms are more mature, but allows GYP developers and
-# early adopters to run GYP from the same hook that the Mac uses.
-# It will temporarily be partially on for windows (only some projects).
-if not (sys.platform in ['darwin', 'linux2', 'win32', 'cygwin'] or
-        os.environ.get('USE_GYP')):
-  sys.exit(0)
-
+# GYP is now the official build system, so it runs for all platforms.
 print 'Updating projects from gyp files...'
+
+# Use Visual Studio 2005 when on buildbots.
+if os.environ.get('CHROME_HEADLESS') == '1':
+  os.environ['GYP_MSVS_VERSION'] = '2005'
+
 try:
   import gyp
 except ImportError, e:
