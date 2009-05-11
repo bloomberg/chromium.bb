@@ -10,10 +10,6 @@ import sys
 # GYP is now the official build system, so it runs for all platforms.
 print 'Updating projects from gyp files...'
 
-# Use Visual Studio 2005 when on buildbots.
-if os.environ.get('CHROME_HEADLESS') == '1':
-  os.environ['GYP_MSVS_VERSION'] = '2005'
-
 try:
   import gyp
 except ImportError, e:
