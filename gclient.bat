@@ -6,6 +6,10 @@
 :: This file is a stub to sync .\bootstrap first and defer control to
 :: .\bootstrap\gclient.bat, which will sync back '.'. This is unless auto
 :: update is disabled, were gclient.py is directly called.
+setlocal
+
+:: This is required with cygwin only.
+PATH=%~dp0;%PATH%
 
 :: Shall skip automatic update?
 IF "%DEPOT_TOOLS_UPDATE%" == "0" GOTO :SKIP_UPDATE
