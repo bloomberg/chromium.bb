@@ -557,19 +557,18 @@ def RunSVNAndGetFileList(options, args, in_directory, file_list):
 
 
 def CaptureSVNInfo(options, relpath, in_directory):
-  """Runs 'svn info' on an existing path.
+  """Returns a dictionary from the svn info output for the given file.
 
   Args:
     relpath: The directory where the working copy resides relative to
       the directory given by in_directory.
     in_directory: The directory where svn is to be run.
-
-  Returns:
-    An object with fields corresponding to the output of 'svn info'
   """
   dom = ParseXML(CaptureSVN(options, ["info", "--xml", relpath], in_directory))
-  result = PrintableObject()
+  result = {}
   if dom:
+    def C(item, f):
+      if item is not None: return f(item)
     # /info/entry/
     #   url
     #   reposityory/(root|uuid)
@@ -578,11 +577,18 @@ def CaptureSVNInfo(options, relpath, in_directory):
     # str() the results because they may be returned as Unicode, which
     # interferes with the higher layers matching up things in the deps
     # dictionary.
-    result = PrintableObject()
-    result.root = str(GetNamedNodeText(dom, 'root'))
-    result.url = str(GetNamedNodeText(dom, 'url'))
-    result.uuid = str(GetNamedNodeText(dom, 'uuid'))
-    result.revision = int(GetNodeNamedAttributeText(dom, 'entry', 'revision'))
+    # TODO(maruel): Fix at higher level instead (!)
+    result['Repository Root'] = C(GetNamedNodeText(dom, 'root'), str)
+    result['URL'] = C(GetNamedNodeText(dom, 'url'), str)
+    result['UUID'] = C(GetNamedNodeText(dom, 'uuid'), str)
+    result['Revision'] = C(GetNodeNamedAttributeText(dom, 'entry', 'revision'),
+                           int)
+    result['Node Kind'] = C(GetNodeNamedAttributeText(dom, 'entry', 'kind'),
+                            str)
+    result['Schedule'] = C(GetNamedNodeText(dom, 'schedule'), str)
+    result['Path'] = C(GetNodeNamedAttributeText(dom, 'entry', 'path'), str)
+    result['Copied From URL'] = C(GetNamedNodeText(dom, 'copy-from-url'), str)
+    result['Copied From Rev'] = C(GetNamedNodeText(dom, 'copy-from-rev'), str)
   return result
 
 
@@ -781,17 +787,21 @@ class SCMWrapper(object):
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:
-        from_info_live = CaptureSVNInfo(options, from_info.url, '.')
-        revision = int(from_info_live.revision)
+        from_info_live = CaptureSVNInfo(options, from_info['URL'], '.')
+        revision = int(from_info_live['Revision'])
         rev_str = ' at %d' % revision
 
-    if from_info.url != components[0]:
+    if from_info['URL'] != components[0]:
       to_info = CaptureSVNInfo(options, url, '.')
-      if from_info.root != to_info.root:
+      if from_info['Repository Root'] != to_info['Repository Root']:
         # We have different roots, so check if we can switch --relocate.
         # Subversion only permits this if the repository UUIDs match.
-        if from_info.uuid != to_info.uuid:
-          raise Error("Can't switch the checkout to %s; UUID don't match" % url)
+        if from_info['UUID'] != to_info['UUID']:
+          raise Error("Can't switch the checkout to %s; UUID don't match. That "
+                      "simply means in theory, gclient should verify you don't "
+                      "have a local change, remove the old checkout and do a "
+                      "fresh new checkout of the new repo. Contributions are "
+                      "welcome." % url)
 
         # Perform the switch --relocate, then rewrite the from_url
         # to reflect where we "are now."  (This is the same way that
@@ -800,14 +810,18 @@ class SCMWrapper(object):
         # can update to a revision or have to switch to a different
         # branch work as expected.
         # TODO(maruel):  TEST ME !
-        command = ["switch", "--relocate", from_info.root, to_info.root,
+        command = ["switch", "--relocate",
+                   from_info['Repository Root'],
+                   to_info['Repository Root'],
                    self.relpath]
         RunSVN(options, command, self._root_dir)
-        from_info.url = from_info.url.replace(from_info.root, to_info.root)
+        from_info['URL'] = from_info['URL'].replace(
+            from_info['Repository Root'],
+            to_info['Repository Root'])
 
     # If the provided url has a revision number that matches the revision
     # number of the existing directory, then we don't need to bother updating.
-    if not options.force and from_info.revision == revision:
+    if not options.force and from_info['Revision'] == revision:
       if options.verbose or not forced_revision:
         print >>options.stdout, ("\n_____ %s%s" % (
             self.relpath, rev_str))
