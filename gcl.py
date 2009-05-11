@@ -531,7 +531,9 @@ def LoadChangelistInfo(changename, fail_on_not_found=True,
         # File has been reverted.
         save = True
         files.remove(file)
-      elif status != file[0]:
+        continue
+      status = status_result[0][0]
+      if status != file[0]:
         save = True
         files[files.index(file)] = (status, file[1])
   change_info = ChangeInfo(changename, issue, description, files)
@@ -748,7 +750,7 @@ def GenerateDiff(files, root=None):
   for file in files:
     # Use svn info output instead of os.path.isdir because the latter fails
     # when the file is deleted.
-    if GetSVNFileInfo(file).get("Node Kind") == "directory":
+    if GetSVNFileInfo(file).get("Node Kind") in ("dir", "directory"):
       continue
     # If the user specified a custom diff command in their svn config file,
     # then it'll be used when we do svn diff, which we don't want to happen
