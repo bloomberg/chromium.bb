@@ -178,6 +178,16 @@ struct _drm_intel_bufmgr {
     int (*bo_flink)(drm_intel_bo *bo, uint32_t *name);
 
     int (*check_aperture_space)(drm_intel_bo **bo_array, int count);
+
+    /**
+     * Disable buffer reuse for buffers which will be shared in some way,
+     * as with scanout buffers. When the buffer reference count goes to zero,
+     * it will be freed and not placed in the reuse list.
+     *
+     * \param bo Buffer to disable reuse for
+     */
+    int (*bo_disable_reuse)(drm_intel_bo *bo);
+
     int debug; /**< Enables verbose debugging printouts */
 };
 

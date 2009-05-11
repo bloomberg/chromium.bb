@@ -212,3 +212,10 @@ int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
     *swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
     return 0;
 }
+
+int drm_intel_bo_disable_reuse(drm_intel_bo *bo)
+{
+	if (bo->bufmgr->bo_disable_reuse)
+		return bo->bufmgr->bo_disable_reuse(bo);
+	return 0;
+}

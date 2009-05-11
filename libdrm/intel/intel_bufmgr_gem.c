@@ -166,6 +166,11 @@ struct _drm_intel_bo_gem {
      char used_as_reloc_target;
 
     /**
+     * Boolean of whether this buffer can be re-used
+     */
+    char reusable;
+
+    /**
      * Size in bytes of this buffer and its relocation descendents.
      *
      * Used to avoid costly tree walking in drm_intel_bufmgr_check_aperture in
@@ -420,6 +425,7 @@ drm_intel_gem_bo_alloc_internal(drm_intel_bufmgr *bufmgr, const char *name,
     bo_gem->used_as_reloc_target = 0;
     bo_gem->tiling_mode = I915_TILING_NONE;
     bo_gem->swizzle_mode = I915_BIT_6_SWIZZLE_NONE;
+    bo_gem->reusable = 1;
 
     DBG("bo_create: buf %d (%s) %ldb\n",
 	bo_gem->gem_handle, bo_gem->name, size);
@@ -479,6 +485,7 @@ drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr, const char *name,
     bo_gem->validate_index = -1;
     bo_gem->gem_handle = open_arg.handle;
     bo_gem->global_name = handle;
+    bo_gem->reusable = 0;
 
     memset(&get_tiling, 0, sizeof(get_tiling));
     get_tiling.handle = bo_gem->gem_handle;
@@ -572,7 +579,7 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 	bucket = drm_intel_gem_bo_bucket_for_size(bufmgr_gem, bo->size);
 	/* Put the buffer into our internal cache for reuse if we can. */
 	tiling_mode = I915_TILING_NONE;
-	if (bo_gem->global_name == 0 &&
+	if (bo_gem->reusable &&
 	    bucket != NULL &&
 	    (bucket->max_entries == -1 ||
 	     (bucket->max_entries > 0 &&
@@ -1168,6 +1175,7 @@ drm_intel_gem_bo_flink(drm_intel_bo *bo, uint32_t *name)
 	if (ret != 0)
 	    return -errno;
 	bo_gem->global_name = flink.name;
+	bo_gem->reusable = 0;
     }
     
     *name = bo_gem->global_name;
@@ -1356,6 +1364,19 @@ drm_intel_gem_check_aperture_space(drm_intel_bo **bo_array, int count)
     }
 }
 
+/*
+ * Disable buffer reuse for objects which are shared with the kernel
+ * as scanout buffers
+ */
+static int
+drm_intel_gem_bo_disable_reuse(drm_intel_bo *bo)
+{
+    drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
+
+    bo_gem->reusable = 0;
+    return 0;
+}
+
 /**
  * Initializes the GEM buffer manager, which uses the kernel to allocate, map,
  * and manage map buffer objections.
@@ -1437,6 +1458,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.destroy = drm_intel_bufmgr_gem_destroy;
     bufmgr_gem->bufmgr.debug = 0;
     bufmgr_gem->bufmgr.check_aperture_space = drm_intel_gem_check_aperture_space;
+    bufmgr_gem->bufmgr.bo_disable_reuse = drm_intel_gem_bo_disable_reuse;
     /* Initialize the linked lists for BO reuse cache. */
     for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++)
 	DRMINITLISTHEAD(&bufmgr_gem->cache_bucket[i].head);

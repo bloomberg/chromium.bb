@@ -108,6 +108,8 @@ int drm_intel_bo_get_tiling(drm_intel_bo *bo, uint32_t *tiling_mode,
 			uint32_t *swizzle_mode);
 int drm_intel_bo_flink(drm_intel_bo *bo, uint32_t *name);
 
+int drm_intel_bo_disable_reuse(drm_intel_bo *bo);
+
 /* drm_intel_bufmgr_gem.c */
 drm_intel_bufmgr *drm_intel_bufmgr_gem_init(int fd, int batch_size);
 drm_intel_bo *drm_intel_bo_gem_create_from_name(drm_intel_bufmgr *bufmgr,
