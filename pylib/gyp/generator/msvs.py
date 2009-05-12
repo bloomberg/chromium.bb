@@ -113,7 +113,10 @@ def _PrepareAction(c, r, has_input_path):
   # python script would need to be run as part of the chrome tree.
   # Eventually we should add some sort of rule_default option to set this
   # per project. For now the behavior chrome needs is the default.
-  if int(r.get('msvs_cygwin_shell', 1)):
+  mcs = r.get('msvs_cygwin_shell')
+  if not mcs:
+    mcs = c.get('msvs_cygwin_shell', 1)
+  if int(mcs):
     # Prepare command.
     direct_cmd = r['action']
     direct_cmd = [i.replace('$(IntDir)',
@@ -143,6 +146,9 @@ def _PrepareAction(c, r, has_input_path):
   else:
     # Support a mode for using cmd directly.
     direct_cmd = r['action']
+    # Convert any paths to native form.
+    direct_cmd = [_FixPath(i) for i in direct_cmd]
+    # Collapse into a single command.
     return ' '.join(direct_cmd)
 
 
