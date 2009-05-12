@@ -205,6 +205,18 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     _ToolAppend(tools, 'VCLinkerTool',
                 'AdditionalDependencies', libraries)
 
+    # If a product name is set, use that instead.
+    if spec.get('product_name'):
+      if spec['type'] == 'executable':
+        _ToolAppend(tools, 'VCLinkerTool', 'OutputFile',
+                    '$(OutDir)\\' + spec['product_name'] + '.exe')
+      elif spec['type'] in ['shared_library', 'loadable_module']:
+        _ToolAppend(tools, 'VCLinkerTool', 'OutputFile',
+                    '$(OutDir)\\' + spec['product_name'] + '.dll')
+      elif spec['type'] in ['static_library']:
+        _ToolAppend(tools, 'VCLibrarianTool', 'OutputFile',
+                    '$(OutDir)\\' + spec['product_name'] + '.lib')
+
     # Add defines.
     defines = []
     for d in c.get('defines', []):
