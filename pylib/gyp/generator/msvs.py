@@ -211,17 +211,19 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     _ToolAppend(tools, 'VCLinkerTool',
                 'AdditionalDependencies', libraries)
 
-    # If a product name is set, use that instead.
-    if spec.get('product_name'):
-      if spec['type'] == 'executable':
-        _ToolAppend(tools, 'VCLinkerTool', 'OutputFile',
-                    '$(OutDir)\\' + spec['product_name'] + '.exe')
-      elif spec['type'] in ['shared_library', 'loadable_module']:
-        _ToolAppend(tools, 'VCLinkerTool', 'OutputFile',
-                    '$(OutDir)\\' + spec['product_name'] + '.dll')
-      elif spec['type'] in ['static_library']:
-        _ToolAppend(tools, 'VCLibrarianTool', 'OutputFile',
-                    '$(OutDir)\\' + spec['product_name'] + '.lib')
+    # Select a name for the output file.
+    output_file_map = {
+        'executable': ('VCLinkerTool', '$(OutDir)\\', '.exe'),
+        'shared_library': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
+        'loadable_module': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
+        'static_library': ('VCLibrarianTool', '$(OutDir)\\lib\\', '.lib'),
+    }
+    output_file_props = output_file_map.get(spec['type'])
+    if output_file_props:
+      vc_tool, out_path, suffix = output_file_props
+      product_name = (
+          out_path + spec.get('product_name', '$(ProjectName)') + suffix)
+      _ToolAppend(tools, vc_tool, 'OutputFile', product_name)
 
     # Add defines.
     defines = []
