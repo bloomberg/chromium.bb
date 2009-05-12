@@ -18,8 +18,6 @@ import upload
 import urllib2
 import xml.dom.minidom
 
-# gcl now depends on gclient.
-import gclient
 
 __version__ = '1.0'
 
@@ -50,14 +48,58 @@ MISSING_TEST_MSG = "Change contains new or modified methods, but no new tests!"
 read_gcl_info = False
 
 
+### Simplified XML processing functions.
+
+def ParseXML(output):
+  try:
+    return xml.dom.minidom.parseString(output)
+  except xml.parsers.expat.ExpatError:
+    return None
+
+def GetNamedNodeText(node, node_name):
+  child_nodes = node.getElementsByTagName(node_name)
+  if not child_nodes:
+    return None
+  assert len(child_nodes) == 1 and child_nodes[0].childNodes.length == 1
+  return child_nodes[0].firstChild.nodeValue
+
+
+def GetNodeNamedAttributeText(node, node_name, attribute_name):
+  child_nodes = node.getElementsByTagName(node_name)
+  if not child_nodes:
+    return None
+  assert len(child_nodes) == 1
+  return child_nodes[0].getAttribute(attribute_name)
+
+
 ### SVN Functions
 
 def IsSVNMoved(filename):
   """Determine if a file has been added through svn mv"""
-  info = gclient.CaptureSVNInfo(filename)
+  info = GetSVNFileInfo(filename)
   return (info.get('Copied From URL') and
           info.get('Copied From Rev') and
           info.get('Schedule') == 'add')
+
+
+def GetSVNFileInfo(file):
+  """Returns a dictionary from the svn info output for the given file."""
+  dom = ParseXML(RunShell(["svn", "info", "--xml", file]))
+  result = {}
+  if dom:
+    # /info/entry/
+    #   url
+    #   reposityory/(root|uuid)
+    #   wc-info/(schedule|depth)
+    #   commit/(author|date)
+    result['Node Kind'] = GetNodeNamedAttributeText(dom, 'entry', 'kind')
+    result['Repository Root'] = GetNamedNodeText(dom, 'root')
+    result['Schedule'] = GetNamedNodeText(dom, 'schedule')
+    result['URL'] = GetNamedNodeText(dom, 'url')
+    result['Path'] = GetNodeNamedAttributeText(dom, 'entry', 'path')
+    result['Copied From URL'] = GetNamedNodeText(dom, 'copy-from-url')
+    result['Copied From Rev'] = GetNamedNodeText(dom, 'copy-from-rev')
+  return result
 
 
 def GetSVNFileProperty(file, property_name):
@@ -105,7 +147,7 @@ def GetSVNStatus(file):
     'unversioned': '?',
     # TODO(maruel): Find the corresponding strings for X, ~
   }
-  dom = gclient.ParseXML(RunShell(command))
+  dom = ParseXML(RunShell(command))
   results = []
   if dom:
     # /status/target/entry/(wc-status|commit|author|date)
@@ -160,16 +202,14 @@ def GetRepositoryRoot():
   """
   global repository_root
   if not repository_root:
-    infos = gclient.CaptureSVNInfo(os.getcwd(), print_error=False)
-    cur_dir_repo_root = infos.get("Repository Root")
+    cur_dir_repo_root = GetSVNFileInfo(os.getcwd()).get("Repository Root")
     if not cur_dir_repo_root:
       raise Exception("gcl run outside of repository")
 
     repository_root = os.getcwd()
     while True:
       parent = os.path.dirname(repository_root)
-      if (gclient.CaptureSVNInfo(parent).get("Repository Root") !=
-          cur_dir_repo_root):
+      if GetSVNFileInfo(parent).get("Repository Root") != cur_dir_repo_root:
         break
       repository_root = parent
   return repository_root
@@ -192,7 +232,7 @@ def GetCodeReviewSetting(key):
     cached_settings_file = os.path.join(GetInfoDir(), CODEREVIEW_SETTINGS_FILE)
     if (not os.path.exists(cached_settings_file) or
         os.stat(cached_settings_file).st_mtime > 60*60*24*3):
-      dir_info = gclient.CaptureSVNInfo(".")
+      dir_info = GetSVNFileInfo(".")
       repo_root = dir_info["Repository Root"]
       url_path = dir_info["URL"]
       settings = ""
@@ -294,13 +334,11 @@ class ChangeInfo:
     files: a list of 2 tuple containing (status, filename) of changed files,
            with paths being relative to the top repository directory.
   """
-  def __init__(self, name="", issue="", description="", files=None):
+  def __init__(self, name="", issue="", description="", files=[]):
     self.name = name
     self.issue = issue
     self.description = description
     self.files = files
-    if self.files is None:
-      self.files = []
     self.patch = None
 
   def FileList(self):
@@ -712,7 +750,7 @@ def GenerateDiff(files, root=None):
   for file in files:
     # Use svn info output instead of os.path.isdir because the latter fails
     # when the file is deleted.
-    if gclient.CaptureSVNInfo(file).get("Node Kind") in ("dir", "directory"):
+    if GetSVNFileInfo(file).get("Node Kind") in ("dir", "directory"):
       continue
     # If the user specified a custom diff command in their svn config file,
     # then it'll be used when we do svn diff, which we don't want to happen

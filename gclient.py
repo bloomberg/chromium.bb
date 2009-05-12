@@ -475,7 +475,7 @@ def IsUsingGit(root, paths):
 # SVN utils:
 
 
-def RunSVN(args, in_directory):
+def RunSVN(options, args, in_directory):
   """Runs svn, sending output to stdout.
 
   Args:
@@ -491,7 +491,7 @@ def RunSVN(args, in_directory):
   SubprocessCall(c, in_directory, options.stdout)
 
 
-def CaptureSVN(args, in_directory=None, print_error=True):
+def CaptureSVN(options, args, in_directory):
   """Runs svn, capturing output sent to stdout as a string.
 
   Args:
@@ -508,14 +508,8 @@ def CaptureSVN(args, in_directory=None, print_error=True):
   # the svn.exe executable, but shell=True makes subprocess on Linux fail
   # when it's called with a list because it only tries to execute the
   # first string ("svn").
-  stderr = None
-  if print_error:
-    stderr = subprocess.PIPE
-  return subprocess.Popen(c,
-                          cwd=in_directory,
-                          shell=(sys.platform == 'win32'),
-                          stdout=subprocess.PIPE,
-                          stderr=stderr).communicate()[0]
+  return subprocess.Popen(c, cwd=in_directory, shell=(sys.platform == 'win32'),
+                          stdout=subprocess.PIPE).communicate()[0]
 
 
 def RunSVNAndGetFileList(options, args, in_directory, file_list):
@@ -562,7 +556,7 @@ def RunSVNAndGetFileList(options, args, in_directory, file_list):
                            pattern=pattern, capture_list=file_list)
 
 
-def CaptureSVNInfo(relpath, in_directory=None, print_error=True):
+def CaptureSVNInfo(options, relpath, in_directory):
   """Returns a dictionary from the svn info output for the given file.
 
   Args:
@@ -570,8 +564,7 @@ def CaptureSVNInfo(relpath, in_directory=None, print_error=True):
       the directory given by in_directory.
     in_directory: The directory where svn is to be run.
   """
-  output = CaptureSVN(["info", "--xml", relpath], in_directory, print_error)
-  dom = ParseXML(output)
+  dom = ParseXML(CaptureSVN(options, ["info", "--xml", relpath], in_directory))
   result = {}
   if dom:
     def C(item, f):
@@ -599,13 +592,13 @@ def CaptureSVNInfo(relpath, in_directory=None, print_error=True):
   return result
 
 
-def CaptureSVNHeadRevision(url):
+def CaptureSVNHeadRevision(options, url):
   """Get the head revision of a SVN repository.
 
   Returns:
     Int head revision
   """
-  info = CaptureSVN(["info", "--xml", url], os.getcwd())
+  info = CaptureSVN(options, ["info", "--xml", url], os.getcwd())
   dom = xml.dom.minidom.parseString(info)
   return int(dom.getElementsByTagName('entry')[0].getAttribute('revision'))
 
@@ -624,7 +617,7 @@ class FileStatus:
             self.path)
 
 
-def CaptureSVNStatus(path):
+def CaptureSVNStatus(options, path):
   """Runs 'svn status' on an existing path.
 
   Args:
@@ -633,7 +626,7 @@ def CaptureSVNStatus(path):
   Returns:
     An array of FileStatus corresponding to the emulated output of 'svn status'
     version 1.5."""
-  dom = ParseXML(CaptureSVN(["status", "--xml"], path))
+  dom = ParseXML(CaptureSVN(options, ["status", "--xml"], path))
   results = []
   if dom:
     # /status/target/entry/(wc-status|commit|author|date)
@@ -735,13 +728,13 @@ class SCMWrapper(object):
     """Cleanup working copy."""
     command = ['cleanup']
     command.extend(args)
-    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+    RunSVN(options, command, os.path.join(self._root_dir, self.relpath))
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
     command = ['diff']
     command.extend(args)
-    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+    RunSVN(options, command, os.path.join(self._root_dir, self.relpath))
 
   def update(self, options, args, file_list):
     """Runs SCM to update or transparently checkout the working copy.
@@ -787,18 +780,19 @@ class SCMWrapper(object):
       return
 
     # Get the existing scm url and the revision number of the current checkout.
-    from_info = CaptureSVNInfo(os.path.join(self._root_dir, self.relpath, '.'),
+    from_info = CaptureSVNInfo(options,
+                               os.path.join(self._root_dir, self.relpath, '.'),
                                '.')
 
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:
-        from_info_live = CaptureSVNInfo(from_info['URL'], '.')
+        from_info_live = CaptureSVNInfo(options, from_info['URL'], '.')
         revision = int(from_info_live['Revision'])
         rev_str = ' at %d' % revision
 
     if from_info['URL'] != components[0]:
-      to_info = CaptureSVNInfo(url, '.')
+      to_info = CaptureSVNInfo(options, url, '.')
       if from_info['Repository Root'] != to_info['Repository Root']:
         # We have different roots, so check if we can switch --relocate.
         # Subversion only permits this if the repository UUIDs match.
@@ -820,7 +814,7 @@ class SCMWrapper(object):
                    from_info['Repository Root'],
                    to_info['Repository Root'],
                    self.relpath]
-        RunSVN(command, self._root_dir)
+        RunSVN(options, command, self._root_dir)
         from_info['URL'] = from_info['URL'].replace(
             from_info['Repository Root'],
             to_info['Repository Root'])
@@ -853,7 +847,7 @@ class SCMWrapper(object):
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    files = CaptureSVNStatus(path)
+    files = CaptureSVNStatus(options, path)
     # Batch the command.
     files_to_revert = []
     for file in files:
@@ -882,7 +876,7 @@ class SCMWrapper(object):
       for p in files_to_revert:
         # Some shell have issues with command lines too long.
         if accumulated_length and accumulated_length + len(p) > 3072:
-          RunSVN(command + accumulated_paths,
+          RunSVN(options, command + accumulated_paths,
                  os.path.join(self._root_dir, self.relpath))
           accumulated_paths = []
           accumulated_length = 0
@@ -890,7 +884,7 @@ class SCMWrapper(object):
           accumulated_paths.append(p)
           accumulated_length += len(p)
       if accumulated_paths:
-        RunSVN(command + accumulated_paths,
+        RunSVN(options, command + accumulated_paths,
                os.path.join(self._root_dir, self.relpath))
 
   def status(self, options, args, file_list):
@@ -1331,7 +1325,7 @@ class GClient(object):
       for entry in prev_entries:
         e_dir = os.path.join(self._root_dir, entry)
         if entry not in entries and self._options.path_exists(e_dir):
-          if CaptureSVNStatus(e_dir):
+          if CaptureSVNStatus(self._options, e_dir):
             # There are modified files in this entry
             entries[entry] = None  # Keep warning until removed.
             print >> self._options.stdout, (
@@ -1389,7 +1383,8 @@ class GClient(object):
           return (original_url, int(revision_overrides[name]))
         else:
           # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-          return (original_url, CaptureSVNHeadRevision(original_url))
+          return (original_url, CaptureSVNHeadRevision(self._options,
+                                                       original_url))
       else:
         url_components = original_url.split("@")
         if revision_overrides.has_key(name):
@@ -1406,6 +1401,7 @@ class GClient(object):
       entries[name] = "%s@%d" % (url, rev)
       # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
       entries_deps_content[name] = CaptureSVN(
+                                     self._options,
                                      ["cat",
                                       "%s/%s@%d" % (url,
                                                     self._options.deps_file,
@@ -1433,6 +1429,7 @@ class GClient(object):
         deps_parent_url_components = deps_parent_url.split("@")
         # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
         deps_parent_content = CaptureSVN(
+                                self._options,
                                 ["cat",
                                  "%s/%s@%s" % (deps_parent_url_components[0],
                                                self._options.deps_file,

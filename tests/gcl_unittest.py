@@ -5,9 +5,7 @@
 
 """Unit tests for gcl.py."""
 
-import StringIO
 import os
-import sys
 import unittest
 
 # Local imports
@@ -48,20 +46,52 @@ class GclUnittest(GclTestsBase):
       'ErrorExit', 'GenerateChangeName', 'GenerateDiff', 'GetCLs',
       'GetChangelistInfoFile', 'GetCodeReviewSetting', 'GetEditor',
       'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
-      'GetModifiedFiles', 'GetRepositoryRoot', 'GetSVNStatus',
+      'GetModifiedFiles', 'GetNamedNodeText', 'GetNodeNamedAttributeText',
+      'GetRepositoryRoot', 'GetSVNFileInfo', 'GetSVNStatus',
       'GetSVNFileProperty', 'Help', 'IGNORE_PATHS', 'IsSVNMoved', 'IsTreeOpen',
       'Lint', 'LoadChangelistInfo', 'LoadChangelistInfoForMultiple',
-      'MISSING_TEST_MSG', 'Opened', 'PresubmitCL', 'ReadFile',
+      'MISSING_TEST_MSG', 'Opened', 'ParseXML', 'PresubmitCL', 'ReadFile',
       'RunShell',
       'RunShellWithReturnCode', 'SEPARATOR', 'SendToRietveld', 'TryChange',
-      'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile', 'gclient',
-      'gcl_info_dir', 'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
+      'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile', 'gcl_info_dir',
+      'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
       'repository_root', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
       'urllib2', 'use_shell', 'xml',
         
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
+
+  def testGetSVNFileInfo(self):
+    def RunShellMock(command):
+      return r"""<?xml version="1.0"?>
+<info>
+<entry kind="file" path="%s" revision="14628">
+<url>http://src.chromium.org/svn/trunk/src/chrome/app/d</url>
+<repository><root>http://src.chromium.org/svn</root></repository>
+<wc-info>
+<schedule>add</schedule>
+<depth>infinity</depth>
+<copy-from-url>http://src.chromium.org/svn/trunk/src/chrome/app/DEPS</copy-from-url>
+<copy-from-rev>14628</copy-from-rev>
+<checksum>369f59057ba0e6d9017e28f8bdfb1f43</checksum>
+</wc-info>
+</entry>
+</info>
+""" % command[3]
+    gcl.RunShell = RunShellMock
+    filename = os.path.join('app', 'd')
+    info = gcl.GetSVNFileInfo(filename)
+    expected = {
+      'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
+      'Repository Root': 'http://src.chromium.org/svn',
+      'Schedule': 'add',
+      'Copied From URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/DEPS',
+      'Copied From Rev': '14628',
+      'Path': filename,
+      'Node Kind': 'file',
+    }
+    self.assertEquals(sorted(info.items()), sorted(expected.items()))
 
   def testGetSVNStatus(self):
     def RunShellMock(command):
@@ -125,41 +155,6 @@ class GclUnittest(GclTestsBase):
     gcl.RunShell = RunShellMock
     info = gcl.GetSVNStatus(None)
     self.assertEquals(info, [])
-
-  def testHelp(self):
-    stdout = sys.stdout
-    dummy = StringIO.StringIO()
-    sys.stdout = dummy
-    gcl.Help()
-    sys.stdout = stdout
-    self.assertEquals(len(dummy.getvalue()), 1718)
-
-  def testGetRepositoryRoot(self):
-    try:
-      gcl.GetRepositoryRoot()
-    except Exception,e:
-      self.assertEquals(e.args[0], "gcl run outside of repository")
-
-
-class ChangeInfoUnittest(GclTestsBase):
-  def testChangeInfoMembers(self):
-    members = [
-      'CloseIssue', 'Delete', 'FileList', 'MissingTests', 'Save',
-      'UpdateRietveldDescription', 'description', 'files', 'issue', 'name',
-      'patch'
-    ]
-    # If this test fails, you should add the relevant test.
-    self.compareMembers(gcl.ChangeInfo(), members)
-
-  def testChangeInfoBase(self):
-    files = [('M', 'foo'), ('A', 'bar')]
-    o = gcl.ChangeInfo('name2', 'issue2', 'description2', files)
-    self.assertEquals(o.name, 'name2')
-    self.assertEquals(o.issue, 'issue2')
-    self.assertEquals(o.description, 'description2')
-    self.assertEquals(o.files, files)
-    self.assertEquals(o.patch, None)
-    self.assertEquals(o.FileList(), ['foo', 'bar'])
 
 
 if __name__ == '__main__':

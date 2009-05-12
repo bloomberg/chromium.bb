@@ -1145,7 +1145,7 @@ class SCMWrapperTestCase(BaseTestCase):
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient.CaptureSVNStatus(base_path).AndReturn([])
+    gclient.CaptureSVNStatus(options, base_path).AndReturn([])
 
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
@@ -1164,11 +1164,11 @@ class SCMWrapperTestCase(BaseTestCase):
       gclient.FileStatus('a', 'M', ' ', ' ', ' '), 
       gclient.FileStatus('b', 'A', ' ', ' ', ' '),
     ]
-    gclient.CaptureSVNStatus(base_path).AndReturn(items)
+    gclient.CaptureSVNStatus(options, base_path).AndReturn(items)
 
     print >>options.stdout, os.path.join(base_path, 'a')
     print >>options.stdout, os.path.join(base_path, 'b')
-    gclient.RunSVN(['revert', 'a', 'b'], base_path)
+    gclient.RunSVN(options, ['revert', 'a', 'b'], base_path)
 
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
@@ -1229,10 +1229,10 @@ class SCMWrapperTestCase(BaseTestCase):
     options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
     # Checkout or update.
     options.path_exists(base_path).AndReturn(True)
-    gclient.CaptureSVNInfo(os.path.join(base_path, "."), '.'
+    gclient.CaptureSVNInfo(options, os.path.join(base_path, "."), '.'
         ).AndReturn(file_info)
     # Cheat a bit here.
-    gclient.CaptureSVNInfo(file_info['URL'], '.').AndReturn(file_info)
+    gclient.CaptureSVNInfo(options, file_info['URL'], '.').AndReturn(file_info)
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
@@ -1276,8 +1276,9 @@ class SCMWrapperTestCase(BaseTestCase):
 </entry>
 </info>
 """ % self.url
-    gclient.CaptureSVN(['info', '--xml', self.url],
-                       '.', True).AndReturn(xml_text)
+    options = self.Options(verbose=True)
+    gclient.CaptureSVN(options, ['info', '--xml', self.url],
+                       '.').AndReturn(xml_text)
     expected = {
       'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
       'UUID': None,
@@ -1290,7 +1291,7 @@ class SCMWrapperTestCase(BaseTestCase):
       'Node Kind': 'file',
     }
     self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.', True)
+    file_info = self._CaptureSVNInfo(options, self.url, '.')
     self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
     self.mox.VerifyAll()
 
@@ -1318,10 +1319,11 @@ class SCMWrapperTestCase(BaseTestCase):
 </entry>
 </info>
 """ % (self.url, self.root_dir)
-    gclient.CaptureSVN(['info', '--xml', self.url],
-                       '.', True).AndReturn(xml_text)
+    options = self.Options(verbose=True)
+    gclient.CaptureSVN(options, ['info', '--xml', self.url],
+                       '.').AndReturn(xml_text)
     self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.', True)
+    file_info = self._CaptureSVNInfo(options, self.url, '.')
     expected = {
       'URL': self.url,
       'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
