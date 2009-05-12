@@ -11,6 +11,7 @@ import unittest
 
 # Local imports
 import gcl
+import gclient
 import presubmit
 import presubmit_canned_checks
 
@@ -24,8 +25,8 @@ class PresubmitTestsBase(unittest.TestCase):
       return dir.endswith('haspresubmit') or dir == ''
     os.path.isfile = MockIsFile
 
-    self.original_GetSVNFileInfo = gcl.GetSVNFileInfo
-    def MockGetSVNFileInfo(path):
+    self.original_CaptureSVNInfo = gclient.CaptureSVNInfo
+    def MockCaptureSVNInfo(path):
       if path.count('notfound'):
         return {}
       results = {
@@ -37,7 +38,7 @@ class PresubmitTestsBase(unittest.TestCase):
       else:
         results['Node Kind'] = 'file'
       return results
-    gcl.GetSVNFileInfo = MockGetSVNFileInfo
+    gclient.CaptureSVNInfo = MockCaptureSVNInfo
 
     self.original_GetSVNFileProperty = gcl.GetSVNFileProperty
     def MockGetSVNFileProperty(path, property_name):
@@ -81,7 +82,7 @@ class PresubmitTestsBase(unittest.TestCase):
 
   def tearDown(self):
     os.path.isfile = self.original_IsFile
-    gcl.GetSVNFileInfo = self.original_GetSVNFileInfo
+    gclient.CaptureSVNInfo = self.original_CaptureSVNInfo
     gcl.GetSVNFileProperty = self.original_GetSVNFileProperty
     gcl.ReadFile = self.original_ReadFile
     gcl.GetRepositoryRoot = self.original_GetRepositoryRoot
@@ -111,8 +112,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
       'OutputApi', 'ParseFiles', 'PresubmitExecuter', 'SPECIAL_KEYS',
       'ScanSubDirs', 'cPickle', 'cStringIO', 'exceptions',
-      'fnmatch', 'gcl', 'glob', 'marshal', 'normpath', 'optparse', 'os',
-      'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
+      'fnmatch', 'gcl', 'gclient', 'glob', 'marshal', 'normpath', 'optparse',
+      'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
       'tempfile', 'types', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.

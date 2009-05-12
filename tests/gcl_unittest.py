@@ -48,52 +48,19 @@ class GclUnittest(GclTestsBase):
       'ErrorExit', 'GenerateChangeName', 'GenerateDiff', 'GetCLs',
       'GetChangelistInfoFile', 'GetCodeReviewSetting', 'GetEditor',
       'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
-      'GetModifiedFiles', 'GetNamedNodeText', 'GetNodeNamedAttributeText',
-      'GetRepositoryRoot', 'GetSVNFileInfo', 'GetSVNStatus',
+      'GetModifiedFiles', 'GetRepositoryRoot', 'GetSVNStatus',
       'GetSVNFileProperty', 'Help', 'IGNORE_PATHS', 'IsSVNMoved', 'IsTreeOpen',
       'Lint', 'LoadChangelistInfo', 'LoadChangelistInfoForMultiple',
-      'MISSING_TEST_MSG', 'Opened', 'ParseXML', 'PresubmitCL', 'ReadFile',
+      'MISSING_TEST_MSG', 'Opened', 'PresubmitCL', 'ReadFile',
       'RunShell',
       'RunShellWithReturnCode', 'SEPARATOR', 'SendToRietveld', 'TryChange',
-      'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile', 'gcl_info_dir',
-      'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
+      'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile', 'gclient',
+      'gcl_info_dir', 'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
       'repository_root', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
       'urllib2', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
-
-  def testGetSVNFileInfo(self):
-    def RunShellMock(command):
-      return r"""<?xml version="1.0"?>
-<info>
-<entry kind="file" path="%s" revision="14628">
-<url>http://src.chromium.org/svn/trunk/src/chrome/app/d</url>
-<repository><root>http://src.chromium.org/svn</root></repository>
-<wc-info>
-<schedule>add</schedule>
-<depth>infinity</depth>
-<copy-from-url>http://src.chromium.org/svn/trunk/src/chrome/app/DEPS</copy-from-url>
-<copy-from-rev>14628</copy-from-rev>
-<checksum>369f59057ba0e6d9017e28f8bdfb1f43</checksum>
-</wc-info>
-</entry>
-</info>
-""" % command[3]
-    # GclTestsBase.tearDown will restore the original.
-    gcl.RunShell = RunShellMock
-    filename = os.path.join('app', 'd')
-    info = gcl.GetSVNFileInfo(filename)
-    expected = {
-      'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
-      'Repository Root': 'http://src.chromium.org/svn',
-      'Schedule': 'add',
-      'Copied From URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/DEPS',
-      'Copied From Rev': '14628',
-      'Path': filename,
-      'Node Kind': 'file',
-    }
-    self.assertEquals(sorted(info.items()), sorted(expected.items()))
 
   def testGetSVNStatus(self):
     def RunShellMock(command):

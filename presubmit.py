@@ -32,6 +32,7 @@ import urllib2  # Exposed through the API.
 # TODO(joi) Would be cleaner to factor out utils in gcl to separate module, but
 # for now it would only be a couple of functions so hardly worth it.
 import gcl
+import gclient
 import presubmit_canned_checks
 
 
@@ -207,7 +208,7 @@ class InputApi(object):
 
       Remember to check for the None case and show an appropriate error!
     """
-    local_path = gcl.GetSVNFileInfo(depot_path).get('Path')
+    local_path = gclient.CaptureSVNInfo(depot_path).get('Path')
     if not local_path:
       return None
     else:
@@ -223,7 +224,7 @@ class InputApi(object):
     Returns:
       The depot path (SVN URL) of the file if mapped, otherwise None.
     """
-    depot_path = gcl.GetSVNFileInfo(local_path).get('URL')
+    depot_path = gclient.CaptureSVNInfo(local_path).get('URL')
     if not depot_path:
       return None
     else:
@@ -331,7 +332,7 @@ class AffectedFile(object):
 
     Returns the empty string if the file does not exist in SCM.
     """
-    return gcl.GetSVNFileInfo(self.AbsoluteLocalPath()).get('URL', '')
+    return gclient.CaptureSVNInfo(self.AbsoluteLocalPath()).get('URL', '')
 
   def LocalPath(self):
     """Returns the path of this file on the local disk relative to client root.
@@ -350,7 +351,8 @@ class AffectedFile(object):
       # subversion, especially on Windows.
       return os.path.isdir(self.path)
     else:
-      return gcl.GetSVNFileInfo(self.path).get('Node Kind') == 'directory'
+      return gclient.CaptureSVNInfo(self.path).get('Node Kind') in ('dir',
+                                                                    'directory')
 
   def SvnProperty(self, property_name):
     """Returns the specified SVN property of this file, or the empty string
