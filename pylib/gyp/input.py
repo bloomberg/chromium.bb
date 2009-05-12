@@ -337,7 +337,7 @@ def ExpandVariables(input, is_late, variables, build_file):
           output = replacement[:]
         else:
           # Split it the same way sh would split arguments.
-          output = shlex.split(replacement)
+          output = shlex.split(str(replacement))
       else:
         # Expanding in string context.
         if isinstance(replacement, list):
@@ -351,8 +351,8 @@ def ExpandVariables(input, is_late, variables, build_file):
                           gyp.common.EncodePOSIXShellList(replacement),
                           output)
         else:
-          # Expanding a string into string context is easy, just replace it.
-          output = re.sub(re.escape(match[0]), replacement, output)
+          # Expanding into string context is easy, just replace it.
+          output = re.sub(re.escape(match[0]), str(replacement), output)
 
   return output
 
