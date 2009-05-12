@@ -95,8 +95,13 @@ def main(args):
   for define in defines:
     tokens = define.split('=', 1)
     if len(tokens) == 2:
+      # If we can make it an int, use that, otherwise, use the string.
+      try:
+        token_value = int(tokens[1])
+      except:
+        token_value = tokens[1]
       # Set the variable to the supplied value.
-      cmdline_default_variables[tokens[0]] = tokens[1]
+      cmdline_default_variables[tokens[0]] = token_value
     else:
       # No value supplied, treat it as a boolean and set it.
       cmdline_default_variables[tokens[0]] = True
