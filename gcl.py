@@ -555,9 +555,13 @@ def Opened():
 
 
 def Help(argv=None):
-  if argv and  argv[0] == 'try':
-    TryChange(None, ['--help'], swallow_exception=False)
-    return
+  if argv:
+    if argv[0] == 'try':
+      TryChange(None, ['--help'], swallow_exception=False)
+      return
+    if argv[0] == 'upload':
+      upload.RealMain(['upload.py', '--help'])
+      return
 
   print (
 """GCL is a wrapper for Subversion that simplifies working with groups of files.
@@ -615,6 +619,9 @@ Advanced commands:
       code. To send multiple changes as one path, use a comma-separated list
       of changenames.
       --> Use 'gcl help try' for more information!
+
+   gcl help [command]
+      Print this help menu, or help for the given command if it exists.
 """)
 
 def GetEditor():
