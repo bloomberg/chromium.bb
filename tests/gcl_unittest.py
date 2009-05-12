@@ -48,7 +48,7 @@ class GclUnittest(GclTestsBase):
       'ErrorExit', 'GenerateChangeName', 'GenerateDiff', 'GetCLs',
       'GetChangelistInfoFile', 'GetCodeReviewSetting', 'GetEditor',
       'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
-      'GetModifiedFiles', 'GetRepositoryRoot', 'GetSVNStatus',
+      'GetModifiedFiles', 'GetRepositoryRoot',
       'GetSVNFileProperty', 'Help', 'IGNORE_PATHS', 'IsSVNMoved', 'IsTreeOpen',
       'Lint', 'LoadChangelistInfo', 'LoadChangelistInfoForMultiple',
       'MISSING_TEST_MSG', 'Opened', 'PresubmitCL', 'ReadFile',
@@ -62,70 +62,6 @@ class GclUnittest(GclTestsBase):
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
 
-  def testGetSVNStatus(self):
-    def RunShellMock(command):
-      return r"""<?xml version="1.0"?>
-<status>
-<target path=".">
-<entry path="unversionned_file.txt">
-<wc-status props="none" item="unversioned"></wc-status>
-</entry>
-<entry path="build\internal\essential.vsprops">
-<wc-status props="normal" item="modified" revision="14628">
-<commit revision="13818">
-<author>ajwong@chromium.org</author>
-<date>2009-04-16T00:42:06.872358Z</date>
-</commit>
-</wc-status>
-</entry>
-<entry path="chrome\app\d">
-<wc-status props="none" copied="true" tree-conflicted="true" item="added">
-</wc-status>
-</entry>
-<entry path="chrome\app\DEPS">
-<wc-status props="modified" item="modified" revision="14628">
-<commit revision="1279">
-<author>brettw@google.com</author>
-<date>2008-08-23T17:16:42.090152Z</date>
-</commit>
-</wc-status>
-</entry>
-<entry path="scripts\master\factory\gclient_factory.py">
-<wc-status props="normal" item="conflicted" revision="14725">
-<commit revision="14633">
-<author>nsylvain@chromium.org</author>
-<date>2009-04-27T19:37:17.977400Z</date>
-</commit>
-</wc-status>
-</entry>
-</target>
-</status>
-"""
-    # GclTestsBase.tearDown will restore the original.
-    gcl.RunShell = RunShellMock
-    info = gcl.GetSVNStatus('.')
-    expected = [
-      ('?      ', 'unversionned_file.txt'),
-      ('M      ', 'build\\internal\\essential.vsprops'),
-      ('A  +   ', 'chrome\\app\\d'),
-      ('MM     ', 'chrome\\app\\DEPS'),
-      ('C      ', 'scripts\\master\\factory\\gclient_factory.py'),
-    ]
-    self.assertEquals(sorted(info), sorted(expected))
-
-  def testGetSVNStatusEmpty(self):
-    def RunShellMock(command):
-      return r"""<?xml version="1.0"?>
-<status>
-<target
-   path="perf">
-</target>
-</status>
-"""
-    # GclTestsBase.tearDown will restore the original.
-    gcl.RunShell = RunShellMock
-    info = gcl.GetSVNStatus(None)
-    self.assertEquals(info, [])
 
   def testHelp(self):
     old_stdout = sys.stdout

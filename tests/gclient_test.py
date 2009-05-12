@@ -1159,8 +1159,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
     items = [
-      gclient.FileStatus('a', 'M', ' ', ' ', ' '), 
-      gclient.FileStatus('b', 'A', ' ', ' ', ' '),
+      ('M      ', 'a'),
+      ('A      ', 'b'),
     ]
     gclient.CaptureSVNStatus(base_path).AndReturn(items)
 
@@ -1386,6 +1386,73 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
                                      pattern, capture_list)
     self.assertEquals(capture_list, ['cc', 'dd'])
     self.mox.VerifyAll()
+
+  def testCaptureSVNStatus(self):
+    x = self
+    def CaptureSVNMock(command):
+      x.assertEquals(['status', '--xml', '.'], command)
+      return r"""<?xml version="1.0"?>
+<status>
+<target path=".">
+<entry path="unversionned_file.txt">
+<wc-status props="none" item="unversioned"></wc-status>
+</entry>
+<entry path="build\internal\essential.vsprops">
+<wc-status props="normal" item="modified" revision="14628">
+<commit revision="13818">
+<author>ajwong@chromium.org</author>
+<date>2009-04-16T00:42:06.872358Z</date>
+</commit>
+</wc-status>
+</entry>
+<entry path="chrome\app\d">
+<wc-status props="none" copied="true" tree-conflicted="true" item="added">
+</wc-status>
+</entry>
+<entry path="chrome\app\DEPS">
+<wc-status props="modified" item="modified" revision="14628">
+<commit revision="1279">
+<author>brettw@google.com</author>
+<date>2008-08-23T17:16:42.090152Z</date>
+</commit>
+</wc-status>
+</entry>
+<entry path="scripts\master\factory\gclient_factory.py">
+<wc-status props="normal" item="conflicted" revision="14725">
+<commit revision="14633">
+<author>nsylvain@chromium.org</author>
+<date>2009-04-27T19:37:17.977400Z</date>
+</commit>
+</wc-status>
+</entry>
+</target>
+</status>
+"""
+    gclient.CaptureSVN = CaptureSVNMock
+    info = gclient.CaptureSVNStatus('.')
+    expected = [
+      ('?      ', 'unversionned_file.txt'),
+      ('M      ', 'build\\internal\\essential.vsprops'),
+      ('A  +   ', 'chrome\\app\\d'),
+      ('MM     ', 'chrome\\app\\DEPS'),
+      ('C      ', 'scripts\\master\\factory\\gclient_factory.py'),
+    ]
+    self.assertEquals(sorted(info), sorted(expected))
+
+  def testCaptureSVNStatusEmpty(self):
+    x = self
+    def CaptureSVNMock(command):
+      x.assertEquals(['status', '--xml'], command)
+      return r"""<?xml version="1.0"?>
+<status>
+<target
+   path="perf">
+</target>
+</status>
+"""
+    gclient.CaptureSVN = CaptureSVNMock
+    info = gclient.CaptureSVNStatus(None)
+    self.assertEquals(info, [])
 
 
 if __name__ == '__main__':

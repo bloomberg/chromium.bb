@@ -612,30 +612,39 @@ def CaptureSVNHeadRevision(url):
   return int(dom.getElementsByTagName('entry')[0].getAttribute('revision'))
 
 
-class FileStatus:
-  def __init__(self, path, text_status, props, lock, history):
-    self.path = path
-    self.text_status = text_status
-    self.props = props
-    self.lock = lock
-    self.history = history
+def CaptureSVNStatus(files):
+  """Returns the svn 1.5 svn status emulated output.
 
-  def __str__(self):
-    # Emulate svn status 1.5 output.
-    return (self.text_status + self.props + self.lock + self.history + ' ' +
-            self.path)
+  @files can be a string (one file) or a list of files.
 
+  Returns an array of (status, file) tuples."""
+  command = ["status", "--xml"]
+  if not files:
+    pass
+  elif isinstance(files, basestring):
+    command.append(files)
+  else:
+    command.extend(files)
 
-def CaptureSVNStatus(path):
-  """Runs 'svn status' on an existing path.
-
-  Args:
-    path: The directory to run svn status.
-
-  Returns:
-    An array of FileStatus corresponding to the emulated output of 'svn status'
-    version 1.5."""
-  dom = ParseXML(CaptureSVN(["status", "--xml"], path))
+  status_letter = {
+    None: ' ',
+    '': ' ',
+    'added': 'A',
+    'conflicted': 'C',
+    'deleted': 'D',
+    'external': 'X',
+    'ignored': 'I',
+    'incomplete': '!',
+    'merged': 'G',
+    'missing': '!',
+    'modified': 'M',
+    'none': ' ',
+    'normal': ' ',
+    'obstructed': '~',
+    'replaced': 'R',
+    'unversioned': '?',
+  }
+  dom = ParseXML(CaptureSVN(command))
   results = []
   if dom:
     # /status/target/entry/(wc-status|commit|author|date)
@@ -649,18 +658,8 @@ def CaptureSVNStatus(path):
         statuses = [' ' for i in range(7)]
         # Col 0
         xml_item_status = wc_status[0].getAttribute('item')
-        if xml_item_status == 'unversioned':
-          statuses[0] = '?'
-        elif xml_item_status == 'modified':
-          statuses[0] = 'M'
-        elif xml_item_status == 'added':
-          statuses[0] = 'A'
-        elif xml_item_status == 'conflicted':
-          statuses[0] = 'C'
-        elif xml_item_status in ('incomplete', 'missing'):
-          statuses[0] = '!'
-        elif not xml_item_status:
-          pass
+        if xml_item_status in status_letter:
+          statuses[0] = status_letter[xml_item_status]
         else:
           raise Exception('Unknown item status "%s"; please implement me!' %
                           xml_item_status)
@@ -682,8 +681,7 @@ def CaptureSVNStatus(path):
         # Col 3
         if wc_status[0].getAttribute('copied') == 'true':
           statuses[3] = '+'
-        item = FileStatus(file, statuses[0], statuses[1], statuses[2],
-                          statuses[3])
+        item = (''.join(statuses), file)
         results.append(item)
   return results
 
@@ -856,10 +854,10 @@ class SCMWrapper(object):
     # Batch the command.
     files_to_revert = []
     for file in files:
-      file_path = os.path.join(path, file.path)
+      file_path = os.path.join(path, file[1])
       print(file_path)
       # Unversioned file or unexpected unversioned file.
-      if file.text_status in ('?', '~'):
+      if file[0][0] in ('?', '~'):
         # Remove extraneous file. Also remove unexpected unversioned
         # directories. svn won't touch them but we want to delete these.
         file_list.append(file_path)
@@ -868,10 +866,10 @@ class SCMWrapper(object):
         except EnvironmentError:
           RemoveDirectory(file_path)
 
-      if file.text_status != '?':
+      if file[0][0] != '?':
         # For any other status, svn revert will work.
         file_list.append(file_path)
-        files_to_revert.append(file.path)
+        files_to_revert.append(file[1])
 
     # Revert them all at once.
     if files_to_revert:

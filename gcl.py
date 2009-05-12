@@ -76,78 +76,14 @@ def GetSVNFileProperty(file, property_name):
     return output
 
 
-def GetSVNStatus(file):
-  """Returns the svn 1.5 svn status emulated output.
-  
-  @file can be a string (one file) or a list of files."""
-  command = ["svn", "status", "--xml"]
-  if file is None:
-    pass
-  elif isinstance(file, basestring):
-    command.append(file)
-  else:
-    command.extend(file)
-
-  status_letter = {
-    '': ' ',
-    'added': 'A',
-    'conflicted': 'C',
-    'deleted': 'D',
-    'ignored': 'I',
-    'missing': '!',
-    'modified': 'M',
-    'normal': ' ',
-    'replaced': 'R',
-    'unversioned': '?',
-    # TODO(maruel): Find the corresponding strings for X, ~
-  }
-  output = RunShell(command)
-  dom = gclient.ParseXML(output)
-  results = []
-  if dom:
-    # /status/target/entry/(wc-status|commit|author|date)
-    for target in dom.getElementsByTagName('target'):
-      base_path = target.getAttribute('path')
-      for entry in target.getElementsByTagName('entry'):
-        file = entry.getAttribute('path')
-        wc_status = entry.getElementsByTagName('wc-status')
-        assert len(wc_status) == 1
-        # Emulate svn 1.5 status ouput...
-        statuses = [' ' for i in range(7)]
-        # Col 0
-        xml_item_status = wc_status[0].getAttribute('item')
-        if xml_item_status in status_letter:
-          statuses[0] = status_letter[xml_item_status]
-        else:
-          raise Exception('Unknown item status "%s"; please implement me!' %
-                          xml_item_status)
-        # Col 1
-        xml_props_status = wc_status[0].getAttribute('props')
-        if xml_props_status == 'modified':
-          statuses[1] = 'M'
-        elif xml_props_status == 'conflicted':
-          statuses[1] = 'C'
-        elif (not xml_props_status or xml_props_status == 'none' or
-              xml_props_status == 'normal'):
-          pass
-        else:
-          raise Exception('Unknown props status "%s"; please implement me!' %
-                          xml_props_status)
-        # Col 3
-        if wc_status[0].getAttribute('copied') == 'true':
-          statuses[3] = '+'
-        item = (''.join(statuses), file)
-        results.append(item)
-  return results
-
-
 def UnknownFiles(extra_args):
   """Runs svn status and prints unknown files.
 
   Any args in |extra_args| are passed to the tool to support giving alternate
   code locations.
   """
-  return [item[1] for item in GetSVNStatus(extra_args) if item[0][0] == '?']
+  return [item[1] for item in gclient.CaptureSVNStatus(extra_args)
+          if item[0][0] == '?']
 
 
 def GetRepositoryRoot():
@@ -488,7 +424,7 @@ def LoadChangelistInfo(changename, fail_on_not_found=True,
   if update_status:
     for file in files:
       filename = os.path.join(GetRepositoryRoot(), file[1])
-      status_result = GetSVNStatus(filename)
+      status_result = gclient.CaptureSVNStatus(filename)
       if not status_result or not status_result[0][0]:
         # File has been reverted.
         save = True
@@ -547,7 +483,7 @@ def GetModifiedFiles():
       files_in_cl[filename] = change_info.name
 
   # Get all the modified files.
-  status_result = GetSVNStatus(None)
+  status_result = gclient.CaptureSVNStatus(None)
   for line in status_result:
     status = line[0]
     filename = line[1]
