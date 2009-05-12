@@ -77,21 +77,6 @@ class BaseTestCase(unittest.TestCase):
     else:
       self.fail('%s not raised' % msg)
 
-  def compareMembers(self, object, members):
-    """If you add a member, be sure to add the relevant test!"""
-    # Skip over members starting with '_' since they are usually not meant to
-    # be for public use.
-    actual_members = [x for x in sorted(dir(object))
-                      if not x.startswith('_')]
-    expected_members = sorted(members)
-    if actual_members != expected_members:
-      diff = ([i for i in actual_members if i not in expected_members] +
-              [i for i in expected_members if i not in actual_members])
-      print diff
-    self.assertEqual(actual_members, expected_members)
-
-
-class GClientBaseTestCase(BaseTestCase):
   def Options(self, *args, **kwargs):
     return self.OptionsObject(self, *args, **kwargs)
 
@@ -114,8 +99,11 @@ class GClientBaseTestCase(BaseTestCase):
     gclient.RunSVN = self.mox.CreateMockAnything()
     self._RunSVNAndGetFileList = gclient.RunSVNAndGetFileList
     gclient.RunSVNAndGetFileList = self.mox.CreateMockAnything()
-    self._sys_stdout = gclient.sys.stdout
-    gclient.sys.stdout = self.mox.CreateMock(self._sys_stdout)
+    # Doesn't seem to work very well:
+    self._os = gclient.os
+    gclient.os = self.mox.CreateMock(os)
+    self._sys = gclient.sys
+    gclient.sys = self.mox.CreateMock(sys)
     self._subprocess = gclient.subprocess
     gclient.subprocess = self.mox.CreateMock(subprocess)
 
@@ -128,11 +116,13 @@ class GClientBaseTestCase(BaseTestCase):
     gclient.RemoveDirectory = self._RemoveDirectory
     gclient.RunSVN = self._RunSVN
     gclient.RunSVNAndGetFileList = self._RunSVNAndGetFileList
-    gclient.sys.stdout = self._sys_stdout
+    # Doesn't seem to work very well:
+    gclient.os = self._os
+    gclient.sys = self._sys
     gclient.subprocess = self._subprocess
 
 
-class GclientTestCase(GClientBaseTestCase):
+class GclientTestCase(BaseTestCase):
   class OptionsObject(object):
     def __init__(self, test_case, verbose=False, spec=None,
                  config_filename='a_file_name',
@@ -150,16 +140,19 @@ class GclientTestCase(GClientBaseTestCase):
       self.head = False
 
       # Mox
+      self.stdout = test_case.stdout
       self.path_exists = test_case.path_exists
       self.platform = test_case.platform
       self.gclient = test_case.gclient
       self.scm_wrapper = test_case.scm_wrapper
 
   def setUp(self):
-    GClientBaseTestCase.setUp(self)
+    BaseTestCase.setUp(self)
+    self.stdout = self.mox.CreateMock(sys.stdout)
     #self.subprocess = self.mox.CreateMock(subprocess)
     # Stub os.path.exists.
     self.path_exists = self.mox.CreateMockAnything()
+    self.sys = self.mox.CreateMock(sys)
     self.platform = 'darwin'
 
     self.gclient = self.mox.CreateMock(gclient.GClient)
@@ -170,7 +163,7 @@ class GclientTestCase(GClientBaseTestCase):
     self.url = Url()
 
 
-class GClientCommandsTestCase(GClientBaseTestCase):
+class GClientCommandsTestCase(BaseTestCase):
   def testCommands(self):
     known_commands = [gclient.DoCleanup, gclient.DoConfig, gclient.DoDiff,
                       gclient.DoHelp, gclient.DoStatus, gclient.DoUpdate,
@@ -231,23 +224,24 @@ class TestDoConfig(GclientTestCase):
 
 class TestDoHelp(GclientTestCase):
   def testGetUsage(self):
-    print(gclient.COMMAND_USAGE_TEXT['config'])
-    self.mox.ReplayAll()
     options = self.Options()
+    print >> options.stdout, gclient.COMMAND_USAGE_TEXT['config']
+
+    self.mox.ReplayAll()
     gclient.DoHelp(options, ('config',))
     self.mox.VerifyAll()
 
   def testTooManyArgs(self):
-    self.mox.ReplayAll()
     options = self.Options()
+    self.mox.ReplayAll()
     self.assertRaisesError("unknown subcommand 'config'; see 'gclient help'",
                            gclient.DoHelp, options, ('config',
                                                      'another argument'))
     self.mox.VerifyAll()
 
   def testUnknownSubcommand(self):
-    self.mox.ReplayAll()
     options = self.Options()
+    self.mox.ReplayAll()
     self.assertRaisesError("unknown subcommand 'xyzzy'; see 'gclient help'",
                            gclient.DoHelp, options, ('xyzzy',))
     self.mox.VerifyAll()
@@ -279,7 +273,7 @@ class GenericCommandTestCase(GclientTestCase):
     self.gclient.LoadCurrentConfig(options).AndReturn(self.gclient)
     text = "# Dummy content\nclient = 'my client'"
     self.gclient.ConfigContent().AndReturn(text)
-    print(text)
+    print >>self.stdout, text
     self.gclient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
@@ -337,7 +331,7 @@ class TestDoUpdate(GenericCommandTestCase):
     self.gclient.GetVar("solutions")
     text = "# Dummy content\nclient = 'my client'"
     self.gclient.ConfigContent().AndReturn(text)
-    print(text)
+    print >>self.stdout, text
     self.gclient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
@@ -383,14 +377,18 @@ class TestDoRevert(GenericCommandTestCase):
 
 class GClientClassTestCase(GclientTestCase):
   def testDir(self):
-    members = [
-      'ConfigContent', 'FromImpl', 'GetVar', 'LoadCurrentConfig',
-      'RunOnDeps', 'SaveConfig', 'SetConfig', 'SetDefaultConfig',
-      'supported_commands', 'PrintRevInfo',
-    ]
+    members = ['ConfigContent', 'FromImpl', '_VarImpl', '_ParseAllDeps',
+      '_ParseSolutionDeps', 'GetVar', '_LoadConfig', 'LoadCurrentConfig',
+      '_ReadEntries', '_RunHookAction', '_RunHooks', 'RunOnDeps', 'SaveConfig',
+      '_SaveEntries', 'SetConfig', 'SetDefaultConfig', 'supported_commands',
+      'PrintRevInfo']
 
     # If you add a member, be sure to add the relevant test!
-    self.compareMembers(gclient.GClient('root_dir', 'options'), members)
+    actual_members = [x for x in sorted(dir(gclient.GClient))
+                      if not x.startswith('__')]
+    self.assertEqual(actual_members, sorted(members))
+    self.mox.ReplayAll()
+    self.mox.VerifyAll()
 
   def testSetConfig_ConfigContent_GetVar_SaveConfig_SetDefaultConfig(self):
     options = self.Options()
@@ -733,11 +731,11 @@ class GClientClassTestCase(GclientTestCase):
   def testRunOnDepsRevisions(self):
     def OptIsRev(options, rev):
       if not options.revision == str(rev):
-        print("options.revision = %s" % options.revision)
+        print "options.revision = %s" % options.revision
       return options.revision == str(rev)
     def OptIsRevNone(options):
       if options.revision:
-        print("options.revision = %s" % options.revision)
+        print "options.revision = %s" % options.revision
       return options.revision == None
     def OptIsRev42(options):
       return OptIsRev(options, 42)
@@ -1060,7 +1058,7 @@ deps = {
     pass
 
 
-class SCMWrapperTestCase(GClientBaseTestCase):
+class SCMWrapperTestCase(BaseTestCase):
   class OptionsObject(object):
      def __init__(self, test_case, verbose=False, revision=None):
       self.verbose = verbose
@@ -1070,25 +1068,29 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       self.force = False
 
       # Mox
+      self.stdout = test_case.stdout
       self.path_exists = test_case.path_exists
 
   def setUp(self):
-    GClientBaseTestCase.setUp(self)
+    BaseTestCase.setUp(self)
     self.root_dir = Dir()
     self.args = Args()
     self.url = Url()
     self.relpath = 'asf'
+    self.stdout = self.mox.CreateMock(sys.stdout)
     # Stub os.path.exists.
     self.path_exists = self.mox.CreateMockAnything()
 
   def testDir(self):
-    members = [
-      'FullUrlForRelativeUrl', 'RunCommand', 'cleanup', 'diff', 'relpath',
-      'revert', 'scm_name', 'status', 'update', 'url',
-    ]
+    members = ['FullUrlForRelativeUrl', 'RunCommand',
+      'cleanup', 'diff', 'revert', 'status', 'update']
 
     # If you add a member, be sure to add the relevant test!
-    self.compareMembers(gclient.SCMWrapper(), members)
+    actual_members = [x for x in sorted(dir(gclient.SCMWrapper))
+                      if not x.startswith('__')]
+    self.assertEqual(actual_members, sorted(members))
+    self.mox.ReplayAll()
+    self.mox.VerifyAll()
 
   def testFullUrlForRelativeUrl(self):
     self.url = 'svn://a/b/c/d'
@@ -1123,11 +1125,12 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient.os.path.isdir(base_path).AndReturn(False)
     # It'll to a checkout instead.
     options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
-    print("\n_____ %s is missing, synching instead" % self.relpath)
+    print >>options.stdout, ("\n_____ %s is missing, synching instead" %
+                             self.relpath)
     # Checkout.
     options.path_exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient.RunSVNAndGetFileList(['checkout', self.url, base_path],
+    gclient.RunSVNAndGetFileList(options, ['checkout', self.url, base_path],
                                  self.root_dir, files_list)
 
     self.mox.ReplayAll()
@@ -1142,7 +1145,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient.CaptureSVNStatus(base_path).AndReturn([])
+    gclient.CaptureSVNStatus(options, base_path).AndReturn([])
 
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
@@ -1161,11 +1164,11 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       gclient.FileStatus('a', 'M', ' ', ' ', ' '), 
       gclient.FileStatus('b', 'A', ' ', ' ', ' '),
     ]
-    gclient.CaptureSVNStatus(base_path).AndReturn(items)
+    gclient.CaptureSVNStatus(options, base_path).AndReturn(items)
 
-    print(os.path.join(base_path, 'a'))
-    print(os.path.join(base_path, 'b'))
-    gclient.RunSVN(['revert', 'a', 'b'], base_path)
+    print >>options.stdout, os.path.join(base_path, 'a')
+    print >>options.stdout, os.path.join(base_path, 'b')
+    gclient.RunSVN(options, ['revert', 'a', 'b'], base_path)
 
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
@@ -1180,7 +1183,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
-    gclient.RunSVNAndGetFileList(['status'] + self.args, base_path,
+    gclient.RunSVNAndGetFileList(options, ['status'] + self.args, base_path,
                                  []).AndReturn(None)
 
     self.mox.ReplayAll()
@@ -1205,7 +1208,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     # Checkout.
     options.path_exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
-    gclient.RunSVNAndGetFileList(['checkout', self.url, base_path],
+    gclient.RunSVNAndGetFileList(options, ['checkout', self.url, base_path],
                                  self.root_dir, files_list)
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
@@ -1226,15 +1229,15 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
     # Checkout or update.
     options.path_exists(base_path).AndReturn(True)
-    gclient.CaptureSVNInfo(os.path.join(base_path, "."), '.'
+    gclient.CaptureSVNInfo(options, os.path.join(base_path, "."), '.'
         ).AndReturn(file_info)
     # Cheat a bit here.
-    gclient.CaptureSVNInfo(file_info['URL'], '.').AndReturn(file_info)
+    gclient.CaptureSVNInfo(options, file_info['URL'], '.').AndReturn(file_info)
     additional_args = []
     if options.manually_grab_svn_rev:
       additional_args = ['--revision', str(file_info['Revision'])]
     files_list = []
-    gclient.RunSVNAndGetFileList(['update', base_path] + additional_args,
+    gclient.RunSVNAndGetFileList(options, ['update', base_path] + additional_args,
                                  self.root_dir, files_list)
 
     self.mox.ReplayAll()
@@ -1247,7 +1250,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     options = self.Options(verbose=True)
     options.path_exists(os.path.join(self.root_dir, self.relpath, '.git')
         ).AndReturn(True)
-    print("________ found .git directory; skipping %s" % self.relpath)
+    print >> options.stdout, (
+        "________ found .git directory; skipping %s" % self.relpath)
 
     self.mox.ReplayAll()
     scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
@@ -1272,7 +1276,9 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 </entry>
 </info>
 """ % self.url
-    gclient.CaptureSVN(['info', '--xml', self.url], '.').AndReturn(xml_text)
+    options = self.Options(verbose=True)
+    gclient.CaptureSVN(options, ['info', '--xml', self.url],
+                       '.').AndReturn(xml_text)
     expected = {
       'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
       'UUID': None,
@@ -1285,7 +1291,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       'Node Kind': 'file',
     }
     self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.')
+    file_info = self._CaptureSVNInfo(options, self.url, '.')
     self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
     self.mox.VerifyAll()
 
@@ -1313,9 +1319,11 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 </entry>
 </info>
 """ % (self.url, self.root_dir)
-    gclient.CaptureSVN(['info', '--xml', self.url], '.').AndReturn(xml_text)
+    options = self.Options(verbose=True)
+    gclient.CaptureSVN(options, ['info', '--xml', self.url],
+                       '.').AndReturn(xml_text)
     self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.')
+    file_info = self._CaptureSVNInfo(options, self.url, '.')
     expected = {
       'URL': self.url,
       'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
@@ -1328,23 +1336,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       'Node Kind': 'dir',
     }
     self.assertEqual(file_info, expected)
-    self.mox.VerifyAll()
-
-
-class RunSVNTestCase(BaseTestCase):
-  def setUp(self):
-    self.mox = mox.Mox()
-    self._OldSubprocessCall = gclient.SubprocessCall
-    gclient.SubprocessCall = self.mox.CreateMockAnything()
-
-  def tearDown(self):
-    gclient.SubprocessCall = self._OldSubprocessCall
-
-  def testRunSVN(self):
-    param2 = 'bleh'
-    gclient.SubprocessCall(['svn', 'foo', 'bar'], param2).AndReturn(None)
-    self.mox.ReplayAll()
-    gclient.RunSVN(['foo', 'bar'], param2)
     self.mox.VerifyAll()
 
 

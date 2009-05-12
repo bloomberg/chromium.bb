@@ -64,7 +64,7 @@ Hooks
 """
 
 __author__ = "darinf@gmail.com (Darin Fisher)"
-__version__ = "0.3.2"
+__version__ = "0.3.1"
 
 import errno
 import optparse
@@ -397,7 +397,7 @@ def RemoveDirectory(*path):
     os.rmdir(file_path)
 
 
-def SubprocessCall(command, in_directory, fail_status=None):
+def SubprocessCall(command, in_directory, out, fail_status=None):
   """Runs command, a list, in directory in_directory.
 
   This function wraps SubprocessCallAndCapture, but does not perform the
@@ -405,10 +405,10 @@ def SubprocessCall(command, in_directory, fail_status=None):
   description.
   """
   # Call subprocess and capture nothing:
-  SubprocessCallAndCapture(command, in_directory, fail_status)
+  SubprocessCallAndCapture(command, in_directory, out, fail_status)
 
 
-def SubprocessCallAndCapture(command, in_directory, fail_status=None,
+def SubprocessCallAndCapture(command, in_directory, out, fail_status=None,
                              pattern=None, capture_list=None):
   """Runs command, a list, in directory in_directory.
 
@@ -423,8 +423,8 @@ def SubprocessCallAndCapture(command, in_directory, fail_status=None,
   default), gclient will raise an Error exception.
   """
 
-  print("\n________ running \'%s\' in \'%s\'"
-        % (' '.join(command), in_directory))
+  print >> out, ("\n________ running \'%s\' in \'%s\'"
+      % (' '.join(command), in_directory))
 
   # *Sigh*:  Windows needs shell=True, or else it won't search %PATH% for the
   # executable, but shell=True makes subprocess on Linux fail when it's called
@@ -475,7 +475,7 @@ def IsUsingGit(root, paths):
 # SVN utils:
 
 
-def RunSVN(args, in_directory):
+def RunSVN(options, args, in_directory):
   """Runs svn, sending output to stdout.
 
   Args:
@@ -488,10 +488,10 @@ def RunSVN(args, in_directory):
   c = [SVN_COMMAND]
   c.extend(args)
 
-  SubprocessCall(c, in_directory)
+  SubprocessCall(c, in_directory, options.stdout)
 
 
-def CaptureSVN(args, in_directory):
+def CaptureSVN(options, args, in_directory):
   """Runs svn, capturing output sent to stdout as a string.
 
   Args:
@@ -508,13 +508,11 @@ def CaptureSVN(args, in_directory):
   # the svn.exe executable, but shell=True makes subprocess on Linux fail
   # when it's called with a list because it only tries to execute the
   # first string ("svn").
-  return subprocess.Popen(c,
-                          cwd=in_directory,
-                          shell=(sys.platform == 'win32'),
+  return subprocess.Popen(c, cwd=in_directory, shell=(sys.platform == 'win32'),
                           stdout=subprocess.PIPE).communicate()[0]
 
 
-def RunSVNAndGetFileList(args, in_directory, file_list):
+def RunSVNAndGetFileList(options, args, in_directory, file_list):
   """Runs svn checkout, update, or status, output to stdout.
 
   The first item in args must be either "checkout", "update", or "status".
@@ -554,13 +552,11 @@ def RunSVNAndGetFileList(args, in_directory, file_list):
         'update':   update_pattern,
       }[args[0]]
 
-  SubprocessCallAndCapture(command,
-                           in_directory,
-                           pattern=pattern,
-                           capture_list=file_list)
+  SubprocessCallAndCapture(command, in_directory, options.stdout,
+                           pattern=pattern, capture_list=file_list)
 
 
-def CaptureSVNInfo(relpath, in_directory=None):
+def CaptureSVNInfo(options, relpath, in_directory):
   """Returns a dictionary from the svn info output for the given file.
 
   Args:
@@ -568,8 +564,7 @@ def CaptureSVNInfo(relpath, in_directory=None):
       the directory given by in_directory.
     in_directory: The directory where svn is to be run.
   """
-  output = CaptureSVN(["info", "--xml", relpath], in_directory)
-  dom = ParseXML(output)
+  dom = ParseXML(CaptureSVN(options, ["info", "--xml", relpath], in_directory))
   result = {}
   if dom:
     def C(item, f):
@@ -597,13 +592,13 @@ def CaptureSVNInfo(relpath, in_directory=None):
   return result
 
 
-def CaptureSVNHeadRevision(url):
+def CaptureSVNHeadRevision(options, url):
   """Get the head revision of a SVN repository.
 
   Returns:
     Int head revision
   """
-  info = CaptureSVN(["info", "--xml", url], os.getcwd())
+  info = CaptureSVN(options, ["info", "--xml", url], os.getcwd())
   dom = xml.dom.minidom.parseString(info)
   return int(dom.getElementsByTagName('entry')[0].getAttribute('revision'))
 
@@ -622,7 +617,7 @@ class FileStatus:
             self.path)
 
 
-def CaptureSVNStatus(path):
+def CaptureSVNStatus(options, path):
   """Runs 'svn status' on an existing path.
 
   Args:
@@ -631,7 +626,7 @@ def CaptureSVNStatus(path):
   Returns:
     An array of FileStatus corresponding to the emulated output of 'svn status'
     version 1.5."""
-  dom = ParseXML(CaptureSVN(["status", "--xml"], path))
+  dom = ParseXML(CaptureSVN(options, ["status", "--xml"], path))
   results = []
   if dom:
     # /status/target/entry/(wc-status|commit|author|date)
@@ -733,13 +728,13 @@ class SCMWrapper(object):
     """Cleanup working copy."""
     command = ['cleanup']
     command.extend(args)
-    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+    RunSVN(options, command, os.path.join(self._root_dir, self.relpath))
 
   def diff(self, options, args, file_list):
     # NOTE: This function does not currently modify file_list.
     command = ['diff']
     command.extend(args)
-    RunSVN(command, os.path.join(self._root_dir, self.relpath))
+    RunSVN(options, command, os.path.join(self._root_dir, self.relpath))
 
   def update(self, options, args, file_list):
     """Runs SCM to update or transparently checkout the working copy.
@@ -752,7 +747,8 @@ class SCMWrapper(object):
     # Only update if git is not controlling the directory.
     git_path = os.path.join(self._root_dir, self.relpath, '.git')
     if options.path_exists(git_path):
-      print("________ found .git directory; skipping %s" % self.relpath)
+      print >> options.stdout, (
+          "________ found .git directory; skipping %s" % self.relpath)
       return
 
     if args:
@@ -780,22 +776,23 @@ class SCMWrapper(object):
       command = ['checkout', url, os.path.join(self._root_dir, self.relpath)]
       if revision:
         command.extend(['--revision', str(revision)])
-      RunSVNAndGetFileList(command, self._root_dir, file_list)
+      RunSVNAndGetFileList(options, command, self._root_dir, file_list)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
-    from_info = CaptureSVNInfo(os.path.join(self._root_dir, self.relpath, '.'),
+    from_info = CaptureSVNInfo(options,
+                               os.path.join(self._root_dir, self.relpath, '.'),
                                '.')
 
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
       if not revision:
-        from_info_live = CaptureSVNInfo(from_info['URL'], '.')
+        from_info_live = CaptureSVNInfo(options, from_info['URL'], '.')
         revision = int(from_info_live['Revision'])
         rev_str = ' at %d' % revision
 
     if from_info['URL'] != components[0]:
-      to_info = CaptureSVNInfo(url, '.')
+      to_info = CaptureSVNInfo(options, url, '.')
       if from_info['Repository Root'] != to_info['Repository Root']:
         # We have different roots, so check if we can switch --relocate.
         # Subversion only permits this if the repository UUIDs match.
@@ -817,7 +814,7 @@ class SCMWrapper(object):
                    from_info['Repository Root'],
                    to_info['Repository Root'],
                    self.relpath]
-        RunSVN(command, self._root_dir)
+        RunSVN(options, command, self._root_dir)
         from_info['URL'] = from_info['URL'].replace(
             from_info['Repository Root'],
             to_info['Repository Root'])
@@ -826,13 +823,14 @@ class SCMWrapper(object):
     # number of the existing directory, then we don't need to bother updating.
     if not options.force and from_info['Revision'] == revision:
       if options.verbose or not forced_revision:
-        print("\n_____ %s%s" % (self.relpath, rev_str))
+        print >>options.stdout, ("\n_____ %s%s" % (
+            self.relpath, rev_str))
       return
 
     command = ["update", os.path.join(self._root_dir, self.relpath)]
     if revision:
       command.extend(['--revision', str(revision)])
-    RunSVNAndGetFileList(command, self._root_dir, file_list)
+    RunSVNAndGetFileList(options, command, self._root_dir, file_list)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications. Subversion specific.
@@ -844,16 +842,17 @@ class SCMWrapper(object):
     if not os.path.isdir(path):
       # svn revert won't work if the directory doesn't exist. It needs to
       # checkout instead.
-      print("\n_____ %s is missing, synching instead" % self.relpath)
+      print >>options.stdout, ("\n_____ %s is missing, synching instead" %
+                               self.relpath)
       # Don't reuse the args.
       return self.update(options, [], file_list)
 
-    files = CaptureSVNStatus(path)
+    files = CaptureSVNStatus(options, path)
     # Batch the command.
     files_to_revert = []
     for file in files:
       file_path = os.path.join(path, file.path)
-      print(file_path)
+      print >>options.stdout, file_path
       # Unversioned file or unexpected unversioned file.
       if file.text_status in ('?', '~'):
         # Remove extraneous file. Also remove unexpected unversioned
@@ -877,7 +876,7 @@ class SCMWrapper(object):
       for p in files_to_revert:
         # Some shell have issues with command lines too long.
         if accumulated_length and accumulated_length + len(p) > 3072:
-          RunSVN(command + accumulated_paths,
+          RunSVN(options, command + accumulated_paths,
                  os.path.join(self._root_dir, self.relpath))
           accumulated_paths = []
           accumulated_length = 0
@@ -885,7 +884,7 @@ class SCMWrapper(object):
           accumulated_paths.append(p)
           accumulated_length += len(p)
       if accumulated_paths:
-        RunSVN(command + accumulated_paths,
+        RunSVN(options, command + accumulated_paths,
                os.path.join(self._root_dir, self.relpath))
 
   def status(self, options, args, file_list):
@@ -895,12 +894,13 @@ class SCMWrapper(object):
     command.extend(args)
     if not os.path.isdir(path):
       # svn status won't work if the directory doesn't exist.
-      print("\n________ couldn't run \'%s\' in \'%s\':\nThe directory "
-            "does not exist."
-            % (' '.join(command), path))
+      print >> options.stdout, (
+          "\n________ couldn't run \'%s\' in \'%s\':\nThe directory "
+          "does not exist."
+          % (' '.join(command), path))
       # There's no file list to retrieve.
     else:
-      RunSVNAndGetFileList(command, path, file_list)
+      RunSVNAndGetFileList(options, command, path, file_list)
 
 
 ## GClient implementation.
@@ -1181,7 +1181,8 @@ class GClient(object):
     # Use a discrete exit status code of 2 to indicate that a hook action
     # failed.  Users of this script may wish to treat hook action failures
     # differently from VC failures.
-    SubprocessCall(command, self._root_dir, fail_status=2)
+    SubprocessCall(command, self._root_dir, self._options.stdout,
+                   fail_status=2)
 
   def _RunHooks(self, command, file_list, is_using_git):
     """Evaluates all hooks, running actions as needed.
@@ -1324,15 +1325,16 @@ class GClient(object):
       for entry in prev_entries:
         e_dir = os.path.join(self._root_dir, entry)
         if entry not in entries and self._options.path_exists(e_dir):
-          if CaptureSVNStatus(e_dir):
+          if CaptureSVNStatus(self._options, e_dir):
             # There are modified files in this entry
             entries[entry] = None  # Keep warning until removed.
-            print("\nWARNING: \"%s\" is no longer part of this client.  "
-                  "It is recommended that you manually remove it.\n") % entry
+            print >> self._options.stdout, (
+                "\nWARNING: \"%s\" is no longer part of this client.  "
+                "It is recommended that you manually remove it.\n") % entry
           else:
             # Delete the entry
-            print("\n________ deleting \'%s\' " +
-                  "in \'%s\'") % (entry, self._root_dir)
+            print >> self._options.stdout, ("\n________ deleting \'%s\' " +
+                "in \'%s\'") % (entry, self._root_dir)
             RemoveDirectory(e_dir)
       # record the current list of entries for next time
       self._SaveEntries(entries)
@@ -1381,7 +1383,8 @@ class GClient(object):
           return (original_url, int(revision_overrides[name]))
         else:
           # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
-          return (original_url, CaptureSVNHeadRevision(original_url))
+          return (original_url, CaptureSVNHeadRevision(self._options,
+                                                       original_url))
       else:
         url_components = original_url.split("@")
         if revision_overrides.has_key(name):
@@ -1398,6 +1401,7 @@ class GClient(object):
       entries[name] = "%s@%d" % (url, rev)
       # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
       entries_deps_content[name] = CaptureSVN(
+                                     self._options,
                                      ["cat",
                                       "%s/%s@%d" % (url,
                                                     self._options.deps_file,
@@ -1425,6 +1429,7 @@ class GClient(object):
         deps_parent_url_components = deps_parent_url.split("@")
         # TODO(aharper): SVN/SCMWrapper cleanup (non-local commandset)
         deps_parent_content = CaptureSVN(
+                                self._options,
                                 ["cat",
                                  "%s/%s@%s" % (deps_parent_url_components[0],
                                                self._options.deps_file,
@@ -1439,7 +1444,7 @@ class GClient(object):
         (url, rev) = GetURLAndRev(d, sub_deps[d])
         entries[d] = "%s@%d" % (url, rev)
 
-    print(";".join(["%s,%s" % (x, entries[x]) for x in sorted(entries.keys())]))
+    print ";".join(["%s,%s" % (x, entries[x]) for x in sorted(entries.keys())])
 
 
 ## gclient commands.
@@ -1457,7 +1462,7 @@ def DoCleanup(options, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print >>options.stdout, client.ConfigContent()
   options.verbose = True
   return client.RunOnDeps('cleanup', args)
 
@@ -1500,7 +1505,7 @@ def DoHelp(options, args):
     Error: if the command is unknown.
   """
   if len(args) == 1 and args[0] in COMMAND_USAGE_TEXT:
-    print(COMMAND_USAGE_TEXT[args[0]])
+    print >>options.stdout, COMMAND_USAGE_TEXT[args[0]]
   else:
     raise Error("unknown subcommand '%s'; see 'gclient help'" % args[0])
 
@@ -1517,7 +1522,7 @@ def DoStatus(options, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print >>options.stdout, client.ConfigContent()
   options.verbose = True
   return client.RunOnDeps('status', args)
 
@@ -1556,7 +1561,7 @@ def DoUpdate(options, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print >>options.stdout, client.ConfigContent()
   return client.RunOnDeps('update', args)
 
 
@@ -1572,7 +1577,7 @@ def DoDiff(options, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print >>options.stdout, client.ConfigContent()
   options.verbose = True
   return client.RunOnDeps('diff', args)
 
@@ -1601,7 +1606,7 @@ def DoRunHooks(options, args):
   if options.verbose:
     # Print out the .gclient file.  This is longer than if we just printed the
     # client dict, but more legible, and it might contain helpful comments.
-    print(client.ConfigContent())
+    print >>options.stdout, client.ConfigContent()
   return client.RunOnDeps('runhooks', args)
 
 
@@ -1700,6 +1705,8 @@ def Main(argv):
   options.entries_filename = ".gclient_entries"
   options.deps_file = "DEPS"
 
+  # These are overridded when testing. They are not externally visible.
+  options.stdout = sys.stdout
   options.path_exists = os.path.exists
   options.gclient = GClient
   options.scm_wrapper = SCMWrapper
@@ -1711,7 +1718,7 @@ if "__main__" == __name__:
   try:
     result = Main(sys.argv)
   except Error, e:
-    print >> sys.stderr, "Error: %s" % str(e)
+    print "Error: %s" % str(e)
     result = 1
   sys.exit(result)
 
