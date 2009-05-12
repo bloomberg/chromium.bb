@@ -51,7 +51,8 @@ _tag_line_re = re.compile(
 SPECIAL_KEYS = {
   'Reviewers' : 'R',
   'BugIDs' : 'BUG',
-  'Tested': 'TESTED'
+  'Tested': 'TESTED',
+  'Test': 'TEST'
 }
 
 

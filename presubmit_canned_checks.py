@@ -6,6 +6,24 @@
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
 
+def CheckChangeHasTestField(input_api, output_api):
+  """Requires that the changelist have a TEST= field."""
+  if input_api.change.Test:
+    return []
+  else:
+    return [output_api.PresubmitNotifyResult(
+        "Changelist should have a TEST= field. TEST=none is allowed.")]
+
+
+def CheckChangeHasBugField(input_api, output_api):
+  """Requires that the changelist have a BUG= field."""
+  if input_api.change.BugIDs:
+    return []
+  else:
+    return [output_api.PresubmitNotifyResult(
+        "Changelist should have a BUG= field. BUG=none is allowed.")]
+
+
 def CheckChangeHasTestedField(input_api, output_api):
   """Requires that the changelist have a TESTED= field."""
   if input_api.change.Tested:

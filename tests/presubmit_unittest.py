@@ -584,13 +584,40 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testMembersChanged(self):
     members = [
-      'CheckChangeHasNoTabs', 'CheckChangeHasQaField',
-      'CheckChangeHasTestedField', 'CheckDoNotSubmit',
+      'CheckChangeHasBugField', 'CheckChangeHasNoTabs',
+      'CheckChangeHasQaField', 'CheckChangeHasTestedField',
+      'CheckChangeHasTestField', 'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
       'CheckLongLines', 'CheckTreeIsOpen',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
+
+  def testCannedCheckChangeHasBugField(self):
+    change = self.MakeBasicChange('foo',
+                                  'Foo\nBUG=1234')
+    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    self.failIf(presubmit_canned_checks.CheckChangeHasBugField(
+        api, presubmit.OutputApi))
+
+    change = self.MakeBasicChange('foo',
+                                  'Foo\nNEVERTESTED=did some stuff')
+    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    self.failUnless(presubmit_canned_checks.CheckChangeHasBugField(
+        api, presubmit.OutputApi))
+
+  def testCannedCheckChangeHasTestField(self):
+    change = self.MakeBasicChange('foo',
+                                  'Foo\nTEST=did some stuff')
+    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    self.failIf(presubmit_canned_checks.CheckChangeHasTestField(
+        api, presubmit.OutputApi))
+
+    change = self.MakeBasicChange('foo',
+                                  'Foo\nNOTEST=did some stuff')
+    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    self.failUnless(presubmit_canned_checks.CheckChangeHasTestField(
+        api, presubmit.OutputApi))
 
   def testCannedCheckChangeHasTestedField(self):
     change = self.MakeBasicChange('foo',
