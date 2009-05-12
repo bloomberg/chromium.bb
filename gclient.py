@@ -491,7 +491,7 @@ def RunSVN(args, in_directory):
   SubprocessCall(c, in_directory)
 
 
-def CaptureSVN(args, in_directory):
+def CaptureSVN(args, in_directory=None, print_error=True):
   """Runs svn, capturing output sent to stdout as a string.
 
   Args:
@@ -508,10 +508,14 @@ def CaptureSVN(args, in_directory):
   # the svn.exe executable, but shell=True makes subprocess on Linux fail
   # when it's called with a list because it only tries to execute the
   # first string ("svn").
+  stderr = None
+  if print_error:
+    stderr = subprocess.PIPE
   return subprocess.Popen(c,
                           cwd=in_directory,
                           shell=(sys.platform == 'win32'),
-                          stdout=subprocess.PIPE).communicate()[0]
+                          stdout=subprocess.PIPE,
+                          stderr=stderr).communicate()[0]
 
 
 def RunSVNAndGetFileList(args, in_directory, file_list):
@@ -560,7 +564,7 @@ def RunSVNAndGetFileList(args, in_directory, file_list):
                            capture_list=file_list)
 
 
-def CaptureSVNInfo(relpath, in_directory=None):
+def CaptureSVNInfo(relpath, in_directory=None, print_error=True):
   """Returns a dictionary from the svn info output for the given file.
 
   Args:
@@ -568,7 +572,7 @@ def CaptureSVNInfo(relpath, in_directory=None):
       the directory given by in_directory.
     in_directory: The directory where svn is to be run.
   """
-  output = CaptureSVN(["info", "--xml", relpath], in_directory)
+  output = CaptureSVN(["info", "--xml", relpath], in_directory, print_error)
   dom = ParseXML(output)
   result = {}
   if dom:

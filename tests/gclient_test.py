@@ -1273,7 +1273,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 </entry>
 </info>
 """ % self.url
-    gclient.CaptureSVN(['info', '--xml', self.url], '.').AndReturn(xml_text)
+    gclient.CaptureSVN(['info', '--xml', self.url],
+                       '.', True).AndReturn(xml_text)
     expected = {
       'URL': 'http://src.chromium.org/svn/trunk/src/chrome/app/d',
       'UUID': None,
@@ -1286,7 +1287,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       'Node Kind': 'file',
     }
     self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.')
+    file_info = self._CaptureSVNInfo(self.url, '.', True)
     self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
     self.mox.VerifyAll()
 
@@ -1314,9 +1315,10 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 </entry>
 </info>
 """ % (self.url, self.root_dir)
-    gclient.CaptureSVN(['info', '--xml', self.url], '.').AndReturn(xml_text)
+    gclient.CaptureSVN(['info', '--xml', self.url],
+                       '.', True).AndReturn(xml_text)
     self.mox.ReplayAll()
-    file_info = self._CaptureSVNInfo(self.url, '.')
+    file_info = self._CaptureSVNInfo(self.url, '.', True)
     expected = {
       'URL': self.url,
       'UUID': '7b9385f5-0452-0410-af26-ad4892b7a1fb',
