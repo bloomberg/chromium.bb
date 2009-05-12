@@ -5,7 +5,9 @@
 
 """Unit tests for gcl.py."""
 
+import StringIO
 import os
+import sys
 import unittest
 
 # Local imports
@@ -56,8 +58,7 @@ class GclUnittest(GclTestsBase):
       'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile', 'gcl_info_dir',
       'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
       'repository_root', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
-      'urllib2', 'use_shell', 'xml',
-        
+      'urllib2', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
@@ -79,6 +80,7 @@ class GclUnittest(GclTestsBase):
 </entry>
 </info>
 """ % command[3]
+    # GclTestsBase.tearDown will restore the original.
     gcl.RunShell = RunShellMock
     filename = os.path.join('app', 'd')
     info = gcl.GetSVNFileInfo(filename)
@@ -132,6 +134,7 @@ class GclUnittest(GclTestsBase):
 </target>
 </status>
 """
+    # GclTestsBase.tearDown will restore the original.
     gcl.RunShell = RunShellMock
     info = gcl.GetSVNStatus('.')
     expected = [
@@ -152,9 +155,51 @@ class GclUnittest(GclTestsBase):
 </target>
 </status>
 """
+    # GclTestsBase.tearDown will restore the original.
     gcl.RunShell = RunShellMock
     info = gcl.GetSVNStatus(None)
     self.assertEquals(info, [])
+
+  def testHelp(self):
+    old_stdout = sys.stdout
+    try:
+      dummy = StringIO.StringIO()
+      gcl.sys.stdout = dummy
+      gcl.Help()
+      self.assertEquals(len(dummy.getvalue()), 1718)
+    finally:
+      gcl.sys.stdout = old_stdout
+
+  def testGetRepositoryRoot(self):
+    try:
+      def RunShellMock(filename):
+        return '<?xml version="1.0"?>\n<info>'
+      gcl.RunShell = RunShellMock
+      gcl.GetRepositoryRoot()
+    except Exception,e:
+      self.assertEquals(e.args[0], "gcl run outside of repository")
+    pass
+
+
+class ChangeInfoUnittest(GclTestsBase):
+  def testChangeInfoMembers(self):
+    members = [
+      'CloseIssue', 'Delete', 'FileList', 'MissingTests', 'Save',
+      'UpdateRietveldDescription', 'description', 'files', 'issue', 'name',
+      'patch'
+    ]
+    # If this test fails, you should add the relevant test.
+    self.compareMembers(gcl.ChangeInfo(), members)
+
+  def testChangeInfoBase(self):
+    files = [('M', 'foo'), ('A', 'bar')]
+    o = gcl.ChangeInfo('name2', 'issue2', 'description2', files)
+    self.assertEquals(o.name, 'name2')
+    self.assertEquals(o.issue, 'issue2')
+    self.assertEquals(o.description, 'description2')
+    self.assertEquals(o.files, files)
+    self.assertEquals(o.patch, None)
+    self.assertEquals(o.FileList(), ['foo', 'bar'])
 
 
 if __name__ == '__main__':

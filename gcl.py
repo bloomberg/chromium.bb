@@ -29,10 +29,6 @@ CODEREVIEW_SETTINGS = {
   "VIEW_VC": "http://src.chromium.org/viewvc/chrome?view=rev&revision=",
 }
 
-# Use a shell for subcommands on Windows to get a PATH search, and because svn
-# may be a batch file.
-use_shell = sys.platform.startswith("win")
-
 # globals that store the root of the current repository and the directory where
 # we store information about changelists.
 repository_root = ""
@@ -84,7 +80,8 @@ def IsSVNMoved(filename):
 
 def GetSVNFileInfo(file):
   """Returns a dictionary from the svn info output for the given file."""
-  dom = ParseXML(RunShell(["svn", "info", "--xml", file]))
+  output = RunShell(["svn", "info", "--xml", file])
+  dom = ParseXML(output)
   result = {}
   if dom:
     # /info/entry/
@@ -147,7 +144,8 @@ def GetSVNStatus(file):
     'unversioned': '?',
     # TODO(maruel): Find the corresponding strings for X, ~
   }
-  dom = ParseXML(RunShell(command))
+  output = RunShell(command)
+  dom = ParseXML(output)
   results = []
   if dom:
     # /status/target/entry/(wc-status|commit|author|date)
@@ -286,6 +284,9 @@ def ErrorExit(msg, exit=True):
 
 def RunShellWithReturnCode(command, print_output=False):
   """Executes a command and returns the output and the return code."""
+  # Use a shell for subcommands on Windows to get a PATH search, and because svn
+  # may be a batch file.
+  use_shell = sys.platform.startswith("win")
   p = subprocess.Popen(command, stdout=subprocess.PIPE,
                        stderr=subprocess.STDOUT, shell=use_shell,
                        universal_newlines=True)
@@ -326,7 +327,7 @@ def WriteFile(filename, contents):
   file.close()
 
 
-class ChangeInfo:
+class ChangeInfo(object):
   """Holds information about a changelist.
 
     issue: the Rietveld issue number, of "" if it hasn't been uploaded yet.
@@ -334,10 +335,12 @@ class ChangeInfo:
     files: a list of 2 tuple containing (status, filename) of changed files,
            with paths being relative to the top repository directory.
   """
-  def __init__(self, name="", issue="", description="", files=[]):
+  def __init__(self, name="", issue="", description="", files=None):
     self.name = name
     self.issue = issue
     self.description = description
+    if files is None:
+      files = []
     self.files = files
     self.patch = None
 
