@@ -69,7 +69,7 @@ class GclUnittest(GclTestsBase):
       dummy = StringIO.StringIO()
       gcl.sys.stdout = dummy
       gcl.Help()
-      self.assertEquals(len(dummy.getvalue()), 1718)
+      self.assertEquals(len(dummy.getvalue()), 1813)
     finally:
       gcl.sys.stdout = old_stdout
 
