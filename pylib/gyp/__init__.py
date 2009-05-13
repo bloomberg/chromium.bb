@@ -98,7 +98,7 @@ def main(args):
       # If we can make it an int, use that, otherwise, use the string.
       try:
         token_value = int(tokens[1])
-      except:
+      except ValueError:
         token_value = tokens[1]
       # Set the variable to the supplied value.
       cmdline_default_variables[tokens[0]] = token_value
