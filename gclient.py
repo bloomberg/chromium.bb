@@ -752,7 +752,8 @@ class SCMWrapper(object):
       Error: if can't get URL for relative path.
     """
     # Only update if git is not controlling the directory.
-    git_path = os.path.join(self._root_dir, self.relpath, '.git')
+    checkout_path = os.path.join(self._root_dir, self.relpath)
+    git_path = os.path.join(checkout_path, '.git')
     if options.path_exists(git_path):
       print("________ found .git directory; skipping %s" % self.relpath)
       return
@@ -777,17 +778,16 @@ class SCMWrapper(object):
     if revision:
       rev_str = ' at %d' % revision
 
-    if not options.path_exists(os.path.join(self._root_dir, self.relpath)):
+    if not options.path_exists(checkout_path):
       # We need to checkout.
-      command = ['checkout', url, os.path.join(self._root_dir, self.relpath)]
+      command = ['checkout', url, checkout_path]
       if revision:
         command.extend(['--revision', str(revision)])
       RunSVNAndGetFileList(command, self._root_dir, file_list)
       return
 
     # Get the existing scm url and the revision number of the current checkout.
-    from_info = CaptureSVNInfo(os.path.join(self._root_dir, self.relpath, '.'),
-                               '.')
+    from_info = CaptureSVNInfo(os.path.join(checkout_path, '.'), '.')
 
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
@@ -798,16 +798,12 @@ class SCMWrapper(object):
 
     if from_info['URL'] != components[0]:
       to_info = CaptureSVNInfo(url, '.')
-      if from_info['Repository Root'] != to_info['Repository Root']:
+      can_switch = ((from_info['Repository Root'] != to_info['Repository Root'])
+                    and (from_info['UUID'] == to_info['UUID']))
+      if can_switch:
+        print("\n_____ relocating %s to a new checkout" % self.relpath)
         # We have different roots, so check if we can switch --relocate.
         # Subversion only permits this if the repository UUIDs match.
-        if from_info['UUID'] != to_info['UUID']:
-          raise Error("Can't switch the checkout to %s; UUID don't match. That "
-                      "simply means in theory, gclient should verify you don't "
-                      "have a local change, remove the old checkout and do a "
-                      "fresh new checkout of the new repo. Contributions are "
-                      "welcome." % url)
-
         # Perform the switch --relocate, then rewrite the from_url
         # to reflect where we "are now."  (This is the same way that
         # Subversion itself handles the metadata when switch --relocate
@@ -823,6 +819,21 @@ class SCMWrapper(object):
         from_info['URL'] = from_info['URL'].replace(
             from_info['Repository Root'],
             to_info['Repository Root'])
+      else:
+        if CaptureSVNStatus(checkout_path):
+          raise Error("Can't switch the checkout to %s; UUID don't match and "
+                      "there is local changes in %s. Delete the directory and "
+                      "try again." % (url, checkout_path))
+        # Ok delete it.
+        print("\n_____ switching %s to a new checkout" % self.relpath)
+        RemoveDirectory(checkout_path)
+        # We need to checkout.
+        command = ['checkout', url, checkout_path]
+        if revision:
+          command.extend(['--revision', str(revision)])
+        RunSVNAndGetFileList(command, self._root_dir, file_list)
+        return
+          
 
     # If the provided url has a revision number that matches the revision
     # number of the existing directory, then we don't need to bother updating.
@@ -831,7 +842,7 @@ class SCMWrapper(object):
         print("\n_____ %s%s" % (self.relpath, rev_str))
       return
 
-    command = ["update", os.path.join(self._root_dir, self.relpath)]
+    command = ["update", checkout_path]
     if revision:
       command.extend(['--revision', str(revision)])
     RunSVNAndGetFileList(command, self._root_dir, file_list)
