@@ -1,1 +1,4 @@
-@"%~dp0svn\svn.exe" %*
+@echo off
+setlocal
+set PATH=%~dp0svn;%PATH%
+"%~dp0svn\svn.exe" %*
