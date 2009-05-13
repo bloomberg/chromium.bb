@@ -43,12 +43,14 @@ class Writer(object):
     self.n_rules = self.doc.createElement('Rules')
     self.n_root.appendChild(self.n_rules)
 
-  def AddCustomBuildRule(self, name, cmd, outputs, extensions):
+  def AddCustomBuildRule(self, name, cmd, additional_dependencies,
+                         outputs, extensions):
     """Adds a rule to the tool file.
 
     Args:
       name: Name of the rule.
       cmd: Command line of the rule.
+      additional_dependencies: other files which may trigger the rule.
       outputs: outputs of the rule.
       extensions: extensions handled by the rule.
     """
@@ -57,6 +59,8 @@ class Writer(object):
     n_rule.setAttribute('CommandLine', cmd)
     n_rule.setAttribute('Outputs', ';'.join(outputs))
     n_rule.setAttribute('FileExtensions', ';'.join(extensions))
+    n_rule.setAttribute('AdditionalDependencies',
+                        ';'.join(additional_dependencies))
     self.n_rules.appendChild(n_rule)
 
   def Write(self, writer=common.WriteOnDiff):

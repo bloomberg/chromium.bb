@@ -342,9 +342,11 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     for r in rules:
       rule_name = r['rule_name']
       rule_ext = r['extension']
+      inputs = [_FixPath(i) for i in r.get('inputs', [])]
       outputs = [_FixPath(i) for i in r.get('outputs', [])]
       cmd = _PrepareAction(c, r, has_input_path=True)
       rules_file.AddCustomBuildRule(name=rule_name, extensions=[rule_ext],
+                                    additional_dependencies=inputs,
                                     outputs=outputs, cmd=cmd)
     # Write out rules file.
     rules_file.Write()
@@ -359,7 +361,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       # Get some properties for this rule.
       rule_ext = r['extension']
       outputs = r.get('outputs', [])
-      # Find sources to which this applies.
+      # Find undiscovered sources to which this applies.
       rule_sources = [s for s in sources if s.endswith('.' + rule_ext)]
       for s in rule_sources:
         for o in outputs:
