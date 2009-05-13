@@ -114,7 +114,7 @@ def _PrepareAction(c, r, has_input_path):
   # Eventually we should add some sort of rule_default option to set this
   # per project. For now the behavior chrome needs is the default.
   mcs = r.get('msvs_cygwin_shell')
-  if not mcs:
+  if mcs is None:
     mcs = c.get('msvs_cygwin_shell', 1)
   if int(mcs):
     # Prepare command.
