@@ -673,10 +673,13 @@ def GenerateDiff(files, root=None):
     output = RunShell(["svn", "diff", "--config-dir", bogus_dir, file])
     if output:
       diff.append(output)
-    # On Posix platforms, svn diff on a mv/cp'd file outputs nothing.
-    # We put in an empty Index entry so upload.py knows about them.
-    elif not sys.platform.startswith("win") and IsSVNMoved(file):
+    elif IsSVNMoved(file):
+      #  svn diff on a mv/cp'd file outputs nothing.
+      # We put in an empty Index entry so upload.py knows about them.
       diff.append("\nIndex: %s\n" % file)
+    else:
+      # The file is not modified anymore. It should be removed from the set.
+      pass
   os.chdir(previous_cwd)
   return "".join(diff)
 
