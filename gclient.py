@@ -753,8 +753,8 @@ class SCMWrapper(object):
     """
     # Only update if git is not controlling the directory.
     checkout_path = os.path.join(self._root_dir, self.relpath)
-    git_path = os.path.join(checkout_path, '.git')
-    if options.path_exists(git_path):
+    git_path = os.path.join(self._root_dir, self.relpath, '.git')
+    if os.path.exists(git_path):
       print("________ found .git directory; skipping %s" % self.relpath)
       return
 
@@ -778,7 +778,7 @@ class SCMWrapper(object):
     if revision:
       rev_str = ' at %d' % revision
 
-    if not options.path_exists(checkout_path):
+    if not os.path.exists(checkout_path):
       # We need to checkout.
       command = ['checkout', url, checkout_path]
       if revision:
@@ -965,7 +965,7 @@ class GClient(object):
     if not from_dir:
       from_dir = os.curdir
     path = os.path.realpath(from_dir)
-    while not options.path_exists(os.path.join(path, options.config_filename)):
+    while not os.path.exists(os.path.join(path, options.config_filename)):
       next = os.path.split(path)
       if not next[1]:
         return None
@@ -1006,7 +1006,7 @@ class GClient(object):
     """
     scope = {}
     filename = os.path.join(self._root_dir, self._options.entries_filename)
-    if not self._options.path_exists(filename):
+    if not os.path.exists(filename):
       return []
     exec(FileRead(filename), scope)
     return scope["entries"]
@@ -1336,7 +1336,7 @@ class GClient(object):
       prev_entries = self._ReadEntries()
       for entry in prev_entries:
         e_dir = os.path.join(self._root_dir, entry)
-        if entry not in entries and self._options.path_exists(e_dir):
+        if entry not in entries and os.path.exists(e_dir):
           if CaptureSVNStatus(e_dir):
             # There are modified files in this entry
             entries[entry] = None  # Keep warning until removed.
@@ -1488,7 +1488,7 @@ def DoConfig(options, args):
   """
   if len(args) < 1 and not options.spec:
     raise Error("required argument missing; see 'gclient help config'")
-  if options.path_exists(options.config_filename):
+  if os.path.exists(options.config_filename):
     raise Error("%s file already exists in the current directory" %
                 options.config_filename)
   client = options.gclient('.', options)
@@ -1713,7 +1713,6 @@ def Main(argv):
   options.entries_filename = ".gclient_entries"
   options.deps_file = "DEPS"
 
-  options.path_exists = os.path.exists
   options.gclient = GClient
   options.scm_wrapper = SCMWrapper
   options.platform = sys.platform

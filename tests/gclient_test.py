@@ -119,6 +119,8 @@ class GClientBaseTestCase(BaseTestCase):
     gclient.sys.stdout = self.mox.CreateMock(self._sys_stdout)
     self._subprocess = gclient.subprocess
     gclient.subprocess = self.mox.CreateMock(self._subprocess)
+    self._os_path_exists = gclient.os.path.exists
+    gclient.os.path.exists = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gclient.CaptureSVN = self._CaptureSVN
@@ -131,6 +133,7 @@ class GClientBaseTestCase(BaseTestCase):
     gclient.RunSVNAndGetFileList = self._RunSVNAndGetFileList
     gclient.sys.stdout = self._sys_stdout
     gclient.subprocess = self._subprocess
+    gclient.os.path.exists = self._os_path_exists
 
 
 class GclientTestCase(GClientBaseTestCase):
@@ -151,16 +154,12 @@ class GclientTestCase(GClientBaseTestCase):
       self.head = False
 
       # Mox
-      self.path_exists = test_case.path_exists
       self.platform = test_case.platform
       self.gclient = test_case.gclient
       self.scm_wrapper = test_case.scm_wrapper
 
   def setUp(self):
     GClientBaseTestCase.setUp(self)
-    #self.subprocess = self.mox.CreateMock(subprocess)
-    # Stub os.path.exists.
-    self.path_exists = self.mox.CreateMockAnything()
     self.platform = 'darwin'
 
     self.gclient = self.mox.CreateMock(gclient.GClient)
@@ -199,7 +198,7 @@ class TestDoConfig(GclientTestCase):
     options = self.Options()
     exception_msg = ('%s file already exists in the current directory' %
                         options.config_filename)
-    self.path_exists(options.config_filename).AndReturn(True)
+    gclient.os.path.exists(options.config_filename).AndReturn(True)
 
     self.mox.ReplayAll()
     self.assertRaisesError(exception_msg, gclient.DoConfig, options, (1,))
@@ -207,7 +206,7 @@ class TestDoConfig(GclientTestCase):
 
   def testFromText(self):
     options = self.Options(spec='config_source_content')
-    options.path_exists(options.config_filename).AndReturn(False)
+    gclient.os.path.exists(options.config_filename).AndReturn(False)
     options.gclient('.', options).AndReturn(options.gclient)
     options.gclient.SetConfig(options.spec)
     options.gclient.SaveConfig()
@@ -218,7 +217,7 @@ class TestDoConfig(GclientTestCase):
 
   def testCreateClientFile(self):
     options = self.Options()
-    options.path_exists(options.config_filename).AndReturn(False)
+    gclient.os.path.exists(options.config_filename).AndReturn(False)
     options.gclient('.', options).AndReturn(options.gclient)
     options.gclient.SetDefaultConfig('the_name', 'http://svn/url/the_name',
                                      'other')
@@ -430,7 +429,7 @@ class GClientClassTestCase(GclientTestCase):
     self.gclient = self.mox.CreateMockAnything()
     options = self.Options()
     path = os.path.realpath(self.root_dir)
-    options.path_exists(os.path.join(path, options.config_filename)
+    gclient.os.path.exists(os.path.join(path, options.config_filename)
         ).AndReturn(True)
     options.gclient(path, options).AndReturn(options.gclient)
     options.gclient._LoadConfig()
@@ -460,8 +459,10 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
+    checkout_path = os.path.join(self.root_dir, solution_name)
+    gclient.os.path.exists(os.path.join(checkout_path, '.git')).AndReturn(False)
     # Expect a check for the entries file and we say there is not one.
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
@@ -514,8 +515,13 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
+    gclient.os.path.exists(os.path.join(self.root_dir, solution_name, 'src',
+                                        't', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, solution_name, '.git')
+        ).AndReturn(False)
     # Expect a check for the entries file and we say there is not one.
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
@@ -583,8 +589,15 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
+    checkout_path = os.path.join(self.root_dir, solution_name)
+    gclient.os.path.exists(os.path.join(checkout_path, '.git')).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'src/n', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'src/t', '.git')
+        ).AndReturn(False)
+
     # Expect a check for the entries file and we say there is not one.
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
@@ -593,9 +606,8 @@ class GClientClassTestCase(GclientTestCase):
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
     # Then an attempt will be made to read its DEPS file.
-    gclient.FileRead(os.path.join(self.root_dir,
-                     solution_name,
-                     options.deps_file)).AndReturn(deps)
+    gclient.FileRead(os.path.join(checkout_path, options.deps_file)
+        ).AndReturn(deps)
 
     # Next we expect an scm to be request for dep src/n even though it does not
     # exist in the DEPS file.
@@ -665,8 +677,15 @@ class GClientClassTestCase(GclientTestCase):
 
     options = self.Options()
 
+    gclient.os.path.exists(os.path.join(self.root_dir, name_a, '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, name_b, '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'src/t', '.git')
+        ).AndReturn(False)
+
     # Expect a check for the entries file and we say there is not one.
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     # An scm will be requested for the first solution.
@@ -715,7 +734,9 @@ class GClientClassTestCase(GclientTestCase):
     # pymox has trouble to mock the class object and not a class instance.
     self.scm_wrapper = self.mox.CreateMockAnything()
     options = self.Options()
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
     options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
         options.scm_wrapper)
@@ -797,7 +818,21 @@ deps_os = {
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
                       entries_content)
 
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'src', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
+                                        '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'src/third_party/cygwin',
+                                        '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir,
+                                         'src/third_party/python_24', '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'src/breakpad/bar',
+                                        '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
     options.scm_wrapper(self.url, self.root_dir, 'src').AndReturn(
@@ -902,7 +937,11 @@ deps = {
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
                       entries_content)
 
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
+                                        '.git')).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
     options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
         options.scm_wrapper)
@@ -956,7 +995,12 @@ deps = {
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
                       entries_content)
 
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, 'foo/third_party/WebKit',
+                                        '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
+        ).AndReturn(False)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
     options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
         options.scm_wrapper)
@@ -1000,7 +1044,7 @@ deps = {
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
                       'dummy entries content')
 
-    options.path_exists(os.path.join(self.root_dir, options.entries_filename)
+    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
     options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
         options.scm_wrapper)
@@ -1070,17 +1114,18 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       self.deps_os = None
       self.force = False
 
-      # Mox
-      self.path_exists = test_case.path_exists
-
   def setUp(self):
     GClientBaseTestCase.setUp(self)
     self.root_dir = Dir()
     self.args = Args()
     self.url = Url()
     self.relpath = 'asf'
-    # Stub os.path.exists.
-    self.path_exists = self.mox.CreateMockAnything()
+    self._os_path_isdir = gclient.os.path.isdir
+    gclient.os.path.isdir = self.mox.CreateMockAnything()
+
+  def tearDown(self):
+    GClientBaseTestCase.tearDown(self)
+    gclient.os.path.isdir = self._os_path_isdir
 
   def testDir(self):
     members = [
@@ -1102,7 +1147,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 
   def testRunCommandException(self):
     options = self.Options(verbose=False)
-    options.path_exists(os.path.join(self.root_dir, self.relpath, '.git')
+    gclient.os.path.exists(os.path.join(self.root_dir, self.relpath, '.git')
         ).AndReturn(False)
 
     self.mox.ReplayAll()
@@ -1119,14 +1164,13 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 
   def testRevertMissing(self):
     options = self.Options(verbose=True)
-    gclient.os.path.isdir = self.mox.CreateMockAnything()
     base_path = os.path.join(self.root_dir, self.relpath)
     gclient.os.path.isdir(base_path).AndReturn(False)
     # It'll to a checkout instead.
-    options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
+    gclient.os.path.exists(os.path.join(base_path, '.git')).AndReturn(False)
     print("\n_____ %s is missing, synching instead" % self.relpath)
     # Checkout.
-    options.path_exists(base_path).AndReturn(False)
+    gclient.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
     gclient.RunSVNAndGetFileList(['checkout', self.url, base_path],
                                  self.root_dir, files_list)
@@ -1136,12 +1180,10 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                              relpath=self.relpath)
     scm.revert(options, self.args, files_list)
     self.mox.VerifyAll()
-    gclient.os.path.isdir = os.path.isdir
 
   def testRevertNone(self):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
     gclient.CaptureSVNStatus(base_path).AndReturn([])
 
@@ -1151,12 +1193,10 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     file_list = []
     scm.revert(options, self.args, file_list)
     self.mox.VerifyAll()
-    gclient.os.path.isdir = os.path.isdir
 
   def testRevert2Files(self):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
     items = [
       ('M      ', 'a'),
@@ -1174,12 +1214,10 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     file_list = []
     scm.revert(options, self.args, file_list)
     self.mox.VerifyAll()
-    gclient.os.path.isdir = os.path.isdir
 
   def testStatus(self):
     options = self.Options(verbose=True)
     base_path = os.path.join(self.root_dir, self.relpath)
-    gclient.os.path.isdir = self.mox.CreateMockAnything()
     gclient.os.path.isdir(base_path).AndReturn(True)
     gclient.RunSVNAndGetFileList(['status'] + self.args, base_path,
                                  []).AndReturn(None)
@@ -1202,9 +1240,9 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     file_info.url = self.url
     file_info.uuid = 'ABC'
     file_info.revision = 42
-    options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
+    gclient.os.path.exists(os.path.join(base_path, '.git')).AndReturn(False)
     # Checkout.
-    options.path_exists(base_path).AndReturn(False)
+    gclient.os.path.exists(base_path).AndReturn(False)
     files_list = self.mox.CreateMockAnything()
     gclient.RunSVNAndGetFileList(['checkout', self.url, base_path],
                                  self.root_dir, files_list)
@@ -1224,9 +1262,9 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       'UUID': 'ABC',
       'Revision': 42,
     }
-    options.path_exists(os.path.join(base_path, '.git')).AndReturn(False)
+    gclient.os.path.exists(os.path.join(base_path, '.git')).AndReturn(False)
     # Checkout or update.
-    options.path_exists(base_path).AndReturn(True)
+    gclient.os.path.exists(base_path).AndReturn(True)
     gclient.CaptureSVNInfo(os.path.join(base_path, "."), '.'
         ).AndReturn(file_info)
     # Cheat a bit here.
@@ -1246,7 +1284,7 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 
   def testUpdateGit(self):
     options = self.Options(verbose=True)
-    options.path_exists(os.path.join(self.root_dir, self.relpath, '.git')
+    gclient.os.path.exists(os.path.join(self.root_dir, self.relpath, '.git')
         ).AndReturn(True)
     print("________ found .git directory; skipping %s" % self.relpath)
 
@@ -1358,10 +1396,13 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
     gclient.sys.stdout = self.mox.CreateMock(self._sys_stdout)
     self._subprocess_Popen = gclient.subprocess.Popen
     gclient.subprocess.Popen = self.mox.CreateMockAnything()
+    self._CaptureSVN = gclient.CaptureSVN
+    gclient.CaptureSVN = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gclient.sys.stdout = self._sys_stdout
     gclient.subprocess.Popen = self._subprocess_Popen
+    gclient.CaptureSVN = self._CaptureSVN
 
   def testSubprocessCallAndCapture(self):
     command = ['boo', 'foo', 'bar']
@@ -1376,7 +1417,7 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
     kid = Mock()
     print("\n________ running 'boo foo bar' in 'bleh'")
     for i in test_string:
-      sys.stdout.write(i)
+      gclient.sys.stdout.write(i)
     gclient.subprocess.Popen(command, bufsize=0, cwd=in_directory,
                              shell=(sys.platform == 'win32'),
                              stdout=gclient.subprocess.PIPE).AndReturn(kid)
@@ -1389,7 +1430,9 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
 
   def testCaptureSVNStatus(self):
     x = self
-    def CaptureSVNMock(command):
+    def CaptureSVNMock(command, in_directory=None, print_error=True):
+      x.assertEquals(in_directory, None)
+      x.assertEquals(print_error, True)
       x.assertEquals(['status', '--xml', '.'], command)
       return r"""<?xml version="1.0"?>
 <status>
@@ -1441,7 +1484,8 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
 
   def testCaptureSVNStatusEmpty(self):
     x = self
-    def CaptureSVNMock(command):
+    def CaptureSVNMock(command, in_directory=None, print_error=True):
+      x.assertEquals(in_directory, None)
       x.assertEquals(['status', '--xml'], command)
       return r"""<?xml version="1.0"?>
 <status>
