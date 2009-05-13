@@ -134,7 +134,7 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
   print ""
 
   # Make sure these files are unmodified with svn status.
-  status = gcl.GetSVNStatus(files)
+  status = gclient.CaptureSVNStatus(files)
   if status:
     if force:
       # TODO(maruel): Use the tool to correctly revert '?' files.
@@ -178,6 +178,7 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
         print 'svn up . -N failed in %s/.' % root
         return retcode
 
+    # TODO(maruel): BUG WITH ONLY ONE FILE.
     command = ["svn", "merge", "-c", revisions_string_rev]
     command.extend(file_list)
     (output, retcode) = gcl.RunShellWithReturnCode(command, print_output=True)
