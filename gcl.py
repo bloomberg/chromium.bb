@@ -987,12 +987,12 @@ def Lint(change_info, args):
 def DoPresubmitChecks(change_info, committing):
   """Imports presubmit, then calls presubmit.DoPresubmitChecks."""
   # Need to import here to avoid circular dependency.
-  import presubmit
-  result = presubmit.DoPresubmitChecks(change_info,
-                                       committing,
-                                       verbose=False,
-                                       output_stream=sys.stdout,
-                                       input_stream=sys.stdin)
+  import presubmit_support
+  result = presubmit_support.DoPresubmitChecks(change_info,
+                                               committing,
+                                               verbose=False,
+                                               output_stream=sys.stdout,
+                                               input_stream=sys.stdin)
   if not result:
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"
   return result

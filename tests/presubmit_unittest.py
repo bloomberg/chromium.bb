@@ -12,7 +12,7 @@ import unittest
 # Local imports
 import gcl
 import gclient
-import presubmit
+import presubmit_support as presubmit
 import presubmit_canned_checks
 
 
