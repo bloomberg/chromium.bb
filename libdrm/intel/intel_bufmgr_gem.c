@@ -815,8 +815,8 @@ drm_intel_gem_bo_subdata (drm_intel_bo *bo, unsigned long offset,
     return 0;
 }
 
-int
-drm_intel_get_pipe_from_crtc_id (drm_intel_bufmgr *bufmgr, int crtc_id)
+static int
+drm_intel_gem_get_pipe_from_crtc_id (drm_intel_bufmgr *bufmgr, int crtc_id)
 {
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *) bufmgr;
     struct drm_i915_get_pipe_from_crtc_id get_pipe_from_crtc_id;
@@ -826,13 +826,13 @@ drm_intel_get_pipe_from_crtc_id (drm_intel_bufmgr *bufmgr, int crtc_id)
     ret = ioctl (bufmgr_gem->fd, DRM_IOCTL_I915_GET_PIPE_FROM_CRTC_ID,
 		 &get_pipe_from_crtc_id);
     if (ret != 0) {
-	/* We're intentionally silent here so that there is no
-	 * complaint when simply running with an older kernel that
-	 * doesn't have the GET_PIPE_FROM_CRTC_ID ioctly. In that
-	 * case, we just punt and try to sync on pipe 0, which is
-	 * hopefully the right pipe in some cases at least.
+	/* We return -1 here to signal that we don't
+	 * know which pipe is associated with this crtc.
+	 * This lets the caller know that this information
+	 * isn't available; using the wrong pipe for
+	 * vblank waiting can cause the chipset to lock up
 	 */
-	return 0;
+	return -1;
     }
 
     return get_pipe_from_crtc_id.pipe;
@@ -1482,6 +1482,7 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
     bufmgr_gem->bufmgr.debug = 0;
     bufmgr_gem->bufmgr.check_aperture_space = drm_intel_gem_check_aperture_space;
     bufmgr_gem->bufmgr.bo_disable_reuse = drm_intel_gem_bo_disable_reuse;
+    bufmgr_gem->bufmgr.get_pipe_from_crtc_id = drm_intel_gem_get_pipe_from_crtc_id;
     /* Initialize the linked lists for BO reuse cache. */
     for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++)
 	DRMINITLISTHEAD(&bufmgr_gem->cache_bucket[i].head);

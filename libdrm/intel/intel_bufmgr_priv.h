@@ -188,6 +188,19 @@ struct _drm_intel_bufmgr {
      */
     int (*bo_disable_reuse)(drm_intel_bo *bo);
 
+    /**
+     *
+     * Return the pipe associated with a crtc_id so that vblank
+     * synchronization can use the correct data in the request.
+     * This is only supported for KMS and gem at this point, when
+     * unsupported, this function returns -1 and leaves the decision
+     * of what to do in that case to the caller
+     *
+     * \param bufmgr the associated buffer manager
+     * \param crtc_id the crtc identifier
+     */
+    int (*get_pipe_from_crtc_id)(drm_intel_bufmgr *bufmgr, int crtc_id);
+    
     int debug; /**< Enables verbose debugging printouts */
 };
 

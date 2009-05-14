@@ -219,3 +219,12 @@ int drm_intel_bo_disable_reuse(drm_intel_bo *bo)
 		return bo->bufmgr->bo_disable_reuse(bo);
 	return 0;
 }
+
+int
+drm_intel_get_pipe_from_crtc_id (drm_intel_bufmgr *bufmgr, int crtc_id)
+{
+	if (bufmgr->get_pipe_from_crtc_id)
+		return bufmgr->get_pipe_from_crtc_id(bufmgr, crtc_id);
+	return -1;
+}
+
