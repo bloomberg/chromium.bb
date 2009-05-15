@@ -7,6 +7,7 @@
 
 import os
 import StringIO
+import sys
 import unittest
 
 # Local imports
@@ -79,6 +80,8 @@ class PresubmitTestsBase(unittest.TestCase):
     def MockGetRepositoryRoot():
       return ''
     gcl.GetRepositoryRoot = MockGetRepositoryRoot
+    self._sys_stdout = sys.stdout
+    sys.stdout = StringIO.StringIO()
 
   def tearDown(self):
     os.path.isfile = self.original_IsFile
@@ -86,6 +89,7 @@ class PresubmitTestsBase(unittest.TestCase):
     gcl.GetSVNFileProperty = self.original_GetSVNFileProperty
     gcl.ReadFile = self.original_ReadFile
     gcl.GetRepositoryRoot = self.original_GetRepositoryRoot
+    sys.stdout = self._sys_stdout
 
   @staticmethod
   def MakeBasicChange(name, description):
@@ -299,7 +303,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO('y\n')
 
-    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input))
+    self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input))
     self.failUnless(output.getvalue().count('!!'))
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
@@ -316,7 +320,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO('n\n')  # say no to the warning
 
-    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input))
+    self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input))
     self.failUnless(output.getvalue().count('??'))
 
     output = StringIO.StringIO()
@@ -324,7 +328,7 @@ class PresubmitUnittest(PresubmitTestsBase):
 
     self.failUnless(presubmit.DoPresubmitChecks(ci,
                                                 False,
-                                                False,
+                                                True,
                                                 output,
                                                 input))
     self.failUnless(output.getvalue().count('??'))
@@ -344,7 +348,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO()  # should be unused
 
-    self.failIf(presubmit.DoPresubmitChecks(ci, False, False, output, input))
+    self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input))
     self.failUnless(output.getvalue().count('??'))
     self.failUnless(output.getvalue().count('XX!!XX'))
     self.failIf(output.getvalue().count('(y/N)'))
@@ -380,11 +384,11 @@ class InputApiUnittest(PresubmitTestsBase):
       'DepotToLocalPath', 'FilterTextFiles', 'LocalPaths', 'LocalToDepotPath',
       'PresubmitLocalPath', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
-      'current_presubmit_path', 'marshal', 'os_path', 'pickle', 'platform',
+      'marshal', 'os_path', 'pickle', 'platform',
       're', 'subprocess', 'tempfile', 'urllib2',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit.InputApi(None, None), members)
+    self.compareMembers(presubmit.InputApi(None, './.'), members)
 
   def testDepotToLocalPath(self):
     path = presubmit.InputApi.DepotToLocalPath('svn:/foo/smurf')
@@ -400,7 +404,7 @@ class InputApiUnittest(PresubmitTestsBase):
 
   def testInputApiConstruction(self):
     # Fudge the change object, it's not used during construction anyway
-    api = presubmit.InputApi(change=42, presubmit_path='foo/path')
+    api = presubmit.InputApi(change=42, presubmit_path='foo/path/PRESUBMIT.py')
     self.failUnless(api.PresubmitLocalPath() == 'foo/path')
     self.failUnless(api.change == 42)
 
@@ -450,13 +454,13 @@ class InputApiUnittest(PresubmitTestsBase):
     api = presubmit.InputApi(change, 'foo/PRESUBMIT.py')
 
     affected_files = api.AffectedFiles()
-    self.failUnless(len(affected_files) == 3)
-    self.failUnless(affected_files[0].LocalPath() ==
-                    presubmit.normpath('foo/blat.cc'))
-    self.failUnless(affected_files[1].LocalPath() ==
-                    presubmit.normpath('foo/blat/binary.dll'))
-    self.failUnless(affected_files[2].LocalPath() ==
-                    presubmit.normpath('foo/mat/beingdeleted.txt'))
+    self.assertEquals(len(affected_files), 3)
+    self.assertEquals(affected_files[0].LocalPath(),
+                      presubmit.normpath('foo/blat.cc'))
+    self.assertEquals(affected_files[1].LocalPath(),
+                      presubmit.normpath('foo/blat/binary.dll'))
+    self.assertEquals(affected_files[2].LocalPath(),
+                      presubmit.normpath('foo/mat/beingdeleted.txt'))
 
     rhs_lines = []
     for line in api.RightHandSideLines():
@@ -596,64 +600,64 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testCannedCheckChangeHasBugField(self):
     change = self.MakeBasicChange('foo',
                                   'Foo\nBUG=1234')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failIf(presubmit_canned_checks.CheckChangeHasBugField(
         api, presubmit.OutputApi))
 
     change = self.MakeBasicChange('foo',
                                   'Foo\nNEVERTESTED=did some stuff')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failUnless(presubmit_canned_checks.CheckChangeHasBugField(
         api, presubmit.OutputApi))
 
   def testCannedCheckChangeHasTestField(self):
     change = self.MakeBasicChange('foo',
                                   'Foo\nTEST=did some stuff')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failIf(presubmit_canned_checks.CheckChangeHasTestField(
         api, presubmit.OutputApi))
 
     change = self.MakeBasicChange('foo',
                                   'Foo\nNOTEST=did some stuff')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failUnless(presubmit_canned_checks.CheckChangeHasTestField(
         api, presubmit.OutputApi))
 
   def testCannedCheckChangeHasTestedField(self):
     change = self.MakeBasicChange('foo',
                                   'Foo\nTESTED=did some stuff')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failIf(presubmit_canned_checks.CheckChangeHasTestedField(
         api, presubmit.OutputApi))
 
     change = self.MakeBasicChange('foo',
                                   'Foo\nNEVERTESTED=did some stuff')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failUnless(presubmit_canned_checks.CheckChangeHasTestedField(
         api, presubmit.OutputApi))
 
   def testCannedCheckChangeHasQAField(self):
     change = self.MakeBasicChange('foo',
                                   'Foo\nQA=test floop feature very well')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failIf(presubmit_canned_checks.CheckChangeHasQaField(
         api, presubmit.OutputApi))
 
     change = self.MakeBasicChange('foo',
                                   'Foo\nNOTFORQA=test floop feature very well')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failUnless(presubmit_canned_checks.CheckChangeHasQaField(
         api, presubmit.OutputApi))
 
   def testCannedCheckDoNotSubmitInDescription(self):
     change = self.MakeBasicChange('foo', 'hello')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failIf(presubmit_canned_checks.CheckDoNotSubmitInDescription(
         api, presubmit.OutputApi))
 
     change = self.MakeBasicChange('foo',
                                   'DO NOT ' + 'SUBMIT')
-    api = presubmit.InputApi(change, 'PRESUBMIT.py')
+    api = presubmit.InputApi(change, './PRESUBMIT.py')
     self.failUnless(presubmit_canned_checks.CheckDoNotSubmitInDescription(
         api, presubmit.OutputApi))
 

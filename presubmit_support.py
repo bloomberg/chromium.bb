@@ -181,7 +181,7 @@ class InputApi(object):
     self.platform = sys.platform
 
     # The local path of the currently-being-processed presubmit script.
-    self.current_presubmit_path = presubmit_path
+    self._current_presubmit_path = os.path.dirname(presubmit_path)
 
     # We carry the canned checks so presubmit scripts can easily use them.
     self.canned_checks = presubmit_canned_checks
@@ -194,7 +194,7 @@ class InputApi(object):
     relative to the PRESUBMIT.py script, so the whole tree can be branched and
     the presubmit script still works, without editing its content.
     """
-    return self.current_presubmit_path
+    return self._current_presubmit_path
 
   @staticmethod
   def DepotToLocalPath(depot_path):
@@ -258,8 +258,7 @@ class InputApi(object):
     script, or subdirectories thereof.
     """
     output_files = []
-    dir_with_slash = normpath(
-        "%s/" % os.path.dirname(self.current_presubmit_path))
+    dir_with_slash = normpath("%s/" % self.PresubmitLocalPath())
     if len(dir_with_slash) == 1:
       dir_with_slash = ''
     for af in self.change.AffectedFiles(include_dirs, include_deletes):
@@ -630,6 +629,7 @@ def DoPresubmitChecks(change_info,
   results = []
   executer = PresubmitExecuter(change_info, committing)
   for filename in presubmit_files:
+    filename = os.path.abspath(filename)
     if verbose:
       print "Running %s" % filename
     # Accept CRLF presubmit script.
