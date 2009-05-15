@@ -970,7 +970,7 @@ class GClient(object):
       if not next[1]:
         return None
       path = next[0]
-    client = options.gclient(path, options)
+    client = GClient(path, options)
     client._LoadConfig()
     return client
 
@@ -1168,8 +1168,7 @@ class GClient(object):
                 raise Error(
                     "relative DEPS entry \"%s\" must begin with a slash" % d)
               # Create a scm just to query the full url.
-              scm = self._options.scm_wrapper(solution["url"], self._root_dir,
-                                              None)
+              scm = SCMWrapper(solution["url"], self._root_dir, None)
               url = scm.FullUrlForRelativeUrl(url)
         if d in deps and deps[d] != url:
           raise Error(
@@ -1280,7 +1279,7 @@ class GClient(object):
       entries[name] = url
       if run_scm:
         self._options.revision = revision_overrides.get(name)
-        scm = self._options.scm_wrapper(url, self._root_dir, name)
+        scm = SCMWrapper(url, self._root_dir, name)
         scm.RunCommand(command, self._options, args, file_list)
         self._options.revision = None
       try:
@@ -1305,7 +1304,7 @@ class GClient(object):
         entries[d] = url
         if run_scm:
           self._options.revision = revision_overrides.get(d)
-          scm = self._options.scm_wrapper(url, self._root_dir, d)
+          scm = SCMWrapper(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
 
@@ -1322,7 +1321,7 @@ class GClient(object):
         entries[d] = url
         if run_scm:
           self._options.revision = revision_overrides.get(d)
-          scm = self._options.scm_wrapper(url, self._root_dir, d)
+          scm = SCMWrapper(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
 
@@ -1464,7 +1463,7 @@ def DoCleanup(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
-  client = options.gclient.LoadCurrentConfig(options)
+  client = GClient.LoadCurrentConfig(options)
   if not client:
     raise Error("client not configured; see 'gclient config'")
   if options.verbose:
@@ -1491,7 +1490,7 @@ def DoConfig(options, args):
   if os.path.exists(options.config_filename):
     raise Error("%s file already exists in the current directory" %
                 options.config_filename)
-  client = options.gclient('.', options)
+  client = GClient('.', options)
   if options.spec:
     client.SetConfig(options.spec)
   else:
@@ -1524,7 +1523,7 @@ def DoStatus(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
-  client = options.gclient.LoadCurrentConfig(options)
+  client = GClient.LoadCurrentConfig(options)
   if not client:
     raise Error("client not configured; see 'gclient config'")
   if options.verbose:
@@ -1541,7 +1540,7 @@ def DoUpdate(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
-  client = options.gclient.LoadCurrentConfig(options)
+  client = GClient.LoadCurrentConfig(options)
 
   if not client:
     raise Error("client not configured; see 'gclient config'")
@@ -1579,7 +1578,7 @@ def DoDiff(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
-  client = options.gclient.LoadCurrentConfig(options)
+  client = GClient.LoadCurrentConfig(options)
   if not client:
     raise Error("client not configured; see 'gclient config'")
   if options.verbose:
@@ -1596,7 +1595,7 @@ def DoRevert(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
-  client = options.gclient.LoadCurrentConfig(options)
+  client = GClient.LoadCurrentConfig(options)
   if not client:
     raise Error("client not configured; see 'gclient config'")
   return client.RunOnDeps('revert', args)
@@ -1608,7 +1607,7 @@ def DoRunHooks(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
-  client = options.gclient.LoadCurrentConfig(options)
+  client = GClient.LoadCurrentConfig(options)
   if not client:
     raise Error("client not configured; see 'gclient config'")
   if options.verbose:
@@ -1624,7 +1623,7 @@ def DoRevInfo(options, args):
   Raises:
     Error: if client isn't configured properly.
   """
-  client = options.gclient.LoadCurrentConfig(options)
+  client = GClient.LoadCurrentConfig(options)
   if not client:
     raise Error("client not configured; see 'gclient config'")
   client.PrintRevInfo()
@@ -1713,8 +1712,6 @@ def Main(argv):
   options.entries_filename = ".gclient_entries"
   options.deps_file = "DEPS"
 
-  options.gclient = GClient
-  options.scm_wrapper = SCMWrapper
   options.platform = sys.platform
   return DispatchCommand(command, options, args)
 

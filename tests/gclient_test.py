@@ -121,6 +121,10 @@ class GClientBaseTestCase(BaseTestCase):
     gclient.subprocess = self.mox.CreateMock(self._subprocess)
     self._os_path_exists = gclient.os.path.exists
     gclient.os.path.exists = self.mox.CreateMockAnything()
+    self._gclient_gclient = gclient.GClient
+    gclient.GClient = self.mox.CreateMockAnything()
+    self._scm_wrapper = gclient.SCMWrapper
+    gclient.SCMWrapper = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gclient.CaptureSVN = self._CaptureSVN
@@ -134,6 +138,8 @@ class GClientBaseTestCase(BaseTestCase):
     gclient.sys.stdout = self._sys_stdout
     gclient.subprocess = self._subprocess
     gclient.os.path.exists = self._os_path_exists
+    gclient.GClient = self._gclient_gclient
+    gclient.SCMWrapper = self._scm_wrapper
 
 
 class GclientTestCase(GClientBaseTestCase):
@@ -155,15 +161,10 @@ class GclientTestCase(GClientBaseTestCase):
 
       # Mox
       self.platform = test_case.platform
-      self.gclient = test_case.gclient
-      self.scm_wrapper = test_case.scm_wrapper
 
   def setUp(self):
     GClientBaseTestCase.setUp(self)
     self.platform = 'darwin'
-
-    self.gclient = self.mox.CreateMock(gclient.GClient)
-    self.scm_wrapper = self.mox.CreateMock(gclient.SCMWrapper)
 
     self.args = Args()
     self.root_dir = Dir()
@@ -184,8 +185,6 @@ class GClientCommandsTestCase(GClientBaseTestCase):
 class TestDoConfig(GclientTestCase):
   def setUp(self):
     GclientTestCase.setUp(self)
-    # pymox has trouble to mock the class object and not a class instance.
-    self.gclient = self.mox.CreateMockAnything()
 
   def testMissingArgument(self):
     exception_msg = "required argument missing; see 'gclient help config'"
@@ -207,9 +206,9 @@ class TestDoConfig(GclientTestCase):
   def testFromText(self):
     options = self.Options(spec='config_source_content')
     gclient.os.path.exists(options.config_filename).AndReturn(False)
-    options.gclient('.', options).AndReturn(options.gclient)
-    options.gclient.SetConfig(options.spec)
-    options.gclient.SaveConfig()
+    gclient.GClient('.', options).AndReturn(gclient.GClient)
+    gclient.GClient.SetConfig(options.spec)
+    gclient.GClient.SaveConfig()
 
     self.mox.ReplayAll()
     gclient.DoConfig(options, (1,),)
@@ -218,10 +217,10 @@ class TestDoConfig(GclientTestCase):
   def testCreateClientFile(self):
     options = self.Options()
     gclient.os.path.exists(options.config_filename).AndReturn(False)
-    options.gclient('.', options).AndReturn(options.gclient)
-    options.gclient.SetDefaultConfig('the_name', 'http://svn/url/the_name',
+    gclient.GClient('.', options).AndReturn(gclient.GClient)
+    gclient.GClient.SetDefaultConfig('the_name', 'http://svn/url/the_name',
                                      'other')
-    options.gclient.SaveConfig()
+    gclient.GClient.SaveConfig()
 
     self.mox.ReplayAll()
     gclient.DoConfig(options,
@@ -256,8 +255,8 @@ class TestDoHelp(GclientTestCase):
 class GenericCommandTestCase(GclientTestCase):
   def ReturnValue(self, command, function, return_value):
     options = self.Options()
-    self.gclient.LoadCurrentConfig(options).AndReturn(self.gclient)
-    self.gclient.RunOnDeps(command, self.args).AndReturn(return_value)
+    gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
+    gclient.GClient.RunOnDeps(command, self.args).AndReturn(return_value)
 
     self.mox.ReplayAll()
     result = function(options, self.args)
@@ -266,7 +265,7 @@ class GenericCommandTestCase(GclientTestCase):
 
   def BadClient(self, function):
     options = self.Options()
-    self.gclient.LoadCurrentConfig(options).AndReturn(None)
+    gclient.GClient.LoadCurrentConfig(options).AndReturn(None)
 
     self.mox.ReplayAll()
     self.assertRaisesError(
@@ -276,11 +275,11 @@ class GenericCommandTestCase(GclientTestCase):
 
   def Verbose(self, command, function):
     options = self.Options(verbose=True)
-    self.gclient.LoadCurrentConfig(options).AndReturn(self.gclient)
+    gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
     text = "# Dummy content\nclient = 'my client'"
-    self.gclient.ConfigContent().AndReturn(text)
+    gclient.GClient.ConfigContent().AndReturn(text)
     print(text)
-    self.gclient.RunOnDeps(command, self.args).AndReturn(0)
+    gclient.GClient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
     result = function(options, self.args)
@@ -322,9 +321,9 @@ class TestDoUpdate(GenericCommandTestCase):
 
   def ReturnValue(self, command, function, return_value):
     options = self.Options()
-    self.gclient.LoadCurrentConfig(options).AndReturn(self.gclient)
-    self.gclient.GetVar("solutions")
-    self.gclient.RunOnDeps(command, self.args).AndReturn(return_value)
+    gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
+    gclient.GClient.GetVar("solutions")
+    gclient.GClient.RunOnDeps(command, self.args).AndReturn(return_value)
 
     self.mox.ReplayAll()
     result = function(options, self.args)
@@ -333,12 +332,12 @@ class TestDoUpdate(GenericCommandTestCase):
 
   def Verbose(self, command, function):
     options = self.Options(verbose=True)
-    self.gclient.LoadCurrentConfig(options).AndReturn(self.gclient)
-    self.gclient.GetVar("solutions")
+    gclient.GClient.LoadCurrentConfig(options).AndReturn(gclient.GClient)
+    gclient.GClient.GetVar("solutions")
     text = "# Dummy content\nclient = 'my client'"
-    self.gclient.ConfigContent().AndReturn(text)
+    gclient.GClient.ConfigContent().AndReturn(text)
     print(text)
-    self.gclient.RunOnDeps(command, self.args).AndReturn(0)
+    gclient.GClient.RunOnDeps(command, self.args).AndReturn(0)
 
     self.mox.ReplayAll()
     result = function(options, self.args)
@@ -390,7 +389,7 @@ class GClientClassTestCase(GclientTestCase):
     ]
 
     # If you add a member, be sure to add the relevant test!
-    self.compareMembers(gclient.GClient('root_dir', 'options'), members)
+    self.compareMembers(self._gclient_gclient('root_dir', 'options'), members)
 
   def testSetConfig_ConfigContent_GetVar_SaveConfig_SetDefaultConfig(self):
     options = self.Options()
@@ -399,7 +398,7 @@ class GClientClassTestCase(GclientTestCase):
                       text)
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(text)
     self.assertEqual(client.ConfigContent(), text)
     self.assertEqual(client.GetVar('client'), 'my client')
@@ -425,17 +424,15 @@ class GClientClassTestCase(GclientTestCase):
     self.mox.VerifyAll()
 
   def testLoadCurrentConfig(self):
-    # pymox has trouble to mock the class object and not a class instance.
-    self.gclient = self.mox.CreateMockAnything()
     options = self.Options()
     path = os.path.realpath(self.root_dir)
     gclient.os.path.exists(os.path.join(path, options.config_filename)
         ).AndReturn(True)
-    options.gclient(path, options).AndReturn(options.gclient)
-    options.gclient._LoadConfig()
+    gclient.GClient(path, options).AndReturn(gclient.GClient)
+    gclient.GClient._LoadConfig()
 
     self.mox.ReplayAll()
-    client = gclient.GClient.LoadCurrentConfig(options, self.root_dir)
+    client = self._gclient_gclient.LoadCurrentConfig(options, self.root_dir)
     self.mox.VerifyAll()
 
   def testRunOnDepsNoDeps(self):
@@ -454,9 +451,6 @@ class GClientClassTestCase(GclientTestCase):
       ']\n'
     ) % solution_name
 
-    self.scm_wrapper = self.mox.CreateMockAnything()
-    scm_wrapper_sol = self.mox.CreateMock(gclient.SCMWrapper)
-
     options = self.Options()
 
     checkout_path = os.path.join(self.root_dir, solution_name)
@@ -466,7 +460,8 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    options.scm_wrapper(self.url, self.root_dir, solution_name
+    scm_wrapper_sol = self.mox.CreateMockAnything()
+    gclient.SCMWrapper(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -481,7 +476,7 @@ class GClientClassTestCase(GclientTestCase):
         entries_content)
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -509,9 +504,8 @@ class GClientClassTestCase(GclientTestCase):
       ']\n'
     ) % (os.path.join(solution_name, 'src', 't'), solution_name)
 
-    self.scm_wrapper = self.mox.CreateMockAnything()
-    scm_wrapper_sol = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_t = self.mox.CreateMock(gclient.SCMWrapper)
+    scm_wrapper_sol = self.mox.CreateMockAnything()
+    scm_wrapper_t = self.mox.CreateMockAnything()
 
     options = self.Options()
 
@@ -525,7 +519,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    options.scm_wrapper(self.url, self.root_dir, solution_name
+    gclient.SCMWrapper(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -537,7 +531,7 @@ class GClientClassTestCase(GclientTestCase):
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in deps and the relative path should now
     # be relative to the DEPS file.
-    options.scm_wrapper(
+    gclient.SCMWrapper(
         'svn://scm.t/trunk',
         self.root_dir,
         os.path.join(solution_name, "src", "t")).AndReturn(scm_wrapper_t)
@@ -549,7 +543,7 @@ class GClientClassTestCase(GclientTestCase):
         entries_content)
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -582,10 +576,9 @@ class GClientClassTestCase(GclientTestCase):
       ']\n'
     ) % solution_name
 
-    self.scm_wrapper = self.mox.CreateMockAnything()
-    scm_wrapper_sol = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_t = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_n = self.mox.CreateMock(gclient.SCMWrapper)
+    scm_wrapper_sol = self.mox.CreateMockAnything()
+    scm_wrapper_t = self.mox.CreateMockAnything()
+    scm_wrapper_n = self.mox.CreateMockAnything()
 
     options = self.Options()
 
@@ -601,7 +594,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the solution.
-    options.scm_wrapper(self.url, self.root_dir, solution_name
+    gclient.SCMWrapper(self.url, self.root_dir, solution_name
         ).AndReturn(scm_wrapper_sol)
     # Then an update will be performed.
     scm_wrapper_sol.RunCommand('update', options, self.args, [])
@@ -611,15 +604,15 @@ class GClientClassTestCase(GclientTestCase):
 
     # Next we expect an scm to be request for dep src/n even though it does not
     # exist in the DEPS file.
-    options.scm_wrapper('svn://custom.n/trunk',
-                        self.root_dir,
-                        "src/n").AndReturn(scm_wrapper_n)
+    gclient.SCMWrapper('svn://custom.n/trunk',
+                       self.root_dir,
+                       "src/n").AndReturn(scm_wrapper_n)
 
     # Next we expect an scm to be request for dep src/t but it should
     # use the url specified in custom_deps.
-    options.scm_wrapper('svn://custom.t/trunk',
-                        self.root_dir,
-                        "src/t").AndReturn(scm_wrapper_t)
+    gclient.SCMWrapper('svn://custom.t/trunk',
+                       self.root_dir,
+                       "src/t").AndReturn(scm_wrapper_t)
 
     scm_wrapper_n.RunCommand('update', options, self.args, [])
     scm_wrapper_t.RunCommand('update', options, self.args, [])
@@ -632,7 +625,7 @@ class GClientClassTestCase(GclientTestCase):
         entries_content)
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -670,10 +663,9 @@ class GClientClassTestCase(GclientTestCase):
       '  "src/t",\n'
       ']\n') % (name_a, name_b)
 
-    self.scm_wrapper = self.mox.CreateMockAnything()
-    scm_wrapper_a = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_b = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_dep = self.mox.CreateMock(gclient.SCMWrapper)
+    scm_wrapper_a = self.mox.CreateMockAnything()
+    scm_wrapper_b = self.mox.CreateMockAnything()
+    scm_wrapper_dep = self.mox.CreateMockAnything()
 
     options = self.Options()
 
@@ -689,7 +681,7 @@ class GClientClassTestCase(GclientTestCase):
         ).AndReturn(False)
 
     # An scm will be requested for the first solution.
-    options.scm_wrapper(url_a, self.root_dir, name_a).AndReturn(
+    gclient.SCMWrapper(url_a, self.root_dir, name_a).AndReturn(
         scm_wrapper_a)
     # Then an attempt will be made to read it's DEPS file.
     gclient.FileRead(os.path.join(self.root_dir, name_a, options.deps_file)
@@ -698,7 +690,7 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_a.RunCommand('update', options, self.args, [])
 
     # An scm will be requested for the second solution.
-    options.scm_wrapper(url_b, self.root_dir, name_b).AndReturn(
+    gclient.SCMWrapper(url_b, self.root_dir, name_b).AndReturn(
         scm_wrapper_b)
     # Then an attempt will be made to read its DEPS file.
     gclient.FileRead(os.path.join(self.root_dir, name_b, options.deps_file)
@@ -707,7 +699,7 @@ class GClientClassTestCase(GclientTestCase):
     scm_wrapper_b.RunCommand('update', options, self.args, [])
 
     # Finally, an scm is requested for the shared dep.
-    options.scm_wrapper('http://svn.t/trunk', self.root_dir, 'src/t'
+    gclient.SCMWrapper('http://svn.t/trunk', self.root_dir, 'src/t'
         ).AndReturn(scm_wrapper_dep)
     # And an update is run on it.
     scm_wrapper_dep.RunCommand('update', options, self.args, [])
@@ -717,7 +709,7 @@ class GClientClassTestCase(GclientTestCase):
         entries_content)
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -731,23 +723,21 @@ class GClientClassTestCase(GclientTestCase):
   'custom_deps': {},
 }, ]""" % (name, self.url)
 
-    # pymox has trouble to mock the class object and not a class instance.
-    self.scm_wrapper = self.mox.CreateMockAnything()
     options = self.Options()
     gclient.os.path.exists(os.path.join(self.root_dir, name, '.git')
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
-        options.scm_wrapper)
-    options.scm_wrapper.RunCommand('update', options, self.args, [])
+    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient.SCMWrapper)
+    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn("Boo = 'a'")
     gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
                       'entries = [\n  "%s",\n]\n' % name)
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -798,15 +788,13 @@ deps_os = {
     cygwin_path = 'dummy path cygwin'
     webkit_path = 'dummy path webkit'
 
-    # pymox has trouble to mock the class object and not a class instance.
-    self.scm_wrapper = self.mox.CreateMockAnything()
-    scm_wrapper_bleh = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_src = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_src2 = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_webkit = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_breakpad = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_cygwin = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_python = self.mox.CreateMock(gclient.SCMWrapper)
+    scm_wrapper_bleh = self.mox.CreateMockAnything()
+    scm_wrapper_src = self.mox.CreateMockAnything()
+    scm_wrapper_src2 = self.mox.CreateMockAnything()
+    scm_wrapper_webkit = self.mox.CreateMockAnything()
+    scm_wrapper_breakpad = self.mox.CreateMockAnything()
+    scm_wrapper_cygwin = self.mox.CreateMockAnything()
+    scm_wrapper_python = self.mox.CreateMockAnything()
     options = self.Options()
     options.revisions = [ 'src@123', 'foo/third_party/WebKit@42',
                           'src/third_party/cygwin@333' ]
@@ -835,44 +823,44 @@ deps_os = {
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
 
-    options.scm_wrapper(self.url, self.root_dir, 'src').AndReturn(
+    gclient.SCMWrapper(self.url, self.root_dir, 'src').AndReturn(
         scm_wrapper_src)
     scm_wrapper_src.RunCommand('update', mox.Func(OptIsRev123), self.args, [])
 
-    options.scm_wrapper(self.url, self.root_dir,
-                        None).AndReturn(scm_wrapper_src2)
+    gclient.SCMWrapper(self.url, self.root_dir,
+                       None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/cygwin@3248'
         ).AndReturn(cygwin_path)
 
-    options.scm_wrapper(self.url, self.root_dir,
-                        None).AndReturn(scm_wrapper_src2)
+    gclient.SCMWrapper(self.url, self.root_dir,
+                       None).AndReturn(scm_wrapper_src2)
     scm_wrapper_src2.FullUrlForRelativeUrl('/trunk/deps/third_party/WebKit'
         ).AndReturn(webkit_path)
 
-    options.scm_wrapper(webkit_path, self.root_dir,
-                        'foo/third_party/WebKit').AndReturn(scm_wrapper_webkit)
+    gclient.SCMWrapper(webkit_path, self.root_dir,
+                       'foo/third_party/WebKit').AndReturn(scm_wrapper_webkit)
     scm_wrapper_webkit.RunCommand('update', mox.Func(OptIsRev42), self.args, [])
 
-    options.scm_wrapper(
+    gclient.SCMWrapper(
         'http://google-breakpad.googlecode.com/svn/trunk/src@285',
         self.root_dir, 'src/breakpad/bar').AndReturn(scm_wrapper_breakpad)
     scm_wrapper_breakpad.RunCommand('update', mox.Func(OptIsRevNone),
                                     self.args, [])
 
-    options.scm_wrapper(cygwin_path, self.root_dir,
-                        'src/third_party/cygwin').AndReturn(scm_wrapper_cygwin)
+    gclient.SCMWrapper(cygwin_path, self.root_dir,
+                       'src/third_party/cygwin').AndReturn(scm_wrapper_cygwin)
     scm_wrapper_cygwin.RunCommand('update', mox.Func(OptIsRev333), self.args,
                                   [])
 
-    options.scm_wrapper('svn://random_server:123/trunk/python_24@5580',
-                        self.root_dir,
-                        'src/third_party/python_24').AndReturn(
+    gclient.SCMWrapper('svn://random_server:123/trunk/python_24@5580',
+                       self.root_dir,
+                       'src/third_party/python_24').AndReturn(
                             scm_wrapper_python)
     scm_wrapper_python.RunCommand('update', mox.Func(OptIsRevNone), self.args,
                                   [])
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -894,7 +882,7 @@ deps_os = {
     options = self.Options()
     options.revisions = [ 'foo/third_party/WebKit@42',
                           'foo/third_party/WebKit@43' ]
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     exception = "Conflicting revision numbers specified."
     try:
@@ -926,10 +914,8 @@ deps = {
       ']\n') % name
     webkit_path = 'dummy path webkit'
 
-    # pymox has trouble to mock the class object and not a class instance.
-    self.scm_wrapper = self.mox.CreateMockAnything()
-    scm_wrapper_webkit = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_src = self.mox.CreateMock(gclient.SCMWrapper)
+    scm_wrapper_webkit = self.mox.CreateMockAnything()
+    scm_wrapper_src = self.mox.CreateMockAnything()
 
     options = self.Options()
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
@@ -943,21 +929,21 @@ deps = {
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
-        options.scm_wrapper)
-    options.scm_wrapper.RunCommand('update', options, self.args, [])
+    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient.SCMWrapper)
+    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
 
-    options.scm_wrapper(self.url, self.root_dir,
-                        None).AndReturn(scm_wrapper_src)
+    gclient.SCMWrapper(self.url, self.root_dir,
+                       None).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar/WebKit'
         ).AndReturn(webkit_path)
 
-    options.scm_wrapper(webkit_path, self.root_dir,
-                        'foo/third_party/WebKit').AndReturn(options.scm_wrapper)
-    options.scm_wrapper.RunCommand('update', options, self.args, [])
+    gclient.SCMWrapper(webkit_path, self.root_dir,
+                       'foo/third_party/WebKit').AndReturn(gclient.SCMWrapper)
+    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -984,10 +970,8 @@ deps = {
       ']\n') % name
     webkit_path = 'dummy path webkit'
 
-    # pymox has trouble to mock the class object and not a class instance.
-    self.scm_wrapper = self.mox.CreateMockAnything()
-    scm_wrapper_webkit = self.mox.CreateMock(gclient.SCMWrapper)
-    scm_wrapper_src = self.mox.CreateMock(gclient.SCMWrapper)
+    scm_wrapper_webkit = self.mox.CreateMockAnything()
+    scm_wrapper_src = self.mox.CreateMockAnything()
 
     options = self.Options()
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
@@ -1002,21 +986,21 @@ deps = {
         ).AndReturn(False)
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
-        options.scm_wrapper)
-    options.scm_wrapper.RunCommand('update', options, self.args, [])
+    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient.SCMWrapper)
+    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
 
-    options.scm_wrapper(self.url, self.root_dir,
-                        None).AndReturn(scm_wrapper_src)
+    gclient.SCMWrapper(self.url, self.root_dir,
+                       None).AndReturn(scm_wrapper_src)
     scm_wrapper_src.FullUrlForRelativeUrl('/trunk/bar_custom/WebKit'
         ).AndReturn(webkit_path)
 
-    options.scm_wrapper(webkit_path, self.root_dir,
-                        'foo/third_party/WebKit').AndReturn(options.scm_wrapper)
-    options.scm_wrapper.RunCommand('update', options, self.args, [])
+    gclient.SCMWrapper(webkit_path, self.root_dir,
+                       'foo/third_party/WebKit').AndReturn(gclient.SCMWrapper)
+    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
     self.mox.VerifyAll()
@@ -1035,9 +1019,6 @@ deps = {
   'foo/third_party/WebKit': Var('webkit') + 'WebKit',
 }"""
 
-    # pymox has trouble to mock the class object and not a class instance.
-    self.scm_wrapper = self.mox.CreateMockAnything()
-
     options = self.Options()
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
@@ -1046,12 +1027,12 @@ deps = {
 
     gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
         ).AndReturn(False)
-    options.scm_wrapper(self.url, self.root_dir, name).AndReturn(
-        options.scm_wrapper)
-    options.scm_wrapper.RunCommand('update', options, self.args, [])
+    gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
+        gclient.SCMWrapper)
+    gclient.SCMWrapper.RunCommand('update', options, self.args, [])
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     exception = "Var is not defined: webkit"
     try:
@@ -1065,19 +1046,19 @@ deps = {
     options = self.Options()
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     exception = "'foo' is an unsupported command"
-    self.assertRaisesError(exception, gclient.GClient.RunOnDeps, client, 'foo',
-                           self.args)
+    self.assertRaisesError(exception, self._gclient_gclient.RunOnDeps, client,
+                           'foo', self.args)
     self.mox.VerifyAll()
 
   def testRunOnDepsFailureEmpty(self):
     options = self.Options()
 
     self.mox.ReplayAll()
-    client = gclient.GClient(self.root_dir, options)
+    client = self._gclient_gclient(self.root_dir, options)
     exception = "No solution specified"
-    self.assertRaisesError(exception, gclient.GClient.RunOnDeps, client,
+    self.assertRaisesError(exception, self._gclient_gclient.RunOnDeps, client,
                            'update', self.args)
     self.mox.VerifyAll()
 
@@ -1134,14 +1115,14 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     ]
 
     # If you add a member, be sure to add the relevant test!
-    self.compareMembers(gclient.SCMWrapper(), members)
+    self.compareMembers(self._scm_wrapper(), members)
 
   def testFullUrlForRelativeUrl(self):
     self.url = 'svn://a/b/c/d'
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'svn://a/b/crap')
     self.mox.VerifyAll()
 
@@ -1151,10 +1132,10 @@ class SCMWrapperTestCase(GClientBaseTestCase):
         ).AndReturn(False)
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     exception = "Unsupported argument(s): %s" % ','.join(self.args)
-    self.assertRaisesError(exception, gclient.SCMWrapper.RunCommand,
+    self.assertRaisesError(exception, self._scm_wrapper.RunCommand,
                            scm, 'update', options, self.args)
     self.mox.VerifyAll()
 
@@ -1176,8 +1157,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                                  self.root_dir, files_list)
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     scm.revert(options, self.args, files_list)
     self.mox.VerifyAll()
 
@@ -1188,8 +1169,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient.CaptureSVNStatus(base_path).AndReturn([])
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
     self.mox.VerifyAll()
@@ -1209,8 +1190,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient.RunSVN(['revert', 'a', 'b'], base_path)
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
     self.mox.VerifyAll()
@@ -1223,8 +1204,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                                  []).AndReturn(None)
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     file_list = []
     self.assertEqual(scm.status(options, self.args, file_list), None)
     self.mox.VerifyAll()
@@ -1247,8 +1228,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient.RunSVNAndGetFileList(['checkout', self.url, base_path],
                                  self.root_dir, files_list)
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     scm.update(options, (), files_list)
     self.mox.VerifyAll()
 
@@ -1277,8 +1258,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                                  self.root_dir, files_list)
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     scm.update(options, (), files_list)
     self.mox.VerifyAll()
 
@@ -1289,8 +1270,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     print("________ found .git directory; skipping %s" % self.relpath)
 
     self.mox.ReplayAll()
-    scm = gclient.SCMWrapper(url=self.url, root_dir=self.root_dir,
-                             relpath=self.relpath)
+    scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
+                            relpath=self.relpath)
     file_list = []
     scm.update(options, self.args, file_list)
     self.mox.VerifyAll()
