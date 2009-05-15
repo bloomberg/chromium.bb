@@ -788,6 +788,10 @@ class SCMWrapper(object):
 
     # Get the existing scm url and the revision number of the current checkout.
     from_info = CaptureSVNInfo(os.path.join(checkout_path, '.'), '.')
+    if not from_info:
+      raise Error("Can't update/checkout %r if an unversioned directory is "
+                  "present. Delete the directory and try again." %
+                  checkout_path)
 
     if options.manually_grab_svn_rev:
       # Retrieve the current HEAD version because svn is slow at null updates.
