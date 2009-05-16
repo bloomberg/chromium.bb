@@ -6,13 +6,17 @@ import getpass
 import optparse
 import os
 import re
-import readline
 import subprocess
 import sys
 import tempfile
 import textwrap
 import upload
 import urllib2
+
+try:
+  import readline
+except ImportError:
+  pass
 
 DEFAULT_SERVER = 'codereview.appspot.com'
 
@@ -21,11 +25,16 @@ def DieWithError(message):
   sys.exit(1)
 
 
-def RunGit(args, error_ok=False, error_message=None, exit_code=False):
+def RunGit(args, error_ok=False, error_message=None, exit_code=False,
+           redirect_stdout=True):
   cmd = ['git'] + args
   # Useful for debugging:
   # print >>sys.stderr, ' '.join(cmd)
-  proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+  if redirect_stdout:
+    stdout = subprocess.PIPE
+  else:
+    stdout = None
+  proc = subprocess.Popen(cmd, stdout=stdout)
   output = proc.communicate()[0]
   if exit_code:
     return proc.returncode
@@ -86,10 +95,6 @@ class Settings:
                         'refs/remotes']).splitlines()
       svn_refs = {}
       for ref in remotes:
-        # git-svn remote refs are generally directly in the refs/remotes/dir,
-        # not a subdirectory (like refs/remotes/origin/master).
-        if '/' in ref[len('refs/remotes/'):]:
-          continue
         match = git_svn_re.search(RunGit(['cat-file', '-p', ref]))
         if match:
           svn_refs[match.group(1)] = ref
@@ -377,7 +382,9 @@ def UserEditedLog(starting_text):
   if ret != 0:
     return
 
-  text = open(filename).read()
+  file.flush()
+  file.seek(0)
+  text = file.read()
   file.close()
   stripcomment_re = re.compile(r'^#.*$', re.MULTILINE)
   return stripcomment_re.sub('', text).strip()
@@ -521,6 +528,14 @@ def CmdDCommit(args):
   if RunGit(['show-ref', '--quiet', '--verify', 'refs/heads/' + MERGE_BRANCH],
             exit_code=True) == 0:
     RunGit(['branch', '-D', MERGE_BRANCH])
+
+  # We might be in a directory that's present in this branch but not in the
+  # trunk.  Move up to the top of the tree so that git commands that expect a
+  # valid CWD won't fail after we check out the merge branch.
+  rel_base_path = RunGit(['rev-parse', '--show-cdup']).strip()
+  if rel_base_path:
+    os.chdir(rel_base_path)
+
   # Stuff our change into the merge branch.
   RunGit(['checkout', '-q', '-b', MERGE_BRANCH, base_branch])
   RunGit(['merge', '--squash', cl.GetBranchRef()])
@@ -618,7 +633,7 @@ def CmdPatch(args):
 def CmdRebase(args):
   # Provide a wrapper for git svn rebase to help avoid accidental
   # git svn dcommit.
-  RunGit(['svn', 'rebase'])
+  RunGit(['svn', 'rebase'], redirect_stdout=False)
 
 def GetTreeStatus():
   """Fetches the tree status and returns either 'open', 'closed',

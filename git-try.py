@@ -45,9 +45,8 @@ def GetBranchName():
 
 def GetPatchName():
   """Construct a name for this patch."""
-  # TODO: perhaps include the hash of the current commit, to distinguish
-  # patches?
-  return GetBranchName()
+  short_sha = Backquote(['git', 'rev-parse', '--short=4', 'HEAD'])
+  return GetBranchName() + '-' + short_sha
 
 
 def GetRevision():
@@ -176,6 +175,10 @@ if __name__ == '__main__':
         '-r', GetRevision(),
         '--diff', diff_file.name,
     ]
+    if options.bot:
+      args.extend(['--bot', options.bot])
+    if options.clobber:
+      args.append('--clobber')
     if GetRietveldPatchsetNumber():
       args.extend([
           '--issue', GetRietveldIssueNumber(),
