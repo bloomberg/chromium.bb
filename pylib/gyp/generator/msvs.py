@@ -137,7 +137,7 @@ def _PrepareActionRaw(c, cmd, cygwin_shell, has_input_path):
     return cmd
   else:
     # Support a mode for using cmd directly.
-    direct_cmd = r['action']
+    direct_cmd = cmd
     # Convert any paths to native form.
     direct_cmd = [_FixPath(i) for i in direct_cmd]
     # Collapse into a single command.
