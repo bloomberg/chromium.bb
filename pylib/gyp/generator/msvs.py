@@ -125,10 +125,14 @@ def _PrepareActionRaw(c, cmd, cygwin_shell, has_input_path):
     direct_cmd = ' '.join(direct_cmd)
     cmd = (
       '$(ProjectDir)%(cygwin_dir)s\\setup_env.bat && '
-      'set CYGWIN=nontsec && '
-      'set INTDIR=$(IntDir)&& '
-      'set OUTDIR=$(OutDir)&& ')
-    if has_input_path:
+      'set CYGWIN=nontsec&& ')
+    if direct_cmd.find('NUMBER_OF_PROCESSORS') >= 0:
+      cmd += 'set /a NUMBER_OF_PROCESSORS_PLUS_1=%%NUMBER_OF_PROCESSORS%%+1&& '
+    if direct_cmd.find('INTDIR') >= 0:
+      cmd += 'set INTDIR=$(IntDir)&& '
+    if direct_cmd.find('OUTDIR') >= 0:
+      cmd += 'set OUTDIR=$(OutDir)&& '
+    if has_input_path and direct_cmd.find('INPUTPATH') >= 0:
       cmd += 'set INPUTPATH=$(InputPath) && '
     cmd += (
       'bash -c "%(cmd)s"')
@@ -358,7 +362,7 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
   cmd = ['make',
          'OutDir=$(OutDir)',
          'IntDir=$(IntDir)',
-         '-j', '$(NUMBER_OF_PROCESSORS)',
+         '-j', '${NUMBER_OF_PROCESSORS_PLUS_1}',
          '-f', filename]
   cmd = _PrepareActionRaw(c_data, cmd, True, False)
   actions_to_add.append({
