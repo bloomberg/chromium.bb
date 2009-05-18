@@ -309,8 +309,8 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
                                    options.suffix)
   file = gyp.common.WriteOnDiff(os.path.join(output_dir, filename))
   # Find cygwin style versions of some paths.
-  file.write('OutDirCygwin=$(shell cygpath -u "$(OutDir)")\n')
-  file.write('IntDirCygwin=$(shell cygpath -u "$(IntDir)")\n')
+  file.write('OutDirCygwin:=$(shell cygpath -u "$(OutDir)")\n')
+  file.write('IntDirCygwin:=$(shell cygpath -u "$(IntDir)")\n')
   # Define default target all as all outputs.
   all_outputs = []
   for rule in rules:
@@ -677,10 +677,6 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   for cpy in spec.get('copies', []):
     for config_name, c_data in spec['configurations'].iteritems():
       for src in cpy.get('files', []):
-#        if os.path.isabs(f) or f[:1] == '$':
-#          src = f
-#        else:
-#          src = os.path.join('$(ProjectDir)', f)
         dst = os.path.join(cpy['destination'], os.path.basename(src))
         cmd = 'mkdir "%s" & copy /Y "%s" "%s"' % (
             _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
