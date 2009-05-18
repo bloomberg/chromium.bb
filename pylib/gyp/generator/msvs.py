@@ -311,15 +311,18 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
   # Find cygwin style versions of some paths.
   file.write('OutDirCygwin:=$(shell cygpath -u "$(OutDir)")\n')
   file.write('IntDirCygwin:=$(shell cygpath -u "$(IntDir)")\n')
-  # Define default target all as all outputs.
+  # Define default target all as first output of each rule instance.
   all_outputs = []
+  first_outputs = []
   for rule in rules:
     trigger_files = _FindRuleTriggerFiles(rule, sources)
     for tf in trigger_files:
       _, outputs = _RuleInputsAndOutputs(rule, tf)
-      all_outputs += list(outputs)
-  all_outputs_cyg = [_Cygwinify(i) for i in all_outputs]
-  file.write('all: %s\n\n' % ' '.join(all_outputs_cyg))
+      all_outputs += outputs
+      # Only take the first one because make is... limited.
+      first_outputs.append(list(outputs)[0])
+  first_outputs_cyg = [_Cygwinify(i) for i in first_outputs]
+  file.write('all: %s\n\n' % ' '.join(first_outputs_cyg))
   # Define how each output is generated.
   for rule in rules:
     trigger_files = _FindRuleTriggerFiles(rule, sources)
@@ -331,6 +334,8 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
       # Get the unique output directories for this rule.
       output_dirs = [os.path.split(i)[0] for i in outputs]
       output_dirs = list(set(output_dirs))
+      # Only take the first one because make is... limited.
+      outputs = [outputs[0]]
       # Prepare the command line for this rule.
       cmd = [_RuleExpandPath(c, tf) for c in rule['action']]
       cmd = ['"%s"' % i for i in cmd]
