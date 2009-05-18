@@ -422,7 +422,25 @@ Wrapper configuration for building this entire "solution,"
 including all the specific targets in various *.scons files.
 '''
 
+import os
 import sys
+
+def GetProcessorCount():
+  '''
+  Detects the number of CPUs on the system. Adapted form:
+  http://codeliberates.blogspot.com/2008/05/detecting-cpuscores-in-python.html
+  '''
+  # Linux, Unix and Mac OS X:
+  if hasattr(os, 'sysconf'):
+    if os.sysconf_names.has_key('SC_NPROCESSORS_ONLN'):
+      # Linux and Unix or Mac OS X with python >= 2.5:
+      return os.sysconf('SC_NPROCESSORS_ONLN')
+    else:  # Mac OS X with Python < 2.5:
+      return int(os.popen2("sysctl -n hw.ncpu")[1].read())
+  # Windows:
+  if os.environ.has_key('NUMBER_OF_PROCESSORS'):
+    return max(int(os.environ.get('NUMBER_OF_PROCESSORS', '1')), 1)
+  return 1  # Default
 
 # Support PROGRESS= to show progress in different ways.
 p = ARGUMENTS.get('PROGRESS')
@@ -434,11 +452,7 @@ elif p == 'name':
   Progress('$TARGET\\r', overwrite=True, file=open('/dev/tty', 'w'))
 
 # Set the default -j value based on the number of processors.
-# TODO(evanm): this is Linux-specific, not posix.
-# Parse /proc/cpuinfo for processor count.
-cpus = len([l for l in open('/proc/cpuinfo')
-                    if l.startswith('processor\\t')])
-SetOption('num_jobs', cpus + 1)
+SetOption('num_jobs', GetProcessorCount() + 1)
 
 # Have SCons use its cached dependency information.
 SetOption('implicit_cache', 1)
