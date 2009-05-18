@@ -80,10 +80,10 @@ struct drm_intel_gem_bo_bucket {
    int num_entries;
 };
 
-/* Arbitrarily chosen, 16 means that the maximum size we'll cache for reuse
- * is 1 << 16 pages, or 256MB.
+/* Only cache objects up to 64MB.  Bigger than that, and the rounding of the
+ * size makes many operations fail that wouldn't otherwise.
  */
-#define DRM_INTEL_GEM_BO_BUCKETS	16
+#define DRM_INTEL_GEM_BO_BUCKETS	14
 typedef struct _drm_intel_bufmgr_gem {
     drm_intel_bufmgr bufmgr;
 
