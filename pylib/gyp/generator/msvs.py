@@ -311,8 +311,9 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
   # Find cygwin style versions of some paths.
   file.write('OutDirCygwin:=$(shell cygpath -u "$(OutDir)")\n')
   file.write('IntDirCygwin:=$(shell cygpath -u "$(IntDir)")\n')
-  # Define default target all as first output of each rule instance.
+  # Gather stuff needed to emit all: target.
   all_outputs = []
+  all_output_dirs = set()
   first_outputs = []
   for rule in rules:
     trigger_files = _FindRuleTriggerFiles(rule, sources)
@@ -321,8 +322,16 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
       all_outputs += outputs
       # Only take the first one because make is... limited.
       first_outputs.append(list(outputs)[0])
+      # Get the unique output directories for this rule.
+      output_dirs = [os.path.split(i)[0] for i in outputs]
+      for od in output_dirs:
+        all_output_dirs.add(od)
   first_outputs_cyg = [_Cygwinify(i) for i in first_outputs]
-  file.write('all: %s\n\n' % ' '.join(first_outputs_cyg))
+  # Write out all: target, including mkdir for each output directory.
+  file.write('all: %s\n' % ' '.join(first_outputs_cyg))
+  for od in all_output_dirs:
+    file.write('\tmkdir -p %s\n' % od)
+  file.write('\n')
   # Define how each output is generated.
   for rule in rules:
     trigger_files = _FindRuleTriggerFiles(rule, sources)
@@ -331,9 +340,6 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
       inputs, outputs = _RuleInputsAndOutputs(rule, tf)
       inputs = [_Cygwinify(i) for i in inputs]
       outputs = [_Cygwinify(i) for i in outputs]
-      # Get the unique output directories for this rule.
-      output_dirs = [os.path.split(i)[0] for i in outputs]
-      output_dirs = list(set(output_dirs))
       # Only take the first one because make is... limited.
       outputs = [outputs[0]]
       # Prepare the command line for this rule.
@@ -342,8 +348,6 @@ def _GenerateExternalRules(p, rules, output_dir, spec,
       cmd = ' '.join(cmd)
       # Add it to the makefile.
       file.write('%s: %s\n' % (' '.join(outputs), ' '.join(inputs)))
-      for d in output_dirs:
-        file.write('\tmkdir -p %s\n' % d)
       file.write('\t%s\n\n' % cmd)
   # Close up the file.
   file.close()
