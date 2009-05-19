@@ -747,7 +747,6 @@ drm_intel_gem_bo_unmap_gtt(drm_intel_bo *bo)
 {
     drm_intel_bufmgr_gem *bufmgr_gem = (drm_intel_bufmgr_gem *)bo->bufmgr;
     drm_intel_bo_gem *bo_gem = (drm_intel_bo_gem *)bo;
-    struct drm_i915_gem_sw_finish sw_finish;
     int ret = 0;
 
     if (bo == NULL)
