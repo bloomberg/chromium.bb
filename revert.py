@@ -24,32 +24,6 @@ class OutsideOfCheckout(exceptions.Exception):
   pass
 
 
-def getTexts(nodelist):
-  """Return a list of texts in the children of a list of DOM nodes."""
-  rc = []
-  for node in nodelist:
-    if node.nodeType == node.TEXT_NODE:
-      rc.append(node.data)
-    else:
-      rc.extend(getTexts(node.childNodes))
-  return rc
-
-
-def RunShellXML(command, print_output=False, keys=None):
-  output = gcl.RunShell(command, print_output)
-  try:
-    dom = xml.dom.minidom.parseString(output)
-    if not keys:
-      return dom
-    result = {}
-    for key in keys:
-      result[key] = getTexts(dom.getElementsByTagName(key))
-  except xml.parsers.expat.ExpatError:
-    print "Failed to parse output:\n%s" % output
-    raise
-  return result
-
-
 def UniqueFast(list):
   list = [item for item in set(list)]
   list.sort()
@@ -58,14 +32,46 @@ def UniqueFast(list):
 
 def GetRepoBase():
   """Returns the repository base of the root local checkout."""
-  xml_data = RunShellXML(['svn', 'info', '.', '--xml'], keys=['root', 'url'])
-  root = xml_data['root'][0]
-  url = xml_data['url'][0]
+  info = gclient.CaptureSVNInfo('.')
+  root = info['Repository Root']
+  url = info['URL']
   if not root or not url:
     raise exceptions.Exception("I'm confused by your checkout")
   if not url.startswith(root):
     raise exceptions.Exception("I'm confused by your checkout", url, root)
   return url[len(root):] + '/'
+
+
+def CaptureSVNLog(args):
+  command = ['log', '--xml']
+  if args:
+    command += args
+  output = gclient.CaptureSVN(command)
+  dom = gclient.ParseXML(output)
+  entries = []
+  if dom:
+    # /log/logentry/
+    #   @revision
+    #   author|date
+    #   paths/
+    #     path (@kind&@action)
+    for node in dom.getElementsByTagName('logentry'):
+      paths = []
+      for path in node.getElementsByTagName('path'):
+        item = {
+          'kind': path.getAttribute('kind'),
+          'action': path.getAttribute('action'),
+          'path': path.firstChild.nodeValue,
+        }
+        paths.append(item)
+      entry = {
+        'revision': int(node.getAttribute('revision')),
+        'author': gclient.GetNamedNodeText(node, 'author'),
+        'date': gclient.GetNamedNodeText(node, 'date'),
+        'paths': paths,
+      }
+      entries.append(entry)
+  return entries
 
 
 def Revert(revisions, force=False, commit=True, send_email=True, message=None,
@@ -91,20 +97,23 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
   revisions_string = ",".join([str(rev) for rev in revisions])
   revisions_string_rev = ",".join([str(-rev) for rev in revisions])
 
-  repo_base = GetRepoBase()
-  files = []
-  blames = []
   # Get all the modified files by the revision. We'll use this list to optimize
   # the svn merge.
+  logs = []
   for revision in revisions:
-    log = RunShellXML(["svn", "log", "-r", str(revision), "-v", "--xml"],
-                        keys=['path', 'author'])
-    for file in log['path']:
+    logs.extend(CaptureSVNLog(["-r", str(revision), "-v"]))
+
+  files = []
+  blames = []
+  repo_base = GetRepoBase()
+  for log in logs:
+    for file in log['paths']:
+      file_name = file['path']
       # Remove the /trunk/src/ part. The + 1 is for the last slash.
-      if not file.startswith(repo_base):
-        raise OutsideOfCheckout(file)
-      files.append(file[len(repo_base):])
-    blames.extend(log['author'])
+      if not file_name.startswith(repo_base):
+        raise OutsideOfCheckout(file_name)
+      files.append(file_name[len(repo_base):])
+    blames.append(log['author'])
 
   # On Windows, we need to fix the slashes once they got the url part removed.
   if sys.platform == 'win32':
@@ -178,7 +187,6 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
         print 'svn up . -N failed in %s/.' % root
         return retcode
 
-    # TODO(maruel): BUG WITH ONLY ONE FILE.
     command = ["svn", "merge", "-c", revisions_string_rev]
     command.extend(file_list)
     (output, retcode) = gcl.RunShellWithReturnCode(command, print_output=True)
