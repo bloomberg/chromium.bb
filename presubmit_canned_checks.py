@@ -118,3 +118,30 @@ def CheckTreeIsOpen(input_api, output_api, url, closed):
   except IOError:
     pass
   return []
+
+
+def RunPythonUnitTests(input_api, output_api, unit_tests):
+  """Imports the unit_tests modules and run them."""
+  import unittest
+  tests_suite = []
+  test_loader = unittest.TestLoader()
+  def LoadTests(module_name):
+    module = __import__(module_name)
+    for part in module_name.split('.')[1:]:
+      module = getattr(module, part)
+    tests_suite.extend(test_loader.loadTestsFromModule(module)._tests)
+  
+  outputs = []
+  for unit_test in unit_tests:
+    try:
+      LoadTests(unit_test)
+    except ImportError:
+      outputs.Append(output_api.PresubmitError("Failed to load %s" % unit_test))
+      raise
+
+  results = unittest.TextTestRunner(verbosity=0).run(unittest.TestSuite(
+      tests_suite))
+  if not results.wasSuccessful():
+    outputs.append(output_api.PresubmitError(
+        "%d unit tests failed." % (results.failures + results.errors)))
+  return outputs

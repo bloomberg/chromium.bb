@@ -592,7 +592,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeHasQaField', 'CheckChangeHasTestedField',
       'CheckChangeHasTestField', 'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
-      'CheckLongLines', 'CheckTreeIsOpen',
+      'CheckLongLines', 'CheckTreeIsOpen', 'RunPythonUnitTests',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
@@ -693,6 +693,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
       self.MockInputApi(), presubmit.OutputApi, url='url_to_closed', closed='0'
     ))
 
+  def RunPythonUnitTests(self):
+    # TODO(maruel): Add real tests.
+    self.failIf(presubmit_canned_checks.RunPythonUnitTests(
+        self.MockInputApi(),
+        presubmit.OutputApi, []))
+    self.failUnless(presubmit_canned_checks.RunPythonUnitTests(
+        self.MockInputApi(),
+        presubmit.OutputApi, ['non_existent_module']))
 
 if __name__ == '__main__':
   unittest.main()

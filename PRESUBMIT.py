@@ -15,24 +15,17 @@ def CheckChangeOnUpload(input_api, output_api):
 
 
 def CheckChangeOnCommit(input_api, output_api):
-  return (RunUnitTests(input_api, output_api) +
-          input_api.canned_checks.CheckDoNotSubmit(input_api, output_api))
-
-
-def RunUnitTests(input_api, output_api):
-  import unittest
-  tests_suite = []
-  test_loader = unittest.TestLoader()
-  def LoadTests(module_name):
-    module = __import__(module_name)
-    for part in module_name.split('.')[1:]:
-      module = getattr(module, part)
-    tests_suite.extend(test_loader.loadTestsFromModule(module)._tests)
-  # List all the test modules to test here:
-  LoadTests('tests.gcl_unittest')
-  LoadTests('tests.gclient_test')
-  LoadTests('tests.presubmit_unittest')
-  LoadTests('tests.trychange_unittest')
-  unittest.TextTestRunner(verbosity=0).run(unittest.TestSuite(tests_suite))
-  # TODO(maruel): Find a way to block the check-in.
-  return []
+  unit_tests = [
+    'tests.gcl_unittest',
+    'tests.gclient_test',
+    'tests.presubmit_unittest',
+    'tests.revert_unittest',
+    'tests.trychange_unittest',
+  ]
+  output = []
+  output.extend(input_api.canned_checks.RunPythonUnitTests(input_api,
+                                                           output_api,
+                                                           unit_tests))
+  output.extend(input_api.canned_checks.CheckDoNotSubmit(input_api,
+                                                         output_api))
+  return output
