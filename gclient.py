@@ -509,7 +509,7 @@ def CaptureSVN(args, in_directory=None, print_error=True):
   # when it's called with a list because it only tries to execute the
   # first string ("svn").
   stderr = None
-  if print_error:
+  if not print_error:
     stderr = subprocess.PIPE
   return subprocess.Popen(c,
                           cwd=in_directory,
