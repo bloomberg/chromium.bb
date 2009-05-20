@@ -1004,7 +1004,8 @@ class GitVCS(VersionControlSystem):
     # the hashes of the base files, so we can upload them along with our diff.
     if self.options.revision:
       extra_args = [self.options.revision] + extra_args
-    gitdiff = RunShell(["git", "diff", "--full-index"] + extra_args)
+    gitdiff = RunShell(["git", "diff", "--no-ext-diff", "--full-index"] +
+                       extra_args)
     svndiff = []
     filecount = 0
     filename = None
