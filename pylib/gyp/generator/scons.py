@@ -398,7 +398,7 @@ def GenerateSConscript(output_filename, spec, build_file):
     for f in copy['files']:
       dest = os.path.join(destdir, os.path.split(f)[1])
       fp.write(fmt % (repr(dest), repr(f)))
-      fp.write('prerequisites.extend(_outputs)\n')
+      fp.write('target_files.extend(_outputs)\n')
 
   fmt = "\ngyp_target = env.Alias('%s', target_files)\n"
   fp.write(fmt % target_name)
