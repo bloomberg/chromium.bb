@@ -11,7 +11,9 @@ import sys
 import unittest
 
 # Local imports
+import __init__
 import gcl
+mox = __init__.mox
 
 
 class GclTestsBase(unittest.TestCase):
@@ -103,6 +105,161 @@ class ChangeInfoUnittest(GclTestsBase):
     self.assertEquals(o.files, files)
     self.assertEquals(o.patch, None)
     self.assertEquals(o.FileList(), ['foo', 'bar'])
+
+
+class UploadCLUnittest(GclTestsBase):
+  def setUp(self):
+    GclTestsBase.setUp(self)
+    self.mox = mox.Mox()
+    self._os_chdir = gcl.os.chdir
+    gcl.os.chdir = self.mox.CreateMockAnything()
+    self._os_close = gcl.os.close
+    gcl.os.close = self.mox.CreateMockAnything()
+    self._os_getcwd = gcl.os.getcwd
+    gcl.os.getcwd = self.mox.CreateMockAnything()
+    self._os_remove = gcl.os.remove
+    gcl.os.remove = self.mox.CreateMockAnything()
+    self._os_write = gcl.os.write
+    gcl.os.write = self.mox.CreateMockAnything()
+    self._tempfile = gcl.tempfile
+    gcl.tempfile = self.mox.CreateMockAnything()
+    self._upload_RealMain = gcl.upload.RealMain
+    gcl.upload.RealMain = self.mox.CreateMockAnything()
+    self._DoPresubmitChecks = gcl.DoPresubmitChecks
+    gcl.DoPresubmitChecks = self.mox.CreateMockAnything()
+    self._GenerateDiff = gcl.GenerateDiff
+    gcl.GenerateDiff = self.mox.CreateMockAnything()
+    self._GetCodeReviewSetting = gcl.GetCodeReviewSetting
+    gcl.GetCodeReviewSetting = self.mox.CreateMockAnything()
+    self._GetRepositoryRoot = gcl.GetRepositoryRoot
+    gcl.GetRepositoryRoot = self.mox.CreateMockAnything()
+    self._SendToRietveld = gcl.SendToRietveld
+    gcl.SendToRietveld = self.mox.CreateMockAnything()
+    self._TryChange = gcl.TryChange
+    gcl.TryChange = self.mox.CreateMockAnything()
+    
+  def tearDown(self):
+    GclTestsBase.tearDown(self)
+    gcl.os.chdir = self._os_chdir
+    gcl.os.close = self._os_close
+    gcl.os.getcwd = self._os_getcwd
+    gcl.os.remove = self._os_remove
+    gcl.os.write = self._os_write
+    gcl.tempfile = self._tempfile
+    gcl.upload.RealMain = self._upload_RealMain
+    gcl.DoPresubmitChecks = self._DoPresubmitChecks
+    gcl.GenerateDiff = self._GenerateDiff
+    gcl.GetCodeReviewSetting = self._GetCodeReviewSetting
+    gcl.GetRepositoryRoot = self._GetRepositoryRoot
+    gcl.SendToRietveld = self._SendToRietveld
+    gcl.TryChange = self._TryChange
+
+  def testNew(self):
+    change_info = gcl.ChangeInfo('naame', 'iissue', 'deescription',
+                                 ['aa', 'bb'])
+    change_info.Save = self.mox.CreateMockAnything()
+    args = ['--foo=bar']
+    change_info.Save()
+    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
+    gcl.os.getcwd().AndReturn('somewhere')
+    gcl.os.chdir(gcl.GetRepositoryRoot().AndReturn(None))
+    gcl.GenerateDiff(change_info.FileList())
+    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server', '--foo=bar',
+        "--message=''", '--issue=iissue'], change_info.patch).AndReturn(("1",
+                                                                         "2"))
+    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
+    gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
+    gcl.TryChange(change_info,
+                  ['--issue', '1', '--patchset', '2'],
+                  swallow_exception=True)
+    gcl.os.chdir('somewhere')
+    self.mox.ReplayAll()
+    gcl.UploadCL(change_info, args)
+    self.mox.VerifyAll()
+
+  def testServerOverride(self):
+    change_info = gcl.ChangeInfo('naame', '', 'deescription',
+                                 ['aa', 'bb'])
+    change_info.Save = self.mox.CreateMockAnything()
+    args = ['--server=a']
+    change_info.Save()
+    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
+    gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
+    gcl.os.write(42, change_info.description)
+    gcl.os.close(42)
+    gcl.GetCodeReviewSetting('CC_LIST')
+    gcl.os.getcwd().AndReturn('somewhere')
+    gcl.os.chdir(gcl.GetRepositoryRoot().AndReturn(None))
+    gcl.GenerateDiff(change_info.FileList())
+    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server', '--server=a',
+        "--description_file=descfile",
+        "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
+    gcl.os.remove('descfile')
+    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
+    #gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
+    #gcl.TryChange(change_info,
+    #              ['--issue', '1', '--patchset', '2'],
+    #              swallow_exception=True)
+    gcl.os.chdir('somewhere')
+    self.mox.ReplayAll()
+    gcl.UploadCL(change_info, args)
+    self.mox.VerifyAll()
+
+  def testNoTry(self):
+    change_info = gcl.ChangeInfo('naame', '', 'deescription',
+                                 ['aa', 'bb'])
+    change_info.Save = self.mox.CreateMockAnything()
+    args = ['--no-try']
+    change_info.Save()
+    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
+    gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
+    gcl.os.write(42, change_info.description)
+    gcl.os.close(42)
+    gcl.GetCodeReviewSetting('CC_LIST')
+    gcl.os.getcwd().AndReturn('somewhere')
+    gcl.os.chdir(gcl.GetRepositoryRoot().AndReturn(None))
+    gcl.GenerateDiff(change_info.FileList())
+    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+        "--description_file=descfile",
+        "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
+    gcl.os.remove('descfile')
+    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
+    gcl.os.chdir('somewhere')
+    self.mox.ReplayAll()
+    gcl.UploadCL(change_info, args)
+    self.mox.VerifyAll()
+
+  def testNormal(self):
+    change_info = gcl.ChangeInfo('naame', '', 'deescription',
+                                 ['aa', 'bb'])
+    change_info.Save = self.mox.CreateMockAnything()
+    args = []
+    change_info.Save()
+    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
+    gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
+    gcl.os.write(42, change_info.description)
+    gcl.os.close(42)
+    gcl.GetCodeReviewSetting('CC_LIST')
+    gcl.os.getcwd().AndReturn('somewhere')
+    gcl.os.chdir(gcl.GetRepositoryRoot().AndReturn(None))
+    gcl.GenerateDiff(change_info.FileList())
+    gcl.upload.RealMain(['upload.py', '-y', '--server=my_server',
+        "--description_file=descfile",
+        "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
+    gcl.os.remove('descfile')
+    gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
+    gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
+    gcl.TryChange(change_info,
+                  ['--issue', '1', '--patchset', '2'],
+                  swallow_exception=True)
+    gcl.os.chdir('somewhere')
+    self.mox.ReplayAll()
+    gcl.UploadCL(change_info, args)
+    self.mox.VerifyAll()
 
 
 if __name__ == '__main__':

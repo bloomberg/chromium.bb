@@ -715,8 +715,13 @@ def UploadCL(change_info, args):
     args.remove("--clobber")
     clobber = True
 
-  # TODO(pamg): Do something when tests are missing. The plan is to upload a
-  # message to Rietveld and have it shown in the UI attached to this patch.
+  # Disable try when the server is overridden.
+  server_1 = re.compile(r"^-s\b.*")
+  server_2 = re.compile(r"^--server\b.*")
+  for arg in args:
+    if server_1.match(arg) or server_2.match(arg):
+      no_try = True
+      break
 
   upload_arg = ["upload.py", "-y"]
   upload_arg.append("--server=" + GetCodeReviewSetting("CODE_REVIEW_SERVER"))

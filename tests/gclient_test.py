@@ -28,13 +28,9 @@ import subprocess
 import sys
 import unittest
 
-directory, _file = os.path.split(__file__)
-if directory:
-  directory += os.sep
-sys.path.append(os.path.abspath(directory + '../pymox'))
-
+import __init__
 import gclient
-import mox
+mox = __init__.mox
 
 
 ## Some utilities for generating arbitrary arguments.
