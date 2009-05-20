@@ -101,8 +101,8 @@ def GetRepositoryRoot():
     repository_root = os.getcwd()
     while True:
       parent = os.path.dirname(repository_root)
-      if (gclient.CaptureSVNInfo(parent).get("Repository Root") !=
-          cur_dir_repo_root):
+      if (gclient.CaptureSVNInfo(parent, print_error=False).get(
+              "Repository Root") != cur_dir_repo_root):
         break
       repository_root = parent
   return repository_root

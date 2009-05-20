@@ -19,13 +19,20 @@ mox = __init__.mox
 class GclTestsBase(unittest.TestCase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
+    self.mox = mox.Mox()
     def RunShellMock(filename):
       return filename
     self._RunShell = gcl.RunShell
     gcl.RunShell = RunShellMock
+    self._gcl_gclient_CaptureSVNInfo = gcl.gclient.CaptureSVNInfo
+    gcl.gclient.CaptureSVNInfo = self.mox.CreateMockAnything()
+    self._gcl_os_getcwd = gcl.os.getcwd
+    gcl.os.getcwd = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gcl.RunShell = self._RunShell
+    gcl.gclient.CaptureSVNInfo = self._gcl_gclient_CaptureSVNInfo
+    gcl.os.getcwd = self._gcl_os_getcwd
 
   def compareMembers(self, object, members):
     """If you add a member, be sure to add the relevant test!"""
@@ -75,15 +82,32 @@ class GclUnittest(GclTestsBase):
     finally:
       gcl.sys.stdout = old_stdout
 
-  def testGetRepositoryRoot(self):
-    try:
-      def RunShellMock(filename):
-        return '<?xml version="1.0"?>\n<info>'
-      gcl.RunShell = RunShellMock
-      gcl.GetRepositoryRoot()
-    except Exception,e:
-      self.assertEquals(e.args[0], "gcl run outside of repository")
-    pass
+  def testGetRepositoryRootNone(self):
+    gcl.repository_root = None
+    gcl.os.getcwd().AndReturn("/bleh/prout")
+    result = {
+      "Repository Root": ""
+    }
+    gcl.gclient.CaptureSVNInfo("/bleh/prout", print_error=False).AndReturn(
+        result)
+    self.mox.ReplayAll()
+    self.assertRaises(Exception, gcl.GetRepositoryRoot)
+    self.mox.VerifyAll()
+
+  def testGetRepositoryRootGood(self):
+    gcl.repository_root = None
+    root_path = os.path.join('bleh', 'prout', 'pouet')
+    gcl.os.getcwd().AndReturn(root_path)
+    result1 = { "Repository Root": "Some root" }
+    gcl.gclient.CaptureSVNInfo(root_path, print_error=False).AndReturn(result1)
+    gcl.os.getcwd().AndReturn(root_path)
+    results2 = { "Repository Root": "A different root" }
+    gcl.gclient.CaptureSVNInfo(
+        os.path.dirname(root_path),
+        print_error=False).AndReturn(results2)
+    self.mox.ReplayAll()
+    self.assertEquals(gcl.GetRepositoryRoot(), root_path)
+    self.mox.VerifyAll()
 
 
 class ChangeInfoUnittest(GclTestsBase):
@@ -110,13 +134,10 @@ class ChangeInfoUnittest(GclTestsBase):
 class UploadCLUnittest(GclTestsBase):
   def setUp(self):
     GclTestsBase.setUp(self)
-    self.mox = mox.Mox()
     self._os_chdir = gcl.os.chdir
     gcl.os.chdir = self.mox.CreateMockAnything()
     self._os_close = gcl.os.close
     gcl.os.close = self.mox.CreateMockAnything()
-    self._os_getcwd = gcl.os.getcwd
-    gcl.os.getcwd = self.mox.CreateMockAnything()
     self._os_remove = gcl.os.remove
     gcl.os.remove = self.mox.CreateMockAnything()
     self._os_write = gcl.os.write
@@ -142,7 +163,6 @@ class UploadCLUnittest(GclTestsBase):
     GclTestsBase.tearDown(self)
     gcl.os.chdir = self._os_chdir
     gcl.os.close = self._os_close
-    gcl.os.getcwd = self._os_getcwd
     gcl.os.remove = self._os_remove
     gcl.os.write = self._os_write
     gcl.tempfile = self._tempfile
