@@ -10,6 +10,7 @@ import getpass
 import os
 import random
 import re
+import shutil
 import string
 import subprocess
 import sys
@@ -21,7 +22,7 @@ import xml.dom.minidom
 # gcl now depends on gclient.
 import gclient
 
-__version__ = '1.0'
+__version__ = '1.1'
 
 
 CODEREVIEW_SETTINGS = {
@@ -34,7 +35,6 @@ CODEREVIEW_SETTINGS = {
 # globals that store the root of the current repository and the directory where
 # we store information about changelists.
 repository_root = ""
-gcl_info_dir = ""
 
 # Filename where we store repository specific information for gcl.
 CODEREVIEW_SETTINGS_FILE = "codereview.settings"
@@ -110,10 +110,12 @@ def GetRepositoryRoot():
 
 def GetInfoDir():
   """Returns the directory where gcl info files are stored."""
-  global gcl_info_dir
-  if not gcl_info_dir:
-    gcl_info_dir = os.path.join(GetRepositoryRoot(), '.svn', 'gcl_info')
-  return gcl_info_dir
+  return os.path.join(GetRepositoryRoot(), '.svn', 'gcl_info')
+
+
+def GetChangesDir():
+  """Returns the directory where gcl change files are stored."""
+  return os.path.join(GetInfoDir(), 'changes')
 
 
 def GetCodeReviewSetting(key):
@@ -373,7 +375,7 @@ def GetChangelistInfoFile(changename):
   """Returns the file that stores information about a changelist."""
   if not changename or re.search(r'[^\w-]', changename):
     ErrorExit("Invalid changelist name: " + changename)
-  return os.path.join(GetInfoDir(), changename)
+  return os.path.join(GetChangesDir(), changename)
 
 
 def LoadChangelistInfoForMultiple(changenames, fail_on_not_found=True,
@@ -442,7 +444,7 @@ def LoadChangelistInfo(changename, fail_on_not_found=True,
 
 def GetCLs():
   """Returns a list of all the changelists in this repository."""
-  cls = os.listdir(GetInfoDir())
+  cls = os.listdir(GetChangesDir())
   if CODEREVIEW_SETTINGS_FILE in cls:
     cls.remove(CODEREVIEW_SETTINGS_FILE)
   return cls
@@ -1020,10 +1022,19 @@ def main(argv=None):
     Help()
     return 0;
 
-  # Create the directory where we store information about changelists if it
+  # Create the directories where we store information about changelists if it
   # doesn't exist.
   if not os.path.exists(GetInfoDir()):
     os.mkdir(GetInfoDir())
+  if not os.path.exists(GetChangesDir()):
+    os.mkdir(GetChangesDir())
+    # For smooth upgrade support, move the files in GetInfoDir() to
+    # GetChangesDir().
+    # TODO(maruel): Remove this code in August 2009.
+    for file in os.listdir(unicode(GetInfoDir())):
+      file_path = os.path.join(unicode(GetInfoDir()), file)
+      if os.path.isfile(file_path) and file != CODEREVIEW_SETTINGS_FILE:
+        shutil.move(file_path, GetChangesDir())
 
   # Commands that don't require an argument.
   command = argv[1]

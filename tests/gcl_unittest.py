@@ -54,7 +54,8 @@ class GclUnittest(GclTestsBase):
     members = [
       'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 'CPP_EXTENSIONS',
       'Change', 'ChangeInfo', 'Changes', 'Commit', 'DoPresubmitChecks',
-      'ErrorExit', 'GenerateChangeName', 'GenerateDiff', 'GetCLs',
+      'ErrorExit', 'GenerateChangeName', 'GenerateDiff', 'GetChangesDir',
+      'GetCLs',
       'GetChangelistInfoFile', 'GetCodeReviewSetting', 'GetEditor',
       'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
       'GetModifiedFiles', 'GetRepositoryRoot',
@@ -63,10 +64,10 @@ class GclUnittest(GclTestsBase):
       'MISSING_TEST_MSG', 'Opened', 'PresubmitCL', 'ReadFile',
       'RunShell',
       'RunShellWithReturnCode', 'SEPARATOR', 'SendToRietveld', 'TryChange',
-      'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile', 'gclient',
-      'gcl_info_dir', 'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
-      'repository_root', 'string', 'subprocess', 'sys', 'tempfile', 'upload',
-      'urllib2', 'xml',
+      'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile',
+      'gclient', 'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
+      'repository_root', 'shutil', 'string', 'subprocess', 'sys', 'tempfile',
+      'upload', 'urllib2', 'xml',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(gcl, members)
