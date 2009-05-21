@@ -22,7 +22,7 @@ import xml.dom.minidom
 # gcl now depends on gclient.
 import gclient
 
-__version__ = '1.1'
+__version__ = '1.1.1'
 
 
 CODEREVIEW_SETTINGS = {
@@ -34,7 +34,7 @@ CODEREVIEW_SETTINGS = {
 
 # globals that store the root of the current repository and the directory where
 # we store information about changelists.
-repository_root = ""
+REPOSITORY_ROOT = ""
 
 # Filename where we store repository specific information for gcl.
 CODEREVIEW_SETTINGS_FILE = "codereview.settings"
@@ -42,8 +42,8 @@ CODEREVIEW_SETTINGS_FILE = "codereview.settings"
 # Warning message when the change appears to be missing tests.
 MISSING_TEST_MSG = "Change contains new or modified methods, but no new tests!"
 
-# Caches whether we read the codereview.settings file yet or not.
-read_gcl_info = False
+# Global cache of files cached in GetCacheDir().
+FILES_CACHE = {}
 
 
 ### SVN Functions
@@ -91,21 +91,21 @@ def GetRepositoryRoot():
 
   The directory is returned as an absolute path.
   """
-  global repository_root
-  if not repository_root:
+  global REPOSITORY_ROOT
+  if not REPOSITORY_ROOT:
     infos = gclient.CaptureSVNInfo(os.getcwd(), print_error=False)
     cur_dir_repo_root = infos.get("Repository Root")
     if not cur_dir_repo_root:
       raise Exception("gcl run outside of repository")
 
-    repository_root = os.getcwd()
+    REPOSITORY_ROOT = os.getcwd()
     while True:
-      parent = os.path.dirname(repository_root)
+      parent = os.path.dirname(REPOSITORY_ROOT)
       if (gclient.CaptureSVNInfo(parent, print_error=False).get(
               "Repository Root") != cur_dir_repo_root):
         break
-      repository_root = parent
-  return repository_root
+      REPOSITORY_ROOT = parent
+  return REPOSITORY_ROOT
 
 
 def GetInfoDir():
@@ -118,44 +118,72 @@ def GetChangesDir():
   return os.path.join(GetInfoDir(), 'changes')
 
 
-def GetCodeReviewSetting(key):
-  """Returns a value for the given key for this repository."""
-  global read_gcl_info
-  if not read_gcl_info:
-    read_gcl_info = True
+def GetCacheDir():
+  """Returns the directory where gcl change files are stored."""
+  return os.path.join(GetInfoDir(), 'cache')
+
+
+def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
+  """Retrieves a file from the repository and caches it in GetCacheDir() for
+  max_age seconds.
+
+  use_root: If False, look up the arborescence for the first match, otherwise go
+            directory to the root repository.
+
+  Note: The cache will be inconsistent if the same file is retrieved with both
+        use_root=True and use_root=False on the same file. Don't be stupid.
+  """
+  global FILES_CACHE
+  if filename not in FILES_CACHE:
+    # Don't try to look up twice.
+    FILES_CACHE[filename] = None
     # First we check if we have a cached version.
-    cached_settings_file = os.path.join(GetInfoDir(), CODEREVIEW_SETTINGS_FILE)
-    if (not os.path.exists(cached_settings_file) or
-        os.stat(cached_settings_file).st_mtime > 60*60*24*3):
+    cached_file = os.path.join(GetCacheDir(), filename)
+    if (not os.path.exists(cached_file) or
+        os.stat(cached_file).st_mtime > max_age):
       dir_info = gclient.CaptureSVNInfo(".")
       repo_root = dir_info["Repository Root"]
-      url_path = dir_info["URL"]
-      settings = ""
+      if use_root:
+        url_path = repo_root
+      else:
+        url_path = dir_info["URL"]
+      content = ""
       while True:
         # Look for the codereview.settings file at the current level.
-        svn_path = url_path + "/" + CODEREVIEW_SETTINGS_FILE
-        settings, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
+        svn_path = url_path + "/" + filename
+        content, rc = RunShellWithReturnCode(["svn", "cat", svn_path])
         if not rc:
-          # Exit the loop if the file was found.
+          # Exit the loop if the file was found. Override content.
           break
         # Make sure to mark settings as empty if not found.
-        settings = ""
+        content = ""
         if url_path == repo_root:
           # Reached the root. Abandoning search.
-          break;
+          break
         # Go up one level to try again.
         url_path = os.path.dirname(url_path)
-
       # Write a cached version even if there isn't a file, so we don't try to
       # fetch it each time.
-      WriteFile(cached_settings_file, settings)
+      WriteFile(cached_file, content)
+    else:
+      content = ReadFile(cached_settings_file)
+    # Keep the content cached in memory.
+    FILES_CACHE[filename] = content
+  return FILES_CACHE[filename]
 
-    output = ReadFile(cached_settings_file)
-    for line in output.splitlines():
+
+def GetCodeReviewSetting(key):
+  """Returns a value for the given key for this repository."""
+  # Use '__just_initialized' as a flag to determine if the settings were
+  # already initialized.
+  global CODEREVIEW_SETTINGS
+  if '__just_initialized' not in CODEREVIEW_SETTINGS:
+    for line in GetCachedFile(CODEREVIEW_SETTINGS_FILE).splitlines():
       if not line or line.startswith("#"):
         continue
       k, v = line.split(": ", 1)
       CODEREVIEW_SETTINGS[k] = v
+    CODEREVIEW_SETTINGS.setdefault('__just_initialized', None)
   return CODEREVIEW_SETTINGS.get(key, "")
 
 
@@ -1035,6 +1063,8 @@ def main(argv=None):
       file_path = os.path.join(unicode(GetInfoDir()), file)
       if os.path.isfile(file_path) and file != CODEREVIEW_SETTINGS_FILE:
         shutil.move(file_path, GetChangesDir())
+  if not os.path.exists(GetCacheDir()):
+    os.mkdir(GetCacheDir())
 
   # Commands that don't require an argument.
   command = argv[1]

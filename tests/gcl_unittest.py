@@ -54,19 +54,19 @@ class GclUnittest(GclTestsBase):
     members = [
       'CODEREVIEW_SETTINGS', 'CODEREVIEW_SETTINGS_FILE', 'CPP_EXTENSIONS',
       'Change', 'ChangeInfo', 'Changes', 'Commit', 'DoPresubmitChecks',
-      'ErrorExit', 'GenerateChangeName', 'GenerateDiff', 'GetChangesDir',
-      'GetCLs',
+      'ErrorExit', 'FILES_CACHE', 'GenerateChangeName', 'GenerateDiff',
+      'GetCacheDir', 'GetCachedFile', 'GetChangesDir', 'GetCLs',
       'GetChangelistInfoFile', 'GetCodeReviewSetting', 'GetEditor',
       'GetFilesNotInCL', 'GetInfoDir', 'GetIssueDescription',
       'GetModifiedFiles', 'GetRepositoryRoot',
       'GetSVNFileProperty', 'Help', 'IGNORE_PATHS', 'IsSVNMoved', 'IsTreeOpen',
       'Lint', 'LoadChangelistInfo', 'LoadChangelistInfoForMultiple',
       'MISSING_TEST_MSG', 'Opened', 'PresubmitCL', 'ReadFile',
-      'RunShell',
+      'REPOSITORY_ROOT', 'RunShell',
       'RunShellWithReturnCode', 'SEPARATOR', 'SendToRietveld', 'TryChange',
       'UnknownFiles', 'UploadCL', 'Warn', 'WriteFile',
-      'gclient', 'getpass', 'main', 'os', 'random', 're', 'read_gcl_info',
-      'repository_root', 'shutil', 'string', 'subprocess', 'sys', 'tempfile',
+      'gclient', 'getpass', 'main', 'os', 'random', 're',
+      'shutil', 'string', 'subprocess', 'sys', 'tempfile',
       'upload', 'urllib2', 'xml',
     ]
     # If this test fails, you should add the relevant test.
@@ -79,12 +79,12 @@ class GclUnittest(GclTestsBase):
       dummy = StringIO.StringIO()
       gcl.sys.stdout = dummy
       gcl.Help()
-      self.assertEquals(len(dummy.getvalue()), 1813)
+      self.assertEquals(len(dummy.getvalue()), 1815)
     finally:
       gcl.sys.stdout = old_stdout
 
   def testGetRepositoryRootNone(self):
-    gcl.repository_root = None
+    gcl.REPOSITORY_ROOT = None
     gcl.os.getcwd().AndReturn("/bleh/prout")
     result = {
       "Repository Root": ""
@@ -96,7 +96,7 @@ class GclUnittest(GclTestsBase):
     self.mox.VerifyAll()
 
   def testGetRepositoryRootGood(self):
-    gcl.repository_root = None
+    gcl.REPOSITORY_ROOT = None
     root_path = os.path.join('bleh', 'prout', 'pouet')
     gcl.os.getcwd().AndReturn(root_path)
     result1 = { "Repository Root": "Some root" }
