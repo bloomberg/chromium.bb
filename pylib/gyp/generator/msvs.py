@@ -691,7 +691,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     for config_name, c_data in spec['configurations'].iteritems():
       for src in cpy.get('files', []):
         dst = os.path.join(cpy['destination'], os.path.basename(src))
-        cmd = 'mkdir "%s" & copy /Y "%s" "%s"' % (
+        cmd = 'mkdir "%s" 2>nul & set ERRORLEVEL=0 & copy /Y "%s" "%s"' % (
             _FixPath(cpy['destination']), _FixPath(src), _FixPath(dst))
         _AddCustomBuildTool(p, config_name, c_data,
                             inputs=[src], outputs=[dst],
