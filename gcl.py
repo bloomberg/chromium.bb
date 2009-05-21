@@ -879,7 +879,7 @@ def Commit(change_info, args):
            " the commit. May the --force be with you.")
     return
 
-  commit_cmd = ["svn", "commit"]
+  commit_cmd = ["svn", "commit", "--non-recursive"]
   filename = ''
   if change_info.issue:
     # Get the latest description from Rietveld.
