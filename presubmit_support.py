@@ -346,13 +346,14 @@ class AffectedFile(object):
 
   def IsDirectory(self):
     """Returns true if this object is a directory."""
-    if os.path.exists(self.path):
+    path = self.AbsoluteLocalPath()
+    if os.path.exists(path):
       # Retrieve directly from the file system; it is much faster than querying
       # subversion, especially on Windows.
-      return os.path.isdir(self.path)
+      return os.path.isdir(path)
     else:
-      return gclient.CaptureSVNInfo(self.path).get('Node Kind') in ('dir',
-                                                                    'directory')
+      return gclient.CaptureSVNInfo(path).get('Node Kind') in ('dir',
+                                                               'directory')
 
   def SvnProperty(self, property_name):
     """Returns the specified SVN property of this file, or the empty string
