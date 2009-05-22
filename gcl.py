@@ -607,7 +607,7 @@ Basic commands:
                           [--send_mail] [--no_try] [--no_presubmit]
       Uploads the changelist to the server for review.
 
-   gcl commit change_name [--force]
+   gcl commit change_name [--no_presubmit] [--force]
       Commits the changelist to the repository.
 
    gcl lint change_name
@@ -1023,11 +1023,13 @@ def DoPresubmitChecks(change_info, committing):
   """Imports presubmit, then calls presubmit.DoPresubmitChecks."""
   # Need to import here to avoid circular dependency.
   import presubmit_support
+  root_presubmit = GetCachedFile('PRESUBMIT.py', use_root=True)
   result = presubmit_support.DoPresubmitChecks(change_info,
                                                committing,
                                                verbose=False,
                                                output_stream=sys.stdout,
-                                               input_stream=sys.stdin)
+                                               input_stream=sys.stdin,
+                                               default_presubmit=root_presubmit)
   if not result:
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"
   return result

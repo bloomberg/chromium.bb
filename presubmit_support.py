@@ -603,7 +603,8 @@ def DoPresubmitChecks(change_info,
                       committing,
                       verbose,
                       output_stream,
-                      input_stream):
+                      input_stream,
+                      default_presubmit):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -619,19 +620,24 @@ def DoPresubmitChecks(change_info,
     verbose: Prints debug info.
     output_stream: A stream to write output from presubmit tests to.
     input_stream: A stream to read input from the user.
+    default_presubmit: A default presubmit script to execute in any case.
 
   Return:
     True if execution can continue, False if not.
   """
   presubmit_files = ListRelevantPresubmitFiles(change_info.FileList())
   if not presubmit_files and verbose:
-    print "Warning, no presubmit.py found."
+    output_stream.write("Warning, no presubmit.py found.")
   results = []
   executer = PresubmitExecuter(change_info, committing)
+  if default_presubmit:
+    if verbose:
+      output_stream.write("Running default presubmit script")
+    results += executer.ExecPresubmitScript(default_presubmit, 'PRESUBMIT.py')
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
-      print "Running %s" % filename
+      output_stream.write("Running %s" % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gcl.ReadFile(filename, 'rU')
     results += executer.ExecPresubmitScript(presubmit_script, filename)
@@ -701,11 +707,12 @@ def Main(argv):
   files = ParseFiles(args, options.recursive)
   if options.verbose:
     print "Found %d files." % len(files)
-  return DoPresubmitChecks(gcl.ChangeInfo(name='temp', files=files),
-                           options.commit,
-                           options.verbose,
-                           sys.stdout,
-                           sys.stdin)
+  return not DoPresubmitChecks(gcl.ChangeInfo(name='temp', files=files),
+                               options.commit,
+                               options.verbose,
+                               sys.stdout,
+                               sys.stdin,
+                               default_presubmit=None)
 
 
 if __name__ == '__main__':
