@@ -1346,6 +1346,12 @@ def RealMain(argv, data=None):
       msg = lines[0]
       patchset = lines[1].strip()
       patches = [x.split(" ", 1) for x in lines[2:]]
+      for patch_pair in patches:
+        # On Windows if a file has property changes its filename uses '\'
+        # instead of '/'.  Perhaps this change should be made (also) on the
+        # server when it is decoding the patch file sent by the client, but
+        # we do it here as well to be safe.
+        patch_pair[1] = patch_pair[1].replace('\\', '/')
     else:
       msg = response_body
   else:
