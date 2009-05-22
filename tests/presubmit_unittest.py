@@ -404,7 +404,7 @@ class InputApiUnittest(PresubmitTestsBase):
       'PresubmitLocalPath', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
       'marshal', 'os_path', 'pickle', 'platform',
-      're', 'subprocess', 'tempfile', 'urllib2',
+      're', 'subprocess', 'tempfile', 'urllib2', 'version',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.InputApi(None, './.'), members)

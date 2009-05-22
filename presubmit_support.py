@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.0.1'
+__version__ = '1.1'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -162,6 +162,8 @@ class InputApi(object):
       change: A presubmit.GclChange object.
       presubmit_path: The path to the presubmit script being processed.
     """
+    # Version number of the presubmit_support script.
+    self.version = [int(x) for x in __version__.split('.')]
     self.change = change
 
     # We expose various modules and functions as attributes of the input_api
