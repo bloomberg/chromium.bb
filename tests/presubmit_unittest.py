@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unit tests for presubmit.py and presubmit_canned_checks.py."""
+"""Unit tests for presubmit_support.py and presubmit_canned_checks.py."""
 
 import os
 import StringIO
@@ -111,13 +111,13 @@ def CheckChangeOnUpload(input_api, output_api):
 
 
 class PresubmitUnittest(PresubmitTestsBase):
-  """General presubmit.py tests (excluding InputApi and OutputApi)."""
+  """General presubmit_support.py tests (excluding InputApi and OutputApi)."""
   def testMembersChanged(self):
     members = [
       'AffectedFile', 'DoPresubmitChecks', 'GclChange', 'InputApi',
       'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
       'OutputApi', 'ParseFiles', 'PresubmitExecuter', 'SPECIAL_KEYS',
-      'ScanSubDirs', 'cPickle', 'cStringIO', 'exceptions',
+      'ScanSubDirs', 'SvnAffectedFile', 'cPickle', 'cStringIO', 'exceptions',
       'fnmatch', 'gcl', 'gclient', 'glob', 'marshal', 'normpath', 'optparse',
       'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
       'tempfile', 'types', 'urllib2',
@@ -215,17 +215,6 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.failUnless(rhs_lines[3][0].LocalPath() == files[3][1])
     self.failUnless(rhs_lines[3][1] == 2)
     self.failUnless(rhs_lines[3][2] == 'two:%s' % files[3][1])
-
-  def testAffectedFile(self):
-    af = presubmit.AffectedFile('foo/blat.cc', 'M')
-    self.failUnless(af.ServerPath() == 'svn:/foo/foo/blat.cc')
-    self.failUnless(af.LocalPath() == presubmit.normpath('foo/blat.cc'))
-    self.failUnless(af.Action() == 'M')
-    self.failUnless(af.NewContents() == ['one:%s' % af.LocalPath(),
-                                         'two:%s' % af.LocalPath()])
-
-    af = presubmit.AffectedFile('notfound.cc', 'A')
-    self.failUnless(af.ServerPath() == '')
 
   def testExecPresubmitScript(self):
     description_lines = ('Hello there',
@@ -404,11 +393,6 @@ def CheckChangeOnUpload(input_api, output_api):
 
     affected_files_and_dirs = change.AffectedFiles(include_dirs=True)
     self.failUnless(len(affected_files_and_dirs) == 2)
-
-  def testSvnProperty(self):
-    affected_file = presubmit.AffectedFile('foo.cc', 'A')
-    self.failUnless(affected_file.SvnProperty('svn:secret-property') ==
-                    'secret-property-value')
 
 
 class InputApiUnittest(PresubmitTestsBase):
@@ -595,6 +579,34 @@ class OuputApiUnittest(PresubmitTestsBase):
     warning = presubmit.OutputApi.PresubmitPromptWarning('???')
     self.failIf(warning._Handle(output, input))
     self.failUnless(output.getvalue().count('???'))
+
+
+class AffectedFileUnittest(PresubmitTestsBase):
+  def testMembersChanged(self):
+    members = [
+      'AbsoluteLocalPath', 'Action', 'IsDirectory', 'LocalPath', 'NewContents',
+      'OldContents', 'OldFileTempPath', 'Property', 'ServerPath', 'action',
+      'is_directory', 'path', 'properties', 'repository_root', 'server_path',
+    ]
+    # If this test fails, you should add the relevant test.
+    self.compareMembers(presubmit.AffectedFile('a', 'b'), members)
+    self.compareMembers(presubmit.SvnAffectedFile('a', 'b'), members)
+
+  def testAffectedFile(self):
+    af = presubmit.SvnAffectedFile('foo/blat.cc', 'M')
+    self.failUnless(af.ServerPath() == 'svn:/foo/foo/blat.cc')
+    self.failUnless(af.LocalPath() == presubmit.normpath('foo/blat.cc'))
+    self.failUnless(af.Action() == 'M')
+    self.failUnless(af.NewContents() == ['one:%s' % af.LocalPath(),
+                                         'two:%s' % af.LocalPath()])
+
+    af = presubmit.AffectedFile('notfound.cc', 'A')
+    self.failUnless(af.ServerPath() == '')
+
+  def testProperty(self):
+    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
+    self.failUnless(affected_file.Property('svn:secret-property') ==
+                    'secret-property-value')
 
 
 class CannedChecksUnittest(PresubmitTestsBase):

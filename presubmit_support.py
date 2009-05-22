@@ -324,15 +324,18 @@ class AffectedFile(object):
 
   def __init__(self, path, action, repository_root=''):
     self.path = path
-    self.action = action.strip()
+    self.action = action
     self.repository_root = repository_root
+    self.server_path = None
+    self.is_directory = None
+    self.properties = {}
 
   def ServerPath(self):
     """Returns a path string that identifies the file in the SCM system.
 
     Returns the empty string if the file does not exist in SCM.
     """
-    return gclient.CaptureSVNInfo(self.AbsoluteLocalPath()).get('URL', '')
+    return ""
 
   def LocalPath(self):
     """Returns the path of this file on the local disk relative to client root.
@@ -347,23 +350,22 @@ class AffectedFile(object):
   def IsDirectory(self):
     """Returns true if this object is a directory."""
     path = self.AbsoluteLocalPath()
-    if os.path.exists(path):
-      # Retrieve directly from the file system; it is much faster than querying
-      # subversion, especially on Windows.
-      return os.path.isdir(path)
-    else:
-      return gclient.CaptureSVNInfo(path).get('Node Kind') in ('dir',
-                                                               'directory')
-
-  def SvnProperty(self, property_name):
-    """Returns the specified SVN property of this file, or the empty string
-    if no such property.
-    """
-    return gcl.GetSVNFileProperty(self.AbsoluteLocalPath(), property_name)
+    if self.is_directory is None:
+      self.is_directory = (os.path.exists(path) and
+                           os.path.isdir(path))
+    return self.is_directory
 
   def Action(self):
     """Returns the action on this opened file, e.g. A, M, D, etc."""
+    # TODO(maruel): Somewhat crappy, Could be "A" or "A  +" for svn but
+    # different for other SCM.
     return self.action
+
+  def Property(self, property_name):
+    """Returns the specified SCM property of this file, or None if no such
+    property.
+    """
+    return self.properties.get(property_name, None)
 
   def NewContents(self):
     """Returns an iterator over the lines in the new version of file.
@@ -395,6 +397,34 @@ class AffectedFile(object):
     raise NotImplementedError()  # Implement if/when needed.
 
 
+class SvnAffectedFile(AffectedFile):
+  """Representation of a file in a change out of a Subversion checkout."""
+
+  def ServerPath(self):
+    if self.server_path is None:
+      self.server_path = gclient.CaptureSVNInfo(
+          self.AbsoluteLocalPath()).get('URL', '')
+    return self.server_path
+
+  def IsDirectory(self):
+    path = self.AbsoluteLocalPath()
+    if self.is_directory is None:
+      if os.path.exists(path):
+        # Retrieve directly from the file system; it is much faster than
+        # querying subversion, especially on Windows.
+        self.is_directory = os.path.isdir(path)
+      else:
+        self.is_directory = gclient.CaptureSVNInfo(
+            path).get('Node Kind') in ('dir', 'directory')
+    return self.is_directory
+
+  def Property(self, property_name):
+    if not property_name in self.properties:
+      self.properties[property_name] = gcl.GetSVNFileProperty(
+          self.AbsoluteLocalPath(), property_name)
+    return self.properties[property_name]
+
+
 class GclChange(object):
   """A gcl change. See gcl.ChangeInfo for more info."""
 
@@ -418,8 +448,10 @@ class GclChange(object):
     self.description_without_tags = '\n'.join(self.description_without_tags)
     self.description_without_tags = self.description_without_tags.rstrip()
 
-    self.affected_files = [AffectedFile(info[1], info[0], repository_root) for
-                           info in change_info.files]
+    self.affected_files = [
+        SvnAffectedFile(info[1], info[0].strip(), repository_root)
+        for info in change_info.files
+    ]
 
   def Change(self):
     """Returns the change name."""
@@ -551,7 +583,6 @@ def ListRelevantPresubmitFiles(files):
 
 
 class PresubmitExecuter(object):
-
   def __init__(self, change_info, committing):
     """
     Args:
