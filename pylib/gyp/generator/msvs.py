@@ -83,12 +83,13 @@ def _SourceInFolders(sources, prefix=None, excluded=None):
   return result
 
 
-def _ToolAppend(tools, tool_name, setting, value):
+def _ToolAppend(tools, tool_name, setting, value, only_if_unset=False):
   if not value: return
   if not tools.get(tool_name):
     tools[tool_name] = dict()
   tool = tools[tool_name]
   if tool.get(setting):
+    if only_if_unset: return
     if type(tool[setting]) == list:
       tool[setting] += value
     else:
@@ -482,7 +483,8 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       vc_tool, out_path, suffix = output_file_props
       product_name = (
           out_path + spec.get('product_name', '$(ProjectName)') + suffix)
-      _ToolAppend(tools, vc_tool, 'OutputFile', product_name)
+      _ToolAppend(tools, vc_tool, 'OutputFile', product_name,
+                  only_if_unset=True)
 
     # Add defines.
     defines = []
