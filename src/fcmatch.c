@@ -184,7 +184,7 @@ typedef struct _FcMatcher {
  * each value, earlier values are more significant than
  * later values
  */
-static FcMatcher _FcMatchers [] = {
+static const FcMatcher _FcMatchers [] = {
     { FC_FOUNDRY_OBJECT,	FcCompareString,	0, 0 },
 #define MATCH_FOUNDRY	    0
 #define MATCH_FOUNDRY_INDEX 0
