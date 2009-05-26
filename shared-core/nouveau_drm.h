@@ -25,7 +25,7 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 12
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 13
 
 struct drm_nouveau_channel_alloc {
 	uint32_t     fb_ctxdma_handle;
@@ -153,17 +153,22 @@ struct drm_nouveau_setparam {
 #define NOUVEAU_GEM_DOMAIN_CPU       (1 << 0)
 #define NOUVEAU_GEM_DOMAIN_VRAM      (1 << 1)
 #define NOUVEAU_GEM_DOMAIN_GART      (1 << 2)
-#define NOUVEAU_GEM_DOMAIN_NOMAP     (1 << 3)
+#define NOUVEAU_GEM_DOMAIN_MAPPABLE  (1 << 3)
 #define NOUVEAU_GEM_DOMAIN_TILE      (1 << 30)
 #define NOUVEAU_GEM_DOMAIN_TILE_ZETA (1 << 31)
 
-struct drm_nouveau_gem_new {
-	uint64_t size;
-	uint32_t channel_hint;
-	uint32_t align;
+struct drm_nouveau_gem_info {
 	uint32_t handle;
 	uint32_t domain;
-	uint32_t offset;
+	uint64_t size;
+	uint64_t offset;
+	uint64_t map_handle;
+};
+
+struct drm_nouveau_gem_new {
+	struct drm_nouveau_gem_info info;
+	uint32_t channel_hint;
+	uint32_t align;
 };
 
 struct drm_nouveau_gem_pushbuf_bo {
@@ -221,12 +226,6 @@ struct drm_nouveau_gem_pin {
 
 struct drm_nouveau_gem_unpin {
 	uint32_t handle;
-};
-
-struct drm_nouveau_gem_mmap {
-	uint32_t handle;
-	uint32_t pad;
-	uint64_t vaddr;
 };
 
 struct drm_nouveau_gem_cpu_prep {
@@ -291,9 +290,9 @@ struct drm_nouveau_sarea {
 #define DRM_NOUVEAU_GEM_PUSHBUF_CALL   0x42
 #define DRM_NOUVEAU_GEM_PIN            0x43
 #define DRM_NOUVEAU_GEM_UNPIN          0x44
-#define DRM_NOUVEAU_GEM_MMAP           0x45
-#define DRM_NOUVEAU_GEM_CPU_PREP       0x46
-#define DRM_NOUVEAU_GEM_CPU_FINI       0x47
-#define DRM_NOUVEAU_GEM_TILE           0x48
+#define DRM_NOUVEAU_GEM_CPU_PREP       0x45
+#define DRM_NOUVEAU_GEM_CPU_FINI       0x46
+#define DRM_NOUVEAU_GEM_TILE           0x47
+#define DRM_NOUVEAU_GEM_INFO           0x48
 
 #endif /* __NOUVEAU_DRM_H__ */

@@ -26,6 +26,8 @@
 struct nouveau_device {
 	unsigned chipset;
 	uint64_t vm_vram_base;
+	uint64_t vm_vram_size;
+	uint64_t vm_gart_size;
 };
 
 #endif

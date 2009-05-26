@@ -66,6 +66,9 @@ nouveau_bo_fake(struct nouveau_device *dev, uint64_t offset, uint32_t flags,
 		uint32_t size, void *map, struct nouveau_bo **);
 
 int
+nouveau_bo_wrap(struct nouveau_device *, uint32_t handle, struct nouveau_bo **);
+
+int
 nouveau_bo_handle_get(struct nouveau_bo *, uint32_t *);
 
 int

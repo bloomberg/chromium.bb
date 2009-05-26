@@ -42,6 +42,17 @@ nouveau_bo_takedown(struct nouveau_device *dev)
 }
 
 static int
+nouveau_bo_info(struct nouveau_bo_priv *nvbo, struct drm_nouveau_gem_info *arg)
+{
+	nvbo->handle = nvbo->base.handle = arg->handle;
+	nvbo->domain = arg->domain;
+	nvbo->size = nvbo->base.size = arg->size;
+	nvbo->offset = arg->offset;
+	nvbo->map_handle = arg->map_handle;
+	return 0;
+}
+
+static int
 nouveau_bo_allocated(struct nouveau_bo_priv *nvbo)
 {
 	if (nvbo->sysmem || nvbo->handle || (nvbo->flags & NOUVEAU_BO_PIN))
@@ -152,7 +163,8 @@ nouveau_bo_kalloc_nomm(struct nouveau_bo_priv *nvbo)
 	if (ret)
 		return ret;
 
-	nvbo->handle = req.map_handle;
+	nvbo->handle =
+	nvbo->map_handle = req.map_handle;
 	nvbo->size = req.size;
 	nvbo->offset = req.offset;
 	if (req.flags & (NOUVEAU_MEM_AGP | NOUVEAU_MEM_PCI))
@@ -169,6 +181,7 @@ nouveau_bo_kalloc(struct nouveau_bo_priv *nvbo, struct nouveau_channel *chan)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
 	struct drm_nouveau_gem_new req;
+	struct drm_nouveau_gem_info *info = &req.info;
 	int ret;
 
 	if (nvbo->handle || (nvbo->flags & NOUVEAU_BO_PIN))
@@ -178,38 +191,36 @@ nouveau_bo_kalloc(struct nouveau_bo_priv *nvbo, struct nouveau_channel *chan)
 		return nouveau_bo_kalloc_nomm(nvbo);
 
 	req.channel_hint = chan ? chan->id : 0;
-
-	req.size = nvbo->size;
 	req.align = nvbo->align;
 
-	req.domain = 0;
+
+	info->size = nvbo->size;
+	info->domain = 0;
 
 	if (nvbo->flags & NOUVEAU_BO_VRAM)
-		req.domain |= NOUVEAU_GEM_DOMAIN_VRAM;
-
+		info->domain |= NOUVEAU_GEM_DOMAIN_VRAM;
 	if (nvbo->flags & NOUVEAU_BO_GART)
-		req.domain |= NOUVEAU_GEM_DOMAIN_GART;
-
-	if (nvbo->flags & NOUVEAU_BO_TILED) {
-		req.domain |= NOUVEAU_GEM_DOMAIN_TILE;
-		if (nvbo->flags & NOUVEAU_BO_ZTILE)
-			req.domain |= NOUVEAU_GEM_DOMAIN_TILE_ZETA;
-	}
-
-	if (!req.domain) {
-		req.domain |= (NOUVEAU_GEM_DOMAIN_VRAM |
+		info->domain |= NOUVEAU_GEM_DOMAIN_GART;
+	if (!info->domain) {
+		info->domain |= (NOUVEAU_GEM_DOMAIN_VRAM |
 			       NOUVEAU_GEM_DOMAIN_GART);
 	}
+
+	if (nvbo->flags & NOUVEAU_BO_TILED) {
+		info->domain |= NOUVEAU_GEM_DOMAIN_TILE;
+		if (nvbo->flags & NOUVEAU_BO_ZTILE)
+			info->domain |= NOUVEAU_GEM_DOMAIN_TILE_ZETA;
+	}
+
+	if (nvbo->flags & NOUVEAU_BO_MAP)
+		info->domain |= NOUVEAU_GEM_DOMAIN_MAPPABLE;
 
 	ret = drmCommandWriteRead(nvdev->fd, DRM_NOUVEAU_GEM_NEW,
 				  &req, sizeof(req));
 	if (ret)
 		return ret;
-	nvbo->handle = nvbo->base.handle = req.handle;
-	nvbo->size = req.size;
-	nvbo->domain = req.domain;
-	nvbo->offset = req.offset;
 
+	nouveau_bo_info(nvbo, &req.info);
 	return 0;
 }
 
@@ -232,25 +243,23 @@ static int
 nouveau_bo_kmap(struct nouveau_bo_priv *nvbo)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(nvbo->base.device);
-	struct drm_nouveau_gem_mmap req;
-	int ret;
 
 	if (nvbo->map)
 		return 0;
 
-	if (!nvbo->handle)
+	if (!nvbo->map_handle)
 		return -EINVAL;
 
 	if (!nvdev->mm_enabled)
 		return nouveau_bo_kmap_nomm(nvbo);
 
-	req.handle = nvbo->handle;
-	ret = drmCommandWriteRead(nvdev->fd, DRM_NOUVEAU_GEM_MMAP,
-				  &req, sizeof(req));
-	if (ret)
-		return ret;
+	nvbo->map = mmap(0, nvbo->size, PROT_READ | PROT_WRITE,
+			 MAP_SHARED, nvdev->fd, nvbo->map_handle);
+	if (nvbo->map == MAP_FAILED) {
+		nvbo->map = NULL;
+		return -errno;
+	}
 
-	nvbo->map = (void *)(unsigned long)req.vaddr;
 	return 0;
 }
 
@@ -338,6 +347,35 @@ nouveau_bo_fake(struct nouveau_device *dev, uint64_t offset, uint32_t flags,
 }
 
 int
+nouveau_bo_wrap(struct nouveau_device *dev, uint32_t handle,
+		struct nouveau_bo **bo)
+{
+	struct nouveau_device_priv *nvdev = nouveau_device(dev);
+	struct drm_nouveau_gem_info req;
+	struct nouveau_bo_priv *nvbo;
+	int ret;
+
+	if (!nvdev->mm_enabled)
+		return -ENODEV;
+
+	ret = nouveau_bo_new(dev, 0, 0, 0, bo);
+	if (ret)
+		return ret;
+	nvbo = nouveau_bo(*bo);
+
+	req.handle = handle;
+	ret = drmCommandWriteRead(nvdev->fd, DRM_NOUVEAU_GEM_INFO,
+				  &req, sizeof(req));
+	if (ret) {
+		nouveau_bo_ref(NULL, bo);
+		return ret;
+	}
+
+	nouveau_bo_info(nvbo, &req);
+	return 0;
+}
+
+int
 nouveau_bo_handle_get(struct nouveau_bo *bo, uint32_t *handle)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
@@ -381,12 +419,12 @@ nouveau_bo_handle_ref(struct nouveau_device *dev, uint32_t handle,
 	struct drm_gem_open req;
 	int ret;
 
-	ret = nouveau_bo_new(dev, 0, 0, 0, bo);
-	if (ret)
-		return ret;
-	nvbo = nouveau_bo(*bo);
-
 	if (!nvdev->mm_enabled) {
+		ret = nouveau_bo_new(dev, 0, 0, 0, bo);
+		if (ret)
+			return ret;
+		nvbo = nouveau_bo(*bo);
+
 		nvbo->handle = 0;
 		nvbo->offset =  handle;
 		nvbo->domain = NOUVEAU_BO_VRAM;
@@ -401,8 +439,13 @@ nouveau_bo_handle_ref(struct nouveau_device *dev, uint32_t handle,
 			return ret;
 		}
 
-		nvbo->size = req.size;
-		nvbo->handle = req.handle;
+		ret = nouveau_bo_wrap(dev, req.handle, bo);
+		if (ret) {
+			nouveau_bo_ref(NULL, bo);
+			return ret;
+		}
+
+		nvbo = nouveau_bo(*bo);
 	}
 
 	nvbo->base.handle = nvbo->handle;
@@ -507,12 +550,15 @@ nouveau_bo_wait(struct nouveau_bo *bo, int cpu_write)
 		return nouveau_bo_wait_nomm(bo, cpu_write);
 
 	req.handle = nvbo->handle;
-	ret = drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_CPU_PREP,
-			      &req, sizeof(req));
+	do {
+		ret = drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_CPU_PREP,
+				      &req, sizeof(req));
+	} while (ret == -EAGAIN);
 	if (ret)
 		return ret;
 
-	nvbo->write_marker = 0;
+	if (ret == 0)
+		nvbo->write_marker = 0;
 	return 0;
 }
 
@@ -578,7 +624,7 @@ int
 nouveau_bo_validate_nomm(struct nouveau_bo_priv *nvbo, uint32_t flags)
 {
 	struct nouveau_bo *new = NULL;
-	uint32_t t_handle, t_domain, t_offset, t_size;
+	uint32_t t_handle, t_domain, t_offset, t_size, t_maph;
 	void *t_map;
 	int ret;
 
@@ -614,18 +660,21 @@ nouveau_bo_validate_nomm(struct nouveau_bo_priv *nvbo, uint32_t flags)
 	}
 
 	t_handle = nvbo->handle;
+	t_maph = nvbo->map_handle;
 	t_domain = nvbo->domain;
 	t_offset = nvbo->offset;
 	t_size = nvbo->size;
 	t_map = nvbo->map;
 
 	nvbo->handle = nouveau_bo(new)->handle;
+	nvbo->map_handle = nouveau_bo(new)->map_handle;
 	nvbo->domain = nouveau_bo(new)->domain;
 	nvbo->offset = nouveau_bo(new)->offset;
 	nvbo->size = nouveau_bo(new)->size;
 	nvbo->map = nouveau_bo(new)->map;
 
 	nouveau_bo(new)->handle = t_handle;
+	nouveau_bo(new)->map_handle = t_maph;
 	nouveau_bo(new)->domain = t_domain;
 	nouveau_bo(new)->offset = t_offset;
 	nouveau_bo(new)->size = t_size;
