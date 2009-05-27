@@ -137,7 +137,7 @@ class PresubmitUnittest(PresubmitTestsBase):
                     presubmit_files)
 
   def testTagLineRe(self):
-    m = presubmit._tag_line_re.match(' BUG =1223, 1445  \t')
+    m = presubmit.GclChange._tag_line_re.match(' BUG =1223, 1445  \t')
     self.failUnless(m)
     self.failUnlessEqual(m.group('key'), 'BUG')
     self.failUnlessEqual(m.group('value'), '1223, 1445')

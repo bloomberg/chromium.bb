@@ -36,11 +36,6 @@ import gclient
 import presubmit_canned_checks
 
 
-# Matches key/value (or "tag") lines in changelist descriptions.
-_tag_line_re = re.compile(
-    '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
-
-
 class NotImplementedException(Exception):
   """We're leaving placeholders in a bunch of places to remind us of the
   design of the API, but we have not implemented all of it yet. Implement as
@@ -57,7 +52,6 @@ def normpath(path):
   # will replace forward slashes with backward slashes.
   path = path.replace(os.sep, '/')
   return os.path.normpath(path)
-
 
 
 class OutputApi(object):
@@ -413,36 +407,49 @@ class SvnAffectedFile(AffectedFile):
 
 
 class GclChange(object):
-  """A gcl change. See gcl.ChangeInfo for more info."""
+  """Describe a change.
+
+  Used directly by the presubmit scripts to query the current change being
+  tested.
+  
+  Instance members:
+    tags: Dictionnary of KEY=VALUE pairs found in the change description.
+    self.KEY: equivalent to tags['KEY']
+  """
+
+  # Matches key/value (or "tag") lines in changelist descriptions.
+  _tag_line_re = re.compile(
+      '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
 
   def __init__(self, change_info, repository_root=''):
-    self.name = change_info.name
-    self.full_description = change_info.description
-    self.repository_root = repository_root
+    #  Do not keep a reference to the original change_info.
+    self._name = change_info.name
+    self._full_description = change_info.description
+    self._repository_root = repository_root
 
     # From the description text, build up a dictionary of key/value pairs
     # plus the description minus all key/value or "tag" lines.
-    self.description_without_tags = []
+    self._description_without_tags = []
     self.tags = {}
     for line in change_info.description.splitlines():
-      m = _tag_line_re.match(line)
+      m = self._tag_line_re.match(line)
       if m:
         self.tags[m.group('key')] = m.group('value')
       else:
-        self.description_without_tags.append(line)
+        self._description_without_tags.append(line)
 
     # Change back to text and remove whitespace at end.
-    self.description_without_tags = '\n'.join(self.description_without_tags)
-    self.description_without_tags = self.description_without_tags.rstrip()
+    self._description_without_tags = '\n'.join(self._description_without_tags)
+    self._description_without_tags = self._description_without_tags.rstrip()
 
-    self.affected_files = [
+    self._affected_files = [
         SvnAffectedFile(info[1], info[0].strip(), repository_root)
         for info in change_info.files
     ]
 
   def Change(self):
     """Returns the change name."""
-    return self.name
+    return self._name
 
   def DescriptionText(self):
     """Returns the user-entered changelist description, minus tags.
@@ -451,15 +458,15 @@ class GclChange(object):
     (whitespace permitted before and around) is considered a tag line.  Such
     lines are stripped out of the description this function returns.
     """
-    return self.description_without_tags
+    return self._description_without_tags
 
   def FullDescriptionText(self):
     """Returns the complete changelist description including tags."""
-    return self.full_description
+    return self._full_description
 
   def RepositoryRoot(self):
     """Returns the repository root for this change, as an absolute path."""
-    return self.repository_root
+    return self._repository_root
 
   def __getattr__(self, attr):
     """Return keys directly as attributes on the object.
@@ -480,9 +487,9 @@ class GclChange(object):
       [AffectedFile(path, action), AffectedFile(path, action)]
     """
     if include_dirs:
-      affected = self.affected_files
+      affected = self._affected_files
     else:
-      affected = filter(lambda x: not x.IsDirectory(), self.affected_files)
+      affected = filter(lambda x: not x.IsDirectory(), self._affected_files)
 
     if include_deletes:
       return affected
