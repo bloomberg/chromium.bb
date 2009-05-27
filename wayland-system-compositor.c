@@ -30,6 +30,7 @@
 #include <math.h>
 #include <linux/input.h>
 #include <linux/vt.h>
+#include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <time.h>
 
@@ -71,9 +72,11 @@ struct wlsc_output {
 	int32_t x, y, width, height;
 
 	drmModeModeInfo *mode;
-	uint32_t fb_id;
 	uint32_t crtc_id;
 	uint32_t connector_id;
+
+	uint32_t fb_id[2];
+	uint32_t current;	
 };
 
 struct wlsc_input_device {
@@ -126,6 +129,7 @@ struct wlsc_compositor {
 	int repaint_on_timeout;
 	struct timespec previous_swap;
 	uint32_t current_frame;
+	struct wl_event_source *drm_source;
 
 	uint32_t meta_state;
 	struct wl_list animate_list;
@@ -583,12 +587,41 @@ wlsc_vector_scalar(struct wlsc_vector *v1, GLdouble s)
 }
 
 static void
+page_flip_handler(int fd, unsigned int frame,
+		  unsigned int sec, unsigned int usec, void *data)
+{
+	struct wlsc_output *output = data;
+	struct wlsc_animate *animate, *next;
+	struct wlsc_compositor *compositor = output->compositor;
+	uint32_t msecs;
+
+	msecs = sec * 1000 + usec / 1000;
+	wl_display_post_frame(compositor->wl_display,
+			      &compositor->base,
+			      compositor->current_frame, msecs);
+
+	wl_event_source_timer_update(compositor->timer_source, 10);
+	compositor->repaint_on_timeout = 1;
+
+	animate = container_of(compositor->animate_list.next, struct wlsc_animate, link);
+	while (&animate->link != &compositor->animate_list) {
+		next = container_of(animate->link.next,
+				    struct wlsc_animate, link);
+		animate->animate(animate, compositor, compositor->current_frame, msecs);
+		animate = next;
+	}
+
+	compositor->current_frame++;
+}
+
+static void
 repaint_output(struct wlsc_output *output)
 {
 	struct wlsc_compositor *ec = output->compositor;
 	struct wlsc_surface *es;
 	struct wlsc_input_device *eid;
 	double s = 3000;
+	int fd;
 
 	if (!eglMakeCurrent(ec->display, output->surface, output->surface, ec->context)) {
 		fprintf(stderr, "failed to make context current\n");
@@ -628,7 +661,10 @@ repaint_output(struct wlsc_output *output)
 				   struct wlsc_input_device, link);
 	}
 
-	eglSwapBuffers(ec->display, output->surface);
+	fd = eglGetDisplayFD(ec->display);
+	output->current ^= 1;
+	eglBindColorBuffer(ec->display, output->surface, output->current);
+	drmModePageFlip(fd, output->crtc_id, output->fb_id[output->current ^ 1], output);
 }
 
 static void
@@ -636,9 +672,6 @@ repaint(void *data)
 {
 	struct wlsc_compositor *ec = data;
 	struct wlsc_output *output;
-	struct wlsc_animate *animate, *next;
-	struct timespec ts;
-	uint32_t msecs;
 
 	if (!ec->repaint_needed) {
 		ec->repaint_on_timeout = 0;
@@ -653,24 +686,6 @@ repaint(void *data)
 	}
 
 	ec->repaint_needed = 0;
-
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	msecs = ts.tv_sec * 1000 + ts.tv_nsec / (1000 * 1000);
-	wl_display_post_frame(ec->wl_display, &ec->base,
-			      ec->current_frame, msecs);
-
-	wl_event_source_timer_update(ec->timer_source, 10);
-	ec->repaint_on_timeout = 1;
-
-	animate = container_of(ec->animate_list.next, struct wlsc_animate, link);
-	while (&animate->link != &ec->animate_list) {
-		next = container_of(animate->link.next,
-				    struct wlsc_animate, link);
-		animate->animate(animate, ec, ec->current_frame, msecs);
-		animate = next;
-	}
-
-	ec->current_frame++;
 }
 
 static void
@@ -759,16 +774,16 @@ surface_copy(struct wl_client *client,
 	struct wlsc_compositor *ec = es->compositor;
 	EGLSurface src;
 
-	/* FIXME: glCopyPixels should work, but then we'll have to
-	 * call eglMakeCurrent to set up the src and dest surfaces
-	 * first.  This seems cheaper, but maybe there's a better way
-	 * to accomplish this. */
-
 	src = eglCreateSurfaceForName(ec->display, ec->config,
 				      name, x + width, y + height, stride, NULL);
 
-	eglCopyNativeBuffers(ec->display, es->surface, GL_FRONT_LEFT, dst_x, dst_y,
-			     src, GL_FRONT_LEFT, x, y, width, height);
+	eglMakeCurrent(ec->display, es->surface, src, ec->context);
+	glDrawBuffer(GL_FRONT);
+	glReadBuffer(GL_FRONT);
+	glRasterPos2d(0, 0);
+	fprintf(stderr, "copypixels\n");
+	glCopyPixels(x, y, width, height, GL_COLOR);
+
 	eglDestroySurface(ec->display, src);
 }
 
@@ -1307,6 +1322,17 @@ post_output_geometry(struct wl_client *client, struct wl_object *global)
 			     output->width, output->height);
 }
 
+static void
+on_drm_input(int fd, uint32_t mask, void *data)
+{
+	drmEventContext evctx;
+
+	memset(&evctx, 0, sizeof evctx);
+	evctx.version = DRM_EVENT_CONTEXT_VERSION;
+	evctx.page_flip_handler = page_flip_handler;
+	drmHandleEvent(fd, &evctx);
+}
+
 static int
 init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 {
@@ -1318,7 +1344,9 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 		EGL_NONE		
 	};
 
+	struct wl_event_loop *loop;
 	EGLint major, minor;
+	int fd;
 
 	ec->display = eglCreateDisplayNative(device);
 	if (ec->display == NULL) {
@@ -1339,17 +1367,19 @@ init_egl(struct wlsc_compositor *ec, struct udev_device *device)
 		fprintf(stderr, "failed to create context\n");
 		return -1;
 	}
+
+	loop = wl_display_get_event_loop(ec->wl_display);
+	fd = eglGetDisplayFD(ec->display);
+	ec->drm_source =
+		wl_event_loop_add_fd(loop, fd,
+				     WL_EVENT_READABLE, on_drm_input, ec);
+
 	return 0;
 }
 
 static int
 create_output(struct wlsc_compositor *ec, struct udev_device *device)
 {
-	const static EGLint surface_attribs[] = {
-		EGL_RENDER_BUFFER, EGL_BACK_BUFFER,
-		EGL_NONE
-	};
-
 	drmModeConnector *connector;
 	drmModeRes *resources;
 	drmModeEncoder *encoder;
@@ -1414,27 +1444,31 @@ create_output(struct wlsc_compositor *ec, struct udev_device *device)
 	output->width = mode->hdisplay;
 	output->height = mode->vdisplay;
 
-	output->surface = eglCreateSurfaceForName(ec->display,
-						  ec->config,
-						  0,
-						  output->width,
-						  output->height,
-						  0, surface_attribs);
+	output->surface = eglCreateSurface(ec->display,
+					   ec->config,
+					   output->width,
+					   output->height,
+					   2, NULL);
 	if (output->surface == NULL) {
 		fprintf(stderr, "failed to create surface\n");
 		return -1;
 	}
 
-	eglGetNativeBuffer(output->surface,
-			   GL_FRONT_LEFT, &name, &handle, &stride);
-	ret = drmModeAddFB(fd, output->width, output->height,
-			   32, 32, stride, handle, &output->fb_id);
-	if (ret) {
-		fprintf(stderr, "failed to add fb: %m\n");
-		return -1;
+	for (i = 0; i < 2; i++) {
+		eglGetColorBuffer(output->surface,
+				  i, &name, &handle, &stride);
+
+		ret = drmModeAddFB(fd, mode->hdisplay, mode->vdisplay,
+				   32, 32, stride, handle, &output->fb_id[i]);
+		if (ret) {
+			fprintf(stderr, "failed to add fb %d: %m\n", i);
+			return -1;
+		}
 	}
 
-	ret = drmModeSetCrtc(fd, encoder->crtc_id, output->fb_id, 0, 0,
+	output->current = 0;
+	ret = drmModeSetCrtc(fd, encoder->crtc_id,
+			     output->fb_id[output->current ^ 1], 0, 0,
 			     &connector->connector_id, 1, mode);
 	if (ret) {
 		fprintf(stderr, "failed to set mode: %m\n");
@@ -1493,7 +1527,8 @@ static void on_enter_vt(int signal_number, void *data)
 	fd = eglGetDisplayFD(ec->display);
 	output = container_of(ec->output_list.next, struct wlsc_output, link);
 	while (&output->link != &ec->output_list) {
-		ret = drmModeSetCrtc(fd, output->crtc_id, output->fb_id, 0, 0,
+		ret = drmModeSetCrtc(fd, output->crtc_id,
+				     output->fb_id[output->current], 0, 0,
 				     &output->connector_id, 1, output->mode);
 		if (ret)
 			fprintf(stderr, "failed to set mode for connector %d: %m\n",
