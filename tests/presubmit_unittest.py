@@ -366,6 +366,8 @@ class PresubmitUnittest(PresubmitTestsBase):
 def CheckChangeOnUpload(input_api, output_api):
   print 'This is a test'
   return [output_api.PresubmitError("!!")]
+def CheckChangeOnCommit(input_api, output_api):
+  raise Exception("Test error")
 """
     def MockReadFile(dummy):
       return ''
@@ -393,6 +395,45 @@ def CheckChangeOnUpload(input_api, output_api):
 
     affected_files_and_dirs = change.AffectedFiles(include_dirs=True)
     self.failUnless(len(affected_files_and_dirs) == 2)
+
+  def testTags(self):
+    DEFAULT_SCRIPT = """
+def CheckChangeOnUpload(input_api, output_api):
+ if input_api.change.tags['BUG'] != 'boo':
+   return [output_api.PresubmitError('Tag parsing failed. 1')]
+ if input_api.change.tags['STORY'] != 'http://tracker.com/42':
+   return [output_api.PresubmitError('Tag parsing failed. 2')]
+ if 'TEST' in input_api.change.tags:
+   return [output_api.PresubmitError('Tag parsing failed. 3')]
+ if input_api.change.DescriptionText() != 'Blah Blah':
+   return [output_api.PresubmitError('Tag parsing failed. 4 ' + 
+                                     input_api.change.DescriptionText())]
+ if (input_api.change.FullDescriptionText() !=
+     'Blah Blah\\n\\nSTORY=http://tracker.com/42\\nBUG=boo\\n'):
+   return [output_api.PresubmitError('Tag parsing failed. 5 ' +
+                                     input_api.change.FullDescriptionText())]
+ return [output_api.PresubmitNotifyResult(input_api.change.tags['STORY'])]
+def CheckChangeOnCommit(input_api, output_api):
+  raise Exception("Test error")
+"""
+    def MockReadFile(dummy):
+      return ''
+    gcl.ReadFile = MockReadFile
+    def MockIsFile(dummy):
+      return False
+    os.path.isfile = MockIsFile
+    change = gcl.ChangeInfo(
+        name='foo',
+        description="Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n")
+    output = StringIO.StringIO()
+    input = StringIO.StringIO('y\n')
+    self.failUnless(presubmit.DoPresubmitChecks(change, False, True, output,
+                                                input, DEFAULT_SCRIPT))
+    self.assertEquals(output.getvalue(),
+                      ('Warning, no presubmit.py found.\n'
+                       'Running default presubmit script.\n\n'
+                       '** Presubmit Messages **\n\n'
+                       'http://tracker.com/42\n\n'))
 
 
 class InputApiUnittest(PresubmitTestsBase):

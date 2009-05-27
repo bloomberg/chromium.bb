@@ -661,17 +661,17 @@ def DoPresubmitChecks(change_info,
   """
   presubmit_files = ListRelevantPresubmitFiles(change_info.FileList())
   if not presubmit_files and verbose:
-    output_stream.write("Warning, no presubmit.py found.")
+    output_stream.write("Warning, no presubmit.py found.\n")
   results = []
   executer = PresubmitExecuter(change_info, committing)
   if default_presubmit:
     if verbose:
-      output_stream.write("Running default presubmit script")
+      output_stream.write("Running default presubmit script.\n")
     results += executer.ExecPresubmitScript(default_presubmit, 'PRESUBMIT.py')
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
-      output_stream.write("Running %s" % filename)
+      output_stream.write("Running %s\n" % filename)
     # Accept CRLF presubmit script.
     presubmit_script = gcl.ReadFile(filename, 'rU')
     results += executer.ExecPresubmitScript(presubmit_script, filename)
