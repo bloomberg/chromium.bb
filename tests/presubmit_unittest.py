@@ -116,7 +116,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     members = [
       'AffectedFile', 'DoPresubmitChecks', 'GclChange', 'InputApi',
       'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
-      'OutputApi', 'ParseFiles', 'PresubmitExecuter', 'SPECIAL_KEYS',
+      'OutputApi', 'ParseFiles', 'PresubmitExecuter',
       'ScanSubDirs', 'SvnAffectedFile', 'cPickle', 'cStringIO', 'exceptions',
       'fnmatch', 'gcl', 'gclient', 'glob', 'marshal', 'normpath', 'optparse',
       'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
@@ -162,13 +162,11 @@ class PresubmitUnittest(PresubmitTestsBase):
     change = presubmit.GclChange(ci)
 
     self.failUnless(change.Change() == 'mychange')
-    self.failUnless(change.Changelist() == 'mychange')
     self.failUnless(change.DescriptionText() ==
                     'Hello there\nthis is a change\nand some more regular text')
     self.failUnless(change.FullDescriptionText() ==
                     '\n'.join(description_lines))
 
-    self.failUnless(change.BugIDs == '123')
     self.failUnless(change.BUG == '123')
     self.failUnless(change.STORY == 'http://foo/')
 

@@ -41,21 +41,6 @@ _tag_line_re = re.compile(
     '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
 
 
-# Friendly names may be used for certain keys.  All values for key-value pairs
-# in change descriptions (like BUG=123) can be retrieved from a change object
-# directly as if they were attributes, e.g. change.R (or equivalently because
-# we have a friendly name for it, change.Reviewers), change.BUG (or
-# change.BugIDs) and so forth.
-#
-# Add to this mapping as needed/desired.
-SPECIAL_KEYS = {
-  'Reviewers' : 'R',
-  'BugIDs' : 'BUG',
-  'Tested': 'TESTED',
-  'Test': 'TEST'
-}
-
-
 class NotImplementedException(Exception):
   """We're leaving placeholders in a bunch of places to remind us of the
   design of the API, but we have not implemented all of it yet. Implement as
@@ -459,10 +444,6 @@ class GclChange(object):
     """Returns the change name."""
     return self.name
 
-  def Changelist(self):
-    """Synonym for Change()."""
-    return self.Change()
-
   def DescriptionText(self):
     """Returns the user-entered changelist description, minus tags.
 
@@ -486,12 +467,7 @@ class GclChange(object):
     You may use a friendly name (from SPECIAL_KEYS) or the actual name of
     the key.
     """
-    if attr in SPECIAL_KEYS:
-      key = SPECIAL_KEYS[attr]
-      if key in self.tags:
-        return self.tags[key]
-    if attr in self.tags:
-      return self.tags[attr]
+    return self.tags.get(attr)
 
   def AffectedFiles(self, include_dirs=False, include_deletes=True):
     """Returns a list of AffectedFile instances for all files in the change.

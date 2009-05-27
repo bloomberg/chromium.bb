@@ -8,7 +8,7 @@
 
 def CheckChangeHasTestField(input_api, output_api):
   """Requires that the changelist have a TEST= field."""
-  if input_api.change.Test:
+  if input_api.change.TEST:
     return []
   else:
     return [output_api.PresubmitNotifyResult(
@@ -17,7 +17,7 @@ def CheckChangeHasTestField(input_api, output_api):
 
 def CheckChangeHasBugField(input_api, output_api):
   """Requires that the changelist have a BUG= field."""
-  if input_api.change.BugIDs:
+  if input_api.change.BUG:
     return []
   else:
     return [output_api.PresubmitNotifyResult(
@@ -26,7 +26,7 @@ def CheckChangeHasBugField(input_api, output_api):
 
 def CheckChangeHasTestedField(input_api, output_api):
   """Requires that the changelist have a TESTED= field."""
-  if input_api.change.Tested:
+  if input_api.change.TESTED:
     return []
   else:
     return [output_api.PresubmitError("Changelist must have a TESTED= field.")]
