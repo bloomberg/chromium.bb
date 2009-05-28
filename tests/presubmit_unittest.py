@@ -21,7 +21,11 @@ import presubmit_canned_checks
 class PresubmitTestsBase(unittest.TestCase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
-    self._warnings_stack = warnings.catch_warnings()
+    if hasattr(warnings, 'catch_warnings'):
+      self._warnings_stack = warnings.catch_warnings()
+    else:
+      self._warnings_stack = None
+    
     warnings.simplefilter("ignore", DeprecationWarning)
     self.original_IsFile = os.path.isfile
     def MockIsFile(f):
