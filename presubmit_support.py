@@ -27,6 +27,7 @@ import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import types
 import urllib2  # Exposed through the API.
+import warnings
 
 # Local imports.
 # TODO(joi) Would be cleaner to factor out utils in gcl to separate module, but
@@ -52,6 +53,21 @@ def normpath(path):
   # will replace forward slashes with backward slashes.
   path = path.replace(os.sep, '/')
   return os.path.normpath(path)
+
+
+def deprecated(func):
+  """This is a decorator which can be used to mark functions as deprecated.
+
+  It will result in a warning being emmitted when the function is used."""
+  def newFunc(*args, **kwargs):
+    warnings.warn("Call to deprecated function %s." % func.__name__,
+                  category=DeprecationWarning,
+                  stacklevel=2)
+    return func(*args, **kwargs)
+  newFunc.__name__ = func.__name__
+  newFunc.__doc__ = func.__doc__
+  newFunc.__dict__.update(func.__dict__)
+  return newFunc
 
 
 class OutputApi(object):
@@ -177,8 +193,7 @@ class InputApi(object):
     """
     return self._current_presubmit_path
 
-  @staticmethod
-  def DepotToLocalPath(depot_path):
+  def DepotToLocalPath(self, depot_path):
     """Translate a depot path to a local path (relative to client root).
 
     Args:
@@ -191,13 +206,10 @@ class InputApi(object):
       Remember to check for the None case and show an appropriate error!
     """
     local_path = gclient.CaptureSVNInfo(depot_path).get('Path')
-    if not local_path:
-      return None
-    else:
+    if local_path:
       return local_path
 
-  @staticmethod
-  def LocalToDepotPath(local_path):
+  def LocalToDepotPath(self, local_path):
     """Translate a local path to a depot path.
 
     Args:
@@ -207,9 +219,7 @@ class InputApi(object):
       The depot path (SVN URL) of the file if mapped, otherwise None.
     """
     depot_path = gclient.CaptureSVNInfo(local_path).get('URL')
-    if not depot_path:
-      return None
-    else:
+    if depot_path:
       return depot_path
 
   @staticmethod
@@ -260,6 +270,7 @@ class InputApi(object):
     """Returns server paths of input_api.AffectedFiles()."""
     return [af.ServerPath() for af in self.AffectedFiles(include_dirs)]
 
+  @deprecated
   def AffectedTextFiles(self, include_deletes=True):
     """Same as input_api.change.AffectedTextFiles() except only lists files
     in the same directory as the current presubmit script, or subdirectories
@@ -287,7 +298,8 @@ class InputApi(object):
         the contents of the line as a string.
     """
     return InputApi._RightHandSideLinesImpl(
-        self.AffectedTextFiles(include_deletes=False))
+        filter(lambda x: x.IsTextFile(),
+               self.AffectedFiles(include_deletes=False)))
 
   @staticmethod
   def _RightHandSideLinesImpl(affected_files):
@@ -348,6 +360,10 @@ class AffectedFile(object):
     """
     return self.properties.get(property_name, None)
 
+  def IsTextFile(self):
+    """Returns True if the file is a text file and not a binary file."""
+    raise NotImplementedError()  # Implement when needed
+
   def NewContents(self):
     """Returns an iterator over the lines in the new version of file.
 
@@ -404,6 +420,15 @@ class SvnAffectedFile(AffectedFile):
       self.properties[property_name] = gcl.GetSVNFileProperty(
           self.AbsoluteLocalPath(), property_name)
     return self.properties[property_name]
+
+  def IsTextFile(self):
+    if self.Action() == 'D':
+      return False
+    mime_type = gcl.GetSVNFileProperty(self.AbsoluteLocalPath(),
+                                       'svn:mime-type')
+    if not mime_type or mime_type.startswith('text/'):
+      return True
+    return False
 
 
 class GclChange(object):
@@ -496,6 +521,7 @@ class GclChange(object):
     else:
       return filter(lambda x: x.Action() != 'D', affected)
 
+  @deprecated
   def AffectedTextFiles(self, include_deletes=True):
     """Return a list of the text files in a change.
 
@@ -535,7 +561,8 @@ class GclChange(object):
         the contents of the line as a string.
     """
     return InputApi._RightHandSideLinesImpl(
-        self.AffectedTextFiles(include_deletes=False))
+        filter(lambda x: x.IsTextFile(),
+               self.AffectedFiles(include_deletes=False)))
 
 
 def ListRelevantPresubmitFiles(files):
@@ -574,6 +601,7 @@ class PresubmitExecuter(object):
       change_info: The ChangeInfo object for the change.
       committing: True if 'gcl commit' is running, False if 'gcl upload' is.
     """
+    # TODO(maruel): Determine the SCM.
     self.change = GclChange(change_info, gcl.GetRepositoryRoot())
     self.committing = committing
 

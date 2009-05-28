@@ -9,6 +9,7 @@ import os
 import StringIO
 import sys
 import unittest
+import warnings
 
 # Local imports
 import gcl
@@ -20,6 +21,8 @@ import presubmit_canned_checks
 class PresubmitTestsBase(unittest.TestCase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
+    self._warnings_stack = warnings.catch_warnings()
+    warnings.simplefilter("ignore", DeprecationWarning)
     self.original_IsFile = os.path.isfile
     def MockIsFile(f):
       dir = os.path.dirname(f)
@@ -92,6 +95,7 @@ def CheckChangeOnUpload(input_api, output_api):
     gcl.ReadFile = self.original_ReadFile
     gcl.GetRepositoryRoot = self.original_GetRepositoryRoot
     sys.stdout = self._sys_stdout
+    self._warnings_stack = None
 
   @staticmethod
   def MakeBasicChange(name, description):
@@ -117,10 +121,11 @@ class PresubmitUnittest(PresubmitTestsBase):
       'AffectedFile', 'DoPresubmitChecks', 'GclChange', 'InputApi',
       'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
       'OutputApi', 'ParseFiles', 'PresubmitExecuter',
-      'ScanSubDirs', 'SvnAffectedFile', 'cPickle', 'cStringIO', 'exceptions',
+      'ScanSubDirs', 'SvnAffectedFile',
+      'cPickle', 'cStringIO', 'deprecated', 'exceptions',
       'fnmatch', 'gcl', 'gclient', 'glob', 'marshal', 'normpath', 'optparse',
       'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
-      'tempfile', 'types', 'urllib2',
+      'tempfile', 'types', 'urllib2', 'warnings',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -449,15 +454,16 @@ class InputApiUnittest(PresubmitTestsBase):
     self.compareMembers(presubmit.InputApi(None, './.'), members)
 
   def testDepotToLocalPath(self):
-    path = presubmit.InputApi.DepotToLocalPath('svn:/foo/smurf')
+    path = presubmit.InputApi(None, './p').DepotToLocalPath('svn:/foo/smurf')
     self.failUnless(path == 'smurf')
-    path = presubmit.InputApi.DepotToLocalPath('svn:/foo/notfound/burp')
+    path = presubmit.InputApi(None, './p').DepotToLocalPath(
+        'svn:/foo/notfound/burp')
     self.failUnless(path == None)
 
   def testLocalToDepotPath(self):
-    path = presubmit.InputApi.LocalToDepotPath('smurf')
+    path = presubmit.InputApi(None, './p').LocalToDepotPath('smurf')
     self.failUnless(path == 'svn:/foo/smurf')
-    path = presubmit.InputApi.LocalToDepotPath('notfound-food')
+    path = presubmit.InputApi(None, './p').LocalToDepotPath('notfound-food')
     self.failUnless(path == None)
 
   def testInputApiConstruction(self):
@@ -524,7 +530,7 @@ class InputApiUnittest(PresubmitTestsBase):
     for line in api.RightHandSideLines():
       rhs_lines.append(line)
     self.failUnless(len(rhs_lines) == 2)
-    self.failUnless(rhs_lines[0][0].LocalPath() ==
+    self.assertEqual(rhs_lines[0][0].LocalPath(),
                     presubmit.normpath('foo/blat.cc'))
 
   def testGetAbsoluteLocalPath(self):
@@ -623,7 +629,8 @@ class OuputApiUnittest(PresubmitTestsBase):
 class AffectedFileUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     members = [
-      'AbsoluteLocalPath', 'Action', 'IsDirectory', 'LocalPath', 'NewContents',
+      'AbsoluteLocalPath', 'Action', 'IsDirectory', 'IsTextFile',
+      'LocalPath', 'NewContents',
       'OldContents', 'OldFileTempPath', 'Property', 'ServerPath', 'action',
       'is_directory', 'path', 'properties', 'repository_root', 'server_path',
     ]
