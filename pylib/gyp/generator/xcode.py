@@ -9,6 +9,7 @@ import posixpath
 import pprint
 import re
 import shutil
+import subprocess
 import tempfile
 
 
@@ -395,6 +396,39 @@ class XcodeProject(object):
       if self.created_dir:
         shutil.rmtree(self.path, True)
       raise
+
+
+cached_xcode_version = None
+def InstalledXcodeVersion():
+  """Fetches the installed version of Xcode, returns empty string if it is
+  unable to figure it out."""
+  
+  global cached_xcode_version
+  if not cached_xcode_version is None:
+    return cached_xcode_version
+
+  # Default to an empty string
+  cached_xcode_version = ''
+  
+  # Collect the xcodebuild's version information.
+  try:
+    import subprocess
+    cmd = ['/usr/bin/xcodebuild', '-version']
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    xcodebuild_version_info = proc.communicate()[0]
+    # Any error, return empty string
+    if proc.returncode:
+      xcodebuild_version_info = ''
+  except OSError:
+    # We failed to launch the tool
+    xcodebuild_version_info = ''
+
+  # Pull out the Xcode version itself.
+  match_line = re.search('^Xcode (.*)$', xcodebuild_version_info, re.MULTILINE)
+  if match_line:
+    cached_xcode_version = match_line.group(1)
+  # Done!
+  return cached_xcode_version
 
 
 def AddSourceToTarget(source, pbxp, xct):
