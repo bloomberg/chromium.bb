@@ -59,22 +59,26 @@ def MakeGuid(name, seed='msvs_new'):
 class MSVSFolder:
   """Folder in a Visual Studio project or solution."""
 
-  def __init__(self, name, entries = None, guid = None, items = None):
+  def __init__(self, path, name = None, entries = None,
+               guid = None, items = None):
     """Initializes the folder.
 
     Args:
-      name: Name of folder.
+      path: Full path to the folder.
+      name: Name of the folder.
       entries: List of folder entries to nest inside this folder.  May contain
           Folder or Project objects.  May be None, if the folder is empty.
       guid: GUID to use for folder, if not None.
       items: List of solution items to include in the folder project.  May be
           None, if the folder does not directly contain items.
     """
-    self.name = name
+    if name:
+      self.name = name
+    else:
+      # Use last layer.
+      self.name = os.path.basename(path)
 
-    # For folder entries, the path is the same as the name
-    self.path = name
-
+    self.path = path
     self.guid = guid
 
     # Copy passed lists (or set to empty lists)

@@ -707,6 +707,67 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   return p.guid
 
 
+def _GetPathDict(root, path):
+  if path == '':
+    return root
+  parent, folder = os.path.split(path)
+  parent_dict = _GetPathDict(root, parent)
+  if folder not in parent_dict:
+    parent_dict[folder] = dict()
+  return parent_dict[folder]
+
+
+def _DictsToFolders(base_path, bucket):
+  # Convert to folders recursively.
+  children = []
+  for folder, contents in bucket.iteritems():
+    if type(contents) == dict:
+      folder_children = _DictsToFolders(os.path.join(base_path, folder),
+                                        contents)
+      folder_children = MSVSNew.MSVSFolder(os.path.join(base_path, folder),
+                                           entries=folder_children)
+      children.append(folder_children)
+    else:
+      children.append(contents)
+  return children
+
+
+def _CollapseSingles(is_root, node):
+  # Recursively explorer the tree of dicts looking for projects which are
+  # the sole item in a folder which has the same name as the project. Bring
+  # such projects up one level.
+  if (not is_root and
+      type(node) == dict and
+      len(node) == 1 and
+      isinstance(node[node.keys()[0]], MSVSNew.MSVSProject) and
+      node[node.keys()[0]].name == node.keys()[0]):
+    node = node[node.keys()[0]]
+  if type(node) != dict:
+    return node
+  for child in node.keys():
+    node[child] = _CollapseSingles(False, node[child])
+  return node
+
+
+def _GatherSolutionFolders(project_objs):
+  root = {}
+  # Convert into a tree of dicts on path.
+  for p in project_objs.keys():
+    gyp_file, target = gyp.common.BuildFileAndTarget('', p)[0:2]
+    gyp_dir = os.path.dirname(gyp_file)
+    path_dict = _GetPathDict(root, gyp_dir)
+    path_dict[target] = project_objs[p]
+  # Walk down from the top until we hit a folder that has more than one entry.
+  # In practice, this strips the top-level "src/" dir from the hierarchy in
+  # the solution.
+  while len(root) == 1 and type(root[root.keys()[0]]) == dict:
+    root = root[root.keys()[0]]
+  # Collapse singles.
+  root = _CollapseSingles(True, root)
+  # Merge buckets until everything is a root entry.
+  return _DictsToFolders('', root)
+
+
 def _ProjectObject(sln, qualified_target, project_objs, projects):
   # Done if this project has an object.
   if project_objs.get(qualified_target):
@@ -728,6 +789,7 @@ def _ProjectObject(sln, qualified_target, project_objs, projects):
       dependencies=deps)
   # Store it to the list of objects.
   project_objs[qualified_target] = obj
+  # Return project object.
   return obj
 
 
@@ -777,19 +839,18 @@ def GenerateOutput(target_list, target_dicts, data, params):
       continue
     sln_path = build_file[:-4] + options.suffix + '.sln'
     #print 'Generating %s' % sln_path
-    # Get projects in the solution, and their dependents in a separate bucket.
+    # Get projects in the solution, and their dependents.
     sln_projects = gyp.common.BuildFileTargets(target_list, build_file)
-    dep_projects = gyp.common.DeepDependencyTargets(target_dicts, sln_projects)
-    # Convert to entries.
+    sln_projects += gyp.common.DeepDependencyTargets(target_dicts, sln_projects)
+    # Convert projects to Project Objects.
     project_objs = {}
-    entries = [_ProjectObject(sln_path, p, project_objs, projects)
-               for p in sln_projects]
-    dep_entries = [_ProjectObject(sln_path, p, project_objs, projects)
-                   for p in dep_projects]
-    entries.append(MSVSNew.MSVSFolder('dependencies', entries=dep_entries))
+    for p in sln_projects:
+      _ProjectObject(sln_path, p, project_objs, projects)
+    # Create folder hierarchy.
+    root_entries = _GatherSolutionFolders(project_objs)
     # Create solution.
     sln = MSVSNew.MSVSSolution(sln_path,
-                               entries=entries,
+                               entries=root_entries,
                                variants=configs,
                                websiteProperties=False,
                                version=msvs_version)
