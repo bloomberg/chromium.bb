@@ -678,7 +678,7 @@ bool Breakpad::HandleException(int           exception_type,
     if (result == KERN_SUCCESS) {
       // Wait for acknowledgement that the inspection has finished.
       MachReceiveMessage acknowledge_messsage;
-      result = acknowledge_port.WaitForMessage(&acknowledge_messsage, 2000);
+      result = acknowledge_port.WaitForMessage(&acknowledge_messsage, 5000);
     }
   }
 

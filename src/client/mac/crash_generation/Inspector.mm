@@ -208,14 +208,21 @@ void Inspector::Inspect(const char *receive_port_name) {
 
     if (result == KERN_SUCCESS) {
       // Inspect the task and write a minidump file.
-      InspectTask();
+      bool wrote_minidump = InspectTask();
 
       // Send acknowledgement to the crashed process that the inspection
       // has finished.  It will then be able to cleanly exit.
-      if (SendAcknowledgement() == KERN_SUCCESS) {
+      // The return value is ignored because failure isn't fatal. If the process
+      // didn't get the message there's nothing we can do, and we still want to
+      // send the report.
+      SendAcknowledgement();
+
+      if (wrote_minidump) {
         // Ask the user if he wants to upload the crash report to a server,
         // and do so if he agrees.
         LaunchReporter(config_file_.GetFilePath());
+      } else {
+        fprintf(stderr, "Inspection of crashed process failed\n");
       }
 
       // Now that we're done reading messages, cleanup the service, but only
