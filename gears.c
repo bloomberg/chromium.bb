@@ -261,12 +261,11 @@ resize_window(struct gears *gears)
 	if (gears->surface != NULL)
 		eglDestroySurface(gears->display, gears->surface);
 
-	gears->surface = eglCreateSurfaceForName(gears->display,
-						 gears->config,
-						 0,
-						 gears->rectangle.width,
-						 gears->rectangle.height,
-						 0, NULL);
+	gears->surface = eglCreateSurface(gears->display,
+					  gears->config,
+					  gears->rectangle.width,
+					  gears->rectangle.height,
+					  1, NULL);
 
 	eglMakeCurrent(gears->display,
 		       gears->surface, gears->surface, gears->context);
@@ -317,7 +316,7 @@ handle_frame(void *data,
 	struct gears *gears = data;
 	uint32_t name, handle, stride;
 
-	eglGetNativeBuffer(gears->surface, GL_FRONT_LEFT, &name, &handle, &stride);
+	eglGetColorBuffer(gears->surface, 0, &name, &handle, &stride);
 	
 	window_copy(gears->window, &gears->rectangle, name, stride);
 
