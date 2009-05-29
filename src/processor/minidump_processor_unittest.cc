@@ -266,7 +266,6 @@ TEST_F(MinidumpProcessorTest, TestBasicProcessing) {
 }  // namespace
 
 int main(int argc, char *argv[]) {
-  BPLOG_INIT(&argc, &argv);
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
