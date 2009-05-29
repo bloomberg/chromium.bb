@@ -23,6 +23,7 @@ generator_default_variables = {
     'RULE_INPUT_PATH': '${SOURCE}',
 }
 
+generator_handles_variants = True
 
 header = """\
 # This file is generated; do not edit.

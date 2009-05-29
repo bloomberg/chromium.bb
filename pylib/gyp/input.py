@@ -16,22 +16,20 @@ linkable_types = ['executable', 'shared_library', 'loadable_module']
 # A list of sections that contain links to other targets.
 dependency_sections = ['dependencies', 'export_dependent_settings']
 
-# A list of sections that contain pathnames.  You should probably call
-# IsPathSection instead, which has other checks.
-path_sections = [
+# base_path_sections is a list of sections defined by GYP that contain
+# pathnames.  The generators can provide more keys, the two lists are merged
+# into path_sections, but you should call IsPathSection instead of using either
+# list directly.
+base_path_sections = [
   'destination',
   'files',
   'include_dirs',
   'inputs',
   'libraries',
-  'mac_bundle_resources',
-  'mac_framework_dirs',
-  'msvs_cygwin_dirs',
-  'msvs_props',
   'outputs',
   'sources',
 ]
-
+path_sections = []
 
 def IsPathSection(section):
   if section in path_sections or \
@@ -40,6 +38,37 @@ def IsPathSection(section):
      section.endswith('_path') or section.endswith('_paths'):
     return True
   return False
+
+
+# base_non_configuraiton_keys is a list of key names that belong in the target
+# itself and should not be propagated into its configurations.  It is merged
+# with a list that can come from the generator to create non_configuration_keys
+base_non_configuration_keys = [
+  # Sections that must exist inside targets and not configurations.
+  'actions',
+  'configurations',
+  'copies',
+  'default_configuration',
+  'dependencies',
+  'link_languages',
+  'libraries',
+  'postbuilds',
+  'product_dir',
+  'product_extension',
+  'product_name',
+  'rules',
+  'sources',
+  'suppress_wildcard',
+  'target_name',
+  'test',
+  'type',
+  'variants',
+
+  # Sections that can be found inside targets or configurations, but that
+  # should not be propagated from targets into their configurations.
+  'variables',
+]
+non_configuration_keys = []
 
 
 def ExceptionAppend(e, msg):
@@ -1196,38 +1225,7 @@ def MergeDicts(to, fro, to_file, fro_file):
 
 
 def SetUpConfigurations(target, target_dict):
-  # non_configuraiton_keys is a list of key names that belong in the target
-  # itself and should not be propagated into its configurations.
-  # TODO(mark/tvl): we need a way for this list to be extended by the
-  # generators.
-  non_configuration_keys = [
-    # Sections that must exist inside targets and not configurations.
-    'actions',
-    'configurations',
-    'copies',
-    'default_configuration',
-    'dependencies',
-    'link_languages',
-    'libraries',
-    'mac_bundle',
-    'mac_bundle_resources',
-    'postbuilds',
-    'product_dir',
-    'product_extension',
-    'product_name',
-    'rules',
-    'sources',
-    'suppress_wildcard',
-    'target_name',
-    'test',
-    'type',
-    'variants',
-    'xcode_create_dependents_test_runner',
-
-    # Sections that can be found inside targets or configurations, but that
-    # should not be propagated from targets into their configurations.
-    'variables',
-  ]
+  global non_configuration_keys
   # key_suffixes is a list of key suffixes that might appear on key names.
   # These suffixes are handled in conditional evaluations (for =, +, and ?)
   # and rules/exclude processing (for ! and /).  Keys with these suffixes
@@ -1507,7 +1505,21 @@ def ValidateRulesInTarget(target, target_dict):
       rule['rule_sources'] = rule_sources
 
 
-def Load(build_files, variables, includes, depth):
+def Load(build_files, variables, includes, depth, generator_input_info):
+  # Set up path_sections and non_configuration_keys with the default data plus
+  # the generator specifc data.
+  global path_sections
+  path_sections = base_path_sections[:]
+  path_sections.extend(generator_input_info['path_sections'])
+
+  global non_configuration_keys
+  non_configuration_keys = base_non_configuration_keys[:]
+  non_configuration_keys.extend(generator_input_info['non_configuration_keys'])
+  
+  # TODO(mark) handle variants if the generator doesn't want them directly.
+  generator_handles_variants = \
+      generator_input_info['generator_handles_variants']
+  
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
   # and the values are the entire build file contents after "early" or "pre"

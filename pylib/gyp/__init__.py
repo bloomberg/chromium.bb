@@ -150,10 +150,23 @@ def main(args):
     # because ActivePython cannot handle key parameters to __import__.
     generator = __import__(generator_name, globals(), locals(), generator_name)
     default_variables.update(generator.generator_default_variables)
+    
+    # Fetch the generator specific info that gets fed to input, we use getattr
+    # so we can default things and the generators only have to provide what
+    # they need.
+    generator_input_info = {
+      'generator_handles_variants':
+          getattr(generator, 'generator_handles_variants', False),
+      'non_configuration_keys':
+          getattr(generator, 'generator_additional_non_configuration_keys', []),
+      'path_sections':
+          getattr(generator, 'generator_additional_path_sections', []),
+    }
 
     # Process the input specific to this generator.
     [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
-                                                includes[:], options.depth)
+                                                includes[:], options.depth,
+                                                generator_input_info)
 
     params = {'options': options,
               'build_files': build_files,

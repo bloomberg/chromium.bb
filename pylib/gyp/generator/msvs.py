@@ -25,6 +25,11 @@ generator_default_variables = {
     'RULE_INPUT_PATH': '$(InputPath)',
 }
 
+# The msvs specific sections that hold paths
+generator_additional_path_sections = [
+  'msvs_cygwin_dirs',
+  'msvs_props',
+]
 
 def _FixPath(path):
   """Convert paths to a form that will make sense in a vcproj file.

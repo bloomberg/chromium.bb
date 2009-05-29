@@ -46,6 +46,19 @@ generator_default_variables = {
   'SHARED_INTERMEDIATE_DIR': '$(%s)' % _shared_intermediate_var,
 }
 
+# The xcode specific sections that hold paths
+generator_additional_path_sections = [
+  'mac_bundle_resources',
+  # 'mac_framework_dirs', input already handles _dirs endings.
+]
+
+# The xcode specific keys that exist on targets and aren't moved down to
+# configurations.
+generator_additional_non_configuration_keys = [
+  'mac_bundle',
+  'mac_bundle_resources',
+  'xcode_create_dependents_test_runner',
+]
 
 class XcodeProject(object):
   def __init__(self, gyp_path, path, build_file_dict):
