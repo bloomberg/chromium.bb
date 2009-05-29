@@ -737,20 +737,18 @@ def _DictsToFolders(base_path, bucket):
   return children
 
 
-def _CollapseSingles(is_root, node):
+def _CollapseSingles(parent, node):
   # Recursively explorer the tree of dicts looking for projects which are
   # the sole item in a folder which has the same name as the project. Bring
   # such projects up one level.
-  if (not is_root and
-      type(node) == dict and
+  if (type(node) == dict and
       len(node) == 1 and
-      isinstance(node[node.keys()[0]], MSVSNew.MSVSProject) and
-      node[node.keys()[0]].name == node.keys()[0]):
-    node = node[node.keys()[0]]
+      node.keys()[0] == parent + '.vcproj'):
+    return node[node.keys()[0]]
   if type(node) != dict:
     return node
   for child in node.keys():
-    node[child] = _CollapseSingles(False, node[child])
+    node[child] = _CollapseSingles(child, node[child])
   return node
 
 
@@ -761,14 +759,14 @@ def _GatherSolutionFolders(project_objs):
     gyp_file, target = gyp.common.BuildFileAndTarget('', p)[0:2]
     gyp_dir = os.path.dirname(gyp_file)
     path_dict = _GetPathDict(root, gyp_dir)
-    path_dict[target] = project_objs[p]
+    path_dict[target + '.vcproj'] = project_objs[p]
   # Walk down from the top until we hit a folder that has more than one entry.
   # In practice, this strips the top-level "src/" dir from the hierarchy in
   # the solution.
   while len(root) == 1 and type(root[root.keys()[0]]) == dict:
     root = root[root.keys()[0]]
   # Collapse singles.
-  root = _CollapseSingles(True, root)
+  root = _CollapseSingles('', root)
   # Merge buckets until everything is a root entry.
   return _DictsToFolders('', root)
 
