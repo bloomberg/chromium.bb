@@ -940,7 +940,21 @@ class GClient(object):
   def SetConfig(self, content):
     self._config_dict = {}
     self._config_content = content
-    exec(content, self._config_dict)
+    try:
+      exec(content, self._config_dict)
+    except SyntaxError, e:
+      try:
+        # Try to construct a human readable error message
+        error_message = [
+            'There is a syntax error in your configuration file.',
+            'Line #%s, character %s:' % (e.lineno, e.offset),
+            '"%s"' % re.sub(r'[\r\n]*$', '', e.text) ]
+      except:
+        # Something went wrong, re-raise the original exception
+        raise e
+      else:
+        # Raise a new exception with the human readable message:
+        raise Error('\n'.join(error_message))
 
   def SaveConfig(self):
     FileWrite(os.path.join(self._root_dir, self._options.config_filename),
