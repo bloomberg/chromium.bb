@@ -12,10 +12,12 @@ import unittest
 import warnings
 
 # Local imports
+import __init__
 import gcl
 import gclient
 import presubmit_support as presubmit
 import presubmit_canned_checks
+mox = __init__.mox
 
 
 class PresubmitTestsBase(unittest.TestCase):
@@ -25,8 +27,8 @@ class PresubmitTestsBase(unittest.TestCase):
       self._warnings_stack = warnings.catch_warnings()
     else:
       self._warnings_stack = None
-    
     warnings.simplefilter("ignore", DeprecationWarning)
+    self.mox = mox.Mox()
     self.original_IsFile = os.path.isfile
     def MockIsFile(f):
       dir = os.path.dirname(f)
@@ -91,6 +93,10 @@ def CheckChangeOnUpload(input_api, output_api):
     gcl.GetRepositoryRoot = MockGetRepositoryRoot
     self._sys_stdout = sys.stdout
     sys.stdout = StringIO.StringIO()
+    self._os_path_exists = os.path.exists
+    os.path.exists = self.mox.CreateMockAnything()
+    self._os_path_isdir = os.path.isdir
+    os.path.isdir = self.mox.CreateMockAnything()
 
   def tearDown(self):
     os.path.isfile = self.original_IsFile
@@ -99,6 +105,8 @@ def CheckChangeOnUpload(input_api, output_api):
     gcl.ReadFile = self.original_ReadFile
     gcl.GetRepositoryRoot = self.original_GetRepositoryRoot
     sys.stdout = self._sys_stdout
+    os.path.exists = self._os_path_exists
+    os.path.isdir = self._os_path_isdir
     self._warnings_stack = None
 
   @staticmethod
@@ -164,7 +172,15 @@ class PresubmitUnittest(PresubmitTestsBase):
       ['M', 'flop/notfound.txt'],  # not found in SVN, still exists locally
       ['D', 'boo/flap.h'],
     ]
-
+    os.path.exists(os.path.join('foo', 'blat.cc')).AndReturn(True)
+    os.path.isdir(os.path.join('foo', 'blat.cc')).AndReturn(False)
+    os.path.exists('binary.dll').AndReturn(True)
+    os.path.isdir('binary.dll').AndReturn(False)
+    os.path.exists('isdir').AndReturn(True)
+    os.path.isdir('isdir').AndReturn(True)
+    os.path.exists(os.path.join('flop', 'notfound.txt')).AndReturn(False)
+    os.path.exists(os.path.join('boo', 'flap.h')).AndReturn(False)
+    self.mox.ReplayAll()
     ci = gcl.ChangeInfo(name='mychange',
                         description='\n'.join(description_lines),
                         files=files)
@@ -222,6 +238,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.failUnless(rhs_lines[3][0].LocalPath() == files[3][1])
     self.failUnless(rhs_lines[3][1] == 2)
     self.failUnless(rhs_lines[3][2] == 'two:%s' % files[3][1])
+    self.mox.VerifyAll()
 
   def testExecPresubmitScript(self):
     description_lines = ('Hello there',
@@ -391,6 +408,11 @@ def CheckChangeOnCommit(input_api, output_api):
       ['A', 'isdir'],
       ['A', 'isdir\\blat.cc'],
     ]
+    os.path.exists('isdir').AndReturn(True)
+    os.path.isdir('isdir').AndReturn(True)
+    os.path.exists(os.path.join('isdir', 'blat.cc')).AndReturn(True)
+    os.path.isdir(os.path.join('isdir', 'blat.cc')).AndReturn(False)
+    self.mox.ReplayAll()
     ci = gcl.ChangeInfo(name='mychange',
                         description='foo',
                         files=files)
@@ -399,7 +421,7 @@ def CheckChangeOnCommit(input_api, output_api):
     affected_files = change.AffectedFiles(include_dirs=False)
     self.failUnless(len(affected_files) == 1)
     self.failUnless(affected_files[0].LocalPath().endswith('blat.cc'))
-
+    self.mox.VerifyAll()
     affected_files_and_dirs = change.AffectedFiles(include_dirs=True)
     self.failUnless(len(affected_files_and_dirs) == 2)
 
@@ -514,6 +536,16 @@ class InputApiUnittest(PresubmitTestsBase):
       ['A', 'boo/flap.h'],
     ]
 
+    os.path.exists(os.path.join('foo', 'blat.cc')).AndReturn(True)
+    os.path.isdir(os.path.join('foo', 'blat.cc')).AndReturn(False)
+    os.path.exists(os.path.join('foo', 'blat', 'binary.dll')).AndReturn(True)
+    os.path.isdir(os.path.join('foo', 'blat', 'binary.dll')).AndReturn(False)
+    os.path.exists(os.path.join('foo', 'mat', 'beingdeleted.txt')).AndReturn(
+        False)
+    os.path.exists(os.path.join('flop', 'notfound.txt')).AndReturn(False)
+    os.path.exists(os.path.join('boo', 'flap.h')).AndReturn(True)
+    os.path.isdir(os.path.join('boo', 'flap.h')).AndReturn(False)
+    self.mox.ReplayAll()
     ci = gcl.ChangeInfo(name='mychange',
                         description='\n'.join(description_lines),
                         files=files)
@@ -536,6 +568,7 @@ class InputApiUnittest(PresubmitTestsBase):
     self.failUnless(len(rhs_lines) == 2)
     self.assertEqual(rhs_lines[0][0].LocalPath(),
                     presubmit.normpath('foo/blat.cc'))
+    self.mox.VerifyAll()
 
   def testGetAbsoluteLocalPath(self):
     # Regression test for bug of presubmit stuff that relies on invoking
@@ -633,10 +666,8 @@ class OuputApiUnittest(PresubmitTestsBase):
 class AffectedFileUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     members = [
-      'AbsoluteLocalPath', 'Action', 'IsDirectory', 'IsTextFile',
-      'LocalPath', 'NewContents',
-      'OldContents', 'OldFileTempPath', 'Property', 'ServerPath', 'action',
-      'is_directory', 'path', 'properties', 'repository_root', 'server_path',
+      'AbsoluteLocalPath', 'Action', 'IsDirectory', 'IsTextFile', 'LocalPath',
+      'NewContents', 'OldContents', 'OldFileTempPath', 'Property', 'ServerPath',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.AffectedFile('a', 'b'), members)
@@ -644,11 +675,14 @@ class AffectedFileUnittest(PresubmitTestsBase):
 
   def testAffectedFile(self):
     af = presubmit.SvnAffectedFile('foo/blat.cc', 'M')
+    os.path.exists(os.path.join('foo', 'blat.cc')).AndReturn(False)
+    self.mox.ReplayAll()
     self.failUnless(af.ServerPath() == 'svn:/foo/foo/blat.cc')
     self.failUnless(af.LocalPath() == presubmit.normpath('foo/blat.cc'))
     self.failUnless(af.Action() == 'M')
     self.failUnless(af.NewContents() == ['one:%s' % af.LocalPath(),
                                          'two:%s' % af.LocalPath()])
+    self.mox.VerifyAll()
 
     af = presubmit.AffectedFile('notfound.cc', 'A')
     self.failUnless(af.ServerPath() == '')
@@ -657,6 +691,25 @@ class AffectedFileUnittest(PresubmitTestsBase):
     affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
     self.failUnless(affected_file.Property('svn:secret-property') ==
                     'secret-property-value')
+
+  def testIsDirectoryNotExists(self):
+    os.path.exists('foo.cc').AndReturn(False)
+    self.mox.ReplayAll()
+    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
+    # Verify cache coherency.
+    self.failIf(affected_file.IsDirectory())
+    self.failIf(affected_file.IsDirectory())
+    self.mox.VerifyAll()
+
+  def testIsDirectory(self):
+    os.path.exists('foo.cc').AndReturn(True)
+    os.path.isdir('foo.cc').AndReturn(True)
+    self.mox.ReplayAll()
+    affected_file = presubmit.SvnAffectedFile('foo.cc', 'A')
+    # Verify cache coherency.
+    self.failUnless(affected_file.IsDirectory())
+    self.failUnless(affected_file.IsDirectory())
+    self.mox.VerifyAll()
 
 
 class CannedChecksUnittest(PresubmitTestsBase):

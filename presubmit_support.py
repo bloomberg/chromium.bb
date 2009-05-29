@@ -316,12 +316,11 @@ class AffectedFile(object):
   """Representation of a file in a change."""
 
   def __init__(self, path, action, repository_root=''):
-    self.path = path
-    self.action = action
-    self.repository_root = repository_root
-    self.server_path = None
-    self.is_directory = None
-    self.properties = {}
+    self._path = path
+    self._action = action
+    self._repository_root = repository_root
+    self._is_directory = None
+    self._properties = {}
 
   def ServerPath(self):
     """Returns a path string that identifies the file in the SCM system.
@@ -333,32 +332,32 @@ class AffectedFile(object):
   def LocalPath(self):
     """Returns the path of this file on the local disk relative to client root.
     """
-    return normpath(self.path)
+    return normpath(self._path)
 
   def AbsoluteLocalPath(self):
     """Returns the absolute path of this file on the local disk.
     """
-    return normpath(os.path.join(self.repository_root, self.LocalPath()))
+    return normpath(os.path.join(self._repository_root, self.LocalPath()))
 
   def IsDirectory(self):
     """Returns true if this object is a directory."""
-    path = self.AbsoluteLocalPath()
-    if self.is_directory is None:
-      self.is_directory = (os.path.exists(path) and
-                           os.path.isdir(path))
-    return self.is_directory
+    if self._is_directory is None:
+      path = self.AbsoluteLocalPath()
+      self._is_directory = (os.path.exists(path) and
+                            os.path.isdir(path))
+    return self._is_directory
 
   def Action(self):
     """Returns the action on this opened file, e.g. A, M, D, etc."""
     # TODO(maruel): Somewhat crappy, Could be "A" or "A  +" for svn but
     # different for other SCM.
-    return self.action
+    return self._action
 
   def Property(self, property_name):
     """Returns the specified SCM property of this file, or None if no such
     property.
     """
-    return self.properties.get(property_name, None)
+    return self._properties.get(property_name, None)
 
   def IsTextFile(self):
     """Returns True if the file is a text file and not a binary file."""
@@ -397,38 +396,47 @@ class AffectedFile(object):
 class SvnAffectedFile(AffectedFile):
   """Representation of a file in a change out of a Subversion checkout."""
 
+  def __init__(self, *args, **kwargs):
+    AffectedFile.__init__(self, *args, **kwargs)
+    self._server_path = None
+    self._is_text_file = None
+
   def ServerPath(self):
-    if self.server_path is None:
-      self.server_path = gclient.CaptureSVNInfo(
+    if self._server_path is None:
+      self._server_path = gclient.CaptureSVNInfo(
           self.AbsoluteLocalPath()).get('URL', '')
-    return self.server_path
+    return self._server_path
 
   def IsDirectory(self):
-    path = self.AbsoluteLocalPath()
-    if self.is_directory is None:
+    if self._is_directory is None:
+      path = self.AbsoluteLocalPath()
       if os.path.exists(path):
         # Retrieve directly from the file system; it is much faster than
         # querying subversion, especially on Windows.
-        self.is_directory = os.path.isdir(path)
+        self._is_directory = os.path.isdir(path)
       else:
-        self.is_directory = gclient.CaptureSVNInfo(
+        self._is_directory = gclient.CaptureSVNInfo(
             path).get('Node Kind') in ('dir', 'directory')
-    return self.is_directory
+    return self._is_directory
 
   def Property(self, property_name):
-    if not property_name in self.properties:
-      self.properties[property_name] = gcl.GetSVNFileProperty(
+    if not property_name in self._properties:
+      self._properties[property_name] = gcl.GetSVNFileProperty(
           self.AbsoluteLocalPath(), property_name)
-    return self.properties[property_name]
+    return self._properties[property_name]
 
   def IsTextFile(self):
-    if self.Action() == 'D':
-      return False
-    mime_type = gcl.GetSVNFileProperty(self.AbsoluteLocalPath(),
-                                       'svn:mime-type')
-    if not mime_type or mime_type.startswith('text/'):
-      return True
-    return False
+    if self._is_text_file is None:
+      if self.Action() == 'D':
+        # A deleted file is not a text file.
+        self._is_text_file = False
+      elif self.IsDirectory():
+        self._is_text_file = False
+      else:
+        mime_type = gcl.GetSVNFileProperty(self.AbsoluteLocalPath(),
+                                           'svn:mime-type')
+        self._is_text_file = (not mime_type or mime_type.startswith('text/'))
+    return self._is_text_file
 
 
 class GclChange(object):
