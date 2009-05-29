@@ -46,7 +46,7 @@ struct display {
 	struct wl_output *output;
 	struct wl_input_device *input_device;
 	struct rectangle screen_allocation;
-	cairo_drm_context_t *ctx;
+	cairo_drm_device_t *device;
 	int fd;
 };
 
@@ -98,7 +98,7 @@ window_draw_decorations(struct window *window)
 	int width, height;
 
 	window->cairo_surface =
-		cairo_drm_surface_create(window->display->ctx,
+		cairo_drm_surface_create(window->display->device,
 					 CAIRO_CONTENT_COLOR_ALPHA,
 					 window->allocation.width,
 					 window->allocation.height);
@@ -205,7 +205,7 @@ window_draw_fullscreen(struct window *window)
 	struct wl_visual *visual;
 
 	window->cairo_surface =
-		cairo_drm_surface_create(window->display->ctx,
+		cairo_drm_surface_create(window->display->device,
 					 CAIRO_CONTENT_COLOR_ALPHA,
 					 window->allocation.width,
 					 window->allocation.height);
@@ -562,7 +562,7 @@ cairo_surface_t *
 window_create_surface(struct window *window,
 		      struct rectangle *rectangle)
 {
-	return cairo_drm_surface_create(window->display->ctx,
+	return cairo_drm_surface_create(window->display->device,
 					CAIRO_CONTENT_COLOR_ALPHA,
 					rectangle->width,
 					rectangle->height);
@@ -707,9 +707,9 @@ display_create(struct wl_display *display, int fd)
 		return NULL;
 
 	d->display = display;
-	d->ctx = cairo_drm_context_get_for_fd(fd);
-	if (d->ctx == NULL) {
-		fprintf(stderr, "failed to get cairo drm context\n");
+	d->device = cairo_drm_device_get_for_fd(fd);
+	if (d->device == NULL) {
+		fprintf(stderr, "failed to get cairo drm device\n");
 		return NULL;
 	}
 

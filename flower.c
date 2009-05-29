@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct wl_visual *visual;
 	int fd;
-	cairo_drm_context_t *ctx;
+	cairo_drm_device_t *device;
 	cairo_surface_t *s;
 	struct timespec ts;
 	GMainLoop *loop;
@@ -171,8 +171,9 @@ int main(int argc, char *argv[])
 	srandom(ts.tv_nsec);
 	flower.offset = random();
 
-	ctx = cairo_drm_context_get_for_fd(fd);
-	s = cairo_drm_surface_create(ctx, CAIRO_CONTENT_COLOR_ALPHA,
+	device = cairo_drm_device_get_for_fd(fd);
+	s = cairo_drm_surface_create(device,
+				     CAIRO_CONTENT_COLOR_ALPHA,
 				     flower.width, flower.height);
 	draw_stuff(s, flower.width, flower.height);
 
