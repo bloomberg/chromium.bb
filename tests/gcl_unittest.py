@@ -5,9 +5,6 @@
 
 """Unit tests for gcl.py."""
 
-import StringIO
-import os
-import sys
 import unittest
 
 # Local imports
@@ -16,23 +13,14 @@ import gcl
 mox = __init__.mox
 
 
-class GclTestsBase(unittest.TestCase):
+class GclTestsBase(mox.MoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
-    self.mox = mox.Mox()
-    def RunShellMock(filename):
-      return filename
-    self._RunShell = gcl.RunShell
-    gcl.RunShell = RunShellMock
-    self._gcl_gclient_CaptureSVNInfo = gcl.gclient.CaptureSVNInfo
-    gcl.gclient.CaptureSVNInfo = self.mox.CreateMockAnything()
-    self._gcl_os_getcwd = gcl.os.getcwd
-    gcl.os.getcwd = self.mox.CreateMockAnything()
-
-  def tearDown(self):
-    gcl.RunShell = self._RunShell
-    gcl.gclient.CaptureSVNInfo = self._gcl_gclient_CaptureSVNInfo
-    gcl.os.getcwd = self._gcl_os_getcwd
+    mox.MoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(gcl, 'RunShell')
+    self.mox.StubOutWithMock(gcl.gclient, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(gcl, 'os')
+    self.mox.StubOutWithMock(gcl.os, 'getcwd')
 
   def compareMembers(self, object, members):
     """If you add a member, be sure to add the relevant test!"""
@@ -74,14 +62,11 @@ class GclUnittest(GclTestsBase):
 
 
   def testHelp(self):
-    old_stdout = sys.stdout
-    try:
-      dummy = StringIO.StringIO()
-      gcl.sys.stdout = dummy
-      gcl.Help()
-      self.assertEquals(len(dummy.getvalue()), 1832)
-    finally:
-      gcl.sys.stdout = old_stdout
+    self.mox.StubOutWithMock(gcl.sys, 'stdout')
+    gcl.sys.stdout.write(mox.StrContains('GCL is a wrapper for Subversion'))
+    gcl.sys.stdout.write('\n')
+    self.mox.ReplayAll()
+    gcl.Help()
 
   def testGetRepositoryRootNone(self):
     gcl.REPOSITORY_ROOT = None
@@ -93,22 +78,20 @@ class GclUnittest(GclTestsBase):
         result)
     self.mox.ReplayAll()
     self.assertRaises(Exception, gcl.GetRepositoryRoot)
-    self.mox.VerifyAll()
 
   def testGetRepositoryRootGood(self):
     gcl.REPOSITORY_ROOT = None
-    root_path = os.path.join('bleh', 'prout', 'pouet')
+    root_path = gcl.os.path.join('bleh', 'prout', 'pouet')
     gcl.os.getcwd().AndReturn(root_path)
     result1 = { "Repository Root": "Some root" }
     gcl.gclient.CaptureSVNInfo(root_path, print_error=False).AndReturn(result1)
     gcl.os.getcwd().AndReturn(root_path)
     results2 = { "Repository Root": "A different root" }
     gcl.gclient.CaptureSVNInfo(
-        os.path.dirname(root_path),
+        gcl.os.path.dirname(root_path),
         print_error=False).AndReturn(results2)
     self.mox.ReplayAll()
     self.assertEquals(gcl.GetRepositoryRoot(), root_path)
-    self.mox.VerifyAll()
 
 
 class ChangeInfoUnittest(GclTestsBase):
@@ -135,45 +118,18 @@ class ChangeInfoUnittest(GclTestsBase):
 class UploadCLUnittest(GclTestsBase):
   def setUp(self):
     GclTestsBase.setUp(self)
-    self._os_chdir = gcl.os.chdir
-    gcl.os.chdir = self.mox.CreateMockAnything()
-    self._os_close = gcl.os.close
-    gcl.os.close = self.mox.CreateMockAnything()
-    self._os_remove = gcl.os.remove
-    gcl.os.remove = self.mox.CreateMockAnything()
-    self._os_write = gcl.os.write
-    gcl.os.write = self.mox.CreateMockAnything()
-    self._tempfile = gcl.tempfile
-    gcl.tempfile = self.mox.CreateMockAnything()
-    self._upload_RealMain = gcl.upload.RealMain
-    gcl.upload.RealMain = self.mox.CreateMockAnything()
-    self._DoPresubmitChecks = gcl.DoPresubmitChecks
-    gcl.DoPresubmitChecks = self.mox.CreateMockAnything()
-    self._GenerateDiff = gcl.GenerateDiff
-    gcl.GenerateDiff = self.mox.CreateMockAnything()
-    self._GetCodeReviewSetting = gcl.GetCodeReviewSetting
-    gcl.GetCodeReviewSetting = self.mox.CreateMockAnything()
-    self._GetRepositoryRoot = gcl.GetRepositoryRoot
-    gcl.GetRepositoryRoot = self.mox.CreateMockAnything()
-    self._SendToRietveld = gcl.SendToRietveld
-    gcl.SendToRietveld = self.mox.CreateMockAnything()
-    self._TryChange = gcl.TryChange
-    gcl.TryChange = self.mox.CreateMockAnything()
-    
-  def tearDown(self):
-    GclTestsBase.tearDown(self)
-    gcl.os.chdir = self._os_chdir
-    gcl.os.close = self._os_close
-    gcl.os.remove = self._os_remove
-    gcl.os.write = self._os_write
-    gcl.tempfile = self._tempfile
-    gcl.upload.RealMain = self._upload_RealMain
-    gcl.DoPresubmitChecks = self._DoPresubmitChecks
-    gcl.GenerateDiff = self._GenerateDiff
-    gcl.GetCodeReviewSetting = self._GetCodeReviewSetting
-    gcl.GetRepositoryRoot = self._GetRepositoryRoot
-    gcl.SendToRietveld = self._SendToRietveld
-    gcl.TryChange = self._TryChange
+    self.mox.StubOutWithMock(gcl.os, 'chdir')
+    self.mox.StubOutWithMock(gcl.os, 'close')
+    self.mox.StubOutWithMock(gcl.os, 'remove')
+    self.mox.StubOutWithMock(gcl.os, 'write')
+    self.mox.StubOutWithMock(gcl, 'tempfile')
+    self.mox.StubOutWithMock(gcl.upload, 'RealMain')
+    self.mox.StubOutWithMock(gcl, 'DoPresubmitChecks')
+    self.mox.StubOutWithMock(gcl, 'GenerateDiff')
+    self.mox.StubOutWithMock(gcl, 'GetCodeReviewSetting')
+    self.mox.StubOutWithMock(gcl, 'GetRepositoryRoot')
+    self.mox.StubOutWithMock(gcl, 'SendToRietveld')
+    self.mox.StubOutWithMock(gcl, 'TryChange')
 
   def testNew(self):
     change_info = gcl.ChangeInfo('naame', 'iissue', 'deescription',
@@ -197,7 +153,6 @@ class UploadCLUnittest(GclTestsBase):
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
     gcl.UploadCL(change_info, args)
-    self.mox.VerifyAll()
 
   def testServerOverride(self):
     change_info = gcl.ChangeInfo('naame', '', 'deescription',
@@ -219,14 +174,9 @@ class UploadCLUnittest(GclTestsBase):
         "--message=deescription"], change_info.patch).AndReturn(("1", "2"))
     gcl.os.remove('descfile')
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
-    #gcl.GetCodeReviewSetting('TRY_ON_UPLOAD').AndReturn('True')
-    #gcl.TryChange(change_info,
-    #              ['--issue', '1', '--patchset', '2'],
-    #              swallow_exception=True)
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
     gcl.UploadCL(change_info, args)
-    self.mox.VerifyAll()
 
   def testNoTry(self):
     change_info = gcl.ChangeInfo('naame', '', 'deescription',
@@ -251,12 +201,11 @@ class UploadCLUnittest(GclTestsBase):
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
     gcl.UploadCL(change_info, args)
-    self.mox.VerifyAll()
 
   def testNormal(self):
     change_info = gcl.ChangeInfo('naame', '', 'deescription',
                                  ['aa', 'bb'])
-    change_info.Save = self.mox.CreateMockAnything()
+    self.mox.StubOutWithMock(change_info, 'Save')
     args = []
     change_info.Save()
     gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
@@ -280,7 +229,6 @@ class UploadCLUnittest(GclTestsBase):
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
     gcl.UploadCL(change_info, args)
-    self.mox.VerifyAll()
 
 
 if __name__ == '__main__':
