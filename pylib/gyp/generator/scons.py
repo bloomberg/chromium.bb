@@ -115,6 +115,34 @@ _outputs = env.Command(
 )
 """
 
+# This is copied from the default SCons action, updated to handle symlinks.
+_copy_action_template = """
+import shutil
+import SCons.Action
+
+def _copy_files_or_dirs_or_symlinks(dest, src):
+  SCons.Node.FS.invalidate_node_memos(dest)
+  if SCons.Util.is_List(src) and os.path.isdir(dest):
+    for file in src:
+      shutil.copy2(file, dest)
+    return 0
+  elif os.path.islink(src):
+    linkto = os.readlink(src)
+    os.symlink(linkto, dest)
+    return 0
+  elif os.path.isfile(src):
+    return shutil.copy2(src, dest)
+  else:
+    return shutil.copytree(src, dest, 1)
+
+def _copy_files_or_dirs_or_symlinks_str(dest, src):
+  return 'Copying %s to %s ...' % (src, dest)
+
+GYPCopy = SCons.Action.ActionFactory(_copy_files_or_dirs_or_symlinks,
+                                     _copy_files_or_dirs_or_symlinks_str,
+                                     convert=str)
+"""
+
 _rule_template = """
 %(name)s_additional_inputs = %(inputs)s
 %(name)s_outputs = %(outputs)s
@@ -391,10 +419,15 @@ def GenerateSConscript(output_filename, spec, build_file):
   SConsTypeWriter[spec.get('type')](fp, spec)
 
   copies = spec.get('copies', [])
+  if copies:
+    fp.write(_copy_action_template)
   for copy in copies:
     destdir = copy['destination']
     files = copy['files']
-    fmt = '\n_outputs = env.Command(%s,\n    %s\n,    \'cp $SOURCE $TARGET\')\n'
+    fmt = ('\n'
+           '_outputs = env.Command(%s,\n'
+           '    %s,\n'
+           '    GYPCopy(\'$TARGET\', \'$SOURCE\'))\n')
     for f in copy['files']:
       dest = os.path.join(destdir, os.path.split(f)[1])
       fp.write(fmt % (repr(dest), repr(f)))
