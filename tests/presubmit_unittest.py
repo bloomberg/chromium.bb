@@ -9,7 +9,6 @@ import os
 import StringIO
 import sys
 import unittest
-import warnings
 
 # Local imports
 import __init__
@@ -20,15 +19,11 @@ import presubmit_canned_checks
 mox = __init__.mox
 
 
-class PresubmitTestsBase(unittest.TestCase):
+class PresubmitTestsBase(mox.MoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   def setUp(self):
-    if hasattr(warnings, 'catch_warnings'):
-      self._warnings_stack = warnings.catch_warnings()
-    else:
-      self._warnings_stack = None
-    warnings.simplefilter("ignore", DeprecationWarning)
-    self.mox = mox.Mox()
+    super(PresubmitTestsBase, self).setUp()
+    self.mox.StubOutWithMock(presubmit, 'warnings')
     self.original_IsFile = os.path.isfile
     def MockIsFile(f):
       dir = os.path.dirname(f)
@@ -107,7 +102,6 @@ def CheckChangeOnUpload(input_api, output_api):
     sys.stdout = self._sys_stdout
     os.path.exists = self._os_path_exists
     os.path.isdir = self._os_path_isdir
-    self._warnings_stack = None
 
   @staticmethod
   def MakeBasicChange(name, description):
@@ -201,8 +195,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.failUnless(len(change.AffectedFiles(include_dirs=True,
                                              include_deletes=False)) == 4)
 
-    affected_text_files = change.AffectedTextFiles(include_deletes=True)
-    self.failUnless(len(affected_text_files) == 3)
+    affected_text_files = change.AffectedTextFiles()
+    self.failUnless(len(affected_text_files) == 2)
     self.failIf(filter(lambda x: x.LocalPath() == 'binary.dll',
                        affected_text_files))
 
@@ -470,7 +464,7 @@ class InputApiUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     members = [
       'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
-      'DepotToLocalPath', 'FilterTextFiles', 'LocalPaths', 'LocalToDepotPath',
+      'DepotToLocalPath', 'LocalPaths', 'LocalToDepotPath',
       'PresubmitLocalPath', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
       'marshal', 'os_path', 'pickle', 'platform',
@@ -497,30 +491,6 @@ class InputApiUnittest(PresubmitTestsBase):
     api = presubmit.InputApi(change=42, presubmit_path='foo/path/PRESUBMIT.py')
     self.failUnless(api.PresubmitLocalPath() == 'foo/path')
     self.failUnless(api.change == 42)
-
-  def testFilterTextFiles(self):
-    class MockAffectedFile(object):
-      def __init__(self, path, action):
-        self.path = path
-        self.action = action
-      def Action(self):
-        return self.action
-      def LocalPath(self):
-        return self.path
-      def AbsoluteLocalPath(self):
-        return self.path
-
-    list = [MockAffectedFile('foo/blat.txt', 'M'),
-            MockAffectedFile('foo/binary.blob', 'M'),
-            MockAffectedFile('blat/flop.txt', 'D')]
-
-    output = presubmit.InputApi.FilterTextFiles(list, include_deletes=True)
-    self.failUnless(len(output) == 2)
-    self.failUnless(list[0] in output and list[2] in output)
-
-    output = presubmit.InputApi.FilterTextFiles(list, include_deletes=False)
-    self.failUnless(len(output) == 1)
-    self.failUnless(list[0] in output)
 
   def testInputApiPresubmitScriptFiltering(self):
     description_lines = ('Hello there',
@@ -607,6 +577,16 @@ class InputApiUnittest(PresubmitTestsBase):
       self.failUnless(absolute_paths[0] == presubmit.normpath('c:/temp/isdir'))
       self.failUnless(absolute_paths[1] ==
                       presubmit.normpath('c:/temp/isdir/blat.cc'))
+
+  def testDeprecated(self):
+    presubmit.warnings.warn(mox.IgnoreArg(), category=mox.IgnoreArg(),
+                            stacklevel=2)
+    self.mox.ReplayAll()
+    change = presubmit.GclChange(gcl.ChangeInfo(name='mychange',
+                                                description='Bleh\n'))
+    api = presubmit.InputApi(change, 'foo/PRESUBMIT.py')
+    api.AffectedTextFiles(include_deletes=False)
+    self.mox.VerifyAll()
 
 
 class OuputApiUnittest(PresubmitTestsBase):
@@ -709,6 +689,21 @@ class AffectedFileUnittest(PresubmitTestsBase):
     # Verify cache coherency.
     self.failUnless(affected_file.IsDirectory())
     self.failUnless(affected_file.IsDirectory())
+    self.mox.VerifyAll()
+
+  def testIsTextFile(self):
+    list = [presubmit.SvnAffectedFile('foo/blat.txt', 'M'),
+            presubmit.SvnAffectedFile('foo/binary.blob', 'M'),
+            presubmit.SvnAffectedFile('blat/flop.txt', 'D')]
+    os.path.exists(os.path.join('foo', 'blat.txt')).AndReturn(True)
+    os.path.isdir(os.path.join('foo', 'blat.txt')).AndReturn(False)
+    os.path.exists(os.path.join('foo', 'binary.blob')).AndReturn(True)
+    os.path.isdir(os.path.join('foo', 'binary.blob')).AndReturn(False)
+    self.mox.ReplayAll()
+
+    output = filter(lambda x: x.IsTextFile(), list)
+    self.failUnless(len(output) == 1)
+    self.failUnless(list[0] == output[0])
     self.mox.VerifyAll()
 
 

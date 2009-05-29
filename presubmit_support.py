@@ -222,41 +222,16 @@ class InputApi(object):
     if depot_path:
       return depot_path
 
-  @staticmethod
-  def FilterTextFiles(affected_files, include_deletes=True):
-    """Filters out all except text files and optionally also filters out
-    deleted files.
-
-    Args:
-      affected_files: List of AffectedFiles objects.
-      include_deletes: If false, deleted files will be filtered out.
-
-    Returns:
-      Filtered list of AffectedFiles objects.
-    """
-    output_files = []
-    for af in affected_files:
-      if include_deletes or af.Action() != 'D':
-        path = af.AbsoluteLocalPath()
-        mime_type = gcl.GetSVNFileProperty(path, 'svn:mime-type')
-        if not mime_type or mime_type.startswith('text/'):
-          output_files.append(af)
-    return output_files
-
   def AffectedFiles(self, include_dirs=False, include_deletes=True):
     """Same as input_api.change.AffectedFiles() except only lists files
     (and optionally directories) in the same directory as the current presubmit
     script, or subdirectories thereof.
     """
-    output_files = []
     dir_with_slash = normpath("%s/" % self.PresubmitLocalPath())
     if len(dir_with_slash) == 1:
       dir_with_slash = ''
-    for af in self.change.AffectedFiles(include_dirs, include_deletes):
-      af_path = normpath(af.LocalPath())
-      if af_path.startswith(dir_with_slash):
-        output_files.append(af)
-    return output_files
+    return filter(lambda x: normpath(x.LocalPath()).startswith(dir_with_slash),
+                  self.change.AffectedFiles(include_dirs, include_deletes))
 
   def LocalPaths(self, include_dirs=False):
     """Returns local paths of input_api.AffectedFiles()."""
@@ -270,17 +245,18 @@ class InputApi(object):
     """Returns server paths of input_api.AffectedFiles()."""
     return [af.ServerPath() for af in self.AffectedFiles(include_dirs)]
 
-  @deprecated
-  def AffectedTextFiles(self, include_deletes=True):
+  def AffectedTextFiles(self, include_deletes=None):
     """Same as input_api.change.AffectedTextFiles() except only lists files
     in the same directory as the current presubmit script, or subdirectories
     thereof.
-
-    Warning: This function retrieves the svn property on each file so it can be
-    slow for large change lists.
     """
-    return InputApi.FilterTextFiles(self.AffectedFiles(include_dirs=False),
-                                    include_deletes)
+    if include_deletes is not None:
+      warnings.warn("AffectedTextFiles(include_deletes=%s)"
+                        " is deprecated and ignored" % str(include_deletes),
+                    category=DeprecationWarning,
+                    stacklevel=2)
+    return filter(lambda x: x.IsTextFile(),
+                  self.AffectedFiles(include_dirs=False, include_deletes=False))
 
   def RightHandSideLines(self):
     """An iterator over all text lines in "new" version of changed files.
@@ -360,7 +336,9 @@ class AffectedFile(object):
     return self._properties.get(property_name, None)
 
   def IsTextFile(self):
-    """Returns True if the file is a text file and not a binary file."""
+    """Returns True if the file is a text file and not a binary file.
+    
+    Deleted files are not text file."""
     raise NotImplementedError()  # Implement when needed
 
   def NewContents(self):
@@ -529,18 +507,15 @@ class GclChange(object):
     else:
       return filter(lambda x: x.Action() != 'D', affected)
 
-  @deprecated
-  def AffectedTextFiles(self, include_deletes=True):
-    """Return a list of the text files in a change.
-
-    It's common to want to iterate over only the text files.
-
-    Args:
-      include_deletes: Controls whether to return files with "delete" actions,
-      which commonly aren't relevant to presubmit scripts.
-    """
-    return InputApi.FilterTextFiles(self.AffectedFiles(include_dirs=False),
-                                    include_deletes)
+  def AffectedTextFiles(self, include_deletes=None):
+    """Return a list of the existing text files in a change."""
+    if include_deletes is not None:
+      warnings.warn("AffectedTextFiles(include_deletes=%s)"
+                        " is deprecated and ignored" % str(include_deletes),
+                    category=DeprecationWarning,
+                    stacklevel=2)
+    return filter(lambda x: x.IsTextFile(),
+                  self.AffectedFiles(include_dirs=False, include_deletes=False))
 
   def LocalPaths(self, include_dirs=False):
     """Convenience function."""
