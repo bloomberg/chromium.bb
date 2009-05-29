@@ -42,7 +42,8 @@ def IsPathSection(section):
 
 # base_non_configuraiton_keys is a list of key names that belong in the target
 # itself and should not be propagated into its configurations.  It is merged
-# with a list that can come from the generator to create non_configuration_keys
+# with a list that can come from the generator to
+# create non_configuration_keys.
 base_non_configuration_keys = [
   # Sections that must exist inside targets and not configurations.
   'actions',
@@ -1507,7 +1508,7 @@ def ValidateRulesInTarget(target, target_dict):
 
 def Load(build_files, variables, includes, depth, generator_input_info):
   # Set up path_sections and non_configuration_keys with the default data plus
-  # the generator specifc data.
+  # the generator-specifc data.
   global path_sections
   path_sections = base_path_sections[:]
   path_sections.extend(generator_input_info['path_sections'])
