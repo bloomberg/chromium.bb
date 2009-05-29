@@ -6,7 +6,6 @@ import gyp.xcodeproj_file
 import errno
 import os
 import posixpath
-import pprint
 import re
 import shutil
 import subprocess
@@ -58,6 +57,11 @@ generator_additional_non_configuration_keys = [
   'mac_bundle',
   'mac_bundle_resources',
   'xcode_create_dependents_test_runner',
+]
+
+# We want to let any rules apply to files that are resources also.
+generator_extra_sources_for_rules = [
+  'mac_bundle_resources',
 ]
 
 class XcodeProject(object):
@@ -633,6 +637,13 @@ def GenerateOutput(target_list, target_dicts, data, params):
         for output in action['outputs']:
           AddResourceToTarget(output, pbxp, xct)
 
+    # tgt_mac_bundle_resources holds the list of bundle resources so
+    # the rule processing can check against it.
+    if spec.get('mac_bundle', 0):
+      tgt_mac_bundle_resources = spec.get('mac_bundle_resources', [])
+    else:
+      tgt_mac_bundle_resources = []
+
     # Add custom shell script phases driving "make" for "rules" sections.
     #
     # Xcode's built-in rule support is almost powerful enough to use directly,
@@ -748,7 +759,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
           for output in concrete_outputs_for_this_rule_source:
             AddSourceToTarget(output, pbxp, xct)
 
-        if rule.get('process_outputs_as_mac_bundle_resources', False):
+        # If the file came from the mac_bundle_resources list or if the rule
+        # is marked to process outputs as bundle resource, do so.
+        was_mac_bundle_resource = rule_source in tgt_mac_bundle_resources
+        if was_mac_bundle_resource or \
+            rule.get('process_outputs_as_mac_bundle_resources', False):
           for output in concrete_outputs_for_this_rule_source:
             AddResourceToTarget(output, pbxp, xct)
 
@@ -885,7 +900,7 @@ exit 1
     # Add "sources".
     for source in spec.get('sources', []):
       (source_root, source_extension) = posixpath.splitext(source)
-      if source_extension not in rules_by_ext:
+      if source_extension[1:] not in rules_by_ext:
         # AddSourceToTarget will add the file to a root group if it's not
         # already there.
         AddSourceToTarget(source, pbxp, xct)
@@ -894,8 +909,12 @@ exit 1
 
     # Add "mac_bundle_resources" if it's a bundle of any type.
     if spec.get('mac_bundle', 0):
-      for resource in spec.get('mac_bundle_resources', []):
-        AddResourceToTarget(resource, pbxp, xct)
+      for resource in tgt_mac_bundle_resources:
+        (resource_root, resource_extension) = posixpath.splitext(resource)
+        if resource_extension[1:] not in rules_by_ext:
+          AddResourceToTarget(resource, pbxp, xct)
+        else:
+          pbxp.AddOrGetFileInRootGroup(resource)
 
     # Add "copies".
     for copy_group in spec.get('copies', []):

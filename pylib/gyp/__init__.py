@@ -161,6 +161,8 @@ def main(args):
           getattr(generator, 'generator_additional_non_configuration_keys', []),
       'path_sections':
           getattr(generator, 'generator_additional_path_sections', []),
+      'extra_sources_for_rules':
+          getattr(generator, 'generator_extra_sources_for_rules', []),
     }
 
     # Process the input specific to this generator.

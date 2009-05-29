@@ -1454,13 +1454,15 @@ def ProcessListFiltersInList(name, the_list):
       ProcessListFiltersInList(name, item)
 
 
-def ValidateRulesInTarget(target, target_dict):
+def ValidateRulesInTarget(target, target_dict, extra_sources_for_rules):
   """Ensures that the rules sections in target_dict are valid and consistent,
   and determines which sources they apply to.
 
   Arguments:
     target: string, name of target.
     target_dict: dict, target spec containing "rules" and "sources" lists.
+    extra_sources_for_rules: a list of keys to scan for rule matches in
+        addition to 'sources'.
   """
 
   # Dicts to map between values found in rules' 'rule_name' and 'extension'
@@ -1495,12 +1497,15 @@ def ValidateRulesInTarget(target, target_dict):
     extension = rule['extension']
 
     rule_sources = []
-    for source in target_dict.get('sources', []):
-      (source_root, source_extension) = os.path.splitext(source)
-      if source_extension.startswith('.'):
-        source_extension = source_extension[1:]
-      if source_extension == extension:
-        rule_sources.append(source)
+    source_keys = ['sources']
+    source_keys.extend(extra_sources_for_rules)
+    for source_key in source_keys:
+      for source in target_dict.get(source_key, []):
+        (source_root, source_extension) = os.path.splitext(source)
+        if source_extension.startswith('.'):
+          source_extension = source_extension[1:]
+        if source_extension == extension:
+          rule_sources.append(source)
 
     if len(rule_sources) > 0:
       rule['rule_sources'] = rule_sources
@@ -1520,6 +1525,10 @@ def Load(build_files, variables, includes, depth, generator_input_info):
   # TODO(mark) handle variants if the generator doesn't want them directly.
   generator_handles_variants = \
       generator_input_info['generator_handles_variants']
+  
+  # A generator can have other lists (in addition to sources) be processed
+  # for rules.
+  extra_sources_for_rules = generator_input_info['extra_sources_for_rules']
   
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
@@ -1583,7 +1592,7 @@ def Load(build_files, variables, includes, depth, generator_input_info):
   # some may, and it seems best to build the list in a common spot.
   for target in flat_list:
     target_dict = targets[target]
-    ValidateRulesInTarget(target, target_dict)
+    ValidateRulesInTarget(target, target_dict, extra_sources_for_rules)
 
   # TODO(mark): Return |data| for now because the generator needs a list of
   # build files that came in.  In the future, maybe it should just accept
