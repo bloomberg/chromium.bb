@@ -64,7 +64,7 @@ def RootDir(max_elt_count=4, max_elt_length=8):
   return os.sep + _DirElts(max_elt_count, max_elt_length)
 
 
-class BaseTestCase(unittest.TestCase):
+class BaseTestCase(mox.MoxTestBase):
   # Like unittest's assertRaises, but checks for Gclient.Error.
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     try:
@@ -93,7 +93,7 @@ class GClientBaseTestCase(BaseTestCase):
     return self.OptionsObject(self, *args, **kwargs)
 
   def setUp(self):
-    self.mox = mox.Mox()
+    BaseTestCase.setUp(self)
     # Mock them to be sure nothing bad happens.
     self._CaptureSVN = gclient.CaptureSVN
     gclient.CaptureSVN = self.mox.CreateMockAnything()
@@ -136,6 +136,7 @@ class GClientBaseTestCase(BaseTestCase):
     gclient.os.path.exists = self._os_path_exists
     gclient.GClient = self._gclient_gclient
     gclient.SCMWrapper = self._scm_wrapper
+    BaseTestCase.tearDown(self)
 
 
 class GclientTestCase(GClientBaseTestCase):
@@ -176,18 +177,13 @@ class GClientCommandsTestCase(GClientBaseTestCase):
       # If it fails, you need to add a test case for the new command.
       self.assert_(v in known_commands)
     self.mox.ReplayAll()
-    self.mox.VerifyAll()
 
 class TestDoConfig(GclientTestCase):
-  def setUp(self):
-    GclientTestCase.setUp(self)
-
   def testMissingArgument(self):
     exception_msg = "required argument missing; see 'gclient help config'"
 
     self.mox.ReplayAll()
     self.assertRaisesError(exception_msg, gclient.DoConfig, self.Options(), ())
-    self.mox.VerifyAll()
 
   def testExistingClientFile(self):
     options = self.Options()
@@ -197,7 +193,6 @@ class TestDoConfig(GclientTestCase):
 
     self.mox.ReplayAll()
     self.assertRaisesError(exception_msg, gclient.DoConfig, options, (1,))
-    self.mox.VerifyAll()
 
   def testFromText(self):
     options = self.Options(spec='config_source_content')
@@ -208,7 +203,6 @@ class TestDoConfig(GclientTestCase):
 
     self.mox.ReplayAll()
     gclient.DoConfig(options, (1,),)
-    self.mox.VerifyAll()
 
   def testCreateClientFile(self):
     options = self.Options()
@@ -221,7 +215,6 @@ class TestDoConfig(GclientTestCase):
     self.mox.ReplayAll()
     gclient.DoConfig(options,
                      ('http://svn/url/the_name', 'other', 'args', 'ignored'))
-    self.mox.VerifyAll()
 
 
 class TestDoHelp(GclientTestCase):
@@ -230,7 +223,6 @@ class TestDoHelp(GclientTestCase):
     self.mox.ReplayAll()
     options = self.Options()
     gclient.DoHelp(options, ('config',))
-    self.mox.VerifyAll()
 
   def testTooManyArgs(self):
     self.mox.ReplayAll()
@@ -238,14 +230,12 @@ class TestDoHelp(GclientTestCase):
     self.assertRaisesError("unknown subcommand 'config'; see 'gclient help'",
                            gclient.DoHelp, options, ('config',
                                                      'another argument'))
-    self.mox.VerifyAll()
 
   def testUnknownSubcommand(self):
     self.mox.ReplayAll()
     options = self.Options()
     self.assertRaisesError("unknown subcommand 'xyzzy'; see 'gclient help'",
                            gclient.DoHelp, options, ('xyzzy',))
-    self.mox.VerifyAll()
 
 
 class GenericCommandTestCase(GclientTestCase):
@@ -257,7 +247,6 @@ class GenericCommandTestCase(GclientTestCase):
     self.mox.ReplayAll()
     result = function(options, self.args)
     self.assertEquals(result, return_value)
-    self.mox.VerifyAll()
 
   def BadClient(self, function):
     options = self.Options()
@@ -267,7 +256,6 @@ class GenericCommandTestCase(GclientTestCase):
     self.assertRaisesError(
         "client not configured; see 'gclient config'",
         function, options, self.args)
-    self.mox.VerifyAll()
 
   def Verbose(self, command, function):
     options = self.Options(verbose=True)
@@ -280,7 +268,6 @@ class GenericCommandTestCase(GclientTestCase):
     self.mox.ReplayAll()
     result = function(options, self.args)
     self.assertEquals(result, 0)
-    self.mox.VerifyAll()
 
 class TestDoCleanup(GenericCommandTestCase):
   def testGoodClient(self):
@@ -324,7 +311,6 @@ class TestDoUpdate(GenericCommandTestCase):
     self.mox.ReplayAll()
     result = function(options, self.args)
     self.assertEquals(result, return_value)
-    self.mox.VerifyAll()
 
   def Verbose(self, command, function):
     options = self.Options(verbose=True)
@@ -338,7 +324,6 @@ class TestDoUpdate(GenericCommandTestCase):
     self.mox.ReplayAll()
     result = function(options, self.args)
     self.assertEquals(result, 0)
-    self.mox.VerifyAll()
 
   def Options(self, verbose=False, *args, **kwargs):
     return self.OptionsObject(self, verbose=verbose, *args, **kwargs)
@@ -417,7 +402,6 @@ class GClientClassTestCase(GclientTestCase):
     }]
     self.assertEqual(client.GetVar('solutions'), solutions)
     self.assertEqual(client.GetVar('foo'), None)
-    self.mox.VerifyAll()
 
   def testLoadCurrentConfig(self):
     options = self.Options()
@@ -429,7 +413,6 @@ class GClientClassTestCase(GclientTestCase):
 
     self.mox.ReplayAll()
     client = self._gclient_gclient.LoadCurrentConfig(options, self.root_dir)
-    self.mox.VerifyAll()
 
   def testRunOnDepsNoDeps(self):
     solution_name = 'testRunOnDepsNoDeps_solution_name'
@@ -475,7 +458,6 @@ class GClientClassTestCase(GclientTestCase):
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
   def testRunOnDepsRelativePaths(self):
     solution_name = 'testRunOnDepsRelativePaths_solution_name'
@@ -542,7 +524,6 @@ class GClientClassTestCase(GclientTestCase):
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
   def testRunOnDepsCustomDeps(self):
     solution_name = 'testRunOnDepsCustomDeps_solution_name'
@@ -624,7 +605,6 @@ class GClientClassTestCase(GclientTestCase):
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
   # Regression test for Issue #11.
   # http://code.google.com/p/gclient/issues/detail?id=11
@@ -708,7 +688,6 @@ class GClientClassTestCase(GclientTestCase):
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
   def testRunOnDepsSuccess(self):
     # Fake .gclient file.
@@ -736,7 +715,6 @@ class GClientClassTestCase(GclientTestCase):
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
   def testRunOnDepsRevisions(self):
     def OptIsRev(options, rev):
@@ -859,7 +837,6 @@ deps_os = {
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
   def testRunOnDepsConflictingRevisions(self):
     # Fake .gclient file.
@@ -942,7 +919,6 @@ deps = {
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
   def testRunOnDepsSuccessCustomVars(self):
     # Fake .gclient file.
@@ -999,9 +975,8 @@ deps = {
     client = self._gclient_gclient(self.root_dir, options)
     client.SetConfig(gclient_config)
     client.RunOnDeps('update', self.args)
-    self.mox.VerifyAll()
 
-  def testRunOnDepsFailueVars(self):
+  def testRunOnDepsFailureVars(self):
     # Fake .gclient file.
     name = 'testRunOnDepsFailureVars_solution_name'
     gclient_config = """solutions = [ {
@@ -1018,11 +993,6 @@ deps = {
     options = self.Options()
     gclient.FileRead(os.path.join(self.root_dir, name, options.deps_file)
         ).AndReturn(deps_content)
-    gclient.FileWrite(os.path.join(self.root_dir, options.entries_filename),
-                      'dummy entries content')
-
-    gclient.os.path.exists(os.path.join(self.root_dir, options.entries_filename)
-        ).AndReturn(False)
     gclient.SCMWrapper(self.url, self.root_dir, name).AndReturn(
         gclient.SCMWrapper)
     gclient.SCMWrapper.RunCommand('update', options, self.args, [])
@@ -1046,7 +1016,6 @@ deps = {
     exception = "'foo' is an unsupported command"
     self.assertRaisesError(exception, self._gclient_gclient.RunOnDeps, client,
                            'foo', self.args)
-    self.mox.VerifyAll()
 
   def testRunOnDepsFailureEmpty(self):
     options = self.Options()
@@ -1056,7 +1025,6 @@ deps = {
     exception = "No solution specified"
     self.assertRaisesError(exception, self._gclient_gclient.RunOnDeps, client,
                            'update', self.args)
-    self.mox.VerifyAll()
 
   def testFromImpl(self):
     # TODO(maruel):  Test me!
@@ -1101,8 +1069,8 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     gclient.os.path.isdir = self.mox.CreateMockAnything()
 
   def tearDown(self):
-    GClientBaseTestCase.tearDown(self)
     gclient.os.path.isdir = self._os_path_isdir
+    GClientBaseTestCase.tearDown(self)
 
   def testDir(self):
     members = [
@@ -1120,7 +1088,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     self.assertEqual(scm.FullUrlForRelativeUrl('/crap'), 'svn://a/b/crap')
-    self.mox.VerifyAll()
 
   def testRunCommandException(self):
     options = self.Options(verbose=False)
@@ -1133,7 +1100,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     exception = "Unsupported argument(s): %s" % ','.join(self.args)
     self.assertRaisesError(exception, self._scm_wrapper.RunCommand,
                            scm, 'update', options, self.args)
-    self.mox.VerifyAll()
 
   def testRunCommandUnknown(self):
     # TODO(maruel): if ever used.
@@ -1156,7 +1122,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.revert(options, self.args, files_list)
-    self.mox.VerifyAll()
 
   def testRevertNone(self):
     options = self.Options(verbose=True)
@@ -1169,7 +1134,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
-    self.mox.VerifyAll()
 
   def testRevert2Files(self):
     options = self.Options(verbose=True)
@@ -1190,7 +1154,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                             relpath=self.relpath)
     file_list = []
     scm.revert(options, self.args, file_list)
-    self.mox.VerifyAll()
 
   def testStatus(self):
     options = self.Options(verbose=True)
@@ -1204,7 +1167,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                             relpath=self.relpath)
     file_list = []
     self.assertEqual(scm.status(options, self.args, file_list), None)
-    self.mox.VerifyAll()
 
 
   # TODO(maruel):  TEST REVISIONS!!!
@@ -1227,7 +1189,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
-    self.mox.VerifyAll()
 
   def testUpdateUpdate(self):
     options = self.Options(verbose=True)
@@ -1257,7 +1218,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
     scm.update(options, (), files_list)
-    self.mox.VerifyAll()
 
   def testUpdateGit(self):
     options = self.Options(verbose=True)
@@ -1270,7 +1230,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
                             relpath=self.relpath)
     file_list = []
     scm.update(options, self.args, file_list)
-    self.mox.VerifyAll()
 
   def testGetSVNFileInfo(self):
     xml_text = r"""<?xml version="1.0"?>
@@ -1304,7 +1263,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
     self.mox.ReplayAll()
     file_info = self._CaptureSVNInfo(self.url, '.', True)
     self.assertEquals(sorted(file_info.items()), sorted(expected.items()))
-    self.mox.VerifyAll()
 
   def testCaptureSvnInfo(self):
     xml_text = """<?xml version="1.0"?>
@@ -1346,29 +1304,28 @@ class SCMWrapperTestCase(GClientBaseTestCase):
       'Node Kind': 'dir',
     }
     self.assertEqual(file_info, expected)
-    self.mox.VerifyAll()
 
 
 class RunSVNTestCase(BaseTestCase):
   def setUp(self):
-    self.mox = mox.Mox()
+    BaseTestCase.setUp(self)
     self._OldSubprocessCall = gclient.SubprocessCall
     gclient.SubprocessCall = self.mox.CreateMockAnything()
 
   def tearDown(self):
     gclient.SubprocessCall = self._OldSubprocessCall
+    BaseTestCase.tearDown(self)
 
   def testRunSVN(self):
     param2 = 'bleh'
     gclient.SubprocessCall(['svn', 'foo', 'bar'], param2).AndReturn(None)
     self.mox.ReplayAll()
     gclient.RunSVN(['foo', 'bar'], param2)
-    self.mox.VerifyAll()
 
 
 class SubprocessCallAndCaptureTestCase(BaseTestCase):
   def setUp(self):
-    self.mox = mox.Mox()
+    BaseTestCase.setUp(self)
     self._sys_stdout = gclient.sys.stdout
     gclient.sys.stdout = self.mox.CreateMock(self._sys_stdout)
     self._subprocess_Popen = gclient.subprocess.Popen
@@ -1380,6 +1337,7 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
     gclient.sys.stdout = self._sys_stdout
     gclient.subprocess.Popen = self._subprocess_Popen
     gclient.CaptureSVN = self._CaptureSVN
+    BaseTestCase.tearDown(self)
 
   def testSubprocessCallAndCapture(self):
     command = ['boo', 'foo', 'bar']
@@ -1403,7 +1361,6 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
     gclient.SubprocessCallAndCapture(command, in_directory, fail_status,
                                      pattern, capture_list)
     self.assertEquals(capture_list, ['cc', 'dd'])
-    self.mox.VerifyAll()
 
   def testCaptureSVNStatus(self):
     x = self
