@@ -78,7 +78,8 @@ def GetEmail():
   for next time we prompt.
 
   """
-  last_email_file_name = os.path.expanduser("~/.last_codereview_email_address")
+  last_email_file_name = os.path.expanduser(
+      os.path.join("~", ".last_codereview_email_address"))
   last_email = ""
   prompt = "Email: "
   if os.path.exists(last_email_file_name):
@@ -373,7 +374,8 @@ class HttpRpcServer(AbstractRpcServer):
     opener.add_handler(urllib2.HTTPSHandler())
     opener.add_handler(urllib2.HTTPErrorProcessor())
     if self.save_cookies:
-      self.cookie_file = os.path.expanduser("~/.codereview_upload_cookies")
+      self.cookie_file = os.path.expanduser(
+          os.path.join("~", ".codereview_upload_cookies"))
       self.cookie_jar = cookielib.MozillaCookieJar(self.cookie_file)
       if os.path.exists(self.cookie_file):
         try:
