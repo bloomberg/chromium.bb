@@ -12,6 +12,17 @@ import gyp.MSVSProject as MSVSProject
 import gyp.MSVSVersion as MSVSVersion
 
 
+# Regular expression for validating Visual Studio GUIDs.  If the GUID
+# contains lowercase hex letters, MSVS will be fine. However,
+# IncrediBuild BuildConsole will parse the solution file, but then
+# silently skip building the target causing hard to track down errors.
+# Note that this only happens with the BuildConsole, and does not occur
+# if IncrediBuild is executed from inside Visual Studio.  This regex
+# validates that the string looks like a GUID with all uppercase hex
+# letters.
+VALID_MSVS_GUID_CHARS = re.compile('^[A-F0-9\-]+$')
+
+
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '.exe',
@@ -430,7 +441,12 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   p = MSVSProject.Writer(vcproj_filename, version=version)
   default_config = spec['configurations'][spec['default_configuration']]
   guid = default_config.get('msvs_guid')
-  if guid: guid = '{%s}' % guid
+  if guid:
+    if VALID_MSVS_GUID_CHARS.match(guid) == None:
+      raise ValueError('Invalid MSVS guid: "%s".  Must match regex: "%s".' %
+                       (guid, VALID_MSVS_GUID_CHARS.pattern))
+
+    guid = '{%s}' % guid
   p.Create(spec['target_name'], guid=guid)
 
   # Get directory project file is in.
