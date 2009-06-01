@@ -879,7 +879,14 @@ def Commit(change_info, args):
            " the commit. May the --force be with you.")
     return
 
-  commit_cmd = ["svn", "commit", "--non-recursive"]
+  # We face a problem with svn here: Let's say change 'bleh' modifies
+  # svn:ignore on dir1\. but another unrelated change 'pouet' modifies
+  # dir1\foo.cc. When the user `gcl commit bleh`, foo.cc is *also committed*.
+  # The only fix is to use --non-recursive but that has its issues too:
+  # Let's say if dir1 is deleted, --non-recursive must *not* be used otherwise
+  # you'll get "svn: Cannot non-recursively commit a directory deletion of a
+  # directory with child nodes". Yay...
+  commit_cmd = ["svn", "commit"]
   filename = ''
   if change_info.issue:
     # Get the latest description from Rietveld.
