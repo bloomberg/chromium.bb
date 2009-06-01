@@ -436,17 +436,23 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
     build_file: Filename of the .gyp file that the vcproj file comes from.
     spec: The target dictionary containing the properties of the target.
   """
-  #print 'Generating %s' % vcproj_filename
-
-  p = MSVSProject.Writer(vcproj_filename, version=version)
+  # Pluck out the default configuration.
   default_config = spec['configurations'][spec['default_configuration']]
+  # Decide the guid of the project.
   guid = default_config.get('msvs_guid')
   if guid:
     if VALID_MSVS_GUID_CHARS.match(guid) == None:
       raise ValueError('Invalid MSVS guid: "%s".  Must match regex: "%s".' %
                        (guid, VALID_MSVS_GUID_CHARS.pattern))
-
     guid = '{%s}' % guid
+
+  # Skip emitting anything if told to with msvs_existing_vcproj option.
+  if default_config.get('msvs_existing_vcproj'):
+    return guid
+
+  #print 'Generating %s' % vcproj_filename
+
+  p = MSVSProject.Writer(vcproj_filename, version=version)
   p.Create(spec['target_name'], guid=guid)
 
   # Get directory project file is in.
@@ -842,9 +848,11 @@ def GenerateOutput(target_list, target_dicts, data, params):
   for qualified_target in target_list:
     build_file = gyp.common.BuildFileAndTarget('', qualified_target)[0]
     spec = target_dicts[qualified_target]
-    vcproj_path = os.path.join(os.path.split(build_file)[0],
-                               spec['target_name'] + options.suffix +
-                               '.vcproj')
+    default_config = spec['configurations'][spec['default_configuration']]
+    vcproj_filename = default_config.get('msvs_existing_vcproj')
+    if not vcproj_filename:
+      vcproj_filename = spec['target_name'] + options.suffix + '.vcproj'
+    vcproj_path = os.path.join(os.path.split(build_file)[0], vcproj_filename)
     projects[qualified_target] = {
         'vcproj_path': vcproj_path,
         'guid': _GenerateProject(vcproj_path, build_file,
