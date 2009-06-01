@@ -187,15 +187,6 @@ def GetCodeReviewSetting(key):
   return CODEREVIEW_SETTINGS.get(key, "")
 
 
-def IsTreeOpen():
-  """Fetches the tree status and returns either True or False."""
-  url = GetCodeReviewSetting('STATUS')
-  status = ""
-  if url:
-    status = urllib2.urlopen(url).read()
-  return status.find('0') == -1
-
-
 def Warn(msg):
   ErrorExit(msg, exit=False)
 
@@ -607,7 +598,7 @@ Basic commands:
                           [--send_mail] [--no_try] [--no_presubmit]
       Uploads the changelist to the server for review.
 
-   gcl commit change_name [--no_presubmit] [--force]
+   gcl commit change_name [--no_presubmit]
       Commits the changelist to the repository.
 
    gcl lint change_name
@@ -872,12 +863,6 @@ def Commit(change_info, args):
       return
   else:
     args.remove("--no_presubmit")
-
-  no_tree_status_check = ("--force" in args or "-f" in args)
-  if not no_tree_status_check and not IsTreeOpen():
-    print ("Error: The tree is closed. Try again later or use --force to force"
-           " the commit. May the --force be with you.")
-    return
 
   # We face a problem with svn here: Let's say change 'bleh' modifies
   # svn:ignore on dir1\. but another unrelated change 'pouet' modifies
