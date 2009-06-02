@@ -82,6 +82,7 @@ nv50_graph_init_regs(struct drm_device *dev)
 	DRM_DEBUG("\n");
 
 	NV_WRITE(NV04_PGRAPH_DEBUG_3, (1<<2) /* HW_CONTEXT_SWITCH_ENABLED */);
+	NV_WRITE(0x402ca8, 0x800);
 }
 
 static int
