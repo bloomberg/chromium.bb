@@ -1091,10 +1091,16 @@ static const FT_UShort platform_order[] = {
 #define NUM_PLATFORM_ORDER (sizeof (platform_order) / sizeof (platform_order[0]))
 
 static const FT_UShort nameid_order[] = {
+#ifdef TT_NAME_ID_WWS_FAMILY
+    TT_NAME_ID_WWS_FAMILY,
+#endif
     TT_NAME_ID_PREFERRED_FAMILY,
     TT_NAME_ID_FONT_FAMILY,
     TT_NAME_ID_MAC_FULL_NAME,
     TT_NAME_ID_FULL_NAME,
+#ifdef TT_NAME_ID_WWS_SUBFAMILY
+    TT_NAME_ID_WWS_SUBFAMILY,
+#endif
     TT_NAME_ID_PREFERRED_SUBFAMILY,
     TT_NAME_ID_FONT_SUBFAMILY,
     TT_NAME_ID_TRADEMARK,
@@ -1236,6 +1242,9 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		    continue;
 
 		switch (sname.name_id) {
+#ifdef TT_NAME_ID_WWS_FAMILY
+		case TT_NAME_ID_WWS_FAMILY:
+#endif
 		case TT_NAME_ID_PREFERRED_FAMILY:
 		case TT_NAME_ID_FONT_FAMILY:
 #if 0	    
@@ -1266,6 +1275,9 @@ FcFreeTypeQueryFace (const FT_Face  face,
 		    np = &nfullname;
 		    nlangp = &nfullname_lang;
 		    break;
+#ifdef TT_NAME_ID_WWS_SUBFAMILY
+		case TT_NAME_ID_WWS_SUBFAMILY:
+#endif
 		case TT_NAME_ID_PREFERRED_SUBFAMILY:
 		case TT_NAME_ID_FONT_SUBFAMILY:
 		    if (FcDebug () & FC_DBG_SCANV)
