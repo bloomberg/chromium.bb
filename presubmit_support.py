@@ -230,9 +230,8 @@ class InputApi(object):
     dir_with_slash = normpath("%s/" % self.PresubmitLocalPath())
     if len(dir_with_slash) == 1:
       dir_with_slash = ''
-    return filter(
-        lambda x: normpath(x.AbsoluteLocalPath()).startswith(dir_with_slash),
-        self.change.AffectedFiles(include_dirs, include_deletes))
+    return filter(lambda x: normpath(x.LocalPath()).startswith(dir_with_slash),
+                  self.change.AffectedFiles(include_dirs, include_deletes))
 
   def LocalPaths(self, include_dirs=False):
     """Returns local paths of input_api.AffectedFiles()."""
@@ -549,29 +548,33 @@ class GclChange(object):
                self.AffectedFiles(include_deletes=False)))
 
 
-def ListRelevantPresubmitFiles(files, root):
+def ListRelevantPresubmitFiles(files):
   """Finds all presubmit files that apply to a given set of source files.
 
   Args:
     files: An iterable container containing file paths.
-    root: Path where to stop searching.
 
   Return:
-    List of absolute paths of the existing PRESUBMIT.py scripts.
+    ['foo/blat/PRESUBMIT.py', 'mat/gat/PRESUBMIT.py']
   """
-  entries = []
-  for f in files:
-    f = normpath(os.path.join(root, f))
-    while f:
-      f = os.path.dirname(f)
-      if f in entries:
+  checked_dirs = {}  # Keys are directory paths, values are ignored.
+  source_dirs = [os.path.dirname(f) for f in files]
+  presubmit_files = []
+  for dir in source_dirs:
+    while (True):
+      if dir in checked_dirs:
+        break  # We've already walked up from this directory.
+
+      test_path = os.path.join(dir, 'PRESUBMIT.py')
+      if os.path.isfile(test_path):
+        presubmit_files.append(normpath(test_path))
+
+      checked_dirs[dir] = ''
+      if dir in ['', '.']:
         break
-      entries.append(f)
-      if f == root:
-        break
-  entries.sort()
-  entries = map(lambda x: os.path.join(x, 'PRESUBMIT.py'), entries)
-  return filter(lambda x: os.path.isfile(x), entries)
+      else:
+        dir = os.path.dirname(dir)
+  return presubmit_files
 
 
 class PresubmitExecuter(object):
@@ -650,9 +653,7 @@ def DoPresubmitChecks(change_info,
   Return:
     True if execution can continue, False if not.
   """
-  checkout_root = gcl.GetRepositoryRoot()
-  presubmit_files = ListRelevantPresubmitFiles(change_info.FileList(),
-                                               checkout_root)
+  presubmit_files = ListRelevantPresubmitFiles(change_info.FileList())
   if not presubmit_files and verbose:
     output_stream.write("Warning, no presubmit.py found.\n")
   results = []
@@ -660,8 +661,7 @@ def DoPresubmitChecks(change_info,
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
-    fake_path = os.path.join(checkout_root, 'PRESUBMIT.py')
-    results += executer.ExecPresubmitScript(default_presubmit, fake_path)
+    results += executer.ExecPresubmitScript(default_presubmit, 'PRESUBMIT.py')
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
     if verbose:
