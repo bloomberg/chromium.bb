@@ -60,8 +60,8 @@ nouveau_pushbuf_calc_reloc(struct drm_nouveau_gem_pushbuf_bo *pbbo,
 
 int
 nouveau_pushbuf_emit_reloc(struct nouveau_channel *chan, void *ptr,
-			   struct nouveau_bo *bo, uint32_t data, uint32_t flags,
-			   uint32_t vor, uint32_t tor)
+			   struct nouveau_bo *bo, uint32_t data, uint32_t data2,
+			   uint32_t flags, uint32_t vor, uint32_t tor)
 {
 	struct nouveau_device_priv *nvdev = nouveau_device(chan->device);
 	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(chan->pushbuf);

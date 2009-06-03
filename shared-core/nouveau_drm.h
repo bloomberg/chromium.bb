@@ -25,7 +25,7 @@
 #ifndef __NOUVEAU_DRM_H__
 #define __NOUVEAU_DRM_H__
 
-#define NOUVEAU_DRM_HEADER_PATCHLEVEL 13
+#define NOUVEAU_DRM_HEADER_PATCHLEVEL 14
 
 struct drm_nouveau_channel_alloc {
 	uint32_t     fb_ctxdma_handle;
@@ -154,8 +154,6 @@ struct drm_nouveau_setparam {
 #define NOUVEAU_GEM_DOMAIN_VRAM      (1 << 1)
 #define NOUVEAU_GEM_DOMAIN_GART      (1 << 2)
 #define NOUVEAU_GEM_DOMAIN_MAPPABLE  (1 << 3)
-#define NOUVEAU_GEM_DOMAIN_TILE      (1 << 30)
-#define NOUVEAU_GEM_DOMAIN_TILE_ZETA (1 << 31)
 
 struct drm_nouveau_gem_info {
 	uint32_t handle;
@@ -163,6 +161,8 @@ struct drm_nouveau_gem_info {
 	uint64_t size;
 	uint64_t offset;
 	uint64_t map_handle;
+	uint32_t tile_mode;
+	uint32_t tile_flags;
 };
 
 struct drm_nouveau_gem_new {

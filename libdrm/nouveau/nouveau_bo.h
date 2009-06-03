@@ -37,6 +37,10 @@
 #define NOUVEAU_BO_LOCAL  (1 << 9)
 #define NOUVEAU_BO_TILED  (1 << 10)
 #define NOUVEAU_BO_ZTILE  (1 << 11)
+#define NOUVEAU_BO_INVAL  (1 << 12)
+#define NOUVEAU_BO_NOSYNC (1 << 13)
+#define NOUVEAU_BO_NOWAIT (1 << 14)
+#define NOUVEAU_BO_IFLUSH (1 << 15)
 #define NOUVEAU_BO_DUMMY  (1 << 31)
 
 struct nouveau_bo {
@@ -46,7 +50,8 @@ struct nouveau_bo {
 	uint64_t size;
 	void *map;
 
-	int tiled;
+	uint32_t tile_mode;
+	uint32_t tile_flags;
 
 	/* Available when buffer is pinned *only* */
 	uint32_t flags;
@@ -56,6 +61,11 @@ struct nouveau_bo {
 int
 nouveau_bo_new(struct nouveau_device *, uint32_t flags, int align, int size,
 	       struct nouveau_bo **);
+
+int
+nouveau_bo_new_tile(struct nouveau_device *, uint32_t flags, int align,
+		    int size, uint32_t tile_mode, uint32_t tile_flags,
+		    struct nouveau_bo **);
 
 int
 nouveau_bo_user(struct nouveau_device *, void *ptr, int size,
@@ -77,6 +87,13 @@ nouveau_bo_handle_ref(struct nouveau_device *, uint32_t handle,
 
 int
 nouveau_bo_ref(struct nouveau_bo *, struct nouveau_bo **);
+
+int
+nouveau_bo_map_range(struct nouveau_bo *, uint32_t delta, uint32_t size,
+		     uint32_t flags);
+
+void
+nouveau_bo_map_flush(struct nouveau_bo *, uint32_t delta, uint32_t size);
 
 int
 nouveau_bo_map(struct nouveau_bo *, uint32_t flags);

@@ -52,15 +52,8 @@ nouveau_bo_info(struct nouveau_bo_priv *nvbo, struct drm_nouveau_gem_info *arg)
 	nvbo->size = nvbo->base.size = arg->size;
 	nvbo->offset = arg->offset;
 	nvbo->map_handle = arg->map_handle;
-
-	if (nvbo->domain & NOUVEAU_GEM_DOMAIN_TILE) {
-		nvbo->base.tiled = 1;
-		if (nvbo->domain & NOUVEAU_GEM_DOMAIN_TILE_ZETA)
-			nvbo->base.tiled |= 2;
-	} else {
-		nvbo->base.tiled = 0;
-	}
-
+	nvbo->base.tile_mode = arg->tile_mode;
+	nvbo->base.tile_flags = arg->tile_flags;
 	return 0;
 }
 
@@ -215,17 +208,14 @@ nouveau_bo_kalloc(struct nouveau_bo_priv *nvbo, struct nouveau_channel *chan)
 		info->domain |= NOUVEAU_GEM_DOMAIN_GART;
 	if (!info->domain) {
 		info->domain |= (NOUVEAU_GEM_DOMAIN_VRAM |
-			       NOUVEAU_GEM_DOMAIN_GART);
-	}
-
-	if (nvbo->flags & NOUVEAU_BO_TILED) {
-		info->domain |= NOUVEAU_GEM_DOMAIN_TILE;
-		if (nvbo->flags & NOUVEAU_BO_ZTILE)
-			info->domain |= NOUVEAU_GEM_DOMAIN_TILE_ZETA;
+				 NOUVEAU_GEM_DOMAIN_GART);
 	}
 
 	if (nvbo->flags & NOUVEAU_BO_MAP)
 		info->domain |= NOUVEAU_GEM_DOMAIN_MAPPABLE;
+
+	info->tile_mode = nvbo->base.tile_mode;
+	info->tile_flags = nvbo->base.tile_flags;
 
 	ret = drmCommandWriteRead(nvdev->fd, DRM_NOUVEAU_GEM_NEW,
 				  &req, sizeof(req));
@@ -276,8 +266,9 @@ nouveau_bo_kmap(struct nouveau_bo_priv *nvbo)
 }
 
 int
-nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, int align,
-	       int size, struct nouveau_bo **bo)
+nouveau_bo_new_tile(struct nouveau_device *dev, uint32_t flags, int align,
+		    int size, uint32_t tile_mode, uint32_t tile_flags,
+		    struct nouveau_bo **bo)
 {
 	struct nouveau_bo_priv *nvbo;
 	int ret;
@@ -290,6 +281,8 @@ nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, int align,
 		return -ENOMEM;
 	nvbo->base.device = dev;
 	nvbo->base.size = size;
+	nvbo->base.tile_mode = tile_mode;
+	nvbo->base.tile_flags = tile_flags;
 
 	nvbo->refcount = 1;
 	/* Don't set NOUVEAU_BO_PIN here, or nouveau_bo_allocated() will
@@ -299,13 +292,6 @@ nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, int align,
 	nvbo->flags = (flags & ~NOUVEAU_BO_PIN);
 	nvbo->size = size;
 	nvbo->align = align;
-
-	/*XXX: murder me violently */
-	if (flags & NOUVEAU_BO_TILED) {
-		nvbo->base.tiled = 1;
-		if (flags & NOUVEAU_BO_ZTILE)
-			nvbo->base.tiled |= 2;
-	}
 
 	if (flags & NOUVEAU_BO_PIN) {
 		ret = nouveau_bo_pin((void *)nvbo, nvbo->flags);
@@ -317,6 +303,22 @@ nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, int align,
 
 	*bo = &nvbo->base;
 	return 0;
+}
+
+int
+nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, int align,
+	       int size, struct nouveau_bo **bo)
+{
+	uint32_t tile_flags = 0;
+
+	if (flags & NOUVEAU_BO_TILED) {
+		if (flags & NOUVEAU_BO_ZTILE)
+			tile_flags = 0x2800;
+		else
+			tile_flags = 0x7000;
+	}
+
+	return nouveau_bo_new_tile(dev, flags, align, size, 0, tile_flags, bo);
 }
 
 int
@@ -575,7 +577,8 @@ nouveau_bo_wait(struct nouveau_bo *bo, int cpu_write)
 }
 
 int
-nouveau_bo_map(struct nouveau_bo *bo, uint32_t flags)
+nouveau_bo_map_range(struct nouveau_bo *bo, uint32_t delta, uint32_t size,
+		     uint32_t flags)
 {
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	int ret;
@@ -598,20 +601,33 @@ nouveau_bo_map(struct nouveau_bo *bo, uint32_t flags)
 	}
 
 	if (nvbo->sysmem) {
-		bo->map = nvbo->sysmem;
+		bo->map = (char *)nvbo->sysmem + delta;
 	} else {
 		ret = nouveau_bo_kmap(nvbo);
 		if (ret)
 			return ret;
 
-		ret = nouveau_bo_wait(bo, (flags & NOUVEAU_BO_WR));
-		if (ret)
-			return ret;
+		if (!(flags & NOUVEAU_BO_NOSYNC)) {
+			ret = nouveau_bo_wait(bo, (flags & NOUVEAU_BO_WR));
+			if (ret)
+				return ret;
+		}
 
-		bo->map = nvbo->map;
+		bo->map = (char *)nvbo->map + delta;
 	}
 
 	return 0;
+}
+
+void
+nouveau_bo_map_flush(struct nouveau_bo *bo, uint32_t delta, uint32_t size)
+{
+}
+
+int
+nouveau_bo_map(struct nouveau_bo *bo, uint32_t flags)
+{
+	return nouveau_bo_map_range(bo, 0, bo->size, flags);
 }
 
 void

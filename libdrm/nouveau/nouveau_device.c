@@ -26,7 +26,7 @@
 
 #include "nouveau_private.h"
 
-#if NOUVEAU_DRM_HEADER_PATCHLEVEL != 13
+#if NOUVEAU_DRM_HEADER_PATCHLEVEL != 14
 #error nouveau_drm.h does not match expected patchlevel, update libdrm.
 #endif
 
