@@ -39,20 +39,9 @@ typedef void irqreturn_t;
 #endif
 
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,25)
-static inline const char *dev_name(const struct device *dev)
-{
-	return dev->bus_id;
-}
-static inline int dev_set_name(struct device *dev, const char *name, ...)
-{
-	va_list vargs;
-
-	va_start(vargs, name);
-	vsnprintf(dev->bus_id, sizeof(dev->bus_id), name, vargs);
-	va_end(vargs);
-
-	return 0;
-}
+#define dev_set_name(dev, name, ...) ({ \
+	snprintf((dev)->bus_id, BUS_ID_SIZE, (name), __VA_ARGS__); \
+	0; })
 #endif
 
 /** AGP types */
