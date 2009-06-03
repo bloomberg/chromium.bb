@@ -1514,8 +1514,8 @@ def DoConfig(options, args):
   else:
     # TODO(darin): it would be nice to be able to specify an alternate relpath
     # for the given URL.
-    base_url = args[0]
-    name = args[0].split("/")[-1]
+    base_url = args[0].rstrip('/')
+    name = base_url.split("/")[-1]
     safesync_url = ""
     if len(args) > 1:
       safesync_url = args[1]
