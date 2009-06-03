@@ -49,6 +49,15 @@ nouveau_bo_info(struct nouveau_bo_priv *nvbo, struct drm_nouveau_gem_info *arg)
 	nvbo->size = nvbo->base.size = arg->size;
 	nvbo->offset = arg->offset;
 	nvbo->map_handle = arg->map_handle;
+
+	if (nvbo->domain & NOUVEAU_GEM_DOMAIN_TILE) {
+		nvbo->base.tiled = 1;
+		if (nvbo->domain & NOUVEAU_GEM_DOMAIN_TILE_ZETA)
+			nvbo->base.tiled |= 2;
+	} else {
+		nvbo->base.tiled = 0;
+	}
+
 	return 0;
 }
 
