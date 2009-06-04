@@ -912,8 +912,7 @@ def Commit(change_info, args):
       change_info.CloseIssue()
   os.chdir(previous_cwd)
 
-
-def Change(change_info):
+def Change(change_info, override_description):
   """Creates/edits a changelist."""
   if change_info.issue:
     try:
@@ -927,9 +926,18 @@ def Change(change_info):
       else:
         ErrorExit("Error getting the description from Rietveld: " + err)
   else:
-    description = change_info.description
+    if override_description:
+      description = override_description
+    else:
+      description = change_info.description
 
   other_files = GetFilesNotInCL()
+  
+  #Edited files will have a letter for the first character in a string.
+  #This regex looks for the presence of that character.
+  file_re = re.compile(r"^[a-z].+\Z", re.IGNORECASE)
+  affected_files = filter(lambda x: file_re.match(x[0]), other_files)
+  unaffected_files = filter(lambda x: not file_re.match(x[0]), other_files)
 
   separator1 = ("\n---All lines above this line become the description.\n"
                 "---Repository Root: " + GetRepositoryRoot() + "\n"
@@ -937,7 +945,8 @@ def Change(change_info):
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
   text = (description + separator1 + '\n' +
           '\n'.join([f[0] + f[1] for f in change_info.files]) + separator2 +
-          '\n'.join([f[0] + f[1] for f in other_files]) + '\n')
+          '\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
+          '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n')
 
   handle, filename = tempfile.mkstemp(text=True)
   os.write(handle, text)
@@ -957,7 +966,7 @@ def Change(change_info):
 
   new_description = split_result[0]
   cl_files_text = split_result[1]
-  if new_description != description:
+  if new_description != description or override_description:
     change_info.description = new_description
     if change_info.issue:
       # Update the Rietveld issue with the new description.
@@ -1107,7 +1116,14 @@ def main(argv=None):
     change_info = LoadChangelistInfo(changename, fail_on_not_found, True)
 
   if command == "change":
-    Change(change_info)
+    if (len(argv) == 4):
+      filename = argv[3]
+      f = open(filename, 'rU')
+      override_description = f.read()
+      f.close()
+    else:
+      override_description = None
+    Change(change_info, override_description)
   elif command == "lint":
     Lint(change_info, argv[3:])
   elif command == "upload":
