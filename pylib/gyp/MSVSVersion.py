@@ -11,10 +11,15 @@ import sys
 class VisualStudioVersion:
   """Information regarding a version of Visual Studio."""
 
-  def __init__(self, description, solution_version, project_version):
+  def __init__(self, short_name, description,
+               solution_version, project_version):
+    self.short_name = short_name
     self.description = description
     self.solution_version = solution_version
     self.project_version = project_version
+
+  def ShortName(self):
+    return self.short_name
 
   def Description(self):
     """Get the full description of the version."""
@@ -58,11 +63,13 @@ def _RegistryGetValue(key, value):
 
 def _CreateVersion(name):
   if name == '2008':
-    return VisualStudioVersion('Visual Studio 2008',
+    return VisualStudioVersion('2008',
+                               'Visual Studio 2008',
                                solution_version='10.00',
                                project_version='9.00')
   elif name == '2005':
-    return VisualStudioVersion('Visual Studio 2005',
+    return VisualStudioVersion('2005',
+                               'Visual Studio 2005',
                                solution_version='9.00',
                                project_version='8.00')
   else:
@@ -74,7 +81,8 @@ def _DetectHighestVisualStudioVersion():
 
   Returns:
     The visual studio version year number of the highest installed installed
-    version, based on the registry. Only versions 8-9 are considered.
+    version, based on the registry and a quick check if devenv.exe exists.
+    Only versions 8-9 are considered.
     Possibilities are:
       None - No version detected
       2005 - Visual Studio 2005 (8)
@@ -105,7 +113,7 @@ def SelectVisualStudioVersion(version='auto'):
   """
   # In auto mode, check environment variable for override.
   if version == 'auto':
-    version = os.environ.get('GYP_MSVS_VERSION', 'auto')
+    version = os.environ.get('GYP_MSVS_VERSION', '2005')
   # In auto mode, detect highest version present.
   if version == 'auto':
     version = _DetectHighestVisualStudioVersion()
