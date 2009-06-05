@@ -68,11 +68,9 @@ FcCharSetDestroy (FcCharSet *fcs)
     }
     if (fcs->num)
     {
+        /* the numbers here are estimates */
 	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (intptr_t));
 	free (FcCharSetLeaves (fcs));
-    }
-    if (fcs->num)
-    {
 	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
 	free (FcCharSetNumbers (fcs));
     }
@@ -134,6 +132,8 @@ FcCharSetFindLeaf (const FcCharSet *fcs, FcChar32 ucs4)
     return 0;
 }
 
+#define FC_IS_ZERO_OR_POWER_OF_TWO(x) (!((x) & ((x)-1)))
+
 static FcBool
 FcCharSetPutLeaf (FcCharSet	*fcs, 
 		  FcChar32	ucs4,
@@ -143,45 +143,52 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
     intptr_t	*leaves = FcCharSetLeaves (fcs);
     FcChar16	*numbers = FcCharSetNumbers (fcs);
 
-    /* XXX We can't handle Unicode values in Plane 16 */
     ucs4 >>= 8;
+    /* XXX We can't handle Unicode values in Plane 16 */
     if (ucs4 >= 0x10000)
 	return FcFalse;
 
-    if (fcs->num == fcs->alloced)
+    if (FC_IS_ZERO_OR_POWER_OF_TWO (fcs->num))
     {
-	intptr_t    *new_leaves = realloc (leaves, (fcs->num + 1) * 
-					   sizeof (*leaves));
-	intptr_t    distance = (intptr_t) new_leaves - (intptr_t) leaves;
-	
+      if (!fcs->num)
+      {
+        unsigned int alloced = 8;
+	leaves = malloc (alloced * sizeof (*leaves));
+	numbers = malloc (alloced * sizeof (*numbers));
+	FcMemAlloc (FC_MEM_CHARSET, alloced * sizeof (*leaves));
+	FcMemAlloc (FC_MEM_CHARSET, alloced * sizeof (*numbers));
+      }
+      else
+      {
+        unsigned int alloced = fcs->num;
+	intptr_t *new_leaves, distance;
+
+	FcMemFree (FC_MEM_CHARSET, alloced * sizeof (*leaves));
+	FcMemFree (FC_MEM_CHARSET, alloced * sizeof (*numbers));
+
+	alloced *= 2;
+	new_leaves = realloc (leaves, alloced * sizeof (*leaves));
+	numbers = realloc (numbers, alloced * sizeof (*numbers));
+
+	FcMemAlloc (FC_MEM_CHARSET, alloced * sizeof (*leaves));
+	FcMemAlloc (FC_MEM_CHARSET, alloced * sizeof (*numbers));
+
+	distance = (intptr_t) new_leaves - (intptr_t) leaves;
 	if (new_leaves && distance)
 	{
 	    int i;
-
 	    for (i = 0; i < fcs->num; i++)
 		new_leaves[i] -= distance;
 	}
 	leaves = new_leaves;
+      }
+
+      if (!leaves || !numbers)
+	  return FcFalse;
+
+      fcs->leaves_offset = FcPtrToOffset (fcs, leaves);
+      fcs->numbers_offset = FcPtrToOffset (fcs, numbers);
     }
-    if (!leaves)
-	return FcFalse;
-    
-    if (fcs->num)
-	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (intptr_t));
-    FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (intptr_t));
-    fcs->leaves_offset = FcPtrToOffset (fcs, leaves);
-    
-    if (!fcs->num)
-	numbers = malloc (sizeof (FcChar16));
-    else
-	numbers = realloc (numbers, (fcs->num + 1) * sizeof (FcChar16));
-    if (!numbers)
-	return FcFalse;
-    
-    if (fcs->num)
-	FcMemFree (FC_MEM_CHARSET, fcs->num * sizeof (FcChar16));
-    FcMemAlloc (FC_MEM_CHARSET, (fcs->num + 1) * sizeof (FcChar16));
-    fcs->numbers_offset = FcPtrToOffset (fcs, numbers);
     
     memmove (leaves + pos + 1, leaves + pos, 
 	     (fcs->num - pos) * sizeof (*leaves));
