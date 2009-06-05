@@ -470,8 +470,11 @@ FcCharSetMerge (FcCharSet *a, const FcCharSet *b, FcBool *changed)
     int		ai = 0, bi = 0;
     FcChar16	an, bn;
 
-    if (a->ref == FC_REF_CONSTANT)
+    if (a->ref == FC_REF_CONSTANT) {
+	if (changed)
+	    *changed = FcFalse;
 	return FcFalse;
+    }
 
     if (changed) {
 	*changed = !FcCharSetIsSubset(b, a);
