@@ -143,12 +143,12 @@ FcCharSetPutLeaf (FcCharSet	*fcs,
     intptr_t	*leaves = FcCharSetLeaves (fcs);
     FcChar16	*numbers = FcCharSetNumbers (fcs);
 
+    /* XXX We can't handle Unicode values in Plane 16 */
     ucs4 >>= 8;
     if (ucs4 >= 0x10000)
 	return FcFalse;
-    if (!fcs->num)
-	leaves = malloc (sizeof (*leaves));
-    else
+
+    if (fcs->num == fcs->alloced)
     {
 	intptr_t    *new_leaves = realloc (leaves, (fcs->num + 1) * 
 					   sizeof (*leaves));
