@@ -724,7 +724,7 @@ FcDirScanConfig (FcFontSet	*set,
 /* fcfont.c */
 FcPrivate int
 FcFontDebug (void);
-    
+
 /* fcfs.c */
 
 FcPrivate FcBool
@@ -732,20 +732,8 @@ FcFontSetSerializeAlloc (FcSerialize *serialize, const FcFontSet *s);
 
 FcPrivate FcFontSet *
 FcFontSetSerialize (FcSerialize *serialize, const FcFontSet * s);
-    
-/* fcgram.y */
-FcPrivate int
-FcConfigparse (void);
 
-FcPrivate int
-FcConfigwrap (void);
-    
-FcPrivate void
-FcConfigerror (char *fmt, ...);
-    
-FcPrivate char *
-FcConfigSaveField (const char *field);
-
+/* fcxml.c */
 FcPrivate void
 FcTestDestroy (FcTest *test);
 

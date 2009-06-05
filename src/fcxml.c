@@ -272,12 +272,6 @@ FcEditDestroy (FcEdit *e)
     free (e);
 }
 
-char *
-FcConfigSaveField (const char *field)
-{
-    return (char *) FcStrCopy ((FcChar8 *) field);
-}
-
 typedef enum _FcElement {
     FcElementNone,
     FcElementFontconfig,
