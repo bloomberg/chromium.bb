@@ -98,7 +98,7 @@ FcValueSave (FcValue v)
 {
     switch (v.type) {
     case FcTypeString:
-	v.u.s = FcStrCopy (v.u.s);
+	v.u.s = FcStrStaticName (v.u.s);
 	if (!v.u.s)
 	    v.type = FcTypeVoid;
 	break;
@@ -482,15 +482,7 @@ FcPatternObjectAddWithBinding  (FcPattern	*p,
 
     memset(new, 0, sizeof (FcValueList));
     FcMemAlloc (FC_MEM_VALLIST, sizeof (FcValueList));
-    /* dup string */
-    if (value.type == FcTypeString)
-    {
-	value.u.s = FcStrStaticName (value.u.s);
-	if (!value.u.s)
-	    value.type = FcTypeVoid;
-    }
-    else
-	value = FcValueSave (value);
+    value = FcValueSave (value);
     if (value.type == FcTypeVoid)
 	goto bail1;
 

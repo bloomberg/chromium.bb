@@ -852,7 +852,8 @@ FcConfigEvaluate (FcPattern *p, FcExpr *e)
 	break;
     case FcOpString:
 	v.type = FcTypeString;
-	v.u.s = FcStrStaticName(e->u.sval);
+	v.u.s = e->u.sval;
+	v = FcValueSave (v);
 	break;
     case FcOpMatrix:
 	v.type = FcTypeMatrix;
