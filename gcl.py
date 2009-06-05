@@ -178,11 +178,13 @@ def GetCodeReviewSetting(key):
   # already initialized.
   global CODEREVIEW_SETTINGS
   if '__just_initialized' not in CODEREVIEW_SETTINGS:
-    for line in GetCachedFile(CODEREVIEW_SETTINGS_FILE).splitlines():
-      if not line or line.startswith("#"):
-        continue
-      k, v = line.split(": ", 1)
-      CODEREVIEW_SETTINGS[k] = v
+    settings_file = GetCachedFile(CODEREVIEW_SETTINGS_FILE)
+    if settings_file:
+      for line in settings_file.splitlines():
+        if not line or line.startswith("#"):
+          continue
+        k, v = line.split(": ", 1)
+        CODEREVIEW_SETTINGS[k] = v
     CODEREVIEW_SETTINGS.setdefault('__just_initialized', None)
   return CODEREVIEW_SETTINGS.get(key, "")
 
