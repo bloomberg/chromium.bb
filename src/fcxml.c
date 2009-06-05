@@ -69,14 +69,23 @@ FcTestDestroy (FcTest *test)
     free (test);
 }
 
-FcExpr *
-FcExprCreateInteger (int i)
+static FcExpr *
+FcExprAlloc (void)
 {
     FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
 
     if (e)
+      FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
+
+    return e;
+}
+
+FcExpr *
+FcExprCreateInteger (int i)
+{
+    FcExpr *e = FcExprAlloc ();
+    if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpInteger;
 	e->u.ival = i;
     }
@@ -86,11 +95,9 @@ FcExprCreateInteger (int i)
 FcExpr *
 FcExprCreateDouble (double d)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpDouble;
 	e->u.dval = d;
     }
@@ -100,11 +107,9 @@ FcExprCreateDouble (double d)
 FcExpr *
 FcExprCreateString (const FcChar8 *s)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpString;
 	e->u.sval = FcStrCopy (s);
     }
@@ -114,11 +119,9 @@ FcExprCreateString (const FcChar8 *s)
 FcExpr *
 FcExprCreateMatrix (const FcMatrix *m)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpMatrix;
 	e->u.mval = FcMatrixCopy (m);
     }
@@ -128,11 +131,9 @@ FcExprCreateMatrix (const FcMatrix *m)
 FcExpr *
 FcExprCreateBool (FcBool b)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpBool;
 	e->u.bval = b;
     }
@@ -142,8 +143,7 @@ FcExprCreateBool (FcBool b)
 FcExpr *
 FcExprCreateNil (void)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
 	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
@@ -155,11 +155,9 @@ FcExprCreateNil (void)
 FcExpr *
 FcExprCreateField (const char *field)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpField;
 	e->u.object = FcObjectFromName (field);
     }
@@ -169,11 +167,9 @@ FcExprCreateField (const char *field)
 FcExpr *
 FcExprCreateConst (const FcChar8 *constant)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = FcOpConst;
 	e->u.constant = FcStrCopy (constant);
     }
@@ -183,11 +179,9 @@ FcExprCreateConst (const FcChar8 *constant)
 FcExpr *
 FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
+    FcExpr *e = FcExprAlloc ();
     if (e)
     {
-	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
 	e->op = op;
 	e->u.tree.left = left;
 	e->u.tree.right = right;
