@@ -21,6 +21,7 @@ import urllib
 
 import gcl
 import gclient
+import upload
 
 __version__ = '1.1'
 
