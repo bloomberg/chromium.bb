@@ -1,7 +1,7 @@
 CXX=g++
 CC=gcc
 
-CXXFLAGS=-gstabs -I../../.. -DNDEBUG -Wall -D_REENTRANT
+CXXFLAGS=-gstabs -I../../.. -DNDEBUG -Wall -D_REENTRANT -m32
 
 .PHONY:all clean
 
