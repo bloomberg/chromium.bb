@@ -443,6 +443,8 @@ class GclChange(object):
     self._name = change_info.name
     self._full_description = change_info.description
     self._repository_root = repository_root
+    self.issue = change_info.issue
+    self.patchset = change_info.patchset
 
     # From the description text, build up a dictionary of key/value pairs
     # plus the description minus all key/value or "tag" lines.

@@ -248,14 +248,30 @@ def WriteFile(filename, contents):
 class ChangeInfo(object):
   """Holds information about a changelist.
 
-    issue: the Rietveld issue number, of "" if it hasn't been uploaded yet.
+    name: change name.
+    issue: the Rietveld issue number or 0 if it hasn't been uploaded yet.
+    patchset: the Rietveld latest patchset number or 0.
     description: the description.
     files: a list of 2 tuple containing (status, filename) of changed files,
            with paths being relative to the top repository directory.
   """
-  def __init__(self, name="", issue="", description="", files=None):
+
+  _SEPARATOR = "\n-----\n"
+  # The info files have the following format:
+  # issue_id, patchset\n   (, patchset is optional)
+  # _SEPARATOR\n
+  # filepath1\n
+  # filepath2\n
+  # .
+  # .
+  # filepathn\n
+  # _SEPARATOR\n
+  # description
+
+  def __init__(self, name, issue, patchset, description, files):
     self.name = name
-    self.issue = issue
+    self.issue = int(issue)
+    self.patchset = int(patchset)
     self.description = description
     if files is None:
       files = []
@@ -276,9 +292,10 @@ class ChangeInfo(object):
 
   def Save(self):
     """Writes the changelist information to disk."""
-    data = SEPARATOR.join([self.issue,
-                          "\n".join([f[0] + f[1] for f in self.files]),
-                          self.description])
+    data = ChangeInfo._SEPARATOR.join([
+        "%d, %d" % (self.issue, self.patchset),
+        "\n".join([f[0] + f[1] for f in self.files]),
+        self.description])
     WriteFile(GetChangelistInfoFile(self.name), data)
 
   def Delete(self):
@@ -378,18 +395,57 @@ class ChangeInfo(object):
 
     return False
 
+  @staticmethod
+  def Load(changename, fail_on_not_found=True, update_status=False):
+    """Gets information about a changelist.
 
-SEPARATOR = "\n-----\n"
-# The info files have the following format:
-# issue_id\n
-# SEPARATOR\n
-# filepath1\n
-# filepath2\n
-# .
-# .
-# filepathn\n
-# SEPARATOR\n
-# description
+    Args:
+      fail_on_not_found: if True, this function will quit the program if the
+        changelist doesn't exist.
+      update_status: if True, the svn status will be updated for all the files
+        and unchanged files will be removed.
+
+    Returns: a ChangeInfo object.
+    """
+    info_file = GetChangelistInfoFile(changename)
+    if not os.path.exists(info_file):
+      if fail_on_not_found:
+        ErrorExit("Changelist " + changename + " not found.")
+      return ChangeInfo(changename)
+    split_data = ReadFile(info_file).split(ChangeInfo._SEPARATOR, 2)
+    if len(split_data) != 3:
+      ErrorExit("Changelist file %s is corrupt" % info_file)
+    items = split_data[0].split(',')
+    issue = 0
+    patchset = 0
+    if items[0]:
+      issue = int(items[0])
+    if len(items) > 1:
+      patchset = int(items[1])
+    files = []
+    for line in split_data[1].splitlines():
+      status = line[:7]
+      file = line[7:]
+      files.append((status, file))
+    description = split_data[2]
+    save = False
+    if update_status:
+      for file in files:
+        filename = os.path.join(GetRepositoryRoot(), file[1])
+        status_result = gclient.CaptureSVNStatus(filename)
+        if not status_result or not status_result[0][0]:
+          # File has been reverted.
+          save = True
+          files.remove(file)
+          continue
+        status = status_result[0][0]
+        if status != file[0]:
+          save = True
+          files[files.index(file)] = (status, file[1])
+    change_info = ChangeInfo(changename, issue, patchset, description, files)
+    if save:
+      change_info.Save()
+    return change_info
 
 
 def GetChangelistInfoFile(changename):
@@ -406,61 +462,11 @@ def LoadChangelistInfoForMultiple(changenames, fail_on_not_found=True,
   This is mainly usefull to concatenate many changes into one for a 'gcl try'.
   """
   changes = changenames.split(',')
-  aggregate_change_info = ChangeInfo(name=changenames)
+  aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None)
   for change in changes:
-    aggregate_change_info.files += LoadChangelistInfo(change,
-                                                      fail_on_not_found,
-                                                      update_status).files
+    aggregate_change_info.files += ChangeInfo.Load(change, fail_on_not_found,
+                                                   update_status).files
   return aggregate_change_info
-
-
-def LoadChangelistInfo(changename, fail_on_not_found=True,
-                       update_status=False):
-  """Gets information about a changelist.
-
-  Args:
-    fail_on_not_found: if True, this function will quit the program if the
-      changelist doesn't exist.
-    update_status: if True, the svn status will be updated for all the files
-      and unchanged files will be removed.
-
-  Returns: a ChangeInfo object.
-  """
-  info_file = GetChangelistInfoFile(changename)
-  if not os.path.exists(info_file):
-    if fail_on_not_found:
-      ErrorExit("Changelist " + changename + " not found.")
-    return ChangeInfo(changename)
-  data = ReadFile(info_file)
-  split_data = data.split(SEPARATOR, 2)
-  if len(split_data) != 3:
-    os.remove(info_file)
-    ErrorExit("Changelist file %s was corrupt and deleted" % info_file)
-  issue = split_data[0]
-  files = []
-  for line in split_data[1].splitlines():
-    status = line[:7]
-    file = line[7:]
-    files.append((status, file))
-  description = split_data[2]
-  save = False
-  if update_status:
-    for file in files:
-      filename = os.path.join(GetRepositoryRoot(), file[1])
-      status_result = gclient.CaptureSVNStatus(filename)
-      if not status_result or not status_result[0][0]:
-        # File has been reverted.
-        save = True
-        files.remove(file)
-        continue
-      status = status_result[0][0]
-      if status != file[0]:
-        save = True
-        files[files.index(file)] = (status, file[1])
-  change_info = ChangeInfo(changename, issue, description, files)
-  if save:
-    change_info.Save()
-  return change_info
 
 
 def GetCLs():
@@ -501,7 +507,7 @@ def GetModifiedFiles():
   # Get a list of all files in changelists.
   files_in_cl = {}
   for cl in GetCLs():
-    change_info = LoadChangelistInfo(cl)
+    change_info = ChangeInfo.Load(cl)
     for status, filename in change_info.files:
       files_in_cl[filename] = change_info.name
 
@@ -559,7 +565,7 @@ def SendToRietveld(request_path, payload=None,
 
 def GetIssueDescription(issue):
   """Returns the issue description from Rietveld."""
-  return SendToRietveld("/" + issue + "/description")
+  return SendToRietveld("/%d/description" % issue)
 
 
 def Opened():
@@ -570,7 +576,7 @@ def Opened():
   for cl_name in cl_keys:
     if cl_name:
       note = ""
-      if len(LoadChangelistInfo(cl_name).files) != len(files[cl_name]):
+      if len(ChangeInfo.Load(cl_name).files) != len(files[cl_name]):
         note = " (Note: this changelist contains files outside this directory)"
       print "\n--- Changelist " + cl_name + note + ":"
     for file in files[cl_name]:
@@ -761,7 +767,7 @@ def UploadCL(change_info, args):
     if not found_message:
       upload_arg.append("--message=''")
 
-    upload_arg.append("--issue=" + change_info.issue)
+    upload_arg.append("--issue=%d" % change_info.issue)
   else: # First time we upload.
     handle, desc_file = tempfile.mkstemp(text=True)
     os.write(handle, change_info.description)
@@ -792,8 +798,9 @@ def UploadCL(change_info, args):
   if change_info.patch is None:
     change_info.patch = GenerateDiff(change_info.FileList())
   issue, patchset = upload.RealMain(upload_arg, change_info.patch)
-  if issue and issue != change_info.issue:
-    change_info.issue = issue
+  if issue and patchset:
+    change_info.issue = int(issue)
+    change_info.patchset = int(patchset)
     change_info.Save()
 
   if desc_file:
@@ -807,14 +814,10 @@ def UploadCL(change_info, args):
   if not no_try:
     try_on_upload = GetCodeReviewSetting('TRY_ON_UPLOAD')
     if try_on_upload and try_on_upload.lower() == 'true':
-      # Use the local diff.
-      args = [
-        "--issue", change_info.issue,
-        "--patchset", patchset,
-      ]
+      trychange_args = []
       if clobber:
-        args.append('--clobber')
-      TryChange(change_info, args, swallow_exception=True)
+        trychange_args.append('--clobber')
+      TryChange(change_info, trychange_args, swallow_exception=True)
 
   os.chdir(previous_cwd)
 
@@ -843,6 +846,10 @@ def TryChange(change_info, args, swallow_exception):
 
   if change_info:
     trychange_args = ['--name', change_info.name]
+    if change_info.issue:
+      trychange_args.extend(["--issue", str(change_info.issue)])
+    if change_info.patchset:
+      trychange_args.extend(["--patchset", str(change_info.patchset)])
     trychange_args.extend(args)
     trychange.TryChange(trychange_args,
                         file_list=change_info.FileList(),
@@ -881,7 +888,7 @@ def Commit(change_info, args):
 
   commit_message = change_info.description.replace('\r\n', '\n')
   if change_info.issue:
-    commit_message += ('\nReview URL: http://%s/%s' %
+    commit_message += ('\nReview URL: http://%s/%d' %
                        (GetCodeReviewSetting("CODE_REVIEW_SERVER"),
                         change_info.issue))
 
@@ -1041,7 +1048,7 @@ def DoPresubmitChecks(change_info, committing):
 def Changes():
   """Print all the changelists and their files."""
   for cl in GetCLs():
-    change_info = LoadChangelistInfo(cl, True, True)
+    change_info = ChangeInfo.Load(cl, True, True)
     print "\n--- Changelist " + change_info.name + ":"
     for file in change_info.files:
       print "".join(file)
@@ -1115,7 +1122,7 @@ def main(argv=None):
   if command == "try" and changename.find(',') != -1:
     change_info = LoadChangelistInfoForMultiple(changename, True, True)
   else:
-    change_info = LoadChangelistInfo(changename, fail_on_not_found, True)
+    change_info = ChangeInfo.Load(changename, fail_on_not_found, True)
 
   if command == "change":
     if (len(argv) == 4):

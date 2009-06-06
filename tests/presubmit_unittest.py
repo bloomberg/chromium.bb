@@ -197,7 +197,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.gcl.ReadFile(notfound).AndReturn('look!\nthere?')
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
     change = presubmit.GclChange(ci)
@@ -265,7 +265,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     fake_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
 
@@ -334,7 +334,7 @@ class PresubmitUnittest(PresubmitTestsBase):
                            'rU').AndReturn(self.presubmit_text)
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
 
@@ -364,7 +364,7 @@ class PresubmitUnittest(PresubmitTestsBase):
           ).AndReturn(self.presubmit_text)
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
 
@@ -403,7 +403,7 @@ class PresubmitUnittest(PresubmitTestsBase):
         ).AndReturn(self.presubmit_text)
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
     output = StringIO.StringIO()
@@ -435,7 +435,7 @@ def CheckChangeOnCommit(input_api, output_api):
                                   'PRESUBMIT.py')).AndReturn(False)
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
 
@@ -459,9 +459,8 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.os.path.isdir(presubmit.os.path.join('isdir', 'blat.cc')
         ).AndReturn(False)
     self.mox.ReplayAll()
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
-                                  description='foo',
-                                  files=files)
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
+                                  description='foo', files=files)
     change = presubmit.GclChange(ci)
 
     affected_files = change.AffectedFiles(include_dirs=False)
@@ -494,7 +493,10 @@ def CheckChangeOnCommit(input_api, output_api):
 
     change = presubmit.gcl.ChangeInfo(
         name='foo',
-        description="Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n")
+        issue=0,
+        patchset=0,
+        description="Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n",
+        files=None)
     output = StringIO.StringIO()
     input = StringIO.StringIO('y\n')
     self.failUnless(presubmit.DoPresubmitChecks(change, False, True, output,
@@ -587,7 +589,7 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.gcl.ReadFile(blat).AndReturn('whatever\ncookie')
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange',
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
     change = presubmit.GclChange(ci)
@@ -622,7 +624,8 @@ class InputApiUnittest(PresubmitTestsBase):
     ]
     self.mox.ReplayAll()
 
-    ci = presubmit.gcl.ChangeInfo(name='mychange', description='', files=files)
+    ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
+                                  description='', files=files)
     # It doesn't make sense on non-Windows platform. This is somewhat hacky,
     # but it is needed since we can't just use os.path.join('c:', 'temp').
     change = presubmit.GclChange(ci, self.fake_root_dir)
@@ -654,7 +657,8 @@ class InputApiUnittest(PresubmitTestsBase):
                             stacklevel=2)
     self.mox.ReplayAll()
     change = presubmit.GclChange(
-        presubmit.gcl.ChangeInfo(name='mychange', description='Bleh\n'))
+        presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
+                                 description='Bleh\n', files=None))
     api = presubmit.InputApi(change, 'foo/PRESUBMIT.py')
     api.AffectedTextFiles(include_deletes=False)
 
@@ -792,6 +796,20 @@ class AffectedFileUnittest(PresubmitTestsBase):
     self.failUnless(list[0] == output[0])
 
 
+class GclChangeUnittest(PresubmitTestsBase):
+  def testMembersChanged(self):
+    self.mox.ReplayAll()
+    members = [
+        'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles', 'Change',
+        'DescriptionText', 'FullDescriptionText', 'LocalPaths',
+        'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
+        'issue', 'patchset', 'tags',
+    ]
+    # If this test fails, you should add the relevant test.
+    ci = presubmit.gcl.ChangeInfo('', 0, 0, '', None)
+    self.compareMembers(presubmit.GclChange(ci, self.fake_root_dir), members)
+
+
 class CannedChecksUnittest(PresubmitTestsBase):
   """Tests presubmit_canned_checks.py."""
 
@@ -808,7 +826,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     return input_api
 
   def MakeBasicChange(self, name, description):
-    ci = presubmit.gcl.ChangeInfo(name=name, description=description)
+    ci = presubmit.gcl.ChangeInfo(name, 0, 0, description, None)
     return presubmit.GclChange(ci, self.fake_root_dir)
 
   def testMembersChanged(self):
