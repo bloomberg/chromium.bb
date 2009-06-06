@@ -104,10 +104,10 @@ class PresubmitUnittest(PresubmitTestsBase):
       'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
       'OutputApi', 'ParseFiles', 'PresubmitExecuter',
       'ScanSubDirs', 'SvnAffectedFile',
-      'cPickle', 'cStringIO', 'deprecated', 'exceptions',
+      'cPickle', 'cStringIO', 'exceptions',
       'fnmatch', 'gcl', 'gclient', 'glob', 'marshal', 'normpath', 'optparse',
       'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
-      'tempfile', 'types', 'unittest', 'urllib2', 'warnings',
+      'tempfile', 'traceback', 'types', 'unittest', 'urllib2', 'warnings',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -476,6 +476,10 @@ def CheckChangeOnUpload(input_api, output_api):
    return [output_api.PresubmitError('Tag parsing failed. 1')]
  if input_api.change.tags['STORY'] != 'http://tracker.com/42':
    return [output_api.PresubmitError('Tag parsing failed. 2')]
+ if input_api.change.BUG != 'boo':
+   return [output_api.PresubmitError('Tag parsing failed. 6')]
+ if input_api.change.STORY != 'http://tracker.com/42':
+   return [output_api.PresubmitError('Tag parsing failed. 7')]
  if 'TEST' in input_api.change.tags:
    return [output_api.PresubmitError('Tag parsing failed. 3')]
  if input_api.change.DescriptionText() != 'Blah Blah':
@@ -517,11 +521,12 @@ class InputApiUnittest(PresubmitTestsBase):
       'DepotToLocalPath', 'LocalPaths', 'LocalToDepotPath',
       'PresubmitLocalPath', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
-      'marshal', 'os_path', 'pickle', 'platform',
-      're', 'subprocess', 'tempfile', 'unittest', 'urllib2', 'version',
+      'is_committing', 'marshal', 'os_path', 'pickle', 'platform',
+      're', 'subprocess', 'tempfile', 'traceback', 'unittest', 'urllib2',
+      'version',
     ]
     # If this test fails, you should add the relevant test.
-    self.compareMembers(presubmit.InputApi(None, './.'), members)
+    self.compareMembers(presubmit.InputApi(None, './.', False), members)
 
   def testDepotToLocalPath(self):
     presubmit.gclient.CaptureSVNInfo('svn://foo/smurf').AndReturn(
@@ -529,9 +534,10 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.gclient.CaptureSVNInfo('svn:/foo/notfound/burp').AndReturn({})
     self.mox.ReplayAll()
 
-    path = presubmit.InputApi(None, './p').DepotToLocalPath('svn://foo/smurf')
+    path = presubmit.InputApi(None, './p', False).DepotToLocalPath(
+        'svn://foo/smurf')
     self.failUnless(path == 'prout')
-    path = presubmit.InputApi(None, './p').DepotToLocalPath(
+    path = presubmit.InputApi(None, './p', False).DepotToLocalPath(
         'svn:/foo/notfound/burp')
     self.failUnless(path == None)
 
@@ -540,15 +546,17 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.gclient.CaptureSVNInfo('notfound-food').AndReturn({})
     self.mox.ReplayAll()
 
-    path = presubmit.InputApi(None, './p').LocalToDepotPath('smurf')
+    path = presubmit.InputApi(None, './p', False).LocalToDepotPath('smurf')
     self.assertEqual(path, 'svn://foo')
-    path = presubmit.InputApi(None, './p').LocalToDepotPath('notfound-food')
+    path = presubmit.InputApi(None, './p', False).LocalToDepotPath(
+        'notfound-food')
     self.failUnless(path == None)
 
   def testInputApiConstruction(self):
     self.mox.ReplayAll()
     # Fudge the change object, it's not used during construction anyway
-    api = presubmit.InputApi(change=42, presubmit_path='foo/path/PRESUBMIT.py')
+    api = presubmit.InputApi(change=42, presubmit_path='foo/path/PRESUBMIT.py',
+                             is_committing=False)
     self.assertEquals(api.PresubmitLocalPath(), 'foo/path')
     self.assertEquals(api.change, 42)
 
@@ -593,7 +601,7 @@ class InputApiUnittest(PresubmitTestsBase):
                                   description='\n'.join(description_lines),
                                   files=files)
     change = presubmit.GclChange(ci)
-    api = presubmit.InputApi(change, 'foo/PRESUBMIT.py')
+    api = presubmit.InputApi(change, 'foo/PRESUBMIT.py', False)
     affected_files = api.AffectedFiles()
     self.assertEquals(len(affected_files), 3)
     self.assertEquals(affected_files[0].LocalPath(),
@@ -643,7 +651,9 @@ class InputApiUnittest(PresubmitTestsBase):
     paths_from_change = change.AbsoluteLocalPaths(include_dirs=True)
     self.assertEqual(len(paths_from_change), 3)
     presubmit_path = join(self.fake_root_dir, 'isdir', 'PRESUBMIT.py')
-    api = presubmit.InputApi(change=change, presubmit_path=presubmit_path)
+    api = presubmit.InputApi(change=change,
+                             presubmit_path=presubmit_path,
+                             is_committing=True)
     paths_from_api = api.AbsoluteLocalPaths(include_dirs=True)
     self.assertEqual(len(paths_from_api), 2)
     for absolute_paths in [paths_from_change, paths_from_api]:
@@ -659,7 +669,7 @@ class InputApiUnittest(PresubmitTestsBase):
     change = presubmit.GclChange(
         presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                  description='Bleh\n', files=None))
-    api = presubmit.InputApi(change, 'foo/PRESUBMIT.py')
+    api = presubmit.InputApi(change, 'foo/PRESUBMIT.py', True)
     api.AffectedTextFiles(include_deletes=False)
 
 
@@ -821,6 +831,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def MockInputApi(self):
     input_api = self.mox.CreateMock(presubmit.InputApi)
     input_api.re = presubmit.re
+    input_api.traceback = presubmit.traceback
     input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
     input_api.unittest = unittest
     return input_api
@@ -945,15 +956,29 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitError)
 
-  def testRunPythonUnitTests1(self):
+  def testRunPythonUnitTestsNoTest(self):
     input_api = self.MockInputApi()
+    input_api.is_committing = False
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, [])
     self.assertEquals(results, [])
 
-  def testRunPythonUnitTests2(self):
+  def testRunPythonUnitTestsNonExistent1(self):
     input_api = self.MockInputApi()
+    input_api.is_committing = False
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests('_non_existent_module'
+        ).AndRaise(exceptions.ImportError('Blehh'))
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, ['_non_existent_module'])
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+                      presubmit.OutputApi.PresubmitNotifyResult)
+
+  def testRunPythonUnitTestsNonExistent2(self):
+    input_api = self.MockInputApi()
+    input_api.is_committing = True
     presubmit_canned_checks._RunPythonUnitTests_LoadTests('_non_existent_module'
         ).AndRaise(exceptions.ImportError('Blehh'))
     self.mox.ReplayAll()
@@ -962,8 +987,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
 
-  def testRunPythonUnitTests3(self):
+  def testRunPythonUnitTestsEmpty1(self):
     input_api = self.MockInputApi()
+    input_api.is_committing = False
     test_module = self.mox.CreateMockAnything()
     presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
         ).AndReturn([])
@@ -973,8 +999,45 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(results, [])
 
-  def testRunPythonUnitTests4(self):
+  def testRunPythonUnitTestsEmpty2(self):
     input_api = self.MockInputApi()
+    input_api.is_committing = True
+    test_module = self.mox.CreateMockAnything()
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
+        ).AndReturn([])
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, ['test_module'])
+    self.assertEquals(results, [])
+
+  def testRunPythonUnitTestsFailure1(self):
+    input_api = self.MockInputApi()
+    input_api.is_committing = False
+    input_api.unittest = self.mox.CreateMock(unittest)
+    test = self.mox.CreateMockAnything()
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
+        ).AndReturn([test])
+    runner = self.mox.CreateMockAnything()
+    input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
+    suite = self.mox.CreateMockAnything()
+    input_api.unittest.TestSuite([test]).AndReturn(suite)
+    test_result = self.mox.CreateMockAnything()
+    runner.run(suite).AndReturn(test_result)
+    test_result.wasSuccessful().AndReturn(False)
+    test_result.failures = 2
+    test_result.errors = 3
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, ['test_module'])
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+                      presubmit.OutputApi.PresubmitNotifyResult)
+
+  def testRunPythonUnitTestsFailure2(self):
+    input_api = self.MockInputApi()
+    input_api.is_committing = True
     input_api.unittest = self.mox.CreateMock(unittest)
     test = self.mox.CreateMockAnything()
     presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
@@ -995,8 +1058,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
 
-  def testRunPythonUnitTests5(self):
+  def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi()
+    input_api.is_committing = False
     input_api.unittest = self.mox.CreateMock(unittest)
     test = self.mox.CreateMockAnything()
     presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'

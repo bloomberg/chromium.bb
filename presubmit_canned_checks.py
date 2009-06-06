@@ -125,17 +125,23 @@ def _RunPythonUnitTests_LoadTests(input_api, module_name):
 
 def RunPythonUnitTests(input_api, output_api, unit_tests):
   """Imports the unit_tests modules and run them."""
+  # We don't want to hinder users from uploading incomplete patches.
+  if input_api.is_committing:
+    message_type = output_api.PresubmitError
+  else:
+    message_type = output_api.PresubmitNotifyResult
   tests_suite = []
   outputs = []
   for unit_test in unit_tests:
     try:
       tests_suite.extend(_RunPythonUnitTests_LoadTests(unit_test))
     except ImportError:
-      outputs.append(output_api.PresubmitError("Failed to load %s" % unit_test))
+      outputs.append(message_type("Failed to load %s" % unit_test,
+                                  long_text=input_api.traceback.format_exc()))
 
   results = input_api.unittest.TextTestRunner(verbosity=0).run(
       input_api.unittest.TestSuite(tests_suite))
   if not results.wasSuccessful():
-    outputs.append(output_api.PresubmitError(
+    outputs.append(message_type(
         "%d unit tests failed." % (results.failures + results.errors)))
   return outputs

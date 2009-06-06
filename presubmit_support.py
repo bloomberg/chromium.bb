@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.2'
+__version__ = '1.3'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -25,6 +25,7 @@ import re  # Exposed through the API.
 import subprocess  # Exposed through the API.
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
+import traceback  # Exposed through the API.
 import types
 import unittest  # Exposed through the API.
 import urllib2  # Exposed through the API.
@@ -54,21 +55,6 @@ def normpath(path):
   # will replace forward slashes with backward slashes.
   path = path.replace(os.sep, '/')
   return os.path.normpath(path)
-
-
-def deprecated(func):
-  """This is a decorator which can be used to mark functions as deprecated.
-
-  It will result in a warning being emmitted when the function is used."""
-  def newFunc(*args, **kwargs):
-    warnings.warn("Call to deprecated function %s." % func.__name__,
-                  category=DeprecationWarning,
-                  stacklevel=2)
-    return func(*args, **kwargs)
-  newFunc.__name__ = func.__name__
-  newFunc.__doc__ = func.__doc__
-  newFunc.__dict__.update(func.__dict__)
-  return newFunc
 
 
 class OutputApi(object):
@@ -151,16 +137,18 @@ class InputApi(object):
   know stuff about the change they're looking at.
   """
 
-  def __init__(self, change, presubmit_path):
+  def __init__(self, change, presubmit_path, is_committing):
     """Builds an InputApi object.
 
     Args:
       change: A presubmit.GclChange object.
       presubmit_path: The path to the presubmit script being processed.
+      is_committing: True if the change is about to be committed.
     """
     # Version number of the presubmit_support script.
     self.version = [int(x) for x in __version__.split('.')]
     self.change = change
+    self.is_committing = is_committing
 
     # We expose various modules and functions as attributes of the input_api
     # so that presubmit scripts don't have to import them.
@@ -173,6 +161,7 @@ class InputApi(object):
     self.re = re
     self.subprocess = subprocess
     self.tempfile = tempfile
+    self.traceback = traceback
     self.unittest = unittest
     self.urllib2 = urllib2
 
@@ -603,7 +592,7 @@ class PresubmitExecuter(object):
     Return:
       A list of result objects, empty if no problems.
     """
-    input_api = InputApi(self.change, presubmit_path)
+    input_api = InputApi(self.change, presubmit_path, self.committing)
     context = {}
     exec script_text in context
 
