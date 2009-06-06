@@ -411,7 +411,7 @@ class ChangeInfo(object):
     if not os.path.exists(info_file):
       if fail_on_not_found:
         ErrorExit("Changelist " + changename + " not found.")
-      return ChangeInfo(changename)
+      return ChangeInfo(changename, 0, 0, '', None)
     split_data = ReadFile(info_file).split(ChangeInfo._SEPARATOR, 2)
     if len(split_data) != 3:
       ErrorExit("Changelist file %s is corrupt" % info_file)
