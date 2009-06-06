@@ -93,6 +93,8 @@ FcConfigCreate (void)
     config->rescanTime = time(0);
     config->rescanInterval = 30;    
 
+    config->expr_pool = NULL;
+
     config->ref = 1;
     
     return config;
@@ -193,6 +195,26 @@ FcSubstDestroy (FcSubst *s)
     }
 }
 
+FcExpr *
+FcConfigAllocExpr (FcConfig *config)
+{
+  if (!config->expr_pool || config->expr_pool->next == config->expr_pool->end)
+  {
+    FcExprPage *new_page;
+
+    new_page = malloc (sizeof (FcExprPage));
+    if (!new_page)
+      return 0;
+    FcMemAlloc (FC_MEM_EXPR, sizeof (FcExprPage));
+
+    new_page->next_page = config->expr_pool;
+    new_page->next = new_page->exprs;
+    config->expr_pool = new_page;
+  }
+
+  return config->expr_pool->next++;
+}
+
 FcConfig *
 FcConfigReference (FcConfig *config)
 {
@@ -212,6 +234,7 @@ void
 FcConfigDestroy (FcConfig *config)
 {
     FcSetName	set;
+    FcExprPage	*page;
 
     if (--config->ref > 0)
 	return;
@@ -237,6 +260,15 @@ FcConfigDestroy (FcConfig *config)
     for (set = FcSetSystem; set <= FcSetApplication; set++)
 	if (config->fonts[set])
 	    FcFontSetDestroy (config->fonts[set]);
+
+    page = config->expr_pool;
+    while (page)
+    {
+      FcExprPage *next = page->next_page;
+      FcMemFree (FC_MEM_EXPR, sizeof (FcExprPage));
+      free (page);
+      page = next;
+    }
 
     free (config);
     FcMemFree (FC_MEM_CONFIG, sizeof (FcConfig));

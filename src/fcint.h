@@ -247,6 +247,15 @@ typedef struct _FcExpr {
     } u;
 } FcExpr;
 
+typedef struct _FcExprPage FcExprPage;
+
+struct _FcExprPage {
+  FcExprPage *next_page;
+  FcExpr *next;
+  FcExpr exprs[(1024 - 2/* two pointers */ - 2/* malloc overhead */) * sizeof (void *) / sizeof (FcExpr)];
+  FcExpr end[0];
+};
+
 typedef enum _FcQual {
     FcQualAny, FcQualAll, FcQualFirst, FcQualNotFirst
 } FcQual;
@@ -486,6 +495,8 @@ struct _FcConfig {
     int		rescanInterval;	    /* interval between scans */
 
     int		ref;                /* reference count */
+
+    FcExprPage *expr_pool;	    /* pool of FcExpr's */
 };
  
 extern FcPrivate FcConfig	*_fcConfig;
@@ -533,6 +544,9 @@ FcStat (const char *file, struct stat *statb)
 #endif
 
 /* fccfg.c */
+
+FcPrivate FcExpr *
+FcConfigAllocExpr (FcConfig *config);
 
 FcPrivate FcBool
 FcConfigAddConfigDir (FcConfig	    *config,

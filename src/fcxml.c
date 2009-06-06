@@ -72,20 +72,9 @@ FcTestDestroy (FcTest *test)
 }
 
 static FcExpr *
-FcExprAlloc (void)
+FcExprCreateInteger (FcConfig *config, int i)
 {
-    FcExpr *e = (FcExpr *) malloc (sizeof (FcExpr));
-
-    if (e)
-      FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
-
-    return e;
-}
-
-static FcExpr *
-FcExprCreateInteger (int i)
-{
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpInteger;
@@ -95,9 +84,9 @@ FcExprCreateInteger (int i)
 }
 
 static FcExpr *
-FcExprCreateDouble (double d)
+FcExprCreateDouble (FcConfig *config, double d)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpDouble;
@@ -107,9 +96,9 @@ FcExprCreateDouble (double d)
 }
 
 static FcExpr *
-FcExprCreateString (const FcChar8 *s)
+FcExprCreateString (FcConfig *config, const FcChar8 *s)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpString;
@@ -119,9 +108,9 @@ FcExprCreateString (const FcChar8 *s)
 }
 
 static FcExpr *
-FcExprCreateMatrix (const FcMatrix *m)
+FcExprCreateMatrix (FcConfig *config, const FcMatrix *m)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpMatrix;
@@ -131,9 +120,9 @@ FcExprCreateMatrix (const FcMatrix *m)
 }
 
 static FcExpr *
-FcExprCreateBool (FcBool b)
+FcExprCreateBool (FcConfig *config, FcBool b)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpBool;
@@ -143,9 +132,9 @@ FcExprCreateBool (FcBool b)
 }
 
 static FcExpr *
-FcExprCreateNil (void)
+FcExprCreateNil (FcConfig *config)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	FcMemAlloc (FC_MEM_EXPR, sizeof (FcExpr));
@@ -155,9 +144,9 @@ FcExprCreateNil (void)
 }
 
 static FcExpr *
-FcExprCreateField (const char *field)
+FcExprCreateField (FcConfig *config, const char *field)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpField;
@@ -167,9 +156,9 @@ FcExprCreateField (const char *field)
 }
 
 static FcExpr *
-FcExprCreateConst (const FcChar8 *constant)
+FcExprCreateConst (FcConfig *config, const FcChar8 *constant)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = FcOpConst;
@@ -179,9 +168,9 @@ FcExprCreateConst (const FcChar8 *constant)
 }
 
 static FcExpr *
-FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right)
+FcExprCreateOp (FcConfig *config, FcExpr *left, FcOp op, FcExpr *right)
 {
-    FcExpr *e = FcExprAlloc ();
+    FcExpr *e = FcConfigAllocExpr (config);
     if (e)
     {
 	e->op = op;
@@ -254,8 +243,8 @@ FcExprDestroy (FcExpr *e)
     case FcOpInvalid:
 	break;
     }
-    FcMemFree (FC_MEM_EXPR, sizeof (FcExpr));
-    free (e);
+
+    e->op = FcOpNil;
 }
 
 void
@@ -1337,7 +1326,7 @@ FcParseFamilies (FcConfigParse *parse, FcVStackTag tag)
 	FcVStackPopAndDestroy (parse);
 	if (expr)
 	{
-	    new = FcExprCreateOp (left, FcOpComma, expr);
+	    new = FcExprCreateOp (parse->config, left, FcOpComma, expr);
 	    if (!new)
 	    {
 		FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1374,7 +1363,7 @@ FcParseFamily (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
-    expr = FcExprCreateString (s);
+    expr = FcExprCreateString (parse->config, s);
     FcStrBufDestroy (&parse->pstack->str);
     if (expr)
 	FcVStackPushExpr (parse, FcVStackFamily, expr);
@@ -1397,7 +1386,7 @@ FcParseAlias (FcConfigParse *parse)
 	case FcVStackFamily:
 	    if (family)
 	    {
-		new = FcExprCreateOp (vstack->u.expr, FcOpComma, family);
+		new = FcExprCreateOp (parse->config, vstack->u.expr, FcOpComma, family);
 		if (!new)
 		    FcConfigMessage (parse, FcSevereError, "out of memory");
 		else
@@ -1511,13 +1500,13 @@ FcPopExpr (FcConfigParse *parse)
 	break;
     case FcVStackString:
     case FcVStackFamily:
-	expr = FcExprCreateString (vstack->u.string);
+	expr = FcExprCreateString (parse->config, vstack->u.string);
 	break;
     case FcVStackField:
-	expr = FcExprCreateField ((char *) vstack->u.string);
+	expr = FcExprCreateField (parse->config, (char *) vstack->u.string);
 	break;
     case FcVStackConstant:
-	expr = FcExprCreateConst (vstack->u.string);
+	expr = FcExprCreateConst (parse->config, vstack->u.string);
 	break;
     case FcVStackGlob:
 	/* XXX: What's the correct action here? (CDW) */
@@ -1529,16 +1518,16 @@ FcPopExpr (FcConfigParse *parse)
 	vstack->tag = FcVStackNone;
 	break;
     case FcVStackInteger:
-	expr = FcExprCreateInteger (vstack->u.integer);
+	expr = FcExprCreateInteger (parse->config, vstack->u.integer);
 	break;
     case FcVStackDouble:
-	expr = FcExprCreateDouble (vstack->u._double);
+	expr = FcExprCreateDouble (parse->config, vstack->u._double);
 	break;
     case FcVStackMatrix:
-	expr = FcExprCreateMatrix (vstack->u.matrix);
+	expr = FcExprCreateMatrix (parse->config, vstack->u.matrix);
 	break;
     case FcVStackBool:
-	expr = FcExprCreateBool (vstack->u.bool_);
+	expr = FcExprCreateBool (parse->config, vstack->u.bool_);
 	break;
     case FcVStackTest:
 	break;
@@ -1573,7 +1562,7 @@ FcPopBinary (FcConfigParse *parse, FcOp op)
     {
 	if (expr)
 	{
-	    new = FcExprCreateOp (left, op, expr);
+	    new = FcExprCreateOp (parse->config, left, op, expr);
 	    if (!new)
 	    {
 		FcConfigMessage (parse, FcSevereError, "out of memory");
@@ -1609,7 +1598,7 @@ FcPopUnary (FcConfigParse *parse, FcOp op)
 
     if ((operand = FcPopExpr (parse)))
     {
-	new = FcExprCreateOp (operand, op, 0);
+	new = FcExprCreateOp (parse->config, operand, op, 0);
 	if (!new)
 	{
 	    FcExprDestroy (operand);
