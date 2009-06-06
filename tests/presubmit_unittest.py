@@ -969,8 +969,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testRunPythonUnitTestsNonExistent1(self):
     input_api = self.MockInputApi()
     input_api.is_committing = False
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests('_non_existent_module'
-        ).AndRaise(exceptions.ImportError('Blehh'))
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
+        input_api, '_non_existent_module').AndRaise(
+            exceptions.ImportError('Blehh'))
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['_non_existent_module'])
@@ -981,8 +982,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testRunPythonUnitTestsNonExistent2(self):
     input_api = self.MockInputApi()
     input_api.is_committing = True
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests('_non_existent_module'
-        ).AndRaise(exceptions.ImportError('Blehh'))
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
+        input_api, '_non_existent_module').AndRaise(
+            exceptions.ImportError('Blehh'))
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['_non_existent_module'])
@@ -993,8 +995,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi()
     input_api.is_committing = False
     test_module = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
-        ).AndReturn([])
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
+        input_api, 'test_module').AndReturn([])
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -1005,8 +1007,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api = self.MockInputApi()
     input_api.is_committing = True
     test_module = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
-        ).AndReturn([])
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
+        input_api, 'test_module').AndReturn([])
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -1018,8 +1020,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.is_committing = False
     input_api.unittest = self.mox.CreateMock(unittest)
     test = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
-        ).AndReturn([test])
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
+        input_api, 'test_module').AndReturn([test])
     runner = self.mox.CreateMockAnything()
     input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
     suite = self.mox.CreateMockAnything()
@@ -1027,8 +1029,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     test_result = self.mox.CreateMockAnything()
     runner.run(suite).AndReturn(test_result)
     test_result.wasSuccessful().AndReturn(False)
-    test_result.failures = 2
-    test_result.errors = 3
+    test_result.failures = [None, None]
+    test_result.errors = [None, None, None]
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -1042,8 +1044,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.is_committing = True
     input_api.unittest = self.mox.CreateMock(unittest)
     test = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
-        ).AndReturn([test])
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
+        input_api, 'test_module').AndReturn([test])
     runner = self.mox.CreateMockAnything()
     input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
     suite = self.mox.CreateMockAnything()
@@ -1051,8 +1053,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     test_result = self.mox.CreateMockAnything()
     runner.run(suite).AndReturn(test_result)
     test_result.wasSuccessful().AndReturn(False)
-    test_result.failures = 2
-    test_result.errors = 3
+    test_result.failures = [None, None]
+    test_result.errors = [None, None, None]
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -1065,8 +1067,8 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.is_committing = False
     input_api.unittest = self.mox.CreateMock(unittest)
     test = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
-        ).AndReturn([test])
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
+        input_api, 'test_module').AndReturn([test])
     runner = self.mox.CreateMockAnything()
     input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
     suite = self.mox.CreateMockAnything()

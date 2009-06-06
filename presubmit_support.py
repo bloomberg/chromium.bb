@@ -731,7 +731,7 @@ def Main(argv):
   files = ParseFiles(args, options.recursive)
   if options.verbose:
     print "Found %d files." % len(files)
-  return not DoPresubmitChecks(gcl.ChangeInfo(name='temp', files=files),
+  return not DoPresubmitChecks(gcl.ChangeInfo('No name', 0, 0, '', files),
                                options.commit,
                                options.verbose,
                                sys.stdout,

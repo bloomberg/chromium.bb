@@ -135,7 +135,7 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
   outputs = []
   for unit_test in unit_tests:
     try:
-      tests_suite.extend(_RunPythonUnitTests_LoadTests(unit_test))
+      tests_suite.extend(_RunPythonUnitTests_LoadTests(input_api, unit_test))
     except ImportError:
       outputs.append(message_type("Failed to load %s" % unit_test,
                                   long_text=input_api.traceback.format_exc()))
@@ -143,6 +143,6 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
   results = input_api.unittest.TextTestRunner(verbosity=0).run(
       input_api.unittest.TestSuite(tests_suite))
   if not results.wasSuccessful():
-    outputs.append(message_type(
-        "%d unit tests failed." % (results.failures + results.errors)))
+    outputs.append(message_type("%d unit tests failed." %
+                                (len(results.failures) + len(results.errors))))
   return outputs
