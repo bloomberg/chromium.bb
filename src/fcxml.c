@@ -102,7 +102,7 @@ FcExprCreateString (FcConfig *config, const FcChar8 *s)
     if (e)
     {
 	e->op = FcOpString;
-	e->u.sval = FcStrCopy (s);
+	e->u.sval = FcStrStaticName (s);
     }
     return e;
 }
@@ -162,7 +162,7 @@ FcExprCreateConst (FcConfig *config, const FcChar8 *constant)
     if (e)
     {
 	e->op = FcOpConst;
-	e->u.constant = FcStrCopy (constant);
+	e->u.constant = FcStrStaticName (constant);
     }
     return e;
 }
@@ -191,7 +191,6 @@ FcExprDestroy (FcExpr *e)
     case FcOpDouble:
 	break;
     case FcOpString:
-	FcStrFree (e->u.sval);
 	break;
     case FcOpMatrix:
 	FcMatrixFree (e->u.mval);
@@ -204,7 +203,6 @@ FcExprDestroy (FcExpr *e)
     case FcOpField:
 	break;
     case FcOpConst:
-	FcStrFree (e->u.constant);
 	break;
     case FcOpAssign:
     case FcOpAssignReplace:
@@ -840,6 +838,7 @@ FcVStackPopAndDestroy (FcConfigParse *parse)
 	break;
     case FcVStackString:
     case FcVStackFamily:
+	break;
     case FcVStackField:
     case FcVStackConstant:
     case FcVStackGlob:
@@ -1920,7 +1919,7 @@ FcPopValue (FcConfigParse *parse)
     
     switch (vstack->tag) {
     case FcVStackString:
-	value.u.s = FcStrCopy (vstack->u.string);
+	value.u.s = FcStrStaticName (vstack->u.string);
 	if (value.u.s)
 	    value.type = FcTypeString;
 	break;
