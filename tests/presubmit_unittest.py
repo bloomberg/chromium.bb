@@ -925,7 +925,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testCannedCheckChangeHasNoTabs(self):
     self.TestContent(presubmit_canned_checks.CheckChangeHasNoTabs,
                      'blah blah', 'blah\tblah',
-                     presubmit.OutputApi.PresubmitError)
+                     presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLines(self):
     check = lambda x,y: presubmit_canned_checks.CheckLongLines(x, y, 10)
@@ -934,6 +934,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCannedCheckTreeIsOpenOpen(self):
     input_api = self.MockInputApi()
+    input_api.is_committing = True
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('url_to_open').AndReturn(connection)
     connection.read().AndReturn('1')
@@ -945,6 +946,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testCannedCheckTreeIsOpenClosed(self):
     input_api = self.MockInputApi()
+    input_api.is_committing = True
     connection = self.mox.CreateMockAnything()
     input_api.urllib2.urlopen('url_to_closed').AndReturn(connection)
     connection.read().AndReturn('0')
@@ -954,7 +956,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, url='url_to_closed', closed='0')
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
-                      presubmit.OutputApi.PresubmitError)
+                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testRunPythonUnitTestsNoTest(self):
     input_api = self.MockInputApi()
