@@ -306,13 +306,13 @@ class ChangeInfo(object):
     """Closes the Rietveld issue for this changelist."""
     data = [("description", self.description),]
     ctype, body = upload.EncodeMultipartFormData(data, [])
-    SendToRietveld("/" + self.issue + "/close", body, ctype)
+    SendToRietveld("/%d/close" % self.issue, body, ctype)
 
   def UpdateRietveldDescription(self):
     """Sets the description for an issue on Rietveld."""
     data = [("description", self.description),]
     ctype, body = upload.EncodeMultipartFormData(data, [])
-    SendToRietveld("/" + self.issue + "/description", body, ctype)
+    SendToRietveld("/%d/description" % self.issue, body, ctype)
 
   def MissingTests(self):
     """Returns True if the change looks like it needs unit tests but has none.
@@ -921,6 +921,7 @@ def Commit(change_info, args):
       change_info.CloseIssue()
   os.chdir(previous_cwd)
 
+
 def Change(change_info, override_description):
   """Creates/edits a changelist."""
   if change_info.issue:
@@ -930,7 +931,7 @@ def Change(change_info, override_description):
       if err.code == 404:
         # The user deleted the issue in Rietveld, so forget the old issue id.
         description = change_info.description
-        change_info.issue = ""
+        change_info.issue = 0
         change_info.Save()
       else:
         ErrorExit("Error getting the description from Rietveld: " + err)
