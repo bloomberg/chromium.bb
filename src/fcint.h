@@ -737,36 +737,6 @@ FcFontSetSerialize (FcSerialize *serialize, const FcFontSet * s);
 FcPrivate void
 FcTestDestroy (FcTest *test);
 
-FcPrivate FcExpr *
-FcExprCreateInteger (int i);
-
-FcPrivate FcExpr *
-FcExprCreateDouble (double d);
-
-FcPrivate FcExpr *
-FcExprCreateString (const FcChar8 *s);
-
-FcPrivate FcExpr *
-FcExprCreateMatrix (const FcMatrix *m);
-
-FcPrivate FcExpr *
-FcExprCreateBool (FcBool b);
-
-FcPrivate FcExpr *
-FcExprCreateNil (void);
-
-FcPrivate FcExpr *
-FcExprCreateField (const char *field);
-
-FcPrivate FcExpr *
-FcExprCreateConst (const FcChar8 *constant);
-
-FcPrivate FcExpr *
-FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right);
-
-FcPrivate void
-FcExprDestroy (FcExpr *e);
-
 FcPrivate void
 FcEditDestroy (FcEdit *e);
 

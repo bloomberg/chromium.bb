@@ -58,6 +58,8 @@
 #undef STRICT
 #endif
 
+static void
+FcExprDestroy (FcExpr *e);
 
 void
 FcTestDestroy (FcTest *test)
@@ -80,7 +82,7 @@ FcExprAlloc (void)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateInteger (int i)
 {
     FcExpr *e = FcExprAlloc ();
@@ -92,7 +94,7 @@ FcExprCreateInteger (int i)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateDouble (double d)
 {
     FcExpr *e = FcExprAlloc ();
@@ -104,7 +106,7 @@ FcExprCreateDouble (double d)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateString (const FcChar8 *s)
 {
     FcExpr *e = FcExprAlloc ();
@@ -116,7 +118,7 @@ FcExprCreateString (const FcChar8 *s)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateMatrix (const FcMatrix *m)
 {
     FcExpr *e = FcExprAlloc ();
@@ -128,7 +130,7 @@ FcExprCreateMatrix (const FcMatrix *m)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateBool (FcBool b)
 {
     FcExpr *e = FcExprAlloc ();
@@ -140,7 +142,7 @@ FcExprCreateBool (FcBool b)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateNil (void)
 {
     FcExpr *e = FcExprAlloc ();
@@ -152,7 +154,7 @@ FcExprCreateNil (void)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateField (const char *field)
 {
     FcExpr *e = FcExprAlloc ();
@@ -164,7 +166,7 @@ FcExprCreateField (const char *field)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateConst (const FcChar8 *constant)
 {
     FcExpr *e = FcExprAlloc ();
@@ -176,7 +178,7 @@ FcExprCreateConst (const FcChar8 *constant)
     return e;
 }
 
-FcExpr *
+static FcExpr *
 FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right)
 {
     FcExpr *e = FcExprAlloc ();
@@ -189,7 +191,7 @@ FcExprCreateOp (FcExpr *left, FcOp op, FcExpr *right)
     return e;
 }
 
-void
+static void
 FcExprDestroy (FcExpr *e)
 {
     if (!e)
