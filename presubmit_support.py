@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.1'
+__version__ = '1.2'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -26,6 +26,7 @@ import subprocess  # Exposed through the API.
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import types
+import unittest  # Exposed through the API.
 import urllib2  # Exposed through the API.
 import warnings
 
@@ -172,6 +173,7 @@ class InputApi(object):
     self.re = re
     self.subprocess = subprocess
     self.tempfile = tempfile
+    self.unittest = unittest
     self.urllib2 = urllib2
 
     # InputApi.platform is the platform you're currently running on.
@@ -273,6 +275,8 @@ class InputApi(object):
         the AffectedFile instance of the current file;
         integer line number (1-based); and
         the contents of the line as a string.
+
+    Note: The cariage return (LF or CR) is stripped off.
     """
     return InputApi._RightHandSideLinesImpl(
         filter(lambda x: x.IsTextFile(),
@@ -349,6 +353,7 @@ class AffectedFile(object):
     side".
 
     Contents will be empty if the file is a directory or does not exist.
+    Note: The cariage returns (LF or CR) are stripped off.
     """
     if self.IsDirectory():
       return []

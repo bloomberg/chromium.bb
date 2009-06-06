@@ -84,16 +84,12 @@ def CheckLongLines(input_api, output_api, maxlen=80):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
-  basename = input_api.basename
-
   bad = []
   for f, line_num, line in input_api.RightHandSideLines():
-    if line.endswith('\n'):
-      line = line[:-1]
     if len(line) > maxlen:
       bad.append(
           '%s, line %s, %s chars' %
-          (basename(f.LocalPath()), line_num, len(line)))
+          (f.LocalPath(), line_num, len(line)))
       if len(bad) == 5:  # Just show the first 5 errors.
         break
 
@@ -120,27 +116,25 @@ def CheckTreeIsOpen(input_api, output_api, url, closed):
   return []
 
 
+def _RunPythonUnitTests_LoadTests(input_api, module_name):
+  """Meant to be stubbed out during unit testing."""
+  module = __import__(module_name)
+  for part in module_name.split('.')[1:]:
+    module = getattr(module, part)
+  return input_api.unittest.TestLoader().loadTestsFromModule(module)._tests
+
 def RunPythonUnitTests(input_api, output_api, unit_tests):
   """Imports the unit_tests modules and run them."""
-  import unittest
   tests_suite = []
-  test_loader = unittest.TestLoader()
-  def LoadTests(module_name):
-    module = __import__(module_name)
-    for part in module_name.split('.')[1:]:
-      module = getattr(module, part)
-    tests_suite.extend(test_loader.loadTestsFromModule(module)._tests)
-  
   outputs = []
   for unit_test in unit_tests:
     try:
-      LoadTests(unit_test)
+      tests_suite.extend(_RunPythonUnitTests_LoadTests(unit_test))
     except ImportError:
-      outputs.Append(output_api.PresubmitError("Failed to load %s" % unit_test))
-      raise
+      outputs.append(output_api.PresubmitError("Failed to load %s" % unit_test))
 
-  results = unittest.TextTestRunner(verbosity=0).run(unittest.TestSuite(
-      tests_suite))
+  results = input_api.unittest.TextTestRunner(verbosity=0).run(
+      input_api.unittest.TestSuite(tests_suite))
   if not results.wasSuccessful():
     outputs.append(output_api.PresubmitError(
         "%d unit tests failed." % (results.failures + results.errors)))

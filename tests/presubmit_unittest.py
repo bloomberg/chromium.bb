@@ -86,12 +86,6 @@ def CheckChangeOnUpload(input_api, output_api):
     self.mox.StubOutWithMock(presubmit.gcl, 'GetSVNFileProperty')
     self.mox.StubOutWithMock(presubmit.gcl, 'ReadFile')
 
-  @staticmethod
-  def MakeBasicChange(name, description):
-    ci = presubmit.gcl.ChangeInfo(name=name, description=description)
-    change = presubmit.GclChange(ci)
-    return change
-
   def compareMembers(self, object, members):
     """If you add a member, be sure to add the relevant test!"""
     # Skip over members starting with '_' since they are usually not meant to
@@ -113,7 +107,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       'cPickle', 'cStringIO', 'deprecated', 'exceptions',
       'fnmatch', 'gcl', 'gclient', 'glob', 'marshal', 'normpath', 'optparse',
       'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
-      'tempfile', 'types', 'urllib2', 'warnings',
+      'tempfile', 'types', 'unittest', 'urllib2', 'warnings',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit, members)
@@ -522,7 +516,7 @@ class InputApiUnittest(PresubmitTestsBase):
       'PresubmitLocalPath', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
       'marshal', 'os_path', 'pickle', 'platform',
-      're', 'subprocess', 'tempfile', 'urllib2', 'version',
+      're', 'subprocess', 'tempfile', 'unittest', 'urllib2', 'version',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit.InputApi(None, './.'), members)
@@ -800,27 +794,22 @@ class AffectedFileUnittest(PresubmitTestsBase):
 
 class CannedChecksUnittest(PresubmitTestsBase):
   """Tests presubmit_canned_checks.py."""
-  class MockInputApi(object):
-    class MockUrllib2(object):
-      class urlopen(object):
-        def __init__(self, url):
-          if url == 'url_to_open':
-            self.result = '1'
-          else:
-            self.result = '0'
-        def read(self):
-          return self.result
-        def close(self):
-          pass
-    def __init__(self, lines=None):
-      self.lines = lines
-      self.basename = lambda x: x
-      self.urllib2 = self.MockUrllib2()
-      self.re = presubmit.re
 
-    def RightHandSideLines(self):
-      for line in self.lines:
-        yield (presubmit.AffectedFile('bingo', 'M'), 1, line)
+  def setUp(self):
+    PresubmitTestsBase.setUp(self)
+    self.mox.StubOutWithMock(presubmit_canned_checks,
+                         '_RunPythonUnitTests_LoadTests')
+
+  def MockInputApi(self):
+    input_api = self.mox.CreateMock(presubmit.InputApi)
+    input_api.re = presubmit.re
+    input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
+    input_api.unittest = unittest
+    return input_api
+
+  def MakeBasicChange(self, name, description):
+    ci = presubmit.gcl.ChangeInfo(name=name, description=description)
+    return presubmit.GclChange(ci, self.fake_root_dir)
 
   def testMembersChanged(self):
     self.mox.ReplayAll()
@@ -834,120 +823,181 @@ class CannedChecksUnittest(PresubmitTestsBase):
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
 
-  def testCannedCheckChangeHasBugField(self):
+  def TestDescription(self, check, description1, description2, error_type):
+    input_api1 = self.MockInputApi()
+    input_api1.change = self.MakeBasicChange('foo', 'Foo\n' + description1)
+    input_api2 = self.MockInputApi()
+    input_api2.change = self.MakeBasicChange('foo', 'Foo\n' + description2)
     self.mox.ReplayAll()
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nBUG=1234')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failIf(presubmit_canned_checks.CheckChangeHasBugField(
-        api, presubmit.OutputApi))
 
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nNEVERTESTED=did some stuff')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failUnless(presubmit_canned_checks.CheckChangeHasBugField(
-        api, presubmit.OutputApi))
+    results1 = check(input_api1, presubmit.OutputApi)
+    self.assertEquals(results1, [])
+    results2 = check(input_api2, presubmit.OutputApi)
+    self.assertEquals(len(results2), 1)
+    self.assertEquals(results2[0].__class__, error_type)
+
+  def TestContent(self, check, content1, content2, error_type):
+    input_api1 = self.MockInputApi()
+    input_api1.change = self.MakeBasicChange('foo', 'Foo\n')
+    affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    affected_file.LocalPath().AndReturn('foo.cc')
+    output1 = [
+      (affected_file, 42, 'yo, ' + content1),
+      (affected_file, 43, 'yer'),
+      (affected_file, 23, 'ya'),
+    ]
+    input_api1.RightHandSideLines().AndReturn(output1)
+    input_api2 = self.MockInputApi()
+    input_api2.change = self.MakeBasicChange('foo', 'Foo\n')
+    output2 = [
+      (affected_file, 42, 'yo, ' + content2),
+      (affected_file, 43, 'yer'),
+      (affected_file, 23, 'ya'),
+    ]
+    input_api2.RightHandSideLines().AndReturn(output2)
+    self.mox.ReplayAll()
+
+    results1 = check(input_api1, presubmit.OutputApi)
+    self.assertEquals(results1, [])
+    results2 = check(input_api2, presubmit.OutputApi)
+    self.assertEquals(len(results2), 1)
+    self.assertEquals(results2[0].__class__, error_type)
+
+  def testCannedCheckChangeHasBugField(self):
+    self.TestDescription(presubmit_canned_checks.CheckChangeHasBugField,
+                         'BUG=1234', '',
+                         presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCannedCheckChangeHasTestField(self):
-    self.mox.ReplayAll()
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nTEST=did some stuff')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failIf(presubmit_canned_checks.CheckChangeHasTestField(
-        api, presubmit.OutputApi))
-
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nNOTEST=did some stuff')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failUnless(presubmit_canned_checks.CheckChangeHasTestField(
-        api, presubmit.OutputApi))
+    self.TestDescription(presubmit_canned_checks.CheckChangeHasTestField,
+                         'TEST=did some stuff', '',
+                         presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCannedCheckChangeHasTestedField(self):
-    self.mox.ReplayAll()
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nTESTED=did some stuff')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failIf(presubmit_canned_checks.CheckChangeHasTestedField(
-        api, presubmit.OutputApi))
-
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nNEVERTESTED=did some stuff')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failUnless(presubmit_canned_checks.CheckChangeHasTestedField(
-        api, presubmit.OutputApi))
+    self.TestDescription(presubmit_canned_checks.CheckChangeHasTestedField,
+                         'TESTED=did some stuff', '',
+                         presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckChangeHasQAField(self):
-    self.mox.ReplayAll()
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nQA=test floop feature very well')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failIf(presubmit_canned_checks.CheckChangeHasQaField(
-        api, presubmit.OutputApi))
-
-    change = self.MakeBasicChange('foo',
-                                  'Foo\nNOTFORQA=test floop feature very well')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failUnless(presubmit_canned_checks.CheckChangeHasQaField(
-        api, presubmit.OutputApi))
+    self.TestDescription(presubmit_canned_checks.CheckChangeHasQaField,
+                         'QA=BSOD your machine', '',
+                         presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckDoNotSubmitInDescription(self):
-    self.mox.ReplayAll()
-    change = self.MakeBasicChange('foo', 'hello')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failIf(presubmit_canned_checks.CheckDoNotSubmitInDescription(
-        api, presubmit.OutputApi))
-
-    change = self.MakeBasicChange('foo',
-                                  'DO NOT ' + 'SUBMIT')
-    api = presubmit.InputApi(change, './PRESUBMIT.py')
-    self.failUnless(presubmit_canned_checks.CheckDoNotSubmitInDescription(
-        api, presubmit.OutputApi))
+    self.TestDescription(presubmit_canned_checks.CheckDoNotSubmitInDescription,
+                         'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
+                         presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckDoNotSubmitInFiles(self):
-    self.mox.ReplayAll()
-    self.failIf(presubmit_canned_checks.CheckDoNotSubmitInFiles(
-      self.MockInputApi(['hello', 'there']), presubmit.OutputApi
-    ))
-    self.failUnless(presubmit_canned_checks.CheckDoNotSubmitInFiles(
-      self.MockInputApi(['hello', 'yo, DO NOT ' + 'SUBMIT']),
-                      presubmit.OutputApi))
+    self.TestContent(presubmit_canned_checks.CheckDoNotSubmitInFiles,
+                     'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
+                     presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckChangeHasNoTabs(self):
-    self.mox.ReplayAll()
-    self.failIf(presubmit_canned_checks.CheckChangeHasNoTabs(
-      self.MockInputApi(['hello', 'there']), presubmit.OutputApi
-    ))
-    self.failUnless(presubmit_canned_checks.CheckChangeHasNoTabs(
-      self.MockInputApi(['hello', 'there\tit is']), presubmit.OutputApi
-    ))
+    self.TestContent(presubmit_canned_checks.CheckChangeHasNoTabs,
+                     'blah blah', 'blah\tblah',
+                     presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckLongLines(self):
-    self.mox.ReplayAll()
-    self.failIf(presubmit_canned_checks.CheckLongLines(
-      self.MockInputApi(['hello', 'there']), presubmit.OutputApi, 5
-    ))
-    self.failUnless(presubmit_canned_checks.CheckLongLines(
-      self.MockInputApi(['hello', 'there!']), presubmit.OutputApi, 5
-    ))
+    check = lambda x,y: presubmit_canned_checks.CheckLongLines(x, y, 10)
+    self.TestContent(check, '', 'blah blah blah',
+                     presubmit.OutputApi.PresubmitPromptWarning)
 
-  def testCannedCheckTreeIsOpen(self):
+  def testCannedCheckTreeIsOpenOpen(self):
+    input_api = self.MockInputApi()
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('url_to_open').AndReturn(connection)
+    connection.read().AndReturn('1')
+    connection.close()
     self.mox.ReplayAll()
-    self.failIf(presubmit_canned_checks.CheckTreeIsOpen(
-      self.MockInputApi(), presubmit.OutputApi, url='url_to_open', closed='0'
-    ))
-    self.failUnless(presubmit_canned_checks.CheckTreeIsOpen(
-      self.MockInputApi(), presubmit.OutputApi, url='url_to_closed', closed='0'
-    ))
+    results = presubmit_canned_checks.CheckTreeIsOpen(
+        input_api, presubmit.OutputApi, url='url_to_open', closed='0')
+    self.assertEquals(results, [])
 
-  def RunPythonUnitTests(self):
+  def testCannedCheckTreeIsOpenClosed(self):
+    input_api = self.MockInputApi()
+    connection = self.mox.CreateMockAnything()
+    input_api.urllib2.urlopen('url_to_closed').AndReturn(connection)
+    connection.read().AndReturn('0')
+    connection.close()
     self.mox.ReplayAll()
-    # TODO(maruel): Add real tests.
-    self.failIf(presubmit_canned_checks.RunPythonUnitTests(
-        self.MockInputApi(),
-        presubmit.OutputApi, []))
-    self.failUnless(presubmit_canned_checks.RunPythonUnitTests(
-        self.MockInputApi(),
-        presubmit.OutputApi, ['non_existent_module']))
+    results = presubmit_canned_checks.CheckTreeIsOpen(
+        input_api, presubmit.OutputApi, url='url_to_closed', closed='0')
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__,
+                      presubmit.OutputApi.PresubmitError)
+
+  def testRunPythonUnitTests1(self):
+    input_api = self.MockInputApi()
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, [])
+    self.assertEquals(results, [])
+
+  def testRunPythonUnitTests2(self):
+    input_api = self.MockInputApi()
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests('_non_existent_module'
+        ).AndRaise(exceptions.ImportError('Blehh'))
+    self.mox.ReplayAll()
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, ['_non_existent_module'])
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
+
+  def testRunPythonUnitTests3(self):
+    input_api = self.MockInputApi()
+    test_module = self.mox.CreateMockAnything()
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
+        ).AndReturn([])
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, ['test_module'])
+    self.assertEquals(results, [])
+
+  def testRunPythonUnitTests4(self):
+    input_api = self.MockInputApi()
+    input_api.unittest = self.mox.CreateMock(unittest)
+    test = self.mox.CreateMockAnything()
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
+        ).AndReturn([test])
+    runner = self.mox.CreateMockAnything()
+    input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
+    suite = self.mox.CreateMockAnything()
+    input_api.unittest.TestSuite([test]).AndReturn(suite)
+    test_result = self.mox.CreateMockAnything()
+    runner.run(suite).AndReturn(test_result)
+    test_result.wasSuccessful().AndReturn(False)
+    test_result.failures = 2
+    test_result.errors = 3
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, ['test_module'])
+    self.assertEquals(len(results), 1)
+    self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
+
+  def testRunPythonUnitTests5(self):
+    input_api = self.MockInputApi()
+    input_api.unittest = self.mox.CreateMock(unittest)
+    test = self.mox.CreateMockAnything()
+    presubmit_canned_checks._RunPythonUnitTests_LoadTests('test_module'
+        ).AndReturn([test])
+    runner = self.mox.CreateMockAnything()
+    input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
+    suite = self.mox.CreateMockAnything()
+    input_api.unittest.TestSuite([test]).AndReturn(suite)
+    test_result = self.mox.CreateMockAnything()
+    runner.run(suite).AndReturn(test_result)
+    test_result.wasSuccessful().AndReturn(True)
+    test_result.failures = 0
+    test_result.errors = 0
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.RunPythonUnitTests(
+        input_api, presubmit.OutputApi, ['test_module'])
+    self.assertEquals(len(results), 0)
+
 
 if __name__ == '__main__':
   unittest.main()
