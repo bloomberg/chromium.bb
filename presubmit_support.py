@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.3'
+__version__ = '1.3.1'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -270,6 +270,17 @@ class InputApi(object):
     return InputApi._RightHandSideLinesImpl(
         filter(lambda x: x.IsTextFile(),
                self.AffectedFiles(include_deletes=False)))
+
+  def ReadFile(self, file, mode='r'):
+    """Reads an arbitrary file.
+    
+    Deny reading anything outside the repository.
+    """
+    if isinstance(file, AffectedFile):
+      file = file.AbsoluteLocalPath()
+    if not file.startswith(self.change.RepositoryRoot()):
+      raise IOError('Access outside the repository root is denied.')
+    return gcl.ReadFile(file, mode)
 
   @staticmethod
   def _RightHandSideLinesImpl(affected_files):

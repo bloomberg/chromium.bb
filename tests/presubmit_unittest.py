@@ -94,6 +94,12 @@ def CheckChangeOnUpload(input_api, output_api):
                       if not x.startswith('_')]
     self.assertEqual(actual_members, sorted(members))
 
+  def MakeBasicChange(self, name, description, root=None):
+    ci = presubmit.gcl.ChangeInfo(name, 0, 0, description, None)
+    if root is None:
+      root = self.fake_root_dir
+    return presubmit.GclChange(ci, root)
+
 
 class PresubmitUnittest(PresubmitTestsBase):
   """General presubmit_support.py tests (excluding InputApi and OutputApi)."""
@@ -519,7 +525,7 @@ class InputApiUnittest(PresubmitTestsBase):
     members = [
       'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
       'DepotToLocalPath', 'LocalPaths', 'LocalToDepotPath',
-      'PresubmitLocalPath', 'RightHandSideLines', 'ServerPaths',
+      'PresubmitLocalPath', 'RightHandSideLines', 'ReadFile', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
       'is_committing', 'marshal', 'os_path', 'pickle', 'platform',
       're', 'subprocess', 'tempfile', 'traceback', 'unittest', 'urllib2',
@@ -671,6 +677,34 @@ class InputApiUnittest(PresubmitTestsBase):
                                  description='Bleh\n', files=None))
     api = presubmit.InputApi(change, 'foo/PRESUBMIT.py', True)
     api.AffectedTextFiles(include_deletes=False)
+
+  def testReadFileStringDenied(self):
+    self.mox.ReplayAll()
+    input_api = presubmit.InputApi(None, './p', False)
+    input_api.change = self.MakeBasicChange('foo', 'Foo\n', '/AA')
+    self.assertRaises(IOError, input_api.ReadFile, 'boo', 'x')
+
+  def testReadFileStringAccepted(self):
+    presubmit.gcl.ReadFile('/AA/boo', 'x').AndReturn(None)
+    self.mox.ReplayAll()
+    input_api = presubmit.InputApi(None, './p', False)
+    input_api.change = self.MakeBasicChange('foo', 'Foo\n', '/AA')
+    input_api.ReadFile('/AA/boo', 'x')
+
+  def testReadFileAffectedFileDenied(self):
+    file = presubmit.AffectedFile('boo', 'M')
+    self.mox.ReplayAll()
+    input_api = presubmit.InputApi(None, './p', False)
+    input_api.change = self.MakeBasicChange('foo', 'Foo\n', '/AA')
+    self.assertRaises(IOError, input_api.ReadFile, 'boo', 'x')
+
+  def testReadFileAffectedFileAccepted(self):
+    file = presubmit.AffectedFile('/AA/boo', 'M')
+    presubmit.gcl.ReadFile('/AA/boo', 'x').AndReturn(None)
+    self.mox.ReplayAll()
+    input_api = presubmit.InputApi(None, './p', False)
+    input_api.change = self.MakeBasicChange('foo', 'Foo\n', '/AA')
+    input_api.ReadFile('/AA/boo', 'x')
 
 
 class OuputApiUnittest(PresubmitTestsBase):
@@ -836,14 +870,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.unittest = unittest
     return input_api
 
-  def MakeBasicChange(self, name, description):
-    ci = presubmit.gcl.ChangeInfo(name, 0, 0, description, None)
-    return presubmit.GclChange(ci, self.fake_root_dir)
-
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'CheckChangeHasBugField', 'CheckChangeHasNoTabs',
+      'CheckChangeHasBugField', 'CheckChangeHasNoCR', 'CheckChangeHasNoTabs',
       'CheckChangeHasQaField', 'CheckChangeHasTestedField',
       'CheckChangeHasTestField', 'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
@@ -922,6 +952,31 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
                      presubmit.OutputApi.PresubmitError)
 
+  def testCheckChangeHasNoCR(self):
+    input_api1 = self.MockInputApi()
+    self.mox.StubOutWithMock(input_api1, 'ReadFile')
+    input_api1.change = self.MakeBasicChange('foo', 'Foo\n')
+    affected_file1 = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    input_api1.AffectedTextFiles().AndReturn([affected_file1])
+    input_api1.ReadFile(affected_file1, 'rb').AndReturn("Hey!\nHo!\n")
+    input_api2 = self.MockInputApi()
+    self.mox.StubOutWithMock(input_api2, 'ReadFile')
+    input_api2.change = self.MakeBasicChange('foo', 'Foo\n')
+    affected_file2 = self.mox.CreateMock(presubmit.SvnAffectedFile)
+    input_api2.AffectedTextFiles().AndReturn([affected_file2])
+    input_api2.ReadFile(affected_file2, 'rb').AndReturn("Hey!\r\nHo!\r\n")
+    affected_file2.LocalPath().AndReturn('bar.cc')
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.CheckChangeHasNoCR(
+        input_api1, presubmit.OutputApi)
+    self.assertEquals(results, [])
+    results2 = presubmit_canned_checks.CheckChangeHasNoCR(
+        input_api2, presubmit.OutputApi)
+    self.assertEquals(len(results2), 1)
+    self.assertEquals(results2[0].__class__,
+                      presubmit.OutputApi.PresubmitPromptWarning)
+  
   def testCannedCheckChangeHasNoTabs(self):
     self.TestContent(presubmit_canned_checks.CheckChangeHasNoTabs,
                      'blah blah', 'blah\tblah',

@@ -68,6 +68,18 @@ def CheckDoNotSubmit(input_api, output_api):
       )
 
 
+def CheckChangeHasNoCR(input_api, output_api):
+  """Checks that there are no \r, \r\n (CR or CRLF) characters in any of the
+  text files to be submitted.
+  """
+  outputs = []
+  for f in input_api.AffectedTextFiles():
+    if '\r' in input_api.ReadFile(f, 'rb'):
+      outputs.append(output_api.PresubmitPromptWarning(
+          "Found a CR character in %s" % f.LocalPath()))
+  return outputs
+
+
 def CheckChangeHasNoTabs(input_api, output_api):
   """Checks that there are no tab characters in any of the text files to be
   submitted.
