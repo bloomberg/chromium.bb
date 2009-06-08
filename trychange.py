@@ -66,8 +66,11 @@ def PathDifference(root, subpath):
   """Returns the difference subpath minus root."""
   if subpath.find(root) != 0:
     return None
-  # The + 1 is for the trailing / or \.
-  return subpath[len(root) + len(os.sep):]
+  # If the root does not have a trailing \ or /, we add it so the returned path
+  # starts immediately after the seperator regardless of whether it is provided.
+  if not root.endswith(os.sep):
+    root += os.sep
+  return subpath[len(root):]
 
 
 def GetSourceRoot():
