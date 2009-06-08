@@ -245,6 +245,17 @@ def WriteFile(filename, contents):
   file.close()
 
 
+def FilterFlag(args, flag):
+  """Returns True if the flag is present in args list.
+
+  The flag is removed from args if present.
+  """
+  if flag in args:
+    args.remove(flag)
+    return True
+  return False
+
+
 class ChangeInfo(object):
   """Holds information about a changelist.
 
@@ -713,36 +724,27 @@ def GenerateDiff(files, root=None):
   return "".join(diff)
 
 
+
+def OptionallyDoPresubmitChecks(change_info, committing, args):
+  if FilterFlag(args, "--no_presubmit") or FilterFlag(args, "--force"):
+    return True
+  return DoPresubmitChecks(change_info, committing=committing)
+
+
 def UploadCL(change_info, args):
   if not change_info.FileList():
     print "Nothing to upload, changelist is empty."
     return
-
-  if not "--no_presubmit" in args:
-    if not DoPresubmitChecks(change_info, committing=False):
-      return
-  else:
-    args.remove("--no_presubmit")
-
-  no_try = "--no_try" in args
-  if no_try:
-    args.remove("--no_try")
-  else:
-    # Support --no-try as --no_try
-    no_try = "--no-try" in args
-    if no_try:
-      args.remove("--no-try")
+  if not OptionallyDoPresubmitChecks(change_info, False, args):
+    return
+  no_try = FilterFlag(args, "--no_try") or FilterFlag(args, "--no-try")
 
   # Map --send-mail to --send_mail
-  if "--send-mail" in args:
-    args.remove("--send-mail")
+  if FilterFlag(args, "--send-mail"):
     args.append("--send_mail")
 
   # Supports --clobber for the try server.
-  clobber = False
-  if "--clobber" in args:
-    args.remove("--clobber")
-    clobber = True
+  clobber = FilterFlag(args, "--clobber")
 
   # Disable try when the server is overridden.
   server_1 = re.compile(r"^-s\b.*")
@@ -866,12 +868,8 @@ def Commit(change_info, args):
   if not change_info.FileList():
     print "Nothing to commit, changelist is empty."
     return
-
-  if not "--no_presubmit" in args:
-    if not DoPresubmitChecks(change_info, committing=True):
-      return
-  else:
-    args.remove("--no_presubmit")
+  if not OptionallyDoPresubmitChecks(change_info, True, args):
+    return
 
   # We face a problem with svn here: Let's say change 'bleh' modifies
   # svn:ignore on dir1\. but another unrelated change 'pouet' modifies
