@@ -144,6 +144,9 @@ def Main():
     sys.exit(1)
 
   chrome_root = args[0]
+  if not os.path.isdir(chrome_root):
+    Message("Path to chrome root (%s) not found." % repr(chrome_root))
+    sys.exit(1)
 
   if not options.nosync:
     rv = DoUpdate(chrome_root)
