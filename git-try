@@ -9,4 +9,4 @@ if [ ! -f "$base_dir/git-try-repo/git-try" ]; then
   git clone git://neugierig.org/git-try.git $base_dir/git-try-repo
 fi
 
-$base_dir/git-try-repo/git-try "$*"
+$base_dir/git-try-repo/git-try "$@"

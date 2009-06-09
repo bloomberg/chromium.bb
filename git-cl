@@ -9,4 +9,4 @@ if [ ! -f "$base_dir/git-cl-repo/git-cl" ]; then
   git clone git://neugierig.org/git-cl.git $base_dir/git-cl-repo
 fi
 
-$base_dir/git-cl-repo/git-cl "$*"
+$base_dir/git-cl-repo/git-cl "$@"
