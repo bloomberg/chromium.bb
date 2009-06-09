@@ -98,7 +98,16 @@ def CheckLongLines(input_api, output_api, maxlen=80):
   """
   bad = []
   for f, line_num, line in input_api.RightHandSideLines():
-    if len(line) > maxlen:
+    # Allow lines with http://, https:// and #define/#pragma/#include/#if/#endif
+    # to exceed the maxlen rule.
+    if (len(line) > maxlen and
+        not 'http://' in line and
+        not 'https://' in line and
+        not line.startswith('#define') and
+        not line.startswith('#include') and
+        not line.startswith('#pragma') and
+        not line.startswith('#if') and
+        not line.startswith('#endif')):
       bad.append(
           '%s, line %s, %s chars' %
           (f.LocalPath(), line_num, len(line)))
