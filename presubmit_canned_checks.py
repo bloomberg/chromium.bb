@@ -6,6 +6,8 @@
 """Generic presubmit checks that can be reused by other presubmit checks."""
 
 
+### Description checks
+
 def CheckChangeHasTestField(input_api, output_api):
   """Requires that the changelist have a TEST= field."""
   if input_api.change.TEST:
@@ -51,40 +53,36 @@ def CheckDoNotSubmitInDescription(input_api, output_api):
     return []
 
 
+### Content checks
+
 def CheckDoNotSubmitInFiles(input_api, output_api):
   """Checks that the user didn't add 'DO NOT ' + 'SUBMIT' to any files."""
   keyword = 'DO NOT ' + 'SUBMIT'
-  for f, line_num, line in input_api.RightHandSideLines():
+  # We want to check every text files, not just source files.
+  for f, line_num, line in input_api.RightHandSideLines(lambda x: x):
     if keyword in line:
       text = 'Found ' + keyword + ' in %s, line %s' % (f.LocalPath(), line_num)
       return [output_api.PresubmitError(text)]
   return []
 
 
-def CheckDoNotSubmit(input_api, output_api):
-  return (
-      CheckDoNotSubmitInDescription(input_api, output_api) +
-      CheckDoNotSubmitInFiles(input_api, output_api)
-      )
-
-
-def CheckChangeHasNoCR(input_api, output_api):
+def CheckChangeHasNoCR(input_api, output_api, source_file_filter=None):
   """Checks that there are no \r, \r\n (CR or CRLF) characters in any of the
-  text files to be submitted.
+  source files to be submitted.
   """
   outputs = []
-  for f in input_api.AffectedTextFiles():
+  for f in input_api.AffectedSourceFiles(source_file_filter):
     if '\r' in input_api.ReadFile(f, 'rb'):
       outputs.append(output_api.PresubmitPromptWarning(
           "Found a CR character in %s" % f.LocalPath()))
   return outputs
 
 
-def CheckChangeHasNoTabs(input_api, output_api):
+def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
   """Checks that there are no tab characters in any of the text files to be
   submitted.
   """
-  for f, line_num, line in input_api.RightHandSideLines():
+  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
     if '\t' in line:
       return [output_api.PresubmitPromptWarning(
           "Found a tab character in %s, line %s" %
@@ -92,12 +90,12 @@ def CheckChangeHasNoTabs(input_api, output_api):
   return []
 
 
-def CheckLongLines(input_api, output_api, maxlen=80):
+def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.
   """
   bad = []
-  for f, line_num, line in input_api.RightHandSideLines():
+  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
     # Allow lines with http://, https:// and #define/#pragma/#include/#if/#endif
     # to exceed the maxlen rule.
     if (len(line) > maxlen and
@@ -119,6 +117,15 @@ def CheckLongLines(input_api, output_api, maxlen=80):
     return [output_api.PresubmitPromptWarning(msg, items=bad)]
   else:
     return []
+
+
+### Other checks
+
+def CheckDoNotSubmit(input_api, output_api):
+  return (
+      CheckDoNotSubmitInDescription(input_api, output_api) +
+      CheckDoNotSubmitInFiles(input_api, output_api)
+      )
 
 
 def CheckTreeIsOpen(input_api, output_api, url, closed):
@@ -144,6 +151,7 @@ def _RunPythonUnitTests_LoadTests(input_api, module_name):
   for part in module_name.split('.')[1:]:
     module = getattr(module, part)
   return input_api.unittest.TestLoader().loadTestsFromModule(module)._tests
+
 
 def RunPythonUnitTests(input_api, output_api, unit_tests):
   """Imports the unit_tests modules and run them."""

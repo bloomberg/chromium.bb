@@ -60,17 +60,19 @@ def CheckChangeOnUpload(input_api, output_api):
   def setUp(self):
     mox.MoxTestBase.setUp(self)
     self.mox.StubOutWithMock(presubmit, 'warnings')
-    # Stub out 'os' but keep os.path.dirname/join/normpath and os.sep.
+    # Stub out 'os' but keep os.path.dirname/join/normpath/splitext and os.sep.
     os_sep = presubmit.os.sep
     os_path_join = presubmit.os.path.join
     os_path_dirname = presubmit.os.path.dirname
     os_path_normpath = presubmit.os.path.normpath
+    os_path_splitext = presubmit.os.path.splitext
     self.mox.StubOutWithMock(presubmit, 'os')
     self.mox.StubOutWithMock(presubmit.os, 'path')
     presubmit.os.sep = os_sep
     presubmit.os.path.join = os_path_join
     presubmit.os.path.dirname = os_path_dirname
     presubmit.os.path.normpath = os_path_normpath
+    presubmit.os.path.splitext = os_path_splitext
     self.mox.StubOutWithMock(presubmit, 'sys')
     # Special mocks.
     def MockAbsPath(f):
@@ -523,9 +525,12 @@ class InputApiUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
-      'DepotToLocalPath', 'LocalPaths', 'LocalToDepotPath',
-      'PresubmitLocalPath', 'RightHandSideLines', 'ReadFile', 'ServerPaths',
+      'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedSourceFiles',
+      'AffectedTextFiles',
+      'DEFAULT_BLACK_LIST', 'DEFAULT_WHITE_LIST',
+      'DepotToLocalPath', 'FilterSourceFile', 'LocalPaths',
+      'LocalToDepotPath',
+      'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
       'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
       'is_committing', 'marshal', 'os_path', 'pickle', 'platform',
       're', 'subprocess', 'tempfile', 'traceback', 'unittest', 'urllib2',
@@ -573,24 +578,30 @@ class InputApiUnittest(PresubmitTestsBase):
                          'BUG=123',
                          ' STORY =http://foo/  \t',
                          'and some more regular text')
+    blat = join('foo', 'blat.cc')
+    readme = join('foo', 'blat', 'READ_ME2')
+    binary = join('foo', 'blat', 'binary.dll')
+    weird = join('foo', 'blat', 'weird.xyz')
+    third_party = join('foo', 'third_party', 'third.cc')
+    another = join('foo', 'blat', 'another.h')
+    beingdeleted = join('foo', 'mat', 'beingdeleted.txt')
+    notfound = join('flop', 'notfound.txt')
+    flap = join('boo', 'flap.h')
     files = [
-      ['A', join('foo', 'blat.cc')],
-      ['M', join('foo', 'blat', 'binary.dll')],
+      ['A', blat],
+      ['M', readme],
+      ['M', binary],
+      ['M', weird],
+      ['M', another],
+      ['M', third_party],
       ['D', 'foo/mat/beingdeleted.txt'],
       ['M', 'flop/notfound.txt'],
       ['A', 'boo/flap.h'],
     ]
 
-  
-    blat = join('foo', 'blat.cc')
-    binary = join('foo', 'blat', 'binary.dll')
-    beingdeleted = join('foo', 'mat', 'beingdeleted.txt')
-    notfound = join('flop', 'notfound.txt')
-    flap = join('boo', 'flap.h')
-    presubmit.os.path.exists(blat).AndReturn(True)
-    presubmit.os.path.isdir(blat).AndReturn(False)
-    presubmit.os.path.exists(binary).AndReturn(True)
-    presubmit.os.path.isdir(binary).AndReturn(False)
+    for i in (blat, readme, binary, weird, another, third_party):
+      presubmit.os.path.exists(i).AndReturn(True)
+      presubmit.os.path.isdir(i).AndReturn(False)
     presubmit.os.path.exists(beingdeleted).AndReturn(False)
     presubmit.os.path.exists(notfound).AndReturn(False)
     presubmit.os.path.exists(flap).AndReturn(True)
@@ -598,30 +609,80 @@ class InputApiUnittest(PresubmitTestsBase):
     presubmit.gclient.CaptureSVNInfo(beingdeleted).AndReturn({})
     presubmit.gclient.CaptureSVNInfo(notfound).AndReturn({})
     presubmit.gcl.GetSVNFileProperty(blat, 'svn:mime-type').AndReturn(None)
+    presubmit.gcl.GetSVNFileProperty(readme, 'svn:mime-type').AndReturn(None)
     presubmit.gcl.GetSVNFileProperty(binary, 'svn:mime-type').AndReturn(
         'application/octet-stream')
+    presubmit.gcl.GetSVNFileProperty(weird, 'svn:mime-type').AndReturn(None)
+    presubmit.gcl.GetSVNFileProperty(another, 'svn:mime-type').AndReturn(None)
+    presubmit.gcl.GetSVNFileProperty(third_party, 'svn:mime-type'
+        ).AndReturn(None)
     presubmit.gcl.ReadFile(blat).AndReturn('whatever\ncookie')
+    presubmit.gcl.ReadFile(another).AndReturn('whatever\ncookie2')
     self.mox.ReplayAll()
 
     ci = presubmit.gcl.ChangeInfo(name='mychange', issue=0, patchset=0,
                                   description='\n'.join(description_lines),
                                   files=files)
     change = presubmit.GclChange(ci)
-    api = presubmit.InputApi(change, 'foo/PRESUBMIT.py', False)
-    affected_files = api.AffectedFiles()
-    self.assertEquals(len(affected_files), 3)
-    self.assertEquals(affected_files[0].LocalPath(),
-                      presubmit.normpath('foo/blat.cc'))
-    self.assertEquals(affected_files[1].LocalPath(),
-                      presubmit.normpath('foo/blat/binary.dll'))
-    self.assertEquals(affected_files[2].LocalPath(),
-                      presubmit.normpath('foo/mat/beingdeleted.txt'))
-    rhs_lines = []
-    for line in api.RightHandSideLines():
-      rhs_lines.append(line)
-    self.assertEquals(len(rhs_lines), 2)
-    self.assertEqual(rhs_lines[0][0].LocalPath(),
-                    presubmit.normpath('foo/blat.cc'))
+    input_api = presubmit.InputApi(change, 'foo/PRESUBMIT.py', False)
+    # Doesn't filter much
+    got_files = input_api.AffectedFiles()
+    self.assertEquals(len(got_files), 7)
+    self.assertEquals(got_files[0].LocalPath(), presubmit.normpath(blat))
+    self.assertEquals(got_files[1].LocalPath(), presubmit.normpath(readme))
+    self.assertEquals(got_files[2].LocalPath(), presubmit.normpath(binary))
+    self.assertEquals(got_files[3].LocalPath(), presubmit.normpath(weird))
+    self.assertEquals(got_files[4].LocalPath(), presubmit.normpath(another))
+    self.assertEquals(got_files[5].LocalPath(), presubmit.normpath(third_party))
+    self.assertEquals(got_files[6].LocalPath(),
+                      presubmit.normpath(beingdeleted))
+    # Ignores weird because of whitelist, third_party because of blacklist,
+    # binary isn't a text file and beingdeleted doesn't exist. The rest is
+    # outside foo/.
+    rhs_lines = [x for x in input_api.RightHandSideLines(None)]
+    self.assertEquals(len(rhs_lines), 4)
+    self.assertEqual(rhs_lines[0][0].LocalPath(), presubmit.normpath(blat))
+    self.assertEqual(rhs_lines[1][0].LocalPath(), presubmit.normpath(blat))
+    self.assertEqual(rhs_lines[2][0].LocalPath(), presubmit.normpath(another))
+    self.assertEqual(rhs_lines[3][0].LocalPath(), presubmit.normpath(another))
+
+  def testCustomFilter(self):
+    def FilterSourceFile(affected_file):
+      return 'a' in affected_file.LocalPath()
+    files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee')]
+    for (action, item) in files:
+      presubmit.os.path.exists(item).AndReturn(True)
+      presubmit.os.path.isdir(item).AndReturn(False)
+      presubmit.gcl.GetSVNFileProperty(item, 'svn:mime-type').AndReturn(None)
+    self.mox.ReplayAll()
+
+    ci = presubmit.gcl.ChangeInfo('mychange', 0, 0, '', files)
+    change = presubmit.GclChange(ci)
+    input_api = presubmit.InputApi(change, './PRESUBMIT.py', False)
+    got_files = input_api.AffectedSourceFiles(FilterSourceFile)
+    self.assertEquals(len(got_files), 2)
+    self.assertEquals(got_files[0].LocalPath(), 'eeaee')
+    self.assertEquals(got_files[1].LocalPath(), 'eeabee')
+
+  def testLambdaFilter(self):
+    white_list = presubmit.InputApi.DEFAULT_BLACK_LIST + (r".*?a.*?",)
+    black_list = [r".*?b.*?"]
+    files = [('A', 'eeaee'), ('M', 'eeabee'), ('M', 'eebcee'), ('M', 'eecaee')]
+    for (action, item) in files:
+      presubmit.os.path.exists(item).AndReturn(True)
+      presubmit.os.path.isdir(item).AndReturn(False)
+      presubmit.gcl.GetSVNFileProperty(item, 'svn:mime-type').AndReturn(None)
+    self.mox.ReplayAll()
+
+    ci = presubmit.gcl.ChangeInfo('mychange', 0, 0, '', files)
+    change = presubmit.GclChange(ci)
+    input_api = presubmit.InputApi(change, './PRESUBMIT.py', False)
+    # Sample usage of overiding the default white and black lists.
+    got_files = input_api.AffectedSourceFiles(
+        lambda x: input_api.FilterSourceFile(x, white_list, black_list))
+    self.assertEquals(len(got_files), 2)
+    self.assertEquals(got_files[0].LocalPath(), 'eeaee')
+    self.assertEquals(got_files[1].LocalPath(), 'eecaee')
 
   def testGetAbsoluteLocalPath(self):
     join = presubmit.os.path.join
@@ -905,7 +966,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       (affected_file, 43, 'yer'),
       (affected_file, 23, 'ya'),
     ]
-    input_api1.RightHandSideLines().AndReturn(output1)
+    input_api1.RightHandSideLines(mox.IgnoreArg()).AndReturn(output1)
     input_api2 = self.MockInputApi()
     input_api2.change = self.MakeBasicChange('foo', 'Foo\n')
     output2 = [
@@ -913,12 +974,12 @@ class CannedChecksUnittest(PresubmitTestsBase):
       (affected_file, 43, 'yer'),
       (affected_file, 23, 'ya'),
     ]
-    input_api2.RightHandSideLines().AndReturn(output2)
+    input_api2.RightHandSideLines(mox.IgnoreArg()).AndReturn(output2)
     self.mox.ReplayAll()
 
-    results1 = check(input_api1, presubmit.OutputApi)
+    results1 = check(input_api1, presubmit.OutputApi, None)
     self.assertEquals(results1, [])
-    results2 = check(input_api2, presubmit.OutputApi)
+    results2 = check(input_api2, presubmit.OutputApi, None)
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__, error_type)
 
@@ -948,31 +1009,32 @@ class CannedChecksUnittest(PresubmitTestsBase):
                          presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckDoNotSubmitInFiles(self):
-    self.TestContent(presubmit_canned_checks.CheckDoNotSubmitInFiles,
-                     'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
-                     presubmit.OutputApi.PresubmitError)
+    self.TestContent(
+        lambda x,y,z: presubmit_canned_checks.CheckDoNotSubmitInFiles(x, y),
+        'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
+        presubmit.OutputApi.PresubmitError)
 
   def testCheckChangeHasNoCR(self):
     input_api1 = self.MockInputApi()
     self.mox.StubOutWithMock(input_api1, 'ReadFile')
     input_api1.change = self.MakeBasicChange('foo', 'Foo\n')
     affected_file1 = self.mox.CreateMock(presubmit.SvnAffectedFile)
-    input_api1.AffectedTextFiles().AndReturn([affected_file1])
+    input_api1.AffectedSourceFiles(None).AndReturn([affected_file1])
     input_api1.ReadFile(affected_file1, 'rb').AndReturn("Hey!\nHo!\n")
     input_api2 = self.MockInputApi()
     self.mox.StubOutWithMock(input_api2, 'ReadFile')
     input_api2.change = self.MakeBasicChange('foo', 'Foo\n')
     affected_file2 = self.mox.CreateMock(presubmit.SvnAffectedFile)
-    input_api2.AffectedTextFiles().AndReturn([affected_file2])
+    input_api2.AffectedSourceFiles(None).AndReturn([affected_file2])
     input_api2.ReadFile(affected_file2, 'rb').AndReturn("Hey!\r\nHo!\r\n")
     affected_file2.LocalPath().AndReturn('bar.cc')
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.CheckChangeHasNoCR(
-        input_api1, presubmit.OutputApi)
+        input_api1, presubmit.OutputApi, None)
     self.assertEquals(results, [])
     results2 = presubmit_canned_checks.CheckChangeHasNoCR(
-        input_api2, presubmit.OutputApi)
+        input_api2, presubmit.OutputApi, None)
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__,
                       presubmit.OutputApi.PresubmitPromptWarning)
@@ -983,7 +1045,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLines(self):
-    check = lambda x,y: presubmit_canned_checks.CheckLongLines(x, y, 10)
+    check = lambda x,y,z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
     self.TestContent(check, '', 'blah blah blah',
                      presubmit.OutputApi.PresubmitPromptWarning)
 

@@ -137,6 +137,37 @@ class InputApi(object):
   know stuff about the change they're looking at.
   """
 
+  # File extensions that are considered source files from a style guide
+  # perspective. Don't modify this list from a presubmit script!
+  DEFAULT_WHITE_LIST = (
+      # C++ and friends
+      r".*\.c", r".*\.cc", r".*\.cpp", r".*\.h", r".*\.m", r".*\.mm",
+      r".*\.inl", r".*\.asm", r".*\.hxx", r".*\.hpp",
+      # Scripts
+      r".*\.js", r".*\.py", r".*\.json", r".*\.sh", r".*\.rb",
+      # No extension at all
+      r"(^|.*[\\\/])[^.]+$",
+      # Other
+      r".*\.java", r".*\.mk", r".*\.am",
+  )
+
+  # Path regexp that should be excluded from being considered containing source
+  # files. Don't modify this list from a presubmit script!
+  DEFAULT_BLACK_LIST = (
+      r".*\bexperimental[\\\/].*",
+      r".*\bthird_party[\\\/].*",
+      # Output directories (just in case)
+      r".*\bDebug[\\\/].*",
+      r".*\bRelease[\\\/].*",
+      r".*\bxcodebuild[\\\/].*",
+      r".*\bsconsbuild[\\\/].*",
+      # All caps files like README and LICENCE.
+      r".*\b[A-Z0-9_]+",
+      # SCM (can happen in dual SCM configuration)
+      r".*\b\.git[\\\/].*",
+      r".*\b\.svn[\\\/].*",
+  )
+
   def __init__(self, change, presubmit_path, is_committing):
     """Builds an InputApi object.
 
@@ -250,7 +281,35 @@ class InputApi(object):
     return filter(lambda x: x.IsTextFile(),
                   self.AffectedFiles(include_dirs=False, include_deletes=False))
 
-  def RightHandSideLines(self):
+  def FilterSourceFile(self, affected_file, white_list=None, black_list=None):
+    """Filters out files that aren't considered "source file".
+
+    If white_list or black_list is None, InputApi.DEFAULT_WHITE_LIST
+    and InputApi.DEFAULT_BLACK_LIST is used respectively.
+
+    The lists will be compiled as regular expression and
+    AffectedFile.LocalPath() needs to pass both list.
+
+    Note: Copy-paste this function to suit your needs or use a lambda function.
+    """
+    def Find(affected_file, list):
+      for item in list:
+        if self.re.match(item, affected_file.LocalPath()):
+          return True
+      return False
+    return (Find(affected_file, white_list or self.DEFAULT_WHITE_LIST) and
+            not Find(affected_file, black_list or self.DEFAULT_BLACK_LIST))
+
+  def AffectedSourceFiles(self, source_file):
+    """Filter the list of AffectedTextFiles by the function source_file.
+
+    If source_file is None, InputApi.FilterSourceFile() is used.
+    """
+    if not source_file:
+      source_file = self.FilterSourceFile
+    return filter(source_file, self.AffectedTextFiles())
+
+  def RightHandSideLines(self, source_file_filter=None):
     """An iterator over all text lines in "new" version of changed files.
 
     Only lists lines from new or modified text files in the change that are
@@ -267,9 +326,8 @@ class InputApi(object):
 
     Note: The cariage return (LF or CR) is stripped off.
     """
-    return InputApi._RightHandSideLinesImpl(
-        filter(lambda x: x.IsTextFile(),
-               self.AffectedFiles(include_deletes=False)))
+    files = self.AffectedSourceFiles(source_file_filter)
+    return InputApi._RightHandSideLinesImpl(files)
 
   def ReadFile(self, file, mode='r'):
     """Reads an arbitrary file.
