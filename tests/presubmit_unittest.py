@@ -937,9 +937,9 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'CheckChangeHasBugField', 'CheckChangeHasOnlyOneEol',
-      'CheckChangeHasNoCR', 'CheckChangeHasNoCrAndHasOnlyOneEol',
-      'CheckChangeHasNoTabs',
+      'CheckChangeHasBugField', 'CheckChangeHasDescription',
+      'CheckChangeHasOnlyOneEol', 'CheckChangeHasNoCR',
+      'CheckChangeHasNoCrAndHasOnlyOneEol', 'CheckChangeHasNoTabs',
       'CheckChangeHasQaField', 'CheckChangeHasTestedField',
       'CheckChangeHasTestField', 'CheckChangeSvnEolStyle',
       'CheckDoNotSubmit',
@@ -949,11 +949,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
 
-  def DescriptionTest(self, check, description1, description2, error_type):
+  def DescriptionTest(self, check, description1, description2, error_type,
+                      committing):
     input_api1 = self.MockInputApi()
-    input_api1.change = self.MakeBasicChange('foo', 'Foo\n' + description1)
+    input_api1.is_committing = committing
+    input_api1.change = self.MakeBasicChange('foo', description1)
     input_api2 = self.MockInputApi()
-    input_api2.change = self.MakeBasicChange('foo', 'Foo\n' + description2)
+    input_api2.is_committing = committing
+    input_api2.change = self.MakeBasicChange('foo', description2)
     self.mox.ReplayAll()
 
     results1 = check(input_api1, presubmit.OutputApi)
@@ -1013,28 +1016,44 @@ class CannedChecksUnittest(PresubmitTestsBase):
   
   def testCannedCheckChangeHasBugField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasBugField,
-                         'BUG=1234', '',
-                         presubmit.OutputApi.PresubmitNotifyResult)
+                         'Foo\nBUG=1234', 'Foo\n',
+                         presubmit.OutputApi.PresubmitNotifyResult,
+                         False)
 
+  def testCheckChangeHasDescription(self):
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasDescription,
+                         'Bleh', '',
+                         presubmit.OutputApi.PresubmitNotifyResult,
+                         False)
+    self.mox.VerifyAll()
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasDescription,
+                         'Bleh', '',
+                         presubmit.OutputApi.PresubmitError,
+                         True)
+  
   def testCannedCheckChangeHasTestField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasTestField,
-                         'TEST=did some stuff', '',
-                         presubmit.OutputApi.PresubmitNotifyResult)
+                         'Foo\nTEST=did some stuff', 'Foo\n',
+                         presubmit.OutputApi.PresubmitNotifyResult,
+                         False)
 
   def testCannedCheckChangeHasTestedField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasTestedField,
-                         'TESTED=did some stuff', '',
-                         presubmit.OutputApi.PresubmitError)
+                         'Foo\nTESTED=did some stuff', 'Foo\n',
+                         presubmit.OutputApi.PresubmitError,
+                         False)
 
   def testCannedCheckChangeHasQAField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasQaField,
-                         'QA=BSOD your machine', '',
-                         presubmit.OutputApi.PresubmitError)
+                         'Foo\nQA=BSOD your machine', 'Foo\n',
+                         presubmit.OutputApi.PresubmitError,
+                         False)
 
   def testCannedCheckDoNotSubmitInDescription(self):
     self.DescriptionTest(presubmit_canned_checks.CheckDoNotSubmitInDescription,
-                         'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
-                         presubmit.OutputApi.PresubmitError)
+                         'Foo\nDO NOTSUBMIT', 'Foo\nDO NOT ' + 'SUBMIT',
+                         presubmit.OutputApi.PresubmitError,
+                         False)
 
   def testCannedCheckDoNotSubmitInFiles(self):
     self.ContentTest(

@@ -53,6 +53,16 @@ def CheckDoNotSubmitInDescription(input_api, output_api):
     return []
 
 
+def CheckChangeHasDescription(input_api, output_api):
+  """Checks the CL description is not empty."""
+  text = input_api.change.DescriptionText()
+  if text.strip() == '':
+    if input_api.is_committing:
+      return [output_api.PresubmitError("Add a description.")]
+    else:
+      return [output_api.PresubmitNotifyResult("Add a description.")]
+  return []
+
 ### Content checks
 
 def CheckDoNotSubmitInFiles(input_api, output_api):
