@@ -91,7 +91,7 @@ class OutputApi(object):
       for item in self._items:
         output_stream.write('  %s\n' % item)
       if self._long_text:
-        output_stream.write('\n***************\n%s\n***************\n\n' %
+        output_stream.write('\n***************\n%s\n***************\n' %
                             self._long_text)
 
       if self.ShouldPrompt() and may_prompt:
@@ -696,7 +696,8 @@ def DoPresubmitChecks(change_info,
                       verbose,
                       output_stream,
                       input_stream,
-                      default_presubmit):
+                      default_presubmit,
+                      may_prompt):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -713,6 +714,7 @@ def DoPresubmitChecks(change_info,
     output_stream: A stream to write output from presubmit tests to.
     input_stream: A stream to read input from the user.
     default_presubmit: A default presubmit script to execute in any case.
+    may_prompt: Enable (y/n) questions on warning or error.
 
   Return:
     True if execution can continue, False if not.
@@ -753,7 +755,7 @@ def DoPresubmitChecks(change_info,
                       ('Warnings', warnings),
                       ('ERRORS', errors)):
     if items:
-      output_stream.write('\n** Presubmit %s **\n\n' % name)
+      output_stream.write('** Presubmit %s **\n' % name)
       for item in items:
         if not item._Handle(output_stream, input_stream,
                             may_prompt=False):
@@ -807,7 +809,8 @@ def Main(argv):
                                options.verbose,
                                sys.stdout,
                                sys.stdin,
-                               default_presubmit=None)
+                               None,
+                               False)
 
 
 if __name__ == '__main__':

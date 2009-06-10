@@ -728,7 +728,7 @@ def GenerateDiff(files, root=None):
 def OptionallyDoPresubmitChecks(change_info, committing, args):
   if FilterFlag(args, "--no_presubmit") or FilterFlag(args, "--force"):
     return True
-  return DoPresubmitChecks(change_info, committing=committing)
+  return DoPresubmitChecks(change_info, committing, True)
 
 
 def UploadCL(change_info, args):
@@ -831,10 +831,10 @@ def PresubmitCL(change_info):
     return
 
   print "*** Presubmit checks for UPLOAD would report: ***"
-  DoPresubmitChecks(change_info, committing=False)
+  DoPresubmitChecks(change_info, False, False)
 
-  print "\n\n*** Presubmit checks for COMMIT would report: ***"
-  DoPresubmitChecks(change_info, committing=True)
+  print "\n*** Presubmit checks for COMMIT would report: ***"
+  DoPresubmitChecks(change_info, True, False)
 
 
 def TryChange(change_info, args, swallow_exception):
@@ -1028,17 +1028,18 @@ def Lint(change_info, args):
   os.chdir(previous_cwd)
 
 
-def DoPresubmitChecks(change_info, committing):
+def DoPresubmitChecks(change_info, committing, may_prompt):
   """Imports presubmit, then calls presubmit.DoPresubmitChecks."""
   # Need to import here to avoid circular dependency.
   import presubmit_support
   root_presubmit = GetCachedFile('PRESUBMIT.py', use_root=True)
-  result = presubmit_support.DoPresubmitChecks(change_info,
-                                               committing,
+  result = presubmit_support.DoPresubmitChecks(change_info=change_info,
+                                               committing=committing,
                                                verbose=False,
                                                output_stream=sys.stdout,
                                                input_stream=sys.stdin,
-                                               default_presubmit=root_presubmit)
+                                               default_presubmit=root_presubmit,
+                                               may_prompt=may_prompt)
   if not result:
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"
   return result

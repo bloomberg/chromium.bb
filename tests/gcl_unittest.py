@@ -184,7 +184,7 @@ class UploadCLUnittest(GclTestsBase):
     self.mox.StubOutWithMock(change_info, 'Save')
     args = ['--foo=bar']
     change_info.Save()
-    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.os.getcwd().AndReturn('somewhere')
     gcl.os.chdir(gcl.GetRepositoryRoot().AndReturn(None))
@@ -205,7 +205,7 @@ class UploadCLUnittest(GclTestsBase):
     change_info.Save = self.mox.CreateMockAnything()
     args = ['--server=a']
     change_info.Save()
-    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
@@ -229,7 +229,7 @@ class UploadCLUnittest(GclTestsBase):
     change_info.Save = self.mox.CreateMockAnything()
     args = ['--no-try']
     change_info.Save()
-    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)
@@ -253,7 +253,7 @@ class UploadCLUnittest(GclTestsBase):
     self.mox.StubOutWithMock(change_info, 'Save')
     args = []
     change_info.Save()
-    gcl.DoPresubmitChecks(change_info, committing=False).AndReturn(True)
+    gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
     gcl.tempfile.mkstemp(text=True).AndReturn((42, 'descfile'))
     gcl.os.write(42, change_info.description)

@@ -350,7 +350,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     input = StringIO.StringIO('y\n')
 
     self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input,
-                                            None))
+                                            None, False))
     self.assertEqual(output.getvalue().count('!!'), 2)
 
   def testDoPresubmitChecksPromptsAfterWarnings(self):
@@ -379,7 +379,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO('n\n')  # say no to the warning
     self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input,
-                                            None))
+                                            None, False))
     self.assertEqual(output.getvalue().count('??'), 2)
 
     output = StringIO.StringIO()
@@ -389,7 +389,8 @@ class PresubmitUnittest(PresubmitTestsBase):
                                                 True,
                                                 output,
                                                 input,
-                                                None))
+                                                None,
+                                                False))
     self.assertEquals(output.getvalue().count('??'), 2)
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
@@ -417,7 +418,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO()  # should be unused
     self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input,
-                                            None))
+                                            None, False))
     self.assertEqual(output.getvalue().count('??'), 2)
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
@@ -452,7 +453,7 @@ def CheckChangeOnCommit(input_api, output_api):
     input = StringIO.StringIO('y\n')
     # Always fail.
     self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input,
-                                            DEFAULT_SCRIPT))
+                                            DEFAULT_SCRIPT, False))
     self.assertEquals(output.getvalue().count('!!'), 1)
 
   def testDirectoryHandling(self):
@@ -512,11 +513,11 @@ def CheckChangeOnCommit(input_api, output_api):
     output = StringIO.StringIO()
     input = StringIO.StringIO('y\n')
     self.failUnless(presubmit.DoPresubmitChecks(change, False, True, output,
-                                                input, DEFAULT_SCRIPT))
+                                                input, DEFAULT_SCRIPT, False))
     self.assertEquals(output.getvalue(),
                       ('Warning, no presubmit.py found.\n'
-                       'Running default presubmit script.\n\n'
-                       '** Presubmit Messages **\n\n'
+                       'Running default presubmit script.\n'
+                       '** Presubmit Messages **\n'
                        'http://tracker.com/42\n\n'))
 
 
