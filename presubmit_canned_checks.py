@@ -179,9 +179,11 @@ def RunPythonUnitTests(input_api, output_api, unit_tests):
       outputs.append(message_type("Failed to load %s" % unit_test,
                                   long_text=input_api.traceback.format_exc()))
 
-  results = input_api.unittest.TextTestRunner(verbosity=0).run(
+  buffer = input_api.cStringIO.StringIO()
+  results = input_api.unittest.TextTestRunner(stream=buffer, verbosity=0).run(
       input_api.unittest.TestSuite(tests_suite))
   if not results.wasSuccessful():
     outputs.append(message_type("%d unit tests failed." %
-                                (len(results.failures) + len(results.errors))))
+                                (len(results.failures) + len(results.errors)),
+                                long_text=buffer.getvalue()))
   return outputs

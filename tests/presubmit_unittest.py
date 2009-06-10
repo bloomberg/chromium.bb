@@ -927,6 +927,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def MockInputApi(self):
     input_api = self.mox.CreateMock(presubmit.InputApi)
+    input_api.cStringIO = presubmit.cStringIO
     input_api.re = presubmit.re
     input_api.traceback = presubmit.traceback
     input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
@@ -946,7 +947,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     # If this test fails, you should add the relevant test.
     self.compareMembers(presubmit_canned_checks, members)
 
-  def TestDescription(self, check, description1, description2, error_type):
+  def DescriptionTest(self, check, description1, description2, error_type):
     input_api1 = self.MockInputApi()
     input_api1.change = self.MakeBasicChange('foo', 'Foo\n' + description1)
     input_api2 = self.MockInputApi()
@@ -959,7 +960,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__, error_type)
 
-  def TestContent(self, check, content1, content2, error_type):
+  def ContentTest(self, check, content1, content2, error_type):
     input_api1 = self.MockInputApi()
     input_api1.change = self.MakeBasicChange('foo', 'Foo\n')
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
@@ -987,32 +988,32 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results2[0].__class__, error_type)
 
   def testCannedCheckChangeHasBugField(self):
-    self.TestDescription(presubmit_canned_checks.CheckChangeHasBugField,
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasBugField,
                          'BUG=1234', '',
                          presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCannedCheckChangeHasTestField(self):
-    self.TestDescription(presubmit_canned_checks.CheckChangeHasTestField,
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasTestField,
                          'TEST=did some stuff', '',
                          presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCannedCheckChangeHasTestedField(self):
-    self.TestDescription(presubmit_canned_checks.CheckChangeHasTestedField,
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasTestedField,
                          'TESTED=did some stuff', '',
                          presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckChangeHasQAField(self):
-    self.TestDescription(presubmit_canned_checks.CheckChangeHasQaField,
+    self.DescriptionTest(presubmit_canned_checks.CheckChangeHasQaField,
                          'QA=BSOD your machine', '',
                          presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckDoNotSubmitInDescription(self):
-    self.TestDescription(presubmit_canned_checks.CheckDoNotSubmitInDescription,
+    self.DescriptionTest(presubmit_canned_checks.CheckDoNotSubmitInDescription,
                          'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
                          presubmit.OutputApi.PresubmitError)
 
   def testCannedCheckDoNotSubmitInFiles(self):
-    self.TestContent(
+    self.ContentTest(
         lambda x,y,z: presubmit_canned_checks.CheckDoNotSubmitInFiles(x, y),
         'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
         presubmit.OutputApi.PresubmitError)
@@ -1043,13 +1044,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
                       presubmit.OutputApi.PresubmitPromptWarning)
   
   def testCannedCheckChangeHasNoTabs(self):
-    self.TestContent(presubmit_canned_checks.CheckChangeHasNoTabs,
+    self.ContentTest(presubmit_canned_checks.CheckChangeHasNoTabs,
                      'blah blah', 'blah\tblah',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCannedCheckLongLines(self):
     check = lambda x,y,z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
-    self.TestContent(check, '', 'blah blah blah',
+    self.ContentTest(check, '', 'blah blah blah',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
 
@@ -1118,7 +1119,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, [])
     self.assertEquals(results, [])
 
-  def testRunPythonUnitTestsNonExistent1(self):
+  def testRunPythonUnitTestsNonExistentUpload(self):
     input_api = self.MockInputApi()
     input_api.is_committing = False
     presubmit_canned_checks._RunPythonUnitTests_LoadTests(
@@ -1131,7 +1132,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
 
-  def testRunPythonUnitTestsNonExistent2(self):
+  def testRunPythonUnitTestsNonExistentCommitting(self):
     input_api = self.MockInputApi()
     input_api.is_committing = True
     presubmit_canned_checks._RunPythonUnitTests_LoadTests(
@@ -1143,7 +1144,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
 
-  def testRunPythonUnitTestsEmpty1(self):
+  def testRunPythonUnitTestsEmptyUpload(self):
     input_api = self.MockInputApi()
     input_api.is_committing = False
     test_module = self.mox.CreateMockAnything()
@@ -1155,7 +1156,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(results, [])
 
-  def testRunPythonUnitTestsEmpty2(self):
+  def testRunPythonUnitTestsEmptyCommitting(self):
     input_api = self.MockInputApi()
     input_api.is_committing = True
     test_module = self.mox.CreateMockAnything()
@@ -1167,15 +1168,20 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(results, [])
 
-  def testRunPythonUnitTestsFailure1(self):
+  def testRunPythonUnitTestsFailureUpload(self):
     input_api = self.MockInputApi()
     input_api.is_committing = False
     input_api.unittest = self.mox.CreateMock(unittest)
+    input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     test = self.mox.CreateMockAnything()
     presubmit_canned_checks._RunPythonUnitTests_LoadTests(
         input_api, 'test_module').AndReturn([test])
     runner = self.mox.CreateMockAnything()
-    input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
+    buffer = self.mox.CreateMockAnything()
+    input_api.cStringIO.StringIO().AndReturn(buffer)
+    buffer.getvalue().AndReturn('BOO HOO!')
+    input_api.unittest.TextTestRunner(stream=buffer, verbosity=0
+        ).AndReturn(runner)
     suite = self.mox.CreateMockAnything()
     input_api.unittest.TestSuite([test]).AndReturn(suite)
     test_result = self.mox.CreateMockAnything()
@@ -1190,16 +1196,22 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
+    self.assertEquals(results[0]._long_text, 'BOO HOO!')
 
-  def testRunPythonUnitTestsFailure2(self):
+  def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi()
     input_api.is_committing = True
     input_api.unittest = self.mox.CreateMock(unittest)
+    input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     test = self.mox.CreateMockAnything()
     presubmit_canned_checks._RunPythonUnitTests_LoadTests(
         input_api, 'test_module').AndReturn([test])
     runner = self.mox.CreateMockAnything()
-    input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
+    buffer = self.mox.CreateMockAnything()
+    input_api.cStringIO.StringIO().AndReturn(buffer)
+    buffer.getvalue().AndReturn('BOO HOO!')
+    input_api.unittest.TextTestRunner(stream=buffer, verbosity=0
+        ).AndReturn(runner)
     suite = self.mox.CreateMockAnything()
     input_api.unittest.TestSuite([test]).AndReturn(suite)
     test_result = self.mox.CreateMockAnything()
@@ -1213,16 +1225,21 @@ class CannedChecksUnittest(PresubmitTestsBase):
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
+    self.assertEquals(results[0]._long_text, 'BOO HOO!')
 
   def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi()
     input_api.is_committing = False
     input_api.unittest = self.mox.CreateMock(unittest)
+    input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     test = self.mox.CreateMockAnything()
     presubmit_canned_checks._RunPythonUnitTests_LoadTests(
         input_api, 'test_module').AndReturn([test])
     runner = self.mox.CreateMockAnything()
-    input_api.unittest.TextTestRunner(verbosity=0).AndReturn(runner)
+    buffer = self.mox.CreateMockAnything()
+    input_api.cStringIO.StringIO().AndReturn(buffer)
+    input_api.unittest.TextTestRunner(stream=buffer, verbosity=0
+        ).AndReturn(runner)
     suite = self.mox.CreateMockAnything()
     input_api.unittest.TestSuite([test]).AndReturn(suite)
     test_result = self.mox.CreateMockAnything()
