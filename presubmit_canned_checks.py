@@ -144,6 +144,20 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
   return []
 
 
+def CheckChangeHasNoStrayWhitespace(input_api, output_api,
+                                    source_file_filter=None):
+  """Checks that there is no stray whitespace at source lines end."""
+  errors = []
+  for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
+    if line.rstrip() != line:
+      errors.append("%s, line %s" % (f.LocalPath(), line_num))
+  if errors:
+    return [output_api.PresubmitPromptWarning(
+        "Found line ending with white spaces in:",
+        long_text="\n".join(errors))]
+  return []
+
+
 def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
   """Checks that there aren't any lines longer than maxlen characters in any of
   the text files to be submitted.

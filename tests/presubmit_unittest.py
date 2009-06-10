@@ -938,6 +938,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
     members = [
       'CheckChangeHasBugField', 'CheckChangeHasDescription',
+      'CheckChangeHasNoStrayWhitespace',
       'CheckChangeHasOnlyOneEol', 'CheckChangeHasNoCR',
       'CheckChangeHasNoCrAndHasOnlyOneEol', 'CheckChangeHasNoTabs',
       'CheckChangeHasQaField', 'CheckChangeHasTestedField',
@@ -1092,6 +1093,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
         lambda x,y,z: presubmit_canned_checks.CheckDoNotSubmitInFiles(x, y),
         'DO NOTSUBMIT', 'DO NOT ' + 'SUBMIT',
         presubmit.OutputApi.PresubmitError)
+
+  def testCheckChangeHasNoStrayWhitespace(self):
+    self.ContentTest(
+        lambda x,y,z:
+            presubmit_canned_checks.CheckChangeHasNoStrayWhitespace(x, y),
+        'Foo', 'Foo ',
+        presubmit.OutputApi.PresubmitPromptWarning)
+    
 
   def testCheckChangeHasOnlyOneEol(self):
     self.ReadFileTest(presubmit_canned_checks.CheckChangeHasOnlyOneEol,
