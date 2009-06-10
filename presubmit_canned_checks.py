@@ -119,7 +119,7 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
     return []
 
 
-def CheckChangeSvnEolStyle(input_api, output_api, source_file_filter):
+def CheckChangeSvnEolStyle(input_api, output_api, source_file_filter=None):
   """Checks that the source files have svn:eol-style=LF."""
   bad = filter(lambda f: f.scm == 'svn' and f.Property('svn:eol-style') != 'LF',
                input_api.AffectedSourceFiles(source_file_filter))
