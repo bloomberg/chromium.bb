@@ -6,7 +6,7 @@
 """Enables directory-specific presubmit checks to run at upload and/or commit.
 """
 
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 
 # TODO(joi) Add caching where appropriate/needed. The API is designed to allow
 # caching (between all different invocations of presubmit scripts for a given
@@ -360,6 +360,7 @@ class AffectedFile(object):
     self._repository_root = repository_root
     self._is_directory = None
     self._properties = {}
+    self.scm = ''
 
   def ServerPath(self):
     """Returns a path string that identifies the file in the SCM system.
@@ -442,6 +443,7 @@ class SvnAffectedFile(AffectedFile):
     AffectedFile.__init__(self, *args, **kwargs)
     self._server_path = None
     self._is_text_file = None
+    self.scm = 'svn'
 
   def ServerPath(self):
     if self._server_path is None:
