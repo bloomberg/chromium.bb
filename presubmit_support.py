@@ -89,7 +89,7 @@ class OutputApi(object):
       output_stream.write(self._message)
       output_stream.write('\n')
       for item in self._items:
-        output_stream.write('  %s\n' % item)
+        output_stream.write('  %s\n' % str(item))
       if self._long_text:
         output_stream.write('\n***************\n%s\n***************\n' %
                             self._long_text)
@@ -434,6 +434,9 @@ class AffectedFile(object):
     modify this file.
     """
     raise NotImplementedError()  # Implement if/when needed.
+
+  def __str__(self):
+    return self.LocalPath()
 
 
 class SvnAffectedFile(AffectedFile):
