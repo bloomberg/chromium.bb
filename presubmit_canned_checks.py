@@ -67,14 +67,56 @@ def CheckDoNotSubmitInFiles(input_api, output_api):
 
 
 def CheckChangeHasNoCR(input_api, output_api, source_file_filter=None):
-  """Checks that there are no \r, \r\n (CR or CRLF) characters in any of the
-  source files to be submitted.
-  """
-  outputs = []
+  """Checks no '\r' (CR) character is in any source files."""
+  cr_files = []
   for f in input_api.AffectedSourceFiles(source_file_filter):
     if '\r' in input_api.ReadFile(f, 'rb'):
-      outputs.append(output_api.PresubmitPromptWarning(
-          "Found a CR character in %s" % f.LocalPath()))
+      cr_files.append(f.LocalPath())
+  if cr_files:
+    return [output_api.PresubmitPromptWarning(
+        "Found a CR character in these files:", items=cr_files)]
+  return []
+
+
+def CheckChangeHasOnlyOneEol(input_api, output_api, source_file_filter=None):
+  """Checks the files ends with one and only one \n (LF)."""
+  eof_files = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    # Check that the file ends in one and only one newline character.
+    if len(contents) > 1 and (contents[-1:] != "\n" or contents[-2:-1] == "\n"):
+      eof_files.append(f.LocalPath())
+
+  if eof_files:
+    return [output_api.PresubmitPromptWarning(
+      'These files should end in one (and only one) newline character:',
+      items=eof_files)]
+  return []
+
+
+def CheckChangeHasNoCrAndHasOnlyOneEol(input_api, output_api,
+                                       source_file_filter=None):
+  """Runs both CheckChangeHasNoCR and CheckChangeHasOnlyOneEOL in one pass.
+
+  It is faster because it is reading the file only once.
+  """
+  cr_files = []
+  eof_files = []
+  for f in input_api.AffectedSourceFiles(source_file_filter):
+    contents = input_api.ReadFile(f, 'rb')
+    if '\r' in contents:
+      cr_files.append(f.LocalPath())
+    # Check that the file ends in one and only one newline character.
+    if len(contents) > 1 and (contents[-1:] != "\n" or contents[-2:-1] == "\n"):
+      eof_files.append(f.LocalPath())
+  outputs = []
+  if cr_files:
+    outputs.append(output_api.PresubmitPromptWarning(
+        "Found a CR character in these files:", items=cr_files))
+  if eof_files:
+    outputs.append(output_api.PresubmitPromptWarning(
+      'These files should end in one (and only one) newline character:',
+      items=eof_files))
   return outputs
 
 
@@ -82,11 +124,13 @@ def CheckChangeHasNoTabs(input_api, output_api, source_file_filter=None):
   """Checks that there are no tab characters in any of the text files to be
   submitted.
   """
+  tabs = []
   for f, line_num, line in input_api.RightHandSideLines(source_file_filter):
     if '\t' in line:
-      return [output_api.PresubmitPromptWarning(
-          "Found a tab character in %s, line %s" %
-          (f.LocalPath(), line_num))]
+      tabs.append("%s, line %s" % (f.LocalPath(), line_num))
+  if tabs:
+    return [output_api.PresubmitPromptWarning("Found a tab character in:",
+                                              long_text="\n".join(tabs))]
   return []
 
 
