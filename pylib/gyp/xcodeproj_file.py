@@ -1580,7 +1580,7 @@ class XCConfigurationList(XCObject):
 
     value = None
     for configuration in self._properties['buildConfigurations']:
-      configuration_value = configuration.GetBuildSettings(key)
+      configuration_value = configuration.GetBuildSetting(key)
       if value == None:
         value = configuration_value
       else:
@@ -2249,7 +2249,9 @@ class PBXNativeTarget(XCTarget):
        self._properties['productType'] != static_library_type and \
        'productType' in other._properties and \
        (other._properties['productType'] == static_library_type or \
-        other._properties['productType'] == shared_library_type):
+        (other._properties['productType'] == shared_library_type and \
+         ((not other.HasBuildSetting('MACH_O_TYPE')) or
+          other.GetBuildSetting('MACH_O_TYPE') != 'mh_bundle'))):
 
       file_ref = other.GetProperty('productReference')
 

@@ -13,6 +13,12 @@ import sys
 # A list of types that are treated as linkable.
 linkable_types = ['executable', 'shared_library', 'loadable_module']
 
+# A list of types that you don't link against when they are a dependency of
+# something linkable.  This is needed so an executable can be a dependency
+# of another executable to ensure it is built first and perhaps copied to
+# ship with the other executable.
+non_linkable_dependency_types = ['executable', 'loadable_module', 'none']
+
 # A list of sections that contain links to other targets.
 dependency_sections = ['dependencies', 'export_dependent_settings']
 
@@ -922,10 +928,10 @@ class DependencyGraphNode(object):
 
     # The target is linkable, add it to the list of link dependencies.
     if self.ref not in dependencies:
-      if target_type != 'none':
-        # Special case: "none" type targets don't produce any linkable products
-        # and shouldn't be exposed as link dependencies, although dependencies
-        # of "none" type targets may still be link dependencies.
+      if not target_type in non_linkable_dependency_types:
+        assert not initial
+        # See the comment on non_linkable_dependency_types for why we don't
+        # include this target in the dependency list of another target.
         dependencies.append(self.ref)
       if initial or not is_linkable:
         # If this is a subsequent target and it's linkable, don't look any
