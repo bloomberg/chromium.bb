@@ -1013,7 +1013,39 @@ class CannedChecksUnittest(PresubmitTestsBase):
     results2 = check(input_api2, presubmit.OutputApi)
     self.assertEquals(len(results2), 1)
     self.assertEquals(results2[0].__class__, error_type)
-  
+
+  def SvnPropertyTest(self, check, property, value1, value2, committing,
+                      error_type):
+    input_api1 = self.MockInputApi()
+    input_api1.is_committing = committing
+    files1 = [
+      presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
+      presubmit.SvnAffectedFile('foo.cc', 'M'),
+    ]
+    input_api1.AffectedSourceFiles(None).AndReturn(files1)
+    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo/bar.cc'),
+                                     property).AndReturn(value1)
+    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
+                                     property).AndReturn(value1)
+    input_api2 = self.MockInputApi()
+    input_api2.is_committing = committing
+    files2 = [
+      presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
+      presubmit.SvnAffectedFile('foo.cc', 'M'),
+    ]
+    input_api2.AffectedSourceFiles(None).AndReturn(files2)
+    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo/bar.cc'),
+                                     property).AndReturn(value2)
+    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
+                                     property).AndReturn(value2)
+    self.mox.ReplayAll()
+
+    results1 = check(input_api1, presubmit.OutputApi, None)
+    self.assertEquals(results1, [])
+    results2 = check(input_api2, presubmit.OutputApi, None)
+    self.assertEquals(len(results2), 1)
+    self.assertEquals(results2[0].__class__, error_type)
+
   def testCannedCheckChangeHasBugField(self):
     self.DescriptionTest(presubmit_canned_checks.CheckChangeHasBugField,
                          'Foo\nBUG=1234', 'Foo\n',
@@ -1092,37 +1124,15 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.ContentTest(check, '', 'blah blah blah',
                      presubmit.OutputApi.PresubmitPromptWarning)
 
+  def testCheckChangeSvnEolStyleCommit(self):
+    self.SvnPropertyTest(presubmit_canned_checks.CheckChangeSvnEolStyle,
+                         'svn:eol-style', 'LF', '', True,
+                         presubmit.OutputApi.PresubmitError)
 
-  def testCheckChangeSvnEolStyle(self):
-    input_api1 = self.MockInputApi()
-    files1 = [
-      presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
-      presubmit.SvnAffectedFile('foo.cc', 'M'),
-    ]
-    input_api1.AffectedSourceFiles(None).AndReturn(files1)
-    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo/bar.cc'),
-                                     'svn:eol-style').AndReturn('LF')
-    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
-                                     'svn:eol-style').AndReturn('LF')
-    input_api2 = self.MockInputApi()
-    files2 = [
-      presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
-      presubmit.SvnAffectedFile('foo.cc', 'M'),
-    ]
-    input_api2.AffectedSourceFiles(None).AndReturn(files2)
-    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo/bar.cc'),
-                                     'svn:eol-style').AndReturn('native')
-    presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
-                                     'svn:eol-style').AndReturn('CRLF')
-    self.mox.ReplayAll()
-
-    results1 = presubmit_canned_checks.CheckChangeSvnEolStyle(
-        input_api1, presubmit.OutputApi, None)
-    self.assertEquals(results1, [])
-    results2 = presubmit_canned_checks.CheckChangeSvnEolStyle(
-        input_api2, presubmit.OutputApi, None)
-    self.assertEquals(len(results2), 1)
-    self.assertEquals(results2[0].__class__, presubmit.OutputApi.PresubmitError)
+  def testCheckChangeSvnEolStyleUpload(self):
+    self.SvnPropertyTest(presubmit_canned_checks.CheckChangeSvnEolStyle,
+                         'svn:eol-style', 'LF', '', False,
+                         presubmit.OutputApi.PresubmitNotifyResult)
 
   def testCannedCheckTreeIsOpenOpen(self):
     input_api = self.MockInputApi()

@@ -178,8 +178,12 @@ def CheckChangeSvnEolStyle(input_api, output_api, source_file_filter=None):
   bad = filter(lambda f: f.scm == 'svn' and f.Property('svn:eol-style') != 'LF',
                input_api.AffectedSourceFiles(source_file_filter))
   if bad:
-    return [output_api.PresubmitError(
-          "Fix these files with svn svn:eol-style=LF", items=bad)]
+    if input_api.is_committing:
+      return [output_api.PresubmitError(
+            "Fix these files with svn svn:eol-style=LF", items=bad)]
+    else:
+      return [output_api.PresubmitNotifyResult(
+            "Fix these files with svn svn:eol-style=LF", items=bad)]
   return []
 
 
