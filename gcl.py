@@ -1040,7 +1040,7 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
                                                input_stream=sys.stdin,
                                                default_presubmit=root_presubmit,
                                                may_prompt=may_prompt)
-  if not result:
+  if not result and may_prompt:
     print "\nPresubmit errors, can't continue (use --no_presubmit to bypass)"
   return result
 
