@@ -17,6 +17,7 @@ import cStringIO  # Exposed through the API.
 import exceptions
 import fnmatch
 import glob
+import logging
 import marshal  # Exposed through the API.
 import optparse
 import os  # Somewhat exposed through the API.
@@ -162,10 +163,10 @@ class InputApi(object):
       r".*\bxcodebuild[\\\/].*",
       r".*\bsconsbuild[\\\/].*",
       # All caps files like README and LICENCE.
-      r".*\b[A-Z0-9_]+",
-      # SCM (can happen in dual SCM configuration)
-      r".*\b\.git[\\\/].*",
-      r".*\b\.svn[\\\/].*",
+      r".*\b[A-Z0-9_]+$",
+      # SCM (can happen in dual SCM configuration). (Slightly over aggressive)
+      r".*\.git[\\\/].*",
+      r".*\.svn[\\\/].*",
   )
 
   def __init__(self, change, presubmit_path, is_committing):
@@ -294,7 +295,9 @@ class InputApi(object):
     """
     def Find(affected_file, list):
       for item in list:
-        if self.re.match(item, affected_file.LocalPath()):
+        local_path = affected_file.LocalPath()
+        if self.re.match(item, local_path):
+          logging.debug("%s matched %s" % (item, local_path))
           return True
       return False
     return (Find(affected_file, white_list or self.DEFAULT_WHITE_LIST) and

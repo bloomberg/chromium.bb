@@ -113,7 +113,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'OutputApi', 'ParseFiles', 'PresubmitExecuter',
       'ScanSubDirs', 'SvnAffectedFile',
       'cPickle', 'cStringIO', 'exceptions',
-      'fnmatch', 'gcl', 'gclient', 'glob', 'marshal', 'normpath', 'optparse',
+      'fnmatch', 'gcl', 'gclient', 'glob', 'logging', 'marshal', 'normpath',
+      'optparse',
       'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
       'tempfile', 'traceback', 'types', 'unittest', 'urllib2', 'warnings',
     ]
@@ -653,6 +654,77 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertEqual(rhs_lines[1][0].LocalPath(), presubmit.normpath(blat))
     self.assertEqual(rhs_lines[2][0].LocalPath(), presubmit.normpath(another))
     self.assertEqual(rhs_lines[3][0].LocalPath(), presubmit.normpath(another))
+
+  def testDefaultWhiteListBlackListFilters(self):
+    def f(x):
+      return presubmit.AffectedFile(x, 'M')
+    files = [
+      (
+        [
+          # To be tested.
+          f('a/experimental/b'),
+          f('experimental/b'),
+          f('a/experimental'),
+          f('a/experimental.cc'),
+        ],
+        [
+          # Expected.
+          'a/experimental',
+          'a/experimental.cc',
+        ],
+      ),
+      (
+        [
+          # To be tested.
+          f('a/third_party/b'),
+          f('third_party/b'),
+          f('a/third_party'),
+          f('a/third_party.cc'),
+        ],
+        [
+          # Expected.
+          'a/third_party',
+          'a/third_party.cc',
+        ],
+      ),
+      (
+        [
+          # To be tested.
+          f('a/LOL_FILE/b'),
+          f('b.c/LOL_FILE'),
+          f('a/PRESUBMIT.py'),
+        ],
+        [
+          # Expected.
+          'a/LOL_FILE/b',
+          'a/PRESUBMIT.py',
+        ],
+      ),
+      (
+        [
+          # To be tested.
+          f('a/.git'),
+          f('b.c/.git'),
+          f('a/.git/bleh.py'),
+          f('.git/bleh.py'),
+        ],
+        [
+          # Expected.
+          'b.c/.git',
+        ],
+      ),
+    ]
+    input_api = presubmit.InputApi(None, './PRESUBMIT.py', False)
+    self.mox.ReplayAll()
+
+    self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 9)
+    for item in files:
+      results = filter(input_api.FilterSourceFile, item[0])
+      for i in range(len(results)):
+        self.assertEquals(results[i].LocalPath(),
+                          presubmit.normpath(item[1][i]))
+      # Same number of expected results.
+      self.assertEquals(len(results), len(item[1]))
 
   def testCustomFilter(self):
     def FilterSourceFile(affected_file):
