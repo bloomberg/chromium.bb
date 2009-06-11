@@ -19,52 +19,28 @@
 __author__ = 'stephen5.ng@gmail.com (Stephen Ng)'
 
 import __builtin__
-import copy
 import os
-import random
-import string
 import StringIO
-import subprocess
-import sys
 import unittest
 
-import __init__
 import gclient
-mox = __init__.mox
+import super_mox
+from super_mox import mox
 
 
-## Some utilities for generating arbitrary arguments.
+class BaseTestCase(super_mox.SuperMoxTestBase):
+  def setUp(self):
+    super_mox.SuperMoxTestBase.setUp(self)
+    self.mox.StubOutWithMock(gclient.os.path, 'exists')
+    self.mox.StubOutWithMock(gclient.os.path, 'isdir')
+    self.mox.StubOutWithMock(gclient.sys, 'stdout')
+    self.mox.StubOutWithMock(gclient, 'subprocess')
+    # These are not tested.
+    self.mox.StubOutWithMock(gclient, 'FileRead')
+    self.mox.StubOutWithMock(gclient, 'FileWrite')
+    self.mox.StubOutWithMock(gclient, 'SubprocessCall')
+    self.mox.StubOutWithMock(gclient, 'RemoveDirectory')
 
-
-def String(max_length):
-  return ''.join([random.choice(string.letters)
-                  for x in xrange(random.randint(1, max_length))])
-
-
-def Strings(max_arg_count, max_arg_length):
-  return [String(max_arg_length) for x in xrange(max_arg_count)]
-
-
-def Args(max_arg_count=8, max_arg_length=16):
-  return Strings(max_arg_count, random.randint(1, max_arg_length))
-
-
-def _DirElts(max_elt_count=4, max_elt_length=8):
-  return os.sep.join(Strings(max_elt_count, max_elt_length))
-
-
-def Dir(max_elt_count=4, max_elt_length=8):
-  return random.choice((os.sep, '')) + _DirElts(max_elt_count, max_elt_length)
-
-def Url(max_elt_count=4, max_elt_length=8):
-  return ('svn://random_host:port/a' +
-          _DirElts(max_elt_count, max_elt_length).replace(os.sep, '/'))
-
-def RootDir(max_elt_count=4, max_elt_length=8):
-  return os.sep + _DirElts(max_elt_count, max_elt_length)
-
-
-class BaseTestCase(mox.MoxTestBase):
   # Like unittest's assertRaises, but checks for Gclient.Error.
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     try:
@@ -74,19 +50,6 @@ class BaseTestCase(mox.MoxTestBase):
     else:
       self.fail('%s not raised' % msg)
 
-  def compareMembers(self, object, members):
-    """If you add a member, be sure to add the relevant test!"""
-    # Skip over members starting with '_' since they are usually not meant to
-    # be for public use.
-    actual_members = [x for x in sorted(dir(object))
-                      if not x.startswith('_')]
-    expected_members = sorted(members)
-    if actual_members != expected_members:
-      diff = ([i for i in actual_members if i not in expected_members] +
-              [i for i in expected_members if i not in actual_members])
-      print diff
-    self.assertEqual(actual_members, expected_members)
-
 
 class GClientBaseTestCase(BaseTestCase):
   def Options(self, *args, **kwargs):
@@ -95,45 +58,18 @@ class GClientBaseTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
     # Mock them to be sure nothing bad happens.
-    self._CaptureSVN = gclient.CaptureSVN
-    gclient.CaptureSVN = self.mox.CreateMockAnything()
+    self.mox.StubOutWithMock(gclient, 'CaptureSVN')
     self._CaptureSVNInfo = gclient.CaptureSVNInfo
-    gclient.CaptureSVNInfo = self.mox.CreateMockAnything()
-    self._CaptureSVNStatus = gclient.CaptureSVNStatus
-    gclient.CaptureSVNStatus = self.mox.CreateMockAnything()
-    self._FileRead = gclient.FileRead
-    gclient.FileRead = self.mox.CreateMockAnything()
-    self._FileWrite = gclient.FileWrite
-    gclient.FileWrite = self.mox.CreateMockAnything()
-    self._RemoveDirectory = gclient.RemoveDirectory
-    gclient.RemoveDirectory = self.mox.CreateMockAnything()
-    self._RunSVN = gclient.RunSVN
-    gclient.RunSVN = self.mox.CreateMockAnything()
-    self._RunSVNAndGetFileList = gclient.RunSVNAndGetFileList
-    gclient.RunSVNAndGetFileList = self.mox.CreateMockAnything()
-    self._sys_stdout = gclient.sys.stdout
-    gclient.sys.stdout = self.mox.CreateMock(self._sys_stdout)
-    self._subprocess = gclient.subprocess
-    gclient.subprocess = self.mox.CreateMock(self._subprocess)
-    self._os_path_exists = gclient.os.path.exists
-    gclient.os.path.exists = self.mox.CreateMockAnything()
+    self.mox.StubOutWithMock(gclient, 'CaptureSVNInfo')
+    self.mox.StubOutWithMock(gclient, 'CaptureSVNStatus')
+    self.mox.StubOutWithMock(gclient, 'RunSVN')
+    self.mox.StubOutWithMock(gclient, 'RunSVNAndGetFileList')
     self._gclient_gclient = gclient.GClient
     gclient.GClient = self.mox.CreateMockAnything()
     self._scm_wrapper = gclient.SCMWrapper
     gclient.SCMWrapper = self.mox.CreateMockAnything()
 
   def tearDown(self):
-    gclient.CaptureSVN = self._CaptureSVN
-    gclient.CaptureSVNInfo = self._CaptureSVNInfo
-    gclient.CaptureSVNStatus = self._CaptureSVNStatus
-    gclient.FileRead = self._FileRead
-    gclient.FileWrite = self._FileWrite
-    gclient.RemoveDirectory = self._RemoveDirectory
-    gclient.RunSVN = self._RunSVN
-    gclient.RunSVNAndGetFileList = self._RunSVNAndGetFileList
-    gclient.sys.stdout = self._sys_stdout
-    gclient.subprocess = self._subprocess
-    gclient.os.path.exists = self._os_path_exists
     gclient.GClient = self._gclient_gclient
     gclient.SCMWrapper = self._scm_wrapper
     BaseTestCase.tearDown(self)
@@ -163,9 +99,9 @@ class GclientTestCase(GClientBaseTestCase):
     GClientBaseTestCase.setUp(self)
     self.platform = 'darwin'
 
-    self.args = Args()
-    self.root_dir = Dir()
-    self.url = Url()
+    self.args = self.Args()
+    self.root_dir = self.Dir()
+    self.url = self.Url()
 
 
 class GClientCommandsTestCase(GClientBaseTestCase):
@@ -1061,16 +997,10 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 
   def setUp(self):
     GClientBaseTestCase.setUp(self)
-    self.root_dir = Dir()
-    self.args = Args()
-    self.url = Url()
+    self.root_dir = self.Dir()
+    self.args = self.Args()
+    self.url = self.Url()
     self.relpath = 'asf'
-    self._os_path_isdir = gclient.os.path.isdir
-    gclient.os.path.isdir = self.mox.CreateMockAnything()
-
-  def tearDown(self):
-    gclient.os.path.isdir = self._os_path_isdir
-    GClientBaseTestCase.tearDown(self)
 
   def testDir(self):
     members = [
@@ -1307,15 +1237,6 @@ class SCMWrapperTestCase(GClientBaseTestCase):
 
 
 class RunSVNTestCase(BaseTestCase):
-  def setUp(self):
-    BaseTestCase.setUp(self)
-    self._OldSubprocessCall = gclient.SubprocessCall
-    gclient.SubprocessCall = self.mox.CreateMockAnything()
-
-  def tearDown(self):
-    gclient.SubprocessCall = self._OldSubprocessCall
-    BaseTestCase.tearDown(self)
-
   def testRunSVN(self):
     param2 = 'bleh'
     gclient.SubprocessCall(['svn', 'foo', 'bar'], param2).AndReturn(None)
@@ -1326,18 +1247,7 @@ class RunSVNTestCase(BaseTestCase):
 class SubprocessCallAndCaptureTestCase(BaseTestCase):
   def setUp(self):
     BaseTestCase.setUp(self)
-    self._sys_stdout = gclient.sys.stdout
-    gclient.sys.stdout = self.mox.CreateMock(self._sys_stdout)
-    self._subprocess_Popen = gclient.subprocess.Popen
-    gclient.subprocess.Popen = self.mox.CreateMockAnything()
-    self._CaptureSVN = gclient.CaptureSVN
-    gclient.CaptureSVN = self.mox.CreateMockAnything()
-
-  def tearDown(self):
-    gclient.sys.stdout = self._sys_stdout
-    gclient.subprocess.Popen = self._subprocess_Popen
-    gclient.CaptureSVN = self._CaptureSVN
-    BaseTestCase.tearDown(self)
+    self.mox.StubOutWithMock(gclient, 'CaptureSVN')
 
   def testSubprocessCallAndCapture(self):
     command = ['boo', 'foo', 'bar']
@@ -1354,7 +1264,7 @@ class SubprocessCallAndCaptureTestCase(BaseTestCase):
     for i in test_string:
       gclient.sys.stdout.write(i)
     gclient.subprocess.Popen(command, bufsize=0, cwd=in_directory,
-                             shell=(sys.platform == 'win32'),
+                             shell=(gclient.sys.platform == 'win32'),
                              stdout=gclient.subprocess.PIPE).AndReturn(kid)
     self.mox.ReplayAll()
     capture_list = []

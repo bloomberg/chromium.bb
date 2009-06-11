@@ -10,28 +10,13 @@ import unittest
 
 # Local imports
 import revert
+import super_mox
+from super_mox import mox
 
 
-class RevertTestsBase(unittest.TestCase):
+class RevertTestsBase(super_mox.SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
-  def setUp(self):
-    pass
-
-  def tearDown(self):
-    pass
-
-  def compareMembers(self, object, members):
-    """If you add a member, be sure to add the relevant test!"""
-    # Skip over members starting with '_' since they are usually not meant to
-    # be for public use.
-    actual_members = [x for x in sorted(dir(object))
-                      if not x.startswith('_')]
-    expected_members = sorted(members)
-    if actual_members != expected_members:
-      diff = ([i for i in actual_members if i not in expected_members] +
-              [i for i in expected_members if i not in actual_members])
-      print diff
-    self.assertEqual(actual_members, expected_members)
+  pass
 
 
 class RevertUnittest(RevertTestsBase):

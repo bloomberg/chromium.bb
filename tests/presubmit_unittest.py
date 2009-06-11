@@ -6,43 +6,17 @@
 """Unit tests for presubmit_support.py and presubmit_canned_checks.py."""
 
 import exceptions
-import random
-import string
 import StringIO
 import unittest
 
 # Local imports
-import __init__
 import presubmit_support as presubmit
 import presubmit_canned_checks
-mox = __init__.mox
-
-def String(max_length):
-  return ''.join([random.choice(string.letters)
-                  for x in xrange(random.randint(1, max_length))])
-
-def Strings(max_arg_count, max_arg_length):
-  return [String(max_arg_length) for x in xrange(max_arg_count)]
-
-def Args(max_arg_count=8, max_arg_length=16):
-  return Strings(max_arg_count, random.randint(1, max_arg_length))
-
-def _DirElts(max_elt_count=4, max_elt_length=8):
-  return presubmit.os.sep.join(Strings(max_elt_count, max_elt_length))
-
-def Dir(max_elt_count=4, max_elt_length=8):
-  return (random.choice((presubmit_support.os.sep, '')) +
-              _DirElts(max_elt_count, max_elt_length))
-
-def Url(max_elt_count=4, max_elt_length=8):
-  return ('svn://random_host:port/a' +
-          _DirElts(max_elt_count, max_elt_length).replace(os.sep, '/'))
-
-def RootDir(max_elt_count=4, max_elt_length=8):
-  return presubmit.os.sep + _DirElts(max_elt_count, max_elt_length)
+import super_mox
+from super_mox import mox
 
 
-class PresubmitTestsBase(mox.MoxTestBase):
+class PresubmitTestsBase(super_mox.SuperMoxTestBase):
   """Setups and tear downs the mocks but doesn't test anything as-is."""
   presubmit_text = """
 def CheckChangeOnUpload(input_api, output_api):
@@ -58,7 +32,7 @@ def CheckChangeOnUpload(input_api, output_api):
 """
 
   def setUp(self):
-    mox.MoxTestBase.setUp(self)
+    super_mox.SuperMoxTestBase.setUp(self)
     self.mox.StubOutWithMock(presubmit, 'warnings')
     # Stub out 'os' but keep os.path.dirname/join/normpath/splitext and os.sep.
     os_sep = presubmit.os.sep
@@ -79,7 +53,7 @@ def CheckChangeOnUpload(input_api, output_api):
       return f
     presubmit.os.path.abspath = MockAbsPath
     self.mox.StubOutWithMock(presubmit.gcl, 'GetRepositoryRoot')
-    fake_root_dir = RootDir()
+    fake_root_dir = self.RootDir()
     self.fake_root_dir = fake_root_dir
     def MockGetRepositoryRoot():
       return fake_root_dir
@@ -87,14 +61,6 @@ def CheckChangeOnUpload(input_api, output_api):
     self.mox.StubOutWithMock(presubmit.gclient, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(presubmit.gcl, 'GetSVNFileProperty')
     self.mox.StubOutWithMock(presubmit.gcl, 'ReadFile')
-
-  def compareMembers(self, object, members):
-    """If you add a member, be sure to add the relevant test!"""
-    # Skip over members starting with '_' since they are usually not meant to
-    # be for public use.
-    actual_members = [x for x in sorted(dir(object))
-                      if not x.startswith('_')]
-    self.assertEqual(actual_members, sorted(members))
 
   def MakeBasicChange(self, name, description, root=None):
     ci = presubmit.gcl.ChangeInfo(name, 0, 0, description, None)
