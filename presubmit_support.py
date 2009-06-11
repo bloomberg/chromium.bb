@@ -529,7 +529,7 @@ class GclChange(object):
         for info in change_info.files
     ]
 
-  def Change(self):
+  def Name(self):
     """Returns the change name."""
     return self._name
 
@@ -547,15 +547,15 @@ class GclChange(object):
     return self._full_description
 
   def RepositoryRoot(self):
-    """Returns the repository root for this change, as an absolute path."""
+    """Returns the repository (checkout) root directory for this change,
+    as an absolute path.
+    """
     return self._repository_root
 
   def __getattr__(self, attr):
-    """Return keys directly as attributes on the object.
-
-    You may use a friendly name (from SPECIAL_KEYS) or the actual name of
-    the key.
-    """
+    """Return tags directly as attributes on the object."""
+    if not re.match(r"^[A-Z_]*$", attr):
+      raise AttributeError(self, attr)
     return self.tags.get(attr)
 
   def AffectedFiles(self, include_dirs=False, include_deletes=True):

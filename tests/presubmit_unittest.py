@@ -210,7 +210,7 @@ class PresubmitUnittest(PresubmitTestsBase):
                                   files=files)
     change = presubmit.GclChange(ci)
 
-    self.failUnless(change.Change() == 'mychange')
+    self.failUnless(change.Name() == 'mychange')
     self.failUnless(change.DescriptionText() ==
                     'Hello there\nthis is a change\nand some more regular text')
     self.failUnless(change.FullDescriptionText() ==
@@ -481,24 +481,31 @@ def CheckChangeOnCommit(input_api, output_api):
   def testTags(self):
     DEFAULT_SCRIPT = """
 def CheckChangeOnUpload(input_api, output_api):
- if input_api.change.tags['BUG'] != 'boo':
-   return [output_api.PresubmitError('Tag parsing failed. 1')]
- if input_api.change.tags['STORY'] != 'http://tracker.com/42':
-   return [output_api.PresubmitError('Tag parsing failed. 2')]
- if input_api.change.BUG != 'boo':
-   return [output_api.PresubmitError('Tag parsing failed. 6')]
- if input_api.change.STORY != 'http://tracker.com/42':
-   return [output_api.PresubmitError('Tag parsing failed. 7')]
- if 'TEST' in input_api.change.tags:
-   return [output_api.PresubmitError('Tag parsing failed. 3')]
- if input_api.change.DescriptionText() != 'Blah Blah':
-   return [output_api.PresubmitError('Tag parsing failed. 4 ' + 
-                                     input_api.change.DescriptionText())]
- if (input_api.change.FullDescriptionText() !=
-     'Blah Blah\\n\\nSTORY=http://tracker.com/42\\nBUG=boo\\n'):
-   return [output_api.PresubmitError('Tag parsing failed. 5 ' +
-                                     input_api.change.FullDescriptionText())]
- return [output_api.PresubmitNotifyResult(input_api.change.tags['STORY'])]
+  if input_api.change.tags['BUG'] != 'boo':
+    return [output_api.PresubmitError('Tag parsing failed. 1')]
+  if input_api.change.tags['STORY'] != 'http://tracker.com/42':
+    return [output_api.PresubmitError('Tag parsing failed. 2')]
+  if input_api.change.BUG != 'boo':
+    return [output_api.PresubmitError('Tag parsing failed. 6')]
+  if input_api.change.STORY != 'http://tracker.com/42':
+    return [output_api.PresubmitError('Tag parsing failed. 7')]
+  try:
+    y = False
+    x = input_api.change.invalid
+  except AttributeError:
+    y = True
+  if not y:
+    return [output_api.PresubmitError('Tag parsing failed. 8')]
+  if 'TEST' in input_api.change.tags:
+    return [output_api.PresubmitError('Tag parsing failed. 3')]
+  if input_api.change.DescriptionText() != 'Blah Blah':
+    return [output_api.PresubmitError('Tag parsing failed. 4 ' + 
+                                      input_api.change.DescriptionText())]
+  if (input_api.change.FullDescriptionText() !=
+      'Blah Blah\\n\\nSTORY=http://tracker.com/42\\nBUG=boo\\n'):
+    return [output_api.PresubmitError('Tag parsing failed. 5 ' +
+                                      input_api.change.FullDescriptionText())]
+  return [output_api.PresubmitNotifyResult(input_api.change.tags['STORY'])]
 def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
@@ -907,8 +914,8 @@ class GclChangeUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-        'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles', 'Change',
-        'DescriptionText', 'FullDescriptionText', 'LocalPaths',
+        'AbsoluteLocalPaths', 'AffectedFiles', 'AffectedTextFiles',
+        'DescriptionText', 'FullDescriptionText', 'LocalPaths', 'Name',
         'RepositoryRoot', 'RightHandSideLines', 'ServerPaths',
         'issue', 'patchset', 'tags',
     ]
