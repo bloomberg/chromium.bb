@@ -380,7 +380,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     output = StringIO.StringIO()
     input = StringIO.StringIO('n\n')  # say no to the warning
     self.failIf(presubmit.DoPresubmitChecks(ci, False, True, output, input,
-                                            None, False))
+                                            None, True))
     self.assertEqual(output.getvalue().count('??'), 2)
 
     output = StringIO.StringIO()
@@ -391,7 +391,7 @@ class PresubmitUnittest(PresubmitTestsBase):
                                                 output,
                                                 input,
                                                 None,
-                                                False))
+                                                True))
     self.assertEquals(output.getvalue().count('??'), 2)
 
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):

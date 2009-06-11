@@ -767,7 +767,7 @@ def DoPresubmitChecks(change_info,
                             may_prompt=False):
           error_count += 1
         output_stream.write('\n')
-  if not errors and warnings:
+  if not errors and warnings and may_prompt:
     output_stream.write(
       'There were presubmit warnings. Sure you want to continue? (y/N): ')
     response = input_stream.readline()
