@@ -929,7 +929,6 @@ class DependencyGraphNode(object):
     # The target is linkable, add it to the list of link dependencies.
     if self.ref not in dependencies:
       if not target_type in non_linkable_dependency_types:
-        assert not initial
         # See the comment on non_linkable_dependency_types for why we don't
         # include this target in the dependency list of another target.
         dependencies.append(self.ref)
