@@ -615,6 +615,7 @@ Basic commands:
 
    gcl upload change_name [-r reviewer1@gmail.com,reviewer2@gmail.com,...]
                           [--send_mail] [--no_try] [--no_presubmit]
+                          [--no_watchlists]
       Uploads the changelist to the server for review.
 
    gcl commit change_name [--no_presubmit]
@@ -738,6 +739,8 @@ def UploadCL(change_info, args):
   if not OptionallyDoPresubmitChecks(change_info, False, args):
     return
   no_try = FilterFlag(args, "--no_try") or FilterFlag(args, "--no-try")
+  no_watchlists = FilterFlag(args, "--no_watchlists") or \
+                  FilterFlag(args, "--no-watchlists")
 
   # Map --send-mail to --send_mail
   if FilterFlag(args, "--send-mail"):
@@ -775,7 +778,17 @@ def UploadCL(change_info, args):
     os.write(handle, change_info.description)
     os.close(handle)
 
+    # Watchlist processing -- CC people interested in this changeset
+    # http://dev.chromium.org/developers/contributing-code/watchlists
+    if not no_watchlists:
+      import watchlists
+      watchlist = watchlists.Watchlists(GetRepositoryRoot())
+      watchers = watchlist.GetWatchersForPaths(change_info.FileList())
+
     cc_list = GetCodeReviewSetting("CC_LIST")
+    if not no_watchlists and watchers:
+        # Filter out all empty elements and join by ','
+        cc_list = ','.join(filter(None, [cc_list] + watchers))
     if cc_list:
       upload_arg.append("--cc=" + cc_list)
     upload_arg.append("--description_file=" + desc_file + "")
