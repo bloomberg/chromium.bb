@@ -17,5 +17,10 @@ except ImportError, e:
   sys.path.append(os.path.join(os.path.dirname(sys.argv[0]), 'pylib'))
   import gyp
 
+# Optionally add supplemental .gypi files if present.
+supplements = glob.glob('src/*/supplement.gypi')
+for supplement in supplements:
+  sys.argv += ['-I', supplement]
+
 if __name__ == '__main__':
   sys.exit(gyp.main(sys.argv[1:]))
