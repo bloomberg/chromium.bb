@@ -75,7 +75,7 @@ BUILDTYPE ?= Debug
 # Directory all our build output goes into.
 # Note that this must be two directories beneath src/ for unit tests to pass,
 # as they reach into the src/ directory for data with relative paths.
-builddir ?= out/$(BUILDTYPE)
+builddir ?= """ + os.getcwd() + """/out/$(BUILDTYPE)
 
 # Object output directory.
 obj := $(builddir)/obj
@@ -302,8 +302,8 @@ class MakefileWriter:
     for action in actions:
       name = self.target + '_' + action['action_name']
       self.WriteLn('### Rules for action "%s":' % action['action_name'])
-      inputs = map(self.Absolutify, action['inputs'])
-      outputs = map(self.Absolutify, action['outputs'])
+      inputs = action['inputs']
+      outputs = action['outputs']
 
       # Build up a list of outputs.
       # Collect the output dirs we'll need.
@@ -320,17 +320,17 @@ class MakefileWriter:
         extra_sources += outputs
 
       # Write the actual command.
-      command = gyp.common.EncodePOSIXShellList(map(self.FixupArgPath, action['action']))
+      command = gyp.common.EncodePOSIXShellList(action['action'])
       if 'message' in action:
         self.WriteLn('quiet_cmd_%s = ACTION %s $@' % (name, action['message']))
       else:
         self.WriteLn('quiet_cmd_%s = ACTION %s $@' % (name, name))
       if len(dirs) > 0:
         command = 'mkdir -p %s' % ' '.join(dirs) + '; ' + command
-      self.WriteLn('cmd_%s = %s' % (name, command))
+      self.WriteLn('cmd_%s = cd %s; %s' % (name, self.path, command))
       self.WriteLn()
-
-      self.WriteMakeRule(outputs, inputs,
+      self.WriteMakeRule(map(self.Absolutify, outputs),
+                         map(self.Absolutify, inputs),
                          actions=['$(call do_cmd,%s)' % name])
 
       # Stuff the outputs in a variable so we can refer to them later.
