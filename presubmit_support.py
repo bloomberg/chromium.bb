@@ -469,7 +469,7 @@ class SvnAffectedFile(AffectedFile):
   def Property(self, property_name):
     if not property_name in self._properties:
       self._properties[property_name] = gcl.GetSVNFileProperty(
-          self.AbsoluteLocalPath(), property_name)
+          self.AbsoluteLocalPath(), property_name).rstrip()
     return self._properties[property_name]
 
   def IsTextFile(self):
