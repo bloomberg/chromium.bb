@@ -504,11 +504,11 @@ class GclChange(object):
   _tag_line_re = re.compile(
       '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
 
-  def __init__(self, change_info, repository_root=''):
+  def __init__(self, change_info):
     #  Do not keep a reference to the original change_info.
     self._name = change_info.name
     self._full_description = change_info.description
-    self._repository_root = repository_root
+    self._repository_root = change_info.GetLocalRoot()
     self.issue = change_info.issue
     self.patchset = change_info.patchset
 
@@ -528,8 +528,8 @@ class GclChange(object):
     self._description_without_tags = self._description_without_tags.rstrip()
 
     self._affected_files = [
-        SvnAffectedFile(info[1], info[0].strip(), repository_root)
-        for info in change_info.files
+        SvnAffectedFile(info[1], info[0].strip(), self._repository_root)
+        for info in change_info.GetFiles()
     ]
 
   def Name(self):
@@ -651,11 +651,11 @@ class PresubmitExecuter(object):
   def __init__(self, change_info, committing):
     """
     Args:
-      change_info: The ChangeInfo object for the change.
+      change_info: The gcl.ChangeInfo object for the change.
       committing: True if 'gcl commit' is running, False if 'gcl upload' is.
     """
     # TODO(maruel): Determine the SCM.
-    self.change = GclChange(change_info, gcl.GetRepositoryRoot())
+    self.change = GclChange(change_info)
     self.committing = committing
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
@@ -714,7 +714,7 @@ def DoPresubmitChecks(change_info,
   when needed.
 
   Args:
-    change_info: The ChangeInfo object for the change.
+    change_info: The gcl.ChangeInfo object for the change.
     committing: True if 'gcl commit' is running, False if 'gcl upload' is.
     verbose: Prints debug info.
     output_stream: A stream to write output from presubmit tests to.
@@ -725,9 +725,8 @@ def DoPresubmitChecks(change_info,
   Return:
     True if execution can continue, False if not.
   """
-  checkout_root = gcl.GetRepositoryRoot()
-  presubmit_files = ListRelevantPresubmitFiles(change_info.FileList(),
-                                               checkout_root)
+  presubmit_files = ListRelevantPresubmitFiles(change_info.GetFileNames(),
+                                               change_info.local_root)
   if not presubmit_files and verbose:
     output_stream.write("Warning, no presubmit.py found.\n")
   results = []
@@ -735,7 +734,7 @@ def DoPresubmitChecks(change_info,
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
-    fake_path = os.path.join(checkout_root, 'PRESUBMIT.py')
+    fake_path = os.path.join(change_info.local_root, 'PRESUBMIT.py')
     results += executer.ExecPresubmitScript(default_presubmit, fake_path)
   for filename in presubmit_files:
     filename = os.path.abspath(filename)

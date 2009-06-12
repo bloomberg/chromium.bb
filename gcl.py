@@ -286,26 +286,36 @@ class ChangeInfo(object):
     self.description = description
     if files is None:
       files = []
-    self.files = files
+    self._files = files
     self.patch = None
+    self._local_root = GetRepositoryRoot()
 
-  def FileList(self):
-    """Returns a list of files."""
-    return [file[1] for file in self.files]
+  def GetFileNames(self):
+    """Returns the list of file names included in this change."""
+    return [file[1] for file in self._files]
+
+  def GetFiles(self):
+    """Returns the list of files included in this change with their status."""
+    return self._files
+
+  def GetLocalRoot(self):
+    """Returns the local repository checkout root directory."""
+    return self._local_root
 
   def _NonDeletedFileList(self):
     """Returns a list of files in this change, not including deleted files."""
-    return [file[1] for file in self.files if not file[0].startswith("D")]
+    return [file[1] for file in self.GetFiles()
+            if not file[0].startswith("D")]
 
   def _AddedFileList(self):
     """Returns a list of files added in this change."""
-    return [file[1] for file in self.files if file[0].startswith("A")]
+    return [file[1] for file in self.GetFiles() if file[0].startswith("A")]
 
   def Save(self):
     """Writes the changelist information to disk."""
     data = ChangeInfo._SEPARATOR.join([
         "%d, %d" % (self.issue, self.patchset),
-        "\n".join([f[0] + f[1] for f in self.files]),
+        "\n".join([f[0] + f[1] for f in self.GetFiles()]),
         self.description])
     WriteFile(GetChangelistInfoFile(self.name), data)
 
@@ -377,7 +387,7 @@ class ChangeInfo(object):
     # apart from source and headers; besides, we'll want them all if we're
     # uploading anyway.
     if self.patch is None:
-      self.patch = GenerateDiff(self.FileList())
+      self.patch = GenerateDiff(self.GetFileNames())
 
     definition = ""
     for line in self.patch.splitlines():
@@ -475,8 +485,8 @@ def LoadChangelistInfoForMultiple(changenames, fail_on_not_found=True,
   changes = changenames.split(',')
   aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None)
   for change in changes:
-    aggregate_change_info.files += ChangeInfo.Load(change, fail_on_not_found,
-                                                   update_status).files
+    aggregate_change_info._files += ChangeInfo.Load(change, fail_on_not_found,
+                                                    update_status).GetFiles()
   return aggregate_change_info
 
 
@@ -519,7 +529,7 @@ def GetModifiedFiles():
   files_in_cl = {}
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl)
-    for status, filename in change_info.files:
+    for status, filename in change_info.GetFiles():
       files_in_cl[filename] = change_info.name
 
   # Get all the modified files.
@@ -587,7 +597,7 @@ def Opened():
   for cl_name in cl_keys:
     if cl_name:
       note = ""
-      if len(ChangeInfo.Load(cl_name).files) != len(files[cl_name]):
+      if len(ChangeInfo.Load(cl_name).GetFiles()) != len(files[cl_name]):
         note = " (Note: this changelist contains files outside this directory)"
       print "\n--- Changelist " + cl_name + note + ":"
     for file in files[cl_name]:
@@ -733,7 +743,7 @@ def OptionallyDoPresubmitChecks(change_info, committing, args):
 
 
 def UploadCL(change_info, args):
-  if not change_info.FileList():
+  if not change_info.GetFiles():
     print "Nothing to upload, changelist is empty."
     return
   if not OptionallyDoPresubmitChecks(change_info, False, args):
@@ -782,7 +792,7 @@ def UploadCL(change_info, args):
     # http://dev.chromium.org/developers/contributing-code/watchlists
     if not no_watchlists:
       import watchlists
-      watchlist = watchlists.Watchlists(GetRepositoryRoot())
+      watchlist = watchlists.Watchlists(change_info.GetLocalRoot())
       watchers = watchlist.GetWatchersForPaths(change_info.FileList())
 
     cc_list = GetCodeReviewSetting("CC_LIST")
@@ -805,13 +815,13 @@ def UploadCL(change_info, args):
   # Change the current working directory before calling upload.py so that it
   # shows the correct base.
   previous_cwd = os.getcwd()
-  os.chdir(GetRepositoryRoot())
+  os.chdir(change_info.GetLocalRoot())
 
   # If we have a lot of files with long paths, then we won't be able to fit
   # the command to "svn diff".  Instead, we generate the diff manually for
   # each file and concatenate them before passing it to upload.py.
   if change_info.patch is None:
-    change_info.patch = GenerateDiff(change_info.FileList())
+    change_info.patch = GenerateDiff(change_info.GetFileNames())
   issue, patchset = upload.RealMain(upload_arg, change_info.patch)
   if issue and patchset:
     change_info.issue = int(issue)
@@ -839,7 +849,7 @@ def UploadCL(change_info, args):
 
 def PresubmitCL(change_info):
   """Reports what presubmit checks on the change would report."""
-  if not change_info.FileList():
+  if not change_info.GetFiles():
     print "Nothing to presubmit check, changelist is empty."
     return
 
@@ -867,7 +877,7 @@ def TryChange(change_info, args, swallow_exception):
       trychange_args.extend(["--patchset", str(change_info.patchset)])
     trychange_args.extend(args)
     trychange.TryChange(trychange_args,
-                        file_list=change_info.FileList(),
+                        file_list=change_info.GetFileNames(),
                         swallow_exception=swallow_exception,
                         prog='gcl try')
   else:
@@ -878,7 +888,7 @@ def TryChange(change_info, args, swallow_exception):
 
 
 def Commit(change_info, args):
-  if not change_info.FileList():
+  if not change_info.GetFiles():
     print "Nothing to commit, changelist is empty."
     return
   if not OptionallyDoPresubmitChecks(change_info, True, args):
@@ -908,14 +918,14 @@ def Commit(change_info, args):
   os.close(handle)
 
   handle, targets_filename = tempfile.mkstemp(text=True)
-  os.write(handle, "\n".join(change_info.FileList()))
+  os.write(handle, "\n".join(change_info.GetFileNames()))
   os.close(handle)
 
   commit_cmd += ['--file=' + commit_filename]
   commit_cmd += ['--targets=' + targets_filename]
   # Change the current working directory before calling commit.
   previous_cwd = os.getcwd()
-  os.chdir(GetRepositoryRoot())
+  os.chdir(change_info.GetLocalRoot())
   output = RunShell(commit_cmd, True)
   os.remove(commit_filename)
   os.remove(targets_filename)
@@ -961,11 +971,12 @@ def Change(change_info, override_description):
   unaffected_files = filter(lambda x: not file_re.match(x[0]), other_files)
 
   separator1 = ("\n---All lines above this line become the description.\n"
-                "---Repository Root: " + GetRepositoryRoot() + "\n"
+                "---Repository Root: " + change_info.GetLocalRoot() + "\n"
                 "---Paths in this changelist (" + change_info.name + "):\n")
   separator2 = "\n\n---Paths modified but not in any changelist:\n\n"
   text = (description + separator1 + '\n' +
-          '\n'.join([f[0] + f[1] for f in change_info.files]) + separator2 +
+          '\n'.join([f[0] + f[1] for f in change_info.GetFiles()]) +
+          separator2 +
           '\n'.join([f[0] + f[1] for f in affected_files]) + '\n' +
           '\n'.join([f[0] + f[1] for f in unaffected_files]) + '\n')
 
@@ -1002,7 +1013,7 @@ def Change(change_info, override_description):
     status = line[:7]
     file = line[7:]
     new_cl_files.append((status, file))
-  change_info.files = new_cl_files
+  change_info._files = new_cl_files
 
   change_info.Save()
   print change_info.name + " changelist saved."
@@ -1025,10 +1036,10 @@ def Lint(change_info, args):
   # Change the current working directory before calling lint so that it
   # shows the correct base.
   previous_cwd = os.getcwd()
-  os.chdir(GetRepositoryRoot())
+  os.chdir(change_info.GetLocalRoot())
 
   # Process cpplints arguments if any.
-  filenames = cpplint.ParseArguments(args + change_info.FileList())
+  filenames = cpplint.ParseArguments(args + change_info.GetFileNames())
 
   for file in filenames:
     if len([file for suffix in CPP_EXTENSIONS if file.endswith(suffix)]):
@@ -1063,7 +1074,7 @@ def Changes():
   for cl in GetCLs():
     change_info = ChangeInfo.Load(cl, True, True)
     print "\n--- Changelist " + change_info.name + ":"
-    for file in change_info.files:
+    for file in change_info.GetFiles():
       print "".join(file)
 
 
@@ -1161,7 +1172,7 @@ def main(argv=None):
   elif command == "try":
     # When the change contains no file, send the "changename" positional
     # argument to trychange.py.
-    if change_info.files:
+    if change_info.GetFiles():
       args = argv[3:]
     else:
       change_info = None
@@ -1172,7 +1183,7 @@ def main(argv=None):
     # the files. This allows commands such as 'gcl diff xxx' to work.
     args =["svn", command]
     root = GetRepositoryRoot()
-    args.extend([os.path.join(root, x) for x in change_info.FileList()])
+    args.extend([os.path.join(root, x) for x in change_info.GetFileNames()])
     RunShell(args, True)
   return 0
 
