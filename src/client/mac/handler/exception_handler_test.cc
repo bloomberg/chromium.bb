@@ -51,7 +51,7 @@ static void *SleepyFunction(void *) {
 }
 
 static void Crasher() {
-  int *a = NULL;
+  int *a = (int*)0x42;
 
 	fprintf(stdout, "Going to crash...\n");
   fprintf(stdout, "A = %d", *a);

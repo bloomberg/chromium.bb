@@ -297,6 +297,7 @@ kern_return_t Inspector::ReadMessages() {
     InspectorInfo &info = (InspectorInfo &)*message.GetData();
     exception_type_ = info.exception_type;
     exception_code_ = info.exception_code;
+    exception_subcode_ = info.exception_subcode;
 
 #if VERBOSE
     printf("message ID = %d\n", message.GetMessageID());
@@ -310,6 +311,7 @@ kern_return_t Inspector::ReadMessages() {
 #if VERBOSE
     printf("exception_type = %d\n", exception_type_);
     printf("exception_code = %d\n", exception_code_);
+    printf("exception_subcode = %d\n", exception_subcode_);
     printf("remote_task = %d\n", remote_task_);
     printf("crashing_thread = %d\n", crashing_thread_);
     printf("handler_thread = %d\n", handler_thread_);
@@ -435,6 +437,7 @@ bool Inspector::InspectTask() {
   if (exception_type_ && exception_code_) {
     generator.SetExceptionInformation(exception_type_,
                                       exception_code_,
+                                      exception_subcode_,
                                       crashing_thread_);
   }
 

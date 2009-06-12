@@ -54,6 +54,7 @@ namespace google_breakpad {
 MinidumpGenerator::MinidumpGenerator()
     : exception_type_(0),
       exception_code_(0),
+      exception_subcode_(0),
       exception_thread_(0),
       crashing_task_(mach_task_self()),
       handler_thread_(mach_thread_self()),
@@ -67,6 +68,7 @@ MinidumpGenerator::MinidumpGenerator(mach_port_t crashing_task,
                                      mach_port_t handler_thread)
     : exception_type_(0),
       exception_code_(0),
+      exception_subcode_(0),
       exception_thread_(0),
       crashing_task_(crashing_task),
       handler_thread_(handler_thread) {
@@ -594,7 +596,10 @@ MinidumpGenerator::WriteExceptionStream(MDRawDirectory *exception_stream) {
   if (!WriteContext(state, &exception_ptr->thread_context))
     return false;
 
-  exception_ptr->exception_record.exception_address = CurrentPCForStack(state);
+  if (exception_type_ == EXC_BAD_ACCESS)
+    exception_ptr->exception_record.exception_address = exception_subcode_;
+  else
+    exception_ptr->exception_record.exception_address = CurrentPCForStack(state);
 
   return true;
 }

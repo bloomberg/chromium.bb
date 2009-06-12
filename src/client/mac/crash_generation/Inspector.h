@@ -56,6 +56,7 @@ enum {
 struct InspectorInfo {
   int           exception_type;
   int           exception_code;
+  int           exception_subcode;
   unsigned int  parameter_count;  // key-value pairs
 };
 
@@ -177,6 +178,7 @@ class Inspector {
 
   int             exception_type_;
   int             exception_code_;
+  int             exception_subcode_;
   mach_port_t     remote_task_;
   mach_port_t     crashing_thread_;
   mach_port_t     handler_thread_;

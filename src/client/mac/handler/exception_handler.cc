@@ -296,6 +296,7 @@ bool ExceptionHandler::WriteMinidump(const string &dump_path,
 
 bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
                                                   int exception_code,
+                                                  int exception_subcode,
                                                   mach_port_t thread_name) {
   bool result = false;
 
@@ -303,6 +304,7 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
     if (directCallback_(callback_context_,
                         exception_type,
                         exception_code,
+                        exception_subcode,
                         thread_name) ) {
       if (exception_type && exception_code)
         _exit(exception_type);
@@ -320,7 +322,8 @@ bool ExceptionHandler::WriteMinidumpWithException(int exception_type,
         if (filter_ && !filter_(callback_context_))
           return false;
 
-        md.SetExceptionInformation(exception_type, exception_code, thread_name);
+        md.SetExceptionInformation(exception_type, exception_code,
+                                   exception_subcode, thread_name);
       }
 
       result = md.Write(next_minidump_path_c_);
@@ -476,7 +479,7 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
 
         // Write out the dump and save the result for later retrieval
         self->last_minidump_write_result_ =
-          self->WriteMinidumpWithException(0, 0, 0);
+          self->WriteMinidumpWithException(0, 0, 0, 0);
 
         self->UninstallHandler(false);
 
@@ -506,11 +509,15 @@ void *ExceptionHandler::WaitForMessage(void *exception_handler_class) {
           gBreakpadAllocator->Unprotect();
 #endif
 
-          // Generate the minidump with the exception data.
-          self->WriteMinidumpWithException(receive.exception, receive.code[0],
-                                           receive.thread.name);
+        int subcode = 0;
+        if (receive.exception == EXC_BAD_ACCESS && receive.code_count > 1)
+          subcode = receive.code[1];
 
-          self->UninstallHandler(true);
+        // Generate the minidump with the exception data.
+        self->WriteMinidumpWithException(receive.exception, receive.code[0],
+                                         subcode, receive.thread.name);
+
+        self->UninstallHandler(true);
 
 #if USE_PROTECTED_ALLOCATIONS
         if(gBreakpadAllocator)

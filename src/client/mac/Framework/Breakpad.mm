@@ -177,10 +177,12 @@ class Breakpad {
   static bool ExceptionHandlerDirectCallback(void *context,
                                              int exception_type,
                                              int exception_code,
+                                             int exception_subcode,
                                              mach_port_t crashing_thread);
 
   bool HandleException(int exception_type,
                        int exception_code,
+                       int exception_subcode,
                        mach_port_t crashing_thread);
 
   // Since ExceptionHandler (w/o namespace) is defined as typedef in OSX's
@@ -245,6 +247,7 @@ static BOOL IsDebuggerActive() {
 bool Breakpad::ExceptionHandlerDirectCallback(void *context,
                                                     int exception_type,
                                                     int exception_code,
+                                                    int exception_subcode,
                                                     mach_port_t crashing_thread) {
   Breakpad *breakpad = (Breakpad *)context;
 
@@ -255,6 +258,7 @@ bool Breakpad::ExceptionHandlerDirectCallback(void *context,
 
   return breakpad->HandleException( exception_type,
                                     exception_code,
+                                    exception_subcode,
                                     crashing_thread);
 }
 
@@ -629,12 +633,13 @@ void        Breakpad::RemoveKeyValue(NSString *key) {
 
 //=============================================================================
 void        Breakpad::GenerateAndSendReport() {
-  HandleException(0, 0, mach_thread_self()); 
+  HandleException(0, 0, 0, mach_thread_self()); 
 }
 
 //=============================================================================
 bool Breakpad::HandleException(int           exception_type,
                                int           exception_code,
+                               int           exception_subcode,
                                mach_port_t   crashing_thread) {
   DEBUGLOG(stderr, "Breakpad: an exception occurred\n");
 
@@ -670,6 +675,7 @@ bool Breakpad::HandleException(int           exception_type,
   InspectorInfo info;
   info.exception_type = exception_type;
   info.exception_code = exception_code;
+  info.exception_subcode = exception_subcode;
   info.parameter_count = config_params_->GetCount();
   message.SetData(&info, sizeof(info));
 
