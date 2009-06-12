@@ -800,7 +800,7 @@ def UploadCL(change_info, args):
     if not no_watchlists:
       import watchlists
       watchlist = watchlists.Watchlists(change_info.GetLocalRoot())
-      watchers = watchlist.GetWatchersForPaths(change_info.GetFileList())
+      watchers = watchlist.GetWatchersForPaths(change_info.GetFiles())
 
     cc_list = GetCodeReviewSetting("CC_LIST")
     if not no_watchlists and watchers:
