@@ -194,10 +194,12 @@ def CheckChangeSvnEolStyle(input_api, output_api, source_file_filter=None):
   if bad:
     if input_api.is_committing:
       return [output_api.PresubmitError(
-            "Fix these files with svn svn:eol-style=LF", items=bad)]
+            "Run `svn pset svn:eol-style LF <item>` on these files:",
+            items=bad)]
     else:
       return [output_api.PresubmitNotifyResult(
-            "Fix these files with svn svn:eol-style=LF", items=bad)]
+            "Run `svn pset svn:eol-style LF <item>` on these files:",
+            items=bad)]
   return []
 
 
