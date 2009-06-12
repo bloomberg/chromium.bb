@@ -1064,7 +1064,13 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
   # Need to import here to avoid circular dependency.
   import presubmit_support
   root_presubmit = GetCachedFile('PRESUBMIT.py', use_root=True)
-  result = presubmit_support.DoPresubmitChecks(change_info=change_info,
+  change = presubmit_support.SvnChange(change_info.name,
+                                       change_info.description,
+                                       change_info.GetLocalRoot(),
+                                       change_info.GetFiles(),
+                                       change_info.issue,
+                                       change_info.patchset)
+  result = presubmit_support.DoPresubmitChecks(change=change,
                                                committing=committing,
                                                verbose=False,
                                                output_stream=sys.stdout,
