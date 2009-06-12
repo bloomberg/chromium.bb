@@ -190,7 +190,7 @@ class UploadCLUnittest(GclTestsBase):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  ['aa', 'bb'])
     change_info.Save = self.mox.CreateMockAnything()
-    args = ['--server=a']
+    args = ['--server=a', '--no_watchlists']
     change_info.Save()
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
@@ -208,13 +208,14 @@ class UploadCLUnittest(GclTestsBase):
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
+
     gcl.UploadCL(change_info, args)
 
   def testNoTry(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  ['aa', 'bb'])
     change_info.Save = self.mox.CreateMockAnything()
-    args = ['--no-try']
+    args = ['--no-try', '--no_watchlists']
     change_info.Save()
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
@@ -232,13 +233,14 @@ class UploadCLUnittest(GclTestsBase):
     gcl.SendToRietveld("/lint/issue%s_%s" % ('1', '2'), timeout=0.5)
     gcl.os.chdir('somewhere')
     self.mox.ReplayAll()
+
     gcl.UploadCL(change_info, args)
 
   def testNormal(self):
     change_info = gcl.ChangeInfo('naame', 0, 0, 'deescription',
                                  ['aa', 'bb'])
     self.mox.StubOutWithMock(change_info, 'Save')
-    args = []
+    args = ['--no_watchlists']
     change_info.Save()
     gcl.DoPresubmitChecks(change_info, False, True).AndReturn(True)
     gcl.GetCodeReviewSetting('CODE_REVIEW_SERVER').AndReturn('my_server')
