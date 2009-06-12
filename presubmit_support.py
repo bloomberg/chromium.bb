@@ -516,7 +516,7 @@ class GclChange(object):
     # plus the description minus all key/value or "tag" lines.
     self._description_without_tags = []
     self.tags = {}
-    for line in change_info.description.splitlines():
+    for line in self._full_description.splitlines():
       m = self._tag_line_re.match(line)
       if m:
         self.tags[m.group('key')] = m.group('value')
@@ -726,7 +726,7 @@ def DoPresubmitChecks(change_info,
     True if execution can continue, False if not.
   """
   presubmit_files = ListRelevantPresubmitFiles(change_info.GetFileNames(),
-                                               change_info.local_root)
+                                               change_info.GetLocalRoot())
   if not presubmit_files and verbose:
     output_stream.write("Warning, no presubmit.py found.\n")
   results = []
@@ -734,7 +734,7 @@ def DoPresubmitChecks(change_info,
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
-    fake_path = os.path.join(change_info.local_root, 'PRESUBMIT.py')
+    fake_path = os.path.join(change_info.GetLocalRoot(), 'PRESUBMIT.py')
     results += executer.ExecPresubmitScript(default_presubmit, fake_path)
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
@@ -809,7 +809,8 @@ def Main(argv):
   files = ParseFiles(args, options.recursive)
   if options.verbose:
     print "Found %d files." % len(files)
-  return not DoPresubmitChecks(gcl.ChangeInfo('No name', 0, 0, '', files),
+  return not DoPresubmitChecks(gcl.ChangeInfo('No name', 0, 0, '', files,
+                                              gcl.GetRepositoryRoot()),
                                options.commit,
                                options.verbose,
                                sys.stdout,

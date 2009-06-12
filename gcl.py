@@ -265,6 +265,7 @@ class ChangeInfo(object):
     description: the description.
     files: a list of 2 tuple containing (status, filename) of changed files,
            with paths being relative to the top repository directory.
+    local_root: Local root directory
   """
 
   _SEPARATOR = "\n-----\n"
@@ -279,7 +280,7 @@ class ChangeInfo(object):
   # _SEPARATOR\n
   # description
 
-  def __init__(self, name, issue, patchset, description, files):
+  def __init__(self, name, issue, patchset, description, files, local_root):
     self.name = name
     self.issue = int(issue)
     self.patchset = int(patchset)
@@ -288,7 +289,7 @@ class ChangeInfo(object):
       files = []
     self._files = files
     self.patch = None
-    self._local_root = GetRepositoryRoot()
+    self._local_root = local_root
 
   def GetFileNames(self):
     """Returns the list of file names included in this change."""
@@ -417,7 +418,7 @@ class ChangeInfo(object):
     return False
 
   @staticmethod
-  def Load(changename, fail_on_not_found=True, update_status=False):
+  def Load(changename, local_root, fail_on_not_found, update_status):
     """Gets information about a changelist.
 
     Args:
@@ -432,7 +433,7 @@ class ChangeInfo(object):
     if not os.path.exists(info_file):
       if fail_on_not_found:
         ErrorExit("Changelist " + changename + " not found.")
-      return ChangeInfo(changename, 0, 0, '', None)
+      return ChangeInfo(changename, 0, 0, '', None, local_root)
     split_data = ReadFile(info_file).split(ChangeInfo._SEPARATOR, 2)
     if len(split_data) != 3:
       ErrorExit("Changelist file %s is corrupt" % info_file)
@@ -452,7 +453,7 @@ class ChangeInfo(object):
     save = False
     if update_status:
       for file in files:
-        filename = os.path.join(GetRepositoryRoot(), file[1])
+        filename = os.path.join(local_root, file[1])
         status_result = gclient.CaptureSVNStatus(filename)
         if not status_result or not status_result[0][0]:
           # File has been reverted.
@@ -463,7 +464,8 @@ class ChangeInfo(object):
         if status != file[0]:
           save = True
           files[files.index(file)] = (status, file[1])
-    change_info = ChangeInfo(changename, issue, patchset, description, files)
+    change_info = ChangeInfo(changename, issue, patchset, description, files,
+                             local_root)
     if save:
       change_info.Save()
     return change_info
@@ -476,16 +478,18 @@ def GetChangelistInfoFile(changename):
   return os.path.join(GetChangesDir(), changename)
 
 
-def LoadChangelistInfoForMultiple(changenames, fail_on_not_found=True,
-                                  update_status=False):
+def LoadChangelistInfoForMultiple(changenames, local_root, fail_on_not_found,
+                                  update_status):
   """Loads many changes and merge their files list into one pseudo change.
 
   This is mainly usefull to concatenate many changes into one for a 'gcl try'.
   """
   changes = changenames.split(',')
-  aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None)
+  aggregate_change_info = ChangeInfo(changenames, 0, 0, '', None, local_root)
   for change in changes:
-    aggregate_change_info._files += ChangeInfo.Load(change, fail_on_not_found,
+    aggregate_change_info._files += ChangeInfo.Load(change,
+                                                    local_root,
+                                                    fail_on_not_found,
                                                     update_status).GetFiles()
   return aggregate_change_info
 
@@ -528,7 +532,8 @@ def GetModifiedFiles():
   # Get a list of all files in changelists.
   files_in_cl = {}
   for cl in GetCLs():
-    change_info = ChangeInfo.Load(cl)
+    change_info = ChangeInfo.Load(cl, GetRepositoryRoot(),
+                                  fail_on_not_found=True, update_status=False)
     for status, filename in change_info.GetFiles():
       files_in_cl[filename] = change_info.name
 
@@ -597,7 +602,9 @@ def Opened():
   for cl_name in cl_keys:
     if cl_name:
       note = ""
-      if len(ChangeInfo.Load(cl_name).GetFiles()) != len(files[cl_name]):
+      change_info = ChangeInfo.Load(cl_name, GetRepositoryRoot(),
+                                    fail_on_not_found=True, update_status=False)
+      if len(change_info.GetFiles()) != len(files[cl_name]):
         note = " (Note: this changelist contains files outside this directory)"
       print "\n--- Changelist " + cl_name + note + ":"
     for file in files[cl_name]:
@@ -1072,7 +1079,7 @@ def DoPresubmitChecks(change_info, committing, may_prompt):
 def Changes():
   """Print all the changelists and their files."""
   for cl in GetCLs():
-    change_info = ChangeInfo.Load(cl, True, True)
+    change_info = ChangeInfo.Load(cl, GetRepositoryRoot(), True, True)
     print "\n--- Changelist " + change_info.name + ":"
     for file in change_info.GetFiles():
       print "".join(file)
@@ -1146,9 +1153,11 @@ def main(argv=None):
   # change didn't exist. All other commands require an existing change.
   fail_on_not_found = command != "try" and command != "change"
   if command == "try" and changename.find(',') != -1:
-    change_info = LoadChangelistInfoForMultiple(changename, True, True)
+    change_info = LoadChangelistInfoForMultiple(changename, GetRepositoryRoot(),
+                                                True, True)
   else:
-    change_info = ChangeInfo.Load(changename, fail_on_not_found, True)
+    change_info = ChangeInfo.Load(changename, GetRepositoryRoot(),
+                                  fail_on_not_found, True)
 
   if command == "change":
     if (len(argv) == 4):

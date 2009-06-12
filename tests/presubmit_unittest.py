@@ -56,16 +56,14 @@ def CheckChangeOnUpload(input_api, output_api):
     self.mox.StubOutWithMock(presubmit.gclient, 'CaptureSVNInfo')
     self.mox.StubOutWithMock(presubmit.gcl, 'GetSVNFileProperty')
     self.mox.StubOutWithMock(presubmit.gcl, 'ReadFile')
-    self.mox.StubOutWithMock(presubmit.gcl, 'ChangeInfo')
-
-  def MakeChangeInfo(self, name, issue, patchset, description):
-    ci = self.mox.CreateMock(presubmit.gcl.ChangeInfo)
-    ci.name = name
-    ci.issue = issue
-    ci.patchset = patchset
-    ci.description = description
-    ci.patch = None
-    ci.local_root = self.fake_root_dir
+    # Stub any non-getter function in gcl.ChangeInfo.
+    to_skip = lambda x: not x.startswith('_') and not x.startswith('Get')
+    for member in filter(to_skip, dir(presubmit.gcl.ChangeInfo)):
+      self.mox.StubOutWithMock(presubmit.gcl.ChangeInfo, member)
+   
+  def MakeChangeInfo(self, name, issue, patchset, description, files):
+    ci = presubmit.gcl.ChangeInfo(name, issue, patchset, description, files,
+                                  self.fake_root_dir)
     return ci
 
 
@@ -172,9 +170,8 @@ class PresubmitUnittest(PresubmitTestsBase):
             {'URL': 'svn:/foo/boo/flap.h'})
     presubmit.gcl.ReadFile(blat).AndReturn('boo!\nahh?')
     presubmit.gcl.ReadFile(notfound).AndReturn('look!\nthere?')
-    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines))
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines),
+                             files)
     self.mox.ReplayAll()
 
     change = presubmit.GclChange(ci)
@@ -240,11 +237,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       ['A', 'foo\\blat.cc'],
     ]
     fake_presubmit = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
-    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines))
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines),
+                             files)
     self.mox.ReplayAll()
 
     executer = presubmit.PresubmitExecuter(ci, False)
@@ -310,10 +304,8 @@ class PresubmitUnittest(PresubmitTestsBase):
                            'rU').AndReturn(self.presubmit_text)
     presubmit.gcl.ReadFile(haspresubmit_path,
                            'rU').AndReturn(self.presubmit_text)
-    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines))
-    ci.GetFileNames().AndReturn([item[1] for item in files])
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines),
+                             files)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -333,7 +325,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     ]
     presubmit_path = join(self.fake_root_dir, 'PRESUBMIT.py')
     haspresubmit_path = join(self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
-    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines))
+    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines),
+                             files)
     for i in range(2):
       presubmit.os.path.isfile(presubmit_path).AndReturn(True)
       presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
@@ -341,9 +334,6 @@ class PresubmitUnittest(PresubmitTestsBase):
           ).AndReturn(self.presubmit_text)
       presubmit.gcl.ReadFile(haspresubmit_path, 'rU'
           ).AndReturn(self.presubmit_text)
-      ci.GetFileNames().AndReturn([item[1] for item in files])
-      ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-      ci.GetFiles().AndReturn(files)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -375,10 +365,8 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.gcl.ReadFile(presubmit_path, 'rU').AndReturn(self.presubmit_text)
     presubmit.gcl.ReadFile(haspresubmit_path, 'rU').AndReturn(
         self.presubmit_text)
-    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines))
-    ci.GetFileNames().AndReturn([item[1] for item in files])
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines),
+                             files)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -408,10 +396,8 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.os.path.isfile(join(self.fake_root_dir,
                                   'haspresubmit',
                                   'PRESUBMIT.py')).AndReturn(False)
-    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines))
-    ci.GetFileNames().AndReturn([item[1] for item in files])
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines),
+                             files)
     self.mox.ReplayAll()
     
     output = StringIO.StringIO()
@@ -432,9 +418,7 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.os.path.isdir(isdir).AndReturn(True)
     presubmit.os.path.exists(blat).AndReturn(True)
     presubmit.os.path.isdir(blat).AndReturn(False)
-    ci = self.MakeChangeInfo('mychange', 0, 0, 'foo')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, 'foo', files)
     self.mox.ReplayAll()
 
     change = presubmit.GclChange(ci)
@@ -476,10 +460,8 @@ def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
     ci = self.MakeChangeInfo(
-        'foo', 0, 0, "Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n")
-    ci.GetFileNames().AndReturn([])
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn([])
+        'foo', 0, 0, "Blah Blah\n\nSTORY=http://tracker.com/42\nBUG=boo\n",
+        None)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -590,9 +572,8 @@ class InputApiUnittest(PresubmitTestsBase):
         ).AndReturn(None)
     presubmit.gcl.ReadFile(blat).AndReturn('whatever\ncookie')
     presubmit.gcl.ReadFile(another).AndReturn('whatever\ncookie2')
-    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines))
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '\n'.join(description_lines),
+                             files)
     self.mox.ReplayAll()
 
     change = presubmit.GclChange(ci)
@@ -704,9 +685,7 @@ class InputApiUnittest(PresubmitTestsBase):
       presubmit.os.path.exists(item).AndReturn(True)
       presubmit.os.path.isdir(item).AndReturn(False)
       presubmit.gcl.GetSVNFileProperty(item, 'svn:mime-type').AndReturn(None)
-    ci = self.MakeChangeInfo('mychange', 0, 0, '')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '', files)
     self.mox.ReplayAll()
 
     change = presubmit.GclChange(ci)
@@ -728,9 +707,7 @@ class InputApiUnittest(PresubmitTestsBase):
       presubmit.os.path.exists(item).AndReturn(True)
       presubmit.os.path.isdir(item).AndReturn(False)
       presubmit.gcl.GetSVNFileProperty(item, 'svn:mime-type').AndReturn(None)
-    ci = self.MakeChangeInfo('mychange', 0, 0, '')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '', files)
     self.mox.ReplayAll()
 
     change = presubmit.GclChange(ci)
@@ -755,9 +732,7 @@ class InputApiUnittest(PresubmitTestsBase):
       ['A', join('isdir', 'blat.cc')],
       ['M', join('elsewhere', 'ouf.cc')],
     ]
-    ci = self.MakeChangeInfo('mychange', 0, 0, '')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn(files)
+    ci = self.MakeChangeInfo('mychange', 0, 0, '', files)
     self.mox.ReplayAll()
 
     # It doesn't make sense on non-Windows platform. This is somewhat hacky,
@@ -791,9 +766,7 @@ class InputApiUnittest(PresubmitTestsBase):
   def testDeprecated(self):
     presubmit.warnings.warn(mox.IgnoreArg(), category=mox.IgnoreArg(),
                             stacklevel=2)
-    ci = self.MakeChangeInfo('mychange', 0, 0, 'Bleh\n')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn([])
+    ci = self.MakeChangeInfo('mychange', 0, 0, 'Bleh\n', [])
     self.mox.ReplayAll()
 
     change = presubmit.GclChange(ci)
@@ -803,9 +776,7 @@ class InputApiUnittest(PresubmitTestsBase):
     api.AffectedTextFiles(include_deletes=False)
 
   def testReadFileStringDenied(self):
-    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn([('M', 'AA')])
+    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n', [('M', 'AA')])
     self.mox.ReplayAll()
 
     input_api = presubmit.InputApi(
@@ -814,10 +785,8 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertRaises(IOError, input_api.ReadFile, 'boo', 'x')
 
   def testReadFileStringAccepted(self):
-    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
+    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n', [('M', 'AA')])
     path = presubmit.os.path.join(self.fake_root_dir, 'AA/boo')
-    ci.GetFiles().AndReturn([('M', 'AA')])
     presubmit.gcl.ReadFile(path, 'x').AndReturn(None)
     self.mox.ReplayAll()
 
@@ -827,9 +796,7 @@ class InputApiUnittest(PresubmitTestsBase):
     input_api.ReadFile(path, 'x')
 
   def testReadFileAffectedFileDenied(self):
-    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn([('M', 'AA')])
+    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n', [('M', 'AA')])
     file = presubmit.AffectedFile('boo', 'M', 'Unrelated')
     self.mox.ReplayAll()
 
@@ -839,9 +806,7 @@ class InputApiUnittest(PresubmitTestsBase):
     self.assertRaises(IOError, input_api.ReadFile, file, 'x')
 
   def testReadFileAffectedFileAccepted(self):
-    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn([('M', 'AA')])
+    ci = self.MakeChangeInfo('foo', 0, 0, 'Foo\n', [('M', 'AA')])
     file = presubmit.AffectedFile('AA/boo', 'M', self.fake_root_dir)
     presubmit.gcl.ReadFile(file.AbsoluteLocalPath(), 'x').AndReturn(None)
     self.mox.ReplayAll()
@@ -995,9 +960,7 @@ class GclChangeUnittest(PresubmitTestsBase):
         'issue', 'patchset', 'tags',
     ]
     # If this test fails, you should add the relevant test.
-    ci = self.MakeChangeInfo('', 0, 0, '')
-    ci.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci.GetFiles().AndReturn([])
+    ci = self.MakeChangeInfo('', 0, 0, '', [])
     self.mox.ReplayAll()
 
     self.compareMembers(presubmit.GclChange(ci), members)
@@ -1040,14 +1003,10 @@ class CannedChecksUnittest(PresubmitTestsBase):
                       committing):
     input_api1 = self.MockInputApi()
     input_api1.is_committing = committing
-    ci1 = self.MakeChangeInfo('foo', 0, 0, description1)
-    ci1.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci1.GetFiles().AndReturn([])
+    ci1 = self.MakeChangeInfo('foo', 0, 0, description1, [])
     input_api2 = self.MockInputApi()
     input_api2.is_committing = committing
-    ci2 = self.MakeChangeInfo('foo', 0, 0, description2)
-    ci2.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci2.GetFiles().AndReturn([])
+    ci2 = self.MakeChangeInfo('foo', 0, 0, description2, [])
     self.mox.ReplayAll()
 
     input_api1.change = presubmit.GclChange(ci1)
@@ -1060,9 +1019,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def ContentTest(self, check, content1, content2, error_type):
     input_api1 = self.MockInputApi()
-    ci1 = self.MakeChangeInfo('foo', 0, 0, 'foo1\n')
-    ci1.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci1.GetFiles().AndReturn([])
+    ci1 = self.MakeChangeInfo('foo', 0, 0, 'foo1\n', [])
     affected_file = self.mox.CreateMock(presubmit.SvnAffectedFile)
     affected_file.LocalPath().AndReturn('foo.cc')
     output1 = [
@@ -1072,9 +1029,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     ]
     input_api1.RightHandSideLines(mox.IgnoreArg()).AndReturn(output1)
     input_api2 = self.MockInputApi()
-    ci2 = self.MakeChangeInfo('foo2', 0, 0, 'foo2\n')
-    ci2.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci2.GetFiles().AndReturn([])
+    ci2 = self.MakeChangeInfo('foo2', 0, 0, 'foo2\n', None)
     output2 = [
       (affected_file, 42, 'yo, ' + content2),
       (affected_file, 43, 'yer'),
@@ -1094,17 +1049,13 @@ class CannedChecksUnittest(PresubmitTestsBase):
   def ReadFileTest(self, check, content1, content2, error_type):
     input_api1 = self.MockInputApi()
     self.mox.StubOutWithMock(input_api1, 'ReadFile')
-    ci1 = self.MakeChangeInfo('foo', 0, 0, 'foo1\n')
-    ci1.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci1.GetFiles().AndReturn([])
+    ci1 = self.MakeChangeInfo('foo', 0, 0, 'foo1\n', None)
     affected_file1 = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api1.AffectedSourceFiles(None).AndReturn([affected_file1])
     input_api1.ReadFile(affected_file1, 'rb').AndReturn(content1)
     input_api2 = self.MockInputApi()
     self.mox.StubOutWithMock(input_api2, 'ReadFile')
-    ci2 = self.MakeChangeInfo('foo2', 0, 0, 'foo2\n')
-    ci2.GetLocalRoot().AndReturn(self.fake_root_dir)
-    ci2.GetFiles().AndReturn([])
+    ci2 = self.MakeChangeInfo('foo2', 0, 0, 'foo2\n', [])
     affected_file2 = self.mox.CreateMock(presubmit.SvnAffectedFile)
     input_api2.AffectedSourceFiles(None).AndReturn([affected_file2])
     input_api2.ReadFile(affected_file2, 'rb').AndReturn(content2)
