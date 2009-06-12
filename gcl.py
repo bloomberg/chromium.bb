@@ -1116,7 +1116,9 @@ def main(argv=None):
     return 0
   if command == "settings":
     ignore = GetCodeReviewSetting("UNKNOWN");
-    print CODEREVIEW_SETTINGS
+    del CODEREVIEW_SETTINGS['__just_initialized']
+    print '\n'.join(("%s: %s" % (str(k), str(v))
+                     for (k,v) in CODEREVIEW_SETTINGS.iteritems()))
     return 0
 
   if len(argv) == 2:
