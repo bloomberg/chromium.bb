@@ -173,7 +173,7 @@ class InputApi(object):
     """Builds an InputApi object.
 
     Args:
-      change: A presubmit.GclChange object.
+      change: A presubmit.Change object.
       presubmit_path: The path to the presubmit script being processed.
       is_committing: True if the change is about to be committed.
     """
@@ -360,7 +360,7 @@ class AffectedFile(object):
   def __init__(self, path, action, repository_root=''):
     self._path = path
     self._action = action
-    self._repository_root = repository_root
+    self._local_root = repository_root
     self._is_directory = None
     self._properties = {}
     self.scm = ''
@@ -380,7 +380,7 @@ class AffectedFile(object):
   def AbsoluteLocalPath(self):
     """Returns the absolute path of this file on the local disk.
     """
-    return normpath(os.path.join(self._repository_root, self.LocalPath()))
+    return normpath(os.path.join(self._local_root, self.LocalPath()))
 
   def IsDirectory(self):
     """Returns true if this object is a directory."""
@@ -489,7 +489,7 @@ class SvnAffectedFile(AffectedFile):
     return self._is_text_file
 
 
-class GclChange(object):
+class Change(object):
   """Describe a change.
 
   Used directly by the presubmit scripts to query the current change being
@@ -500,24 +500,27 @@ class GclChange(object):
     self.KEY: equivalent to tags['KEY']
   """
 
+  _AFFECTED_FILES = AffectedFile
+
   # Matches key/value (or "tag") lines in changelist descriptions.
-  _tag_line_re = re.compile(
+  _TAG_LINE_RE = re.compile(
       '^\s*(?P<key>[A-Z][A-Z_0-9]*)\s*=\s*(?P<value>.*?)\s*$')
 
-  def __init__(self, change_info):
-    #  Do not keep a reference to the original change_info.
-    self._name = change_info.name
-    self._full_description = change_info.description
-    self._repository_root = change_info.GetLocalRoot()
-    self.issue = change_info.issue
-    self.patchset = change_info.patchset
+  def __init__(self, name, description, local_root, files, issue, patchset):
+    if files is None:
+      files = []
+    self._name = name
+    self._full_description = description
+    self._local_root = local_root
+    self.issue = issue
+    self.patchset = patchset
 
     # From the description text, build up a dictionary of key/value pairs
     # plus the description minus all key/value or "tag" lines.
     self._description_without_tags = []
     self.tags = {}
     for line in self._full_description.splitlines():
-      m = self._tag_line_re.match(line)
+      m = self._TAG_LINE_RE.match(line)
       if m:
         self.tags[m.group('key')] = m.group('value')
       else:
@@ -528,8 +531,8 @@ class GclChange(object):
     self._description_without_tags = self._description_without_tags.rstrip()
 
     self._affected_files = [
-        SvnAffectedFile(info[1], info[0].strip(), self._repository_root)
-        for info in change_info.GetFiles()
+        self._AFFECTED_FILES(info[1], info[0].strip(), self._local_root)
+        for info in files
     ]
 
   def Name(self):
@@ -553,7 +556,7 @@ class GclChange(object):
     """Returns the repository (checkout) root directory for this change,
     as an absolute path.
     """
-    return self._repository_root
+    return self._local_root
 
   def __getattr__(self, attr):
     """Return tags directly as attributes on the object."""
@@ -622,6 +625,10 @@ class GclChange(object):
                self.AffectedFiles(include_deletes=False)))
 
 
+class SvnChange(Change):
+  _AFFECTED_FILES = SvnAffectedFile
+
+
 def ListRelevantPresubmitFiles(files, root):
   """Finds all presubmit files that apply to a given set of source files.
 
@@ -648,14 +655,13 @@ def ListRelevantPresubmitFiles(files, root):
 
 
 class PresubmitExecuter(object):
-  def __init__(self, change_info, committing):
+  def __init__(self, change, committing):
     """
     Args:
-      change_info: The gcl.ChangeInfo object for the change.
+      change: The Change object.
       committing: True if 'gcl commit' is running, False if 'gcl upload' is.
     """
-    # TODO(maruel): Determine the SCM.
-    self.change = GclChange(change_info)
+    self.change = change
     self.committing = committing
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
@@ -697,7 +703,7 @@ class PresubmitExecuter(object):
     return result
 
 
-def DoPresubmitChecks(change_info,
+def DoPresubmitChecks(change,
                       committing,
                       verbose,
                       output_stream,
@@ -714,7 +720,7 @@ def DoPresubmitChecks(change_info,
   when needed.
 
   Args:
-    change_info: The gcl.ChangeInfo object for the change.
+    change: The Change object.
     committing: True if 'gcl commit' is running, False if 'gcl upload' is.
     verbose: Prints debug info.
     output_stream: A stream to write output from presubmit tests to.
@@ -725,16 +731,16 @@ def DoPresubmitChecks(change_info,
   Return:
     True if execution can continue, False if not.
   """
-  presubmit_files = ListRelevantPresubmitFiles(change_info.GetFileNames(),
-                                               change_info.GetLocalRoot())
+  presubmit_files = ListRelevantPresubmitFiles(change.AbsoluteLocalPaths(True),
+                                               change.RepositoryRoot())
   if not presubmit_files and verbose:
     output_stream.write("Warning, no presubmit.py found.\n")
   results = []
-  executer = PresubmitExecuter(change_info, committing)
+  executer = PresubmitExecuter(change, committing)
   if default_presubmit:
     if verbose:
       output_stream.write("Running default presubmit script.\n")
-    fake_path = os.path.join(change_info.GetLocalRoot(), 'PRESUBMIT.py')
+    fake_path = os.path.join(change.RepositoryRoot(), 'PRESUBMIT.py')
     results += executer.ExecPresubmitScript(default_presubmit, fake_path)
   for filename in presubmit_files:
     filename = os.path.abspath(filename)
@@ -805,18 +811,33 @@ def Main(argv):
                    help="Act recursively")
   parser.add_option("-v", "--verbose", action="store_true",
                    help="Verbose output")
+  parser.add_option("--files", default='')
+  parser.add_option("--name", default='no name')
+  parser.add_option("--description", default='')
+  parser.add_option("--issue", type='int', default=0)
+  parser.add_option("--patchset", type='int', default=0)
+  parser.add_options("--root", default='')
+  parser.add_options("--default_presubmit", default='')
+  parser.add_options("--may_prompt", action='store_true')
   options, args = parser.parse_args(argv[1:])
-  files = ParseFiles(args, options.recursive)
+  if not options.files:
+    options.files = ParseFiles(args, options.recursive)
+  if not options.root:
+    options.root = gcl.GetRepositoryRoot()
   if options.verbose:
     print "Found %d files." % len(files)
-  return not DoPresubmitChecks(gcl.ChangeInfo('No name', 0, 0, '', files,
-                                              gcl.GetRepositoryRoot()),
+  return not DoPresubmitChecks(SvnChange(options.name,
+                                         options.description,
+                                         options.root,
+                                         options.files,
+                                         options.issue,
+                                         options.patchset),
                                options.commit,
                                options.verbose,
                                sys.stdout,
                                sys.stdin,
-                               None,
-                               False)
+                               options.default_presubmit,
+                               options.may_prompt)
 
 
 if __name__ == '__main__':
