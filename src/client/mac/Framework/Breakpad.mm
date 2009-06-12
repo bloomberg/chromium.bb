@@ -629,7 +629,7 @@ void        Breakpad::RemoveKeyValue(NSString *key) {
 
 //=============================================================================
 void        Breakpad::GenerateAndSendReport() {
-  HandleException(0, 0, 0);
+  HandleException(0, 0, mach_thread_self()); 
 }
 
 //=============================================================================
