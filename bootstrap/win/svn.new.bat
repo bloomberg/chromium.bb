@@ -1,4 +1,4 @@
 @echo off
 setlocal
-set PATH=%~dp0svn;%PATH%
-"%~dp0svn\svn.exe" %*
+set PATH=%~dp0svn_bin;%PATH%
+"%~dp0svn_bin\svn.exe" %*

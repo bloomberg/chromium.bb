@@ -34,16 +34,19 @@ goto :PYTHON_CHECK
 echo Installing subversion ...
 :: svn is not accessible; check it out and create 'proxy' files.
 if exist "%~dp0svn.7z" del "%~dp0svn.7z"
-cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/svn_win_client.zip "%~dp0svn.zip"
+cscript //nologo //e:jscript "%~dp0get_file.js" %WIN_TOOLS_ROOT_URL%/third_party/svn_bin.zip "%~dp0svn.zip"
 if errorlevel 1 goto :SVN_FAIL
 :: Cleanup svn directory if it was existing.
 if exist "%WIN_TOOLS_ROOT_DIR%\svn\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\svn"
+if exist "%WIN_TOOLS_ROOT_DIR%\svn_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\svn_bin"
+:: Will create svn_bin\...
 cscript //nologo //e:jscript "%~dp0unzip.js" "%~dp0svn.zip" "%WIN_TOOLS_ROOT_DIR%"
 if errorlevel 1 goto :SVN_FAIL
-if not exist "%WIN_TOOLS_ROOT_DIR%\svn\." goto :SVN_FAIL
+if not exist "%WIN_TOOLS_ROOT_DIR%\svn_bin\." goto :SVN_FAIL
 del "%~dp0svn.zip"
 :: Create the batch file.
 call copy /y "%~dp0svn.new.bat" "%WIN_TOOLS_ROOT_DIR%\svn.bat" 1>nul
+call copy /y "%~dp0svn.new" "%WIN_TOOLS_ROOT_DIR%\svn" 1>nul
 goto :PYTHON_CHECK
 
 
@@ -73,10 +76,12 @@ goto :END
 echo Installing python ...
 :: Cleanup python directory if it was existing.
 if exist "%WIN_TOOLS_ROOT_DIR%\python\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python"
-call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python "%WIN_TOOLS_ROOT_DIR%\python"
+if exist "%WIN_TOOLS_ROOT_DIR%\python_bin\." rd /q /s "%WIN_TOOLS_ROOT_DIR%\python_bin"
+call svn co -q %WIN_TOOLS_ROOT_URL%/third_party/python "%WIN_TOOLS_ROOT_DIR%\python_bin"
 if errorlevel 1 goto :PYTHON_FAIL
 :: Create the batch file.
 call copy /y "%~dp0python.new.bat" "%WIN_TOOLS_ROOT_DIR%\python.bat" 1>nul
+call copy /y "%~dp0python.new" "%WIN_TOOLS_ROOT_DIR%\python" 1>nul
 set ERRORLEVEL=0
 goto :END
 
