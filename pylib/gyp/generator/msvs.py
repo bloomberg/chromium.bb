@@ -483,7 +483,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
 
     # Add in includes.
     include_dirs = c.get('include_dirs', [])
-    resource_include_dirs = c.get('resource_include_dirs', [])
+    resource_include_dirs = c.get('resource_include_dirs', include_dirs)
     include_dirs = [_FixPath(i) for i in include_dirs]
     resource_include_dirs = [_FixPath(i) for i in resource_include_dirs]
     _ToolAppend(tools, 'VCCLCompilerTool',
