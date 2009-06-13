@@ -4,6 +4,7 @@
 # is transitioning to GYP-based builds.  It is intended to be used as the
 # action of a gclient hook.
 
+import glob
 import os
 import sys
 
