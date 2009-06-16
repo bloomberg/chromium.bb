@@ -278,8 +278,12 @@ def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
   return data
 
 
-early_variable_re = re.compile('((<!?@?)\((.*?)\))')
-late_variable_re = re.compile('((>!?@?)\((.*?)\))')
+early_variable_re = re.compile('(?P<replace>(?P<type><!?@?)'
+                               '\((?P<is_array>\s*\[?)'
+                               '(?P<content>.*?)(\]?)\))')
+late_variable_re = re.compile('(?P<replace>(?P<type>>!?@?)'
+                              '\((?P<is_array>\s*\[?)'
+                              '(?P<content>.*?)(\]?)\))')
 
 def ExpandVariables(input, is_late, variables, build_file):
   # Look for the pattern that gets expanded into variables
@@ -287,28 +291,33 @@ def ExpandVariables(input, is_late, variables, build_file):
     variable_re = early_variable_re
   else:
     variable_re = late_variable_re
-  matches = variable_re.findall(input)
+  matches = map(None, variable_re.finditer(input))
 
   output = input
   if matches != None:
     # Reverse the list of matches so that replacements are done right-to-left.
-    # That ensures that earlier re.sub calls won't mess up the string in a
+    # That ensures that earlier replacements won't mess up the string in a
     # way that causes later calls to find the earlier substituted text instead
     # of what's intended for replacement.
     matches.reverse()
-    for match in matches:
-      # match[0] is the substring to look for, match[1] is the character code
-      # for the replacement type (< > <! >! <@ >@ <!@ >!@), and match[2] is the
-      # name of the variable (< >) or command to run (<! >!).
+    for match_group in matches:
+      match = match_group.groupdict()
+      # match['replace'] is the substring to look for, match['type']
+      # is the character code for the replacement type (< > <! >! <@
+      # >@ <!@ >!@), match['is_array'] contains a '[' for command
+      # arrays, and match['content'] is the name of the variable (< >)
+      # or command to run (<! >!).
 
       # run_command is true if a ! variant is used.
-      run_command = '!' in match[1]
+      run_command = '!' in match['type']
 
       # expand_to_list is true if an @ variant is used.  In that case,
-      # the expansion should result in a list.
-      # Also note that the caller to be expecting a list in return, and not
-      # all callers do because not all are working in list context.
-      expand_to_list = '@' in match[1] and input == match[0]
+      # the expansion should result in a list.  Note that the caller
+      # is to be expecting a list in return, and not all callers do
+      # because not all are working in list context.  Also, for list
+      # expansions, there can be no other text besides the variable
+      # expansion in the input.
+      expand_to_list = '@' in match['type'] and input == match['replace']
 
       if run_command:
         # Run the command in the build file's directory.
@@ -320,7 +329,12 @@ def ExpandVariables(input, is_late, variables, build_file):
           # command in the current directory.
           build_file_dir = None
 
-        p = subprocess.Popen(match[2], shell=True,
+        if match['is_array']:
+          command = eval('[%s]' % match['content'])
+        else:
+          command = match['content']
+
+        p = subprocess.Popen(command, shell=True,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              cwd=build_file_dir)
         (p_stdout, p_stderr) = p.communicate()
@@ -328,19 +342,21 @@ def ExpandVariables(input, is_late, variables, build_file):
         if p.wait() != 0 or p_stderr:
           sys.stderr.write(p_stderr)
           # Simulate check_call behavior by reusing its exception.
-          raise subprocess.CalledProcessError(p.returncode, match[2])
+          raise subprocess.CalledProcessError(p.returncode, command)
 
         replacement = p_stdout.rstrip()
       else:
-        if not match[2] in variables:
-          raise KeyError, 'Undefined variable ' + match[2] + ' in ' + input
-        replacement = variables[match[2]]
+        if not match['content'] in variables:
+          raise KeyError, 'Undefined variable ' + match['content'] + \
+                          ' in ' + input
+        replacement = variables[match['content']]
 
       if isinstance(replacement, list):
         for item in replacement:
           if not isinstance(item, str) and not isinstance(item, int):
-            raise TypeError, 'Variable ' + match[2] + ' must expand to a ' + \
-                             ' string or list of strings; list contains a ' + \
+            raise TypeError, 'Variable ' + match['content'] + \
+                             ' must expand to a string or list of strings; ' + \
+                             'list contains a ' + \
                              item.__class__.__name__
         # Run through the list and handle variable expansions in it.  Since
         # the list is guaranteed not to contain dicts, this won't do anything
@@ -354,9 +370,9 @@ def ExpandVariables(input, is_late, variables, build_file):
                                             build_file)
       elif not isinstance(replacement, str) and \
            not isinstance(replacement, int):
-            raise TypeError, 'Variable ' + match[2] + ' must expand to a ' + \
-                             ' string or list of strings; found a ' + \
-                             replacement.__class__.__name__
+            raise TypeError, 'Variable ' + match['content'] + \
+                             ' must expand to a string or list of strings; ' + \
+                             'found a ' + replacement.__class__.__name__
 
       if expand_to_list:
         # Expanding in list context.  It's guaranteed that there's only one
@@ -374,15 +390,20 @@ def ExpandVariables(input, is_late, variables, build_file):
           # When expanding a list into string context, turn the list items
           # into a string in a way that will work with a subprocess call.
           #
-          # TODO(mark): This isn't completely correct.  This should call a
-          # generator-provided function that observes the proper
-          # list-to-argument quoting rules on a specific platform.
-          output = re.sub(re.escape(match[0]),
-                          gyp.common.EncodePOSIXShellList(replacement),
-                          output)
+          # TODO(mark): This isn't completely correct.  This should
+          # call a generator-provided function that observes the
+          # proper list-to-argument quoting rules on a specific
+          # platform instead of just calling the POSIX encoding
+          # routine.
+          output = "".join([output[:match_group.start('replace')],
+                            gyp.common.EncodePOSIXShellList(replacement),
+                            output[match_group.end('replace'):]])
+
         else:
           # Expanding into string context is easy, just replace it.
-          output = re.sub(re.escape(match[0]), str(replacement), output)
+          output = "".join([output[:match_group.start('replace')],
+                            str(replacement),
+                            output[match_group.end('replace'):]])
 
   return output
 
@@ -1521,15 +1542,15 @@ def Load(build_files, variables, includes, depth, generator_input_info):
   global non_configuration_keys
   non_configuration_keys = base_non_configuration_keys[:]
   non_configuration_keys.extend(generator_input_info['non_configuration_keys'])
-  
+
   # TODO(mark) handle variants if the generator doesn't want them directly.
   generator_handles_variants = \
       generator_input_info['generator_handles_variants']
-  
+
   # A generator can have other lists (in addition to sources) be processed
   # for rules.
   extra_sources_for_rules = generator_input_info['extra_sources_for_rules']
-  
+
   # Load build files.  This loads every target-containing build file into
   # the |data| dictionary such that the keys to |data| are build file names,
   # and the values are the entire build file contents after "early" or "pre"
