@@ -235,7 +235,7 @@ static void Start(Options *options) {
     minidump_processor(new MinidumpProcessor(symbol_supplier.get(), &resolver));
   ProcessState process_state;
   if (minidump_processor->Process(minidump_file, &process_state) !=
-      MinidumpProcessor::PROCESS_OK) {
+      google_breakpad::PROCESS_OK) {
     fprintf(stderr, "MinidumpProcessor::Process failed\n");
     return;
   }
