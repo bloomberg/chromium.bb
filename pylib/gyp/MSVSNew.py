@@ -212,6 +212,16 @@ class MSVSSolution:
       if isinstance(e, MSVSFolder):
         entries_to_check += e.entries
 
+    # Sort by name then guid (so things are in order on vs2008).
+    def NameThenGuid(a, b):
+      if a.name < b.name: return -1
+      if a.name > b.name: return 1
+      if a.get_guid() < b.get_guid(): return -1
+      if a.get_guid() > b.get_guid(): return 1
+      return 0
+
+    all_entries = sorted(all_entries, NameThenGuid)
+
     # Open file and print header
     f = writer(self.path)
     f.write('Microsoft Visual Studio Solution File, '
