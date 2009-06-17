@@ -92,7 +92,8 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
 
   # Move to the repository root and make the revision numbers sorted in
   # decreasing order.
-  os.chdir(gcl.GetRepositoryRoot())
+  local_root = gcl.GetRepositoryRoot()
+  os.chdir(local_root)
   revisions.sort(reverse=True)
   revisions_string = ",".join([str(rev) for rev in revisions])
   revisions_string_rev = ",".join([str(-rev) for rev in revisions])
@@ -221,8 +222,8 @@ def Revert(revisions, force=False, commit=True, send_email=True, message=None,
     description += "\n\n"
     description += message
   # Don't use gcl.Change() since it prompts the user for infos.
-  change_info = gcl.ChangeInfo(name=changename, issue='',
-                               description=description, files=files_status)
+  change_info = gcl.ChangeInfo(changename, 0, 0, description, files_status,
+                               local_root)
   change_info.Save()
 
   upload_args = ['--no_presubmit', '-r', ",".join(reviewers)]
