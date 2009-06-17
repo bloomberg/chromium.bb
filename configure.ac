@@ -47,6 +47,11 @@ AC_ARG_ENABLE(nouveau-experimental-api,
 	      [Enable support for nouveau's experimental API (default: disabled)]),
 	      [NOUVEAU=$enableval], [NOUVEAU=no])
 
+AC_ARG_ENABLE(radeon-experimental-api,
+	      AS_HELP_STRING([--enable-radeon-experimental-api],
+	      [Enable support for radeon's KMS API (default: disabled)]),
+	      [RADEON=$enableval], [RADEON=no])
+
 dnl ===========================================================================
 dnl check compiler flags
 AC_DEFUN([LIBDRM_CC_TRY_FLAG], [
@@ -125,6 +130,8 @@ fi
 
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
 
+AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
+
 PKG_CHECK_MODULES(CAIRO, cairo, [HAVE_CAIRO=yes], [HAVE_CAIRO=no])
 if test "x$HAVE_CAIRO" = xyes; then
 	AC_DEFINE(HAVE_CAIRO, 1, [Have cairo support])
@@ -144,6 +151,8 @@ AC_OUTPUT([
 	Makefile
 	libdrm/Makefile
 	libdrm/intel/Makefile
+	libdrm/radeon/Makefile
+	libdrm/radeon/libdrm_radeon.pc
 	libdrm/nouveau/Makefile
 	libdrm/nouveau/libdrm_nouveau.pc
 	shared-core/Makefile

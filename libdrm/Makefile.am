@@ -22,7 +22,11 @@ if HAVE_NOUVEAU
 NOUVEAU_SUBDIR = nouveau
 endif
 
-SUBDIRS = . intel $(NOUVEAU_SUBDIR)
+if HAVE_RADEON
+RADEON_SUBDIR = radeon
+endif
+
+SUBDIRS = . intel $(NOUVEAU_SUBDIR) $(RADEON_SUBDIR)
 
 libdrm_la_LTLIBRARIES = libdrm.la
 libdrm_ladir = $(libdir)
