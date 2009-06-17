@@ -6,7 +6,24 @@
 # This script will try to sync the bootstrap directories and then defer control.
 
 base_dir=$(dirname "$0")
- 
+
+# Update git checkouts prior the cygwin check, we don't want to use msysgit.
+if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
+then
+  (cd "$base_dir"; git svn fetch -q; git merge trunk -q)
+fi
+
+if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/git-cl-repo/.git" ]
+then
+  (cd "$base_dir/git-cl-repo"; git pull -q)
+fi
+
+if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/git-try-repo/.git" ]
+then
+  (cd "$base_dir/git-try-repo"; git pull -q)
+fi
+
+
 # Use the batch file as an entry point if on cygwin.
 if [ "${OSTYPE}" = "cygwin" -a "${TERM}" = "cygwin" ]; then
    ${base_dir}/gclient.bat "$@"
@@ -14,14 +31,12 @@ if [ "${OSTYPE}" = "cygwin" -a "${TERM}" = "cygwin" ]; then
 fi
 
 
+# We're on POSIX (not cygwin). We can now safely look for svn checkout.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.svn" ]
 then
   # Update the bootstrap directory to stay up-to-date with the latest
   # depot_tools.
-  svn -q up "$base_dir/bootstrap"
-
-  # Then defer the control to the bootstrapper.
-  exec "$base_dir/bootstrap/gclient.sh" "$@"
-else
-  exec python "$base_dir/gclient.py" "$@"
+  svn -q up "$base_dir"
 fi
+
+exec python "$base_dir/gclient.py" "$@"
