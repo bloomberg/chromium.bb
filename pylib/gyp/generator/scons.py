@@ -13,8 +13,8 @@ import re
 generator_default_variables = {
     'EXECUTABLE_PREFIX': '',
     'EXECUTABLE_SUFFIX': '',
-    'INTERMEDIATE_DIR': '$OBJ_DIR/$COMPONENT_NAME/$TARGET_NAME/intermediate',
-    'SHARED_INTERMEDIATE_DIR': '$OBJ_DIR/global_intermediate',
+    'INTERMEDIATE_DIR': '$OBJ_DIR/${COMPONENT_NAME}/_${TARGET_NAME}_intermediate',
+    'SHARED_INTERMEDIATE_DIR': '$OBJ_DIR/_global_intermediate',
     'OS': 'linux',
     'PRODUCT_DIR': '$TOP_BUILDDIR',
     'RULE_INPUT_ROOT': '${SOURCE.filebase}',
