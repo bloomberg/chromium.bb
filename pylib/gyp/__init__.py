@@ -26,7 +26,7 @@ def Load(build_files, format, default_variables={}, includes=[], depth='.'):
   data returned by loading the specified build files.
   """
   default_variables = copy.copy(default_variables)
-  
+
   # Default variables provided by this program and its modules should be
   # named WITH_CAPITAL_LETTERS to provide a distinct "best practice" namespace,
   # avoiding collisions with user and automatic variables.
@@ -37,7 +37,7 @@ def Load(build_files, format, default_variables={}, includes=[], depth='.'):
   # because ActivePython cannot handle key parameters to __import__.
   generator = __import__(generator_name, globals(), locals(), generator_name)
   default_variables.update(generator.generator_default_variables)
-  
+
   # Fetch the generator specific info that gets fed to input, we use getattr
   # so we can default things and the generators only have to provide what
   # they need.
@@ -81,13 +81,38 @@ def main(args):
                     help='comma separated list of flag names to pass to the '
                          'generator')
 
+  # We read a few things from ~/.gyp, so set up a var for that.
+  home_vars = ['HOME']
+  if sys.platform in ('cygwin', 'win32'):
+    home_vars.append('USERPROFILE')
+  home = None
+  for home_var in home_vars:
+    home = os.getenv(home_var)
+    if home != None:
+      break
+  home_dot_gyp = None
+  if home != None:
+    home_dot_gyp = os.path.join(home, '.gyp')
+    if not os.path.exists(home_dot_gyp):
+      home_dot_gyp = None
+
+  # TODO(thomasvl): add support for ~/.gyp/defaults
+
   (options, build_files) = parser.parse_args(args)
 
   if not options.formats:
-    options.formats = [ {'darwin': 'xcode',
-                         'win32':  'msvs',
-                         'cygwin': 'msvs',
-                         'linux2': 'scons',}[sys.platform] ]
+    # If no format was given on the command line, then check the env variable.
+    generate_formats = os.environ.get('GYP_GENERATORS', [])
+    if generate_formats:
+      generate_formats = shlex.split(generate_formats)
+    if generate_formats:
+      options.formats = generate_formats
+    else:
+      # Nothing in the variable, default based on platform.
+      options.formats = [ {'darwin': 'xcode',
+                           'win32':  'msvs',
+                           'cygwin': 'msvs',
+                           'linux2': 'scons',}[sys.platform] ]
 
   if not build_files:
     build_files = FindBuildFiles()
@@ -152,31 +177,22 @@ def main(args):
 
   # If ~/.gyp/include.gypi exists, it'll be forcibly included into every
   # .gyp file that's loaded, before anything else is included.
-  home_vars = ['HOME']
-  if sys.platform in ('cygwin', 'win32'):
-    home_vars.append('USERPROFILE')
-
-  home = None
-  for home_var in home_vars:
-    home = os.getenv(home_var)
-    if home != None:
-      break
-
-  if home != None:
-    default_include = os.path.join(home, '.gyp', 'include.gypi')
+  if home_dot_gyp != None:
+    default_include = os.path.join(home_dot_gyp, 'include.gypi')
     if os.path.exists(default_include):
       includes.append(default_include)
 
   # Command-line --include files come after the default include.
   if options.includes:
     includes.extend(options.includes)
-  
+
   # Generator flags should be prefixed with the target generator since they
   # are global across all generator runs.
   generator_flags = options.generator_flags.split(',')
 
-  # Generate all requested formats
-  for format in options.formats:
+  # Generate all requested formats (use a set in case we got one format request
+  # twice)
+  for format in set(options.formats):
 
     # Start with the default variables from the command line.
     [generator, flat_list, targets, data] = Load(build_files, format,
