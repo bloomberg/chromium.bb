@@ -6,6 +6,7 @@
 """Unit tests for presubmit_support.py and presubmit_canned_checks.py."""
 
 import exceptions
+import os
 import StringIO
 import unittest
 
@@ -399,7 +400,7 @@ def CheckChangeOnCommit(input_api, output_api):
   def testDirectoryHandling(self):
     files = [
       ['A', 'isdir'],
-      ['A', 'isdir\\blat.cc'],
+      ['A', os.path.join('isdir', 'blat.cc')],
     ]
     isdir = presubmit.os.path.join(self.fake_root_dir, 'isdir')
     blat = presubmit.os.path.join(isdir, 'blat.cc')
