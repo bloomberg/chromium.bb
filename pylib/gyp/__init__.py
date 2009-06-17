@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import copy
 import gyp.input
 import optparse
 import os.path
@@ -15,6 +16,46 @@ def FindBuildFiles():
     if file[-len(extension):] == extension:
       build_files.append(file)
   return build_files
+
+
+def Load(build_files, format, default_variables={}, includes=[], depth='.'):
+  """
+  Loads one or more specified build files.
+  default_variables and includes will be copied before use.
+  Returns the generator for the specified format and the
+  data returned by loading the specified build files.
+  """
+  default_variables = copy.copy(default_variables)
+  
+  # Default variables provided by this program and its modules should be
+  # named WITH_CAPITAL_LETTERS to provide a distinct "best practice" namespace,
+  # avoiding collisions with user and automatic variables.
+  default_variables['GENERATOR'] = format
+
+  generator_name = 'gyp.generator.' + format
+  # These parameters are passed in order (as opposed to by key)
+  # because ActivePython cannot handle key parameters to __import__.
+  generator = __import__(generator_name, globals(), locals(), generator_name)
+  default_variables.update(generator.generator_default_variables)
+  
+  # Fetch the generator specific info that gets fed to input, we use getattr
+  # so we can default things and the generators only have to provide what
+  # they need.
+  generator_input_info = {
+    'generator_handles_variants':
+        getattr(generator, 'generator_handles_variants', False),
+    'non_configuration_keys':
+        getattr(generator, 'generator_additional_non_configuration_keys', []),
+    'path_sections':
+        getattr(generator, 'generator_additional_path_sections', []),
+    'extra_sources_for_rules':
+        getattr(generator, 'generator_extra_sources_for_rules', []),
+  }
+
+  # Process the input specific to this generator.
+  result = gyp.input.Load(build_files, default_variables, includes[:],
+                          depth, generator_input_info)
+  return [generator] + result
 
 
 def main(args):
@@ -138,37 +179,9 @@ def main(args):
   for format in options.formats:
 
     # Start with the default variables from the command line.
-    default_variables = cmdline_default_variables.copy()
-    
-    # Default variables provided by this program and its modules should be
-    # named WITH_CAPITAL_LETTERS to provide a distinct "best practice" namespace,
-    # avoiding collisions with user and automatic variables.
-    default_variables['GENERATOR'] = format
-
-    generator_name = 'gyp.generator.' + format
-    # These parameters are passed in order (as opposed to by key)
-    # because ActivePython cannot handle key parameters to __import__.
-    generator = __import__(generator_name, globals(), locals(), generator_name)
-    default_variables.update(generator.generator_default_variables)
-    
-    # Fetch the generator specific info that gets fed to input, we use getattr
-    # so we can default things and the generators only have to provide what
-    # they need.
-    generator_input_info = {
-      'generator_handles_variants':
-          getattr(generator, 'generator_handles_variants', False),
-      'non_configuration_keys':
-          getattr(generator, 'generator_additional_non_configuration_keys', []),
-      'path_sections':
-          getattr(generator, 'generator_additional_path_sections', []),
-      'extra_sources_for_rules':
-          getattr(generator, 'generator_extra_sources_for_rules', []),
-    }
-
-    # Process the input specific to this generator.
-    [flat_list, targets, data] = gyp.input.Load(build_files, default_variables,
-                                                includes[:], options.depth,
-                                                generator_input_info)
+    [generator, flat_list, targets, data] = Load(build_files, format,
+                                                 cmdline_default_variables,
+                                                 includes, options.depth)
 
     params = {'options': options,
               'build_files': build_files,
