@@ -8,7 +8,7 @@
 base_dir=$(dirname "$0")
  
 # Use the batch file as an entry point if on cygwin.
-if [ "${OSTYPE}" = "cygwin" ]; then
+if [ "${OSTYPE}" = "cygwin" -a "${TERM}" = "cygwin" ]; then
    ${base_dir}/gclient.bat "$@"
    exit
 fi
