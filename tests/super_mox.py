@@ -27,9 +27,9 @@ def OnTestsLoad():
       import subprocess
       subprocess.call(['svn', 'co', 'http://pymox.googlecode.com/svn/trunk',
                        os.path.join(directory, 'pymox')],
-                      shell=True)
+                      shell=sys.platform.startswith('win'))
       try:
-        import mox as Mox
+        import pymox.mox as Mox
         mox = Mox
       except ImportError:
         print >> sys.stderr, ("\nError, failed to load pymox\n")
