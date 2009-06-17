@@ -489,6 +489,50 @@ class SvnAffectedFile(AffectedFile):
     return self._is_text_file
 
 
+class GitAffectedFile(AffectedFile):
+  """Representation of a file in a change out of a git checkout."""
+
+  def __init__(self, *args, **kwargs):
+    AffectedFile.__init__(self, *args, **kwargs)
+    self._server_path = None
+    self._is_text_file = None
+    self.scm = 'git'
+
+  def ServerPath(self):
+    if self._server_path is None:
+      raise NotImplementedException()  # TODO(maruel) Implement.
+    return self._server_path
+
+  def IsDirectory(self):
+    if self._is_directory is None:
+      path = self.AbsoluteLocalPath()
+      if os.path.exists(path):
+        # Retrieve directly from the file system; it is much faster than
+        # querying subversion, especially on Windows.
+        self._is_directory = os.path.isdir(path)
+      else:
+        # raise NotImplementedException()  # TODO(maruel) Implement.
+        self._is_directory = False
+    return self._is_directory
+
+  def Property(self, property_name):
+    if not property_name in self._properties:
+      raise NotImplementedException()  # TODO(maruel) Implement.
+    return self._properties[property_name]
+
+  def IsTextFile(self):
+    if self._is_text_file is None:
+      if self.Action() == 'D':
+        # A deleted file is not a text file.
+        self._is_text_file = False
+      elif self.IsDirectory():
+        self._is_text_file = False
+      else:
+        # raise NotImplementedException()  # TODO(maruel) Implement.
+        self._is_text_file = os.path.isfile(self.AbsoluteLocalPath())
+    return self._is_text_file
+
+
 class Change(object):
   """Describe a change.
 
@@ -627,6 +671,10 @@ class Change(object):
 
 class SvnChange(Change):
   _AFFECTED_FILES = SvnAffectedFile
+
+
+class GitChange(Change):
+  _AFFECTED_FILES = GitAffectedFile
 
 
 def ListRelevantPresubmitFiles(files, root):
@@ -783,12 +831,14 @@ def DoPresubmitChecks(change,
 
 def ScanSubDirs(mask, recursive):
   if not recursive:
-    return [x for x in glob.glob(mask) if '.svn' not in x]
+    return [x for x in glob.glob(mask) if '.svn' not in x and '.git' not in x]
   else:
     results = []
     for root, dirs, files in os.walk('.'):
       if '.svn' in dirs:
         dirs.remove('.svn')
+      if '.git' in dirs:
+        dirs.remove('.git')
       for name in files:
         if fnmatch.fnmatch(name, mask):
           results.append(os.path.join(root, name))
@@ -805,33 +855,52 @@ def ParseFiles(args, recursive):
 def Main(argv):
   parser = optparse.OptionParser(usage="%prog [options]",
                                  version="%prog " + str(__version__))
-  parser.add_option("-c", "--commit", action="store_true",
+  parser.add_option("-c", "--commit", action="store_true", default=False,
                    help="Use commit instead of upload checks")
+  parser.add_option("-u", "--upload", action="store_false", dest='commit',
+                   help="Use upload instead of commit checks")
   parser.add_option("-r", "--recursive", action="store_true",
                    help="Act recursively")
-  parser.add_option("-v", "--verbose", action="store_true",
+  parser.add_option("-v", "--verbose", action="store_true", default=False,
                    help="Verbose output")
-  parser.add_option("--files", default='')
+  parser.add_option("--files")
   parser.add_option("--name", default='no name')
   parser.add_option("--description", default='')
   parser.add_option("--issue", type='int', default=0)
   parser.add_option("--patchset", type='int', default=0)
-  parser.add_options("--root", default='')
-  parser.add_options("--default_presubmit", default='')
-  parser.add_options("--may_prompt", action='store_true')
+  parser.add_option("--root", default='')
+  parser.add_option("--default_presubmit")
+  parser.add_option("--may_prompt", action='store_true', default=False)
   options, args = parser.parse_args(argv[1:])
-  if not options.files:
-    options.files = ParseFiles(args, options.recursive)
   if not options.root:
-    options.root = gcl.GetRepositoryRoot()
+    options.root = os.getcwd()
+  if os.path.isdir(os.path.join(options.root, '.git')):
+    change_class = GitChange
+    if not options.files:
+      if args:
+        options.files = ParseFiles(args, options.recursive)
+      else:
+        # Grab modified files.
+        raise NotImplementedException()  # TODO(maruel) Implement.
+  elif os.path.isdir(os.path.join(options.root, '.svn')):
+    change_class = SvnChange
+    if not options.files:
+      if args:
+        options.files = ParseFiles(args, options.recursive)
+      else:
+        # Grab modified files.
+        files = gclient.CaptureSVNStatus([options.root])
+  else:
+    # Doesn't seem under source control.
+    change_class = Change
   if options.verbose:
-    print "Found %d files." % len(files)
-  return not DoPresubmitChecks(SvnChange(options.name,
-                                         options.description,
-                                         options.root,
-                                         options.files,
-                                         options.issue,
-                                         options.patchset),
+    print "Found %d files." % len(options.files)
+  return not DoPresubmitChecks(change_class(options.name,
+                                            options.description,
+                                            options.root,
+                                            options.files,
+                                            options.issue,
+                                            options.patchset),
                                options.commit,
                                options.verbose,
                                sys.stdout,

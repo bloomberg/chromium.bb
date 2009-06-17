@@ -63,7 +63,8 @@ class PresubmitUnittest(PresubmitTestsBase):
   def testMembersChanged(self):
     self.mox.ReplayAll()
     members = [
-      'AffectedFile', 'Change', 'DoPresubmitChecks', 'InputApi',
+      'AffectedFile', 'Change', 'DoPresubmitChecks', 'GitChange',
+      'GitAffectedFile', 'InputApi',
       'ListRelevantPresubmitFiles', 'Main', 'NotImplementedException',
       'OutputApi', 'ParseFiles', 'PresubmitExecuter', 'ScanSubDirs',
       'SvnAffectedFile', 'SvnChange',
@@ -461,6 +462,24 @@ def CheckChangeOnCommit(input_api, output_api):
                        'Running default presubmit script.\n'
                        '** Presubmit Messages **\n'
                        'http://tracker.com/42\n\n'))
+
+  def testMain(self):
+    self.mox.StubOutWithMock(presubmit, 'DoPresubmitChecks')
+    self.mox.StubOutWithMock(presubmit, 'ParseFiles')
+    presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.git')
+        ).AndReturn(False)
+    presubmit.os.path.isdir(presubmit.os.path.join(self.fake_root_dir, '.svn')
+        ).AndReturn(False)
+    #presubmit.ParseFiles([], None).AndReturn([])
+    presubmit.DoPresubmitChecks(mox.IgnoreArg(), False, False,
+                                mox.IgnoreArg(),
+                                mox.IgnoreArg(),
+                                None, False).AndReturn(False)
+    self.mox.ReplayAll()
+    
+    self.assertEquals(True,
+                      presubmit.Main(['presubmit', '--root',
+                                      self.fake_root_dir]))
 
 
 class InputApiUnittest(PresubmitTestsBase):
