@@ -5,7 +5,6 @@
 
 """Unit tests for trychange.py."""
 
-import os
 import unittest
 
 # Local imports
@@ -23,18 +22,19 @@ class TryChangeUnittest(TryChangeTestsBase):
   """General trychange.py tests."""
   def testMembersChanged(self):
     members = [
-      'EscapeDot', 'ExecuteTryServerScript', 'GIT', 'GetSourceRoot', 'GuessVCS',
+      'EscapeDot', 'GIT', 'GetSourceRoot',
+      'GetTryServerSettings', 'GuessVCS',
       'HELP_STRING', 'InvalidScript', 'NoTryServerAccess', 'PathDifference',
-      'RunCommand', 'SCM', 'SCRIPT_PATH', 'SVN', 'TryChange', 'USAGE',
+      'RunCommand', 'SCM', 'SVN', 'TryChange', 'USAGE',
       'datetime', 'gcl', 'gclient', 'getpass', 'logging', 'optparse', 'os',
-      'shutil', 'sys', 'tempfile', 'traceback', 'urllib',
+      'shutil', 'socket', 'sys', 'tempfile', 'traceback', 'upload', 'urllib',
     ]
     # If this test fails, you should add the relevant test.
     self.compareMembers(trychange, members)
 
 
 class SVNUnittest(TryChangeTestsBase):
-  """General trychange.py tests."""
+  """trychange.SVN tests."""
   def testMembersChanged(self):
     members = [
       'GenerateDiff', 'ProcessOptions', 'options'
@@ -43,8 +43,8 @@ class SVNUnittest(TryChangeTestsBase):
     self.compareMembers(trychange.SVN(None), members)
 
 
-class TryChangeUnittest(TryChangeTestsBase):
-  """General trychange.py tests."""
+class GITUnittest(TryChangeTestsBase):
+  """trychange.GIT tests."""
   def testMembersChanged(self):
     members = [
       'GenerateDiff', 'GetEmail', 'GetPatchName', 'ProcessOptions', 'options'

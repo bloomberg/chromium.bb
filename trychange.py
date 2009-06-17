@@ -14,6 +14,7 @@ import logging
 import optparse
 import os
 import shutil
+import socket
 import sys
 import tempfile
 import traceback
@@ -28,7 +29,6 @@ __version__ = '1.1'
 
 # Constants
 HELP_STRING = "Sorry, Tryserver is not available."
-SCRIPT_PATH = os.path.join('tools', 'tryserver', 'tryserver.py')
 USAGE = r"""%prog [options]
 
 Client-side script to send a try job to the try server. It communicates to
@@ -75,27 +75,29 @@ def PathDifference(root, subpath):
 
 def GetSourceRoot():
   """Returns the absolute directory one level up from the repository root."""
+  # TODO(maruel): This is odd to assume that '..' is the source root.
   return os.path.abspath(os.path.join(gcl.GetRepositoryRoot(), '..'))
 
 
-def ExecuteTryServerScript():
-  """Locates the tryserver script, executes it and returns its dictionary.
-
-  The try server script contains the repository-specific try server commands."""
-  script_locals = {}
-  try:
-    # gcl.GetRepositoryRoot() may throw an exception.
-    script_path = os.path.join(gcl.GetRepositoryRoot(), SCRIPT_PATH)
-  except Exception:
-    return script_locals
-  if os.path.exists(script_path):
+def GetTryServerSettings():
+  """Grab try server settings local to the repository."""
+  def _SafeResolve(host):
     try:
-      exec(gcl.ReadFile(script_path), script_locals)
-    except Exception, e:
-      # TODO(maruel):  Need to specialize the exception trapper.
-      traceback.print_exc()
-      raise InvalidScript('%s is invalid.' % script_path)
-  return script_locals
+      return socket.getaddrinfo(host, None)
+    except socket.gaierror:
+      return None
+
+  settings = {}
+  settings['http_port'] = gcl.GetCodeReviewSetting('TRYSERVER_HTTP_PORT')
+  settings['http_host'] = gcl.GetCodeReviewSetting('TRYSERVER_HTTP_HOST')
+  settings['svn_repo'] = gcl.GetCodeReviewSetting('TRYSERVER_SVN_URL')
+  # Use http is the http_host name resolve, fallback to svn otherwise.
+  if (settings['http_port'] and settings['http_host'] and
+      _SafeResolve(settings['http_host'])):
+    settings['default_transport'] = 'http'
+  elif settings.get('svn_repo'):
+    settings['default_transport'] = 'svn'
+  return settings
 
 
 def EscapeDot(name):
@@ -256,18 +258,12 @@ def _ParseSendChangeOptions(options):
 
 def _SendChangeHTTP(options):
   """Send a change to the try server using the HTTP protocol."""
-  script_locals = ExecuteTryServerScript()
-
   if not options.host:
-    options.host = script_locals.get('try_server_http_host', None)
-    if not options.host:
-      raise NoTryServerAccess('Please use the --host option to specify the try '
-          'server host to connect to.')
+    raise NoTryServerAccess('Please use the --host option to specify the try '
+        'server host to connect to.')
   if not options.port:
-    options.port = script_locals.get('try_server_http_port', None)
-    if not options.port:
-      raise NoTryServerAccess('Please use the --port option to specify the try '
-          'server port to connect to.')
+    raise NoTryServerAccess('Please use the --port option to specify the try '
+        'server port to connect to.')
 
   values = _ParseSendChangeOptions(options)
   values['patch'] = options.diff
@@ -298,12 +294,9 @@ def _SendChangeHTTP(options):
 def _SendChangeSVN(options):
   """Send a change to the try server by committing a diff file on a subversion
   server."""
-  script_locals = ExecuteTryServerScript()
   if not options.svn_repo:
-    options.svn_repo = script_locals.get('try_server_svn', None)
-    if not options.svn_repo:
-      raise NoTryServerAccess('Please use the --svn_repo option to specify the'
-                              ' try server svn repository to connect to.')
+    raise NoTryServerAccess('Please use the --svn_repo option to specify the'
+                            ' try server svn repository to connect to.')
 
   values = _ParseSendChangeOptions(options)
   description = ''
@@ -315,7 +308,9 @@ def _SendChangeSVN(options):
   temp_file = tempfile.NamedTemporaryFile()
   temp_file_name = temp_file.name
   try:
-    RunCommand(['svn', 'checkout', '--depth', 'empty', '--non-interactive',
+    # Don't use  '--non-interactive', since we want it to prompt for
+    # crendentials if necessary.
+    RunCommand(['svn', 'checkout', '--depth', 'empty',
                 options.svn_repo, temp_dir])
     # TODO(maruel): Use a subdirectory per user?
     current_time = str(datetime.datetime.now()).replace(':', '.')
@@ -391,6 +386,11 @@ def TryChange(argv,
               file_list,
               swallow_exception,
               prog=None):
+  default_settings = GetTryServerSettings()
+  transport_functions = { 'http': _SendChangeHTTP, 'svn': _SendChangeSVN }
+  default_transport = transport_functions.get(
+      default_settings.get('default_transport'))
+
   # Parse argv
   parser = optparse.OptionParser(usage=USAGE,
                                  version=__version__,
@@ -446,30 +446,43 @@ def TryChange(argv,
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server by HTTP")
-  group.add_option("--use_http", action="store_const", const=_SendChangeHTTP,
-                   dest="send_patch", default=_SendChangeHTTP,
+  group.add_option("--use_http",
+                   action="store_const",
+                   const=_SendChangeHTTP,
+                   dest="send_patch",
+                   default=default_transport,
                    help="Use HTTP to talk to the try server [default]")
   group.add_option("--host",
+                   default=default_settings['http_host'],
                    help="Host address")
   group.add_option("--port",
+                   default=default_settings['http_port'],
                    help="HTTP port")
   group.add_option("--proxy",
                    help="HTTP proxy")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Access the try server with SVN")
-  group.add_option("--use_svn", action="store_const", const=_SendChangeSVN,
+  group.add_option("--use_svn",
+                   action="store_const",
+                   const=_SendChangeSVN,
                    dest="send_patch",
                    help="Use SVN to talk to the try server")
-  group.add_option("--svn_repo", metavar="SVN_URL",
+  group.add_option("--svn_repo",
+                   metavar="SVN_URL",
+                   default=default_settings['svn_repo'],
                    help="SVN url to use to write the changes in; --use_svn is "
                         "implied when using --svn_repo")
   parser.add_option_group(group)
 
   options, args = parser.parse_args(argv)
-  # Switch the default accordingly.
-  if options.svn_repo:
-    options.send_patch = _SendChangeSVN
+
+  # Switch the default accordingly if there was no default send_patch.
+  if not options.send_patch:
+    if options.http_port and options.http_host:
+      options.send_patch = _SendChangeHTTP
+    elif options.svn_repo:
+      options.send_patch = _SendChangeSVN
 
   if len(args) == 1 and args[0] == 'help':
     parser.print_help()
