@@ -45,19 +45,30 @@ class Watchlists(object):
     self._LoadWatchlistRules()
 
   def _GetRulesFilePath(self):
+    """Returns path to WATCHLISTS file."""
     return os.path.join(self._repo_root, self._RULES_FILENAME)
 
   def _HasWatchlistsFile(self):
     """Determine if watchlists are available for this repo."""
     return os.path.exists(self._GetRulesFilePath())
 
+  def _ContentsOfWatchlistsFile(self):
+    """Read the WATCHLISTS file and return its contents."""
+    try:
+      watchlists_file = open(self._GetRulesFilePath())
+      contents = watchlists_file.read()
+      watchlists_file.close()
+      return contents
+    except IOError, e:
+      logging.error("Cannot read %s: %s" % (self._GetRulesFilePath(), e))
+      return ''
+
   def _LoadWatchlistRules(self):
+    """Load watchlists from WATCHLISTS file. Does nothing if not present."""
     if not self._HasWatchlistsFile():
       return
-    watchlists_file = open(self._GetRulesFilePath())
-    contents = watchlists_file.read()
-    watchlists_file.close()
 
+    contents = self._ContentsOfWatchlistsFile()
     watchlists_data = None
     try:
       watchlists_data = eval(contents, {'__builtins__': None}, None)

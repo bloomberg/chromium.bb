@@ -15,6 +15,7 @@ UNIT_TESTS = [
   'tests.presubmit_unittest',
   'tests.revert_unittest',
   'tests.trychange_unittest',
+  'tests.watchlists_unittest',
 ]
 
 def CheckChangeOnUpload(input_api, output_api):
