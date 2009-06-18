@@ -104,6 +104,7 @@ class Watchlists(object):
     """
     watchers = set()  # A set, to avoid duplicates
     for path in paths:
+      path = path.replace(os.sep, '/')
       for name, rule in self._defns.iteritems():
         if name not in self._watchlists: continue
         rex_str = rule.get('filepath')
