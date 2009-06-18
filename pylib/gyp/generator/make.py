@@ -420,7 +420,12 @@ class MakefileWriter:
     for configname in sorted(configs.keys()):
       config = configs[configname]
       self.WriteList(config.get('defines'), 'DEFS_%s' % configname, prefix='-D')
+      self.WriteLn("# Flags passed to both C and C++ files.");
       self.WriteList(config.get('cflags'), 'CFLAGS_%s' % configname)
+      self.WriteLn("# Flags passed to only C (and not C++) files.");
+      self.WriteList(config.get('cflags_c'), 'CFLAGS_C_%s' % configname)
+      self.WriteLn("# Flags passed to only C++ (and not C) files.");
+      self.WriteList(config.get('cflags_cc'), 'CFLAGS_CC_%s' % configname)
       includes = config.get('include_dirs')
       if includes:
         includes = map(self.Absolutify, includes)
@@ -457,8 +462,10 @@ class MakefileWriter:
 # CFLAGS et al overrides must be target-local.
 # See "Target-specific Variable Values" in the GNU Make manual.""")
       self.WriteLn("$(OBJS): CFLAGS := $(CFLAGS_$(BUILDTYPE)) "
+                   "$(CFLAGS_C_$(BUILDTYPE)) "
                    "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
       self.WriteLn("$(OBJS): CXXFLAGS := $(CFLAGS_$(BUILDTYPE)) "
+                   "$(CFLAGS_CC_$(BUILDTYPE)) "
                    "$(DEFS_$(BUILDTYPE)) $(INCS_$(BUILDTYPE))")
 
     self.WriteLn()
