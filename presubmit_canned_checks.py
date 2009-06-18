@@ -189,17 +189,44 @@ def CheckLongLines(input_api, output_api, maxlen=80, source_file_filter=None):
 
 def CheckChangeSvnEolStyle(input_api, output_api, source_file_filter=None):
   """Checks that the source files have svn:eol-style=LF."""
-  bad = filter(lambda f: f.scm == 'svn' and f.Property('svn:eol-style') != 'LF',
-               input_api.AffectedSourceFiles(source_file_filter))
+  return CheckSvnProperty(input_api, output_api,
+                          'svn:eol-style', 'LF',
+                          input_api.AffectedSourceFiles(source_file_filter))
+
+
+def CheckSvnForCommonMimeTypes(input_api, output_api):
+  """Checks that common binary file types have the correct svn:mime-type."""
+  output = []
+  files = input_api.AffectedFiles(include_deletes=False)
+  def FilterFiles(extension):
+    return filter(lambda x: x.endswith(extension), files)
+  def JpegFiles():
+    return filter(lambda x: (x.endswith('.jpg') or x.endswith('.jpeg') or
+                             x.endswith('.jpe')),
+                  files)
+  def RunCheck(mime_type, files):
+    output.extend(CheckSvnProperty(input_api, output_api, 'svn:mime-type',
+                                   mime_type, files))
+  RunCheck('application/pdf', FilterFiles('.pdf'))
+  RunCheck('image/bmp', FilterFiles('.bmp'))
+  RunCheck('image/gif', FilterFiles('.gif'))
+  RunCheck('image/png', FilterFiles('.png'))
+  RunCheck('image/jpeg', JpegFiles())
+  RunCheck('image/vnd.microsoft.icon', FilterFiles('.ico'))
+  return output
+
+
+def CheckSvnProperty(input_api, output_api, prop, expected, affected_files):
+  """Checks that affected_files files have prop=expected."""
+  bad = filter(lambda f: f.scm == 'svn' and f.Property(prop) != expected,
+               affected_files)
   if bad:
     if input_api.is_committing:
-      return [output_api.PresubmitError(
-            "Run `svn pset svn:eol-style LF <item>` on these files:",
-            items=bad)]
+      type = output_api.PresubmitError
     else:
-      return [output_api.PresubmitNotifyResult(
-            "Run `svn pset svn:eol-style LF <item>` on these files:",
-            items=bad)]
+      type = output_api.PresubmitNotifyResult
+    message = "Run `svn pset %s %s <item>` on these files:" % (prop, expected)
+    return [type(message, items=bad)]
   return []
 
 

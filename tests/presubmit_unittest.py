@@ -998,6 +998,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
       'CheckChangeHasNoCrAndHasOnlyOneEol', 'CheckChangeHasNoTabs',
       'CheckChangeHasQaField', 'CheckChangeHasTestedField',
       'CheckChangeHasTestField', 'CheckChangeSvnEolStyle',
+      'CheckSvnForCommonMimeTypes', 'CheckSvnProperty',
       'CheckDoNotSubmit',
       'CheckDoNotSubmitInDescription', 'CheckDoNotSubmitInFiles',
       'CheckLongLines', 'CheckTreeIsOpen', 'RunPythonUnitTests',
@@ -1074,13 +1075,16 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results2[0].__class__, error_type)
 
   def SvnPropertyTest(self, check, property, value1, value2, committing,
-                      error_type):
+                      error_type, use_source_file):
     input_api1 = self.MockInputApi(None, committing)
     files1 = [
       presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
       presubmit.SvnAffectedFile('foo.cc', 'M'),
     ]
-    input_api1.AffectedSourceFiles(None).AndReturn(files1)
+    if use_source_file:
+      input_api1.AffectedSourceFiles(None).AndReturn(files1)
+    else:
+      input_api1.AffectedFiles(include_deleted=False).AndReturn(files1)
     presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo/bar.cc'),
                                      property).AndReturn(value1)
     presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
@@ -1090,7 +1094,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
       presubmit.SvnAffectedFile('foo/bar.cc', 'A'),
       presubmit.SvnAffectedFile('foo.cc', 'M'),
     ]
-    input_api2.AffectedSourceFiles(None).AndReturn(files2)
+    if use_source_file:
+      input_api2.AffectedSourceFiles(None).AndReturn(files2)
+    else:
+      input_api2.AffectedFiles(include_deleted=False).AndReturn(files2)
+    
     presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo/bar.cc'),
                                      property).AndReturn(value2)
     presubmit.gcl.GetSVNFileProperty(presubmit.normpath('foo.cc'),
@@ -1190,14 +1198,45 @@ class CannedChecksUnittest(PresubmitTestsBase):
                      presubmit.OutputApi.PresubmitPromptWarning)
 
   def testCheckChangeSvnEolStyleCommit(self):
+    # Test CheckSvnProperty at the same time.
     self.SvnPropertyTest(presubmit_canned_checks.CheckChangeSvnEolStyle,
                          'svn:eol-style', 'LF', '', True,
-                         presubmit.OutputApi.PresubmitError)
+                         presubmit.OutputApi.PresubmitError, True)
 
   def testCheckChangeSvnEolStyleUpload(self):
     self.SvnPropertyTest(presubmit_canned_checks.CheckChangeSvnEolStyle,
                          'svn:eol-style', 'LF', '', False,
-                         presubmit.OutputApi.PresubmitNotifyResult)
+                         presubmit.OutputApi.PresubmitNotifyResult, True)
+
+  def testCheckSvnForCommonMimeTypes(self):
+    self.mox.StubOutWithMock(presubmit_canned_checks, 'CheckSvnProperty')
+    input_api = self.MockInputApi(None, False)
+    output_api = presubmit.OutputApi()
+    input_api.AffectedFiles(include_deletes=False).AndReturn([
+        'a.pdf', 'b.bmp', 'c.gif', 'd.png', 'e.jpg', 'f.ico'])
+    presubmit_canned_checks.CheckSvnProperty(
+        input_api, output_api, 'svn:mime-type', 'application/pdf', ['a.pdf']
+        ).AndReturn([1])
+    presubmit_canned_checks.CheckSvnProperty(
+        input_api, output_api, 'svn:mime-type', 'image/bmp', ['b.bmp']
+        ).AndReturn([2])
+    presubmit_canned_checks.CheckSvnProperty(
+        input_api, output_api, 'svn:mime-type', 'image/gif', ['c.gif']
+        ).AndReturn([3])
+    presubmit_canned_checks.CheckSvnProperty(
+        input_api, output_api, 'svn:mime-type', 'image/png', ['d.png']
+        ).AndReturn([4])
+    presubmit_canned_checks.CheckSvnProperty(
+        input_api, output_api, 'svn:mime-type', 'image/jpeg', ['e.jpg']
+        ).AndReturn([5])
+    presubmit_canned_checks.CheckSvnProperty(
+        input_api, output_api, 'svn:mime-type', 'image/vnd.microsoft.icon',
+        ['f.ico']).AndReturn([6])
+    self.mox.ReplayAll()
+
+    results = presubmit_canned_checks.CheckSvnForCommonMimeTypes(
+        input_api, output_api)
+    self.assertEquals(results, [1, 2, 3, 4, 5, 6])
 
   def testCannedCheckTreeIsOpenOpen(self):
     input_api = self.MockInputApi(None, True)
