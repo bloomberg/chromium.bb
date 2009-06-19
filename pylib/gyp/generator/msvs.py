@@ -556,6 +556,11 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       _ToolAppend(tools, 'VCCLCompilerTool',
                   'ForcedIncludeFiles', header)
 
+    # Loadable modules don't generate import libraries;
+    # tell dependent projects to not expect one.
+    if spec['type'] == 'loadable_module':
+      _ToolAppend(tools, 'VCLinkerTool', 'IgnoreImportLibrary', 'true')
+
     # Set the module definition file if any.
     if spec['type'] in ['shared_library', 'loadable_module']:
       def_files = [s for s in spec.get('sources', []) if s.endswith('.def')]
