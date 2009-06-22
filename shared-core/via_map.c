@@ -65,17 +65,7 @@ static int via_do_init_map(struct drm_device * dev, drm_via_init_t * init)
 #ifdef VIA_HAVE_DMABLIT
 	via_init_dmablit( dev );
 #endif
-#ifdef VIA_HAVE_FENCE
-	dev_priv->emit_0_sequence = 0;
-	dev_priv->have_idlelock = 0;
-	spin_lock_init(&dev_priv->fence_lock);
-#endif /* VIA_HAVE_FENCE */
 	dev->dev_private = (void *)dev_priv;
-#ifdef VIA_HAVE_BUFFER
-	ret = drm_bo_driver_init(dev);
-	if (ret)
-		DRM_ERROR("Could not initialize buffer object driver.\n");
-#endif
 	return ret;
 
 }

@@ -155,8 +155,6 @@ typedef unsigned long uintptr_t;
 #define DRM_MEM_MM        22
 #define DRM_MEM_HASHTAB   23
 #define DRM_MEM_OBJECTS   24
-#define DRM_MEM_FENCE     25
-#define DRM_MEM_TTM       26
 #define DRM_MEM_BUFOBJ    27
 
 #define DRM_MAX_CTXBITMAP (PAGE_SIZE * 8)
@@ -660,8 +658,6 @@ struct drm_gem_object {
 	void *driver_private;
 };
 
-#include "drm_objects.h"
-
 /**
  * DRM driver structure. This structure represent the common code for
  * a family of cards. There will one drm_device for each card present
@@ -855,10 +851,6 @@ struct drm_device {
 	struct list_head maplist;	/**< Linked list of regions */
 	int map_count;			/**< Number of mappable regions */
 	struct drm_open_hash map_hash;       /**< User token hash table for maps */
-	struct drm_mm offset_manager;        /**< User token manager */
-	struct drm_open_hash object_hash;    /**< User token hash table for objects */
-	struct address_space *dev_mapping;  /**< For unmap_mapping_range() */
-	struct page *ttm_dummy_page;
 
 	/** \name Context handle management */
 	/*@{ */
@@ -953,9 +945,6 @@ struct drm_device {
 	unsigned int agp_buffer_token;
 	struct drm_minor *primary;		/**< render type primary screen head */
 
-	struct drm_fence_manager fm;
-	struct drm_buffer_manager bm;
-
 	/** \name Drawable information */
 	/*@{ */
 	spinlock_t drw_lock;
@@ -977,15 +966,6 @@ struct drm_device {
 	uint32_t flush_domains;		/* domains pending flush */
 	/*@} */
 };
-
-#if __OS_HAS_AGP
-struct drm_agp_ttm_backend {
-	struct drm_ttm_backend backend;
-	DRM_AGP_MEM *mem;
-	struct agp_bridge_data *bridge;
-	int populated;
-};
-#endif
 
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
@@ -1279,7 +1259,6 @@ extern DRM_AGP_MEM *drm_agp_allocate_memory(struct agp_bridge_data *bridge, size
 extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
-extern struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev);
 extern void drm_agp_chipset_flush(struct drm_device *dev);
 				/* Stub support (drm_stub.h) */
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,

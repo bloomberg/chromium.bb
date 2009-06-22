@@ -62,8 +62,6 @@
  */
 #define VIA_HAVE_DMABLIT 1
 #define VIA_HAVE_CORE_MM 1
-#define VIA_HAVE_FENCE   1
-#define VIA_HAVE_BUFFER  1
 #endif
 
 #define VIA_PCI_BUF_SIZE 60000
@@ -194,18 +192,6 @@ extern int via_init_context(struct drm_device * dev, int context);
 #ifdef VIA_HAVE_DMABLIT
 extern void via_dmablit_handler(struct drm_device *dev, int engine, int from_irq);
 extern void via_init_dmablit(struct drm_device *dev);
-#endif
-
-#ifdef VIA_HAVE_BUFFER
-extern struct drm_ttm_backend *via_create_ttm_backend_entry(struct drm_device *dev);
-extern int via_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
-			   uint32_t *type);
-extern int via_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
-extern int via_init_mem_type(struct drm_device *dev, uint32_t type,
-			       struct drm_mem_type_manager *man);
-extern uint64_t via_evict_flags(struct drm_buffer_object *bo);
-extern int via_move(struct drm_buffer_object *bo, int evict,
-		int no_wait, struct drm_bo_mem_reg *new_mem);
 #endif
 
 #endif

@@ -37,10 +37,6 @@ static struct pci_device_id pciidlist[] = {
 	xgi_PCI_IDS
 };
 
-#ifdef XGI_HAVE_FENCE
-extern struct drm_fence_driver xgi_fence_driver;
-#endif /* XGI_HAVE_FENCE */
-
 int xgi_bootstrap(struct drm_device *, void *, struct drm_file *);
 
 static struct drm_ioctl_desc xgi_ioctls[] = {
@@ -104,10 +100,6 @@ static struct drm_driver driver = {
 		.probe = probe,
 		.remove = __devexit_p(drm_cleanup_pci),
 	},
-
-#ifdef XGI_HAVE_FENCE
-	.fence_driver = &xgi_fence_driver,
-#endif /* XGI_HAVE_FENCE */
 
 	.name = DRIVER_NAME,
 	.desc = DRIVER_DESC,
@@ -362,9 +354,6 @@ irqreturn_t xgi_kern_isr(DRM_IRQ_ARGS)
 		DRM_WRITE32(info->mmio_map,
 			    0x2800 + M2REG_AUTO_LINK_SETTING_ADDRESS,
 			    cpu_to_le32(M2REG_AUTO_LINK_SETTING_COMMAND | irq_bits));
-#ifdef XGI_HAVE_FENCE
-		xgi_fence_handler(dev);
-#endif /* XGI_HAVE_FENCE */
 		DRM_WAKEUP(&info->fence_queue);
 		return IRQ_HANDLED;
 	} else {

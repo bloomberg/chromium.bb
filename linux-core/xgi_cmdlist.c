@@ -148,9 +148,6 @@ int xgi_submit_cmdlist(struct drm_device * dev, void * data,
 	}
 
 	info->cmdring.last_ptr = xgi_find_pcie_virt(info, pCmdInfo->hw_addr);
-#ifdef XGI_HAVE_FENCE
-	drm_fence_flush_old(info->dev, 0, info->next_sequence);
-#endif /* XGI_HAVE_FENCE */
 	return 0;
 }
 

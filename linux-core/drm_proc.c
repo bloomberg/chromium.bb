@@ -49,8 +49,6 @@ static int drm_queues_info(char *buf, char **start, off_t offset,
 			   int request, int *eof, void *data);
 static int drm_bufs_info(char *buf, char **start, off_t offset,
 			 int request, int *eof, void *data);
-static int drm_objects_info(char *buf, char **start, off_t offset,
-			 int request, int *eof, void *data);
 static int drm_gem_name_info(char *buf, char **start, off_t offset,
 			     int request, int *eof, void *data);
 static int drm_gem_object_info(char *buf, char **start, off_t offset,
@@ -73,7 +71,6 @@ static struct drm_proc_list {
 	{"clients", drm_clients_info},
 	{"queues", drm_queues_info},
 	{"bufs", drm_bufs_info},
-	{"objects", drm_objects_info},
 	{"gem_names", drm_gem_name_info},
 	{"gem_objects", drm_gem_object_info},
 #if DRM_DEBUG_CODE
@@ -427,105 +424,6 @@ static int drm_bufs_info(char *buf, char **start, off_t offset, int request,
 
 	mutex_lock(&dev->struct_mutex);
 	ret = drm__bufs_info(buf, start, offset, request, eof, data);
-	mutex_unlock(&dev->struct_mutex);
-	return ret;
-}
-
-/**
- * Called when "/proc/dri/.../objects" is read.
- *
- * \param buf output buffer.
- * \param start start of output data.
- * \param offset requested start offset.
- * \param request requested number of bytes.
- * \param eof whether there is no more data to return.
- * \param data private data.
- * \return number of written bytes.
- */
-static int drm__objects_info(char *buf, char **start, off_t offset, int request,
-			  int *eof, void *data)
-{
-	struct drm_minor *minor = (struct drm_minor *) data; 
-	struct drm_device *dev = minor->dev;
-	int len = 0;
-	struct drm_buffer_manager *bm = &dev->bm;
-	struct drm_fence_manager *fm = &dev->fm;
-	uint64_t used_mem;
-	uint64_t used_emer;
-	uint64_t low_mem;
-	uint64_t high_mem;
-	uint64_t emer_mem;
-
-	if (offset > DRM_PROC_LIMIT) {
-		*eof = 1;
-		return 0;
-	}
-
-	*start = &buf[offset];
-	*eof = 0;
-
-	DRM_PROC_PRINT("Object accounting:\n\n");
-	if (fm->initialized) {
-		DRM_PROC_PRINT("Number of active fence objects: %d.\n",
-			       atomic_read(&fm->count));
-	} else {
-		DRM_PROC_PRINT("Fence objects are not supported by this driver\n");
-	}
-
-	if (bm->initialized) {
-		DRM_PROC_PRINT("Number of active buffer objects: %d.\n\n",
-			       atomic_read(&bm->count));
-	}
-	DRM_PROC_PRINT("Memory accounting:\n\n");
-	if (bm->initialized) {
-		DRM_PROC_PRINT("Number of locked GATT pages: %lu.\n", bm->cur_pages);
-	} else {
-		DRM_PROC_PRINT("Buffer objects are not supported by this driver.\n");
-	}
-
-	drm_query_memctl(&used_mem, &used_emer, &low_mem, &high_mem, &emer_mem);
-
-	if (used_mem > 16*PAGE_SIZE) {
-		DRM_PROC_PRINT("Used object memory is %lu pages.\n",
-			       (unsigned long) (used_mem >> PAGE_SHIFT));
-	} else {
-		DRM_PROC_PRINT("Used object memory is %lu bytes.\n",
-			       (unsigned long) used_mem);
-	}
-	if (used_emer > 16*PAGE_SIZE) {
-		DRM_PROC_PRINT("Used emergency memory is %lu pages.\n",
-			       (unsigned long) (used_emer >> PAGE_SHIFT));
-	} else {
-		DRM_PROC_PRINT("Used emergency memory is %lu bytes.\n\n",
-			       (unsigned long) used_emer);
-	}
-	DRM_PROC_PRINT("Soft object memory usage threshold is %lu pages.\n",
-		       (unsigned long) (low_mem >> PAGE_SHIFT));
-	DRM_PROC_PRINT("Hard object memory usage threshold is %lu pages.\n",
-		       (unsigned long) (high_mem >> PAGE_SHIFT));
-	DRM_PROC_PRINT("Emergency root only memory usage threshold is %lu pages.\n",
-		       (unsigned long) (emer_mem >> PAGE_SHIFT));
-
-	DRM_PROC_PRINT("\n");
-
-	if (len > request + offset)
-		return request;
-	*eof = 1;
-	return len - offset;
-}
-
-/**
- * Simply calls _objects_info() while holding the drm_device::struct_mutex lock.
- */
-static int drm_objects_info(char *buf, char **start, off_t offset, int request,
-			 int *eof, void *data)
-{
-	struct drm_minor *minor = (struct drm_minor *) data; 
-	struct drm_device *dev = minor->dev;
-	int ret;
-
-	mutex_lock(&dev->struct_mutex);
-	ret = drm__objects_info(buf, start, offset, request, eof, data);
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }

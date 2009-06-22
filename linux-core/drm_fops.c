@@ -152,13 +152,6 @@ int drm_open(struct inode *inode, struct file *filp)
 	}
 
 out:
-	mutex_lock(&dev->struct_mutex);
-	BUG_ON((dev->dev_mapping != NULL) &&
-	       (dev->dev_mapping != inode->i_mapping));
-	if (dev->dev_mapping == NULL)
-		dev->dev_mapping = inode->i_mapping;
-	mutex_unlock(&dev->struct_mutex);
-
 	return retcode;
 }
 EXPORT_SYMBOL(drm_open);
@@ -332,33 +325,6 @@ int drm_fasync(int fd, struct file *filp, int on)
 }
 EXPORT_SYMBOL(drm_fasync);
 
-static void drm_object_release(struct file *filp)
-{
-	struct drm_file *priv = filp->private_data;
-	struct list_head *head;
-	struct drm_ref_object *ref_object;
-	int i;
-
-	/*
-	 * Free leftover ref objects created by me. Note that we cannot use
-	 * list_for_each() here, as the struct_mutex may be temporarily
-	 * released by the remove_() functions, and thus the lists may be
-	 * altered.
-	 * Also, a drm_remove_ref_object() will not remove it
-	 * from the list unless its refcount is 1.
-	 */
-
-	head = &priv->refd_objects;
-	while (head->next != head) {
-		ref_object = list_entry(head->next, struct drm_ref_object, list);
-		drm_remove_ref_object(priv, ref_object);
-		head = &priv->refd_objects;
-	}
-
-	for (i = 0; i < _DRM_NO_REF_TYPES; ++i)
-		drm_ht_remove(&priv->refd_object_hash[i]);
-}
-
 /**
  * Release file.
  *
@@ -475,7 +441,6 @@ int drm_release(struct inode *inode, struct file *filp)
 	mutex_unlock(&dev->ctxlist_mutex);
 
 	mutex_lock(&dev->struct_mutex);
-	drm_object_release(filp);
 	if (file_priv->remove_auth_on_close == 1) {
 		struct drm_file *temp;
 

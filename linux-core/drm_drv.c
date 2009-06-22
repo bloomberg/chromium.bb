@@ -121,36 +121,6 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 
 	DRM_IOCTL_DEF(DRM_IOCTL_UPDATE_DRAW, drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl,
-		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_CREATE, drm_fence_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_REFERENCE, drm_fence_reference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_UNREFERENCE, drm_fence_unreference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_SIGNALED, drm_fence_signaled_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_FLUSH, drm_fence_flush_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_WAIT, drm_fence_wait_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_EMIT, drm_fence_emit_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_BUFFERS, drm_fence_buffers_ioctl, DRM_AUTH),
-
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_CREATE, drm_bo_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_MAP, drm_bo_map_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNMAP, drm_bo_unmap_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_REFERENCE, drm_bo_reference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNREFERENCE, drm_bo_unreference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_SETSTATUS, drm_bo_setstatus_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_INFO, drm_bo_info_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_WAIT_IDLE, drm_bo_wait_idle_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_VERSION, drm_bo_version_ioctl, 0),
-
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INFO, drm_mm_info_ioctl, 0),
-
 #if OS_HAS_GEM
 	DRM_IOCTL_DEF(DRM_IOCTL_GEM_CLOSE, drm_gem_close_ioctl, 0),
 	DRM_IOCTL_DEF(DRM_IOCTL_GEM_FLINK, drm_gem_flink_ioctl, DRM_AUTH),
@@ -182,8 +152,6 @@ int drm_lastclose(struct drm_device * dev)
 	/*
 	 * We can't do much about this function failing.
 	 */
-
-	drm_bo_driver_finish(dev);
 
 	if (dev->driver->lastclose)
 		dev->driver->lastclose(dev);
@@ -283,7 +251,6 @@ int drm_lastclose(struct drm_device * dev)
 		dev->lock.file_priv = NULL;
 		wake_up_interruptible(&dev->lock.lock_queue);
 	}
-	dev->dev_mapping = NULL;
 	mutex_unlock(&dev->struct_mutex);
 
 	DRM_DEBUG("lastclose completed\n");
@@ -398,7 +365,6 @@ static void drm_cleanup(struct drm_device * dev)
 	}
 
 	drm_lastclose(dev);
-	drm_fence_manager_takedown(dev);
 
 	drm_vblank_cleanup(dev);
 
@@ -423,8 +389,6 @@ static void drm_cleanup(struct drm_device * dev)
 
 	drm_ctxbitmap_cleanup(dev);
 	drm_ht_remove(&dev->map_hash);
-	drm_mm_takedown(&dev->offset_manager);
-	drm_ht_remove(&dev->object_hash);
 
 	drm_put_minor(dev);
 	if (drm_put_dev(dev))
