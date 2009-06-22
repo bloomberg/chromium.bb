@@ -447,7 +447,7 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 		d = div(i, width);
 		fb_ptr[i] = 0x00130502 * (d.quot >> 6) + 0x000a1120 * (d.rem >> 6);
 	}
-	drm_intel_bo_unmap(bo);
+	drm_intel_gem_bo_unmap_gtt(bo);
 
 	*bo_out = bo;
 	*stride_out = stride;
