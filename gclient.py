@@ -1354,7 +1354,8 @@ class GClient(object):
       for entry in prev_entries:
         e_dir = os.path.join(self._root_dir, entry)
         if entry not in entries and os.path.exists(e_dir):
-          if not options.delete_unversioned_trees or CaptureSVNStatus(e_dir):
+          if not self._options.delete_unversioned_trees or \
+             CaptureSVNStatus(e_dir):
             # There are modified files in this entry
             entries[entry] = None  # Keep warning until removed.
             print("\nWARNING: \"%s\" is no longer part of this client.  "
