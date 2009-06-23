@@ -1347,14 +1347,14 @@ class GClient(object):
     self._RunHooks(command, file_list, is_using_git)
 
     if command == 'update':
-      # notify the user if there is an orphaned entry in their working copy.
-      # TODO(darin): we should delete this directory manually if it doesn't
-      # have any changes in it.
+      # Notify the user if there is an orphaned entry in their working copy.
+      # Only delete the directory if there are no changes in it, and
+      # delete_unversioned_trees is set to true.
       prev_entries = self._ReadEntries()
       for entry in prev_entries:
         e_dir = os.path.join(self._root_dir, entry)
         if entry not in entries and os.path.exists(e_dir):
-          if CaptureSVNStatus(e_dir):
+          if not options.delete_unversioned_trees or CaptureSVNStatus(e_dir):
             # There are modified files in this entry
             entries[entry] = None  # Keep warning until removed.
             print("\nWARNING: \"%s\" is no longer part of this client.  "
@@ -1704,6 +1704,10 @@ def Main(argv):
   option_parser.add_option("", "--head", action="store_true", default=False,
                            help=("skips any safesync_urls specified in "
                                  "configured solutions"))
+  option_parser.add_option("", "--delete_unversioned_trees",
+                           action="store_true", default=False,
+                           help=("on update, delete any unexpected "
+                                 "unversioned trees that are in the checkout"))
 
   if len(argv) < 2:
     # Users don't need to be told to use the 'help' command.
