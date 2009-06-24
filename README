@@ -1,11 +1,229 @@
                               Fontconfig
              Font configuration and customization library
-                              Version 2.6
-                              2008-05-31
+                              Version 2.7
+                              2009-06-24
 
 
 Check INSTALL for compilation and installation instructions.
 Report bugs to https://bugs.freedesktop.org in the fontconfig module.
+
+2.7
+
+Alexey Khoroshilov (1):
+      Use human-readable file names in the docs (bug #16278)
+
+Behdad Esfahbod (119):
+      Avoid C99ism in Win32 code (#16651)
+      [doc] Fix inaccuracy in FcFontRenderPrepare docs (#16985)
+      When canonizing filenames, squash // and remove final / (#bug 16286)
+      Add orth file for Maithili mai.orth (#15821)
+      Replace RCS Id tags with the file name
+      [doc] Fix signatures of FcPatternGetFTFace and FcPatternGetLangSet (#16272)
+      Update Thai default families (#16223)
+      Add ~/.fonts.conf.d to default config (#17100)
+      [fc-match] Fix list of getopt options in --help
+      Update man pages
+      Add fc-query (#13019)
+      Implement fc-list --verbose (#13015)
+      [doc] Add const decorator for FcPatternDuplicate()
+      Add FcPatternFilter() (#13016)
+      [doc] Document that a zero rescanInterval disables automatic checks (#17103)
+      Get rid of $Id$ tags
+      [doc] Fix signature of FcConfigHome()
+      Fix docs re 'orig' argument of FcPatternBuild and family
+      Update sr.orth to actul subset of Cyrillic used by Serbian (#17208)
+      Add Sindhi .orth file. (#17140)
+      Add WenQuanYi fonts to default conf (#17262, from Mandriva)
+      Handle -h and --help according to GNU Coding Standards (#17104)
+      Document when config can be NULL (#17105)
+      Add FcConfigReference() (#17124)
+      Document how to free return value of FcNameUnparse()
+      Don't leak FcValues string loaded through fcxml.c (#17661)
+      Don't call FcPatternGetCharSet in FcSortWalk unless we need to (#17361)
+      Fix two more doc typos
+      [.gitignore] Update
+      Cleanup symlinks in "make uninstall" (bug #18885)
+      [fccache] Consistently use FcStat() over stat() (bug #18195)
+      Consistently use FcStat() over stat() in all places
+      Use __builtin_popcount() when available (bug #17592)
+      Fix compile with old FreeType that doesn't have FT_Select_Size() (bug #17498)
+      Implement fc-list --quiet ala grep (bug #17141)
+      [65-fonts-persian.conf] Set foundry in target=scan instead of target=font
+      Don't use identifier named complex
+      Explicitly chmod() directories (bug #18934)
+      Remove special-casing of FC_FILE in FcPatternPrint()
+      [.gitignore] Update
+      Implement FcPatternFormat and use it in cmdline tools (bug #17107)
+      Fix comparison of family names to ignore leading space properly
+      [fcmatch.c] Fix debug formatting
+      [fcmatch] Use larger multipliers to enforce order
+      [fcmatch] When matching, reserve score 0 for when elements don't exist
+      [fcmatch] Move FcFontSetMatch() functionality into FcFontSetMatchInternal()
+      [doc] Note that fontset returned by FcConfigGetFonts should not be modified
+      Make FcCharSetMerge() public
+      Don't use FcCharSetCopy in FcCharSetMerge
+      Oops.  Fix usage output.
+      Revive FcConfigScan() (bug #17121)
+      Add fc-scan too that runs FcFileScan/FcDirScan
+      Oops, fix FcPatternFilter
+      [fc-match] Accept list of elements like fc-list (bug #13017)
+      Cleanup all manpage.* files
+      [fcmatch] Fix crash when no fonts are available.
+      [fcfreetype] Fix typo in GB2312 encoding name string (#19845)
+      Add ICONV_LIBS to fontconfig.pc.in (#19606)
+      [win32] Fix usage of GetFullPathName()
+      [win32] Expand "APPSHAREFONTDIR" to ../share/fonts relative to binary location
+      [win32] Do not remove leading '\\' such that network paths work
+      [fccache] Make sure the cache is current when reusing from open caches
+      Update Sinhala orthography (#19288)
+      [cache] After writing cache to file, update the internal copy to reflect this
+      Further update Sinhala orthography (#19288)
+      [fcformat] Add support for width modifiers
+      [fcformat] Refactor and restructure code for upcoming changes
+      [fcformat] Add support for subexpressions
+      [fcformat] Add element filtering and deletion
+      [fcformat] Add conditionals
+      [fcformat] Add simple converters
+      [fcformat] Implement 'cescape', 'shescape', and 'xmlescape' converters
+      [FcStrBuf] better handle malloc failure
+      [fcformat] Add value-count syntax
+      [fcformat] Implement 'delete', 'escape', and 'translate' filter functions
+      [fcformat] Start adding builtins
+      [fcformat] Refactor code to avoid malloc
+      [fcformat] Add support for builtin formats
+      [fcformat] Support indexing simple tags
+      [fcformat] Support 'default value' for simple tags
+      [fcformat] Implement array enumeration
+      [fclang] Implement FcLangSetGetLangs() (#18846)
+      [fcformat] Enumerate langsets like we do arrays of values
+      [fcformat] Add a 'pkgkit' builtin that prints tags for font packages
+      [fcformat] Add list of undocumented language features
+      [fc-lang] Continue parsing after an "include" (#20179)
+      Fix Fanti (fat) orth file (#20390)
+      Fix Makefile's to not create target file in case of failure
+      [fcstr.c] Embed a static 64-byte buffer in FcStrBuf
+      [fcstr,fcxml] Don't copy FcStrBuf contents when we would free it soon
+      [fcxml] Don't allocate attr array if there are no attributes
+      [fcxml] Embed 8 static FcPStack objects in FcConfigParse
+      [fcxml] Embed 64 static FcVStack objects in FcConfigParse
+      [fcxml.c] Embed a static 64-byte attr buffer in FcPStack
+      Call git tools using "git cmd" instead of "git-cmd" syntax
+      Replace 'KEITH PACKARD' with 'THE AUTHOR(S)' in license text in all files
+      [fcformat] Fix default-value handling
+      Document FcPatternFormat() format
+      [Makefile.am] Don't clean ChangeLog in distclean
+      Revert "[conf] Disable hinting when emboldening (#19904)" (#20599)
+      [fc-lang] Fix bug in country map generation
+      [fcstr] Remove unused variable
+      [fc-lang] Make LangSet representation in the cache files stable
+      [fc-cache] Remove obsolete sentence from man page
+      Detect TrueType Collections by checking the font data header
+      Mark matchers array const (#21935)
+      Use/prefer WWS family/style (name table id 21/22)
+      Simplify FcValueSave() semantics
+      Add XXX note about Unicode Plane 16
+      Always set *changed in FcCharsetMerge
+      [charset] Grow internal FcCharset arrays exponentially
+      Remove unused prototypes and function
+      [xml] Centralize FcExpr allocation
+      [xml] Mark more symbols static
+      [xml] Allocate FcExpr's in a pool in FcConfig
+      [xml] Intern more strings
+      Bug 22154 -- fontconfig.pc doesn't include libxml2 link flags
+      Fix distcheck
+      Remove keithp's GPG key id
+
+Benjamin Close (1):
+      Remove build manpage logfile if it exists
+
+Chris Wilson (1):
+      Reduce number of allocations during FcSortWalk().
+
+Dan Nicholson (1):
+      Let make expand fc_cachedir/FC_CACHEDIR (bug #18675)
+
+Harald Fernengel (1):
+      Don't use variables named 'bool' (bug #18851)
+
+Harshula Jayasuriya (1):
+      Fix Sinhala coverage (bug #19288)
+
+Karl Tomlinson (1):
+      Change FcCharSetMerge API
+
+Mike FABIAN (1):
+      [conf] Disable hinting when emboldening (#19904)
+
+Peter (1):
+      Make sure alias files are built first (bug 16464)
+
+Rahul Bhalerao (1):
+      Add config for new Indic fonts (bug #17856)
+
+Roozbeh Pournader (60):
+      Correct Sindhi orthography to use Arabic script (bug #17140)
+      Remove Sinhala characters not in modern use (bug #19288)
+      Add Filipino orth, alias Tagalog to Filipino (bug #19846)
+      Split Mongolian orth to Mongolia and China (bug #19847)
+      Fix doubly encoded UTF-8 in comments (bug #19848)
+      Change Turkmen orth from Cyrillic to Latin (bug #19849)
+      Rename Venda from "ven" to "ve" (bug #19852)
+      Rename "ku" to "ku_am", add "ku_iq" (bug #19853).
+      Add Kashubian (csb) orth file (bug #19866)
+      Add Malay (ms) orthography (bug #19867)
+      Add Kinyarwanda (rw) orthography (bug #19868)
+      Add Upper Sorbian (hsb) orthography (bug #19870)
+      Add Berber orthographies in Latin and Tifinagh scripts (bug #19881)
+      Renamed az to az_az (bug #19889)
+      Rename Igbo from "ibo" to "ig" (bug #19892)
+      Remove punctuation symbols from Asturian orthography (bug #19893)
+      Add Chhattisgarhi (hne) orthography (bug #19891)
+      Use newly added Cyrillic letters for Kurdish (bug #20049)
+      Add Kurdish in Turkey (ku_tr) orthography (bug #19891)
+      Add Aragonese (an) orthography (bug #19891)
+      Add Haitian Creole (ht) orthography (bug #19891)
+      Ad Ganda (lg) orthography (bug #19891)
+      Add Limburgan (li) orthography (bug #19891)
+      Add Sardinian (sc) orthography (bug #19891)
+      Add Sidamo (sid) and Wolaitta (wal) orthographies (bug #19891)
+      Fix Bengali (bn) and Assamese (as) orthographies (bug #22924)
+      Remove Euro Sign from all orthographies (bug #19865)
+      Add Ottoman Turkish (ota) orthography (bug #20114)
+      Divide Panjabi (pa) to that of Pakistan and India (bug #19890)
+      Add Blin (byn) orthography (bug #19891)
+      Add Papiamento (pap_aw, pap_an) orthographies (bug #19891)
+      Add Crimean Tatar (crh) orthography (bug #19891)
+      Switch Uzbek (uz) orthography to Latin (bug #19851)
+      Update Azerbaijani in Latin (az_az) to present usage (bug #20173)
+      Rename Avaric orthography from 'ava' to 'av' (bug #20174)
+      Rename Bambara orthography from 'bam' to 'bm' (bug #20175)
+      Rename Fulah orthography from 'ful' to 'ff' (bug #20177)
+      Change Kashmiri (ks) orthography to Arabic script (bug #20200)
+      Tighten Central Khmer (km) orthography (bug #20202)
+      Remove digits and symbols from some Indic orthographies (bug #20204)
+      Add Divehi (dv) orthography (bug #20207)
+      Extend Crimean Tatar (crh) orthography (bug #19891)
+      Update Serbo-Croatian (sh) orthography (bug #20368)
+      Add Ewe (ee) orthography (bug #20386)
+      Add Herero (hz) orthograhy (bug #20387)
+      Add Akan (ak) and Fanti (fat) orthographies (bug #20390)
+      Added Quechua (qu) orthography (bug #20392)
+      Add Sango (sg) orthography (bug #20393)
+      Add Tahitian (ty) orthography (bug #20391)
+      Add Navajo (nv) orthography (bug #20395)
+      Add Rundi (rn) orthography (bug #20398)
+      Add Zhuang (za) orthography (bug #20399)
+      Add orthographies for Oshiwambo languages (bug #20401)
+      Add Shona (sn) orthography (bug #20394)
+      Add Sichuan Yi (ii) orthography (bug #20402)
+      Add Javanese (jv) orthography (bug #20403)
+      Add Nauru (na) orthography (bug #20418)
+      Add Kanuri (kr) orthography (bug #20438)
+      Add Sundanese (su) orthography (bug #20440)
+      Reorganize Panjabi/Punjabi and Lahnda orthographies (bug #19890)
+
+Serge van den Boom (1):
+      Correctly handle mmap() failure (#21062)
 
 2.6
 
