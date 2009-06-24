@@ -63,11 +63,10 @@ endif
 
 # Creating ChangeLog from git log:
 
-MAINTAINERCLEANFILES += ChangeLog
-
+MAINTAINERCLEANFILES += $(srcdir)/ChangeLog
 EXTRA_DIST += ChangeLog
-
-ChangeLog:
+ChangeLog: $(srcdir)/ChangeLog
+$(srcdir)/ChangeLog:
 	if test -d "$(srcdir)/.git"; then \
 	  (GIT_DIR=$(top_srcdir)/.git ./missing --run git log --stat) | fmt --split-only > $@.tmp \
 	  && mv -f $@.tmp $@ \
