@@ -110,7 +110,7 @@ $test git commit -m"Bump version to $version" \
 	README
 
 # tag the tree
-$test git tag -m "Version $version" $version
+$test git tag -s -m "Version $version" $version
 
 # Make distributed change log
 
