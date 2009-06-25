@@ -10,7 +10,7 @@ base_dir=$(dirname "$0")
 # Update git checkouts prior the cygwin check, we don't want to use msysgit.
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
 then
-  (cd "$base_dir"; git svn fetch -q; git merge trunk -q)
+  (cd "$base_dir"; git svn rebase -q -q)
 fi
 
 if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/git-cl-repo/.git" ]
