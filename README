@@ -14,6 +14,10 @@ This package contains:
   chrome-update-create-task.bat
     Creates a scheduled task to do an automatic local chromium build every day.
 
+  cpplint.py
+    A copy of our linting tool which enforces Google style. Fetched from
+    http://google-styleguide.googlecode.com/svn/trunk/cpplint/cpplint.py
+
   gcl
     A tool for uploading and managing code reviews on the Chromium
     project, using the Rietveld code review tool.  More info at:
