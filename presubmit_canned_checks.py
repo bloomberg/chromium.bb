@@ -256,35 +256,53 @@ def CheckTreeIsOpen(input_api, output_api, url, closed):
   return []
 
 
-def _RunPythonUnitTests_LoadTests(input_api, module_name):
-  """Meant to be stubbed out during unit testing."""
-  module = __import__(module_name)
-  for part in module_name.split('.')[1:]:
-    module = getattr(module, part)
-  return input_api.unittest.TestLoader().loadTestsFromModule(module)._tests
-
-
 def RunPythonUnitTests(input_api, output_api, unit_tests):
-  """Imports the unit_tests modules and run them."""
+  """Run the unit tests out of process, capture the output and use the result
+  code to determine success.
+  """
   # We don't want to hinder users from uploading incomplete patches.
   if input_api.is_committing:
     message_type = output_api.PresubmitError
   else:
     message_type = output_api.PresubmitNotifyResult
-  tests_suite = []
   outputs = []
   for unit_test in unit_tests:
-    try:
-      tests_suite.extend(_RunPythonUnitTests_LoadTests(input_api, unit_test))
-    except ImportError:
-      outputs.append(message_type("Failed to load %s" % unit_test,
-                                  long_text=input_api.traceback.format_exc()))
-
-  buffer = input_api.cStringIO.StringIO()
-  results = input_api.unittest.TextTestRunner(stream=buffer, verbosity=0).run(
-      input_api.unittest.TestSuite(tests_suite))
-  if not results.wasSuccessful():
-    outputs.append(message_type("%d unit tests failed." %
-                                (len(results.failures) + len(results.errors)),
-                                long_text=buffer.getvalue()))
-  return outputs
+    # Run the unit tests out of process. This is because some unit tests
+    # stub out base libraries and don't clean up their mess. It's too easy to
+    # get subtle bugs.
+    cwd = None
+    env = None
+    unit_test_name = unit_test
+    # "python -m test.unit_test" doesn't work. We need to change to the right
+    # directory instead.
+    if '.' in unit_test:
+      # Tests imported in submodules (subdirectories) assume that the current
+      # directory is in the PYTHONPATH. Manually fix that.
+      unit_test = unit_test.replace('.', '/')
+      cwd = input_api.os_path.dirname(unit_test)
+      unit_test = input_api.os_path.basename(unit_test)
+      env = input_api.environ.copy()
+      backpath = [';'.join(['..'] * (cwd.count('/') + 1))]
+      if env.get('PYTHONPATH'):
+        backpath.append(env.get('PYTHONPATH'))
+      env['PYTHONPATH'] = ';'.join((backpath))
+    subproc = input_api.subprocess.Popen(
+        [
+          input_api.python_executable,
+          "-m",
+          "%s" % unit_test
+        ],
+        cwd=cwd,
+        env=env,
+        stdin=input_api.subprocess.PIPE,
+        stdout=input_api.subprocess.PIPE,
+        stderr=input_api.subprocess.PIPE)
+    stdoutdata, stderrdata = subproc.communicate()
+    # Discard the output if returncode == 0
+    if subproc.returncode:
+      outputs.append("Test '%s' failed with code %d\n%s\n%s\n" % (
+          unit_test_name, subproc.returncode, stdoutdata, stderrdata))
+  if outputs:
+    return [message_type("%d unit tests failed." % len(outputs),
+                                long_text='\n'.join(outputs))]
+  return []

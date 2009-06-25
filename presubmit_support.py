@@ -197,6 +197,10 @@ class InputApi(object):
     self.unittest = unittest
     self.urllib2 = urllib2
 
+    # To easily fork python.
+    self.python_executable = sys.executable
+    self.environ = os.environ
+
     # InputApi.platform is the platform you're currently running on.
     self.platform = sys.platform
 

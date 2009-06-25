@@ -494,8 +494,9 @@ class InputApiUnittest(PresubmitTestsBase):
       'DepotToLocalPath', 'FilterSourceFile', 'LocalPaths',
       'LocalToDepotPath',
       'PresubmitLocalPath', 'ReadFile', 'RightHandSideLines', 'ServerPaths',
-      'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change',
+      'basename', 'cPickle', 'cStringIO', 'canned_checks', 'change', 'environ',
       'is_committing', 'marshal', 'os_path', 'pickle', 'platform',
+      'python_executable',
       're', 'subprocess', 'tempfile', 'traceback', 'unittest', 'urllib2',
       'version',
     ]
@@ -975,8 +976,6 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def setUp(self):
     PresubmitTestsBase.setUp(self)
-    self.mox.StubOutWithMock(presubmit_canned_checks,
-                         '_RunPythonUnitTests_LoadTests')
 
   def MockInputApi(self, change, committing):
     input_api = self.mox.CreateMock(presubmit.InputApi)
@@ -985,8 +984,11 @@ class CannedChecksUnittest(PresubmitTestsBase):
     input_api.traceback = presubmit.traceback
     input_api.urllib2 = self.mox.CreateMock(presubmit.urllib2)
     input_api.unittest = unittest
+    input_api.subprocess = self.mox.CreateMock(presubmit.subprocess)
+
     input_api.change = change
     input_api.is_committing = committing
+    input_api.python_executable = 'pyyyyython'
     return input_api
 
   def testMembersChanged(self):
@@ -1271,9 +1273,14 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testRunPythonUnitTestsNonExistentUpload(self):
     input_api = self.MockInputApi(None, False)
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
-        input_api, '_non_existent_module').AndRaise(
-            exceptions.ImportError('Blehh'))
+    process = self.mox.CreateMockAnything()
+    process.returncode = 2
+    input_api.subprocess.Popen(
+        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None,
+        stderr=presubmit.subprocess.PIPE, stdin=presubmit.subprocess.PIPE,
+        stdout=presubmit.subprocess.PIPE).AndReturn(process)
+    process.communicate().AndReturn(
+        ('', 'pyyython: module _non_existent_module not found'))
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -1284,57 +1291,31 @@ class CannedChecksUnittest(PresubmitTestsBase):
 
   def testRunPythonUnitTestsNonExistentCommitting(self):
     input_api = self.MockInputApi(None, True)
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
-        input_api, '_non_existent_module').AndRaise(
-            exceptions.ImportError('Blehh'))
+    process = self.mox.CreateMockAnything()
+    process.returncode = 2
+    input_api.subprocess.Popen(
+        ['pyyyyython', '-m', '_non_existent_module'], cwd=None, env=None,
+        stderr=presubmit.subprocess.PIPE, stdin=presubmit.subprocess.PIPE,
+        stdout=presubmit.subprocess.PIPE).AndReturn(process)
+    process.communicate().AndReturn(
+        ('', 'pyyython: module _non_existent_module not found'))
     self.mox.ReplayAll()
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['_non_existent_module'])
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
 
-  def testRunPythonUnitTestsEmptyUpload(self):
-    input_api = self.MockInputApi(None, False)
-    test_module = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
-        input_api, 'test_module').AndReturn([])
-    self.mox.ReplayAll()
-
-    results = presubmit_canned_checks.RunPythonUnitTests(
-        input_api, presubmit.OutputApi, ['test_module'])
-    self.assertEquals(results, [])
-
-  def testRunPythonUnitTestsEmptyCommitting(self):
-    input_api = self.MockInputApi(None, True)
-    test_module = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
-        input_api, 'test_module').AndReturn([])
-    self.mox.ReplayAll()
-
-    results = presubmit_canned_checks.RunPythonUnitTests(
-        input_api, presubmit.OutputApi, ['test_module'])
-    self.assertEquals(results, [])
-
   def testRunPythonUnitTestsFailureUpload(self):
     input_api = self.MockInputApi(None, False)
     input_api.unittest = self.mox.CreateMock(unittest)
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
-    test = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
-        input_api, 'test_module').AndReturn([test])
-    runner = self.mox.CreateMockAnything()
-    buffer = self.mox.CreateMockAnything()
-    input_api.cStringIO.StringIO().AndReturn(buffer)
-    buffer.getvalue().AndReturn('BOO HOO!')
-    input_api.unittest.TextTestRunner(stream=buffer, verbosity=0
-        ).AndReturn(runner)
-    suite = self.mox.CreateMockAnything()
-    input_api.unittest.TestSuite([test]).AndReturn(suite)
-    test_result = self.mox.CreateMockAnything()
-    runner.run(suite).AndReturn(test_result)
-    test_result.wasSuccessful().AndReturn(False)
-    test_result.failures = [None, None]
-    test_result.errors = [None, None, None]
+    process = self.mox.CreateMockAnything()
+    process.returncode = -1
+    input_api.subprocess.Popen(
+        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
+        stderr=presubmit.subprocess.PIPE, stdin=presubmit.subprocess.PIPE,
+        stdout=presubmit.subprocess.PIPE).AndReturn(process)
+    process.communicate().AndReturn(('BOO HOO!', ''))
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
@@ -1342,55 +1323,38 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__,
                       presubmit.OutputApi.PresubmitNotifyResult)
-    self.assertEquals(results[0]._long_text, 'BOO HOO!')
+    self.assertEquals(results[0]._long_text,
+                      "Test 'test_module' failed with code -1\nBOO HOO!")
 
   def testRunPythonUnitTestsFailureCommitting(self):
     input_api = self.MockInputApi(None, True)
-    input_api.unittest = self.mox.CreateMock(unittest)
-    input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
-    test = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
-        input_api, 'test_module').AndReturn([test])
-    runner = self.mox.CreateMockAnything()
-    buffer = self.mox.CreateMockAnything()
-    input_api.cStringIO.StringIO().AndReturn(buffer)
-    buffer.getvalue().AndReturn('BOO HOO!')
-    input_api.unittest.TextTestRunner(stream=buffer, verbosity=0
-        ).AndReturn(runner)
-    suite = self.mox.CreateMockAnything()
-    input_api.unittest.TestSuite([test]).AndReturn(suite)
-    test_result = self.mox.CreateMockAnything()
-    runner.run(suite).AndReturn(test_result)
-    test_result.wasSuccessful().AndReturn(False)
-    test_result.failures = [None, None]
-    test_result.errors = [None, None, None]
+    process = self.mox.CreateMockAnything()
+    process.returncode = 1
+    input_api.subprocess.Popen(
+        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
+        stderr=presubmit.subprocess.PIPE, stdin=presubmit.subprocess.PIPE,
+        stdout=presubmit.subprocess.PIPE).AndReturn(process)
+    process.communicate().AndReturn(('BOO HOO!', ''))
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
         input_api, presubmit.OutputApi, ['test_module'])
     self.assertEquals(len(results), 1)
     self.assertEquals(results[0].__class__, presubmit.OutputApi.PresubmitError)
-    self.assertEquals(results[0]._long_text, 'BOO HOO!')
+    self.assertEquals(results[0]._long_text,
+                      "Test 'test_module' failed with code 1\nBOO HOO!")
 
   def testRunPythonUnitTestsSuccess(self):
     input_api = self.MockInputApi(None, False)
     input_api.cStringIO = self.mox.CreateMock(presubmit.cStringIO)
     input_api.unittest = self.mox.CreateMock(unittest)
-    test = self.mox.CreateMockAnything()
-    presubmit_canned_checks._RunPythonUnitTests_LoadTests(
-        input_api, 'test_module').AndReturn([test])
-    runner = self.mox.CreateMockAnything()
-    buffer = self.mox.CreateMockAnything()
-    input_api.cStringIO.StringIO().AndReturn(buffer)
-    input_api.unittest.TextTestRunner(stream=buffer, verbosity=0
-        ).AndReturn(runner)
-    suite = self.mox.CreateMockAnything()
-    input_api.unittest.TestSuite([test]).AndReturn(suite)
-    test_result = self.mox.CreateMockAnything()
-    runner.run(suite).AndReturn(test_result)
-    test_result.wasSuccessful().AndReturn(True)
-    test_result.failures = 0
-    test_result.errors = 0
+    process = self.mox.CreateMockAnything()
+    process.returncode = 0
+    input_api.subprocess.Popen(
+        ['pyyyyython', '-m', 'test_module'], cwd=None, env=None,
+        stderr=presubmit.subprocess.PIPE, stdin=presubmit.subprocess.PIPE,
+        stdout=presubmit.subprocess.PIPE).AndReturn(process)
+    process.communicate().AndReturn(('', ''))
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.RunPythonUnitTests(
