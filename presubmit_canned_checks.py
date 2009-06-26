@@ -198,21 +198,23 @@ def CheckSvnForCommonMimeTypes(input_api, output_api):
   """Checks that common binary file types have the correct svn:mime-type."""
   output = []
   files = input_api.AffectedFiles(include_deletes=False)
+  def IsExts(x, exts):
+    path = x.LocalPath()
+    for extension in exts:
+      if path.endswith(extension):
+        return True
+    return False
   def FilterFiles(extension):
-    return filter(lambda x: x.endswith(extension), files)
-  def JpegFiles():
-    return filter(lambda x: (x.endswith('.jpg') or x.endswith('.jpeg') or
-                             x.endswith('.jpe')),
-                  files)
+    return filter(lambda x: IsExts(x, extension), files)
   def RunCheck(mime_type, files):
     output.extend(CheckSvnProperty(input_api, output_api, 'svn:mime-type',
                                    mime_type, files))
-  RunCheck('application/pdf', FilterFiles('.pdf'))
-  RunCheck('image/bmp', FilterFiles('.bmp'))
-  RunCheck('image/gif', FilterFiles('.gif'))
-  RunCheck('image/png', FilterFiles('.png'))
-  RunCheck('image/jpeg', JpegFiles())
-  RunCheck('image/vnd.microsoft.icon', FilterFiles('.ico'))
+  RunCheck('application/pdf', FilterFiles(['.pdf']))
+  RunCheck('image/bmp', FilterFiles(['.bmp']))
+  RunCheck('image/gif', FilterFiles(['.gif']))
+  RunCheck('image/png', FilterFiles(['.png']))
+  RunCheck('image/jpeg', FilterFiles(['.jpg', '.jpeg', '.jpe']))
+  RunCheck('image/vnd.microsoft.icon', FilterFiles(['.ico']))
   return output
 
 

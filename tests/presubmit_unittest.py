@@ -1227,26 +1227,31 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.mox.StubOutWithMock(presubmit_canned_checks, 'CheckSvnProperty')
     input_api = self.MockInputApi(None, False)
     output_api = presubmit.OutputApi()
-    input_api.AffectedFiles(include_deletes=False).AndReturn([
-        'a.pdf', 'b.bmp', 'c.gif', 'd.png', 'e.jpg', 'f.ico'])
+    A = lambda x: presubmit.AffectedFile(x, 'M')
+    files = [
+      A('a.pdf'), A('b.bmp'), A('c.gif'), A('d.png'), A('e.jpg'), A('f.jpe'),
+      A('random'), A('g.jpeg'), A('h.ico'),
+    ]
+    input_api.AffectedFiles(include_deletes=False).AndReturn(files)
     presubmit_canned_checks.CheckSvnProperty(
-        input_api, output_api, 'svn:mime-type', 'application/pdf', ['a.pdf']
+        input_api, output_api, 'svn:mime-type', 'application/pdf', [files[0]]
         ).AndReturn([1])
     presubmit_canned_checks.CheckSvnProperty(
-        input_api, output_api, 'svn:mime-type', 'image/bmp', ['b.bmp']
+        input_api, output_api, 'svn:mime-type', 'image/bmp', [files[1]]
         ).AndReturn([2])
     presubmit_canned_checks.CheckSvnProperty(
-        input_api, output_api, 'svn:mime-type', 'image/gif', ['c.gif']
+        input_api, output_api, 'svn:mime-type', 'image/gif', [files[2]]
         ).AndReturn([3])
     presubmit_canned_checks.CheckSvnProperty(
-        input_api, output_api, 'svn:mime-type', 'image/png', ['d.png']
+        input_api, output_api, 'svn:mime-type', 'image/png', [files[3]]
         ).AndReturn([4])
     presubmit_canned_checks.CheckSvnProperty(
-        input_api, output_api, 'svn:mime-type', 'image/jpeg', ['e.jpg']
+        input_api, output_api, 'svn:mime-type', 'image/jpeg',
+        [files[4], files[5], files[7]]
         ).AndReturn([5])
     presubmit_canned_checks.CheckSvnProperty(
         input_api, output_api, 'svn:mime-type', 'image/vnd.microsoft.icon',
-        ['f.ico']).AndReturn([6])
+        [files[8]]).AndReturn([6])
     self.mox.ReplayAll()
 
     results = presubmit_canned_checks.CheckSvnForCommonMimeTypes(
