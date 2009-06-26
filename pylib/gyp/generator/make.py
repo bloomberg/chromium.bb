@@ -75,7 +75,7 @@ BUILDTYPE ?= Debug
 # Directory all our build output goes into.
 # Note that this must be two directories beneath src/ for unit tests to pass,
 # as they reach into the src/ directory for data with relative paths.
-builddir ?= """ + os.getcwd() + """/out/$(BUILDTYPE)
+builddir ?= $(rootdir)/out/$(BUILDTYPE)
 
 # Object output directory.
 obj := $(builddir)/obj
@@ -189,6 +189,14 @@ $(obj)/%.o: $(obj)/%.cc
 $(obj)/%.o: $(obj)/%.cpp
 	$(call do_cmd,cxx)
 	@$(fixup_dep)
+""")
+
+# This gets added to the very beginning of the Makefile, setting the root
+# directory as computed by gyp.
+SHARED_HEADER_ROOTDIR = ("""\
+# The root of the project.
+rootdir ?= %s
+
 """)
 
 SHARED_FOOTER = """\
@@ -610,7 +618,8 @@ class MakefileWriter:
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
-  root_makefile = open('Makefile', 'w')
+  root_makefile = open(os.path.join(options.depth, 'Makefile'), 'w')
+  root_makefile.write(SHARED_HEADER_ROOTDIR % options.depth)
   root_makefile.write(SHARED_HEADER)
 
   for qualified_target in target_list:
