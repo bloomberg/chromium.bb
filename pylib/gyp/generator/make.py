@@ -141,7 +141,7 @@ quiet_cmd_touch = TOUCH $@
 cmd_touch = touch $@
 
 quiet_cmd_copy = COPY $@
-cmd_copy = ln -f $< $@
+cmd_copy = ln -f $< $@ || cp -af $< $@
 
 # Due to circular dependencies between libraries :(, we wrap the
 # special "figure out circular dependencies" flags around the entire
