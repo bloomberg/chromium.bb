@@ -22,6 +22,7 @@ import marshal  # Exposed through the API.
 import optparse
 import os  # Somewhat exposed through the API.
 import pickle  # Exposed through the API.
+import random
 import re  # Exposed through the API.
 import subprocess  # Exposed through the API.
 import sys  # Parts exposed through API.
@@ -38,6 +39,10 @@ import warnings
 import gcl
 import gclient
 import presubmit_canned_checks
+
+
+# Ask for feedback only once in program lifetime.
+_ASKED_FOR_FEEDBACK = False
 
 
 class NotImplementedException(Exception):
@@ -780,6 +785,10 @@ def DoPresubmitChecks(change,
     default_presubmit: A default presubmit script to execute in any case.
     may_prompt: Enable (y/n) questions on warning or error.
 
+  Warning:
+    If may_prompt is true, output_stream SHOULD be sys.stdout and input_stream
+    SHOULD be sys.stdin.
+
   Return:
     True if execution can continue, False if not.
   """
@@ -830,6 +839,13 @@ def DoPresubmitChecks(change,
     response = input_stream.readline()
     if response.strip().lower() != 'y':
       error_count += 1
+
+  global _ASKED_FOR_FEEDBACK
+  # Ask for feedback one time out of 5.
+  if (len(results) and random.randint(0, 4) == 0 and not _ASKED_FOR_FEEDBACK):
+    output_stream.write("Was the presubmit check useful? Please send feedback "
+                        "& hate mail to maruel@chromium.org!\n")
+    _ASKED_FOR_FEEDBACK = True
   return (error_count == 0)
 
 

@@ -48,7 +48,9 @@ def CheckChangeOnUpload(input_api, output_api):
     presubmit.os.path.dirname = os_path_dirname
     presubmit.os.path.normpath = os_path_normpath
     presubmit.os.path.splitext = os_path_splitext
+    self.mox.StubOutWithMock(presubmit, 'random')
     self.mox.StubOutWithMock(presubmit, 'sys')
+    presubmit._ASKED_FOR_FEEDBACK = False
     # Special mocks.
     def MockAbsPath(f):
       return f
@@ -71,8 +73,8 @@ class PresubmitUnittest(PresubmitTestsBase):
       'SvnAffectedFile', 'SvnChange',
       'cPickle', 'cStringIO', 'exceptions',
       'fnmatch', 'gcl', 'gclient', 'glob', 'logging', 'marshal', 'normpath',
-      'optparse',
-      'os', 'pickle', 'presubmit_canned_checks', 're', 'subprocess', 'sys',
+      'optparse', 'os', 'pickle',
+      'presubmit_canned_checks', 'random', 're', 'subprocess', 'sys',
       'tempfile', 'traceback', 'types', 'unittest', 'urllib2', 'warnings',
     ]
     # If this test fails, you should add the relevant test.
@@ -295,6 +297,7 @@ class PresubmitUnittest(PresubmitTestsBase):
                            'rU').AndReturn(self.presubmit_text)
     presubmit.gcl.ReadFile(haspresubmit_path,
                            'rU').AndReturn(self.presubmit_text)
+    presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -322,6 +325,8 @@ class PresubmitUnittest(PresubmitTestsBase):
           ).AndReturn(self.presubmit_text)
       presubmit.gcl.ReadFile(haspresubmit_path, 'rU'
           ).AndReturn(self.presubmit_text)
+    presubmit.random.randint(0, 4).AndReturn(1)
+    presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -355,6 +360,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.gcl.ReadFile(presubmit_path, 'rU').AndReturn(self.presubmit_text)
     presubmit.gcl.ReadFile(haspresubmit_path, 'rU').AndReturn(
         self.presubmit_text)
+    presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
@@ -367,7 +373,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.assertEqual(output.getvalue().count('XX!!XX'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
 
-  def testDoDefaultPresubmitChecks(self):
+  def testDoDefaultPresubmitChecksAndFeedback(self):
     join = presubmit.os.path.join
     description_lines = ('Hello there',
                          'this is a change',
@@ -386,6 +392,7 @@ def CheckChangeOnCommit(input_api, output_api):
     presubmit.os.path.isfile(join(self.fake_root_dir,
                                   'haspresubmit',
                                   'PRESUBMIT.py')).AndReturn(False)
+    presubmit.random.randint(0, 4).AndReturn(0)
     self.mox.ReplayAll()
     
     output = StringIO.StringIO()
@@ -395,7 +402,12 @@ def CheckChangeOnCommit(input_api, output_api):
                               self.fake_root_dir, files, 0, 0)
     self.failIf(presubmit.DoPresubmitChecks(change, False, True, output, input,
                                             DEFAULT_SCRIPT, False))
-    self.assertEquals(output.getvalue().count('!!'), 1)
+    text = ('Warning, no presubmit.py found.\n'
+            'Running default presubmit script.\n'
+            '** Presubmit ERRORS **\n!!\n\n'
+            'Was the presubmit check useful? Please send feedback & hate mail '
+            'to maruel@chromium.org!\n')
+    self.assertEquals(output.getvalue(), text)
 
   def testDirectoryHandling(self):
     files = [
@@ -449,6 +461,7 @@ def CheckChangeOnUpload(input_api, output_api):
 def CheckChangeOnCommit(input_api, output_api):
   raise Exception("Test error")
 """
+    presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
     output = StringIO.StringIO()
