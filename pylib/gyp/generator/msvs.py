@@ -759,6 +759,7 @@ def _DictsToFolders(base_path, bucket):
       folder_children = _DictsToFolders(os.path.join(base_path, folder),
                                         contents)
       folder_children = MSVSNew.MSVSFolder(os.path.join(base_path, folder),
+                                           name='(' + folder + ')',
                                            entries=folder_children)
       children.append(folder_children)
     else:
