@@ -60,71 +60,13 @@ ftglue_qalloc( FT_Memory  memory,
   } while (0)
 
 
-FTGLUE_APIDEF( FT_Pointer )
-ftglue_alloc( FT_Memory  memory,
-              FT_ULong   size,
-              FT_Error  *perror )
-{
-  FT_Error    error = 0;
-  FT_Pointer  block = NULL;
-
-  if ( size > 0 )
-  {
-    block = memory->alloc( memory, size );
-    if ( !block )
-      error = FT_Err_Out_Of_Memory;
-    else
-      memset( (char*)block, 0, (size_t)size );
-  }
-
-  *perror = error;
-  return block;
-}
-
-
-FTGLUE_APIDEF( FT_Pointer )
-ftglue_realloc( FT_Memory   memory,
-                FT_Pointer  block,
-                FT_ULong    old_size,
-                FT_ULong    new_size,
-                FT_Error   *perror )
-{
-  FT_Pointer  block2 = NULL;
-  FT_Error    error  = 0;
-
-  if ( old_size == 0 || block == NULL )
-  {
-    block2 = ftglue_alloc( memory, new_size, &error );
-  }
-  else if ( new_size == 0 )
-  {
-    ftglue_free( memory, block );
-  }
-  else
-  {
-    block2 = memory->realloc( memory, old_size, new_size, block );
-    if ( block2 == NULL )
-      error = FT_Err_Out_Of_Memory;
-    else if ( new_size > old_size )
-      memset( (char*)block2 + old_size, 0, (size_t)(new_size - old_size) );
-  }
-
-  if ( !error )
-    block = block2;
-
-  *perror = error;
-  return block;
-}
-
-
-FTGLUE_APIDEF( void )
+static void
 ftglue_free( FT_Memory   memory,
              FT_Pointer  block )
 {
   if ( block )
     memory->free( memory, block );
 }
-
 
 FTGLUE_APIDEF( FT_Long )
 ftglue_stream_pos( FT_Stream   stream )
@@ -301,7 +243,7 @@ ftglue_face_goto_table( FT_Face    face,
         goto FoundIt;
       }
     }
-    error = TT_Err_Table_Missing;
+    error = FT_Err_Table_Missing;
 
   FoundIt:
     FORGET_Frame();

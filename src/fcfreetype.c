@@ -1674,7 +1674,7 @@ FcFreeTypeQueryFace (const FT_Face  face,
     /*
      * Skip over PCF fonts that have no encoded characters; they're
      * usually just Unicode fonts transcoded to some legacy encoding
-     * ftglue.c forces us to approximate whether a font is a PCF font
+     * FT forces us to approximate whether a font is a PCF font
      * or not by whether it has any BDF properties.  Try PIXEL_SIZE;
      * I don't know how to get a list of BDF properties on the font. -PL
      */
@@ -2815,10 +2815,6 @@ FcFreeTypeCharSet (FT_Face face, FcBlanks *blanks)
 #define TTAG_GPOS  FT_MAKE_TAG( 'G', 'P', 'O', 'S' )
 #define TTAG_GSUB  FT_MAKE_TAG( 'G', 'S', 'U', 'B' )
 #define TTAG_SILF  FT_MAKE_TAG( 'S', 'i', 'l', 'f')
-#define TT_Err_Ok FT_Err_Ok
-#define TT_Err_Invalid_Face_Handle FT_Err_Invalid_Face_Handle
-#define TTO_Err_Empty_Script              0x1005
-#define TTO_Err_Invalid_SubTable          0x1001
 
 #define OTLAYOUT_HEAD	    "otlayout:"
 #define OTLAYOUT_HEAD_LEN   9
@@ -2868,29 +2864,30 @@ compareulong (const void *a, const void *b)
 }
 
 
-static FT_Error
-GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *script_count)
+static int
+GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags)
 {
-    FT_ULong         cur_offset, new_offset, base_offset;
+    FT_ULong   cur_offset, new_offset, base_offset;
     FT_Stream  stream = face->stream;
     FT_Error   error;
-    FT_UShort          n, p;
+    FT_UShort  n, p;
     FT_Memory  memory;
+    int        script_count;
 
-    if ( !stream )
-	return TT_Err_Invalid_Face_Handle;
+    if (!stream)
+        return 0;
 
     memory = stream->memory;
 
     if (( error = ftglue_face_goto_table( face, tabletag, stream ) ))
-	return error;
+	return 0;
 
     base_offset = ftglue_stream_pos ( stream );
 
     /* skip version */
 
     if ( ftglue_stream_seek ( stream, base_offset + 4L ) || ftglue_stream_frame_enter( stream, 2L ) )
-	return error;
+	return 0;
 
     new_offset = GET_UShort() + base_offset;
 
@@ -2898,25 +2895,24 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 
     cur_offset = ftglue_stream_pos( stream );
 
-    if ( ftglue_stream_seek( stream, new_offset ) != TT_Err_Ok )
-	return error;
+    if ( ftglue_stream_seek( stream, new_offset ) != FT_Err_Ok )
+	return 0;
 
     base_offset = ftglue_stream_pos( stream );
 
     if ( ftglue_stream_frame_enter( stream, 2L ) )
-	return error;
+	return 0;
 
-    *script_count = GET_UShort ();
+    script_count = GET_UShort ();
 
     ftglue_stream_frame_exit( stream );
 
-    *stags = ftglue_alloc(memory, *script_count * sizeof( FT_ULong ), &error);
-
-    if (error)
-	return error;
+    *stags = malloc(script_count * sizeof (FT_ULong));
+    if (!stags)
+	return 0;
 
     p = 0;
-    for ( n = 0; n < *script_count; n++ )
+    for ( n = 0; n < script_count; n++ )
     {
         if ( ftglue_stream_frame_enter( stream, 6L ) )
 	    goto Fail;
@@ -2930,28 +2926,24 @@ GetScriptTags(FT_Face face, FT_ULong tabletag, FT_ULong **stags, FT_UShort *scri
 
 	error = ftglue_stream_seek( stream, new_offset );
 
-	if ( error == TT_Err_Ok )
+	if ( error == FT_Err_Ok )
 	    p++;
 
 	(void)ftglue_stream_seek( stream, cur_offset );
     }
 
     if (!p)
-    {
-	error = TTO_Err_Invalid_SubTable;
 	goto Fail;
-    }
 
     /* sort the tag list before returning it */
-    qsort(*stags, *script_count, sizeof(FT_ULong), compareulong);
+    qsort(*stags, script_count, sizeof(FT_ULong), compareulong);
 
-    return TT_Err_Ok;
+    return script_count;
 
 Fail:
-    *script_count = 0;
-    ftglue_free( memory, *stags );
+    free(*stags);
     *stags = NULL;
-    return error;
+    return 0;
 }
 
 static FcChar8 *
@@ -2970,11 +2962,9 @@ FcFontCapabilities(FT_Face face)
     err = FT_Load_Sfnt_Table(face, TTAG_SILF, 0, 0, &len);
     issilgraphitefont = ( err == FT_Err_Ok);
 
-    if (GetScriptTags(face, TTAG_GPOS, &gpostags, &gpos_count) != FT_Err_Ok)
-	gpos_count = 0;
-    if (GetScriptTags(face, TTAG_GSUB, &gsubtags, &gsub_count) != FT_Err_Ok)
-	gsub_count = 0;
-    
+    gpos_count = GetScriptTags(face, TTAG_GPOS, &gpostags);
+    gsub_count = GetScriptTags(face, TTAG_GSUB, &gsubtags);
+
     if (!issilgraphitefont && !gsub_count && !gpos_count)
     	goto bail;
 
@@ -3007,8 +2997,8 @@ FcFontCapabilities(FT_Face face)
     if (FcDebug () & FC_DBG_SCANV)
 	printf("complex_ features in this font: %s\n", complex_);
 bail:
-    ftglue_free(memory, gsubtags);
-    ftglue_free(memory, gpostags);
+    free(gsubtags);
+    free(gpostags);
     return complex_;
 }
 

@@ -51,12 +51,6 @@
 FT_BEGIN_HEADER
 
 
-/* utility macros */
-#define  TT_Err_Ok                   FT_Err_Ok
-#define  TT_Err_Invalid_Argument     FT_Err_Invalid_Argument
-#define  TT_Err_Invalid_Face_Handle  FT_Err_Invalid_Face_Handle
-#define  TT_Err_Table_Missing        FT_Err_Table_Missing
-
 #define  SET_ERR(c)   ( (error = (c)) != 0 )
 
 #ifndef FTGLUE_API
@@ -107,37 +101,10 @@ ftglue_stream_frame_enter( FT_Stream   stream,
 FTGLUE_API( void )
 ftglue_stream_frame_exit( FT_Stream  stream );
 
-FTGLUE_API( FT_Byte )
-ftglue_stream_get_byte( FT_Stream  stream );
-
-FTGLUE_API( FT_Short )
-ftglue_stream_get_short( FT_Stream  stream );
-
-FTGLUE_API( FT_Long )
-ftglue_stream_get_long( FT_Stream   stream );
-
 FTGLUE_API( FT_Error )
 ftglue_face_goto_table( FT_Face    face,
                         FT_ULong   tag,
                         FT_Stream  stream );
-
-FTGLUE_API( FT_Pointer )
-ftglue_alloc( FT_Memory  memory,
-              FT_ULong   size,
-              FT_Error  *perror_ );
-
-FTGLUE_API( FT_Pointer )
-ftglue_realloc( FT_Memory   memory,
-                FT_Pointer  block,
-                FT_ULong    old_size,
-                FT_ULong    new_size,
-                FT_Error   *perror_ );
-
-FTGLUE_API( void )
-ftglue_free( FT_Memory   memory,
-             FT_Pointer  block );
-
-/* */
 
 FT_END_HEADER
 
