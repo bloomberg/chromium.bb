@@ -25,7 +25,7 @@ fi
 
 
 # Use the batch file as an entry point if on cygwin.
-if [ "${OSTYPE}" = "cygwin" -a "${TERM}" = "cygwin" ]; then
+if [ "${OSTYPE}" = "cygwin" -a "${TERM}" != "xterm" ]; then
    ${base_dir}/gclient.bat "$@"
    exit
 fi
