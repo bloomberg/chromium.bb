@@ -96,7 +96,7 @@ def GetRepositoryRoot():
     infos = gclient.CaptureSVNInfo(os.getcwd(), print_error=False)
     cur_dir_repo_root = infos.get("Repository Root")
     if not cur_dir_repo_root:
-      raise Exception("gcl run outside of repository")
+      raise gclient.Error("gcl run outside of repository")
 
     REPOSITORY_ROOT = os.getcwd()
     while True:
@@ -138,7 +138,10 @@ def GetCachedFile(filename, max_age=60*60*24*3, use_root=False):
     # Don't try to look up twice.
     FILES_CACHE[filename] = None
     # First we check if we have a cached version.
-    cached_file = os.path.join(GetCacheDir(), filename)
+    try:
+      cached_file = os.path.join(GetCacheDir(), filename)
+    except gclient.Error:
+      return None
     if (not os.path.exists(cached_file) or
         os.stat(cached_file).st_mtime > max_age):
       dir_info = gclient.CaptureSVNInfo(".")
@@ -1099,21 +1102,25 @@ def main(argv=None):
     Help()
     return 0;
 
-  # Create the directories where we store information about changelists if it
-  # doesn't exist.
-  if not os.path.exists(GetInfoDir()):
-    os.mkdir(GetInfoDir())
-  if not os.path.exists(GetChangesDir()):
-    os.mkdir(GetChangesDir())
-    # For smooth upgrade support, move the files in GetInfoDir() to
-    # GetChangesDir().
-    # TODO(maruel): Remove this code in August 2009.
-    for file in os.listdir(unicode(GetInfoDir())):
-      file_path = os.path.join(unicode(GetInfoDir()), file)
-      if os.path.isfile(file_path) and file != CODEREVIEW_SETTINGS_FILE:
-        shutil.move(file_path, GetChangesDir())
-  if not os.path.exists(GetCacheDir()):
-    os.mkdir(GetCacheDir())
+  try:
+    # Create the directories where we store information about changelists if it
+    # doesn't exist.
+    if not os.path.exists(GetInfoDir()):
+      os.mkdir(GetInfoDir())
+    if not os.path.exists(GetChangesDir()):
+      os.mkdir(GetChangesDir())
+      # For smooth upgrade support, move the files in GetInfoDir() to
+      # GetChangesDir().
+      # TODO(maruel): Remove this code in August 2009.
+      for file in os.listdir(unicode(GetInfoDir())):
+        file_path = os.path.join(unicode(GetInfoDir()), file)
+        if os.path.isfile(file_path) and file != CODEREVIEW_SETTINGS_FILE:
+          shutil.move(file_path, GetChangesDir())
+    if not os.path.exists(GetCacheDir()):
+      os.mkdir(GetCacheDir())
+  except gclient.Error:
+    # Will throw an exception if not run in a svn checkout.
+    pass
 
   # Commands that don't require an argument.
   command = argv[1]
