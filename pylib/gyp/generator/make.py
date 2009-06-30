@@ -255,6 +255,11 @@ target_link_deps = {}
 
 
 class MakefileWriter:
+  """MakefileWriter packages up the writing of one target-specific foobar.mk.
+
+  Its only real entry point is Write(), and is mostly used for namespacing.
+  """
+
   def Write(self, qualified_target, output_filename, root, spec, configs):
     print 'Generating %s' % output_filename
     self.fp = open(output_filename, 'w')
@@ -312,6 +317,14 @@ class MakefileWriter:
 
 
   def WriteActions(self, actions, extra_sources, extra_outputs):
+    """Write Makefile code for any 'actions' from the gyp input.
+
+    extra_sources: a list that will be filled in with newly generated source
+                   files, if any
+    extra_outputs: a list that will be filled in with any outputs of these
+                   actions (used to make other pieces dependent on these
+                   actions)
+    """
     for action in actions:
       name = self.target + '_' + action['action_name']
       self.WriteLn('### Rules for action "%s":' % action['action_name'])
@@ -355,6 +368,13 @@ class MakefileWriter:
 
 
   def WriteRules(self, rules, extra_sources, extra_outputs):
+    """Write Makefile code for any 'rules' from the gyp input.
+
+    extra_sources: a list that will be filled in with newly generated source
+                   files, if any
+    extra_outputs: a list that will be filled in with any outputs of these
+                   rules (used to make other pieces dependent on these rules)
+    """
     for rule in rules:
       name = self.target + '_' + rule['rule_name']
       self.WriteLn('### Generated for rule %s:' % name)
@@ -410,6 +430,11 @@ class MakefileWriter:
 
 
   def WriteCopies(self, copies, extra_outputs):
+    """Write Makefile code for any 'copies' from the gyp input.
+
+    extra_outputs: a list that will be filled in with any outputs of this action
+                   (used to make other pieces dependent on this action
+    """
     self.WriteLn('### Generated for copy rule.')
 
     variable = self.target + '_copies'
@@ -429,6 +454,16 @@ class MakefileWriter:
 
   def WriteSources(self, configs, deps, sources,
                    extra_outputs, extra_link_deps):
+    """Write Makefile code for any 'sources' from the gyp input.
+    These are source files necessary to build the current target.
+
+    configs, deps, sources: input from gyp.
+    extra_outputs: a list of extra outputs this action should be dependent on;
+                   used to serialize action/rules before compilation
+    extra_link_deps: a list that will be filled in with any outputs of
+                     compilation (to be used in link lines)
+    """
+
     # Write configuration-specific variables for CFLAGS, etc.
     for configname in sorted(configs.keys()):
       config = configs[configname]
@@ -485,6 +520,11 @@ class MakefileWriter:
 
 
   def ComputeOutput(self, spec):
+    """Return the 'output' (full output path) of a gyp spec.
+
+    E.g., the loadable module 'foobar' in directory 'baz' will produce
+      '$(obj)/baz/libfoobar.so'
+    """
     output = None
     target = spec['target_name']
     if self.type == 'static_library':
@@ -504,6 +544,12 @@ class MakefileWriter:
 
 
   def ComputeDeps(self, spec):
+    """Compute the dependencies of a gyp spec.
+
+    Returns a tuple (deps, link_deps), where each is a list of
+    filenames that will need to be put in front of make for either
+    building (deps) or linking (link_deps).
+    """
     deps = set()
     link_deps = set()
     if 'dependencies' in spec:
@@ -520,6 +566,13 @@ class MakefileWriter:
 
 
   def WriteTarget(self, spec, configs, deps, link_deps, extra_outputs):
+    """Write Makefile code to produce the final target of the gyp spec.
+
+    spec, configs: input from gyp.
+    deps, link_deps: dependency lists; see ComputeDeps()
+    extra_outputs: any extra outputs that our target should depend on
+    """
+
     self.WriteLn('### Rules for final target.')
 
     if extra_outputs:
@@ -574,6 +627,12 @@ class MakefileWriter:
 
 
   def WriteList(self, list, variable=None, prefix=''):
+    """Write a variable definition that is a list of values.
+
+    E.g. WriteList(['a','b'], 'foo', prefix='blah') writes out
+         foo = blaha blahb
+    but in a pretty-printed style.
+    """
     self.fp.write(variable + " := ")
     if list:
       list = [QuoteIfNecessary(prefix + l) for l in list]
@@ -583,6 +642,16 @@ class MakefileWriter:
 
   def WriteMakeRule(self, outputs, inputs, actions=None, comment=None,
                     order_only=False):
+    """Write a Makefile rule, with some extra tricks.
+
+    outputs: a list of outputs for the rule (note: this is not directly
+             supported by make; see comments below)
+    inputs: a list of inputs for the rule
+    actions: a list of shell commands to run for the rule
+    comment: a comment to put in the Makefile above the rule (also useful
+             for making this Python script's code self-documenting)
+    order_only: if true, makes the dependency order-only
+    """
     if comment:
       self.WriteLn('# ' + comment)
     order_insert = '| ' if order_only else ''
