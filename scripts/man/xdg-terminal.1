@@ -1,0 +1,60 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "XDG\-TERMINAL" "1" "12/07/2006" "xdg\-utils 1.0" ""
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+xdg\-terminal \- opens the user's preferred terminal emulator application
+.SH "SYNOPSIS"
+.HP 13
+\fBxdg\-terminal\fR [\fB\fIcommand\fR\fR]
+.HP 13
+\fBxdg\-terminal\fR {\fB\-\-help\fR \fB\-\-manual\fR \fB\-\-version\fR}
+.SH "DESCRIPTION"
+.PP
+xdg\-terminal opens the user's preferred terminal emulator application. If a command is provided the command will be executed by the shell within the newly opened terminal window.
+.PP
+xdg\-terminal is for use inside a desktop session only. It is not recommended to use xdg\-terminal as root.
+.SH "OPTIONS"
+.TP
+\fB\-\-help\fR
+Show command synopsis.
+.TP
+\fB\-\-manual\fR
+Show this manualpage.
+.TP
+\fB\-\-version\fR
+Show the xdg\-utils version information.
+.SH "EXIT CODES"
+.PP
+An exit code of 0 indicates success while a non\-zero exit code indicates failure. The following failure codes can be returned:
+.TP
+\fB1\fR
+Error in command line syntax.
+.TP
+\fB3\fR
+A required tool could not be found.
+.TP
+\fB4\fR
+The action failed.
+.SH "EXAMPLES"
+.PP
+.nf
+xdg\-terminal
+.fi
+.sp
+Opens the user's default terminal emulator, just starting an interactive shell.
+.PP
+.nf
+xdg\-terminal top
+.fi
+.sp
+Opens the user's default terminal emulator and lets it run the top executable.
+.SH "AUTHOR"
+Kevin Krammer. 
+.br
+<kevin.krammer@gmx.at>

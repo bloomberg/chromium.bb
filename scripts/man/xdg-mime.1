@@ -1,0 +1,188 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "XDG\-MIME" "1" "06/24/2007" "xdg\-utils 1.0" ""
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+xdg\-mime \- command line tool for querying information about file type handling and adding descriptions for new file types
+.SH "SYNOPSIS"
+.HP 9
+\fBxdg\-mime\fR query {filetype default} ...
+.HP 9
+\fBxdg\-mime\fR default \fIapplication\fR \fImimetype(s)\fR
+.HP 9
+\fBxdg\-mime\fR install [\fB\-\-mode\ \fR\fB\fImode\fR\fR] [\fB\-\-novendor\fR] \fImimetypes\-file\fR
+.HP 9
+\fBxdg\-mime\fR uninstall [\fB\-\-mode\ \fR\fB\fImode\fR\fR] \fImimetypes\-file\fR
+.HP 9
+\fBxdg\-mime\fR {\fB\-\-help\fR \fB\-\-manual\fR \fB\-\-version\fR}
+.SH "DESCRIPTION"
+.PP
+The xdg\-mime program can be used to query information about file types and to add descriptions for new file types.
+.SH "COMMANDS"
+.TP
+query
+Returns information related to file types.
+.sp
+The
+\fIquery\fR
+option is for use inside a desktop session only. It is not recommended to use xdg\-mime query as root.
+.sp
+The following queries are supported:
+.sp
+query filetype
+\fIFILE\fR: Returns the file type of
+\fIFILE\fR
+in the form of a MIME type.
+.sp
+query default
+\fImimetype\fR: Returns the default application that the desktop environment uses for opening files of type
+\fImimetype\fR. The default application is identified by its *.desktop file.
+.TP
+default
+Ask the desktop environment to make
+\fIapplication\fR
+the default application for opening files of type
+\fImimetype\fR. An application can be made the default for several file types by specifying multiple mimetypes.
+.sp
+\fIapplication\fR
+is the desktop file id of the application and has the form vendor\-name.desktop
+\fIapplication\fR
+must already be installed in the desktop menu before it can be made the default handler. The aplication's desktop file must list support for all the MIME types that it wishes to be the default handler for.
+.sp
+Requests to make an application a default handler may be subject to system policy or approval by the end\-user. xdg\-mime query can be used to verify whether an application is the actual default handler for a specific file type.
+.sp
+The
+\fIdefault\fR
+option is for use inside a desktop session only. It is not recommended to use xdg\-mime default as root.
+.TP
+install
+Adds the file type descriptions provided in
+\fImimetypes\-file\fR
+to the desktop environment.
+\fImimetypes\-file\fR
+must be a XML file that follows the freedesktop.org Shared MIME\-info Database specification and that has a mime\-info element as its document root. For each new file type one or more icons with name
+\fImajor\fR\-\fIminor\fR
+must be installed with the
+\fBxdg\-icon\-resource\fR
+command in the
+\fImimetypes\fR
+context. For example the application/vnd.oasis.opendocument.text filetype requires an icon by the name of application\-vnd.oasis.opendocument.text to be installed.
+.TP
+uninstall
+Removes the file type descriptions provided in
+\fImimetypes\-file\fR
+and previously added with
+\fBxdg\-mime install\fR
+from the desktop environment.
+\fImimetypes\-file\fR
+must be a XML file that follows the freedesktop.org Shared MIME\-info Database specification and that has a mime\-info element as its document root.
+.SH "OPTIONS"
+.TP
+\fB\-\-mode\fR \fImode\fR
+\fImode\fR
+can be
+\fIuser\fR
+or
+\fIsystem\fR. In user mode the file is (un)installed for the current user only. In system mode the file is (un)installed for all users on the system. Usually only root is allowed to install in system mode.
+.sp
+The default is to use system mode when called by root and to use user mode when called by a non\-root user.
+.TP
+\fB\-\-novendor\fR
+Normally, xdg\-mime checks to ensure that the
+\fImimetypes\-file\fR
+to be installed has a proper vendor prefix. This option can be used to disable that check.
+.sp
+A vendor prefix consists of alpha characters ([a\-zA\-Z]) and is terminated with a dash ("\-"). Companies and organizations are encouraged to use a word or phrase, preferably the organizations name, for which they hold a trademark as their vendor prefix. The purpose of the vendor prefix is to prevent name conflicts.
+.TP
+\fB\-\-help\fR
+Show command synopsis.
+.TP
+\fB\-\-manual\fR
+Show this manualpage.
+.TP
+\fB\-\-version\fR
+Show the xdg\-utils version information.
+.SH "ENVIRONMENT VARIABLES"
+.PP
+xdg\-mime honours the following environment variables:
+.TP
+XDG_UTILS_DEBUG_LEVEL
+Setting this environment variable to a non\-zero numerical value makes xdg\-mime do more verbose reporting on stderr. Setting a higher value increases the verbosity.
+.TP
+XDG_UTILS_INSTALL_MODE
+This environment variable can be used by the user or administrator to override the installation mode. Valid values are
+\fIuser\fR
+and
+\fIsystem\fR.
+.SH "EXIT CODES"
+.PP
+An exit code of 0 indicates success while a non\-zero exit code indicates failure. The following failure codes can be returned:
+.TP
+\fB1\fR
+Error in command line syntax.
+.TP
+\fB2\fR
+One of the files passed on the command line did not exist.
+.TP
+\fB3\fR
+A required tool could not be found.
+.TP
+\fB4\fR
+The action failed.
+.TP
+\fB5\fR
+No permission to read one of the files passed on the command line.
+.SH "SEE ALSO"
+.PP
+\fBxdg\-icon\-resource\fR(1),
+\fBxdg\-desktop\-menu\fR(1)
+.SH "EXAMPLES"
+.PP
+.nf
+xdg\-mime query filetype /tmp/foobar.png
+.fi
+.sp
+Prints the MIME type of the file /tmp/foobar.png, in this case image/png
+.PP
+.nf
+xdg\-mime query default image/png
+.fi
+.sp
+Prints the .desktop filename of the application which is registered to open PNG files.
+.PP
+.nf
+xdg\-mime install shinythings\-shiny.xml
+.fi
+.sp
+Adds a file type description for "shiny"\-files. "shinythings\-" is used as the vendor prefix. The file type description could look as folows.
+.sp
+.nf
+shinythings\-shiny.xml:
+
+<?xml version="1.0"?>
+<mime\-info xmlns='http://www.freedesktop.org/standards/shared\-mime\-info'>
+  <mime\-type type="text/x\-shiny">
+    <comment>Shiny new file type</comment>
+    <glob pattern="*.shiny"/>
+    <glob pattern="*.shi"/>
+  </mime\-type>
+</mime\-info>
+.fi
+.sp
+An icon for this new file type must also be installed, for example with:
+.sp
+.nf
+xdg\-icon\-resource install \-\-context mimetypes \-\-size 64 shiny\-file\-icon.png text\-x\-shiny
+.fi
+.sp
+.SH "AUTHOR"
+Kevin Krammer, Jeremy White. 
+.br
+<kevin.krammer@gmx.at>
+.br
+<jwhite@codeweavers.com>

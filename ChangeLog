@@ -1,0 +1,77 @@
+
+2008-08-11 Rex Dieter <rdieter@fedoraproject.org>
+    * initial support for kde4
+
+ 2008-01-24 Kevin Krammer <kevin.krammer@gmx.at>
+    * Fixing security issue in xdg-email and xdg-open at replacing
+      parameter in $BROWSER
+
+=== xdg-utils 1.0.2 ====
+
+=== xdg-utils 1.0.1 ====
+
+2006-11-03 Waldo Bastian <waldo.bastian@intel.com>
+    * Fixed spurious output on stdout by xdg-desktop-menu
+    * Cleaned up shell syntax for xdg-screensaver and xdg-icon-resource
+      (fixes Ubuntu 6.10)
+
+2006-10-29 Kevin Krammer <kevin.krammer@gmx.at>
+    * Fixed non-ascii mailto URI handling of xdg-emial on non-UTF8 locales
+      under KDE
+
+=== xdg-utils 1.0 ====
+
+2006-05-10 Bryce Harrington <bryce@osdl.org>
+    * Created xdg-screensaver
+
+2006-04-24 Kevin Krammer <kevin.krammer@gmx.at>
+    * Applied patch provided by Benedikt Meurer <benedikt.meurer@unix-ag.uni-siegen.de>
+      to improve the compatability of the Makefile
+    * Added --title option to xdg-file-dialog
+    * Applied another path by Benedikt to let xdg-file-dialog use
+      zenity on GNOME and XFCE
+    * Added a documentation extraction AWK script created by Benedikt which replaces
+      the sed code and adds extraction of examples additionally to the usage info.
+    * Added printing of examples to the --help command.
+
+2006-04-14 Kevin Krammer <kevin.krammer@gmx.at>
+    * Added documentation for --version to all xml files
+    * Added script for file selection task, e.g. using the native file dialog
+      to get a file or directory name
+
+2006-04-11 Kevin Krammer <kevin.krammer@gmx.at>
+    * Applied exit functions to the other scripts
+    * Added a function to check for common commands like --help or --version
+      and always perform the same reaction
+
+2006-04-10 Kevin Krammer <kevin.krammer@gmx.at>
+    * Added common exit functions to improve return value consistency.
+      Currently only used in xdg-mime to gather feedback
+
+2006-04-08 Kevin Krammer <kevin.krammer@gmx.at>
+    * In case of $BROWSER being not avialable or empty, try a fixed list of well
+      known browsers instead
+
+2006-04-06 Kevin Krammer <kevin.krammer@gmx.at>
+    * Fixed "detection" of generic case in xdg-mime, xdg-open and xdg-su as
+      discovered by Hagai Kariti <hobbithk@gmail.com>
+    * Fixed tailoring of file and gnomevf-info output by using "sed" to remove a leading
+      whitespace instead of "cut"
+
+2006-04-05 Kevin Krammer <kevin.krammer@gmx.at>
+    * Applied patch by Benedikt Meurer <benedikt.meurer@unix-ag.uni-siegen.de> which
+      adds detection for XFCE, XFCE paths for xdg-open and xdg-email and
+      which fixes the script for non-bash shells.
+
+2006-03-31 Waldo Bastian <waldo.bastian@intel.com>
+    * Generate usage instructions from the same XML that is used for manpages
+    * Included licence text in scripts
+    * Added xdg-desktop script
+    * Added documentation (DocBook, HTML, manpages)
+    * Have Makefile generate manpages
+    * Included fix for xdg-su provided by Jeremy White <jwhite@codeweavers.com>
+    * Added "release" target to Makefile for generating releases
+    * Added support for .directory and .menu files to xdg-menu
+
+2006-03-21 Kevin Krammer <kevin.krammer@gmx.at>
+    * Imported the current state into freedesktop.org CVS for easier shared development

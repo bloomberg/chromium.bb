@@ -1,0 +1,33 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"><title>xdg-terminal</title><meta name="generator" content="DocBook XSL Stylesheets V1.69.1"></head><body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF"><div class="refentry" lang="en"><a name="xdg-terminal"></a><div class="titlepage"></div><div class="refnamediv"><h2>Name</h2><p>xdg-terminal &#8212; opens the user's preferred terminal emulator application</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><div class="cmdsynopsis"><p><code class="command">xdg-terminal</code>  [<code class="option"><em class="replaceable"><code>command</code></em></code>]</p></div><div class="cmdsynopsis"><p><code class="command">xdg-terminal</code>  { <code class="option">--help</code>  |   <code class="option">--manual</code>  |   <code class="option">--version</code> }</p></div></div><div class="refsect1" lang="en"><a name="description"></a><h2>Description</h2><p>
+      xdg-terminal opens the user's preferred terminal emulator application.
+      If a command is provided the command will be executed by the shell within
+      the newly opened terminal window.
+    </p><p>
+      xdg-terminal is for use inside a desktop session only.
+      It is not recommended to use xdg-terminal as root.
+    </p></div><div class="refsect1" lang="en"><a name="options"></a><h2>Options</h2><div class="variablelist"><dl><dt><span class="term"><code class="option">--help</code></span></dt><dd>
+	    Show command synopsis.
+	  </dd><dt><span class="term"><code class="option">--manual</code></span></dt><dd>
+	    Show this manualpage.
+	  </dd><dt><span class="term"><code class="option">--version</code></span></dt><dd>
+            Show the xdg-utils version information.
+          </dd></dl></div></div><div class="refsect1" lang="en"><a name="exitcodes"></a><h2>Exit Codes</h2><p>
+      An exit code of 0 indicates success while a non-zero exit code
+      indicates failure. The following failure codes can be returned:
+    </p><div class="variablelist"><dl><dt><span class="term"><code class="option">1</code></span></dt><dd>
+	    Error in command line syntax.
+	  </dd><dt><span class="term"><code class="option">3</code></span></dt><dd>
+	    A required tool could not be found.
+	  </dd><dt><span class="term"><code class="option">4</code></span></dt><dd>
+	    The action failed.
+	  </dd></dl></div></div><div class="refsect1" lang="en"><a name="examples"></a><h2>Examples</h2><p>
+</p><pre class="programlisting">
+xdg-terminal
+</pre><p>
+      Opens the user's default terminal emulator, just starting an interactive shell.
+    </p><p>
+</p><pre class="programlisting">
+xdg-terminal top
+</pre><p>
+      Opens the user's default terminal emulator and lets it run the top executable.
+    </p></div></div></body></html>

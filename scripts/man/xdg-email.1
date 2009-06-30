@@ -1,0 +1,118 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "XDG\-EMAIL" "1" "06/24/2007" "xdg\-utils 1.0" ""
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+xdg\-email \- command line tool for sending mail using the user's preferred e\-mail composer
+.SH "SYNOPSIS"
+.HP 10
+\fBxdg\-email\fR [\fB\-\-utf8\fR] [\fB\-\-cc\fR\ \fIaddress\fR] [\fB\-\-bcc\fR\ \fIaddress\fR] [\fB\-\-subject\fR\ \fItext\fR] [\fB\-\-body\fR\ \fItext\fR] [\fB\-\-attach\fR\ \fIfile\fR] [\fImailto\-uri\fR \fIaddress(es)\fR]
+.HP 10
+\fBxdg\-email\fR {\fB\-\-help\fR \fB\-\-manual\fR \fB\-\-version\fR}
+.SH "DESCRIPTION"
+.PP
+xdg\-email opens the user's preferred e\-mail composer in order to send a mail to
+\fIaddress(es)\fR
+or
+\fImailto\-uri\fR. RFC2368 defines mailto: URIs. xdg\-email limits support to, cc, subject and body fields in
+\fImailto\-uri\fR, all other fields are silently ignored.
+\fIaddress(es)\fR
+must follow the syntax of RFC822. Multiple addresses may be provided as separate arguments.
+.PP
+All information provided on the command line is used to prefill corresponding fields in the user's e\-mail composer. The user will have the opportunity to change any of this information before actually sending the e\-mail.
+.PP
+xdg\-email is for use inside a desktop session only. It is not recommended to use xdg\-email as root.
+.PP
+See http://portland.freedesktop.org/EmailConfig for information on how the user can change the e\-mail composer that is used.
+.SH "OPTIONS"
+.TP
+\fB\-\-utf8\fR
+Indicates that all command line options that follow are in utf8. Without this option, command line options are expected to be encoded according to locale. If the locale already specifies utf8 this option has no effect. This option does not affect mailto URIs that are passed on the command line.
+.TP
+\fB\-\-cc\fR \fIaddress\fR
+Specify a recipient to be copied on the e\-mail.
+.TP
+\fB\-\-bcc\fR \fIaddress\fR
+Specify a recipient to be blindly copied on the e\-mail.
+.TP
+\fB\-\-subject\fR \fItext\fR
+Specify a subject for the e\-mail.
+.TP
+\fB\-\-body\fR \fItext\fR
+Specify a body for the e\-mail. Since the user will be able to make changes before actually sending the e\-mail, this can be used to provide the user with a template for the e\-mail.
+\fItext\fR
+may contain linebreaks.
+.TP
+\fB\-\-attach\fR \fIfile\fR
+Specify an attachment for the e\-mail.
+\fIfile\fR
+must point to an existing file.
+.sp
+Some e\-mail applications require the file to remain present after xdg\-email returns.
+.TP
+\fB\-\-help\fR
+Show command synopsis.
+.TP
+\fB\-\-manual\fR
+Show this manualpage.
+.TP
+\fB\-\-version\fR
+Show the xdg\-utils version information.
+.SH "ENVIRONMENT VARIABLES"
+.PP
+xdg\-email honours the following environment variables:
+.TP
+XDG_UTILS_DEBUG_LEVEL
+Setting this environment variable to a non\-zero numerical value makes xdg\-email do more verbose reporting on stderr. Setting a higher value increases the verbosity.
+.SH "EXIT CODES"
+.PP
+An exit code of 0 indicates success while a non\-zero exit code indicates failure. The following failure codes can be returned:
+.TP
+\fB1\fR
+Error in command line syntax.
+.TP
+\fB2\fR
+One of the files passed on the command line did not exist.
+.TP
+\fB3\fR
+A required tool could not be found.
+.TP
+\fB4\fR
+The action failed.
+.TP
+\fB5\fR
+No permission to read one of the files passed on the command line.
+.SH "CONFIGURATION"
+.PP
+Visit http://portland.freedesktop.org/EmailConfig for information how to configure xdg\-email to use the email client of your choice.
+.SH "EXAMPLES"
+.PP
+.nf
+xdg\-email 'Jeremy White <jwhite@example.com>'
+.fi
+.sp
+.PP
+.nf
+xdg\-email \-\-attach /tmp/logo.png \\
+          \-\-subject 'Logo contest' \\
+          \-\-body 'Attached you find the logo for the contest.' \\
+          'jwhite@example.com'
+.fi
+.sp
+.PP
+.nf
+xdg\-email \-\-subject 'Your password is about to expire' \\
+          'jwhite@example.com' 'bastian@example.com' 'whipple@example.com'
+.fi
+.sp
+.SH "AUTHOR"
+Kevin Krammer, Jeremy White. 
+.br
+<kevin.krammer@gmx.at>
+.br
+<jwhite@codeweavers.com>

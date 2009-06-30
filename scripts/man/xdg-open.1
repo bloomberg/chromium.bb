@@ -1,0 +1,65 @@
+.\" ** You probably do not want to edit this file directly **
+.\" It was generated using the DocBook XSL Stylesheets (version 1.69.1).
+.\" Instead of manually editing it, you probably should edit the DocBook XML
+.\" source for it and then use the DocBook XSL Stylesheets to regenerate it.
+.TH "XDG\-OPEN" "1" "06/24/2007" "xdg\-utils 1.0" ""
+.\" disable hyphenation
+.nh
+.\" disable justification (adjust text to left margin only)
+.ad l
+.SH "NAME"
+xdg\-open \- opens a file or URL in the user's preferred application
+.SH "SYNOPSIS"
+.HP 9
+\fBxdg\-open\fR {\fB\fIfile\fR\fR \fB\fIURL\fR\fR}
+.HP 9
+\fBxdg\-open\fR {\fB\-\-help\fR \fB\-\-manual\fR \fB\-\-version\fR}
+.SH "DESCRIPTION"
+.PP
+xdg\-open opens a file or URL in the user's preferred application. If a URL is provided the URL will be opened in the user's preferred web browser. If a file is provided the file will be opened in the preferred application for files of that type. xdg\-open supports file, ftp, http and https URLs.
+.PP
+xdg\-open is for use inside a desktop session only. It is not recommended to use xdg\-open as root.
+.SH "OPTIONS"
+.TP
+\fB\-\-help\fR
+Show command synopsis.
+.TP
+\fB\-\-manual\fR
+Show this manualpage.
+.TP
+\fB\-\-version\fR
+Show the xdg\-utils version information.
+.SH "EXIT CODES"
+.PP
+An exit code of 0 indicates success while a non\-zero exit code indicates failure. The following failure codes can be returned:
+.TP
+\fB1\fR
+Error in command line syntax.
+.TP
+\fB2\fR
+One of the files passed on the command line did not exist.
+.TP
+\fB3\fR
+A required tool could not be found.
+.TP
+\fB4\fR
+The action failed.
+.SH "EXAMPLES"
+.PP
+.nf
+xdg\-open 'http://www.freedesktop.org/'
+.fi
+.sp
+Opens the Freedesktop.org website in the user's default browser
+.PP
+.nf
+xdg\-open /tmp/foobar.png
+.fi
+.sp
+Opens the PNG image file /tmp/foobar.png in the user's default image viewing application.
+.SH "AUTHOR"
+Kevin Krammer, Jeremy White. 
+.br
+<kevin.krammer@gmx.at>
+.br
+<jwhite@codeweavers.com>

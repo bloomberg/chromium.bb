@@ -1,0 +1,217 @@
+
+#----------------------------------------------------------------------------
+#   Common utility functions included in all XDG wrapper scripts
+#----------------------------------------------------------------------------
+
+DEBUG()
+{
+  [ -z "${XDG_UTILS_DEBUG_LEVEL}" ] && return 0;
+  [ ${XDG_UTILS_DEBUG_LEVEL} -lt $1 ] && return 0;
+  shift
+  echo "$@" >&2
+}
+
+#-------------------------------------------------------------
+# Exit script on successfully completing the desired operation
+
+exit_success()
+{
+    if [ $# -gt 0 ]; then
+        echo "$@"
+        echo
+    fi
+
+    exit 0
+}
+
+
+#-----------------------------------------
+# Exit script on malformed arguments, not enough arguments
+# or missing required option.
+# prints usage information
+
+exit_failure_syntax()
+{
+    if [ $# -gt 0 ]; then
+        echo "@NAME@: $@" >&2
+        echo "Try '@NAME@ --help' for more information." >&2
+    else
+        usage
+        echo "Use 'man @NAME@' or '@NAME@ --manual' for additional info."
+    fi
+
+    exit 1
+}
+
+#-------------------------------------------------------------
+# Exit script on missing file specified on command line
+
+exit_failure_file_missing()
+{
+    if [ $# -gt 0 ]; then
+        echo "@NAME@: $@" >&2
+    fi
+
+    exit 2
+}
+
+#-------------------------------------------------------------
+# Exit script on failure to locate necessary tool applications
+
+exit_failure_operation_impossible()
+{
+    if [ $# -gt 0 ]; then
+        echo "@NAME@: $@" >&2
+    fi
+
+    exit 3
+}
+
+#-------------------------------------------------------------
+# Exit script on failure returned by a tool application
+
+exit_failure_operation_failed()
+{
+    if [ $# -gt 0 ]; then
+        echo "@NAME@: $@" >&2
+    fi
+
+    exit 4
+}
+
+#------------------------------------------------------------
+# Exit script on insufficient permission to read a specified file
+
+exit_failure_file_permission_read()
+{
+    if [ $# -gt 0 ]; then
+        echo "@NAME@: $@" >&2
+    fi
+
+    exit 5
+}
+
+#------------------------------------------------------------
+# Exit script on insufficient permission to read a specified file
+
+exit_failure_file_permission_write()
+{
+    if [ $# -gt 0 ]; then
+        echo "@NAME@: $@" >&2
+    fi
+
+    exit 6
+}
+
+check_input_file()
+{
+    if [ ! -e "$1" ]; then
+        exit_failure_file_missing "file '$1' does not exist"
+    fi
+    if [ ! -r "$1" ]; then
+        exit_failure_file_permission_read "no permission to read file '$1'"
+    fi
+}
+
+check_vendor_prefix()
+{
+    file_label="$2"
+    [ -n "$file_label" ] || file_label="filename"
+    file=`basename "$1"`
+    case "$file" in
+       [a-zA-Z]*-*)
+         return
+         ;;
+    esac
+
+    echo "@NAME@: $file_label '$file' does not have a proper vendor prefix" >&2
+    echo 'A vendor prefix consists of alpha characters ([a-zA-Z]) and is terminated' >&2
+    echo 'with a dash ("-"). An example '"$file_label"' is '"'example-$file'" >&2
+    echo "Use --novendor to override or '@NAME@ --manual' for additional info." >&2
+    exit 1
+}
+
+check_output_file()
+{
+    # if the file exists, check if it is writeable
+    # if it does not exists, check if we are allowed to write on the directory
+    if [ -e "$1" ]; then
+        if [ ! -w "$1" ]; then
+            exit_failure_file_permission_write "no permission to write to file '$1'"
+        fi
+    else
+        DIR=`dirname "$1"`
+        if [ ! -w "$DIR" -o ! -x "$DIR" ]; then
+            exit_failure_file_permission_write "no permission to create file '$1'"
+        fi
+    fi
+}
+
+#----------------------------------------
+# Checks for shared commands, e.g. --help
+
+check_common_commands()
+{
+    while [ $# -gt 0 ] ; do
+        parm="$1"
+        shift
+
+        case "$parm" in
+            --help)
+            usage
+            echo "Use 'man @NAME@' or '@NAME@ --manual' for additional info."
+            exit_success
+            ;;
+
+            --manual)
+            manualpage
+            exit_success
+            ;;
+
+            --version)
+            echo "@NAME@ 1.0.2"
+            exit_success
+            ;;
+        esac
+    done
+}
+
+check_common_commands "$@"
+
+[ -z "${XDG_UTILS_DEBUG_LEVEL}" ] && unset XDG_UTILS_DEBUG_LEVEL;
+if [ ${XDG_UTILS_DEBUG_LEVEL-0} -lt 1 ]; then
+    # Be silent
+    xdg_redirect_output=" > /dev/null 2> /dev/null"
+else
+    # All output to stderr
+    xdg_redirect_output=" >&2"
+fi
+
+#--------------------------------------
+# Checks for known desktop environments
+# set variable DE to the desktop environments name, lowercase
+
+detectDE()
+{
+    if [ x"$KDE_FULL_SESSION" = x"true" ]; then DE=kde;
+    elif [ x"$GNOME_DESKTOP_SESSION_ID" != x"" ]; then DE=gnome;
+    elif xprop -root _DT_SAVE_MODE | grep ' = \"xfce4\"$' >/dev/null 2>&1; then DE=xfce;
+    fi
+}
+
+#----------------------------------------------------------------------------
+# kfmclient exec/openURL can give bogus exit value in KDE <= 3.5.4
+# It also always returns 1 in KDE 3.4 and earlier
+# Simply return 0 in such case
+
+kfmclient_fix_exit_code()
+{
+    version=`kde${KDE_SESSION_VERSION}-config --version 2>/dev/null | grep KDE`
+    major=`echo $version | sed 's/KDE: \([0-9]\).*/\1/'`
+    minor=`echo $version | sed 's/KDE: [0-9]*\.\([0-9]\).*/\1/'`
+    release=`echo $version | sed 's/KDE: [0-9]*\.[0-9]*\.\([0-9]\).*/\1/'`
+    test "$major" -gt 3 && return $1
+    test "$minor" -gt 5 && return $1
+    test "$release" -gt 4 && return $1
+    return 0
+}
