@@ -628,13 +628,15 @@ class MakefileWriter:
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
-  root_makefile = open(os.path.join(options.depth, 'Makefile'), 'w')
+  root_makefile = open(os.path.join(options.depth, 'Makefile' + options.suffix),
+                       'w')
   root_makefile.write(SHARED_HEADER_ROOTDIR % options.depth)
   root_makefile.write(SHARED_HEADER)
 
   for qualified_target in target_list:
     build_file, target = gyp.common.BuildFileAndTarget('', qualified_target)[:2]
-    output_file = os.path.join(os.path.split(build_file)[0], target + '.mk')
+    output_file = os.path.join(os.path.split(build_file)[0],
+                               target + options.suffix + '.mk')
 
     spec = target_dicts[qualified_target]
     configs = spec['configurations']
