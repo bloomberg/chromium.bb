@@ -493,9 +493,9 @@ class MakefileWriter:
     elif self.type == 'executable':
       target = spec.get('product_name', target)
     else:
-      print "ERROR: What output file should be generated?", "typ", self.type, "target", target
-    output = os.path.join('$(obj)', self.path, target)
-    return output
+      print ("ERROR: What output file should be generated?",
+             "typ", self.type, "target", target)
+    return os.path.join('$(obj)', self.path, target)
 
 
   def ComputeDeps(self, spec):
@@ -533,16 +533,6 @@ class MakefileWriter:
     if self.type == 'executable':
       self.WriteMakeRule([self.output], link_deps,
                          actions = ['$(call do_cmd,link)'])
-      filename = os.path.split(self.output)[1]
-      binpath = '$(builddir)/' + filename
-      self.WriteMakeRule([binpath], [self.output],
-                         actions = ['$(call do_cmd,copy)'],
-                         comment = 'Copy this to the binary output path.')
-
-      self.WriteMakeRule([filename], [binpath],
-                         comment = 'Short alias for building this executable.')
-      self.WriteMakeRule(['all'], [binpath],
-                         comment = 'Add executable to "all" target.')
     elif self.type == 'static_library':
       self.WriteMakeRule([self.output], link_deps,
                          actions = [
@@ -561,6 +551,21 @@ class MakefileWriter:
       pass
     else:
       print "WARNING: no output for", self.type, target
+
+    # Add special-case rules for our installable targets.
+    # 1) They need to install to the build dir or "product" dir.
+    # 2) They get shortcuts for building (e.g. "make chrome").
+    # 3) They are part of "make all".
+    if self.type in ('executable', 'loadable_module'):
+      filename = os.path.split(self.output)[1]
+      binpath = '$(builddir)/' + filename
+      self.WriteMakeRule([binpath], [self.output],
+                         actions = ['$(call do_cmd,copy)'],
+                         comment = 'Copy this to the binary output path.')
+      self.WriteMakeRule([filename], [binpath],
+                         comment = 'Short alias for building this executable.')
+      self.WriteMakeRule(['all'], [binpath],
+                         comment = 'Add executable to "all" target.')
 
 
   def WriteList(self, list, variable=None, prefix=''):
