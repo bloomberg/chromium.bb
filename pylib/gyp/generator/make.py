@@ -51,6 +51,11 @@ generator_default_variables = {
   'RULE_INPUT_NAME': 'XXXNAME$(notdir $(basename $^)0',
 }
 
+# Tell GYP how to process the input for us.
+# TODO: This might not be needed, but input.py was doing this for all linux
+# generation so I kept the behavior for this generator also.
+generator_wants_absolute_build_file_paths = True
+
 # Header of toplevel Makefile.
 # This should go into the build tree, but it's easier to keep it here for now.
 SHARED_HEADER = ("""\

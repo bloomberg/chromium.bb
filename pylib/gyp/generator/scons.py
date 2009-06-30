@@ -23,7 +23,9 @@ generator_default_variables = {
     'RULE_INPUT_PATH': '${SOURCE}',
 }
 
+# Tell GYP how to process the input for us.
 generator_handles_variants = True
+generator_wants_absolute_build_file_paths = True
 
 header = """\
 # This file is generated; do not edit.

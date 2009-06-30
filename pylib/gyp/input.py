@@ -71,6 +71,8 @@ base_non_configuration_keys = [
 ]
 non_configuration_keys = []
 
+# Controls how the generator want the build file paths.
+absolute_build_file_paths = False
 
 def ExceptionAppend(e, msg):
   if not e.args:
@@ -203,15 +205,18 @@ def LoadBuildFileIncludesIntoList(sublist, sublist_path, data, aux_data,
 # that contains the targets...
 def LoadTargetBuildFile(build_file_path, data, aux_data, variables, includes,
                         depth):
+  global absolute_build_file_paths
+
   # If depth is set, predefine the DEPTH variable to be a relative path from
   # this build file's directory to the directory identified by depth.
   if depth:
     variables['DEPTH'] = \
         gyp.common.RelativePath(depth, os.path.dirname(build_file_path))
 
-  if sys.platform in ('linux', 'linux2'):
-    # TODO(mmentovai):  replace this block with the real fix.
+  # If the generator needs absolue paths, then do so.
+  if absolute_build_file_paths:
     build_file_path = os.path.abspath(build_file_path)
+
   if build_file_path in data:
     # Already loaded.
     return
@@ -553,7 +558,7 @@ def ProcessVariablesAndConditionsInDict(the_dict, is_late, variables,
   # so that conditions may take advantage of expanded variables.  For example,
   # if the_dict contains:
   #   {'type':       '<(library_type)',
-  #    'conditions': [['_type=="static_library"', { ... }]]}, 
+  #    'conditions': [['_type=="static_library"', { ... }]]},
   # _type, as used in the condition, will only be set to the value of
   # library_type if variable expansion is performed before condition
   # processing.  However, condition processing should occur prior to recursion
@@ -1546,6 +1551,10 @@ def Load(build_files, variables, includes, depth, generator_input_info):
   # TODO(mark) handle variants if the generator doesn't want them directly.
   generator_handles_variants = \
       generator_input_info['generator_handles_variants']
+
+  global absolute_build_file_paths
+  absolute_build_file_paths = \
+      generator_input_info['generator_wants_absolute_build_file_paths']
 
   # A generator can have other lists (in addition to sources) be processed
   # for rules.
