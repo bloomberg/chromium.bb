@@ -144,12 +144,19 @@ static int cs_gem_write_reloc(struct radeon_cs *cs,
              * domain set then the read_domain should also be set for this
              * new relocation.
              */
-            if (reloc->read_domain && !read_domain) {
-                return -EINVAL;
+            /* the DDX expects to read and write from same pixmap */
+            if (write_domain && (reloc->read_domain & write_domain)) {
+                reloc->read_domain = 0;
+                reloc->write_domain = write_domain;
+            } else if (read_domain & reloc->write_domain) {
+                reloc->read_domain = 0;
+            } else {
+                if (write_domain != reloc->write_domain)
+                    return -EINVAL;
+                if (read_domain != reloc->read_domain)
+                    return -EINVAL;
             }
-            if (reloc->write_domain && !write_domain) {
-                return -EINVAL;
-            }
+
             reloc->read_domain |= read_domain;
             reloc->write_domain |= write_domain;
             /* update flags */
