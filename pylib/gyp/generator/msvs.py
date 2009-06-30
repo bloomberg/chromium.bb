@@ -837,9 +837,12 @@ def GenerateOutput(target_list, target_dicts, data, params):
   """
 
   options = params['options']
+  generator_flags = params['generator_flags']
 
-  # Select project file format version.
-  msvs_version = MSVSVersion.SelectVisualStudioVersion(options.msvs_version)
+  # Select project file format version (if unset, default to auto detecting).
+  msvs_version = \
+    MSVSVersion.SelectVisualStudioVersion(generator_flags.get('msvs_version',
+                                                              'auto')
 
   # Prepare the set of configurations.
   configs = set()

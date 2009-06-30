@@ -57,6 +57,27 @@ def Load(build_files, format, default_variables={}, includes=[], depth='.'):
                           depth, generator_input_info)
   return [generator] + result
 
+def NameValueListToDict(name_value_list):
+  """
+  Takes an array of strings of the form 'NAME=VALUE' and creates a dictionary
+  of the pairs.  If a string is simply NAME, then the value in the dictionary
+  is set to True.  If VALUE can be converted to an integer, it is.
+  """
+  result = { }
+  for item in name_value_list:
+    tokens = item.split('=', 1)
+    if len(tokens) == 2:
+      # If we can make it an int, use that, otherwise, use the string.
+      try:
+        token_value = int(tokens[1])
+      except ValueError:
+        token_value = tokens[1]
+      # Set the variable to the supplied value.
+      result[tokens[0]] = token_value
+    else:
+      # No value supplied, treat it as a boolean and set it.
+      result[tokens[0]] = True
+  return result
 
 def main(args):
   my_name = os.path.basename(sys.argv[0])
@@ -69,7 +90,7 @@ def main(args):
   parser.add_option('-f', '--format', dest='formats', action='append',
                     help='output formats to generate')
   parser.add_option('--msvs-version', dest='msvs_version',
-                    default='auto', help='visual studio sub-format to generate')
+                    help='Deprecated; use -G msvs_version=MSVS_VERSION instead')
   parser.add_option('-I', '--include', dest='includes', action='append',
                     metavar='INCLUDE',
                     help='files to include in all loaded .gyp files')
@@ -77,9 +98,8 @@ def main(args):
                     help='set DEPTH gyp variable to a relative path to PATH')
   parser.add_option('-S', '--suffix', dest='suffix', default='',
                     help='suffix to add to generated files')
-  parser.add_option('--generator-flags', dest='generator_flags', default='',
-                    help='comma separated list of flag names to pass to the '
-                         'generator')
+  parser.add_option('-G', dest='generator_flags', action='append', default=[],
+                    metavar='FLAG=VAL', help='sets generator flag FLAG to VAL')
 
   # We read a few things from ~/.gyp, so set up a var for that.
   home_vars = ['HOME']
@@ -158,19 +178,7 @@ def main(args):
     defines = shlex.split(defines)
   if options.defines:
     defines += options.defines
-  for define in defines:
-    tokens = define.split('=', 1)
-    if len(tokens) == 2:
-      # If we can make it an int, use that, otherwise, use the string.
-      try:
-        token_value = int(tokens[1])
-      except ValueError:
-        token_value = tokens[1]
-      # Set the variable to the supplied value.
-      cmdline_default_variables[tokens[0]] = token_value
-    else:
-      # No value supplied, treat it as a boolean and set it.
-      cmdline_default_variables[tokens[0]] = True
+  cmdline_default_variables = NameValueListToDict(defines)
 
   # Set up includes.
   includes = []
@@ -188,7 +196,21 @@ def main(args):
 
   # Generator flags should be prefixed with the target generator since they
   # are global across all generator runs.
-  generator_flags = options.generator_flags.split(',')
+  gen_flags = os.environ.get('GYP_GENERATOR_FLAGS', [])
+  if gen_flags:
+    gen_flags = shlex.split(gen_flags)
+  if options.generator_flags:
+    gen_flags += options.generator_flags
+  generator_flags = NameValueListToDict(gen_flags)
+  
+  # TODO: Remove this and the option after we've gotten folks to move to the
+  # generator flag.
+  if options.msvs_version:
+    print >>sys.stderr, \
+      'DEPRECATED: Use generator flag (-G msvs_version=' + \
+      options.msvs_version + ') instead of --msvs-version=' + \
+      options.msvs_version
+    generator_flags['msvs_version'] = options.msvs_version
 
   # Generate all requested formats (use a set in case we got one format request
   # twice)
