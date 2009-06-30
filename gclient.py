@@ -129,6 +129,7 @@ Valid options:
   --revision SOLUTION@REV : update given solution to specified revision
   --deps PLATFORM(S)  : sync deps for the given platform(s), or 'all'
   --verbose           : output additional diagnostics
+  --head              : update to latest revision, instead of last good revision
 
 Examples:
   gclient %(cmd)s
