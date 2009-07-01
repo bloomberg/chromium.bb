@@ -19,7 +19,8 @@ SCRIPTS		= \
     xdg-icon-resource \
     xdg-open \
     xdg-email \
-    xdg-screensaver
+    xdg-screensaver \
+    xdg-settings
 #    xdg-su
 #    xdg-copy \
 #    xdg-file-dialog
@@ -89,6 +90,7 @@ xdg-email: xdg-email.in xdg-utils-common.in
 xdg-mime: xdg-mime.in xdg-utils-common.in
 xdg-open: xdg-open.in xdg-utils-common.in
 xdg-screensaver: xdg-screensaver.in xdg-utils-common.in
+xdg-settings: xdg-settings.in xdg-utils-common.in
 xdg-icon-resource: xdg-icon-resource.in xdg-utils-common.in
 
 xdg-su: xdg-su.in xdg-utils-common.in

@@ -1,0 +1,12 @@
+This directory contains a copy of xdg-utils obtained from CVS on 2009-06-29,
+with this command:
+
+cvs -d:pserver:anoncvs@anoncvs.freedesktop.org:/cvs/portland co -d xdg-utils portland/xdg-utils
+
+The .cvsignore files were converted to svn:ignore properties to check it in.
+
+It has been modified to add the xdg-settings command for getting and, in some
+cases, setting various GNU/Linux desktop environment settings like the default
+web browser and proxy configuration.
+
+The license for xdg-utils is in the LICENSE file and is similar to BSD-style.

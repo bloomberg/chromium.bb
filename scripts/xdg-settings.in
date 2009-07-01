@@ -1,0 +1,319 @@
+#!/bin/sh
+#---------------------------------------------
+#   xdg-settings
+#
+#   Utility script to get various settings from the desktop environment.
+#
+#   Refer to the usage() function below for usage.
+#
+#   Copyright 2009, Google Inc.
+#
+#   LICENSE:
+#
+#---------------------------------------------
+
+manualpage()
+{
+cat << _MANUALPAGE
+_MANUALPAGE
+}
+
+usage()
+{
+cat << _USAGE
+_USAGE
+}
+
+#@xdg-utils-common@
+
+check_desktop_filename()
+{
+    case "$1" in
+      */*)
+        exit_failure_syntax "invalid application name"
+        ;;
+      *.desktop)
+        return
+        ;;
+      *)
+        exit_failure_syntax "invalid application name"
+        ;;
+    esac
+}
+
+# {{{ default browser
+
+# In order to remove an application from the automatically-generated list of
+# applications for handling a given MIME type, the desktop environment may copy
+# the global .desktop file into the user's .local directory, and remove that
+# MIME type from its list. In that case, we must restore the MIME type to the
+# application's list of MIME types before we can set it as the default for that
+# MIME type. (We can't just delete the local version, since the user may have
+# made other changes to it as well. So, tweak the existing file.)
+# This function is hard-coded for text/html but it could be adapted if needed.
+fix_local_desktop_file()
+{
+    apps="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+    # No local desktop file?
+    [ ! -f "$apps/$1" ] && return
+    MIME="`grep ^MimeType= "$apps/$1" | cut -d= -f 2-`"
+    case "$MIME" in
+      text/html\;*|*\;text/html\;*|*\;text/html\;|*\;text/html)
+        # Already has text/html? Great!
+        return 0
+        ;;
+    esac
+
+    # Add text/html to the list
+    temp="`mktemp $apps/$1.XXXXXX`" || return
+    grep -v ^MimeType= "$apps/$1" >> "$temp"
+    echo "MimeType=text/html;$MIME" >> "$temp"
+
+    oldlines="`wc -l < "$apps/$1"`"
+    newlines="`wc -l < "$temp"`"
+    # The new file should have at least as many lines as the old
+    if [ $oldlines -le $newlines ]; then
+        mv "$temp" "$apps/$1"
+        # This can take a little bit to get noticed
+        sleep 4
+    else
+        rm -f "$temp"
+        return 1
+    fi
+}
+
+get_browser_mime()
+{
+    xdg-mime query default text/html
+}
+
+set_browser_mime()
+{
+    orig="`get_browser_mime`"
+    # Fixing the local desktop file can actually change the default browser all
+    # by itself, so we fix it only after querying to find the current default
+    fix_local_desktop_file "$1" || return
+    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share/applications}"
+    xdg-mime default "$1" text/html || return
+    if [ x"`get_browser_mime`" != x"$1" ]; then
+        # Put back the original value
+        xdg-mime default "$orig" text/html
+        exit_failure_operation_failed
+    fi
+}
+
+get_browser_kde()
+{
+    browser="`kreadconfig --file kdeglobals --group General --key BrowserApplication`"
+    if [ x"$browser" = x ]; then
+        # No default browser; KDE will probably use the MIME type text/html
+        get_browser_mime
+    else
+        echo "$browser"
+    fi
+}
+
+set_browser_kde()
+{
+    set_browser_mime "$1" || return
+    kwriteconfig --file kdeglobals --group General --key BrowserApplication "$1"
+}
+
+# This handles backslashes but not quote marks
+first_word()
+{
+    read first rest
+    echo "$first"
+}
+
+binary_to_desktop_file()
+{
+    search="${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    binary="`which "$1"`"
+    base="`basename "$1"`"
+    IFS=:
+    for dir in $search; do
+        unset IFS
+        [ "$dir" -a -d "$dir/applications" ] || continue
+        for file in "$dir"/applications/*.desktop; do
+            [ -r "$file" ] || continue
+            # Check to make sure it's worth the processing
+            grep -q "^Exec.*$base" "$file" || continue
+            exec="`grep "^Exec\(\[[^]=]*]\)\?=" "$file" | cut -d= -f 2- | first_word`"
+            full="`which "$exec"`"
+            if [ x"$full" = x"$binary" ]; then
+                # Fix any double slashes that got added path composition
+                echo "$file" | sed -e 's,//*,/,g'
+                return
+            fi
+        done
+    done
+}
+
+desktop_file_to_command()
+{
+    search="${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    desktop="`basename "$1"`"
+    IFS=:
+    for dir in $search; do
+        [ "$dir" -a -d "$dir/applications" ] || continue
+        file="$dir/applications/$desktop"
+        [ -r "$file" ] || continue
+        # Change %F, %f, %U, and %u to %s
+        grep "^Exec\(\[[^]=]*]\)\?=" "$file" | cut -d= -f 2- | sed -e 's/%[FfUu]/%s/g'
+        return
+    done
+}
+
+get_browser_gnome()
+{
+    binary="`gconftool-2 --get /desktop/gnome/applications/browser/exec`"
+    if [ x"$binary" = x ]; then
+        # No default browser; GNOME might use the MIME type text/html
+        get_browser_mime
+    else
+        # gconftool gives the binary (maybe with %s etc. afterward),
+        # but we want the desktop file name, not the binary. So, we
+        # have to find the desktop file to which it corresponds.
+        binary="`echo "$binary" | first_word`"
+        desktop="`binary_to_desktop_file "$binary"`"
+        if [ "$desktop" ]; then
+            basename "$desktop"
+            exit_success
+        fi
+        binary="`which "$binary"`"
+        if [ "$binary" ]; then
+            echo "$binary"
+            exit_success
+        fi
+        exit_failure_operation_failed
+    fi
+}
+
+set_browser_gnome()
+{
+    command="`desktop_file_to_command "$1"`"
+    [ "$command" ] || exit_failure_file_missing
+    binary="`echo "$command" | first_word`"
+    set_browser_mime "$1" || return
+
+    # Set the default browser
+    gconftool-2 --type string --set /desktop/gnome/applications/browser/exec "$binary"
+    gconftool-2 --type bool --set /desktop/gnome/applications/browser/needs_term false
+    gconftool-2 --type bool --set /desktop/gnome/applications/browser/nremote true
+    # Set the handler for HTTP and HTTPS
+    for protocol in http https; do
+        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$command"
+        gconftool-2 --type bool --set /desktop/gnome/url-handlers/$protocol/needs_terminal false
+        gconftool-2 --type bool --set /desktop/gnome/url-handlers/$protocol/enabled true
+    done
+    # Set the handler for about: and unknown URL types
+    for protocol in about unknown; do
+        gconftool-2 --type string --set /desktop/gnome/url-handlers/$protocol/command "$command"
+    done
+}
+
+get_browser_xfce()
+{
+    # Not supported yet
+    exit_failure_operation_impossible
+}
+
+set_browser_xfce()
+{
+    # Not supported yet
+    exit_failure_operation_impossible
+}
+
+# }}} default browser
+
+dispatch_specific()
+{
+    # The PARM comments in this function are used to generate the output of
+    # the --list option. The formatting is important. Make sure to line up the
+    # property descriptions with spaces so that it will look nice.
+    if [ x"$op" = x"get" ]; then
+        case "$parm" in
+          default-web-browser) # PROP:           Default web browser
+            get_browser_$DE
+            ;;
+
+          *)
+            exit_failure_syntax
+            ;;
+        esac
+    else # set
+        [ $# -eq 1 ] || exit_failure_syntax "unexpected/missing argument"
+        case "$parm" in
+          default-web-browser)
+            check_desktop_filename "$1"
+            set_browser_$DE "$1"
+            ;;
+
+          *)
+            exit_failure_syntax
+            ;;
+        esac
+    fi
+
+    if [ $? -eq 0 ]; then
+        exit_success
+    else
+        exit_failure_operation_failed
+    fi
+}
+
+dispatch_generic()
+{
+    # We only know how to get the default web browser
+    [ x"$op" != x"get" ] && exit_failure_operation_impossible
+    [ x"$parm" != x"default-web-browser" ] && exit_failure_operation_impossible
+
+    # FIXME: look up the desktop file name
+
+    # First look in $BROWSER
+    if [ x"$BROWSER" != x ]; then
+        echo "${BROWSER%%:*}"
+        exit_success
+    fi
+
+    # Debian and Ubuntu (and others?) have x-www-browser
+    browser="`which x-www-browser`"
+    [ "$browser" ] || exit_failure_operation_failed
+    browser="`readlink -f "$browser"`"
+
+    echo "$browser"
+    exit_success
+}
+
+if [ x"$1" = x"--list" ]; then
+    echo "Known properties:"
+    # Extract the property names from dispatch_specific() above
+    grep "^[ 	]*[^)]*) # PROP:" "$0" | sed -e 's/^[ 	]*\([^)]*\)) # PROP: \(.*\)$/  \1 \2/' | sort
+    exit_success
+fi
+
+[ x"$1" != x ] || exit_failure_syntax "no operation given"
+[ x"$2" != x ] || exit_failure_syntax "no parameter name given"
+
+op="$1"
+parm="$2"
+shift 2
+
+[ x"$op" = x"get" -o x"$op" = x"set" ] || exit_failure_syntax "invalid operation"
+
+detectDE
+
+case "$DE" in
+    kde|gnome|xfce)
+    dispatch_specific "$@"
+    ;;
+
+    generic)
+    dispatch_generic "$@"
+    ;;
+
+    *)
+    exit_failure_operation_impossible "unknown desktop environment"
+    ;;
+esac

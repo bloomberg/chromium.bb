@@ -15,3 +15,5 @@ e-mail composer
 
 xdg-screensaver - command line tool for controlling the screensaver
 
+xdg-settings - get various settings from the desktop environment
+
