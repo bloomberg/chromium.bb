@@ -206,6 +206,7 @@ ProcessResult MinidumpProcessor::Process(
       interrupted = true;
     }
     process_state->threads_.push_back(stack.release());
+    process_state->thread_memory_regions_.push_back(thread_memory);
   }
 
   if (interrupted) {

@@ -59,6 +59,7 @@ using google_breakpad::BasicSourceLineResolver;
 using google_breakpad::CallStack;
 using google_breakpad::CodeModule;
 using google_breakpad::CodeModules;
+using google_breakpad::Minidump;
 using google_breakpad::MinidumpProcessor;
 using google_breakpad::OnDemandSymbolSupplier;
 using google_breakpad::PathnameStripper;
@@ -73,6 +74,7 @@ typedef struct {
   NSString *minidumpPath;
   NSString *searchDir;
   NSString *symbolSearchDir;
+  BOOL printThreadMemory;
 } Options;
 
 //=============================================================================
@@ -234,7 +236,13 @@ static void Start(Options *options) {
   scoped_ptr<MinidumpProcessor>
     minidump_processor(new MinidumpProcessor(symbol_supplier.get(), &resolver));
   ProcessState process_state;
-  if (minidump_processor->Process(minidump_file, &process_state) !=
+  scoped_ptr<Minidump> dump(new google_breakpad::Minidump(minidump_file));
+
+  if (!dump->Read()) {
+    fprintf(stderr, "Minidump %s could not be read\n", dump->path().c_str());
+    return;
+  }
+  if (minidump_processor->Process(dump.get(), &process_state) !=
       google_breakpad::PROCESS_OK) {
     fprintf(stderr, "MinidumpProcessor::Process failed\n");
     return;
@@ -274,12 +282,20 @@ static void Start(Options *options) {
 
   // Print all of the threads in the dump.
   int thread_count = process_state.threads()->size();
+  const std::vector<google_breakpad::MinidumpMemoryRegion*>
+    *thread_memory_regions = process_state.thread_memory_regions();
+
   for (int thread_index = 0; thread_index < thread_count; ++thread_index) {
     if (thread_index != requesting_thread) {
       // Don't print the crash thread again, it was already printed.
       printf("\n");
       printf("Thread %d\n", thread_index);
       PrintStack(process_state.threads()->at(thread_index), cpu);
+      google_breakpad::MinidumpMemoryRegion *thread_stack_bytes =
+        thread_memory_regions->at(thread_index);
+      if (options->printThreadMemory) {
+        thread_stack_bytes->Print();
+      }
     }
   }
 
@@ -303,9 +319,11 @@ static void Usage(int argc, const char *argv[]) {
                   "If modules cannot be found at the paths stored in the "
                   "minidump file, they will be searched for at "    
                   "<module-search-dir>/<path-in-minidump-file>.\n");
-  fprintf(stderr, "Usage: %s [-s module-search-dir] [-S symbol-file-search-dir] minidump-file\n", argv[0]);
+  fprintf(stderr, "Usage: %s [-s module-search-dir] [-S symbol-file-search-dir] "
+	          "minidump-file\n", argv[0]);
   fprintf(stderr, "\t-s: Specify a search directory to use for missing modules\n" 
-                  "\t-S: Specify a search directory to use for symbol files\n"  
+                  "\t-S: Specify a search directory to use for symbol files\n"
+                  "\t-t: Print thread stack memory in hex\n"
                   "\t-h: Usage\n"
                   "\t-?: Usage\n");
 }
@@ -315,7 +333,7 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
   extern int optind;
   char ch;
 
-  while ((ch = getopt(argc, (char * const *)argv, "S:s:h?")) != -1) {
+  while ((ch = getopt(argc, (char * const *)argv, "S:s:ht?")) != -1) {
     switch (ch) {
       case 's':
         options->searchDir = [[NSFileManager defaultManager]
@@ -329,6 +347,9 @@ static void SetupOptions(int argc, const char *argv[], Options *options) {
                                       length:strlen(optarg)];
         break;
         
+      case 't':
+        options->printThreadMemory = YES;
+        break;
       case 'h':
       case '?':
         Usage(argc, argv);
