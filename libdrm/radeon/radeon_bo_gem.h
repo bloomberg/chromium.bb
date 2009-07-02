@@ -39,4 +39,5 @@ void radeon_bo_manager_gem_dtor(struct radeon_bo_manager *bom);
 
 uint32_t radeon_gem_name_bo(struct radeon_bo *bo);
 int radeon_gem_set_domain(struct radeon_bo *bo, uint32_t read_domains, uint32_t write_domain);
+int radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name);
 #endif

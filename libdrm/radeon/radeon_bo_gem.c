@@ -236,6 +236,21 @@ uint32_t radeon_gem_name_bo(struct radeon_bo *bo)
     return bo_gem->name;
 }
 
+int radeon_gem_get_kernel_name(struct radeon_bo *bo, uint32_t *name)
+{
+    struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
+    struct drm_gem_flink flink;
+    int r;
+
+    flink.handle = bo->handle;
+    r = ioctl(bo->bom->fd, DRM_IOCTL_GEM_FLINK, &flink);
+    if (r) {
+	return r;
+    }
+    *name = flink.name;
+    return 0;
+}
+
 int radeon_gem_set_domain(struct radeon_bo *bo, uint32_t read_domains, uint32_t write_domain)
 {
     struct radeon_bo_gem *bo_gem = (struct radeon_bo_gem*)bo;
