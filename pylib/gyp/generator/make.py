@@ -80,7 +80,7 @@ BUILDTYPE ?= Debug
 # Directory all our build output goes into.
 # Note that this must be two directories beneath src/ for unit tests to pass,
 # as they reach into the src/ directory for data with relative paths.
-builddir ?= $(rootdir)/out/$(BUILDTYPE)
+builddir ?= $(rootdir)/$(builddir_name)/$(BUILDTYPE)
 
 # Object output directory.
 obj := $(builddir)/obj
@@ -201,6 +201,12 @@ $(obj)/%.o: $(obj)/%.cpp
 SHARED_HEADER_ROOTDIR = ("""\
 # The root of the project.
 rootdir ?= %s
+
+""")
+
+SHARED_HEADER_BUILDDIR_NAME = ("""\
+# The name of the builddir.
+builddir_name ?= %s
 
 """)
 
@@ -697,9 +703,12 @@ class MakefileWriter:
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
+  generator_flags = params['generator_flags']
+  builddir_name = generator_flags.get('output_dir', 'out')
   root_makefile = open(os.path.join(options.depth, 'Makefile' + options.suffix),
                        'w')
   root_makefile.write(SHARED_HEADER_ROOTDIR % options.depth)
+  root_makefile.write(SHARED_HEADER_BUILDDIR_NAME % builddir_name)
   root_makefile.write(SHARED_HEADER)
 
   for qualified_target in target_list:
