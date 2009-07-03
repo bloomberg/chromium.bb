@@ -227,7 +227,7 @@ static int cs_gem_begin(struct radeon_cs *cs,
         uint32_t tmp, *ptr;
 	int num = (ndw > 0x3FF) ? ndw : 0x3FF;
 
-        tmp = (cs->cdw + 1 + num) & (~num);
+        tmp = (cs->ndw + 1 + num) & (~num);
         ptr = (uint32_t*)realloc(cs->packets, 4 * tmp);
         if (ptr == NULL) {
             return -ENOMEM;
