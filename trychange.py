@@ -24,7 +24,7 @@ import gcl
 import gclient
 import upload
 
-__version__ = '1.1'
+__version__ = '1.1.1'
 
 
 # Constants
@@ -253,6 +253,8 @@ def _ParseSendChangeOptions(options):
     values['issue'] = options.issue
   if options.patchset:
     values['patchset'] = options.patchset
+  if options.target:
+    values['target'] = options.target
   return values
 
 
@@ -423,6 +425,10 @@ def TryChange(argv,
   group.add_option("-c", "--clobber", action="store_true",
                     help="Force a clobber before building; e.g. don't do an "
                          "incremental build")
+  # TODO(maruel): help="Select a specific configuration, usually 'debug' or "
+  #                    "'release'"
+  group.add_option("--target", help=optparse.SUPPRESS_HELP)
+
   # Override the list of tests to run, use multiple times to list many tests
   # (or comma separated)
   group.add_option("-t", "--tests", action="append",
