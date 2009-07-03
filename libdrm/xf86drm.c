@@ -241,22 +241,22 @@ static int drmMatchBusID(const char *id1, const char *id2)
 
     /* Try to match old/new-style PCI bus IDs. */
     if (strncasecmp(id1, "pci", 3) == 0) {
-	int o1, b1, d1, f1;
-	int o2, b2, d2, f2;
+	unsigned int o1, b1, d1, f1;
+	unsigned int o2, b2, d2, f2;
 	int ret;
 
-	ret = sscanf(id1, "pci:%04x:%02x:%02x.%d", &o1, &b1, &d1, &f1);
+	ret = sscanf(id1, "pci:%04x:%02x:%02x.%u", &o1, &b1, &d1, &f1);
 	if (ret != 4) {
 	    o1 = 0;
-	    ret = sscanf(id1, "PCI:%d:%d:%d", &b1, &d1, &f1);
+	    ret = sscanf(id1, "PCI:%u:%u:%u", &b1, &d1, &f1);
 	    if (ret != 3)
 		return 0;
 	}
 
-	ret = sscanf(id2, "pci:%04x:%02x:%02x.%d", &o2, &b2, &d2, &f2);
+	ret = sscanf(id2, "pci:%04x:%02x:%02x.%u", &o2, &b2, &d2, &f2);
 	if (ret != 4) {
 	    o2 = 0;
-	    ret = sscanf(id2, "PCI:%d:%d:%d", &b2, &d2, &f2);
+	    ret = sscanf(id2, "PCI:%u:%u:%u", &b2, &d2, &f2);
 	    if (ret != 3)
 		return 0;
 	}
