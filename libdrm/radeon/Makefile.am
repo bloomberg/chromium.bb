@@ -37,6 +37,7 @@ libdrm_radeon_la_LIBADD = ../libdrm.la @PTHREADSTUBS_LIBS@
 libdrm_radeon_la_SOURCES = \
 	radeon_bo_gem.c \
 	radeon_cs_gem.c \
+	radeon_cs_space.c \
 	radeon_track.c
 
 libdrm_radeonincludedir = ${includedir}/drm

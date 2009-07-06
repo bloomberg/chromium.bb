@@ -204,7 +204,8 @@ static struct radeon_bo_funcs bo_gem_funcs = {
     bo_unref,
     bo_map,
     bo_unmap,
-    bo_wait
+    bo_wait,
+    NULL,
 };
 
 struct radeon_bo_manager *radeon_bo_manager_gem_ctor(int fd)
