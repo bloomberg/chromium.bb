@@ -270,6 +270,36 @@ static int drmMatchBusID(const char *id1, const char *id2)
 }
 
 /**
+ * Handles error checking for chown call.
+ *
+ * \param path to file.
+ * \param id of the new owner.
+ * \param id of the new group.
+ *
+ * \return zero if success or -1 if failure.
+ *
+ * \internal
+ * Checks for failure. If failure was caused by signal call chown again.
+ * If any other failure happened then it will output error mesage using
+ * drmMsg() call.
+ */
+static int chown_check_return(const char *path, uid_t owner, gid_t group)
+{
+	int rv;
+
+	do {
+		rv = chown(path, owner, group);
+	} while (rv != 0 && errno == EINTR);
+
+	if (rv == 0)
+		return 0;
+
+	drmMsg("Failed to change owner or group for file %s! %d: %s\n",
+			path, errno, strerror(errno));
+	return -1;
+}
+
+/**
  * Open the DRM device, creating it if necessary.
  *
  * \param dev major and minor numbers of the device.
@@ -307,7 +337,7 @@ static int drmOpenDevice(long dev, int minor, int type)
 	if (!isroot)
 	    return DRM_ERR_NOT_ROOT;
 	mkdir(DRM_DIR_NAME, DRM_DEV_DIRMODE);
-	chown(DRM_DIR_NAME, 0, 0); /* root:root */
+	chown_check_return(DRM_DIR_NAME, 0, 0); /* root:root */
 	chmod(DRM_DIR_NAME, DRM_DEV_DIRMODE);
     }
 
@@ -320,7 +350,7 @@ static int drmOpenDevice(long dev, int minor, int type)
     }
 
     if (drm_server_info) {
-	chown(buf, user, group);
+	chown_check_return(buf, user, group);
 	chmod(buf, devmode);
     }
 #else
@@ -363,7 +393,7 @@ wait_for_udev:
 	remove(buf);
 	mknod(buf, S_IFCHR | devmode, dev);
 	if (drm_server_info) {
-	    chown(buf, user, group);
+	    chown_check_return(buf, user, group);
 	    chmod(buf, devmode);
 	}
     }
