@@ -366,7 +366,7 @@ fix_local_desktop_file()
     esac
 
     # Add text/html to the list
-    temp="`mktemp $apps/$1.XXXXXX`" || return
+    temp="`mktemp "$apps/$1.XXXXXX"`" || return
     grep -v ^MimeType= "$apps/$1" >> "$temp"
     echo "MimeType=text/html;$MIME" >> "$temp"
 
@@ -394,7 +394,7 @@ set_browser_mime()
     # Fixing the local desktop file can actually change the default browser all
     # by itself, so we fix it only after querying to find the current default
     fix_local_desktop_file "$1" || return
-    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share/applications}"
+    mkdir -p "${XDG_DATA_HOME:-$HOME/.local/share}/applications"
     xdg-mime default "$1" text/html || return
     if [ x"`get_browser_mime`" != x"$1" ]; then
         # Put back the original value
@@ -440,8 +440,8 @@ binary_to_desktop_file()
             [ -r "$file" ] || continue
             # Check to make sure it's worth the processing
             grep -q "^Exec.*$base" "$file" || continue
-            exec="`grep "^Exec\(\[[^]=]*]\)\?=" "$file" | cut -d= -f 2- | first_word`"
-            full="`which "$exec"`"
+            command="`grep "^Exec\(\[[^]=]*]\)\?=" "$file" | cut -d= -f 2- | first_word`"
+            full="`which "$command"`"
             if [ x"$full" = x"$binary" ]; then
                 # Fix any double slashes that got added path composition
                 echo "$file" | sed -e 's,//*,/,g'
@@ -457,6 +457,7 @@ desktop_file_to_command()
     desktop="`basename "$1"`"
     IFS=:
     for dir in $search; do
+        unset IFS
         [ "$dir" -a -d "$dir/applications" ] || continue
         file="$dir/applications/$desktop"
         [ -r "$file" ] || continue
@@ -516,14 +517,87 @@ set_browser_gnome()
 
 get_browser_xfce()
 {
-    # Not supported yet
-    exit_failure_operation_impossible
+    search="${XDG_CONFIG_HOME:-$HOME/.config}:${XDG_CONFIG_DIRS:-/etc/xdg}"
+    IFS=:
+    for dir in $search; do
+        unset IFS
+        [ "$dir" -a -d "$dir/xfce4" ] || continue
+        file="$dir/xfce4/helpers.rc"
+        [ -r "$file" ] || continue
+        grep -q "^WebBrowser=" "$file" || continue
+        desktop="`grep "^WebBrowser=" "$file" | cut -d= -f 2-`"
+        echo "$desktop.desktop"
+        return
+    done
+    exit_failure_operation_failed
+}
+
+check_xfce_desktop_file()
+{
+    # Annoyingly, xfce wants its .desktop files in a separate directory instead
+    # of the standard locations, and requires a few custom tweaks to them:
+    # "Type" must be "X-XFCE-Helper"
+    # "X-XFCE-Category" must be "WebBrowser" (for web browsers, anyway)
+    # "X-XFCE-Commands" and "X-XFCE-CommandsWithParameter" must be set
+    search="${XDG_DATA_HOME:-$HOME/.local/share}:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}"
+    IFS=:
+    for dir in $search; do
+        unset IFS
+        [ "$dir" -a -d "$dir/xfce4/helpers" ] || continue
+        file="$dir/xfce4/helpers/$1"
+        # We have the file, no need to create it
+        [ -r "$file" ] && return
+    done
+    IFS=:
+    for dir in $search; do
+        unset IFS
+        [ "$dir" -a -d "$dir/applications" ] || continue
+        file="$dir/applications/$1"
+        if [ -r "$file" ]; then
+            # Found a file to convert
+            target="${XDG_DATA_HOME:-$HOME/.local/share}/xfce4/helpers"
+            mkdir -p "$target"
+            grep -v "^Type=" "$file" > "$target/$1"
+            echo "Type=X-XFCE-Helper" >> "$target/$1"
+            echo "X-XFCE-Category=WebBrowser" >> "$target/$1"
+            # Change %F, %f, %U, and %u to "%s"
+            command="`grep "^Exec\(\[[^]=]*]\)\?=" "$file" | cut -d= -f 2- | sed -e 's/%[FfUu]/"%s"/g'`"
+            echo "X-XFCE-Commands=`echo "$command" | first_word`" >> "$target/$1"
+            echo "X-XFCE-CommandsWithParameter=$command" >> "$target/$1"
+            return
+        fi
+    done
+    return 1
 }
 
 set_browser_xfce()
 {
-    # Not supported yet
-    exit_failure_operation_impossible
+    check_xfce_desktop_file "$1" || exit_failure_operation_failed
+
+    helper_dir="${XDG_CONFIG_HOME:-$HOME/.config}/xfce4"
+    if [ ! -d "$helper_dir" ]; then
+        mkdir -p "$helper_dir" || exit_failure_operation_failed
+    fi
+
+    helpers_rc="$helper_dir/helpers.rc"
+    # Create the file if it does not exist to avoid special cases below
+    if [ ! -r "$helpers_rc" ]; then
+        touch "$helpers_rc" || exit_failure_operation_failed
+    fi
+
+    temp="`mktemp "$helpers_rc.XXXXXX"`" || return
+    grep -v ^WebBrowser= "$helpers_rc" >> "$temp"
+    echo "WebBrowser=${1%.desktop}" >> "$temp"
+
+    oldlines="`wc -l < "$helpers_rc"`"
+    newlines="`wc -l < "$temp"`"
+    # The new file should have at least as many lines as the old
+    if [ $oldlines -le $newlines ]; then
+        mv "$temp" "$helpers_rc"
+    else
+        rm -f "$temp"
+        return 1
+    fi
 }
 
 # }}} default browser
