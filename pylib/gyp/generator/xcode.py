@@ -499,6 +499,8 @@ def ExpandXcodeVariables(string, expansions):
 
 def GenerateOutput(target_list, target_dicts, data, params):
   options = params['options']
+  generator_flags = params['generator_flags']
+  parallel_builds = generator_flags.get('xcode_parallel_builds', True)
   xcode_projects = {}
   for build_file, build_file_dict in data.iteritems():
     (build_file_root, build_file_ext) = os.path.splitext(build_file)
@@ -510,7 +512,9 @@ def GenerateOutput(target_list, target_dicts, data, params):
     xcode_projects[build_file] = xcp
     pbxp = xcp.project
 
-    pbxp.SetProperty('attributes', {'BuildIndependentTargetsInParallel': 'YES'})
+    if parallel_builds:
+      pbxp.SetProperty('attributes',
+                       {'BuildIndependentTargetsInParallel': 'YES'})
 
     main_group = pbxp.GetProperty('mainGroup')
     build_group = gyp.xcodeproj_file.PBXGroup({'name': 'Build'})
