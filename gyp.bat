@@ -1,1 +1,1 @@
-@python %~dp0/gyp %*
+@python "%~dp0/gyp" %*
