@@ -131,10 +131,12 @@ def main(args):
       options.formats = generate_formats
     else:
       # Nothing in the variable, default based on platform.
-      options.formats = [ {'darwin': 'xcode',
-                           'win32':  'msvs',
-                           'cygwin': 'msvs',
-                           'linux2': 'scons',}[sys.platform] ]
+      options.formats = [ {'darwin':   'xcode',
+                           'win32':    'msvs',
+                           'cygwin':   'msvs',
+                           'freebsd7': 'make',
+                           'freebsd8': 'make',
+                           'linux2':   'scons',}[sys.platform] ]
 
   if not build_files:
     build_files = FindBuildFiles()
