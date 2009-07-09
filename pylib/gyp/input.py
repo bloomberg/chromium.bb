@@ -353,7 +353,7 @@ def ExpandVariables(input, is_late, variables, build_file):
       else:
         if not match['content'] in variables:
           raise KeyError, 'Undefined variable ' + match['content'] + \
-                          ' in ' + input
+                          ' in ' + build_file
         replacement = variables[match['content']]
 
       if isinstance(replacement, list):
