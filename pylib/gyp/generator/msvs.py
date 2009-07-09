@@ -181,6 +181,16 @@ def _PrepareAction(c, r, has_input_path):
     return _PrepareActionRaw(c, r['action'], False, has_input_path)
 
 
+def _PickPrimaryInput(inputs):
+  # Pick second input as the primary one, unless there's only one.
+  # TODO(bradnelson): this is a bit of a hack,
+  # find something more general.
+  if len(inputs) > 1:
+    return inputs[1]
+  else:
+    return inputs[0]
+
+
 def _AddCustomBuildTool(p, config_name, c_data,
                         inputs, outputs, description, cmd):
   """Add a custom build tool to execute something.
@@ -203,13 +213,7 @@ def _AddCustomBuildTool(p, config_name, c_data,
       'Outputs': ';'.join(outputs),
       'CommandLine': cmd,
       })
-  # Pick second input as the primary one, unless there's only one.
-  # TODO(bradnelson): this is a bit of a hack,
-  # find something more general.
-  if len(inputs) > 1:
-    primary_input = inputs[1]
-  else:
-    primary_input = inputs[0]
+  primary_input = _PickPrimaryInput(inputs)
   # Add to the properties of primary input.
   p.AddFileConfig(primary_input,
                   _ConfigFullName(config_name, c_data), tools=[tool])
@@ -428,6 +432,7 @@ def _GenerateRules(p, output_dir, options, spec,
       trigger_files = _FindRuleTriggerFiles(rule, sources)
       for tf in trigger_files:
         inputs, outputs = _RuleInputsAndOutputs(rule, tf)
+        inputs.remove(tf)
         sources.update(inputs)
         excluded_sources.update(inputs)
         sources.update(outputs)
@@ -615,17 +620,19 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   sources.add(os.path.split(build_file)[1])
   # Add in 'action' inputs and outputs.
   for a in spec.get('actions', []):
-    for i in a.get('inputs', []):
-      if i not in sources:
-        sources.add(i)
-        excluded_sources.add(i)
+    inputs = a.get('inputs', [])
+    primary_input = _PickPrimaryInput(inputs)
+    inputs = set(inputs)
+    sources.update(inputs)
+    inputs.remove(primary_input)
+    excluded_sources.update(inputs)
     if a.get('process_outputs_as_sources', False):
-      for i in a.get('outputs', []):
-        sources.add(i)
+      outputs = set(a.get('outputs', []))
+      sources.update(outputs)
   # Add in 'copies' inputs and outputs.
   for cpy in spec.get('copies', []):
-    for f in cpy.get('files', []):
-      sources.add(f)
+    files = set(cpy.get('files', []))
+    sources.update(files)
 
   # Add rules.
   actions_to_add = []
