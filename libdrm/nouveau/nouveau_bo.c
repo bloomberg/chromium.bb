@@ -752,11 +752,13 @@ nouveau_bo_pin(struct nouveau_bo *bo, uint32_t flags)
 		return nouveau_bo_pin_nomm(bo, flags);
 
 	/* Ensure we have a kernel object... */
-	if (!nvbo->handle) {
+	if (!nvbo->flags) {
 		if (!(flags & (NOUVEAU_BO_VRAM | NOUVEAU_BO_GART)))
 			return -EINVAL;
 		nvbo->flags = flags;
+	}
 
+	if (!nvbo->handle) {
 		ret = nouveau_bo_kalloc(nvbo, NULL);
 		if (ret)
 			return ret;
