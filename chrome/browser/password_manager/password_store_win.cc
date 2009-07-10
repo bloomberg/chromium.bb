@@ -18,17 +18,25 @@ PasswordStoreWin::PasswordStoreWin(WebDataService* web_data_service)
     : PasswordStoreDefault(web_data_service) {
 }
 
+void PasswordStoreWin::CancelLoginsQuery(int handle) {
+  PasswordStoreDefault::CancelLoginsQuery(handle);
+  DeleteFormForRequest(handle);
+}
+
+int PasswordStoreWin::GetLogins(const webkit_glue::PasswordForm& form,
+                                PasswordStoreConsumer* consumer) {
+  int request_handle = PasswordStoreDefault::GetLogins(form, consumer);
+  pending_request_forms_.insert(PendingRequestFormMap::value_type(
+      request_handle, form));
+  return request_handle;
+}
+
 void PasswordStoreWin::OnWebDataServiceRequestDone(
     WebDataService::Handle h, const WDTypedResult *result) {
-  // Look up this handle in our request map to get the original
-  // GetLoginsRequest.
-  PendingRequestMap::iterator it(pending_requests_.find(h));
+  scoped_ptr<GetLoginsRequest> request(TakeRequestWithHandle(h));
   // If the request was cancelled, we are done.
-  if (it == pending_requests_.end())
+  if (!request.get())
     return;
-
-  scoped_ptr<GetLoginsRequest> request(it->second);
-  pending_requests_.erase(it);
 
   DCHECK(result);
   if (!result)
@@ -36,27 +44,30 @@ void PasswordStoreWin::OnWebDataServiceRequestDone(
 
   switch (result->GetType()) {
     case PASSWORD_RESULT: {
-      // This is a response from WebDataService::GetLogins.
+      // This is a response from a WebDataService::Get*Logins method.
       const WDResult<std::vector<PasswordForm*> >* r =
         static_cast<const WDResult<std::vector<PasswordForm*> >*>(result);
       std::vector<PasswordForm*> result_value = r->GetValue();
 
       if (result_value.size()) {
         // If we found some results then return them now.
-        request->consumer->OnPasswordStoreRequestDone(request->handle,
-                                                      result_value);
+        CompleteRequest(request.get(), result_value);
         return;
       } else {
-        // Otherwise try finding IE7 logins.
-        IE7PasswordInfo info;
-        std::wstring url = ASCIIToWide(request->form.origin.spec());
-        info.url_hash = ie7_password::GetUrlHash(url);
+        // Otherwise try finding IE7 logins if we were looking for a specific
+        // page.
+        PendingRequestFormMap::iterator it(pending_request_forms_.find(
+            request->handle));
+        if (it != pending_request_forms_.end()) {
+          IE7PasswordInfo info;
+          std::wstring url = ASCIIToWide(it->second.origin.spec());
+          info.url_hash = ie7_password::GetUrlHash(url);
 
-        if (web_data_service_->IsRunning()) {
-          WebDataService::Handle web_data_handle =
-              web_data_service_->GetIE7Login(info, this);
-          pending_requests_.insert(PendingRequestMap::value_type(
-              web_data_handle, request.release()));
+          if (web_data_service_->IsRunning()) {
+            WebDataService::Handle web_data_handle =
+                web_data_service_->GetIE7Login(info, this);
+            TrackRequest(web_data_handle, request.release());
+          }
         }
       }
       break;
@@ -64,17 +75,32 @@ void PasswordStoreWin::OnWebDataServiceRequestDone(
 
     case PASSWORD_IE7_RESULT: {
       // This is a response from WebDataService::GetIE7Login.
-      PasswordForm* ie7_form = GetIE7Result(result, request->form);
+      PendingRequestFormMap::iterator it(pending_request_forms_.find(
+          request->handle));
+      PasswordForm* ie7_form = GetIE7Result(result, it->second);
 
       std::vector<PasswordForm*> forms;
       if (ie7_form)
         forms.push_back(ie7_form);
 
-      request->consumer->OnPasswordStoreRequestDone(request->handle,
-                                                    forms);
+      CompleteRequest(request.get(), forms);
       break;
     }
   }
+}
+
+void PasswordStoreWin::DeleteFormForRequest(int handle) {
+  PendingRequestFormMap::iterator it(pending_request_forms_.find(handle));
+  if (it != pending_request_forms_.end()) {
+    pending_request_forms_.erase(it);
+  }
+}
+
+void PasswordStoreWin::CompleteRequest(
+    GetLoginsRequest* request,
+    const std::vector<webkit_glue::PasswordForm*>& forms) {
+  DeleteFormForRequest(request->handle);
+  request->consumer->OnPasswordStoreRequestDone(request->handle, forms);
 }
 
 PasswordForm* PasswordStoreWin::GetIE7Result(const WDTypedResult *result,

@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/views/options/options_page_view.h"
-#include "chrome/browser/webdata/web_data_service.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/table/table_view.h"
@@ -61,7 +61,7 @@ class MultiLabelButtons : public views::NativeButton {
 ///////////////////////////////////////////////////////////////////////////////
 // PasswordsTableModel
 class PasswordsTableModel : public TableModel,
-                            public WebDataServiceConsumer {
+                            public PasswordStoreConsumer {
  public:
   explicit PasswordsTableModel(Profile* profile);
   virtual ~PasswordsTableModel();
@@ -80,9 +80,10 @@ class PasswordsTableModel : public TableModel,
   // and clear the view.
   void ForgetAndRemoveAllSignons();
 
-  // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result);
+  // PasswordStoreConsumer implementation.
+  virtual void OnPasswordStoreRequestDone(
+      int handle, const std::vector<webkit_glue::PasswordForm*>& result);
+
   // Request saved logins data.
   void GetAllSavedLoginsForProfile();
 
@@ -110,9 +111,9 @@ class PasswordsTableModel : public TableModel,
     scoped_ptr<webkit_glue::PasswordForm> form;
   };
 
-  // The web data service associated with the currently active profile.
-  WebDataService* web_data_service() {
-    return profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+  // The password store associated with the currently active profile.
+  PasswordStore* password_store() {
+    return profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
   }
 
   // The TableView observing this model.
@@ -122,8 +123,8 @@ class PasswordsTableModel : public TableModel,
   // to this observer.
   PasswordsTableModelObserver* row_count_observer_;
 
-  // Handle to any pending WebDataService::GetLogins query.
-  WebDataService::Handle pending_login_query_;
+  // Handle to any pending PasswordStore login lookup query.
+  int pending_login_query_;
 
   // The set of passwords we're showing.
   typedef std::vector<PasswordRow*> PasswordRows;

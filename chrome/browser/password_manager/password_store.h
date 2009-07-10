@@ -11,6 +11,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/thread.h"
+#include "base/time.h"
 #include "webkit/glue/password_form.h"
 
 class Profile;
@@ -40,37 +41,53 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
 
   // Adds the given PasswordForm to the secure password store asynchronously.
   virtual void AddLogin(const webkit_glue::PasswordForm& form);
+
   // Updates the matching PasswordForm in the secure password store (async).
   virtual void UpdateLogin(const webkit_glue::PasswordForm& form);
+
   // Removes the matching PasswordForm from the secure password store (async).
   virtual void RemoveLogin(const webkit_glue::PasswordForm& form);
+
+  // Removes all logins created in the given date range.
+  virtual void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
+                                          const base::Time& delete_end);
+
   // Searches for a matching PasswordForm and returns a handle so the async
   // request can be tracked. Implement the PasswordStoreConsumer interface to
   // be notified on completion.
   virtual int GetLogins(const webkit_glue::PasswordForm& form,
                         PasswordStoreConsumer* consumer);
 
-  // Cancels a previous GetLogins query (async)
+  // Gets the complete list of PasswordForms and returns a handle so the async
+  // request can be tracked. Implement the PasswordStoreConsumer interface to
+  // be notified on completion.
+  virtual int GetAllLogins(PasswordStoreConsumer* consumer);
+
+  // Gets the complete list of PasswordForms that are not blacklist entries--and
+  // are thus auto-fillable--and returns a handle so the async request can be
+  // tracked. Implement the PasswordStoreConsumer interface to be notified
+  // on completion.
+  virtual int GetAllAutofillableLogins(PasswordStoreConsumer* consumer);
+
+  // Cancels a previous Get*Logins query (async)
   virtual void CancelLoginsQuery(int handle);
 
  protected:
-  // Simple container class that represents a GetLogins request.
-  // Created in GetLogins and passed to GetLoginsImpl.
-  struct GetLoginsRequest {
-    GetLoginsRequest(const webkit_glue::PasswordForm& f,
-                     PasswordStoreConsumer* c,
+  // Simple container class that represents a login lookup request.
+  class GetLoginsRequest {
+   public:
+    GetLoginsRequest(PasswordStoreConsumer* c,
                      int handle);
 
-    // The query form that was originally passed to GetLogins
-    webkit_glue::PasswordForm form;
-    // The consumer to notify when this GetLogins request is complete
+    // The consumer to notify when this request is complete.
     PasswordStoreConsumer* consumer;
     // A unique handle for the request
     int handle;
-    // The message loop that the GetLogins request was made from.  We send the
-    // result back to the consumer in this same message loop.
+    // The message loop that the request was made from.  We send the result
+    // back to the consumer in this same message loop.
     MessageLoop* message_loop;
 
+   private:
     DISALLOW_COPY_AND_ASSIGN(GetLoginsRequest);
   };
 
@@ -87,15 +104,18 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // Should find all PasswordForms with the same signon_realm. The results
   // will then be scored by the PasswordFormManager. Once they are found
   // (or not), the consumer should be notified.
-  virtual void GetLoginsImpl(GetLoginsRequest* request) = 0;
+  virtual void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                              const base::Time& delete_end) = 0;
+  virtual void GetLoginsImpl(GetLoginsRequest* request,
+                             const webkit_glue::PasswordForm& form) = 0;
+  // Finds all PasswordForms, and notifies the consumer.
+  virtual void GetAllLoginsImpl(GetLoginsRequest* request) = 0;
+  // Finds all non-blacklist PasswordForms, and notifies the consumer.
+  virtual void GetAllAutofillableLoginsImpl(GetLoginsRequest* request) = 0;
 
-  // Notifies the consumer that GetLoginsImpl() is complete.
+  // Notifies the consumer that a Get*Logins() request is complete.
   void NotifyConsumer(GetLoginsRequest* request,
                       const std::vector<webkit_glue::PasswordForm*> forms);
-
-  // Next handle to return from GetLogins() to allow callers to track
-  // their request.
-  int handle_;
 
   // Thread that the synchronous methods are run in.
   scoped_ptr<base::Thread> thread_;
@@ -107,6 +127,13 @@ class PasswordStore : public base::RefCountedThreadSafe<PasswordStore> {
   // consumers will cancel their requests before they are destroyed).
   void NotifyConsumerImpl(PasswordStoreConsumer* consumer, int handle,
                           const std::vector<webkit_glue::PasswordForm*> forms);
+
+  // Returns a new request handle tracked in pending_requests_.
+  int GetNewRequestHandle();
+
+  // Next handle to return from Get*Logins() to allow callers to track
+  // their request.
+  int handle_;
 
   // List of pending request handles.  Handles are removed from the set when
   // they finish or are canceled.

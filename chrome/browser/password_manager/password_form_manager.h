@@ -132,7 +132,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // PasswordManager owning this.
   const PasswordManager* const password_manager_;
 
-  // Handle to any pending WebDataService::GetLogins query.
+  // Handle to any pending PasswordStore::GetLogins query.
   int pending_login_query_;
 
   // Convenience pointer to entry in best_matches_ that is marked
@@ -143,7 +143,7 @@ class PasswordFormManager : public PasswordStoreConsumer {
 
   typedef enum {
     PRE_MATCHING_PHASE,      // Have not yet invoked a GetLogins query to find
-                             // matching login information from DB.
+                             // matching login information from password store.
     MATCHING_PHASE,          // We've made a GetLogins request, but
                              // haven't received or finished processing result.
     POST_MATCHING_PHASE      // We've queried the DB and processed matching

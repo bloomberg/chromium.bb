@@ -31,28 +31,47 @@ void PasswordStore::ScheduleTask(Task* task) {
 }
 
 void PasswordStore::AddLogin(const PasswordForm& form) {
-  ScheduleTask(NewRunnableMethod(
-      this, &PasswordStore::AddLoginImpl, form));
+  ScheduleTask(NewRunnableMethod(this, &PasswordStore::AddLoginImpl, form));
 }
 
 void PasswordStore::UpdateLogin(const PasswordForm& form) {
-  ScheduleTask(NewRunnableMethod(
-      this, &PasswordStore::UpdateLoginImpl, form));
+  ScheduleTask(NewRunnableMethod(this, &PasswordStore::UpdateLoginImpl, form));
 }
 
 void PasswordStore::RemoveLogin(const PasswordForm& form) {
-  ScheduleTask(NewRunnableMethod(
-      this, &PasswordStore::RemoveLoginImpl, form));
+  ScheduleTask(NewRunnableMethod(this, &PasswordStore::RemoveLoginImpl, form));
+}
+
+void PasswordStore::RemoveLoginsCreatedBetween(const base::Time& delete_begin,
+                                               const base::Time& delete_end) {
+  ScheduleTask(NewRunnableMethod(this,
+                                 &PasswordStore::RemoveLoginsCreatedBetweenImpl,
+                                 delete_begin, delete_end));
 }
 
 int PasswordStore::GetLogins(const PasswordForm& form,
                              PasswordStoreConsumer* consumer) {
-  int handle = handle_++;
-  GetLoginsRequest* request = new GetLoginsRequest(form, consumer, handle);
+  int handle = GetNewRequestHandle();
+  GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
+  ScheduleTask(NewRunnableMethod(this, &PasswordStore::GetLoginsImpl, request,
+                                 form));
+  return handle;
+}
 
-  pending_requests_.insert(handle);
+int PasswordStore::GetAllLogins(PasswordStoreConsumer* consumer) {
+  int handle = GetNewRequestHandle();
+  GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
+  ScheduleTask(NewRunnableMethod(this, &PasswordStore::GetAllLoginsImpl,
+                                 request));
+  return handle;
+}
 
-  ScheduleTask(NewRunnableMethod(this, &PasswordStore::GetLoginsImpl, request));
+int PasswordStore::GetAllAutofillableLogins(PasswordStoreConsumer* consumer) {
+  int handle = GetNewRequestHandle();
+  GetLoginsRequest* request = new GetLoginsRequest(consumer, handle);
+  ScheduleTask(NewRunnableMethod(this,
+                                 &PasswordStore::GetAllAutofillableLoginsImpl,
+                                 request));
   return handle;
 }
 
@@ -78,16 +97,17 @@ void PasswordStore::NotifyConsumerImpl(PasswordStoreConsumer* consumer,
   consumer->OnPasswordStoreRequestDone(handle, forms);
 }
 
+int PasswordStore::GetNewRequestHandle() {
+  int handle = handle_++;
+  pending_requests_.insert(handle);
+  return handle;
+}
+
 void PasswordStore::CancelLoginsQuery(int handle) {
   pending_requests_.erase(handle);
 }
 
 PasswordStore::GetLoginsRequest::GetLoginsRequest(
-    const PasswordForm& form,
-    PasswordStoreConsumer* consumer,
-    int handle)
-      : form(form),
-        consumer(consumer),
-        handle(handle),
-        message_loop(MessageLoop::current()) {
+    PasswordStoreConsumer* consumer, int handle)
+    : consumer(consumer), handle(handle), message_loop(MessageLoop::current()) {
 }

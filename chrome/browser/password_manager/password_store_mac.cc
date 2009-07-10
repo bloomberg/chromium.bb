@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/time.h"
 #include "chrome/browser/keychain_mac.h"
 #include "chrome/browser/password_manager/login_database_mac.h"
 
@@ -657,13 +656,19 @@ void PasswordStoreMac::RemoveLoginImpl(const PasswordForm& form) {
   NOTIMPLEMENTED();
 }
 
-void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request) {
+void PasswordStoreMac::RemoveLoginsCreatedBetweenImpl(
+    const base::Time& delete_begin, const base::Time& delete_end) {
+  NOTIMPLEMENTED();
+}
+
+void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request,
+                                     const webkit_glue::PasswordForm& form) {
   MacKeychainPasswordFormAdapter keychainAdapter(keychain_.get());
   std::vector<PasswordForm*> keychain_forms =
-      keychainAdapter.PasswordsMatchingForm(request->form);
+      keychainAdapter.PasswordsMatchingForm(form);
 
   std::vector<PasswordForm*> database_forms;
-  login_metadata_db_->GetLogins(request->form, &database_forms);
+  login_metadata_db_->GetLogins(form, &database_forms);
 
   std::vector<PasswordForm*> merged_forms;
   internal_keychain_helpers::MergePasswordForms(&keychain_forms,
@@ -680,4 +685,12 @@ void PasswordStoreMac::GetLoginsImpl(GetLoginsRequest* request) {
   STLDeleteElements(&keychain_forms);
 
   NotifyConsumer(request, merged_forms);
+}
+
+void PasswordStoreMac::GetAllLoginsImpl(GetLoginsRequest* request) {
+  NOTIMPLEMENTED();
+}
+
+void PasswordStoreMac::GetAllAutofillableLoginsImpl(GetLoginsRequest* request) {
+  NOTIMPLEMENTED();
 }

@@ -22,7 +22,12 @@ class PasswordStoreMac : public PasswordStore {
   void AddLoginImpl(const webkit_glue::PasswordForm& form);
   void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
   void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  void GetLoginsImpl(GetLoginsRequest* request);
+  void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                      const base::Time& delete_end);
+  void GetLoginsImpl(GetLoginsRequest* request,
+                     const webkit_glue::PasswordForm& form);
+  void GetAllLoginsImpl(GetLoginsRequest* request);
+  void GetAllAutofillableLoginsImpl(GetLoginsRequest* request);
 
   scoped_ptr<MacKeychain> keychain_;
   scoped_ptr<LoginDatabaseMac> login_metadata_db_;

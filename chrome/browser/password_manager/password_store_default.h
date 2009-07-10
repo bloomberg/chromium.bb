@@ -32,8 +32,12 @@ class PasswordStoreDefault : public PasswordStore,
   virtual void AddLogin(const webkit_glue::PasswordForm& form);
   virtual void UpdateLogin(const webkit_glue::PasswordForm& form);
   virtual void RemoveLogin(const webkit_glue::PasswordForm& form);
+  virtual void RemoveLoginsCreatedBetween(const base::Time& delete_begin,
+                                          const base::Time& delete_end);
   virtual int GetLogins(const webkit_glue::PasswordForm& form,
                         PasswordStoreConsumer* consumer);
+  virtual int GetAllLogins(PasswordStoreConsumer* consumer);
+  virtual int GetAllAutofillableLogins(PasswordStoreConsumer* consumer);
   virtual void CancelLoginsQuery(int handle);
 
  protected:
@@ -41,13 +45,38 @@ class PasswordStoreDefault : public PasswordStore,
   void AddLoginImpl(const webkit_glue::PasswordForm& form);
   void UpdateLoginImpl(const webkit_glue::PasswordForm& form);
   void RemoveLoginImpl(const webkit_glue::PasswordForm& form);
-  void GetLoginsImpl(GetLoginsRequest* request);
+  void RemoveLoginsCreatedBetweenImpl(const base::Time& delete_begin,
+                                      const base::Time& delete_end);
+  void GetLoginsImpl(GetLoginsRequest* request,
+                     const webkit_glue::PasswordForm& form);
+  void GetAllLoginsImpl(GetLoginsRequest* request);
+  void GetAllAutofillableLoginsImpl(GetLoginsRequest* request);
 
   // Called when a WebDataService method finishes.
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
 
+  // Finds the GetLoginsRequest associated with the in-flight WebDataService
+  // request identified by |handle|, removes it from the tracking list, and
+  // returns it. Ownership of the GetLoginsRequest passes to the caller.
+  // Returns NULL if the request has been cancelled.
+  GetLoginsRequest* TakeRequestWithHandle(WebDataService::Handle handle);
+
+  // Takes ownership of |request| and tracks it under |handle|.
+  void TrackRequest(WebDataService::Handle handle, GetLoginsRequest* request);
+
   scoped_refptr<WebDataService> web_data_service_;
+
+ private:
+  // Creates a new request, stored in pending_requests_, for the given
+  // WebDataService query, and returns the request handle that should be used
+  // for it in the client API.
+  int CreateNewRequestForQuery(WebDataService::Handle web_data_handle,
+                               PasswordStoreConsumer* consumer);
+
+  // Next handle to return from our Get*Logins() overrides to allow callers to
+  // track their request.
+  int handle_;
 
   // Methods in this class call async WebDataService methods.  This mapping
   // remembers which WebDataService request corresponds to which PasswordStore
@@ -55,7 +84,6 @@ class PasswordStoreDefault : public PasswordStore,
   typedef std::map<WebDataService::Handle, GetLoginsRequest*> PendingRequestMap;
   PendingRequestMap pending_requests_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreDefault);
 };
 

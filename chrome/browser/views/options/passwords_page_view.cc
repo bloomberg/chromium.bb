@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -53,7 +54,7 @@ PasswordsTableModel::PasswordsTableModel(Profile* profile)
       pending_login_query_(NULL),
       saved_signons_cleanup_(&saved_signons_),
       profile_(profile) {
-  DCHECK(profile && profile->GetWebDataService(Profile::EXPLICIT_ACCESS));
+  DCHECK(profile && profile->GetPasswordStore(Profile::EXPLICIT_ACCESS));
 }
 
 PasswordsTableModel::~PasswordsTableModel() {
@@ -103,31 +104,21 @@ void PasswordsTableModel::SetObserver(TableModelObserver* observer) {
 
 void PasswordsTableModel::GetAllSavedLoginsForProfile() {
   DCHECK(!pending_login_query_);
-  pending_login_query_ = web_data_service()->GetAllAutofillableLogins(this);
+  pending_login_query_ = password_store()->GetAllAutofillableLogins(this);
 }
 
-void PasswordsTableModel::OnWebDataServiceRequestDone(
-    WebDataService::Handle h,
-    const WDTypedResult* result) {
-  DCHECK_EQ(pending_login_query_, h);
+void PasswordsTableModel::OnPasswordStoreRequestDone(
+    int handle, const std::vector<PasswordForm*>& result) {
+  DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = NULL;
 
-  if (!result)
-    return;
-
-  DCHECK(result->GetType() == PASSWORD_RESULT);
-
-  // Get the result from the database into a useable form.
-  const WDResult<std::vector<PasswordForm*> >* r =
-      static_cast<const WDResult<std::vector<PasswordForm*> >*>(result);
-  std::vector<PasswordForm*> rows = r->GetValue();
   STLDeleteElements<PasswordRows>(&saved_signons_);
-  saved_signons_.resize(rows.size(), NULL);
+  saved_signons_.resize(result.size(), NULL);
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  for (size_t i = 0; i < rows.size(); ++i) {
+  for (size_t i = 0; i < result.size(); ++i) {
     saved_signons_[i] = new PasswordRow(
-        gfx::SortedDisplayURL(rows[i]->origin, languages), rows[i]);
+        gfx::SortedDisplayURL(result[i]->origin, languages), result[i]);
   }
   if (observer_)
     observer_->OnModelChanged();
@@ -145,7 +136,7 @@ void PasswordsTableModel::ForgetAndRemoveSignon(int row) {
   PasswordRows::iterator target_iter = saved_signons_.begin() + row;
   // Remove from DB, memory, and vector.
   PasswordRow* password_row = *target_iter;
-  web_data_service()->RemoveLogin(*(password_row->form.get()));
+  password_store()->RemoveLogin(*(password_row->form.get()));
   delete password_row;
   saved_signons_.erase(target_iter);
   if (observer_)
@@ -159,7 +150,7 @@ void PasswordsTableModel::ForgetAndRemoveAllSignons() {
   while (iter != saved_signons_.end()) {
     // Remove from DB, memory, and vector.
     PasswordRow* row = *iter;
-    web_data_service()->RemoveLogin(*(row->form.get()));
+    password_store()->RemoveLogin(*(row->form.get()));
     delete row;
     iter = saved_signons_.erase(iter);
   }
@@ -173,7 +164,7 @@ void PasswordsTableModel::ForgetAndRemoveAllSignons() {
 // PasswordsTableModel, private
 void PasswordsTableModel::CancelLoginsQuery() {
   if (pending_login_query_) {
-    web_data_service()->CancelRequest(pending_login_query_);
+    password_store()->CancelLoginsQuery(pending_login_query_);
     pending_login_query_ = NULL;
   }
 }

@@ -306,6 +306,9 @@ class WebDataService : public base::RefCountedThreadSafe<WebDataService> {
   //////////////////////////////////////////////////////////////////////////////
   //
   // Password manager
+  // NOTE: These methods are all deprecated; new clients should use
+  // PasswordStore. These are only still here because Windows is (temporarily)
+  // still using them for its PasswordStore implementation.
   //
   //////////////////////////////////////////////////////////////////////////////
 

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_EXCEPTIONS_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_EXCEPTIONS_PAGE_VIEW_H_
 
+#include <vector>
+
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/views/options/passwords_page_view.h"
 #include "views/controls/table/table_view_observer.h"
@@ -22,9 +24,9 @@ class ExceptionsTableModel : public PasswordsTableModel {
   virtual std::wstring GetText(int row, int column);
   virtual int CompareValues(int row1, int row2, int col_id);
 
-  // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
-                                           const WDTypedResult* result);
+  // PasswordStoreConsumer implementation.
+  virtual void OnPasswordStoreRequestDone(
+      int handle, const std::vector<webkit_glue::PasswordForm*>& result);
   // Request all logins data.
   void GetAllExceptionsForProfile();
 };

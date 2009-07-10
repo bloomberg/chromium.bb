@@ -41,31 +41,21 @@ int ExceptionsTableModel::CompareValues(int row1, int row2,
 
 void ExceptionsTableModel::GetAllExceptionsForProfile() {
   DCHECK(!pending_login_query_);
-  pending_login_query_ = web_data_service()->GetAllLogins(this);
+  pending_login_query_ = password_store()->GetAllLogins(this);
 }
 
-void ExceptionsTableModel::OnWebDataServiceRequestDone(
-    WebDataService::Handle h,
-    const WDTypedResult* result) {
-  DCHECK_EQ(pending_login_query_, h);
+void ExceptionsTableModel::OnPasswordStoreRequestDone(
+    int handle, const std::vector<webkit_glue::PasswordForm*>& result) {
+  DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = NULL;
 
-  if (!result)
-    return;
-
-  DCHECK(result->GetType() == PASSWORD_RESULT);
-
-  // Get the result from the database into a useable form.
-  const WDResult<std::vector<PasswordForm*> >* r =
-      static_cast<const WDResult<std::vector<PasswordForm*> >*>(result);
-  std::vector<PasswordForm*> rows = r->GetValue();
   STLDeleteElements<PasswordRows>(&saved_signons_);
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
-  for (size_t i = 0; i < rows.size(); ++i) {
-    if (rows[i]->blacklisted_by_user) {
+  for (size_t i = 0; i < result.size(); ++i) {
+    if (result[i]->blacklisted_by_user) {
       saved_signons_.push_back(new PasswordRow(
-          gfx::SortedDisplayURL(rows[i]->origin, languages), rows[i]));
+          gfx::SortedDisplayURL(result[i]->origin, languages), result[i]));
     }
   }
   if (observer_)

@@ -101,9 +101,9 @@ void PasswordFormManager::PermanentlyBlacklist() {
   // autofill it again.
   if (!best_matches_.empty()) {
     PasswordFormMap::const_iterator iter;
-    WebDataService* web_data_service =
-        profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
-    if (!web_data_service) {
+    PasswordStore* password_store =
+        profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
+    if (!password_store) {
       NOTREACHED();
       return;
     }
@@ -115,7 +115,7 @@ void PasswordFormManager::PermanentlyBlacklist() {
       // different origin URL) and just happened to match this form because of
       // the scoring algorithm. See bug 1204493.
       if (iter->second->origin == observed_form_.origin)
-        web_data_service->RemoveLogin(*iter->second);
+        password_store->RemoveLogin(*iter->second);
     }
   }
 

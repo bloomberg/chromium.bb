@@ -23,16 +23,33 @@ class PasswordStoreWin : public PasswordStoreDefault {
   explicit PasswordStoreWin(WebDataService* web_data_service);
   virtual ~PasswordStoreWin() {}
 
+  // Overridden so that we can save the form for later use.
+  virtual int GetLogins(const webkit_glue::PasswordForm& form,
+                        PasswordStoreConsumer* consumer);
+  virtual void CancelLoginsQuery(int handle);
+
  private:
   // See PasswordStoreDefault.
   void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                    const WDTypedResult* result);
+
+  // Removes the form for |handle| from pending_request_forms_ (if any).
+  void DeleteFormForRequest(int handle);
+
+  // Cleans up internal state related to |request|, and sends its results to
+  // the request's consumer.
+  void CompleteRequest(GetLoginsRequest* request,
+                       const std::vector<webkit_glue::PasswordForm*>& forms);
 
   // Gets logins from IE7 if no others are found. Also copies them into
   // Chrome's WebDatabase so we don't need to look next time.
   webkit_glue::PasswordForm* GetIE7Result(
       const WDTypedResult* result,
       const webkit_glue::PasswordForm& form);
+
+  // Holds forms associated with in-flight GetLogin queries.
+  typedef std::map<int, webkit_glue::PasswordForm> PendingRequestFormMap;
+  PendingRequestFormMap pending_request_forms_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreWin);
 };

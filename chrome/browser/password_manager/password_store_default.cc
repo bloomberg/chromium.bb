@@ -12,7 +12,7 @@
 using webkit_glue::PasswordForm;
 
 PasswordStoreDefault::PasswordStoreDefault(WebDataService* web_data_service)
-    : web_data_service_(web_data_service) {
+    : web_data_service_(web_data_service), handle_(0) {
 }
 
 PasswordStoreDefault::~PasswordStoreDefault() {
@@ -22,7 +22,7 @@ PasswordStoreDefault::~PasswordStoreDefault() {
   }
 }
 
-// Override all the public methods to do avoid passthroughs to the Impl
+// Override all the public methods to avoid passthroughs to the Impl
 // versions. Since we are calling through to WebDataService, which is
 // asynchronous, we'll still behave as the caller expects.
 void PasswordStoreDefault::AddLogin(const PasswordForm& form) {
@@ -37,15 +37,29 @@ void PasswordStoreDefault::RemoveLogin(const PasswordForm& form) {
   web_data_service_->RemoveLogin(form);
 }
 
+void PasswordStoreDefault::RemoveLoginsCreatedBetween(
+    const base::Time& delete_begin, const base::Time& delete_end) {
+  web_data_service_->RemoveLoginsCreatedBetween(delete_begin, delete_end);
+}
+
 int PasswordStoreDefault::GetLogins(const PasswordForm& form,
                                     PasswordStoreConsumer* consumer) {
-  int handle = handle_++;
-  GetLoginsRequest* request = new GetLoginsRequest(form, consumer, handle);
+  WebDataService::Handle web_data_handle = web_data_service_->GetLogins(form,
+                                                                        this);
+  return CreateNewRequestForQuery(web_data_handle, consumer);
+}
 
-  int web_data_handle = web_data_service_->GetLogins(form, this);
-  pending_requests_.insert(PendingRequestMap::value_type(web_data_handle,
-                                                         request));
-  return handle;
+int PasswordStoreDefault::GetAllLogins(PasswordStoreConsumer* consumer) {
+  WebDataService::Handle web_data_handle =
+      web_data_service_->GetAllLogins(this);
+  return CreateNewRequestForQuery(web_data_handle, consumer);
+}
+
+int PasswordStoreDefault::GetAllAutofillableLogins(
+    PasswordStoreConsumer* consumer) {
+  WebDataService::Handle web_data_handle =
+      web_data_service_->GetAllAutofillableLogins(this);
+  return CreateNewRequestForQuery(web_data_handle, consumer);
 }
 
 void PasswordStoreDefault::CancelLoginsQuery(int handle) {
@@ -69,26 +83,36 @@ void PasswordStoreDefault::RemoveLoginImpl(const PasswordForm& form) {
   NOTREACHED();
 }
 
+void PasswordStoreDefault::RemoveLoginsCreatedBetweenImpl(
+    const base::Time& delete_begin, const base::Time& delete_end) {
+  NOTREACHED();
+}
+
 void PasswordStoreDefault::UpdateLoginImpl(const PasswordForm& form) {
   NOTREACHED();
 }
 
-void PasswordStoreDefault::GetLoginsImpl(GetLoginsRequest* request) {
+void PasswordStoreDefault::GetLoginsImpl(
+    GetLoginsRequest* request, const webkit_glue::PasswordForm& form) {
+  NOTREACHED();
+}
+
+void PasswordStoreDefault::GetAllLoginsImpl(GetLoginsRequest* request) {
+  NOTREACHED();
+}
+
+void PasswordStoreDefault::GetAllAutofillableLoginsImpl(
+    GetLoginsRequest* request) {
   NOTREACHED();
 }
 
 void PasswordStoreDefault::OnWebDataServiceRequestDone(
     WebDataService::Handle h,
     const WDTypedResult *result) {
-  // Look up this handle in our request map to get the original
-  // GetLoginsRequest.
-  PendingRequestMap::iterator it(pending_requests_.find(h));
+  scoped_ptr<GetLoginsRequest> request(TakeRequestWithHandle(h));
   // If the request was cancelled, we are done.
-  if (it == pending_requests_.end())
+  if (!request.get())
     return;
-
-  scoped_ptr<GetLoginsRequest> request(it->second);
-  pending_requests_.erase(it);
 
   DCHECK(result);
   if (!result)
@@ -99,4 +123,28 @@ void PasswordStoreDefault::OnWebDataServiceRequestDone(
 
   request->consumer->OnPasswordStoreRequestDone(request->handle,
                                                 r->GetValue());
+}
+
+PasswordStoreDefault::GetLoginsRequest*
+    PasswordStoreDefault::TakeRequestWithHandle(WebDataService::Handle handle) {
+  PendingRequestMap::iterator it(pending_requests_.find(handle));
+  if (it == pending_requests_.end())
+    return NULL;
+
+  GetLoginsRequest* request = it->second;
+  pending_requests_.erase(it);
+  return request;
+}
+
+int PasswordStoreDefault::CreateNewRequestForQuery(
+    WebDataService::Handle web_data_handle, PasswordStoreConsumer* consumer) {
+  int api_handle = handle_++;
+  GetLoginsRequest* request = new GetLoginsRequest(consumer, api_handle);
+  TrackRequest(web_data_handle, request);
+  return api_handle;
+}
+
+void PasswordStoreDefault::TrackRequest(WebDataService::Handle handle,
+                                        GetLoginsRequest* request) {
+  pending_requests_.insert(PendingRequestMap::value_type(handle, request));
 }

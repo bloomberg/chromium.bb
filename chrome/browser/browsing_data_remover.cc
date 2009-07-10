@@ -10,6 +10,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -115,10 +116,10 @@ void BrowsingDataRemover::Remove(int remove_mask) {
 
   if (remove_mask & REMOVE_PASSWORDS) {
     UserMetrics::RecordAction(L"ClearBrowsingData_Passwords", profile_);
-    WebDataService* web_data_service =
-        profile_->GetWebDataService(Profile::EXPLICIT_ACCESS);
+    PasswordStore* password_store =
+        profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 
-    web_data_service->RemoveLoginsCreatedBetween(delete_begin_, delete_end_);
+    password_store->RemoveLoginsCreatedBetween(delete_begin_, delete_end_);
   }
 
   if (remove_mask & REMOVE_FORM_DATA) {
