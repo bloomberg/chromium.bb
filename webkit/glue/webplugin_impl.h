@@ -121,7 +121,7 @@ class WebPluginImpl : public WebPlugin,
   // Creates a WebPlugin instance, as long as the delegate's initialization
   // succeeds.  If it fails, the delegate is deleted and NULL is returned.
   // Note that argn and argv are UTF8.
-  static WebCore::Widget* Create(const GURL& url,
+  static PassRefPtr<WebCore::Widget> Create(const GURL& url,
                                  char** argn,
                                  char** argv,
                                  int argc,
@@ -342,6 +342,9 @@ class WebPluginImpl : public WebPlugin,
 
   WebPluginDelegate* delegate_;
 
+  // Don't use RefPtr here since doing so extends the lifetime of a plugin
+  // beyond the frame which causes crashes and videos playing after navigating
+  // away etc.
   WebPluginContainer* widget_;
 
   typedef std::map<WebPluginResourceClient*,

@@ -9,6 +9,7 @@
 
 MSVC_PUSH_WARNING_LEVEL(0);
 #include "FrameLoaderClient.h"
+#include <wtf/RefPtr.h>
 MSVC_POP_WARNING();
 
 #include "build/build_config.h"
@@ -177,7 +178,7 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
                                       const WebCore::String& referrer,
                                       bool allowsScrolling, int marginWidth,
                                       int marginHeight);
-  virtual WebCore::Widget* createPlugin(const WebCore::IntSize&,
+  virtual PassRefPtr<WebCore::Widget> createPlugin(const WebCore::IntSize&,
                                         WebCore::HTMLPlugInElement*,
                                         const WebCore::KURL&,
                                         const WTF::Vector<WebCore::String>&,
@@ -186,7 +187,7 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
                                         bool loadManually);
   virtual void redirectDataToPlugin(WebCore::Widget* pluginWidget);
 
-  virtual WebCore::Widget* createJavaAppletWidget(
+  virtual PassRefPtr<WebCore::Widget> createJavaAppletWidget(
       const WebCore::IntSize&,
       WebCore::HTMLAppletElement*,
       const WebCore::KURL& /* base_url */,
@@ -251,7 +252,8 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient {
   GURL expected_client_redirect_dest_;
 
   // Contains a pointer to the plugin widget.
-  WebPluginContainer* plugin_widget_;
+  WTF::RefPtr<WebPluginContainer> plugin_widget_;
+
   // Indicates if we need to send over the initial notification to the plugin
   // which specifies that the plugin should be ready to accept data.
   bool sent_initial_response_to_plugin_;

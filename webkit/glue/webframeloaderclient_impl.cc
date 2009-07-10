@@ -94,7 +94,6 @@ WebFrameLoaderClient::WebFrameLoaderClient(WebFrameImpl* frame) :
     webframe_(frame),
     postpone_loading_data_(false),
     has_representation_(false),
-    plugin_widget_(NULL),
     sent_initial_response_to_plugin_(false),
     next_window_open_disposition_(IGNORE_ACTION) {
 }
@@ -991,7 +990,7 @@ void WebFrameLoaderClient::revertToProvisionalState(DocumentLoader*) {
 
 void WebFrameLoaderClient::setMainDocumentError(DocumentLoader*,
                                                 const ResourceError& error) {
-  if (plugin_widget_) {
+  if (plugin_widget_.get()) {
     if (sent_initial_response_to_plugin_) {
       plugin_widget_->didFail(error);
       sent_initial_response_to_plugin_ = false;
@@ -1057,7 +1056,7 @@ void WebFrameLoaderClient::didChangeTitle(DocumentLoader*) {
 
 // Called whenever data is received.
 void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* data, int length) {
-  if (!plugin_widget_) {
+  if (!plugin_widget_.get()) {
     if (postpone_loading_data_) {
       postponed_data_.append(data, length);
       if (postponed_data_.length() >= 512) {
@@ -1072,7 +1071,7 @@ void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* dat
 
   // The plugin widget could have been created in the webframe_->DidReceiveData
   // function.
-  if (plugin_widget_) {
+  if (plugin_widget_.get()) {
     if (!sent_initial_response_to_plugin_) {
       sent_initial_response_to_plugin_ = true;
       plugin_widget_->didReceiveResponse(
@@ -1083,7 +1082,7 @@ void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* dat
 }
 
 void WebFrameLoaderClient::finishedLoading(DocumentLoader* dl) {
-  if (plugin_widget_) {
+  if (plugin_widget_.get()) {
     plugin_widget_->didFinishLoading();
     plugin_widget_ = NULL;
     sent_initial_response_to_plugin_ = false;
@@ -1324,7 +1323,7 @@ static void DeleteToArray(char** arr) {
   delete [] arr;
 }
 
-Widget* WebFrameLoaderClient::createPlugin(const IntSize& size, // TODO(erikkay): how do we use this?
+PassRefPtr<Widget> WebFrameLoaderClient::createPlugin(const IntSize& size, // TODO(erikkay): how do we use this?
                                            HTMLPlugInElement* element,
                                            const KURL&url,
                                            const Vector<String>& param_names,
@@ -1401,7 +1400,7 @@ Widget* WebFrameLoaderClient::createPlugin(const IntSize& size, // TODO(erikkay)
   char **argn = ToArray(param_names);
   char **argv = ToArray(param_values);
   int argc = static_cast<int>(param_names.size());
-  Widget* result = WebPluginImpl::Create(gurl, argn, argv, argc, element,
+  RefPtr<Widget> result = WebPluginImpl::Create(gurl, argn, argv, argc, element,
                                          webframe_, plugin_delegate,
                                          load_manually, my_mime_type);
 
@@ -1415,10 +1414,10 @@ Widget* WebFrameLoaderClient::createPlugin(const IntSize& size, // TODO(erikkay)
 // (e.g., acrobat reader).
 void WebFrameLoaderClient::redirectDataToPlugin(Widget* pluginWidget) {
   plugin_widget_ = static_cast<WebPluginContainer*>(pluginWidget);
-  DCHECK(plugin_widget_ != NULL);
+  DCHECK(plugin_widget_.get());
 }
 
-Widget* WebFrameLoaderClient::createJavaAppletWidget(
+PassRefPtr<Widget> WebFrameLoaderClient::createJavaAppletWidget(
                                            const IntSize& size,
                                            HTMLAppletElement* element,
                                            const KURL& /* base_url */,

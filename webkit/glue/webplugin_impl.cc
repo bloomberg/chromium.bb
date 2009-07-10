@@ -335,7 +335,7 @@ void WebPluginContainer::ReadHttpResponseInfo(
   }
 }
 
-WebCore::Widget* WebPluginImpl::Create(const GURL& url,
+PassRefPtr<WebCore::Widget> WebPluginImpl::Create(const GURL& url,
                                        char** argn,
                                        char** argv,
                                        int argc,
@@ -357,7 +357,7 @@ WebCore::Widget* WebPluginImpl::Create(const GURL& url,
 
   WebPluginContainer* container = new WebPluginContainer(webplugin);
   webplugin->SetContainer(container);
-  return container;
+  return adoptRef(container);
 }
 
 WebPluginImpl::WebPluginImpl(WebCore::HTMLPlugInElement* element,
@@ -1380,7 +1380,7 @@ void WebPluginImpl::TearDownPluginInstance(
   // plugin.  Tell the frame we're gone so that it can invalidate all
   // of those sub JSObjects.
   if (frame()) {
-    ASSERT(widget_ != NULL);
+    ASSERT(widget_);
     frame()->script()->cleanupScriptObjectsForPlugin(widget_);
   }
 
