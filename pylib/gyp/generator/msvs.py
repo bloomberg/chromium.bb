@@ -470,11 +470,12 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
 
   # Pick target configuration type.
   config_type = {
-      'executable': '1',
-      'shared_library': '2',
-      'loadable_module': '2',
-      'static_library': '4',
-      'none': '10',
+      'executable': '1',  # .exe
+      'shared_library': '2',  # .dll
+      'loadable_module': '2',  # .dll
+      'static_library': '4',  # .lib
+      'none': '4',  # Should be 10=Utility but doing static lib for IB.
+      'utility': '10',  # Utility type
       }[spec['type']]
 
   for config_name, c in spec['configurations'].iteritems():
@@ -683,6 +684,11 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   # Convert to folders and the right slashes.
   sources = [i.split('\\') for i in sources]
   sources = _SourceInFolders(sources, excluded=fully_excluded)
+  # Add in dummy file for type none.
+  if spec['type'] == 'none':
+    dummy_relpath = gyp.common.RelativePath(
+        options.depth + '\\tools\\gyp\\gyp_dummy.c', gyp_dir)
+    sources.append(dummy_relpath)
   # Add in files.
   p.AddFiles(sources)
 
