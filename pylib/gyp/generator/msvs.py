@@ -474,7 +474,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       'shared_library': '2',  # .dll
       'loadable_module': '2',  # .dll
       'static_library': '4',  # .lib
-      'none': '4',  # Should be 10=Utility but doing static lib for IB.
+      'none': '1',  # Should be 10=Utility but doing .exe to work around IB.
       'utility': '10',  # Utility type
       }[spec['type']]
 
