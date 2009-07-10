@@ -139,6 +139,8 @@ struct _drm_intel_bo_gem {
     uint32_t tiling_mode;
     uint32_t swizzle_mode;
 
+    time_t free_time;
+
     /** Array passed to the DRM containing relocation information. */
     struct drm_i915_gem_relocation_entry *relocs;
     /** Array of bos corresponding to relocs[i].target_handle */
@@ -219,7 +221,6 @@ drm_intel_gem_bo_bucket_for_size(drm_intel_bufmgr_gem *bufmgr_gem,
 
     return NULL;
 }
-
 
 static void drm_intel_gem_dump_validation_list(drm_intel_bufmgr_gem *bufmgr_gem)
 {
@@ -533,6 +534,30 @@ drm_intel_gem_bo_free(drm_intel_bo *bo)
     free(bo);
 }
 
+/** Frees all cached buffers significantly older than @time. */
+static void
+drm_intel_gem_cleanup_bo_cache(drm_intel_bufmgr_gem *bufmgr_gem, time_t time)
+{
+    int i;
+
+    for (i = 0; i < DRM_INTEL_GEM_BO_BUCKETS; i++) {
+	struct drm_intel_gem_bo_bucket *bucket = &bufmgr_gem->cache_bucket[i];
+
+	while (!DRMLISTEMPTY(&bucket->head)) {
+	    drm_intel_bo_gem *bo_gem;
+
+	    bo_gem = DRMLISTENTRY(drm_intel_bo_gem, bucket->head.next, head);
+	    if (time - bo_gem->free_time <= 1)
+		break;
+
+	    DRMLISTDEL(&bo_gem->head);
+	    bucket->num_entries--;
+
+	    drm_intel_gem_bo_free(&bo_gem->bo);
+	}
+    }
+}
+
 static void
 drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 {
@@ -567,6 +592,11 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 	      bucket->num_entries < bucket->max_entries)) &&
 	    drm_intel_gem_bo_set_tiling(bo, &tiling_mode, 0) == 0)
 	{
+	    struct timespec time;
+
+	    clock_gettime(CLOCK_MONOTONIC, &time);
+	    bo_gem->free_time = time.tv_sec;
+
 	    bo_gem->name = NULL;
 	    bo_gem->validate_index = -1;
 	    bo_gem->relocs = NULL;
@@ -575,6 +605,8 @@ drm_intel_gem_bo_unreference_locked(drm_intel_bo *bo)
 
 	    DRMLISTADDTAIL(&bo_gem->head, &bucket->head);
 	    bucket->num_entries++;
+
+	    drm_intel_gem_cleanup_bo_cache(bufmgr_gem, time.tv_sec);
 	} else {
 	    drm_intel_gem_bo_free(bo);
 	}
