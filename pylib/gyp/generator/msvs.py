@@ -474,8 +474,8 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
       'shared_library': '2',  # .dll
       'loadable_module': '2',  # .dll
       'static_library': '4',  # .lib
-      'none': '1',  # Should be 10=Utility but doing .exe to work around IB.
-      'utility': '10',  # Utility type
+      'none': '10',  # Utility type
+      'dummy_executable': '1',  # .exe
       }[spec['type']]
 
   for config_name, c in spec['configurations'].iteritems():
@@ -517,6 +517,7 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
         'shared_library': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
         'loadable_module': ('VCLinkerTool', '$(OutDir)\\', '.dll'),
         'static_library': ('VCLibrarianTool', '$(OutDir)\\lib\\', '.lib'),
+        'dummy_executable': ('VCLinkerTool', '$(IntDir)\\', '.junk'),
     }
     output_file_props = output_file_map.get(spec['type'])
     if output_file_props:
@@ -685,7 +686,8 @@ def _GenerateProject(vcproj_filename, build_file, spec, options, version):
   sources = [i.split('\\') for i in sources]
   sources = _SourceInFolders(sources, excluded=fully_excluded)
   # Add in dummy file for type none.
-  if spec['type'] == 'none':
+  if spec['type'] == 'dummy_executable':
+    # Pull in a dummy main so it can link successfully.
     dummy_relpath = gyp.common.RelativePath(
         options.depth + '\\tools\\gyp\\gyp_dummy.c', gyp_dir)
     sources.append(dummy_relpath)
