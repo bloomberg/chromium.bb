@@ -5,7 +5,7 @@
 #import "chrome/app/breakpad_mac.h"
 
 // Stubbed out versions of breakpad integration functions so we can compile
-// unit tests without linking in Breakpad.
+// without linking in Breakpad.
 
 bool IsCrashReporterDisabled() {
   return true;

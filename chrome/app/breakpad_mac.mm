@@ -18,31 +18,6 @@
 
 extern "C" {
 
-#if !defined(GOOGLE_CHROME_BUILD)
-
-// If we aren't compiling as a branded build, then add dummy versions of the
-// Breakpad functions so we don't have to link against Breakpad.
-
-BreakpadRef BreakpadCreate(NSDictionary *parameters) {
-  NOTREACHED();
-  return NULL;
-}
-
-void BreakpadRelease(BreakpadRef ref) {
-  NOTREACHED();
-}
-
-void BreakpadAddUploadParameter(BreakpadRef ref, NSString *key,
-                                NSString *value) {
-  NOTREACHED();
-}
-
-void BreakpadRemoveUploadParameter(BreakpadRef ref, NSString *key) {
-  NOTREACHED();
-}
-
-#endif  // !defined(GOOGLE_CHROME_BUILD)
-
 namespace {
 
 BreakpadRef gBreakpadRef = NULL;

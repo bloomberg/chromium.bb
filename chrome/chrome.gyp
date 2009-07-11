@@ -2443,8 +2443,6 @@
         # All .cc, .h, .m, and .mm files under app except for tests.
         'app/breakpad_win.cc',
         'app/breakpad_win.h',
-        'app/breakpad_mac.mm',
-        'app/breakpad_mac.h',
         'app/chrome_exe_main.cc',
         'app/chrome_exe_main.mm',
         'app/chrome_exe_main_gtk.cc',
@@ -2605,6 +2603,10 @@
                 # A real .dSYM is needed for dump_syms to operate on.
                 'mac_real_dsym': 1,
               },
+              'sources': [
+                'app/breakpad_mac.mm',
+                'app/breakpad_mac.h',
+              ],
               'dependencies': [
                 '../breakpad/breakpad.gyp:breakpad',
                 '../breakpad/breakpad.gyp:dump_syms',
@@ -2622,6 +2624,12 @@
                   'action': ['<(DEPTH)/build/mac/dump_app_syms',
                              '<(branding)'],
                 },
+              ],
+            }, {
+              # no breakpad, put in the stubs
+              'sources': [
+                'app/breakpad_mac_stubs.mm',
+                'app/breakpad_mac.h',
               ],
             }],  # mac_breakpad
             ['mac_keystone==1', {
