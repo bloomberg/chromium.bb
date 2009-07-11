@@ -331,20 +331,16 @@ int ChromeMain(int argc, const char** argv) {
     return 1;
 #endif
 
+#if defined(OS_POSIX)
+  // Always ignore SIGPIPE.  We check the return value of write().
+  CHECK(signal(SIGPIPE, SIG_IGN) != SIG_ERR);
+#endif  // OS_POSIX
+
   int browser_pid;
   std::wstring process_type =
     parsed_command_line.GetSwitchValue(switches::kProcessType);
   if (process_type.empty()) {
     browser_pid = base::GetCurrentProcId();
-#if defined(OS_POSIX)
-    // Ignore SIGPIPE so we don't crash when writing to sockets that have been
-    // closed on the server end.
-    struct sigaction action;
-    action.sa_handler = SIG_IGN;
-    sigemptyset(&action.sa_mask);
-    action.sa_flags = 0;
-    CHECK(sigaction(SIGPIPE, &action, 0) == 0);
-#endif  // OS_POSIX
   } else {
 #if defined(OS_WIN)
     std::wstring channel_name =
