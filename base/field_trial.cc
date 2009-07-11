@@ -67,9 +67,12 @@ std::string FieldTrial::MakeName(const std::string& name_prefix,
 // static
 FieldTrialList* FieldTrialList::global_ = NULL;
 
-FieldTrialList::FieldTrialList()
-  : application_start_time_(Time::Now()) {
+// static
+bool FieldTrialList::register_without_global_ = false;
+
+FieldTrialList::FieldTrialList() : application_start_time_(Time::Now()) {
   DCHECK(!global_);
+  DCHECK(!register_without_global_);
   global_ = this;
 }
 
@@ -86,9 +89,10 @@ FieldTrialList::~FieldTrialList() {
 
 // static
 void FieldTrialList::Register(FieldTrial* trial) {
-  DCHECK(global_);
-  if (!global_)
+  if (!global_) {
+    register_without_global_ = true;
     return;
+  }
   AutoLock auto_lock(global_->lock_);
   DCHECK(!global_->PreLockedFind(trial->name()));
   trial->AddRef();

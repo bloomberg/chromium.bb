@@ -2947,6 +2947,22 @@ void RenderView::DumpLoadHistograms() const {
           kBeginToFinishMax, kBeginToFinishBucketCount);
   }
 
+  static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
+      !FieldTrialList::Find("CacheSize")->group_name().empty());
+  if (use_cache_histogram1)
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        FieldTrial::MakeName("Renderer4.StartToFinish", "CacheSize").data(),
+        finish - start, kBeginToFinishMin,
+        kBeginToFinishMax, kBeginToFinishBucketCount);
+
+  static bool use_cache_histogram2(FieldTrialList::Find("NewEviction") &&
+      !FieldTrialList::Find("NewEviction")->group_name().empty());
+  if (use_cache_histogram2)
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        FieldTrial::MakeName("Renderer4.StartToFinish", "NewEviction").data(),
+        finish - start, kBeginToFinishMin,
+        kBeginToFinishMax, kBeginToFinishBucketCount);
+
   UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.CommitToFinish", finish - commit);
 
   if (!first_paint.is_null()) {

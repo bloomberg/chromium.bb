@@ -210,6 +210,11 @@ class FieldTrialList {
 
   static FieldTrialList* global_;  // The singleton of this class.
 
+  // This will tell us if there is an attempt to register a field trial without
+  // creating the FieldTrialList. This is not an error, unless a FieldTrialList
+  // is created after that.
+  static bool register_without_global_;
+
   // A helper value made availabel to users, that shows when the FieldTrialList
   // was initialized.  Note that this is a singleton instance, and hence is a
   // good approximation to the start of the process.
