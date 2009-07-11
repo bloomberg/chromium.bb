@@ -350,7 +350,7 @@ o3djs.material.createMaterialFromFile = function(pack, url, drawList) {
   var material = pack.createObject('Material');
   material.effect = effect;
   material.drawList = drawList;
-  effect.createUniformParameters(material);
+  o3djs.effect.createUniformParameters(pack, effect, material);
 
   return material;
 };

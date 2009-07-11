@@ -263,10 +263,13 @@ pingpong/instructions.gif
 pingpong/logo.gif
 pingpong/o3dPingPong.html
 shaders/README
+shaders/billboard.shader
 shaders/binormal.shader
 shaders/bump.shader
 shaders/checker.shader
 shaders/diffuse.shader
+shaders/green-blue-checker.shader
+shaders/imposter.shader
 shaders/one-channel-texture.shader
 shaders/normal.shader
 shaders/phong-vertex-anim.shader

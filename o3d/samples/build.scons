@@ -112,12 +112,13 @@ env.Append(BUILDERS = {'SplitSampleHTML' : sample_builder})
 # These are the files we process for the interactive sampler.
 # TODO: We don't currently verify that these samples are included in
 # interactive_samples.js, which constructs the sampler, or that all the files
-# in there are mentioned here.  The build script should validate that the lists
-# match, and should also run whenever interactive_samples.js changes.
+# in there are mentioned here.  The build script should parse the 
+# interactive_samples.js file instead of using this list.
 samples = [
   '2d.html',
   'animated-scene.html',
   'animation.html',
+  'billboards.html',
   'canvas-texturedraw.html',
   'canvas.html',
   'convolution.html',
