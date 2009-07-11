@@ -13,6 +13,7 @@
 #include "base/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
 #include "chrome/common/ipc_message.h"
+#include "chrome/common/transport_dib.h"
 #include "chrome/renderer/plugin_channel_host.h"
 #include "googleurl/src/gurl.h"
 #include "skia/ext/platform_canvas.h"
@@ -146,14 +147,10 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   // Draw a graphic indicating a crashed plugin.
   void PaintSadPlugin(gfx::NativeDrawingContext context, const gfx::Rect& rect);
 
-#if defined(OS_WIN)
-  // Returns true if the given rectangle is different in the hdc and the
-  // current background bitmap.
-  bool BackgroundChanged(HDC hdc, const gfx::Rect& rect);
-#else
-  // TODO(port): this should be portable; just avoiding windowless plugins for
-  // now.
-#endif
+  // Returns true if the given rectangle is different in the native drawing
+  // context and the current background bitmap.
+  bool BackgroundChanged(gfx::NativeDrawingContext context,
+                         const gfx::Rect& rect);
 
   // Copies the given rectangle from the transport bitmap to the backing store.
   void CopyFromTransportToBacking(const gfx::Rect& rect);
@@ -162,7 +159,7 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   void ResetWindowlessBitmaps();
 
   // Creates a shared memory section and canvas.
-  bool CreateBitmap(scoped_ptr<base::SharedMemory>* memory,
+  bool CreateBitmap(scoped_ptr<TransportDIB>* memory,
                     scoped_ptr<skia::PlatformCanvas>* canvas);
 
   RenderView* render_view_;
@@ -195,11 +192,11 @@ class WebPluginDelegateProxy : public WebPluginDelegate,
   // store when we get an invalidate from it.  The background bitmap is used
   // for transparent plugins, as they need the backgroud data during painting.
   bool transparent_;
-  scoped_ptr<base::SharedMemory> backing_store_;
+  scoped_ptr<TransportDIB> backing_store_;
   scoped_ptr<skia::PlatformCanvas> backing_store_canvas_;
-  scoped_ptr<base::SharedMemory> transport_store_;
+  scoped_ptr<TransportDIB> transport_store_;
   scoped_ptr<skia::PlatformCanvas> transport_store_canvas_;
-  scoped_ptr<base::SharedMemory> background_store_;
+  scoped_ptr<TransportDIB> background_store_;
   scoped_ptr<skia::PlatformCanvas> background_store_canvas_;
   // This lets us know which portion of the backing store has been painted into.
   gfx::Rect backing_store_painted_;

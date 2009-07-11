@@ -369,11 +369,16 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 #if defined(OS_WIN)
   if (!windowless_hdc_)
     return;
+#elif defined(OS_MACOSX)
+  if (!windowless_context_.get())
+    return;
+#endif
 
   // Clear the damaged area so that if the plugin doesn't paint there we won't
   // end up with the old values.
   gfx::Rect offset_rect = rect;
   offset_rect.Offset(delegate_->GetRect().origin());
+#if defined(OS_WIN)
   if (!background_hdc_) {
     FillRect(windowless_hdc_, &offset_rect.ToRECT(),
         static_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
@@ -393,6 +398,22 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 
   SelectClipRgn(windowless_hdc_, NULL);
   DeleteObject(clip_region);
+#elif defined(OS_MACOSX)
+  CGContextSaveGState(windowless_context_);
+  if (!background_context_.get()) {
+    CGContextSetFillColorWithColor(windowless_context_,
+                                   CGColorGetConstantColor(kCGColorWhite));
+    CGContextFillRect(windowless_context_, rect.ToCGRect());
+  } else {
+    scoped_cftyperef<CGImageRef> image(
+        CGBitmapContextCreateImage(background_context_));
+    scoped_cftyperef<CGImageRef> sub_image(
+        CGImageCreateWithImageInRect(image, rect.ToCGRect()));
+    CGContextDrawImage(background_context_, rect.ToCGRect(), sub_image);
+  }
+  CGContextClipToRect(windowless_context_, rect.ToCGRect());
+  delegate_->Paint(windowless_context_, rect);
+  CGContextRestoreGState(windowless_context_);
 #else
   // TODO(port): windowless painting.
   NOTIMPLEMENTED();
@@ -402,22 +423,21 @@ void WebPluginProxy::Paint(const gfx::Rect& rect) {
 void WebPluginProxy::UpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect,
-    const TransportDIB::Id& windowless_buffer_id,
-    const TransportDIB::Id& background_buffer_id) {
-  // TODO(port): this isn't correct usage of a TransportDIB; for now,
-  // the caller temporarly just stuffs the handle into the HANDLE
-  // field of the TransportDIB::Id so it should behave like the older
-  // code.
+    const TransportDIB::Handle& windowless_buffer,
+    const TransportDIB::Handle& background_buffer) {
   gfx::Rect old = delegate_->GetRect();
   gfx::Rect old_clip_rect = delegate_->GetClipRect();
 
   delegate_->UpdateGeometry(window_rect, clip_rect);
-#if defined(OS_WIN)
   bool moved = old.x() != window_rect.x() || old.y() != window_rect.y();
-  if (windowless_buffer_id.handle) {
+#if defined(OS_MACOSX)
+  if (windowless_buffer.fd > 0) {
+#else
+  if (windowless_buffer) {
+#endif
     // The plugin's rect changed, so now we have a new buffer to draw into.
-    SetWindowlessBuffer(windowless_buffer_id.handle,
-                        background_buffer_id.handle);
+    SetWindowlessBuffer(windowless_buffer,
+                        background_buffer);
   } else if (moved) {
     // The plugin moved, so update our world transform.
     UpdateTransform();
@@ -428,15 +448,12 @@ void WebPluginProxy::UpdateGeometry(
       old_clip_rect.IsEmpty() && !damaged_rect_.IsEmpty()) {
     InvalidateRect(damaged_rect_);
   }
-#else
-  NOTIMPLEMENTED();
-#endif
 }
 
 #if defined(OS_WIN)
 void WebPluginProxy::SetWindowlessBuffer(
-    const base::SharedMemoryHandle& windowless_buffer,
-    const base::SharedMemoryHandle& background_buffer) {
+    const TransportDIB::Handle& windowless_buffer,
+    const TransportDIB::Handle& background_buffer) {
   // Convert the shared memory handle to a handle that works in our process,
   // and then use that to create an HDC.
   ConvertBuffer(windowless_buffer,
@@ -500,6 +517,54 @@ void WebPluginProxy::UpdateTransform() {
   xf.eM12 = 0;
   xf.eM22 = 1;
   SetWorldTransform(windowless_hdc_, &xf);
+}
+#elif defined(OS_MACOSX)
+void WebPluginProxy::UpdateTransform() {
+  NOTIMPLEMENTED();
+}
+
+void WebPluginProxy::SetWindowlessBuffer(
+    const TransportDIB::Handle& windowless_buffer,
+    const TransportDIB::Handle& background_buffer) {
+  // Convert the shared memory handle to a handle that works in our process,
+  // and then use that to create a CGContextRef.
+  windowless_dib_.reset(TransportDIB::Map(windowless_buffer));
+  background_dib_.reset(TransportDIB::Map(background_buffer));
+  scoped_cftyperef<CGColorSpaceRef> rgb_colorspace(
+      CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB));
+  windowless_context_.reset(CGBitmapContextCreate(
+      windowless_dib_->memory(),
+      delegate_->GetRect().width(),
+      delegate_->GetRect().height(),
+      8, 4 * delegate_->GetRect().width(),
+      rgb_colorspace,
+      kCGImageAlphaPremultipliedFirst |
+      kCGBitmapByteOrder32Host));
+  CGContextTranslateCTM(windowless_context_, 0, delegate_->GetRect().height());
+  CGContextScaleCTM(windowless_context_, 1, -1);
+  if (background_dib_.get()) {
+    background_context_.reset(CGBitmapContextCreate(
+        background_dib_->memory(),
+        delegate_->GetRect().width(),
+        delegate_->GetRect().height(),
+        8, 4 * delegate_->GetRect().width(),
+        rgb_colorspace,
+        kCGImageAlphaPremultipliedFirst |
+        kCGBitmapByteOrder32Host));
+    CGContextTranslateCTM(background_context_, 0,
+                          delegate_->GetRect().height());
+    CGContextScaleCTM(background_context_, 1, -1);
+  }
+}
+#elif defined (OS_LINUX)
+void WebPluginProxy::UpdateTransform() {
+  NOTIMPLEMENTED();
+}
+
+void WebPluginProxy::SetWindowlessBuffer(
+    const TransportDIB::Handle& windowless_buffer,
+    const TransportDIB::Handle& background_buffer) {
+  NOTIMPLEMENTED();
 }
 #endif
 

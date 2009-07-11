@@ -95,6 +95,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
                         NPAPI::PluginInstance *instance);
   ~WebPluginDelegateImpl();
 
+#if !defined(OS_MACOSX)
   //--------------------------
   // used for windowed plugins
   void WindowedUpdateGeometry(const gfx::Rect& window_rect,
@@ -115,6 +116,7 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Tells the plugin about the current state of the window.
   // See NPAPI NPP_SetWindow for more information.
   void WindowedSetWindow();
+#endif
 
 #if defined(OS_WIN)
   // Registers the window class for our window
@@ -153,10 +155,10 @@ class WebPluginDelegateImpl : public WebPluginDelegate {
   // Closes down and destroys our plugin instance.
   void DestroyInstance();
 
+#if !defined(OS_MACOSX)
   // used for windowed plugins
   gfx::PluginWindowHandle windowed_handle_;
   bool windowed_did_set_window_;
-#if defined(OS_WIN)
   gfx::Rect windowed_last_pos_;
 #endif
 

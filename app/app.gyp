@@ -68,6 +68,7 @@
         'gfx/canvas.cc',
         'gfx/canvas.h',
         'gfx/canvas_linux.cc',
+        'gfx/canvas_mac.mm',
         'gfx/canvas_win.cc',
         'gfx/font.h',
         'gfx/font_gtk.cc',

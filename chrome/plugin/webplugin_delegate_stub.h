@@ -71,8 +71,8 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
   void OnUpdateGeometry(const gfx::Rect& window_rect,
                         const gfx::Rect& clip_rect,
-                        const TransportDIB::Id& windowless_buffer,
-                        const TransportDIB::Id& background_buffer);
+                        const TransportDIB::Handle& windowless_buffer,
+                        const TransportDIB::Handle& background_buffer);
   void OnGetPluginScriptableObject(int* route_id, intptr_t* npobject_ptr);
   void OnSendJavaScriptStream(const std::string& url,
                               const std::wstring& result,

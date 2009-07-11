@@ -272,11 +272,11 @@ void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
 void WebPluginDelegateStub::OnUpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect,
-    const TransportDIB::Id& windowless_buffer_id,
-    const TransportDIB::Id& background_buffer_id) {
+    const TransportDIB::Handle& windowless_buffer,
+    const TransportDIB::Handle& background_buffer) {
   webplugin_->UpdateGeometry(
       window_rect, clip_rect,
-      windowless_buffer_id, background_buffer_id);
+      windowless_buffer, background_buffer);
 }
 
 void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id,

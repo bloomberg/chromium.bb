@@ -45,7 +45,7 @@ TransportDIB* TransportDIB::Map(TransportDIB::Handle handle) {
   if (!dib->shared_memory_.Map(st.st_size)) {
     delete dib;
     HANDLE_EINTR(close(handle.fd));
-    return false;
+    return NULL;
   }
 
   dib->size_ = st.st_size;

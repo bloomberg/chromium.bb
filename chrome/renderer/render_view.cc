@@ -1762,7 +1762,6 @@ WebPluginDelegate* RenderView::CreatePluginDelegate(
     const std::string& mime_type,
     const std::string& clsid,
     std::string* actual_mime_type) {
-#if defined(OS_WIN) || defined(OS_LINUX)
   if (!PluginChannelHost::IsListening())
     return NULL;
 
@@ -1783,13 +1782,16 @@ WebPluginDelegate* RenderView::CreatePluginDelegate(
   else
     mime_type_to_use = mime_type;
 
-#if !defined(OS_LINUX)  // In-proc plugins aren't supported on Linux.
   if (RenderProcess::current()->in_process_plugins()) {
+#if defined(OS_WIN)  // In-proc plugins aren't supported on Linux or Mac.
     return WebPluginDelegate::Create(path,
                                      mime_type_to_use,
                                      gfx::NativeViewFromId(host_window_));
-  }
+#else
+    NOTIMPLEMENTED();
+    return NULL;
 #endif
+  }
 
   WebPluginDelegateProxy* proxy =
       WebPluginDelegateProxy::Create(url, mime_type_to_use, clsid, this);
@@ -1799,11 +1801,6 @@ WebPluginDelegate* RenderView::CreatePluginDelegate(
   plugin_delegates_.push_back(proxy);
 
   return proxy;
-#else
-  // TODO(port): Plugins currently not supported
-  NOTIMPLEMENTED();
-  return NULL;
-#endif
 }
 
 WebKit::WebMediaPlayer* RenderView::CreateWebMediaPlayer(

@@ -600,22 +600,19 @@ void NPN_InvalidateRect(NPP id, NPRect *invalidRect) {
   DCHECK(plugin.get() != NULL);
   if (plugin.get() && plugin->webplugin()) {
     if (invalidRect) {
-      if (!plugin->windowless()) {
 #if defined(OS_WIN)
+      if (!plugin->windowless()) {
         RECT rect = {0};
         rect.left = invalidRect->left;
         rect.right = invalidRect->right;
         rect.top = invalidRect->top;
         rect.bottom = invalidRect->bottom;
         ::InvalidateRect(plugin->window_handle(), &rect, FALSE);
-#elif defined(OS_MACOSX)
-        NOTIMPLEMENTED();
-#else
-        NOTIMPLEMENTED();
-#endif
         return;
       }
-
+#elif defined(OS_LINUX)
+      NOTIMPLEMENTED();
+#endif
       gfx::Rect rect(invalidRect->left,
                      invalidRect->top,
                      invalidRect->right - invalidRect->left,
@@ -633,8 +630,13 @@ void NPN_InvalidateRegion(NPP id, NPRegion invalidRegion) {
   //
   // Similar to NPN_InvalidateRect.
 
-  // TODO: implement me
-  DLOG(INFO) << "NPN_InvalidateRegion is not implemented yet.";
+  // TODO: this is overkill--add platform-specific region handling (at the
+  // very least, fetch the region's bounding box and pass it to InvalidateRect).
+  scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
+  DCHECK(plugin.get() != NULL);
+  if (plugin.get() && plugin->webplugin()) {
+    plugin->webplugin()->Invalidate();
+  }
 }
 
 void NPN_ForceRedraw(NPP id) {
@@ -652,10 +654,8 @@ void NPN_ForceRedraw(NPP id) {
   // settings.  The HDC settings must be restored whenever control returns
   // back to the browser, either before returning from NPP_HandleEvent or
   // before calling a drawing-related netscape method.
-  //
 
-  // TODO: implement me
-  DLOG(INFO) << "NPN_ForceRedraw is not implemented yet.";
+  NOTIMPLEMENTED();
 }
 
 NPError NPN_GetValue(NPP id, NPNVariable variable, void *value) {

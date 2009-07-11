@@ -13,6 +13,7 @@
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/ref_counted.h"
 #include "base/string_util.h"
@@ -41,6 +42,10 @@
 
 #if defined(OS_POSIX)
 #include "chrome/common/ipc_channel_posix.h"
+#endif
+
+#if defined(OS_MACOSX)
+#include "base/scoped_cftyperef.h"
 #endif
 
 using WebKit::WebCursorInfo;
@@ -389,17 +394,13 @@ void WebPluginDelegateProxy::UpdateGeometry(
                 const gfx::Rect& clip_rect) {
   plugin_rect_ = window_rect;
 
-  // Be careful to explicitly call the default constructors for these ids,
-  // as they can be POD on some platforms and we want them initialized.
-  TransportDIB::Id transport_store_id = TransportDIB::Id();
-  TransportDIB::Id background_store_id = TransportDIB::Id();
+  bool bitmaps_changed = false;
 
   if (windowless_) {
-#if defined(OS_WIN)
-    // TODO(port): use TransportDIB instead of allocating these directly.
     if (!backing_store_canvas_.get() ||
         (window_rect.width() != backing_store_canvas_->getDevice()->width() ||
          window_rect.height() != backing_store_canvas_->getDevice()->height())) {
+      bitmaps_changed = true;
       // Create a shared memory section that the plugin paints into
       // asynchronously.
       ResetWindowlessBitmaps();
@@ -412,36 +413,52 @@ void WebPluginDelegateProxy::UpdateGeometry(
           ResetWindowlessBitmaps();
           return;
         }
-
-        // TODO(port): once we use TransportDIB we will properly fill in these
-        // ids; for now we just fill in the HANDLE field.
-        transport_store_id.handle = transport_store_->handle();
-        if (background_store_.get())
-          background_store_id.handle = background_store_->handle();
       }
     }
-#else
-    // TODO(port): refactor our allocation of backing stores.
-    NOTIMPLEMENTED();
-#endif
   }
 
-  IPC::Message* msg = new PluginMsg_UpdateGeometry(
-      instance_id_, window_rect, clip_rect,
-      transport_store_id, background_store_id);
+  IPC::Message* msg = NULL;
+#if defined(OS_POSIX)
+  // If we're using POSIX mmap'd TransportDIBs, sending the handle across
+  // IPC establishes a new mapping rather than just sending a window ID,
+  // so only do so if we've actually recreated the shared memory bitmaps.
+  if (!bitmaps_changed) {
+    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
+        TransportDIB::Handle(), TransportDIB::Handle());
+  } else
+#endif
+  if (transport_store_.get() && background_store_.get()) {
+    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
+        transport_store_->handle(), background_store_->handle());
+  } else if (transport_store_.get()) {
+    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
+        transport_store_->handle(), TransportDIB::Handle());
+  } else {
+    msg = new PluginMsg_UpdateGeometry(instance_id_, window_rect, clip_rect,
+        TransportDIB::Handle(), TransportDIB::Handle());
+  }
+
   msg->set_unblock(true);
   Send(msg);
 }
 
-#if defined(OS_WIN)
-// Copied from render_widget.cc
-static size_t GetPaintBufSize(const gfx::Rect& rect) {
-  // TODO(darin): protect against overflow
-  return 4 * rect.width() * rect.height();
+#if defined(OS_MACOSX)
+static void ReleaseTransportDIB(TransportDIB *dib) {
+  if (dib) {
+    IPC::Message* msg = new ViewHostMsg_FreeTransportDIB(dib->id());
+    RenderThread::current()->Send(msg);
+  }
 }
 #endif
 
 void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
+#if defined(OS_MACOSX)
+  // tell the browser to relase these TransportDIBs
+  ReleaseTransportDIB(backing_store_.get());
+  ReleaseTransportDIB(transport_store_.get());
+  ReleaseTransportDIB(background_store_.get());
+#endif
+
   backing_store_.reset();
   transport_store_.reset();
   backing_store_canvas_.reset();
@@ -452,28 +469,36 @@ void WebPluginDelegateProxy::ResetWindowlessBitmaps() {
 }
 
 bool WebPluginDelegateProxy::CreateBitmap(
-    scoped_ptr<base::SharedMemory>* memory,
+    scoped_ptr<TransportDIB>* memory,
     scoped_ptr<skia::PlatformCanvas>* canvas) {
-#if defined(OS_WIN)
-  size_t size = GetPaintBufSize(plugin_rect_);
-  scoped_ptr<base::SharedMemory> new_shared_memory(new base::SharedMemory());
-  if (!new_shared_memory->Create(L"", false, true, size))
-    return false;
-
-  scoped_ptr<skia::PlatformCanvas> new_canvas(new skia::PlatformCanvas);
-  if (!new_canvas->initialize(plugin_rect_.width(), plugin_rect_.height(),
-                              true, new_shared_memory->handle())) {
-    return false;
+  int width = plugin_rect_.width();
+  int height = plugin_rect_.height();
+  const size_t stride = skia::PlatformCanvas::StrideForWidth(width);
+  const size_t size = stride * height;
+#if defined(OS_LINUX)
+  static unsigned long max_size = 0;
+  if (max_size == 0) {
+    std::string contents;
+    file_util::ReadFileToString(FilePath("/proc/sys/kernel/shmmax"), &contents);
+    max_size = strtoul(contents.c_str(), NULL, 0);
   }
-
-  memory->swap(new_shared_memory);
-  canvas->swap(new_canvas);
-  return true;
-#else
-  // TODO(port): use TransportDIB properly.
-  NOTIMPLEMENTED();
-  return false;
+  if (size > max_size)
+    return false;
 #endif
+#if defined(OS_MACOSX)
+  TransportDIB::Handle handle;
+  IPC::Message* msg = new ViewHostMsg_AllocTransportDIB(size, &handle);
+  if (!RenderThread::current()->Send(msg))
+    return false;
+  if (handle.fd < 0)
+    return false;
+  memory->reset(TransportDIB::Map(handle));
+#else
+  static uint32 sequence_number = 0;
+  memory->reset(TransportDIB::Create(size, sequence_number++));
+#endif
+  canvas->reset((*memory)->GetPlatformCanvas(width, height));
+  return true;
 }
 
 void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
@@ -489,36 +514,59 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
   if (!windowless_)
     return;
 
-  // TODO(port): side-stepping some windowless plugin code for now.
-#if defined(OS_WIN)
   // We got a paint before the plugin's coordinates, so there's no buffer to
   // copy from.
-  if (!backing_store_canvas_.get())
+  if (!backing_store_canvas_.get()) {
     return;
+  }
 
   // Limit the damaged rectangle to whatever is contained inside the plugin
   // rectangle, as that's the rectangle that we'll bitblt to the hdc.
   gfx::Rect rect = damaged_rect.Intersect(plugin_rect_);
+  gfx::Rect offset_rect = rect;
+  offset_rect.Offset(-plugin_rect_.x(), -plugin_rect_.y());
 
   bool background_changed = false;
   if (background_store_canvas_.get() && BackgroundChanged(context, rect)) {
     background_changed = true;
+#if defined(OS_WIN)
     HDC background_hdc =
         background_store_canvas_->getTopPlatformDevice().getBitmapDC();
-    BitBlt(background_hdc, rect.x()-plugin_rect_.x(), rect.y()-plugin_rect_.y(),
+    BitBlt(background_hdc, offset_rect.x(), offset_rect.y(),
         rect.width(), rect.height(), context, rect.x(), rect.y(), SRCCOPY);
+#elif defined(OS_MACOSX)
+    CGContextRef background_context =
+        background_store_canvas_->getTopPlatformDevice().GetBitmapContext();
+    scoped_cftyperef<CGImageRef>
+        background_image(CGBitmapContextCreateImage(background_context));
+    scoped_cftyperef<CGImageRef> sub_image(
+        CGImageCreateWithImageInRect(background_image, offset_rect.ToCGRect()));
+    CGContextDrawImage(context, rect.ToCGRect(), sub_image);
+#else
+    NOTIMPLEMENTED();
+#endif
   }
 
-  gfx::Rect offset_rect = rect;
-  offset_rect.Offset(-plugin_rect_.x(), -plugin_rect_.y());
   if (background_changed || !backing_store_painted_.Contains(offset_rect)) {
     Send(new PluginMsg_Paint(instance_id_, offset_rect));
     CopyFromTransportToBacking(offset_rect);
   }
 
+#if defined(OS_WIN)
   HDC backing_hdc = backing_store_canvas_->getTopPlatformDevice().getBitmapDC();
   BitBlt(context, rect.x(), rect.y(), rect.width(), rect.height(), backing_hdc,
-      rect.x()-plugin_rect_.x(), rect.y()-plugin_rect_.y(), SRCCOPY);
+      offset_rect.x(), offset_rect.y(), SRCCOPY);
+#elif defined(OS_MACOSX)
+  CGContextRef backing_context =
+      backing_store_canvas_->getTopPlatformDevice().GetBitmapContext();
+  scoped_cftyperef<CGImageRef>
+      backing_image(CGBitmapContextCreateImage(backing_context));
+  scoped_cftyperef<CGImageRef> sub_image(
+      CGImageCreateWithImageInRect(backing_image, offset_rect.ToCGRect()));
+  CGContextDrawImage(context, rect.ToCGRect(), sub_image);
+#else
+  NOTIMPLEMENTED();
+#endif
 
   if (invalidate_pending_) {
     // Only send the PaintAck message if this paint is in response to an
@@ -527,18 +575,12 @@ void WebPluginDelegateProxy::Paint(gfx::NativeDrawingContext context,
     invalidate_pending_ = false;
     Send(new PluginMsg_DidPaint(instance_id_));
   }
-#else
-  // TODO(port): windowless plugin paint handling goes here.
-  NOTIMPLEMENTED();
-#endif
 }
 
-#if defined(OS_WIN)
-// TODO(port): this should be portable; just avoiding windowless plugins for
-// now.
 bool WebPluginDelegateProxy::BackgroundChanged(
-    HDC hdc,
+    gfx::NativeDrawingContext hdc,
     const gfx::Rect& rect) {
+#if defined(OS_WIN)
   HBITMAP hbitmap = static_cast<HBITMAP>(GetCurrentObject(hdc, OBJ_BITMAP));
   if (hbitmap == NULL) {
     NOTREACHED();
@@ -578,9 +620,11 @@ bool WebPluginDelegateProxy::BackgroundChanged(
       return true;
   }
 
+#else
+  NOTIMPLEMENTED();
+#endif
   return false;
 }
-#endif
 
 void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
   base::SharedMemoryHandle shared_memory;
@@ -860,7 +904,7 @@ void WebPluginDelegateProxy::OnGetCPBrowsingContext(uint32* context) {
   *context = render_view_ ? render_view_->GetCPBrowsingContext() : 0;
 }
 
-void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext hdc,
+void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext context,
                                             const gfx::Rect& rect) {
   const int width = plugin_rect_.width();
   const int height = plugin_rect_.height();
@@ -886,7 +930,7 @@ void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext hdc,
 
 #if defined(OS_WIN)
   skia::PlatformDevice& device = canvas.getTopPlatformDevice();
-  device.drawToHDC(hdc, plugin_rect_.x(), plugin_rect_.y(), NULL);
+  device.drawToHDC(context, plugin_rect_.x(), plugin_rect_.y(), NULL);
 #elif defined(OS_LINUX)
   // Though conceptually we've been handed a cairo_surface_t* and we
   // could've just hooked up the canvas to draw directly onto it, our
@@ -895,33 +939,46 @@ void WebPluginDelegateProxy::PaintSadPlugin(gfx::NativeDrawingContext hdc,
   // TODO(evanm): revisit when we have printing hooked up, as that might
   // change our usage of cairo.
   skia::PlatformDevice& device = canvas.getTopPlatformDevice();
-  cairo_t* cairo = cairo_create(hdc);
+  cairo_t* cairo = cairo_create(context);
   cairo_surface_t* source_surface = device.beginPlatformPaint();
   cairo_set_source_surface(cairo, source_surface, plugin_rect_.x(), plugin_rect_.y());
   cairo_paint(cairo);
   cairo_destroy(cairo);
   // We have no endPlatformPaint() on the Linux PlatformDevice.
   // The surface is owned by the device.
+#elif defined(OS_MACOSX)
+  canvas.getTopPlatformDevice().DrawToContext(
+      context, plugin_rect_.x(), plugin_rect_.y(), NULL);
 #else
   NOTIMPLEMENTED();
 #endif
 }
 
 void WebPluginDelegateProxy::CopyFromTransportToBacking(const gfx::Rect& rect) {
-  if (!backing_store_canvas_.get())
+  if (!backing_store_canvas_.get()) {
     return;
+  }
 
-#if defined(OS_WIN)
   // Copy the damaged rect from the transport bitmap to the backing store.
+#if defined(OS_WIN)
   HDC backing = backing_store_canvas_->getTopPlatformDevice().getBitmapDC();
   HDC transport = transport_store_canvas_->getTopPlatformDevice().getBitmapDC();
   BitBlt(backing, rect.x(), rect.y(), rect.width(), rect.height(),
       transport, rect.x(), rect.y(), SRCCOPY);
-  backing_store_painted_ = backing_store_painted_.Union(rect);
+#elif defined(OS_MACOSX)
+  gfx::NativeDrawingContext backing =
+      backing_store_canvas_->getTopPlatformDevice().GetBitmapContext();
+  gfx::NativeDrawingContext transport =
+      transport_store_canvas_->getTopPlatformDevice().GetBitmapContext();
+  scoped_cftyperef<CGImageRef> image(CGBitmapContextCreateImage(transport));
+  scoped_cftyperef<CGImageRef> sub_image(
+      CGImageCreateWithImageInRect(image, rect.ToCGRect()));
+  CGContextDrawImage(backing, rect.ToCGRect(), sub_image);
 #else
   // TODO(port): probably some new code in TransportDIB should go here.
   NOTIMPLEMENTED();
 #endif
+  backing_store_painted_ = backing_store_painted_.Union(rect);
 }
 
 void WebPluginDelegateProxy::OnHandleURLRequest(

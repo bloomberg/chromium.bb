@@ -9,6 +9,9 @@
 
 #include "base/hash_tables.h"
 #include "base/ref_counted.h"
+#if defined(OS_MACOSX)
+#include "base/scoped_cftyperef.h"
+#endif
 #include "base/scoped_handle.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
@@ -104,8 +107,8 @@ class WebPluginProxy : public WebPlugin {
 
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
-                      const TransportDIB::Id& windowless_buffer,
-                      const TransportDIB::Id& background_buffer);
+                      const TransportDIB::Handle& windowless_buffer,
+                      const TransportDIB::Handle& background_buffer);
 
   void CancelDocumentLoad();
 
@@ -129,22 +132,22 @@ class WebPluginProxy : public WebPlugin {
   // Handler for sending over the paint event to the plugin.
   void OnPaint(const gfx::Rect& damaged_rect);
 
-#if defined(OS_WIN)
   // Updates the shared memory section where windowless plugins paint.
-  void SetWindowlessBuffer(const base::SharedMemoryHandle& windowless_buffer,
-                           const base::SharedMemoryHandle& background_buffer);
+  void SetWindowlessBuffer(const TransportDIB::Handle& windowless_buffer,
+                           const TransportDIB::Handle& background_buffer);
 
+#if defined(OS_WIN)
   // Converts a shared memory section handle from the renderer process into a
   // bitmap and hdc that are mapped to this process.
   void ConvertBuffer(const base::SharedMemoryHandle& buffer,
                      ScopedHandle* shared_section,
                      ScopedBitmap* bitmap,
                      ScopedHDC* hdc);
+#endif
 
   // Called when a plugin's origin moves, so that we can update the world
   // transform of the local HDC.
   void UpdateTransform();
-#endif
 
   typedef base::hash_map<int, WebPluginResourceClient*> ResourceClientMap;
   ResourceClientMap resource_clients_;
@@ -174,6 +177,11 @@ class WebPluginProxy : public WebPlugin {
   ScopedHandle background_shared_section_;
   ScopedBitmap background_bitmap_;
   ScopedHDC background_hdc_;
+#elif defined(OS_MACOSX)
+  scoped_ptr<TransportDIB> windowless_dib_;
+  scoped_ptr<TransportDIB> background_dib_;
+  scoped_cftyperef<CGContextRef> windowless_context_;
+  scoped_cftyperef<CGContextRef> background_context_;
 #endif
 
   ScopedRunnableMethodFactory<WebPluginProxy> runnable_method_factory_;
