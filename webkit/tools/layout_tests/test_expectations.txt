@@ -2823,3 +2823,7 @@ BUG16355 LINUX : LayoutTests/fast/forms/slider-delete-while-dragging-thumb.html 
 BUG16410 : LayoutTests/fast/workers/worker-cloneport.html = FAIL CRASH
 BUG16410 : LayoutTests/fast/workers/worker-messageport-gc.html = FAIL CRASH
 BUG16410 : LayoutTests/fast/workers/worker-messageport.html = FAIL CRASH
+
+// WebKit merge 45685:45738
+BUG16241 : LayoutTests/fast/dom/anchor-toString.html = FAIL
+BUG16410 : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
