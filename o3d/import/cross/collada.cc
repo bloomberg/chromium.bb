@@ -1954,7 +1954,7 @@ Effect* Collada::BuildEffect(FCDocument* doc, FCDEffect* collada_effect) {
         String file_name = "embedded-shader-" +
                            IntToString(unique_filename_counter_) + ".fx";
         file_path = FilePath(FILE_PATH_LITERAL("shaders"));
-        file_path.Append(UTF8ToFilePath(file_name));
+        file_path = file_path.Append(UTF8ToFilePath(file_name));
       } else if (code->GetType() == FCDEffectCode::INCLUDE) {
         fstring path = code->GetFilename();
         file_path = WideToFilePath(path.c_str());
