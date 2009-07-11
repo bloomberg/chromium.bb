@@ -22,7 +22,7 @@
           'outputs': [
             '../../third_party/cygwin/_always_run_setup_mount.marker',
           ],
-          'action': ['<@(_inputs)'],
+          'action': ['', '<@(_inputs)'],
         },
       ],
     },
