@@ -190,8 +190,9 @@ namespace o3d {
     <tr><td>o3d.PointSpriteEnable</td><td>ParamBoolean</td>
         <td>default = false</td></tr>
     <tr><td>o3d.PointSize</td><td>ParamFloat</td><td>TBD</td></tr>
-    <tr><td>o3d.PolygonOffset1</td><td>ParamFloat<td>TBD</td></tr>
-    <tr><td>o3d.PolygonOffset2</td><td>ParamFloat<td>TBD</td></tr>
+    <tr><td>o3d.PolygonOffset1</td><td>ParamFloat, polygon offset slope factor<td>0</td></tr>
+    <tr><td>o3d.PolygonOffset2</td><td>ParamFloat, polygon offset bias (in
+    resolvable units)<td>0</td></tr>
     <tr><td>o3d.FillMode</td><td>ParamInteger, State.Fill</td>
         <td>default = State.SOLID</td></tr>
     <tr><td>o3d.ZEnable</td><td>ParamBoolean</td>
@@ -262,6 +263,15 @@ namespace o3d {
         <td>default = State.BLEND_ADD</td></tr>
     </table>
 
+    Note: Polygon offset is computed with the following formula:
+    \code
+    totalOffset = PolygonOffset1 * slope + PolygonOffset2 * r
+    \endcode
+    Slope is the maximum difference in depth between 2 adjacent pixels of the
+    polygon. r is the smallest value that would fail the NOTEQUAL test against
+    0.
+    Typical useful values to layer a polygon on top of another one are -1.0 for
+    each of PolygonOffset1 and PolygonOffset2.
   %]
   [nocpp, userglue] Param? GetStateParam(String state_name);
 
