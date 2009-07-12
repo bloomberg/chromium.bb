@@ -65,6 +65,7 @@ class ExceptionsPageView : public OptionsPageView,
   // The buttons and labels.
   views::NativeButton remove_button_;
   views::NativeButton remove_all_button_;
+  MultiLabelButtons show_button_;
 
   DISALLOW_COPY_AND_ASSIGN(ExceptionsPageView);
 };

@@ -68,6 +68,10 @@ void ExceptionsTableModel::OnPasswordStoreRequestDone(
 // ExceptionsPageView, public
 ExceptionsPageView::ExceptionsPageView(Profile* profile)
     : OptionsPageView(profile),
+      ALLOW_THIS_IN_INITIALIZER_LIST(show_button_(
+          this,
+          l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_SHOW_BUTTON),
+          l10n_util::GetString(IDS_PASSWORDS_PAGE_VIEW_HIDE_BUTTON))),
       ALLOW_THIS_IN_INITIALIZER_LIST(remove_button_(
           this,
           l10n_util::GetString(IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_BUTTON))),
@@ -115,12 +119,13 @@ void ExceptionsPageView::InitControlLayout() {
   SetupTable();
 
   // Do the layout thing.
-  const int column_set_id = 0;
   GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);
 
+  const int top_column_set_id = 0;
+
   // Design the grid.
-  ColumnSet* column_set = layout->AddColumnSet(column_set_id);
+  ColumnSet* column_set = layout->AddColumnSet(top_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
@@ -128,14 +133,19 @@ void ExceptionsPageView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
 
   // Fill the grid.
-  layout->StartRow(0, column_set_id);
-  layout->AddView(table_view_, 1, 4, GridLayout::FILL,
+  layout->StartRow(0, top_column_set_id);
+  layout->AddView(table_view_, 1, 6, GridLayout::FILL,
                   GridLayout::FILL);
   layout->AddView(&remove_button_);
-  layout->StartRowWithPadding(0, column_set_id, 0,
+  layout->StartRowWithPadding(0, top_column_set_id, 0,
                               kRelatedControlVerticalSpacing);
   layout->SkipColumns(1);
   layout->AddView(&remove_all_button_);
+  layout->StartRowWithPadding(0, top_column_set_id, 0,
+                              kRelatedControlVerticalSpacing);
+
+  layout->SkipColumns(1);
+  layout->AddView(&show_button_);
   layout->AddPaddingRow(1, 0);
 
   // Ask the database for exception data.
@@ -145,11 +155,16 @@ void ExceptionsPageView::InitControlLayout() {
 ///////////////////////////////////////////////////////////////////////////////
 // ExceptionsPageView, private
 void ExceptionsPageView::SetupButtons() {
+  // Disable all buttons in the first place.
   remove_button_.SetParentOwned(false);
   remove_button_.SetEnabled(false);
 
   remove_all_button_.SetParentOwned(false);
   remove_all_button_.SetEnabled(false);
+
+  show_button_.SetParentOwned(false);
+  show_button_.SetEnabled(false);
+  show_button_.SetVisible(false);
 }
 
 void ExceptionsPageView::SetupTable() {
@@ -159,9 +174,8 @@ void ExceptionsPageView::SetupTable() {
   // Creates the different columns for the table.
   // The float resize values are the result of much tinkering.
   std::vector<TableColumn> columns;
-  columns.push_back(TableColumn(
-      IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN,
-      TableColumn::LEFT, -1, 0.55f));
+  columns.push_back(TableColumn(IDS_PASSWORDS_PAGE_VIEW_SITE_COLUMN,
+                                TableColumn::LEFT, -1, 0.55f));
   columns.back().sortable = true;
   table_view_ = new views::TableView(&table_model_, columns, views::TEXT_ONLY,
                                      true, true, true);
