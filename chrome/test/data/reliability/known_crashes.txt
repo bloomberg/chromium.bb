@@ -76,3 +76,6 @@ PREFIX : webcore::renderobject::localtoabsolute___webcore::layoutstate::layoutst
 
 # 8033
 SUBSTRING : windowdragresponsetask::run___messageloop::runtask___messageloop::dowork
+
+# 16582
+PREFIX : tabcontentsviewwin::setpagetitle___tabcontents::updatetitleforentry___tabcontents::updatetitle___renderviewhost::onmsgupdatetitle___ipc::messagewithtuple
