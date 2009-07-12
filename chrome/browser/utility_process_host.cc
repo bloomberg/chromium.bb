@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/process_util.h"
+#include "base/string_util.h"
 #include "base/task.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
@@ -59,6 +60,10 @@ std::wstring UtilityProcessHost::GetUtilityProcessCmd() {
 }
 
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
+  // Name must be set or metrics_service will crash in any test which
+  // launches a UtilityProcessHost.
+  set_name(L"utility_process_host_" + ASCIIToWide(channel_id()));
+
   if (!CreateChannel())
     return false;
 

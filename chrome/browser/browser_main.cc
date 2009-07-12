@@ -751,7 +751,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   profile->InitExtensions();
   // Start up the web resource service.  This starts loading data after a
   // short delay so as not to interfere with startup time.
-  if (parsed_command_line.HasSwitch(switches::kWebResources))
+  if (!parsed_command_line.HasSwitch(switches::kDisableWebResources))
     profile->InitWebResources();
 
   int result_code = ResultCodes::NORMAL_EXIT;

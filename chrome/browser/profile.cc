@@ -566,6 +566,9 @@ void ProfileImpl::InitExtensions() {
 }
 
 void ProfileImpl::InitWebResources() {
+  if (web_resource_service_)
+    return;  // Already initialized.
+
   web_resource_service_ = new WebResourceService(
       this,
       g_browser_process->file_thread()->message_loop());

@@ -1426,7 +1426,7 @@ NewTabUI::NewTabUI(TabContents* contents)
     AddMessageHandler((new MostVisitedHandler())->Attach(this));
     AddMessageHandler((new RecentlyClosedTabsHandler())->Attach(this));
     AddMessageHandler((new MetricsHandler())->Attach(this));
-    if (EnableWebResources())
+    if (!WebResourcesDisabled())
       AddMessageHandler((new TipsHandler())->Attach(this));
 
     if (UseOldNewTabPage()) {
@@ -1484,7 +1484,7 @@ void NewTabUI::Observe(NotificationType type,
 void NewTabUI::RegisterUserPrefs(PrefService* prefs) {
   MostVisitedHandler::RegisterUserPrefs(prefs);
   ShownSectionsHandler::RegisterUserPrefs(prefs);
-  if (NewTabUI::EnableWebResources())
+  if (!NewTabUI::WebResourcesDisabled())
     TipsHandler::RegisterUserPrefs(prefs);
 }
 
@@ -1495,7 +1495,7 @@ bool NewTabUI::UseOldNewTabPage() {
 }
 
 // static
-bool NewTabUI::EnableWebResources() {
+bool NewTabUI::WebResourcesDisabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return command_line->HasSwitch(switches::kWebResources);
+  return command_line->HasSwitch(switches::kDisableWebResources);
 }

@@ -44,6 +44,8 @@ class WebResourceService::WebResourceFetcher
     // If we are still fetching data, exit.
     if (web_resource_service_->in_fetch_)
       return;
+    else
+      web_resource_service_->in_fetch_ = true;
 
     url_fetcher_.reset(new URLFetcher(GURL(
         WideToUTF8(web_resource_service_->web_resource_server_)),
@@ -95,7 +97,7 @@ class WebResourceService::UnpackerClient
   UnpackerClient(WebResourceService* web_resource_service,
                  const std::string& json_data)
     : web_resource_service_(web_resource_service),
-      json_data_(json_data) {
+      json_data_(json_data), got_response_(false) {
   }
 
   void Start() {
@@ -107,18 +109,43 @@ class WebResourceService::UnpackerClient
                             web_resource_service_->resource_dispatcher_host_,
                             MessageLoop::current()));
     } else {
-      // TODO(mrc): unit tests here.
+      // If we don't have a resource_dispatcher_host_, assume we're in
+      // a test and run the unpacker directly in-process.
+      WebResourceUnpacker unpacker(json_data_);
+      if (unpacker.Run()) {
+        OnUnpackWebResourceSucceeded(*unpacker.parsed_json());
+      } else {
+        OnUnpackWebResourceFailed(unpacker.error_message());
+      }
     }
   }
 
  private:
+  // UtilityProcessHost::Client
+  virtual void OnProcessCrashed() {
+    if (got_response_)
+      return;
+
+    OnUnpackWebResourceFailed(
+        "Chrome crashed while trying to retrieve web resources.");
+  }
+
   virtual void OnUnpackWebResourceSucceeded(const ListValue& parsed_json) {
     web_resource_service_->OnWebResourceUnpacked(parsed_json);
-    Release();
+    Cleanup();
   }
 
   virtual void OnUnpackWebResourceFailed(const std::string& error_message) {
     web_resource_service_->EndFetch();
+    Cleanup();
+  }
+
+  // Release reference and set got_response_.
+  void Cleanup() {
+    if (got_response_)
+      return;
+
+    got_response_ = true;
     Release();
   }
 
@@ -134,6 +161,10 @@ class WebResourceService::UnpackerClient
 
   // Holds raw JSON string.
   const std::string& json_data_;
+
+  // True if we got a response from the utility process and have cleaned up
+  // already.
+  bool got_response_;
 };
 
 // TODO(mrc): make into a changeable preference.
@@ -222,24 +253,22 @@ void WebResourceService::OnWebResourceUnpacked(const ListValue& parsed_json) {
 }
 
 void WebResourceService::StartAfterDelay() {
-  int64 delay = kStartResourceFetchDelay;
+  int delay = kStartResourceFetchDelay;
   // Check whether we have ever put a value in the web resource cache;
   // if so, pull it out and see if it's time to update again.
   if (prefs_->HasPrefPath(prefs::kNTPTipsCacheUpdate)) {
     std::wstring last_update_pref =
       prefs_->GetString(prefs::kNTPTipsCacheUpdate);
-    int64 ms_since_update =
-        (base::Time::Now() - base::Time::FromDoubleT(
-        StringToDouble(WideToASCII(last_update_pref)))).InMilliseconds();
+    int ms_until_update = kCacheUpdateDelay -
+        static_cast<int>((base::Time::Now() - base::Time::FromDoubleT(
+        StringToDouble(WideToASCII(last_update_pref)))).InMilliseconds());
 
-    delay = kStartResourceFetchDelay +
-        (ms_since_update > kCacheUpdateDelay ?
-         0 : kCacheUpdateDelay - ms_since_update);
+    delay = ms_until_update > kCacheUpdateDelay ?
+            kCacheUpdateDelay : (ms_until_update < kStartResourceFetchDelay ?
+                                 kStartResourceFetchDelay : ms_until_update);
   }
 
   // Start fetch and wait for UpdateResourceCache.
-  DCHECK(delay >= kStartResourceFetchDelay &&
-         delay <= kCacheUpdateDelay);
   web_resource_fetcher_->StartAfterDelay(static_cast<int>(delay));
 }
 
