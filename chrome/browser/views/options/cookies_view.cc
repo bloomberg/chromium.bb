@@ -50,12 +50,12 @@ class CookiesTableModel : public TableModel {
   void RemoveCookies(int start_index, int remove_count);
   void RemoveAllShownCookies();
 
-  // TableModel implementation:
+  // TableModel methods.
   virtual int RowCount();
   virtual std::wstring GetText(int row, int column_id);
   virtual SkBitmap GetIcon(int row);
-  virtual void SetObserver(TableModelObserver* observer);
   virtual int CompareValues(int row1, int row2, int column_id);
+  virtual void SetObserver(TableModelObserver* observer);
 
   // Filter the cookies to only display matched results.
   void UpdateSearchResults(const std::wstring& filter);
@@ -130,7 +130,8 @@ void CookiesTableModel::RemoveCookies(int start_index, int remove_count) {
   // We could do this all better if there was a way to mark elements of
   // all_cookies as dead instead of deleting, but this should be fine for now.
   DoFilter();
-  observer_->OnItemsRemoved(start_index, remove_count);
+  if (observer_)
+    observer_->OnItemsRemoved(start_index, remove_count);
 }
 
 void CookiesTableModel::RemoveAllShownCookies() {
@@ -615,6 +616,7 @@ void CookiesView::OnTableViewDelete(views::TableView* table_view) {
 
 void CookiesView::ContentsChanged(views::Textfield* sender,
                                   const std::wstring& new_contents) {
+  clear_search_button_->SetEnabled(!search_field_->text().empty());
   search_update_factory_.RevokeAll();
   MessageLoop::current()->PostDelayedTask(FROM_HERE,
       search_update_factory_.NewRunnableMethod(
@@ -705,6 +707,7 @@ void CookiesView::Init() {
   search_field_->SetController(this);
   clear_search_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_COOKIES_CLEAR_SEARCH_LABEL));
+  clear_search_button_->SetEnabled(false);
   description_label_ = new views::Label(
       l10n_util::GetString(IDS_COOKIES_INFO_LABEL));
   description_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -781,6 +784,7 @@ void CookiesView::Init() {
 
 void CookiesView::ResetSearchQuery() {
   search_field_->SetText(EmptyWString());
+  clear_search_button_->SetEnabled(false);
   UpdateSearchResults();
 }
 
