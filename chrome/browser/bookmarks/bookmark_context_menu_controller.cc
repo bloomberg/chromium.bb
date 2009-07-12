@@ -253,8 +253,7 @@ void BookmarkContextMenuController::BuildMenu() {
       configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
       configuration_ == BOOKMARK_MANAGER_TREE ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER ||
-      configuration_ == BOOKMARK_BAR) {
+      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
     delegate_->AddSeparator();
     delegate_->AddItem(IDS_CUT);
     delegate_->AddItem(IDS_COPY);
