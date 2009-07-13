@@ -27,22 +27,6 @@
 #include "net/base/net_util.h"
 #include "net/url_request/url_request_unittest.h"
 
-#if defined(OS_LINUX)
-#define MAYBE_UnknownSize DISABLED_UnknownSize
-#define MAYBE_IncognitoDownload DISABLED_IncognitoDownload
-// http://crbug.com/15211
-#define MAYBE_PerWindowShelf DISABLED_PerWindowShelf
-// http://crbug.com/15244
-#define MAYBE_DownloadMimeType DISABLED_DownloadMimeType
-#define MAYBE_ContentDisposition DISABLED_ContentDisposition
-#else
-#define MAYBE_UnknownSize UnknownSize
-#define MAYBE_IncognitoDownload IncognitoDownload
-#define MAYBE_PerWindowShelf PerWindowShelf
-#define MAYBE_DownloadMimeType DownloadMimeType
-#define MAYBE_ContentDisposition ContentDisposition
-#endif
-
 namespace {
 
 const wchar_t kDocRoot[] = L"chrome/test/data";
@@ -171,7 +155,7 @@ class DownloadTest : public UITest {
 
 // Download a file with non-viewable content, verify that the
 // download tab opened and the file exists.
-TEST_F(DownloadTest, MAYBE_DownloadMimeType) {
+TEST_F(DownloadTest, DownloadMimeType) {
   FilePath file(FILE_PATH_LITERAL("download-test1.lib"));
 
   EXPECT_EQ(1, GetTabCount());
@@ -219,7 +203,7 @@ TEST_F(DownloadTest, NoDownload) {
 // Download a 0-size file with a content-disposition header, verify that the
 // download tab opened and the file exists as the filename specified in the
 // header.  This also ensures we properly handle empty file downloads.
-TEST_F(DownloadTest, MAYBE_ContentDisposition) {
+TEST_F(DownloadTest, ContentDisposition) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
@@ -242,7 +226,7 @@ TEST_F(DownloadTest, MAYBE_ContentDisposition) {
 // Test that the download shelf is per-window by starting a download in one
 // tab, opening a second tab, closing the shelf, going back to the first tab,
 // and checking that the shelf is closed.
-TEST_F(DownloadTest, MAYBE_PerWindowShelf) {
+TEST_F(DownloadTest, PerWindowShelf) {
   FilePath file(FILE_PATH_LITERAL("download-test3.gif"));
   FilePath download_file(FILE_PATH_LITERAL("download-test3-attachment.gif"));
 
@@ -287,7 +271,7 @@ TEST_F(DownloadTest, MAYBE_PerWindowShelf) {
 // in the middle until the server receives a second request for
 // "download-finish.  At that time, the download will finish.
 // Flaky on Linux: http://code.google.com/p/chromium/issues/detail?id=14746
-TEST_F(DownloadTest, MAYBE_UnknownSize) {
+TEST_F(DownloadTest, UnknownSize) {
   GURL url(URLRequestSlowDownloadJob::kUnknownSizeUrl);
   FilePath filename;
   net::FileURLToFilePath(url, &filename);
@@ -308,7 +292,7 @@ TEST_F(DownloadTest, DISABLED_KnownSize) {
 
 // Test that when downloading an item in Incognito mode, we don't crash when
 // closing the last Incognito window (http://crbug.com/13983).
-TEST_F(DownloadTest, MAYBE_IncognitoDownload) {
+TEST_F(DownloadTest, IncognitoDownload) {
   // Open a regular window and sanity check default values for window / tab
   // count and shelf visibility.
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
