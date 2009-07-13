@@ -46,10 +46,6 @@ ExceptionManager *g_exception_manager = NULL;
 
 namespace o3d {
 
-char *NP_GetMIMEDescription(void) {
-  return O3D_PLUGIN_MIME_TYPE "::O3D MIME";
-}
-
 NPError NP_GetValue(void *instance, NPPVariable variable, void *value) {
   switch (variable) {
     case NPPVpluginNameString:
@@ -172,4 +168,17 @@ NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
 
   return NPERR_NO_ERROR;
 }
+
+char *NP_GetMIMEDescription(void) {
+  return O3D_PLUGIN_MIME_TYPE "::O3D MIME";
+}
+
 }  // namespace o3d / extern "C"
+
+#if !defined(O3D_INTERNAL_PLUGIN)
+extern "C" {
+NPError NP_GetValue(void *instance, NPPVariable variable, void *value) {
+  return o3d::NP_GetValue(instance, variable, value);
+}
+}
+#endif

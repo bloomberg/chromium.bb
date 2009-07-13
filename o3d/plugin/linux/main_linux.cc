@@ -570,17 +570,6 @@ static gboolean GtkTimeoutCallback(gpointer user_data) {
   return TRUE;
 }
 
-NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
-  switch (variable) {
-    case NPPVpluginNeedsXEmbed:
-      *static_cast<NPBool *>(value) = g_xembed_support;
-      return NPERR_NO_ERROR;
-    default:
-      return NPERR_INVALID_PARAM;
-  }
-  return NPERR_NO_ERROR;
-}
-
 NPError InitializePlugin() {
   if (!o3d::SetupOutOfMemoryHandler())
     return NPERR_MODULE_LOAD_FAILED_ERROR;
@@ -646,6 +635,17 @@ NPError OSCALL NP_Shutdown(void) {
 }  // namespace o3d / extern "C"
 
 namespace o3d {
+
+NPError PlatformNPPGetValue(NPP instance, NPPVariable variable, void *value) {
+  switch (variable) {
+    case NPPVpluginNeedsXEmbed:
+      *static_cast<NPBool *>(value) = g_xembed_support;
+      return NPERR_NO_ERROR;
+    default:
+      return NPERR_INVALID_PARAM;
+  }
+  return NPERR_NO_ERROR;
+}
 
 void RenderOnDemandCallbackHandler::Run() {
   DrawPlugin(obj_);

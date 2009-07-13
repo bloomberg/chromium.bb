@@ -41,6 +41,8 @@
 #include <iostream>
 #include <fstream>
 
+namespace o3d {
+
 // Checks OS version
 bool CheckOSVersion(NPP npp) {
   return true;
@@ -60,3 +62,5 @@ bool GetUserConfigMetrics() {
   // TODO: Finish this function!
   return true;
 }
+
+}  // namespace o3d
