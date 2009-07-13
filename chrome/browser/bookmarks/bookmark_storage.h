@@ -44,7 +44,7 @@ class BookmarkStorage : public NotificationObserver,
     LoadDetails(BookmarkNode* bb_node,
                 BookmarkNode* other_folder_node,
                 BookmarkIndex* index,
-                int64 max_id)
+                int max_id)
         : bb_node_(bb_node),
           other_folder_node_(other_folder_node),
           index_(index),
@@ -62,8 +62,8 @@ class BookmarkStorage : public NotificationObserver,
     BookmarkIndex* index() { return index_.get(); }
 
     // Max id of the nodes.
-    void set_max_id(int64 max_id) { max_id_ = max_id; }
-    int64 max_id() const { return max_id_; }
+    void set_max_id(int max_id) { max_id_ = max_id; }
+    int max_id() const { return max_id_; }
 
     // Computed checksum.
     void set_computed_checksum(const std::string& value) {
@@ -77,18 +77,13 @@ class BookmarkStorage : public NotificationObserver,
     }
     const std::string& stored_checksum() const { return stored_checksum_; }
 
-    // Whether ids were reassigned.
-    void set_ids_reassigned(bool value) { ids_reassigned_ = value; }
-    bool ids_reassigned() const { return ids_reassigned_; }
-
    private:
     scoped_ptr<BookmarkNode> bb_node_;
     scoped_ptr<BookmarkNode> other_folder_node_;
     scoped_ptr<BookmarkIndex> index_;
-    int64 max_id_;
+    int max_id_;
     std::string computed_checksum_;
     std::string stored_checksum_;
-    bool ids_reassigned_;
 
     DISALLOW_COPY_AND_ASSIGN(LoadDetails);
   };

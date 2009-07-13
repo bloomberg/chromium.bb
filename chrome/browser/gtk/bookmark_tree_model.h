@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_GTK_BOOKMARK_TREE_MODEL_H_
 
 #include <string>
-#include "base/basictypes.h"
 
 class BookmarkModel;
 class BookmarkNode;
@@ -37,12 +36,12 @@ GtkTreeStore* MakeFolderTreeStore();
 // |recursive| indicates whether to recurse into sub-directories (if false,
 // the tree store will effectively be a list). |only_folders| indicates whether
 // to include bookmarks in the tree, or to only show folders.
-void AddToTreeStore(BookmarkModel* model, int64 selected_id,
+void AddToTreeStore(BookmarkModel* model, int selected_id,
                     GtkTreeStore* store, GtkTreeIter* selected_iter);
 
 // As above, but inserts just the tree rooted at |node| as a child of |parent|.
 // If |parent| is NULL, add it at the top level.
-void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
+void AddToTreeStoreAt(const BookmarkNode* node, int selected_id,
                       GtkTreeStore* store, GtkTreeIter* selected_iter,
                       GtkTreeIter* parent);
 
@@ -54,7 +53,7 @@ const BookmarkNode* CommitTreeStoreDifferencesBetween(
     GtkTreeIter* selected);
 
 // Returns the id field of the row pointed to by |iter|.
-int64 GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
+int GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);
 
 // Returns the title field of the row pointed to by |iter|.
 std::wstring GetTitleFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter);

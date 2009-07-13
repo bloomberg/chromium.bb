@@ -41,7 +41,7 @@ void RecursiveResolve(BookmarkModel* bb_model, const BookmarkNode* bb_node,
   GtkTreeIter child_iter;
   if (gtk_tree_model_iter_children(tree_model, &child_iter, parent_iter)) {
     do {
-      int64 id = bookmark_utils::GetIdFromTreeIter(tree_model, &child_iter);
+      int id = bookmark_utils::GetIdFromTreeIter(tree_model, &child_iter);
       std::wstring title =
           bookmark_utils::GetTitleFromTreeIter(tree_model, &child_iter);
       const BookmarkNode* child_bb_node = NULL;
@@ -74,10 +74,10 @@ namespace bookmark_utils {
 
 GtkTreeStore* MakeFolderTreeStore() {
   return gtk_tree_store_new(FOLDER_STORE_NUM_COLUMNS, GDK_TYPE_PIXBUF,
-                            G_TYPE_STRING, G_TYPE_INT64);
+                            G_TYPE_STRING, G_TYPE_INT);
 }
 
-void AddToTreeStore(BookmarkModel* model, int64 selected_id,
+void AddToTreeStore(BookmarkModel* model, int selected_id,
                     GtkTreeStore* store, GtkTreeIter* selected_iter) {
   const BookmarkNode* root_node = model->root_node();
   for (int i = 0; i < root_node->GetChildCount(); ++i) {
@@ -86,7 +86,7 @@ void AddToTreeStore(BookmarkModel* model, int64 selected_id,
   }
 }
 
-void AddToTreeStoreAt(const BookmarkNode* node, int64 selected_id,
+void AddToTreeStoreAt(const BookmarkNode* node, int selected_id,
                       GtkTreeStore* store, GtkTreeIter* selected_iter,
                       GtkTreeIter* parent) {
   if (!node->is_folder())
@@ -128,7 +128,7 @@ const BookmarkNode* CommitTreeStoreDifferencesBetween(
     DCHECK(GetIdFromTreeIter(tree_model, &tree_root) != 0)
         << "It should be impossible to add another toplevel node";
 
-    int64 id = GetIdFromTreeIter(tree_model, &tree_root);
+    int id = GetIdFromTreeIter(tree_model, &tree_root);
     const BookmarkNode* child_node = NULL;
     for (int j = 0; j < root_node->GetChildCount(); ++j) {
       const BookmarkNode* node = root_node->GetChild(j);
@@ -148,12 +148,12 @@ const BookmarkNode* CommitTreeStoreDifferencesBetween(
   return node_to_return;
 }
 
-int64 GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
+int GetIdFromTreeIter(GtkTreeModel* model, GtkTreeIter* iter) {
   GValue value = { 0, };
-  int64 ret_val = -1;
+  int ret_val = -1;
   gtk_tree_model_get_value(model, iter, ITEM_ID, &value);
-  if (G_VALUE_HOLDS_INT64(&value))
-    ret_val = g_value_get_int64(&value);
+  if (G_VALUE_HOLDS_INT(&value))
+    ret_val = g_value_get_int(&value);
   else
     NOTREACHED() << "Impossible type mismatch";
 

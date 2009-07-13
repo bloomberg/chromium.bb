@@ -41,7 +41,7 @@ void BookmarkDragData::Element::WriteToPickle(Pickle* pickle) const {
   pickle->WriteBool(is_url);
   pickle->WriteString(url.spec());
   pickle->WriteWString(title);
-  pickle->WriteInt64(id_);
+  pickle->WriteInt(id_);
   if (!is_url) {
     pickle->WriteSize(children.size());
     for (std::vector<Element>::const_iterator i = children.begin();
@@ -57,7 +57,7 @@ bool BookmarkDragData::Element::ReadFromPickle(Pickle* pickle,
   if (!pickle->ReadBool(iterator, &is_url) ||
       !pickle->ReadString(iterator, &url_spec) ||
       !pickle->ReadWString(iterator, &title) ||
-      !pickle->ReadInt64(iterator, &id_)) {
+      !pickle->ReadInt(iterator, &id_)) {
     return false;
   }
   url = GURL(url_spec);

@@ -22,7 +22,7 @@ class DictionaryValue;
 class ListValue;
 class Value;
 
-// Utility class to help assign unique 64-bit IDs.
+// Utility class to help assign unique integer IDs.
 class UniqueIDGenerator {
  public:
   UniqueIDGenerator();
@@ -31,26 +31,25 @@ class UniqueIDGenerator {
   // returns the id itself, otherwise generates a new unique id in a simple way
   // and returns that.
   // NOTE that if id is 0, a new unique id is returned.
-  int64 GetUniqueID(int64 id);
+  int GetUniqueID(int id);
 
   // Resets the ID generator to initial state.
   void Reset();
 
   // Returns the current maximum.
-  int64 current_max() const { return current_max_; }
+  int current_max() const { return current_max_; }
 
  private:
   // Checks if the given ID is already assigned.
-  bool IsIdAssigned(int64 id) const;
+  bool IsIdAssigned(int id) const;
 
   // Records the given ID as assigned.
-  void RecordId(int64 id);
+  void RecordId(int id);
 
   // Maximum value we have seen so far.
-  int64 current_max_;
-
+  int current_max_;
   // All IDs assigned so far.
-  scoped_ptr<std::set<int64> > assigned_ids_;
+  scoped_ptr<std::set<int> > assigned_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(UniqueIDGenerator);
 };
@@ -60,11 +59,14 @@ class UniqueIDGenerator {
 
 class BookmarkCodec {
  public:
-  // Creates an instance of the codec. During decoding, if the IDs in the file
-  // are not unique, we will reassign IDs to make them unique. There are no
-  // guarantees on how the IDs are reassigned or about doing minimal
-  // reassignments to achieve uniqueness.
+  // Creates an instance of the codec. Encodes/decodes bookmark IDs also if
+  // persist_ids is true. The default constructor will not encode/decode IDs.
+  // During decoding, if persist_ids is true and if the IDs in the file are not
+  // unique, we will reassign IDs to make them unique. There are no guarantees
+  // on how the IDs are reassigned or about doing minimal reassignments to
+  // achieve uniqueness.
   BookmarkCodec();
+  explicit BookmarkCodec(bool persist_ids);
 
   // Encodes the model to a JSON value. It's up to the caller to delete the
   // returned object. This is invoked to encode the contents of the bookmark bar
@@ -86,7 +88,7 @@ class BookmarkCodec {
   // |max_node_id| is set to the max id of the nodes.
   bool Decode(BookmarkNode* bb_node,
               BookmarkNode* other_folder_node,
-              int64* max_node_id,
+              int* max_node_id,
               const Value& value);
 
   // Returns the checksum computed during last encoding/decoding call.
@@ -98,10 +100,6 @@ class BookmarkCodec {
   // differ from the stored checksum if the file contents were changed by the
   // user.
   const std::string& stored_checksum() const { return stored_checksum_; }
-
-  // Returns whether the IDs were reassigned during decoding. Always returns
-  // false after encoding.
-  bool ids_reassigned() const { return ids_reassigned_; }
 
   // Names of the various keys written to the Value.
   static const wchar_t* kRootsKey;
@@ -129,6 +127,7 @@ class BookmarkCodec {
   // Helper to perform decoding.
   bool DecodeHelper(BookmarkNode* bb_node,
                     BookmarkNode* other_folder_node,
+                    int* max_id,
                     const Value& value);
 
   // Decodes the children of the specified node. Returns true on success.
@@ -161,11 +160,10 @@ class BookmarkCodec {
   void InitializeChecksum();
   void FinalizeChecksum();
 
+  // Whether to persist IDs or not.
+  bool persist_ids_;
   // Unique ID generator used during decoding.
   UniqueIDGenerator id_generator_;
-
-  // Whether or not IDs were reassigned by the codec.
-  bool ids_reassigned_;
 
   // MD5 context used to compute MD5 hash of all bookmark data.
   MD5Context md5_context_;

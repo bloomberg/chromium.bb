@@ -152,7 +152,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
 
   if (show_tree_) {
     GtkTreeIter selected_iter;
-    int64 selected_id = node_ ? node_->GetParent()->id() : 0;
+    int selected_id = node_ ? node_->GetParent()->id() : 0;
     tree_store_ = bookmark_utils::MakeFolderTreeStore();
     bookmark_utils::AddToTreeStore(bb_model_, selected_id,
                                    tree_store_, &selected_iter);
@@ -328,7 +328,7 @@ void BookmarkEditorGtk::AddNewGroup(GtkTreeIter* parent, GtkTreeIter* child) {
       bookmark_utils::GetFolderIcon(),
       bookmark_utils::FOLDER_NAME,
       l10n_util::GetStringUTF8(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME).c_str(),
-      bookmark_utils::ITEM_ID, static_cast<int64>(0),
+      bookmark_utils::ITEM_ID, 0,
       -1);
 }
 

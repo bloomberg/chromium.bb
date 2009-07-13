@@ -68,11 +68,13 @@ class BookmarkStorage::LoadTask : public Task {
   LoadTask(const FilePath& path,
            MessageLoop* loop,
            BookmarkStorage* storage,
-           LoadDetails* details)
+           LoadDetails* details,
+           bool persist_ids)
       : path_(path),
         loop_(loop),
         storage_(storage),
-        details_(details) {
+        details_(details),
+        persist_ids_(persist_ids) {
   }
 
   virtual void Run() {
@@ -84,15 +86,14 @@ class BookmarkStorage::LoadTask : public Task {
       if (root.get()) {
         // Building the index cane take a while, so we do it on the background
         // thread.
-        int64 max_node_id = 0;
-        BookmarkCodec codec;
+        int max_node_id = 0;
+        BookmarkCodec codec(persist_ids_);
         TimeTicks start_time = TimeTicks::Now();
         codec.Decode(details_->bb_node(), details_->other_folder_node(),
                      &max_node_id, *root.get());
         details_->set_max_id(std::max(max_node_id, details_->max_id()));
         details_->set_computed_checksum(codec.computed_checksum());
         details_->set_stored_checksum(codec.stored_checksum());
-        details_->set_ids_reassigned(codec.ids_reassigned());
         UMA_HISTOGRAM_TIMES("Bookmarks.DecodeTime",
                             TimeTicks::Now() - start_time);
 
@@ -128,6 +129,7 @@ class BookmarkStorage::LoadTask : public Task {
   MessageLoop* loop_;
   scoped_refptr<BookmarkStorage> storage_;
   LoadDetails* details_;
+  bool persist_ids_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadTask);
 };
@@ -162,7 +164,8 @@ void BookmarkStorage::DoLoadBookmarks(const FilePath& path) {
   Task* task = new LoadTask(path,
                             backend_thread() ? MessageLoop::current() : NULL,
                             this,
-                            details_.get());
+                            details_.get(),
+                            model_->PersistIDs());
   RunTaskOnBackendThread(task);
 }
 
@@ -208,7 +211,7 @@ void BookmarkStorage::BookmarkModelDeleted() {
 }
 
 bool BookmarkStorage::SerializeData(std::string* output) {
-  BookmarkCodec codec;
+  BookmarkCodec codec(model_->PersistIDs());
   scoped_ptr<Value> value(codec.Encode(model_));
   JSONStringValueSerializer serializer(output);
   serializer.set_pretty_print(true);

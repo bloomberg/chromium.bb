@@ -443,7 +443,7 @@ void BookmarkEditorView::ExpandAndSelect() {
   tree_view_->ExpandAll();
 
   const BookmarkNode* to_select = node_ ? node_->GetParent() : parent_;
-  int64 group_id_to_select = to_select->id();
+  int group_id_to_select = to_select->id();
   DCHECK(group_id_to_select);  // GetMostRecentParent should never return NULL.
   EditorNode* b_node =
       FindNodeWithID(tree_model_->GetRoot(), group_id_to_select);
@@ -478,7 +478,7 @@ void BookmarkEditorView::CreateNodes(const BookmarkNode* bb_node,
 
 BookmarkEditorView::EditorNode* BookmarkEditorView::FindNodeWithID(
     BookmarkEditorView::EditorNode* node,
-    int64 id) {
+    int id) {
   if (node->value == id)
     return node;
   for (int i = 0; i < node->GetChildCount(); ++i) {

@@ -53,18 +53,19 @@ class BookmarkNode : public TreeNode<BookmarkNode> {
   // Creates a new node with the specified url and id of 0
   explicit BookmarkNode(const GURL& url);
   // Creates a new node with the specified url and id.
-  BookmarkNode(int64 id, const GURL& url);
+  BookmarkNode(int id, const GURL& url);
   virtual ~BookmarkNode() {}
 
   // Returns the URL.
   const GURL& GetURL() const { return url_; }
 
   // Returns a unique id for this node.
-  // For bookmark nodes that are managed by the bookmark model, the IDs are
-  // persisted across sessions.
-  int64 id() const { return id_; }
+  //
+  // NOTE: this id is only unique for the session and NOT unique across
+  // sessions. Don't persist it!
+  int id() const { return id_; }
   // Sets the id to the given value.
-  void set_id(int64 id) { id_ = id; }
+  void set_id(int id) { id_ = id; }
 
   // Returns the type of this node.
   BookmarkNode::Type GetType() const { return type_; }
@@ -125,10 +126,10 @@ class BookmarkNode : public TreeNode<BookmarkNode> {
 
  private:
   // helper to initialize various fields during construction.
-  void Initialize(int64 id);
+  void Initialize(int id);
 
   // Unique identifier for this node.
-  int64 id_;
+  int id_;
 
   // Whether the favicon has been loaded.
   bool loaded_favicon_;
@@ -291,7 +292,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
 
   // Returns the node with the specified id, or NULL if there is no node with
   // the specified id.
-  const BookmarkNode* GetNodeByID(int64 id);
+  const BookmarkNode* GetNodeByID(int id);
 
   // Adds a new group node at the specified position.
   const BookmarkNode* AddGroup(const BookmarkNode* parent,
@@ -354,6 +355,10 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // testing.
   void ClearStore();
 
+  // Sets/returns whether or not bookmark IDs are persisted or not.
+  bool PersistIDs() const { return persist_ids_; }
+  void SetPersistIDs(bool value);
+
   // Returns whether the bookmarks file changed externally.
   bool file_changed() const { return file_changed_; }
 
@@ -399,7 +404,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
                         bool was_bookmarked);
 
   // Implementation of GetNodeByID.
-  const BookmarkNode* GetNodeByID(const BookmarkNode* node, int64 id);
+  const BookmarkNode* GetNodeByID(const BookmarkNode* node, int id);
 
   // Returns true if the parent and index are valid.
   bool IsValidIndex(const BookmarkNode* parent, int index, bool allow_end);
@@ -439,12 +444,13 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
                        const NotificationDetails& details);
 
   // Generates and returns the next node ID.
-  int64 generate_next_node_id();
+  int generate_next_node_id();
 
   // Sets the maximum node ID to the given value.
   // This is used by BookmarkCodec to report the maximum ID after it's done
-  // decoding since during decoding codec assigns node IDs.
-  void set_next_node_id(int64 id) { next_node_id_ = id; }
+  // decoding since during decoding codec can assign IDs to nodes if IDs are
+  // persisted.
+  void set_next_node_id(int id) { next_node_id_ = id; }
 
   // Records that the bookmarks file was changed externally.
   void SetFileChanged();
@@ -453,12 +459,20 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   // the returned object.
   BookmarkStorage::LoadDetails* CreateLoadDetails();
 
+  // Registers bookmarks related prefs.
+  void RegisterPreferences();
+  // Loads bookmark related preferences.
+  void LoadPreferences();
+
   NotificationRegistrar registrar_;
 
   Profile* profile_;
 
   // Whether the initial set of data has been loaded.
   bool loaded_;
+
+  // Whether to persist bookmark IDs.
+  bool persist_ids_;
 
   // Whether the bookmarks file was changed externally. This is set after
   // loading is complete and once set the value never changes.
@@ -472,7 +486,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   BookmarkNode* other_node_;
 
   // The maximum ID assigned to the bookmark nodes in the model.
-  int64 next_node_id_;
+  int next_node_id_;
 
   // The observers.
   ObserverList<BookmarkModelObserver> observers_;

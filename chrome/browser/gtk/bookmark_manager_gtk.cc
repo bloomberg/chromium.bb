@@ -37,8 +37,8 @@ const int kRecentlyBookmarkedCount = 50;
 // IDs for the recently added and search nodes. These values assume that node
 // IDs will be strictly non-negative, which is an implementation detail of
 // BookmarkModel, so this is sort of a hack.
-const int64 kRecentID = -1;
-const int64 kSearchID = -2;
+const int kRecentID = -1;
+const int kSearchID = -2;
 
 // Padding between "Search:" and the entry field, in pixels.
 const int kSearchPadding = 5;
