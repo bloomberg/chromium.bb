@@ -475,7 +475,7 @@ o3djs.rendergraph.createDrawPassInfo = function(
 
 /**
  * A class to manage a draw pass.
- *
+ * @constructor
  * @param {!o3d.Pack} pack Pack to manage created objects.
  * @param {!o3d.DrawContext} drawContext The DrawContext for this draw pass.
  * @param {o3d.DrawList.SortMethod} sortMethod How to sort this draw pass's
@@ -532,7 +532,7 @@ o3djs.rendergraph.DrawPassInfo = function(pack,
 
   /**
    * The DrawList for this DrawPassInfo.
-   * @type {!o3d.Pack}
+   * @type {!o3d.DrawList}
    */
   this.drawList = opt_drawList;
 
