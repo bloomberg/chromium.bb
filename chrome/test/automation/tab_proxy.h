@@ -250,6 +250,9 @@ class TabProxy : public AutomationResourceProxy {
   // Prints the current page without user intervention.
   bool PrintNow();
 
+  // Sends off an asynchronous request for printing.
+  bool PrintAsync();
+
   // Save the current web page. |file_name| is the HTML file name, and
   // |dir_path| is the directory for saving resource files. |type| indicates
   // which type we're saving as: HTML only or the complete web page.

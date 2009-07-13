@@ -98,6 +98,10 @@ void AutomationProvider::PrintNow(int tab_handle,
   NOTIMPLEMENTED();
 }
 
+void AutomationProvider::PrintAsync(int tab_handle) {
+  NOTIMPLEMENTED();
+}
+
 #if defined(OS_MACOSX)
 void AutomationProvider::GetAutocompleteEditText(int autocomplete_edit_handle,
                                                  bool* success,

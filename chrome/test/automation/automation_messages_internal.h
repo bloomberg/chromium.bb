@@ -973,4 +973,7 @@ IPC_BEGIN_MESSAGES(Automation)
                       int /* request_id */,
                       URLRequestStatus /* status */)
 
+  IPC_MESSAGE_ROUTED1(AutomationMsg_PrintAsync,
+                      int /* tab_handle */)
+
 IPC_END_MESSAGES(Automation)

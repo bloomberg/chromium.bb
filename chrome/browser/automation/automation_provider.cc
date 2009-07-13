@@ -1020,6 +1020,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_IsPageMenuCommandEnabled,
                         IsPageMenuCommandEnabled)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_PrintNow, PrintNow)
+    IPC_MESSAGE_HANDLER(AutomationMsg_PrintAsync, PrintAsync)
     IPC_MESSAGE_HANDLER(AutomationMsg_SavePage, SavePage)
     IPC_MESSAGE_HANDLER(AutomationMsg_AutocompleteEditGetText,
                         GetAutocompleteEditText)
@@ -2576,6 +2577,15 @@ void AutomationProvider::PrintNow(int tab_handle,
   }
   AutomationMsg_PrintNow::WriteReplyParams(reply_message, false);
   Send(reply_message);
+}
+
+void AutomationProvider::PrintAsync(int tab_handle) {
+  NavigationController* tab = NULL;
+  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
+  if (tab_contents) {
+    if (tab_contents->PrintNow())
+      return;
+  }
 }
 #endif
 

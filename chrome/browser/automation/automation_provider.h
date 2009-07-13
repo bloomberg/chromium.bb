@@ -357,6 +357,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   // Prints the current tab immediately.
   void PrintNow(int tab_handle, IPC::Message* reply_message);
 
+  // Asynchronous request for printing the current tab.
+  void PrintAsync(int tab_handle);
+
   // Save the current web page.
   void SavePage(int tab_handle,
                 const std::wstring& file_name,

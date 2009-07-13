@@ -532,6 +532,13 @@ bool TabProxy::PrintNow() {
   return succeeded;
 }
 
+bool TabProxy::PrintAsync() {
+  if (!is_valid())
+    return false;
+
+  return sender_->Send(new AutomationMsg_PrintAsync(0, handle_));
+}
+
 bool TabProxy::SavePage(const std::wstring& file_name,
                         const std::wstring& dir_path,
                         SavePackage::SavePackageType type) {
