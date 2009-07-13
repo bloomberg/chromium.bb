@@ -43,6 +43,9 @@ const int kDangerousElementPadding = 3;
 // it will be elided.
 const int kTextWidth = 140;
 
+// Display width of the dangerous file warning, in pixels.
+const int kDangerousTextWidth = 350;
+
 // The minimum width we will ever draw the download item. Used as a lower bound
 // during animation. This number comes from the width of the images used to
 // make the download item.
@@ -283,11 +286,12 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_image,
                        FALSE, FALSE, 0);
 
-    // Create the warning text.
-    // TODO(estade): the encoding might not be UTF8.
+    std::wstring elided_filename = gfx::ElideFilename(
+        get_download()->original_name(),
+        gfx::Font(), kTextWidth);
     std::string dangerous_warning =
         l10n_util::GetStringFUTF8(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-        UTF8ToUTF16(get_download()->original_name().value()));
+        WideToUTF16(elided_filename));
     gchar* label_markup =
         g_markup_printf_escaped(kLabelColorMarkup, kFilenameColor,
                                 dangerous_warning.c_str());
@@ -301,6 +305,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
     // request when the animation is going on.
     gtk_box_pack_start(GTK_BOX(dangerous_hbox_), dangerous_label,
                        TRUE, TRUE, 0);
+    gtk_widget_set_size_request(dangerous_label, kDangerousTextWidth, -1);
     g_free(label_markup);
 
     // Create the ok button.
