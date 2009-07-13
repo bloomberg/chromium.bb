@@ -388,6 +388,22 @@ get_browser_mime()
     xdg-mime query default text/html
 }
 
+parse_binary_or_desktop()
+{
+    binary="`echo "$binary" | first_word`"
+    desktop="`binary_to_desktop_file "$binary"`"
+    if [ "$desktop" ]; then
+        basename "$desktop"
+        exit_success
+    fi
+    binary="`which "$binary"`"
+    if [ "$binary" ]; then
+        echo "$binary"
+        exit_success
+    fi
+    exit_failure_operation_failed
+}
+
 set_browser_mime()
 {
     orig="`get_browser_mime`"
@@ -410,7 +426,13 @@ get_browser_kde()
         # No default browser; KDE will probably use the MIME type text/html
         get_browser_mime
     else
-        echo "$browser"
+        echo $browser | grep '^!' > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo "$browser"
+            exit_success
+        fi
+        binary="${browser#!}"
+        parse_binary_or_desktop
     fi
 }
 
@@ -477,18 +499,7 @@ get_browser_gnome()
         # gconftool gives the binary (maybe with %s etc. afterward),
         # but we want the desktop file name, not the binary. So, we
         # have to find the desktop file to which it corresponds.
-        binary="`echo "$binary" | first_word`"
-        desktop="`binary_to_desktop_file "$binary"`"
-        if [ "$desktop" ]; then
-            basename "$desktop"
-            exit_success
-        fi
-        binary="`which "$binary"`"
-        if [ "$binary" ]; then
-            echo "$binary"
-            exit_success
-        fi
-        exit_failure_operation_failed
+        parse_binary_or_desktop
     fi
 }
 
