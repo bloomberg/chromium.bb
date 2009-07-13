@@ -46,6 +46,8 @@ const char* kEndLinkOss = "END_LINK_OSS";
 const char* kBeginLink = "BEGIN_LINK";
 const char* kEndLink = "END_LINK";
 
+const char* kSmaller = "<span size=\"smaller\">%s</span>";
+
 void OnDialogResponse(GtkDialog* dialog, int response_id) {
   // We're done.
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -77,6 +79,10 @@ void OnLinkButtonClick(GtkWidget* button, const char* url) {
 const char* GetChromiumUrl() {
   static std::string url(l10n_util::GetStringUTF8(IDS_CHROMIUM_PROJECT_URL));
   return url.c_str();
+}
+
+std::string Smaller(const std::string& text) {
+  return std::string("<span size=\"smaller\">") + text + std::string("</span>");
 }
 
 }  // namespace
@@ -121,14 +127,17 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
 
   GtkWidget* text_vbox = gtk_vbox_new(FALSE, kExtraLineSpacing);
 
+  GdkColor black = gfx::kGdkBlack;
   GtkWidget* product_label = MakeMarkupLabel(
       "<span font_desc=\"18\" weight=\"bold\" style=\"normal\">%s</span>",
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME));
+  gtk_widget_modify_fg(product_label, GTK_STATE_NORMAL, &black);
   gtk_box_pack_start(GTK_BOX(text_vbox), product_label, FALSE, FALSE, 0);
 
   GtkWidget* version_label = gtk_label_new(WideToUTF8(current_version).c_str());
   gtk_misc_set_alignment(GTK_MISC(version_label), 0.0, 0.5);
   gtk_label_set_selectable(GTK_LABEL(version_label), TRUE);
+  gtk_widget_modify_fg(version_label, GTK_STATE_NORMAL, &black);
   gtk_box_pack_start(GTK_BOX(text_vbox), version_label, FALSE, FALSE, 0);
 
   gtk_container_add(GTK_CONTAINER(text_alignment), text_vbox);
@@ -150,8 +159,7 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
                                  gtk_util::kContentAreaBorder);
 
   GtkWidget* copyright_label = MakeMarkupLabel(
-      "<span size=\"smaller\">%s</span>",
-      l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_COPYRIGHT));
+      kSmaller, l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_COPYRIGHT));
   gtk_box_pack_start(GTK_BOX(vbox), copyright_label, TRUE, TRUE, 5);
 
   std::string license = l10n_util::GetStringUTF8(IDS_ABOUT_VERSION_LICENSE);
@@ -167,26 +175,20 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   DCHECK(link1_end != std::string::npos);
 
   GtkWidget* license_chunk1 = MakeMarkupLabel(
-      "<span size=\"smaller\">%s</span>",
-      license.substr(0, link1));
+      kSmaller, license.substr(0, link1));
   GtkWidget* license_chunk2 = MakeMarkupLabel(
-      "<span size=\"smaller\">%s</span>",
+      kSmaller,
       license.substr(link1_end + strlen(kEndLinkOss),
                      link2 - link1_end - strlen(kEndLinkOss)));
   GtkWidget* license_chunk3 = MakeMarkupLabel(
-      "<span size=\"smaller\">%s</span>",
-      license.substr(link2_end + strlen(kEndLinkOss)));
+      kSmaller, license.substr(link2_end + strlen(kEndLinkOss)));
 
-  std::string first_link_text =
-      std::string("<span size=\"smaller\">") +
+  std::string first_link_text = Smaller(
       license.substr(link1 + strlen(kBeginLinkOss),
-                     link1_end - link1 - strlen(kBeginLinkOss)) +
-      std::string("</span>");
-  std::string second_link_text =
-      std::string("<span size=\"smaller\">") +
+                     link1_end - link1 - strlen(kBeginLinkOss)));
+  std::string second_link_text = Smaller(
       license.substr(link2 + strlen(kBeginLinkOss),
-                     link2_end - link2 - strlen(kBeginLinkOss)) +
-      std::string("</span>");
+                     link2_end - link2 - strlen(kBeginLinkOss)));
 
   GtkWidget* first_link =
       gtk_chrome_link_button_new_with_markup(first_link_text.c_str());
@@ -226,7 +228,33 @@ void ShowAboutDialogForProfile(GtkWindow* parent, Profile* profile) {
   gtk_box_pack_start(GTK_BOX(license_vbox), license_hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(license_vbox), license_hbox2, FALSE, FALSE, 0);
 
+#if defined(GOOGLE_CHROME_BUILD)
+  std::vector<size_t> url_offsets;
+  std::wstring text = l10n_util::GetStringF(IDS_ABOUT_TERMS_OF_SERVICE,
+                                            std::wstring(),
+                                            std::wstring(),
+                                            &url_offsets);
+
+  std::string tos_link_text = Smaller(
+      l10n_util::GetStringUTF8(IDS_TERMS_OF_SERVICE));
+  GtkWidget* tos_chunk1 = MakeMarkupLabel(
+      kSmaller, WideToUTF8(text.substr(0, url_offsets[0])).c_str());
+  GtkWidget* tos_link =
+      gtk_chrome_link_button_new_with_markup(tos_link_text.c_str());
+  GtkWidget* tos_chunk2 = MakeMarkupLabel(
+      kSmaller, WideToUTF8(text.substr(url_offsets[0])).c_str());
+
+  GtkWidget* tos_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(tos_hbox), tos_chunk1, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(tos_hbox), tos_link, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(tos_hbox), tos_chunk2, FALSE, FALSE, 0);
+
+  g_signal_connect(tos_link, "clicked", G_CALLBACK(OnLinkButtonClick),
+                   const_cast<char*>(kTOS));
+#endif
+
   gtk_box_pack_start(GTK_BOX(vbox), license_vbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), tos_hbox, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(content_area), vbox, TRUE, TRUE, 0);
 
   g_signal_connect(dialog, "response", G_CALLBACK(OnDialogResponse), NULL);
