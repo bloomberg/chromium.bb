@@ -427,7 +427,7 @@
               'action': [
                 'python',
                 '<(scan_server_dlls_py)',
-                '--output_dir=<(INTERMEDIATE_DIR)',
+                '--output_dir=<(PRODUCT_DIR)',
                 '--input_file=<(RULE_INPUT_PATH)',
                 '--header_output_dir=<(INTERMEDIATE_DIR)',
                 # TODO(sgk):  may just use environment variables
