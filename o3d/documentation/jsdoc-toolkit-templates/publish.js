@@ -37,6 +37,7 @@
 
 var g_symbolSet;  // so we can look stuff up below.
 var g_filePrefix;
+var g_skipRE;
 var g_validJSDOCTypes = {
   'number': true,
   'Number': true,
@@ -50,6 +51,7 @@ var g_validJSDOCTypes = {
   'undefined': true};
 var g_unknownTypes = { };
 var g_numErrors = 0;
+var g_o3djsMode = false;
 
 /**
  * Called automatically by JsDoc Toolkit.
@@ -61,9 +63,17 @@ function publish(symbolSet) {
     outDir: JSDOC.opt.d || SYS.pwd + '../out/jsdoc/',
     templatesDir: JSDOC.opt.t || SYS.pwd + '../templates/jsdoc/',
     symbolsDir: '',
-    prefix: JSDOC.opt.D.prefix || 'js_1_0_'};
+    prefix: JSDOC.opt.D.prefix || 'js_1_0_',
+    o3djs: JSDOC.opt.D.o3djs || ''};
   publish.conf.srcDir = publish.conf.outDir + 'src/'
   publish.conf.htmlDir = publish.conf.outDir + 'original_html/'
+
+  if (publish.conf.o3djs) {
+    g_o3djsMode = true;
+  }
+
+  // In o3djs mode, don't generate docs for these.
+  g_skipRE = new RegExp('^(o3d$|o3d\\.|Vectormath)');
 
   // is source output is suppressed, just display the links to the source file
   if (JSDOC.opt.s && defined(Link) && Link.prototype._makeSrcLink) {
@@ -127,6 +137,11 @@ function publish(symbolSet) {
     symbol.events = symbol.getEvents();   // 1 order matters
     symbol.methods = symbol.getMethods(); // 2
 
+    if (g_o3djsMode && g_skipRE.test(symbol.alias)) {
+      print('Skipping docs for  : ' + symbol.alias);
+      continue;
+    }
+
     print('Generating docs for: ' + symbol.alias);
     // Comment these lines in to see what data is available to the templates.
     //print('----------------------------------------------------------------');
@@ -179,7 +194,6 @@ function publish(symbolSet) {
     System.exit(1);
   }
 }
-
 
 /**
  *  Gets just the first sentence (up to a full stop).
@@ -281,19 +295,35 @@ function resolveLinks(str) {
 }
 
 /**
+ * Makes a link for a symbol.
+ * 
+ * @param {string} symbolName Name of symbol 
+ * @param {string} extra extra 
+ * @param {string} opt_bookmark Optional bookmark.
+ */
+function makeSymbolLink(symbolName, extra, opt_bookmark) {
+  var prefix = g_filePrefix;
+  if (g_o3djsMode && g_skipRE.test(symbolName)) {
+    prefix = '../classo3d_1_1_';
+  }
+  return (prefix + symbolName + extra +
+          '.html').toLowerCase() + 
+         (opt_bookmark ? '#' + opt_bookmark : '');
+}
+
+/**
  * Make link from symbol.
  * @param {Object} symbol Symbol from class database.
  * @param {string} opt_extra extra suffix to add before '.html'.
  * @return {string} url to symbol.
  */
 function getLinkToSymbol(symbol, opt_extra) {
+  opt_extra = opt_extra || '_ref';
   if (symbol.is('CONSTRUCTOR') || symbol.isNamespace) {
-    return (g_filePrefix + symbol.alias + (opt_extra || '_ref') +
-            '.html').toLowerCase();
+    return makeSymbolLink(symbol.alias, opt_extra);
   } else {
     var parentSymbol = getSymbol(symbol.memberOf);
-    return (g_filePrefix + parentSymbol.alias + (opt_extra || '_ref') +
-            '.html').toLowerCase() + '#' + symbol.name;
+    return makeSymbolLink(parentSymbol.alias, opt_extra, symbol.name);
   }
 }
 
@@ -632,21 +662,11 @@ function linkifySingleType(place, type) {
           link = '<a class="el" href="' + getLinkToSymbol(symbol) + '#' +
               field + '">' +  type + '</a>';
         } else {
-          if (startsWith(type, 'o3d.')) {
-            // TODO(gman): remove this hack, make nixysa generate JSDOC js
-            //     files instead of C++ headers and pass those into
-            //     jsdoctoolkit.
+          if (subType[0] == '?') {
+            subType = subType.substring(1);
+          }
+          if (!g_validJSDOCTypes[subType]) {
             reportUnknownType(place, type);
-            link = '<a class="el" href="../classo3d_1_1_' +
-                camelCaseToUnderscore(type.substring(4)) + '.html">' +
-                type + '</a>';
-          } else {
-            if (subType[0] == '?') {
-              subType = subType.substring(1);
-            }
-            if (!g_validJSDOCTypes[subType]) {
-              reportUnknownType(place, type);
-            }
           }
         }
       }
@@ -744,4 +764,18 @@ function getSourcePath(symbol) {
   var path = symbol.srcFile.replace(/\\/g, '/');
   var index = path.indexOf('/o3djs/');
   return path.substring(index + 1);
+}
+
+/**
+ * Gets a qualified name. Used for members. For namespaces will return the fully
+ * qualified name. For objects will return just ObjectName.method
+ * @param {!Symbol} method The method or property to get a qualified name for.
+ * @return {string} The qualified name for the method or property.
+ */
+function getQualifiedName(method) {
+  var parent = getSymbol(method.memberOf);
+  if (parent.isNamespace) {
+    return method.memberOf + "." + method.name
+  }
+  return parent.name + '.' + method.name;
 }

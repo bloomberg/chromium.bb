@@ -60,17 +60,19 @@ thisClass = data;
   {! var ownMethods = data.methods.sort(makeSortby("name")); !}
   <if test="ownMethods.length">
     <h2>Public Member Functions</h2>
-    <ul>
+    <table>
     <for each="method" in="ownMethods">
     <if test="!method.isPrivate">
-        <li>
-        <if test="method.isStatic||!method.memberOf">&lt;static&gt; </if>
+        <tr><td><li></li></td>
+        <td>
+	<if test="method.isStatic||!method.memberOf">&lt;static&gt; </if>
         <if test="method.type.length">{+linkifyTypeSpec(makeName('[Method Summary]', thisClass.alias, method.name), method.type)+}&nbsp;</if>
-        <a class="el" href="#{+method.name+}">{+method.name+}</a>{+makeSignature(method.params)+}
-        </li>
+	</td>
+	<td><a class="el" href="#{+method.name+}">{+getQualifiedName(method)+}</a>{+makeSignature(method.params)+}</td>
+        </tr>
     </if>
     </for>
-    </ul>
+    </table>
   </if>
 </if>
 
@@ -79,17 +81,19 @@ thisClass = data;
   {! var ownProperties = data.properties.sort(makeSortby("name")); !}
   <if test="ownProperties.length">
     <h2>Public Properties</h2>
-    <ul>
+    <table>
     <for each="property" in="ownProperties">
-    <if test="!property.isPrivate">
-      <li>
+    <if test="!property.isPrivate && !property.isNamespace">
+      <tr><td><li></li></td>
+      <td>
       <if test="property.isStatic||!property.memberOf">&lt;static&gt;&nbsp;</if>
       {+linkifyTypeSpec(makeName('[Property Summary]', thisClass.alias, property.name), getPropertyType(property))+}
-      <a class="el" href="#{+property.name+}">{+property.name+}</a>
-      </li>
+      </td>
+      <td><a class="el" href="#{+property.name+}">{+getQualifiedName(property)+}</a></td>
+      </tr>
     </if>
     </for>
-    </ul>
+    </table>
   </if>
 </if>
 
@@ -172,7 +176,7 @@ thisClass = data;
         <if test="member.params && member.params.length">
         {!
          var tempCSS = "memname";
-         var tempName = linkifyTypeSpecForReturn(makeName('[Method Detail]', thisClass.alias, member.name), member.type)+" "+member.memberOf+"."+member.name;
+         var tempName = linkifyTypeSpecForReturn(makeName('[Method Detail]', thisClass.alias, member.name), member.type)+" "+getQualifiedName(member);
          var tempParen = "(";
          var tempEnd = member.params.length > 1 ? "" : ")"
         !}
@@ -250,13 +254,13 @@ thisClass = data;
   <hr/>
   <h2>Member Property Documentation</h2>
   <for each="property" in="ownProperties">
-  <if test="!property.isPrivate">
+  <if test="!property.isPrivate && !property.isNamespace">
     <a class="anchor" name="{+property.name+}"></a>
     <div class="memitem">
     <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">{+linkifyTypeSpec(makeName('[Property Detail]', thisClass.alias, property.name), getPropertyType(property))+} {+property.memberOf+"."+property.name+}</td>
+          <td class="memname">{+linkifyTypeSpec(makeName('[Property Detail]', thisClass.alias, property.name), getPropertyType(property))+} {+getQualifiedName(property)+}</td>
         </tr>
       </table>
     </div>

@@ -648,6 +648,7 @@ o3djs.base.maybeDeobfuscateFunctionName_ = function(name) {
 o3djs.base.inherit = function(subClass, superClass) {
   /**
    * TmpClass.
+   * @ignore
    * @constructor
    */
   var TmpClass = function() { };

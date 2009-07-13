@@ -322,6 +322,9 @@ o3djs.particles.createParticleSystem = function(pack,
  *     else.
  * @param {!o3d.ParamFloat} opt_clockParam A ParamFloat to be the default
  *     clock for emitters of this particle system.
+ * @param {!function(): number} opt_randomFunction A function that returns
+ *     a random number between 0.0 and 1.0. This allows you to pass in a
+ *     pseudo random function if you need particles that are reproducable.
  */
 o3djs.particles.ParticleSystem = function(pack,
                                           viewInfo,

@@ -137,11 +137,16 @@ def RunNixysa(idl_files, generate, output_dir, nixysa_options):
     idl_files)
 
 
-def RunJSDocToolkit(js_files, output_dir, prefix):
+def RunJSDocToolkit(js_files, output_dir, prefix, o3djs):
   """Executes the JSDocToolkit."""
   list_filename = MakePath('../scons-out/docs/obj/doclist.conf')
   f = open(list_filename, 'w')
-  f.write('{\n_: [\n')
+  f.write('{\nD:{\n')
+  f.write('prefix: "%s",\n' % prefix)
+  f.write('o3djs: "%s",\n' % o3djs)
+  f.write('endMarker: ""\n')
+  f.write('},\n')
+  f.write('_: [\n')
   for filename in js_files:
     f.write('"%s",\n' % filename.replace('\\', '/'))
   f.write(']\n}\n')
@@ -153,7 +158,6 @@ def RunJSDocToolkit(js_files, output_dir, prefix):
     '-jar',
     MakePath('../third_party/jsdoctoolkit/files/jsrun.jar'),
     MakePath('../third_party/jsdoctoolkit/files/app/run.js'),
-    '-D="prefix:%s"' % prefix,
     '-v',
     '-t=%s' % MakePath('./jsdoc-toolkit-templates//'),
     '-d=' + output_dir,
@@ -172,7 +176,11 @@ def BuildJavaScriptForExternsFromIDLs(idl_files, output_dir):
 
 
 def BuildO3DDocsFromJavaScript(js_files, output_dir):
-  RunJSDocToolkit(js_files, output_dir, 'classo3d_1_1_')
+  RunJSDocToolkit(js_files, output_dir, 'classo3d_1_1_', '')
+
+
+def BuildO3DJSDocs(js_files, output_dir):
+  RunJSDocToolkit(js_files, output_dir, 'js_0_1_', 'true')
 
 
 def BuildO3DExternsFile(js_files_dir, extra_externs_file, externs_file):
@@ -213,6 +221,8 @@ def main():
   docs_js_outpath = MakePath('../scons-out/docs/obj/documentation/apijs')
   externs_js_outpath = MakePath('../scons-out/docs/obj/externs')
   o3d_docs_html_outpath = MakePath('../scons-out/docs/obj/documentation/html')
+  o3djs_docs_html_outpath = MakePath(
+      '../scons-out/docs/obj/documentation/html/jsdocs')
   o3d_externs_path = MakePath('../scons-out/docs/obj/o3d-externs.js')
   compiled_o3djs_outpath = MakePath(
       '../scons-out/docs/obj/documentation/base.js')
@@ -242,6 +252,7 @@ def main():
   BuildO3DExternsFile(externs_js_outpath,
                       o3d_extra_externs_path,
                       o3d_externs_path)
+  BuildO3DJSDocs(o3djs_files + [o3d_externs_path], o3djs_docs_html_outpath)
   BuildCompiledO3DJS(o3djs_files,
                      externs_path,
                      o3d_externs_path,

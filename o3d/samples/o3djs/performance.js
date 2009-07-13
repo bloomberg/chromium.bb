@@ -39,6 +39,12 @@
 o3djs.provide('o3djs.performance');
 
 /**
+ * A Module to help with adjusting performance.
+ * @namespace
+ */
+o3djs.performance = o3djs.performance || {};
+
+/**
  * Creates a utility that monitors performance [in terms of FPS] and helps to
  * adjust the rendered scene accordingly.
  * @param {number} targetFPSMin the minimum acceptable frame rate; if we're
@@ -155,7 +161,7 @@ o3djs.performance.PerformanceMonitor = function(
  * @type {{
  *   opt_minSamples: number,
  *   opt_damping: number,
- *   opt_delayCycles, number
+ *   opt_delayCycles: number
  * }}
  */
 o3djs.performance.PerformanceMonitor.Options = goog.typedef;
