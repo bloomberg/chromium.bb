@@ -55,14 +55,22 @@ using glue::StreamManager;
 using o3d::DisplayWindowWindows;
 using o3d::Event;
 
+namespace {
+// The instance handle of the O3D DLL.
+HINSTANCE g_module_instance;
+}  // namespace anonymous
+
+#if !defined(O3D_INTERNAL_PLUGIN)
+
 o3d::PluginLogging* g_logger = NULL;
 bool g_logging_initialized = false;
 o3d::BluescreenDetector *g_bluescreen_detector = NULL;
 
-#if !defined(O3D_INTERNAL_PLUGIN)
 extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
                                DWORD reason,
                                LPVOID reserved) {
+  g_module_instance = instance;
+
   if (reason == DLL_PROCESS_DETACH) {
      // Teardown V8 when the plugin dll is unloaded.
      // NOTE: NP_Shutdown would have been a good place for this code but
@@ -79,6 +87,8 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
 #endif  // O3D_INTERNAL_PLUGIN
 
 namespace {
+const wchar_t* const kFullScreenWindowClassName = L"O3DFullScreenWindowClass";
+
 // We would normally make this a stack variable in main(), but in a
 // plugin, that's not possible, so we allocate it dynamically and
 // destroy it explicitly.
@@ -657,6 +667,19 @@ LRESULT CALLBACK WindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam) {
   return 0;
 }
 
+bool RegisterFullScreenWindowClass() {
+  WNDCLASSEX window_class = { sizeof(WNDCLASSEX) };
+  window_class.hInstance = g_module_instance;
+  window_class.lpfnWndProc = WindowProc;
+  window_class.lpszClassName = kFullScreenWindowClassName;
+  window_class.style = CS_DBLCLKS;
+  return RegisterClassEx(&window_class) != 0;
+}
+
+void UnregisterFullScreenWindowClass() {
+  UnregisterClass(kFullScreenWindowClassName, g_module_instance);
+}
+
 NPError InitializePlugin() {
 #if !defined(O3D_INTERNAL_PLUGIN)
   if (!o3d::SetupOutOfMemoryHandler())
@@ -681,6 +704,9 @@ NPError InitializePlugin() {
 #endif  // O3D_INTERNAL_PLUGIN
 
   DLOG(INFO) << "NP_Initialize";
+
+  if (!RegisterFullScreenWindowClass())
+    return NPERR_MODULE_LOAD_FAILED_ERROR;
 
   return NPERR_NO_ERROR;
 }
@@ -716,12 +742,8 @@ HWND CreateFullscreenWindow(PluginObject *obj,
   }
   CHECK(mode.width() > 0 && mode.height() > 0);
 
-  HINSTANCE instance =
-      reinterpret_cast<HINSTANCE>(
-          ::GetWindowLongPtr(obj->GetPluginHWnd(), GWLP_HINSTANCE));
-  WNDCLASSEX *wcx = obj->GetFullscreenWindowClass(instance, WindowProc);
   HWND hWnd = CreateWindowEx(NULL,
-                             wcx->lpszClassName,
+                             kFullScreenWindowClassName,
                              L"O3D Test Fullscreen Window",
                              WS_POPUP,
                              0, 0,
@@ -729,7 +751,7 @@ HWND CreateFullscreenWindow(PluginObject *obj,
                              mode.height(),
                              NULL,
                              NULL,
-                             instance,
+                             g_module_instance,
                              NULL);
 
   ShowWindow(hWnd, SW_SHOW);
@@ -753,6 +775,8 @@ NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs) {
 NPError OSCALL NP_Shutdown(void) {
   HANDLE_CRASHES;
   DLOG(INFO) << "NP_Shutdown";
+
+  UnregisterFullScreenWindowClass();
 
 #if !defined(O3D_INTERNAL_PLUGIN)
 

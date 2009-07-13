@@ -743,9 +743,6 @@ void PluginObject::set_cursor(o3d::Cursor::CursorType cursor_type) {
 }
 
 #ifdef OS_WIN
-bool PluginObject::fullscreen_class_registered_ = false;
-WNDCLASSEX PluginObject::fullscreen_class_;
-
 static const wchar_t* kWindowPropertyName = L"o3d";
 
 void PluginObject::StorePluginProperty(HWND hWnd, PluginObject *obj) {
@@ -772,22 +769,6 @@ void PluginObject::ClearPluginProperty(HWND hWnd) {
     RemoveProp(hWnd, kWindowPropertyName);
     ::DragAcceptFiles(hWnd, false);
   }
-}
-
-WNDCLASSEX *PluginObject::GetFullscreenWindowClass(HINSTANCE hInstance,
-                                                   WNDPROC window_proc) {
-  if (!fullscreen_class_registered_) {
-    ZeroMemory(&fullscreen_class_, sizeof(WNDCLASSEX));
-    fullscreen_class_.cbSize = sizeof(WNDCLASSEX);
-    fullscreen_class_.hInstance = hInstance;
-    fullscreen_class_.lpfnWndProc = window_proc;
-    fullscreen_class_.lpszClassName = L"O3DFullScreenWindowClass";
-    fullscreen_class_.style = CS_DBLCLKS;
-
-    RegisterClassEx(&fullscreen_class_);
-    fullscreen_class_registered_ = true;
-  }
-  return &fullscreen_class_;
 }
 
 static LPCTSTR O3DToWindowsCursor(o3d::Cursor::CursorType cursor_type) {

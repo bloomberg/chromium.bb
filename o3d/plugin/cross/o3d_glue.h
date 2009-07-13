@@ -406,9 +406,6 @@ class PluginObject: public NPObject {
   static PluginObject *GetPluginProperty(HWND hWnd);
   // Clears out the plugin stored on this HWND.
   static void ClearPluginProperty(HWND hWnd);
-  // WNDCLASSEX used for constructing fullscreen windows.
-  static WNDCLASSEX *GetFullscreenWindowClass(
-      HINSTANCE instance, WNDPROC window_proc);
   // One bit of state that helps us turn the sequence of events that windows
   // produces on a double click into what JavaScript is expecting.
   bool got_dblclick_;
@@ -435,8 +432,6 @@ class PluginObject: public NPObject {
   HCURSOR cursors_[o3d::Cursor::NUM_CURSORS];  // loaded windows cursors.
   HCURSOR hCursor_;
   WNDPROC default_plugin_window_proc_;
-  static WNDCLASSEX fullscreen_class_;
-  static bool fullscreen_class_registered_;
   bool painted_once_;
 #endif  // OS_WIN
 };
