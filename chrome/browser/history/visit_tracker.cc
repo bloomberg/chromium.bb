@@ -4,6 +4,8 @@
 
 #include "chrome/browser/history/visit_tracker.h"
 
+#include "base/stl_util-inl.h"
+
 namespace history {
 
 // When the list gets longer than 'MaxItems', CleanupTransitionList will resize

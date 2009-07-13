@@ -15,7 +15,6 @@
 #include "chrome/browser/history/text_database.h"
 #include "chrome/browser/history/query_parser.h"
 #include "chrome/browser/history/url_database.h"
-#include "chrome/browser/history/visit_database.h"
 #include "chrome/common/mru_cache.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -24,6 +23,7 @@ struct sqlite3;
 namespace history {
 
 class HistoryPublisher;
+class VisitDatabase;
 
 // Manages a set of text databases representing different time periods. This
 // will page them in and out as necessary, and will manage queries for times

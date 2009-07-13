@@ -4,6 +4,8 @@
 
 #include "chrome/browser/history/visitsegment_database.h"
 
+#include <math.h>
+
 #include "base/logging.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/page_usage_data.h"

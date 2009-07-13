@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_HISTORY_PAGE_USAGE_DATA_H__
 
 #include "base/string16.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+
+class SkBitmap;
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -34,10 +34,7 @@ class PageUsageData {
         score_(0.0) {
   }
 
-  virtual ~PageUsageData() {
-    delete thumbnail_;
-    delete favicon_;
-  }
+  virtual ~PageUsageData();
 
   // Return the url ID
   history::URLID GetID() const {
@@ -72,13 +69,7 @@ class PageUsageData {
     thumbnail_set_ = true;
   }
 
-  void SetThumbnail(SkBitmap* img) {
-    if (thumbnail_ && thumbnail_ != img)
-      delete thumbnail_;
-
-    thumbnail_ = img;
-    thumbnail_set_ = true;
-  }
+  void SetThumbnail(SkBitmap* img);
 
   bool HasThumbnail() const {
     return thumbnail_set_;
@@ -100,12 +91,7 @@ class PageUsageData {
     favicon_set_ = true;
   }
 
-  void SetFavIcon(SkBitmap* img) {
-    if (favicon_ && favicon_ != img)
-      delete favicon_;
-    favicon_ = img;
-    favicon_set_ = true;
-  }
+  void SetFavIcon(SkBitmap* img);
 
   bool HasFavIcon() const {
     return favicon_set_;

@@ -17,7 +17,6 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/common/notification_registrar.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
@@ -27,6 +26,8 @@ class Profile;
 namespace history {
 
 class InMemoryDatabase;
+struct URLsDeletedDetails;
+struct URLsModifiedDetails;
 
 class InMemoryHistoryBackend : public NotificationObserver {
  public:

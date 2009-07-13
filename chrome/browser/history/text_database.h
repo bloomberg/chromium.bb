@@ -12,10 +12,10 @@
 #include "base/file_path.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/meta_table_helper.h"
-#include "chrome/common/sqlite_compiled_statement.h"
 #include "googleurl/src/gurl.h"
 
 struct sqlite3;
+class SqliteStatementCache;
 
 namespace history {
 

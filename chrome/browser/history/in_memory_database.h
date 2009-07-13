@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H__
 #define CHROME_BROWSER_HISTORY_HISTORY_MEMORY_DB_H__
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "chrome/browser/history/url_database.h"
-#include "chrome/common/sqlite_compiled_statement.h"
 
 struct sqlite3;
+
+class SqliteStatementCache;
 
 namespace history {
 

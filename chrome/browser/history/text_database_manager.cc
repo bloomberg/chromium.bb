@@ -11,6 +11,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/history/history_publisher.h"
+#include "chrome/browser/history/visit_database.h"
 #include "chrome/common/mru_cache.h"
 
 using base::Time;

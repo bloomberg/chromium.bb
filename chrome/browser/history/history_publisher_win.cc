@@ -11,6 +11,8 @@
 
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
+#include "base/time.h"
+#include "googleurl/src/gurl.h"
 
 namespace {
 

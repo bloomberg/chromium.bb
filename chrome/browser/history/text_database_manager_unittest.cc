@@ -6,6 +6,7 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/history/text_database_manager.h"
+#include "chrome/browser/history/visit_database.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;

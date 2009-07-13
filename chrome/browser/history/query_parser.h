@@ -8,7 +8,7 @@
 #ifndef CHROME_BROWSER_HISTORY_QUERY_PARSER_H__
 #define CHROME_BROWSER_HISTORY_QUERY_PARSER_H__
 
-#include <set>
+#include <string>
 #include <vector>
 
 #include "chrome/browser/history/snippet.h"

@@ -5,13 +5,10 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_H__
 #define CHROME_BROWSER_HISTORY_HISTORY_H__
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
-#include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"

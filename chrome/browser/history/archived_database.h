@@ -6,13 +6,13 @@
 #define CHROME_BROWSER_HISTORY_ARCHIVED_DATABASE_H_
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
-#include "chrome/browser/history/download_database.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
 #include "chrome/browser/meta_table_helper.h"
 
 struct sqlite3;
+
+class FilePath;
 
 namespace history {
 

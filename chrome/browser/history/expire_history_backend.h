@@ -14,7 +14,6 @@
 #include "base/time.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/text_database_manager.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BookmarkService;
@@ -27,6 +26,7 @@ namespace history {
 class ArchivedDatabase;
 class HistoryDatabase;
 struct HistoryDetails;
+class TextDatabaseManager;
 class ThumbnailDatabase;
 
 // Delegate used to broadcast notifications to the main thread.
@@ -103,31 +103,7 @@ class ExpireHistoryBackend {
   FRIEND_TEST(ExpireHistoryTest, ExpiringVisitsReader);
   friend class ::TestingProfile;
 
-  struct DeleteDependencies {
-    // The time range affected. These can be is_null() to be unbounded in one
-    // or both directions.
-    base::Time begin_time, end_time;
-
-    // ----- Filled by DeleteVisitRelatedInfo or manually if a function doesn't
-    //       call that function. -----
-
-    // The unique URL rows affected by this delete.
-    std::map<URLID, URLRow> affected_urls;
-
-    // ----- Filled by DeleteOneURL -----
-
-    // The URLs deleted during this operation.
-    std::vector<URLRow> deleted_urls;
-
-    // The list of all favicon IDs that the affected URLs had. Favicons will be
-    // shared between all URLs with the same favicon, so this is the set of IDs
-    // that we will need to check when the delete operations are complete.
-    std::set<FavIconID> affected_favicons;
-
-    // Tracks the set of databases that have changed so we can optimize when
-    // when we're done.
-    TextDatabaseManager::ChangeSet text_db_changes;
-  };
+  struct DeleteDependencies;
 
   // Removes the data from the full text index associated with the given URL
   // string/ID pair. If |update_visits| is set, the visits that reference the

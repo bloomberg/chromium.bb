@@ -7,19 +7,14 @@
 
 #include <utility>
 
-#include "base/gfx/rect.h"
 #include "base/file_path.h"
-#include "base/lock.h"
 #include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
-#include "base/task.h"
 #include "chrome/browser/history/archived_database.h"
 #include "chrome/browser/history/download_types.h"
 #include "chrome/browser/history/expire_history_backend.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/history/history_marshaling.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/history/page_usage_data.h"
 #include "chrome/browser/history/text_database_manager.h"
 #include "chrome/browser/history/thumbnail_database.h"
 #include "chrome/browser/history/visit_tracker.h"

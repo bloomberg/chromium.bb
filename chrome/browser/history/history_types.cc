@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/history/history_types.h"
+
 #include <limits>
 
-#include "chrome/browser/history/history_types.h"
+#include "base/stl_util-inl.h"
 
 using base::Time;
 

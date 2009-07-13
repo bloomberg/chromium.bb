@@ -5,17 +5,16 @@
 #ifndef CHROME_BROWSER_HISTORY_STARRED_URL_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_STARRED_URL_DATABASE_H_
 
-#include <map>
 #include <set>
 
 #include "app/tree_node_model.h"
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 struct sqlite3;
+class FilePath;
 class SqliteStatementCache;
 
 namespace history {

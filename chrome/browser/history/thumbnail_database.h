@@ -7,15 +7,15 @@
 
 #include <vector>
 
-#include "base/file_path.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/url_database.h"  // For DBCloseScoper.
 #include "chrome/browser/meta_table_helper.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 
 struct sqlite3;
+class FilePath;
 struct ThumbnailScore;
+class SkBitmap;
+class SqliteStatementCache;
 namespace base {
   class Time;
 }

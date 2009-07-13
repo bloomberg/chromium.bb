@@ -8,14 +8,18 @@
 #include <vector>
 #include <string>
 
-#include "base/time.h"
-#include "chrome/browser/history/history_types.h"
-#include "googleurl/src/gurl.h"
+#include "base/basictypes.h"
 
 #if defined(OS_WIN)
 #include "base/scoped_comptr_win.h"
 #include "history_indexer.h"
 #endif
+
+class GURL;
+
+namespace base {
+class Time;
+}
 
 namespace history {
 

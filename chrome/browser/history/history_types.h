@@ -5,15 +5,13 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_TYPES_H__
 #define CHROME_BROWSER_HISTORY_HISTORY_TYPES_H__
 
-#include <algorithm>
 #include <map>
 #include <set>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/gfx/rect.h"
 #include "base/stack_container.h"
-#include "base/stl_util-inl.h"
 #include "base/time.h"
 #include "chrome/browser/history/snippet.h"
 #include "chrome/common/page_transition_types.h"

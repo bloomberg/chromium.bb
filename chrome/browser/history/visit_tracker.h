@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_HISTORY_VISIT_TRACKER_H__
 #define CHROME_BROWSER_HISTORY_VISIT_TRACKER_H__
 
-#include <list>
 #include <map>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/browser/history/history_types.h"

@@ -8,7 +8,6 @@
 #define CHROME_BROWSER_DOWNLOAD_TYPES_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/file_path.h"

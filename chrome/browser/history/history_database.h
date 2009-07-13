@@ -5,19 +5,17 @@
 #ifndef CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 #define CHROME_BROWSER_HISTORY_HISTORY_DATABASE_H_
 
-#include "base/file_path.h"
 #include "chrome/browser/history/download_database.h"
-#include "chrome/browser/history/history.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/starred_url_database.h"
 #include "chrome/browser/history/url_database.h"
 #include "chrome/browser/history/visit_database.h"
 #include "chrome/browser/history/visitsegment_database.h"
 #include "chrome/browser/meta_table_helper.h"
-#include "chrome/common/sqlite_compiled_statement.h"
-#include "chrome/common/sqlite_utils.h"
 
 struct sqlite3;
+
+class FilePath;
 
 namespace history {
 
