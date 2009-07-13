@@ -491,23 +491,12 @@ bool AutocompleteEditViewMac::OnAfterPossibleChange() {
   const bool something_changed = model_->OnAfterPossibleChange(new_text,
       selection_differs, text_differs, just_deleted_text, at_end_of_edit);
 
-  // Restyle if the user changed something.
-  // TODO(shess): Does this need to diver deeper to avoid flashing?
-  // For instance, if the user types "/" after the hostname, will it
-  // show as HostTextColor() for an instant before being replaced by
-  // BaseTextColor().  This could probably be done by subclassing the
-  // cell and intercepting draw requests so that we draw the right
-  // thing every time.
-  // NOTE(shess): That kind of thing would also help with when the
-  // flashing from when the user's typing replaces the selection which
-  // is then re-created with the new autocomplete results.
-  if (something_changed) {
-    // TODO(shess) I believe that this call is needless duplication of
-    // effort.  As best I can tell, something_changed can only be true
-    // if |model_| called UpdatePopup(), which then updated us.  But
-    // the state involved seems substantial.
-    EmphasizeURLComponents();
-  }
+  // Restyle in case the user changed something.
+  // TODO(shess): I believe there are multiple-redraw cases, here.
+  // Linux watches for something_changed && text_differs, but that
+  // fails for us in case you copy the URL and paste the identical URL
+  // back (we'll lose the styling).
+  EmphasizeURLComponents();
 
   return something_changed;
 }
