@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "net/base/file_stream.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/ipc_message_utils.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
@@ -77,7 +78,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
   FilePath manifest_path =
       temp_install_dir_.AppendASCII(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
-    SetError(Extension::kInvalidManifestError);
+    SetError(extension_manifest_errors::kInvalidManifest);
     return NULL;
   }
 
@@ -90,7 +91,7 @@ DictionaryValue* ExtensionUnpacker::ReadManifest() {
   }
 
   if (!root->IsType(Value::TYPE_DICTIONARY)) {
-    SetError(Extension::kInvalidManifestError);
+    SetError(extension_manifest_errors::kInvalidManifest);
     return NULL;
   }
 

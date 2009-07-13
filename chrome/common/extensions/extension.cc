@@ -13,6 +13,7 @@
 #include "base/third_party/nss/blapi.h"
 #include "base/third_party/nss/sha256.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/extension_error_utils.h"
 #include "chrome/common/extensions/user_script.h"
@@ -23,6 +24,10 @@
 #if defined(OS_WIN)
 #include "base/registry.h"
 #endif
+
+namespace keys = extension_manifest_keys;
+namespace values = extension_manifest_values;
+namespace errors = extension_manifest_errors;
 
 namespace {
   const int kPEMOutputColumns = 65;
@@ -46,143 +51,21 @@ namespace {
   }
 };
 
+// static
 int Extension::id_counter_ = 0;
 
 const char Extension::kManifestFilename[] = "manifest.json";
 
-const wchar_t* Extension::kBackgroundKey = L"background_page";
-const wchar_t* Extension::kContentScriptsKey = L"content_scripts";
-const wchar_t* Extension::kCssKey = L"css";
-const wchar_t* Extension::kDescriptionKey = L"description";
-const wchar_t* Extension::kIconPathKey = L"icon";
-const wchar_t* Extension::kIconPathsKey = L"icons";
-const wchar_t* Extension::kJsKey = L"js";
-const wchar_t* Extension::kMatchesKey = L"matches";
-const wchar_t* Extension::kNameKey = L"name";
-const wchar_t* Extension::kPageActionIdKey = L"id";
-const wchar_t* Extension::kPageActionsKey = L"page_actions";
-const wchar_t* Extension::kPermissionsKey = L"permissions";
-const wchar_t* Extension::kPluginsKey = L"plugins";
-const wchar_t* Extension::kPluginsPathKey = L"path";
-const wchar_t* Extension::kPluginsPublicKey = L"public";
-const wchar_t* Extension::kPublicKeyKey = L"key";
-const wchar_t* Extension::kRunAtKey = L"run_at";
-const wchar_t* Extension::kSignatureKey = L"signature";
-const wchar_t* Extension::kThemeKey = L"theme";
-const wchar_t* Extension::kThemeImagesKey = L"images";
-const wchar_t* Extension::kThemeColorsKey = L"colors";
-const wchar_t* Extension::kThemeTintsKey = L"tints";
-const wchar_t* Extension::kThemeDisplayPropertiesKey = L"properties";
-const wchar_t* Extension::kToolstripsKey = L"toolstrips";
-const wchar_t* Extension::kTypeKey = L"type";
-const wchar_t* Extension::kVersionKey = L"version";
-const wchar_t* Extension::kUpdateURLKey = L"update_url";
-
-const char* Extension::kRunAtDocumentStartValue = "document_start";
-const char* Extension::kRunAtDocumentEndValue = "document_end";
-const char* Extension::kPageActionTypeTab = "tab";
-const char* Extension::kPageActionTypePermanent = "permanent";
-
 // A list of all the keys allowed by themes.
 static const wchar_t* kValidThemeKeys[] = {
-  Extension::kDescriptionKey,
-  Extension::kIconPathKey,
-  Extension::kNameKey,
-  Extension::kPublicKeyKey,
-  Extension::kSignatureKey,
-  Extension::kThemeKey,
-  Extension::kVersionKey
+  keys::kDescription,
+  keys::kIconPath,
+  keys::kName,
+  keys::kPublicKey,
+  keys::kSignature,
+  keys::kTheme,
+  keys::kVersion
 };
-
-// Extension-related error messages. Some of these are simple patterns, where a
-// '*' is replaced at runtime with a specific value. This is used instead of
-// printf because we want to unit test them and scanf is hard to make
-// cross-platform.
-const char* Extension::kInvalidContentScriptError =
-    "Invalid value for 'content_scripts[*]'.";
-const char* Extension::kInvalidContentScriptsListError =
-    "Invalid value for 'content_scripts'.";
-const char* Extension::kInvalidCssError =
-    "Invalid value for 'content_scripts[*].css[*]'.";
-const char* Extension::kInvalidCssListError =
-    "Required value 'content_scripts[*].css is invalid.";
-const char* Extension::kInvalidDescriptionError =
-    "Invalid value for 'description'.";
-const char* Extension::kInvalidJsError =
-    "Invalid value for 'content_scripts[*].js[*]'.";
-const char* Extension::kInvalidJsListError =
-    "Required value 'content_scripts[*].js is invalid.";
-const char* Extension::kInvalidKeyError =
-    "Value 'key' is missing or invalid.";
-const char* Extension::kInvalidManifestError =
-    "Manifest is missing or invalid.";
-const char* Extension::kInvalidMatchCountError =
-    "Invalid value for 'content_scripts[*].matches. There must be at least one "
-    "match specified.";
-const char* Extension::kInvalidMatchError =
-    "Invalid value for 'content_scripts[*].matches[*]'.";
-const char* Extension::kInvalidMatchesError =
-    "Required value 'content_scripts[*].matches' is missing or invalid.";
-const char* Extension::kInvalidNameError =
-    "Required value 'name' is missing or invalid.";
-const char* Extension::kInvalidPageActionError =
-    "Invalid value for 'page_actions[*]'.";
-const char* Extension::kInvalidPageActionIconPathError =
-    "Invalid value for 'page_actions[*].icons[*]'.";
-const char* Extension::kInvalidPageActionsListError =
-    "Invalid value for 'page_actions'.";
-const char* Extension::kInvalidPageActionIconPathsError =
-    "Required value 'page_actions[*].icons' is missing or invalid.";
-const char* Extension::kInvalidPageActionIdError =
-    "Required value 'id' is missing or invalid.";
-const char* Extension::kInvalidPageActionTypeValueError =
-    "Invalid value for 'page_actions[*].type', expected 'tab' or 'permanent'.";
-const char* Extension::kInvalidPermissionsError =
-    "Required value 'permissions' is missing or invalid.";
-const char* Extension::kInvalidPermissionCountWarning =
-    "Warning, 'permissions' key found, but array is empty.";
-const char* Extension::kInvalidPermissionError =
-    "Invalid value for 'permissions[*]'.";
-const char* Extension::kInvalidPermissionSchemeError =
-    "Invalid scheme for 'permissions[*]'. Only 'http' and 'https' are "
-    "allowed.";
-const char* Extension::kInvalidPluginsError =
-    "Invalid value for 'plugins'.";
-const char* Extension::kInvalidPluginsPathError =
-    "Invalid value for 'plugins[*].path'.";
-const char* Extension::kInvalidPluginsPublicError =
-    "Invalid value for 'plugins[*].public'.";
-const char* Extension::kInvalidBackgroundError =
-    "Invalid value for 'background'.";
-const char* Extension::kInvalidRunAtError =
-    "Invalid value for 'content_scripts[*].run_at'.";
-const char* Extension::kInvalidSignatureError =
-    "Value 'signature' is missing or invalid.";
-const char* Extension::kInvalidToolstripError =
-    "Invalid value for 'toolstrips[*]'";
-const char* Extension::kInvalidToolstripsError =
-    "Invalid value for 'toolstrips'.";
-const char* Extension::kInvalidVersionError =
-    "Required value 'version' is missing or invalid. It must be between 1-4 "
-    "dot-separated integers.";
-const char* Extension::kInvalidZipHashError =
-    "Required key 'zip_hash' is missing or invalid.";
-const char* Extension::kMissingFileError =
-    "At least one js or css file is required for 'content_scripts[*]'.";
-const char* Extension::kInvalidThemeError =
-    "Invalid value for 'theme'.";
-const char* Extension::kInvalidThemeImagesError =
-    "Invalid value for theme images - images must be strings.";
-const char* Extension::kInvalidThemeImagesMissingError =
-    "Am image specified in the theme is missing.";
-const char* Extension::kInvalidThemeColorsError =
-    "Invalid value for theme colors - colors must be integers";
-const char* Extension::kInvalidThemeTintsError =
-    "Invalid value for theme images - tints must be decimal numbers.";
-const char* Extension::kInvalidUpdateURLError =
-    "Invalid value for update url: '[*]'.";
-const char* Extension::kThemesCannotContainExtensionsError =
-    "A theme cannot contain extensions code.";
 
 #if defined(OS_WIN)
 const char* Extension::kExtensionRegistryPath =
@@ -282,20 +165,20 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
                                      int definition_index, std::string* error,
                                      UserScript* result) {
   // run_at
-  if (content_script->HasKey(kRunAtKey)) {
+  if (content_script->HasKey(keys::kRunAt)) {
     std::string run_location;
-    if (!content_script->GetString(kRunAtKey, &run_location)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidRunAtError,
+    if (!content_script->GetString(keys::kRunAt, &run_location)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidRunAt,
           IntToString(definition_index));
       return false;
     }
 
-    if (run_location == kRunAtDocumentStartValue) {
+    if (run_location == values::kRunAtDocumentStart) {
       result->set_run_location(UserScript::DOCUMENT_START);
-    } else if (run_location == kRunAtDocumentEndValue) {
+    } else if (run_location == values::kRunAtDocumentEnd) {
       result->set_run_location(UserScript::DOCUMENT_END);
     } else {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidRunAtError,
+      *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidRunAt,
           IntToString(definition_index));
       return false;
     }
@@ -303,28 +186,28 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 
   // matches
   ListValue* matches = NULL;
-  if (!content_script->GetList(kMatchesKey, &matches)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidMatchesError,
+  if (!content_script->GetList(keys::kMatches, &matches)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatches,
         IntToString(definition_index));
     return false;
   }
 
   if (matches->GetSize() == 0) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidMatchCountError,
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatchCount,
         IntToString(definition_index));
     return false;
   }
   for (size_t j = 0; j < matches->GetSize(); ++j) {
     std::string match_str;
     if (!matches->GetString(j, &match_str)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidMatchError,
+      *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
           IntToString(definition_index), IntToString(j));
       return false;
     }
 
     URLPattern pattern;
     if (!pattern.Parse(match_str)) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidMatchError,
+      *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidMatch,
           IntToString(definition_index), IntToString(j));
       return false;
     }
@@ -334,24 +217,24 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
 
   // js and css keys
   ListValue* js = NULL;
-  if (content_script->HasKey(kJsKey) &&
-      !content_script->GetList(kJsKey, &js)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidJsListError,
+  if (content_script->HasKey(keys::kJs) &&
+      !content_script->GetList(keys::kJs, &js)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidJsList,
         IntToString(definition_index));
     return false;
   }
 
   ListValue* css = NULL;
-  if (content_script->HasKey(kCssKey) &&
-      !content_script->GetList(kCssKey, &css)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidCssListError,
+  if (content_script->HasKey(keys::kCss) &&
+      !content_script->GetList(keys::kCss, &css)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidCssList,
         IntToString(definition_index));
     return false;
   }
 
   // The manifest needs to have at least one js or css user script definition.
   if (((js ? js->GetSize() : 0) + (css ? css->GetSize() : 0)) == 0) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kMissingFileError,
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kMissingFile,
         IntToString(definition_index));
     return false;
   }
@@ -362,7 +245,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       Value* value;
       std::wstring relative;
       if (!js->Get(script_index, &value) || !value->GetAsString(&relative)) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidJsError,
+        *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidJs,
             IntToString(definition_index), IntToString(script_index));
         return false;
       }
@@ -379,7 +262,7 @@ bool Extension::LoadUserScriptHelper(const DictionaryValue* content_script,
       Value* value;
       std::wstring relative;
       if (!css->Get(script_index, &value) || !value->GetAsString(&relative)) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidCssError,
+        *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidCss,
             IntToString(definition_index), IntToString(script_index));
         return false;
       }
@@ -403,11 +286,11 @@ PageAction* Extension::LoadPageActionHelper(
 
   ListValue* icons;
   // Read the page action |icons|.
-  if (!page_action->HasKey(kIconPathsKey) ||
-      !page_action->GetList(kIconPathsKey, &icons) ||
+  if (!page_action->HasKey(keys::kIconPaths) ||
+      !page_action->GetList(keys::kIconPaths, &icons) ||
       icons->GetSize() == 0) {
     *error = ExtensionErrorUtils::FormatErrorMessage(
-        kInvalidPageActionIconPathsError, IntToString(definition_index));
+        errors::kInvalidPageActionIconPaths, IntToString(definition_index));
     return NULL;
   }
 
@@ -417,7 +300,7 @@ PageAction* Extension::LoadPageActionHelper(
     FilePath::StringType path;
     if (!(*iter)->GetAsString(&path) || path.empty()) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
-          kInvalidPageActionIconPathError,
+          errors::kInvalidPageActionIconPath,
           IntToString(definition_index), IntToString(icon_count));
       return NULL;
     }
@@ -429,17 +312,17 @@ PageAction* Extension::LoadPageActionHelper(
 
   // Read the page action |id|.
   std::string id;
-  if (!page_action->GetString(kPageActionIdKey, &id)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidPageActionIdError,
-        IntToString(definition_index));
+  if (!page_action->GetString(keys::kPageActionId, &id)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(
+        errors::kInvalidPageActionId, IntToString(definition_index));
     return NULL;
   }
   result->set_id(id);
 
   // Read the page action |name|.
   std::string name;
-  if (!page_action->GetString(kNameKey, &name)) {
-    *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidNameError,
+  if (!page_action->GetString(keys::kName, &name)) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kInvalidName,
         IntToString(definition_index));
     return NULL;
   }
@@ -448,15 +331,15 @@ PageAction* Extension::LoadPageActionHelper(
   // Read the page action |type|. It is optional and set to permanent if
   // missing.
   std::string type;
-  if (!page_action->GetString(kTypeKey, &type)) {
+  if (!page_action->GetString(keys::kType, &type)) {
     result->set_type(PageAction::PERMANENT);
-  } else if (!LowerCaseEqualsASCII(type, kPageActionTypeTab) &&
-             !LowerCaseEqualsASCII(type, kPageActionTypePermanent)) {
+  } else if (!LowerCaseEqualsASCII(type, values::kPageActionTypeTab) &&
+             !LowerCaseEqualsASCII(type, values::kPageActionTypePermanent)) {
     *error = ExtensionErrorUtils::FormatErrorMessage(
-        kInvalidPageActionTypeValueError, IntToString(definition_index));
+        errors::kInvalidPageActionTypeValue, IntToString(definition_index));
     return NULL;
   } else {
-    if (LowerCaseEqualsASCII(type, kPageActionTypeTab))
+    if (LowerCaseEqualsASCII(type, values::kPageActionTypeTab))
       result->set_type(PageAction::TAB);
     else
       result->set_type(PageAction::PERMANENT);
@@ -615,16 +498,16 @@ bool Extension::FormatPEMForFileOutput(const std::string input,
 
 bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
                               std::string* error) {
-  if (source.HasKey(kPublicKeyKey)) {
+  if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
-    if (!source.GetString(kPublicKeyKey, &public_key_) ||
+    if (!source.GetString(keys::kPublicKey, &public_key_) ||
       !ParsePEMKeyBytes(public_key_, &public_key_bytes) ||
       !GenerateIdFromPublicKey(public_key_bytes, &id_)) {
-        *error = kInvalidKeyError;
+        *error = errors::kInvalidKey;
         return false;
     }
   } else if (require_id) {
-    *error = kInvalidKeyError;
+    *error = errors::kInvalidKey;
     return false;
   } else {
     // Generate a random ID
@@ -643,70 +526,70 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
 
   // Initialize version.
   std::string version_str;
-  if (!source.GetString(kVersionKey, &version_str)) {
-    *error = kInvalidVersionError;
+  if (!source.GetString(keys::kVersion, &version_str)) {
+    *error = errors::kInvalidVersion;
     return false;
   }
   version_.reset(Version::GetVersionFromString(version_str));
   if (!version_.get() || version_->components().size() > 4) {
-    *error = kInvalidVersionError;
+    *error = errors::kInvalidVersion;
     return false;
   }
 
   // Initialize name.
-  if (!source.GetString(kNameKey, &name_)) {
-    *error = kInvalidNameError;
+  if (!source.GetString(keys::kName, &name_)) {
+    *error = errors::kInvalidName;
     return false;
   }
 
   // Initialize description (optional).
-  if (source.HasKey(kDescriptionKey)) {
-    if (!source.GetString(kDescriptionKey, &description_)) {
-      *error = kInvalidDescriptionError;
+  if (source.HasKey(keys::kDescription)) {
+    if (!source.GetString(keys::kDescription, &description_)) {
+      *error = errors::kInvalidDescription;
       return false;
     }
   }
 
   // Initialize update url (if present).
-  if (source.HasKey(kUpdateURLKey)) {
+  if (source.HasKey(keys::kUpdateURL)) {
     std::string tmp;
-    if (!source.GetString(kUpdateURLKey, &tmp)) {
-      *error =
-          ExtensionErrorUtils::FormatErrorMessage(kInvalidUpdateURLError, "");
+    if (!source.GetString(keys::kUpdateURL, &tmp)) {
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidUpdateURL, "");
       return false;
     }
     update_url_ = GURL(tmp);
     if (!update_url_.is_valid() || update_url_.has_ref()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidUpdateURLError,
-          tmp);
+      *error = ExtensionErrorUtils::FormatErrorMessage(
+          errors::kInvalidUpdateURL, tmp);
       return false;
     }
   }
 
   // Initialize themes.
   is_theme_ = false;
-  if (source.HasKey(kThemeKey)) {
+  if (source.HasKey(keys::kTheme)) {
     // Themes cannot contain extension keys.
     if (ContainsNonThemeKeys(source)) {
-      *error = kThemesCannotContainExtensionsError;
+      *error = errors::kThemesCannotContainExtensions;
       return false;
     }
 
     DictionaryValue* theme_value;
-    if (!source.GetDictionary(kThemeKey, &theme_value)) {
-      *error = kInvalidThemeError;
+    if (!source.GetDictionary(keys::kTheme, &theme_value)) {
+      *error = errors::kInvalidTheme;
       return false;
     }
     is_theme_ = true;
 
     DictionaryValue* images_value;
-    if (theme_value->GetDictionary(kThemeImagesKey, &images_value)) {
+    if (theme_value->GetDictionary(keys::kThemeImages, &images_value)) {
       // Validate that the images are all strings
       DictionaryValue::key_iterator iter = images_value->begin_keys();
       while (iter != images_value->end_keys()) {
         std::string val;
         if (!images_value->GetString(*iter, &val)) {
-          *error = kInvalidThemeImagesError;
+          *error = errors::kInvalidThemeImages;
           return false;
         }
         ++iter;
@@ -716,7 +599,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     DictionaryValue* colors_value;
-    if (theme_value->GetDictionary(kThemeColorsKey, &colors_value)) {
+    if (theme_value->GetDictionary(keys::kThemeColors, &colors_value)) {
       // Validate that the colors are all three-item lists
       DictionaryValue::key_iterator iter = colors_value->begin_keys();
       while (iter != colors_value->end_keys()) {
@@ -742,7 +625,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
             }
           }
         }
-        *error = kInvalidThemeColorsError;
+        *error = errors::kInvalidThemeColors;
         return false;
         ++iter;
       }
@@ -751,7 +634,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     DictionaryValue* tints_value;
-    if (theme_value->GetDictionary(kThemeTintsKey, &tints_value)) {
+    if (theme_value->GetDictionary(keys::kThemeTints, &tints_value)) {
       // Validate that the tints are all reals.
       DictionaryValue::key_iterator iter = tints_value->begin_keys();
       while (iter != tints_value->end_keys()) {
@@ -762,7 +645,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
             !tint_list->GetReal(0, &hue) ||
             !tint_list->GetReal(1, &hue) ||
             !tint_list->GetReal(2, &hue)) {
-          *error = kInvalidThemeTintsError;
+          *error = errors::kInvalidThemeTints;
           return false;
         }
         ++iter;
@@ -772,7 +655,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
     }
 
     DictionaryValue* display_properties_value;
-    if (theme_value->GetDictionary(kThemeDisplayPropertiesKey,
+    if (theme_value->GetDictionary(keys::kThemeDisplayProperties,
         &display_properties_value)) {
       theme_display_properties_.reset(
           static_cast<DictionaryValue*>(display_properties_value->DeepCopy()));
@@ -782,10 +665,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   }
 
   // Initialize plugins (optional).
-  if (source.HasKey(kPluginsKey)) {
+  if (source.HasKey(keys::kPlugins)) {
     ListValue* list_value;
-    if (!source.GetList(kPluginsKey, &list_value)) {
-      *error = kInvalidPluginsError;
+    if (!source.GetList(keys::kPlugins, &list_value)) {
+      *error = errors::kInvalidPlugins;
       return false;
     }
 
@@ -795,22 +678,22 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       bool is_public = false;
 
       if (!list_value->GetDictionary(i, &plugin_value)) {
-        *error = kInvalidPluginsError;
+        *error = errors::kInvalidPlugins;
         return false;
       }
 
       // Get plugins[i].path.
-      if (!plugin_value->GetString(kPluginsPathKey, &path)) {
+      if (!plugin_value->GetString(keys::kPluginsPath, &path)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidPluginsPathError, IntToString(i));
+            errors::kInvalidPluginsPath, IntToString(i));
         return false;
       }
 
       // Get plugins[i].content (optional).
-      if (plugin_value->HasKey(kPluginsPublicKey)) {
-        if (!plugin_value->GetBoolean(kPluginsPublicKey, &is_public)) {
+      if (plugin_value->HasKey(keys::kPluginsPublic)) {
+        if (!plugin_value->GetBoolean(keys::kPluginsPublic, &is_public)) {
           *error = ExtensionErrorUtils::FormatErrorMessage(
-              kInvalidPluginsPublicError, IntToString(i));
+              errors::kInvalidPluginsPublic, IntToString(i));
           return false;
         }
       }
@@ -822,28 +705,28 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   }
 
   // Initialize background url (optional).
-  if (source.HasKey(kBackgroundKey)) {
+  if (source.HasKey(keys::kBackground)) {
     std::string background_str;
-    if (!source.GetString(kBackgroundKey, &background_str)) {
-      *error = kInvalidBackgroundError;
+    if (!source.GetString(keys::kBackground, &background_str)) {
+      *error = errors::kInvalidBackground;
       return false;
     }
     background_url_ = GetResourceURL(background_str);
   }
 
   // Initialize toolstrips (optional).
-  if (source.HasKey(kToolstripsKey)) {
+  if (source.HasKey(keys::kToolstrips)) {
     ListValue* list_value;
-    if (!source.GetList(kToolstripsKey, &list_value)) {
-      *error = kInvalidToolstripsError;
+    if (!source.GetList(keys::kToolstrips, &list_value)) {
+      *error = errors::kInvalidToolstrips;
       return false;
     }
 
     for (size_t i = 0; i < list_value->GetSize(); ++i) {
       std::string toolstrip;
       if (!list_value->GetString(i, &toolstrip)) {
-        *error = ExtensionErrorUtils::FormatErrorMessage(kInvalidToolstripError,
-            IntToString(i));
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidToolstrip, IntToString(i));
         return false;
       }
       toolstrips_.push_back(toolstrip);
@@ -851,10 +734,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   }
 
   // Initialize content scripts (optional).
-  if (source.HasKey(kContentScriptsKey)) {
+  if (source.HasKey(keys::kContentScripts)) {
     ListValue* list_value;
-    if (!source.GetList(kContentScriptsKey, &list_value)) {
-      *error = kInvalidContentScriptsListError;
+    if (!source.GetList(keys::kContentScripts, &list_value)) {
+      *error = errors::kInvalidContentScriptsList;
       return false;
     }
 
@@ -862,7 +745,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       DictionaryValue* content_script;
       if (!list_value->GetDictionary(i, &content_script)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidContentScriptError, IntToString(i));
+            errors::kInvalidContentScript, IntToString(i));
         return false;
       }
 
@@ -875,10 +758,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   }
 
   // Initialize page actions (optional).
-  if (source.HasKey(kPageActionsKey)) {
+  if (source.HasKey(keys::kPageActions)) {
     ListValue* list_value;
-    if (!source.GetList(kPageActionsKey, &list_value)) {
-      *error = kInvalidPageActionsListError;
+    if (!source.GetList(keys::kPageActions, &list_value)) {
+      *error = errors::kInvalidPageActionsList;
       return false;
     }
 
@@ -886,7 +769,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       DictionaryValue* page_action_value;
       if (!list_value->GetDictionary(i, &page_action_value)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidPageActionError, IntToString(i));
+            errors::kInvalidPageAction, IntToString(i));
         return false;
       }
 
@@ -899,31 +782,31 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   }
 
   // Initialize the permissions (optional).
-  if (source.HasKey(kPermissionsKey)) {
+  if (source.HasKey(keys::kPermissions)) {
     ListValue* hosts = NULL;
-    if (!source.GetList(kPermissionsKey, &hosts)) {
+    if (!source.GetList(keys::kPermissions, &hosts)) {
       *error = ExtensionErrorUtils::FormatErrorMessage(
-          kInvalidPermissionsError, "");
+          errors::kInvalidPermissions, "");
       return false;
     }
 
     if (hosts->GetSize() == 0) {
       ExtensionErrorReporter::GetInstance()->ReportError(
-          kInvalidPermissionCountWarning, false);
+          errors::kInvalidPermissionCountWarning, false);
     }
 
     for (size_t i = 0; i < hosts->GetSize(); ++i) {
       std::string host_str;
       if (!hosts->GetString(i, &host_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidPermissionError, IntToString(i));
+            errors::kInvalidPermission, IntToString(i));
         return false;
       }
 
       URLPattern pattern;
       if (!pattern.Parse(host_str)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidPermissionError, IntToString(i));
+            errors::kInvalidPermission, IntToString(i));
         return false;
       }
 
@@ -931,7 +814,7 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
       if ((pattern.scheme() != chrome::kHttpScheme) &&
           (pattern.scheme() != chrome::kHttpsScheme)) {
         *error = ExtensionErrorUtils::FormatErrorMessage(
-            kInvalidPermissionSchemeError, IntToString(i));
+            errors::kInvalidPermissionScheme, IntToString(i));
         return false;
       }
 

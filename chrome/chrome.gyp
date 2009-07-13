@@ -294,6 +294,8 @@
         # All .cc, .h, and .mm files under chrome/common except for tests.
         'common/extensions/extension.cc',
         'common/extensions/extension.h',
+        'common/extensions/extension_constants.cc',
+        'common/extensions/extension_constants.h',
         'common/extensions/extension_error_reporter.cc',
         'common/extensions/extension_error_reporter.h',
         'common/extensions/extension_error_utils.cc',

@@ -32,6 +32,7 @@
 #include "chrome/browser/utility_process_host.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "chrome/common/extensions/extension_unpacker.h"
 #include "chrome/common/json_value_serializer.h"
@@ -164,7 +165,7 @@ class ExtensionsServiceBackend::UnpackerClient
     // The const_cast is hacky, but seems like the right thing here, rather than
     // making a full copy just to make this change.
     const_cast<DictionaryValue*>(&manifest)->SetString(
-        Extension::kPublicKeyKey, public_key_);
+        extension_manifest_keys::kPublicKey, public_key_);
 
     // The extension was unpacked to the temp dir inside our unpacking dir.
     FilePath extension_dir = temp_extension_path_.DirName().AppendASCII(
@@ -682,7 +683,7 @@ DictionaryValue* ExtensionsServiceBackend::ReadManifest(FilePath manifest_path,
     return NULL;
 
   if (!root->IsType(Value::TYPE_DICTIONARY)) {
-    *error = Extension::kInvalidManifestError;
+    *error = extension_manifest_errors::kInvalidManifest;
     return NULL;
   }
 
@@ -696,7 +697,8 @@ Extension* ExtensionsServiceBackend::LoadExtension(
   FilePath manifest_path =
       extension_path.AppendASCII(Extension::kManifestFilename);
   if (!file_util::PathExists(manifest_path)) {
-    ReportExtensionLoadError(extension_path, Extension::kInvalidManifestError);
+    ReportExtensionLoadError(extension_path,
+        extension_manifest_errors::kInvalidManifest);
     return NULL;
   }
 

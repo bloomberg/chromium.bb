@@ -8,6 +8,7 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -116,8 +117,10 @@ void CreateTestExtensions(int count, ExtensionList *list) {
   for (int i = 1; i <= count; i++) {
     DictionaryValue input;
     Extension* e = new Extension();
-    input.SetString(Extension::kVersionKey, StringPrintf("%d.0.0.0", i));
-    input.SetString(Extension::kNameKey, StringPrintf("Extension %d", i));
+    input.SetString(extension_manifest_keys::kVersion,
+                    StringPrintf("%d.0.0.0", i));
+    input.SetString(extension_manifest_keys::kName,
+                    StringPrintf("Extension %d", i));
     std::string error;
     EXPECT_TRUE(e->InitFromValue(input, false, &error));
     list->push_back(e);

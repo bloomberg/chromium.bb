@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/external_extension_provider.h"
 #include "chrome/browser/extensions/external_pref_extension_provider.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -604,15 +605,15 @@ TEST_F(ExtensionsServiceTest, LoadAllExtensionsFromDirectoryFail) {
 
   EXPECT_TRUE(MatchPattern(GetErrors()[1],
       std::string("Could not load extension from '*'. ") +
-      Extension::kInvalidManifestError)) << GetErrors()[1];
+      extension_manifest_errors::kInvalidManifest)) << GetErrors()[1];
 
   EXPECT_TRUE(MatchPattern(GetErrors()[2],
       std::string("Could not load extension from '*'. ") +
-      Extension::kMissingFileError)) << GetErrors()[2];
+      extension_manifest_errors::kMissingFile)) << GetErrors()[2];
 
   EXPECT_TRUE(MatchPattern(GetErrors()[3],
       std::string("Could not load extension from '*'. ") +
-      Extension::kInvalidManifestError)) << GetErrors()[3];
+      extension_manifest_errors::kInvalidManifest)) << GetErrors()[3];
 };
 
 // Test that partially deleted extensions are cleaned up during startup
