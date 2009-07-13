@@ -45,6 +45,7 @@ class ToolbarView;
 class ZoomMenuModel;
 
 namespace views {
+class ExternalFocusTracker;
 class Menu;
 class SingleSplitView;
 }
@@ -419,6 +420,11 @@ class BrowserView : public BrowserWindow,
 
   // Split view containing the contents container and devtools container.
   views::SingleSplitView* contents_split_;
+
+  // Tracks and stores the last focused view which is not the
+  // devtools_container_ or any of its children. Used to restore focus once
+  // the devtools_container_ is hidden.
+  scoped_ptr<views::ExternalFocusTracker> devtools_focus_tracker_;
 
   // The Status information bubble that appears at the bottom of the window.
   scoped_ptr<StatusBubbleViews> status_bubble_;

@@ -64,6 +64,7 @@
 #endif
 #include "views/controls/single_split_view.h"
 #include "views/fill_layout.h"
+#include "views/focus/external_focus_tracker.h"
 #include "views/view.h"
 #include "views/widget/root_view.h"
 #include "views/window/dialog_delegate.h"
@@ -1624,14 +1625,32 @@ bool BrowserView::MaybeShowInfoBar(TabContents* contents) {
 void BrowserView::UpdateDevToolsForContents(TabContents* tab_contents) {
   TabContents* devtools_contents =
       DevToolsWindow::GetDevToolsContents(tab_contents);
+
+  bool should_show = devtools_contents && !devtools_container_->IsVisible();
+  bool should_hide = !devtools_contents && devtools_container_->IsVisible();
+
   devtools_container_->ChangeTabContents(devtools_contents);
-  if (!devtools_contents && devtools_container_->IsVisible()) {
+
+  if (should_show) {
+    if (!devtools_focus_tracker_.get()) {
+      // Install devtools focus tracker when dev tools window is shown for the
+      // first time.
+      devtools_focus_tracker_.reset(
+          new views::ExternalFocusTracker(devtools_container_,
+                                          GetFocusManager()));
+    }
+    devtools_container_->SetVisible(true);
+    contents_split_->Layout();
+  } else if (should_hide) {
     // Store split offset when hiding devtools window only.
     g_browser_process->local_state()->SetInteger(
         prefs::kDevToolsSplitLocation, contents_split_->divider_offset());
+    // Restore focus to the last focused view when hiding devtools window.
+    devtools_focus_tracker_->FocusLastFocusedExternalView();
+
+    devtools_container_->SetVisible(false);
+    contents_split_->Layout();
   }
-  devtools_container_->SetVisible(devtools_contents != NULL);
-  contents_split_->Layout();
 }
 
 void BrowserView::UpdateUIForContents(TabContents* contents) {
