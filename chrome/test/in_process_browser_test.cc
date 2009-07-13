@@ -102,6 +102,8 @@ void InProcessBrowserTest::SetUp() {
   if (single_process_)
     command_line->AppendSwitch(switches::kSingleProcess);
 
+  command_line->AppendSwitch(switches::kDisableWebResources);
+
   command_line->AppendSwitchWithValue(switches::kUserDataDir, user_data_dir);
 
   // For some reason the sandbox wasn't happy running in test mode. These
