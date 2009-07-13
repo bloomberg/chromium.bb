@@ -1099,10 +1099,13 @@ def MakePathRelative(to_file, fro_file, item):
      (len(item) > 0 and item[0] in ('/', '$', '-', '<', '>')):
     return item
   else:
+    # TODO(dglazkov) The backslash/forward-slash replacement at the end is a
+    # temporary measure. This should really be addressed by keeping all paths
+    # in POSIX until actual project generation.
     return os.path.normpath(os.path.join(
         gyp.common.RelativePath(os.path.dirname(fro_file),
                                 os.path.dirname(to_file)),
-                                item))
+                                item)).replace('\\', '/')
 
 
 def MergeLists(to, fro, to_file, fro_file, is_paths=False, append=True):
