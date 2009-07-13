@@ -561,13 +561,8 @@ void AutocompleteEditViewMac::AcceptInput(
 }
 
 void AutocompleteEditViewMac::FocusLocation() {
-  // -makeFirstResponder: will select the entire field_.  If we're
-  // already firstResponder, it's likely that we want to retain the
-  // current selection.
-  if (![field_ currentEditor]) {
-    [[field_ window] makeFirstResponder:field_];
-    DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
-  }
+  [[field_ window] makeFirstResponder:field_];
+  DCHECK_EQ([field_ currentEditor], [[field_ window] firstResponder]);
 }
 
 @implementation AutocompleteFieldDelegate
