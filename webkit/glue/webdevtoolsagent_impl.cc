@@ -123,6 +123,10 @@ void WebDevToolsAgentImpl::Detach() {
   attached_ = false;
 }
 
+void WebDevToolsAgentImpl::OnNavigate() {
+  DebuggerAgentManager::OnNavigate();
+}
+
 void WebDevToolsAgentImpl::SetMainFrameDocumentReady(bool ready) {
   if (!attached_) {
     return;

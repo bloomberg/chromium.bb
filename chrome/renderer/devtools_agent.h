@@ -26,6 +26,8 @@ class DevToolsAgent : public WebDevToolsAgentDelegate {
   DevToolsAgent(int routing_id, RenderView* view);
   virtual ~DevToolsAgent();
 
+  void OnNavigate();
+
   // IPC message interceptor. Called on the Render thread.
   virtual bool OnMessageReceived(const IPC::Message& message);
 

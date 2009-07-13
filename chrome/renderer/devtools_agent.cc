@@ -22,6 +22,13 @@ DevToolsAgent::~DevToolsAgent() {
   agent_for_routing_id_.erase(routing_id_);
 }
 
+void DevToolsAgent::OnNavigate() {
+  WebDevToolsAgent* web_agent = GetWebAgent();
+  if (web_agent) {
+    web_agent->OnNavigate();
+  }
+}
+
 // Called on the Renderer thread.
 bool DevToolsAgent::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;

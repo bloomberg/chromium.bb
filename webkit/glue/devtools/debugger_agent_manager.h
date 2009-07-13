@@ -50,6 +50,8 @@ class DebuggerAgentManager {
 
   static void OnWebViewClosed(WebViewImpl* webview);
 
+  static void OnNavigate();
+
  private:
   DebuggerAgentManager();
   ~DebuggerAgentManager();

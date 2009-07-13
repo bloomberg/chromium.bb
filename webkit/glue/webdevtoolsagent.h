@@ -28,6 +28,8 @@ class WebDevToolsAgent {
 
   virtual void Detach() = 0;
 
+  virtual void OnNavigate() = 0;
+
   virtual void DispatchMessageFromClient(const std::string& class_name,
                                          const std::string& method_name,
                                          const std::string& raw_msg) = 0;

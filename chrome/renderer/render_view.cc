@@ -635,6 +635,9 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   if (!webview())
     return;
 
+  if (devtools_agent_.get())
+    devtools_agent_->OnNavigate();
+
   child_process_logging::ScopedActiveURLSetter url_setter(params.url);
 
   AboutHandler::MaybeHandle(params.url);

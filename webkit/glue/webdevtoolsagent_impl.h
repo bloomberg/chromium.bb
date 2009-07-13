@@ -57,6 +57,7 @@ class WebDevToolsAgentImpl
   // WebDevToolsAgent implementation.
   virtual void Attach();
   virtual void Detach();
+  virtual void OnNavigate();
   virtual void DispatchMessageFromClient(const std::string& class_name,
                                          const std::string& method_name,
                                          const std::string& raw_msg);

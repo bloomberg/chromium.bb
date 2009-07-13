@@ -250,6 +250,13 @@ void DebuggerAgentManager::OnWebViewClosed(WebViewImpl* webview) {
 }
 
 // static
+void DebuggerAgentManager::OnNavigate() {
+  if (in_host_dispatch_handler_) {
+    DebuggerAgentManager::SendContinueCommandToV8();
+  }
+}
+
+// static
 void DebuggerAgentManager::SendCommandToV8(const string16& cmd,
                                            v8::Debug::ClientData* data) {
 #if USE(V8)
