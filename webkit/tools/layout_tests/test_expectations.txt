@@ -2827,3 +2827,9 @@ BUG16410 : LayoutTests/fast/workers/worker-messageport.html = FAIL CRASH
 // WebKit merge 45685:45738
 BUG16241 : LayoutTests/fast/dom/anchor-toString.html = FAIL
 BUG16410 : LayoutTests/http/tests/security/MessagePort/event-listener-context.html = FAIL
+BUG16410 : LayoutTests/fast/events/message-channel-gc-2.html = CRASH
+BUG16410 : LayoutTests/fast/events/message-channel-gc-4.html = CRASH
+BUG16410 : LayoutTests/fast/events/message-channel-listener-circular-ownership.html = CRASH
+BUG16410 : LayoutTests/fast/events/message-port-constructor-for-deleted-document.html = CRASH
+BUG16410 : LayoutTests/fast/events/message-port-deleted-frame.html = CRASH
+BUG16639 : LayoutTests/fast/events/mouseover-mouseout2.html = CRASH
