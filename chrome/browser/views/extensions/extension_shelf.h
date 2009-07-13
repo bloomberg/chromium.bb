@@ -13,7 +13,6 @@
 #include "views/view.h"
 
 class Browser;
-class ExtensionShelfHandle;
 namespace views {
   class Label;
   class MouseEvent;
@@ -22,7 +21,6 @@ namespace views {
 // A shelf that contains Extension toolstrips.
 class ExtensionShelf : public views::View,
                        public ExtensionContainer,
-                       public BrowserBubble::Delegate,
                        public ExtensionShelfModelObserver {
  public:
   explicit ExtensionShelf(Browser* browser);
@@ -30,9 +28,6 @@ class ExtensionShelf : public views::View,
 
   // Get the current model.
   ExtensionShelfModel* model() { return model_.get(); }
-
-  // Return the current active ExtensionShelfHandle (if any).
-  BrowserBubble* GetHandle();
 
   // View
   virtual void Paint(gfx::Canvas* canvas);
@@ -45,10 +40,6 @@ class ExtensionShelf : public views::View,
   virtual void OnExtensionMouseEvent(ExtensionView* view);
   virtual void OnExtensionMouseLeave(ExtensionView* view);
 
-  // BrowserBubble::Delegate
-  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
-  virtual void BubbleBrowserWindowClosed(BrowserBubble* bubble);
-
   // ExtensionShelfModelObserver
   virtual void ToolstripInsertedAt(ExtensionHost* toolstrip, int index);
   virtual void ToolstripRemovingAt(ExtensionHost* toolstrip, int index);
@@ -60,56 +51,36 @@ class ExtensionShelf : public views::View,
   virtual void ExtensionShelfEmpty();
   virtual void ShelfModelReloaded();
 
-  // Dragging toolstrips
-  void DragExtension();
-  void DropExtension(const gfx::Point& pt, bool cancel);
-  void DragHandleTo(const gfx::Point& pt);
-
  protected:
   // View
   virtual void ChildPreferredSizeChanged(View* child);
 
  private:
+  class Toolstrip;
+  friend class Toolstrip;
+  class PlaceholderView;
+
+  // Dragging toolstrips
+  void DropExtension(Toolstrip* handle, const gfx::Point& pt, bool cancel);
+
   // Inits the background bitmap.
   void InitBackground(gfx::Canvas* canvas, const SkRect& subset);
 
-  // Returns the toolstrip at |x| coordinate.  If |x| is < 0, returns
-  // the first toolstrip.  If |x| > the last toolstrip position, the
-  // last toolstrip is returned.
-  ExtensionHost* ToolstripAtX(int x);
+  // Returns the Toolstrip at |x| coordinate.  If |x| is out of bounds, returns
+  // NULL.
+  Toolstrip* ToolstripAtX(int x);
+
+  // Returns the Toolstrip at |index|.
+  Toolstrip* ToolstripAtIndex(int index);
 
   // Returns the toolstrip associated with |view|.
-  ExtensionHost* ToolstripForView(ExtensionView* view);
-
-  // Show / Hide the shelf handle.
-  void ShowShelfHandle();
-  void DoShowShelfHandle();
-  void HideShelfHandle(int delay_ms);
-  void DoHideShelfHandle();
-
-  // Adjust shelf handle size and position.
-  void LayoutShelfHandle();
+  Toolstrip* ToolstripForView(ExtensionView* view);
 
   // Loads initial state from |model_|.
   void LoadFromModel();
 
   // Background bitmap to draw under extension views.
   SkBitmap background_;
-
-  // The current shelf handle.
-  scoped_ptr<BrowserBubble> handle_;
-
-  // Whether to handle is visible;
-  bool handle_visible_;
-
-  // Which child view the handle is currently over.
-  ExtensionHost* current_toolstrip_;
-
-  // Timers for tracking mouse hovering.
-  ScopedRunnableMethodFactory<ExtensionShelf> timer_factory_;
-
-  // A placeholder for a pending drag
-  View* drag_placeholder_view_;
 
   // The model representing the toolstrips on the shelf.
   scoped_ptr<ExtensionShelfModel> model_;

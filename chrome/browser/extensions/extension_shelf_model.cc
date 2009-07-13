@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_shelf_model.h"
 
+#include "base/stl_util-inl.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -11,8 +12,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
-
-/////////////////////////////
 
 ExtensionShelfModel::ExtensionShelfModel(Browser* browser)
     : browser_(browser), ready_(false) {
@@ -40,12 +39,11 @@ ExtensionShelfModel::ExtensionShelfModel(Browser* browser)
 }
 
 ExtensionShelfModel::~ExtensionShelfModel() {
-  int count = toolstrips_.size();
-  while (count) {
-    count--;
-    RemoveToolstripAt(count);
-  }
-  DCHECK(observers_.size() == 0);
+  while (observers_.size())
+    observers_.RemoveObserver(observers_.GetElementAt(0));
+
+  STLDeleteContainerPairFirstPointers(toolstrips_.begin(), toolstrips_.end());
+  toolstrips_.clear();
 }
 
 void ExtensionShelfModel::AddObserver(ExtensionShelfModelObserver* observer) {
@@ -58,12 +56,14 @@ void ExtensionShelfModel::RemoveObserver(
 }
 
 void ExtensionShelfModel::AppendToolstrip(ExtensionHost* toolstrip) {
-  InsertToolstripAt(count(), toolstrip);
+  InsertToolstripAt(count(), toolstrip, NULL);
 }
 
 void ExtensionShelfModel::InsertToolstripAt(int index,
-                                            ExtensionHost* toolstrip) {
-  toolstrips_.insert(toolstrips_.begin() + index, toolstrip);
+                                            ExtensionHost* toolstrip,
+                                            void* data) {
+  toolstrips_.insert(toolstrips_.begin() + index,
+                     ToolstripItem(toolstrip, data));
   if (ready_) {
     FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
                       ToolstripInsertedAt(toolstrip, index));
@@ -79,29 +79,43 @@ void ExtensionShelfModel::RemoveToolstripAt(int index) {
 }
 
 void ExtensionShelfModel::MoveToolstripAt(int index, int to_index) {
+  DCHECK(index >= 0);
+  DCHECK(to_index >= 0);
   if (index == to_index)
     return;
 
-  ExtensionHost* toolstrip = toolstrips_.at(index);
+  ToolstripItem toolstrip = toolstrips_[index];
   toolstrips_.erase(toolstrips_.begin() + index);
   toolstrips_.insert(toolstrips_.begin() + to_index, toolstrip);
 
   FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
-                    ToolstripMoved(toolstrip, index, to_index));
+                    ToolstripMoved(toolstrip.first, index, to_index));
 
   UpdatePrefs();
 }
 
 int ExtensionShelfModel::IndexOfToolstrip(ExtensionHost* toolstrip) {
-  ExtensionToolstrips::iterator i =
-    std::find(toolstrips_.begin(), toolstrips_.end(), toolstrip);
-  if (i == toolstrips_.end())
-    return -1;
-  return i - toolstrips_.begin();
+  ExtensionToolstrips::iterator i;
+  for (i = toolstrips_.begin(); i != toolstrips_.end(); ++i) {
+    if (i->first == toolstrip)
+      return i - toolstrips_.begin();
+  }
+  return -1;
 }
 
 ExtensionHost* ExtensionShelfModel::ToolstripAt(int index) {
-  return toolstrips_[index];
+  DCHECK(index >= 0);
+  return toolstrips_[index].first;
+}
+
+void* ExtensionShelfModel::ToolstripDataAt(int index) {
+  DCHECK(index >= 0);
+  return toolstrips_[index].second;
+}
+
+void ExtensionShelfModel::SetToolstripDataAt(int index, void* data) {
+  DCHECK(index >= 0);
+  toolstrips_[index].second = data;
 }
 
 void ExtensionShelfModel::Observe(NotificationType type,
@@ -201,7 +215,7 @@ void ExtensionShelfModel::SortToolstrips() {
     GURL& url = urls[i];
     for (ExtensionToolstrips::iterator toolstrip = copy.begin();
         toolstrip != copy.end(); ++toolstrip) {
-      if (url == (*toolstrip)->GetURL()) {
+      if (url == (*toolstrip).first->GetURL()) {
         // Note that it's technically possible for the same URL to appear in
         // multiple toolstrips, so we don't do any testing for uniqueness.
         toolstrips_.push_back(*toolstrip);

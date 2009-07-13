@@ -67,8 +67,8 @@ class ExtensionShelfModel : public NotificationObserver {
   // Add |toolstrip| to the end of the shelf.
   void AppendToolstrip(ExtensionHost* toolstrip);
 
-  // Insert |toolstrip| at |index|.
-  void InsertToolstripAt(int index, ExtensionHost* toolstrip);
+  // Insert |toolstrip| and |data| at |index|.
+  void InsertToolstripAt(int index, ExtensionHost* toolstrip, void* data);
 
   // Remove the toolstrip at |index|.
   void RemoveToolstripAt(int index);
@@ -81,6 +81,10 @@ class ExtensionShelfModel : public NotificationObserver {
 
   // Return the toolstrip at |index|.  Returns NULL if index is out of range.
   ExtensionHost* ToolstripAt(int index);
+
+  // Get/Set some arbitrary data associated with a particular toolstrip.
+  void SetToolstripDataAt(int index, void* data);
+  void* ToolstripDataAt(int index);
 
   // NotificationObserver
   virtual void Observe(NotificationType type,
@@ -113,7 +117,8 @@ class ExtensionShelfModel : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   // The Toolstrips loaded in this model. The model owns these objects.
-  typedef std::vector<ExtensionHost*> ExtensionToolstrips;
+  typedef std::pair<ExtensionHost*, void*> ToolstripItem;
+  typedef std::vector<ToolstripItem> ExtensionToolstrips;
   ExtensionToolstrips toolstrips_;
 
   // Our observers.

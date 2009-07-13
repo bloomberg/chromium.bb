@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -64,14 +65,29 @@ static const int kHideDelayMs = 500;
 }  // namespace
 
 
-// A small handle that is used for dragging or otherwise interacting with an
-// extension toolstrip.
-class ExtensionShelfHandle : public views::View {
- public:
-  explicit ExtensionShelfHandle(ExtensionShelf* shelf);
+// A view that holds the place for a toolstrip in the shelf while the toolstrip
+// is being dragged or moved.
+// TODO(erikkay) this should draw a dimmed out version of the toolstrip.
+class ExtensionShelf::PlaceholderView : public views::View {
+public:
+  PlaceholderView() {}
 
-  // The ExtensionView that the handle is attached to.
-  void SetExtensionView(ExtensionView* v);
+  // ExtensionShelf resizes its views to their preferred size at layout,
+  // so just always prefer the current size.
+  gfx::Size GetPreferredSize() { return size(); }
+
+private:
+  DISALLOW_COPY_AND_ASSIGN(PlaceholderView);
+};
+
+// A wrapper class for the ExtensionHost displayed as a toolstrip.
+// The class itself also acts as the View for the handle of the toolstrip
+// it represents.
+class ExtensionShelf::Toolstrip : public views::View,
+                                  public BrowserBubble::Delegate {
+ public:
+  Toolstrip(ExtensionShelf* shelf, ExtensionHost* host);
+  virtual ~Toolstrip();
 
   // View
   virtual void Paint(gfx::Canvas* canvas);
@@ -83,48 +99,128 @@ class ExtensionShelfHandle : public views::View {
   virtual bool OnMouseDragged(const views::MouseEvent& event);
   virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
   virtual bool IsFocusable() const { return true; }
+  virtual void ChildPreferredSizeChanged(View* child);
+
+  // Retrieves the handle for this toolstrip, creating it if necessary.
+  BrowserBubble* GetHandle();
+
+  // Adjust the size and position of the handle.
+  void LayoutHandle();
+
+  // Is the handle for this toolstrip currently visible.
+  bool handle_visible() { return (handle_.get() && handle_->visible()); }
+
+  // Is the toolstrip opened in expanded mode.
+  bool expanded() { return expanded_; }
+
+  // Is the toolstrip being dragged.
+  bool dragging() { return dragging_; }
+
+  // Accessors for the host and its view.
+  ExtensionHost* host() const { return host_; }
+  ExtensionView* view() const { return host_->view(); }
+
+  // The view that's currently displayed in the shelf.  This could be
+  // either the ExtensionView or |placeholder_view_| depending on the
+  // current state.
+  View* GetShelfView() const {
+    if (placeholder_view_)
+      return placeholder_view_;
+    return view();
+  }
+
+  // Detaching the toolstrip from the shelf means that the ExtensionView is
+  // displayed inside of the BrowserBubble rather than the shelf. This may
+  // still visually appear to be part of the shelf (expanded) or completely
+  // separate (dragging).
+  // If |browser| is true, it also will detach/attach to the browser window.
+  void DetachFromShelf(bool browser);
+  void AttachToShelf(bool browser);
+
+  // Show / Hide the shelf handle.
+  void ShowShelfHandle();
+  void DoShowShelfHandle();
+  void HideShelfHandle(int delay_ms);
+  void DoHideShelfHandle();
+  void StopHandleTimer();
+
+  // BrowserBubble::Delegate
+  virtual void BubbleBrowserWindowMoved(BrowserBubble* bubble);
+  virtual void BubbleBrowserWindowClosed(BrowserBubble* bubble);
 
  private:
-  ExtensionShelf* shelf_;
-  ExtensionView* extension_view_;
+  // The actual renderer that this toolstrip contains.
+  ExtensionHost* host_;
+
+  // The handle is a BrowserBubble so that it can exist as an independent,
+  // floating window.  It also acts as the container for the ExtensionView when
+  // it's being dragged.
+  scoped_ptr<BrowserBubble> handle_;
+
+  // Used for drawing the name of the extension in the handle.
   scoped_ptr<views::Label> title_;
+
+  // Pointer back to the containing shelf.
+  ExtensionShelf* shelf_;
+
+  // When dragging, a placeholder view is put into the shelf to hold space
+  // for the ExtensionView.  This view is parent owned when it's in the view
+  // hierarchy, so there's no ownership issues here.
+  PlaceholderView* placeholder_view_;
+
+  // Current state of the toolstrip, currently can't both be expanded and
+  // dragging.
+  // TODO(erikkay) Support dragging while expanded.
   bool dragging_;
+  bool expanded_;
+
+  // If dragging, where did the drag start from.
   gfx::Point initial_drag_location_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionShelfHandle);
+  // Timers for tracking mouse hovering.
+  ScopedRunnableMethodFactory<ExtensionShelf::Toolstrip> timer_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(Toolstrip);
 };
 
-ExtensionShelfHandle::ExtensionShelfHandle(ExtensionShelf* shelf)
-    : shelf_(shelf), extension_view_(NULL), dragging_(false) {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+ExtensionShelf::Toolstrip::Toolstrip(ExtensionShelf* shelf,
+                                     ExtensionHost* host)
+    : host_(host),
+      shelf_(shelf),
+      placeholder_view_(NULL),
+      dragging_(false),
+      expanded_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)) {
+  DCHECK(host->view());
+  // We're owned by shelf_, not the bubble that we get inserted in and out of.
+  SetParentOwned(false);
 
+  std::wstring name = UTF8ToWide(host_->extension()->name());
   // |title_| isn't actually put in the view hierarchy.  We just use it
   // to draw in place.  The reason for this is so that we can properly handle
   // the various mouse events necessary for hovering and dragging.
-  title_.reset(new views::Label(L"", rb.GetFont(ResourceBundle::BaseFont)));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  title_.reset(new views::Label(name, rb.GetFont(ResourceBundle::BaseFont)));
   title_->SetColor(kHandleTextColor);
   title_->SetDrawHighlighted(true);
   title_->SetHighlightColor(kHandleTextHighlightColor);
   title_->SetBounds(kHandlePadding, kHandlePadding, 100, 100);
   title_->SizeToPreferredSize();
-}
 
-void ExtensionShelfHandle::SetExtensionView(ExtensionView* v) {
-  DCHECK(v->extension());
-  extension_view_ = v;
-  if (!extension_view_->extension())
-    return;
-  title_->SetText(UTF8ToWide(extension_view_->extension()->name()));
-  title_->SizeToPreferredSize();
   SizeToPreferredSize();
 }
 
-void ExtensionShelfHandle::Paint(gfx::Canvas* canvas) {
+ExtensionShelf::Toolstrip::~Toolstrip() {
+  if (handle_.get() && handle_->attached())
+    handle_->DetachFromBrowser();
+}
+
+void ExtensionShelf::Toolstrip::Paint(gfx::Canvas* canvas) {
   canvas->FillRectInt(kBackgroundColor, 0, 0, width(), height());
   canvas->FillRectInt(kBorderColor, 0, 0, width(), 1);
   canvas->FillRectInt(kBorderColor, 0, 0, 1, height() - 1);
   canvas->FillRectInt(kBorderColor, width() - 1, 0, 1, height() - 1);
-  int ext_width = extension_view_->width() + kToolstripPadding +
+  int ext_width = view()->width() + kToolstripPadding +
       kToolstripDividerWidth;
   if (ext_width < width()) {
     canvas->FillRectInt(kBorderColor, ext_width, height() - 1,
@@ -141,57 +237,66 @@ void ExtensionShelfHandle::Paint(gfx::Canvas* canvas) {
   }
 }
 
-gfx::Size ExtensionShelfHandle::GetPreferredSize() {
+gfx::Size ExtensionShelf::Toolstrip::GetPreferredSize() {
   gfx::Size sz = title_->GetPreferredSize();
-  if (extension_view_) {
-    int width = std::max(extension_view_->width() + 2, sz.width());
-    sz.set_width(width);
-  }
+  int width = std::max(view()->width() + 2, sz.width());
+  sz.set_width(width);
   sz.Enlarge(kHandlePadding * 2, kHandlePadding * 2);
   if (dragging_) {
-    gfx::Size extension_size = extension_view_->GetPreferredSize();
+    gfx::Size extension_size = view()->GetPreferredSize();
     sz.Enlarge(0, extension_size.height() + 2);
+  } else if (expanded_) {
+    // TODO(erikkay) these sizes are a temporary hack until we can get the
+    // size from the extension itself.
+    const int tempHeight = 200;
+    const int tempWidth = 400;
+    int width = std::max(sz.width(), tempWidth);
+    sz.set_width(width);
+    gfx::Size extension_size = view()->GetPreferredSize();
+    sz.Enlarge(0, extension_size.height() + 2 + tempHeight);
   }
   return sz;
 }
 
-void ExtensionShelfHandle::Layout() {
-  if (dragging_) {
+void ExtensionShelf::Toolstrip::Layout() {
+  if (dragging_ || expanded_) {
     int y = title_->bounds().bottom() + kHandlePadding + 1;
-    extension_view_->SetBounds(1,
-                               y,
-                               extension_view_->width(),
-                               extension_view_->height());
+    view()->SetBounds(1, y, view()->width(), view()->height());
   }
 }
 
-void ExtensionShelfHandle::OnMouseEntered(const views::MouseEvent& event) {
-  DCHECK(extension_view_);
-  shelf_->OnExtensionMouseEvent(extension_view_);
+void ExtensionShelf::Toolstrip::OnMouseEntered(const views::MouseEvent& event) {
+  if (dragging_ || expanded_)
+    return;
+  ShowShelfHandle();
 }
 
-void ExtensionShelfHandle::OnMouseExited(const views::MouseEvent& event) {
-  DCHECK(extension_view_);
-  shelf_->OnExtensionMouseLeave(extension_view_);
+void ExtensionShelf::Toolstrip::OnMouseExited(const views::MouseEvent& event) {
+  if (dragging_ || expanded_)
+    return;
+  HideShelfHandle(kHideDelayMs);
 }
 
-bool ExtensionShelfHandle::OnMousePressed(const views::MouseEvent& event) {
+bool ExtensionShelf::Toolstrip::OnMousePressed(const views::MouseEvent& event) {
   initial_drag_location_ = event.location();
   return true;
 }
 
-bool ExtensionShelfHandle::OnMouseDragged(const views::MouseEvent& event) {
-  if (!dragging_) {
+bool ExtensionShelf::Toolstrip::OnMouseDragged(const views::MouseEvent& event) {
+  if (expanded_) {
+    // Do nothing for now.
+  } else if (!dragging_) {
     int y_delta = abs(initial_drag_location_.y() - event.location().y());
     int x_delta = abs(initial_drag_location_.x() - event.location().x());
     if (y_delta > GetVerticalDragThreshold() ||
         x_delta > GetHorizontalDragThreshold()) {
       dragging_ = true;
-      shelf_->DragExtension();
+      StopHandleTimer();
+      DetachFromShelf(true);
     }
   } else {
     // When freely dragging a window, you can really only trust the
-    // actual screen point.  Coordinate conversions, just don't work.
+    // actual screen point.  Local coordinate conversions don't work.
     gfx::Point screen = views::Screen::GetCursorScreenPoint();
 
     // However, the handle is actually a child of the browser window
@@ -200,13 +305,16 @@ bool ExtensionShelfHandle::OnMouseDragged(const views::MouseEvent& event) {
     views::View::ConvertPointToScreen(shelf_->GetRootView(), &origin);
     screen.set_x(screen.x() - origin.x() - initial_drag_location_.x());
     screen.set_y(screen.y() - origin.y() - initial_drag_location_.y());
-    shelf_->DragHandleTo(screen);
+
+    // TODO(erikkay) as this gets dragged around, update the placeholder view
+    // on the shelf to show where it will get dropped to.
+    handle_->MoveTo(screen.x(), screen.y());
   }
   return true;
 }
 
-void ExtensionShelfHandle::OnMouseReleased(const views::MouseEvent& event,
-                                           bool canceled) {
+void ExtensionShelf::Toolstrip::OnMouseReleased(const views::MouseEvent& event,
+                                                bool canceled) {
   if (dragging_) {
     views::View::OnMouseReleased(event, canceled);
     dragging_ = false;
@@ -215,37 +323,165 @@ void ExtensionShelfHandle::OnMouseReleased(const views::MouseEvent& event,
     gfx::Point loc = event.location();
     View::ConvertPointToScreen(this, &loc);
     View::ConvertPointToView(NULL, shelf_, &loc);
-    shelf_->DropExtension(loc, canceled);
+    shelf_->DropExtension(this, loc, canceled);
+    AttachToShelf(true);
+  } else {
+#if 0
+    // TODO(erikkay) implementation currently in progress
+    expanded_ = !expanded_;
+    if (expanded_) {
+      StopHandleTimer();
+      DetachFromShelf(false);
+      LayoutHandle();
+    } else {
+      AttachToShelf(false);
+    }
+#endif
   }
 }
 
-////////////////////////////////////////////////
+BrowserBubble* ExtensionShelf::Toolstrip::GetHandle() {
+  if (!handle_.get()) {
+    handle_.reset(new BrowserBubble(this, shelf_->GetWidget(),
+                                    gfx::Point(0, 0)));
+    handle_->set_delegate(this);
+    LayoutHandle();
+  }
+  return handle_.get();
+}
+
+void ExtensionShelf::Toolstrip::LayoutHandle() {
+  if (!handle_.get())
+    return;
+
+  int handle_width = std::max(view()->width(), width());
+  gfx::Point origin(-kToolstripPadding, -(height() + kToolstripPadding - 1));
+  if (expanded_) {
+    origin.set_y(-(height() + kToolstripPadding - 1));
+    views::View::ConvertPointToView(GetShelfView(), shelf_->GetRootView(),
+                                    &origin);
+  } else {
+    views::View::ConvertPointToWidget(view(), &origin);
+  }
+  SetBounds(0, 0, handle_width, height());
+  handle_->SetBounds(origin.x(), origin.y(), handle_width, height());
+  handle_->ResizeToView();
+}
+
+void ExtensionShelf::Toolstrip::ChildPreferredSizeChanged(View* child) {
+  if (child == view())
+    child->SizeToPreferredSize();
+}
+
+void ExtensionShelf::Toolstrip::BubbleBrowserWindowMoved(BrowserBubble* bubble)
+{
+  HideShelfHandle(0);
+}
+
+void ExtensionShelf::Toolstrip::BubbleBrowserWindowClosed(BrowserBubble* bubble)
+{
+  HideShelfHandle(0);
+}
+
+void ExtensionShelf::Toolstrip::DetachFromShelf(bool browserDetach) {
+  DCHECK(!placeholder_view_);
+  if (browserDetach && handle_->attached())
+    handle_->DetachFromBrowser();
+
+  // Construct a placeholder view to replace the view.
+  placeholder_view_ = new PlaceholderView();
+  placeholder_view_->SetBounds(view()->bounds());
+  shelf_->AddChildView(placeholder_view_);
+
+  AddChildView(view());
+  SizeToPreferredSize();
+  handle_->ResizeToView();
+  Layout();
+}
+
+void ExtensionShelf::Toolstrip::AttachToShelf(bool browserAttach) {
+  if (browserAttach && !handle_->attached())
+    handle_->AttachToBrowser();
+
+  // Move the view back into the shelf and remove the old placeholder.
+  shelf_->AddChildView(view());
+
+  // The size of the view may have changed, so just set the position.
+  view()->SetX(placeholder_view_->x());
+  view()->SetY(placeholder_view_->y());
+
+  // Remove the old placeholder.
+  shelf_->RemoveChildView(placeholder_view_);
+  delete placeholder_view_;
+  placeholder_view_ = NULL;
+
+  SizeToPreferredSize();
+  Layout();
+  shelf_->Layout();
+}
+
+void ExtensionShelf::Toolstrip::DoShowShelfHandle() {
+  GetHandle();
+  if (!handle_->visible()) {
+    LayoutHandle();
+    handle_->Show();
+  }
+}
+
+void ExtensionShelf::Toolstrip::DoHideShelfHandle() {
+  if (!handle_visible() || dragging_ || expanded_)
+    return;
+  handle_->Hide();
+  if (handle_->attached())
+    handle_->DetachFromBrowser();
+  handle_.reset(NULL);
+}
+
+void ExtensionShelf::Toolstrip::StopHandleTimer() {
+  if (!timer_factory_.empty())
+    timer_factory_.RevokeAll();
+}
+
+void ExtensionShelf::Toolstrip::ShowShelfHandle() {
+  StopHandleTimer();
+  if (handle_visible())
+    return;
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      timer_factory_.NewRunnableMethod(
+          &ExtensionShelf::Toolstrip::DoShowShelfHandle),
+      1000);
+}
+
+void ExtensionShelf::Toolstrip::HideShelfHandle(int delay_ms) {
+  StopHandleTimer();
+  if (!handle_visible() || dragging_ || expanded_)
+    return;
+  if (delay_ms) {
+    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+        timer_factory_.NewRunnableMethod(
+            &ExtensionShelf::Toolstrip::DoHideShelfHandle),
+        delay_ms);
+  } else {
+    DoHideShelfHandle();
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 ExtensionShelf::ExtensionShelf(Browser* browser)
-    : handle_(NULL),
-      handle_visible_(false),
-      current_toolstrip_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(timer_factory_(this)),
-      drag_placeholder_view_(NULL),
-      model_(new ExtensionShelfModel(browser)) {
+    : model_(new ExtensionShelfModel(browser)) {
   model_->AddObserver(this);
   LoadFromModel();
   EnableCanvasFlippingForRTLUI(true);
 }
 
 ExtensionShelf::~ExtensionShelf() {
-  model_->RemoveObserver(this);
-}
-
-BrowserBubble* ExtensionShelf::GetHandle() {
-  if (!handle_.get() && current_toolstrip_) {
-    ExtensionShelfHandle* handle_view = new ExtensionShelfHandle(this);
-    handle_view->SetExtensionView(current_toolstrip_->view());
-    handle_.reset(new BrowserBubble(handle_view, GetWidget(),
-                                    gfx::Point(0, 0)));
-    handle_->set_delegate(this);
+  int count = model_->count();
+  for (int i = 0; i < count; ++i) {
+    delete ToolstripAtIndex(i);
+    model_->SetToolstripDataAt(i, NULL);
   }
-  return handle_.get();
+  model_->RemoveObserver(this);
 }
 
 void ExtensionShelf::Paint(gfx::Canvas* canvas) {
@@ -287,7 +523,11 @@ gfx::Size ExtensionShelf::GetPreferredSize() {
 }
 
 void ExtensionShelf::ChildPreferredSizeChanged(View* child) {
-  Layout();
+  Toolstrip *toolstrip = ToolstripForView(static_cast<ExtensionView*>(child));
+  if (!toolstrip)
+    return;
+  if (!toolstrip->handle_visible())
+    Layout();
 }
 
 void ExtensionShelf::Layout() {
@@ -302,36 +542,35 @@ void ExtensionShelf::Layout() {
   int count = model_->count();
   for (int i = 0; i < count; ++i) {
     x += kToolstripPadding;  // left padding
-    ExtensionHost* toolstrip = model_->ToolstripAt(i);
-    ExtensionView* extension_view = toolstrip->view();
-    gfx::Size pref = extension_view->GetPreferredSize();
+    Toolstrip* toolstrip = ToolstripAtIndex(i);
+    if (!toolstrip)  // can be NULL while in the process of removing
+      continue;
+    View* view = toolstrip->GetShelfView();
+    gfx::Size pref = view->GetPreferredSize();
     int next_x = x + pref.width() + kToolstripPadding;  // right padding
-    extension_view->set_is_clipped(next_x >= max_x);
-    extension_view->SetBounds(x, y, pref.width(), content_height);
-    extension_view->Layout();
+    if (view == toolstrip->view())
+      toolstrip->view()->set_is_clipped(next_x >= max_x);
+    view->SetBounds(x, y, pref.width(), content_height);
+    view->Layout();
+    if (toolstrip->handle_visible())
+      toolstrip->LayoutHandle();
     x = next_x + kToolstripDividerWidth;
   }
-  if (handle_.get())
-    LayoutShelfHandle();
   SchedulePaint();
 }
 
 void ExtensionShelf::OnMouseEntered(const views::MouseEvent& event) {
-  ExtensionHost* toolstrip = ToolstripAtX(event.x());
-  if (toolstrip) {
-    current_toolstrip_ = toolstrip;
-    ShowShelfHandle();
-  }
 }
 
 void ExtensionShelf::OnMouseExited(const views::MouseEvent& event) {
-  HideShelfHandle(kHideDelayMs);
 }
 
-void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* toolstrip,
+void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* host,
                                          int index) {
+  model_->SetToolstripDataAt(index, new Toolstrip(this, host));
+
   bool had_views = GetChildViewCount() > 0;
-  ExtensionView* view = toolstrip->view();
+  ExtensionView* view = host->view();
   if (!background_.empty())
     view->SetBackground(background_);
   AddChildView(view);
@@ -341,18 +580,25 @@ void ExtensionShelf::ToolstripInsertedAt(ExtensionHost* toolstrip,
   Layout();
 }
 
-void ExtensionShelf::ToolstripRemovingAt(ExtensionHost* toolstrip,
+void ExtensionShelf::ToolstripRemovingAt(ExtensionHost* host,
                                          int index) {
-  ExtensionView* view = toolstrip->view();
+  // Delete the Toolstrip view and remove it from the model.
+  Toolstrip* toolstrip = ToolstripAtIndex(index);
+  View* view = toolstrip->GetShelfView();
   RemoveChildView(view);
+  delete toolstrip;
+  model_->SetToolstripDataAt(index, NULL);
+
+  // Technically, the toolstrip is still in the model at this point, but
+  // the Layout code handles this case.
   Layout();
 }
 
-void ExtensionShelf::ToolstripDraggingFrom(ExtensionHost* toolstrip,
+void ExtensionShelf::ToolstripDraggingFrom(ExtensionHost* host,
                                            int index) {
 }
 
-void ExtensionShelf::ToolstripMoved(ExtensionHost* toolstrip,
+void ExtensionShelf::ToolstripMoved(ExtensionHost* host,
                                     int from_index,
                                     int to_index) {
   Layout();
@@ -373,83 +619,32 @@ void ExtensionShelf::ShelfModelReloaded() {
 }
 
 void ExtensionShelf::OnExtensionMouseEvent(ExtensionView* view) {
-  // Ignore these events when dragging.
-  if (drag_placeholder_view_)
-    return;
-  ExtensionHost *toolstrip = ToolstripForView(view);
-  if (toolstrip != current_toolstrip_)
-    current_toolstrip_ = toolstrip;
-  if (current_toolstrip_)
-    ShowShelfHandle();
+  Toolstrip *toolstrip = ToolstripForView(view);
+  if (toolstrip)
+    toolstrip->ShowShelfHandle();
 }
 
 void ExtensionShelf::OnExtensionMouseLeave(ExtensionView* view) {
-  // Ignore these events when dragging.
-  if (drag_placeholder_view_)
-    return;
-  ExtensionHost *toolstrip = ToolstripForView(view);
-  if (toolstrip == current_toolstrip_)
-    HideShelfHandle(kHideDelayMs);
+  Toolstrip *toolstrip = ToolstripForView(view);
+  if (toolstrip)
+    toolstrip->HideShelfHandle(kHideDelayMs);
 }
 
-void ExtensionShelf::BubbleBrowserWindowMoved(BrowserBubble* bubble) {
-  HideShelfHandle(0);
-}
-
-void ExtensionShelf::BubbleBrowserWindowClosed(BrowserBubble* bubble) {
-  // We'll be going away shortly, so no need to do any other teardown here.
-  HideShelfHandle(0);
-}
-
-void ExtensionShelf::DragExtension() {
-  // Construct a placeholder view to replace the view.
-  // TODO(erikkay) the placeholder should draw a dimmed version of the
-  // extension view
-  drag_placeholder_view_ = new View();
-  drag_placeholder_view_->SetBounds(current_toolstrip_->view()->bounds());
-  AddChildView(drag_placeholder_view_);
-
-  // Now move the view into the handle's widget.
-  ExtensionShelfHandle* handle_view =
-      static_cast<ExtensionShelfHandle*>(GetHandle()->view());
-  handle_view->AddChildView(current_toolstrip_->view());
-  handle_view->SizeToPreferredSize();
-  handle_->ResizeToView();
-  handle_view->Layout();
-  handle_->DetachFromBrowser();
-  SchedulePaint();
-}
-
-void ExtensionShelf::DropExtension(const gfx::Point& pt, bool cancel) {
-  handle_->AttachToBrowser();
-
-  // Replace the placeholder view with the original.
-  AddChildView(current_toolstrip_->view());
-  current_toolstrip_->view()->SetBounds(drag_placeholder_view_->bounds());
-  RemoveChildView(drag_placeholder_view_);
-  delete drag_placeholder_view_;
-  drag_placeholder_view_ = NULL;
-
-  ExtensionHost* toolstrip = ToolstripAtX(pt.x());
-  if (toolstrip) {
-    int from = model_->IndexOfToolstrip(current_toolstrip_);
-    int to = model_->IndexOfToolstrip(toolstrip);
-    model_->MoveToolstripAt(from, to);
+void ExtensionShelf::DropExtension(Toolstrip* toolstrip,
+                                   const gfx::Point& pt, bool cancel) {
+  Toolstrip* dest_toolstrip = ToolstripAtX(pt.x());
+  if (!dest_toolstrip) {
+    if (pt.x() > 0)
+      dest_toolstrip = ToolstripAtIndex(model_->count() - 1);
+    else
+      dest_toolstrip = ToolstripAtIndex(0);
   }
-
-  ExtensionShelfHandle* handle_view =
-      static_cast<ExtensionShelfHandle*>(GetHandle()->view());
-  handle_view->SizeToPreferredSize();
-  handle_view->Layout();
-  handle_->ResizeToView();
-  LayoutShelfHandle();
-  SchedulePaint();
-}
-
-void ExtensionShelf::DragHandleTo(const gfx::Point& pt) {
-  handle_->MoveTo(pt.x(), pt.y());
-  // TODO(erikkay) as this gets dragged around, update the placeholder view
-  // on the shelf to show where it will get dropped to.
+  if (toolstrip == dest_toolstrip)
+    return;
+  int from = model_->IndexOfToolstrip(toolstrip->host());
+  int to = model_->IndexOfToolstrip(dest_toolstrip->host());
+  DCHECK(from != to);
+  model_->MoveToolstripAt(from, to);
 }
 
 void ExtensionShelf::InitBackground(gfx::Canvas* canvas,
@@ -484,103 +679,42 @@ void ExtensionShelf::InitBackground(gfx::Canvas* canvas,
   // Tell all extension views about the new background
   int count = model_->count();
   for (int i = 0; i < count; ++i)
-    model_->ToolstripAt(i)->view()->SetBackground(background_);
+    ToolstripAtIndex(i)->view()->SetBackground(background_);
 }
 
-ExtensionHost* ExtensionShelf::ToolstripAtX(int x) {
+ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripAtX(int x) {
   int count = model_->count();
   if (count == 0)
     return NULL;
 
   if (x < 0)
-    return model_->ToolstripAt(0);
+    return NULL;
 
   for (int i = 0; i < count; ++i) {
-    ExtensionHost* toolstrip = model_->ToolstripAt(i);
-    ExtensionView* view = toolstrip->view();
+    Toolstrip* toolstrip = ToolstripAtIndex(i);
+    View* view = toolstrip->GetShelfView();
     if (x > (view->x() + view->width() + kToolstripPadding))
       continue;
     return toolstrip;
   }
 
-  return model_->ToolstripAt(count - 1);
+  return NULL;
 }
 
-ExtensionHost* ExtensionShelf::ToolstripForView(ExtensionView* view) {
+ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripAtIndex(int index) {
+  return static_cast<Toolstrip*>(model_->ToolstripDataAt(index));
+}
+
+ExtensionShelf::Toolstrip* ExtensionShelf::ToolstripForView(
+    ExtensionView* view) {
   int count = model_->count();
   for (int i = 0; i < count; ++i) {
-    ExtensionHost* toolstrip = model_->ToolstripAt(i);
+    Toolstrip* toolstrip = ToolstripAtIndex(i);
     if (view == toolstrip->view())
       return toolstrip;
   }
   NOTREACHED();
   return NULL;
-}
-
-void ExtensionShelf::ShowShelfHandle() {
-  if (drag_placeholder_view_)
-    return;
-  if (!timer_factory_.empty())
-    timer_factory_.RevokeAll();
-  if (handle_visible_) {
-    // The contents may have changed, even though the handle is still visible.
-    LayoutShelfHandle();
-    return;
-  }
-  MessageLoop::current()->PostDelayedTask(FROM_HERE,
-      timer_factory_.NewRunnableMethod(&ExtensionShelf::DoShowShelfHandle),
-      1000);
-}
-
-void ExtensionShelf::DoShowShelfHandle() {
-  if (!handle_visible_) {
-    handle_visible_ = true;
-    LayoutShelfHandle();
-    handle_->Show();
-  }
-}
-
-void ExtensionShelf::HideShelfHandle(int delay_ms) {
-  if (drag_placeholder_view_)
-    return;
-  if (!timer_factory_.empty())
-    timer_factory_.RevokeAll();
-  if (!handle_visible_)
-    return;
-  if (delay_ms) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-        timer_factory_.NewRunnableMethod(&ExtensionShelf::DoHideShelfHandle),
-        delay_ms);
-  } else {
-    DoHideShelfHandle();
-  }
-}
-
-void ExtensionShelf::DoHideShelfHandle() {
-  if (handle_visible_) {
-    handle_visible_ = false;
-    handle_->Hide();
-    handle_->DetachFromBrowser();
-    handle_.reset(NULL);
-    current_toolstrip_ = NULL;
-  }
-}
-
-void ExtensionShelf::LayoutShelfHandle() {
-  if (current_toolstrip_) {
-    GetHandle();  // ensure that the handle exists since we delete on hide
-    ExtensionShelfHandle* handle_view =
-        static_cast<ExtensionShelfHandle*>(GetHandle()->view());
-    handle_view->SetExtensionView(current_toolstrip_->view());
-    int width = std::max(current_toolstrip_->view()->width(),
-                         handle_view->width());
-    gfx::Point origin(-kToolstripPadding,
-                      -(handle_view->height() + kToolstripPadding - 1));
-    views::View::ConvertPointToWidget(current_toolstrip_->view(), &origin);
-    handle_view->SetBounds(0, 0, width, handle_view->height());
-    handle_->SetBounds(origin.x(), origin.y(),
-                       width, handle_view->height());
-  }
 }
 
 void ExtensionShelf::LoadFromModel() {

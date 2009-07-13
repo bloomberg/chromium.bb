@@ -39,6 +39,7 @@ class BrowserBubble {
   // Normally called automatically during construction, but if DetachFromBrowser
   // has been called manually, then this call will reattach.
   void AttachToBrowser();
+  bool attached() const { return attached_; }
 
   // Get/Set the delegate.
   Delegate* delegate() const { return delegate_; }
@@ -52,7 +53,7 @@ class BrowserBubble {
   // Show or hide the bubble.
   void Show();
   void Hide();
-  bool is_visible() const { return visible_; }
+  bool visible() const { return visible_; }
 
   // The contained view.
   views::View* view() const { return view_; }
