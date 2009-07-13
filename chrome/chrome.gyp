@@ -4372,7 +4372,7 @@
               'SubSystem': '2',
             },
             'VCManifestTool': {
-              'AdditionalManifestFiles': '$(SolutionDir)\\app\\chrome.dll.manifest',
+              'AdditionalManifestFiles': '$(ProjectDir)\\app\\chrome.dll.manifest',
             },
           },
           'configurations': {
