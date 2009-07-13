@@ -824,7 +824,8 @@ void TabStrip::TabSelectedAt(TabContents* old_contents,
   }
 }
 
-void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index) {
+void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index,
+                        bool pinned_state_changed) {
   Tab* tab = GetTabAt(from_index);
   tab_data_.erase(tab_data_.begin() + from_index);
   TabData data = {tab, gfx::Rect()};

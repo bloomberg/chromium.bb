@@ -1671,7 +1671,8 @@ void Browser::TabSelectedAt(TabContents* old_contents,
 
 void Browser::TabMoved(TabContents* contents,
                        int from_index,
-                       int to_index) {
+                       int to_index,
+                       bool pinned_state_changed) {
   DCHECK(from_index >= 0 && to_index >= 0);
   // Notify the history service.
   SyncHistoryWithTabs(std::min(from_index, to_index));

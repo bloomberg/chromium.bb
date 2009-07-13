@@ -251,7 +251,8 @@ void TabOverviewController::TabDetachedAt(TabContents* contents, int index) {
 
 void TabOverviewController::TabMoved(TabContents* contents,
                                      int from_index,
-                                     int to_index) {
+                                     int to_index,
+                                     bool pinned_state_changed) {
   if (!grid_->modifying_model())
     grid_->CancelDrag();
 

@@ -129,7 +129,8 @@ void BrowserTabStrip::TabSelectedAt(TabContents* old_contents,
 
 void BrowserTabStrip::TabMoved(TabContents* contents,
                                int from_index,
-                               int to_index) {
+                               int to_index,
+                               bool pinned_state_changed) {
   TabStrip2::MoveTabAt(from_index, to_index);
 }
 

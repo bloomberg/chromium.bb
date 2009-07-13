@@ -33,7 +33,8 @@ class TabStripModelObserverBridge : public TabStripModelObserver {
                              bool user_gesture);
   virtual void TabMoved(TabContents* contents,
                         int from_index,
-                        int to_index);
+                        int to_index,
+                        bool pinned_state_changed);
   virtual void TabChangedAt(TabContents* contents, int index,
                             bool loading_only);
   virtual void TabStripEmpty();

@@ -150,9 +150,9 @@ void ExtensionBrowserEventRouter::TabCreatedAt(TabContents* contents,
 
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(&contents->controller()));
-  
+
   // Observing TAB_CONTENTS_DESTROYED is necessary because it's
-  // possible for tabs to be created, detached and then destroyed without 
+  // possible for tabs to be created, detached and then destroyed without
   // ever having been re-attached and closed. This happens in the case of
   // a devtools TabContents that is opened in window, docked, then closed.
   registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
@@ -254,7 +254,8 @@ void ExtensionBrowserEventRouter::TabSelectedAt(TabContents* old_contents,
 
 void ExtensionBrowserEventRouter::TabMoved(TabContents* contents,
                                            int from_index,
-                                           int to_index) {
+                                           int to_index,
+                                           bool pinned_state_changed) {
   ListValue args;
   args.Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
 

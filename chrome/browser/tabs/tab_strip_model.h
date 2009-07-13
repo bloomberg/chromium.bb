@@ -72,20 +72,12 @@ class TabStripModelObserver {
                              int index,
                              bool user_gesture) { }
 
-  // The specified TabContents at |from_index| was moved to |to_index|.
-  // TODO(sky): nuke and convert all to 4 arg variant.
-  virtual void TabMoved(TabContents* contents,
-                        int from_index,
-                        int to_index) { }
-
   // The specified TabContents at |from_index| was moved to |to_index|. If
   // the pinned state of the tab is changing |pinned_state_changed| is true.
   virtual void TabMoved(TabContents* contents,
                         int from_index,
                         int to_index,
-                        bool pinned_state_changed) {
-    TabMoved(contents, from_index, to_index);
-  }
+                        bool pinned_state_changed) { }
 
   // The specified TabContents at |index| changed in some way. |contents| may
   // be an entirely different object and the old value is no longer available

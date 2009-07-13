@@ -61,7 +61,8 @@ void TabStripModelObserverBridge::TabSelectedAt(TabContents* old_contents,
 
 void TabStripModelObserverBridge::TabMoved(TabContents* contents,
                                            int from_index,
-                                           int to_index) {
+                                           int to_index,
+                                           bool pinned_state_changed) {
   if ([controller_ respondsToSelector:
           @selector(tabMovedWithContents:fromIndex:toIndex:)]) {
     [controller_ tabMovedWithContents:contents
