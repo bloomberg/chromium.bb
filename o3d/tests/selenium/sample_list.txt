@@ -89,6 +89,7 @@ medium  instancing                        screenshot pdiff_threshold(14300)
 medium  juggler                           screenshot downsample(1)
 medium  julia                             screenshot
 small   multiple-views                    screenshot pdiff_threshold(1900)
+medium  old-school-shadows                screenshot pdiff_threshold(2000)
 medium  particles                         screenshot pdiff_threshold(35500)
 medium  primitives                        screenshot pdiff_threshold(17200) pdiff_threshold_mac(20000) colorfactor(.7)
 medium  procedural-texture                screenshot pdiff_threshold(1300)

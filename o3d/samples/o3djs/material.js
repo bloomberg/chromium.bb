@@ -337,6 +337,42 @@ o3djs.material.createBasicMaterial = function(pack,
 };
 
 /**
+ * This function creates a constant material. No lighting. It is especially
+ * useful for debugging shapes and 2d UI elements.
+ *
+ * @param {!o3d.Pack} pack Pack to manage created objects.
+ * @param {!o3djs.rendergraph.ViewInfo} viewInfo as returned from
+ *     o3djs.rendergraph.createBasicView.
+ * @param {(!o3djs.math.Vector4|!o3d.Texture)} colorOrTexture Either a color in
+ *     the format [r, g, b, a] or an O3D texture.
+ * @param {boolean} opt_transparent Whether or not the material is transparent.
+ *     Defaults to false.
+ * @return {!o3d.Material} The created material.
+ */
+o3djs.material.createConstantMaterial = function(pack,
+                                                 viewInfo,
+                                                 colorOrTexture,
+                                                 opt_transparent) {
+  var material = pack.createObject('Material');
+  material.drawList = opt_transparent ? viewInfo.zOrderedDrawList :
+                                        viewInfo.performanceDrawList;
+
+  // If it has a length assume it's a color, otherwise assume it's a texture.
+  if (colorOrTexture.length) {
+    material.createParam('emissive', 'ParamFloat4').value = colorOrTexture;
+  } else {
+    var paramSampler = material.createParam('emissiveSampler', 'ParamSampler');
+    var sampler = pack.createObject('Sampler');
+    paramSampler.value = sampler;
+    sampler.texture = colorOrTexture;
+  }
+
+  o3djs.material.attachStandardEffect(pack, material, viewInfo, 'constant');
+
+  return material;
+};
+
+/**
  * This function creates 2 color procedureal texture material.
  *
  * @see o3djs.material.createBasicMaterial
@@ -344,7 +380,7 @@ o3djs.material.createBasicMaterial = function(pack,
  * @param {!o3d.Pack} pack Pack to manage created objects.
  * @param {!o3djs.rendergraph.ViewInfo} viewInfo as returned from
  *     o3djs.rendergraph.createBasicView.
- * @param {!o3djs.math.Vector4} opt_color1 a color in the format [r, g, b, a]. 
+ * @param {!o3djs.math.Vector4} opt_color1 a color in the format [r, g, b, a].
  *     Defaults to a medium blue-green.
  * @param {!o3djs.math.Vector4} opt_color2 a color in the format [r, g, b, a].
  *     Defaults to a light blue-green.

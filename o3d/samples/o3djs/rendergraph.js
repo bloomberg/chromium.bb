@@ -173,8 +173,8 @@ o3djs.rendergraph.ViewInfo = function(pack,
                                       opt_viewport,
                                       opt_performanceDrawList,
                                       opt_zOrderedDrawList) {
+  var that = this;
   var clearColor = opt_clearColor || [0.5, 0.5, 0.5, 1.0];
-
   var viewPriority = opt_priority || 0;
   var priority = 0;
 
@@ -191,74 +191,13 @@ o3djs.rendergraph.ViewInfo = function(pack,
   clearBuffer.priority = priority++;
   clearBuffer.parent = viewport;
 
-  // Create DrawLists
-  var performanceDrawList;
-  if (opt_performanceDrawList) {
-    performanceDrawList = opt_performanceDrawList;
-    this.ownPerformanceDrawList_ = false;
-  } else {
-    performanceDrawList = pack.createObject('DrawList');
-    this.ownPerformanceDrawList_ = true;
-  }
-  var zOrderedDrawList;
-  if (opt_zOrderedDrawList) {
-    zOrderedDrawList = opt_zOrderedDrawList;
-    this.ownZOrderedDrawList_ = false;
-  } else {
-    zOrderedDrawList = pack.createObject('DrawList');
-    this.ownZOrderedDrawList_ = true;
-  }
-
-  // Create DrawContext.
-  var drawContext = pack.createObject('DrawContext');
-
   // Creates a TreeTraversal and parents it to the root.
   var treeTraversal = pack.createObject('TreeTraversal');
   treeTraversal.priority = priority++;
   treeTraversal.parent = viewport;
-
-  // Creates an empty stateSet to parent the performanceDrawPass to
-  // just to make it easier to do certain effects.
-  var performanceStateSet = pack.createObject('StateSet');
-  var performanceState = pack.createObject('State');
-  performanceStateSet.state = performanceState;
-  performanceStateSet.priority = priority++;
-  performanceStateSet.parent = viewport;
-  performanceState.getStateParam('ColorWriteEnable').value = 7;
-
-  // Creates a DrawPass for performance shapes.
-  var performanceDrawPass = pack.createObject('DrawPass');
-  performanceDrawPass.drawList = performanceDrawList;
-  performanceDrawPass.parent = performanceStateSet;
-
-  // Creates a StateSet so everything on the zOrderedDrawPass is assumed
-  // to need alpha blending with the typical settings.
-  var zOrderedStateSet = pack.createObject('StateSet');
-  var zOrderedState = pack.createObject('State');
-  zOrderedState.getStateParam('AlphaBlendEnable').value = true;
-  zOrderedState.getStateParam('SourceBlendFunction').value =
-      o3djs.base.o3d.State.BLENDFUNC_SOURCE_ALPHA;
-  zOrderedState.getStateParam('DestinationBlendFunction').value =
-      o3djs.base.o3d.State.BLENDFUNC_INVERSE_SOURCE_ALPHA;
-  zOrderedState.getStateParam('AlphaTestEnable').value = true;
-  zOrderedState.getStateParam('AlphaComparisonFunction').value =
-      o3djs.base.o3d.State.CMP_GREATER;
-  zOrderedState.getStateParam('ColorWriteEnable').value = 7;
-
-  zOrderedStateSet.state = zOrderedState;
-  zOrderedStateSet.priority = priority++;
-  zOrderedStateSet.parent = viewport;
-
-  // Creates a DrawPass for zOrdered shapes.
-  var zOrderedDrawPass = pack.createObject('DrawPass');
-  zOrderedDrawPass.drawList = zOrderedDrawList;
-  zOrderedDrawPass.sortMethod = o3djs.base.o3d.DrawList.BY_Z_ORDER;
-  zOrderedDrawPass.parent = zOrderedStateSet;
-
-  // Register the passlists and drawcontext with the TreeTraversal
-  treeTraversal.registerDrawList(performanceDrawList, drawContext, true);
-  treeTraversal.registerDrawList(zOrderedDrawList, drawContext, true);
   treeTraversal.transform = treeRoot;
+
+  this.drawPassInfos_ = [];
 
   /**
    * Pack that manages the objects created for this ViewInfo.
@@ -300,11 +239,93 @@ o3djs.rendergraph.ViewInfo = function(pack,
    */
   this.clearBuffer = clearBuffer;
 
+  // Create DrawContext.
+  var drawContext = pack.createObject('DrawContext');
+
+  /**
+   * The DrawContext used by this ViewInfo.
+   * @type {!o3d.DrawContext}
+   */
+  this.drawContext = drawContext;
+
+  /**
+   * The TreeTraversal used by this ViewInfo.
+   * @type {!o3d.TreeTraversal}
+   */
+  this.treeTraversal = treeTraversal;
+
+  /**
+   * The highest priority used for objects under the Viewport RenderNode created
+   * by this ViewInfo.
+   * @type {number}
+   */
+  this.priority = priority;
+
+  /**
+   * This function is here just because the inside use case of
+   * ViewInfo.createDrawPass is the less common case.
+   * @param {o3d.DrawList.SortMethod} sortMethod how to sort.
+   * @param {!o3d.DrawList} opt_drawList DrawList to use.
+   */
+  function createDrawPass(sortMethod, opt_drawList) {
+    return that.createDrawPass(
+        sortMethod,
+        undefined,
+        undefined,
+        undefined,
+        opt_drawList);
+  }
+
+  // Setup a Performance Ordered DrawPass
+  var performanceDrawPassInfo = createDrawPass(
+      o3djs.base.o3d.DrawList.BY_PERFORMANCE,
+      opt_performanceDrawList);
+
+  var performanceState = performanceDrawPassInfo.state;
+  performanceState.getStateParam('ColorWriteEnable').value = 7;
+
+  // Setup a z Ordered DrawPass
+  var zOrderedDrawPassInfo = createDrawPass(
+      o3djs.base.o3d.DrawList.BY_Z_ORDER,
+      opt_zOrderedDrawList);
+
+  var zOrderedState = zOrderedDrawPassInfo.state;
+
+  zOrderedState.getStateParam('ColorWriteEnable').value = 7;
+  zOrderedState.getStateParam('AlphaBlendEnable').value = true;
+  zOrderedState.getStateParam('SourceBlendFunction').value =
+      o3djs.base.o3d.State.BLENDFUNC_SOURCE_ALPHA;
+  zOrderedState.getStateParam('DestinationBlendFunction').value =
+      o3djs.base.o3d.State.BLENDFUNC_INVERSE_SOURCE_ALPHA;
+  zOrderedState.getStateParam('AlphaTestEnable').value = true;
+  zOrderedState.getStateParam('AlphaComparisonFunction').value =
+      o3djs.base.o3d.State.CMP_GREATER;
+  zOrderedState.getStateParam('ColorWriteEnable').value = 7;
+
+  // Parent whatever the root is to the parent passed in.
+  if (opt_parent) {
+    this.root.parent = opt_parent;
+  }
+
+  /**
+   * The DrawPassInfo for the performance draw pass.
+   * @type {!o3djs.rendergraph.DrawPassInfo}
+   */
+  this.performanceDrawPassInfo = performanceDrawPassInfo;
+
+  /**
+   * The DrawPassInfo for the zOrdered draw pass.
+   * @type {!o3djs.rendergraph.DrawPassInfo}
+   */
+  this.zOrderedDrawPassInfo = zOrderedDrawPassInfo;
+
+  // Legacy properties
+
   /**
    * The StateSet RenderNode above the performance DrawPass in this ViewInfo
    * @type {!o3d.StateSet}
    */
-  this.performanceStateSet = performanceStateSet;
+  this.performanceStateSet = performanceDrawPassInfo.stateSet;
 
   /**
    * The State object used by the performanceStateSet object in this ViewInfo.
@@ -318,13 +339,13 @@ o3djs.rendergraph.ViewInfo = function(pack,
    * materials.
    * @type {!o3d.DrawList}
    */
-  this.performanceDrawList = performanceDrawList;
+  this.performanceDrawList = performanceDrawPassInfo.drawList;
 
   /**
    * The StateSet RenderNode above the ZOrdered DrawPass in this ViewInfo
    * @type {!o3d.StateSet}
    */
-  this.zOrderedStateSet = zOrderedStateSet;
+  this.zOrderedStateSet = zOrderedDrawPassInfo.stateSet;
 
   /**
    * The State object used by the zOrderedStateSet object in this ViewInfo.
@@ -340,43 +361,19 @@ o3djs.rendergraph.ViewInfo = function(pack,
    * materials.
    * @type {!o3d.DrawList}
    */
-  this.zOrderedDrawList = zOrderedDrawList;
-
-  /**
-   * The DrawContext used by this ViewInfo.
-   * @type {!o3d.DrawContext}
-   */
-  this.drawContext = drawContext;
-
-  /**
-   * The TreeTraversal used by this ViewInfo.
-   * @type {!o3d.TreeTraversal}
-   */
-  this.treeTraversal = treeTraversal;
+  this.zOrderedDrawList = zOrderedDrawPassInfo.drawList;
 
   /**
    * The DrawPass used with the performance DrawList created by this ViewInfo.
    * @type {!o3d.DrawPass}
    */
-  this.performanceDrawPass = performanceDrawPass;
+  this.performanceDrawPass = performanceDrawPassInfo.drawPass;
 
   /**
    * The DrawPass used with the zOrdered DrawList created by this ViewInfo.
    * @type {!o3d.DrawPass}
    */
-  this.zOrderedDrawPass = zOrderedDrawPass;
-
-  /**
-   * The highest priority used for objects under the Viewport RenderNode created
-   * by this ViewInfo.
-   * @type {number}
-   */
-  this.priority = priority;
-
-  // Parent whatever the root is to the parent passed in.
-  if (opt_parent) {
-    this.root.parent = opt_parent;
-  }
+  this.zOrderedDrawPass = zOrderedDrawPassInfo.drawPass;
 };
 
 /**
@@ -393,28 +390,180 @@ o3djs.rendergraph.ViewInfo.prototype.destroy = function(
   if (opt_destroyDrawContext === undefined) {
     opt_destroyDrawContext = true;
   }
-  if (opt_destroyDrawList === undefined) {
-    opt_destroyDrawList = true;
+
+  for (var ii = 0; ii < this.drawPassInfos_.length; ++ii) {
+    this.drawPassInfos_[ii].destroy();
   }
+
   // Remove everything we created from the pack.
   this.pack.removeObject(this.viewport);
   this.pack.removeObject(this.clearBuffer);
-  if (this.ownPerformanceDrawList_ && opt_destroyDrawList) {
-    this.pack.removeObject(this.performanceDrawList);
-  }
-  if (this.ownZOrderedDrawList_ && opt_destroyDrawList) {
-    this.pack.removeObject(this.zOrderedDrawList);
-  }
   if (opt_destroyDrawContext) {
     this.pack.removeObject(this.drawContext);
   }
   this.pack.removeObject(this.treeTraversal);
-  this.pack.removeObject(this.performanceDrawPass);
-  this.pack.removeObject(this.zOrderedDrawPass);
   // Remove our substree from its parent.
   this.viewport.parent = null;
 
   // At this point, IF nothing else is referencing any of these objects
   // they should get removed.
+};
+
+/**
+ * Creates a draw pass in this ViewInfo.
+ *
+ * @param {o3d.DrawList.SortMethod} sortMethod How to sort this draw pass's
+ *     DrawElements.
+ * @param {!o3d.DrawContext} opt_drawContext The DrawContext for this draw pass.
+ *     If not passed in the default DrawContext for this ViewInfo will be used.
+ * @param {number} opt_priority The priority for this draw pass. If not passed
+ *     in the priority will be the next priority for this ViewInfo.
+ * @param {!o3d.RenderNode} opt_parent The RenderNode to parent this draw pass
+ *     under. If not passed in the draw pass will be parented under the
+ *     ViewInfo's viewport RenderNode.
+ * @param {!o3d.DrawList} opt_drawList The DrawList for this draw pass. If not
+ *     passed in one will be created.
+ * @return {!o3djs.rendergraph.DrawPassInfo}
+ */
+o3djs.rendergraph.ViewInfo.prototype.createDrawPass = function(
+    sortMethod,
+    opt_drawContext,
+    opt_priority,
+    opt_parent,
+    opt_drawList) {
+  opt_drawContext = opt_drawContext || this.drawContext;
+  opt_parent = opt_parent || this.viewport;
+  opt_priority = (typeof opt_priority !== 'undefined') ? opt_priority :
+                 this.priority++;
+  var drawPassInfo = o3djs.rendergraph.createDrawPassInfo(
+     this.pack,
+     opt_drawContext,
+     sortMethod,
+     opt_parent,
+     opt_drawList);
+  drawPassInfo.root.priority = opt_priority;
+  this.treeTraversal.registerDrawList(
+      drawPassInfo.drawList, opt_drawContext, true);
+
+  this.drawPassInfos_.push(drawPassInfo);
+
+  return drawPassInfo;
+};
+
+/**
+ * Creates a DrawPassInfo to manage a draw pass.
+ *
+ * @param {!o3d.Pack} pack Pack to manage created objects.
+ * @param {!o3d.DrawContext} drawContext The DrawContext for this draw pass.
+ * @param {o3d.DrawList.SortMethod} sortMethod How to sort this draw pass's
+ *     DrawElements.
+ * @param {!o3d.DrawList} opt_drawList The DrawList for this draw pass. If not
+ *     passed in one will be created.
+ * @param {!o3d.RenderNode} opt_parent The RenderNode to parent this draw pass
+ *     under. If not passed the draw pass will not be parented.
+ * @return {!o3djs.rendergraph.DrawPassInfo}
+ */
+o3djs.rendergraph.createDrawPassInfo = function(
+    pack,
+    drawContext,
+    sortMethod,
+    opt_parent,
+    opt_drawList) {
+  return new o3djs.rendergraph.DrawPassInfo(
+      pack, drawContext, sortMethod, opt_parent, opt_drawList);
+};
+
+/**
+ * A class to manage a draw pass.
+ *
+ * @param {!o3d.Pack} pack Pack to manage created objects.
+ * @param {!o3d.DrawContext} drawContext The DrawContext for this draw pass.
+ * @param {o3d.DrawList.SortMethod} sortMethod How to sort this draw pass's
+ *     DrawElements.
+ * @param {!o3d.DrawList} opt_drawList The DrawList for this draw pass. If not
+ *     passed in one will be created.
+ * @param {!o3d.RenderNode} opt_parent The RenderNode to parent this draw pass
+ *     under. If not passed the draw pass will not be parented.
+ * @return {!o3djs.rendergraph.DrawPassInfo}
+ */
+o3djs.rendergraph.DrawPassInfo = function(pack,
+                                          drawContext,
+                                          sortMethod,
+                                          opt_parent,
+                                          opt_drawList) {
+  var ownDrawList = opt_drawList ? false : true;
+
+  opt_parent = opt_parent || NULL;
+  opt_drawList = opt_drawList || pack.createObject('DrawList');
+
+  var stateSet = pack.createObject('StateSet');
+  var state = pack.createObject('State');
+  stateSet.state = state;
+  stateSet.parent = opt_parent;
+
+  var drawPass = pack.createObject('DrawPass');
+  drawPass.drawList = opt_drawList;
+  drawPass.sortMethod = sortMethod;
+  drawPass.parent = stateSet;
+
+  /**
+   * The pack managing the objects created for this DrawPassInfo.
+   * @type {!o3d.Pack}
+   */
+  this.pack = pack;
+
+  /**
+   * The State that affects all things drawn in this DrawPassInfo.
+   * @type {!o3d.State}
+   */
+  this.state = state;
+
+  /**
+   * The StateSet that applies the state for this DrawPassInfo.
+   * @type {!o3d.StateSet}
+   */
+  this.stateSet = stateSet;
+
+  /**
+   * The DrawPass for this DrawPassInfo.
+   * @type {!o3d.DrawPass}
+   */
+  this.drawPass = drawPass;
+
+  /**
+   * The DrawList for this DrawPassInfo.
+   * @type {!o3d.Pack}
+   */
+  this.drawList = opt_drawList;
+
+  /**
+   * The root RenderNode of this DrawPassInfo. This is the RenderNdoe you should
+   * use if you want to turn this draw pass off or reparent it.
+   * @type {!o3d.RenderNode}
+   */
+  this.root = stateSet;
+
+  /**
+   * A flag whether or not we created the DrawList for this DrawPassInfo.
+   * @private
+   * @type {boolean}
+   */
+  this.ownDrawList_ = ownDrawList;
+};
+
+/**
+ * Frees the resources created for this DrawPassInfo.
+ */
+o3djs.rendergraph.DrawPassInfo.prototype.destroy = function() {
+  // Remove everything we created from the pack.
+  if (this.ownDrawList_) {
+    this.drawList.parent = null;
+    this.pack_.removeObject(this.drawList);
+  }
+  this.drawPass.parent = null;
+  this.stateSet.parent = null;
+  this.pack.removeObject(this.drawPass);
+  this.pack.removeObject(this.stateSet);
+  this.pack.removeObject(this.state);
 };
 

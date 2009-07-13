@@ -138,6 +138,7 @@ samples = [
   'julia.html',
   'multiple-clients.html',
   'multiple-views.html',
+  'old-school-shadows.html',
   'particles.html',
   'phongshading.html',
   'picking.html',
