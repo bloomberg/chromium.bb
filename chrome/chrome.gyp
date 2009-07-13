@@ -1236,6 +1236,8 @@
         'browser/net/dns_host_info.h',
         'browser/net/dns_master.cc',
         'browser/net/dns_master.h',
+        'browser/net/metadata_url_request.cc',
+        'browser/net/metadata_url_request.h',
         'browser/net/referrer.cc',
         'browser/net/referrer.h',
         'browser/net/resolve_proxy_msg_helper.cc',

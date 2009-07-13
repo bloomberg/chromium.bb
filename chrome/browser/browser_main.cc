@@ -34,6 +34,7 @@
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/net/dns_global.h"
+#include "chrome/browser/net/metadata_url_request.h"
 #include "chrome/browser/net/sdch_dictionary_fetcher.h"
 #include "chrome/browser/plugin_service.h"
 #include "chrome/browser/process_singleton.h"
@@ -660,6 +661,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // chrome-extension:// URLs.
   RegisterURLRequestChromeJob();
   RegisterExtensionProtocols();
+  RegisterMetadataURLRequestHandler();
 
   // In unittest mode, this will do nothing.  In normal mode, this will create
   // the global GoogleURLTracker instance, which will promptly go to sleep for
