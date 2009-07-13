@@ -240,6 +240,16 @@ void WebFrameLoaderClient::dispatchWillSendRequest(
     request.setTargetType(DetermineTargetTypeFromLoader(loader));
   }
 
+  // Inherit the first party for cookies from the request's frame.  However, if
+  // the request is for a main frame, the current document's
+  // firstPartyForCookies is the old document, so we leave firstPartyForCookies
+  // empty to indicate that the request is a first-party request.
+  if (request.targetType() != ResourceRequest::TargetIsMainFrame &&
+      webframe_->frame()->document()) {
+    request.setFirstPartyForCookies(
+        webframe_->frame()->document()->firstPartyForCookies());
+  }
+
   // FrameLoader::loadEmptyDocumentSynchronously() creates an empty document
   // with no URL.  We don't like that, so we'll rename it to about:blank.
   if (request.url().isEmpty())
