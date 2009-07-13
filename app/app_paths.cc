@@ -18,12 +18,16 @@ bool PathProvider(int key, FilePath* result) {
 
   FilePath cur;
   switch (key) {
+#if !defined(OS_MACOSX)
+    // These are not "themes" that are user-created, but rather the dlls and
+    // pak files. On the Mac, we keep the pak files in the lproj folders.
     case app::DIR_THEMES:
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("themes"));
       create_dir = true;
       break;
+#endif
     case app::DIR_LOCALES:
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
@@ -40,8 +44,16 @@ bool PathProvider(int key, FilePath* result) {
     case app::DIR_EXTERNAL_EXTENSIONS:
       if (!PathService::Get(base::DIR_MODULE, &cur))
         return false;
+#if defined(OS_MACOSX)
+      // On Mac, built-in extensions are in Contents/Extensions, a sibling of
+      // the App dir. If there are none, it may not exist.
+      cur = cur.DirName();
+      cur = cur.Append(FILE_PATH_LITERAL("Extensions"));
+      create_dir = false;
+#else
       cur = cur.Append(FILE_PATH_LITERAL("extensions"));
       create_dir = true;
+#endif
       break;
     // The following are only valid in the development environment, and
     // will fail if executed from an installed executable (because the
