@@ -62,7 +62,7 @@ std::wstring UtilityProcessHost::GetUtilityProcessCmd() {
 bool UtilityProcessHost::StartProcess(const FilePath& exposed_dir) {
   // Name must be set or metrics_service will crash in any test which
   // launches a UtilityProcessHost.
-  set_name(L"utility_process_host_" + ASCIIToWide(channel_id()));
+  set_name(L"utility process");
 
   if (!CreateChannel())
     return false;
