@@ -21,7 +21,7 @@ class CanvasPaintT : public T {
  public:
   // This constructor assumes the result is opaque.
   explicit CanvasPaintT(GdkEventExpose* event)
-      : surface_(NULL),
+      : context_(NULL),
         window_(event->window),
         rectangle_(event->area),
         composite_alpha_(false) {
@@ -29,7 +29,7 @@ class CanvasPaintT : public T {
   }
 
   CanvasPaintT(GdkEventExpose* event, bool opaque)
-      : surface_(NULL),
+      : context_(NULL),
         window_(event->window),
         rectangle_(event->area),
         composite_alpha_(false) {
@@ -44,7 +44,8 @@ class CanvasPaintT : public T {
       cairo_t* cr = gdk_cairo_create(window_);
       if (composite_alpha_)
         cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-      cairo_set_source_surface(cr, surface_, rectangle_.x, rectangle_.y);
+      cairo_surface_t* source_surface = cairo_get_target(context_);
+      cairo_set_source_surface(cr, source_surface, rectangle_.x, rectangle_.y);
       cairo_rectangle(cr, rectangle_.x, rectangle_.y,
                       rectangle_.width, rectangle_.height);
       cairo_fill(cr);
@@ -80,10 +81,10 @@ class CanvasPaintT : public T {
     // surface.
     T::translate(-SkIntToScalar(rectangle_.x), -SkIntToScalar(rectangle_.y));
 
-    surface_ = T::getTopPlatformDevice().beginPlatformPaint();
+    context_ = T::getTopPlatformDevice().beginPlatformPaint();
   }
 
-  cairo_surface_t* surface_;
+  cairo_t* context_;
   GdkWindow* window_;
   GdkRectangle rectangle_;
   // See description above setter.

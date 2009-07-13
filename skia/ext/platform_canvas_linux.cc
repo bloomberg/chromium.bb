@@ -42,7 +42,7 @@ bool PlatformCanvas::initialize(int width, int height, bool is_opaque,
   return true;
 }
 
-cairo_surface_t* PlatformCanvas::beginPlatformPaint() {
+cairo_t* PlatformCanvas::beginPlatformPaint() {
   return getTopPlatformDevice().beginPlatformPaint();
 }
 

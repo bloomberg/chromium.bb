@@ -357,11 +357,10 @@ void WebWidgetHost::Paint() {
   gdk_window_begin_paint_rect(window, &grect);
 
   // BitBlit to the gdk window.
-  skia::PlatformDevice& platdev = canvas_->getTopPlatformDevice();
-  skia::BitmapPlatformDevice* const bitdev =
-      static_cast<skia::BitmapPlatformDevice*>(&platdev);
+  cairo_t* source_surface = canvas_->beginPlatformPaint();
   cairo_t* cairo_drawable = gdk_cairo_create(window);
-  cairo_set_source_surface(cairo_drawable, bitdev->surface(), 0, 0);
+  cairo_set_source_surface(cairo_drawable, cairo_get_target(source_surface),
+                           0, 0);
   cairo_paint(cairo_drawable);
   cairo_destroy(cairo_drawable);
 
