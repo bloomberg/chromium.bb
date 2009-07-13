@@ -75,8 +75,7 @@ AudioRendererHost::IPCAudioSource::IPCAudioSource(
 }
 
 AudioRendererHost::IPCAudioSource::~IPCAudioSource() {
-  DCHECK(AudioOutputStream::STATE_STOPPED == state_ ||
-         AudioOutputStream::STATE_CREATED == state_);
+  DCHECK_EQ(AudioOutputStream::STATE_STOPPED, state_);
 }
 
 // static
