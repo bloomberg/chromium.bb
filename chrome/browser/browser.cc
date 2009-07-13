@@ -1075,9 +1075,9 @@ void Browser::OpenCreateShortcutsDialog() {
 #endif
 }
 
-void Browser::OpenJavaScriptConsole() {
+void Browser::ToggleJavaScriptConsole() {
   UserMetrics::RecordAction(L"ShowJSConsole", profile_);
-  DevToolsManager::GetInstance()->OpenDevToolsWindow(
+  DevToolsManager::GetInstance()->ToggleDevToolsWindow(
       GetSelectedTabContents()->render_view_host());
 }
 
@@ -1357,7 +1357,7 @@ void Browser::ExecuteCommandWithDisposition(
     // Show various bits of UI
     case IDC_OPEN_FILE:             OpenFile();                    break;
     case IDC_CREATE_SHORTCUTS:      OpenCreateShortcutsDialog();   break;
-    case IDC_JS_CONSOLE:            OpenJavaScriptConsole();       break;
+    case IDC_JS_CONSOLE:            ToggleJavaScriptConsole();     break;
     case IDC_TASK_MANAGER:          OpenTaskManager();             break;
     case IDC_SELECT_PROFILE:        OpenSelectProfileDialog();     break;
     case IDC_NEW_PROFILE:           OpenNewProfileDialog();        break;

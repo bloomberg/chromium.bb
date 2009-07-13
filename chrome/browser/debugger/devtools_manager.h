@@ -54,6 +54,8 @@ class DevToolsManager : public DevToolsClientHost::CloseListener,
 
   void OpenDevToolsWindow(RenderViewHost* inspected_rvh);
 
+  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh);
+
   // Starts element inspection in the devtools client.
   // Creates one by means of OpenDevToolsWindow if no client
   // exists.
@@ -83,7 +85,11 @@ private:
 
   DevToolsClientHost* FindOnwerDevToolsClientHost(RenderViewHost* client_rvh);
 
+  void ToggleDevToolsWindow(RenderViewHost* inspected_rvh, bool force_open);
+
   void ReopenWindow(RenderViewHost* client_rvh, bool docked);
+
+  void CloseWindow(DevToolsClientHost* client_host);
 
   // These two maps are for tracking dependencies between inspected tabs and
   // their DevToolsClientHosts. They are usful for routing devtools messages
