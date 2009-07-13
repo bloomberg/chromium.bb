@@ -124,8 +124,7 @@ class ResourceBundle {
   // is missing.
   GdkPixbuf* GetPixbufNamed(int resource_id);
 
-  // As above, but flips it in RTL locales. Note that this will add the flipped
-  // pixbuf to the same cache used by GetPixbufNamed().
+  // As above, but flips it in RTL locales.
   GdkPixbuf* GetRTLEnabledPixbufNamed(int resource_id);
 
  private:

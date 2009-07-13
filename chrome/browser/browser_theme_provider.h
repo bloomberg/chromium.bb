@@ -137,6 +137,7 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   virtual bool HasCustomImage(int id);
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   virtual GdkPixbuf* GetPixbufNamed(int id);
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id);
 #elif defined(OS_MACOSX)
   virtual NSImage* GetNSImageNamed(int id);
   virtual NSColor* GetNSColorTint(int id);
@@ -251,6 +252,11 @@ class BrowserThemeProvider : public base::RefCounted<BrowserThemeProvider>,
   // Clears the platform-specific caches. Do not call directly; it's called
   // from ClearCaches().
   void FreePlatformCaches();
+
+#if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
+  // Loads an image and flips it horizontally if |rtl_enabled| is true.
+  GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled);
+#endif
 
   // Cached images. We cache all retrieved and generated bitmaps and keep
   // track of the pointers. We own these and will delete them when we're done

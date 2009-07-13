@@ -80,16 +80,15 @@ void CustomDrawButtonBase::Observe(NotificationType type,
   DCHECK(theme_provider_);
   DCHECK(NotificationType::BROWSER_THEME_CHANGED == type);
 
-  // TODO(tc): Add GetRTLEnabledPixbufNamed to ThemeProviderGtk.
-  pixbufs_[GTK_STATE_NORMAL] =
-      normal_id_ ? theme_provider_->GetPixbufNamed(normal_id_) : NULL;
-  pixbufs_[GTK_STATE_ACTIVE] =
-      active_id_ ? theme_provider_->GetPixbufNamed(active_id_) : NULL;
-  pixbufs_[GTK_STATE_PRELIGHT] =
-      highlight_id_ ? theme_provider_->GetPixbufNamed(highlight_id_) : NULL;
+  pixbufs_[GTK_STATE_NORMAL] = normal_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(normal_id_) : NULL;
+  pixbufs_[GTK_STATE_ACTIVE] = active_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(active_id_) : NULL;
+  pixbufs_[GTK_STATE_PRELIGHT] = highlight_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(highlight_id_) : NULL;
   pixbufs_[GTK_STATE_SELECTED] = NULL;
-  pixbufs_[GTK_STATE_INSENSITIVE] =
-      depressed_id_ ? theme_provider_->GetPixbufNamed(depressed_id_) : NULL;
+  pixbufs_[GTK_STATE_INSENSITIVE] = depressed_id_ ?
+      theme_provider_->GetRTLEnabledPixbufNamed(depressed_id_) : NULL;
 }
 
 CustomDrawButton::CustomDrawButton(int normal_id, int active_id,

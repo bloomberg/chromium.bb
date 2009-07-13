@@ -4,14 +4,25 @@
 
 #include "chrome/browser/browser_theme_provider.h"
 
+#include "app/l10n_util.h"
 #include "base/gfx/gtk_util.h"
 #include "base/logging.h"
 
 GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) {
+  return GetPixbufImpl(id, false);
+}
+
+GdkPixbuf* BrowserThemeProvider::GetRTLEnabledPixbufNamed(int id) {
+  return GetPixbufImpl(id, true);
+}
+
+GdkPixbuf* BrowserThemeProvider::GetPixbufImpl(int id, bool rtl_enabled) {
   DCHECK(CalledOnValidThread());
+  // Use the negative |resource_id| for the key for BIDI-aware images.
+  int key = rtl_enabled ? -id : id;
 
   // Check to see if we already have the pixbuf in the cache.
-  GdkPixbufMap::const_iterator found = gdk_pixbufs_.find(id);
+  GdkPixbufMap::const_iterator found = gdk_pixbufs_.find(key);
   if (found != gdk_pixbufs_.end())
     return found->second;
 
@@ -20,7 +31,14 @@ GdkPixbuf* BrowserThemeProvider::GetPixbufNamed(int id) {
 
   // We loaded successfully.  Cache the pixbuf.
   if (pixbuf) {
-    gdk_pixbufs_[id] = pixbuf;
+    if ((l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT) &&
+        rtl_enabled) {
+      GdkPixbuf* original_pixbuf = pixbuf;
+      pixbuf = gdk_pixbuf_flip(pixbuf, TRUE);
+      g_object_unref(original_pixbuf);
+    }
+
+    gdk_pixbufs_[key] = pixbuf;
     return pixbuf;
   }
 

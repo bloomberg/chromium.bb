@@ -64,6 +64,9 @@ class ThemeProvider {
   // pointer to a shared empty placeholder bitmap so it will be visible what
   // is missing.
   virtual GdkPixbuf* GetPixbufNamed(int id) = 0;
+
+  // As above, but flips it in RTL locales.
+  virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) = 0;
 #elif defined(OS_MACOSX)
   // Gets the NSImage with the specified |id|.
   //
