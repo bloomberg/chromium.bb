@@ -2101,6 +2101,39 @@
               ],
             }],
             ['chromeos==1',{
+	      'dependencies': [
+  		'../third_party/protobuf/protobuf.gyp:protobuf',
+  		'../third_party/protobuf/protobuf.gyp:protoc',
+ 	      ],
+	      'actions': [
+ 	        { 'action_name': 'my_proto',
+    		  'inputs': [
+      		    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+      		    'browser/metrics/system_metrics.proto',
+    		  ],
+		  'outputs': [
+      		    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
+    		    '<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.h',
+    		  ],
+    		  'dependencies': [
+      		    '../third_party/protobuf/protobuf.gyp:protoc',
+    		  ],
+		  'action': [
+      		    '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)protoc<(EXECUTABLE_SUFFIX)',
+      		    'browser/metrics/system_metrics.proto',
+		    '--cpp_out=<(INTERMEDIATE_DIR)/chrome',
+    		  ],
+		},
+ 	      ],
+ 	      'sources': [
+      		'<(INTERMEDIATE_DIR)/chrome/browser/metrics/system_metrics.pb.cc',
+                'browser/metrics/system_metrics_logger.h',
+                'browser/metrics/system_metrics_logger_impl.cc',
+                'browser/metrics/system_metrics_logger_impl.h',
+  	      ],
+	      'include_dirs': [
+	        '<(INTERMEDIATE_DIR)',
+ 	      ],
               'sources/': [
                 ['include', 'browser/views/new_browser_window_widget.cc'],
                 ['include', 'browser/views/new_browser_window_widget.h'],

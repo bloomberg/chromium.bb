@@ -49,6 +49,8 @@ static const AtomInfo kAtomInfos[] = {
     "WM_STATE" },
   { TabOverviewTypes::ATOM_WM_TRANSIENT_FOR,
     "WM_TRANSIENT_FOR" },
+  { TabOverviewTypes::ATOM_WM_SYSTEM_METRICS,
+    "WM_SYSTEM_METRICS" },
 };
 
 bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
@@ -135,6 +137,59 @@ bool TabOverviewTypes::DecodeMessage(const GdkEventClient& event,
   for (int i = 0; i < msg->max_params(); ++i)
     msg->set_param(i, event.data.l[i+1]);  // l[0] contains message type
 
+  return true;
+}
+
+bool TabOverviewTypes::DecodeStringMessage(const GdkEventProperty& event,
+                                           std::string* msg) {
+  DCHECK(NULL != msg);
+  if (type_to_atom_[ATOM_WM_SYSTEM_METRICS] !=
+      gdk_x11_atom_to_xatom(event.atom))
+    return false;
+
+  DLOG(WARNING) << "Got property change notification for system metrics.";
+  if (GDK_PROPERTY_DELETE == event.state) {
+    DLOG(WARNING) << "Ignoring delete EventPropertyNotification";
+    return false;
+  }
+
+  // We will be using DBus for this communication in the future, so I don't
+  // really worry right now that we could generate more than 1KB here.
+  // Also, I use "long" rather than int64 because that is what X expects.
+  long acceptable_bytes = 1024;
+  Atom actual_type;
+  int actual_format;
+  unsigned long num_items, bytes_left;
+  unsigned char *output;
+  if (Success != XGetWindowProperty(x11_util::GetXDisplay(),
+                                    GDK_WINDOW_XID(event.window),
+                                    type_to_atom_[ATOM_WM_SYSTEM_METRICS],
+                                    0,
+                                    acceptable_bytes,
+                                    false,
+                                    AnyPropertyType,
+                                    &actual_type,
+                                    &actual_format,
+                                    &num_items,
+                                    &bytes_left,
+                                    &output)) {
+    DLOG(WARNING) << "Could not read system metrics property from X.";
+    return false;
+  }
+  if (actual_format == 0) {
+    DLOG(WARNING) << "System Metrics property not set.";
+    return false;
+  }
+  if (actual_format != 8) {
+    DLOG(WARNING) << "Message was not encoded as a string of bytes...";
+    return false;
+  }
+  if (bytes_left != 0) {
+    DLOG(ERROR) << "We wanted all the bytes at once...";
+    return false;
+  }
+  msg->assign(reinterpret_cast<char*>(output), num_items);
+  XFree(output);
   return true;
 }
 

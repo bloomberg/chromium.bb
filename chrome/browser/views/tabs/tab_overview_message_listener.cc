@@ -7,6 +7,8 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/metrics/system_metrics_logger_impl.h"
+#include "chrome/browser/metrics/system_metrics.pb.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/views/new_browser_window_widget.h"
 #include "chrome/browser/views/tabs/tab_overview_controller.h"
@@ -25,12 +27,34 @@ TabOverviewMessageListener* TabOverviewMessageListener::instance() {
 void TabOverviewMessageListener::WillProcessEvent(GdkEvent* event) {
 }
 
+namespace {
+void ProcessSystemMetricsString(const std::string& message) {
+  SystemMetricsLoggerImpl logger;
+  chrome_os_pb::SystemMetrics system_metrics;
+  if (!system_metrics.ParseFromString(message)) {
+    DLOG(ERROR) << "Could not parse system metrics protobuffer!";
+    return;
+  }
+  // For now, boot time is the only metric we'll worry about.
+  if (system_metrics.has_boot_time_ms()) {
+    logger.RecordBootTime(system_metrics.boot_time_ms());
+  }
+}
+}  // namespace
+
 void TabOverviewMessageListener::DidProcessEvent(GdkEvent* event) {
   if (event->type == GDK_CLIENT_EVENT) {
     TabOverviewTypes::Message message;
     GdkEventClient* client_event = reinterpret_cast<GdkEventClient*>(event);
     if (TabOverviewTypes::instance()->DecodeMessage(*client_event, &message))
       ProcessMessage(message, client_event->window);
+  } else if (event->type == GDK_PROPERTY_NOTIFY) {
+    std::string message;
+    GdkEventProperty* client_event = reinterpret_cast<GdkEventProperty*>(event);
+    if (TabOverviewTypes::instance()->DecodeStringMessage(*client_event,
+                                                          &message)) {
+      ProcessSystemMetricsString(message);
+    }
   }
 }
 

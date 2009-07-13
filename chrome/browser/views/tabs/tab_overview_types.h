@@ -32,6 +32,7 @@ class TabOverviewTypes {
     ATOM_WM_S0,
     ATOM_WM_STATE,
     ATOM_WM_TRANSIENT_FOR,
+    ATOM_WM_SYSTEM_METRICS,
     kNumAtoms,
   };
 
@@ -203,6 +204,10 @@ class TabOverviewTypes {
   // If |event| is a valid Message it is decoded into |msg| and true is
   // returned. If false is returned, |event| is not a valid Message.
   bool DecodeMessage(const GdkEventClient& event, Message* msg);
+
+  // If |event| is a valid StringMessage it is decoded into |msg| and true is
+  // returned. If false is returned, |event| is not a valid StringMessage.
+  bool DecodeStringMessage(const GdkEventProperty& event, std::string* msg);
 
  private:
   friend struct DefaultSingletonTraits<TabOverviewTypes>;
